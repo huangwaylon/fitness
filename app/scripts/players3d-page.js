@@ -2,7 +2,8 @@
 // The browser half of scripts/players3d-models.ts: NH's human player as parts the app assembles at runtime
 // (components/player3d). Built on the avatar study's assembler (design/avatar/render/player.js: served as /player.js):
 //   bodyGltf()       the body (skeleton, skin, legs, face patches, ears, noses) with its tintable textures: the skin's
-//                    alpha its tint mask (1: skin, tinted at runtime; 0: the underwear's own colour), the face patches'
+//                    alpha its tint mask, 255 − 127 × mask (128: skin, tinted at runtime; 255: its own colour, the
+//                    underwear's; never 0, where a browser's premultiplied decode loses the colour), the face patches'
 //                    likewise (the eyes' and mouths' atlases come apart, per eye or mouth type: faceAtlas)
 //   faceAtlas(kind, folder)  an eye type's 16 frames (4 × 4 of 128 × 64) or a mouth's 9 (3 × 3 of 64 × 64), skin-masked
 //   cheeks()         the three blush shapes, skin-masked
@@ -56,7 +57,7 @@ window.addFiles = (more) => { Object.assign(FILES, more); return true; };
 async function skinTex() {
   const a = await px('PlayerBody', 'mSkin_Alb.png');
   const m = await px('PlayerBody', 'mSkin_Mix.png', a.width, a.height);
-  for (let i = 0; i < a.data.length; i += 4) a.data[i + 3] = m.data[i];
+  for (let i = 0; i < a.data.length; i += 4) a.data[i + 3] = 255 - Math.round(m.data[i] * 127 / 255);
   return a;
 }
 /** A face frame: its RGB where _Mix's red is 0, white where 1 (the skin's, tinted), the red as alpha; the sclera lifted
@@ -69,7 +70,7 @@ async function faceFrame(folder, base, frame, w, h) {
     const r = m ? m.data[i] / 255 : 0;
     if (base === 'mEye' && r < 0.5 && a.data[i] > 150) for (let c = 0; c < 3; c++) a.data[i + c] += Math.round((255 - a.data[i + c]) * 0.55);
     for (let c = 0; c < 3; c++) a.data[i + c] = Math.round(a.data[i + c] * (1 - r) + 255 * r);
-    a.data[i + 3] = Math.round(r * 255);
+    a.data[i + 3] = 255 - Math.round(r * 127);
   }
   return a;
 }
@@ -81,7 +82,8 @@ window.faceAtlas = async (kind, folder, more) => {
   for (let i = 0; i < n; i++) {
     const f = await faceFrame(folder, base, i, cw, ch);
     if (!f) continue;
-    const x0 = (i % cols) * cw, y0 = Math.floor(i / cols) * ch;
+    // (its rows bottom up: three's texture rows are, and villager3d/faces.ts cellTransform counts them so)
+    const x0 = (i % cols) * cw, y0 = (rows - 1 - Math.floor(i / cols)) * ch;
     for (let y = 0; y < ch; y++) out.data.set(f.data.subarray(y * cw * 4, (y + 1) * cw * 4), ((y0 + y) * cols * cw + x0) * 4);
   }
   return canvasOf(out).toDataURL('image/png');
@@ -95,7 +97,7 @@ window.cheeks = async () => {
     for (let i = 0; i < a.data.length; i += 4) {
       const w = 1 - (1 - a.data[i] / 255) * 0.6;
       for (let c = 0; c < 3; c++) a.data[i + c] = Math.round(255 * w + b[c] * (1 - w));
-      a.data[i + 3] = Math.round(w * 255);
+      a.data[i + 3] = 255 - Math.round(w * 127);
     }
     out.push(png(canvasOf(a), 128));
   }
@@ -103,7 +105,7 @@ window.cheeks = async () => {
 };
 
 /** The body as a glTF: its meshes on its skeleton; the skin's and the legs' textures in it (tintable: material
- *  extras `tint`), the face patches' uvs on the atlases' first cell (their textures come apart). */
+ *  extras `tint`), the face patches' textures come apart (atlases: their extras `atlas`). */
 window.bodyGltf = async () => {
   const p = await loadPlayer(structuredClone(BASE_LOOK), FILES);
   const skin = texOf(await skinTex());
@@ -127,13 +129,14 @@ window.bodyGltf = async () => {
     else if (n === 'mEye' || n === 'mMouth' || n === 'mCheek') {
       const [cols, rows] = n === 'mEye' ? [4, 4] : n === 'mMouth' ? [3, 3] : [1, 1];
       mat.userData = { tint: 'skin', mask: 1, atlas: [cols, rows, n === 'mEye' ? 16 : n === 'mMouth' ? 9 : 1] };
-      const uv = m.geometry.attributes.uv;
-      for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / cols, 1 - (1 - uv.getY(i)) / rows);
+      // (the uvs as NH's: the runtime picks a cell by the texture's offset and repeat, villager3d/faces.ts cellTransform)
       // (a 4 px placeholder: its texture is the eye's, the mouth's or the blush's, set at runtime)
       mat.map = texOf(new ImageData(new Uint8ClampedArray(64).fill(255), 4, 4));
     }
+    // (the noses told apart by their material's name: a GLB's node names don't survive packing)
+    const noseK = /^Nose0([0-2])/.exec(m.name);
+    if (noseK) mat.name = `mNose${noseK[1]}`;
     m.material = mat;
-    if (/^Nose0[0-2]/.test(m.name)) m.name = m.name.slice(0, 6);
     const g = m.geometry;
     tris += (g.index ? g.index.count : g.attributes.position.count) / 3;
     for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'uv', 'skinIndex', 'skinWeight'].includes(k)) g.deleteAttribute(k);
