@@ -235,9 +235,10 @@ export function toJson(l: Layout): LayoutJson {
 export function fromJson(j: unknown): Layout | null {
   if (typeof j !== 'object' || j === null) return null;
   const o = j as Partial<LayoutJson>;
-  if (o.v !== 1 || !Array.isArray(o.tiles) || o.tiles.length !== GRID.rows || !Array.isArray(o.objects)) return null;
+  // (an older export's grid had fewer rows: the rest is the sea behind it)
+  if (o.v !== 1 || !Array.isArray(o.tiles) || o.tiles.length > GRID.rows || o.tiles.length < 1 || !Array.isArray(o.objects)) return null;
   const codes = new Uint8Array(GRID.cols * GRID.rows);
-  for (let r = 0; r < GRID.rows; r++) {
+  for (let r = 0; r < o.tiles.length; r++) {
     const row = o.tiles[r];
     if (typeof row !== 'string' || row.length !== GRID.cols || !/^[0-9a-z]+$/.test(row)) return null;
     for (let c = 0; c < GRID.cols; c++) codes[idx(c, r)] = parseInt(row[c], 36) % 36;

@@ -8,7 +8,7 @@
   import { layout as store } from '#lib/store/layout.svelte.ts';
   import { KIND_LIST, kindDef, type KindDef } from '#lib/layout/catalog.ts';
   import { GRID, PATHS, TILE, type Kind } from '#lib/layout/grid.ts';
-  import { fromJson, footOf, objMid, opsBetween, toJson, type Layout, type Obj } from '#lib/layout/model.ts';
+  import { extentOf, fromJson, footOf, objMid, opsBetween, toJson, type Layout, type Obj } from '#lib/layout/model.ts';
   import { validate, type Issue } from '#lib/layout/validate.ts';
   import { riverStems } from '#lib/layout/river.ts';
   import { artUrl } from '#lib/art.ts';
@@ -413,7 +413,7 @@
         view = zoomAt(view, W / 2, H / 2, 0.8);
         break;
       case '0':
-        view = fitView(W, H);
+        view = fitView(W, H, extentOf(store.current).land);
         break;
     }
   }
@@ -502,7 +502,7 @@
     W = r.width;
     H = r.height;
     // the front of the island in view at the start, a tile ~27px
-    const fit = untrack(() => fitView(W, H));
+    const fit = untrack(() => fitView(W, H, extentOf(store.current).land));
     view = zoomAt(fit, W / 2, H - 20, 0.9 / fit.s);
     window.addEventListener('keydown', onKey);
     window.addEventListener('keyup', onKeyUp);

@@ -21,10 +21,14 @@ export const tileUnder = (v: View, px: number, py: number): [number, number] => 
   const [x, z] = toWorld(v, px, py);
   return [Math.floor((x - GRID.x0) / TILE), Math.floor((z - GRID.z0) / TILE)];
 };
-/** A view that fits the whole grid in `w` × `h` px, the front of the island at the bottom. */
-export function fitView(w: number, h: number): View {
-  const s = Math.min((w - 40) / (GRID.cols * TILE), (h - 40) / (GRID.rows * TILE), 1.2);
-  return { s, ox: (w - GRID.cols * TILE * s) / 2, oy: h - GRID.rows * TILE * s - 20 };
+/** A view that fits the island in `w` × `h` px, the front of the island at the bottom: the grid's width, and along it
+ *  the land's box (model.ts extentOf) and two tiles of sea (the whole grid without one; the grid keeps rows of sea
+ *  behind the island for it to grow into). */
+export function fitView(w: number, h: number, land?: { z0: number; z1: number }): View {
+  const za = land && land.z1 > land.z0 ? Math.max(GRID.z0, land.z0 - 2 * TILE) : GRID.z0;
+  const zb = land && land.z1 > land.z0 ? Math.min(Z1, land.z1 + 2 * TILE) : Z1;
+  const s = Math.min((w - 40) / (GRID.cols * TILE), (h - 40) / (zb - za), 1.2);
+  return { s, ox: (w - GRID.cols * TILE * s) / 2, oy: h - 20 - (Z1 - za) * s };
 }
 /** Zoom about a canvas point. */
 export function zoomAt(v: View, px: number, py: number, k: number): View {
