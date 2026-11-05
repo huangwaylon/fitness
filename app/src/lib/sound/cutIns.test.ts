@@ -1,5 +1,5 @@
 // The cut-ins' rules in sound.svelte.ts (docs/design.md#sound) against a fake engine: what plays, what's pinned, and
-// how a cut-in ends (its end, its file failing, the volume at 0, stopJingle).
+// how a cut-in ends (its end, its file failing, the volume at 0, stopJingle, the wasps' phases).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 class FakeEngine {
@@ -106,6 +106,22 @@ describe('cut-ins', () => {
     expect(e.track).toBe('event/aerobics');
     m.stopJingle('aerobics');
     expect(e.track).not.toBe('event/aerobics');
+  });
+
+  it('the wasps: the chase loops in (the sting kept fetched), a sting plays Stung by Bees, a net brings the island’s music back', async () => {
+    const { m, e, AUDIO } = await musicOn();
+    m.waspMusic('chase');
+    expect(e.track).toBe('event/bee-chase');
+    expect(e.pinned).toContain(AUDIO.events['bee-stung']!.file);
+    m.waspMusic('stung');
+    expect(e.track).toBe('event/bee-stung');
+    e.onended?.('event/bee-stung');
+    expect(e.track).not.toMatch(/^event\/bee/);
+    m.waspMusic('chase');
+    m.waspMusic('caught');
+    expect(e.track).not.toMatch(/^event\/bee/);
+    m.waspMusic('stung'); // no chase on: nothing
+    expect(e.track).not.toMatch(/^event\/bee/);
   });
 
   it('the volume at 0 ends a K.K. song (its caption with it)', async () => {

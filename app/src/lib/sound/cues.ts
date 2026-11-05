@@ -5,7 +5,7 @@
 import { untrack } from 'svelte';
 import type { SceneSfx, SoundId } from './ids.ts';
 import { semitones } from './mix.ts';
-import { covered, play } from './sound.svelte.ts';
+import { announce, covered, play } from './sound.svelte.ts';
 
 export type Cue =
   // the island
@@ -61,6 +61,7 @@ export const CUES: Record<Cue, CueDef> = {
   'emote-joy': { sound: 'sparkle', world: true },
   'emote-idea': { sound: 'pop', gain: 0.8, world: true },
   trouble: { sound: 'oops', world: true },
+  // しずえ's announcement: the radio jingle of the moment, the chime its placeholder (sound.svelte.ts announce)
   announce: { sound: 'chime', world: true },
   'choice-move': { sound: 'cursor' },
   'choice-pick': { sound: 'confirm' },
@@ -162,9 +163,8 @@ export const CUES: Record<Cue, CueDef> = {
 const COIN_RUN = [0, 2, 4, 7, 9, 12, 14, 16, 19] as const;
 export const coinStep = (n: number): number => COIN_RUN[Math.min(Math.max(0, n), COIN_RUN.length - 1)];
 
-/** Test hook (e2e/sound.spec.ts): an array on `window.__cues` collects every cue that passes the world/UI rule. */
-
-/** Play a moment's sound. `step`: semitones up; `gain`: × the cue's level. */
+/** Play a moment's sound. `step`: semitones up; `gain`: × the cue's level. Test hook (e2e/sound.spec.ts): an array
+ *  on `window.__cues` collects every cue that passes the world/UI rule. */
 export function cue(c: Cue, o: { step?: number; gain?: number } = {}): void {
   // untracked: a cue fired from an {@attach} or an $effect must not make it depend on the sheets or the sound
   // settings (FruitTree's drop-in re-ran, re-dropping and re-thudding its newest fruit, every time a sheet closed)
@@ -172,6 +172,7 @@ export function cue(c: Cue, o: { step?: number; gain?: number } = {}): void {
     const d = CUES[c];
     if (d.world && covered()) return;
     globalThis.__cues?.push(c);
+    if (c === 'announce') return announce({ gain: (d.gain ?? 1) * (o.gain ?? 1) });
     const step = (d.step ?? 0) + (o.step ?? 0);
     play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: d.delay ?? 0, rate: step ? semitones(step) : undefined });
   });

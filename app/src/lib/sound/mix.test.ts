@@ -88,9 +88,9 @@ describe('the catalogue and the cue table', () => {
     }
     expect(SOUND_IDS.filter((id) => !used.has(id))).toEqual([]);
   });
-  it("a sound without a placeholder of its own borrows a jingle's: the radio's the broadcast's, then the chime's", () => {
+  it("a sound without a placeholder of its own borrows a jingle's: the radio's the chime's", () => {
     expect(placeholderOf('radio-noon-3')).toBe('chime');
-    expect(SOUNDS['radio-noon-3'].like).toBe('island-broadcast');
+    expect(SOUNDS['radio-noon-3'].like).toBe('chime');
     expect(placeholderOf('get-fanfare')).toBe('fanfare');
     expect(placeholderOf('complete-fanfare')).toBe('fanfare');
     expect(placeholderOf('coin')).toBe('coin');

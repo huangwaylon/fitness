@@ -11,7 +11,7 @@ import { AMBIENT_IDS, type AmbientId } from './ambient.ts';
 import { EVENT_MUSIC_IDS, type EventMusicId } from './events.ts';
 import { PLACE_IDS, type PlaceId } from './places.ts';
 
-interface AudioManifest {
+export interface AudioManifest {
   sfx: Partial<Record<SoundId, string>>;
   /** The opening theme (a one-shot; `start` 0). */
   opening: MusicTrack | null;

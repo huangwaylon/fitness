@@ -2492,18 +2492,24 @@ track without its file is the hour's music (or its `alt`):
 | Jan 1 05:00 – Jan 2 05:00 | 元日 (New Year's Day) |
 
 **Cut-ins** (`sound.svelte.ts`) swap at once over the island's music and hand back to it: the wasps (`waspMusic`):
-Chased by Bees loops from the nest's fall; a net brings the island's music back; a sting plays Stung by Bees once. K.K.'s
-songs are cut-ins too, and the island's own (`eventJingle`, only with ミュージック on and the file there, else the
-moment's effect plays): the tape deck's stretch plays ラジオ体操 (aerobics) for its ~6 s, then the music crossfades
-back (else the tape's `stretch-song`); the birthday cake plays ハッピーバースデー (else the music box); Franklin, fed his
-fish on Turkey Day, cooks: the cooking jingle, then the dish's. Festivale's キメダンス tracks are in the catalogue with no
-moment yet (no dance moment). The settings' note and the Now Playing tile (and the Media Session) name the event
-track or song, NH's titles in ja/en (`sound.title.<id>`).
+the nest's fall only fetches Chased by Bees ahead; it cuts in and loops as the wasps come out (`chase`; 6 s at most if
+the scene never ends it); a net brings the island's music back; a sting plays Stung by Bees once (kept fetched during
+the chase). K.K.'s songs are cut-ins too, and the island's own (`eventJingle(id | ids, loopMs?)`, `events.ts
+CutInId`, only with ミュージック on and the file there, else the moment's effect plays): the tape deck's stretch plays
+ラジオ体操 (aerobics) for its ~6 s, then the music crossfades back (else the tape's `stretch-song`; a stretch cut short or
+the deck leaving stops it: `stopJingle`); the birthday cake plays ハッピーバースデー (else the music box); Franklin, fed
+his fish on Turkey Day, cooks: the cooking jingle, then the dish's (fetched under the first). A cut-in ends at its end,
+when its file can't play (`onfailed`: offline, undecodable, never silence for good), at 音量 0, or when ミュージック goes
+off; one asked for during the opening theme ends the opening. Under a cut-in the track it interrupted (indoors the
+room's and the island's) stays fetched (`choose.ts pinsFor`). The settings' note and the Now Playing tile (and the
+Media Session, `mediaSession.ts`) name the event track or song, NH's titles in ja/en (`sound.title.<id>`). The midnight
+Happy New Year! is remembered by its Tokyo date on the phone (`island.newYearIntro`): a reload doesn't replay it.
 
 ### Place music
 
 As in NH, a building's room plays its own track in place of the island's (`places.ts`, `sound.svelte.ts setPlace`),
-with the hour's 3 s crossfade going in and coming back out. What sounds, first there wins (`pickMusic`): the opening
+with a short fade under the door's black going in and coming back out (`hourly.ts` DOOR: 0.65 s), the hour's 3 s
+crossfade between a building's rooms. What sounds, first there wins (`choose.ts pickMusic`): the opening
 theme, a cut-in (K.K., the wasps), the room's track, the island's (the event's on its day, else the hour's). So indoors
 on an event day the room's music plays, as in NH; a cut-in still plays over a room.
 
@@ -2514,23 +2520,25 @@ on an event day the room's music plays, as in NH; a cut-in still plays over a ro
 | The tent and the homes | none: NH's houses play the hour's music |
 
 The museum's room is my villager's, read on the frames drawn (none while nothing moves): it changes once the villager is
-6 units through an opening (`plan.ts wingHeld`) and has stayed 0.6 s (`Settle`), so a doorway never flaps. The shop has
-no hours or upgrade, so `shop-closing` and `shop-big` aren't used; a variant without a file plays its main room's
-(`shop-big` → `shop`, `museum-fossils` / `museum-art` → `museum-hall`). `able-sisters`, `resident-*`, `redd` and
-`dreaming` have no room yet (the closet is a level of せってい, under the sheet's muffle: it keeps whatever plays). A room
-without a file keeps the island's music. Tapping the museum's or the shop's door fetches its track while the villager
-walks up (`prefetchPlace`); indoors the island's file stays in memory (pinned) so leaving starts it at once, and the
-room's is released on the way out. Nothing is fetched while ミュージック is off. The settings' note and the Now Playing
+6 units through an opening (`plan.ts wingHeld`) and has stayed 0.6 s (`Settle`), so a doorway never flaps. `PlaceId` is
+only the rooms the app has (the museum's three, the shop); NH's others (its shop's variants, the fossil and art wings,
+the Able Sisters, Resident Services, Redd, dreaming) have no room here. A room without a file keeps the island's music.
+Tapping the museum's or the shop's door fetches its track while the villager walks up (`prefetchPlace`), and the
+museum fetches its two wings' 4 s after the hall opens; indoors the island's file stays in memory (pinned) so leaving
+starts it at once, and the room's is released on the way out. Nothing is fetched while ミュージック is off. The settings' note and the Now Playing
 tile name the room's track (`sound.title.<id>`, NH's names).
 
 ### K.K. Slider
 
-`kk.ts kkTracks`: K.K.'s songs from the manifest's `kk` list (`{ id, ja, en, file, gain }`, NH's official titles),
-one-shots under `audio/kk/`; their airchecks (NH's stereo versions) at `kkAircheck.<id>` (`{ file, start: 0, gain }`).
-`playKK(id, source)` plays one over the island's (or a room's) music: `live` K.K. on his stool, `aircheck` a room's
-stereo ([the tent's stereos](#the-tent): its aircheck, else the live file, `kkFile`); `stopKK(source?)` ends it (only
-a song from that source), `sound.kk` is the song playing and `sound.kkFrom` where from; `kkPick` never repeats the
-last one. One cut-in path for both: the room's or the island's music stops for it and comes back after.
+`kk.ts loadKK()`: K.K.'s songs from `static/audio/kk.json` (its `kk` list, `{ id, ja, en, file, gain, v }`, NH's
+official titles; one-shots under `audio/kk/`; their airchecks, NH's stereo versions, at `kkAircheck.<id>`), a chunk of
+its own loaded the first time K.K. or a stereo's list shows, or a song is asked for (13 KB the first load doesn't
+carry). `playKK(id, source)` plays one over the island's (or a room's) music: `live` K.K. on his stool, `aircheck` a
+room's stereo ([the tent's stereos](#the-tent): its aircheck, else the live file, `kkTrack`); `stopKK(source?)` ends
+it (only a song from that source); `sound.kk` is `{ id, from }` while one plays; `kkPick` never repeats the last one;
+`kkTitle` is the title in the app's language. The two songs K.K.'s リクエスト offers are fetched as he offers them
+(`prefetchKK`), a stereo's on the press of its row. One cut-in path for both: the room's or the island's music stops
+for it and comes back after.
 
 ### Ambience
 
@@ -2552,11 +2560,11 @@ Soft mallets and bells for the panel, cursor, confirm and cancel. Dialogue is si
 step, taps in `data-sfx`, outcomes call `cue()` (tree tap → rustle, fruit lands → thud, each coin → a climbing
 pentatonic run, 受け取る and a present → NH's get fanfare, both of us meeting all four goals (the celebration's
 fireworks) → the complete fanfare, buy → purchase, scenery → `scene-<kind>`). The first open of the day (しずえ's
-`announce`) plays the **radio jingle** that opens NH's island broadcast (`radio.ts radioJingleAt`): morning 05–11,
+`announce`, its own path: `sound.svelte.ts announce`, waiting up to 15 s for the first tap) plays the **radio jingle**
+that opens NH's island broadcast (`radio.ts radioJingleAt`): morning 05–11,
 noon 11–17, evening 17–05, one of six picked by the Tokyo date's seed (both phones hear the same), or the holiday's own
 all its date (Bunny Day, Halloween, Turkey Day, Toy Day, the countdown on Dec 31, the carnival on Festivale). A sound
-without its file borrows a `like`'s (`ids.ts`): a radio jingle the broadcast's (`island-broadcast`), that the PA
-chime; the fanfares the item-get placeholder. **World
+without its file borrows a `like`'s (`ids.ts`): a radio jingle the PA chime's; the fanfares the fanfare's. **World
 cues** (the island's own sounds) are skipped while a sheet, the panel or the harvest covers the scene; UI cues always
 play.
 
@@ -2570,8 +2578,9 @@ plays `boop`. Enforced by `taps.test.ts`, walked by `e2e/sound.spec.ts`.
 
 Buses: music 0.30, ambience 0.28, effects 0.90; master 音量 squared (default 0.8). ≤ 6 voices and a cap per sound
 (`ids.ts`); jingles (the fanfares, miles, the radio jingles) never overlap and duck the music to 25%. Effects decode
-on the unlock, except the `lazy` ones (the 24 radio jingles, the broadcast, the complete fanfare): fetched at their
-first play (it waits up to 2.5 s for the file, else plays the placeholder) and kept decoded four at most. Effects jitter pitch.
+on the unlock (only while 効果音 is on), except the `lazy` ones (the 24 radio jingles, the complete fanfare): fetched
+at their first play (it waits up to 2.5 s for the file, then plays the placeholder: never nothing) and kept decoded
+two at most (1.5–2.8 MB of PCM each at 48 kHz). Effects jitter pitch.
 
 ### Engine lifecycle
 
@@ -2585,14 +2594,19 @@ first play (it waits up to 2.5 s for the file, else plays the placeholder) and k
 - **Idle suspend:** with only effects on the context sleeps 10 s after the last sound.
 - **Background:** hidden → decks paused, ambience stopped, context suspended, the hour clock stopped; back in front the
   hour fades in over 0.8 s.
+- **Music off:** the fade-out, then every music file in memory and its object URL let go, the decks' media too
+  (`Engine.release`); the next on fetches again (from the service worker's cache).
 - **iOS session:** always `ambient`: it mixes with other apps' audio and follows the Ring/Silent switch. The Media
-  Session tile names the tune.
+  Session tile names the tune (`mediaSession.ts`).
 
 ### Audio files
 
-`static/audio/manifest.json` (bundled by `manifest.ts`): `sfx.<id>`, `music.<weather>.<00–23>` = `{file, start, end?,
-gain?}`, `opening`, `ambient.<id>`, `events.<id>`, `places.<id>` (the same shape), `kk[]` and `kkAircheck.<id>`. Add a
-file and its entry, no code change; a missing effect keeps its placeholder, missing ambience its procedural bed, missing
+`static/audio/manifest.json` (bundled by `manifest.ts`): `sfx.<id>` = `{file, v}`, `music.<weather>.<00–23>` = `{file,
+start, end?, gain?, v}`, `opening`, `ambient.<id>`, `events.<id>`, `places.<id>` (the same shape); K.K.'s `kk[]` and
+`kkAircheck.<id>` in `static/audio/kk.json` (`kk.ts`, loaded when first needed). `v` is the file's content hash
+(written by the build, `npm run audio:music -- --hashes` alone after a file is replaced by hand; `sound.test.ts`
+checks every one): the app fetches `file?v=`, so `/audio/*` is immutable to the browser and the service worker
+([backend.md](backend.md#service-worker)). Add a file and its entry, no code change; a missing effect keeps its placeholder, missing ambience its procedural bed, missing
 music is silence. `npm run audio:music -- <dir> [--only <key regex>]` (`scripts/music.ts`, ffmpeg) builds every entry
 from the user's MP3s by its track number (`CATALOGUE`): loops (finds the period, cuts it where both passes are the same
 samples, appends the copy), one-shots (silence trimmed), AAC 64 kbps, `gain` to −16 LUFS. Rips too short to find the
@@ -2600,16 +2614,15 @@ period in loop with a known one: the rain and snow hours (one pass and a few sec
 the museum's hall its 23.2 s. Where the rip's second pass is a variation, not the same samples, the wrap is a 2 s
 blend: rain and snow at 4 PM, the museum's fish and insect rooms (a texture, looped at three of the hall's phrases),
 Bunny Day at 0.98. Reese & Cyrus's wedding loop is 128 s, at 56 kbps to stay under 1 MB; the GameCube's ラジオ体操
-(`aerobics`) doesn't loop in its rip and loops whole. Jingles (`sfx/`: the fanfares, the island broadcast, the radio
-jingles) are mono, trimmed, faded, their loudness in the file (an effect has no `gain`; a mono file is measured as
-heard, from both speakers); the fanfares end where their OST track's bed begins (1.7–1.8 s), the broadcast after its
-first pass (18.6 s). K.K.: the nine NH live songs kept; the other 64 live songs from the GameCube and e+ rip (150–207,
+(`aerobics`) doesn't loop in its rip and loops whole. Jingles (`sfx/`: the fanfares, the radio jingles) are mono,
+trimmed, faded, their loudness in the file (an effect has no `gain`; a mono file is measured as heard, from both
+speakers); the fanfares end where their OST track's bed begins (1.7–1.8 s). K.K.: the nine NH live songs kept; the other 64 live songs from the GameCube and e+ rip (150–207,
 517–531; e+'s Señor K.K. is NH's K.K. Mariachi; the "Not My Bag" tracks are one song each: My Place … Wandering) and 70
 airchecks (208–262, 532–546; e+'s Marine Song 2001 cut to its first 214 s pass; Stale Cupcakes, Spring Blossoms and
 Wandering have none in the rip), with NH's titles from the game's text. The rip is all but mono (side −26 dB under mid
-live), so they are mono AAC at 40 kbps (measured as close to the source as stereo at 48). Not built (no moment in the
-app): Kimedance, the museum's fossil and art rooms, the shop's big and closing, the Able Sisters, the tent, Redd,
-dreaming. `sound.test.ts`: every path in the manifest exists and every file is named; each folder under its budget
+live), so they are mono AAC at 40 kbps (measured as close to the source as stereo at 48). Not built (no moment or room in
+the app): Kimedance, the island broadcast's own jingle (the radio jingles open it), the museum's fossil and art rooms,
+the shop's big and closing, the Able Sisters, Resident Services, the tent, Redd, dreaming. `sound.test.ts`: every path in the manifest exists and every file is named; each folder under its budget
 (one file / all): `music/` 1 / 64 MB, `places/` 1 / 6 MB, `sfx/` 0.25 / 4 MB, `kk/` 1.2 / 60 MB, `kk/aircheck/` 1.2 /
 36 MB. Audio is never precached
 ([backend.md](backend.md#service-worker)).

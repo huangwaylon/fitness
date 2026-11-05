@@ -23,6 +23,8 @@ import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync }
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { LEVELS } from '../src/lib/sound/mix.ts';
+import { RADIO_HOLIDAYS, RADIO_SLOTS, RADIO_VARIANTS } from '../src/lib/sound/ids.ts';
+import type { MusicTrack } from '../src/lib/sound/hourly.ts';
 
 const FFMPEG = process.env.FFMPEG ?? '/opt/homebrew/bin/ffmpeg';
 const OUT = join(import.meta.dirname, '../static/audio');
@@ -419,10 +421,9 @@ const CATALOGUE = new Map<string, Row>([
   ...hours(1, 2, 'sunny', (h) => `music/hour-${h}.m4a`),
   ...hours(2, 1, 'rain', (h) => `music/rain-${h}.m4a`),
   ...hours(2, 25, 'snow', (h) => `music/snow-${h}.m4a`),
-  // the rooms (src/lib/sound/places.ts) the app has: the museum's hall, fish and insect rooms, the shop, resident
-  // services. The hall's rip has one pass and most of the next; the fish and insect rooms are a texture with no exact
-  // repeat (three of the hall's 23.2 s phrases, blended at the wrap).
-  ['3-02', { key: 'places.resident-services', file: 'places/resident-services.m4a', kind: 'loop' }],
+  // the rooms (src/lib/sound/places.ts) the app has: the museum's hall, fish and insect rooms, the shop. The hall's
+  // rip has one pass and most of the next; the fish and insect rooms are a texture with no exact repeat (three of the
+  // hall's 23.2 s phrases, blended at the wrap).
   ['3-04', { key: 'places.museum-hall', file: 'places/museum-hall.m4a', kind: 'loop', periodS: 23.2258 }],
   ['3-05', { key: 'places.museum-fish', file: 'places/museum-fish.m4a', kind: 'loop', periodS: 3 * 23.2258 }],
   ['3-06', { key: 'places.museum-bugs', file: 'places/museum-bugs.m4a', kind: 'loop', periodS: 3 * 23.2258 }],
@@ -449,20 +450,17 @@ const CATALOGUE = new Map<string, Row>([
   ['4-19', { key: 'events.new-year-2am', file: 'music/new-year-2am.m4a', kind: 'loop' }],
   ['4-20', { key: 'events.new-years-day', file: 'music/new-years-day.m4a', kind: 'loop' }],
   ['4-21', { key: 'events.festivale', file: 'music/festivale.m4a', kind: 'loop', periodS: 50.323 }],
-  // (4-22, 4-23 Festivale's Kimedance: no dance moment yet)
   ['4-36', { key: 'events.bee-chase', file: 'music/bee-chase.m4a', kind: 'loop', minLagS: 4 }],
   ['4-37', { key: 'events.bee-stung', file: 'music/bee-stung.m4a', kind: 'once', seconds: STUNG_S }],
   // the GameCube rip: the radio exercise for the group stretch, e+'s birthday song
   ['106', { key: 'events.aerobics', file: 'music/aerobics.m4a', kind: 'loop', whole: true }],
   ['516', { key: 'events.happy-birthday', file: 'music/happy-birthday.m4a', kind: 'once' }],
-  // jingles (ids.ts): the fanfares only to the bed their tracks loop under them, the broadcast's first pass
-  ['4-27', { key: 'sfx.island-broadcast', file: 'sfx/island-broadcast.m4a', kind: 'sfx', seconds: 18.6 }],
+  // jingles (ids.ts): the fanfares only to the bed their tracks loop under them; the radio jingles 4-41 … 4-64 in
+  // ids.ts's order (the times of day's six each, then the holidays')
   ['4-39', { key: 'sfx.get-fanfare', file: 'sfx/get-fanfare.m4a', kind: 'sfx', seconds: 1.8 }],
   ['4-40', { key: 'sfx.complete-fanfare', file: 'sfx/complete-fanfare.m4a', kind: 'sfx', seconds: 1.7 }],
-  ...['morning', 'noon', 'evening'].flatMap((part, p) => Array.from({ length: 6 }, (_, i): [string, Row] =>
-    [`4-${41 + p * 6 + i}`, { key: `sfx.radio-${part}-${i + 1}`, file: `sfx/radio-${part}-${i + 1}.m4a`, kind: 'sfx' }])),
-  ...['bunny-day', 'halloween', 'turkey-day', 'toy-day', 'countdown', 'carnival'].map((id, i): [string, Row] =>
-    [`4-${59 + i}`, { key: `sfx.radio-${id}`, file: `sfx/radio-${id}.m4a`, kind: 'sfx' }]),
+  ...[...RADIO_SLOTS.flatMap((part) => RADIO_VARIANTS.map((n) => `${part}-${n}`)), ...RADIO_HOLIDAYS].map((id, i): [string, Row] =>
+    [`4-${41 + i}`, { key: `sfx.radio-${id}`, file: `sfx/radio-${id}.m4a`, kind: 'sfx' }]),
   // K.K.: the live songs (his Saturday show) and the airchecks (the stereo's recordings), one-shots
   ...KK.flatMap(([id, ja, en, live, air]): [string, Row][] => [
     ...(live ? [[live, { key: `kk.${id}`, file: `kk/${id}.m4a`, kind: 'once', kbps: KK_KBPS, mono: true, ja, en }] as [string, Row]] : []),
@@ -470,7 +468,8 @@ const CATALOGUE = new Map<string, Row>([
   ])
 ]);
 
-type Entry = { file: string; start: number; end?: number; gain?: number; v?: string };
+/** A manifest entry as written: the app's MusicTrack plus its file's content hash. */
+type Entry = MusicTrack & { v?: string };
 type Manifest = Record<string, unknown> & { kk?: (Entry & { id: string; ja?: string; en?: string })[] };
 
 /** Put an entry at a dotted key (`kk.<id>`: that song in the list, with its titles, in KK's order); the entry kept. */
@@ -507,8 +506,8 @@ function build(src: string, only: RegExp, dry: boolean): void {
       }
       let e: Entry;
       if (row.kind === 'loop') {
-        const like = row.periodOf?.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], man) as Entry | undefined;
-        e = looped(path, file, row, dry, like?.end ?? row.periodS);
+        const shared = row.periodOf?.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], man) as Entry | undefined;
+        e = looped(path, file, row, dry, shared?.end ?? row.periodS);
       }
       else {
         oneShot(path, out, dry, row.kbps ?? 64, row.seconds, row.mono ? 1 : 2);
@@ -521,7 +520,7 @@ function build(src: string, only: RegExp, dry: boolean): void {
     }
   }
   if (dry) return;
-  for (const e of built) e.gain = trackGain(loudness(join(OUT, e.file)));
+  for (const e of built) e.gain = gainOf(e.file).gain;
   writeHashes(man);
   writeManifest(man);
 }
@@ -566,18 +565,24 @@ function writeHashes(man: Manifest): void {
   console.log(`hashes: ${n} changed`);
 }
 
+/** A file's loudness and the gain that brings it to the target. */
+function gainOf(file: string): { gain: number; i: number; tp: number } {
+  const l = loudness(join(OUT, file));
+  return { ...l, gain: trackGain(l) };
+}
+
 /** Measure every music file in the manifest and write its `gain`. */
 function writeGains(man: Manifest): void {
   for (const [name, e] of entries(man, true)) {
-    const l = loudness(join(OUT, e.file));
-    e.gain = trackGain(l);
+    const { gain, ...l } = gainOf(e.file);
+    e.gain = gain;
     console.log(`${name.padEnd(24)} ${l.i.toFixed(1)} LUFS  ${l.tp >= 0 ? '+' : ''}${l.tp.toFixed(1)} dBTP  → gain ${e.gain >= 0 ? '+' : ''}${e.gain.toFixed(1)} dB` +
       `  (${(l.i + e.gain).toFixed(1)} LUFS)`);
   }
 }
 
 function main(): void {
-  const args = process.argv.slice(2).filter((a) => a !== '--extras'); // --extras: the old name of the same build
+  const args = process.argv.slice(2);
   if (args[0] === '--gains' || args[0] === '--hashes') {
     const man = readManifest();
     if (args[0] === '--gains') writeGains(man);

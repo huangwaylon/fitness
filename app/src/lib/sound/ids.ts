@@ -41,21 +41,20 @@ export type SoundId =
   | 'music-box'
   // NH's two fanfares (jingles): an item got (受け取る, a present), a set completed (all four goals, both of us)
   | 'get-fanfare' | 'complete-fanfare'
-  // しずえ's island broadcast (島内放送) and the radio jingle that opens it on the day's first open (radio.ts): one of
-  // six for the time of day, or the holiday's own on its day
-  | 'island-broadcast' | RadioJingle;
+  // the radio jingle that opens しずえ's island broadcast (島内放送) on the day's first open (radio.ts): one of six for
+  // the time of day, or the holiday's own on its day
+  | RadioJingle;
 
-/** The time of day's radio jingles (radio.ts): morning 05–11, noon 11–17, evening 17–05. */
-export type RadioSlot = 'morning' | 'noon' | 'evening';
-const RADIO_SLOTS: readonly RadioSlot[] = ['morning', 'noon', 'evening'];
-/** Six variants per time of day. */
-export const RADIO_VARIANTS = 6;
-/** The holidays with their own radio jingle (radio.ts radioJingleAt). */
-export type RadioHoliday = 'bunny-day' | 'halloween' | 'turkey-day' | 'toy-day' | 'countdown' | 'carnival';
-const RADIO_HOLIDAYS: readonly RadioHoliday[] = ['bunny-day', 'halloween', 'turkey-day', 'toy-day', 'countdown', 'carnival'];
-export type RadioJingle = `radio-${RadioSlot}-${1 | 2 | 3 | 4 | 5 | 6}` | `radio-${RadioHoliday}`;
+/** The time of day's radio jingles (radio.ts): morning 05–11, noon 11–17, evening 17–05, six variants each, then the
+ *  holidays' own (radio.ts radioJingleAt), in the OST's order (scripts/music.ts numbers them by it: 4-41 … 4-64). */
+export const RADIO_SLOTS = ['morning', 'noon', 'evening'] as const;
+export const RADIO_VARIANTS = [1, 2, 3, 4, 5, 6] as const;
+export const RADIO_HOLIDAYS = ['bunny-day', 'halloween', 'turkey-day', 'toy-day', 'countdown', 'carnival'] as const;
+export type RadioSlot = (typeof RADIO_SLOTS)[number];
+export type RadioHoliday = (typeof RADIO_HOLIDAYS)[number];
+export type RadioJingle = `radio-${RadioSlot}-${(typeof RADIO_VARIANTS)[number]}` | `radio-${RadioHoliday}`;
 export const RADIO_JINGLES: readonly RadioJingle[] = [
-  ...RADIO_SLOTS.flatMap((s) => Array.from({ length: RADIO_VARIANTS }, (_, i) => `radio-${s}-${i + 1}` as RadioJingle)),
+  ...RADIO_SLOTS.flatMap((s) => RADIO_VARIANTS.map((n): RadioJingle => `radio-${s}-${n}`)),
   ...RADIO_HOLIDAYS.map((h): RadioJingle => `radio-${h}`)
 ];
 
@@ -160,9 +159,8 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   'music-box': { bus: 'sfx', gain: 0.5, jitter: 0, max: 1, jingle: true },
   'get-fanfare': { bus: 'sfx', gain: 0.75, jitter: 0, max: 1, jingle: true, like: 'fanfare' },
   'complete-fanfare': { bus: 'sfx', gain: 0.75, jitter: 0, max: 1, jingle: true, like: 'fanfare', lazy: true },
-  // the broadcast's opening; a radio jingle without its file sounds like it, and it like the PA chime
-  'island-broadcast': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1, jingle: true, like: 'chime', lazy: true },
-  ...(Object.fromEntries(RADIO_JINGLES.map((id) => [id, { bus: 'sfx', gain: 0.55, jitter: 0, max: 1, jingle: true, like: 'island-broadcast', lazy: true }])) as Record<RadioJingle, SoundDef>)
+  // a radio jingle without its file sounds like the PA chime
+  ...(Object.fromEntries(RADIO_JINGLES.map((id) => [id, { bus: 'sfx', gain: 0.55, jitter: 0, max: 1, jingle: true, like: 'chime', lazy: true }])) as Record<RadioJingle, SoundDef>)
 };
 
 export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];
@@ -170,7 +168,7 @@ export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];
 export const isSoundId = (s: string): s is SoundId => Object.hasOwn(SOUNDS, s);
 
 /** The ids with a placeholder of their own (synth.ts): every id without a `like`. */
-export type SynthId = Exclude<SoundId, 'get-fanfare' | 'complete-fanfare' | 'island-broadcast' | RadioJingle>;
+export type SynthId = Exclude<SoundId, 'get-fanfare' | 'complete-fanfare' | RadioJingle>;
 export const SYNTH_IDS = SOUND_IDS.filter((id): id is SynthId => !SOUNDS[id].like);
 
 /** Whose placeholder an id uses: its own, or its `like`'s (followed to the end). */

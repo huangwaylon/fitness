@@ -23,7 +23,8 @@ import type { SoundSettings } from './settings.ts';
 const MUFFLE_HZ = 900;
 /** A sound asked for while the renderer is still loading plays if it arrives within this long (the first tap). */
 const LATE_MS = 400;
-/** A lazy file (ids.ts `lazy`: the day's radio jingle) fetched at its first play sounds if it arrives within this long. */
+/** A lazy file (ids.ts `lazy`: the day's radio jingle) fetched at its first play sounds if it arrives within this long;
+ *  past it the placeholder (its `like`'s) plays instead, never nothing. */
 const LAZY_LATE_MS = 2500;
 /** Lazy files kept decoded at once: the oldest goes first. A radio jingle is 7.6–14.5 s mono, decoded at the context's
  *  rate (48 kHz on an iPhone) as 32-bit floats: 1.5–2.8 MB of PCM each. */
@@ -298,7 +299,7 @@ export class Engine {
         // an undecodable file (or one gone mid-play): only the deck meant to sound reports it
         el.addEventListener('error', () => deck.key && this.#decks[this.#front] === deck && this.onfailed?.(deck.key));
         // Never in the background: the lock screen, Control Center or headphones may play the element while the page
-        // is hidden (it's the Now Playing item under the 'playback' session). Keep it paused there.
+        // is hidden (it's the Media Session's Now Playing item). Keep it paused there.
         el.addEventListener('play', () => document.hidden && el.pause());
         // a jump in the playing deck (a seek from outside) re-times the loop hand-off
         el.addEventListener('seeked', () => this.#decks[this.#front] === deck && !this.#wrapping && this.#armWrap());
@@ -407,13 +408,13 @@ export class Engine {
   play(id: SoundId, o: { gain?: number; rate?: number; delay?: number } = {}, late = false): void {
     const ctx = this.#ready();
     if (!ctx) return;
-    // no file of its own: the sound it's `like` (a radio jingle the broadcast's file, else the chime)
-    const like = SOUNDS[id].like;
-    if (like && !AUDIO.sfx[id]) return this.play(like, o, late);
+    // (an id with no file of its own plays its `like`'s buffer: #buffer)
     const lazy = late ? null : this.#lazyPath(id);
     if (lazy) {
-      const t0 = clock();
-      void this.#loadLazy(id, lazy).then(() => clock() - t0 < LAZY_LATE_MS && this.play(id, o, true));
+      let played = false;
+      const go = () => !played && ((played = true), this.play(id, o, true));
+      const timer = setTimeout(go, LAZY_LATE_MS);
+      void this.#loadLazy(id, lazy).then(() => (clearTimeout(timer), go()));
       return;
     }
     const buf = this.#buffer(ctx, id);

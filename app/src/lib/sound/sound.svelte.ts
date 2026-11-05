@@ -1,32 +1,29 @@
 // Sound for the app (docs/design.md#sound): the settings, the unlock on the first tap, the hourly music clock, the
 // weather, the muffle under sheets and the pause in the background. App moments go through cue() (cues.ts);
-// this module decides whether anything may sound at all. Nothing is created while every setting is off.
+// this module decides whether anything may sound at all; what plays is choose.ts's. Nothing is created while every
+// setting is off.
 //   startSound({ muffled: () => ui.sheets.length > 0 })   // once, in the root layout
 //   setSound({ music: true })                             // from a tap (the settings app)
-//   sound.weather = 'rain'; sound.heavy = true                // set by the island's weather (island/weatherNow.svelte.ts)
-//   waspMusic('chase') · playKK('kk-march')               // cut-ins over the island's music (events.ts, kk.ts)
+//   sound.weather = 'rain'; sound.heavy = true            // set by the island's weather (island/weatherNow.svelte.ts)
+//   waspMusic('chase') · playKK('kk-march') · stopKK()    // cut-ins over the island's music (events.ts, kk.ts)
+//   eventJingle('happy-birthday') · stopJingle('aerobics') // the island's own cut-ins (events.ts CutInId)
 //   setPlace('shop') · setPlace(null)                     // a building's room plays its own track (places.ts)
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
 import { Engine } from './engine.ts';
-import type { Gesture } from './session.ts';
+import { HourClock, type Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
-import { msToNextHour, trackAt, type Fade, type MusicTrack, type Weather } from './hourly.ts';
-import { eventMusicAt, msToNextEdge, type EventMusicId } from './events.ts';
+import { msToNextHour, type Fade, type Weather } from './hourly.ts';
+import { msToNextEdge, type CutInId } from './events.ts';
 import { radioJingleAt } from './radio.ts';
-import { kkTitle, kkTrack, loadKK, type KKSource, type KKTrack } from './kk.ts';
-import { pickMusic, placeTrack, type PlaceId } from './places.ts';
-import { HourClock } from './session.ts';
+import { kkTrack, loadKK, type KKSource } from './kk.ts';
+import { placeTrack, type PlaceId } from './places.ts';
+import { musicAt, openingMusic, pickMusic, pinsFor, placeMusic, playingLabel as labelOf, type CutIn, type Playing } from './choose.ts';
+import { initMediaSession, nowPlaying, tilePaused } from './mediaSession.ts';
 import { ambientFor } from './ambient.ts';
 import { DEVICE, localKV } from '#lib/sync/storage.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
-import { t } from '#lib/i18n/index.ts';
-import { asset } from '$app/paths';
-
-/** What the music is: the opening theme, the hour's track, an event's (events.ts, the wasps' too), a room's
- *  (places.ts), a K.K. song, or nothing. */
-export type Playing = 'opening' | 'hour' | EventMusicId | PlaceId | 'kk' | null;
 
 export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; kk: { id: string; from: KKSource } | null }>({
   settings: { ...DEFAULT_SOUND },
@@ -35,28 +32,29 @@ export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: 
   heavy: false,
   /** What the music is (for the settings' note and the Now Playing tile). */
   playing: null,
-  /** The K.K. song playing (kk.ts id) and where from (K.K. on the island, or a room's stereo: its aircheck), else
-   *  null. */
+  /** The K.K. song playing (kk.ts id) and where from (K.K. on the island, or a room's stereo: its aircheck). */
   kk: null
 });
 
-/** A track the engine should play: its key, whether it loops, and its fade (hourly.ts: a cut-in's quick swap). */
-interface Want {
-  key: string;
-  track: MusicTrack;
-  playing: Exclude<Playing, null>;
-  loop: boolean;
-  fade?: Fade;
-}
-
-/** A cut-in over the island's music, as in NH: the wasps' chase (loops until they're netted or sting), their sting
- *  (once) or a K.K. song (once). It ends by itself (a one-shot's end, CUT_IN_MAX_MS for the chase) or is cleared. */
-let cutIn: (Want & { kk?: KKTrack; from?: KKSource; next?: EventMusicId[] }) | null = null;
+/** The cut-in playing (choose.ts CutIn): it ends by itself (a one-shot's end, a loop's `loopMs`) or is cleared. */
+let cutIn: CutIn | null = null;
 let cutInTimer: ReturnType<typeof setTimeout> | undefined;
 /** A chase the scene never ended (it went away mid-swarm) lets the island's music back after this long. */
 const CHASE_MAX_MS = 6000;
-/** The midnight jingle (events.ts intro) is heard once a day, on this phone: the Tokyo date it was, kept (a reload
- *  at 00:01 doesn't play it again). */
+/** The building's room the player is in (places.ts; null: outdoors). */
+let place: PlaceId | null = null;
+let engine: Engine | null = null;
+/** The opening theme is playing (or about to): the hourly track waits for it to end. */
+let opening = false;
+/** A sheet, the phone or the harvest covers the scene (from the layout). */
+let coveredBy: () => boolean = () => false;
+/** しずえ's daily announcement fires as the island opens, before any tap can unlock audio: it waits this long for the
+ *  first tap (NH plays it as you step outside), then lapses. */
+const ANNOUNCE_WAIT_MS = 15_000;
+let announceAt = 0;
+
+/** The midnight jingle (events.ts intro) is heard once a day on this phone: the Tokyo date it was, kept (a reload at
+ *  00:01 doesn't play it again). */
 let introDay: string | null = null;
 const introHeard = (day: string): boolean => introDay === day || localKV()?.getItem(DEVICE.newYearIntro) === day;
 function hearIntro(day: string): void {
@@ -68,37 +66,38 @@ function hearIntro(day: string): void {
   }
 }
 
-/** The building's room the player is in (places.ts; null: outdoors, or a room that keeps the island's music). */
-let place: PlaceId | null = null;
+const island = (d: Date) => musicAt(d, sound.weather, AUDIO, introHeard);
+const room = () => placeMusic(place, AUDIO);
+/** What plays under a cut-in (and is fetched ahead): the room's track indoors, else the island's. */
+const baseAt = (d: Date) => pickMusic({ place: room(), island: island(d) });
 
-let engine: Engine | null = null;
-/** The opening theme is playing (or about to): the hourly track waits for it to end. */
-let opening = false;
-/** A sheet, the phone or the harvest covers the scene (from the layout). */
-let coveredBy: () => boolean = () => false;
-/** しずえ's daily announcement fires as the island opens, before any tap can unlock audio: it waits this long for the
- *  first tap (NH plays it as you step outside), then lapses. */
-const ANNOUNCE_WAIT_MS = 15_000;
-let announceAt = 0;
+/** A one-shot ended, or a track couldn't play (a one-shot would never end): what it held back comes back. */
+function ended(key: string): void {
+  switch (key === cutIn?.key ? 'cut-in' : key) {
+    case 'opening':
+      opening = false;
+      break;
+    case 'cut-in': {
+      const next = cutIn!.next ?? [];
+      endCutIn();
+      if (next.length && eventJingle(next)) return;
+      break;
+    }
+    case 'event/happy-new-year':
+      hearIntro(dayKey());
+      break;
+    default:
+      return; // a loop's: nothing waits on it
+  }
+  syncMusic();
+}
 
 function eng(): Engine {
   if (!engine) {
     engine = new Engine();
-    // a one-shot that ended, or one whose file couldn't play (it would never end): what it held back comes back
-    engine.onended = engine.onfailed = (key) => {
-      if (key === 'opening') opening = false;
-      else if (cutIn?.key === key) {
-        const next = cutIn.next ?? [];
-        endCutIn();
-        if (next.length && eventJingle(next)) return;
-      }
-      else if (key === 'event/happy-new-year') hearIntro(dayKey());
-      else return;
-      syncMusic();
-    };
+    engine.onended = engine.onfailed = ended;
     // the context came back by itself (after a call or Siri): bring the music back without waiting for a tap
     engine.onrunning = () => engine?.track && syncMusic();
-    // the opening is title music: it plays clear under the phone that started it
   }
   return engine;
 }
@@ -125,7 +124,7 @@ function unlock(ev?: Event): void {
   e.unlock(music, activation);
   apply();
   if (!activation) return;
-  if (Date.now() - announceAt < ANNOUNCE_WAIT_MS) void e.whenReady().then(() => play('chime'));
+  if (Date.now() - announceAt < ANNOUNCE_WAIT_MS) void e.whenReady().then(() => announce());
   announceAt = 0;
 }
 
@@ -139,74 +138,38 @@ function apply(): void {
     // muted, not off: the track keeps its place; a cut-in (a K.K. song, its caption) ends, as nobody hears it
     if (cutIn) endCutIn();
     e.hush();
-    const ms = mediaSession();
-    if (ms?.metadata) ms.playbackState = 'paused';
+    tilePaused();
   } else {
     e.resume();
     syncMusic();
   }
 }
 
-/** The island's own music at an instant: the event's track on an event day (its midnight jingle first, once), else
- *  the Tokyo hour's. Cut-ins (the wasps, K.K.) come on top of it. */
-function musicAt(d: Date): Want | null {
-  const ev = eventMusicAt(d, sound.weather);
-  const intro = ev?.intro && AUDIO.events[ev.intro];
-  if (ev?.intro && intro && !introHeard(dayKey(d))) return { key: `event/${ev.intro}`, track: intro, playing: ev.intro, loop: false };
-  const id = ev && (AUDIO.events[ev.id] ? ev.id : ev.alt && AUDIO.events[ev.alt] ? ev.alt : null);
-  if (id) return { key: `event/${id}`, track: AUDIO.events[id]!, playing: id, loop: true };
-  const tr = trackAt(d, sound.weather, AUDIO.music);
-  return tr && { key: tr.key, track: tr, playing: 'hour', loop: true };
-}
-
-/** The room's track (null: outdoors, or the room has no file, so the island's music goes on). */
-function placeMusic(): Want | null {
-  const tr = placeTrack(place, AUDIO.places);
-  return tr && { key: `place/${tr.id}`, track: tr, playing: tr.id, loop: true };
-}
-
-/** What plays under a cut-in: the room's track indoors, else the island's (places.ts pickMusic). */
-const baseAt = (d: Date): Want | null => pickMusic({ place: placeMusic(), island: musicAt(d) });
-
-/** What the settings' note and the Now Playing tile say about the music (null: none). A K.K. song's title is the
- *  cut-in's. */
-export function playingLabel(playing: Playing, hour: number): string | null {
-  if (playing === 'opening') return t('sound.opening');
-  if (playing === 'hour') return t('sound.nowPlaying', { hour });
-  if (playing === 'kk') {
-    const k = cutIn?.kk;
-    return k ? t(cutIn?.from === 'aircheck' ? 'sound.nowPlayingAircheck' : 'sound.nowPlayingTitle', { title: kkTitle(k) }) : null;
-  }
-  return playing ? t('sound.nowPlayingTitle', { title: t(`sound.title.${playing}`) }) : null;
-}
+/** What the settings' note and the Now Playing tile say about the music (null: none). */
+export const playingLabel = (playing: Playing, hour: number): string | null => labelOf(playing, hour, cutIn);
 
 function endCutIn(): void {
   clearTimeout(cutInTimer);
   cutIn = null;
   sound.kk = null;
-  engine?.pin([]);
 }
 
-/** Start a cut-in (when ミュージック can sound) and play it at once. False: it can't sound now. */
-function startCutIn(want: NonNullable<typeof cutIn>, maxMs?: number): boolean {
-  if (!audible() || !engine) return false;
+/** Start a cut-in (when ミュージック can sound) and play it at once; a loop ends after `loopMs`. False: it can't
+ *  sound now. */
+function startCutIn(want: CutIn, loopMs?: number): boolean {
+  if (!audible()) return false;
   clearTimeout(cutInTimer);
   // the opening outranks a cut-in (pickMusic): a cut-in asked for now ends it, as a tap past NH's title screen
   opening = false;
-  const d = now();
   cutIn = want;
   sound.kk = want.kk && want.from ? { id: want.kk.id, from: want.from } : null;
-  // keep what it interrupted (indoors the room's and the island's: coming back, or leaving the room meanwhile, starts
-  // at once), the next of a chain (Franklin's done after his start) and, during the chase, the sting that may follow
-  const keep = [placeMusic(), musicAt(d), want.next?.[0] && AUDIO.events[want.next[0]], want.playing === 'bee-chase' && AUDIO.events['bee-stung']];
-  engine.pin([...new Set(keep.flatMap((w) => (!w ? [] : 'track' in w ? [w.track.file] : [w.file])))]);
-  if (maxMs) cutInTimer = setTimeout(() => cutIn === want && (endCutIn(), syncMusic()), maxMs);
+  if (loopMs) cutInTimer = setTimeout(() => cutIn === want && (endCutIn(), syncMusic()), loopMs);
   syncMusic();
   return true;
 }
 
-/** The music and ambience that should sound now: the opening while it plays, a cut-in, else the island's (musicAt).
- *  `fade`: how a change fades (hourly.ts; a cut-in's own is its quick swap). */
+/** The music and ambience that should sound now (choose.ts pickMusic: the opening while it plays, a cut-in, the
+ *  room's, the island's), and what stays fetched (pinsFor). `fade`: how a change fades (a cut-in's own is its swap). */
 function syncMusic(fade: Fade = 'hour'): void {
   const e = engine;
   if (!e?.ctx || document.hidden) return;
@@ -228,61 +191,13 @@ function syncMusic(fade: Fade = 'hour'): void {
   e.muffle(coveredBy() && !opening);
   const d = now();
   const { hour, month } = jst(d);
-  const island = musicAt(d), inside = placeMusic();
-  const want = pickMusic<Want>({ opening: opening && AUDIO.opening ? { key: 'opening', track: AUDIO.opening, playing: 'opening', loop: false } : null, cutIn, place: inside, island });
-  // indoors, the island's file stays (leaving starts it at once); a cut-in pins its own
-  if (!cutIn) e.pin(want === inside && island ? [island.track.file] : []);
+  const out = island(d), inside = room();
+  const want = pickMusic({ opening: opening ? openingMusic(AUDIO) : null, cutIn, place: inside, island: out });
+  e.pin(pinsFor({ cutIn, place: inside, island: out, files: AUDIO }));
   sound.playing = want?.playing ?? null;
   void e.setTrack(want?.key ?? null, want?.track ?? null, want?.loop, want?.fade ?? fade);
   nowPlaying(playingLabel(sound.playing, hour));
   void e.setAmbient(ambientFor(hour, month, sound.weather, { heavy: sound.heavy }));
-}
-
-const mediaSession = (): MediaSession | null => (typeof navigator !== 'undefined' && 'mediaSession' in navigator ? navigator.mediaSession : null);
-
-/** The Media Session (the lock screen's and Control Center's Now Playing tile). Under the 'playback' session iOS may
- *  show one for the music deck. Its ▶ and ⏸ are ours: ▶ only resumes while the app is in front (never
- *  music from a pocket), ⏸ holds the track until the next tap in the app. The tile is named after the tune with the
- *  app's icon, so it isn't a bare URL; no seeking or skipping. */
-function initMediaSession(): void {
-  const ms = mediaSession();
-  if (!ms) return;
-  const handle = (a: MediaSessionAction, f: MediaSessionActionHandler | null) => {
-    try {
-      ms.setActionHandler(a, f);
-    } catch {
-      /* this action isn't supported */
-    }
-  };
-  handle('play', () => {
-    if (document.hidden || !engine?.ctx || silent(sound.settings)) return void (ms.playbackState = 'paused');
-    engine.unhold();
-    engine.resume();
-    syncMusic();
-  });
-  const hold = () => {
-    engine?.holdMusic();
-    ms.playbackState = 'paused';
-  };
-  handle('pause', hold);
-  handle('stop', hold);
-  for (const a of ['seekbackward', 'seekforward', 'seekto', 'previoustrack', 'nexttrack'] as const) handle(a, null);
-}
-
-/** What the Now Playing tile says (null: no music). */
-function nowPlaying(title: string | null): void {
-  const ms = mediaSession();
-  if (!ms) return;
-  if (!title) {
-    ms.metadata = null;
-    ms.playbackState = 'none';
-    return;
-  }
-  const name = title.replace(/^♪\s*/, '');
-  if (ms.metadata?.title !== name && typeof MediaMetadata === 'function') {
-    ms.metadata = new MediaMetadata({ title: name, artist: t('app.name'), artwork: [{ src: asset('icons/icon-512.webp'), sizes: '512x512', type: 'image/webp' }] });
-  }
-  ms.playbackState = document.hidden ? 'paused' : 'playing';
 }
 
 /** Ahead of the first tap (needs no context): the renderer, and the hour's track when ミュージック is on. */
@@ -295,15 +210,15 @@ function prefetchFirst(): void {
   if (tr) e.prefetch(tr.track.file);
 }
 
-/** The next hour's track a minute early (only while it could play: visible, ミュージック on and audible), and the change
- *  on the hour. Stopped while hidden (onHide), so nothing is fetched and kept for hours nobody hears. */
+/** The next hour's track a minute early (only while it could be heard), and the change on the hour. Stopped while
+ *  hidden (onHide), so nothing is fetched and kept for hours nobody hears. */
 const hourClock = new HourClock(
   now,
   (at) => {
     const tr = audible() && baseAt(at);
     if (tr) engine?.prefetch(tr.track.file);
   },
-  syncMusic,
+  () => syncMusic(),
   undefined,
   (d) => Math.min(msToNextHour(d), msToNextEdge(d) ?? Infinity)
 );
@@ -318,9 +233,7 @@ export function setSound(patch: Partial<SoundSettings>): void {
   opening = next.music && (opening || (!prev.music && !!AUDIO.opening));
   unlock();
   apply();
-  const e = engine;
-  if (!e) return;
-  if (next.sfx && !prev.sfx) void e.whenReady().then(() => play('confirm'));
+  if (engine && next.sfx && !prev.sfx) void engine.whenReady().then(() => play('confirm'));
 }
 
 /** The scene is covered (world cues wait; cues.ts). */
@@ -329,35 +242,38 @@ export const covered = (): boolean => coveredBy();
 /** Play an effect if 効果音 is on (cues.ts is the usual way in). */
 export function play(id: SoundId, o?: { gain?: number; rate?: number; delay?: number }): void {
   const s = sound.settings;
+  if (s.volume > 0 && s.sfx) engine?.play(id, o);
+}
+
+/** しずえ's announcement (cue 'announce'): the radio jingle of the moment (radio.ts; without its file the PA chime).
+ *  Fired as the island opens, before any tap: it waits for the first one (ANNOUNCE_WAIT_MS). */
+export function announce(o?: { gain?: number }): void {
+  const s = sound.settings;
   if (s.volume <= 0 || !s.sfx) return;
-  if (id === 'chime' && engine?.needsUnlock(false) !== false) announceAt = Date.now();
-  // the announcement opens with the radio jingle of the moment (radio.ts; its file, else the broadcast's, else the chime)
-  else engine?.play(id === 'chime' ? radioJingleAt(now()) : id, o);
+  if (!engine || engine.needsUnlock(false)) announceAt = Date.now();
+  else engine.play(radioJingleAt(now()), o);
 }
 
 /** The wasps (island/TreeShakes.svelte), as in NH: `nest` (it fell: fetch the chase ahead), `chase` (they're out:
  *  Chased by Bees cuts in over the island's music and loops), `caught` (netted: the island's music comes straight
  *  back), `stung` (Stung by Bees, once, then the island's music fades back in). Only with ミュージック on. */
 export function waspMusic(phase: 'nest' | 'chase' | 'caught' | 'stung'): void {
-  const chase = AUDIO.events['bee-chase'], stung = AUDIO.events['bee-stung'];
+  const chase = AUDIO.events['bee-chase'];
   if (phase === 'nest') {
     if (chase && audible()) engine?.prefetch(chase.file);
-  } else if (phase === 'chase') {
-    if (chase) startCutIn({ key: 'event/bee-chase', track: chase, playing: 'bee-chase', loop: true, fade: 'cut' }, CHASE_MAX_MS);
-  } else if (cutIn?.playing === 'bee-chase') {
+  } else if (phase === 'chase') eventJingle('bee-chase', CHASE_MAX_MS);
+  else if (cutIn?.id === 'bee-chase') {
     // caught or stung: the chase ends either way
     endCutIn();
-    if (phase === 'stung' && stung && startCutIn({ key: 'event/bee-stung', track: stung, playing: 'bee-stung', loop: false, fade: 'cut' })) return;
-    const base = baseAt(now());
-    if (base && engine?.ctx) void engine.setTrack(base.key, base.track, base.loop, 'cut');
-    syncMusic();
+    if (phase === 'stung' && eventJingle('bee-stung')) return;
+    syncMusic('cut');
   }
 }
 
 /** K.K. plays song `id` (kk.ts loadKK's list) over the island's music, which stops for it and comes back after (NH's
  *  show): `source` `live` K.K. on his stool, `aircheck` a room's stereo (the song's aircheck, else its live file).
- *  Only with ミュージック on and audio unlocked (call it from a tap). `sound.kk` is the song and its source while it
- *  plays. False: it can't sound now (no such song, the list not loaded yet, music off, locked or muted). */
+ *  Only with ミュージック on and audio unlocked (call it from a tap). False: it can't sound now (no such song, the
+ *  list not loaded yet, music off, locked or muted). */
 export function playKK(id: string, source: KKSource = 'live'): boolean {
   void loadKK();
   const k = kkTrack(id, source);
@@ -370,18 +286,19 @@ export function prefetchKK(id: string, source: KKSource = 'live'): void {
   if (k) engine?.prefetch(k.track.file);
 }
 
-/** The island's own cut-ins (events.ts): `aerobics` for the stretch, `happy-birthday` at the cake, Franklin's cooking,
- *  Festivale's dance. A one-shot plays once (a list: one after another), a loop until `maxMs`; then the island's music
- *  fades back. Only with ミュージック on, audio unlocked and the file there: false, and the caller plays its effect. */
-export function eventJingle(ids: EventMusicId | EventMusicId[], maxMs?: number): boolean {
+/** The island's own cut-ins (events.ts CutInId): `aerobics` for the stretch, `happy-birthday` at the cake, Franklin's
+ *  cooking, the wasps'. A one-shot plays once (a list: one after another); with `loopMs` it loops that long. Then the
+ *  island's music fades back. Only with ミュージック on, audio unlocked and the file there: false, and the caller plays
+ *  its effect. */
+export function eventJingle(ids: CutInId | CutInId[], loopMs?: number): boolean {
   const [id, ...next] = Array.isArray(ids) ? ids : [ids];
   const tr = AUDIO.events[id];
-  return !!tr && startCutIn({ key: `event/${id}`, track: tr, playing: id, loop: !!maxMs, fade: 'cut', next }, maxMs);
+  return !!tr && startCutIn({ key: `event/${id}`, track: tr, playing: id, id, loop: !!loopMs, fade: 'cut', next }, loopMs);
 }
 
 /** Stop an island cut-in early (the stretch left or cut short: TapeDeck): the island's music fades back in. */
-export function stopJingle(id: EventMusicId): void {
-  if (cutIn?.playing !== id) return;
+export function stopJingle(id: CutInId): void {
+  if (cutIn?.id !== id) return;
   endCutIn();
   syncMusic();
 }
@@ -419,15 +336,26 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   sound.settings = loadSound(localKV());
   const gestures = ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown'] as const;
   for (const g of gestures) document.addEventListener(g, unlock, { capture: true, passive: true });
-  initMediaSession();
+  initMediaSession({
+    // ▶: only in front, with a kind on; ⏸ (and ⏹): the track holds until a tap in the app
+    play: () => {
+      if (document.hidden || !engine?.ctx || silent(sound.settings)) return tilePaused();
+      engine.unhold();
+      engine.resume();
+      syncMusic();
+    },
+    hold: () => {
+      engine?.holdMusic();
+      tilePaused();
+    }
+  });
   // the renderer is pure and small: fetch it ahead of the first tap when a setting is on (nothing loads while off);
   // with ミュージック on, the hour's file too, so the first tap anywhere starts it inside that tap (no fetch to wait for)
   const first = silent(sound.settings) ? undefined : setTimeout(prefetchFirst, 1000);
   const onHide = () => {
     hourClock.stop();
     engine?.pause();
-    const ms = mediaSession();
-    if (ms && ms.playbackState !== 'none') ms.playbackState = 'paused';
+    tilePaused();
   };
   const onVisible = () => {
     if (document.hidden) return onHide();
@@ -459,7 +387,7 @@ export function startSound(o: { muffled: () => boolean }): () => void {
     $effect(() => {
       void sound.weather;
       void sound.heavy;
-      untrack(syncMusic);
+      untrack(() => syncMusic());
     });
   });
   hourClock.start();
