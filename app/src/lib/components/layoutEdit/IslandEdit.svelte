@@ -297,12 +297,23 @@
     }).filter((m) => !!m);
   });
 
+  /** The world z's where the camera's moves are looked for (one at least is on screen wherever it looks). */
+  const CAM_PROBE = [0, 150, 300, 450, 600, 750, 900, 1050, 1200];
   let raf = 0;
   $effect(() => {
     // the camera may move under a held thing (a pinch), and under the marks: they follow
     if (!sel && !marks.length) return;
+    // (a re-render only when the camera did move: ground points along the island, those on screen, and the stage's
+    // size, read each display frame; a bump every frame re-rendered the marks and the held thing's outline at 60 a
+    // second for nothing)
+    let was = '';
     const tick = () => {
-      rev++;
+      let key = stage.size().join();
+      for (const z of CAM_PROBE) key += `|${stage.toScreen(195, z, 0)?.join() ?? '-'}`;
+      if (key !== was) {
+        was = key;
+        rev++;
+      }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
