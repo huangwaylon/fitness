@@ -25,7 +25,7 @@ const CHUNKS_MAX = 16;
 const TILES_MAX = CHUNK * CHUNKS_MAX - 1;
 /** A tile's character: kind × 4 + tier, base 36 (lib/layout/grid.ts). */
 const TILE_RE = /^[0-9a-z]{64}$/;
-/** At most this many outdoor objects ever set (each id's latest op is a row: the default's and ours). */
+/** At most this many outdoor objects standing at once (the default's and ours; a removed one's row is kept, uncounted). */
 export const LAYOUT_MAX = 1500;
 
 /** An object's id: a default one's (world.ts's: `palm-1`, `fl:52:180`, `home-B`) or a new one (`o` + random). */
@@ -132,18 +132,26 @@ export function resetAt(m: ReadonlyMap<string, LayoutEntry>): number {
 /** Whether an entry is void (an object or a chunk older than the reset). */
 export const isVoid = (e: LayoutEntry, reset: number): boolean => (e.sc === 'o' || e.sc === 'c') && e.at <= reset;
 
+/** Whether an entry is a piece standing outdoors: an object set, not removed, not void by the reset. @public
+ *  (relay/src/store.ts) */
+export const isStanding = (e: LayoutEntry, reset: number): boolean => e.sc === 'o' && !e.rm && !isVoid(e, reset);
+
 /** What the record does with a new op, given the layout rows it holds: `stale` (an op that beats it is there, or a
- *  reset voids it: acknowledged, nothing appended), `full` (a new object past LAYOUT_MAX: refused) or `append` (the
- *  same id's older rows are replaced). */
-export function layoutAccept(held: readonly LayoutEntry[], e: LayoutEntry): 'append' | 'stale' | 'full' {
+ *  reset voids it: acknowledged, nothing appended), `full` (a piece put down past LAYOUT_MAX standing: refused) or
+ *  `append` (the same id's older rows are replaced). The cap counts the pieces standing (isStanding), never a removed
+ *  one's row (2026-11-05: counted, ~1,450 removals made every placement full): a removal is never refused, and a
+ *  removed piece put back counts as a new one. `standing`: that count when the caller keeps it (the record's meta:
+ *  relay/src/store.ts), so `held` need only hold the op's own id's rows and the reset. */
+export function layoutAccept(held: readonly LayoutEntry[], e: LayoutEntry, standing?: number): 'append' | 'stale' | 'full' {
   const m = new Map<string, LayoutEntry>();
   for (const h of held) mergeLayout(m, h);
   const was = m.get(layoutKey(e));
   if (was && !layoutBeats(e, was)) return 'stale';
-  if (isVoid(e, resetAt(m))) return 'stale';
-  if (e.sc === 'o' && !was) {
-    let n = 0;
-    for (const h of m.values()) if (h.sc === 'o') n++;
+  const reset = resetAt(m);
+  if (isVoid(e, reset)) return 'stale';
+  if (isStanding(e, reset) && !(was && isStanding(was, reset))) {
+    let n = standing ?? 0;
+    if (standing === undefined) for (const h of m.values()) if (isStanding(h, reset)) n++;
     if (n >= LAYOUT_MAX) return 'full';
   }
   return 'append';

@@ -1309,8 +1309,8 @@ decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: l
   frame's CPU p50/p95 1/4 → 2/3 ms, idle 60 fps either way and 30 frames a second drawn (the ambient rate), my villager
   running on a treadmill the same (193 calls, 2/3 ms, 30 a second; seated side on it stays at the ambient rate:
   villagers.ts turns to the anchor's own way). `npm run ios:check -- --seed --then` (docs/ops/testing.md).
-- **How many:** the layout's objects are capped by the record at 1,500 ever set (`contract/layout.ts` LAYOUT_MAX, the
-  default island's ~100 among them), not by `contract/decor.ts` DECOR_MAX (30: the old もようがえ's decorations' map,
+- **How many:** the layout's objects are capped by the record at 1,500 standing (`contract/layout.ts` LAYOUT_MAX; a removed one's row is kept, never counted;
+  the default island's ~100 among them), not by `contract/decor.ts` DECOR_MAX (30: the old もようがえ's decorations' map,
   moved into the layout once; nothing places by it now). A gym of 10–20 pieces fits.
 - **In:** せってい → もようがえ → はじめる (the sheet closes; no new HUD control on the island): IslandEdit over the 3D
   camera, the tent's way: a tray of every kind, a ghost green or red, a drag a tile at a time, a tap on the ground

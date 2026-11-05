@@ -68,6 +68,28 @@ describe('layout ops (contract/layout.ts)', () => {
     const full: LayoutEntry[] = Array.from({ length: LAYOUT_MAX }, (_, i) => ({ sc: 'o', id: `o${i}`, at: T0 + i, k: 'oak', x: 0, z: 0, f: 0, who: 'A' }) as LayoutEntry);
     expect(layoutAccept(full, { sc: 'o', id: 'new', at: T0 + 9e6, k: 'oak', x: 0, z: 0, f: 0, who: 'A' })).toBe('full');
     expect(layoutAccept(full, { sc: 'o', id: 'o3', at: T0 + 9e6, k: 'oak', x: 1, z: 0, f: 0, who: 'A' })).toBe('append');
+    // a removal is never refused, even when full
+    expect(layoutAccept(full, { sc: 'o', id: 'new', at: T0 + 9e6, rm: true, who: 'A' })).toBe('append');
+  });
+
+  test('the cap counts the pieces standing, never the removed ones (their rows stay, so nothing brings them back)', () => {
+    // 2026-11-05 relay review O1: the cap counted the tombstones, so after ~1,450 removals every placement was full
+    const set = (i: number, at: number): LayoutEntry => ({ sc: 'o', id: `o${i}`, at, k: 'oak', x: 0, z: 0, f: 0, who: 'A' });
+    const gone: LayoutEntry[] = Array.from({ length: LAYOUT_MAX }, (_, i) => ({ sc: 'o', id: `o${i}`, at: T0 + i, rm: true, who: 'A' }) as LayoutEntry);
+    const fresh = { sc: 'o', id: 'new', at: T0 + 9e6, k: 'oak', x: 0, z: 0, f: 0, who: 'A' } as LayoutEntry;
+    expect(layoutAccept(gone, fresh)).toBe('append');
+    // and the void ones (older than the reset) neither
+    const voided: LayoutEntry[] = [...Array.from({ length: LAYOUT_MAX }, (_, i) => set(i, T0 + i)), { sc: 'r', id: 'reset', at: T0 + 5e6, who: 'A' }];
+    expect(layoutAccept(voided, fresh)).toBe('append');
+    // one standing short of the cap: one more, then full; a removed piece put back counts as a new one
+    const most = [...Array.from({ length: LAYOUT_MAX - 1 }, (_, i) => set(i, T0 + i)), { sc: 'o', id: 'back', at: T0, rm: true, who: 'A' } as LayoutEntry];
+    expect(layoutAccept(most, fresh)).toBe('append');
+    const all = [...most, fresh];
+    expect(layoutAccept(all, { ...fresh, id: 'new2' } as LayoutEntry)).toBe('full');
+    expect(layoutAccept(all, { sc: 'o', id: 'back', at: T0 + 9e6, k: 'oak', x: 0, z: 0, f: 0, who: 'A' })).toBe('full');
+    // the record's count of them (its meta: relay/src/store.ts) stands in for the rows
+    expect(layoutAccept([], fresh, LAYOUT_MAX)).toBe('full');
+    expect(layoutAccept([], fresh, LAYOUT_MAX - 1)).toBe('append');
   });
 
   test('a home’s room is its own: its own ids, its own cap', () => {
