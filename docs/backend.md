@@ -663,7 +663,7 @@ writes/day (unused). A generous day for two phones:
 | Sockets (each show of the app) | 2 × 60 | 120 | 120 | ~150 (10 s awake each, 128 MB) | | |
 | Pings (every 60 s while shown, 2 × 2 h) | 240 | 0 | 12 | ~300 | | |
 | Intents kept for the day (the room's ring), nudges | ~2,000 | 0 | 100 | ~100 | | ~2,000 |
-| Record reads: snapshots (opens not current, pushes, taps; ~5 rows each, a full one ~750) | ~300 | 300 | 300 | ~30 | ~3,000 | |
+| Record reads: snapshots (opens not current, pushes, taps; ~5 rows each; a full one is the whole record: ~97k rows a year, below) | ~300 | 300 | 300 | ~30 | ~3,000 (+ ~97k per full fetch) | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ~300 rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The real weather (the same cron: the room's tick, a fetch at :15 and :45, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
@@ -672,9 +672,13 @@ writes/day (unused). A generous day for two phones:
 
 Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
 smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a
-tenth of it even with the island's presence ten times busier. Storage: ~150 bytes a row, ~1 MB a year against 5 GB, plus the
-meal log: ~300 bytes a row, ~11k rows a year for three people at ~10 meals a day (~3 MB a year in a full snapshot,
-0.8 MB gzipped; on a phone ~4 MB a year of cache, written a segment at a time).
+tenth of it even with the island's presence ten times busier. **Snapshot size** (measured 2026-11-05, the relay review, for a year of
+the two phones and the guest): ~97k rows and ~5.9 MB of JSON a year in a full snapshot (metrics:
+every Shortcut run appends each changed value of its 32 days; events: tallies, island days, decor and layout ops, the
+meal log's ~300-byte rows), not the ~750 rows / ~1 MB once budgeted. A full fetch (a new epoch, a new phone, a dropped
+cache) is the whole record in one reply and one DO request (~97k rows read, ~2 % of the day's 5 M); polls stay small.
+The phones compact their cache ([Compaction](#compaction)), the record doesn't yet: server-side compaction and a paged
+snapshot are the next batch. Storage against 5 GB is no concern.
 
 ## Notifications
 

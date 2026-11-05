@@ -84,7 +84,7 @@ record by hand; run it after a restore whose reply says the room wasn't told).
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data "{\"key\":\"$KEY\",\"action\":\"uploads\"}"
 ```
 
-Every list should have as many lines as `dates`. Each run replaces a day's values with Health's current totals (latest wins; a locked week's ベル stay put).
+Every list should have as many lines as `dates`. Each run replaces a day's values with Health's current totals (latest wins; a locked week's ベル stay put), except that a past day never drops to 0 from a value above it (`N past zeros ignored` in the notes: a run that read nothing, Health locked).
 Shortcut fixes: [shortcut §6](shortcut-health-sync.md#6-troubleshooting).
 
 ## 7. Backups
