@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import type { EventRow } from '../contract/api.ts';
 import { BANK, type Level } from './bank.ts';
 import { DECK_SIZE } from './deck.ts';
-import { answersOf, dayNum, daysPlayed, gamesOf, listenAnswers, recentOf, scoreOf, stageOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
+import { answersOf, dayNum, daysPlayed, gamesOf, isLadderGame, listenAnswers, recentOf, scoreOf, speedOf, stageOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
+import { ladderDeck } from './ladder.ts';
 import { cardsOf, dueOf, gradeOf, practiceDeck, step } from './srs.ts';
 import { feedback, recommend, tripsOf } from './advice.ts';
 import { skillsOf } from './tags.ts';
@@ -249,6 +250,54 @@ describe('the advice', () => {
     expect(tripsOf(game(['w1-right', 'w1-rock', 'n1-reps-1', 'w3-kitchen', 'w1-hat'], { miss: ['w1-right', 'w1-rock', 'n1-reps-1', 'w3-kitchen'] }))).toEqual([
       { key: 'f:l-r', skill: 'lr', n: 2 }, { key: 'f:teen-ty', skill: 'num', n: 1 }, { key: 's:cons', skill: 'cons', n: 1 }
     ]);
+  });
+});
+
+describe('スピード はしご: the fastest comfortable speed', () => {
+  /** A ladder game: two ladders' rungs, `miss` / `replayed` by rung id. */
+  const ladderGame = (a: string, b: string, o: { miss?: string[]; replayed?: string[] } = {}) =>
+    game([1, 2, 3, 4].flatMap((n) => [`${a}-${n}`]).concat([1, 2, 3, 4].map((n) => `${b}-${n}`)), { lv: 4, ...o });
+  it('reads each ladder’s climb (in order, first listen, stopping at a miss or a replay); comfortable is the fastest ≥ 75 % of the last 8 climbed', () => {
+    // 4 ladders: climbs 4, 2 (miss at 3), 3 (replay at 4), 4
+    const gs = [
+      ladderGame('sp-platform', 'sp-gate', { miss: ['sp-gate-3'] }),
+      ladderGame('sp-water', 'sp-yen', { replayed: ['sp-water-4'] })
+    ];
+    const sp = speedOf(gs);
+    expect(sp).toMatchObject({ ladders: 4, recent: 4, measuring: false, best: 1.4 });
+    expect(sp.reach).toEqual([1, 1, 0.75, 0.5]);
+    expect(sp.comfort).toBe(1.2);
+    expect(isLadderGame(gs[0])).toBe(true);
+  });
+  it('measures from 4 ladders; a ladder whose first rung I didn’t have isn’t counted; none at 0.8× is null', () => {
+    const one = speedOf([ladderGame('sp-platform', 'sp-gate', { miss: ['sp-platform-1', 'sp-gate-1'] })]);
+    expect(one).toMatchObject({ ladders: 2, measuring: true, comfort: null, best: null, reach: [0, 0, 0, 0] });
+    const late = game(['sp-cat-2', 'sp-cat-3', 'sp-cat-4'], { lv: 4 });
+    expect(speedOf([late]).ladders).toBe(0);
+    expect(speedOf([game(ids('w1-'), { lv: 1 })]).ladders).toBe(0);
+  });
+  it('leaves ladder games out of the quiz trend and the level nudge', () => {
+    const l1 = ids('w1-', 8);
+    const quiz = [game(l1, { lv: 1 }), game(l1, { lv: 1 }), game(l1, { lv: 1 })];
+    const all = [...quiz, ladderGame('sp-platform', 'sp-gate', { miss: ['sp-platform-1', 'sp-gate-1'] })];
+    expect(trendOf(all)).toEqual(trendOf(quiz));
+    expect(recommend({ stats: statsOf(answersOf(all), TODAY), games: all, dueItems: 0, levels: LV, bank: BANK })).toContainEqual({ kind: 'level', lv: 2 });
+  });
+  it('recommends the ladder: to try (after 3 quiz games, when offered), or while comfortable below 1.2×; never once at 1.2×', () => {
+    const l1 = ids('w1-', 8);
+    const quiz = [game(l1, { lv: 1, miss: [l1[0]] }), game(l1, { lv: 1, miss: [l1[0]] }), game(l1, { lv: 1, miss: [l1[0]] })];
+    const rec = (gs: Game[], ladder = true) => recommend({ stats: statsOf(answersOf(gs), TODAY), games: gs, dueItems: 0, levels: [1], bank: BANK, speed: speedOf(gs), ladder });
+    expect(rec(quiz)).toContainEqual({ kind: 'speed', at: null, tried: false });
+    expect(rec(quiz, false).map((r) => r.kind)).not.toContain('speed');
+    const slow = [...quiz, ladderGame('sp-platform', 'sp-gate', { miss: ['sp-platform-2', 'sp-gate-2'] }), ladderGame('sp-water', 'sp-yen', { miss: ['sp-water-2', 'sp-yen-2'] })];
+    expect(rec(slow)).toContainEqual({ kind: 'speed', at: 0.8, tried: true });
+    const quick = [...quiz, ladderGame('sp-platform', 'sp-gate', { miss: ['sp-platform-4'] }), ladderGame('sp-water', 'sp-yen', { miss: ['sp-water-4'] })];
+    expect(rec(quick).map((r) => r.kind)).not.toContain('speed');
+  });
+  it('a ladder game’s row keeps each pick as authored', () => {
+    const items = ladderDeck(8).slice(0, 4);
+    const r = listenAnswers(items, items.map((it) => ({ k: it.answer })), items.map(() => true), [0, 0, 0, 0], true);
+    expect(r.map(([, ok, pick]) => [ok, pick])).toEqual([[1, 0], [1, 0], [1, 0], [1, 0]]);
   });
 });
 

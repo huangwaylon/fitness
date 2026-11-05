@@ -5,13 +5,16 @@
   // (the last 5 games' mean, its change, a 12-point sparkline), this week's days (7 dots, never a streak), the
   // recommendations each with its start, the couple summary (games together and both people's minutes, never a level;
   // not on the guest's phone) and the details (per type, accent and level: one table, one header row) folded; with no game
-  // yet, しずえ's hello and 「あそぶ」 (back to the lobby's first tab). Mine alone: the record sends the
+  // yet, しずえ's hello and 「あそぶ」 (back to the lobby's first tab). スピード はしご's measure once a ladder's been
+  // climbed: the fastest comfortable speed (a stat tile) over one bar a rung (the share of the recent ladders that
+  // climbed it, labelled directly; one hue). Mine alone: the record sends the
   // partner only a summary (contract/guest.ts rowsFor).
   import type { Report } from '#lib/kikimimi/report.ts';
   import type { Rec } from '#lib/kikimimi/advice.ts';
-  import { stageOf } from '#lib/kikimimi/progress.ts';
+  import { SPEED_MIN, stageOf } from '#lib/kikimimi/progress.ts';
   import { SKILLS } from '#lib/kikimimi/tags.ts';
   import { levelMark, type Accent, type ItemType } from '#lib/kikimimi/bank.ts';
+  import { SPEEDS, sx } from '#lib/kikimimi/ladder.ts';
   import Host from '../characters/Host.svelte';
   import { recWords } from './progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -57,6 +60,25 @@
         <p class="note">{s.measuring ? t('kiki.prog.measuring', { n: 16 - s.answers }) : t('kiki.prog.comfort', { stars: '★'.repeat(comfy), name: t(`kiki.lv.${comfy}`) })}</p>
       {/if}
     </section>
+
+    {#if report.speed.ladders}
+      {@const sp = report.speed}
+      <!-- スピード はしご: the fastest comfortable speed, and one bar a rung (the share of recent ladders that climbed it) -->
+      <section class="tile card" aria-labelledby="kp-speed" data-kiki-speed={sp.comfort ?? ''}>
+        <h3 id="kp-speed" class="sec-label in">{t('kiki.prog.speed')}</h3>
+        <p class="stage">{sp.measuring ? (sp.best ? t('kiki.prog.speedBest', { x: sx(sp.best) }) : t('kiki.prog.speedLow')) : sp.comfort ? t('kiki.prog.speedLine', { x: sx(sp.comfort) }) : t('kiki.prog.speedLow')}</p>
+        <ul class="bars rungs">
+          {#each SPEEDS as x, k (k)}
+            <li data-rung={k + 1} data-m={pct(sp.reach[k])}>
+              <span class="bl">{sx(x)}×</span>
+              <span class="track" aria-hidden="true"><i style:width="{Math.max(3, pct(sp.reach[k]))}%"></i></span>
+              <span class="bv">{t('kiki.prog.pct', { pct: pct(sp.reach[k]) })}</span>
+            </li>
+          {/each}
+        </ul>
+        <p class="note">{sp.measuring ? t('kiki.prog.speedMeasuring', { n: SPEED_MIN - sp.ladders }) : `${t('kiki.prog.speedSub', { n: sp.recent })}${sp.best ? ` · ${t('kiki.prog.speedBest', { x: sx(sp.best) })}` : ''}`}</p>
+      </section>
+    {/if}
 
     <!-- what to practise next -->
     <section class="sec" aria-labelledby="kp-rec" data-kiki-recs>
@@ -171,6 +193,8 @@
   li[data-m=""] .track { background: none; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--bar) 45%, var(--card)); }
   .bv { font: 700 var(--fs-s)/1 var(--font-num, var(--font-ui)); text-align: right; color: var(--text); }
   li[data-m=''] .bv { color: var(--text-soft); }
+  .bars.rungs { padding: 4px 0; gap: 8px; }
+  .rungs li { grid-template-columns: 3em 1fr 3em; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
   .big { margin: 0; font: 700 28px/1.1 var(--font-num, var(--font-ui)); }
   .spark { width: 100%; height: 36px; overflow: visible; }

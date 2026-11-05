@@ -4,7 +4,7 @@
 import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { BANK, type Item, type Level } from './bank.ts';
-import { answersOf, daysPlayed, gamesOf, recentOf, statsOf, together, trendOf, weekDays, type Game, type OtherGame, type Stats } from './progress.ts';
+import { answersOf, daysPlayed, gamesOf, recentOf, speedOf, statsOf, together, trendOf, weekDays, type Game, type OtherGame, type Speed, type Stats } from './progress.ts';
 import { cardsOf, dueOf, practiceDeck, type Focus } from './srs.ts';
 import { feedback, recommend, type Feedback, type Rec } from './advice.ts';
 
@@ -22,19 +22,22 @@ export interface Report {
   together: { games: number; minutes: number; partner: boolean };
   /** Minutes I listened this week. */
   minutes: number;
+  /** スピード はしご's measure: the fastest comfortable speed. */
+  speed: Speed;
 }
 
-/** The report of `me`'s rows as of `today`, the levels this phone offers (the advice's level nudge and tries). The
- *  guest's has no couple summary. */
-export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, levels: readonly Level[]): Report {
+/** The report of `me`'s rows as of `today`, the levels this phone offers (the advice's level nudge and tries) and
+ *  whether it offers スピード はしご. The guest's has no couple summary. */
+export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, levels: readonly Level[], ladder = false): Report {
   const { mine, others } = gamesOf(rows, me);
   const answers = answersOf(mine);
   const stats = statsOf(answers, today);
   const due = dueOf(cardsOf(answers), today).items.length;
   const week = new Set(weekDays(today));
+  const speed = speedOf(mine);
   return {
-    today, games: mine, others, stats, due,
-    recs: recommend({ stats, games: mine, dueItems: due, levels, bank: BANK }),
+    today, games: mine, others, stats, due, speed,
+    recs: recommend({ stats, games: mine, dueItems: due, levels, bank: BANK, speed, ladder }),
     trend: trendOf(mine), recent: recentOf(mine), days: daysPlayed(mine, today),
     together: together(mine, me === 'G' ? [] : others, today),
     minutes: Math.round(mine.filter((g) => week.has(g.d)).reduce((s, g) => s + g.ms, 0) / 60_000)
