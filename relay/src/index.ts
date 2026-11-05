@@ -7,6 +7,7 @@ import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
 import { IslandStore } from './storeObject.ts';
+import { isCompactTick } from './store.ts';
 import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
 import { logHealthRoute, logRoute, relaySink } from './logRoute.ts';
@@ -225,10 +226,20 @@ export class IslandRoom extends DurableObject<Env> {
 type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth };
 
 export default {
-  /** Every 15 minutes: the real weather when it's due (IslandRoom weatherTick). */
-  async scheduled(_ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+  /** Every 15 minutes: the real weather when it's due (IslandRoom weatherTick); once a day, at 04:15 Tokyo (just after a
+   *  Wednesday's week lock), the record's compaction (store.ts compact). */
+  async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     const t0 = Date.now();
     const log = sinkOf(env, ctx);
+    if (isCompactTick(ev.scheduledTime)) {
+      ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).compactTick().then(
+        (r) => console.log('compact', JSON.stringify(r)),
+        (e) => {
+          console.warn('compact-fail', errName(e));
+          log([{ e: 'do.error', l: 3, d: { where: 'compact', name: errName(e) } }]);
+        }
+      ));
+    }
     ctx.waitUntil(
       env.ROOM.get(env.ROOM.idFromName('island')).weatherTick().then(
         (r) => {

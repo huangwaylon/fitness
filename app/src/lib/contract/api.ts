@@ -146,7 +146,17 @@ export type Fail = { ok: false; error: ApiError; detail?: string };
  * `rev` is the data revision (docs/backend.md#revision): when it differs from the one the client cached with, it
  * is another epoch (the record was rebuilt, or another backend answered), so drop the cache and fetch everything (no `since`).
  */
-export type SnapshotReply = { ok: true; me: Who; now: string; rev: string; rows: SnapshotRows } | Fail;
+export type SnapshotReply = { ok: true; me: Who; now: string; rev: string; rows: SnapshotRows; next?: string } | Fail;
+
+/** A paged `snapshot` (2026-11-05, docs/backend.md#api): `page` rows at most a reply, the next page asked for with the
+ *  reply's `next` as `after` (the same `since`) until a reply has none. A request without `page` gets every row at once,
+ *  as before. @public (relay/src/store.ts, sync/cache.ts) */
+export const SNAPSHOT_PAGE = 4000;
+/** The most rows a page may ask for. @public (relay/src/store.ts) */
+export const SNAPSHOT_PAGE_MAX = 10_000;
+/** A page's cursor (`next`, `after`): the last row's `at`, its table (`m` metrics, `e` events) and its `seq`.
+ *  @public (relay/src/store.ts) */
+export const CURSOR_RE = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\|([me])\|(\d{1,15})$/;
 /** `build`: the record's code (relay/src/store.ts STORE_BUILD), to tell which code the deployment runs. `me`: `G` for the
  *  guest's key. */
 export type WhoamiReply = { ok: true; me: Who; build: string } | Fail;

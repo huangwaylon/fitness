@@ -17,9 +17,11 @@ import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot, validEventData } from '../../app/src/lib/contract/record.ts';
 import {
-  eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec, isWho,
+  CURSOR_RE, eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec, isWho, SNAPSHOT_PAGE_MAX,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
+import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
+import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isVoid, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
@@ -57,7 +59,7 @@ export interface StoreIO {
 }
 
 /** What the store answers to `health` and `whoami` (`build`): bumped with the store's code. */
-export const STORE_BUILD = 'relay-1';
+export const STORE_BUILD = 'relay-2';
 export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
 const MAX_EVENT_DATA_CHARS = 20_000;
@@ -73,6 +75,17 @@ const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
 const ADMIN_ONCE = ['restore', 'rev', 'logpurge'];
 /** How long their signatures are remembered: past the signature's own window (±5 minutes) on both sides. */
 const ADMIN_SEEN_MS = 10 * 60_000;
+/** Compaction (compact): at most this many metrics rows deleted a run. Each delete writes ~4 rows (the row, its `at`
+ *  index, its unique key, the meta) against the Free plan's 100,000 a day; a week brings ~2,000 new rows to drop, so a
+ *  run a day keeps up and a year's backlog goes in a few weeks. */
+export const COMPACT_MAX = 5_000;
+/** The cron's tick that compacts the record (index.ts scheduled): 19:15 UTC, 04:15 Tokyo, once a day. */
+export const isCompactTick = (t: number): boolean => Math.floor((t % 86_400_000) / 60_000) === 19 * 60 + 15;
+/** Seqs per DELETE (Durable Objects' SQLite binds at most 100 parameters). */
+const DELETE_CHUNK = 90;
+/** Dates compacted in one transaction. */
+const COMPACT_DATES_PER_TX = 7;
+const SEQ_MAX = 9e15;
 const utf8 = new TextEncoder();
 const ISO_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
@@ -288,29 +301,71 @@ export class StoreCore {
       if (Number.isNaN(ms)) return fail('bad_request');
       since = new Date(ms).toISOString();
     } else if (body.since !== undefined && body.since !== null && body.since !== '') return fail('bad_request');
+    // paged (`page`: rows at most, `after`: the last page's `next`); without `page` every row at once, as before
+    let page: { limit: number; after: Cursor | null } | null = null;
+    if (body.page !== undefined) {
+      const after = body.after === undefined ? null : cursorOf(body.after);
+      if (!isPageSize(body.page) || after === undefined) return fail('bad_request');
+      page = { limit: body.page, after };
+    } else if (body.after !== undefined) return fail('bad_request');
     // the guest's: the activity and the events, never a からだ row, a からだ goal or a member's profile; a member's:
     // never the guest's profile (contract/guest.ts rowsFor)
-    const rows = this.rowsSince(since);
-    return { ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev(), rows: rowsFor(me, rows) };
+    const head = { ok: true, me, now: new Date(this.io.now()).toISOString(), rev: this.rev() };
+    if (!page) return { ...head, rows: rowsFor(me, this.rowsSince(since)) };
+    const p = this.rowsPage(since, page.after, page.limit);
+    return { ...head, rows: rowsFor(me, p.rows), ...(p.next ? { next: p.next } : {}) };
   }
 
   /** Every row after `since` ('' = all), in `at` order: the `at` index, and the late rows that came in after it. */
   rowsSince(since: string): SnapshotRows {
     const sql = this.io.sql;
-    const late = since ? Date.parse(since) - LATE_MARGIN_MS : 0;
-    const pick = <T extends Record<string, Bind>>(tab: 'metrics' | 'events', cols: string): T[] => {
-      const rows = sql.exec<T & { seq: number }>(`SELECT seq, ${cols} FROM ${tab} WHERE at > ? ORDER BY at, seq`, since).toArray();
+    const pick = <T extends Record<string, Bind>>(tab: 'metrics' | 'events', cols: string): (T & { seq: number; at: string })[] => {
+      const rows = sql.exec<T & { seq: number; at: string }>(`SELECT seq, ${cols} FROM ${tab} WHERE at > ? ORDER BY at, seq`, since).toArray();
       if (!since) return rows;
-      const extra = sql.exec<T & { seq: number }>(`SELECT seq, ${cols} FROM ${tab} WHERE late > ? AND at <= ?`, late, since).toArray();
-      if (!extra.length) return rows;
-      return [...rows, ...extra].sort((x, y) => (String(x.at) < String(y.at) ? -1 : String(x.at) > String(y.at) ? 1 : x.seq - y.seq));
+      const extra = this.lateRows<T>(tab, cols, since);
+      return extra.length ? [...rows, ...extra].sort(byAt) : rows;
     };
-    return {
-      metrics: pick<{ at: string; person: PersonId; date: string; metric: MetricRow[3]; value: number }>('metrics', 'at, person, date, metric, value')
-        .map((r) => [r.at, r.person, r.date, r.metric, r.value]),
-      events: pick<{ at: string; person: Who; id: string; type: EventRow[3]; data: string }>('events', 'at, person, id, type, data')
-        .map((r) => [r.at, r.person, r.id, r.type, r.data])
-    };
+    return { metrics: pick<MetricCols>('metrics', METRIC_COLS).map(metricRow), events: pick<EventCols>('events', EVENT_COLS).map(eventRow) };
+  }
+
+  /** The late rows a poll at `since` also gets: stamped at or before it, arrived after it less LATE_MARGIN_MS. */
+  private lateRows<T extends Record<string, Bind>>(tab: 'metrics' | 'events', cols: string, since: string): (T & { seq: number; at: string })[] {
+    return this.io.sql.exec<T & { seq: number; at: string }>(`SELECT seq, ${cols} FROM ${tab} WHERE late > ? AND at <= ?`, Date.parse(since) - LATE_MARGIN_MS, since).toArray();
+  }
+
+  /**
+   * A page of the rows after `since`: the next `limit` in (at, table, seq) order after `after` (null: the first page,
+   * which also brings the late rows), with the cursor of its last row when there are more (`next`). The pages together
+   * are rowsSince(since); a row written between two pages comes in a later one (its `at` is after every row handed
+   * out before), so a phone that applies the pages together has the record as of the last one. Reads ≤ 2 (limit + 1)
+   * rows from the `at` indexes.
+   */
+  rowsPage(since: string, after: Cursor | null, limit: number): { rows: SnapshotRows; next: string | null } {
+    const sql = this.io.sql;
+    const c: Cursor = after ?? { at: since, t: 'e', seq: SEQ_MAX };
+    // the rows of one `at` go metrics first, then events: past an event's row none of that `at`'s metrics are left
+    const floor = (t: 'm' | 'e') => (c.t === t ? c.seq : t === 'm' ? SEQ_MAX : -1);
+    const take = <T extends Record<string, Bind>>(tab: 'metrics' | 'events', t: 'm' | 'e', cols: string) =>
+      sql.exec<T & { seq: number; at: string }>(`SELECT seq, ${cols} FROM ${tab} WHERE at >= ? AND (at > ? OR seq > ?) ORDER BY at, seq LIMIT ?`, c.at, c.at, floor(t), limit + 1)
+        .toArray();
+    const ms = take<MetricCols>('metrics', 'm', METRIC_COLS), es = take<EventCols>('events', 'e', EVENT_COLS);
+    // merged in (at, table, seq) order: the first `limit`
+    let i = 0, j = 0, n = 0;
+    let last: string | null = null;
+    while (n < limit && (i < ms.length || j < es.length)) {
+      const m = ms[i], e = es[j];
+      const r = m && (!e || m.at <= e.at) ? { x: ms[i++], t: 'm' } : { x: es[j++], t: 'e' };
+      last = `${r.x.at}|${r.t}|${r.x.seq}`;
+      n++;
+    }
+    const metrics = ms.slice(0, i), events = es.slice(0, j);
+    const more = i < ms.length || j < es.length;
+    if (!after && since) {
+      const lm = this.lateRows<MetricCols>('metrics', METRIC_COLS, since), le = this.lateRows<EventCols>('events', EVENT_COLS, since);
+      if (lm.length) metrics.push(...lm), metrics.sort(byAt);
+      if (le.length) events.push(...le), events.sort(byAt);
+    }
+    return { rows: { metrics: metrics.map(metricRow), events: events.map(eventRow) }, next: more ? last : null };
   }
 
   private uploads(me: Who): Reply {
@@ -739,9 +794,93 @@ export class StoreCore {
 
   /** Every row, as `load` takes them (the backup, docs/ops/runbook.md#7-backups): the load of a dump is the record. */
   dump(): { rows: Required<ImportRows> } {
-    const all = this.rowsSince('');
-    const uploads = this.io.sql.exec<{ at: string; person: string; status: string; bytes: number; notes: string }>('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray()
+    return { rows: { ...this.rowsSince(''), uploads: this.uploadRows() } };
+  }
+
+  /** The admin's `dump {limit?, after?}`: with `limit`, a page of the dump (the metrics and events as rowsPage pages
+   *  them, the audit on the first page, `next` the `after` of the next); without, every row at once (dump). */
+  dumpPage(o: Rec): { ok: true; rows: Required<ImportRows>; next?: string } | Fail {
+    if (o.limit === undefined && o.after === undefined) return { ok: true, ...this.dump() };
+    const after = o.after === undefined ? null : cursorOf(o.after);
+    if (after === undefined || !isPageSize(o.limit)) return fail('bad_request');
+    const p = this.rowsPage('', after, o.limit);
+    return { ok: true, rows: { ...p.rows, uploads: after ? [] : this.uploadRows() }, ...(p.next ? { next: p.next } : {}) };
+  }
+
+  private uploadRows(): unknown[][] {
+    return this.io.sql.exec<{ at: string; person: string; status: string; bytes: number; notes: string }>('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray()
       .map((r) => [r.at, r.person, r.status, r.bytes, r.notes]);
-    return { rows: { metrics: all.metrics, events: all.events, uploads } };
+  }
+
+  // ---------------------------------------------------------------- compaction
+
+  /**
+   * Drop the `metrics` rows of locked weeks the model can no longer read (contract/compact.ts compactKeep, the phones'
+   * own rule: the same views, ~90 % fewer rows), a date at a time (its rows read by the (person, date, …) key), a week
+   * of dates a transaction, at most `max` rows deleted a run. The dates looked at: on the first run every date; then
+   * those with rows written (or loaded late) since the last run and those whose week locked since. A run that stopped
+   * at `max` leaves its mark where it was, so the next one looks at them again (a compacted date is read, nothing
+   * deleted). Events are never touched (their slots keep one row each already) and no id leaves `ids`.
+   */
+  compact(max = COMPACT_MAX): { dates: number; deleted: number; more: boolean; metrics: number } {
+    const sql = this.io.sql;
+    const now = this.io.now();
+    const mark = this.meta('compact');
+    const was = mark ? (JSON.parse(mark) as { at: string; now: number }) : null;
+    const dates = new Set<string>();
+    const add = (rows: { date: string }[]) => rows.forEach((r) => dates.add(r.date));
+    if (!was) add(sql.exec<{ date: string }>('SELECT DISTINCT date FROM metrics').toArray());
+    else {
+      add(sql.exec<{ date: string }>('SELECT DISTINCT date FROM metrics WHERE at > ?', was.at).toArray());
+      add(sql.exec<{ date: string }>('SELECT DISTINCT date FROM metrics WHERE late > ?', was.now).toArray());
+      // the weeks that locked since: their dates (a week locks 9 days and 4 hours after its Monday began)
+      for (let t = was.now - 10 * 86_400_000; t <= now + 86_400_000; t += 86_400_000) {
+        const d = localDateAt(t), lock = weekLockMs(d);
+        if (lock > was.now && lock <= now) dates.add(d);
+      }
+    }
+    const due = [...dates].filter((d) => weekLockMs(d) <= now).sort();
+    const newest = this.newestAt() ?? '';
+    let deleted = 0, done = 0;
+    for (let i = 0; i < due.length && deleted < max; i += COMPACT_DATES_PER_TX) {
+      deleted += this.io.tx(() => {
+        let n = 0;
+        for (const date of due.slice(i, i + COMPACT_DATES_PER_TX)) {
+          const rows = (['A', 'B'] as const).flatMap((p) => sql.exec<MetricCols & { seq: number; at: string }>(
+            `SELECT seq, ${METRIC_COLS} FROM metrics WHERE person = ? AND date = ? ORDER BY at, seq`, p, date
+          ).toArray());
+          const keep = compactKeep(rows.map(metricRow), now);
+          const gone = keep ? rows.filter((_, k) => !keep.has(k)).map((r) => r.seq) : [];
+          for (let k = 0; k < gone.length; k += DELETE_CHUNK) {
+            const part = gone.slice(k, k + DELETE_CHUNK);
+            sql.exec(`DELETE FROM metrics WHERE seq IN (${part.map(() => '?').join(', ')})`, ...part);
+          }
+          n += gone.length;
+          done++;
+        }
+        return n;
+      });
+    }
+    const more = done < due.length;
+    if (!more) this.setMeta('compact', JSON.stringify({ at: newest, now }));
+    return { dates: done, deleted, more, metrics: this.counts().metrics };
   }
 }
+
+/** A page's place (contract/api.ts CURSOR_RE): the last row's `at`, its table and its seq. */
+interface Cursor { at: string; t: 'm' | 'e'; seq: number }
+/** A cursor from the wire, or undefined when it isn't one. */
+function cursorOf(x: unknown): Cursor | undefined {
+  const m = typeof x === 'string' ? CURSOR_RE.exec(x) : null;
+  return m ? { at: m[1], t: m[2] as 'm' | 'e', seq: Number(m[3]) } : undefined;
+}
+const isPageSize = (n: unknown): n is number => Number.isInteger(n) && (n as number) >= 1 && (n as number) <= SNAPSHOT_PAGE_MAX;
+
+type MetricCols = { at: string; person: PersonId; date: string; metric: MetricRow[3]; value: number };
+type EventCols = { at: string; person: Who; id: string; type: EventRow[3]; data: string };
+const METRIC_COLS = 'at, person, date, metric, value';
+const EVENT_COLS = 'at, person, id, type, data';
+const metricRow = (r: MetricCols): MetricRow => [r.at, r.person, r.date, r.metric, r.value];
+const eventRow = (r: EventCols): EventRow => [r.at, r.person, r.id, r.type, r.data];
+/** `at`, then `seq`. */
+const byAt = (x: { at: string; seq: number }, y: { at: string; seq: number }): number => (x.at < y.at ? -1 : x.at > y.at ? 1 : x.seq - y.seq);

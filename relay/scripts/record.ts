@@ -7,7 +7,8 @@
 //   bookmark [ms]       point-in-time recovery: the bookmark now and `ms` ago (default 1 h)
 //   restore <bookmark>  restore the record to a bookmark (a new epoch follows by itself; `rev` only if its note says so)
 //   rev                 a new epoch: every phone refetches everything
-//   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`)
+//   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`), fetched in pages
+//   compact [max] [rev] the record's compaction now (the cron runs it daily); `rev`: a new epoch after it
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped)
 // (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { readFileSync } from 'node:fs';
@@ -16,6 +17,31 @@ import { signed } from './admin.ts';
 const args = process.argv.slice(2).filter((a: string) => a !== '--test');
 
 const CHUNK = 400;
+/** Rows a dump page (the record's SNAPSHOT_PAGE_MAX at most). */
+const DUMP_PAGE = 5000;
+
+/** The dump, a page at a time, as one `{ok, rev, rows}` (what `load` takes); started again if the epoch changes under it. */
+async function dump(): Promise<Record<string, unknown>> {
+  for (let tries = 0; tries < 3; tries++) {
+    const rows = { metrics: [] as unknown[], events: [] as unknown[], uploads: [] as unknown[] };
+    let after: unknown, rev: unknown = null, pages = 0;
+    do {
+      const r = (await signed({ op: 'dump', limit: DUMP_PAGE, ...(after ? { after } : {}) })) as { ok: boolean; rev: string; next?: string; rows: typeof rows };
+      if (!r.ok) throw new Error(`dump: ${JSON.stringify(r)}`);
+      if (rev !== null && r.rev !== rev) break;
+      rev = r.rev;
+      for (const k of ['metrics', 'events', 'uploads'] as const) rows[k].push(...r.rows[k]);
+      after = r.next;
+      pages++;
+    } while (after);
+    if (!after) {
+      console.error(`dump: ${pages} pages, ${rows.metrics.length} metrics, ${rows.events.length} events, ${rows.uploads.length} uploads, rev ${String(rev)}`);
+      return { ok: true, rev, rows };
+    }
+    console.error('dump: a new epoch under it, again');
+  }
+  throw new Error('dump: the epoch kept changing');
+}
 
 /** Rows into the record in `at` order, CHUNK at a time (the object's CPU per request stays small). */
 async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads?: unknown[][] }): Promise<void> {
@@ -47,12 +73,15 @@ switch (cmd) {
     console.log(JSON.stringify(await signed({ op: 'restore', bookmark: arg })));
     break;
   case 'dump':
-    process.stdout.write(`${JSON.stringify(await signed({ op: 'dump' }))}\n`);
+    process.stdout.write(`${JSON.stringify(await dump())}\n`);
+    break;
+  case 'compact':
+    console.log(JSON.stringify(await signed({ op: 'compact', ...(arg && arg !== 'rev' ? { max: Number(arg) } : {}), ...(args.includes('rev') ? { rev: true } : {}) })));
     break;
   case 'load':
     await load((JSON.parse(readFileSync(arg, 'utf8')) as { rows: Record<string, unknown[][]> }).rows);
     break;
   default:
-    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | load <file>  [--test]');
+    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | compact [max] [rev] | load <file>  [--test]');
     process.exit(1);
 }
