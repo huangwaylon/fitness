@@ -7,12 +7,13 @@ import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf, type ListenRow } from '#lib/contract/listen.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
 import type { Level } from '#lib/kikimimi/bank.ts';
-import { LEVELS } from '#lib/kikimimi/deck.ts';
+import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
 import { reportOf, type Report } from '#lib/kikimimi/report.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import type { Who } from '#lib/types.ts';
 import type { Rec } from '#lib/kikimimi/advice.ts';
+import { sx } from '#lib/kikimimi/ladder.ts';
 import { t } from '#lib/i18n/index.ts';
 
 type Kept = { at: number; row: ListenRow };
@@ -52,7 +53,7 @@ export function currentReport(levels: readonly Level[] = LEVELS): Report | null 
   void kept;
   const m = week.model;
   if (!m) return null;
-  return reportOf(progressRows(m.me, m.state.listen), m.me, localDateAt(m.now), levels);
+  return reportOf(progressRows(m.me, m.state.listen), m.me, localDateAt(m.now), levels, LADDER_OK);
 }
 
 /** A recommendation's words: its title and why (きろく's rows, the results' 「つぎは…」). */
@@ -65,5 +66,8 @@ export function recWords(r: Rec): { title: string; why: string } {
     case 'level': return { title: t('kiki.rec.level', { lv: r.lv }), why: t('kiki.rec.levelWhy') };
     case 'steady': return { title: t('kiki.rec.steady'), why: t('kiki.rec.steadyWhy', { lv: r.lv }) };
     case 'accent': return { title: t('kiki.rec.accent', { accent: t(`kiki.accent.${r.accent}`) }), why: t('kiki.rec.accentWhy') };
+    case 'speed': return r.tried
+      ? { title: t('kiki.rec.speed'), why: r.at === null ? t('kiki.prog.speedLow') : t('kiki.rec.speedWhy', { x: sx(r.at) }) }
+      : { title: t('kiki.rec.speedTry'), why: t('kiki.rec.speedTryWhy') };
   }
 }

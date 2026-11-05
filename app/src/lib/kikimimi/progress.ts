@@ -7,6 +7,7 @@ import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { BANK, levelRank, type Accent, type Feature, type Item, type ItemType } from './bank.ts';
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
+import { SPEEDS, climb, isRungId, rungOf } from './ladder.ts';
 
 /** One of my answers, with its game's context. */
 export interface Answer {
@@ -93,7 +94,7 @@ export function listenAnswers(
   items.forEach((it, i) => {
     const a = answers[i];
     if (!had[i] || r.length >= 12 || (!a && !done)) return;
-    const pick = a ? (BY_ID.get(it.id)?.choices.indexOf(it.choices[a.k]) ?? -1) : -1;
+    const pick = a ? ((BY_ID.get(it.id) ?? rungOf(it.id))?.choices.indexOf(it.choices[a.k]) ?? -1) : -1;
     r.push([it.id, a && a.k === it.answer ? 1 : 0, pick, Math.min(99, rp[i] ?? 0)]);
   });
   return r;
@@ -237,9 +238,57 @@ export function stageOf(level: number): { stage: Stage; into: number } {
   return { stage, into: Math.max(0, Math.min(1, (level - stage.from) / (stage.to - stage.from))) };
 }
 
-/** First-listen accuracy per game, the last `n` games (oldest first). */
+/** A スピード はしご game (its answers are rungs': ladder.ts). Its first listens fail by design at the top, so the
+ *  trend and the level nudge leave it out; it has its own measure (speedOf). */
+export const isLadderGame = (g: Pick<Game, 'r'>): boolean => g.r.some((a) => isRungId(a.id));
+
+/** First-listen accuracy per quiz game, the last `n` games (oldest first). */
 export function trendOf(games: readonly Game[], n = 12): number[] {
-  return games.filter((g) => g.r.length).slice(-n).map((g) => g.r.filter((a) => a.ok && a.rp === 0).length / g.r.length);
+  return games.filter((g) => g.r.length && !isLadderGame(g)).slice(-n).map((g) => g.r.filter((a) => a.ok && a.rp === 0).length / g.r.length);
+}
+
+/** The ladders a speed reading takes (the last this many climbed) and the fewest it's read from. */
+const SPEED_RECENT = 8;
+export const SPEED_MIN = 4;
+/** A speed is comfortable when at least this share of the recent ladders climbed past it (curriculum §10's 75-85 %). */
+const SPEED_COMFORT = 0.75;
+
+/** The fastest comfortable speed (docs/kikimimi.md "スピード はしご"): over my last SPEED_RECENT ladders, the share
+ *  that climbed each rung (right on the first listen, in order: ladder.ts climb), and the fastest rung at least
+ *  SPEED_COMFORT of them climbed (null: not even 0.8×); measuring below SPEED_MIN ladders. A ladder whose first rung I
+ *  didn't have (a mid-game join) isn't counted. `best` is the highest climb ever. */
+export interface Speed {
+  ladders: number;
+  /** Per rung (SPEEDS' order): the share of the recent ladders that climbed it. */
+  reach: number[];
+  /** The ladders `reach` is over. */
+  recent: number;
+  comfort: number | null;
+  best: number | null;
+  measuring: boolean;
+}
+export function speedOf(games: readonly Game[]): Speed {
+  const climbs: number[] = [];
+  for (const g of games) {
+    const by = new Map<string, (Answer | undefined)[]>();
+    for (const a of g.r) {
+      const rung = rungOf(a.id)?.rung;
+      if (!rung) continue;
+      const tries = by.get(rung.ladder) ?? [];
+      tries[rung.n - 1] = a;
+      by.set(rung.ladder, tries);
+    }
+    for (const tries of by.values())
+      if (tries[0]) climbs.push(climb(Array.from({ length: SPEEDS.length }, (_, k) => (tries[k] ? { ok: tries[k]!.ok, first: tries[k]!.rp === 0 } : null))));
+  }
+  const recent = climbs.slice(-SPEED_RECENT);
+  const reach = SPEEDS.map((_, k) => (recent.length ? recent.filter((c) => c > k).length / recent.length : 0));
+  const top = reach.reduce((n, r, k) => (r >= SPEED_COMFORT && n === k ? k + 1 : n), 0);
+  const best = climbs.length ? Math.max(...climbs) : 0;
+  return {
+    ladders: climbs.length, reach, recent: recent.length, comfort: top ? SPEEDS[top - 1] : null, best: best ? SPEEDS[best - 1] : null,
+    measuring: climbs.length < SPEED_MIN
+  };
 }
 
 /** The last 5 games' mean first-listen accuracy and its change from the 5 before (null with fewer than 10 games). */
