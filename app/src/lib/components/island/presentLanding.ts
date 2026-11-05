@@ -8,8 +8,8 @@
 //   the screen: inside the view, in its lower part (nearer the camera, big enough to tap), clear of every control
 //               (the HUD, the bottom controls, the catch stack, the villagers' and the trees' tap areas).
 // Each rule gives way a little (a short screen's front is mostly trees and villagers) before none is found.
-import { walkable, type LayoutNav } from '#lib/layout/nav.ts';
-import { GRID, TILE, tileX, tileZ } from '#lib/layout/grid.ts';
+import { levelAt, walkable, type LayoutNav } from '#lib/layout/nav.ts';
+import { tileX, tileZ } from '#lib/layout/grid.ts';
 import { footOf, originOf, type Layout } from '#lib/layout/model.ts';
 import type { Box } from './geom.ts';
 
@@ -20,13 +20,6 @@ type Surface = 'sea' | 'sand' | 'grass' | 'dirt' | 'stone' | 'water';
 const RING = 14;
 /** How far a footprint keeps it (u). */
 const FOOT_PAD = 4;
-const CELL = TILE / 2, COLS = GRID.cols * 2, ROWS = GRID.rows * 2;
-
-/** The walk grid's level at (x, z) (its tier; a ramp's in between), or NaN off it. */
-function levelAt(nav: LayoutNav, x: number, z: number): number {
-  const i = Math.floor((x - GRID.x0) / CELL), j = Math.floor((z - GRID.z0) / CELL);
-  return i >= 0 && j >= 0 && i < COLS && j < ROWS ? nav.level[j * COLS + i] : NaN;
-}
 
 /** Every object's footprint on the layout (u: its tiles, nudged as it stands), padded. */
 export function footprints(layout: Layout): Box[] {

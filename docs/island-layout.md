@@ -360,7 +360,8 @@ way to turn its own house).
 
 - **Weeds and fossils** (`layout/spots.ts` daySpots): 15 weed spots and 6 dig spots a day from the layout's open
   grass (a grass tile nothing stands on, off the paths, the water and the banks, away from a door, a board's front,
-  a named spot and the stairs, one a walker reaches), spread out, seeded by the date and the island's seed: the same
+  a named spot and the stairs, off a building's ground (`layout/clear.ts`: its door's step and the strip behind it its
+  model hides), one a walker reaches), spread out, seeded by the date and the island's seed: the same
   on every phone. `beach.ts useSpots(layoutSpots(() => layout.current))` switches the island's weeds (care.ts) and
   fossils (beach.ts digSpots) onto them; before the layout's applied, world.ts's spots (`island/site.svelte.ts` calls it).
 - **NH's bridges and inclines** (`npm run structure-models`: 8 bridges, NH's shortest span; 6 inclines: stone, brick,

@@ -263,6 +263,12 @@ export function walkable(g: LayoutNav, x: number, z: number, extra?: Extra): boo
   return k >= 0 && !!g.open[k] && !inExtra(extra, x, z);
 }
 
+/** The walk grid's level at (x, z) (its tier; a ramp's in between), or NaN off it. */
+export function levelAt(g: LayoutNav, x: number, z: number): number {
+  const k = cellIndex([x, z]);
+  return k >= 0 ? g.level[k] : NaN;
+}
+
 /** Whether a step from cell a to its neighbour b is one a walker may take. */
 const stepOk = (g: LayoutNav, a: number, b: number) => !!g.open[b] && Math.abs(g.level[a] - g.level[b]) <= STEP;
 

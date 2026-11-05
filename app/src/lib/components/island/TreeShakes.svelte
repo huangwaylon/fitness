@@ -24,6 +24,8 @@
   import { timers } from './timers.ts';
   import { hookOneOf, islandSeed } from './devHooks.ts';
   import { giftAt, giftId, holdsGift } from './treeGifts.ts';
+  import { site } from './site.svelte.ts';
+  import { offBuildingsAt } from './world.ts';
   import { onDestroy, onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import OfficialArt from '../characters/OfficialArt.svelte';
@@ -89,6 +91,7 @@
   /** What the day's shakes left lying (the shared day: a reload or the partner's phone finds it too), and which of it
    *  fell while this island watched (only those fall; the rest just lie there). */
   const lyingNow = $derived.by(() => {
+    void site.rev;
     const d = world.day;
     // anyone's pick-up takes it at once, mine too (a phone that lost its own record gets my claims back in the replay)
     return fallen(d.shakes, treeOf, (id) => !!taken(d, id));
@@ -99,14 +102,16 @@
   let forced: string | undefined = hookOneOf('shake', ['nest', 'branch', 'bagworm', 'spider', 'coconut', 'wood']) ?? undefined;
 
   /** The day's wood lying under the trees (the shared day's puts, `wd:`), as the branches: anyone's pick-up takes it
-   *  at once. */
+   *  at once. A piece put on a building's ground lies at the free spot off it (world.ts offBuildingsAt). */
   const woodLying = $derived.by(() => {
+    void site.rev;
     const d = world.day;
     return Object.values(d.puts).flatMap((p) => {
       const tree = woodTree(p.id);
       if (!tree || !(WOODS as readonly string[]).includes(p.what)) return [];
       if (taken(d, p.id)) return [];
-      return [{ id: p.id, tree, what: p.what as Wood, x: p.at[0], z: p.at[1] }];
+      const [x, z] = offBuildingsAt(p.at[0], p.at[1]);
+      return [{ id: p.id, tree, what: p.what as Wood, x, z }];
     });
   });
   /** A piece of wood falls out of the tree (mine as I shake it, the partner's as theirs comes in). */

@@ -8,6 +8,7 @@
 import type { Put } from '#lib/sync/world-day.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { sceneryTrees, type ShakeTree } from './treeShake.ts';
+import { offBuildingsAt } from './world.ts';
 
 /** How many trees hold a present each day (NH's two). */
 export const GIFTS_A_DAY = 2;
@@ -32,5 +33,6 @@ export const giftTree = (id: string): string | null => (id.startsWith(PREFIX) ? 
 export const holdsGift = (date: string, tree: string, puts: Readonly<Record<string, Put>>, seed = ISLAND_SEED): boolean =>
   !puts[giftId(tree)] && giftTreesOn(date, seed).includes(tree);
 
-/** Where it lands: in front of the trunk on the inner side (a branch lies further in, a nest outside). */
-export const giftAt = (t: ShakeTree): [number, number] => [Math.round(t.x - t.out * 16), Math.round(t.z - 20)];
+/** Where it lands: in front of the trunk on the inner side (a branch lies further in, a nest outside); off a building
+ *  beside the tree (world.ts offBuildingsAt: never on its footprint, its steps or behind it). */
+export const giftAt = (t: ShakeTree): [number, number] => offBuildingsAt(Math.round(t.x - t.out * 16), Math.round(t.z - 20));

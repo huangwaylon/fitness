@@ -7,6 +7,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { camTo, geo, openNear, quiet, type Geo } from './island.ts';
 import { hudMenu } from './hud.ts';
+import { layoutOpOf, mergeLayout, type LayoutEntry } from '../src/lib/contract/layout.ts';
+import { defaultLayout, layoutOf } from '../src/lib/layout/model.ts';
+import { navOf, type LayoutNav } from '../src/lib/layout/nav.ts';
+import { onBuilding } from '../src/lib/layout/clear.ts';
+import { tileAt } from '../src/lib/layout/grid.ts';
 
 test.use({ viewport: { width: 393, height: 852 }, hasTouch: true, isMobile: true });
 
@@ -121,4 +126,78 @@ test('a phone that lost its own record of the day: what I opened (the relay’s 
   await expect(page.locator('[data-wood-id]')).toHaveCount(0);
   await tapGift(page, 'pafresh', left[1]);
   await expect(page.locator('[data-find="present"]')).toHaveCount(0);
+});
+
+// What lay on a building's ground (2026-11-05: "drawn but can't be tapped"): a tree's present and wood behind the shop
+// (the default island's cedar there dropped them on the strip its model hides), a present on the museum's steps (its
+// footprint: the building's tap area took the tap), and a building placed in the もようがえ over a present lying on
+// the lawn. Each is drawn at the free spot off the building (layout/clear.ts offBuildings, its put as it was) and a
+// finger collects it there.
+const DEFAULT_NAV = navOf(defaultLayout());
+/** Where the island draws a present or a piece of wood (its 3D model's foot, world x, z), or null without WebGL. */
+const modelAt = (page: Page, id: string) =>
+  page.evaluate((id) => {
+    const p = (window as unknown as { __world3d?: { where(id: string): { x: number; z: number } | null } }).__world3d?.where(id);
+    return p ? [p.x, -p.z] as [number, number] : null;
+  }, id);
+/** Where `id` is drawn, off every building's ground (`put`: where it was put, the logic tier's answer: no model). */
+async function offTheBuildings(page: Page, id: string, g: LayoutNav, put: readonly [number, number]): Promise<readonly [number, number]> {
+  const at = await modelAt(page, id);
+  if (at) expect(onBuilding(g, at[0], at[1], 0), `${id} drawn at ${at}`).toBe(false);
+  return at ?? put;
+}
+/** A finger's tap on a piece of wood, where it's drawn: picked up by A, gone. */
+async function tapWood(page: Page, id: string, z: number) {
+  await camTo(page, z - 114);
+  const wood = page.locator(`[data-wood-id="${id}"]`);
+  await expect(wood).toHaveCount(1);
+  const b = (await wood.boundingBox())!;
+  await page.touchscreen.tap(b.x + b.width / 2, b.y + b.height / 2);
+  await expect.poll(() => pickedBy(page, id)).toEqual(['A:wood']);
+  await expect(wood).toHaveCount(0);
+}
+
+test('what lay on a building’s ground (behind the shop, on the museum’s steps) is drawn off it and collected by touch', async ({ page }) => {
+  test.setTimeout(90_000);
+  const G = await open(page);
+  const shop = DEFAULT_NAV.doors.shop.box, museum = DEFAULT_NAV.doors.museum.box;
+  // the cedar behind the shop, and where the old rule dropped its present and wood (in front of its trunk: behind the shop)
+  const tree = G.SCENERY.find((s) => s.kind === 'cedar' && s.x > shop.x0 && s.x < shop.x1 && s.z > shop.y1 && s.z < shop.y1 + 90)!;
+  expect(tree, 'a cedar just behind the shop').toBeTruthy();
+  const out = tree.x < 195 ? -1 : 1;
+  const gift: [number, number] = [Math.round(tree.x - out * 16), Math.round(tree.z - 20)], wood: [number, number] = [Math.round(tree.x), Math.round(tree.z - 40)];
+  const steps: [number, number] = [Math.round((museum.x0 + museum.x1) / 2 + 30), museum.y0 + 12];
+  for (const p of [gift, wood, steps]) expect(onBuilding(DEFAULT_NAV, p[0], p[1], 0)).toBe(true);
+  await seed(page, [
+    { kind: 'put', id: `tf:${tree.id}`, what: 'present', at: gift, who: 'B', t: T },
+    { kind: 'put', id: `wd:${tree.id}:0`, what: 'wood', at: wood, who: 'B', t: T + 10 },
+    { kind: 'put', id: 'pbsteps', what: 'present', at: steps, who: 'B', t: T + 20 }
+  ]);
+  await camTo(page, gift[1] - 114);
+  const giftDrawn = await offTheBuildings(page, `gift-tf:${tree.id}`, DEFAULT_NAV, gift);
+  const woodDrawn = await offTheBuildings(page, `drop-wd:${tree.id}:0`, DEFAULT_NAV, wood);
+  // (both moved off the same strip lie side by side: the wood first, a button in front)
+  await tapWood(page, `wd:${tree.id}:0`, woodDrawn[1]);
+  await tapGift(page, `tf:${tree.id}`, giftDrawn[1]);
+  await camTo(page, steps[1] - 114);
+  await tapGift(page, 'pbsteps', (await offTheBuildings(page, 'gift-pbsteps', DEFAULT_NAV, steps))[1]);
+});
+
+test('a building placed over a present lying on the lawn (the もようがえ): the present is drawn off it and opens at a tap', async ({ page }) => {
+  test.setTimeout(90_000);
+  const G = await open(page);
+  const tree = G.SCENERY.find((s) => s.id === G.GIFT_TREES[0])!;
+  const at = await openNear(page, 195, Math.round(tree.z - 20), 20);
+  // the museum moved onto it: the present on its front row (one of the ops a もようがえ's ✓ sends)
+  const [c, r] = tileAt(at[0], at[1]);
+  const op = { sc: 'o', id: 'museum', at: T, k: 'museum', x: Math.max(0, c - 3), z: r, f: 0 };
+  await page.evaluate((ops) => localStorage.setItem('island-demo.layout', ops), JSON.stringify([{ who: 'A', ...op }]));
+  const m = new Map<string, LayoutEntry>();
+  mergeLayout(m, { ...layoutOpOf(op)!, who: 'A' } as LayoutEntry);
+  const g = navOf(layoutOf(m));
+  expect(onBuilding(g, at[0], at[1], 0)).toBe(true);
+  await seed(page, [{ kind: 'put', id: 'pbunder', what: 'present', at, who: 'B', t: T }]);
+  expect(await page.evaluate(() => (window as unknown as { __layout: { obj(id: string): { x: number; z: number } } }).__layout.obj('museum'))).toMatchObject({ x: op.x, z: r });
+  await camTo(page, at[1] - 114);
+  await tapGift(page, 'pbunder', (await offTheBuildings(page, 'gift-pbunder', g, at))[1]);
 });

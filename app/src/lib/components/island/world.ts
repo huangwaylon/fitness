@@ -6,6 +6,7 @@
 
 import SCATTER from './scatter.json' with { type: 'json' };
 import type { LayoutNav } from '#lib/layout/nav.ts';
+import { offBuildings, onBuilding } from '#lib/layout/clear.ts';
 
 export type Pt = readonly [number, number];
 type RoundRect = { readonly x0: number; readonly x1: number; readonly z0: number; readonly z1: number; readonly r: number };
@@ -418,3 +419,15 @@ export const worldGen = (): number => gen;
 export const onLayout = (): boolean => geo !== null;
 /** The layout's walk grid while the island reads it, else null. */
 export const layoutNav = (): LayoutNav | null => geo?.nav ?? null;
+/** Whether a thing `r` u round (x, z) would lie on a building's ground (layout/clear.ts onBuilding: its footprint, its
+ *  door's step, the strip behind it its model hides); never on world.ts's own island. */
+export const onBuildingAt = (x: number, z: number, r?: number): boolean => {
+  const g = layoutNav();
+  return !!g && onBuilding(g, x, z, r);
+};
+/** Where a thing meant for (x, z) lies: there, or off the buildings at the nearest free spot (layout/clear.ts
+ *  offBuildings), the same on every phone holding the layout. */
+export const offBuildingsAt = (x: number, z: number, r?: number): [number, number] => {
+  const g = layoutNav();
+  return g ? offBuildings(g, x, z, r) : [x, z];
+};

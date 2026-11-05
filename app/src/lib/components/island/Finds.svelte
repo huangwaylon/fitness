@@ -52,6 +52,7 @@
   import { treeById } from './treeShake.ts';
   import { SvelteSet } from 'svelte/reactivity';
   import { site } from './site.svelte.ts';
+  import { offBuildingsAt } from './world.ts';
   import { fieldsOf } from '#lib/layout/fields.ts';
   import { nextRunUp, washAt, washFrom, washMs, type WashIn } from '#lib/layout/swash.ts';
 
@@ -257,14 +258,17 @@
    *  one up: the shared day's puts (a reload or the partner's phone finds them there too; the partner's at a usual
    *  size). */
   const sizes = new Map<string, number>();
-  /** The presents lying unopened: gone once anyone's claim is in the shared day (world-day.ts lying). */
+  /** The presents lying unopened: gone once anyone's claim is in the shared day (world-day.ts lying). One put on a
+   *  building's ground (before the rule, or a building placed over it since) lies at the free spot off it
+   *  (world.ts offBuildingsAt, layout/clear.ts): seen and tapped there on every phone, its put as it was. */
   const presents = $derived.by(() => {
+    void site.rev;
     const all = lying(shared.day).filter((p) => p.what === 'present' || p.what === 'sky-egg');
     // the balloons' newest three, and every tree's (two a day at most)
     const trees = all.filter((p) => giftTree(p.id)), balloons = all.filter((p) => !giftTree(p.id)).slice(-3);
     return [...balloons, ...trees].map((p) => {
-      const tree = giftTree(p.id);
-      return { uid: p.id, x: p.at[0], y: p.at[1], art: p.what === 'sky-egg' ? findArt('sky-egg') : 'deco/present', size: sizes.get(p.id) ?? PRESENT_U, tree,
+      const tree = giftTree(p.id), [x, y] = offBuildingsAt(p.at[0], p.at[1]);
+      return { uid: p.id, x, y, art: p.what === 'sky-egg' ? findArt('sky-egg') : 'deco/present', size: sizes.get(p.id) ?? PRESENT_U, tree,
         from: tree ? (treeById(tree)?.h ?? 120) * 0.55 : 0 };
     });
   });

@@ -986,7 +986,8 @@ NH).
 - **Wood** (NH's axe, without one: `treeShake.ts woodFall`): besides that, any tree's shake knocks a piece of wood out
   1 in 2 times (木材, やわらかい木材 or かたい木材, alike), three a tree a Tokyo day at most, none while its present lies
   under it. Seeded by the date, the tree and the shake's place among the day's shakes of it, so both phones say the
-  same; it crosses as a `put` (`wd:<tree>:<k>`, first wins) and lies in front of the trunk (behind it where the front is the sea) until a tap picks it
+  same; it crosses as a `put` (`wd:<tree>:<k>`, first wins) and lies in front of the trunk (behind it where the front is the sea; never on a building's ground beside the tree: [Tap
+  targets](#scene-interactions)) until a tap picks it
   up into my pocket. `?shake=wood` forces one.
 - **A tree's present** (`island/treeGifts.ts`, `e2e/tree-gifts.spec.ts`; NH's furniture from the trees): each Tokyo
   day two of the oaks and cedars (`GIFT_TREES`: not a palm, which has its coconuts, nor a goal tree, which has its fruit
@@ -1037,7 +1038,20 @@ now (camera.svelte.ts `body`: the hull of its model's outermost points, `things.
 or before its model is in, its footprint up to its height), nothing past it, nowhere once behind the horizon: a tap on
 the river beside the shop fishes (`e2e/building-taps.spec.ts`, on the user's island); what a module tests by position
 in front of a building's area (a tree's present lying before it, a fish in the pond before it, a bug) is that thing's
-(SceneTaps: hitbox.ts `notBehind`; one behind it only where some of it shows past the building's outline); a flower's `::after` grows it to 44px; what a module hit-tests itself (a shell, a fragment, the
+(SceneTaps: hitbox.ts `notBehind`; one behind it only where some of it shows past the building's outline). **Nothing
+lies on a building's ground** (`layout/clear.ts`, `island/offBuildings.test.ts`, `e2e/present-taps.spec.ts`): its
+footprint (the walk grid's box: its tiles, the museum's steps on its front row), its door's step, and the strip behind
+it its model hides from the camera (0.65 × its height: 58° down). Drawn there a thing was lost: in the walls or behind
+them unseen, on the steps behind the front line, so the building's tap area took the tap. One rule both ways, a
+function of the layout and the point alone (every phone puts it in the same place): what's dropped or spawned takes a
+spot off it (a tree's present, wood, branch, coconuts, a nest's and a bug's spot, mushrooms, the beach's shells,
+fragments and bottles, a balloon's landing, the day's weeds and dig spots: `openGrass` leaves those tiles out), and
+what lies there already (put before the rule, or a building placed or moved in the もようがえ over it since) is drawn and
+tapped at the nearest free spot `offBuildings` gives it: rings 6u apart from the camera's side round, walkable, at its
+level, off the trees' and bushes' tap areas where it can be; its put (`at`) stays as it was, and a layout change moves it
+at once. A goal tree's fruit row moves as one. We move the thing rather than test what the camera sees at a tap: a find
+inside the walls or behind them would still be unseen, and the footprint test (`notBehind`) stays true for everything;
+a flower's `::after` grows it to 44px; what a module hit-tests itself (a shell, a fragment, the
 bottle, a dig spot, a mushroom, a present, a weed, the rock, a bug, the tape deck, the cake) is the box of what it
 draws (its img / svg: a node's anchor is a 0 × 0 point at its foot) grown to 44px (`hitOf`), the one in front (the
 smaller world z) when two overlap (`pick`); on water only on what it draws (3px round it: `bareOf`), its 44px margin
