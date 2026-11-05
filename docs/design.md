@@ -821,6 +821,10 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
 - **The shell:** a second visit's page is the service worker's cached shell at once (docs/backend.md "Service worker").
 - **The players:** drawn from the bundled part table; the whole one (~1.1 MB) only for a part it lacks
   ([Players](#players)).
+- **The island page's chunks:** `index.html` (the SPA shell every route opens with) modulepreloads the island page's
+  chunk and its static imports (`scripts/headers.ts`, after the build: Kit's fallback page preloads only the root
+  layout's), and `+layout.ts` load() starts the 3D island's import (three.js and its scene) on `/` while the page
+  reads the week from IndexedDB (IslandScene imports it only once the week is in).
 - **three.js:** imported by name everywhere (`world3d/threePreview.ts` for the editor's preview and the home picker: a
   whole-module `import('three')` kept all of three in the shared chunk, 680 → 526 KB raw, 171 → 131 KB gzipped).
 

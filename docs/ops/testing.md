@@ -48,7 +48,7 @@ The tiers and why: [test-strategy.md](test-strategy.md).
   `BASE`, `islandURL`), so a build under one (`BASE_PATH=/x npm run build`, then `BASE_PATH=/x npm run e2e`) is tested the same.
 - **The headers.** `npm run build` writes `build-pages/_headers` (`scripts/headers.ts`: the CSP SvelteKit put in the
   page's `<meta>`, with `frame-ancestors 'none'`, and nosniff, no-referrer, Permissions-Policy, HSTS; a year's cache for
-  `_app/immutable/`), and `serve-build.ts` serves them as Cloudflare Pages does (all but the cache). `csp.spec.ts` walks
+  `_app/immutable/`; and the island page's chunks as modulepreload links in `index.html`), and `serve-build.ts` serves them as Cloudflare Pages does (all but the cache). `csp.spec.ts` walks
   the island, its sheets, the music, the shop, the museum, the tent and the editor and fails on any CSP violation.
 - Playwright's browsers are cached by its version; bumping `@playwright/test` downloads them once.
 
