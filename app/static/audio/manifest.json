@@ -1,6 +1,34 @@
 {
   "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. Every entry is built by `npm run audio:music -- <dir> [--only <key regex>]` (scripts/music.ts, its CATALOGUE: source track number -> key) from the user's own files; `npm run audio:music -- --gains` re-measures only the gains. A music entry is { file, start, end?, gain }: a loop is one seamless period (start = the second where the loop begins musically; playback starts there) plus a 3 s copy of the period's start, `end` = where the period ends (the engine's two decks hand over inside the copy); a one-shot has start 0 and no `end`. gain = dB to the common loudness (-16 LUFS). Music: AAC-LC stereo 44.1 kHz, 64 kbps (K.K.'s, from the GameCube rip, 48). music.<sunny|rain|snow>.<00-23> = the Tokyo hour's loop (music/hour-HH, rain-HH, snow-HH). opening = the opening theme (one-shot). events.<id> = the event music and cut-ins (src/lib/sound/events.ts EVENT_MUSIC_IDS), music/<id>. places.<id> = a room's loop (src/lib/sound/places.ts), places/<id>. kk = K.K.'s live songs in NH's order, [{ id, ja, en, file, start, gain }] (ja/en: NH's official titles; one-shots under kk/); kkAircheck.<id> = the same song's aircheck (the stereo's recording), kk/aircheck/<id>. sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts or its `like`'s): AAC .m4a, mono 44.1 kHz 64 kbps, a plain path (no gain: the jingles from the OST, sfx/<id>, are trimmed, faded and normalised to -16 LUFS in the file). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
-  "sfx": {},
+  "sfx": {
+    "island-broadcast": "sfx/island-broadcast.m4a",
+    "get-fanfare": "sfx/get-fanfare.m4a",
+    "complete-fanfare": "sfx/complete-fanfare.m4a",
+    "radio-morning-1": "sfx/radio-morning-1.m4a",
+    "radio-morning-2": "sfx/radio-morning-2.m4a",
+    "radio-morning-3": "sfx/radio-morning-3.m4a",
+    "radio-morning-4": "sfx/radio-morning-4.m4a",
+    "radio-morning-5": "sfx/radio-morning-5.m4a",
+    "radio-morning-6": "sfx/radio-morning-6.m4a",
+    "radio-noon-1": "sfx/radio-noon-1.m4a",
+    "radio-noon-2": "sfx/radio-noon-2.m4a",
+    "radio-noon-3": "sfx/radio-noon-3.m4a",
+    "radio-noon-4": "sfx/radio-noon-4.m4a",
+    "radio-noon-5": "sfx/radio-noon-5.m4a",
+    "radio-noon-6": "sfx/radio-noon-6.m4a",
+    "radio-evening-1": "sfx/radio-evening-1.m4a",
+    "radio-evening-2": "sfx/radio-evening-2.m4a",
+    "radio-evening-3": "sfx/radio-evening-3.m4a",
+    "radio-evening-4": "sfx/radio-evening-4.m4a",
+    "radio-evening-5": "sfx/radio-evening-5.m4a",
+    "radio-evening-6": "sfx/radio-evening-6.m4a",
+    "radio-bunny-day": "sfx/radio-bunny-day.m4a",
+    "radio-halloween": "sfx/radio-halloween.m4a",
+    "radio-turkey-day": "sfx/radio-turkey-day.m4a",
+    "radio-toy-day": "sfx/radio-toy-day.m4a",
+    "radio-countdown": "sfx/radio-countdown.m4a",
+    "radio-carnival": "sfx/radio-carnival.m4a"
+  },
   "opening": {
     "file": "music/opening.m4a",
     "start": 0,
@@ -493,6 +521,93 @@
       "file": "music/bee-stung.m4a",
       "start": 0,
       "gain": 2.2
+    },
+    "wedding-party": {
+      "file": "music/wedding-party.m4a",
+      "start": 47.072,
+      "end": 57.6,
+      "gain": 0.2
+    },
+    "fireworks-show": {
+      "file": "music/fireworks-show.m4a",
+      "start": 52.931,
+      "end": 57.93102,
+      "gain": -2.6
+    },
+    "turkey-cooking-start": {
+      "file": "music/turkey-cooking-start.m4a",
+      "start": 0,
+      "gain": -1.4
+    },
+    "turkey-cooking-done": {
+      "file": "music/turkey-cooking-done.m4a",
+      "start": 0,
+      "gain": 0.1
+    },
+    "toy-day-snow": {
+      "file": "music/toy-day-snow.m4a",
+      "start": 65.676,
+      "end": 73.142857,
+      "gain": -1.4
+    },
+    "toy-day": {
+      "file": "music/toy-day.m4a",
+      "start": 67.114,
+      "end": 73.142857,
+      "gain": -2.2
+    },
+    "countdown-2300": {
+      "file": "music/countdown-2300.m4a",
+      "start": 55.361,
+      "end": 58.94737,
+      "gain": -1.7
+    },
+    "countdown-2330": {
+      "file": "music/countdown-2330.m4a",
+      "start": 52.21,
+      "end": 55,
+      "gain": -3.3
+    },
+    "countdown-2350": {
+      "file": "music/countdown-2350.m4a",
+      "start": 56.969,
+      "end": 63.157868,
+      "gain": -4.1
+    },
+    "countdown-2355": {
+      "file": "music/countdown-2355.m4a",
+      "start": 47.677,
+      "end": 49.230771,
+      "gain": -4.1
+    },
+    "happy-birthday": {
+      "file": "music/happy-birthday.m4a",
+      "start": 0,
+      "gain": 3.6
+    },
+    "aerobics": {
+      "file": "music/aerobics.m4a",
+      "start": 0,
+      "end": 98.275261,
+      "gain": 2.7
+    },
+    "bunny-day": {
+      "file": "music/bunny-day.m4a",
+      "start": 55.429,
+      "end": 61.714263,
+      "gain": -2.5
+    },
+    "wedding": {
+      "file": "music/wedding.m4a",
+      "start": 122.326,
+      "end": 127.8261,
+      "gain": 0.8
+    },
+    "festivale": {
+      "file": "music/festivale.m4a",
+      "start": 47.646,
+      "end": 50.323016,
+      "gain": -1.2
     }
   },
   "kk": [
@@ -568,5 +683,37 @@
       "start": 0,
       "gain": -4.1
     }
-  ]
+  ],
+  "places": {
+    "resident-services": {
+      "file": "places/resident-services.m4a",
+      "start": 62.545,
+      "end": 64,
+      "gain": -2
+    },
+    "shop": {
+      "file": "places/shop.m4a",
+      "start": 53.472,
+      "end": 62.337664,
+      "gain": 0.7
+    },
+    "museum-hall": {
+      "file": "places/museum-hall.m4a",
+      "start": 22.226,
+      "end": 23.225805,
+      "gain": 6
+    },
+    "museum-fish": {
+      "file": "places/museum-fish.m4a",
+      "start": 63.677,
+      "end": 69.677392,
+      "gain": 6
+    },
+    "museum-bugs": {
+      "file": "places/museum-bugs.m4a",
+      "start": 53.677,
+      "end": 69.677392,
+      "gain": 6
+    }
+  }
 }
