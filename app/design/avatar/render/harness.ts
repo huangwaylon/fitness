@@ -23,7 +23,7 @@ const SAFE = /^[A-Za-z0-9_]+$/;
 export interface Harness {
   page: Page;
   /** One model folder copied (once) into the scratch dir → its file names. */
-  copy(folder: string): string[];
+  copy(folder: string, skip?: RegExp): string[];
   /** Every folder an outfit (or any JSON) names, with PlayerBody, copied → { '<Folder>.Nin_NX_NVN': files } for loadPlayer. */
   filesFor(o: unknown): Record<string, string[]>;
   call<T>(fn: string, ...a: unknown[]): Promise<T>;
@@ -47,14 +47,14 @@ export async function openHarness(opts: { page?: string; size?: number } = {}): 
   const MODELS = process.env.NH_MODELS?.replace(/^~(?=\/)/, process.env.HOME ?? '~') ?? join(process.env.HOME ?? '', 'Downloads', 'Model');
   if (!existsSync(MODELS)) throw new Error(`no model folder at ${MODELS} (set NH_MODELS)`);
   mkdirSync(SCRATCH, { recursive: true });
-  const copy = (folder: string): string[] => {
+  const copy = (folder: string, skip?: RegExp): string[] => {
     if (!SAFE.test(folder)) throw new Error(`unsafe folder name ${folder}`);
     const src = join(MODELS, F(folder));
     if (!existsSync(src)) throw new Error(`not in the dump: ${folder}`);
     const dst = join(SCRATCH, F(folder));
     if (!existsSync(dst)) {
       mkdirSync(dst);
-      for (const n of readdirSync(src)) if (/^[A-Za-z0-9_]+(\.[0-9]+)?\.(dae|png)$/.test(n) && statSync(join(src, n)).isFile()) cpSync(join(src, n), join(dst, n));
+      for (const n of readdirSync(src)) if (/^[A-Za-z0-9_]+(\.[0-9]+)?\.(dae|png)$/.test(n) && !skip?.test(n) && statSync(join(src, n)).isFile()) cpSync(join(src, n), join(dst, n));
     }
     return readdirSync(dst);
   };
