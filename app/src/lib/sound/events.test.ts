@@ -142,7 +142,9 @@ describe('event music schedule (Tokyo)', () => {
 
 describe('K.K. songs (kk.ts)', () => {
   it('the list: NH’s official titles, one file each under kk/, in the song-list order', () => {
-    expect(kkTracks.map((k) => [k.id, k.ja, k.en])).toEqual([
+    // the user's NH rip's nine among them in that order (the rest the GameCube / e+ live recordings: 73 songs, all
+    // but NH's new ones)
+    const nine = [
       ['kk-chorale', 'けけさんびか', 'K.K. Chorale'],
       ['kk-march', 'けけマーチ', 'K.K. March'],
       ['kk-waltz', 'けけワルツ', 'K.K. Waltz'],
@@ -152,7 +154,11 @@ describe('K.K. songs (kk.ts)', () => {
       ['kk-reggae', 'けけレゲエ', 'K.K. Reggae'],
       ['kk-rock', 'けけロック', 'K.K. Rock'],
       ['kk-rockin', 'けけのロケンロール', "Rockin' K.K."]
-    ]);
+    ];
+    expect(kkTracks.filter((k) => nine.some(([id]) => id === k.id)).map((k) => [k.id, k.ja, k.en])).toEqual(nine);
+    expect(kkTracks).toHaveLength(73);
+    expect(kkTracks.find((k) => k.id === 'kk-mariachi')).toMatchObject({ ja: 'セニョールけけ', en: 'K.K. Mariachi' }); // e+'s Señor K.K.
+    expect(Object.keys(AUDIO.kkAircheck).every((id) => kkTracks.some((k) => k.id === id))).toBe(true);
     for (const k of kkTracks) {
       expect(k.file).toBe(`kk/${k.id}.m4a`);
       expect(k.start).toBe(0);

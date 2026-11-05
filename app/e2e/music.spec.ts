@@ -83,6 +83,6 @@ test('K.K.: his request prompt, then おまかせ plays one of his songs (not th
   // a tap on the asked question would close it: wait for the answers (the greeting is one page)
   await expect(page.locator('.choices.asking')).toBeVisible({ timeout: 8000 });
   await page.locator('.choice', { hasText: 'おまかせ' }).click();
-  await expect.poll(() => audio.find((p) => /^kk\/kk-[a-z]+\.m4a$/.test(p))).toBeTruthy();
+  await expect.poll(() => audio.find((p) => /^kk\/kk-[a-z0-9-]+\.m4a$/.test(p))).toBeTruthy();
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).not.toContain('kk-song');
 });

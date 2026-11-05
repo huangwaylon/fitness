@@ -2474,11 +2474,17 @@ the museum's hall its 23.2 s. Where the rip's second pass is a variation, not th
 blend: rain and snow at 4 PM, the museum's fish and insect rooms (a texture, looped at three of the hall's phrases),
 Bunny Day at 0.98. Reese & Cyrus's wedding loop is 128 s, at 56 kbps to stay under 1 MB; the GameCube's ラジオ体操
 (`aerobics`) doesn't loop in its rip and loops whole. Jingles (`sfx/`: the fanfares, the island broadcast, the radio
-jingles) are mono, trimmed, faded, their loudness in the file (an effect has no `gain`); the fanfares end where their
-OST track's bed begins (1.7–1.8 s), the broadcast after its first pass (18.6 s). Not built (no moment in the app):
-Kimedance, the museum's fossil and art rooms, the shop's big and closing, the Able Sisters, the tent, Redd, dreaming.
-`sound.test.ts`: every path in the manifest exists and every file is named; each folder under its budget (one file /
-all): `music/` 1 / 64 MB, `places/` 1 / 6 MB, `sfx/` 0.25 / 4 MB, `kk/` 1.2 / 12 MB. Audio is never precached
+jingles) are mono, trimmed, faded, their loudness in the file (an effect has no `gain`; a mono file is measured as
+heard, from both speakers); the fanfares end where their OST track's bed begins (1.7–1.8 s), the broadcast after its
+first pass (18.6 s). K.K.: the nine NH live songs kept; the other 64 live songs from the GameCube and e+ rip (150–207,
+517–531; e+'s Señor K.K. is NH's K.K. Mariachi; the "Not My Bag" tracks are one song each: My Place … Wandering) and 70
+airchecks (208–262, 532–546; e+'s Marine Song 2001 cut to its first 214 s pass; Stale Cupcakes, Spring Blossoms and
+Wandering have none in the rip), with NH's titles from the game's text. The rip is all but mono (side −26 dB under mid
+live), so they are mono AAC at 40 kbps (measured as close to the source as stereo at 48). Not built (no moment in the
+app): Kimedance, the museum's fossil and art rooms, the shop's big and closing, the Able Sisters, the tent, Redd,
+dreaming. `sound.test.ts`: every path in the manifest exists and every file is named; each folder under its budget
+(one file / all): `music/` 1 / 64 MB, `places/` 1 / 6 MB, `sfx/` 0.25 / 4 MB, `kk/` 1.2 / 60 MB, `kk/aircheck/` 1.2 /
+36 MB. Audio is never precached
 ([backend.md](backend.md#service-worker)).
 
 ### Sound settings

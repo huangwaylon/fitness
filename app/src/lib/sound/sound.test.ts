@@ -55,7 +55,8 @@ describe('audio manifest (static/audio/manifest.json)', () => {
     'music/': [1, 64],
     'places/': [1, 6],
     'sfx/': [0.25, 4],
-    'kk/': [1.2, 12]
+    'kk/': [1.2, 60],
+    'kk/aircheck/': [1.2, 36]
   };
   it('every file it names exists, and the music stays small (each folder under its budget)', () => {
     // every path in the manifest: the sfx and ambience strings, every `file` at any depth (keys the parser doesn't
