@@ -128,7 +128,8 @@ export type Intent =
 /** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone,
  *  `same` おなじへや: only the host's phone speaks), `join` / `leave` it or the game, `go` the game starts at `at`
  *  (the relay's clock), `a` my answer to question `i` (choice `k`, `rp` replayed or slowed, `s` my running total),
- *  `skip` question `i` starts at `at` (the host: everyone answered, or つぎへ), `end` the host cancelled it. */
+ *  `skip` question `i` starts at `at` (the host: everyone answered, or つぎへ), `end` the host cancelled it.
+ *  @public (kikimimi/session.ts) */
 export type QuizWire =
   | { g: string; op: 'open'; seed: number; lv: QuizLv; same: boolean }
   | { g: string; op: 'join' | 'leave' | 'end' }
