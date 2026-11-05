@@ -3,8 +3,7 @@ import adapterStatic from '@sveltejs/adapter-static';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { execSync } from 'node:child_process';
 
-/** The app version (shown in せってい → あそびかた, names the SW cache, and in _app/version.json for Kit's update
- *  check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
+/** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
   let sha = process.env.GITHUB_SHA?.slice(0, 7);
   if (!sha) {
@@ -101,9 +100,9 @@ export default defineConfig({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },
       paths: { base: (process.env.BASE_PATH ?? '') as '' | `/${string}` },
-      // Static hosting has no headers: SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its
-      // inline bootstrap script to script-src. Only the relay (its socket, lib/sync/live.ts LIVE_URL, the record's /api,
-      // lib/sync/transport.ts, and its /push/* endpoints, lib/sync/push.ts PUSH_URL) is reachable besides our own.
+      // SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its inline bootstrap script to
+      // script-src; scripts/headers.ts copies it into build-pages/_headers too. Only the relay (its socket, lib/sync/live.ts LIVE_URL, and the record's /api,
+      // lib/sync/transport.ts) is reachable besides our own.
       csp: {
         mode: 'hash',
         directives: {

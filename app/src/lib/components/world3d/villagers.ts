@@ -74,7 +74,7 @@ export interface Villagers3 {
   tip(slot: string): Vector3 | null;
   /** A villager's tap area (u: its width across, its height over its feet): its body's core, from its head's height
    *  standing (NH's villagers: the head's base ~0.57 up the figure, the head and body ~0.6 as wide as tall), once it's
-   *  stood once, or null. Island3D sizes its DOM card to it, not to the 2D render (docs/world3d-gaps.md 2). */
+   *  stood once, or null. Island3D sizes its DOM card to it, not to its art's render. */
   size(slot: string): [number, number] | null;
   /** The angler's line up (the e2e's): headings in plan (degrees, world x/z: atan2(dx, −dz)) of its facing, its rod
    *  (hand → tip) and its line (tip → float), or null when it holds no aimed rod. */

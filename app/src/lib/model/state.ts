@@ -162,7 +162,7 @@ export function rowsUpTo(s: Pick<State, 'ats'>, t: number): number {
   return n;
 }
 
-/** Sheets may hand dates back as full ISO instants; normalise to a Tokyo `YYYY-MM-DD`. */
+/** A date given as a full ISO instant (an imported row) normalised to a Tokyo `YYYY-MM-DD`. */
 function normDate(v: unknown): LocalDate | null {
   const s = String(v ?? '').trim();
   if (DATE_RE.test(s)) return s;

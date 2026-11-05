@@ -456,7 +456,7 @@
     // in stage px (the stage is the whole viewport: the sky is its top, down to the horizon)
     const sky = { x0: s.left - r.left + 8, x1: s.right - r.left - 8, y0: band.top - r.top + 6, y1: w.view.horizon - 14 };
     // the 3D island's whole-island view leaves the sky a sliver under the HUD on a short screen: there a streak may
-    // cross on down over the island's far end (the forest's tops: NH's sky seen past them; docs/world3d-gaps.md 4)
+    // cross on down over the island's far end (the forest's tops: NH's sky seen past them)
     if (w.three) sky.y1 = Math.max(sky.y1, sky.y0 + 150);
     const avoid = guardsU(g, 4).map((b) => ({ x0: b.x0 / g.k, x1: b.x1 / g.k, y0: b.y0 / g.k, y1: b.y1 / g.k }));
     const path = streakPath(sky, avoid, Math.random);

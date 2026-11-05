@@ -1,5 +1,5 @@
-// The e2e suite: the built app (`npm run build` first; CI downloads the build job's artifact) served like GitHub Pages
-// (scripts/serve-build.ts), in Playwright's WebKit as an iPhone 15 — the users' phones are an iPhone 15 and an iPhone 16 on
+// The e2e suite: the built app (`npm run build` first; each CI shard builds the commit itself) served like Cloudflare
+// Pages (scripts/serve-build.ts), in Playwright's WebKit as an iPhone 15 — the users' phones are an iPhone 15 and an iPhone 16 on
 // Safari, and Playwright's two profiles have the same 393×659 viewport, so one project covers both — and in Chromium.
 // `npm run e2e -- --project=webkit`.
 // Rules for stable specs: docs/ops/testing.md.
