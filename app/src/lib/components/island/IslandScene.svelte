@@ -1310,7 +1310,7 @@
   }
   .vil:disabled { cursor: default; }
   /* a 3D villager: its tap area its model's core (Island3D sets --v3w, --v3h in u; rounded, as the figure), not the 2D
-     render's with its padding and least size: in front of the tent it covered most of the door (docs/world3d-gaps.md 2) */
+     render's with its padding and least size: in front of the tent it covered most of the door) */
   .scene[data-r3] :global(.actor[data-v3] .vil) { width: calc(var(--v3w, 46) * 100cqw / 390); height: calc(var(--v3h, 76) * 100cqw / 390); min-width: 0; min-height: 0; padding: 0; }
   .scene[data-r3] :global(.actor[data-v3] .vil > *) { pointer-events: none; }
   .vil:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }

@@ -1,4 +1,4 @@
-// What nothing uses any more (docs/cleanup-2d.md: written for the 2D island's cutover, kept as the unused-asset scan):
+// What nothing uses any more (the unused-asset scan; docs/ops/testing.md "Unused assets"):
 // every file under static/ and every module under src/, sorted into what may go (the 3D island draws NH's model and
 // nothing else shows the art, or nothing names it), what stays (the tent, the ずかん, the HUD, the cards of art the 3D
 // island draws for what has no model, the DOM tap areas' sizes) and what needs a look. Read-only: it deletes nothing.
@@ -12,7 +12,7 @@
 // dead or dev-only).
 //
 // Usage (from app/): npm run unused [-- --json] [-- --list=safe|used|unsure] [-- --seen=/tmp/seen.txt]
-//   (the probe that writes --seen's file: node scripts/unused-probe.ts <port>, with the build served: docs/cleanup-2d.md)
+//   (the probe that writes --seen's file: node scripts/unused-probe.ts <port>, with the build served)
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 
@@ -232,7 +232,7 @@ const KNOWN: [RegExp, Row['cat'], string][] = [
   [/^terrain\/nh\//, 'used', 'NH’s ground textures for the layout’s live terrain (world3d/terrain.ts)'],
   [/^art\/season\//, 'used', 'the falling petals, leaves and snowflakes the DOM still draws over the 3D island (a tapped bush’s rustle, a shaken tree: seen drawn in the probe), and the 3D floats’ cards'],
   [/^food\//, 'used', 'the meal log’s food data (lib/food/load.ts: fetched by name from its index)'],
-  // kept in phase B though the scan calls them safe (docs/cleanup-2d.md "What was kept"):
+  // kept by hand though the scan calls them safe (the DOM over the 3D island still shows or measures them):
   [/^art\/(flowers|trees)\//, 'used', 'a DOM tap area’s size or clip over the 3D model comes from its art (Flowers’ .fl, Scenery’s oak layers)'],
   [/^art\/items\/candy\.webp$|^art\/deco\/party-popper\.webp$/, 'used', 'drawn by the DOM over the 3D island (Jack’s treat, the birthday popper)'],
   [/^art\/deco\/birthday-cake\.webp$/, 'used', 'the cake’s tap box is its art’s (Cake.svelte)'],

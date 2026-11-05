@@ -29,7 +29,7 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
   await page.goto('?demo&date=2026-11-12T22:00&critter=none');
   await expect(hudMenu(page)).toBeVisible();
   // (the 3D island's whole-island view leaves the night sky a sliver under the HUD: there a streak crosses on down over
-  // the island's far end, docs/world3d-gaps.md 4)
+  // the island's far end)
   await is3d(page);
   await page.evaluate(() => {
     const w = window as { __stars?: number };

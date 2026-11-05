@@ -1,4 +1,4 @@
-// The probe for npm run unused (docs/cleanup-2d.md): opens the built 3D island in a run of scenes (the seasons, the
+// The probe for npm run unused (scripts/unused-assets.ts): opens the built 3D island in a run of scenes (the seasons, the
 // times of day, the weather, the events, the visitors, a critter, a find), scrolls and taps about, and writes every
 // static path it drew (a visible DOM image or background) or that the engine loaded (a card's texture, the ground:
 // fetched, never an attached image), one a line, for `npm run unused -- --seen=<file>`. Downloaded but hidden (the
