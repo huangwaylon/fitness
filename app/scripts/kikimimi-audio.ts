@@ -60,6 +60,7 @@ import { codecArgs, condOf, condPlan, condSource, stepFilter, type CondPlan, typ
 import type { Bed } from '../src/lib/kikimimi/bank.ts';
 import { SR, chime, convolve, filter, gain, impulse, lufs, noise, readPcm, writeWav } from './tts/dsp.ts';
 import { fnv1a, mulberry32 } from '../src/lib/random.ts';
+import { LADDERS as ALL_LADDERS, NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
 
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const FFPROBE = process.env.FFPROBE ?? 'ffprobe';
@@ -152,6 +153,10 @@ const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(TTS, 'report.json')
 /** One entry per clip: an item, or each line of a dialogue as its own (bank.ts clipItems: `<item>-<n>`). */
 const ALL: readonly Item[] = ITEMS.flatMap(clipItems);
 const BANK = ALL.filter((it) => LEVELS.includes(it.lv));
+/** スピード はしご (ladder.ts): each ladder's line spoken once (the gate as any clip's), its rungs that take stretched. */
+const LADDERS = ALL_LADDERS.filter((l) => LEVELS.includes(l.line.lv));
+/** Every rung clip id (`<ladder>-<n>`), made or not. */
+const RUNG_IDS = ALL_LADDERS.flatMap((l) => l.rungs.map((r) => r.id));
 
 // ---- small helpers ---------------------------------------------------------------------------------------------------
 
@@ -304,6 +309,23 @@ function condition(wav: string, plan: CondPlan, id: string, out: string): number
   writeWav(out, x);
   return Math.round(lead * 1000) / 1000;
 }
+// ---- スピード はしご: a line's take at each rung's speed -------------------------------------------------------------
+
+/** Bump to re-make every rung clip after a change below (a line's take is re-spoken only when its own source changes). */
+const LADDER_V = 1;
+/** A rung's tempo is kept within this (atempo measured on 24 level-4 takes, UTMOS: 0.8× 4.29, 1.0× 4.30, 1.15× 4.18,
+ *  1.25× 4.12, 1.4× 3.93, 1.55× 3.73; whisper still heard them word for word): past it a line's rung is off its speed
+ *  (the report's `clamped`). */
+const TEMPO_MIN = 0.7, TEMPO_MAX = 1.6;
+/** Syllables in spoken English, roughly (vowel groups, a silent final e aside): the pace's measure. */
+function syllables(text: string): number {
+  return (text.toLowerCase().match(/[a-z']+/g) ?? []).reduce((s, w) => {
+    const v = w.replace(/'/g, '').replace(/(?:[^laeiouy]es|[^laeiouy]ed|[^laeiouy]e)$/, (m) => m[0]).replace(/^y/, '');
+    return s + Math.max(1, v.match(/[aeiouy]+/g)?.length ?? 0);
+  }, 0);
+}
+/** A ladder line's source hash for rung n (its take's source, the rung's speed, the rate it's stretched to). */
+const rungSrc = (lineSrc: string, n: number) => sha(JSON.stringify([lineSrc, n, SPEEDS[n - 1], NATURAL_RATE, TEMPO_MIN, TEMPO_MAX, LADDER_V]), 10);
 
 // ---- the cast's reference clips --------------------------------------------------------------------------------------
 
@@ -468,6 +490,12 @@ interface Row {
   cond?: string;
   condHyp?: string;
   condWer?: number;
+  /** A rung clip's (スピード はしご): its speed, the tempo its line's take was stretched by, its pace (syllables a
+   *  second) and whether the tempo was clamped (off its speed). */
+  speed?: number;
+  tempo?: number;
+  rate?: number;
+  clamped?: boolean;
   flags: string[];
 }
 
@@ -556,6 +584,8 @@ function printList(c: Record<string, Clip>): void {
     const cond = condOf(it);
     console.log(`[ ] ${it.id.padEnd(18)} ${d}s  ${castOf(it)}${cond ? `  (${condPlan(cond).key})` : ''}  ${it.en}`);
   }
+  console.log('\n== スピード はしご (each rung: the line at its speed) ==');
+  for (const l of LADDERS) console.log(`[ ] ${l.id.padEnd(18)} ${l.rungs.map((r) => `${c[r.id]?.dur.toFixed(2) ?? '?'}s`).join(' ')}  ${castOf(l.line)}  ${l.line.en}`);
 }
 
 function run(): void {
@@ -570,7 +600,12 @@ function run(): void {
     const files = [fileOf(p.it.id), ...(hasSlow(p.it) ? [fileOf(p.it.id, true)] : [])];
     return flag('--force') || !old[p.it.id] || oldSrc[p.it.id] !== p.src || !files.every((f) => existsSync(f));
   });
-  console.log(`${plans.length} items selected, ${todo.length} to speak (engine ${JSON.stringify(ENGINE)}, slow by ${STRETCH})`);
+  // スピード はしご: a ladder whose rung clips are missing or out of date has its line spoken (a take already made, a
+  // level-4 line's own included, comes from the raw cache) and every rung made again from it
+  const ladderPlans = SAY ? [] : LADDERS.filter((l) => !only || only.test(l.id)).map((l) => ({ l, p: planOf(l.line) }));
+  const ladderTodo = ladderPlans.filter(({ l, p }) => l.rungs.some((r) =>
+    flag('--force') || !old[r.id] || oldSrc[r.id] !== rungSrc(p.master, r.rung!.n) || !existsSync(fileOf(r.id))));
+  console.log(`${plans.length} items selected, ${todo.length} to speak (engine ${JSON.stringify(ENGINE)}, slow by ${STRETCH}); ${ladderPlans.length} ladders, ${ladderTodo.length} to make`);
   const rows: Record<string, Row> = {};
   const record = (p: Plan, normal: string, slowWav: string | null, extra: Partial<Row>) => {
     const out = fileOf(p.it.id);
@@ -597,7 +632,7 @@ function run(): void {
       process.stdout.write(`\r${Object.keys(srcs).length} spoken: ${p.it.id.padEnd(24)}`);
     }
   } else {
-    const best = speak(todo);
+    const best = speak([...todo, ...ladderTodo.map((x) => x.p)]);
     // the conditions over the clean takes that passed the gate, then whisper's loose check of the mixed clips
     const conds = todo.filter((p) => p.cond);
     const mixed = new Map<string, string>(), leads = new Map<string, number>();
@@ -627,7 +662,37 @@ function run(): void {
         writeFileSync(join(cleanDir, `${p.it.id}.json`), JSON.stringify({ hash: clips[p.it.id].hash, lead: leads.get(p.it.id) }));
       } else for (const x of ['m4a', 'json']) rmSync(join(cleanDir, `${p.it.id}.${x}`), { force: true });
     }
-    const made = todo.map((p) => p.it.id);
+    // each ladder's rungs: its take (trimmed, as spoken) stretched to each rung's speed × NATURAL_RATE, then finished
+    // as any clip; whisper hears every rung (the report's QA at speed; a mishearing at 1.4× is flagged, never re-rolled:
+    // the take passed the gate at its own pace)
+    const rungs: { id: string; p: Plan; n: number; tempo: number; rate: number; clamped: boolean }[] = [];
+    for (const { l, p } of ladderTodo) {
+      const t = best.get(p.it.id)!;
+      const rate = syllables(p.text) / Math.max(0.5, duration(t.wav));
+      for (const r of l.rungs) {
+        const n = r.rung!.n, want = (SPEEDS[n - 1] * NATURAL_RATE) / rate;
+        const tempo = Math.round(Math.min(TEMPO_MAX, Math.max(TEMPO_MIN, want)) * 1000) / 1000;
+        const wav = join(CACHE, 'work', `${r.id}-rung.wav`);
+        stretch(t.wav, tempo, wav);
+        finish(wav, fileOf(r.id));
+        clips[r.id] = { dur: duration(fileOf(r.id)), hash: sha(readFileSync(fileOf(r.id)), 8) };
+        srcs[r.id] = rungSrc(p.master, n);
+        rungs.push({ id: r.id, p, n, tempo, rate: Math.round((rate * tempo) * 100) / 100, clamped: Math.abs(tempo - want) > 0.005 });
+      }
+    }
+    if (rungs.length) {
+      const heard = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', rungs.map((r) => ({ wav: fileOf(r.id), refs: [r.p.it.en, r.p.text] })));
+      for (const r of rungs) {
+        const t = best.get(r.p.it.id)!, h = heard[fileOf(r.id)], dur = clips[r.id].dur, words = r.p.text.match(/[A-Za-z']+/g)?.length ?? 0;
+        rows[r.id] = {
+          src: srcs[r.id], cast: r.p.cast, engine: r.p.engine, text: r.p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60),
+          seed: t.seed, tries: takesOf.get(r.p.it.id) ?? 1, hyp: h.hyp, wer: h.wer, content: h.content, sim: t.sim,
+          speed: SPEEDS[r.n - 1], tempo: r.tempo, rate: r.rate, clamped: r.clamped,
+          flags: [...(h.content ? ['misheard'] : []), ...(r.clamped ? ['clamped'] : []), ...(t.content ? ['take-misheard'] : [])]
+        };
+      }
+    }
+    const made = [...todo.map((p) => p.it.id), ...rungs.map((r) => r.id)];
     if (!flag('--no-mos')) {
       // a mixed clip's UTMOS is its clean take's (noise is the point)
       const fileFor = (id: string) => (mixed.has(id) ? best.get(id)!.m4a : fileOf(id));
@@ -639,10 +704,11 @@ function run(): void {
     }
   }
   // clips of items no longer in the bank (a whole run into static/ only)
-  const ids = new Set(ALL.map((it) => it.id));
+  const ids = new Set([...ALL.map((it) => it.id), ...RUNG_IDS]);
   for (const id of Object.keys(clips)) if (!ids.has(id)) { delete clips[id]; delete srcs[id]; }
   if (!SCRATCH && !only) {
-    const want = new Set(ALL.filter((it) => clips[it.id]).flatMap((it) => [`${it.id}.m4a`, ...(hasSlow(it) ? [`${it.id}-slow.m4a`] : [])]));
+    const want = new Set([...ALL.filter((it) => clips[it.id]).flatMap((it) => [`${it.id}.m4a`, ...(hasSlow(it) ? [`${it.id}-slow.m4a`] : [])]),
+      ...RUNG_IDS.filter((id) => clips[id]).map((id) => `${id}.m4a`)]);
     for (const f of readdirSync(OUT).filter((f) => !want.has(f))) rmSync(join(OUT, f));
   }
   const sorted = <T>(o: Record<string, T>) => Object.fromEntries(Object.keys(o).sort().map((k) => [k, o[k]]));
@@ -671,11 +737,18 @@ function run(): void {
     rerolled: R.filter((r) => r.tries > 1).length, conditioned: R.filter((r) => r.cond).length,
     condWer: mean(R.map((r) => r.condWer).filter((x): x is number => typeof x === 'number')), flagged: Object.keys(rows).filter((k) => rows[k].flags.length).sort(),
     mos: mean(num('mos')), mosMin: min(num('mos')), sim: mean(num('sim')), simMin: min(num('sim')), rtf: mean(num('rtf')), wer: mean(num('wer')),
-    wpm, files: files.length, kb: Math.round(bytes / 1024), perVoice
+    wpm, files: files.length, kb: Math.round(bytes / 1024), perVoice,
+    ladders: Object.fromEntries(SPEEDS.map((speed) => {
+      const rs = R.filter((r) => r.speed === speed);
+      const f = (k: 'mos' | 'rate' | 'tempo') => rs.map((r) => r[k]).filter((x): x is number => typeof x === 'number');
+      return [`${speed}x`, { n: rs.length, mos: mean(f('mos')), mosMin: min(f('mos')), rate: mean(f('rate')), tempoMin: min(f('tempo')),
+        tempoMax: f('tempo').length ? Math.max(...f('tempo')) : null, clamped: rs.filter((r) => r.clamped).length, misheard: rs.filter((r) => r.content).length }];
+    }))
   };
   writeFileSync(REPORT, JSON.stringify({ summary, items: sorted(rows) }, null, 1) + '\n');
   console.log(`\n${todo.length} spoken in ${summary.wallSeconds}s. All ${R.length} clips: whisper word for word ${summary.perfect}, content clean ${summary.contentClean}, re-rolled ${summary.rerolled}`);
   console.log(`UTMOS mean ${summary.mos} (min ${summary.mosMin}); similarity to the ref mean ${summary.sim} (min ${summary.simMin}); RTF ${summary.rtf}; wpm by level ${JSON.stringify(wpm)}`);
+  for (const [x, v] of Object.entries(summary.ladders)) if (v.n) console.log(`  rungs ${x}: ${v.n} clips, UTMOS ${v.mos} (min ${v.mosMin}), ${v.rate} syl/s, tempo ${v.tempoMin}-${v.tempoMax}, clamped ${v.clamped}, misheard ${v.misheard}`);
   for (const [c, v] of Object.entries(perVoice)) console.log(`  ${c}: ${v.n} clips, UTMOS ${v.mos} (min ${v.mosMin}), sim ${v.sim} (min ${v.simMin})${v.misheard ? `, ${v.misheard} misheard` : ''}`);
   if (summary.conditioned) console.log(`conditions: ${summary.conditioned} clips mixed, whisper's WER over them mean ${summary.condWer}`);
   for (const [id, r] of Object.entries(rows)) if (r.flags.length) console.log(`  FLAG ${id} [${r.flags.join(', ')}] said "${r.text}", heard "${r.hyp}"${r.cond ? ` (${r.cond}: "${r.condHyp}")` : ''}`);

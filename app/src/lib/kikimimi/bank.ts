@@ -113,6 +113,16 @@ export interface Item {
   /** The speech condition mixed over the clean take (staging.ts NOISE, or the item's own; a phone or PA channel
    *  without one gets its light condition: conditions.ts condOf). A dialogue's lines take it unless they have their own. */
   cond?: Cond;
+  /** A スピード はしご rung (ladder.ts): its ladder, its place on it (1-4) and its speed (× natural speech). Its clip is
+   *  the ladder's line at that speed (its id, `<ladder>-<n>`). Never in BANK. */
+  rung?: Rung;
+}
+
+/** A rung of a スピード はしご (docs/kikimimi.md "スピード はしご"). */
+export interface Rung {
+  ladder: string;
+  n: number;
+  speed: number;
 }
 
 // ---- staging: the scene, the channel and the sound marks (docs/kikimimi.md "Visuals") --------------------------------

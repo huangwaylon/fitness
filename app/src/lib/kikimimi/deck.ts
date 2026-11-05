@@ -3,6 +3,7 @@
 import { mulberry32, shuffle } from '#lib/random.ts';
 import { BANK, isDialogue, type Item, type ItemType, type Level } from './bank.ts';
 import { CLIPS, voiced } from './clips.ts';
+import { ladderReady } from './ladder.ts';
 
 export const DECK_SIZE = 8;
 
@@ -43,6 +44,8 @@ export const playable = (clips: Readonly<Record<string, unknown>>): Level[] => {
   });
 };
 export const LEVELS: readonly Level[] = playable(CLIPS);
+/** Whether this phone offers スピード はしご (the lobby's mode choice): once every rung of every ladder has its clip. */
+export const LADDER_OK: boolean = ladderReady(CLIPS);
 
 /** Never more than this many of one type in a row. */
 const MAX_RUN = 2;

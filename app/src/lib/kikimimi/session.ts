@@ -19,6 +19,9 @@ export interface QuizDeck {
   count: number;
   dur(i: number): number;
   answer(i: number): number;
+  /** A player's points from their answers, when the deck scores its own way (スピード はしご: the rungs climbed,
+   *  ladder.ts ladderPoints); else each answer's points.ts `points`. */
+  score?(answers: ReadonlyMap<number, { k: number; rp: boolean }>): number;
 }
 /** The deck every phone builds from an `open`'s seed and level. */
 export type DeckOf = (seed: number, lv: QuizLv) => QuizDeck;
@@ -74,6 +77,8 @@ interface QuizInvite {
   g: string;
   host: Who;
   lv: QuizLv;
+  /** スピード はしご (the seed's bit 1). */
+  ladder: boolean;
   same: boolean;
   /** It's already going (さんか joins at the next question). */
   started: boolean;
@@ -94,6 +99,10 @@ interface QuizTeam {
  *  new field, so no relay deploy (the relay passes known fields only); flipping it deals a new deck, never seen yet. */
 export const versus = (seed: number): boolean => (seed & 1) === 1;
 const withVersus = (seed: number, vs: boolean): number => ((seed & ~1) | (vs ? 1 : 0)) >>> 0;
+/** スピード はしご (kikimimi/ladder.ts) rides on the seed too: its bit 1 (a quiz lobby's seed has it clear). The deck is
+ *  the ladders' then, the level unused; the session is the quiz's (8 questions), its points the deck's (QuizDeck.score). */
+export const isLadder = (seed: number): boolean => (seed & 2) === 2;
+export const withLadder = (seed: number, on: boolean): number => ((seed & ~2) | (on ? 2 : 0)) >>> 0;
 
 /** Why my game went away: the host cancelled it, the host left the lobby, or it was never started. */
 export type QuizNotice = 'cancelled' | 'host-left' | 'stale';
@@ -111,6 +120,8 @@ export interface QuizView {
   seed: number;
   /** たいせん: points and a ranking (else co-op: the team's tally, no one's score shown to the others). */
   vs: boolean;
+  /** スピード はしご (else the quiz at `lv`). */
+  ladder: boolean;
   /** Whether this phone plays the clips (おなじへや: the host's only). */
   speaks: boolean;
   /** Who joined, A B G order. */
@@ -331,7 +342,7 @@ export class QuizSession {
 
   /** Open a lobby of mine (せってい's あそぶ), on this phone only until I invite the others: I'm its host. Leaves the
    *  game I was in. */
-  open(o: { lv: QuizLv; same?: boolean; vs?: boolean }, now: number): QuizOut[] {
+  open(o: { lv: QuizLv; same?: boolean; vs?: boolean; ladder?: boolean }, now: number): QuizOut[] {
     const out = this.leave(now);
     this.notice = null;
     let g = '';
@@ -339,7 +350,7 @@ export class QuizSession {
       g = '';
       for (let n = 0; n < 6; n++) g += GAME_ID[Math.floor(this.random() * GAME_ID.length) % GAME_ID.length];
     } while (this.games.has(g));
-    const seed = withVersus(Math.floor(this.random() * 2 ** 32), !!o.vs);
+    const seed = withLadder(withVersus(Math.floor(this.random() * 2 ** 32), !!o.vs), !!o.ladder);
     const gm = this.game(g, this.me, seed, o.lv, o.same ?? false, now);
     gm.local = true;
     return out;
@@ -355,12 +366,15 @@ export class QuizSession {
     return [this.opening(gm)];
   }
 
-  /** The host changes its lobby's level, おなじへや or たいせん (sent again as an `open` once announced). */
-  configure(o: { lv?: QuizLv; same?: boolean; vs?: boolean }, now: number): QuizOut[] {
+  /** The host changes its lobby's level, おなじへや, たいせん or the mode (スピード はしご), sent again as an `open` once
+   *  announced. */
+  configure(o: { lv?: QuizLv; same?: boolean; vs?: boolean; ladder?: boolean }, now: number): QuizOut[] {
     this.prune(now);
     const gm = this.mine();
     if (!gm || gm.host !== this.me || gm.goAt !== undefined) return [];
-    this.setup(gm, o.vs === undefined ? gm.seed : withVersus(gm.seed, o.vs), o.lv ?? gm.lv, o.same ?? gm.same);
+    let seed = o.vs === undefined ? gm.seed : withVersus(gm.seed, o.vs);
+    if (o.ladder !== undefined) seed = withLadder(seed, o.ladder);
+    this.setup(gm, seed, o.lv ?? gm.lv, o.same ?? gm.same);
     return this.send(gm, this.opening(gm));
   }
 
@@ -441,13 +455,13 @@ export class QuizSession {
     this.prune(now);
     const gm = this.mine();
     const none: QuizView = {
-      phase: 'idle', g: null, host: null, amHost: false, local: false, lv: 1, same: false, seed: 0, vs: false, speaks: true, players: [], i: -1, n: 0,
+      phase: 'idle', g: null, host: null, amHost: false, local: false, lv: 1, same: false, seed: 0, vs: false, ladder: false, speaks: true, players: [], i: -1, n: 0,
       from: 0, until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], had: [], scores: {}, team: { right: 0, all: 0, done: 0 }, rightNow: 0,
       canNext: false, invite: null, notice: this.notice
     };
     if (!gm) {
       const o = this.offer(now);
-      return o ? { ...none, invite: { g: o.g, host: o.host, lv: o.lv, same: o.same, started: o.goAt !== undefined } } : none;
+      return o ? { ...none, invite: { g: o.g, host: o.host, lv: o.lv, ladder: isLadder(o.seed), same: o.same, started: o.goAt !== undefined } } : none;
     }
     const at = this.at(gm, now);
     const scores: Partial<Record<Who, number>> = {};
@@ -463,7 +477,7 @@ export class QuizSession {
     const mine = gm.answers.get(this.me);
     return {
       ...none, phase: at.phase, g: gm.g, host: gm.host, amHost: gm.host === this.me, local: !!gm.local, lv: gm.lv, same: gm.same, seed: gm.seed,
-      vs: versus(gm.seed), team: this.team(gm, at.phase === 'results' ? gm.n : reveal ? at.i + 1 : Math.max(0, at.i)),
+      vs: versus(gm.seed), ladder: isLadder(gm.seed), team: this.team(gm, at.phase === 'results' ? gm.n : reveal ? at.i + 1 : Math.max(0, at.i)),
       rightNow: at.phase === 'reveal' ? players.filter((p) => p.pick?.ok).length : 0,
       speaks: !gm.same || gm.host === this.me, players, i: at.i, n: gm.n, from: at.from, until: at.until, playAt: at.playAt, playEnd: at.playEnd,
       limit: at.limit, out: at.out, answers: Array.from({ length: gm.n }, (_, i) => mine?.get(i) ?? null),
@@ -650,8 +664,10 @@ export class QuizSession {
     return [];
   }
 
-  /** A player's answers' points counted here (おなじへや: no first-listen bonus, only the host's phone can replay). */
+  /** A player's answers' points counted here (おなじへや: no first-listen bonus, only the host's phone can replay; a
+   *  deck that scores its own way counts them its way: スピード はしご's climb, where a replay is the replayer's own). */
   private sum(gm: Game, w: Who): number {
+    if (gm.deck.score) return gm.deck.score(gm.answers.get(w) ?? new Map());
     let s = 0;
     for (const [i, a] of gm.answers.get(w) ?? []) s += points(a.k === gm.deck.answer(i), a.rp || gm.same);
     return s;
