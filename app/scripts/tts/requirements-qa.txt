@@ -4,5 +4,5 @@ whisper-normalizer==1.0.0
 librosa==0.11.0
 soundfile==0.14.0
 torch==2.15.0
-torchaudio
+torchaudio==2.11.1  # the newest wheel (none for torch 2.15 yet); SpeechMOS and speechbrain only load and resample
 speechbrain==1.1.2

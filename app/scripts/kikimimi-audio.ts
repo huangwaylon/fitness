@@ -38,7 +38,8 @@
 // Python: scripts/tts/tts.py runs in venvs made with uv under .cache/tts/ from scripts/tts/requirements-*.txt, or the
 // pythons in KIKIMIMI_TTS_PY (mlx-audio), KIKIMIMI_PHONON_PY (ptts), KIKIMIMI_KOKORO_PY, KIKIMIMI_QA_PY (jiwer,
 // whisper-normalizer, torch for UTMOS), KIKIMIMI_SV_PY (speechbrain); KIKIMIMI_TTS_EVAL=/tmp/tts-eval takes the TTS
-// evaluation's venvs. whisper-cli and its model (~/.cache/whisper/ggml-large-v3-turbo.bin, or WHISPER_MODEL) are needed.
+// evaluation's venvs. whisper-cli and its model (~/.cache/whisper/ggml-large-v3-turbo.bin, or WHISPER_MODEL) are needed;
+// the one-time setup is in docs/kikimimi.md "Audio" (a preflight names what's missing).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -48,14 +49,14 @@ import { ROSTER } from '../src/lib/villagers/roster.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
 import { CAST_IDS, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
 
-const FFMPEG = process.env.FFMPEG ?? '/opt/homebrew/bin/ffmpeg';
-const FFPROBE = process.env.FFPROBE ?? '/opt/homebrew/bin/ffprobe';
+const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
+const FFPROBE = process.env.FFPROBE ?? 'ffprobe';
 const APP = join(import.meta.dirname, '..');
 const TTS = join(import.meta.dirname, 'tts');
 const CAST_FILE = join(TTS, 'cast.json');
 const REFS = join(TTS, 'refs');
 const CACHE = resolve(process.env.KIKIMIMI_TTS_CACHE ?? join(APP, '.cache/tts'));
-const VCTK = process.env.KIKIMIMI_VCTK_REFS ?? '/tmp/tts-eval/refs';
+const VCTK = process.env.KIKIMIMI_VCTK_REFS ?? join(CACHE, 'vctk');
 const EVAL = process.env.KIKIMIMI_TTS_EVAL;
 
 /** Bump to re-speak everything after a change to the processing below (neural engines; `say` keeps v1's hashes). */
@@ -180,7 +181,9 @@ function py<T>(which: Py, cmd: string, jobs: unknown[], extra: string[] = []): R
   const dir = dirOf(CACHE, 'jobs'), n = `${process.pid}-${jobN++}`;
   const jf = join(dir, `${cmd}-${n}.json`), rf = join(dir, `${cmd}-${n}.out.json`);
   writeFileSync(jf, JSON.stringify(jobs));
-  const r = spawnSync(python(which), [join(TTS, 'tts.py'), cmd, ...extra, '--jobs', jf, '--result', rf], { stdio: 'inherit' });
+  const r = spawnSync(python(which), [join(TTS, 'tts.py'), cmd, ...extra, '--jobs', jf, '--result', rf], {
+    stdio: 'inherit', env: { KIKIMIMI_ECAPA: join(CACHE, 'ecapa'), ...process.env }
+  });
   if (r.status !== 0) throw new Error(`tts.py ${cmd} failed (${r.status})`);
   const out = JSON.parse(readFileSync(rf, 'utf8'));
   rmSync(jf); rmSync(rf);
@@ -554,7 +557,15 @@ function run(): void {
   console.log(`${files.length} files in ${OUT}, ${(bytes / 1024).toFixed(0)} KB; report ${REPORT}`);
 }
 
-if (flag('--refs')) makeRefs();
+/** The tools a run needs, checked before minutes of synthesis (the one-time setup: docs/kikimimi.md "Audio"). */
+function preflight(): void {
+  const missing = [FFMPEG, FFPROBE, 'whisper-cli', 'uv'].filter((b) => spawnSync(b, ['-h'], { stdio: 'ignore' }).error);
+  const model = process.env.WHISPER_MODEL ?? join(process.env.HOME ?? '', '.cache/whisper/ggml-large-v3-turbo.bin');
+  if (!existsSync(model)) missing.push(model);
+  if (missing.length) throw new Error(`missing ${missing.join(', ')}: see the one-time setup in docs/kikimimi.md "Audio"`);
+}
+
+if (flag('--refs')) { preflight(); makeRefs(); }
 else if (flag('--listen')) listen();
 else if (flag('--list')) printList(existsSync(CLIPS) ? JSON.parse(readFileSync(CLIPS, 'utf8')) : {});
-else run();
+else { preflight(); run(); }

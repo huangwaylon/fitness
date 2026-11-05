@@ -10,15 +10,14 @@
   import SoundLine from './scene/SoundLine.svelte';
   import MarkLegend from './scene/MarkLegend.svelte';
   import { villagerArt } from '#lib/art.ts';
-  import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
-  import { i18n, t } from '#lib/i18n/index.ts';
+  import { rosterName as name } from './scene/stage.ts';
+  import { t } from '#lib/i18n/index.ts';
 
   let { it, talk = -1, from = null, clock = () => Date.now(), compact = false }: {
     it: Item & { lines: readonly Line[] }; talk?: number; from?: number | null; clock?: () => number; compact?: boolean;
   } = $props();
   const first = $derived(it.lines[0].who);
   const other = $derived(it.lines.find((l) => l.who !== first)?.who ?? first);
-  const name = (id: RosterId) => (i18n.locale === 'ja' ? ROSTER[id].nameJa : ROSTER[id].nameEn);
   /** Every line's marks (the key's). */
   const marks = $derived(it.lines.flatMap((l) => l.marks ?? []));
   /** A `next` item's answer, said by whoever didn't say the last line. */

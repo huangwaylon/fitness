@@ -2,7 +2,8 @@
 // art fetched ahead (with its clip: game.svelte.ts). Loaded with the sheet only.
 import { channelOf, isDialogue, type Item } from '#lib/kikimimi/bank.ts';
 import { artUrl, villagerArt } from '#lib/art.ts';
-import type { RosterId } from '#lib/villagers/roster.ts';
+import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
+import { i18n } from '#lib/i18n/index.ts';
 
 /** A scene's backdrop: its art key (static/art/scene/<id>.webp, painted by scripts/scenes/scenes.ts). */
 export const sceneArt = (id: string): string => `scene/${id}`;
@@ -18,6 +19,9 @@ export const SCENE_SIZES = '(max-width: 520px) 100vw, 393px';
 
 /** Whether the scene card stands in for the plain stage while the clip plays: a scene, or a phone, PA or video call. */
 export const isStaged = (it: Item): boolean => !!it.scene || channelOf(it) !== 'live';
+
+/** A speaker's name in the app's language (the card's, the transcript's, the heads' alt). */
+export const rosterName = (id: RosterId): string => (i18n.locale === 'ja' ? ROSTER[id].nameJa : ROSTER[id].nameEn);
 
 /** Who speaks, in order of first line (a dialogue's two, else the speaker). */
 export const speakersOf = (it: Item): RosterId[] => (isDialogue(it) ? [...new Set(it.lines.map((l) => l.who))] : [it.speaker]);
