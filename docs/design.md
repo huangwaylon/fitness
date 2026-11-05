@@ -2193,7 +2193,7 @@ twice), and he's there every day, NH's own model (the visitors' GLB, 58 KB, load
 kept, hidden out of view) sitting on NH's log stool and facing its way (`world3d/villagers.ts` slot `kk`, the
 director's actor `kk`; posed only while something moves, as the villagers are). What he's up to goes by the Tokyo
 clock (`kkMode`; `?kk=show|day|asleep` in dev or `?demo`):
-- **His show, Saturday 18:00–24:00** (NH's concert; the plaza has no visitor then): with ミュージック on, a tap is his
+- **His show, Saturday 18:00–24:00** (NH's concert; the plaza has no visitor then): a tap is his
   greeting with NH's choice box, **リクエスト** (two songs, or ほかの 曲) or **おまかせ**. The island's music stops for
   the song ([K.K. Slider](#kk-slider): his live file), he strums harder, ♪ float up, the villagers sway and a
   「♪ けけボッサ」 caption sits by him. A tap mid-song offers ストップ / つづけて. At its end his sign-off (「また 来週の
@@ -2203,10 +2203,16 @@ clock (`kkMode`; `?kk=show|day|asleep` in dev or `?demo`):
   chat that offers a song all the same (「なにか 一曲 どうだい？」, リクエスト / おまかせ, the same song flow; his
   sign-off 「また いつでも 来いよ」). Decided so: a resident who never played but once a week would just be scenery.
 - **Asleep, 00:00–06:00** (after the show too): nodded off on his stool (villager3d's `nap`, a sleepy face, zzz); a
-  tap is a mumble (「…ムニャ… もう 店じまい さ…」), no song; his song stops at midnight.
-- With no song files he's tuning his guitar; with the music off he only chats (his introduction, then his lines). A
-  tap turns my villager to him where it stands (he's an interactable: no walk). Leaving the island, or bedtime, stops
-  his song (`stopKK('live')`: never a stereo's).
+  tap wakes him groggily and he offers one all the same (「…ん…？ ムニャ… リクエスト かい？ ふぁ～… いいぜ、 一曲
+  やろう」, the same song flow; awake while it plays, his sign-off 「…ふぁ～ サンキュー… じゃ、 おやすみ…」, then back
+  to sleep). The clock reaching midnight mid-song (the show's last one) still stops it.
+- **Anyone, any time** (the user, 2026-11-06: "everyone should be able to request songs at any time"): A, B and the
+  guest alike, whatever ミュージック is: with it off, picking a song turns it on (the tap that asked for a song wants
+  to hear it); with the volume at 0 he says the sound isn't getting through. The song is each phone's own (a cut-in
+  on this phone, as a stereo's: nothing of it goes through the relay). Usage counters `act:kk.tap.<mode>`,
+  `act:kk.song.<mode>`, `act:kk.mute` (the log's `use`). With no song files he's tuning his guitar (asleep a mumble).
+  A tap turns my villager to him where it stands (he's an interactable: no walk). Leaving the island stops his song
+  (`stopKK('live')`: never a stereo's).
 
 ### Visitors: life
 

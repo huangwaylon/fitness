@@ -1,4 +1,4 @@
-// Visitors (docs/design.md "Visitors"): K.K. on Saturday nights (a song with the music on), Daisy Mae on Sunday
+// Visitors (docs/design.md "Visitors"): K.K. on his stool (a song on request, for anyone, at any hour), Daisy Mae on Sunday
 // mornings, one of NH's weekday visitors most other days (Wisp at night, Gulliver washed up and asleep until the fifth
 // nudge). They stand at centre stage (the layout's plaza, a clear patch of lawn behind the villagers, seen as the island
 // opens at まえ), Gulliver on the front beach, never under a control; a tap gives a line (an introduction first), no
@@ -89,32 +89,36 @@ test('K.K. lives on his stool, every day (a Friday evening too); on Saturday fro
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
 });
 
-test('K.K. by day asks for a request too; asleep at night he only mumbles', async ({ page }) => {
-  await music(page);
-  await page.goto('?demo&date=2026-11-04T15:00&critter=none&visitor=none'); // a Wednesday afternoon
-  await expect(hudMenu(page)).toBeVisible();
-  await camTo(page, (await geo(page)).CAMS.mae, false);
-  await quiet(page); // (the opening beats over)
-  await tapKK(page);
-  await expect(page.locator('[data-fx="talk"] .sr')).toContainText('一曲 どうだい？');
-  await readOut(page);
-  await expect(page.locator('.choice')).toHaveText(['リクエスト', 'おまかせ']);
-  await page.goto('?demo&date=2026-11-05T02:00&critter=none'); // 2 a.m.
-  await expect(hudMenu(page)).toBeVisible();
-  await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', 'asleep');
-  await camTo(page, (await geo(page)).CAMS.mae, false);
-  await tapKK(page);
-  await expect(page.locator('[data-fx="talk"] .sr')).toContainText('ムニャ');
-  await expect(page.locator('.choice')).toHaveCount(0);
-});
+// The user: "who can request songs from kk slider and when? … everyone should be able to request songs at any time".
+// Each of the three (A, B, the guest), by day and at night (asleep, he wakes groggily): the request, then a song.
+for (const as of ['A', 'B', 'G'] as const)
+  for (const [when, line] of [['2026-11-04T15:00', '一曲 どうだい？'], ['2026-11-05T02:00', 'リクエスト かい？']] as const)
+    test(`anyone asks K.K. for a song at any time: ${as} at ${when.slice(11)}`, async ({ page }) => {
+      await music(page);
+      await page.goto(`?demo&as=${as}&date=${when}&critter=none&visitor=none`); // a Wednesday afternoon; 2 a.m.
+      await expect(hudMenu(page)).toBeVisible();
+      await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', when.endsWith('02:00') ? 'asleep' : 'day');
+      await camTo(page, (await geo(page)).CAMS.mae, false);
+      await quiet(page); // (the opening beats over)
+      await tapKK(page);
+      await expect(page.locator('[data-fx="talk"] .sr')).toContainText(line);
+      await readOut(page);
+      await expect(page.locator('.choice')).toHaveText(['リクエスト', 'おまかせ']);
+      await choose(page, page.locator('.choice', { hasText: 'おまかせ' }));
+      await expect(page.locator('[data-fx="kk-caption"].placed')).toHaveText(/^♪ /);
+      await expect(page.locator('[data-kk].show')).toHaveCount(1);
+    });
 
-test('K.K. with the music off just introduces himself', async ({ page }) => {
+test('K.K. with the music off still takes a request: the pick turns ミュージック on and he plays', async ({ page }) => {
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
   await expect(hudMenu(page)).toBeVisible();
   await camTo(page, (await geo(page)).CAMS.mae, false);
   await tapFigure(page, '[data-kk] .art');
-  await expect(page.locator('[data-fx="talk"].placed')).toHaveAttribute('data-pages', '3');
-  await expect(page.locator('[data-fx="talk"] .sr')).toContainText('とたけけ だ');
+  await expect(page.locator('[data-fx="talk"] .sr')).toContainText('リクエストは あるかな？');
+  await readOut(page);
+  await choose(page, page.locator('.choice', { hasText: 'おまかせ' }));
+  await expect(page.locator('[data-fx="kk-caption"].placed')).toHaveText(/^♪ /);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('island.sound') ?? '{}').music)).toBe(true);
 });
 
 test('visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gulliver on the beach) clear of every control; the first tap is an introduction', async ({ page }) => {

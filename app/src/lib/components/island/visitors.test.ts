@@ -100,9 +100,9 @@ describe('visitors (NH)', () => {
         last = k;
       }
     }
-    // K.K. (kkSlider.ts): the show's greeting asks for a request, by day too; his sign-offs; tuning when he has no songs
-    // yet; asleep a mumble
-    for (const k of ['hello', 'dayHello', 'which', 'tuning', 'playing', 'bye', 'byeDay', 'asleep', 'intro']) for (const c of [ja, en] as Record<string, string>[]) expect(c[`chat.sp.kk-slider.${k}`], k).toBeTruthy();
-    expect((ja as Record<string, string>)['chat.sp.kk-slider.hello']).toContain('リクエスト');
+    // K.K. (kkSlider.ts): the show's greeting asks for a request, by day too, woken at night too; his sign-offs; tuning
+    // when he has no songs yet (asleep a mumble)
+    for (const k of ['hello', 'dayHello', 'wake', 'which', 'tuning', 'playing', 'bye', 'byeDay', 'byeNight', 'asleep', 'noSound']) for (const c of [ja, en] as Record<string, string>[]) expect(c[`chat.sp.kk-slider.${k}`], k).toBeTruthy();
+    for (const k of ['hello', 'wake']) expect((ja as Record<string, string>)[`chat.sp.kk-slider.${k}`]).toContain('リクエスト');
   });
 });
