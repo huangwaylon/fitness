@@ -5,7 +5,7 @@
   // 「たいせん」 (a ranking; off: co-op, the team's tally) and the host's 「はじめる（Nにん）」 (the others wait for it).
   import type { Who } from '#lib/types.ts';
   import { ORDER } from '#lib/kikimimi/session.ts';
-  import type { Level } from '#lib/kikimimi/bank.ts';
+  import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
   import type { QuizGame } from './game.svelte.ts';
   import Host from '../characters/Host.svelte';
@@ -58,7 +58,7 @@
       {#each LEVELS as lv (lv)}
         <button type="button" class="lv" role="radio" aria-checked={v.lv === lv} aria-disabled={!v.amHost && v.lv !== lv} data-level={lv}
           data-sfx={v.lv === lv ? 'none' : 'tick'} onclick={() => v.amHost && level(lv)}>
-          <span class="stars" aria-hidden="true">{'★'.repeat(lv)}</span>
+          <span class="stars" aria-hidden="true">{levelMark(lv)}</span>
           <span>{t(`kiki.lv.${lv}`)}</span>
         </button>
       {/each}
@@ -120,6 +120,8 @@
   .sec { display: grid; gap: 8px; }
   /* the four levels a 2×2 grid (three and one left a hole) */
   .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  /* the アナウンス pack: a row of its own under the four stages (beside the ladder, not a fifth step) */
+  .lv[data-level='5'] { grid-column: 1 / -1; }
   .lv {
     appearance: none; border: 0; cursor: pointer; min-height: 64px; border-radius: var(--r-card); display: grid; place-content: center; gap: 2px;
     background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-body)/1.2 var(--font-ui);

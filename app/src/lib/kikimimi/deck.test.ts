@@ -7,7 +7,7 @@ import { LINE_GAP, clipDur, clipUrl, itemDur, sequenceStarts, voiced } from './c
 import { DIALOGUES } from './dialogues.ts';
 
 /** Every level with a bank (deck() builds a gated level's deck too: only the lobby hides it). */
-const LEVELS: Level[] = [1, 2, 3, 4];
+const LEVELS: Level[] = [1, 2, 3, 4, 5];
 const seeds = Array.from({ length: 300 }, (_, i) => (Math.imul(i + 1, 2654435761) >>> 0));
 
 describe('kikimimi deck', () => {
@@ -84,8 +84,21 @@ describe('kikimimi deck', () => {
     for (const s of [0, 1, 0x7fffffff, 0xffffffff]) expect(deck(s, 3)).toHaveLength(DECK_SIZE);
   });
 
-  it('a level this bank has no mix for (5: another phone’s newer level) is an empty deck, not a crash', () => {
-    expect(deck(7, 5)).toEqual([]);
+  it('a level this bank has no mix for (another phone’s newer level) is an empty deck, not a crash', () => {
+    expect(deck(7, 6 as Level)).toEqual([]);
+    expect(deck(7, 5, { ...MIX, 5: undefined })).toEqual([]);
+  });
+
+  it('level 5, the アナウンス pack: 3 num, 2 gist, 2 mean, 1 reply, single clips (its gists too), never twice in a row', () => {
+    expect(MIX[5]).toEqual({ num: 3, gist: 2, mean: 2, reply: 1 });
+    const seen = new Set<string>();
+    for (const s of seeds) {
+      const d = deck(s, 5);
+      expect(d.every((it) => it.lv === 5 && !isDialogue(it) && it.cond)).toBe(true);
+      for (const it of d) seen.add(it.id);
+    }
+    // the seeds reach the whole pack
+    expect(seen.size).toBe(BANK.filter((it) => it.lv === 5).length);
   });
 });
 
@@ -93,30 +106,40 @@ describe('kikimimi levels offered (the lobby’s gate)', () => {
   const all = Object.fromEntries(BANK.flatMap((it) => clipIds(it)).map((id) => [id, {}]));
 
   it('a level is offered only once every item of it has a clip', () => {
-    expect(playable(all)).toEqual([1, 2, 3, 4]);
+    expect(playable(all)).toEqual([1, 2, 3, 4, 5]);
     const oneShort: Record<string, unknown> = { ...all };
     delete oneShort[BANK.find((it) => it.lv === 4 && !isDialogue(it))!.id];
-    expect(playable(oneShort)).toEqual([1, 2, 3]);
+    expect(playable(oneShort)).toEqual([1, 2, 3, 5]);
     expect(playable({})).toEqual([]);
+  });
+
+  it('the アナウンス pack waits for its clips: one missing and level 5 is hidden, the rest offered as before', () => {
+    const packShort: Record<string, unknown> = { ...all };
+    delete packShort[BANK.find((it) => it.lv === 5)!.id];
+    expect(playable(packShort)).toEqual([1, 2, 3, 4]);
+    // its gists are single clips: the dialogue gate doesn't wait for them, nor they for it
+    expect(mixes(packShort)[4]).toHaveProperty('gist', 1);
+    const noPack = Object.fromEntries(BANK.filter((it) => it.lv < 5).flatMap((it) => clipIds(it)).map((id) => [id, {}]));
+    expect(mixes(noPack)[4]).toHaveProperty('gist', 1);
   });
 
   it('dialogues have a gate of their own: level 4 plays without them till every line of every dialogue has a clip', () => {
     const noDialogues = Object.fromEntries(BANK.filter((it) => !isDialogue(it)).map((it) => [it.id, {}]));
-    expect(playable(noDialogues)).toEqual([1, 2, 3, 4]);
+    expect(playable(noDialogues)).toEqual([1, 2, 3, 4, 5]);
     expect(mixes(noDialogues)[4]).toEqual({ word: 2, num: 2, reply: 2, mean: 2 });
     const lineShort: Record<string, unknown> = { ...all };
     delete lineShort[clipIds(DIALOGUES[3])[1]];
     expect(mixes(lineShort)[4]).not.toHaveProperty('gist');
-    expect(playable(lineShort)).toEqual([1, 2, 3, 4]);
+    expect(playable(lineShort)).toEqual([1, 2, 3, 4, 5]);
     expect(mixes(all)[4]).toHaveProperty('gist', 1);
   });
 
-  it('never a level without a mix or items (5), whatever the clips', () => {
-    expect(playable({ ...all, 'x5-anything': {} })).not.toContain(5);
+  it('never a level without a mix or items, whatever the clips', () => {
+    expect(playable({ ...all, 'x6-anything': {} })).toEqual([1, 2, 3, 4, 5]);
   });
 
-  it('today: levels 1-4 (level 4 since the neural cast’s clips landed)', () => {
-    expect(OFFERED).toEqual([1, 2, 3, 4]);
+  it('today: levels 1-5 (level 4 since the neural cast’s clips landed, 5 since the アナウンス pack’s)', () => {
+    expect(OFFERED).toEqual([1, 2, 3, 4, 5]);
   });
 });
 

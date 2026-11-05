@@ -1,7 +1,7 @@
 // ききみみ クイズ's advice (docs/kikimimi.md "Recommendations and feedback"): what to practise next (each with a
 // one-tap start) and しずえ's line after a game, from the stats (progress.ts) and the cards (srs.ts). Returns ids and
 // numbers; the UI words them (i18n kiki.rec.*, kiki.fb.*). Pure.
-import type { Accent, Level } from './bank.ts';
+import { levelRank, type Accent, type Level } from './bank.ts';
 import type { Game, Stats } from './progress.ts';
 import { MIN_SHOWN, itemOf } from './progress.ts';
 import { SKILLS, featureSkill, skillsOf, tagsOf, type Skill } from './tags.ts';
@@ -61,7 +61,8 @@ export function recommend(o: { stats: Stats; games: readonly Game[]; dueItems: n
     const last = normal.filter((g) => g.lv === lv).slice(-3);
     const r = last.flatMap((g) => g.r);
     const right = r.length ? r.filter((a) => a.ok).length / r.length : 0;
-    const up = o.levels.find((x) => x > lv);
+    // the next stage up (the アナウンス pack sits beside level 4, never a step up)
+    const up = o.levels.find((x) => levelRank(x) > levelRank(lv));
     if (last.length >= 3 && right >= 0.85 && up !== undefined) out.push({ kind: 'level', lv: up });
     else if (last.length >= 3 && right <= 0.5) out.push({ kind: 'steady', lv });
   }

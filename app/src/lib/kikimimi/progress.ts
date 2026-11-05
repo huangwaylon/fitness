@@ -5,7 +5,7 @@
 import { listenOf, listenSummaryOf, type ListenRow } from '../contract/listen.ts';
 import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
-import { BANK, type Accent, type Feature, type Item, type ItemType } from './bank.ts';
+import { BANK, levelRank, type Accent, type Feature, type Item, type ItemType } from './bank.ts';
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
 
 /** One of my answers, with its game's context. */
@@ -146,9 +146,9 @@ export interface Stats {
   measuring: boolean;
 }
 
-/** An item's difficulty on the ability scale: its level (L1 −1 … L4 2) and its type. */
+/** An item's difficulty on the ability scale: its level (L1 −1 … L4 2; the アナウンス pack as L4) and its type. */
 const TYPE_OFFSET: Readonly<Record<ItemType, number>> = { pic: -0.3, word: 0, num: 0, reply: 0.2, mean: 0.4, gist: 0.3, next: 0.3 };
-const difficulty = (it: Pick<Item, 'lv' | 'type'>): number => it.lv - 2 + TYPE_OFFSET[it.type];
+const difficulty = (it: Pick<Item, 'lv' | 'type'>): number => levelRank(it.lv) - 2 + TYPE_OFFSET[it.type];
 const ESTIMATE_MIN = 16;
 /** θ − ln 4: where the predicted score is 80 %. */
 const COMFORT = Math.log(4);
@@ -200,7 +200,7 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
     const expected = 1 / (1 + Math.exp(-(theta - b)));
     theta += (k < 24 ? 0.3 : 0.15) * (sc - expected);
     k++;
-    maxLv = Math.max(maxLv, it.lv);
+    maxLv = Math.max(maxLv, levelRank(it.lv));
   }
   const mastery = (x: { n: number; w: number; s: number }): Mastery => {
     const raw = (PRIOR * PRIOR_W + x.s) / (PRIOR_W + x.w);

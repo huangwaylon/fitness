@@ -43,7 +43,16 @@ export const PLACES: Readonly<Record<string, readonly [SceneId | null, Channel?]
   'd4-gate-change': ['gate'], 'd4-squat-form': [null], 'd4-parcel': ['door'], 'd4-store-credit': ['street'], 'd4-taxi-street': ['street'],
   'd4-grab-lunch': ['office'], 'd4-video-call': ['office'], 'd4-pizza-diet': ['street'], 'd4-cough-drive': ['pharmacy'],
   'd4-installer': ['living'], 'd4-service-charge': ['cafe'], 'd4-misheard-name': ['cafe'], 'd4-im-easy': ['living'],
-  'd4-hotel-suite': [null], 'd4-bank-scam': ['living'], 'd4-ferry-off': [null]
+  'd4-hotel-suite': [null], 'd4-bank-scam': ['living'], 'd4-ferry-off': [null],
+  // the アナウンス pack (level 5): on the platform, in the train (none), at the gate, a call or a voicemail at home, in a
+  // shop (none), the office's alarm test, the radio in a café
+  'a5-track': ['platform'], 'a5-behind': [null], 'a5-final-call': ['gate'], 'a5-gate-moved': ['gate'], 'a5-boarding-time': ['gate'],
+  'a5-press-three': ['living'], 'a5-queue': ['living'], 'a5-dentist': ['living'], 'a5-key-code': ['living'], 'a5-closing': [null],
+  'a5-coats': [null], 'a5-typhoon': ['cafe'], 'a5-suspended': ['platform'], 'a5-other-side': [null], 'a5-wind': ['platform'],
+  'a5-burst-pipe': ['living'], 'a5-cover-shift': ['living'], 'a5-alarm-test': ['office'], 'a5-high-volume': ['living'],
+  'a5-passing': ['platform'], 'a5-alight': ['platform'], 'a5-last-train': ['platform'], 'a5-plumber': ['living'], 'a5-rows': ['gate'],
+  'a5-reason': ['living'], 'a5-intercom': ['platform'], 'a5-make-known': ['gate'], 'a5-leave-message': ['living'],
+  'a5-did-you-say': ['living'], 'a5-out-of-service': ['platform']
 };
 
 const light = (kind: Cond['kind'], bed?: Cond['bed']): Cond => ({ kind, level: 'light', ...(bed && { bed }) });
@@ -109,7 +118,26 @@ export const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'd4-pizza-diet-1': [['say', 'Want to', 'wanna']],
   'd4-pizza-diet-2': [['say', 'kind of', 'kinda'], g('trying')],
   'd4-installer-3': [['say', '18', 'eighTEEN'], ['say', 'them', "'em"]],
-  'd4-service-charge-1': [['link', 'Hang on'], ['say', '15%', 'fifteen per cent']]
+  'd4-service-charge-1': [['link', 'Hang on'], ['say', '15%', 'fifteen per cent']],
+  // the アナウンス pack
+  'a5-track': [['say', '10:12', 'ten twelve'], ['stress', '3 5']],
+  'a5-behind': [['say', '15', 'fifTEEN']],
+  'a5-final-call': [['say', '212', 'two-one-two'], ['say', '64', 'sixty-four']],
+  'a5-gate-moved': [['say', '838', 'eight-three-eight'], ['say', '71', 'SEVenty-one']],
+  'a5-boarding-time': [['say', '409', 'four-oh-nine'], ['say', '7:50', 'seven fifty']],
+  'a5-press-three': [['link', 'lost or stolen'], ['stress', '3']],
+  'a5-queue': [['stress', '6 12']],
+  'a5-dentist': [['say', '14th', 'fourTEENTH'], ['say', '3:15', 'three fifteen']],
+  'a5-key-code': [['say', '4719', 'four-seven-one-nine'], ['say', '4791', 'four-seven-nine-one'], ['say', 'you', 'ya']],
+  'a5-closing': [['say', '15', 'fifTEEN'], ['say', '8', 'eight']],
+  'a5-coats': [['say', '30', 'THIRty'], ['say', '40%', 'FORty per cent']],
+  'a5-typhoon': [['say', '90', 'NINEty'], ['say', '40', 'FORty']],
+  'a5-cover-shift': [['say', 'and', "an'"], g('flying')],
+  'a5-plumber': [g('running'), ['link', 'hold your']],
+  'a5-rows': [['say', '30', 'THIRty']],
+  'a5-make-known': [['say', '22', 'twenty-two']],
+  'a5-leave-message': [['say', 'Dr', 'Doctor'], ['say', '2', 'two']],
+  'a5-out-of-service': [['link', 'not in'], ['say', '2', 'two']]
 };
 
 /** An item's staging: its scene, its channel when the conditions don't give it, its sound marks, its noise. */
