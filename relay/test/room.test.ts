@@ -712,6 +712,22 @@ describe('high-fives (the relay only, never the record)', () => {
     expect(held).toEqual({});
   });
 
+  it('a resend of the same numbered high-five (its ack lost with the socket) is acked again, never delivered twice', () => {
+    // 2026-11-05 review: a high-five is acked but not kept, so the resend check (the ring's) never knew it
+    const a = join(KEY_A, 0), b = join(KEY_B, 0);
+    say(a, { kind: 'highfive', at: now - 20, c: 7 });
+    const t = now;
+    bye(a);
+    now += 2000;
+    const a2 = join(KEY_A, 0);
+    say(a2, { kind: 'highfive', at: t - 20, c: 7 });
+    expect(fives(b)).toHaveLength(1);
+    expect(a2.sent.at(-1)).toEqual({ v: 3, kind: 'ack', c: 7, t, ok: true });
+    // another one with the same number but another tap (another phone of mine) is its own
+    say(a2, { kind: 'highfive', at: now, c: 7 });
+    expect(fives(b)).toHaveLength(2);
+  });
+
   it('refuses a bad time', () => {
     const a = join(KEY_A, 0), b = join(KEY_B, 0);
     b.sent = [];

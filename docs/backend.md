@@ -330,7 +330,8 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   to the other person only. Any intent may carry `c`, the phone's sequence number (increasing through the day: its
   `Date.now()` at sending, or one more): the room answers the sender `ack {c, t, ok}` (`t` its stamp; `ok` false when
   the world refused it: a claim already made, a nest too soon, a walk numbered before the one it keeps), and a resend
-  of a kept intent with the same `c` (after a reconnect) is acked again, never relayed or kept twice. It relays to
+  of a kept intent with the same `c` (after a reconnect) is acked again, never relayed or kept twice; so is one of the
+  last 64 acked intents it doesn't keep (a high-five: the same intent and `c`, in the room's memory). It relays to
   the partner before it writes the day to storage (a message sent after a write waits for it: the output gate), so a
   kept intent reaches the partner as fast as a passing one; its ack goes after the write (an ack is durable).
   `ping {c}` → `pong {c, t}`; `got {at}` (my phone heard the partner's high-five `at`: the one held for me goes); `presence {who, on}` when the partner comes or goes (the island
