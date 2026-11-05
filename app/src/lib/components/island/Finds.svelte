@@ -45,7 +45,7 @@
   import { mushroomSpots, mushroomsOn, rareMushroom, type Mushroom } from './mushrooms.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
-  import { lying, taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
+  import { lying, taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
   import { tellPartner, type PartnerNews } from './partnerNews.ts';
   import { loadCatalogNames } from '#lib/i18n/catalog.ts';
   import { giftTree } from './treeGifts.ts';
@@ -83,10 +83,11 @@
 
   const clock = $derived(minuteNow());
   const date = $derived(dayKey(clock));
-  /** What's gone today: what this phone took (once my villager got there) and what the partner took (the shared day). */
+  /** What's gone today: what this phone took, and every claim in the shared day (mine too: a phone that lost its own
+   *  record gets them back in the relay's replay; world-day.ts takenIds). */
   const goneOn = (d: string): Set<string> => {
     const mine = takenOn(d);
-    return d === dayKey() ? mine.union(takenByOthers(shared.day, shared.me)) : mine;
+    return d === dayKey() ? mine.union(takenIds(shared.day)) : mine;
   };
   /** Both people's wishes for a morning (stars.ts: one fragment each): mine and the partner's. */
   const allWishes = () => {
@@ -256,9 +257,9 @@
    *  one up: the shared day's puts (a reload or the partner's phone finds them there too; the partner's at a usual
    *  size). */
   const sizes = new Map<string, number>();
-  /** Presents opened here (gone once my villager has opened it; the partner's at once). */
+  /** The presents lying unopened: gone once anyone's claim is in the shared day (world-day.ts lying). */
   const presents = $derived.by(() => {
-    const all = lying(shared.day, shared.me, (id) => (void taken, takenOn(date).has(id))).filter((p) => p.what === 'present' || p.what === 'sky-egg');
+    const all = lying(shared.day).filter((p) => p.what === 'present' || p.what === 'sky-egg');
     // the balloons' newest three, and every tree's (two a day at most)
     const trees = all.filter((p) => giftTree(p.id)), balloons = all.filter((p) => !giftTree(p.id)).slice(-3);
     return [...balloons, ...trees].map((p) => {

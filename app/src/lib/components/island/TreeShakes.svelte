@@ -26,7 +26,6 @@
   import { giftAt, giftId, holdsGift } from './treeGifts.ts';
   import { onDestroy, onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
-  import { take, takenOn } from './sceneDay.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
@@ -91,32 +90,22 @@
    *  fell while this island watched (only those fall; the rest just lie there). */
   const lyingNow = $derived.by(() => {
     const d = world.day;
-    void pickedN;
-    const mine = takenOn(dayKey());
-    // the partner's pick-up takes it at once; mine once my villager has got there (this phone's record)
-    return fallen(d.shakes, treeOf, (id) => {
-      const c = taken(d, id);
-      return !!c && (c.who !== world.me || mine.has(id));
-    });
+    // anyone's pick-up takes it at once, mine too (a phone that lost its own record gets my claims back in the replay)
+    return fallen(d.shakes, treeOf, (id) => !!taken(d, id));
   });
-  /** What I picked up here (this phone's record of the day: a reload finds it gone), bumped to re-derive. */
-  let pickedN = $state(0);
   const dropping = new SvelteSet<string>();
 
   // the dev hook: the next shake drops this (a bagworm or a spider: that bug)
   let forced: string | undefined = hookOneOf('shake', ['nest', 'branch', 'bagworm', 'spider', 'coconut', 'wood']) ?? undefined;
 
-  /** The day's wood lying under the trees (the shared day's puts, `wd:`), as the branches: the partner's pick-up takes
-   *  it at once, mine once my villager has got there. */
+  /** The day's wood lying under the trees (the shared day's puts, `wd:`), as the branches: anyone's pick-up takes it
+   *  at once. */
   const woodLying = $derived.by(() => {
     const d = world.day;
-    void pickedN;
-    const mine = takenOn(dayKey());
     return Object.values(d.puts).flatMap((p) => {
       const tree = woodTree(p.id);
       if (!tree || !(WOODS as readonly string[]).includes(p.what)) return [];
-      const c = taken(d, p.id);
-      if (c && (c.who !== world.me || mine.has(p.id))) return [];
+      if (taken(d, p.id)) return [];
       return [{ id: p.id, tree, what: p.what as Wood, x: p.at[0], z: p.at[1] }];
     });
   });
@@ -292,8 +281,6 @@
     if (coconut) void loadNames().catch(() => {});
     if (!world.share({ kind: 'pick', id, what: b.what, at: [Math.round(b.x), Math.round(b.z)] }).fresh) return;
     turnTo(b.x);
-    take(dayKey(), id);
-    pickedN++;
     sceneSfx('twig');
     const good = coconut ? 'coconut' : 'tree-branch';
     recordGoods(good);
@@ -311,8 +298,6 @@
     void loadNames().catch(() => {});
     if (!world.share({ kind: 'pick', id, what: b.what, at: [b.x, b.z] }).fresh) return;
     turnTo(b.x);
-    take(dayKey(), id);
-    pickedN++;
     sceneSfx('twig');
     recordGoods(b.what);
     picked(b.x, b.z, `finds/${b.what}`, b.what);

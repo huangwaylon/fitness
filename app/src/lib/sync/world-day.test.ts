@@ -176,6 +176,26 @@ describe('the shared day: two phones on the relay', () => {
     expect(taken(B.day, 'tf:oak-m1')?.who).toBe('A');
   });
 
+  it('a phone that lost its own record (a new origin) gets my claims back in the replay: what I opened lies on no phone, and can’t be claimed again', () => {
+    const { A, B, tick } = island();
+    A.open();
+    B.open();
+    expect(A.act({ kind: 'put', id: 'pa1', what: 'present', at: [160, 40] })).toBe(true);
+    expect(A.act({ kind: 'pick', id: 'pa1', what: 'present:item:sword', at: [160, 40] })).toBe(true);
+    expect(A.act({ kind: 'put', id: 'pa2', what: 'present', at: [280, 50] })).toBe(true);
+    tick();
+    A.close();
+    // A's phone again, its storage gone: the day comes back from the relay (mine too, batched)
+    const A2 = new (Object.getPrototypeOf(A).constructor)('A') as typeof A;
+    A2.open(dayStart(DAY), true);
+    expect(taken(A2.day, 'pa1')?.who).toBe('A');
+    expect(lying(A2.day).map((p) => p.id)).toEqual(['pa2']);
+    expect(A2.act({ kind: 'pick', id: 'pa1', what: 'present:item:sword' })).toBe(false);
+    expect(A2.act({ kind: 'pick', id: 'pa2', what: 'present:item:typewriter' })).toBe(true);
+    B.drain();
+    expect(lying(B.day)).toEqual([]);
+  });
+
   it('a scripted session of every kind (conflicts, a dropped socket and its resends, a late join in one replay): the same canonical day on every phone', () => {
     const { A, B, tick } = island();
     A.open();

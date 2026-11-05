@@ -527,7 +527,10 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   watered cells, wishes, each person's last walk. First wins, and the relay's order makes it so: a partner's claim of
   something I claimed too means the relay heard theirs first (it drops a later claim, never relaying or keeping it),
   so theirs replaces mine (`beat`) and my phone shows it caught by them. A repeat changes nothing; another day's is
-  ignored.
+  ignored. A claim in the day is gone on every phone, mine too (`lying`, `takenIds`; the island's finds, care, fruit,
+  branches and wood): a phone that lost its own scene record (a new origin, Safari's cleared storage) gets my claims
+  back in the replay and the day's row, and a claim can't be made twice, so a thing kept lying for one was drawn but
+  untappable (2026-11-05, after the move to pages.dev: the presents I'd opened lay about, `e2e/present-taps.spec.ts`).
 - **The store** (`store/world.svelte.ts`, `world`): today's day on this phone, kept in localStorage (`island.world`,
   the day's events; the demo's per tab) so a reload needs only what's new; `share(intent)` folds my change (refused
   when the partner already has it), keeps it and sends it; `on(fn)` the partner's, `live` when it happened in the last
