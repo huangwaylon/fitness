@@ -3,11 +3,12 @@
   // its sound marks over them (marks.ts soundLine: the shape it's said in above a reduced run, ‿ arcs where words join,
   // swallowed letters greyed, ● over a stressed word), and the karaoke while its clip replays: the words said so far in
   // ink, the one being said underlined, the rest soft (clips.ts wordTimes: whisper's alignment, else the clip spread over
-  // the words). `from`: when the clip started on the relay's clock (null: not playing, every word in ink). A frame loop
+  // the words; karaoke.svelte.ts). `from`: when the clip started on the relay's clock (null: not playing, every word in ink). A frame loop
   // runs only while it plays and only re-renders when the word changes; under reduced motion the word doesn't hop.
   import type { SoundMark } from '#lib/kikimimi/bank.ts';
   import { soundLine } from '#lib/kikimimi/marks.ts';
   import { wordTimes } from '#lib/kikimimi/clips.ts';
+  import { karaoke } from './karaoke.svelte.ts';
 
   let { en, focus, marks, clip, from = null, clock }: {
     en: string; focus?: string; marks?: readonly SoundMark[]; clip: string; from?: number | null; clock: () => number;
@@ -15,27 +16,8 @@
   const groups = $derived(soundLine(en, focus, marks));
   const times = $derived(wordTimes(clip, en));
   /** The word being said (-1 before the first; past the last: every word said); null when not playing. */
-  let at = $state<number | null>(null);
-
-  $effect(() => {
-    const start = from, ts = times;
-    if (start === null) {
-      at = null;
-      return;
-    }
-    let raf = 0;
-    const tick = () => {
-      const s = (clock() - start) / 1000;
-      let k = -1;
-      while (k + 1 < ts.length - 1 && ts[k + 1] <= s) k++;
-      const next = s >= ts.at(-1)! ? ts.length : k;
-      if (next !== at) at = next;
-      if (s < ts.at(-1)! + 0.3) raf = requestAnimationFrame(tick);
-      else at = null;
-    };
-    tick();
-    return () => cancelAnimationFrame(raf);
-  });
+  const k = karaoke({ from: () => from, times: () => times, clock: () => clock() });
+  const at = $derived(k.at);
   const wordState = (w: number) => (at === null || w < at ? 'said' : w === at ? 'now' : 'yet');
 </script>
 
