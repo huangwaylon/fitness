@@ -556,8 +556,11 @@ def build_jbfd(b):
         sd = lib.fnum(r['energy_kcal_sd'])
         if sd is not None and sd > 0.5 * max(lib.fnum(r['energy_kcal_mean'], 0), 20):   # incoherent mix (powder + drink)
             continue
+        vals = {n: lib.fnum(r[col + '_mean']) for n, col in zip(NUTS, JBFD_COLS)}
+        if None not in (vals['p'], vals['f'], vals['c']) and vals['kcal'] > 2 * (4 * vals['p'] + 9 * vals['f'] + 4 * vals['c']) + 30:
+            continue   # means of different label bases (レギュラーコーヒー粉: 337 kcal with P/F/C of the brewed cup)
         it = {'id': 'jbfd:' + r['box_id'], 'name': name, 'cat': cat,
-              **nutrients({n: lib.fnum(r[col + '_mean']) for n, col in zip(NUTS, JBFD_COLS)}), 'portions': [{'label': '100g', 'g': 100}],
+              **nutrients(vals), 'portions': [{'label': '100g', 'g': 100}],
               'note': '市販のプライベートブランド商品%d品の栄養成分表示（100gあたり）の平均%s。商品により異なります' % (
                   n, '（エネルギーの標準偏差 %d kcal）' % kcal_int(sd) if sd is not None else '')}
         items.append(it)

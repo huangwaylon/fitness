@@ -48,7 +48,7 @@
 {"key": "hashpotato", "name": "ハッシュポテト", "en": "Hash brown", "aliases": ["ハッシュドポテト"], "cat": "コンビニ", "ing": [["02020", 60], ["17012", 0.4]], "unit": "1個"},
 {"key": "saladchicken", "name": "サラダチキン", "en": "Salad chicken (steamed breast)", "aliases": ["さらだちきん", "鶏むね"], "cat": "コンビニ", "ing": [["11220", 110], ["17012", 1.2]], "unit": "1パック（110g）", "portions": [["ハーフ", 0.5]]},
 {"key": "saladchicken_bar", "name": "サラダチキンバー", "en": "Salad chicken stick", "aliases": ["チキンバー", "スティック"], "cat": "コンビニ", "ing": [["11220", 60], ["17012", 0.8]], "unit": "1本"},
-{"key": "yudetamago", "name": "ゆで卵（塩味付き）", "en": "Seasoned boiled egg", "aliases": ["ゆでたまご", "ゆで玉子", "味付けたまご", "煮卵"], "cat": "コンビニ", "ing": [["12005", 50], ["17012", 0.4]], "unit": "1個", "portions": [["2個入り", 2]]},
+{"key": "yudetamago", "name": "ゆで卵（塩味付き）", "en": "Seasoned boiled egg", "aliases": ["ゆでたまご", "ゆで玉子", "味付けたまご", "煮卵", "味玉", "味付け卵", "味付玉子", "味たま"], "cat": "コンビニ", "ing": [["12005", 50], ["17012", 0.4]], "unit": "1個", "portions": [["2個入り", 2]]},
 {"key": "cup_noodle", "name": "カップラーメン（しょうゆ・レギュラー）", "en": "Instant cup noodles (soy, regular)", "aliases": ["カップ麺", "カップヌードル", "カップラーメン", "インスタントラーメン"], "cat": "コンビニ", "ing": [["01191", 78]], "unit": "1個（めん・スープ全部 78g）", "portions": [["スープを残した場合の目安", 0.8]]},
 {"key": "cup_noodle_big", "name": "カップラーメン（しょうゆ・ビッグ）", "en": "Instant cup noodles (soy, large)", "aliases": ["カップ麺 大盛", "ビッグカップ"], "cat": "コンビニ", "ing": [["01191", 100]], "unit": "1個（100g）"},
 {"key": "cup_noodle_shio", "name": "カップラーメン（塩・シーフード）", "en": "Instant cup noodles (salt/seafood)", "aliases": ["シーフードヌードル", "塩カップ麺"], "cat": "コンビニ", "ing": [["01193", 75]], "unit": "1個（75g）"},

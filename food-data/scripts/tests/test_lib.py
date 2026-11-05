@@ -370,6 +370,17 @@ class OffPlausibility(unittest.TestCase):
         self.assertEqual(off.pick_cat([], 'サワークリーム ポテトチップス', 564), '菓子・デザート')
         self.assertEqual(off.pick_cat([], 'レモンサワー', 45), '酒')
         self.assertIsNone(self.check(45, 5, 5, 20, 0, '菓子・デザート', 'ポテトチップス')[0])   # energy itself wrong
+        for name, cat in (('さば水煮', '魚介'), ('かに入り茶碗蒸し', '魚介'), ('出汁香る鶏の唐揚げ', '肉'), ('パンプキンサラダ', '野菜'),
+                          ('サワードウブレッド', 'パン'), ('水ようかん', '菓子・デザート'), ('だし巻き玉子', '卵'),
+                          ('春巻き', '主菜'), ('トロたく巻', '寿司'), ('チーズ巻き', '乳製品'), ('緑茶', '飲料')):
+            self.assertEqual(off.pick_cat([], name, 200), cat, name)   # a keyword inside another word is no keyword
+
+    def test_alcohol_and_creatine(self):
+        self.assertEqual(self.check(0, 0, 0, 1, 0, 'その他', 'ストロングレモン'), (None, ['alcohol_zero']))
+        self.assertEqual(self.check(0, 0, 0, 0, 0, '飲料', 'ノンアルコール ビールテイスト')[1], [])
+        self.assertEqual(self.check(360, 90, 0, 0, 0, 'その他', 'クレアチンパウダー'), ((0, 0.0, 0, 0, 0), ['creatine']))
+        self.assertEqual(self.check(385, 85.2, 0.1, 12.5, 1.3, 'その他', 'クレアルカリン レモン味')[0][:2], (4 * 12.5 + 0.9, 0.0))
+        self.assertEqual(self.check(386, 69.1, 5.4, 15.1, 0.8, 'その他', 'ホエイプロテイン HMB &クレアチン')[1], [])
 
     def test_salt_allow_list(self):
         for name, salt in (('柚子こしょう', 18.0), ('かのや 濃ゆ口', 14.65), ('うすくち白', 18.4), ('こいくち醤油', 14.5)):

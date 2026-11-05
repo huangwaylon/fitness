@@ -79,15 +79,15 @@ Counts are from the current build.
 |---|---|---|---|---|---|---|
 | `foods.json` | MEXT 日本食品標準成分表（八訂）増補2023年 (Excel, 2026-03-27 errata) | 2,538 | 公共データ利用規約1.0 (CC BY 4.0 compatible) | 「日本食品標準成分表（八訂）増補2023年から引用」 + modification notice | Official values. Display names, categories, aliases and portions are rule-based plus curated overrides | Per 100 g of edible portion; energy is composition-based (八訂) |
 | `dishes.json` | Own recipes × MEXT | 341 | MEXT terms (values); recipes are our own | 「…をもとに算出（レシピは独自）」 | `data_src/dishes/`: MEXT food numbers + grams, summed to per 100 g; default portion = 1人前 | Home-style estimates |
-| `eatout.json` | Own recipes × MEXT | 437 | as above | as above | `data_src/eatout/` (shared components), portion multipliers (size only: a stronger drink such as 濃いめハイボール is its own item). A few foods MEXT lacks (whey protein, Greek yogurt, protein bar) use typical values from `data_src/eatout/_typical.json`, and their note says so | Generic chain/konbini-style estimates, not any chain's numbers |
+| `eatout.json` | Own recipes × MEXT | 439 | as above | as above | `data_src/eatout/` (shared components), portion multipliers (size only: a stronger drink such as 濃いめハイボール is its own item). A few foods MEXT lacks (whey protein, Greek yogurt, protein bar) use typical values from `data_src/eatout/_typical.json`, and their note says so | Generic chain/konbini-style estimates, not any chain's numbers |
 | `extra_maff_kyodo.json` | MAFF「うちの郷土料理」 | 1,123 | PDL1.0 (+ MEXT) | 「…のレシピを加工して作成」 | Free-text ingredient lines mapped to MEXT (`maff_ingredients.py`), converted to grams, summed. English names from MAFF's English site | Recipes are kept only if ≤ 5 % of the mass is unmapped, and not when the staple or the dish's own fish/meat is 適量 (not 「お好みで」), a serving weighs over 1.5 kg (no servings or pieces: the recipe over 10 kg; bulk festival recipes), or tofu is made from dry soybeans. 「16枚（1枚30g）」 = 16 × 30 g, a range's middle. A seasoning 適量 with no other salt: salt unknown (null). Water counts only for soups/doughs; dry foods gain water per MEXT 表12; frying oil = 10 % of fried parts |
 | `extra_takatsuki.json` | 高槻市 学校給食レシピ (BODIK) | 54 | CC BY 4.0 (+ MEXT) | 「…を加工して作成」 | Same text-recipe mapper as MAFF | School recipes |
 | `extra_kurume.json` | 久留米市 料理の栄養価一覧 (BODIK) | 230 | CC BY 2.1 JP | 「…を加工して作成（1人前値を100g当たりに換算）」 | Official per-serving values ÷ ingredient weight (+ water absorbed by rice and dry foods; soups, which list no dashi/water, weigh at least 150 g) | Uses 成分表2010 energy (staples ~3–8 % above 八訂). Seasonings, drinks, dairy and raw fruit are skipped |
 | `extra_toyonaka.json` | 豊中市 小中学校給食献立 (BODIK) | 607 | CC BY 4.0 | 「…を加工して作成（料理ごとに集計し100g当たりに換算）」 | Ingredient rows (raw g + nutrients, MEXT 食品番号) summed per dish; cooking water added via 表12; soups weigh at least the stated cc or 160/180 g | Some rows use older table values. Adult default portion (below) |
 | `extra_kumagaya.json` | 熊谷市 学校給食献立情報 2023–2026 (埼玉県 portal) | 773 | PDL1.0 | as Toyonaka | As Toyonaka. Its 食品ID are city-local codes that keep the MEXT group prefix, so raw-weight staples are detected by composition | Adult default portion (below) |
 | `extra_tokyo_hokeniryo.json` | 東京都 島しょ保健所「一人でもできる簡単レシピ」 | 14 | CC BY | 「…を加工して作成」 | Official per-serving values ÷ serving weight estimated from the ingredient list (`data_src/tokyo_hokeniryo_recipes.json`) | Estimated weights |
-| `jbfd.json` | JBFD v0.1 (Nakagawa & Yamamoto, RinCOM) | 68 | CC0 1.0 | courtesy credit | Mean label values of ≥ 3 private-brand products per food type with no MEXT item (カット野菜ミックス, ゼリー飲料 ...); boxes with SD > 0.5 × max(mean, 20) kcal (powder averaged with drinks) are skipped | Products vary; the SD is in `note` |
-| `products.json`, `jan/` | Open Food Facts (Japan) | 13,922 (search) / 42,856 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values from the CSV dump + API pages; plausibility rules (below) | Crowd-entered. `products.json` collapses identical products and is capped at 3 MB (most-scanned first); the shards hold every valid product |
+| `jbfd.json` | JBFD v0.1 (Nakagawa & Yamamoto, RinCOM) | 66 | CC0 1.0 | courtesy credit | Mean label values of ≥ 3 private-brand products per food type with no MEXT item (カット野菜ミックス, ゼリー飲料 ...); boxes with SD > 0.5 × max(mean, 20) kcal (powder averaged with drinks) are skipped, and so are boxes whose kcal is over twice 4P+9F+4C + 30 (label bases mixed: レギュラーコーヒー粉) | Products vary; the SD is in `note` |
+| `products.json`, `jan/` | Open Food Facts (Japan) | 13,916 (search) / 42,850 (barcodes) | ODbL 1.0 / DbCL 1.0 | 「© Open Food Facts contributors」 | Label values from the CSV dump + API pages; plausibility rules (below) | Crowd-entered. `products.json` collapses identical products and is capped at 3 MB (most-scanned first); the shards hold every valid product |
 
 **School-lunch adult portions** (Toyonaka, Kumagaya): the default portion is 「1人前（目安）」, the median adult
 portion of the same dish in dishes/eatout/Kurume/MEXT. When no such dish exists, it is 「1人前（目安・給食量から換算）」 =
@@ -109,10 +109,17 @@ and fat don't explain leave it blank (いかフライ).
 - Salt above the category cap (e.g. 飲料 1.5, 菓子 5, 魚介 6 g) → null it, unless the name matches a salty-food allow-list (塩, 漬, 昆布, みそ, 〜口, こしょう, キューブ ...). Salt above 60 g outside 調味料 → always null it.
 - Protein supplements (プロテイン, ホエイ, whey, protein; not soups, noodles, snacks, meat dishes or pea protein) skip the allow-list and have their own salt caps: powder (≥ 250 kcal) 4 g, bar 3 g, drink/jelly 1.5 g.
 - Fried chicken (からあげ, 唐揚, フライドチキン, ナゲット ...; not mixes, seasonings, flavoured snacks, fish/soy karaage or dishes) under 120 kcal holds per-piece values → drop the product.
-- Category comes from OFF tags, else name keywords; the 酒 keywords (サワー, ビール ...) are ignored above 300 kcal (サワークリーム chips).
+- Category comes from OFF tags, else name keywords; the 酒 keywords (サワー, ビール ...) are ignored above 300 kcal (サワークリーム chips),
+  and words that hold a keyword without being one are rewritten first (`NAME_FALSE_FRIENDS`: さば水煮 is no 水, 茶碗蒸し no 茶,
+  出汁の唐揚げ no 汁, パンプキン no パン, だし巻き no だし); a bare 巻 means 寿司 only when nothing else matched (春巻, チーズ巻).
+- An alcoholic drink at 0 kcal (ストロング, 檸檬堂, n % ...; not ノンアル) has lost its energy → drop the product.
+- Creatine (クレアチン, not a protein powder with it): Japanese labels count its nitrogen as protein (5 g: P 4.4 g, 18 kcal);
+  it is neither a protein nor an energy source → P 0 and kcal = 4C + 9F (a flavoured one's sugar), with a note saying so.
 
 Search aliases come from Wikidata (CC0) and ja.wikipedia (CC BY-SA, short names and readings only, no text), frozen
-in `data_src/aliases_*.json`.
+in `data_src/aliases_*.json`. MEXT's rule-based aliases (`mext_names.py` TOKEN_ALIASES) give an animal's own names
+(豚肉, 牛肉, 鶏肉) to its cuts, not to its processed meats or offal (`PROCESSED_MEAT`: 豚肉 found ベーコン first), and ライス only
+to cooked rice (01088's override), not to every 米 food (米粉, おもゆ).
 
 ## Verification
 

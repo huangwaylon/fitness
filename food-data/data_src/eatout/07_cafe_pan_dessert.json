@@ -25,6 +25,8 @@
 {"key": "drink_yogurt", "name": "飲むヨーグルト", "en": "Drinking yogurt", "aliases": ["のむヨーグルト", "ヨーグルトドリンク"], "cat": "飲料", "ing": [["13027", 200]], "unit": "200ml"},
 {"key": "tapioca", "name": "タピオカミルクティー", "en": "Bubble milk tea", "aliases": ["タピオカ", "タピ", "ボバ", "ミルクティー"], "cat": "飲料", "ing": [["02057", 100], ["16044", 200], ["13003", 120], ["03026", 35], ["water", 40]], "unit": "Mサイズ"},
 {"key": "green_tea_pet", "name": "緑茶（ペットボトル）", "en": "Green tea (PET bottle)", "aliases": ["お茶", "緑茶", "ペットボトル茶"], "cat": "飲料", "ing": [["16037", 500]], "unit": "500ml"},
+{"key": "water", "name": "水（ミネラルウォーター）", "en": "Water", "aliases": ["水", "みず", "ミネラルウォーター", "お水", "白湯", "さゆ", "water"], "cat": "飲料", "ing": [["water", 500]], "unit": "500ml", "portions": [["コップ1杯（200ml）", 0.4]]},
+{"key": "tansansui", "name": "炭酸水（無糖）", "en": "Sparkling water (unsweetened)", "aliases": ["炭酸水", "たんさんすい", "ソーダ水", "スパークリングウォーター"], "cat": "飲料", "ing": [["water", 500]], "unit": "500ml"},
 {"key": "melonpan", "name": "メロンパン", "en": "Melon pan", "aliases": ["めろんぱん", "メロンパン"], "cat": "パン", "ing": [["15132", 110]], "unit": "1個"},
 {"key": "croissant", "name": "クロワッサン", "en": "Croissant", "aliases": ["くろわっさん"], "cat": "パン", "ing": [["01209", 45]], "unit": "1個"},
 {"key": "anpan", "name": "あんパン", "en": "Anpan (red bean bun)", "aliases": ["あんぱん", "つぶあんパン"], "cat": "パン", "ing": [["15069", 100]], "unit": "1個"},
