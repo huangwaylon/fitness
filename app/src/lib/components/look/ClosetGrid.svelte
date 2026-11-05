@@ -1,11 +1,11 @@
 <script lang="ts">
   // One grid of the すがた level's closet (customization.md §3.4), NH's wardrobe way: a tile per item (in the variant
-  // worn, else the one last chosen, else the first; the colour filter's when one is set), a tap wears it and opens a
-  // row of colour dots under that tile's row (its variants: a dot wears that one; toggle buttons, not radios, so the
-  // grid's roving keeps to its tiles). A なし tile first where the slot may be empty. Built a slice per frame (a few
+  // worn, else the one last chosen, else the first; the colour filter's when one is set), a tap wears it and shows its
+  // colours on the stage (the level's dots, never in the grid: the grid doesn't move). A なし tile first where the slot
+  // may be empty. Built a slice per frame (a few
   // hundred tops at once is a long task on a phone); a garment's tile is its catalogue icon, loaded lazily and tinted to
   // the colour shown (closet.ts Variant.tint); a face part's or hairstyle's its number. The closet's items have no
-  // names: a tile is 「トップス 3」 to a screen reader, a dot its colour.
+  // names: a tile is 「トップス 3、いろ 4しゅるい」 to a screen reader.
   import type { PartId, PlayerLook } from '#lib/contract/look.ts';
   import { roving } from '../ui/roving.ts';
   import { closet, GARMENT_KINDS, OPTIONAL_KINDS, wornIn, type ClosetItem, type ClosetKind, type Hue, type Variant } from './closet.ts';
@@ -18,8 +18,10 @@
     /** The variant last chosen per item key (the tile shows it). */
     chosen: Record<string, PartId>;
     onwear: (kind: ClosetKind, id: PartId | null) => void;
+    /** Every tap on a tile (its item; null: なし), worn already or not: the stage shows its colours. */
+    ontap?: (item: ClosetItem | null) => void;
   }
-  let { kind, look, hue, chosen, onwear }: Props = $props();
+  let { kind, look, hue, chosen, onwear, ontap }: Props = $props();
 
   const COLS = 5;
   const FIRST = 30;
@@ -37,8 +39,6 @@
     const raf = requestAnimationFrame(() => (limit += STEP));
     return () => cancelAnimationFrame(raf);
   });
-  /** The item whose colour row is open (by its key). */
-  let open = $state<string | null>(null);
 
   type Tile = { item: ClosetItem | null; v: Variant | null; n: number };
   /** The variant a tile shows: the worn one, the last chosen, the first (within the filter). */
@@ -53,14 +53,15 @@
   const rows = $derived(Array.from({ length: Math.ceil(tiles.length / COLS) }, (_, r) => tiles.slice(r * COLS, r * COLS + COLS)));
   const isWorn = (tile: Tile) => (tile.item ? tile.item.variants.some((v) => v.id === worn) : worn === null);
   const tabStop = $derived(tiles.find(isWorn) ?? tiles[0]);
-  const label = (tile: Tile) => (tile.item ? t('look.item', { kind: t(`look.kind.${kind}`), n: tile.n }) : t('look.none'));
+  const label = (tile: Tile) => {
+    if (!tile.item) return t('look.none');
+    const name = t('look.item', { kind: t(`look.kind.${kind}`), n: tile.n });
+    return tile.item.variants.length > 1 ? t('look.itemColours', { name, n: tile.item.variants.length }) : name;
+  };
 
   function tap(tile: Tile) {
-    if (!tile.item) {
-      open = null;
-      return onwear(kind, null);
-    }
-    open = garment && tile.item.variants.length > 1 ? tile.item.key : null;
+    ontap?.(tile.item);
+    if (!tile.item) return onwear(kind, null);
     if (tile.v && tile.v.id !== worn) onwear(kind, tile.v.id);
   }
 </script>
@@ -97,16 +98,6 @@
           </button>
         {/each}
       </div>
-      {@const it = row.find((x) => x.item?.key === open)?.item}
-      {#if it}
-        <div class="dots" role="group" aria-label={t('look.colours', { name: label(row.find((x) => x.item === it)!) })} data-colours={it.key}>
-          {#each it.variants as v, i (v.id)}
-            {@const on = v.id === worn}
-            <button type="button" class="dot" aria-pressed={on} aria-label={`${t(`look.hue.${v.hue}`)} ${t('look.swatch', { n: i + 1 })}`} data-part={v.id}
-              data-sfx={on ? 'none' : 'tick'} style:--sw={v.swatch} onclick={() => v.id !== worn && onwear(kind, v.id)}></button>
-          {/each}
-        </div>
-      {/if}
     {/each}
   </div>
 {:else}
@@ -132,18 +123,5 @@
   .n { position: absolute; right: 6px; bottom: 5px; font-size: 11px; opacity: .7; }
   .n.big { position: static; font-size: var(--fs-body); opacity: 1; }
   .none { width: 46%; height: 46%; opacity: .6; }
-  /* the colour row: NH's dots sliding open under the tapped item's row */
-  .dots {
-    display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip);
-    animation: open 200ms var(--ease-soft);
-  }
-  @keyframes open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-  .dot {
-    appearance: none; cursor: pointer; border: 0; padding: 0; width: 44px; height: 44px; border-radius: 50%; position: relative; background: none;
-  }
-  .dot::before {
-    content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--sw); box-shadow: inset 0 0 0 2px rgb(0 0 0 / .16);
-  }
-  .dot[aria-pressed='true']::before { box-shadow: inset 0 0 0 2px rgb(0 0 0 / .16), 0 0 0 3px var(--surface), 0 0 0 6px var(--c-leaf-edge); }
   .empty { margin: 16px 0; text-align: center; font-weight: 700; color: var(--text-soft); }
 </style>

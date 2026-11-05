@@ -116,8 +116,7 @@ test('sound off: no AudioContext, no media element, however much is tapped', asy
   await page.touchscreen.tap(x, y);
   await fromMenu(page, 'settings', 'tap');
   await page.locator('[data-push=look]').click();
-  await page.locator('[data-push=villager]').click();
-  await page.locator('.titlebar .back').click();
+  await page.locator('[data-look-tab=villager]').click();
   await page.locator('.titlebar .back').click();
   await page.locator('.titlebar .close').click();
   await page.waitForTimeout(500);
@@ -224,10 +223,11 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('島', 'せってい (→ the sheet)', () => page.locator('[data-hud-settings]').tap(), ['jar-tap', 'panel-open']);
   await step('すがた', 'かえる', () => dlg.locator('[data-push=look]').tap(), ['page']);
   await step('すがた', 'a category', () => dlg.locator('[data-cat=bottoms]').tap(), ['tick']);
-  await step('すがた', 'むらびとの すがたに する', () => dlg.locator('[data-push=villager]').tap(), ['page']);
+  await step('すがた', 'むらびと tab', () => dlg.locator('[data-look-tab=villager]').tap(), ['tick']);
+  await step('すがた', 'the tab already shown', () => dlg.locator('[data-look-tab=villager]').tap(), []);
   await step('むらびと', 'search field', () => dlg.getByRole('searchbox').tap(), []);
   await step('むらびと', 'pick a villager', () => dlg.locator('.rv[aria-checked="false"]').first().tap(), ['tick']);
-  await step('むらびと', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
+  await step('すがた', 'もどす', () => dlg.locator('[data-look-revert]').tap(), ['back']);
   await step('すがた', 'back (‹)', () => dlg.locator('.titlebar .back').tap(), ['back']);
   await step('サウンド', '音量 slider (change)', () => dlg.locator('input[type=range]').fill('6'), ['tick']);
   await step('ことば', '日本語 (already chosen)', () => dlg.getByRole('radio', { name: '日本語' }).tap(), []);

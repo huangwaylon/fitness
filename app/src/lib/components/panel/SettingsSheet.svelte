@@ -1,15 +1,14 @@
 <script lang="ts">
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: すがた (the look's portrait,
-  // the よびな; かえる → the すがた level, whose foot pushes the villager picker over it), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
+  // the よびな; かえる → the すがた level: the closet and the villagers, one dresser), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
   // the guest's) and もようがえ (one row: はじめる; not
   // the guest's).
-  // Each pushes a level with ‹ (the picker over すがた, which stays mounted under it: its edits are sent as it's left);
+  // Each pushes a level with ‹ (すがた's edits are sent as it's left, with a とりけす banner here);
   // ✕, the backdrop and Esc close it, and the next opening starts at its top.
   import { tick } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
-  import VillagerPicker from './VillagerPicker.svelte';
   import LookPage from '../look/LookPage.svelte';
   import LookPortrait from '../look/LookPortrait.svelte';
   import SoundSection from './SoundSection.svelte';
@@ -32,8 +31,8 @@
 
   let { open = $bindable() }: { open: boolean } = $props();
 
-  /** The levels pushed: すがた, and the villager picker over it. */
-  let stack = $state<('look' | 'villager')[]>([]);
+  /** The levels pushed: すがた. */
+  let stack = $state<'look'[]>([]);
   const push = $derived(stack.at(-1) ?? null);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
@@ -55,7 +54,7 @@
   /** The guest's phone (docs/design.md "The guest"): no もようがえ, no つうしん. */
   const guest = $derived(isGuest(view));
 
-  async function go(to: 'look' | 'villager') {
+  async function go(to: 'look') {
     if (!stack.length) savedTop = body?.scrollTop ?? 0;
     stack = [...stack, to];
     await tick();
@@ -91,11 +90,8 @@
 <Sheet bind:open label={t('island.settings')} variant="pop" onclose={closed}>
   <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (open = false)} sfx="self" /></div>
   <div class="panel-body" class:fill={push !== null} data-settings bind:this={body}>
-    {#if stack.includes('look') && view}
-      <div class="page" hidden={push !== 'look'}><LookPage {view} onvillager={() => go('villager')} /></div>
-    {/if}
-    {#if push === 'villager' && view}
-      <div class="page"><VillagerPicker {view} /></div>
+    {#if push === 'look' && view}
+      <div class="page"><LookPage {view} /></div>
     {:else if !push && view && me && worn}
       <section class="sec" aria-labelledby="sec-look">
         <h2 id="sec-look" class="sec-label">{t('panel.look')}</h2>
@@ -137,11 +133,9 @@
     margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column; gap: 14px;
   }
   .panel-body > :global(*) { flex: none; }
-  /* the villager picker pins its head and scrolls its own grid (to the bottom edge): the body holds still */
+  /* すがた pins its stage and tabs and scrolls its own panel (to the bottom edge): the body holds still */
   .panel-body.fill { overflow: hidden; padding-bottom: 0; }
   .panel-body.fill > .page { flex: 1; min-height: 0; }
-  /* すがた under the picker: kept (its edits are sent as it's left), not shown */
-  .page[hidden] { display: none; }
   /* a pushed level slides in from the right (design.md "Navigation") */
   .page { display: flex; flex-direction: column; gap: 14px; animation: slide 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes slide { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }

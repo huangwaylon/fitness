@@ -1,5 +1,5 @@
 // The すがた level's live 3D preview (customization.md §3.1; docs/design.md "すがた"): the look being edited as NH's
-// human player (components/player3d createPlayer), idling and blinking on a small canvas of its own, a drag turning
+// human player (components/player3d createPlayer), idling and blinking on a canvas of its own (the stage's size), a drag turning
 // it, a tap hopping it, every edit dressed on in place. Its renderer is the level's one WebGL context: the closet's
 // portraits (the コーデ chips, the せってい row) are drawn through it too (player3d portrait: a render target, a
 // second player kept for the shots), never another context. Frames on demand: only while the player moves (a step or
@@ -39,8 +39,7 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
   renderer.setPixelRatio(noDraw ? 1 : Math.min(DPR_MAX, window.devicePixelRatio || 1));
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.setClearColor(0x000000, 0);
-  const w = canvas.clientWidth || 96, h = canvas.clientHeight || 132;
-  renderer.setSize(w, h, false);
+  const w = Math.round(canvas.clientWidth) || 96, h = Math.round(canvas.clientHeight) || 132;
 
   const scene = new Scene();
   scene.add(new HemisphereLight(0xffffff, 0x9fb0a0, 1.6));
@@ -63,13 +62,30 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
   scene.add(pivot);
   player.step(0);
   player.step(1000);
-  // the frame: the whole figure at rest, a little room over the head and under the feet
+  // the frame: the whole figure at rest, a little room over the head and under the feet; again whenever the canvas's
+  // CSS box changes size (the stage's width; its compact states are a transform, not a resize), never a new renderer
   const box = new Box3().setFromObject(player.group), size = box.getSize(new Vector3());
   const fh = size.y * 1.12, cy = box.min.y + size.y * 0.5;
-  const fit = Math.max(fh, (size.x * 1.25) / camera.aspect);
-  const d = fit / 2 / Math.tan((camera.fov / 2) * Math.PI / 180);
-  camera.position.set(0, cy + d * 0.08, d);
-  camera.lookAt(0, cy, 0);
+  let cw = w, ch = h;
+  function frameTo(nw: number, nh: number) {
+    cw = nw;
+    ch = nh;
+    renderer.setSize(nw, nh, false);
+    camera.aspect = nw / nh;
+    camera.updateProjectionMatrix();
+    const fit = Math.max(fh, (size.x * 1.25) / camera.aspect);
+    const d = fit / 2 / Math.tan((camera.fov / 2) * Math.PI / 180);
+    camera.position.set(0, cy + d * 0.08, d);
+    camera.lookAt(0, cy, 0);
+  }
+  frameTo(w, h);
+  const resized = new ResizeObserver(() => {
+    const nw = Math.round(canvas.clientWidth), nh = Math.round(canvas.clientHeight);
+    if (nw < 8 || nh < 8 || (nw === cw && nh === ch)) return;
+    frameTo(nw, nh);
+    dirty = true;
+  });
+  resized.observe(canvas);
 
   let yaw = 0, spin = 0, held = false, letGo = -1e9, dirty = true, last = 0, raf = 0, gone = false;
   function frame(t: number) {
@@ -133,6 +149,7 @@ export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook,
     dispose() {
       if (gone) return;
       gone = true;
+      resized.disconnect();
       cancelAnimationFrame(raf);
       scene.remove(pivot);
       player.dispose();

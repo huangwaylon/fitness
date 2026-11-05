@@ -45,7 +45,7 @@ const NONE: Record<string, string> = {
   'lib/components/look/LookPage.svelte': 'the name fields (the system keyboard); the choice already made does nothing; a full ＋ ほぞん shows its banner, as a disabled ok does nothing',
   'lib/components/look/ClosetGrid.svelte': 'the item or colour already worn does nothing',
   'lib/components/look/LookPreview.svelte': 'a tap only hops the preview (its own motion, no cue)',
-  'lib/components/panel/VillagerPicker.svelte': 'name and search fields; the villager already chosen does nothing',
+  'lib/components/look/VillagerGrid.svelte': 'the search field (the system keyboard); the villager already worn does nothing',
   'lib/components/panel/LangSection.svelte': 'the language already chosen does nothing',
   'lib/components/panel/SeasonSection.svelte': 'the choice already made does nothing',
   'lib/components/panel/ProfileSection.svelte': 'the choice already made does nothing; the birthday field opens the system date picker',

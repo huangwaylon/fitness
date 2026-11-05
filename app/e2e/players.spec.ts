@@ -41,11 +41,10 @@ test('the look picks the model: A and B human players, a villager look its villa
   // むらびとの すがた: Raymond, swapped in place
   await fromMenu(a, 'settings');
   await settings(a).locator('[data-push=look]').click();
-  await settings(a).locator('[data-push=villager]').click();
+  await settings(a).locator('[data-look-tab=villager]').click();
   const name = ROSTER.raymond.nameJa;
   await settings(a).getByRole('searchbox').fill(name);
   await settings(a).getByRole('radio', { name }).click();
-  await back(a);
   await back(a);
   await a.keyboard.press('Escape');
   await expect(settings(a)).toBeHidden();
@@ -75,6 +74,7 @@ test('the look picks the model: A and B human players, a villager look its villa
   // A back to いつもの: its player again
   await fromMenu(a, 'settings');
   await settings(a).locator('[data-push=look]').click();
+  await settings(a).locator('[data-look-tab=coord]').click();
   await settings(a).locator('[data-look-chip="usual"]').click();
   await back(a);
   await a.keyboard.press('Escape');
