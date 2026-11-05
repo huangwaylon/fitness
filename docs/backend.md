@@ -205,7 +205,9 @@ missing reads as no cache (a full fetch), segments it doesn't list (another tab'
 no cache and the next save clears it. A refresh posts `snapshot` with `since` and `page` (4,000 rows; 2026-11-05),
 fetching each page after the last one's `next` and applying them together at the end (`sync/cache.ts fetchPages`: a
 page that fails leaves the cache as it was, a new epoch between two pages starts over whole, an older relay's one reply
-is taken as it comes), then
+is taken as it comes; no cap on the pages, since every metric row of Apple Health is kept: until 2026-11-05 a fetch
+stopped at 200 pages, 800k rows, a new phone's first fetch failing some years on; now a `next` that came before fails
+the fetch, and only a runaway's 100,000 pages stop it), then
 merges (`model/snapshot.ts`: deduped by natural key, its key set kept with each row list and layered by each merge, so
 a poll costs the rows it brings; ordered by `at`; an empty poll keeps the same rows object, so nothing re-reduces and
 no rows are written), records the server clock skew and saves in order. Overlapping refreshes share one request; a `fresh` caller waits for one more after any in flight. A reply that

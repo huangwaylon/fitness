@@ -345,8 +345,10 @@ async function fetchSnapshot(clientNow: () => number): Promise<ApiResult<{ cache
   }
 }
 
-/** At most this many pages a fetch (SNAPSHOT_PAGE rows each: far past any record). */
-const MAX_PAGES = 200;
+/** No cap on a fetch's pages but a runaway's (every metric row of Apple Health is kept, the compaction on hold: a fixed
+ *  200 pages, 800k rows, would have failed a new phone's first fetch some years on): a page whose `next` came before
+ *  fails the fetch, and past this many (400M rows: the phone's memory goes first) it stops. */
+const RUNAWAY_PAGES = 100_000;
 type SnapshotOk = Extract<SnapshotReply, { ok: true }>;
 
 /**
@@ -360,12 +362,16 @@ async function fetchPages(since: string | null): Promise<ApiResult<SnapshotOk & 
   for (let attempt = 0; attempt < 2; attempt++, from = null) {
     const metrics: SnapshotRows['metrics'] = [], events: SnapshotRows['events'] = [];
     let after: string | undefined, first: SnapshotOk | null = null;
-    for (let n = 0; n < MAX_PAGES; n++) {
+    const seen = new Set<string>();
+    let n = 0;
+    for (; n < RUNAWAY_PAGES; n++) {
       const r = await post<SnapshotOk>('snapshot', { ...(from ? { since: from } : {}), page: SNAPSHOT_PAGE, ...(after ? { after } : {}) });
       if (!r.ok) return r;
       // a new epoch (or another person) under the fetch: over again, whole
       if (first && (r.rev !== first.rev || r.me !== first.me)) break;
       after = typeof r.next === 'string' ? r.next : undefined;
+      if (after !== undefined && seen.has(after)) return { ok: false, error: 'unavailable', detail: 'a snapshot cursor came twice' };
+      if (after !== undefined) seen.add(after);
       // one page: as it came (the merge checks it)
       if (!first && !after) return { ...r, whole: !from };
       first ??= r;
@@ -373,8 +379,8 @@ async function fetchPages(since: string | null): Promise<ApiResult<SnapshotOk & 
       metrics.push(...r.rows.metrics);
       events.push(...r.rows.events);
       if (!after) return { ...r, rows: { metrics, events }, whole: !from };
-      if (n === MAX_PAGES - 1) return { ok: false, error: 'unavailable', detail: 'too many snapshot pages' };
     }
+    if (n === RUNAWAY_PAGES) return { ok: false, error: 'unavailable', detail: 'too many snapshot pages' };
   }
   return { ok: false, error: 'unavailable', detail: 'the epoch changed during the fetch' };
 }
