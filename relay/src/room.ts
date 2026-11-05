@@ -46,16 +46,17 @@ export type Held = Partial<Record<string, { from: Who; to: Who; at: number; t: n
 /** A change as the room keeps it: relayed, with its sender's sequence number (`c`: a resend is known again). */
 export type Kept = Relayed & { c?: number };
 
-/** A socket must say hello within this long. */
-export const HELLO_MS = 10_000;
+/** A socket must say hello within this long (a phone says it on open, one round trip). */
+export const HELLO_MS = 3_000;
 /** The day's world kept for a phone that opens later (docs/backend.md#shared-world): today's (Tokyo) changes, the
  *  last RING_MAX, and each person's last walk (never trimmed, carried into each new day). */
 export const RING_MAX = 400;
 /** Per connection: a burst of 20, 20 a second after that. */
 const BURST = 20;
 const PER_SEC = 20;
-/** At most this many sockets at once (two people, a few tabs, room to reconnect). */
-export const MAX_SOCKETS = 8;
+/** At most this many sockets waiting for their hello: a new one lets the oldest go. Welcomed sockets have no cap of
+ *  their own and never count here: a person's hello replaces their earlier socket, so there are at most three. */
+export const MAX_PENDING = 4;
 /** A person's phrases (`say`) at most one this often (ms): a newer one within it goes nowhere (the phone waits 1.5 s). */
 const SAY_GAP_MS = 1000;
 
@@ -140,7 +141,8 @@ export class RoomCore<S extends Sock> {
     if (!b) this.buckets.set(s, (b = new Bucket(BURST, PER_SEC, now)));
     if (!b.take(now)) return;
     const meta = this.io.meta(s);
-    if (!meta) return;
+    // a socket let go (swept, or making room) before its hello: whatever it says now goes nowhere
+    if (!meta || (!meta.who && meta.opened === 0)) return;
     const msg = parseClient(raw);
     if (!msg) {
       const v = otherVersion(raw);
@@ -305,10 +307,22 @@ export class RoomCore<S extends Sock> {
     return next;
   }
 
-  /** Whether another socket may join (after sweeping out the silent ones). */
-  roomFor(): boolean {
+  /** Room for one more socket: the silent ones past their time swept out, then the oldest still waiting for a hello
+   *  let go until fewer than MAX_PENDING wait (so a few silent sockets can never keep a phone out). Returns how many
+   *  were let go to make room. */
+  makeRoom(): number {
     this.sweep();
-    return this.io.sockets().filter((s) => this.io.meta(s)?.opened !== 0).length < MAX_SOCKETS;
+    const waiting = this.io.sockets().filter((s) => {
+      const m = this.io.meta(s);
+      return m && !m.who && m.opened !== 0;
+    }).sort((x, y) => this.io.meta(x)!.opened - this.io.meta(y)!.opened);
+    let n = 0;
+    while (waiting.length - n >= MAX_PENDING) {
+      const s = waiting[n++];
+      this.io.setMeta(s, { who: null, opened: 0 });
+      this.shut(s, CLOSE.timeout, 'no hello');
+    }
+    return n;
   }
 
   /** Today's world (a new Tokyo day starts empty but for each person's last walk: where their villager stands, however

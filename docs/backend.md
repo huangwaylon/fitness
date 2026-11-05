@@ -312,8 +312,10 @@ catches an offline phone up.
   last change; `here`: everyone else who is here; `gone`: when the room saw each person's last socket close,
   for those not here and my own last one, kept in its storage: one gone quiet inside a room leaves it then,
   `store/where.svelte.ts`), or
-  closes 4001. No hello within 10 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
-  (4002, no presence flicker). At most 8 sockets.
+  closes 4001. No hello within 3 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
+  (4002, no presence flicker), so there are at most three welcomed sockets. At most 4 sockets wait for their hello: a
+  new one lets the oldest of them go (4003, the log's `room.full`), so silent sockets never keep a phone out; a socket
+  is never refused.
 - **Protocol** (`app/src/lib/contract/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
   `v: 3` (the rolling-log world with the guest: `who` may be `G`, the welcome's `here`, a high-five's `to`; v1 and v2
   went on 2026-11-05, once every phone's hello said v3: the log's `ws.hello`), ≤ 256 bytes (an intent ~60–100; a `replay` ≤ 16,000). Intents: `walk {to: node id | [x, z], at?,

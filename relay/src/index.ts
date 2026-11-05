@@ -87,10 +87,9 @@ export class IslandRoom extends DurableObject<Env> {
 
   async fetch(req: Request): Promise<Response> {
     if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });
-    if (!this.core.roomFor()) {
-      this.log([{ e: 'room.full', l: 2, d: { socks: this.ctx.getWebSockets().length } }]);
-      return new Response('room full', { status: 503 });
-    }
+    // never refused: the oldest socket still waiting for its hello is let go instead (room.ts makeRoom)
+    const evicted = this.core.makeRoom();
+    if (evicted) this.log([{ e: 'room.full', l: 2, d: { socks: this.ctx.getWebSockets().length } }]);
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server);
     this.core.open(server);
