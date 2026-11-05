@@ -10,8 +10,6 @@ export interface Clip {
   hash: string;
   /** The slow clip's content hash (levels 1 and 2). */
   slow?: string;
-  /** The hash of what was spoken (text, voice, rate): the script regenerates a clip when it changes. */
-  src: string;
 }
 
 export const CLIPS: Readonly<Record<string, Clip>> = raw;
