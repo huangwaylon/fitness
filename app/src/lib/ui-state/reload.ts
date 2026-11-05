@@ -1,11 +1,13 @@
 // Stale-build recovery: after a deploy, a PWA left resident still runs the old build. Its lazy chunks
-// (きろく, the harvest) can 404, and a remembered rejected import() would fail forever. A failed chunk load forgets
-// the import and reloads once (into the new build; Safari also keeps a failed import for the page's life, so only a
-// reload retries it); a detected new version reloads when nothing is open. Not on a page that is leaving: Safari fails
-// every load of a page navigating away, and the reload then took the navigation over (back to this page). Leaving, a
-// fetch fails too, so a chunk failure reloads only once one more request gets through.
+// (きろく, the harvest) can 404, and a remembered rejected import() would fail forever. A chunk that isn't fetched
+// forgets the import and, when the deployed build is a newer one, reloads once into it (Safari also keeps a failed
+// import for the page's life, so only a reload retries it); a detected new version reloads when nothing is open. Each
+// only once the new build's service worker controls the page, so the reload is its shell, not the old one again. Not
+// on a page that is leaving: Safari fails every load of a page navigating away, and the reload then took the
+// navigation over (back to this page); leaving, version.json isn't fetched either.
 // The send queue and the key live in storage, so a reload loses nothing but an open sheet.
 
+import { version } from '$app/env';
 import { log, persistLog } from '#lib/sync/log.ts';
 
 const KEY = 'island.reloadAt';
@@ -67,28 +69,50 @@ export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.na
   return w;
 }
 
-/** Whether this page still reaches the site (false on a page that is leaving, or offline). */
-async function reachable(): Promise<boolean> {
+/** The deployed build's version (Kit's _app/version.json, past every cache), or null when the site can't be asked (a
+ *  page that is leaving, offline). */
+async function deployed(): Promise<string | null> {
   const { resolve } = await import('$app/paths');
-  await fetch(`${resolve('/')}_app/version.json`, { cache: 'no-store' });
-  return true;
+  const res = await fetch(`${resolve('/')}_app/version.json`, { cache: 'no-store' });
+  if (!res.ok) return null;
+  const v = ((await res.json()) as { version?: unknown }).version;
+  return typeof v === 'string' ? v : null;
 }
 
-/** A chunk failed to load: reload once, unless the page is leaving (or offline: the next open retries). */
-export async function reloadUnlessLeaving(alive: () => Promise<boolean> = reachable): Promise<boolean> {
-  if (!(await alive().catch(() => false))) return false;
-  // (a stale build's chunk: into the new build's worker first, as a deploy's reload; none till it's in)
+/** sessionStorage: the deployed version a chunk's failure last reloaded the page for (one reload a build). */
+const CHUNK_KEY = 'island.chunkReloadFor';
+
+/**
+ * A chunk failed to load: reload into the deployed build, once, and only if it isn't this one (a reload into the very
+ * build whose chunk fails cures nothing: it reloaded on every failure, forever). Not on a page that is leaving or
+ * offline (version.json not fetched: the next open retries), not before the new build's worker controls the page
+ * (newWorker: else the reload is the old build's cached shell again), and once a deployed version a session.
+ */
+export async function reloadUnlessLeaving(deployedNow: () => Promise<string | null> = deployed, running: string = version): Promise<boolean> {
+  const v = await deployedNow().catch(() => null);
+  if (!v || v === running) return false;
+  try {
+    if (sessionStorage.getItem(CHUNK_KEY) === v) return false;
+  } catch {
+    return false;
+  }
   if (!(await newWorker())) return false;
+  try {
+    sessionStorage.setItem(CHUNK_KEY, v);
+  } catch {
+    return false;
+  }
   return safeReload(Date.now(), 'chunk');
 }
 
-/** A memoised lazy import that forgets a failed load (the next open retries) and reloads once (reloadUnlessLeaving). */
-export function lazy<T>(load: () => Promise<T>, alive?: () => Promise<boolean>): () => Promise<T> {
+/** A memoised lazy import that forgets a failed load (the next call retries) and reloads into a newer deployed build
+ *  (reloadUnlessLeaving). */
+export function lazy<T>(load: () => Promise<T>, deployedNow?: () => Promise<string | null>): () => Promise<T> {
   let mod: Promise<T> | null = null;
   return () =>
     (mod ??= load().catch((e: unknown) => {
       mod = null;
-      void reloadUnlessLeaving(alive);
+      void reloadUnlessLeaving(deployedNow);
       throw e;
     }));
 }

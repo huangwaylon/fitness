@@ -1,9 +1,13 @@
 // A component loaded the first time it is wanted, then kept: its chunk stays out of the first load (a visitor, the
 // fireworks, an event's decorations only come on their days). The import goes through reload.ts `lazy`, so a chunk a
-// deploy removed reloads into the new build; a failed one is asked for again at its next chance (retry.ts).
+// deploy removed reloads into the new build; a failed one is asked for again at its next chance (retry.ts), up to
+// MAX_TRIES times a page (a chunk that keeps failing was asked for every 30-60 s for good, each time a version check).
 import type { Component } from 'svelte';
 import { lazy } from './reload.ts';
 import { nextChance } from './retry.ts';
+
+/** A lazy component's loads a page at most: the first and its retries. */
+export const MAX_TRIES = 5;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function lazyComponent<C extends Component<any, any>>(load: () => Promise<{ default: C }>): { get(want: boolean): C | null } {
@@ -21,11 +25,13 @@ export function lazyComponent<C extends Component<any, any>>(load: () => Promise
         asked = true;
         void get().then(
           (m) => (loaded = m.default),
-          () =>
-            void nextChance(failures++).then(() => {
+          () => {
+            if (++failures >= MAX_TRIES) return;
+            void nextChance(failures - 1).then(() => {
               asked = false;
               again++;
-            })
+            });
+          }
         );
       }
       return loaded;

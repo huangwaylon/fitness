@@ -842,7 +842,13 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
   draws as it is or as いつもの's parts at the first paint.
 - **A failed load tries again** at its next chance (`ui-state/retry.ts nextChance`: the next `online`, the page back
   to the front, or a backoff of 2 s doubling to a minute): a lazy component (`lazyComponent.svelte.ts`: whoever asked
-  sees it then), a food dataset (`food/load.ts`, a few times, added when it comes), the villagers' birthdays chunk.
+  sees it then; 5 loads a page at most), a food dataset (`food/load.ts`, a few times, added when it comes), the
+  villagers' birthdays chunk.
+- **A chunk that fails reloads the page** (`ui-state/reload.ts reloadUnlessLeaving`) only into a newer build: when
+  `_app/version.json` names another version than the running one, once that version a session (sessionStorage
+  `island.chunkReloadFor`), and only once its service worker controls the page. A chunk of the running build that
+  keeps failing reloads nothing (it reloaded every 30-60 s for good: each retry's failure, and Vite's
+  `vite:preloadError` again).
 - **Static files keep Pages' default cache** (revalidated): `/room/*`, `/terrain/*` and `/art/*` are not
   content-hashed by name (a `?v=` on some, none on the tent's walls and floors, the terrain's strata, the art), and
   `_headers` can't match a query string.
