@@ -144,6 +144,10 @@ keys; without either, the keys file: §4). It signs `POST /admin` with the serve
   last 30 days); `restore <bookmark>` restarts the object on it (from the moment it's asked until the restart every request is answered `unavailable`, which the phones retry: nothing is acknowledged that the bookmark then drops; a Shortcut run in those seconds is covered by its next one), and the room (told before the restart, its own storage) calls the restored record ~5 s later (retrying every 30 s, 10 tries) to start a new epoch, so every phone refetches; only when the reply's `note` says the room wasn't told, run `rev` yourself. Beyond 30 days:
   `dump > island-record-YYYY-MM-DD.json` (every row, the held values too, fetched a page at a time: the admin's `dump` pages by default, 10,000 rows; keep it off the repo) and `load <file>` into an empty record.
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
+- **`counts`** also says `schema_v` (the record's migrations run: 3 since 2026-11-05). The admin ops `shopcheck
+  {fix?}` and `decorcheck {fix?}` (signed like the rest: `scripts/admin.ts`) compare the record's running shop ledgers
+  and decor caps' counts with a full fold of the rows; `fix` takes the fold's. Run them if a sale or a placement is
+  refused when it shouldn't be.
 - **`held [A|B]`**: the values an ingest held back (a past day's 0 over a value above it, [backend](../backend.md#ingest)
   "Latest wins"), never served; each with when it was first and last sent and how often. **`promote <person> <date>
   <metric> [value]`**: one of them made a row of that day (the day's latest from then on, the phones get it at their
