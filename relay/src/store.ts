@@ -791,12 +791,15 @@ export class StoreCore {
    *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. */
   private shopTarget(me: Who, type: 'sell' | 'buy', d: Rec): 'pocket' | 'wallet' | 'owned' | null {
     const parse = (raw: string): Rec | null => this.rowRec(raw, 'shop');
-    const caught = new Map<string, number>();
-    // (less what was given back: a claim race lost)
+    const caught = new Map<string, number>(), back = new Map<string, number>();
+    // (less what was given back: a claim race lost; and that kept apart, for what a sold one owes)
     for (const r of this.io.sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('tally', 'tally_back') AND person = ?", me).toArray()) {
       const t = parse(r.data);
       const sign = r.type === 'tally_back' ? -1 : 1;
-      if (t && isTally(t)) for (const k in t.counts) caught.set(k, (caught.get(k) ?? 0) + sign * t.counts[k]);
+      if (t && isTally(t)) for (const k in t.counts) {
+        caught.set(k, (caught.get(k) ?? 0) + sign * t.counts[k]);
+        if (sign < 0) back.set(k, (back.get(k) ?? 0) + t.counts[k]);
+      }
     }
     const rows: ShopRow[] = [];
     for (const r of this.io.sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('sell', 'buy') AND person = ? ORDER BY at, seq", me).toArray()) {
@@ -807,7 +810,7 @@ export class StoreCore {
       else if (b) rows.push({ type: 'buy', data: b });
     }
     const row: ShopRow = type === 'sell' ? { type, data: sellOf(d)! } : { type, data: buyOf(d)! };
-    return shopRefusal(shopLedger(caught, rows), caught, row);
+    return shopRefusal(shopLedger(caught, rows, back), caught, row);
   }
 
   /** Every decor row (its seq, sender and data). */

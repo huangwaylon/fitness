@@ -101,8 +101,9 @@ export function stockOf(date: LocalDate): readonly string[] {
 
 // ---- the ledger
 
-/** A person's shop as their rows leave it: sold per species, かいがら, the pieces bought (in order). */
-export interface Ledger { sold: Map<string, number>; shells: number; owned: string[] }
+/** A person's shop as their rows leave it: sold per species (and what they fetched, `soldV`), かいがら (less what is
+ *  owed), the pieces bought (in order), and the かいがら owed per species (`owed`: sold catches given back since). */
+export interface Ledger { sold: Map<string, number>; soldV: Map<string, number>; shells: number; owned: string[]; owed: Map<string, number> }
 
 /** A row of the shop: a sell or a buy, as `sellOf` / `buyOf` read it; `queued` when the record hasn't kept it yet (a
  *  phone's queue, model/state.ts foldEvents). */
@@ -119,25 +120,59 @@ export function shopRefusal(l: Ledger, caught: ReadonlyMap<string, number>, row:
 }
 
 /**
+ * The かいがら owed for `species` (`caught`: its tallies less what was given back; `back`: what was given back): the
+ * catches sold that a give-back took back (a claim race lost after the sale, contract/tally.ts tally_back), at what
+ * they fetched on average. Only a give-back's: a sale a lower tally uncovers otherwise (a stale one from before the
+ * record kept each day's largest counts) owes nothing, as before. A later catch of the species covers the sale again
+ * and the debt goes (its かいがら back; the pocket still empty: that catch stands in for the one given back).
+ */
+function owedOf(l: Ledger, species: string, caught: ReadonlyMap<string, number>, back: ReadonlyMap<string, number>): number {
+  const s = l.sold.get(species) ?? 0, c = caught.get(species) ?? 0, b = back.get(species) ?? 0;
+  const units = Math.max(0, s - c) - Math.max(0, s - (c + b));
+  return units > 0 ? Math.round((units * (l.soldV.get(species) ?? 0)) / s) : 0;
+}
+
+/**
  * One person's rows (server order) folded. A row the record kept counts whatever the tallies say now: it was covered
  * when it was kept, so a tally that reads lower since (a stale one, from before the record kept each day's largest
  * counts) never takes back a sale's かいがら or a bought piece; only a piece twice is ignored. A queued row counts only
- * when the ledger covers it (the record would refuse it), so a phone's view never shows a negative wallet.
+ * when the ledger covers it (the record would refuse it), so a phone's view never shows a negative wallet. `back`:
+ * the person's given-back counts (`caught` is already less them): a sold catch given back costs its かいがら (owedOf),
+ * so a sale of a catch that was never theirs buys nothing (2026-11-05: it left the pocket at −n and the かいがら
+ * spendable). The ledger's `shells` are less what is owed, and may go below 0 when the かいがら were spent already.
+ * The record folds by this (relay/src/store.ts), so the phones and the record agree.
  */
-export function shopLedger(caught: ReadonlyMap<string, number>, rows: Iterable<ShopRow>): Ledger {
-  const l: Ledger = { sold: new Map(), shells: 0, owned: [] };
-  for (const row of rows) {
-    const why = shopRefusal(l, caught, row);
-    if (why === 'owned' || (why && row.queued)) continue;
-    if (row.type === 'sell') {
-      l.sold.set(row.data.species, (l.sold.get(row.data.species) ?? 0) + row.data.n);
-      l.shells += row.data.v;
-    } else {
-      l.owned.push(row.data.item);
-      l.shells -= row.data.price;
-    }
-  }
+export function shopLedger(caught: ReadonlyMap<string, number>, rows: Iterable<ShopRow>, back: ReadonlyMap<string, number> = new Map()): Ledger {
+  const l: Ledger = { sold: new Map(), soldV: new Map(), shells: 0, owned: [], owed: new Map() };
+  for (const row of rows) shopStep(l, caught, back, row);
   return l;
+}
+
+/** One row into the ledger, as shopLedger folds it (the record's running ledger takes its new rows by this). @public
+ *  (relay/src/store.ts) */
+export function shopStep(l: Ledger, caught: ReadonlyMap<string, number>, back: ReadonlyMap<string, number>, row: ShopRow): void {
+  const why = shopRefusal(l, caught, row);
+  if (why === 'owned' || (why && row.queued)) return;
+  if (row.type === 'sell') {
+    const k = row.data.species;
+    l.sold.set(k, (l.sold.get(k) ?? 0) + row.data.n);
+    l.soldV.set(k, (l.soldV.get(k) ?? 0) + row.data.v);
+    l.shells += row.data.v;
+    reowe(l, k, caught, back);
+  } else {
+    l.owned.push(row.data.item);
+    l.shells -= row.data.price;
+  }
+}
+
+/** The debt of `species` as the tallies say now (after a sell, or a tally or give-back of it): `shells` moved by its
+ *  change. @public (relay/src/store.ts) */
+export function reowe(l: Ledger, species: string, caught: ReadonlyMap<string, number>, back: ReadonlyMap<string, number>): void {
+  const was = l.owed.get(species) ?? 0, now = owedOf(l, species, caught, back);
+  if (now === was) return;
+  if (now) l.owed.set(species, now);
+  else l.owed.delete(species);
+  l.shells -= now - was;
 }
 
 /** Whether a tally key sells (a pocket's kind with a price). */

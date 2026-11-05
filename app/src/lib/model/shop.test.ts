@@ -108,4 +108,17 @@ describe('a catch given back (tally_back: a claim race lost after its tally came
     const t = tallyTotals(s.tallies);
     expect([t.all.get('fish:koi'), t.by.A.get('fish:koi'), t.all.get('bug:tarantula'), t.by.B.has('bug:tarantula')]).toEqual([1, 1, 1, false]);
   });
+
+  it('after a sale, costs the sold catch’s かいがら (the record’s rule): the wallet as if never sold; a later catch pays it', () => {
+    // 2026-11-05 relay review R1
+    const rows = [
+      ev(at('09:00'), 'A', 'tally', { date: D, counts: { 'fish:koi': 2 } }),
+      ev(at('09:01'), 'A', 'sell', { species: 'fish:koi', n: 2, v: 80 }),
+      ev(at('09:02'), 'A', 'tally_back', { date: D, counts: { 'fish:koi': 1 } })
+    ];
+    const s = reduce({ metrics: [], events: rows }, null);
+    expect(shopView(s, 'A')).toEqual({ pocket: new Map(), shells: 40, owned: [] });
+    const later = reduce({ metrics: [], events: [...rows, ev(at('09:30'), 'A', 'tally', { date: D, counts: { 'fish:koi': 3 } })] }, null);
+    expect(shopView(later, 'A')).toEqual({ pocket: new Map(), shells: 80, owned: [] });
+  });
 });

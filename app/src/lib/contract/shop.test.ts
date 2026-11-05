@@ -130,4 +130,21 @@ describe('the ledger', () => {
     expect(l.shells).toBe(KOI3 - 6);
     expect(shopLedger(caught, [buy('f3672'), buy('f3672')]).owned).toEqual(['f3672']); // still a piece once
   });
+  it('a sold catch given back costs what it fetched; a stale low tally still owes nothing; a later catch pays it', () => {
+    // 2026-11-05 relay review R1: sold, then given back (a claim race lost): the pocket at −n, the かいがら spendable
+    const K = sellPrice('fish:koi')!;
+    const rows = [sell('fish:koi', 3), buy('f3672')];
+    // 3 caught, 2 given back (caught is already less them): 2 of the 3 sold weren't hers
+    const l = shopLedger(new Map([['fish:koi', 1]]), rows, new Map([['fish:koi', 2]]));
+    expect(l.owed).toEqual(new Map([['fish:koi', 2 * K]]));
+    expect(l.shells).toBe(K - 6);
+    expect(shopRefusal(l, new Map([['fish:koi', 1]]), buy('f7047', K - 5))).toBe('wallet');
+    expect(shopRefusal(l, new Map([['fish:koi', 1]]), sell('fish:koi', 1))).toBe('pocket');
+    // more given back than sold beyond the pocket: only the sold ones owe
+    expect(shopLedger(new Map([['fish:koi', 0]]), [sell('fish:koi', 1)], new Map([['fish:koi', 3]])).shells).toBe(0);
+    // two more caught since: the sale covered again, nothing owed
+    expect(shopLedger(new Map([['fish:koi', 3]]), rows, new Map([['fish:koi', 2]])).shells).toBe(KOI3 - 6);
+    // at what they fetched (an older app's lower price), not today's list
+    expect(shopLedger(new Map([['fish:koi', 0]]), [{ type: 'sell', data: { species: 'fish:koi', n: 2, v: 2 * K - 2 } }], new Map([['fish:koi', 2]])).shells).toBe(0);
+  });
 });
