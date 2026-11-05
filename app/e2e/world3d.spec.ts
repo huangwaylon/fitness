@@ -3,7 +3,7 @@
 // POC's address) opens it.
 import { expect, test, type Page } from '@playwright/test';
 import { openRewards } from './hud.ts';
-import { lawnTap } from './island.ts';
+import { islandURL, lawnTap } from './island.ts';
 
 type W3 = {
   xRoom(k?: number): number;
@@ -158,7 +158,7 @@ test('the 3D camera zoomed in: one finger pans sideways too, held over the islan
 test('/world3d, the POC\'s address, opens the island', async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto(`world3d/?${Q}`);
-  await expect(page).toHaveURL(/\/fitness\/\?demo/);
+  await expect(page).toHaveURL(islandURL('demo'));
   await ready(page);
 });
 

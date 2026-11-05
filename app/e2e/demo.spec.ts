@@ -1,7 +1,7 @@
 // Demo smoke test: buy, undo, the harvest recap, the ベル ledger (read-only), けんこう's goals, on `?demo` (no backend, no key).
 import { expect, test, type Page } from '@playwright/test';
 import { fromMenu, hudBells, hudMenu, openRewards, unfoldMenu } from './hud.ts';
-import { lawnTap, quiet } from './island.ts';
+import { BASE, islandURL, lawnTap, quiet } from './island.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
@@ -660,7 +660,7 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   await expect(row('ミュージック')).toHaveAttribute('aria-checked', 'true');
   // the opening theme plays while the panel is up (NH's title screen); closing the panel hands over to the hour
   await expect(sheet(page).getByText('いまは オープニングテーマ')).toBeVisible();
-  await expect.poll(() => audio).toContain('/fitness/audio/music/opening.m4a');
+  await expect.poll(() => audio).toContain(`${BASE}/audio/music/opening.m4a`);
   await sheet(page).getByRole('slider', { name: '音量' }).fill('4');
   await sheet(page).locator('.titlebar .close').click();
   // the hour's track (or, on an event day, its track: events.ts)
@@ -754,7 +754,7 @@ test('the old /jar link lands on the island with the panel open on ごほうび 
   await page.goto('jar?demo');
   await expect(sheet(page).locator('[data-wallet]')).toBeVisible();
   await expect(sheet(page).locator('.shop')).toBeVisible();
-  await expect(page).toHaveURL(/\/fitness\/\?demo$/); // no ?panel left for a reload to reopen
+  await expect(page).toHaveURL(islandURL('demo$')); // no ?panel left for a reload to reopen
   await sheet(page).locator('.titlebar .close').click();
   await openPanel(page); // then the menu's ベル row opens it as ever
 });

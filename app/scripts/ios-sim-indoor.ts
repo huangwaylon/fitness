@@ -9,7 +9,7 @@
 //
 //   npm run ios:indoor -- [--url BASE] [--device "iPhone 17"] [--out DIR] [--keep] [--fpv] [--museum] [--room N]
 //
-//   --url     the site's base (default: the live site, https://huangwaylon.github.io/fitness/)
+//   --url     the site's base (default: the live site, https://island-fund.pages.dev/)
 //   --fpv     every room at my villager's eyes (the first-person view: ?fpv=1)
 //   --museum  the museum only (no tent, no home)
 //   --room N  the tent and うめ's room furnished first with N pieces (4 rugs, then the starter set's small things,
@@ -24,7 +24,7 @@ const opt = (name: string, def: string) => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] : def;
 };
-const BASE = opt('--url', 'https://huangwaylon.github.io/fitness/').replace(/\/?$/, '/');
+const BASE = opt('--url', 'https://island-fund.pages.dev/').replace(/\/?$/, '/');
 const Q = `demo&date=2026-11-04T12:00&critter=none&visitor=none${args.includes('--fpv') ? '&fpv=1' : ''}`;
 const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 const OUT = opt('--out', join(import.meta.dirname, '..', 'test-results', 'ios-sim', `indoor-${stamp}`));

@@ -2,6 +2,11 @@
 // (`tapOn`: in 3D the whole island is in view, so a villager or a visitor in front covers much of a small door).
 import { expect, type Locator, type Page } from '@playwright/test';
 
+/** The site's base path, as the build's (playwright.config.ts BASE_PATH: '/fitness' on GitHub Pages, '' at a domain's root). */
+export const BASE = process.env.BASE_PATH ?? '/fitness';
+/** The island's own URL (the base path's root) with a query, `rest` (a regex source) after its `?`. */
+export const islandURL = (rest = ''): RegExp => new RegExp(`^https?://[^/]+${BASE}/?\\?${rest}`);
+
 /** The 3D island's test hooks (Island3D.svelte's window.__world3d), the parts the specs read. */
 export type W3 = {
   loaded(): boolean;

@@ -4,6 +4,7 @@
 // day, finds it where it was, on both phones.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
+import { islandURL } from './island.ts';
 import { is3d, lawnTap, settled, tapOn } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -31,7 +32,7 @@ async function goIn(page: Page, id: 'shop' | 'museum') {
 /** Out by ‹ 島へ. */
 async function goOut(page: Page) {
   await page.getByRole('button', { name: '島へ' }).click();
-  await expect(page).toHaveURL(/fitness\/?\?/);
+  await expect(page).toHaveURL(islandURL());
 }
 async function inAndOut(page: Page, id: 'shop' | 'museum') {
   await goIn(page, id);

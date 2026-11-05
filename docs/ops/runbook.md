@@ -3,7 +3,8 @@
 Three pieces, no server of our own:
 - **The relay** (`relay/`, a Cloudflare Worker on the Free plan, §10): the record (metrics, events, the ingest audit in
   a Durable Object's SQLite, §13), the live room (presence and the day's shared world). No notifications (§12).
-- **The app:** a static PWA on GitHub Pages that computes everything in the browser from the record's rows.
+- **The app:** a static PWA on Cloudflare Pages (https://island-fund.pages.dev/, project `island-fund`; until the phones
+  have moved, also https://huangwaylon.github.io/fitness/) that computes everything in the browser from the record's rows.
 - **The sheet:** the Google Sheet *Island Fund*, a read-only export of the record (§9), and its Apps Script web app (one
   `/exec` URL) that takes the export.
 
@@ -12,10 +13,22 @@ The sheet's setup: [google-setup.md](google-setup.md). How it works: [backend.md
 ## 1. Deploy the UI
 Push to `main`. Any change under `app/**` (or to the workflow) runs `.github/workflows/pages.yml`:
 
-1. `npm ci --ignore-scripts`, then beside each other: `npm run build` with `BASE_PATH=/fitness` (once), and `npm run check`, `npm run knip`, `npx vitest run`
+1. `npm ci --ignore-scripts`, then beside each other: `npm run build` with `BASE_PATH=/fitness` (once, and again with
+   `BASE_PATH=''` for Cloudflare), and `npm run check`, `npm run knip`, `npx vitest run`
 2. the e2e against that build: Playwright in Chromium (twelve shards); WebKit as an iPhone 15 runs nightly on macOS
    (testing.md), gating nothing until it's green across the board
-3. deploy `app/build-pages/` to https://huangwaylon.github.io/fitness/
+3. deploy the root build to Cloudflare Pages (https://island-fund.pages.dev/, `wrangler pages deploy`, then a check that
+   it answers this build with its headers), and the `/fitness` one to https://huangwaylon.github.io/fitness/
+
+**Cloudflare Pages:** the project `island-fund` on the umeway1122@gmail.com account (direct upload, no Git integration:
+this workflow is the gate). CI needs two repo secrets: `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` (dash.cloudflare.com
+→ My Profile → API Tokens → Create Token → **Custom token**: permission *Account → Cloudflare Pages → Edit*, account
+resources: that one account; then `gh secret set CLOUDFLARE_API_TOKEN` and `gh secret set
+CLOUDFLARE_ACCOUNT_ID`). By hand, from `app/`: `BASE_PATH= npm run build`, then `npx wrangler pages deploy build-pages
+--project-name island-fund --branch main` (any `--branch` but `main` is a preview at `<branch>.island-fund.pages.dev`).
+The headers (CSP, nosniff, no-referrer, Permissions-Policy, HSTS, the immutable cache) are `build-pages/_headers`,
+written by the build ([testing.md](testing.md) "The headers"). GitHub Pages can't set headers: its copy has only the
+`<meta>` CSP.
 
 A red step stops the deploy (a flaky test, one that fails and then passes once more, is annotated instead:
 [testing.md](testing.md)); pull requests run steps 1–2 only. Re-run: Actions → *Deploy UI to GitHub Pages* →
@@ -185,15 +198,15 @@ keys). It signs `POST /admin` with the server-to-server secret.
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
 
 ## 14. Pair a phone
-On each iPhone: open https://huangwaylon.github.io/fitness/ in Safari → Share → **Add to Home Screen** *first*, open
+On each iPhone: open https://island-fund.pages.dev/ in Safari → Share → **Add to Home Screen** *first*, open
 the app from the icon, paste that person's key (the password manager). iOS gives the Home Screen app its own storage,
-so a key entered in Safari isn't seen there; a `…/fitness/#key=<key>` link works only when opened inside the installed
+so a key entered in Safari isn't seen there; a `https://island-fund.pages.dev/#key=<key>` link works only when opened inside the installed
 app. Then the Shortcut: [shortcut-health-sync.md](shortcut-health-sync.md) §2–4.
 
 <a id="4b-the-guest"></a>**The guest** ([design](../design.md#the-guest)): the same steps with `KEY_C` (a Worker secret,
 §4; `openssl rand -hex 32`, kept in the password manager), and no Shortcut (the guest has no health data). Send them:
 
-> 1. iPhone の Safari で https://huangwaylon.github.io/fitness/ を ひらいて、きょうゆう → **ホーム画面に追加**。
+> 1. iPhone の Safari で https://island-fund.pages.dev/ を ひらいて、きょうゆう → **ホーム画面に追加**。
 > 2. ホーム画面の しまの貯金箱 を ひらいて、この キーを はりつけて **つなぐ**：`<KEY_C>`
 > 3. せってい → むらびと で すきな むらびとと なまえを えらんでね。
 >

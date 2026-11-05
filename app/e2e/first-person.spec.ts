@@ -4,6 +4,7 @@
 // leaving and coming back in finds it as it was. A drag mid-walk turns the camera alone: the walk goes on to its spot,
 // the head stays where the finger left it.
 import { expect, test, type Page } from '@playwright/test';
+import { islandURL } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
@@ -85,7 +86,7 @@ for (const room of ROOMS) {
     // kept on this phone: on, out and back in, it's at the eyes from the first frame; off, it's off
     await eyeBtn.click();
     await page.getByRole('button', { name: '島へ' }).click();
-    await expect(page).toHaveURL(/\/fitness\/\?/);
+    await expect(page).toHaveURL(islandURL());
     await open(page);
     await expect(page.locator('[data-fpv]')).toHaveAttribute('data-fpv', 'on');
     expect((await r(page, (h) => h.fpv()))!.inside).toBe(true);

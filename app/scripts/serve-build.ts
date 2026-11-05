@@ -1,7 +1,10 @@
 // Serves build-pages/ the way GitHub Pages does, for the e2e tests: the exact bytes CI deploys (the build job's
-// artifact), under the base path, with 404.html (the SPA fallback) for any other path. No dependencies, starts at once.
+// artifact), under the base path, with 404.html (the SPA fallback) for any other path, and the headers Cloudflare Pages
+// adds (build-pages/_headers, scripts/headers.ts: the CSP and the rest; not its Cache-Control: here nothing is cached).
+// No dependencies, starts at once.
 // `node scripts/serve-build.ts <port> [base]`.
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
+import { readFileSync } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 
@@ -31,6 +34,21 @@ const TYPES: Record<string, string> = {
   '.wasm': 'application/wasm',
   '.txt': 'text/plain; charset=utf-8'
 };
+
+/** build-pages/_headers' rules (Pages' format: a path, `*` a wildcard, then indented `Name: value` lines). */
+const RULES: { path: RegExp; headers: [string, string][] }[] = [];
+try {
+  for (const block of readFileSync(join(root, '_headers'), 'utf8').split(/\n(?=\S)/)) {
+    const [head, ...lines] = block.trim().split('\n');
+    if (!head) continue;
+    const path = new RegExp(`^${head.trim().replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*')}$`);
+    const headers = lines.map((l) => l.trim().split(/:\s*(.*)/s).slice(0, 2) as [string, string]).filter(([k]) => k && k.toLowerCase() !== 'cache-control');
+    RULES.push({ path, headers });
+  }
+} catch {
+  /* no _headers: a build from before them */
+}
+const headersFor = (path: string): Record<string, string> => Object.fromEntries(RULES.filter((r) => r.path.test(path)).flatMap((r) => r.headers));
 
 async function file(path: string): Promise<string | undefined> {
   try {
@@ -63,7 +81,7 @@ async function serve(req: IncomingMessage, res: ServerResponse) {
   const hit = inBase ? await file(join(root, rel)) : undefined;
   const served = hit ?? join(root, '404.html');
   const body = await readFile(served);
-  const headers = { 'content-type': TYPES[extname(served)] ?? 'application/octet-stream', 'cache-control': 'no-store', 'accept-ranges': 'bytes' };
+  const headers = { ...headersFor(path), 'content-type': TYPES[extname(served)] ?? 'application/octet-stream', 'cache-control': 'no-store', 'accept-ranges': 'bytes' };
   // WebKit's media elements ask for byte ranges (as Pages answers them)
   const range = hit && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? '');
   if (range && (range[1] || range[2])) {

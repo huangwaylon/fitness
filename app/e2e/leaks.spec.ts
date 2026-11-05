@@ -4,6 +4,7 @@
 // (Chromium's CDP, hence @chromium). Before the fixes: one more context a home picker opened (three's dispose listeners
 // on the cached home models held the picker's renderer), one more an /editor visit (and a document keydown listener).
 import { expect, test, type Page } from '@playwright/test';
+import { BASE } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&as=B';
@@ -64,16 +65,16 @@ test('the rooms and the home picker, in and out: no WebGL context or window list
   await watch(page);
   await page.goto(Q);
   await islandUp(page);
-  const back = async () => (await nav(page, `/fitness/${Q}`), await islandUp(page));
+  const back = async () => (await nav(page, `${BASE}/${Q}`), await islandUp(page));
   const trips = async () => {
-    await nav(page, `/fitness/shop${Q}`);
+    await nav(page, `${BASE}/shop${Q}`);
     await expect(page.locator('[data-shop]')).toBeVisible();
     await back();
-    await nav(page, `/fitness/museum${Q}`);
+    await nav(page, `${BASE}/museum${Q}`);
     await framed(page, '__museum');
     await back();
     // うめ's house, as うめ: いえを かえる opened, two homes previewed, closed
-    await nav(page, `/fitness/tent${Q}&home=B`);
+    await nav(page, `${BASE}/tent${Q}&home=B`);
     await framed(page, '__tent');
     for (let i = 0; i < 2; i++) {
       await page.locator('[data-home-look]').click();
@@ -107,7 +108,7 @@ test('the museum in first person and out, the eye button, a bench: no context or
   await watch(page);
   await page.goto(Q);
   await islandUp(page);
-  const back = async () => (await nav(page, `/fitness/${Q}`), await islandUp(page));
+  const back = async () => (await nav(page, `${BASE}/${Q}`), await islandUp(page));
   const inside: number[] = [];
   // the eye button: on (at the eyes) or off (the room's camera)
   const eye = async (on: boolean) => {
@@ -115,12 +116,12 @@ test('the museum in first person and out, the eye button, a bench: no context or
     await expect.poll(() => mu<boolean>(`m => (f => !!f && f.on === ${on} && f.inside === ${on} && !f.busy)(m.fpv())`), { timeout: 15_000 }).toBe(true);
   };
   const round = async () => {
-    await nav(page, `/fitness/museum${Q}`);
+    await nav(page, `${BASE}/museum${Q}`);
     await framed(page, '__museum');
     await eye(true);
     await back();
     // in again: in first person from the first frame (kept on this phone), then off
-    await nav(page, `/fitness/museum${Q}`);
+    await nav(page, `${BASE}/museum${Q}`);
     await framed(page, '__museum');
     await expect.poll(() => mu<boolean>('m => !!m.fpv()?.inside && !m.fpv().busy'), { timeout: 15_000 }).toBe(true);
     await eye(false);
