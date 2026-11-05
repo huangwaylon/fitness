@@ -24,8 +24,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 ## Simplicity rules
 
 - No tab bar: 島 (the island), the health popup (tap the dumbbell: けんこう), the meal log (tap the bowl: ごはん), and
-  behind the HUD menu's leaf the one panel for the ベル (its 「ベル 121」 row: ごほうび, no tabs), the ずかん and せってい,
-  each its own sheet.
+  behind the HUD menu's leaf the one panel for the ベル (its 「ベル 121」 row: ごほうび, no tabs), the ずかん, えいご
+  ききとり (ききみみ クイズ) and せってい, each its own sheet.
 - One focal point per screen (島: the island itself, the sky clean, the leaf the door to the rest; ごほうび: the
   balance, today's ベル under it).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
@@ -62,11 +62,13 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
 - **Menu** (`island/HudMenu.svelte`, `e2e/hud-menu.spec.ts`): the cluster's right end, at the screen's side, a 40px
   cream disc with the lip in a 44px target, NH's leaf mark in it (drawn inline: two greens either side of a pale vein, a dark outline, a curled stem; NH's art has no flat one, `money/leaf` is the 3D item); `aria-expanded`, `aria-controls` its
   pills. Folded by default: the sky shows only the dumbbell, the bowl and the menu. A tap unfolds it: the disc turns
-  NH's yellow, the leaf tips (−40°, as if it flicked the menu down) and three cream pills drop out of it, one after
+  NH's yellow, the leaf tips (−40°, as if it flicked the menu down) and four cream pills drop out of it, one after
   the other (a 380ms spring, 55ms apart), right-aligned under the leaf (along the screen's side), the same width:
   **ベル 121** (the shared wallet's balance in the app's number font, no icon: the number is the picture) →
   [the panel](#panel) (ごほうび; `aria-expanded` while it's open), **ずかん** (NH's agrias butterfly) →
-  [the ずかん](#zukan) and **せってい** (a gear in the say button's soft brown: NH has no settings icon) →
+  [the ずかん](#zukan), **えいご ききとり** (しずえ's head) → [ききみみ クイズ](#ききみみ-クイズ) (「さそわれています！」 under
+  its name, and a coral dot on the folded leaf, while someone's invite is live) and **せってい** (a gear in the say
+  button's soft brown: NH has no settings icon) →
   [せってい](#panel). Each pill is 44px tall, its name then its icon or number (a word as well as a picture: an icon
   alone would be a guess). The ベル row's label carries today's ベル too (「ごほうび · ふたりのベル 129 ベル · きょう
   12 ベル」: on the island only a screen reader hears today's total; it's shown in full in ごほうび). No permanent
@@ -2323,9 +2325,10 @@ scale (about half a villager tall): on its day a tap plays the tape (the 3D vill
 
 ### ききみみ クイズ
 An English listening game for the players (A, B and the guest), for Japanese speakers learning English; the full spec
-is [kikimimi.md](kikimimi.md). せってい's row 「えいご ききとり」 [あそぶ] (the guest's too) opens its full-height sheet
+is [kikimimi.md](kikimimi.md). The HUD menu's pill 「えいご ききとり」, above せってい (the guest's too), opens its full-height sheet
 (`components/kikimimi/KikimimiSheet.svelte`, its own chunk with the bank, the deck, the session and its strings
-`i18n/kikimimi.*.json`); the tap starts the voice session (`invite.svelte.ts` openQuiz → sound `voiceSession(true)`), so
+`i18n/kikimimi.*.json`); the tap itself starts the voice session (`invite.svelte.ts` wakeQuizVoice → sound `voiceSession(true)`, before the pill's
+press beat; openQuiz after it), so
 the clips play with the silent switch on. The always-loaded part is `KikimimiHost.svelte` in the island scene: a listener
 on the scene's one Live (`relay ?? demoRelay`, never a second) that keeps the quiz intents heard lately (handed to the
 sheet's session as it opens: a host re-sends only when someone comes back) and shows another's new lobby as a banner
