@@ -41,8 +41,8 @@ class IslandLayout {
   #demo = false;
   #last = 0;
   #subs = new Set<(n: LayoutNews) => void>();
-  /** Where my changes go to the record (store/actions.ts sendDecor: the decor event, scoped). */
-  sink: ((op: LayoutOp) => void) | null = null;
+  /** Where my changes go to the record (store/actions.ts sendDecors: the decor events, scoped), a burst at once. */
+  sink: ((ops: LayoutOp[]) => void) | null = null;
 
   #key(): string {
     return this.#demo ? DEMO.layout : LIVE.layout;
@@ -170,7 +170,10 @@ class IslandLayout {
       any = r.who;
       this.#landed(e);
     }
-    if (any) this.#changed(any, false);
+    if (!any) return;
+    this.#settled();
+    this.#changed(any, false);
+    this.#resolveSoon();
   }
 
   /** The partner's objects that just landed, to look at for a clash with one of mine (#resolve). */
@@ -178,7 +181,15 @@ class IslandLayout {
   #landed(e: LayoutEntry): void {
     if (e.sc !== 'o' || e.rm || e.who === this.#me) return;
     this.#landedIds.add(e.id);
-    if (this.#landedIds.size === 1) setTimeout(() => this.#resolve(), 0);
+  }
+  #resolving = false;
+  #resolveSoon(): void {
+    if (this.#resolving || !this.#landedIds.size) return;
+    this.#resolving = true;
+    setTimeout(() => {
+      this.#resolving = false;
+      this.#resolve();
+    }, 0);
   }
   /**
    * The partner's pieces that landed on one of mine (two edits of different objects on one tile at once: each fine
@@ -215,7 +226,25 @@ class IslandLayout {
     const e = this.#merge(d);
     if (!e) return;
     this.#landed(e);
-    this.#changed(m.who, world.now() - t < 12_000);
+    // a burst of the partner's ops (their editor's save: one socket message each) is one rebuild, the tick after
+    const live = world.now() - t < 12_000;
+    this.#pending = { who: m.who, live: live || !!this.#pending?.live };
+    if (this.#pendingTimer) return;
+    this.#pendingTimer = setTimeout(() => {
+      this.#pendingTimer = null;
+      this.#settled();
+      this.#resolveSoon();
+    }, 0);
+  }
+  /** The partner's ops merged but not yet rebuilt into the layout (#heard): whose was the last, and any live. */
+  #pending: { who: Who; live: boolean } | null = null;
+  #pendingTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Rebuild for the partner's ops waiting (before anything else changes the layout: theirs come first). */
+  #settled(): void {
+    const p = this.#pending;
+    if (!p) return;
+    this.#pending = null;
+    this.#changed(p.who, p.live);
   }
 
   /** The time of a change of mine: the relay's clock, never twice the same, after every op it replaces. */
@@ -234,6 +263,7 @@ class IslandLayout {
   /** Changes of mine (their `at` from stamp(), increasing): merged, kept, sent. The ops that took. */
   apply(ops: readonly LayoutOp[]): LayoutOp[] {
     this.#load();
+    this.#settled();
     const took: LayoutOp[] = [];
     for (const op of ops) {
       const e = { ...op, who: this.#me ?? 'A' } as LayoutEntry;
@@ -243,10 +273,9 @@ class IslandLayout {
     }
     if (!took.length) return took;
     this.#changed(this.#me ?? 'A', false);
-    for (const op of took) {
-      this.#relay?.send({ kind: 'decor', ...op } as never);
-      this.sink?.(op);
-    }
+    for (const op of took) this.#relay?.send({ kind: 'decor', ...op } as never);
+    // to the record as one burst: one queue write and one recompute of the week, not one per op
+    this.sink?.(took);
     return took;
   }
 
@@ -276,6 +305,9 @@ class IslandLayout {
     this.#last = 0;
     this.#subs.clear();
     this.#landedIds.clear();
+    this.#pending = null;
+    if (this.#pendingTimer) clearTimeout(this.#pendingTimer);
+    this.#pendingTimer = null;
     this.rev++;
   }
 }

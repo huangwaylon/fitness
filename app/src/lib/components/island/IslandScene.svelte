@@ -72,7 +72,7 @@
   import { buildingAt, walkNav } from './nav.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
-  import { sendDecor, sendIslandDay } from '#lib/store/actions.ts';
+  import { sendDecor, sendDecors, sendIslandDay } from '#lib/store/actions.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { decor } from '#lib/store/decor.svelte.ts';
   import { layout as islandLayout } from '#lib/store/layout.svelte.ts';
@@ -812,7 +812,7 @@
   $effect(() => {
     shared.sink = (date, row) => sendIslandDay(date, row);
     decor.sink = (op) => sendDecor(op);
-    islandLayout.sink = (op) => sendDecor(op);
+    islandLayout.sink = (ops) => sendDecors(ops);
     return () => {
       shared.sink = null;
       decor.sink = null;

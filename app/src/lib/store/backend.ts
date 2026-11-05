@@ -42,6 +42,9 @@ export interface Backend {
   /** Load, then sync. `background` refreshes respect a floor; `fresh` ones never reuse a fetch already in flight. */
   refresh(opts: { background?: boolean; fresh?: boolean }): Promise<void>;
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions): SendResult;
+  /** Several events at once (a burst: the editor's save), shown at once and sent together: one queue write and one
+   *  recompute of the view. No undo or hold. */
+  sendMany?(events: readonly { type: EventType; data: Record<string, unknown> }[]): void;
   /** Forget the cached state (after pairing as someone else). */
   reset(): void;
   /** A last touch to the view (the demo's `?demo=harvest`). */

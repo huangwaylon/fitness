@@ -85,6 +85,12 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
 - The room relays a layout op live but never keeps it in the day's ring (an afternoon in the editor would push the
   shared world out of it); a phone opening later reads it from the record. A `drag` with `sc: 'o'` is an outdoor
   object being moved (x, z its middle in world units): presence, as the tent's.
+- **A burst** (2026-11-05: the editor's save, a もようがえ, a clash settled): my ops are merged and rebuilt once and go
+  to the record as one burst (`week.sendMany`: one queue write, one recompute of the week); the partner's, one socket
+  message each, are merged as they come and rebuilt once, the tick after. 40 ops (desktop Chrome, the demo's phones on
+  the in-process relay, `e2e/live-sync.spec.ts` burst): the sender 14–17 ms → 6 ms, the partner's longest frame
+  67–100 ms (83–133 ms over budget) → 17 ms (none). The room relays 20 at once and drops the rest over its rate limit
+  (a layout op isn't numbered): the partner gets those from the record's push.
 - **Two edits on one tile** (2026-11-05, the sync review's E13): each phone's op is fine on its own island, but two
   phones moving different pieces onto one tile at once left both there (last writer wins only per id). When the
   partner's ops land (live, or the record's rows), a piece of theirs that overlaps one of mine (validate.ts's

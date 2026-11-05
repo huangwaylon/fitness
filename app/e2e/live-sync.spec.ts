@@ -6,6 +6,7 @@
 //   dead a socket that stays open and carries nothing: found out and replaced, what was sent goes again
 //   kill an intent made offline and the app killed before it went: sent when the app opens again
 //   E13  both phones move a different piece onto one tile at once: the later op's phone moves its piece off
+//   burst 40 layout ops at once (the editor's save): what each phone's main thread spends on them
 //   tabs two tabs of one phone (the second's socket replaces the first's): neither's layout ops written over
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { DEMO_CTX, newIsland, setVisible } from './liveRoom.ts';
@@ -211,4 +212,54 @@ test('E13: both phones move a different piece onto one tile at once: the later o
   await a.waitForTimeout(1000);
   expect((await where(a)).join()).toBe(wa.join());
   expect((await where(b)).join()).toBe(wa.join());
+});
+
+/** Start timing `p`'s frames (framesDone: its longest frame and its time over budget, frames past 17 ms). */
+const frames = (p: Page) => p.evaluate(() => {
+  const w = window as unknown as { __frames?: { gaps: number[]; on: boolean } };
+  const f: { gaps: number[]; on: boolean } = (w.__frames = { gaps: [], on: true });
+  let last = performance.now();
+  const tick = (t: number) => {
+    f.gaps.push(t - last);
+    last = t;
+    if (f.on) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
+const framesDone = (p: Page) => p.evaluate(() => {
+  const f = (window as unknown as { __frames: { gaps: number[]; on: boolean } }).__frames;
+  f.on = false;
+  return { max: Math.round(Math.max(...f.gaps)), over: Math.round(f.gaps.reduce((a, g) => a + Math.max(0, g - 17), 0)) };
+});
+
+test('burst: 40 layout ops at once cost each phone one rebuild, not forty', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const island = newIsland();
+  const { page: a } = await demoPhone(browser, island, 'A');
+  const { page: b } = await demoPhone(browser, island, 'B');
+  await connected(a);
+  await connected(b);
+  const ids = (await lay(a, (l) => [...l.ids('palm'), ...l.ids('oak'), ...l.ids('cedar'), ...l.ids('flower')].join())).split(',').slice(0, 40);
+  expect(ids).toHaveLength(40);
+  await frames(b);
+  // A: the editor's save of 40 moves (each a tile east), timed in the page, through the frame after it
+  const ms = await a.evaluate(async (ids) => {
+    const l = (window as unknown as { __layout: L }).__layout, wo = (window as unknown as { __world: W }).__world;
+    let at = wo.layoutStamp();
+    const ops = ids.map((id) => {
+      const o = l.obj(id)!;
+      return { sc: 'o', id, at: at++, k: o.k, x: o.x + 1, z: o.z, f: o.f };
+    });
+    const t0 = performance.now();
+    wo.layoutApply(ops);
+    const sync = performance.now() - t0;
+    await new Promise((r) => requestAnimationFrame(() => setTimeout(r, 0)));
+    return { sync: Math.round(sync), frame: Math.round(performance.now() - t0) };
+  }, ids);
+  // (the room relays a burst of 20 at once, the rest over its rate limit: a live phone's record push brings those)
+  await expect.poll(() => lay(b, (l, id) => l.obj(id)?.x, ids[0]), { timeout: 10_000 }).toBe(await lay(a, (l, id) => l.obj(id)?.x, ids[0]));
+  await b.waitForTimeout(500);
+  const fb = await framesDone(b);
+  console.log(`burst of 40: A ${ms.sync} ms (${ms.frame} ms through its next frame); B's longest frame ${fb.max} ms, ${fb.over} ms over budget`);
+  expect(ms.sync).toBeLessThan(400);
 });

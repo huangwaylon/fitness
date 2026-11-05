@@ -11,7 +11,7 @@
   import PlanStage from '#lib/components/layoutEdit/PlanStage.svelte';
   import { layout } from '#lib/store/layout.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { sendDecor } from '#lib/store/actions.ts';
+  import { sendDecors } from '#lib/store/actions.ts';
   import { LIVE_URL, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
 
@@ -37,7 +37,7 @@
         relay = own ?? (LIVE_URL ? liveRelay() : null);
         layout.attach(relay, who, !!week.demo);
         own?.start();
-        layout.sink = (op) => sendDecor(op);
+        layout.sink = (ops) => sendDecors(ops);
       });
       // the record's layout rows (the model's, queued ones included)
       $effect(() => {

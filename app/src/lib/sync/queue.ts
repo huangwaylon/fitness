@@ -84,6 +84,15 @@ export function enqueue(type: EventType, data: Record<string, unknown>, now = Da
   return ev;
 }
 
+/** Several events at once (one write of the queue). */
+export function enqueueAll(events: readonly { type: EventType; data: Record<string, unknown> }[], now = Date.now()): QueuedEvent[] {
+  const evs = events.map(({ type, data }): QueuedEvent => ({ id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now }));
+  if (!evs.length) return evs;
+  saveQueue([...queued(), ...evs]);
+  for (const e of evs) count(`ev:${e.type}`);
+  return evs;
+}
+
 /** Undo: drop a queued event that has not been sent yet. False if it already went out. */
 export function unqueue(id: string): boolean {
   const q = queued();
