@@ -14,7 +14,10 @@ type Kiki = { view(): { phase: string; i: number }; right(): number; items(): st
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;
 const sheet = (p: Page) => p.locator('dialog[open] [data-kikimimi]');
 const shot = async (p: Page, name: string) => {
-  if (SHOTS) await p.locator('dialog[open]').screenshot({ path: `${SHOTS}/${name}.png` });
+  if (!SHOTS) return;
+  // (しずえ's line typed out: ui/Bubble's data-typing)
+  await expect(p.locator('dialog[open] [data-typing="true"]')).toHaveCount(0);
+  await p.locator('dialog[open]').screenshot({ path: `${SHOTS}/${name}.png` });
 };
 
 async function playGame(page: Page, wrong: readonly number[]) {
