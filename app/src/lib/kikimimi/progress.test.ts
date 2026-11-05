@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { EventRow } from '../contract/api.ts';
 import { BANK, type Level } from './bank.ts';
 import { DECK_SIZE } from './deck.ts';
-import { answersOf, dayNum, daysPlayed, gamesOf, recentOf, scoreOf, stageOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
+import { answersOf, dayNum, daysPlayed, gamesOf, listenAnswers, recentOf, scoreOf, stageOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
 import { cardsOf, dueOf, gradeOf, practiceDeck, step } from './srs.ts';
 import { feedback, recommend, tripsOf } from './advice.ts';
 import { skillsOf } from './tags.ts';
@@ -36,6 +36,37 @@ describe('gamesOf', () => {
       { id: 'n2-price-1', ok: false, pick: 2, rp: 1, d: TODAY, g: 'ab12', lv: 2, p: false }
     ]);
     expect(others).toEqual([{ who: 'B', d: TODAY, g: 'ab12', n: 2, ms: 130_000 }]);
+  });
+
+  it('one game for a game id written twice (left and joined again: two rows of one `g`): its answers once each, its minutes summed', () => {
+    const first = { d: TODAY, g: 'cd34', lv: 2, n: 2, ms: 60_000, r: [['w2-read', 1, 0, 0], ['n2-price-1', 0, 2, 1]] };
+    const again = { d: TODAY, g: 'cd34', lv: 2, n: 3, ms: 90_000, r: [['n2-price-1', 1, 0, 0], ['w2-cats', 0, -1, 0]] };
+    const rows: EventRow[] = [
+      ['2026-11-05T03:00:01.000Z', 'A', 'e1', 'listen', JSON.stringify(first)],
+      ['2026-11-05T03:00:02.000Z', 'B', 'e2', 'listen', JSON.stringify({ d: TODAY, g: 'cd34', n: 2, ms: 70_000 })],
+      ['2026-11-05T03:05:00.000Z', 'A', 'e3', 'listen', JSON.stringify(again)],
+      ['2026-11-05T03:05:01.000Z', 'B', 'e4', 'listen', JSON.stringify({ d: TODAY, g: 'cd34', n: 3, ms: 20_000 })]
+    ];
+    const { mine: m, others } = gamesOf(rows, 'A');
+    expect(m).toHaveLength(1);
+    expect(m[0]).toMatchObject({ g: 'cd34', n: 3, ms: 150_000, at: Date.parse('2026-11-05T03:00:01.000Z') });
+    expect(m[0].r.map((a) => [a.id, a.ok])).toEqual([['w2-read', true], ['n2-price-1', false], ['w2-cats', false]]);
+    expect(others).toEqual([{ who: 'B', d: TODAY, g: 'cd34', n: 3, ms: 90_000 }]);
+  });
+});
+
+describe('listenAnswers: a game’s answers as a row', () => {
+  const items = BANK.filter((it) => it.lv === 2).slice(0, 4);
+  const pick = (n: number) => ({ k: items[n].answer });
+  it('only the questions I had (a mid-game join, a lock: not misses); at the results the rest had time out, left mid-way only those answered', () => {
+    const answers = [null, pick(1), null, { k: (items[3].answer + 1) % items[3].choices.length }];
+    const had = [false, true, true, true];
+    expect(listenAnswers(items, answers, had, [0, 2, 0, 0], true)).toEqual([
+      [items[1].id, 1, items[1].answer, 2],
+      [items[2].id, 0, -1, 0],
+      [items[3].id, 0, (items[3].answer + 1) % items[3].choices.length, 0]
+    ]);
+    expect(listenAnswers(items, answers, had, [], false).map((r) => r[0])).toEqual([items[1].id, items[3].id]);
   });
 });
 

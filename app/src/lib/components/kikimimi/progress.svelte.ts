@@ -26,9 +26,10 @@ function keptRows(me: Who): Kept[] {
   return v.rows.filter((k): k is Kept => !!k && typeof k === 'object' && typeof (k as Kept).at === 'number' && listenOf((k as Kept).row) !== null);
 }
 
-/** A game of mine finished (or left mid-way): kept on this phone and sent to the record. */
+/** A game of mine finished (or left mid-way): kept on this phone and sent to the record. A game joined again after
+ *  leaving it keeps both rows here as on the record (one game in the fold: progress.ts gamesOf). */
 export function recordGame(me: Who, row: ListenRow): void {
-  const rows = [...keptRows(me).filter((k) => k.row.g !== row.g), { at: Date.now(), row }].slice(-KEEP);
+  const rows = [...keptRows(me), { at: Date.now(), row }].slice(-KEEP);
   writeJson(localKV(), DEVICE.kikimimiGames, { who: me, rows });
   kept++;
   week.send('listen', row as unknown as Record<string, unknown>);

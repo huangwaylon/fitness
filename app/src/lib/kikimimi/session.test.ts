@@ -625,6 +625,41 @@ describe('ききみみ session: the host is the clock', () => {
     expect(r.view('G')).toMatchObject({ phase: 'lead', i: 5, out: false });
   });
 
+  it('`had`: the questions I was in (answered, or in the game as its clip began): none before a mid-game join, none slept through, the ones answered before a lock kept', () => {
+    const r = room(['A', 'B', 'G']);
+    r.act('A', (x, n) => x.open({ lv: 1 }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('B', (x, n) => x.join(n));
+    r.act('A', (x, n) => x.go(n));
+    const s0 = r.now + WINDOWS.countdown;
+    // G joins as question 0's clip has begun: in from question 1
+    r.now = s0 + 1500 + DUR + 500;
+    r.act('G', (x, n) => x.join(n));
+    expect(r.view('G').had).toEqual([false, true, true, true, true, true, true, true]);
+    // B answers question 0, lets question 1 time out, then sleeps through 2-3 (A plays on alone, fast)
+    r.act('A', (x, n) => x.answer(0, false, n));
+    r.act('B', (x, n) => x.answer(0, false, n));
+    r.now = s0 + FULL + 1500 + DUR + 500;
+    r.act('A', (x, n) => x.answer(1, false, n));
+    r.act('G', (x, n) => x.answer(1, false, n));
+    r.now = s0 + 2 * FULL - 1000; // question 1's reveal; B's phone locks
+    r.here.delete('B');
+    r.presence();
+    let t = s0 + 2 * FULL;
+    for (let i = 2; i < 4; i++) {
+      r.now = t + 5000;
+      r.act('A', (x, n) => x.answer(0, false, n));
+      r.act('G', (x, n) => x.answer(0, false, n));
+      t = r.now + WINDOWS.reveal;
+    }
+    r.now = t + 10_000; // question 4's clip long begun
+    r.here.add('B');
+    r.presence();
+    expect(r.view('B')).toMatchObject({ i: 4, out: true });
+    expect(r.view('B').had.slice(0, 5)).toEqual([true, false, false, false, false]);
+    expect(r.view('B').had.slice(5)).toEqual([true, true, true]);
+  });
+
   it('the host locked: the players wait for it (no racing ahead) and adopt its clock when it’s back; gone past the grace, they move on and go back to its position when it returns', () => {
     const r = room();
     const s0 = started(r);
