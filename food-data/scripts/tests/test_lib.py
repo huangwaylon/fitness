@@ -186,6 +186,30 @@ class SchoolLunch(unittest.TestCase):
         self.assertEqual(big['portions'][0]['g'], 390)                 # capped at 1.3x, not 600 g
 
 
+class LunchBlanks(unittest.TestCase):
+    """build.blank_null: a blank cell is a zero only where the row needs none."""
+    @staticmethod
+    def rows(*rs):
+        return [dict(zip(('kcal', 'p', 'f', 'c', 'salt'), r)) for r in rs]
+
+    def tot(self, rs):
+        t = {k: sum(lib.fnum(r[k], 0.0) for r in rs) for k in ('kcal', 'p', 'f', 'c', 'salt')}
+        build.blank_null(rs, t)
+        return t
+
+    def test_blank_null(self):
+        saikyo = self.tot(self.rows(('66', '7.3', '3.6', '', '')))             # fish in miso, both cells blank
+        self.assertEqual((saikyo['salt'], saikyo['c']), (None, 0.0))           # its energy is P and F: C 0 stands
+        fry = self.tot(self.rows(('105', '5', '5.9', '', ''), ('45', '', '5', '', '')))
+        self.assertEqual((fry['salt'], fry['c']), (None, None))                 # breaded: energy P and F don't explain
+        miso = self.tot(self.rows(('30', '2', '1', '3', '1.2'), ('20', '2', '1.2', '0.5', '')))
+        self.assertEqual(miso['salt'], 1.2)                                     # the tofu's blank: the rest is counted
+        oil = self.tot(self.rows(('40', '3', '1', '6', '0.5'), ('45', '', '5', '', '')))
+        self.assertEqual((oil['salt'], oil['c']), (0.5, 6.0))                   # oil needs neither
+        typo = self.tot(self.rows(('47', '14.6', '1.8', '0.6', '0.4')))          # P alone > its energy
+        self.assertEqual((typo['p'], typo['f'], typo['c'], typo['salt']), (None, None, None, 0.4))
+
+
 class MaffAmounts(unittest.TestCase):
     def test_grams(self):
         soy, sugar, carrot, rice = MI.match('しょうゆ'), MI.match('砂糖'), MI.match('にんじん'), MI.match('米')
@@ -195,6 +219,11 @@ class MaffAmounts(unittest.TestCase):
                                 ('少々', soy, 0.5), ('適量', soy, 0.0), ('1合', rice, 150.0), ('ひとつまみ', soy, 1.0)):
             self.assertEqual(MI.grams(text, ent), want, text)
         self.assertIsNone(MI.grams('1・1/3', soy))
+        pork = MI.match('豚肉')
+        for text, want in (('16枚（1枚30g）', 480.0), ('4本（1本／約250～350g）', 1200.0), ('2枚(100g)', 100.0),
+                           ('2個(1個約100~120g)', 220.0), ('約250～350g', 300.0)):   # a count x one's weight; a range's middle
+            self.assertEqual(MI.grams(text, pork), want, text)
+        self.assertIsNone(MI.grams('3cm厚さ8個', carrot))                # slices, not whole pieces
         self.assertEqual(MI.match('濃口しょうゆ')['id'], '17007')
         self.assertEqual(MI.match('笹の葉')['flag'], 'nonfood')
 
