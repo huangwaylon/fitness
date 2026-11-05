@@ -130,6 +130,12 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
     // (open ground there a tap walks to, nothing over it on this screen)
     const [tx, tz] = await openNear(tapper, nx, nz, 45, true);
     const [x, y] = await tapper.evaluate(([tx, tz]) => (window as unknown as { __world: W }).__world.at(tx, tz), [tx, tz]);
+    // where the tap lands: the ground under the finger (the 3D island's pick, within openNear's 8u of the spot asked for:
+    // on WebKit B's spot is on a rise, 8u off)
+    const [gx, gz] = await tapper.evaluate(([x, y, tx, tz]) => {
+      const g = (window as unknown as { __world3d?: { ground(cx: number, cy: number): { x: number; z: number } | null } }).__world3d?.ground(x, y);
+      return g ? [g.x, g.z] : [tx, tz];
+    }, [x, y, tx, tz]);
     await tapper.mouse.click(x, y);
     // under way: the two tabs have it within a few steps of each other (one frame and the evaluate's skew apart: the
     // two reads up to 0.2 s apart, as far as the tap-walk's run goes in that time). Not drawn (the full tier): two tabs
@@ -149,7 +155,7 @@ test('two players: a tap-walk on one tab plays on the other from the same start 
       await expect.poll(() => t.evaluate((who) => (window as unknown as { __world: { state(): { villagers: Record<string, { walking: boolean }> } } }).__world.state().villagers[who].walking, who), { timeout: 8000 }).toBe(false);
     const [p, q] = await Promise.all([feet(tapper, true), feet(watcher, false)]);
     expect(Math.hypot(p[0] - q[0], p[1] - q[1])).toBeLessThan(1.5);
-    expect(Math.hypot(p[0] - tx, p[1] - tz)).toBeLessThan(4);
+    expect(Math.hypot(p[0] - gx, p[1] - gz)).toBeLessThan(4);
   }
   // a tab opening later (B's phone again) has A's villager where A's tab has it
   const c = await ctx.newPage();
@@ -201,7 +207,9 @@ test('two players: Gulliver woken on one tab is up on the other too, and for a t
   await expect(g(b)).not.toHaveAttribute('data-asleep', /./, { timeout: 2000 });
   const c = await ctx.newPage();
   await c.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none&as=B');
-  await expect(g(c)).toBeAttached({ timeout: 5000 });
+  // (its page loading: the expect's own budget, 10 s on CI, as a first wait after goto; a third tab under load took over 5 s)
+  await expect(hudMenu(c)).toBeVisible();
+  await expect(g(c)).toBeAttached();
   await c.waitForTimeout(800);
   await expect(g(c)).not.toHaveAttribute('data-asleep', /./);
   await ctx.close();

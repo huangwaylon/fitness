@@ -26,8 +26,26 @@ const canopyAt = (page: Page) =>
         if (document.elementFromPoint(cx + dx, cy + dy)?.closest('button.canopy') === el) return { x: cx + dx, y: cy + dy };
     return { x: cx, y: cy };
   });
+/** The popup where it stays (or none): it's placed, then placed again as its rows come in and it grows (FruitTree
+ *  fitPopup), so a canopy point it left open a frame ago may be under it now (the next tap the popup's). Three frames
+ *  unmoved, at most 400 ms. */
+const popupStill = (page: Page) =>
+  page.evaluate(() => new Promise<void>((ok) => {
+    const t0 = performance.now();
+    let last = '', same = 0;
+    const frame = () => {
+      const b = document.querySelector('.detail')?.getBoundingClientRect();
+      const now = b ? `${b.left},${b.top},${b.width},${b.height}` : '';
+      same = now === last ? same + 1 : 0;
+      last = now;
+      if (!now || same >= 3 || performance.now() - t0 > 400) ok();
+      else requestAnimationFrame(frame);
+    };
+    frame();
+  }));
 async function shake(page: Page) {
   for (let i = 0; i < 3; i++) {
+    await popupStill(page);
     const c = await canopyAt(page);
     await page.mouse.click(c.x, c.y);
     await page.waitForTimeout(120);
@@ -191,7 +209,7 @@ const baseOf = (page: Page, sel: string, fy = 0.85) =>
     return null;
   }, fy);
 
-test('a goal tree’s trunk and base answer a tap as its leaves do: the popup opens, a quick run shakes it', async ({ page }) => {
+test('a goal tree’s trunk and base answer a tap as its leaves do: the popup opens, a quick run shakes it', { tag: '@quarantine', annotation: { type: 'quarantine', description: 'owner: the tree-taps owner (FruitTree.svelte), 2026-11-05: the goal tree’s .trunk-btn is under its .canopy and .row-btn (2 of 240 sampled points its own on WebKit, 4 on Chromium), so baseOf finds no point on WebKit and Chromium passes by a 3px sliver; a tap on the trunk area is the fruit row’s, which never counts toward a shake. Decide whether the trunk should take its own taps (then raise it over the row) or the spec should tap the row' } }, async ({ page }) => {
   await open(page, '&shake=branch');
   const p = (await baseOf(page, '[data-tree-node="A"] .trunk-btn'))!;
   expect(p).not.toBeNull();

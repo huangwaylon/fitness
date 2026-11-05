@@ -101,7 +101,17 @@ test('a pond fish on the long layout: cast beside it, the bite, a tap catches it
   await expect.poll(where).not.toBeNull();
   await page.waitForTimeout(600); // (pond.spec's: the shadow settles into its swim)
   const f = (await where())!;
-  await page.mouse.click(f.x + 6, f.y);
+  // beside it, on its water: never a bank's flower or anything else a tap would be (the shadow by the edge: +6px was a
+  // cosmos on the bank now and then)
+  const [tx, ty] = await page.evaluate(({ x, y }) => {
+    const h = window as unknown as { __world3d: { ground(cx: number, cy: number): { x: number; z: number } | null }; __world: { ground(x: number, z: number): { surface: string } } };
+    for (const [dx, dy] of [[6, 0], [-6, 0], [0, 6], [0, -6], [10, 0], [-10, 0], [0, 10], [0, -10], [6, 6], [-6, 6], [6, -6], [-6, -6]]) {
+      const g = h.__world3d.ground(x + dx, y + dy), el = document.elementFromPoint(x + dx, y + dy);
+      if (g && h.__world.ground(g.x, g.z).surface === 'water' && !el?.closest('button, a, [data-flower], [data-tree], [data-bush], [data-care], [data-find], [data-decor], [data-sit], [data-fixture]')) return [x + dx, y + dy];
+    }
+    return [x + 6, y];
+  }, f);
+  await page.mouse.click(tx, ty);
   await expect(page.locator('[data-bobber]')).toBeAttached();
   // the reel the moment it bites (a tap before it scares it off: e2e/island.ts reelOnBite)
   await reelOnBite(page, 196, 420);
