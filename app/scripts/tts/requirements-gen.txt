@@ -1,0 +1,9 @@
+# scripts/tts/tts.py synth (Qwen3-TTS, VoxCPM2 via mlx-audio; Phonon via ptts): the versions the pilot ran with
+mlx==0.32.4
+mlx-audio==0.6.4
+transformers==5.22.1
+sentencepiece==0.2.3
+numpy==2.5.4
+scipy==1.18.1
+soundfile==0.14.0
+ptts==0.6.0

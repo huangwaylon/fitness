@@ -1,41 +1,280 @@
-// ききみみ クイズ: every bank item spoken by macOS `say` into static/audio/kikimimi/ (docs/kikimimi.md "Audio").
-//   node scripts/kikimimi-audio.ts             generate what's new or changed, drop clips of items that are gone, print the list
-//   node scripts/kikimimi-audio.ts --force     regenerate every clip
-//   node scripts/kikimimi-audio.ts --list      only print the listen-through list
-//   node scripts/kikimimi-audio.ts --listen [--only <regex over ids>]   play each clip (afplay) with its text: the listening check
-// Voices: a table per accent and gender, best first; the first one installed is used (`say -v '?'`). The Premium and
-// Enhanced voices (System Settings → Accessibility → Spoken Content → Manage Voices) win when installed; the fallbacks
-// are Samantha (US), Daniel (UK) and Karen (AU), so on a Mac with only those both genders of an accent share a voice.
-// The Eloquence voices (Eddy, Reed, Rocko, Flo, Shelley, Sandy, Grandma, Grandpa) and the old robotic ones are never used.
-// Each item: `say` at its level's rate (and at ~70% for levels 1 and 2: `<id>-slow.m4a`) → ffmpeg: leading and trailing
-// silence trimmed (a short pad kept), loudness to −16 LUFS, mono AAC ~48 kbps at 24 kHz, +faststart.
-// src/lib/kikimimi/clips.json gets {id: {dur, hash, slow?}} (bundled with the game), and scripts/kikimimi-clips.src.json
-// {id: src}: `src` hashes what was spoken (text, voice, rate, this pipeline's version), so a run regenerates only the items
-// whose text or voice changed (or whose files are missing); the script's alone, kept out of the client bundle.
+// ききみみ クイズ: every bank item spoken into static/audio/kikimimi/ (docs/kikimimi.md "Audio"). Silent: never plays a
+// sound itself except `--listen`, which a person runs.
+//   node scripts/kikimimi-audio.ts [options]       make what's new or changed (by each clip's source hash), print a report
+//     --engine qwen3            the engine (default qwen3); per accent: `qwen3,au=voxcpm2` or `us=kokoro,uk=kokoro,au=qwen3`
+//                               qwen3 / voxcpm2 clone each cast voice's reference clip; kokoro uses cast.json `kokoro`
+//                               voices (US and UK only); say is the legacy macOS voice (levels 1-3 only, never 4)
+//     --levels 1,2,3,4          the levels to speak (default all; say: 1-3)
+//     --only <regex>            item ids to speak (the rest keep their clips)
+//     --out <dir>               a scratch dir instead of static/: clips.json, clips.src.json and report.json land there too
+//     --force                   re-speak every selected item
+//     --retries 5               the gate: re-roll a clip with the next seed while whisper mishears a content word or
+//                               its voice drifts (--min-sim 0.5: ECAPA cosine to the reference)
+//     --l1-tempo 0.92           level 1's normal clips gently slowed (atempo); 1 = as spoken
+//     --no-mos, --no-sv         skip UTMOS or the speaker-similarity check
+//   node scripts/kikimimi-audio.ts --refs [--design-seeds 7,11,23] [--only <regex over cast ids>]
+//                               make the cast's missing reference clips (scripts/tts/refs/<id>.m4a, committed); with
+//                               --design-seeds the VoiceDesign voices are re-rolled over those seeds and the best by
+//                               UTMOS (heard word for word) is kept, its seed written back to cast.json
+//   node scripts/kikimimi-audio.ts --list           the listen-through list (each clip with its cast voice and text)
+//   node scripts/kikimimi-audio.ts --listen [--only <regex>]   play each clip (afplay) with its text: a person's check
+//
+// The cast (docs/curriculum.md §9): scripts/tts/cast.json, 12 voices (US 3 a gender; UK and AU 3), each villager one voice
+// for good (bank4.ts CAST, speech.ts castOf). Every voice is a reference clip with its exact transcript, cloned for
+// every line: US voices designed by Qwen3-TTS VoiceDesign from a text description (no real person), UK voices spoken by
+// Phonon's synthetic catalogue voices, AU voices from the VCTK corpus (CC BY 4.0; credited in docs/kikimimi.md).
+// Spoken text: speech.ts spokenText (`tts`, else `en` with its numbers written out).
+// Each clip: the engine (seeded) → a raw WAV cached by source hash and seed under .cache/tts/raw (the masters) → ffmpeg:
+// edge silence trimmed, loudness gain to −16 LUFS (true peak ≤ −1.5 dBTP via a limiter), mono AAC ~48 kbps at 24 kHz,
+// +faststart. Levels 1-2 get `<id>-slow.m4a`: the take as spoken time-stretched to 0.75 by ffmpeg atempo (the same take,
+// not a re-synthesis; level 1's normal clips are slowed to 0.92 the same way).
+// QA: whisper-cli large-v3-turbo hears each clip; a content word wrong (articles and fillers aside; numbers and reductions
+// normalised) re-rolls it with the next seed, up to --retries times, then it's flagged. UTMOS (SpeechMOS utmos22) and
+// ECAPA cosine to the voice's reference (drift < 0.3 flagged) are measured. scripts/tts/report.json gets every clip's
+// numbers, and a summary prints.
+// src/lib/kikimimi/clips.json gets {id: {dur, hash, slow?}} (bundled with the game) and scripts/kikimimi-clips.src.json
+// {id: src}: `src` hashes the engine, its model, the cast voice and its reference, the text and this pipeline's version.
+//
+// Python: scripts/tts/tts.py runs in venvs made with uv under .cache/tts/ from scripts/tts/requirements-*.txt, or the
+// pythons in KIKIMIMI_TTS_PY (mlx-audio), KIKIMIMI_PHONON_PY (ptts), KIKIMIMI_KOKORO_PY, KIKIMIMI_QA_PY (jiwer,
+// whisper-normalizer, torch for UTMOS), KIKIMIMI_SV_PY (speechbrain); KIKIMIMI_TTS_EVAL=/tmp/tts-eval takes the TTS
+// evaluation's venvs. whisper-cli and its model (~/.cache/whisper/ggml-large-v3-turbo.bin, or WHISPER_MODEL) are needed.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { BANK as ALL, type Accent, type Item } from '../src/lib/kikimimi/bank.ts';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+import { BANK as ALL, type Accent, type CastId, type Item } from '../src/lib/kikimimi/bank.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
+import { CAST_IDS, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
 
 const FFMPEG = process.env.FFMPEG ?? '/opt/homebrew/bin/ffmpeg';
 const FFPROBE = process.env.FFPROBE ?? '/opt/homebrew/bin/ffprobe';
-const OUT = join(import.meta.dirname, '../static/audio/kikimimi');
-const CLIPS = join(import.meta.dirname, '../src/lib/kikimimi/clips.json');
-const SRCS = join(import.meta.dirname, 'kikimimi-clips.src.json');
-/** Bump to regenerate everything after a change to the processing below. */
-const PIPELINE = 1;
-/** Levels 1-3 only: level 4 (bank4.ts) waits for the neural cast (docs/curriculum.md §9) and is never spoken by `say`; the
- *  lobby hides it till its clips exist (deck.ts LEVELS). */
-const BANK = ALL.filter((it) => it.lv <= 3);
-/** Words per minute by level: a little slow for level 1, natural for 3. Slow clips at ~70%. */
-const RATE: Readonly<Record<number, number>> = { 1: 160, 2: 175, 3: 185 };
-const SLOW = 0.7;
+const APP = join(import.meta.dirname, '..');
+const TTS = join(import.meta.dirname, 'tts');
+const CAST_FILE = join(TTS, 'cast.json');
+const REFS = join(TTS, 'refs');
+const CACHE = resolve(process.env.KIKIMIMI_TTS_CACHE ?? join(APP, '.cache/tts'));
+const VCTK = process.env.KIKIMIMI_VCTK_REFS ?? '/tmp/tts-eval/refs';
+const EVAL = process.env.KIKIMIMI_TTS_EVAL;
+
+/** Bump to re-speak everything after a change to the processing below (neural engines; `say` keeps v1's hashes). */
+const PIPELINE = 2;
+/** The clip seeds: the first try's, then +1 per re-roll. */
+const SEED = 1234;
+const SLOW = 0.75;
 const hasSlow = (it: Item): boolean => it.lv <= 2;
 
+type Engine = 'qwen3' | 'voxcpm2' | 'kokoro' | 'say';
+const MODEL: Readonly<Record<Engine | 'design' | 'phonon', string>> = {
+  qwen3: 'mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16',
+  voxcpm2: 'mlx-community/VoxCPM2-bf16',
+  kokoro: 'mlx-community/Kokoro-82M-bf16',
+  say: 'macOS say',
+  design: 'mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-bf16',
+  phonon: 'gradium/phonon-31m-en'
+};
+const CLONES = (e: Engine) => e === 'qwen3' || e === 'voxcpm2';
+
+interface CastEntry {
+  accent: Accent;
+  gender: 'f' | 'm';
+  /** design: Qwen3 VoiceDesign from `description`; phonon: a Phonon catalogue voice speaks ref.text; vctk: a corpus clip. */
+  source: 'design' | 'phonon' | 'vctk';
+  description: string;
+  /** The reference's seed (design, phonon). */
+  seed: number;
+  /** Kokoro's voice for this slot (US and UK). */
+  kokoro?: string;
+  ref: { text: string; voice?: string; file?: string; origin: string; licence: string; attribution?: string; mos?: number };
+}
+const CASTS: Record<CastId, CastEntry> = JSON.parse(readFileSync(CAST_FILE, 'utf8'));
+
+// ---- arguments -------------------------------------------------------------------------------------------------------
+
+const args = process.argv.slice(2);
+const flag = (f: string) => args.includes(f);
+const opt = (f: string): string | undefined => (args.includes(f) ? args[args.indexOf(f) + 1] : undefined);
+const only = opt('--only') ? new RegExp(opt('--only')!) : null;
+const RETRIES = Number(opt('--retries') ?? 5);
+/** Level 1's normal clips a touch slower (Qwen speaks L1 lines at ~205 wpm; 0.92 → ~190, `say` v1 was 160): within
+ *  §9's ±10%, and atempo leaves UTMOS where it was. 1 = none. */
+const L1_TEMPO = Number(opt('--l1-tempo') ?? 0.92);
+/** The voice gate: a take whose ECAPA cosine to its reference is under this is re-rolled (under 0.3: flagged drift). */
+const MIN_SIM = Number(opt('--min-sim') ?? 0.5);
+
+/** "qwen3" or "kokoro,au=qwen3" or "us=kokoro,uk=kokoro,au=qwen3" → an engine per accent. */
+function engines(spec: string): Record<Accent, Engine> {
+  const ok = (e: string): Engine => {
+    if (!(e in MODEL) || e === 'design' || e === 'phonon') throw new Error(`unknown engine ${e}`);
+    return e as Engine;
+  };
+  let def: Engine | undefined;
+  const per: Partial<Record<Accent, Engine>> = {};
+  for (const part of spec.split(',')) {
+    const [a, e] = part.includes('=') ? part.split('=') : [undefined, part];
+    if (a) per[a as Accent] = ok(e);
+    else def = ok(e);
+  }
+  const out = { us: per.us ?? def, uk: per.uk ?? def, au: per.au ?? def };
+  for (const [a, e] of Object.entries(out)) if (!e) throw new Error(`--engine: no engine for ${a}`);
+  return out as Record<Accent, Engine>;
+}
+const ENGINE = engines(opt('--engine') ?? 'qwen3');
+const SAY = ENGINE.us === 'say';
+if (SAY && (ENGINE.uk !== 'say' || ENGINE.au !== 'say')) throw new Error('--engine say is all or nothing');
+const LEVELS = (opt('--levels') ?? (SAY ? '1,2,3' : '1,2,3,4')).split(',').map(Number);
+if (SAY && LEVELS.includes(4)) throw new Error('level 4 is never spoken by say (docs/curriculum.md §9)');
+
+const SCRATCH = opt('--out') ? resolve(opt('--out')!) : null;
+const OUT = SCRATCH ?? join(APP, 'static/audio/kikimimi');
+const CLIPS = SCRATCH ? join(SCRATCH, 'clips.json') : join(APP, 'src/lib/kikimimi/clips.json');
+const SRCS = SCRATCH ? join(SCRATCH, 'clips.src.json') : join(import.meta.dirname, 'kikimimi-clips.src.json');
+const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(TTS, 'report.json');
+const BANK = ALL.filter((it) => LEVELS.includes(it.lv));
+
+// ---- small helpers ---------------------------------------------------------------------------------------------------
+
+const sha = (b: string | Buffer, n: number) => createHash('sha256').update(b).digest('hex').slice(0, n);
+const dirOf = (...p: string[]) => {
+  const d = join(...p);
+  mkdirSync(d, { recursive: true });
+  return d;
+};
+const duration = (file: string): number =>
+  Math.round(Number(execFileSync(FFPROBE, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8' })) * 100) / 100;
+const ff = (...a: string[]) => execFileSync(FFMPEG, ['-v', 'error', '-y', ...a]);
+const mean = (xs: number[]) => (xs.length ? Math.round((xs.reduce((s, x) => s + x, 0) / xs.length) * 1000) / 1000 : null);
+const min = (xs: number[]) => (xs.length ? Math.min(...xs) : null);
+
+// ---- python ----------------------------------------------------------------------------------------------------------
+
+type Py = 'gen' | 'phonon' | 'kokoro' | 'qa' | 'sv';
+const PY_ENV: Record<Py, [string, string]> = {
+  gen: ['KIKIMIMI_TTS_PY', 'fish/venv/bin/python'],
+  phonon: ['KIKIMIMI_PHONON_PY', 'phonon/.venv/bin/python'],
+  kokoro: ['KIKIMIMI_KOKORO_PY', 'kokoro/bin/python'],
+  qa: ['KIKIMIMI_QA_PY', 'scorer/bin/python'],
+  sv: ['KIKIMIMI_SV_PY', 'fish/svenv/bin/python']
+};
+/** The venv each python job runs in: an env var, the TTS evaluation's, or one made here with uv. */
+function python(which: Py): string {
+  const [env, evalPath] = PY_ENV[which];
+  if (process.env[env]) return process.env[env]!;
+  if (EVAL) return join(EVAL, evalPath);
+  const req = { gen: 'gen', phonon: 'gen', kokoro: 'kokoro', qa: 'qa', sv: 'qa' }[which];
+  const dir = join(CACHE, `venv-${req}`), bin = join(dir, 'bin/python');
+  if (!existsSync(bin)) {
+    console.log(`making ${dir} (uv)…`);
+    execFileSync('uv', ['venv', '-q', '-p', '3.12', dir], { stdio: 'inherit' });
+    execFileSync('uv', ['pip', 'install', '-q', '--python', bin, '-r', join(TTS, `requirements-${req}.txt`)], { stdio: 'inherit' });
+  }
+  return bin;
+}
+let jobN = 0;
+/** Run a tts.py subcommand on a job list; its JSON result. */
+function py<T>(which: Py, cmd: string, jobs: unknown[], extra: string[] = []): Record<string, T> {
+  if (!jobs.length) return {};
+  const dir = dirOf(CACHE, 'jobs'), n = `${process.pid}-${jobN++}`;
+  const jf = join(dir, `${cmd}-${n}.json`), rf = join(dir, `${cmd}-${n}.out.json`);
+  writeFileSync(jf, JSON.stringify(jobs));
+  const r = spawnSync(python(which), [join(TTS, 'tts.py'), cmd, ...extra, '--jobs', jf, '--result', rf], { stdio: 'inherit' });
+  if (r.status !== 0) throw new Error(`tts.py ${cmd} failed (${r.status})`);
+  const out = JSON.parse(readFileSync(rf, 'utf8'));
+  rmSync(jf); rmSync(rf);
+  return out;
+}
+
+// ---- audio processing ------------------------------------------------------------------------------------------------
+
+const TRIM = 'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05';
+/** Raw engine output → mono 24 kHz float WAV, edge silence trimmed. */
+function trim(raw: string, out: string): void {
+  ff('-i', raw, '-af', `highpass=f=50,${TRIM},areverse,${TRIM},areverse`, '-ac', '1', '-ar', '24000', '-c:a', 'pcm_f32le', out);
+}
+/** Integrated loudness and true peak (ffmpeg loudnorm's measuring pass). */
+function loudness(wav: string): { i: number; tp: number } {
+  const r = spawnSync(FFMPEG, ['-hide_banner', '-i', wav, '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'], { encoding: 'utf8' });
+  const j = JSON.parse(r.stderr.match(/\{[^{}]*"input_i"[^{}]*\}/)![0]);
+  return { i: Number(j.input_i), tp: Number(j.input_tp) };
+}
+/** A trimmed WAV → the shipped m4a: a gain to −16 LUFS (a limiter holds the true peak under −1.5 dBTP), a 60 ms tail. */
+function finish(wav: string, out: string): void {
+  const { i, tp } = loudness(wav);
+  const gain = Number.isFinite(i) ? -16 - i : 0;
+  const limit = tp + gain > -1.5 ? `,alimiter=limit=${(10 ** (-1.6 / 20)).toFixed(3)}:attack=2:release=40:level=0` : '';
+  ff('-i', wav, '-af', `volume=${gain.toFixed(2)}dB${limit},apad=pad_dur=0.06`,
+    '-ac', '1', '-ar', '24000', '-c:a', 'aac', '-b:a', '48k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', out);
+}
+/** ffmpeg atempo (WSOLA): in the pilot it kept UTMOS (0.92: 4.36 vs 4.37 unstretched; 0.75: 4.31), where rubberband
+ *  cost 0.7 (R3) to 1.9 (R2). */
+const STRETCH = 'atempo';
+/** A trimmed WAV at another tempo (0.75: three quarters the speed), the pitch kept. */
+function stretch(wav: string, tempo: number, out: string): void {
+  ff('-i', wav, '-af', `atempo=${tempo}`, '-c:a', 'pcm_f32le', out);
+}
+
+// ---- the cast's reference clips --------------------------------------------------------------------------------------
+
+const refM4a = (id: CastId) => join(REFS, `${id}.m4a`);
+/** The reference as the engines take it (24 kHz mono WAV, cached; made from the committed m4a when missing). */
+function refWav(id: CastId): string {
+  const wav = join(dirOf(CACHE, 'refs'), `${id}.wav`);
+  if (!existsSync(wav)) {
+    if (!existsSync(refM4a(id))) throw new Error(`no reference for ${id}: run with --refs`);
+    ff('-i', refM4a(id), '-ac', '1', '-ar', '24000', '-c:a', 'pcm_s16le', wav);
+  }
+  return wav;
+}
+const refHash = (id: CastId) => sha(readFileSync(refM4a(id)), 10);
+/** Commit-sized reference: mono AAC 64 kbps (a 15 s clip ~120 KB). */
+const encodeRef = (wav: string, id: CastId) =>
+  ff('-i', wav, '-ac', '1', '-ar', '24000', '-c:a', 'aac', '-b:a', '64k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', refM4a(id));
+
+function makeRefs(): void {
+  const seeds = opt('--design-seeds')?.split(',').map(Number);
+  const ids = CAST_IDS.filter((id) => (!only || only.test(id)) && (!existsSync(refM4a(id)) || (seeds && CASTS[id].source === 'design')));
+  const tmp = dirOf(CACHE, 'refs/cand');
+  const cands: { id: CastId; seed: number; wav: string }[] = [];
+  const design = ids.filter((id) => CASTS[id].source === 'design');
+  // candidates cached by their description and text (a re-run re-scores without re-speaking)
+  const designJobs = design.flatMap((id) => (seeds ?? [CASTS[id].seed]).map((seed) =>
+    ({ out: join(tmp, `${id}_s${seed}-${sha(CASTS[id].description + CASTS[id].ref.text, 6)}.wav`), text: CASTS[id].ref.text, seed, instruct: CASTS[id].description })));
+  py('gen', 'synth', designJobs.filter((j) => !existsSync(j.out)), ['--engine', 'qwen3-design', '--model', MODEL.design]);
+  for (const j of designJobs) cands.push({ id: j.out.match(/([a-z]{2}-[fm]\d)_s/)![1] as CastId, seed: j.seed, wav: j.out });
+  const phonon = ids.filter((id) => CASTS[id].source === 'phonon')
+    .map((id) => ({ out: join(tmp, `${id}_s${CASTS[id].seed}.wav`), text: CASTS[id].ref.text, seed: CASTS[id].seed, voice: CASTS[id].ref.voice, id }));
+  py('phonon', 'synth', phonon, ['--engine', 'phonon']);
+  for (const j of phonon) cands.push({ id: j.id, seed: j.seed, wav: j.out });
+  for (const id of ids.filter((id) => CASTS[id].source === 'vctk')) {
+    const src = join(VCTK, CASTS[id].ref.file!);
+    if (!existsSync(src)) throw new Error(`${id}: ${src} missing (KIKIMIMI_VCTK_REFS)`);
+    const wav = join(tmp, `${id}_s0.wav`);
+    ff('-i', src, '-ac', '1', '-ar', '24000', '-c:a', 'pcm_s16le', wav);
+    cands.push({ id, seed: 0, wav });
+  }
+  if (!cands.length) return console.log('every cast voice has its reference');
+  const heard = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', cands.map((c) => ({ wav: c.wav, refs: [CASTS[c.id].ref.text] })));
+  const mos = flag('--no-mos') ? {} : py<number>('qa', 'mos', cands.map((c) => c.wav));
+  for (const id of new Set(cands.map((c) => c.id))) {
+    const mine = cands.filter((c) => c.id === id)
+      .map((c) => ({ ...c, mos: mos[c.wav] ?? 0, content: heard[c.wav].content, hyp: heard[c.wav].hyp }))
+      .sort((a, b) => a.content - b.content || b.mos - a.mos);
+    for (const c of mine) console.log(`  ${id} seed ${c.seed}: UTMOS ${c.mos.toFixed(2)}, ${c.content} content errors${c.content ? `: "${c.hyp}"` : ''}`);
+    const best = mine[0];
+    copyFileSync(best.wav, join(dirOf(CACHE, 'refs'), `${id}.wav`));
+    encodeRef(best.wav, id);
+    CASTS[id].seed = best.seed;
+    if (mos[best.wav]) CASTS[id].ref.mos = mos[best.wav];
+    console.log(`${id}: seed ${best.seed} kept (${(statSync(refM4a(id)).size / 1024).toFixed(0)} KB)`);
+  }
+  writeFileSync(CAST_FILE, JSON.stringify(CASTS, null, 1) + '\n');
+}
+
+// ---- legacy: macOS say (levels 1-3) ----------------------------------------------------------------------------------
+
+const RATE: Readonly<Record<number, number>> = { 1: 160, 2: 175, 3: 185 };
+const SAY_SLOW = 0.7;
 /** Best first; the last of each is the stock fallback. */
 const VOICES: Record<Accent, Record<'f' | 'm', string[]>> = {
   us: {
@@ -52,55 +291,155 @@ const VOICES: Record<Accent, Record<'f' | 'm', string[]>> = {
   }
 };
 const NEVER = /^(Eddy|Reed|Rocko|Flo|Shelley|Sandy|Grandma|Grandpa|Fred|Ralph|Albert|Kathy|Junior)\b/;
-
-const args = process.argv.slice(2);
-const flag = (f: string) => args.includes(f);
-const only = args.includes('--only') ? new RegExp(args[args.indexOf('--only') + 1]) : null;
-
-/** Installed voices by name; macOS adds " (English (UK))" to a name it has in more than one language or variant. */
-const installed = new Set(
-  execFileSync('say', ['-v', '?'], { encoding: 'utf8' }).split('\n')
-    .map((l) => l.split(/\s{2,}|\s+[a-z]{2}_[A-Z]{2}\s/)[0].trim().replace(/ \(English \([^)]*\)\)$/, '')).filter(Boolean)
-);
-function voiceFor(it: Item): string {
+let installed: Set<string> | undefined;
+function sayVoice(it: Item): string {
+  /** Installed voices by name; macOS adds " (English (UK))" to a name it has in more than one language or variant. */
+  installed ??= new Set(execFileSync('say', ['-v', '?'], { encoding: 'utf8' }).split('\n')
+    .map((l) => l.split(/\s{2,}|\s+[a-z]{2}_[A-Z]{2}\s/)[0].trim().replace(/ \(English \([^)]*\)\)$/, '')).filter(Boolean));
   const gender = ROSTER[it.speaker].gender;
-  const name = VOICES[it.voice][gender].find((v) => installed.has(v) && !NEVER.test(v));
+  const name = VOICES[it.voice][gender].find((v) => installed!.has(v) && !NEVER.test(v));
   if (!name) throw new Error(`no ${it.voice} voice installed (wanted one of ${VOICES[it.voice][gender].join(', ')})`);
   return name;
 }
-
-const sha = (b: string | Buffer, n: number) => createHash('sha256').update(b).digest('hex').slice(0, n);
-const spoken = (it: Item) => it.tts ?? it.en;
-const srcOf = (it: Item, voice: string) => sha(JSON.stringify([spoken(it), voice, RATE[it.lv], hasSlow(it) && SLOW, PIPELINE]), 10);
-const fileOf = (id: string, slow = false) => join(OUT, `${id}${slow ? '-slow' : ''}.m4a`);
-
-const tmp = mkdtempSync(join(tmpdir(), 'kikimimi-'));
-/** Speak and encode one file; its duration (s). */
-function render(text: string, voice: string, rate: number, out: string): void {
-  const aiff = join(tmp, 'say.aiff');
+function sayRender(text: string, voice: string, rate: number, out: string): void {
+  const aiff = join(dirOf(CACHE, 'say'), 'say.aiff'), wav = join(CACHE, 'say', 'say.wav');
   execFileSync('say', ['-v', voice, '-r', String(rate), '-o', aiff, text]);
-  const trim = 'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.04';
-  execFileSync(FFMPEG, [
-    '-v', 'error', '-y', '-i', aiff,
-    '-af', `${trim},areverse,${trim},areverse,loudnorm=I=-16:TP=-1.5:LRA=11,apad=pad_dur=0.06`,
-    '-ac', '1', '-ar', '24000', '-c:a', 'aac', '-b:a', '48k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', out
-  ]);
+  trim(aiff, wav);
+  finish(wav, out);
 }
-const duration = (file: string): number =>
-  Math.round(Number(execFileSync(FFPROBE, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8' })) * 100) / 100;
 
-const old: Record<string, Clip> = existsSync(CLIPS) ? JSON.parse(readFileSync(CLIPS, 'utf8')) : {};
-const oldSrc: Record<string, string> = existsSync(SRCS) ? JSON.parse(readFileSync(SRCS, 'utf8')) : {};
-const clips: Record<string, Clip> = {};
-const srcs: Record<string, string> = {};
-mkdirSync(OUT, { recursive: true });
+// ---- the plan: what each item is spoken with ------------------------------------------------------------------------
+
+interface Plan {
+  it: Item;
+  cast: CastId;
+  engine: Engine;
+  text: string;
+  src: string;
+}
+function planOf(it: Item): Plan {
+  const cast = castOf(it), engine = ENGINE[it.voice], entry = CASTS[cast];
+  if (!entry) throw new Error(`${it.id}: no cast.json entry for ${cast}`);
+  if (engine === 'say') {
+    // v1's hash, so a say run keeps the shipped clips
+    const text = it.tts ?? it.en, voice = sayVoice(it);
+    return { it, cast, engine, text, src: sha(JSON.stringify([text, voice, RATE[it.lv], hasSlow(it) && SAY_SLOW, 1]), 10) };
+  }
+  if (engine === 'kokoro' && !entry.kokoro) throw new Error(`${it.id}: kokoro has no ${cast} voice (no Australian voices: --engine kokoro,au=qwen3)`);
+  const text = spokenText(it);
+  const voice = CLONES(engine) ? [cast, refHash(cast), entry.ref.text] : [entry.kokoro];
+  const tempo = it.lv === 1 ? L1_TEMPO : 1;
+  return {
+    it, cast, engine, text,
+    src: sha(JSON.stringify([engine, MODEL[engine], voice, text, SEED, hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE]), 10)
+  };
+}
+
+interface Take {
+  seed: number;
+  raw: string;
+  wav: string;
+  m4a: string;
+  gen?: number;
+  rawDur?: number;
+  hyp?: string;
+  wer?: number;
+  content?: number;
+  sim?: number;
+}
+interface Row {
+  src: string;
+  cast: CastId;
+  engine: Engine;
+  text: string;
+  dur: number;
+  /** Words a minute (the normal clip, its 60 ms tail aside). */
+  wpm: number;
+  seed: number;
+  /** Takes spoken (1 + re-rolls). */
+  tries: number;
+  hyp?: string;
+  wer?: number;
+  content?: number;
+  mos?: number;
+  sim?: number;
+  rtf?: number;
+  flags: string[];
+}
+
+/** A take's rank, lowest best: content words misheard plus drift (another voice, similarity under 0.3, counts as one),
+ *  then off-voice (under MIN_SIM), then WER, then the higher similarity. */
+const rank = (t: Take): number => {
+  const sim = t.sim ?? 1;
+  return (t.content! + (sim < 0.3 ? 1 : 0)) * 1000 + (sim < MIN_SIM ? 100 : 0) + t.wer! * 10 + (1 - sim);
+};
+/** How many takes each item got. */
+const takesOf = new Map<string, number>();
+
+/** Speak `plans` with their engines: takes re-rolled with the next seed while whisper mishears a content word or the
+ *  voice drifts from its reference (ECAPA cosine under MIN_SIM); the best take each. */
+function speak(plans: Plan[]): Map<string, Take> {
+  const work = dirOf(CACHE, 'work'), raws = dirOf(CACHE, 'raw');
+  const best = new Map<string, Take>();
+  let todo = plans;
+  for (let k = 0; k <= RETRIES && todo.length; k++) {
+    const takes = new Map<string, Take>();
+    for (const p of todo) {
+      const seed = SEED + k;
+      takesOf.set(p.it.id, k + 1);
+      takes.set(p.it.id, { seed, raw: join(raws, `${p.src}-s${seed}.wav`), wav: join(work, `${p.it.id}-${k}.wav`), m4a: join(work, `${p.it.id}-${k}.m4a`) });
+    }
+    for (const engine of ['qwen3', 'voxcpm2', 'kokoro'] as const) {
+      const jobs = todo.filter((p) => p.engine === engine && !existsSync(takes.get(p.it.id)!.raw)).map((p) => {
+        const t = takes.get(p.it.id)!, e = CASTS[p.cast];
+        return CLONES(engine)
+          ? { out: t.raw, text: p.text, seed: t.seed, ref_audio: refWav(p.cast), ref_text: e.ref.text }
+          : { out: t.raw, text: p.text, seed: t.seed, voice: e.kokoro };
+      });
+      if (jobs.length) console.log(`${engine}: ${jobs.length} clips (try ${k + 1})`);
+      const res = py<{ gen: number; dur: number }>(engine === 'kokoro' ? 'kokoro' : 'gen', 'synth', jobs, ['--engine', engine, '--model', MODEL[engine]]);
+      for (const [raw, r] of Object.entries(res)) writeFileSync(`${raw}.json`, JSON.stringify(r)); // the master's timing, for RTF
+    }
+    for (const p of todo) {
+      const t = takes.get(p.it.id)!, meta = `${t.raw}.json`;
+      if (existsSync(meta)) {
+        const r = JSON.parse(readFileSync(meta, 'utf8'));
+        Object.assign(t, { gen: r.gen, rawDur: r.dur });
+      }
+    }
+    for (const p of todo) {
+      const t = takes.get(p.it.id)!;
+      trim(t.raw, t.wav);
+      // the slow clip is made from t.wav (the take as spoken), the normal one maybe gently stretched (L1)
+      if (p.it.lv === 1 && L1_TEMPO !== 1) {
+        const s = t.wav.replace(/\.wav$/, '-t.wav');
+        stretch(t.wav, L1_TEMPO, s);
+        finish(s, t.m4a);
+      } else finish(t.wav, t.m4a);
+    }
+    const heard = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', todo.map((p) => ({ wav: takes.get(p.it.id)!.m4a, refs: [p.it.en, p.text] })));
+    const cloned = todo.filter((p) => CLONES(p.engine));
+    const sim = flag('--no-sv') ? {} : py<number>('sv', 'sv', cloned.map((p) => ({ wav: takes.get(p.it.id)!.m4a, ref: refWav(p.cast) })));
+    const again: Plan[] = [];
+    for (const p of todo) {
+      const t = takes.get(p.it.id)!, h = heard[t.m4a];
+      Object.assign(t, { hyp: h.hyp, wer: h.wer, content: h.content, sim: sim[t.m4a] });
+      const b = best.get(p.it.id);
+      if (!b || rank(t) < rank(b)) best.set(p.it.id, t);
+      if (h.content > 0 || (t.sim ?? 1) < MIN_SIM) again.push(p);
+    }
+    if (again.length) console.log(`gate: ${again.length} misheard or off-voice${k < RETRIES ? ', re-rolling' : ''}: ${again.map((p) => p.it.id).join(' ')}`);
+    todo = again;
+  }
+  return best;
+}
 
 function listen(): void {
   for (const it of BANK) {
     if (only && !only.test(it.id)) continue;
-    console.log(`\n${it.id}  [${it.voice.toUpperCase()} ${voiceFor(it)}, ${ROSTER[it.speaker].nameEn}]\n  ${it.en}\n  ${it.ja}`);
-    spawnSync('afplay', [fileOf(it.id)], { stdio: 'inherit' });
-    if (hasSlow(it)) spawnSync('afplay', [fileOf(it.id, true)], { stdio: 'inherit' });
+    console.log(`\n${it.id}  [${castOf(it)}, ${ROSTER[it.speaker].nameEn}]\n  ${it.en}\n  ${it.ja}`);
+    spawnSync('afplay', [join(OUT, `${it.id}.m4a`)], { stdio: 'inherit' });
+    if (hasSlow(it)) spawnSync('afplay', [join(OUT, `${it.id}-slow.m4a`)], { stdio: 'inherit' });
   }
 }
 
@@ -110,44 +449,110 @@ function printList(c: Record<string, Clip>): void {
   for (const it of [...BANK].sort((a, b) => a.lv - b.lv || a.id.localeCompare(b.id))) {
     if (it.lv !== lv) console.log(`\n== level ${(lv = it.lv)} ==`);
     const d = c[it.id]?.dur.toFixed(2) ?? '  ?  ';
-    console.log(`[ ] ${it.id.padEnd(18)} ${d}s  ${it.voice.toUpperCase()} ${voiceFor(it).padEnd(10)} ${it.en}`);
+    console.log(`[ ] ${it.id.padEnd(18)} ${d}s  ${castOf(it)}  ${it.en}`);
   }
 }
 
-if (flag('--listen')) listen();
-else if (flag('--list')) printList(old);
-else {
-  let made = 0;
-  for (const it of BANK) {
-    const voice = voiceFor(it), src = srcOf(it, voice), prev = old[it.id];
-    const files = [fileOf(it.id), ...(hasSlow(it) ? [fileOf(it.id, true)] : [])];
-    srcs[it.id] = src;
-    if (!flag('--force') && prev && oldSrc[it.id] === src && files.every((f) => existsSync(f))) {
-      clips[it.id] = prev;
-      continue;
+function run(): void {
+  const t0 = Date.now();
+  mkdirSync(OUT, { recursive: true });
+  const old: Record<string, Clip> = existsSync(CLIPS) ? JSON.parse(readFileSync(CLIPS, 'utf8')) : {};
+  const oldSrc: Record<string, string> = existsSync(SRCS) ? JSON.parse(readFileSync(SRCS, 'utf8')) : {};
+  const clips: Record<string, Clip> = { ...old }, srcs: Record<string, string> = { ...oldSrc };
+  const fileOf = (id: string, slow = false) => join(OUT, `${id}${slow ? '-slow' : ''}.m4a`);
+  const plans = BANK.filter((it) => !only || only.test(it.id)).map(planOf);
+  const todo = plans.filter((p) => {
+    const files = [fileOf(p.it.id), ...(hasSlow(p.it) ? [fileOf(p.it.id, true)] : [])];
+    return flag('--force') || !old[p.it.id] || oldSrc[p.it.id] !== p.src || !files.every((f) => existsSync(f));
+  });
+  console.log(`${plans.length} items selected, ${todo.length} to speak (engine ${JSON.stringify(ENGINE)}, slow by ${STRETCH})`);
+  const rows: Record<string, Row> = {};
+  const record = (p: Plan, normal: string, slowWav: string | null, extra: Partial<Row>) => {
+    const out = fileOf(p.it.id);
+    copyFileSync(normal, out);
+    if (slowWav) {
+      const s = join(CACHE, 'work', `${p.it.id}-slow.wav`);
+      stretch(slowWav, SLOW, s);
+      finish(s, fileOf(p.it.id, true));
+    } else rmSync(fileOf(p.it.id, true), { force: true });
+    clips[p.it.id] = { dur: duration(out), hash: sha(readFileSync(out), 8), ...(slowWav && { slow: sha(readFileSync(fileOf(p.it.id, true)), 8) }) };
+    srcs[p.it.id] = p.src;
+    const dur = clips[p.it.id].dur, words = p.text.match(/[A-Za-z']+/g)?.length ?? 0;
+    rows[p.it.id] = { src: p.src, cast: p.cast, engine: p.engine, text: p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60), seed: SEED, tries: 1, flags: [], ...extra };
+  };
+  if (SAY) {
+    for (const p of todo) {
+      const voice = sayVoice(p.it);
+      sayRender(p.text, voice, RATE[p.it.lv], fileOf(p.it.id));
+      if (hasSlow(p.it)) sayRender(p.text, voice, Math.round(RATE[p.it.lv] * SAY_SLOW), fileOf(p.it.id, true));
+      else rmSync(fileOf(p.it.id, true), { force: true });
+      const f = fileOf(p.it.id);
+      clips[p.it.id] = { dur: duration(f), hash: sha(readFileSync(f), 8), ...(hasSlow(p.it) && { slow: sha(readFileSync(fileOf(p.it.id, true)), 8) }) };
+      srcs[p.it.id] = p.src;
+      process.stdout.write(`\r${Object.keys(srcs).length} spoken: ${p.it.id.padEnd(24)}`);
     }
-    render(spoken(it), voice, RATE[it.lv], files[0]);
-    if (hasSlow(it)) render(spoken(it), voice, Math.round(RATE[it.lv] * SLOW), files[1]);
-    else rmSync(fileOf(it.id, true), { force: true });
-    clips[it.id] = {
-      dur: duration(files[0]),
-      hash: sha(readFileSync(files[0]), 8),
-      ...(hasSlow(it) && { slow: sha(readFileSync(files[1]), 8) })
-    };
-    made++;
-    process.stdout.write(`\r${made} spoken: ${it.id.padEnd(24)}`);
+  } else {
+    const best = speak(todo);
+    for (const p of todo) {
+      const t = best.get(p.it.id)!;
+      const flags = [...(t.content ? ['misheard'] : []), ...(t.sim === undefined ? [] : t.sim < 0.3 ? ['drift'] : t.sim < MIN_SIM ? ['low-sim'] : [])];
+      record(p, t.m4a, hasSlow(p.it) ? t.wav : null, {
+        seed: t.seed, tries: takesOf.get(p.it.id) ?? 1, hyp: t.hyp, wer: t.wer, content: t.content, sim: t.sim, flags,
+        ...(t.gen !== undefined && t.rawDur && { rtf: Math.round((t.gen / t.rawDur) * 1000) / 1000 })
+      });
+    }
+    const made = todo.map((p) => p.it.id);
+    if (!flag('--no-mos')) {
+      const mos = py<number>('qa', 'mos', made.map((id) => fileOf(id)));
+      for (const id of made) {
+        rows[id].mos = mos[fileOf(id)];
+        if (rows[id].mos! < 3.5) rows[id].flags.push('low-mos');
+      }
+    }
   }
-  // clips of items no longer in the bank
-  const want = new Set(BANK.flatMap((it) => [`${it.id}.m4a`, ...(hasSlow(it) ? [`${it.id}-slow.m4a`] : [])]));
-  const gone = readdirSync(OUT).filter((f) => !want.has(f));
-  for (const f of gone) rmSync(join(OUT, f));
-  const sorted = Object.fromEntries(Object.keys(clips).sort().map((k) => [k, clips[k]]));
-  writeFileSync(CLIPS, JSON.stringify(sorted, null, 1).replace(/\n  +/g, ' ').replace(/\n \}/g, ' }') + '\n');
-  writeFileSync(SRCS, JSON.stringify(Object.fromEntries(Object.keys(srcs).sort().map((k) => [k, srcs[k]])), null, 1) + '\n');
-  const bytes = readdirSync(OUT).reduce((s, f) => s + readFileSync(join(OUT, f)).length, 0);
-  console.log(`\n${made} items spoken, ${gone.length} old files removed; ${readdirSync(OUT).length} files, ${(bytes / 1024).toFixed(0)} KB`);
-  const used = new Set(BANK.map(voiceFor));
-  console.log(`voices: ${[...used].join(', ')}`);
-  printList(clips);
+  // clips of items no longer in the bank (a whole run into static/ only)
+  const ids = new Set(ALL.map((it) => it.id));
+  for (const id of Object.keys(clips)) if (!ids.has(id)) { delete clips[id]; delete srcs[id]; }
+  if (!SCRATCH && !only) {
+    const want = new Set(ALL.filter((it) => clips[it.id]).flatMap((it) => [`${it.id}.m4a`, ...(hasSlow(it) ? [`${it.id}-slow.m4a`] : [])]));
+    for (const f of readdirSync(OUT).filter((f) => !want.has(f))) rmSync(join(OUT, f));
+  }
+  const sorted = <T>(o: Record<string, T>) => Object.fromEntries(Object.keys(o).sort().map((k) => [k, o[k]]));
+  writeFileSync(CLIPS, JSON.stringify(sorted(clips), null, 1).replace(/\n  +/g, ' ').replace(/\n \}/g, ' }') + '\n');
+  writeFileSync(SRCS, JSON.stringify(sorted(srcs), null, 1) + '\n');
+  const files = readdirSync(OUT).filter((f) => f.endsWith('.m4a'));
+  const bytes = files.reduce((s, f) => s + statSync(join(OUT, f)).size, 0);
+  if (SAY) return console.log(`\n${todo.length} items spoken by say; ${files.length} files, ${(bytes / 1024).toFixed(0)} KB`);
+
+  // the report covers every clip made by this pipeline: earlier runs' rows kept while their clip is unchanged
+  const prev: Record<string, Row> = existsSync(REPORT) ? JSON.parse(readFileSync(REPORT, 'utf8')).items ?? {} : {};
+  for (const [id, r] of Object.entries(prev)) if (!rows[id] && r.src && srcs[id] === r.src && clips[id]) rows[id] = r;
+  const R = Object.values(rows);
+  const num = (k: 'mos' | 'sim' | 'rtf' | 'wer') => R.map((r) => r[k]).filter((x): x is number => typeof x === 'number');
+  const perVoice = Object.fromEntries([...new Set(R.map((r) => r.cast))].sort().map((c) => {
+    const rs = R.filter((r) => r.cast === c);
+    const f = (k: 'mos' | 'sim') => rs.map((r) => r[k]).filter((x): x is number => typeof x === 'number');
+    return [c, { n: rs.length, mos: mean(f('mos')), mosMin: min(f('mos')), sim: mean(f('sim')), simMin: min(f('sim')), misheard: rs.filter((r) => r.content).length }];
+  }));
+  const lvOf = new Map(ALL.map((it) => [it.id, it.lv]));
+  const wpm = Object.fromEntries([1, 2, 3, 4].map((lv) => [lv, mean(Object.entries(rows).filter(([id]) => lvOf.get(id) === lv).map(([, r]) => r.wpm))]));
+  const summary = {
+    engine: ENGINE, models: Object.fromEntries([...new Set(Object.values(ENGINE))].map((e) => [e, MODEL[e]])), pipeline: PIPELINE,
+    slow: { tempo: SLOW, by: STRETCH }, l1Tempo: L1_TEMPO, at: new Date().toISOString(), wallSeconds: Math.round((Date.now() - t0) / 1000),
+    spokenNow: todo.length, clips: R.length, perfect: R.filter((r) => r.wer === 0).length, contentClean: R.filter((r) => !r.content).length,
+    rerolled: R.filter((r) => r.tries > 1).length, flagged: Object.keys(rows).filter((k) => rows[k].flags.length).sort(),
+    mos: mean(num('mos')), mosMin: min(num('mos')), sim: mean(num('sim')), simMin: min(num('sim')), rtf: mean(num('rtf')), wer: mean(num('wer')),
+    wpm, files: files.length, kb: Math.round(bytes / 1024), perVoice
+  };
+  writeFileSync(REPORT, JSON.stringify({ summary, items: sorted(rows) }, null, 1) + '\n');
+  console.log(`\n${todo.length} spoken in ${summary.wallSeconds}s. All ${R.length} clips: whisper word for word ${summary.perfect}, content clean ${summary.contentClean}, re-rolled ${summary.rerolled}`);
+  console.log(`UTMOS mean ${summary.mos} (min ${summary.mosMin}); similarity to the ref mean ${summary.sim} (min ${summary.simMin}); RTF ${summary.rtf}; wpm by level ${JSON.stringify(wpm)}`);
+  for (const [c, v] of Object.entries(perVoice)) console.log(`  ${c}: ${v.n} clips, UTMOS ${v.mos} (min ${v.mosMin}), sim ${v.sim} (min ${v.simMin})${v.misheard ? `, ${v.misheard} misheard` : ''}`);
+  for (const [id, r] of Object.entries(rows)) if (r.flags.length) console.log(`  FLAG ${id} [${r.flags.join(', ')}] said "${r.text}", heard "${r.hyp}"`);
+  console.log(`${files.length} files in ${OUT}, ${(bytes / 1024).toFixed(0)} KB; report ${REPORT}`);
 }
-rmSync(tmp, { recursive: true, force: true });
+
+if (flag('--refs')) makeRefs();
+else if (flag('--listen')) listen();
+else if (flag('--list')) printList(existsSync(CLIPS) ? JSON.parse(readFileSync(CLIPS, 'utf8')) : {});
+else run();

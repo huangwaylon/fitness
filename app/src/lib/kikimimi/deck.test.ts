@@ -84,8 +84,8 @@ describe('kikimimi levels offered (the lobby’s gate)', () => {
     expect(playable({ ...all, 'x5-anything': {} })).not.toContain(5);
   });
 
-  it('today: levels 1-3 (level 4 waits for the neural cast’s clips: make this [1, 2, 3, 4] when they land)', () => {
-    expect(OFFERED).toEqual([1, 2, 3]);
+  it('today: levels 1-4 (level 4 since the neural cast’s clips landed)', () => {
+    expect(OFFERED).toEqual([1, 2, 3, 4]);
   });
 });
 

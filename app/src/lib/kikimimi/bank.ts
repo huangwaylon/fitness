@@ -6,10 +6,9 @@
 // number) with close distractors. `reply` is TOEIC Part 2: the traps repeat a word or a sound of the question, answer
 // another wh-question, or say yes/no to a wh-question.
 //   Accents: level 1 is US only, level 2 adds UK, level 3 adds AU. Jock villagers say gym lines.
-//   Levels 1-3 are spoken by scripts/kikimimi-audio.ts (macOS `say`) into static/audio/kikimimi/<id>.m4a; changing an
-// item's `en`, `tts` or `voice` regenerates its clip. Ids are file names: keep them stable. Level 4 (かわ・もり,
-// bank4.ts) waits for the neural cast (docs/curriculum.md §9): `say` never speaks it, and the lobby offers a level only
-// once every item of it has a clip (deck.ts LEVELS).
+//   Every item is spoken by scripts/kikimimi-audio.ts (the neural cast, docs/kikimimi.md "Audio") into
+// static/audio/kikimimi/<id>.m4a; changing an item's `en`, `tts`, `voice` or speaker's voice regenerates its clip. Ids
+// are file names: keep them stable. The lobby offers a level only once every item of it has a clip (deck.ts LEVELS).
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { QuizLv } from '../contract/live-protocol.ts';
 import { BANK4 } from './bank4.ts';
@@ -20,9 +19,10 @@ export type ItemType = 'pic' | 'word' | 'num' | 'reply' | 'mean';
 /** The protocol's levels (1-5); the bank has 1-4 (5 is room for the next without a relay deploy). */
 export type Level = QuizLv;
 export type Accent = 'us' | 'uk' | 'au';
-/** A cast voice, for the neural TTS being chosen (docs/curriculum.md §9: ≥ 2 voices per accent × gender): accent,
- *  gender, slot. Each villager speaks with one for good (bank4.ts CAST). */
-export type CastId = `${Accent}-${'f' | 'm'}${1 | 2}`;
+/** A cast voice of the neural TTS (docs/curriculum.md §9; 12 voices, US weighted: speech.ts SLOTS lists the ones that
+ *  exist, scripts/tts/cast.json describes them): accent, gender, slot. Each villager speaks with one for good (bank4.ts
+ *  CAST). */
+export type CastId = `${Accent}-${'f' | 'm'}${1 | 2 | 3}`;
 
 /** The scenario generator's dimensions an item was made from (docs/curriculum.md §5): they drive the levers, review
  *  and coverage later. */
