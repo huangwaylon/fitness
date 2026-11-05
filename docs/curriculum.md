@@ -436,7 +436,7 @@ Each increment takes 1–3 agent-days, lands on main green, and ships something 
 | 3 | Co-op default and privacy: 「ふたりで n/8」 results, たいせん toggle, copy fixes (おしい！, いっぱつ せいかい！, ★ level names); log each answer to the `listen` day row (owner-only). Progress data starts accruing. | 2 |
 | 4 | Dialogue items in the quiz: `gist` / `next` over 2–4-line dialogues (`playSequence`), 24 overheard and service dialogues. | 2–3 |
 | 5 | Visuals v1: the SVG scene kit (8 backdrops), channel frames, transcript karaoke and sound marks at the reveal. | 2–3 |
-| 6 | Conditions in the pipeline: noise beds, phone band, PA reverb; the アナウンス pack (30 PA, voicemail and IVR items) as a quiz level mix. | 2 |
+| 6 | ✅ **Done 2026-11-06.** Conditions in the pipeline: noise beds, phone band, PA reverb; the アナウンス pack (30 PA, voicemail and IVR items) as a quiz level mix. As built: level 5 「アナウンス」; beds synthesised from our own clips (no third-party audio) at +15 / +10 dB; 79 level-4 clips re-mixed (docs/kikimimi.md "Conditions", "The アナウンス pack"). | 2 |
 | 7 | スピード はしご as a quiz mode: 30 ladders. | 1–2 |
 | 8 | Framework: `RoundSession`, `GameDef`, `play` intent (relay first), the quiz migrated. | 3 |
 | 9 | YAML content compiler and packs, SW cache class, `/dev/listen`. | 3 |
