@@ -270,7 +270,8 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         });
         free(g);
       }
-      if (!disposed) unuse(urlOf(name), true);
+      // (always: a mount disposed meanwhile hands back only what's still in gltfs, and this one's left it)
+      unuse(urlOf(name), true);
     });
   }
 
