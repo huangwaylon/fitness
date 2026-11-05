@@ -829,7 +829,13 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
   reads the week from IndexedDB (IslandScene imports it only once the week is in).
 - **The ground's fields:** the layout's distance fields in a worker from `+layout.ts` load()
   ([island-layout](island-layout.md): the distance fields); the river stems' field with `Math.sqrt`, not
-  `Math.hypot`, in its hot loop (the same numbers).
+  `Math.hypot`, in its hot loop (the same numbers). The 3D island's mount waits for the worker's answer, 300 ms at
+  most (`fieldsSoon`), before it builds the ground: its mount is one long task, and the answer (a task of its own) was
+  only read after it, when the ground had built the fields on the main thread already (~230 ms at 4× CPU). Not in
+  the e2e's logic mode (nothing drawn; its tests read the projection as the HUD shows). A late answer (the fields
+  built here meanwhile, or the tiles changed) is dropped, never kept over the current layout's set (~8 MB each).
+  Measured (HTTP/2 brotli at ~Fast 4G, 4× CPU, `?demo`, medians): first frame warm 1,175 → 877 ms, cold 2,201 →
+  1,949 ms; no fields built on the main thread.
 - **The 2D heads' stand-in figure:** its colours from `look/swatches.json` (each bundled item's swatch, ~10 KB,
   written by `npm run players3d` beside the part table) through `look/swatch.ts`; the closet and the part table
   (~80 KB) load with すがた. `contract/partIds.json` (~39 KB) stays in the first load: it decides whether a kept look

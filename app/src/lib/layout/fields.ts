@@ -103,11 +103,12 @@ export function fieldsOf(layout: Layout): Fields {
 }
 /** Whether the layout's fields are built (or adopted). */
 export const hasFields = (layout: Layout): boolean => cache.has(layout) || byKey.has(keyOf(layout));
-/** A layout's fields computed elsewhere (computeFields in a worker: the same code, the same numbers), kept unless
- *  they were built here meanwhile; any layout with the same tiles and bridges takes them. */
+/** A layout's fields computed elsewhere (computeFields in a worker: the same code, the same numbers), kept only while
+ *  no set is held here yet (the launch's); any layout with the same tiles and bridges takes them. A late answer is
+ *  dropped (~8 MB let go): its own set built here meanwhile, or the island's tiles changed since it was asked, and
+ *  keeping it would push out the current layout's set (byKey holds one). */
 export function adoptFields(layout: Layout, raw: RawFields): void {
-  const k = keyOf(layout);
-  if (!cache.has(layout) && !byKey.has(k)) keep(k, wrap(raw));
+  if (!cache.has(layout) && !byKey.size) keep(keyOf(layout), wrap(raw));
 }
 
 /** A chamfer distance transform (3 × 3, steps 1 and √2) of a boolean raster: each cell's distance to the nearest set
