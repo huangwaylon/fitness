@@ -2,5 +2,5 @@
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "ignore": ["design/**", "scripts/models-page.js", "scripts/room-models-page.js", "scripts/room-surfaces-page.js", "scripts/world3d-page.js", "scripts/world3d-sheet-page.js", "scripts/villagers3d-page.js", "scripts/players3d-page.js"],
   "ignoreDependencies": ["@fontsource/zen-maru-gothic", "gltfpack"],
-  "ignoreBinaries": ["cwebp", "dwebp", "safaridriver"]
+  "ignoreBinaries": ["cwebp", "dwebp", "safaridriver", "say", "afplay"]
 }

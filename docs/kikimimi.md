@@ -45,12 +45,17 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
 
 ## Content: `app/src/lib/kikimimi/`
 
-- **`bank.ts`**: each item is `{id, lv, type, en, ja, speaker, choices, answer, focus?}`.
+- **`bank.ts`**: each item is `{id, lv, type, en, ja, speaker, voice, choices, answer, focus?, ask?, tts?}`.
   - `speaker` is a villager id from roster.ts. Jock villagers say gym lines ("Ten more push-ups!"), since this is a fitness app.
-  - Accents: L1 is US only, L2 adds UK, L3 adds AU.
-  - Aim for **≥ 40 items per level in v1**, templates included. Grow towards 80 or more.
-- **`deck.ts`**: `deck(seed, lv): Item[]` is pure and deterministic. It follows the per-level mix, never puts the same type more than twice in a row, and shuffles the choices by the seed. Every phone builds the same deck from `{seed, lv}`, so no text goes on the wire.
-- **`score.ts`**: pure scoring.
+  - Accents: L1 is US only, L2 adds UK, L3 adds AU. `voice` is the item's accent; the voice's gender is the speaker's (roster).
+  - `ask` (pic, num) is a short Japanese question shown while the clip plays (「なにが つれた？」): a pic sentence names several of its pictures, so it says what to listen for.
+  - `pic` choices are art keys (`critters/squid`, `finds/items/blue-umbrella`, `decor/kettlebell-0`…); `PIC_JA` gives each its Japanese label (VoiceOver, the review list).
+  - `word` items' `focus` is the answer as it appears in `en` (the blank before the reveal). `reply` items' `ja` is the question → the right reply.
+  - `tts` is what `say` reads when it isn't `en` as written (unused so far).
+  - Aim for **≥ 40 items per level in v1**, templates included. Grow towards 80 or more. v1 has 46 / 49 / 49 (144 items).
+- **`deck.ts`**: `deck(seed, lv): Item[]` is pure and deterministic. It follows the per-level mix, never puts the same type more than twice in a row, and shuffles the choices by the seed. Every phone builds the same deck from `{seed, lv}`, so no text goes on the wire. The returned items are copies: `choices` is the shuffled order and `answer` the right choice's index in it. Num items from the same template aren't drawn together while the pool allows.
+- **`score.ts`**: pure scoring: `points(right, replayed)`, `MAX_SCORE` (1040).
+- **`clips.ts`**: `clipUrl(id, slow?)`, the path under audio/ that `loadVoice` takes (`kikimimi/<id>.m4a?v=<hash>`), and `clipDur(id)`, from clips.json.
 
 ## Audio
 
@@ -58,11 +63,13 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
   - `app/scripts/kikimimi-audio.ts` (`npm run audio:kikimimi`) uses macOS `say` with a voice table per accent and gender.
   - It prefers Premium/Enhanced voices (Ava, Zoe, Evan, Serena, Lee and so on) when installed, and falls back to **Samantha (US), Daniel (UK) and Karen (AU)**.
   - The robotic Eloquence voices (Eddy, Reed, Rocko, Flo, Shelley, Sandy, Fred, Ralph) are **never used**.
+  - On the Mac the v1 clips were made on, no Premium/Enhanced English voice was installed, so every clip is Samantha (US), Daniel (UK) or Karen (AU), and both genders of an accent share one voice. Installing Premium voices and running the script again re-speaks every item (the voice is part of each clip's source hash).
+  - Rates: 160 wpm at L1, 175 at L2, 185 at L3; slow clips at 70%.
 - **Files.**
-  - `ffmpeg` encodes mono AAC `.m4a` at about 48 kbps, into `static/audio/kikimimi/<id>.m4a`, plus `<id>-slow.m4a` (`say -r` about 70%) for L1 and L2.
-  - The script writes `app/src/lib/kikimimi/clips.json` (`{id: {dur, hash}}`), which is imported at build time. It is **not** under static, because audio is cache-first and never revalidated. URLs carry `?v=<hash>`.
-  - It regenerates only the items whose text or voice changed.
-- **Listening check.** A person listens to every clip before it counts as done. The lead and the user do this; the script prints a list to listen through.
+  - `ffmpeg` encodes mono AAC `.m4a` at about 48 kbps (24 kHz), into `static/audio/kikimimi/<id>.m4a`, plus `<id>-slow.m4a` (`say -r` about 70%) for L1 and L2. Leading and trailing silence is trimmed and the loudness set to −16 LUFS. v1: 239 files, ~3.4 MB (~15 KB a clip).
+  - The script writes `app/src/lib/kikimimi/clips.json` (`{id: {dur, hash, slow?, src}}`: `slow` is the slow file's hash, `src` the hash of the text, voice and rate), which is imported at build time. It is **not** under static, because audio is cache-first and never revalidated. URLs carry `?v=<hash>`.
+  - It regenerates only the items whose text or voice changed, and deletes the files of items no longer in the bank.
+- **Listening check.** A person listens to every clip before it counts as done. The lead and the user do this; the script prints a list to listen through, and `npm run audio:kikimimi -- --listen [--only <regex>]` plays each clip (and its slow one) with its text. (A machine pass with whisper large-v3-turbo heard 126 of the 144 normal clips word for word; 16 more differ only in how numbers or contractions are written; two are near misses to check by ear: r2-caught "this" heard as "the", r3-boxes "boxes" as "boxers" in Daniel's UK voice.)
 - **Engine additions** (sound/engine.ts and sound.svelte.ts):
   - a `voice` bus. Its level follows the master volume only, not the 効果音/ミュージック toggles;
   - `loadClip(path)`, which returns an `AudioBuffer` or null;

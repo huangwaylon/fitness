@@ -78,10 +78,12 @@ describe('audio manifest (static/audio/manifest.json, kk.json)', () => {
       for (const s of sizes) expect(s, dir).toBeLessThan(file * 1024 * 1024);
       expect(sizes.reduce((a, b) => a + b, 0), dir).toBeLessThan(all * 1024 * 1024);
     }
-    // and every audio file on disk is named (nothing ships unused)
+    // and every audio file on disk is named (nothing ships unused; ききみみ's clips are named by lib/kikimimi/clips.json
+    // and checked by kikimimi/bank.test.ts)
     const onDisk = readdirSync(STATIC, { recursive: true, withFileTypes: true })
       .filter((d) => d.isFile() && !d.name.endsWith('.json'))
-      .map((d) => relative(STATIC, join(d.parentPath, d.name)));
+      .map((d) => relative(STATIC, join(d.parentPath, d.name)))
+      .filter((p) => !p.startsWith('kikimimi/'));
     expect(onDisk.filter((p) => !paths.includes(p))).toEqual([]);
   });
   it('every entry carries its file’s content hash (`v`: a re-cut file is a new URL; `npm run audio:music -- --hashes`)', () => {
