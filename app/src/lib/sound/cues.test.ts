@@ -43,3 +43,16 @@ describe('scenery cues', () => {
     expect(level('bite')).toBeGreaterThan(level('nibble') * 2);
   });
 });
+
+describe("NH's fanfares and the announcement (docs/design.md#cues)", () => {
+  it('受け取る and a present: the get fanfare; both of us meeting all four goals: the complete fanfare, on the island', () => {
+    expect(CUES['harvest-receive']).toEqual({ sound: 'get-fanfare' });
+    expect(CUES['goals-complete']).toEqual({ sound: 'complete-fanfare', world: true });
+    for (const c of ['harvest-receive', 'goals-complete'] as const) expect(SOUNDS[CUES[c].sound].jingle).toBe(true);
+    // without their files: the item-get placeholder
+    expect(placeholderOf('get-fanfare')).toBe('fanfare');
+  });
+  it("the day's first open: the chime, which plays the moment's radio jingle (sound.svelte.ts play, radio.ts)", () => {
+    expect(CUES.announce).toEqual({ sound: 'chime', world: true });
+  });
+});
