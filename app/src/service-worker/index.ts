@@ -5,7 +5,7 @@ import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
 import { AUDIO_CACHE, FOOD_CACHE, ROOM_CACHE, SHELL, foodFetch, isAudio, isFoodData, isCritterArt, isDecorArt, isFont, isMusic, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches } from './caches.ts';
 
-// The app may live under a base path (GitHub Pages: /fitness/); the registration scope carries it.
+// The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
 
 const CACHE = `${SHELL}${version}`;
@@ -22,7 +22,7 @@ const VILLAGERS = 'island-villagers-v1';
 // their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
 // never precached: AUDIO_CACHE.
 const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(precachable);
-/** Checked with the server past the browser's HTTP cache (GitHub Pages: max-age 600): a static file or the shell
+/** Checked with the server past the browser's HTTP cache (a host's own max-age): a static file or the shell
  *  fetched within 10 minutes before a deploy would otherwise be stored stale for the whole version. Revalidated, not
  *  reloaded: an unchanged file (most of the art, each deploy) is a 304 from the HTTP cache's copy, not a download. The
  *  hashed chunks can't be stale. */

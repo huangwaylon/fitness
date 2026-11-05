@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "vite build && node scripts/headers.ts && cp build-pages/index.html build-pages/404.html && touch build-pages/.nojekyll",
+    "build": "vite build && node scripts/headers.ts && cp build-pages/index.html build-pages/404.html",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "test": "vitest run",

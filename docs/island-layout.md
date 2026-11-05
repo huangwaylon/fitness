@@ -240,9 +240,9 @@ extentOf(layout): { grid, land, shore, home }   // model.ts: the island's box, t
 
 ## The editor (phase 3)
 
-`/fitness/editor/` (`routes/editor/+page.svelte`, `components/editor/`: `Editor.svelte`, `plan.ts` the canvas,
+`/editor/` (`routes/editor/+page.svelte`, `components/editor/`: `Editor.svelte`, `plan.ts` the canvas,
 `edits.ts` the edits, `Preview3D.svelte`): unlinked, noindex, the members' only (the browser paired with the A or B key
-at `/fitness/pair`; the guest's key gets 「ウェイと うめだけが つかえます」, and the record refuses the guest's outdoor ops
+at `/pair`; the guest's key gets 「ウェイと うめだけが つかえます」, and the record refuses the guest's outdoor ops
 anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the phone).
 
 - **The plan:** the layout top-down, the back of the island at the top (as the phones see it): tiles in NH's map

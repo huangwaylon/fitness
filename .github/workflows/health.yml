@@ -1,6 +1,7 @@
 # Backend monitor (docs/ops/runbook.md §3): the relay's /health (the Worker and the room) and a keyless
 # {"action":"health"} to the record's /api (its Durable Object). It fails, so GitHub e-mails the owner, unless both
-# answer JSON with ok:true.
+# answer JSON with ok:true; and the app's site (https://island-fund.pages.dev: a build, its CSP header, the relay's
+# CORS for its origin).
 name: Backend health
 
 on:
@@ -27,3 +28,12 @@ jobs:
           echo "$body" | head -c 300; echo
           echo "$body" | jq -e '.ok == true' > /dev/null || { echo "::error::the record's /api did not answer ok (docs/ops/runbook.md §13)"; exit 1; }
           echo "healthy, record build $(echo "$body" | jq -r '.build')"
+      - name: The app's site (Cloudflare Pages), its headers, and the relay admitting its origin
+        run: |
+          site=https://island-fund.pages.dev
+          v=$(curl -sS --max-time 30 "$site/_app/version.json?t=$(date +%s)" | jq -r '.version // empty')
+          [ -n "$v" ] || { echo "::error::$site/_app/version.json did not answer (docs/ops/runbook.md §1)"; exit 1; }
+          curl -sSI --max-time 30 "$site/" | grep -qi '^content-security-policy:.*frame-ancestors' || { echo "::error::$site has no CSP header (docs/ops/runbook.md §1)"; exit 1; }
+          cors=$(curl -sS --max-time 30 -o /dev/null -D - -H "Origin: $site" -H 'Content-Type: text/plain' --data '{"action":"health"}' https://island-fund-relay.island-fund-relay.workers.dev/api | grep -i '^access-control-allow-origin:' | tr -d '\r' | awk '{print $2}')
+          [ "$cors" = "$site" ] || { echo "::error::the relay's /api doesn't allow $site (ALLOWED_ORIGINS, docs/backend.md)"; exit 1; }
+          echo "site $v, with its CSP; the relay allows its origin"

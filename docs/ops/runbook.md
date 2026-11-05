@@ -3,32 +3,32 @@
 Two pieces, no server of our own:
 - **The relay** (`relay/`, a Cloudflare Worker on the Free plan, §10): the record (metrics, events, the ingest audit in
   a Durable Object's SQLite, §13), the live room (presence and the day's shared world). No notifications (§12).
-- **The app:** a static PWA on Cloudflare Pages (https://island-fund.pages.dev/, project `island-fund`; until the phones
-  have moved, also https://huangwaylon.github.io/fitness/) that computes everything in the browser from the record's rows.
+- **The app:** a static PWA on Cloudflare Pages (https://island-fund.pages.dev/, project `island-fund`; GitHub Pages'
+  https://huangwaylon.github.io/fitness/ until 2026-11-05) that computes everything in the browser from the record's rows.
 No Google Sheet any more: its export was removed on 2026-11-05 (§2). How it works: [backend.md](../backend.md).
 
 ## 1. Deploy the UI
 Push to `main`. Any change under `app/**` (or to the workflow) runs `.github/workflows/pages.yml`:
 
-1. `npm ci --ignore-scripts`, then beside each other: `npm run build` with `BASE_PATH=/fitness` (once, and again with
-   `BASE_PATH=''` for Cloudflare), and `npm run check`, `npm run knip`, `npx vitest run`
+1. `npm ci --ignore-scripts`, then beside each other: `npm run build` (once; at the root: `BASE_PATH` unset), and
+   `npm run check`, `npm run knip`, `npx vitest run`
 2. the e2e against that build: Playwright in Chromium (twelve shards); WebKit as an iPhone 15 runs nightly on macOS
    (testing.md), gating nothing until it's green across the board
-3. deploy the root build to Cloudflare Pages (https://island-fund.pages.dev/, `wrangler pages deploy`, then a check that
-   it answers this build with its headers), and the `/fitness` one to https://huangwaylon.github.io/fitness/
+3. deploy that build to Cloudflare Pages (https://island-fund.pages.dev/, `wrangler pages deploy`, then a check that
+   it answers this build with its headers; `health.yml` checks it every 6 hours too)
 
 **Cloudflare Pages:** the project `island-fund` on the umeway1122@gmail.com account (direct upload, no Git integration:
 this workflow is the gate). CI needs two repo secrets: `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` (dash.cloudflare.com
 → My Profile → API Tokens → Create Token → **Custom token**: permission *Account → Cloudflare Pages → Edit*, account
 resources: that one account; then `gh secret set CLOUDFLARE_API_TOKEN` and `gh secret set
-CLOUDFLARE_ACCOUNT_ID`). By hand, from `app/`: `BASE_PATH= npm run build`, then `npx wrangler pages deploy build-pages
+CLOUDFLARE_ACCOUNT_ID`). By hand, from `app/`: `npm run build`, then `npx wrangler pages deploy build-pages
 --project-name island-fund --branch main` (any `--branch` but `main` is a preview at `<branch>.island-fund.pages.dev`).
 The headers (CSP, nosniff, no-referrer, Permissions-Policy, HSTS, the immutable cache) are `build-pages/_headers`,
-written by the build ([testing.md](testing.md) "The headers"). GitHub Pages can't set headers: its copy has only the
-`<meta>` CSP.
+written by the build ([testing.md](testing.md) "The headers"). GitHub Pages (which can't set headers) is off since
+2026-11-05: the old URL is a 404.
 
 A red step stops the deploy (a flaky test, one that fails and then passes once more, is annotated instead:
-[testing.md](testing.md)); pull requests run steps 1–2 only. Re-run: Actions → *Deploy UI to GitHub Pages* →
+[testing.md](testing.md)); pull requests run steps 1–2 only. Re-run: Actions → *Deploy UI* →
 **Run workflow**. Before a model change, also run `npm run bench` (year 3 compacted ≤ 15 ms).
 
 ## 2. The Google Sheet (removed 2026-11-05)

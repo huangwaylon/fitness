@@ -5,7 +5,7 @@ stand minutes grow fruit and earn ベル into one shared wallet, spent on small 
 Japanese-first PWA on Cloudflare Pages; its server is a Cloudflare relay (`relay/`: the record in a Durable Object, and
 the live room).
 
-**App:** https://island-fund.pages.dev/ (demo data: add `?demo`; the old https://huangwaylon.github.io/fitness/ until the phones have moved)
+**App:** https://island-fund.pages.dev/ (demo data: add `?demo`)
 
 ## Run it
 ```sh

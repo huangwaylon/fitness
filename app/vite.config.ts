@@ -100,7 +100,7 @@ export default defineConfig({
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },
-      paths: { base: (process.env.BASE_PATH ?? '/fitness') as `/${string}` },
+      paths: { base: (process.env.BASE_PATH ?? '') as '' | `/${string}` },
       // Static hosting has no headers: SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its
       // inline bootstrap script to script-src. Only the relay (its socket, lib/sync/live.ts LIVE_URL, the record's /api,
       // lib/sync/transport.ts, and its /push/* endpoints, lib/sync/push.ts PUSH_URL) is reachable besides our own.

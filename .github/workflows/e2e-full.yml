@@ -1,5 +1,5 @@
 # The full tier (docs/ops/test-strategy.md, docs/ops/testing.md): the whole e2e suite drawn (real software GL, as the
-# gate was until Nov 2026), the quarantine included, after each run of *Deploy UI to GitHub Pages* on main (the nightly
+# gate was until Nov 2026), the quarantine included, after each run of *Deploy UI* on main (the nightly
 # one too) and on demand. It never holds a deploy back, and its own workflow keeps the deploy run's result the gate's
 # alone. Its failures are in its summary and annotated on their specs; a red full tier is the next push's to fix. A
 # failed test is run once more (flaky or broken?). One at a time, never cancelled: a newer one waits, and one still
@@ -9,7 +9,7 @@ name: e2e full tier
 
 on:
   workflow_run:
-    workflows: ['Deploy UI to GitHub Pages']
+    workflows: ['Deploy UI']
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -38,7 +38,6 @@ jobs:
       run:
         working-directory: app
     env:
-      BASE_PATH: /${{ github.event.repository.name }}
       E2E_SLOW: 1
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0

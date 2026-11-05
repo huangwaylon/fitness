@@ -1,11 +1,11 @@
-# Builds the UI as a static site and deploys it to Cloudflare Pages (https://island-fund.pages.dev/, its own origin) and,
-# until the phones have moved (docs/ops/runbook.md section 14), to GitHub Pages: https://huangwaylon.github.io/fitness/
+# Builds the UI as a static site and deploys it to Cloudflare Pages: https://island-fund.pages.dev/ (its own origin; GitHub
+# Pages, https://huangwaylon.github.io/fitness/, until 2026-11-05).
 # The backend is the relay (relay/: the record at /api, the room at /room); its URLs are in the app (lib/sync/live.ts).
-# The layout (docs/ops/testing.md, docs/ops/test-strategy.md): `build` (the Pages artifact, and the `site` the full
-# tier tests), `checks` and the gate's e2e (the logic tier and the drawn smoke) all beside it from the start (each e2e
+# The layout (docs/ops/testing.md, docs/ops/test-strategy.md): `build` (the `site` artifact: what is deployed, and
+# what the full tier tests), `checks` and the gate's e2e (the logic tier and the drawn smoke) all beside it from the start (each e2e
 # shard builds the same commit itself: ~12 s, where waiting for `build` and its artifact cost ~60 s), then `deploy` once
 # all of them are green; the full tier (every test drawn, the quarantine: e2e-full.yml) after it, never holding it back.
-name: Deploy UI to GitHub Pages
+name: Deploy UI
 
 on:
   push:
@@ -49,30 +49,10 @@ jobs:
           cache-dependency-path: app/package-lock.json
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm run build
-        env:
-          BASE_PATH: /${{ github.event.repository.name }}
-      # what the e2e shards test (already-compressed webp/glb/m4a: stored, not zipped again)
+      # what is deployed, and what the full tier tests (already-compressed webp/glb/m4a: stored, not zipped again)
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: site
-          path: app/build-pages
-          include-hidden-files: true
-          compression-level: 0
-          retention-days: 1
-      - if: github.event_name != 'pull_request'
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
-        with:
-          path: app/build-pages
-      # the same commit at a domain's root (BASE_PATH ''), for Cloudflare Pages (https://island-fund.pages.dev: its
-      # own origin; the headers in build-pages/_headers, scripts/headers.ts)
-      - if: github.event_name != 'pull_request'
-        run: npm run build
-        env:
-          BASE_PATH: ''
-      - if: github.event_name != 'pull_request'
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: site-root
           path: app/build-pages
           include-hidden-files: true
           compression-level: 0
@@ -119,7 +99,6 @@ jobs:
       run:
         working-directory: app
     env:
-      BASE_PATH: /${{ github.event.repository.name }}
       E2E_RENDER: none
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
@@ -179,8 +158,6 @@ jobs:
     defaults:
       run:
         working-directory: app
-    env:
-      BASE_PATH: /${{ github.event.repository.name }}
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
@@ -249,28 +226,10 @@ jobs:
           path: e2e-timings.json
           retention-days: 30
 
-  deploy:
-    needs: [build, checks, e2e-logic]
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    # never cancelled halfway: a newer push's deploy waits for this one
-    concurrency:
-      group: pages-deploy
-      cancel-in-progress: false
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
-
-  # The same gate, then the root build to Cloudflare Pages (https://island-fund.pages.dev, project island-fund: direct
+  # Once the gate is green, the build to Cloudflare Pages (https://island-fund.pages.dev, project island-fund: direct
   # upload, no Git integration, so this workflow stays the gate). Secrets CLOUDFLARE_API_TOKEN (Pages: Edit, this
   # account only) and CLOUDFLARE_ACCOUNT_ID (docs/ops/runbook.md §1); without them the job says so and deploys nothing.
-  deploy-cloudflare:
+  deploy:
     needs: [build, checks, e2e-logic]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -295,7 +254,7 @@ jobs:
       - if: steps.ready.outputs.go == 'true'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: site-root
+          name: site
           path: site
       - if: steps.ready.outputs.go == 'true'
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0

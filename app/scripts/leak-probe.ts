@@ -17,8 +17,8 @@ import { writeFileSync } from 'node:fs';
 import { BUG_IDS, FISH_IDS } from '../src/lib/components/museum/species.ts';
 
 const PORT = Number(process.env.E2E_PORT ?? 4693);
-// the build's base path (BASE_PATH, as serve-build.ts: '/fitness' on GitHub Pages, '' at a root)
-const PATH = process.env.BASE_PATH ?? '/fitness';
+// the build's base path (BASE_PATH, as serve-build.ts: '' at the root, the default)
+const PATH = process.env.BASE_PATH ?? '';
 const BASE = `http://127.0.0.1:${PORT}${PATH}/`;
 const flow = process.argv[2] ?? 'shop';
 const N = Number(process.argv[3] ?? 6);

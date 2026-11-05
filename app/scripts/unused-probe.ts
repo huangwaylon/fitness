@@ -11,7 +11,7 @@ import { writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const port = Number(args[0] ?? 4396), out = args[1] ?? '/tmp/seen.txt';
-const PATH = process.env.BASE_PATH ?? '/fitness';
+const PATH = process.env.BASE_PATH ?? '';
 const base = `http://127.0.0.1:${port}${PATH}/`;
 const inBase = new RegExp(`^${PATH}/`);
 const scenes = [

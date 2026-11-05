@@ -51,7 +51,7 @@ export function artKeys(): string[] {
   return Object.keys(FILES);
 }
 
-/** URL for a key (base-path aware, so the Pages `/fitness` base works), or null when missing. */
+/** URL for a key (base-path aware), or null when missing. */
 export function artUrl(key: string | null | undefined): string | null {
   const e = art(key);
   return e ? asset(`art/${e.path}` as Parameters<typeof asset>[0]) : null;
