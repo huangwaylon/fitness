@@ -324,7 +324,8 @@ if (KEY_C) {
   check(rows === n && pages <= 4, `a paged snapshot is the whole one (${n} rows in ${pages} pages)`);
   const text = JSON.stringify({ op: 'compact' }), t = String(Date.now());
   const c = await fetch(new URL('/admin', http), { method: 'POST', headers: { 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') }, body: text }).then((r) => r.json() as Promise<Record<string, unknown>>);
-  check(c.ok === true && typeof c.deleted === 'number', `the record's compaction runs (${JSON.stringify(c)})`);
+  // (it deletes Health history rows: refused without its confirm, which the smoke never sends)
+  check(c.ok === false && typeof c.detail === 'string' && c.detail.includes('delete-health-history'), `the record's compaction is refused without its confirm (${JSON.stringify(c).slice(0, 80)})`);
 }
 
 // The real weather (docs/backend.md "The real weather"): a fixture timeline put in by a signed /admin reaches a phone

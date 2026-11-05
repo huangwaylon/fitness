@@ -15,8 +15,9 @@ export interface Meta {
   sk?: string;
   /** When the room last heard from it (its hello, then a message: kept every HEARD_EVERY_MS at most). */
   hd?: number;
-  /** When the room last asked it whether it's there (sweepSilent's probe). */
-  pr?: number;
+  /** Its hello said `beat`: the phone sends something (the heartbeat at least) whenever it has sent nothing for 20 s,
+   *  so its silence means it's gone (sweepSilent). */
+  bt?: true;
   /** Whose admission ticket it came with (contract/ticket.ts, the Worker's check): its hello must be that person's,
    *  and it is never let go to make room for another. */
   tk?: Who;
@@ -77,14 +78,12 @@ export interface DayIndex {
  *  socket it came on (`sk`: a walk's numbers are compared on one socket only). Neither goes out again. */
 export type Kept = Relayed & { c?: number; sk?: string };
 
-/** A welcomed socket heard nothing from this long (no message, no heartbeat) is asked whether it's there: a fresh
- *  welcome, which a phone answers with its pings at once (sync/live.ts: a welcome starts them). A phone shown pings
- *  whenever it heard nothing for 20 s, and one hearing the others' news may not ping at all: so it's asked, never just
- *  closed (2026-11-05, relay review O2: the heartbeat's auto-response never woke the room, a ghost stayed `here`). */
-export const PROBE_AFTER_MS = 45_000;
-/** Still nothing this long after the probe, and silent this long in all: the socket is a ghost (a phone gone without
- *  closing it: asleep, out of signal), closed and its person gone. */
-export const PROBE_WAIT_MS = 15_000;
+/** A socket whose hello said `beat` (its phone sends something, the heartbeat at least, whenever it has sent nothing
+ *  for 20 s) and that the room heard nothing from this long (no message, no heartbeat: three beats missed) is a ghost:
+ *  a phone gone without closing it (asleep, out of signal), closed and its person gone (2026-11-05, relay review O2:
+ *  the heartbeat's auto-response never woke the room, a ghost stayed `here`). A socket without `beat` (the apps before
+ *  it ping only when they've *heard* nothing for 20 s, so one only listening to the others' news may be silent for
+ *  minutes) is never closed for its silence: it isn't told apart from a ghost. */
 export const SILENT_MS = 60_000;
 /** The watchdog's alarm at most this often (the room wakes for it: cheap, but not every second). */
 export const WATCH_MIN_MS = 30_000;
@@ -234,7 +233,7 @@ export class RoomCore<S extends Sock> {
       }
       return;
     }
-    if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v, msg.build);
+    if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v, msg.build, msg.beat);
     if (!meta.who) return this.shut(s, CLOSE.unauthorized, 'hello first');
     if (msg.kind === 'ping') return this.send(s, { v: LIVE_V, kind: 'pong', c: msg.c, t: now });
     const who = meta.who;
@@ -301,7 +300,7 @@ export class RoomCore<S extends Sock> {
     this.send(s, { v: LIVE_V, kind: 'ack', c, t, ok });
   }
 
-  private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV, build?: string): void {
+  private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV, build?: string, beat?: true): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
     // a ticket's socket is its person's alone
@@ -318,7 +317,7 @@ export class RoomCore<S extends Sock> {
     // the ghosts of the others (a phone gone without closing) out before this one hears who's here (and before it's
     // in: it never hears of them)
     this.sweepSilent();
-    this.io.setMeta(s, { ...meta, who, v, hd: t });
+    this.io.setMeta(s, { ...meta, who, v, hd: t, ...(beat ? { bt: true as const } : {}) });
     // `peer`: a member's partner is here; the guest's, either member. `here`: everyone else who is
     const here = this.hereFor(who);
     const peer = who === 'G' ? here.some((w) => w !== 'G') : here.includes(other(who));
@@ -411,43 +410,25 @@ export class RoomCore<S extends Sock> {
   }
 
   /**
-   * The welcomed sockets heard nothing from for PROBE_AFTER_MS (no message, no heartbeat) are asked whether they're
-   * there (a fresh welcome: the phone pings at once); those still silent PROBE_WAIT_MS after it, SILENT_MS in all, are
-   * ghosts: closed, their person gone for the others (presence off) unless another socket of theirs is open. From the
-   * alarm while anyone is in, and on each hello. Returns when to look next (at least WATCH_MIN_MS on), or null when
-   * nobody is in.
+   * The ghosts let go: each welcomed socket whose hello said `beat` and that the room heard nothing from for SILENT_MS
+   * (no message, no heartbeat) is closed (4003 `silent`), its person gone for the others (presence off) unless another
+   * socket of theirs is open. Nothing is sent to ask (a mid-session welcome would make a phone redo its welcome's
+   * work: its outbox, its catch-up, its clock). From the alarm while such a socket is in, and on each hello. Returns
+   * when to look next (at least WATCH_MIN_MS on), or null when there's none to watch.
    */
   sweepSilent(): number | null {
     const now = this.io.now();
     let next: number | null = null;
-    const due = (t: number) => void (next = next === null ? t : Math.min(next, t));
     for (const s of this.authed()) {
       const m = this.io.meta(s)!;
+      if (!m.bt) continue;
       const last = Math.max(m.hd ?? m.opened, this.io.heardAt?.(s) ?? 0);
-      const asked = m.pr !== undefined && m.pr > last ? m.pr : null;
-      if (asked === null) {
-        if (now - last >= PROBE_AFTER_MS) {
-          this.io.setMeta(s, { ...m, pr: now });
-          this.send(s, this.welcomeOf(m.who!, now));
-          due(now + PROBE_WAIT_MS);
-        } else due(last + PROBE_AFTER_MS);
-      } else if (now - asked >= PROBE_WAIT_MS && now - last >= SILENT_MS) {
+      if (now - last >= SILENT_MS) {
         this.close(s);
         this.shut(s, CLOSE.timeout, 'silent');
-      } else due(Math.max(asked + PROBE_WAIT_MS, last + SILENT_MS));
+      } else next = next === null ? last + SILENT_MS : Math.min(next, last + SILENT_MS);
     }
     return next === null ? null : Math.max(next, now + WATCH_MIN_MS);
-  }
-
-  /** The welcome `who`'s phone hears (its hello's, and a silent socket's probe): who's here, when those not here left,
-   *  the record's last change it may hear of. */
-  private welcomeOf(who: Who, t: number): ServerMsg {
-    const here = this.hereFor(who);
-    const peer = who === 'G' ? here.some((w) => w !== 'G') : here.includes(other(who));
-    const gone: Gone = {};
-    for (const w of ['A', 'B', 'G'] as const) if (w !== who && this.gone[w] !== undefined && !here.includes(w)) gone[w] = this.gone[w];
-    const rec = who === 'G' ? this.recG : this.rec;
-    return { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(rec ? { rec } : {}), here, ...(Object.keys(gone).length ? { gone } : {}), hb: true };
   }
 
   /** Close sockets that never said hello. Returns when to sweep next, or null when none is waiting. */
