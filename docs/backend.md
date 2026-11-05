@@ -361,6 +361,9 @@ made after it carries no `l`, the switch's op keeps the light.
   starts one when the phones should refetch the smaller record (once, after the first run's backlog).
 - **Measured** (2026-11-02, curl from Tokyo): a full snapshot 0.09–0.18 s for 73 KB, an empty poll 0.06 s; an event write is one
   `events` request, the row back in its reply.
+- **A restore** (`restore {bookmark}`): the object answers every `/api` request `unavailable` (retried, never
+  acknowledged) from before it sets the bookmark until it restarts on it (~200 ms after its reply), so no write is
+  acked and then dropped by the bookmark (2026-11-05, relay review O4); the restored record starts a new epoch.
 - **Backups:** point-in-time recovery (30 days, on the Free plan) and `dump` / `load`: [runbook §13](ops/runbook.md#13-the-record).
 
 ## Live relay

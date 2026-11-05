@@ -123,7 +123,15 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       }
       case 'restore': {
         if (typeof o.bookmark !== 'string') return { ok: false, error: 'bad_request' };
-        await storage.onNextSessionRestoreBookmark(o.bookmark);
+        // from here every request is `unavailable` (retried), never acknowledged: a write kept between this and the
+        // restart would be acked and then dropped by the bookmark (relay review O4)
+        this.core.freeze();
+        try {
+          await storage.onNextSessionRestoreBookmark(o.bookmark);
+        } catch (e) {
+          this.core.thaw();
+          throw e;
+        }
         // the room calls `restored` a few seconds after the restart (a new epoch: every phone refetches); its own
         // storage, since this object's is about to be the bookmark's
         const told = await this.env.ROOM.get(this.env.ROOM.idFromName('island')).restoring().then(() => true, (e) => (console.warn('restoring', errName(e)), false));
