@@ -137,12 +137,15 @@ describe('the meal log in the record', () => {
     expect(pref('B', { key: 'saltGoal', value: 7.5 })).toMatchObject({ ok: true });
     expect(pref('G', { key: 'fatGoal', value: 60 })).toMatchObject({ ok: true });
     expect(pref('G', { key: 'carbsGoal', value: null })).toMatchObject({ ok: true });
+    // fibre and alcohol (2026-11-05): as the others (the record's slot, the guest its own)
+    expect([pref('A', { key: 'fibreGoal', value: 21 }), pref('G', { key: 'alcoholGoal', value: 10 }), pref('G', { person: 'B', key: 'fibreGoal', value: 20 })]
+      .map((r) => r.error ?? r.ok)).toEqual([true, true, 'forbidden']);
     expect(pref('G', { person: 'A', key: 'proteinGoal', value: 100 })).toMatchObject({ ok: false, error: 'forbidden' });
     // the latest per person and key: a second protein goal replaces the first
     expect(pref('B', { person: 'B', key: 'proteinGoal', value: 120 })).toMatchObject({ ok: true });
     const goals = (call(KEY_C, 'snapshot').rows.events as unknown[][]).filter((r) => r[3] === 'pref').map((r) => JSON.parse(r[4] as string));
     expect(goals.filter((d) => d.key === 'proteinGoal')).toEqual([{ person: 'B', key: 'proteinGoal', value: 120 }]);
-    expect(goals.map((d) => d.key).sort()).toEqual(['carbsGoal', 'fatGoal', 'proteinGoal', 'saltGoal']);
+    expect(goals.map((d) => d.key).sort()).toEqual(['alcoholGoal', 'carbsGoal', 'fatGoal', 'fibreGoal', 'proteinGoal', 'saltGoal']);
   });
 
   it('persists: a new store has the entries, and a dump loads back as it was (a beaten op skipped)', () => {
@@ -450,5 +453,27 @@ describe('the meal log in the record', () => {
     const c = customs()[0];
     expect(recipe('B', 'cmeal050', { n: 'サラダ', sv: 1, it: [{ g: 15, f: customSnap(c) }, { g: 100, f: RICE }] })).toMatchObject({ ok: true });
     expect(recipes()[0].it[0].f).toMatchObject({ id: 'custom:mmeal050', k: 400, fa: 40 });
+  });
+
+  it('fibre and alcohol (`fi`, `al`, 2026-11-05): kept when known, in bounds; an op without them as before', () => {
+    const BEER = { id: 'mext:16006', n: 'ビール', k: 39, p: 0.3, fa: 0, c: 3.1, s: 0, fi: 0, al: 3.7, u: '中ジョッキ' };
+    const got: unknown[] = [
+      log('A', 'fmealfa1', { g: 350, f: BEER }).ok, log('B', 'fmealfa2').ok, log('G', 'fmealfa3', { f: { ...RICE, fi: 1.5, al: null } }).ok,
+      // out of bounds or not a number: refused (a food's per 100 g up to 100 g; a serving's, `sv`, up to 500 g)
+      ...[{ ...BEER, al: 100.5 }, { ...BEER, fi: -1 }, { ...BEER, fi: '1' }, { ...BEER, al: { g: 1 } }, { ...BEER, sv: true, al: 501 }].map((f, i) => log('A', `fmealfb${i}`, { f }).error),
+      log('A', 'fmealfc1', { g: 100, f: { ...BEER, sv: true, al: 500 } }).ok,
+      // a custom food and a recipe carry them too; a repeat's items as a food's
+      custom('A', 'mmealfa1', { n: 'ハイボール', u: '1杯', g: 350, k: 150, al: 28, fi: null }).ok, custom('A', 'mmealfa2', { n: 'x', u: '1杯', g: 10, k: 1, fi: 11 }).error,
+      recipe('B', 'cmealfa1', { n: 'ビールとごはん', sv: 1, it: [{ g: 350, f: BEER }, { g: 150, f: RICE }] }).ok,
+      sendRep('A', { id: 'rmealfa1', at: (now += 1000), m: 'd', it: [{ g: 350, f: BEER }], w: 127, from: '2026-11-03' }).ok
+    ];
+    const f = (id: string) => JSON.parse(rows().find((r) => r[4].includes(id))![4]).f;
+    const { fi: _fi, al: _al, ...bare } = BEER;
+    expect([...got, f('fmealfa1'), f('fmealfa2'), f('fmealfa3'), customs().find((c) => c.id === 'mmealfa1'), recipes()[0].it[0].f]).toEqual([
+      true, true, true, 'bad_request', 'bad_request', 'bad_request', 'bad_request', 'bad_request', true, true, 'bad_request', true, true,
+      BEER, RICE, { ...RICE, fi: 1.5 }, expect.objectContaining({ al: 28, k: 150 }), BEER
+    ]);
+    expect(Object.keys(f('fmealfa2'))).toEqual(Object.keys(RICE));
+    expect(bare).toEqual({ ...BEER, fi: undefined, al: undefined });
   });
 });

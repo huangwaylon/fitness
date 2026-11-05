@@ -121,6 +121,21 @@ only while the goal weight is under the latest weigh-in, floored at the resting 
 standard defaults to Asian cut-offs (JASSO, WHO's 23 / 25), right for East Asian bodies; WHO's can be chosen. Ethnicity
 itself is not stored: only the standard it suggests.
 
+### Fibre and alcohol (2026-11-05)
+The meal log counts 食物繊維 and アルコール (the user approved the food review's proposal). A snapshot gains two optional
+keys, `fi` and `al` (g per 100 g; [backend](backend.md#events) `food`), kept only when known: an entry logged before,
+or from a source that doesn't say (most products, the city sets), has neither and reads as unknown, never as a false
+value. Optional so nothing older changes (every old snapshot is as it was) and the other ways in (quick add, a custom food
+left blank) simply lack them; the relay took them first, as with `sv`. kcal stays as each source gives it: MEXT's
+energy already holds alcohol's 7 kcal/g. Fibre is MEXT's 食物繊維総量 (and the school lunches' 食物繊維 rows); a day's
+fibre is unknown (記録なし on its chart) when none of its entries knows it, else the sum of those that do. Alcohol counts
+only drinks: MEXT's アルコール of a 酒 (a dish's みりん or 料理酒 mostly cooks off, and would read as drinking), an unknown
+one as none. Goals (the registry): fibre at least, by default the 食事摂取基準 2025's 目標量 by sex and age (men 20 g,
+22 from 30 to 64; women 18; needs the profile's sex); alcohol at most, **20 g until set**, for everyone: 厚労省's
+「節度ある適度な飲酒」 (健康日本21: about 20 g of pure alcohol a day on average), the one plain national line, a ceiling a
+drinker can see against rather than none at all; 健康日本21（第三次）'s risk lines (40 g men, 20 g women) are above or
+at it, so the default never reads as permission. A goal set always wins; one cleared is the 20 g again.
+
 ### Player avatars: the look as two prefs, いつもの in code (2026-11-05)
 A and B are NH human players by default; the villager stays an option (the user). All clothing is free, with no
 ownership, so the record's check of a look is its whole check: no inventory to consult. Each person's look is one

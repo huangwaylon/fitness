@@ -29,6 +29,10 @@ export interface Item {
   f?: number | null;
   c?: number | null;
   salt?: number | null;
+  /** Fibre (食物繊維総量) and alcohol, g; absent or null when unknown (most products, the city sets; alcohol only on
+   *  drinks). */
+  fib?: number | null;
+  alc?: number | null;
   /** A curated search boost, 1–3. */
   pop?: number;
   portions?: Portion[];

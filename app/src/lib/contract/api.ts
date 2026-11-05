@@ -51,7 +51,8 @@ export const isMetricKey = (v: unknown): v is MetricKey => v === 'weight' || isA
  * (`data.person`); the other prefs are the sender's own.
  */
 export const GOAL_PREF_KEYS: readonly string[] = [
-  'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal'
+  'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'kcalGoal', 'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal',
+  'fibreGoal', 'alcoholGoal'
 ];
 
 /**
@@ -62,7 +63,7 @@ export const GOAL_PREF_KEYS: readonly string[] = [
  */
 export const PREF_KEYS: readonly string[] = [
   'locale', 'villagerName', 'villager', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'kcalGoal',
-  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'weatherMode', 'sex', 'birth', 'bmiStd', 'look', 'savedLooks'
+  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'fibreGoal', 'alcoholGoal', 'weatherMode', 'sex', 'birth', 'bmiStd', 'look', 'savedLooks'
 ];
 
 /** The profile's `pref` keys (contract/profile.ts PROFILE_KEYS, written out here as GOAL_PREF_KEYS are): either member
