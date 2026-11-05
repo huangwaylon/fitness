@@ -63,8 +63,21 @@ class IslandLayout {
     const e = { ...op, who } as LayoutEntry;
     return mergeLayout(this.#map, e) ? e : null;
   }
+  /** Another tab's ops in storage merged into mine (the merge is commutative): the newest that was news, or null. */
+  #fold(kept: unknown): LayoutEntry | null {
+    let news: LayoutEntry | null = null;
+    if (Array.isArray(kept))
+      for (const k of kept) {
+        const e = this.#merge(k);
+        if (e && (!news || e.at > news.at)) news = e;
+      }
+    return news;
+  }
   #changed(who: Who, live: boolean): void {
     const was = this.#layout;
+    // a second tab of the app keeps the same copy (its socket replaced this one's, so it hears nothing of mine): its
+    // ops are merged in before mine are written, never written over (docs/backend.md#live-sync "Two tabs")
+    this.#fold(readJson<unknown[]>(localKV(), this.#key()));
     this.#layout = layoutOf(this.#map);
     writeJson(localKV(), this.#key(), [...this.#map.values()]);
     this.rev++;
@@ -118,6 +131,7 @@ class IslandLayout {
     this.#me = me;
     this.#demo = demo;
     if (relay) this.#off = relay.on((m) => this.#heard(m));
+    this.#listen();
     this.rev++;
     // the e2e's view of the layout this phone holds (dev builds and the demo)
     if (typeof window !== 'undefined' && (import.meta.env.DEV || demo))
@@ -125,6 +139,24 @@ class IslandLayout {
         pos: (id: string) => this.pos(id), obj: (id: string) => this.obj(id), home: (w: Who) => this.home(w), count: (k: string) => this.ofKind(k).length,
         ids: (k: string) => this.ofKind(k).map((o) => o.id)
       };
+  }
+
+  #listening = false;
+  /** Another tab's writes, folded in as they land (the `storage` event: only other tabs' writes fire it). */
+  #listen(): void {
+    if (this.#listening || typeof window === 'undefined') return;
+    this.#listening = true;
+    window.addEventListener('storage', (e) => {
+      if (e.key !== this.#key() || !this.#loaded || !e.newValue) return;
+      let kept: unknown;
+      try {
+        kept = JSON.parse(e.newValue);
+      } catch {
+        return;
+      }
+      const news = this.#fold(kept);
+      if (news) this.#changed(news.who, false);
+    });
   }
 
   /** The record's layout rows (the model's, queued ones included). */

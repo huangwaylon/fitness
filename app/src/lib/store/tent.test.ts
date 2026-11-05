@@ -1,7 +1,7 @@
 // The tent's room on this phone (store/tent.svelte.ts): my changes merged, kept and sent (the relay and the sheet, with
 // the room's scope); the partner's heard; the sheet's rows merged in; the island's decorations never mixed in.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { configureStorage, type KV } from '#lib/sync/storage.ts';
+import { configureStorage, LIVE, type KV } from '#lib/sync/storage.ts';
 import type { Intent, Relayed } from '#lib/contract/live-protocol.ts';
 import type { Live, LiveStatus } from '#lib/sync/live.ts';
 import { TENT_MAX, TENT_WALL, type TentEntry } from '#lib/contract/tent.ts';
@@ -27,10 +27,12 @@ function fakeRelay() {
 }
 
 const T0 = Date.UTC(2026, 10, 1, 3);
+let kv: Mem;
 beforeEach(() => {
   vi.useFakeTimers();
   vi.setSystemTime(T0);
-  configureStorage({ local: new Mem() });
+  kv = new Mem();
+  configureStorage({ local: kv });
   world.reset();
   tent.reset();
   decor.reset();
@@ -92,5 +94,14 @@ describe('the tent on this phone', () => {
     tent.attach(null, 'B');
     tent.rows([...rows].reverse());
     expect([tent.pieces[0].x, tent.wall]).toEqual([2, 'w4833']);
+  });
+
+  it('a second tab’s pieces in storage are merged in before mine are written, never written over', () => {
+    tent.attach(fakeRelay().live, 'A');
+    void tent.pieces;
+    kv.setItem(LIVE.tent, JSON.stringify([{ sc: 't', id: 'dtabtwo2', at: T0 + 1, item: 'f3672', x: 1, z: 1, f: 0, p: T0 + 1, who: 'A' }]));
+    expect(tent.set({ id: 'dtabone1', item: 'f7047', x: 4, z: 4, f: 0 })).toBe(true);
+    expect((JSON.parse(kv.getItem(LIVE.tent)!) as TentEntry[]).map((e) => e.id).sort()).toEqual(['dtabone1', 'dtabtwo2']);
+    expect(tent.byId('dtabtwo2')).toMatchObject({ x: 1, z: 1 });
   });
 });

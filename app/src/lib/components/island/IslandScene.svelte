@@ -705,6 +705,9 @@
         decorSet: (p: Parameters<typeof decor.set>[0]) => decor.set(p),
         decorRemove: (id: string) => decor.remove(id),
         decorCanon: () => decorCanon(),
+        /** Layout ops of mine straight into the layout (its stamp first: `layoutStamp()`), and the merged ops. */
+        layoutApply: (ops: Parameters<typeof islandLayout.apply>[0]) => islandLayout.apply(ops).length,
+        layoutStamp: () => islandLayout.stamp(),
         metrics: () => (relay ?? demoRelay)?.metrics?.() ?? null,
         status: () => (relay ?? demoRelay)?.status() ?? null
       } : {})

@@ -5,6 +5,7 @@
 //   E14  the relay closes the socket (1012, a deploy) while the partner writes: fetched after the reconnect
 //   dead a socket that stays open and carries nothing: found out and replaced, what was sent goes again
 //   kill an intent made offline and the app killed before it went: sent when the app opens again
+//   tabs two tabs of one phone (the second's socket replaces the first's): neither's layout ops written over
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { DEMO_CTX, newIsland, setVisible } from './liveRoom.ts';
 import { hudMenu } from './hud.ts';
@@ -24,7 +25,7 @@ async function phone(browser: Browser, island: Island, who: Who) {
   return page;
 }
 
-type W = { share(i: object): boolean; canon(): string; status(): { connected: boolean; peer: boolean } | null; metrics(): { pending: number; closed: number } | null };
+type W = { layoutStamp(): number; layoutApply(ops: object[]): number; share(i: object): boolean; canon(): string; status(): { connected: boolean; peer: boolean } | null; metrics(): { pending: number; closed: number } | null };
 const w = <T,>(p: Page, fn: keyof W, ...args: unknown[]) =>
   p.evaluate(([fn, args]) => ((window as unknown as { __world: Record<string, (...a: unknown[]) => unknown> }).__world[fn as string](...(args as unknown[]))), [fn, args] as const) as Promise<T>;
 
@@ -136,4 +137,49 @@ test('kill: a change made offline and the app killed before it went is sent when
   await connected(a2);
   await expect.poll(() => w<string>(b, 'canon').then((c) => c.includes(id)), { timeout: 10_000 }).toBe(true);
   await expect.poll(() => w<{ pending: number } | null>(a2, 'metrics').then((m) => m?.pending), { timeout: 5000 }).toBe(0);
+});
+
+type Obj = { id: string; k: string; x: number; z: number; f: number };
+type L = { obj(id: string): Obj | undefined; ids(k: string): string[] };
+const lay = <T,>(p: Page, fn: (l: L, arg: string) => T, arg = '') => p.evaluate(([f, a]) => new Function('l', 'a', `return (${f})(l, a)`)((window as unknown as { __layout: L }).__layout, a), [fn.toString(), arg] as const) as Promise<T>;
+/** One of my palms moved one tile east, as the editor would (its stamp the layout's). */
+async function nudge(p: Page, id: string): Promise<Obj> {
+  const o = (await lay(p, (l, id) => l.obj(id), id))!;
+  const at = await w<number>(p, 'layoutStamp');
+  const op = { sc: 'o', id, at, k: o.k, x: o.x + 1, z: o.z, f: o.f };
+  expect(await w<number>(p, 'layoutApply', [op])).toBe(1);
+  return { ...o, x: o.x + 1 };
+}
+
+test('two tabs of one phone: each one’s layout op is kept, and the other tab folds it in', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const island = newIsland();
+  const A = await demoPhone(browser, island, 'A');
+  const a1 = A.page;
+  await connected(a1);
+  // a second tab: its hello replaces the first's socket (4002: the first hears nothing more)
+  const a2 = await A.open();
+  await connected(a2);
+  const [p1, p2, p3] = (await lay(a1, (l) => l.ids('palm'))).slice(0, 3);
+  // the first tab hears nothing of the second's writes as they land (a live phone between fetches; the demo's shared
+  // record still brings the op over in the end, so here this guards the merge and the fold: store/layout.test and
+  // tent.test fail without them)
+  await a1.evaluate(() => {
+    const w = window as unknown as { __deaf?: (e: Event) => void };
+    w.__deaf = (e) => e.stopImmediatePropagation();
+    window.addEventListener('storage', w.__deaf, true);
+  });
+  const moved2 = await nudge(a2, p2);
+  const moved1 = await nudge(a1, p1);
+  // the storage both tabs share has both (the first tab's write didn't drop the second's)
+  const kept = await a1.evaluate(() => JSON.parse(localStorage.getItem('island-demo.layout') ?? '[]') as { id: string; x: number }[]);
+  expect(kept.find((e) => e.id === p2)?.x).toBe(moved2.x);
+  expect(kept.find((e) => e.id === p1)?.x).toBe(moved1.x);
+  // and each tab has the other's: the first merged the second's in with its own write, the second folds the first's
+  // as its write lands
+  expect(await lay(a1, (l, id) => l.obj(id)?.x, p2)).toBe(moved2.x);
+  await expect.poll(() => lay(a2, (l, id) => l.obj(id)?.x, p1)).toBe(moved1.x);
+  await a1.evaluate(() => window.removeEventListener('storage', (window as unknown as { __deaf: (e: Event) => void }).__deaf, true));
+  const moved3 = await nudge(a2, p3);
+  await expect.poll(() => lay(a1, (l, id) => l.obj(id)?.x, p3)).toBe(moved3.x);
 });
