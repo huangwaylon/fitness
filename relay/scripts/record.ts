@@ -1,43 +1,19 @@
 // The record's admin tool (docs/ops/runbook.md#13-the-record), run from a Mac with the two person keys in the
 // environment (never on the command line of a shared shell, never logged):
 //   KEY_A=… KEY_B=… node scripts/record.ts <command> [--test]
-// --test: the test relay (island-fund-relay-test) instead of production; KEYS_FILE=.smoke-keys for its keys.
+// --test: the test relay (island-fund-relay-test) instead of production. Keys: KEY_A / KEY_B, else KEYS_FILE, else
+// .smoke-keys (--test) or ~/.config/island-fund/keys (admin.ts).
 //   counts              rows per table, the revision, the newest `at`
 //   bookmark [ms]       point-in-time recovery: the bookmark now and `ms` ago (default 1 h)
 //   restore <bookmark>  restore the record to a bookmark (then `rev`)
 //   rev                 a new epoch: every phone refetches everything
 //   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`)
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped)
-//   telemetry [n]       the phones' newest anonymous records (errors, sessions' frames and load times; default 50)
-import { createHmac } from 'node:crypto';
+// (the phones' and the relay's events: scripts/logs.ts, `npm run logs`)
 import { readFileSync } from 'node:fs';
+import { signed } from './admin.ts';
 
 const args = process.argv.slice(2).filter((a: string) => a !== '--test');
-const TEST = process.argv.includes('--test');
-const RELAY = TEST ? 'https://island-fund-relay-test.island-fund-relay.workers.dev' : 'https://island-fund-relay.island-fund-relay.workers.dev';
-// a KEY=value file instead (KEYS_FILE=relay/.smoke-keys for the test relay)
-const fileKeys: Record<string, string> = process.env.KEYS_FILE
-  ? Object.fromEntries(readFileSync(process.env.KEYS_FILE, 'utf8').trim().split('\n').map((l) => l.split('=') as [string, string]))
-  : {};
-const KEY_A = (process.env.KEY_A ?? fileKeys.KEY_A)?.trim().toLowerCase() ?? '';
-const KEY_B = (process.env.KEY_B ?? fileKeys.KEY_B)?.trim().toLowerCase() ?? '';
-if (!KEY_A || !KEY_B) {
-  console.error('set KEY_A and KEY_B in the environment');
-  process.exit(1);
-}
-const secret = createHmac('sha256', `${KEY_A}:${KEY_B}`).update('island-relay-notify/1').digest('hex');
-
-/** A signed POST to the record's /admin. */
-async function signed(body: object): Promise<Record<string, unknown>> {
-  const text = JSON.stringify(body);
-  const t = String(Date.now());
-  const res = await fetch(`${RELAY}/admin`, {
-    method: 'POST', body: text,
-    headers: { 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') }
-  });
-  if (!res.ok) throw new Error(`/admin: ${res.status} ${await res.text()}`);
-  return (await res.json()) as Record<string, unknown>;
-}
 
 const CHUNK = 400;
 
@@ -60,15 +36,6 @@ async function load(rows: { metrics?: unknown[][]; events?: unknown[][]; uploads
 
 const [cmd, arg] = args;
 switch (cmd) {
-  case 'telemetry': {
-    const r = (await signed({ op: 'telemetry', n: Number(arg ?? 50) })) as { rows?: { at: string; kind: string; data: Record<string, unknown> }[] };
-    for (const row of r.rows ?? []) {
-      const d = row.data;
-      const what = row.kind === 'error' ? `${d.msg ?? ''} ${d.stack ? `@ ${String(d.stack).split('\n')[0]}` : ''}` : `load ${d.loadMs ?? '?'} ms, frames p50 ${d.p50 ?? '?'} p95 ${d.p95 ?? '?'} ms, idle ${d.idleFps ?? '?'} fps (drawn ${d.drawFps ?? '?'})`;
-      console.log(`${row.at.slice(0, 19)}  ${row.kind.padEnd(7)}  ${String(d.os ?? '').padEnd(10)} ${d.standalone ? 'pwa' : '   '}  ${what}`);
-    }
-    break;
-  }
   case 'counts':
   case 'rev':
     console.log(JSON.stringify(await signed({ op: cmd })));
@@ -86,6 +53,6 @@ switch (cmd) {
     await load((JSON.parse(readFileSync(arg, 'utf8')) as { rows: Record<string, unknown[][]> }).rows);
     break;
   default:
-    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | telemetry [n]  [--test]');
+    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | load <file>  [--test]');
     process.exit(1);
 }

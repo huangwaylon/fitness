@@ -8,15 +8,26 @@ import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, type Held, type Kept, type Meta } from './room.ts';
 import { isOldPushPath, pushGone } from './pushGone.ts';
 import { IslandStore } from './storeObject.ts';
+import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
+import { logHealthRoute, logRoute, relaySink } from './logRoute.ts';
+import { keyOwner } from './auth.ts';
+import { errName, type RelayEvent } from './log.ts';
+import type { ReqMeta } from './reqMeta.ts';
 import { TOKYO, WX_EMPTY, due, fetchTick, fixture, omUrl, wxHealth, type WxState } from './weather.ts';
 
-export { IslandStore };
+export { IslandStore, IslandLog };
 
 export interface Env {
   ROOM: DurableObjectNamespace<IslandRoom>;
   /** The record (docs/backend.md#the-record): one SQLite-backed object, `idFromName('record')`. */
   STORE: DurableObjectNamespace<IslandStore>;
+  /** The log (docs/ops/observability.md): one SQLite-backed object, `idFromName('log')`. */
+  LOG: DurableObjectNamespace<IslandLog>;
+  /** `1`: the log's off switch (`/log` acknowledges, nothing is kept; the relay sends it nothing). */
+  LOG_OFF?: string;
+  /** The health workflow's token for `/health/log` (a secret: counts only). Unset: no `/health/log`. */
+  HEALTH_TOKEN?: string;
   /** Comma-separated page origins allowed to connect (localhost is always allowed). */
   ALLOWED_ORIGINS: string;
   /** The person keys (secrets). Unset = nobody gets in. */
@@ -76,7 +87,10 @@ export class IslandRoom extends DurableObject<Env> {
 
   async fetch(req: Request): Promise<Response> {
     if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });
-    if (!this.core.roomFor()) return new Response('room full', { status: 503 });
+    if (!this.core.roomFor()) {
+      this.log([{ e: 'room.full', l: 2, d: { socks: this.ctx.getWebSockets().length } }]);
+      return new Response('room full', { status: 503 });
+    }
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server);
     this.core.open(server);
@@ -89,7 +103,9 @@ export class IslandRoom extends DurableObject<Env> {
   }
 
   webSocketClose(ws: WebSocket, code: number): void {
+    const m = ws.deserializeAttachment() as Meta | null;
     this.core.close(ws);
+    this.log([{ e: 'room.close', l: 1, role: m?.who ?? null, d: { code, secs: m?.opened ? Math.round((Date.now() - m.opened) / 1000) : -1, socks: this.ctx.getWebSockets().length - 1 } }]);
     try {
       ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye');
     } catch {
@@ -99,6 +115,12 @@ export class IslandRoom extends DurableObject<Env> {
 
   webSocketError(ws: WebSocket): void {
     this.core.close(ws);
+  }
+
+  /** The room's events to the log (logRoute.ts relaySink: best effort). */
+  private log(evs: RelayEvent[]): void {
+    if (this.env.LOG_OFF === '1') return;
+    relaySink(() => this.env.LOG.get(this.env.LOG.idFromName('log')), (p) => this.ctx.waitUntil(p), Date.now)(evs);
   }
 
   /** RPC from the record (and the Worker's /notify): pass the change to the connected phones. */
@@ -164,22 +186,39 @@ type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; he
 export default {
   /** Every 15 minutes: the real weather when it's due (IslandRoom weatherTick). */
   async scheduled(_ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    const t0 = Date.now();
+    const log = sinkOf(env, ctx);
     ctx.waitUntil(
       env.ROOM.get(env.ROOM.idFromName('island')).weatherTick().then(
-        (r) => r.fetched && console.log('wx', JSON.stringify(r).slice(0, 200)),
-        (e) => console.warn('wx-fail', e)
+        (r) => {
+          if (r.fetched) console.log('wx', JSON.stringify({ ok: r.ok, fail: r.fail, hours: r.health.hours }));
+          // a tick that fetched (at :15 and :45) or failed: the log's `cron.wx`
+          if (r.fetched) log([{ e: 'cron.wx', l: r.ok ? 1 : 2, d: { ok: r.ok, fetched: true, fail: r.fail, hours: r.health.hours, age: r.health.age, ms: Date.now() - t0 } }]);
+        },
+        (e) => {
+          console.warn('wx-fail', errName(e));
+          log([{ e: 'cron.wx', l: 3, d: { ok: false, fetched: false, fail: errName(e), ms: Date.now() - t0 } }]);
+        }
       )
     );
   },
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(req.url);
+    const logObj = () => env.LOG.get(env.LOG.idFromName('log'));
     if (url.pathname === '/health') {
       // the real weather's age (the runbook, the smoke test): never in the way of the health itself
       const wx = await env.ROOM.get(env.ROOM.idFromName('island')).wxHealth().catch(() => null);
       return Response.json({ ok: true, v: LIVE_V, versions: LIVE_VS, t: Date.now(), wx }, { headers: { 'Cache-Control': 'no-store' } });
     }
     if (url.pathname === '/notify') return notify(req, env);
-    if (url.pathname === '/api') return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => env.STORE.get(env.STORE.idFromName('record')));
+    if (url.pathname === '/api') {
+      const log = sinkOf(env, ctx);
+      return apiRoute(req, env.ALLOWED_ORIGINS ?? '', () => env.STORE.get(env.STORE.idFromName('record')), (m, ms) => log([reqEvent(m, ms)]));
+    }
+    if (url.pathname === '/log') {
+      return logRoute(req, { allowed: env.ALLOWED_ORIGINS ?? '', off: env.LOG_OFF === '1', roleOf: (k) => (typeof k === 'string' && /^[0-9a-fA-F]{32,128}$/.test(k) ? keyOwner(k, env) : null), now: Date.now }, logObj);
+    }
+    if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
     if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')));
     // notifications are gone: an old app's /push/* gets 410 (pushGone.ts)
     if (isOldPushPath(url.pathname)) return pushGone(req, env.ALLOWED_ORIGINS ?? '');
@@ -189,6 +228,19 @@ export default {
     return env.ROOM.get(env.ROOM.idFromName('island')).fetch(req);
   }
 } satisfies ExportedHandler<Env>;
+
+/** The relay's events to the log from a request or the cron (none with the off switch). */
+function sinkOf(env: Env, ctx: ExecutionContext): (evs: RelayEvent[]) => void {
+  if (env.LOG_OFF === '1') return () => {};
+  return relaySink(() => env.LOG.get(env.LOG.idFromName('log')), (p) => ctx.waitUntil(p), Date.now);
+}
+
+/** An `/api` request as the log's `req` (reqMeta.ts): warn when refused, error when the record failed. */
+function reqEvent(m: ReqMeta, ms: number): RelayEvent {
+  const { role, rid, sid, ...d } = m;
+  const l = m.st === 'unavailable' ? 3 : m.st === 'ok' && !m.rej ? 1 : 2;
+  return { e: 'req', l, role, rid, sid, d: { ...d, ms } };
+}
 
 /**
  * POST /notify (docs/backend.md#push): a server says the record changed (the record itself tells the room by RPC). Signed (notify.ts), never from a browser
