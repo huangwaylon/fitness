@@ -154,6 +154,28 @@ describe('the island room', () => {
     expect(a.closed).toBeNull();
   });
 
+  it('a numbered intent over the limit hears `busy {c}` (never kept, relayed or acked); a ping and a got never wait', () => {
+    // 2026-11-05 review: a numbered intent dropped by the bucket was silent: its phone waited for an ack until the next
+    // reconnect. `busy` is its own kind, so a phone that doesn't know it ignores it and keeps the intent as before.
+    const a = join(KEY_A, 0);
+    const b = join(KEY_B, 0);
+    for (let i = 0; i < 19; i++) say(a, { kind: 'act', act: 'tap' });
+    a.sent = [];
+    b.sent = [];
+    say(a, { kind: 'world', op: 'watered', id: 'fl1', c: 5 });
+    say(a, { kind: 'act', act: 'tap' }); // unnumbered: dropped, as before
+    expect(a.sent).toEqual([{ v: 3, kind: 'busy', c: 5, t: now }]);
+    expect(parseServer(JSON.stringify(a.raw.at(-1)))).toEqual({ v: 3, kind: 'busy', c: 5, t: now });
+    expect(b.sent).toEqual([]);
+    expect(saved).toEqual([]);
+    say(a, { kind: 'ping', c: now - 3 });
+    expect(a.sent.at(-1)).toEqual({ v: 3, kind: 'pong', c: now - 3, t: now });
+    // its resend once the bucket has room is taken
+    now += 100;
+    say(a, { kind: 'world', op: 'watered', id: 'fl1', c: 5 });
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'ack', c: 5, ok: true });
+  });
+
   it('replays the day’s world after `since` to a reconnecting phone, in order, mine too', () => {
     const a = join(KEY_A);
     const b = join(KEY_B);

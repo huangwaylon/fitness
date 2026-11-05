@@ -348,6 +348,9 @@ export function createLive(o: LiveOptions): Live {
           const { v: _v, kind: _k, t: _t, ...w } = m;
           return safe(() => takeWx(w));
         }
+        case 'busy':
+          // over the room's rate limit: the intent stays in the outbox (sent again after the next welcome)
+          return;
         default:
           if (m.who === st.me) return;
           if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });

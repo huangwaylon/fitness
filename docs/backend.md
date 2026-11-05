@@ -339,7 +339,7 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   `GET /health` lists `versions`. Deploy order for a version bump: the relay first, speaking both (`LIVE_VS`), then
   the app; the old one goes once the log's `ws.hello` (`npm run logs -- report`, *Live hellos*) shows every phone on
   the new one.
-- **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued.
+- **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued, and a welcomed phone's numbered intent hears `busy {c, t}` (2026-11-05: neither relayed nor kept; the phone sends it again later; its own kind, so an older phone ignores it and resends after its next welcome as before). `ping` and `got` never wait on the bucket.
 - **Replay:** the room keeps today's shared world in DO storage ([Shared world](#shared-world)); a hello with `since`
   (the last such `t` that phone heard, kept across reloads: `island.liveSince`) gets the newer ones after the welcome,
   all of them, mine too (a phone that lost its record gets it back), in `replay {es}` messages of ≤ 16,000 bytes (~150
