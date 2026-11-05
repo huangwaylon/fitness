@@ -18,7 +18,7 @@ import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
 import type { Person3 } from '../person3d/person3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
-import { drawOff } from '../../ui-state/testMode.ts';
+import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
 import { lean } from '../world3d/release.ts';
 import { plainImages } from '../world3d/gltf.ts';
 import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
@@ -285,6 +285,8 @@ function loadModel(code: string): Promise<GLTF | null> {
 
 export function createTent(canvas: HTMLCanvasElement): Tent {
   const renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
+  // (no per-program link check on a live phone: testMode.ts shaderChecks)
+  renderer.debug.checkShaderErrors = shaderChecks();
   // the e2e's logic mode (testMode.ts): every frame runs, nothing is drawn
   const noDraw = drawOff();
   const dpr = noDraw ? 1 : Math.min(DPR_MAX, window.devicePixelRatio || 1);

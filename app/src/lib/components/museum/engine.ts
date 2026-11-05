@@ -17,7 +17,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import type { Villager3D } from '../villager3d/villager3d.ts';
 import type { Person3 } from '../person3d/person3d.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
-import { drawOff } from '../../ui-state/testMode.ts';
+import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
 import { decal } from './geometry.ts';
 import { frameRate } from '#lib/store/frameRate.svelte.ts';
 import { pacer } from '../world3d/pace.ts';
@@ -356,6 +356,8 @@ function grass(): CanvasTexture {
 export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world: string }): Museum {
   const noDraw = drawOff();
   const renderer = new WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: 'high-performance' });
+  // (no per-program link check on a live phone: testMode.ts shaderChecks)
+  renderer.debug.checkShaderErrors = shaderChecks();
   const dprFull = noDraw ? 1 : Math.min(DPR_MAX, window.devicePixelRatio || 1);
   renderer.setPixelRatio(dprFull);
   renderer.outputColorSpace = SRGBColorSpace;

@@ -9,7 +9,7 @@ import {
 } from 'three';
 import { createPlayer, portrait, type Player3D } from '../player3d/player3d.ts';
 import type { PlayerLook } from '#lib/contract/look.ts';
-import { drawOff } from '#lib/ui-state/testMode.ts';
+import { drawOff, shaderChecks } from '#lib/ui-state/testMode.ts';
 
 export interface Preview3D {
   /** Wear a look (in place: what changed). */
@@ -36,6 +36,8 @@ const BACK_MS = 2500;
 export async function createPreview(canvas: HTMLCanvasElement, look: PlayerLook, dir: string, seed = 0): Promise<Preview3D> {
   const noDraw = drawOff();
   const renderer = new WebGLRenderer({ canvas, antialias: !noDraw, alpha: true, premultipliedAlpha: true, powerPreference: 'low-power', stencil: false });
+  // (no per-program link check on a live phone: testMode.ts shaderChecks)
+  renderer.debug.checkShaderErrors = shaderChecks();
   renderer.setPixelRatio(noDraw ? 1 : Math.min(DPR_MAX, window.devicePixelRatio || 1));
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.setClearColor(0x000000, 0);
