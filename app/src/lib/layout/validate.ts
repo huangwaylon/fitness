@@ -41,6 +41,18 @@ const solid = (o: Obj) => {
   return !!d && (d.block || o.k === 'bridge' || o.k === 'stairs');
 };
 
+/** Whether two objects overlap as validate's `overlap` has it: solid things never share ground, a flower never stands
+ *  in a solid thing, a structure (stairs, a bridge) clashes only with what blocks or another structure; the spots and
+ *  the markers with nothing. */
+export function overlap(layout: Layout, a: Obj, b: Obj): boolean {
+  if (a.k === 'spot' || isMarker(a.k) || b.k === 'spot' || isMarker(b.k) || (!solid(a) && !solid(b))) return false;
+  // a flower may grow by stairs or a bridge's end
+  const sa = a.k === 'bridge' || a.k === 'stairs', sb = b.k === 'bridge' || b.k === 'stairs';
+  if ((sa && !sb && !kindDef(b.k)?.block) || (sb && !sa && !kindDef(a.k)?.block)) return false;
+  const ba = standBox(layout, a), bb = standBox(layout, b);
+  return ba.x0 < bb.x1 && bb.x0 < ba.x1 && ba.y0 < bb.y1 && bb.y0 < ba.y1;
+}
+
 export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[] {
   const out: Issue[] = [];
   const add = (code: IssueCode, level: Issue['level'], tiles: [number, number][], ids: string[], ja: string, en: string) => out.push({ code, level, tiles, ids, ja, en });
@@ -87,16 +99,9 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
   // overlaps: solid things never share ground; a flower never stands in a solid thing
   for (let i = 0; i < objs.length; i++) {
     const a = objs[i];
-    if (a.k === 'spot' || isMarker(a.k)) continue;
-    const ba = standBox(layout, a);
     for (let k = i + 1; k < objs.length; k++) {
       const b = objs[k];
-      if (b.k === 'spot' || isMarker(b.k) || (!solid(a) && !solid(b))) continue;
-      // a flower may grow by stairs or a bridge's end: a structure clashes only with what blocks, or another structure
-      const sa = a.k === 'bridge' || a.k === 'stairs', sb = b.k === 'bridge' || b.k === 'stairs';
-      if ((sa && !sb && !kindDef(b.k)?.block) || (sb && !sa && !kindDef(a.k)?.block)) continue;
-      const bb = standBox(layout, b);
-      if (ba.x0 < bb.x1 && bb.x0 < ba.x1 && ba.y0 < bb.y1 && bb.y0 < ba.y1)
+      if (overlap(layout, a, b))
         add('overlap', 'error', [...objTiles(layout, a), ...objTiles(layout, b)], [a.id, b.id], `${kindDef(a.k)?.ja}と${kindDef(b.k)?.ja}が かさなっている`, `${kindDef(a.k)?.en} and ${kindDef(b.k)?.en} overlap`);
     }
   }

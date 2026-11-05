@@ -6,6 +6,8 @@ import type { Intent, Relayed } from '#lib/contract/live-protocol.ts';
 import type { Live, LiveStatus } from '#lib/sync/live.ts';
 import type { LayoutEntry, LayoutOp } from '#lib/contract/layout.ts';
 import { layout } from './layout.svelte.ts';
+import { clashesWith } from '#lib/layout/resolve.ts';
+import { validate } from '#lib/layout/validate.ts';
 import { world } from './world.svelte.ts';
 
 class Mem implements KV {
@@ -51,5 +53,57 @@ describe('the layout on this phone', () => {
     layout.apply([move('o-tab1', 20, 20, T0 + 2)]);
     expect(stored()).toEqual(['o-tab1', 'o-tab2']);
     expect(layout.obj('o-tab2')).toMatchObject({ x: 10, z: 10 });
+  });
+
+  /** Two palms of the default and a tile one of them may stand on, clear of everything. */
+  function setup() {
+    const r = fakeRelay();
+    layout.attach(r.live, 'A');
+    const [p1, p2] = layout.ofKind('palm');
+    return { r, p1, p2, to: { x: p1.x + 1, z: p1.z } };
+  }
+  const tileOf = (id: string) => [layout.obj(id)!.x, layout.obj(id)!.z];
+
+  it('E13: the partner’s piece lands on the tile mine moved to, theirs earlier: mine moves to the nearest clear tile, as an op', () => {
+    const { r, p1, p2, to } = setup();
+    expect(validate(layout.current).filter((i) => i.code === 'overlap')).toEqual([]);
+    layout.apply([move(p1.id, to.x, to.z, T0 + 2000)]);
+    r.sent.length = 0;
+    r.hear({ sc: 'o', id: p2.id, at: T0 + 1000, k: 'palm', x: to.x, z: to.z, f: 0, who: 'B', t: T0 + 1000 });
+    expect(clashesWith(layout.current, layout.obj(p2.id)!).map((o) => o.id)).toEqual([p1.id]);
+    vi.advanceTimersByTime(1);
+    // theirs stays; mine moved, sent as a normal op of mine
+    expect(tileOf(p2.id)).toEqual([to.x, to.z]);
+    expect(tileOf(p1.id)).not.toEqual([to.x, to.z]);
+    expect(clashesWith(layout.current, layout.obj(p1.id)!)).toEqual([]);
+    expect(r.sent).toEqual([expect.objectContaining({ kind: 'decor', sc: 'o', id: p1.id, x: tileOf(p1.id)[0], z: tileOf(p1.id)[1] })]);
+    expect(validate(layout.current).filter((i) => i.level === 'error')).toEqual([]);
+  });
+
+  it('E13, the other phone: the partner’s op is the later one: mine stays, theirs is theirs to move', () => {
+    const { r, p1, p2, to } = setup();
+    layout.apply([move(p1.id, to.x, to.z, T0 + 1000)]);
+    r.sent.length = 0;
+    r.hear({ sc: 'o', id: p2.id, at: T0 + 2000, k: 'palm', x: to.x, z: to.z, f: 0, who: 'B', t: T0 + 2000 });
+    vi.advanceTimersByTime(1);
+    expect(tileOf(p1.id)).toEqual([to.x, to.z]);
+    expect(r.sent).toEqual([]);
+    // and its move, when it comes, ends it: nothing more from either side
+    r.hear({ sc: 'o', id: p2.id, at: T0 + 3000, k: 'palm', x: to.x + 3, z: to.z, f: 0, who: 'B', t: T0 + 3000 });
+    vi.advanceTimersByTime(1);
+    expect(r.sent).toEqual([]);
+  });
+
+  it('the guest never moves the outdoors; my own two pieces on one tile are mine to sort out', () => {
+    const { r, p1, p2, to } = setup();
+    layout.attach(r.live, 'G');
+    r.hear({ sc: 'o', id: p2.id, at: T0 + 1000, k: 'palm', x: to.x, z: to.z, f: 0, who: 'A', t: T0 + 1000 });
+    vi.advanceTimersByTime(1);
+    expect(r.sent).toEqual([]);
+    layout.attach(r.live, 'A');
+    layout.apply([move(p1.id, to.x, to.z, T0 + 2000)]);
+    r.sent.length = 0;
+    vi.advanceTimersByTime(1);
+    expect(r.sent).toEqual([]);
   });
 });
