@@ -59,8 +59,7 @@ the editor, the homes) and the 3D integration (the scene, the camera, porting th
   path, the water, off the grass for a tree or a flower) moved to the nearest free tile round it (the homes and the
   structures first, the flowers last), so no two share a tile (`layout.test.ts`). The layout a phone shows is the default
   with the record's ops over it (`layoutOf(entries)`).
-- **The island reads the layout** on every phone (the 2D island, which kept world.ts's 46-tile area, went in November
-  2026: docs/cleanup-2d.md).
+- **The island reads the layout** on every phone.
 
 ## Ops (the record and the relay)
 

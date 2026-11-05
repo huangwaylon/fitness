@@ -801,7 +801,7 @@ DOM island's model, director, nav, sync and every overlay means only the drawing
 
 ### The 2D island goes; no WebGL is a line, not a fallback (November 2026)
 The 3D island became the default on the 60-tile layout (behind せってい's 2D/3D switch for a release), then the 2D island
-went (docs/cleanup-2d.md phase B): the rolling log (`roll.ts`), its baked ground (48 chunks and the bake), its CSS water,
+went (2026-11-03, ~4,700 lines): the rolling log (`roll.ts`), its baked ground (48 chunks and the bake), its CSS water,
 the scroller camera, the old もようがえ (DecorMode: IslandEdit is the one), the switch and `?island` / `?layout`, the
 2D-only art (lit looks, turned facings, the bridge's deck, the cliff sprites), the /villagers3d POC and the e2e's 2D
 variants. Without WebGL the island shows 「この端末では しまを 表示できません」 and the rest of the app (the panel, health,

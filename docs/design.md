@@ -602,8 +602,7 @@ Nothing on the island pays ベル.
 `island/world.ts` (every coordinate: the layout's once applied, `island/site.svelte.ts`), `island/camera.svelte.ts`
 (the projector), `island/IslandScene.svelte`, `world3d/Island3D.svelte` (the canvas), `world3d/engine.ts` (the scene,
 the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/world3d.spec.ts`, `e2e/world-perf.spec.ts`
-(on demand: `WORLD_PERF=1`). The 2D island (the rolling log, its baked ground and CSS water, せってい's 2D/3D switch)
-went in November 2026 (docs/cleanup-2d.md).
+(on demand: `WORLD_PERF=1`).
 
 - **Units:** world units (an 80u villager); x across (centre 195), z into the island (bigger = further back; the front
   shoreline is SHORE_Z). The live island reads the editable layout (`site.svelte.ts`: world.ts's values are the
@@ -621,7 +620,9 @@ went in November 2026 (docs/cleanup-2d.md).
   no model yet); the villagers and the day's visitor NH's models (`villagers.ts`, villager3d/: a villager with none
   is its render's card, a visitor never is); the lights `lights.ts`; the finger `gestures.ts`. The camera's ends come from the
   layout's extent (the shoreline at まえ, the far end at ウェイ's door). `window.__world3d` (stats, view, go, client,
-  ground, where, focus, xRoom, strays, alphaBlends, away) for the e2e (`e2e/world3d.spec.ts`).
+  ground, where, focus, xRoom, strays, alphaBlends, away, lamps) for the e2e (`e2e/world3d.spec.ts`): `stats().why` names
+  the parts that wanted the last frame (`~`: ambience only), `stats().paused` is true under a sheet (no frames drawn),
+  `lamps()` the lamps lit now (lights.ts `lit()`; none by day).
   - **The camera** (the user, 2026-11-02): the default zoom (1) is the widest it rests at, x centred, and one finger
     only scrolls along the island (its sideways movement ignored). Zoomed in past it, one finger pans sideways too (a
     free 2D pan with its fling), x held over the land plus 24 u of sea either side (`xRoom`: growing in over the first

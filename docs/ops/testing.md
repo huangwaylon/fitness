@@ -8,10 +8,11 @@ The tiers and why: [test-strategy.md](test-strategy.md).
 | Job | What | Gates the deploy |
 |---|---|---|
 | `build` | `npm run build` once; its `build-pages/` is the `site` artifact: what `deploy` ships and the full tier tests | yes |
-| `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build | yes |
+| `checks` | `npm run check`, `npm run knip`, `npx vitest run`, beside the build; the quarantine listed in the summary (`scripts/e2e-quarantine.ts`: red when a quarantined test has no owner) | yes |
 | `e2e-logic` ×12 | **the logic tier**: Playwright in Chromium (iPhone 13 profile), every test but `@render` and `@quarantine`, with the 3D engines drawing nothing (`E2E_RENDER=none`), on `site` served as Pages serves it (`scripts/serve-build.ts`), 3 workers each (4 made the short waits flaky on the 4-core runners), shards balanced by each test's time (`scripts/e2e-shards.ts plan`, from the committed `e2e/timings.json`; the `timings` job's summary says when they drift apart: `npm run e2e:timings` and commit it); each shard builds the commit itself (~12 s: no waiting for `build`) | yes |
-| `e2e-render` | **the drawn smoke**: the `@render` and `@smoke` tests with real (software) GL, one runner; advisory since Nov 2026 (CI's SwiftShader isn't the phones' Metal: rendering is judged on the iOS Simulator and the phones) | no |
-| `deploy` | `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`), once all of the above are green; then checks https://island-fund.pages.dev answers this build (`_app/version.json`) with its CSP header. No `CLOUDFLARE_API_TOKEN` secret: a warning, nothing deployed | — |
+| `e2e-render` | **the drawn smoke**: the `@render` and `@smoke` tests with real (software) GL, one runner; advisory (CI's SwiftShader isn't the phones' Metal: rendering is judged on the iOS Simulator and the phones) | no |
+| `timings` | after the logic tier, on pushes: its test times folded into `e2e/timings.json` (the `e2e-timings` artifact) and the shards' spread in the summary | no |
+| `deploy` | `site` to Cloudflare Pages (`wrangler pages deploy`, project `island-fund`), once all of the above are green; then checks https://island-fund.pages.dev answers this build (`_app/version.json`) with its CSP header. No `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` secret: a warning, nothing deployed | — |
 | `e2e-full` ×10 | **the full tier** (`.github/workflows/e2e-full.yml`, its own workflow after each run of this one, and on demand): the whole suite drawn (the quarantine too), one browser a runner, `E2E_SLOW=1` (a test 90 s, an expect 20 s: drawn under software GL the game itself runs slower); its failures in its summary and on their specs | no |
 
 - **Red main never deploys, and the newest green does.** One run at a time on `main`, never cancelled: a newer push
@@ -157,6 +158,19 @@ prints what retains the ones new since the first snapshot.
 - **Models kept:** the page-wide caches keep each model without its loader's parser (release.ts `lean`: the parser
   holds the GLB's whole file again). Over days they still grow, one entry a new model (a visitor's, a day's thing), and
   the island's GPU keeps each texture it drew until it goes: bounded by the models there are.
+
+## Unused assets
+`npm run unused` (`scripts/unused-assets.ts`, read-only) sorts every file under `static/` and every module under `src/`
+into safe to delete, used (with who uses it) and unsure; `-- --list=safe|used|unsure` for the paths, `-- --json`. Kept
+by hand though nothing names them for the 3D island: the flowers' and oaks' art (the DOM tap areas' sizes and clips),
+the candy, the party popper, the cake and the event pieces' art (the DOM over the canvas still shows or measures them).
+Check a deletion against what the built island draws:
+```sh
+npm run build && node scripts/serve-build.ts 4396 &   # a free port (lsof -i :4396)
+node scripts/unused-probe.ts 4396 /tmp/seen.txt       # 17 scenes: what's drawn or loaded; exits 1 on any 404 under art/, room/, terrain/
+npm run unused -- --seen=/tmp/seen.txt                # the summary, with what was seen drawn
+```
+Beside its list the probe writes `<file>.wasted`: what was downloaded into the DOM and never seen drawn.
 
 ## The iOS Simulator check (the real target, on the Mac)
 
