@@ -190,5 +190,3 @@ export function wornIn(look: PlayerLook, kind: ClosetKind): PartId | null {
   return id;
 }
 
-/** A swatch for a part (the figure's stand-in colours): its variant's, else `fallback`. */
-export const swatchOf = (id: PartId | null | undefined, fallback: Hex): Hex => closet().find(id)?.variant.swatch ?? fallback;

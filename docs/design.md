@@ -828,6 +828,10 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
 - **The ground's fields:** the layout's distance fields in a worker from `+layout.ts` load()
   ([island-layout](island-layout.md): the distance fields); the river stems' field with `Math.sqrt`, not
   `Math.hypot`, in its hot loop (the same numbers).
+- **The 2D heads' stand-in figure:** its colours from `look/swatches.json` (each bundled item's swatch, ~10 KB,
+  written by `npm run players3d` beside the part table) through `look/swatch.ts`; the closet and the part table
+  (~80 KB) load with すがた. `contract/partIds.json` (~39 KB) stays in the first load: it decides whether a kept look
+  draws as it is or as いつもの's parts at the first paint.
 - **three.js:** imported by name everywhere (`world3d/threePreview.ts` for the editor's preview and the home picker: a
   whole-module `import('three')` kept all of three in the shared chunk, 680 → 526 KB raw, 171 → 131 KB gzipped).
 

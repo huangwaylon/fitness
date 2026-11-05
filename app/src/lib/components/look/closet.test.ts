@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_LOOKS, isOnepiece, isPlayerLook, type PlayerLook } from '#lib/contract/look.ts';
 import PARTS from '../player3d/parts.json' with { type: 'json' };
+import SWATCHES from './swatches.json' with { type: 'json' };
+import { swatchOf } from './swatch.ts';
 import { closet, closetFrom, GARMENT_KINDS, hueOf, HUES, itemKey, wear, wornIn, type ClosetKind } from './closet.ts';
 
 const KINDS: ClosetKind[] = ['eye', 'mouth', 'hair', 'top', 'onepiece', 'bottom', 'socks', 'shoes', 'hat', 'glasses', 'ornament'];
@@ -89,6 +91,13 @@ describe('the part table’s closet (components/player3d/parts.json)', () => {
       expect(it.sw, id).toMatch(/^#[0-9a-f]{6}$/);
       if (it.icon) expect(icons[it.icon], it.icon).toMatch(/^#[0-9a-f]{6}$/);
     }
+  });
+
+  it('the stand-in figure’s swatches (swatches.json, swatch.ts) are the closet’s own, for every garment', () => {
+    for (const id of Object.keys(ITEMS)) expect(swatchOf(id, '#000001'), id).toBe(c.find(id)!.variant.swatch);
+    expect(Object.keys(SWATCHES.sw).sort()).toEqual(Object.keys(ITEMS).sort());
+    expect(swatchOf('TopsTexNotAThing0', '#000001')).toBe('#000001');
+    expect(swatchOf(null, '#000002')).toBe('#000002');
   });
 
   it('groups a line’s colours in one tile with its icon, and keeps one-pieces apart from tops', () => {

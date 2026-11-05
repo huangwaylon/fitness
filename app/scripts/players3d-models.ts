@@ -6,6 +6,7 @@
 //   static/room/player/mesh/<key>.glb        each part's mesh alone (a hairstyle with its greyscale texture; a top's
 //                                            shape, a shoe's, a glasses' frame…), bound to the body's joints by name
 //   static/room/player/tex/<id>[.<material>].webp   each item's baked albedo (its colour; tints stay at runtime)
+//   src/lib/components/look/swatches.json   the bundled items' swatches alone (the 2D stand-in figure)
 //   src/lib/components/player3d/parts.json   the part table: every id → its slot, mesh, textures, colour line, icon,
 //                                            swatch (the closet's dot); each icon's colour (the closet tints it)
 // Under /room/: the service worker caches what a phone wears on first use, never at install.
@@ -339,6 +340,9 @@ write(TABLE, {
   items: starter,
   icons: Object.fromEntries(Object.entries(table.icons as Record<string, string>).filter(([k]) => keepIcon.has(k)))
 });
+// each bundled item's swatch alone (look/swatch.ts: the 2D stand-in figure in the first load, without the table)
+const swatches = Object.entries(starter).flatMap(([id, it]) => ((it as { sw?: string }).sw ? [[id, (it as { sw?: string }).sw!]] : []));
+writeFileSync(join(APP, 'src', 'lib', 'components', 'look', 'swatches.json'), `{\n "_": "scripts/players3d-models.ts: each bundled item’s swatch (components/player3d/parts.json sw), for the 2D stand-in figure (look/swatch.ts) without the part table",\n "sw": {\n${swatches.map(([k, v]) => `  ${JSON.stringify(k)}: ${JSON.stringify(v)}`).join(',\n')}\n }\n}\n`);
 // every part id the app knows (contract/look.ts usePartTable: store/look.ts), compact for the main bundle: an id that
 // ends in a digit by its line (the id less its digit: its digits), the rest as they are
 const ids = [...hairs, ...eyes, ...mouths, ...items.map((it) => it.id)].sort();
