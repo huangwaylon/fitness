@@ -10,7 +10,7 @@
 //   - Colours are tints: the skin (its texture's alpha says where), the hair, the hair-coloured parts.
 //   - dress(look) swaps what changed in place: a colour or a texture is a material's change, a new shape a mesh's.
 import {
-  Bone, Color, DoubleSide, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Texture, TextureLoader, Vector3,
+  Bone, Box3, Color, DoubleSide, Matrix4, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Sphere, Texture, TextureLoader, Vector3,
   type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh, type WebGLProgramParametersWithUniforms
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -57,6 +57,9 @@ const luma = (hex: string) => {
 };
 /** The self-light (villager3d's: lit a little by its own colour). */
 const LIFT = 0.32;
+/** How far past the sphere round its joints at rest (model units) the figure may reach in any pose: its tallest hair
+ *  or hat 3.6 over it, its body at most 2.3 in any state or action (a hop's lift moves the sphere with it), with room. */
+const REACH = 10;
 
 const loader = new GLTFLoader();
 loader.setMeshoptDecoder(MeshoptDecoder);
@@ -197,6 +200,18 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     anchors[k] = b;
   }
   model.updateMatrixWorld(true);
+  // its bounds (the rooms' culling, the shadows' too): a sphere round its joints at rest and its reach, the same for
+  // every mesh on it, where three's own is a skinned mesh's vertices in the pose of the first frame it's drawn in
+  const toModel = new Matrix4().copy(model.matrixWorld).invert(), joints = new Box3(), jv = new Vector3();
+  model.traverse((n) => void ((n as Bone).isBone && joints.expandByPoint(jv.setFromMatrixPosition(n.matrixWorld).applyMatrix4(toModel))));
+  const ball = joints.getBoundingSphere(new Sphere());
+  ball.radius += REACH;
+  const bound = (m: SkinnedMesh) => {
+    // (in the mesh's own frame: its place on the model)
+    m.updateWorldMatrix(true, false);
+    m.boundingSphere = ball.clone().applyMatrix4(new Matrix4().copy(model.matrixWorld).invert().multiply(m.matrixWorld).invert());
+    m.frustumCulled = true;
+  };
   // one skeleton for the body and every part (skin.ts: one bone set a frame, not one a mesh)
   const rigSkin = sharedSkin(model);
   for (const m of skinned) rigSkin.bind(m, m.skeleton.bones);
@@ -246,7 +261,6 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     bodyMat.set(n, mat);
     owned.push(mat);
     m.material = mat;
-    m.frustumCulled = false;
   }
   const noses = () => {
     for (const m of skinned) {
@@ -334,7 +348,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       model.add(m);
       m.updateMatrixWorld(true);
       rigSkin.bind(m, to);
-      m.frustumCulled = false;
+      bound(m);
     }
     const w: Worn = { key: p.key, meshes: ms, bones: added, mats: [] };
     await dressPart(slot, w, p.item);
@@ -413,6 +427,8 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   const allSkinned = () => [...skinned, ...[...worn.values()].flatMap((w) => w.meshes)];
   const kind = playerKind(model, cur.mouthFrame);
   const v = animateModel(id, model, seed, kind);
+  // (animateModel draws every mesh unculled, a villager's bounds unknown: a player's are)
+  for (const m of allSkinned()) bound(m);
   const tints = () => {
     skin.set(cur.skin);
     hair.set(cur.hairColor);
