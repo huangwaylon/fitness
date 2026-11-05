@@ -841,7 +841,12 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
   the e2e's logic mode (nothing drawn; its tests read the projection as the HUD shows). A late answer (the fields
   built here meanwhile, or the tiles changed) is dropped, never kept over the current layout's set (~8 MB each).
   Measured (HTTP/2 brotli at ~Fast 4G, 4× CPU, `?demo`, medians): first frame warm 1,175 → 877 ms, cold 2,201 →
-  1,949 ms; no fields built on the main thread.
+  1,949 ms; no fields built on the main thread. The same worker builds the ground's chunks (`layout/mesh.ts
+  chunkMesh`: the top, the walls, the falls, the water, ~160 ms at 4× CPU), sent back as transferred buffers and
+  handed out once each to the ground's first build (`adoptChunks`, by the layout's tiles, pieces and homes; dropped
+  with a late answer's fields): first frame cold 1,962 → 1,856 ms, warm ~880 → 805 ms; no chunk built on the main
+  thread. The engine sizes its drawing buffer only when the size changed (the ResizeObserver's first call repeated
+  createIsland's: a canvas's buffer is reallocated even for the same width), 3 → 2 allocations before the first frame.
 - **The 2D heads' stand-in figure:** its colours from `look/swatches.json` (each bundled item's swatch, ~10 KB,
   written by `npm run players3d` beside the part table) through `look/swatch.ts`; the closet and the part table
   (~80 KB) load with すがた. `contract/partIds.json` (~39 KB) stays in the first load: it decides whether a kept look

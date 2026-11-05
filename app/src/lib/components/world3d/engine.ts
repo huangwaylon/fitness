@@ -373,11 +373,15 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     rev++;
     horizonY = NaN;
   }
+  /** The size the drawing buffer was last given: the ResizeObserver's first call (as the island mounts) is the size
+   *  createIsland gave it, and setting a canvas's width reallocates its buffer even to the same value (~70 ms at 4×
+   *  CPU before the first frame). */
+  let sizedW = 0, sizedH = 0;
   function resize() {
     const r = canvas.getBoundingClientRect();
     W = Math.max(1, r.width);
     H = Math.max(1, r.height);
-    renderer.setSize(W, H, false);
+    if (W !== sizedW || H !== sizedH) renderer.setSize((sizedW = W), (sizedH = H), false);
     camera.aspect = W / H;
     D0 = VIEW_W / (2 * Math.tan(((FOV / 2) * Math.PI) / 180) * camera.aspect);
     // the pivot (the ground the camera looks at) a little below the middle: more island ahead, the horizon high

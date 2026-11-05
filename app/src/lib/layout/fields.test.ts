@@ -9,6 +9,7 @@ import { Ch, adoptFields, computeFields, fieldsOf, hasFields, type RawFields } f
 import { codeOf, idx } from './grid.ts';
 import { Layout, defaultLayout, layoutOf } from './model.ts';
 import { fieldsSoon, primeFields } from './fieldsPrime.ts';
+import { CHUNK_COUNT, adoptChunks, chunkMesh } from './mesh.ts';
 
 const record = () =>
   layoutOf((RECORD as Record<string, unknown>[]).map((r) => {
@@ -49,6 +50,25 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
     expect(fieldsOf(l)).toBe(f);
     const main = fieldsOf(altered(record(), 4));
     for (let x = -100; x < 520; x += 37.3) for (let z = -100; z < 1720; z += 41.7) expect(typeof main.at(Ch.fresh, x, z)).toBe('number');
+  });
+  it('the ground\'s chunks from the worker\'s inputs are the main thread\'s, bit for bit; each handed out once', () => {
+    const l = altered(record(), 9);
+    // (as the worker builds them: a clone of the codes, pieces and homes, its own fields)
+    const w = structuredClone({ codes: l.codes, objects: l.objects, homes: l.homes });
+    const wl = new Layout(w.codes, w.objects, w.homes);
+    const off = Array.from({ length: CHUNK_COUNT }, (_, i) => structuredClone(chunkMesh(wl, i)));
+    const main = Array.from({ length: CHUNK_COUNT }, (_, i) => chunkMesh(l, i));
+    for (let i = 0; i < CHUNK_COUNT; i++)
+      for (const p of ['top', 'walls', 'falls', 'water'] as const)
+        for (const [k, a] of Object.entries(main[i][p])) expect(same(a as Float32Array, (off[i][p] as unknown as Record<string, Float32Array>)[k]), `chunk ${i} ${p}.${k}`).toBe(true);
+    // adopted: the next layout alike takes them, once; another layout's are its own
+    const next = new Layout(l.codes.slice(), new Map(l.objects), l.homes);
+    adoptChunks(next, off);
+    expect(chunkMesh(next, 3)).toBe(off[3]);
+    expect(chunkMesh(next, 3)).not.toBe(off[3]);
+    const other = altered(record(), 10);
+    expect(chunkMesh(other, 4)).not.toBe(off[4]);
+    expect(chunkMesh(next, 4)).not.toBe(off[4]);
   });
   it('a late answer is dropped: it never pushes out the set the island has now', () => {
     const now = altered(record(), 6), stale = altered(record(), 7);
