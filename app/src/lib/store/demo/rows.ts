@@ -77,6 +77,16 @@ const REPEAT_FROM = 2;
 const iso = (ms: number) => new Date(ms).toISOString();
 const at = (date: string, h: number, m = 0) => jstMs(date, h, m);
 
+/** The demo's ききみみ games of A's: days ago, hour, game id, level, played with B, the answers `[id, ok, pick, rp]`. */
+type DemoAnswer = [string, 0 | 1, number, number];
+const LISTEN_DEMO: readonly [number, number, string, number, boolean, DemoAnswer[]][] = [
+  [9, 21, 'dm0a1', 2, false, [['w2-read', 0, 1, 1], ['p2-pear', 1, 0, 0], ['n2-price-1', 1, 0, 0], ['r2-tea', 1, 0, 0], ['w2-cloud', 0, 2, 2], ['n2-days-1', 1, 0, 1], ['p2-ramen', 1, 0, 0], ['r2-break', 1, 0, 0]]],
+  [6, 21, 'dm0b2', 2, true, [['w2-flight', 0, 1, 0], ['p2-camera', 1, 0, 0], ['n2-opens-1', 1, 0, 0], ['r2-rain', 1, 0, 0], ['w2-seat', 1, 0, 0], ['n2-tourney-1', 0, 1, 1], ['p2-tire', 1, 0, 0], ['r2-shirt', 1, 0, 0]]],
+  [4, 22, 'dm0c3', 3, false, [['w3-gotta', 0, 1, 2], ['p3-boot', 1, 0, 1], ['n3-meet-1', 1, 0, 0], ['r3-coffee', 0, 2, 1], ['w3-shouldve', 0, 2, 0], ['n3-reps-1', 1, 0, 0], ['r3-mind', 1, 0, 0], ['r3-gym', 1, 0, 0]]],
+  [2, 21, 'dm0d4', 3, true, [['w3-id', 1, 0, 1], ['p3-water', 1, 0, 0], ['n3-steal-1', 1, 0, 0], ['r3-keep-down', 1, 0, 0], ['w3-thought', 1, 0, 0], ['n3-meteor-1', 1, 0, 0], ['r3-show', 0, 1, 0], ['r3-picnic', 1, 0, 0]]],
+  [1, 21, 'dm0e5', 1, false, [['w1-right', 0, 1, 1], ['p1-squid', 1, 0, 0], ['n1-reps-1', 1, 0, 0], ['w1-fly', 0, 1, 0], ['w1-hat', 1, 0, 0], ['n1-meet-1', 1, 0, 0], ['p1-coffee', 1, 0, 0], ['w1-collect', 1, 0, 1]]]
+];
+
 /** The demo's rows as of `now` (only rows the server would have stamped by then). */
 function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   const today = localDateAt(now);
@@ -210,6 +220,13 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   ev(tc, 'A', 'food_custom', { id: 'mdemoa1', at: tc, n: '社食の日替わり定食', u: '1個', k: 650, p: 22, fa: 18, c: 95, s: 3 });
   ev(tc + 60_000, 'B', 'food_custom', { id: 'mdemob1', at: tc + 60_000, n: '手作りおにぎり（鮭）', u: '1個', g: 110, k: 180, p: 5, fa: 1, c: 38, s: 1 });
   ev(at(addDays(today, -MEAL_DAYS), 21, 6), 'B', 'pref', { key: 'kcalGoal', value: 1700 });
+  // ききみみ クイズ's games (docs/kikimimi.md "Progress & feedback"): A's few, two of them with B; each phone gets the
+  // other's as a summary (rowsFor). A's misses lean on L/R and linked sounds, so きろく has something to say.
+  for (const [ago, h, g, lv, both, r] of LISTEN_DEMO) {
+    const d = addDays(today, -ago);
+    ev(at(d, h, 5), 'A', 'listen', { d, g, lv, n: both ? 2 : 1, ms: 250_000, r });
+    if (both) ev(at(d, h, 6), 'B', 'listen', { d, g, lv, n: 2, ms: 250_000, r: r.map(([id]) => [id, 1, 0, 0]) });
+  }
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
   return { metrics: byAt(metrics), events: byAt(events) };

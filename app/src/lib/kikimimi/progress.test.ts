@@ -204,3 +204,19 @@ describe('the advice', () => {
     ]);
   });
 });
+
+describe('the demo', () => {
+  it('has valid games of bank items, the partner’s as summaries', async () => {
+    const { demoCache } = await import('#lib/store/demo/rows.ts');
+    const rows = demoCache(Date.parse('2026-11-05T12:00:00+09:00')).rows.events.filter((r) => r[3] === 'listen');
+    const { mine, others } = gamesOf(rows, 'A');
+    expect(mine).toHaveLength(5);
+    expect(others).toHaveLength(2);
+    for (const a of answersOf(mine)) {
+      const it = BANK.find((b) => b.id === a.id);
+      expect(it, a.id).toBeTruthy();
+      expect(a.pick).toBeLessThan(it!.choices.length);
+      expect(a.ok).toBe(a.pick === it!.answer);
+    }
+  });
+});

@@ -10,6 +10,10 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
+  import Host from '../characters/Host.svelte';
+  import { currentReport, recWords } from './progress.svelte.ts';
+  import { feedbackFor } from '#lib/kikimimi/report.ts';
+  import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
 
   let { game, onagain, ondone }: { game: QuizGame; onagain: () => void; ondone: () => void } = $props();
   const v = $derived(game.view);
@@ -29,6 +33,20 @@
   const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null })).filter((r) => !missedOnly || !r.ok));
   const tally = $derived(items.filter((_, i) => ok(i)).length);
   /** A choice as written (a picture's Japanese name: the English isn't given away). */
+  /** My feedback (docs/kikimimi.md "Recommendations and feedback"): しずえ's line from my きろく with this game in it,
+   *  and what tripped me (this game's missed features). Mine alone, on my phone. */
+  const recorded = $derived(game.recorded && game.recorded.g === v.g ? game.recorded : null);
+  const fb = $derived.by(() => {
+    const r = recorded ? currentReport() : null;
+    return r && recorded ? feedbackFor(r, recorded.g) : null;
+  });
+  const fbLine = $derived.by(() => {
+    if (!fb) return '';
+    const head = fb.kind === 'up' ? t('kiki.fb.up', { skill: t(`kiki.skill.${fb.skill}`) }) : t(`kiki.fb.${fb.kind}`);
+    return fb.next ? `${head} ${t('kiki.fb.next', { what: recWords(fb.next).title })}` : head;
+  });
+  const trips = $derived(recorded ? tripsOf({ r: recorded.r.map(([id, ok]) => ({ id, ok: ok === 1 })) }) : []);
+  const tripLabel = (key: string) => (key.startsWith('f:') ? t(`kiki.f.${key.slice(2)}`) : t(`kiki.skill.${key.slice(2)}`));
   const choiceText = (it: Item, k: number) => (it.type === 'pic' ? (PIC_JA[it.choices[k]] ?? '') : it.choices[k]);
 </script>
 
@@ -37,6 +55,20 @@
     <Bubble text={line} host="wave" size={64} />
     <p class="tally" data-kiki-tally={tally}>{t('kiki.tally', { n: items.length, k: tally })}</p>
   </div>
+
+  {#if recorded}
+    <section class="fb card" data-kiki-feedback={fb?.kind ?? ''}>
+      {#if fbLine}
+        <div class="fb-line"><span class="fb-host" aria-hidden="true"><Host head size={44} animate={false} eager /></span><p>{fbLine}</p></div>
+      {/if}
+      <div class="trips" data-kiki-trips={trips.length}>
+        <h3 class="sec-label in">{t('kiki.trips')}</h3>
+        {#if trips.length}
+          <ul>{#each trips as x (x.key)}<li data-trip={x.key}>{tripLabel(x.key)}{#if x.n > 1} <b>×{x.n}</b>{/if}</li>{/each}</ul>
+        {:else}<p class="none">{t('kiki.tripsNone')}</p>{/if}
+      </div>
+    </section>
+  {/if}
 
   {#if ranking.length > 1}
     <ol class="rank card">
@@ -65,6 +97,7 @@
             <p class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
             <p class="ja">{#each jaLines(r.it) as l, n (n)}<span>{l}</span>{/each}</p>
             {#if r.it.type === 'pic' || r.it.type === 'num'}<p class="ans">→ {choiceText(r.it, r.it.answer)}</p>{/if}
+            {#if !r.ok}<p class="tags">{tripKeys(r.it.id).map((x) => tripLabel(x.key)).join(' · ')}</p>{/if}
             {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
           </div>
           <div class="hear">
@@ -88,6 +121,19 @@
   .host { display: grid; gap: 6px; }
   .tally { margin: 0; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text-soft); }
   .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
+  .fb { display: grid; gap: 10px; padding: 12px 14px; }
+  .fb-line { display: flex; align-items: center; gap: 10px; }
+  .fb-line p { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
+  .fb-host { flex: none; line-height: 0; }
+  .trips { display: grid; gap: 6px; }
+  .trips .sec-label.in { margin: 0; }
+  .trips ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .trips li {
+    padding: 4px 10px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.3 var(--font-ui);
+    background: color-mix(in srgb, var(--c-coral) 16%, var(--card)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c-coral) 55%, transparent);
+  }
+  .trips .none { text-align: left; }
+  .tags { margin: 0; font: 700 11px/1.4 var(--font-ui); color: var(--text-soft); }
   .rank { list-style: none; margin: 0; padding: 8px 14px; display: grid; gap: 4px; }
   .rank li { display: grid; grid-template-columns: 4.2em auto 1fr; align-items: center; gap: 10px; }
   /* the winner's row: a ribbon of yuzu behind it, the cup by the rank */
