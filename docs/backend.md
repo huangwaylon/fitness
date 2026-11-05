@@ -384,7 +384,9 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   last 64 acked intents it doesn't keep (a high-five: the same intent and `c`, in the room's memory). It relays to
   the partner before it writes the day to storage (a message sent after a write waits for it: the output gate), so a
   kept intent reaches the partner as fast as a passing one; its ack goes after the write (an ack is durable).
-  `ping {c}` → `pong {c, t}`; `got {at}` (my phone heard the partner's high-five `at`: the one held for me goes); `presence {who, on}` when the partner comes or goes (the island
+  `ping {c}` → `pong {c, t}`; the heartbeat (2026-11-05, `HB_PING` / `HB_PONG`: exactly `{"v":3,"kind":"hb"}` → `{"v":3,"kind":"hb","t":0}`), answered by the
+  Durable Objects runtime itself (`setWebSocketAutoResponse`), so it never wakes the room or bills duration: liveness
+  only (`t` is no clock), any socket, never the bucket; the welcome's `hb: true` says the room answers it; `got {at}` (my phone heard the partner's high-five `at`: the one held for me goes); `presence {who, on}` when the partner comes or goes (the island
   stands Wilbur on the dock while it's on). A `v` the relay doesn't know closes 4004, before or after the hello, with
   the reason `protocol version N unsupported (relay speaks 3)`; the client waits for the next show, i.e. a reload.
   `GET /health` lists `versions`. Deploy order for a version bump: the relay first, speaking both (`LIVE_VS`), then

@@ -102,6 +102,18 @@ const tOpen = performance.now() - t0;
 a.send({ kind: 'hello', key: KEY_A });
 const wa = await a.next((m) => m.kind === 'welcome');
 check(wa.me === 'A', `A welcomed (connect ${tOpen.toFixed(0)} ms, hello → welcome ${(performance.now() - t0 - tOpen).toFixed(0)} ms)`);
+{
+  // the heartbeat: the runtime's fixed answer (the room left asleep), and the welcome says the room has it
+  const hb: number[] = [];
+  for (let i = 0; i < 5; i++) {
+    const t = performance.now();
+    a.ws.send('{"v":3,"kind":"hb"}');
+    const r = await a.next((m) => m.kind === 'hb');
+    hb.push(performance.now() - t);
+    if (i === 0) check(wa.hb === true && r.t === 0, 'the heartbeat is answered with its fixed reply, and the welcome says so');
+  }
+  console.log(`     heartbeat RTT: ${stats(hb)}`);
+}
 
 const b = new Client();
 await b.open();

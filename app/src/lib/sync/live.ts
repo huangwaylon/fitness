@@ -491,6 +491,9 @@ export function createLive(o: LiveOptions): Live {
             for (const f of subs) safe(() => f(r));
           }
           return;
+        case 'hb':
+          // the heartbeat's answer: alive (heardAt), nothing else
+          return;
         case 'pong': {
           if (!sent.delete(m.c)) return;
           const rtt = Date.now() - m.c;
