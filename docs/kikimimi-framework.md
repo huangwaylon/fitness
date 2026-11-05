@@ -136,7 +136,7 @@ Keep it pure. game.svelte.ts's current trick of reading through `itemsOf()` stay
 
 `opts = {lv: Level}` (plus whatever 6/7 add: a mix id, ladder on/off) ↔ `[lv, …]`. `build = deck(seed, lv)` mapped to rounds `{kind: 'quiz.'+type, id, n}`. `timing` is the default windows with `play = itemDur`. `grade = points(k === answer, rp > 0 || same)`. `record` is today's `listenAnswers` per round. 「にがて れんしゅう」 stays a local deck via `usePractice`.
 
-If 7 ships the speed ladder inside the quiz, it becomes `gm: 'ladder'` on the `play` wire: one round per rung (`group` the ladder), `timing.lead` 0 after rung 1, and points weighted by rung. Its `quiz`-wire form decodes through `QuizOpts` for the deprecation window.
+7 shipped the speed ladder inside the quiz (2026-11-06, docs/kikimimi.md "スピード はしご"): on the `quiz` wire it is the `open` seed's bit 1 (session.ts `isLadder`), its deck ladder.ts `ladderDeck(seed)`, its points the deck's (`QuizDeck.score`: a flat 100 a rung climbed in order on the first listen, not weighted by rung). On the `play` wire it becomes `gm: 'ladder'`: one round per rung (`group` the ladder), `timing.lead` 0 after rung 1, a group score (the climb). Its `quiz`-wire form decodes through `QuizOpts` (the seed bit) for the deprecation window.
 
 ## 4. The `play` intent
 
