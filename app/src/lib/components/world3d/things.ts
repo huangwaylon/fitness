@@ -468,6 +468,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     let more = false, died = false;
     for (const [id, f] of fades) {
       if (f.a === f.to) continue;
+      // (one whose model is still loading waits for it: its fade starts once it's drawn, never part-way in)
+      if (!byId.has(id) && !f.dying) {
+        f.t = t;
+        continue;
+      }
       const dt = Math.min(FADE_STEP_MS, Math.max(0, t - f.t));
       f.t = t;
       f.a = f.to ? Math.min(1, f.a + dt / FADE_IN_MS) : Math.max(0, f.a - dt / FADE_OUT_MS);
