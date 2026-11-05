@@ -330,3 +330,75 @@ describe('a room’s music (places.ts)', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith(roomSrc);
   });
 });
+
+describe('lazy effects (ids.ts `lazy`: the radio jingles)', () => {
+  const RADIO = (['1', '2', '3', '4', '5'] as const).map((n) => `radio-morning-${n}` as const);
+  beforeEach(() => {
+    vi.resetModules();
+    vi.doMock('./manifest.ts', async (orig) => {
+      const m = await orig<typeof import('./manifest.ts')>();
+      const sfx = { coin: 'sfx/coin.m4a', 'island-broadcast': 'sfx/broadcast.m4a', ...Object.fromEntries(RADIO.map((id) => [id, `sfx/${id}.m4a`])) };
+      return { ...m, audioUrl: (p: string) => `/audio/${p}`, AUDIO: { ...m.AUDIO, sfx } };
+    });
+  });
+  afterEach(() => {
+    vi.doUnmock('./manifest.ts');
+    vi.resetModules();
+  });
+  const fetched = (path: string) => vi.mocked(fetch).mock.calls.filter(([u]) => u === `/audio/${path}`).length;
+
+  it('the unlock decodes the others, not the lazy ones; a first play fetches its file and plays it', async () => {
+    const { e, ctx } = await unlocked();
+    expect(fetched('sfx/coin.m4a')).toBe(1);
+    for (const id of RADIO) expect(fetched(`sfx/${id}.m4a`)).toBe(0);
+    const before = ctx.sources.length;
+    e.play('radio-morning-1');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetched('sfx/radio-morning-1.m4a')).toBe(1);
+    const src = ctx.sources.slice(before).find((s) => s.buffer);
+    expect((src?.buffer as AudioBuffer | undefined)?.duration).toBe(1); // the decoded file (the fake's 1 s)
+  });
+
+  it('keeps four decoded at most, the least recently played going first', async () => {
+    const { e } = await unlocked();
+    for (const id of RADIO) {
+      e.play(id);
+      await vi.advanceTimersByTimeAsync(20_000); // past the jingle (one at a time)
+    }
+    e.play('radio-morning-5');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetched('sfx/radio-morning-5.m4a')).toBe(1); // still here
+    e.play('radio-morning-1');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetched('sfx/radio-morning-1.m4a')).toBe(2); // let go, fetched again
+  });
+
+  it("a file that can't be had plays the placeholder (the chime's), and isn't asked for again at once", async () => {
+    const { e, ctx } = await unlocked();
+    vi.mocked(fetch).mockImplementation(async () => ({ ok: false }) as Response);
+    await vi.advanceTimersByTimeAsync(1000); // the renderer chunk
+    const before = ctx.sources.length;
+    e.play('radio-morning-2');
+    await vi.advanceTimersByTimeAsync(0);
+    const src = ctx.sources.slice(before).find((s) => s.buffer);
+    expect((src?.buffer as AudioBuffer | undefined)?.duration).toBeGreaterThan(1); // the chime's ~1.7 s placeholder
+    await vi.advanceTimersByTimeAsync(20_000);
+    e.play('radio-morning-2');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetched('sfx/radio-morning-2.m4a')).toBe(1);
+  });
+
+  it("a jingle with no file of its own plays its `like`'s (the radio's: the broadcast's file)", async () => {
+    const { e } = await unlocked();
+    e.play('radio-noon-6');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetched('sfx/broadcast.m4a')).toBe(1);
+  });
+
+  it('nothing is fetched while effects are off (no context, no play)', async () => {
+    const { Engine } = await import('./engine.ts');
+    new Engine().play('radio-morning-3');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetched('sfx/radio-morning-3.m4a')).toBe(0);
+  });
+});

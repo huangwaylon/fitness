@@ -4,6 +4,8 @@ import { EVENT_MUSIC_IDS, eventMusicAt, msToNextEdge } from './events.ts';
 import { nthWeekday } from '#lib/time/dates.ts';
 import { kkPick, kkTracks } from './kk.ts';
 import { AUDIO } from './manifest.ts';
+import ja from '#lib/i18n/ja.json';
+import en from '#lib/i18n/en.json';
 
 const at = (s: string) => eventMusicAt(new Date(`${s}+09:00`));
 
@@ -115,6 +117,12 @@ describe('event music schedule (Tokyo)', () => {
     expect(at('2027-10-08T23:59:59')).toEqual({ id: 'wedding-party', alt: 'wedding' });
     expect(at('2027-10-09T00:00:00')).toBeNull();
     expect(at('2027-06-06T12:00:00')).toBeNull(); // a June Sunday (the arch): no music of its own
+  });
+  it("every track has NH's title in ja and en (the settings' note, the Now Playing tile, the Media Session)", () => {
+    for (const id of EVENT_MUSIC_IDS) {
+      expect((ja as Record<string, string>)[`sound.title.${id}`], id).toBeTruthy();
+      expect((en as Record<string, string>)[`sound.title.${id}`], id).toBeTruthy();
+    }
   });
   it('an ordinary day has none', () => {
     for (const s of ['2026-07-15T12:00:00', '2026-12-25T20:00:00', '2027-02-01T00:30:00']) expect(at(s)).toBeNull();

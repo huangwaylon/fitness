@@ -397,6 +397,9 @@ export class Engine {
   play(id: SoundId, o: { gain?: number; rate?: number; delay?: number } = {}, late = false): void {
     const ctx = this.#ready();
     if (!ctx) return;
+    // no file of its own: the sound it's `like` (a radio jingle the broadcast's file, else the chime)
+    const like = SOUNDS[id].like;
+    if (like && !AUDIO.sfx[id]) return this.play(like, o, late);
     const lazy = late ? null : this.#lazyPath(id);
     if (lazy) {
       const t0 = clock();
