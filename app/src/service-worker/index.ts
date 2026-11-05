@@ -3,14 +3,15 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, FOOD_CACHE, ROOM_CACHE, SHELL, foodFetch, isAudio, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { AUDIO_CACHE, FOOD_CACHE, ROOM_CACHE, SHELL, foodFetch, isAudio, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
 
 const CACHE = `${SHELL}${version}`;
 const FONTS = 'island-fonts-v1';
-/** A slow network (one bar, a captive portal) must not hang the launch: after this the cached shell opens. */
+/** A first visit's navigation (no shell of this version cached yet) on a slow network (one bar, a captive portal) must
+ *  not hang the launch: after this an older version's cached shell opens, if there is one. */
 const NAV_TIMEOUT_MS = 3000;
 // Villager art: 440 villagers × render + icon (~12 MB) is too much to download at install. Only the two
 // default villagers are precached; every other render/icon is cached on first use, in a cache that outlives builds
@@ -48,9 +49,12 @@ self.addEventListener('install', (event) => {
         else todo.push(p);
       }
       await cache.addAll(todo);
-      // The SPA shell (ssr = false): any navigation can be served by the scope root.
+      // The SPA shell (ssr = false): any navigation can be served by the scope root. Only this build's (a deploy
+      // landing during the install would give a newer build's HTML, whose chunks this cache hasn't): else none, and
+      // navigations go to the network till a newer worker installs its own.
       try {
-        await cache.add(fresh(SCOPE));
+        const res = await fetch(fresh(SCOPE));
+        if (res.ok && isShellOf(await res.clone().text(), version)) await cache.put(SCOPE, res);
       } catch {
         /* offline at install; the shell is cached on the next navigation */
       }
@@ -82,25 +86,34 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return; // the relay (the record, the room): always live
 
-  // Network first (a fresh shell points at the current chunks), the cached shell when offline or after 3 s. The
-  // response becomes the offline shell only where this version has none (keepShell); off the response's path.
+  // Stale-while-revalidate: this version's cached shell at once (its chunks are in the same cache: installed together),
+  // never a wait on the network. The revalidation is the worker's own: the browser checks for a new service worker on
+  // each navigation (every deploy changes it: its version), the new one installs its build's shell and chunks, skips
+  // waiting and claims the page; the page sees the deploy (Kit's _app/version.json check on resume) and reloads once
+  // the new worker controls it (ui-state/reload.ts updateReload). No shell of this version yet (a first visit, or
+  // offline at install): network first, an older version's shell offline or after 3 s; the response becomes this
+  // version's shell if it is this build's (keepShell).
   if (req.mode === 'navigate') {
-    const net = fetch(req);
+    const own = caches.open(CACHE).then((c) => c.match(SCOPE)).catch(() => undefined);
+    const net = own.then((hit) => (hit ? null : fetch(req)));
     // cloned in the first callback on `net`, before respondWith below can hand the body to the page
     event.waitUntil(
       net.then((res) => {
+        if (!res) return;
         const copy = res.clone();
-        return caches.open(CACHE).then((c) => keepShell(c, SCOPE, copy));
+        return caches.open(CACHE).then((c) => keepShell(c, SCOPE, copy, version));
       }).catch(() => {})
     );
     event.respondWith(
       (async () => {
+        const hit = await own;
+        if (hit) return hit;
         let timer: ReturnType<typeof setTimeout> | undefined;
         const late = new Promise<null>((r) => (timer = setTimeout(r, NAV_TIMEOUT_MS, null)));
         const first = await Promise.race([net.catch(() => null), late]);
         clearTimeout(timer);
         if (first) return first;
-        return (await cached(SCOPE)) ?? net.catch(() => Response.error());
+        return (await cached(SCOPE)) ?? net.then((r) => r ?? Response.error(), () => Response.error());
       })()
     );
     return;

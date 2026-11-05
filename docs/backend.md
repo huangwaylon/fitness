@@ -709,8 +709,17 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   cache).
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
   from it) and the runtime caches; deletes the rest.
-- **Navigations:** network first; the cached shell offline or after 3 s. A response becomes this version's shell only
-  if it has none, so an old worker never stores a newer build's HTML.
+- **Navigations:** stale-while-revalidate: this version's cached shell at once (installed with its chunks, so the HTML
+  always matches them; the install keeps the shell only if it is its own build's, `caches.ts isShellOf`: the version
+  Kit writes into the bootstrap). The revalidation is the worker's: the browser checks for a new worker on each
+  navigation, and every deploy changes it. No shell of this version yet (a first visit, offline at install): network
+  first, an older version's shell offline or after 3 s; the response becomes this version's shell only if it has none
+  and it is this build's HTML, so an old worker never stores a newer build's.
+- **Updates:** Kit's `_app/version.json` check (on focus and on coming back to the front) sets `updated`; the layout
+  then waits for the new build's worker (`ui-state/reload.ts newWorker`: `registration.update()`, the new worker
+  installs, skips waiting and claims the page, `controllerchange`; at most 15 s) and reloads once nothing is open, so
+  the reload is served the new build's shell. A stale chunk's reload waits the same way. `e2e/sw-update.spec.ts`
+  (Chromium; `scripts/serve-build.ts /__e2e/deploy` stands in for a deploy).
 - **Notifications:** none (no `push` or `notificationclick` handler: [decisions](decisions.md#no-notifications-2026-11-02)).
 - **Runtime:** fonts, villager, critter, find and present art cache-first on first use; audio (`island-audio-v1`)
   cache-first and never revalidated: every audio URL carries its file's content hash (`?v=`, `lib/sound/manifest.ts`;

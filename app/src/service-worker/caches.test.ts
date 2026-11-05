@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, foodFetch, isAudio, isFoodData, isMusic, keepShell, lruEvict, olderShells, precachable, staleCaches, staleFood, staleUse } from './caches.ts';
+import { AUDIO_CACHE, foodFetch, isAudio, isFoodData, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, staleCaches, staleFood, staleUse } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -96,21 +96,30 @@ describe('the offline shell from a navigation (keepShell)', () => {
     return { puts, cache: { match: async () => (has ? new Response('old') : undefined), put: async (k: RequestInfo | URL) => void puts.push(String(k)) } };
   };
 
+  const html = (v: string) => `<html><script>__sveltekit_x = {\n base: "",\n version: "${v}"\n };</script></html>`;
   it('kept when this version has no shell yet (offline at install)', async () => {
     const c = fakeCache(false);
-    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('<html>'));
+    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response(html('2026-11-05.abc1234')), '2026-11-05.abc1234');
     expect(c.puts).toEqual(['/fitness/']);
+  });
+
+  it('never another build’s HTML (a deploy since: its chunks are in no cache of this version)', async () => {
+    const c = fakeCache(false);
+    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response(html('2026-11-06.def5678')), '2026-11-05.abc1234');
+    expect(c.puts).toEqual([]);
+    expect(isShellOf(html('2026-11-05.abc1234'), '2026-11-05.abc1234')).toBe(true);
+    expect(isShellOf(html('2026-11-05.abc12345'), '2026-11-05.abc1234')).toBe(false);
   });
 
   it('never over the version’s own shell (a newer build’s HTML would point at chunks no cache holds)', async () => {
     const c = fakeCache(true);
-    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('<html>new build'));
+    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response(html('2026-11-05.abc1234')), '2026-11-05.abc1234');
     expect(c.puts).toEqual([]);
   });
 
   it('never an error page', async () => {
     const c = fakeCache(false);
-    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('nope', { status: 404 }));
+    await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('nope', { status: 404 }), '2026-11-05.abc1234');
     expect(c.puts).toEqual([]);
   });
 });

@@ -22,7 +22,7 @@
   import { startWeather } from '#lib/components/island/weatherNow.svelte.ts';
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
-  import { lazy, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
+  import { lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
   import { startSound } from '#lib/sound/sound.svelte.ts';
   import { startTaps } from '#lib/sound/taps.ts';
   import { startExactTaps } from '#lib/ui-state/exactTaps.ts';
@@ -65,9 +65,14 @@
   });
 
   // A new deploy (Kit checks _app/version.json when the app comes back to the front): reload into it once nothing
-  // is open, so a resident PWA never keeps running an old build against new chunks.
+  // is open, so a resident PWA never keeps running an old build against new chunks. Once the new build's service
+  // worker controls the page (newWorker): it serves the reload its own shell, from its cache.
+  let workerReady = $state(false);
   $effect(() => {
-    if (updated.current && !onPair && !showHarvest && !ui.sheets.length) safeReload(Date.now(), 'update');
+    if (updated.current) void newWorker().then(() => (workerReady = true));
+  });
+  $effect(() => {
+    if (workerReady && !onPair && !showHarvest && !ui.sheets.length) safeReload(Date.now(), 'update');
   });
 
   // the log's coarse usage: which routes are opened (sync/log.ts `use`)

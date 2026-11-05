@@ -69,9 +69,17 @@ createServer((req, res) => {
   });
 }).listen(port, '127.0.0.1', () => console.log(`build-pages on http://127.0.0.1:${port}${base}/`));
 
+/** The e2e's stand-in for a deploy (sw-update.spec): `/__e2e/deploy` changes the service worker's bytes from then on,
+ *  as a deploy's new worker would (a browser fetches a worker's script itself: Playwright can't route it). */
+let deploys = 0;
+
 async function serve(req: IncomingMessage, res: ServerResponse) {
   const url = new URL(req.url ?? '/', 'http://x');
   const path = decodeURIComponent(url.pathname);
+  if (path === '/__e2e/deploy') {
+    res.writeHead(200, { 'content-type': 'text/plain' }).end(String(++deploys));
+    return;
+  }
   if (path === base) {
     res.writeHead(301, { location: `${base}/${url.search}` }).end();
     return;
@@ -80,7 +88,8 @@ async function serve(req: IncomingMessage, res: ServerResponse) {
   const rel = inBase ? normalize(path.slice(base.length)).replace(/^(\.\.[/\\])+/, '') : '';
   const hit = inBase ? await file(join(root, rel)) : undefined;
   const served = hit ?? join(root, '404.html');
-  const body = await readFile(served);
+  let body = await readFile(served);
+  if (deploys && path.endsWith('/service-worker.js')) body = Buffer.concat([body, Buffer.from(`\n// e2e deploy ${deploys}\n`)]);
   const headers = { ...headersFor(path), 'content-type': TYPES[extname(served)] ?? 'application/octet-stream', 'cache-control': 'no-store', 'accept-ranges': 'bytes' };
   // WebKit's media elements ask for byte ranges (as Pages answers them)
   const range = hit && /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? '');
