@@ -285,7 +285,8 @@ an ack without a row (a duplicate) is followed by a `fresh` re-read 1.5 s later.
 - **Revision:** `rev` is an epoch (`e1`, `e2`, …), changed only when the record is rebuilt (`node scripts/record.ts
   rev`, and by itself after a restore: [Revision](#revision)). Nothing edits the record by hand.
 - **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"; the Worker refuses a missing or malformed
-  signature or a time outside the 5-minute window with 401 before the object, which checks the signature), takes the record tool's ops (`{op}`: counts
+  signature or a time outside the 5-minute window with 401 before the object, which checks the signature; a `restore`,
+  `rev` or `logpurge` is taken once per signature: its replay within 10 minutes is 409, table `admin_seen`), takes the record tool's ops (`{op}`: counts
   and who came which way, bookmarks, a restore, a new epoch, a dump, the log (`logs`, `logstats`, `logpurge`: the log's own object, [observability](ops/observability.md)), the weather, and `load`: rows that already have
   their `at`, by the same rules, idempotent).
 - **Push-driven:** after a write the object tells the room (`changed`, [Push](#push); a failed call is tried once more); the room keeps the last one
