@@ -341,11 +341,10 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
   these have ops of their own but one flower (`mid-fl-3`, a tile from where it stood). まえ's lawn and the river's
   banks stay as they were: the specs that walk on open
   lawn ask the page for it (`e2e/island.ts` `lawnTap`, `openNear`) rather than tapping a fixed point a building may come
-  to stand on. On the record of 2026-11-03 the museum takes the one spot that only clears flowers and the shop stands
-  over the campsite's path at the back, tiles 8…14 × 46…49. On the user's island of 2026-11-04 (flower borders down
-  both sides, the main path between, no 7 × 4 spot clear; the museum would have straddled the main path across the
-  front lawn and left the shop none) the museum clears four of the west border's flowers (tiles 2…8 × 12…15) and the
-  shop four of the east's (tiles 10…16 × 11…14), either side of the main path on the front lawn.
+  to stand on. The user placed both (the live record, checked 2026-11-05): the museum
+  on the front lawn, tiles 9…15 × 18…21, the shop at the back, tiles 6…12 × 49…52, neither on a home; the record's
+  fixture of 2026-11-03 (`layout/record-2026-11-03.json`) predates it, and without those two ops the shop stands at its
+  default, on ウェイ's home (`world3d/drawCheck.test.ts` folds it with the user's moves; the e2e specs append them).
 
 ## Turning a home
 
