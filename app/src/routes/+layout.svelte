@@ -22,7 +22,7 @@
   import { startWeather } from '#lib/components/island/weatherNow.svelte.ts';
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
-  import { lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
+  import { isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
   import { startSound } from '#lib/sound/sound.svelte.ts';
   import { startTaps } from '#lib/sound/taps.ts';
   import { startExactTaps } from '#lib/ui-state/exactTaps.ts';
@@ -97,7 +97,11 @@
     };
     document.addEventListener('visibilitychange', onVisible);
     // Any other chunk that fails to load (Vite's preload helper reports it): a stale build, reload once (not as we leave).
-    const onStale = () => void reloadUnlessLeaving();
+    // Only a chunk not fetched: the helper reports every lazy import that rejects, a module that threw as it ran too
+    // (the sound's renderer, the villagers' birthdays, K.K.'s songs), which a reload doesn't cure.
+    const onStale = (e: Event) => {
+      if (isChunkError((e as Event & { payload?: unknown }).payload)) void reloadUnlessLeaving();
+    };
     window.addEventListener('vite:preloadError', onStale);
     const stopViewport = startViewport();
     // a touch's click where the finger was, over the island and in the rooms (no snapping onto a door nearby)

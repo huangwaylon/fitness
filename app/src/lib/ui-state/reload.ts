@@ -79,6 +79,15 @@ async function deployed(): Promise<string | null> {
   return typeof v === 'string' ? v : null;
 }
 
+/** Whether a failed import is its file not fetched (a chunk a deploy removed, the network gone), not a module that
+ *  threw as it ran (a reload doesn't cure that): the browsers' TypeErrors for a module script that didn't load
+ *  (Chrome "Failed to fetch dynamically imported module", Safari "Importing a module script failed.", Firefox "error
+ *  loading dynamically imported module") and Vite's preload helper's for a chunk's CSS. */
+export function isChunkError(e: unknown): boolean {
+  const m = e instanceof Error ? e.message : '';
+  return (e instanceof TypeError && /dynamically imported module|importing a module script|module script failed/i.test(m)) || /^Unable to preload CSS/.test(m);
+}
+
 /** sessionStorage: the deployed version a chunk's failure last reloaded the page for (one reload a build). */
 const CHUNK_KEY = 'island.chunkReloadFor';
 
@@ -105,14 +114,14 @@ export async function reloadUnlessLeaving(deployedNow: () => Promise<string | nu
   return safeReload(Date.now(), 'chunk');
 }
 
-/** A memoised lazy import that forgets a failed load (the next call retries) and reloads into a newer deployed build
- *  (reloadUnlessLeaving). */
+/** A memoised lazy import that forgets a failed load (the next call retries) and, for a chunk not fetched, reloads
+ *  into a newer deployed build (reloadUnlessLeaving). */
 export function lazy<T>(load: () => Promise<T>, deployedNow?: () => Promise<string | null>): () => Promise<T> {
   let mod: Promise<T> | null = null;
   return () =>
     (mod ??= load().catch((e: unknown) => {
       mod = null;
-      void reloadUnlessLeaving(deployedNow);
+      if (isChunkError(e)) void reloadUnlessLeaving(deployedNow);
       throw e;
     }));
 }
