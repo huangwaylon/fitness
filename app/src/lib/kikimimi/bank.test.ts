@@ -40,6 +40,23 @@ describe('kikimimi bank', () => {
     }
   });
 
+  // A villager named in the clip is named in the Japanese as heard: the English name in katakana (EN_KANA), not their
+  // Japanese game name when it differs (p1-guitar's "Raymond" was 「ジャック」). The special characters (しずえ,
+  // たぬきち…) keep the names the players know them by.
+  const EN_KANA: Record<string, string> = { Raymond: 'レイモンド', Sydney: 'シドニー' };
+  it('a villager named in the English is named in the Japanese as heard', () => {
+    const named = Object.values(ROSTER).map((r) => ({ ...r, re: new RegExp(`\\b${r.nameEn.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`) }));
+    for (const it of BANK) {
+      const heard = it.type === 'reply' ? `${it.en} ${it.choices[it.answer]}` : it.en;
+      for (const r of named.filter((r) => r.re.test(heard))) {
+        const kana = r.special ? r.nameJa : EN_KANA[r.nameEn];
+        expect(kana, `${it.id}: add ${r.nameEn}'s katakana to EN_KANA`).toBeTruthy();
+        expect(it.ja, `${it.id}: ${r.nameEn}`).toContain(kana);
+        if (!r.special && r.nameJa !== kana) expect(it.ja, `${it.id}: ${r.nameEn} is heard, not ${r.nameJa}`).not.toContain(r.nameJa);
+      }
+    }
+  });
+
   it('accents: level 1 US only, level 2 adds UK, level 3 adds AU (and uses all three), level 4 all three', () => {
     const allowed: Partial<Record<Level, string[]>> = { 1: ['us'], 2: ['us', 'uk'], 3: ['us', 'uk', 'au'], 4: ['us', 'uk', 'au'] };
     for (const it of BANK) expect(allowed[it.lv], it.id).toContain(it.voice);
