@@ -52,14 +52,21 @@ export function newWorker(sw: ServiceWorkerContainer | undefined = globalThis.na
       } catch {
         return false;
       }
-      const next = reg.installing ?? reg.waiting;
+      let next = reg.installing ?? reg.waiting;
       if (!next) return true;
-      const failed = new Promise<boolean>((ok) => {
-        const gone = () => next.state === 'redundant' && ok(false);
-        next.addEventListener('statechange', gone);
-        gone();
-      });
-      return Promise.race([changed, failed]);
+      const redundant = (w: ServiceWorker) =>
+        new Promise<false>((ok) => {
+          const gone = () => w.state === 'redundant' && ok(false);
+          w.addEventListener('statechange', gone);
+          gone();
+        });
+      // (one gone redundant for a newer one, a deploy landing during its install: that one's waited for)
+      for (;;) {
+        if (await Promise.race([changed, redundant(next)])) return true;
+        const after = reg.installing ?? reg.waiting;
+        if (!after || after === next) return false;
+        next = after;
+      }
     })();
     waits.set(sw, (w = mine));
     void mine.then((ok) => {
