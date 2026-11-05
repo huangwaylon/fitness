@@ -12,8 +12,9 @@ import { Engine } from './engine.ts';
 import type { Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
-import { trackAt, type MusicTrack, type Weather } from './hourly.ts';
-import { eventMusicAt, type EventMusicId } from './events.ts';
+import { msToNextHour, trackAt, type MusicTrack, type Weather } from './hourly.ts';
+import { eventMusicAt, msToNextEdge, type EventMusicId } from './events.ts';
+import { radioJingleAt } from './radio.ts';
 import { kkFile, kkTracks, type KKSource } from './kk.ts';
 import { pickMusic, placeTrack, type PlaceId } from './places.ts';
 import { HourClock } from './session.ts';
@@ -51,7 +52,7 @@ interface Want {
 
 /** A cut-in over the island's music, as in NH: the wasps' chase (loops until they're netted or sting), their sting
  *  (once) or a K.K. song (once). It ends by itself (a one-shot's end, CUT_IN_MAX_MS for the chase) or is cleared. */
-let cutIn: (Want & { kk?: string; kkFrom?: KKSource }) | null = null;
+let cutIn: (Want & { kk?: string; kkFrom?: KKSource; next?: EventMusicId[] }) | null = null;
 let cutInTimer: ReturnType<typeof setTimeout> | undefined;
 /** A chase the scene never ended (it went away mid-swarm) lets the island's music back after this long. */
 const CHASE_MAX_MS = 6000;
@@ -76,7 +77,11 @@ function eng(): Engine {
     engine = new Engine();
     engine.onended = (key) => {
       if (key === 'opening') opening = false;
-      else if (cutIn?.key === key) endCutIn();
+      else if (cutIn?.key === key) {
+        const next = cutIn.next ?? [];
+        endCutIn();
+        if (next.length && eventJingle(next)) return;
+      }
       else if (key === 'event/happy-new-year') introHeard.add(dayKey());
       else return;
       syncMusic();
@@ -130,11 +135,11 @@ function apply(): void {
 /** The island's own music at an instant: the event's track on an event day (its midnight jingle first, once), else
  *  the Tokyo hour's. Cut-ins (the wasps, K.K.) come on top of it. */
 function musicAt(d: Date): Want | null {
-  const ev = eventMusicAt(d);
+  const ev = eventMusicAt(d, sound.weather);
   const intro = ev?.intro && AUDIO.events[ev.intro];
   if (ev?.intro && intro && !introHeard.has(dayKey(d))) return { key: `event/${ev.intro}`, track: intro, playing: ev.intro, loop: false };
-  const loop = ev && AUDIO.events[ev.id];
-  if (ev && loop) return { key: `event/${ev.id}`, track: loop, playing: ev.id, loop: true };
+  const id = ev && (AUDIO.events[ev.id] ? ev.id : ev.alt && AUDIO.events[ev.alt] ? ev.alt : null);
+  if (id) return { key: `event/${id}`, track: AUDIO.events[id]!, playing: id, loop: true };
   const tr = trackAt(d, sound.weather, AUDIO.music);
   return tr && { key: tr.key, track: tr, playing: 'hour', loop: true };
 }
@@ -168,7 +173,7 @@ function endCutIn(): void {
 }
 
 /** Start a cut-in (when ミュージック can sound) and play it at once. False: it can't sound now. */
-function startCutIn(want: Want & { kk?: string; kkFrom?: KKSource }, maxMs?: number): boolean {
+function startCutIn(want: NonNullable<typeof cutIn>, maxMs?: number): boolean {
   const s = sound.settings;
   if (!musicOn(s) || s.volume <= 0 || !engine?.ctx || document.hidden) return false;
   clearTimeout(cutInTimer);
@@ -277,7 +282,9 @@ const hourClock = new HourClock(
     const tr = baseAt(at);
     if (tr && s.music && s.volume > 0 && engine?.ctx && !document.hidden) engine.prefetch(tr.track.file);
   },
-  syncMusic
+  syncMusic,
+  undefined,
+  (d) => Math.min(msToNextHour(d), msToNextEdge(d) ?? Infinity)
 );
 
 /** Change settings (from a tap: that tap unlocks audio). Turning a kind on previews it: 効果音 a confirm, ミュージック
@@ -303,7 +310,8 @@ export function play(id: SoundId, o?: { gain?: number; rate?: number; delay?: nu
   const s = sound.settings;
   if (s.volume <= 0 || !s.sfx) return;
   if (id === 'chime' && engine?.needsUnlock(false) !== false) announceAt = Date.now();
-  else engine?.play(id, o);
+  // the announcement opens with the radio jingle of the moment (radio.ts; its file, else the broadcast's, else the chime)
+  else engine?.play(id === 'chime' ? radioJingleAt(now()) : id, o);
 }
 
 /** The wasps (island/TreeShakes.svelte), as in NH: `nest` (it fell: fetch the chase ahead), `chase` (they're out:
@@ -332,6 +340,15 @@ export function waspMusic(phase: 'nest' | 'chase' | 'caught' | 'stung'): void {
 export function playKK(id: string, source: KKSource = 'live'): boolean {
   const k = kkTracks.find((s) => s.id === id);
   return !!k && startCutIn({ key: `kk/${source}/${k.id}`, track: kkFile(k, source), playing: 'kk', loop: false, cut: true, kk: k.id, kkFrom: source });
+}
+
+/** The island's own cut-ins (events.ts): `aerobics` for the stretch, `happy-birthday` at the cake, Franklin's cooking,
+ *  Festivale's dance. A one-shot plays once (a list: one after another), a loop until `maxMs`; then the island's music
+ *  fades back. Only with ミュージック on, audio unlocked and the file there: false, and the caller plays its effect. */
+export function eventJingle(ids: EventMusicId | EventMusicId[], maxMs?: number): boolean {
+  const [id, ...next] = Array.isArray(ids) ? ids : [ids];
+  const tr = AUDIO.events[id];
+  return !!tr && startCutIn({ key: `event/${id}`, track: tr, playing: id, loop: !!maxMs, cut: true, next }, maxMs);
 }
 
 /** Stop a K.K. song early (the show ends, a stereo's tapped off, the room is left): the island's music fades back

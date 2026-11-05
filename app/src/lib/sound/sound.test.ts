@@ -8,7 +8,7 @@ import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent } from './setting
 import { AUDIO, hasMusic, parseManifest } from './manifest.ts';
 import { DEVICE, type KV } from '#lib/sync/storage.ts';
 import { durationOf, render } from './synth.ts';
-import { SOUND_IDS } from './ids.ts';
+import { SYNTH_IDS } from './ids.ts';
 
 const memory = (init: Record<string, string> = {}): KV & { data: Record<string, string> } => {
   const data = { ...init };
@@ -134,7 +134,7 @@ describe('audio manifest (static/audio/manifest.json)', () => {
 
 describe('placeholder effects (synth.ts)', () => {
   it('every sound renders: short, finite, peaking at 0.8, silent at the very end', () => {
-    for (const id of SOUND_IDS) {
+    for (const id of SYNTH_IDS) {
       const x = render(id, 22050);
       expect(x.length).toBe(Math.ceil(durationOf(id) * 22050));
       expect(durationOf(id)).toBeLessThan(id === 'stretch-song' ? 6.5 : id === 'music-box' ? 4.5 : id === 'chime' || id === 'fanfare' ? 2.5 : 1);

@@ -48,7 +48,7 @@
   import { localDateAt } from '#lib/time/dates.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { kkPick, kkTracks, type KKTrack } from '#lib/sound/kk.ts';
-  import { playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
+  import { eventJingle, playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';
   import { EDGE, clearAt, guardsU, place, stageGeo } from './placement.ts';
   import { zodiacOf } from './beach.ts';
@@ -541,6 +541,8 @@
       clearTimeout(thanksTimer);
       thanksTimer = setTimeout(() => {
         cue('emote-joy');
+        // NH's Turkey Day: he cooks it then and there (the cooking jingle, then the dish's; only with ミュージック on)
+        eventJingle(['turkey-cooking-start', 'turkey-cooking-done']);
         treatArt = critterArt(fish as FishId);
         treat++;
         clearTimeout(treatTimer);

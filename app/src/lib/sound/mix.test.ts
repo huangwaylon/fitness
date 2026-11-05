@@ -1,7 +1,7 @@
 // The mix rules (docs/design.md#mix): the voice limit, pitch jitter, the duck under a jingle, and the cue table.
 import { describe, expect, it } from 'vitest';
 import { MAX_VOICES, VoiceLimiter, duckPlan, jitterRate, semitones } from './mix.ts';
-import { SOUNDS, SOUND_IDS, isSoundId } from './ids.ts';
+import { RADIO_JINGLES, SOUNDS, SOUND_IDS, isSoundId, placeholderOf } from './ids.ts';
 import { CUES, coinStep } from './cues.ts';
 import { REACTIONS } from '../components/motion/reactions.ts';
 
@@ -77,10 +77,26 @@ describe('duck under a jingle', () => {
 });
 
 describe('the catalogue and the cue table', () => {
-  it('every cue names a real sound, and every sound is used by a cue', () => {
+  it('every cue names a real sound, and every sound is used by a cue (the radio jingles by the announcement)', () => {
     for (const c of Object.values(CUES)) expect(isSoundId(c.sound)).toBe(true);
-    const used = new Set<string>(Object.values(CUES).map((c) => c.sound));
+    // the announcement's chime plays the moment's radio jingle (radio.ts); a sound's `like` (its placeholder) is used
+    // with it
+    const used = new Set<string>();
+    for (let id of [...Object.values(CUES).map((c) => c.sound), ...RADIO_JINGLES]) {
+      used.add(id);
+      while (SOUNDS[id].like) used.add((id = SOUNDS[id].like!));
+    }
     expect(SOUND_IDS.filter((id) => !used.has(id))).toEqual([]);
+  });
+  it("a sound without a placeholder of its own borrows a jingle's: the radio's the broadcast's, then the chime's", () => {
+    expect(placeholderOf('radio-noon-3')).toBe('chime');
+    expect(SOUNDS['radio-noon-3'].like).toBe('island-broadcast');
+    expect(placeholderOf('get-fanfare')).toBe('fanfare');
+    expect(placeholderOf('complete-fanfare')).toBe('fanfare');
+    expect(placeholderOf('coin')).toBe('coin');
+    for (const id of SOUND_IDS) expect(SOUNDS[placeholderOf(id)].like).toBeUndefined();
+    // the many once-a-day jingles load on their first play, never all at the unlock
+    for (const id of RADIO_JINGLES) expect(SOUNDS[id]).toMatchObject({ jingle: true, lazy: true });
   });
   it('levels stay gentle: nothing above 0.8, UI ticks under the island actions, jingles on the sfx bus', () => {
     for (const id of SOUND_IDS) expect(SOUNDS[id].gain).toBeLessThanOrEqual(0.8);

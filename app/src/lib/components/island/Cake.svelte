@@ -1,10 +1,11 @@
 <script lang="ts">
   // The birthday cake (docs/design.md "Birthdays"; birthday.ts): on one of our birthdays NH's birthday cake stands in front
   // of centre stage (world.ts CAKE, the campsite's clearing seen from おく: a world node), its candles lit. A tap (a scene item like the
-  // visitors, a 44px reach, while it's on screen) plays a little music box (an original tune, a jingle) and blows the
+  // visitors, a 44px reach, while it's on screen) plays NH's Happy Birthday (a cut-in over the music; without the music, a little music box: an original tune, a jingle) and blows the
   // candles out: a puff of smoke, out for the day on this phone. No ベル.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
+  import { eventJingle } from '#lib/sound/sound.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { su } from './scene.ts';
@@ -33,7 +34,8 @@
     const r = el?.querySelector('.cake')?.getBoundingClientRect();
     if (!on || !r || !enabled() || !w.inView(at[0], at[1]) || !seen(at[0], at[1])) return false;
     if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
-    cue('birthday-cake');
+    // NH's Happy Birthday over the island's music (ミュージック on, its file there), else the music box
+    if (!eventJingle('happy-birthday')) cue('birthday-cake');
     if (!out) {
       out = true;
       blowOut(date);

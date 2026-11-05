@@ -77,7 +77,8 @@ export class IdleTimer {
 
 /**
  * The top-of-the-hour timers for the hourly music: `prefetch(at)` PREFETCH_MS before the hour (`at`: just after it),
- * then `change()` on the hour, re-arming itself. Stopped while the app is hidden (nothing changes or fetches there;
+ * then `change()` on the hour, re-arming itself. `next`: ms to the next change (the hour's, or sooner: the event
+ * music's minutes, events.ts msToNextEdge). Stopped while the app is hidden (nothing changes or fetches there;
  * coming back starts it again), so a background tab never piles up an hour's file at a time.
  */
 export class HourClock {
@@ -86,7 +87,9 @@ export class HourClock {
   #prefetch: (at: Date) => void;
   #change: () => void;
   #timers: Timers;
-  constructor(now: () => Date, prefetch: (at: Date) => void, change: () => void, timers: Timers = TIMERS) {
+  #next: (d: Date) => number;
+  constructor(now: () => Date, prefetch: (at: Date) => void, change: () => void, timers: Timers = TIMERS, next: (d: Date) => number = msToNextHour) {
+    this.#next = next;
     this.#now = now;
     this.#prefetch = prefetch;
     this.#change = change;
@@ -95,9 +98,10 @@ export class HourClock {
 
   start(): void {
     this.stop();
-    const ms = msToNextHour(this.#now());
+    const t = this.#now(), ms = this.#next(t);
+    const due = new Date(t.getTime() + ms + 1000);
     this.#ids = [
-      this.#timers.set(() => this.#prefetch(new Date(this.#now().getTime() + PREFETCH_MS + 1000)), Math.max(0, ms - PREFETCH_MS)),
+      this.#timers.set(() => this.#prefetch(due), Math.max(0, ms - PREFETCH_MS)),
       this.#timers.set(() => {
         this.#change();
         this.start();

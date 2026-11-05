@@ -1,7 +1,7 @@
 // The cue table (docs/design.md#cues): scenery taps are wired, quiet world sounds.
 import { describe, expect, it } from 'vitest';
 import { CUES } from './cues.ts';
-import { SOUNDS, type SceneSfx } from './ids.ts';
+import { SOUNDS, placeholderOf, type SceneSfx } from './ids.ts';
 import { durationOf } from './synth.ts';
 
 // every kind sceneSfx() can ask for (the Record type makes the compiler list them all)
@@ -30,7 +30,7 @@ describe('scenery cues', () => {
       expect(d.jitter, k).toBeGreaterThan(0);
       expect(d.max, k).toBeLessThanOrEqual(2);
       expect(d.jingle, k).toBeFalsy();
-      expect(durationOf(c.sound), k).toBeLessThan(1); // a ≤ 1 s flourish
+      expect(durationOf(placeholderOf(c.sound)), k).toBeLessThan(1); // a ≤ 1 s flourish
     }
   });
   it("fishing: the bite has its own sound (not the nibble's plop), the loudest of the scenery, so it's heard at once", () => {

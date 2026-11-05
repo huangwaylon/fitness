@@ -38,7 +38,26 @@ export type SoundId =
   // the night sky: a wish's soft chime; fireworks: a rocket's rising whistle and the burst (a soft boom and a crackle)
   | 'wish' | 'whistle' | 'firework'
   // a birthday's cake (island/Cake.svelte): a little music box (an original waltz, ~4 s)
-  | 'music-box';
+  | 'music-box'
+  // NH's two fanfares (jingles): an item got (受け取る, a present), a set completed (all four goals, both of us)
+  | 'get-fanfare' | 'complete-fanfare'
+  // しずえ's island broadcast (島内放送) and the radio jingle that opens it on the day's first open (radio.ts): one of
+  // six for the time of day, or the holiday's own on its day
+  | 'island-broadcast' | RadioJingle;
+
+/** The time of day's radio jingles (radio.ts): morning 05–11, noon 11–17, evening 17–05. */
+export type RadioSlot = 'morning' | 'noon' | 'evening';
+const RADIO_SLOTS: readonly RadioSlot[] = ['morning', 'noon', 'evening'];
+/** Six variants per time of day. */
+export const RADIO_VARIANTS = 6;
+/** The holidays with their own radio jingle (radio.ts radioJingleAt). */
+export type RadioHoliday = 'bunny-day' | 'halloween' | 'turkey-day' | 'toy-day' | 'countdown' | 'carnival';
+const RADIO_HOLIDAYS: readonly RadioHoliday[] = ['bunny-day', 'halloween', 'turkey-day', 'toy-day', 'countdown', 'carnival'];
+export type RadioJingle = `radio-${RadioSlot}-${1 | 2 | 3 | 4 | 5 | 6}` | `radio-${RadioHoliday}`;
+export const RADIO_JINGLES: readonly RadioJingle[] = [
+  ...RADIO_SLOTS.flatMap((s) => Array.from({ length: RADIO_VARIANTS }, (_, i) => `radio-${s}-${i + 1}` as RadioJingle)),
+  ...RADIO_HOLIDAYS.map((h): RadioJingle => `radio-${h}`)
+];
 
 /** What a scenery tap asks to sound like (island/sceneTaps.ts sceneSfx → the `scene-<kind>` cue in cues.ts). */
 export type SceneSfx =
@@ -67,6 +86,11 @@ interface SoundDef {
   max: number;
   /** A jingle: ducks the music under it and never overlaps another jingle (the later one is dropped). */
   jingle?: boolean;
+  /** No placeholder of its own: without its file it sounds like this id (its file, else its placeholder). */
+  like?: SoundId;
+  /** Its file is fetched on its first play, not on the unlock, and kept in a small cache (engine.ts LAZY_CAP): the
+   *  many long jingles heard once a day. */
+  lazy?: boolean;
 }
 
 // Levels: soft UI ticks well under the island actions, the jingles at the top (they are the rewards).
@@ -133,9 +157,25 @@ export const SOUNDS: Record<SoundId, SoundDef> = {
   // fireworks come every couple of seconds for hours: kept low, two at most
   whistle: { bus: 'sfx', gain: 0.16, jitter: 120, max: 2 },
   firework: { bus: 'sfx', gain: 0.28, jitter: 90, max: 2 },
-  'music-box': { bus: 'sfx', gain: 0.5, jitter: 0, max: 1, jingle: true }
+  'music-box': { bus: 'sfx', gain: 0.5, jitter: 0, max: 1, jingle: true },
+  'get-fanfare': { bus: 'sfx', gain: 0.75, jitter: 0, max: 1, jingle: true, like: 'fanfare' },
+  'complete-fanfare': { bus: 'sfx', gain: 0.75, jitter: 0, max: 1, jingle: true, like: 'fanfare', lazy: true },
+  // the broadcast's opening; a radio jingle without its file sounds like it, and it like the PA chime
+  'island-broadcast': { bus: 'sfx', gain: 0.55, jitter: 0, max: 1, jingle: true, like: 'chime', lazy: true },
+  ...(Object.fromEntries(RADIO_JINGLES.map((id) => [id, { bus: 'sfx', gain: 0.55, jitter: 0, max: 1, jingle: true, like: 'island-broadcast', lazy: true }])) as Record<RadioJingle, SoundDef>)
 };
 
 export const SOUND_IDS = Object.keys(SOUNDS) as SoundId[];
 
 export const isSoundId = (s: string): s is SoundId => Object.hasOwn(SOUNDS, s);
+
+/** The ids with a placeholder of their own (synth.ts): every id without a `like`. */
+export type SynthId = Exclude<SoundId, 'get-fanfare' | 'complete-fanfare' | 'island-broadcast' | RadioJingle>;
+export const SYNTH_IDS = SOUND_IDS.filter((id): id is SynthId => !SOUNDS[id].like);
+
+/** Whose placeholder an id uses: its own, or its `like`'s (followed to the end). */
+export function placeholderOf(id: SoundId): SynthId {
+  let i = id;
+  for (let n = 0; SOUNDS[i].like && n < 8; n++) i = SOUNDS[i].like!;
+  return i as SynthId;
+}
