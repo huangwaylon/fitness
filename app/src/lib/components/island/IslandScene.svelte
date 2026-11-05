@@ -62,6 +62,7 @@
   import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
   import { GUEST_ARRIVAL, guestSpot, doorAt, outOf, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
+  import { nextChance } from '#lib/ui-state/retry.ts';
   import { kkSpot } from './kkSlider.ts';
   import { digSpots, spotsOn } from './beach.ts';
   import * as W from './world.ts';
@@ -362,7 +363,15 @@
   const bday = $derived(birthdaysShown(today, preview.event));
   let villagerBdays = $state<Record<string, string> | null>(null);
   $effect(() => {
-    void import('#lib/villagers/birthdays.ts').then((m) => (villagerBdays = m.BIRTHDAYS));
+    // (a failed load tried again at its next chance, a few times: retry.ts)
+    let gone = false;
+    const get = (n: number): void =>
+      void import('#lib/villagers/birthdays.ts').then(
+        (m) => !gone && (villagerBdays = m.BIRTHDAYS),
+        () => n < 5 && void nextChance(n).then(() => !gone && get(n + 1))
+      );
+    get(0);
+    return () => (gone = true);
   });
   const hatOf = (id: VillagerActor, person: Look): string | null =>
     (bday.length && id !== 'third') || isBirthday(villagerBdays?.[resolveLook({ villager: person.villager, person: person.person }).id], today) ? HATS[id === 'third' ? 'partner' : id] : null;

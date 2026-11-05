@@ -834,6 +834,12 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
   written by `npm run players3d` beside the part table) through `look/swatch.ts`; the closet and the part table
   (~80 KB) load with すがた. `contract/partIds.json` (~39 KB) stays in the first load: it decides whether a kept look
   draws as it is or as いつもの's parts at the first paint.
+- **A failed load tries again** at its next chance (`ui-state/retry.ts nextChance`: the next `online`, the page back
+  to the front, or a backoff of 2 s doubling to a minute): a lazy component (`lazyComponent.svelte.ts`: whoever asked
+  sees it then), a food dataset (`food/load.ts`, a few times, added when it comes), the villagers' birthdays chunk.
+- **Static files keep Pages' default cache** (revalidated): `/room/*`, `/terrain/*` and `/art/*` are not
+  content-hashed by name (a `?v=` on some, none on the tent's walls and floors, the terrain's strata, the art), and
+  `_headers` can't match a query string.
 - **three.js:** imported by name everywhere (`world3d/threePreview.ts` for the editor's preview and the home picker: a
   whole-module `import('three')` kept all of three in the shared chunk, 680 → 526 KB raw, 171 → 131 KB gzipped).
 

@@ -1,11 +1,15 @@
 // The meal log's IO edge: the food data from static/food/ (scripts/food-data.ts), fetched when the food sheet first
 // opens, never at install (service worker: cached on first use under its `?v=`, so it works offline after that).
 // index.json first (past the HTTP cache: it names the version), then the core datasets and verify.json together; the
-// lazy ones (products, 3 MB) after, in `db.more`. A dataset that fails to load is left out (its items unsearchable);
+// lazy ones (products, 3 MB) after, in `db.more`. A dataset that fails to load is left out (its items unsearchable)
+// till a retry at its next chance brings it (`chance`: the caller's, ui-state/retry.ts nextChance; none: no retry);
 // only a missing index.json fails the load. Each is indexed a slice per task (db.ts SLICE), never a long frame.
 import { asset } from '$app/paths';
 import { addDataset, emptyDb, type FoodDb } from './db.ts';
 import type { Dataset, FoodIndex, Verify } from './types.ts';
+
+/** A failed dataset's retries (at its next chances) before it's left out for the session. */
+const RETRIES = 4;
 
 const url = (file: string, v?: string): string => `${asset(`food/${file}` as Parameters<typeof asset>[0])}${v ? `?v=${encodeURIComponent(v)}` : ''}`;
 
@@ -18,13 +22,19 @@ async function json<T>(href: string, init?: RequestInit): Promise<T> {
 /** Back to the event loop: a frame, a keystroke go first. */
 const pause = (): Promise<void> => new Promise((ok) => setTimeout(ok, 0));
 
-export async function loadFoodDb(): Promise<FoodDb> {
+/** `chance(n)`: when to fetch a failed dataset again (its `n`-th retry); none: it stays out. */
+export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise<FoodDb> {
   const index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache' });
   const db = emptyDb(index);
   // One dataset indexed at a time, in slices (the keys come built: scripts/food-data.ts), in the order they arrive.
   let indexing = Promise.resolve();
+  // (a dataset that fails is fetched again at its next chance, a few times, and added when it comes; the load itself
+  // never waits for it)
+  const add = (meta: FoodIndex['datasets'][number], d: Dataset) => (indexing = indexing.then(() => addDataset(db, meta, d, pause)).catch(() => {}));
+  const again = (meta: FoodIndex['datasets'][number], n: number): void =>
+    void chance?.(n).then(() => json<Dataset>(url(meta.file, index.version)).then((d) => void add(meta, d), () => n < RETRIES && again(meta, n + 1)));
   const load = (meta: FoodIndex['datasets'][number]) =>
-    json<Dataset>(url(meta.file, index.version)).then((d) => (indexing = indexing.then(() => addDataset(db, meta, d, pause)).catch(() => {})), () => {});
+    json<Dataset>(url(meta.file, index.version)).then((d) => add(meta, d), () => again(meta, 0));
   const core = index.datasets.filter((d) => !d.lazy);
   const lazy = index.datasets.filter((d) => d.lazy);
   // all at once, added in the order they arrive (search ranks by match, not by file)
