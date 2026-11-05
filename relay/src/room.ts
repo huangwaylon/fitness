@@ -17,6 +17,9 @@ export interface Meta {
   hd?: number;
   /** When the room last asked it whether it's there (sweepSilent's probe). */
   pr?: number;
+  /** Whose admission ticket it came with (contract/ticket.ts, the Worker's check): its hello must be that person's,
+   *  and it is never let go to make room for another. */
+  tk?: Who;
 }
 
 export interface Sock {
@@ -185,9 +188,9 @@ export class RoomCore<S extends Sock> {
     }
   }
 
-  /** A new socket, accepted but not yet authenticated. */
-  open(s: S): void {
-    this.io.setMeta(s, { who: null, opened: this.io.now(), sk: `${this.io.now().toString(36)}${Math.random().toString(36).slice(2, 8)}` });
+  /** A new socket, accepted but not yet authenticated (`tk`: whose admission ticket it came with). */
+  open(s: S, tk?: Who): void {
+    this.io.setMeta(s, { who: null, opened: this.io.now(), sk: `${this.io.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`, ...(tk ? { tk } : {}) });
   }
 
   message(s: S, raw: unknown): void {
@@ -301,6 +304,8 @@ export class RoomCore<S extends Sock> {
   private hello(s: S, meta: Meta, key: string, since: number | undefined, v: LiveV, build?: string): void {
     const who = keyOwner(key, this.io.keys);
     if (!who) return this.shut(s, CLOSE.unauthorized, 'unknown key');
+    // a ticket's socket is its person's alone
+    if (meta.tk && meta.tk !== who) return this.shut(s, CLOSE.unauthorized, "not the ticket's");
     // a repeated hello: nothing changes
     if (meta.who) return;
     const was = this.authed(who);
@@ -467,9 +472,10 @@ export class RoomCore<S extends Sock> {
    *  were let go to make room. */
   makeRoom(): number {
     this.sweep();
+    // (a ticketed one never: it proved a key before it got here, and has its hello's time like any)
     const waiting = this.io.sockets().filter((s) => {
       const m = this.io.meta(s);
-      return m && !m.who && m.opened !== 0;
+      return m && !m.who && m.opened !== 0 && !m.tk;
     }).sort((x, y) => this.io.meta(x)!.opened - this.io.meta(y)!.opened);
     let n = 0;
     while (waiting.length - n >= MAX_PENDING) {

@@ -380,6 +380,15 @@ catches an offline phone up.
   ([The record](#the-record)); `POST /notify` ([Push](#push)).
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://island-fund.pages.dev`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
+- **Admission** (2026-11-05, relay review O3: the server half; the phones' half comes next, then it is required): a
+  phone may offer, as its WebSocket's subprotocols, `island-v1` and a ticket (`contract/ticket.ts`: `tk.<who>.<exp
+  base 36>.<hex HMAC-SHA256 under the person's key, lower case, of island-room.<who>.<exp>>`, `exp` at most 10 minutes
+  ahead of the relay's clock; the phones make it for 5). The Worker checks it before the room (`auth.ts admission`): a
+  bad or stale ticket is 403; a good one goes on marked with its person (`X-Island-Ticket`, set or removed only by the
+  Worker), the room answers with `island-v1` (a browser drops a socket whose answer names no subprotocol it offered),
+  its hello must be that person's (else 4001 `not the ticket's`) and it is never let go to make room for another
+  (`makeRoom` lets go only unticketed ones; it still says hello within 12 s). A socket without a ticket is let in as
+  before, for now.
 - **Auth:** the first message is `hello {key, since?, build?}` (`build`, 2026-11-05: the app's version, ≤ 24 of
   `[0-9A-Za-z.-]`, else left out; the room logs each welcomed hello as `ws.hello {v, build}` with who:
   [observability](ops/observability.md)). The room compares it in constant time with the secrets
