@@ -8,7 +8,7 @@
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
-// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
+// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), lookidle (すがた open at rest: its rAFs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
 // button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3), rebuild (a find kept off
 // and let back x2: the aquarium rebuilt as a new find rebuilds it).
 // FILL=1 (a room flow): the room furnished with the starter set first. --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor; --path=<name>: the retainer
@@ -255,6 +255,8 @@ const playerRefs: number[] = [];
 /** The stereo flow's blob URLs alive after each cycle. */
 const blobsBy: number[] = [];
 let stereoTurn = 0;
+/** The lookidle flow's rAF callbacks over 3 s at rest in すがた. */
+const idleRafs: number[] = [];
 if (flow === 'dressrace') await page.route(/\/room\/player\/(mesh|tex)\//, async (r) => { await new Promise((ok) => setTimeout(ok, 600)); await r.continue(); });
 let snap0: Map<string, [number, number]> | null = SNAP && process.env.SNAP_AT === '0' ? new Map() : null;
 const cycle = async () => {
@@ -330,6 +332,14 @@ const cycle = async () => {
     const st = await page.evaluate(() => (window as unknown as { __player3d: { texs(): { refs: number } } }).__player3d.texs());
     console.log('player3d', JSON.stringify(st));
     playerRefs.push(st.refs);
+  } else if (flow === 'lookidle') {
+    // すがた open and left alone: the rAF callbacks asked for over 3 s at rest (the island's own, under the sheet, too)
+    const sheet = page.locator('dialog[open]').first();
+    await SHEETS.settings(); await sel('[data-push=look]'); await sheet.locator('[data-push=look]').click();
+    await sel('[data-look-preview][data-look-3d=on]'); await page.waitForTimeout(2000);
+    idleRafs.push(await page.evaluate(() => new Promise<number>((ok) => { const W = window as unknown as { __rafs(): number }, r0 = W.__rafs(); setTimeout(() => ok(W.__rafs() - r0), 3000); })));
+    await sheet.locator('.titlebar .back').click(); await page.waitForTimeout(300);
+    await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10_000 }); await page.waitForTimeout(1000);
   } else if (flow === 'stereo') {
     // the tent's jukebox: its song list opened, scrolled (10 songs pressed by the finger a scroll starts on, as iOS
     // gives it: a pointerdown, its pointercancel as the list scrolls), closed with ✕; the blob URLs alive after each
@@ -505,6 +515,7 @@ if (flow === 'look' || flow === 'clothes') {
     process.exitCode = 1;
   }
 }
+if (flow === 'lookidle') console.log(`rAF callbacks in 3 s, すがた at rest ${JSON.stringify(idleRafs)}`);
 // stereo: the blob URLs no more after the last list than after the first (the track's own and the two fetched ahead)
 if (flow === 'stereo') {
   console.log(`blob URLs alive by cycle ${JSON.stringify(blobsBy)}`);
