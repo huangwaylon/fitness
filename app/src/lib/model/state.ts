@@ -4,7 +4,7 @@
 import type { LocalDate, PersonId, ShopItemId, WeekKey, Who } from '#lib/types.ts';
 import { CUTOFFS } from '#lib/config/rules.ts';
 import { LIMITS, shopPrice } from '#lib/contract/rules.ts';
-import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
+import { addDays, instantOrNull, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
@@ -17,10 +17,10 @@ import { isBirth, isBmiStd, isProfileKey, isSex, PROFILE_KEYS, type BmiStd, type
 import { lookPrefRead, readSavedLooks, type SavedLook } from '#lib/contract/look.ts';
 import { goalDay } from '#lib/contract/record.ts';
 import type { TallyRow } from './tally.ts';
-import { rowAt } from './snapshot.ts';
+import { appendedTo, rowAt } from './snapshot.ts';
 import {
   BODY_BOUNDS, DATE_RE, eventSubject, EVENT_TYPES, isFind, isId, isPersonId, isWho, isActivityMetric, isBodyMetric, isWeatherMode, roundKg, WEIGHT_KG,
-  type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type SnapshotRows, type WeatherMode
+  type ActivityMetric, type BodyMetric, type EventRow, type EventType, type FindKind, type MetricRow, type SnapshotRows, type WeatherMode
 } from '#lib/contract/api.ts';
 
 export const partnerOf = (p: PersonId): PersonId => (p === 'A' ? 'B' : 'A');
@@ -231,10 +231,31 @@ type RawEvent = 'food' | 'food_repeat' | 'food_recipe' | 'food_custom';
 
 const bodyMaps = (): Record<BodyMetric, Map<LocalDate, Timed<number>[]>> => ({ body_fat_pct: new Map(), bmi: new Map(), lean_kg: new Map() });
 
+/** The last row set reduced (without queued rows) and its State: the next, when it is these rows with rows appended
+ *  (a poll's merge: snapshot.ts appendedTo), is folded from it (foldRows) instead of reduced whole. */
+let last: { rows: SnapshotRows; state: State } | null = null;
+/** How many reduces were folds (state-fold.test). */
+export const reduceStats = { folds: 0 };
+
 /** Index and validate all rows. Rows are only ever appended, so nothing here depends on "now". `queued`: the ids of
  *  rows the record hasn't kept yet (a phone's queue: its sells and buys are judged as the record will, contract/shop.ts
- *  shopLedger). */
+ *  shopLedger). Rows that extend the last set reduced by appending (a poll's, in `at` order) are folded over its State
+ *  (foldRows: the same State a whole reduce gives, without reading every row again: a 3-year record's ~110k rows were
+ *  reduced on every poll that brought one). */
 export function reduce(r: SnapshotRows, rev: string | null = null, queued?: ReadonlySet<string>): State {
+  if (queued) return reduceAll(r, rev, queued);
+  if (last) {
+    const m = appendedTo(r.metrics ?? [], last.rows.metrics ?? []), e = m && appendedTo(r.events ?? [], last.rows.events ?? []);
+    const s = m && e ? foldRows(last.state, m, e, rev) : null;
+    if (s) {
+      reduceStats.folds++;
+      return (last = { rows: r, state: s }).state;
+    }
+  }
+  return (last = { rows: r, state: reduceAll(r, rev) }).state;
+}
+
+function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<string>): State {
   const s: State = {
     metrics: { A: new Map(), B: new Map() },
     bellSpends: [],
@@ -316,14 +337,105 @@ export function reduce(r: SnapshotRows, rev: string | null = null, queued?: Read
   return s;
 }
 
+/** Whether `rows` (by their readable `at` and person, as sortedByAt reads them) all come at or after `ats`' last, in
+ *  order: then a whole reduce reads them after the base's rows, in the order given. */
+function after(rows: readonly (readonly unknown[])[], ats: readonly number[]): boolean {
+  let lastAt = ats.length ? ats[ats.length - 1] : -Infinity;
+  for (const row of rows) {
+    const at = rowAt(row, false);
+    if (at === null || !isWho(row[1])) continue;
+    if (at < lastAt) return false;
+    lastAt = at;
+  }
+  return true;
+}
+
 /**
- * `reduce` of `base`'s rows plus `events`, without reducing the base again and without touching it (a State is never
- * mutated: bells.ts caches per State): the lists the events can change are copied, the rest is shared. Only for
- * events stamped after every event of the base (the queued ones: view.ts composeModel); otherwise null.
+ * `reduce` of `base`'s rows plus the `metrics` and `events` appended to them, without reading the base's again and
+ * without touching it (a State is never mutated: bells.ts caches per State): the maps, days and lists the new rows
+ * land in are copied, the rest is shared. Each row goes through what reduceAll does with it, so the State is the one a
+ * whole reduce gives (state-fold.test). Only for rows stamped at or after their tab's last (a poll's, almost always);
+ * otherwise null (only a whole reduce orders them right).
  */
-export function foldEvents(base: State, events: readonly EventRow[], rev: string | null): State | null {
-  const baseAts = base.ats[1] ?? [];
-  const s: State = {
+function foldRows(base: State, metrics: readonly MetricRow[], events: readonly EventRow[], rev: string | null): State | null {
+  const indexed = events.filter((row) => !RAW_EVENTS.has(row[3]));
+  if (!after(metrics, base.ats[0] ?? []) || !after(indexed, base.ats[1] ?? [])) return null;
+  const s: State = events.length ? copyLists(base, rev) : { ...base, rev, ats: [base.ats[0] ?? [], base.ats[1] ?? []] };
+  s.ats = [[...s.ats[0]], s.ats[1]];
+  if (metrics.length) {
+    s.metrics = { A: base.metrics.A, B: base.metrics.B };
+    s.weights = { A: base.weights.A, B: base.weights.B };
+    s.body = { A: { ...base.body.A }, B: { ...base.body.B } };
+    s.lastSync = { ...base.lastSync };
+  }
+  // what this fold copied already (a map, a day, a list): the next row into it pushes there
+  const own = new Set<object>();
+  const mine = <T extends object>(v: T, copy: (v: T) => T): T => {
+    if (own.has(v)) return v;
+    const c = copy(v);
+    own.add(c);
+    return c;
+  };
+  const listOf = <K>(m: Map<K, Timed<number>[]>, k: K): Timed<number>[] => {
+    const l = m.get(k);
+    const c = l ? mine(l, (x) => [...x]) : mine([] as Timed<number>[], (x) => x);
+    if (c !== l) m.set(k, c);
+    return c;
+  };
+  const lastSyncMs: Record<PersonId, number> = { A: instantOrNull(base.lastSync.A) ?? -Infinity, B: instantOrNull(base.lastSync.B) ?? -Infinity };
+  for (const row of metrics) {
+    const at = rowAt(row, false);
+    const [iso, person, d, metric, v] = row;
+    if (at === null || !isWho(person)) continue;
+    s.ats[0].push(at);
+    if (!isPersonId(person)) continue;
+    const date = normDate(d);
+    const value = num(v);
+    if (!date || value === null) continue;
+    if (metric === 'weight') {
+      if (value < WEIGHT_KG.min || value > WEIGHT_KG.max) continue;
+      const m = (s.weights[person] = mine(s.weights[person], (x) => new Map(x)));
+      listOf(m, date).push({ at, v: roundKg(value) });
+    } else if (isBodyMetric(metric)) {
+      if (value < BODY_BOUNDS[metric].min || value > BODY_BOUNDS[metric].max) continue;
+      const m = (s.body[person][metric] = mine(s.body[person][metric], (x) => new Map(x)));
+      listOf(m, date).push({ at, v: roundKg(value) });
+    } else if (isActivityMetric(metric)) {
+      const m = (s.metrics[person] = mine(s.metrics[person], (x) => new Map(x)));
+      const was = m.get(date);
+      const day = was ? mine(was, (x) => ({ ...x })) : mine({} as Partial<Record<ActivityMetric, Timed<number>[]>>, (x) => x);
+      if (day !== was) m.set(date, day);
+      const list = day[metric];
+      (day[metric] = list ? mine(list, (x) => [...x]) : mine([] as Timed<number>[], (x) => x)).push({ at, v: value });
+      const wk = weekOf(date);
+      if ((s.start === null || wk < s.start) && at <= finalMs(wk)) s.start = wk;
+    } else continue;
+    if (at > lastSyncMs[person]) {
+      lastSyncMs[person] = at;
+      s.lastSync[person] = String(iso);
+    }
+  }
+  for (const row of events) {
+    const list = RAW_EVENTS.get(row[3]);
+    if (list) {
+      if (isWho(row[1])) s[list].push(row);
+      continue;
+    }
+    const at = rowAt(row, false);
+    if (at === null || !isWho(row[1])) continue;
+    s.ats[1].push(at);
+    const [, person, , type, raw] = row;
+    const d = parseData(raw);
+    if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
+    const subject = eventSubject(type, d, person);
+    if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
+  }
+  return s;
+}
+
+/** A State's copy whose event lists (and prefs, goals, the events' `ats`) may be pushed to; the rest shared. */
+function copyLists(base: State, rev: string | null): State {
+  return {
     ...base,
     bellSpends: [...base.bellSpends],
     spendVoids: [...base.spendVoids],
@@ -343,8 +455,18 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     prefs: { A: { ...base.prefs.A }, B: { ...base.prefs.B }, G: { ...base.prefs.G } },
     dailyGoals: { A: copyGoals(base.dailyGoals.A), B: copyGoals(base.dailyGoals.B) },
     rev,
-    ats: [base.ats[0] ?? [], [...baseAts]]
+    ats: [base.ats[0] ?? [], [...(base.ats[1] ?? [])]]
   };
+}
+
+/**
+ * `reduce` of `base`'s rows plus `events`, without reducing the base again and without touching it (a State is never
+ * mutated: bells.ts caches per State): the lists the events can change are copied, the rest is shared. Only for
+ * events stamped after every event of the base (the queued ones: view.ts composeModel); otherwise null.
+ */
+export function foldEvents(base: State, events: readonly EventRow[], rev: string | null): State | null {
+  const baseAts = base.ats[1] ?? [];
+  const s = copyLists(base, rev);
   let last = baseAts.length ? baseAts[baseAts.length - 1] : -Infinity;
   for (const row of events) {
     const at = rowAt(row, false);
