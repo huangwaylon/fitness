@@ -988,3 +988,12 @@ agree on, more traffic) and the host only re-sending on presence (a lost skip mi
 せってい no longer invites everyone: the lobby is local (nothing sent, a solo game sends nothing at all) until
 「みんなを さそう」; in おなじへや the first-listen bonus is off for everyone, since only the host's phone can replay. Why:
 the review's repro and the game designer's P0s (an accidental invite to the whole island; an unfair +30).
+
+### ききみみ クイズ level 4: content before its voices, hidden till its clips exist (2026-11-05)
+Level 4 「かわ・もり」 (docs/curriculum.md §14, increment 1) landed as content only: 67 real-life items (`bank4.ts`) with
+`tts`, `note`, an abstract `cast` voice id per villager and the scenario `tags`, and no audio. The lobby offers a level
+only when every item of it has a clip (`deck.ts LEVELS`), so main stays shippable while the neural TTS is chosen; the
+`say` script never speaks level 4 (the robotic voices were rejected). The protocol's quiz `lv` went from 1-3 to 1-5 at
+the same time, so the relay (which validates `lv`) is redeployed long before any phone sends 4, and 5 needs no deploy
+later. Rejected: generating `say` clips now to be replaced (the user rejected them; a level shipped with them would be
+played), a feature flag (the clips themselves are the readiness signal, nothing to forget to flip).

@@ -6,6 +6,7 @@
   import type { Who } from '#lib/types.ts';
   import { ORDER } from '#lib/kikimimi/session.ts';
   import type { Level } from '#lib/kikimimi/bank.ts';
+  import { LEVELS } from '#lib/kikimimi/deck.ts';
   import type { QuizGame } from './game.svelte.ts';
   import Host from '../characters/Host.svelte';
   import PlayerChip from './PlayerChip.svelte';
@@ -17,7 +18,6 @@
 
   let { game, onlevel }: { game: QuizGame; onlevel: (lv: Level) => void } = $props();
   const v = $derived(game.view);
-  const LEVELS: readonly Level[] = [1, 2, 3];
   /** Everyone in the lobby or on the island: joined first (A B G), then those here who haven't. */
   const people = $derived(ORDER.filter((w) => w === game.me || v.players.some((p) => p.who === w) || game.here.includes(w)));
   const joined = (w: Who) => v.players.some((p) => p.who === w);

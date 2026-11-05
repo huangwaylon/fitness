@@ -16,6 +16,7 @@
   import { QuizGame } from './game.svelte.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
   import type { Level } from '#lib/kikimimi/bank.ts';
+  import { LEVELS } from '#lib/kikimimi/deck.ts';
   import type { QuizPhase } from '#lib/kikimimi/session.ts';
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -39,7 +40,7 @@
   /** The level last played on this phone (the next lobby's). */
   const lastLv = (): Level => {
     const n = Number(localKV()?.getItem(DEVICE.kikimimiLv));
-    return n === 2 || n === 3 ? n : 1;
+    return LEVELS.find((lv) => lv === n) ?? 1;
   };
   function keepLv(lv: Level) {
     try {
