@@ -298,7 +298,7 @@ made after it carries no `l`, the switch's op keeps the light.
 - **Schema:** `SCHEMA` (the base tables, `IF NOT EXISTS`) and then `MIGRATIONS`, an ordered list run once each on the
   object's start, each step and its mark (`meta.schema_v`, the steps run; the admin `counts` says it) one transaction; a
   new table or index is a new step at the end, never an edit of one that shipped; a step that adds a derived table fills
-  it from the rows there. 1: index `events (type, person)`; 2: `metrics_latest`, filled from `metrics`.
+  it from the rows there. 1: index `events (type, person)`; 2: `metrics_latest`, filled from `metrics`; 3: `metrics_held` ([Ingest](#ingest) "Latest wins").
 - **API:** `POST /api` (`{key, action, ...}` as text/plain JSON; `ingest`, `event`,
   `snapshot`, `uploads`, `whoami`, keyless `health` → `{ok, build: 'relay-2'}`), every reply JSON with status 200;
   CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size, and that
@@ -315,6 +315,13 @@ made after it carries no `l`, the switch's op keeps the light.
   `boardAccept` / `foodAccept`). A pref the model ignores takes
   no slot. A `highfive` event (high-fives go over the room) is acknowledged and kept nowhere; an old row of one is ignored
   by the model.
+- **The shop's check** (a `sell` or a `buy`, `shopTarget`): against each person's running ledger (meta `shop|<who>`:
+  their tallies' totals less the give-backs, the give-backs, sold and fetched per species, かいがら, owed, the pieces),
+  kept in the same transaction as each tally, give-back, sell and buy (`shopNote`: a tally's change is its kept row
+  less the one it replaced; a sell or buy by the fold's own step, `contract/shop.ts shopStep`), never their history
+  (until 2026-11-05 every sale reread it: a year's 20-sale batch read ~153k rows, 112 ms; now a few). Folded from the
+  rows when it isn't there (the first sale after this deploy; after a `load`, which lets them go); the admin's
+  `shopcheck {fix?}` compares each with the full fold (`same`, `differs`, `none`) and takes the fold's with `fix`.
 - **Ingest:** `relay/src/parse.ts` and the audit row (`relay/src/audit.ts`); a day's latest
   value read from `metrics_latest` over the body's days (one row a day and metric: a 32-day body reads ≤ 32 × its
   metrics, never the history; until 2026-11-05 every row of the 32 days, ~23,000 after a month of hourly runs). `relay/test/ingest-golden.test.ts` runs a week of

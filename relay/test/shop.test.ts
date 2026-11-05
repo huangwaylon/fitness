@@ -181,3 +181,55 @@ describe('the shop in the record', () => {
     expect(buy('A', 'f3672', 6)).toEqual(refused('wallet short')); // caught, not sold yet
   });
 });
+
+describe('the shop’s running ledger (O5)', () => {
+  let now: number;
+  let db: ReturnType<typeof memSql>;
+  let store: StoreCore;
+  beforeEach(() => {
+    now = T0;
+    db = memSql();
+    store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B, KEY_C }, now: () => (now += 10), notify: () => {} });
+  });
+  let n = 0;
+  const batch = (events: { type: string; data: object }[]) =>
+    store.handle({ key: KEY_A, action: 'events', events: events.map((e) => ({ id: `r${++n}`, ...e })) }, 100) as { ok: boolean; results: { ok: boolean; detail?: string }[] };
+  const day = (i: number) => new Date(Date.parse(`${D}T00:00:00Z`) - i * 86_400_000).toISOString().slice(0, 10);
+
+  it('a sale reads the running ledger, not the history: a year of tallies and sales, then a 20-sale batch', () => {
+    // 2026-11-05 relay review O5: each sale refolded every tally and shop row (a year: 153k rows read, 112 ms)
+    for (let i = 365; i >= 1; i -= 50) {
+      batch(Array.from({ length: Math.min(50, i) }, (_, j) => ({ type: 'tally', data: { date: day(i - j), counts: { 'fish:koi': 5, 'bug:ant': 3 } } })));
+      now += 60_000;
+    }
+    for (let i = 0; i < 6; i++) {
+      batch(Array.from({ length: 50 }, () => ({ type: 'sell', data: { species: 'fish:koi', n: 1, v: K } })));
+      now += 60_000;
+    }
+    const before = db.reads();
+    const r = batch(Array.from({ length: 20 }, () => ({ type: 'sell', data: { species: 'fish:koi', n: 1, v: K } })));
+    expect(r.results.every((x) => x.ok)).toBe(true);
+    expect(db.reads() - before).toBeLessThan(20 * 10);
+    expect(store.shopCheck()).toEqual({ ok: true, A: 'same', B: 'none', G: 'none' });
+  });
+
+  it('stays the fold’s through tallies, give-backs, sells, buys and a load; the admin re-check says so and mends', () => {
+    const item = stockOf(D)[0];
+    batch([{ type: 'tally', data: { date: D, counts: { 'fish:whale-shark': 4, 'fish:koi': 1 } } }]);
+    batch([{ type: 'sell', data: { species: 'fish:whale-shark', n: 3, v: 3 * W } }]);
+    batch([{ type: 'tally', data: { date: D, counts: { 'fish:whale-shark': 5 } } }]); // merged: the day's larger counts
+    batch([{ type: 'tally_back', data: { date: D, counts: { 'fish:whale-shark': 3 } } }]); // 1 of the 3 sold owes
+    batch([{ type: 'buy', data: { item, price: buyPrice(item)!, d: D } }, { type: 'buy', data: { item, price: buyPrice(item)!, d: D } }]);
+    batch([{ type: 'tally', data: { date: day(1), counts: { 'fish:whale-shark': 2 } } }]); // the debt paid
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    store.load({ rows: { events: [[new Date(T0 + 9e6).toISOString(), 'A', 'x1', 'tally', JSON.stringify({ date: day(2), counts: { 'fish:koi': 9 } })]] } });
+    expect(store.shopCheck()).toMatchObject({ A: 'none' }); // let go: the next sale folds again
+    expect(batch([{ type: 'sell', data: { species: 'fish:koi', n: 10, v: 10 * K } }]).results[0].ok).toBe(true);
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+    // a ledger gone wrong (by hand) is found and mended
+    db.db.prepare("UPDATE meta SET v = replace(v, '\"h\":', '\"h\":1') WHERE k = 'shop|A'").run();
+    expect(store.shopCheck()).toMatchObject({ A: 'differs' });
+    expect(store.shopCheck({ fix: true })).toMatchObject({ A: 'differs' });
+    expect(store.shopCheck()).toMatchObject({ A: 'same' });
+  });
+});
