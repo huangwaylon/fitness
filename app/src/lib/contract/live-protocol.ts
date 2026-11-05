@@ -129,11 +129,12 @@ export type Intent =
    *  a list. PlayWire's ops. */
   | ({ kind: 'play' } & PlayWire);
 
-/** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone,
- *  `same` おなじへや: only the host's phone speaks), `join` / `leave` it or the game, `go` the game starts at `at`
- *  (the relay's clock), `a` my answer to question `i` (choice `k`, `rp` replayed or slowed, `s` my running total),
- *  `skip` the host's position: question `i` starts at `at` (0-8; 8: the results), sent as it changes (everyone answered,
- *  つぎへ) and every few seconds as a beacon, `end` the host cancelled it.
+/** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone, the
+ *  seed's bit 0 たいせん and bits 1-2 こたえる じかん; `same` おなじへや: only the host's phone speaks), `join` / `leave`
+ *  it or the game, `go` the game starts at `at` (the relay's clock), `a` my answer to question `i` (choice `k`, `rp`
+ *  replayed or slowed, `s` my running total), `skip` the host's position: question `i` starts at `at` (0-8; 8: the
+ *  results), sent as it changes (つぎへ) and every few seconds as a beacon; a player's `skip` is its よみおわった (`i` the
+ *  question it's in) or, the host gone, its つぎへ (`i` the next); `end` the host cancelled it.
  *  @public (kikimimi/session.ts) */
 export type QuizWire =
   | { g: string; op: 'open'; seed: number; lv: QuizLv; same: boolean }
@@ -144,8 +145,9 @@ export type QuizWire =
 /** A quiz's level: 1-3 the first bank, 4 かわ・もり (docs/curriculum.md §14), 5 room for the next without a relay deploy
  *  (a phone offers only the levels it has every clip of: kikimimi/deck.ts LEVELS). @public (kikimimi/) */
 export type QuizLv = 1 | 2 | 3 | 4 | 5;
-/** A quiz's questions (`a`'s `i` 0-7, `skip`'s 0-8), choices (`k` 0-3) and the most a game scores (8 × (100 + 30));
- *  kikimimi/deck.test.ts checks them against deck.ts and score.ts. @public (kikimimi/) */
+/** A quiz's questions (`a`'s `i` 0-7, `skip`'s 0-8), choices (`k` 0-3) and the most a game's `s` may say: 8 × (100 +
+ *  30), the first-listen bonus's days (now 100 a right answer, いっぱつ a badge: a phone from before still sends its
+ *  totals); kikimimi/deck.test.ts checks them against deck.ts and score.ts. @public (kikimimi/) */
 export const QUIZ_QS = 8;
 /** @public (kikimimi/) */
 export const QUIZ_MAX_S = 1040;

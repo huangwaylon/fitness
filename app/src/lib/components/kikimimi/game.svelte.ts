@@ -7,7 +7,7 @@
 import { BANK, clipIds, isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
 import { clipDur, clipUrl, itemDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
 import { SPEEDS, ladderPoints } from '#lib/kikimimi/ladder.ts';
-import { FAST_WINDOWS, QuizSession, isLadder, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizView } from '#lib/kikimimi/session.ts';
+import { FAST_WINDOWS, QuizSession, isLadder, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizTimer, type QuizView } from '#lib/kikimimi/session.ts';
 import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
 import { loadVoice, playVoice } from '#lib/sound/sound.svelte.ts';
@@ -60,8 +60,9 @@ export class QuizGame {
   items = $derived(this.view?.g ? itemsOf(this.view.seed, this.view.lv) : []);
   /** Question i was replayed or slowed before my answer (an answer's `rp`). */
   replayed = $state<boolean[]>([]);
-  /** A replay sounding (🔁, 🐢, the reveal's), on the relay's clock: the bubble's bar. */
-  sounding = $state.raw<{ i: number; from: number; until: number; slow: boolean } | null>(null);
+  /** A replay sounding (🔁, 🐢, the reveal's, a review row's: i -1), on the relay's clock: the bubble's bar, the
+   *  karaoke (`at` the item's id). */
+  sounding = $state.raw<{ i: number; at: string; from: number; until: number; slow: boolean } | null>(null);
   /** A dialogue's line being spoken (its speaker bobs, its karaoke runs): question i (-1: a review row), line k of item
    *  `at`, started at `from` (the relay's clock); on every phone, from the schedule (おなじへや's others hear the host's). */
   talk = $state.raw<{ i: number; k: number; at: string; from: number } | null>(null);
@@ -70,8 +71,9 @@ export class QuizGame {
   /** おなじへや on a phone that doesn't speak: 🔁 / 🐢 shown disabled (「ホストの スマホで ながれます」), and no
    *  first-listen bonus for anyone (session.ts). */
   listenOnly = $derived(!!this.view?.same && !this.view.speaks);
-  /** This game is にがて れんしゅう (a solo deck of my weak spots). */
-  practicing = $state(false);
+  /** This game is にがて れんしゅう (a solo deck of my weak spots: 'weak') or the last game's misses again ('missed'),
+   *  else false. Both are recorded as practice (the row's `p`). */
+  practicing = $state<false | 'weak' | 'missed'>(false);
   /** My answers of the last game, as recorded (the results' feedback), or null. */
   recorded = $state.raw<ListenRow | null>(null);
 
@@ -115,24 +117,25 @@ export class QuizGame {
   // ---------- taps ----------
 
   /** Open a lobby (I host it), on this phone only until `invite`. */
-  open(lv: Level, same = false, vs = false, ladder = false): void {
+  open(lv: Level, same = false, vs = false, ladder = false, timer?: QuizTimer): void {
     this.practicing = false;
-    this.#act((s, now) => s.open({ lv, same, vs, ladder }, now));
+    this.#act((s, now) => s.open({ lv, same, vs, ladder, timer }, now));
   }
-  /** にがて れんしゅう: my lobby kept alone starts at once with `items` (srs.ts practiceDeck) as its deck. */
-  practice(items: Item[]): void {
+  /** にがて れんしゅう (`kind` weak: srs.ts practiceDeck) or the misses again (missed: the last game's items I got
+   *  wrong): my lobby kept alone starts at once with `items` as its deck. Nothing on the wire. */
+  practice(items: Item[], kind: 'weak' | 'missed' = 'weak'): void {
     const v = this.view;
     if (!v?.g || v.phase !== 'lobby' || !v.local || !v.amHost || !items.length) return;
     usePractice(v.seed, v.lv as Level, items);
     this.#fetched = '';
-    this.practicing = true;
+    this.practicing = kind;
     this.go();
   }
   /** みんなを さそう: my lobby announced to everyone here. */
   invite(): void {
     this.#act((s, now) => s.invite(now));
   }
-  configure(o: { lv?: Level; same?: boolean; vs?: boolean; ladder?: boolean }): void {
+  configure(o: { lv?: Level; same?: boolean; vs?: boolean; ladder?: boolean; timer?: QuizTimer }): void {
     this.#act((s, now) => s.configure(o, now));
   }
   join(g?: string): void {
@@ -146,9 +149,13 @@ export class QuizGame {
     const i = this.view.i;
     this.#act((s, now) => s.answer(k, !!this.replayed[i], now));
   }
-  /** The host's つぎへ. */
+  /** つぎへ (the host's; anyone's once the host has gone). */
   next(): void {
     this.#act((s, now) => s.next(now));
+  }
+  /** よみおわった (a player's, in a reveal). */
+  ready(): void {
+    this.#act((s, now) => s.ready(now));
   }
   /** Leave the game (✕, やめる). */
   leave(): void {
@@ -258,12 +265,14 @@ export class QuizGame {
       this.#stopAll();
       this.#planned = null;
     }
-    const first = v.phase === 'lead' || v.phase === 'play';
-    if (first && v.speaks && !v.out && (!this.#planned || (this.#planned.at !== v.playAt && now < this.#planned.at))) {
+    // (untimed, a phone that came in after the clip: its first play now, once, not counted as a replay)
+    const late = v.phase === 'answer' && !Number.isFinite(v.limit) && !v.answers[v.i] && this.#planned?.i !== v.i;
+    const first = v.phase === 'lead' || v.phase === 'play' || late;
+    if (first && v.speaks && !v.out && (!this.#planned || (this.#planned.at !== v.playAt && now < this.#planned.at) || late)) {
       this.#planned?.h?.stop();
       const plan: { i: number; at: number; h: Handle | null } = { i: v.i, at: v.playAt, h: null };
       this.#planned = plan;
-      void this.#playSequence(it, plan.at, () => this.#planned === plan).then((h) => (plan.h = h));
+      void this.#playSequence(it, late ? null : plan.at, () => this.#planned === plan).then((h) => (plan.h = h));
       // the next question's (first) clip decoded meanwhile (the engine keeps the last 4)
       const after = items[v.i + 1];
       if (after) void loadVoice(clipUrl(clipIds(after)[0]));
@@ -293,7 +302,7 @@ export class QuizGame {
     this.#recordedG = v.g;
     const row: ListenRow = {
       d: localDateAt(now), g: v.g, lv: v.lv, n: Math.max(1, Math.min(3, v.players.length)),
-      ms: Math.max(0, Math.min(3_600_000, Math.round(now - (this.#began || now)))), ...(this.practicing && { p: 1 as const }), r
+      ms: Math.max(0, Math.min(3_600_000, Math.round(now - (this.#began || now)))), ...(this.practicing !== false && { p: 1 as const }), r
     };
     this.recorded = row;
     this.#record?.(row);
@@ -354,7 +363,7 @@ export class QuizGame {
     const h = await this.#playSequence(it, null, () => i < 0 || this.view.i === at, { slow: slow && !isDialogue(it), before: () => this.#stopAll(true) });
     if (!h) return;
     if (isDialogue(it)) this.#turns(it, i, h.from);
-    const s = { i, from: h.from, until: h.from + h.ms, slow };
+    const s = { i, at: it.id, from: h.from, until: h.from + h.ms, slow };
     this.sounding = s;
     clearTimeout(this.#soundingTimer);
     this.#soundingTimer = setTimeout(() => this.sounding === s && (this.sounding = null), h.ms + 50);

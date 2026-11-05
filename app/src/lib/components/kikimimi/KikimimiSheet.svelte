@@ -21,7 +21,7 @@
   import { heardQuiz, quizLive } from './invite.svelte.ts';
   import { BANK, levelMark, type Level } from '#lib/kikimimi/bank.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
-  import type { QuizPhase } from '#lib/kikimimi/session.ts';
+  import { TIMERS, type QuizPhase, type QuizTimer } from '#lib/kikimimi/session.ts';
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
@@ -53,6 +53,18 @@
       /* full or private: the next lobby starts at level 1 */
     }
   }
+  /** こたえる じかん last set on this phone (the next lobby's; 30 s by default). */
+  const lastTimer = (): QuizTimer => {
+    const raw = localKV()?.getItem(DEVICE.kikimimiTimer);
+    return TIMERS.find((x) => raw !== null && raw !== undefined && x === Number(raw)) ?? 30;
+  };
+  function keepTimer(timer: QuizTimer) {
+    try {
+      localKV()?.setItem(DEVICE.kikimimiTimer, String(timer));
+    } catch {
+      /* full or private: the next lobby's is 30 s */
+    }
+  }
 
   // Each opening: a game of its own (what the island heard handed to it), joined or opened (mine: on this phone till
   // みんなを さそう); closing leaves it. Who I am may come a moment after the sheet (the week's first load).
@@ -63,7 +75,7 @@
     const g = new QuizGame({ live: quizLive(), me, fast: hook('kikimimi') === 'fast', heard: heardQuiz(), record: (row) => recordGame(who, row) });
     untrack(() => {
       if (join) g.join(join);
-      else if (!g.view.invite) g.open(lastLv());
+      else if (!g.view.invite) g.open(lastLv(), false, false, false, lastTimer());
     });
     game = g;
     // (tests: `deck(ids)` starts my lobby kept alone on these items, as にがて れんしゅう does: a dialogue before its clips)
@@ -119,20 +131,31 @@
    *  back to the invite (the host's next). */
   function again() {
     if (!game || !v) return;
-    const host = v.amHost, lv = v.lv, same = v.same, vs = v.vs, ladder = v.ladder, shared = !v.local, practicing = game.practicing;
+    const host = v.amHost, lv = v.lv, same = v.same, vs = v.vs, ladder = v.ladder, timer = v.timer, shared = !v.local, practicing = game.practicing;
     game.close();
     if (host || !game.view.invite) {
-      game.open(lv as Level, same, vs, ladder);
+      game.open(lv as Level, same, vs, ladder, timer);
       if (host && shared) game.invite();
-      else if (practicing) practice();
+      else if (practicing === 'weak') practice();
     }
+  }
+  /** まちがえた もんだいを もういちど: the last game's misses as a solo deck (a lobby of mine kept alone: nothing on the
+   *  wire), its reveals untimed as every reveal, recorded as practice. */
+  function replayMissed() {
+    if (!game || !v) return;
+    const missed = game.items.filter((it, i) => v.answers[i]?.k !== it.answer);
+    if (!missed.length) return;
+    const lv = v.lv, timer = v.timer;
+    game.close();
+    game.open(lv as Level, false, false, false, timer);
+    game.practice(missed, 'missed');
   }
   /** にがて れんしゅう: my lobby kept alone starts with a deck of my weak spots (`focus`: a recommendation's). */
   function practice(focus: Focus = null) {
     const r = currentReport();
     if (!game || !r) return;
     if (game.view.ladder) game.configure({ ladder: false }); // (a quiz's: from a recommendation in スピード はしご's lobby)
-    game.practice(practiceFor(r, LEVELS, game.view.seed, focus));
+    game.practice(practiceFor(r, LEVELS, game.view.seed, focus), 'weak');
   }
   /** The lobby's tab: あそぶ or きろく (back to あそぶ whenever the lobby is left). */
   let tab = $state<'play' | 'record'>('play');
@@ -154,7 +177,7 @@
     } else practice(r.kind === 'skill' || r.kind === 'try' ? { skill: r.skill } : r.kind === 'accent' ? { accent: r.accent } : null);
   }
   function startOwn() {
-    game?.open(lastLv());
+    game?.open(lastLv(), false, false, false, lastTimer());
   }
   const hostName = (w: 'A' | 'B' | 'G') => (week.view ? villagerNameOf(week.view, w) : '');
   /** The countdown (WINDOWS.countdown, 4 s): 「よーい」 for its first second (4), then 3-2-1. */
@@ -193,7 +216,7 @@
             {#if report}<Progress {report} guest={week.guest} canStart={v.amHost && v.local} onstart={startRec} onplay={() => (tab = 'play')} />{/if}
           {/await}
         {:else}
-          <Lobby {game} onlevel={keepLv} onpractice={() => practice()} />
+          <Lobby {game} onlevel={keepLv} ontimer={keepTimer} onpractice={() => practice()} />
         {/if}
       {:else if v.phase === 'countdown'}
         <div class="center count" data-kiki-count={count}>
@@ -202,7 +225,7 @@
           {#key count}<span class="num" class:set={count > 3} aria-live="assertive">{count > 3 ? t('kiki.set') : count}</span>{/key}
         </div>
       {:else if v.phase === 'results'}
-        <Results {game} onagain={again} ondone={() => (open = false)} />
+        <Results {game} onagain={again} onmissed={replayMissed} ondone={() => (open = false)} />
       {:else}
         <Play {game} />
       {/if}

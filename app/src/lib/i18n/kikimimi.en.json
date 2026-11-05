@@ -38,7 +38,7 @@
   "kiki.timeUp": "Time's up",
   "kiki.right": "Correct!",
   "kiki.wrong": "So close!",
-  "kiki.firstTry": "First listen! +{n}",
+  "kiki.firstTry": "First listen!",
   "kiki.cheer.right": "Yay!",
   "kiki.cheer.wrong": "It's okay, on to the next!",
   "kiki.cheer.none": "You'll make the next one!",
@@ -233,5 +233,16 @@
   "kiki.rec.speed": "Get used to speed: Speed ladder",
   "kiki.rec.speedWhy": "Comfortable up to {x}× now",
   "kiki.rec.speedTry": "Try the Speed ladder",
-  "kiki.rec.speedTryWhy": "How fast can you follow?"
+  "kiki.rec.speedTryWhy": "How fast can you follow?",
+  "kiki.timer": "Answer time",
+  "kiki.timer.20": "20 s",
+  "kiki.timer.30": "30 s",
+  "kiki.timer.60": "60 s",
+  "kiki.timer.0": "None",
+  "kiki.timerNone": "Waits till everyone answers",
+  "kiki.readyTap": "Done reading",
+  "kiki.readyWait": "Done! Waiting for the host",
+  "kiki.nextReady": "Next ({n}/{m} done reading)",
+  "kiki.missedReplay": "Try the missed ones again",
+  "kiki.firstCount": "First listen: {k}"
 }

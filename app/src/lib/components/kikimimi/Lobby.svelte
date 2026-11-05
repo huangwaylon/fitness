@@ -5,8 +5,9 @@
   // 「たいせん」 (a ranking; off: co-op, the team's tally) and the host's 「はじめる（Nにん）」 (the others wait for it).
   // Over the level, the mode (once its clips exist: deck.ts LADDER_OK): クイズ or スピード はしご (its four speeds and
   // its rule in place of the level; no にがて れんしゅう, a quiz's).
+  // 「こたえる じかん」 (20 / 30 / 60 びょう / なし: the host's, the others see it; remembered on this phone) under the level.
   import type { Who } from '#lib/types.ts';
-  import { ORDER } from '#lib/kikimimi/session.ts';
+  import { ORDER, type QuizTimer } from '#lib/kikimimi/session.ts';
   import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
   import { SPEEDS, sx } from '#lib/kikimimi/ladder.ts';
@@ -19,7 +20,9 @@
   import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { game, onlevel, onpractice }: { game: QuizGame; onlevel: (lv: Level) => void; onpractice: () => void } = $props();
+  let { game, onlevel, ontimer, onpractice }: { game: QuizGame; onlevel: (lv: Level) => void; ontimer: (t: QuizTimer) => void; onpractice: () => void } = $props();
+  /** The answer windows in the order shown (none last). */
+  const TIMER_ROW: readonly QuizTimer[] = [20, 30, 60, 0];
   const v = $derived(game.view);
   /** Everyone in the lobby or on the island: joined first (A B G), then those here who haven't. */
   const people = $derived(ORDER.filter((w) => w === game.me || v.players.some((p) => p.who === w) || game.here.includes(w)));
@@ -33,6 +36,11 @@
     if (lv === v.lv) return;
     game.configure({ lv });
     onlevel(lv);
+  }
+  function timer(x: QuizTimer) {
+    if (x === v.timer) return;
+    game.configure({ timer: x });
+    ontimer(x);
   }
   function same() {
     cue(v.same ? 'toggle-off' : 'toggle-on');
@@ -89,6 +97,17 @@
     </div>
   </section>
   {/if}
+
+  <section class="sec" aria-labelledby="kk-timer">
+    <h3 id="kk-timer" class="sec-label">{t('kiki.timer')}</h3>
+    <div class="timers" role="radiogroup" aria-labelledby="kk-timer" data-kiki-timer={v.timer}>
+      {#each TIMER_ROW as x (x)}
+        <button type="button" class="tm" role="radio" aria-checked={v.timer === x} aria-disabled={!v.amHost && v.timer !== x} data-timer={x}
+          data-sfx={v.timer === x ? 'none' : 'tick'} onclick={() => v.amHost && timer(x)}>{t(`kiki.timer.${x}`)}</button>
+      {/each}
+    </div>
+    {#if v.timer === 0}<p class="hint">{t('kiki.timerNone')}</p>{/if}
+  </section>
 
   {#if !v.local}
     <section class="sec" aria-labelledby="kk-who" data-kiki-players>
@@ -155,6 +174,15 @@
   .lv[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
   .lv:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .stars { color: var(--c-coral); letter-spacing: 1px; font-size: var(--fs-s); }
+  /* こたえる じかん: one row of four (the chosen one yuzu, as a level's) */
+  .timers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .tm {
+    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill);
+    background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1.1 var(--font-ui); padding: 0 4px;
+  }
+  .tm[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
+  .tm[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
+  .tm:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   /* the chosen one's stars stay coral (the darker text coral on yuzu) */
   .lv[aria-checked='true'] .stars { color: var(--c-coral-text); }
   /* the mode: a segmented pair (the chosen one yuzu, as a level's) */
