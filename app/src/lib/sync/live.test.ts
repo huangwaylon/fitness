@@ -464,6 +464,52 @@ describe('live: the relay clock', () => {
   });
 });
 
+describe('live: the heartbeat (a room that answers it without waking)', () => {
+  /** A relay that answers the heartbeat (its fixed reply) and pings. */
+  const hbRelay = (ws: FakeWS) => {
+    ws.pongs = true;
+    const send = ws.send.bind(ws);
+    ws.send = (d: string) => {
+      send(d);
+      if (d === '{"v":3,"kind":"hb"}') ws.onmessage?.({ data: '{"v":3,"kind":"hb","t":0}' });
+    };
+  };
+
+  it('a quiet socket asks with the heartbeat when the welcome says the room has it; the clock’s timed ping every 5 minutes', async () => {
+    live.start();
+    const ws = last();
+    hbRelay(ws);
+    ws.open();
+    ws.recv({ kind: 'welcome', me: 'A', peer: true, t: Date.now(), hb: true });
+    await vi.advanceTimersByTimeAsync(2100);
+    const kinds = () => ws.sent.map((m) => m.kind).filter((k) => k === 'ping' || k === 'hb');
+    const k0 = kinds().length;
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    const k = kinds().slice(k0);
+    expect(k.filter((x) => x === 'hb').length).toBeGreaterThanOrEqual(25);
+    expect(k.filter((x) => x === 'ping')).toHaveLength(2);
+    expect(FakeWS.all).toHaveLength(1); // alive all along on the heartbeat's answers
+    expect(live.status().connected).toBe(true);
+  });
+
+  it('an unanswered heartbeat gives the socket up as a ping would; a room that doesn’t say `hb` gets pings', async () => {
+    live.start();
+    const ws = last();
+    ws.open();
+    ws.recv({ kind: 'welcome', me: 'A', peer: true, t: Date.now(), hb: true });
+    vi.advanceTimersByTime(2100);
+    vi.advanceTimersByTime(20_000);
+    expect(ws.sent.at(-1)?.kind).toBe('hb');
+    vi.advanceTimersByTime(10_000);
+    expect(ws.closed?.code).toBe(4000);
+    const ws2 = last();
+    ws2.pongs = true;
+    ws2.welcome();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(ws2.sent.some((m) => m.kind === 'hb')).toBe(false);
+  });
+});
+
 describe('live: liveness (a socket open but carrying nothing)', () => {
   const pings = (ws: FakeWS) => ws.sent.filter((m) => m.kind === 'ping').length;
 

@@ -413,7 +413,10 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   `visible` with a dead socket). A kept intent's ack is due within 5 s: overdue with nothing heard since it went, the
   socket is dead (as above); heard from (an older relay that dropped it over its limit without a word), it goes again
   on the socket, the wait doubling to 60 s; `busy {c}` resends it after a backoff (1 s doubling). Idle traffic while
-  shown: 3 pings and 3 pongs a minute on a quiet socket (was 1 and 1), none while anything else is heard. `send(intent)` is a no-op returning false unless welcomed
+  shown: 3 probes and 3 answers a minute on a quiet socket (was 1 and 1), none while anything else is heard; since
+  2026-11-05 a probe to a room whose welcome said `hb` is the heartbeat (`HB_PING`, answered by the runtime with the room
+  asleep: no duration), and a timed ping goes at most 5 minutes apart for the clock (`CLOCK_EVERY_MS`); an older room
+  gets pings as before. `send(intent)` is a no-op returning false unless welcomed
   and, for what the room doesn't keep, the partner is present; it never throws or blocks. A layout op sent with someone
   there is numbered too (2026-11-05, `isLayoutIntent`): acked, never kept, so an editor's save of 40 over the room's
   burst of 20 hears `busy` for the rest and sends them again a second on (the room acks a resend it relayed without
@@ -729,7 +732,7 @@ writes/day (unused). A generous day for two phones:
 | Source | Count/day | Worker req | DO req | DO GB-s | Rows read | Rows written |
 |---|---|---|---|---|---|---|
 | Sockets (each show of the app) | 2 × 60 | 120 | 120 | ~150 (10 s awake each, 128 MB) | | |
-| Pings (a quiet socket every 20 s while shown, 2 × 2 h) | 720 | 0 | 36 | ~900 | | |
+| Liveness (a quiet socket every 20 s while shown, 2 × 2 h): the heartbeat, answered by the runtime without waking the room (2026-11-05), and a timed ping for the clock every 5 minutes | 720 (672 heartbeats, 48 pings) | 0 | ≤ 36 | ~60 (the pings; ~900 when every probe was a ping) | | |
 | Intents kept for the day (the room's ring), nudges | ~2,000 | 0 | 100 | ~100 | | ~2,000 |
 | Record reads: snapshots (opens not current, pushes, taps; ~5 rows each; a full one is the whole compacted record: ~13k rows a year, below) | ~300 | 300 | 300 | ~30 | ~3,000 (+ ~13k per full fetch) | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
@@ -737,7 +740,7 @@ writes/day (unused). A generous day for two phones:
 | The record's compaction (the cron's 04:15 run; a Wednesday's drops the week that locked, ~2,000 rows; the other days' nothing) | 1 | 0 | 1 | ~1 | ~2,000 (that week's dates) | ~8,000 on a Wednesday, else ~0 (not in the total) |
 | The real weather (the same cron: the room's tick, a fetch at :15 and :45, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
 | The log ([observability](ops/observability.md): a `req` RPC each `/api`, the phones' batches, room closes; a row and a cap row each write, the prune 30 days on) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
-| **Total** (Free plan limit) | | **~630 (0.6 % of 100,000)** | **~1,650 (1.7 % of 100,000)** | **~1,220 (9.4 % of 13,000)** | **~22,000 (0.4 % of 5 M)** | **~7,050 (7 % of 100,000)** |
+| **Total** (Free plan limit) | | **~630 (0.6 % of 100,000)** | **~1,650 (1.7 % of 100,000)** | **~380 (2.9 % of 13,000)** | **~22,000 (0.4 % of 5 M)** | **~7,050 (7 % of 100,000)** |
 
 Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
 smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a
