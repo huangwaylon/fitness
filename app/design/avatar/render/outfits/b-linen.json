@@ -1,0 +1,40 @@
+{
+ "name": "b-linen",
+ "skin": "#f6cfa8",
+ "hair": "PlayerHair12",
+ "hairColor": "#2f241d",
+ "eye": "PlayerEye22",
+ "eyeColor": "#3d2416",
+ "mouth": "PlayerMouth01",
+ "mouthFrame": 1,
+ "nose": 0,
+ "cheek": 1,
+ "top": {
+  "mesh": "PlayerTopsOnepieceAlineH",
+  "tex": "TopsTexOnepieceAlineHLinen0",
+  "onepiece": true
+ },
+ "bottom": {
+  "mesh": "PlayerBottomsSkirtLong",
+  "tex": "BottomsTexSkirtLongDenim3"
+ },
+ "shoes": "ShoesLowcutRubbertoe7",
+ "socks": "SocksTexDailysocks1",
+ "extra": [
+  {
+   "folder": "CapOrnamentLRibbon7",
+   "rigid": true,
+   "at": [
+    0,
+    0.6,
+    -3.75
+   ],
+   "turn": [
+    1.45,
+    0,
+    0
+   ],
+   "scale": 0.75
+  }
+ ]
+}

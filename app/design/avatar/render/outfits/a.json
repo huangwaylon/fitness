@@ -1,0 +1,23 @@
+{
+ "name": "a",
+ "skin": "#f6cfa8",
+ "hair": "PlayerHair24",
+ "hairColor": "#2f241d",
+ "eye": "PlayerEye02",
+ "eyeColor": "#3d2416",
+ "mouth": "PlayerMouth01",
+ "mouthFrame": 0,
+ "nose": 0,
+ "cheek": 1,
+ "top": {
+  "mesh": "PlayerTopsTopOuterL",
+  "tex": "TopsTexTopOuterLAran3"
+ },
+ "bottom": {
+  "mesh": "PlayerBottomsPantsNormal",
+  "tex": "BottomsTexPantsNormalSlacks0"
+ },
+ "shoes": "ShoesLowcutRubbertoe7",
+ "socks": "SocksTexDailysocks1",
+ "glasses": "AccessoryGlassCircle0"
+}
