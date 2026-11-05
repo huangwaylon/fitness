@@ -109,7 +109,7 @@ const ROWS: readonly Row[] = [
     id: 'd4-meeting-room', type: 'gist', ask: '女性が 本当に 言いたいことは？', focus: 'the only room with a screen',
     lines: [
       ['molly', 'Are you using the meeting room at three?', '3時に会議室使う？'],
-      ['kid-cat', 'Yeah, why?', 'うん、なんで？'],
+      ['kid-cat', "Yeah, why? What's up?", 'うん、なんで？ どうかした？'],
       ['molly', "No reason. It's just that the client moved our call to three, and it's the only room with a screen.",
         '別に。ただ、クライアントが電話会議を3時にずらして、画面があるのはあの部屋だけなんだよね。']
     ],
@@ -167,7 +167,7 @@ const ROWS: readonly Row[] = [
     id: 'd4-squat-form', type: 'next', focus: 'sitting back',
     lines: [
       ['dom', 'Okay, ten more squats. Keep your chest up!', 'よし、スクワットあと10回。胸を張って！'],
-      ['goldie', 'Like this?', 'こう？'],
+      ['goldie', 'Like this? Is that right?', 'こう？ これで合ってる？'],
       ['dom', "Almost. You're kind of leaning forward. Try sitting back, like there's a chair behind you.", 'おしい。ちょっと前に倒れてる。後ろに椅子があるつもりで、腰を引いてみて。',
         "Almost. You're kinda leaning forward. Try sittin' back, like there's a chair behind ya."]
     ],
@@ -202,9 +202,9 @@ const ROWS: readonly Row[] = [
     id: 'd4-taxi-street', type: 'gist', ask: 'なにが おきた？', focus: 'Sorry, Street',
     lines: [
       ['cherry', 'Could you take me to Brunswick Street, please?', 'ブランズウィック通り（ストリート）までお願いします。'],
-      ['kappn', 'Brunswick Road? No worries.', 'ブランズウィック・ロードね、了解。'],
+      ['kappn', 'Brunswick Road? No worries, mate.', 'ブランズウィック・ロードね、了解。'],
       ['cherry', 'Sorry, Street. Brunswick Street, in Fitzroy.', 'すみません、ストリートです。フィッツロイのブランズウィック通り。'],
-      ['kappn', 'Ah, righto. Totally different direction. Good thing you said.', 'あー、了解。全然逆方向だ。言ってくれてよかった。', 'Ah, righto. Totally different direction. Good thing ya said.']
+      ['kappn', 'Ah, righto. Totally different direction. Good thing you said something.', 'あー、了解。全然逆方向だ。言ってくれてよかった。', 'Ah, righto. Totally different direction. Good thing ya said something.']
     ],
     choices: ['The driver nearly went to the wrong place.', "The driver doesn't know Fitzroy.", 'The passenger changed her destination.'],
     ja: '運転手が違う場所へ行くところだった。', note: 'Street と Road の聞き違いを直しただけ。行き先は同じ',
