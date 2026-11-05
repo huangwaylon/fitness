@@ -4,7 +4,7 @@
 //     --engine qwen3            the engine (default qwen3); per accent: `qwen3,au=voxcpm2` or `us=kokoro,uk=kokoro,au=qwen3`
 //                               qwen3 / voxcpm2 clone each cast voice's reference clip; kokoro uses cast.json `kokoro`
 //                               voices (US and UK only); say is the legacy macOS voice (levels 1-3 only, never 4)
-//     --levels 1,2,3,4          the levels to speak (default all; say: 1-3)
+//     --levels 1,2,3,4,5        the levels to speak (default all; say: 1-3)
 //     --only <regex>            item ids to speak (the rest keep their clips)
 //     --out <dir>               a scratch dir instead of static/: clips.json, clips.src.json and report.json land there too
 //     --force                   re-speak every selected item
@@ -29,6 +29,13 @@
 // edge silence trimmed, loudness gain to −16 LUFS (true peak ≤ −1.5 dBTP via a limiter), mono AAC ~48 kbps at 24 kHz,
 // +faststart. Levels 1-2 get `<id>-slow.m4a`: the take as spoken time-stretched to 0.75 by ffmpeg atempo (the same take,
 // not a re-synthesis; level 1's normal clips are slowed to 0.92 the same way).
+// Conditions (docs/kikimimi.md "Conditions", src/lib/kikimimi/conditions.ts): a clip with a speech condition (its `cond`,
+// or a phone or PA channel's light one: condOf) is mixed after the clean take passed the gate: a phone band and codec, a
+// voicemail's room, a PA hall with its chime, a noise bed (scripts/tts/beds/, scripts/kikimimi-beds.ts) at its SNR. The
+// condition (its plan and its bed's file hash) is part of the clip's source hash; the raw take stays cached by the clean
+// master's hash, so re-mixing never re-speaks. The strict gate runs on the clean take; the conditioned clip is only
+// checked loosely (whisper's WER ≤ the condition's bound, else flagged `cond-wer`), and UTMOS is the clean take's. The
+// clean take is kept under .cache/tts/clean/ (with the speech's offset in the mixed clip) for the karaoke's alignment.
 // QA: whisper-cli large-v3-turbo hears each clip; a content word wrong (articles and fillers aside; numbers and reductions
 // normalised) re-rolls it with the next seed, up to --retries times, then it's flagged. UTMOS (SpeechMOS utmos22) and
 // ECAPA cosine to the voice's reference (drift < 0.3 flagged) are measured. scripts/tts/report.json gets every clip's
@@ -49,6 +56,10 @@ import { BANK as ITEMS, clipItems, type Accent, type CastId, type Item } from '.
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
 import { CAST_IDS, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
+import { codecArgs, condOf, condPlan, condSource, stepFilter, type CondPlan, type Step } from '../src/lib/kikimimi/conditions.ts';
+import type { Bed } from '../src/lib/kikimimi/bank.ts';
+import { SR, chime, convolve, filter, gain, impulse, lufs, noise, readPcm, writeWav } from './tts/dsp.ts';
+import { fnv1a, mulberry32 } from '../src/lib/random.ts';
 
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const FFPROBE = process.env.FFPROBE ?? 'ffprobe';
@@ -56,6 +67,7 @@ const APP = join(import.meta.dirname, '..');
 const TTS = join(import.meta.dirname, 'tts');
 const CAST_FILE = join(TTS, 'cast.json');
 const REFS = join(TTS, 'refs');
+const BEDS = join(TTS, 'beds');
 const CACHE = resolve(process.env.KIKIMIMI_TTS_CACHE ?? join(APP, '.cache/tts'));
 const VCTK = process.env.KIKIMIMI_VCTK_REFS ?? join(CACHE, 'vctk');
 const EVAL = process.env.KIKIMIMI_TTS_EVAL;
@@ -97,6 +109,10 @@ const flag = (f: string) => args.includes(f);
 const opt = (f: string): string | undefined => (args.includes(f) ? args[args.indexOf(f) + 1] : undefined);
 /** The clip seeds: the first try's (--seed), then +1 per re-roll. */
 const SEED = Number(opt('--seed') ?? 1234);
+/** A person's re-roll kept across runs: the first take's seed of a clip whose default takes were weak (a `--seed` given
+ *  on the command line wins). */
+const PINNED: Readonly<Record<string, number>> = { 'd4-landlord-3': 2000, 'd4-taxi-street-4': 2000 };
+const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
 const RETRIES = Number(opt('--retries') ?? 5);
 /** Level 1's normal clips a touch slower (Qwen speaks L1 lines at ~205 wpm; 0.92 → ~190, `say` v1 was 160): within
@@ -125,8 +141,8 @@ function engines(spec: string): Record<Accent, Engine> {
 const ENGINE = engines(opt('--engine') ?? 'qwen3');
 const SAY = ENGINE.us === 'say';
 if (SAY && (ENGINE.uk !== 'say' || ENGINE.au !== 'say')) throw new Error('--engine say is all or nothing');
-const LEVELS = (opt('--levels') ?? (SAY ? '1,2,3' : '1,2,3,4')).split(',').map(Number);
-if (SAY && LEVELS.includes(4)) throw new Error('level 4 is never spoken by say (docs/curriculum.md §9)');
+const LEVELS = (opt('--levels') ?? (SAY ? '1,2,3' : '1,2,3,4,5')).split(',').map(Number);
+if (SAY && LEVELS.some((lv) => lv > 3)) throw new Error('levels 4-5 are never spoken by say (docs/curriculum.md §9)');
 
 const SCRATCH = opt('--out') ? resolve(opt('--out')!) : null;
 const OUT = SCRATCH ?? join(APP, 'static/audio/kikimimi');
@@ -218,6 +234,75 @@ const STRETCH = 'atempo';
 /** A trimmed WAV at another tempo (0.75: three quarters the speed), the pitch kept. */
 function stretch(wav: string, tempo: number, out: string): void {
   ff('-i', wav, '-af', `atempo=${tempo}`, '-c:a', 'pcm_f32le', out);
+}
+
+// ---- speech conditions (conditions.ts: what each does; here, how) -----------------------------------------------------
+
+const bedPcm = new Map<Bed, Float32Array>();
+/** A stretch of a bed `n` samples long from an offset picked by the clip's id (the bed loops), faded in and out. */
+function bedSegment(b: Bed, n: number, id: string): Float32Array {
+  if (!bedPcm.has(b)) bedPcm.set(b, readPcm(bedFile(b)));
+  const bed = bedPcm.get(b)!, at = fnv1a(id) % bed.length, out = new Float32Array(n), f = Math.round(0.25 * SR);
+  for (let i = 0; i < n; i++) out[i] = bed[(at + i) % bed.length] * Math.min(1, i / f, (n - 1 - i) / f);
+  return out;
+}
+/** Speech over its bed: the bed from `pre` before it to `post` after, at `snr` dB under the speech's loudness `ref`. */
+function withBed(x: Float32Array, plan: CondPlan, id: string, ref: number): Float32Array {
+  const pre = Math.round(plan.pre * SR), post = Math.round(plan.post * SR);
+  const seg = bedSegment(plan.bed!.id, pre + x.length + post, id);
+  const out = gain(seg, ref - plan.bed!.snr - lufs(seg));
+  for (let i = 0; i < x.length; i++) out[pre + i] += x[i];
+  return out;
+}
+/** A channel's steps over the speech: band and compressor steps as one ffmpeg chain, a room by convolution, a codec
+ *  round trip at 8 kHz, line hiss at its SNR. */
+function channel(x: Float32Array, steps: readonly Step[], id: string): Float32Array {
+  let y = x;
+  for (let i = 0; i < steps.length; ) {
+    const s = steps[i];
+    if (s.op === 'band' || s.op === 'comp') {
+      const run: Step[] = [];
+      while (i < steps.length && (steps[i].op === 'band' || steps[i].op === 'comp')) run.push(steps[i++]);
+      y = filter(y, run.map(stepFilter).join(','));
+      continue;
+    }
+    if (s.op === 'room') y = convolve(y, impulse(s, Math.round(s.rt60 * 100)));
+    else if (s.op === 'codec') y = filter(y, '', codecArgs(s));
+    else if (s.op === 'hiss') {
+      const h = noise(y.length, mulberry32(fnv1a(`${id}:hiss`)), 6000, 200);
+      const g = 10 ** ((lufs(y) - s.snr - lufs(h)) / 20);
+      y = y.map((v, k) => v + h[k] * g);
+    }
+    i++;
+  }
+  return y;
+}
+/** The clean take (a trimmed WAV) under its condition into `out` (a WAV); the speech's offset in it (s): the chime and
+ *  the bed's lead-in. */
+function condition(wav: string, plan: CondPlan, id: string, out: string): number {
+  let x: Float32Array = readPcm(wav);
+  const ref = lufs(x);
+  let lead = 0, head = 0;
+  if (plan.chime) {
+    const c = chime(), cg = gain(c, ref - 3 - lufs(c)), gap = Math.round(0.35 * SR);
+    const y = new Float32Array(cg.length + gap + x.length);
+    y.set(cg);
+    y.set(x, cg.length + gap);
+    x = y;
+    head = cg.length + gap;
+    lead += head / SR;
+  }
+  if (plan.bed?.at === 'source') {
+    x = withBed(x, plan, id, ref);
+    lead += plan.pre;
+  }
+  x = channel(x, plan.steps, id);
+  if (plan.bed?.at === 'listener') {
+    x = withBed(x, plan, id, lufs(x.subarray(head)));
+    lead += plan.pre;
+  }
+  writeWav(out, x);
+  return Math.round(lead * 1000) / 1000;
 }
 
 // ---- the cast's reference clips --------------------------------------------------------------------------------------
@@ -321,24 +406,33 @@ interface Plan {
   cast: CastId;
   engine: Engine;
   text: string;
+  /** The clean master's hash: the raw takes are cached by it. */
+  master: string;
+  /** The speech condition mixed over the clean take (null: clean). */
+  cond: CondPlan | null;
+  /** The clip's source hash: the master's, with its condition's. */
   src: string;
 }
+const bedFile = (b: Bed) => join(BEDS, `${b}.m4a`);
+/** The assets a condition uses (its bed's file), by hash: part of the clip's source. */
+const condAssets = (c: CondPlan): Record<string, string> => (c.bed ? { [`bed:${c.bed.id}`]: sha(readFileSync(bedFile(c.bed.id)), 10) } : {});
 function planOf(it: Item): Plan {
   const cast = castOf(it), engine = ENGINE[it.voice], entry = CASTS[cast];
   if (!entry) throw new Error(`${it.id}: no cast.json entry for ${cast}`);
   if (engine === 'say') {
     // v1's hash, so a say run keeps the shipped clips
     const text = it.tts ?? it.en, voice = sayVoice(it);
-    return { it, cast, engine, text, src: sha(JSON.stringify([text, voice, RATE[it.lv], hasSlow(it) && SAY_SLOW, 1]), 10) };
+    const src = sha(JSON.stringify([text, voice, RATE[it.lv], hasSlow(it) && SAY_SLOW, 1]), 10);
+    return { it, cast, engine, text, master: src, cond: null, src };
   }
   if (engine === 'kokoro' && !entry.kokoro) throw new Error(`${it.id}: kokoro has no ${cast} voice (no Australian voices: --engine kokoro,au=qwen3)`);
   const text = spokenText(it);
   const voice = CLONES(engine) ? [cast, refHash(cast), entry.ref.text] : [entry.kokoro];
   const tempo = it.lv === 1 ? L1_TEMPO : 1;
-  return {
-    it, cast, engine, text,
-    src: sha(JSON.stringify([engine, MODEL[engine], voice, text, SEED, hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE]), 10)
-  };
+  const master = sha(JSON.stringify([engine, MODEL[engine], voice, text, seedOf(it.id), hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE]), 10);
+  const c = condOf(it), cond = c && condPlan(c);
+  if (cond && hasSlow(it)) throw new Error(`${it.id}: no conditions at levels 1-2 (their slow clip is the clean take)`);
+  return { it, cast, engine, text, master, cond, src: condSource(master, cond, cond ? condAssets(cond) : {}) };
 }
 
 interface Take {
@@ -370,6 +464,10 @@ interface Row {
   mos?: number;
   sim?: number;
   rtf?: number;
+  /** The condition mixed over it ("pa:light"), and what whisper heard of the mixed clip (the loose check). */
+  cond?: string;
+  condHyp?: string;
+  condWer?: number;
   flags: string[];
 }
 
@@ -391,9 +489,9 @@ function speak(plans: Plan[]): Map<string, Take> {
   for (let k = 0; k <= RETRIES && todo.length; k++) {
     const takes = new Map<string, Take>();
     for (const p of todo) {
-      const seed = SEED + k;
+      const seed = seedOf(p.it.id) + k;
       takesOf.set(p.it.id, k + 1);
-      takes.set(p.it.id, { seed, raw: join(raws, `${p.src}-s${seed}.wav`), wav: join(work, `${p.it.id}-${k}.wav`), m4a: join(work, `${p.it.id}-${k}.m4a`) });
+      takes.set(p.it.id, { seed, raw: join(raws, `${p.master}-s${seed}.wav`), wav: join(work, `${p.it.id}-${k}.wav`), m4a: join(work, `${p.it.id}-${k}.m4a`) });
     }
     for (const engine of ['qwen3', 'voxcpm2', 'kokoro'] as const) {
       const jobs = todo.filter((p) => p.engine === engine && !existsSync(takes.get(p.it.id)!.raw)).map((p) => {
@@ -455,7 +553,8 @@ function printList(c: Record<string, Clip>): void {
   for (const it of [...BANK].sort((a, b) => a.lv - b.lv || a.id.localeCompare(b.id))) {
     if (it.lv !== lv) console.log(`\n== level ${(lv = it.lv)} ==`);
     const d = c[it.id]?.dur.toFixed(2) ?? '  ?  ';
-    console.log(`[ ] ${it.id.padEnd(18)} ${d}s  ${castOf(it)}  ${it.en}`);
+    const cond = condOf(it);
+    console.log(`[ ] ${it.id.padEnd(18)} ${d}s  ${castOf(it)}${cond ? `  (${condPlan(cond).key})` : ''}  ${it.en}`);
   }
 }
 
@@ -484,7 +583,7 @@ function run(): void {
     clips[p.it.id] = { dur: duration(out), hash: sha(readFileSync(out), 8), ...(slowWav && { slow: sha(readFileSync(fileOf(p.it.id, true)), 8) }) };
     srcs[p.it.id] = p.src;
     const dur = clips[p.it.id].dur, words = p.text.match(/[A-Za-z']+/g)?.length ?? 0;
-    rows[p.it.id] = { src: p.src, cast: p.cast, engine: p.engine, text: p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60), seed: SEED, tries: 1, flags: [], ...extra };
+    rows[p.it.id] = { src: p.src, cast: p.cast, engine: p.engine, text: p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60), seed: seedOf(p.it.id), tries: 1, flags: [], ...extra };
   };
   if (SAY) {
     for (const p of todo) {
@@ -499,19 +598,42 @@ function run(): void {
     }
   } else {
     const best = speak(todo);
+    // the conditions over the clean takes that passed the gate, then whisper's loose check of the mixed clips
+    const conds = todo.filter((p) => p.cond);
+    const mixed = new Map<string, string>(), leads = new Map<string, number>();
+    if (conds.length) console.log(`conditions: ${conds.length} clips`);
+    for (const p of conds) {
+      const t = best.get(p.it.id)!, w = t.wav.replace(/\.wav$/, '-c.wav'), m = t.m4a.replace(/\.m4a$/, '-c.m4a');
+      leads.set(p.it.id, condition(t.wav, p.cond!, p.it.id, w));
+      finish(w, m);
+      mixed.set(p.it.id, m);
+    }
+    const loose = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', conds.map((p) => ({ wav: mixed.get(p.it.id)!, refs: [p.it.en, p.text] })));
+    const cleanDir = dirOf(CACHE, 'clean');
     for (const p of todo) {
       const t = best.get(p.it.id)!;
       const flags = [...(t.content ? ['misheard'] : []), ...(t.sim === undefined ? [] : t.sim < 0.3 ? ['drift'] : t.sim < MIN_SIM ? ['low-sim'] : [])];
-      record(p, t.m4a, hasSlow(p.it) ? t.wav : null, {
+      const m = mixed.get(p.it.id), h = m ? loose[m] : undefined;
+      if (h && h.wer > p.cond!.maxWer) flags.push('cond-wer');
+      record(p, m ?? t.m4a, hasSlow(p.it) ? t.wav : null, {
         seed: t.seed, tries: takesOf.get(p.it.id) ?? 1, hyp: t.hyp, wer: t.wer, content: t.content, sim: t.sim, flags,
-        ...(t.gen !== undefined && t.rawDur && { rtf: Math.round((t.gen / t.rawDur) * 1000) / 1000 })
+        ...(t.gen !== undefined && t.rawDur && { rtf: Math.round((t.gen / t.rawDur) * 1000) / 1000 }),
+        ...(p.cond && h && { cond: p.cond.key, condHyp: h.hyp, condWer: h.wer,
+          wpm: Math.round(((p.text.match(/[A-Za-z']+/g)?.length ?? 0) / Math.max(duration(t.m4a) - 0.06, 0.1)) * 60) })
       });
+      // the clean take beside the mixed clip (the karaoke aligns on it: kikimimi-words.ts), or none for a clean clip
+      if (m) {
+        copyFileSync(t.m4a, join(cleanDir, `${p.it.id}.m4a`));
+        writeFileSync(join(cleanDir, `${p.it.id}.json`), JSON.stringify({ hash: clips[p.it.id].hash, lead: leads.get(p.it.id) }));
+      } else for (const x of ['m4a', 'json']) rmSync(join(cleanDir, `${p.it.id}.${x}`), { force: true });
     }
     const made = todo.map((p) => p.it.id);
     if (!flag('--no-mos')) {
-      const mos = py<number>('qa', 'mos', made.map((id) => fileOf(id)));
+      // a mixed clip's UTMOS is its clean take's (noise is the point)
+      const fileFor = (id: string) => (mixed.has(id) ? best.get(id)!.m4a : fileOf(id));
+      const mos = py<number>('qa', 'mos', made.map(fileFor));
       for (const id of made) {
-        rows[id].mos = mos[fileOf(id)];
+        rows[id].mos = mos[fileFor(id)];
         if (rows[id].mos! < 3.5) rows[id].flags.push('low-mos');
       }
     }
@@ -541,12 +663,13 @@ function run(): void {
     return [c, { n: rs.length, mos: mean(f('mos')), mosMin: min(f('mos')), sim: mean(f('sim')), simMin: min(f('sim')), misheard: rs.filter((r) => r.content).length }];
   }));
   const lvOf = new Map(ALL.map((it) => [it.id, it.lv]));
-  const wpm = Object.fromEntries([1, 2, 3, 4].map((lv) => [lv, mean(Object.entries(rows).filter(([id]) => lvOf.get(id) === lv).map(([, r]) => r.wpm))]));
+  const wpm = Object.fromEntries([1, 2, 3, 4, 5].map((lv) => [lv, mean(Object.entries(rows).filter(([id]) => lvOf.get(id) === lv).map(([, r]) => r.wpm))]));
   const summary = {
     engine: ENGINE, models: Object.fromEntries([...new Set(Object.values(ENGINE))].map((e) => [e, MODEL[e]])), pipeline: PIPELINE,
     slow: { tempo: SLOW, by: STRETCH }, l1Tempo: L1_TEMPO, at: new Date().toISOString(), wallSeconds: Math.round((Date.now() - t0) / 1000),
     spokenNow: todo.length, clips: R.length, perfect: R.filter((r) => r.wer === 0).length, contentClean: R.filter((r) => !r.content).length,
-    rerolled: R.filter((r) => r.tries > 1).length, flagged: Object.keys(rows).filter((k) => rows[k].flags.length).sort(),
+    rerolled: R.filter((r) => r.tries > 1).length, conditioned: R.filter((r) => r.cond).length,
+    condWer: mean(R.map((r) => r.condWer).filter((x): x is number => typeof x === 'number')), flagged: Object.keys(rows).filter((k) => rows[k].flags.length).sort(),
     mos: mean(num('mos')), mosMin: min(num('mos')), sim: mean(num('sim')), simMin: min(num('sim')), rtf: mean(num('rtf')), wer: mean(num('wer')),
     wpm, files: files.length, kb: Math.round(bytes / 1024), perVoice
   };
@@ -554,7 +677,8 @@ function run(): void {
   console.log(`\n${todo.length} spoken in ${summary.wallSeconds}s. All ${R.length} clips: whisper word for word ${summary.perfect}, content clean ${summary.contentClean}, re-rolled ${summary.rerolled}`);
   console.log(`UTMOS mean ${summary.mos} (min ${summary.mosMin}); similarity to the ref mean ${summary.sim} (min ${summary.simMin}); RTF ${summary.rtf}; wpm by level ${JSON.stringify(wpm)}`);
   for (const [c, v] of Object.entries(perVoice)) console.log(`  ${c}: ${v.n} clips, UTMOS ${v.mos} (min ${v.mosMin}), sim ${v.sim} (min ${v.simMin})${v.misheard ? `, ${v.misheard} misheard` : ''}`);
-  for (const [id, r] of Object.entries(rows)) if (r.flags.length) console.log(`  FLAG ${id} [${r.flags.join(', ')}] said "${r.text}", heard "${r.hyp}"`);
+  if (summary.conditioned) console.log(`conditions: ${summary.conditioned} clips mixed, whisper's WER over them mean ${summary.condWer}`);
+  for (const [id, r] of Object.entries(rows)) if (r.flags.length) console.log(`  FLAG ${id} [${r.flags.join(', ')}] said "${r.text}", heard "${r.hyp}"${r.cond ? ` (${r.cond}: "${r.condHyp}")` : ''}`);
   console.log(`${files.length} files in ${OUT}, ${(bytes / 1024).toFixed(0)} KB; report ${REPORT}`);
 }
 

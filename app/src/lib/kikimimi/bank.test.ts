@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
-import { BANK, PIC_JA, clipIds, isDialogue, jaLines, splitFocus, type ItemType, type Level } from './bank.ts';
+import { BANK, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitFocus, type ItemType, type Level } from './bank.ts';
 import { CAST } from './bank4.ts';
 import { LEVELS, MIX, mixes } from './deck.ts';
 import { CLIPS } from './clips.ts';
@@ -200,7 +200,8 @@ describe('kikimimi bank', () => {
         const c = CLIPS[id];
         expect(c, id).toBeDefined();
         expect(c.dur, id).toBeGreaterThan(0.5);
-        expect(c.dur, id).toBeLessThan(8);
+        // a PA's chime and hall add ~2.5 s; the アナウンス pack's announcements run longer
+        expect(c.dur, id).toBeLessThan(it.lv === 5 ? 18 : channelOf(it) === 'pa' ? 11 : 8);
         expect(c.hash).toMatch(/^[0-9a-f]{8}$/);
         expect(existsSync(join(STATIC, 'audio/kikimimi', `${id}.m4a`)), id).toBe(true);
         const slow = it.lv <= 2;
