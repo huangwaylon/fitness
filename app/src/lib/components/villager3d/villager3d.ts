@@ -142,6 +142,12 @@ export interface Kind {
   depth?: { back: number; front: number };
   /** A villager face's cell (faces.ts: an eye's or a mouth's) → this model's own frame. */
   cell?: (part: 'eye' | 'mouth', i: number, face: Face) => number;
+  /** The sting's lump over its own left eye (the hand the sting raises: a player's reaches its cheek), not the right. */
+  lumpLeft?: boolean;
+  /** How far in from the eyes' outer edge the lump's middle is, of their span (a villager's 0.27). */
+  lumpAt?: number;
+  /** Its size against the eyes' span (a player's face patch spans its whole face: smaller). */
+  lumpScale?: number;
   /** An action at u ms (poses.ts action's, or its own where its proportions need it). */
   action?: (a: Action, u: number) => { p: Pose; w: number };
 }
@@ -241,12 +247,13 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
   if (head && eyeBox) {
     const [a, b] = eyeBox as [Vector3, Vector3];
     const w = b.x - a.x;
-    const at = new Vector3(a.x + 0.27 * w, (a.y + b.y) / 2, b.z + 0.05 * w);
+    const k = kind.lumpAt ?? 0.27;
+    const at = new Vector3(kind.lumpLeft ? b.x - k * w : a.x + k * w, (a.y + b.y) / 2, b.z + 0.05 * w);
     // (in the model's own frame: before it's put in the scaled group)
     model.updateMatrixWorld(true);
     head.worldToLocal(at);
     lump = new Mesh(new SphereGeometry(1, 16, 12), new MeshLambertMaterial({ color: 0xf2a6b6, emissive: new Color(0xf2a6b6), emissiveIntensity: 0.25 }));
-    const r = 0.2 * w;
+    const r = 0.2 * w * (kind.lumpScale ?? 1);
     lump.scale.set(r, r * 0.85, r * 0.6);
     lump.position.copy(at);
     lump.visible = false;
