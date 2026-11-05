@@ -2,7 +2,9 @@
 // each item's clip length (`dur`, s: the schedule is computed from it) and its files' content hashes (`?v=`: audio is
 // cached first and never revalidated, so a re-spoken clip must be a new URL). Bundled with the game's chunk only.
 import raw from './clips.json';
+import aligned from './words.json';
 import { clipIds, type Item } from './bank.ts';
+import { wordSpans } from './marks.ts';
 
 export interface Clip {
   /** The normal clip's length (s). */
@@ -59,5 +61,31 @@ export function sequenceStarts(durs: readonly number[], at: number, now: number)
     out.push(start);
     t = start + ms + LINE_GAP * 1000;
   }
+  return out;
+}
+
+// ---- the karaoke's word timings -------------------------------------------------------------------------------------
+
+/** words.json (scripts/kikimimi-words.ts): a clip's words aligned by whisper, `[hash, start…, end]` in centiseconds,
+ *  one start per word of its `en` (marks.ts wordSpans); stale (another hash: the clip re-spoken) is ignored. */
+const WORDS = aligned as unknown as Readonly<Record<string, readonly [string, ...number[]]>>;
+
+/** Each word's start (s from the clip's start) and the clip's end, one per word of `en` and one more: the aligned
+ *  timings where they're for this clip, else the clip's length spread over the words by their letters (a pause after
+ *  a comma or a full stop). */
+export function wordTimes(id: string, en: string): number[] {
+  const words = wordSpans(en).map(([a, b]) => en.slice(a, b));
+  const a = WORDS[id];
+  if (a && a[0] === CLIPS[id]?.hash && a.length === words.length + 2) return (a.slice(1) as number[]).map((cs) => cs / 100);
+  const dur = CLIPS[id]?.dur ?? 2;
+  const weight = words.map((w) => w.replace(/[^\p{L}\p{N}]/gu, '').length + 1 + (/[,.?!:;…—]$/.test(w) ? 2 : 0));
+  const total = weight.reduce((x, y) => x + y, 0) || 1;
+  const out: number[] = [];
+  let t = 0;
+  for (const w of weight) {
+    out.push(Math.round(t * 100) / 100);
+    t += (w / total) * dur;
+  }
+  out.push(dur);
   return out;
 }

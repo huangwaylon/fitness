@@ -26,6 +26,8 @@
     "icons:build": "node scripts/icons.ts",
     "audio:music": "node scripts/music.ts",
     "audio:kikimimi": "node scripts/kikimimi-audio.ts",
+    "audio:kikimimi-words": "node scripts/kikimimi-words.ts",
+    "art:scenes": "node scripts/scenes/scenes.ts",
     "heads": "node scripts/heads.ts",
     "bench": "node scripts/bench-model.ts",
     "leak": "node scripts/leak-probe.ts",
