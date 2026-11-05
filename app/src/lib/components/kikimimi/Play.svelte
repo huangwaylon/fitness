@@ -1,0 +1,206 @@
+<script lang="ts">
+  // One question of ききみみ クイズ (docs/kikimimi.md "The game"): the speaker pops in (the lead-in), their bubble stays
+  // empty 「♪…」 with a bar the clip's length while it plays (the item's `ask`, or a word item's line with its blank,
+  // under it), the choices dimmed until the first play ends, then one final tap; 🔁 and 🐢 (levels 1-2) as often as
+  // wanted; each player's ✓ as they answer. The reveal: ○ on the right choice, × on a wrong pick, the English (its key
+  // words marked), the Japanese and the accent, the speaker's ✨ / 💦 and each player's, the host's つぎへ.
+  import type { QuizGame } from './game.svelte.ts';
+  import { PIC_JA, type Item } from '#lib/kikimimi/bank.ts';
+  import { points } from '#lib/kikimimi/score.ts';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import Mark from '../ui/Mark.svelte';
+  import PlayerChip from './PlayerChip.svelte';
+  import { villagerArt } from '#lib/art.ts';
+  import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
+
+  let { game }: { game: QuizGame } = $props();
+  const v = $derived(game.view);
+  const it = $derived<Item | undefined>(game.items[v.i]);
+  const reveal = $derived(v.phase === 'reveal');
+  const mine = $derived(v.answers[v.i] ?? null);
+  const right = $derived(!!mine && !!it && mine.k === it.answer);
+  /** The choices take a tap: the answer window, not answered, not sat out. */
+  const open = $derived(v.phase === 'answer' && !mine && !v.out);
+  /** 🔁 / 🐢 once the first play is over, on a phone that speaks. */
+  const canHear = $derived(v.speaks && !v.out && (v.phase === 'answer' || reveal));
+  const slowOk = $derived(v.lv <= 2);
+  const solo = $derived(v.players.length <= 1);
+  const name = (id: RosterId) => (i18n.locale === 'ja' ? ROSTER[id].nameJa : ROSTER[id].nameEn);
+
+  /** The bubble's bar: a replay sounding, else the first play (on every phone: おなじへや's others hear the host's). */
+  const bar = $derived.by(() => {
+    const s = game.sounding;
+    if (s && s.i === v.i) return { from: s.from, until: s.until, key: `r${s.from}` };
+    if (v.phase === 'play') return { from: v.playAt, until: v.playEnd, key: `p${v.i}:${v.playAt}` };
+    return null;
+  });
+  /** The `en` split around its focus (marked at the reveal; a word item's blank before it). */
+  const parts = $derived.by(() => {
+    if (!it) return null;
+    const f = it.focus, at = f ? it.en.indexOf(f) : -1;
+    return at < 0 || !f ? { pre: it.en, focus: '', post: '' } : { pre: it.en.slice(0, at), focus: f, post: it.en.slice(at + f.length) };
+  });
+
+  function chip(p: (typeof v.players)[number]): 'answered' | 'right' | 'wrong' | 'away' | null {
+    if (reveal) return p.pick ? (p.pick.ok ? 'right' : 'wrong') : null;
+    if (p.answered) return 'answered';
+    return p.here ? null : 'away';
+  }
+  /** A choice's look: mine (picked, before the reveal), right (○), wrong (my pick, ×), or none. */
+  function mark(k: number): 'mine' | 'right' | 'wrong' | null {
+    if (!it) return null;
+    if (reveal) return k === it.answer ? 'right' : mine?.k === k ? 'wrong' : null;
+    return mine?.k === k ? 'mine' : null;
+  }
+</script>
+
+{#if it}
+  <div class="q" data-kiki-q={v.i} data-type={it.type} data-phase={v.phase}>
+    {#if !solo}
+      <div class="players">
+        {#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} note={t('kiki.points', { n: p.score })} size={36} />{/each}
+      </div>
+    {/if}
+
+    <div class="stage">
+      <span class="speaker" class:pop={v.phase === 'lead'} class:talk={!!bar}>
+        <OfficialArt key={villagerArt(it.speaker, true)} alt={name(it.speaker)} size={76} eager />
+        {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
+      </span>
+      <div class="bubble" class:open={reveal} aria-live="polite">
+        {#if reveal && parts}
+          <p class="en" lang="en" data-kiki-en>{parts.pre}{#if parts.focus}<mark>{parts.focus}</mark>{/if}{parts.post}</p>
+          <p class="ja">{it.ja}</p>
+          <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
+        {:else}
+          <p class="notes" aria-label={t('kiki.listen')}>♪…</p>
+          <span class="track" aria-hidden="true">
+            {#if bar}{#key bar.key}<i style:animation-duration="{Math.max(1, bar.until - bar.from)}ms" style:animation-delay="{-Math.max(0, game.now - bar.from)}ms"></i>{/key}{/if}
+          </span>
+        {/if}
+      </div>
+    </div>
+
+    {#if !reveal}
+      {#if it.type === 'word' && parts}
+        <p class="line" lang="en">{parts.pre}<span class="blank" aria-label="____">　　　</span>{parts.post}</p>
+      {:else if it.ask}
+        <p class="ask">{it.ask}</p>
+      {/if}
+    {:else}
+      <p class="verdict" class:ok={right} data-kiki-verdict={v.out ? 'out' : right ? 'right' : mine ? 'wrong' : 'none'}>
+        {#if v.out}{t('kiki.out')}
+        {:else if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')} <b>+{points(true, mine!.rp)}</b>{#if !mine!.rp}<small>{t('kiki.firstTry')}</small>{/if}
+        {:else}<span class="sym" aria-hidden="true">×</span>{mine ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
+      </p>
+    {/if}
+
+    <div class="choices" class:pics={it.type === 'pic'} class:dim={!open && !reveal && !mine} role="group" aria-label={t('kiki.pick')}>
+      {#each it.choices as c, k (k)}
+        {@const m = mark(k)}
+        <button type="button" class="ch" data-choice={k} data-mark={m ?? undefined} aria-pressed={mine?.k === k}
+          aria-disabled={!open} aria-label={it.type === 'pic' ? (PIC_JA[c] ?? '') : undefined} data-sfx={open ? 'choice-pick' : 'none'}
+          onclick={() => open && game.answer(k)}>
+          {#if it.type === 'pic'}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={it.type === 'num' ? undefined : 'en'}>{c}</span>{/if}
+          {#if m === 'right'}<span class="sym ok" aria-hidden="true">○</span>{:else if m === 'wrong'}<span class="sym ng" aria-hidden="true">×</span>{/if}
+        </button>
+      {/each}
+    </div>
+
+    {#if v.phase === 'answer'}
+      <span class="timer" aria-hidden="true">{#key `${v.i}:${v.playEnd}`}<i style:animation-duration="{Math.max(1, v.limit - v.playEnd)}ms" style:animation-delay="{-Math.max(0, game.now - v.playEnd)}ms"></i>{/key}</span>
+    {/if}
+
+    <p class="status" role="status">
+      {#if v.out && !reveal}{t('kiki.out')}
+      {:else if mine && !reveal && !solo}{t('kiki.answered')} {t('kiki.waitOthers')}
+      {:else if v.phase === 'lead' || v.phase === 'play'}{t('kiki.listen')}{/if}
+    </p>
+  </div>
+
+  <div class="level-acts acts">
+    {#if v.speaks && !v.out}
+      <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
+      {#if slowOk}<button type="button" class="btn small paper" data-kiki-slow aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(true)}>🐢 {t('kiki.slow')}</button>{/if}
+    {/if}
+    {#if v.canNext}<button type="button" class="btn small" data-kiki-next data-sfx="confirm" onclick={() => game.next()}>{t('kiki.next')}</button>{/if}
+  </div>
+{/if}
+
+<style>
+  .q { display: grid; gap: 12px; }
+  .players { display: flex; justify-content: center; gap: 14px; }
+
+  /* the speaker and their NH bubble: the speaker's head left, the bubble's tail pointing at it */
+  .stage { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 4px 2px; }
+  .speaker { position: relative; line-height: 0; transform-origin: 50% 100%; }
+  .speaker.pop { animation: pop-in 420ms var(--ease-bounce) both; }
+  .speaker.talk { animation: bob 520ms ease-in-out infinite alternate; }
+  .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: pop-in 320ms var(--ease-bounce) both; }
+  .react :global(svg) { width: 100%; height: 100%; }
+  .bubble {
+    position: relative; min-height: 76px; display: grid; align-content: center; gap: 6px; padding: 12px 16px;
+    border-radius: 28px; background: var(--c-card); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+  }
+  .bubble::before {
+    content: ''; position: absolute; left: -9px; top: 50%; width: 20px; height: 20px; margin-top: -10px; rotate: 45deg;
+    background: var(--c-card); border-radius: 4px;
+  }
+  .notes { margin: 0; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .1em; }
+  .track { position: relative; display: block; height: 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-edge) 25%, transparent); overflow: hidden; }
+  .track i { position: absolute; inset: 0; transform-origin: 0 50%; background: var(--c-leaf); border-radius: inherit; animation: grow linear both; }
+  .en { margin: 0; font: 700 max(17px, var(--fs-talk))/1.4 var(--font-ui); position: relative; }
+  .en mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--c-yuzu) 85%, transparent) 55%); color: inherit; padding: 0 1px; }
+  .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; }
+  .accent {
+    justify-self: start; position: relative; padding: 3px 10px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink);
+    font: 700 var(--fs-xs)/1.2 var(--font-ui);
+  }
+
+  .ask, .line { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
+  .line { font-size: max(17px, var(--fs-body)); }
+  .blank { display: inline-block; min-width: 3.5em; border-bottom: 3px solid var(--text); margin: 0 4px; }
+  .verdict { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--c-coral); }
+  .verdict.ok { color: var(--leaf-text); }
+  .verdict b { font-family: var(--font-num, var(--font-ui)); }
+  .verdict small { font-size: var(--fs-s); color: var(--text-soft); }
+  .verdict .sym { font-size: 1.2em; }
+
+  .choices { display: grid; gap: 10px; transition: opacity var(--dur-quick); }
+  .choices.pics { grid-template-columns: 1fr 1fr; }
+  .choices.dim { opacity: .5; }
+  .ch {
+    appearance: none; border: 0; cursor: pointer; position: relative; min-height: 56px; padding: 10px 16px; border-radius: var(--r-card);
+    display: grid; place-items: center; background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl);
+    font: 700 max(17px, var(--fs-body))/1.3 var(--font-ui); text-align: center;
+  }
+  .pics .ch { aspect-ratio: 1.15; padding: 8px; }
+  .ch[aria-disabled='true'] { cursor: default; }
+  .ch:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .ch[data-mark='mine'] { background: var(--ctl-sel); color: var(--c-ink); }
+  .ch[data-mark='right'] { background: color-mix(in srgb, var(--c-leaf) 55%, var(--c-card)); color: var(--c-ink); box-shadow: inset 0 0 0 3px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge); }
+  .ch[data-mark='wrong'] { background: color-mix(in srgb, var(--c-coral) 30%, var(--c-card)); color: var(--c-ink); }
+  .choices:has([data-mark='right']) .ch:not([data-mark]) { opacity: .55; }
+  .ch .sym { position: absolute; top: 4px; right: 10px; font: 700 26px/1 var(--font-ui); }
+  .ch .sym.ok { color: var(--c-leaf-text, var(--c-ink)); }
+  .ch .sym.ng { color: var(--c-coral); }
+  .tx { overflow-wrap: anywhere; }
+
+  .timer { display: block; height: 6px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; }
+  .timer i { display: block; height: 100%; background: var(--c-yuzu); transform-origin: 0 50%; animation: shrink linear both; }
+  .status { min-height: 1.4em; margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
+  .acts { justify-content: center; }
+  .acts :global(.btn.small) { flex: 1 1 0; white-space: nowrap; }
+  /* つぎへ: the host's one action, its own row under 🔁 🐢 */
+  .acts :global([data-kiki-next]) { flex: 1 1 100%; min-height: var(--cta-h); font-size: var(--fs-talk); }
+
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+  @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
+  @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    .speaker.pop, .speaker.talk, .react { animation: none; }
+    .choices { transition: none; }
+  }
+</style>

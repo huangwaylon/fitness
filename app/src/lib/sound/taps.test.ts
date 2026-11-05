@@ -34,6 +34,7 @@ const SELF: Record<string, string> = {
   'lib/components/island/Balloon.svelte': 'scene-balloon',
   'lib/components/island/Scenery.svelte': 'the campsite’s door → tick as its line about today’s guest is said',
   'lib/components/layoutEdit/IslandEdit.svelte': 'tick to pick, turn or move a thing and for a tab, confirm to put it down, boop when it can\'t, undo to put away (TentEdit\'s)',
+  'lib/components/kikimimi/Lobby.svelte': 'おなじへや → toggle-on / toggle-off',
   'lib/components/homes/HomePicker.svelte': 'これにする → confirm once the new look goes out (silent while it would not fit, or nothing changed)'
 };
 
@@ -59,7 +60,9 @@ const NONE: Record<string, string> = {
   'lib/components/food/FoodRecipe.svelte': 'the recipe\'s name field: the system keyboard clicks',
   'lib/components/food/FoodCustom.svelte': 'the custom food\'s fields (name, serving, weight, kcal, nutrients): the system keyboard clicks',
   'lib/components/island/SayPicker.svelte': 'the phrase field: the system keyboard clicks',
-  'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks'
+  'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks',
+  'lib/components/kikimimi/Lobby.svelte': 'the level already chosen does nothing',
+  'lib/components/kikimimi/Play.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)'
 };
 
 /** A real `disabled` swallows the tap (no boop). Only where silence is right; elsewhere use aria-disabled. */

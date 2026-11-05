@@ -118,6 +118,8 @@ Field validation:
 - Built: `new QuizSession({me, deckOf, windows?})`, `deckOf(seed, lv)` → `{count, dur(i) (ms), answer(i)}` (the deck's interface, not the bank). In: `receive(m, now)`, `presence(here, now)`. Taps: `open({lv, same}, now)`, `configure`, `join`, `leave` (the host's lobby: `end`; a game going goes on), `end`, `go`, `answer(k, rp, now)`, `next` (つぎへ), `close`. Each returns the intents to send; `now` is the relay's clock. `view(now)` gives `{phase, i, n, from, until, playAt, playEnd, limit, out, players, answers, scores, speaks, canNext, invite, notice}`. `quizLink(live)` and `wireQuiz(session, link, changed)` do the wiring. `WINDOWS` / `FAST_WINDOWS` (`?kikimimi=fast`, on every phone: the schedule is each phone's own).
 - As built: a lobby whose host has been away 15 s is dropped (a moment's reconnect keeps it). A late `go` or `skip` > 5 s keeps its times, and the questions whose clip began before it came are sat out (`out`). The same goes for a join mid-game. The host's skip on everyone answered is `at` = its reveal's start + 8 s, sent as the reveal starts. The last question has no skip: each phone's results come after its own reveal. Players re-send `join` when someone comes back too, so a phone back from a lock knows who to wait for.
 
+- As built (phase 2): with the host gone (its `leave`, or its phone away), each phone moves on by itself once everyone left has answered: the next question at its reveal's end, nothing sent.
+
 **The demo relay.** The banner and the sheet reuse the island's existing Live (`relay ?? demoRelay`, IslandScene). They never create a second one: a second local live sends its own hi/bye.
 
 ## UI
@@ -131,6 +133,13 @@ Field validation:
   - Reduced motion is honoured.
   - `pic` choices have Japanese labels for VoiceOver, so the English isn't given away.
 - **Strings** are an `addCatalog` chunk (ja + en).
+
+- **Built (phase 2):**
+  - `components/kikimimi/KikimimiHost.svelte` + `invite.svelte.ts` (always loaded): `quiz` {mounted, open, join}, `openQuiz(join?)` (calls `voiceSession(true)` in the tap), `listenQuiz(live, invited, ended)` keeping the last 10 min of quiz intents (`heardQuiz()`, replayed into the sheet's session as it opens), the banner via `toasts.show(…, {person, low, action: さんか})`, dropped when the host ends or leaves that lobby. Mounted in IslandScene with `relay ?? demoRelay`; `quiz.open` covers the island (its 3D engine paused).
+  - `KikimimiSheet.svelte` (lazy, `Sheet` variant `pop`): from せってい a lobby of mine at once unless an invite is waiting (then the invite and 「じぶんで はじめる」); the level last played is kept (`DEVICE.kikimimiLv`). `Lobby.svelte`, `Play.svelte`, `Results.svelte`, `PlayerChip.svelte`; `game.svelte.ts` (the session wired to the Live, the deck adapter, clip scheduling and prefetch, cues `quiz-pop` / `quiz-right` / `quiz-wrong` / `quiz-end`).
+  - `Sheet.svelte` gained `ondismiss` (false keeps it open: the game's 「やめる？」).
+  - おなじへや: 🔁 / 🐢 show only on the phone that speaks (the host's); the others hear the host's replays.
+  - e2e: `app/e2e/kikimimi.spec.ts` (solo, やめる？, two players from the banner to both results).
 
 ## Performance
 
@@ -158,5 +167,5 @@ Field validation:
    - **Content and audio:** bank, deck, score, script, clips, clips.json, tests.
    - **Protocol and session:** the intent, relay test, `session.ts` (against the deck's interface), tests.
    - **Engine voice:** the engine and sound additions, the `kiki` cache class, tests.
-2. **UI:** the sheet, the settings row, the banner, the wiring, e2e.
+2. **UI:** the sheet, the settings row, the banner, the wiring, e2e. (Done 2026-11-05.)
 3. **Reviews and fixes:** English content (including a listen-through), UX on the iOS Simulator, perf and quality. Then docs.

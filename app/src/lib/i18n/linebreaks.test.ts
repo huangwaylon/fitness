@@ -4,9 +4,10 @@ import { describe, expect, it } from 'vitest';
 import jaMain from './ja.json';
 import jaTab from './kenkou.ja.json';
 import jaFood from './food.ja.json';
+import jaKiki from './kikimimi.ja.json';
 import jaNames from './catch.ja.json';
 
-const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames };
+const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaKiki };
 
 /** The longest stretch of a string with no break opportunity under keep-all, in characters ({n} counts as one). */
 function longestRun(s: string): number {

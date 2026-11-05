@@ -962,3 +962,14 @@ once (the guest: `villager`, `look: null`). No けってい: leaving keeps it, a
 throws the changes away); もどす on the stage and a 5 s とりけす after leaving cover the regret. Why: the user ("make the
 menu for customizing user and choosing villager more intuitive. maybe tabbed with shared preview of final form"); before,
 the villager was a second level sent on tap while the look was sent on leaving, two commit models on one screen.
+
+### ききみみ クイズ: a lazy sheet, a tiny invite listener (2026-11-05)
+The listening game's sheet is its own chunk (the bank, the deck, the session, its strings: ~30 KB gzipped) loaded on
+the first あそぶ or さんか; the island's first load only gains the listener and the banner (`KikimimiHost`,
+`invite.svelte.ts`, a few hundred bytes) and two strings. The listener keeps the quiz intents heard in the last 10
+minutes and hands them to the sheet's session as it opens, rather than the session living in the first load or the host
+re-sending on a sheet's opening: the relay's quiz intent is presence only, so a phone that opens the sheet later would
+otherwise never hear the lobby. The session's scoring is score.ts's (one `points`). With the host gone mid-game each
+phone moves on by itself once everyone left has answered (a reveal's length later), as no skip will come. Mid-game the
+sheet isn't closed by a backdrop tap or Esc (Sheet's `ondismiss`); ✕ asks first. Why: the user's game for several
+players, with nothing heavy before it's opened (docs/kikimimi.md "Performance").

@@ -6,6 +6,7 @@
 // re-sends when someone comes back), which the caller hands to live.send; the UI only renders `view(now)`.
 // The deck comes in through an interface (QuizDeck), never the bank itself.
 import type { Live } from '../sync/live.ts';
+import { points } from './score.ts';
 import { QUIZ_MAX_S, QUIZ_QS, type QuizLv, type QuizWire, type Relayed, type Who } from '../contract/live-protocol.ts';
 
 /** Where a game is: none (`idle`, an invite perhaps), the lobby, the 3-2-1, a question's lead-in (the villager pops
@@ -49,9 +50,6 @@ export const FAST_WINDOWS: QuizWindows = { ...WINDOWS, answer: 3000, reveal: 150
 export type QuizOut = { kind: 'quiz' } & QuizWire;
 export type QuizIn = Extract<Relayed, { kind: 'quiz' }>;
 
-/** A question's points (docs/kikimimi.md "Scoring"): right 100, and 30 more with no replay or slow play (「1かいで！」);
- *  wrong or timed out 0. 8 × 130 = QUIZ_MAX_S. */
-export const points = (right: boolean, rp: boolean): number => (right ? 100 + (rp ? 0 : 30) : 0);
 
 /** @public (UI, phase 2) An answer: the choice, whether the clip was replayed or slowed first, when it was given or heard (relay clock). */
 export interface QuizAnswer {
@@ -475,8 +473,7 @@ export class QuizSession {
   /** The host's skip to question i at `at` (applied here, sent to the others) when it's sooner than the schedule. */
   private skip(gm: Game, i: number, at: number): QuizOut[] {
     if (i >= gm.n || at >= this.start(gm, i)) return [];
-    gm.starts.set(i, at);
-    for (const j of [...gm.starts.keys()]) if (j > i) gm.starts.delete(j);
+    this.rebase(gm, i, at);
     gm.lastSkip = { i, at };
     return [{ kind: 'quiz', g: gm.g, op: 'skip', i, at }];
   }
@@ -541,8 +538,19 @@ export class QuizSession {
     const players = [...gm.joined].filter((w) => w === this.me || this.here.has(w));
     if (!players.every((w) => gm.answers.get(w)?.has(i))) return [];
     gm.allIn.set(i, now);
-    if (gm.host !== this.me || i >= gm.n - 1) return [];
-    return this.skip(gm, i + 1, this.times(gm, i).reveal + this.w.reveal);
+    if (i >= gm.n - 1) return [];
+    const at = this.times(gm, i).reveal + this.w.reveal;
+    if (gm.host === this.me) return this.skip(gm, i + 1, at);
+    // the host gone (left, or its phone away): no skip will come, so each phone moves on from its own reveal's end
+    if (!gm.joined.has(gm.host) || !this.here.has(gm.host)) this.rebase(gm, i + 1, at);
+    return [];
+  }
+
+  /** Question i starts at `at` here (sooner than the schedule), with nothing sent. */
+  private rebase(gm: Game, i: number, at: number): void {
+    if (at >= this.start(gm, i)) return;
+    gm.starts.set(i, at);
+    for (const j of [...gm.starts.keys()]) if (j > i) gm.starts.delete(j);
   }
 
   private myScore(gm: Game): number {
