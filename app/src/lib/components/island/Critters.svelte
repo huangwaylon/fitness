@@ -1525,7 +1525,7 @@
   // now (world: where each is seen now, and its water)
   onMount(() => {
     if (!hooksOn()) return;
-    (window as unknown as { __fish?: unknown }).__fish = {
+    window.__fish = {
       why: () => why,
       fish: () => allFish().flatMap((f) => {
         if (f.gone) return [];
@@ -1538,7 +1538,7 @@
       line: () => (line ? { x: line.x, z: line.z, water: line.water, phase: line.phase, landed: line.phase !== 'flying', under: line.phase === 'bite', fish: line.fish } : null),
       lines: () => Object.values(lines).map((l) => l && { who: l.who, x: l.x, z: l.z, landed: l.landed, under: l.under, id: l.id ?? null })
     };
-    return () => void delete (window as unknown as { __fish?: unknown }).__fish;
+    return () => void delete window.__fish;
   });
   onMount(() => {
     const want = hook('critter'), dive = hook('sea');

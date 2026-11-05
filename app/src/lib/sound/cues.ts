@@ -163,7 +163,6 @@ const COIN_RUN = [0, 2, 4, 7, 9, 12, 14, 16, 19] as const;
 export const coinStep = (n: number): number => COIN_RUN[Math.min(Math.max(0, n), COIN_RUN.length - 1)];
 
 /** Test hook (e2e/sound.spec.ts): an array on `window.__cues` collects every cue that passes the world/UI rule. */
-type CueLog = { __cues?: Cue[] };
 
 /** Play a moment's sound. `step`: semitones up; `gain`: × the cue's level. */
 export function cue(c: Cue, o: { step?: number; gain?: number } = {}): void {
@@ -172,7 +171,7 @@ export function cue(c: Cue, o: { step?: number; gain?: number } = {}): void {
   untrack(() => {
     const d = CUES[c];
     if (d.world && covered()) return;
-    (globalThis as CueLog).__cues?.push(c);
+    globalThis.__cues?.push(c);
     const step = (d.step ?? 0) + (o.step ?? 0);
     play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: d.delay ?? 0, rate: step ? semitones(step) : undefined });
   });

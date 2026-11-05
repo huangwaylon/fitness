@@ -329,7 +329,7 @@
   /** The e2e's view of the mode. */
   export const snapshot = () => (sel ? { ...sel, why } : null);
   $effect(() => {
-    (window as unknown as { __islandEdit?: unknown }).__islandEdit = {
+    window.__islandEdit = {
       sel: () => (sel ? { ...sel, orig: undefined, why } : null),
       ghost: () => ghost,
       screenOf: (x: number, z: number) => {
@@ -341,7 +341,7 @@
         return p ? [b.left + p[0], b.top + p[1]] : null;
       }
     };
-    return () => delete (window as unknown as { __islandEdit?: unknown }).__islandEdit;
+    return () => delete window.__islandEdit;
   });
 </script>
 

@@ -121,7 +121,7 @@ class IslandLayout {
     this.rev++;
     // the e2e's view of the layout this phone holds (dev builds and the demo)
     if (typeof window !== 'undefined' && (import.meta.env.DEV || demo))
-      (window as unknown as { __layout?: unknown }).__layout = {
+      window.__layout = {
         pos: (id: string) => this.pos(id), obj: (id: string) => this.obj(id), home: (w: Who) => this.home(w), count: (k: string) => this.ofKind(k).length,
         ids: (k: string) => this.ofKind(k).map((o) => o.id)
       };

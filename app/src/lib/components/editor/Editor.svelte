@@ -506,7 +506,7 @@
     view = zoomAt(fit, W / 2, H - 20, 0.9 / fit.s);
     window.addEventListener('keydown', onKey);
     window.addEventListener('keyup', onKeyUp);
-    (window as unknown as { __editor?: unknown }).__editor = {
+    window.__editor = {
       view: () => view, layout: () => store.current, select: (ids: string[]) => (selected = new Set(ids)), issues: () => issues, undrawn: () => undrawnList,
       screenOf: (x: number, z: number) => {
         const [sx, sy] = toScreen(view, x, z), b = canvas!.getBoundingClientRect();
@@ -525,7 +525,7 @@
       ro.disconnect();
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('keyup', onKeyUp);
-      delete (window as unknown as { __editor?: unknown }).__editor;
+      delete window.__editor;
     };
   });
 

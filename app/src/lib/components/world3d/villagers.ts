@@ -399,7 +399,6 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
 
   // the e2e's (dev builds, ?demo and the logic tier): a 3D villager's state, what it holds and its tip (three's space), and what its
   // last frame saw (its spec, the rod)
-  type Hooked = { __villagers3?: unknown };
   const hook = debug && {
     last: (slot: string) => debug.get(slot) ?? null,
     state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
@@ -423,7 +422,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     /** Its sting's swollen eye showing (the lump on its head bone). */
     stung: (slot: string) => !!ws.get(slot)?.v?.group.getObjectByName('sting-lump')?.visible
   };
-  if (hook) (window as unknown as Hooked).__villagers3 = hook;
+  if (hook) window.__villagers3 = hook;
 
   return {
     frame,
@@ -471,7 +470,7 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       }
       ws.clear();
       // (the hook holds this island: gone with it)
-      if (hook && (window as unknown as Hooked).__villagers3 === hook) delete (window as unknown as Hooked).__villagers3;
+      if (hook && window.__villagers3 === hook) delete window.__villagers3;
     }
   };
 }

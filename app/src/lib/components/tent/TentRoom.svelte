@@ -660,7 +660,7 @@
       own?.stop();
       eng?.dispose();
       eng = null;
-      delete (window as unknown as { __tent?: unknown }).__tent;
+      delete window.__tent;
     };
   });
 
@@ -680,7 +680,7 @@
   /** The e2e's and the console's hooks (dev builds, ?demo, and the e2e's logic mode: a paired phone on a test record). */
   function hooks() {
     if (!import.meta.env.DEV && !new URLSearchParams(location.search).has('demo') && !drawOff()) return;
-    (window as unknown as { __tent?: unknown }).__tent = {
+    window.__tent = {
       stats: () => eng?.stats(),
       loading: () => eng?.loading() ?? 0,
       mine: () => eng?.at(me),

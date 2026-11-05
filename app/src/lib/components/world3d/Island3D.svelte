@@ -958,8 +958,7 @@
       world.invalidate();
     });
     ro.observe(canvas);
-    const W = window as unknown as { __world3d?: unknown };
-    W.__world3d = {
+    window.__world3d = {
       stats: () => e.stats(), view: () => e.view(), limits: () => e.limits(), loaded: () => loaded && !e.stats().loading,
       go: (z: number, k?: number, x?: number) => e.go(z, k, false, x), pan: (dy: number, dx?: number) => (e.touching(true), e.pan(dy, dx), e.touching(false)), xRoom: (k?: number) => e.xRoom(k), zoomRange: () => e.zoomRange(),
       zoom: (f: number) => e.zoom(f), fling: (vy: number, vx?: number) => e.fling(vy, vx),
@@ -1035,7 +1034,7 @@
       world.useThree(null);
       e.dispose();
       eng = null;
-      delete W.__world3d;
+      delete window.__world3d;
     };
   });
 </script>

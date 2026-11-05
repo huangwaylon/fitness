@@ -834,8 +834,7 @@ export class Engine {
       this.#ambient.set(key, { src, gain: g });
     }
     // test hook (e2e/weather.spec.ts): the layers sounding, when the page set an array there
-    const log = globalThis as { __ambient?: string[] };
-    if (log.__ambient && token === this.#ambientToken) log.__ambient = [...this.#ambient.keys()];
+    if (globalThis.__ambient && token === this.#ambientToken) globalThis.__ambient = [...this.#ambient.keys()];
   }
 
   /** The page went to the background (or the phone locked): silence at once and let the hardware sleep. The front

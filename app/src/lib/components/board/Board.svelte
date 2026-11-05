@@ -103,13 +103,12 @@
 
   // ---- the e2e's hook: what the face drew, and where it is in 3D ----
   onMount(() => {
-    const W = window as unknown as { __board?: unknown };
-    W.__board = {
+    window.__board = {
       drawn: () => drawn,
       /** The 3D face's place in the scene (null: none, or not in it). */
       face3: () => face3?.box() ?? null
     };
-    return () => void delete W.__board;
+    return () => void delete window.__board;
   });
 
   // ---- the bird: a tiny idle (it looks about now and then) ----
