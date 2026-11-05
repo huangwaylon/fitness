@@ -279,6 +279,48 @@ Each game reuses ききみみ's seeded deck, host clock, presence intents and la
 | 13 | **つり ききわけ** (minimal-pair fishing) | phonemes | solo | S–M | floor only |
 | — | ラベルの コーデ, ケケの チャント, Redd's fakes | — | — | — | parked (low transfer, fragile timing) |
 
+### 7.1 New modes from the second team round (2026-11-06)
+
+The learning scientist (`/tmp/modes/science.md`), the EFL teacher with the curriculum designer (`teaching.md`) and the game designer with the Japanese panel (`games.md`) proposed 24 modes. Duplicates are merged here and ranked by learning value × fun × cost. All of them run on the increment 8 framework (`GameDef`).
+
+**Tier 1: build first. Cheap and high value, they reuse content or generate it from templates.**
+
+| Mode | What it is | Why |
+|---|---|---|
+| **しずえの しゅうまつ たいかい** | A Sunday quiz show built from the week's misses: interleaved (まぜまぜ), levelled per player so the B1+ partner can win, with a confidence wager round (かけて ききみみ: bet かいがら on how sure you are) | Retrieval + spacing + interleaving + hypercorrection; a weekly ritual; the panel's top pick with the bedtime story |
+| **おやすみ ものがたり** | A bedtime story in the tent: no score, a sleep timer, chapters (the serial's form) | Extensive listening at 95%+ comprehension; the panel: 「これは毎日やる」 |
+| **すうじ ラッシュ** | A café rush of orders full of numbers and dates with mid-stream corrections | Numbers under pressure; fully template-generated |
+| **よみきき サンド** | Listen blind → read the transcript → listen blind again, over any item | Vandergrift's metacognitive cycle; no new content |
+| **みんなで ディクトグロス** | Co-op: hear a 20–40 s passage twice, rebuild it together on one tile board | Merged into ことば タイル (increment 10) as its co-op mode |
+
+**Tier 2: next. Medium effort, strong curriculum fit.**
+- **トーン あて:** one line said sincere / sarcastic / resigned; match each to a face or to what happens next. Risk: test first whether the Qwen clone can vary tone on demand.
+- **うわさの でんごん:** a rumour drifting over 4 villagers; tap what changed. Narrow listening over many voices.
+- **めいたんてい フータ:** a museum whodunit; cross-examine alibis and spot the contradiction.
+- **かいぎの ぎじろく:** a video-call meeting; fill the minutes: decisions, owners, deadlines, objections.
+- **ざつだん パーティ:** small talk and turn-taking; tap when the turn is really yours.
+- **いいまわし ずかん + なかよし:** an idiom and phrasal-verb museum answered by consequence, plus villager friendship that grows as you understand them. The meta layer over every mode; friendship never drops.
+- **ピーッ！ かいしゅう:** an earlier line replays with a bleep over the idiom to recall. Folded into the SRS fold (increment 12).
+- **でんごん リレー:** one hears a call and tells the other what to do. Folded into ふたりで ジグソー (increment 19).
+
+**Tier 3: later or seasonal.**
+- とたけけの よふかしラジオ (a call-in show);
+- いっしょに クッキング (recipes, tied to the food log);
+- ウィスプの なぞとき (a seasonal audio escape room);
+- わらいどころ (sitcom banter; humour is hard for TTS);
+- フータの ノート (folded into long-form, increment 17);
+- おなじ はなし、3にん (folded into たちぎき / long-form as an accent variant).
+
+**Cut or parked, with reasons:**
+- minimal-pair fishing: barely transfers at TOEIC 700+;
+- riddles: no clear listening target;
+- karaoke and the K.K. chant: song research is about recall, and singing is embarrassing (the panel);
+- mic-based modes (アフレコ, まねっこ エコー): strong evidence (Hamada's shadowing studies), but iOS mic fragility and embarrassment. Revisit only as a private, unscored option.
+
+**Two design changes the scientist flagged:**
+- the speed ladder must reward rungs climbed in order and stop at the first miss, not pay out top-heavy;
+- the 「いっぱつ」 +30 bonus discourages replaying, which helps learning. To decide with the user: keep, shrink, or replace it with a badge.
+
 ## 8. The visual system
 
 Everything uses the app's paper theme (cream paper, rounded cards, the NH brown ink, soft drop shadows) and stays lazy-loaded.
