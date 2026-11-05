@@ -30,7 +30,9 @@ const ALLOW: Record<string, string[]> = {
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],
   sound: ['types', 'time', 'sync', 'i18n', 'random'],
-  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'random']
+  // ききみみ クイズ (docs/kikimimi.md): the session's pure state machine over the quiz intent (sync: the Live's type)
+  kikimimi: ['types', 'contract', 'sync'],
+  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random']
 };
 
 function files(dir: string): string[] {
