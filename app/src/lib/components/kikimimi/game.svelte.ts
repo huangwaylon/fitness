@@ -5,7 +5,6 @@
 // each line scheduled on the relay's clock after the one before, LINE_GAP apart; the session's schedule has their summed
 // length, clips.ts itemDur). Loaded with the sheet only.
 import { BANK, clipIds, isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
-import { deck } from '#lib/kikimimi/deck.ts';
 import { clipDur, clipUrl, itemDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
 import { FAST_WINDOWS, QuizSession, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizView } from '#lib/kikimimi/session.ts';
 import type { Live } from '#lib/sync/live.ts';
@@ -17,26 +16,7 @@ import { localDateAt } from '#lib/contract/tokyo.ts';
 import type { ListenRow } from '#lib/contract/listen.ts';
 import { listenAnswers } from '#lib/kikimimi/progress.ts';
 import { preloadStage } from './scene/stage.ts';
-
-/** The last decks built (the session's and the UI's are the same items), by seed and level. */
-const decks = new Map<string, Item[]>();
-function itemsOf(seed: number, lv: Level): Item[] {
-  const key = `${seed}:${lv}`;
-  let d = decks.get(key);
-  if (!d) {
-    d = deck(seed, lv);
-    decks.set(key, d);
-    while (decks.size > 2) decks.delete(decks.keys().next().value!);
-  }
-  return d;
-}
-
-/** にがて れんしゅう's deck (srs.ts practiceDeck) for a lobby of mine kept alone: its seed and level stand for it, as a
- *  shared deck's would (nothing goes on the wire). */
-function usePractice(seed: number, lv: Level, items: Item[]): void {
-  decks.delete(`${seed}:${lv}`);
-  decks.set(`${seed}:${lv}`, items);
-}
+import { itemsOf, pinDeck, usePractice } from './decks.ts';
 
 /** The deck as the session sees it: how many, each item's length as played (ms, clips.json: a dialogue's lines and
  *  the gaps) and its right choice. Read through at each call: にがて れんしゅう puts its own items in before the start
@@ -235,6 +215,8 @@ export class QuizGame {
       this.#rp = [];
       this.#began = 0;
     }
+    // the game I'm in keeps its deck whatever other phones' lobbies build (decks.ts)
+    pinDeck(v.g ? v.seed : null, v.lv as Level);
     if (v.g && v.phase !== 'lobby' && v.phase !== 'idle' && !this.#began) this.#began = now;
     if (v.phase === 'results' && v.g) this.#keep(v, now, true);
     this.view = v;
