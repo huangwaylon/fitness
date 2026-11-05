@@ -976,7 +976,8 @@ NH).
 - **Tap or shake:** on a goal tree one tap on it (its canopy or its trunk) opens or closes the popup; on any other
   tree a tap on its leaves or its trunk (Scenery's `data-tree` hit areas, down to its base: the ground further round it
   stays the ground's; [Tap targets](#scene-interactions)) rustles it. The third tap
-  within 1.2 s (and each quick tap after) is a shake: a goal tree's popup closes, the tree shakes where it stands and
+  within 1.2 s (and each quick tap after) is a shake (on a goal tree its fruit row, lying over the trunk's base, counts
+  too when the tap isn't on a fallen fruit: a tap there is the trunk's, 2026-11-05): a goal tree's popup closes, the tree shakes where it stands and
   rustles (`tree-shake`), my villager turning to it (no walk).
 - **What falls, by the kind of tree (NH's):** a hardwood (an oak, a goal tree) or a cedar: 1 in 8 a wasp nest, else 1
   in 7 a dangling bug, else 1 in 5 a branch (it lies beside the trunk until a tap picks it up, into my pocket). A palm:

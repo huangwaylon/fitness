@@ -15,7 +15,8 @@
   // goal at 1.5×, at most +2; 「（上限 2）」 when more were reached), this person's total (「うめの きょう +6 ベル」),
   // then ふたりでぜんぶ (both people, all four goals: +2, shared: shown in both popups, so ウェイ + うめ + ふたりでぜんぶ
   // is today's total, ごほうび's 「きょう +N ベル」) and when the data last arrived. It stays until this tree is tapped again, the other
-  // tree is tapped, or a tap lands elsewhere. A quick run of canopy taps (the third within 1.2 s, and each quick tap after) is NH's shake instead: the
+  // tree is tapped, or a tap lands elsewhere. A quick run of canopy taps (the third within 1.2 s, and each quick tap after; the trunk's and the fruit row's off a
+  // fallen fruit count too: the row lies over the trunk's base) is NH's shake instead: the
   // popup closes, the tree rustles and `onshake` asks the scene what falls (treeShake.ts: a branch, now and then a wasp
   // nest). `shakeN` (bumped by idle life) shakes the tree without the popup; `celebrate` sparkles a fruit.
   import { pickUp } from '../motion/transitions.ts';
@@ -260,13 +261,14 @@
   });
 
   /** A tap on the canopy (or the row with nothing to pick up): closes this tree's popup if it's open, else opens it (the
-   *  canopy shakes the tree; the row highlights its nearest fruit). */
+   *  canopy shakes the tree; the row highlights its nearest fruit). `run`: it counts toward a quick run's shake (the
+   *  canopy's, the trunk's, and the row's off a fallen fruit: the row lies over the trunk's base). */
   let canopyTaps: number[] = [];
-  function tap(f: RingFruit | null, canopy = f === null) {
-    if (canopy) {
-      const run = shakeTap(canopyTaps, Date.now());
-      canopyTaps = run.taps;
-      if (run.shake) {
+  function tap(f: RingFruit | null, canopy = f === null, run = canopy) {
+    if (run) {
+      const r = shakeTap(canopyTaps, Date.now());
+      canopyTaps = r.taps;
+      if (r.shake) {
         if (open) ontoggle?.(false);
         shake(true);
         return onshake?.();
@@ -297,7 +299,8 @@
       const g = near(ground);
       if (Math.abs(g.gx - px) <= Math.max(22, 22 / k)) return collect(g.f);
     }
-    tap(near(spots).f);
+    // (off a fruit: over the trunk's base, so it counts toward a shake as the trunk's own tap would)
+    tap(near(spots).f, false, true);
   }
 
   /** {@attach}: the popup in screen space (docs/design.md "Trees"): over every tint and weather (never dimmed), in the
@@ -445,7 +448,7 @@
 <div class="node" {@attach w.at({ x: (rowL + rowR) / 2, z: rowZ, h: 30, dz: -40, inv: true })}>
   <button type="button" class="row-btn" style:left={u(-(rowR - rowL) / 2)} style:top={u(-FRUIT_U * 0.5)} style:width={u(rowR - rowL)}
     aria-label={ground.length ? t(`tree.pick.${ground[0].f}`) : label} aria-expanded={open} aria-controls={detailId}
-    tabindex={ground.length ? 0 : -1} data-sfx="self" onclick={rowTap}></button>
+    tabindex={ground.length ? 0 : -1} data-sfx="self" data-tree-row={person.person} onclick={rowTap}></button>
 </div>
 
 {#each fx as e (e.n)}
