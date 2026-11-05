@@ -904,7 +904,7 @@
     };
     world.useThree(proj);
     let camWas = NaN, horizonWas = NaN, revWas = -1;
-    vil3 = createVillagers((o) => e.add(o), dirs.villagers, () => e.kick());
+    vil3 = createVillagers((o) => e.add(o), dirs.villagers, () => e.kick(), e.things);
     // the 2D heads' portraits of the players' looks (the partner's, one never opened in すがた here): drawn through this
     // renderer when the island is idle
     painter = createPainter(e.renderer(), dirs.player, () => e.idle() || e.isPaused(), () => e.kick());
@@ -987,7 +987,7 @@
         return e.groundAt(cx - r.left, cy - r.top);
       },
       away: (x: number, z: number) => inFocusWay(x, z), camStill: () => e.camStill(), idle: () => e.idle(), fxWarmed: () => e.fxWarmed(), fx: (kind: FxKind, x: number, z: number, lift?: number, o?: Parameters<typeof e.fx>[4]) => e.fx(kind, x, z, lift, o), strays: (reach?: number) => e.strays(reach), alphaBlends: () => e.alphaBlends(),
-      things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o), head: (slot: string) => { const h = vil3?.head(slot); if (!h) return null; const p = h.getWorldPosition(new Vector3()); return [p.x, p.y, p.z]; },
+      things: (id: string) => e.things.has(id), where: (id: string) => e.things.where(id), part: (id: string, name: string) => e.things.part(id, name), groups: () => e.things.groups(), over: (id: string, o: Parameters<typeof e.things.over>[1]) => e.things.over(id, o), head: (slot: string) => { const h = vil3?.head(slot); if (!h) return null; const p = h.getWorldPosition(new Vector3()); return [p.x, p.y, p.z]; },
       focus: (x: number, z: number, lift?: number) => e.focusOn({ x, z, lift }), restore: () => e.restore(),
       /** The water's surface and what's under it at world (x, z) (a fish's shadow is drawn between them). */
       water: (x: number, z: number) => [waterY(x, z), bedY(x, z)],

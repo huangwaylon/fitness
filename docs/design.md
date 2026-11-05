@@ -1249,7 +1249,19 @@ decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: l
   jabbing at the bag from its side, bouncing on the ball, pull-ups at the bar, its chin over the bar at the top); a tap
   on the ground gets it off. One villager a piece (taken: a `boop`), the earlier on it keeping it, and nothing new on the
   relay: as a seat, standing still on its spot is on it, so every phone draws the same (`e2e/gym.spec.ts`). Asleep on one
-  it dozes. The rest are to look at (a tap jiggles them). **Cost:** a piece is the decorations' instanced model (a
+  it dozes. **The bench's bar is pressed** (the user: "can we make them bench-press the barbell?"): NH's bench has its
+  barbell baked into its one mesh, but as pieces of their own, so the conversion lifts them out as the GLB's `bar` node
+  (docs/world3d-assets.md "Parts split out"); lain down (420 ms), the bar leaves the rack for the hands (GRAB_MS 520),
+  rides them each frame (its middle the two hand bones' middle, its length along them: villager3d `hands()`,
+  world3d/benchBar.ts, no allocation) through poses.ts `press` (1.8 s a rep: up 0.72 s, a pause at the top, down 0.81 s,
+  the elbows bending on the way down), and goes back onto the rack as it gets up (RACK_MS 420) or dozes off. Villagers
+  and human players alike (the same Hand_L / Hand_R bones). Nothing new on the relay: the use is the seat's, so both
+  phones draw the same; nobody on it, the bar is on the rack as before. Cost: while one presses, +1 draw call (its bar on
+  its own, no shadow), one matrix a frame; at rest none (the bar is the bench's instanced part: +1 draw for all benches).
+  e2e/gym.spec.ts (the bar at the hands over a rep, on both phones; up, racked); benchBar.test.ts (the split's node and
+  bounds, the blend). iOS Simulator (own iPhone 16, iOS 26.5, local build): the bar at the hands' middle (0 u off)
+  through the rep, player and villager, back on the rack once up; 197–208 calls, CPU 1–3 ms. The rest are to look at
+  (a tap jiggles them). **Cost:** a piece is the decorations' instanced model (a
   repeated one adds no draw); its use is the villager's own pose, stepped at the island's ambient rate (the frames it
   draws anyway while a villager shows: `villager3d` `looping()`), never the full one. iOS Simulator (own iPhone 16, iOS
   26.5, local build, the demo island at noon, the camera on the gym): ten pieces placed (two bikes, two treadmills, the

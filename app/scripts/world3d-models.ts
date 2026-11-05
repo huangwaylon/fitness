@@ -66,6 +66,9 @@ interface Job {
   noAo?: boolean;
   /** Not NH's: one of scripts/world3d-fx.ts's stylised effects (a sparkle, a splash). */
   fx?: Fx;
+  /** A part lifted out as its own node, the same material (scripts/world3d-page.js splitOff): the connected pieces of
+   *  the mesh wholly above `above` (model units), named `name`, their middle the node's spot (its extras' `rest`). */
+  split?: { name: string; above: number };
   /** The art keys it serves (scripts/world3d-assets.ts: the island's things, into assets.json; not the POC's models.json). */
   uses?: Use[];
 }
@@ -209,7 +212,9 @@ await page.route('http://w3d.local/**', (route) => {
 await page.goto('http://w3d.local/');
 await page.waitForFunction(() => (window as unknown as { ready?: boolean }).ready);
 
-interface Meta { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1 }
+/** A part lifted out (Job `split`): its node's name, where it rests (model units: its middle), its long axis and length. */
+interface Part { name: string; rest: number[]; axis: 'x' | 'y' | 'z'; len: number; tris: number }
+interface Meta { min: number[]; max: number[]; tris: number; kb: number; v: string; lit?: 1; part?: Omit<Part, 'tris'> }
 const metas: Record<string, Meta> = existsSync(META) ? (JSON.parse(readFileSync(META, 'utf8')) as { models: Record<string, Meta> }).models : {};
 const ASSET_META = join(dirname(META), 'assets.json');
 /** The island's things' models (assets.json `models`; the POC's stay in models.json too). */
@@ -217,9 +222,9 @@ const assetMetas: Record<string, Meta> = existsSync(ASSET_META) ? (JSON.parse(re
 let total = 0;
 for (const j of todo) {
   const files = [...j.tex!, ...new Set(j.parts.map((p) => p[0]))].map((f) => [F(f), readdirSync(join(scratch, F(f)))]);
-  const r = j.fx ? { ...fxGltf(j.fx), lit: j.fx === 'flame' } : await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean }> }).convert(o), {
+  const r = j.fx ? { ...fxGltf(j.fx), lit: j.fx === 'flame' } : await page.evaluate((o) => (window as unknown as { convert: (o: unknown) => Promise<{ gltf: string; box: [number[], number[]]; tris: number; lit: boolean; split: Part | null }> }).convert(o), {
     parts: j.parts.map(([f, d, at]) => ({ folder: F(f), dae: `${d}.dae`, at })), files, maxTex: j.maxTex ?? 256, maxEmi: 128,
-    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant, noAo: j.noAo
+    grdRow: j.grdRow, grdRows: j.grdRows, grdBlock: j.grdBlock, hide: j.hide, alias: j.alias, flat: j.flat, pose: j.pose, grdFile: j.grdFile, snow: j.snow, variant: j.variant, noAo: j.noAo, split: j.split
   });
   const g = JSON.parse(r.gltf) as { buffers: { uri: string }[]; images?: { uri?: string; mimeType?: string }[]; textures?: { source?: number; extensions?: object }[]; extensionsUsed?: string[]; extensionsRequired?: string[] };
   const dir = join(work, j.name);
@@ -249,11 +254,14 @@ for (const j of todo) {
   mkdirSync(dirname(out), { recursive: true });
   const max = j.tris ?? TRIS;
   const si = r.tris > max ? ['-si', (max / r.tris).toFixed(3)] : [];
-  execFileSync('node', [GLTFPACK, '-i', join(dir, 'm.gltf'), '-o', out, '-cc', '-ce', 'ext', ...si]);
+  // (a lifted part's node and its extras kept: not merged into the rest)
+  const split = 'split' in r ? r.split : null, keep = j.split ? ['-kn', '-ke'] : [];
+  if (j.split && !split) throw new Error(`${j.name}: nothing above ${j.split.above} to lift out`);
+  execFileSync('node', [GLTFPACK, '-i', join(dir, 'm.gltf'), '-o', out, '-cc', '-ce', 'ext', ...keep, ...si]);
   const bytes = statSync(out).size;
   total += bytes;
   const v = createHash('sha256').update(readFileSync(out)).digest('hex').slice(0, 8);
-  (j.uses ? assetMetas : metas)[j.name] = { min: r.box[0].map((n) => +n.toFixed(2)), max: r.box[1].map((n) => +n.toFixed(2)), tris: Math.min(r.tris, max), kb: +(bytes / 1024).toFixed(1), v, ...(r.lit ? { lit: 1 as const } : {}) };
+  (j.uses ? assetMetas : metas)[j.name] = { min: r.box[0].map((n) => +n.toFixed(2)), max: r.box[1].map((n) => +n.toFixed(2)), tris: Math.min(r.tris, max), kb: +(bytes / 1024).toFixed(1), v, ...(r.lit ? { lit: 1 as const } : {}), ...(split ? { part: { name: split.name, rest: split.rest, axis: split.axis, len: split.len } } : {}) };
   if (process.env.PARTS) console.log(JSON.stringify((r as unknown as { parts: unknown }).parts));
   console.log(`${j.name}: ${(bytes / 1024).toFixed(1)} KB, ${r.tris} tris${si.length ? ` → ${max}` : ''}${r.lit ? ', lit' : ''}, h ${(r.box[1][1] - r.box[0][1]).toFixed(1)}`);
 }

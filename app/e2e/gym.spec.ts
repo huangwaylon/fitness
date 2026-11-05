@@ -4,7 +4,7 @@
 // standing still on its spot is on it, island/sitting.ts).
 import { expect, test, type Page } from '@playwright/test';
 import { fromMenu, hudMenu } from './hud.ts';
-import { geo, tapOn } from './island.ts';
+import { geo, openNear, tapOn } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 const DATE = '2026-11-04T12:00';
@@ -92,4 +92,65 @@ test('the default island\'s pull-up bar is the gym\'s: a tap walks up to it and 
   await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { idle(): boolean } }).__world.idle()), { timeout: 5000 }).toBe(true);
   await tapOn(page, page.locator('[data-sit="pullup"]'));
   await expect.poll(() => v3(page, 'mine'), { timeout: 15_000 }).toBe('pullup');
+});
+
+/** The weight bench's bar with a villager (world3d/benchBar.ts): how far off the rack and its hands' middle. */
+type Bar = { piece: string; k: number; hands: [number, number, number] } | null;
+const bar = (page: Page, slot: string) => page.evaluate((s) => (window as unknown as { __villagers3?: { bar(s: string): Bar } }).__villagers3?.bar(s) ?? null, slot);
+/** Where the bench's bar is drawn off its rack (three's space), null: on it. */
+const barAt = (page: Page, id: string) => page.evaluate((id) => (window as unknown as { __world3d: { part(id: string, n: string): [number, number, number] | null } }).__world3d.part(id, 'bar'), id);
+
+test('the weight bench: lying on it, the bar leaves the rack for the hands and is pressed with them (on both phones); getting up racks it', async ({ browser }) => {
+  test.setTimeout(90_000);
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  await open(a);
+  await open(b, '&as=B');
+  await editLayout(a);
+  await a.locator('[data-tab="gym"]').click();
+  await a.locator('[data-island-item="weight-bench"]').click();
+  await expect.poll(() => ie(a, (e) => e.sel()?.k ?? null)).toBe('weight-bench');
+  await fineFrom(a, 6, 12);
+  await a.locator('button[data-act="place"]').dispatchEvent('click');
+  await expect.poll(() => ie(a, (e) => e.sel())).toBeNull();
+  const id = (await ids(a, 'weight-bench')).at(-1)!;
+  await a.locator('[data-island-done]').click();
+  await expect(a.locator('[data-island-edit]')).toHaveCount(0);
+  await expect.poll(() => a.evaluate((id) => (window as unknown as { __world3d: { where(id: string): { model: string } | null } }).__world3d.where(id)?.model ?? null, id)).toBe('decor/weight-bench');
+  // at rest the bar is on the rack (the bench's own part, not drawn apart)
+  expect(await barAt(a, id)).toBeNull();
+  await tapOn(a, a.locator(`[data-decor="${id}"]`));
+  await expect.poll(() => v3(a, 'mine'), { timeout: 15_000 }).toBe('press');
+  // lain down, the bar comes off the rack into the hands
+  await expect.poll(async () => (await bar(a, 'mine'))?.k ?? 0, { timeout: 5000 }).toBe(1);
+  if (process.env.SHOTS) await a.screenshot({ path: `${process.env.SHOTS}/gym-press.png` });
+  // over a rep (1.8 s) it rides the hands: its middle at theirs, up and down
+  const ys: number[] = [];
+  for (let i = 0; i < 20; i++) {
+    const [h, at] = await a.evaluate((id) => {
+      const w = window as unknown as { __villagers3: { bar(s: string): Bar }; __world3d: { part(id: string, n: string): [number, number, number] | null } };
+      return [w.__villagers3.bar('mine'), w.__world3d.part(id, 'bar')] as const;
+    }, id);
+    expect(h && at, 'held').toBeTruthy();
+    expect(Math.hypot(at![0] - h!.hands[0], at![1] - h!.hands[1], at![2] - h!.hands[2]), 'at the hands').toBeLessThan(4);
+    ys.push(at![1]);
+    await a.waitForTimeout(100);
+  }
+  expect(Math.max(...ys) - Math.min(...ys), 'pressed up and down').toBeGreaterThan(3);
+  // the other phone: A's villager (its partner) pressing, the bar off the rack in its hands there too
+  await b.bringToFront();
+  await expect.poll(() => v3(b, 'partner'), { timeout: 15_000 }).toBe('press');
+  await expect.poll(async () => (await bar(b, 'partner'))?.k ?? 0, { timeout: 8000 }).toBe(1);
+  expect(await barAt(b, id)).not.toBeNull();
+  // a tap on the ground: A gets up, and the bar goes back onto the rack
+  await a.bringToFront();
+  const [bx, bz] = (await where(a, id))!;
+  const [tx, tz] = await openNear(a, bx, bz + 60, 45, true);
+  const [x, y] = await a.evaluate(([tx, tz]) => (window as unknown as { __world: { at(x: number, z: number): [number, number] } }).__world.at(tx, tz), [tx, tz]);
+  await a.mouse.click(x, y);
+  await expect.poll(() => v3(a, 'mine'), { timeout: 5000 }).not.toBe('press');
+  await expect.poll(() => barAt(a, id), { timeout: 3000 }).toBeNull();
+  await b.bringToFront();
+  await expect.poll(() => barAt(b, id), { timeout: 8000 }).toBeNull();
+  await ctx.close();
 });

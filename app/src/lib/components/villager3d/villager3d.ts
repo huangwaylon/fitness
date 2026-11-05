@@ -75,6 +75,9 @@ export interface Villager3D {
   aim(at: Vector3 | null): void;
   /** The hand's world position (three's), or null. */
   hand(): Vector3 | null;
+  /** Both hands' world positions (three's: the hand bones, as posed now) into `l` and `r`; false without them. No
+   *  allocation (the weight bench's bar follows them each frame: world3d/benchBar.ts). */
+  hands(l: Vector3, r: Vector3): boolean;
   /** Sit or lie on a seat (seats3d.ts: its anchor, in the group's parent's space): from where it stands it turns,
    *  steps back onto it and sits down, or climbs onto the bed and lies down (SIT_MS), the hips on the seat, the back to
    *  its back, the head on the pillow end, its feet down or dangling as the seat's height has them. While it's on one
@@ -225,7 +228,7 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
     crownLocal = head.worldToLocal(new Vector3(hp.x, top, hp.z));
   }
   let worn: Object3D | null = null;
-  const hand = rig.bone('Hand_R');
+  const hand = rig.bone('Hand_R'), handL = rig.bone('Hand_L');
   let held3: { obj: Object3D; tip: Vector3; q: Quaternion } | null = null;
   let aimAt: Vector3 | null = null;
   const aimV = new Vector3(), aimH = new Vector3(), aimQ = new Quaternion(), aimHQ = new Quaternion(), aimHQ_s = new Vector3();
@@ -459,6 +462,14 @@ export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind =
       orient();
     },
     hand: () => (hand ? hand.getWorldPosition(new Vector3()) : null),
+    hands(l, r) {
+      if (!hand || !handL) return false;
+      // (the group's own matrices brought up to date once; the bones' world positions under it as posed)
+      group.updateMatrixWorld(true);
+      l.setFromMatrixPosition(handL.matrixWorld);
+      r.setFromMatrixPosition(hand.matrixWorld);
+      return true;
+    },
     tip() {
       if (!held3) return null;
       held3.obj.updateWorldMatrix(true, false);

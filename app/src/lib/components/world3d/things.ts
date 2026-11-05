@@ -5,7 +5,7 @@
 // without a rebuild. Every material is a Lambert (NH's soft look, cheaper than PBR), bent (bend.ts); a lamp's own _Emi
 // map is its night light (lights.ts adds its halo and its pool).
 import {
-  BackSide, Color, DoubleSide, FrontSide, InstancedBufferAttribute, InstancedMesh, Matrix4, MeshDepthMaterial, MeshLambertMaterial, Quaternion,
+  BackSide, Color, DoubleSide, FrontSide, InstancedBufferAttribute, InstancedMesh, Matrix4, Mesh as MeshOf, MeshDepthMaterial, MeshLambertMaterial, Quaternion,
   RGBADepthPacking, Vector3, Vector4, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Scene, type Side
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -119,6 +119,15 @@ export interface Things {
   swap(id: string, model: string | null): void;
   /** The camera turned: the billboards turn with it. */
   camera(q: Quaternion): void;
+  /** A part of an instance's model (its GLB's node of that name, the same material: the weight bench's `bar`) taken
+   *  off it and drawn on its own where `m` has its frame (three's space: the part's middle, turned and scaled; the
+   *  island's bend on it as on the rest), each frame it's held; null puts it back. It casts no shadow while it's off
+   *  (the map isn't redrawn as it moves); its spot on the instance is empty meanwhile. */
+  lift(id: string, part: string, m: Matrix4 | null): void;
+  /** The part's frame as it rests on the instance (three's space), into `out`; null: no such part (or not built). */
+  rest(id: string, part: string, out: Matrix4): Matrix4 | null;
+  /** Where a part taken off its instance is drawn now (its middle, three's space), or null: on it (the e2e's). */
+  part(id: string, part: string): [number, number, number] | null;
   /** Something of the scene's own on an instance (the board's face: docs/board.md), in its model's units, placed, turned,
    *  scaled and bent with it; null takes it off. */
   attach(id: string, obj: Object3D | null): void;
@@ -248,14 +257,19 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     name: ModelName;
     sig: string;
     list: Inst[];
-    meshes: { im: InstancedMesh; local: Matrix4; grey?: InstancedBufferAttribute; fade?: InstancedBufferAttribute; flap?: InstancedBufferAttribute }[];
+    meshes: { im: InstancedMesh; local: Matrix4; grey?: InstancedBufferAttribute; fade?: InstancedBufferAttribute; flap?: InstancedBufferAttribute; part?: Part }[];
     base: Matrix4[];
     /** Its instances fade (a critter's, or one the caller fades: Over `fade`). */
     soft: boolean;
     /** Its model's outermost points (outline), found once. */
     shape?: Vector3[];
   }
+  /** A mesh of a part (lift): the part's name, its frame in the model (its node's: where it rests) and the mesh in that
+   *  frame. */
+  interface Part { name: string; at: Matrix4; inPart: Matrix4 }
   const groups = new Map<ModelName, Group>();
+  /** The parts taken off their instances (lift), by `${id}|${part}`: drawn as meshes of their own. */
+  const loose = new Map<string, { g: Group; meshes: Mesh[]; at: Vector3 }>();
   /** A model's outermost vertex each way of SHAPE_DIRS (in its own space, its meshes' transforms in): its convex hull
    *  near enough, so the hull of these on screen is its silhouette's. */
   function shapeOf(g: Group): Vector3[] {
@@ -318,10 +332,12 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     return out.compose(tmpV.set(x, y, -z), tmpQ, tmpS);
   }
   function write(g: Group, only?: number) {
-    for (const { im, local, grey, fade, flap } of g.meshes) {
+    for (const { im, local, grey, fade, flap, part } of g.meshes) {
       for (let i = 0; i < g.base.length; i++) {
         if (only !== undefined && i !== only) continue;
-        im.setMatrixAt(i, tmpM.multiplyMatrices(g.base[i], local));
+        // (a part taken off: its spot on the instance empty)
+        if (part && loose.has(`${g.list[i].id}|${part.name}`)) im.setMatrixAt(i, ZERO);
+        else im.setMatrixAt(i, tmpM.multiplyMatrices(g.base[i], local));
         if (grey) grey.setX(i, overs.get(g.list[i].id)?.grey ?? 0);
         if (fade) fade.setX(i, opacity(g.list[i].id));
         if (flap) flap.setX(i, flaps.get(g.list[i].id) ?? 0);
@@ -357,6 +373,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   /** Objects riding on instances, by instance id (attach). */
   const riders = new Map<string, Object3D>();
   function drop(g: Group) {
+    // (a part off one of its instances goes with it: the next lift draws it anew from the new build)
+    for (const [k, l] of loose) if (l.g === g) {
+      for (const m of l.meshes) scene.remove(m);
+      loose.delete(k);
+    }
     for (const { im, grey, fade, flap } of g.meshes) {
       scene.remove(im);
       if (grey || fade || flap) im.geometry.dispose();
@@ -380,6 +401,10 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     gl.scene.traverse((n) => {
       const mesh = n as Mesh;
       if (!mesh.isMesh) return;
+      // (a part of its own: under a node whose extras say where it rests, scripts/world3d-models.ts `split`)
+      let pn: Object3D | null = mesh;
+      while (pn && !pn.userData.rest) pn = pn.parent;
+      const part: Part | undefined = pn ? { name: pn.name, at: pn.matrixWorld.clone(), inPart: pn.matrixWorld.clone().invert().multiply(mesh.matrixWorld) } : undefined;
       // (a bee's, a dragonfly's wings are their own mesh: only those flap; a butterfly is one, its body kept still)
       const flaps = !!flapAt?.flaps.get(mesh);
       const { m, front, depth } = lambert(mesh.material as Material, grey, soft, flaps ? flapAt!.at : null);
@@ -406,7 +431,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
         const mname = (mesh.material as Material).name;
         if (insts.some((o) => o.tint !== undefined) && /Flower|Petal|Flow|Bloom/.test(mname) && !/Body|Leaf/.test(mname))
           insts.forEach((o, i) => im.setColorAt(i, new Color(o.tint ?? 0xffffff)));
-        g.meshes.push({ im, local: mesh.matrixWorld.clone(), grey: ga, fade: fa, flap: wa });
+        g.meshes.push({ im, local: mesh.matrixWorld.clone(), grey: ga, fade: fa, flap: wa, part });
         scene.add(im);
       }
     });
@@ -611,6 +636,57 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       if (b) (matOf(b.inst, b.g.base[b.i]), write(b.g, b.i));
       void later();
       changed();
+    },
+    lift(id, name, m) {
+      const a = byId.get(id), k = `${id}|${name}`;
+      let l = loose.get(k);
+      if (!m) {
+        if (!l) return;
+        for (const x of l.meshes) scene.remove(x);
+        loose.delete(k);
+        if (a) write(a.g, a.i);
+        return changed(true);
+      }
+      if (!a) return;
+      if (l && l.g !== a.g) {
+        for (const x of l.meshes) scene.remove(x);
+        l = undefined;
+      }
+      const fresh = !l;
+      if (!l) {
+        // its meshes drawn on their own: the instanced ones' geometry and (bent) material, no shadow of their own
+        const meshes: Mesh[] = [];
+        for (const e of a.g.meshes) {
+          if (e.part?.name !== name) continue;
+          const x = new MeshOf(e.im.geometry, e.im.material);
+          x.matrixAutoUpdate = false;
+          x.frustumCulled = false;
+          x.castShadow = false;
+          x.receiveShadow = true;
+          x.userData.inPart = e.part.inPart;
+          meshes.push(x);
+          scene.add(x);
+        }
+        if (!meshes.length) return;
+        l = { g: a.g, meshes, at: new Vector3() };
+        loose.set(k, l);
+        write(a.g, a.i);
+      }
+      l.at.setFromMatrixPosition(m);
+      for (const x of l.meshes) {
+        x.matrix.multiplyMatrices(m, x.userData.inPart as Matrix4);
+        x.matrixWorldNeedsUpdate = true;
+      }
+      // (its shadow on the rack gone once; then only a redraw)
+      changed(fresh);
+    },
+    rest(id, name, out) {
+      const a = byId.get(id), p = a?.g.meshes.find((e) => e.part?.name === name)?.part;
+      return a && p ? out.multiplyMatrices(a.g.base[a.i], p.at) : null;
+    },
+    part(id, name) {
+      const l = loose.get(`${id}|${name}`);
+      return l ? [l.at.x, l.at.y, l.at.z] : null;
     },
     attach(id, obj) {
       const was = riders.get(id);

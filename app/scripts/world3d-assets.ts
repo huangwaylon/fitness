@@ -110,6 +110,8 @@ export interface AssetJob {
   variant?: number;
   /** No occlusion baked in (the snowboy). */
   noAo?: boolean;
+  /** A part lifted out as its own node (scripts/world3d-models.ts Job `split`: the weight bench's barbell). */
+  split?: { name: string; above: number };
   /** Not NH's: a stylised effect (scripts/world3d-fx.ts). */
   fx?: 'sparkle' | 'bang' | 'dust' | 'splash' | 'ripple' | 'zzz' | 'sweat' | 'confetti' | 'flame' | 'lily-pad';
   uses: Use[];
@@ -289,8 +291,12 @@ const DECOR: [string, string][] = [
   ['exercise-ball', 'FtrBalanceball'], ['barbell', 'FtrBarbell'], ['kettlebell', 'FtrKettlebell'], ['protein-shaker', 'FtrProtein'],
   ['water-cooler', 'FtrWaterserver'], ['digital-scale', 'FtrWeightscale'], ['climbing-wall', 'FtrClimbingwall'], ['upright-locker', 'FtrLocker']
 ];
+/** A decoration's part lifted out of its one mesh, its own node (the same material): the weight bench's barbell, its bar,
+ *  plates and collars (the mesh's pieces wholly above 10 model units: the rack's uprights reach the ground), lifted off
+ *  the rack and pressed by whoever lies on it (world3d/benchBar.ts). */
+const SPLIT: Record<string, AssetJob['split']> = { 'weight-bench': { name: 'bar', above: 10 } };
 const decor = DECOR.map(([id, model]): AssetJob => ({
-  name: `decor/${id}`, parts: one(model), tex: ftrTex(model), uses: [0, 1, 2, 3].map((f): Use => ({ key: `decor/${id}-${f}`, cat: 'decor', s: DECOR_U, yaw: f * 90 }))
+  name: `decor/${id}`, parts: one(model), tex: ftrTex(model), ...(SPLIT[id] ? { split: SPLIT[id] } : {}), uses: [0, 1, 2, 3].map((f): Use => ({ key: `decor/${id}-${f}`, cat: 'decor', s: DECOR_U, yaw: f * 90 }))
 }));
 
 // the events: Halloween (the pumpkin by day, the spooky lantern lit at night), the birthday's cake and popper, the
