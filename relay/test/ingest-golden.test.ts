@@ -3,7 +3,10 @@
 // shapes the two phones really send (the `uploads` audit of 2026-11-02: A's iPhone-only body with English dates, B's
 // with the Watch's steps, Japanese dates and kcal to three decimals; the values are made up, not anyone's health data).
 // fixtures/ingest-golden.json is what app/gas/main.ts's ingest answered and wrote for these runs on 2026-11-02 (on its
-// fakes, before step 5 removed it); the record matched it then, run for run, and must go on matching it.
+// fakes, before step 5 removed it); the record matched it then, run for run, and must go on matching it. One change
+// since, on purpose (2026-11-05, store.ts ingest): a past day's 0 over a value above it is ignored, so four rows went
+// (B's exercise on 10-03 and 10-04 shifted to 0, A's steps on 10-07 and 10-08 read 0 from an unreadable line) and
+// three audit rows say `N past zeros ignored`.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -82,7 +85,7 @@ describe('ingest: the record answers and writes as the Apps Script did', () => {
     }
     const sMetrics = db.sql.exec('SELECT at, person, date, metric, value FROM metrics ORDER BY at, seq').toArray().map((r) => Object.values(r));
     const sUploads = db.sql.exec('SELECT at, person, status, bytes, notes FROM uploads ORDER BY seq').toArray().map((r) => Object.values(r));
-    expect(GOLDEN.replies.map((r) => (r as { metrics?: number; error?: string }).metrics ?? (r as { error?: string }).error)).toEqual([128, 128, 0, 2, 39, 130, 1, 96, 35, 'bad_request', 0, 6]);
+    expect(GOLDEN.replies.map((r) => (r as { metrics?: number; error?: string }).metrics ?? (r as { error?: string }).error)).toEqual([128, 128, 0, 2, 39, 129, 1, 95, 33, 'bad_request', 0, 6]);
     expect(sMetrics).toEqual(GOLDEN.metrics);
     expect(sUploads).toEqual(GOLDEN.uploads);
     expect(store.rowsSince('').metrics).toEqual(GOLDEN.metrics);
