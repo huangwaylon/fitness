@@ -212,13 +212,13 @@ describe('kikimimi bank', () => {
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other files, and the clips stay small (each under 60 KB, all under 6 MB)', () => {
+  it('ships no other files, and the clips stay small (each under 60 KB, all under 8 MB)', () => {
     const dir = join(STATIC, 'audio/kikimimi');
     const want = new Set(BANK.flatMap((it) => clipIds(it).flatMap((id) => [`${id}.m4a`, ...(it.lv <= 2 ? [`${id}-slow.m4a`] : [])])));
     const files = readdirSync(dir);
     expect(files.filter((f) => !want.has(f))).toEqual([]);
     const sizes = files.map((f) => statSync(join(dir, f)).size);
     for (const s of sizes) expect(s).toBeLessThan(60 * 1024);
-    expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(6 * 1024 * 1024);
+    expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(8 * 1024 * 1024);
   });
 });

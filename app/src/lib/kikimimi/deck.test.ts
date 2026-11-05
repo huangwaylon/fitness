@@ -68,9 +68,9 @@ describe('kikimimi deck', () => {
       // a dialogue keeps its lines; its choices shuffled like any
       for (const it of d.filter(isDialogue)) expect(it.lines.length).toBeGreaterThanOrEqual(2);
     }
-    // today (no dialogue clips): level 4's deck has none, and にがて れんしゅう's pool leaves them out (inMix)
-    for (const s of seeds.slice(0, 50)) expect(deck(s, 4).some((it) => DIALOGUE_TYPES.includes(it.type))).toBe(false);
-    expect(DIALOGUES.some((it) => inMix(it))).toBe(false);
+    // today (every dialogue line voiced): level 4's deck has them, and にがて れんしゅう's pool takes them (inMix)
+    for (const s of seeds.slice(0, 50)) expect(deck(s, 4).some((it) => DIALOGUE_TYPES.includes(it.type))).toBe(true);
+    expect(DIALOGUES.every((it) => inMix(it))).toBe(true);
     expect(DIALOGUES.every((it) => inMix(it, all))).toBe(true);
   });
 
@@ -103,7 +103,7 @@ describe('kikimimi levels offered (the lobby’s gate)', () => {
   it('dialogues have a gate of their own: level 4 plays without them till every line of every dialogue has a clip', () => {
     const noDialogues = Object.fromEntries(BANK.filter((it) => !isDialogue(it)).map((it) => [it.id, {}]));
     expect(playable(noDialogues)).toEqual([1, 2, 3, 4]);
-    expect(mixes(noDialogues)[4]).toEqual(MIX[4]);
+    expect(mixes(noDialogues)[4]).toEqual({ word: 2, num: 2, reply: 2, mean: 2 });
     const lineShort: Record<string, unknown> = { ...all };
     delete lineShort[clipIds(DIALOGUES[3])[1]];
     expect(mixes(lineShort)[4]).not.toHaveProperty('gist');
@@ -159,7 +159,7 @@ describe('kikimimi clips', () => {
     expect(itemDur(d, clips)).toBeCloseTo(1.5 + 2.25 + 3 + 2 * LINE_GAP);
     expect(itemDur(d, { 'd4-oat-latte-1': { dur: 1 } })).toBeUndefined();
     expect(voiced(d, clips)).toBe(true);
-    expect(voiced(d)).toBe(false); // not yet
+    expect(voiced(d)).toBe(true); // its lines' clips landed
     expect(itemDur(one)).toBe(clipDur('p1-squid'));
   });
 
