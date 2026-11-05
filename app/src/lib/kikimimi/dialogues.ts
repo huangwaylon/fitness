@@ -73,7 +73,7 @@ const ROWS: readonly Row[] = [
       ['raymond', 'Excuse me, is the 8:40 to Brighton still running?', 'すみません、8時40分のブライトン行きはまだ動いていますか？',
         'Excuse me, is the eight forty to Brighton still running?'],
       ['mabel', "It's been cancelled, I'm afraid. There's a signal fault at Haywards Heath.", 'あいにく運休です。ヘイワーズヒースで信号故障がありまして。'],
-      ['raymond', 'Brilliant. So how do I get there?', '最高だね（皮肉）。じゃあどうやって行けば？'],
+      ['raymond', 'Brilliant. So how do I get there?', 'そりゃ最高だね。じゃあ、どうやって行けば？'],
       ['mabel', "Your best bet's the rail replacement bus. It leaves from outside, by the taxi rank.", '代行バスがいちばんです。外のタクシー乗り場の横から出ます。']
     ],
     choices: ["He'll take a bus from outside the station.", "He'll wait for the 8:40 train.", "He'll take a taxi to Brighton."],
@@ -192,7 +192,7 @@ const ROWS: readonly Row[] = [
       ['stitches', "Hi, I'd like to return these headphones. They stopped working after a week.", 'このヘッドホンを返品したいんです。1週間で動かなくなって。'],
       ['audie', 'Do you have the receipt?', 'レシートはお持ちですか？'],
       ['stitches', 'Uh, no, it was a gift.', 'いや、プレゼントでもらったので。'],
-      ['audie', "Then I'm afraid all I can offer is store credit.", 'それでしたら、店内で使えるクレジットでのご返金しかできかねます。']
+      ['audie', "Then I'm afraid all I can offer is store credit.", 'それでしたら、あいにく店内クレジットでのご対応のみになります。']
     ],
     choices: ["That's fine. Can I use it online as well?", "Great, I'll take the cash, then.", 'No thanks, I already have a receipt.'],
     ja: 'それでいいです。オンラインでも使えますか？', note: 'store credit＝店で使える金券。現金は戻らない',
@@ -243,7 +243,7 @@ const ROWS: readonly Row[] = [
       ['molly', 'Hmm. Let me check my calendar and get back to you.', 'うーん。予定見て、また連絡するね。']
     ],
     choices: ["She probably doesn't want to go.", "She'll go if there are salads.", "She's busy on Friday evening."],
-    ja: 'たぶん行きたくない。', note: 'be good＝食べすぎない。get back to you＝やんわり断る',
+    ja: 'たぶん行きたくない。', note: 'be good＝節制中。get back to you はここでは遠回しな断り',
     tags: tg(18, 'friend', 'refusal', [], ['wanna', 'kinda'])
   },
   {
@@ -260,7 +260,7 @@ const ROWS: readonly Row[] = [
   {
     id: 'd4-installer', type: 'gist', ask: '木曜の 朝、家に いるのは？', focus: 'stay in',
     lines: [
-      ['pietro', 'We can send someone Thursday, between eight and one.', '木曜の8時から1時の間に、担当者を伺わせます。'],
+      ['pietro', 'We can send someone Thursday, between eight and one.', '木曜の8時から1時の間に、担当の者がお伺いします。'],
       ['audie', 'Between eight and one? I start work at ten.', '8時から1時？ 10時から仕事なんです。'],
       ['pietro', 'Somebody over 18 just needs to be home to let them in.', '18歳以上の方がご在宅で、中に入れていただければ大丈夫です。', "Somebody over eighteen just needs to be home to let 'em in."],
       ['audie', "Okay, I'll ask my roommate to stay in.", 'わかりました、ルームメイトに家にいてもらいます。']
@@ -288,7 +288,7 @@ const ROWS: readonly Row[] = [
       ['goldie', 'Got it. Large mocha for... May?', '了解です。ラージのモカ、メイさん？']
     ],
     choices: ['Close enough, thanks!', 'Can I get a name for that?', 'No, I ordered a mocha.'],
-    ja: 'まあ近いし、ありがとう！', note: 'May と呼ばれた。モカは合っている',
+    ja: 'だいたい合ってるし、いいよ。ありがとう！', note: 'Wei を May と聞き違えた。Close enough＝まあいいか',
     tags: tg(51, 'service', 'humour', ['cafe'])
   },
   {
@@ -308,7 +308,7 @@ const ROWS: readonly Row[] = [
     lines: [
       ['merengue', "Your room won't be ready till three, I'm afraid.", '申し訳ありませんが、お部屋は3時までご用意できません。'],
       ['blathers', "Ah. My meeting's at two, so I was hoping to change first.", 'ああ。2時に会議があって、先に着替えたかったんですが。'],
-      ['merengue', 'We do have a suite available now, for a small supplement.', '今すぐご利用いただけるスイートもございます、少しの追加料金で。'],
+      ['merengue', 'We do have a suite available now, for a small supplement.', '少々の追加料金で、今すぐご利用いただけるスイートもございます。'],
       ['blathers', 'How small are we talking?', '少しって、どのくらいです？']
     ],
     choices: ['How much extra the suite costs.', 'Whether the meeting room is free.', 'What time his room will be ready.'],
