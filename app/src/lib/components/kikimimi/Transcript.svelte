@@ -50,8 +50,8 @@
 <style>
   .tr { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   /* the heads' column a fixed 36px, so every bubble on a side starts and ends at one line */
-  .ln { display: grid; grid-template-columns: 36px 1fr; align-items: end; gap: 8px; margin-right: 28px; }
-  .ln.right { grid-template-columns: 1fr 36px; margin: 0 0 0 28px; }
+  .ln { display: grid; grid-template-columns: 36px minmax(0, 1fr); align-items: end; gap: 8px; margin-right: 28px; }
+  .ln.right { grid-template-columns: minmax(0, 1fr) 36px; margin: 0 0 0 28px; }
   .ln.right .head { order: 2; }
   .head { line-height: 0; justify-self: center; }
   .b {
@@ -65,7 +65,8 @@
   .b small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--leaf-text); }
   .en { margin: 0; font: 700 max(16px, var(--fs-body))/1.4 var(--font-ui); }
   .key { margin-top: -2px; display: flex; justify-content: center; }
-  .ja { margin: 0; font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--c-ink-soft); }
+  /* adult Japanese with no spaces between words: keep-all (theme.css) would never break it; ordinary CJK breaks, kinsoku kept */
+  .ja { margin: 0; font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--c-ink-soft); word-break: normal; line-break: strict; }
   .compact .en { font-size: 15px; }
   .compact .b { padding: 6px 10px; }
   /* on a review card (the bubbles' own cream): the first speaker's a step darker, so it still reads as a bubble */
