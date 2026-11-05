@@ -265,7 +265,7 @@ Each game reuses ききみみ's seeded deck, host clock, presence intents and la
 | # | Game | Trains | Modes | Effort | Priority |
 |---|---|---|---|---|---|
 | 1 | **ききみみ クイズ** (existing) + L4/L5 and the new types `mean` (what do they mean?), `gist`, `next` (best next line after a 2–4-line dialogue) | replies, pragmatics, numbers in real contexts | co-op, solo, たいせん | S per step | **now** |
-| 2 | **スピード はしご** (speed ladder): one line in 3 takes, careful → natural → fast reduced; answer at each rung, the top pays most | reductions, rate tolerance | solo, co-op | S | 2 |
+| 2 | **スピード はしご** (speed ladder): one line at rising speeds, a different question at each rung (as built: 4 rungs, 0.8× → 1.4× by time-stretch, a flat 100 a rung climbed in order on the first listen, not a top-weighted payout) | reductions, rate tolerance | solo, co-op, たいせん | S | 2 (built) |
 | 3 | **ことば タイル** with reductions: rebuild what was said from tiles, with decoys *to/the/a, I'd/I'll, can/can't, should've/shouldn't have*; the reveal shows the spoken shape | segmentation, weak forms | solo, co-op (half the tiles each) | S | 3 |
 | 4 | **ようじ でんわ** (phone errands with complications): a NookPhone call asks for something, then changes it ("oh, actually, make that…"), you act on the pocket grid or fill a memo | multi-step detail, self-repair, phone audio | solo, co-op (each hears half) | M | 4 |
 | 5 | **たちぎき** (overheard): 2–3 villagers talk, overlap and interrupt; match opinions to faces, then who changed their mind, the mood, the plan | tracking speakers, attitude, inference | co-op, solo | S UI, content-heavy | 5 |
@@ -437,7 +437,7 @@ Each increment takes 1–3 agent-days, lands on main green, and ships something 
 | 4 | Dialogue items in the quiz: `gist` / `next` over 2–4-line dialogues (`playSequence`), 24 overheard and service dialogues. | 2–3 |
 | 5 | Visuals v1: the SVG scene kit (8 backdrops), channel frames, transcript karaoke and sound marks at the reveal. | 2–3 |
 | 6 | ✅ **Done 2026-11-06.** Conditions in the pipeline: noise beds, phone band, PA reverb; the アナウンス pack (30 PA, voicemail and IVR items) as a quiz level mix. As built: level 5 「アナウンス」; beds synthesised from our own clips (no third-party audio) at +15 / +10 dB; 79 level-4 clips re-mixed (docs/kikimimi.md "Conditions", "The アナウンス pack"). | 2 |
-| 7 | スピード はしご as a quiz mode: 30 ladders. | 1–2 |
+| 7 | ✅ **Done 2026-11-06.** スピード はしご as a quiz mode: 30 ladders (0.8× → 1.4× by atempo, a different question a rung, the score the rungs climbed in order on the first listen; the mode on the seed's bit 1, no relay change; きろく's fastest comfortable speed; docs/kikimimi.md "スピード はしご"). | 1–2 |
 | 8 | Framework: `RoundSession`, `GameDef`, `play` intent (relay first), the quiz migrated. | 3 |
 | 9 | YAML content compiler and packs, SW cache class, `/dev/listen`. | 3 |
 | 10 | ことば タイル with reductions: 60 sentences. | 2 |
