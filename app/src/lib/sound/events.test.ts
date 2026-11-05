@@ -160,7 +160,7 @@ describe('K.K. songs (kk.ts)', () => {
     expect(kkTracks.find((k) => k.id === 'kk-mariachi')).toMatchObject({ ja: 'セニョールけけ', en: 'K.K. Mariachi' }); // e+'s Señor K.K.
     expect(Object.keys(AUDIO.kkAircheck).every((id) => kkTracks.some((k) => k.id === id))).toBe(true);
     for (const k of kkTracks) {
-      expect(k.file).toBe(`kk/${k.id}.m4a`);
+      expect(k.file).toMatch(new RegExp(`^kk/${k.id}\\.m4a\\?v=`));
       expect(k.start).toBe(0);
       expect(k.end).toBeUndefined(); // one-shots: he plays a song once
     }

@@ -2,6 +2,7 @@
 // user-provided and committed by the user's decision; this script never downloads anything.
 //   node scripts/music.ts <source dir> [--only <regex over manifest keys>] [--dry]
 //   node scripts/music.ts --gains    only re-measure the committed files and rewrite their `gain`
+//   node scripts/music.ts --hashes   only rewrite every entry's content hash `v` (after replacing a file by hand)
 // Source: the NH OST rip ("1-02. 1200 AM (Sunny).mp3": disc 1 sunny hours, 2 rain and snow, 3 places, 4 events and
 // jingles) and the GameCube / e+ rip ("150 - K.K. Chorale (LIVE).mp3"), each file named by its track number in
 // CATALOGUE. Loops: each OST rip plays its loop about twice and fades out. Find the loop period (the lag at which the
@@ -11,10 +12,13 @@
 // of its first TAIL seconds (manifest `end` = where the period ends): the engine's two decks hand over inside the copy,
 // where both hold the same samples, instead of relying on `<audio loop>` (WebKit seeks to 0 at the end, which can
 // drop out). One-shots are trimmed of silence; jingles (sfx) also mono, faded at both ends, with their loudness baked
-// in (sfx entries have no `gain`). Then each music file's loudness is measured and its `gain` written (trackGain).
+// in (sfx entries have no `gain`). Then each music file's loudness is measured and its `gain` written (trackGain), and
+// every entry's `v` (its file's content hash: the app fetches `file?v=`, so a re-cut file under the same name is a new
+// URL and /audio/* can be cached as immutable).
 // Output: AAC-LC stereo 44.1 kHz .m4a with +faststart at 64 kbps (K.K.'s from the GameCube rip mono at 40), and the
 // entries of static/audio/manifest.json (the rest of the file is kept as is).
 import { execFileSync, spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -443,7 +447,7 @@ const CATALOGUE = new Map<string, Row>([
   ])
 ]);
 
-type Entry = { file: string; start: number; end?: number; gain?: number };
+type Entry = { file: string; start: number; end?: number; gain?: number; v?: string };
 type Manifest = Record<string, unknown> & { kk?: (Entry & { id: string; ja?: string; en?: string })[] };
 
 /** Put an entry at a dotted key (`kk.<id>`: that song in the list, with its titles, in KK's order); the entry kept. */
@@ -474,7 +478,7 @@ function build(src: string, only: RegExp, dry: boolean): void {
     try {
       if (row.kind === 'sfx') {
         jingle(path, out, dry, row.seconds);
-        put(man, row.key, row.file);
+        put(man, row.key, { file: row.file } as Entry);
         console.log(`${row.file}  ${file}  jingle`);
         continue;
       }
@@ -495,6 +499,7 @@ function build(src: string, only: RegExp, dry: boolean): void {
   }
   if (dry) return;
   for (const e of built) e.gain = trackGain(loudness(join(OUT, e.file)));
+  writeHashes(man);
   writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
 }
 
@@ -513,16 +518,34 @@ function trackGain({ i, tp }: { i: number; tp: number }): number {
   return Math.round(Math.min(6, Math.max(-12, g)) * 10) / 10;
 }
 
-/** Every music entry in the manifest: the objects with a `file`, at any depth (sfx are plain paths). */
-function entries(o: unknown, at = ''): [string, Entry][] {
+/** Every entry in the manifest: the objects with a `file`, at any depth (`music` only the music: no sfx, whose
+ *  loudness is baked into the file). */
+function entries(o: unknown, music = false, at = ''): [string, Entry][] {
   if (!o || typeof o !== 'object') return [];
   if (typeof (o as Entry).file === 'string') return [[at, o as Entry]];
-  return Object.entries(o).flatMap(([k, v]) => entries(v, at ? `${at}.${k}` : k));
+  return Object.entries(o).flatMap(([k, v]) => (music && !at && k === 'sfx' ? [] : entries(v, music, at ? `${at}.${k}` : k)));
+}
+
+/** A file's content hash, short (the `?v=` the app fetches it under). */
+const hashOf = (file: string): string => createHash('sha256').update(readFileSync(join(OUT, file))).digest('hex').slice(0, 8);
+
+/** Write every entry's `v` (an effect's plain path becomes `{ file, v }`). */
+function writeHashes(man: Manifest): void {
+  for (const k of ['sfx', 'ambient']) {
+    const m = (man[k] ?? {}) as Record<string, unknown>;
+    for (const [id, v] of Object.entries(m)) if (typeof v === 'string') m[id] = { file: v };
+  }
+  let n = 0;
+  for (const [, e] of entries(man)) {
+    const v = hashOf(e.file);
+    if (e.v !== v) (e.v = v), n++;
+  }
+  console.log(`hashes: ${n} changed`);
 }
 
 /** Measure every music file in the manifest and write its `gain`. */
 function writeGains(man: Manifest): void {
-  for (const [name, e] of entries(man)) {
+  for (const [name, e] of entries(man, true)) {
     const l = loudness(join(OUT, e.file));
     e.gain = trackGain(l);
     console.log(`${name.padEnd(24)} ${l.i.toFixed(1)} LUFS  ${l.tp >= 0 ? '+' : ''}${l.tp.toFixed(1)} dBTP  → gain ${e.gain >= 0 ? '+' : ''}${e.gain.toFixed(1)} dB` +
@@ -532,14 +555,15 @@ function writeGains(man: Manifest): void {
 
 function main(): void {
   const args = process.argv.slice(2).filter((a) => a !== '--extras'); // --extras: the old name of the same build
-  if (args[0] === '--gains') {
+  if (args[0] === '--gains' || args[0] === '--hashes') {
     const man = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Manifest;
-    writeGains(man);
+    if (args[0] === '--gains') writeGains(man);
+    writeHashes(man);
     writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
     return;
   }
   const [src] = args;
-  if (!src || src.startsWith('--')) throw new Error('usage: node scripts/music.ts <source dir> [--only <regex>] [--dry] | --gains');
+  if (!src || src.startsWith('--')) throw new Error('usage: node scripts/music.ts <source dir> [--only <regex>] [--dry] | --gains | --hashes');
   const only = args.indexOf('--only');
   build(src, new RegExp(only > 0 ? args[only + 1] : '.'), args.includes('--dry'));
 }

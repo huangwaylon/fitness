@@ -39,13 +39,25 @@ const obj = (v: unknown): Record<string, unknown> => (v && typeof v === 'object'
 
 const num = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 
-/** `{ file, start, end?, gain? }` plays from `start` s (see MusicTrack). A bad `end` (not after `start`) falls back
- *  to `<audio loop>`; a bad `gain` to 0 dB. */
+/** An entry's path with its content hash (`v`, scripts/music.ts --hashes) as `?v=`: a re-cut file under the same name
+ *  is a new URL, so neither the service worker's cache nor the browser's (/audio/* is immutable) serves the old one.
+ *  The path is the file's key everywhere after (the engine's blobs, its pins). */
+const versioned = (file: string, v: unknown): string => (typeof v === 'string' && /^[0-9a-f]{4,16}$/.test(v) ? `${file}?v=${v}` : file);
+
+/** An effect's or a bed's entry: `{ file, v }` (or a plain path). */
+function path(v: unknown): string | null {
+  if (str(v)) return v;
+  const t = obj(v);
+  return str(t.file) ? versioned(t.file, t.v) : null;
+}
+
+/** `{ file, start, end?, gain?, v? }` plays from `start` s (see MusicTrack). A bad `end` (not after `start`) falls
+ *  back to `<audio loop>`; a bad `gain` to 0 dB. */
 function track(v: unknown): MusicTrack | null {
   const t = obj(v);
   if (!str(t.file)) return null;
   const start = num(t.start) && t.start >= 0 ? t.start : 0;
-  const out: MusicTrack = { file: t.file, start };
+  const out: MusicTrack = { file: versioned(t.file, t.v), start };
   if (num(t.end) && t.end > start) out.end = t.end;
   if (num(t.gain)) out.gain = t.gain;
   return out;
@@ -57,7 +69,8 @@ export function parseManifest(json: unknown): { manifest: AudioManifest; problem
   const root = obj(json);
   const sfx: AudioManifest['sfx'] = {};
   for (const [k, v] of Object.entries(obj(root.sfx))) {
-    if (isSoundId(k) && str(v)) sfx[k] = v;
+    const p = path(v);
+    if (isSoundId(k) && p) sfx[k] = p;
     else problems.push(`sfx.${k}`);
   }
   const music: MusicFiles = {};
@@ -76,7 +89,8 @@ export function parseManifest(json: unknown): { manifest: AudioManifest; problem
   }
   const ambient: AudioManifest['ambient'] = {};
   for (const [k, v] of Object.entries(obj(root.ambient))) {
-    if (AMBIENT_IDS.includes(k as AmbientId) && str(v)) ambient[k as AmbientId] = v;
+    const p = path(v);
+    if (AMBIENT_IDS.includes(k as AmbientId) && p) ambient[k as AmbientId] = p;
     else problems.push(`ambient.${k}`);
   }
   const opening = root.opening === undefined || root.opening === null ? null : track(root.opening);

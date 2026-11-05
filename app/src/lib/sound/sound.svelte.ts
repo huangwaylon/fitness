@@ -75,7 +75,8 @@ let announceAt = 0;
 function eng(): Engine {
   if (!engine) {
     engine = new Engine();
-    engine.onended = (key) => {
+    // a one-shot that ended, or one whose file couldn't play (it would never end): what it held back comes back
+    engine.onended = engine.onfailed = (key) => {
       if (key === 'opening') opening = false;
       else if (cutIn?.key === key) {
         const next = cutIn.next ?? [];
@@ -123,7 +124,9 @@ function apply(): void {
   e.setLevels(s);
   if (!anyOn(s)) e.sleep();
   else if (s.volume <= 0) {
-    e.hush(); // muted, not off: the track keeps its place
+    // muted, not off: the track keeps its place; a cut-in (a K.K. song, its caption) ends, as nobody hears it
+    if (cutIn) endCutIn();
+    e.hush();
     const ms = mediaSession();
     if (ms?.metadata) ms.playbackState = 'paused';
   } else {
@@ -177,12 +180,16 @@ function startCutIn(want: NonNullable<typeof cutIn>, maxMs?: number): boolean {
   const s = sound.settings;
   if (!musicOn(s) || s.volume <= 0 || !engine?.ctx || document.hidden) return false;
   clearTimeout(cutInTimer);
-  const base = baseAt(now());
+  // the opening outranks a cut-in (pickMusic): a cut-in asked for now ends it, as a tap past NH's title screen
+  opening = false;
+  const d = now();
   cutIn = want;
   sound.kk = want.kk ?? null;
   sound.kkFrom = want.kkFrom ?? null;
-  // keep the interrupted track (coming back starts at once) and, during the chase, the sting that may follow
-  engine.pin([...(base ? [base.track.file] : []), ...(want.playing === 'bee-chase' && AUDIO.events['bee-stung'] ? [AUDIO.events['bee-stung'].file] : [])]);
+  // keep what it interrupted (indoors the room's and the island's: coming back, or leaving the room meanwhile, starts
+  // at once), the next of a chain (Franklin's done after his start) and, during the chase, the sting that may follow
+  const keep = [placeMusic(), musicAt(d), want.next?.[0] && AUDIO.events[want.next[0]], want.playing === 'bee-chase' && AUDIO.events['bee-stung']];
+  engine.pin([...new Set(keep.flatMap((w) => (!w ? [] : 'track' in w ? [w.track.file] : [w.file])))]);
   if (maxMs) cutInTimer = setTimeout(() => cutIn === want && (endCutIn(), syncMusic()), maxMs);
   syncMusic();
   return true;
@@ -202,7 +209,10 @@ function syncMusic(): void {
     nowPlaying(null);
     return;
   }
-  if (s.volume <= 0) return; // muted: everything holds where it is
+  if (s.volume <= 0) {
+    if (cutIn) endCutIn(); // muted: everything holds where it is, but a cut-in nobody hears is over
+    return;
+  }
   e.muffle(coveredBy() && !opening);
   const d = now();
   const { hour, month } = jst(d);
@@ -349,6 +359,13 @@ export function eventJingle(ids: EventMusicId | EventMusicId[], maxMs?: number):
   const [id, ...next] = Array.isArray(ids) ? ids : [ids];
   const tr = AUDIO.events[id];
   return !!tr && startCutIn({ key: `event/${id}`, track: tr, playing: id, loop: !!maxMs, cut: true, next }, maxMs);
+}
+
+/** Stop an island cut-in early (the stretch left or cut short: TapeDeck): the island's music fades back in. */
+export function stopJingle(id: EventMusicId): void {
+  if (cutIn?.playing !== id) return;
+  endCutIn();
+  syncMusic();
 }
 
 /** Stop a K.K. song early (the show ends, a stereo's tapped off, the room is left): the island's music fades back

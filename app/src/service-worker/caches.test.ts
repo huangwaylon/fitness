@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, foodFetch, isAudio, isFoodData, isMusic, keepShell, lruEvict, olderShells, precachable, staleCaches, staleFood } from './caches.ts';
+import { AUDIO_CACHE, foodFetch, isAudio, isFoodData, isMusic, keepShell, lruEvict, olderShells, precachable, staleCaches, staleFood, staleUse } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -23,22 +23,37 @@ describe('service worker cache generations', () => {
   });
 });
 
-describe('audio cache (LRU for music)', () => {
-  const m = (h: string) => `https://x.example/fitness/audio/music/hour-${h}.m4a`;
-  const fx = 'https://x.example/fitness/audio/sfx/coin.m4a';
+describe('audio cache (an LRU per class)', () => {
+  const m = (h: string) => `https://x.example/fitness/audio/music/hour-${h}.m4a?v=0a1b2c3d`;
+  const kk = (id: string) => `https://x.example/fitness/audio/kk/${id}.m4a?v=0a1b2c3d`;
+  const fx = (id: string) => `https://x.example/fitness/audio/sfx/${id}.m4a?v=0a1b2c3d`;
 
-  it('keeps the 3 most recently used music files, oldest out first', () => {
-    expect(lruEvict([m('07'), fx, m('08'), m('09'), m('10'), m('11')])).toEqual([m('07'), m('08')]);
+  it('keeps the 3 most recently used music files, oldest out first; a room’s track is music', () => {
+    expect(lruEvict([m('07'), fx('coin'), m('08'), m('09'), m('10'), m('11')])).toEqual([m('07'), m('08')]);
+    const room = 'https://x.example/fitness/audio/places/shop.m4a?v=1';
+    expect(lruEvict([room, m('07'), m('08'), m('09')])).toEqual([room]);
   });
 
-  it('never evicts effects, and nothing under the limit', () => {
-    expect(lruEvict([fx, m('07'), m('08')])).toEqual([]);
+  it('K.K.’s songs have their own two: a run of songs never pushes the hours out', () => {
+    expect(lruEvict([m('07'), kk('kk-a'), kk('kk-b'), kk('kk-c'), m('08')])).toEqual([kk('kk-a')]);
+    expect(lruEvict([kk('kk-a'), `https://x.example/fitness/audio/kk/aircheck/kk-b.m4a?v=1`])).toEqual([]);
+  });
+
+  it('effects keep a few too (an old version of a re-cut file ages out); nothing under the limits', () => {
+    expect(lruEvict([fx('coin'), m('07'), m('08')])).toEqual([]);
+    const many = Array.from({ length: 10 }, (_, i) => fx(`radio-${i}`));
+    expect(lruEvict(many)).toEqual(many.slice(0, 2));
+  });
+
+  it('a hit is re-put only when it isn’t its class’s most recent already', () => {
+    const keys = [m('07'), m('08'), kk('kk-a'), fx('coin')];
+    expect([staleUse(keys, m('08')), staleUse(keys, m('07')), staleUse(keys, kk('kk-a')), staleUse(keys, fx('coin'))]).toEqual([false, true, false, false]);
   });
 
   it('tells audio and music paths apart', () => {
     expect([isAudio('/fitness/audio/sfx/coin.m4a'), isMusic('/fitness/audio/sfx/coin.m4a'), isMusic('/fitness/audio/music/opening.m4a')]).toEqual([true, false, true]);
-    // the event music sits with the hours; K.K.'s songs are music too (LRU), never precached
-    expect([isMusic('/fitness/audio/music/halloween.m4a'), isMusic('/fitness/audio/kk/kk-march.m4a'), precachable('audio/kk/kk-march.m4a')]).toEqual([true, true, false]);
+    // the event music sits with the hours, the rooms' too; K.K.'s songs are their own class, never precached
+    expect([isMusic('/fitness/audio/music/halloween.m4a'), isMusic('/fitness/audio/places/shop.m4a'), isMusic('/fitness/audio/kk/kk-march.m4a'), precachable('audio/kk/kk-march.m4a')]).toEqual([true, true, false, false]);
     expect(isAudio('/fitness/art/fruit/peach.webp')).toBe(false);
   });
 

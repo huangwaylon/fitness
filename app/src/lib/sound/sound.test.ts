@@ -1,6 +1,7 @@
 // Settings persistence, the audio manifest (and that every file it names is on disk) and the placeholder renders
 // (docs/design.md#audio-files, #sound-settings).
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import raw from '../../../static/audio/manifest.json';
@@ -79,6 +80,17 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       .map((d) => relative(STATIC, join(d.parentPath, d.name)));
     expect(onDisk.filter((p) => !paths.includes(p))).toEqual([]);
   });
+  it('every entry carries its file’s content hash (`v`: a re-cut file is a new URL; `npm run audio:music -- --hashes`)', () => {
+    const files = (o: unknown): { file: string; v?: unknown }[] =>
+      o && typeof o === 'object' ? (typeof (o as { file?: unknown }).file === 'string' ? [o as { file: string }] : Object.values(o).flatMap(files)) : [];
+    const all = files(raw);
+    expect(all.length).toBeGreaterThan(200);
+    const stale = all.filter((e) => e.v !== createHash('sha256').update(readFileSync(join(STATIC, e.file))).digest('hex').slice(0, 8));
+    expect(stale.map((e) => e.file)).toEqual([]);
+    // the app fetches them under it
+    expect(AUDIO.opening!.file).toMatch(/^music\/opening\.m4a\?v=[0-9a-f]{8}$/);
+    expect(AUDIO.sfx['get-fanfare']).toMatch(/^sfx\/get-fanfare\.m4a\?v=[0-9a-f]{8}$/);
+  });
   it('has all 24 sunny hours, each with a loop start, a period end and a loudness gain, plus the opening', () => {
     const sunny = AUDIO.music.sunny ?? {};
     expect(Object.keys(sunny).sort()).toEqual(Array.from({ length: 24 }, (_, h) => String(h).padStart(2, '0')));
@@ -90,18 +102,18 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       expect(t!.gain).toBeLessThanOrEqual(6);
     }
     expect(hasMusic()).toBe(true);
-    expect(AUDIO.opening).toMatchObject({ file: 'music/opening.m4a', start: 0 });
+    expect(AUDIO.opening).toMatchObject({ file: expect.stringMatching(/^music\/opening\.m4a\?v=/), start: 0 });
     expect(AUDIO.opening!.gain).toBeLessThan(0); // the loudest file: turned down
   });
   it('drops what it cannot use and says so', () => {
     const { manifest, problems } = parseManifest({
-      sfx: { coin: 'sfx/coin.m4a', nope: 'x.m4a', pop: 3 },
+      sfx: { coin: 'sfx/coin.m4a', nope: 'x.m4a', pop: 3, bells: { file: 'sfx/bells.m4a', v: '0a1b2c3d' }, thud: { file: 'sfx/thud.m4a', v: '../x' } },
       music: {
         sunny: {
           '07': { file: 'music/a.m4a' },
           '24': 'music/b.m4a',
           '08': { file: 'music/c.m4a', start: 12.5 },
-          '09': { file: 'music/d.m4a', start: 3, end: 60, gain: -2.5 },
+          '09': { file: 'music/d.m4a', start: 3, end: 60, gain: -2.5, v: 'beef0123' },
           '10': { file: 'music/e.m4a', start: 30, end: 20, gain: 'loud' }
         },
         fog: {}
@@ -113,13 +125,14 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       opening: 4
     });
     expect(manifest).toEqual({
-      sfx: { coin: 'sfx/coin.m4a' },
+      // (an entry's hash its `?v=`; one that isn't a hash is left off)
+      sfx: { coin: 'sfx/coin.m4a', bells: 'sfx/bells.m4a?v=0a1b2c3d', thud: 'sfx/thud.m4a' },
       opening: null,
       music: {
         sunny: {
           '07': { file: 'music/a.m4a', start: 0 },
           '08': { file: 'music/c.m4a', start: 12.5 },
-          '09': { file: 'music/d.m4a', start: 3, end: 60, gain: -2.5 },
+          '09': { file: 'music/d.m4a?v=beef0123', start: 3, end: 60, gain: -2.5 },
           // an end before the start falls back to <audio loop>; a gain that isn't a number to 0 dB
           '10': { file: 'music/e.m4a', start: 30 }
         }

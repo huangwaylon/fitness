@@ -2,7 +2,9 @@
 // - The Content-Security-Policy is the one SvelteKit wrote into index.html's <meta> (vite.config.ts `csp`: the relay's
 //   origins, data:/blob: images and media, the hash of its inline bootstrap script, inline styles), plus what a <meta>
 //   can't carry: frame-ancestors 'none'. The <meta> stays (the same policy; both apply).
-// - Hashed files (`_app/immutable/`) are cached for a year; everything else keeps Pages' default (revalidated).
+// - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
+//   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts); everything else keeps Pages' default
+//   (revalidated).
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -26,6 +28,9 @@ const headers = `${base}/*
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
 ${base}/_app/immutable/*
+  Cache-Control: public, max-age=31536000, immutable
+
+${base}/audio/*
   Cache-Control: public, max-age=31536000, immutable
 `;
 writeFileSync(join(root, '_headers'), headers);

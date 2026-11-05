@@ -8,6 +8,7 @@
   // or when it plays), and its ♪ floats only when it's ready. No ベル.
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
   //   ?stretch (dev or ?demo) brings the deck out now.
+  import { untrack } from 'svelte';
   import { hookFlag } from './devHooks.ts';
   import { su } from './scene.ts';
   import { TAPE_DECK } from './world.ts';
@@ -17,7 +18,7 @@
   import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { eventJingle } from '#lib/sound/sound.svelte.ts';
+  import { eventJingle, stopJingle } from '#lib/sound/sound.svelte.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { POSES, POSE_MS, STRETCH_MS, deckOut, sawIsland, stretched, stretchedToday } from './stretching.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -64,11 +65,15 @@
     stretched(date);
     // NH's aerobics music cuts in for the stretch (ミュージック on, its file there), else the tape's little tune
     if (!eventJingle('aerobics', STRETCH_MS)) cue('stretch');
-    groupStretch(POSES, POSE_MS, () => {
+    const over = () => {
       playing = false;
       bump++;
-    });
+    };
+    // cut short (the actors reset): the tape stops with it, the island's music comes back
+    groupStretch(POSES, POSE_MS, over, () => (over(), stopJingle('aerobics')));
   }
+  // the island left mid-stretch: the tape doesn't play on over the room's music
+  $effect(() => () => untrack(() => playing && stopJingle('aerobics')));
 
   /** A tap on the scene (client px): true when the deck took it. Reach: a 44px target around the radio. Not ready (the
    *  layout's deck, every day): a line saying why. */

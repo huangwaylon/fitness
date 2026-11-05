@@ -1,38 +1,120 @@
 {
-  "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. Every entry is built by `npm run audio:music -- <dir> [--only <key regex>]` (scripts/music.ts, its CATALOGUE: source track number -> key) from the user's own files; `npm run audio:music -- --gains` re-measures only the gains. A music entry is { file, start, end?, gain }: a loop is one seamless period (start = the second where the loop begins musically; playback starts there) plus a 3 s copy of the period's start, `end` = where the period ends (the engine's two decks hand over inside the copy); a one-shot has start 0 and no `end`. gain = dB to the common loudness (-16 LUFS). Music: AAC-LC stereo 44.1 kHz, 64 kbps (K.K.'s from the GameCube / e+ rip mono at 40: the rip is all but mono). music.<sunny|rain|snow>.<00-23> = the Tokyo hour's loop (music/hour-HH, rain-HH, snow-HH). opening = the opening theme (one-shot). events.<id> = the event music and cut-ins (src/lib/sound/events.ts EVENT_MUSIC_IDS), music/<id>. places.<id> = a room's loop (src/lib/sound/places.ts), places/<id>. kk = K.K.'s live songs in NH's order, [{ id, ja, en, file, start, gain }] (ja/en: NH's official titles; one-shots under kk/); kkAircheck.<id> = the same song's aircheck (the stereo's recording), kk/aircheck/<id>. sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts or its `like`'s): AAC .m4a, mono 44.1 kHz 64 kbps, a plain path (no gain: the jingles from the OST, sfx/<id>, are trimmed, faded and normalised in the file to -16 LUFS as heard, from both speakers). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
+  "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. Every entry is built by `npm run audio:music -- <dir> [--only <key regex>]` (scripts/music.ts, its CATALOGUE: source track number -> key) from the user's own files; `npm run audio:music -- --gains` re-measures only the gains, `-- --hashes` rewrites only the hashes. Every entry carries `v`, its file's content hash (the app fetches file?v=, so a re-cut file is a new URL: /audio/* is cached as immutable); a file replaced by hand needs `--hashes`. A music entry is { file, start, end?, gain, v }: a loop is one seamless period (start = the second where the loop begins musically; playback starts there) plus a 3 s copy of the period's start, `end` = where the period ends (the engine's two decks hand over inside the copy); a one-shot has start 0 and no `end`. gain = dB to the common loudness (-16 LUFS). Music: AAC-LC stereo 44.1 kHz, 64 kbps (K.K.'s from the GameCube / e+ rip mono at 40: the rip is all but mono). music.<sunny|rain|snow>.<00-23> = the Tokyo hour's loop (music/hour-HH, rain-HH, snow-HH). opening = the opening theme (one-shot). events.<id> = the event music and cut-ins (src/lib/sound/events.ts EVENT_MUSIC_IDS), music/<id>. places.<id> = a room's loop (src/lib/sound/places.ts), places/<id>. kk = K.K.'s live songs in NH's order, [{ id, ja, en, file, start, gain }] (ja/en: NH's official titles; one-shots under kk/); kkAircheck.<id> = the same song's aircheck (the stereo's recording), kk/aircheck/<id>. sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts or its `like`'s): AAC .m4a, mono 44.1 kHz 64 kbps, { file, v } (no gain: the jingles from the OST, sfx/<id>, are trimmed, faded and normalised in the file to -16 LUFS as heard, from both speakers). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
   "sfx": {
-    "island-broadcast": "sfx/island-broadcast.m4a",
-    "get-fanfare": "sfx/get-fanfare.m4a",
-    "complete-fanfare": "sfx/complete-fanfare.m4a",
-    "radio-morning-1": "sfx/radio-morning-1.m4a",
-    "radio-morning-2": "sfx/radio-morning-2.m4a",
-    "radio-morning-3": "sfx/radio-morning-3.m4a",
-    "radio-morning-4": "sfx/radio-morning-4.m4a",
-    "radio-morning-5": "sfx/radio-morning-5.m4a",
-    "radio-morning-6": "sfx/radio-morning-6.m4a",
-    "radio-noon-1": "sfx/radio-noon-1.m4a",
-    "radio-noon-2": "sfx/radio-noon-2.m4a",
-    "radio-noon-3": "sfx/radio-noon-3.m4a",
-    "radio-noon-4": "sfx/radio-noon-4.m4a",
-    "radio-noon-5": "sfx/radio-noon-5.m4a",
-    "radio-noon-6": "sfx/radio-noon-6.m4a",
-    "radio-evening-1": "sfx/radio-evening-1.m4a",
-    "radio-evening-2": "sfx/radio-evening-2.m4a",
-    "radio-evening-3": "sfx/radio-evening-3.m4a",
-    "radio-evening-4": "sfx/radio-evening-4.m4a",
-    "radio-evening-5": "sfx/radio-evening-5.m4a",
-    "radio-evening-6": "sfx/radio-evening-6.m4a",
-    "radio-bunny-day": "sfx/radio-bunny-day.m4a",
-    "radio-halloween": "sfx/radio-halloween.m4a",
-    "radio-turkey-day": "sfx/radio-turkey-day.m4a",
-    "radio-toy-day": "sfx/radio-toy-day.m4a",
-    "radio-countdown": "sfx/radio-countdown.m4a",
-    "radio-carnival": "sfx/radio-carnival.m4a"
+    "island-broadcast": {
+      "file": "sfx/island-broadcast.m4a",
+      "v": "44156f3b"
+    },
+    "get-fanfare": {
+      "file": "sfx/get-fanfare.m4a",
+      "v": "57c2dfbc"
+    },
+    "complete-fanfare": {
+      "file": "sfx/complete-fanfare.m4a",
+      "v": "14d0c85c"
+    },
+    "radio-morning-1": {
+      "file": "sfx/radio-morning-1.m4a",
+      "v": "f790f7c4"
+    },
+    "radio-morning-2": {
+      "file": "sfx/radio-morning-2.m4a",
+      "v": "da7ccbad"
+    },
+    "radio-morning-3": {
+      "file": "sfx/radio-morning-3.m4a",
+      "v": "9613b4e0"
+    },
+    "radio-morning-4": {
+      "file": "sfx/radio-morning-4.m4a",
+      "v": "80c4cb6c"
+    },
+    "radio-morning-5": {
+      "file": "sfx/radio-morning-5.m4a",
+      "v": "1cc2bb7a"
+    },
+    "radio-morning-6": {
+      "file": "sfx/radio-morning-6.m4a",
+      "v": "ac019deb"
+    },
+    "radio-noon-1": {
+      "file": "sfx/radio-noon-1.m4a",
+      "v": "604c1b52"
+    },
+    "radio-noon-2": {
+      "file": "sfx/radio-noon-2.m4a",
+      "v": "8ec12427"
+    },
+    "radio-noon-3": {
+      "file": "sfx/radio-noon-3.m4a",
+      "v": "74a3514d"
+    },
+    "radio-noon-4": {
+      "file": "sfx/radio-noon-4.m4a",
+      "v": "1a497dcc"
+    },
+    "radio-noon-5": {
+      "file": "sfx/radio-noon-5.m4a",
+      "v": "33828770"
+    },
+    "radio-noon-6": {
+      "file": "sfx/radio-noon-6.m4a",
+      "v": "6fa5a07d"
+    },
+    "radio-evening-1": {
+      "file": "sfx/radio-evening-1.m4a",
+      "v": "8e6cf912"
+    },
+    "radio-evening-2": {
+      "file": "sfx/radio-evening-2.m4a",
+      "v": "a9d17cb0"
+    },
+    "radio-evening-3": {
+      "file": "sfx/radio-evening-3.m4a",
+      "v": "7d985a1b"
+    },
+    "radio-evening-4": {
+      "file": "sfx/radio-evening-4.m4a",
+      "v": "3b2c3ec1"
+    },
+    "radio-evening-5": {
+      "file": "sfx/radio-evening-5.m4a",
+      "v": "f89ba1b3"
+    },
+    "radio-evening-6": {
+      "file": "sfx/radio-evening-6.m4a",
+      "v": "895440c4"
+    },
+    "radio-bunny-day": {
+      "file": "sfx/radio-bunny-day.m4a",
+      "v": "61f7d1d6"
+    },
+    "radio-halloween": {
+      "file": "sfx/radio-halloween.m4a",
+      "v": "db3b69a2"
+    },
+    "radio-turkey-day": {
+      "file": "sfx/radio-turkey-day.m4a",
+      "v": "14d5b844"
+    },
+    "radio-toy-day": {
+      "file": "sfx/radio-toy-day.m4a",
+      "v": "26023363"
+    },
+    "radio-countdown": {
+      "file": "sfx/radio-countdown.m4a",
+      "v": "8aedbcd1"
+    },
+    "radio-carnival": {
+      "file": "sfx/radio-carnival.m4a",
+      "v": "f0a78f28"
+    }
   },
   "opening": {
     "file": "music/opening.m4a",
     "start": 0,
-    "gain": -5.3
+    "gain": -5.3,
+    "v": "ef2e962c"
   },
   "music": {
     "sunny": {
@@ -40,145 +122,169 @@
         "file": "music/hour-10.m4a",
         "start": 60.623,
         "end": 69.333333,
-        "gain": -2.2
+        "gain": -2.2,
+        "v": "23bc0847"
       },
       "11": {
         "file": "music/hour-11.m4a",
         "start": 70.758,
         "end": 79.384626,
-        "gain": -2.6
+        "gain": -2.6,
+        "v": "737f965a"
       },
       "12": {
         "file": "music/hour-12.m4a",
         "start": 56.514,
         "end": 65.21746,
-        "gain": -4.1
+        "gain": -4.1,
+        "v": "a29e0321"
       },
       "13": {
         "file": "music/hour-13.m4a",
         "start": 47.385,
         "end": 55.384603,
-        "gain": -1.2
+        "gain": -1.2,
+        "v": "065e485e"
       },
       "14": {
         "file": "music/hour-14.m4a",
         "start": 75.163,
         "end": 83.72093,
-        "gain": -2
+        "gain": -2,
+        "v": "d36ccb9d"
       },
       "15": {
         "file": "music/hour-15.m4a",
         "start": 48.024,
         "end": 56.842109,
-        "gain": -2.7
+        "gain": -2.7,
+        "v": "4858c803"
       },
       "16": {
         "file": "music/hour-16.m4a",
         "start": 30.526,
         "end": 50.526327,
-        "gain": -1.9
+        "gain": -1.9,
+        "v": "68a67514"
       },
       "17": {
         "file": "music/hour-17.m4a",
         "start": 89.804,
         "end": 98.630136,
-        "gain": -1.3
+        "gain": -1.3,
+        "v": "3c885793"
       },
       "18": {
         "file": "music/hour-18.m4a",
         "start": 41.475,
         "end": 54.130431,
-        "gain": 0.9
+        "gain": 0.9,
+        "v": "23f0716f"
       },
       "19": {
         "file": "music/hour-19.m4a",
         "start": 91.054,
         "end": 103.783764,
-        "gain": 0.2
+        "gain": 0.2,
+        "v": "2c22a684"
       },
       "20": {
         "file": "music/hour-20.m4a",
         "start": 43.794,
         "end": 54,
-        "gain": -1.8
+        "gain": -1.8,
+        "v": "7e475bf8"
       },
       "21": {
         "file": "music/hour-21.m4a",
         "start": 43.495,
         "end": 56.29737,
-        "gain": -0.2
+        "gain": -0.2,
+        "v": "738063aa"
       },
       "22": {
         "file": "music/hour-22.m4a",
         "start": 57.932,
         "end": 66.671043,
-        "gain": -1.1
+        "gain": -1.1,
+        "v": "237b38e5"
       },
       "23": {
         "file": "music/hour-23.m4a",
         "start": 63.395,
         "end": 72,
-        "gain": -0.1
+        "gain": -0.1,
+        "v": "0fa42e1c"
       },
       "00": {
         "file": "music/hour-00.m4a",
         "start": 57.245,
         "end": 69.76746,
-        "gain": 1.4
+        "gain": 1.4,
+        "v": "92ce1813"
       },
       "01": {
         "file": "music/hour-01.m4a",
         "start": 75.444,
         "end": 84,
-        "gain": 0
+        "gain": 0,
+        "v": "f98f199c"
       },
       "02": {
         "file": "music/hour-02.m4a",
         "start": 93.71,
         "end": 102.352971,
-        "gain": 0.9
+        "gain": 0.9,
+        "v": "3658231d"
       },
       "03": {
         "file": "music/hour-03.m4a",
         "start": 41.885,
         "end": 50.526304,
-        "gain": -0.1
+        "gain": -0.1,
+        "v": "3e2f7424"
       },
       "04": {
         "file": "music/hour-04.m4a",
         "start": 42.124,
         "end": 54.857143,
-        "gain": 0.6
+        "gain": 0.6,
+        "v": "29567dff"
       },
       "05": {
         "file": "music/hour-05.m4a",
         "start": 80,
         "end": 95.999955,
-        "gain": 2.7
+        "gain": 2.7,
+        "v": "3695901d"
       },
       "06": {
         "file": "music/hour-06.m4a",
         "start": 52.754,
         "end": 61.621633,
-        "gain": 0.2
+        "gain": 0.2,
+        "v": "d41a13ff"
       },
       "07": {
         "file": "music/hour-07.m4a",
         "start": 66.188,
         "end": 75,
-        "gain": -1.8
+        "gain": -1.8,
+        "v": "c92027f3"
       },
       "08": {
         "file": "music/hour-08.m4a",
         "start": 61.806,
         "end": 70.714263,
-        "gain": -3.4
+        "gain": -3.4,
+        "v": "a79baea1"
       },
       "09": {
         "file": "music/hour-09.m4a",
         "start": 50.183,
         "end": 58.784104,
-        "gain": -2.3
+        "gain": -2.3,
+        "v": "e8acee52"
       }
     },
     "rain": {
@@ -186,145 +292,169 @@
         "file": "music/rain-10.m4a",
         "start": 60.333,
         "end": 69.333333,
-        "gain": 0.5
+        "gain": 0.5,
+        "v": "c6e2a3ef"
       },
       "11": {
         "file": "music/rain-11.m4a",
         "start": 77.385,
         "end": 79.384626,
-        "gain": -0.6
+        "gain": -0.6,
+        "v": "63078523"
       },
       "12": {
         "file": "music/rain-12.m4a",
         "start": 64.217,
         "end": 65.21737,
-        "gain": -1.9
+        "gain": -1.9,
+        "v": "2f1fe4ff"
       },
       "13": {
         "file": "music/rain-13.m4a",
         "start": 45.885,
         "end": 55.384626,
-        "gain": 1
+        "gain": 1,
+        "v": "7f6c7685"
       },
       "14": {
         "file": "music/rain-14.m4a",
         "start": 82.721,
         "end": 83.72093,
-        "gain": 0.7
+        "gain": 0.7,
+        "v": "12282224"
       },
       "15": {
         "file": "music/rain-15.m4a",
         "start": 55.342,
         "end": 56.842109,
-        "gain": -0.1
+        "gain": -0.1,
+        "v": "99132edb"
       },
       "16": {
         "file": "music/rain-16.m4a",
         "start": 34.519,
         "end": 50.519048,
-        "gain": 2.1
+        "gain": 2.1,
+        "v": "3bd2820c"
       },
       "17": {
         "file": "music/rain-17.m4a",
         "start": 89.13,
         "end": 98.630136,
-        "gain": -0.1
+        "gain": -0.1,
+        "v": "a68dd346"
       },
       "18": {
         "file": "music/rain-18.m4a",
         "start": 51.13,
         "end": 54.130431,
-        "gain": 2.8
+        "gain": 2.8,
+        "v": "d1a3c696"
       },
       "19": {
         "file": "music/rain-19.m4a",
         "start": 96.784,
         "end": 103.783787,
-        "gain": 2.6
+        "gain": 2.6,
+        "v": "bf3fdcc1"
       },
       "20": {
         "file": "music/rain-20.m4a",
         "start": 53,
         "end": 54,
-        "gain": 0.7
+        "gain": 0.7,
+        "v": "a16daf28"
       },
       "21": {
         "file": "music/rain-21.m4a",
         "start": 53.296,
         "end": 56.296281,
-        "gain": 1.1
+        "gain": 1.1,
+        "v": "68f30278"
       },
       "22": {
         "file": "music/rain-22.m4a",
         "start": 65.667,
         "end": 66.666667,
-        "gain": -0.2
+        "gain": -0.2,
+        "v": "68e9b514"
       },
       "23": {
         "file": "music/rain-23.m4a",
         "start": 71,
         "end": 72,
-        "gain": 3.4
+        "gain": 3.4,
+        "v": "9ed1fe5e"
       },
       "00": {
         "file": "music/rain-00.m4a",
         "start": 68.767,
         "end": 69.767438,
-        "gain": 1.5
+        "gain": 1.5,
+        "v": "a5774d49"
       },
       "01": {
         "file": "music/rain-01.m4a",
         "start": 83,
         "end": 84,
-        "gain": 0.5
+        "gain": 0.5,
+        "v": "1253eebc"
       },
       "02": {
         "file": "music/rain-02.m4a",
         "start": 100.353,
         "end": 102.352948,
-        "gain": 2.8
+        "gain": 2.8,
+        "v": "f1054448"
       },
       "03": {
         "file": "music/rain-03.m4a",
         "start": 49.526,
         "end": 50.526304,
-        "gain": 1.5
+        "gain": 1.5,
+        "v": "560afe25"
       },
       "04": {
         "file": "music/rain-04.m4a",
         "start": 48.857,
         "end": 54.857188,
-        "gain": 3.8
+        "gain": 3.8,
+        "v": "a96cff88"
       },
       "05": {
         "file": "music/rain-05.m4a",
         "start": 95,
         "end": 96,
-        "gain": 3.5
+        "gain": 3.5,
+        "v": "d5dd280c"
       },
       "06": {
         "file": "music/rain-06.m4a",
         "start": 60.622,
         "end": 61.621633,
-        "gain": 3.7
+        "gain": 3.7,
+        "v": "6508ba80"
       },
       "07": {
         "file": "music/rain-07.m4a",
         "start": 74,
         "end": 75,
-        "gain": 0.7
+        "gain": 0.7,
+        "v": "4acb0c6d"
       },
       "08": {
         "file": "music/rain-08.m4a",
         "start": 69.714,
         "end": 70.714263,
-        "gain": -2.2
+        "gain": -2.2,
+        "v": "90773fcf"
       },
       "09": {
         "file": "music/rain-09.m4a",
         "start": 55.784,
         "end": 58.784104,
-        "gain": -2
+        "gain": -2,
+        "v": "81b3f0e1"
       }
     },
     "snow": {
@@ -332,145 +462,169 @@
         "file": "music/snow-10.m4a",
         "start": 59.333,
         "end": 69.333333,
-        "gain": 0.6
+        "gain": 0.6,
+        "v": "6cc88290"
       },
       "11": {
         "file": "music/snow-11.m4a",
         "start": 77.385,
         "end": 79.384626,
-        "gain": -0.5
+        "gain": -0.5,
+        "v": "de476aa0"
       },
       "12": {
         "file": "music/snow-12.m4a",
         "start": 61.217,
         "end": 65.21746,
-        "gain": -0.7
+        "gain": -0.7,
+        "v": "2254b897"
       },
       "13": {
         "file": "music/snow-13.m4a",
         "start": 51.885,
         "end": 55.384626,
-        "gain": 1.3
+        "gain": 1.3,
+        "v": "517bbb81"
       },
       "14": {
         "file": "music/snow-14.m4a",
         "start": 82.721,
         "end": 83.72093,
-        "gain": 0.2
+        "gain": 0.2,
+        "v": "3bc46831"
       },
       "15": {
         "file": "music/snow-15.m4a",
         "start": 54.842,
         "end": 56.842109,
-        "gain": -0.9
+        "gain": -0.9,
+        "v": "569fbe1b"
       },
       "16": {
         "file": "music/snow-16.m4a",
         "start": 34.519,
         "end": 50.51907,
-        "gain": 0.4
+        "gain": 0.4,
+        "v": "c4ce9e02"
       },
       "17": {
         "file": "music/snow-17.m4a",
         "start": 89.13,
         "end": 98.630136,
-        "gain": -0.4
+        "gain": -0.4,
+        "v": "8d085591"
       },
       "18": {
         "file": "music/snow-18.m4a",
         "start": 53.13,
         "end": 54.130431,
-        "gain": 2.6
+        "gain": 2.6,
+        "v": "5c2ead58"
       },
       "19": {
         "file": "music/snow-19.m4a",
         "start": 99.784,
         "end": 103.783787,
-        "gain": 2.2
+        "gain": 2.2,
+        "v": "8a5f9435"
       },
       "20": {
         "file": "music/snow-20.m4a",
         "start": 53,
         "end": 54,
-        "gain": 1.4
+        "gain": 1.4,
+        "v": "701d238f"
       },
       "21": {
         "file": "music/snow-21.m4a",
         "start": 53.296,
         "end": 56.296281,
-        "gain": 1.4
+        "gain": 1.4,
+        "v": "2a8ffd48"
       },
       "22": {
         "file": "music/snow-22.m4a",
         "start": 65.667,
         "end": 66.666667,
-        "gain": -0.2
+        "gain": -0.2,
+        "v": "9088d300"
       },
       "23": {
         "file": "music/snow-23.m4a",
         "start": 71,
         "end": 72,
-        "gain": 2
+        "gain": 2,
+        "v": "af944cd2"
       },
       "00": {
         "file": "music/snow-00.m4a",
         "start": 68.767,
         "end": 69.767438,
-        "gain": 2.8
+        "gain": 2.8,
+        "v": "eab7bb54"
       },
       "01": {
         "file": "music/snow-01.m4a",
         "start": 83,
         "end": 84,
-        "gain": 0.5
+        "gain": 0.5,
+        "v": "1b22f14d"
       },
       "02": {
         "file": "music/snow-02.m4a",
         "start": 97.353,
         "end": 102.352971,
-        "gain": 3.6
+        "gain": 3.6,
+        "v": "723e6689"
       },
       "03": {
         "file": "music/snow-03.m4a",
         "start": 49.526,
         "end": 50.526304,
-        "gain": 0.4
+        "gain": 0.4,
+        "v": "1ef3f37a"
       },
       "04": {
         "file": "music/snow-04.m4a",
         "start": 46.857,
         "end": 54.857143,
-        "gain": 2.2
+        "gain": 2.2,
+        "v": "19104557"
       },
       "05": {
         "file": "music/snow-05.m4a",
         "start": 95,
         "end": 96,
-        "gain": 2.8
+        "gain": 2.8,
+        "v": "37f9aacf"
       },
       "06": {
         "file": "music/snow-06.m4a",
         "start": 60.622,
         "end": 61.621633,
-        "gain": 2.2
+        "gain": 2.2,
+        "v": "20115680"
       },
       "07": {
         "file": "music/snow-07.m4a",
         "start": 74,
         "end": 75,
-        "gain": 0.8
+        "gain": 0.8,
+        "v": "6659f26a"
       },
       "08": {
         "file": "music/snow-08.m4a",
         "start": 64.714,
         "end": 70.714263,
-        "gain": -2.5
+        "gain": -2.5,
+        "v": "a56e41c3"
       },
       "09": {
         "file": "music/snow-09.m4a",
         "start": 55.784,
         "end": 58.784104,
-        "gain": -1.8
+        "gain": -1.8,
+        "v": "bc06bfcb"
       }
     }
   },
@@ -480,134 +634,157 @@
       "file": "music/halloween.m4a",
       "start": 69.335,
       "end": 78.139546,
-      "gain": -0.5
+      "gain": -0.5,
+      "v": "02774745"
     },
     "turkey-day": {
       "file": "music/turkey-day.m4a",
       "start": 62.469,
       "end": 71.111156,
-      "gain": -3
+      "gain": -3,
+      "v": "31f01028"
     },
     "happy-new-year": {
       "file": "music/happy-new-year.m4a",
       "start": 0,
-      "gain": -2.4
+      "gain": -2.4,
+      "v": "fee200fc"
     },
     "new-year-0am": {
       "file": "music/new-year-0am.m4a",
       "start": 88.818,
       "end": 96.818141,
-      "gain": -5.9
+      "gain": -5.9,
+      "v": "d33fe60b"
     },
     "new-year-2am": {
       "file": "music/new-year-2am.m4a",
       "start": 63.005,
       "end": 72,
-      "gain": -3.5
+      "gain": -3.5,
+      "v": "134d2b5a"
     },
     "new-years-day": {
       "file": "music/new-years-day.m4a",
       "start": 62.611,
       "end": 71.25,
-      "gain": -3.1
+      "gain": -3.1,
+      "v": "eb2f3ba7"
     },
     "bee-chase": {
       "file": "music/bee-chase.m4a",
       "start": 8.775,
       "end": 10.32263,
-      "gain": -0.4
+      "gain": -0.4,
+      "v": "22bf20a5"
     },
     "bee-stung": {
       "file": "music/bee-stung.m4a",
       "start": 0,
-      "gain": 2.2
+      "gain": 2.2,
+      "v": "42910643"
     },
     "wedding-party": {
       "file": "music/wedding-party.m4a",
       "start": 47.072,
       "end": 57.6,
-      "gain": 0.2
+      "gain": 0.2,
+      "v": "6b876688"
     },
     "fireworks-show": {
       "file": "music/fireworks-show.m4a",
       "start": 52.931,
       "end": 57.93102,
-      "gain": -2.6
+      "gain": -2.6,
+      "v": "042b701b"
     },
     "turkey-cooking-start": {
       "file": "music/turkey-cooking-start.m4a",
       "start": 0,
-      "gain": -1.4
+      "gain": -1.4,
+      "v": "3db86028"
     },
     "turkey-cooking-done": {
       "file": "music/turkey-cooking-done.m4a",
       "start": 0,
-      "gain": 0.1
+      "gain": 0.1,
+      "v": "19717bd2"
     },
     "toy-day-snow": {
       "file": "music/toy-day-snow.m4a",
       "start": 65.676,
       "end": 73.142857,
-      "gain": -1.4
+      "gain": -1.4,
+      "v": "c1bcb727"
     },
     "toy-day": {
       "file": "music/toy-day.m4a",
       "start": 67.114,
       "end": 73.142857,
-      "gain": -2.2
+      "gain": -2.2,
+      "v": "c651c124"
     },
     "countdown-2300": {
       "file": "music/countdown-2300.m4a",
       "start": 55.361,
       "end": 58.94737,
-      "gain": -1.7
+      "gain": -1.7,
+      "v": "85247ff8"
     },
     "countdown-2330": {
       "file": "music/countdown-2330.m4a",
       "start": 52.21,
       "end": 55,
-      "gain": -3.3
+      "gain": -3.3,
+      "v": "3799255e"
     },
     "countdown-2350": {
       "file": "music/countdown-2350.m4a",
       "start": 56.969,
       "end": 63.157868,
-      "gain": -4.1
+      "gain": -4.1,
+      "v": "44ad6c05"
     },
     "countdown-2355": {
       "file": "music/countdown-2355.m4a",
       "start": 47.677,
       "end": 49.230771,
-      "gain": -4.1
+      "gain": -4.1,
+      "v": "8d125ba3"
     },
     "happy-birthday": {
       "file": "music/happy-birthday.m4a",
       "start": 0,
-      "gain": 3.6
+      "gain": 3.6,
+      "v": "a272ffd6"
     },
     "aerobics": {
       "file": "music/aerobics.m4a",
       "start": 0,
       "end": 98.275261,
-      "gain": 2.7
+      "gain": 2.7,
+      "v": "41c8b7e2"
     },
     "bunny-day": {
       "file": "music/bunny-day.m4a",
       "start": 55.429,
       "end": 61.714263,
-      "gain": -2.5
+      "gain": -2.5,
+      "v": "b706aa50"
     },
     "wedding": {
       "file": "music/wedding.m4a",
       "start": 122.326,
       "end": 127.8261,
-      "gain": 0.8
+      "gain": 0.8,
+      "v": "a6493277"
     },
     "festivale": {
       "file": "music/festivale.m4a",
       "start": 47.646,
       "end": 50.323016,
-      "gain": -1.2
+      "gain": -1.2,
+      "v": "a0ba2c87"
     }
   },
   "kk": [
@@ -617,7 +794,8 @@
       "en": "K.K. Chorale",
       "file": "kk/kk-chorale.m4a",
       "start": 0,
-      "gain": -2.7
+      "gain": -2.7,
+      "v": "0ef12b8a"
     },
     {
       "id": "kk-march",
@@ -625,7 +803,8 @@
       "en": "K.K. March",
       "file": "kk/kk-march.m4a",
       "start": 0,
-      "gain": -4.1
+      "gain": -4.1,
+      "v": "00487813"
     },
     {
       "id": "kk-waltz",
@@ -633,7 +812,8 @@
       "en": "K.K. Waltz",
       "file": "kk/kk-waltz.m4a",
       "start": 0,
-      "gain": -3.4
+      "gain": -3.4,
+      "v": "cc5a0fe2"
     },
     {
       "id": "kk-swing",
@@ -641,7 +821,8 @@
       "en": "K.K. Swing",
       "file": "kk/kk-swing.m4a",
       "start": 0,
-      "gain": -2.7
+      "gain": -2.7,
+      "v": "5f2a85a5"
     },
     {
       "id": "kk-jazz",
@@ -649,7 +830,8 @@
       "en": "K.K. Jazz",
       "file": "kk/kk-jazz.m4a",
       "start": 0,
-      "gain": -2.6
+      "gain": -2.6,
+      "v": "a4d52e68"
     },
     {
       "id": "kk-fusion",
@@ -657,7 +839,8 @@
       "en": "K.K. Fusion",
       "file": "kk/kk-fusion.m4a",
       "start": 0,
-      "gain": -1.1
+      "gain": -1.1,
+      "v": "623a4bd7"
     },
     {
       "id": "kk-etude",
@@ -665,7 +848,8 @@
       "en": "K.K. Étude",
       "file": "kk/kk-etude.m4a",
       "start": 0,
-      "gain": -1.7
+      "gain": -1.7,
+      "v": "b61504e6"
     },
     {
       "id": "kk-lullaby",
@@ -673,7 +857,8 @@
       "en": "K.K. Lullaby",
       "file": "kk/kk-lullaby.m4a",
       "start": 0,
-      "gain": -1.8
+      "gain": -1.8,
+      "v": "16f02b3d"
     },
     {
       "id": "kk-aria",
@@ -681,7 +866,8 @@
       "en": "K.K. Aria",
       "file": "kk/kk-aria.m4a",
       "start": 0,
-      "gain": -1.6
+      "gain": -1.6,
+      "v": "39625555"
     },
     {
       "id": "kk-samba",
@@ -689,7 +875,8 @@
       "en": "K.K. Samba",
       "file": "kk/kk-samba.m4a",
       "start": 0,
-      "gain": -1
+      "gain": -1,
+      "v": "c2d2ff44"
     },
     {
       "id": "kk-bossa",
@@ -697,7 +884,8 @@
       "en": "K.K. Bossa",
       "file": "kk/kk-bossa.m4a",
       "start": 0,
-      "gain": -3.5
+      "gain": -3.5,
+      "v": "8f2ea3fa"
     },
     {
       "id": "kk-calypso",
@@ -705,7 +893,8 @@
       "en": "K.K. Calypso",
       "file": "kk/kk-calypso.m4a",
       "start": 0,
-      "gain": -1.3
+      "gain": -1.3,
+      "v": "9a613868"
     },
     {
       "id": "kk-salsa",
@@ -713,7 +902,8 @@
       "en": "K.K. Salsa",
       "file": "kk/kk-salsa.m4a",
       "start": 0,
-      "gain": -3
+      "gain": -3,
+      "v": "ccaf2c43"
     },
     {
       "id": "kk-mambo",
@@ -721,7 +911,8 @@
       "en": "K.K. Mambo",
       "file": "kk/kk-mambo.m4a",
       "start": 0,
-      "gain": -0.1
+      "gain": -0.1,
+      "v": "3ce6173e"
     },
     {
       "id": "kk-reggae",
@@ -729,7 +920,8 @@
       "en": "K.K. Reggae",
       "file": "kk/kk-reggae.m4a",
       "start": 0,
-      "gain": -3
+      "gain": -3,
+      "v": "6b498859"
     },
     {
       "id": "kk-ska",
@@ -737,7 +929,8 @@
       "en": "K.K. Ska",
       "file": "kk/kk-ska.m4a",
       "start": 0,
-      "gain": -0.3
+      "gain": -0.3,
+      "v": "48ad2cce"
     },
     {
       "id": "kk-tango",
@@ -745,7 +938,8 @@
       "en": "K.K. Tango",
       "file": "kk/kk-tango.m4a",
       "start": 0,
-      "gain": -0.1
+      "gain": -0.1,
+      "v": "8ab34d56"
     },
     {
       "id": "kk-faire",
@@ -753,7 +947,8 @@
       "en": "K.K. Faire",
       "file": "kk/kk-faire.m4a",
       "start": 0,
-      "gain": -1.8
+      "gain": -1.8,
+      "v": "34cdb9d3"
     },
     {
       "id": "kk-aloha",
@@ -761,7 +956,8 @@
       "en": "Aloha K.K.",
       "file": "kk/kk-aloha.m4a",
       "start": 0,
-      "gain": -3
+      "gain": -3,
+      "v": "89507cc3"
     },
     {
       "id": "kk-lucky",
@@ -769,7 +965,8 @@
       "en": "Lucky K.K.",
       "file": "kk/kk-lucky.m4a",
       "start": 0,
-      "gain": -0.3
+      "gain": -0.3,
+      "v": "a716159d"
     },
     {
       "id": "kk-condor",
@@ -777,7 +974,8 @@
       "en": "K.K. Condor",
       "file": "kk/kk-condor.m4a",
       "start": 0,
-      "gain": -1.5
+      "gain": -1.5,
+      "v": "5d8ee4d3"
     },
     {
       "id": "kk-steppe",
@@ -785,7 +983,8 @@
       "en": "K.K. Steppe",
       "file": "kk/kk-steppe.m4a",
       "start": 0,
-      "gain": -1.3
+      "gain": -1.3,
+      "v": "6b51ebdc"
     },
     {
       "id": "kk-imperial",
@@ -793,7 +992,8 @@
       "en": "Imperial K.K.",
       "file": "kk/kk-imperial.m4a",
       "start": 0,
-      "gain": -0.1
+      "gain": -0.1,
+      "v": "6f79e9d3"
     },
     {
       "id": "kk-casbah",
@@ -801,7 +1001,8 @@
       "en": "K.K. Casbah",
       "file": "kk/kk-casbah.m4a",
       "start": 0,
-      "gain": -0.7
+      "gain": -0.7,
+      "v": "832dbdd9"
     },
     {
       "id": "kk-safari",
@@ -809,7 +1010,8 @@
       "en": "K.K. Safari",
       "file": "kk/kk-safari.m4a",
       "start": 0,
-      "gain": 0.2
+      "gain": 0.2,
+      "v": "eb5ecc49"
     },
     {
       "id": "kk-folk",
@@ -817,7 +1019,8 @@
       "en": "K.K. Folk",
       "file": "kk/kk-folk.m4a",
       "start": 0,
-      "gain": -1.3
+      "gain": -1.3,
+      "v": "4629e5d1"
     },
     {
       "id": "kk-rock",
@@ -825,7 +1028,8 @@
       "en": "K.K. Rock",
       "file": "kk/kk-rock.m4a",
       "start": 0,
-      "gain": -3.4
+      "gain": -3.4,
+      "v": "72a5ad5b"
     },
     {
       "id": "kk-rockin",
@@ -833,7 +1037,8 @@
       "en": "Rockin' K.K.",
       "file": "kk/kk-rockin.m4a",
       "start": 0,
-      "gain": -4.1
+      "gain": -4.1,
+      "v": "eb3fd1cc"
     },
     {
       "id": "kk-ragtime",
@@ -841,7 +1046,8 @@
       "en": "K.K. Ragtime",
       "file": "kk/kk-ragtime.m4a",
       "start": 0,
-      "gain": -0.9
+      "gain": -0.9,
+      "v": "c1c6eafb"
     },
     {
       "id": "kk-gumbo",
@@ -849,7 +1055,8 @@
       "en": "K.K. Gumbo",
       "file": "kk/kk-gumbo.m4a",
       "start": 0,
-      "gain": -1
+      "gain": -1,
+      "v": "fd77d7df"
     },
     {
       "id": "kk-funk",
@@ -857,7 +1064,8 @@
       "en": "The K. Funk",
       "file": "kk/kk-funk.m4a",
       "start": 0,
-      "gain": 0.9
+      "gain": 0.9,
+      "v": "7a84554c"
     },
     {
       "id": "kk-blues",
@@ -865,7 +1073,8 @@
       "en": "K.K. Blues",
       "file": "kk/kk-blues.m4a",
       "start": 0,
-      "gain": -0.5
+      "gain": -0.5,
+      "v": "fc60cf1a"
     },
     {
       "id": "kk-soulful",
@@ -873,7 +1082,8 @@
       "en": "Soulful K.K.",
       "file": "kk/kk-soulful.m4a",
       "start": 0,
-      "gain": -2.6
+      "gain": -2.6,
+      "v": "76abcb60"
     },
     {
       "id": "kk-soul",
@@ -881,7 +1091,8 @@
       "en": "K.K. Soul",
       "file": "kk/kk-soul.m4a",
       "start": 0,
-      "gain": 0.5
+      "gain": 0.5,
+      "v": "ead21af4"
     },
     {
       "id": "kk-cruisin",
@@ -889,7 +1100,8 @@
       "en": "K.K. Cruisin'",
       "file": "kk/kk-cruisin.m4a",
       "start": 0,
-      "gain": -1.5
+      "gain": -1.5,
+      "v": "c8560bc2"
     },
     {
       "id": "kk-love-song",
@@ -897,7 +1109,8 @@
       "en": "K.K. Love Song",
       "file": "kk/kk-love-song.m4a",
       "start": 0,
-      "gain": -2
+      "gain": -2,
+      "v": "402f0774"
     },
     {
       "id": "kk-dnb",
@@ -905,7 +1118,8 @@
       "en": "K.K. D&B",
       "file": "kk/kk-dnb.m4a",
       "start": 0,
-      "gain": 0
+      "gain": 0,
+      "v": "e687d868"
     },
     {
       "id": "kk-technopop",
@@ -913,7 +1127,8 @@
       "en": "K.K. Technopop",
       "file": "kk/kk-technopop.m4a",
       "start": 0,
-      "gain": 0.4
+      "gain": 0.4,
+      "v": "8384ee24"
     },
     {
       "id": "kk-dj",
@@ -921,7 +1136,8 @@
       "en": "DJ K.K.",
       "file": "kk/kk-dj.m4a",
       "start": 0,
-      "gain": -0.5
+      "gain": -0.5,
+      "v": "f8e700d4"
     },
     {
       "id": "kk-only-me",
@@ -929,7 +1145,8 @@
       "en": "Only Me",
       "file": "kk/kk-only-me.m4a",
       "start": 0,
-      "gain": -1.2
+      "gain": -1.2,
+      "v": "0558643e"
     },
     {
       "id": "kk-country",
@@ -937,7 +1154,8 @@
       "en": "K.K. Country",
       "file": "kk/kk-country.m4a",
       "start": 0,
-      "gain": -1
+      "gain": -1,
+      "v": "3bba6787"
     },
     {
       "id": "kk-surfin",
@@ -945,7 +1163,8 @@
       "en": "Surfin' K.K.",
       "file": "kk/kk-surfin.m4a",
       "start": 0,
-      "gain": -0.9
+      "gain": -0.9,
+      "v": "c27ed63c"
     },
     {
       "id": "kk-ballad",
@@ -953,7 +1172,8 @@
       "en": "K.K. Ballad",
       "file": "kk/kk-ballad.m4a",
       "start": 0,
-      "gain": -1.1
+      "gain": -1.1,
+      "v": "ac8182be"
     },
     {
       "id": "kk-comrade",
@@ -961,7 +1181,8 @@
       "en": "Comrade K.K.",
       "file": "kk/kk-comrade.m4a",
       "start": 0,
-      "gain": -2.6
+      "gain": -2.6,
+      "v": "425a570f"
     },
     {
       "id": "kk-lament",
@@ -969,7 +1190,8 @@
       "en": "K.K. Lament",
       "file": "kk/kk-lament.m4a",
       "start": 0,
-      "gain": -1.2
+      "gain": -1.2,
+      "v": "fcbf51fc"
     },
     {
       "id": "kk-go-rider",
@@ -977,7 +1199,8 @@
       "en": "Go K.K. Rider",
       "file": "kk/kk-go-rider.m4a",
       "start": 0,
-      "gain": -1.4
+      "gain": -1.4,
+      "v": "280d015e"
     },
     {
       "id": "kk-dirge",
@@ -985,7 +1208,8 @@
       "en": "K.K. Dirge",
       "file": "kk/kk-dirge.m4a",
       "start": 0,
-      "gain": -1.4
+      "gain": -1.4,
+      "v": "5e0b652e"
     },
     {
       "id": "kk-western",
@@ -993,7 +1217,8 @@
       "en": "K.K. Western",
       "file": "kk/kk-western.m4a",
       "start": 0,
-      "gain": -1.3
+      "gain": -1.3,
+      "v": "28b65755"
     },
     {
       "id": "kk-mr",
@@ -1001,7 +1226,8 @@
       "en": "Mr. K.K.",
       "file": "kk/kk-mr.m4a",
       "start": 0,
-      "gain": -2
+      "gain": -2,
+      "v": "edfa5fa2"
     },
     {
       "id": "kk-cafe",
@@ -1009,7 +1235,8 @@
       "en": "Café K.K.",
       "file": "kk/kk-cafe.m4a",
       "start": 0,
-      "gain": -1.7
+      "gain": -1.7,
+      "v": "fb1de813"
     },
     {
       "id": "kk-parade",
@@ -1017,7 +1244,8 @@
       "en": "K.K. Parade",
       "file": "kk/kk-parade.m4a",
       "start": 0,
-      "gain": -1.3
+      "gain": -1.3,
+      "v": "13042850"
     },
     {
       "id": "kk-mariachi",
@@ -1025,7 +1253,8 @@
       "en": "K.K. Mariachi",
       "file": "kk/kk-mariachi.m4a",
       "start": 0,
-      "gain": -2.7
+      "gain": -2.7,
+      "v": "cb4a3877"
     },
     {
       "id": "kk-song",
@@ -1033,7 +1262,8 @@
       "en": "K.K. Song",
       "file": "kk/kk-song.m4a",
       "start": 0,
-      "gain": -2
+      "gain": -2,
+      "v": "15b02f65"
     },
     {
       "id": "kk-i-love-you",
@@ -1041,7 +1271,8 @@
       "en": "I Love You",
       "file": "kk/kk-i-love-you.m4a",
       "start": 0,
-      "gain": -0.6
+      "gain": -0.6,
+      "v": "6e6aeb49"
     },
     {
       "id": "kk-two-days-ago",
@@ -1049,7 +1280,8 @@
       "en": "Two Days Ago",
       "file": "kk/kk-two-days-ago.m4a",
       "start": 0,
-      "gain": -1
+      "gain": -1,
+      "v": "1edb9021"
     },
     {
       "id": "kk-my-place",
@@ -1057,7 +1289,8 @@
       "en": "My Place",
       "file": "kk/kk-my-place.m4a",
       "start": 0,
-      "gain": -0.9
+      "gain": -0.9,
+      "v": "01ccbf59"
     },
     {
       "id": "kk-forest-life",
@@ -1065,7 +1298,8 @@
       "en": "Forest Life",
       "file": "kk/kk-forest-life.m4a",
       "start": 0,
-      "gain": 0.5
+      "gain": 0.5,
+      "v": "45a3bf1c"
     },
     {
       "id": "kk-to-the-edge",
@@ -1073,7 +1307,8 @@
       "en": "To the Edge",
       "file": "kk/kk-to-the-edge.m4a",
       "start": 0,
-      "gain": -0.2
+      "gain": -0.2,
+      "v": "d30648b4"
     },
     {
       "id": "kk-pondering",
@@ -1081,7 +1316,8 @@
       "en": "Pondering",
       "file": "kk/kk-pondering.m4a",
       "start": 0,
-      "gain": -1.2
+      "gain": -1.2,
+      "v": "551a39a3"
     },
     {
       "id": "kk-dixie",
@@ -1089,7 +1325,8 @@
       "en": "K.K. Dixie",
       "file": "kk/kk-dixie.m4a",
       "start": 0,
-      "gain": -3.5
+      "gain": -3.5,
+      "v": "464f8bff"
     },
     {
       "id": "kk-marathon",
@@ -1097,7 +1334,8 @@
       "en": "K.K. Marathon",
       "file": "kk/kk-marathon.m4a",
       "start": 0,
-      "gain": -0.8
+      "gain": -0.8,
+      "v": "82ac2009"
     },
     {
       "id": "kk-king",
@@ -1105,7 +1343,8 @@
       "en": "King K.K.",
       "file": "kk/kk-king.m4a",
       "start": 0,
-      "gain": -2.2
+      "gain": -2.2,
+      "v": "b9511125"
     },
     {
       "id": "kk-mountain-song",
@@ -1113,7 +1352,8 @@
       "en": "Mountain Song",
       "file": "kk/kk-mountain-song.m4a",
       "start": 0,
-      "gain": -0.9
+      "gain": -0.9,
+      "v": "0b73d766"
     },
     {
       "id": "kk-marine-song-2001",
@@ -1121,7 +1361,8 @@
       "en": "Marine Song 2001",
       "file": "kk/kk-marine-song-2001.m4a",
       "start": 0,
-      "gain": -2.3
+      "gain": -2.3,
+      "v": "f8d56ca5"
     },
     {
       "id": "kk-neapolitan",
@@ -1129,7 +1370,8 @@
       "en": "Neapolitan",
       "file": "kk/kk-neapolitan.m4a",
       "start": 0,
-      "gain": -2.4
+      "gain": -2.4,
+      "v": "b568636f"
     },
     {
       "id": "kk-steep-hill",
@@ -1137,7 +1379,8 @@
       "en": "Steep Hill",
       "file": "kk/kk-steep-hill.m4a",
       "start": 0,
-      "gain": -3.2
+      "gain": -3.2,
+      "v": "8ee30aa9"
     },
     {
       "id": "kk-rockabilly",
@@ -1145,7 +1388,8 @@
       "en": "K.K. Rockabilly",
       "file": "kk/kk-rockabilly.m4a",
       "start": 0,
-      "gain": -2
+      "gain": -2,
+      "v": "ada851d1"
     },
     {
       "id": "kk-agent",
@@ -1153,7 +1397,8 @@
       "en": "Agent K.K.",
       "file": "kk/kk-agent.m4a",
       "start": 0,
-      "gain": -2.6
+      "gain": -2.6,
+      "v": "4307c814"
     },
     {
       "id": "kk-rally",
@@ -1161,7 +1406,8 @@
       "en": "K.K. Rally",
       "file": "kk/kk-rally.m4a",
       "start": 0,
-      "gain": -2.7
+      "gain": -2.7,
+      "v": "79ca835d"
     },
     {
       "id": "kk-metal",
@@ -1169,7 +1415,8 @@
       "en": "K.K. Metal",
       "file": "kk/kk-metal.m4a",
       "start": 0,
-      "gain": -3.6
+      "gain": -3.6,
+      "v": "3926e891"
     },
     {
       "id": "kk-stale-cupcakes",
@@ -1177,7 +1424,8 @@
       "en": "Stale Cupcakes",
       "file": "kk/kk-stale-cupcakes.m4a",
       "start": 0,
-      "gain": -2.3
+      "gain": -2.3,
+      "v": "e910d778"
     },
     {
       "id": "kk-spring-blossoms",
@@ -1185,7 +1433,8 @@
       "en": "Spring Blossoms",
       "file": "kk/kk-spring-blossoms.m4a",
       "start": 0,
-      "gain": -0.4
+      "gain": -0.4,
+      "v": "bdf6b954"
     },
     {
       "id": "kk-wandering",
@@ -1193,7 +1442,8 @@
       "en": "Wandering",
       "file": "kk/kk-wandering.m4a",
       "start": 0,
-      "gain": -1.8
+      "gain": -1.8,
+      "v": "aaba665a"
     }
   ],
   "places": {
@@ -1201,383 +1451,458 @@
       "file": "places/resident-services.m4a",
       "start": 62.545,
       "end": 64,
-      "gain": -2
+      "gain": -2,
+      "v": "2f66fda2"
     },
     "shop": {
       "file": "places/shop.m4a",
       "start": 53.472,
       "end": 62.337664,
-      "gain": 0.7
+      "gain": 0.7,
+      "v": "6ef3ce34"
     },
     "museum-hall": {
       "file": "places/museum-hall.m4a",
       "start": 22.226,
       "end": 23.225805,
-      "gain": 6
+      "gain": 6,
+      "v": "458ea884"
     },
     "museum-fish": {
       "file": "places/museum-fish.m4a",
       "start": 63.677,
       "end": 69.677392,
-      "gain": 6
+      "gain": 6,
+      "v": "58a76dd5"
     },
     "museum-bugs": {
       "file": "places/museum-bugs.m4a",
       "start": 53.677,
       "end": 69.677392,
-      "gain": 6
+      "gain": 6,
+      "v": "3a5c3649"
     }
   },
   "kkAircheck": {
     "kk-chorale": {
       "file": "kk/aircheck/kk-chorale.m4a",
       "start": 0,
-      "gain": -6.2
+      "gain": -6.2,
+      "v": "8c0a72b0"
     },
     "kk-march": {
       "file": "kk/aircheck/kk-march.m4a",
       "start": 0,
-      "gain": -1.9
+      "gain": -1.9,
+      "v": "bf688217"
     },
     "kk-waltz": {
       "file": "kk/aircheck/kk-waltz.m4a",
       "start": 0,
-      "gain": -2.2
+      "gain": -2.2,
+      "v": "e79974ff"
     },
     "kk-swing": {
       "file": "kk/aircheck/kk-swing.m4a",
       "start": 0,
-      "gain": -6.4
+      "gain": -6.4,
+      "v": "2618ab56"
     },
     "kk-jazz": {
       "file": "kk/aircheck/kk-jazz.m4a",
       "start": 0,
-      "gain": -6.2
+      "gain": -6.2,
+      "v": "ae784fa2"
     },
     "kk-fusion": {
       "file": "kk/aircheck/kk-fusion.m4a",
       "start": 0,
-      "gain": -2.4
+      "gain": -2.4,
+      "v": "8dabb6f0"
     },
     "kk-etude": {
       "file": "kk/aircheck/kk-etude.m4a",
       "start": 0,
-      "gain": -2.3
+      "gain": -2.3,
+      "v": "e1cae4c5"
     },
     "kk-lullaby": {
       "file": "kk/aircheck/kk-lullaby.m4a",
       "start": 0,
-      "gain": -2.4
+      "gain": -2.4,
+      "v": "9e1c92fa"
     },
     "kk-aria": {
       "file": "kk/aircheck/kk-aria.m4a",
       "start": 0,
-      "gain": -5.2
+      "gain": -5.2,
+      "v": "79e7c7a3"
     },
     "kk-samba": {
       "file": "kk/aircheck/kk-samba.m4a",
       "start": 0,
-      "gain": -4.5
+      "gain": -4.5,
+      "v": "2ffdd56d"
     },
     "kk-bossa": {
       "file": "kk/aircheck/kk-bossa.m4a",
       "start": 0,
-      "gain": -4.5
+      "gain": -4.5,
+      "v": "34b39e8f"
     },
     "kk-calypso": {
       "file": "kk/aircheck/kk-calypso.m4a",
       "start": 0,
-      "gain": 0
+      "gain": 0,
+      "v": "72836de7"
     },
     "kk-salsa": {
       "file": "kk/aircheck/kk-salsa.m4a",
       "start": 0,
-      "gain": -1.4
+      "gain": -1.4,
+      "v": "f2ac1fb7"
     },
     "kk-mambo": {
       "file": "kk/aircheck/kk-mambo.m4a",
       "start": 0,
-      "gain": -1.7
+      "gain": -1.7,
+      "v": "352e17f0"
     },
     "kk-reggae": {
       "file": "kk/aircheck/kk-reggae.m4a",
       "start": 0,
-      "gain": -0.2
+      "gain": -0.2,
+      "v": "93243fe4"
     },
     "kk-ska": {
       "file": "kk/aircheck/kk-ska.m4a",
       "start": 0,
-      "gain": -2.5
+      "gain": -2.5,
+      "v": "ce52b7b7"
     },
     "kk-tango": {
       "file": "kk/aircheck/kk-tango.m4a",
       "start": 0,
-      "gain": -5.1
+      "gain": -5.1,
+      "v": "455c3136"
     },
     "kk-faire": {
       "file": "kk/aircheck/kk-faire.m4a",
       "start": 0,
-      "gain": -3
+      "gain": -3,
+      "v": "4bc7dffe"
     },
     "kk-aloha": {
       "file": "kk/aircheck/kk-aloha.m4a",
       "start": 0,
-      "gain": -2.4
+      "gain": -2.4,
+      "v": "5050d76a"
     },
     "kk-lucky": {
       "file": "kk/aircheck/kk-lucky.m4a",
       "start": 0,
-      "gain": -4.8
+      "gain": -4.8,
+      "v": "706e2945"
     },
     "kk-condor": {
       "file": "kk/aircheck/kk-condor.m4a",
       "start": 0,
-      "gain": -4.3
+      "gain": -4.3,
+      "v": "5cfc7443"
     },
     "kk-steppe": {
       "file": "kk/aircheck/kk-steppe.m4a",
       "start": 0,
-      "gain": -5.1
+      "gain": -5.1,
+      "v": "7e7a9186"
     },
     "kk-imperial": {
       "file": "kk/aircheck/kk-imperial.m4a",
       "start": 0,
-      "gain": -3.5
+      "gain": -3.5,
+      "v": "a0f047eb"
     },
     "kk-casbah": {
       "file": "kk/aircheck/kk-casbah.m4a",
       "start": 0,
-      "gain": -2.7
+      "gain": -2.7,
+      "v": "aa648b92"
     },
     "kk-safari": {
       "file": "kk/aircheck/kk-safari.m4a",
       "start": 0,
-      "gain": 0
+      "gain": 0,
+      "v": "9e54d963"
     },
     "kk-folk": {
       "file": "kk/aircheck/kk-folk.m4a",
       "start": 0,
-      "gain": -3.2
+      "gain": -3.2,
+      "v": "e42a0068"
     },
     "kk-rock": {
       "file": "kk/aircheck/kk-rock.m4a",
       "start": 0,
-      "gain": -3.2
+      "gain": -3.2,
+      "v": "e858027b"
     },
     "kk-rockin": {
       "file": "kk/aircheck/kk-rockin.m4a",
       "start": 0,
-      "gain": -5.5
+      "gain": -5.5,
+      "v": "cffd539e"
     },
     "kk-ragtime": {
       "file": "kk/aircheck/kk-ragtime.m4a",
       "start": 0,
-      "gain": -3
+      "gain": -3,
+      "v": "764d8b96"
     },
     "kk-gumbo": {
       "file": "kk/aircheck/kk-gumbo.m4a",
       "start": 0,
-      "gain": -3.6
+      "gain": -3.6,
+      "v": "53bed48e"
     },
     "kk-funk": {
       "file": "kk/aircheck/kk-funk.m4a",
       "start": 0,
-      "gain": -1.3
+      "gain": -1.3,
+      "v": "27616a97"
     },
     "kk-blues": {
       "file": "kk/aircheck/kk-blues.m4a",
       "start": 0,
-      "gain": -4.7
+      "gain": -4.7,
+      "v": "c4969dbf"
     },
     "kk-soulful": {
       "file": "kk/aircheck/kk-soulful.m4a",
       "start": 0,
-      "gain": -1.9
+      "gain": -1.9,
+      "v": "42b0287f"
     },
     "kk-soul": {
       "file": "kk/aircheck/kk-soul.m4a",
       "start": 0,
-      "gain": -2.2
+      "gain": -2.2,
+      "v": "6df693a9"
     },
     "kk-cruisin": {
       "file": "kk/aircheck/kk-cruisin.m4a",
       "start": 0,
-      "gain": -1.2
+      "gain": -1.2,
+      "v": "436c86b1"
     },
     "kk-love-song": {
       "file": "kk/aircheck/kk-love-song.m4a",
       "start": 0,
-      "gain": -0.5
+      "gain": -0.5,
+      "v": "77e50d78"
     },
     "kk-dnb": {
       "file": "kk/aircheck/kk-dnb.m4a",
       "start": 0,
-      "gain": -5.1
+      "gain": -5.1,
+      "v": "f52ec885"
     },
     "kk-technopop": {
       "file": "kk/aircheck/kk-technopop.m4a",
       "start": 0,
-      "gain": -1.3
+      "gain": -1.3,
+      "v": "4f901675"
     },
     "kk-dj": {
       "file": "kk/aircheck/kk-dj.m4a",
       "start": 0,
-      "gain": -3.6
+      "gain": -3.6,
+      "v": "e30e4c50"
     },
     "kk-only-me": {
       "file": "kk/aircheck/kk-only-me.m4a",
       "start": 0,
-      "gain": 1.6
+      "gain": 1.6,
+      "v": "d23c1ba3"
     },
     "kk-country": {
       "file": "kk/aircheck/kk-country.m4a",
       "start": 0,
-      "gain": -3.9
+      "gain": -3.9,
+      "v": "c8208ab8"
     },
     "kk-surfin": {
       "file": "kk/aircheck/kk-surfin.m4a",
       "start": 0,
-      "gain": -1.2
+      "gain": -1.2,
+      "v": "ef809f31"
     },
     "kk-ballad": {
       "file": "kk/aircheck/kk-ballad.m4a",
       "start": 0,
-      "gain": -2.9
+      "gain": -2.9,
+      "v": "ff6c0dea"
     },
     "kk-comrade": {
       "file": "kk/aircheck/kk-comrade.m4a",
       "start": 0,
-      "gain": -5
+      "gain": -5,
+      "v": "e4147d9d"
     },
     "kk-lament": {
       "file": "kk/aircheck/kk-lament.m4a",
       "start": 0,
-      "gain": -3.7
+      "gain": -3.7,
+      "v": "5281b2ee"
     },
     "kk-go-rider": {
       "file": "kk/aircheck/kk-go-rider.m4a",
       "start": 0,
-      "gain": -5.4
+      "gain": -5.4,
+      "v": "1e4ef694"
     },
     "kk-dirge": {
       "file": "kk/aircheck/kk-dirge.m4a",
       "start": 0,
-      "gain": -2.2
+      "gain": -2.2,
+      "v": "c63cf6ce"
     },
     "kk-western": {
       "file": "kk/aircheck/kk-western.m4a",
       "start": 0,
-      "gain": -2.9
+      "gain": -2.9,
+      "v": "1bccf7ae"
     },
     "kk-mr": {
       "file": "kk/aircheck/kk-mr.m4a",
       "start": 0,
-      "gain": -6.5
+      "gain": -6.5,
+      "v": "a667ffb4"
     },
     "kk-cafe": {
       "file": "kk/aircheck/kk-cafe.m4a",
       "start": 0,
-      "gain": -3.5
+      "gain": -3.5,
+      "v": "ebc68d2c"
     },
     "kk-parade": {
       "file": "kk/aircheck/kk-parade.m4a",
       "start": 0,
-      "gain": -3.2
+      "gain": -3.2,
+      "v": "c8a4fb1e"
     },
     "kk-mariachi": {
       "file": "kk/aircheck/kk-mariachi.m4a",
       "start": 0,
-      "gain": -4.2
+      "gain": -4.2,
+      "v": "863ba273"
     },
     "kk-song": {
       "file": "kk/aircheck/kk-song.m4a",
       "start": 0,
-      "gain": -4.6
+      "gain": -4.6,
+      "v": "f9d0188a"
     },
     "kk-i-love-you": {
       "file": "kk/aircheck/kk-i-love-you.m4a",
       "start": 0,
-      "gain": -5.6
+      "gain": -5.6,
+      "v": "751c4176"
     },
     "kk-two-days-ago": {
       "file": "kk/aircheck/kk-two-days-ago.m4a",
       "start": 0,
-      "gain": -2.5
+      "gain": -2.5,
+      "v": "96086893"
     },
     "kk-my-place": {
       "file": "kk/aircheck/kk-my-place.m4a",
       "start": 0,
-      "gain": -2.6
+      "gain": -2.6,
+      "v": "5a7a0817"
     },
     "kk-forest-life": {
       "file": "kk/aircheck/kk-forest-life.m4a",
       "start": 0,
-      "gain": -2.3
+      "gain": -2.3,
+      "v": "7cef633a"
     },
     "kk-to-the-edge": {
       "file": "kk/aircheck/kk-to-the-edge.m4a",
       "start": 0,
-      "gain": -0.9
+      "gain": -0.9,
+      "v": "98955a3f"
     },
     "kk-pondering": {
       "file": "kk/aircheck/kk-pondering.m4a",
       "start": 0,
-      "gain": -4.6
+      "gain": -4.6,
+      "v": "b6731429"
     },
     "kk-dixie": {
       "file": "kk/aircheck/kk-dixie.m4a",
       "start": 0,
-      "gain": -2.3
+      "gain": -2.3,
+      "v": "92b3fad2"
     },
     "kk-marathon": {
       "file": "kk/aircheck/kk-marathon.m4a",
       "start": 0,
-      "gain": -1
+      "gain": -1,
+      "v": "6dd1cfac"
     },
     "kk-king": {
       "file": "kk/aircheck/kk-king.m4a",
       "start": 0,
-      "gain": 0
+      "gain": 0,
+      "v": "3bd2ec22"
     },
     "kk-mountain-song": {
       "file": "kk/aircheck/kk-mountain-song.m4a",
       "start": 0,
-      "gain": -5.6
+      "gain": -5.6,
+      "v": "c2d09f35"
     },
     "kk-marine-song-2001": {
       "file": "kk/aircheck/kk-marine-song-2001.m4a",
       "start": 0,
-      "gain": -3.4
+      "gain": -3.4,
+      "v": "83e76b7d"
     },
     "kk-neapolitan": {
       "file": "kk/aircheck/kk-neapolitan.m4a",
       "start": 0,
-      "gain": -3.4
+      "gain": -3.4,
+      "v": "6b7caa10"
     },
     "kk-steep-hill": {
       "file": "kk/aircheck/kk-steep-hill.m4a",
       "start": 0,
-      "gain": -2.7
+      "gain": -2.7,
+      "v": "4c43d2f8"
     },
     "kk-rockabilly": {
       "file": "kk/aircheck/kk-rockabilly.m4a",
       "start": 0,
-      "gain": -2
+      "gain": -2,
+      "v": "34137a63"
     },
     "kk-agent": {
       "file": "kk/aircheck/kk-agent.m4a",
       "start": 0,
-      "gain": -2.5
+      "gain": -2.5,
+      "v": "e2bf2c81"
     },
     "kk-rally": {
       "file": "kk/aircheck/kk-rally.m4a",
       "start": 0,
-      "gain": -3.4
+      "gain": -3.4,
+      "v": "a971107c"
     },
     "kk-metal": {
       "file": "kk/aircheck/kk-metal.m4a",
       "start": 0,
-      "gain": -5.2
+      "gain": -5.2,
+      "v": "31969627"
     }
   }
 }

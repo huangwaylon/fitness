@@ -12,8 +12,9 @@ export const stretch = $state<{ pose: Motion | null; n: number }>({ pose: null, 
 /** How long a villager who is out (a wander, a walk to something) takes to get home. */
 const HOME_MS = 1600;
 
-/** Run the routine: `poses` of `ms` each. Returns the ms until it starts (0, or the walk home). */
-export function groupStretch(poses: readonly Motion[], ms: number, done?: () => void): number {
+/** Run the routine: `poses` of `ms` each; `done` at its end, `aborted` if it's cut short (the actors reset). Returns the
+ *  ms until it starts (0, or the walk home). */
+export function groupStretch(poses: readonly Motion[], ms: number, done?: () => void, aborted?: () => void): number {
   // the two members' villagers (the guest's moves only by its own taps: on the guest's phone, A and B stretch)
   const ids = memberActors();
   const out = ids.filter((id) => actors[id].walking || awayFromHome(id));
@@ -49,6 +50,9 @@ export function groupStretch(poses: readonly Motion[], ms: number, done?: () => 
   later('mine', total, () => {
     stretch.pose = null;
     done?.();
-  }, () => (stretch.pose = null));
+  }, () => {
+    stretch.pose = null;
+    aborted?.();
+  });
   return start;
 }

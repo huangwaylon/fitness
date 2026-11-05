@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, FOOD_CACHE, ROOM_CACHE, SHELL, foodFetch, isAudio, isFoodData, isCritterArt, isDecorArt, isFont, isMusic, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches } from './caches.ts';
+import { AUDIO_CACHE, FOOD_CACHE, ROOM_CACHE, SHELL, foodFetch, isAudio, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -106,21 +106,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Audio: cache first, fetched whole by the sound engine (it plays music from a blob, so no Range requests reach
-  // here; one that does goes to the network). A hit is re-put to mark it recently used; only MUSIC_KEEP music files
-  // are kept (least recently used out).
+  // Audio: cache first and never revalidated (every URL carries its file's hash: caches.ts), fetched whole by the sound
+  // engine (it plays music from a blob, so no Range requests reach here; one that does goes to the network). A hit
+  // that isn't its class's newest is re-put to mark it recently used; each class keeps its few (least recently used
+  // out: lruEvict).
   if (isAudio(url.pathname)) {
     if (req.headers.has('range')) return;
     event.respondWith(
       (async () => {
         const cache = await caches.open(AUDIO_CACHE);
         const hit = await cache.match(req);
-        if (hit && !isMusic(url.pathname)) return hit;
         const res = hit ?? (await fetch(req));
         if (res.ok && res.status === 200) {
+          const copy = res.clone();
           const put = (async () => {
-            if (hit) await cache.delete(req);
-            await cache.put(req, res.clone());
+            if (hit) {
+              if (!staleUse((await cache.keys()).map((k) => k.url), req.url)) return;
+              await cache.delete(req);
+            }
+            await cache.put(req, copy);
             for (const old of lruEvict((await cache.keys()).map((k) => k.url))) await cache.delete(old);
           })();
           event.waitUntil(put.catch(() => {}));

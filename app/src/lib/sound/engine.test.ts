@@ -201,10 +201,48 @@ describe('decks', () => {
     const done = e.setTrack('10', HOUR);
     await vi.advanceTimersByTimeAsync(0);
     const deck = decks.find((d) => d.count('loadedmetadata') > 0)!;
-    expect(deck.count('error')).toBe(1);
+    expect(deck.count('error')).toBe(2); // the wait's, and the deck's own (onfailed)
     deck.fire('loadedmetadata');
     await done;
-    expect([deck.count('loadedmetadata'), deck.count('error')]).toEqual([0, 0]);
+    expect([deck.count('loadedmetadata'), deck.count('error')]).toEqual([0, 1]);
+  });
+});
+
+describe('a track that can’t play (onfailed)', () => {
+  it('a one-shot whose file can’t be fetched reports it (a cut-in would otherwise never end)', async () => {
+    const { e } = await unlocked();
+    const failed: string[] = [];
+    e.onfailed = (k) => failed.push(k);
+    vi.mocked(fetch).mockImplementationOnce(async () => ({ ok: false }) as Response);
+    await e.setTrack('kk/live/kk-march', { file: 'kk/kk-march.m4a', start: 0 }, false, true);
+    expect(failed).toEqual(['kk/live/kk-march']);
+  });
+  it('an undecodable file reports it from its deck, and stops there', async () => {
+    const { e, decks } = await unlocked();
+    for (const a of decks) a.readyState = 0;
+    const failed: string[] = [];
+    e.onfailed = (k) => failed.push(k);
+    const done = e.setTrack('opening', OPENING, false);
+    await vi.advanceTimersByTimeAsync(0);
+    const deck = decks.find((d) => d.count('loadedmetadata') > 0)!;
+    deck.fire('error');
+    await done;
+    expect(failed).toEqual(['opening']);
+    // a deck that isn't the one meant to sound (a faded-out one, its blob let go) says nothing
+    decks.find((d) => d !== deck)!.fire('error');
+    expect(failed).toEqual(['opening']);
+  });
+  it('a slow fetch never lets the idle timer put the context to sleep under the track it waits for', async () => {
+    const { e, ctx } = await unlocked();
+    let arrive!: () => void;
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise((ok) => (arrive = () => ok({ ok: true, blob: async () => new Blob(['x']) } as Response))));
+    const done = e.setTrack('event/bee-chase', HOUR, true, true);
+    await vi.advanceTimersByTimeAsync(IDLE_SUSPEND_MS * 2);
+    expect(ctx.suspends).toBe(0);
+    arrive();
+    await done;
+    await settle();
+    expect([ctx.state, e.track]).toEqual(['running', 'event/bee-chase']);
   });
 });
 

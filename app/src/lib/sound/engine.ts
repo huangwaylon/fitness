@@ -149,6 +149,9 @@ export class Engine {
   #held = false;
   /** Called when a one-shot track (the opening, a jingle, a sting, a K.K. song) ends. */
   onended: ((key: string) => void) | null = null;
+  /** Called when a track can't play: its file couldn't be fetched (offline, never heard) or the deck couldn't decode
+   *  it. A one-shot would otherwise never end (and its cut-in hold the island's music back for good). */
+  onfailed: ((key: string) => void) | null = null;
   /** Called when the context starts running again (after an interruption, or iOS resuming it on its own). */
   onrunning: (() => void) | null = null;
 
@@ -288,6 +291,8 @@ export class Engine {
         ctx.createMediaElementSource(el).connect(gain).connect(this.#duck);
         const deck: Deck = { el, gain, key: null, level: 1, end: null, starting: false, fadeEnd: 0, gen: 0 };
         el.addEventListener('ended', () => this.#ended(deck));
+        // an undecodable file (or one gone mid-play): only the deck meant to sound reports it
+        el.addEventListener('error', () => deck.key && this.#decks[this.#front] === deck && this.onfailed?.(deck.key));
         // Never in the background: the lock screen, Control Center or headphones may play the element while the page
         // is hidden (it's the Now Playing item under the 'playback' session). Keep it paused there.
         el.addEventListener('play', () => document.hidden && el.pause());
@@ -552,9 +557,18 @@ export class Engine {
     if (!key || !track) return;
     // Already fetched (prefetched at launch, or heard this session): no await, so when this runs inside a tap the
     // deck's play() below is inside it too, and iOS can't refuse it. Otherwise wait for the file; the deck was
-    // unlocked by its silent clip in the first tap, and a refused play() is retried by the next tap.
-    const url = this.#urls.get(track.file) ?? (await this.#blob(track.file));
-    if (!url || token !== this.#token) return; // offline and never heard: silence until the next change
+    // unlocked by its silent clip in the first tap, and a refused play() is retried by the next tap. Meanwhile
+    // nothing is sounding (the old track faded out), so the idle timer is held off: a slow fetch must not let the
+    // context sleep under the track it's fetching.
+    let url = this.#urls.get(track.file);
+    if (!url) {
+      this.#idle.cancel();
+      url = (await this.#blob(track.file)) ?? undefined;
+      if (this.#asleep && ctx.state === 'suspended' && !document.hidden) this.#wake(ctx);
+      this.#idle.poke();
+    }
+    if (token !== this.#token) return;
+    if (!url) return void this.onfailed?.(key); // offline and never heard: silence until the next change
     this.#trimBlobs([track.file]);
     this.#front = 1 - this.#front;
     const next = this.#decks[this.#front];
@@ -568,14 +582,13 @@ export class Engine {
     next.gain.gain.value = 0;
     next.el.src = url;
     next.el.play().catch(() => {}); // at gain 0: the seek and the fade-in follow
-    // seek once the element knows the file (start = where the loop begins musically); an undecodable file goes on
-    const known = next.el.readyState >= 1 || (await firstEvent(next.el, ['loadedmetadata', 'error'])) === 'loadedmetadata';
-    if (known) {
-      try {
-        next.el.currentTime = track.start;
-      } catch {
-        /* plays from 0 */
-      }
+    // seek once the element knows the file (start = where the loop begins musically); an undecodable file stops
+    // here (the deck's error listener has reported it: onfailed)
+    if (next.el.readyState < 1 && (await firstEvent(next.el, ['loadedmetadata', 'error'])) === 'error') return void (next.starting = false);
+    try {
+      next.el.currentTime = track.start;
+    } catch {
+      /* plays from 0 */
     }
     if (token !== this.#token) return void (next.starting = false);
     const lead = Math.max(0, plan.inFrom - ctx.currentTime);
