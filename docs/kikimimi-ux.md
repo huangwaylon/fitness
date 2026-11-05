@@ -1,0 +1,519 @@
+# ききみみ UX: the hub, the menu, progression (design, 2026-11-06)
+
+This is the lead product designer's synthesis of the UI/UX round on the English-listening feature. The inputs were the brief (the user: "overhaul the menu and UI design… make it intuitive and reorganize features", and "take inspiration from Duolingo and other language-learning game apps"), the IA and wireframes (UX), the game team's study of Duolingo and the island's loops, and the copy and naming review (a UX writer with the ウェイ / うめ panel). It builds on docs/kikimimi.md (as built), docs/curriculum.md §3, §7, §7.1, §11 and §14, and docs/kikimimi-framework.md §5 and §7. Nothing here is built yet. Builders follow this document and update it as they go. Settled choices move into docs/decisions.md as they land.
+
+A clickable static prototype of every screen below was built alongside this doc (plain HTML, the app's tokens, fonts and art, screenshots at 393×852 in WebKit). It isn't in the repo. The wireframes here are the reference.
+
+---
+
+## 1. Decisions and the conflicts they settle
+
+| Question | IA (UX) | Game team | Copy team | **Decision** |
+|---|---|---|---|---|
+| The feature's name | 「ききみみ」 | — | 「ききみみ」; the old quiz becomes a mode | **「ききみみ」** everywhere (the pill, the sheet, the invite). The HUD pill reads 「ききみみ」 with a small 「えいご」 sub-label. The old quiz is the mode **「ひとこと クイズ」** |
+| Home structure | hub + push/pop stack, no tab bar | 4 bottom tabs: きょう · みち · ずかん · きろく | 4 tabs: きょう · あそぶ · ずかん · きろく | **Hub + one push/pop stack.** The root is きょう. Under the menu, a row of **four entry tiles**: あそぶ · みんなで · ずかん · きろく. No tab bar (§2) |
+| Where the path lives | — | its own tab, みち | — | **「しまの みち」 is pushed** from the top of あそぶ and from the menu's きょうの いっぽ card. It's where lessons come from, not a fifth destination |
+| The stage ladder | open | §3 names | §3 names, label 「ばしょ」 | **はまべ → かわ → もり → やま → ほし**, labelled 「ばしょ」 (§4) |
+| Mode grouping | 3 shelves by length/kind | ささっと / じっくり / ゆったり | 5 groups by situation | **4 groups by situation**: さくっと · まちで・でんわで · じっくり · ねる まえに. Co-op-only modes sit in the みんなで picker, the tournament in きょう |
+| Shelves | horizontal 96×112 tiles | — | — | **A 2-column grid per group, scrolling vertically.** At 393 px, horizontal shelves hide two thirds of each group and are hard to scan with VoiceOver |
+| おさらい | the today card only | menu card 1 | in さくっと | **Both**: menu card 1 every day, and a tile in さくっと. Users shouldn't have to hunt for review |
+| アナウンス | a pack inside the quiz | — | a mode | **A mode** (today's `lv` 5 becomes this mode, not a stage) |
+| よみきき サンド | an action on review rows | — | a reveal button | **A button on every review row**: 「よんでから もういちど」 |
+| Daily rhythm | one today card | 3 menu cards | one soft goal | **3 menu cards** (§6). Any one card means 「きょうは OK」 |
+| Rewards | stamps, ずかん | かいがら, capped | stamps, no XP | **かいがら with a daily cap, never ベル** (§7) |
+| Streak | none | weekly days | a stamp card | **A weekly stamp card.** No streak, ever |
+| たいせん | shown only when `modes.vs` | opt-in | 「きょうりょく ／ しょうぶ」 | **A two-way switch 「きょうりょく ／ しょうぶ」, defaulting to きょうりょく**, shown only for games that support しょうぶ |
+| 「おなじへや」 | settings default + lobby | — | 「おとを 1だいに まとめる」 | **「おとを 1だいに まとめる」**, sub-label 「おなじ へやで ハモらない ように」; a lobby toggle with its default in settings |
+| しずえ's voice | — | — | polite | **です／ます** (「おみごとです！」, 「おつかれさまでした！」). Casual cheers belong to the villagers |
+| Kanji | — | — | rule set | UI chrome and speech: **kana with spaces**. Translations, notes and glosses: **normal kanji-kana** at every stage |
+
+**Ruled out:** hearts or lives, XP, leagues, rankings outside しょうぶ, streak counters or freezes, missed-day counts, push notifications and nagging copy (「さみしかった」), and payouts per correct answer.
+
+## 2. Why hub tiles, not a tab bar
+
+The sheet is a full-height bottom sheet (`Sheet` variant `pop`), 393 px wide, about 780 px of usable height on an iPhone 15/16.
+
+1. **The foot is already taken.** Mode detail, the lobby, the game frame and results each need a sticky action row at the bottom (はじめる, つぎへ, おわる / もういっかい). A tab bar would either stack under it (about 140 px of chrome out of 780) or vanish on push, and a bar that comes and goes reads as broken.
+2. **The use isn't balanced.** Most opens are "do today's thing" (one green button). ずかん and きろく are weekly visits. Tabs promise four equal places and spend permanent chrome on the rare ones.
+3. **One back model.** Tabs with a push stack mean one stack per tab, and ‹ becomes ambiguous ("back to which tab?"). The app's sheets already use one stack (SettingsSheet `stack`), and the invite deep link is simple with one: `[hub, lobby]`.
+4. **Reach and size.** The four tiles sit mid-sheet, in the thumb's arc, at 84×92 px each (art, name, a live line such as 「うめが いるよ」 or 「かわ ★★」), so they say more than a tab label could.
+5. **The cost is small.** Every place is one tap from the root. From deep pages it's ‹ then a tile, and ✕ / おわる always lands on the hub.
+
+## 3. Naming: old → new
+
+| Today | New | Note |
+|---|---|---|
+| pill 「えいご ききとり」 | 「ききみみ」 with the sub-label 「えいご」 | while an invite waits, the sub-label becomes 「さそわれています！」 |
+| sheet title 「ききみみ クイズ」 | 「ききみみ」 at the root; the page's name on pushes; the mode's name in a game | |
+| 「ききとりクイズに さそっています」 | 「{name}が ききみみに さそっています」 + the mode on the second line | |
+| ききみみ クイズ (the game) | **ひとこと クイズ** | subtitle 「ひとことを きいて えらぶ」 |
+| レベル | **ばしょ** | never やさしい / むずかしい |
+| ★ はまべ / ★★ いりえ / ★★★ かわぐち / ★★★★ かわ・もり | はまべ (1, 2) / かわ / もり (§4) | いりえ, かわぐち and かわ・もり are dropped |
+| L5 (the アナウンス mix) | the mode **アナウンス** | 「えき・くうこう・るすでん」 |
+| にがて れんしゅう | **おさらい** | にがて stays only as a private word in きろく |
+| 「つぎは これを れんしゅう しよう」 (きろく) | the menu's cards | |
+| 「おなじ へやで あそぶ」 | **「おとを 1だいに まとめる」** | |
+| 「たいせん」 | **「きょうりょく ／ しょうぶ」** | しょうぶ sub-label 「ばしょに あわせて てんすう」 |
+| ひとりで はじめる / みんなを さそう | **はじめる** (primary) / **さそう** (second) | |
+| やめる？ | **「ここで やめる？」** + 「ここまでの きろくは のこります」 | |
+| 「せいかい！ +100」 / 「いっぱつ せいかい！ +30」 | 「せいかい！」 + a **いっぱつ** badge (no number) | the user's decision 2026-11-06 |
+| 「1いは …さん！」, 「1040てん」 (co-op) | co-op: 「ふたりで 7 / 8 です。」; ranks only in しょうぶ | |
+| 「8もん中 6もん」 | 「じぶんは 6 / 8」 | |
+| 「ホストが …」 | 「{name}が おわりに しました」 / 「{name}との つながりが きれました」 / 「しばらく うごきが なかったので おわりました」 | |
+| skill labels にた ぼいん / にた しいん / だいじな ところ / うけこたえ | **ship と sheep / b・v・th / こまかい じょうほう / へんじ** | L と R, つながる おと, すうじ, ほんね stay. One list for the bars and the trip chips |
+| たんしゅくけい / しょうりゃく (chips) | 「I'd / I'll」 / 「はぶかれる ことば」 | |
+| 1かいで せいかい | いっぱつ | |
+| placement test | **みみ チェック** | |
+| ふたりで ジグソー / ディクトグロス | **はんぶんこ** / **ふたりで タイル** | |
+| トーン あて / かいぎの ぎじろく / フータ／ラジオ | **きもち あて / かいぎ メモ / フータの おはなし** | |
+
+Words never used in the UI: べんきょう, テスト, しけん, レッスン (except the path's lesson labels, which read 「レッスン 2「おと」」 for now; open question 5), ノルマ, ミス, やさしい / むずかしい.
+
+## 4. One ladder: ばしょ
+
+| Stage | ★ | CEFR (private, under くわしく) | Today's content | Note |
+|---|---|---|---|---|
+| **S0 はまべ** | ★ | A2–B1 | **L1 → はまべ 1, L2 → はまべ 2** | two sub-steps, shown as two dots under the name; one stage to the user |
+| **S1 かわ** | ★★ | B1+ | **L3** | |
+| **S2 もり** | ★★★ | B2 | **L4** (today's かわ・もり bank) | the L4 bank is S1/S2 material (curriculum §3); it lives at もり because its `mean` / dialogue items are its core |
+| **S3 やま** | ★★★★ | B2+ | none yet | greyed in pickers until a unit ships; the path shows it in mist |
+| **S4 ほし** | ★★★★★ | C1 | none yet | as やま |
+| — | | | **L5 → the アナウンス mode** | a mode with its own ばしょ (its PA/voicemail items keep their S1/S2 tags) |
+
+- **The contract keeps `lv` 1–5** (the wire and the `listen` row). The mapping is a UI table in `catalog.ts` (`stageOfLv`), so no relay change. Rows written with `lv` 5 count toward アナウンス, not a stage.
+- **The comfortable stage** (progress.ts, as built: below L2.5 S0, below L3.5 S1, below L4.5 S2, else S3) now prints 「いまの ばしょ：かわ ★★」, and the next step 「つぎは もり が ちょうど いい ころ」.
+- **おまかせ** is every mode's default: the stage its skill suggests. An override is kept per mode (`DEVICE.kikiStage[gm]`).
+
+## 5. IA and navigation
+
+```
+pill ─▶ sheet 「ききみみ」
+hub (きょう) ─┬─ ⚙ せってい
+              ├─ menu card ───────────────▶ [game frame] ─▶ results
+              ├─ あそぶ ─┬─ しまの みち ─ unit ─▶ [frame]
+              │          └─ mode detail ─┬─▶ [frame] ─▶ results
+              │                          └─ みんなで (game preselected)
+              ├─ みんなで (lobby) ─▶ [frame on every phone] ─▶ results
+              ├─ ずかん ─ entry
+              ├─ きろく ─ skill / past game (ReviewList)
+              └─ たいかい banner (Fri 18:00 – Mon 05:00) ─▶ mode detail
+first open: welcome ─ sound check ─ みみ チェック ─ result ─▶ hub
+```
+
+**Rules**
+- **One stack** (`nav.svelte.ts`, SettingsSheet's pattern): ‹ pops one level, scroll is restored on pop, and focus returns to the row that pushed. Pages are at most three deep.
+- **✕ closes the sheet from any page.** If others have joined my lobby, it asks first: 「みんなの へやが なくなります」.
+- **In a game** (countdown → reveal) there is no ‹. ✕ asks 「ここで やめる？」. A backdrop tap or Esc does nothing.
+- **Results:** おわる pops to the hub (it doesn't close). もういっかい restarts the same mode (and re-invites in a shared game).
+- **Backdrop tap / Esc** pops when the stack is deeper than the hub and closes at the hub.
+- **Deep links** build a full stack: the invite banner gives `[hub, lobby]`; the たいかい banner gives `[hub, mode(taikai)]`. ‹ always lands on the hub.
+- **The night:** StoryFrame is a game page (no ‹). Its sleep timer ends it, and the sheet then closes itself (fading out over 2 s).
+- **The invite** is a card at the top of the hub (and the banner on the island, as built). さんか pushes the lobby, joined.
+
+## 6. Screens
+
+The prototype's screens, in order. Sizes are the app's tokens: cards `--r-card` 24, buttons 16, taps ≥ 44 px, the 4 px lip, cream cards on the tan panel.
+
+### 6.1 Hub (きょう)
+
+```
+┌───────────────────────────────────────────┐
+│ (⚙)            ききみみ               (✕) │
+├───────────────────────────────────────────┤
+│ ┌ invite (only while one waits) ────────┐ │
+│ │ (うめ) うめが さそっています  [さんか]│ │
+│ └───────────────────────────────────────┘ │
+│ (しずえ) こんばんは！ きょうの メニューです。│
+│ ┌ すみ  おさらい · 6もん          🐚+20 ┐ │  done: folded
+│ ┌ (ジュン) きょうの いっぽ · かわ ③      ┐ │  green-edged: the next one
+│ │ カフェで ちゅうもん                    │ │
+│ │ レッスン 2「おと」· 6ふん   [つづける] │ │  the only primary
+│ ┌ (マスター) きまぐれ                    ┐ │
+│ │ すうじ ラッシュ · 3ふん          🐚+20 │ │
+│ 1つで きょうは OK。のこりは おまけです  🐚20/80│
+│ [あそぶ] [みんなで] [ずかん(2)] [きろく]   │  4 entry tiles, 84×92
+│ ┌ しずえの しゅうまつ たいかい   › ┐ yuzu │  Fri 18:00 – Mon 05:00
+│ ┌ こんしゅう きいた ひ        3 / 5 にち ┐ │
+│ │ (月)(火)(水)(木)[金](土)(日)            │ │
+│ │ ふたりの クエスト  ふたりで 42 / 60 ぷん│ │
+│ │ ━━━━━━━━━━━━░░░░░  🎁                 │ │
+└───────────────────────────────────────────┘
+```
+
+- **しずえ's line** changes with the time and state: 「おはようございます！」 / 「こんばんは！」; after the menu 「きょうは ここまでで じゅうぶんです！」; after a gap 「おかえりなさい！」 (never a count of missed days).
+- **The menu** (`today.ts`, pure, §7.1) shows three cards. A done card folds to a stamp and a line. The first undone card has the only green button. Each undone card shows its かいがら.
+- **The entry tiles** carry one live line: あそぶ 「14の ゲーム」, みんなで 「うめが いるよ」 (presence) or 「ひとりでも OK」, ずかん 「ことば 28」 + a coral count of new entries, きろく 「かわ ★★」.
+- **The week card** is the stamp card and, for members, the couple quest. The guest sees its own solo quest (§7.4).
+
+### 6.2 あそぶ
+
+```
+┌───────────────────────────────────────────┐
+│ (‹)              あそぶ               (✕) │
+├───────────────────────────────────────────┤
+│ ┌ (ジュン) しまの みち            › ┐     │
+│ │ かわ ★★ · ユニット 3 / 10  ●●◉○○○ │     │
+│ さくっと  3ぷんで できる                   │
+│ ┌ ひとこと クイズ ┐ ┌ スピード はしご ┐   │  2-col tiles: art, name,
+│ │ ひとことを きいて│ │ ゆっくり → はやい│   │  one-line subtitle,
+│ │ えらぶ  4ふん 👥 │ │ 3ふん 👥         │   │  mins, 👥 if shareable
+│ ┌ すうじ ラッシュ ✨┐ ┌ おさらい        ┐   │
+│ まちで・でんわで  ばめんで きく            │
+│ [ようじ でんわ] [アナウンス] [たちぎき] [かいぎ メモ]
+│ じっくり  ながめに きく                    │
+│ [しずえの ニュース] [フータの おはなし] [ジョニーの たび]
+│ ねる まえに  てんすう なし                 │
+│ ┌ (ジョニー) おやすみ ものがたり     › ┐  │  night-tinted icon
+└───────────────────────────────────────────┘
+```
+
+| Group | Modes (as they ship) |
+|---|---|
+| **さくっと**（3ぷんで できる） | ひとこと クイズ, スピード はしご, すうじ ラッシュ, おさらい, ことば タイル, きもち あて |
+| **まちで・でんわで**（ばめんで きく） | ようじ でんわ, アナウンス, たちぎき, かいぎ メモ, ざつだん パーティ, うわさの でんごん, めいたんてい フータ |
+| **じっくり**（ながめに きく） | しずえの ニュース, フータの おはなし (long-form), ジョニーの たび (serial) |
+| **ねる まえに**（てんすう なし） | おやすみ ものがたり |
+| みんなで picker only | はんぶんこ (jigsaw), ふたりで タイル (dictogloss) |
+| きょう only | しずえの しゅうまつ たいかい (Fri 18:00 – Mon 05:00), みみ チェック (first run; again from ⚙) |
+
+- **Only playable modes show** (a game's gate, as `LEVELS` works today). There's never a 「もうすぐ」 wall. An empty group is hidden.
+- **At most one ✨ 「あたらしい」 pill** at a time: the newest mode until it's been played once.
+- **No filter UI.** At 18 modes, four labelled groups are faster than filters.
+
+### 6.3 しまの みち (the island path)
+
+```
+│ (しずえ) どの ユニットからでも どうぞ。とばして チェックも できます。│
+│ はまべ ★  [クリア]                     📻 ラジカセ │  stage + landmark reward
+│        ┌ (✓) はまべ 1 · 2 ─────────────────┐      │
+│ かわ ★★                                🛶 いかだ   │
+│ ┌ (✓ ルル) ① えきで まちあわせ ┐                  │  zig-zag nodes
+│        ┌ (✓ ジュディ) ② ともだちと よてい ┐       │
+│ ┌ (ジュン) ③ カフェで ちゅうもん ●○○○○ [つづける]┐ │  current: green edge
+│        ┌ (ジュリー) ④ びょういんの でんわ    › ┐   │
+│ もり ★★★                               🍄 ランプ   │
+│ ░░ みみ チェックで ★★★ に なったら ひらきます ░░ │  mist, never a lock wall
+```
+
+- **A node is a unit** (curriculum §6): its host villager, its scenario, and five lesson dots (であい, おと, ばめん, じっせん, チェック). The mode each lesson uses is chosen by the unit.
+- **Freedom:** placement opens stages; inside an open stage every unit can be played in any order. 「とばして チェック」 on any node runs lesson 5 at once (≥ 80 % on the first play stamps the unit).
+- **Couple view:** a unit both have stamped shows a double stamp. Stages are never shown side by side.
+- Built after increment 9, when `units/index.json` has each unit's stage and host. Until then, あそぶ has no path card and the menu's card 2 is 「きょうの クイズ」 at your stage.
+
+### 6.4 Mode detail
+
+```
+│ (‹)          ひとこと クイズ           (✕) │
+│ [ scene backdrop with the cast           ] │  150 px, art/scene/*
+│ ひとことを きいて えらぶ                    │
+│ しまの みんなの ひとこと。きこえた ことば、│
+│ へんじ、ほんねを えらびます。               │
+│ (8もん) (4ふん) (👥 ふたりで できる)        │
+│ ┌ ばしょ                       (おまかせ) ┐ │
+│ │ [★ はまべ ••][★★ かわ][★★★ もり][やま][ほし] │  radiogroup; やま/ほし off
+│ │ いまの あなたに ちょうど いい ばしょ です。 │
+│ ┌ このごろ (じぶんだけ)        ○ ○ × ○ ○ ┐ │
+│ [さそう]  [        はじめる         ]       │  sticky foot
+```
+
+- **The stage row** is the StagePicker inline: five places with ★, the selected one yuzu, the empty ones sunk (`--ctl-off`, `aria-disabled`). Tapping a place sets an override and the pill turns into 「おまかせに もどす」. はまべ shows its two sub-steps as dots; tapping はまべ again toggles 1 ↔ 2.
+- **Unit-based modes** add a row 「いまの ユニット ③ カフェで ちゅうもん ›」 (the unit picker lists the open units by stage, each with its stamp).
+- **The volume check** shows inline here only when the volume is 0 or before the day's first game: 「おとが 0 です。せってい で あげてね」 with 🔊.
+- **The たいかい's detail** has the wager explained in one line and, when the partner is on the island, the primary is 「みんなで」.
+
+### 6.5 みんなで (lobby)
+
+```
+│ (‹)              みんなで              (✕) │
+│ あそぶ ゲーム                               │
+│ [ひとこと クイズ✓][はしご][すうじ][はんぶんこ][かいぎ] → │  scrolls; co-op-only included
+│ さんかする ひと                             │
+│ ┌ (ウェイ✓) さんか (うめ✓) さんか (？) おきゃくさん しまに いない ┐ │
+│ ばしょは ひとりずつ ちょうど いい ところに あわせます。│
+│ ┌ [ きょうりょく ][ しょうぶ ]                 ┐ │  Segmented, default きょうりょく
+│ │ ふたりで ひとつの スコア。だれが まちがえたかは でません。│
+│ ┌ おとを 1だいに まとめる                [○  ]┐ │
+│ │ おなじ へやで ハモらない ように               │ │
+│ [          はじめる（2にん）              ]  │  before さそう: [さそう]
+```
+
+- **Getting here:** the hub tile, a mode's さそう (the game preselected) or an invite (joined; controls read-only, foot 「ウェイが はじめるのを まっています」).
+- **きょうりょく／しょうぶ** shows only when the picked game has `modes.vs`. Each phone's tier is its own (`join.tr`) and never shown next to anyone else's.
+- **Alone:** 「ひとりでも はじめられます」 under the people card; さそう still works.
+- **Leaving:** ✕ with others joined asks first. When the host leaves, the notice shows and ‹ goes to the hub.
+
+### 6.6 In-game frame (RoundFrame / RevealFrame)
+
+```
+question                                  reveal
+│ (ウェイ)(うめ✓)  ひとこと クイズ  (✕) │  │ (ウェイ)(うめ)  ひとこと クイズ  (✕) │
+│                  ●●▬○○○○○            │  │                 ●●▬○○○○○             │
+│ ┌ scene: カフェ ─────────────────┐   │  │        ◯ せいかい！                   │
+│ │ (ジュン) ♪… ━━━━━░░░            │   │  │  [★ いっぱつ] (2にん せいかい！)      │
+│ [🔁 もういちど] [🐢]                  │  │ ┌ No worries, I'm not in a rush. ◯ ┐  │
+│ なんて こたえる？                     │  │ (ジュン) Sorry, the oat latte's gonna │
+│ [ No worries, I'm not in a rush. ]    │  │   be a few more minutes. That OK?     │
+│ [ Sure, I'll have it here.       ]    │  │   すみません、オーツラテはもう少し…   │
+│ [ Yes, it's on the house.        ]    │  │ [メモ] gonna = going to。「待てますか」…│
+│ ━━━━━━━━━━━━░░░ (time)               │  │ (しずえ) おみごとです！                │
+│                                       │  │ [            つぎへ             ]     │
+```
+
+- **The bar:** the players' chips at the left (✓ when answered), the mode's name with the round dots (the current one a yuzu pill) in the middle, ✕ at the right. The old 「3 / 4」 title goes.
+- **The frame owns** the countdown, the bar, the replay row (🔁 / 🐢, listenOnly on おとを 1だいに), the timer, the foot and ✕. A game supplies the Stage, Input and Reveal slots (framework §5).
+- **The reveal:** ○ / × with 「せいかい！」 or 「こたえは ○○ でした」 (「おしい！」 only for a near-miss pick); the いっぱつ badge without a number; 「2にん せいかい！」 in co-op, never who; the Japanese and the note in normal kanji-kana; しずえ's polite word (「おみごとです！」, 「だいじょうぶですよ、つぎに いきましょう」).
+
+### 6.7 Results
+
+```
+│                  けっか                (✕) │
+│ (しずえ) おつかれさまでした！ ふたりで 7 / 8 です。│
+│          じぶんは 6 / 8 · いっぱつ 4          │
+│ ┌ きょうの ごほうび ──────────────────────┐ │
+│ │ 🐚 +20 かいがら    │ 金 スタンプ          │ │
+│ │    きょう 40 / 80  │    4 / 5 にち        │ │
+│ │ 🎁 ふたりで +4ぷん │ (フータ) ことば +2   │ │
+│ │    クエスト 46 / 60│    ずかんへ          │ │
+│ │ (ジュン) ジュンと もっと なかよく なりました ♥ │  only at a level-up
+│ ┌ つまずいた ところ  (I'd / I'll ×1) (つながる おと) ┐ │
+│ ┌ きょうの ひとこと  No worries, I'm not in a rush. ┐ │  mint card
+│ ふりかえり                       まちがえた だけ │
+│ ┌ × I'd grab a table if I were you.        ┐ │
+│ │   私なら席を取っておくよ。 えらんだ: I'll ×  │ │
+│ │   (▶︎) (🐢) [よんでから もういちど]          │ │
+│ [おわる]  [       もういっかい        ]       │
+```
+
+- **The rewards card** shows only what moved: かいがら while under the cap (at the cap: 「きょうの かいがらは ここまで。ずかんと なかよしは まだ ふえます」), the day's stamp the first time, quest minutes (members), new ずかん entries, a friendship level-up.
+- **しょうぶ** adds the ranking above the rewards (as built), scored against expectation.
+
+### 6.8 おやすみ ものがたり (StoryFrame)
+
+```
+│        おやすみ ものがたり             (✕) │  night palette (data-tod night)
+│        ジョニーの たび · だい 3わ           │
+│ ┌ dimmed scene (art/scene/living, 42 %) ☾ ┐ │
+│ │             (ジョニー)                   │ │
+│ The Lighthouse Keeper's Cat                 │
+│ ジョニーが とうだいの ねこの はなしを します │
+│ ━━━━━━━━━░░░░░░░░░  4:12 / 9:30            │
+│                 ( ⏸ )                       │  92 px
+│              おやすみ タイマー               │
+│ [10ぷん] [20ぷん] [30ぷん] [ぜんぶ]          │
+│ てんすうは ありません。タイマーで しずかに おわります。│
+```
+
+- No score, no chips, no review list; it writes a `listen` row with its minutes (no answers) so the minutes count for the week and the quest.
+- The timer fades the voice over the last 20 s, then the sheet closes over 2 s. The chapter resumes from its segment next time (つづき).
+
+### 6.9 きろく
+
+```
+│ (‹)               きろく               (✕) │
+│ ┌ いまの ばしょ  ★★ かわ   3 / 10 ユニット ┐ │
+│ │ ━━━━━━░░░░░░░░                          │ │
+│ │ 「つながる おと」が のびています。もりまで あと すこし！│
+│ │                                 くわしく › │ │  CEFR, TOEIC めやす, tables
+│ ┌ こんしゅう        ウィーク スタンプ 18こ ┐ │
+│ │ (月)(火)(水)(木)[金](土)(日)             │ │
+│ │ じぶん 26ぷん · ふたりで 42ぷん · ぜんぶで 12じかん │
+│ とくい・にがて            タップで れんしゅう │
+│ ┌ L と R ━━━░░ 38% … ほんね ━━━░░ 47%     ┐ │  8 bars, one list
+│ さいきん                                    │
+│ ┌ ひとこと クイズ  11/6 · ふたりで 7 / 8  › ┐ │  pushes its ReviewList
+```
+
+- A skill row pushes 「{skill}」 with one button, 「れんしゅう」 (おさらい focused on that skill).
+- The recommendations move to the menu. The couple line is minutes only, never a level.
+
+### 6.10 ずかん
+
+Segmented: **ことば · こえ · なかま · スタンプ** (four 85-px segments).
+- **ことば:** sections by scenario family (みせ, でんわ, たび, しごと…) with a completion bar; 3-column cards. Caught: the phrase, its Japanese, stars. Seen: a silhouette with the scenario icon and 「みせ · 1かい きいた」. New: a coral 「NEW」. An entry pushes: the phrase, the meaning, the trap note, ▶︎ for every clip and voice it was heard in, who said it, the date.
+- **こえ:** the cast and accents, caught after 10 items understood from that voice.
+- **なかま:** villagers with NH hearts (levels only, never points) and the next reward line; unheard villagers are silhouettes.
+- **スタンプ:** unit can-do stamps, shared stamps, week stamps, the いっぱつ badge count, tournament trophies.
+- Owner-only. The partner sees only 「ふたりとも しってる: 48」 (in きろく's couple line, later).
+
+### 6.11 せってい (⚙)
+
+🔊 「きこえる？」 with the earphones tip; 「おとを 1だいに まとめる」 default; にほんごやく (いつも / まちがえた とき / みない); こんしゅうの めあて (3 / 5 / 7 にち); ふたりの クエスト (30 / 60 / 90 ぷん, members only, shared setting); 「みみ チェックを もういちど」.
+
+### 6.12 First run
+
+1. **Welcome** (`DEVICE.kikiOnboarded` unset): しずえ standing, 「はじめまして！ ここは えいごの みみを そだてる ところです。」, three points (1にち 3ぷんから · ふたりで いっしょに · まず みみ チェック（4ふん）), [あとで] / [はじめる]. Step dots 1/3.
+2. **The sound check** (🔊, volume 0 warning).
+3. **みみ チェック** (12 adaptive items, framework §7 #11), ending on the result: 「ちょうど いい ばしょ ★★ かわ」 on the five-place strip, とくい / これから chips, 「🔒 この けっかは あなただけに みえます。」, [ききみみへ].
+
+あとで drops to the hub at はまべ 2 (S0 high). The menu's card 2 offers みみ チェック quietly until it's done. Existing players skip the welcome: their stage comes from their rows (progress.ts), and the menu offers the check once. The guest gets the same flow with its own data.
+
+## 7. Progression and rewards
+
+### 7.1 The daily menu (`today.ts`, pure)
+
+Picked from the Tokyo day (`d`, the same day key as the `listen` rows and the week dots), the report and the SRS fold. Same inputs, same menu, on every phone of mine.
+
+| Card | Content | Length |
+|---|---|---|
+| 1 **おさらい** | due SRS cards, capped at 8 (「しずえが 6もん えらびました」, never "14 overdue"). None due: the card becomes 「おさらいは ぜんぶ おわり！」 and the slot moves on | ≤ 3 min |
+| 2 **きょうの いっぽ** | the next lesson of the current unit on the path. Before units: 「きょうの クイズ」 at your stage. Before みみ チェック: the check | 5–8 min |
+| 3 **きまぐれ** | one rotating playable mode, seeded by the day, never the same as yesterday's; after 21:00 JST it becomes **おやすみ ものがたり** | 3–10 min |
+
+- **The tournament** (Fri 18:00 – Mon 05:00 JST) is a banner above the tiles, not a card; playing it fills a card slot like any session.
+- **Any one finished session means 「きょうは OK」** and stamps the day. A session that doesn't match a card ticks the first undone card, so free play is never "off menu".
+- **After all three:** しずえ says 「きょうは ここまでで じゅうぶんです！」. Free play stays open; it moves ずかん, friendship and the path, but not かいがら.
+- **A finished session** = a `listen` row with ≥ 4 answers, or a no-answer mode (story, long-form segments) with `ms` ≥ 3 min.
+
+### 7.2 かいがら (never ベル)
+
+かいがら is the shop's per-person currency (docs/design.md "The shop": NH's Bells ÷ 20; a median piece 110, a sea bass 20, a koi 200). ベル stays the fitness wallet for real treats and trips; English never touches it.
+
+| Source | かいがら | Rule |
+|---|---|---|
+| A finished session | **20** | the first 3 of a Tokyo day |
+| All three in a day | **+20** | with the third |
+| **Daily cap** | **80** | nothing per correct answer, nothing past the cap |
+| ふたりの クエスト met | **150 each** | + a seasonal item (record player, world map, English-label poster) through the present path |
+| The guest's solo quest (30 min) met | **100** | |
+| たいかい chips | **30–200** | 100 chips for the wager round only; bets 0 / 10 / 30 an item, a right answer pays the bet ×2; chips convert 1:1, floor 30, cap 200 |
+| Unit stamped (チェック ≥ 80 % first play) | **200** | + the host villager's gift: one furniture piece with a short English letter |
+| Stage cleared (every unit stamped) | **1,000** | + the landmark: はまべ ラジカセ, かわ いかだ, もり ツリーハウスの ランプ, やま てんぼうだい, ほし てんたいぼうえんきょう |
+
+- **A typical week** (all menus, the quest, a tournament at silver, one unit): 560 + 150 + ~120 + 200 ≈ **1,030**, about nine median pieces. A light week (3 days, one card): 60 + 0–150. The tuning knob is the per-session amount; open question 1.
+- **Server-verifiable, no new event.** Income is a pure fold over my own `listen` rows (`contract/kaigara.ts listenIncome(rows)`: per day, the first three finished sessions; units from rows with `u` set and the チェック's first-play rate; the quest from both members' public summaries `{d, g, n, ms}`; chips from the tournament row's wager answers). `shopLedger` adds it to `shells`, so the record checks a buy against it like any other. The relay deploys first (curriculum §12 rule). Gifts, trophies and landmarks go through the present path (a present's furniture is もようがえ's and never sells).
+- **No streak-like payout.** Nothing pays more for consecutive days.
+
+### 7.3 The weekly stamp card (never a streak)
+
+- Each person picks a target of **3, 5 or 7 days** a week (default **3**). A day is stamped by one finished session.
+- Hitting the target earns a **week stamp** (ずかん › スタンプ). Week stamps 10 / 20 / 30 / 40 each send a gift; 40 in a year is a big item (the NH-style stamp card).
+- What's visible is 「こんしゅう 3 / 5 にち」. It resets each Monday with no loss and no "0 days". A missed week says nothing.
+
+### 7.4 ふたりの クエスト (minutes)
+
+- Monday 00:00 to Sunday 24:00, one shared bar: **minutes heard**, 60 by default (30 / 60 / 90, a shared setting). Minutes, not correct answers, so each person adds the same per minute at any level.
+- The bar shows 「ふたりで 42 / 60 ぷん」 and never who added what (it sums both members' `ms` from the public summaries).
+- Met: 150 かいがら each + a seasonal item. Missed: nothing is said; the bar just starts again.
+- **The guest** has a solo quest (30 min, 100 かいがら), never inside the couple bar.
+
+### 7.5 The island path
+
+47 units over five stages (curriculum §13), about 10 per stage, in any order inside an open stage. Unit stamp 200 + a villager gift; stage clear 1,000 + a landmark (§7.2). **Hours heard** is a quiet lifetime meter in きろく; K.K. songs unlock at 1, 5, 10, 25 and 50 hours for the island radio. A stage reached by placement opens without its 1,000 or landmark (open question 2).
+
+### 7.6 ずかん
+
+- **ことば:** みた (heard once: a silhouette) → つかまえた (understood in 3 contexts: the full entry). Stars: ★ caught on a first listen (the いっぱつ badge lives here), ★★ with 2 accents, ★★★ under a condition (phone, PA, noise). About 300–400 chunks; a completed section sends a display case for the tent.
+- **こえ:** ≥ 12 cast voices, then the exposure accents; caught after 10 items understood from that voice.
+- **スタンプ:** can-do stamps per unit, shared stamps (both stamped), week stamps, the いっぱつ count, trophies (bronze for taking part, silver ≥ 70 % at your tier, gold ≥ 85 %; one per tier per season).
+- Needs the content's `Phrase` (curriculum §12) to tag items with chunks; until increment 9 the quiz's `focus` words stand in.
+
+### 7.7 なかよし (friendship that never drops)
+
+- +1 point per item understood from that villager, +2 on a first listen. Points never drop and are never shown; hearts appear at level-ups.
+- Levels at **10 / 30 / 70 / 150 / 300**: L1 an English greeting on the island; L2 a letter; L3 they phone you with ようじ でんわ; L4 a furniture gift; L5 their photo for the tent.
+- Each person's own. A villager both have at L5 gives a shared photo.
+
+## 8. Empty and edge states
+
+| Where | State |
+|---|---|
+| Hub, first open | the welcome (§6.12) |
+| Hub, no data (あとで) | card 2 = みみ チェック; cards 1/3 as normal (おさらい: a starter set) |
+| Menu, none due | 「おさらいは ぜんぶ おわり！」 and the slot moves on |
+| Menu, all done | three stamps, 「きょうは ここまでで じゅうぶんです！」, tiles as normal |
+| Daily cap reached | the cards show 「✓」 without +20; results say the cap line (§6.7) |
+| After a gap | 「おかえりなさい！」; the due cap holds (≤ 8), no count of missed days |
+| Partner already played | 「うめは もう きいたよ」 on the みんなで tile line, never the score |
+| きろく, empty | しずえ 「まだ まっしろ。1かい きくと ここに あしあとが つきます。」 + [あそぶ] (pops to the hub) |
+| ずかん, empty | three silhouettes + 「ゲームで みつかります」 |
+| A group in あそぶ with no playable mode | hidden |
+| Lobby, alone | 「ひとりでも はじめられます」; さそう still works |
+| Lobby, host left | 「{name}が おわりに しました」; ‹ to the hub |
+| Offline, pack not cached | the tile dimmed with 「オフラインでは まだ」; cached packs play |
+| `cv` mismatch | 「アプリを こうしんしてね」 (framework §4.2) |
+| Volume 0 | the inline 🔊 row in mode detail and the lobby |
+| Night (≥ 21:00) | きまぐれ = おやすみ; StoryFrame in the night palette whatever the island's time |
+| Guest | no couple quest (its solo one), no partner lines, its own stage, ずかん and きろく |
+
+## 9. What's removed or merged
+
+| Today | Becomes |
+|---|---|
+| the あそぶ / きろく tabs | gone: the hub + a pushed きろく |
+| the level grid (4 buttons) | the ばしょ row with おまかせ in mode detail |
+| 🎯 にがて れんしゅう | おさらい (menu card 1, a さくっと tile, きろく's skill rows) |
+| three stacked lobby buttons | mode detail: さそう / はじめる |
+| 🔊 in the lobby | せってい, first run, and inline only at volume 0 |
+| recommendations in きろく | the menu |
+| +100 / +30 いっぱつ pills | 「せいかい！」 + the いっぱつ badge |
+| the 「3 / 4」 game title | the mode's name + round dots |
+| たいせん always shown | 「きょうりょく ／ しょうぶ」, only for games with `modes.vs` |
+| 「けっか はっぴょう」 + ranks in co-op | 「けっか」; ranks only in しょうぶ |
+| `DEVICE.kikimimiLv` | `DEVICE.kikiStage[gm]` (migrated: lv 1–2 → はまべ, 3 → かわ, 4 → もり, 5 → アナウンス's override) |
+
+## 10. Components and files
+
+Aligned with the framework's layout (framework §2, §5). New pieces are marked **new**.
+
+```
+app/src/lib/kikimimi/
+  catalog.ts        new · pure: per GameDef meta {gm, group, mins, coop, vs, night, playable(ctx)}; GROUPS; stageOfLv
+  today.ts          new · pure: pickMenu(day, report, srs, units, now) → 3 cards; matchSession(card, row)
+  rewards.ts        new · pure: the display side (today's かいがら, quest minutes, week stamps) over the rows
+  friendship.ts     new · pure: points and levels per villager from rows
+  zukan.ts          new · pure: seen / caught / stars per phrase and voice
+  progress.ts, srs.ts, advice.ts, report.ts   as built (advice feeds today.ts)
+app/src/lib/contract/
+  kaigara.ts        new · listenIncome(rows) folded by shopLedger (relay first)
+app/src/lib/components/kikimimi/
+  frame/            framework §5: RoundSheet, RoundFrame, RevealFrame, Results, ReviewList, Lobby (+ GamePicker),
+                    PlayerChip, ChoiceGrid, Transcript, scene/*
+    nav.svelte.ts   new · the stack: Page = hub | asobu | path | mode(gm) | lobby | record | skill(id) | game(id)
+                    | zukan(tab) | entry(id) | settings | welcome | placed; push / pop / reset, scroll + focus restore
+    RewardStrip.svelte   new · results' きょうの ごほうび
+    StoryFrame.svelte    new · the night frame (no score), sleep timer
+  hub/              new · Hub, MenuCard, InviteCard, EntryTiles, EventBanner, WeekCard     (the hub chunk)
+  asobu/            new · Asobu (groups), ModeTile, PathCard
+  mode/             new · ModeDetail, StageRow (StagePicker), UnitPicker
+  path/             new · IslandPath, UnitNode                                            (lazy)
+  record/           Progress.svelte → Record.svelte + SkillDetail                         (lazy)
+  zukan/            new · KikiZukan, PhraseCard, PhraseEntry, FriendRow (styles from kiroku/ZukanCard)  (lazy)
+  settings/         new · KikiSettings                                                    (lazy)
+  onboarding/       new · Welcome, Placed                                                 (lazy)
+  KikimimiHost.svelte, invite.svelte.ts   always loaded; the pill label + sub-label
+app/src/lib/sync/storage.ts   DEVICE: kikiStage, kikiOnboarded, kikiPrefs {ja, sameRoom, weekGoal}
+app/src/lib/i18n/kikimimi.*.json   the strings (§3)
+```
+
+- **Budgets:** the hub chunk (nav, catalog, today, hub/*) ≤ 25 KB gz; each game ≤ 15 KB gz; きろく, ずかん, the path, settings, onboarding and StoryFrame are `{#await import()}` chunks; the always-loaded part stays as built (+ the sub-label string).
+- **e2e:** keep every `data-kiki-*` hook; add `data-kiki-page` on each page, specs for push/pop and ✕, the invite deep link (`[hub, lobby]`), the menu picks (fixed day seed) and the reward strip.
+
+## 11. Build plan (each step small, shippable and green)
+
+Framework step 8b (`round/`, `RoundSession`, `frame/`) is the hinge: it waits for increments 6 and 7, and it moves Lobby / Play / Results into `frame/`. UX work that edits those files waits for 8b, or lands before 8b starts and is rebased by it.
+
+| Step | When | Work | Tests | Est. |
+|---|---|---|---|---|
+| **U0** copy pass | now, before 8b starts (strings + small markup) | pill 「ききみみ」 + 「えいご」; titles; invite line; ばしょ names (はまべ 1 / 2, かわ, もり); the いっぱつ badge (no +30, no +100 in co-op); 「ふたりで 7 / 8 です。」; しずえ polite; translations in kanji-kana (bank `ja` at ★1); 「おとを 1だいに まとめる」; 「きょうりょく ／ しょうぶ」 as a Segmented; skill labels; notices without ホスト | i18n key tests; e2e text asserts updated; screenshot pass | 0.5 d |
+| **8b** | after 6 and 7 | framework (unchanged plan) | framework §9 | 1.5 d |
+| **U1** the stack | after 8b | `nav.svelte.ts` in RoundSheet; Hub v0 (しずえ's line, one card 「きょうの クイズ」 at your stage, the four tiles); あそぶ with the playable modes (ひとこと クイズ, アナウンス, スピード はしご); ModeDetail + StageRow replacing the level grid (`DEVICE.kikiStage` migration); みんなで page = frame/Lobby; きろく pushed (Progress as is); ずかん tile hidden | nav unit tests (push/pop/reset, deep link); catalog tests; e2e: solo from the hub, two players from the invite, ✕ ask | 1.5 d |
+| **U2** the menu | after U1 | `today.ts` + MenuCard ×3, done states, 「きょうは OK」, the soft stop; recommendations leave きろく | today.test (seeded days, night swap, none due, session matching); e2e menu flow | 1 d |
+| **U3** かいがら | after U2; relay first | `contract/kaigara.ts` + `shopLedger`; RewardStrip; the cap lines; the shop shows the new balance | contract tests (cap, finished-session rule, idempotent per `g`, guest's own); relay tests; ledger round-trip | 1 d |
+| **G-たいかい** | after U3 (the user's order) | the tournament game (curriculum §7.1) + the EventBanner + chips → かいがら + trophies | per framework | 2–3 d |
+| **U4** week + quest + settings | after U3 | WeekCard (stamps, target), the couple quest (summaries), the guest's solo quest, KikiSettings, the volume-0 inline row | rewards.test (Monday reset, guest separation); e2e settings | 1 d |
+| **G-おやすみ** + StoryFrame | after U4 | the story game in StoryFrame; つづき; the night card | story timer tests (fake clock); e2e open → timer end closes | 2 d |
+| **U5** ずかん v1 | after 9b (Phrase in content) | KikiZukan (ことば, なかま, スタンプ), friendship.ts, zukan.ts; the ずかん tile shows | fold tests; e2e entry push | 1.5 d |
+| **U6** first run | with increment 11 (みみ チェック) | Welcome, the sound check, Placed; card 2 offers the check | e2e first open, あとで | 1 d |
+| **U7** the path | after 9b/9c (units index) and the first S1 unit packs | IslandPath, UnitNode, とばして チェック; unit and stage rewards, villager gifts via presents | path ordering tests; income tests for units | 1.5 d |
+| **U8** こえ ずかん, K.K. songs, polish | later | voices tab, hours meter unlocks | — | 1 d |
+
+Each step keeps main green and is playable: U0 alone already fixes the naming; U1 is the new home with today's content; every later step adds one visible thing.
+
+## 12. Open questions for the user
+
+1. **かいがら amounts.** 80 a day max, ~1,000 in a full week (about nine median furniture pieces). Is that right next to the island's catches, or should a session pay 10 (cap 40)?
+2. **Placement windfall.** Should a stage reached by みみ チェック (e.g. はまべ for both of you) pay its 1,000 and landmark, or only stages cleared unit by unit?
+3. **Weekly target default.** 3 days (gentlest) or 5?
+4. **The 「えいご」 sub-label** on the pill: keep it for good, or drop it after a few weeks as the copy team suggested?
+5. **「レッスン」** inside the path's units: the copy team bans the word; keep the five lesson names only (であい, おと, ばめん, じっせん, チェック)?
+6. **ジョニーの たび / フータの おはなし:** fine to use Gulliver and Blathers as hosts (both appear in the art set), or keep hosts to island villagers?
