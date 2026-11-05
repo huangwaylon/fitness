@@ -9,6 +9,7 @@ import { GRID, PATHS, TILE, idx, kindOf, onGrid, tileAt, tileMid, tileX, tileZ }
 import { doorOf, extentOf, footOf, objMid, objTiles, originOf, type Layout, type Obj } from './model.ts';
 import { isMarker, kindDef } from './catalog.ts';
 import { navOf, reachable } from './nav.ts';
+import { onBuilding, tapCovered } from './clear.ts';
 
 type Pt = readonly [number, number];
 
@@ -17,26 +18,7 @@ const open = new WeakMap<Layout, [number, number][]>();
 export function openGrass(layout: Layout): [number, number][] {
   const had = open.get(layout);
   if (had) return had;
-  const taken = new Set<string>();
-  const mark = (c: number, r: number) => taken.add(`${c},${r}`);
-  for (const o of layout.objects.values()) {
-    // (a visitors' spot is a mark: nothing stands on it)
-    if (isMarker(o.k)) continue;
-    for (const [c, r] of objTiles(layout, o)) mark(c, r);
-    const def = kindDef(o.k);
-    // what one walks up to: its door's tiles (a home, a board) and a spot's ring stay clear
-    if (o.k === 'home' || def?.front) for (const [c, r] of doorOf(layout, o).tiles) mark(c, r);
-    if (o.k === 'spot') for (const [c, r] of objTiles(layout, o)) for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
-    if (o.k === 'stairs') for (const [c, r] of objTiles(layout, o)) for (let j = -1; j <= 1; j++) mark(c, r + j);
-    // a tree's canopy stands over the ground behind it and beside it on screen (its leaves take a tap there), a bush's
-    // or a flower's thumb-sized tap area over the tiles round it
-    // (the tile in front too: a spot's own thumb-sized tap area there would reach up over a trunk, a bush, a flower; anything
-    // else one taps all round it, the rock, the tape deck, a bench: a weed beside the rock clonked it, a fossil by the
-    // bench took the bench's tap)
-    const ROUND = def?.block === true && def.group !== 'tree' && def.group !== 'bush' && o.k !== 'home';
-    const over = def?.group === 'tree' ? 2 : def?.group === 'bush' || def?.group === 'flower' || ROUND ? 1 : -1;
-    for (const [c, r] of over >= 0 ? objTiles(layout, o) : []) for (let j = -1; j <= over; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
-  }
+  const taken = tapCovered(layout);
   const nav = navOf(layout);
   const out: [number, number][] = [];
   for (let r = 0; r < GRID.rows; r++)
@@ -48,7 +30,8 @@ export function openGrass(layout: Layout): [number, number][] {
         return k === 'sea' || k === 'river' || k === 'pond' || layout.tier(c + dc, r + dr) !== layout.tier(c, r);
       })) continue;
       const [x, z] = tileMid(c, r);
-      if (reachable(nav, x, z)) out.push([c, r]);
+      // (nor on a building's ground: its door's step, the strip behind it its model hides: clear.ts)
+      if (reachable(nav, x, z) && !onBuilding(nav, x, z)) out.push([c, r]);
     }
   open.set(layout, out);
   return out;

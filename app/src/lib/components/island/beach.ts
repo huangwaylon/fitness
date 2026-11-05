@@ -5,7 +5,7 @@
 // caption, an icon and (the first time) a ずかん `find`, never ベル.
 import { pickOne, shuffle, weighted } from '#lib/random.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { BEACH_BOX, DIG_SPOTS as DIGS, LAWN_SPOTS, SHORE_Z, worldGen } from './world.ts';
+import { BEACH_BOX, DIG_SPOTS as DIGS, LAWN_SPOTS, SHORE_Z, offBuildingsAt, onBuildingAt, worldGen } from './world.ts';
 import { daySpots } from '#lib/layout/spots.ts';
 import type { Layout } from '#lib/layout/model.ts';
 
@@ -91,7 +91,8 @@ type Pt = { x: number; y: number };
 /** A spot on the beach (from the item's own stream `r`) at least BEACH_GAP from every point in `near`: every 5u along
  *  the sand, tried in a seeded order (so a gap is found whenever there is one), else the spot furthest from them (a
  *  crowded beach: fragments after many wishes). `first`: an x to try first (a fragment's stretch of sand); `edge`: at the
- *  water's edge, half in the foam (the bottle). Depth varies a little (y0 − 2 to y1). */
+ *  water's edge, half in the foam (the bottle). Depth varies a little (y0 − 2 to y1). Never on a building's ground (a
+ *  shop on the sand: world.ts onBuildingAt); the crowded beach's fallback is moved off it. */
 function beachSpot(r: () => number, near: readonly Pt[], { first, edge = false }: { first?: number; edge?: boolean } = {}): Pt {
   const x0 = BEACH.x0 + 6 + r() * 5, n = Math.floor((BEACH.x1 - 6 - x0) / 5) + 1;
   const xs = Array.from({ length: n }, (_, k) => x0 + k * 5);
@@ -101,11 +102,13 @@ function beachSpot(r: () => number, near: readonly Pt[], { first, edge = false }
   const tenth = (v: number) => Math.round(v * 10) / 10;
   for (const x0 of xs) {
     const x = tenth(x0), y = tenth(edge ? edgeZ() : BEACH.y0 - 2 + r() * (BEACH.y1 - BEACH.y0 + 2));
+    if (onBuildingAt(x, y)) continue;
     const d = Math.min(Infinity, ...near.map((p) => Math.hypot(p.x - x, p.y - y)));
     if (d >= BEACH_GAP) return { x, y };
     if (d > bestD) (best = { x, y }), (bestD = d);
   }
-  return best;
+  const [x, y] = offBuildingsAt(best.x, best.y);
+  return { x, y };
 }
 /** Open lawn for a weed (world.ts LAWN_SPOTS: the health lawn and the campsite's ground, off the paths, flowers and trunks;
  *  a dig spot takes its own spots, world.ts DIG_SPOTS). Centre stage (a visitor's spot) stays clear. */

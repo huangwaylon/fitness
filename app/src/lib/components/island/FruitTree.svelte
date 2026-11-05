@@ -43,7 +43,8 @@
   import { taken as takenBy } from '#lib/sync/world-day.ts';
   import { fx3d } from './fx3d.ts';
   import { echo3d } from './echo3d.ts';
-  import { GOAL_TREES } from './world.ts';
+  import { GOAL_TREES, offBuildingsAt } from './world.ts';
+  import { site } from './site.svelte.ts';
   import { recordGoods } from '#lib/store/actions.ts';
 
   interface Props {
@@ -117,6 +118,14 @@
   const sync = $derived(open ? lastSyncLine(person.lastSyncAt, minuteNow()) : null);
   /** The fruit row leans out from the middle (left tree left, right tree right). */
   const lean = $derived(x < 195 ? -FRUIT_LEAN : FRUIT_LEAN);
+  /** The fruit row's offset off a building's ground, moved as one (world.ts offBuildingsAt round its middle, its whole
+   *  width: a goal tree just behind a building or beside its door), [0, 0] almost always; the same on every phone. */
+  const off = $derived.by(() => {
+    void site.rev;
+    const mx = x + lean, mz = z + (FRUIT_SPOTS[0][1] + FRUIT_SPOTS[1][1]) / 2;
+    const [ox, oz] = offBuildingsAt(mx, mz, FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U / 2);
+    return [ox - mx, oz - mz] as const;
+  });
 
   /** Today (the model's Tokyo day; the gallery has no view) and this phone's record of today's fallen and picked fruit. */
   const date = $derived(week.view?.today ?? dayKey(minuteNow()));
@@ -142,7 +151,7 @@
       const stage = gone && r.met ? 'gone' : stageOf(id, r.met, rec);
       // hanging: [dx, up] in the canopy's frame; on the ground: its own spot (gx, gz) in front of the trunk
       const tx = TREE_FRUIT[i][0], up = TREE_FRUIT[i][1];
-      const gx = x + lean + FRUIT_SPOTS[i][0], gz = z + FRUIT_SPOTS[i][1];
+      const gx = x + lean + FRUIT_SPOTS[i][0] + off[0], gz = z + FRUIT_SPOTS[i][1] + off[1];
       const down = stage === 'ground' || stage === 'gone';
       // the canopy spot seen from the ground spot (units, its frame): the fall starts there
       const fx = x + tx - gx, fy = -up + FRUIT_SPOTS[i][1] * FORE;
@@ -151,10 +160,10 @@
       return { f, i, met: r.met, stage, filter: fruitFilter(r.met ? 100 : todayPct(r)), tx, up, gx, gz, fx, fy, down, grey };
     })
   );
-  const rowL = $derived(x + lean + FRUIT_SPOTS[0][0] - FRUIT_U);
-  const rowR = $derived(x + lean + FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U);
+  const rowL = $derived(x + lean + off[0] + FRUIT_SPOTS[0][0] - FRUIT_U);
+  const rowR = $derived(x + lean + off[0] + FRUIT_SPOTS[FRUIT_SPOTS.length - 1][0] + FRUIT_U);
   /** The fruit row's middle in depth (its button stands there, in front of whoever stands at the trunk). */
-  const rowZ = $derived(z + (FRUIT_SPOTS[0][1] + FRUIT_SPOTS[1][1]) / 2);
+  const rowZ = $derived(z + off[1] + (FRUIT_SPOTS[0][1] + FRUIT_SPOTS[1][1]) / 2);
   /** Fallen fruit, waiting to be picked up. */
   const ground = $derived(spots.filter((s) => s.stage === 'ground'));
   /** All four met today: the canopy glints (NH's money tree). */

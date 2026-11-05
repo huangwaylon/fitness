@@ -16,7 +16,7 @@ import type { Drop } from '#lib/sync/live-protocol.ts';
 import { NEST_GAP_MS } from '#lib/sync/live-protocol.ts';
 import type { Put, Shake } from '#lib/sync/world-day.ts';
 import { BUGS, inHours } from './critters.ts';
-import { GOAL_TREES, SCENERY, TREE_H, surfaceAt } from './world.ts';
+import { GOAL_TREES, SCENERY, TREE_H, offBuildingsAt, onBuildingAt, surfaceAt } from './world.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 
 export { NEST_GAP_MS };
@@ -158,12 +158,15 @@ export interface Fallen {
   z: number;
 }
 
-/** Where a tree's drop lies (world): a branch inside, a nest or a dangling bug outside, a coconut (`n` 0 or 1). */
+/** Where a tree's drop lies (world): a branch inside, a nest or a dangling bug outside, a coconut (`n` 0 or 1); off a
+ *  building beside the tree (world.ts offBuildingsAt), the same on every phone. */
 export function dropAt(t: ShakeTree, what: Exclude<Drop, 'none'>, n = 0): { x: number; z: number } {
-  const z = t.z - FRONT;
-  if (what === 'branch') return { x: t.x - t.out * BRANCH_DX, z };
-  if (what === 'coconut') return { x: t.x + t.out * COCONUT_AT[n % 2][0], z: t.z + COCONUT_AT[n % 2][1] };
-  return { x: t.x + t.out * (what === 'nest' ? NEST_DX : DANGLE_DX), z };
+  const front = t.z - FRONT;
+  const [x, z] = what === 'branch' ? [t.x - t.out * BRANCH_DX, front]
+    : what === 'coconut' ? [t.x + t.out * COCONUT_AT[n % 2][0], t.z + COCONUT_AT[n % 2][1]]
+    : [t.x + t.out * (what === 'nest' ? NEST_DX : DANGLE_DX), front];
+  const [px, pz] = offBuildingsAt(x, z);
+  return { x: px, z: pz };
 }
 
 /** What the day's shakes left lying (branches, coconuts) nobody has picked up yet, where on this phone. */
@@ -220,11 +223,14 @@ export function woodFall(date: string, tree: string, n: number, out: number, see
 /** Where a tree's `k`-th piece lands (world): the k-th of WOOD_AT's spots on land (a beach palm's front may be the sea):
  *  a row out in front of the trunk, then one behind it; the three apart and a tap's width clear of what else lies there
  *  (the branch inside, the nest and the dangling bug outside, a palm's coconuts at its foot; never with a present: no
- *  wood on the shake that drops one, nor while it lies). */
+ *  wood on the shake that drops one, nor while it lies); never on a building's ground (world.ts onBuildingAt: a tree
+ *  beside the museum keeps its wood off the museum's steps), else the k-th spot moved off it. */
 const WOOD_AT: readonly (readonly [number, number])[] = [[0, -40], [34, -36], [-34, -38], [0, 40], [34, 40], [-34, 40]];
 const LAND = new Set(['sand', 'grass', 'dirt']);
 export const woodAt = (t: ShakeTree, k: number): [number, number] => {
   const spots = WOOD_AT.map(([a, b]): [number, number] => [Math.round(t.x + t.out * a), Math.round(t.z + b)]);
-  const land = spots.filter(([x, z]) => LAND.has(surfaceAt(x, z)));
-  return land[k] ?? spots[k % spots.length];
+  const land = spots.filter(([x, z]) => LAND.has(surfaceAt(x, z)) && !onBuildingAt(x, z));
+  if (land[k]) return land[k];
+  const [x, z] = spots[k % spots.length];
+  return offBuildingsAt(x, z);
 };

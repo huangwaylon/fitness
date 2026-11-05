@@ -269,6 +269,8 @@ export async function fossilOnScreen(page: Page): Promise<{ x: number; y: number
   // each in turn (a villager may stand over one)
   for (const z of zs) {
     await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z - 160);
+    // (at rest: Finds shows a spot once the camera settles there and nothing covers it, so the count read next holds)
+    await settled(page);
     const p = await expect.poll(find, { timeout: 1500 }).not.toBeNull().then(() => find(), () => null);
     if (p) return p;
   }

@@ -5,7 +5,7 @@
 // (the ずかん has no kind for them; docs/decisions.md "Mushrooms are cosmetic").
 import { weighted } from '#lib/random.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
-import { ROCK, SCENERY, TAPE_DECK, onLayout } from './world.ts';
+import { ROCK, SCENERY, TAPE_DECK, offBuildingsAt, onLayout } from './world.ts';
 
 /** NH's four ground mushrooms with their spawn weights (Nookipedia "Mushroom", a 3-star island: the elegant one rare). */
 export const MUSHROOMS = [['skinny-mushroom', 35], ['round-mushroom', 30], ['flat-mushroom', 30], ['elegant-mushroom', 5]] as const;
@@ -24,8 +24,9 @@ const at = (id: string, kind: 'oak' | 'cedar', dx: number, dz: number): readonly
   // on the layout the trees stand where anyone puts them: never on the rock or the tape deck (a tap there is theirs),
   // the tree's other side then
   const clear = (x: number, z: number) => [ROCK, TAPE_DECK].every(([px, pz]) => Math.hypot(px - x, pz - z) >= NEAR_U);
-  if (onLayout() && !clear(t.x + dx, t.z + dz) && clear(t.x - dx, t.z + dz)) return [t.x - dx, t.z + dz];
-  return [t.x + dx, t.z + dz];
+  // (and never on a building's ground: off it, the same on every phone)
+  if (onLayout() && !clear(t.x + dx, t.z + dz) && clear(t.x - dx, t.z + dz)) return offBuildingsAt(t.x - dx, t.z + dz);
+  return offBuildingsAt(t.x + dx, t.z + dz);
 };
 /** How far a mushroom keeps from the rock and the tape deck on the layout (u). */
 const NEAR_U = 44;

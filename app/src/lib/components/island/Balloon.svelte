@@ -16,6 +16,7 @@
   import { uiBoxes } from './placement.ts';
   import { surfaceAt } from './world.ts';
   import { site } from './site.svelte.ts';
+  import { buildingZones } from '#lib/layout/clear.ts';
   import { fx3d } from './fx3d.ts';
   import { RIG, balloonModel, fallMs, flying, laneY, moveFlight, planFlight, popFlight, rigAt, setFlight, type Flight, type SkyView } from './balloonFlight.ts';
   import { chooseLanding, footprints, openGround, type LandView } from './presentLanding.ts';
@@ -99,7 +100,7 @@
       const b = el.getBoundingClientRect(), g = w.worldAtClient(b.left + b.width / 2, b.bottom);
       return g ? [[g.x, g.z] as const] : [];
     });
-    const open = nav && lay ? openGround(nav, surfaceAt, footprints(lay)) : (x: number, z: number) => surfaceAt(x, z) === 'grass' || surfaceAt(x, z) === 'sand';
+    const open = nav && lay ? openGround(nav, surfaceAt, [...footprints(lay), ...buildingZones(nav)]) : (x: number, z: number) => surfaceAt(x, z) === 'grass' || surfaceAt(x, z) === 'sand';
     return chooseLanding(view, open, lying, sx);
   }
 
