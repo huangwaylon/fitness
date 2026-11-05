@@ -13,6 +13,7 @@ import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
 import { buyOf, sellOf, type ShopRowAt } from '#lib/contract/shop.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, PROFILE_KEYS, type BmiStd, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
+import { lookPrefRead, readSavedLooks, type SavedLook } from '#lib/contract/look.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
@@ -62,6 +63,11 @@ interface Prefs extends Partial<Record<LatestGoalKey, number>> {
   locale?: 'ja' | 'en'; villagerName?: string; villager?: string;
   /** The profile (contract/profile.ts; model/profile.ts reads it): sex, birth date (`YYYY-MM-DD`), BMI standard. */
   sex?: Sex; birth?: string; bmiStd?: BmiStd;
+  /** The look worn (contract/look.ts LookPref, as sent: resolveLook reads it, an unknown part as いつもの's); unset:
+   *  いつもの. */
+  look?: unknown;
+  /** The コーデ (contract/look.ts), read (readSavedLooks). */
+  savedLooks?: SavedLook[];
 }
 
 export interface State {
@@ -375,8 +381,9 @@ type MemberEvent = (s: State, person: PersonId, at: number, d: Data) => void;
 const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
   if (isPersonId(person)) fn(s, person, at, d);
 };
-/** The prefs the guest has (its villager, name, language, meal-log goals and profile): anything else of `G` is ignored. */
-const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...goalKeysOf('food'), ...PROFILE_KEYS];
+/** The prefs the guest has (its villager, name, look, コーデ, language, meal-log goals and profile): anything else of `G`
+ *  is ignored. */
+const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', ...goalKeysOf('food'), ...PROFILE_KEYS];
 const noGoals = (): Record<DailyGoalId, Timed<number>[]> => ({ steps: [], move: [], exercise: [], stand: [] });
 const copyGoals = (g: Record<DailyGoalId, Timed<number>[]>): Record<DailyGoalId, Timed<number>[]> =>
   ({ steps: [...g.steps], move: [...g.move], exercise: [...g.exercise], stand: [...g.stand] });
@@ -458,6 +465,11 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
       const v = d.value.trim();
       if (v.length >= 1 && v.length <= LIMITS.villagerNameMaxChars) p.villagerName = v;
     } else if (d.key === 'villager' && typeof d.value === 'string' && /^[a-z][a-z0-9_-]{0,23}$/.test(d.value)) p.villager = d.value;
+    else if (d.key === 'look') {
+      // null: back to いつもの; a player or a villager kept as sent (resolveLook reads it part by part); else ignored
+      if (d.value === null) delete p.look;
+      else if (lookPrefRead(d.value)) p.look = d.value;
+    } else if (d.key === 'savedLooks' && Array.isArray(d.value)) p.savedLooks = readSavedLooks(d.value, person);
     else if (isProfileKey(d.key)) {
       // The profile: a value, or null to clear it; anything else is ignored (as the record's slot: prefTaken).
       if (d.value === null) delete p[d.key];

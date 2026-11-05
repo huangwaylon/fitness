@@ -8,9 +8,9 @@ import type { Who } from '../types.ts';
 import { scopeMayWrite } from './layout.ts';
 import { goalKeysOf } from './goals.ts';
 
-/** The guest's own prefs: cosmetic, its meal log's daily goals (kcal and the nutrients; never another goal, never
+/** The guest's own prefs: cosmetic (its look and コーデ too: contract/look.ts), its meal log's daily goals (kcal and the nutrients; never another goal, never
  *  another person's) and its own profile (contract/profile.ts: its sex, birth date and BMI standard). */
-const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', ...goalKeysOf('food'), ...PROFILE_PREF_KEYS];
+const GUEST_PREF_KEYS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', ...goalKeysOf('food'), ...PROFILE_PREF_KEYS];
 
 type Rec = Record<string, unknown>;
 

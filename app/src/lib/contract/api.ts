@@ -55,13 +55,14 @@ export const GOAL_PREF_KEYS: readonly string[] = [
 ];
 
 /**
- * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`, every
+ * The `pref` keys the model reads (any other key is refused): the sender's `locale`, `villagerName`, `villager`, `look`
+ * and `savedLooks` (contract/look.ts: the look worn and the コーデ), every
  * goal (contract/goals.ts GOALS: the activity, body and meal-log goals, each its own key), the profile (`sex`, `birth`,
  * `bmiStd`: PROFILE_PREF_KEYS) and the island's `weatherMode` (WEATHER_MODES: island-wide, the members' alone).
  */
 export const PREF_KEYS: readonly string[] = [
   'locale', 'villagerName', 'villager', 'stepsGoal', 'moveGoal', 'exerciseGoal', 'standGoal', 'goalWeight', 'goalBodyFat', 'goalBmi', 'goalLean', 'kcalGoal',
-  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'weatherMode', 'sex', 'birth', 'bmiStd'
+  'proteinGoal', 'fatGoal', 'carbsGoal', 'saltGoal', 'weatherMode', 'sex', 'birth', 'bmiStd', 'look', 'savedLooks'
 ];
 
 /** The profile's `pref` keys (contract/profile.ts PROFILE_KEYS, written out here as GOAL_PREF_KEYS are): either member

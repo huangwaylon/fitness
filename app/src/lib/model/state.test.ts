@@ -126,6 +126,23 @@ describe('reduce: events', () => {
     expect(s.prefs).toEqual({ A: { locale: 'en', villagerName: 'ウェイ' }, B: { villager: 'ume' }, G: {} });
   });
 
+  it('look and savedLooks: per person (the guest’s too), null back to いつもの, コーデ read leniently', () => {
+    const look = { kind: 'player', look: { v: 1, hair: 'PlayerHair12' } };
+    const s = reduce(rows([
+      ev(at(WK, '12:00'), 'A', 'pref', { key: 'look', value: look }),
+      ev(at(WK, '12:00'), 'B', 'pref', { key: 'look', value: { kind: 'villager' } }),
+      ev(at(WK, '13:00'), 'B', 'pref', { key: 'look', value: null }),
+      ev(at(WK, '12:00'), 'G' as PersonId, 'pref', { key: 'look', value: { kind: 'villager' } }),
+      ev(at(WK, '12:00'), 'A', 'pref', { key: 'look', value: 'goldie' }),
+      ev(at(WK, '12:00'), 'A', 'pref', { key: 'savedLooks', value: [{ id: 'abcd1234', name: ' あ ', look: { hair: 'PlayerHair00' } }, { id: 'x' }] })
+    ]));
+    expect(s.prefs.A.look).toEqual(look);
+    expect(s.prefs.B).toEqual({});
+    expect(s.prefs.G).toEqual({ look: { kind: 'villager' } });
+    expect(s.prefs.A.savedLooks).toHaveLength(1);
+    expect(s.prefs.A.savedLooks?.[0]).toMatchObject({ id: 'abcd1234', name: 'あ', look: { hair: 'PlayerHair00', top: 'TopsTexTopOuterLAran3' } });
+  });
+
   it('every roster id can be picked, hyphenated ones too (kk-slider, tom-nook, agent-s)', () => {
     for (const id of ROSTER_IDS) {
       const s = reduce(rows([ev(at(WK), 'A', 'pref', { key: 'villager', value: id })]));
