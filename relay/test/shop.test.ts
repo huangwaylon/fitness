@@ -45,6 +45,28 @@ describe('the shop in the record', () => {
     expect(sell('A', 'bug:tarantula', 1, sellPrice('bug:tarantula')!)).toEqual(refused('pocket short')); // never caught
   });
 
+  it('a catch given back (a claim race lost after its tally came in) leaves the pocket, only what that day’s tally holds', () => {
+    const back = (who: 'A' | 'B' | 'G', counts: Record<string, number>, date = D, id?: string) => send(who, 'tally_back', { date, counts }, id);
+    tally('A', { 'fish:koi': 2, 'bug:ant': 1 });
+    expect(back('A', { 'fish:koi': 1 }, D, 'g1')).toEqual({ ok: true });
+    expect(back('A', { 'fish:koi': 1 }, D, 'g1')).toEqual({ ok: true, duplicate: true }); // its id once
+    expect(sell('A', 'fish:koi', 2, 2 * K)).toEqual(refused('pocket short')); // 2 caught, 1 given back
+    expect(sell('A', 'fish:koi', 1, K)).toEqual({ ok: true });
+    // more than the day's tally holds, of a key it hasn't, of a day it hasn't: refused
+    expect(back('A', { 'fish:koi': 3 })).toEqual(refused('tally short'));
+    expect(back('A', { 'bug:moth': 1 })).toEqual(refused('tally short'));
+    expect(back('A', { 'fish:koi': 1 }, '2026-11-03')).toEqual(refused('tally short'));
+    // a lower one later (a stale send) takes nothing back: the day's row keeps the larger counts
+    expect(back('A', { 'bug:ant': 1 })).toEqual({ ok: true });
+    expect(back('A', { 'fish:koi': 2, 'bug:ant': 1 })).toEqual({ ok: true });
+    expect(sell('A', 'fish:koi', 1, K)).toEqual(refused('pocket short'));
+    // the guest gives back its own; a member's never touches another's pocket
+    tally('G', { 'fish:koi': 1 });
+    expect(back('G', { 'fish:koi': 1 })).toEqual({ ok: true });
+    tally('B', { 'fish:koi': 1 });
+    expect(sell('B', 'fish:koi', 1, K)).toEqual({ ok: true });
+  });
+
   it('refuses a price over the list, a kind that doesn’t sell (a present’s piece); keeps one under it (an older app’s list)', () => {
     tally('A', { 'fish:koi': 5, 'shell:cowrie': 3, 'item:froggy-chair': 1 });
     expect(sell('A', 'fish:koi', 1, K + 1)).toEqual(refused());

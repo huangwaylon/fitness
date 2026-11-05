@@ -29,6 +29,7 @@ export function guestMayWrite(type: string, d: Rec): boolean {
   switch (type) {
     case 'find':
     case 'tally':
+    case 'tally_back':
     case 'board':
     case 'food':
     case 'food_repeat':

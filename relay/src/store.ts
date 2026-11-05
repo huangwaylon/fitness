@@ -34,7 +34,7 @@ import { scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { buyOf, sellOf, shopLedger, shopRefusal, type ShopRow } from '../../app/src/lib/contract/shop.ts';
-import { isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
+import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 
 type Rec = Record<string, unknown>;
@@ -544,6 +544,12 @@ export class StoreCore {
       // a day's tally only grows: the slot keeps each entry's larger count of the held row and this one, so a stale
       // lower send (a second phone's, a queue that waited) never takes back a catch a sale counted (contract/tally.ts)
       if (type === 'tally') kept = this.tallyKept(me, data);
+      // what's given back of a day (a claim race lost after its tally came in): only grows, and only what that day's
+      // tally holds (contract/tally.ts backCovered)
+      if (type === 'tally_back') {
+        kept = this.tallyKept(me, data, 'tally_back');
+        if (!backCovered(this.heldTally(me, String(data.date)), (JSON.parse(kept) as { counts: Record<string, number> }).counts)) return fail('bad_request', 'tally short');
+      }
       const at = this.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
@@ -645,12 +651,20 @@ export class StoreCore {
     return op ? { ...op, who: r.person } : null;
   }
 
-  /** A `tally` of `who`'s as its slot keeps it (JSON): merged with the day's row held (contract/tally.ts mergeTally). */
-  private tallyKept(who: Who, d: Rec): string {
-    const held = this.io.sql.exec<{ data: string }>('SELECT data FROM events WHERE slot = ?', `tally|${who}|${String(d.date)}`).toArray()[0];
+  /** A `tally` (or a `tally_back`) of `who`'s as its slot keeps it (JSON): merged with the day's row held
+   *  (contract/tally.ts mergeTally). */
+  private tallyKept(who: Who, d: Rec, type: 'tally' | 'tally_back' = 'tally'): string {
+    const held = this.io.sql.exec<{ data: string }>('SELECT data FROM events WHERE slot = ?', `${type}|${who}|${String(d.date)}`).toArray()[0];
     const h = held ? this.rowRec(held.data, 'tally') : null;
     if (!h || !isTally(h) || !isTally(d)) return JSON.stringify(d);
     return JSON.stringify({ date: d.date, counts: mergeTally(h.counts, d.counts) });
+  }
+
+  /** `who`'s tally of `date` the record holds (its counts; none: empty). */
+  private heldTally(who: Who, date: string): Record<string, number> {
+    const held = this.io.sql.exec<{ data: string }>('SELECT data FROM events WHERE slot = ?', `tally|${who}|${date}`).toArray()[0];
+    const h = held ? this.rowRec(held.data, 'tally') : null;
+    return h && isTally(h) ? h.counts : {};
   }
 
   /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null. The fold reads
@@ -658,9 +672,11 @@ export class StoreCore {
   private shopTarget(me: Who, type: 'sell' | 'buy', d: Rec): 'pocket' | 'wallet' | 'owned' | null {
     const parse = (raw: string): Rec | null => this.rowRec(raw, 'shop');
     const caught = new Map<string, number>();
-    for (const r of this.io.sql.exec<{ data: string }>("SELECT data FROM events WHERE type = 'tally' AND person = ?", me).toArray()) {
+    // (less what was given back: a claim race lost)
+    for (const r of this.io.sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('tally', 'tally_back') AND person = ?", me).toArray()) {
       const t = parse(r.data);
-      if (t && isTally(t)) for (const k in t.counts) caught.set(k, (caught.get(k) ?? 0) + t.counts[k]);
+      const sign = r.type === 'tally_back' ? -1 : 1;
+      if (t && isTally(t)) for (const k in t.counts) caught.set(k, (caught.get(k) ?? 0) + sign * t.counts[k]);
     }
     const rows: ShopRow[] = [];
     for (const r of this.io.sql.exec<{ type: string; data: string }>("SELECT type, data FROM events WHERE type IN ('sell', 'buy') AND person = ? ORDER BY at, seq", me).toArray()) {
@@ -768,7 +784,7 @@ export class StoreCore {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // a later one of the slot is there already
         return 'had';
       }
-      if (type === 'tally') json = this.tallyKept(person, d); // with the larger counts of the row it replaces
+      if (type === 'tally' || type === 'tally_back') json = this.tallyKept(person, d, type); // with the larger counts of the row it replaces
     }
     this.put(id, at, person, type, json, slot, this.seeAt(at) ? arrived : null);
     return 'added';

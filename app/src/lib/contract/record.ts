@@ -45,6 +45,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
     case 'find':
       return isFind(d);
     case 'tally':
+    // a day's catches given back (a claim race lost after its tally reached the record: contract/tally.ts), a tally's shape;
+    // whether that day's tally covers them is the record's check (relay/src/store.ts)
+    case 'tally_back':
       return isTally(d, localDateAt(now));
     case 'island':
       return isIslandDay(d, localDateAt(now));
@@ -135,7 +138,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 
 /**
  * The slot an event fills, or null: a later event of the same slot replaces it (the record keeps one row per slot).
- * - `tally`, `island`: the sender's day (`date`);
+ * - `tally`, `tally_back`, `island`: the sender's day (`date`);
  * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `look`, `savedLooks`), the profile (`sex`, `birth`, `bmiStd`) or a goal kept as its latest (contract/goals.ts history
  *   `latest`: the body and meal-log goals): its subject and key;
  * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (goalDay: its `day`, else `at`'s), so the goal in
@@ -151,6 +154,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
 export function eventSlot(type: EventType | string, sender: Who, subject: Who, d: Rec, at: number): string | null {
   switch (type) {
     case 'tally':
+    case 'tally_back':
     case 'island':
       return typeof d.date === 'string' ? `${type}|${sender}|${d.date}` : null;
     case 'decor':

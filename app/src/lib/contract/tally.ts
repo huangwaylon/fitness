@@ -41,6 +41,18 @@ export function isTally(d: Record<string, unknown>, today?: LocalDate): d is Rec
 }
 
 /**
+ * A `tally_back` (2026-11-05): what one person gives back of one day's tally, `{date, counts}` as a tally's: a claim
+ * race lost after the day's tally already reached the record (the partner's claim was first; tallies only go up, so
+ * the catch is taken back by a row of its own). Its slot is the person's day, its counts only grow (mergeTally), and
+ * the record keeps it only while that day's tally covers it (backCovered): a person's day counts are the tally's less
+ * these. The ずかん and the pocket read the difference (model/tally.ts). @public (relay/src/store.ts)
+ */
+export function backCovered(tally: Tally, back: Tally): boolean {
+  for (const k in back) if (back[k] > (tally[k] ?? 0)) return false;
+  return true;
+}
+
+/**
  * Two tallies of one person's day as one: each entry's larger count (a day's counts only grow, so a lower one is a
  * stale send: a second phone's, a queue that waited). `held`'s entries first, then `next`'s new ones while there is room
  * (TALLY_MAX_KEYS: the row stays valid). The record keeps this over the slot's row (relay/src/store.ts) and the model
