@@ -210,7 +210,8 @@ stopped at 200 pages, 800k rows, a new phone's first fetch failing some years on
 the fetch, and only a runaway's 100,000 pages stop it), then
 merges (`model/snapshot.ts`: deduped by natural key, its key set kept with each row list and layered by each merge, so
 a poll costs the rows it brings; ordered by `at`; an empty poll keeps the same rows object, so nothing re-reduces and
-no rows are written), records the server clock skew and saves in order. Overlapping refreshes share one request; a `fresh` caller waits for one more after any in flight. A reply that
+no rows are written; a poll whose rows only append, in `at` order, is folded over the last State, `model/state.ts`
+foldRows, the same State a whole reduce gives: ~300k rows reduced whole ~160 ms on a Mac, folded < 1 ms), records the server clock skew and saves in order. Overlapping refreshes share one request; a `fresh` caller waits for one more after any in flight. A reply that
 lands after pairing again is dropped.
 
 ### Compaction

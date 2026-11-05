@@ -91,7 +91,21 @@ function mergeTab<T extends readonly unknown[]>(base: T[], add: T[] | undefined,
     : out.map((r, i) => [r, i] as const).sort((x, y) => atMs(x[0]) - atMs(y[0]) || x[1] - y[1]).map(([r]) => r);
   sortedLists.add(merged);
   keysMemo.set(merged, keys);
+  if (merged === out) appendedFrom.set(merged, base);
   return merged;
+}
+
+/** A merge's output that is its base with rows appended (no sort), and that base: reduce folds only what was added. */
+const appendedFrom = new WeakMap<readonly unknown[], readonly unknown[]>();
+/** The rows `next` adds to `prev` when it is `prev` with rows appended by merges (a few in a row at most), else null. */
+export function appendedTo<T>(next: readonly T[], prev: readonly T[]): T[] | null {
+  if (next === prev) return [];
+  let l: readonly unknown[] | undefined = next;
+  for (let i = 0; i < 16 && l; i++) {
+    l = appendedFrom.get(l);
+    if (l === prev) return next.slice(prev.length);
+  }
+  return null;
 }
 
 /**
