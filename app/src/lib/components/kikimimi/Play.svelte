@@ -1,13 +1,16 @@
 <script lang="ts">
   // One question of ききみみ クイズ (docs/kikimimi.md "The game"): the speaker pops in (the lead-in), their bubble stays
-  // empty 「♪…」 with a bar the clip's length while it plays (the item's `ask`, or a word item's line with its blank,
-  // under it), the choices dimmed until the first play ends, then one final tap; 🔁 and 🐢 (levels 1-2) as often as
-  // wanted; each player's ✓ as they answer. The reveal: ○ on the right choice, × on a wrong pick, the English (its key
-  // words marked), the Japanese and the accent, the speaker's ✨ / 💦 and each player's, the host's つぎへ.
+  // empty 「♪…」 with a bar the clip's length while it plays, 🔁 and 🐢 (levels 1-2) under it as often as wanted (off
+  // on おなじへや's other phones: the host's plays them); what to listen for (the item's `ask`, or its type's) and a word
+  // item's line with its blank; the choices dimmed until the first play ends, then one final tap; each player's ✓ as
+  // they answer. The reveal: ○ on the right choice, × on a wrong pick, the English (its key words marked), the Japanese
+  // (a reply's on two lines) and the accent, +100 and 「いっぱつ せいかい！ +30」 apart, a missed picture's name, the
+  // speaker's ✨ / 💦 and each player's, the host's word, the host's つぎへ. The question sits mid-screen on a tall phone.
   import type { QuizGame } from './game.svelte.ts';
-  import { PIC_JA, type Item } from '#lib/kikimimi/bank.ts';
-  import { points } from '#lib/kikimimi/score.ts';
+  import { PIC_JA, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
+  import { FIRST_LISTEN, RIGHT } from '#lib/kikimimi/score.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
+  import Host from '../characters/Host.svelte';
   import Mark from '../ui/Mark.svelte';
   import PlayerChip from './PlayerChip.svelte';
   import { villagerArt } from '#lib/art.ts';
@@ -35,12 +38,12 @@
     if (v.phase === 'play') return { from: v.playAt, until: v.playEnd, key: `p${v.i}:${v.playAt}` };
     return null;
   });
-  /** The `en` split around its focus (marked at the reveal; a word item's blank before it). */
-  const parts = $derived.by(() => {
-    if (!it) return null;
-    const f = it.focus, at = f ? it.en.indexOf(f) : -1;
-    return at < 0 || !f ? { pre: it.en, focus: '', post: '' } : { pre: it.en.slice(0, at), focus: f, post: it.en.slice(at + f.length) };
-  });
+  /** The `en` around its focus (marked at the reveal; a word item's blank before it). */
+  const parts = $derived(it ? splitFocus(it) : null);
+  /** What to listen for: the item's own question, else its type's (word, reply). */
+  const ask = $derived(it ? (it.ask ?? (it.type === 'word' || it.type === 'reply' ? t(`kiki.ask.${it.type}`) : '')) : '');
+  /** The reveal's verdict: sat out, right, wrong (a pick) or none (time up). */
+  const verdict = $derived(v.out ? 'out' : right ? 'right' : mine ? 'wrong' : 'none');
 
   function chip(p: (typeof v.players)[number]): 'answered' | 'right' | 'wrong' | 'away' | null {
     if (reveal) return p.pick ? (p.pick.ok ? 'right' : 'wrong') : null;
@@ -70,8 +73,9 @@
       </span>
       <div class="bubble" class:open={reveal} aria-live="polite">
         {#if reveal && parts}
-          <p class="en" lang="en" data-kiki-en>{parts.pre}{#if parts.focus}<mark>{parts.focus}</mark>{/if}{parts.post}</p>
-          <p class="ja">{it.ja}</p>
+          {@const [pre, focus, post] = parts}
+          <p class="en" lang="en" data-kiki-en>{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
+          <p class="ja">{#each jaLines(it) as l, n (n)}<span>{l}</span>{/each}</p>
           <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
         {:else}
           <p class="notes" aria-label={t('kiki.listen')}>♪…</p>
@@ -80,20 +84,33 @@
           </span>
         {/if}
       </div>
+      {#if (v.speaks || game.listenOnly) && !v.out}
+        <!-- 🔁 / 🐢 under the bubble, the clip's own controls (おなじへや on another's phone: shown, never live; the host's phone plays them for the room) -->
+        <div class="hear">
+          <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
+          {#if slowOk}<button type="button" class="btn small paper" data-kiki-slow aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(true)}>🐢 {t('kiki.slow')}</button>{/if}
+          {#if game.listenOnly}<small class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</small>{/if}
+        </div>
+      {/if}
     </div>
 
     {#if !reveal}
+      {#if ask}<p class="ask">{ask}</p>{/if}
       {#if it.type === 'word' && parts}
-        <p class="line" lang="en">{parts.pre}<span class="blank" aria-label="____">　　　</span>{parts.post}</p>
-      {:else if it.ask}
-        <p class="ask">{it.ask}</p>
+        <p class="line" lang="en">{parts[0]}<span class="blank" aria-label="____">　　　</span>{parts[2]}</p>
       {/if}
     {:else}
-      <p class="verdict" class:ok={right} data-kiki-verdict={v.out ? 'out' : right ? 'right' : mine ? 'wrong' : 'none'}>
-        {#if v.out}{t('kiki.out')}
-        {:else if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')} <b>+{points(true, mine!.rp || v.same)}</b>{#if !mine!.rp && !v.same}<small>{t('kiki.firstTry')}</small>{/if}
-        {:else}<span class="sym" aria-hidden="true">×</span>{mine ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
-      </p>
+      <div class="verdict" class:ok={right} data-kiki-verdict={verdict}>
+        {#if v.out}<p>{t('kiki.out')}</p>
+        {:else}
+          <p>
+            {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')} <b>+{RIGHT}</b>
+            {:else}<span class="sym" aria-hidden="true">×</span>{mine ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
+          </p>
+          {#if right && !mine?.rp && !v.same}<span class="bonus" data-kiki-bonus>{t('kiki.firstTry', { n: FIRST_LISTEN })}</span>{/if}
+          {#if !right && it.type === 'pic'}<span class="answer-is">{t('kiki.answerIs', { a: PIC_JA[it.choices[it.answer]] ?? '' })}</span>{/if}
+        {/if}
+      </div>
     {/if}
 
     <div class="choices" class:pics={it.type === 'pic'} class:dim={!open && !reveal && !mine} role="group" aria-label={t('kiki.pick')}>
@@ -113,25 +130,24 @@
     {/if}
 
     <p class="status" role="status">
-      {#if v.out && !reveal}{t('kiki.out')}
+      {#if reveal && !v.out}<span class="cheer"><Host head size={30} animate={false} eager />{t(`kiki.cheer.${verdict}`)}</span>
+      {:else if v.out && !reveal}{t('kiki.out')}
       {:else if mine && !reveal && !solo}{t('kiki.answered')} {t('kiki.waitOthers')}
       {:else if v.phase === 'lead' || v.phase === 'play'}{t('kiki.listen')}{/if}
     </p>
   </div>
 
-  <div class="level-acts acts">
-    {#if (v.speaks || game.listenOnly) && !v.out}
-      <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
-      {#if slowOk}<button type="button" class="btn small paper" data-kiki-slow aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(true)}>🐢 {t('kiki.slow')}</button>{/if}
-      <!-- おなじへや on another's phone: shown, never live (the host's phone plays them for the room) -->
-      {#if game.listenOnly}<p class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</p>{/if}
-    {/if}
-    {#if v.canNext}<button type="button" class="btn small" data-kiki-next data-sfx="confirm" onclick={() => game.next()}>{t('kiki.next')}</button>{/if}
-  </div>
+  {#if v.canNext}
+    <div class="level-acts">
+      <button type="button" class="btn" data-kiki-next data-sfx="confirm" onclick={() => game.next()}>{t('kiki.next')}</button>
+    </div>
+  {/if}
 {/if}
 
 <style>
-  .q { display: grid; gap: 12px; }
+  /* the question takes the scroller's room, its content centred: mid-screen on a tall phone, not a gap under it */
+  .q { display: grid; gap: 12px; align-content: center; }
+  :global(.kk-body) > .q { flex: 1 0 auto; }
   .players { display: flex; justify-content: center; gap: 14px; }
 
   /* the speaker and their NH bubble: the speaker's head left, the bubble's tail pointing at it */
@@ -155,6 +171,7 @@
   .en { margin: 0; font: 700 max(17px, var(--fs-talk))/1.4 var(--font-ui); position: relative; }
   .en mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--c-yuzu) 85%, transparent) 55%); color: inherit; padding: 0 1px; }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; }
+  .ja span { display: block; }
   .accent {
     justify-self: start; position: relative; padding: 3px 10px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink);
     font: 700 var(--fs-xs)/1.2 var(--font-ui);
@@ -163,17 +180,20 @@
   .ask, .line { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
   .line { font-size: max(17px, var(--fs-body)); }
   .blank { display: inline-block; min-width: 3.5em; border-bottom: 3px solid var(--text); margin: 0 4px; }
-  .verdict { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--c-coral); }
-  .verdict.ok { color: var(--leaf-text); }
+  .verdict { display: grid; justify-items: center; gap: 6px; }
+  .verdict p { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--c-coral); }
+  .verdict.ok p { color: var(--leaf-text); }
   .verdict b { font-family: var(--font-num, var(--font-ui)); }
-  .verdict small { font-size: var(--fs-s); color: var(--text-soft); }
   .verdict .sym { font-size: 1.2em; }
+  /* 「1かいで」's +30, its own pill beside the +100 */
+  .bonus { padding: 4px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); animation: pop-in 320ms var(--ease-bounce) 200ms both; }
+  .answer-is { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
 
   .choices { display: grid; gap: 10px; transition: opacity var(--dur-quick); }
   .choices.pics { grid-template-columns: 1fr 1fr; }
   .choices.dim { opacity: .5; }
   .ch {
-    appearance: none; border: 0; cursor: pointer; position: relative; min-height: 56px; padding: 10px 16px; border-radius: var(--r-card);
+    appearance: none; border: 0; cursor: pointer; position: relative; min-height: clamp(56px, 8vh, 72px); padding: 10px 16px; border-radius: var(--r-card);
     display: grid; place-items: center; background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl);
     font: 700 max(17px, var(--fs-body))/1.3 var(--font-ui); text-align: center;
   }
@@ -192,18 +212,21 @@
   .timer { display: block; height: 6px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; }
   .timer i { display: block; height: 100%; background: var(--c-yuzu); transform-origin: 0 50%; animation: shrink linear both; }
   .status { min-height: 1.4em; margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .acts { justify-content: center; }
-  .acts .hint { flex: 1 1 100%; margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .acts :global(.btn.small) { flex: 1 1 0; white-space: nowrap; }
-  /* つぎへ: the host's one action, its own row under 🔁 🐢 */
-  .acts :global([data-kiki-next]) { flex: 1 1 100%; min-height: var(--cta-h); font-size: var(--fs-talk); }
+  /* the host's word on the verdict (しずえ's head) */
+  .cheer { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-body); color: var(--text); }
+  /* 🔁 🐢 under the bubble (the bubble's column), small; おなじへや's others: off, with why */
+  .hear { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .hear .btn.small { flex: 0 1 auto; white-space: nowrap; }
+  .hint { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
+  /* つぎへ: the host's one action at the foot */
+  .level-acts [data-kiki-next] { min-height: var(--cta-h); font-size: var(--fs-talk); }
 
   @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
   @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
   @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
   @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
-    .speaker.pop, .speaker.talk, .react { animation: none; }
+    .speaker.pop, .speaker.talk, .react, .bonus { animation: none; }
     .choices { transition: none; }
   }
 </style>

@@ -1,13 +1,14 @@
 <script lang="ts">
   // ききみみ クイズ's results (docs/kikimimi.md "Results"): しずえ reads them out like the morning broadcast (the ranking,
-  // with reactions), then the review list, the game's main learning moment: every sentence's English (its key words
-  // marked) and Japanese, ▶︎ and 🐢 (levels 1-2), ○ / × for my answer, and 「まちがえた だけ」 to show only the missed.
+  // the winner's row with 🏆, and how many I got right under her line), then the review list, the game's main learning
+  // moment: every sentence's English (its key words marked) and Japanese (a reply's on two lines), ▶︎ and 🐢 (levels
+  // 1-2), ○ / × for my answer and on a miss what I picked, and 「まちがえた だけ」 to show only the missed.
   import type { QuizGame } from './game.svelte.ts';
-  import type { Who } from '#lib/types.ts';
-  import { PIC_JA, type Item } from '#lib/kikimimi/bank.ts';
+  import { PIC_JA, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Bubble from '../ui/Bubble.svelte';
   import PlayerChip from './PlayerChip.svelte';
   import { week } from '#lib/store/week.svelte.ts';
+  import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { game, onagain, ondone }: { game: QuizGame; onagain: () => void; ondone: () => void } = $props();
@@ -18,33 +19,30 @@
     const rows = [...v.players].sort((a, b) => b.score - a.score);
     return rows.map((p) => ({ ...p, rank: rows.findIndex((q) => q.score === p.score) + 1 }));
   });
-  const nameOf = (w: Who) => {
-    const view = week.view;
-    return !view ? '' : w === 'G' ? view.guest.villagerName : view.people[w].villagerName;
-  };
   const line = $derived.by(() => {
     if (ranking.length <= 1) return t('kiki.hostSolo', { score: ranking[0]?.score ?? 0 });
     const top = ranking.filter((r) => r.rank === 1);
-    return top.length > 1 ? t('kiki.hostTie') : t('kiki.hostTop', { name: nameOf(top[0].who) });
+    return top.length > 1 || !week.view ? t('kiki.hostTie') : t('kiki.hostTop', { name: villagerNameOf(week.view, top[0].who) });
   });
   const ok = (i: number) => !!v.answers[i] && v.answers[i]!.k === items[i]?.answer;
   let missedOnly = $state(false);
-  const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i) })).filter((r) => !missedOnly || !r.ok));
-  const answerText = (it: Item) => (it.type === 'pic' ? (PIC_JA[it.choices[it.answer]] ?? '') : it.choices[it.answer]);
-  function split(it: Item) {
-    const f = it.focus, at = f ? it.en.indexOf(f) : -1;
-    return at < 0 || !f ? [it.en, '', ''] : [it.en.slice(0, at), f, it.en.slice(at + f.length)];
-  }
+  const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null })).filter((r) => !missedOnly || !r.ok));
+  const tally = $derived(items.filter((_, i) => ok(i)).length);
+  /** A choice as written (a picture's Japanese name: the English isn't given away). */
+  const choiceText = (it: Item, k: number) => (it.type === 'pic' ? (PIC_JA[it.choices[k]] ?? '') : it.choices[k]);
 </script>
 
 <div class="results" data-kiki-results>
-  <Bubble text={line} host="wave" size={64} />
+  <div class="host">
+    <Bubble text={line} host="wave" size={64} />
+    <p class="tally" data-kiki-tally={tally}>{t('kiki.tally', { n: items.length, k: tally })}</p>
+  </div>
 
   {#if ranking.length > 1}
     <ol class="rank card">
       {#each ranking as r (r.who)}
-        <li data-rank={r.rank}>
-          <span class="no" class:top={r.rank === 1}>{t('kiki.rank', { n: r.rank })}</span>
+        <li data-rank={r.rank} class:first={r.rank === 1}>
+          <span class="no" class:top={r.rank === 1}>{#if r.rank === 1}<span class="cup" aria-hidden="true">🏆</span>{/if}{t('kiki.rank', { n: r.rank })}</span>
           <PlayerChip who={r.who} state={r.rank === 1 ? 'right' : null} size={44} />
           <b class="pts">{t('kiki.points', { n: r.score })}</b>
         </li>
@@ -60,13 +58,14 @@
     {#if !rows.length}<p class="none">{t('kiki.allRight')}</p>{/if}
     <ul class="review">
       {#each rows as r (r.i)}
-        {@const [pre, focus, post] = split(r.it)}
+        {@const [pre, focus, post] = splitFocus(r.it)}
         <li class="item card" data-review={r.i} data-ok={r.ok}>
           <span class="sym" class:ok={r.ok} aria-label={r.ok ? t('kiki.right') : t('kiki.wrong')}>{r.ok ? '○' : '×'}</span>
           <div class="txt">
             <p class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
-            <p class="ja">{r.it.ja}</p>
-            {#if r.it.type === 'pic' || r.it.type === 'num'}<p class="ans">→ {answerText(r.it)}</p>{/if}
+            <p class="ja">{#each jaLines(r.it) as l, n (n)}<span>{l}</span>{/each}</p>
+            {#if r.it.type === 'pic' || r.it.type === 'num'}<p class="ans">→ {choiceText(r.it, r.it.answer)}</p>{/if}
+            {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
           </div>
           <div class="hear">
             <button type="button" class="ib" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(r.it)}>▶︎</button>
@@ -86,10 +85,15 @@
 <style>
   .results { display: grid; gap: 14px; }
   .results :global(.bubble) { margin-bottom: 0; }
+  .host { display: grid; gap: 6px; }
+  .tally { margin: 0; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text-soft); }
   .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .rank { list-style: none; margin: 0; padding: 8px 14px; display: grid; gap: 4px; }
-  .rank li { display: grid; grid-template-columns: 3em auto 1fr; align-items: center; gap: 10px; }
-  .no { font: 700 var(--fs-body)/1 var(--font-num, var(--font-ui)); color: var(--text-soft); }
+  .rank li { display: grid; grid-template-columns: 4.2em auto 1fr; align-items: center; gap: 10px; }
+  /* the winner's row: a ribbon of yuzu behind it, the cup by the rank */
+  .rank li.first { margin: 0 -8px; padding: 2px 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 40%, transparent); }
+  .cup { margin-right: 2px; font-size: .85em; }
+  .no { font: 700 var(--fs-body)/1 var(--font-num, var(--font-ui)); color: var(--text-soft); white-space: nowrap; }
   .no.top { color: var(--c-coral); font-size: var(--fs-title); }
   .rank :global(.pc) { grid-auto-flow: column; justify-items: start; align-items: center; max-width: none; gap: 10px; }
   .pts { justify-self: end; font: 700 var(--fs-talk)/1 var(--font-num, var(--font-ui)); }
@@ -103,7 +107,9 @@
   .txt { min-width: 0; display: grid; gap: 4px; }
   .en { margin: 0; font: 700 17px/1.4 var(--font-ui); }
   .en mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--c-yuzu) 85%, transparent) 55%); color: inherit; }
-  .ja, .ans { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
+  .ja, .ans, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
+  .ja span { display: block; }
+  .picked { color: var(--c-coral); }
   .hear { display: flex; gap: 6px; }
   .ib {
     appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center;

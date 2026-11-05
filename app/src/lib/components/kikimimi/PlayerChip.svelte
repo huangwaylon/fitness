@@ -5,6 +5,7 @@
   import Avatar from '../characters/Avatar.svelte';
   import Mark from '../ui/Mark.svelte';
   import { week } from '#lib/store/week.svelte.ts';
+  import { villagerNameOf } from '#lib/ui-state/viewer.ts';
 
   interface Props {
     who: Who;
@@ -15,10 +16,7 @@
     size?: number;
   }
   let { who, state = null, note = null, size = 40 }: Props = $props();
-  const name = $derived.by(() => {
-    const v = week.view;
-    return !v ? '' : who === 'G' ? v.guest.villagerName : v.people[who].villagerName;
-  });
+  const name = $derived(week.view ? villagerNameOf(week.view, who) : '');
 </script>
 
 <div class="pc" class:away={state === 'away'} data-player={who} data-state={state ?? undefined}>

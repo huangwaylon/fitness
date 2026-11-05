@@ -58,6 +58,8 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
     await expect(sheet(page).locator('[data-kiki-en]')).toBeVisible();
     await expect(sheet(page).locator('[data-kiki-verdict]')).toHaveAttribute('data-kiki-verdict', i === 3 ? 'wrong' : 'right');
     await expect(sheet(page).locator('[data-mark="right"]')).toHaveCount(1);
+    // the first listen's +30 apart from the +100 (none on a miss)
+    await expect(sheet(page).locator('[data-kiki-bonus]')).toHaveCount(i === 3 ? 0 : 1);
     // the host's つぎへ cuts the reveal short
     await sheet(page).locator('[data-kiki-next]').click();
   }
@@ -65,9 +67,11 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   // 7 right on the first listen: 7 × 130
   await expect.poll(() => kiki(page, (k) => k.view().players[0].score)).toBe(910);
   await expect(sheet(page).locator('[data-review]')).toHaveCount(8);
+  await expect(sheet(page).locator('[data-kiki-tally]')).toHaveText('8もん中 7もん せいかい');
   await sheet(page).locator('[data-kiki-missed]').click();
   await expect(sheet(page).locator('[data-review]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-review="3"]')).toHaveAttribute('data-ok', 'false');
+  await expect(sheet(page).locator('[data-review="3"] [data-kiki-picked]')).toContainText('えらんだ');
   // おわる: closed, the island back
   await sheet(page).locator('[data-kiki-done]').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);

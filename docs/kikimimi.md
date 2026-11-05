@@ -149,6 +149,11 @@ Field validation:
   - おなじへや: 🔁 / 🐢 play only on the phone that speaks (the host's); the others show them disabled with 「ホストの スマホで ながれます」 (game.svelte.ts `listenOnly`) and hear the host's replays.
   - Notices: 「ホストが ゲームを とじました」 (cancelled), 「ホストが いなくなりました」, 「じかんが たったので おわりました」 (stale).
   - e2e: `app/e2e/kikimimi.spec.ts` (solo, やめる？, two players from the banner to both results).
+- **Polish (phase 3, game/UX review):**
+  - Play: 🔁 / 🐢 sit in a small row under the bubble (on おなじへや's other phones shown off, 「ホストの スマホで ながれます」); the foot holds only the host's つぎへ. The question takes the scroller's room with its content centred (no gap under it on a tall phone); choices `clamp(56px, 8vh, 72px)` tall. An item without `ask` gets its type's: word 「きこえた ことばは？」, reply 「なんて こたえる？」.
+  - Reveal: 「せいかい！ +100」 and a 「いっぱつ せいかい！ +30」 pill apart; a missed picture names the right one (「こたえ: イカ」, PIC_JA); a reply's Japanese on two lines (the question, then 「→ the reply」: bank.ts `jaLines`); しずえ's head with a word per verdict under the choices; 「よく きいてね！ よーい…」 at the 3-2-1.
+  - Results: 「8もん中 6もん せいかい」 under しずえ's line; the winner's row a yuzu ribbon with 🏆; a missed row shows 「えらんだ: … ×」 under the right answer; 「もういっかい あそぶ」.
+  - bank.ts `splitFocus(item)` → [before, focus, after], shared by Play and Results. theme.css `.level-acts::after` covers the scroller's bottom padding, so rows scrolling under a sheet's sticky buttons don't show again below them.
 
 ## Performance
 

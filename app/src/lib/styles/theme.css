@@ -109,11 +109,13 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 /* ---------- a level's actions (ごはん's amount, マイ食品, マイレシピ, いつもの): its one action and what goes with it, held at the
    foot of the sheet's scroller while the level is longer than the screen, and over the keyboard while a field is being
    typed in (sticky keeps clear of the scroller's bottom padding, --body-pad, which holds the home indicator and the
-   keyboard: Sheet's --kb); the action (the leaf .btn) takes the row's room, the cream ones their own ---------- */
+   keyboard: Sheet's --kb); the action (the leaf .btn) takes the row's room, the cream ones their own. Its ::after is
+   paper over that padding, so the rows scrolling under the buttons don't show again below them ---------- */
 .level-acts {
   position: sticky; bottom: 0; z-index: 2; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 -8px; padding: 14px 8px 6px;
   background: linear-gradient(transparent, var(--surface) 14px);
 }
+.level-acts::after { content: ''; position: absolute; left: 0; right: 0; top: 100%; height: var(--body-pad, 0px); background: var(--surface); }
 .level-acts > .btn { margin: 0 0 var(--lip-h); width: auto; flex: none; }
 .level-acts > .btn:not(.paper) { flex: 1 1 8em; }
 
