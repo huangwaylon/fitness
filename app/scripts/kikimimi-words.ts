@@ -6,7 +6,9 @@
 // whisper-cli (large-v3-turbo, ~/.cache/whisper/ggml-large-v3-turbo.bin or WHISPER_MODEL) hears each clip word by word
 // (`-ml 1 -sow`, DTW token timestamps); its words are matched to the shown words (a DP over normalised spellings:
 // "gonna" is heard where "going to" is shown, a number may come as digits or words), and the shown words it didn't
-// match are spread between their neighbours by their letters. Only the normal clips (the karaoke replays those).
+// match are spread between their neighbours by their letters. Only the normal clips (the karaoke replays those). A clip
+// mixed with a speech condition (noise, a phone line, a PA's hall: docs/kikimimi.md "Conditions") is aligned on its
+// clean take, which the audio script keeps under .cache/tts/clean/ with the speech's offset in the mixed clip.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -21,6 +23,7 @@ const { wordSpans } = await import('../src/lib/kikimimi/marks.ts');
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'src/lib/kikimimi/words.json');
+const CLEAN = join(process.env.KIKIMIMI_TTS_CACHE ?? join(APP, '.cache/tts'), 'clean');
 const CLIPS = JSON.parse(readFileSync(join(APP, 'src/lib/kikimimi/clips.json'), 'utf8')) as Record<string, { dur: number; hash: string }>;
 const MODEL = process.env.WHISPER_MODEL ?? join(homedir(), '.cache/whisper/ggml-large-v3-turbo.bin');
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
@@ -90,9 +93,14 @@ if (todo.length && !existsSync(MODEL)) throw new Error(`${MODEL} missing: the on
 if (todo.length) {
   const tmp = mkdtempSync(join(tmpdir(), 'kiki-words-'));
   try {
+    /** A mixed clip's clean take and the speech's offset in the clip (s), while it's this clip's; else the clip. */
+    const leads = new Map<string, number>();
     const files = todo.map((c) => {
-      const wav = join(tmp, `${c.id}.wav`);
-      execFileSync(FFMPEG, ['-loglevel', 'error', '-y', '-i', join(APP, 'static/audio/kikimimi', `${c.id}.m4a`), '-ar', '16000', '-ac', '1', wav]);
+      const wav = join(tmp, `${c.id}.wav`), side = join(CLEAN, `${c.id}.json`);
+      const clean = existsSync(side) ? (JSON.parse(readFileSync(side, 'utf8')) as { hash: string; lead: number }) : null;
+      const use = clean?.hash === CLIPS[c.id].hash && existsSync(join(CLEAN, `${c.id}.m4a`));
+      if (use) leads.set(c.id, clean!.lead);
+      execFileSync(FFMPEG, ['-loglevel', 'error', '-y', '-i', use ? join(CLEAN, `${c.id}.m4a`) : join(APP, 'static/audio/kikimimi', `${c.id}.m4a`), '-ar', '16000', '-ac', '1', wav]);
       return wav;
     });
     const t = Date.now();
@@ -104,7 +112,8 @@ if (todo.length) {
     let matched = 0, total = 0;
     for (const [k, c] of todo.entries()) {
       const j = JSON.parse(readFileSync(`${files[k]}.json`, 'utf8')) as { transcription: { offsets: { from: number; to: number }; text: string }[] };
-      const heard = j.transcription.map((s) => ({ w: s.text.trim(), from: s.offsets.from / 1000, to: s.offsets.to / 1000 })).filter((h) => norm(h.w));
+      const lead = leads.get(c.id) ?? 0;
+      const heard = j.transcription.map((s) => ({ w: s.text.trim(), from: s.offsets.from / 1000 + lead, to: s.offsets.to / 1000 + lead })).filter((h) => norm(h.w));
       const shown = wordSpans(c.en).map(([a, b]) => c.en.slice(a, b));
       const dur = CLIPS[c.id].dur;
       const times = align(shown, heard, dur);
@@ -112,7 +121,7 @@ if (todo.length) {
       matched += shown.filter((w) => heard.some((h) => norm(h.w) === norm(w))).length;
       words[c.id] = [CLIPS[c.id].hash, ...times.map((s) => Math.round(s * 100))];
     }
-    console.log(`shown words heard as written: ${matched}/${total}`);
+    console.log(`shown words heard as written: ${matched}/${total} (${leads.size} mixed clips aligned on their clean takes)`);
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

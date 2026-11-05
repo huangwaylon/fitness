@@ -1,0 +1,32 @@
+{
+ "cafe": {
+  "seconds": 24,
+  "seed": 2026,
+  "lufs": -30,
+  "made": "12 reversed talkers of our own TTS clips in a small room (RT60 0.6 s); cup clinks and spoon taps; a steam wand; air handling",
+  "voices": "144 of our own level 1-3 clips (static/audio/kikimimi, a3a038d577), reversed",
+  "licence": "ours: synthesised by scripts/kikimimi-beds.ts from seeded noise and the project's own TTS clips; no third-party audio",
+  "whisper": "so",
+  "kb": 121
+ },
+ "street": {
+  "seconds": 24,
+  "seed": 2027,
+  "lufs": -30,
+  "made": "traffic rumble and 6 cars passing (shaped noise under swells); 4 far reversed talkers; walkers; city hum",
+  "voices": "144 of our own level 1-3 clips (static/audio/kikimimi, a3a038d577), reversed",
+  "licence": "ours: synthesised by scripts/kikimimi-beds.ts from seeded noise and the project's own TTS clips; no third-party audio",
+  "whisper": "so",
+  "kb": 121
+ },
+ "station": {
+  "seconds": 24,
+  "seed": 2028,
+  "lufs": -30,
+  "made": "14 reversed talkers of our own TTS clips in a hall (RT60 2.0 s); walkers; a train arriving (a low swell); air handling hum",
+  "voices": "144 of our own level 1-3 clips (static/audio/kikimimi, a3a038d577), reversed",
+  "licence": "ours: synthesised by scripts/kikimimi-beds.ts from seeded noise and the project's own TTS clips; no third-party audio",
+  "whisper": "so",
+  "kb": 121
+ }
+}

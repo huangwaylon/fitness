@@ -37,7 +37,7 @@ export interface Tags {
   register: 'service' | 'colleague' | 'boss' | 'friend' | 'partner' | 'neighbour' | 'stranger' | 'official' | 'broadcast';
   pragmatic: 'literal' | 'indirect' | 'refusal' | 'hedge' | 'understatement' | 'sarcasm' | 'humour' | 'formula' | 'ritual' | 'attitude' | 'deception';
   /** Speech conditions for the mix (none: studio clean). */
-  conditions?: readonly ('phone' | 'voicemail' | 'pa' | 'video' | 'cafe' | 'station' | 'desk')[];
+  conditions?: readonly ('phone' | 'voicemail' | 'pa' | 'video' | 'cafe' | 'station' | 'street' | 'desk')[];
   /** The sound features it trains (curriculum §3). */
   features?: readonly Feature[];
 }
@@ -59,6 +59,8 @@ export interface Line {
   tts?: string;
   /** The sound marks over this line at the reveal (staging.ts MARKS, by its clip id). */
   marks?: readonly SoundMark[];
+  /** This line's speech condition, when it isn't the dialogue's (`Item.cond`). */
+  cond?: Cond;
 }
 
 export interface Item {
@@ -101,6 +103,9 @@ export interface Item {
   channel?: Channel;
   /** The sound marks over `en` at the reveal (staging.ts MARKS; a dialogue's are its lines'). */
   marks?: readonly SoundMark[];
+  /** The speech condition mixed over the clean take (staging.ts NOISE, or the item's own; a phone or PA channel
+   *  without one gets its light condition: conditions.ts condOf). A dialogue's lines take it unless they have their own. */
+  cond?: Cond;
 }
 
 // ---- staging: the scene, the channel and the sound marks (docs/kikimimi.md "Visuals") --------------------------------
@@ -118,6 +123,24 @@ export type Channel = (typeof CHANNELS)[number];
  * over each word of `at` (space-separated, each its first whole-word match).
  */
 export type SoundMark = readonly ['say', at: string, said: string] | readonly ['link', at: string] | readonly ['drop', at: string, letters: string] | readonly ['stress', words: string];
+
+/**
+ * A speech condition, mixed offline over the clean take (docs/kikimimi.md "Conditions", docs/curriculum.md §5.3 and §9;
+ * scripts/kikimimi-audio.ts with conditions.ts): a channel (a phone line, a voicemail, a PA in a hall) or a noise bed
+ * (a café, a street, a station), `light` or `heavy` (the beds' SNR +15 / +10 dB), and a channel's `bed` behind it (a PA
+ * on a platform, a caller in a café). Part of the clip's source hash; the clean master stays cached.
+ */
+export const COND_KINDS = ['phone', 'voicemail', 'pa', 'cafe', 'street', 'station'] as const;
+type CondKind = (typeof COND_KINDS)[number];
+/** The noise beds (scripts/tts/beds/<bed>.m4a, made by scripts/kikimimi-beds.ts). */
+export const BEDS = ['cafe', 'street', 'station'] as const;
+export type Bed = (typeof BEDS)[number];
+export interface Cond {
+  kind: CondKind;
+  level: 'light' | 'heavy';
+  /** A channel's background (a bed kind is its own). */
+  bed?: Bed;
+}
 
 /** An item's channel: its own, else from its conditions (a phone or voicemail, a PA, a video call), else face to face. */
 export function channelOf(it: Pick<Item, 'channel' | 'tags'>): Channel {
@@ -141,7 +164,7 @@ export function clipItems(it: Item): Item[] {
   const ids = clipIds(it);
   return it.lines.map((l, n): Item => {
     const { lines: _, tts: __, ...rest } = it;
-    return { ...rest, id: ids[n], en: l.en, ja: l.ja, speaker: l.who, voice: l.cast.slice(0, 2) as Accent, cast: l.cast, ...(l.tts && { tts: l.tts }) };
+    return { ...rest, id: ids[n], en: l.en, ja: l.ja, speaker: l.who, voice: l.cast.slice(0, 2) as Accent, cast: l.cast, ...(l.tts && { tts: l.tts }), ...(l.cond && { cond: l.cond }) };
   });
 }
 

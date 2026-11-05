@@ -14,13 +14,15 @@
    "by": "atempo"
   },
   "l1Tempo": 0.92,
-  "at": "2026-11-05T17:27:59.886Z",
-  "wallSeconds": 28,
+  "at": "2026-11-05T21:45:55.421Z",
+  "wallSeconds": 13,
   "spokenNow": 2,
   "clips": 295,
   "perfect": 290,
   "contentClean": 292,
   "rerolled": 30,
+  "conditioned": 79,
+  "condWer": 0.013,
   "flagged": [
    "d4-installer-3",
    "d4-landlord-1",
@@ -38,10 +40,11 @@
    "1": 193.043,
    "2": 248.469,
    "3": 242.204,
-   "4": 211.046
+   "4": 211.046,
+   "5": null
   },
   "files": 390,
-  "kb": 6458,
+  "kb": 6764,
   "perVoice": {
    "au-f1": {
     "n": 24,
@@ -143,7 +146,7 @@
  },
  "items": {
   "d4-bank-scam-1": {
-   "src": "3bc3dbc32d",
+   "src": "d0633d5ee4",
    "cast": "uk-m2",
    "engine": "qwen3",
    "text": "Hi, this is Mark from your bank's fraud team. We've blocked a suspicious payment.",
@@ -157,10 +160,13 @@
    "content": 0,
    "sim": 0.679,
    "rtf": 0.279,
+   "cond": "phone:light",
+   "condHyp": "Hi, this is Mark from your bank's fraud team. We've blocked a suspicious payment.",
+   "condWer": 0,
    "mos": 4.353
   },
   "d4-bank-scam-2": {
-   "src": "85ca147d70",
+   "src": "ab02c89588",
    "cast": "uk-m1",
    "engine": "qwen3",
    "text": "Oh. Which payment?",
@@ -174,10 +180,13 @@
    "content": 0,
    "sim": 0.631,
    "rtf": 0.325,
+   "cond": "phone:light",
+   "condHyp": "Oh, which payment?",
+   "condWer": 0,
    "mos": 4.344
   },
   "d4-bank-scam-3": {
-   "src": "864bc61b21",
+   "src": "7104b996a3",
    "cast": "uk-m2",
    "engine": "qwen3",
    "text": "I'll explain in a sec. First, just read me the code we've texted you, to confirm it's you.",
@@ -191,10 +200,13 @@
    "content": 0,
    "sim": 0.729,
    "rtf": 0.276,
+   "cond": "phone:light",
+   "condHyp": "I'll explain in a sec. First, just read me the code we've texted you to confirm it's you.",
+   "condWer": 0,
    "mos": 4.378
   },
   "d4-bank-scam-4": {
-   "src": "e4d971ac90",
+   "src": "790e86bb3c",
    "cast": "uk-m1",
    "engine": "qwen3",
    "text": "Hang on. I'll ring the number on the back of my card.",
@@ -208,6 +220,9 @@
    "content": 0,
    "sim": 0.756,
    "rtf": 0.3,
+   "cond": "phone:light",
+   "condHyp": "Hang on, I'll ring the number on the back of my card.",
+   "condWer": 0,
    "mos": 4.491
   },
   "d4-cough-drive-1": {
@@ -313,11 +328,11 @@
    "mos": 3.961
   },
   "d4-friend-cancels-1": {
-   "src": "5541c9c704",
+   "src": "c84822e019",
    "cast": "us-f3",
    "engine": "qwen3",
    "text": "Hey, so... about tonight. I'm really sorry, but I'm totally wiped out.",
-   "dur": 4.57,
+   "dur": 5.42,
    "wpm": 160,
    "seed": 1234,
    "tries": 1,
@@ -327,14 +342,17 @@
    "content": 0,
    "sim": 0.663,
    "rtf": 0.306,
+   "cond": "phone:light+street",
+   "condHyp": "Hey, so, about tonight. I'm really sorry, but I'm totally wiped out.",
+   "condWer": 0,
    "mos": 4.433
   },
   "d4-friend-cancels-2": {
-   "src": "bc1bbab8d6",
+   "src": "e6fea19ba0",
    "cast": "us-f2",
    "engine": "qwen3",
    "text": "Oh no, long day?",
-   "dur": 1.73,
+   "dur": 2.58,
    "wpm": 144,
    "seed": 1234,
    "tries": 1,
@@ -344,14 +362,17 @@
    "content": 0,
    "sim": 0.665,
    "rtf": 0.323,
+   "cond": "phone:light+street",
+   "condHyp": "Oh, no. Long day.",
+   "condWer": 0,
    "mos": 4.341
   },
   "d4-friend-cancels-3": {
-   "src": "46d52c4f4b",
+   "src": "b794afd831",
    "cast": "us-f3",
    "engine": "qwen3",
    "text": "The worst. Can we do Saturday instead? My treat.",
-   "dur": 4,
+   "dur": 4.85,
    "wpm": 137,
    "seed": 1234,
    "tries": 1,
@@ -361,14 +382,17 @@
    "content": 0,
    "sim": 0.669,
    "rtf": 0.269,
+   "cond": "phone:light+street",
+   "condHyp": "The worst. Can we do Saturday instead? My treat.",
+   "condWer": 0,
    "mos": 4.443
   },
   "d4-gate-change-1": {
-   "src": "49f5d0561d",
+   "src": "13ca975827",
    "cast": "au-m1",
    "engine": "qwen3",
    "text": "Is this the gate for Melbourne?",
-   "dur": 1.33,
+   "dur": 2.18,
    "wpm": 283,
    "seed": 1234,
    "tries": 1,
@@ -378,14 +402,17 @@
    "content": 0,
    "sim": 0.719,
    "rtf": 0.429,
+   "cond": "station:light",
+   "condHyp": "Is this the gate for Melbourne?",
+   "condWer": 0,
    "mos": 3.942
   },
   "d4-gate-change-2": {
-   "src": "72c2ef3d81",
+   "src": "71f764f608",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "It was, but it's moved to fifty-two. And there's a forty-minute delay.",
-   "dur": 4.12,
+   "dur": 4.97,
    "wpm": 207,
    "seed": 1234,
    "tries": 1,
@@ -395,14 +422,17 @@
    "content": 0,
    "sim": 0.724,
    "rtf": 0.279,
+   "cond": "station:light",
+   "condHyp": "It was, but it's moved to 52 and there's a 40 minute delay.",
+   "condWer": 0,
    "mos": 4.029
   },
   "d4-gate-change-3": {
-   "src": "419625d8c8",
+   "src": "9291e83239",
    "cast": "au-m1",
    "engine": "qwen3",
    "text": "Forty? I've got a connection at half six.",
-   "dur": 2.29,
+   "dur": 3.14,
    "wpm": 215,
    "seed": 1234,
    "tries": 1,
@@ -412,14 +442,17 @@
    "content": 0,
    "sim": 0.811,
    "rtf": 0.354,
+   "cond": "station:light",
+   "condHyp": "40, I've got a connection at half six.",
+   "condWer": 0,
    "mos": 4.201
   },
   "d4-gate-change-4": {
-   "src": "624ac536f0",
+   "src": "e8f87e8d5d",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "You should be right. They'll hold it for the Sydney passengers.",
-   "dur": 3.29,
+   "dur": 4.14,
    "wpm": 204,
    "seed": 1234,
    "tries": 1,
@@ -429,6 +462,9 @@
    "content": 0,
    "sim": 0.763,
    "rtf": 0.305,
+   "cond": "station:light",
+   "condHyp": "You should be right. They'll hold it for the Sydney passengers.",
+   "condWer": 0,
    "mos": 3.993
   },
   "d4-grab-lunch-1": {
@@ -619,7 +655,7 @@
    "mos": 4.252
   },
   "d4-installer-1": {
-   "src": "f8d6ede6c7",
+   "src": "c58a7cbb1e",
    "cast": "us-m3",
    "engine": "qwen3",
    "text": "We can send someone Thursday, between eight and one.",
@@ -633,10 +669,13 @@
    "content": 0,
    "sim": 0.727,
    "rtf": 0.297,
+   "cond": "phone:light",
+   "condHyp": "We can send someone Thursday between 8 and 1.",
+   "condWer": 0,
    "mos": 4.464
   },
   "d4-installer-2": {
-   "src": "04728bd040",
+   "src": "2e4cec8588",
    "cast": "us-f2",
    "engine": "qwen3",
    "text": "Between eight and one? I start work at ten.",
@@ -650,10 +689,13 @@
    "content": 0,
    "sim": 0.742,
    "rtf": 0.286,
+   "cond": "phone:light",
+   "condHyp": "Between 8 and 1, I start work at 10.",
+   "condWer": 0,
    "mos": 4.455
   },
   "d4-installer-3": {
-   "src": "c8bbcce08c",
+   "src": "182154d2da",
    "cast": "us-m3",
    "engine": "qwen3",
    "text": "Somebody over eighteen just needs to be home to let 'em in.",
@@ -669,10 +711,13 @@
    "content": 1,
    "sim": 0.759,
    "rtf": 0.355,
+   "cond": "phone:light",
+   "condHyp": "Somebody over 18 just needs to be home to let him in.",
+   "condWer": 0.083,
    "mos": 4.378
   },
   "d4-installer-4": {
-   "src": "de7508ea06",
+   "src": "0c3870e4b6",
    "cast": "us-f2",
    "engine": "qwen3",
    "text": "Okay, I'll ask my roommate to stay in.",
@@ -686,10 +731,13 @@
    "content": 0,
    "sim": 0.718,
    "rtf": 0.3,
+   "cond": "phone:light",
+   "condHyp": "Okay, I'll ask my roommate to stay in.",
+   "condWer": 0,
    "mos": 4.137
   },
   "d4-landlord-1": {
-   "src": "77bc1a5135",
+   "src": "93fae8b5cc",
    "cast": "us-f1",
    "engine": "qwen3",
    "text": "Hi, it's Bunnie in four B. The leak under the sink is back.",
@@ -705,10 +753,13 @@
    "content": 1,
    "sim": 0.854,
    "rtf": 0.261,
+   "cond": "phone:light",
+   "condHyp": "Hi, it's Bunny in 4B. The leak under the sink is back.",
+   "condWer": 0.071,
    "mos": 4.365
   },
   "d4-landlord-2": {
-   "src": "209dbdf116",
+   "src": "65533a811a",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "Ah. Well, it should be fine for now. Just keep a bucket under it.",
@@ -722,10 +773,13 @@
    "content": 0,
    "sim": 0.743,
    "rtf": 0.28,
+   "cond": "phone:light",
+   "condHyp": "Ah, well, it should be fine for now. Just keep a bucket under it.",
+   "condWer": 0,
    "mos": 4.302
   },
   "d4-landlord-3": {
-   "src": "37345ce95f",
+   "src": "ca2edd60a7",
    "cast": "us-f1",
    "engine": "qwen3",
    "text": "That's what you said last month.",
@@ -739,10 +793,13 @@
    "content": 0,
    "sim": 0.583,
    "rtf": 0.325,
+   "cond": "phone:light",
+   "condHyp": "That's what you said last month.",
+   "condWer": 0,
    "mos": 3.763
   },
   "d4-landlord-4": {
-   "src": "b1776b5b85",
+   "src": "4e2ad284e7",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "Right, right. I'll, uh, see if my guy can swing by sometime next week.",
@@ -756,6 +813,9 @@
    "content": 0,
    "sim": 0.787,
    "rtf": 0.268,
+   "cond": "phone:light",
+   "condHyp": "Right, right. I'll, uh, see if my guy can swing by sometime next week.",
+   "condWer": 0,
    "mos": 4.312
   },
   "d4-meeting-room-1": {
@@ -810,11 +870,11 @@
    "mos": 4.436
   },
   "d4-misheard-name-1": {
-   "src": "44a997359a",
+   "src": "41feac064b",
    "cast": "us-f2",
    "engine": "qwen3",
    "text": "Can I get a name for that?",
-   "dur": 1.24,
+   "dur": 2.09,
    "wpm": 356,
    "seed": 1234,
    "tries": 1,
@@ -824,14 +884,17 @@
    "content": 0,
    "sim": 0.635,
    "rtf": 0.343,
+   "cond": "cafe:heavy",
+   "condHyp": "Can I get a name for that?",
+   "condWer": 0,
    "mos": 4.25
   },
   "d4-misheard-name-2": {
-   "src": "ab1b1329fc",
+   "src": "2a1009b504",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "It's Wei. W, E, I.",
-   "dur": 2.59,
+   "dur": 3.44,
    "wpm": 119,
    "seed": 1235,
    "tries": 2,
@@ -841,14 +904,17 @@
    "content": 0,
    "sim": 0.662,
    "rtf": 0.348,
+   "cond": "cafe:heavy",
+   "condHyp": "It's WEI. W-E-I.",
+   "condWer": 0,
    "mos": 4.319
   },
   "d4-misheard-name-3": {
-   "src": "f3c62ca4b6",
+   "src": "8c90d24fa3",
    "cast": "us-f2",
    "engine": "qwen3",
    "text": "Got it. Large mocha for... May?",
-   "dur": 3.32,
+   "dur": 4.17,
    "wpm": 110,
    "seed": 1235,
    "tries": 2,
@@ -858,6 +924,9 @@
    "content": 0,
    "sim": 0.766,
    "rtf": 0.307,
+   "cond": "cafe:heavy",
+   "condHyp": "Got it. Large mocha for... May?",
+   "condWer": 0,
    "mos": 4.407
   },
   "d4-neighbour-party-1": {
@@ -912,11 +981,11 @@
    "mos": 4.478
   },
   "d4-oat-latte-1": {
-   "src": "43bc9b4826",
+   "src": "61a653e53d",
    "cast": "us-f1",
    "engine": "qwen3",
    "text": "Large oat latte for... Dawn?",
-   "dur": 2.57,
+   "dur": 3.42,
    "wpm": 120,
    "seed": 1234,
    "tries": 1,
@@ -926,14 +995,17 @@
    "content": 0,
    "sim": 0.692,
    "rtf": 0.278,
+   "cond": "cafe:light",
+   "condHyp": "Large oat latte for... Dawn?",
+   "condWer": 0,
    "mos": 4.358
   },
   "d4-oat-latte-2": {
-   "src": "545282095e",
+   "src": "e9210921cb",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Uh, I think that's mine, but I asked for almond milk.",
-   "dur": 2.73,
+   "dur": 3.58,
    "wpm": 247,
    "seed": 1234,
    "tries": 1,
@@ -943,14 +1015,17 @@
    "content": 0,
    "sim": 0.712,
    "rtf": 0.276,
+   "cond": "cafe:light",
+   "condHyp": "I think that's mine, but I asked for almond milk.",
+   "condWer": 0,
    "mos": 3.914
   },
   "d4-oat-latte-3": {
-   "src": "bf18a034e1",
+   "src": "2f6d16c287",
    "cast": "us-f1",
    "engine": "qwen3",
    "text": "Oh, shoot. Sorry about that. Lemme remake it for ya, it'll just be a minute.",
-   "dur": 4.75,
+   "dur": 5.6,
    "wpm": 192,
    "seed": 1234,
    "tries": 1,
@@ -960,6 +1035,9 @@
    "content": 0,
    "sim": 0.836,
    "rtf": 0.257,
+   "cond": "cafe:light",
+   "condHyp": "Oh, shoot. Sorry about that. Let me remake it for you. It'll just be a minute.",
+   "condWer": 0,
    "mos": 4.302
   },
   "d4-parcel-1": {
@@ -1014,11 +1092,11 @@
    "mos": 4.344
   },
   "d4-pizza-diet-1": {
-   "src": "278d9447de",
+   "src": "b76568b685",
    "cast": "us-f1",
    "engine": "qwen3",
    "text": "There's a new pizza place opening Friday. Wanna go?",
-   "dur": 3.09,
+   "dur": 3.94,
    "wpm": 178,
    "seed": 1234,
    "tries": 1,
@@ -1028,14 +1106,17 @@
    "content": 0,
    "sim": 0.858,
    "rtf": 0.285,
+   "cond": "street:light",
+   "condHyp": "There's a new pizza place opening Friday. Wanna go?",
+   "condWer": 0,
    "mos": 4.384
   },
   "d4-pizza-diet-2": {
-   "src": "0ec8f22ad8",
+   "src": "4ccdd8cbf9",
    "cast": "us-f3",
    "engine": "qwen3",
    "text": "Ooh, Friday... I'd love to, but I'm kinda tryin' to be good this month.",
-   "dur": 4.27,
+   "dur": 5.12,
    "wpm": 200,
    "seed": 1234,
    "tries": 1,
@@ -1045,14 +1126,17 @@
    "content": 0,
    "sim": 0.64,
    "rtf": 0.279,
+   "cond": "street:light",
+   "condHyp": "Ooh, Friday. I'd love to, but I'm kind of trying to be good this month.",
+   "condWer": 0,
    "mos": 4.406
   },
   "d4-pizza-diet-3": {
-   "src": "6eb1904f8e",
+   "src": "196231d355",
    "cast": "us-f1",
    "engine": "qwen3",
    "text": "They do salads too!",
-   "dur": 1.25,
+   "dur": 2.1,
    "wpm": 202,
    "seed": 1234,
    "tries": 1,
@@ -1062,14 +1146,17 @@
    "content": 0,
    "sim": 0.569,
    "rtf": 0.327,
+   "cond": "street:light",
+   "condHyp": "They do salads, too.",
+   "condWer": 0,
    "mos": 3.911
   },
   "d4-pizza-diet-4": {
-   "src": "1934488166",
+   "src": "f4cb55295a",
    "cast": "us-f3",
    "engine": "qwen3",
    "text": "Hmm. Let me check my calendar and get back to you.",
-   "dur": 3.39,
+   "dur": 4.24,
    "wpm": 198,
    "seed": 1234,
    "tries": 1,
@@ -1079,10 +1166,13 @@
    "content": 0,
    "sim": 0.745,
    "rtf": 0.286,
+   "cond": "street:light",
+   "condHyp": "Hmm. Let me check my calendar and get back to you.",
+   "condWer": 0,
    "mos": 4.255
   },
   "d4-receptionist-1": {
-   "src": "9e7b858bc5",
+   "src": "2bfc1a9dc1",
    "cast": "uk-m1",
    "engine": "qwen3",
    "text": "Hi, I was hoping to see Doctor Patel sometime this week.",
@@ -1096,10 +1186,13 @@
    "content": 0,
    "sim": 0.811,
    "rtf": 0.28,
+   "cond": "phone:light",
+   "condHyp": "Hi, I was hoping to see Dr. Patel sometime this week.",
+   "condWer": 0,
    "mos": 4.451
   },
   "d4-receptionist-2": {
-   "src": "d171e9c6f9",
+   "src": "4abc1d88f1",
    "cast": "uk-f1",
    "engine": "qwen3",
    "text": "She's fully booked till the twentieth, but I could put you on the cancellation list.",
@@ -1113,10 +1206,13 @@
    "content": 0,
    "sim": 0.802,
    "rtf": 0.281,
+   "cond": "phone:light",
+   "condHyp": "She's fully booked till the 20th, but I could put you on the cancellation list.",
+   "condWer": 0,
    "mos": 4.352
   },
   "d4-receptionist-3": {
-   "src": "5e5703a657",
+   "src": "129d3a7801",
    "cast": "uk-m1",
    "engine": "qwen3",
    "text": "Go on, then. And if nothing comes up?",
@@ -1130,10 +1226,13 @@
    "content": 0,
    "sim": 0.766,
    "rtf": 0.302,
+   "cond": "phone:light",
+   "condHyp": "Go on then. And if nothing comes up,",
+   "condWer": 0,
    "mos": 4.446
   },
   "d4-receptionist-4": {
-   "src": "fcb6caa038",
+   "src": "15979997d5",
    "cast": "uk-f1",
    "engine": "qwen3",
    "text": "Then it's the twentieth at ten past nine, with Doctor Okafor instead.",
@@ -1147,14 +1246,17 @@
    "content": 0,
    "sim": 0.775,
    "rtf": 0.271,
+   "cond": "phone:light",
+   "condHyp": "then it's the 20th at 10 past nine with Dr. Okafor instead.",
+   "condWer": 0,
    "mos": 4.45
   },
   "d4-service-charge-1": {
-   "src": "278afb78a9",
+   "src": "ca77fcad6f",
    "cast": "au-m1",
    "engine": "qwen3",
    "text": "Hang on, there's a fifteen per cent service charge on here.",
-   "dur": 3.12,
+   "dur": 3.97,
    "wpm": 216,
    "seed": 1234,
    "tries": 1,
@@ -1164,14 +1266,17 @@
    "content": 0,
    "sim": 0.785,
    "rtf": 0.318,
+   "cond": "cafe:light",
+   "condHyp": "Hang on, there's a 15% service charge on here.",
+   "condWer": 0,
    "mos": 4.054
   },
   "d4-service-charge-2": {
-   "src": "a86eca492f",
+   "src": "4fbc1e43fc",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "Seriously? The waiter forgot our drinks twice!",
-   "dur": 3.5,
+   "dur": 4.35,
    "wpm": 122,
    "seed": 1234,
    "tries": 1,
@@ -1181,14 +1286,17 @@
    "content": 0,
    "sim": 0.708,
    "rtf": 0.298,
+   "cond": "cafe:light",
+   "condHyp": "Seriously? The waiter forgot our drinks twice?",
+   "condWer": 0,
    "mos": 4.225
   },
   "d4-service-charge-3": {
-   "src": "935ff99709",
+   "src": "9e76db8483",
    "cast": "au-m1",
    "engine": "qwen3",
    "text": "Want me to ask them to take it off?",
-   "dur": 1.42,
+   "dur": 2.27,
    "wpm": 397,
    "seed": 1234,
    "tries": 1,
@@ -1198,6 +1306,9 @@
    "content": 0,
    "sim": 0.669,
    "rtf": 0.421,
+   "cond": "cafe:light",
+   "condHyp": "Want me to ask them to take it off?",
+   "condWer": 0,
    "mos": 3.795
   },
   "d4-squat-form-1": {
@@ -1320,11 +1431,11 @@
    "mos": 4.369
   },
   "d4-taxi-street-1": {
-   "src": "8497335412",
+   "src": "0380d85ef2",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "Could you take me to Brunswick Street, please?",
-   "dur": 2.2,
+   "dur": 3.05,
    "wpm": 224,
    "seed": 1234,
    "tries": 1,
@@ -1334,14 +1445,17 @@
    "content": 0,
    "sim": 0.588,
    "rtf": 0.342,
+   "cond": "street:light",
+   "condHyp": "Could you take me to Brunswick Street please?",
+   "condWer": 0,
    "mos": 3.895
   },
   "d4-taxi-street-2": {
-   "src": "0235bb4e78",
+   "src": "527ac6b86a",
    "cast": "au-m2",
    "engine": "qwen3",
    "text": "Brunswick Road? No worries, mate.",
-   "dur": 2.28,
+   "dur": 3.13,
    "wpm": 135,
    "seed": 1235,
    "tries": 2,
@@ -1351,14 +1465,17 @@
    "content": 0,
    "sim": 0.518,
    "rtf": 0.43,
+   "cond": "street:light",
+   "condHyp": "Brunswick Road? No worries, mate.",
+   "condWer": 0,
    "mos": 4.189
   },
   "d4-taxi-street-3": {
-   "src": "58b9f0a66c",
+   "src": "4c1e6ebc6e",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "Sorry, Street. Brunswick Street, in Fitzroy.",
-   "dur": 2.97,
+   "dur": 3.82,
    "wpm": 124,
    "seed": 1237,
    "tries": 4,
@@ -1368,14 +1485,17 @@
    "content": 0,
    "sim": 0.61,
    "rtf": 0.328,
+   "cond": "street:light",
+   "condHyp": "Sarri Street, Brunswick Street in Fitzroy.",
+   "condWer": 0.167,
    "mos": 3.794
   },
   "d4-taxi-street-4": {
-   "src": "cbddca6471",
+   "src": "ba66bc9a08",
    "cast": "au-m2",
    "engine": "qwen3",
    "text": "Ah, righto. Totally different direction. Good thing ya said something.",
-   "dur": 5.5,
+   "dur": 6.35,
    "wpm": 110,
    "seed": 2003,
    "tries": 4,
@@ -1385,14 +1505,17 @@
    "content": 0,
    "sim": 0.656,
    "rtf": 0.304,
+   "cond": "street:light",
+   "condHyp": "Ah, righto. Totally different direction. Good thing you said something.",
+   "condWer": 0,
    "mos": 4.148
   },
   "d4-train-cancelled-1": {
-   "src": "d611b522a9",
+   "src": "e6d3f051e1",
    "cast": "uk-m1",
    "engine": "qwen3",
    "text": "Excuse me, is the eight forty to Brighton still running?",
-   "dur": 2.94,
+   "dur": 3.79,
    "wpm": 208,
    "seed": 1234,
    "tries": 1,
@@ -1402,14 +1525,17 @@
    "content": 0,
    "sim": 0.76,
    "rtf": 0.287,
+   "cond": "station:light",
+   "condHyp": "Excuse me, is the 8.40 to Brighton still running?",
+   "condWer": 0,
    "mos": 4.424
   },
   "d4-train-cancelled-2": {
-   "src": "5bef853cb3",
+   "src": "a474daeb99",
    "cast": "uk-f1",
    "engine": "qwen3",
    "text": "It's been cancelled, I'm afraid. There's a signal fault at Haywards Heath.",
-   "dur": 3.78,
+   "dur": 4.63,
    "wpm": 194,
    "seed": 1236,
    "tries": 3,
@@ -1419,14 +1545,17 @@
    "content": 0,
    "sim": 0.78,
    "rtf": 0.271,
+   "cond": "station:light",
+   "condHyp": "It's been cancelled, I'm afraid. There's a signal fault at Haywards Heath.",
+   "condWer": 0,
    "mos": 4.411
   },
   "d4-train-cancelled-3": {
-   "src": "ee011ad8a7",
+   "src": "984ebfe27d",
    "cast": "uk-m1",
    "engine": "qwen3",
    "text": "Brilliant. So how do I get there?",
-   "dur": 1.88,
+   "dur": 2.73,
    "wpm": 231,
    "seed": 1234,
    "tries": 1,
@@ -1436,14 +1565,17 @@
    "content": 0,
    "sim": 0.75,
    "rtf": 0.311,
+   "cond": "station:light",
+   "condHyp": "Brilliant. So how do I get there?",
+   "condWer": 0,
    "mos": 4.407
   },
   "d4-train-cancelled-4": {
-   "src": "ef3fb920ff",
+   "src": "7f1d867f16",
    "cast": "uk-f1",
    "engine": "qwen3",
    "text": "Your best bet's the rail replacement bus. It leaves from outside, by the taxi rank.",
-   "dur": 4.71,
+   "dur": 5.56,
    "wpm": 194,
    "seed": 1234,
    "tries": 1,
@@ -1453,6 +1585,9 @@
    "content": 0,
    "sim": 0.815,
    "rtf": 0.264,
+   "cond": "station:light",
+   "condHyp": "Your best bet's the rail replacement bus. It leaves from outside by the taxi bank.",
+   "condWer": 0.062,
    "mos": 4.453
   },
   "d4-video-call-1": {
@@ -1524,11 +1659,11 @@
    "mos": 4.401
   },
   "d4-wrong-dish-1": {
-   "src": "9a57d0ff9c",
+   "src": "7c790d0648",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "Here's your chicken parmy, enjoy!",
-   "dur": 2.01,
+   "dur": 2.86,
    "wpm": 154,
    "seed": 1235,
    "tries": 2,
@@ -1538,14 +1673,17 @@
    "content": 0,
    "sim": 0.563,
    "rtf": 0.338,
+   "cond": "cafe:light",
+   "condHyp": "Here's your chicken pāmi. Enjoy.",
+   "condWer": 0.167,
    "mos": 3.739
   },
   "d4-wrong-dish-2": {
-   "src": "5b9afd079e",
+   "src": "1e9b2ca571",
    "cast": "au-m2",
    "engine": "qwen3",
    "text": "Sorry, I think there's been a mix-up. I ordered the barramundi.",
-   "dur": 3.72,
+   "dur": 4.57,
    "wpm": 197,
    "seed": 1234,
    "tries": 1,
@@ -1555,14 +1693,17 @@
    "content": 0,
    "sim": 0.528,
    "rtf": 0.319,
+   "cond": "cafe:light",
+   "condHyp": "Sorry, I think there's been a mix-up. I ordered the barramundi.",
+   "condWer": 0,
    "mos": 3.694
   },
   "d4-wrong-dish-3": {
-   "src": "ce0079d228",
+   "src": "cc4c5db777",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "Oh, my bad! The barramundi's sold out, though. Would the snapper do?",
-   "dur": 4.39,
+   "dur": 5.24,
    "wpm": 166,
    "seed": 1235,
    "tries": 2,
@@ -1572,6 +1713,9 @@
    "content": 0,
    "sim": 0.56,
    "rtf": 0.277,
+   "cond": "cafe:light",
+   "condHyp": "Oh my bad. The Barramundi's sold out though. With the snapper too?",
+   "condWer": 0.154,
    "mos": 4.153
   },
   "m4-be-good": {
@@ -1609,11 +1753,11 @@
    "mos": 4.457
   },
   "m4-cat": {
-   "src": "97b09c0fd2",
+   "src": "004f4c4050",
    "cast": "au-m2",
    "engine": "qwen3",
    "text": "Hey, it's me. Long story, but, um, any chance ya could feed my cat tomorrow?",
-   "dur": 5.49,
+   "dur": 5.88,
    "wpm": 166,
    "seed": 1238,
    "tries": 5,
@@ -1623,10 +1767,13 @@
    "content": 0,
    "sim": 0.649,
    "rtf": 0.282,
+   "cond": "voicemail:light",
+   "condHyp": "Hey, it's me. Long story, but any chance Ja could feed my cat tomorrow?",
+   "condWer": 0.067,
    "mos": 4.401
   },
   "m4-damp": {
-   "src": "acc124ad4e",
+   "src": "bb1efbdb95",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "Honestly, a little damp never hurt anyone. It should be fine.",
@@ -1640,14 +1787,17 @@
    "content": 0,
    "sim": 0.718,
    "rtf": 0.279,
+   "cond": "phone:light",
+   "condHyp": "Honestly, a little damp never hurt anyone. It should be fine.",
+   "condWer": 0,
    "mos": 4.183
   },
   "m4-dessert": {
-   "src": "03b1d07151",
+   "src": "b03ff78a2e",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "Split it evenly? Sure, as long as I get half your dessert too.",
-   "dur": 4.53,
+   "dur": 5.38,
    "wpm": 174,
    "seed": 1234,
    "tries": 1,
@@ -1657,6 +1807,9 @@
    "content": 0,
    "sim": 0.728,
    "rtf": 0.283,
+   "cond": "cafe:light",
+   "condHyp": "Split it evenly? Sure, as long as I get half your dessert too.",
+   "condWer": 0,
    "mos": 4.148
   },
   "m4-easy": {
@@ -1694,7 +1847,7 @@
    "mos": 4.452
   },
   "m4-gift-card": {
-   "src": "753606abcc",
+   "src": "2ed8747b2b",
    "cast": "uk-m2",
    "engine": "qwen3",
    "text": "Your parcel's being held. You just need to pay a small release fee, by gift card.",
@@ -1708,10 +1861,13 @@
    "content": 0,
    "sim": 0.774,
    "rtf": 0.275,
+   "cond": "phone:light",
+   "condHyp": "Your parcel's being held. You just need to pay a small release fee by gift card.",
+   "condWer": 0,
    "mos": 4.444
   },
   "m4-half-price": {
-   "src": "7d423044c1",
+   "src": "d8ceeaa88c",
    "cast": "us-m3",
    "engine": "qwen3",
    "text": "Before I cancel that for you, can I offer you three months at half price?",
@@ -1725,10 +1881,13 @@
    "content": 0,
    "sim": 0.733,
    "rtf": 0.286,
+   "cond": "phone:light",
+   "condHyp": "Before I cancel that for you, can I offer you three months at half price?",
+   "condWer": 0,
    "mos": 4.397
   },
   "m4-interesting": {
-   "src": "0018224ae8",
+   "src": "187da98973",
    "cast": "uk-m1",
    "engine": "qwen3",
    "text": "That's an interesting idea. It's not quite what we agreed, though.",
@@ -1742,6 +1901,9 @@
    "content": 0,
    "sim": 0.713,
    "rtf": 0.292,
+   "cond": "phone:light",
+   "condHyp": "That's an interesting idea. It's not quite what we agreed, though.",
+   "condWer": 0,
    "mos": 4.445
   },
   "m4-not-bad": {
@@ -1779,7 +1941,7 @@
    "mos": 4.409
   },
   "m4-put-through": {
-   "src": "84147b8ca9",
+   "src": "663deb2247",
    "cast": "us-f3",
    "engine": "qwen3",
    "text": "That's actually handled by a different department. Lemme put you through.",
@@ -1793,14 +1955,17 @@
    "content": 0,
    "sim": 0.703,
    "rtf": 0.283,
+   "cond": "phone:light",
+   "condHyp": "That's actually handled by a different department. Let me put you through.",
+   "condWer": 0,
    "mos": 4.465
   },
   "m4-sailings": {
-   "src": "96a26892d2",
+   "src": "7322de64ed",
    "cast": "au-m2",
    "engine": "qwen3",
    "text": "Due to the wind, this afternoon's sailings are suspended until further notice.",
-   "dur": 4.65,
+   "dur": 8.29,
    "wpm": 157,
    "seed": 1234,
    "tries": 1,
@@ -1810,10 +1975,13 @@
    "content": 0,
    "sim": 0.807,
    "rtf": 0.3,
+   "cond": "pa:heavy",
+   "condHyp": "Due to the wind, this afternoon's sailings are suspended until further notice.",
+   "condWer": 0,
    "mos": 4.17
   },
   "m4-see-what": {
-   "src": "de931c2227",
+   "src": "88d0dfce48",
    "cast": "us-m3",
    "engine": "qwen3",
    "text": "I'll see what I can do, but I can't promise anything.",
@@ -1827,14 +1995,17 @@
    "content": 0,
    "sim": 0.714,
    "rtf": 0.294,
+   "cond": "phone:light",
+   "condHyp": "I'll see what I can do, but I can't promise anything.",
+   "condWer": 0,
    "mos": 4.405
   },
   "m4-swing-by": {
-   "src": "1c9faccfef",
+   "src": "ded00f50e6",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Saturday? Yeah, I'll try 'n' swing by, if I'm not too wiped out.",
-   "dur": 4.62,
+   "dur": 5.47,
    "wpm": 171,
    "seed": 1234,
    "tries": 1,
@@ -1844,6 +2015,9 @@
    "content": 0,
    "sim": 0.78,
    "rtf": 0.263,
+   "cond": "street:light",
+   "condHyp": "Saturday? Yeah, I'll try and swing by, if I'm not too wiped out.",
+   "condWer": 0,
    "mos": 4.417
   },
   "m4-upgrade": {
@@ -2578,11 +2752,11 @@
    "mos": 3.856
   },
   "n4-claim": {
-   "src": "33afcda34c",
+   "src": "160da8a060",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "Just a reminder: we need the claim by the thirtieth, which is this Thursday.",
-   "dur": 4.56,
+   "dur": 4.95,
    "wpm": 187,
    "seed": 1234,
    "tries": 1,
@@ -2592,6 +2766,9 @@
    "content": 0,
    "sim": 0.675,
    "rtf": 0.301,
+   "cond": "voicemail:light",
+   "condHyp": "Just a reminder, we need the claim by the 30th, which is this Thursday.",
+   "condWer": 0,
    "mos": 4.187
   },
   "n4-dollars": {
@@ -2629,11 +2806,11 @@
    "mos": 4.356
   },
   "n4-gate": {
-   "src": "a2ee734be9",
+   "src": "5bbcb25064",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "Flight eight fifteen to Sydney is now boarding at gate fifty. Sorry — gate fifteen.",
-   "dur": 4.5,
+   "dur": 8.32,
    "wpm": 189,
    "seed": 1234,
    "tries": 1,
@@ -2643,10 +2820,13 @@
    "content": 0,
    "sim": 0.697,
    "rtf": 0.281,
+   "cond": "pa:light+station",
+   "condHyp": "Flight 815 to Sydney is now boarding at Gate 50. Sorry, Gate 15.",
+   "condWer": 0,
    "mos": 4.248
   },
   "n4-half-nine": {
-   "src": "6fe66c0917",
+   "src": "8d00834c90",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "I've got Tuesday at a quarter to five, or Wednesday at half nine.",
@@ -2660,6 +2840,9 @@
    "content": 0,
    "sim": 0.651,
    "rtf": 0.289,
+   "cond": "phone:light",
+   "condHyp": "I've got Tuesday at a quarter to five or Wednesday at half nine.",
+   "condWer": 0,
    "mos": 4.114
   },
   "n4-highs": {
@@ -2680,11 +2863,11 @@
    "mos": 4.277
   },
   "n4-platform": {
-   "src": "d9af856840",
+   "src": "2ebcd1d2b1",
    "cast": "au-m2",
    "engine": "qwen3",
    "text": "The six forty to Osaka will now depart from platform fourteen, not twelve.",
-   "dur": 4.79,
+   "dur": 8.61,
    "wpm": 165,
    "seed": 1234,
    "tries": 1,
@@ -2694,6 +2877,9 @@
    "content": 0,
    "sim": 0.793,
    "rtf": 0.296,
+   "cond": "pa:light+station",
+   "condHyp": "The 642 Osaka will now depart from platform 14, not 12.",
+   "condWer": 0.167,
    "mos": 4.307
   },
   "n4-pounds": {
@@ -2714,7 +2900,7 @@
    "mos": 4.482
   },
   "n4-reference": {
-   "src": "2763f536a9",
+   "src": "43c0092f2a",
    "cast": "uk-f1",
    "engine": "qwen3",
    "text": "Your reference number is four-seven-oh, nine-two.",
@@ -2728,6 +2914,9 @@
    "content": 0,
    "sim": 0.75,
    "rtf": 0.292,
+   "cond": "phone:light",
+   "condHyp": "Your reference number is 47092.",
+   "condWer": 0,
    "mos": 4.477
   },
   "n4-reps": {
@@ -2748,11 +2937,11 @@
    "mos": 4.306
   },
   "n4-split": {
-   "src": "9f4ee80976",
+   "src": "92fe1cd106",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "So that's a hundred and eighty-six between four of us. Call it forty-seven each.",
-   "dur": 5.23,
+   "dur": 6.08,
    "wpm": 186,
    "seed": 1234,
    "tries": 1,
@@ -2762,14 +2951,17 @@
    "content": 0,
    "sim": 0.8,
    "rtf": 0.268,
+   "cond": "cafe:light",
+   "condHyp": "So that's 186 between four of us. Call it 47 each.",
+   "condWer": 0.077,
    "mos": 4.099
   },
   "n4-water": {
-   "src": "c62f0a6bac",
+   "src": "b9881e7ada",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "The water will be off from ten till two — sorry, till three. That's this Thursday.",
-   "dur": 4.45,
+   "dur": 7.42,
    "wpm": 205,
    "seed": 1234,
    "tries": 1,
@@ -2779,10 +2971,13 @@
    "content": 0,
    "sim": 0.74,
    "rtf": 0.28,
+   "cond": "pa:light",
+   "condHyp": "The water will be off from 10 till 2, sorry, till 3. That's this Thursday.",
+   "condWer": 0,
    "mos": 4.416
   },
   "n4-yen": {
-   "src": "e43eee9c65",
+   "src": "05bd45dd73",
    "cast": "us-m3",
    "engine": "qwen3",
    "text": "It'd be sixty-eight thousand yen, plus another five thousand if you need us to pack.",
@@ -2796,6 +2991,9 @@
    "content": 0,
    "sim": 0.751,
    "rtf": 0.28,
+   "cond": "phone:light",
+   "condHyp": "It'd be 68,000 yen, plus another 5,000 if you need us to pack.",
+   "condWer": 0,
    "mos": 4.446
   },
   "p1-bike": {
@@ -3904,7 +4102,7 @@
    "mos": 4.327
   },
   "r4-come-up": {
-   "src": "6c4b9160dd",
+   "src": "e037037cda",
    "cast": "us-f1",
    "engine": "qwen3",
    "text": "I'm so sorry, something's come up. Can we do Thursday instead?",
@@ -3918,6 +4116,9 @@
    "content": 0,
    "sim": 0.784,
    "rtf": 0.281,
+   "cond": "phone:light",
+   "condHyp": "I'm so sorry, something's come up. Can we do Thursday instead?",
+   "condWer": 0,
    "mos": 4.322
   },
   "r4-cut-out": {
@@ -3955,11 +4156,11 @@
    "mos": 4.171
   },
   "r4-ginza": {
-   "src": "29e0e42e2a",
+   "src": "7903296832",
    "cast": "us-f3",
    "engine": "qwen3",
    "text": "Excuse me, is this the right way for the Ginza Line?",
-   "dur": 3.01,
+   "dur": 3.86,
    "wpm": 224,
    "seed": 1234,
    "tries": 1,
@@ -3969,6 +4170,9 @@
    "content": 0,
    "sim": 0.647,
    "rtf": 0.288,
+   "cond": "station:light",
+   "condHyp": "Excuse me, is this the right way for the Ginza line?",
+   "condWer": 0,
    "mos": 4.435
   },
   "r4-housewarming": {
@@ -3989,7 +4193,7 @@
    "mos": 4.398
   },
   "r4-leak": {
-   "src": "0f66a49236",
+   "src": "384b108469",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "I'll get someone to take a look at it sometime next week.",
@@ -4003,6 +4207,9 @@
    "content": 0,
    "sim": 0.715,
    "rtf": 0.307,
+   "cond": "phone:light",
+   "condHyp": "I'll get someone to take a look at it sometime next week.",
+   "condWer": 0,
    "mos": 4.297
   },
   "r4-lunch": {
@@ -4023,11 +4230,11 @@
    "mos": 4.133
   },
   "r4-name": {
-   "src": "88d97ed05b",
+   "src": "ae3a6af356",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Sorry, what was the name again? It's a bit loud in here.",
-   "dur": 2.94,
+   "dur": 3.79,
    "wpm": 250,
    "seed": 1234,
    "tries": 1,
@@ -4037,6 +4244,9 @@
    "content": 0,
    "sim": 0.75,
    "rtf": 0.274,
+   "cond": "cafe:light",
+   "condHyp": "Sorry? What was the name again? It's a bit loud in here.",
+   "condWer": 0,
    "mos": 4.003
   },
   "r4-noise": {
@@ -4057,11 +4267,11 @@
    "mos": 4.245
   },
   "r4-not-fussed": {
-   "src": "b1e6ad298f",
+   "src": "9c38220169",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "Thai or Italian? I'm honestly not fussed.",
-   "dur": 4.09,
+   "dur": 4.94,
    "wpm": 104,
    "seed": 1234,
    "tries": 1,
@@ -4071,14 +4281,17 @@
    "content": 0,
    "sim": 0.687,
    "rtf": 0.286,
+   "cond": "street:light",
+   "condHyp": "Thai or Italian? I'm honestly not fussed.",
+   "condWer": 0,
    "mos": 3.855
   },
   "r4-overbooked": {
-   "src": "d549958343",
+   "src": "a1ad1b6757",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "We're overbooked on this flight. Would you be willing to take a later one?",
-   "dur": 3.5,
+   "dur": 4.35,
    "wpm": 244,
    "seed": 1234,
    "tries": 1,
@@ -4088,6 +4301,9 @@
    "content": 0,
    "sim": 0.73,
    "rtf": 0.262,
+   "cond": "station:light",
+   "condHyp": "We're overbooked on this flight. Would you be willing to take a later one?",
+   "condWer": 0,
    "mos": 4.408
   },
   "r4-parcel": {
@@ -4108,7 +4324,7 @@
    "mos": 3.985
   },
   "r4-reschedule": {
-   "src": "71dc7e15c6",
+   "src": "93914027a9",
    "cast": "au-f1",
    "engine": "qwen3",
    "text": "We can move it, but just so you know, there's a fee for changes within twenty-four hours.",
@@ -4122,6 +4338,9 @@
    "content": 0,
    "sim": 0.728,
    "rtf": 0.281,
+   "cond": "phone:light",
+   "condHyp": "We can move it, but just so you know, there's a fee for changes within 24 hours.",
+   "condWer": 0,
    "mos": 4.152
   },
   "r4-room-ready": {
@@ -4142,11 +4361,11 @@
    "mos": 4.456
   },
   "r4-service-charge": {
-   "src": "e1189f1f04",
+   "src": "88191e964b",
    "cast": "uk-m2",
    "engine": "qwen3",
    "text": "There's a twelve and a half per cent service charge on here. Didja know?",
-   "dur": 2.97,
+   "dur": 3.82,
    "wpm": 289,
    "seed": 1234,
    "tries": 1,
@@ -4156,14 +4375,17 @@
    "content": 0,
    "sim": 0.637,
    "rtf": 0.297,
+   "cond": "cafe:light",
+   "condHyp": "There's a 12.5% service charge on here, did you know?",
+   "condWer": 0,
    "mos": 4.248
   },
   "r4-so-done": {
-   "src": "a8c629cae8",
+   "src": "c6d45b6c7c",
    "cast": "us-f2",
    "engine": "qwen3",
    "text": "My boss moved the deadline up again. I'm so done with this job.",
-   "dur": 4.41,
+   "dur": 5.26,
    "wpm": 179,
    "seed": 1234,
    "tries": 1,
@@ -4173,6 +4395,9 @@
    "content": 0,
    "sim": 0.767,
    "rtf": 0.274,
+   "cond": "cafe:light",
+   "condHyp": "My boss moved the deadline up again. I'm so done with this job.",
+   "condWer": 0,
    "mos": 4.405
   },
   "r4-store-credit": {
@@ -4193,7 +4418,7 @@
    "mos": 4.472
   },
   "r4-triage": {
-   "src": "205b7657e9",
+   "src": "c727a25575",
    "cast": "uk-m1",
    "engine": "qwen3",
    "text": "The earliest I can do is a call back from the doctor this afternoon.",
@@ -4207,6 +4432,9 @@
    "content": 0,
    "sim": 0.71,
    "rtf": 0.288,
+   "cond": "phone:light",
+   "condHyp": "The earliest I can do is a call back from the doctor this afternoon.",
+   "condWer": 0,
    "mos": 4.415
   },
   "r4-tricky": {
@@ -4947,7 +5175,7 @@
    "mos": 4.45
   },
   "w4-can-us": {
-   "src": "a96a911b40",
+   "src": "c0493cc0b6",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "I can make it between eight and one.",
@@ -4961,10 +5189,13 @@
    "content": 0,
    "sim": 0.733,
    "rtf": 0.314,
+   "cond": "phone:light",
+   "condHyp": "I can make it between 8 and 1.",
+   "condWer": 0,
    "mos": 4.26
   },
   "w4-cant-uk": {
-   "src": "2d3cfb4566",
+   "src": "f8e9f8ff8d",
    "cast": "uk-m1",
    "engine": "qwen3",
    "text": "We can't see you before Thursday.",
@@ -4978,6 +5209,9 @@
    "content": 0,
    "sim": 0.598,
    "rtf": 0.35,
+   "cond": "phone:light",
+   "condHyp": "We can't see you before Thursday.",
+   "condWer": 0,
    "mos": 4.381
   },
   "w4-didja": {
@@ -5049,7 +5283,7 @@
    "mos": 4.223
   },
   "w4-lemme": {
-   "src": "d3972098df",
+   "src": "fe60544f9f",
    "cast": "us-f3",
    "engine": "qwen3",
    "text": "Lemme just pull up your account.",
@@ -5063,6 +5297,9 @@
    "content": 0,
    "sim": 0.583,
    "rtf": 0.337,
+   "cond": "phone:light",
+   "condHyp": "Let me just pull up your account.",
+   "condWer": 0,
    "mos": 4.416
   },
   "w4-shouldve": {
@@ -5117,11 +5354,11 @@
    "mos": 4.313
   },
   "w4-were-gonna": {
-   "src": "28a5d4df6b",
+   "src": "aa04ff2af5",
    "cast": "us-m2",
    "engine": "qwen3",
    "text": "We're gonna start boarding shortly.",
-   "dur": 1.37,
+   "dur": 4.34,
    "wpm": 229,
    "seed": 1234,
    "tries": 1,
@@ -5131,6 +5368,9 @@
    "content": 0,
    "sim": 0.503,
    "rtf": 0.325,
+   "cond": "pa:light",
+   "condHyp": "We're gonna start boarding shortly.",
+   "condWer": 0,
    "mos": 3.83
   },
   "w4-wouldnt-have": {

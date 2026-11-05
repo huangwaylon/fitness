@@ -9,7 +9,12 @@
 // Where the item's `tags.conditions` already say it (bank.ts channelOf), the channel isn't repeated here.
 //   Marks: every item or line with a `tts` respelling has them: the reduced shape above the spelling (`say`: lemme,
 // gonna, a number as said), the joins (`link`), the swallowed letters (`drop`), the stressed words (`stress`).
-import type { Channel, Item, SceneId, SoundMark } from './bank.ts';
+//   Noise (`NOISE`): a speech condition where the scene has one (docs/kikimimi.md "Conditions"): a café's murmur, a
+// street, a station or an airport concourse; mostly light (+15 dB), heavy (+10 dB) only where the noise is the scene's
+// point (a name misheard over the café's noise) or the meaning survives it (a ferry PA in the wind: what it means, not a
+// number). `word` items stay clean: their contrasts are fine detail, and level 4 stays fair. A phone or PA channel
+// with no entry gets its light condition anyway (conditions.ts condOf).
+import type { Channel, Cond, Item, SceneId, SoundMark } from './bank.ts';
 
 /** item id → [scene | null, channel?] (the channel only where `tags.conditions` don't give it). */
 export const PLACES: Readonly<Record<string, readonly [SceneId | null, Channel?]>> = {
@@ -39,6 +44,23 @@ export const PLACES: Readonly<Record<string, readonly [SceneId | null, Channel?]
   'd4-grab-lunch': ['office'], 'd4-video-call': ['office'], 'd4-pizza-diet': ['street'], 'd4-cough-drive': ['pharmacy'],
   'd4-installer': ['living'], 'd4-service-charge': ['cafe'], 'd4-misheard-name': ['cafe'], 'd4-im-easy': ['living'],
   'd4-hotel-suite': [null], 'd4-bank-scam': ['living'], 'd4-ferry-off': [null]
+};
+
+const light = (kind: Cond['kind'], bed?: Cond['bed']): Cond => ({ kind, level: 'light', ...(bed && { bed }) });
+const heavy = (kind: Cond['kind'], bed?: Cond['bed']): Cond => ({ kind, level: 'heavy', ...(bed && { bed }) });
+
+/** item id → its speech condition, where the scene gives it noise (level 4; the アナウンス pack writes its own). */
+export const NOISE: Readonly<Record<string, Cond>> = {
+  // a café
+  'r4-name': light('cafe'), 'r4-so-done': light('cafe'), 'r4-service-charge': light('cafe'), 'm4-dessert': light('cafe'), 'n4-split': light('cafe'),
+  'd4-oat-latte': light('cafe'), 'd4-wrong-dish': light('cafe'), 'd4-service-charge': light('cafe'), 'd4-misheard-name': heavy('cafe'),
+  // a station, a platform PA, an airport's concourse
+  'r4-ginza': light('station'), 'd4-train-cancelled': light('station'), 'n4-platform': light('pa', 'station'), 'n4-gate': light('pa', 'station'),
+  'r4-overbooked': light('station'), 'd4-gate-change': light('station'),
+  // a street
+  'r4-not-fussed': light('street'), 'm4-swing-by': light('street'), 'd4-taxi-street': light('street'), 'd4-pizza-diet': light('street'),
+  // a friend calling from outside; a ferry PA in the wind
+  'd4-friend-cancels': light('phone', 'street'), 'm4-sailings': heavy('pa')
 };
 
 const g = (at: string): SoundMark => ['drop', at, 'g'];
@@ -90,8 +112,8 @@ export const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'd4-service-charge-1': [['link', 'Hang on'], ['say', '15%', 'fifteen per cent']]
 };
 
-/** An item's staging: its scene, its channel when the conditions don't give it, its sound marks. */
-export function staged(id: string): Pick<Item, 'scene' | 'channel' | 'marks'> {
+/** An item's staging: its scene, its channel when the conditions don't give it, its sound marks, its noise. */
+export function staged(id: string): Pick<Item, 'scene' | 'channel' | 'marks' | 'cond'> {
   const [scene, channel] = PLACES[id] ?? [null];
-  return { ...(scene && { scene }), ...(channel && { channel }), ...(MARKS[id] && { marks: MARKS[id] }) };
+  return { ...(scene && { scene }), ...(channel && { channel }), ...(MARKS[id] && { marks: MARKS[id] }), ...(NOISE[id] && { cond: NOISE[id] }) };
 }

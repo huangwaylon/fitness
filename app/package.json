@@ -27,6 +27,7 @@
     "audio:music": "node scripts/music.ts",
     "audio:kikimimi": "node scripts/kikimimi-audio.ts",
     "audio:kikimimi-words": "node scripts/kikimimi-words.ts",
+    "audio:kikimimi-beds": "node scripts/kikimimi-beds.ts",
     "art:scenes": "node scripts/scenes/scenes.ts",
     "heads": "node scripts/heads.ts",
     "bench": "node scripts/bench-model.ts",
