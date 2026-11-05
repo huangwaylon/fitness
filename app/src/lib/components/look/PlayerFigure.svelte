@@ -4,7 +4,7 @@
   // `head`: the portrait's crop (a コーデ chip, the せってい row).
   import type { PlayerLook } from '#lib/contract/look.ts';
   import { isOnepiece } from '#lib/contract/look.ts';
-  import { swatchOf } from './closet.ts';
+  import { swatchOf } from './swatch.ts';
 
   let { look, head = false }: { look: PlayerLook; head?: boolean } = $props();
 
