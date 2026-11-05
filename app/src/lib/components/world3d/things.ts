@@ -156,6 +156,54 @@ const SHAPE_DIRS: readonly Vector3[] = Array.from({ length: 64 }, (_, i) => {
  *  builds from them at once, with no fetch, meshopt or image decode again (~60 of them). Each mount's GPU copies go with
  *  its renderer (dispose: three uploads them again to the next). A failed load isn't kept. */
 const loaded = new Map<string, Promise<GLTF | null>>();
+/** The models that come and go with the island's life (a critter, a find, a sea creature: ~250 species over the days),
+ *  as against the layout's few dozen that stand: one's GPU copies go when its last instance does (each mount's), and
+ *  of their loads, not in use on any mount, the LAZY_KEEP last used stay decoded (the rest let go of: geometry and
+ *  images closed). Before, every species ever seen stayed on the GPU and decoded for the page's life (~3 textures a
+ *  minute idle on the demo, heading for ~15 MB of GPU and 10 MB of images). */
+const LAZY = (() => {
+  const cats = new Set(['bug', 'fish', 'sea', 'find']), lazy = new Map<string, boolean>();
+  for (const k of Object.values(ASSET_KEYS)) lazy.set(k.m, (lazy.get(k.m) ?? true) && cats.has(k.cat));
+  return new Set([...lazy].filter(([, l]) => l).map(([m]) => m));
+})();
+const LAZY_KEEP = 12;
+/** The mounts using each loaded model (by URL), and the lazy ones no mount uses, oldest first (the LRU). */
+const users = new Map<string, number>(), idle = new Set<string>();
+function use(url: string) {
+  users.set(url, (users.get(url) ?? 0) + 1);
+  idle.delete(url);
+}
+function unuse(url: string, lazy: boolean) {
+  const n = (users.get(url) ?? 1) - 1;
+  if (n > 0) return void users.set(url, n);
+  users.delete(url);
+  if (!lazy) return;
+  idle.add(url);
+  // (the oldest past LAZY_KEEP: its decoded model let go of, its images closed; fetched and decoded again if it comes back)
+  for (const old of idle) {
+    if (idle.size <= LAZY_KEEP) break;
+    idle.delete(old);
+    const p = loaded.get(old);
+    loaded.delete(old);
+    void p?.then((g) => g && free(g, true));
+  }
+}
+/** A model's GPU copies let go of on every renderer (its geometries, textures and materials: three uploads them again
+ *  to the next that draws them); `close`: its decoded images too (it's not to be drawn again). */
+function free(g: GLTF, close = false) {
+  g.scene.traverse((n) => {
+    const mesh = n as Mesh;
+    if (!mesh.isMesh) return;
+    mesh.geometry.dispose();
+    const s = mesh.material as MeshStandardMaterial;
+    for (const t of [s.map, s.emissiveMap]) {
+      if (!t) continue;
+      t.dispose();
+      if (close) (t.image as { close?: () => void } | null)?.close?.();
+    }
+    s.dispose();
+  });
+}
 let loader: GLTFLoader | null = null;
 function load(url: string, name: string): Promise<GLTF | null> {
   let p = loaded.get(url);
@@ -187,11 +235,42 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
     }
     if (!p) {
       pending++;
-      p = load(`${base}${name}.glb?v=${MODELS[name]?.v ?? 0}`, name).then((g) => (pending--, g && got.add(g), g));
+      const url = urlOf(name);
+      use(url);
+      p = load(url, name).then((g) => (pending--, g && got.add(g), g));
       gltfs.set(name, p);
     }
     return p;
   };
+  const urlOf = (name: ModelName) => `${base}${name}.glb?v=${MODELS[name]?.v ?? 0}`;
+  /** A lazy model's last instance gone: its GPU copies and this mount's materials of it let go of, its load handed
+   *  back (kept decoded a while: unuse). Asked for again, it's built afresh. */
+  function release(name: ModelName) {
+    const p = gltfs.get(name);
+    if (!p || name.startsWith('proc/')) return;
+    gltfs.delete(name);
+    void p.then((g) => {
+      if (g && !disposed) {
+        got.delete(g);
+        g.scene.traverse((n) => {
+          const src = (n as Mesh).isMesh ? ((n as Mesh).material as Material) : null;
+          for (const map of src ? [mats, softMats] : []) {
+            const r = map.get(src!);
+            if (!r) continue;
+            map.delete(src!);
+            for (const x of [r.m, r.front]) {
+              if (!x) continue;
+              x.dispose();
+              for (const arr of [lit, lifted]) if (arr.includes(x)) arr.splice(arr.indexOf(x), 1);
+            }
+            r.depth.dispose();
+          }
+        });
+        free(g);
+      }
+      if (!disposed) unuse(urlOf(name), true);
+    });
+  }
 
   // ---- materials: each model's once ----
   const lit: MeshLambertMaterial[] = [], lifted: MeshLambertMaterial[] = [];
@@ -479,6 +558,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       want.delete(name);
       drop(g);
       groups.delete(name);
+      if (LAZY.has(name)) release(name);
       changed();
     }
     await Promise.all(jobs);
@@ -766,16 +846,11 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       }
       // (now, not once every load is in: a model still loading was never on this renderer, and the next island may
       // already have the shared ones on its own: a late dispose would drop its copies too)
-      for (const g of got) g.scene.traverse((n) => {
-        const mesh = n as Mesh;
-        if (!mesh.isMesh) return;
-        mesh.geometry.dispose();
-        const s = mesh.material as MeshStandardMaterial;
-        s.map?.dispose();
-        s.emissiveMap?.dispose();
-        s.dispose();
-      });
+      for (const g of got) free(g);
       got.clear();
+      // (this mount's loads handed back: the lazy ones may be let go of now, as no mount uses them)
+      for (const name of gltfs.keys()) if (!name.startsWith('proc/')) unuse(urlOf(name), LAZY.has(name));
+      gltfs.clear();
     }
   };
 }
