@@ -329,15 +329,9 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
   a tap on it walks up and goes in to `/museum` (IslandScene goInto); the editor's plan draws it as a home is drawn,
   named, its door marked; its palette and the phone's tray (たてもの) offer it only while the island has none.
 - **The default** puts it at the back, on the clifftop behind the campsite (`scripts/layout-default.ts` MUSEUM: tiles
-  6…12 × 54…57, its door's row kept clear; the clifftop's cedars claim their tiles after it). An island arranged
-  before it came (the record) may hold something there: then, once, a member's phone moves it to the free spot nearest
-  its default, facing the camera if it can (`layout/buildings.ts` buildingOps: one `o` op of its id, as the editor's
-  move; the guest never sends one; an island where it has an op of its own is left as it is). IslandScene runs it after
-  the record's rows (`layout.placeBuildings()`). A spot is had three ways, in turn: on clear ground; else clearing
-  flowers (only flowers: never a tree, a bush, furniture, or a path under it; at most 12, each an `o` removal before the
-  building's op, as the editor's); else, the last resort, over a path. Each must leave every named spot reachable. On
-  the record of 2026-11-03 (the user's own cedars on the clifftop) it clears one flower and stands turned on the west
-  lawn, tiles 4…7 × 11…17 (`buildings.test.ts`).
+  6…12 × 54…57, its door's row kept clear; the clifftop's cedars claim their tiles after it). On an island arranged
+  before it came, where something stands there, nothing moves it: the members place the museum and the shop
+  themselves, in the editor (validate.ts flags the overlap).
 - **The shop** the same way: NH's StrcMarketA02 and its doors with the Japanese sign (タヌキ商店:
   `npm run world3d-models -- --only=shop`, 129 KB), `/shop`; the default puts it in the middle, west of the main path
   behind うめ's home, its door a step off the path (`layout-default.ts` SHOP: tiles 2…8 × 34…37). うめ's home stands two
