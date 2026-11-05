@@ -39,13 +39,11 @@
   //   staying until caught (the e2e's hook; it comes where the camera can see it if it can, else at its place);
   //   ?sea=<id>|pearl: a bubble spot; ?flea: a tap on my villager always sends a flea off it.
   import { fx3d, has3d } from './fx3d.ts';
-  import { NIBBLE_MS, PLUNGE_MS, angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
+  import { angle, angling, floatLift, nibbled } from '../world3d/fishing3d.ts';
   import { NOTICE_U, cast as castLine, due, pull, step as stepLine, type Around, type Line as MyLine, type Plan, type Step } from './fishing.ts';
   import { actorOf } from '#lib/ui-state/cast.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { EASE, Glide, turn, yawOf } from './glide.ts';
   import { pace, SLOW_PX } from '../world3d/pace.ts';
-  import { wingBeat } from '../world3d/wings.ts';
   import { showCatch } from './catchCard.ts';
   import { timers } from './timers.ts';
   import { fnv1a as seedOf, pickOne } from '#lib/random.ts';
@@ -72,7 +70,7 @@
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught } from '#lib/sync/world-day.ts';
   import type { FishPhase, How, Relayed, Who } from '#lib/contract/live-protocol.ts';
-  import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Flying, type Leg } from './critterPath.ts';
+  import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
   import { actors, holdNaps, inMotion, livePos, wake as wakeUp } from '../motion/director.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -82,17 +80,13 @@
   import {
     BUGS, bushes, FISH, FRESH, POND_SHADOW, REAR_MS, SEA_SWIM, STAY_MS,
     bugPlace, bushBug, critterArt, findKind, fleesFrom, freshAreas, shadowLen, fleaJumps, hookItem, landing, netSwing,
-    oddsAt, patches, perch3d, perches, pickBug, pickFish, sameWater, stalkTap, swimAt, swimPick, swimmable, type BugId, type BugPlace, type Catch,
-    type FishId, type Flight, type JunkId, type Patch, type StalkState, type Swim, type Water
+    oddsAt, patches, perch3d, perches, pickBug, pickFish, sameWater, stalkTap, swimAt, swimPick, swimmable, type BugId, type Catch,
+    type FishId, type JunkId, type Patch, type Swim, type Water
   } from './critters.ts';
   import type { PondFishId } from './pondFish.ts';
   import type { FreshWhere } from './world.ts';
-
-  /** Where a shadow is, one at a time each: a stretch of the coast (coast.ts: `sea` off the front beach, `sea1`…
-   *  round the rest, ambient life's sea channels) or a fresh water. */
-  type Pool = Water | `sea${number}`;
-  const seaPool = (coast = 0): Pool => (coast ? `sea${coast}` : 'sea');
-  const poolOf = (water: Water, coast = 0): Pool => (water === 'sea' ? seaPool(coast) : water);
+  import { bugLoc, fishLoc, loc, poolOf, seaPool, type Bug, type Fish, type Line, type Net, type P3, type Pool, type Shared } from './critterTypes.ts';
+  import { critterMotion3d } from './critterMotion3d.ts';
 
   interface Props {
     scene?: HTMLElement;
@@ -103,58 +97,8 @@
   let { scene, tod, enabled }: Props = $props();
   const w = useWorld();
 
-  /** A world point (units) and its height above the ground. */
-  interface P3 { x: number; z: number; lift: number }
-  interface Fish {
-    n: number; item: FishId | PondFishId | JunkId; water: Water; pool: Pool; size: number; shape?: 'narrow' | 'fin';
-    /** Where it is heading (world) and how long that takes; its node's anchor (its spawn point). */
-    x: number; z: number; ms: number; ax: number; az: number;
-    /** Heading: mirrored (head right) and turned toward where it swims (deg, −90…90 on screen). */
-    flip: boolean; rot: number;
-    area: Swim; gone: boolean; dash: boolean;
-    /** Closing in on a bobber in short darts (NH): each one quick off the mark, easing in. */
-    spurt?: boolean;
-    /** The shared world's (critterPath.ts): its id (its catch is shared), its itinerary and when it came (relay ms). */
-    cid?: string; legs?: Leg[]; t0?: number;
-    /** Another's line is out at it (their phone's `fish` steps): theirs while it is, swimming up to their float. */
-    taken?: Who;
-    /** Its stay is over: it leaves once no line holds it (never while it plays with a float). */
-    due?: boolean;
-  }
-  /** Another's line as their phone tells it (`fish` steps): its float at (x, z), the line from their villager's rod (the
-   *  bank's sx, sz when it isn't in reach), at a shadow `id`. */
-  interface Line { who: Who; slot: string; id?: string; x: number; z: number; sx: number; sz: number; landed: boolean; under: boolean; rings: number; n: number }
-  interface Bug {
-    n: number; id: BugId; flight: Flight; place: BugPlace;
-    /** Where it is (world, lift above the ground), its node's anchor and the ground's foreshortening there. */
-    x: number; z: number; lift: number; ax: number; az: number; g: number;
-    ms: number; flip: boolean; gone: boolean;
-    /** Sat down: a cicada on its trunk, a butterfly resting on a flower (its wings slowly open and close). */
-    sat: boolean;
-    /** Startled: it rises up and away, fully seen, and fades out at the end. */
-    fled?: boolean;
-    /** A tarantula's or a scorpion's mood (stalkTap). */
-    stalk?: StalkState;
-    /** Netted: it holds still where it was seen (its translate frozen) until the swing lands. */
-    held?: boolean; freeze?: string;
-    /** When it set off for good (performance.now() ms): the 3D model fades over its leave's last FADE3_MS. */
-    goneAt?: number;
-    /** Its itinerary (critterPath.ts: the shared world's, from its seed, or this phone's own), where it set off and
-     *  when it came (relay ms); dropped when something else moves it (a startle, a charge, a rear). */
-    cid?: string; legs?: Leg[]; start?: P3; t0?: number;
-  }
-  /** A shared critter's id and where its itinerary comes from: its seed, when it came (relay ms) and how long it stays
-   *  in all (ms). */
-  interface Shared { cid?: string; path?: { seed: number; t0: number; total: number } }
-  /** The net swung at a bug (stage units: the screen's overlay). */
-  interface Net { n: number; x: number; y: number; in3d?: boolean }
-
   const rand = Math.random;
   const between = (a: number, b: number) => a + rand() * (b - a);
-  /** A node's inner offset (local units: before the node's perspective scale). */
-  const loc = (dx: number, dy: number) => `calc(${dx.toFixed(2)} * var(--u)) calc(${dy.toFixed(2)} * var(--u))`;
-  const fishLoc = (f: Fish) => loc(f.x - f.ax, -(f.z - f.az));
-  const bugLoc = (b: Bug) => loc(b.x - b.ax, -(b.z - b.az) * b.g - b.lift);
 
   /** One shadow off each stretch of coast and one in each fresh water, at most. */
   const none = (): Partial<Record<Pool, Fish | null>> => ({});
@@ -585,123 +529,11 @@
   // behind it. While it plays with my line its nose meets the float: backed off a little, each nibble a bump on it with
   // the float's dip (fishing3d.ts), the bite a lunge onto it as it plunges; scared, it darts off with a quick tail
   // wiggle. The models fade in and out (world3d/things.ts: never popped).
-  interface Mo { g: Glide; yaw: number; out: number; t: number; off: number; xyz: [number, number, number]; ph: number; flap: number }
-  const mos = new Map<string, Mo>();
-  const moOf = (id: string, yaw: number): Mo => {
-    let m = mos.get(id);
-    if (!m) mos.set(id, (m = { g: new Glide(), yaw, out: yaw, t: performance.now(), off: 0, xyz: [0, 0, 0], ph: 0, flap: 0 }));
-    return m;
-  };
-  const fishId = (f: Fish) => `fish-${f.water}-${f.n}`;
-  const bugId = (b: Bug) => `bug-${b.n}`;
-  /** Its 3D shadow's length (u: the model's, as assets.json scales shadow/*). */
-  const len3 = (f: Fish) => (f.shape === 'fin' ? 64 : shadowLen(f.size, f.shape));
-  /** Backed off from the float between nibbles (u, nose to float). */
-  const NOSE_GAP = 2.4;
-  /** A 3D model's fade out at the end of its leave (world3d/things.ts FADE_OUT_MS). */
-  const FADE3_MS = 600;
+  const { mos, fishId, bugId, len3, fishGlide, mirrorFish, mirrorBug, srcBug, fish3, fishYaw, bug3, bugYaw, bugOff } = critterMotion3d({
+    line: () => line, nose: () => nose, lineN: () => lineN, relayNow: () => shared.now(), snapshot: (v) => $state.snapshot(v) as typeof v
+  });
   /** My line's fish, nose to the float from `at` (performance.now() ms) on, for that line (`n`: lineN). */
   let nose: { f: Fish; at: number; n: number } | null = null;
-  /** The shadow's middle now (the 2D sprite's, by its transition's curve). */
-  const fishGlide = (id: string, f: Pick<Fish, 'x' | 'z' | 'ms' | 'flip' | 'dash' | 'spurt'>, t: number) =>
-    moOf(id, yawOf(f.flip ? 1 : -1, 0)).g.to(t, f.x, f.z, 0, f.ms, f.dash ? EASE.dash : f.spurt ? EASE.spurt : EASE.swim).at(t);
-  // What the 3D frame reads of a fish or a bug each frame (fish3, bug3, the yaw, flap and fade getters), mirrored off
-  // its state proxy by an attachment (re-run as they change: {@attach mirrorFish(f)}): a proxy's every read boxes its
-  // number and builds no plain field (~10 KB a frame, Chromium's heap sampling), read here from plain fields.
-  interface FishSrc { id: string; x: number; z: number; ms: number; flip: boolean; dash: boolean; spurt: boolean; len: number }
-  interface BugSrc {
-    id: string; x: number; z: number; lift: number; ms: number; flip: boolean; gone: boolean; goneAt: number; fled: boolean; held: boolean;
-    flight: Flight; legs: Leg[] | undefined; start: P3 | undefined; t0: number | undefined; perched: boolean; quick: boolean; rear: boolean; sat: boolean;
-  }
-  const fishSrc = new WeakMap<Fish, FishSrc>(), bugSrc = new WeakMap<Bug, BugSrc>();
-  function mirrorFishNow(f: Fish): FishSrc {
-    const o = fishSrc.get(f) ?? ({} as FishSrc);
-    Object.assign(o, { id: fishId(f), x: f.x, z: f.z, ms: f.ms, flip: f.flip, dash: f.dash, spurt: !!f.spurt, len: len3(f) });
-    fishSrc.set(f, o);
-    return o;
-  }
-  function mirrorBugNow(b: Bug): BugSrc {
-    const o = bugSrc.get(b) ?? ({} as BugSrc);
-    Object.assign(o, {
-      id: bugId(b), x: b.x, z: b.z, lift: b.lift, ms: b.ms, flip: b.flip, gone: b.gone, goneAt: b.goneAt ?? 0, fled: !!b.fled, held: !!b.held,
-      flight: b.flight, legs: b.legs && $state.snapshot(b.legs), start: b.start && $state.snapshot(b.start), t0: b.t0,
-      perched: b.sat && (b.place === 'trunk' || b.place === 'palm'), quick: b.id === 'honeybee' || b.flight === 'dart', rear: b.stalk === 'rear', sat: b.sat
-    });
-    bugSrc.set(b, o);
-    return o;
-  }
-  const mirrorFish = (f: Fish) => () => void mirrorFishNow(f);
-  const mirrorBug = (b: Bug) => () => void mirrorBugNow(b);
-  // (before its attachment has run: read once, untracked, so the reader's own effect doesn't follow its fields)
-  const srcFish = (f: Fish) => fishSrc.get(f) ?? untrack(() => mirrorFishNow(f));
-  const srcBug = (b: Bug) => bugSrc.get(b) ?? untrack(() => mirrorBugNow(b));
-  /** A nibble's bump of the nose on the float (0 … 1, at its height with the float's dip, a quarter in). */
-  const bump = (n: number) => (n < 0.25 ? EASE.smooth(n / 0.25) : n < 0.6 ? 1 - EASE.smooth((n - 0.25) / 0.35) : 0);
-  /** The 3D shadow's spot this frame (its nose: world x, z, lift) and its yaw (`out`). */
-  function fish3(f: Fish): [number, number, number] {
-    const s = srcFish(f), t = performance.now(), m = moOf(s.id, yawOf(s.flip ? 1 : -1, 0)), g = fishGlide(s.id, s, t);
-    const dt = Math.min(100, Math.max(0, t - m.t));
-    m.t = t;
-    const c = line, mine = !!c && c.fish === s.id;
-    // its heading: at the float while it plays with my line (backing off, it never turns tail), else the way it swims
-    // (kept while it's still)
-    let want = m.yaw;
-    if (c && mine) {
-      if (Math.hypot(c.x - g.x, c.z - g.z) > 0.5) want = yawOf(c.x - g.x, c.z - g.z);
-    } else if (g.done(t) < 1 && Math.hypot(g.tx - g.fx, g.tz - g.fz) > 0.5) want = yawOf(g.tx - g.fx, g.tz - g.fz);
-    m.yaw = turn(m.yaw, want, dt, s.dash ? 80 : s.spurt ? 110 : 280);
-    const hx = Math.sin(m.yaw), hz = -Math.cos(m.yaw), half = s.len / 2;
-    if (c && mine && nose && nose.f === f && nose.n === lineN && t >= nose.at) {
-      // nose to the float: backed off NOSE_GAP, each nibble a bump onto it, the bite a lunge over it
-      const gap = Math.hypot(c.x - g.x, c.z - g.z) - half;
-      let off = (gap - NOSE_GAP) * EASE.smooth(Math.min(1, (t - nose.at) / 300));
-      const n = (t - angling.nibble) / NIBBLE_MS;
-      if (angling.nibble >= nose.at && n >= 0 && n < 1) off += NOSE_GAP * bump(n);
-      if (c.phase === 'bite') off += (gap + half * 0.35 - off) * EASE.smooth(Math.min(1, (t - angling.bite) / PLUNGE_MS));
-      m.off = off;
-    } else m.off *= Math.exp(-dt / 140);
-    // its tail: a quick wiggle darting off, a slow wag swimming
-    const wag = s.dash ? Math.sin((t / 1000) * Math.PI * 2 * 7) * 0.42 : Math.sin((t / 1300) * Math.PI * 2) * (g.done(t) < 1 ? 0.07 : 0.035);
-    m.out = m.yaw + wag;
-    m.xyz[0] = g.x + hx * (half + m.off);
-    m.xyz[1] = g.z + hz * (half + m.off);
-    m.xyz[2] = -2.5;
-    return m.xyz;
-  }
-  const fishYaw = (f: Fish) => ((s) => mos.get(s.id)?.out ?? yawOf(s.flip ? 1 : -1, 0))(srcFish(f));
-  /** The 3D bug's spot this frame (world x, z, lift): on its itinerary, the itinerary's own curve (critterPath.ts bugAt:
-   *  a butterfly's meander and bob, a hop's arc), turned the way it flies; off it (startled, leaving), its moves by
-   *  the 3D island's curves, a lift-off rising first; netted, it holds still. */
-  const flying: Flying = { x: 0, z: 0, lift: 0, vx: 0, vz: 0 };
-  function bug3(bp: Bug): [number, number, number] {
-    const b = srcBug(bp), t = performance.now(), m = moOf(b.id, b.flip ? Math.PI : 0);
-    const dt = Math.min(100, Math.max(0, t - m.t));
-    m.t = t;
-    if (b.held && m.g.started) return m.xyz;
-    let want = b.flip ? Math.PI : 0, ups = b.fled || b.gone ? 80 : 0;
-    if (b.legs && b.start && b.t0 !== undefined) {
-      const p = bugAt(b.flight, b.legs, b.start, shared.now() - b.t0, flying);
-      ups = Math.hypot(p.vx, p.vz) * 1000;
-      // (NH's models face their +z, as the fish's: yawOf)
-      if (!b.perched) want = ups > 4 ? yawOf(p.vx, p.vz) : m.yaw;
-      m.g.set(t, p.x, p.z, p.lift);
-    } else {
-      const g = m.g.to(t, b.x, b.z, b.lift, b.ms, b.fled || b.flight === 'dart' ? EASE.out : EASE.smooth, b.gone ? EASE.out : null).at(t);
-      const dx = g.tx - g.fx, dz = g.tz - g.fz;
-      if (!b.perched) want = g.done(t) < 1 && Math.hypot(dx, dz) > 0.5 ? yawOf(dx, dz) : m.yaw;
-    }
-    const g = m.g;
-    m.out = m.yaw = turn(m.yaw, want, dt, 90);
-    m.xyz[0] = g.x;
-    m.xyz[1] = g.z;
-    m.xyz[2] = g.l + (b.rear ? 3 : 0);
-    // its wings (world3d/wings.ts wingBeat)
-    wingBeat(m, dt, b.quick, b.sat, ups);
-    return m.xyz;
-  }
-  const bugYaw = (bp: Bug) => ((b) => mos.get(b.id)?.out ?? (b.flip ? Math.PI : 0))(srcBug(bp));
-  /** Hidden in 3D: once it's leaving, over its leave's last FADE3_MS (it fades out as it goes). */
-  const bugOff = (bp: Bug) => ((b) => b.gone && performance.now() >= b.goneAt + b.ms - FADE3_MS)(srcBug(bp));
   // the 3D island's frames for them (world3d/pace.ts): a shadow dawdling at the ambient rate (the engine's 30 a
   // second: a slow move is ambience), a dart off or a bug's flight fast on screen at the full rate to its move's end (a
   // butterfly drifting slowly or off screen is ambience, as a slow model's move is: Island3D); their fades are the 3D

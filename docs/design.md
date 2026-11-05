@@ -1463,7 +1463,7 @@ goes with the leaving).
 
 ### Critters
 
-`island/Critters.svelte`, `island/critters.ts`, `island/critterPath.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo
+`island/Critters.svelte` (its shapes `critterTypes.ts`, its 3D moves frame by frame `critterMotion3d.ts`), `island/critters.ts`, `island/critterPath.ts`, `e2e/critters.spec.ts`. NH species on the Tokyo
 clock, for fun and frequent, and the same on both phones (ambient life's 10-second slots, `island/ambient.ts`,
 docs/backend.md "Ambient life"): the sea holds a shadow off every stretch of the coast most of the time (NH's all round
 the island: `island/coast.ts` cuts the sea within 3 tiles of the shore that the camera can show into one stretch per
