@@ -46,10 +46,11 @@
   import { site } from '../island/site.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
-  import { homePlaces, placeObjects, type Inst, type Standin } from './objects.ts';
-  import { buildHome, homeTod } from './home.ts';
-  import { buildStructure, structurePlaces } from './structure.ts';
-  import { POND_Y, buildPond } from './pond.ts';
+  import { placeObjects, type Inst, type Standin } from './objects.ts';
+  import { homeTod } from './home.ts';
+  import { createBuilt } from './built.ts';
+  import { lookOf } from './groundLook.ts';
+  import { POND_Y } from './pond.ts';
   import { pondOval, pondPlaces } from '#lib/layout/ponds.ts';
   import { washAt } from '#lib/layout/swash.ts';
   import { inOval } from '../island/world.ts';
@@ -132,7 +133,7 @@
   const layoutNow = (): Layout => site.layout ?? layoutStore.current;
   let lground: LayoutGround | null = null;
   /** The ground's look today: the season's, the petals' or the fallen leaves' weeks. */
-  const lookNow = (): Look => (season === 'spring' && foliage === 'blossom' ? 'spring-petals' : season === 'autumn' && foliage === 'fall' ? 'autumn-leaves' : season);
+  const lookNow = (): Look => lookOf(season, foliage);
 
   // ---- what has no model yet: a card of today's art, standing on its feet point (island/models.json) ----
   const P = PLACES as unknown as Record<string, { ax: number; ay: number }>;
@@ -740,53 +741,25 @@
       standins(st);
       e.glows((lamps3 = standinLamps(st)));
       lground?.look(lookNow());
-      builtOn(e, lay);
+      built.sync(lay, heightOf);
       e.water(isWater);
       fitEnds(e);
     });
   });
 
-  // ---- the layout's homes (NH's parts: home.ts) and its bridges and stairs (NH's models: structure.ts), built and
-  // stood on the ground; again when one's look or spot changes ----
-  const built = new Map<string, { key: string; g: Object3D | null }>();
+  // ---- the layout's homes (NH's parts: home.ts), its bridges and stairs (NH's models: structure.ts) and its ponds
+  // (pond.ts), built and stood on the ground; again when one's look or spot changes (built.ts: the editor's preview
+  // keeps its own the same way) ----
   const TOD_LAMPS = { day: 0, dusk: 0.7, night: 1 } as const;
-  function builtOn(e: Island3, lay: Layout) {
-    const want = new Map<string, { key: string; make: () => Promise<Object3D | null>; at: { x: number; z: number; yaw: number; y?: number }; home: boolean }>();
-    for (const p of homePlaces(lay))
-      want.set(`home:${p.id}`, { key: JSON.stringify(p), make: () => buildHome(p.style), at: { x: p.x, z: p.z, yaw: p.yaw }, home: true });
-    for (const p of structurePlaces(lay)) {
-      // its origin on the lower ground: the lower of its two ends' (a bridge's banks, the stairs' foot)
-      const dx = (Math.cos(p.yaw) * p.length) / 2, dz = (Math.sin(p.yaw) * p.length) / 2;
-      const y = Math.min(heightOf(p.x - dx, p.z - dz), heightOf(p.x + dx, p.z + dz));
-      want.set(`structure:${p.id}`, { key: JSON.stringify(p) + y.toFixed(1), make: () => buildStructure(p), at: { x: p.x, z: p.z, yaw: p.yaw, y }, home: false });
-    }
-    // the ponds put down (pond.ts: their water, bed and stones), on the grass
-    for (const p of pondPlaces(lay)) {
-      const y = heightOf(p.x, p.z);
-      want.set(`pond:${p.id}`, { key: JSON.stringify(p) + y.toFixed(1), make: async () => buildPond(p), at: { x: p.x, z: p.z, yaw: p.yaw, y }, home: false });
-    }
-    for (const id of built.keys()) if (!want.has(id)) {
-      e.placeGroup(id, null);
-      built.delete(id);
-    }
-    for (const [id, w] of want) {
-      if (built.get(id)?.key === w.key) continue;
-      const entry = { key: w.key, g: null as Object3D | null };
-      built.set(id, entry);
-      void w.make().then((g) => {
-        if (built.get(id) !== entry || !eng) return;
-        entry.g = g;
-        if (g && w.home) homeTod(g as Parameters<typeof homeTod>[0], TOD_LAMPS[todNow()], LIFT[todNow()]);
-        eng.placeGroup(id, g, w.at);
-      });
-    }
-  }
+  const built = createBuilt((id, g, at) => eng?.placeGroup(id, g, at), (id, g) => {
+    if (id.startsWith('home:')) homeTod(g, TOD_LAMPS[todNow()], LIFT[todNow()]);
+  });
   // the homes' lamps and self-light with the time of day
   $effect(() => {
     const t3 = todNow();
     if (!eng) return;
     untrack(() => {
-      for (const [id, b] of built) if (b.g && id.startsWith('home:')) homeTod(b.g as Parameters<typeof homeTod>[0], TOD_LAMPS[t3], LIFT[t3]);
+      built.each((id, g) => id.startsWith('home:') && homeTod(g as Parameters<typeof homeTod>[0], TOD_LAMPS[t3], LIFT[t3]));
       eng?.kick();
     });
   });

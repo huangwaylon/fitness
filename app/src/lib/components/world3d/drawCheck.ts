@@ -8,7 +8,7 @@ import { isMarker, kindDef } from '#lib/layout/catalog.ts';
 import type { Layout } from '#lib/layout/model.ts';
 import { WHO_OF_HOME } from '#lib/layout/homes.ts';
 import { worldOf } from '../island/layoutWorld.ts';
-import { swapsOn } from '../island/fixedDecor.ts';
+import { piecesOn, swapsOn } from '../island/fixedDecor.ts';
 import { placeObjects, type Day } from './objects.ts';
 import { modelBounds } from './models3d.ts';
 import type { Season } from '#lib/ui-state/theme.svelte.ts';
@@ -39,6 +39,19 @@ export function phoneDays(layout: Layout, year = 2026): (Day & { date: string })
     return { date, season, foliage, month: Number(md.slice(0, 2)), swaps, structures: true };
   });
 }
+
+/** A day as the phones' 3D island draws it (IslandScene's scenery3 and pieces3): the island's scenery looks with the
+ *  date's swaps, the fixed decor's pieces at that hour (a seasonal spot empty out of its season). The editor's
+ *  preview draws the island today with it. */
+export function islandDay(layout: Layout, d: { season: Season; foliage: string; month: number; date: string; hour: number; seed?: string }): Day {
+  const w = worldOf(layout), sw = swapsOn(d.date);
+  const swaps = Object.fromEntries(w.SCENERY.map((s) => [s.id, sw[s.id] ?? { key: s.key, h: s.h }]));
+  return { season: d.season, foliage: d.foliage, month: d.month, swaps, pieces: piecesOn(d.date, d.hour, d.seed, w.ARCH), structures: true };
+}
+
+/** The editor's preview's day (editor/Preview3D.svelte): the island's, with what the island draws by other means as
+ *  instances here (the goal trees' fruit, the bulletin board: their DOM nodes' models on the island). */
+export const previewDay = (layout: Layout, d: Parameters<typeof islandDay>[1]): Day => ({ ...islandDay(layout, d), fruit: true, board: true });
 
 /** Drawn by something else than placeObjects' instances, or never drawn. */
 function elsewhere(layout: Layout, id: string, k: string, day: Day): boolean {

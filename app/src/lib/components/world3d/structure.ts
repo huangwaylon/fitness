@@ -17,7 +17,7 @@ const FAMILY: Record<string, Record<string, string>> = {
   bridge: { stone: 'bridge-stone', wood: 'bridge-wood', log: 'bridge-log', brick: 'bridge-brick', red: 'bridge-red', iron: 'bridge-iron', japanese: 'bridge-japanese', suspension: 'bridge-suspension' },
   stairs: { stone: 'stairs-stone-stair', brick: 'stairs-brick-stair', iron: 'stairs-iron-stair', wood: 'stairs-wood-stair', log: 'stairs-wood', natural: 'stairs-natural' }
 };
-export const structureFamily = (k: string, s: string | undefined): string | null => {
+const structureFamily = (k: string, s: string | undefined): string | null => {
   const f = FAMILY[k]?.[s ?? ''] ?? FAMILY[k]?.[Object.keys(FAMILY[k] ?? {})[0]];
   return f && FAMILIES[f] ? f : null;
 };

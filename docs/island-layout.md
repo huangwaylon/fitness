@@ -298,7 +298,25 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
 - **Live:** each finished action (a drop, a stroke, a turn) goes out as layout ops at once (the store: the record
   and the relay), so a phone holds it as it's made; a drag streams the piece's spot as presence (`drag`, `sc: 'o'`,
   ~10 a second). The checks (validate.ts) run a moment after every change; a click on one selects its pieces and
-  centres its tiles. The 3D preview beside the plan is the island's own ground and models.
+  centres its tiles. The 3D preview beside the plan is the island's own ground and models (below).
+- **The 3D preview** (`editor/Preview3D.svelte`; `?view=orbit` alone, `?view=phone` as a phone's camera): drawn
+  through the island's own builders, nothing of its own, so the two can't drift: the ground (`terrain.ts`
+  buildGround: the sea, the beach, the cliffs and falls, the river, the paths, the いけ tiles), placeObjects' instances
+  on the island's day today (`drawCheck.ts previewDay`: the season's look from the theme, the scenery's swaps, the fixed
+  decor's pieces at this hour; with the goal trees' fruit and the bulletin board as instances, the island's DOM nodes'
+  models), the homes, bridges, stairs and ponds put down (`world3d/built.ts` createBuilt, which Island3D keeps its own
+  with) and K.K. seated on his stool (the island's `villagers.ts`, slot `kk`, his GLB loaded once there's a stool;
+  asleep 0–6 as on the island; he goes with the stool while it's held and sits on it again where it's dropped or
+  turned). Not drawn (they aren't the layout's): the villagers, the players and the visitors, the day's finds, weeds
+  and critters, the weather, the lamps' night glow, the events' pieces (the wedding arch, Halloween's pumpkins, the
+  birthday cake: their own components on the island), today's hybrid flower. `world3d/previewDraw.test.ts` fails for a
+  catalog kind with no drawing in it. **Moving it, by hand only** (never on its own): orbit, a drag turns, the wheel or a
+  pinch zooms, a right / shift / space drag or two fingers pan; phone, a drag on open ground (or open water) pans across
+  and along the island, a pinch or ctrl-wheel zooms, the wheel scrolls (a press on a piece is still the もようがえ's:
+  IslandEdit takes it first; with a piece held, a drag on open ground pans and a tap there still puts it there: the
+  stage's `pans`). The pan keeps the camera's pivot over the land's box (a tile's margin); ⌖ puts it back where it
+  started. It draws a frame only when something changed (an edit, the camera, a model in, a wobble, K.K. settling),
+  never on a timer (the water's ripples move only with a frame); everything is let go of when it closes.
 - **`?check`** (`world3d/drawCheck.ts undrawn`): a 3Dの チェック panel listing each object the phones' 3D island
   doesn't draw as a model (placeObjects run as the island runs it, a day of each season), and why: an unknown kind, a
   card of 2D art, nothing at all (a look with no model and no art), a model file missing; a click selects it. What's
@@ -308,6 +326,9 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
   kept).
 - **The e2e** (`e2e/editor.spec.ts`): a move reaches the other tab's layout live and stays across a reload; a stroke
   and its undo / redo; R; Delete refusing a goal tree; placing (refused on the river); reset; the guest's door.
+  `e2e/editor-preview.spec.ts`: a pond placed on the plan is the island's pond in the preview, K.K. sits on his stool
+  and follows it when it's dragged and turned; the phone view pans (kept over the island), ⌖ puts it back, a still
+  preview draws no frame; a press on a piece picks it up without panning.
 
 ## Homes (phase 4)
 
@@ -434,7 +455,7 @@ and taken away, Kicks on it on both phones; a bench on it: red, the warning, the
   (`store/layout.svelte.ts`; things.ts rebuilds only the models whose instances changed).
 - **The camera's ends** from `extentOf(layout.current)` (the shoreline + 60, the far home's door + 16), recomputed on
   a change; `MID_X` 195.
-- **The homes:** `homePlaces(layout.current)` → `buildHome(style)` attached (rebuilt on `diff.homes`); a tap on
+- **The homes:** `homePlaces(layout.current)` → `buildHome(style)` attached (`world3d/built.ts` createBuilt, with the bridges, stairs and ponds: the editor's preview keeps its own the same way; rebuilt on `diff.homes`); a tap on
   `home-B` / `home-G` walks to its door and goes in to `/tent?home=B|G` (the campsite's to `/tent`; back out, the
   room drops `home`); their lamps `homeTod`.
 - **The gameplay:** `island/site.svelte.ts` `site.on` (always): `island/layoutWorld.ts worldOf(layout)` derives every

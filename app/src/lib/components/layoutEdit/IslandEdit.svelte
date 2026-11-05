@@ -36,6 +36,9 @@
     size(): [number, number];
     /** Hide a placed thing's model while it's held (null: none). */
     hide?(id: string | null): void;
+    /** The stage pans itself on a drag over open ground (the editor's preview: a tap there does nothing of its own):
+     *  a press on the ground while something's held passes on to it too, its tap still putting the held thing there. */
+    pans?: boolean;
   }
   interface Props {
     stage: EditStage;
@@ -209,12 +212,20 @@
     }
     if (!onHeld && !sel) return;
     finger = { id: e.pointerId, x: sx, y: sy, moved: false, onHeld };
+    // (on open ground with something held, over a stage that pans: the drag is the stage's, the tap ours)
+    if (!onHeld && stage.pans) return;
     host.setPointerCapture(e.pointerId);
     e.stopPropagation();
     e.preventDefault();
   }
   function onMove(e: PointerEvent) {
     if (!finger || finger.id !== e.pointerId) return;
+    if (!finger.onHeld && stage.pans) {
+      // (a drag that pans the stage is never a tap, wherever it's lifted)
+      const b = stage.host.getBoundingClientRect();
+      if (Math.hypot(e.clientX - b.left - finger.x, e.clientY - b.top - finger.y) >= 8) finger.moved = true;
+      return;
+    }
     e.stopPropagation();
     if (!finger.onHeld || !sel) return;
     const b = stage.host.getBoundingClientRect();
@@ -234,11 +245,11 @@
     const f = finger;
     finger = null;
     if (!f || f.id !== e.pointerId) return;
-    e.stopPropagation();
+    if (f.onHeld || !stage.pans) e.stopPropagation();
     const b = stage.host.getBoundingClientRect();
     const sx = e.clientX - b.left, sy = e.clientY - b.top;
     // a tap on the ground with something held: there
-    if (!f.onHeld && sel && Math.hypot(sx - f.x, sy - f.y) < 8) {
+    if (!f.onHeld && sel && !f.moved && Math.hypot(sx - f.x, sy - f.y) < 8) {
       const g = stage.toGround(sx, sy);
       if (g) {
         const [x, z] = anchorFor(sel.k, sel.f, g[0], g[1]);

@@ -23,7 +23,9 @@ import { SWASH_GLSL } from '#lib/layout/swash.ts';
 import { SEA_Y, fieldOf } from '#lib/layout/height.ts';
 import { extentOf, type Layout } from '#lib/layout/model.ts';
 
-export type Look = 'spring' | 'summer' | 'autumn' | 'winter' | 'spring-petals' | 'autumn-leaves';
+import type { Look } from './groundLook.ts';
+
+export type { Look };
 export interface GroundOptions {
   renderer: WebGLRenderer;
   /** The site's base URL (static files: terrain/nh/*.webp). */

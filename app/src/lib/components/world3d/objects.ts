@@ -64,6 +64,9 @@ export interface Day {
   hybrid?: { id: string; flower: string } | null;
   /** The scene draws the bridges itself (structure.ts, NH's own models): none here. */
   structures?: boolean;
+  /** The bulletin board as an instance here (the editor's preview); the 3D island's is its DOM node's model
+   *  (board/Board.svelte: the same model at the same spot), so none by default. */
+  board?: boolean;
 }
 
 const MU = ISLAND_MODELS as unknown as Record<string, { mu: [number, number] }>;
@@ -262,6 +265,12 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       }
       case 'stairs': case 'spot': case 'plaza': case 'beach-spot':
         break; // the stairs are the ground's (terrain.ts); a spot, a visitors' spot (IslandEdit marks it), is never drawn
+      case 'board': {
+        // NH's bulletin board (its winter look in winter), as Board.svelte stands it: at its own scale, turned its way
+        const a = day.board ? keyModel('deco/bulletin-board', season === 'winter') : null;
+        if (a) thing(a.m as ModelName, a.s, { yaw: yaw + ((a.yaw ?? 0) * Math.PI) / 180 });
+        break;
+      }
       default: {
         // the fixed decor's spots: the day's piece there (a seasonal spot empty out of its season), else its own look
         const piece = pieces?.get(o.id);
