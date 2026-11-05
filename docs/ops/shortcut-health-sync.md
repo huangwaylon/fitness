@@ -81,7 +81,7 @@ out step 4 and `steps_watch`.
 
 ### A day without the Watch (optional step 8d)
 **Fill Missing** turns a day with no samples into `0`, so a day the Watch stayed off arrives as Move 0, Exercise 0,
-Stand 0. The app copes (since 2026-11-05 it reads a day with all three 0 as no data for them: [design](../design.md#kenkou)),
+Stand 0. The app copes (it reads a day with all three 0 as no data for them: [design](../design.md#kenkou)),
 so this step is optional; it only makes the record say what happened. Recommended: send an **empty line** instead of
 `0` for those three on such a day (an empty line writes no row; the reply counts it under `skipped`, harmless). Blank
 only a day where all three are 0: a worn day's Exercise 0 is real. [U: action names]
@@ -115,11 +115,6 @@ On each iPhone, open **しまの同期** and:
 If the scale doesn't write BMI or lean body mass to Health, those lists are all `0`: harmless. To fill the past, run the
 §5 baseline with the three new queries set to 84 days too.
 
-### A Shortcut from before 2026-11-02
-Its step 9 URL is a `https://script.google.com/macros/s/…/exec` one: replace it with
-`https://island-fund-relay.island-fund-relay.workers.dev/api` (tap the URL, select all, paste), leave everything else,
-tap ▶ once: `{"ok":true,"metrics":…}`. Both phones did this on 2026-11-02.
-
 ## 3. The automation
 Shortcuts → **Automation** → **+** → **App** → **LINE** (or the app you open most) → **Is Opened** → **Run
 Immediately**, **Notify When Run** off → **Run Shortcut しまの同期**. Do this on both phones.
@@ -141,7 +136,7 @@ trend.
 | Symptom | Fix |
 |---|---|
 | `unauthorized` | Wrong or rotated key in step 1 |
-| HTML instead of JSON | Still on an old `/exec` URL: move to `https://island-fund-relay.island-fund-relay.workers.dev/api` (§2) |
+| HTML instead of JSON | The wrong URL in step 9: it must be `https://island-fund-relay.island-fund-relay.workers.dev/api` (§2) |
 | `not found` | The URL has a typo or extra characters: it must be exactly `https://island-fund-relay.island-fund-relay.workers.dev/api` |
 | `bad_request`, `…: expected Text` | That field is Number/Array in step 9: make it **Text** |
 | `warnings: ["weight: 1 lines but 31 dates…"]` | That list didn't use the same range, **Group by Day** and **Fill Missing** as `dates` (the same for `body_fat_percentage`, `body_mass_index`, `lean_body_mass`) |
