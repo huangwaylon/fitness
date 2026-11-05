@@ -38,7 +38,7 @@
   <div class="txt">
     <b class="ja">{nameJa}</b>
     <span class="en" lang="en">{nameEn}</span>
-    <span class="who" data-museum-finder={who}><Avatar person={who} villager={villagers[who]} size={18} />{t('zukan.foundBy', { date, name: finder })}</span>
+    <span class="who" data-museum-finder={who}><Avatar worn person={who} villager={villagers[who]} size={18} />{t('zukan.foundBy', { date, name: finder })}</span>
     <span class="n" data-museum-times>{t('zukan.times', { n })}</span>
   </div>
   <span class="x"><NavButton kind="close" onclick={onclose} /></span>

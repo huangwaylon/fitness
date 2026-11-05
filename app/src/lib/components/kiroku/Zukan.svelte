@@ -107,7 +107,7 @@
         <!-- who found how many of this page first (once the guest has found anything: three people share it) -->
         <span class="each firsts" data-zukan-firsts>
           {#each order as p (p)}
-            <span class="one" data-zukan-first={p}><Avatar person={p} villager={villagers[p]} size={18} />{firsts[p]}</span>
+            <span class="one" data-zukan-first={p}><Avatar worn person={p} villager={villagers[p]} size={18} />{firsts[p]}</span>
           {/each}
         </span>
       {/if}
@@ -118,10 +118,10 @@
             <span class="big"><OfficialArt key={pick.art} size={48} /></span>
             <div class="txt">
               <b class="nm">{bare(t(pick.name))} <span class="times" data-zukan-times>{t('zukan.times', { n: times(pick.id) })}</span></b>
-              <span class="who"><Avatar person={f.person} villager={villagers[f.person]} size={20} />{t('zukan.foundBy', { date: date(f.date), name: finder(f.person) })}</span>
+              <span class="who"><Avatar worn person={f.person} villager={villagers[f.person]} size={20} />{t('zukan.foundBy', { date: date(f.date), name: finder(f.person) })}</span>
               <span class="each">
                 {#each order as p (p)}
-                  <span class="one" data-zukan-person={p}><Avatar person={p} villager={villagers[p]} size={18} />{t('zukan.personTimes', { name: names[p], n: countOf(counts, findKey(kind, pick.id), false, p) })}</span>
+                  <span class="one" data-zukan-person={p}><Avatar worn person={p} villager={villagers[p]} size={18} />{t('zukan.personTimes', { name: names[p], n: countOf(counts, findKey(kind, pick.id), false, p) })}</span>
                 {/each}
               </span>
               {#if line && long}

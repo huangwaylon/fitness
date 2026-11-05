@@ -95,9 +95,44 @@ test('in the tent and the museum: my human player, and my villager once I wear i
   await expect.poll(() => inRoom('__tent'), { timeout: 30_000 }).toBe(usual);
   await a.goto('museum?critter=none&visitor=none');
   await expect.poll(() => inRoom('__museum'), { timeout: 30_000 }).toBe(usual);
-  rec.event('A', 'pref', { key: 'villager', value: 'raymond' });
-  rec.event('A', 'pref', { key: 'look', value: { kind: 'villager' } });
-  await a.goto('tent?critter=none&visitor=none');
-  await expect.poll(() => inRoom('__tent'), { timeout: 30_000 }).toBe('v:raymond');
   await a.context().close();
+  // my villager look (sent from another phone of mine): a phone opening later draws my villager in the tent
+  expect(rec.event('A', 'pref', { key: 'villager', value: 'raymond' })).toEqual({ ok: true });
+  expect(rec.event('A', 'pref', { key: 'look', value: { kind: 'villager' } })).toEqual({ ok: true });
+  const a2 = await phone(browser, rec, 'A');
+  await a2.goto('tent?critter=none&visitor=none');
+  await expect.poll(() => a2.evaluate(() => (window as unknown as Record<string, Room | undefined>).__tent?.model('A') ?? null), { timeout: 30_000 }).toBe('v:raymond');
+  await a2.context().close();
+});
+
+// The 2D heads: the island's renderer draws the players' portraits when it's idle or paused under a sheet (person3d
+// createPainter), kept by the look (look/portraits.svelte.ts): the partner's head too, a look never opened in すがた here
+test('the 2D heads: A’s and B’s portraits, drawn by the island’s renderer @render', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.goto('?demo&date=2026-11-04T12:00&critter=none&visitor=none');
+  await page.waitForFunction(() => (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded(), null, { timeout: 30_000 });
+  await fromMenu(page, 'settings');
+  const heads = page.locator('#sec-sync + .prows .av');
+  await expect(heads).toHaveCount(2);
+  await expect(heads.nth(0)).toHaveAttribute('data-portrait', '3d', { timeout: 60_000 });
+  await expect(heads.nth(1)).toHaveAttribute('data-portrait', '3d', { timeout: 60_000 });
+  // kept for the next opening
+  expect(await page.evaluate(() => (JSON.parse(localStorage.getItem('look.portraits') ?? '[]') as unknown[]).length)).toBeGreaterThanOrEqual(2);
+});
+
+test('the 2D heads in the logic tier: a player’s stand-in figure, a villager look its villager', async ({ browser }) => {
+  const rec = newRecord();
+  const a = await phone(browser, rec, 'A');
+  await fromMenu(a, 'settings');
+  const heads = settings(a).locator('#sec-sync + .prows .av');
+  await expect(heads.nth(0)).toHaveAttribute('data-portrait', 'figure');
+  await expect(heads.nth(1)).toHaveAttribute('data-portrait', 'figure');
+  await a.context().close();
+  rec.event('B', 'pref', { key: 'look', value: { kind: 'villager' } });
+  const b = await phone(browser, rec, 'A');
+  await fromMenu(b, 'settings');
+  const hb = settings(b).locator('#sec-sync + .prows .av');
+  await expect(hb.nth(1)).not.toHaveAttribute('data-portrait', /./);
+  await expect(hb.nth(1).locator('img, svg').first()).toBeVisible();
+  await b.context().close();
 });

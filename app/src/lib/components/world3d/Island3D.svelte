@@ -11,7 +11,8 @@
   import { art, artUrl, villagerArt } from '#lib/art.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
   import type { Look as Worn } from '#lib/contract/look.ts';
-  import { person3, type Dirs } from '../person3d/person3d.ts';
+  import { createPainter, person3, type Dirs } from '../person3d/person3d.ts';
+  import { useIdlePainter } from '../look/portraits.svelte.ts';
   import type { Who } from '#lib/types.ts';
   import type { VillagerActor } from '#lib/ui-state/cast.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
@@ -180,6 +181,7 @@
   /** The seats' tops (u): a bench's, a stool's (NH's park bench and log stool at 3u a model unit). */
   const seatTop = (name: string) => (name.startsWith('stool') ? 9 : 13);
   let vil3: Villagers3 | null = null;
+  let painter: ReturnType<typeof createPainter> | null = null;
 
   // ---- the rain and the snow (precip.ts: in the world, one draw call each, the motion in the shader) ----
   let p3 = $state.raw<Precip | null>(null);
@@ -874,6 +876,10 @@
     world.useThree(proj);
     let camWas = NaN, horizonWas = NaN, revWas = -1;
     vil3 = createVillagers((o) => e.add(o), dirs.villagers, () => e.kick());
+    // the 2D heads' portraits of the players' looks (the partner's, one never opened in すがた here): drawn through this
+    // renderer when the island is idle
+    painter = createPainter(e.renderer(), dirs.player, () => e.idle() || e.isPaused(), () => e.kick());
+    useIdlePainter(painter.paint);
     vil3.lift(LIFT[todNow()]);
     b3 = createBalloon3((o) => e.add(o), heightOf, () => e.kick());
     b3.lift(LIFT[todNow()]);
@@ -997,6 +1003,9 @@
       setDrawnFps(null);
       offLayout();
       listen3d(null);
+      useIdlePainter(null);
+      painter?.dispose();
+      painter = null;
       vil3?.dispose();
       vil3 = null;
       b3?.dispose();

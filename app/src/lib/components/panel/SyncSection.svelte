@@ -13,7 +13,7 @@
 <div class="prows">
   {#each [view.people[view.me], view.people[view.partner]] as p (p.person)}
     <div class="prow static">
-      <Avatar person={p.person} villager={p.villager} size={40} />
+      <Avatar worn person={p.person} villager={p.villager} size={40} />
       <span class="prl">{p.villagerName}</span>
       <span class="money when">{formatSyncTime(p.lastSyncAt, view.today)}</span>
     </div>

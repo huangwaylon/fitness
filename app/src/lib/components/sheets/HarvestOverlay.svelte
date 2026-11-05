@@ -86,7 +86,7 @@
           {#each people as who, i (who)}
             {@const pv = view.people[who]}
             <div class="trow" style="animation-delay:{0.3 + i * 0.6}s">
-              <Avatar person={who} villager={pv.villager} size={40} />
+              <Avatar worn person={who} villager={pv.villager} size={40} />
               <span class="who"><b class="nm">{pv.villagerName}</b></span>
               <b class="plus money">{formatBells(b[who], { signed: true })}</b>
             </div>

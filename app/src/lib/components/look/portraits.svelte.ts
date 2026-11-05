@@ -47,6 +47,9 @@ function save() {
 }
 
 let painter: Painter | null = null;
+/** Who draws them when no one else does (the island's renderer, when it's idle): the partner's look, one never edited
+ *  on this phone. */
+let fallback: Painter | null = null;
 const wanted = new Map<string, PlayerLook>();
 /** Looks the painter drew nothing for this session (the logic mode, a missing part): not asked again. */
 const missed = new Set<string>();
@@ -56,11 +59,11 @@ async function drain() {
   if (busy) return;
   busy = true;
   try {
-    while (painter && wanted.size) {
+    for (let p = painter ?? fallback; p && wanted.size; p = painter ?? fallback) {
       const [key, look] = wanted.entries().next().value!;
       wanted.delete(key);
       if (shots.has(key)) continue;
-      const url = await painter(look, PORTRAIT_PX).catch(() => null);
+      const url = await p(look, PORTRAIT_PX).catch(() => null);
       if (!url) missed.add(key);
       else {
         shots.set(key, url);
@@ -88,5 +91,12 @@ export function portraitOf(look: PlayerLook): string | null {
 /** Set (or clear, null) who draws the portraits: the すがた preview while it's open. */
 export function usePainter(p: Painter | null): void {
   painter = p;
+  if (p) void drain();
+}
+
+/** Set (or clear, null) who draws the portraits when no usePainter painter is set: the island's renderer (world3d,
+ *  person3d). @public */
+export function useIdlePainter(p: Painter | null): void {
+  fallback = p;
   if (p) void drain();
 }

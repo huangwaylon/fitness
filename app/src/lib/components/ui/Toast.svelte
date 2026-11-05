@@ -7,6 +7,8 @@
   import type { Who } from '#lib/types.ts';
   import Host from '../characters/Host.svelte';
   import Villager from '../characters/Villager.svelte';
+  import Avatar from '../characters/Avatar.svelte';
+  import { lookOf } from '#lib/store/look.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
 
@@ -73,7 +75,8 @@
       tabindex={action ? -1 : undefined} onclick={() => !action && dismiss()}
       onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => (action ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>
     <span class="pebble" aria-hidden="true">
-      {#if person}<Villager {person} size={36} head animate={false} eager />
+      {#if person && lookOf(person).kind === 'player'}<Avatar worn {person} size={36} />
+      {:else if person}<Villager {person} size={36} head animate={false} eager />
       {:else}<Host head size={36} animate={false} eager />{/if}
     </span>
     <span class="txt">{text}</span>

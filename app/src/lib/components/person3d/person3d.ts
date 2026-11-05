@@ -5,12 +5,14 @@
 // (player3d createPlayer), a `villager` look the roster villager (villager3d createVillager, the `villager` pref).
 // A scene keeps the model while its `key` stays and swaps it, in place, when the key changes (the look changed: on
 // leaving すがた, or the partner's phone sending theirs). Pure but for the model factories (player3d loads on first use).
-import type { Look } from '#lib/contract/look.ts';
+import type { Look, PlayerLook } from '#lib/contract/look.ts';
 import type { Who } from '#lib/types.ts';
 import { resolveLook as villagerLook } from '#lib/villagers/look.ts';
 import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { url3d } from '../villager3d/manifest.ts';
-import type { SkinnedMesh } from 'three';
+import type { SkinnedMesh, WebGLRenderer } from 'three';
+import type { Painter } from '../look/portraits.svelte.ts';
+import { drawOff } from '../../ui-state/testMode.ts';
 
 /** Where the models are (the site's room/villagers3d/ and room/player/: $app/paths asset). */
 export interface Dirs { villagers: string; player: string }
@@ -74,4 +76,54 @@ export function person3(who: Who, look: Look, villagerPref: string | null | unde
   }
   memo.set(look, { pref: villagerPref, p });
   return p;
+}
+
+/**
+ * The 2D heads' portraits (look/portraits.svelte.ts useIdlePainter) drawn by a renderer the page has (the island's),
+ * one at a time when `idle()` (nothing moving, or paused under a sheet): one player kept for the shots, dressed in each
+ * look. Nothing in the logic mode (null: the stand-in stays). `drawn()` after each (the island draws again).
+ */
+export function createPainter(renderer: WebGLRenderer, dir: string, idle: () => boolean, drawn: () => void): { paint: Painter; dispose(): void } {
+  let gone = false, queue: Promise<unknown> = Promise.resolve(), pending = 0, done: ReturnType<typeof setTimeout> | undefined;
+  let shooter: Promise<Villager3D & { dress(l: PlayerLook): Promise<void> }> | null = null;
+  const settle = () => new Promise<void>((ok) => {
+    const t = () => (gone || idle() ? ok() : setTimeout(t, 400));
+    setTimeout(t, 400);
+  });
+  /** The shots' player let go of once none are asked for a while (its textures off the island's renderer). */
+  const letGo = () => {
+    const p = shooter;
+    shooter = null;
+    void p?.then((v) => v.dispose(), () => {});
+  };
+  const paint: Painter = (look, px) => {
+    pending++;
+    clearTimeout(done);
+    const run = queue.then(async () => {
+      if (gone || drawOff()) return null;
+      await settle();
+      const { createPlayer, portrait } = await import('../player3d/player3d.ts');
+      shooter ??= createPlayer('portrait', look, dir, 0).then((p) => (p.step(0), p.step(1000), released(p) as typeof p));
+      const p = await shooter;
+      await p.dress(look);
+      p.face(null);
+      p.step(2000);
+      if (gone) return null;
+      const url = portrait(renderer, p, px, null).toDataURL('image/png');
+      drawn();
+      return url;
+    });
+    queue = run.catch(() => null).finally(() => {
+      if (--pending === 0) done = setTimeout(letGo, 5000);
+    });
+    return run;
+  };
+  return {
+    paint,
+    dispose() {
+      gone = true;
+      clearTimeout(done);
+      letGo();
+    }
+  };
 }
