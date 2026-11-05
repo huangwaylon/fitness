@@ -15,6 +15,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { HALF, ROOM, TILE, centreOf, isSurface, isWallItem, onTop, wallSpot, type Facing, type Pt, type Spot } from './grid.ts';
 import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
 import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
+import { hitsSkinned } from '../player3d/hit.ts';
 import type { Person3 } from '../person3d/person3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
@@ -1364,22 +1365,14 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     return rug;
   }
   /** Whether a 3D model is drawn under client px, or within a finger of it (a human player has no render to read its
-   *  outline off: its skinned meshes as posed, raycast, the ray put back as it was). */
+   *  outline off: its meshes as posed, boxed by joint, player3d/hit.ts; the ray put back as it was). */
   const FINGER = 12;
   function modelUnder(v: Villager3D, cx: number, cy: number): boolean {
-    const meshes: Object3D[] = [];
-    v.group.traverse((o) => {
-      const m = o as SkinnedMesh;
-      if (!m.isMesh || !m.visible) return;
-      // (its bounds as posed now: three keeps a skinned mesh's from its first raycast)
-      if (m.isSkinnedMesh) (m as { boundingSphere: unknown }).boundingSphere = null;
-      meshes.push(m);
-    });
     const at = ray.ray.clone();
     let on = false;
     for (const [dx, dy] of [[0, 0], [FINGER, 0], [-FINGER, 0], [0, FINGER], [0, -FINGER]]) {
       screen.aim(ray, cx + dx, cy + dy);
-      if (ray.intersectObjects(meshes, false).length) { on = true; break; }
+      if (hitsSkinned(v.group, ray.ray)) { on = true; break; }
     }
     ray.ray.copy(at);
     return on;
