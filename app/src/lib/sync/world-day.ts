@@ -182,19 +182,15 @@ export function hash(s: string): string {
 export const caught = (d: WorldDay, id: string): Claim | null => d.claims[`catch:${id}`] ?? null;
 /** Whether a thing on the ground (by its id) was taken today. */
 export const taken = (d: WorldDay, id: string): Claim | null => d.claims[`pick:${id}`] ?? null;
-/** The ids picked up, dug or pulled today (a day item's uid, a put's id). */
+/** The ids picked up, dug or pulled today (a day item's uid, a put's id), by anyone: gone on every phone, mine too. A
+ *  claim of mine the day holds is gone even when this phone's own record (sceneDay, fruitDay) doesn't have it: a phone
+ *  that lost that record (a new origin, Safari's cleared storage) gets my claims back in the relay's replay, and a
+ *  claim can't be made twice, so a thing kept lying for it could never be picked up. */
 export const takenIds = (d: WorldDay): Set<string> =>
   new Set(Object.keys(d.claims).filter((k) => k.startsWith('pick:')).map((k) => k.slice(5)));
-/** The ids someone else took today (a phone hides its own once its villager has got there, not at the tap). */
-export const takenByOthers = (d: WorldDay, me: Who | null): Set<string> =>
-  new Set(Object.entries(d.claims).filter(([k, c]) => k.startsWith('pick:') && c.who !== me).map(([k]) => k.slice(5)));
-/** What lies about now: the day's puts nobody has picked up or caught. */
-export const lying = (d: WorldDay, me: Who | null = null, mineGone?: (id: string, claimedAt: number) => boolean): Put[] =>
-  Object.values(d.puts).filter((p) => {
-    const c = taken(d, p.id) ?? caught(d, p.id);
-    // my own claim leaves it there until my villager has got to it (`mineGone`); anyone else's takes it at once
-    return !c || (me !== null && c.who === me && !!mineGone && !mineGone(p.id, c.t));
-  }).sort((a, b) => a.t - b.t);
+/** What lies about now: the day's puts nobody (me included) has picked up or caught. */
+export const lying = (d: WorldDay): Put[] =>
+  Object.values(d.puts).filter((p) => !(taken(d, p.id) ?? caught(d, p.id))).sort((a, b) => a.t - b.t);
 /** How many wishes, everyone's, bring a fragment on the morning of `date`. */
 export const wishesFor = (d: WorldDay, date: string): number => Object.values(d.wishes[date] ?? {}).reduce((s, n) => s + (n ?? 0), 0);
 

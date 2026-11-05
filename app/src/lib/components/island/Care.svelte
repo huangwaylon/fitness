@@ -23,7 +23,7 @@
   import { take, takenOn } from './sceneDay.ts';
   import { partnerTurnTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
-  import { taken as takenBy, takenByOthers } from '#lib/sync/world-day.ts';
+  import { taken as takenBy, takenIds } from '#lib/sync/world-day.ts';
   import { onMount } from 'svelte';
   import { SHOWN, hitOf, hitSources, pick, type HitBox, type Seen } from './hitbox.ts';
   import { fx3d } from './fx3d.ts';
@@ -49,8 +49,8 @@
     void pulled;
     void site.rev;
     const { hour, minute } = jst(clock);
-    // what was taken today: by me (once my villager got there: this phone's own record) and by the partner (the shared day)
-    const gone = date === dayKey() ? takenOn(date).union(takenByOthers(shared.day, shared.me)) : takenOn(date);
+    // what was taken today: this phone's own record, and every claim in the shared day (mine too: world-day.ts takenIds)
+    const gone = date === dayKey() ? takenOn(date).union(takenIds(shared.day)) : takenOn(date);
     const dug = new Set(digSpots(date, gone, seed).map((s) => `${s.x},${s.y}`));
     return weedsAt(date, (hour * 60 + minute) * 60_000, seed, dug).filter((w) => !gone.has(w.uid));
   });

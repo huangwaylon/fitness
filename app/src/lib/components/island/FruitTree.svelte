@@ -136,8 +136,9 @@
       const r = ring(f);
       // picked up by either of us today (the shared day's `fr:<person>:<fruit>`) is gone on both phones
       const id = fruitId(person.person, f), by = date === dayKey() ? takenBy(shared.day, `fr:${id}`) : null;
-      // the partner's pick-up takes it at once; mine once my villager has got there (rec.picked)
-      const gone = !!by && by.who !== shared.me;
+      // anyone's pick-up takes it at once, mine too (a phone that lost its own record, rec, gets my claim back in the
+      // relay's replay: a claim can't be made twice, so a fruit kept on the ground for it could never be picked up)
+      const gone = !!by;
       const stage = gone && r.met ? 'gone' : stageOf(id, r.met, rec);
       // hanging: [dx, up] in the canopy's frame; on the ground: its own spot (gx, gz) in front of the trunk
       const tx = TREE_FRUIT[i][0], up = TREE_FRUIT[i][1];
@@ -210,15 +211,10 @@
     if (!shared.share({ kind: 'pick', id: sid, what: `fruit:${f}`, at: [Math.round(s.gx), Math.round(s.gz)] }).fresh) return;
     // picked up where it lies, my villager turning to it (avatar.ts); into my pocket (the shop's くだもの)
     turnTo(s.gx);
-    pick(f);
-    recordGoods(f);
-  }
-  function pick(f: RingFruit) {
-    const s = spots.find((p) => p.f === f);
-    if (!s || s.stage !== 'ground') return;
     cue('fruit-pick');
     rec = markPicked(date, fruitId(person.person, f));
     addFx('sparkles', s.gx, s.gz, FRUIT_U * 0.4);
+    recordGoods(f);
   }
 
   /** `sound`: a tap or a real event rustles; idle life's shake stays silent. */
