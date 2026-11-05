@@ -141,7 +141,8 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (goalDay: its `day`, else `at`'s), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
  * - the island's `weatherMode`: one for the island, whoever set it (the last one wins);
- * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces);
+ * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces), a room light's switch
+ *   (`lt`) its own beside its piece's;
  * - a `board` op: its post's id (`boardAccept` decides whether it replaces);
  * - a `food` op: its entry's id, a `food_repeat` op its repeat's, a `food_recipe` op its recipe's, a `food_custom` op
  *   its custom food's (`foodAccept` decides whether it replaces).
@@ -153,7 +154,8 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
     case 'island':
       return typeof d.date === 'string' ? `${type}|${sender}|${d.date}` : null;
     case 'decor':
-      return typeof d.id === 'string' ? `decor|${typeof d.sc === 'string' ? d.sc : ''}|${d.id}` : null;
+      // (a light's switch alone, contract/tent.ts: its own slot beside its piece's)
+      return typeof d.id === 'string' ? `decor|${typeof d.sc === 'string' ? d.sc : ''}|${d.id}${d.lt !== undefined ? '|l' : ''}` : null;
     case 'board':
       return typeof d.id === 'string' ? `board|${d.id}` : null;
     case 'food':

@@ -240,6 +240,12 @@ describe('live protocol: the tent (v2)', () => {
     // a light's switch
     expect(parseClient(j({ ...set, l: 0 }))).toEqual({ v: 3, ...set, l: 0 });
     expect(parseClient(j({ ...set, l: 3 }))).toBeNull();
+    // a light's switch alone (2026-11-05): a room's only, nothing else on it
+    const lt = { kind: 'decor', sc: 'u', id: 'dmh1abc2a', at: T, lt: 0 };
+    expect(parseClient(j(lt))).toEqual({ v: 3, ...lt });
+    expect(parseServer(j({ ...lt, who: 'B', t: T }))).toEqual({ v: 3, ...lt, who: 'B', t: T });
+    expect(parseClient(j({ ...lt, x: 3, item: 'f4041' }))).toEqual({ v: 3, ...lt });
+    for (const bad of [j({ ...lt, lt: 2 }), j({ ...lt, sc: undefined }), j({ ...lt, sc: 'o', id: 'tree1' })]) expect(parseClient(bad), bad).toBeNull();
     // on another piece's surface
     expect(parseClient(j({ ...set, on: 'dmh1table1' }))).toEqual({ v: 3, ...set, on: 'dmh1table1' });
     for (const bad of [j({ ...set, on: 'nope' }), j({ ...set, sc: undefined, on: 'dmh1table1', x: 100, z: 100 })]) expect(parseClient(bad), bad).toBeNull();

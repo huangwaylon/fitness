@@ -90,3 +90,50 @@ describe('the room’s layout', () => {
       .toEqual([60, 'full', 'append', 'append', 60]);
   });
 });
+
+describe('a light’s switch alone (2026-11-05)', () => {
+  const e = (id: string, at: number, who: 'A' | 'B', o = {}) => ({ ...tentOpOf(set(id, at, o))!, who }) as TentEntry;
+  const sw = (id: string, at: number, lt: 0 | 1, who: 'A' | 'B' = 'B') => ({ ...tentOpOf({ sc: 't', id, at, lt })!, who }) as TentEntry;
+
+  it('is {sc, id, at, lt} and nothing else, never of a surface', () => {
+    expect(tentOpOf({ sc: 'u', id: 'dlamp001', at: T0, lt: 0 })).toEqual({ sc: 'u', id: 'dlamp001', at: T0, lt: 0 });
+    for (const bad of [
+      { sc: 't', id: 'dlamp001', at: T0, lt: 2 }, { sc: 't', id: 'dlamp001', at: T0, lt: 1, x: 1 }, { sc: 't', id: TENT_ROOM, at: T0, lt: 1 },
+      { sc: 't', id: 'dlamp001', at: T0, lt: 1, rm: true }, { id: 'dlamp001', at: T0, lt: 1 }
+    ]) expect(tentOpOf(bad), JSON.stringify(bad)).toBeNull();
+  });
+
+  it('never moves its piece: a move the partner made meanwhile (later) and the switch both stand, in any order', () => {
+    const placed = e('dlamp001', T0, 'A', { item: 'f1432', x: 1 });
+    const moved = e('dlamp001', T0 + 20, 'A', { item: 'f1432', x: 5 });
+    const off = sw('dlamp001', T0 + 10, 0);
+    for (const order of [[placed, moved, off], [placed, off, moved], [off, moved, placed]]) {
+      const m = new Map<string, TentEntry>();
+      for (const x of order) mergeTent(m, x);
+      expect(tentLayout(m.values()).pieces.map((p) => [p.x, p.l])).toEqual([[5, 0]]);
+    }
+  });
+
+  it('the later of the switch and the piece’s own `l` (an older phone’s whole-state op) is the light; a tie is the switch', () => {
+    const layout = (...es: TentEntry[]) => tentLayout(es).pieces[0].l;
+    expect(layout(e('dlamp001', T0, 'A', { item: 'f1432' }), sw('dlamp001', T0 + 1, 0))).toBe(0);
+    expect(layout({ ...e('dlamp001', T0 + 2, 'A', { item: 'f1432' }), l: 1 } as TentEntry, sw('dlamp001', T0 + 1, 0))).toBe(1);
+    expect(layout({ ...e('dlamp001', T0 + 1, 'A', { item: 'f1432' }), l: 1 } as TentEntry, sw('dlamp001', T0 + 1, 0))).toBe(0);
+    expect(layout(e('dlamp001', T0 + 1, 'A', { item: 'f1432' }), sw('dlamp001', T0, 0))).toBe(0);
+    // a later switch over an earlier one
+    expect(layout(e('dlamp001', T0, 'A'), sw('dlamp001', T0 + 1, 0), sw('dlamp001', T0 + 2, 1, 'A'))).toBe(1);
+  });
+
+  it('the record: a switch of a piece it holds is appended (never full, never counted), of none or a removed one stale', () => {
+    const held = Array.from({ length: TENT_MAX }, (_, i) => e(`dp${String(i).padStart(5, '0')}`, T0 + i, 'A'));
+    expect(tentAccept(held, sw('dp00003', T0 + 100, 0))).toBe('append');
+    const lit = [...held, sw('dp00003', T0 + 100, 0)];
+    expect(tentAccept(lit, sw('dp00003', T0 + 99, 1))).toBe('stale');
+    expect(tentAccept(lit, sw('dp00003', T0 + 101, 1))).toBe('append');
+    expect(tentAccept(lit, e('dnew0001', T0 + 120, 'B'))).toBe('full');
+    expect(tentAccept(held, sw('dnone001', T0 + 100, 0))).toBe('stale');
+    expect(tentAccept([...held, { sc: 't', id: 'dp00003', at: T0 + 50, rm: true, who: 'A' }], sw('dp00003', T0 + 100, 0))).toBe('stale');
+    // the piece's own move is not beaten by its switch
+    expect(tentAccept(lit, e('dp00003', T0 + 100, 'B', { x: 6 }))).toBe('append');
+  });
+});

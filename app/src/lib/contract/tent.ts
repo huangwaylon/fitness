@@ -27,8 +27,11 @@ type Facing = 0 | 1 | 2 | 3;
 type Sc = 't' | 'u' | 'v';
 const SCOPES: readonly string[] = ['t', 'u', 'v'];
 export type TentOp =
-  | { sc: Sc; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; on?: string; l?: 0 | 1; rm?: undefined }
-  | { sc: Sc; id: string; at: number; rm: true };
+  | { sc: Sc; id: string; at: number; item: string; x: number; z: number; f: Facing; p: number; on?: string; l?: 0 | 1; rm?: undefined; lt?: undefined }
+  | { sc: Sc; id: string; at: number; rm: true; lt?: undefined }
+  /** A light's switch alone (2026-11-05): piece `id`'s light on (1) or off (0), never its place; its own entry in the
+   *  merge (tentKey), the later of it and the piece's own `l` is the light. */
+  | { sc: Sc; id: string; at: number; lt: 0 | 1; rm?: undefined };
 export type TentEntry = TentOp & { who: Who };
 /** A piece in the tent as the room shows it. */
 export interface TentPiece {
@@ -62,6 +65,10 @@ export function tentOpOf(d: Record<string, unknown>): TentOp | null {
     if (surface || d.rm !== true || keys.some((k) => k !== 'sc' && k !== 'id' && k !== 'at' && k !== 'rm')) return null;
     return { sc, id: d.id, at: d.at, rm: true };
   }
+  if (d.lt !== undefined) {
+    if (surface || (d.lt !== 0 && d.lt !== 1) || keys.some((k) => k !== 'sc' && k !== 'id' && k !== 'at' && k !== 'lt')) return null;
+    return { sc, id: d.id, at: d.at, lt: d.lt };
+  }
   if (keys.some((k) => !['sc', 'id', 'at', 'item', 'x', 'z', 'f', 'p', 'on', 'l'].includes(k))) return null;
   if (d.l !== undefined && (surface || (d.l !== 0 && d.l !== 1))) return null;
   if (surface === 'r' && d.item !== 'r0' && d.item !== 'r1') return null;
@@ -79,11 +86,15 @@ function tentBeats(a: TentEntry, b: TentEntry): boolean {
   return a.who > b.who;
 }
 
-/** Merge an entry into the map (id → its winning entry): true when it changed it. */
+/** An entry's place in the merge: the piece's id, or its light switch's (`<id>/l`: a switch never beats a move). */
+const tentKey = (e: Pick<TentOp, 'id' | 'lt'>): string => (e.lt === undefined ? e.id : `${e.id}/l`);
+
+/** Merge an entry into the map (tentKey → its winning entry): true when it changed it. */
 export function mergeTent(m: Map<string, TentEntry>, e: TentEntry): boolean {
-  const was = m.get(e.id);
+  const k = tentKey(e);
+  const was = m.get(k);
   if (was && (was === e || !tentBeats(e, was))) return false;
-  m.set(e.id, e);
+  m.set(k, e);
   return true;
 }
 
@@ -94,28 +105,48 @@ const isSurface = (id: string) => id === TENT_WALL || id === TENT_FLOOR || id ==
 export function tentLayout(entries: Iterable<TentEntry>): { pieces: TentPiece[]; wall: string | null; floor: string | null; lights: boolean } {
   const pieces: TentPiece[] = [];
   let wall: string | null = null, floor: string | null = null, lights = true;
-  for (const e of entries) {
-    if (e.rm) continue;
+  const all = [...entries];
+  // each piece's light switch (its own op, the latest per piece)
+  const switched = new Map<string, { at: number; l: 0 | 1 }>();
+  for (const e of all) {
+    if (e.lt === undefined) continue;
+    const was = switched.get(e.id);
+    if (!was || e.at > was.at) switched.set(e.id, { at: e.at, l: e.lt });
+  }
+  for (const e of all) {
+    if (e.rm || e.lt !== undefined) continue;
     if (e.id === TENT_WALL) wall = e.item;
     else if (e.id === TENT_FLOOR) floor = e.item;
     else if (e.id === TENT_ROOM) lights = e.item === 'r1';
-    else pieces.push({ id: e.id, item: e.item, x: e.x, z: e.z, f: e.f, p: e.p, at: e.at, who: e.who, ...(e.on ? { on: e.on } : {}), ...(e.l !== undefined ? { l: e.l } : {}) });
+    else {
+      // its switch's, unless the piece's own op says `l` (an older phone's whole state) later (a tie: the switch)
+      const sw = switched.get(e.id);
+      const l = sw && (e.l === undefined || sw.at >= e.at) ? sw.l : e.l;
+      pieces.push({ id: e.id, item: e.item, x: e.x, z: e.z, f: e.f, p: e.p, at: e.at, who: e.who, ...(e.on ? { on: e.on } : {}), ...(l !== undefined ? { l } : {}) });
+    }
   }
   pieces.sort((a, b) => a.p - b.p || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   return { pieces: pieces.slice(0, TENT_MAX), wall, floor, lights };
 }
 
-/** What the record does with a new op, given the tent's rows it holds: `stale` (an op that beats it is there), `full`
- *  (a new piece past the cap: refused) or `append` (the same id's older rows are deleted). */
+/** What the record does with a new op, given the tent's rows it holds: `stale` (an op that beats it is there; a light's
+ *  switch of a piece the room doesn't hold, or holds removed), `full` (a new piece past the cap: refused) or `append`
+ *  (the same entry's older rows are deleted: its slot, contract/record.ts eventSlot). */
 export function tentAccept(held: readonly TentEntry[], e: TentEntry): 'append' | 'stale' | 'full' {
   held = held.filter((h) => h.sc === e.sc);
-  const same = held.filter((h) => h.id === e.id);
+  const same = held.filter((h) => tentKey(h) === tentKey(e));
   if (same.some((h) => !tentBeats(e, h))) return 'stale';
+  if (e.lt !== undefined) {
+    const piece = new Map<string, TentEntry>();
+    for (const h of held) if (h.id === e.id && h.lt === undefined) mergeTent(piece, h);
+    const p = piece.get(e.id);
+    return p && !p.rm && !isSurface(e.id) ? 'append' : 'stale';
+  }
   if (!e.rm && !same.length && !isSurface(e.id)) {
     const m = new Map<string, TentEntry>();
     for (const h of held) mergeTent(m, h);
     let n = 0;
-    for (const h of m.values()) if (!h.rm && !isSurface(h.id)) n++;
+    for (const h of m.values()) if (!h.rm && h.lt === undefined && !isSurface(h.id)) n++;
     if (n >= TENT_MAX) return 'full';
   }
   return 'append';

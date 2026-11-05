@@ -128,6 +128,8 @@ export type Intent =
 type DecorWire =
   | { sc?: 't' | 'u' | 'v'; id: string; at: number; item: string; x: number; z: number; f: number; p: number; on?: string; l?: number; rm?: undefined }
   | { sc?: 't' | 'u' | 'v' | 'o'; id: string; at: number; rm: true }
+  /** A room light's switch alone (contract/tent.ts, 2026-11-05). */
+  | { sc: 't' | 'u' | 'v'; id: string; at: number; lt: 0 | 1 }
   | { sc: 'o'; id: string; at: number; k: string; x: number; z: number; f: number; s?: string; rm?: undefined }
   | { sc: 'c'; id: string; at: number; g: string }
   | { sc: 'r'; id: 'reset'; at: number }
@@ -390,6 +392,8 @@ function intentOf(o: Obj): Intent | null {
       const room = o.sc !== undefined;
       const sc = room ? { sc: o.sc as 't' | 'u' | 'v' } : {};
       if (o.rm !== undefined) return o.rm === true ? { kind: 'decor', ...sc, id: o.id, at: o.at, rm: true } : null;
+      // a room light's switch alone (never its place)
+      if (o.lt !== undefined) return room && (o.lt === 0 || o.lt === 1) ? { kind: 'decor', sc: o.sc as 't' | 'u' | 'v', id: o.id, at: o.at, lt: o.lt } : null;
       const [xs, zs] = room ? [TENT_TILES, TENT_TILES] : [WORLD_X, WORLD_Z];
       if (typeof o.item !== 'string' || !TOKEN.test(o.item) || !within(o.x, xs) || !within(o.z, zs) || !within(o.f, [0, 3]) || !isTime(o.p)) return null;
       // a room's piece on another's surface (`on`: that piece's id), a light's switch (`l`)
