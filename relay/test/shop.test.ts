@@ -45,6 +45,21 @@ describe('the shop in the record', () => {
     expect(sell('A', 'bug:tarantula', 1, sellPrice('bug:tarantula')!)).toEqual(refused('pocket short')); // never caught
   });
 
+  it('a catch given back after it was sold costs its かいがら: no wallet from a fish never kept, and a later catch pays it', () => {
+    // 2026-11-05 relay review R1: the give-back left the pocket at −n and the sale's かいがら spendable
+    const back = (counts: Record<string, number>) => send('A', 'tally_back', { date: D, counts });
+    const price = buyPrice(item)!, k = Math.ceil(price / K);
+    tally('A', { 'fish:koi': k });
+    expect(sell('A', 'fish:koi', k, k * K)).toEqual({ ok: true });
+    expect(back({ 'fish:koi': k })).toEqual({ ok: true }); // kept: the race was lost
+    expect(buy('A')).toEqual(refused('wallet short')); // the sold koi weren't hers: their かいがら are owed
+    expect(sell('A', 'fish:koi', 1, K)).toEqual(refused('pocket short'));
+    // k more koi caught that day: the debt paid (her かいがら back), the pocket still empty
+    tally('A', { 'fish:koi': 2 * k });
+    expect(sell('A', 'fish:koi', 1, K)).toEqual(refused('pocket short'));
+    expect(buy('A')).toEqual({ ok: true });
+  });
+
   it('a catch given back (a claim race lost after its tally came in) leaves the pocket, only what that day’s tally holds', () => {
     const back = (who: 'A' | 'B' | 'G', counts: Record<string, number>, date = D, id?: string) => send(who, 'tally_back', { date, counts }, id);
     tally('A', { 'fish:koi': 2, 'bug:ant': 1 });
