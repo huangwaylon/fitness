@@ -45,7 +45,8 @@ Animation: none. NH's files have no clips (the .dae files hold the bind pose onl
 (a flutter, a bob, a swim) stays the runtime's. The visitors' arms are lowered from the bind pose.
 
 Effects: the seasons' falling leaves, petals and snowflakes are NH's own (the ones a net catches: InsectAutumnLeaf,
-InsectSakurapetal, InsectSnowCrystal). NH's files have no effect models (no Eff*/Emo*), so the sparkle, the 「！」,
+InsectSakurapetal, InsectSnowCrystal). NH's files have no effect models (no Eff*/Emo*), so the sparkle (now drawn
+as `effects.ts`' star in code, gold, Fx.svelte's path; `fx/sparkle` stays the campfire's tinted sparks), the 「！」,
 the dust puff, the splash and its ripple are small stylised meshes in the art's colours, unlit, 2 KB each
 (`scripts/world3d-fx.ts`, the `fx/*` keys; flat ones face +z for the runtime to turn to the camera). So are the
 zzz, the sweat drop, the confetti, the campfire's flame (`lit`) and the pond's lily pad; the heart and the ♪ are
