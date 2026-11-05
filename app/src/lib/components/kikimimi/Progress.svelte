@@ -1,10 +1,11 @@
 <script lang="ts">
   // ききみみ クイズ's きろく (docs/kikimimi.md "Progress & feedback" UI), the lobby's second tab, its own lazy chunk: my
   // stage (a stat tile: the curriculum's stage, its CEFR and a meter of how far into it), the sub-skills as horizontal
-  // bars (mastery, one hue, the value at the bar's end; unmeasured an empty track with 「まだ」), the first-listen trend
+  // bars (mastery, one hue, the value at the bar's end; unmeasured an outlined, empty track with 「まだ」), the first-listen trend
   // (the last 5 games' mean, its change, a 12-point sparkline), this week's days (7 dots, never a streak), the
   // recommendations each with its start, the couple summary (games together and both people's minutes, never a level;
-  // not on the guest's phone) and the details (per type, accent and level) folded. Mine alone: the record sends the
+  // not on the guest's phone) and the details (per type, accent and level: one table, one header row) folded; with no game
+  // yet, しずえ's hello and 「あそぶ」 (back to the lobby's first tab). Mine alone: the record sends the
   // partner only a summary (contract/guest.ts rowsFor).
   import type { Report } from '#lib/kikimimi/report.ts';
   import type { Rec } from '#lib/kikimimi/advice.ts';
@@ -15,9 +16,11 @@
   import { recWords } from './progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { report, guest, canStart, onstart }: { report: Report; guest: boolean; canStart: boolean; onstart: (r: Rec) => void } = $props();
+  let { report, guest, canStart, onstart, onplay }: { report: Report; guest: boolean; canStart: boolean; onstart: (r: Rec) => void; onplay: () => void } = $props();
   const s = $derived(report.stats);
   const stage = $derived(s.level === null ? null : stageOf(s.level));
+  /** The level to play next (the comfortable one, a level that exists): the next step within the stage, not a second stage. */
+  const comfy = $derived(Math.min(4, Math.max(1, Math.round(s.level ?? 1))));
   const pct = (x: number) => Math.round(x * 100);
   // the sparkline: first-listen accuracy per game, 0-100 % on a fixed scale (one axis), the last point marked
   const W = 120, H = 36, PAD = 5;
@@ -28,6 +31,12 @@
   const TYPES: readonly ItemType[] = ['pic', 'word', 'num', 'reply', 'mean', 'gist', 'next'];
   const ACCENTS: readonly Accent[] = ['us', 'uk', 'au'];
   const levels = $derived(Object.keys(s.byLevel).map(Number).sort());
+  /** くわしく's sections: per type, per accent, per level (each a sub-header row in the one table). */
+  const details = $derived([
+    ['byType', TYPES.filter((x) => s.byType[x]).map((x) => [t(`kiki.type.${x}`), s.byType[x]!] as const)],
+    ['byAccent', ACCENTS.filter((x) => s.byAccent[x]).map((x) => [t(`kiki.accent.${x}`), s.byAccent[x]!] as const)],
+    ['byLevel', levels.map((x) => [`★${x}`, s.byLevel[x]!] as const)]
+  ] as const);
 </script>
 
 <div class="prog" data-kiki-progress>
@@ -36,6 +45,8 @@
       <span class="host" aria-hidden="true"><Host head size={52} animate={false} eager /></span>
       <p>{t('kiki.prog.empty')}</p>
     </div>
+    <!-- nothing yet (a guest's first visit, a new phone): the way to a first game -->
+    <button type="button" class="btn" data-kiki-prog-play data-sfx="tick" onclick={onplay}>{t('kiki.tab.play')}</button>
   {:else}
     <!-- the stage: a stat tile with a meter -->
     <section class="tile card" aria-labelledby="kp-level" data-kiki-stage={stage?.stage.id}>
@@ -43,7 +54,7 @@
       {#if stage}
         <p class="stage"><span class="stars" aria-hidden="true">{'★'.repeat(stage.stage.stars)}</span>{t(`kiki.stage.${stage.stage.id}`)}<small>{stage.stage.cefr}</small></p>
         <div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow={pct(stage.into)} aria-label={t(`kiki.stage.${stage.stage.id}`)}><i style:width="{Math.max(4, pct(stage.into))}%"></i></div>
-        <p class="note">{s.measuring ? t('kiki.prog.measuring', { n: 16 - s.answers }) : t('kiki.prog.comfort', { lv: Math.round(s.level!) })}</p>
+        <p class="note">{s.measuring ? t('kiki.prog.measuring', { n: 16 - s.answers }) : t('kiki.prog.comfort', { lv: comfy, stars: '★'.repeat(comfy), name: t(`kiki.lv.${comfy}`) })}</p>
       {/if}
     </section>
 
@@ -111,16 +122,18 @@
 
     <details class="card more">
       <summary data-sfx="tick">{t('kiki.prog.details')}</summary>
-      {#each [['byType', TYPES.filter((x) => s.byType[x]).map((x) => [t(`kiki.type.${x}`), s.byType[x]!] as const)], ['byAccent', ACCENTS.filter((x) => s.byAccent[x]).map((x) => [t(`kiki.accent.${x}`), s.byAccent[x]!] as const)], ['byLevel', levels.map((x) => [`★${x}`, s.byLevel[x]!] as const)]] as const as [key, rows] (key)}
-        <table>
-          <caption>{t(`kiki.prog.${key}`)}</caption>
+      <!-- one table: a single header row, each kind a sub-header row, so the columns line up -->
+      <table data-kiki-details>
+        <thead><tr><td></td><th scope="col">{t('kiki.prog.colRight')}</th><th scope="col">{t('kiki.prog.colFirst')}</th><th scope="col">{t('kiki.prog.colN')}</th></tr></thead>
+        {#each details as [key, rows] (key)}
           <tbody>
+            <tr class="sub"><th scope="rowgroup" colspan="4">{t(`kiki.prog.${key}`)}</th></tr>
             {#each rows as [name, a] (name)}
-              <tr><th scope="row">{name}</th><td>{t('kiki.prog.pct', { pct: pct(a.right) })}</td><td class="soft">1× {t('kiki.prog.pct', { pct: pct(a.first) })}</td><td class="soft">{t('kiki.prog.n', { n: a.n })}</td></tr>
+              <tr><th scope="row">{name}</th><td>{t('kiki.prog.pct', { pct: pct(a.right) })}</td><td class="soft">{t('kiki.prog.pct', { pct: pct(a.first) })}</td><td class="soft">{a.n}</td></tr>
             {/each}
           </tbody>
-        </table>
-      {/each}
+        {/each}
+      </table>
     </details>
     <p class="hint center">🔒 {t('kiki.prog.private')}</p>
   {/if}
@@ -154,9 +167,11 @@
   .bl { font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .track { height: 12px; border-radius: 0 4px 4px 0; background: var(--bar-track); }
   .track i { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--bar); }
+  /* unmeasured: an outline, so an empty bar never reads as 0 % */
+  li[data-m=""] .track { background: none; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--bar) 45%, var(--card)); }
   .bv { font: 700 var(--fs-s)/1 var(--font-num, var(--font-ui)); text-align: right; color: var(--text); }
   li[data-m=''] .bv { color: var(--text-soft); }
-  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
   .big { margin: 0; font: 700 28px/1.1 var(--font-num, var(--font-ui)); }
   .spark { width: 100%; height: 36px; overflow: visible; }
   .spark path { fill: none; stroke: var(--bar); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
@@ -169,9 +184,11 @@
   .more { padding: 0 14px; }
   .more summary { cursor: pointer; min-height: var(--hit); display: flex; align-items: center; font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .more table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font: 700 var(--fs-s)/1.6 var(--font-ui); }
-  .more caption { text-align: left; color: var(--text-soft); padding: 4px 0; }
   .more th { text-align: left; font-weight: 700; }
-  .more td { text-align: right; font-family: var(--font-num, var(--font-ui)); }
+  .more thead th { text-align: right; font-size: var(--fs-xs); color: var(--text-soft); white-space: nowrap; padding-left: 8px; }
+  .more .sub th { color: var(--text-soft); padding: 10px 0 2px; }
+  .more tbody:first-of-type .sub th { padding-top: 2px; }
+  .more td { text-align: right; font-family: var(--font-num, var(--font-ui)); width: 4.5em; }
   .more td.soft { color: var(--text-soft); }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .center { text-align: center; }

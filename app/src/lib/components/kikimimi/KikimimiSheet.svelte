@@ -186,7 +186,7 @@
         </div>
         {#if tab === 'record'}
           {#await import('./Progress.svelte') then { default: Progress }}
-            {#if report}<Progress {report} guest={week.guest} canStart={v.amHost && v.local} onstart={startRec} />{/if}
+            {#if report}<Progress {report} guest={week.guest} canStart={v.amHost && v.local} onstart={startRec} onplay={() => (tab = 'play')} />{/if}
           {/await}
         {:else}
           <Lobby {game} onlevel={keepLv} onpractice={() => practice()} />
