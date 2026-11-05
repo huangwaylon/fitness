@@ -88,14 +88,14 @@ describe('villager roster', () => {
     expect(artKeys().filter((k) => /^villagers\/.+-icon$/.test(k))).toHaveLength(ROSTER_IDS.length);
   });
 
-  it('roster.ts (names, ~35 KB) stays out of the first load: only the lazy せってい sheet, the search and the dev gallery import it', () => {
+  it('roster.ts (names, ~35 KB) stays out of the first load: only the lazy せってい sheet, ききみみ クイズ’s sheet, the search and the dev gallery import it', () => {
     const SRC = join(import.meta.dirname, '..', '..');
     const importers = (readdirSync(SRC, { recursive: true }) as string[])
       .filter((f) => /\.(ts|svelte)$/.test(f) && !f.endsWith('.test.ts'))
       .filter((f) => /^\s*import (?!type )[^;]*from '(#lib\/villagers|\.)\/roster\.ts'/m.test(readFileSync(join(SRC, f), 'utf8')))
       .sort();
     expect(importers).toEqual([
-      'lib/components/dev/Gallery.svelte', 'lib/components/look/LookPage.svelte', 'lib/components/look/VillagerGrid.svelte', 'lib/components/panel/SettingsSheet.svelte', 'lib/villagers/search.ts'
+      'lib/components/dev/Gallery.svelte', 'lib/components/kikimimi/Play.svelte', 'lib/components/look/LookPage.svelte', 'lib/components/look/VillagerGrid.svelte', 'lib/components/panel/SettingsSheet.svelte', 'lib/villagers/search.ts'
     ]);
   });
 

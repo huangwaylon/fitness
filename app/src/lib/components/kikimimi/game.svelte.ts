@@ -1,0 +1,247 @@
+// ききみみ クイズ's game on this phone (docs/kikimimi.md "Sync", "Audio"): the session (kikimimi/session.ts, pure) wired to
+// the island's Live (or to nothing: solo without a relay), its view refreshed at each phase's end and at each message,
+// and the clips: each question's played at its start on the relay's clock (playVoice's relayAt), the next one fetched
+// meanwhile, the reveal's replay, and the player's 🔁 / 🐢. Loaded with the sheet only.
+import { BANK, type Item, type Level } from '#lib/kikimimi/bank.ts';
+import { deck } from '#lib/kikimimi/deck.ts';
+import { clipDur, clipUrl } from '#lib/kikimimi/clips.ts';
+import { FAST_WINDOWS, QuizSession, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizView } from '#lib/kikimimi/session.ts';
+import type { Live } from '#lib/sync/live.ts';
+import type { Who } from '#lib/types.ts';
+import { loadVoice, playVoice } from '#lib/sound/sound.svelte.ts';
+import { audioUrl } from '#lib/sound/manifest.ts';
+import { cue } from '#lib/sound/cues.ts';
+
+/** The last decks built (the session's and the UI's are the same items), by seed and level. */
+const decks = new Map<string, Item[]>();
+function itemsOf(seed: number, lv: Level): Item[] {
+  const key = `${seed}:${lv}`;
+  let d = decks.get(key);
+  if (!d) {
+    d = deck(seed, lv);
+    decks.set(key, d);
+    while (decks.size > 2) decks.delete(decks.keys().next().value!);
+  }
+  return d;
+}
+
+/** The deck as the session sees it: how many, each clip's length (ms, clips.json) and its right choice. */
+const deckOf: DeckOf = (seed, lv) => {
+  const items = itemsOf(seed, lv);
+  return { count: items.length, dur: (i) => Math.round((clipDur(items[i]?.id ?? '') ?? 2) * 1000), answer: (i) => items[i]?.answer ?? -1 };
+};
+
+/** No relay (a dev build without one): a game alone, on the device's clock. */
+const soloLink = (): QuizLink => ({ now: () => Date.now(), send: () => false, on: () => () => {}, onHere: (fn) => (fn([]), () => {}) });
+
+/** The lobby's sound check: a clip from no game (the bank's first L1 item; nothing of the deck given away). */
+const TEST_CLIP = BANK.find((it) => it.lv === 1)!.id;
+
+type Handle = { stop(): void };
+
+export class QuizGame {
+  /** The session's view as of `now` (the relay's clock). */
+  view = $state.raw<QuizView>(null as unknown as QuizView);
+  now = $state(0);
+  /** The game's items (its deck), [] outside one. */
+  items = $derived(this.view?.g ? itemsOf(this.view.seed, this.view.lv) : []);
+  /** Question i was replayed or slowed before my answer (an answer's `rp`). */
+  replayed = $state<boolean[]>([]);
+  /** A replay sounding (🔁, 🐢, the reveal's), on the relay's clock: the bubble's bar. */
+  sounding = $state.raw<{ i: number; from: number; until: number; slow: boolean } | null>(null);
+  /** Who else has the island open (the lobby's list). */
+  here = $state.raw<readonly Who[]>([]);
+
+  readonly me: Who;
+  readonly #link: QuizLink;
+  readonly #session: QuizSession;
+  readonly #wire: ReturnType<typeof wireQuiz>;
+  #timer: ReturnType<typeof setTimeout> | undefined;
+  #handles = new Set<Handle>();
+  /** The first play planned: its question and start (a `skip` moving it plans it again). */
+  #planned: { i: number; at: number; h: Handle | null } | null = null;
+  /** The question whose reveal replay was played, the phase last cued, the deck whose clips were fetched. */
+  #revealed = -1;
+  #cued = '';
+  #fetched = '';
+  #gone = false;
+  #offHere: () => void;
+
+  constructor(o: { live: Live | null; me: Who; fast?: boolean; heard?: readonly QuizIn[] }) {
+    this.me = o.me;
+    this.#link = o.live ? quizLink(o.live) : soloLink();
+    this.#session = new QuizSession({ me: o.me, deckOf, windows: o.fast ? FAST_WINDOWS : undefined });
+    // what the island heard before this sheet opened: as if heard now (a host re-sends only when someone comes back)
+    const now = this.#link.now();
+    for (const m of o.heard ?? []) this.#session.receive(m, now);
+    this.#offHere = this.#link.onHere((h) => (this.here = h));
+    this.#wire = wireQuiz(this.#session, this.#link, () => this.#refresh());
+    this.#refresh();
+  }
+
+  // ---------- taps ----------
+
+  /** Open a lobby (I host it). */
+  open(lv: Level, same = false): void {
+    this.#act((s, now) => s.open({ lv, same }, now));
+  }
+  configure(o: { lv?: Level; same?: boolean }): void {
+    this.#act((s, now) => s.configure(o, now));
+  }
+  join(g?: string): void {
+    this.#act((s, now) => s.join(now, g));
+  }
+  go(): void {
+    this.#act((s, now) => s.go(now));
+  }
+  /** My one, final answer to the current question. */
+  answer(k: number): void {
+    const i = this.view.i;
+    this.#act((s, now) => s.answer(k, !!this.replayed[i], now));
+  }
+  /** The host's つぎへ. */
+  next(): void {
+    this.#act((s, now) => s.next(now));
+  }
+  /** Leave the game (✕, やめる). */
+  leave(): void {
+    this.#act((s, now) => s.leave(now));
+  }
+  /** Done with the results or a notice. */
+  close(): void {
+    this.#act((s, now) => void s.close(now));
+  }
+
+  /** 🔁 / 🐢: the current question's clip again (normal or slow), now; counts as a replay for my answer. */
+  replay(slow = false): void {
+    const it = this.items[this.view.i];
+    if (!it) return;
+    const i = this.view.i;
+    if (this.view.phase === 'answer' && !this.view.answers[i]) this.replayed = Object.assign([...this.replayed], { [i]: true });
+    void this.#playNow(it, i, slow);
+  }
+
+  /** A review row's ▶︎ / 🐢 (the results). */
+  hear(it: Item, slow = false): void {
+    void this.#playNow(it, -1, slow);
+  }
+
+  /** The lobby's 🔊 「きこえる？」: whether a clip could play (false: no voice session, interrupted). */
+  async test(): Promise<boolean> {
+    const buf = await loadVoice(clipUrl(TEST_CLIP));
+    if (!buf || this.#gone) return false;
+    this.#stopAll();
+    return !!this.#track(playVoice(buf));
+  }
+
+  /** The sheet closed: leave the game, stop listening and every clip. */
+  dispose(): void {
+    if (this.#gone) return;
+    this.leave();
+    this.#gone = true;
+    clearTimeout(this.#timer);
+    this.#wire.stop();
+    this.#offHere();
+    this.#stopAll();
+  }
+
+  // ---------- inside ----------
+
+  #act(f: (s: QuizSession, now: number) => QuizOut[] | void): void {
+    if (!this.#gone) this.#wire.act(f);
+  }
+
+  /** The view now, the clips and cues it calls for, and a wake-up at the phase's end (each second of the 3-2-1; a
+   *  lobby's every few seconds, for its host's grace and its TTL). */
+  #refresh(): void {
+    if (this.#gone) return;
+    const now = this.#link.now();
+    const v = this.#session.view(now);
+    if (this.view && v.g !== this.view.g) this.replayed = [];
+    this.view = v;
+    this.now = now;
+    this.#sounds(v, now);
+    this.#cues(v);
+    clearTimeout(this.#timer);
+    let wait = Number.isFinite(v.until) ? v.until - now : 5000;
+    if (v.phase === 'countdown') wait = Math.min(wait, (v.until - now) % 1000 || 1000);
+    this.#timer = setTimeout(() => this.#refresh(), Math.max(20, Math.min(5000, wait)) + 10);
+  }
+
+  #sounds(v: QuizView, now: number): void {
+    const items = this.items;
+    // the lobby: the deck's clips fetched into the cache (8 × ~15 KB), the first one decoded
+    if (v.g && (v.phase === 'lobby' || v.phase === 'countdown') && this.#fetched !== `${v.seed}:${v.lv}` && items.length) {
+      this.#fetched = `${v.seed}:${v.lv}`;
+      for (const it of items) void fetch(audioUrl(clipUrl(it.id))).then((r) => r.arrayBuffer()).catch(() => {});
+      if (v.speaks) void loadVoice(clipUrl(items[0].id));
+    }
+    if (v.phase === 'idle' || v.phase === 'lobby' || v.phase === 'results') {
+      if (this.#planned || this.#handles.size) this.#stopAll();
+      this.#planned = null;
+      this.#revealed = -1;
+      return;
+    }
+    const it = items[v.i];
+    if (!it || v.i < 0) return;
+    if (this.#planned && this.#planned.i !== v.i) {
+      this.#stopAll();
+      this.#planned = null;
+    }
+    const first = v.phase === 'lead' || v.phase === 'play';
+    if (first && v.speaks && !v.out && (!this.#planned || (this.#planned.at !== v.playAt && now < this.#planned.at))) {
+      this.#planned?.h?.stop();
+      const plan: { i: number; at: number; h: Handle | null } = { i: v.i, at: v.playAt, h: null };
+      this.#planned = plan;
+      void loadVoice(clipUrl(it.id)).then((buf) => {
+        if (!buf || this.#gone || this.#planned !== plan) return;
+        plan.h = this.#track(playVoice(buf, { relayAt: plan.at, now: () => this.#link.now() }));
+      });
+      // the next question's clip decoded meanwhile (the engine keeps the last 4)
+      const after = items[v.i + 1];
+      if (after) void loadVoice(clipUrl(after.id));
+    }
+    if (v.phase === 'reveal' && this.#revealed !== v.i) {
+      this.#revealed = v.i;
+      if (v.speaks && !v.out) void this.#playNow(it, v.i, false);
+    }
+  }
+
+  #cues(v: QuizView): void {
+    const key = `${v.g}:${v.i}:${v.phase}`;
+    if (key === this.#cued) return;
+    this.#cued = key;
+    if (v.phase === 'lead' && !v.out) cue('quiz-pop');
+    else if (v.phase === 'reveal' && !v.out) {
+      const a = v.answers[v.i];
+      cue(a && a.k === this.items[v.i]?.answer ? 'quiz-right' : 'quiz-wrong');
+    } else if (v.phase === 'results' && v.g) cue('quiz-end');
+  }
+
+  async #playNow(it: Item, i: number, slow: boolean): Promise<void> {
+    const buf = await loadVoice(clipUrl(it.id, slow));
+    if (!buf || this.#gone) return;
+    this.#stopAll(true);
+    const h = this.#track(playVoice(buf));
+    if (!h) return;
+    const from = this.#link.now();
+    const s = { i, from, until: from + buf.duration * 1000, slow };
+    this.sounding = s;
+    setTimeout(() => this.sounding === s && (this.sounding = null), buf.duration * 1000 + 50);
+  }
+
+  #track(h: { stop(): void } | null): Handle | null {
+    if (!h) return null;
+    this.#handles.add(h);
+    return h;
+  }
+
+  /** Every clip of mine stops (`keepPlan`: but the first play planned, when it's a replay over it: never, the
+   *  replay buttons wait for its end). */
+  #stopAll(keepPlan = false): void {
+    for (const h of this.#handles) h.stop();
+    this.#handles.clear();
+    if (!keepPlan) this.#planned = this.#planned ? { ...this.#planned, h: null } : null;
+    this.sounding = null;
+  }
+}

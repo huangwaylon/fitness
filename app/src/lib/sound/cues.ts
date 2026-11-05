@@ -29,7 +29,9 @@ export type Cue =
   // group stretching's tune
   | 'stretch'
   // a birthday's cake
-  | 'birthday-cake';
+  | 'birthday-cake'
+  // ききみみ クイズ (components/kikimimi): a question's villager popping in, a reveal right or wrong, the results
+  | 'quiz-pop' | 'quiz-right' | 'quiz-wrong' | 'quiz-end';
 
 interface CueDef {
   sound: SoundId;
@@ -155,7 +157,13 @@ export const CUES: Record<Cue, CueDef> = {
   stretch: { sound: 'stretch-song', world: true },
   // a birthday's cake (island/Cake.svelte): its music box as the candles go out (with ミュージック on and the file there,
   // NH's Happy Birthday cuts in instead)
-  'birthday-cake': { sound: 'music-box', world: true }
+  'birthday-cake': { sound: 'music-box', world: true },
+  // ききみみ クイズ (the game's sheet: never the world's, so they sound over it): the villager pops in with a chime's
+  // little pop, a right answer's sparkle, a wrong one's oops, the results' jingle
+  'quiz-pop': { sound: 'pop', gain: 0.8, step: 5 },
+  'quiz-right': { sound: 'sparkle', step: 3 },
+  'quiz-wrong': { sound: 'oops', gain: 0.8 },
+  'quiz-end': { sound: 'miles' }
 };
 
 /** A run of coins climbs this major pentatonic (semitones), one note per coin across the whole batch, then holds the

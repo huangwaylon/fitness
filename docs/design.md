@@ -2321,6 +2321,37 @@ goes for the day. On the island's layout the deck is a fixed piece there every d
 scale (about half a villager tall): on its day a tap plays the tape (the 3D villagers do NH's three: villager3d poses
 `warmup`, `sidebend`, `jump`); any other time a tap says when it plays, or that today's is done, and no ♪ floats.
 
+### ききみみ クイズ
+An English listening game for the players (A, B and the guest), for Japanese speakers learning English; the full spec
+is [kikimimi.md](kikimimi.md). せってい's row 「えいご ききとり」 [あそぶ] (the guest's too) opens its full-height sheet
+(`components/kikimimi/KikimimiSheet.svelte`, its own chunk with the bank, the deck, the session and its strings
+`i18n/kikimimi.*.json`); the tap starts the voice session (`invite.svelte.ts` openQuiz → sound `voiceSession(true)`), so
+the clips play with the silent switch on. The always-loaded part is `KikimimiHost.svelte` in the island scene: a listener
+on the scene's one Live (`relay ?? demoRelay`, never a second) that keeps the quiz intents heard lately (handed to the
+sheet's session as it opens: a host re-sends only when someone comes back) and shows another's new lobby as a banner
+through the one toast host, 「ウェイが ききとりクイズに さそっています」 [さんか] (that game joined).
+- **Lobby** (`Lobby.svelte`): しずえ's welcome, the level (★ やさしい / ★★ ふつう / ★★★ むずかしい; the host's pick, the last
+  kept on the phone), 「おなじへや」 (only the host's phone speaks), who's here and who joined, 🔊 「きこえる？」 (a clip from no
+  game; 音量 0 says so), the host's はじめる (the others wait for it). Opening it with someone's lobby waiting shows that
+  invite and 「じぶんで はじめる」 instead.
+- **A question** (`Play.svelte`): the 3-2-1 once, then each question's speaker pops in with a little pop, bobbing while
+  their clip plays, their bubble an empty 「♪…」 with a bar the clip's length; under it the item's `ask` (a word item: its
+  line with the blank). The choices (pic: 2 × 2 NH art, VoiceOver labels from PIC_JA; else text ≥ 17 px) stay dimmed
+  until the first play ends; one tap is final. 🔁 もういちど and 🐢 ゆっくり (levels 1-2) after the first play, on a phone
+  that speaks; each player's chip gets ✓ as they answer. The reveal: ○ on the right choice, × on a wrong pick, the
+  English in the bubble (its `focus` marked yuzu), the Japanese and the accent chip, the clip again, the speaker's and
+  each chip's ✨ / 💦, the sparkle or oops cue; the host's つぎへ cuts it short.
+- **Results** (`Results.svelte`): しずえ's line (the winner, a tie, or the solo score), the ranking, then the review list
+  (every sentence's English and Japanese, ○ / ×, ▶︎ and 🐢, 「まちがえた だけ」), おわる / もういちど.
+- **Closing**: mid-game a backdrop tap or Esc keeps the sheet (Sheet's `ondismiss`) and ✕ asks 「やめる？」; the lobby
+  closes at once (the host's lobby is cancelled for everyone). Closing ends the voice session and drops every clip. While
+  the voice is on but suspended (a lock, an app switch) a 「タップして つづける」 card wakes it.
+- **The island** is covered (`IslandScene` covered: the 3D island paused, its life still) while the sheet is open.
+- `game.svelte.ts` wires the pure `kikimimi/session.ts` to the Live (or to nothing, solo without a relay): the view at
+  each phase's end and each message; each question's clip at its start on the relay's clock (`playVoice` relayAt), the
+  next one decoded meanwhile, the deck's clips fetched into the cache in the lobby. `?kikimimi=fast` (hooks on) shortens
+  the answer and reveal windows on every phone; `window.__kiki` (hooks on) is the e2e's view and right answer.
+
 ### Seasonal preview
 
 `ui-state/preview.ts` (pure: `resolvePreview`), `ui-state/preview.svelte.ts`, `panel/SeasonSection.svelte`,

@@ -113,7 +113,10 @@ export const DEVICE = {
   fpv: 'island.fpv',
   /** localStorage: the Tokyo date whose midnight Happy New Year! this phone played (lib/sound/sound.svelte.ts: once,
    *  not again after a reload). */
-  newYearIntro: 'island.newYearIntro'
+  newYearIntro: 'island.newYearIntro',
+  /** localStorage: `1` | `2` | `3`: the ききみみ クイズ level last played on this phone (the next lobby's;
+   *  components/kikimimi/KikimimiSheet.svelte). */
+  kikimimiLv: 'island.kikimimiLv'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

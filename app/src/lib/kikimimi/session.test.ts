@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { FAST_WINDOWS, QuizSession, WINDOWS, points, quizLink, wireQuiz, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
+import { points } from './score.ts';
+import { FAST_WINDOWS, QuizSession, WINDOWS, quizLink, wireQuiz, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
 import type { LiveStatus } from '../sync/live.ts';
 import type { Relayed, Who } from '../contract/live-protocol.ts';
 
@@ -334,17 +335,24 @@ describe('ききみみ session: lost and late messages', () => {
     expect(r.view('G')).toMatchObject({ phase: 'answer', i: 1, out: true });
   });
 
-  it('the host gone mid-game: the game goes on, on the schedule, to the results', () => {
+  it('the host gone mid-game: the game goes on to the results, each phone moving on when everyone left has answered', () => {
     const r = room();
     const s0 = started(r);
     r.now = s0 + 5000;
     r.here.delete('A');
     r.presence();
     r.act('B', (x, n) => x.answer(0, false, n));
+    const sent = r.sent.length;
     r.act('G', (x, n) => x.answer(0, true, n));
-    expect(r.view('B')).toMatchObject({ phase: 'reveal', i: 0, until: s0 + FULL }); // early reveal here, no skip
-    r.now = s0 + FULL;
+    // the early reveal here, and (no skip will come) the next question at its end on each phone, nothing sent but the answer
+    expect(r.view('B')).toMatchObject({ phase: 'reveal', i: 0, until: s0 + 5000 + WINDOWS.reveal });
+    expect(r.view('G')).toMatchObject({ phase: 'reveal', i: 0, until: s0 + 5000 + WINDOWS.reveal });
+    expect(r.sent.slice(sent).map((x) => x.m.op)).toEqual(['a']);
+    r.now = s0 + 5000 + WINDOWS.reveal;
     expect(r.view('G')).toMatchObject({ phase: 'lead', i: 1 });
+    // nobody answers question 1: its full length
+    r.now = s0 + 5000 + WINDOWS.reveal + FULL;
+    expect(r.view('B')).toMatchObject({ phase: 'lead', i: 2 });
     r.now = s0 + 8 * FULL;
     expect(r.view('B')).toMatchObject({ phase: 'results', scores: { B: 130, G: 100 } });
     // a player's leave mid-game: the others don't wait for them

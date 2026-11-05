@@ -30,10 +30,12 @@
     title?: string;
     variant?: 'paper' | 'top' | 'pop';
     onclose?: () => void;
+    /** A backdrop tap or Esc: false keeps the sheet open (a game going asks first: ききみみ's 「やめる？」). */
+    ondismiss?: () => boolean;
     children: Snippet;
     footer?: Snippet;
   }
-  let { open = $bindable(), label, title, variant = 'paper', onclose, children, footer }: Props = $props();
+  let { open = $bindable(), label, title, variant = 'paper', onclose, ondismiss, children, footer }: Props = $props();
   let dlg: HTMLDialogElement | undefined = $state();
   const id = ++seq;
   /** The topmost open sheet hosts the banner. */
@@ -75,14 +77,18 @@
 
   /** Dismissed by hand (the backdrop, Esc): Ⓑ (✕ sounds it through its data-sfx); a sheet closed by its own button
    *  (保存, 買う！) sounds that button instead. */
-  function dismissed() {
+  function dismissed(e?: Event): boolean {
+    if (ondismiss && !ondismiss()) {
+      e?.preventDefault();
+      return false;
+    }
     cue('back');
+    return true;
   }
 
   function backdrop(e: MouseEvent) {
     if (e.target !== dlg) return;
-    dismissed();
-    dlg?.close();
+    if (dismissed()) dlg?.close();
   }
 </script>
 

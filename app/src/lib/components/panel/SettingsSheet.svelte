@@ -2,7 +2,7 @@
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: すがた (the look's portrait,
   // the よびな; かえる → the すがた level: the closet and the villagers, one dresser), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
-  // the guest's) and もようがえ (one row: はじめる; not
+  // the guest's), えいご ききとり (one row: あそぶ → ききみみ クイズ's sheet, its voice session started in the tap) and もようがえ (one row: はじめる; not
   // the guest's).
   // Each pushes a level with ‹ (すがた's edits are sent as it's left, with a とりけす banner here);
   // ✕, the backdrop and Esc close it, and the next opening starts at its top.
@@ -28,6 +28,7 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
+  import { openQuiz } from '../kikimimi/invite.svelte.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -109,6 +110,10 @@
       <section class="sec" aria-labelledby="sec-weather" data-weather-section><h2 id="sec-weather" class="sec-label">{t('panel.weather')}</h2><WeatherSection {guest} /></section>
       <section class="sec" aria-labelledby="sec-fps"><h2 id="sec-fps" class="sec-label">{t('panel.fps')}</h2><FpsSection /></section>
       {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync" class="sec-label">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
+      <div class="prow static decor" data-kikimimi-row>
+        <span class="prl">{t('panel.kikimimi')}</span>
+        <button type="button" class="btn small paper" data-kikimimi-start data-sfx="open" onclick={() => (openQuiz(), (open = false))}>{t('panel.kikimimiPlay')}</button>
+      </div>
       {#if !guest}
         <div class="prow static decor">
           <span class="prl">{t('panel.decor')}</span>
