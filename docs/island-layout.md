@@ -1,12 +1,8 @@
 # The island's layout (customisable outdoors, homes and interiors)
 
-Status: **all five phases landed**: 1 the schema, the ops, the default's migration, the nav, the checks, the store;
-2 the 3D ground from the grid, the objects from the layout, the long island; 3 the desktop editor; 4 the homes, their
-looks and their rooms; 5 the phone's もようがえ of the layout (its mount on the 3D island is the lead's, below).
-Phone terraforming is deferred (the editor's alone). This file is the contract
-between the layout work (`app/src/lib/layout/`, `store/layout.svelte.ts`, `world3d/terrain.ts`, `world3d/objects.ts`,
-the editor, the homes) and the 3D integration (the scene, the camera, porting the island's features: the lead's
-`world3d/engine.ts` and the rest of `world3d/`).
+The layout: the schema, the ops, the default, the nav, the checks and the store (`app/src/lib/layout/`,
+`store/layout.svelte.ts`); the 3D ground and objects from it (`world3d/terrain.ts`, `world3d/objects.ts`); the desktop
+editor; the homes, their looks and their rooms; the phone's もようがえ. Phone terraforming is the editor's alone.
 
 ## The grid
 
@@ -204,7 +200,7 @@ for their spots with no visual change (the default's offsets); the 3D island rea
   fishing and casts go by tiles. The editor marks it on the plan (`かわの せん`, on by default): the centreline, the
   banks dashed, each arc orange with its radius in tiles and its angle; `/editor?check` lists the arcs (かわの カーブ).
 - **The look is baked on the GPU** (`world3d/terrain.ts`): one shader paints each band's texture from the fields and
-  the tiles, NH's way (the 2D bake's grass with its flecks, NH's own grass pattern, the beach going wet at the sea and
+  the tiles, NH's way (grass with its flecks, NH's own grass pattern, the beach going wet at the sea and
   the seabed deepening under it, the dirt path worn with its pebbles, NH's stone, brick and plank textures, a river's
   earthy rim and its bed, a shade at a cliff's foot), once at load and again only for what a change touches. The
   season's palette (`ground.look`) rebakes it all.
@@ -373,18 +369,16 @@ way to turn its own house).
   grass (a grass tile nothing stands on, off the paths, the water and the banks, away from a door, a board's front,
   a named spot and the stairs, one a walker reaches), spread out, seeded by the date and the island's seed: the same
   on every phone. `beach.ts useSpots(layoutSpots(() => layout.current))` switches the island's weeds (care.ts) and
-  fossils (beach.ts digSpots) onto them; before the layout's applied, world.ts's spots. **For the lead:** call it when
-  the 3D island reads the layout, `useSpots(null)` to go back.
+  fossils (beach.ts digSpots) onto them; before the layout's applied, world.ts's spots (`island/site.svelte.ts` calls it).
 - **NH's bridges and inclines** (`npm run structure-models`: 8 bridges, NH's shortest span; 6 inclines: stone, brick,
   iron, wood, log, natural; `world3d/structure.ts`): `structurePlaces(layout)` + `buildStructure(place)` → a group
   to attach at `(x, ground.heightAt(x, z), −z)` (a bridge at its banks' feet − 6), its yaw set. The stairs are NH's
-  2 × 4 (rising one tier over four tiles). **For the lead:** with these attached, pass `structures: true` to
-  placeObjects (no world3d bridge instance) and `stairs: false` to buildGround (no drawn steps).
+  2 × 4 (rising one tier over four tiles). Island3D attaches them, with `structures: true` to placeObjects (no
+  world3d bridge instance) and `stairs: false` to buildGround (no drawn steps).
 - **The old もようがえ's decorations** (`layout/migrate.ts`): each member's phone moves its own (by the decoration's
   last placer) into the layout once, as `o` ops `m-<its id>` on its tile (おく's z moved back as the default's), kind
   and facing kept (`layout.migrateDecor`, from IslandScene with the record's decorations); already moved (any op of
-  that id, a removal too) never again; the guest has none. The old decoration stays in its own store for the 2D
-  island; **for the lead:** the 3D island on the layout draws the layout's copy and not contract/decor's.
+  that id, a removal too) never again; the guest has none. The island draws the layout's copy, not contract/decor's.
 
 ## Phone editing (phase 5)
 
@@ -402,69 +396,39 @@ its model hidden), drags it a tile at a time; a tap on the ground moves it there
 **Terraforming on the phone (paths, water, cliffs) is deferred:** the desktop editor's alone for now.
 
 It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), hide(id) }`. The editor's phone
-view gives it one (`/editor/?view=phone&edit`: the 3D island's camera and bend; `&preview=0` a flat plan, the e2e's).
-**To mount it on the 3D island** (the lead's IslandScene / Island3D): when せってい → もようがえ opens with the 3D island
-on, `<IslandEdit stage={…} relay={relay} ondone={() => (ui.decorating = false)} />` in place of DecorMode, the stage
-from the World (`host` the scene element, `toScreen` = `world.at(x, z, lift)` in its px, `toGround` =
+view gives it one (`/editor/?view=phone&edit`: the 3D island's camera and bend, `&cam=<z>` its spot; `&preview=0` a
+flat plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its camera). On the island, IslandScene
+mounts it while せってい → もようがえ is open, the stage from the World (`host` the scene element, `toScreen` = `world.at(x, z, lift)` in its px, `toGround` =
 `world.worldAt(sx, sy)`, `hide(id)` = `things.over(id, { hidden: true })` / `over(id, null)`). The e2e:
 `e2e/island-edit.spec.ts` (a new piece placed and on the other phone; a placed one picked up, dragged and put down;
 red over the river; no 🗑 for a one-off; none for the guest), `e2e/visitor-spot.spec.ts` (the plaza put down, moved
 and taken away, Kicks on it on both phones; a bench on it: red, the warning, the usual ring).
 
-## What the 3D integration must change (the lead's files)
+## How the 3D island reads it
 
-1. **The ground:** `createIsland(canvas, ground)` takes a BuiltGround already (2c4e4b64): pass
-   `buildGround(layout.current, { renderer, look })` (it needs the renderer for its bake: create it first, or let
-   createIsland hand it over); `groundLook(urls)` → `ground.look(look)` (the season's palette, rebaked); the Ground
-   draws the sea, the fresh water, the falls and a deep plane under the sea, on the same `waterU` the frame loop
-   drives. Cull its bands per frame as the baked chunks were (`z1 > camZ − 700 && z0 < camZ + 1500` over
-   `ground.chunks()`): today a BuiltGround's meshes all stay visible.
-2. **The things:** `island(day)` → `placeObjects(layout.current, day)` (the same Inst and Standin shapes). Ids are
-   the layout's: the fixed decor's pieces are their spots' ids (`bench-mae`, not `fx-bench-mae`), the campsite's
-   tent is `home-A` (not `tent`; `tap: 'tent'` as before), the bridge `bridge`. うめ's and the guest's homes come
-   in phase 4 (`world3d/home.ts`).
-3. **Live changes:** `layout.on(({ diff }) => { ground.rebuild(layout.current, diff.chunks); things.place(placeObjects(layout.current, day).insts) })`
-   (`store/layout.svelte.ts`; things.ts already rebuilds only the models whose instances changed).
-4. **The camera:** `CAM_Z = { min: 30, max: 1000 }` → from `extentOf(layout.current)`: `min = shore + 60` (today's
-   30), `max = home[1] + 16` (today's 1000 by the campsite at 984; the campsite's door is now at z 1404, so ~1420). Recompute
-   on a layout change (the members may move the tent). `MID_X` 195 stays (the width is the same); the horizon rule
-   (bend R 1300) and the shadow box (it follows the camera) need nothing; at 60 tiles the campsite's door is at z ≈ 1404; the lights' nearest-6 budget is the same
-   on a longer island (more lamps in all, the same 6 at a time); the sea plane is the Ground's (4200 × 6000 round
-   the grid's middle, z 1290).
-5. **The homes:** for each of `homePlaces(layout.current)`, `buildHome(style)` → `engine.attach(group, { x, z, yaw })`
-   (rebuild when its style or spot changes: `diff.homes`, a moved `home-*`). A tap on `home-B` / `home-G` walks to its
-   door (`navOf(...).named['door-home-B']`, a `door` snap: `building` the home's id) and, arrived, goes in through
-   the door's iris to `tent/?home=B` (the guest's: `?home=G`); the campsite's as today (`/tent`). Their lamps:
-   `homeTod(group, lamps)` in the time of day.
-6. **Walking:** `planTap(navOf(layout.current), …)` (rebuild the nav on a layout change, ~4 ms), feet from
-   `ground.feet`. Named nodes: `homeA`, `homeB` (the villagers' spots), `centreStage` (island/nav.ts: `stageOf`'s), `door-home-A|B|G`, the
-   default's seats (`seatMaeL` … `stoolW`, `pullup`), `front-<id>` (a bulletin board's spot).
-7. **The gameplay on the layout (landed): `island/site.svelte.ts` `site.on`, always on** (the switch, `?layout` and
-   `LAYOUT_3D` went with the 2D island). world.ts's geometry is the layout's: `island/layoutWorld.ts worldOf(layout)` derives every value the island reads (`HOMES`, `CAMPSITE` /
-   `BUILDINGS` with `home-B` and `home-G`, `CENTRE_STAGE` / `ARCH` / `CAKE`, `SEATS` / `PULLUP_AT`, `SCENERY` (the
-   hedges among it), `DECOR_SLOTS`, `FLOWERS`, `GOAL_TREES`, `ROCK`, `TAPE_DECK`, `RIVER` (the centreline through its
-   tiles, spring to sea), `POND` / `SPRING` (their tiles' ovals), `CLIFF`, `BRIDGE`, `SHORE_Z`, `LAND`, `SEA_BOX`,
-   `BEACH_BOX`, `CAMS`, `LAWN_SPOTS` / `DIG_SPOTS`; and from the tiles: `surfaceAt`, `freshWhere`, `inRiver`,
-   `onLand`, `onGrass`), and world.ts `setWorld` swaps them in (ES live bindings: every import reads the new value; a
-   cache keys on `worldGen()`; a DOM overlay reads `site.rev` to follow a change). Before it's applied (and in the unit
-   tests), world.ts's own. Each change of the layout re-derives it (`layout.on`), so the editor's moves show live.
-   - **The walk** is layout/nav.ts's: `nav.ts walkNav()` (the layout's grid with the island's named spots: `treeA`,
-     `pondside`, `door-campsite`… as before, each nudged to where a walker reaches) for a tap, and walkGraph.ts's geo
-     (`lnav`) for the idle walks and the visitors.
-   - **The homes:** a tap on `[data-building="home-B"|"home-G"]` walks up to its door and goes in to `/tent?home=B|G`
-     (the campsite's to `/tent`); back out, the room drops `home` from the URL.
-   - **The day's spots:** `useSpots(layoutSpots(...))` (beach.ts), so weeds and fossils lie on the layout's open grass.
-   - **The decorations:** Decor.svelte draws the layout's decoration objects (`m-<id>` and the phone's new ones) as tap
-     areas only (no `m3`: placeObjects draws them).
-   - **The engine's side** (Island3D / engine.ts, under the same `site.on`): `buildGround(site.layout)`,
-     `placeObjects(site.layout, day)`, the homes and structures attached, the camera's ends from `extentOf`, IslandEdit.
-   - The e2e: `e2e/layout-island.spec.ts` (the doors, homes, named spots; うめ's home entered; a tap walk in the long
-     middle); unit: `island/layoutWorld.test.ts`.
+- **The ground:** `createIsland(canvas, ground)` with `buildGround(layout.current, { renderer, look })` (the season's
+  palette: `ground.look(look)`); its bands culled per frame (`ground.chunks()`, engine.ts).
+- **The things:** `placeObjects(layout.current, day)`; ids are the layout's (the fixed decor's spots' ids, the
+  campsite's tent `home-A` with `tap: 'tent'`, the bridge `bridge`).
+- **Live changes:** `layout.on(({ diff }) => …)` rebuilds the changed ground chunks and things
+  (`store/layout.svelte.ts`; things.ts rebuilds only the models whose instances changed).
+- **The camera's ends** from `extentOf(layout.current)` (the shoreline + 60, the far home's door + 16), recomputed on
+  a change; `MID_X` 195.
+- **The homes:** `homePlaces(layout.current)` → `buildHome(style)` attached (rebuilt on `diff.homes`); a tap on
+  `home-B` / `home-G` walks to its door and goes in to `/tent?home=B|G` (the campsite's to `/tent`; back out, the
+  room drops `home`); their lamps `homeTod`.
+- **The gameplay:** `island/site.svelte.ts` `site.on` (always): `island/layoutWorld.ts worldOf(layout)` derives every
+  value world.ts exports (`HOMES`, `CAMPSITE` / `BUILDINGS`, `CENTRE_STAGE` / `ARCH` / `CAKE`, `SEATS` / `PULLUP_AT`,
+  `SCENERY`, `DECOR_SLOTS`, `FLOWERS`, `GOAL_TREES`, `ROCK`, `TAPE_DECK`, `RIVER`, `POND` / `SPRING`, `CLIFF`,
+  `BRIDGE`, `SHORE_Z`, `LAND`, `SEA_BOX`, `BEACH_BOX`, `CAMS`, `LAWN_SPOTS` / `DIG_SPOTS`; `surfaceAt`, `freshWhere`,
+  `inRiver`, `onLand`, `onGrass`) and `setWorld` swaps them in (ES live bindings; a cache keys on `worldGen()`; a DOM
+  overlay reads `site.rev`). Before it's applied (and in the unit tests), world.ts's own.
+- **The walk:** layout/nav.ts's (`nav.ts walkNav()`: the layout's grid with the island's named spots, `homeA`,
+  `homeB`, `centreStage`, `door-home-A|B|G`, the default's seats, `front-<id>`) for a tap; walkGraph.ts's geo for the
+  idle walks and the visitors.
+- **The decorations:** Decor.svelte draws the layout's decoration objects as tap areas only (placeObjects draws them).
+- The e2e: `e2e/layout-island.spec.ts`; unit: `island/layoutWorld.test.ts`.
 
 ## Not yet
 
 - Phone terraforming (paths, water, cliffs) is the desktop editor's only, for now.
-- The weeds' lawn spots and the dig spots are still world.ts's (not layout objects); once the 3D island reads the
-  layout they should be derived from it (open grass tiles), so a moved pond never holds a weed.
-- NH's bridges and inclines as models (BridgeWood…, SlopeBrickStair, SlopeIronStair are in the game files): the
-  stone bridge is world3d's one model, the stairs are drawn stone steps.
