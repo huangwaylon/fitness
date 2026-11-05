@@ -186,6 +186,8 @@ test('むらびとの すがたに する wears the villager; いつもの bring
   const rec = newRecord();
   const a = await phone(browser, rec, 'A');
   await openLook(a);
+  // the player in 3D (its renderer the level's own), the villager its official render
+  await expect(settings(a).locator('[data-look-preview=player][data-look-3d=on]')).toBeVisible({ timeout: 15_000 });
   await settings(a).locator('[data-push=villager]').click();
   await expect(settings(a).locator('.picker')).toBeVisible();
   await expect(settings(a).locator('[data-look-page]')).toBeHidden(); // kept under the picker
@@ -193,7 +195,7 @@ test('むらびとの すがたに する wears the villager; いつもの bring
   await settings(a).getByRole('searchbox').fill(jun);
   await settings(a).getByRole('radio', { name: jun }).click();
   await back(a); // to すがた: the preview is the villager now
-  await expect(settings(a).locator('[data-look-preview=villager]')).toBeVisible();
+  await expect(settings(a).locator('[data-look-preview=villager][data-look-3d=off]')).toBeVisible();
   await back(a); // to the list: sent
   await expect.poll(() => lastValue(rec, 'A', 'look')).toEqual({ kind: 'villager' });
   expect(lastValue(rec, 'A', 'villager')).toBe('raymond');
@@ -203,8 +205,9 @@ test('むらびとの すがたに する wears the villager; いつもの bring
   await openLook(a);
   await expect(chip(a, 'usual')).toHaveAttribute('aria-pressed', 'false');
   await chip(a, 'usual').click();
-  await expect(settings(a).locator('[data-look-preview=player]')).toBeVisible();
+  await expect(settings(a).locator('[data-look-preview=player][data-look-3d=on]')).toBeVisible({ timeout: 15_000 });
   await back(a);
+  await expect(settings(a).locator('[data-look-preview] canvas')).toHaveCount(0); // the level and its renderer gone
   await expect.poll(() => sentPrefs(rec, 'A', 'look').map(([ok, v]) => [ok, v])).toEqual([[true, { kind: 'villager' }], [true, null]]);
   await expect(settings(a).locator('[data-look-row]')).toHaveAttribute('data-look-row', 'player');
   await expect(settings(a).locator('[data-look-worn]')).toHaveText('いつもの');

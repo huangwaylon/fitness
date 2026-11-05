@@ -1,7 +1,7 @@
 <script lang="ts">
-  // A stand-in drawing of a human player from its look (the closet's swatches as flat colours), until the 3D player
-  // (components/player3d createPlayer) and its portraits land. Only LookPreview and LookPortrait use it: swapping it out
-  // touches nothing else. `head`: the portrait's crop (a コーデ chip, the せってい row).
+  // A stand-in drawing of a human player from its look (the closet's swatches as flat colours): while the 3D player
+  // loads (LookPreview), with no WebGL, and for a portrait not drawn yet (LookPortrait). Only those two use it.
+  // `head`: the portrait's crop (a コーデ chip, the せってい row).
   import type { PlayerLook } from '#lib/contract/look.ts';
   import { isOnepiece } from '#lib/contract/look.ts';
   import { swatchOf } from './closet.ts';
