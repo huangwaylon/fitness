@@ -374,7 +374,11 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   world](#shared-world)): `pick {id, what, at?}`, `put {id, what, at}`, `shake {tree, drop}`. Relay-only: `changed {what, who, at, rev}`, `wx {h0, s, fx?, at, src, rev}` ([The real weather](#the-real-weather)). The room drops any client-sent `who`/`t`, stamps its own (`t` strictly increasing) and sends it
   to the other person only. Any intent may carry `c`, the phone's sequence number (increasing through the day: its
   `Date.now()` at sending, or one more): the room answers the sender `ack {c, t, ok}` (`t` its stamp; `ok` false when
-  the world refused it: a claim already made, a nest too soon, a walk numbered before the one it keeps), and a resend
+  the world refused it: a claim already made, a nest too soon, a walk numbered before the one it keeps on the same
+  socket, or one from another socket that set off (`s`) over 5 s before it: since 2026-11-05 a walk's `c` is compared
+  only with its own socket's (each socket gets an id at open, `Meta.sk`, kept with the walk and never sent), so a
+  person's second device with another clock, or a phone after a reload, walks on where a newer socket's walk had been
+  refused), and a resend
   of a kept intent with the same `c` (after a reconnect) is acked again, never relayed or kept twice; so is one of the
   last 64 acked intents it doesn't keep (a high-five: the same intent and `c`, in the room's memory). It relays to
   the partner before it writes the day to storage (a message sent after a write waits for it: the output gate), so a

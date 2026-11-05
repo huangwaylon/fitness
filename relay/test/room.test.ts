@@ -491,6 +491,36 @@ describe('the shared world (docs/backend.md#shared-world)', () => {
     expect(a.sent).toEqual([]);
   });
 
+  it('a walk’s number is compared on its own socket only: another device of the same person (another clock) walks on', () => {
+    const b = join(KEY_B);
+    // A's iPad, its clock an hour fast: its walk numbered by it
+    const pad = join(KEY_A);
+    say(pad, { kind: 'walk', to: [100, 300], s: now, ms: 1000, c: now + 3600_000 });
+    expect(pad.sent.at(-1)).toMatchObject({ kind: 'ack', ok: true });
+    // A's phone, on the right clock: its hello replaces the iPad's socket, and its walk is taken
+    now += 60_000;
+    const phone = join(KEY_A);
+    say(phone, { kind: 'walk', to: [120, 300], s: now, ms: 1000, c: now });
+    expect(phone.sent.at(-1)).toMatchObject({ kind: 'ack', ok: true });
+    expect(b.sent.filter((m) => m.kind === 'walk').map((m) => (m as unknown as { to: number[] }).to)).toEqual([[100, 300], [120, 300]]);
+    // on one socket the order still holds: an older number after a newer one is a late resend
+    say(phone, { kind: 'walk', to: [140, 300], s: now, ms: 1000, c: now - 5 });
+    expect(phone.sent.at(-1)).toMatchObject({ kind: 'ack', ok: false });
+    // and a walk from another socket that set off well before the kept one (an old resend after a reconnect) too
+    now += 60_000;
+    const again = join(KEY_A);
+    say(again, { kind: 'walk', to: [160, 300], s: now - 120_000, ms: 1000, c: now + 7200_000 });
+    expect(again.sent.at(-1)).toMatchObject({ kind: 'ack', ok: false });
+    say(again, { kind: 'walk', to: [180, 300], s: now - 61_000 - 2000, ms: 1000, c: 5 });
+    expect(again.sent.at(-1)).toMatchObject({ kind: 'ack', ok: true });
+    // the kept walk goes out as it came: no socket id, no number
+    const late = join(KEY_B, 0);
+    const kept = late.sent.find((m) => m.kind === 'walk' && m.who === 'A');
+    expect(kept).toMatchObject({ to: [180, 300] });
+    expect(kept).not.toHaveProperty('sk');
+    expect(kept).not.toHaveProperty('c');
+  });
+
   it('relays to the partner before it keeps (a send after a storage write waits for it)', () => {
     const order: string[] = [];
     const base = io();

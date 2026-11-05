@@ -11,6 +11,8 @@ export interface Meta {
   who: Who | null;
   opened: number;
   v?: LiveV;
+  /** The socket's own id (made at open, 2026-11-05): a walk's order is its socket's (admit). */
+  sk?: string;
 }
 
 export interface Sock {
@@ -54,8 +56,9 @@ export interface DayIndex {
   nests: [tree: string, t: number][];
 }
 
-/** A change as the room keeps it: relayed, with its sender's sequence number (`c`: a resend is known again). */
-export type Kept = Relayed & { c?: number };
+/** A change as the room keeps it: relayed, with its sender's sequence number (`c`: a resend is known again) and the
+ *  socket it came on (`sk`: a walk's numbers are compared on one socket only). Neither goes out again. */
+export type Kept = Relayed & { c?: number; sk?: string };
 
 /** A socket must say hello within this long (a phone says it on open, one round trip). */
 export const HELLO_MS = 3_000;
@@ -72,6 +75,10 @@ export const MAX_PENDING = 4;
 const ACKED_MAX = 64;
 /** A person's phrases (`say`) at most one this often (ms): a newer one within it goes nowhere (the phone waits 1.5 s). */
 const SAY_GAP_MS = 1000;
+/** A walk from another socket of the same person than the one kept (another device, or the same after a reconnect)
+ *  is refused only when it set off (`s`, the relay's clock as the phone has it) this much before the kept one: a stale
+ *  resend, never a phone's clock a little off. */
+const WALK_SKEW_MS = 5000;
 
 export class RoomCore<S extends Sock> {
   private readonly buckets = new WeakMap<S, Bucket>();
@@ -148,7 +155,7 @@ export class RoomCore<S extends Sock> {
 
   /** A new socket, accepted but not yet authenticated. */
   open(s: S): void {
-    this.io.setMeta(s, { who: null, opened: this.io.now() });
+    this.io.setMeta(s, { who: null, opened: this.io.now(), sk: `${this.io.now().toString(36)}${Math.random().toString(36).slice(2, 8)}` });
   }
 
   message(s: S, raw: unknown): void {
@@ -212,7 +219,7 @@ export class RoomCore<S extends Sock> {
     const out: Relayed = { ...intent, v: LIVE_V, who, t: this.stamp() };
     // the shared world: a claim already made today, a second nest within the hour, or a walk older than the one kept
     // goes nowhere
-    if (stored && !this.admit(out, c)) return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
+    if (stored && !this.admit(out, c, meta.sk)) return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
     // a high-five goes to whose villager was tapped (`to`), else the partner (member to member)
     const to = out.kind === 'highfive' ? (out.to ?? (who === 'G' ? null : other(who))) : null;
     if (out.kind === 'highfive' && (!to || to === who)) return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
@@ -228,7 +235,7 @@ export class RoomCore<S extends Sock> {
       this.held = { ...this.held, [`${who}>${to}`]: { from: who, to, at: (out as { at: number }).at, t: out.t } };
       this.io.hold?.(this.held);
     }
-    if (stored) this.keep(c !== undefined ? { ...out, c } : out);
+    if (stored) this.keep({ ...out, ...(c !== undefined ? { c } : {}), ...(out.kind === 'walk' && meta.sk ? { sk: meta.sk } : {}) });
     else if (c !== undefined) {
       this.acked.set(`${who}:${c}`, { same: JSON.stringify(intent), t: out.t });
       if (this.acked.size > ACKED_MAX) this.acked.delete(this.acked.keys().next().value!);
@@ -409,15 +416,22 @@ export class RoomCore<S extends Sock> {
   }
 
   /** Whether the day's world takes a change: false when it refuses it (claimed already, a nest too soon, a walk sent
-   *  before the one it holds: a late resend). */
-  private admit(e: Relayed, seq?: number): boolean {
+   *  before the one it holds: a late resend). A walk's number (`seq`, the phone's clock) is compared with the kept
+   *  walk's only when both came on the same socket (`sk`): another device's clock, or the same phone's after a reload,
+   *  numbers its own way, and a newer socket's first walk is taken; across sockets a walk that set off WALK_SKEW_MS
+   *  before the kept one is a stale resend. (A socket from before `sk` compares as before.) */
+  private admit(e: Relayed, seq?: number, sk?: string): boolean {
     this.fresh();
     const c = claimOf(e);
     if (c && this.claims.has(c)) return false;
     if (e.kind === 'shake' && e.drop === 'nest' && e.t - (this.nests.get(e.tree) ?? -Infinity) < NEST_GAP_MS) return false;
     if (e.kind === 'walk' && seq !== undefined) {
       const last = this.ring.find((x) => x.kind === 'walk' && x.who === e.who);
-      if (last?.c !== undefined && last.c > seq) return false;
+      if (last?.kind === 'walk') {
+        const same = !sk || last.sk === sk;
+        if (same && last.c !== undefined && last.c > seq) return false;
+        if (!same && e.s !== undefined && last.s !== undefined && e.s + WALK_SKEW_MS < last.s) return false;
+      }
     }
     return true;
   }
@@ -440,10 +454,10 @@ export class RoomCore<S extends Sock> {
 }
 
 /** A kept change's intent alone (as its sender sent it). */
-const bare = ({ c: _c, v: _v, who: _w, t: _t, ...i }: Kept): Omit<Kept, 'c' | 'v' | 'who' | 't'> => i;
+const bare = ({ c: _c, sk: _sk, v: _v, who: _w, t: _t, ...i }: Kept): Omit<Kept, 'c' | 'sk' | 'v' | 'who' | 't'> => i;
 
-/** A kept change as sent: without its sender's sequence number. */
-const strip = ({ c: _c, ...e }: Kept): Relayed => e;
+/** A kept change as sent: without its sender's sequence number and socket. */
+const strip = ({ c: _c, sk: _sk, ...e }: Kept): Relayed => e;
 
 /** The day's changes in runs whose `replay` message stays within REPLAY_BYTES. */
 function chunks(es: Relayed[]): Relayed[][] {
