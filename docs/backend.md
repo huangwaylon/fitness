@@ -364,8 +364,16 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   requests/day (incoming WebSocket messages count 20:1), 13,000 GB-s/day; two people tapping are far below.
 - **Client** (`app/src/lib/sync/live.ts`, `createLive({key})`): connects while the page is visible and online, closes
   on hide or offline (no socket, no timers), reconnects after a drop with backoff (1 s doubling to 60 s, ±25 %); after
-  4001/4002/4004 it waits until the page is shown again. Clock: pings at welcome, +2 s, then every 60 s; the offset is
-  the shortest round trip's of the last 8 (`serverNow()`). `send(intent)` is a no-op returning false unless welcomed
+  4001/4002/4004 it waits until the page is shown again. Clock: pings at welcome and +2 s; the offset is the shortest
+  round trip's of the last 8 (`serverNow()`). **Liveness** (2026-11-05): a socket that dies without closing (a
+  half-open TCP after an iPhone's sleep, a tunnel) used to look connected for good: pinged once a minute, its pong never
+  awaited. Now a socket quiet for 20 s (nothing heard: any message counts) is pinged, and nothing heard within 10 s of
+  a ping gives it up (closed with the client's own 4000, logged as `ws.close`) and opens a new one at once, whose
+  welcome sends the outbox again; `pageshow` and `focus` ping a socket that looks open (iOS can bring a page back
+  `visible` with a dead socket). A kept intent's ack is due within 5 s: overdue with nothing heard since it went, the
+  socket is dead (as above); heard from (an older relay that dropped it over its limit without a word), it goes again
+  on the socket, the wait doubling to 60 s; `busy {c}` resends it after a backoff (1 s doubling). Idle traffic while
+  shown: 3 pings and 3 pongs a minute on a quiet socket (was 1 and 1), none while anything else is heard. `send(intent)` is a no-op returning false unless welcomed
   and, for what the room doesn't keep, the partner is present; it never throws or blocks. `on()` delivers the partner's intents,
   `onStatus()` `{connected, me, peer}`. URL: `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off). What the room
   keeps (`isStored`: the shared world's intents and walks) goes even with the partner away, numbered (`c`), and waits
@@ -667,14 +675,14 @@ writes/day (unused). A generous day for two phones:
 | Source | Count/day | Worker req | DO req | DO GB-s | Rows read | Rows written |
 |---|---|---|---|---|---|---|
 | Sockets (each show of the app) | 2 × 60 | 120 | 120 | ~150 (10 s awake each, 128 MB) | | |
-| Pings (every 60 s while shown, 2 × 2 h) | 240 | 0 | 12 | ~300 | | |
+| Pings (a quiet socket every 20 s while shown, 2 × 2 h) | 720 | 0 | 36 | ~900 | | |
 | Intents kept for the day (the room's ring), nudges | ~2,000 | 0 | 100 | ~100 | | ~2,000 |
 | Record reads: snapshots (opens not current, pushes, taps; ~5 rows each; a full one is the whole record: ~97k rows a year, below) | ~300 | 300 | 300 | ~30 | ~3,000 (+ ~97k per full fetch) | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ~300 rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The real weather (the same cron: the room's tick, a fetch at :15 and :45, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
 | The log ([observability](ops/observability.md): a `req` RPC each `/api`, the phones' batches, room closes; a row and a cap row each write, the prune 30 days on) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
-| **Total** (Free plan limit) | | **~630 (0.6 % of 100,000)** | **~1,630 (1.6 % of 100,000)** | **~620 (4.8 % of 13,000)** | **~22,000 (0.4 % of 5 M)** | **~7,050 (7 % of 100,000)** |
+| **Total** (Free plan limit) | | **~630 (0.6 % of 100,000)** | **~1,650 (1.7 % of 100,000)** | **~1,220 (9.4 % of 13,000)** | **~22,000 (0.4 % of 5 M)** | **~7,050 (7 % of 100,000)** |
 
 Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
 smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a

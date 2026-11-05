@@ -17,8 +17,12 @@ class FakeWS {
   constructor(public url: string) {
     FakeWS.all.push(this);
   }
+  /** Answer each ping at once (a live relay). */
+  pongs = false;
   send(d: string) {
-    this.sent.push(JSON.parse(d));
+    const m = JSON.parse(d) as Record<string, unknown>;
+    this.sent.push(m);
+    if (this.pongs && m.kind === 'ping') this.recv({ kind: 'pong', c: m.c, t: Date.now() });
   }
   close(code?: number) {
     this.closed = { code };
@@ -403,15 +407,17 @@ describe('live: days open (nothing piles up)', () => {
     expect(vi.getTimerCount()).toBeLessThanOrEqual(timers);
   });
 
-  it('a second welcome on one socket keeps one ping a minute', () => {
+  it('a second welcome on one socket keeps one quiet-socket ping (every 20 s)', () => {
     live.start();
     last().welcome();
+    last().pongs = true;
     last().recv({ kind: 'welcome', me: 'A', peer: true, t: Date.now() });
     vi.advanceTimersByTime(30_000);
     const pings = () => last().sent.filter((m) => m.kind === 'ping').length;
     const before = pings();
     vi.advanceTimersByTime(60_000);
-    expect(pings() - before).toBe(1);
+    expect(pings() - before).toBe(3);
+    expect(FakeWS.all).toHaveLength(1);
   });
 });
 
@@ -435,9 +441,11 @@ describe('live: the relay clock', () => {
     expect(live.serverNow() - Date.now()).toBe(3010);
     ws.recv({ kind: 'pong', c: 12345, t: 1 }); // not mine: ignored
     expect(live.serverNow() - Date.now()).toBe(3010);
+    // then whenever the socket was quiet for 20 s
+    ws.pongs = true;
     const before = ws.sent.length;
     vi.advanceTimersByTime(60_000);
-    expect(ws.sent.length).toBe(before + 1);
+    expect(ws.sent.length).toBe(before + 3);
   });
 
   it('points at the relay\'s room by default', () => {
@@ -452,5 +460,142 @@ describe('live: the relay clock', () => {
     expect(backoff(0, 0.999)).toBe(1250);
     expect(bestOffset([])).toBe(0);
     expect(bestOffset([{ rtt: 90, off: 1 }, { rtt: 30, off: 2 }, { rtt: 60, off: 3 }])).toBe(2);
+  });
+});
+
+describe('live: liveness (a socket open but carrying nothing)', () => {
+  const pings = (ws: FakeWS) => ws.sent.filter((m) => m.kind === 'ping').length;
+
+  it('a quiet socket is pinged every 20 s; one hearing things isn’t', async () => {
+    live.start();
+    const ws = last();
+    ws.welcome();
+    ws.pongs = true;
+    await vi.advanceTimersByTimeAsync(2100);
+    const p0 = pings(ws);
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(pings(ws) - p0).toBe(3);
+    // the partner walking every 5 s: no ping needed
+    const p1 = pings(ws);
+    for (let i = 0; i < 12; i++) {
+      ws.recv({ kind: 'walk', to: [1, 2], who: 'B', t: Date.now() });
+      await vi.advanceTimersByTimeAsync(5000);
+    }
+    expect(pings(ws) - p1).toBe(0);
+  });
+
+  it('an idle hour on screen: 3 pings and 3 pongs a minute (was 1 and 1)', async () => {
+    live.start();
+    const ws = last();
+    ws.welcome();
+    ws.pongs = true;
+    await vi.advanceTimersByTimeAsync(2100);
+    const m0 = live.metrics!();
+    await vi.advanceTimersByTimeAsync(60 * 60_000);
+    const m1 = live.metrics!();
+    expect((m1.sent - m0.sent) / 60).toBe(3);
+    expect((m1.recv - m0.recv) / 60).toBe(3);
+    expect(FakeWS.all).toHaveLength(1);
+  });
+
+  it('a ping unanswered for 10 s: the socket is given up (4000) and a new one opened at once, the outbox sent again', () => {
+    live.start();
+    const ws = last();
+    ws.welcome();
+    vi.advanceTimersByTime(2100);
+    vi.advanceTimersByTime(20_000); // the quiet socket's ping
+    expect(FakeWS.all).toHaveLength(1);
+    vi.advanceTimersByTime(10_000); // no pong
+    expect(ws.closed?.code).toBe(4000);
+    expect(FakeWS.all).toHaveLength(2);
+    expect(live.status().connected).toBe(false);
+    expect(live.metrics!().closed).toBe(4000);
+    last().welcome();
+    expect(live.status().connected).toBe(true);
+  });
+
+  it('a kept intent unacked for 5 s with nothing heard since: the socket is dead, a new one sends it again', () => {
+    live.start();
+    const ws = last();
+    ws.welcome();
+    vi.advanceTimersByTime(2100);
+    expect(live.send({ kind: 'world', op: 'watered', id: 'fl:1:2' })).toBe(true);
+    const c = (ws.sent.at(-1) as { c: number }).c;
+    vi.advanceTimersByTime(4900);
+    expect(FakeWS.all).toHaveLength(1);
+    vi.advanceTimersByTime(200);
+    expect(ws.closed?.code).toBe(4000);
+    const ws2 = last();
+    expect(ws2).not.toBe(ws);
+    ws2.welcome();
+    expect(ws2.sent.find((m) => m.kind === 'world')).toMatchObject({ c });
+    ws2.recv({ kind: 'ack', c, t: Date.now(), ok: true });
+    expect(live.metrics!().pending).toBe(0);
+    ws2.pongs = true;
+    vi.advanceTimersByTime(60_000);
+    expect(FakeWS.all).toHaveLength(2);
+  });
+
+  it('a socket alive but no ack (an older relay dropped it over its limit): sent again on it, 5 s then 10 s', () => {
+    live.start();
+    const ws = last();
+    ws.welcome();
+    ws.pongs = true;
+    vi.advanceTimersByTime(2100);
+    live.send({ kind: 'world', op: 'watered', id: 'fl:1:2' });
+    const c = (ws.sent.at(-1) as { c: number }).c;
+    const copies = () => ws.sent.filter((m) => m.kind === 'world').length;
+    ws.recv({ kind: 'walk', to: [1, 2], who: 'B', t: Date.now() }); // (the socket hears things)
+    vi.advanceTimersByTime(5000);
+    expect(copies()).toBe(2);
+    ws.recv({ kind: 'walk', to: [1, 3], who: 'B', t: Date.now() });
+    vi.advanceTimersByTime(9900);
+    expect(copies()).toBe(2);
+    vi.advanceTimersByTime(200);
+    expect(copies()).toBe(3);
+    ws.recv({ kind: 'ack', c, t: Date.now(), ok: true });
+    vi.advanceTimersByTime(60_000);
+    expect(copies()).toBe(3);
+    expect(FakeWS.all).toHaveLength(1);
+    expect(live.metrics!()).toMatchObject({ pending: 0, resent: 2 });
+  });
+
+  it('`busy {c}`: the room turned it away; sent again on the socket after a backoff, kept till acked', () => {
+    live.start();
+    const ws = last();
+    ws.welcome();
+    vi.advanceTimersByTime(2100);
+    live.send({ kind: 'pick', id: 's9', what: 'shell:conch' });
+    const c = (ws.sent.at(-1) as { c: number }).c;
+    ws.recv({ kind: 'busy', c, t: Date.now() });
+    expect(live.metrics!()).toMatchObject({ busy: 1, pending: 1 });
+    vi.advanceTimersByTime(1300); // backoff(0): 750–1250 ms
+    expect(ws.sent.filter((m) => m.kind === 'pick')).toHaveLength(2);
+    ws.recv({ kind: 'ack', c, t: Date.now(), ok: true });
+    expect(live.metrics!().pending).toBe(0);
+    expect(FakeWS.all).toHaveLength(1);
+  });
+
+  it('back in front (pageshow, focus): a socket that looks open is pinged, and replaced when it doesn’t answer', () => {
+    let wake = () => {};
+    live = createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env: { ...env, wake: (fn) => ((wake = fn), () => (wake = () => {})) }, since });
+    live.start();
+    const ws = last();
+    ws.welcome();
+    vi.advanceTimersByTime(2100);
+    const p = pings(ws);
+    wake();
+    expect(pings(ws)).toBe(p + 1);
+    vi.advanceTimersByTime(10_000);
+    expect(ws.closed?.code).toBe(4000);
+    expect(FakeWS.all).toHaveLength(2);
+    // shown and answering: nothing changes
+    const ws2 = last();
+    ws2.welcome();
+    ws2.pongs = true;
+    wake();
+    vi.advanceTimersByTime(10_000);
+    expect(FakeWS.all).toHaveLength(2);
+    live.stop();
   });
 });
