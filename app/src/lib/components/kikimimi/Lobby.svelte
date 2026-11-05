@@ -70,7 +70,7 @@
       <h3 id="kk-who" class="sec-label">{t('kiki.players')}</h3>
       <div class="who card">
         {#each people as w (w)}
-          <PlayerChip who={w} state={joined(w) ? 'answered' : 'away'} note={joined(w) ? null : t('kiki.notYet')} size={48} />
+          <PlayerChip who={w} state={joined(w) ? 'here' : 'away'} note={joined(w) ? null : t('kiki.notYet')} size={48} />
         {/each}
       </div>
       {#if people.length === 1}<p class="hint">{t('kiki.soloOk')}</p>{/if}
@@ -118,7 +118,8 @@
   .hello p { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .host { flex: none; line-height: 0; }
   .sec { display: grid; gap: 8px; }
-  .levels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  /* the four levels a 2×2 grid (three and one left a hole) */
+  .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .lv {
     appearance: none; border: 0; cursor: pointer; min-height: 64px; border-radius: var(--r-card); display: grid; place-content: center; gap: 2px;
     background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-body)/1.2 var(--font-ui);
@@ -127,7 +128,8 @@
   .lv[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
   .lv:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .stars { color: var(--c-coral); letter-spacing: 1px; font-size: var(--fs-s); }
-  .lv[aria-checked='true'] .stars { color: var(--c-ink); }
+  /* the chosen one's stars stay coral (the darker text coral on yuzu) */
+  .lv[aria-checked='true'] .stars { color: var(--c-coral-text); }
   .row {
     appearance: none; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0;
     border-radius: var(--r-card); border: 0; background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); text-align: left; width: 100%; font: inherit;
@@ -153,7 +155,7 @@
   .test .btn { width: 100%; }
   .level-acts > .wide { flex: 1 1 100%; }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
-  .hint.warn { color: var(--c-coral); }
+  .hint.warn { color: var(--coral-text); }
   .wait { flex: 1; margin: 0; padding: 14px 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }
   @media (prefers-reduced-motion: reduce) { .sw i { transition: none; } }
 </style>

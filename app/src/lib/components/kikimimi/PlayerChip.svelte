@@ -1,6 +1,6 @@
 <script lang="ts">
   // A player in ききみみ クイズ: their head as worn (Avatar), their villager's name, and a badge under it: ✓ answered (never
-  // what), ✨ / 💦 at the reveal, their score, まだ in the lobby.
+  // what), ✨ / 💦 at the reveal, their score; in the lobby joined (here: as is, no badge) or まだ (dimmed).
   import type { Who } from '#lib/types.ts';
   import Avatar from '../characters/Avatar.svelte';
   import Mark from '../ui/Mark.svelte';
@@ -9,8 +9,9 @@
 
   interface Props {
     who: Who;
-    /** ✓: answered; right / wrong: the reveal's reaction; away: dimmed (a locked phone, not joined yet). */
-    state?: 'answered' | 'right' | 'wrong' | 'away' | null;
+    /** ✓: answered; right / wrong: the reveal's reaction; here: joined the lobby (as is, no badge: ✓ is an answer's);
+     *  away: dimmed (a locked phone, not joined yet). */
+    state?: 'answered' | 'right' | 'wrong' | 'here' | 'away' | null;
     /** The line under the name (a score, まだ). */
     note?: string | null;
     size?: number;
