@@ -9,7 +9,8 @@ import { mushroomSpots } from './mushrooms.ts';
 import { defaultLayout, withChanges } from '#lib/layout/model.ts';
 import { isLayoutNav } from '#lib/layout/nav.ts';
 import { validate } from '#lib/layout/validate.ts';
-import { stageOf } from '#lib/layout/spots.ts';
+import { openGrass, plazaOk, stageOf } from '#lib/layout/spots.ts';
+import { tileMid } from '#lib/layout/grid.ts';
 import { freshAreas, waterAt } from './critters.ts';
 
 const l = defaultLayout();
@@ -33,6 +34,10 @@ describe('worldOf: world.ts from the layout', () => {
     expect(g.SHORE_Z).toBe(W.WORLD_2D.SHORE_Z);
     expect(g.SEA_BOX).toEqual(W.WORLD_2D.SEA_BOX);
     expect(g.CENTRE_STAGE).toEqual(stageOf(l)); // (the visitors' stage: the layout's plaza, spots.test.ts)
+    // the members' plaza (spots.test.ts): the stage, the wedding's arch and a birthday's cake go with it
+    const [mc, mr] = openGrass(l).find(([c, r]) => plazaOk(l, c, r) && Math.hypot(tileMid(c, r)[0] - g.CENTRE_STAGE[0], tileMid(c, r)[1] - g.CENTRE_STAGE[1]) > 150)!;
+    const marked = worldOf(withChanges(l, { set: [{ id: 'o1', k: 'plaza', x: mc, z: mr, f: 0 }] }));
+    expect([marked.CENTRE_STAGE, marked.ARCH[0] - marked.CENTRE_STAGE[0], marked.ARCH[1] - marked.CENTRE_STAGE[1], marked.CAKE[1] - marked.CENTRE_STAGE[1]]).toEqual([tileMid(mc, mr), 0, 24, -40]);
     expect(near([g.POND.x, g.POND.z], [W.WORLD_2D.POND.x, W.WORLD_2D.POND.z + 420], 20)).toBe(true);
   });
   test('the river runs from the upper tier to the sea, the bridge over it', () => {

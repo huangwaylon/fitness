@@ -102,12 +102,29 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
   `reachable`, `named` (`homeA`, `homeB`, `door-home-A|B|G`, the default's seats `seatMaeL`…
   `stoolW`, `pullup`). **A drop-in for planTap:** `planTap(navOf(layout), from, x, z)` (tapWalk.ts takes either nav).
   Builds in ~4 ms.
-- **The visitors' stage** (`layout/spots.ts` `stageOf(layout)`, NH's plaza): the open grass tile nearest the island's
+- **The visitors' stage** (`layout/spots.ts` `stageOf(layout)`, NH's plaza): the members' plaza mark when one is put
+  down and usable (below), else the open grass tile nearest the island's
   middle 200u behind the villagers' spots (in view as the camera opens at まえ), with a tile clear on each side, behind
   and in front (no path, water, door or thing on it), nothing tall in front of it on screen (a tree's canopy, a home,
   a villager at its spot) nor right behind it; looser if none has that. `washedUp(layout, date, seed)`: Gulliver's
-  beach, a free sand tile two in from the sea in the beach's middle, by the date. The day's weeds and fossils keep off
-  the stage. Pure: every phone with the layout agrees, and a もようがえ moves them.
+  beach, his mark's tile when one is put down and usable, else a free sand tile two in from the sea in the beach's
+  middle, by the date. The day's weeds and fossils keep off the stage; the wedding's arch and a birthday's cake stand
+  by it (layoutWorld.ts ARCH, CAKE), the idle walks keep off it (nav `centreStage`), a balloon's present lands clear of
+  the visitor drawn there. Pure: every phone with the layout agrees, and a もようがえ moves them.
+- **The visitors' spots** (catalog.ts group `visitor`, kinds `plaza` おきゃくさんの ばしょ and `beach-spot` ジョニーの
+  ばしょ, `one`: one each on the island, removable): a mark the members put down, never drawn in play, standing on
+  nothing (no ground taken, no overlap, no block, the weeds' open grass unchanged). **Two marks cover everyone:**
+  every visitor but Gulliver stands at centre stage (K.K.'s show, Wisp, Celeste, the hosts, the wedding couple too),
+  so one plaza places them all; Gulliver alone lies elsewhere (the beach, a new stretch by the date), so his is its own
+  and optional. A night stage of K.K.'s own would be a third spot with no visitor of its own to justify it.
+  `markerSpot(layout, k)`: the latest put down (two phones at once: the later id; the phone's ✓ removes the other),
+  where they stand (`at`, the tile's middle) or `at: null` when nobody can now. Usable: the plaza's `plazaOk` (grass or
+  a path, the stage's clear 3 × 3 patch round it, its tier's, for the arch behind and the cake in front, and
+  reachable; what stands in front of it on screen is the members' choice), Gulliver's `beachOk` (sand with sand each
+  side, nothing a tile round it nor three behind, reachable). Unusable (something put on it, the ground repainted):
+  the derived spot, and validate.ts's `visitor-spot` warning (the editor's bar, the plan's issues). An ordinary
+  `sc: 'o'` object op: the contract takes any kind token (no relay change), and an older app keeps an object of a kind
+  it doesn't know without drawing it.
 - **Validation** (`layout/validate.ts` `validate(layout)` → issues, each `error` or `warn` with its tiles and ids): an
   object off the land or in water, one straddling a cliff, two footprints over each other, a tree off the grass
   (warn), stairs that join no cliff, a bridge that spans no water, a home whose door can't be reached, a missing or
@@ -373,7 +390,10 @@ way to turn its own house).
 ## Phone editing (phase 5)
 
 `components/layoutEdit/IslandEdit.svelte`: the island's もようがえ on the phone, the tent's way (TentEdit's tray, bar
-and buttons). The tray's tabs (き, かんぼく, はな, いわ, あかり, かぐ, ジム (the gym: design.md "Decorating"), はし・さか) over every placeable kind (the ten
+and buttons). The tray's tabs (き, かんぼく, はな, いわ, あかり, かぐ, ジム (the gym: design.md "Decorating"), はし・さか, たてもの, おきゃくさん (the
+visitors' spots, above: their marks drawn over the ground only in the mode, a soft tile and its sign, red when nobody
+can stand there now with the reason in the bar; the usual spot a dashed ring while no plaza is down; the tray's item
+picks up the one there, so placing it again moves it, and with something held a tap on a mark puts it there)) over every placeable kind (the ten
 decorations of island/decor.ts are layout kinds now too: いしどうろう … いちりんしゃ, cards of their renders in 3D until
 they have models); a tap on one puts it down as a ghost on the free tile nearest the view's middle, its footprint on
 the ground green or red, the bar saying why (the checks' reason); a finger on it, or on any placed thing (picked up,
@@ -389,7 +409,8 @@ on, `<IslandEdit stage={…} relay={relay} ondone={() => (ui.decorating = false)
 from the World (`host` the scene element, `toScreen` = `world.at(x, z, lift)` in its px, `toGround` =
 `world.worldAt(sx, sy)`, `hide(id)` = `things.over(id, { hidden: true })` / `over(id, null)`). The e2e:
 `e2e/island-edit.spec.ts` (a new piece placed and on the other phone; a placed one picked up, dragged and put down;
-red over the river; no 🗑 for a one-off; none for the guest).
+red over the river; no 🗑 for a one-off; none for the guest), `e2e/visitor-spot.spec.ts` (the plaza put down, moved
+and taken away, Kicks on it on both phones; a bench on it: red, the warning, the usual ring).
 
 ## What the 3D integration must change (the lead's files)
 

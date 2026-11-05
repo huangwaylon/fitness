@@ -104,8 +104,9 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   motion: a plain fade; aria-hidden: the label says it); only coins landing flash it, never a とりけす's refund. All of
   it waits while something covers the scene. The leaf, not the bowl or the dumbbell: it is where the ベル live now,
   and the corner it sits in is where NH's own bells pickup flies (up to the phone's corner).
-- **Centre stage:** the plaza (`world.ts` `CENTRE_STAGE`, ひろば: `layout/spots.ts` `stageOf`, a clear patch of lawn
-  behind the villagers' spots, in view as the island opens), where visitors stand.
+- **Centre stage:** the plaza (`world.ts` `CENTRE_STAGE`, ひろば: `layout/spots.ts` `stageOf`, where the members put
+  the visitors' spot in the もようがえ, else a clear patch of lawn behind the villagers' spots, in view as the island
+  opens), where visitors stand.
 - **Villagers:** a tap on mine is a squish; a tap on the partner's is a high-five ([Villager taps](#villager-taps)).
   Neither opens a sheet.
 - **Say button** (`island/SayButton.svelte`): a small round cream button at the scene's bottom right, NH's chat glyph
@@ -1204,7 +1205,8 @@ decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: l
   moved into the layout once; nothing places by it now). A gym of 10–20 pieces fits.
 - **In:** せってい → もようがえ → はじめる (the sheet closes; no new HUD control on the island): IslandEdit over the 3D
   camera, the tent's way: a tray of every kind, a ghost green or red, a drag a tile at a time, a tap on the ground
-  puts it there, ↻ まわす, ✕, 🗑, ✓ (island-layout.md "Phone editing").
+  puts it there, ↻ まわす, ✕, 🗑, ✓ (island-layout.md "Phone editing"). Its おきゃくさん tab: where the visitors stand
+  and where Gulliver washes up (a mark each, seen only in the mode; "Visitors").
 - **Out of the mode** a placed item is a world thing: NH's model on the 3D island, its DOM node the tap area (its 2D
   art hidden under the model), an obstacle the walk goes round (layout/nav.ts), and a tap jiggles it where it stands
   (my villager turns to it: no walk). The partner's change, just made, puffs where it lands and their villager turns
@@ -1975,11 +1977,13 @@ once a week, drawn by the week's Monday, with about one quiet day in ten): **Kic
 (none on a Saturday: K.K.'s); **Jack** on Halloween night, **Celeste** on a meteor shower's night, the holiday hosts on
 their days, the wedding couple on its days. Priority (`visitorAt`): the event's host (Jack included), the wedding
 couple, Celeste, K.K., Daisy Mae, then the day's. `?visitor=none`: nobody. They stand on centre stage in the plaza
-(ひろば: derived from the layout, `stageOf`; it moves with a もようがえ), its skinned model converted as the villagers'
+(ひろば: `stageOf`, the layout's: where we put **おきゃくさんの ばしょ** in the もようがえ's おきゃくさん tab, else derived; it
+moves with a もようがえ, a visitor out then on the new spot at once), its skinned model converted as the villagers'
 are (`scripts/villagers3d-models.ts`: the special characters, and `VISITOR_ONLY` for the hosts, Jack and the wedding's
 pair) and drawn and posed by the same code and materials (`world3d/villagers.ts`, slot `visitor`; Cyrus `visitor:b`),
 at NH's proportions to them, with the same blob shadow; as in NH, **Gulliver washes up on the front beach** (`washedUp`:
-a new stretch of sand some days), lying face down on the sand, his head to the left (villager3d's `prone`). A tap (while they're on screen): my villager turns to
+where we put **ジョニーの ばしょ**, else a new stretch of sand some days; one plaza and his beach cover every visitor:
+island-layout.md "The visitors' spots"), lying face down on the sand, his head to the left (villager3d's `prone`). A tap (while they're on screen): my villager turns to
 them where it stands, then their introduction the first time, then one of their lines. No trading, no ベル.
 
 **K.K.'s show:** with ミュージック on, a tap is his greeting with NH's choice box, **リクエスト** (up to four songs) or

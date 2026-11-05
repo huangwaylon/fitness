@@ -37,6 +37,11 @@ describe('the editor’s edits', () => {
     expect(pasted.ids).toHaveLength(1);
     expect(pasted.layout.objects.get(pasted.ids[0])).toMatchObject({ k: 'park-bench', x: 10, z: 17 });
   });
+  test('a visitors’ spot is one on the island: placing another moves it; it may be taken away', () => {
+    const a = place(l, 'plaza', 6, 15, 0, undefined, T0)!, b = place(a.layout, 'plaza', 9, 20, 0, undefined, T0 + 1)!;
+    const plazas = (g: typeof l) => [...g.objects.values()].filter((o) => o.k === 'plaza').map((o) => [o.id, o.x, o.z]);
+    expect([b.id, plazas(b.layout), plazas(remove(b.layout, [b.id]))]).toEqual([a.id, [[a.id, 9, 20]], []]);
+  });
   test('the fixed pieces stay: a goal tree, a home, the villagers’ spots', () => {
     const r = remove(l, ['goal-A', 'home-B', 'spot-stage', 'palm-1']);
     expect(r.objects.has('goal-A') && r.objects.has('home-B') && r.objects.has('spot-stage')).toBe(true);

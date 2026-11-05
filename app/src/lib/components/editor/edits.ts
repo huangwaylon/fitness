@@ -45,11 +45,13 @@ export function cliff(l: Layout, tiles: Iterable<[number, number]>, dir: 1 | -1)
   return set.length ? withChanges(l, { tiles: set }) : l;
 }
 
-/** A new object of a kind at a tile (its footprint's back-left), facing f, its variant s (the kind's first). */
+/** A new object of a kind at a tile (its footprint's back-left), facing f, its variant s (the kind's first). A kind of
+ *  one on the island (a visitors' spot) moves the one there instead. */
 export function place(l: Layout, k: string, c: number, r: number, f: Facing, s: string | undefined, at: number): { layout: Layout; id: string } | null {
   const def = kindDef(k);
   if (!def) return null;
-  const id = newObjId(at);
+  // (the latest of its kind: the one in force, should two phones each have put one down)
+  const id = (def.one && [...l.objects.values()].filter((o) => o.k === k).map((o) => o.id).sort().pop()) || newObjId(at);
   const o: Obj = { id, k, x: c, z: r, f: def.turns ? f : (f % 2) as Facing, ...((s ?? def.variants?.[0]) ? { s: s ?? def.variants![0] } : {}) };
   if (!inGrid(l, o)) return null;
   return { layout: withChanges(l, { set: [o] }), id };

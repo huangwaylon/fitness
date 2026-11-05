@@ -3,12 +3,13 @@
 // record keeps whatever the members save; the phones walk what nav.ts derives from it.
 import { GRID, isWater, kindOf, tierOf, idx, onGrid, type Kind } from './grid.ts';
 import { doorOf, footOf, objMid, objTiles, originOf, type Layout, type Obj } from './model.ts';
-import { kindDef } from './catalog.ts';
+import { isMarker, kindDef } from './catalog.ts';
+import { markerSpot } from './spots.ts';
 import { HOME_IDS } from './homes.ts';
 import { blockBox, navOf, reachable, type LayoutNav } from './nav.ts';
 
 type IssueCode =
-  | 'off-land' | 'on-water' | 'overlap' | 'not-grass' | 'split' | 'stairs' | 'bridge' | 'door' | 'goal' | 'home' | 'unreachable' | 'pocket' | 'water-diagonal' | 'water-edge';
+  | 'off-land' | 'on-water' | 'overlap' | 'not-grass' | 'split' | 'stairs' | 'bridge' | 'door' | 'goal' | 'home' | 'unreachable' | 'pocket' | 'water-diagonal' | 'water-edge' | 'visitor-spot';
 export interface Issue {
   code: IssueCode;
   /** An error breaks something (a walk, a door, a goal); a warning only looks wrong. */
@@ -86,11 +87,11 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
   // overlaps: solid things never share ground; a flower never stands in a solid thing
   for (let i = 0; i < objs.length; i++) {
     const a = objs[i];
-    if (a.k === 'spot') continue;
+    if (a.k === 'spot' || isMarker(a.k)) continue;
     const ba = standBox(layout, a);
     for (let k = i + 1; k < objs.length; k++) {
       const b = objs[k];
-      if (b.k === 'spot' || (!solid(a) && !solid(b))) continue;
+      if (b.k === 'spot' || isMarker(b.k) || (!solid(a) && !solid(b))) continue;
       // a flower may grow by stairs or a bridge's end: a structure clashes only with what blocks, or another structure
       const sa = a.k === 'bridge' || a.k === 'stairs', sb = b.k === 'bridge' || b.k === 'stairs';
       if ((sa && !sb && !kindDef(b.k)?.block) || (sb && !sa && !kindDef(a.k)?.block)) continue;
@@ -139,6 +140,13 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     if (o.k !== 'spot') continue;
     const [x, z] = objMid(layout, o);
     if (!reachable(nav, x, z)) add('unreachable', 'error', objTiles(layout, o), [o.id], 'ばしょまで いけない', `The spot (${o.s}) can't be reached`);
+  }
+  // the visitors' spots: where they can stand now (else the island's own spot: a warning, nothing breaks)
+  for (const k of ['plaza', 'beach-spot'] as const) {
+    const m = markerSpot(layout, k), o = m && layout.objects.get(m.id);
+    if (!o || m.at) continue;
+    const def = kindDef(k)!;
+    add('visitor-spot', 'warn', objTiles(layout, o), [o.id], `${def.ja}に たてない（いつもの ばしょに たつよ）`, `Nobody can stand at the ${def.en.toLowerCase()} (the usual spot instead)`);
   }
   // pockets: land nobody can walk to (a tile whose every walkable cell is off the main region)
   const pocket: [number, number][] = [];

@@ -4,7 +4,7 @@
 // listed: a home of NH's parts (home.ts), the bridges and stairs (structure.ts), the bulletin board (its DOM node's
 // model), a named spot (never drawn), a seasonal spot out of its season.
 import { art } from '#lib/art.ts';
-import { kindDef } from '#lib/layout/catalog.ts';
+import { isMarker, kindDef } from '#lib/layout/catalog.ts';
 import type { Layout } from '#lib/layout/model.ts';
 import { WHO_OF_HOME } from '#lib/layout/homes.ts';
 import { worldOf } from '../island/layoutWorld.ts';
@@ -42,7 +42,7 @@ export function phoneDays(layout: Layout, year = 2026): (Day & { date: string })
 
 /** Drawn by something else than placeObjects' instances, or never drawn. */
 function elsewhere(layout: Layout, id: string, k: string, day: Day): boolean {
-  if (k === 'spot' || k === 'stairs' || k === 'board') return true;
+  if (k === 'spot' || k === 'stairs' || k === 'board' || isMarker(k)) return true;
   if (k === 'bridge') return !!day.structures;
   if (k === 'home') return layout.homes[WHO_OF_HOME[id] ?? 'A'].m !== 'campsite';
   if (k === 'beach-chair' || k === 'sandcastle' || k === 'snowboy') return !day.pieces?.some((p) => p.id === id);

@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'vitest';
 import { defaultLayout, extentOf, layoutOf, objMid, objTiles, withChanges, type Layout } from './model.ts';
-import { daySpots, openGrass, stageOf, washedUp } from './spots.ts';
+import { beachOk, daySpots, markerOf, openGrass, plazaOk, stageOf, washedUp } from './spots.ts';
+import { validate } from './validate.ts';
 import { navOf, reachable } from './nav.ts';
 import RECORD from './record-2026-11-03.json' with { type: 'json' };
 import { layoutOpOf, mergeLayout } from '#lib/contract/layout.ts';
 import { migratedId, migrationOps } from './migrate.ts';
-import { codeOf, tileAt } from './grid.ts';
+import { codeOf, tileAt, tileMid } from './grid.ts';
 import type { LayoutEntry } from '#lib/contract/layout.ts';
 
 const l = defaultLayout();
@@ -89,6 +90,58 @@ describe('the visitors’ stage and Gulliver’s beach, from the layout (spots.t
         expect(p[1]).toBeLessThan(extentOf(g).shore + 90);
       }
     }
+  });
+});
+
+describe('the visitors’ spots: the members’ marks (spots.ts markerSpot)', () => {
+  const auto = stageOf(l)!, [ac, ar] = tileAt(auto[0], auto[1]);
+  // a tile the plaza may go on, well away from the usual spot; one more for a move
+  const ok = openGrass(l).filter(([c, r]) => plazaOk(l, c, r) && Math.hypot(c - ac, r - ar) > 4);
+  const [pc, pr] = ok[0], [qc, qr] = ok.find(([c, r]) => Math.hypot(c - pc, r - pr) > 4)!;
+  const mark = (g: Layout, id: string, k: string, x: number, z: number) => withChanges(g, { set: [{ id, k, x, z, f: 0 }] });
+  test('the plaza: they stand on it, it moves them, the day’s weeds and fossils keep off it; a mark gone, or nobody able to stand there, the usual spot', () => {
+    const bad: string[] = [];
+    const want = (what: string, got: unknown, exp: unknown) => JSON.stringify(got) === JSON.stringify(exp) || bad.push(`${what}: ${JSON.stringify(got)} ≠ ${JSON.stringify(exp)}`);
+    const marked = mark(l, 'o1', 'plaza', pc, pr);
+    want('on it', stageOf(marked), tileMid(pc, pr));
+    want('every phone', stageOf(mark(defaultLayout(), 'o1', 'plaza', pc, pr)), tileMid(pc, pr));
+    want('moved', stageOf(mark(marked, 'o1', 'plaza', qc, qr)), tileMid(qc, qr));
+    want('gone', stageOf(withChanges(marked, { remove: ['o1'] })), auto);
+    want('takes no ground', openGrass(marked), openGrass(l));
+    want('no issue', validate(marked).filter((i) => i.code === 'visitor-spot').length, 0);
+    for (const [x, z] of [...daySpots(marked, '2026-11-04', 'island-fund').lawn, ...daySpots(marked, '2026-11-04', 'island-fund').dig])
+      if (Math.hypot(x - tileMid(pc, pr)[0], z - tileMid(pc, pr)[1]) <= 30) bad.push(`a weed or a fossil at ${x},${z}`);
+    // a well put on it, or beside it: the usual spot (of the layout with the well), and the editor's warning
+    for (const [dx, why] of [[0, 'on it'], [1, 'beside it']] as const) {
+      const walled = mark(marked, 'o2', 'brick-well', pc + dx, pr);
+      want(`a well ${why}`, stageOf(walled), stageOf(withChanges(walled, { remove: ['o1'] })));
+      want(`a well ${why}: the warning`, validate(walled).filter((i) => i.code === 'visitor-spot').map((i) => [i.level, i.ids]), [['warn', ['o1']]]);
+      want(`a well ${why}: no overlap`, validate(walled).filter((i) => i.code === 'overlap').length, 0);
+    }
+    // on the water, on sand: never
+    for (const [c, r] of [[pc, pr], [pc, pr + 1]] as const) if (plazaOk(withChanges(l, { tiles: [[c, r, codeOf('pond', l.tier(c, r))]] }), pc, pr)) bad.push(`water at ${c},${r}`);
+    // two put down at once (two phones): the later one
+    want('the later', markerOf(mark(marked, 'o0', 'plaza', qc, qr), 'plaza')?.id, 'o1');
+    expect(bad).toEqual([]);
+  });
+  test('Gulliver’s: he lies on it every day, the dated pick when it’s gone or off the sand', () => {
+    const bad: string[] = [];
+    const sand: [number, number][] = [];
+    for (let r = 0; r < 60; r++) for (let c = 0; c < 20; c++) if (beachOk(l, c, r)) sand.push([c, r]);
+    const [bc, br] = sand[0] ?? [-1, -1];
+    const days = ['2026-11-02', '2026-11-03', '2026-11-04', '2026-11-05'];
+    const g = mark(l, 'o3', 'beach-spot', bc, br);
+    for (const d of days) {
+      if (JSON.stringify(washedUp(g, d, 'island-fund')) !== JSON.stringify(tileMid(bc, br))) bad.push(`${d}: not on it`);
+      // on the grass (the plaza's tile): the dated pick, as without it
+      if (JSON.stringify(washedUp(mark(l, 'o3', 'beach-spot', pc, pr), d, 'island-fund')) !== JSON.stringify(washedUp(l, d, 'island-fund'))) bad.push(`${d}: off the sand`);
+    }
+    // the plaza is the others': it never moves him, his never moves them
+    if (JSON.stringify(stageOf(g)) !== JSON.stringify(auto)) bad.push('his moved the stage');
+    expect([sand.length > 0, bad]).toEqual([true, []]);
+  });
+  test('an op of the new kinds passes the contract as it is (no relay change; an older app keeps it as a thing it doesn’t know)', () => {
+    expect([layoutOpOf({ sc: 'o', id: 'o1', at: 1.8e12, k: 'plaza', x: 9, z: 30, f: 0 }), layoutOpOf({ sc: 'o', id: 'o2', at: 1.8e12, k: 'beach-spot', x: 9, z: 3, f: 0 })].map((o) => o?.k)).toEqual(['plaza', 'beach-spot']);
   });
 });
 

@@ -6,7 +6,7 @@
 // sends one (the record refuses its outdoor ops anyway); an island where it already has an op (moved, or placed here
 // before) is left as it is.
 import { isVoid, resetAt, type LayoutEntry, type LayoutOp } from '#lib/contract/layout.ts';
-import { KIND_LIST } from './catalog.ts';
+import { isMarker, KIND_LIST } from './catalog.ts';
 import { GRID, PATHS, isWater, kindOf, tierOf, idx, onGrid } from './grid.ts';
 import { defaultLayout, doorOf, layoutOf, objMid, objTiles, withChanges, type Layout, type Obj } from './model.ts';
 import { validate } from './validate.ts';
@@ -45,7 +45,7 @@ function freeSpot(l: Layout, o: Obj, way: Way): Spot | null {
   const taken = new Set<string>();
   const bloom = new Map<string, string>();
   for (const p of without.objects.values()) {
-    if (p.k === 'spot') continue;
+    if (p.k === 'spot' || isMarker(p.k)) continue;
     for (const [c, r] of objTiles(without, p)) (flowers && p.k === 'flower' ? bloom.set(`${c},${r}`, p.id) : taken.add(`${c},${r}`));
   }
   const ground = (c: number, r: number) => (onGrid(c, r) ? l.codes[idx(c, r)] : -1);
