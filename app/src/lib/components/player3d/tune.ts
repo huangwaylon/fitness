@@ -42,11 +42,14 @@ export const PLAYER_MOUTH: Readonly<Record<number, number>> = { 0: 0, 1: 7, 2: 8
 /** poses.ts fish's rod arm: Arm_1_R x, y, z (ROD_X, 0.25, ARMS - 0.55) and Arm_2_R y. */
 const VILLAGER_FISH = [-1.05, 0.25, 1.22 - 0.55, 0.75] as const;
 const FISH_ARM: readonly [V3, V3] = [[-0.35, 0.55, 1.1], [0, 1.35, 0]];
+/** (in place: poses.ts base makes each frame's pose afresh) */
 const playerPose = (st: State, p: Pose): Pose => {
   if (st !== 'fish') return p;
   const a1 = p.j.Arm_1_R ?? [0, 0, 0];
   // (the breath's bob on the arm kept)
-  return { ...p, j: { ...p.j, Arm_1_R: [FISH_ARM[0][0] + (a1[0] - VILLAGER_FISH[0]), FISH_ARM[0][1], FISH_ARM[0][2]], Arm_2_R: FISH_ARM[1] } };
+  p.j.Arm_1_R = [FISH_ARM[0][0] + (a1[0] - VILLAGER_FISH[0]), FISH_ARM[0][1], FISH_ARM[0][2]];
+  p.j.Arm_2_R = FISH_ARM[1];
+  return p;
 };
 
 /** A villager face's cell → the player's frame: the resting mouth (cell 0) is the look's own `rest` frame, but asleep
@@ -141,14 +144,36 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
     if (b) arms[n] = jOf(b);
   }
   const hw = new Vector3(), ht = new Vector3();
+  // the hand and the head from the joint they hang from (the chest), by their joints' own turns alone: no world
+  // matrices (each check climbed the whole scene twice, the arm's fingers and tool updated besides)
+  const chainFrom = (top: Object3D, to: Object3D | undefined): Object3D[] | null => {
+    const out: Object3D[] = [];
+    for (let n: Object3D | null = to ?? null; n; n = n.parent) {
+      if (n === top) return out.reverse();
+      out.push(n);
+    }
+    return null;
+  };
+  let chest: Object3D | null = null;
+  for (let n: Object3D | null = head?.parent ?? null; n && !chest; n = n.parent) if (chainFrom(n, bones.get('Hand_L'))) chest = n;
+  const toHead = chest && head ? chainFrom(chest, head) : null;
+  const toHand = { L: chest ? chainFrom(chest, bones.get('Hand_L')) : null, R: chest ? chainFrom(chest, bones.get('Hand_R')) : null };
+  const hm = new Matrix4(), headIn = new Matrix4();
+  /** The head's frame from the chest's, this pose's (once an after()). */
+  const headNow = () => {
+    hm.identity();
+    for (const b of toHead!) hm.multiply((b.updateMatrix(), b.matrix));
+    headIn.copy(hm).invert();
+  };
   /** How far inside the head a hand's middle is (< 1 inside; the mitt ~0.75 round its middle). */
   const inside = (side: 'L' | 'R') => {
-    const w = bones.get(`Wrist_${side}`), h = bones.get(`Hand_${side}`);
-    if (!w || !h || !head || !hasHead) return 9;
-    w.getWorldPosition(hw);
-    h.getWorldPosition(ht);
-    hw.lerp(ht, 0.5);
-    head.worldToLocal(hw).sub(headC);
+    const c = toHand[side];
+    if (!c || c.length < 2 || !toHead || !hasHead) return 9;
+    hm.identity();
+    for (let i = 0; i < c.length - 1; i++) hm.multiply((c[i].updateMatrix(), c[i].matrix));
+    hw.setFromMatrixPosition(hm);
+    ht.setFromMatrixPosition(hm.multiply((c[c.length - 1].updateMatrix(), c[c.length - 1].matrix)));
+    hw.lerp(ht, 0.5).applyMatrix4(headIn).sub(headC);
     const m = 0.9;
     return Math.hypot(hw.x / (headR.x + m), hw.y / (headR.y + m), hw.z / (headR.z + m));
   };
@@ -177,24 +202,22 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
     }
     // the hands out of the head: the upper arm swung out about the forward axis till the hand clears, then the elbow
     // unbent
-    if (head && hasHead) {
+    if (toHead && hasHead) {
+      headNow();
       for (const side of ['L', 'R'] as const) {
         const a1 = arms[`Arm_1_${side}`], a2 = arms[`Arm_2_${side}`];
         if (!a1 || !a2) continue;
-        a1.bone.updateMatrixWorld(true);
         if (inside(side) >= 1) continue;
         const v1 = arm1[side], v2 = pose.j[`Arm_2_${side}`] ?? [0, 0, 0], out = side === 'L' ? -1 : 1;
         let dz = 0;
         while (dz < 0.9 && inside(side) < 1) {
           dz += 0.06;
           set(a1, [v1[0], v1[1], v1[2] + out * dz]);
-          a1.bone.updateMatrixWorld(true);
         }
         let k = 1;
         while (k > 0.2 && inside(side) < 1) {
           k -= 0.08;
           set(a2, [v2[0] * k, v2[1] * k, v2[2] * k]);
-          a2.bone.updateMatrixWorld(true);
         }
       }
     }
