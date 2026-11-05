@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Relayed } from '#lib/sync/live-protocol.ts';
+import type { Relayed } from '#lib/contract/live-protocol.ts';
 import { where } from './where.svelte.ts';
 
 const tent = (inside: boolean) => ({ v: 2, kind: 'tent', in: inside, who: 'B', t: 1 }) as unknown as Relayed;

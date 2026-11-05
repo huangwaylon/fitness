@@ -11,7 +11,7 @@
   //   <SayPicker scene={el} anchor={buttonEl} onpick={(text) => …} onclose={(e) => …} />
   import { flushSync, onMount } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
-  import { cleanSay, SAY_MAX } from '#lib/sync/live-protocol.ts';
+  import { cleanSay, SAY_MAX } from '#lib/contract/live-protocol.ts';
   import { onKeyboardInset, readKeyboardInset } from '../ui/keyboardInset.svelte.ts';
   import { EDGE } from './placement.ts';
   import { recentSays } from './say.ts';

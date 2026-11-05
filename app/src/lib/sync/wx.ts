@@ -2,7 +2,7 @@
 // the relay's `wx` (sync/live.ts) kept in localStorage (`island.wx`), so a phone opening offline still has the hours
 // it was sent (up to 36 h ahead). The island reads it through components/island/weatherNow.svelte.ts. Plain TS.
 import { LIVE, localKV, readJson, writeJson } from './storage.ts';
-import { wxOf, type Wx } from './live-protocol.ts';
+import { wxOf, type Wx } from '../contract/live-protocol.ts';
 
 let held: Wx | null | undefined;
 const subs = new Set<(w: Wx | null) => void>();

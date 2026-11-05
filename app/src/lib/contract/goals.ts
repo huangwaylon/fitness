@@ -1,7 +1,7 @@
 // Every goal the app keeps (docs/design.md "Goals in place", docs/decisions.md "Goal directions"): one entry per metric
 // charted in けんこう or ごはん's グラフ, the single source for its `pref` key, which way it points (at least / at most /
 // near a value), the range and grid the record takes, how its history is kept, who sees it and its default. The
-// record (model/record.ts, relay/src/store.ts), the model (model/state.ts), the guest's rules (contract/guest.ts) and
+// record (contract/record.ts, relay/src/store.ts), the model (model/state.ts), the guest's rules (contract/guest.ts) and
 // the screens' editors (components/health/goals.ts) all read it. Pure, relative imports only (the relay imports it).
 
 /**

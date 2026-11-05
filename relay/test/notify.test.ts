@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { parseNotice } from '../../app/src/lib/sync/live-protocol.ts';
+import { parseNotice } from '../../app/src/lib/contract/live-protocol.ts';
 import { NOTIFY_LABEL, NOTIFY_WINDOW_MS, notifySecret, notifySig, verifyNotify } from '../src/notify.ts';
 
 const KEY_A = 'a1'.repeat(16);

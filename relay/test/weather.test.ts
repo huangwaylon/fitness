@@ -4,7 +4,7 @@
 // fake fetch and a fixed clock.
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { wxOf, type Wx } from '../../app/src/lib/sync/live-protocol.ts';
+import { wxOf, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { BACKOFF_MS, WX_EMPTY, changed, due, fetchTick, fixture, fold, mapHour, mapHours, omUrl, parseOpenMeteo, served, timeline, wxHealth, type FetchLike, type Hour, type WxState } from '../src/weather.ts';
 
 const DIR = `${import.meta.dirname}/fixtures/open-meteo`;

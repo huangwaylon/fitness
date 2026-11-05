@@ -1,6 +1,6 @@
 // Folder boundaries: each top-level folder of src/lib may import only the folders on its allow-list,
 // so the direction contract/time → config/scoring/model → sync → store → ui-state → components holds, and nothing
-// under lib imports a route. A new edge has to be added here on purpose.
+// under lib imports a route. A new edge has to be added here on purpose. The relay (relay/) imports only contract/.
 import { describe, expect, it } from 'vitest';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -102,6 +102,33 @@ describe('src/lib folder boundaries', () => {
   });
 });
 
+describe('the relay boundary', () => {
+  it('relay/ (its code, tests and scripts) imports from the app only contract/, and contract/ reaches only itself, types.ts and random.ts', () => {
+    const RELAY = resolve(LIB, '../../../relay');
+    const APP = resolve(LIB, '../..');
+    const walk = (d: string): string[] => readdirSync(d).flatMap((f) => {
+      const p = join(d, f);
+      return statSync(p).isDirectory() ? (f === 'node_modules' ? [] : walk(p)) : /\.ts$/.test(f) ? [p] : [];
+    });
+    const seen: string[] = [];
+    const bad: string[] = [];
+    for (const f of ['src', 'test', 'scripts'].flatMap((d) => walk(join(RELAY, d))))
+      for (const [, spec] of readFileSync(f, 'utf8').matchAll(/(?:from|import)\s*\(?\s*['"]([^'"]+)['"]/g)) {
+        if (!spec.startsWith('.')) continue;
+        const target = fileOf(resolve(dirname(f), spec));
+        if (!target.startsWith(`${APP}/`)) continue;
+        seen.push(target);
+        if (!target.startsWith(join(LIB, 'contract/'))) bad.push(`${relative(RELAY, f)} → ${relative(APP, target)}`);
+      }
+    expect(seen.length).toBeGreaterThan(10); // the scan found the relay's imports
+    expect(bad).toEqual([]);
+    // what the relay bundles through the contract
+    const ok = (f: string) => f.startsWith(join(LIB, 'contract/')) || f === join(LIB, 'types.ts') || f === join(LIB, 'random.ts');
+    const reached = new Set(seen.flatMap((f) => [f, ...reachable(f)]));
+    expect([...reached].filter((f) => !ok(f)).map((f) => relative(APP, f))).toEqual([]);
+  });
+});
+
 describe('import specifiers', () => {
   it('are all understood by this scan (relative, #lib/, $lib/, a package or Kit)', () => {
     expect(unknown).toEqual([]);
@@ -137,7 +164,7 @@ describe('かいがら never mix with ベル', () => {
     const economy = [join(LIB, 'model/bells.ts'), ...readdirSync(join(LIB, 'scoring')).filter((f) => /\.ts$/.test(f) && !/\.test\.ts$/.test(f)).map((f) => join(LIB, 'scoring', f))];
     // (the model's State reads the shop's rows as it reads a tally's: model/state.ts → contract/shop.ts, its shapes only)
     expect(economy.filter((r) => reachable(r).has(shop[0])).map((r) => relative(LIB, r))).toEqual([]);
-    const bells = [...economy, join(LIB, 'config/rules.ts')];
+    const bells = [...economy, join(LIB, 'config/rules.ts'), join(LIB, 'contract/rules.ts')];
     expect(shop.filter((r) => bells.some((f) => reachable(r).has(f))).map((r) => relative(LIB, r))).toEqual([]);
   });
 });

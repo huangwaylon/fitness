@@ -33,7 +33,7 @@
   import { recordFind, recordGoods } from '#lib/store/actions.ts';
   import { world } from '#lib/store/world.svelte.ts';
   import { caught, taken } from '#lib/sync/world-day.ts';
-  import type { Drop } from '#lib/sync/live-protocol.ts';
+  import type { Drop } from '#lib/contract/live-protocol.ts';
   import { VILLAGER, u } from './scene.ts';
   import { OVER, useWorld } from './camera.svelte.ts';
   import { sceneSfx } from './sceneTaps.ts';

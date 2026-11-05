@@ -6,7 +6,7 @@
 import { isLogId, isToken, LOG_ACTIONS, LOG_STATUS } from '../../app/src/lib/contract/log.ts';
 import { isRec } from '../../app/src/lib/contract/api.ts';
 import type { StoreCore } from './store.ts';
-import type { Who } from '../../app/src/lib/types.ts';
+import type { Who } from '../../app/src/lib/contract/api.ts';
 
 export interface ReqMeta {
   action: string;

@@ -4,7 +4,7 @@
 // op, which is the record). On the partner's phone it's held: lifted where my finger has it, eased between the
 // updates, not theirs to pick up; silent for SILENT_MS (or the partner gone) and it drops back where the room has it.
 // Plain TS: the relay's send and the clock come in.
-import type { Intent, Relayed, Who } from '#lib/sync/live-protocol.ts';
+import type { Intent, Relayed, Who } from '#lib/contract/live-protocol.ts';
 import type { Facing } from './grid.ts';
 
 type Drag = Extract<Intent, { kind: 'drag' }>;

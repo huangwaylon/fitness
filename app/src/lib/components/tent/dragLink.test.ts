@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Intent, Relayed } from '#lib/sync/live-protocol.ts';
+import type { Intent, Relayed } from '#lib/contract/live-protocol.ts';
 import { DRAG_MS, DragLink, KEEP_MS, SILENT_MS } from './dragLink.ts';
 
 const T0 = 1_793_000_000_000;

@@ -11,7 +11,7 @@ import { isWeatherMode, nextDay, type FindKind, type WeatherMode } from '#lib/co
 import { findKey, findsView } from '#lib/model/finds.ts';
 import { addToTally, dayTallies } from '#lib/model/tally.ts';
 import { localDateAt } from '#lib/time/dates.ts';
-import { shopPrice } from '#lib/config/rules.ts';
+import { shopPrice } from '#lib/contract/rules.ts';
 import { GOALS, isGoalValue, type GoalId } from '#lib/contract/goals.ts';
 import {
   customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,

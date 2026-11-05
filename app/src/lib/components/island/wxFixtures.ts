@@ -3,7 +3,7 @@
 // weather's states need no relay and no particular day. By Tokyo's hour of each: `rain-pm` rain 12:00–18:00,
 // `clears` rain until 14:00 then fine (a rainbow), `typhoon` a downpour all day, `snow`, `fog` foggy mornings
 // (05:00–09:00), `cloudy` overcast, `stale` a timeline fetched 37 hours ago (it no longer serves: the seeded day). Pure.
-import type { Wx, WxSky } from '#lib/sync/live-protocol.ts';
+import type { Wx, WxSky } from '#lib/contract/live-protocol.ts';
 
 export const WX_FIXTURES = ['rain-pm', 'clears', 'typhoon', 'snow', 'fog', 'cloudy', 'stale'] as const;
 export type WxFixture = (typeof WX_FIXTURES)[number];

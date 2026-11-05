@@ -1,7 +1,10 @@
 # Island Fund: backend
 
 The record (a Durable Object's SQLite on the relay) and the client's sync. The contract (tables, row tuples, reply
-shapes, bounds) is `app/src/lib/contract/api.ts`, shared by the record (`relay/src/store.ts`) and the client.
+shapes, bounds) is `app/src/lib/contract/api.ts`, shared by the record (`relay/src/store.ts`) and the client. The relay
+imports from the app only `app/src/lib/contract/` (the record's rules `record.ts`, the room's wire `live-protocol.ts`,
+the log's schema `log.ts`, the ops' shapes), and the contract reaches only itself, `types.ts` and `random.ts`
+(`deps.test.ts` "the relay boundary").
 
 ## Overview
 
@@ -27,7 +30,7 @@ UTC with milliseconds, strictly increasing (all rows of one ingest share it). Da
 ## Events
 
 Exactly the types in `EVENT_TYPES`; another type or a bad shape is refused with `bad_request`. `data` is an object,
-≤ 20,000 characters as JSON. The server checks shapes (and a spend's item and price, `SHOP` in `config/rules.ts`);
+≤ 20,000 characters as JSON. The server checks shapes (and a spend's item and price, `SHOP` in `contract/rules.ts`);
 wallet cover is a read-time rule in the model, which ignores an invalid row.
 
 | type | data | Rules |
@@ -259,7 +262,7 @@ an ack without a row (a duplicate) is followed by a `fresh` re-read 1.5 s later.
   CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size
   only and hands the body to the object, which parses it, checks the key and answers (the Free plan gives a Worker ~10
   ms of CPU per request; the object far more). Rate limit 120 per key per minute.
-- **Rules** (`app/src/lib/model/record.ts`): the shape checks (`validEventData`); `at` =
+- **Rules** (`app/src/lib/contract/record.ts`): the shape checks (`validEventData`); `at` =
   max(now, last + 1 ms), one per ingest, one per event; an event id once, forever (`ids`: a late retry of a replaced
   event is still a duplicate); **slots**, a later event of a slot replacing it: a
   tally and an island day per sender and day, a cosmetic pref (`locale`, `villagerName`, `villager`, `look`, `savedLooks`) or a latest-only goal (the からだ and meal-log goals) per
@@ -312,7 +315,7 @@ catches an offline phone up.
   `store/where.svelte.ts`), or
   closes 4001. No hello within 10 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
   (4002, no presence flicker). At most 8 sockets.
-- **Protocol** (`app/src/lib/sync/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
+- **Protocol** (`app/src/lib/contract/live-protocol.ts`, imported by both sides and checked by the same parsers): JSON,
   `v: 3` (v2, the rolling-log world, with the guest: `who` may be `G`, the welcome's `here`, a high-five's `to`; the
   relay still speaks `v: 2` and `v: 1` to an older phone, answering each socket in the version of its hello, and a phone
   before v3 never hears of the guest; a walk crosses between v2 and v3, never from v1), ≤ 256 bytes (an intent ~60–100; a `replay` ≤ 16,000). Intents: `walk {to: node id | [x, z], at?,

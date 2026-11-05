@@ -2,7 +2,7 @@
 // Durable Object, the island room, which relays each person's intents to the other. The room uses the WebSocket
 // Hibernation API, so an idle connection costs nothing; a phone connects only while the app is on screen.
 import { DurableObject } from 'cloudflare:workers';
-import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/sync/live-protocol.ts';
+import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, type Held, type Kept, type Meta } from './room.ts';

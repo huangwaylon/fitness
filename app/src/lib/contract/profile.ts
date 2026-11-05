@@ -1,6 +1,6 @@
 // A person's profile (せってい → プロフィール, docs/design.md "Profile"; docs/backend.md "Events" `pref`): their sex, their
 // birth date and the BMI standard their category is read by, prefs like the goals. What the record accepts, shared by
-// the record (model/record.ts validEventData) and the model (model/state.ts). Private: a member's are the two members'
+// the record (contract/record.ts validEventData) and the model (model/state.ts). Private: a member's are the two members'
 // alone and the guest's the guest's alone (contract/guest.ts profileSeen). Pure, relative imports only (the relay
 // imports it).
 import { isLocalDate } from './api.ts';

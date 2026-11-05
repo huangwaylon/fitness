@@ -3,7 +3,7 @@
 // Only my own words (じぶんで かく; no presets): the last RECENT_MAX are kept on this phone as quick picks. Plain
 // TS: the storage and the clock come in.
 import { DEVICE, localKV, readJson, writeJson, type KV } from '#lib/sync/storage.ts';
-import { cleanSay } from '#lib/sync/live-protocol.ts';
+import { cleanSay } from '#lib/contract/live-protocol.ts';
 
 /** Who a balloon stands by: a villager's element on the island, or (a home's room, its villagers in 3D) its box on
  *  screen worked out each time it's asked, gone (`isConnected` false) once the villager is. */

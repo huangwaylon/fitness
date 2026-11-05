@@ -8,7 +8,7 @@
 //   decor.set(p) / decor.remove(id) a change of mine: merged, kept, sent (the relay now, the sheet's queue)
 //   decor.on(fn)                    the partner's changes as they arrive (`live`: it just happened)
 import { DECOR_MAX, decorLayout, decorOpOf, mergeDecor, type DecorEntry, type DecorOp, type Placed } from '#lib/contract/decor.ts';
-import type { Relayed, Who } from '#lib/sync/live-protocol.ts';
+import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { world } from './world.svelte.ts';

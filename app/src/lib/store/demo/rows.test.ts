@@ -7,7 +7,7 @@ import { provisionalMs, reduce } from '#lib/model/state.ts';
 import { economyWeeks, weekBells, weekSum } from '#lib/model/bells.ts';
 import { bellsLedger, dayDetail } from '#lib/model/history.ts';
 import { addDays } from '#lib/time/dates.ts';
-import { shopPrice } from '#lib/config/rules.ts';
+import { shopPrice } from '#lib/contract/rules.ts';
 import { isActivityMetric } from '#lib/contract/api.ts';
 import { customs, foodDay, recipes, setGoal } from '#lib/model/food.ts';
 import { localDateAt } from '#lib/time/dates.ts';

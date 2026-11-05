@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RoomCore, type Meta } from '../../../../relay/src/room.ts';
-import { dayStart, parseServer, tokyoDay, type Intent, type Relayed, type Who } from './live-protocol.ts';
+import { dayStart, parseServer, tokyoDay, type Intent, type Relayed, type Who } from '../contract/live-protocol.ts';
 import { apply, applyRow, canonical, emptyDay, hash, lying, rowOf, taken, takenIds, caught, wishesFor, type DayEvent, type WorldDay } from './world-day.ts';
 
 const KEY_A = 'a1'.repeat(16);

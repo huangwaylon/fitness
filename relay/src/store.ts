@@ -4,7 +4,7 @@
 //
 // - `at` is the record's clock: strictly increasing (max(now, last + 1 ms)), shared by the rows of one ingest.
 // - An event id is accepted once, forever (`ids`: a replaced event's id still dedupes a late retry).
-// - A slot (app model/record.ts eventSlot) holds one event: a later one of the same slot replaces it, so a tally or an
+// - A slot (app contract/record.ts eventSlot) holds one event: a later one of the same slot replaces it, so a tally or an
 //   island day is one row per person and day (a tally's counts the larger of the two rows', entry by entry: they only
 //   grow), a cosmetic pref one per person, a goal one per person and Tokyo day, a decoration one per item, a board
 //   post, a meal entry, a repeat, a recipe and a custom food one per id (each one's latest op).
@@ -15,7 +15,7 @@
 //   the late rows that arrived after `since` (less a margin for the two servers' clocks), so no phone misses one.
 import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
-import { eventSlot, validEventData } from '../../app/src/lib/model/record.ts';
+import { eventSlot, validEventData } from '../../app/src/lib/contract/record.ts';
 import {
   eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec, isWho,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
@@ -25,7 +25,7 @@ import { tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract
 import { isRoomScope, isVoid, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
 import { BOARD_MAX, boardAccept, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
 import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
-import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { verifyNotify } from './notify.ts';
 import { errName } from './log.ts';
 import { scrubMsg } from '../../app/src/lib/contract/log.ts';
@@ -33,7 +33,7 @@ import { keyOwner, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
 import { buyOf, sellOf, shopLedger, shopRefusal, type ShopRow } from '../../app/src/lib/contract/shop.ts';
 import { isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
-import type { PersonId, Who } from '../../app/src/lib/types.ts';
+import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 
 type Rec = Record<string, unknown>;
 type Bind = string | number | null;

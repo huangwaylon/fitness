@@ -1,8 +1,11 @@
 // Calendar helpers. Asia/Tokyo is UTC+9 with no DST, so a fixed offset is exact.
 import type { LocalDate, WeekKey } from '#lib/types.ts';
 import { DATE_RE } from '../contract/api.ts';
+import { ZONE_OFFSET_MS, localDateAt, ymd } from '../contract/tokyo.ts';
 
-export const ZONE_OFFSET_MS = 9 * 60 * 60 * 1000;
+// (the Tokyo day of an instant is the contract's: the record checks dates with it)
+export { ZONE_OFFSET_MS, localDateAt };
+
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 /**
@@ -65,13 +68,6 @@ export function instantOrNull(v: unknown): number | null {
   }
 }
 
-function ymd(d: Date): LocalDate {
-  const y = String(d.getUTCFullYear()).padStart(4, '0');
-  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(d.getUTCDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
-
 // The model does calendar arithmetic on the same few thousand dates over and over (weeks × days × cutoffs): memoize
 // the pure date → ms and date → week steps. Bounded by the dates the app ever sees.
 const DATE_MS = new Map<string, number>();
@@ -86,15 +82,6 @@ export function dateMs(date: LocalDate): number {
     DATE_MS.set(date, (ms = Date.UTC(y, m - 1, d)));
   }
   return ms;
-}
-
-const LOCAL_DAY = new Map<number, LocalDate>();
-/** Epoch ms → local date in Asia/Tokyo. */
-export function localDateAt(ms: number): LocalDate {
-  const day = Math.floor((ms + ZONE_OFFSET_MS) / DAY_MS);
-  let d = LOCAL_DAY.get(day);
-  if (d === undefined) LOCAL_DAY.set(day, (d = ymd(new Date(day * DAY_MS))));
-  return d;
 }
 
 /** ISO timestamp (with offset) → local date in Asia/Tokyo. */

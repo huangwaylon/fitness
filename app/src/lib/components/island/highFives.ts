@@ -3,7 +3,7 @@
 // no news. Kept per Tokyo day in localStorage (sync/storage.ts SCENE.highFivesGot), by the tap's time on the relay's
 // clock (its identity). Plain TS: the storage comes in.
 import { SCENE, localKV, readJson, writeJson, type KV } from '#lib/sync/storage.ts';
-import { tokyoDay, type Who } from '#lib/sync/live-protocol.ts';
+import { tokyoDay, type Who } from '#lib/contract/live-protocol.ts';
 
 /** A high-five heard within this long of its tap (ms) plays as the moment (the two face each other, the sparkle, the
  *  hearts); older (held while this phone was closed) it's the banner and the hearts only. */

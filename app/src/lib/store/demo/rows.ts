@@ -13,7 +13,7 @@ import { provisionalMs } from '#lib/model/state.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 import { maxAt } from '#lib/model/snapshot.ts';
 import { mulberry32 } from '#lib/random.ts';
-import { shopPrice } from '#lib/config/rules.ts';
+import { shopPrice } from '#lib/contract/rules.ts';
 import { WEEKDAYS, type FoodSnap, type Meal } from '#lib/contract/food.ts';
 
 const DEMO_WEEKS_BACK = 8;

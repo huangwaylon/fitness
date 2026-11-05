@@ -2,7 +2,7 @@
 // the room's scope); the partner's heard; the sheet's rows merged in; the island's decorations never mixed in.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
-import type { Intent, Relayed } from '#lib/sync/live-protocol.ts';
+import type { Intent, Relayed } from '#lib/contract/live-protocol.ts';
 import type { Live, LiveStatus } from '#lib/sync/live.ts';
 import { TENT_MAX, TENT_WALL, type TentEntry } from '#lib/contract/tent.ts';
 import { tent } from './tent.svelte.ts';

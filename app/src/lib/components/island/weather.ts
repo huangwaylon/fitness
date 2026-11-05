@@ -7,7 +7,7 @@
 // the `real` mode while the phone has a timeline that covers the hour; the seeded one is the fallback and the `game`
 // mode. Pure; the island's state is weatherNow.svelte.ts. Nothing here pays: no ベル.
 import { weighted } from '#lib/random.ts';
-import type { Wx, WxSky } from '#lib/sync/live-protocol.ts';
+import type { Wx, WxSky } from '#lib/contract/live-protocol.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
 import { showAt } from './fireworks.ts';
 import { showerAt, showerNight } from './meteor.ts';

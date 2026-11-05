@@ -6,7 +6,7 @@ import { sceneryTrees, shakeDrop, treeById, wireDrop } from './treeShake.ts';
 import { addDays } from '#lib/time/dates.ts';
 import type { LocalDate } from '#lib/types.ts';
 import { apply, applyRow, emptyDay, lying, rowOf } from '#lib/sync/world-day.ts';
-import { dayStart } from '#lib/sync/live-protocol.ts';
+import { dayStart } from '#lib/contract/live-protocol.ts';
 
 const byId = new Map(ITEMS.map((i) => [i.id, i]));
 const placeable = new Set(Object.values(room.items as Record<string, { cat?: string }>).flatMap((m) => (m.cat ? [m.cat] : [])));

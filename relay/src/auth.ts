@@ -1,7 +1,7 @@
 // Who may connect: the person keys (Worker secrets KEY_A / KEY_B, the members', the same keys the phones use for Apps
 // Script, and KEY_C, the guest's: docs/backend.md#the-guest) and the page origins a browser may open the socket from. The origin check only keeps other sites' pages out; the key is
 // the authentication.
-import type { Who } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Who } from '../../app/src/lib/contract/live-protocol.ts';
 
 export interface Keys {
   KEY_A?: string;

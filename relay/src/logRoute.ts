@@ -11,7 +11,7 @@
 import { originAllowed, sameKey } from './auth.ts';
 import { LOG_BODY_MAX } from '../../app/src/lib/contract/log.ts';
 import { errName, type RelayEvent } from './log.ts';
-import type { Who } from '../../app/src/lib/types.ts';
+import type { Who } from '../../app/src/lib/contract/api.ts';
 
 export interface LogRoom {
   ingest(text: string): Promise<Record<string, unknown>> | Record<string, unknown>;

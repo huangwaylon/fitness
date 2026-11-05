@@ -3,7 +3,7 @@
 // it's due), mapped to the game's skies with dead bands so the sky doesn't flicker, and kept as a 36-hour timeline
 // (live-protocol.ts Wx). An hour is locked once it starts (the next one from :45): every phone that has the timeline
 // shows the same sky at the same hour, whenever it got it. Pure but for `tick`'s fetch, which comes in.
-import { WX_MAX_HOURS, type Wx, type WxSky } from '../../app/src/lib/sync/live-protocol.ts';
+import { WX_MAX_HOURS, type Wx, type WxSky } from '../../app/src/lib/contract/live-protocol.ts';
 
 /** Hours the timeline holds from the current one, and before it. */
 export const WX_HOURS = 36;

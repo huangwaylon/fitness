@@ -10,7 +10,7 @@
 // The other homes' rooms are the same (docs/island-layout.md "Homes"): `rooms.B` うめ's house (`sc: 'u'`), `rooms.G`
 // the guest's (`v`); `rooms.A` is the tent's.
 import { TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_WALL, mergeTent, tentLayout, tentOpOf, type TentEntry, type TentOp, type TentPiece } from '#lib/contract/tent.ts';
-import type { Relayed, Who } from '#lib/sync/live-protocol.ts';
+import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { world } from './world.svelte.ts';

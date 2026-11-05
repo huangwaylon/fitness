@@ -10,7 +10,7 @@
 //   world.onHere(fn)             who else is here now, and each change
 //   world.day                    today's WorldDay (reactive through `world.rev`)
 import { emptyDay, apply, applyRow, rowOf, type Applied, type Claim, type DayEvent, type DayRow, type WorldDay } from '#lib/sync/world-day.ts';
-import { guestMaySend, tokyoDay, type Intent, type Relayed, type Who } from '#lib/sync/live-protocol.ts';
+import { guestMaySend, tokyoDay, type Intent, type Relayed, type Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { dayKey, now } from '#lib/time/clock.ts';

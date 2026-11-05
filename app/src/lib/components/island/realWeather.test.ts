@@ -3,11 +3,11 @@
 // real clear hours, the fallbacks (no timeline, one that no longer covers the hour, one 36 hours old) and the 05:00
 // day; the `?wx=` fixtures; the island-wide mode (`pref weatherMode`); the phone's cache of the timeline.
 import { beforeEach, describe, expect, it } from 'vitest';
-import { parseServer, type Wx } from '#lib/sync/live-protocol.ts';
+import { parseServer, type Wx } from '#lib/contract/live-protocol.ts';
 import { configureStorage, LIVE, type KV } from '#lib/sync/storage.ts';
 import { heldWx, onWx, resetWx, takeWx } from '#lib/sync/wx.ts';
 import { reduce } from '#lib/model/state.ts';
-import { eventSlot, prefTaken } from '#lib/model/record.ts';
+import { eventSlot, prefTaken } from '#lib/contract/record.ts';
 import { guestMayWrite } from '#lib/contract/guest.ts';
 import type { EventRow } from '#lib/contract/api.ts';
 import { addDays } from '#lib/time/dates.ts';

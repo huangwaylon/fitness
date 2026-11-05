@@ -12,8 +12,8 @@
 // coconuts) lies there on both phones, by ids from the day's shakes, until one of us picks it up. Every tree also gives
 // NH's wood, without an axe: a shake knocks a piece out now and then, three a tree a Tokyo day at most (`woodFall`,
 // seeded by the date and the tree's shakes, the same on both phones), put on the island for both (`wd:<tree>:<k>`).
-import type { Drop } from '#lib/sync/live-protocol.ts';
-import { NEST_GAP_MS } from '#lib/sync/live-protocol.ts';
+import type { Drop } from '#lib/contract/live-protocol.ts';
+import { NEST_GAP_MS } from '#lib/contract/live-protocol.ts';
 import type { Put, Shake } from '#lib/sync/world-day.ts';
 import { BUGS, inHours } from './critters.ts';
 import { GOAL_TREES, SCENERY, TREE_H, offBuildingsAt, onBuildingAt, surfaceAt } from './world.ts';

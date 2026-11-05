@@ -10,7 +10,7 @@
 // on every phone, for as long as it's gone (the relay keeps each person's last walk, across days). Plain TS: the relay
 // and the clock come in through `VillagerLink`.
 import { WAKE_MS, actors, along, isRemote, livePos, onOwnMove, onWake, place, setRemote, wake, walkTo, type Facing, type Move } from '../motion/director.svelte.ts';
-import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/sync/live-protocol.ts';
+import { VIA_MAX, type Face, type Intent, type Pt, type Who } from '#lib/contract/live-protocol.ts';
 import { actorOfFor, whoOfFor, type VillagerActor } from '#lib/ui-state/cast.ts';
 import { dist } from '#lib/layout/nav.ts';
 import { SPEED } from './speed.ts';

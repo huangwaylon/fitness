@@ -14,7 +14,7 @@ import { diffLayouts, type LayoutDiff } from '#lib/layout/diff.ts';
 import { migrationOps } from '#lib/layout/migrate.ts';
 import type { Placed } from '#lib/contract/decor.ts';
 import type { HomeStyle } from '#lib/layout/homes.ts';
-import type { Relayed, Who } from '#lib/sync/live-protocol.ts';
+import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { world } from './world.svelte.ts';

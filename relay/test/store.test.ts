@@ -3,7 +3,7 @@
 import { createHmac } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LATE_MARGIN_MS, RATE_PER_MINUTE, STORE_BUILD, StoreCore } from '../src/store.ts';
-import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);

@@ -1,9 +1,9 @@
-// The record's rules (model/record.ts): `prefTaken` agrees with what the model takes, and the slots.
+// The record's rules (contract/record.ts): `prefTaken` agrees with what the model takes, and the slots.
 import { describe, expect, it } from 'vitest';
 import { eventSlot, prefTaken, validEventData } from './record.ts';
-import { DEFAULT_LOOKS } from '../contract/look.ts';
-import { reduce } from './state.ts';
-import type { EventRow } from '../contract/api.ts';
+import { DEFAULT_LOOKS } from './look.ts';
+import { reduce } from '../model/state.ts';
+import type { EventRow } from './api.ts';
 
 describe('prefTaken', () => {
   it('is exactly what the model takes (a pref it ignores leaves the earlier one in force)', () => {

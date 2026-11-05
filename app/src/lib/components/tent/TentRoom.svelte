@@ -49,7 +49,7 @@
   import { sendDecor } from '#lib/store/actions.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
-  import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/sync/live-protocol.ts';
+  import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/contract/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { DEFAULT_FLOOR, DEFAULT_WALL, ITEMS, STARTER, codeOfFind } from './items.ts';
   import { DOOR_IN, HALF, centreOf, nearestFree, resolve as resolveRoom, walkPath, type Pt, type Resolved } from './grid.ts';

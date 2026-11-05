@@ -8,7 +8,7 @@ import { StoreCore } from '../src/store.ts';
 import { RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
 import { keyOwner } from '../src/auth.ts';
 import { notifySecret } from '../src/notify.ts';
-import { CLOSE, type Notice, type ServerMsg } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, type Notice, type ServerMsg } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);
