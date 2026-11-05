@@ -17,7 +17,7 @@ import { LIMITS, shopPrice } from './rules.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from './profile.ts';
 import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
 import { localDateAt } from './tokyo.ts';
-import type { Who } from '../types.ts';
+import type { LocalDate, Who } from '../types.ts';
 
 type Rec = Record<string, unknown>;
 
@@ -34,7 +34,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // the profile's values are checked here (contract/profile.ts: a sex, a birth date 1900 … 10 years ago, a BMI
       // standard, or null), and the look's (contract/look.ts: a whole look, at most 20 コーデ); the other prefs' at read
       // time (prefTaken)
+      // a goal a day keeps may say the phone's Tokyo day it was set on (`day`: goalDay)
       return (PREF_KEYS as readonly unknown[]).includes(d.key) && d.value !== undefined && (!isProfileKey(d.key) || profileValueOk(d.key, d.value, localDateAt(now)))
+        && (d.day === undefined || (isDailyGoalKey(d.key) && isLocalDate(d.day)))
         && (d.key !== 'look' || lookPrefOk(d.value)) && (d.key !== 'savedLooks' || savedLooksOk(d.value));
     case 'harvest':
       return isLocalDate(d.week);
@@ -88,6 +90,24 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
 const FOOD_AHEAD_MS = 24 * 60 * 60 * 1000;
 const atNear = (at: number, now: number): boolean => at <= now + FOOD_AHEAD_MS;
 
+/** Whether `key` is a goal a day keeps (contract/goals.ts history `daily`). */
+const isDailyGoalKey = (key: unknown): boolean => {
+  const id = goalOfKey(key);
+  return id !== null && GOALS[id].history === 'daily';
+};
+
+/**
+ * The Tokyo day a goal a day keeps applies from: its `day` (2026-11-05: the phone's Tokyo day when it was set, so a
+ * goal set at 23:59 that reaches the record after midnight is that day's) when it is within a day of the record's
+ * Tokyo day of `at`, else that day (an older phone's, or one queued offline for longer). The record's slot
+ * (eventSlot) and the model (model/state.ts dailyGoalOn) both read it. @public (model/state.ts)
+ */
+export function goalDay(d: Rec, at: number): LocalDate {
+  const own = localDateAt(at);
+  const day = d.day;
+  return typeof day === 'string' && isLocalDate(day) && (day === own || nextDay(day) === own || day === nextDay(own)) ? day : own;
+}
+
 /** The prefs only the latest of counts (per person); the goals keep their history (`moveGoalOn` prices past days). */
 const LATEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', ...GOAL_IDS.filter((id) => GOALS[id].history === 'latest').map((id) => GOALS[id].key), 'sex', 'birth', 'bmiStd'];
 
@@ -118,7 +138,7 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  * - `tally`, `island`: the sender's day (`date`);
  * - a cosmetic `pref` (`locale`, `villagerName`, `villager`, `look`, `savedLooks`), the profile (`sex`, `birth`, `bmiStd`) or a goal kept as its latest (contract/goals.ts history
  *   `latest`: the body and meal-log goals): its subject and key;
- * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (`at`), so the goal in
+ * - a goal a day keeps (history `daily`: `stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`): its subject, key and the Tokyo day it was made (goalDay: its `day`, else `at`'s), so the goal in
  *   force on each past day stays (a goal applies from the day it's made; the last of a day is the one that counts);
  * - the island's `weatherMode`: one for the island, whoever set it (the last one wins);
  * - a `decor` op: its scope and item id (`decorAccept` / `tentAccept` decide whether it replaces);
@@ -145,7 +165,7 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
     case 'pref':
       if (!prefTaken(d.key, d.value)) return null;
       if (d.key === 'weatherMode') return 'pref|island|weatherMode';
-      return LATEST_PREFS.includes(d.key) ? `pref|${subject}|${d.key}` : `pref|${subject}|${d.key}|${localDateAt(at)}`;
+      return LATEST_PREFS.includes(d.key) ? `pref|${subject}|${d.key}` : `pref|${subject}|${d.key}|${goalDay(d, at)}`;
     default:
       return null;
   }

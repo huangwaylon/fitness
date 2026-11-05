@@ -58,6 +58,18 @@ describe('reduce: events', () => {
     expect(s.prefs).toEqual({ A: { goalBmi: 22.5 }, B: {}, G: {} });
   });
 
+  it("a goal a day keeps applies from its `day` (the phone's Tokyo day, within a day of its row's), else its row's day", () => {
+    const p = (when: string, value: number, day?: string) => ev(when, 'A', 'pref', { key: 'moveGoal', value, ...(day ? { day } : {}) });
+    const s = reduce(rows([
+      // set at 23:59:58 on the phone, stamped 00:00:01 the next day by the record
+      p('2026-11-08T15:00:01.000Z', 450, '2026-11-08'),
+      p('2026-11-08T15:00:30.000Z', 500),
+      // a day two days off: its row's day
+      p('2026-11-09T03:00:00.000Z', 550, '2026-11-07')
+    ]));
+    expect(['2026-11-07', '2026-11-08', WK, '2026-11-10'].map((d) => dailyGoalOn(s, 'A', 'move', d))).toEqual([600, 450, 550, 550]);
+  });
+
   it('pref stepsGoal: a whole 500 steps in 1,000–30,000 per person, in at order; anything else is ignored', () => {
     const goal = (when: string, person: PersonId, value: unknown) => ev(when, person, 'pref', { key: 'stepsGoal', value });
     const s = reduce(rows([
