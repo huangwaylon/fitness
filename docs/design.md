@@ -12,7 +12,7 @@ daily goal) into one shared wallet, spent on two treats: おやつ and 外食. J
 - **Data in:** an iOS Shortcut posts Health's daily totals (steps, exercise minutes, active energy, stand minutes,
   weight, body fat %, BMI, lean body mass) several times a day. **Apple Health is the source of truth:** no health number is entered or fixed in the
   app ([Health data](#health-data)).
-- **Data out:** the PWA (SvelteKit, static on GitHub Pages) fetches the raw rows and computes every number on the
+- **Data out:** the PWA (SvelteKit, static on Cloudflare Pages) fetches the raw rows and computes every number on the
   phone (`lib/model/`, pure functions).
 - **Principles:** zero required taps a day; both people see all data; no notifications (the app is opened by choice;
   [decisions](decisions.md#no-notifications-2026-11-02)); everything always animates

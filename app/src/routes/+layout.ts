@@ -1,4 +1,4 @@
-// Client-rendered PWA: the browser computes the week from the Apps Script snapshot (lib/model).
+// Client-rendered PWA: the browser computes the week from the record's snapshot (lib/model).
 import { loadEnglish, setLocale } from '#lib/i18n/index.ts';
 import { DEVICE, localKV, readJson } from '#lib/sync/storage.ts';
 

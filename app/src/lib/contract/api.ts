@@ -1,22 +1,7 @@
-// The record's tabs and API shapes (docs/backend.md#tabs, #api). Shared by the record (relay/src/store.ts), the sheet's
-// exporter (app/gas/main.ts), the model and the client: row tuples, reply shapes and the validation regexes both sides
-// apply. Dependency-free (type imports only), since it is bundled into apps-script/Code.js.
+// The record's tables and API shapes (docs/backend.md#tables, #api). Shared by the record (relay/src/store.ts), the
+// model and the client: row tuples, reply shapes and the validation regexes both sides apply. Dependency-free (type
+// imports only).
 import type { PersonId, Who } from '../types.ts';
-
-export const TABS = {
-  metrics: ['at', 'person', 'date', 'metric', 'value'],
-  events: ['at', 'person', 'id', 'type', 'data'],
-  uploads: ['at', 'person', 'status', 'bytes', 'error']
-} as const;
-
-export type TabName = keyof typeof TABS;
-
-/** Columns holding numbers; every other column is formatted as plain text so Sheets never turns dates into Dates. */
-export const NUMERIC_COLUMNS: Record<TabName, readonly string[]> = {
-  metrics: ['value'],
-  events: [],
-  uploads: ['bytes']
-};
 
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
 export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy'] as const;
@@ -151,8 +136,9 @@ export type EventRow = [at: string, person: Who, id: string, type: EventType, da
 
 export interface SnapshotRows { metrics: MetricRow[]; events: EventRow[] }
 
-/** `forbidden`: the guest's key asked for something only a member may (an ingest, a buy, a goal: contract/guest.ts). */
+/** `forbidden`: the guest's key asked for something only a member may (an ingest, a buy, a goal: contract/guest.ts). @public (relay/src/store.ts) */
 export type ApiError = 'unauthorized' | 'forbidden' | 'bad_request' | 'too_large' | 'busy' | 'unavailable';
+/** @public (relay/src/store.ts) */
 export type Fail = { ok: false; error: ApiError; detail?: string };
 
 /**
@@ -160,6 +146,6 @@ export type Fail = { ok: false; error: ApiError; detail?: string };
  * is another epoch (the record was rebuilt, or another backend answered), so drop the cache and fetch everything (no `since`).
  */
 export type SnapshotReply = { ok: true; me: Who; now: string; rev: string; rows: SnapshotRows } | Fail;
-/** `build`: hash of the deployed Code.js (`dev` unbundled), to tell which code the deployment runs. `me`: `G` for the
+/** `build`: the record's code (relay/src/store.ts STORE_BUILD), to tell which code the deployment runs. `me`: `G` for the
  *  guest's key. */
 export type WhoamiReply = { ok: true; me: Who; build: string } | Fail;

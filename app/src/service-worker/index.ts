@@ -80,7 +80,7 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // the Apps Script backend: always live
+  if (url.origin !== self.location.origin) return; // the relay (the record, the room): always live
 
   // Network first (a fresh shell points at the current chunks), the cached shell when offline or after 3 s. The
   // response becomes the offline shell only where this version has none (keepShell); off the response's path.

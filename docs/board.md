@@ -130,7 +130,7 @@ interface Proj3 {
   oldest (by `p`). The phones show the same 50.
 - Live: a post goes to the record at once; the record's notice reaches every open phone over the room, which fetch it
   (the room's 256-byte messages are too small for a post's text, so there is no live intent of its own).
-- The Sheet export carries the `board` rows like every event.
+- The dump carries the `board` rows like every event.
 
 ## Checked (`app/e2e/board.spec.ts`)
 
