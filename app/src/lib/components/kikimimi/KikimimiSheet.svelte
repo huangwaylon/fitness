@@ -19,7 +19,7 @@
   import type { Focus } from '#lib/kikimimi/srs.ts';
   import type { Rec } from '#lib/kikimimi/advice.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
-  import type { Level } from '#lib/kikimimi/bank.ts';
+  import { BANK, type Level } from '#lib/kikimimi/bank.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
   import type { QuizPhase } from '#lib/kikimimi/session.ts';
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
@@ -66,7 +66,13 @@
       else if (!g.view.invite) g.open(lastLv());
     });
     game = g;
-    if (hooksOn()) (window as unknown as { __kiki?: unknown }).__kiki = { view: () => g.view, right: () => g.items[g.view.i]?.answer ?? -1, items: () => g.items.map((it) => it.id) };
+    // (tests: `deck(ids)` starts my lobby kept alone on these items, as にがて れんしゅう does: a dialogue before its clips)
+    if (hooksOn())
+      (window as unknown as { __kiki?: unknown }).__kiki = {
+        view: () => g.view, right: () => g.items[g.view.i]?.answer ?? -1, items: () => g.items.map((it) => it.id),
+        deck: (ids: string[]) => g.practice(ids.map((id) => BANK.find((it) => it.id === id)!).filter(Boolean)),
+        talk: () => g.talk
+      };
     return () => {
       g.dispose();
       game = null;

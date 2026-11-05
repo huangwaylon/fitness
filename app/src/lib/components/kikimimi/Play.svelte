@@ -6,8 +6,12 @@
   // they answer. The reveal: ○ on the right choice, × on a wrong pick, the English (its key words marked), the Japanese
   // (a reply's on two lines) and the accent, +100 and 「いっぱつ せいかい！ +30」 apart, a missed picture's name, the
   // speaker's ✨ / 💦 and each player's, the host's word, the host's つぎへ. The question sits mid-screen on a tall phone.
+  // A dialogue (gist, next): both speakers' heads, the one talking bobbing, and at the reveal its two-sided transcript
+  // (Transcript.svelte) with the focus marked; level 4's `note` (the trap) under the accent. Co-op (several, not
+  // たいせん): the others' chips only ✓, no points, and how many got it at the reveal (「2にん せいかい！」), never who.
   import type { QuizGame } from './game.svelte.ts';
-  import { PIC_JA, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
+  import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
+  import Transcript from './Transcript.svelte';
   import { FIRST_LISTEN, RIGHT } from '#lib/kikimimi/score.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Host from '../characters/Host.svelte';
@@ -21,6 +25,12 @@
   const v = $derived(game.view);
   const it = $derived<Item | undefined>(game.items[v.i]);
   const reveal = $derived(v.phase === 'reveal');
+  /** A dialogue (gist, next): its two speakers' heads while it plays, the one talking bobbing; its transcript at the reveal. */
+  const dlg = $derived(it && isDialogue(it) ? it : null);
+  const duo = $derived(dlg ? [...new Set(dlg.lines.map((l) => l.who))] : []);
+  const talking = $derived(game.talk && game.talk.i === v.i ? game.talk.k : -1);
+  /** Who's talking now (before the first turn's timer: the first speaker). */
+  const talker = $derived(dlg ? dlg.lines[Math.max(0, talking)].who : null);
   const mine = $derived(v.answers[v.i] ?? null);
   const right = $derived(!!mine && !!it && mine.k === it.answer);
   /** The choices take a tap: the answer window, not answered, not sat out. */
@@ -68,17 +78,32 @@
       </div>
     {/if}
 
-    <div class="stage">
-      <span class="speaker" class:pop={v.phase === 'lead'} class:talk={!!bar}>
-        <OfficialArt key={villagerArt(it.speaker, true)} alt={name(it.speaker)} size={76} eager />
-        {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
-      </span>
+    <div class="stage" class:dlg={reveal && dlg}>
+      {#if dlg}
+        <span class="speaker duo" class:pop={v.phase === 'lead'} data-kiki-duo>
+          {#each duo as who (who)}
+            <span class="one" class:talk={!!bar && talker === who}>
+              <OfficialArt key={villagerArt(who, true)} alt={name(who)} size={reveal ? 44 : 56} eager />
+            </span>
+          {/each}
+          {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
+        </span>
+      {:else}
+        <span class="speaker" class:pop={v.phase === 'lead'} class:talk={!!bar}>
+          <OfficialArt key={villagerArt(it.speaker, true)} alt={name(it.speaker)} size={76} eager />
+          {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
+        </span>
+      {/if}
       <div class="bubble" class:open={reveal} aria-live="polite">
-        {#if reveal && parts}
+        {#if reveal && dlg}
+          <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
+          {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+        {:else if reveal && parts}
           {@const [pre, focus, post] = parts}
           <p class="en" lang="en" data-kiki-en>{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
           <p class="ja">{#each jaLines(it) as l, n (n)}<span>{l}</span>{/each}</p>
           <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
+          {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
         {:else}
           <p class="notes" aria-label={t('kiki.listen')}>♪…</p>
           <span class="track" aria-hidden="true">
@@ -95,6 +120,8 @@
         </div>
       {/if}
     </div>
+
+    {#if reveal && dlg}<Transcript it={dlg} talk={talking} />{/if}
 
     {#if !reveal}
       {#if ask}<p class="ask">{ask}</p>{/if}
@@ -157,7 +184,12 @@
   .stage { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 4px 2px; }
   .speaker { position: relative; line-height: 0; transform-origin: 50% 100%; }
   .speaker.pop { animation: pop-in 420ms var(--ease-bounce) both; }
-  .speaker.talk { animation: bob 520ms ease-in-out infinite alternate; }
+  .speaker.talk, .duo .one.talk { animation: bob 520ms ease-in-out infinite alternate; }
+  /* a dialogue's two speakers, side by side (the one not talking a little back) */
+  .duo { display: flex; gap: 2px; }
+  .duo .one { line-height: 0; transform-origin: 50% 100%; transition: opacity var(--dur-quick); }
+  .duo:has(.talk) .one:not(.talk) { opacity: .6; }
+  .note { margin: 0; font: 700 var(--fs-xs)/1.45 var(--font-ui); color: var(--c-ink); position: relative; padding: 4px 8px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
   .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: pop-in 320ms var(--ease-bounce) both; }
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {
@@ -231,7 +263,7 @@
   @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
   @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {
-    .speaker.pop, .speaker.talk, .react, .bonus { animation: none; }
+    .speaker.pop, .speaker.talk, .duo .one.talk, .react, .bonus { animation: none; }
     .choices { transition: none; }
   }
 </style>

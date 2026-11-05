@@ -43,7 +43,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { BANK as ALL, type Accent, type CastId, type Item } from '../src/lib/kikimimi/bank.ts';
+import { BANK as ITEMS, clipItems, type Accent, type CastId, type Item } from '../src/lib/kikimimi/bank.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
 import { CAST_IDS, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
@@ -131,6 +131,8 @@ const OUT = SCRATCH ?? join(APP, 'static/audio/kikimimi');
 const CLIPS = SCRATCH ? join(SCRATCH, 'clips.json') : join(APP, 'src/lib/kikimimi/clips.json');
 const SRCS = SCRATCH ? join(SCRATCH, 'clips.src.json') : join(import.meta.dirname, 'kikimimi-clips.src.json');
 const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(TTS, 'report.json');
+/** One entry per clip: an item, or each line of a dialogue as its own (bank.ts clipItems: `<item>-<n>`). */
+const ALL: readonly Item[] = ITEMS.flatMap(clipItems);
 const BANK = ALL.filter((it) => LEVELS.includes(it.lv));
 
 // ---- small helpers ---------------------------------------------------------------------------------------------------

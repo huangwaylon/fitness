@@ -10,7 +10,7 @@ import { fromMenu, hudMenu } from './hud.ts';
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
 
-type Kiki = { view(): { phase: string; i: number; n: number; amHost: boolean; players: { who: string; score: number }[] }; right(): number };
+type Kiki = { view(): { phase: string; i: number; n: number; amHost: boolean; players: { who: string; score: number }[] }; right(): number; deck(ids: string[]): void; items(): string[] };
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;
 const sheet = (p: Page) => p.locator('dialog[open] [data-kikimimi]');
 const phase = (p: Page) => sheet(p).getAttribute('data-phase');
@@ -98,6 +98,43 @@ test('mid-game, Esc and the backdrop keep the sheet; ✕ asks 「やめる？」
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   await page.locator('dialog[open] .titlebar button').last().click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
+});
+
+test('dialogues (gist, next): both speakers while it plays, the two-sided transcript at the reveal (a next’s answer as the next line), the review’s transcripts', async ({ page }) => {
+  test.slow();
+  await open(page);
+  await play(page);
+  await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
+  // (level 4's dialogues wait for their clips: the test hook starts my lobby on them, as にがて れんしゅう would; no clip
+  // sounds here, the schedule runs on the 2 s stand-in)
+  await kiki(page, (k) => k.deck(['d4-oat-latte', 'd4-train-cancelled']));
+  await expect.poll(() => kiki(page, (k) => k.items())).toEqual(['d4-oat-latte', 'd4-train-cancelled']);
+  const shots = process.env.KIKI_SHOTS ? '/tmp/kikimimi-shots/inc34' : null;
+  for (const [i, lines, next] of [[0, 3, true], [1, 4, false]] as const) {
+    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 15_000 }).toBe(i);
+    await expect(sheet(page).locator(`[data-kiki-q="${i}"]`)).toHaveAttribute('data-type', next ? 'next' : 'gist');
+    // while it plays: both speakers' heads, no text
+    await expect(sheet(page).locator('[data-kiki-duo] .one')).toHaveCount(2);
+    await expect(sheet(page).locator('[data-kiki-transcript]')).toHaveCount(0);
+    await expect(sheet(page).locator('.ask')).toHaveText(next ? 'つぎの ひとことは？' : '男性は このあと どうする？');
+    if (shots && i === 1) await page.screenshot({ path: `${shots}/dialogue-play.png` });
+    await answer(page, i === 1);
+    await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
+    const tr = sheet(page).locator(`[data-kiki-transcript="${next ? 'd4-oat-latte' : 'd4-train-cancelled'}"]`);
+    await expect(tr.locator('[data-line]')).toHaveCount(lines);
+    // the second speaker's lines on the right; the focus marked in its line
+    await expect(tr.locator('[data-line="1"]')).toHaveClass(/right/);
+    await expect(tr.locator('mark')).toHaveCount(1);
+    await expect(tr.locator('[data-kiki-next-line]')).toHaveCount(next ? 1 : 0);
+    if (next) await expect(tr.locator('[data-kiki-next-line] .en')).toHaveText("No worries, I'm not in a rush.");
+    await expect(sheet(page).locator('[data-kiki-note]')).toBeVisible();
+    if (shots) await page.screenshot({ path: `${shots}/dialogue-reveal-${next ? 'next' : 'gist'}.png` });
+    await sheet(page).locator('[data-kiki-next]').click();
+  }
+  await expect(sheet(page)).toHaveAttribute('data-phase', 'results');
+  await expect(sheet(page).locator('[data-review] [data-kiki-transcript]')).toHaveCount(2);
+  await expect(sheet(page).locator('[data-review="1"] .ans')).toContainText("He'll take a bus from outside the station.");
+  if (shots) await page.screenshot({ path: `${shots}/dialogue-results.png`, fullPage: true });
 });
 
 /** A and B in A's shared lobby (B from the banner's さんか); `vs`: A turns たいせん on before starting. */

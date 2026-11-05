@@ -116,7 +116,7 @@ export interface Stats {
 }
 
 /** An item's difficulty on the ability scale: its level (L1 −1 … L4 2) and its type. */
-const TYPE_OFFSET: Readonly<Record<ItemType, number>> = { pic: -0.3, word: 0, num: 0, reply: 0.2, mean: 0.4 };
+const TYPE_OFFSET: Readonly<Record<ItemType, number>> = { pic: -0.3, word: 0, num: 0, reply: 0.2, mean: 0.4, gist: 0.3, next: 0.3 };
 const difficulty = (it: Pick<Item, 'lv' | 'type'>): number => it.lv - 2 + TYPE_OFFSET[it.type];
 const ESTIMATE_MIN = 16;
 /** θ − ln 4: where the predicted score is 80 %. */
