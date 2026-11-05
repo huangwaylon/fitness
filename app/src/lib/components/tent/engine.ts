@@ -1652,13 +1652,18 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     clearTimeout(warmT);
     if (!noDraw && !disposed) warmT = setTimeout(warm, 400);
   }
+  /** Hidden mid-way: taken up again when shown (a frame asked for while hidden never comes, and the warm-up waited on
+   *  it, a timer every 100-400 ms the whole time). */
+  let warmHeld = false;
   function warm() {
     if (disposed) return;
+    if (document.hidden) return void (warmHeld = true);
     if (pending || raf || !frames) return warmSoon();
     const meshes: Object3D[] = [];
     scene.traverse((n) => void ((n as Mesh).material && meshes.push(n)));
     const step = () => {
       if (disposed) return;
+      if (document.hidden) return void (warmHeld = true);
       if (raf) return void (warmT = setTimeout(step, 100));
       const n0 = renderer.info.programs?.length ?? 0;
       while (meshes.length && (renderer.info.programs?.length ?? 0) === n0) {
@@ -1691,13 +1696,23 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   function blinks() {
     blinkT = undefined;
     if (disposed) return;
-    // (hidden: the next frame's own step shows the face; a frame coming draws it)
-    if (document.hidden || raf) return blinkSoon();
+    // (hidden: no timer till it's shown again, onVis; a frame coming: its own step shows the face, and asks again)
+    if (document.hidden) return;
+    if (raf) return blinkSoon();
     let changed = false;
     for (const w of villagers.values()) if (w.v3 && !w.path && !w.posing && w.v3.blink(now())) changed = true;
     if (changed) invalidate();
     else blinkSoon();
   }
+
+  // (shown again: the faces' timer from now, a frame for what changed meanwhile)
+  const onVis = () => {
+    if (document.hidden || disposed) return;
+    invalidate();
+    blinkSoon();
+    if (warmHeld) (warmHeld = false), warmSoon();
+  };
+  document.addEventListener('visibilitychange', onVis);
 
   fit();
   night(0);
@@ -1745,6 +1760,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       disposed = true;
       cancelAnimationFrame(raf);
       clearTimeout(blinkT);
+      document.removeEventListener('visibilitychange', onVis);
       clearTimeout(warmT);
       for (const w of villagers.values()) w.v3?.dispose();
       const seen = new Set<object>();
