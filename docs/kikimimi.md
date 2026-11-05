@@ -155,6 +155,70 @@ Field validation:
   - Results: 「8もん中 6もん せいかい」 under しずえ's line; the winner's row a yuzu ribbon with 🏆; a missed row shows 「えらんだ: … ×」 under the right answer; 「もういっかい あそぶ」.
   - bank.ts `splitFocus(item)` → [before, focus, after], shared by Play and Results. theme.css `.level-acts::after` covers the scroller's bottom padding, so rows scrolling under a sheet's sticky buttons don't show again below them.
 
+## Progress & feedback (spec, 2026-11-05)
+
+The user asked for "a mechanic for progress and improvement and learning tracking; recommendations and feedback on what to study and focus on". Both learners are B1+ (TOEIC 700+, listening already good), so the point is **which sounds and skills still trip you**, not a score. Decided defaults: each person's detailed results are theirs alone; only shared summaries reach the partner; co-op by default (no level next to the other's: docs/curriculum.md §11).
+
+### What's measured (per person)
+
+- **Every answer:** the item, right or not, the choice picked (the authored index, so distractors still diagnose: an L/R miss vs a vowel miss), first listen or not and the number of replays (🔁 and 🐢 alike), the game's level and whether it was にがて れんしゅう.
+- **Sub-skills** (the bars). Each item has a primary skill (its type, or its first feature for `word`) and secondary ones (its other features, at half weight):
+
+  | skill | label | from |
+  |---|---|---|
+  | `lr` | L と R | feature `l-r` |
+  | `vowel` | にた ぼいん | `vowel` (hat/hut, ship/sheep) |
+  | `cons` | にた しいん | `b-v`, `th`, `sh-s`, `f-h`, `ending` (cats/cat); a `word` item with no feature |
+  | `reduce` | つながる おと | `contraction`, `weak-form`, `flap`, `yod`, `gonna` … `kinda`, `can-cant`, `t-glottal`, `ellipsis` |
+  | `num` | すうじ | type `num`; `numbers`, `teen-ty`, `clock`, `self-repair` |
+  | `detail` | だいじな ところ | type `pic` (the right word among others heard); `contrast`, `katakana` |
+  | `reply` | うけこたえ | type `reply` with a literal or formulaic pragmatic layer; `idiom` |
+  | `indirect` | ほんね | type `mean`; a `reply` whose pragmatic layer is indirect, a refusal, a hedge, understatement, sarcasm, humour, attitude or deception; `intonation` |
+
+- **Tags.** Level 4 has `tags` already (bank4.ts). Levels 1-3 get a compact table keyed by item id (`kikimimi/tags.ts`: features plus, for replies, a pragmatic layer), with the same vocabulary plus S0's segmentals (curriculum §3): `l-r`, `vowel`, `b-v`, `th`, `sh-s`, `f-h`, `ending`, `katakana`, `contrast`, `clock`. bank.test checks every item has tags and every tag maps to a skill.
+- **Mastery** of a skill (0-1): a recency-weighted (half-life 21 days), smoothed (prior 0.7 × 2 answers) mean of answer scores, **first listen right = 1, right after a replay = 0.6, wrong = 0** (curriculum §10: a first-play correct answer counts more). Shown only past 3 answers' weight (else 「まだ データが すくない」).
+- **Also per type, per accent (US / UK / AU) and per level:** plain accuracy and first-listen accuracy, with counts.
+- **The level estimate:** an Elo-style ability θ (curriculum §10: updates go to the learner, never the items). An item's difficulty is its level (L1 −1, L2 0, L3 1, L4 2) plus a type offset (pic −0.3, reply +0.2, mean +0.4); after each answer θ += K × (score − expected), K 0.3 for the first 24 answers, then 0.15. The **comfortable level** is where θ predicts 80 % (θ − ln 4, on the levels' scale), capped at the hardest level played + 0.5, and shown as the curriculum's stage: below L2.5 S0 はまべ ★ (A2-B1), below L3.5 S1 かわ ★★ (B1+), below L4.5 S2 もり ★★★ (B2), else S3 やま ★★★★ (B2+). 「はかっている とちゅう」 until 16 answers.
+- **Trend:** first-listen accuracy per game, the last 12 games (a sparkline), and the last 5 games' against the 5 before.
+- **Consistency, never a streak:** the days played this Tokyo week (Monday first), 7 dots. A missed day costs nothing.
+
+### Storage: one `listen` row per person per game
+
+- **The row** (docs/backend.md "Events", `contract/listen.ts`): `listen {d, g, lv, n, ms, p?, r}`. `d` the Tokyo day; `g` the game id (the session's, `[a-z0-9]{4,12}`); `lv` 1-5; `n` the players 1-3; `ms` the game's length (0-1 h); `p: 1` にがて れんしゅう; `r` 1-12 answers `[id, ok, pick, rp]` (`id` an item id, `ok` 0/1, `pick` the authored choice index or −1 timed out, `rp` replays 0-99). Questions sat out (a late join) aren't in it. ~200 bytes.
+- **Why per game, not per day** (curriculum §12 proposed a day slot): a game is written once, at its results, with its own event id, so a retry is a duplicate and two phones of one person never overwrite each other's day; no slot and no merge on the record. ~3 games a day × 2 people is ~2,000 rows (~400 KB) a year. Never compacted (the record never compacts events).
+- **Who sees it** (`contract/guest.ts rowsFor`, server-enforced, in every snapshot and delta): its owner the whole row; the other member only the summary `{d, g, n, ms}` (that a game was played, when, how long, with how many: the couple summary; never the level, the answers or the score); the guest's rows reach only the guest, and the members' never reach the guest. The guest writes its own (`guestMayWrite`).
+- **Relay change:** a new event type is refused by an older relay (`bad_request`), so the relay deploys before a phone sends one. An app from before it ignores the rows (`EVENT_TYPES`).
+- **Offline:** the row goes through the write queue like every event (kept in localStorage until acked) and shows at once (the optimistic view); the snapshot cache keeps the acked ones. Everything below is folded from the rows on the phone, never stored: the SRS state too (curriculum §12).
+
+### Adaptivity: spaced repetition and にがて れんしゅう
+
+- **The shared deck stays deterministic** (`deck(seed, lv)`): every multiplayer game and the normal solo game are as before. Personal adaptivity is solo only.
+- **Cards** (curriculum §10: a chunk or a feature, never a clip): an **item card** for each item missed or answered only after a replay (in any game, multiplayer too: the per-player review set), and a **feature card** for each feature answered. Leitner boxes 0-6 with intervals 0 / 1 / 3 / 7 / 16 / 35 / 90 days: right on the first listen = good (up a box), right after a replay = hard (the box kept, at least 1), wrong = again (box 0, due at once). Folded from the answers in time order (`kikimimi/srs.ts`), deterministic, never stored.
+- **「にがて れんしゅう」** (a solo mode, the lobby's): 8 questions from the levels this phone offers: due item cards first (most overdue, lowest box; at most 4), then items carrying the weakest due features (a different item from the one missed when there is one: another clip of the feature), then the weakest skills' items, never the same item twice. A recommendation's tap narrows it to one skill. Choices shuffled by the seed. Nothing on the wire (a lobby kept alone sends nothing); the session runs it as any solo game (`deckOf` returns the practice deck).
+
+### Recommendations and feedback (`kikimimi/advice.ts`, pure)
+
+- **「つぎは これを れんしゅう しよう」** (at most 3, each with a one-tap start):
+  1. due cards ≥ 4: 「おさらい」 (にがて れんしゅう, every skill);
+  2. the weakest skills with enough data (mastery < 0.75, or the lowest one below 0.85): 「{skill} を れんしゅう」 (にがて れんしゅう of that skill);
+  3. a skill the levels offered haven't measured (< 3 answers): 「{skill} を ためそう」;
+  4. a level nudge: the last 3 games at the current level ≥ 85 % right and a higher level offered: 「レベル N に ちょうせん」 (that level's game); ≤ 50 %: 「にがて れんしゅう」 before moving on;
+  5. an accent ≥ 15 points below the others (≥ 6 answers each): 「{accent} の えいごに なれよう」 (practice weighted to it).
+- **しずえ's line after each game** (the results): the skill whose mastery rose most with this game (≥ +0.05): 「{skill}が のびてるよ！」, then the first recommendation: 「つぎは {skill}！」; all right: 「ぜんもん せいかい！ すごい！」; nothing yet: an encouragement.
+- **Per-game feedback** (the results): 「つまずいた ところ」, chips of this game's missed features and skills with their counts (「L と R ×2」, 「-teen / -ty」), and each missed review row's feature label.
+
+### UI
+
+- **The lobby** gets two tabs: 「あそぶ」 (as now, plus 「にがて れんしゅう」 under ひとりで はじめる once there's a game recorded) and 「きろく」.
+- **「きろく」** (`Progress.svelte`, its own lazy chunk inside the sheet's): the stage and its bar (the comfortable level within it); the sub-skills as horizontal bars (mastery, one hue, the value at the bar's end, unmeasured shown as an outline: bars, not a radar, read better at 8 skills on a phone); the trend sparkline with its last value; the week's 7 dots; the recommendations with their start buttons; the couple summary 「ふたりで こんしゅう: いっしょに Nかい · Mふん」 (games both played, by `g`, and both people's minutes; never a level); details (per type, per accent, per level) folded under 「くわしく」. The guest sees its own きろく and no couple summary.
+- **Results:** しずえ's line from the feedback, 「つまずいた ところ」 chips above the review list.
+- **The paper style** of the sheets (cards, lips, the AC palette: leaf for the bars, coral only for "missed"); tap targets ≥ 44 px; reduced motion honoured.
+
+### Tests
+
+- vitest: the stats (mastery, the estimate, trend, week dots, couple summary), the SRS fold and the practice deck (determinism, due first, no repeats, a focus), the advice rules, the row's validation (`contract/listen.ts`), the tag table's coverage; relay: the row accepted and refused, owner-only rows, the summary to the partner, nothing between the guest and the members.
+- e2e (logic tier): a solo game in `?demo`, then きろく shows the game, the bars and a recommendation whose start opens にがて れんしゅう.
+
 ## Performance
 
 - Nothing heavy loads before the sheet opens. The banner listener is a few hundred bytes.
