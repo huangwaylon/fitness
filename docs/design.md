@@ -2006,6 +2006,18 @@ DEFAULT_LOOKS, the signed-off looks), assembled at runtime from parts converted 
 - `design/avatar/player3d/check.ts`: the runtime drawn off the app's own modules in headless Chrome (A and B in their
   states, faces, a swap, a portrait), for a quick look before the phone.
 
+**Who draws a person** (`components/person3d/person3d.ts`, `e2e/players.spec.ts`): `person3(who, look, villagerPref,
+dirs)` is the one seam between the look a person wears (`store/look.ts` `lookOf`) and the model a scene stands up: a
+player look → `createPlayer` (its villager as the stand-in if a part can't be had), a villager look → the roster
+villager. It's keyed by the look: the island (`world3d/villagers.ts`), the tent and homes and the museum keep a model
+while its key stays and swap it in place when it changes (on leaving すがた, or the partner's phone): the island keeps
+the old one drawn till the new one is in, the rooms keep the walker (its spot, seat, walk, first person). A player
+shows no villager card while it loads (the island draws nothing, the tent's card is its tap area only). Its models'
+`dispose()` also disposes their skeletons (three's bone textures, else left on the island's renderer at each swap or
+visitor gone). The island's tap area for a player is from its crown (0.45 × its height wide). `npm run leak -- look`
+swaps looks on the island. The fishing specs fish as a villager (`fishing3d.spec` seeds the look); a player's rod
+line-up is the 3D engine's to tune (the spec's fixme).
+
 ### Visitors
 
 `island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors, one at a time, each NH's own 3D

@@ -53,6 +53,8 @@ export interface Look {
   noMirror: boolean;
   /** Its 3D model (person3d: the villager's, when NH has one, or the human player's): drawn instead of the render. */
   person?: Person3;
+  /** Its render never drawn, only its tap area (a human player: not its villager's picture while its model loads). */
+  cardless?: boolean;
 }
 export type Hit = { kind: 'piece'; id: string } | { kind: 'villager'; who: Who } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 export interface Placed extends Spot {
@@ -935,7 +937,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       if (disposed || villagers.get(who) !== w) return t.dispose();
       t.colorSpace = SRGBColorSpace;
       mat.map = t;
-      mat.visible = !w.v3;
+      mat.visible = !w.v3 && !w.look.cardless;
       mat.needsUpdate = true;
       const img = t.image as CanvasImageSource & { width: number; height: number };
       const ah = 48, aw = Math.max(1, Math.round((ah * img.width) / img.height));
@@ -1367,9 +1369,9 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     for (const h of ray.intersectObjects(objs, true)) {
       if (h.object === mat || h.object === door) return { kind: 'door' };
       if (h.object.userData.who) {
-        // only where the render is drawn (a little grown: a 44 px finger)
+        // only where the render is drawn (a little grown: a 44 px finger); a player's (no render drawn) its card's box
         const w = villagers.get(h.object.userData.who as Who);
-        if (w?.alpha && h.uv) {
+        if (w?.alpha && h.uv && !w.look.cardless) {
           const { w: aw, h: ah, a } = w.alpha;
           const u = h.uv.x;
           const px = Math.round(u * (aw - 1)), py = Math.round((1 - h.uv.y) * (ah - 1));
@@ -1570,7 +1572,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
         // (its body hidden once the camera is near its head; its shadow stays)
         const hide = fp.mix > 0.5;
         if (w.v3) w.v3.show(!hide);
-        else if (w.mat.map) w.mat.visible = !hide;
+        else if (w.mat.map && !w.look.cardless) w.mat.visible = !hide;
       }
       if (!fp.on && !fp.mix) fpWho = null;
     }

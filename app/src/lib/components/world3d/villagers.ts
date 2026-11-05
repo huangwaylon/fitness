@@ -405,6 +405,10 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
     /** The model drawn (person3d's key: `v:<roster id>` a villager, `p:…` a human player), null till one is in. */
     model: (slot: string) => (ws.get(slot)?.v ? ws.get(slot)!.key : null),
+    /** Its tap area (u: width, height), once measured. */
+    size: (slot: string) => ws.get(slot)?.size ?? null,
+    /** A human player drawn (player3d's: it has dress()), not a villager (a stand-in's too). */
+    player: (slot: string) => !!ws.get(slot)?.v && 'dress' in ws.get(slot)!.v!,
     tool: (slot: string) => (ws.get(slot)?.tool?.obj ? ws.get(slot)!.tool!.key : null),
     tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null,
     /** The materials on it drawn unbent (engine.ts bend: off the island it stands on), what it took up since included. */
@@ -447,8 +451,14 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       if (!w || !v) return null;
       // (measured standing: seated or lying its head is elsewhere)
       if (!w.size && v.state() === 'idle' && !v.seat()) {
-        const hb = v.head(), h = hb ? (hb.getWorldPosition(headP).y - v.group.position.y) * 1.75 : 0;
-        if (h > 10) w.size = [Math.round(h * 0.6), Math.round(h)];
+        // (a human player: NH's taller figure, its head higher up it and narrower than a villager's: from its crown)
+        if ('dress' in v) {
+          const top = v.crown(crownP), h = top ? top.y - v.group.position.y : 0;
+          if (h > 10) w.size = [Math.round(h * 0.45), Math.round(h)];
+        } else {
+          const hb = v.head(), h = hb ? (hb.getWorldPosition(headP).y - v.group.position.y) * 1.75 : 0;
+          if (h > 10) w.size = [Math.round(h * 0.6), Math.round(h)];
+        }
       }
       return w.size ?? null;
     },

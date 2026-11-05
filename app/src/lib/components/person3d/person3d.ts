@@ -4,7 +4,7 @@
 // through the model's own interface, the same for both kinds). A `player` look is NH's human player
 // (player3d createPlayer), a `villager` look the roster villager (villager3d createVillager, the `villager` pref).
 // A scene keeps the model while its `key` stays and swaps it, in place, when the key changes (the look changed: on
-// leaving すがた, or the partner's phone sending theirs). Pure but for the model factories.
+// leaving すがた, or the partner's phone sending theirs). Pure but for the model factories (player3d loads on first use).
 import type { Look } from '#lib/contract/look.ts';
 import type { Who } from '#lib/types.ts';
 import { resolveLook as villagerLook } from '#lib/villagers/look.ts';
@@ -12,16 +12,16 @@ import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
 import { url3d } from '../villager3d/manifest.ts';
 import type { SkinnedMesh } from 'three';
 
-/** Human players drawn (player3d createPlayer). Off until the player runtime is in: a player look draws the person's
- *  villager, as before the looks. */
-const PLAYERS = false;
+/** Where the models are (the site's room/villagers3d/ and room/player/: $app/paths asset). */
+export interface Dirs { villagers: string; player: string }
 
 /** A person's model as a scene draws it. */
 export interface Person3 {
   /** Same key, same model: a new one swaps it. */
   key: string;
   kind: 'villager' | 'player';
-  /** The roster villager: drawn for a villager look; its render is the 2D card until a model is in. */
+  /** The roster villager: drawn for a villager look (its render the 2D card till its model is in), and a player's
+   *  stand-in if its parts can't be had. */
   villager: string;
   /** It has a 3D model (a villager without one: the card only). */
   has3d: boolean;
@@ -54,16 +54,24 @@ const memo = new WeakMap<Look, { pref: string | null | undefined; p: Person3 }>(
 
 /**
  * Who draws `who` wearing `look`: their villager (`villagerPref`, the `villager` pref; null: their default) for a
- * villager look, NH's human player for a player look. `dir`: the villagers' GLBs (room/villagers3d/). Memoised by the
- * look object (a scene asks every frame).
+ * villager look, NH's human player for a player look (their villager if a part can't be had). Memoised by the look
+ * object (a scene asks every frame).
  */
-export function person3(who: Who, look: Look, villagerPref: string | null | undefined, dir: string): Person3 {
+export function person3(who: Who, look: Look, villagerPref: string | null | undefined, dirs: Dirs): Person3 {
   const hit = memo.get(look);
   if (hit && hit.pref === villagerPref) return hit.p;
   const id = villagerLook({ villager: look.kind === 'villager' ? (look.villager ?? villagerPref) : villagerPref, person: who }).id;
-  const v = villager3(id, dir);
-  // (players off: the villager, so a player look's changes swap nothing)
-  const p: Person3 = look.kind === 'player' && PLAYERS ? { ...v, key: `p:${lookKey(look)}`, kind: 'player', has3d: true } : v;
+  const v = villager3(id, dirs.villagers);
+  let p = v;
+  if (look.kind === 'player') {
+    const { kind: _kind, ...parts } = look;
+    p = {
+      key: `p:${lookKey(look)}`, kind: 'player', villager: id, has3d: true,
+      create: (seed) => import('../player3d/player3d.ts')
+        .then(({ createPlayer }) => createPlayer(who, parts, dirs.player, seed))
+        .then(released, () => v.create(seed) ?? Promise.reject(new Error(`no model for ${who}`)))
+    };
+  }
   memo.set(look, { pref: villagerPref, p });
   return p;
 }
