@@ -9,8 +9,9 @@
 // The Eloquence voices (Eddy, Reed, Rocko, Flo, Shelley, Sandy, Grandma, Grandpa) and the old robotic ones are never used.
 // Each item: `say` at its level's rate (and at ~70% for levels 1 and 2: `<id>-slow.m4a`) → ffmpeg: leading and trailing
 // silence trimmed (a short pad kept), loudness to −16 LUFS, mono AAC ~48 kbps at 24 kHz, +faststart.
-// src/lib/kikimimi/clips.json gets {id: {dur, hash, slow?, src}}: `src` hashes what was spoken (text, voice, rate, this
-// pipeline's version), so a run regenerates only the items whose text or voice changed (or whose files are missing).
+// src/lib/kikimimi/clips.json gets {id: {dur, hash, slow?}} (bundled with the game), and scripts/kikimimi-clips.src.json
+// {id: src}: `src` hashes what was spoken (text, voice, rate, this pipeline's version), so a run regenerates only the items
+// whose text or voice changed (or whose files are missing); the script's alone, kept out of the client bundle.
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -24,6 +25,7 @@ const FFMPEG = process.env.FFMPEG ?? '/opt/homebrew/bin/ffmpeg';
 const FFPROBE = process.env.FFPROBE ?? '/opt/homebrew/bin/ffprobe';
 const OUT = join(import.meta.dirname, '../static/audio/kikimimi');
 const CLIPS = join(import.meta.dirname, '../src/lib/kikimimi/clips.json');
+const SRCS = join(import.meta.dirname, 'kikimimi-clips.src.json');
 /** Bump to regenerate everything after a change to the processing below. */
 const PIPELINE = 1;
 /** Words per minute by level: a little slow for level 1, natural for 3. Slow clips at ~70%. */
@@ -85,7 +87,9 @@ const duration = (file: string): number =>
   Math.round(Number(execFileSync(FFPROBE, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', file], { encoding: 'utf8' })) * 100) / 100;
 
 const old: Record<string, Clip> = existsSync(CLIPS) ? JSON.parse(readFileSync(CLIPS, 'utf8')) : {};
+const oldSrc: Record<string, string> = existsSync(SRCS) ? JSON.parse(readFileSync(SRCS, 'utf8')) : {};
 const clips: Record<string, Clip> = {};
+const srcs: Record<string, string> = {};
 mkdirSync(OUT, { recursive: true });
 
 function listen(): void {
@@ -114,7 +118,8 @@ else {
   for (const it of BANK) {
     const voice = voiceFor(it), src = srcOf(it, voice), prev = old[it.id];
     const files = [fileOf(it.id), ...(hasSlow(it) ? [fileOf(it.id, true)] : [])];
-    if (!flag('--force') && prev?.src === src && files.every((f) => existsSync(f))) {
+    srcs[it.id] = src;
+    if (!flag('--force') && prev && oldSrc[it.id] === src && files.every((f) => existsSync(f))) {
       clips[it.id] = prev;
       continue;
     }
@@ -124,8 +129,7 @@ else {
     clips[it.id] = {
       dur: duration(files[0]),
       hash: sha(readFileSync(files[0]), 8),
-      ...(hasSlow(it) && { slow: sha(readFileSync(files[1]), 8) }),
-      src
+      ...(hasSlow(it) && { slow: sha(readFileSync(files[1]), 8) })
     };
     made++;
     process.stdout.write(`\r${made} spoken: ${it.id.padEnd(24)}`);
@@ -136,6 +140,7 @@ else {
   for (const f of gone) rmSync(join(OUT, f));
   const sorted = Object.fromEntries(Object.keys(clips).sort().map((k) => [k, clips[k]]));
   writeFileSync(CLIPS, JSON.stringify(sorted, null, 1).replace(/\n  +/g, ' ').replace(/\n \}/g, ' }') + '\n');
+  writeFileSync(SRCS, JSON.stringify(Object.fromEntries(Object.keys(srcs).sort().map((k) => [k, srcs[k]])), null, 1) + '\n');
   const bytes = readdirSync(OUT).reduce((s, f) => s + readFileSync(join(OUT, f)).length, 0);
   console.log(`\n${made} items spoken, ${gone.length} old files removed; ${readdirSync(OUT).length} files, ${(bytes / 1024).toFixed(0)} KB`);
   const used = new Set(BANK.map(voiceFor));
