@@ -330,22 +330,26 @@
     life.later(() => fiving.delete(id), Math.max(400, FIVE_MS - ago));
   }
   /** The high-five's sparkle, flying from one villager's hands to the other's in an arc (ZAP_MS); `ago`: started that
-   *  long ago (the partner's tap, heard a moment later). */
-  let zap = $state<{ n: number; t0: number; from: VillagerActor; to: VillagerActor } | null>(null);
+   *  long ago (the partner's tap, heard a moment later). The 3D island draws it (effects.ts' `zap`: its star in code,
+   *  unlit, warmed with the island, following zapAt every frame); the node stays (the specs' [data-zap]), its art
+   *  invisible then (`in3d`). */
+  let zap = $state<{ n: number; t0: number; from: VillagerActor; to: VillagerActor; in3d: boolean } | null>(null);
   const ZAP_MS = 520;
   function zapStart(from: VillagerActor, ago = 0, to: VillagerActor = from === 'mine' ? 'partner' : 'mine') {
     const left = ZAP_MS - ago;
     if (left <= 60) return;
     const t0 = performance.now() - ago, n = (zap?.n ?? 0) + 1, stop = world.moveStart();
-    zap = { n, t0, from, to };
+    const [x, z, h] = zapPos(t0, from, to);
+    zap = { n, t0, from, to, in3d: fx3d('zap', x, z, h, { ms: left, follow: () => zapPos(t0, from, to) }) };
     life.later(() => {
       stop();
       if (zap?.n === n) zap = null;
     }, left + 60);
   }
-  function zapAt(): readonly [number, number, number] {
-    const k = Math.min(1, (performance.now() - (zap?.t0 ?? 0)) / ZAP_MS);
-    const [ax, az] = livePos(zap?.from ?? 'mine'), [bx, bz] = livePos(zap?.to ?? 'partner');
+  const zapAt = () => zapPos(zap?.t0 ?? 0, zap?.from ?? 'mine', zap?.to ?? 'partner');
+  function zapPos(t0: number, from: VillagerActor, to: VillagerActor): readonly [number, number, number] {
+    const k = Math.min(1, (performance.now() - t0) / ZAP_MS);
+    const [ax, az] = livePos(from), [bx, bz] = livePos(to);
     return [ax + (bx - ax) * k, az + (bz - az) * k, VILLAGER.h * (0.55 + Math.sin(Math.PI * k) * 0.35)];
   }
   // Island care: a flower watered yesterday can show a hybrid colour today (care.ts; `?hybrid` in the demo shows one).
@@ -1191,8 +1195,8 @@
         {#if zap}
           {#key zap.n}
             <!-- the high-five's sparkle, flying from mine to the partner -->
-            <div class="zap-node" aria-hidden="true" {@attach world.at({ x: 0, z: 0, h: 20, live: zapAt, always: true, light: true, m3: { key: 'fx/sparkle', id: `zap-${zap.n}`, face: 'camera' } })}>
-              <svg data-m3art class="zap" viewBox="0 0 24 24" data-zap><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /><circle cx="12" cy="12" r="3" /></svg>
+            <div class="zap-node" aria-hidden="true" {@attach world.at({ x: 0, z: 0, h: 20, live: zapAt, always: true, light: true })}>
+              <svg class="zap" class:in3d={zap.in3d} viewBox="0 0 24 24" data-zap><path d="M12 0 C13 8 16 11 24 12 C16 13 13 16 12 24 C11 16 8 13 0 12 C8 11 11 8 12 0 Z" /><circle cx="12" cy="12" r="3" /></svg>
             </div>
           {/key}
         {/if}

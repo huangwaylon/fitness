@@ -657,7 +657,12 @@ the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/worl
   - **Flourishes** (`effects.ts`, `island/fx3d.ts`): a tap's dust and splash, a bush's leaves, sparks, drops, sparkles,
     a rearing bug's 「！」: a few particles of NH's fx/* models in world space, depth-tested, fading (the bite's 「！」 is
     `biteMark.ts`'s, on the angler's head, over everything); the DOM's own
-    `.in3d`, invisible. A DOM reaction on art the canvas draws (a jiggle, a rustle, a shake) moves the model too
+    `.in3d`, invisible. The sparkles, a villager's ✦ and the high five's flying star are one star in code
+    (`effects.ts` starGeometry: Fx.svelte's path, gold with a white heart and a warm rim, no texture: sharp at any size and
+    zoom), warmed with the island; a character's sparkles start round the top of its head, a step toward the camera
+    (from the head's middle the 3D head hid them). The high five's star is a flourish (`zap`) that follows its arc
+    every frame, not a model of the island's things: as one it came lit and black (no normals, its colours ignored),
+    and the first after opening never showed (its model loaded on first use, after the 0.5 s flight). A DOM reaction on art the canvas draws (a jiggle, a rustle, a shake) moves the model too
     (`island/echo3d.ts`).
   - **The board's focus** (docs/board.md): `world.three.focus(rect)` / `unfocus()` / `attach(id, obj)`.
   - On a software renderer (CI's headless Chromium) it draws at its lightest (half the pixels, no shadow map); the

@@ -348,6 +348,8 @@
   // ---- the characters' flourishes (the director's fx: sparkles, hearts, notes, confetti, a puff, a sleeper's zzz) ----
   const FX3: Record<string, FxKind> = { sparkles: 'sparkle', hearts: 'hearts', notes: 'notes', confetti: 'confetti', puff: 'dust', glint: 'sparkle', zzz: 'zzz' };
   const fxSeen = new Set<string>(), zzzAt: Record<string, number> = {};
+  /** How far toward the camera a character's sparkles start (u): clear of its head. */
+  const SPARKLE_NEAR = 12;
   function actorFx(e: Island3, t: number) {
     for (const id of ['mine', 'partner', 'third', 'visitor'] as const) {
       const a = actors[id];
@@ -366,7 +368,14 @@
         const key = `${id}:${f.n}`;
         if (fxSeen.has(key)) continue;
         fxSeen.add(key);
-        e.fx(k, x, z, VILLAGER.h * (f.kind === 'confetti' ? 0.6 : f.kind === 'puff' ? 0 : 0.7));
+        const lift = VILLAGER.h * (f.kind === 'confetti' ? 0.6 : f.kind === 'puff' ? 0 : 0.7);
+        if (k === 'sparkle') {
+          // round the top of the head (as its marks: marks3), a step toward the camera, a little bigger: from the
+          // head's middle the 3D head hid them (depth tested), but for one now and then
+          const hb = vil3?.head(id), feet = feetOf(x, z), top = hb ? (hb.getWorldPosition(headV).y - feet) * 2 - 6 : lift;
+          const near = e.at(x, z - 1, top).depth < e.at(x, z + 1, top).depth ? -1 : 1;
+          e.fx(k, x, z + near * SPARKLE_NEAR, Math.max(lift, top), { size: 1.25 });
+        } else e.fx(k, x, z, lift);
       }
     }
     if (fxSeen.size > 200) fxSeen.clear();

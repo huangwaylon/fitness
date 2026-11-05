@@ -7,8 +7,8 @@
 // canvas, a bubble), unlit (they're light), fading. The DOM island spawns them where it spawned its own
 // (island/fx3d.ts), whose art then goes invisible.
 import {
-  NormalBlending, Scene, CanvasTexture, Color, DoubleSide, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion, RingGeometry, SphereGeometry,
-  SRGBColorSpace, type BufferGeometry, type Camera, type MeshStandardMaterial, type Side, type Texture, type WebGLRenderer
+  NormalBlending, Scene, BufferGeometry, CanvasTexture, Color, DoubleSide, Float32BufferAttribute, Group, Matrix4, Mesh, MeshBasicMaterial, PlaneGeometry, Quaternion,
+  RingGeometry, SphereGeometry, SRGBColorSpace, type Camera, type MeshStandardMaterial, type Side, type Texture, type WebGLRenderer
 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -20,7 +20,7 @@ import { HOP_MS, POP_IN_MS, POP_OUT_MS, popIn } from './biteMark.ts';
 
 export type FxKind =
   | 'dust' | 'sand' | 'snow' | 'splash' | 'ripple' | 'sparkle' | 'sparks' | 'bang' | 'leaves' | 'drops' | 'hearts'
-  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame' | 'mark';
+  | 'ring' | 'notes' | 'zzz' | 'confetti' | 'swing' | 'bubbles' | 'fall' | 'firefly' | 'flame' | 'mark' | 'zap';
 export interface FxOpts {
   /** A season's leaf for `leaves` / `fall` (maple-leaf, petal, snowflake), the tool for `swing` (net, shovel), a
    *  villager's `mark` (sparkle, heart, note, zzz, bang, sweat), or a tint (#rrggbb). */
@@ -35,6 +35,9 @@ export interface FxOpts {
   dir?: number;
   /** A held one stays while this says so (a rearing bug's 「！」: till it's down), `ms` at most, then pops out. */
   held?: () => boolean;
+  /** Where it is each frame (world x, z, lift), not where it was spawned: the high five's star flying between two
+   *  villagers that may still be moving. */
+  follow?: () => readonly [number, number, number?];
 }
 
 interface Part {
@@ -70,6 +73,7 @@ interface Part {
   pop?: boolean;
   held?: () => boolean;
   end?: number;
+  follow?: FxOpts['follow'];
 }
 
 export interface Effects {
@@ -97,8 +101,10 @@ const MODEL: Record<string, string> = {
 /** World units a model unit (assets.json's `s` for each; the island's own at theirs). */
 const SCALE: Record<string, number> = {
   dust: 7.3, splash: 11.25, ripple: 9, sparkle: 6, bang: 13.5, 'maple-leaf': 2.3, petal: 3.1, snowflake: 2.3, shovel: 2.45,
-  ring: 17, note: 2.9, zzz: 5.8, heart: 3, confetti: 4, bubble: 1.6, glow: 5, net: 5.4, flame: 7.7, sweat: 6
+  ring: 17, note: 2.9, zzz: 5.8, heart: 3, confetti: 4, bubble: 1.6, glow: 5, net: 5.4, flame: 7.7, sweat: 6, star: 6
 };
+/** The high five's star flying between the two, u across at its full size (the DOM zap's, IslandScene's .zap). */
+const ZAP_U = 26;
 /** A villager's mark over its head (NH's float: about a third of its head across), world units across. */
 const MARK_U: Record<string, number> = { sparkle: 16, heart: 15, note: 14, zzz: 15, bang: 14, sweat: 11 };
 /** A 「！」's hop's height (u: a bug's rear; the bite's is biteMark.ts's, its pop the same). */
@@ -108,6 +114,51 @@ const CONFETTI = ['#ff6f91', '#ffd84a', '#6fd3ff', '#8be07a', '#c89cff', '#ff9d3
 
 /** A source's meshes: their geometry (quantized by the converter: placed by its matrix, never baked), map and colour. */
 type Src = { geo: BufferGeometry; map: Texture | null; color: Color; add?: boolean; m?: Matrix4; vc?: boolean }[];
+
+/** NH's star sparkle as the DOM's flourishes draw it (Fx.svelte's STAR path: four long curved points, gold, a white
+ *  heart) with a warm rim round it, so it reads on cream, sand and a pale villager alike; geometry in code, no texture: as sharp as
+ *  the canvas is at any size (a sparkle, the high five's flying star, a villager's ✦ mark). Radius 1, facing +z, in
+ *  its vertex colours, back to front in one draw (the rim, the fill, the heart: they never write depth). */
+export function starGeometry(): BufferGeometry {
+  // the path's quarter (M12 0 C13 8 16 11 24 12 in its 24 box): the top point to the right one, the rest by symmetry
+  const N = 14, rim: [number, number][] = [];
+  const P = [[0, 1], [1 / 12, 1 / 3], [1 / 3, 1 / 12], [1, 0]];
+  for (let q = 0; q < 4; q++) {
+    const c = Math.cos((-q * Math.PI) / 2), s = Math.sin((-q * Math.PI) / 2);
+    for (let i = 0; i < N; i++) {
+      const t = i / N, u = 1 - t, b = [u * u * u, 3 * u * u * t, 3 * u * t * t, t * t * t];
+      const x = b.reduce((a, w, k) => a + w * P[k][0], 0), y = b.reduce((a, w, k) => a + w * P[k][1], 0);
+      rim.push([x * c - y * s, x * s + y * c]);
+    }
+  }
+  const pos: number[] = [], col: number[] = [];
+  const tri = (a: [number, number], b: [number, number], c: [number, number], z: number, k: Color) => {
+    pos.push(a[0], a[1], z, b[0], b[1], z, c[0], c[1], z);
+    for (let i = 0; i < 3; i++) col.push(k.r, k.g, k.b);
+  };
+  const n = rim.length, W = 0.1;
+  // the rim: the outline pushed out along its normal (the rim runs clockwise: outward is the tangent turned a quarter
+  // anticlockwise), a little more at the points
+  const out = rim.map(([x, y], i) => {
+    const [ax, ay] = rim[(i + n - 1) % n], [bx, by] = rim[(i + 1) % n];
+    let nx = -(by - ay), ny = bx - ax;
+    const l = Math.hypot(nx, ny) || 1;
+    nx /= l, ny /= l;
+    const w = i % N === 0 ? W * 1.6 : W;
+    return [x + nx * w, y + ny * w] as [number, number];
+  });
+  const rimC = new Color('#f2a93b'), fill = new Color('#ffe27a'), heart = new Color('#ffffff');
+  for (let i = 0; i < n; i++) tri([0, 0], out[i], out[(i + 1) % n], 0, rimC);
+  for (let i = 0; i < n; i++) tri([0, 0], rim[i], rim[(i + 1) % n], 0.001, fill);
+  for (let i = 0, m = 20; i < m; i++) {
+    const a = (i / m) * Math.PI * 2, b = ((i + 1) / m) * Math.PI * 2, r = 0.25;
+    tri([0, 0], [r * Math.cos(a), r * Math.sin(a)], [r * Math.cos(b), r * Math.sin(b)], 0.002, heart);
+  }
+  const g = new BufferGeometry();
+  g.setAttribute('position', new Float32BufferAttribute(pos, 3));
+  g.setAttribute('color', new Float32BufferAttribute(col, 3));
+  return g;
+}
 
 /** A soft round glow (a firefly). */
 function glow(): Texture {
@@ -140,6 +191,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     if (name === 'ring') p = Promise.resolve([{ geo: new RingGeometry(0.72, 1, 36).rotateX(-Math.PI / 2), map: null, color: new Color('#fff7de') }]);
     else if (name === 'bubble') p = Promise.resolve([{ geo: new SphereGeometry(1, 10, 8), map: null, color: new Color('#e9f8ff') }]);
     else if (name === 'glow') p = Promise.resolve([{ geo: quad, map: glow(), color: white, add: true }]);
+    else if (name === 'star') p = Promise.resolve([{ geo: starGeometry(), map: null, color: white, vc: true }]);
     else {
       const m = MODEL[name];
       p = loader.loadAsync(`${base}${m}.glb?v=${MODELS[m]?.v ?? 0}`).then((g) => {
@@ -170,7 +222,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
   };
   let warmed = false, warmMats: MeshBasicMaterial[] = [];
   async function warm(renderer: WebGLRenderer, camera: Camera) {
-    const names = [...new Set([...Object.keys(MODEL), 'ring', 'bubble', 'glow'])];
+    const names = [...new Set([...Object.keys(MODEL), 'ring', 'bubble', 'glow', 'star'])];
     const srcs = (await Promise.all(names.map(load))).filter((x): x is Src => !!x);
     if (disposed) return;
     // each source once, compiled in a scene of its own (the island's fog: the same shaders) and its texture uploaded:
@@ -230,9 +282,9 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       scene.add(obj);
       const k = SCALE[name] ?? 5;
       parts.push({
-        name, obj, mats, t0: performance.now(), life: p.life, x, y, z, vx: p.vx ?? 0, vy: p.vy ?? 0, vz: p.vz ?? 0, g: p.g ?? 0, spin: p.spin ?? 0,
+        name: p.name ?? name, obj, mats, t0: performance.now(), life: p.life, x, y, z, vx: p.vx ?? 0, vy: p.vy ?? 0, vz: p.vz ?? 0, g: p.g ?? 0, spin: p.spin ?? 0,
         s0: (p.s0 ?? 1) * k, s1: (p.s1 ?? 1) * k, face: p.face ?? true, flat: p.flat ?? false, sway: p.sway ?? 0, arc: p.arc ?? 0,
-        blink: p.blink ?? false, tag: p.tag, fade: p.fade ?? true, pop: p.pop, held: p.held
+        blink: p.blink ?? false, tag: p.tag, fade: p.fade ?? true, pop: p.pop, held: p.held, follow: p.follow
       });
       if (!p.tag) shown++;
       onLoad?.();
@@ -246,6 +298,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? [] : null;
   const hook = {
     live: (name: string) => parts.filter((p) => p.name === name && p.obj.scale.x > 0).map((p) => ({ x: p.obj.position.x, y: p.obj.position.y, z: -p.obj.position.z, s: p.obj.scale.x })),
+    /** Each drawn part's textures' sizes (px; null: none, drawn as geometry in its colours, sharp at any size). */
+    maps: (name: string) => parts.filter((p) => p.name === name).map((p) => p.mats.map((m) => (m.map ? [(m.map.image as { width: number }).width, (m.map.image as { height: number }).height] : null))),
     log: () => log
   };
   if (log) (window as unknown as { __fx3?: unknown }).__fx3 = hook;
@@ -284,7 +338,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       case 'sparkle': {
         for (let i = 0; i < 3; i++) {
           const a = (i / 3) * Math.PI * 2 + rnd(0, 1);
-          part('sparkle', x + Math.cos(a) * 5 * k, y + 6 * k, z, { life: 640, vx: Math.cos(a) * 14 * k, vy: 18 + Math.sin(a) * 6, s0: 0.25 * k, s1: 0.9 * k, spin: rnd(-3, 3), tint: o.v });
+          part('star', x + Math.cos(a) * 5 * k, y + 6 * k, z, { life: 640, vx: Math.cos(a) * 14 * k, vy: 18 + Math.sin(a) * 6, s0: 0.25 * k, s1: 0.9 * k, spin: rnd(-3, 3), tint: o.v });
         }
         return;
       }
@@ -354,8 +408,15 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         return;
       case 'mark': {
         // a villager's floating mark: pops in over its head, bobs a little, fades (Emote.svelte's float)
-        const m = o.v && MODEL[o.v] ? o.v : 'sparkle', s = (MARK_U[m] ?? 14) / ((SCALE[m] ?? 5) * 2) * k;
-        part(m, x, y, z, { life: o.ms ?? 2200, s0: s * 0.4, s1: s, vy: 2, sway: 0.6, face: true });
+        const m = o.v && MODEL[o.v] ? o.v : 'sparkle', src = m === 'sparkle' ? 'star' : m, s = (MARK_U[m] ?? 14) / ((SCALE[src] ?? 5) * 2) * k;
+        part(src, x, y, z, { life: o.ms ?? 2200, s0: s * 0.4, s1: s, vy: 2, sway: 0.6, face: true });
+        return;
+      }
+      case 'zap': {
+        // the high five's star, flying from one villager's hands to the other's (IslandScene's arc: `follow`), turning
+        // half a turn as it goes, swelling then easing (as the DOM zap's keyframes)
+        const s = (ZAP_U / ((SCALE.star ?? 6) * 2)) * k;
+        part('star', x, y, z, { name: 'zap', life: o.ms ?? 520, s0: s * 0.5, s1: s * 1.1, spin: Math.PI / ((o.ms ?? 520) / 1000), follow: o.follow });
         return;
       }
       case 'firefly':
@@ -382,8 +443,14 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         p.life = Math.min(p.life, age + POP_OUT_MS);
       }
       const s = age / 1000;
-      const px = p.x + p.vx * s + (p.sway ? Math.sin(age / 180) * p.sway : 0), py = p.y + p.vy * s + 0.5 * p.g * s * s, pz = p.z + p.vz * s;
-      p.obj.position.set(px, py, -pz);
+      if (p.follow) {
+        // (where its mover says it is now)
+        const [fx, fz, fl = 0] = p.follow();
+        p.obj.position.set(fx, ground(fx, fz) + fl, -fz);
+      } else {
+        const px = p.x + p.vx * s + (p.sway ? Math.sin(age / 180) * p.sway : 0), py = p.y + p.vy * s + 0.5 * p.g * s * s, pz = p.z + p.vz * s;
+        p.obj.position.set(px, py, -pz);
+      }
       if (p.pop) {
         // in with an overshoot, a little hop now and then (its feet on its spot), out by shrinking
         const out = p.end === undefined ? 1 : Math.max(0, 1 - (age - p.end) / POP_OUT_MS);
