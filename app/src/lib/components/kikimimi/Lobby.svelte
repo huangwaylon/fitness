@@ -9,6 +9,7 @@
   import PlayerChip from './PlayerChip.svelte';
   import { sound } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
+  import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -19,10 +20,7 @@
   /** Everyone in the lobby or on the island: joined first (A B G), then those here who haven't. */
   const people = $derived(ORDER.filter((w) => w === game.me || v.players.some((p) => p.who === w) || game.here.includes(w)));
   const joined = (w: Who) => v.players.some((p) => p.who === w);
-  const hostName = $derived.by(() => {
-    const view = week.view, h = v.host;
-    return !view || !h ? '' : h === 'G' ? view.guest.villagerName : view.people[h].villagerName;
-  });
+  const hostName = $derived(week.view && v.host ? villagerNameOf(week.view, v.host) : '');
   /** The sound check: not tried, tried (the hint shows), or failed to play. */
   let tested = $state(false);
   const zero = $derived(sound.settings.volume <= 0);
