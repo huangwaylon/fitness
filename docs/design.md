@@ -1997,11 +1997,19 @@ DEFAULT_LOOKS, the signed-off looks), assembled at runtime from parts converted 
   `contract/partIds.json` is every id the app has (compact: an id ending in a digit by its line), given to
   `usePartTable` by `store/look.ts`, so a look naming another part (a newer app's) reads as いつもの's part. The relay
   keeps the form check only (an older relay keeps a newer phone's part).
-- **What's converted:** every hairstyle (37, with NH's 16 under-a-hat cuts), eye (26) and mouth (4), and every
-  top, bottom, shoe, sock, pair of glasses and hair ornament the closet sweep wore cleanly (3,917 items: 272 meshes
-  3.1 MB, textures 11.7 MB, all under `/room/player/`, lazy). The first closet (the bundled table) is every colour of
-  the art scout's lines (237 items). Hats (`--hats`) are converted and worn (over NH's cut-down hair) but not yet
-  listed. An outfit is ~60 KB over the body.
+- **What's converted:** every hairstyle (37, with NH's 16 under-a-hat cuts), eye (26, each with its iris mask) and
+  mouth (4), and every top, bottom, shoe, sock, pair of glasses, hat and hair ornament the closet sweep wore cleanly
+  (4,338 items: 376 meshes 3.9 MB, textures 13.2 MB, ~17 MB with the faces and the table, all under `/room/player/`,
+  lazy). The first closet (the bundled table) is every colour of the art scout's lines and four hat lines (259 items).
+  An outfit is ~60 KB over the body.
+- **Hats (ぼうし):** at NH's brim; the hair goes under it as NH's cut-down version where the style has one, else away.
+  A hat and a hair ornament are both headwear: wearing one takes the other off (closet.ts `wear`).
+- **Eye colour:** a tint, as the hair's and the skin's: each eye type's iris mask (`face/<PlayerEyeNN>.iris.webp`, the
+  atlas's cells: the iris and, darker, the pupil) takes `eyeColor`.
+- **Hair ornaments:** at each hairstyle's top or left side as the pipeline measures them (rays from far out toward the
+  head's middle, the hair's first surface: parts.json `hair.<id>.spot`): crowns, wreaths, headbands and horns on top, the
+  L ones (hairpins, side bows) on the left side standing out of the hair; B's bow at her ponytail's tie, as signed off
+  (player3d.ts `ORNAMENT_ON`).
 
 **The runtime** (`components/player3d/`: `player3d.ts`, `tune.ts`, `parts.ts`, `portrait.ts`):
 - `createPlayer(id, look, asset('/room/player'), seed)` → a `Player3D`: villager3d's `Villager3D` (the same

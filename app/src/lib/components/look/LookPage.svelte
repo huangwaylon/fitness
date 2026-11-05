@@ -157,7 +157,7 @@
   let hue = $state<Hue | null>(null);
   const KINDS: Record<Category, ClosetKind[]> = {
     face: ['eye', 'mouth'], hair: ['hair'], tops: ['top'], bottoms: ['bottom'], onepiece: ['onepiece'],
-    socks: ['socks'], shoes: ['shoes'], acc: ['glasses', 'ornament']
+    socks: ['socks'], shoes: ['shoes'], hat: ['hat'], acc: ['glasses', 'ornament']
   };
   const garments = $derived(cat !== 'face' && cat !== 'hair');
   const colours = closet().colours;

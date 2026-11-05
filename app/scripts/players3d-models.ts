@@ -14,7 +14,7 @@
 // scout curated, design/avatar/catalog.md), or --all (every item the closet sweep wore cleanly: ~19 MB). The sweep's
 // exclusions are kept (customs designs, underwater variants, NPC aprons, placeholders; umbrellas aren't worn).
 //
-// Usage (from app/): NH_MODELS=~/Downloads/Model node scripts/players3d-models.ts [--all] [--hats] [--map]
+// Usage (from app/): NH_MODELS=~/Downloads/Model node scripts/players3d-models.ts [--all] [--map]
 // The model folder is untrusted input and never part of the repo: only the named folders' .dae and .png files are
 // copied into a scratch dir (three.js reads them in the page; nothing in them is run). Needs Google Chrome (Playwright's
 // channel 'chrome'), cwebp and dwebp; gltfpack from node_modules. --map refetches the community's item names (Norviah's
@@ -53,7 +53,7 @@ const STARTER: Record<string, RegExp> = {
   socks: /^SocksTex(Dailysocks|Line|Footcover)\d$/,
   glasses: /^AccessoryGlass(Circle|Oval|Thurmont|Octagon|Square|Round)\d$/,
   ornament: /^CapOrnament(LRibbon|TRibbon|LHearthairpin|LFlowerhairpin|LStarhairpin)\d$/,
-  hat: /^CapHat(Beret|Knitcap)\d$/
+  hat: /^CapHat(Beret|Knitcap|Baseball|Strawhat)\d$/
 };
 const SLOT_PREFIX: [string, string][] = [['top', 'TopsTex'], ['bottom', 'BottomsTex'], ['shoes', 'Shoes'], ['socks', 'SocksTex'], ['glasses', 'AccessoryGlass'], ['ornament', 'CapOrnament'], ['hat', 'CapHat']];
 /** The closet sweep's exclusions (design/avatar/closet/excluded.json), and its by-design odd glasses kept out of a
@@ -67,8 +67,7 @@ interface Item { id: string; slot: string; mesh: string | null; onepiece?: boole
 const items: Item[] = [];
 for (const id of NAMES) {
   const slot = SLOT_PREFIX.find(([, p]) => id.startsWith(p))?.[0];
-  // (hats only with --hats: the runtime wears them over NH's cut-down hair, the closet hasn't their grid yet)
-  if (!slot || excluded(id) || (slot === 'hat' && !process.argv.includes('--hats')) || (!all && !STARTER[slot].test(id))) continue;
+  if (!slot || excluded(id) || (!all && !STARTER[slot].test(id))) continue;
   if (slot === 'glasses' && id.startsWith('AccessoryGlassmouth')) continue;
   let mesh: string | null = null;
   if (slot === 'top') mesh = topsMeshes.find((m) => id.slice(7).startsWith(m.slice(10))) ?? null;
@@ -211,7 +210,11 @@ console.log(`body: ${(table.body as { kb: number }).kb} KB, ${b.tris} tris`);
 // the faces
 const face: Record<string, unknown> = {};
 for (const [kind, list] of [['eye', eyes], ['mouth', mouths]] as const) {
-  for (const id of list) face[id] = webp(await call<string>('faceAtlas', kind, id, copy(id)), join(OUT, 'face', `${id}.webp`), 82);
+  for (const id of list) {
+    face[id] = webp(await call<string>('faceAtlas', kind, id, copy(id)), join(OUT, 'face', `${id}.webp`), 82);
+    // (an eye's iris mask: the eye colour's tint)
+    if (kind === 'eye') (face[id] as Record<string, unknown>).iris = webp(await call<string>('irisAtlas', id, copy(id)), join(OUT, 'face', `${id}.iris.webp`), 80);
+  }
 }
 table.face = face;
 
@@ -229,7 +232,10 @@ for (const h of [...hairs, ...caps]) await doMesh(h, true);
 for (const k of new Set(meshKey.values())) await doMesh(k, false);
 table.mesh = meshes;
 const capOf = (h: string) => (HAS.has(h.replace('PlayerHair', 'PlayerHairCap')) ? h.replace('PlayerHair', 'PlayerHairCap') : null);
-table.hair = Object.fromEntries(hairs.map((h) => [h, { mesh: h, cap: capOf(h) }]));
+// each hairstyle's top and left side, measured (hair ornaments sit there)
+const spots: Record<string, unknown> = {};
+for (const h of hairs) spots[h] = await call('hairSpots', h, copy(h));
+table.hair = Object.fromEntries(hairs.map((h) => [h, { mesh: h, cap: capOf(h), spot: spots[h] }]));
 
 // the items' textures
 const out: Record<string, unknown> = {};

@@ -88,6 +88,48 @@ window.faceAtlas = async (kind, folder, more) => {
   }
   return canvasOf(out).toDataURL('image/png');
 };
+/** An eye type's iris mask, as its atlas (the same cells): where the eye's own colour is dark inside the eye (its iris and
+ *  pupil, NH's eye colour tints it) the albedo's alpha (1 the iris, ~0.5 the pupil: darker), else 0; grey, opaque. */
+window.irisAtlas = async (folder, more) => {
+  Object.assign(FILES, more ?? {});
+  const n = 16, cols = 4, cw = 128, ch = 64, rows = 4, out = new ImageData(cols * cw, rows * ch);
+  for (let i = 0; i < n; i++) {
+    const a = await px(folder, `mEye_Alb.${i}.png`, cw, ch);
+    if (!a) continue;
+    const m = await px(folder, `mEye_Mix.${i}.png`, cw, ch);
+    const x0 = (i % cols) * cw, y0 = (rows - 1 - Math.floor(i / cols)) * ch;
+    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
+      const j = (y * cw + x) * 4, o = ((y0 + y) * cols * cw + x0 + x) * 4;
+      const eye = !m || m.data[j] < 128, dark = Math.max(a.data[j], a.data[j + 1], a.data[j + 2]) < 80;
+      const v = eye && dark ? a.data[j + 3] : 0;
+      out.data[o] = out.data[o + 1] = out.data[o + 2] = v;
+      out.data[o + 3] = 255;
+    }
+  }
+  return canvasOf(out).toDataURL('image/png');
+};
+
+/** Where a hairstyle's top and its left side are (hair ornaments: NH places them per hairstyle, the files don't say
+ *  where): rays from far out toward the head's middle, the first surface hit (the hair's, else the head's), relative
+ *  to the head joint in the body's axes. top: [x, y, z]; side: [x, y, z]. */
+window.hairSpots = async (folder, more) => {
+  Object.assign(FILES, more ?? {});
+  await P.wear('hair', folder);
+  P.body.updateMatrixWorld(true);
+  const head = new THREE.Vector3().setFromMatrixPosition(P.bones.get('Head').matrixWorld);
+  const centre = head.clone().add(new THREE.Vector3(0, 3.4, -0.3));
+  const meshes = P.out.filter((r) => r.slot === 'hair' || r.slot === 'mSkin').map((r) => r.mesh);
+  for (const m of meshes) { m.skeleton?.update(); m.boundingSphere = null; m.boundingBox = null; }
+  const ray = new THREE.Raycaster();
+  const spot = (d) => {
+    d.normalize();
+    ray.set(centre.clone().addScaledVector(d, 30), d.clone().negate());
+    const hit = ray.intersectObjects(meshes, false)[0];
+    const p = hit ? hit.point : centre.clone().addScaledVector(d, 4);
+    return p.sub(head).toArray().map((v) => +v.toFixed(2));
+  };
+  return { top: spot(new THREE.Vector3(0, 1, -0.08)), side: spot(new THREE.Vector3(0.8, 0.55, 0.2)) };
+};
 /** The three blush shapes: white (skin) where _Alb is white, the blush (#f3958a) where black, the skin weight as alpha. */
 window.cheeks = async () => {
   const out = [];
