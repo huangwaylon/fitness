@@ -453,8 +453,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       if (!w.size && v.state() === 'idle' && !v.seat()) {
         // (a human player: NH's taller figure, its head higher up it and narrower than a villager's: from its crown)
         if ('dress' in v) {
-          const top = v.crown(crownP), h = top ? top.y - v.group.position.y : 0;
-          if (h > 10) w.size = [Math.round(h * 0.45), Math.round(h)];
+          // (its core, as a villager's: the head's crown a little over the box, which an oak's canopy then covers)
+          const top = v.crown(crownP), h = top ? (top.y - v.group.position.y) * 0.88 : 0;
+          if (h > 10) w.size = [Math.round(h * 0.5), Math.round(h)];
         } else {
           const hb = v.head(), h = hb ? (hb.getWorldPosition(headP).y - v.group.position.y) * 1.75 : 0;
           if (h > 10) w.size = [Math.round(h * 0.6), Math.round(h)];
