@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { IDBFactory } from 'fake-indexeddb';
-import type { SnapshotRows } from '#lib/contract/api.ts';
+import { SNAPSHOT_PAGE, type EventRow, type SnapshotRows } from '#lib/contract/api.ts';
 import { configureStorage, getKey, getStoredMe, type KV } from './storage.ts';
 import { configureTransport, post } from './transport.ts';
 import { ackedEvents, backoffMs, enqueue, flush, holdEvent, nextRetryAt, queued, retryNow, unqueue } from './queue.ts';
@@ -357,6 +357,49 @@ describe('snapshot cache', () => {
     expect(calls.map((c) => c.since ?? null)).toEqual([null, '2026-11-02T01:00:00.000Z', null]);
     expect(r.ok && r.cache.me).toBe('B');
     expect(r.ok && r.cache.rows.metrics).toEqual(rowsB.metrics);
+  });
+  describe('a paged snapshot (the record pages it: `page`, `next`, `after`)', () => {
+    const ev = (i: number): EventRow => [new Date(Date.parse('2026-11-02T01:00:00.000Z') + i * 1000).toISOString(), 'A', `p${i}`, 'pref', '{"key":"locale","value":"en"}'];
+    /** The record's pages of `rows` (2 a page), `rev` per call; `fail` answers that page `unavailable`. */
+    const paged = (rows: EventRow[], o: { rev?: (n: number) => string; fail?: number } = {}) => {
+      let n = 0;
+      return (b: Record<string, unknown>) => {
+        const i = typeof b.after === 'string' ? Number(b.after) : 0;
+        if (o.fail === n++) return { ok: false, error: 'unavailable' };
+        const from = b.since ? rows.filter((r) => r[0] > String(b.since)) : rows;
+        const page = from.slice(i, i + 2);
+        return { ok: true, me: 'A', rev: o.rev?.(n) ?? 'e1', now: '2026-11-02T02:00:00.000Z', rows: { metrics: [], events: page }, ...(i + 2 < from.length ? { next: String(i + 2) } : {}) };
+      };
+    };
+
+    it('fetches every page (asking for SNAPSHOT_PAGE rows, each after the last one’s `next`) and applies them together', async () => {
+      handler = paged([0, 1, 2, 3, 4].map(ev));
+      const r = await refreshSnapshot();
+      expect(calls.map((c) => [c.page, c.after ?? null])).toEqual([[SNAPSHOT_PAGE, null], [SNAPSHOT_PAGE, '2'], [SNAPSHOT_PAGE, '4']]);
+      expect(r.ok && r.cache.rows.events.map((x) => x[2])).toEqual(['p0', 'p1', 'p2', 'p3', 'p4']);
+      expect(r.ok && r.cache.since).toBe(ev(4)[0]);
+      expect((await loadCache())?.rows.events).toHaveLength(5);
+    });
+
+    it('a page that fails leaves the cache as it was: nothing of the pages before it is applied', async () => {
+      handler = paged([0, 1].map(ev));
+      await refreshSnapshot();
+      handler = paged([0, 1, 2, 3, 4, 5].map(ev), { fail: 1 });
+      const r = await refreshSnapshot();
+      expect(r.ok).toBe(false);
+      expect((await loadCache())?.rows.events.map((x) => x[2])).toEqual(['p0', 'p1']);
+    });
+
+    it('a new epoch between two pages starts the fetch over, whole', async () => {
+      handler = paged([0, 1].map(ev));
+      await refreshSnapshot();
+      calls = [];
+      handler = paged([0, 1, 2, 3, 4].map(ev), { rev: (n) => (n === 1 ? 'e1' : 'e2') });
+      const r = await refreshSnapshot();
+      expect(calls.map((c) => [c.since ?? null, c.after ?? null])).toEqual([[ev(1)[0], null], [ev(1)[0], '2'], [null, null], [null, '2'], [null, '4']]);
+      expect(r.ok && r.cache.rev).toBe('e2');
+      expect(r.ok && r.cache.rows.events.map((x) => x[2])).toEqual(['p0', 'p1', 'p2', 'p3', 'p4']);
+    });
   });
   it('pairing again while a fetch is in flight discards its reply: no old rows or `me` come back', async () => {
     let pairMidway = () => {};

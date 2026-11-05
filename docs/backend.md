@@ -197,7 +197,10 @@ segments that still hold the same rows in the same place and writes the rest ane
 only the last, partly filled segment (≤ ~300 KB of meal log rows, usually far less), after a compaction the segments from its first dropped
 row on. The meta and the segments it lists go in one transaction, so a reader sees one whole set; a listed segment
 missing reads as no cache (a full fetch), segments it doesn't list (another tab's) go on the next save; anything else in the store (an older layout) reads as
-no cache and the next save clears it. A refresh posts `snapshot` with `since`,
+no cache and the next save clears it. A refresh posts `snapshot` with `since` and `page` (4,000 rows; 2026-11-05),
+fetching each page after the last one's `next` and applying them together at the end (`sync/cache.ts fetchPages`: a
+page that fails leaves the cache as it was, a new epoch between two pages starts over whole, an older relay's one reply
+is taken as it comes), then
 merges (`model/snapshot.ts`: deduped by natural key, its key set kept with each row list and layered by each merge, so
 a poll costs the rows it brings; ordered by `at`; an empty poll keeps the same rows object, so nothing re-reduces and
 no rows are written), records the server clock skew and saves in order. Overlapping refreshes share one request; a `fresh` caller waits for one more after any in flight. A reply that
@@ -733,7 +736,7 @@ every Shortcut run appends each changed value of its 32 days; events: tallies, i
 meal log's ~300-byte rows), not the ~750 rows / ~1 MB once budgeted. A full fetch (a new epoch, a new phone, a dropped
 cache) was the whole record in one reply and one DO request (~97k rows read, ~2 % of the day's 5 M); polls stay small.
 **Since 2026-11-05 the record compacts itself** ([The record](#the-record) "Compaction") **and pages its snapshot**
-([API](#api)). A synthetic year (`relay/test/compact.test.ts`: both phones' Shortcut every waking hour, A's weight, the
+([API](#api); the phones fetch 4,000 rows a page and apply the pages together: [Snapshot cache](#snapshot-cache)). A synthetic year (`relay/test/compact.test.ts`: both phones' Shortcut every waking hour, A's weight, the
 meal log of three, a tally a person a day; fewer metrics rows than the review's 32-day re-sends): a cold fetch before
 49,215 rows (39,425 metrics, 9,790 events), 5.16 MB, 49,216 rows read; after compaction 13,168 rows (3,378 metrics),
 2.97 MB, 13,169 rows read, in 4 pages of ≤ 4,000 rows (the meal log's rows are most of what's left). The first

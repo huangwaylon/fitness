@@ -3,7 +3,7 @@
 // another epoch: the record rebuilt, docs/backend.md#revision) drops it and fetches everything. When IndexedDB is unavailable the cache lives in memory for the
 // session (reported).
 import type { Who } from '#lib/types.ts';
-import { DATE_RE, isWho, type EventRow, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
+import { DATE_RE, isWho, SNAPSHOT_PAGE, type EventRow, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import { compactRows } from '#lib/model/compact.ts';
 import { finalMs, lastLockAt } from '#lib/model/state.ts';
@@ -345,16 +345,50 @@ async function fetchSnapshot(clientNow: () => number): Promise<ApiResult<{ cache
   }
 }
 
+/** At most this many pages a fetch (SNAPSHOT_PAGE rows each: far past any record). */
+const MAX_PAGES = 200;
+type SnapshotOk = Extract<SnapshotReply, { ok: true }>;
+
+/**
+ * The snapshot after `since` (null: everything), every page of it (docs/backend.md#api: `page`, the reply's `next` as
+ * the next `after`), as one reply: the pages' rows together, the last page's `now`. Nothing is applied until all of
+ * them are in, so a fetch that fails midway leaves the cache as it was; a new epoch between two pages starts over,
+ * whole. A record from before paging answers every row at once (no `next`).
+ */
+async function fetchPages(since: string | null): Promise<ApiResult<SnapshotOk & { whole: boolean }>> {
+  let from = since;
+  for (let attempt = 0; attempt < 2; attempt++, from = null) {
+    const metrics: SnapshotRows['metrics'] = [], events: SnapshotRows['events'] = [];
+    let after: string | undefined, first: SnapshotOk | null = null;
+    for (let n = 0; n < MAX_PAGES; n++) {
+      const r = await post<SnapshotOk>('snapshot', { ...(from ? { since: from } : {}), page: SNAPSHOT_PAGE, ...(after ? { after } : {}) });
+      if (!r.ok) return r;
+      // a new epoch (or another person) under the fetch: over again, whole
+      if (first && (r.rev !== first.rev || r.me !== first.me)) break;
+      after = typeof r.next === 'string' ? r.next : undefined;
+      // one page: as it came (the merge checks it)
+      if (!first && !after) return { ...r, whole: !from };
+      first ??= r;
+      if (!Array.isArray(r.rows?.metrics) || !Array.isArray(r.rows.events)) throw new Error('a malformed snapshot page');
+      metrics.push(...r.rows.metrics);
+      events.push(...r.rows.events);
+      if (!after) return { ...r, rows: { metrics, events }, whole: !from };
+      if (n === MAX_PAGES - 1) return { ok: false, error: 'unavailable', detail: 'too many snapshot pages' };
+    }
+  }
+  return { ok: false, error: 'unavailable', detail: 'the epoch changed during the fetch' };
+}
+
 async function fetchAndMerge(clientNow: () => number): Promise<ApiResult<{ cache: SnapshotCache }>> {
   const key = getKey();
   const prev = await loadCache();
   const me = getStoredMe();
   const since = prev && (!me || prev.me === me) ? prev.since : null;
-  let r = await post<Extract<SnapshotReply, { ok: true }>>('snapshot', since ? { since } : {});
+  let r = await fetchPages(since);
   // Start over when the record is in another epoch than these rows were cached in (a restore), or when the key answers for someone
   // else: a `since` page merged into nothing would pass for the whole history.
-  const stale = r.ok && since && prev && (r.rev !== prev.rev || r.me !== prev.me);
-  if (stale) r = await post<Extract<SnapshotReply, { ok: true }>>('snapshot', {});
+  const stale = r.ok && since && prev && (r.whole || r.rev !== prev.rev || r.me !== prev.me);
+  if (stale && !(r.ok && r.whole)) r = await fetchPages(null);
   // Paired again while this was in flight: the reply belongs to the old key, so neither its rows nor its `me` may
   // overwrite what pairing just reset (the refresh pairing starts fetches for the new key).
   if (getKey() !== key) return { ok: false, error: 'unavailable', detail: 'paired again during the fetch' };
