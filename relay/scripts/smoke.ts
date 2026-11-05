@@ -294,6 +294,27 @@ if (KEY_C) {
   for (const c of [ga, gb, g]) c.ws.close(1000);
 }
 
+// The record's paged snapshot and its compaction (docs/backend.md "Snapshot size"): the pages together are the whole
+// snapshot; a compaction run answers (the cron runs it daily).
+{
+  const api = (key: string, action: string, extra: object = {}) =>
+    fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action, ...extra }) }).then((r) => r.json() as Promise<Record<string, any>>);
+  const whole = await api(KEY_A, 'snapshot');
+  const n = whole.rows.metrics.length + whole.rows.events.length;
+  const page = Math.max(1, Math.ceil(n / 3));
+  let after: string | undefined, rows = 0, pages = 0;
+  do {
+    const r = await api(KEY_A, 'snapshot', { page, ...(after ? { after } : {}) });
+    rows += r.rows.metrics.length + r.rows.events.length;
+    after = r.next;
+    pages++;
+  } while (after && pages < 10);
+  check(rows === n && pages <= 4, `a paged snapshot is the whole one (${n} rows in ${pages} pages)`);
+  const text = JSON.stringify({ op: 'compact' }), t = String(Date.now());
+  const c = await fetch(new URL('/admin', http), { method: 'POST', headers: { 'X-Island-Time': t, 'X-Island-Sig': createHmac('sha256', secret).update(`${t}.${text}`).digest('hex') }, body: text }).then((r) => r.json() as Promise<Record<string, unknown>>);
+  check(c.ok === true && typeof c.deleted === 'number', `the record's compaction runs (${JSON.stringify(c)})`);
+}
+
 // The real weather (docs/backend.md "The real weather"): a fixture timeline put in by a signed /admin reaches a phone
 // after its welcome and when it changes, a fetch now from Open-Meteo (JMA's models) gives 30+
 // hours, and /health says how old it is.

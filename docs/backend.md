@@ -107,12 +107,12 @@ preflight; a Shortcut's `application/json` is fine), `{key, action, ...}`. Every
 | `ingest` | the Shortcut's fields ([Ingest](#ingest)) | `{ok, metrics, skipped?, warnings?}` |
 | `event` | `id, type, data` | `{ok, duplicate?}`: a repeated `id` is acked as a duplicate, so retries are safe |
 | `events` | `events: [{id, type, data}, …]` (≤ 50) | `{ok, results: [{id, ok, duplicate?, at?} \| {id, ok: false, error, detail?}]}`: each kept in order as `event` would, `at` its stored row's; one whose write throws is `{id, ok: false, error: 'unavailable'}` alone (nothing of it kept), the others go on and the notice tells of what committed |
-| `snapshot` | `since?` (ISO: the max `at` cached) | `{ok, me, now, rev, rows:{metrics, events}}`: compact arrays in column order, rows with `at > since`, both people |
+| `snapshot` | `since?` (ISO: the max `at` cached); `page?` (1–10,000 rows a reply), `after?` (the last page's `next`) | `{ok, me, now, rev, rows:{metrics, events}, next?}`: compact arrays in column order, rows with `at > since`, both people. With `page` (2026-11-05), at most that many rows in (at, table, seq) order and `next` (a cursor `<at>\|m\|<seq>` or `…\|e\|…`) while there are more: the pages together are the whole reply, and a row written between two pages is in a later one. Without `page`, every row at once (as before) |
 | `uploads` | | `{ok, rows:[{at, status, bytes, notes}]}`: the caller's last 20 audit rows, newest first |
 | `whoami` | | `{ok, me, build}` (pairing) |
-| `health` | no `key` | `{ok, build: 'relay-1'}` |
+| `health` | no `key` | `{ok, build: 'relay-2'}` |
 
-An unreadable `since` is `bad_request`; an unknown action too.
+An unreadable `since`, a `page` out of range, an `after` that isn't a cursor (or one without `page`) is `bad_request`; an unknown action too.
 
 ## Auth and limits
 
@@ -207,7 +207,9 @@ lands after pairing again is dropped.
 
 On each merge `model/compact.ts` drops `metrics` rows of locked weeks the model can no longer read: per (person, date,
 metric) it keeps the latest row at the lock and the latest overall; per person the newest row. Weight keeps the newest
-row per day. Views are unchanged; ~90% of rows go. A `tally` replaced by a later one of the same person and day goes
+row per day. Views are unchanged; ~90% of rows go. The rule is the contract's (`contract/compact.ts compactKeep`,
+`weekLockMs` = the model's `finalMs`, checked equal), and **the record compacts its own rows by it** (2026-11-05,
+[The record](#the-record) Compaction), so a cold fetch brings what a compacted cache holds. A `tally` replaced by a later one of the same person and day goes
 too (the record no longer has it), and so does a `food`, `food_recipe` or `food_custom` op the meal log's fold no longer reads
 (`model/food.ts foldedAway`: one replaced by a later op of the same id, or refused): per id the op the record keeps,
 a removal with the op it removed (alone the fold would read it as stale). ~20 % of the meal log's rows (edits) go.
@@ -284,7 +286,7 @@ any phone sends it: not done.)
   `id` unique, `at`, `person`, `type`, `data`, `slot` unique, `late`; indexes on `at` and `type`), `ids` (every event id
   ever accepted), `uploads` (the ingest audit), `meta` (`last_at`, `rev`).
 - **API:** `POST /api` (`{key, action, ...}` as text/plain JSON; `ingest`, `event`,
-  `snapshot`, `uploads`, `whoami`, keyless `health` → `{ok, build: 'relay-1'}`), every reply JSON with status 200;
+  `snapshot`, `uploads`, `whoami`, keyless `health` → `{ok, build: 'relay-2'}`), every reply JSON with status 200;
   CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size, and that
   the body carries a person's key (`storeRoute.ts keyGate`: a bounded scan for a top-level `"key": "<hex>"`, not a
   parse; a body with none goes on only when it is ≤ 512 characters, keyless `health`), else `unauthorized` there, so a
@@ -312,11 +314,21 @@ any phone sends it: not done.)
 - **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"; the Worker refuses a missing or malformed
   signature or a time outside the 5-minute window with 401 before the object, which checks the signature; a `restore`,
   `rev` or `logpurge` is taken once per signature: its replay within 10 minutes is 409, table `admin_seen`), takes the record tool's ops (`{op}`: counts
-  and who came which way, bookmarks, a restore, a new epoch, a dump, the log (`logs`, `logstats`, `logpurge`: the log's own object, [observability](ops/observability.md)), the weather, and `load`: rows that already have
+  and who came which way, bookmarks, a restore, a new epoch, a dump (paged: `limit`, `after`), a compaction, the log (`logs`, `logstats`, `logpurge`: the log's own object, [observability](ops/observability.md)), the weather, and `load`: rows that already have
   their `at`, by the same rules, idempotent).
 - **Push-driven:** after a write the object tells the room (`changed`, [Push](#push); a failed call is tried once more); the room keeps the last one
   (`rec {at, rev}`, in its storage) and hands it to each phone in its `welcome`, so a phone that has it needn't fetch
   on opening ([When it syncs](#when-it-syncs)).
+- **Compaction** (2026-11-05, `store.ts compact`): the record drops the `metrics` rows of locked weeks the model can no
+  longer read, by the phones' own rule (`contract/compact.ts`; events are never touched, their slots keep one row each
+  already, and no id leaves `ids`). A date at a time (its rows by the (person, date, …) key), a week of dates a
+  transaction, at most 5,000 rows deleted a run (each delete writes ~4 rows against the Free plan's 100,000 a day): the
+  Worker's cron at 19:15 UTC (04:15 Tokyo, just after a Wednesday's lock) once a day (`compactTick`, the log's
+  `cron.compact`), or the admin's `compact {max?, rev?}`. Each run looks at the dates with rows written or loaded since
+  the last run and those whose week locked since (the first run: every date); a run stopped at its cap leaves the mark
+  where it was, so the next looks again (a compacted date is a fixed point: read, nothing deleted). No new epoch: a
+  phone's cache holds a superset and compacts it by the same rule, so its views are the same; `compact {rev: true}`
+  starts one when the phones should refetch the smaller record (once, after the first run's backlog).
 - **Measured** (2026-11-02, curl from Tokyo): a full snapshot 0.09–0.18 s for 73 KB, an empty poll 0.06 s; an event write is one
   `events` request, the row back in its reply.
 - **Backups:** point-in-time recovery (30 days, on the Free plan) and `dump` / `load`: [runbook §13](ops/runbook.md#13-the-record).
@@ -705,9 +717,10 @@ writes/day (unused). A generous day for two phones:
 | Sockets (each show of the app) | 2 × 60 | 120 | 120 | ~150 (10 s awake each, 128 MB) | | |
 | Pings (a quiet socket every 20 s while shown, 2 × 2 h) | 720 | 0 | 36 | ~900 | | |
 | Intents kept for the day (the room's ring), nudges | ~2,000 | 0 | 100 | ~100 | | ~2,000 |
-| Record reads: snapshots (opens not current, pushes, taps; ~5 rows each; a full one is the whole record: ~97k rows a year, below) | ~300 | 300 | 300 | ~30 | ~3,000 (+ ~97k per full fetch) | |
+| Record reads: snapshots (opens not current, pushes, taps; ~5 rows each; a full one is the whole compacted record: ~13k rows a year, below) | ~300 | 300 | 300 | ~30 | ~3,000 (+ ~13k per full fetch) | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ~300 rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
+| The record's compaction (the cron's 04:15 run; a Wednesday's drops the week that locked, ~2,000 rows; the other days' nothing) | 1 | 0 | 1 | ~1 | ~2,000 (that week's dates) | ~8,000 on a Wednesday, else ~0 (not in the total) |
 | The real weather (the same cron: the room's tick, a fetch at :15 and :45, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
 | The log ([observability](ops/observability.md): a `req` RPC each `/api`, the phones' batches, room closes; a row and a cap row each write, the prune 30 days on) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
 | **Total** (Free plan limit) | | **~630 (0.6 % of 100,000)** | **~1,650 (1.7 % of 100,000)** | **~1,220 (9.4 % of 13,000)** | **~22,000 (0.4 % of 5 M)** | **~7,050 (7 % of 100,000)** |
@@ -718,9 +731,14 @@ tenth of it even with the island's presence ten times busier. **Snapshot size** 
 the two phones and the guest): ~97k rows and ~5.9 MB of JSON a year in a full snapshot (metrics:
 every Shortcut run appends each changed value of its 32 days; events: tallies, island days, decor and layout ops, the
 meal log's ~300-byte rows), not the ~750 rows / ~1 MB once budgeted. A full fetch (a new epoch, a new phone, a dropped
-cache) is the whole record in one reply and one DO request (~97k rows read, ~2 % of the day's 5 M); polls stay small.
-The phones compact their cache ([Compaction](#compaction)), the record doesn't yet: server-side compaction and a paged
-snapshot are the next batch. Storage against 5 GB is no concern.
+cache) was the whole record in one reply and one DO request (~97k rows read, ~2 % of the day's 5 M); polls stay small.
+**Since 2026-11-05 the record compacts itself** ([The record](#the-record) "Compaction") **and pages its snapshot**
+([API](#api)). A synthetic year (`relay/test/compact.test.ts`: both phones' Shortcut every waking hour, A's weight, the
+meal log of three, a tally a person a day; fewer metrics rows than the review's 32-day re-sends): a cold fetch before
+49,215 rows (39,425 metrics, 9,790 events), 5.16 MB, 49,216 rows read; after compaction 13,168 rows (3,378 metrics),
+2.97 MB, 13,169 rows read, in 4 pages of ≤ 4,000 rows (the meal log's rows are most of what's left). The first
+compaction of a year's backlog takes ~7 daily runs (5,000 deletes each, ~20,000 rows written of the day's 100,000); a
+week's new rows after that are ~2,000 (~8,000 rows written, once a week). Storage against 5 GB is no concern.
 
 ## Notifications
 

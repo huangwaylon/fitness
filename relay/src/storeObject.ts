@@ -59,6 +59,14 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
     return this.core.handleText(text);
   }
 
+  /** RPC from the Worker's cron, once a day (index.ts): the record's compaction (store.ts compact), logged. */
+  compactTick(): { ok: true; dates: number; deleted: number; more: boolean; metrics: number } {
+    const t0 = Date.now();
+    const r = this.core.compact();
+    this.log([{ e: 'cron.compact', l: 1, d: { dates: r.dates, deleted: r.deleted, more: r.more, metrics: r.metrics, ms: Date.now() - t0 } }]);
+    return { ok: true, ...r };
+  }
+
   /** The same, with the request's meta for the log's `req` (reqMeta.ts; the Worker times it and sends it). */
   apiMeta(text: string): { body: string; meta: ReqMeta } {
     const keys = { KEY_A: this.env.KEY_A, KEY_B: this.env.KEY_B, KEY_C: this.env.KEY_C };
@@ -86,7 +94,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    * - `bookmark {ms?}`: point-in-time recovery's bookmark now and `ms` ago (default 1 h);
    * - `restore {bookmark}`: restore the record to that bookmark (the object restarts; every phone refetches: a new epoch);
    * - `rev`: start a new epoch (every phone drops its cache and fetches everything);
-   * - `dump`: every row (the backup, docs/ops/runbook.md#13-the-record);
+   * - `dump {limit?, after?}`: every row (the backup, docs/ops/runbook.md#13-the-record); with `limit`, a page of it
+   *   (`next`: the `after` of the next page; the audit on the first);
+   * - `compact {max?, rev?}`: the record's compaction now (store.ts compact; `rev: true` starts a new epoch after it);
    * - `load {rows: {metrics?, events?, uploads?}}`: rows that already have their `at` (a dump's) into the record, by
    *   its rules (idempotent: what it has is skipped);
    * - `logs {since?, until?, after?, before?, desc?, lvl?, ev?, role?, sid?, rid?, src?, build?, limit?}`: the log's
@@ -120,7 +130,14 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       case 'load':
         return this.core.load(o);
       case 'dump':
-        return { ok: true, rev: this.core.rev(), ...this.core.dump() };
+        return { rev: this.core.rev(), ...this.core.dumpPage(o) };
+      case 'compact': {
+        // the record's own compaction now (the cron runs it daily: compactTick); `rev`: a new epoch after it, so the
+        // phones refetch the smaller record (their caches compact by the same rule, so they needn't)
+        const max = typeof o.max === 'number' && Number.isInteger(o.max) && o.max > 0 ? o.max : undefined;
+        const r = this.core.compact(max);
+        return { ok: true, ...r, ...(o.rev === true ? { rev: this.core.bumpRev() } : {}) };
+      }
       // the log (docs/ops/observability.md): its own object's
       case 'logs':
         return { ok: true, ...(await this.logObj().query(o)) };

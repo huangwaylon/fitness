@@ -93,7 +93,8 @@ re-sent: [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). 
 
 - **Point-in-time recovery** (the Durable Object's, on the Free plan, the last 30 days): §13 `bookmark` / `restore`.
 - **The dump:** monthly, `node scripts/record.ts dump > island-record-YYYY-MM-DD.json` from `relay/` (§13),
-  kept somewhere private (never in the repo).
+  kept somewhere private (never in the repo). It fetches the record 5,000 rows a page (the admin `dump {limit, after}`,
+  2026-11-05) and writes one file as before (`load` takes it); it starts over if the epoch changes under it.
 
 **Restore** after a bad change: the record to a bookmark from before it (§13; the new epoch follows by itself: `counts` shows the new rev a few seconds on). From a dump into a new, empty record: `load <file>`, then `rev`.
 
@@ -143,6 +144,12 @@ keys; without either, the keys file: §4). It signs `POST /admin` with the serve
   last 30 days); `restore <bookmark>` restarts the object on it, and the room (told before the restart, its own storage) calls the restored record ~5 s later (retrying every 30 s, 10 tries) to start a new epoch, so every phone refetches; only when the reply's `note` says the room wasn't told, run `rev` yourself. Beyond 30 days:
   `dump > island-record-YYYY-MM-DD.json` (every row; keep it off the repo) and `load <file>` into an empty record.
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
+- **`compact [max] [rev]`**: the record's compaction now ([backend](../backend.md#the-record) "Compaction": the
+  `metrics` rows of locked weeks the model no longer reads, by the phones' rule; at most `max` deletes, default 5,000).
+  The cron runs it by itself at 04:15 Tokyo every day (the log's `cron.compact`: `deleted`, `more` while a backlog
+  remains). `rev` starts a new epoch after it (the phones refetch the smaller record; not needed: their caches compact
+  by the same rule). A dump taken after it has only the compacted rows (a locked day's history within it is gone; what the
+  model reads is all there).
 
 ## 14. Pair a phone
 On each iPhone: open https://island-fund.pages.dev/ in Safari → Share → **Add to Home Screen** *first*, open
