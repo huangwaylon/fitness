@@ -302,7 +302,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     maps: (name: string) => parts.filter((p) => p.name === name).map((p) => p.mats.map((m) => (m.map ? [(m.map.image as { width: number }).width, (m.map.image as { height: number }).height] : null))),
     log: () => log
   };
-  if (log) (window as unknown as { __fx3?: unknown }).__fx3 = hook;
+  if (log) window.__fx3 = hook;
   function spawn(kind: FxKind, x: number, z: number, lift = 0, o: FxOpts = {}) {
     spawnTag = o.tag;
     if (log && log.push({ kind, t: performance.now(), size: o.size }) > 200) log.shift();
@@ -487,7 +487,7 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
       void Promise.all(got.values()).then((ms) => ms?.forEach((m) => m?.forEach((s) => s.geo !== quad && s.geo.dispose())));
       quad.dispose();
       // (the hook holds this island's renderer: gone with it)
-      if (log && (window as unknown as { __fx3?: unknown }).__fx3 === hook) delete (window as unknown as { __fx3?: unknown }).__fx3;
+      if (log && window.__fx3 === hook) delete window.__fx3;
     }
   };
 }

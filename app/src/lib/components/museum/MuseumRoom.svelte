@@ -447,7 +447,7 @@
       own?.stop();
       eng?.dispose();
       eng = null;
-      delete (window as unknown as { __museum?: unknown }).__museum;
+      delete window.__museum;
     };
   });
 
@@ -460,7 +460,7 @@
   /** The e2e's and the console's hooks (dev builds, ?demo and the logic tier). */
   function hooks() {
     if (!import.meta.env.DEV && !new URLSearchParams(location.search).has('demo') && !drawOff()) return;
-    (window as unknown as { __museum?: unknown }).__museum = {
+    window.__museum = {
       stats: () => eng?.stats(),
       mine: () => eng?.at(me),
       at: (w: Who) => eng?.at(w),

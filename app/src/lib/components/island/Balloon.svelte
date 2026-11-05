@@ -136,8 +136,7 @@
     };
     el?.addEventListener('click', onClick, true);
     // the e2e's: where it is, a pop, and the flight moved over a spot (a pop over the back of the island)
-    const W = window as unknown as { __balloon?: unknown };
-    W.__balloon = {
+    window.__balloon = {
       flight: () => flying(),
       pop: () => tap(),
       move: (x: number, z: number) => moveFlight(x, z, laneY(skyView(), z)),
@@ -152,7 +151,7 @@
       clearTimeout(give);
       el?.removeEventListener('click', onClick, true);
       setFlight(null);
-      delete W.__balloon;
+      delete window.__balloon;
     };
   });
   let btn = $state<HTMLButtonElement | null>(null);
