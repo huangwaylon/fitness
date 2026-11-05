@@ -2,7 +2,7 @@
 // its own: the room's code and three.js come only then (the island never loads them); my villager walks where the
 // floor is tapped; the doormat and ‹ 島へ go back out, to the island as it was.
 import { expect, test, type Page } from '@playwright/test';
-import { camTo, campDoor, geo, is3d, tapOn } from './island.ts';
+import { campDoor, camTo, geo, is3d, islandURL, tapOn } from './island.ts';
 
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */
 async function openEdit(p: Page) {
@@ -79,7 +79,7 @@ test('the tent opens through the door and goes back out to the island as it was'
   // out by the doormat (the front edge's middle)
   const [x, y] = await tent(page, (t) => t.px(0, 36.5));
   await page.mouse.click(x, y);
-  await expect(page).toHaveURL(/\/fitness\/\?/);
+  await expect(page).toHaveURL(islandURL());
   // (the camera where it was: the island puts its scroll back as it lays out; cam() reads the engine's camera from its
   // first frame on, before that the island's default, and drawn under software GL that first frame takes seconds)
   await is3d(page);
@@ -127,7 +127,7 @@ test('a tap on the floor walks my villager there; ‹ 島へ goes back out; noth
   await expect.poll(() => page.evaluate(() => (window as unknown as { __tent: { isDefault(): boolean } }).__tent.isDefault()), { timeout: SLOW }).toBe(true);
   await expect(page.locator('[data-tent-reset]')).toHaveCount(0);
   await page.getByRole('button', { name: '島へ' }).click();
-  await expect(page).toHaveURL(/\/fitness\/\?/);
+  await expect(page).toHaveURL(islandURL());
 });
 
 type Piece = { id: string; item: string; x: number; z: number; f: number };
@@ -412,7 +412,7 @@ test('the HHA: the first time in after a day’s decorating, ハニワくん’s
   const hha = () => page.evaluate(() => (window as unknown as { __tent: { hha(): Promise<H> } }).__tent.hha());
   const out = async () => {
     await page.getByRole('button', { name: '島へ' }).click();
-    await expect(page).toHaveURL(/\/fitness\/\?/);
+    await expect(page).toHaveURL(islandURL());
   };
   const letter = page.locator('[data-tent-letter]');
   // nothing decorated yet: no letter

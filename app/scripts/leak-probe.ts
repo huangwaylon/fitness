@@ -17,7 +17,9 @@ import { writeFileSync } from 'node:fs';
 import { BUG_IDS, FISH_IDS } from '../src/lib/components/museum/species.ts';
 
 const PORT = Number(process.env.E2E_PORT ?? 4693);
-const BASE = `http://127.0.0.1:${PORT}/fitness/`;
+// the build's base path (BASE_PATH, as serve-build.ts: '/fitness' on GitHub Pages, '' at a root)
+const PATH = process.env.BASE_PATH ?? '/fitness';
+const BASE = `http://127.0.0.1:${PORT}${PATH}/`;
 const flow = process.argv[2] ?? 'shop';
 const N = Number(process.argv[3] ?? 6);
 const SNAP = process.argv.includes('--snap');
@@ -177,17 +179,17 @@ const mu = <T>(js: string) => page.evaluate(`window.__museum?.${js}`) as Promise
 const until = async (js: string, ms = 20_000) => { for (const t0 = Date.now(); Date.now() - t0 < ms; await page.waitForTimeout(100)) if (await page.evaluate(js)) return; throw new Error(`timed out: ${js}`); };
 async function inMuseum() {
   if (await page.evaluate(() => location.pathname.includes('museum'))) return;
-  await nav(`/fitness/museum${Q}`); await museumUp(); await page.waitForTimeout(1500);
+  await nav(`${PATH}/museum${Q}`); await museumUp(); await page.waitForTimeout(1500);
 }
 const sel = (s: string) => page.waitForFunction((q) => !!document.querySelector(q), s, { timeout: 30_000 });
 
 const ROOMS: Record<string, [string, () => Promise<unknown>]> = {
-  shop: [`/fitness/shop${Q}`, () => sel('[data-shop]')],
-  tent: [`/fitness/tent${Q}`, tentUp],
-  home: [`/fitness/tent${Q}&home=B`, tentUp],
-  museum: [`/fitness/museum${Q}`, () => museumUp()],
-  fpv: [`/fitness/museum${Q}`, async () => { await museumUp(); await until('(f => f && f.inside && !f.busy)(window.__museum.fpv())'); }],
-  editor: [`/fitness/editor/${Q}`, () => page.waitForFunction(() => !!(window as unknown as { __editor?: unknown }).__editor, null, { timeout: 30_000 })]
+  shop: [`${PATH}/shop${Q}`, () => sel('[data-shop]')],
+  tent: [`${PATH}/tent${Q}`, tentUp],
+  home: [`${PATH}/tent${Q}&home=B`, tentUp],
+  museum: [`${PATH}/museum${Q}`, () => museumUp()],
+  fpv: [`${PATH}/museum${Q}`, async () => { await museumUp(); await until('(f => f && f.inside && !f.busy)(window.__museum.fpv())'); }],
+  editor: [`${PATH}/editor/${Q}`, () => page.waitForFunction(() => !!(window as unknown as { __editor?: unknown }).__editor, null, { timeout: 30_000 })]
 };
 const SHEETS: Record<string, () => Promise<void>> = {
   food: async () => { await page.getByRole('button', { name: 'ごはん', exact: true }).click(); },
@@ -236,7 +238,7 @@ const cycle = async () => {
     // (FILL=1: the room furnished with the starter set first, kept: its models come back from the page-wide cache)
     if (process.env.FILL) await page.evaluate(() => { const t = (window as any).__tent; if (t && t.pieces().length < 10) t.fill(t.starter()); });
     await page.waitForTimeout(Number(process.env.DWELL ?? 1500));
-    await nav(`/fitness/${Q}`); await islandUp(); await page.waitForTimeout(1500);
+    await nav(`${PATH}/${Q}`); await islandUp(); await page.waitForTimeout(1500);
   } else if (flow in SHEETS) {
     await SHEETS[flow](); await sel('dialog[open]'); await page.waitForTimeout(1200);
     await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10_000 }); await page.waitForTimeout(800);
@@ -248,7 +250,7 @@ const cycle = async () => {
   } else if (flow === 'vis') {
     await vis('hidden'); await page.waitForTimeout(500); await vis('visible'); await page.waitForTimeout(1500);
   } else if (flow === 'picker') {
-    if (!(await page.evaluate(() => location.pathname.includes('tent')))) { await nav(`/fitness/tent${Q}&as=B&home=B`); await tentUp(); await page.waitForTimeout(1500); }
+    if (!(await page.evaluate(() => location.pathname.includes('tent')))) { await nav(`${PATH}/tent${Q}&as=B&home=B`); await tentUp(); await page.waitForTimeout(1500); }
     await page.locator('[data-home-look]').click(); await sel('[data-home-picker]'); await page.waitForTimeout(800);
     const ms = await page.locator('[data-home-picker] [data-model]').count();
     for (let k = 0; k < Math.min(ms, 4); k++) { await page.locator('[data-home-picker] [data-model]').nth(k).click(); await page.waitForTimeout(700); }
@@ -347,7 +349,7 @@ const cycle = async () => {
     }
   } else if (flow === 'sell') {
     // the shop's うる: one catch picked and sold, five times a cycle (the demo's pocket seeded with 999 sea bass)
-    if (!(await page.evaluate(() => location.pathname.includes('shop')))) { await nav(`/fitness/shop${Q}`); await sel('[data-shop-pocket] [data-shop-catch]'); await page.waitForTimeout(1500); }
+    if (!(await page.evaluate(() => location.pathname.includes('shop')))) { await nav(`${PATH}/shop${Q}`); await sel('[data-shop-pocket] [data-shop-catch]'); await page.waitForTimeout(1500); }
     for (let k = 0; k < 5; k++) {
       const n0 = await page.locator('[data-shop]').getAttribute('data-shells');
       await page.locator('[data-shop-catch="fish:sea-bass"]').click();
@@ -367,7 +369,7 @@ const cycle = async () => {
     for (const k of ['shop', 'tent', 'home', 'museum']) {
       const [p, up] = ROOMS[k];
       await nav(p); await up(); await page.waitForTimeout(1200);
-      await nav(`/fitness/${Q}`); await islandUp(); await page.waitForTimeout(1200);
+      await nav(`${PATH}/${Q}`); await islandUp(); await page.waitForTimeout(1200);
     }
   }
 };

@@ -2,7 +2,7 @@
 // its track plays instead of the hour's; the wasps' chase and sting cut in over the island's music; a tap on K.K. plays
 // one of his songs. Dates are mocked with ?date= (Tokyo). Checked by the files the engine fetches.
 import { expect, test, type Page } from '@playwright/test';
-import { is3d, quiet } from './island.ts';
+import { BASE, is3d, quiet } from './island.ts';
 import { hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -11,7 +11,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 /** Music on; records every audio file fetched. */
 async function open(page: Page, q: string): Promise<string[]> {
   const audio: string[] = [];
-  page.on('request', (r) => r.url().includes('/audio/') && audio.push(new URL(r.url()).pathname.replace(/^\/fitness\/audio\//, '')));
+  page.on('request', (r) => r.url().includes('/audio/') && audio.push(new URL(r.url()).pathname.replace(`${BASE}/audio/`, '')));
   await page.addInitScript(() => {
     localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: true, volume: 0.8 }));
     (window as { __cues?: string[] }).__cues = [];

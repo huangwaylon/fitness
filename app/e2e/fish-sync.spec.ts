@@ -5,6 +5,7 @@
 // out hears its step again; an angler whose phone goes is no longer fishing. The demo's players are two
 // tabs of one browser (sync/live-local.ts plays the room).
 import { expect, test, type Page } from '@playwright/test';
+import { islandURL } from './island.ts';
 import { is3d, reelOnBite, sawIt, tapOn, toTheWater, watchFor } from './island';
 import { overHead, type Mark } from './biteMark.ts';
 
@@ -105,7 +106,7 @@ async function intoMuseum(page: Page) {
 }
 async function outOfMuseum(page: Page) {
   await page.getByRole('button', { name: '島へ' }).click();
-  await expect(page).toHaveURL(/fitness\/?\?/);
+  await expect(page).toHaveURL(islandURL());
   expect(await is3d(page)).toBe(true);
 }
 /** B casts by its sea shadow, and the shadow comes to B's float (nobody's now). */

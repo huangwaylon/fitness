@@ -11,7 +11,9 @@ import { writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2).filter((a) => !a.startsWith('--'));
 const port = Number(args[0] ?? 4396), out = args[1] ?? '/tmp/seen.txt';
-const base = `http://127.0.0.1:${port}/fitness/`;
+const PATH = process.env.BASE_PATH ?? '/fitness';
+const base = `http://127.0.0.1:${port}${PATH}/`;
+const inBase = new RegExp(`^${PATH}/`);
 const scenes = [
   'date=2026-11-04T12:00', 'date=2026-11-04T21:00', 'date=2026-11-04T18:00&weather=rain',
   'date=2026-04-05T10:00', 'date=2026-07-12T13:00&visitor=gulliver', 'date=2026-10-31T19:00',
@@ -28,11 +30,11 @@ for (const q of scenes) {
   const p = await ctx.newPage();
   p.on('request', (r) => {
     const u = new URL(r.url());
-    if (/\/(art|terrain)\//.test(u.pathname)) (fetched.add(u.pathname.replace(/^\/fitness\//, '')), requests++);
+    if (/\/(art|terrain)\//.test(u.pathname)) (fetched.add(u.pathname.replace(inBase, '')), requests++);
   });
   p.on('response', (r) => {
     const u = new URL(r.url());
-    if (r.status() === 404 && /\/(art|room|terrain)\//.test(u.pathname)) missing.add(`${u.pathname.replace(/^\/fitness\//, '')} (${q})`);
+    if (r.status() === 404 && /\/(art|room|terrain)\//.test(u.pathname)) missing.add(`${u.pathname.replace(inBase, '')} (${q})`);
   });
   await p.goto(`${base}?demo&${q}`);
   await p.waitForTimeout(6000);
@@ -47,7 +49,7 @@ for (const q of scenes) {
     await p.mouse.click(x, y);
     await p.waitForTimeout(600);
   }
-  const got = await p.evaluate(() => {
+  const got = await p.evaluate((pre) => {
     const res = { vis: [] as string[], dom: [] as string[] };
     const shown = (el: Element) => {
       for (let e: Element | null = el; e; e = e.parentElement) {
@@ -60,13 +62,13 @@ for (const q of scenes) {
     for (const el of document.querySelectorAll('img, [style*="url("]')) {
       const src = el instanceof HTMLImageElement ? el.currentSrc || el.src : /url\("?([^")]+)/.exec(getComputedStyle(el).backgroundImage)?.[1];
       if (!src) continue;
-      const path = new URL(src, location.href).pathname.replace(/^\/fitness\//, '');
+      const path = new URL(src, location.href).pathname.slice(pre.length).replace(/^\//, '');
       if (!/^(art|terrain)\//.test(path)) continue;
       res.dom.push(path);
       if (shown(el)) res.vis.push(path);
     }
     return res;
-  });
+  }, PATH);
   got.vis.forEach((x) => drawn.add(x));
   got.dom.forEach((x) => inDom.add(x));
   const r3 = await p.evaluate(() => !!document.querySelector('.scene[data-r3]'));

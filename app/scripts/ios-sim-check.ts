@@ -5,7 +5,7 @@
 //
 //   npm run ios:check -- [--url URL] [--device "iPhone 17"] [--out DIR] [--keep]
 //
-//   --url     the page (default: the live site, https://huangwaylon.github.io/fitness/?demo)
+//   --url     the page (default: the live site, https://island-fund.pages.dev/?demo)
 //   --device  a simulator by name (default: the first available "iPhone 1…" of the newest iOS)
 //   --out     where the report and screenshots go (default: app/test-results/ios-sim/<date>)
 //   --keep    leave the simulator booted
@@ -20,7 +20,7 @@ const opt = (name: string, def: string) => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] : def;
 };
-const URL_ = opt('--url', 'https://huangwaylon.github.io/fitness/?demo');
+const URL_ = opt('--url', 'https://island-fund.pages.dev/?demo');
 const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
 const OUT = opt('--out', join(import.meta.dirname, '..', 'test-results', 'ios-sim', stamp));
 const PORT = 4730 + Math.floor(Math.random() * 50);
