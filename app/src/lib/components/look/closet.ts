@@ -1,13 +1,12 @@
 // The closet behind せってい → すがた (design/avatar/customization.md §3): what the grid lists, as one small interface, so
 // the level doesn't care where the parts come from. The closet is the part table's (components/player3d/parts.json, the
 // 3D engineer's pipeline: every hairstyle, eye and mouth and each garment's colour line, with its catalogue icon) and its
-// colours as measured from the parts' own textures (swatches.json: scripts/look-swatches.ts); a bigger table (the
+// colours as measured from the parts' own textures (the table's `sw` per item and `icons`: the pipeline's); a bigger table (the
 // pipeline's --all) is the same code. The wear rules (a one-piece clears the bottoms, a bottom clears a one-piece) are
 // here too, pure.
 import { isOnepiece, type Hex, type PartId, type PlayerLook } from '#lib/contract/look.ts';
 import { artUrl } from '#lib/art.ts';
 import PARTS from '../player3d/parts.json' with { type: 'json' };
-import SWATCHES from './swatches.json' with { type: 'json' };
 
 /** The level's category chips, in order (かお · かみ · トップス · ボトムス · ワンピース · くつした · くつ · こもの). */
 export const CATEGORIES = ['face', 'hair', 'tops', 'bottoms', 'onepiece', 'socks', 'shoes', 'acc'] as const;
@@ -124,9 +123,10 @@ export function closetFrom(parts: Partial<Record<ClosetKind, Entry[]>>, colours:
 interface Table {
   face: Record<string, unknown>;
   hair: Record<string, unknown>;
-  items: Record<string, { slot: string; onepiece?: boolean; icon: string | null }>;
+  items: Record<string, { slot: string; onepiece?: boolean; icon: string | null; sw?: string }>;
+  icons?: Record<string, string>;
 }
-/** The measured colours (swatches.json): per item, per catalogue icon. */
+/** The measured colours (the part table's): per item, per catalogue icon. */
 interface Swatches { items: Record<string, Hex>; icons: Record<string, Hex> }
 /** The kind of a part table item by its slot (a `top` that's a one-piece has its own grid). */
 const KIND_OF: Record<string, ClosetKind> = {
@@ -134,8 +134,7 @@ const KIND_OF: Record<string, ClosetKind> = {
 };
 
 /** The closet of a part table and its measured colours: every hairstyle, eye and mouth, and every garment in the
- *  table's order, grouped by line. An item without a measured colour isn't listed (swatches.json is behind the table:
- *  npm run look:swatches). */
+ *  table's order, grouped by line. An item without a measured colour isn't listed. */
 function tableCloset(table: Table, swatches: Swatches): Closet {
   const parts: Partial<Record<ClosetKind, Entry[]>> = { hair: [], eye: [], mouth: [] };
   for (const id of Object.keys(table.hair)) parts.hair!.push({ id, swatch: HAIR });
@@ -165,7 +164,10 @@ const COLOURS: Closet['colours'] = {
 
 let current: Closet | null = null;
 /** The closet the level lists: the part table's, unless another was set (useCloset). */
-export const closet = (): Closet => (current ??= tableCloset(PARTS as Table, SWATCHES));
+const swatchesOf = (t: Table): Swatches => ({
+  items: Object.fromEntries(Object.entries(t.items).flatMap(([id, it]) => (it.sw ? [[id, it.sw]] : []))), icons: t.icons ?? {}
+});
+export const closet = (): Closet => (current ??= tableCloset(PARTS as Table, swatchesOf(PARTS as Table)));
 /** Swap the closet (a test's; null: back to the part table's). @public */
 export function useCloset(c: Closet | null): void {
   current = c;

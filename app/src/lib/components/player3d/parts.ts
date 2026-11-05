@@ -1,5 +1,7 @@
-// The player part table (parts.json, scripts/players3d-models.ts) and where each file is: under the site's
-// room/player/ (the service worker caches it on first use, never at install), its content hash in the address.
+// The player part table (scripts/players3d-models.ts) and where each file is: under the site's room/player/ (the
+// service worker caches it on first use, never at install), its content hash in the address. The bundle carries the
+// first closet's table (parts.json: what the closet lists); the whole table (every item converted) is fetched once,
+// beside the parts, when a player is drawn (loadParts).
 import TABLE from './parts.json' with { type: 'json' };
 
 /** How a part's material is drawn: its texture (a file under tex/, or a plain colour), cut out, see-through (the
@@ -17,6 +19,8 @@ export interface ItemSpec {
   line: string;
   /** The closet's icon (static/art/finds/items/<icon>.webp), or null. */
   icon: string | null;
+  /** Its swatch: its texture's own dominant colour (the closet's dot and colour filter). */
+  sw?: string;
 }
 interface MeshSpec { v: string; kb: number; tris: number; rigid: boolean; mats: string[] }
 export interface PartTable {
@@ -26,14 +30,32 @@ export interface PartTable {
   mesh: Record<string, MeshSpec>;
   hair: Record<string, { mesh: string; cap: string | null }>;
   items: Record<string, ItemSpec>;
+  /** Each catalogue icon's own colour (the closet tints a line's icon to a colour). */
+  icons: Record<string, string>;
+  /** The whole table's hash and size (the bundle's table only). */
+  full?: { v: string; items: number };
 }
+/** The first closet's table (bundled). */
 export const PARTS = TABLE as unknown as PartTable;
+
+let whole: Promise<PartTable> | null = null;
+/** The whole table (room/player/parts.json, once a page; the bundled one if it can't be had). */
+export function loadParts(dir: string): Promise<PartTable> {
+  if (!PARTS.full) return Promise.resolve(PARTS);
+  whole ??= fetch(`${dir.replace(/\/?$/, '/')}parts.json?v=${PARTS.full.v}`)
+    .then((r) => (r.ok ? (r.json() as Promise<PartTable>) : PARTS))
+    .catch(() => {
+      whole = null;
+      return PARTS;
+    });
+  return whole;
+}
 
 const slash = (dir: string) => dir.replace(/\/?$/, '/');
 /** The body's address in `dir` (the site's room/player/: $app/paths asset). */
 export const bodyUrl = (dir: string): string => `${slash(dir)}body.glb?v=${PARTS.body.v}`;
 /** A mesh's address (a hairstyle's, a top's shape…), or null when the table hasn't it. */
-export const meshUrl = (key: string, dir: string): string | null => (PARTS.mesh[key] ? `${slash(dir)}mesh/${key}.glb?v=${PARTS.mesh[key].v}` : null);
+export const meshUrl = (key: string, dir: string, t: PartTable = PARTS): string | null => (t.mesh[key] ? `${slash(dir)}mesh/${key}.glb?v=${t.mesh[key].v}` : null);
 /** An eye's or mouth's atlas (by its part id) or a blush's (`cheek0`–`cheek2`). */
 export function faceUrl(id: string, dir: string): string | null {
   const c = /^cheek([0-2])$/.exec(id);

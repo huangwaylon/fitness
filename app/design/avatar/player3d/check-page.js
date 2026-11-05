@@ -33,6 +33,7 @@ window.run = async () => {
   out.idle = shot(45, 420);
   out.face = shot(70, 160, -55, -0.3);
   out.faceB = shot(70, 160, 55, 0.3);
+  out.backB = shot(70, 200, 55, Math.PI - 0.5);
   a.set('sit'); b.set('sit'); step(3000);
   out.sit = shot(40, 420);
   a.set('walk'); b.set('walk');

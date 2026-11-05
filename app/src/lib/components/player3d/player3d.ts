@@ -18,7 +18,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
 import { animateModel, type Villager3D } from '../villager3d/villager3d.ts';
-import { PARTS, bodyUrl, faceUrl, meshUrl, texUrl, type ItemSpec, type TexSpec } from './parts.ts';
+import { PARTS, bodyUrl, faceUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
 import { playerKind } from './tune.ts';
 
 /** @public (the 2D heads' portraits, the closet's tiles) */
@@ -35,7 +35,14 @@ export interface Player3D extends Villager3D {
 
 /** Where what's modelled on the head is modelled from, in the head joint's frame (the body's axes), model units. */
 const ANCHOR = { head: [0, 0, 0], hat: [0, 3.567, -0.281], face: [0, 1.85, 3.32], crown: [0, 6.3, -0.3] } as const;
-type AnchorKind = keyof typeof ANCHOR;
+type AnchorKind = keyof typeof ANCHOR | 'ornament';
+type V3 = readonly [number, number, number];
+/** Where a hair ornament sits on a hairstyle (head frame; `turn` radians; `scale`): NH places them per hairstyle and
+ *  the files don't say where, so the crown unless a style is listed (B's low ponytail: the bow at its tie, as signed
+ *  off: design/avatar/render/outfits/b.json). */
+const ORNAMENT_ON: Record<string, { at: V3; turn?: V3; scale?: number }> = {
+  PlayerHair12: { at: [0, 0.6, -3.75], turn: [1.45, 0, 0], scale: 0.75 }
+};
 /** The slots a look's parts go in (each a mesh of its own, or none). */
 const SLOTS = ['hair', 'top', 'bottom', 'shoes', 'glasses', 'ornament', 'hat'] as const;
 type Slot = (typeof SLOTS)[number];
@@ -117,7 +124,7 @@ interface Worn { key: string; meshes: SkinnedMesh[]; bones: Bone[]; mats: Materi
  * asset), `seed` its blink's rhythm. Rejects if a part it needs isn't there (the caller keeps its stand-in).
  */
 export async function createPlayer(id: string, look: PlayerLook, dir: string, seed = 0): Promise<Player3D> {
-  const body = await glb(bodyUrl(dir));
+  const [body, T] = await Promise.all([glb(bodyUrl(dir)), loadParts(dir)]);
   const model = cloneSkinned(body.scene);
   const bones = new Map<string, Bone>();
   model.traverse((n) => {
@@ -136,11 +143,11 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   attach.name = 'HeadAttach';
   head.add(attach);
   attach.quaternion.copy(head.getWorldQuaternion(new Quaternion()).invert().multiply(model.getWorldQuaternion(new Quaternion())));
-  for (const k of Object.keys(ANCHOR) as AnchorKind[]) {
+  for (const k of [...Object.keys(ANCHOR), 'ornament'] as AnchorKind[]) {
     if (k === 'head') { anchors.head = attach; continue; }
     const b = new Bone();
     b.name = `${k}Attach`;
-    b.position.fromArray(ANCHOR[k]);
+    if (k !== 'ornament') b.position.fromArray(ANCHOR[k]);
     attach.add(b);
     anchors[k] = b;
   }
@@ -164,7 +171,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   };
   for (const n of ['mEye', 'mMouth', 'mCheek'] as const) faceTex[n] = await loadFace(n);
   const socksTex = async (): Promise<Texture | null> => {
-    const it = cur.socks ? PARTS.items[cur.socks] : null, t = it?.tex.mSocks;
+    const it = cur.socks ? T.items[cur.socks] : null, t = it?.tex.mSocks;
     return t ? tex(texUrl(t, dir)!) : null;
   };
   let socks = await socksTex();
@@ -195,11 +202,20 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   noses();
 
   // ---- the parts ----
+  /** The ornament's anchor where the hairstyle has it. */
+  const placeOrnament = () => {
+    const b = anchors.ornament, o = ORNAMENT_ON[cur.hair];
+    b.position.fromArray(o?.at ?? ANCHOR.crown);
+    b.rotation.set(...(o?.turn ?? [0, 0, 0]));
+    b.scale.setScalar(o?.scale ?? 1);
+    b.updateMatrixWorld(true);
+  };
+  placeOrnament();
   const worn = new Map<Slot, Worn>();
   /** What a slot wears in a look: its mesh's key, its item (textures), its anchor. */
   function partOf(slot: Slot, l: PlayerLook): { key: string; item: ItemSpec | null; anchor: AnchorKind | null } | null {
     if (slot === 'hair') {
-      const h = PARTS.hair[l.hair];
+      const h = T.hair[l.hair];
       if (!h) return null;
       // under a hat: NH's cut-down hair where the style has one, else none
       const key = l.hat ? h.cap : h.mesh;
@@ -207,14 +223,14 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     }
     if (slot === 'bottom' && isOnepiece(l.top)) return null;
     const id = l[slot];
-    const item = id ? PARTS.items[id] : null;
+    const item = id ? T.items[id] : null;
     if (!item?.mesh) return null;
-    const anchor: AnchorKind | null = slot === 'glasses' ? 'face' : slot === 'ornament' ? 'crown' : slot === 'hat' ? 'hat' : null;
+    const anchor: AnchorKind | null = slot === 'glasses' ? 'face' : slot === 'ornament' ? 'ornament' : slot === 'hat' ? 'hat' : null;
     return { key: item.mesh, item, anchor };
   }
   /** The part's mesh bound to this player's skeleton: its own joints grafted on (under their parent, or the anchor). */
   async function put(slot: Slot, p: { key: string; item: ItemSpec | null; anchor: AnchorKind | null }): Promise<Worn> {
-    const u = meshUrl(p.key, dir);
+    const u = meshUrl(p.key, dir, T);
     if (!u) throw new Error(`player: no mesh ${p.key}`);
     const g = await glb(u);
     const part = cloneSkinned(g.scene);
@@ -344,6 +360,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       mat.emissiveMap = mat.map;
       socksMask.value = socks ? 0 : 1;
     }
+    if (prev.hair !== cur.hair) placeOrnament();
     let skeletal = false;
     for (const slot of SLOTS) {
       const a = partOf(slot, prev), b = partOf(slot, cur), w = worn.get(slot);
@@ -378,20 +395,21 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   }) as Player3D;
 }
 
-/** The parts a look needs (their addresses: what a phone fetches to draw it; the service worker caches each). */
-export function partUrls(look: PlayerLook, dir: string): string[] {
+/** The parts a look needs (their addresses: what a phone fetches to draw it; the service worker caches each), by
+ *  `t` (the bundled first closet's table, or loadParts' whole one). */
+export function partUrls(look: PlayerLook, dir: string, t: PartTable = PARTS): string[] {
   const out = [bodyUrl(dir)];
   const f = (u: string | null) => u && out.push(u);
   f(faceUrl(look.eye, dir));
   f(faceUrl(look.mouth, dir));
   f(faceUrl(`cheek${look.cheek}`, dir));
-  const h = PARTS.hair[look.hair];
-  if (h) f(meshUrl(look.hat && h.cap ? h.cap : h.mesh, dir));
+  const h = t.hair[look.hair];
+  if (h) f(meshUrl(look.hat && h.cap ? h.cap : h.mesh, dir, t));
   for (const k of ['top', 'bottom', 'socks', 'shoes', 'glasses', 'ornament', 'hat'] as const) {
     const id = look[k];
-    const it = id ? PARTS.items[id] : null;
+    const it = id ? t.items[id] : null;
     if (!it || (k === 'bottom' && isOnepiece(look.top))) continue;
-    if (it.mesh) f(meshUrl(it.mesh, dir));
+    if (it.mesh) f(meshUrl(it.mesh, dir, t));
     for (const t of Object.values(it.tex)) f(texUrl(t, dir));
   }
   return out;

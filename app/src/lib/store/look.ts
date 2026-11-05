@@ -11,10 +11,11 @@ import {
 } from '#lib/contract/look.ts';
 import PART_IDS from '#lib/contract/partIds.json' with { type: 'json' };
 
-// the parts this app has (scripts/players3d-models.ts): a look naming any other (a newer app's, one dropped) reads as
+// the parts this app has (scripts/players3d-models.ts: an id ending in a digit by its line, the rest exactly): a look naming any other (a newer app's, one dropped) reads as
 // いつもの's part, and this phone never sends one. (The relay keeps the form check only: a newer phone's part survives
 // an older relay; each phone draws what it has.)
-usePartTable(new Set(PART_IDS));
+const exactIds = new Set(PART_IDS.exact), lineIds = PART_IDS.lines as Record<string, string>;
+usePartTable({ has: (id) => exactIds.has(id) || (lineIds[id.slice(0, -1)] ?? '').includes(id.slice(-1)) });
 
 /** けす's とりけす: the delete is shown at once and sent after this (the UI's banner carries the SendResult's undo). */
 const DELETE_HOLD_MS = 5000;
