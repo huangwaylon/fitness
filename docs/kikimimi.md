@@ -71,6 +71,7 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
   - `voiceSession(on)`, called **inside a tap** (さんか / はじめる / あそぶ). It creates and unlocks the context even when sound is set silent, holds it awake, and sets `navigator.audioSession.type = 'playback'` so it plays with the silent switch on. Leaving the game restores it;
   - `playVoice(buf, {relayAt?})`, which converts relay time with `ctx.currentTime + (relayAt − serverNow())/1000`.
   - Decoded buffers are kept in an LRU of 4.
+  - Built: `voiceSession(on): boolean`, `voice: {on, state}` (the card shows while `on` and `state !== 'running'`; its tap calls `voiceSession(true)`), `loadVoice('kikimimi/<id>.m4a?v=<hash>')`, `playVoice(buf, {relayAt?, now?})` → `{stop(), endsAt}` (audio clock) or null. A `relayAt` already past plays the clip whole from now. At 音量 0 the voice is silent too.
 - **Fetching.** The lobby fetches the deck's clips as bytes (8 × ~25 KB) and decodes them just in time.
 - **Caching.** The service worker's audio cache gets a `kiki` class, KEEP about 24, so quiz clips don't push the game's effects out. A played clip replays offline. Clips are not precached.
 - **The lobby** has a 🔊 「きこえる？」 test.
