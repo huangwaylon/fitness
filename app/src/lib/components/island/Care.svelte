@@ -113,7 +113,7 @@
     turnTo(weed.x);
     take(date, weed.uid);
     pulled++;
-    recordGoods('weeds'); // NH's clump of weeds, into my pocket (the shop's しげん)
+    recordGoods('weeds', `pick:${weed.uid}`); // NH's clump of weeds, into my pocket (the shop's しげん)
     sceneSfx('weed');
     spawn({ kind: 'pull', x: weed.x, y: weed.y, flip: weed.flip }, 700);
   }

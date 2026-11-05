@@ -166,6 +166,9 @@ class SharedWorld {
   set sink(fn: ((date: string, row: DayRow) => void) | null) {
     this.#sink = fn;
   }
+  /** A race of mine lost (the relay heard the partner's claim first: their claim key, who, and whether it just
+   *  happened): store/actions.ts lostRace takes back what my claim put in my pocket. */
+  lost: ((claim: string, who: Who, live: boolean, kind: DayEvent['kind']) => void) | null = null;
 
   /** The sheet's island days (model/state.ts islandDays, each person's latest by day): today's folded in (what the
    *  relay didn't bring: both apps were closed, an outage), yesterday's watering and wishes kept for today. */
@@ -279,6 +282,14 @@ class SharedWorld {
       this.rev++;
     }
     const n: WorldNews = { e, live: this.now() - e.t < LIVE_MS, beat: a.beat };
+    const k = a.beat && a.beat.who === this.#me ? claimOf(e) : null;
+    if (k) {
+      try {
+        this.lost?.(k, e.who, n.live, e.kind);
+      } catch (err) {
+        console.error('world:', err);
+      }
+    }
     for (const f of this.#subs) {
       try {
         f(n);

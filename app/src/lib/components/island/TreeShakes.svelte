@@ -201,7 +201,7 @@
     later(() => (net = null), 420);
     later(async () => {
       sceneSfx('catch');
-      const added = recordFind('bug', d.bug);
+      const added = recordFind('bug', d.bug, `catch:${d.id}`);
       const text = await catchLine(d.bug as BugId);
       const [sx, sy] = w.screenU(d.x, d.y, DANGLE_UP);
       showCatch(sx, sy, critterArt(d.bug), text, added);
@@ -270,7 +270,7 @@
     later(() => (net = null), 420);
     later(async () => {
       sceneSfx('catch');
-      const added = recordFind('bug', 'wasp');
+      const added = recordFind('bug', 'wasp', `catch:${s.id}`);
       const text = await catchLine('wasp');
       const [sx, sy] = w.screenU(x, z, lift);
       showCatch(sx, sy, critterArt('wasp'), text, added);
@@ -288,7 +288,7 @@
     turnTo(b.x);
     sceneSfx('twig');
     const good = coconut ? 'coconut' : 'tree-branch';
-    recordGoods(good);
+    recordGoods(good, `pick:${id}`);
     picked(b.x, b.z, `finds/${good}`, good);
   }
   /** Picked up (into my pocket): NH's line on the plate, 「ヤシのみを ひろった！」. */
@@ -304,7 +304,7 @@
     if (!world.share({ kind: 'pick', id, what: b.what, at: [b.x, b.z] }).fresh) return;
     turnTo(b.x);
     sceneSfx('twig');
-    recordGoods(b.what);
+    recordGoods(b.what, `pick:${id}`);
     picked(b.x, b.z, `finds/${b.what}`, b.what);
   }
 

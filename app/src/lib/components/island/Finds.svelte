@@ -229,7 +229,7 @@
     if (!claim(s.uid, `shell:${s.id}`, s.x, s.y)) return;
     pickHere(s.x, () => {
       if (!stillMine(s.uid)) return;
-      const added = recordFind('shell', s.id);
+      const added = recordFind('shell', s.id, `pick:${s.uid}`);
       pickUp(s.uid, s.x, s.y, findArt(s.id), s.tilt);
       sceneSfx('shell');
       plate(s.x, s.y, 4, findArt(s.id), () => t('beach.picked', { name: t(`beach.name.${s.id}`) }), 180, added);
@@ -239,7 +239,7 @@
     if (!claim(f.uid, `fragment:${f.id}`, f.x, f.y)) return;
     pickHere(f.x, () => {
       if (!stillMine(f.uid)) return;
-      recordFind('fragment', f.id);
+      recordFind('fragment', f.id, `pick:${f.uid}`);
       pickUp(f.uid, f.x, f.y, findArt(f.id), 0);
       sceneSfx('fragment');
       plate(f.x, f.y, 4, findArt(f.id), () => t('beach.picked', { name: t(`beach.name.${f.id}`) }), 180);
@@ -326,7 +326,7 @@
       take(date, p.uid);
       taken++;
       if (!inside) {
-        recordGoods('sky-egg');
+        recordGoods('sky-egg', `pick:${p.uid}`);
         const n = ++seq;
         lift = { n, x: p.x, y: p.y, lift: p.size / 2, art: p.art, tilt: 0 };
         later(() => lift?.n === n && (lift = null), 500);
@@ -339,7 +339,7 @@
       sceneSfx('present');
       later(() => sceneSfx('catch'), 260);
       void catalog().then((C) => {
-        const added = recordFind(inside.kind, inside.id);
+        const added = recordFind(inside.kind, inside.id, `pick:${p.uid}`);
         const name = C.catalogName(inside);
         // a recipe shows NH's DIY card, its name bare ("a DIY recipe for cherry-blossom clock")
         if (inside.kind === 'recipe') plate(p.x, p.y, p.size / 2, 'presents/diy-recipe', () => t('present.gotRecipe', { name: t(name).replace(/^(an?|some) /, '') }), 420, added);
@@ -351,7 +351,7 @@
     if (!claim(m.uid, `mushroom:${m.id}`, m.x, m.y)) return;
     pickHere(m.x, () => {
       if (!stillMine(m.uid)) return;
-      recordGoods(m.id);
+      recordGoods(m.id, `pick:${m.uid}`);
       pickUp(m.uid, m.x, m.y, findArt(m.id), 0, 6);
       sceneSfx('mushroom');
       plate(m.x, m.y, 6, findArt(m.id), () => t('beach.picked', { name: t(`beach.name.${m.id}`) }), 180);
@@ -372,7 +372,7 @@
     holdTimer = setTimeout(() => (digHold = 0), digHold - Date.now());
     pickHere(s.x, () => {
       if (!stillMine(s.uid)) return;
-      const added = special ? (recordGoods(special), false) : recordFind('fossil', s.fossil);
+      const added = special ? (recordGoods(special, `pick:${s.uid}`), false) : recordFind('fossil', s.fossil, `pick:${s.uid}`);
       take(date, s.uid);
       taken++;
       sceneSfx('dig');

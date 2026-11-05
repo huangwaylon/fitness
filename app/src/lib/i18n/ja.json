@@ -217,6 +217,7 @@
   "world.partner.dug": "{who}が {name}を ほりだした！",
   "world.partner.got": "{who}が {name}を てにいれた！",
   "world.partner.beat": "{who}が さきに {name}を つかまえた！",
+  "world.partner.first": "{who}が さきに とったよ",
   "shake.dangle": "むしを つかまえる",
   "beach.picked": "{name}を ひろった！",
   "present.got": "{name}を てにいれた！",

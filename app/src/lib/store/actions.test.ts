@@ -129,6 +129,48 @@ describe('the island’s finds (the ずかん)', () => {
     // held until the first catch's minute is up, not a new minute from the second
     expect(tallyOf()[0].nextAt).toBe(NOW + 60_000);
   });
+
+  it('a race lost on a claim (the partner’s reached the relay first): its catch comes out of my tally again, with a line', async () => {
+    const { recordFind, recordGoods } = await import('./actions.ts');
+    const { world } = await import('./world.svelte.ts');
+    const { toasts } = await import('#lib/ui-state/toast.svelte.ts');
+    const { t } = await import('#lib/i18n/index.ts');
+    vi.advanceTimersByTime(120_000); // (the last test's held tally sent)
+    await model();
+    week.view = { people: { A: { villagerName: 'ウェイ' }, B: { villagerName: 'うめ' } }, guest: { villagerName: 'ゲスト' } } as unknown as WeekView;
+    let hear: ((m: object) => void) | null = null;
+    const st = { connected: true, me: 'A' as const, peer: true, here: ['B' as const] };
+    world.reset();
+    world.attach({ start() {}, stop() {}, send: () => true, on: (fn) => ((hear = fn as never), () => {}), onChange: () => () => {}, onStatus: (fn) => (fn(st), () => {}), status: () => st, serverNow: () => Date.now() }, 'A');
+    const tallies = () => queued().filter((e) => e.type === 'tally').map((e) => e.data);
+    const before = tallies().length;
+    // I net a koi and pick up a branch; both counted, in one held tally
+    expect(world.share({ kind: 'catch', what: 'koi', id: 'fresh:5', how: 'net' }).fresh).toBe(true);
+    recordFind('fish', 'koi', 'catch:fresh:5');
+    // (the model, as live: the queue on top of the rows)
+    const held = queued().filter((e) => e.type === 'tally').at(-1)!;
+    await model([['2026-11-18T12:00:00.000Z', 'A', held.id, 'tally', JSON.stringify(held.data)]]);
+    expect(world.share({ kind: 'pick', id: 'br1', what: 'tree-branch' }).fresh).toBe(true);
+    recordGoods('tree-branch', 'pick:br1');
+    expect(tallies().slice(before)).toEqual([{ date: '2026-11-18', counts: { 'fish:koi': 1, 'goods:tree-branch': 1 } }]);
+    // the relay heard うめ's catch of the koi first: mine is out of the tally (the live catch's news is the island's)
+    hear!({ v: 3, kind: 'catch', what: 'koi', id: 'fresh:5', how: 'rod', who: 'B', t: Date.now() - 50 });
+    expect(tallies().slice(before)).toEqual([{ date: '2026-11-18', counts: { 'goods:tree-branch': 1 } }]);
+    // and the branch: nothing left to send, and a line says who has it
+    toasts.dismiss();
+    hear!({ v: 3, kind: 'pick', id: 'br1', what: 'tree-branch', who: 'B', t: Date.now() - 40 });
+    expect(tallies().slice(before)).toEqual([]);
+    expect(toasts.current?.text).toBe(t('world.partner.first', { who: 'うめ' }));
+    world.reset();
+  });
+
+  it('a race lost on a claim this phone never counted (a reload since): nothing taken, no line', async () => {
+    const { lostRace } = await import('./actions.ts');
+    const { toasts } = await import('#lib/ui-state/toast.svelte.ts');
+    toasts.dismiss();
+    expect(lostRace('catch:nothing', 'B')).toBe(false);
+    expect(toasts.current).toBeNull();
+  });
 });
 
 describe('the meal log', () => {

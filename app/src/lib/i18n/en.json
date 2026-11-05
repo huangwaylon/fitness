@@ -217,6 +217,7 @@
   "world.partner.dug": "{who} dug up {name}!",
   "world.partner.got": "{who} got {name}!",
   "world.partner.beat": "{who} got to {name} first!",
+  "world.partner.first": "{who} got there first",
   "shake.dangle": "Net the bug",
   "beach.picked": "I picked up {name}!",
   "present.got": "I got {name}!",
