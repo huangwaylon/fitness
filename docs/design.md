@@ -223,8 +223,10 @@ no foot bar: the stage and the tabs hold still, the panel under them scrolls to 
   hidden, for the portraits). The logic mode builds it and draws nothing.
 - **Portraits** (`look/portraits.svelte.ts`, `look/LookPortrait.svelte`): a player's round head (the コーデ chips, the
   せってい row) is `portrait()` through the preview's renderer (a second player kept for the shots, never a second
-  context), 128 px, kept by the look's hash in memory and in localStorage (`look.portraits`, the latest 24; quota:
-  fewer, never the user's data's room). Asked for as a chip shows, and the look being edited 0.7 s after its last edit,
+  context), 128 px, kept by the look's hash in localStorage, each head its own entry (`look.portrait.<hash>`;
+  `look.portraits` the hashes, the latest 24; quota: fewer, never the user's data's room; the old one-list format split
+  on first use), and in memory only as a head is asked for (24 at most, the least recently asked for let go). Nothing
+  is read as the module loads. Asked for as a chip shows, and the look being edited 0.7 s after its last edit,
   so the せってい row has it once the level is closed (outside すがた nothing draws them: a look never drawn shows the
   stand-in). iOS Simulator (iPhone 17 Pro, iOS 26.5, a local build's demo, すがた open over the island): idle 59 fps,
   frame p95 17 ms, 1 long frame in 5 s, no errors.

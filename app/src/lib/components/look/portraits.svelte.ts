@@ -1,9 +1,10 @@
 // The players' portraits (customization.md §5): a look's head, drawn once from the look and kept by its hash, so the
 // コーデ chips and the せってい row show the 3D player's head without a renderer of their own. Drawn by whoever
-// paints (the すがた level's preview registers its renderer while it's open: never a second context); kept in memory
-// and in localStorage (`look.portraits`, the latest PORTRAIT_KEEP, newest last), so the せってい row has them on the
-// next opening too. A look with none yet shows the caller's stand-in until it's drawn.
-import { SvelteMap } from 'svelte/reactivity';
+// paints (the すがた level's preview registers its renderer while it's open: never a second context); kept in
+// localStorage, each under its own key (`look.portrait.<hash>`; `look.portraits` the kept hashes, the latest KEEP,
+// newest last), so the せってい row has them on the next opening too, and in memory only as a head is asked for
+// (KEEP at most, the least recently asked for let go: each a 10-20 KB data URL). Nothing is read as the module loads:
+// a head's own entry the first time it's asked for. A look with none yet shows the caller's stand-in until it's drawn.
 import type { PlayerLook } from '#lib/contract/look.ts';
 
 /** Pixels a side (the strip's 60px chips at 2×; the せってい row's 48 px). */
@@ -22,26 +23,96 @@ function lookHash(l: PlayerLook): string {
   return (h >>> 0).toString(36);
 }
 
-const shots = new SvelteMap<string, string>();
-/** What's kept, read once as the module loads (never inside a $derived: that may not write state). */
-function load() {
-  if (typeof localStorage === 'undefined') return;
+const PREFIX = 'look.portrait.';
+
+/** The heads in memory (least recently asked for first), at most KEEP; not reactive state (read inside a $derived). */
+const shots = new Map<string, string>();
+/** A head drawn this session: the $derived that asked re-reads (shots itself is no state: a read may fill it). */
+let drawn = $state(0);
+/** The heads whose kept entry was read (none there: not read again till it's drawn or let go of). */
+const asked = new Set<string>();
+const storage = (): Storage | null => (typeof localStorage === 'undefined' ? null : localStorage);
+const remember = (key: string, url: string) => {
+  shots.delete(key);
+  shots.set(key, url);
+  if (shots.size > KEEP) {
+    const old = shots.keys().next().value!;
+    shots.delete(old);
+    // (asked again, read again from its entry)
+    asked.delete(old);
+  }
+};
+
+let migrated = false;
+/** The kept hashes, newest last; the old format (`look.portraits` the [hash, data URL] pairs) split once. */
+function index(): string[] {
+  const ls = storage();
+  if (!ls) return [];
   try {
-    const kept = JSON.parse(localStorage.getItem(STORE) ?? '[]') as [string, string][];
-    if (Array.isArray(kept)) for (const [k, v] of kept) if (typeof k === 'string' && typeof v === 'string' && v.startsWith('data:image/')) shots.set(k, v);
+    const raw = JSON.parse(ls.getItem(STORE) ?? '[]') as unknown[];
+    if (!Array.isArray(raw)) return [];
+    if (!migrated && raw.some((e) => Array.isArray(e))) {
+      migrated = true;
+      const keys: string[] = [];
+      // (its room first: each head then fits where the whole list was)
+      ls.removeItem(STORE);
+      for (const e of raw)
+        if (Array.isArray(e) && typeof e[0] === 'string' && typeof e[1] === 'string' && e[1].startsWith('data:image/')) {
+          try {
+            ls.setItem(PREFIX + e[0], e[1]);
+            keys.push(e[0]);
+          } catch {
+            break; // (full: the rest drawn again)
+          }
+        }
+      ls.setItem(STORE, JSON.stringify(keys));
+      return keys;
+    }
+    migrated = true;
+    return raw.filter((k): k is string => typeof k === 'string');
   } catch {
-    /* none kept, or unreadable: drawn again */
+    return []; // unreadable, or full mid-migration: drawn again
   }
 }
-load();
-function save() {
-  const all = [...shots].slice(-KEEP);
-  for (let n = all.length; n > 0; n = Math.floor(n / 2)) {
+/** A head from memory, else its own kept entry (read once: a miss is none till it's drawn). */
+function kept(key: string): string | null {
+  const url = shots.get(key);
+  if (url) {
+    remember(key, url);
+    return url;
+  }
+  if (asked.has(key)) return null;
+  asked.add(key);
+  try {
+    if (!migrated) index();
+    const v = storage()?.getItem(PREFIX + key);
+    if (v?.startsWith('data:image/')) {
+      remember(key, v);
+      return v;
+    }
+  } catch {
+    /* unreadable: drawn again */
+  }
+  return null;
+}
+/** Keep a drawn head: its entry, the index (the latest KEEP; the rest's entries removed), fewer when storage is full
+ *  (never the user's data's room). */
+function save(key: string, url: string) {
+  const ls = storage();
+  if (!ls) return;
+  let keys = [...index().filter((k) => k !== key), key];
+  const drop = (n: number) => {
+    for (const k of keys.slice(0, Math.max(0, keys.length - n))) ls.removeItem(PREFIX + k);
+    keys = keys.slice(-n);
+  };
+  drop(KEEP);
+  for (let n = keys.length; n > 0; n = Math.floor(n / 2)) {
     try {
-      localStorage.setItem(STORE, JSON.stringify(all.slice(-n)));
+      ls.setItem(PREFIX + key, url);
+      ls.setItem(STORE, JSON.stringify(keys));
       return;
     } catch {
-      /* full: keep fewer (never the user's data's room) */
+      drop(Math.floor(n / 2));
     }
   }
 }
@@ -62,12 +133,13 @@ async function drain() {
     for (let p = painter ?? fallback; p && wanted.size; p = painter ?? fallback) {
       const [key, look] = wanted.entries().next().value!;
       wanted.delete(key);
-      if (shots.has(key)) continue;
+      if (kept(key)) continue;
       const url = await p(look, PORTRAIT_PX).catch(() => null);
       if (!url) missed.add(key);
       else {
-        shots.set(key, url);
-        save();
+        remember(key, url);
+        save(key, url);
+        drawn++;
       }
     }
   } finally {
@@ -79,7 +151,8 @@ async function drain() {
  *  it again once drawn). */
 export function portraitOf(look: PlayerLook): string | null {
   const key = lookHash(look);
-  const url = shots.get(key);
+  void drawn;
+  const url = kept(key);
   if (url) return url;
   if (!wanted.has(key) && !missed.has(key)) {
     wanted.set(key, look);
