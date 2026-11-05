@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
-import { BANK, PIC_JA, type ItemType, type Level } from './bank.ts';
+import { BANK, PIC_JA, jaLines, splitFocus, type ItemType, type Level } from './bank.ts';
 import { CAST } from './bank4.ts';
 import { LEVELS, MIX } from './deck.ts';
 import { CLIPS } from './clips.ts';
@@ -61,6 +61,19 @@ describe('kikimimi bank', () => {
     const allowed: Partial<Record<Level, string[]>> = { 1: ['us'], 2: ['us', 'uk'], 3: ['us', 'uk', 'au'], 4: ['us', 'uk', 'au'] };
     for (const it of BANK) expect(allowed[it.lv], it.id).toContain(it.voice);
     for (const lv of [1, 2, 3, 4] as Level[]) expect(new Set(BANK.filter((it) => it.lv === lv).map((it) => it.voice)).size).toBe(Math.min(lv, 3));
+  });
+
+  it('splitFocus and jaLines: the focus marked in place; a reply on two lines, the question, then → the reply', () => {
+    expect(splitFocus({ en: 'I got a squid!', focus: 'squid' })).toEqual(['I got a ', 'squid', '!']);
+    expect(splitFocus({ en: 'Hello.', focus: 'bye' })).toEqual(['Hello.', '', '']);
+    expect(splitFocus({ en: 'Hello.' })).toEqual(['Hello.', '', '']);
+    for (const it of BANK) {
+      expect(splitFocus(it).join(''), it.id).toBe(it.en);
+      const lines = jaLines(it), two = it.type === 'reply' || it.type === 'mean';
+      expect(lines.length, it.id).toBe(two ? 2 : 1);
+      if (it.type === 'reply') expect(lines[1], it.id).toMatch(/^→ 「.+」$/);
+      expect(it.ja.split('→').length, it.id).toBe(two ? 2 : 1);
+    }
   });
 
   it('answers are in range, choices distinct, counts per type', () => {

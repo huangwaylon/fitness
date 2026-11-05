@@ -148,6 +148,20 @@ export const PIC_JA: Readonly<Record<string, string>> = {
   'finds/items/walking-shoes': 'くつ'
 };
 
+/** `en` around its focus: [before, focus, after] (the focus '' when there is none or it isn't in `en`): marked at the
+ *  reveal and in the review list, a `word` item's blank before. */
+export function splitFocus(it: Pick<Item, 'en' | 'focus'>): [string, string, string] {
+  const f = it.focus, at = f ? it.en.indexOf(f) : -1;
+  return !f || at < 0 ? [it.en, '', ''] : [it.en.slice(0, at), f, it.en.slice(at + f.length)];
+}
+
+/** The Japanese as shown: a `reply`'s (or a `mean`'s) on two lines, the question, then 「→ the reply」 (the gist);
+ *  else one line. */
+export function jaLines(it: Pick<Item, 'ja'>): string[] {
+  const at = it.ja.indexOf('→');
+  return at < 0 ? [it.ja] : [it.ja.slice(0, at).trim(), `→ ${it.ja.slice(at + 1).trim()}`];
+}
+
 // ---- authored items -------------------------------------------------------------------------------------------------
 
 type Row = readonly [id: string, speaker: RosterId, voice: Accent, en: string, ja: string, choices: readonly string[], extra?: Partial<Item>];
