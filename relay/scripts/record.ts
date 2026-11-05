@@ -8,7 +8,10 @@
 //   restore <bookmark>  restore the record to a bookmark (a new epoch follows by itself; `rev` only if its note says so)
 //   rev                 a new epoch: every phone refetches everything
 //   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`), fetched in pages
-//   compact [max] [rev] the record's compaction now (the cron runs it daily); `rev`: a new epoch after it
+//   compact --delete-health-history [max] [rev]
+//                       the record's compaction now: it DELETES Health history rows (the locked weeks' superseded
+//                       values; the user's rule is to keep them all: dump first). Refused without the flag. `rev`: a
+//                       new epoch after it
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped)
 //   held [A|B]          the values an ingest held back (a past day's 0 over a value above it), never served
 //   promote <person> <date> <metric> [value]   a held value made a row of the day's history (its latest now)
@@ -77,9 +80,16 @@ switch (cmd) {
   case 'dump':
     process.stdout.write(`${JSON.stringify(await dump())}\n`);
     break;
-  case 'compact':
-    console.log(JSON.stringify(await signed({ op: 'compact', ...(arg && arg !== 'rev' ? { max: Number(arg) } : {}), ...(args.includes('rev') ? { rev: true } : {}) })));
+  case 'compact': {
+    if (!process.argv.includes('--delete-health-history')) {
+      console.error('compact DELETES Health history rows (the locked weeks\' superseded values; the user keeps them all). Dump first; then, only if the user decided so: compact --delete-health-history [max] [rev]');
+      process.exit(1);
+    }
+    const rest = args.filter((x: string) => x !== '--delete-health-history');
+    const max = rest.slice(1).find((x: string) => /^\d+$/.test(x));
+    console.log(JSON.stringify(await signed({ op: 'compact', confirm: 'delete-health-history', ...(max ? { max: Number(max) } : {}), ...(rest.includes('rev') ? { rev: true } : {}) })));
     break;
+  }
   case 'held':
     console.log(JSON.stringify(await signed({ op: 'held', ...(arg ? { person: arg } : {}) })));
     break;
@@ -92,6 +102,6 @@ switch (cmd) {
     await load((JSON.parse(readFileSync(arg, 'utf8')) as { rows: Record<string, unknown[][]> }).rows);
     break;
   default:
-    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | compact [max] [rev] | load <file> | held [person] | promote <person> <date> <metric> [value]  [--test]');
+    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | compact --delete-health-history [max] [rev] | load <file> | held [person] | promote <person> <date> <metric> [value]  [--test]');
     process.exit(1);
 }

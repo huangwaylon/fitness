@@ -98,7 +98,8 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
    *   `promote {person, date, metric, value?}`: one made a row of the day's history (its latest now);
    * - `dump {limit?, after?}`: every row (the backup, docs/ops/runbook.md#13-the-record); with `limit`, a page of it
    *   (`next`: the `after` of the next page; the audit on the first);
-   * - `compact {max?, rev?}`: the record's compaction now (store.ts compact; `rev: true` starts a new epoch after it);
+   * - `compact {confirm: 'delete-health-history', max?, rev?}`: the record's compaction now (store.ts compactOp: it
+   *   deletes Health history rows, refused without the confirm; `rev: true` starts a new epoch after it);
    * - `load {rows: {metrics?, events?, uploads?}}`: rows that already have their `at` (a dump's) into the record, by
    *   its rules (idempotent: what it has is skipped);
    * - `logs {since?, until?, after?, before?, desc?, lvl?, ev?, role?, sid?, rid?, src?, build?, limit?}`: the log's
@@ -138,13 +139,10 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
         return this.core.load(o);
       case 'dump':
         return { rev: this.core.rev(), ...this.core.dumpPage(o) };
-      case 'compact': {
-        // the record's own compaction now (the cron runs it daily: compactTick); `rev`: a new epoch after it, so the
-        // phones refetch the smaller record (their caches compact by the same rule, so they needn't)
-        const max = typeof o.max === 'number' && Number.isInteger(o.max) && o.max > 0 ? o.max : undefined;
-        const r = this.core.compact(max);
-        return { ok: true, ...r, ...(o.rev === true ? { rev: this.core.bumpRev() } : {}) };
-      }
+      case 'compact':
+        // the record's compaction by hand: it deletes Health history rows, so only with its confirm (store.ts
+        // compactOp; the cron runs it only with COMPACT_CRON=1); `rev`: a new epoch after it
+        return this.core.compactOp(o);
       // the log (docs/ops/observability.md): its own object's
       case 'logs':
         return { ok: true, ...(await this.logObj().query(o)) };
