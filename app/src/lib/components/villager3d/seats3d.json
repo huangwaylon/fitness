@@ -61,10 +61,16 @@
   },
   "island": {
     "beach-chair": {"k":"l","y":3.9,"a":"x","head":-1,"s":[-7.2,8.3],"c":[0],"py":0.7},
+    "exercise-ball": {"k":"u","use":"bounce","x":0,"y":7.6,"z":0,"yaw":0,"fx":0,"fz":8},
+    "exercise-bike": {"k":"u","use":"pedal","x":3.3,"y":9,"z":0,"yaw":-1.5708,"fx":3,"fz":8},
     "hammock": {"k":"l","y":5,"a":"x","head":-1,"s":[-6.7,7.8],"c":[0],"py":0.6,"sway":1},
     "iron-chair": {"k":"s","y":4.9,"x":[0],"z0":-1.7,"z1":2.3,"back":4.9},
     "log-bench": {"k":"s","y":4.4,"x":[-3.5,4],"z0":0.3,"z1":3.8,"back":4},
     "log-stool": {"k":"s","y":4.2,"x":[0],"z0":-2.2,"z1":2.3,"back":0},
-    "park-bench": {"k":"s","y":4.2,"x":[-3.9,3.9],"z0":-1.7,"z1":3.3,"back":4.7}
+    "park-bench": {"k":"s","y":4.2,"x":[-3.9,3.9],"z0":-1.7,"z1":3.3,"back":4.7},
+    "pullup": {"k":"u","use":"pullup","x":0,"y":0,"z":-5,"yaw":0,"fx":0,"fz":-5},
+    "punching-bag": {"k":"u","use":"punch","x":-8,"y":0,"z":2,"yaw":1.5708,"fx":-8,"fz":2},
+    "treadmill": {"k":"u","use":"run","x":1.5,"y":1.2,"z":0,"yaw":-1.5708,"fx":1.5,"fz":8},
+    "weight-bench": {"k":"l","y":5.4,"a":"x","head":-1,"s":[-7.2,7.8],"c":[0],"py":0,"use":"press"}
   }
 }

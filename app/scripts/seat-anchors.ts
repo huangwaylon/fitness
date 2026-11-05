@@ -19,7 +19,8 @@ const ITEMS = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'ten
 const ASSETS = JSON.parse(readFileSync(join(APP, 'src', 'lib', 'components', 'world3d', 'assets.json'), 'utf8')) as { keys: Record<string, { m: string; foot?: [number, number] }>; models: Record<string, { max: number[] }> };
 const only = (process.argv.find((a) => a.startsWith('--only='))?.slice(7) ?? '').split(',').filter(Boolean);
 
-type Shape = (SeatShape | BedShape) & { sway?: 1 };
+type Use = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup';
+type Shape = ((SeatShape | BedShape) & { sway?: 1; use?: Use }) | { k: 'u'; use: Use; x: number; y: number; z: number; yaw: number; fx: number; fz: number };
 /** The island's seats: its model, how many sit on it, sat or lain on. */
 const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l' }> = {
   'park-bench': { key: 'deco/park-bench', n: 2, u: 's' },
@@ -27,12 +28,29 @@ const ISLAND: Record<string, { key: string; n: number; u: 's' | 'l' }> = {
   'log-stool': { key: 'deco/log-stool', n: 1, u: 's' },
   hammock: { key: 'deco/hammock', n: 1, u: 'l' },
   'iron-chair': { key: 'decor/iron-chair-0', n: 1, u: 's' },
-  'beach-chair': { key: 'deco/beach-chair', n: 1, u: 'l' }
+  'beach-chair': { key: 'deco/beach-chair', n: 1, u: 'l' },
+  // the gym's weight bench: lain on (its presses: OVERRIDES' use)
+  'weight-bench': { key: 'decor/weight-bench-0', n: 1, u: 'l' }
+};
+/** The gym's pieces used in place (seats3d.ts's `u`: no seat or bed the rays could find), by hand from their models
+ *  (model units, +z their front, the bounds in world3d/assets.json): where the feet (standing) or the hips (seated) go,
+ *  which way it faces, and where one gets on from. The bike's saddle (its top 9 up, at +x; the console at −x: it rides
+ *  facing −x), the ball's top, the treadmill's belt (1.2 up, the console at −x: it runs facing −x), beside the bag
+ *  (hung at x −0.5, z +2: a punch from its left, side on to the camera), behind the pull-up bar (its bar 14 up at z
+ *  −1.5: under it, facing us, world.ts PULLUP_AT's 15u behind the stand's middle). */
+type UseShape = Extract<Shape, { k: 'u' }>;
+const USE: Record<string, UseShape> = {
+  'exercise-bike': { k: 'u', use: 'pedal', x: 3.3, y: 9, z: 0, yaw: -Math.PI / 2, fx: 3, fz: 8 },
+  'exercise-ball': { k: 'u', use: 'bounce', x: 0, y: 7.6, z: 0, yaw: 0, fx: 0, fz: 8 },
+  treadmill: { k: 'u', use: 'run', x: 1.5, y: 1.2, z: 0, yaw: -Math.PI / 2, fx: 1.5, fz: 8 },
+  'punching-bag': { k: 'u', use: 'punch', x: -8, y: 0, z: 2, yaw: Math.PI / 2, fx: -8, fz: 2 },
+  pullup: { k: 'u', use: 'pullup', x: 0, y: 0, z: -5, yaw: 0, fx: 0, fz: -5 }
 };
 /** What the rays get wrong or can't tell, by hand: merged over what they found. A hammock sways (its cloth sags in the
  *  middle; the lying height is the sag's, a little under the rim the rays see first). */
 const OVERRIDES: Record<string, Partial<Shape>> = {
   hammock: { sway: 1 },
+  'weight-bench': { use: 'press' },
   f1620: { sway: 1 }
 };
 
@@ -78,6 +96,7 @@ for (const [model, it] of Object.entries(ISLAND)) {
   if (sh) out.island[model] = { ...sh, ...OVERRIDES[model] } as Shape;
   console.log(model, JSON.stringify(out.island[model] ?? 'none'));
 }
+for (const [model, sh] of Object.entries(USE)) if (want(model)) out.island[model] = { ...sh, yaw: Math.round(sh.yaw * 1e4) / 1e4 } as Shape;
 await browser.close();
 const sorted = (o: Record<string, Shape>) => Object.keys(o).sort().map((k) => `    ${JSON.stringify(k)}: ${JSON.stringify(o[k])}`).join(',\n');
 writeFileSync(OUT, `{\n  "_": "scripts/seat-anchors.ts (npm run seat-anchors): each seat's and bed's shape in its model's own frame (model units, +z its front)",\n  "tent": {\n${sorted(out.tent)}\n  },\n  "island": {\n${sorted(out.island)}\n  }\n}\n`);

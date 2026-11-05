@@ -639,14 +639,15 @@ went in November 2026 (docs/cleanup-2d.md).
   arch's spot. The seasonal lamps and the illuminated tree light at dusk like the lanterns. All from the date, the hour
   and the seed: the same on both phones. Every spot is a walk obstacle all year and a spot a decoration can't take
   ([Decorating](#decorating)), so a seasonal piece never lands on one. Their shadows are the 3D island's. A tap answers where it stands (nobody walks, my villager turns to it), but for a seat (it
-  sits: below): the bar rings (`clang`), the pump gushes (`pump`), the sandcastle and the snowboy puff, the
+  sits: below; the pull-up bar is the gym's: a tap walks up to it and does pull-ups, [Decorating](#decorating)): the pump gushes (`pump`), the sandcastle and the snowboy puff, the
   rest knock softly. The shishi-odoshi tips (NH's model posed: `deco/shishiodoshi-tip`) every 15–25 s while it's in
   view and on a tap, and knocks back on its stone: `kon` (local, cosmetic). The new sounds are synthesized
   (`sound/synth.ts`).
   **The decor's life** (ambient life's beats, `island/ambient.ts`, `IslandScene`): an outing now and then stops at the
   front bench and sits 20–40 s; on a day a sit on the pond's bench (each its own seat); in the evening (19–22) a
   villager goes to sit at the campfire on its own stool (A west, B east) for 30–60 s; on a day its person met the
-  exercise goal (🍑) a villager goes to the pull-up bar now and then and does pull-ups there; when both met every goal
+  exercise goal (🍑) a villager goes to the pull-up bar now and then and does pull-ups there (standing on its spot is
+  on it, the gym's way: the 3D villager's `pullup`); when both met every goal
   today, at dusk (17:00–19:00, each quarter hour both are home) they set off together for the front bench and sit side
   by side facing the sea for 90 s. A villager standing still on a seat's spot (`world.ts` SEATS: `layout/nav.ts`
   seatsOf, a step in front of the seat, where the room's walk to a chair ends) is on it: the 3D villager turns and sits
@@ -1095,6 +1096,31 @@ decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: l
 - **The items** (ten, NH's models): いしどうろう (stone lantern), バードバス, ガーデンワゴン, アイアンガーデンテーブル and チェア,
   レンガのいど, たぬきのおきもの, モンステラ, みちしるべ (signpost), いちりんしゃ (wheelbarrow), with the layout's other kinds in
   IslandEdit's tray tabs.
+- **The gym** (the tray's ジム tab, `layout/catalog.ts` group `gym`; the user: "I want to build a gym"): NH's fitness
+  furniture under its official names, the decorations' pipeline (scripts/models.ts and world3d-assets.ts `DECOR`: the
+  icon `decor/<kind>-0`, the model `decor/<kind>`, its first colour), NH's footprints (catalog.ts; they turn), the same
+  checks, ops and members-only もようがえ as every outdoor piece: けんすいスタンド (the pull-up bar, the default island's
+  own stand among them), プレスベンチ, エクササイズバイク, ランニングマシン, サンドバッグ, バランスボール, バーベル, ケトルベル,
+  プロテインシェイカー, ウォーターサーバー, たいじゅうそくていき, クライミングウォール, ロッカー. NH has no dumbbells, medicine ball,
+  rowing machine, ab roller, stepper, stretch board or jump rope, and the yoga mats and exercise mats aren't in the model
+  files. **Used, NH's way** (the six NH lets one use): a tap walks my villager up to it and on, a seat of sitting.ts
+  (`layout/nav.ts` SEAT_ON, `villager3d/seats3d.json` `use`: the weight bench a bed from its model, the rest a point by hand,
+  `scripts/seat-anchors.ts` USE), and there it uses it in a loop while it stays (poses.ts `press`, `pedal`, `run`,
+  `punch`, `bounce`, `pullup`: lying on the bench pressing, pedalling the bike side on, running on the treadmill's belt,
+  jabbing at the bag from its side, bouncing on the ball, pull-ups at the bar, its chin over the bar at the top); a tap
+  on the ground gets it off. One villager a piece (taken: a `boop`), the earlier on it keeping it, and nothing new on the
+  relay: as a seat, standing still on its spot is on it, so every phone draws the same (`e2e/gym.spec.ts`). Asleep on one
+  it dozes. The rest are to look at (a tap jiggles them). **Cost:** a piece is the decorations' instanced model (a
+  repeated one adds no draw); its use is the villager's own pose, stepped at the island's ambient rate (the frames it
+  draws anyway while a villager shows: `villager3d` `looping()`), never the full one. iOS Simulator (own iPhone 16, iOS
+  26.5, local build, the demo island at noon, the camera on the gym): ten pieces placed (two bikes, two treadmills, the
+  bench, the bag, the ball, a barbell, a kettlebell, a water cooler) draw calls 180 → 193, triangles 246k → 259k, the
+  frame's CPU p50/p95 1/4 → 2/3 ms, idle 60 fps either way and 30 frames a second drawn (the ambient rate), my villager
+  running on a treadmill the same (193 calls, 2/3 ms, 30 a second; it used to ask for the full rate while seated turned
+  side on: villagers.ts turns to the anchor's own way). `npm run ios:check -- --seed --then` (docs/ops/testing.md).
+- **How many:** the layout's objects are capped by the record at 1,500 ever set (`contract/layout.ts` LAYOUT_MAX, the
+  default island's ~100 among them), not by `contract/decor.ts` DECOR_MAX (30: the old もようがえ's decorations' map,
+  moved into the layout once; nothing places by it now). A gym of 10–20 pieces fits.
 - **In:** せってい → もようがえ → はじめる (the sheet closes; no new HUD control on the island): IslandEdit over the 3D
   camera, the tent's way: a tray of every kind, a ghost green or red, a drag a tile at a time, a tap on the ground
   puts it there, ↻ まわす, ✕, 🗑, ✓ (island-layout.md "Phone editing").
@@ -1166,7 +1192,7 @@ goes with the leaving).
   relay) their villager rests in the room where it last stood; while they're on the island it isn't here.
 - **もようがえ** (the foot's green button) arranges the room: the grid on the floor and the tray in the thumb's reach:
   tabs かぐ (the starter set), ラグ, みつけた (every furniture either of us found in a balloon's present that NH has a model
-  of: the ずかん's カタログ, newest first), かべがみ, ゆか, over NH's own icons in two rows that scroll sideways (60 px), and
+  of: the ずかん's カタログ, newest first), ジム (the gym's pieces of those found or bought, gathered: tent/items.ts GYM; the rooms' pieces stay the balloons' and the shop's, and a bike or a treadmill in a room acts in place, the bench is lain on), かべがみ, ゆか, over NH's own icons in two rows that scroll sideways (60 px), and
   ✓ おわる with the count (「3/60」). A tap on a piece's icon puts it down as a ghost on the free spot nearest my villager,
   lifted, its footprint on the floor green where it may stand and red where not, the bar above saying why
   (「でいりぐちは あけて おこう」, 「ほかの かぐと かさなります」, 「むらびとが いるよ」…); a finger on it (or on a placed piece,
