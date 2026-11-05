@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CLOSE, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { HELLO_MS, MAX_PENDING, RING_MAX, RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
 
 const KEY_A = 'a1'.repeat(16);
@@ -70,7 +70,7 @@ beforeEach(() => {
 describe('the island room', () => {
   it('welcomes a known key, says whether the partner is here and tells the partner', () => {
     const a = join(KEY_A);
-    expect(a.sent).toEqual([{ v: 3, kind: 'welcome', me: 'A', peer: false, t: now, here: [] }]);
+    expect(a.sent).toEqual([{ v: 3, kind: 'welcome', me: 'A', peer: false, t: now, here: [], hb: true }]);
     const b = join(KEY_B);
     expect(b.sent[0]).toMatchObject({ kind: 'welcome', me: 'B', peer: true, here: ['A'] });
     expect(a.sent.at(-1)).toEqual({ v: 3, kind: 'presence', who: 'B', on: true, t: now });
@@ -123,6 +123,28 @@ describe('the island room', () => {
     const a = join(KEY_A);
     room.message(a, JSON.stringify({ v: 2, kind: 'act', act: 'tap' }));
     expect(a.closed?.code).toBe(CLOSE.version);
+  });
+
+  it('answers the heartbeat with its fixed answer, as the runtime’s auto-response does: any socket, never the bucket', () => {
+    const raw: string[] = [];
+    const x = join();
+    x.send = (d: string) => void raw.push(d);
+    room.message(x, HB_PING);
+    expect(raw).toEqual([HB_PONG]);
+    expect(x.closed).toBeNull(); // (before its hello too)
+    const a = join(KEY_A), b = join(KEY_B);
+    const got: string[] = [];
+    a.send = (d: string) => void got.push(d);
+    for (let i = 0; i < 30; i++) room.message(a, HB_PING);
+    expect(got).toEqual(Array(30).fill(HB_PONG));
+    b.sent = [];
+    say(a, { kind: 'act', act: 'rock' }); // the bucket untouched by them
+    expect(b.kinds()).toEqual(['act']);
+    // a lookalike isn't it (the runtime matches exactly): a malformed intent, dropped
+    got.length = 0;
+    room.message(a, '{"kind":"hb","v":3}');
+    expect(got).toEqual([]);
+    expect(parseServer(HB_PONG)).toEqual({ v: 3, kind: 'hb', t: 0 });
   });
 
   it('answers a ping with the relay time, to the sender only', () => {
@@ -312,7 +334,7 @@ describe('the island room', () => {
     room.notify({ what: 'ingest', who: 'A', at: '2026-11-01T01:02:03.456Z', rev: 'e1' });
     room.notify({ what: 'event', who: 'B', at: '2026-11-01T01:00:00.000Z', rev: 'e1' }); // an older copy, late
     expect(marks).toEqual([{ at: '2026-11-01T01:02:03.456Z', rev: 'e1' }]);
-    expect(join(KEY_B).sent[0]).toEqual({ v: 3, kind: 'welcome', me: 'B', peer: true, t: now, rec: { at: '2026-11-01T01:02:03.456Z', rev: 'e1' }, here: ['A'] });
+    expect(join(KEY_B).sent[0]).toEqual({ v: 3, kind: 'welcome', me: 'B', peer: true, t: now, rec: { at: '2026-11-01T01:02:03.456Z', rev: 'e1' }, here: ['A'], hb: true });
     room = new RoomCore(io(), [], { at: '2026-11-01T01:02:03.456Z', rev: 'e1' });
     socks = [];
     expect(join(KEY_A).sent[0]).toMatchObject({ kind: 'welcome', rec: { at: '2026-11-01T01:02:03.456Z', rev: 'e1' } });

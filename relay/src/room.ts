@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 import { served } from './weather.ts';
@@ -159,6 +159,16 @@ export class RoomCore<S extends Sock> {
   }
 
   message(s: S, raw: unknown): void {
+    // the heartbeat: answered as the runtime's auto-response answers it (index.ts), before anything else (a room
+    // awake, or a test's): any socket, no bucket
+    if (raw === HB_PING) {
+      try {
+        s.send(HB_PONG);
+      } catch {
+        /* closing */
+      }
+      return;
+    }
     const now = this.io.now();
     const meta = this.io.meta(s);
     // a socket let go (swept, or making room) before its hello: whatever it says now goes nowhere
@@ -267,7 +277,8 @@ export class RoomCore<S extends Sock> {
     const gone: Gone = {};
     for (const w of ['A', 'B', 'G'] as const) if (this.gone[w] !== undefined && !here.includes(w)) gone[w] = this.gone[w];
     if (this.gone[who] !== undefined) this.setGone(who, undefined);
-    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(this.rec ? { rec: this.rec } : {}), here, ...(Object.keys(gone).length ? { gone } : {}) });
+    // `hb`: this room answers the heartbeat (HB_PING) without waking (2026-11-05)
+    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(this.rec ? { rec: this.rec } : {}), here, ...(Object.keys(gone).length ? { gone } : {}), hb: true });
     // the real sky, when the room has one that still serves
     const wx = served(this.wx, t);
     if (wx) this.send(s, { v: LIVE_V, kind: 'wx', ...wx, t });

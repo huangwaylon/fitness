@@ -135,6 +135,16 @@ type DecorWire =
   | { sc: 'r'; id: 'reset'; at: number }
   | { sc: 'h'; id: string; at: number; m: string; w?: string; r?: string; d?: string; f?: number };
 
+/**
+ * The heartbeat (2026-11-05): a fixed message and its fixed answer, which the room's runtime answers by itself without
+ * waking the room (Durable Objects' setWebSocketAutoResponse matches the request exactly), so a quiet socket's liveness
+ * probe costs no duration. Liveness only: the relay's clock is the timed `ping`'s. A room that answers it says so in its
+ * welcome (`hb`). @public (relay/, sync/live.ts)
+ */
+export const HB_PING = '{"v":3,"kind":"hb"}';
+/** @public (relay/, sync/live.ts) */
+export const HB_PONG = '{"v":3,"kind":"hb","t":0}';
+
 /** Client → relay. `hello` must come first (the person key; `since` = the last world event's `t` it has seen: the day's
  *  world after it comes as `replay` messages, mine included; `build`: the app's version, `2026-11-05.ef93d8b`, for the log's
  *  `ws.hello`; absent from a phone before 2026-11-05). An intent's `c` (this phone's sequence number, increasing
@@ -155,8 +165,10 @@ export type ServerMsg =
   /** `peer`: a member's partner is here (the guest's: either member). `here`: everyone else who is. `gone`
    *  (2026-11): when the room last saw each person's last socket close, on its clock, for those not here (mine:
    *  my previous one's): one gone quiet inside a room is out of it a while after (store/where.svelte.ts). */
-  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[]; gone?: Gone }
+  | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[]; gone?: Gone; hb?: true }
   | { v: LiveV; kind: 'pong'; c: number; t: number }
+  /** The heartbeat's answer (HB_PONG: `t` 0, the runtime's fixed reply, never a clock). */
+  | { v: LiveV; kind: 'hb'; t: number }
   | { v: LiveV; kind: 'ack'; c: number; t: number; ok: boolean }
   /** My numbered intent `c` came over the room's rate limit (2026-11-05): dropped, neither relayed nor kept; send it
    *  again later. Its own kind, so a phone that doesn't know it ignores it and keeps the intent for its next resend. */
@@ -536,8 +548,10 @@ export function parseServer(raw: unknown): ServerMsg | null {
       const rec = isObj(o.rec) ? noticeOf({ ...o.rec, what: 'event', who: o.me }) : null;
       const here = Array.isArray(o.here) ? o.here.filter(isWho).filter((w, i, l) => w !== o.me && l.indexOf(w) === i) : null;
       const gone = isObj(o.gone) ? goneOf(o.gone) : null;
-      return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}), ...(here ? { here } : {}), ...(gone ? { gone } : {}) };
+      return { v: LIVE_V, kind: 'welcome', me: o.me, peer: o.peer, t, ...(rec ? { rec: { at: rec.at, rev: rec.rev } } : {}), ...(here ? { here } : {}), ...(gone ? { gone } : {}), ...(o.hb === true ? { hb: true as const } : {}) };
     }
+    case 'hb':
+      return { v: LIVE_V, kind: 'hb', t };
     case 'pong':
       return isTime(o.c) ? { v: LIVE_V, kind: 'pong', c: o.c, t } : null;
     case 'presence':
