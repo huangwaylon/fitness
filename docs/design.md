@@ -2638,7 +2638,8 @@ plays `boop`. Enforced by `taps.test.ts`, walked by `e2e/sound.spec.ts`.
 
 ### Mix
 
-Buses: music 0.30, ambience 0.28, effects 0.90; master 音量 squared (default 0.8). ≤ 6 voices and a cap per sound
+Buses: music 0.30, ambience 0.28, effects 0.90, voice 1.0 (ききみみ's clips: 音量 alone, not the toggles; they duck the
+music as a jingle does); master 音量 squared (default 0.8). ≤ 6 voices and a cap per sound
 (`ids.ts`); jingles (the fanfares, miles, the radio jingles) never overlap and duck the music to 25%. Effects decode
 on the unlock (only while 効果音 is on), except the `lazy` ones (the 24 radio jingles, the complete fanfare): fetched
 at their first play (it waits up to 2.5 s for the file, then plays the placeholder: never nothing) and kept decoded
@@ -2658,8 +2659,15 @@ two at most (1.5–2.8 MB of PCM each at 48 kHz). Effects jitter pitch.
   hour fades in over 0.8 s.
 - **Music off:** the fade-out, then every music file in memory and its object URL let go, the decks' media too
   (`Engine.release`); the next on fetches again (from the service worker's cache).
-- **iOS session:** always `ambient`: it mixes with other apps' audio and follows the Ring/Silent switch. The Media
+- **iOS session:** `ambient`: it mixes with other apps' audio and follows the Ring/Silent switch. The Media
   Session tile names the tune (`mediaSession.ts`).
+- **Voice session (ききみみ, [kikimimi.md](kikimimi.md#audio)):** `voiceSession(true)` inside a game's tap creates or
+  wakes the context even with sound set silent (no decks, no effects loaded), holds it awake (no idle suspend, no
+  sleep on everything off; the background still suspends it and stops its clips), and sets the session to `playback`
+  (plays with the switch on); `false` stops the clips, drops the decoded ones (an LRU of 4), restores the type and
+  hands back to the settings. `voice.state` not running while on → the game's 「タップして つづける」 card; any real tap
+  resumes it. `playVoice(buf, {relayAt, now})` schedules at `currentTime + (relayAt − now())/1000`; a past time plays
+  whole from now.
 
 ### Audio files
 
@@ -2686,7 +2694,8 @@ live), so they are mono AAC at 40 kbps (measured as close to the source as stere
 the app): Kimedance, the island broadcast's own jingle (the radio jingles open it), the museum's fossil and art rooms,
 the shop's big and closing, the Able Sisters, Resident Services, the tent, Redd, dreaming. `sound.test.ts`: every path in the manifest exists and every file is named; each folder under its budget
 (one file / all): `music/` 1 / 64 MB, `places/` 1 / 6 MB, `sfx/` 0.25 / 4 MB, `kk/` 1.2 / 60 MB, `kk/aircheck/` 1.2 /
-36 MB. Audio is never precached
+36 MB. Audio is never precached; the worker's audio cache keeps its few per class (music 3, K.K. 2, ききみみ 24, the
+rest 8)
 ([backend.md](backend.md#service-worker)).
 
 ### Sound settings

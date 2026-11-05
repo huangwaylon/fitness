@@ -901,7 +901,7 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   cache-first and never revalidated: every audio URL carries its file's content hash (`?v=`, `lib/sound/manifest.ts`;
   `/audio/*` is served immutable, `scripts/headers.ts`), so a re-cut file is a new URL. An LRU per class keeps the 3
   most recent music files (the hours, the event music, the rooms), K.K.'s 2 (a run of songs never pushes the hours
-  out) and 8 of the rest (effects, beds: an old version ages out); a hit is re-put only when it isn't its class's
+  out), ききみみ's 24 (`/audio/kikimimi/`: a quiz's clips never push the effects out) and 8 of the rest (effects, beds: an old version ages out); a hit is re-put only when it isn't its class's
   newest. Range requests pass through. The food data (`/food/*.json`, `island-food-v1`) cache-first by its `?v=<index.version>`, stored after it answers; `index.json` from the network within 2.5 s, else (or offline) its cached copy. A newer `index.json` waits beside the cached one until every file it names is cached; only then does it replace it and the older version's files go, so going offline mid-update leaves the last whole version, never a mix. Other GETs: this version's cache, the previous one, then the
   network. The relay is cross-origin and always live.
 
