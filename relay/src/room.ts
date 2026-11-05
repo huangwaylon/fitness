@@ -33,6 +33,8 @@ export interface RoomIO<S extends Sock> {
   hold?(held: Held): void;
   /** Persist when each person's phone last left (fire and forget). */
   saveGone?(gone: Gone): void;
+  /** Persist the day's claims and nests (fire and forget): they outlive the ring's trimming and a restart. */
+  saveDay?(d: DayIndex): void;
   /** A hello was welcomed: whose, in which version, from which build (absent before 2026-11-05). The room logs it
    *  (`ws.hello`) and fetches the real weather then, when it's due (weather.ts). */
   onHello?(who: Who, v: LiveV, build?: string): void;
@@ -42,6 +44,15 @@ export interface RoomIO<S extends Sock> {
  *  the last one only, a newer one of the pair replacing it; when it was tapped (`at`, its identity) and when the room
  *  heard it (`t`). */
 export type Held = Partial<Record<string, { from: Who; to: Who; at: number; t: number }>>;
+
+/** The day's claims (who made each, its stamp and sequence number: a resend of it is acked again) and each tree's
+ *  last nest, kept apart from the ring so that trimming the ring, and a restart after it, never lets a claim be made
+ *  twice. `day`: the Tokyo day they are of (another day's are let go). */
+export interface DayIndex {
+  day: number;
+  claims: [key: string, who: Who, t: number, c: number | null][];
+  nests: [tree: string, t: number][];
+}
 
 /** A change as the room keeps it: relayed, with its sender's sequence number (`c`: a resend is known again). */
 export type Kept = Relayed & { c?: number };
@@ -65,7 +76,7 @@ export class RoomCore<S extends Sock> {
   private lastT = 0;
 
   /** Today's claims (live-protocol claimOf: first wins) and each tree's last nest, from the ring. */
-  private claims = new Set<string>();
+  private claims = new Map<string, { who: Who; t: number; c?: number }>();
   private nests = new Map<string, number>();
   private day = -1;
   /** When each person's last phrase went out (presence only: not kept). */
@@ -78,7 +89,7 @@ export class RoomCore<S extends Sock> {
   /** Tokyo's real sky by the hour (weather.ts), sent after each welcome and to everyone when it changes. */
   private wx: Wx | null;
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null) {
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null) {
     this.wx = wx;
     this.held = { ...held };
     this.gone = { ...gone };
@@ -171,6 +182,10 @@ export class RoomCore<S extends Sock> {
       const same = JSON.stringify(intent);
       const had = this.fresh().find((e) => e.who === who && e.c === c && JSON.stringify(bare(e)) === same);
       if (had) return this.ack(s, c, had.t, true);
+      // or of a claim of mine trimmed from the ring since
+      const k = claimOf(intent);
+      const mine = k ? this.claims.get(k) : undefined;
+      if (mine && mine.who === who && mine.c === c) return this.ack(s, c, mine.t, true);
     }
     if (intent.kind === 'say') {
       // presence only, gently limited (the room's bucket is for bursts of world taps)
@@ -340,13 +355,36 @@ export class RoomCore<S extends Sock> {
     this.claims.clear();
     this.nests.clear();
     for (const e of this.ring) this.index(e);
+    // and those the ring no longer holds (kept apart: saveDay), when they are today's
+    if (this.kept?.day === today) {
+      for (const [k, who, t, c] of this.kept.claims) if (!this.claims.has(k)) this.claims.set(k, c === null ? { who, t } : { who, t, c });
+      for (const [tree, t] of this.kept.nests) this.nests.set(tree, Math.max(this.nests.get(tree) ?? 0, t));
+    }
+    this.kept = null;
     return this.ring;
   }
 
-  private index(e: Relayed): void {
+  /** Take a kept change into the day's claims and nests; true when they changed. */
+  private index(e: Kept): boolean {
     const c = claimOf(e);
-    if (c) this.claims.add(c);
-    if (e.kind === 'shake' && e.drop === 'nest') this.nests.set(e.tree, Math.max(this.nests.get(e.tree) ?? 0, e.t));
+    if (c && !this.claims.has(c)) {
+      this.claims.set(c, e.c === undefined ? { who: e.who, t: e.t } : { who: e.who, t: e.t, c: e.c });
+      return true;
+    }
+    if (e.kind === 'shake' && e.drop === 'nest' && e.t > (this.nests.get(e.tree) ?? 0)) {
+      this.nests.set(e.tree, e.t);
+      return true;
+    }
+    return false;
+  }
+
+  /** The day's claims and nests as saveDay keeps them. */
+  private dayIndex(): DayIndex {
+    return {
+      day: this.day,
+      claims: [...this.claims].map(([k, x]) => [k, x.who, x.t, x.c ?? null]),
+      nests: [...this.nests]
+    };
   }
 
   /** Whether the day's world takes a change: false when it refuses it (claimed already, a nest too soon, a walk sent
@@ -364,14 +402,18 @@ export class RoomCore<S extends Sock> {
   }
 
   /** Keep a change the world took (admit) in the day's world. A walk replaces its person's last one; past RING_MAX the
-   *  oldest change that isn't a walk goes. */
+   *  oldest change that claims nothing and isn't a walk goes (else the oldest that isn't a walk: its claim stays in
+   *  the day's claims, saveDay). */
   private keep(e: Kept): void {
     const ring = this.fresh();
     const rest = e.kind === 'walk' ? ring.filter((x) => !(x.kind === 'walk' && x.who === e.who)) : ring;
     const next = [...rest, e];
-    while (next.length > RING_MAX) next.splice(Math.max(0, next.findIndex((x) => x.kind !== 'walk')), 1);
+    while (next.length > RING_MAX) {
+      const i = next.findIndex((x) => x.kind !== 'walk' && !claimOf(x));
+      next.splice(i >= 0 ? i : Math.max(0, next.findIndex((x) => x.kind !== 'walk')), 1);
+    }
     this.ring = next;
-    this.index(e);
+    if (this.index(e)) this.io.saveDay?.(this.dayIndex());
     this.io.save(this.ring);
   }
 }

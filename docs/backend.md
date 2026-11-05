@@ -521,8 +521,12 @@ a person does is a small intent over the relay, kept by the room for the day, fo
 - **The room** (`relay/src/room.ts`): keeps today's world (Tokyo's day on the relay clock, a new day starts empty but
   for each person's last walk, carried in with a new stamp so a phone opening asks for it: their villager stays where
   it was left, however long ago): the last 400 changes (`world`, `catch` with an id, `pick`, `put`, `shake`; past
-  that the oldest that isn't a walk goes) and each person's last `walk` (replacing the one before), in DO storage, its claims and nests rebuilt after a hibernation. It refuses a claim it already
-  holds today and a second nest from a tree within the hour (`NEST_GAP_MS`). A hello's `since` replays the partner's
+  that the oldest that claims nothing and isn't a walk goes, then the oldest claim) and each person's last `walk`
+  (replacing the one before), in DO storage. The day's claims (with who made each, its stamp and `c`) and each tree's
+  last nest are kept apart from the ring (storage key `day`, `DayIndex`, let go with the Tokyo day), so neither a
+  trimmed ring nor a hibernation after it lets a claim be made twice (2026-11-05: a pick trimmed by 400 later changes
+  and a restart was accepted again); a resend of a trimmed claim by its sender with the same `c` is acked again. It
+  refuses a claim it already holds today and a second nest from a tree within the hour (`NEST_GAP_MS`). A hello's `since` replays the partner's
   after it; a page's first hello asks from Tokyo midnight (or the kept `since`), so a phone opening later hears the
   day.
 - **The demo** (`sync/live-local.ts`): the demo's two players are two tabs of one browser (`?demo`, `?demo&as=B`);
