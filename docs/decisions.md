@@ -121,6 +121,17 @@ only while the goal weight is under the latest weigh-in, floored at the resting 
 standard defaults to Asian cut-offs (JASSO, WHO's 23 / 25), right for East Asian bodies; WHO's can be chosen. Ethnicity
 itself is not stored: only the standard it suggests.
 
+### Player avatars: the look as two prefs, いつもの in code (2026-11-05)
+A and B are NH human players by default; the villager stays an option (the user). All clothing is free, with no
+ownership, so the record's check of a look is its whole check: no inventory to consult. Each person's look is one
+`look` pref and their コーデ one whole-list `savedLooks` pref (≤ 20, names ≤ 12): only their owner edits them and a
+person has one phone, so a per-コーデ op log (as decor's) would buy nothing. The default look, いつもの, is code, never a
+row: it can't be deleted or drift, and no migration was written (no `look` pref means it). Wearing one's own いつもの
+sends null, so a retune of the default reaches everyone. The record checks a look whole (`bad_request` otherwise); a
+phone reads it part by part, an unknown part as いつもの's, so a newer app's part never breaks an older phone. Part ids
+are format-checked per slot until the closet's part table is generated; it plugs in (`usePartTable`) without a schema
+change. Details: [backend](backend.md#the-look), `app/design/avatar/customization.md` §4.
+
 ### Meal log (2026-11-03)
 An exception to *No manual input*: ごはん (the HUD's button between the jar and the dumbbell) is a meal log, typed in by
 the person (a food from the shipped data, its grams, the meal and the day), and nothing Health measures is: the

@@ -38,7 +38,7 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 | `spend` | `{spendId, item, bells}` | `spendId` 1–128 chars; `item` `snack` with `bells` 40, or `dinner` with `bells` 70 |
 | `spend_void` | `{spendId}` | from either person; the script refuses one naming no `spend` row and acknowledges a second void of the same buy as `duplicate` (nothing appended); the model takes the first after the spend |
 | `harvest` | `{week}` | a week key; counts only for the harvest open at the time |
-| `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), and the goals: one key per charted metric, its range, grid, direction and history in the registry (`contract/goals.ts` GOALS, `isGoalValue`; the latest ones may be null: none). A day keeps its own (no null): `stepsGoal` (1,000–30,000 in 500s), `moveGoal` (integer 100–2,000), `exerciseGoal` (min: 5–300 in 5s), `standGoal` (min: 10–600 in 10s). The latest only (or null): `goalWeight` (20–300 kg, one decimal), `goalBodyFat` (3–60 %, one decimal), `goalBmi` (15–40, one decimal), `goalLean` (10–150 kg, one decimal), and the meal log's `kcalGoal` (kcal: 1,000–5,000 in 50s), `proteinGoal` (g: 10–400 in 5s), `fatGoal` (g: 10–300 in 5s), `carbsGoal` (g: 20–800 in 5s), `saltGoal` (g: 1–20 in 0.5s). The profile (`contract/profile.ts`, [design](design.md#profile); each checked by the record when set, or null: unset): `sex` (`m`/`f`), `birth` (a real `YYYY-MM-DD` from 1900-01-01 to 10 years before the record's Tokyo day; else `bad_request`), `bmiStd` (`asia`/`who`); private: a member's reach the two members only, the guest's the guest only (`rowsFor`, [The guest](#the-guest)) |
+| `pref` | `{key, value, person?}` | `locale` (`ja`/`en`), `villagerName` (1–20), `villager` (roster id), the look (`contract/look.ts`, [below](#the-look)): `look` and `savedLooks`, and the goals: one key per charted metric, its range, grid, direction and history in the registry (`contract/goals.ts` GOALS, `isGoalValue`; the latest ones may be null: none). A day keeps its own (no null): `stepsGoal` (1,000–30,000 in 500s), `moveGoal` (integer 100–2,000), `exerciseGoal` (min: 5–300 in 5s), `standGoal` (min: 10–600 in 10s). The latest only (or null): `goalWeight` (20–300 kg, one decimal), `goalBodyFat` (3–60 %, one decimal), `goalBmi` (15–40, one decimal), `goalLean` (10–150 kg, one decimal), and the meal log's `kcalGoal` (kcal: 1,000–5,000 in 50s), `proteinGoal` (g: 10–400 in 5s), `fatGoal` (g: 10–300 in 5s), `carbsGoal` (g: 20–800 in 5s), `saltGoal` (g: 1–20 in 0.5s). The profile (`contract/profile.ts`, [design](design.md#profile); each checked by the record when set, or null: unset): `sex` (`m`/`f`), `birth` (a real `YYYY-MM-DD` from 1900-01-01 to 10 years before the record's Tokyo day; else `bad_request`), `bmiStd` (`asia`/`who`); private: a member's reach the two members only, the guest's the guest only (`rowsFor`, [The guest](#the-guest)) |
 | `find` | `{kind, id}` | the island's scenery for the shared ずかん: `kind` ∈ `fish` · `bug` · `sea` · `fossil` · `shell` · `fragment` · `item` · `recipe` (`FIND_KINDS`; the last two: what a balloon's present held), `id` a catalog id (`[a-z][a-z0-9-]{0,47}`; the lists live in the client, so they can grow without a redeploy). Never ベル |
 | `tally` | `{date, counts}` | one person's counts of one Tokyo day for the ずかん's 「×12」 (`contract/tally.ts`): `date` a real date not after tomorrow (server's Tokyo date), `counts` 1–300 keys `kind:id` (a find's kind and id, or `goods:<id>`: a pick-up with no ずかん page, never a find, since 2026-11-04; an older record refuses the whole row, so the relay deploys first) → whole 1–999. One row per person and day: see **Tally** below. Never ベル |
 | `island` | `{date, taken, puts, shakes, watered, wishes, at?}` | one person's part of one Tokyo day's shared island ([Shared world](#shared-world), `contract/island.ts`): ids picked up, dug, pulled or opened (≤ 400), things put down `[id, what, x, z]` (≤ 60), shakes that left something `[tree, drop, at]` (≤ 120), flowers watered (`fl:<x>:<z>`, world.ts FLOWERS, ≤ 40), wishes by the morning they bring a fragment, where their villager stands (`[x, z]` within the plan); `date` not after tomorrow. One row per person and day, replaced like a tally. Never ベル |
@@ -69,8 +69,31 @@ rows of a few hundred bytes.
 `person` (`A`/`B`, whose goal; absent = the sender) is allowed only on the goal prefs (`contract/api.ts` GOAL_PREF_KEYS: the registry's thirteen) and the profile's (PROFILE_PREF_KEYS: `sex`, `birth`, `bmiStd`; either member sets either member's, as the goals)
 (`eventSubject`, shared by both sides). The row's `person` column is always the sender. A new pref key needs the
 relay first (the record refuses a key it doesn't know: `bad_request`); an app from before it reads such a row and
-ignores it (the model takes only the keys it knows), so `goalBodyFat` (2026-11-02) went relay first, then the app, and so did `food` and `kcalGoal` (2026-11-03), the nutrient goals (2026-11-04), `exerciseGoal` / `standGoal` / `goalBmi` / `goalLean` (2026-11-05), `sex` / `birth` / `bmiStd` (2026-11-05), `food_repeat` (2026-11-03), `food_recipe` (2026-11-03), `sell` / `buy` (2026-11-04) and `food_custom` (2026-11-04). There are no health-data events:
+ignores it (the model takes only the keys it knows), so `goalBodyFat` (2026-11-02) went relay first, then the app, and so did `food` and `kcalGoal` (2026-11-03), the nutrient goals (2026-11-04), `exerciseGoal` / `standGoal` / `goalBmi` / `goalLean` (2026-11-05), `sex` / `birth` / `bmiStd` (2026-11-05), `look` / `savedLooks` (2026-11-05), `food_repeat` (2026-11-03), `food_recipe` (2026-11-03), `sell` / `buy` (2026-11-04) and `food_custom` (2026-11-04). There are no health-data events:
 Apple Health is the source of truth ([design.md](design.md#health-data)).
+
+### The look
+Each person's avatar (`app/design/avatar/customization.md` §4, `contract/look.ts`): an NH human player assembled
+from parts, or their roster villager. Two prefs, the sender's own (a `person` on them is `bad_request`; the guest's are
+its own too), one slot each per person (the latest wins), sent to every phone like the other cosmetic prefs, both
+checked whole by the record when set (`validEventData`: `lookPrefOk`, `savedLooksOk`; else `bad_request`):
+- `look`: `{kind: 'player', look}`, `{kind: 'villager'}` (which villager: the `villager` pref) or null. Unset or null:
+  **いつもの**, the default look, which is code (`DEFAULT_LOOKS`: A's and B's signed-off players, `design/avatar/render/outfits/a.json`,
+  `b.json`; the guest's its villager) and never stored, so it can't be deleted or drift, and the members became their
+  players with nothing written.
+- `savedLooks`: the コーデ, the whole list (only its owner edits it): at most 20 of `{id, name, look}`, `id` 8 of
+  `[a-z0-9]` (unique), `name` 1–12 code points, trimmed, no control characters. 20 of the longest fit the 20,000
+  characters of an event's data with room to spare (`look.test.ts`).
+- A player `look` (v 1): `hair`, `eye`, `mouth` (part ids), `hairColor`, `eyeColor`, `skin` (`#rrggbb`: tints),
+  `mouthFrame` (0–8, its resting frame), `cheek`, `nose` (0–2), and `top`, `bottom`, `socks`, `shoes`, `glasses`,
+  `ornament` (a part id or null), `hat` (optional, later); no other key. A part id is its slot's dump folder family
+  (`PlayerHair…`, `PlayerEye…`, `PlayerMouth…`, `TopsTex…`, `BottomsTex…`, `SocksTex…`, `Shoes…`, `AccessoryGlass…`,
+  `CapOrnament…`, `CapHat…`), letters and digits, ≤ 40 characters; a one-piece top (`TopsTexOnepiece…`) has no
+  bottom. Once the closet pipeline's part table exists (`usePartTable`), only its ids pass.
+- **Reading** (`resolveLook`, `readSavedLooks`): a phone reads a look part by part, so a field that's missing, broken
+  or names a part it doesn't know (a newer app's) is いつもの's for that field alone, never a crash; the stored row is
+  kept as it is. The model and the slot take any `{kind}`-shaped look (`lookPrefRead`); the whole check is the record's.
+- No ownership: all clothing is free, so a valid look is a wearable one. Neither pref is private (presentation only).
 
 ## API
 
@@ -253,7 +276,7 @@ steps, each deployed and green before the next, the old path working through eac
 - **Rules** (`app/src/lib/model/record.ts`): the shape checks the script had (`validEventData`); `at` =
   max(now, last + 1 ms), one per ingest, one per event; an event id once, forever (`ids`: a late retry of a replaced
   event is still a duplicate); **slots**, a later event of a slot replacing it (where the sheet deleted and appended): a
-  tally and an island day per sender and day, a cosmetic pref (`locale`, `villagerName`, `villager`) or a latest-only goal (the からだ and meal-log goals) per
+  tally and an island day per sender and day, a cosmetic pref (`locale`, `villagerName`, `villager`, `look`, `savedLooks`) or a latest-only goal (the からだ and meal-log goals) per
   subject, a goal a day keeps (`stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`) per subject and Tokyo day of its `at` (the goal in force on each past day
   stays: `dailyGoalOn`), a decoration per scope and id (by `decorAccept` / `tentAccept`), a board note, a meal entry and a repeat per id (by
   `boardAccept` / `foodAccept`). A pref the model ignores takes
@@ -422,7 +445,7 @@ claims, the ずかん, the tent's decor, pairing.
   goalWeight`, `goalBodyFat`, `goalBmi`, `goalLean`: the registry's `body` group): the goals and their history, the buys and voids (the jar, view-only), the harvests, the finds, tallies,
   decorations, island days, cosmetic prefs, the board and every meal (everyone's, with the meal log's goals; every repeat, recipe and custom food too). Never a からだ row: `weight`, `body_fat_pct`, `bmi`, `lean_kg`; never a member's profile (`pref sex` / `birth` / `bmiStd` whose subject is A or B), its own it does get. A member's snapshot in turn never carries the guest's profile (`rowsFor`).
 - **What it writes** (`guestMayWrite`): `find` and `tally` (credited to `G`), a `sell` and a `buy` at the shop (its own pocket and かいがら), a `board` note (its own to edit and take down), a `food` entry, a `food_repeat`, a `food_recipe` and a `food_custom` (its own meals, repeats, recipes and custom foods; only its own to edit, end and remove; anyone's recipe or custom food it logs as its own entry), the tent's `decor` (`sc: 't'`), its own home's room and look (`sc` `v`, `h` with `hG`; never the outdoors), its own
-  `pref` `locale` / `villagerName` / `villager`, the meal log's goals and its profile (`sex`, `birth`, `bmiStd`; its own: no `person`). Anything else, and `ingest` / `uploads`, is `forbidden` (the queue drops
+  `pref` `locale` / `villagerName` / `villager` / `look` / `savedLooks`, the meal log's goals and its profile (`sex`, `birth`, `bmiStd`; its own: no `person`). Anything else, and `ingest` / `uploads`, is `forbidden` (the queue drops
   it). Its rows are the record's like anyone's: one tally per day (`tally|G|<date>`), its prefs' own slots, the tent's
   merge order A < B < G; the dump carries them with `person = G`.
 - **The room** (v3 only: a guest's hello in v1/v2 is closed 4004): the guest may `walk`, `act`, `catch`, `pick`, `put`,
