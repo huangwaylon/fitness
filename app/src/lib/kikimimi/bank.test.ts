@@ -109,14 +109,14 @@ describe('kikimimi bank', () => {
     const l4 = BANK.filter((it) => it.lv === 4);
     for (const it of l4) {
       expect(it.cast, it.id).toBe(CAST[it.speaker]);
-      expect(it.cast, it.id).toMatch(/^(us|uk|au)-[fm][12]$/);
+      expect(it.cast, it.id).toMatch(/^(us|uk|au)-[fm][123]$/);
       expect(it.cast!.slice(0, 2), it.id).toBe(it.voice);
       expect(it.cast![3], it.id).toBe(ROSTER[it.speaker].gender);
     }
     for (const [id, cast] of Object.entries(CAST)) expect(cast![3], id).toBe(ROSTER[id as keyof typeof ROSTER].gender);
     expect(new Set(l4.map((it) => it.cast)).size).toBe(12);
-    // every cast villager speaks (no stale entries), and levels 1-3 have no cast yet
-    expect(Object.keys(CAST).filter((id) => !l4.some((it) => it.speaker === id))).toEqual([]);
+    // every cast villager speaks (no stale entries); levels 1-3 carry no `cast` (speech.ts castOf derives theirs)
+    expect(Object.keys(CAST).filter((id) => !BANK.some((it) => it.speaker === id))).toEqual([]);
     for (const it of BANK.filter((it) => it.lv !== 4)) expect(it.cast, it.id).toBeUndefined();
   });
 

@@ -1,0 +1,176 @@
+{
+ "us-f1": {
+  "accent": "us",
+  "gender": "f",
+  "source": "design",
+  "seed": 99,
+  "kokoro": "af_heart",
+  "description": "A cheerful young American woman in her early twenties with a standard General American accent. Bright, bubbly and upbeat, like a lively neighbour who is always happy to see you. Clear articulation, natural conversational pace, medium-high pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.412
+  }
+ },
+ "us-f2": {
+  "accent": "us",
+  "gender": "f",
+  "source": "design",
+  "seed": 7,
+  "kokoro": "af_nova",
+  "description": "A warm American woman in her late twenties with a standard General American accent. Friendly, easygoing and sincere, like a kind coworker chatting over coffee. Clear articulation, natural conversational pace, medium pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.426
+  }
+ },
+ "us-f3": {
+  "accent": "us",
+  "gender": "f",
+  "source": "design",
+  "seed": 11,
+  "kokoro": "af_sarah",
+  "description": "A gentle American woman in her mid forties with a standard General American accent. Calm, kind and reassuring, like a caring neighbour who runs the local bakery. Clear articulation, relaxed natural pace, medium-low pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.466
+  }
+ },
+ "us-m1": {
+  "accent": "us",
+  "gender": "m",
+  "source": "design",
+  "seed": 11,
+  "kokoro": "am_echo",
+  "description": "An energetic young American man in his early twenties with a standard General American accent. Upbeat, sporty and enthusiastic, like a friendly gym buddy. Clear articulation, natural lively pace, medium pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.185
+  }
+ },
+ "us-m2": {
+  "accent": "us",
+  "gender": "m",
+  "source": "design",
+  "seed": 23,
+  "kokoro": "am_liam",
+  "description": "A friendly American man in his forties with a standard General American accent. Warm, polite and businesslike, like a helpful shop owner greeting a regular customer. Clear articulation, natural relaxed pace, medium-low pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.379
+  }
+ },
+ "us-m3": {
+  "accent": "us",
+  "gender": "m",
+  "source": "design",
+  "seed": 11,
+  "kokoro": "am_eric",
+  "description": "A mellow American man in his late fifties with a standard General American accent. Relaxed, good-humoured and laid-back, with a slightly husky but clear voice, like an easygoing musician. Clear articulation, unhurried natural pace, low pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.46
+  }
+ },
+ "uk-f1": {
+  "accent": "uk",
+  "gender": "f",
+  "source": "phonon",
+  "seed": 1234,
+  "kokoro": "bf_isabella",
+  "description": "A sparky, attentive British English woman's voice (Phonon catalogue voice Maeve, en-gb), warm and to the point.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "voice": "Maeve",
+   "origin": "Phonon 31m (gradium/phonon-31m-en) speaking the text with the synthetic catalogue voice Maeve (gradium/phonon-voices): no real person",
+   "licence": "Apache-2.0",
+   "mos": 4.505
+  }
+ },
+ "uk-m1": {
+  "accent": "uk",
+  "gender": "m",
+  "source": "phonon",
+  "seed": 1234,
+  "kokoro": "bm_fable",
+  "description": "A sparky, attentive British English man's voice (Phonon catalogue voice Toby, en-gb), smooth and friendly.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "voice": "Toby",
+   "origin": "Phonon 31m (gradium/phonon-31m-en) speaking the text with the synthetic catalogue voice Toby (gradium/phonon-voices): no real person",
+   "licence": "Apache-2.0",
+   "mos": 4.49
+  }
+ },
+ "uk-m2": {
+  "accent": "uk",
+  "gender": "m",
+  "source": "phonon",
+  "seed": 1234,
+  "kokoro": "bm_george",
+  "description": "A middle-aged British English man's voice (Phonon catalogue voice Edwin, en-gb), firm and sincere with tidy articulation.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "voice": "Edwin",
+   "origin": "Phonon 31m (gradium/phonon-31m-en) speaking the text with the synthetic catalogue voice Edwin (gradium/phonon-voices): no real person",
+   "licence": "Apache-2.0",
+   "mos": 4.471
+  }
+ },
+ "au-f1": {
+  "accent": "au",
+  "gender": "f",
+  "source": "vctk",
+  "seed": 0,
+  "description": "A New Zealand English woman, 25 (VCTK speaker p335): the corpus has no Australian woman.",
+  "ref": {
+   "text": "We also need a small plastic snake and a big toy frog for the kids. The rainbow is a division of white light into many beautiful colors.",
+   "file": "vctk_p335_nz_f.wav",
+   "origin": "CSTR VCTK Corpus 0.92, speaker p335, mic1 utterances 004 and 007: trimmed, joined with 0.35 s gaps, loudness-normalised, resampled",
+   "licence": "CC BY 4.0",
+   "attribution": "Yamagishi, Junichi; Veaux, Christophe; MacDonald, Kirsten. (2019). CSTR VCTK Corpus: English Multi-speaker Corpus for CSTR Voice Cloning Toolkit (version 0.92). University of Edinburgh, CSTR. https://doi.org/10.7488/ds/2645",
+   "mos": 3.617
+  }
+ },
+ "au-m1": {
+  "accent": "au",
+  "gender": "m",
+  "source": "vctk",
+  "seed": 0,
+  "description": "An Australian English man, 26, Sydney (VCTK speaker p326).",
+  "ref": {
+   "text": "We also need a small plastic snake and a big toy frog for the kids. When the sunlight strikes raindrops in the air, they act as a prism and form a rainbow. The rainbow is a division of white light into many beautiful colors.",
+   "file": "vctk_p326_au_m.wav",
+   "origin": "CSTR VCTK Corpus 0.92, speaker p326, mic1 utterances 004, 006 and 007: trimmed, joined with 0.35 s gaps, loudness-normalised, resampled",
+   "licence": "CC BY 4.0",
+   "attribution": "Yamagishi, Junichi; Veaux, Christophe; MacDonald, Kirsten. (2019). CSTR VCTK Corpus: English Multi-speaker Corpus for CSTR Voice Cloning Toolkit (version 0.92). University of Edinburgh, CSTR. https://doi.org/10.7488/ds/2645",
+   "mos": 4.149
+  }
+ },
+ "au-m2": {
+  "accent": "au",
+  "gender": "m",
+  "source": "vctk",
+  "seed": 0,
+  "description": "An Australian English man, 28 (VCTK speaker p374).",
+  "ref": {
+   "text": "We also need a small plastic snake and a big toy frog for the kids. When the sunlight strikes raindrops in the air, they act as a prism and form a rainbow. The rainbow is a division of white light into many beautiful colors.",
+   "file": "vctk_p374_au_m.wav",
+   "origin": "CSTR VCTK Corpus 0.92, speaker p374, mic1 utterances 004, 006 and 007: trimmed, joined with 0.35 s gaps, loudness-normalised, resampled",
+   "licence": "CC BY 4.0",
+   "attribution": "Yamagishi, Junichi; Veaux, Christophe; MacDonald, Kirsten. (2019). CSTR VCTK Corpus: English Multi-speaker Corpus for CSTR Voice Cloning Toolkit (version 0.92). University of Edinburgh, CSTR. https://doi.org/10.7488/ds/2645",
+   "mos": 4.2
+  }
+ }
+}

@@ -5,3 +5,5 @@ build-pages/
 test-results/
 playwright-report/
 playwright-results.json
+# the kikimimi TTS pipeline: venvs, reference WAVs, raw masters, work files (scripts/kikimimi-audio.ts)
+.cache/

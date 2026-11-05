@@ -10,25 +10,28 @@
 // distractors), `word` (reductions and contractions in context, 3 choices that all fit), `num` (natural-speed numbers
 // in real contexts, the distractors the corrected value, a heard number or a plausible sum). No `pic`: the art is
 // island things, and these scenes aren't.
-//   Voices: one cast voice per villager for good (CAST: accent, gender, slot; 12 core voices, 2 per accent × gender),
-// for the neural TTS being chosen. No clips yet: the lobby hides level 4 till every item has one (deck.ts LEVELS).
+//   Voices: one cast voice per villager for good (CAST: accent, gender, slot; 12 core voices, US 3 per gender, UK and
+// AU 3 each), for the neural TTS (scripts/tts/cast.json).
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Accent, CastId, Item, ItemType, Tags } from './bank.ts';
 
-/** Who speaks with which cast voice (young / middle / older spread over the slots). */
+/** Who speaks with which cast voice, for good (12 core voices, US weighted: 3 a gender; UK and AU 3 each, men's lines
+ *  outnumbering women's there: uk-f1, uk-m1, uk-m2, au-f1, au-m1, au-m2; speech.ts SLOTS, scripts/tts/cast.json).
+ *  Levels 1-3's speakers are here too, at their main accent; a line in another accent takes a voice of that accent and
+ *  the speaker's gender by a stable hash (speech.ts castOf). */
 export const CAST: Readonly<Partial<Record<RosterId, CastId>>> = {
-  bunnie: 'us-f1', rosie: 'us-f1', audie: 'us-f1',
-  goldie: 'us-f2', maple: 'us-f2', molly: 'us-f2',
-  dom: 'us-m1', stitches: 'us-m1', 'kid-cat': 'us-m1',
-  'tom-nook': 'us-m2', orville: 'us-m2', pietro: 'us-m2',
-  ankha: 'uk-f1', diana: 'uk-f1',
-  merengue: 'uk-f2', mabel: 'uk-f2',
-  raymond: 'uk-m1', julian: 'uk-m1',
-  redd: 'uk-m2', blathers: 'uk-m2', apollo: 'uk-m2',
-  coco: 'au-f1',
-  cherry: 'au-f2', whitney: 'au-f2',
-  roald: 'au-m1', sherb: 'au-m1', punchy: 'au-m1', wilbur: 'au-m1',
-  kappn: 'au-m2'
+  bunnie: 'us-f1', rosie: 'us-f1', lily: 'us-f1', judy: 'us-f1',
+  goldie: 'us-f2', audie: 'us-f2', label: 'us-f2',
+  maple: 'us-f3', molly: 'us-f3', 'daisy-mae': 'us-f3',
+  dom: 'us-m1', stitches: 'us-m1', 'kid-cat': 'us-m1', cj: 'us-m1', kicks: 'us-m1',
+  'tom-nook': 'us-m2', orville: 'us-m2', hamlet: 'us-m2', gulliver: 'us-m2',
+  pietro: 'us-m3', bob: 'us-m3', anchovy: 'us-m3', 'kk-slider': 'us-m3', flick: 'us-m3',
+  ankha: 'uk-f1', diana: 'uk-f1', fauna: 'uk-f1', merengue: 'uk-f1', mabel: 'uk-f1', celeste: 'uk-f1',
+  raymond: 'uk-m1', julian: 'uk-m1', marshal: 'uk-m1',
+  redd: 'uk-m2', blathers: 'uk-m2', apollo: 'uk-m2', brewster: 'uk-m2',
+  coco: 'au-f1', saharah: 'au-f1', cherry: 'au-f1', whitney: 'au-f1',
+  roald: 'au-m1', punchy: 'au-m1',
+  kappn: 'au-m2', wilbur: 'au-m2', sherb: 'au-m2'
 };
 
 /** A `mean` item's question while it plays. */
