@@ -188,7 +188,9 @@ function pack(r: { gltf: string }, out: string) {
     g.extensionsRequired = [...new Set([...(g.extensionsRequired ?? []), 'EXT_texture_webp'])];
   }
   writeFileSync(join(dir, 'm.gltf'), JSON.stringify(g));
-  execFileSync('node', [GLTFPACK, '-i', join(dir, 'm.gltf'), '-o', out, '-cc', '-ce', 'ext', '-kn', '-km', '-ke'], { stdio: 'pipe' });
+  // (-vtf: the uvs stay floats: the runtime puts the closet's textures on these meshes, and a quantised uv's scale
+  // rides on the texture it came with, which a part's GLB hasn't)
+  execFileSync('node', [GLTFPACK, '-i', join(dir, 'm.gltf'), '-o', out, '-cc', '-ce', 'ext', '-kn', '-km', '-ke', '-vtf'], { stdio: 'pipe' });
   return { v: hash(out), kb: kb(out) };
 }
 

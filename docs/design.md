@@ -1967,6 +1967,28 @@ DEFAULT_LOOKS, the signed-off looks), assembled at runtime from parts converted 
   2.9 MB under `/room/player/`, all lazy. An outfit is ~60 KB over the body. `--all` converts the whole closet the sweep
   found clean (4.7k items, ~19 MB).
 
+**The runtime** (`components/player3d/`: `player3d.ts`, `tune.ts`, `parts.ts`, `portrait.ts`):
+- `createPlayer(id, look, asset('/room/player'), seed)` → a `Player3D`: villager3d's `Villager3D` (the same
+  interface the island, the tent and the museum use: `group`, `set(state)`, `act(action)`, `face(f)`, `step`,
+  `blink`/`nextBlink`, `sitAt`, `grip`/`aim`/`tip`/`hand` (the rod), `wear` (a hat), `eyes()` (first person),
+  `crown()`, `show`, `lift`, `opacity`, `dispose`) plus `dress(look)` and `look()`. It rejects if a part isn't there
+  (keep the stand-in).
+  - **Body once a page:** the body's GLB, each mesh, each texture are cached page-wide; a player clones the body.
+  - **Swapping:** `await p.dress(next)` changes in place what differs: a tint (skin, hair) is a colour, an eye or a
+    mouth type an image under the same texture, a colour of the same garment a texture, a new shape a mesh (bound by
+    joint name; a one-piece clears the bottoms; a hat swaps the hair for NH's cut where the style has one).
+  - **Faces:** `p.face('happy' | … | null)` takes faces.ts's expressions; tune.ts maps them onto the player's frames
+    (PLAYER_EYE, PLAYER_MOUTH), resting on the look's own `mouthFrame`; blinks run as the villagers'.
+  - **Poses:** poses.ts's, unforked: villager3d's `animateModel(id, model, seed, kind)` takes a Kind (rig.ts
+    `RigOpts`: the hands on Wrist_*, an `after` hook for the cloth, the ponytail, the hands kept out of the head;
+    sitOn's reach; the torso's depths for lying; the sting's and the cast's overrides). The villagers' path is
+    `createVillager(id, url, seed)` as before (`animateModel` with no Kind).
+- `portrait(renderer, player, size, bg)` (`portrait.ts`): the head as a canvas, drawn by a renderer the page already
+  has into a render target (never a second context); the player is borrowed and put back.
+- `partUrls(look, dir)`: what a look fetches (for a prefetch, or a test).
+- `design/avatar/player3d/check.ts`: the runtime drawn off the app's own modules in headless Chrome (A and B in their
+  states, faces, a swap, a portrait), for a quick look before the phone.
+
 ### Visitors
 
 `island/Visitor.svelte`, `island/visitors.ts`, `e2e/visitors.spec.ts`. NH's visitors, one at a time, each NH's own 3D

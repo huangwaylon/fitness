@@ -18,9 +18,9 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
-import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, strideOf, type Action, type Pose, type State } from './poses.ts';
+import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, strideOf, type Action, type Body, type Pose, type State } from './poses.ts';
 import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
-import { rigOf, type Rig } from './rig.ts';
+import { rigOf, type Rig, type RigOpts } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
 
 /** Sitting down or getting up (ms): the turn, the step onto it, the pose's change. */
@@ -127,7 +127,28 @@ const BLOB = new CircleGeometry(1, 20).rotateX(-Math.PI / 2);
 /** A villager's 3D model, standing at its group's origin (its feet), facing +z (three's: toward the island's camera). */
 export async function createVillager(id: string, url: string, seed = 0): Promise<Villager3D> {
   const g = await load(url);
-  const model = cloneSkinned(g.scene);
+  return animateModel(id, cloneSkinned(g.scene), seed);
+}
+
+/** What a kind of character does its own way over a villager's (NH's human players: player3d/tune.ts). */
+export interface Kind {
+  /** Its materials are already its own (made for this model alone): not cloned. */
+  ownMaterials?: boolean;
+  /** Its rigging (rig.ts RigOpts: the hands' bones, the cloth's and the hair's own drivers). */
+  rig?: RigOpts;
+  /** Its measures over the bones' (a player's sole sits further under its ankle: sitOn's reach). */
+  body?: Partial<Body>;
+  /** How far its back and front stand from its middle, lying on them (its torso's: a player's head is far deeper). */
+  depth?: { back: number; front: number };
+  /** A villager face's cell (faces.ts: an eye's or a mouth's) → this model's own frame. */
+  cell?: (part: 'eye' | 'mouth', i: number, face: Face) => number;
+  /** An action at u ms (poses.ts action's, or its own where its proportions need it). */
+  action?: (a: Action, u: number) => { p: Pose; w: number };
+}
+
+/** A character's skinned model (a villager's clone, an assembled player) given the villagers' life: its states,
+ *  actions, faces, seats, tools; standing at its group's origin, facing +z. */
+export function animateModel(id: string, model: Object3D, seed = 0, kind: Kind = {}): Villager3D {
   // every material is this clone's own: the island patches its materials' shaders for the rolling log (bend.ts), and a
   // shared one patched there bent the same kind's body off into the floor in a room (the user's "floating face, the
   // body far below": a face's material was its own, unbent, its body's the island's); the face's also change cells.
@@ -140,13 +161,13 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
     if (!m.isMesh) return;
     m.frustumCulled = false;
     const mat = m.material as MeshLambertMaterial;
-    const mine = mat.clone();
+    const mine = kind.ownMaterials ? mat : mat.clone();
     delete mine.userData.bent;
     m.material = mine;
     owned.push(mine);
     const atlas = mat.userData?.atlas as [number, number, number] | undefined;
-    if (atlas && mat.map) {
-      const tex = mat.map.clone();
+    if (atlas && mat.map && atlas[0] * atlas[1] > 1) {
+      const tex = kind.ownMaterials ? mat.map : mat.map.clone();
       mine.map = tex;
       mine.emissiveMap = tex;
       faces.push({ m: mine, tex, atlas: [atlas[0], atlas[1]], base: { ox: tex.offset.x, oy: tex.offset.y, sx: tex.repeat.x, sy: tex.repeat.y }, cell: -1 });
@@ -159,11 +180,11 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       }
     }
   });
-  const rig = rigOf(model);
+  const rig = rigOf(model, kind.rig);
   // its measures at rest (model units): how tall, how far its back is behind its middle (lying on it, it's lifted by
   // that; sitting, its hips sit that far out from the seat's back)
   const restBox = new Box3().setFromObject(model);
-  const tall = restBox.max.y, backDepth = Math.max(1, -restBox.min.z), frontDepth = Math.max(1, restBox.max.z);
+  const tall = restBox.max.y, backDepth = kind.depth?.back ?? Math.max(1, -restBox.min.z), frontDepth = kind.depth?.front ?? Math.max(1, restBox.max.z);
   // the faces NH swaps whole meshes for (a bird's beak, a deer's or a gorilla's muzzle: scripts/villagers3d-page.js
   // keeps FaceNothing, FaceGood and FaceBad, named for their face): the one for the expression shows
   const swaps: { kind: 'Nothing' | 'Good' | 'Bad'; mesh: Object3D }[] = [];
@@ -257,7 +278,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
 
   let cur: State = 'idle', prev: State = 'idle', since = -1e9, faceSet: Face | null = null;
   let act: { a: Action; t0: number } | null = null, phase = 0, lastT = 0, speed = 0, held: Pose | null = null;
-  const o: { phase: number; speed: number; body: typeof rig.body; seed: number; seatH?: number; back?: boolean; sway?: number } = { phase: 0, speed: 0, body: rig.body, seed };
+  const o: { phase: number; speed: number; body: typeof rig.body; seed: number; seatH?: number; back?: boolean; sway?: number } = { phase: 0, speed: 0, body: { ...rig.body, ...kind.body }, seed };
   /** A transform in the group's parent's space. */
   type Tf = { x: number; y: number; z: number; yaw: number };
   /** On a seat (since t0, from where it stood), or getting up off one (since t0). */
@@ -311,7 +332,8 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
   /** The face at t: its eye's and mouth's cells, a swapped face mesh, the sting's lump. */
   const showFace = (t: number): boolean => {
     const face = faceOf();
-    const eye = eyeAt(face, t, seed), mouth = mouthAt(face, t);
+    const eye0 = eyeAt(face, t, seed), mouth0 = mouthAt(face, t);
+    const eye = kind.cell ? kind.cell('eye', eye0, face) : eye0, mouth = kind.cell ? kind.cell('mouth', mouth0, face) : mouth0;
     let changed = false;
     for (const f of faces) changed = setCell(f, f.m.name === 'mEye' ? eye : mouth) || changed;
     const was = swapShown;
@@ -470,7 +492,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
         const u = t - act.t0;
         if (u >= ACTION_MS[act.a]) act = null;
         else {
-          const r = action(act.a, u);
+          const r = (kind.action ?? action)(act.a, u);
           p = over(p, r.p, r.w);
         }
       }
