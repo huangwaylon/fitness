@@ -12,7 +12,7 @@
 // where both hold the same samples, instead of relying on `<audio loop>` (WebKit seeks to 0 at the end, which can
 // drop out). One-shots are trimmed of silence; jingles (sfx) also mono, faded at both ends, with their loudness baked
 // in (sfx entries have no `gain`). Then each music file's loudness is measured and its `gain` written (trackGain).
-// Output: AAC-LC stereo 44.1 kHz .m4a with +faststart (64 kbps; K.K.'s rip, 32 kHz GameCube audio, at 48), and the
+// Output: AAC-LC stereo 44.1 kHz .m4a with +faststart at 64 kbps (K.K.'s from the GameCube rip mono at 40), and the
 // entries of static/audio/manifest.json (the rest of the file is kept as is).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
@@ -255,11 +255,11 @@ const TRIM = 'silenceremove=start_periods=1:start_threshold=-60dB,areverse,silen
 
 /** A one-shot (the opening, an event's jingle, a K.K. song): as is, minus the silence at both ends; `seconds` keeps
  *  only that long, faded out over its last 1.5 s. */
-function oneShot(path: string, out: string, dry: boolean, kbps: number, seconds?: number): void {
+function oneShot(path: string, out: string, dry: boolean, kbps: number, seconds?: number, channels = 2): void {
   const cut = seconds ? `,atrim=0:${seconds},afade=t=out:st=${seconds - 1.5}:d=1.5` : '';
   if (dry) return;
   execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', path, '-vn', '-af', TRIM + cut,
-    '-c:a', 'aac', '-b:a', `${kbps}k`, '-ac', '2', '-ar', String(SR), '-movflags', '+faststart', out]);
+    '-c:a', 'aac', '-b:a', `${kbps}k`, '-ac', String(channels), '-ar', String(SR), '-movflags', '+faststart', out]);
 }
 
 /** A jingle as an effect file: trimmed, 10 ms in and 80 ms out, mono, its loudness gain applied to the samples.
@@ -286,7 +286,96 @@ type Kind = 'loop' | 'once' | 'sfx';
 interface Row {
   key: string; file: string; kind: Kind;
   minLagS?: number; seconds?: number; kbps?: number; periodS?: number; periodOf?: string; whole?: boolean;
+  /** A one-shot in one channel; a K.K. song's titles (`kk.<id>`). */
+  mono?: boolean; ja?: string; en?: string;
 }
+
+/** K.K.'s songs in NH's order: id, NH's official titles (the game's text: ja, en), and the source's track numbers of
+ *  the live version and the aircheck (the GameCube rip 150-207 and 208-262, e+'s 517-531 and 532-546). The first
+ *  nine's live files came from the user's NH rip (null: kept as they are). */
+const KK: [id: string, ja: string, en: string, live: string | null, aircheck: string | null][] = [
+  ['kk-chorale', 'けけさんびか', 'K.K. Chorale', null, '208'],
+  ['kk-march', 'けけマーチ', 'K.K. March', null, '209'],
+  ['kk-waltz', 'けけワルツ', 'K.K. Waltz', null, '210'],
+  ['kk-swing', 'けけスウィング', 'K.K. Swing', null, '211'],
+  ['kk-jazz', 'けけジャズ', 'K.K. Jazz', '154', '212'],
+  ['kk-fusion', 'けけフュージョン', 'K.K. Fusion', '155', '213'],
+  ['kk-etude', 'けけのエチュード', 'K.K. Étude', '156', '214'],
+  ['kk-lullaby', 'けけララバイ', 'K.K. Lullaby', '157', '215'],
+  ['kk-aria', 'けけマリア', 'K.K. Aria', '158', '216'],
+  ['kk-samba', 'けけサンバ', 'K.K. Samba', '159', '217'],
+  ['kk-bossa', 'けけボッサ', 'K.K. Bossa', null, '218'],
+  ['kk-calypso', 'けけカリプソ', 'K.K. Calypso', '161', '219'],
+  ['kk-salsa', 'けけサルサ', 'K.K. Salsa', null, '220'],
+  ['kk-mambo', 'けけマンボ', 'K.K. Mambo', '163', '221'],
+  ['kk-reggae', 'けけレゲエ', 'K.K. Reggae', null, '222'],
+  ['kk-ska', 'けけスカ', 'K.K. Ska', '165', '223'],
+  ['kk-tango', 'けけタンゴ', 'K.K. Tango', '166', '224'],
+  ['kk-faire', 'ハイサイけけ', 'K.K. Faire', '167', '225'],
+  ['kk-aloha', 'アロハけけ', 'Aloha K.K.', '168', '226'],
+  ['kk-lucky', 'アイリッシュそんぐ', 'Lucky K.K.', '169', '227'],
+  ['kk-condor', 'ペルーのうた', 'K.K. Condor', '170', '228'],
+  ['kk-steppe', 'コサックそんぐ', 'K.K. Steppe', '171', '229'],
+  ['kk-imperial', 'けけチャイナ', 'Imperial K.K.', '172', '230'],
+  ['kk-casbah', 'トルコそんぐ', 'K.K. Casbah', '173', '231'],
+  ['kk-safari', 'けけアフロ', 'K.K. Safari', '174', '232'],
+  ['kk-folk', 'けけみんよう', 'K.K. Folk', '175', '233'],
+  ['kk-rock', 'けけロック', 'K.K. Rock', null, '234'],
+  ['kk-rockin', 'けけのロケンロール', "Rockin' K.K.", null, '235'],
+  ['kk-ragtime', 'ラグタイム', 'K.K. Ragtime', '178', '236'],
+  ['kk-gumbo', 'ニューオリンズそんぐ', 'K.K. Gumbo', '179', '237'],
+  ['kk-funk', 'けけファンク', 'The K. Funk', '180', '238'],
+  ['kk-blues', 'けけブルース', 'K.K. Blues', '181', '239'],
+  ['kk-soulful', 'けけゴスペル', 'Soulful K.K.', '182', '240'],
+  ['kk-soul', 'けけソウル', 'K.K. Soul', '183', '241'],
+  ['kk-cruisin', 'アーバンけけ', "K.K. Cruisin'", '184', '242'],
+  ['kk-love-song', 'けけラヴソング', 'K.K. Love Song', '185', '243'],
+  ['kk-dnb', 'ドラムンベース', 'K.K. D&B', '186', '244'],
+  ['kk-technopop', 'テクノビート', 'K.K. Technopop', '187', '245'],
+  ['kk-dj', 'ユーロビート', 'DJ K.K.', '188', '246'],
+  ['kk-only-me', 'オンリーミー', 'Only Me', '189', '247'],
+  ['kk-country', 'けけカントリー', 'K.K. Country', '190', '248'],
+  ['kk-surfin', 'エレキそんぐ', "Surfin' K.K.", '191', '249'],
+  ['kk-ballad', 'けけバラッド', 'K.K. Ballad', '192', '250'],
+  ['kk-comrade', 'しょうわけけかよう', 'Comrade K.K.', '193', '251'],
+  ['kk-lament', 'けけえんか', 'K.K. Lament', '194', '252'],
+  ['kk-go-rider', 'ゆけ!けけライダー', 'Go K.K. Rider', '195', '253'],
+  ['kk-dirge', 'こわいうた', 'K.K. Dirge', '196', '254'],
+  ['kk-western', 'けけウェスタン', 'K.K. Western', '197', '255'],
+  ['kk-mr', 'けけせんせい', 'Mr. K.K.', '198', '256'],
+  ['kk-cafe', 'けけパリ', 'Café K.K.', '199', '257'],
+  ['kk-parade', 'けけパレード', 'K.K. Parade', '200', '258'],
+  ['kk-mariachi', 'セニョールけけ', 'K.K. Mariachi', '201', '259'],
+  ['kk-song', 'けけソング', 'K.K. Song', '202', '260'],
+  ['kk-i-love-you', 'だいすき', 'I Love You', '203', '261'],
+  ['kk-two-days-ago', 'おととい', 'Two Days Ago', '204', '262'],
+  // the GameCube's "Not My Bag" songs (an unknown request): each one song
+  ['kk-my-place', 'ぼくのばしょ', 'My Place', '205', '532'],
+  ['kk-forest-life', 'もりのせいかつ', 'Forest Life', '206', '533'],
+  ['kk-to-the-edge', 'ナミナミ', 'To the Edge', '207', '534'],
+  ['kk-pondering', 'かんがえちゅう', 'Pondering', '517', '535'],
+  ['kk-dixie', 'けけディキシー', 'K.K. Dixie', '518', '536'],
+  ['kk-marathon', 'けけガムラン', 'K.K. Marathon', '519', '537'],
+  ['kk-king', 'けけだいみょう', 'King K.K.', '520', '538'],
+  ['kk-mountain-song', 'アルペンそんぐ', 'Mountain Song', '521', '539'],
+  ['kk-marine-song-2001', 'ふなうた2001', 'Marine Song 2001', '522', '540'],
+  ['kk-neapolitan', 'ナポリタン', 'Neapolitan', '523', '541'],
+  ['kk-steep-hill', 'にだんざか', 'Steep Hill', '524', '542'],
+  ['kk-rockabilly', 'けけビリー', 'K.K. Rockabilly', '525', '543'],
+  ['kk-agent', 'けけけいじ', 'Agent K.K.', '526', '544'],
+  ['kk-rally', 'けけおんど', 'K.K. Rally', '527', '545'],
+  ['kk-metal', 'けけメタル', 'K.K. Metal', '528', '546'],
+  // e+'s "Not My Bag" songs: no aircheck in the rip
+  ['kk-stale-cupcakes', 'ブルーおにぎり', 'Stale Cupcakes', '529', null],
+  ['kk-spring-blossoms', 'はるのこもれび', 'Spring Blossoms', '530', null],
+  ['kk-wandering', 'ほうろう', 'Wandering', '531', null]
+];
+
+/** K.K.'s rip is all but mono (side −26 dB under mid live, −20 / −42 dB the GameCube's / e+'s airchecks): mono at
+ *  40 kbps measures as close to the source as stereo at 48, for a sixth less. */
+const KK_KBPS = 40;
+/** The rip plays e+'s Marine Song 2001 aircheck twice: the first pass. */
+const KK_SECONDS: Record<string, number> = { '540': 214.35 };
 
 const hh = (h: number) => String(h).padStart(2, '0');
 /** A disc's 24 hours, 00..23 from track `first` (rain and snow loop with the sunny hour's period). */
@@ -346,20 +435,30 @@ const CATALOGUE = new Map<string, Row>([
   ...['morning', 'noon', 'evening'].flatMap((part, p) => Array.from({ length: 6 }, (_, i): [string, Row] =>
     [`4-${41 + p * 6 + i}`, { key: `sfx.radio-${part}-${i + 1}`, file: `sfx/radio-${part}-${i + 1}.m4a`, kind: 'sfx' }])),
   ...['bunny-day', 'halloween', 'turkey-day', 'toy-day', 'countdown', 'carnival'].map((id, i): [string, Row] =>
-    [`4-${59 + i}`, { key: `sfx.radio-${id}`, file: `sfx/radio-${id}.m4a`, kind: 'sfx' }])
+    [`4-${59 + i}`, { key: `sfx.radio-${id}`, file: `sfx/radio-${id}.m4a`, kind: 'sfx' }]),
+  // K.K.: the live songs (his Saturday show) and the airchecks (the stereo's recordings), one-shots
+  ...KK.flatMap(([id, ja, en, live, air]): [string, Row][] => [
+    ...(live ? [[live, { key: `kk.${id}`, file: `kk/${id}.m4a`, kind: 'once', kbps: KK_KBPS, mono: true, ja, en }] as [string, Row]] : []),
+    ...(air ? [[air, { key: `kkAircheck.${id}`, file: `kk/aircheck/${id}.m4a`, kind: 'once', kbps: KK_KBPS, mono: true, seconds: KK_SECONDS[air] }] as [string, Row]] : [])
+  ])
 ]);
 
 type Entry = { file: string; start: number; end?: number; gain?: number };
-type Manifest = Record<string, unknown> & { kk?: (Entry & { id: string })[] };
+type Manifest = Record<string, unknown> & { kk?: (Entry & { id: string; ja?: string; en?: string })[] };
 
-/** Put an entry at a dotted key (`kk.<id>` updates that song in the list, keeping its titles). */
-function put(man: Manifest, key: string, value: Entry | string): void {
+/** Put an entry at a dotted key (`kk.<id>`: that song in the list, with its titles, in KK's order); the entry kept. */
+function put(man: Manifest, key: string, value: Entry | string, row?: Row): Entry | string {
   const [top, ...rest] = key.split('.');
-  if (top === 'kk') return void Object.assign((man.kk ?? []).find((s) => s.id === rest[0]) ?? {}, value);
-  if (!rest.length) return void (man[top] = value);
+  if (top === 'kk') {
+    const song = { id: rest[0], ja: row?.ja, en: row?.en, ...(value as Entry) };
+    const order = KK.map(([id]) => id);
+    man.kk = [...(man.kk ?? []).filter((s) => s.id !== song.id), song].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+    return song;
+  }
+  if (!rest.length) return (man[top] = value);
   let o = (man[top] ??= {}) as Record<string, unknown>;
   for (const p of rest.slice(0, -1)) o = (o[p] ??= {}) as Record<string, unknown>;
-  o[rest.at(-1)!] = value;
+  return (o[rest.at(-1)!] = value);
 }
 
 /** Build the catalogue's files found in `src` whose key matches `only`, and write their manifest entries. */
@@ -385,12 +484,11 @@ function build(src: string, only: RegExp, dry: boolean): void {
         e = looped(path, file, row, dry, like?.end ?? row.periodS);
       }
       else {
-        oneShot(path, out, dry, row.kbps ?? 64, row.seconds);
+        oneShot(path, out, dry, row.kbps ?? 64, row.seconds, row.mono ? 1 : 2);
         e = { file: row.file, start: 0 };
         console.log(`${row.file}  ${file}  one-shot`);
       }
-      put(man, row.key, e);
-      built.push(e);
+      built.push(put(man, row.key, e, row) as Entry);
     } catch (err) {
       console.warn(`  ! ${file}: ${(err as Error).message}; skipped`);
     }
@@ -400,9 +498,10 @@ function build(src: string, only: RegExp, dry: boolean): void {
   writeFileSync(MANIFEST, JSON.stringify(man, null, 2) + '\n');
 }
 
-/** Integrated loudness (LUFS) and true peak (dBTP) of a file, from ffmpeg's loudnorm analysis pass. */
+/** Integrated loudness (LUFS) and true peak (dBTP) of a file, from ffmpeg's loudnorm analysis pass. A mono file is
+ *  measured as heard, from both speakers (dual mono: +3 LU over its one channel). */
 function loudness(file: string): { i: number; tp: number } {
-  const r = spawnSync(FFMPEG, ['-hide_banner', '-nostats', '-i', file, '-af', 'loudnorm=print_format=json', '-f', 'null', '-'], { encoding: 'utf8' });
+  const r = spawnSync(FFMPEG, ['-hide_banner', '-nostats', '-i', file, '-af', 'loudnorm=print_format=json:dual_mono=true', '-f', 'null', '-'], { encoding: 'utf8' });
   const json = r.stderr.slice(r.stderr.lastIndexOf('{'), r.stderr.lastIndexOf('}') + 1);
   const m = JSON.parse(json) as { input_i: string; input_tp: string };
   return { i: Number(m.input_i), tp: Number(m.input_tp) };

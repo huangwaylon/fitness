@@ -464,7 +464,7 @@ test('a stereo: a tap opens K.K.’s song list, おまかせ plays his aircheck 
   await page.locator('[data-song="any"]').click();
   await expect(page.locator('[data-stereo-picker]')).toHaveCount(0);
   await expect.poll(() => audio.length).toBeGreaterThan(0);
-  expect(audio[0]).toMatch(/^kk\/(aircheck\/)?kk-[a-z-]+\.m4a$/);
+  expect(audio[0]).toMatch(/^kk\/(aircheck\/)?kk-[a-z0-9-]+\.m4a$/);
   await page.mouse.click(x, y);
   await expect.poll(() => page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('toggle-off');
   await expect(page.locator('[data-stereo-picker]')).toHaveCount(0);

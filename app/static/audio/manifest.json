@@ -1,5 +1,5 @@
 {
-  "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. Every entry is built by `npm run audio:music -- <dir> [--only <key regex>]` (scripts/music.ts, its CATALOGUE: source track number -> key) from the user's own files; `npm run audio:music -- --gains` re-measures only the gains. A music entry is { file, start, end?, gain }: a loop is one seamless period (start = the second where the loop begins musically; playback starts there) plus a 3 s copy of the period's start, `end` = where the period ends (the engine's two decks hand over inside the copy); a one-shot has start 0 and no `end`. gain = dB to the common loudness (-16 LUFS). Music: AAC-LC stereo 44.1 kHz, 64 kbps (K.K.'s, from the GameCube rip, 48). music.<sunny|rain|snow>.<00-23> = the Tokyo hour's loop (music/hour-HH, rain-HH, snow-HH). opening = the opening theme (one-shot). events.<id> = the event music and cut-ins (src/lib/sound/events.ts EVENT_MUSIC_IDS), music/<id>. places.<id> = a room's loop (src/lib/sound/places.ts), places/<id>. kk = K.K.'s live songs in NH's order, [{ id, ja, en, file, start, gain }] (ja/en: NH's official titles; one-shots under kk/); kkAircheck.<id> = the same song's aircheck (the stereo's recording), kk/aircheck/<id>. sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts or its `like`'s): AAC .m4a, mono 44.1 kHz 64 kbps, a plain path (no gain: the jingles from the OST, sfx/<id>, are trimmed, faded and normalised to -16 LUFS in the file). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
+  "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. Every entry is built by `npm run audio:music -- <dir> [--only <key regex>]` (scripts/music.ts, its CATALOGUE: source track number -> key) from the user's own files; `npm run audio:music -- --gains` re-measures only the gains. A music entry is { file, start, end?, gain }: a loop is one seamless period (start = the second where the loop begins musically; playback starts there) plus a 3 s copy of the period's start, `end` = where the period ends (the engine's two decks hand over inside the copy); a one-shot has start 0 and no `end`. gain = dB to the common loudness (-16 LUFS). Music: AAC-LC stereo 44.1 kHz, 64 kbps (K.K.'s from the GameCube / e+ rip mono at 40: the rip is all but mono). music.<sunny|rain|snow>.<00-23> = the Tokyo hour's loop (music/hour-HH, rain-HH, snow-HH). opening = the opening theme (one-shot). events.<id> = the event music and cut-ins (src/lib/sound/events.ts EVENT_MUSIC_IDS), music/<id>. places.<id> = a room's loop (src/lib/sound/places.ts), places/<id>. kk = K.K.'s live songs in NH's order, [{ id, ja, en, file, start, gain }] (ja/en: NH's official titles; one-shots under kk/); kkAircheck.<id> = the same song's aircheck (the stereo's recording), kk/aircheck/<id>. sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts or its `like`'s): AAC .m4a, mono 44.1 kHz 64 kbps, a plain path (no gain: the jingles from the OST, sfx/<id>, are trimmed, faded and normalised in the file to -16 LUFS as heard, from both speakers). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
   "sfx": {
     "island-broadcast": "sfx/island-broadcast.m4a",
     "get-fanfare": "sfx/get-fanfare.m4a",
@@ -644,12 +644,68 @@
       "gain": -2.7
     },
     {
+      "id": "kk-jazz",
+      "ja": "けけジャズ",
+      "en": "K.K. Jazz",
+      "file": "kk/kk-jazz.m4a",
+      "start": 0,
+      "gain": -2.6
+    },
+    {
+      "id": "kk-fusion",
+      "ja": "けけフュージョン",
+      "en": "K.K. Fusion",
+      "file": "kk/kk-fusion.m4a",
+      "start": 0,
+      "gain": -1.1
+    },
+    {
+      "id": "kk-etude",
+      "ja": "けけのエチュード",
+      "en": "K.K. Étude",
+      "file": "kk/kk-etude.m4a",
+      "start": 0,
+      "gain": -1.7
+    },
+    {
+      "id": "kk-lullaby",
+      "ja": "けけララバイ",
+      "en": "K.K. Lullaby",
+      "file": "kk/kk-lullaby.m4a",
+      "start": 0,
+      "gain": -1.8
+    },
+    {
+      "id": "kk-aria",
+      "ja": "けけマリア",
+      "en": "K.K. Aria",
+      "file": "kk/kk-aria.m4a",
+      "start": 0,
+      "gain": -1.6
+    },
+    {
+      "id": "kk-samba",
+      "ja": "けけサンバ",
+      "en": "K.K. Samba",
+      "file": "kk/kk-samba.m4a",
+      "start": 0,
+      "gain": -1
+    },
+    {
       "id": "kk-bossa",
       "ja": "けけボッサ",
       "en": "K.K. Bossa",
       "file": "kk/kk-bossa.m4a",
       "start": 0,
       "gain": -3.5
+    },
+    {
+      "id": "kk-calypso",
+      "ja": "けけカリプソ",
+      "en": "K.K. Calypso",
+      "file": "kk/kk-calypso.m4a",
+      "start": 0,
+      "gain": -1.3
     },
     {
       "id": "kk-salsa",
@@ -660,12 +716,108 @@
       "gain": -3
     },
     {
+      "id": "kk-mambo",
+      "ja": "けけマンボ",
+      "en": "K.K. Mambo",
+      "file": "kk/kk-mambo.m4a",
+      "start": 0,
+      "gain": -0.1
+    },
+    {
       "id": "kk-reggae",
       "ja": "けけレゲエ",
       "en": "K.K. Reggae",
       "file": "kk/kk-reggae.m4a",
       "start": 0,
       "gain": -3
+    },
+    {
+      "id": "kk-ska",
+      "ja": "けけスカ",
+      "en": "K.K. Ska",
+      "file": "kk/kk-ska.m4a",
+      "start": 0,
+      "gain": -0.3
+    },
+    {
+      "id": "kk-tango",
+      "ja": "けけタンゴ",
+      "en": "K.K. Tango",
+      "file": "kk/kk-tango.m4a",
+      "start": 0,
+      "gain": -0.1
+    },
+    {
+      "id": "kk-faire",
+      "ja": "ハイサイけけ",
+      "en": "K.K. Faire",
+      "file": "kk/kk-faire.m4a",
+      "start": 0,
+      "gain": -1.8
+    },
+    {
+      "id": "kk-aloha",
+      "ja": "アロハけけ",
+      "en": "Aloha K.K.",
+      "file": "kk/kk-aloha.m4a",
+      "start": 0,
+      "gain": -3
+    },
+    {
+      "id": "kk-lucky",
+      "ja": "アイリッシュそんぐ",
+      "en": "Lucky K.K.",
+      "file": "kk/kk-lucky.m4a",
+      "start": 0,
+      "gain": -0.3
+    },
+    {
+      "id": "kk-condor",
+      "ja": "ペルーのうた",
+      "en": "K.K. Condor",
+      "file": "kk/kk-condor.m4a",
+      "start": 0,
+      "gain": -1.5
+    },
+    {
+      "id": "kk-steppe",
+      "ja": "コサックそんぐ",
+      "en": "K.K. Steppe",
+      "file": "kk/kk-steppe.m4a",
+      "start": 0,
+      "gain": -1.3
+    },
+    {
+      "id": "kk-imperial",
+      "ja": "けけチャイナ",
+      "en": "Imperial K.K.",
+      "file": "kk/kk-imperial.m4a",
+      "start": 0,
+      "gain": -0.1
+    },
+    {
+      "id": "kk-casbah",
+      "ja": "トルコそんぐ",
+      "en": "K.K. Casbah",
+      "file": "kk/kk-casbah.m4a",
+      "start": 0,
+      "gain": -0.7
+    },
+    {
+      "id": "kk-safari",
+      "ja": "けけアフロ",
+      "en": "K.K. Safari",
+      "file": "kk/kk-safari.m4a",
+      "start": 0,
+      "gain": 0.2
+    },
+    {
+      "id": "kk-folk",
+      "ja": "けけみんよう",
+      "en": "K.K. Folk",
+      "file": "kk/kk-folk.m4a",
+      "start": 0,
+      "gain": -1.3
     },
     {
       "id": "kk-rock",
@@ -682,6 +834,366 @@
       "file": "kk/kk-rockin.m4a",
       "start": 0,
       "gain": -4.1
+    },
+    {
+      "id": "kk-ragtime",
+      "ja": "ラグタイム",
+      "en": "K.K. Ragtime",
+      "file": "kk/kk-ragtime.m4a",
+      "start": 0,
+      "gain": -0.9
+    },
+    {
+      "id": "kk-gumbo",
+      "ja": "ニューオリンズそんぐ",
+      "en": "K.K. Gumbo",
+      "file": "kk/kk-gumbo.m4a",
+      "start": 0,
+      "gain": -1
+    },
+    {
+      "id": "kk-funk",
+      "ja": "けけファンク",
+      "en": "The K. Funk",
+      "file": "kk/kk-funk.m4a",
+      "start": 0,
+      "gain": 0.9
+    },
+    {
+      "id": "kk-blues",
+      "ja": "けけブルース",
+      "en": "K.K. Blues",
+      "file": "kk/kk-blues.m4a",
+      "start": 0,
+      "gain": -0.5
+    },
+    {
+      "id": "kk-soulful",
+      "ja": "けけゴスペル",
+      "en": "Soulful K.K.",
+      "file": "kk/kk-soulful.m4a",
+      "start": 0,
+      "gain": -2.6
+    },
+    {
+      "id": "kk-soul",
+      "ja": "けけソウル",
+      "en": "K.K. Soul",
+      "file": "kk/kk-soul.m4a",
+      "start": 0,
+      "gain": 0.5
+    },
+    {
+      "id": "kk-cruisin",
+      "ja": "アーバンけけ",
+      "en": "K.K. Cruisin'",
+      "file": "kk/kk-cruisin.m4a",
+      "start": 0,
+      "gain": -1.5
+    },
+    {
+      "id": "kk-love-song",
+      "ja": "けけラヴソング",
+      "en": "K.K. Love Song",
+      "file": "kk/kk-love-song.m4a",
+      "start": 0,
+      "gain": -2
+    },
+    {
+      "id": "kk-dnb",
+      "ja": "ドラムンベース",
+      "en": "K.K. D&B",
+      "file": "kk/kk-dnb.m4a",
+      "start": 0,
+      "gain": 0
+    },
+    {
+      "id": "kk-technopop",
+      "ja": "テクノビート",
+      "en": "K.K. Technopop",
+      "file": "kk/kk-technopop.m4a",
+      "start": 0,
+      "gain": 0.4
+    },
+    {
+      "id": "kk-dj",
+      "ja": "ユーロビート",
+      "en": "DJ K.K.",
+      "file": "kk/kk-dj.m4a",
+      "start": 0,
+      "gain": -0.5
+    },
+    {
+      "id": "kk-only-me",
+      "ja": "オンリーミー",
+      "en": "Only Me",
+      "file": "kk/kk-only-me.m4a",
+      "start": 0,
+      "gain": -1.2
+    },
+    {
+      "id": "kk-country",
+      "ja": "けけカントリー",
+      "en": "K.K. Country",
+      "file": "kk/kk-country.m4a",
+      "start": 0,
+      "gain": -1
+    },
+    {
+      "id": "kk-surfin",
+      "ja": "エレキそんぐ",
+      "en": "Surfin' K.K.",
+      "file": "kk/kk-surfin.m4a",
+      "start": 0,
+      "gain": -0.9
+    },
+    {
+      "id": "kk-ballad",
+      "ja": "けけバラッド",
+      "en": "K.K. Ballad",
+      "file": "kk/kk-ballad.m4a",
+      "start": 0,
+      "gain": -1.1
+    },
+    {
+      "id": "kk-comrade",
+      "ja": "しょうわけけかよう",
+      "en": "Comrade K.K.",
+      "file": "kk/kk-comrade.m4a",
+      "start": 0,
+      "gain": -2.6
+    },
+    {
+      "id": "kk-lament",
+      "ja": "けけえんか",
+      "en": "K.K. Lament",
+      "file": "kk/kk-lament.m4a",
+      "start": 0,
+      "gain": -1.2
+    },
+    {
+      "id": "kk-go-rider",
+      "ja": "ゆけ!けけライダー",
+      "en": "Go K.K. Rider",
+      "file": "kk/kk-go-rider.m4a",
+      "start": 0,
+      "gain": -1.4
+    },
+    {
+      "id": "kk-dirge",
+      "ja": "こわいうた",
+      "en": "K.K. Dirge",
+      "file": "kk/kk-dirge.m4a",
+      "start": 0,
+      "gain": -1.4
+    },
+    {
+      "id": "kk-western",
+      "ja": "けけウェスタン",
+      "en": "K.K. Western",
+      "file": "kk/kk-western.m4a",
+      "start": 0,
+      "gain": -1.3
+    },
+    {
+      "id": "kk-mr",
+      "ja": "けけせんせい",
+      "en": "Mr. K.K.",
+      "file": "kk/kk-mr.m4a",
+      "start": 0,
+      "gain": -2
+    },
+    {
+      "id": "kk-cafe",
+      "ja": "けけパリ",
+      "en": "Café K.K.",
+      "file": "kk/kk-cafe.m4a",
+      "start": 0,
+      "gain": -1.7
+    },
+    {
+      "id": "kk-parade",
+      "ja": "けけパレード",
+      "en": "K.K. Parade",
+      "file": "kk/kk-parade.m4a",
+      "start": 0,
+      "gain": -1.3
+    },
+    {
+      "id": "kk-mariachi",
+      "ja": "セニョールけけ",
+      "en": "K.K. Mariachi",
+      "file": "kk/kk-mariachi.m4a",
+      "start": 0,
+      "gain": -2.7
+    },
+    {
+      "id": "kk-song",
+      "ja": "けけソング",
+      "en": "K.K. Song",
+      "file": "kk/kk-song.m4a",
+      "start": 0,
+      "gain": -2
+    },
+    {
+      "id": "kk-i-love-you",
+      "ja": "だいすき",
+      "en": "I Love You",
+      "file": "kk/kk-i-love-you.m4a",
+      "start": 0,
+      "gain": -0.6
+    },
+    {
+      "id": "kk-two-days-ago",
+      "ja": "おととい",
+      "en": "Two Days Ago",
+      "file": "kk/kk-two-days-ago.m4a",
+      "start": 0,
+      "gain": -1
+    },
+    {
+      "id": "kk-my-place",
+      "ja": "ぼくのばしょ",
+      "en": "My Place",
+      "file": "kk/kk-my-place.m4a",
+      "start": 0,
+      "gain": -0.9
+    },
+    {
+      "id": "kk-forest-life",
+      "ja": "もりのせいかつ",
+      "en": "Forest Life",
+      "file": "kk/kk-forest-life.m4a",
+      "start": 0,
+      "gain": 0.5
+    },
+    {
+      "id": "kk-to-the-edge",
+      "ja": "ナミナミ",
+      "en": "To the Edge",
+      "file": "kk/kk-to-the-edge.m4a",
+      "start": 0,
+      "gain": -0.2
+    },
+    {
+      "id": "kk-pondering",
+      "ja": "かんがえちゅう",
+      "en": "Pondering",
+      "file": "kk/kk-pondering.m4a",
+      "start": 0,
+      "gain": -1.2
+    },
+    {
+      "id": "kk-dixie",
+      "ja": "けけディキシー",
+      "en": "K.K. Dixie",
+      "file": "kk/kk-dixie.m4a",
+      "start": 0,
+      "gain": -3.5
+    },
+    {
+      "id": "kk-marathon",
+      "ja": "けけガムラン",
+      "en": "K.K. Marathon",
+      "file": "kk/kk-marathon.m4a",
+      "start": 0,
+      "gain": -0.8
+    },
+    {
+      "id": "kk-king",
+      "ja": "けけだいみょう",
+      "en": "King K.K.",
+      "file": "kk/kk-king.m4a",
+      "start": 0,
+      "gain": -2.2
+    },
+    {
+      "id": "kk-mountain-song",
+      "ja": "アルペンそんぐ",
+      "en": "Mountain Song",
+      "file": "kk/kk-mountain-song.m4a",
+      "start": 0,
+      "gain": -0.9
+    },
+    {
+      "id": "kk-marine-song-2001",
+      "ja": "ふなうた2001",
+      "en": "Marine Song 2001",
+      "file": "kk/kk-marine-song-2001.m4a",
+      "start": 0,
+      "gain": -2.3
+    },
+    {
+      "id": "kk-neapolitan",
+      "ja": "ナポリタン",
+      "en": "Neapolitan",
+      "file": "kk/kk-neapolitan.m4a",
+      "start": 0,
+      "gain": -2.4
+    },
+    {
+      "id": "kk-steep-hill",
+      "ja": "にだんざか",
+      "en": "Steep Hill",
+      "file": "kk/kk-steep-hill.m4a",
+      "start": 0,
+      "gain": -3.2
+    },
+    {
+      "id": "kk-rockabilly",
+      "ja": "けけビリー",
+      "en": "K.K. Rockabilly",
+      "file": "kk/kk-rockabilly.m4a",
+      "start": 0,
+      "gain": -2
+    },
+    {
+      "id": "kk-agent",
+      "ja": "けけけいじ",
+      "en": "Agent K.K.",
+      "file": "kk/kk-agent.m4a",
+      "start": 0,
+      "gain": -2.6
+    },
+    {
+      "id": "kk-rally",
+      "ja": "けけおんど",
+      "en": "K.K. Rally",
+      "file": "kk/kk-rally.m4a",
+      "start": 0,
+      "gain": -2.7
+    },
+    {
+      "id": "kk-metal",
+      "ja": "けけメタル",
+      "en": "K.K. Metal",
+      "file": "kk/kk-metal.m4a",
+      "start": 0,
+      "gain": -3.6
+    },
+    {
+      "id": "kk-stale-cupcakes",
+      "ja": "ブルーおにぎり",
+      "en": "Stale Cupcakes",
+      "file": "kk/kk-stale-cupcakes.m4a",
+      "start": 0,
+      "gain": -2.3
+    },
+    {
+      "id": "kk-spring-blossoms",
+      "ja": "はるのこもれび",
+      "en": "Spring Blossoms",
+      "file": "kk/kk-spring-blossoms.m4a",
+      "start": 0,
+      "gain": -0.4
+    },
+    {
+      "id": "kk-wandering",
+      "ja": "ほうろう",
+      "en": "Wandering",
+      "file": "kk/kk-wandering.m4a",
+      "start": 0,
+      "gain": -1.8
     }
   ],
   "places": {
@@ -714,6 +1226,358 @@
       "start": 53.677,
       "end": 69.677392,
       "gain": 6
+    }
+  },
+  "kkAircheck": {
+    "kk-chorale": {
+      "file": "kk/aircheck/kk-chorale.m4a",
+      "start": 0,
+      "gain": -6.2
+    },
+    "kk-march": {
+      "file": "kk/aircheck/kk-march.m4a",
+      "start": 0,
+      "gain": -1.9
+    },
+    "kk-waltz": {
+      "file": "kk/aircheck/kk-waltz.m4a",
+      "start": 0,
+      "gain": -2.2
+    },
+    "kk-swing": {
+      "file": "kk/aircheck/kk-swing.m4a",
+      "start": 0,
+      "gain": -6.4
+    },
+    "kk-jazz": {
+      "file": "kk/aircheck/kk-jazz.m4a",
+      "start": 0,
+      "gain": -6.2
+    },
+    "kk-fusion": {
+      "file": "kk/aircheck/kk-fusion.m4a",
+      "start": 0,
+      "gain": -2.4
+    },
+    "kk-etude": {
+      "file": "kk/aircheck/kk-etude.m4a",
+      "start": 0,
+      "gain": -2.3
+    },
+    "kk-lullaby": {
+      "file": "kk/aircheck/kk-lullaby.m4a",
+      "start": 0,
+      "gain": -2.4
+    },
+    "kk-aria": {
+      "file": "kk/aircheck/kk-aria.m4a",
+      "start": 0,
+      "gain": -5.2
+    },
+    "kk-samba": {
+      "file": "kk/aircheck/kk-samba.m4a",
+      "start": 0,
+      "gain": -4.5
+    },
+    "kk-bossa": {
+      "file": "kk/aircheck/kk-bossa.m4a",
+      "start": 0,
+      "gain": -4.5
+    },
+    "kk-calypso": {
+      "file": "kk/aircheck/kk-calypso.m4a",
+      "start": 0,
+      "gain": 0
+    },
+    "kk-salsa": {
+      "file": "kk/aircheck/kk-salsa.m4a",
+      "start": 0,
+      "gain": -1.4
+    },
+    "kk-mambo": {
+      "file": "kk/aircheck/kk-mambo.m4a",
+      "start": 0,
+      "gain": -1.7
+    },
+    "kk-reggae": {
+      "file": "kk/aircheck/kk-reggae.m4a",
+      "start": 0,
+      "gain": -0.2
+    },
+    "kk-ska": {
+      "file": "kk/aircheck/kk-ska.m4a",
+      "start": 0,
+      "gain": -2.5
+    },
+    "kk-tango": {
+      "file": "kk/aircheck/kk-tango.m4a",
+      "start": 0,
+      "gain": -5.1
+    },
+    "kk-faire": {
+      "file": "kk/aircheck/kk-faire.m4a",
+      "start": 0,
+      "gain": -3
+    },
+    "kk-aloha": {
+      "file": "kk/aircheck/kk-aloha.m4a",
+      "start": 0,
+      "gain": -2.4
+    },
+    "kk-lucky": {
+      "file": "kk/aircheck/kk-lucky.m4a",
+      "start": 0,
+      "gain": -4.8
+    },
+    "kk-condor": {
+      "file": "kk/aircheck/kk-condor.m4a",
+      "start": 0,
+      "gain": -4.3
+    },
+    "kk-steppe": {
+      "file": "kk/aircheck/kk-steppe.m4a",
+      "start": 0,
+      "gain": -5.1
+    },
+    "kk-imperial": {
+      "file": "kk/aircheck/kk-imperial.m4a",
+      "start": 0,
+      "gain": -3.5
+    },
+    "kk-casbah": {
+      "file": "kk/aircheck/kk-casbah.m4a",
+      "start": 0,
+      "gain": -2.7
+    },
+    "kk-safari": {
+      "file": "kk/aircheck/kk-safari.m4a",
+      "start": 0,
+      "gain": 0
+    },
+    "kk-folk": {
+      "file": "kk/aircheck/kk-folk.m4a",
+      "start": 0,
+      "gain": -3.2
+    },
+    "kk-rock": {
+      "file": "kk/aircheck/kk-rock.m4a",
+      "start": 0,
+      "gain": -3.2
+    },
+    "kk-rockin": {
+      "file": "kk/aircheck/kk-rockin.m4a",
+      "start": 0,
+      "gain": -5.5
+    },
+    "kk-ragtime": {
+      "file": "kk/aircheck/kk-ragtime.m4a",
+      "start": 0,
+      "gain": -3
+    },
+    "kk-gumbo": {
+      "file": "kk/aircheck/kk-gumbo.m4a",
+      "start": 0,
+      "gain": -3.6
+    },
+    "kk-funk": {
+      "file": "kk/aircheck/kk-funk.m4a",
+      "start": 0,
+      "gain": -1.3
+    },
+    "kk-blues": {
+      "file": "kk/aircheck/kk-blues.m4a",
+      "start": 0,
+      "gain": -4.7
+    },
+    "kk-soulful": {
+      "file": "kk/aircheck/kk-soulful.m4a",
+      "start": 0,
+      "gain": -1.9
+    },
+    "kk-soul": {
+      "file": "kk/aircheck/kk-soul.m4a",
+      "start": 0,
+      "gain": -2.2
+    },
+    "kk-cruisin": {
+      "file": "kk/aircheck/kk-cruisin.m4a",
+      "start": 0,
+      "gain": -1.2
+    },
+    "kk-love-song": {
+      "file": "kk/aircheck/kk-love-song.m4a",
+      "start": 0,
+      "gain": -0.5
+    },
+    "kk-dnb": {
+      "file": "kk/aircheck/kk-dnb.m4a",
+      "start": 0,
+      "gain": -5.1
+    },
+    "kk-technopop": {
+      "file": "kk/aircheck/kk-technopop.m4a",
+      "start": 0,
+      "gain": -1.3
+    },
+    "kk-dj": {
+      "file": "kk/aircheck/kk-dj.m4a",
+      "start": 0,
+      "gain": -3.6
+    },
+    "kk-only-me": {
+      "file": "kk/aircheck/kk-only-me.m4a",
+      "start": 0,
+      "gain": 1.6
+    },
+    "kk-country": {
+      "file": "kk/aircheck/kk-country.m4a",
+      "start": 0,
+      "gain": -3.9
+    },
+    "kk-surfin": {
+      "file": "kk/aircheck/kk-surfin.m4a",
+      "start": 0,
+      "gain": -1.2
+    },
+    "kk-ballad": {
+      "file": "kk/aircheck/kk-ballad.m4a",
+      "start": 0,
+      "gain": -2.9
+    },
+    "kk-comrade": {
+      "file": "kk/aircheck/kk-comrade.m4a",
+      "start": 0,
+      "gain": -5
+    },
+    "kk-lament": {
+      "file": "kk/aircheck/kk-lament.m4a",
+      "start": 0,
+      "gain": -3.7
+    },
+    "kk-go-rider": {
+      "file": "kk/aircheck/kk-go-rider.m4a",
+      "start": 0,
+      "gain": -5.4
+    },
+    "kk-dirge": {
+      "file": "kk/aircheck/kk-dirge.m4a",
+      "start": 0,
+      "gain": -2.2
+    },
+    "kk-western": {
+      "file": "kk/aircheck/kk-western.m4a",
+      "start": 0,
+      "gain": -2.9
+    },
+    "kk-mr": {
+      "file": "kk/aircheck/kk-mr.m4a",
+      "start": 0,
+      "gain": -6.5
+    },
+    "kk-cafe": {
+      "file": "kk/aircheck/kk-cafe.m4a",
+      "start": 0,
+      "gain": -3.5
+    },
+    "kk-parade": {
+      "file": "kk/aircheck/kk-parade.m4a",
+      "start": 0,
+      "gain": -3.2
+    },
+    "kk-mariachi": {
+      "file": "kk/aircheck/kk-mariachi.m4a",
+      "start": 0,
+      "gain": -4.2
+    },
+    "kk-song": {
+      "file": "kk/aircheck/kk-song.m4a",
+      "start": 0,
+      "gain": -4.6
+    },
+    "kk-i-love-you": {
+      "file": "kk/aircheck/kk-i-love-you.m4a",
+      "start": 0,
+      "gain": -5.6
+    },
+    "kk-two-days-ago": {
+      "file": "kk/aircheck/kk-two-days-ago.m4a",
+      "start": 0,
+      "gain": -2.5
+    },
+    "kk-my-place": {
+      "file": "kk/aircheck/kk-my-place.m4a",
+      "start": 0,
+      "gain": -2.6
+    },
+    "kk-forest-life": {
+      "file": "kk/aircheck/kk-forest-life.m4a",
+      "start": 0,
+      "gain": -2.3
+    },
+    "kk-to-the-edge": {
+      "file": "kk/aircheck/kk-to-the-edge.m4a",
+      "start": 0,
+      "gain": -0.9
+    },
+    "kk-pondering": {
+      "file": "kk/aircheck/kk-pondering.m4a",
+      "start": 0,
+      "gain": -4.6
+    },
+    "kk-dixie": {
+      "file": "kk/aircheck/kk-dixie.m4a",
+      "start": 0,
+      "gain": -2.3
+    },
+    "kk-marathon": {
+      "file": "kk/aircheck/kk-marathon.m4a",
+      "start": 0,
+      "gain": -1
+    },
+    "kk-king": {
+      "file": "kk/aircheck/kk-king.m4a",
+      "start": 0,
+      "gain": 0
+    },
+    "kk-mountain-song": {
+      "file": "kk/aircheck/kk-mountain-song.m4a",
+      "start": 0,
+      "gain": -5.6
+    },
+    "kk-marine-song-2001": {
+      "file": "kk/aircheck/kk-marine-song-2001.m4a",
+      "start": 0,
+      "gain": -3.4
+    },
+    "kk-neapolitan": {
+      "file": "kk/aircheck/kk-neapolitan.m4a",
+      "start": 0,
+      "gain": -3.4
+    },
+    "kk-steep-hill": {
+      "file": "kk/aircheck/kk-steep-hill.m4a",
+      "start": 0,
+      "gain": -2.7
+    },
+    "kk-rockabilly": {
+      "file": "kk/aircheck/kk-rockabilly.m4a",
+      "start": 0,
+      "gain": -2
+    },
+    "kk-agent": {
+      "file": "kk/aircheck/kk-agent.m4a",
+      "start": 0,
+      "gain": -2.5
+    },
+    "kk-rally": {
+      "file": "kk/aircheck/kk-rally.m4a",
+      "start": 0,
+      "gain": -3.4
+    },
+    "kk-metal": {
+      "file": "kk/aircheck/kk-metal.m4a",
+      "start": 0,
+      "gain": -5.2
     }
   }
 }
