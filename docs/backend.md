@@ -276,7 +276,9 @@ an ack without a row (a duplicate) is followed by a `fresh` re-read 1.5 s later.
 second's hello replaces the first's socket (4002), so the first hears nothing of the second. The layout and the
 rooms (`store/layout.svelte.ts`, `store/tent.svelte.ts`: every op's winning entry, a commutative merge) merge what's
 in storage before they write, never writing a stale whole map over the other tab's ops, and fold the other tab's
-writes as their `storage` events land.
+writes as their `storage` events land. The layout writes once per tick's burst (2026-11-05, round 2: it parsed, folded
+and rewrote the whole copy at every change, mine too), and parses what's stored only when its text isn't this tab's
+own last write.
 
 **Conflicts:** every op merges commutatively per id (last writer wins: `at`, then who), so the phones always agree;
 two edits of different things that clash are settled by one phone: a layout piece moved onto one the partner moved
