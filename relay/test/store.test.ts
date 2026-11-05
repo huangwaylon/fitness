@@ -2,7 +2,7 @@
 // import of rows that already have their `at`, and the notices after writes.
 import { createHmac } from 'node:crypto';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { LATE_MARGIN_MS, RATE_PER_MINUTE, STORE_BUILD, StoreCore } from '../src/store.ts';
+import { LATE_MARGIN_MS, PAGES_PER_MINUTE, RATE_PER_MINUTE, STORE_BUILD, StoreCore } from '../src/store.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
@@ -39,6 +39,18 @@ describe('auth and limits', () => {
     expect(b('whoami')).toEqual({ ok: true, me: 'B', build: STORE_BUILD });
     expect(a('drop')).toEqual({ ok: false, error: 'bad_request' });
     expect(store.handle(null, 0)).toEqual({ ok: false, error: 'bad_request' });
+  });
+
+  it('a snapshot’s later pages have their own budget: a cold fetch of a big record never spends the writes’', () => {
+    // 2026-11-05 relay review O9: each page counted against the 120 a minute
+    for (let i = 0; i < 300; i++) expect(a('snapshot', { page: 10, after: '2026-11-02T03:00:00.000Z|e|1' }).ok).toBe(true);
+    expect(a('whoami').ok).toBe(true);
+    for (let i = 0; i < RATE_PER_MINUTE - 1; i++) a('whoami');
+    expect(a('whoami')).toEqual({ ok: false, error: 'busy' });
+    expect(a('snapshot', { page: 10, after: '2026-11-02T03:00:00.000Z|e|1' }).ok).toBe(true); // the pages' own still
+    expect(a('snapshot', { page: 10 })).toEqual({ ok: false, error: 'busy' }); // a first page is a request like any
+    for (let i = 301; i < PAGES_PER_MINUTE; i++) a('snapshot', { page: 10, after: '2026-11-02T03:00:00.000Z|e|1' });
+    expect(a('snapshot', { page: 10, after: '2026-11-02T03:00:00.000Z|e|1' })).toEqual({ ok: false, error: 'busy' });
   });
 
   it(`${RATE_PER_MINUTE} requests per key per minute`, () => {

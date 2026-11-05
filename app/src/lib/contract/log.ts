@@ -54,7 +54,7 @@ export const LOG_EVENTS = {
   use: { src: 'c', f: { '*': 'n' } },
   "log.drop": { src: 'c', f: { n: 'n', why: ['cap', 'full', 'day', 'pending'] } },
   // ---- the relay
-  req: { src: 'r', f: { action: LOG_ACTIONS, st: LOG_STATUS, ms: 'n', inB: 'n', outB: 'n', n: 'n', rej: 'n', why: 't', m: 'n', sk: 'n', w: 'n', dup: 'n', exc: 't' } },
+  req: { src: 'r', f: { action: LOG_ACTIONS, st: LOG_STATUS, ms: 'n', inB: 'n', outB: 'n', n: 'n', rej: 'n', why: 't', m: 'n', sk: 'n', w: 'n', dup: 'n', exc: 't', pg: 'n' } },
   "room.close": { src: 'r', f: { code: 'n', secs: 'n', socks: 'n' } },
   "room.full": { src: 'r', f: { socks: 'n' } },
   "ws.hello": { src: 'r', f: { v: 'n', build: 't' } },
