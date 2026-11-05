@@ -826,7 +826,13 @@ with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
 - **The island page's chunks:** `index.html` (the SPA shell every route opens with) modulepreloads the island page's
   chunk and its static imports (`scripts/headers.ts`, after the build: Kit's fallback page preloads only the root
   layout's), and `+layout.ts` load() starts the 3D island's import (three.js and its scene) on `/` while the page
-  reads the week from IndexedDB (IslandScene imports it only once the week is in).
+  reads the week from IndexedDB (IslandScene imports it only once the week is in): only when the launch opens the
+  island (`ui-state/boot.ts opensIsland`: the demo, or a key on a build that is set up, and no `#key=` link), so a
+  phone going to /pair downloads 592 KB, not 837 KB (brotli), 114 requests, not 136. Not preloaded from `index.html`
+  (the startup review's B1, tried: an inline script adding its 22 chunks as modulepreload for such a launch): over
+  HTTP/2 at ~Fast 4G, 4× CPU the cold first frame was no sooner (1,848-1,935 → 1,866-1,896 ms, within the noise) and
+  the first paint ~100 ms later (916-936 → 1,040 ms; low fetch priority the same), the bandwidth shared with what the
+  first paint waits for; load() asks for it soon enough.
 - **The ground's fields:** the layout's distance fields in a worker from `+layout.ts` load()
   ([island-layout](island-layout.md): the distance fields); the river stems' field with `Math.sqrt`, not
   `Math.hypot`, in its hot loop (the same numbers). The 3D island's mount waits for the worker's answer, 300 ms at
