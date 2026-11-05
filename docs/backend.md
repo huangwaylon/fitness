@@ -269,7 +269,11 @@ writes as their `storage` events land.
 **Conflicts:** every op merges commutatively per id (last writer wins: `at`, then who), so the phones always agree;
 two edits of different things that clash are settled by one phone: a layout piece moved onto one the partner moved
 to the same tile at once moves off, by the later op's phone ([island-layout.md](island-layout.md#ops-the-record-and-the-relay)
-"Two edits on one tile").
+"Two edits on one tile"). A room's light switch (`store/tent.svelte.ts switchLight`) is the piece's whole state
+again, so it is stamped just after the piece's own last op, not now: a move the partner made meanwhile (later) wins
+and the switch is the one lost, where a switch stamped now had put the piece back where this phone last saw it. (A
+switch of its own, never touching the piece's place, needs a new op in `contract/tent.ts` and a relay deploy before
+any phone sends it: not done.)
 
 <a id="the-record"></a>
 ## The record
