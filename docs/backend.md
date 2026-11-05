@@ -9,8 +9,7 @@ The record is an append-only log with slots (a later tally of the same day repla
 relay's `IslandStore` ([The record](#the-record)) is its only reader and writer. It authenticates, validates shapes,
 stamps `at` and appends; there is no server-side economy and no config: the client caches the rows and derives every
 number on read. User actions are `event` rows sent through a persisted queue and shown at once; health data comes from
-each phone's Shortcut (`ingest`). Nothing is exported (the Google Sheet export went on 2026-11-05: [decisions](decisions.md#sheet-export-removed-2026-11-05));
-the backups are point-in-time recovery and the dump ([runbook §7](ops/runbook.md#7-backups)).
+each phone's Shortcut (`ingest`). Nothing is exported; the backups are point-in-time recovery and the dump ([runbook §7](ops/runbook.md#7-backups)).
 
 ## Tables
 
@@ -23,9 +22,7 @@ UTC with milliseconds, strictly increasing (all rows of one ingest share it). Da
 | `events` | `at`, `person`, `id`, `type`, `data` (JSON text) | `event` / `events`; `id` client-generated |
 | `uploads` | `at`, `person`, `status`, `bytes`, `error` | `ingest`'s audit: `ok` / `partial` / `error`, size, warnings and the body's shape (never the body or key) |
 
-`metrics` and `events` are synced to the client; `uploads` is read only by the `uploads` action. Until 2026-11-05 a
-Google Sheet held a copy of the three, rewritten by the relay's cron; that export is gone
-([decisions](decisions.md#sheet-export-removed-2026-11-05)).
+`metrics` and `events` are synced to the client; `uploads` is read only by the `uploads` action.
 
 ## Events
 
@@ -118,8 +115,8 @@ An unreadable `since` is `bad_request`; an unknown action too.
 
 - **Keys:** the caller is whichever Worker secret `KEY_A` / `KEY_B` matches (or `KEY_C`, the guest's: `G`,
   [The guest](#the-guest)), in constant time; a key that isn't 32–128 hex characters is refused before any comparison.
-  The two members' keys are Script Properties (the export's signature is derived from them, never from `KEY_C`):
-  rotate both together ([runbook §4](ops/runbook.md#4-rotate-a-key)).
+  `KEY_A` and `KEY_B` also derive the server-to-server secret that signs `/notify` and `/admin` (never `KEY_C`): a
+  rotation updates the admin tools' keys file too ([runbook §4](ops/runbook.md#4-rotate-a-key)).
 - **Rate limit:** 120 requests per key per minute (in the record's memory). Over it: `busy`.
 
 ## Record state
@@ -133,9 +130,8 @@ committed (the output gate).
 
 `rev` is the record's epoch (`e1`, `e2`, …): it changes only when the record is rebuilt (a restore, or `node
 scripts/record.ts rev`). A `snapshot` whose `rev` or `me` differs from the cache's makes the client drop the cache
-(never the unsent queue) and fetch everything; the first read from the record after the sheet did the same once.
-Locked weeks' earnings are memoised per `rev`. Nothing edits the record by hand, so
-there is no `onEdit` and no `resync` any more.
+(never the unsent queue) and fetch everything. Locked weeks' earnings are memoised per `rev`. Nothing edits the
+record by hand.
 
 ## Ingest
 
@@ -190,12 +186,10 @@ non-2xx or non-JSON = `unavailable`).
 unavailable): a `meta` record (all but the rows, a few hundred bytes, written on every refresh) and the rows in
 **segments**, each tab's rows in order, 1,000 a record (`seg:<tab>:<key>`, listed in the meta). A save keeps the
 segments that still hold the same rows in the same place and writes the rest anew from the first change: on a poll
-only the last, partly filled segment (≤ ~300 KB of meal log rows, usually far less; it was every row, 4 MB at year 1
-and 13 MB at year 3 with the meal log, rewritten per change), after a compaction the segments from its first dropped
+only the last, partly filled segment (≤ ~300 KB of meal log rows, usually far less), after a compaction the segments from its first dropped
 row on. The meta and the segments it lists go in one transaction, so a reader sees one whole set; a listed segment
-missing reads as no cache (a full fetch), segments it doesn't list (another tab's) go on the next save. Older layouts
-are read once and moved on the next save, which clears them, so the update never refetches: `meta` v 2 + one `rows`
-record (2026-11-02 to 11-03) and the one `snapshot` record (`v: 1`, before). A refresh posts `snapshot` with `since`,
+missing reads as no cache (a full fetch), segments it doesn't list (another tab's) go on the next save; anything else in the store (an older layout) reads as
+no cache and the next save clears it. A refresh posts `snapshot` with `since`,
 merges (`model/snapshot.ts`: deduped by natural key, its key set kept with each row list and layered by each merge, so
 a poll costs the rows it brings; ordered by `at`; an empty poll keeps the same rows object, so nothing re-reduces and
 no rows are written), records the server clock skew and saves in order. Overlapping refreshes share one request; a `fresh` caller waits for one more after any in flight. A reply that
@@ -214,8 +208,7 @@ Every `food_repeat` op stays: its fold (`repeatAccept`) takes every op's skipped
 ### Write queue
 
 `sync/queue.ts`: events in `island.queue`, sent in order until acked. To the record, everything that may go now goes in
-one `events` request (≤ 50, in queue order, the holds and subjects below kept), each answered by id; to Apps Script
-(no record URL), one `event` at a time.
+one `events` request (≤ 50, in queue order, the holds and subjects below kept), each answered by id.
 
 - **Holds:** a held event (`holdMs`, the undo window) is skipped, not waited for; `unqueue` takes it back, `holdEvent`
   moves its time.
@@ -239,8 +232,8 @@ RAW_EVENTS: unparsed, out of `ats`, one lookup a row), so a change's reduce is t
 the food sheet reads them (`model/food.ts`): each row parsed and validated once (memoised per row object), the
 entries folded from the last fold when the rows extend it (a poll: its new rows and one merge). `npm run bench`
 (3 people × ~10 meals a day, every op a polling phone gets) at year 3, Node on an M5: poll + 1 row → view 3–4 ms with
-the meal log, 2–3 ms without (it was 85–100 ms); reduce + week view 3 ms (was 85–100); the sheet open first after a
-cold start ~55–65 ms (every row parsed once), then ~5 ms per poll; a cache write after a poll ~0.4 ms (was 19–28 ms).
+the meal log, 2–3 ms without; reduce + week view 3 ms; the sheet open first after a
+cold start ~55–65 ms (every row parsed once), then ~5 ms per poll; a cache write after a poll ~0.4 ms.
 
 ### When it syncs
 
@@ -251,64 +244,48 @@ queue, then fetches. **Not when current:** on launch and on becoming visible the
 cache has it (same `rev`, `at` ≤ `since`) and was fetched within 15 minutes, it only flushes the queue. No welcome, no
 socket or an older cache: it fetches. **After an ack:** the record answers each event with its stored row's `at`, and
 that row goes into the cache at once (`since` unmoved, so the next poll still brings everything written after it); only
-an ack without a row (a duplicate, or Apps Script's) is followed by a `fresh` re-read 1.5 s later.
+an ack without a row (a duplicate) is followed by a `fresh` re-read 1.5 s later.
 
 <a id="the-record"></a>
 ## The record
-
-The data of record moved from the sheet to the relay on 2026-11-02 (decisions: *The record on the relay*), in five
-steps, each deployed and green before the next, the old path working through each (the phones update a day apart):
-1. **mirror**: the script copied each write's rows here (a signed import), and the sheet's history was imported (`at`
-   kept, high-fives and superseded cosmetic prefs left out); the model's numbers from both were the same
-   ([runbook §13](ops/runbook.md#13-the-record) "History");
-2. **reads**: the app's snapshot from `/api` (Apps Script was its fallback for a day);
-3. **writes**: the queue's `events` to `/api`; Apps Script forwarded every keyed request it still got;
-4. **Shortcuts**: their URL is `/api` ([shortcut §2](ops/shortcut-health-sync.md#a-shortcut-from-before-2026-11-02));
-   the old one forwarded;
-5. **export**: the sheet is rewritten from the record; the script's own record code went, and with no forwarded
-   request since both phones moved (A 125 and B 95 straight to `/api`, 0 through Apps Script by 05:38Z), the forward
-   and the script's external-request scope went too. (The export itself was removed on 2026-11-05.)
 
 - **Where:** `relay/src/store.ts` (`StoreCore`, free of the Workers runtime), in its own SQLite-backed Durable Object,
   `IslandStore` (`idFromName('record')`, `storeObject.ts`), apart from the island room. Tables: `metrics` (`seq`, `at`,
   `person`, `date`, `metric`, `value` REAL, `late`; unique (person, date, metric, at), index on `at`), `events` (`seq`,
   `id` unique, `at`, `person`, `type`, `data`, `slot` unique, `late`; indexes on `at` and `type`), `ids` (every event id
   ever accepted), `uploads` (the ingest audit), `meta` (`last_at`, `rev`).
-- **API:** `POST /api`, the web app's contract unchanged (`{key, action, ...}` as text/plain JSON; `ingest`, `event`,
-  `snapshot`, `uploads`, `whoami`, keyless `health` → `{ok, build: 'relay-1'}`), every reply JSON with status 200 as
-  Apps Script's; CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size
+- **API:** `POST /api` (`{key, action, ...}` as text/plain JSON; `ingest`, `event`,
+  `snapshot`, `uploads`, `whoami`, keyless `health` → `{ok, build: 'relay-1'}`), every reply JSON with status 200;
+  CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size
   only and hands the body to the object, which parses it, checks the key and answers (the Free plan gives a Worker ~10
   ms of CPU per request; the object far more). Rate limit 120 per key per minute.
-- **Rules** (`app/src/lib/model/record.ts`): the shape checks the script had (`validEventData`); `at` =
+- **Rules** (`app/src/lib/model/record.ts`): the shape checks (`validEventData`); `at` =
   max(now, last + 1 ms), one per ingest, one per event; an event id once, forever (`ids`: a late retry of a replaced
-  event is still a duplicate); **slots**, a later event of a slot replacing it (where the sheet deleted and appended): a
+  event is still a duplicate); **slots**, a later event of a slot replacing it: a
   tally and an island day per sender and day, a cosmetic pref (`locale`, `villagerName`, `villager`, `look`, `savedLooks`) or a latest-only goal (the からだ and meal-log goals) per
   subject, a goal a day keeps (`stepsGoal`, `moveGoal`, `exerciseGoal`, `standGoal`) per subject and Tokyo day of its `at` (the goal in force on each past day
   stays: `dailyGoalOn`), a decoration per scope and id (by `decorAccept` / `tentAccept`), a board note, a meal entry and a repeat per id (by
   `boardAccept` / `foodAccept`). A pref the model ignores takes
-  no slot. A `highfive` (no longer an event type: high-fives go over the room) still queued on a phone from before is
-  acknowledged and kept nowhere; an old row of one in a cache is ignored by the model.
-- **Ingest:** `relay/src/parse.ts` (the script's parser, moved unchanged) and the audit row (`relay/src/audit.ts`); a day's latest
+  no slot. A `highfive` event (high-fives go over the room) is acknowledged and kept nowhere; an old row of one is ignored
+  by the model.
+- **Ingest:** `relay/src/parse.ts` and the audit row (`relay/src/audit.ts`); a day's latest
   row read from the (person, date, metric) key over the body's days. `relay/test/ingest-golden.test.ts` runs a week of
   both phones' Shortcut bodies (their real shapes: A's iPhone-only body with English dates, B's with the Watch's steps
-  and Japanese dates; made-up values) and checks the record's replies, rows, `at`s and audit rows against what the
-  script answered and wrote for them (`fixtures/ingest-golden.json`, recorded before the script's ingest was removed).
+  and Japanese dates; made-up values) and checks the record's replies, rows, `at`s and audit rows against a recorded golden
+  (`fixtures/ingest-golden.json`).
 - **`since`:** answered from the `at` index; an empty poll reads one row (the revision). A row that arrived out of
-  `at` order (an import's: while the script mirrored, two requests' copies could race) is marked `late` with its arrival time, and a
+  `at` order (an import's) is marked `late` with its arrival time, and a
   poll also returns late rows that arrived after `since` − 10 s, so no phone misses one (the merge dedupes it).
 - **Revision:** `rev` is an epoch (`e1`, `e2`, …), changed only when the record is rebuilt (`node scripts/record.ts
   rev`, after a restore). Nothing edits the record by hand.
 - **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"), takes the record tool's ops (`{op}`: counts
   and who came which way, bookmarks, a restore, a new epoch, a dump, the log (`logs`, `logstats`, `logpurge`: the log's own object, [observability](ops/observability.md)), the weather, and `load`: rows that already have
-  their `at`, by the same rules, idempotent). During step 1 the same signed path took the script's copy of each write
-  (sent as ASCII: a Shortcut's dates carry U+202F, and a copy with it failed the signature until it was escaped).
+  their `at`, by the same rules, idempotent).
 - **Push-driven:** after a write the object tells the room (`changed`, [Push](#push)); the room keeps the last one
   (`rec {at, rev}`, in its storage) and hands it to each phone in its `welcome`, so a phone that has it needn't fetch
   on opening ([When it syncs](#when-it-syncs)).
-- **Measured** (2026-11-02, curl from Tokyo): a full snapshot 0.09–0.18 s for 73 KB (the sheet's: 2.8–3 s for 131 KB;
-  4–8 s at busy times), an empty poll 0.06 s (the sheet's: 2.1–2.2 s, once 14.5 s). An event write through Apps Script
-  took two locked requests (the event and the 1.5 s re-read); to the record it is one `events` request, the row back
-  in its reply.
+- **Measured** (2026-11-02, curl from Tokyo): a full snapshot 0.09–0.18 s for 73 KB, an empty poll 0.06 s; an event write is one
+  `events` request, the row back in its reply.
 - **Backups:** point-in-time recovery (30 days, on the Free plan) and `dump` / `load`: [runbook §13](ops/runbook.md#13-the-record).
 
 ## Live relay
@@ -386,8 +363,7 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
 - **Tests:** `relay/test/` (keys, origins, the bucket, the room: auth, relay to the other person only, stamping, rate
   limit, replay and ring trimming, replacement, presence, hello timeout, the socket cap, the nudge and `changed`; the
   notify secret, signatures and window) with `cd relay && npm test`
-  (also `.github/workflows/relay.yml`); `live-protocol.test.ts`, `live.test.ts` and `store/push.test.ts` in the app's vitest; the push's
-  script side in `gas/main.test.ts`.
+  (also `.github/workflows/relay.yml`); `live-protocol.test.ts`, `live.test.ts` and `store/push.test.ts` in the app's vitest.
 
 ## The real weather
 
@@ -575,12 +551,11 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   said again every 5 s while they're here (a phone that missed its start finds it on its way). Idle motions and the
   ambient beats stay clock-seeded (ambient.ts); an action plays in place on both phones (no walk-then-act). A phone gone
   (closed, hidden, offline, however long) leaves its villager where its last walk ended on every phone (the room's
-  last walk, carried across days; no walk home since 2026-11-04,
+  last walk, carried across days,
   [decisions](decisions.md#a-villager-stays-where-it-was-left-2026-11-04)); back, it says where it stands (its kept
   spot) once its welcome is in.
 - **Sleep:** the villagers doze 22:00–05:00 on the relay's clock (`islandLife`: put to sleep or woken at the hour it
-  turns, the same moment on both phones; no longer re-checked each minute, which put a woken villager back to sleep
-  early). A wake here (a tap on mine, a high-five wakes both) is `act {act: wake, id: <whose>, at}` (the relay's
+  turns, the same moment on both phones; never re-checked each minute, so a woken villager stays awake). A wake here (a tap on mine, a high-five wakes both) is `act {act: wake, id: <whose>, at}` (the relay's
   clock): the other phone wakes the same villager for what's left of its 10 s (`villagerSync.ts playWake`), so both
   doze off again at the same moment (and stay up past 05:00). Gulliver woken (the fifth nudge) is `world {op: woke,
   id: gulliver}`, kept in the day (`WorldDay.woke`): up on both phones, and for a phone opening later.
@@ -638,11 +613,11 @@ up a phone that missed it.
 - **Record → room:** after a write that added `metrics` or `events` rows (an `ingest` with a changed value, a new
   event; never a duplicate, a refusal or a read), the record calls the room (an RPC between the two objects, after its
   commit) with `{what: 'ingest'|'event', who, at, rev}` (`at` = the newest row's, `rev` the record's). `POST /notify`
-  (signed, below) still takes the same notice from a server.
+  (signed, below) takes the same notice from a server (`npm run smoke` uses it; nothing else sends one).
 - **Auth:** the notify secret is HMAC-SHA256(key `"<KEY_A>:<KEY_B>"` trimmed and lower-cased,
   `island-relay-notify/1`), derived by both servers from the person keys they already hold; a phone holds only its own
-  key, so it can't sign. Nothing to provision; rotating a key rotates it (the relay's and Script Properties' keys must
-  match, runbook §4). The same secret signs `/admin` and the export. Each POST carries `X-Island-Time` (ms) and `X-Island-Sig` = HMAC-SHA256(key secret,
+  key, so it can't sign. Nothing to provision; rotating a key rotates it (and the admin tools' keys file with it,
+  runbook §4). The same secret signs `/admin`. Each POST carries `X-Island-Time` (ms) and `X-Island-Sig` = HMAC-SHA256(key secret,
   `"<time>.<body>"`), hex; the relay refuses a signature more than 5 minutes off (401), a body over 256 bytes (413) or
   a bad notice (400), and answers 204 with `X-Island-Heard: <sockets>` (`relay/src/notify.ts`). The secret never
   travels and no key is in a URL or a log.
@@ -658,7 +633,7 @@ up a phone that missed it.
 - **Cost** (Free plan, measured by `npm run smoke`): one notify = 1 Worker request + 1 DO request; a nudge = 1/20 of a
   DO request. Budget for two phones: [Request budget](#request-budget).
 - **Measured** (from a Mac in Tokyo, test relay): notify POST → `changed` on both phones median 53–70 ms (max 92);
-  the nudge one way median 19 ms. Apps Script's own `health` (no sheet) takes ~1 s, the relay's ~20–50 ms.
+  the nudge one way median 19 ms; the relay's `health` ~20–50 ms.
 
 ### Request budget
 
@@ -681,14 +656,13 @@ writes/day (unused). A generous day for two phones:
 
 Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
 smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a
-tenth of it even with the island's presence ten times busier (the sheet's export, until 2026-11-05, read ~75,000 rows a
-day: a dump each time). Storage: ~150 bytes a row, ~1 MB a year against 5 GB, plus the
+tenth of it even with the island's presence ten times busier. Storage: ~150 bytes a row, ~1 MB a year against 5 GB, plus the
 meal log: ~300 bytes a row, ~11k rows a year for three people at ~10 meals a day (~3 MB a year in a full snapshot,
 0.8 MB gzipped; on a phone ~4 MB a year of cache, written a segment at a time).
 
 ## Notifications
 
-None since 2026-11-02 ([decisions](decisions.md#no-notifications-2026-11-02)). What is left of them: on open the app
+None ([decisions](decisions.md#no-notifications-2026-11-02)). What is left of them: on open the app
 unsubscribes any Web Push subscription its service worker holds and forgets `island.push` and `island.goalSent`
 (`app/src/lib/sync/pushGone.ts`, its test; `e2e/no-notify.spec.ts`), and the relay answers an old build's
 `/push/subscribe`, `/push/unsubscribe` and `/push/goal` 410 Gone with CORS for the page (`relay/src/pushGone.ts`,
@@ -700,7 +674,7 @@ before (an app build's `/push/*` call would then 404, which it also ignores).
 `app/src/service-worker/` (pure rules in `caches.ts`).
 
 - **Install:** precaches built JS/CSS and static files except fonts, audio, the art manifest, the app icons, villager art
-  beyond the two defaults and the critters', finds' and presents' art (all cached on first use). Non-hashed files and the shell are fetched with `cache: 'reload'` (past Pages' 10-minute HTTP
+  beyond the two defaults and the critters', finds' and presents' art (all cached on first use). Non-hashed files and the shell are fetched with `cache: 'reload'` (past the HTTP
   cache).
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks
   from it) and the runtime caches; deletes the rest.
