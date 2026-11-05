@@ -165,6 +165,37 @@ describe('the island’s finds (the ずかん)', () => {
     world.reset();
   });
 
+  it('a race lost after its tally went (its minute up): the catch is given back by a `tally_back` of its day, never more than the day’s tally', async () => {
+    const { recordFind } = await import('./actions.ts');
+    const { world } = await import('./world.svelte.ts');
+    vi.advanceTimersByTime(120_000); // (the last test's held tally sent)
+    const day = '2026-11-18';
+    const rec = (counts: object) => ['2026-11-18T01:00:00.000Z', 'A', 'r0', 'tally', JSON.stringify({ date: day, counts })] as [string, 'A', string, string, string];
+    await model([rec({ 'fish:koi': 2 })]);
+    week.view = { people: { A: { villagerName: 'ウェイ' }, B: { villagerName: 'うめ' } }, guest: { villagerName: 'ゲスト' } } as unknown as WeekView;
+    let hear: ((m: object) => void) | null = null;
+    const st = { connected: true, me: 'A' as const, peer: true, here: ['B' as const] };
+    world.reset();
+    world.attach({ start() {}, stop() {}, send: () => true, on: (fn) => ((hear = fn as never), () => {}), onChange: () => () => {}, onStatus: (fn) => (fn(st), () => {}), status: () => st, serverNow: () => Date.now() }, 'A');
+    const backs = () => queued().filter((e) => e.type === 'tally_back').map((e) => e.data);
+    expect(world.share({ kind: 'catch', what: 'koi', id: 'fresh:7', how: 'net' }).fresh).toBe(true);
+    recordFind('fish', 'koi', 'catch:fresh:7');
+    // its minute is up: the tally goes (in flight), and comes back as the record's
+    vi.advanceTimersByTime(61_000);
+    await model([rec({ 'fish:koi': 3 })]);
+    // a second koi in a new minute, still held
+    expect(world.share({ kind: 'catch', what: 'koi', id: 'fresh:8', how: 'net' }).fresh).toBe(true);
+    recordFind('fish', 'koi', 'catch:fresh:8');
+    // the relay heard うめ's catch of the first koi first: its tally went, so it's given back
+    hear!({ v: 3, kind: 'catch', what: 'koi', id: 'fresh:7', how: 'rod', who: 'B', t: Date.now() - 50 });
+    expect(backs()).toEqual([{ date: day, counts: { 'fish:koi': 1 } }]);
+    // the second, still held: out of the held tally, no give-back
+    hear!({ v: 3, kind: 'catch', what: 'koi', id: 'fresh:8', how: 'rod', who: 'B', t: Date.now() - 40 });
+    expect(backs()).toHaveLength(1);
+    expect(queued().filter((e) => e.type === 'tally').at(-1)?.data).toEqual({ date: day, counts: { 'fish:koi': 3 } });
+    world.reset();
+  });
+
   it('a race lost on a claim this phone never counted (a reload since): nothing taken, no line', async () => {
     const { lostRace } = await import('./actions.ts');
     const { toasts } = await import('#lib/ui-state/toast.svelte.ts');

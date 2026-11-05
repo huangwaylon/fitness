@@ -131,7 +131,10 @@ export function setVillager(villager: string) {
 const TALLY_HOLD_MS = 60_000;
 /** The tally waiting to be sent (its counts as sent): a newer one replaces it within the same window. Still queued
  *  past its window (offline), it can still be taken back (`undo`), for a race lost late (`lostRace`). */
-let held: { date: LocalDate; until: number; counts: Record<string, number>; undo: () => boolean; hold?: (ms: number | null) => number } | null = null;
+let held: { date: LocalDate; until: number; counts: Record<string, number>; undo: () => boolean; hold?: (ms: number | null) => number; w: number } | null = null;
+/** The held tally's window (a new one each minute's first catch): a claim counted in the one still held is taken out
+ *  of it; one counted in a window sent since is given back (`tally_back`). */
+let windows = 0;
 
 /** One more of `key` (`kind:id`) in my tally of today (the model's day, so the demo's `?date=` too). `claim`: the
  *  shared world's claim it came with (`catch:<id>`, `pick:<id>`), so a race lost on it takes it back. */
@@ -145,30 +148,33 @@ function countOne(key: string, claim?: string): void {
   const same = held && held.date === date && held.until > now ? held : null;
   const holdMs = same ? same.until - now : TALLY_HOLD_MS;
   same?.undo();
+  const w = same ? same.w : ++windows;
   const r = week.send('tally', { date, counts }, { holdMs });
-  held = r.undo ? { date, until: now + holdMs, counts, undo: r.undo, hold: r.hold } : null;
+  held = r.undo ? { date, until: now + holdMs, counts, undo: r.undo, hold: r.hold, w } : null;
   if (claim) {
-    counted.set(claim, key);
+    counted.set(claim, { key, date, w });
     if (counted.size > COUNTED_MAX) counted.delete(counted.keys().next().value!);
   }
 }
 
-/** The claims of mine this session and the tally key each counted (a race lost on one takes that one back). */
-const counted = new Map<string, string>();
+/** The claims of mine this session: the tally key each counted, its day and its held window (a race lost on one takes
+ *  that one back). */
+const counted = new Map<string, { key: string; date: LocalDate; w: number }>();
 const COUNTED_MAX = 400;
 
 /**
  * The partner got there first (store/world.svelte.ts: the relay heard their claim before mine, `beat`): what my claim
- * put in my pocket comes out again, by the same `tally` event, and a gentle line says who has it. A day's counts only
- * grow on the record (contract/tally.ts mergeTally), so it's taken back from the tally still waiting to be sent (held
- * a minute, or queued while offline): true when it was. One the record already has can't be (false; the line still
- * shows unless `quiet`: the island's own news says so).
+ * put in my pocket comes out again, and a gentle line says who has it. A day's counts only grow on the record
+ * (contract/tally.ts mergeTally), so a catch counted in the tally still waiting to be sent (held a minute, or queued
+ * while offline) is taken out of it; one whose tally went is given back by a `tally_back` of its day (2026-11-05:
+ * the record keeps it while that day's tally covers it). True when it was taken back (the line shows either way,
+ * unless `quiet`: the island's own news says so).
  */
 export function lostRace(claim: string, who: Who, quiet = false): boolean {
-  const key = counted.get(claim);
+  const c = counted.get(claim);
   counted.delete(claim);
-  if (key === undefined) return false;
-  const took = uncount(key);
+  if (c === undefined) return false;
+  const took = (c.w === held?.w && uncount(c.key)) || giveBack(c.date, c.key);
   if (!quiet) {
     const v = week.view;
     const name = !v ? '' : who === 'G' ? v.guest.villagerName : v.people[who].villagerName;
@@ -190,8 +196,19 @@ function uncount(key: string): boolean {
   if (!Object.keys(counts).length) return true;
   const holdMs = Math.max(0, h.until - Date.now());
   const r = week.send('tally', { date: h.date, counts }, { holdMs });
-  held = r.undo ? { date: h.date, until: h.until, counts, undo: r.undo, hold: r.hold } : null;
+  held = r.undo ? { date: h.date, until: h.until, counts, undo: r.undo, hold: r.hold, w: h.w } : null;
   return true;
+}
+
+/** One `key` of `date`'s tally given back (a `tally_back`, contract/tally.ts): the day's given-back counts with one
+ *  more, never past what the day's tally holds (the record's check, backCovered). False when there's nothing to give. */
+function giveBack(date: LocalDate, key: string): boolean {
+  const m = week.model;
+  if (!m) return false;
+  const days = dayTallies(m.state.tallies).filter((r) => r.person === m.me && r.date === date);
+  const tally = days.find((r) => !r.back)?.counts ?? {}, back = days.find((r) => r.back)?.counts ?? {};
+  if ((back[key] ?? 0) + 1 > (tally[key] ?? 0)) return false;
+  return week.send('tally_back', { date, counts: addToTally(back, key) }).ok;
 }
 
 /** Send the held tally now (the shop: the record sells only what it holds of my catches). */
