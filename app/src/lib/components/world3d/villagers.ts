@@ -27,7 +27,7 @@ import type { Motion } from '../motion/reactions.ts';
 import { site } from '../island/site.svelte.ts';
 import { seatAnchor, seatNamed } from '../island/sitting.ts';
 import { ASSET_MODELS } from './assets.ts';
-import { barAt, barK, GRAB_MS } from './benchBar.ts';
+import { barAt, barK, GRAB_MS, HELD, HELD_SCALE, heldIn } from './benchBar.ts';
 
 export interface VSpec {
   /** The slot (an actor: mine, partner, third, visitor) and the roster id it draws. */
@@ -140,12 +140,17 @@ function faceOf(emote: string | null, stung: boolean): Face | null {
 const FADE_MS = 220;
 /** The weight bench's bar (its model's part: benchBar.ts), lifted off the rack by whoever presses on it. */
 const BAR = ASSET_MODELS['decor/weight-bench']?.part ?? null;
+/** The gym's barbell pressed in its place (benchBar.ts HELD): its own space into the bar's frame, once. */
+const HELD_AT = (() => {
+  const m = ASSET_MODELS[HELD];
+  return BAR && m ? { model: HELD, inPart: heldIn(new Matrix4(), BAR.axis, m.min, m.max, HELD_SCALE) } : undefined;
+})();
 /** Lying down onto the bench before the hands go for the bar (villager3d.ts SIT_MS). */
 const LIE_MS = 420;
 
 /** What the villagers move of the things' (world3d/things.ts): a piece's part taken off it, and where it rests. */
 export interface Parts {
-  lift(id: string, part: string, m: Matrix4 | null): void;
+  lift(id: string, part: string, m: Matrix4 | null, held?: { model: string; inPart: Matrix4 }): void;
   rest(id: string, part: string, out: Matrix4): Matrix4 | null;
 }
 
@@ -218,9 +223,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       rack(w);
       return false;
     }
-    if (k <= 0) return true;
-    if (!parts.rest(b.piece, BAR.name, restM) || !v.hands(handL, handR)) return false;
-    parts.lift(b.piece, BAR.name, barAt(barM, restM, BAR.axis, handL, handR, k));
+    // (lying down, the barbell's on the rack in the small bar's place: then off it for the hands)
+    if (!parts.rest(b.piece, BAR.name, restM) || (k > 0 && !v.hands(handL, handR))) return false;
+    parts.lift(b.piece, BAR.name, barAt(barM, restM, BAR.axis, handL, handR, k), HELD_AT);
     return k < 1;
   }
   let lastT = 0, liftL = 0.32, disposed = false;
@@ -471,12 +476,12 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     player: (slot: string) => !!ws.get(slot)?.v && 'dress' in ws.get(slot)!.v!,
     tool: (slot: string) => (ws.get(slot)?.tool?.obj ? ws.get(slot)!.tool!.key : null),
     tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null,
-    /** The weight bench's bar with it (benchBar.ts): the bench, how far off the rack (0 … 1), and its hands' middle
-     *  now (three's space), or null. */
+    /** The weight bench's bar with it (benchBar.ts): the bench, how far off the rack (0 … 1), and its hands now and
+     *  their middle (three's space), or null. */
     bar: (slot: string) => {
       const w = ws.get(slot), v = w?.v;
       if (!w?.bar || !v || !v.hands(handL, handR)) return null;
-      return { piece: w.bar.piece, k: barK(lastT, w.bar.t0, w.bar.off, w.bar.kOff), hands: handL.add(handR).multiplyScalar(0.5).toArray() };
+      return { piece: w.bar.piece, k: barK(lastT, w.bar.t0, w.bar.off, w.bar.kOff), l: handL.toArray(), r: handR.toArray(), hands: handL.add(handR).multiplyScalar(0.5).toArray() };
     },
     /** The materials on it drawn unbent (engine.ts bend: off the island it stands on), what it took up since included. */
     unbent: (slot: string) => {
