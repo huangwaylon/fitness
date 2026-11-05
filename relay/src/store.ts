@@ -33,7 +33,7 @@ import { errName } from './log.ts';
 import { scrubMsg } from '../../app/src/lib/contract/log.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { guestMayWrite, rowsFor } from '../../app/src/lib/contract/guest.ts';
-import { buyOf, sellOf, shopLedger, shopRefusal, type ShopRow } from '../../app/src/lib/contract/shop.ts';
+import { buyOf, reowe, sellOf, shopLedger, shopRefusal, shopStep, type Ledger, type ShopRow } from '../../app/src/lib/contract/shop.ts';
 import { backCovered, isTally, mergeTally } from '../../app/src/lib/contract/tally.ts';
 import type { PersonId, Who } from '../../app/src/lib/contract/api.ts';
 
@@ -673,7 +673,11 @@ export class StoreCore {
       const at = this.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
-      this.put(id, at, me, type, kept, eventSlot(type, me, subject, data, Date.parse(at)), null);
+      const slot = eventSlot(type, me, subject, data, Date.parse(at));
+      // the running shop ledger (shopNote): a tally's or a give-back's change is the kept row less the one it replaces
+      const was = (type === 'tally' || type === 'tally_back') && slot ? this.slotTally(slot) : null;
+      this.put(id, at, me, type, kept, slot, null);
+      if (type === 'tally' || type === 'tally_back' || type === 'sell' || type === 'buy') this.shopNote(me, type, kept, was);
       if (type === 'board' && data.rm === true) this.pruneBoard();
       return { ok: true, at };
     });
@@ -787,9 +791,84 @@ export class StoreCore {
     return h && isTally(h) ? h.counts : {};
   }
 
-  /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null. The fold reads
-   *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. */
+  /** Why a sell or a buy of `me`'s isn't covered by their rows (contract/shop.ts shopRefusal), or null: against the
+   *  running ledger (shopState: meta, one row), never their history (until 2026-11-05 every sale reread it: a year's
+   *  20-sale batch read 153k rows). */
   private shopTarget(me: Who, type: 'sell' | 'buy', d: Rec): 'pocket' | 'wallet' | 'owned' | null {
+    const st = this.shopState(me);
+    const row: ShopRow = type === 'sell' ? { type, data: sellOf(d)! } : { type, data: buyOf(d)! };
+    return shopRefusal(st.l, st.caught, row);
+  }
+
+  /** A tally slot's counts as held (none: empty). */
+  private slotTally(slot: string): Record<string, number> {
+    const held = this.io.sql.exec<{ data: string }>('SELECT data FROM events WHERE slot = ?', slot).toArray()[0];
+    const h = held ? this.rowRec(held.data, 'tally') : null;
+    return h && isTally(h) ? h.counts : {};
+  }
+
+  /** `who`'s running shop ledger (meta `shop|<who>`), folded from their rows when it isn't there (the first sale
+   *  after a deploy, a load, a re-check). */
+  private shopState(who: Who): ShopState {
+    const raw = this.meta(`shop|${who}`);
+    if (raw) {
+      const st = shopStateOf(raw);
+      if (st) return st;
+    }
+    const st = this.shopFold(who);
+    this.setMeta(`shop|${who}`, shopStateJson(st));
+    return st;
+  }
+
+  /** A kept row into `who`'s running ledger, when it has one (else the next sale folds it from the rows, this one's
+   *  included): a tally's or a give-back's change (its kept counts less `was`, the row it replaced), a sell or a buy
+   *  by the fold's own step (contract/shop.ts shopStep), each touched species' debt again (reowe). */
+  private shopNote(who: Who, type: 'tally' | 'tally_back' | 'sell' | 'buy', kept: string, was: Record<string, number> | null): void {
+    const raw = this.meta(`shop|${who}`);
+    const st = raw ? shopStateOf(raw) : null;
+    if (!st) return;
+    const d = this.rowRec(kept, 'shop');
+    if (!d) return;
+    if (type === 'tally' || type === 'tally_back') {
+      if (!isTally(d)) return;
+      const sign = type === 'tally_back' ? -1 : 1;
+      for (const k in d.counts) {
+        const delta = d.counts[k] - (was?.[k] ?? 0);
+        if (!delta) continue;
+        st.caught.set(k, (st.caught.get(k) ?? 0) + sign * delta);
+        if (sign < 0) st.back.set(k, (st.back.get(k) ?? 0) + delta);
+        if (st.l.sold.has(k)) reowe(st.l, k, st.caught, st.back);
+      }
+    } else {
+      const s = type === 'sell' ? sellOf(d) : null, b = type === 'buy' ? buyOf(d) : null;
+      if (s) shopStep(st.l, st.caught, st.back, { type: 'sell', data: s });
+      else if (b) shopStep(st.l, st.caught, st.back, { type: 'buy', data: b });
+    }
+    this.setMeta(`shop|${who}`, shopStateJson(st));
+  }
+
+  /** The running ledgers let go (a load or an import brought rows past them): the next sale folds each again. */
+  private shopForget(): void {
+    this.io.sql.exec("DELETE FROM meta WHERE k IN ('shop|A', 'shop|B', 'shop|G')");
+  }
+
+  /** The admin's `shopcheck {fix?}`: each person's running ledger against the full fold of their rows; `fix`: the
+   *  fold's taken (the running one dropped and made again). */
+  shopCheck(o: Rec = {}): Record<string, unknown> {
+    const out: Record<string, unknown> = {};
+    for (const who of ['A', 'B', 'G'] as const) {
+      const raw = this.meta(`shop|${who}`);
+      const fold = shopStateJson(this.shopFold(who));
+      const same = raw === null ? null : raw === fold;
+      out[who] = same === null ? 'none' : same ? 'same' : 'differs';
+      if (o.fix === true && same === false) this.setMeta(`shop|${who}`, fold);
+    }
+    return { ok: true, ...out };
+  }
+
+  /** `who`'s shop folded from every row of theirs (the running ledger's start, and its admin re-check). The fold reads
+   *  their day tallies (one row a day: ≤ 366 a year) and their shop rows, in the object, never the Worker. */
+  private shopFold(me: Who): ShopState {
     const parse = (raw: string): Rec | null => this.rowRec(raw, 'shop');
     const caught = new Map<string, number>(), back = new Map<string, number>();
     // (less what was given back: a claim race lost; and that kept apart, for what a sold one owes)
@@ -809,8 +888,7 @@ export class StoreCore {
       if (s) rows.push({ type: 'sell', data: s });
       else if (b) rows.push({ type: 'buy', data: b });
     }
-    const row: ShopRow = type === 'sell' ? { type, data: sellOf(d)! } : { type, data: buyOf(d)! };
-    return shopRefusal(shopLedger(caught, rows, back), caught, row);
+    return { caught, back, l: shopLedger(caught, rows, back) };
   }
 
   /** Every decor row (its seq, sender and data). */
@@ -855,6 +933,8 @@ export class StoreCore {
         if (v === 'added') out[tab] = (out[tab] ?? 0) + 1;
         else if (v === 'skipped') out.skipped++;
       }
+      // (rows the running shop ledgers never saw: folded again at the next sale)
+      if (out.events) this.shopForget();
       return out;
     });
   }
@@ -1030,6 +1110,27 @@ export class StoreCore {
     const more = done < due.length;
     if (!more) this.setMeta('compact', JSON.stringify({ at: newest, now }));
     return { dates: done, deleted, more, metrics: this.counts().metrics };
+  }
+}
+
+/** A person's running shop ledger (store.ts shopState): their tallies' totals less the give-backs, the give-backs, and
+ *  the ledger of their shop rows (contract/shop.ts). */
+interface ShopState { caught: Map<string, number>; back: Map<string, number>; l: Ledger }
+
+/** A ledger as meta keeps it: each map as its entries without the zeros, sorted, so a running one and a fold compare
+ *  as text. */
+function shopStateJson(st: ShopState): string {
+  const m = (x: ReadonlyMap<string, number>) => [...x].filter(([, n]) => n !== 0).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+  return JSON.stringify({ c: m(st.caught), b: m(st.back), s: m(st.l.sold), v: m(st.l.soldV), o: m(st.l.owed), h: st.l.shells, w: st.l.owned });
+}
+
+function shopStateOf(raw: string): ShopState | null {
+  try {
+    const x = JSON.parse(raw) as { c: [string, number][]; b: [string, number][]; s: [string, number][]; v: [string, number][]; o: [string, number][]; h: number; w: string[] };
+    if (!Array.isArray(x.c) || !Array.isArray(x.w) || typeof x.h !== 'number') return null;
+    return { caught: new Map(x.c), back: new Map(x.b), l: { sold: new Map(x.s), soldV: new Map(x.v), owed: new Map(x.o), shells: x.h, owned: x.w } };
+  } catch {
+    return null;
   }
 }
 
