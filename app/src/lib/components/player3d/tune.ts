@@ -260,6 +260,9 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
 
   return {
     ownMaterials: true,
+    lumpLeft: true,
+    lumpScale: 0.5,
+    lumpAt: 0.19,
     rig: {
       alias: { Hand_L: 'Wrist_L', Hand_R: 'Wrist_R' },
       after

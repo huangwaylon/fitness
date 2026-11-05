@@ -34,6 +34,7 @@ window.run = async () => {
   out.face = shot(70, 160, -55, -0.3);
   out.faceB = shot(70, 160, 55, 0.3);
   out.backB = shot(70, 200, 55, Math.PI - 0.5);
+  out.side = shot(70, 180, -55, -1.0);
   a.set('sit'); b.set('sit'); step(3000);
   out.sit = shot(40, 420);
   a.set('walk'); b.set('walk');
@@ -47,6 +48,7 @@ window.run = async () => {
   a.face(null); b.face(null);
   a.act('wave'); b.act('sting'); step(9200); step(9900);
   out.acts = shot(45, 420);
+  out.sting = shot(70, 170, 55, 0.2);
   step(13000);
   // a swap: B into A's top and hair, a red-haired A
   await b.dress({ ...DEFAULT_LOOKS.B, top: 'TopsTexTopTshirtsHPocketshirts3', bottom: 'BottomsTexPantsNormalDenim0', hair: 'PlayerHair05', ornament: null, eye: 'PlayerEye00' });

@@ -34,7 +34,7 @@ export interface Player3D extends Villager3D {
 }
 
 /** Where what's modelled on the head is modelled from, in the head joint's frame (the body's axes), model units. */
-const ANCHOR = { head: [0, 0, 0], hat: [0, 3.567, -0.281], face: [0, 1.85, 3.32], crown: [0, 6.3, -0.3] } as const;
+const ANCHOR = { head: [0, 0, 0], hat: [0, 3.567, -0.281], face: [0, 1.85, 3.05], crown: [0, 6.3, -0.3] } as const;
 type AnchorKind = keyof typeof ANCHOR | 'ornament';
 type V3 = readonly [number, number, number];
 /** Where a hair ornament sits on a hairstyle (head frame; `turn` radians; `scale`): NH places them per hairstyle and
