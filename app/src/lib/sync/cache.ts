@@ -3,13 +3,13 @@
 // another epoch: the record rebuilt, docs/backend.md#revision) drops it and fetches everything. When IndexedDB is unavailable the cache lives in memory for the
 // session (reported).
 import type { Who } from '#lib/types.ts';
-import { DATE_RE, type EventRow, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
+import { DATE_RE, isWho, type EventRow, type SnapshotReply, type SnapshotRows } from '#lib/contract/api.ts';
 import { emptyRows, maxAt, mergeRows } from '#lib/model/snapshot.ts';
 import { compactRows } from '#lib/model/compact.ts';
 import { finalMs, lastLockAt } from '#lib/model/state.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
 import { getKey, getStoredMe, reportStorageProblem, storeMe } from './storage.ts';
-import { post, type GasResult } from './transport.ts';
+import { post, type ApiResult } from './transport.ts';
 
 export interface SnapshotCache {
   v: 1;
@@ -42,13 +42,10 @@ const STORE = 'cache';
  * rows in order, SEG_ROWS a record (`seg:<tab>:<unique>`, listed in the meta). Rows only grow at the end between
  * compactions, so a save rewrites only the segments from the first one that changed: the last, partly filled one on
  * a usual poll (≤ ~300 KB, where one record of every row was 4–13 MB at years 1–3 with the meal log). The meta and the
- * segments it lists are written in one transaction, so a reader sees one consistent set. Older layouts are read
- * once and moved on the next save, in the same transaction that deletes them: `rows` (meta v 2, every row in one
- * record) and `snapshot` (v 1, the rows inside).
+ * segments it lists are written in one transaction, so a reader sees one consistent set. Anything else in the store
+ * (an older layout: it's a cache) reads as no cache, and the next save clears it.
  */
 const META = 'meta';
-const ROWS = 'rows';
-const LEGACY = 'snapshot';
 const SEG = 'seg:';
 /** A new segment's key is never one in use, by this page or another (another tab of the app: its meta then lists
  *  segments this one may have deleted, read as no cache: fetched again, never as other rows). */
@@ -63,7 +60,6 @@ const TABS: readonly Tab[] = ['metrics', 'events'];
 type Segments = { key: string; rows: readonly unknown[] }[];
 /** The `meta` record: the cache without its rows, and the segments that hold them. */
 type Meta = Omit<SnapshotCache, 'v' | 'rows'> & { v: 3; segs: Record<Tab, string[]> };
-type MetaV2 = Omit<Meta, 'v' | 'segs'> & { v: 2 };
 
 let idb: IDBFactory | null = typeof indexedDB !== 'undefined' ? indexedDB : null;
 let db: Promise<IDBDatabase | null> | null = null;
@@ -133,18 +129,9 @@ async function tx<T>(mode: IDBTransactionMode, run: (s: IDBObjectStore) => T): P
   return out;
 }
 
-const validRows = (r: unknown): r is SnapshotRows => {
-  const x = r as SnapshotRows | null;
-  return !!x && Array.isArray(x.events) && Array.isArray(x.metrics);
-};
-const validLegacy = (c: unknown): c is SnapshotCache => {
-  const x = c as SnapshotCache | null;
-  return !!x && x.v === 1 && validRows(x.rows);
-};
-const validMeta = (m: unknown): m is Meta | MetaV2 => {
-  const x = m as Meta | MetaV2 | null;
-  if (!x || (x.me !== 'A' && x.me !== 'B')) return false;
-  return x.v === 2 || (x.v === 3 && TABS.every((t) => Array.isArray(x.segs?.[t])));
+const validMeta = (m: unknown): m is Meta => {
+  const x = m as Meta | null;
+  return !!x && isWho(x.me) && x.v === 3 && TABS.every((t) => Array.isArray(x.segs?.[t]));
 };
 
 /** The rows the meta's segments hold, and the segments (null: one is missing: the set isn't whole, start over). */
@@ -162,7 +149,7 @@ function fromSegments(meta: Meta, keys: IDBValidKey[], values: unknown[]): { row
   return { rows, segs };
 }
 
-/** The cached snapshot (from IndexedDB once per session): the `meta` and its segments, else an older layout. */
+/** The cached snapshot (from IndexedDB once per session): the `meta` and its segments. */
 export function loadCache(): Promise<SnapshotCache | null> {
   if (mem !== undefined) return Promise.resolve(mem);
   loading ??= (async () => {
@@ -170,13 +157,13 @@ export function loadCache(): Promise<SnapshotCache | null> {
     let onDisk: Record<Tab, Segments> | null = null;
     let stray: string[] = [];
     try {
-      const [meta, rows, legacy, keys, values] = await tx('readonly', (s) => {
-        // The store holds the cache's records only: every one at once (the segments, or an older layout).
-        const all = Promise.all([req(s.get(META)), req(s.get(ROWS)), req(s.get(LEGACY)), req(s.getAllKeys()), req(s.getAll())]);
+      const [meta, keys, values] = await tx('readonly', (s) => {
+        // The store holds the cache's records only: every one at once (the meta and its segments).
+        const all = Promise.all([req(s.get(META)), req(s.getAllKeys()), req(s.getAll())]);
         all.catch(() => {}); // a failed read fails the transaction, which is what's awaited
         return all;
       });
-      if (validMeta(meta) && meta.v === 3) {
+      if (validMeta(meta)) {
         const got = fromSegments(meta, keys, values);
         if (got) {
           const { v: _v, segs: _s, ...rest } = meta;
@@ -185,10 +172,7 @@ export function loadCache(): Promise<SnapshotCache | null> {
           const listed = new Set([...meta.segs.metrics, ...meta.segs.events]);
           stray = keys.map(String).filter((k) => k.startsWith(SEG) && !listed.has(k));
         }
-      } else if (validMeta(meta) && meta.v === 2 && validRows(rows)) {
-        const { v: _v, ...rest } = meta;
-        c = { ...rest, v: 1, rows }; // the next save moves it to segments
-      } else if (validLegacy(legacy)) c = legacy; // the next save moves it to segments
+      }
     } catch {
       // No IndexedDB (or it failed): start empty, kept in memory.
     }
@@ -324,9 +308,9 @@ export function applySnapshot(prev: SnapshotCache | null, reply: Reply, clientNo
   };
 }
 
-let fetching: Promise<GasResult<{ cache: SnapshotCache }>> | null = null;
+let fetching: Promise<ApiResult<{ cache: SnapshotCache }>> | null = null;
 /** The one follow-up fetch `fresh` callers wait for while a request is in flight. */
-let again: Promise<GasResult<{ cache: SnapshotCache }>> | null = null;
+let again: Promise<ApiResult<{ cache: SnapshotCache }>> | null = null;
 
 /**
  * Fetch rows since the last seen `at` (everything on first run, or when `rev` changed: a new epoch), merge and persist. Overlapping
@@ -334,7 +318,7 @@ let again: Promise<GasResult<{ cache: SnapshotCache }>> | null = null;
  * needs rows written before now (the re-read after an ack), so a request already in flight (it may have been answered
  * before the write) is followed by one more, shared by every such caller.
  */
-export function refreshSnapshot(clientNow: () => number = Date.now, fresh = false): Promise<GasResult<{ cache: SnapshotCache }>> {
+export function refreshSnapshot(clientNow: () => number = Date.now, fresh = false): Promise<ApiResult<{ cache: SnapshotCache }>> {
   if (fetching && fresh) {
     return (again ??= fetching.then(() => {
       again = null;
@@ -351,7 +335,7 @@ export function refreshSnapshot(clientNow: () => number = Date.now, fresh = fals
   return p;
 }
 
-async function fetchSnapshot(clientNow: () => number): Promise<GasResult<{ cache: SnapshotCache }>> {
+async function fetchSnapshot(clientNow: () => number): Promise<ApiResult<{ cache: SnapshotCache }>> {
   try {
     return await fetchAndMerge(clientNow);
   } catch (e) {
@@ -361,7 +345,7 @@ async function fetchSnapshot(clientNow: () => number): Promise<GasResult<{ cache
   }
 }
 
-async function fetchAndMerge(clientNow: () => number): Promise<GasResult<{ cache: SnapshotCache }>> {
+async function fetchAndMerge(clientNow: () => number): Promise<ApiResult<{ cache: SnapshotCache }>> {
   const key = getKey();
   const prev = await loadCache();
   const me = getStoredMe();

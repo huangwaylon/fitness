@@ -7,8 +7,8 @@ import { getKey } from './storage.ts';
 import { LIVE_URL } from './live.ts';
 import { API_OK_SAMPLE, log, logId, sessionId } from './log.ts';
 
-export type GasError = 'offline' | 'unauthorized' | 'forbidden' | 'busy' | 'unavailable' | 'bad_request' | 'too_large';
-export type GasResult<T> = ({ ok: true } & T) | { ok: false; error: GasError; detail?: string };
+export type ApiError = 'offline' | 'unauthorized' | 'forbidden' | 'busy' | 'unavailable' | 'bad_request' | 'too_large';
+export type ApiResult<T> = ({ ok: true } & T) | { ok: false; error: ApiError; detail?: string };
 
 const TIMEOUT_MS = 20_000;
 /** The relay's record: `VITE_RECORD_URL`, else the live relay's origin + `/api` (empty: none, the "not set up" screen). */
@@ -30,11 +30,11 @@ export function configureTransport(o: { fetch?: typeof fetch; url?: string }): v
   if (o.url !== undefined) url = o.url;
 }
 
-const KNOWN: GasError[] = ['unauthorized', 'forbidden', 'busy', 'unavailable', 'bad_request', 'too_large'];
+const KNOWN: ApiError[] = ['unauthorized', 'forbidden', 'busy', 'unavailable', 'bad_request', 'too_large'];
 
 /** POST `{key, action, ...body}` as text/plain (a simple request: no CORS preflight). Never throws. Each carries a request
  *  id (`rid`) and the app session's (`sid`): the relay's log joins its `req` to the phone's `api.*` (sync/log.ts). */
-export async function post<T extends object = object>(action: string, body: Record<string, unknown> = {}, opts: { key?: string; timeoutMs?: number } = {}): Promise<GasResult<T>> {
+export async function post<T extends object = object>(action: string, body: Record<string, unknown> = {}, opts: { key?: string; timeoutMs?: number } = {}): Promise<ApiResult<T>> {
   const key = opts.key ?? getKey();
   if (!key) return { ok: false, error: 'unauthorized' };
   if (!url) return { ok: false, error: 'unavailable', detail: 'no record URL' };
@@ -51,7 +51,7 @@ export async function post<T extends object = object>(action: string, body: Reco
   return r;
 }
 
-async function send<T extends object>(action: string, key: string, rid: string, body: Record<string, unknown>, timeoutMs?: number): Promise<GasResult<T>> {
+async function send<T extends object>(action: string, key: string, rid: string, body: Record<string, unknown>, timeoutMs?: number): Promise<ApiResult<T>> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs ?? TIMEOUT_MS);
   let res: Response;
@@ -76,8 +76,8 @@ async function send<T extends object>(action: string, key: string, rid: string, 
       return { ok: false, error: 'unavailable', detail: 'not JSON' }; // an error page on the way
     }
     const r = json as { ok?: unknown; error?: unknown; detail?: unknown };
-    if (r && r.ok === true) return json as GasResult<T>;
-    const error = KNOWN.includes(r?.error as GasError) ? (r.error as GasError) : 'unavailable';
+    if (r && r.ok === true) return json as ApiResult<T>;
+    const error = KNOWN.includes(r?.error as ApiError) ? (r.error as ApiError) : 'unavailable';
     return { ok: false, error, ...(typeof r?.detail === 'string' ? { detail: r.detail } : {}) };
   } catch {
     return { ok: false, error: ctrl.signal.aborted ? 'unavailable' : 'offline' };
@@ -86,6 +86,6 @@ async function send<T extends object>(action: string, key: string, rid: string, 
   }
 }
 
-export function whoami(key: string): Promise<GasResult<{ me: Who }>> {
+export function whoami(key: string): Promise<ApiResult<{ me: Who }>> {
   return post<Extract<WhoamiReply, { ok: true }>>('whoami', {}, { key });
 }

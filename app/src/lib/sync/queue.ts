@@ -3,7 +3,7 @@
 import type { EventType } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
-import { post, type GasError } from './transport.ts';
+import { post, type ApiError } from './transport.ts';
 import { count, log } from './log.ts';
 
 export interface QueuedEvent {
@@ -123,12 +123,12 @@ export function backoffMs(tries: number, rand = Math.random): number {
  * `acked`: the events the server confirmed in this flush (not merely ones that left the queue, e.g. by undo);
  * `stored`: those the record wrote a row for just now, with its `at` (the row the next snapshot would bring).
  */
-interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: QueuedEvent[]; remaining: number; error?: GasError }
+interface FlushResult { sent: number; acked: QueuedEvent[]; stored: { ev: QueuedEvent; at: string }[]; dropped: QueuedEvent[]; remaining: number; error?: ApiError }
 
 /** At most this many events in one request to the record (its EVENTS_MAX). */
 const BATCH_MAX = 50;
 /** One event's answer in an `events` reply. */
-type EventResult = { id: string | null; ok: true; duplicate?: true; at?: string } | { id: string | null; ok: false; error: GasError; detail?: string };
+type EventResult = { id: string | null; ok: true; duplicate?: true; at?: string } | { id: string | null; ok: false; error: ApiError; detail?: string };
 
 let flushing: Promise<FlushResult> | null = null;
 /** The events currently in flight (they can't be undone any more). */
@@ -190,12 +190,12 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       keepAcked([...ackedEvents().filter((x) => x.id !== ev.id), { ...ev, ackedAt: now() }]);
       saveQueue(queued().filter((x) => x.id !== ev.id));
     };
-    const drop = (ev: QueuedEvent, error: GasError) => {
+    const drop = (ev: QueuedEvent, error: ApiError) => {
       log('queue.drop', { type: ev.type, err: error, tries: ev.tries + 1 }, 3);
       out.dropped.push(ev);
       saveQueue(queued().filter((x) => x.id !== ev.id));
     };
-    const backOff = (ev: QueuedEvent, error: GasError) => {
+    const backOff = (ev: QueuedEvent, error: ApiError) => {
       out.error = error;
       if (error === 'unauthorized') return;
       const tries = ev.tries + 1;
