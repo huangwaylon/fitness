@@ -6,7 +6,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env.E2E_PORT ?? 4173);
-const BASE = process.env.BASE_PATH ?? '/fitness';
+const BASE = process.env.BASE_PATH ?? '';
 // Each test's phone starts with these in localStorage:
 // E2E_RENDER=none: the logic mode, the 3D engines run every frame but draw nothing (src/lib/ui-state/testMode.ts,
 // docs/ops/test-strategy.md): CI's software GL then costs nothing;

@@ -1,5 +1,4 @@
-// Writes build-pages/_headers, the response headers Cloudflare Pages serves the site with (docs/ops/runbook.md §1;
-// GitHub Pages ignores the file). `npm run build` runs it after `vite build`.
+// Writes build-pages/_headers, the response headers Cloudflare Pages serves the site with (docs/ops/runbook.md §1). `npm run build` runs it after `vite build`.
 // - The Content-Security-Policy is the one SvelteKit wrote into index.html's <meta> (vite.config.ts `csp`: the relay's
 //   origins, data:/blob: images and media, the hash of its inline bootstrap script, inline styles), plus what a <meta>
 //   can't carry: frame-ancestors 'none'. The <meta> stays (the same policy; both apply).
@@ -8,7 +7,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = join(import.meta.dirname, '..', 'build-pages');
-const base = (process.env.BASE_PATH ?? '/fitness').replace(/\/$/, '');
+const base = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
 const html = readFileSync(join(root, 'index.html'), 'utf8');
 const csp = /<meta http-equiv="content-security-policy" content="([^"]+)"/.exec(html)?.[1];
 if (!csp) throw new Error('headers: no content-security-policy <meta> in build-pages/index.html');

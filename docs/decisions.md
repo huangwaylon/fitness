@@ -351,9 +351,10 @@ direct upload from CI after the gate), installed to the home screen, with a stri
 `build-pages/_headers`) allowing only our origin and the relay's, and nosniff, no-referrer, a Permissions-Policy, no
 framing, HSTS. Without a key the site shows only pairing or `?demo`. Why: the pairing key is in localStorage, and on
 https://huangwaylon.github.io/fitness the origin was shared with the account's other GitHub Pages sites (any of them
-could read it); GitHub Pages can't set headers; Cloudflare's free plan already hosts the relay. The move: both
-URLs serve the same build and the relay lets both origins in until each phone is paired on the new one (runbook §14);
-then GitHub Pages goes and the repo goes private.
+could read it); GitHub Pages can't set headers; Cloudflare's free plan already hosts the relay. The move
+(2026-11-05): both URLs served the same build and the relay let both origins in until each phone was paired on the new
+one (new keys, runbook §14); then the GitHub Pages site, its deploy and the github.io origin went. The repo stays
+public (the user's call; no key or data is in it).
 
 ### Offline shell
 The service worker precaches the build (not audio, fonts or art beyond the defaults), loads pages network-first with a
