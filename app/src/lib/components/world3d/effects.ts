@@ -244,7 +244,10 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
         warmScene.add(mesh);
       }
     }
-    renderer.compile(warmScene, camera);
+    // (with the island's lights, `scene`: a program's key has the lights and their shadows, so one compiled without them
+    // was another program, and each burst's, each leaf's own material compiled the real one afresh: 28 builds in 90 s
+    // idle on the iOS Simulator, a 28-31 ms frame each)
+    renderer.compile(warmScene, camera, scene);
     // (kept: disposing them would free the very programs just compiled, mid their parallel compile's status check)
     warmMats = mats;
     warmed = true;
