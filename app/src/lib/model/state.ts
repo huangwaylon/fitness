@@ -420,6 +420,9 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   tally(s, person, at, d) {
     if (isTally(d)) s.tallies.push({ at, person, date: d.date, counts: d.counts });
   },
+  tally_back(s, person, at, d) {
+    if (isTally(d)) s.tallies.push({ at, person, date: d.date, counts: d.counts, back: true });
+  },
   island: members((s, person, at, d) => {
     if (isIslandDay(d)) s.islandDays.push({ at, person, data: d });
   }),

@@ -35,7 +35,7 @@ function latestTallies(events: EventRow[]): EventRow[] {
   const latest = new Map<string, { at: number; i: number }>();
   const tallies: number[] = [];
   events.forEach((row, i) => {
-    if (row[3] !== 'tally' && row[3] !== 'island') return;
+    if (row[3] !== 'tally' && row[3] !== 'tally_back' && row[3] !== 'island') return;
     const at = rowAt(row);
     let date: unknown;
     try { date = (JSON.parse(String(row[4])) as { date?: unknown }).date; } catch { return; }

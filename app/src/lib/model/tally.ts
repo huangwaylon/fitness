@@ -16,6 +16,8 @@ export interface TallyRow {
   person: Who;
   date: LocalDate;
   counts: Tally;
+  /** A `tally_back` row: these counts given back (subtracted), contract/tally.ts. */
+  back?: true;
 }
 
 export interface Totals {
@@ -25,11 +27,12 @@ export interface Totals {
   by: Readonly<Record<Who, ReadonlyMap<string, number>>>;
 }
 
-/** Each person's day as one row: its latest `at`, each entry's largest count of the day's rows (mergeTally). */
+/** Each person's day as one row: its latest `at`, each entry's largest count of the day's rows (mergeTally); the
+ *  day's `tally_back` rows the same, as a row of their own (`back`). */
 export function dayTallies(rows: readonly TallyRow[]): TallyRow[] {
   const days = new Map<string, TallyRow>();
   for (const r of rows) {
-    const k = `${r.person}|${r.date}`;
+    const k = `${r.person}|${r.date}${r.back ? '|back' : ''}`;
     const prev = days.get(k);
     days.set(k, prev ? { ...r, at: Math.max(prev.at, r.at), counts: mergeTally(prev.counts, r.counts) } : r);
   }
@@ -46,10 +49,14 @@ export function tallyTotals(rows: readonly TallyRow[]): Totals {
   const by: Record<Who, Map<string, number>> = { A: new Map(), B: new Map(), G: new Map() };
   for (const r of dayTallies(rows)) {
     const mine = by[r.person];
-    for (const k in r.counts) {
-      const n = r.counts[k];
-      all.set(k, (all.get(k) ?? 0) + n);
-      mine.set(k, (mine.get(k) ?? 0) + n);
+    // (what was given back counts against the day's tally: a race lost)
+    for (const k in r.counts) mine.set(k, (mine.get(k) ?? 0) + (r.back ? -r.counts[k] : r.counts[k]));
+  }
+  // each person's at least none (a given-back row cached without its day's tally), then everyone's
+  for (const mine of Object.values(by)) {
+    for (const [k, n] of mine) {
+      if (n <= 0) mine.delete(k);
+      else all.set(k, (all.get(k) ?? 0) + n);
     }
   }
   const out: Totals = { all, by };

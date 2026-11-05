@@ -136,7 +136,7 @@ function countOne(key: string, claim?: string): void {
   const m = week.model;
   if (!m) return;
   const date = localDateAt(m.now);
-  const mine = dayTallies(m.state.tallies).find((r) => r.person === m.me && r.date === date);
+  const mine = dayTallies(m.state.tallies).find((r) => r.person === m.me && r.date === date && !r.back);
   const counts = addToTally(mine?.counts ?? {}, key);
   const now = Date.now();
   const same = held && held.date === date && held.until > now ? held : null;

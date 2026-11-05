@@ -90,3 +90,22 @@ describe('the pocket and かいがら', () => {
     expect(weekBells(s, '2026-11-02', Date.parse(at('23:00')))).toEqual(weekBells(none, '2026-11-02', Date.parse(at('23:00'))));
   });
 });
+
+describe('a catch given back (tally_back: a claim race lost after its tally came in)', () => {
+  it('leaves the pocket and the ずかん’s count; a lower one later takes nothing more; one without its tally counts for nothing', async () => {
+    const { tallyTotals } = await import('./tally.ts');
+    const s = reduce({
+      metrics: [],
+      events: [
+        ev(at('09:00'), 'A', 'tally', { date: D, counts: { 'fish:koi': 3, 'bug:tarantula': 1 } }),
+        ev(at('09:01'), 'A', 'tally_back', { date: D, counts: { 'fish:koi': 2 } }),
+        ev(at('09:02'), 'A', 'tally_back', { date: D, counts: { 'fish:koi': 1 } }), // a stale lower send: the day keeps 2
+        ev(at('09:03'), 'B', 'tally_back', { date: D, counts: { 'bug:tarantula': 1 } }) // B has no tally that day
+      ]
+    }, null);
+    expect([...shopView(s, 'A').pocket]).toEqual([['fish:koi', 1], ['bug:tarantula', 1]]);
+    expect([...shopView(s, 'B').pocket]).toEqual([]);
+    const t = tallyTotals(s.tallies);
+    expect([t.all.get('fish:koi'), t.by.A.get('fish:koi'), t.all.get('bug:tarantula'), t.by.B.has('bug:tarantula')]).toEqual([1, 1, 1, false]);
+  });
+});
