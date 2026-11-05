@@ -61,8 +61,11 @@ test('the bite’s 「！」 is over my villager’s head at every zoom, panned,
   await page.waitForTimeout(800);
   for (const k of [1, 3.2]) {
     const m = await at(page, k, `seated-${k}`);
-    // (NH's short legs: on the bench its head is about as high as standing, a little higher)
-    expect(Math.abs(m.at[1] - (await ground(page, m)) - standUp), 'its head’s height seated').toBeLessThan(12);
+    // (on the bench its head is about as high as standing: a villager's short legs a little higher, a human player's
+    // longer ones lower, ~15 % of its standing height; never up at a standing head's height over a seated one)
+    const dy = m.at[1] - (await ground(page, m)) - standUp;
+    expect(dy, 'its head’s height seated').toBeLessThan(12);
+    expect(dy, 'its head’s height seated').toBeGreaterThan(-0.25 * standUp);
   }
   // let go: it pops out
   await w3(page, (w) => w.pinBite(null));
