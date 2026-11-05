@@ -56,6 +56,10 @@ class SharedWorld {
     const r = this.#relay;
     return now().getTime() + (r ? r.serverNow() - Date.now() : 0);
   }
+  /** The Tokyo date (YYYY-MM-DD) on the island's clock (`by` ms on): the relay's, as its day is, never the device's. */
+  #date(by = 0): string {
+    return dayKey(new Date(this.now() + by));
+  }
   /** The relay's own clock (a walk's `s`: never a `?date=` preview's). */
   serverNow(): number {
     return this.#relay?.serverNow() ?? Date.now();
@@ -173,7 +177,7 @@ class SharedWorld {
   /** The sheet's island days (model/state.ts islandDays, each person's latest by day): today's folded in (what the
    *  relay didn't bring: both apps were closed, an outage), yesterday's watering and wishes kept for today. */
   rows(rows: readonly { at: number; person: Who; data: DayRow & { date: string } }[]): void {
-    const d = this.#today(), today = dayKey(now()), yesterday = dayKey(new Date(now().getTime() - 86_400_000));
+    const d = this.#today(), today = this.#date(), yesterday = this.#date(-86_400_000);
     const latest = new Map<string, (typeof rows)[number]>();
     for (const r of rows) {
       if (r.data.date !== today && r.data.date !== yesterday) continue;
@@ -222,7 +226,7 @@ class SharedWorld {
   /** A wish (mine or the partner's) noted for its morning; mornings gone by are dropped. */
   #noteWish(e: DayEvent): void {
     if (e.kind !== 'world' || e.op !== 'wished') return;
-    const today = dayKey(now());
+    const today = this.#date();
     const all = this.#wishes ?? readJson<Record<string, Partial<Record<Who, number>>>>(localKV(), this.#wishKey()) ?? {};
     const out: Record<string, Partial<Record<Who, number>>> = {};
     for (const [d, w] of Object.entries(all)) if (d >= today) out[d] = w;
@@ -328,7 +332,7 @@ class SharedWorld {
         // the sheet keeps my part of the day (when the relay has nothing: both apps closed past its day; a catch made
         // offline, which the partner mustn't catch again); a walk's row waits for the next change or the hold (where my
         // villager stands is the relay's to carry)
-        if (e.kind !== 'walk' && this.#me) this.#sink?.(dayKey(now()), rowOf(d, this.#me));
+        if (e.kind !== 'walk' && this.#me) this.#sink?.(this.#date(), rowOf(d, this.#me));
       }
     }
     return a;

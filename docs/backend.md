@@ -380,7 +380,11 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
 - **Client** (`app/src/lib/sync/live.ts`, `createLive({key})`): connects while the page is visible and online, closes
   on hide or offline (no socket, no timers), reconnects after a drop with backoff (1 s doubling to 60 s, ±25 %); after
   4001/4002/4004 it waits until the page is shown again. Clock: pings at welcome and +2 s; the offset is the shortest
-  round trip's of the last 8 (`serverNow()`). **Liveness** (2026-11-05): a socket that dies without closing (a
+  round trip's of the last 8 (`serverNow()`), kept across reloads (`island.liveOffset`, 2026-11-05: rewritten when it
+  moves 50 ms): what a phone stamps before its first welcome (a layout or a room op made offline or in the first second
+  after opening) is on the relay's clock too, so a device clock running fast can't win every last-writer conflict;
+  the shared world's Tokyo day (the record's day rows, the wishes' mornings, the row's date) is the island's clock's
+  (`world.now()`), never the device's. **Liveness** (2026-11-05): a socket that dies without closing (a
   half-open TCP after an iPhone's sleep, a tunnel) used to look connected for good: pinged once a minute, its pong never
   awaited. Now a socket quiet for 20 s (nothing heard: any message counts) is pinged, and nothing heard within 10 s of
   a ping gives it up (closed with the client's own 4000, logged as `ws.close`) and opens a new one at once, whose

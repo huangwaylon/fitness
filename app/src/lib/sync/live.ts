@@ -171,6 +171,15 @@ const RESEND_BURST = 12;
 const RESEND_GAP_MS = 60;
 const ACKS_KEPT = 20;
 
+/** The kept clock offset is rewritten only when it moved this much (ms); one further off than a day is no offset. */
+const OFFSET_KEEP_MS = 50;
+const OFFSET_MAX_MS = 86_400_000;
+/** The relay's clock offset as last measured on this phone (localStorage `island.liveOffset` = `{off}`), else 0. */
+function keptOffset(): number {
+  const o = readJson<{ off?: unknown }>(localKV(), LIVE.offset);
+  return o && typeof o.off === 'number' && Number.isFinite(o.off) && Math.abs(o.off) < OFFSET_MAX_MS ? o.off : 0;
+}
+
 /** Retry delay after `n` consecutive failures (n ≥ 0); `r` in [0, 1). */
 export function backoff(n: number, r = Math.random()): number {
   const d = Math.min(BACKOFF.max, BACKOFF.base * 2 ** n);
@@ -231,7 +240,16 @@ export function createLive(o: LiveOptions): Live {
   let pingEvery: ReturnType<typeof setTimeout> | null = null;
   const sent = new Set<number>(); // the c (Date.now() at sending) of each ping awaiting its pong
   let samples: { rtt: number; off: number }[] = [];
-  let offset = 0;
+  /** The relay's clock less the device's: the last one measured, kept across reloads, so what this phone stamps before
+   *  the first welcome (a layout or a room op made offline, or in the second after opening) is on the relay's clock
+   *  too: a device clock running fast can't win every conflict with it. */
+  let offset = keptOffset();
+  let savedOffset = offset;
+  const keepOffset = () => {
+    if (Math.abs(offset - savedOffset) < OFFSET_KEEP_MS) return;
+    savedOffset = offset;
+    writeJson(localKV(), LIVE.offset, { off: Math.round(offset) });
+  };
   /** The last shared-world change heard (the hello's `since`): read when the page loads, so a later open hears the day. */
   let lastWorld = since.get(Date.now());
   const subs = new Set<(m: Relayed) => void>();
@@ -433,6 +451,7 @@ export function createLive(o: LiveOptions): Live {
           log('ws.open', { ms: welcomedAt - madeAt, retries: fails });
           fails = 0;
           offset = m.t - Date.now(); // a first guess until the pings refine it
+          keepOffset();
           samples = [];
           setStatus({ connected: true, me: m.me, peer: m.peer, here: m.here ?? (m.peer ? [partnerOf(m.me)] : []), rec: m.rec, gone: m.gone ?? {} });
           for (const at of PING_MS) pings.push(setTimeout(ping, at));
@@ -477,6 +496,7 @@ export function createLive(o: LiveOptions): Live {
           const rtt = Date.now() - m.c;
           samples = [...samples, { rtt, off: m.t - (m.c + rtt / 2) }].slice(-SAMPLES);
           offset = bestOffset(samples);
+          keepOffset();
           return;
         }
         case 'presence': {

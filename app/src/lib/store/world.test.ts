@@ -72,6 +72,20 @@ describe('the shared island on this phone', () => {
     expect(caught(world.day, 'fresh:8')).toMatchObject({ who: 'B', what: 'koi' });
   });
 
+  it('the Tokyo day of the sheet’s rows and the wishes is the relay’s, not a device clock running a day ahead', () => {
+    const r = fakeRelay();
+    // the device's clock a day fast: the relay's (its offset from the pings) a day behind it
+    r.live.serverNow = () => Date.now() - 86_400_000;
+    vi.setSystemTime(T0 + 86_400_000);
+    world.attach(r.live, 'A');
+    const rows: { date: string }[] = [];
+    world.sink = (date) => rows.push({ date });
+    world.rows([{ at: T0 - 5000, person: 'B', data: { date: '2026-11-01', taken: ['w7'], puts: [], shakes: [], watered: [], wishes: {} } }]);
+    expect(takenIds(world.day).has('w7')).toBe(true);
+    world.share({ kind: 'pick', id: 'w8', what: 'weed' });
+    expect(rows.at(-1)?.date).toBe('2026-11-01');
+  });
+
   it('hears the partner: played when it just happened, only folded when it\'s the day\'s replay; a repeat is nothing', () => {
     const r = fakeRelay();
     world.attach(r.live, 'A');
