@@ -26,7 +26,7 @@ import { createEffects, type FxKind, type FxOpts } from './effects.ts';
 import { createBiteMarks, type MarkState } from './biteMark.ts';
 import { createLights, lampFog, type LampSpot } from './lights.ts';
 import type { Inst } from './objects.ts';
-import { drawOff } from '../../ui-state/testMode.ts';
+import { drawOff, shaderChecks } from '../../ui-state/testMode.ts';
 import { releaseAll, resourcesOf } from './release.ts';
 import { frameRate } from '#lib/store/frameRate.svelte.ts';
 import { pacer } from './pace.ts';
@@ -263,6 +263,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   const noDraw = drawOff();
   if (noDraw) Object.assign(opts, { dpr: 1, shadows: false });
   const renderer = new WebGLRenderer({ canvas, antialias: init.aa ?? true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance', stencil: false });
+  // (no per-program link check on a live phone: testMode.ts shaderChecks)
+  renderer.debug.checkShaderErrors = shaderChecks();
   renderer.setPixelRatio(opts.dpr);
   renderer.setClearColor(0x000000, 0);
   renderer.outputColorSpace = SRGBColorSpace;

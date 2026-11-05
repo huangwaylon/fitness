@@ -20,3 +20,10 @@ export function drawOff(): boolean {
   const q = new URLSearchParams(location.search);
   return q.get('render') === 'none' && (import.meta.env.DEV || q.has('demo'));
 }
+
+/** Whether three checks each shader program as it links (renderer.debug.checkShaderErrors): a sync readback of the
+ *  link status and the info logs, per program, on the first frames. In development and the demo (the e2e's builds:
+ *  world3d.spec's render tier fails on a THREE error), never on a live phone. */
+export function shaderChecks(): boolean {
+  return import.meta.env.DEV || (typeof location !== 'undefined' && new URLSearchParams(location.search).has('demo'));
+}
