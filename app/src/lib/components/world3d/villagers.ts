@@ -64,6 +64,9 @@ export interface VSpec {
   tool?: string | null;
   /** In the way of the board's focus (between the camera and the board): faded out. */
   away?: boolean;
+  /** On screen or near it (Island3D's view test, with a margin for the log's bend): off it, it's hidden and not
+   *  posed (undefined: on). */
+  seen?: boolean;
 }
 
 /** A frame's outcome (one object, written over each frame): the slots drawn as cards, whether one moves (the full
@@ -367,7 +370,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         cards.add(s.slot);
         continue;
       }
-      v.group.visible = s.shown;
+      // (off screen: hidden, not drawn; still placed, its state and moments kept, posed again as it comes into view)
+      const inView = s.seen !== false;
+      v.group.visible = s.shown && inView;
       if (!s.shown) {
         rack(w);
         continue;
@@ -453,10 +458,11 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
       const hp = angling ? v.hand() : null, at = hp ? rodTarget(!aiming, w.yaw, hp, ang) : null;
       v.aim(at ? aimP.set(at.x, 0, at.z) : null);
       const busy = s.walking || t < w.busyUntil || Math.abs(dx) + Math.abs(dz) > 0.01 || turning;
-      if (busy) moving = true;
+      if (busy && inView) moving = true;
       // posed (its breathing, its moment, its walk) while anything moves; still, it holds its pose and only its face
       // changes (a blink: a texture's offset and one redraw), so the island idles as it did
-      if (active || busy || w.posing) {
+      if (!inView) w.posing = true;
+      else if (active || busy || w.posing) {
         // (posed till it settles: a state's crossfade, an action, and once more after it stops)
         const going = v.step(t, s.walking ? moved : 0, s.walking ? (moved / Math.max(1, dt)) * 1000 : 0);
         w.posing = active || busy || going;
