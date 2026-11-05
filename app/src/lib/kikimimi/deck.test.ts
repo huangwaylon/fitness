@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BANK, DIALOGUE_TYPES, clipIds, clipItems, isDialogue, type Level } from './bank.ts';
 import { DECK_SIZE, LEVELS as OFFERED, MIX, deck, inMix, mixes, playable } from './deck.ts';
-import { FIRST_LISTEN, RIGHT, points } from './score.ts';
+import { RIGHT, firstListen, points } from './score.ts';
 import { QUIZ_MAX_S, QUIZ_QS } from '../contract/live-protocol.ts';
 import { LINE_GAP, clipDur, clipUrl, itemDur, sequenceStarts, voiced } from './clips.ts';
 import { DIALOGUES } from './dialogues.ts';
@@ -144,13 +144,17 @@ describe('kikimimi levels offered (the lobby’s gate)', () => {
 });
 
 describe('kikimimi score', () => {
-  it('100 for right, +30 on the first listen, 0 for wrong', () => {
-    expect(points(true, false)).toBe(RIGHT + FIRST_LISTEN);
-    expect(points(true, true)).toBe(RIGHT);
-    expect(points(false, false)).toBe(0);
-    expect(points(false, true)).toBe(0);
+  it('100 for right, 0 for wrong; いっぱつ (the first listen) a badge, no points', () => {
+    expect(points(true)).toBe(RIGHT);
+    expect(points(false)).toBe(0);
+    expect(firstListen(true, false)).toBe(true);
+    expect(firstListen(true, true)).toBe(false);
+    expect(firstListen(false, false)).toBe(false);
+    expect(firstListen(true, false, true)).toBe(false); // おなじへや: only the host's phone can replay
     expect(QUIZ_QS).toBe(DECK_SIZE);
-    expect(QUIZ_MAX_S).toBe(DECK_SIZE * (RIGHT + FIRST_LISTEN));
+    // the wire's bound stays the old 8 × (100 + 30): a phone from before the badge still sends its totals
+    expect(QUIZ_MAX_S).toBe(1040);
+    expect(QUIZ_MAX_S).toBeGreaterThanOrEqual(DECK_SIZE * RIGHT);
   });
 });
 

@@ -38,7 +38,7 @@
   "kiki.timeUp": "じかんぎれ",
   "kiki.right": "せいかい！",
   "kiki.wrong": "おしい！",
-  "kiki.firstTry": "いっぱつ せいかい！ +{n}",
+  "kiki.firstTry": "いっぱつ！",
   "kiki.cheer.right": "やったー！",
   "kiki.cheer.wrong": "だいじょうぶ、つぎ いこう！",
   "kiki.cheer.none": "つぎは まにあうよ！",
@@ -233,5 +233,16 @@
   "kiki.rec.speed": "スピード はしごで はやさに なれよう",
   "kiki.rec.speedWhy": "いま {x}× まで らくに",
   "kiki.rec.speedTry": "スピード はしごを ためそう",
-  "kiki.rec.speedTryWhy": "はやい えいごに どこまで ついていける？"
+  "kiki.rec.speedTryWhy": "はやい えいごに どこまで ついていける？",
+  "kiki.timer": "こたえる じかん",
+  "kiki.timer.20": "20びょう",
+  "kiki.timer.30": "30びょう",
+  "kiki.timer.60": "60びょう",
+  "kiki.timer.0": "なし",
+  "kiki.timerNone": "みんなが こたえるまで まちます",
+  "kiki.readyTap": "よみおわった",
+  "kiki.readyWait": "よみおわった！ ホストを まっています",
+  "kiki.nextReady": "つぎへ（よみおわった {n}/{m}）",
+  "kiki.missedReplay": "まちがえた もんだいを もういちど",
+  "kiki.firstCount": "いっぱつ {k}もん"
 }

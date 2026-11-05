@@ -4,8 +4,10 @@
   // on おなじへや's other phones: the host's plays them); what to listen for (the item's `ask`, or its type's) and a word
   // item's line with its blank; the choices dimmed until the first play ends, then one final tap; each player's ✓ as
   // they answer. The reveal: ○ on the right choice, × on a wrong pick, the English (its key words marked), the Japanese
-  // (a reply's on two lines) and the accent, +100 and 「いっぱつ せいかい！ +30」 apart, a missed picture's name, the
-  // speaker's ✨ / 💦 and each player's, the host's word, the host's つぎへ. The question sits mid-screen on a tall phone.
+  // (a reply's on two lines) and the accent, +100 and the 「いっぱつ！」 stamp (a badge, no points), a missed picture's
+  // name, the speaker's ✨ / 💦 and each player's, the host's word. The reveal is untimed: the host's つぎへ (with how many
+  // tapped よみおわった), the others' よみおわった (📖 on their chip); solo, my つぎへ; the host gone, anyone's つぎへ. The
+  // answer window's bar only when it's timed (こたえる じかん なし: none). The question sits mid-screen on a tall phone.
   // A dialogue (gist, next): both speakers' heads, the one talking bobbing; at the reveal the verdict and only the right
   // choice and my pick (never under the sticky つぎへ), then its two-sided transcript
   // (Transcript.svelte) with the focus marked; level 4's `note` (the trap) under the accent. Co-op (several, not
@@ -25,7 +27,7 @@
   import SoundLine from './scene/SoundLine.svelte';
   import MarkLegend from './scene/MarkLegend.svelte';
   import { isStaged, rosterName as name, speakersOf } from './scene/stage.ts';
-  import { FIRST_LISTEN, RIGHT } from '#lib/kikimimi/score.ts';
+  import { RIGHT, firstListen } from '#lib/kikimimi/score.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Host from '../characters/Host.svelte';
   import Mark from '../ui/Mark.svelte';
@@ -116,7 +118,7 @@
   <div class="q" data-kiki-q={v.i} data-type={it.type} data-phase={v.phase}>
     {#if !solo}
       <div class="players">
-        {#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} note={coop ? null : t('kiki.points', { n: p.score })} size={36} />{/each}
+        {#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} ready={p.ready} note={coop ? null : t('kiki.points', { n: p.score })} size={36} />{/each}
       </div>
     {/if}
 
@@ -207,7 +209,7 @@
             {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')} <b>+{RIGHT}</b>
             {:else}<span class="sym" aria-hidden="true">×</span>{mine ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
           </p>
-          {#if right && !mine?.rp && !v.same}<span class="bonus" data-kiki-bonus>{t('kiki.firstTry', { n: FIRST_LISTEN })}</span>{/if}
+          {#if firstListen(right, !!mine?.rp, v.same)}<span class="bonus" data-kiki-bonus>{t('kiki.firstTry')}</span>{/if}
           {/if}
           {#if coop}<span class="team-now" data-kiki-team-now={v.rightNow}>{v.rightNow ? t('kiki.teamNow', { n: v.rightNow }) : t('kiki.teamNone')}</span>{/if}
           {#if !right && it.type === 'pic'}<span class="answer-is">{t('kiki.answerIs', { a: PIC_JA[it.choices[it.answer]] ?? '' })}</span>{/if}
@@ -229,7 +231,7 @@
       {/each}
     </div>
 
-    {#if v.phase === 'answer'}
+    {#if v.phase === 'answer' && Number.isFinite(v.limit)}
       <span class="timer" aria-hidden="true">{#key `${v.i}:${v.playEnd}`}<i style:animation-duration="{Math.max(1, v.limit - v.playEnd)}ms" style:animation-delay="{-Math.max(0, game.now - v.playEnd)}ms"></i>{/key}</span>
     {/if}
 
@@ -246,7 +248,16 @@
 
   {#if v.canNext}
     <div class="level-acts">
-      <button type="button" class="btn" data-kiki-next data-sfx="confirm" onclick={() => game.next()}>{t('kiki.next')}</button>
+      <button type="button" class="btn" data-kiki-next data-kiki-ready-n={v.ready.n} data-sfx="confirm" onclick={() => game.next()}>
+        {v.amHost && v.ready.of ? t('kiki.nextReady', { n: v.ready.n, m: v.ready.of }) : t('kiki.next')}
+      </button>
+    </div>
+  {:else if v.canReady}
+    {@const done = !!v.players.find((p) => p.who === game.me)?.ready}
+    <div class="level-acts">
+      <button type="button" class="btn" class:paper={done} data-kiki-ready aria-pressed={done} data-sfx={done ? 'none' : 'confirm'} onclick={() => !done && game.ready()}>
+        {done ? t('kiki.readyWait') : `📖 ${t('kiki.readyTap')}`}
+      </button>
     </div>
   {/if}
 {/if}
@@ -297,8 +308,11 @@
   .verdict.ok p { color: var(--leaf-text); }
   .verdict b { font-family: var(--font-num, var(--font-ui)); }
   .verdict .sym { font-size: 1.2em; }
-  /* 「1かいで」's +30, its own pill beside the +100 */
-  .bonus { padding: 4px 12px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); animation: pop-in 320ms var(--ease-bounce) 200ms both; }
+  /* 「いっぱつ！」: a stamp beside the +100 (a badge, no points), tilted like a rubber stamp */
+  .bonus {
+    padding: 4px 12px; border-radius: 8px; rotate: -6deg; background: color-mix(in srgb, var(--c-yuzu) 55%, var(--card)); color: var(--c-coral-text);
+    box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui); animation: pop-in 320ms var(--ease-bounce) 200ms both;
+  }
   /* co-op: how many of us got it (never who) */
   .team-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .answer-is { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text); }
@@ -335,7 +349,8 @@
   .hear .btn.small { flex: 0 1 auto; white-space: nowrap; }
   .hint { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
   /* つぎへ: the host's one action at the foot */
-  .level-acts [data-kiki-next] { min-height: var(--cta-h); font-size: var(--fs-talk); }
+  .level-acts [data-kiki-next], .level-acts [data-kiki-ready] { min-height: var(--cta-h); font-size: var(--fs-talk); }
+  .level-acts [data-kiki-ready][aria-pressed='true'] { font-size: var(--fs-body); }
 
   /* スピード はしご: the ladder's four speeds as steps rising left to right (climbed leaf, this one yuzu, stopped coral) */
   .ladder { display: flex; align-items: flex-end; justify-content: center; gap: 12px; }

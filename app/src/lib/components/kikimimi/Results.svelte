@@ -2,14 +2,20 @@
   // ききみみ クイズ's results (docs/kikimimi.md "Results"): しずえ reads them out like the morning broadcast (the ranking,
   // the winner's row with 🏆, and how many I got right under her line; co-op, the default with several players: the
   // team's 「ふたりで 7/8」 and 「そろって せいかい」 instead, no ranking, no one's points), then the review list, the game's main learning
-  // moment: every sentence's English (its key words marked) and Japanese (a reply's on two lines), ▶︎ and 🐢 (levels
-  // 1-2), ○ / × for my answer and on a miss what I picked, and 「まちがえた だけ」 to show only the missed.
+  // moment. With misses it opens on them (「まちがえた だけ」 on, the first one open) and offers 「まちがえた もんだいを
+  // もういちど」 (those again, solo, as practice; a quiz's). Each row: ○ / × and the sentence; tapped open, its English
+  // with the sound marks and the karaoke as ▶︎ plays it (a dialogue: its whole transcript), the marks' key, the Japanese
+  // (a reply's on two lines), the trap's note, what I picked, ▶︎ and 🐢 (levels 1-2). いっぱつ (right on the first listen)
+  // a stamp.
   // スピード はしご: しずえ's line is how high I climbed; a card of my climbs (each ladder's steps, how high); the review
   // one row a ladder: its line (the chunk marked), its Japanese and note, each rung's question with my ○ / ×, and ▶︎ at
   // each speed.
   import type { QuizGame } from './game.svelte.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
+  import SoundLine from './scene/SoundLine.svelte';
+  import MarkLegend from './scene/MarkLegend.svelte';
+  import { firstListen } from '#lib/kikimimi/score.ts';
   import Bubble from '../ui/Bubble.svelte';
   import PlayerChip from './PlayerChip.svelte';
   import { week } from '#lib/store/week.svelte.ts';
@@ -20,7 +26,7 @@
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
   import { SPEEDS, climbs, laddersIn, speedAt, sx } from '#lib/kikimimi/ladder.ts';
 
-  let { game, onagain, ondone }: { game: QuizGame; onagain: () => void; ondone: () => void } = $props();
+  let { game, onagain, onmissed, ondone }: { game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void } = $props();
   const v = $derived(game.view);
   const items = $derived(game.items);
   /** Highest first; ties share a rank. */
@@ -43,9 +49,20 @@
     return top.length > 1 || !week.view ? t('kiki.hostTie') : t('kiki.hostTop', { name: villagerNameOf(week.view, top[0].who) });
   });
   const ok = (i: number) => !!v.answers[i] && v.answers[i]!.k === items[i]?.answer;
-  let missedOnly = $state(false);
-  const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null })).filter((r) => !missedOnly || !r.ok));
   const tally = $derived(items.filter((_, i) => ok(i)).length);
+  const misses = $derived(items.length - tally);
+  /** いっぱつ: right with no replay or slow play (a stamp; no points). */
+  const first = (i: number) => firstListen(ok(i), !!v.answers[i]?.rp, v.same);
+  const firsts = $derived(items.filter((_, i) => first(i)).length);
+  // with misses, the results open on them, the first one open (once: the filter and the rows are mine after)
+  // svelte-ignore state_referenced_locally
+  let missedOnly = $state(items.some((_, i) => !ok(i)));
+  // svelte-ignore state_referenced_locally
+  let opened = $state<number[]>([items.findIndex((_, i) => !ok(i))]);
+  const toggle = (i: number) => (opened = opened.includes(i) ? opened.filter((x) => x !== i) : [...opened, i]);
+  const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null })).filter((r) => !missedOnly || !r.ok));
+  /** A review row's ▶︎ playing this item: when it started (its karaoke). */
+  const playing = (it: Item) => (game.sounding && game.sounding.i === -1 && game.sounding.at === it.id ? game.sounding.from : null);
   /** My feedback (docs/kikimimi.md "Recommendations and feedback"): しずえ's line from my きろく with this game in it,
    *  and what tripped me (this game's missed features). Mine alone, on my phone. */
   const recorded = $derived(game.recorded && game.recorded.g === v.g ? game.recorded : null);
@@ -74,6 +91,7 @@
       </div>
     {/if}
     <p class="tally" data-kiki-tally={tally}>{t(coop ? 'kiki.tallyMine' : 'kiki.tally', { n: items.length, k: tally })}</p>
+    {#if firsts}<p class="firsts"><span class="stamp" data-kiki-firsts={firsts}>{t('kiki.firstCount', { k: firsts })}</span></p>{/if}
   </div>
 
   <!-- たいせん: the ranking first (the game's outcome), then my feedback -->
@@ -122,6 +140,9 @@
       <h3 id="kk-review" class="sec-label">{t('kiki.review')}</h3>
       <button type="button" class="chip" aria-pressed={missedOnly} data-kiki-missed data-sfx="tick" onclick={() => (missedOnly = !missedOnly)}>{t('kiki.missedOnly')}</button>
     </div>
+    {#if misses && !ladders.length}
+      <button type="button" class="btn paper retry" data-kiki-retry data-sfx="confirm" onclick={onmissed}>🎯 {t('kiki.missedReplay')}</button>
+    {/if}
     {#if ladders.length}
       {@const shown = ladders.map((l, j) => ({ l, j })).filter(({ l, j }) => !missedOnly || mine[j] < l.n)}
       {#if !shown.length}<p class="none">{t('kiki.allRight')}</p>{/if}
@@ -161,24 +182,39 @@
     <ul class="review">
       {#each rows as r (r.i)}
         {@const [pre, focus, post] = splitFocus(r.it)}
-        <li class="item card" data-review={r.i} data-ok={r.ok}>
-          <span class="sym" class:ok={r.ok} aria-label={r.ok ? t('kiki.right') : t('kiki.wrong')}>{r.ok ? '○' : '×'}</span>
-          <div class="txt">
-            {#if isDialogue(r.it)}
-              <Transcript it={r.it} compact talk={game.talk?.i === -1 && game.talk.at === r.it.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} />
-              {#if r.it.type === 'gist'}<p class="ans" lang="en">→ {r.it.choices[r.it.answer]}<span>{r.it.ja}</span></p>{/if}
-            {:else}
-              <p class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
-              <p class="ja">{#each jaLines(r.it) as l, n (n)}<span>{l}</span>{/each}</p>
-            {/if}
-            {#if r.it.type === 'pic' || r.it.type === 'num'}<p class="ans">→ {choiceText(r.it, r.it.answer)}</p>{/if}
-            {#if !r.ok}<p class="tags">{tripKeys(r.it.id).map((x) => tripLabel(x.key)).join(' · ')}</p>{/if}
-            {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
-          </div>
-          <div class="hear">
-            <button type="button" class="ib" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(r.it)}>▶︎</button>
-            {#if r.it.lv <= 2}<button type="button" class="ib" aria-label={t('kiki.playSlow')} data-sfx="tick" onclick={() => game.hear(r.it, true)}>🐢</button>{/if}
-          </div>
+        {@const open = opened.includes(r.i)}
+        {@const dlg = isDialogue(r.it) ? r.it : null}
+        <li class="item card" data-review={r.i} data-ok={r.ok} data-open={open}>
+          <button type="button" class="head" aria-expanded={open} data-kiki-row={r.i} data-sfx="tick" onclick={() => toggle(r.i)}>
+            <span class="sym" class:ok={r.ok} aria-label={r.ok ? t('kiki.right') : t('kiki.wrong')}>{r.ok ? '○' : '×'}</span>
+            <span class="sum">
+              {#if dlg}<span class="en" lang="en">→ {dlg.choices[dlg.answer]}</span>
+              {:else if open}<span class="en big" data-kiki-review-en><SoundLine en={r.it.en} focus={r.it.focus} marks={r.it.marks} clip={r.it.id} from={playing(r.it)} clock={() => game.clock()} /></span>
+              {:else}<span class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</span>{/if}
+              {#if !open && !r.ok && r.k !== null}<span class="picked">{t('kiki.picked', { a: choiceText(r.it, r.k) })} ×</span>{/if}
+            </span>
+            {#if first(r.i)}<span class="stamp sm" aria-label={t('kiki.firstTry')}>{t('kiki.firstTry')}</span>{/if}
+            <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
+          </button>
+          {#if open}
+            <div class="txt" data-kiki-detail={r.i}>
+              {#if dlg}
+                <Transcript it={dlg} talk={game.talk?.i === -1 && game.talk.at === dlg.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} />
+                {#if dlg.type === 'gist'}<p class="ans" lang="en">→ {dlg.choices[dlg.answer]}<span>{dlg.ja}</span></p>{/if}
+              {:else}
+                {#if r.it.marks}<MarkLegend marks={r.it.marks} />{/if}
+                <p class="ja">{#each jaLines(r.it) as l, n (n)}<span>{l}</span>{/each}</p>
+              {/if}
+              {#if r.it.type === 'pic' || r.it.type === 'num'}<p class="ans">→ {choiceText(r.it, r.it.answer)}</p>{/if}
+              {#if r.it.note}<p class="note" data-kiki-note>{r.it.note}</p>{/if}
+              {#if !r.ok}<p class="tags">{tripKeys(r.it.id).map((x) => tripLabel(x.key)).join(' · ')}</p>{/if}
+              {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
+              <div class="hear">
+                <button type="button" class="ib" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(r.it)}>▶︎</button>
+                {#if r.it.lv <= 2 && !dlg}<button type="button" class="ib" aria-label={t('kiki.playSlow')} data-sfx="tick" onclick={() => game.hear(r.it, true)}>🐢</button>{/if}
+              </div>
+            </div>
+          {/if}
         </li>
       {/each}
     </ul>
@@ -227,8 +263,25 @@
   .none { margin: 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--leaf-text); }
   .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   /* ▶︎ / 🐢 under the text (the text's column), so the Japanese has the card's width */
-  .item { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 8px 10px; padding: 12px 14px; }
-  .item .hear { grid-column: 2; }
+  .item { display: grid; gap: 8px; padding: 0; }
+  /* a row's head: the whole width a button (○ / ×, the sentence, いっぱつ, ▾) */
+  .head {
+    appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; width: 100%;
+    display: grid; grid-template-columns: auto 1fr auto auto; align-items: start; gap: 10px; padding: 12px 14px; min-height: var(--hit);
+  }
+  .sum { min-width: 0; display: grid; gap: 2px; }
+  .chev { font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
+  .item .txt { padding: 0 14px 12px 46px; }
+  .en.big { font-size: max(17px, var(--fs-talk)); }
+  .note { margin: 0; font: 700 var(--fs-xs)/1.45 var(--font-ui); color: var(--c-ink); padding: 4px 8px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
+  .retry { width: 100%; }
+  .firsts { margin: 0; text-align: center; }
+  /* いっぱつ: a rubber stamp (no points) */
+  .stamp {
+    display: inline-block; padding: 3px 10px; border-radius: 8px; rotate: -4deg; color: var(--c-coral-text);
+    background: color-mix(in srgb, var(--c-yuzu) 45%, var(--card)); box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui);
+  }
+  .stamp.sm { padding: 2px 6px; font-size: var(--fs-xs); white-space: nowrap; }
   .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
   .sym.ok { color: var(--leaf-text); }
   .txt { min-width: 0; display: grid; gap: 4px; }

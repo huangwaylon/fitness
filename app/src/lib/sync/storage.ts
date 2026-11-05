@@ -117,6 +117,9 @@ export const DEVICE = {
   /** localStorage: `1` | `2` | `3`: the ききみみ クイズ level last played on this phone (the next lobby's;
    *  components/kikimimi/KikimimiSheet.svelte). */
   kikimimiLv: 'island.kikimimiLv',
+  /** localStorage: `20` | `30` | `60` | `0` (none): the ききみみ こたえる じかん last set on this phone (the next lobby's;
+   *  30 by default). */
+  kikimimiTimer: 'island.kikimimiTimer',
   /** localStorage: `{who, rows: [{at, row}]}`, my last ききみみ games' `listen` rows (contract/listen.ts) as recorded on
    *  this phone: きろく's fallback while offline or before the record has them (components/kikimimi/progress.svelte.ts;
    *  the record's rows win, by game id). */
