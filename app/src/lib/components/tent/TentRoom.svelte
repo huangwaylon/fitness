@@ -10,7 +10,8 @@
   // on the phones whose villager is in this room too (the relay's `say` with this room's `sc`; one place at a time).
   import { goto } from '$app/navigation';
   import { asset, resolve } from '$app/paths';
-  import { url3d } from '../villager3d/manifest.ts';
+  import { person3 } from '../person3d/person3d.ts';
+  import { lookOf as wornOf } from '#lib/store/look.ts';
   import { onMount, untrack } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
   import TentEdit from './TentEdit.svelte';
@@ -111,13 +112,23 @@
 
   function lookOf(who: Who): Look | null {
     const villager = who === 'G' ? view.guest.villager : view.people[who].villager;
-    const l = resolveLook({ villager, person: who });
+    // who draws them (person3d: the look they wear, their villager or their human player); the villager's render the
+    // card while the model loads
+    const person = person3(who, wornOf(who), villager, asset('room/villagers3d/' as Parameters<typeof asset>[0]));
+    const l = resolveLook({ villager: person.villager, person: who });
     const key = villagerArt(l.id);
     const a = art(key), url = artUrl(key);
-    // NH's 3D villager where it has one
-    const model = url3d(l.id, asset('room/villagers3d/' as Parameters<typeof asset>[0]));
-    return a && url ? { url, aspect: a.w / a.h, looksRight: l.looksRight, noMirror: l.noMirror, model, id: l.id } : null;
+    return a && url ? { url, aspect: a.w / a.h, looksRight: l.looksRight, noMirror: l.noMirror, person: person.has3d ? person : undefined } : null;
   }
+  // a look changed (on leaving すがた, or the partner's phone): the model swapped where it is
+  $effect(() => {
+    for (const w of [me, ...others]) void wornOf(w);
+    untrack(() => {
+      if (!eng) return;
+      if (eng.at(me)) eng.villager(me, lookOf(me));
+      partnerShown();
+    });
+  });
   const nightOf = (tod: string) => (tod === 'night' ? 1 : tod === 'dusk' ? 0.55 : tod === 'dawn' ? 0.3 : 0);
 
   /** What the balloons brought that NH has a model of (either of us found it), newest first, the starters left out. */
@@ -674,6 +685,8 @@
       /** Walk my villager to a floor point (model units), as a tap there. */
       walkTo: (x: number, z: number) => walkTo([x, z]),
       v3: (who: Who) => eng?.v3(who) ?? null,
+      /** The model drawn for `who` (person3d's key), null till one is in. */
+      model: (who: Who) => eng?.model(who) ?? null,
       at: (who: Who) => eng?.at(who),
       walking: (who: Who) => eng?.walking(who),
       /** A model point's client px. */

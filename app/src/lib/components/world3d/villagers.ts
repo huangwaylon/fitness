@@ -11,8 +11,9 @@ import { MeshLambertMaterial, Color, Vector3 as V3, type Vector3, type Material,
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { keyModel, MODELS } from './models3d.ts';
-import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
-import { url3d } from '../villager3d/manifest.ts';
+import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
+import { villager3, type Person3 } from '../person3d/person3d.ts';
+import { drawOff } from '../../ui-state/testMode.ts';
 import { ACTION_MS, seatOf, type Action, type State } from '../villager3d/poses.ts';
 import { anglerOf, type Phase } from './fishing3d.ts';
 import { bend } from './bend.ts';
@@ -30,6 +31,8 @@ export interface VSpec {
   /** The slot (an actor: mine, partner, third, visitor) and the roster id it draws. */
   slot: string;
   id: string;
+  /** A person's model (person3d: their villager or their human player), by its key; else the roster id's villager. */
+  model?: Person3;
   x: number;
   z: number;
   /** Its feet's height (the ground under it, a bridge's deck). */
@@ -134,7 +137,9 @@ const FADE_MS = 220;
 
 export function createVillagers(add: (o: Object3D) => () => void, dir: string, kick: () => void): Villagers3 {
   interface W {
-    id: string;
+    /** The model's key (person3d's, or the roster id) and, while a new look's loads over the old model, its key. */
+    key: string;
+    next: string | null;
     v: Villager3D | null;
     loading: boolean;
     off: () => void;
@@ -166,23 +171,40 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
   };
   let lastT = 0, liftL = 0.32, disposed = false;
   const headP = new V3(), aimP = new V3(), crownP = new V3();
-  const debug = import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? new Map<string, unknown>() : null;
+  const debug = import.meta.env.DEV || new URLSearchParams(location.search).has('demo') || drawOff() ? new Map<string, unknown>() : null;
+
+  const keyOf = (s: VSpec) => s.model?.key ?? s.id;
+  const make = (s: VSpec): Promise<Villager3D> | null => (s.model ?? villager3(s.id, dir)).create(s.slot.length * 1.3);
 
   function ensure(s: VSpec): W {
+    const key = keyOf(s);
     let w = ws.get(s.slot);
-    if (w && w.id !== s.id) {
+    // another look: drawn as it was till the new model is in, then swapped in place (where it stands, its seat, its
+    // hat and rod taken up again); with nothing drawn yet, a new one at once
+    if (w && w.key !== key && w.v && w.next !== key) {
+      const was = w, p = make(s);
+      was.next = key;
+      if (p) void p.then((v) => {
+        if (disposed || ws.get(s.slot) !== was || was.next !== key) return v.dispose();
+        was.off();
+        was.v?.dispose();
+        Object.assign(was, { key, next: null, v, hat: null, tool: null, posing: true, size: undefined });
+        v.lift(liftL);
+        was.off = add(v.group);
+        kick();
+      }, () => was.next === key && (was.next = null));
+    } else if (w && w.key !== key && !w.v) {
       w.off();
-      w.v?.dispose();
       ws.delete(s.slot);
       w = undefined;
-    }
+    } else if (w && w.key === key) w.next = null;
     if (!w) {
-      const nw: W = { id: s.id, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0 };
+      const nw: W = { key, next: null, v: null, loading: false, off: () => {}, x: s.x, z: s.z, yaw: 0, motionN: s.motionN, busyUntil: 0, alpha: 1, posing: true, hat: null, tool: null, angleN: anglerOf(s.slot).n, rodUntil: 0 };
       ws.set(s.slot, nw);
-      const url = url3d(s.id, dir);
-      if (url) {
+      const p = make(s);
+      if (p) {
         nw.loading = true;
-        void createVillager(s.id, url, s.slot.length * 1.3).then((v) => {
+        void p.then((v) => {
           nw.loading = false;
           if (disposed || ws.get(s.slot) !== nw) return v.dispose();
           nw.v = v;
@@ -375,12 +397,14 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
     return { cards, moving };
   }
 
-  // the e2e's (dev builds and ?demo): a 3D villager's state, what it holds and its tip (three's space), and what its
+  // the e2e's (dev builds, ?demo and the logic tier): a 3D villager's state, what it holds and its tip (three's space), and what its
   // last frame saw (its spec, the rod)
   type Hooked = { __villagers3?: unknown };
   const hook = debug && {
     last: (slot: string) => debug.get(slot) ?? null,
     state: (slot: string) => ws.get(slot)?.v?.state() ?? null,
+    /** The model drawn (person3d's key: `v:<roster id>` a villager, `p:…` a human player), null till one is in. */
+    model: (slot: string) => (ws.get(slot)?.v ? ws.get(slot)!.key : null),
     tool: (slot: string) => (ws.get(slot)?.tool?.obj ? ws.get(slot)!.tool!.key : null),
     tip: (slot: string) => ws.get(slot)?.v?.tip()?.toArray() ?? null,
     /** The materials on it drawn unbent (engine.ts bend: off the island it stands on), what it took up since included. */
