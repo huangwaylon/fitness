@@ -244,13 +244,15 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
   };
   const urlOf = (name: ModelName) => `${base}${name}.glb?v=${MODELS[name]?.v ?? 0}`;
   /** A lazy model's last instance gone: its GPU copies and this mount's materials of it let go of, its load handed
-   *  back (kept decoded a while: unuse). Asked for again, it's built afresh. */
+   *  back (kept decoded a while: unuse). Asked for again, it's built afresh; asked for again before its load's tick
+   *  (a critter gone and another of its species come in one regroup), its new build has these very materials
+   *  (lambert's) and GPU copies: they stay. */
   function release(name: ModelName) {
     const p = gltfs.get(name);
     if (!p || name.startsWith('proc/')) return;
     gltfs.delete(name);
     void p.then((g) => {
-      if (g && !disposed) {
+      if (g && !disposed && !gltfs.has(name)) {
         got.delete(g);
         g.scene.traverse((n) => {
           const src = (n as Mesh).isMesh ? ((n as Mesh).material as Material) : null;
