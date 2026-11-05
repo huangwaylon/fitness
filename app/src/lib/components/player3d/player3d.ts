@@ -10,7 +10,7 @@
 //   - Colours are tints: the skin (its texture's alpha says where), the hair, the hair-coloured parts.
 //   - dress(look) swaps what changed in place: a colour or a texture is a material's change, a new shape a mesh's.
 import {
-  Bone, Color, DoubleSide, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Skeleton, Texture, TextureLoader,
+  Bone, Color, DoubleSide, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Skeleton, Texture, TextureLoader, Vector3,
   type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh, type WebGLProgramParametersWithUniforms
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -18,7 +18,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
 import { animateModel, type Villager3D } from '../villager3d/villager3d.ts';
-import { PARTS, bodyUrl, faceUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
+import { PARTS, bodyUrl, faceUrl, irisUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
 import { playerKind } from './tune.ts';
 
 /** @public (the 2D heads' portraits, the closet's tiles) */
@@ -37,9 +37,10 @@ export interface Player3D extends Villager3D {
 const ANCHOR = { head: [0, 0, 0], hat: [0, 3.567, -0.281], face: [0, 1.85, 3.05], crown: [0, 6.3, -0.3] } as const;
 type AnchorKind = keyof typeof ANCHOR | 'ornament';
 type V3 = readonly [number, number, number];
-/** Where a hair ornament sits on a hairstyle (head frame; `turn` radians; `scale`): NH places them per hairstyle and
- *  the files don't say where, so the crown unless a style is listed (B's low ponytail: the bow at its tie, as signed
- *  off: design/avatar/render/outfits/b.json). */
+/** The head's middle, in the head joint's frame (what a side ornament stands out from: hairSpots' rays aim there). */
+const HEAD_MIDDLE = new Vector3(0, 3.4, -0.3);
+/** A side ornament's own spot on a hairstyle (head frame; `turn` radians; `scale`), over the measured one (parts.json
+ *  hair spot): B's low ponytail, the bow at its tie, as signed off (design/avatar/render/outfits/b.json). */
 const ORNAMENT_ON: Record<string, { at: V3; turn?: V3; scale?: number }> = {
   PlayerHair12: { at: [0, 0.6, -3.75], turn: [1.45, 0, 0], scale: 0.75 }
 };
@@ -84,23 +85,33 @@ function tex(url: string): Promise<Texture> {
 /** A material whose texture's alpha says where it takes the tint (255 − 127 × the tint's share: never 0, where a
  *  premultiplied decode loses the colour): the skin (the underwear keeps its own colour), the face patches (around
  *  the eyes and mouth), the bare legs; its self-light likewise. */
-function maskMaterial(name: string, map: Texture, tint: Color, mask: { value: number }): MeshLambertMaterial {
+/** The eye's iris: its mask (the eye atlas's cells: 1 the iris, ~0.5 the pupil) and the eye colour it takes. */
+interface Iris { map: { value: Texture | null }; colour: Color }
+function maskMaterial(name: string, map: Texture, tint: Color, mask: { value: number }, iris: Iris | null = null): MeshLambertMaterial {
   const m = new MeshLambertMaterial({ name, map, emissive: new Color(0xffffff), emissiveMap: map, emissiveIntensity: LIFT });
   const uTint = { value: tint };
   m.onBeforeCompile = (s: WebGLProgramParametersWithUniforms) => {
     s.uniforms.uTint = uTint;
     s.uniforms.uMask = mask;
-    s.fragmentShader = `uniform vec3 uTint;\nuniform float uMask;\n${s.fragmentShader}`
+    // (the eye: its iris takes the eye colour, its pupil darker, by the mask sampled where the atlas is)
+    const eye = iris ? `
+  float irisV = texture2D( uIris, vMapUv ).r;
+  diffuseColor.rgb = mix( diffuseColor.rgb, uEye * irisV * irisV, smoothstep( 0.08, 0.3, irisV ) );` : '';
+    if (iris) {
+      s.uniforms.uIris = iris.map;
+      s.uniforms.uEye = { value: iris.colour };
+    }
+    s.fragmentShader = `uniform vec3 uTint;\nuniform float uMask;\n${iris ? 'uniform sampler2D uIris;\nuniform vec3 uEye;\n' : ''}${s.fragmentShader}`
       .replace('#include <map_fragment>', `#ifdef USE_MAP
   vec4 sampledDiffuseColor = texture2D( map, vMapUv );
-  diffuseColor.rgb *= mix( sampledDiffuseColor.rgb, sampledDiffuseColor.rgb * uTint, clamp( ( 1.0 - sampledDiffuseColor.a ) * 2.0, 0.0, 1.0 ) * uMask );
+  diffuseColor.rgb *= mix( sampledDiffuseColor.rgb, sampledDiffuseColor.rgb * uTint, clamp( ( 1.0 - sampledDiffuseColor.a ) * 2.0, 0.0, 1.0 ) * uMask );${eye}
 #endif`)
       .replace('#include <emissivemap_fragment>', `#ifdef USE_EMISSIVEMAP
   vec4 emissiveColor = texture2D( emissiveMap, vEmissiveMapUv );
   totalEmissiveRadiance *= mix( emissiveColor.rgb, emissiveColor.rgb * uTint, clamp( ( 1.0 - emissiveColor.a ) * 2.0, 0.0, 1.0 ) * uMask );
 #endif`);
   };
-  m.customProgramCacheKey = () => 'player-mask';
+  m.customProgramCacheKey = () => (iris ? 'player-mask-iris' : 'player-mask');
   return m;
 }
 /** A part's material: its texture (or colour), cut out or see-through, tinted (the hair's colour, the skin's). */
@@ -154,7 +165,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   model.updateMatrixWorld(true);
 
   let cur: PlayerLook = { ...look };
-  const skin = new Color(cur.skin), hair = new Color(cur.hairColor);
+  const skin = new Color(cur.skin), hair = new Color(cur.hairColor), eyeColour = new Color(cur.eyeColor);
   const socksMask = { value: 1 }, faceMask = { value: 1 };
   const owned: Material[] = [];
   /** The body's own: the skin, the legs (bare: the skin; in socks: their texture), the face patches, the noses. */
@@ -170,6 +181,13 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     return t;
   };
   for (const n of ['mEye', 'mMouth', 'mCheek'] as const) faceTex[n] = await loadFace(n);
+  // the iris mask (its own copy: a texture's uploaded image; sampled at the eye's own cell)
+  const irisMap: Iris['map'] = { value: null };
+  const loadIris = async () => {
+    const u = irisUrl(cur.eye, dir, T);
+    return u ? tex(u) : null;
+  };
+  irisMap.value = await loadIris();
   const socksTex = async (): Promise<Texture | null> => {
     const it = cur.socks ? T.items[cur.socks] : null, t = it?.tex.mSocks;
     return t ? tex(texUrl(t, dir)!) : null;
@@ -185,7 +203,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       mat.userData.bare = s.map;
       socksMask.value = socks ? 0 : 1;
     } else if (n === 'mEye' || n === 'mMouth' || n === 'mCheek') {
-      mat = maskMaterial(n, faceTex[n]!, skin, faceMask);
+      mat = maskMaterial(n, faceTex[n]!, skin, faceMask, n === 'mEye' ? { map: irisMap, colour: eyeColour } : null);
       mat.userData = { ...s.userData };
     } else mat = partMaterial(n, s.map, {}, null);
     bodyMat.set(n, mat);
@@ -202,12 +220,22 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   noses();
 
   // ---- the parts ----
-  /** The ornament's anchor where the hairstyle has it. */
+  /** The ornament's anchor: where its hairstyle's measured top (a crown, a wreath, a headband, horns) or left side (a
+   *  hairpin, a side bow: L) is, the side ones turned to stand out of the hair; or a style's own spot (ORNAMENT_ON). */
   const placeOrnament = () => {
-    const b = anchors.ornament, o = ORNAMENT_ON[cur.hair];
-    b.position.fromArray(o?.at ?? ANCHOR.crown);
-    b.rotation.set(...(o?.turn ?? [0, 0, 0]));
-    b.scale.setScalar(o?.scale ?? 1);
+    const b = anchors.ornament, side = /^CapOrnamentL[A-Z]/.test(cur.ornament ?? '');
+    const own = side ? ORNAMENT_ON[cur.hair] : undefined, spot = T.hair[cur.hair]?.spot;
+    b.quaternion.identity();
+    b.scale.setScalar(own?.scale ?? 1);
+    if (own) {
+      b.position.fromArray(own.at);
+      b.rotation.set(...(own.turn ?? [0, 0, 0]));
+    } else if (spot && side) {
+      // (a little into the hair, its up along the way out of the head's middle)
+      const at = new Vector3(...spot.side), out = at.clone().sub(HEAD_MIDDLE).normalize();
+      b.position.copy(at).addScaledVector(out, -0.15);
+      b.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), out);
+    } else b.position.fromArray(spot ? [spot.top[0], spot.top[1] - 0.15, spot.top[2]] : ANCHOR.crown);
     b.updateMatrixWorld(true);
   };
   placeOrnament();
@@ -334,6 +362,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
   const tints = () => {
     skin.set(cur.skin);
     hair.set(cur.hairColor);
+    eyeColour.set(cur.eyeColor);
   };
   let busy: Promise<void> = Promise.resolve();
   const dress = async (next: PlayerLook) => {
@@ -353,6 +382,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       t.dispose();
       t.needsUpdate = true;
     }
+    if (prev.eye !== cur.eye) irisMap.value = await loadIris();
     if (prev.socks !== cur.socks) {
       socks = await socksTex();
       const mat = bodyMat.get('mSocks')!;
@@ -360,7 +390,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       mat.emissiveMap = mat.map;
       socksMask.value = socks ? 0 : 1;
     }
-    if (prev.hair !== cur.hair) placeOrnament();
+    if (prev.hair !== cur.hair || prev.ornament !== cur.ornament) placeOrnament();
     let skeletal = false;
     for (const slot of SLOTS) {
       const a = partOf(slot, prev), b = partOf(slot, cur), w = worn.get(slot);

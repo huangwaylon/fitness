@@ -26,9 +26,12 @@ interface MeshSpec { v: string; kb: number; tris: number; rigid: boolean; mats: 
 export interface PartTable {
   body: { v: string; kb: number; tris: number };
   cheek: { v: string; kb: number }[];
-  face: Record<string, { v: string; kb: number }>;
+  /** An eye's or mouth's atlas; an eye's iris mask beside it (the eye colour's tint). */
+  face: Record<string, { v: string; kb: number; iris?: { v: string; kb: number } }>;
   mesh: Record<string, MeshSpec>;
-  hair: Record<string, { mesh: string; cap: string | null }>;
+  /** A hairstyle's mesh, its under-a-hat cut, and its top and left side as measured (hair ornaments sit there: head
+   *  joint frame, the body's axes). */
+  hair: Record<string, { mesh: string; cap: string | null; spot?: { top: [number, number, number]; side: [number, number, number] } }>;
   items: Record<string, ItemSpec>;
   /** Each catalogue icon's own colour (the closet tints a line's icon to a colour). */
   icons: Record<string, string>;
@@ -62,5 +65,10 @@ export function faceUrl(id: string, dir: string): string | null {
   if (c) return `${slash(dir)}face/${id}.webp?v=${PARTS.cheek[+c[1]].v}`;
   return PARTS.face[id] ? `${slash(dir)}face/${id}.webp?v=${PARTS.face[id].v}` : null;
 }
+/** An eye's iris mask (its eye colour's tint), or null. */
+export const irisUrl = (id: string, dir: string, t: PartTable = PARTS): string | null => {
+  const i = t.face[id]?.iris;
+  return i ? `${slash(dir)}face/${id}.iris.webp?v=${i.v}` : null;
+};
 /** An item's texture file's address. */
 export const texUrl = (t: TexSpec, dir: string): string | null => (t.file ? `${slash(dir)}tex/${t.file}?v=${t.v}` : null);

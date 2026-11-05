@@ -181,6 +181,26 @@ test('けす goes out after its banner; もどす undoes this visit; full at 20 
   await a.context().close();
 });
 
+test('ぼうし: a hat takes the hair ornament off (headwear, one at a time); めの いろ; both go out on leaving', async ({ browser }) => {
+  const rec = newRecord();
+  const b = await phone(browser, rec, 'B');
+  await openLook(b);
+  await b.locator('[data-cat=hat]').click();
+  const grid = settings(b).locator('[data-closet=hat]');
+  await expect(grid.locator('[data-item=none]')).toHaveAttribute('aria-checked', 'true');
+  await grid.locator('[data-item=CapHatBeret]').click();
+  await expect(grid.locator('[data-item=CapHatBeret]')).toHaveAttribute('aria-checked', 'true');
+  // her bow (B's いつもの) went: the ornament's なし is on
+  await settings(b).locator('[data-cat=acc]').click();
+  await expect(settings(b).locator('[data-closet=ornament] [data-item=none]')).toHaveAttribute('aria-checked', 'true');
+  // the eyes' colour: another swatch
+  await settings(b).locator('[data-cat=face]').click();
+  await settings(b).locator('[data-colour=eyeColor] [data-hex="#4f6378"]').click();
+  await back(b);
+  await expect.poll(() => lastValue(rec, 'B', 'look')).toMatchObject({ kind: 'player', look: { hat: expect.stringMatching(/^CapHatBeret\d$/), ornament: null, eyeColor: '#4f6378' } });
+  await b.context().close();
+});
+
 test('むらびとの すがたに する wears the villager; いつもの brings the player back (no look pref)', async ({ browser }) => {
   test.setTimeout(45_000);
   const rec = newRecord();

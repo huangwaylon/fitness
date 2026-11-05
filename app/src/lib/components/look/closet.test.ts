@@ -3,7 +3,7 @@ import { DEFAULT_LOOKS, isOnepiece, isPlayerLook, type PlayerLook } from '#lib/c
 import PARTS from '../player3d/parts.json' with { type: 'json' };
 import { closet, closetFrom, GARMENT_KINDS, hueOf, HUES, itemKey, wear, wornIn, type ClosetKind } from './closet.ts';
 
-const KINDS: ClosetKind[] = ['eye', 'mouth', 'hair', 'top', 'onepiece', 'bottom', 'socks', 'shoes', 'glasses', 'ornament'];
+const KINDS: ClosetKind[] = ['eye', 'mouth', 'hair', 'top', 'onepiece', 'bottom', 'socks', 'shoes', 'hat', 'glasses', 'ornament'];
 const ITEMS = PARTS.items as Record<string, { slot: string; line: string; onepiece?: boolean; icon: string | null }>;
 
 describe('the closet adapter', () => {
@@ -57,6 +57,11 @@ describe('the closet adapter', () => {
     expect(isPlayerLook(back)).toBe(true);
     expect(wear(a, 'glasses', null).glasses).toBeNull();
     expect(wear(a, 'top', null)).toBe(a); // a top isn't taken off by the grid
+    // a hat and a hair ornament are both headwear: one at a time
+    const b = { ...a, ornament: 'CapOrnamentLRibbon7' };
+    const hatted = wear(b, 'hat', 'CapHatBeret0');
+    expect([hatted.hat, hatted.ornament]).toEqual(['CapHatBeret0', null]);
+    expect([wear(hatted, 'ornament', 'CapOrnamentLRibbon7').hat, wear(hatted, 'hat', null).hat]).toEqual([null, null]);
   });
 });
 

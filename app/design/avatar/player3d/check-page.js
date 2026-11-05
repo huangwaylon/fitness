@@ -51,10 +51,11 @@ window.run = async () => {
   out.sting = shot(70, 170, 55, 0.2);
   step(13000);
   // a swap: B into A's top and hair, a red-haired A
-  await b.dress({ ...DEFAULT_LOOKS.B, top: 'TopsTexTopTshirtsHPocketshirts3', bottom: 'BottomsTexPantsNormalDenim0', hair: 'PlayerHair05', ornament: null, eye: 'PlayerEye00' });
-  await a.dress({ ...DEFAULT_LOOKS.A, hairColor: '#a03020', skin: '#c98e62', glasses: 'AccessoryGlassOval1', top: 'TopsTexOnepieceBalloonHDolly0', bottom: null });
+  await b.dress({ ...DEFAULT_LOOKS.B, top: 'TopsTexTopTshirtsHPocketshirts3', bottom: 'BottomsTexPantsNormalDenim0', hair: 'PlayerHair05', ornament: 'CapOrnamentLHearthairpin0', eye: 'PlayerEye00', eyeColor: '#4f6378' });
+  await a.dress({ ...DEFAULT_LOOKS.A, hairColor: '#a03020', skin: '#c98e62', glasses: 'AccessoryGlassOval1', top: 'TopsTexOnepieceBalloonHDolly0', bottom: null, hat: 'CapHatBeret0', eyeColor: '#2e6f3a' });
   step(14000);
   out.dressed = shot(45, 420);
+  out.dressedFace = shot(70, 300, 0, 0.35);
   out.portraitA = portrait(r, a, 256, '#f4efe2').toDataURL('image/png');
   out.portraitB = portrait(r, b, 256, null).toDataURL('image/png');
   out.after = shot(45, 420);

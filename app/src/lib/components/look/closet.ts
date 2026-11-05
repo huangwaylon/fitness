@@ -8,21 +8,21 @@ import { isOnepiece, type Hex, type PartId, type PlayerLook } from '#lib/contrac
 import { artUrl } from '#lib/art.ts';
 import PARTS from '../player3d/parts.json' with { type: 'json' };
 
-/** The level's category chips, in order (かお · かみ · トップス · ボトムス · ワンピース · くつした · くつ · こもの). */
-export const CATEGORIES = ['face', 'hair', 'tops', 'bottoms', 'onepiece', 'socks', 'shoes', 'acc'] as const;
+/** The level's category chips, in order (かお · かみ · トップス · ボトムス · ワンピース · くつした · くつ · ぼうし · こもの). */
+export const CATEGORIES = ['face', 'hair', 'tops', 'bottoms', 'onepiece', 'socks', 'shoes', 'hat', 'acc'] as const;
 export type Category = (typeof CATEGORIES)[number];
 
 /** A grid of parts: a face part, the hair, or a garment (tops and one-pieces are both the `top` slot). */
-export type ClosetKind = 'eye' | 'mouth' | 'hair' | 'top' | 'onepiece' | 'bottom' | 'socks' | 'shoes' | 'glasses' | 'ornament';
+export type ClosetKind = 'eye' | 'mouth' | 'hair' | 'top' | 'onepiece' | 'bottom' | 'socks' | 'shoes' | 'hat' | 'glasses' | 'ornament';
 /** The look's slot each kind wears into. */
 const SLOT_OF = {
   eye: 'eye', mouth: 'mouth', hair: 'hair', top: 'top', onepiece: 'top', bottom: 'bottom',
-  socks: 'socks', shoes: 'shoes', glasses: 'glasses', ornament: 'ornament'
+  socks: 'socks', shoes: 'shoes', hat: 'hat', glasses: 'glasses', ornament: 'ornament'
 } as const satisfies Record<ClosetKind, keyof PlayerLook>;
 /** The kinds that may be left off (a なし tile first). */
-export const OPTIONAL_KINDS: ReadonlySet<ClosetKind> = new Set(['socks', 'shoes', 'glasses', 'ornament']);
+export const OPTIONAL_KINDS: ReadonlySet<ClosetKind> = new Set(['socks', 'shoes', 'hat', 'glasses', 'ornament']);
 /** The kinds with colour variants and the colour filter (the garments; a face part or hair is its one shape). */
-export const GARMENT_KINDS: ReadonlySet<ClosetKind> = new Set(['top', 'onepiece', 'bottom', 'socks', 'shoes', 'glasses', 'ornament']);
+export const GARMENT_KINDS: ReadonlySet<ClosetKind> = new Set(['top', 'onepiece', 'bottom', 'socks', 'shoes', 'hat', 'glasses', 'ornament']);
 
 /** The colour filter's buckets, in the row's order (すべて first: no bucket). */
 export const HUES = ['red', 'yellow', 'green', 'blue', 'purple', 'pink', 'brown', 'white', 'black'] as const;
@@ -130,7 +130,7 @@ interface Table {
 interface Swatches { items: Record<string, Hex>; icons: Record<string, Hex> }
 /** The kind of a part table item by its slot (a `top` that's a one-piece has its own grid). */
 const KIND_OF: Record<string, ClosetKind> = {
-  top: 'top', bottom: 'bottom', socks: 'socks', shoes: 'shoes', glasses: 'glasses', ornament: 'ornament'
+  top: 'top', bottom: 'bottom', socks: 'socks', shoes: 'shoes', hat: 'hat', glasses: 'glasses', ornament: 'ornament'
 };
 
 /** The closet of a part table and its measured colours: every hairstyle, eye and mouth, and every garment in the
@@ -173,13 +173,16 @@ export function useCloset(c: Closet | null): void {
   current = c;
 }
 
-/** A look with `id` worn as `kind`, by NH's rules: a one-piece clears the bottoms; a bottom clears a one-piece. */
+/** A look with `id` worn as `kind`, by NH's rules: a one-piece clears the bottoms; a bottom clears a one-piece; a hat
+ *  and a hair ornament are both headwear, one at a time (a hat puts the hair under it: NH's cut where the style has one). */
 export function wear(look: PlayerLook, kind: ClosetKind, id: PartId | null): PlayerLook {
   const slot = SLOT_OF[kind];
   if (id === null && !OPTIONAL_KINDS.has(kind)) return look;
   const out = { ...look, [slot]: id } as PlayerLook;
   if (slot === 'top' && isOnepiece(id)) out.bottom = null;
   if (slot === 'bottom' && id !== null && isOnepiece(look.top)) out.top = null;
+  if (slot === 'hat' && id !== null) out.ornament = null;
+  if (slot === 'ornament' && id !== null && out.hat) out.hat = null;
   return out;
 }
 
