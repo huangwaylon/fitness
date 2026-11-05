@@ -324,7 +324,7 @@ catches an offline phone up.
   `{at, src, age, hours, fails}`, [The real weather](#the-real-weather)); `POST /api` and `/admin`
   ([The record](#the-record)); `POST /notify` ([Push](#push)); `/push/*`: 410 Gone (the old notifications'
   routes, for an app build from before their removal: `relay/src/pushGone.ts`).
-- **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://island-fund.pages.dev`, and `https://huangwaylon.github.io` until both phones have moved) and
+- **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://island-fund.pages.dev`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
 - **Auth:** the first message is `hello {key, since?}`. The room compares it in constant time with the secrets
   `KEY_A`/`KEY_B`/`KEY_C` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?, here?, gone?}` (`rec`: the record's
