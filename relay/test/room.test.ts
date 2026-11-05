@@ -396,6 +396,33 @@ describe('the island room', () => {
     expect(join(KEY_A).sent[0]).toMatchObject({ kind: 'welcome', rec: { at: '2026-11-01T01:02:03.456Z', rev: 'e1' } });
   });
 
+  it('a ticketed socket (its key proved at the Worker) is never let go to make room, and its hello must be its person’s', () => {
+    const t = new FakeSock();
+    socks.push(t);
+    room.open(t, 'A');
+    for (let i = 0; i < 8; i++) {
+      now += 10;
+      room.makeRoom();
+      join();
+    }
+    expect(t.closed).toBeNull();
+    say(t, { kind: 'hello', key: KEY_A });
+    expect(t.sent[0]).toMatchObject({ kind: 'welcome', me: 'A' });
+    // another's key on a ticket's socket: refused
+    const u = new FakeSock();
+    socks.push(u);
+    room.open(u, 'B');
+    say(u, { kind: 'hello', key: KEY_A });
+    expect(u.closed).toEqual({ code: CLOSE.unauthorized, reason: "not the ticket's" });
+    // it still says hello in time like any
+    const late = new FakeSock();
+    socks.push(late);
+    room.open(late, 'G');
+    now += HELLO_MS;
+    room.sweep();
+    expect(late.closed?.code).toBe(CLOSE.timeout);
+  });
+
   it('silent sockets never lock the phones out: at most 4 wait for their hello, the oldest let go for a new one', () => {
     // 2026-11-05 review: 8 sockets that never said hello filled the room (MAX 8 counted them) and both phones got 503
     const enter = (key?: string) => {

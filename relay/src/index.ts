@@ -3,7 +3,7 @@
 // Hibernation API, so an idle connection costs nothing; a phone connects only while the app is on screen.
 import { DurableObject } from 'cloudflare:workers';
 import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
-import { originAllowed } from './auth.ts';
+import { admission, originAllowed, subprotocolOf, TICKET_HEADER } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, PROBE_AFTER_MS, RoomCore, type Acked, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
 import { IslandStore } from './storeObject.ts';
@@ -121,9 +121,13 @@ export class IslandRoom extends DurableObject<Env> {
     if (evicted) this.log([{ e: 'room.full', l: 2, d: { socks: this.ctx.getWebSockets().length } }]);
     const { 0: client, 1: server } = new WebSocketPair();
     this.ctx.acceptWebSocket(server);
-    this.core.open(server);
+    // whose admission ticket it came with (the Worker checked it: admission, below), never let go to make room
+    const tk = req.headers.get(TICKET_HEADER);
+    this.core.open(server, tk === 'A' || tk === 'B' || tk === 'G' ? tk : undefined);
     await this.alarmBy(Date.now() + HELLO_MS);
-    return new Response(null, { status: 101, webSocket: client });
+    // a phone that offered subprotocols hears one back (a browser drops a socket whose answer names none it offered)
+    const proto = subprotocolOf(req.headers.get('Sec-WebSocket-Protocol'));
+    return new Response(null, { status: 101, webSocket: client, ...(proto ? { headers: { 'Sec-WebSocket-Protocol': proto } } : {}) });
   }
 
   /** The alarm at `at` at the latest (one alarm: the hello sweep's and a restore's share it). */
@@ -301,7 +305,9 @@ export default {
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
     if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });
     if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });
-    return env.ROOM.get(env.ROOM.idFromName('island')).fetch(req);
+    const adm = await admission(req, env, Date.now());
+    if (!adm) return new Response('forbidden', { status: 403 });
+    return env.ROOM.get(env.ROOM.idFromName('island')).fetch(adm);
   }
 } satisfies ExportedHandler<Env>;
 

@@ -2,6 +2,7 @@
 // Script, and KEY_C, the guest's: docs/backend.md#the-guest) and the page origins a browser may open the socket from. The origin check only keeps other sites' pages out; the key is
 // the authentication.
 import type { Who } from '../../app/src/lib/contract/live-protocol.ts';
+import { ROOM_PROTOCOL, ticketIn, ticketOwner } from '../../app/src/lib/contract/ticket.ts';
 
 export interface Keys {
   KEY_A?: string;
@@ -37,4 +38,31 @@ export function originAllowed(origin: string | null, allowed: string): boolean {
   if (!origin) return false;
   if (LOCAL.test(origin)) return true;
   return allowed.split(',').map((s) => s.trim()).filter(Boolean).includes(origin);
+}
+
+/** The header the Worker tells the room whose ticket a socket came with (never a client's: always set or removed here). */
+export const TICKET_HEADER = 'X-Island-Ticket';
+
+/**
+ * The admission (relay review O3, the server half): a socket's request with a ticket among its subprotocols
+ * (contract/ticket.ts) goes on marked with whose it is (TICKET_HEADER); a bad or stale ticket is refused (null: 403).
+ * One without a ticket still goes on, unmarked (the phones send none yet; once they all do, it is required here).
+ */
+export async function admission(req: Request, keys: Keys, now: number): Promise<Request | null> {
+  const t = ticketIn(req.headers.get('Sec-WebSocket-Protocol'));
+  const headers = new Headers(req.headers);
+  headers.delete(TICKET_HEADER);
+  if (t) {
+    const who = await ticketOwner(t, keys, now);
+    if (!who) return null;
+    headers.set(TICKET_HEADER, who);
+  }
+  return new Request(req, { headers });
+}
+
+/** The subprotocol a socket's answer names: ROOM_PROTOCOL when it was offered, else the first offered (null: none). */
+export function subprotocolOf(header: string | null): string | null {
+  const offered = (header ?? '').split(',').map((p) => p.trim()).filter(Boolean);
+  if (!offered.length) return null;
+  return offered.includes(ROOM_PROTOCOL) ? ROOM_PROTOCOL : offered[0];
 }
