@@ -1,0 +1,112 @@
+# たちぎき S3 やま (a): faster talk with interruptions: a stand-up where someone is blocked, a boss who hedges, gossip at
+# a barbecue, a surprise party that nearly isn't, tourists on a train working out where to get off.
+schema: 1
+unit: s3-tachi-a
+game: tachi
+stage: 4
+track: work
+seeds: [12, 40, 44, 53, 54]
+features: { primary: overlap, review: chain }
+cando: "わりこみの ある 速い 3人の かいわで 結論と 心がわりを ききとれる"
+status: draft
+items:
+  - kind: tachi
+    id: tachi-standup-blocked
+    ask: "朝の ミーティング。だれが 止まっている？"
+    scene: office
+    channel: video
+    lines:
+      - { who: pietro, at: 0, en: "Okay, quick round. Ankha, you first.", ja: "よし、手短にいこう。アンカから。" }
+      - { who: ankha, at: 0.2, en: "Yesterday I finished the login screens. Today I'm on the payment flow, but I'm stuck till I get the new API keys from Kapp'n's team.", tts: "Yesterday I finished the login screens. Today I'm on the payment flow, bu' I'm stuck till I ge' the new A P I keys from Kapp'n's team.", ja: "昨日はログイン画面を仕上げました。今日は決済の流れに入りますが、カッペイさんのチームから新しいAPIキーをもらうまで止まってます。" }
+      - { who: kappn, at: -0.3, en: "Yeah, about that. Security haven't signed them off yet. Could be Thursday.", tts: "Yeah, about that. Security haven't signed 'em off yet. Could be Thursday.", ja: "あー、それね。セキュリティの承認がまだ下りてないんだ。木曜になるかも。" }
+      - { who: pietro, at: 0.2, en: "Thursday? The demo's Wednesday.", ja: "木曜？デモは水曜だよ。" }
+      - { who: kappn, at: 0.3, en: "I know, I know. I'll chase them this morning. Worst case, she can use the test keys for the demo.", tts: "I know, I know. I'll chase 'em this mornin'. Worst case, she c'n use the test keys for the demo.", ja: "わかってる、わかってる。今朝せっついてみる。最悪、デモはテスト用のキーでいけるよ。" }
+      - { who: ankha, at: -0.4, en: "Test keys won't show the real card screen, though. That's the whole point of the demo.", tts: "Test keys won't show the real card screen, though. Tha's the whole point of the demo.", ja: "でもテスト用のキーだと本物のカード画面が出ないの。それがデモの肝なのに。" }
+      - { who: pietro, at: 0.3, en: "Okay, then let's not risk it. We push the demo to Friday, and I'll tell the client. Kapp'n, keys by Thursday, no later.", tts: "Okay, then let's not risk it. We push the demo to Friday, an' I'll tell the client. Kapp'n, keys by Thursday, no later.", ja: "わかった、じゃあ無理はしない。デモは金曜にずらして、クライアントには僕から言う。カッペイ、キーは木曜まで、それ以上は待てない。" }
+      - { who: kappn, at: 0.2, en: "Thursday. Got it.", ja: "木曜ね。了解。" }
+    rounds:
+      - { type: opinions, claims: ["テスト用では デモの 意味が ない", "最悪 テスト用で いける", "デモを 金曜に ずらす"], answer: [ankha, kappn, pietro] }
+      - { type: changed, answer: pietro }
+      - { type: plan, ask: "結論は？", choices: ["The demo stays on Wednesday with the test keys.", "The demo moves to Friday, and the keys must come by Thursday.", "The payment flow is dropped from the demo."], answer: 1, ja: "デモは金曜に延期。キーは木曜までに。" }
+    note: "stuck till～＝〜まで作業が止まる。誰が原因か"
+    tags: { seed: 44, register: colleague, pragmatic: literal, conditions: [video], features: [overlap, t-glottal, chain] }
+
+  - kind: tachi
+    id: tachi-launch-hedge
+    ask: "リリース日の 前倒しを 相談している"
+    scene: office
+    lines:
+      - { who: julian, at: 0, en: "So, the client wants to bring the launch forward to the first of March. Is that doable?", tts: "So, the client wants ta bring the launch forward to the first of March. Is that doable?", ja: "で、クライアントがローンチを3月1日に前倒ししたいそうです。いけますか？" }
+      - { who: goldie, at: 0.3, en: "It might be tricky. I mean, it's not impossible, but we'd be cutting corners on testing.", tts: "It might be tricky. I mean, it's not impossible, but we'd be cuttin' corners on testing.", ja: "ちょっと厳しいかもね。まあ、不可能じゃないけど、テストで手を抜くことになる。" }
+      - { who: roald, at: -0.3, en: "Tricky? Mate, we're already behind. There's no way we're ready by March.", ja: "厳しい？いやいや、もう遅れてるんだよ。3月なんて絶対無理。" }
+      - { who: julian, at: 0.3, en: "They're offering a bonus if we hit it, apparently. Twenty per cent on top.", ja: "間に合えばボーナスを出すそうです。20%上乗せで。" }
+      - { who: roald, at: 0.2, en: "...Okay, twenty per cent's not nothing. If we drop the Android version for launch, maybe.", tts: "...Okay, twenty per cent's not nothin'. If we drop the Android version for launch, maybe.", ja: "…まあ、20%はばかにできないな。ローンチでAndroid版を外すなら、もしかしたら。" }
+      - { who: goldie, at: -0.4, en: "I'm not keen on dropping Android. Half their users are on it.", ja: "Android外しは気が進まないな。ユーザーの半分がAndroidだから。" }
+      - { who: julian, at: 0.3, en: "What if Android follows two weeks later? I can sell that to them.", ja: "Androidを2週間遅れで出すのはどうでしょう？それなら先方を説得できます。" }
+      - { who: goldie, at: 0.3, en: "Fine. iOS on the 1st, Android by the 15th. But I want that in writing.", tts: "Fine. I O S on the first, Android by the fifteenth. But I want that in writing.", ja: "いいわ。iOSは1日、Androidは15日まで。ただし書面でね。" }
+    rounds:
+      - { type: opinions, claims: ["Androidを 外せば 間に合う かも", "Androidは ユーザーの 半分", "2週間 遅れなら 先方を 説得できる"], answer: [roald, goldie, julian] }
+      - { type: changed, answer: roald }
+      - { type: plan, ask: "決まったことは？", choices: ["Both versions launch on the 1st of March.", "The launch stays on the original date.", "iOS launches on the 1st and Android by the 15th."], answer: 2, ja: "iOSは1日、Androidは15日までに出す。" }
+    note: "might be tricky は遠回しの反対。20%で気が変わる"
+    tags: { seed: 40, register: boss, pragmatic: hedge, features: [overlap, numbers, ellipsis] }
+
+  - kind: tachi
+    id: tachi-bbq-gossip
+    ask: "バーベキューで うわさ話"
+    scene: street
+    lines:
+      - { who: rosie, at: 0, en: "Okay, don't look now, but Kenta and Yui just turned up. Together.", ja: "ねえ、今見ないでね。ケンタとユイが来たの。一緒に。" }
+      - { who: punchy, at: -0.3, en: "Together together? Or just the same train?", ja: "一緒って、そういう一緒？それとも同じ電車だっただけ？" }
+      - { who: diana, at: 0.2, en: "Same train, surely. She's been seeing that guy from her climbing gym for ages.", tts: "Same train, surely. She's been seein' that guy from 'er climbing gym for ages.", ja: "同じ電車でしょ、さすがに。彼女、クライミングジムの人とずっと付き合ってるもの。" }
+      - { who: rosie, at: 0.3, en: "Not any more. They broke up in, like, January.", ja: "もう違うよ。1月くらいに別れたの。" }
+      - { who: diana, at: -0.4, en: "Did they? Oh. Well, then, I suppose... he did bring her a drink without asking what she wanted.", tts: "Did they? Oh. Well, then, I s'pose... he did bring 'er a drink without askin' what she wanted.", ja: "そうなの？あら。それなら…たしかに彼、何がいいか聞かずに彼女に飲み物を持ってきてたわね。" }
+      - { who: punchy, at: 0.3, en: "That's nothing. I brought you a drink without asking.", ja: "そんなの何でもないよ。僕だって君に聞かずに飲み物持ってきたし。" }
+      - { who: diana, at: 0.2, en: "You brought me a warm beer. That's different.", ja: "あなたが持ってきたのはぬるいビールよ。それとは違う。" }
+      - { who: rosie, at: -0.3, en: "Shh, they're coming over. Act normal. Someone say something about the weather.", ja: "しっ、こっち来る。普通にして。誰か天気の話して。" }
+    rounds:
+      - { type: opinions, claims: ["ユイは 前の 彼と 別れた", "飲み物 くらいで 決めつけない", "彼の 飲み物の 渡し方に 気づいた"], answer: [rosie, punchy, diana] }
+      - { type: changed, answer: diana }
+      - { type: plan, ask: "このあと どうなる？", choices: ["One of them will ask the couple directly.", "The two will come over, and they'll act casual.", "They'll leave to buy more drinks."], answer: 1, ja: "二人がこっちに来るので、何気なくふるまう。" }
+    note: "together together＝恋人として一緒、の強調"
+    tags: { seed: 53, register: friend, pragmatic: attitude, conditions: [street], features: [overlap, h-drop, intonation] }
+
+  - kind: tachi
+    id: tachi-surprise-party
+    ask: "サプライズパーティーの 段取り"
+    scene: living
+    lines:
+      - { who: molly, at: 0, en: "Okay, so the cake's being picked up at five, and the restaurant's holding the back room from seven.", ja: "よし、ケーキは5時に受け取り、レストランは7時から奥の部屋を押さえてもらってる。" }
+      - { who: sherb, at: 0.3, en: "And she still thinks we're just having a quiet dinner, yeah? Not twenty people.", tts: "An' she still thinks we're just havin' a quiet dinner, yeah? Not twenty people.", ja: "で、彼女はまだ静かな夕食だと思ってるんだよね？20人じゃなくて。" }
+      - { who: raymond, at: -0.3, en: "Hang on. Who's picking up the cake? I thought you said you would.", tts: "'Ang on. Who's pickin' up the cake? I thought you said you would.", ja: "待って。ケーキは誰が受け取るの？君がやるって言ってたと思うけど。" }
+      - { who: molly, at: 0.3, en: "I said I'd order it. I can't do five, I'm at the hairdresser's till half past.", ja: "注文するって言ったの。5時は無理。5時半まで美容院なの。" }
+      - { who: sherb, at: 0.2, en: "I'll get it, then. It's on my way.", ja: "じゃあ俺が取りに行く。通り道だし。" }
+      - { who: raymond, at: -0.4, en: "Wait, no, you're the one taking her to the restaurant. You can't turn up with a cake box.", ja: "待って、だめだ、彼女をレストランに連れていくのは君だろ。ケーキの箱を持って現れちゃまずい。" }
+      - { who: sherb, at: 0.3, en: "Good point. Fine, you do the cake, then.", ja: "たしかに。じゃあケーキは君ね。" }
+      - { who: molly, at: -0.5, en: "Shh! She's here. So, uh, yes, the report's due Monday, everyone.", ja: "しっ！来た。えー、そう、みなさん、報告書は月曜締め切りです。" }
+    rounds:
+      - { type: opinions, claims: ["5時は 美容院で 行けない", "連れていく 人が ケーキを 持つのは だめ", "最初は 自分が 取りに 行くと 言った"], answer: [molly, raymond, sherb] }
+      - { type: changed, answer: sherb }
+      - { type: plan, ask: "ケーキは だれが？", choices: ["The one taking her to dinner, on the way.", "The one who pointed out the problem.", "The one at the hairdresser's, at half five."], answer: 1, ja: "問題を指摘した人が受け取りに行く。" }
+    note: "the report は話をそらすための作り話"
+    tags: { seed: 54, register: friend, pragmatic: humour, features: [overlap, h-drop, clock] }
+
+  - kind: tachi
+    id: tachi-train-tourists
+    ask: "電車で 旅行者の 会話。どこで 降りる？"
+    scene: platform
+    lines:
+      - { who: stitches, at: 0, en: "So is it this stop or the next one for the big temple?", ja: "大きなお寺って、この駅？次の駅？" }
+      - { who: coco, at: 0.3, en: "Asakusa? We're not even on the right line for that. This is going to Shinjuku.", tts: "Asakusa? We're not even on the right line for that. This is goin' to Shinjuku.", ja: "浅草？そもそも路線が違うよ。これは新宿行き。" }
+      - { who: merengue, at: -0.2, en: "Which is fine, because we said Shinjuku Gyoen first, didn't we? The garden. Then the temple tomorrow.", ja: "それでいいのよ、先に新宿御苑って言ったでしょ？庭園。お寺は明日。" }
+      - { who: stitches, at: 0.3, en: "Did we? I thought the garden was closed on Mondays.", ja: "そうだっけ？庭園って月曜休みじゃなかった？" }
+      - { who: merengue, at: 0.2, en: "Today's Tuesday, love.", ja: "今日は火曜日よ。" }
+      - { who: stitches, at: -0.4, en: "Is it? Wow. Okay. Garden it is.", ja: "そうなの？うわ。じゃあ庭園で。" }
+      - { who: coco, at: 0.3, en: "Then we want Shinjuku-gyoemmae, not Shinjuku. Which means changing at Yotsuya. That's... two stops from here.", tts: "Then we want Shinjuku-gyoemmae, not Shinjuku. Which means changin' at Yotsuya. That's... two stops from 'ere.", ja: "それなら新宿じゃなくて新宿御苑前。つまり四ツ谷で乗り換え。ここから…2駅。" }
+      - { who: merengue, at: 0.2, en: "Brilliant. Bags ready, then.", ja: "完璧。じゃあ荷物用意して。" }
+    rounds:
+      - { type: opinions, claims: ["路線が ちがうと 気づいた", "今日は 庭園、お寺は あした", "庭園は 休みだと 思っていた"], answer: [coco, merengue, stitches] }
+      - { type: changed, answer: stitches }
+      - { type: plan, ask: "3人は どこで 降りる？", choices: ["Yotsuya, to change for the garden.", "Shinjuku, at the end of the line.", "Asakusa, for the temple."], answer: 0, ja: "四ツ谷で降りて、庭園へ乗り換える。" }
+    note: "love は親しい呼びかけ（英）。乗換駅で降りる"
+    tags: { seed: 12, register: stranger, pragmatic: literal, conditions: [train], features: [overlap, h-drop, contrast] }

@@ -1,0 +1,202 @@
+# ことば タイル S2 もり: reduction chains (whatcha, whaddaya, dunno, gimme), should've / could've / would've, h-dropping.
+schema: 1
+unit: s2-tile
+game: tile
+stage: 3
+track: people
+seeds: [3, 17, 18, 30, 31, 36, 37, 38, 40, 43, 49, 52, 57]
+features: { primary: chain, review: yod }
+cando: "should've・whaddaya・dunno など ちぢまった かたまりを ききとれる"
+status: draft
+items:
+  - kind: tile
+    id: tile-whatcha-up-to
+    speaker: kicks
+    en: "What are you up to this weekend?"
+    tts: "Whatcha up to this weekend?"
+    ja: "今週末は何するの？"
+    tiles: ["What", "are", "you", "up", "to", "this", "weekend"]
+    decoys: ["do", "at"]
+    marks: [[say, "What are you", "Whatcha"]]
+    note: "Whatcha＝What are you。are はほぼ消えて聞こえない"
+    scene: office
+    tags: { seed: 38, register: colleague, pragmatic: ritual, features: [chain] }
+
+  - kind: tile
+    id: tile-shoulda-told-him
+    speaker: audie
+    en: "I should've just told him the truth."
+    tts: "I shoulda just told 'im the truth."
+    ja: "最初から本当のことを言えばよかった。"
+    tiles: ["I", "should've", "just", "told", "him", "the", "truth"]
+    decoys: ["shouldn't have", "them"]
+    marks: [[say, "should've", "shoulda"], [say, "him", "'im"], [link, "told him"]]
+    note: "should've は「シュダ」。'im の h は落ちて「トールディム」"
+    scene: cafe
+    tags: { seed: 57, register: friend, pragmatic: attitude, features: [contraction, h-drop] }
+
+  - kind: tile
+    id: tile-coulda-fixed-it
+    speaker: stitches
+    en: "If you'd called sooner, I could've fixed it for half the price."
+    tts: "If ya'd called sooner, I coulda fixed it for half the price."
+    ja: "もっと早く呼んでくれてたら、半額で直せたんだけどね。"
+    tiles: ["If", "you'd", "called", "sooner", "I", "could've", "fixed", "it", "for", "half", "the", "price"]
+    decoys: ["you", "couldn't have"]
+    marks: [[say, "could've", "coulda"], [link, "fixed it"]]
+    note: "you'd の d はほぼ消える。could've＝できたのに（実際は×）"
+    tags: { seed: 31, register: service, pragmatic: literal, features: [contraction] }
+
+  - kind: tile
+    id: tile-dunno-not-that-hungry
+    speaker: kid-cat
+    en: "I don't know, I'm not that hungry, to be honest."
+    tts: "I dunno, I'm not that hungry, ta be honest."
+    ja: "どうかな、正直そんなにお腹すいてないんだよね。"
+    tiles: ["I", "don't", "know", "I'm", "not", "that", "hungry", "to", "be", "honest"]
+    decoys: ["don't mind", "so"]
+    marks: [[say, "don't know", "dunno"], [say, "to", "ta"]]
+    note: "dunno＝don't know。not that＝そこまで〜ない"
+    scene: street
+    tags: { seed: 18, register: friend, pragmatic: refusal, features: [dunno, chain] }
+
+  - kind: tile
+    id: tile-word-with-him
+    speaker: tom-nook
+    en: "I'll have a word with him and get back to you."
+    tts: "I'll have a word with 'im an' get back to ya."
+    ja: "彼に話しておいて、また連絡します。"
+    tiles: ["I'll", "have", "a", "word", "with", "him", "and", "get", "back", "to", "you"]
+    decoys: ["them", "I'd"]
+    marks: [[say, "him", "'im"], [say, "and", "an'"], [link, "with him and"]]
+    note: "with 'im an' は「ウィズィマン」。have a word＝話をつける"
+    scene: living
+    tags: { seed: 30, register: neighbour, pragmatic: hedge, conditions: [phone], features: [h-drop, weak-form] }
+
+  - kind: tile
+    id: tile-whaddaya-wanna-do
+    speaker: molly
+    en: "What do you want to do tonight? I'm easy."
+    tts: "Whaddaya wanna do tonight? I'm easy."
+    ja: "今夜どうする？わたしはなんでもいいよ。"
+    tiles: ["What", "do", "you", "want", "to", "do", "tonight", "I'm", "easy"]
+    decoys: ["are", "going"]
+    marks: [[say, "What do you", "Whaddaya"], [say, "want to", "wanna"]]
+    note: "whaddaya＝what do you。wanna＝want to"
+    scene: living
+    tags: { seed: 36, register: partner, pragmatic: indirect, features: [chain, wanna] }
+
+  - kind: tile
+    id: tile-wedve-been-fine
+    speaker: julian
+    en: "We'd have been fine if they hadn't changed the brief."
+    tts: "We'd've been fine if they hadn't changed the brief."
+    ja: "向こうが依頼内容を変えなければ、問題なかったのに。"
+    tiles: ["We'd", "have", "been", "fine", "if", "they", "hadn't", "changed", "the", "brief"]
+    decoys: ["We'll", "had"]
+    marks: [[say, "We'd have", "We'd've"], [stress, "hadn't"]]
+    note: "We'd've は「ウィダヴ」。have been は弱く短い"
+    scene: office
+    tags: { seed: 40, register: colleague, pragmatic: attitude, features: [contraction, weak-form] }
+
+  - kind: tile
+    id: tile-not-gonna-lie
+    speaker: pietro
+    en: "I'm not going to lie, it's going to be tight."
+    tts: "I'm not gonna lie, it's gonna be tight."
+    ja: "正直に言うと、かなりぎりぎりになるね。"
+    tiles: ["I'm", "not", "going", "to", "lie", "it's", "going", "to", "be", "tight"]
+    decoys: ["want", "was"]
+    marks: [[say, "going to lie", "gonna lie"], [say, "going to be", "gonna be"]]
+    note: "I'm not gonna lie＝正直言うと。前置きの決まり文句"
+    scene: office
+    tags: { seed: 40, register: boss, pragmatic: hedge, features: [gonna, chain] }
+
+  - kind: tile
+    id: tile-gotta-run
+    speaker: sherb
+    en: "Sorry, mate, I've got to run. Catch you later."
+    tts: "Sorry, mate, I've gotta run. Catchya later."
+    ja: "ごめん、もう行かなきゃ。またね。"
+    tiles: ["Sorry", "mate", "I've", "got", "to", "run", "Catch", "you", "later"]
+    decoys: ["I", "want"]
+    marks: [[say, "got to", "gotta"], [say, "Catch you", "Catchya"]]
+    note: "gotta run＝もう行かなきゃ。I've の ve はほぼ消える"
+    scene: street
+    tags: { seed: 49, register: friend, pragmatic: formula, features: [gotta, chain] }
+
+  - kind: tile
+    id: tile-room-at-the-back
+    speaker: diana
+    en: "If I were you, I'd ask for a room at the back."
+    tts: "If I were you, I'd ask fer a room at the back."
+    ja: "わたしなら、奥のお部屋をお願いしますね。"
+    tiles: ["If", "I", "were", "you", "I'd", "ask", "for", "a", "room", "at", "the", "back"]
+    decoys: ["I'll", "front"]
+    marks: [[say, "for a", "fer a"], [link, "I'd ask"]]
+    note: "I'd＝わたしなら〜する（助言）。I'll なら今からする"
+    tags: { seed: 3, register: service, pragmatic: indirect, conditions: [desk], features: [contraction, weak-form] }
+
+  - kind: tile
+    id: tile-too-much-on
+    speaker: coco
+    en: "I'd love to, but I've got way too much on."
+    tts: "I'd love ta, but I've got way too much on."
+    ja: "行きたいんだけど、予定が詰まりすぎてて。"
+    tiles: ["I'd", "love", "to", "but", "I've", "got", "way", "too", "much", "on"]
+    decoys: ["I'll", "I"]
+    marks: [[say, "to", "ta"], [link, "much on"]]
+    note: "too much on＝予定がいっぱい。I'd love to, but は断り"
+    scene: street
+    tags: { seed: 18, register: friend, pragmatic: refusal, features: [contraction, idiom] }
+
+  - kind: tile
+    id: tile-gimme-a-sec
+    speaker: dom
+    en: "Give me a sec, let me grab my water."
+    tts: "Gimme a sec, lemme grab my water."
+    ja: "ちょっと待って、水取ってくる。"
+    tiles: ["Give", "me", "a", "sec", "let", "me", "grab", "my", "water"]
+    decoys: ["Let's", "the"]
+    marks: [[say, "Give me", "Gimme"], [say, "let me", "lemme"]]
+    note: "gimme＝give me、lemme＝let me。sec＝ちょっと"
+    tags: { seed: 17, register: friend, pragmatic: literal, features: [lemme, chain] }
+
+  - kind: tile
+    id: tile-go-over-it
+    speaker: goldie
+    en: "Do you want me to go over it again?"
+    tts: "D'you want me ta go over it again?"
+    ja: "もう一度説明しようか？"
+    tiles: ["Do", "you", "want", "me", "to", "go", "over", "it", "again"]
+    decoys: ["Did", "won't"]
+    marks: [[say, "Do you", "D'you"], [link, "over it again"]]
+    note: "go over＝もう一度説明する。over it again はひと続き"
+    scene: office
+    tags: { seed: 43, register: colleague, pragmatic: literal, features: [yod, linking] }
+
+  - kind: tile
+    id: tile-leave-it-out-front
+    speaker: punchy
+    en: "They said to leave it out front, so that's what I did."
+    tts: "They said ta leave id out front, so that's whad I did."
+    ja: "玄関の前に置いといてって言われたから、そうしたよ。"
+    tiles: ["They", "said", "to", "leave", "it", "out", "front", "so", "that's", "what", "I", "did"]
+    decoys: ["the", "at"]
+    marks: [[link, "leave it out"], [say, "what I", "whad I"]]
+    note: "leave it out は「リーヴィダウ」と一続き"
+    scene: door
+    tags: { seed: 37, register: stranger, pragmatic: literal, features: [linking, flap] }
+
+  - kind: tile
+    id: tile-woulda-called
+    speaker: whitney
+    en: "Sorry, I would've called, but my phone died."
+    tts: "Sorry, I woulda called, but my phone died."
+    ja: "ごめん、電話しようと思ったんだけど、スマホの電池が切れちゃって。"
+    tiles: ["Sorry", "I", "would've", "called", "but", "my", "phone", "died"]
+    decoys: ["wouldn't have", "dead"]
+    marks: [[say, "would've", "woulda"]]
+    note: "would've は「ウダ」。〜するつもりだった（でもしなかった）"
+    scene: living
+    tags: { seed: 49, register: friend, pragmatic: formula, conditions: [phone], features: [contraction] }

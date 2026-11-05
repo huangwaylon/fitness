@@ -1,0 +1,111 @@
+# たちぎき S2 もり (b): a leaving gift, a polite non-answer that turns into a yes, fireworks in the rain, a noisy
+# neighbour, a friend venting about her manager.
+schema: 1
+unit: s2-tachi-b
+game: tachi
+stage: 3
+track: people
+seeds: [18, 32, 50, 54, 57]
+features: { primary: overlap, review: h-drop }
+cando: "3人の かいわで えんきょくな ことわりと 心がわりを ききとれる"
+status: draft
+items:
+  - kind: tachi
+    id: tachi-leaving-gift
+    ask: "同僚への プレゼントを 決めている"
+    scene: office
+    lines:
+      - { who: maple, at: 0, en: "Okay, Sato-san's leaving do is Friday, and we still need a gift. I was thinking a nice bottle of sake.", ja: "さて、佐藤さんの送別会は金曜で、まだプレゼントが決まってないの。いい日本酒を考えてたんだけど。" }
+      - { who: raymond, at: 0.3, en: "She doesn't drink, though, does she? I've never seen her have anything stronger than tea.", tts: "She doesn't drink, though, does she? I've never seen 'er 'ave anything stronger than tea.", ja: "でも彼女、飲まないよね？お茶より強いものを飲んでるところ、見たことないよ。" }
+      - { who: roald, at: -0.2, en: "Yeah, nah, sake's a bad call. What about a voucher? Then she picks.", tts: "Yeah, nah, sake's a bad call. Wha' about a voucher? Then she picks.", ja: "うん、いや、日本酒はやめたほうがいい。ギフト券は？それなら本人が選べる。" }
+      - { who: maple, at: 0.3, en: "A voucher feels kind of lazy, doesn't it? Like we couldn't be bothered.", tts: "A voucher feels kinda lazy, doesn't it? Like we couldn't be bothered.", ja: "ギフト券ってちょっと手抜きっぽくない？面倒くさがったみたいで。" }
+      - { who: raymond, at: 0.3, en: "She's moving to Fukuoka for the hiking, isn't she? Get her something for that. A decent flask, or a backpack.", tts: "She's movin' to Fukuoka for the hiking, isn't she? Get 'er something for that. A decent flask, or a backpack.", ja: "彼女、山歩きのために福岡に引っ越すんだよね？それ用のものにしよう。いい水筒とか、リュックとか。" }
+      - { who: roald, at: -0.4, en: "Ooh, the flask. And we could get it engraved with the team name.", tts: "Ooh, the flask. An' we could get it engraved with the team name.", ja: "お、水筒いいね。チーム名を彫ってもらえるし。" }
+      - { who: maple, at: 0.3, en: "Okay, I'm sold. A flask with an engraving. I'll order it tonight so it's here by Thursday.", ja: "わかった、それで決まり。名入れの水筒ね。今夜注文して、木曜までに届くようにする。" }
+      - { who: roald, at: 0.2, en: "Legend. I'll pass the envelope round for the money.", ja: "さすが。お金集めの封筒は僕が回すよ。" }
+    rounds:
+      - { type: opinions, claims: ["彼女は お酒を 飲まない", "最初は ギフト券を すすめた", "ギフト券は 手抜きに 見える"], answer: [raymond, roald, maple] }
+      - { type: changed, answer: maple }
+      - { type: plan, ask: "プレゼントは？", choices: ["A bottle of good sake.", "An engraved flask, ordered tonight.", "A gift voucher for a hiking shop."], answer: 1, ja: "名入れの水筒。今夜注文する。" }
+    note: "Yeah, nah＝いや、ちがう（豪）。I'm sold＝賛成"
+    tags: { seed: 54, register: colleague, pragmatic: attitude, features: [overlap, h-drop, idiom] }
+
+  - kind: tachi
+    id: tachi-bootcamp
+    ask: "朝の トレーニングに さそっている"
+    scene: cafe
+    lines:
+      - { who: kicks, at: 0, en: "So, are we doing the six o'clock bootcamp in Yoyogi or not? It's only ¥3,000 a month.", tts: "So, are we doin' the six o'clock bootcamp in Yoyogi or not? It's only three thousand a month.", ja: "で、代々木の朝6時のブートキャンプ、やるの？やらないの？月3000円だけだよ。" }
+      - { who: bunnie, at: 0.3, en: "I'm so in. I need something to get me out of bed.", ja: "絶対やる。ベッドから出るきっかけが欲しいの。" }
+      - { who: diana, at: 0.3, en: "It sounds lovely. I'll definitely think about it.", ja: "素敵ね。ぜひ考えてみるわ。" }
+      - { who: kicks, at: -0.3, en: "That's a no, isn't it?", ja: "それ、ノーってことでしょ？" }
+      - { who: diana, at: 0.3, en: "It's not a no! It's just... six o'clock. In January. Outside.", ja: "ノーじゃないわよ！ただ…6時でしょ。1月に。外で。" }
+      - { who: bunnie, at: 0.3, en: "There's an indoor option on rainy days, and the first week's free.", tts: "There's an indoor option on rainy days, an' the first week's free.", ja: "雨の日は室内でやるし、最初の1週間は無料だよ。" }
+      - { who: diana, at: -0.4, en: "Free? Well, that changes things. Fine, I'll come for the free week and see.", ja: "無料？それなら話は別ね。いいわ、無料の週だけ行ってみる。" }
+      - { who: kicks, at: 0.2, en: "Ha! Monday, six sharp. I'll pick you both up at quarter to.", tts: "Ha! Monday, six sharp. I'll pick ya both up at quarter to.", ja: "やった！月曜6時ぴったりね。2人とも5時45分に迎えに行くよ。" }
+    rounds:
+      - { type: opinions, claims: ["「考えてみる」は 断りだと 見ぬいた", "朝 起きる きっかけが ほしい", "冬の 朝6時に 外は きつい"], answer: [kicks, bunnie, diana] }
+      - { type: changed, answer: diana }
+      - { type: plan, ask: "月曜の 朝は？", choices: ["Only two of them go, at six.", "They'll try the indoor class on a rainy day.", "All three go, and one picks the others up at 5:45."], answer: 2, ja: "3人とも行く。1人が5時45分に迎えに行く。" }
+    note: "I'll think about it は断りのことが多い"
+    tags: { seed: 18, register: friend, pragmatic: refusal, conditions: [cafe], features: [overlap, intonation, clock] }
+
+  - kind: tachi
+    id: tachi-fireworks-rain
+    ask: "花火大会に 行くか 話している"
+    scene: living
+    lines:
+      - { who: audie, at: 0, en: "The forecast says a 70% chance of rain on Saturday. Are we still going to the fireworks?", tts: "The forecast says a seventy per cent chance of rain on Saturday. Are we still goin' to the fireworks?", ja: "土曜の降水確率70%だって。それでも花火大会行く？" }
+      - { who: wilbur, at: 0.3, en: "Course we are. They only cancel if there's a proper storm. A bit of drizzle never stopped anyone.", ja: "もちろん行くよ。中止になるのは本格的な嵐のときだけ。霧雨くらいで誰もやめないって。" }
+      - { who: apollo, at: -0.2, en: "Standing in a wet yukata for two hours with a million people? Can't wait.", tts: "Standin' in a wet yukata for two hours with a million people? Can't wait.", ja: "濡れた浴衣で100万人と2時間立ちっぱなし？楽しみで仕方ないね。" }
+      - { who: audie, at: 0.3, en: "He's got a point. Last year the trains afterwards were a nightmare, even when it was dry.", ja: "一理あるよ。去年は晴れてても帰りの電車が地獄だったし。" }
+      - { who: wilbur, at: 0.3, en: "Okay, how about this. My mate's got a flat in Asakusa with a balcony. You can see the whole thing from there.", tts: "Okay, how 'bout this. My mate's got a flat in Asakusa with a balcony. Ya can see the whole thing from there.", ja: "じゃあこうしよう。友だちが浅草にベランダ付きの部屋を持ってるんだ。そこから全部見えるよ。" }
+      - { who: apollo, at: -0.4, en: "A balcony? With a roof? Right, I'm in. I'll bring snacks.", ja: "ベランダ？屋根付き？よし、行く。お菓子持っていくよ。" }
+      - { who: audie, at: 0.3, en: "I'll check the official site on Saturday morning. If it's called off, we'll just get takeout at his mate's.", tts: "I'll check the official site on Saturday morning. If it's called off, we'll just get takeout at 'is mate's.", ja: "土曜の朝、公式サイトを確認するね。中止なら、その友だちの家でテイクアウトにしよう。" }
+      - { who: wilbur, at: 0.2, en: "Sorted.", ja: "決まり。" }
+    rounds:
+      - { type: opinions, claims: ["少しの 雨なら 平気", "屋根が あるなら 行く", "帰りの 電車が 心配"], answer: [wilbur, apollo, audie] }
+      - { type: changed, answer: apollo }
+      - { type: plan, ask: "土曜は どうする？", choices: ["Watch from a friend's balcony in Asakusa.", "Stand by the river in yukata.", "Stay home and watch it on TV."], answer: 0, ja: "浅草の友だちの部屋のベランダから見る。" }
+    note: "Can't wait は皮肉。濡れて立つのは嫌という意味"
+    tags: { seed: 50, register: friend, pragmatic: sarcasm, features: [overlap, numbers, h-drop] }
+
+  - kind: tachi
+    id: tachi-noisy-neighbour
+    ask: "マンションの 住人が 話している"
+    scene: door
+    lines:
+      - { who: cherry, at: 0, en: "Did either of you hear the guy in 405 last night? Drilling. At midnight.", tts: "Did either of you hear the guy in four-oh-five last night? Drilling. At midnight.", ja: "昨日の夜、405号室の人の音聞こえた？ドリル。夜中の12時に。" }
+      - { who: fauna, at: 0.3, en: "I did. I was going to go up and say something, but I didn't want to make it awkward.", tts: "I did. I was gonna go up an' say something, but I didn't wanna make it awkward.", ja: "聞こえた。上に行って何か言おうかと思ったけど、気まずくしたくなくて。" }
+      - { who: tom-nook, at: -0.3, en: "Honestly, I'd just leave a note at the management office. Let them deal with it.", tts: "Honestly, I'd just leave a note at the management office. Let 'em deal with it.", ja: "正直、管理事務所にメモを残すだけでいいと思うよ。向こうに対応してもらえば。" }
+      - { who: cherry, at: 0.3, en: "A note? He'll never know it's about him. I reckon we just knock on his door.", tts: "A note? He'll never know it's about 'im. I reckon we just knock on 'is door.", ja: "メモ？自分のことだって気づかないよ。直接ドアをノックすればいいと思う。" }
+      - { who: fauna, at: 0.3, en: "I'd rather not knock. He's huge.", ja: "ノックはちょっと…。すごく大きい人なのよ。" }
+      - { who: tom-nook, at: 0.3, en: "He's actually really nice. He helped me carry my bike up last week. He probably just doesn't realise how thin the walls are.", ja: "実はすごくいい人だよ。先週、自転車を上まで運ぶのを手伝ってくれた。壁の薄さに気づいてないだけじゃないかな。" }
+      - { who: fauna, at: -0.4, en: "Oh. Well, if he's nice... maybe a friendly word is better than a note, then.", ja: "あら。いい人なら…メモより直接やんわり言ったほうがいいかもね。" }
+      - { who: cherry, at: 0.2, en: "Great. We'll go up together after work. Safety in numbers.", ja: "よし。仕事のあと、一緒に行こう。人数がいれば安心。" }
+    rounds:
+      - { type: opinions, claims: ["直接 ドアを ノックすべき", "管理事務所に メモで いい", "気まずく したくない"], answer: [cherry, tom-nook, fauna] }
+      - { type: changed, answer: fauna }
+      - { type: plan, ask: "どうする？", choices: ["They'll leave a note at the management office.", "They'll go and talk to him together after work.", "They'll wait and see if it happens again."], answer: 1, ja: "仕事のあと、一緒に直接話しに行く。" }
+    note: "I'd rather not＝できれば嫌。遠回しな拒否"
+    tags: { seed: 32, register: neighbour, pragmatic: indirect, features: [overlap, gonna, h-drop] }
+
+  - kind: tachi
+    id: tachi-credit-stolen
+    ask: "友だちが 仕事の ぐちを 言っている"
+    scene: cafe
+    lines:
+      - { who: label, at: 0, en: "So guess whose name was on the slides at the board meeting. Not mine.", ja: "ねえ、役員会議のスライドに誰の名前が載ってたと思う？私じゃないの。" }
+      - { who: mabel, at: 0.3, en: "No! Your manager's? After you stayed till ten every night?", ja: "うそ！上司の？毎晩10時まで残ってたのに？" }
+      - { who: bob, at: -0.2, en: "Classic. You should email the director. Just, like, casually mention it was your work.", tts: "Classic. You should email the director. Just, like, casually mention it was yer work.", ja: "あるあるだね。部長にメールすればいいよ。さりげなく自分の仕事だって書いてさ。" }
+      - { who: mabel, at: 0.3, en: "Hmm, I'd talk to the manager first. Going over her head could backfire.", tts: "Hmm, I'd talk to the manager first. Goin' over 'er head could backfire.", ja: "うーん、私ならまず上司と話すかな。頭越しにやると裏目に出るかも。" }
+      - { who: label, at: 0.3, en: "Ugh, I hate confrontation. I was just going to let it go.", tts: "Ugh, I hate confrontation. I was just gonna let it go.", ja: "うわ、対立って苦手。そのまま流そうと思ってたのに。" }
+      - { who: bob, at: -0.4, en: "If you let it go, she'll do it again. Trust me.", ja: "流したら、またやられるよ。ほんとに。" }
+      - { who: label, at: 0.3, en: "Yeah... you're right. Okay. I'll ask her for a quick chat tomorrow. Not an angry one, just... a chat.", ja: "そうだよね…その通り。わかった。明日ちょっと話す時間をもらう。怒るんじゃなくて…話すだけ。" }
+      - { who: mabel, at: 0.2, en: "Good for you. And keep your old drafts. Just in case.", tts: "Good for you. An' keep yer old drafts. Just in case.", ja: "えらい。それと、前の下書きは取っておいてね。念のため。" }
+    rounds:
+      - { type: opinions, claims: ["部長に メールすべき", "まず 上司と 話すべき", "対立は 苦手"], answer: [bob, mabel, label] }
+      - { type: changed, answer: label }
+      - { type: plan, ask: "あした どうする？", choices: ["She'll email the director about the slides.", "She'll let it go this time.", "She'll have a calm chat with her manager."], answer: 2, ja: "上司と落ち着いて話す。" }
+    note: "go over her head＝頭越しに上へ訴える"
+    tags: { seed: 57, register: friend, pragmatic: attitude, conditions: [cafe], features: [overlap, h-drop, gonna] }

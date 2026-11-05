@@ -1,0 +1,121 @@
+# ようじ でんわ S1 かわ: errand and service calls with one complication each (a mid-call change, a correction, an
+# indirect request, a bad line). One call = one play round + its memo round(s). `half`: which co-op role hears a line.
+schema: 1
+unit: s1-call
+game: call
+stage: 2
+track: life
+seeds: [13, 16, 35, 37, 49]
+features: { primary: self-repair, review: weak-form }
+cando: "でんわで とちゅうの へんこうや いいなおしを ききとって メモできる"
+status: draft
+cast: { me: us-m3 }
+items:
+  - kind: call
+    id: call-oat-milk
+    ask: "かいものを たのまれた。メモしよう"
+    scene: street
+    channel: phone
+    lines:
+      - { who: goldie, en: "Hey, are you still at the station? Could you grab a couple of things on your way back?", tts: "Hey, are ya still at the station? Couldja grab a couple of things on yer way back?", ja: "ねえ、まだ駅？帰りにちょっと買い物してきてくれる？" }
+      - { who: me, en: "Sure. What do you need?", ja: "いいよ。何がいる？" }
+      - { who: goldie, en: "Oat milk, the one in the blue carton, and a dozen eggs.", tts: "Oat milk, the one in the blue carton, an' a dozen eggs.", ja: "オーツミルク、青いパックのやつ。あと卵を12個。" }
+      - { who: me, en: "Blue carton, a dozen eggs. Got it.", ja: "青いパック、卵12個ね。了解。" }
+      - { who: goldie, en: "Oh, actually, make that two cartons. Ken and Mari are coming over on Sunday, and they go through it like water.", tts: "Oh, actually, make that two cartons. Ken an' Mari are comin' over on Sunday, an' they go through it like water.", ja: "あ、やっぱり2本にして。日曜にケンとマリが来るし、あの二人すごい勢いで飲むから。", repair: true }
+      - { who: goldie, en: "And if they're out of the blue one, the green's fine. Just not the sweetened one.", tts: "An' if they're outta the blue one, the green's fine. Just not the sweetened one.", ja: "青いのがなかったら緑でいいよ。甘いのだけはやめてね。" }
+    half: [0, 0, 0, 1, 1, 1]
+    memo:
+      - slots:
+          - { ask: "なにを？", options: ["オーツミルク", "アーモンドミルク", "ぎゅうにゅう"], answer: 0 }
+          - { ask: "いくつ？", options: ["1本", "2本", "12本"], answer: 1 }
+          - { ask: "たまごは？", options: ["6こ", "10こ", "12こ"], answer: 2 }
+          - { ask: "青が ないときは？", options: ["緑で いい", "甘いのでも いい", "買わなくて いい"], answer: 0 }
+    note: "make that two＝やっぱり2つに。言い直したあとが答え"
+    tags: { seed: 35, register: partner, pragmatic: literal, conditions: [phone, street], features: [self-repair, weak-form] }
+
+  - kind: call
+    id: call-prescription-ready
+    ask: "薬局に でんわ。メモしよう"
+    scene: living
+    channel: phone
+    lines:
+      - { who: me, en: "Hi, I'm just calling to check if my prescription's ready. It's under Wei.", ja: "もしもし、処方薬ができているか確認したくてお電話しました。ウェイの名前です。" }
+      - { who: merengue, en: "Let me just have a look. Wei... It's not quite ready, I'm afraid. We're still waiting on one of the items.", tts: "Lemme just 'ave a look. Wei... It's not quite ready, I'm afraid. We're still waitin' on one of the items.", ja: "お調べしますね。ウェイ様…申し訳ありません、まだ少しかかります。お薬の一つが入荷待ちでして。" }
+      - { who: me, en: "Oh, okay. When should I come in?", ja: "そうですか。いつ伺えばいいですか？" }
+      - { who: merengue, en: "It should be here by four. Actually, say half four, just to be safe.", tts: "It should be here by four. Actually, say half four, just ta be safe.", ja: "4時までには届くはずです。いえ、念のため4時半にしておきましょう。", repair: true }
+      - { who: merengue, en: "Oh, and could you bring your insurance card? The one we've got on file has expired.", tts: "Oh, an' couldja bring yer insurance card? The one we've got on file's expired.", ja: "あと、保険証をお持ちいただけますか？こちらで控えているものは期限が切れていまして。" }
+      - { who: me, en: "Will do. Thanks very much.", ja: "わかりました。ありがとうございます。" }
+    half: [0, 0, 0, 1, 1, 1]
+    memo:
+      - slots:
+          - { ask: "何時に 行く？", options: ["4時", "4時半", "5時半"], answer: 1 }
+          - { ask: "持っていく ものは？", options: ["保険証", "処方せん", "お薬手帳"], answer: 0 }
+          - { ask: "まだ できていない 理由は？", options: ["薬が 1つ 届いていない", "名前の まちがい", "保険証の 期限切れ"], answer: 0 }
+    note: "half four＝4時半（英）。actually の後が答え"
+    tags: { seed: 13, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, clock, h-drop] }
+
+  - kind: call
+    id: call-redelivery
+    ask: "配達の 人から でんわ"
+    scene: office
+    channel: phone
+    lines:
+      - { who: punchy, en: "G'day, it's the courier. I've got a parcel for you, but there's no one home.", tts: "G'day, it's the courier. I've gotta parcel for ya, but there's no one home.", ja: "どうも、配達の者です。お荷物があるんですが、ご不在のようで。" }
+      - { who: me, en: "Oh, sorry, I'm at work. Could you leave it at the door?", ja: "あ、すみません、仕事中なんです。玄関前に置いてもらえますか？" }
+      - { who: punchy, en: "Can't, I'm afraid. It needs a signature. I can bring it back this evening, though, between six and eight.", tts: "Can't, I'm afraid. It needs a signature. I c'n bring it back this evening, though, between six an' eight.", ja: "あいにくできないんです。サインが必要で。ただ、今晩6時から8時の間ならもう一度お持ちできます。" }
+      - { who: me, en: "Hmm, I won't be back till seven-ish.", ja: "うーん、7時ごろまで帰れないんですよ。" }
+      - { who: punchy, en: "No dramas. Hang on, let me check... Yeah, I can do the last slot instead, eight till nine.", tts: "No dramas. Hang on, lemme check... Yeah, I c'n do the last slot instead, eight till nine.", ja: "大丈夫ですよ。ちょっと待ってくださいね…ええ、代わりに最終の8時から9時でいけます。", repair: true }
+      - { who: punchy, en: "Or if it's easier, your neighbour at number five said she's happy to take it.", tts: "Or if it's easier, yer neighbour at number five said she's happy ta take it.", ja: "それか、そのほうが楽なら、5番のお隣さんが預かってもいいと言ってましたよ。" }
+      - { who: me, en: "Eight till nine is perfect. Thanks.", ja: "8時から9時でお願いします。ありがとう。" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - slots:
+          - { ask: "何時に 来る？", options: ["6時〜8時", "7時ごろ", "8時〜9時"], answer: 2 }
+          - { ask: "置いて いけない 理由は？", options: ["サインが いる", "雨が ふっている", "住所が ちがう"], answer: 0 }
+          - { ask: "ほかの 方法は？", options: ["5番の となりの人に あずける", "コンビニで うけとる", "あした もう一度"], answer: 0 }
+    note: "instead＝代わりに。最初の6時〜8時ではない"
+    tags: { seed: 37, register: stranger, pragmatic: literal, conditions: [phone, street], features: [self-repair, lemme, weak-form] }
+
+  - kind: call
+    id: call-dentist-move
+    ask: "歯医者から でんわ"
+    scene: living
+    channel: phone
+    lines:
+      - { who: coco, en: "Hi, it's Coco from Bayside Dental. I'm calling about your appointment on Thursday.", ja: "ベイサイド歯科のココです。木曜日のご予約の件でお電話しました。" }
+      - { who: coco, en: "Unfortunately Dr Lee's off sick, so we need to move you. Would Tuesday at a quarter past three work?", tts: "Unfortunately Doctor Lee's off sick, so we need ta move you. Would Tuesday at a quarter past three work?", ja: "あいにくリー先生が病欠でして、ご予約を移させていただきたいんです。火曜の3時15分はいかがですか？" }
+      - { who: me, en: "Tuesday afternoon's tricky. Have you got anything in the morning?", ja: "火曜の午後はちょっと厳しくて。午前中は空いてますか？" }
+      - { who: coco, en: "Let me see... Wednesday at ten forty? Oh, no, sorry, that's just gone. Friday at ten forty, then.", tts: "Lemme see... Wednesday at ten forty? Oh, no, sorry, that's just gone. Friday at ten forty, then.", ja: "ええと…水曜の10時40分は？あ、いえ、すみません、今埋まってしまいました。では金曜の10時40分で。", repair: true }
+      - { who: me, en: "Friday's fine.", ja: "金曜で大丈夫です。" }
+      - { who: coco, en: "Lovely. And since we moved it, there's no change fee, of course. Just come in ten minutes early to fill in a form.", tts: "Lovely. An' since we moved it, there's no change fee, of course. Just come in ten minutes early ta fill in a form.", ja: "よかったです。こちらの都合なので、もちろん変更手数料はかかりません。問診票の記入があるので10分前にお越しください。" }
+    half: [0, 0, 0, 1, 1, 1]
+    memo:
+      - slots:
+          - { ask: "新しい 予約は？", options: ["火曜", "水曜", "金曜"], answer: 2 }
+          - { ask: "何時？", options: ["3時15分", "10時30分", "10時40分"], answer: 2 }
+          - { ask: "手数料は？", options: ["かからない", "かかる", "当日なら かかる"], answer: 0 }
+          - { ask: "変更の 理由は？", options: ["先生が 休み", "予約の まちがい", "改装工事"], answer: 0 }
+    note: "that's just gone＝今埋まった。水曜は消える"
+    tags: { seed: 16, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, lemme, clock] }
+
+  - kind: call
+    id: call-film-rebook
+    ask: "友だちから でんわ。チケットを 取りなおす"
+    scene: living
+    channel: phone
+    lines:
+      - { who: kid-cat, en: "Hey, so, bad news. My train's stuck outside Shinagawa. Some kind of signal problem.", tts: "Hey, so, bad news. My train's stuck outside Shinagawa. Some kinda signal problem.", ja: "ねえ、悪い知らせ。電車が品川の手前で止まってて。信号トラブルか何かみたい。" }
+      - { who: me, en: "Oh no. The film starts at seven.", ja: "うそ。映画7時からだよ。" }
+      - { who: kid-cat, en: "Yeah, I know. I'm not going to make seven. Is there a later showing, by any chance?", tts: "Yeah, I know. I'm not gonna make seven. Is there a later showing, by any chance?", ja: "うん、わかってる。7時には間に合わない。もしかして、遅い回ってある？" }
+      - { who: me, en: "There's one at nine fifteen.", ja: "9時15分のがあるよ。" }
+      - { who: kid-cat, en: "Nine fifteen... Actually, no, I've got an early start tomorrow. Could we just do tomorrow at seven instead?", ja: "9時15分か…いや、やっぱり明日朝早いんだ。明日の7時にできない？", repair: true }
+      - { who: kid-cat, en: "And, um, those recliner seats were kind of pricey, weren't they? Just saying.", tts: "An', um, those recliner seats were kinda pricey, weren't they? Just sayin'.", ja: "それと、えーと、リクライナー席ってけっこう高かったよね？いや、言ってみただけ。" }
+      - { who: me, en: "Ha, okay. Regular seats it is.", ja: "はは、了解。普通の席にするね。" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - slots:
+          - { ask: "いつに 変える？", options: ["今日 7時", "今日 9時15分", "あした 7時"], answer: 2 }
+          - { ask: "席は？", options: ["リクライナー席", "ふつうの 席", "いちばん 前"], answer: 1 }
+          - { ask: "遅れる 理由は？", options: ["電車が 止まっている", "仕事が 長引いた", "寝坊した"], answer: 0 }
+    note: "Just saying＝遠回しなお願い。安い席にしてほしい"
+    tags: { seed: 49, register: friend, pragmatic: indirect, conditions: [phone, train], features: [self-repair, kinda, gonna] }

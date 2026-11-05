@@ -1,0 +1,203 @@
+# ことば タイル S1 かわ (b): did you / would you / could you run together (yod), 'em, lemme, kinda, for and of.
+schema: 1
+unit: s1-tile-b
+game: tile
+stage: 2
+track: people
+seeds: [1, 2, 13, 16, 26, 30, 35, 37, 39, 42, 49, 50, 51]
+features: { primary: yod, review: weak-form }
+cando: "did you・would you・let me の つながった おとを ききとって ぶんを くみたてられる"
+status: draft
+items:
+  - kind: tile
+    id: tile-hot-or-iced
+    speaker: rosie
+    en: "Did you want that hot or iced?"
+    tts: "Didja want that hot or iced?"
+    ja: "ホットとアイス、どちらになさいますか？"
+    tiles: ["Did", "you", "want", "that", "hot", "or", "iced"]
+    decoys: ["Do", "it"]
+    marks: [[say, "Did you", "Didja"], [link, "hot or iced"]]
+    note: "Did you は「ディジャ」。過去形でも今の注文のていねいな聞き方"
+    scene: cafe
+    tags: { seed: 51, register: service, pragmatic: formula, conditions: [cafe], features: [yod, linking] }
+
+  - kind: tile
+    id: tile-bag-on-the-scale
+    speaker: orville
+    en: "Would you mind putting your bag on the scale?"
+    tts: "Wouldja mind puddin' yer bag on the scale?"
+    ja: "お荷物をはかりに載せていただけますか？"
+    tiles: ["Would", "you", "mind", "putting", "your", "bag", "on", "the", "scale"]
+    decoys: ["Do", "a"]
+    marks: [[say, "Would you", "Wouldja"], [say, "putting", "puddin'"], [say, "your", "yer"]]
+    note: "Would you は「ウッジャ」。putting の t は「ディ」になる"
+    scene: gate
+    tags: { seed: 1, register: service, pragmatic: formula, conditions: [desk], features: [yod, flap] }
+
+  - kind: tile
+    id: tile-end-up-doing
+    speaker: kid-cat
+    en: "What did you end up doing last night?"
+    tts: "Whadidja end up doin' last night?"
+    ja: "ゆうべ、結局何してたの？"
+    tiles: ["What", "did", "you", "end", "up", "doing", "last", "night"]
+    decoys: ["do", "and"]
+    marks: [[say, "What did you", "Whadidja"], [link, "end up"], [drop, "last", "t"]]
+    note: "What did you は「ワディジャ」。end up＝結局〜する"
+    scene: street
+    tags: { seed: 50, register: friend, pragmatic: literal, features: [yod, linking] }
+
+  - kind: tile
+    id: tile-wont-make-me-sleepy
+    speaker: goldie
+    en: "Could you give me something that won't make me sleepy?"
+    tts: "Couldja gimme something that won't make me sleepy?"
+    ja: "眠くならないお薬をいただけますか？"
+    tiles: ["Could", "you", "give", "me", "something", "that", "won't", "make", "me", "sleepy"]
+    decoys: ["want", "Can"]
+    marks: [[say, "Could you", "Couldja"], [say, "give me", "gimme"], [stress, "won't"]]
+    note: "won't は「ウォウント」と口が丸い。want は「ワント」"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [yod, contraction] }
+
+  - kind: tile
+    id: tile-lemme-know-home
+    speaker: tom-nook
+    en: "Just let me know when you're home."
+    tts: "Just lemme know when you're home."
+    ja: "ご在宅のときに知らせてください。"
+    tiles: ["Just", "let", "me", "know", "when", "you're", "home"]
+    decoys: ["let's", "you"]
+    marks: [[say, "let me", "lemme"], [drop, "Just", "t"]]
+    note: "lemme＝let me。let's とちがい「ミ」が残る"
+    scene: living
+    tags: { seed: 30, register: neighbour, pragmatic: literal, conditions: [phone], features: [lemme] }
+
+  - kind: tile
+    id: tile-try-em-on
+    speaker: mabel
+    en: "You can try them on over there."
+    tts: "You c'n try 'em on over there."
+    ja: "あちらでご試着いただけますよ。"
+    tiles: ["You", "can", "try", "them", "on", "over", "there"]
+    decoys: ["him", "can't"]
+    marks: [[say, "them", "'em"], [link, "try them on over"]]
+    note: "try 'em on は「トライエモン」。them の th は消える"
+    tags: { seed: 26, register: service, pragmatic: literal, features: [weak-form, linking] }
+
+  - kind: tile
+    id: tile-sign-for-this
+    speaker: punchy
+    en: "Could you sign for this one? Just your initials is fine."
+    tts: "Couldja sign for this one? Just yer initials is fine."
+    ja: "こちらにサインをお願いします。イニシャルだけで大丈夫です。"
+    tiles: ["Could", "you", "sign", "for", "this", "one", "Just", "your", "initials", "is", "fine"]
+    decoys: ["Can", "four"]
+    marks: [[say, "Could you", "Couldja"], [say, "your", "yer"]]
+    note: "for は弱く「ファ」。数の four なら長く強い"
+    scene: door
+    tags: { seed: 37, register: stranger, pragmatic: literal, features: [yod, weak-form] }
+
+  - kind: tile
+    id: tile-kinda-tired
+    speaker: bob
+    en: "I'm kind of tired. Do you mind if we stay in?"
+    tts: "I'm kinda tired. D'you mind if we stay in?"
+    ja: "ちょっと疲れてて。今日は家にいてもいい？"
+    tiles: ["I'm", "kind", "of", "tired", "Do", "you", "mind", "if", "we", "stay", "in"]
+    decoys: ["Did", "out"]
+    marks: [[say, "kind of", "kinda"], [say, "Do you", "D'you"]]
+    note: "kinda＝kind of。stay in＝外出しない（out の逆）"
+    scene: living
+    tags: { seed: 35, register: partner, pragmatic: indirect, features: [kinda, yod] }
+
+  - kind: tile
+    id: tile-bit-earlier
+    speaker: coco
+    en: "Would you be able to come in a bit earlier?"
+    tts: "Wouldja be able to come in a bid earlier?"
+    ja: "少し早めにお越しいただくことはできますか？"
+    tiles: ["Would", "you", "be", "able", "to", "come", "in", "a", "bit", "earlier"]
+    decoys: ["Will", "little"]
+    marks: [[say, "Would you", "Wouldja"], [say, "bit", "bid"], [link, "come in a bit earlier"]]
+    note: "a bit earlier は「アビデーリア」とつながる"
+    scene: living
+    tags: { seed: 16, register: service, pragmatic: indirect, conditions: [phone], features: [yod, flap] }
+
+  - kind: tile
+    id: tile-sent-you
+    speaker: julian
+    en: "Did you get the email I sent you this morning?"
+    tts: "Didja get the email I sentcha this morning?"
+    ja: "けさ送ったメール、届いた？"
+    tiles: ["Did", "you", "get", "the", "email", "I", "sent", "you", "this", "morning"]
+    decoys: ["Do", "send"]
+    marks: [[say, "Did you", "Didja"], [say, "sent you", "sentcha"]]
+    note: "sent you は「センチュ」。send なら t の音がない"
+    scene: office
+    tags: { seed: 39, register: colleague, pragmatic: literal, conditions: [video], features: [yod] }
+
+  - kind: tile
+    id: tile-out-of-work
+    speaker: cherry
+    en: "I'll call you when I get out of work."
+    tts: "I'll call ya when I ged outta work."
+    ja: "仕事が終わったら電話するね。"
+    tiles: ["I'll", "call", "you", "when", "I", "get", "out", "of", "work"]
+    decoys: ["I'd", "at"]
+    marks: [[say, "out of", "outta"], [link, "get out of"]]
+    note: "out of は「アウラ」。I'll の ll も聞き落としやすい"
+    scene: living
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [weak-form, flap] }
+
+  - kind: tile
+    id: tile-heat-that-up
+    speaker: maple
+    en: "Would you like me to heat that up for you?"
+    tts: "Wouldja like me ta heat that up for ya?"
+    ja: "こちら、温めましょうか？"
+    tiles: ["Would", "you", "like", "me", "to", "heat", "that", "up", "for", "you"]
+    decoys: ["it", "Do"]
+    marks: [[say, "Would you", "Wouldja"], [say, "to", "ta"], [link, "that up"]]
+    note: "heat that up＝温める。that up は「ザダップ」"
+    tags: { seed: 26, register: service, pragmatic: formula, features: [yod, weak-form] }
+
+  - kind: tile
+    id: tile-what-you-think
+    speaker: raymond
+    en: "Let me know what you think of the draft."
+    tts: "Lemme know whatcha think of the draft."
+    ja: "下書き、どう思うか聞かせて。"
+    tiles: ["Let", "me", "know", "what", "you", "think", "of", "the", "draft"]
+    decoys: ["Let's", "have"]
+    marks: [[say, "Let me", "Lemme"], [say, "what you", "whatcha"]]
+    note: "what you は「ワッチャ」。of は弱く「ア」になる"
+    scene: office
+    tags: { seed: 42, register: colleague, pragmatic: literal, features: [lemme, yod] }
+
+  - kind: tile
+    id: tile-eat-yet
+    speaker: anchovy
+    en: "Did you eat yet? I can make you something."
+    tts: "Didja eat yet? I c'n make ya something."
+    ja: "もう食べた？なにか作ろうか。"
+    tiles: ["Did", "you", "eat", "yet", "I", "can", "make", "you", "something"]
+    decoys: ["Do", "can't"]
+    marks: [[say, "Did you", "Didja"], [say, "can", "c'n"]]
+    note: "Did you eat は「ディジーチ」とも。can は弱い「クン」"
+    scene: living
+    tags: { seed: 35, register: partner, pragmatic: literal, features: [yod, can-cant] }
+
+  - kind: tile
+    id: tile-aisle-or-window
+    speaker: wilbur
+    en: "Do you want an aisle or a window?"
+    tts: "D'ya want an aisle or a window?"
+    ja: "通路側と窓側、どちらがいいですか？"
+    tiles: ["Do", "you", "want", "an", "aisle", "or", "a", "window"]
+    decoys: ["Did", "and"]
+    marks: [[say, "Do you", "D'ya"], [link, "want an aisle or a"]]
+    note: "an aisle は「アナイル」、or a は「オラ」とつながる"
+    scene: gate
+    tags: { seed: 2, register: service, pragmatic: literal, conditions: [desk], features: [yod, linking] }
