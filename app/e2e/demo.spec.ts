@@ -696,11 +696,11 @@ test('focus ring: none on せってい’s かえる after tap → ‹ back; the
   expect(await ring()).not.toBe('none');
 });
 
-test('むらびと: すがた → むらびとの すがたに する → とくべつ (たぬきち, しずえ…) first, then むらびと; picking しずえ makes たぬきち the host', async ({ page }) => {
+test('むらびと: すがた → the むらびと tab → とくべつ (たぬきち, しずえ…) first, then むらびと; wearing しずえ makes たぬきち the host', async ({ page }) => {
   await page.goto('?demo');
   await openSettings(page);
   await sheet(page).locator('[data-push=look]').click();
-  await sheet(page).locator('[data-push=villager]').click();
+  await sheet(page).locator('[data-look-tab=villager]').click();
   const dlg = sheet(page);
   await expect(dlg.locator('.grp')).toHaveText(['とくべつ', 'むらびと']);
   await expect(dlg.getByRole('radio').first()).toHaveAccessibleName('たぬきち');
@@ -709,7 +709,8 @@ test('むらびと: すがた → むらびとの すがたに する → とく
   await expect(dlg.getByRole('radio')).toHaveCount(1);
   await dlg.getByRole('searchbox').fill('しずえ');
   await dlg.getByRole('radio', { name: 'しずえ' }).click();
-  await expect(dlg.locator('.vk')).toHaveText('とくべつ');
+  await expect(dlg.locator('[data-look-status]')).toHaveText('むらびと · しずえ');
+  await dlg.locator('.titlebar .back').click(); // kept as the level is left
   await page.goto('?demo=harvest');
   await expect(page.locator('.bubble .who').first()).toHaveText('たぬきち');
 });

@@ -101,6 +101,9 @@ custom-design shapes. These are costume pieces with extra fitting work.
 
 ## 3. Settings UX: すがた
 
+> **Superseded in layout (2026-11-05):** すがた is now one dresser (stage, six tabs, the villager picker as the むらびと
+> tab, one commit model): [sugata-ux.md](sugata-ux.md) and docs/design.md "すがた". What follows is the first level's design.
+
 **The せってい row:**
 - The first section, today's むらびと (`panel/SettingsSheet.svelte`), becomes **すがた**.
 - The row: a portrait chip, the よびな, and **かえる**.

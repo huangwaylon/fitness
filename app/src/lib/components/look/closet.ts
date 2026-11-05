@@ -8,10 +8,6 @@ import { isOnepiece, type Hex, type PartId, type PlayerLook } from '#lib/contrac
 import { artUrl } from '#lib/art.ts';
 import PARTS from '../player3d/parts.json' with { type: 'json' };
 
-/** The level's category chips, in order (かお · かみ · トップス · ボトムス · ワンピース · くつした · くつ · ぼうし · こもの). */
-export const CATEGORIES = ['face', 'hair', 'tops', 'bottoms', 'onepiece', 'socks', 'shoes', 'hat', 'acc'] as const;
-export type Category = (typeof CATEGORIES)[number];
-
 /** A grid of parts: a face part, the hair, or a garment (tops and one-pieces are both the `top` slot). */
 export type ClosetKind = 'eye' | 'mouth' | 'hair' | 'top' | 'onepiece' | 'bottom' | 'socks' | 'shoes' | 'hat' | 'glasses' | 'ornament';
 /** The look's slot each kind wears into. */

@@ -154,33 +154,53 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
-or the villager's; かえる → [the すがた level](#sugata), whose foot pushes the villager picker: 23 special characters
-and all 417 NH villagers, its head pinned over the scrolling grid), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
+or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
 English), **きせつ** ([Seasonal preview](#seasonal-preview)), **てんき** (ほんもの / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), and **もようがえ** (one row with its
-はじめる; not the guest's). すがた pushes a level with ‹, the picker another over it; ✕, the backdrop and Esc close it,
+はじめる; not the guest's). すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
-<a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/ClosetGrid.svelte`, `look/closet.ts`, `store/look.ts`,
-`e2e/look.spec.ts`; [design/avatar/customization.md](../app/design/avatar/customization.md) §3, the user's 2026-11-05
-sign-off): each person's NH human player, the whole closet free (no ベル, no shop, no unlocks), for A, B and the guest alike.
-- **The head** (pinned): the preview (3D: a drag turns it, a tap hops it), よびな, and **もどす** once something changed this visit (back to
-  what was worn on opening).
-- **コーデ** (one sideways row of 60px portraits, names under them): **★いつもの** first (the signed-off default; one tap
-  wears it; never stored, so it can't be overwritten or deleted; the guest's is its villager), then the saved ones newest
-  first, then **＋ ほぞん** (a name, 「コーデ 3」 by default, 1–12 characters; at 20 it's sunk and says 「コーデは 20こまで。
-  いっぱいだよ」). The chip last tapped carries **⋯**, a small sheet: **うわがき** (with the look now; sunk while they're the
-  same), **なまえを かえる**, **けす** (「この コーデを けしますか？」, then とりけす on the banner for 5 s: sent after).
-- **The closet:** chips かお · かみ · トップス · ボトムス · ワンピース · くつした · くつ · こもの (held at the top as it
-  scrolls); for garments a colour filter (すべて · あか · きいろ · みどり · あお · むらさき · ピンク · ちゃ · しろ · くろ);
-  NH's wardrobe grid, five a row, a tile per item showing its variant worn or last chosen; a tap wears it and opens its
-  colour dots under that row. なし first for くつした, くつ, めがね, かみかざり. A ワンピース clears the bottoms, a bottom the
-  ワンピース. かお: め, めの いろ, くち, はだ, ほお, はな; かみ: かみがた, かみの いろ. No search, no names (a tile is
-  「トップス 3」 to VoiceOver, a dot its colour).
-- **The foot:** 「むらびとの すがたに する」 → the villager picker (すがた stays mounted under it); its pick is sent at once,
-  the villager look with the rest.
-- **Sending:** wearing only changes the preview; the look goes out once, one `look` pref, when the level is left (‹, ✕,
-  Esc, the backdrop, or the app going to the background), and only if it changed. A member's いつもの is sent as null.
-  コーデ edits go out as they're made, the whole `savedLooks` list ([backend](backend.md#events)).
+<a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/LookStage.svelte`, `look/tabs.ts`, `look/ClosetGrid.svelte`,
+`look/VillagerGrid.svelte`, `look/closet.ts`, `store/look.ts`, `e2e/look.spec.ts`, `e2e/picker.spec.ts`;
+[design/avatar/sugata-ux.md](../app/design/avatar/sugata-ux.md), the redesign of 2026-11-05, after
+[customization.md](../app/design/avatar/customization.md) §3): one dresser, NH's wardrobe layout. Each person's NH human
+player or a villager, the whole closet free (no ベル, no shop, no unlocks), for A, B and the guest alike. One pushed level,
+no foot bar: the stage and the tabs hold still, the panel under them scrolls to the screen's foot.
+- **The stage** (262 px): the final form, always: the 3D player filling it (drag turns, tap hops; 「↔ まわせるよ」 until
+  the session's first drag) or the villager's official render. Top-left the **status pill**, in words (`role=status`):
+  「★いつもの」, a コーデ's name when what's worn is exactly it, 「ふゆ · アレンジちゅう」 when started from one and changed,
+  「コーデなし」, or 「むらびと · ことの」 (the guest's: 「★いつもの · ことの」). Under it **もどす** once anything changed this
+  visit: the look and the villager as they were on opening. Top-right the nameplate 「ウェイ ✎」 (yuzu): the よびな sheet.
+  Along its bottom the **colour dots** of the item last tapped (else the one worn in that grid), or めのいろ (かお → め),
+  かみのいろ (かみ): one row of 44 px targets, radios named by their hue (「あか」, numbered when two share one); the figure
+  shrinks to make room, the grid never moves. Hidden on コーデ and むらびと and for a one-colour item. Once the panel
+  scrolls past 8 px the stage eases to 150 px (back at the top, back to 262); while the villager search has the keyboard
+  it's a 76 px strip (the head, the name, its kind). The figure scales by a transform (the canvas keeps its size).
+- **Six tabs** (`role=tablist`, icon and name, the picked one yuzu with the edge and lip; ←/→ move): **コーデ · かお ·
+  かみ · ふく · こもの · むらびと**. It opens on コーデ when any is saved, else ふく. A sub-row (segmented, 44 px) where a tab
+  has one: かお め · くち · はな · ほお · はだ; ふく トップス · ボトムス · ワンピース · くつした · くつ · ぼうし; こもの めがね ·
+  かみかざり.
+- **コーデ**: a 4-column grid of 64 px portraits: **★いつもの** first (the signed-off default, never stored; the guest's is
+  its villager), the saved ones newest first, **＋ ほぞん** (a name, 「コーデ 3」 by default, 1–12 characters; at 20 it's sunk
+  and says 「コーデは 20こまで。いっぱいだよ」; a villager worn: 「むらびとの すがたは ほぞん できないよ」). The one picked has the
+  leaf ring, and a coral dot once what's worn differs from it. A saved one picked shows its actions inline: 「「ふゆ」と
+  ちょっと ちがうよ」 with **いまので うわがき** (only when edited) · **なまえ** · **けす** (「この コーデを けしますか？」, then
+  とりけす on the banner for 5 s: sent after).
+- **The closet** (かお, かみ, ふく, こもの): NH's wardrobe grid, five a row, a tile per item showing its variant worn or last
+  chosen; a tap wears it and puts its colours on the stage; the worn tile again does nothing (only なし takes a thing
+  off). なし first for くつした, くつ, ぼうし, めがね, かみかざり. ふく has a colour filter (すべて, then nine hue dots, sideways,
+  per sub for the visit). A ワンピース clears the bottoms, a bottom the ワンピース; a hat and a hair ornament are one at a
+  time. はな, ほお: three chips; はだ: the skin dots in the panel. No names: a tile is 「トップス 3、いろ 4しゅるい」 to
+  VoiceOver.
+- **むらびと**: the search (held at the panel's top), then とくべつ (23) and the 417 villagers, the heads lazy (one
+  IntersectionObserver on the panel), built a slice per frame on the tab's first opening and kept after. A tap wears
+  that villager on the stage. With a villager worn, the human tabs carry a yuzu strip 「いまは ことのの すがた。ふくを
+  えらぶと にんげんに もどるよ」; the first human pick wears the player again with this visit's human edits.
+- **Sending:** what's tapped is the draft on the stage. Leaving the level (‹, ✕, Esc, the backdrop, or the app going to
+  the background) keeps it, sent once and only if it changed: one `look` pref, and a picked villager's `villager` pref
+  first (the guest: `villager`, then `look: null`, its いつもの). A member's いつもの is sent as null. Leaving with a change
+  shows 「すがたを かえたよ」 with **とりけす** for 5 s (it re-sends the look and the villager as they were on opening).
+  No けってい (✕ keeps, as NH's wardrobe). コーデ edits go out as they're made, the whole `savedLooks` list
+  ([backend](backend.md#events)).
 - **The closet is the part table's** ([Players](#players): `player3d/parts.json`, through `look/closet.ts`'s `Closet`
   interface): every hairstyle, eye and mouth, and each garment line a tile with its colours as dots, in the table's
   order. The table has no colours, so `scripts/look-swatches.ts` (`npm run look:swatches`, after `players3d`; dwebp)
@@ -192,7 +212,8 @@ sign-off): each person's NH human player, the whole closet free (no ベル, no s
   white, times the swatch, masked to its shape; a tube sock's stripes tint with its leg). A face part's or hairstyle's
   tile is its number. closet.test keeps both いつもの looks' parts, every grid non-empty and every swatch measured.
 - **The preview in 3D** (`look/LookPreview.svelte`, `look/preview3d.ts`): the look as NH's human player
-  (`createPlayer`, [Players](#players)) on a small canvas of its own, idling and blinking; every edit is `dress()`ed on
+  (`createPlayer`, [Players](#players)) on the stage's canvas (a ResizeObserver re-frames it when its box changes:
+  `setSize`, the camera's aspect, never a new renderer), idling and blinking; every edit is `dress()`ed on
   in place; a drag turns it (a flick spins a little, it stays turned 2.5 s, then eases back to the front), a tap hops it.
   Its renderer, made when the level opens and let go of when it closes (the player, the portraits' player, the
   renderer, `forceContextLoss`), is the level's one WebGL context (the island's sleeps under the sheet, as for the

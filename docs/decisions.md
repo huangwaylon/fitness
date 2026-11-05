@@ -938,3 +938,12 @@ Measured full on the iOS Simulator (design.md "The tent"): draw calls 80 → ~11
 so a repeated model stays a mesh of its own (no instancing: it would complicate moving, turning and table-top things
 for nothing measurable); 3 rooms × 60 ops make a ~48 KB snapshot, and a live op is per piece (≤ 185 of 256 bytes).
 Why: the user ("Can we increase the max number of items in a room to 60?").
+
+### すがた: one dresser, dress as you go, kept on leaving (2026-11-05)
+すがた is one level: a large shared stage on top (the final form, its state in words), six tabs (コーデ · かお · かみ ·
+ふく · こもの · むらびと) and the panel (design.md "すがた", design/avatar/sugata-ux.md). The villager picker is the むらびと
+tab, and its pick joins the draft like a garment: nothing is sent until the level is left, then `villager` and `look`
+once (the guest: `villager`, `look: null`). No けってい: leaving keeps it, as NH's wardrobe (a けってい would suggest ✕
+throws the changes away); もどす on the stage and a 5 s とりけす after leaving cover the regret. Why: the user ("make the
+menu for customizing user and choosing villager more intuitive. maybe tabbed with shared preview of final form"); before,
+the villager was a second level sent on tap while the look was sent on leaving, two commit models on one screen.

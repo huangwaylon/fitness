@@ -95,7 +95,7 @@ describe('villager roster', () => {
       .filter((f) => /^\s*import (?!type )[^;]*from '(#lib\/villagers|\.)\/roster\.ts'/m.test(readFileSync(join(SRC, f), 'utf8')))
       .sort();
     expect(importers).toEqual([
-      'lib/components/dev/Gallery.svelte', 'lib/components/panel/SettingsSheet.svelte', 'lib/components/panel/VillagerPicker.svelte', 'lib/villagers/search.ts'
+      'lib/components/dev/Gallery.svelte', 'lib/components/look/LookPage.svelte', 'lib/components/look/VillagerGrid.svelte', 'lib/components/panel/SettingsSheet.svelte', 'lib/villagers/search.ts'
     ]);
   });
 

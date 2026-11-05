@@ -6,7 +6,7 @@ import { week } from './week.svelte.ts';
 import type { SendResult } from './backend.ts';
 import type { Who } from '#lib/types.ts';
 import {
-  DEFAULT_LOOKS, isPlayerLook, LOOK_LIMITS, lookName, newLookId, resolveLook, sameLook, usePartTable,
+  DEFAULT_LOOKS, isPlayerLook, LOOK_LIMITS, lookName, newLookId, playerOf, resolveLook, sameLook, usePartTable,
   type Look, type PlayerLook, type SavedLook
 } from '#lib/contract/look.ts';
 import PART_IDS from '#lib/contract/partIds.json' with { type: 'json' };
@@ -53,14 +53,30 @@ export function wearLook(look: PlayerLook): SendResult {
 /** Back to いつもの (clears the `look` pref). @public (the すがた level) */
 export const wearUsual = (): SendResult => week.send('pref', { key: 'look', value: null });
 
-/** Wear the roster villager (「むらびとの すがたに する」): `villager` a roster id (also sends the `villager` pref), or
- *  none for the one already picked. @public (the すがた level) */
+/** Wear the roster villager (すがた's むらびと tab, sent as the level is left): `villager` a roster id (also sends the
+ *  `villager` pref first), or none for the one already picked. @public (the すがた level) */
 export function wearVillager(villager?: string): SendResult {
   if (villager !== undefined) {
     const r = week.send('pref', { key: 'villager', value: villager });
     if (!r.ok) return r;
   }
   return week.send('pref', { key: 'look', value: { kind: 'villager' } });
+}
+
+/**
+ * すがた's とりけす (the banner after leaving with a change): wear `look` again with `villager` as the villager pref, as
+ * when the level opened (`villager` the roster id then). The villager pref first, if it isn't that; then the look (a villager look is the guest's いつもの,
+ * no `look` pref). @public (the すがた level)
+ */
+export function restoreLook(look: Look, villager: string): SendResult {
+  const me = viewer();
+  if (!me) return { ok: false };
+  if ((week.model?.state.prefs[me].villager ?? null) !== villager) {
+    const r = week.send('pref', { key: 'villager', value: villager });
+    if (!r.ok) return r;
+  }
+  if (look.kind === 'player') return wearLook(playerOf(look, me));
+  return me === 'G' ? wearUsual() : wearVillager();
 }
 
 /** Wear a コーデ by its id. @public (the すがた level) */

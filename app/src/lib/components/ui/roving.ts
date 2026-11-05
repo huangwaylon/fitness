@@ -1,4 +1,4 @@
-// Roving tabindex for a role=radiogroup (WAI-ARIA APG): only the checked radio is in the tab order (the template
+// Roving tabindex for a role=radiogroup or a role=tablist (WAI-ARIA APG): only the checked radio is in the tab order (the template
 // sets tabindex 0 / -1); the arrow keys, Home and End move to a sibling radio and select it. In a wrapping grid
 // (the villager picker) Up / Down move a whole row, i.e. by the number of radios on the first line.
 import type { Attachment } from 'svelte/attachments';
@@ -7,7 +7,7 @@ const STEP: Record<string, number> = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -
 
 export const roving: Attachment<HTMLElement> = (group) => {
   function keydown(e: KeyboardEvent) {
-    const items = [...group.querySelectorAll<HTMLElement>('[role=radio]')];
+    const items = [...group.querySelectorAll<HTMLElement>('[role=radio], [role=tab]')];
     const i = items.indexOf(document.activeElement as HTMLElement);
     if (i < 0) return;
     const n = items.length;

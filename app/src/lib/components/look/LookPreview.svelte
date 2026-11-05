@@ -1,5 +1,5 @@
 <script lang="ts">
-  // The すがた level's preview slot (customization.md §3.1): the look being edited, full body. A player is NH's human
+  // The すがた stage's figure (design/avatar/sugata-ux.md §3.2): the look being edited, full body, filling its box. A player is NH's human
   // player in 3D (look/preview3d.ts: its own small renderer, made on mount and let go of on unmount, the level's one
   // WebGL context, which also draws the portraits: portraits.svelte.ts), idling and blinking; a drag turns it, a tap
   // hops it, each edit is dressed on in place. Until it's built (or if it can't be) the flat stand-in figure stands
@@ -13,7 +13,7 @@
   import { portraitOf, usePainter } from './portraits.svelte.ts';
   import type { Preview3D } from './preview3d.ts';
 
-  let { who, look }: { who: Who; look: Look } = $props();
+  let { who, look, onturn }: { who: Who; look: Look; onturn?: () => void } = $props();
   let hop = $state(0);
   let canvas: HTMLCanvasElement;
   let p3 = $state<Preview3D | null>(null);
@@ -65,7 +65,10 @@
     const dx = e.clientX - from.x;
     from.x = e.clientX;
     from.moved += Math.abs(dx);
-    if (from.moved > 6) p3?.turn(dx);
+    if (from.moved > 6) {
+      p3?.turn(dx);
+      onturn?.();
+    }
   }
   function up(e: PointerEvent) {
     if (!from || e.pointerId !== from.id) return;
@@ -83,12 +86,12 @@
 <button type="button" class="lpv" data-look-preview={look.kind} data-look-3d={in3d ? 'on' : 'off'} aria-hidden="true" tabindex="-1" data-sfx="none"
   onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up}
   onclick={(e) => e.detail === 0 && (hop++, p3?.hop())}>
-  <canvas bind:this={canvas} class="gl" class:on={in3d} width="96" height="132"></canvas>
+  <canvas bind:this={canvas} class="gl" class:on={in3d} width="300" height="240"></canvas>
   {#if !in3d}
     {#key hop}
       <span class="fig">
         {#if look.kind === 'villager'}
-          {#key look.villager}<Villager person={who} villager={look.villager} size={112} head={false} expression="cheer" eager />{/key}
+          {#key look.villager}<Villager person={who} villager={look.villager} size={200} head={false} expression="cheer" eager />{/key}
         {:else}
           <PlayerFigure look={player} />
         {/if}
@@ -100,10 +103,12 @@
 <style>
   .lpv {
     appearance: none; border: 0; padding: 0; background: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
-    width: 96px; height: 132px; flex: none; display: grid; place-items: end center; position: relative;
+    width: 100%; height: 100%; display: grid; place-items: end center; position: relative;
     touch-action: pan-y; user-select: none; -webkit-user-select: none;
   }
   .gl { position: absolute; inset: 0; width: 100%; height: 100%; visibility: hidden; pointer-events: none; }
   .gl.on { visibility: visible; }
-  .fig { width: 88px; height: 128px; display: grid; place-items: end center; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  .fig { width: 100%; height: 100%; display: grid; place-items: end center; animation: if-pop var(--dur-pop) var(--ease-bounce) both; }
+  /* the stand-in figure (no 3D) at the stage's height */
+  .fig :global(svg[data-figure]) { width: auto; height: 96%; }
 </style>
