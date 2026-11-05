@@ -113,6 +113,8 @@
   .banner.undo, .banner.undo:popover-open { top: auto; bottom: calc(var(--pad-bottom) + 16px); height: 56px; animation-name: up-in; }
   /* …but in the shop, whose うる / かう bar is in the thumb zone: high, over the counter's sign (components/shop) */
   :global(:root:has([data-shop])) .banner.undo { top: calc(var(--ui-top) + 56px); bottom: auto; animation-name: none; }
+  /* …and on the island with no sheet up: over the say button at the bottom right (IslandScene .say-dock: 44px, 8px up), never on it */
+  :global(:root:has(.island .say-dock):not(:has(dialog[open], [data-shop]))) .banner.undo { bottom: calc(var(--pad-bottom) + 8px + var(--hit) + 10px); }
   .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-s); line-height: 1.25; }
   @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
   .re { flex: none; line-height: 0; }
