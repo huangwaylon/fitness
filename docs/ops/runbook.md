@@ -146,8 +146,9 @@ keys; without either, the keys file: §4). It signs `POST /admin` with the serve
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
 - **`compact [max] [rev]`**: the record's compaction now ([backend](../backend.md#the-record) "Compaction": the
   `metrics` rows of locked weeks the model no longer reads, by the phones' rule; at most `max` deletes, default 5,000).
-  The cron runs it by itself at 04:15 Tokyo every day (the log's `cron.compact`: `deleted`, `more` while a backlog
-  remains). `rev` starts a new epoch after it (the phones refetch the smaller record; not needed: their caches compact
+  **On hold (the user, 2026-11-05):** the cron runs it at 04:15 Tokyo only with `COMPACT_CRON = "1"` in wrangler.toml's
+  `[vars]`, unset now, so nothing is compacted until the user decides (dump first, then turn it on; the log's
+  `cron.compact`: `deleted`, `more` while a backlog remains). `rev` starts a new epoch after it (the phones refetch the smaller record; not needed: their caches compact
   by the same rule). A dump taken after it has only the compacted rows (a locked day's history within it is gone; what the
   model reads is all there).
 

@@ -327,7 +327,8 @@ made after it carries no `l`, the switch's op keeps the light.
   already, and no id leaves `ids`). A date at a time (its rows by the (person, date, …) key), a week of dates a
   transaction, at most 5,000 rows deleted a run (each delete writes ~4 rows against the Free plan's 100,000 a day): the
   Worker's cron at 19:15 UTC (04:15 Tokyo, just after a Wednesday's lock) once a day (`compactTick`, the log's
-  `cron.compact`), or the admin's `compact {max?, rev?}`. Each run looks at the dates with rows written or loaded since
+  `cron.compact`) **only with the var `COMPACT_CRON=1`, unset (off) since the user's hold of 2026-11-05: the locked
+  days' history is kept until they decide**, or the admin's `compact {max?, rev?}` by hand. Each run looks at the dates with rows written or loaded since
   the last run and those whose week locked since (the first run: every date); a run stopped at its cap leaves the mark
   where it was, so the next looks again (a compacted date is a fixed point: read, nothing deleted). No new epoch: a
   phone's cache holds a superset and compacts it by the same rule, so its views are the same; `compact {rev: true}`
