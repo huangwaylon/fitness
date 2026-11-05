@@ -119,7 +119,7 @@ export interface Item {
 }
 
 /** A rung of a スピード はしご (docs/kikimimi.md "スピード はしご"). */
-export interface Rung {
+interface Rung {
   ladder: string;
   n: number;
   speed: number;

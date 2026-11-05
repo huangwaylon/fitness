@@ -144,3 +144,6 @@ export function rungState(items: readonly Item[], answers: readonly ({ k: number
 
 /** The speed a climb reached (0 rungs: none). */
 export const speedAt = (rungs: number): number | null => (rungs > 0 ? SPEEDS[Math.min(rungs, SPEEDS.length) - 1] : null);
+
+/** A speed as shown: one decimal (0.8, 1.0, 1.4). */
+export const sx = (x: number): string => x.toFixed(1);

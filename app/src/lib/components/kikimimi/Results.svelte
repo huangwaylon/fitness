@@ -4,6 +4,9 @@
   // team's 「ふたりで 7/8」 and 「そろって せいかい」 instead, no ranking, no one's points), then the review list, the game's main learning
   // moment: every sentence's English (its key words marked) and Japanese (a reply's on two lines), ▶︎ and 🐢 (levels
   // 1-2), ○ / × for my answer and on a miss what I picked, and 「まちがえた だけ」 to show only the missed.
+  // スピード はしご: しずえ's line is how high I climbed; a card of my climbs (each ladder's steps, how high); the review
+  // one row a ladder: its line (the chunk marked), its Japanese and note, each rung's question with my ○ / ×, and ▶︎ at
+  // each speed.
   import type { QuizGame } from './game.svelte.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
@@ -15,6 +18,7 @@
   import { currentReport, recWords } from './progress.svelte.ts';
   import { feedbackFor } from '#lib/kikimimi/report.ts';
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
+  import { SPEEDS, climbs, laddersIn, speedAt, sx } from '#lib/kikimimi/ladder.ts';
 
   let { game, onagain, ondone }: { game: QuizGame; onagain: () => void; ondone: () => void } = $props();
   const v = $derived(game.view);
@@ -27,7 +31,12 @@
   /** Co-op (several players, not たいせん): the team's tally, no ranking and no one's points. */
   const coop = $derived(v.players.length > 1 && !v.vs);
   const teamKey = $derived(v.players.length >= 3 ? 'kiki.team.3' : 'kiki.team.2');
+  /** スピード はしご: my climb on each ladder (rungs right on the first listen, in order), its ladders' places. */
+  const ladders = $derived(laddersIn(items));
+  const mine = $derived(climbs(items, new Map(v.answers.flatMap((a, i) => (a ? [[i, { k: a.k, rp: a.rp }] as const] : [])))));
+  const best = $derived(mine.length ? Math.max(...mine) : 0);
   const line = $derived.by(() => {
+    if (ladders.length && (ranking.length <= 1 || coop)) return best ? t('kiki.hostLadder', { x: sx(speedAt(best)!) }) : t('kiki.hostLadderNone');
     if (ranking.length <= 1) return t('kiki.hostSolo', { score: ranking[0]?.score ?? 0 });
     if (coop) return t(v.team.right >= v.n ? 'kiki.hostTeam.all' : v.team.right * 4 >= v.n * 3 ? 'kiki.hostTeam.good' : 'kiki.hostTeam.try');
     const top = ranking.filter((r) => r.rank === 1);
@@ -80,7 +89,20 @@
     </ol>
   {/if}
 
-  {#if recorded}
+  {#if ladders.length}
+    <!-- スピード はしご: how high each ladder went -->
+    <section class="climbs card" data-kiki-climbs={mine.join(',')}>
+      <h3 class="sec-label in">{t('kiki.ladder.title')}</h3>
+      <ul>
+        {#each ladders as l, j (l.ladder)}
+          <li data-kiki-climb-row={j} data-height={mine[j]}>
+            <ol class="steps" aria-hidden="true">{#each SPEEDS as x, k (k)}<li class:up={k < mine[j]} style:--h="{40 + k * 20}%"><span>{sx(x)}×</span></li>{/each}</ol>
+            <b>{mine[j] ? t('kiki.ladder.reach', { x: sx(speedAt(mine[j])!) }) : t('kiki.ladder.reachNone')}</b>
+          </li>
+        {/each}
+      </ul>
+    </section>
+  {:else if recorded}
     <section class="fb card" data-kiki-feedback={fb?.kind ?? ''}>
       {#if fbLine}
         <!-- しずえ's already speaking in the bubble above: her line here without a second head -->
@@ -100,6 +122,41 @@
       <h3 id="kk-review" class="sec-label">{t('kiki.review')}</h3>
       <button type="button" class="chip" aria-pressed={missedOnly} data-kiki-missed data-sfx="tick" onclick={() => (missedOnly = !missedOnly)}>{t('kiki.missedOnly')}</button>
     </div>
+    {#if ladders.length}
+      {@const shown = ladders.map((l, j) => ({ l, j })).filter(({ l, j }) => !missedOnly || mine[j] < l.n)}
+      {#if !shown.length}<p class="none">{t('kiki.allRight')}</p>{/if}
+      <ul class="review">
+        {#each shown as { l, j } (l.ladder)}
+          {@const last = items[l.from + l.n - 1]}
+          {@const [pre, focus, post] = splitFocus(last)}
+          <li class="item card ladder" data-review-ladder={j} data-ok={mine[j] === l.n}>
+            <span class="sym" class:ok={mine[j] === l.n} aria-hidden="true">{mine[j] === l.n ? '○' : '×'}</span>
+            <div class="txt">
+              <p class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
+              <p class="ja">{last.ja}</p>
+              {#if last.note}<p class="tags">{last.note}</p>{/if}
+              <ol class="qs">
+                {#each items.slice(l.from, l.from + l.n) as it, k (it.id)}
+                  {@const i = l.from + k}
+                  <li data-review={i} data-ok={ok(i)}>
+                    <span class="x">{sx(SPEEDS[k])}×</span>
+                    <span class="sym small" class:ok={ok(i)} aria-label={ok(i) ? t('kiki.right') : t('kiki.wrong')}>{ok(i) ? '○' : '×'}</span>
+                    <span class="q">{it.ask ?? t('kiki.ask.word')} → <b lang={it.type === 'word' ? 'en' : undefined}>{it.choices[it.answer]}</b>
+                      {#if !ok(i) && v.answers[i]}<span class="picked" data-kiki-picked>{t('kiki.picked', { a: it.choices[v.answers[i]!.k] })}</span>{/if}</span>
+                  </li>
+                {/each}
+              </ol>
+              <p class="tags">{t('kiki.ladder.speeds')}</p>
+              <div class="speeds">
+                {#each items.slice(l.from, l.from + l.n) as it, k (it.id)}
+                  <button type="button" class="chip" data-kiki-hear={l.from + k} data-sfx="tick" aria-label="{t('kiki.play')} {sx(SPEEDS[k])}×" onclick={() => game.hear(it)}>▶︎ {sx(SPEEDS[k])}×</button>
+                {/each}
+              </div>
+            </div>
+          </li>
+        {/each}
+      </ul>
+    {:else}
     {#if !rows.length}<p class="none">{t('kiki.allRight')}</p>{/if}
     <ul class="review">
       {#each rows as r (r.i)}
@@ -125,6 +182,7 @@
         </li>
       {/each}
     </ul>
+    {/if}
   </section>
 </div>
 
@@ -184,5 +242,23 @@
     appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center;
     background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 18px/1 var(--font-ui);
   }
+  /* スピード はしご: each ladder's steps, climbed leaf */
+  .climbs { display: grid; gap: 8px; padding: 12px 14px; }
+  .climbs ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .climbs > ul > li { display: flex; align-items: center; gap: 12px; }
+  .climbs b { font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 40px); align-items: end; gap: 3px; height: 36px; }
+  .steps li {
+    height: var(--h); border-radius: 6px 6px 3px 3px; display: grid; align-items: end; justify-items: center; padding-bottom: 2px;
+    background: var(--ctl-off); color: var(--text-soft); font: 700 10px/1 var(--font-num, var(--font-ui));
+  }
+  .steps li.up { background: var(--c-leaf); color: var(--c-ink); }
+  .qs { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; }
+  .qs li { display: grid; grid-template-columns: 2.6em 1.2em 1fr; gap: 4px; align-items: baseline; font: 700 var(--fs-s)/1.4 var(--font-ui); }
+  .qs .x { font-family: var(--font-num, var(--font-ui)); color: var(--text-soft); }
+  .sym.small { font-size: var(--fs-body); }
+  .qs .picked { display: block; }
+  .speeds { display: flex; flex-wrap: wrap; gap: 6px; }
+  .speeds .chip { min-height: var(--hit); }
   .ib:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
 </style>

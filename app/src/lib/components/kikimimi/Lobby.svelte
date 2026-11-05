@@ -3,10 +3,13 @@
   // 🔊 「きこえる？」 (with 音量 0's hint). My lobby starts on this phone alone: 「ひとりで はじめる」, or 「みんなを さそう」
   // (the invite goes out); once shared, who's here and who joined, 「おなじ へやで あそぶ」 (only the host's phone speaks),
   // 「たいせん」 (a ranking; off: co-op, the team's tally) and the host's 「はじめる（Nにん）」 (the others wait for it).
+  // Over the level, the mode (once its clips exist: deck.ts LADDER_OK): クイズ or スピード はしご (its four speeds and
+  // its rule in place of the level; no にがて れんしゅう, a quiz's).
   import type { Who } from '#lib/types.ts';
   import { ORDER } from '#lib/kikimimi/session.ts';
   import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
-  import { LEVELS } from '#lib/kikimimi/deck.ts';
+  import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
+  import { SPEEDS, sx } from '#lib/kikimimi/ladder.ts';
   import type { QuizGame } from './game.svelte.ts';
   import Host from '../characters/Host.svelte';
   import PlayerChip from './PlayerChip.svelte';
@@ -35,6 +38,11 @@
     cue(v.same ? 'toggle-off' : 'toggle-on');
     game.configure({ same: !v.same });
   }
+  /** クイズ or スピード はしご (the host's; a new deck either way). */
+  function mode(ladder: boolean) {
+    if (ladder === v.ladder) return;
+    game.configure({ ladder });
+  }
   /** たいせん (ranking) or co-op (the default: the team's tally). */
   function versus() {
     cue(v.vs ? 'toggle-off' : 'toggle-on');
@@ -52,6 +60,22 @@
     <p>{t('kiki.sub')}</p>
   </div>
 
+  {#if LADDER_OK}
+    <div class="modes" role="radiogroup" aria-label={t('kiki.mode')} data-kiki-modes>
+      {#each [false, true] as l (l)}
+        <button type="button" class="mode" role="radio" aria-checked={v.ladder === l} aria-disabled={!v.amHost && v.ladder !== l} data-kiki-mode={l ? 'ladder' : 'quiz'}
+          data-sfx={v.ladder === l ? 'none' : 'tick'} onclick={() => v.amHost && mode(l)}>{t(l ? 'kiki.mode.ladder' : 'kiki.mode.quiz')}</button>
+      {/each}
+    </div>
+  {/if}
+
+  {#if v.ladder}
+    <section class="sec ladder card" data-kiki-ladder-about>
+      <p class="about">{t('kiki.ladderAbout')}</p>
+      <ol class="speeds" aria-hidden="true">{#each SPEEDS as x, k (k)}<li style:--h="{40 + k * 20}%"><span>{sx(x)}×</span></li>{/each}</ol>
+      <p class="hint">{t('kiki.ladderRule')}</p>
+    </section>
+  {:else}
   <section class="sec" aria-labelledby="kk-lv">
     <h3 id="kk-lv" class="sec-label">{t('kiki.level')}</h3>
     <div class="levels" role="radiogroup" aria-labelledby="kk-lv">
@@ -64,6 +88,7 @@
       {/each}
     </div>
   </section>
+  {/if}
 
   {#if !v.local}
     <section class="sec" aria-labelledby="kk-who" data-kiki-players>
@@ -103,7 +128,7 @@
 <div class="level-acts">
   {#if v.amHost && v.local}
     <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => game.go()}>{t('kiki.startSolo')}</button>
-    <button type="button" class="btn paper wide" data-kiki-practice data-sfx="confirm" onclick={onpractice}>🎯 {t('kiki.practice')}</button>
+    {#if !v.ladder}<button type="button" class="btn paper wide" data-kiki-practice data-sfx="confirm" onclick={onpractice}>🎯 {t('kiki.practice')}</button>{/if}
     <button type="button" class="btn paper wide" data-kiki-invite-all data-sfx="open" onclick={() => game.invite()}>{t('kiki.inviteAll')}</button>
   {:else if v.amHost}
     <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => game.go()}>{t('kiki.startN', { n: v.players.length })}</button>
@@ -132,6 +157,23 @@
   .stars { color: var(--c-coral); letter-spacing: 1px; font-size: var(--fs-s); }
   /* the chosen one's stars stay coral (the darker text coral on yuzu) */
   .lv[aria-checked='true'] .stars { color: var(--c-coral-text); }
+  /* the mode: a segmented pair (the chosen one yuzu, as a level's) */
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: var(--r-pill); background: var(--ctl-off); }
+  .mode {
+    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill); background: transparent;
+    color: var(--text-soft); font: 700 var(--fs-body)/1 var(--font-ui);
+  }
+  .mode[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: var(--sh-ctl); }
+  .mode[aria-disabled='true'] { cursor: default; }
+  .ladder.card { padding: 12px 14px; gap: 10px; }
+  .about { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
+  .speeds { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); align-items: end; gap: 6px; height: 52px; }
+  .speeds li {
+    height: var(--h); border-radius: 10px 10px 4px 4px; display: grid; align-items: end; justify-items: center; padding-bottom: 3px;
+    background: color-mix(in srgb, var(--c-leaf) 45%, var(--card)); font: 700 var(--fs-s)/1 var(--font-num, var(--font-ui)); color: var(--c-ink);
+  }
+  .speeds li:last-child { background: var(--c-leaf); }
+  .ladder .hint { margin: 0; }
   .row {
     appearance: none; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0;
     border-radius: var(--r-card); border: 0; background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); text-align: left; width: 100%; font: inherit;
