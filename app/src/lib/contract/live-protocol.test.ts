@@ -355,6 +355,7 @@ describe('live protocol: ききみみ クイズ (`quiz`, presence only)', () => 
     { kind: 'quiz', g, op: 'go', at: T },
     { kind: 'quiz', g, op: 'a', i: 7, k: 3, rp: true, s: 1040 },
     { kind: 'quiz', g, op: 'skip', i: 0, at: T },
+    { kind: 'quiz', g, op: 'skip', i: 8, at: T },
     { kind: 'quiz', g, op: 'end' }
   ];
 
@@ -376,7 +377,7 @@ describe('live protocol: ききみみ クイズ (`quiz`, presence only)', () => 
       { ...open, seed: -1 }, { ...open, seed: 4_294_967_296 }, { ...open, seed: 1.5 }, { ...open, seed: '1' }, { ...open, lv: 0 }, { ...open, lv: 4 }, { ...open, lv: 1.5 }, { ...open, same: 1 }, { ...open, same: undefined },
       { ...go, at: -1 }, { ...go, at: 'now' }, { ...go, at: undefined },
       { ...a, i: 8 }, { ...a, i: -1 }, { ...a, k: 4 }, { ...a, k: 0.5 }, { ...a, rp: 0 }, { ...a, s: 1041 }, { ...a, s: -1 }, { ...a, s: undefined },
-      { ...skip, i: 8 }, { ...skip, at: undefined }
+      { ...skip, i: 9 }, { ...skip, i: -1 }, { ...skip, at: undefined }
     ];
     for (const b of bad) expect(parseClient(j(b)), JSON.stringify(b)).toBeNull();
     expect(parseClient(v1(open))).toBeNull();

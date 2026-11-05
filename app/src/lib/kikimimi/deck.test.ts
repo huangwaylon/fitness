@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { BANK, type Level } from './bank.ts';
 import { DECK_SIZE, MIX, deck } from './deck.ts';
-import { FIRST_LISTEN, MAX_SCORE, RIGHT, points } from './score.ts';
+import { FIRST_LISTEN, RIGHT, points } from './score.ts';
+import { QUIZ_MAX_S, QUIZ_QS } from '../contract/live-protocol.ts';
 import { clipDur, clipUrl } from './clips.ts';
 
 const LEVELS: Level[] = [1, 2, 3];
@@ -69,8 +70,8 @@ describe('kikimimi score', () => {
     expect(points(true, true)).toBe(RIGHT);
     expect(points(false, false)).toBe(0);
     expect(points(false, true)).toBe(0);
-    expect(MAX_SCORE).toBe(DECK_SIZE * 130);
-    expect(MAX_SCORE).toBe(1040);
+    expect(QUIZ_QS).toBe(DECK_SIZE);
+    expect(QUIZ_MAX_S).toBe(DECK_SIZE * (RIGHT + FIRST_LISTEN));
   });
 });
 

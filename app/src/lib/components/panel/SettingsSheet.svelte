@@ -28,7 +28,7 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { isGuest, mine } from '#lib/ui-state/viewer.ts';
-  import { openQuiz } from '../kikimimi/invite.svelte.ts';
+  import { invitedNow, openQuiz } from '../kikimimi/invite.svelte.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -111,7 +111,7 @@
       <section class="sec" aria-labelledby="sec-fps"><h2 id="sec-fps" class="sec-label">{t('panel.fps')}</h2><FpsSection /></section>
       {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync" class="sec-label">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
       <div class="prow static decor" data-kikimimi-row>
-        <span class="prl">{t('panel.kikimimi')}</span>
+        <span class="prl">{t('panel.kikimimi')}{#if invitedNow()}<small class="invited" data-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{/if}</span>
         <button type="button" class="btn small paper" data-kikimimi-start data-sfx="open" onclick={() => (openQuiz(), (open = false))}>{t('panel.kikimimiPlay')}</button>
       </div>
       {#if !guest}
@@ -148,6 +148,7 @@
   /* one section per topic: a small heading over its rows */
   .sec { display: grid; gap: 8px; }
   .me .prl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
+  .invited { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--c-coral); }
   .me .btn, .decor .btn { flex: none; }
   .guest { margin: 6px 4px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .demo { align-self: center; background: var(--c-yuzu); color: var(--c-ink); border-radius: var(--r-chip); padding: 4px 10px; font: 700 var(--fs-s)/1 var(--font-ui); }

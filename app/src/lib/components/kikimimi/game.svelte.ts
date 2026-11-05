@@ -38,6 +38,8 @@ const soloLink = (): QuizLink => ({ now: () => Date.now(), send: () => false, on
 const TEST_CLIP = BANK.find((it) => it.lv === 1)!.id;
 
 type Handle = { stop(): void };
+/** The longest between wake-ups (the host's beacon is every 3 s: session.ts WINDOWS.beacon). */
+const WAKE = 3000;
 
 export class QuizGame {
   /** The session's view as of `now` (the relay's clock). */
@@ -51,6 +53,9 @@ export class QuizGame {
   sounding = $state.raw<{ i: number; from: number; until: number; slow: boolean } | null>(null);
   /** Who else has the island open (the lobby's list). */
   here = $state.raw<readonly Who[]>([]);
+  /** おなじへや on a phone that doesn't speak: 🔁 / 🐢 shown disabled (「ホストの スマホで ながれます」), and no
+   *  first-listen bonus for anyone (session.ts). */
+  listenOnly = $derived(!!this.view?.same && !this.view.speaks);
 
   readonly me: Who;
   readonly #link: QuizLink;
@@ -65,6 +70,7 @@ export class QuizGame {
   #cued = '';
   #fetched = '';
   #gone = false;
+  #soundingTimer: ReturnType<typeof setTimeout> | undefined;
   #offHere: () => void;
 
   constructor(o: { live: Live | null; me: Who; fast?: boolean; heard?: readonly QuizIn[] }) {
@@ -74,16 +80,20 @@ export class QuizGame {
     // what the island heard before this sheet opened: as if heard now (a host re-sends only when someone comes back)
     const now = this.#link.now();
     for (const m of o.heard ?? []) this.#session.receive(m, now);
-    this.#offHere = this.#link.onHere((h) => (this.here = h));
+    this.#offHere = this.#link.onHere((h) => h && (this.here = h));
     this.#wire = wireQuiz(this.#session, this.#link, () => this.#refresh());
     this.#refresh();
   }
 
   // ---------- taps ----------
 
-  /** Open a lobby (I host it). */
+  /** Open a lobby (I host it), on this phone only until `invite`. */
   open(lv: Level, same = false): void {
     this.#act((s, now) => s.open({ lv, same }, now));
+  }
+  /** みんなを さそう: my lobby announced to everyone here. */
+  invite(): void {
+    this.#act((s, now) => s.invite(now));
   }
   configure(o: { lv?: Level; same?: boolean }): void {
     this.#act((s, now) => s.configure(o, now));
@@ -140,6 +150,7 @@ export class QuizGame {
     this.leave();
     this.#gone = true;
     clearTimeout(this.#timer);
+    clearTimeout(this.#soundingTimer);
     this.#wire.stop();
     this.#offHere();
     this.#stopAll();
@@ -151,10 +162,11 @@ export class QuizGame {
     if (!this.#gone) this.#wire.act(f);
   }
 
-  /** The view now, the clips and cues it calls for, and a wake-up at the phase's end (each second of the 3-2-1; a
-   *  lobby's every few seconds, for its host's grace and its TTL). */
+  /** The view now, the clips and cues it calls for, and a wake-up at the phase's end (each second of the 3-2-1; at
+   *  least every few seconds: the host's beacon, a lobby's grace and TTL). */
   #refresh(): void {
     if (this.#gone) return;
+    this.#wire?.tick(); // (undefined while wireQuiz itself calls in, at the start)
     const now = this.#link.now();
     const v = this.#session.view(now);
     if (this.view && v.g !== this.view.g) this.replayed = [];
@@ -163,9 +175,9 @@ export class QuizGame {
     this.#sounds(v, now);
     this.#cues(v);
     clearTimeout(this.#timer);
-    let wait = Number.isFinite(v.until) ? v.until - now : 5000;
+    let wait = Number.isFinite(v.until) ? v.until - now : WAKE;
     if (v.phase === 'countdown') wait = Math.min(wait, (v.until - now) % 1000 || 1000);
-    this.#timer = setTimeout(() => this.#refresh(), Math.max(20, Math.min(5000, wait)) + 10);
+    this.#timer = setTimeout(() => this.#refresh(), Math.max(20, Math.min(WAKE, wait)) + 10);
   }
 
   #sounds(v: QuizView, now: number): void {
@@ -173,7 +185,7 @@ export class QuizGame {
     // the lobby: the deck's clips fetched into the cache (8 × ~15 KB), the first one decoded
     if (v.g && (v.phase === 'lobby' || v.phase === 'countdown') && this.#fetched !== `${v.seed}:${v.lv}` && items.length) {
       this.#fetched = `${v.seed}:${v.lv}`;
-      for (const it of items) void fetch(audioUrl(clipUrl(it.id))).then((r) => r.arrayBuffer()).catch(() => {});
+      for (const it of items) void fetch(audioUrl(clipUrl(it.id))).then((r) => (this.#gone ? null : r.arrayBuffer())).catch(() => {});
       if (v.speaks) void loadVoice(clipUrl(items[0].id));
     }
     if (v.phase === 'idle' || v.phase === 'lobby' || v.phase === 'results') {
@@ -219,15 +231,18 @@ export class QuizGame {
   }
 
   async #playNow(it: Item, i: number, slow: boolean): Promise<void> {
+    const at = this.view.i;
     const buf = await loadVoice(clipUrl(it.id, slow));
-    if (!buf || this.#gone) return;
+    // gone, or the game moved on while it loaded (a replay of the last question over the next one's clip: dropped)
+    if (!buf || this.#gone || (i >= 0 && this.view.i !== at)) return;
     this.#stopAll(true);
     const h = this.#track(playVoice(buf));
     if (!h) return;
     const from = this.#link.now();
     const s = { i, from, until: from + buf.duration * 1000, slow };
     this.sounding = s;
-    setTimeout(() => this.sounding === s && (this.sounding = null), buf.duration * 1000 + 50);
+    clearTimeout(this.#soundingTimer);
+    this.#soundingTimer = setTimeout(() => this.sounding === s && (this.sounding = null), buf.duration * 1000 + 50);
   }
 
   #track(h: { stop(): void } | null): Handle | null {

@@ -8,11 +8,26 @@
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
+  import { voiceSession } from '#lib/sound/sound.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { listenQuiz, openQuiz, quiz } from './invite.svelte.ts';
 
   let { live }: { live: Live | null } = $props();
   const loadSheet = lazy(() => import('./KikimimiSheet.svelte'));
+  let Sheet = $state.raw<typeof import('./KikimimiSheet.svelte').default | null>(null);
+
+  // The sheet's chunk from its first opening; failed to load (offline, a deploy's moment): not open (the voice session
+  // the tap began ended, the island uncovered), and the next tap tries again.
+  $effect(() => {
+    if (!quiz.mounted || Sheet) return;
+    loadSheet().then(
+      (m) => (Sheet = m.default),
+      () => {
+        quiz.open = quiz.mounted = false;
+        voiceSession(false);
+      }
+    );
+  });
 
   /** The banner shown for this game (dropped when its host cancels it). */
   let shownFor: { g: string; id: number } | null = null;
@@ -36,6 +51,4 @@
   });
 </script>
 
-{#if quiz.mounted}
-  {#await loadSheet() then { default: KikimimiSheet }}<KikimimiSheet bind:open={quiz.open} join={quiz.join} />{/await}
-{/if}
+{#if Sheet}<Sheet bind:open={quiz.open} join={quiz.join} />{/if}

@@ -91,7 +91,7 @@
     {:else}
       <p class="verdict" class:ok={right} data-kiki-verdict={v.out ? 'out' : right ? 'right' : mine ? 'wrong' : 'none'}>
         {#if v.out}{t('kiki.out')}
-        {:else if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')} <b>+{points(true, mine!.rp)}</b>{#if !mine!.rp}<small>{t('kiki.firstTry')}</small>{/if}
+        {:else if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')} <b>+{points(true, mine!.rp || v.same)}</b>{#if !mine!.rp && !v.same}<small>{t('kiki.firstTry')}</small>{/if}
         {:else}<span class="sym" aria-hidden="true">×</span>{mine ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
       </p>
     {/if}
@@ -120,9 +120,11 @@
   </div>
 
   <div class="level-acts acts">
-    {#if v.speaks && !v.out}
+    {#if (v.speaks || game.listenOnly) && !v.out}
       <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
       {#if slowOk}<button type="button" class="btn small paper" data-kiki-slow aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(true)}>🐢 {t('kiki.slow')}</button>{/if}
+      <!-- おなじへや on another's phone: shown, never live (the host's phone plays them for the room) -->
+      {#if game.listenOnly}<p class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</p>{/if}
     {/if}
     {#if v.canNext}<button type="button" class="btn small" data-kiki-next data-sfx="confirm" onclick={() => game.next()}>{t('kiki.next')}</button>{/if}
   </div>
@@ -191,6 +193,7 @@
   .timer i { display: block; height: 100%; background: var(--c-yuzu); transform-origin: 0 50%; animation: shrink linear both; }
   .status { min-height: 1.4em; margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .acts { justify-content: center; }
+  .acts .hint { flex: 1 1 100%; margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .acts :global(.btn.small) { flex: 1 1 0; white-space: nowrap; }
   /* つぎへ: the host's one action, its own row under 🔁 🐢 */
   .acts :global([data-kiki-next]) { flex: 1 1 100%; min-height: var(--cta-h); font-size: var(--fs-talk); }
