@@ -303,6 +303,14 @@ export function editFood(id: string, ch: { d?: LocalDate; m?: Meal; g?: number; 
   return sendFood({ id, at: foodNow(e.at), d: ch.d ?? e.d, m: ch.m ?? e.m, g, f });
 }
 
+/** 「最新の値にする」: one of my entries re-snapshotted, `f` its food as it is now (components/food/fresh.ts latestSnap);
+ *  its day, meal and grams kept. An ordinary edit (the owner's only). */
+export function refreshFood(id: string, f: FoodSnap): SendResult {
+  const e = myFood(id);
+  if (!e) return { ok: false };
+  return sendFood({ id, at: foodNow(e.at), d: e.d, m: e.m, g: e.g, f });
+}
+
 /** Remove one of my entries (final). */
 export function removeFood(id: string): SendResult {
   const e = myFood(id);

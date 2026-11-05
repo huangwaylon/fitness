@@ -306,7 +306,7 @@ Health data over time for the personal trainer, one person at a time, computed o
 `items/dinner`, set 3px below the pill's centre so the bowl, not its nori, sits mid-pill) grows it out
 of the bowl like けんこう (full height; whose day, title ごはん and ✕; ‹ in whose place while a level is open). What each of us ate, typed in by hand; it never earns ベル.
 Everyone sees everyone's meals, the guest's phone too; only the owner changes an entry. Its code, its strings
-(`i18n/food.*.json`) and the food data load with the first opening (the data only with the first search).
+(`i18n/food.*.json`) and the food data load with the first opening (the data with the first search, or a moment after my day shows a catalogue entry: 最新の値にする).
 
 - **Tabs:** first, right under the title bar (stable across tabs), けんこう's group switch (`ui/Segmented`, a list
   of tabs: `Food.svelte` TABS): きろく (on each opening; its icon NH's rice cooker, `art.ts` FOOD_TAB_ART: the plate
@@ -352,6 +352,15 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   at once (from its snapshot: its own portion; the catalog's portions swapped in when they come); anyone else's day is
   read-only. Levels slide in (240 ms, as けんこう's); ‹ comes back where the day was scrolled, the focus on what
   opened it. Confirmations are short (「夜ごはんに ついかしました」) and docked low, never over the level they land on.
+  **最新の値にする** (the user approved, 2026-11-05; `fresh.ts`): an entry keeps its food as logged, so a data fix (or
+  an edit of its recipe or custom food) never changes it. On my day, an entry of mine (not a いつもの's) whose food is
+  now otherwise beyond rounding (the catalogue item with its id, its recipe or custom food now: kcal past ½, a nutrient
+  past 0.05 g or become known or unknown; fibre and alcohol only when both know them, so an entry from before them isn't
+  flagged for that alone; not when it now logs by the serving or by weight instead) has a small leaf-text link under its
+  row, 「最新の値にする（729→765 kcal）」: a tap re-snapshots it (its day, meal, grams and portion kept: an ordinary edit,
+  `refreshFood`), 「「…」を 最新の値に しました」. Nothing is ever updated by itself; anyone else's day never offers it. The
+  catalogue loads for it a moment after my day shows an entry of it (it is the search's data too; the products when
+  they come).
   **Several foods a trip** (the user approved, 2026-11-05): a new entry logged from a meal's search (its amount's
   ついか, a recipe's or a custom food's) comes back to that search, not the day: the field cleared and focused in the
   same tap (the keyboard stays up), and under it 「ついかした もの（n）」, this trip's entries (each with ✕: removed at
