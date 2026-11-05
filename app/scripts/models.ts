@@ -144,7 +144,11 @@ const DECOR_PPU = 3 * 3;
 const DECOR: [string, string][] = [
   ['stone-lantern', 'FtrStonelantern'], ['birdbath', 'FtrBirdbus'], ['garden-wagon', 'FtrGardenwagon'], ['iron-table', 'FtrIrongardenTable'],
   ['iron-chair', 'FtrIrongardenChair'], ['brick-well', 'FtrWellBrick'], ['tanuki', 'FtrOrnamentTanuki'], ['monstera', 'FtrPlantMonstera'],
-  ['signpost', 'FtrSignpost'], ['wheelbarrow', 'FtrHandcart']
+  ['signpost', 'FtrSignpost'], ['wheelbarrow', 'FtrHandcart'],
+  // the gym (もようがえ's ジム tab: layout/catalog.ts group 'gym'), NH's fitness furniture
+  ['weight-bench', 'FtrPressBench'], ['exercise-bike', 'FtrExercisebike'], ['treadmill', 'FtrRunningmachine'], ['punching-bag', 'FtrSandbag'],
+  ['exercise-ball', 'FtrBalanceball'], ['barbell', 'FtrBarbell'], ['kettlebell', 'FtrKettlebell'], ['protein-shaker', 'FtrProtein'],
+  ['water-cooler', 'FtrWaterserver'], ['digital-scale', 'FtrWeightscale'], ['climbing-wall', 'FtrClimbingwall'], ['upright-locker', 'FtrLocker']
 ];
 JOBS.push(...DECOR.flatMap(([id, model]) => [0, 1, 2, 3].map((f): Job => ({
   px: 0, ppu: DECOR_PPU, anchor: 'origin', rotY: f * 90,

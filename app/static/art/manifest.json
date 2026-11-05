@@ -1,5 +1,5 @@
 {
-  "version": 55,
+  "version": 56,
   "files": {
     "bridges/stone-front": {
       "path": "bridges/stone-front.webp",
@@ -1603,6 +1603,12 @@
       "h": 119,
       "source": "https://nookipedia.com/wiki/File:Wedding_Arch_(Cute)_NH_Icon.png"
     },
+    "decor/barbell-0": {
+      "path": "decor/barbell-0.webp",
+      "w": 173,
+      "h": 63,
+      "source": "rendered from NH's model FtrBarbell (scripts/models.ts)"
+    },
     "decor/birdbath-0": {
       "path": "decor/birdbath-0.webp",
       "w": 69,
@@ -1614,6 +1620,30 @@
       "w": 130,
       "h": 181,
       "source": "rendered from NH's model FtrWellBrick (scripts/models.ts)"
+    },
+    "decor/climbing-wall-0": {
+      "path": "decor/climbing-wall-0.webp",
+      "w": 180,
+      "h": 249,
+      "source": "rendered from NH's model FtrClimbingwall (scripts/models.ts)"
+    },
+    "decor/digital-scale-0": {
+      "path": "decor/digital-scale-0.webp",
+      "w": 55,
+      "h": 34,
+      "source": "rendered from NH's model FtrWeightscale (scripts/models.ts)"
+    },
+    "decor/exercise-ball-0": {
+      "path": "decor/exercise-ball-0.webp",
+      "w": 70,
+      "h": 70,
+      "source": "rendered from NH's model FtrBalanceball (scripts/models.ts)"
+    },
+    "decor/exercise-bike-0": {
+      "path": "decor/exercise-bike-0.webp",
+      "w": 87,
+      "h": 117,
+      "source": "rendered from NH's model FtrExercisebike (scripts/models.ts)"
     },
     "decor/garden-wagon-0": {
       "path": "decor/garden-wagon-0.webp",
@@ -1633,11 +1663,29 @@
       "h": 85,
       "source": "rendered from NH's model FtrIrongardenTable (scripts/models.ts)"
     },
+    "decor/kettlebell-0": {
+      "path": "decor/kettlebell-0.webp",
+      "w": 41,
+      "h": 52,
+      "source": "rendered from NH's model FtrKettlebell (scripts/models.ts)"
+    },
     "decor/monstera-0": {
       "path": "decor/monstera-0.webp",
       "w": 82,
       "h": 153,
       "source": "rendered from NH's model FtrPlantMonstera (scripts/models.ts)"
+    },
+    "decor/protein-shaker-0": {
+      "path": "decor/protein-shaker-0.webp",
+      "w": 55,
+      "h": 66,
+      "source": "rendered from NH's model FtrProtein (scripts/models.ts)"
+    },
+    "decor/punching-bag-0": {
+      "path": "decor/punching-bag-0.webp",
+      "w": 85,
+      "h": 182,
+      "source": "rendered from NH's model FtrSandbag (scripts/models.ts)"
     },
     "decor/signpost-0": {
       "path": "decor/signpost-0.webp",
@@ -1656,6 +1704,30 @@
       "w": 78,
       "h": 115,
       "source": "rendered from NH's model FtrOrnamentTanuki (scripts/models.ts)"
+    },
+    "decor/treadmill-0": {
+      "path": "decor/treadmill-0.webp",
+      "w": 151,
+      "h": 117,
+      "source": "rendered from NH's model FtrRunningmachine (scripts/models.ts)"
+    },
+    "decor/upright-locker-0": {
+      "path": "decor/upright-locker-0.webp",
+      "w": 70,
+      "h": 175,
+      "source": "rendered from NH's model FtrLocker (scripts/models.ts)"
+    },
+    "decor/water-cooler-0": {
+      "path": "decor/water-cooler-0.webp",
+      "w": 50,
+      "h": 155,
+      "source": "rendered from NH's model FtrWaterserver (scripts/models.ts)"
+    },
+    "decor/weight-bench-0": {
+      "path": "decor/weight-bench-0.webp",
+      "w": 165,
+      "h": 172,
+      "source": "rendered from NH's model FtrPressBench (scripts/models.ts)"
     },
     "decor/wheelbarrow-0": {
       "path": "decor/wheelbarrow-0.webp",

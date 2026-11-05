@@ -143,6 +143,17 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         continue;
       }
     }
+    // the decorations (the もようがえ's furniture and the gym's: their kind's icon `decor/<kind>-0`): NH's model
+    // (assets.json `decor/<kind>-0`, at its own scale), turned by its facing: it used to look for a model of the kind's
+    // bare name, found none and stood a card of the 2D art, which drew over what stood in front of it (a well behind a
+    // campfire floated over it) and was missing from the editor's preview
+    if (def.icon.startsWith('decor/')) {
+      const a = keyModel(`decor/${o.k}-0`);
+      if (a) thing(a.m as ModelName, a.s);
+      else if (has(o.k)) thing(o.k, DECOR_U);
+      else standins.push({ id: o.id, key: `decor/${o.k}-${o.f}`, x, z, h });
+      continue;
+    }
     switch (o.k) {
       case 'oak':
         thing(oak, scaleOf(`trees/${oak}`, oak, h), { tap: 'tree' });
@@ -238,17 +249,6 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
       }
       case 'stairs': case 'spot':
         break; // the stairs are the ground's (terrain.ts); a spot is never drawn
-      case 'stone-lantern': case 'birdbath': case 'garden-wagon': case 'iron-table': case 'iron-chair': case 'brick-well': case 'tanuki': case 'monstera': case 'signpost': case 'wheelbarrow':
-      {
-        // NH's model (assets.json `decor/<kind>-0`, at its own scale), turned by its facing: it used to look for a model
-        // of the kind's bare name, found none and stood a card of the 2D art, which drew over what stood in front of it
-        // (a well behind a campfire floated over it) and was missing from the editor's preview
-        const a = keyModel(`decor/${o.k}-0`);
-        if (a) thing(a.m as ModelName, a.s);
-        else if (has(o.k)) thing(o.k, DECOR_U);
-        else standins.push({ id: o.id, key: `decor/${o.k}-${o.f}`, x, z, h });
-        break;
-      }
       default: {
         // the fixed decor's spots: the day's piece there (a seasonal spot empty out of its season), else its own look
         const piece = pieces?.get(o.id);

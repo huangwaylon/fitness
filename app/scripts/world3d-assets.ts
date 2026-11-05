@@ -283,7 +283,11 @@ const decos: AssetJob[] = [
 const DECOR: [string, string][] = [
   ['stone-lantern', 'FtrStonelantern'], ['birdbath', 'FtrBirdbus'], ['garden-wagon', 'FtrGardenwagon'], ['iron-table', 'FtrIrongardenTable'],
   ['iron-chair', 'FtrIrongardenChair'], ['brick-well', 'FtrWellBrick'], ['tanuki', 'FtrOrnamentTanuki'], ['monstera', 'FtrPlantMonstera'],
-  ['signpost', 'FtrSignpost'], ['wheelbarrow', 'FtrHandcart']
+  ['signpost', 'FtrSignpost'], ['wheelbarrow', 'FtrHandcart'],
+  // the gym (もようがえ's ジム tab: layout/catalog.ts group 'gym'), NH's fitness furniture
+  ['weight-bench', 'FtrPressBench'], ['exercise-bike', 'FtrExercisebike'], ['treadmill', 'FtrRunningmachine'], ['punching-bag', 'FtrSandbag'],
+  ['exercise-ball', 'FtrBalanceball'], ['barbell', 'FtrBarbell'], ['kettlebell', 'FtrKettlebell'], ['protein-shaker', 'FtrProtein'],
+  ['water-cooler', 'FtrWaterserver'], ['digital-scale', 'FtrWeightscale'], ['climbing-wall', 'FtrClimbingwall'], ['upright-locker', 'FtrLocker']
 ];
 const decor = DECOR.map(([id, model]): AssetJob => ({
   name: `decor/${id}`, parts: one(model), tex: ftrTex(model), uses: [0, 1, 2, 3].map((f): Use => ({ key: `decor/${id}-${f}`, cat: 'decor', s: DECOR_U, yaw: f * 90 }))

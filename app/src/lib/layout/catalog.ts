@@ -3,7 +3,7 @@
 // stand, its drawn height (u: the 2D sprites' and the 3D models' size), its palette icon (an art key) and its names.
 // The editor's palette, the validation, the nav and the 3D placement (world3d/objects.ts) all read this one table.
 
-type Group = 'tree' | 'bush' | 'flower' | 'rock' | 'light' | 'furniture' | 'season' | 'structure' | 'building' | 'home' | 'spot';
+type Group = 'tree' | 'bush' | 'flower' | 'rock' | 'light' | 'furniture' | 'gym' | 'season' | 'structure' | 'building' | 'home' | 'spot';
 /** Where a kind may stand: any land tile (`land`), on grass only (`grass`: a tree, a flower), over water with land at
  *  both ends (`span`: a bridge), in front of a cliff one tier up (`cliff`: stairs). */
 type On = 'land' | 'grass' | 'span' | 'cliff';
@@ -76,7 +76,6 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'rod-stand', group: 'furniture', ja: 'つりざおスタンド', en: 'Rod stand', w: 1, d: 1, block: true, foot: [22, 10], on: 'land', h: 30, icon: 'deco/rod-stand' }),
   k({ k: 'pump', group: 'furniture', ja: 'ポンプ', en: 'Pump', w: 1, d: 1, block: true, foot: [24, 14], on: 'land', h: 34, icon: 'deco/pump' }),
   k({ k: 'shishiodoshi', group: 'furniture', ja: 'ししおどし', en: 'Shishi-odoshi', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 28, icon: 'deco/shishiodoshi', turns: true }),
-  k({ k: 'pullup', group: 'furniture', ja: 'てつぼう', en: 'Pull-up bar', w: 1, d: 1, block: true, foot: [28, 12], on: 'land', h: 44, icon: 'deco/pullup', turns: true }),
   k({ k: 'firewood', group: 'furniture', ja: 'まき', en: 'Firewood', w: 1, d: 1, block: true, foot: [18, 12], on: 'land', h: 18, icon: 'deco/firewood' }),
   k({ k: 'tape-deck', group: 'furniture', ja: 'ラジカセ', en: 'Tape deck', w: 1, d: 1, block: true, foot: [34, 20], on: 'land', h: 40, icon: 'deco/tape-deck', fixed: true }),
   // the decorations NH's outdoor furniture the phones put down (island/decor.ts's ten), on the layout's tiles now
@@ -90,6 +89,23 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'monstera', group: 'furniture', ja: 'モンステラ', en: 'Monstera', w: 1, d: 1, block: true, foot: [22, 20], on: 'land', h: 40, icon: 'decor/monstera-0', turns: true }),
   k({ k: 'signpost', group: 'furniture', ja: 'みちしるべ', en: 'Signpost', w: 1, d: 1, block: true, foot: [18, 14], on: 'land', h: 42, icon: 'decor/signpost-0', turns: true }),
   k({ k: 'wheelbarrow', group: 'furniture', ja: 'いちりんしゃ', en: 'Wheelbarrow', w: 2, d: 1, block: true, foot: [40, 22], on: 'land', h: 26, icon: 'decor/wheelbarrow-0', turns: true }),
+  // the gym (ジム: NH's fitness furniture, its official names; the decorations' models and icons, `decor/<kind>-0`). A tap
+  // on the ones NH lets one use walks my villager up to it and on (layout/nav.ts SEAT_ON's `use`: island/sitting.ts):
+  // the weight bench's presses, the bike's pedalling, the treadmill's run, the punching bag's punches, the exercise
+  // ball's bounce, the pull-up bar's reps (the default island's own stand, `deco/pullup`, is one of them)
+  k({ k: 'pullup', group: 'gym', ja: 'けんすいスタンド', en: 'Pull-up-bar stand', w: 1, d: 1, block: true, foot: [28, 12], on: 'land', h: 44, icon: 'deco/pullup', turns: true }),
+  k({ k: 'weight-bench', group: 'gym', ja: 'プレスベンチ', en: 'Weight bench', w: 2, d: 1, block: true, foot: [56, 28], on: 'land', h: 52, icon: 'decor/weight-bench-0', turns: true }),
+  k({ k: 'exercise-bike', group: 'gym', ja: 'エクササイズバイク', en: 'Exercise bike', w: 1, d: 1, block: true, foot: [28, 16], on: 'land', h: 37, icon: 'decor/exercise-bike-0', turns: true }),
+  k({ k: 'treadmill', group: 'gym', ja: 'ランニングマシン', en: 'Treadmill', w: 2, d: 1, block: true, foot: [50, 28], on: 'land', h: 34, icon: 'decor/treadmill-0', turns: true }),
+  k({ k: 'punching-bag', group: 'gym', ja: 'サンドバッグ', en: 'Punching bag', w: 1, d: 1, block: true, foot: [28, 24], on: 'land', h: 58, icon: 'decor/punching-bag-0', turns: true }),
+  k({ k: 'exercise-ball', group: 'gym', ja: 'バランスボール', en: 'Exercise ball', w: 1, d: 1, block: true, foot: [22, 22], on: 'land', h: 23, icon: 'decor/exercise-ball-0', turns: true }),
+  k({ k: 'barbell', group: 'gym', ja: 'バーベル', en: 'Barbell', w: 2, d: 1, block: true, foot: [56, 20], on: 'land', h: 21, icon: 'decor/barbell-0', turns: true }),
+  k({ k: 'kettlebell', group: 'gym', ja: 'ケトルベル', en: 'Kettlebell', w: 1, d: 1, block: true, foot: [14, 12], on: 'land', h: 17, icon: 'decor/kettlebell-0', turns: true }),
+  k({ k: 'protein-shaker', group: 'gym', ja: 'プロテインシェイカー', en: 'Protein shaker bottle', w: 1, d: 1, block: true, foot: [16, 16], on: 'land', h: 17, icon: 'decor/protein-shaker-0', turns: true }),
+  k({ k: 'water-cooler', group: 'gym', ja: 'ウォーターサーバー', en: 'Water cooler', w: 1, d: 1, block: true, foot: [16, 18], on: 'land', h: 51, icon: 'decor/water-cooler-0', turns: true }),
+  k({ k: 'digital-scale', group: 'gym', ja: 'たいじゅうそくていき', en: 'Digital scale', w: 1, d: 1, block: true, foot: [18, 16], on: 'land', h: 4, icon: 'decor/digital-scale-0', turns: true }),
+  k({ k: 'climbing-wall', group: 'gym', ja: 'クライミングウォール', en: 'Climbing wall', w: 2, d: 1, block: true, foot: [60, 12], on: 'land', h: 90, icon: 'decor/climbing-wall-0', turns: true }),
+  k({ k: 'upright-locker', group: 'gym', ja: 'ロッカー', en: 'Upright locker', w: 1, d: 1, block: true, foot: [24, 22], on: 'land', h: 56, icon: 'decor/upright-locker-0', turns: true }),
   // NH's bulletin board (けいじばん): one on the island, used from the tile in front of it
   k({ k: 'board', group: 'furniture', ja: 'けいじばん', en: 'Bulletin board', w: 2, d: 1, block: true, foot: [54, 14], on: 'land', h: 44, icon: 'deco/bulletin-board', turns: true, fixed: true, front: true }),
   // the seasonal spots (fixedDecor.ts: the season's piece stands there in its weeks)
