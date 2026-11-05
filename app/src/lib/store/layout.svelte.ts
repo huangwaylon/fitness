@@ -9,15 +9,15 @@
 //   layout.apply(ops)                changes of mine: merged, kept, sent (the editor's save, the phone's もようがえ)
 //   layout.on(fn)                    every change as it lands, with what changed (diff.ts)
 import { layoutOpOf, mergeLayout, type LayoutEntry, type LayoutOp } from '#lib/contract/layout.ts';
-import { defaultLayout, layoutOf, objMid, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
-import { clashesWith, clearTile } from '#lib/layout/resolve.ts';
+import { defaultLayout, layoutOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
+import { resolveMoves } from '#lib/layout/resolve.ts';
 import { diffLayouts, type LayoutDiff } from '#lib/layout/diff.ts';
 import { migrationOps } from '#lib/layout/migrate.ts';
 import type { Placed } from '#lib/contract/decor.ts';
 import type { HomeStyle } from '#lib/layout/homes.ts';
 import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
-import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import { DEMO, LIVE, localKV, writeRaw } from '#lib/sync/storage.ts';
 import { world } from './world.svelte.ts';
 
 const LAYOUT_SCOPES: readonly unknown[] = ['o', 'c', 'r', 'h'];
@@ -50,7 +50,9 @@ class IslandLayout {
   #load(): void {
     if (this.#loaded) return;
     this.#loaded = true;
-    const kept = readJson<unknown[]>(localKV(), this.#key());
+    const raw = localKV()?.getItem(this.#key()) ?? null;
+    this.#written = raw;
+    const kept = parse(raw);
     if (Array.isArray(kept)) for (const k of kept) this.#merge(k);
     this.#layout = layoutOf(this.#map);
   }
@@ -76,12 +78,41 @@ class IslandLayout {
   }
   #changed(who: Who, live: boolean): void {
     const was = this.#layout;
-    // a second tab of the app keeps the same copy (its socket replaced this one's, so it hears nothing of mine): its
-    // ops are merged in before mine are written, never written over (docs/backend.md#live-sync "Two tabs")
-    this.#fold(readJson<unknown[]>(localKV(), this.#key()));
     this.#layout = layoutOf(this.#map);
-    writeJson(localKV(), this.#key(), [...this.#map.values()]);
+    this.#writeSoon();
     this.rev++;
+    this.#tell(was, who, live);
+  }
+  /** What storage held as this tab last read or wrote it (the raw text: unchanged since, no other tab wrote). */
+  #written: string | null = null;
+  #writing = false;
+  /** The layout written once per burst of changes (an editor's save, a partner's burst, a storage event), the tick's
+   *  end: a second tab of the app keeps the same copy (its socket replaced this one's, so it hears nothing of mine), so
+   *  what it wrote since is merged in first, never written over (docs/backend.md#live-sync "Two tabs"); unchanged
+   *  since this tab's own last write (the text the same), nothing is parsed. */
+  #writeSoon(): void {
+    if (this.#writing) return;
+    this.#writing = true;
+    queueMicrotask(() => this.#write());
+  }
+  #write(): void {
+    if (!this.#writing) return;
+    this.#writing = false;
+    const kv = localKV(), key = this.#key();
+    const raw = kv?.getItem(key) ?? null;
+    if (raw !== null && raw !== this.#written) {
+      const was = this.#layout;
+      const news = this.#fold(parse(raw));
+      if (news) {
+        this.#layout = layoutOf(this.#map);
+        this.rev++;
+        this.#tell(was, news.who, false);
+      }
+    }
+    const text = JSON.stringify([...this.#map.values()]);
+    if (writeRaw(kv, key, text)) this.#written = text;
+  }
+  #tell(was: Layout, who: Who, live: boolean): void {
     if (!this.#subs.size) return;
     const n: LayoutNews = { diff: diffLayouts(was, this.#layout), who, live };
     for (const f of this.#subs) {
@@ -125,6 +156,7 @@ class IslandLayout {
     this.#off?.();
     this.#off = null;
     if (demo !== this.#demo) {
+      this.#write(); // (what's waiting is the last copy's)
       this.#map.clear();
       this.#loaded = false;
     }
@@ -149,13 +181,7 @@ class IslandLayout {
     this.#listening = true;
     window.addEventListener('storage', (e) => {
       if (e.key !== this.#key() || !this.#loaded || !e.newValue) return;
-      let kept: unknown;
-      try {
-        kept = JSON.parse(e.newValue);
-      } catch {
-        return;
-      }
-      const news = this.#fold(kept);
+      const news = this.#fold(parse(e.newValue));
       if (news) this.#changed(news.who, false);
     });
   }
@@ -192,29 +218,20 @@ class IslandLayout {
     }, 0);
   }
   /**
-   * The partner's pieces that landed on one of mine (two edits of different objects on one tile at once: each fine
-   * alone): when my op is the later of the two (their `at`, then who, as the merge orders them: the same on both
-   * phones), my piece moves to the nearest clear tile (layout/resolve.ts), as an op of mine like any; else it's
-   * theirs to move. Never the guest's (the outdoors is the members').
+   * The partner's pieces that landed on one of mine, or block a door with one of mine (two edits of different objects
+   * at once, each fine alone: one tile, or a piece by a door the other turned to face it): when my op is the later of
+   * the two (their `at`, then who, as the merge orders them: the same on both phones), my piece moves to the nearest
+   * clear tile (layout/resolve.ts resolveMoves), as an op of mine like any; else it's theirs to move. Never the
+   * guest's (the outdoors is the members').
    */
   #resolve(): void {
     const ids = [...this.#landedIds];
     this.#landedIds.clear();
-    const me = this.#me;
-    if (!me || me === 'G') return;
-    let l = this.#layout;
+    const l = this.#layout;
     const ops: LayoutOp[] = [];
-    for (const rid of ids) {
-      const r = l.objects.get(rid), er = this.#map.get(`o|${rid}`);
-      if (!r || !er) continue;
-      for (const m of clashesWith(l, r)) {
-        const em = this.#map.get(`o|${m.id}`);
-        if (!em || em.sc !== 'o' || em.rm || em.who !== me || !(em.at > er.at || (em.at === er.at && em.who > er.who))) continue;
-        const to = clearTile(l, m.id);
-        if (!to) continue;
-        ops.push({ sc: 'o', id: m.id, at: this.stamp(), k: m.k, x: to[0], z: to[1], f: m.f, ...(m.s !== undefined ? { s: m.s } : {}) });
-        l = withChanges(l, { set: [{ ...m, x: to[0], z: to[1], n: undefined }] });
-      }
+    for (const { id, to } of resolveMoves(l, this.#map, ids, this.#me)) {
+      const m = l.objects.get(id)!;
+      ops.push({ sc: 'o', id, at: this.stamp(), k: m.k, x: to[0], z: to[1], f: m.f, ...(m.s !== undefined ? { s: m.s } : {}) });
     }
     if (ops.length) this.apply(ops);
   }
@@ -308,7 +325,19 @@ class IslandLayout {
     this.#pending = null;
     if (this.#pendingTimer) clearTimeout(this.#pendingTimer);
     this.#pendingTimer = null;
+    this.#written = null;
+    this.#writing = false;
     this.rev++;
+  }
+}
+
+/** Kept JSON text, or null when it's none or not JSON. */
+function parse(raw: string | null): unknown {
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
   }
 }
 

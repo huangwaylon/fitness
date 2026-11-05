@@ -100,7 +100,14 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
   in a fixed order, on land of one tier, out of the water, on grass when it belongs there, overlapping nothing, making
   no error the island doesn't have without it: a door, K.K.'s front, a way blocked), as a normal op of mine; else it
   is theirs to move. Only one phone moves, onto a tile clear as merged, so nothing ping-pongs. Never the guest's
-  phone; bridges and stairs (one place only) stay and show the editor's overlap.
+  phone; bridges and stairs (one place only) stay and show the editor's overlap. **A door blocked between two edits**
+  (2026-11-05, round 2): a palm put east of K.K.'s stool while the other phone turns the stool to face east is fine on
+  each phone, and together his front is blocked (validate's `door`: a home's, a building's, a front). When the
+  partner's ops land near a door (or move its building), the merged island's `door` errors are looked at: a pair of a
+  landed piece of theirs and one of mine, each the door's own building or near it (2 tiles) and clearing the error when
+  taken away, is settled as an overlap is: the later op's owner moves its piece (`layout/resolve.ts resolveMoves`,
+  clearTile's error baseline), so the stool moves off, still facing east, or the palm does; a door the island had
+  blocked already, or another piece blocks, is nobody's. A partner's burst away from every door costs no check.
 - Ids: a default object's (`goal-A`, `fl:52:180`), a new one `o<time><random>` (`model.ts newObjId`); tokens
   (`k`, `s`, `m`) are lower-case; home parts (`w`, `r`, `d`) `[A-Za-z0-9.]`.
 

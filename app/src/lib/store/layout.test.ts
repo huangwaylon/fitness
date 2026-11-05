@@ -44,15 +44,39 @@ const move = (id: string, x: number, z: number, at: number): LayoutOp => ({ sc: 
 const stored = () => (JSON.parse(kv.getItem(LIVE.layout) ?? '[]') as LayoutEntry[]).map((e) => e.id).sort();
 
 describe('the layout on this phone', () => {
-  it('a second tab’s ops in storage are merged in before mine are written, never written over', () => {
+  it('a second tab’s ops in storage are merged in before mine are written, never written over', async () => {
     const r = fakeRelay();
     layout.attach(r.live, 'A');
     void layout.current;
     // the other tab (its socket replaced this one's: this one hears nothing of it) wrote its op
     kv.setItem(LIVE.layout, JSON.stringify([{ ...move('o-tab2', 10, 10, T0 + 1), who: 'A' }]));
     layout.apply([move('o-tab1', 20, 20, T0 + 2)]);
+    await Promise.resolve();
     expect(stored()).toEqual(['o-tab1', 'o-tab2']);
     expect(layout.obj('o-tab2')).toMatchObject({ x: 10, z: 10 });
+  });
+
+  it('my own changes write the layout once per burst, and parse nothing when storage is as this tab left it', async () => {
+    const r = fakeRelay();
+    layout.attach(r.live, 'A');
+    void layout.current;
+    let writes = 0, reads = 0;
+    const set = kv.setItem.bind(kv), get = kv.getItem.bind(kv);
+    kv.setItem = (k, v) => void (k === LIVE.layout && writes++, set(k, v));
+    kv.getItem = (k) => (k === LIVE.layout && reads++, get(k));
+    const parse = vi.spyOn(JSON, 'parse');
+    for (let i = 0; i < 10; i++) layout.apply([move(`o-burst${i}`, 20 + i, 20, T0 + 10 + i)]);
+    await Promise.resolve();
+    expect(writes).toBe(1);
+    expect(reads).toBe(1);
+    expect(parse).not.toHaveBeenCalled();
+    // again, a tick later: the text is still this tab's own
+    layout.apply([move('o-burst10', 31, 20, T0 + 30)]);
+    await Promise.resolve();
+    expect(writes).toBe(2);
+    expect(parse).not.toHaveBeenCalled();
+    parse.mockRestore();
+    expect(stored()).toHaveLength(11);
   });
 
   /** Two palms of the default and a tile one of them may stand on, clear of everything. */
@@ -91,6 +115,19 @@ describe('the layout on this phone', () => {
     r.hear({ sc: 'o', id: p2.id, at: T0 + 3000, k: 'palm', x: to.x + 3, z: to.z, f: 0, who: 'B', t: T0 + 3000 });
     vi.advanceTimersByTime(1);
     expect(r.sent).toEqual([]);
+  });
+
+  it('a door blocked between us (their palm by K.K.’s stool, my turn of it to face the palm, mine later): my stool moves off, as an op', () => {
+    const r = fakeRelay();
+    layout.attach(r.live, 'B');
+    const kk = layout.obj('kk-slider')!, [p] = layout.ofKind('palm');
+    layout.apply([{ sc: 'o', id: kk.id, at: T0 + 2000, k: kk.k, x: kk.x, z: kk.z, f: 1 }]);
+    r.sent.length = 0;
+    r.hear({ sc: 'o', id: p.id, at: T0 + 1000, k: 'palm', x: kk.x + 1, z: kk.z, f: 0, who: 'A', t: T0 + 1000 });
+    vi.advanceTimersByTime(1);
+    expect(tileOf(p.id)).toEqual([kk.x + 1, kk.z]);
+    expect(r.sent).toEqual([expect.objectContaining({ kind: 'decor', sc: 'o', id: kk.id })]);
+    expect(validate(layout.current).filter((i) => i.code === 'door')).toEqual([]);
   });
 
   it('the guest never moves the outdoors; my own two pieces on one tile are mine to sort out', () => {

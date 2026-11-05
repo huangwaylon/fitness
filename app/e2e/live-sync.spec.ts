@@ -233,6 +233,36 @@ test('E13: both phones move a different piece onto one tile at once: the later o
   expect((await where(b)).join()).toBe(wa.join());
 });
 
+test('a door blocked between two edits at once (a palm by K.K.’s stool, the stool turned to face it): the later op’s phone moves its piece, both agree', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const island = newIsland();
+  const { page: a } = await demoPhone(browser, island, 'A');
+  const { page: b } = await demoPhone(browser, island, 'B');
+  await connected(a);
+  await connected(b);
+  const kk = (await lay(a, (l) => l.obj('kk-slider')))!;
+  const [p] = await lay(a, (l) => l.ids('palm'));
+  const palm = (await lay(a, (l, id) => l.obj(id), p))!;
+  const [ta, tb] = await Promise.all([w<number>(a, 'layoutStamp'), w<number>(b, 'layoutStamp')]);
+  // A's palm east of the stool, B's turn of the stool to face east (B's the later op): each fine on its own island
+  await Promise.all([
+    w<number>(a, 'layoutApply', [{ sc: 'o', id: p, at: Math.min(ta, tb), k: palm.k, x: kk.x + 1, z: kk.z, f: palm.f }]),
+    w<number>(b, 'layoutApply', [{ sc: 'o', id: 'kk-slider', at: Math.max(ta, tb) + 50, k: kk.k, x: kk.x, z: kk.z, f: 1 }])
+  ]);
+  const where = (pg: Page) => Promise.all([p, 'kk-slider'].map((id) => lay(pg, (l, id) => { const o = l.obj(id)!; return `${o.x},${o.z},${o.f}`; }, id)));
+  await expect.poll(async () => {
+    const [wa, wb] = await Promise.all([where(a), where(b)]);
+    return wa.join() === wb.join() && wa[1] !== `${kk.x},${kk.z},1`;
+  }, { timeout: 10_000 }).toBe(true);
+  // the palm (the earlier op) stood; the stool moved, still facing east, its front clear
+  const [wa] = [await where(a)];
+  expect(wa[0]).toBe(`${kk.x + 1},${kk.z},${palm.f}`);
+  expect(wa[1].endsWith(',1')).toBe(true);
+  await a.waitForTimeout(1000);
+  expect((await where(a)).join()).toBe(wa.join());
+  expect((await where(b)).join()).toBe(wa.join());
+});
+
 /** Start timing `p`'s frames (framesDone: its longest frame and its time over budget, frames past 17 ms). */
 const frames = (p: Page) => p.evaluate(() => {
   const w = window as unknown as { __frames?: { gaps: number[]; on: boolean } };
