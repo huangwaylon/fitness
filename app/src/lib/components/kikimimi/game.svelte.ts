@@ -15,6 +15,7 @@ import { audioUrl } from '#lib/sound/manifest.ts';
 import { cue } from '#lib/sound/cues.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
 import type { ListenRow } from '#lib/contract/listen.ts';
+import { listenAnswers } from '#lib/kikimimi/progress.ts';
 import { preloadStage } from './scene/stage.ts';
 
 /** The last decks built (the session's and the UI's are the same items), by seed and level. */
@@ -36,8 +37,6 @@ function usePractice(seed: number, lv: Level, items: Item[]): void {
   decks.delete(`${seed}:${lv}`);
   decks.set(`${seed}:${lv}`, items);
 }
-
-const BY_ID = new Map(BANK.map((it) => [it.id, it]));
 
 /** The deck as the session sees it: how many, each item's length as played (ms, clips.json: a dialogue's lines and
  *  the gaps) and its right choice. Read through at each call: にがて れんしゅう puts its own items in before the start
@@ -102,10 +101,8 @@ export class QuizGame {
   #cued = '';
   #fetched = '';
   #gone = false;
-  /** My replays per question before answering (the row's `rp`), the questions sat out, when the game began, the game
-   *  recorded. */
+  /** My replays per question before answering (the row's `rp`), when the game began, the game recorded. */
   #rp: number[] = [];
-  #outs = new Set<number>();
   #began = 0;
   #recordedG = '';
   readonly #record: ((row: ListenRow) => void) | undefined;
@@ -236,11 +233,9 @@ export class QuizGame {
     if (this.view && v.g !== this.view.g) {
       this.replayed = [];
       this.#rp = [];
-      this.#outs.clear();
       this.#began = 0;
     }
     if (v.g && v.phase !== 'lobby' && v.phase !== 'idle' && !this.#began) this.#began = now;
-    if (v.out && v.i >= 0) this.#outs.add(v.i);
     if (v.phase === 'results' && v.g) this.#keep(v, now, true);
     this.view = v;
     this.now = now;
@@ -298,19 +293,12 @@ export class QuizGame {
   }
 
   /** My answers of this game as a `listen` row (contract/listen.ts), recorded once: at the results (an unanswered
-   *  question timed out) or when I leave mid-way (only those answered). Questions sat out aren't in it. */
+   *  question timed out) or when I leave mid-way (only those answered). Only the questions I had (the view's `had`):
+   *  those before a mid-game join or slept through aren't in it. Joined again after leaving, the game's second row
+   *  has the same `g`; the stats fold them into one game (progress.ts gamesOf). */
   #keep(v: QuizView, now: number, done: boolean): void {
     if (!v.g || this.#recordedG === v.g) return;
-    const items = itemsOf(v.seed, v.lv as Level);
-    const r: ListenRow['r'] = [];
-    items.forEach((it, i) => {
-      if (this.#outs.has(i) || r.length >= 12) return;
-      const a = v.answers[i];
-      if (!a && !done) return;
-      const authored = BY_ID.get(it.id);
-      const pick = a ? (authored?.choices.indexOf(it.choices[a.k]) ?? -1) : -1;
-      r.push([it.id, a && a.k === it.answer ? 1 : 0, pick, Math.min(99, this.#rp[i] ?? 0)]);
-    });
+    const r = listenAnswers(itemsOf(v.seed, v.lv as Level), v.answers, v.had, this.#rp, done);
     if (!r.length) return;
     this.#recordedG = v.g;
     const row: ListenRow = {

@@ -130,6 +130,9 @@ export interface QuizView {
   out: boolean;
   /** My answer to each question (null: none), for the reveal and the review list. */
   answers: (QuizAnswer | null)[];
+  /** Whether I had each question: answered it, or its clip began after I came into the schedule (not sat out: a
+   *  mid-game join, a late `go`, a lock). My `listen` row holds only these (a question not had isn't a miss). */
+  had: boolean[];
   scores: Partial<Record<Who, number>>;
   /** The team's tally so far (counted in the reveal and the results). */
   team: QuizTeam;
@@ -439,7 +442,7 @@ export class QuizSession {
     const gm = this.mine();
     const none: QuizView = {
       phase: 'idle', g: null, host: null, amHost: false, local: false, lv: 1, same: false, seed: 0, vs: false, speaks: true, players: [], i: -1, n: 0,
-      from: 0, until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], scores: {}, team: { right: 0, all: 0, done: 0 }, rightNow: 0,
+      from: 0, until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], had: [], scores: {}, team: { right: 0, all: 0, done: 0 }, rightNow: 0,
       canNext: false, invite: null, notice: this.notice
     };
     if (!gm) {
@@ -463,7 +466,8 @@ export class QuizSession {
       vs: versus(gm.seed), team: this.team(gm, at.phase === 'results' ? gm.n : reveal ? at.i + 1 : Math.max(0, at.i)),
       rightNow: at.phase === 'reveal' ? players.filter((p) => p.pick?.ok).length : 0,
       speaks: !gm.same || gm.host === this.me, players, i: at.i, n: gm.n, from: at.from, until: at.until, playAt: at.playAt, playEnd: at.playEnd,
-      limit: at.limit, out: at.out, answers: Array.from({ length: gm.n }, (_, i) => mine?.get(i) ?? null), scores,
+      limit: at.limit, out: at.out, answers: Array.from({ length: gm.n }, (_, i) => mine?.get(i) ?? null),
+      had: Array.from({ length: gm.n }, (_, i) => !!mine?.has(i) || this.times(gm, i).playAt >= gm.inAt), scores,
       canNext: gm.host === this.me && at.phase === 'reveal'
     };
   }

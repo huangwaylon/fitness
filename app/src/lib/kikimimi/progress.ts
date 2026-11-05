@@ -43,9 +43,11 @@ export interface OtherGame {
 const BY_ID: ReadonlyMap<string, Item> = new Map(BANK.map((it) => [it.id, it]));
 export const itemOf = (id: string): Item | undefined => BY_ID.get(id);
 
-/** My games (in the order played) and the others' summaries, from the `listen` rows this phone holds. */
+/** My games (in the order played) and the others' summaries, from the `listen` rows this phone holds. A game id
+ *  written twice (left mid-way and joined again: the record keeps both rows, append-only) is one game: its answers once
+ *  each (the first kept), its minutes summed, the most players, when it was first kept. */
 export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; others: OtherGame[] } {
-  const mine: Game[] = [], others: OtherGame[] = [];
+  const mine = new Map<string, Game>(), others = new Map<string, OtherGame>();
   for (const row of rows) {
     let data: unknown;
     try {
@@ -58,14 +60,40 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
       const x = listenOf(data);
       if (!x) continue;
       const p = x.p === 1;
-      mine.push({ d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r: x.r.map(([id, ok, pick, rp]) => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p })) });
+      const r = x.r.map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
+      const was = mine.get(x.g);
+      if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r });
+      else {
+        const sooner = at < was.at, [early, late] = sooner ? [r, was.r] : [was.r, r];
+        const have = new Set(early.map((y) => y.id));
+        mine.set(x.g, { ...was, ...(sooner && { d: x.d, at }), n: Math.max(was.n, x.n), ms: was.ms + x.ms, p: was.p || p, r: [...early, ...late.filter((y) => !have.has(y.id))] });
+      }
     } else {
       const s = listenSummaryOf(data);
-      if (s) others.push({ who: row[1], ...s });
+      if (!s) continue;
+      const key = `${row[1]}:${s.g}`, was = others.get(key);
+      others.set(key, was ? { ...was, n: Math.max(was.n, s.n), ms: was.ms + s.ms } : { who: row[1], ...s });
     }
   }
-  mine.sort((a, b) => a.at - b.at || (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
-  return { mine, others };
+  const games = [...mine.values()].sort((a, b) => a.at - b.at || (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
+  return { mine: games, others: [...others.values()] };
+}
+
+/** My answers of a game as its `listen` row's `r` (contract/listen.ts): the questions I had (the session's view
+ *  `had`: a question sat out, before a mid-game join or slept through, isn't a miss), in order, at most 12. Each with
+ *  its authored choice index (the deck shuffles them); unanswered, timed out (−1) at the results (`done`), else left
+ *  out (a game left mid-way: only those answered). */
+export function listenAnswers(
+  items: readonly Item[], answers: readonly ({ k: number } | null)[], had: readonly boolean[], rp: readonly number[], done: boolean
+): ListenRow['r'] {
+  const r: ListenRow['r'] = [];
+  items.forEach((it, i) => {
+    const a = answers[i];
+    if (!had[i] || r.length >= 12 || (!a && !done)) return;
+    const pick = a ? (BY_ID.get(it.id)?.choices.indexOf(it.choices[a.k]) ?? -1) : -1;
+    r.push([it.id, a && a.k === it.answer ? 1 : 0, pick, Math.min(99, rp[i] ?? 0)]);
+  });
+  return r;
 }
 
 /** An answer's score: right on the first listen 1, right after a replay 0.6, wrong 0 (curriculum §10). */
