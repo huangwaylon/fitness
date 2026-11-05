@@ -128,7 +128,7 @@ describe('event music schedule (Tokyo)', () => {
     for (const s of ['2026-07-15T12:00:00', '2026-12-25T20:00:00', '2027-02-01T00:30:00']) expect(at(s)).toBeNull();
   });
   it("the manifest's event tracks: known ids; loops with a period end, one-shots from 0", () => {
-    const ONE_SHOTS = new Set(['happy-new-year', 'bee-stung', 'turkey-cooking-start', 'turkey-cooking-done', 'kimedance-done', 'happy-birthday', 'countdown-2355']);
+    const ONE_SHOTS = new Set(['happy-new-year', 'bee-stung', 'turkey-cooking-start', 'turkey-cooking-done', 'kimedance-done', 'happy-birthday']);
     for (const id of Object.keys(AUDIO.events) as (typeof EVENT_MUSIC_IDS)[number][]) {
       expect(EVENT_MUSIC_IDS).toContain(id);
       const t = AUDIO.events[id]!;

@@ -53,6 +53,8 @@ describe('audio manifest (static/audio/manifest.json)', () => {
   // one file's cap is what a phone waits for; the folder's is what the repo carries.
   const BUDGET_MB: Record<string, [file: number, all: number]> = {
     'music/': [1, 64],
+    'places/': [1, 6],
+    'sfx/': [0.25, 4],
     'kk/': [1.2, 12]
   };
   it('every file it names exists, and the music stays small (each folder under its budget)', () => {

@@ -170,11 +170,11 @@ function refine(x: Float32Array, at: number, approx: number): [number, number] {
 /** First sample louder than −40 dBFS. */
 const onset = (x: Float32Array) => Math.max(0, x.findIndex((v) => Math.abs(v) > 0.01));
 
-function encode(pcm: Float32Array, out: string): void {
+function encode(pcm: Float32Array, out: string, kbps = 64): void {
   const raw = join(tmpdir(), `music-${process.pid}.f32`);
   writeFileSync(raw, Buffer.from(pcm.buffer, pcm.byteOffset, pcm.byteLength));
   const r = spawnSync(FFMPEG, ['-v', 'error', '-y', '-f', 'f32le', '-ar', String(SR), '-ac', '2', '-i', raw,
-    '-c:a', 'aac', '-b:a', '64k', '-ar', String(SR), '-movflags', '+faststart', out], { stdio: 'inherit' });
+    '-c:a', 'aac', '-b:a', `${kbps}k`, '-ar', String(SR), '-movflags', '+faststart', out], { stdio: 'inherit' });
   rmSync(raw);
   if (r.status !== 0) throw new Error(`ffmpeg failed for ${out}`);
 }
@@ -183,15 +183,27 @@ function encode(pcm: Float32Array, out: string): void {
  *  and its manifest entry (`start` where the loop begins musically, `end` where the period ends). `minLagS`: the
  *  shortest loop to look for (the wasps' chase loops in seconds). `periodS`: the period, known (a rain or snow hour
  *  has its sunny hour's: their rips hold one pass and a few seconds of the next, too little to find it in). */
-function looped(path: string, file: string, name: string, dry: boolean, minLagS = 20, periodS?: number): Entry {
+function looped(path: string, file: string, row: Row, dry: boolean, periodS = row.periodS): Entry {
+  const { file: name, minLagS = 20, kbps = 64 } = row;
   const mono = decode(path, SR, 1);
   const first = onset(mono);
+  if (row.whole) {
+    // the piece itself, from its first sound to its last, then again from the top
+    const last = mono.findLastIndex((v) => Math.abs(v) > 0.001) + 1;
+    const st = decode(path, SR, 2).subarray(first * 2, last * 2);
+    const pcm = new Float32Array(st.length + TAIL * SR * 2);
+    pcm.set(st);
+    pcm.set(st.subarray(0, TAIL * SR * 2), st.length);
+    if (!dry) encode(pcm, join(OUT, name), kbps);
+    console.log(`${name}  ${file}  the whole piece, ${((last - first) / SR).toFixed(3)}s`);
+    return { file: name, start: 0, end: Math.round(((last - first) / SR) * 1e6) / 1e6 };
+  }
   let runAt: number, lag: number;
   if (periodS) {
     // the loop begins where the audio first matches itself one period later
     lag = Math.round(periodS * SR);
     runAt = first;
-    for (let t = first; t + lag + 1.2 * SR < mono.length; t += SR / 2) if (refine(mono, t, lag)[1] >= 0.98) (runAt = t), (t = Infinity);
+    for (let t = first; t + lag + 1.2 * SR < mono.length; t += SR / 2) if (refine(mono, t, lag)[1] >= 0.95) (runAt = t), (t = Infinity);
   } else {
     const loop = findLoop(features(decode(path, ASR, 1)), 0.8, minLagS);
     if (!loop) throw new Error('no repeat found; cut it by hand');
@@ -202,9 +214,9 @@ function looped(path: string, file: string, name: string, dry: boolean, minLagS 
   // the repeat begins (after an intro).
   const musical = runAt - first < 3 * SR ? Math.min(first, runAt) : runAt;
   // Cut one period from a point where both passes are identical on both sides (the wrap blends the second pass's
-  // last moments into the first's just before the cut), so the wrap is seamless: the earliest such second.
+  // last moments into the first's just before the cut), so the wrap is seamless: the first second that does, else the best.
   let cut = 0, period = 0, corr = -1;
-  for (let off = 1; off <= (minLagS >= 20 ? 24 : 4); off++) {
+  for (let off = 1; off <= (minLagS >= 20 ? 120 : 4); off++) {
     const at = runAt + off * SR;
     if (at + lag + 1.2 * SR > mono.length) break;
     const [p, c] = refine(mono, at, lag);
@@ -213,6 +225,8 @@ function looped(path: string, file: string, name: string, dry: boolean, minLagS 
     if (m > 0.995) break;
   }
   if (corr < 0.98) console.warn(`  ! ${file}: best loop match only ${corr.toFixed(4)}: a ${XFADE_VARIED_S} s blend`);
+  // no repeat at all (a room's generative texture): keep the known period, on the music's beat
+  if (periodS && corr < 0.9) period = lag;
   const XFADE = Math.round((corr < 0.98 ? XFADE_VARIED_S : XFADE_S) * SR);
   const st = decode(path, SR, 2);
   const tail = TAIL * SR;
@@ -228,8 +242,8 @@ function looped(path: string, file: string, name: string, dry: boolean, minLagS 
   // the copy of the period's start: the same samples the loop wraps to
   pcm.copyWithin(period * 2, 0, tail * 2);
   // Where to start playing in the file: the loop's musical start, as heard on the second pass.
-  const start = (musical + period - cut) / SR;
-  if (!dry) encode(pcm, join(OUT, name));
+  const start = ((((musical - cut) % period) + period) % period) / SR;
+  if (!dry) encode(pcm, join(OUT, name), kbps);
   const kb = dry ? 0 : Math.round(statSync(join(OUT, name)).size / 1024);
   console.log(`${name}  ${file}  ${(mono.length / SR).toFixed(1)}s → period ${(period / SR).toFixed(3)}s cut at ${(cut / SR).toFixed(2)}s ` +
     `(match ${corr.toFixed(4)}), plays from ${start.toFixed(2)}s` + (dry ? '' : `  ${kb} KB`));
@@ -248,14 +262,17 @@ function oneShot(path: string, out: string, dry: boolean, kbps: number, seconds?
     '-c:a', 'aac', '-b:a', `${kbps}k`, '-ac', '2', '-ar', String(SR), '-movflags', '+faststart', out]);
 }
 
-/** A jingle as an effect file: trimmed, 10 ms in and 80 ms out, mono, its loudness gain applied to the samples. */
-function jingle(path: string, out: string, dry: boolean): void {
+/** A jingle as an effect file: trimmed, 10 ms in and 80 ms out, mono, its loudness gain applied to the samples.
+ *  `seconds` keeps only that long (a fanfare before the bed its OST track loops under it), faded over its last
+ *  quarter (1.5 s at most). */
+function jingle(path: string, out: string, dry: boolean, seconds?: number): void {
   if (dry) return;
   const wav = join(tmpdir(), `jingle-${process.pid}.wav`);
-  execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', path, '-vn', '-af', TRIM, '-ac', '1', '-ar', String(SR), wav]);
+  execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', path, '-vn', '-af', TRIM + (seconds ? `,atrim=0:${seconds}` : ''), '-ac', '1', '-ar', String(SR), wav]);
   const s = statSync(wav).size / 2 / SR; // 16-bit mono
+  const fade = seconds ? Math.min(1.5, s / 4) : 0.08;
   const g = trackGain(loudness(wav));
-  execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', wav, '-af', `volume=${g}dB,afade=t=in:d=0.01,afade=t=out:st=${Math.max(0, s - 0.08)}:d=0.08`,
+  execFileSync(FFMPEG, ['-v', 'error', '-y', '-i', wav, '-af', `volume=${g}dB,afade=t=in:d=0.01,afade=t=out:st=${s - fade}:d=${fade}`,
     '-c:a', 'aac', '-b:a', '64k', '-movflags', '+faststart', out]);
   rmSync(wav);
 }
@@ -263,9 +280,13 @@ function jingle(path: string, out: string, dry: boolean): void {
 type Kind = 'loop' | 'once' | 'sfx';
 /** A manifest entry to build: its dotted key (`music.rain.07`, `events.halloween`, `sfx.get-fanfare`), its file under
  *  static/audio/, and how. `minLagS`: the shortest loop to look for (the wasps' chase loops in seconds); `seconds`:
- *  a one-shot cut to that long; `kbps`: a one-shot's bitrate (64); `periodOf`: the key of an entry whose period this
- *  loop shares. */
-interface Row { key: string; file: string; kind: Kind; minLagS?: number; seconds?: number; kbps?: number; periodOf?: string }
+ *  a one-shot cut to that long; `kbps`: the bitrate (64); a loop's period when the rip is too short to find it in,
+ *  known (`periodS`, measured once) or an entry's whose period it shares (`periodOf`); `whole`: a piece that doesn't
+ *  loop in its rip, looped whole. */
+interface Row {
+  key: string; file: string; kind: Kind;
+  minLagS?: number; seconds?: number; kbps?: number; periodS?: number; periodOf?: string; whole?: boolean;
+}
 
 const hh = (h: number) => String(h).padStart(2, '0');
 /** A disc's 24 hours, 00..23 from track `first` (rain and snow loop with the sunny hour's period). */
@@ -282,14 +303,50 @@ const CATALOGUE = new Map<string, Row>([
   ...hours(1, 2, 'sunny', (h) => `music/hour-${h}.m4a`),
   ...hours(2, 1, 'rain', (h) => `music/rain-${h}.m4a`),
   ...hours(2, 25, 'snow', (h) => `music/snow-${h}.m4a`),
+  // the rooms (src/lib/sound/places.ts) the app has: the museum's hall, fish and insect rooms, the shop, resident
+  // services. The hall's rip has one pass and most of the next; the fish and insect rooms are a texture with no exact
+  // repeat (three of the hall's 23.2 s phrases, blended at the wrap).
+  ['3-02', { key: 'places.resident-services', file: 'places/resident-services.m4a', kind: 'loop' }],
+  ['3-04', { key: 'places.museum-hall', file: 'places/museum-hall.m4a', kind: 'loop', periodS: 23.2258 }],
+  ['3-05', { key: 'places.museum-fish', file: 'places/museum-fish.m4a', kind: 'loop', periodS: 3 * 23.2258 }],
+  ['3-06', { key: 'places.museum-bugs', file: 'places/museum-bugs.m4a', kind: 'loop', periodS: 3 * 23.2258 }],
+  ['3-12', { key: 'places.shop', file: 'places/shop.m4a', kind: 'loop' }],
+  // the events (src/lib/sound/events.ts). Bunny Day's and Festivale's second passes are variations (no exact repeat:
+  // blended); Reese & Cyrus's loop is two 63 s halves, 128 s in all (at 56 kbps: under 1 MB)
+  ['4-03', { key: 'events.bunny-day', file: 'music/bunny-day.m4a', kind: 'loop', periodS: 61.714 }],
+  ['4-04', { key: 'events.wedding', file: 'music/wedding.m4a', kind: 'loop', periodS: 127.826, kbps: 56 }],
+  ['4-05', { key: 'events.wedding-party', file: 'music/wedding-party.m4a', kind: 'loop' }],
+  ['4-06', { key: 'events.fireworks-show', file: 'music/fireworks-show.m4a', kind: 'loop' }],
   ['4-07', { key: 'events.halloween', file: 'music/halloween.m4a', kind: 'loop' }],
   ['4-08', { key: 'events.turkey-day', file: 'music/turkey-day.m4a', kind: 'loop' }],
+  ['4-09', { key: 'events.turkey-cooking-start', file: 'music/turkey-cooking-start.m4a', kind: 'once' }],
+  ['4-10', { key: 'events.turkey-cooking-done', file: 'music/turkey-cooking-done.m4a', kind: 'once' }],
+  ['4-11', { key: 'events.toy-day-snow', file: 'music/toy-day-snow.m4a', kind: 'loop' }],
+  ['4-12', { key: 'events.toy-day', file: 'music/toy-day.m4a', kind: 'loop' }],
+  // NH's 11:55 runs on to midnight; here a loop, as the app may open at any minute of it
+  ['4-13', { key: 'events.countdown-2300', file: 'music/countdown-2300.m4a', kind: 'loop' }],
+  ['4-14', { key: 'events.countdown-2330', file: 'music/countdown-2330.m4a', kind: 'loop' }],
+  ['4-15', { key: 'events.countdown-2350', file: 'music/countdown-2350.m4a', kind: 'loop' }],
+  ['4-16', { key: 'events.countdown-2355', file: 'music/countdown-2355.m4a', kind: 'loop' }],
   ['4-17', { key: 'events.happy-new-year', file: 'music/happy-new-year.m4a', kind: 'once' }],
   ['4-18', { key: 'events.new-year-0am', file: 'music/new-year-0am.m4a', kind: 'loop' }],
   ['4-19', { key: 'events.new-year-2am', file: 'music/new-year-2am.m4a', kind: 'loop' }],
   ['4-20', { key: 'events.new-years-day', file: 'music/new-years-day.m4a', kind: 'loop' }],
+  ['4-21', { key: 'events.festivale', file: 'music/festivale.m4a', kind: 'loop', periodS: 50.323 }],
+  // (4-22, 4-23 Festivale's Kimedance: no dance moment yet)
   ['4-36', { key: 'events.bee-chase', file: 'music/bee-chase.m4a', kind: 'loop', minLagS: 4 }],
-  ['4-37', { key: 'events.bee-stung', file: 'music/bee-stung.m4a', kind: 'once', seconds: STUNG_S }]
+  ['4-37', { key: 'events.bee-stung', file: 'music/bee-stung.m4a', kind: 'once', seconds: STUNG_S }],
+  // the GameCube rip: the radio exercise for the group stretch, e+'s birthday song
+  ['106', { key: 'events.aerobics', file: 'music/aerobics.m4a', kind: 'loop', whole: true }],
+  ['516', { key: 'events.happy-birthday', file: 'music/happy-birthday.m4a', kind: 'once' }],
+  // jingles (ids.ts): the fanfares only to the bed their tracks loop under them, the broadcast's first pass
+  ['4-27', { key: 'sfx.island-broadcast', file: 'sfx/island-broadcast.m4a', kind: 'sfx', seconds: 18.6 }],
+  ['4-39', { key: 'sfx.get-fanfare', file: 'sfx/get-fanfare.m4a', kind: 'sfx', seconds: 1.8 }],
+  ['4-40', { key: 'sfx.complete-fanfare', file: 'sfx/complete-fanfare.m4a', kind: 'sfx', seconds: 1.7 }],
+  ...['morning', 'noon', 'evening'].flatMap((part, p) => Array.from({ length: 6 }, (_, i): [string, Row] =>
+    [`4-${41 + p * 6 + i}`, { key: `sfx.radio-${part}-${i + 1}`, file: `sfx/radio-${part}-${i + 1}.m4a`, kind: 'sfx' }])),
+  ...['bunny-day', 'halloween', 'turkey-day', 'toy-day', 'countdown', 'carnival'].map((id, i): [string, Row] =>
+    [`4-${59 + i}`, { key: `sfx.radio-${id}`, file: `sfx/radio-${id}.m4a`, kind: 'sfx' }])
 ]);
 
 type Entry = { file: string; start: number; end?: number; gain?: number };
@@ -317,7 +374,7 @@ function build(src: string, only: RegExp, dry: boolean): void {
     mkdirSync(join(out, '..'), { recursive: true });
     try {
       if (row.kind === 'sfx') {
-        jingle(path, out, dry);
+        jingle(path, out, dry, row.seconds);
         put(man, row.key, row.file);
         console.log(`${row.file}  ${file}  jingle`);
         continue;
@@ -325,7 +382,7 @@ function build(src: string, only: RegExp, dry: boolean): void {
       let e: Entry;
       if (row.kind === 'loop') {
         const like = row.periodOf?.split('.').reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], man) as Entry | undefined;
-        e = looped(path, file, row.file, dry, row.minLagS, like?.end);
+        e = looped(path, file, row, dry, like?.end ?? row.periodS);
       }
       else {
         oneShot(path, out, dry, row.kbps ?? 64, row.seconds);

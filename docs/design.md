@@ -2402,10 +2402,17 @@ gain?}`, `opening`, `ambient.<id>`, `events.<id>`, `places.<id>` (the same shape
 file and its entry, no code change; a missing effect keeps its placeholder, missing ambience its procedural bed, missing
 music is silence. `npm run audio:music -- <dir> [--only <key regex>]` (`scripts/music.ts`, ffmpeg) builds every entry
 from the user's MP3s by its track number (`CATALOGUE`): loops (finds the period, cuts it where both passes are the same
-samples, appends the copy), one-shots (silence trimmed), AAC 64 kbps, `gain` to −16 LUFS. The rain and snow rips hold
-one pass and a few seconds of the next, so they loop with their sunny hour's period; rain and snow at 4 PM have no
-exact repeat in the rip and wrap with a 2 s blend. `sound.test.ts`: files exist and are named, each folder under its
-budget (one file / all): `music/` 1 / 64 MB, `kk/` 1.2 / 12 MB. Audio is never precached
+samples, appends the copy), one-shots (silence trimmed), AAC 64 kbps, `gain` to −16 LUFS. Rips too short to find the
+period in loop with a known one: the rain and snow hours (one pass and a few seconds of the next) their sunny hour's,
+the museum's hall its 23.2 s. Where the rip's second pass is a variation, not the same samples, the wrap is a 2 s
+blend: rain and snow at 4 PM, the museum's fish and insect rooms (a texture, looped at three of the hall's phrases),
+Bunny Day at 0.98. Reese & Cyrus's wedding loop is 128 s, at 56 kbps to stay under 1 MB; the GameCube's ラジオ体操
+(`aerobics`) doesn't loop in its rip and loops whole. Jingles (`sfx/`: the fanfares, the island broadcast, the radio
+jingles) are mono, trimmed, faded, their loudness in the file (an effect has no `gain`); the fanfares end where their
+OST track's bed begins (1.7–1.8 s), the broadcast after its first pass (18.6 s). Not built (no moment in the app):
+Kimedance, the museum's fossil and art rooms, the shop's big and closing, the Able Sisters, the tent, Redd, dreaming.
+`sound.test.ts`: every path in the manifest exists and every file is named; each folder under its budget (one file /
+all): `music/` 1 / 64 MB, `places/` 1 / 6 MB, `sfx/` 0.25 / 4 MB, `kk/` 1.2 / 12 MB. Audio is never precached
 ([backend.md](backend.md#service-worker)).
 
 ### Sound settings
