@@ -89,8 +89,9 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
   to the record as one burst (`week.sendMany`: one queue write, one recompute of the week); the partner's, one socket
   message each, are merged as they come and rebuilt once, the tick after. 40 ops (desktop Chrome, the demo's phones on
   the in-process relay, `e2e/live-sync.spec.ts` burst): the sender 14–17 ms → 6 ms, the partner's longest frame
-  67–100 ms (83–133 ms over budget) → 17 ms (none). The room relays 20 at once and drops the rest over its rate limit
-  (a layout op isn't numbered): the partner gets those from the record's push.
+  67–100 ms (83–133 ms over budget) → 17 ms (none). The room relays 20 at once; since 2026-11-05 the
+  phone numbers a layout op sent with the partner there, so the rest hear `busy` and go again a second on (they were
+  dropped, and only the record's push brought them: `e2e/live-sync.spec.ts` burst, all 40 live on the demo's phones).
 - **Two edits on one tile** (2026-11-05, the sync review's E13): each phone's op is fine on its own island, but two
   phones moving different pieces onto one tile at once left both there (last writer wins only per id). When the
   partner's ops land (live, or the record's rows), a piece of theirs that overlaps one of mine (validate.ts's

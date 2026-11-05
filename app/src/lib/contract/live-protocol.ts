@@ -594,8 +594,10 @@ export function guestMaySend(i: Intent): boolean {
 export const isAcked = (i: Intent): boolean => isStored(i) || i.kind === 'highfive';
 
 /** A layout op (`sc` o, c, r, h): relayed live but never kept in the day's ring (an afternoon in the editor would push
- *  the shared world out of it); the record keeps it, and a phone opening later reads it there. */
-const isLayoutIntent = (i: Intent): boolean => i.kind === 'decor' && (i.sc === 'o' || i.sc === 'c' || i.sc === 'r' || i.sc === 'h');
+ *  the shared world out of it); the record keeps it, and a phone opening later reads it there. Numbered while someone
+ *  is there to hear it (sync/live.ts send: an editor's save over the room's rate limit hears `busy` and goes again).
+ *  @public (sync/live.ts) */
+export const isLayoutIntent = (i: Intent): boolean => i.kind === 'decor' && (i.sc === 'o' || i.sc === 'c' || i.sc === 'r' || i.sc === 'h');
 
 /** Whether the room keeps an intent in the day's world (replayed to a phone that opens later): the shared world's
  *  changes (not the layout's) and each person's last walk (where their villager stands). */

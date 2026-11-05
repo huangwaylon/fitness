@@ -413,7 +413,10 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   socket is dead (as above); heard from (an older relay that dropped it over its limit without a word), it goes again
   on the socket, the wait doubling to 60 s; `busy {c}` resends it after a backoff (1 s doubling). Idle traffic while
   shown: 3 pings and 3 pongs a minute on a quiet socket (was 1 and 1), none while anything else is heard. `send(intent)` is a no-op returning false unless welcomed
-  and, for what the room doesn't keep, the partner is present; it never throws or blocks. `on()` delivers the partner's intents,
+  and, for what the room doesn't keep, the partner is present; it never throws or blocks. A layout op sent with someone
+  there is numbered too (2026-11-05, `isLayoutIntent`): acked, never kept, so an editor's save of 40 over the room's
+  burst of 20 hears `busy` for the rest and sends them again a second on (the room acks a resend it relayed without
+  relaying it twice: its last 64 acked intents), where they were dropped and only the record's push brought them. `on()` delivers the partner's intents,
   `onStatus()` `{connected, me, peer}`. URL: `LIVE_URL`, overridable by `VITE_LIVE_URL` (empty = off). What the room
   keeps (`isStored`: the shared world's intents and walks) goes even with the partner away, numbered (`c`), and waits
   in an outbox (≤ 120, a walk replacing the walk before it) until its `ack`: sent offline or lost with a dropped
