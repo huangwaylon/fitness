@@ -16,19 +16,33 @@ export function olderShells(keys: readonly string[], current: string): string[] 
   return keys.filter((k) => k.startsWith(SHELL) && k !== current).reverse();
 }
 
-/** The audio runtime cache (docs/design.md#engine-lifecycle): music files (the hours, the event music, K.K.'s songs)
- *  are 0.1–1.1 MB each, so only the most recently played few stay on the phone. */
+/** The audio runtime cache (docs/design.md#engine-lifecycle). Every audio URL carries its file's content hash (`?v=`,
+ *  lib/sound/manifest.ts), so a hit is never stale and is served without asking the network; a re-cut file is a new
+ *  URL, and the old one ages out of its class's LRU. Three classes, each keeping its most recently used few: the music
+ *  (the hours, the event music, the rooms: 0.1–1.1 MB each), K.K.'s songs (a song or two heard: they never push the
+ *  hours out) and the rest (the effects and beds: small). */
 export const AUDIO_CACHE = 'island-audio-v1';
-const MUSIC_KEEP = 3;
 export const isAudio = (path: string): boolean => path.includes('/audio/');
-export const isMusic = (path: string): boolean => path.includes('/audio/music/') || path.includes('/audio/kk/');
+export const isMusic = (path: string): boolean => path.includes('/audio/music/') || path.includes('/audio/places/');
+const isKK = (path: string): boolean => path.includes('/audio/kk/');
+type AudioClass = 'music' | 'kk' | 'sfx';
+const KEEP: Record<AudioClass, number> = { music: 3, kk: 2, sfx: 8 };
+const classOf = (url: string): AudioClass => {
+  const p = new URL(url, 'https://x/').pathname;
+  return isMusic(p) ? 'music' : isKK(p) ? 'kk' : 'sfx';
+};
 
 /** Least recently used first out: `keys` in use order (oldest first: a hit is re-put at the end); which to delete so
- *  at most `keep` music files remain. Effects and ambience (small) are never evicted. */
+ *  each class keeps at most its KEEP. */
 export function lruEvict(keys: readonly string[]): string[] {
-  const music = keys.filter((k) => isMusic(new URL(k, 'https://x/').pathname));
-  return music.slice(0, Math.max(0, music.length - MUSIC_KEEP));
+  return (Object.keys(KEEP) as AudioClass[]).flatMap((c) => {
+    const of = keys.filter((k) => classOf(k) === c);
+    return of.slice(0, Math.max(0, of.length - KEEP[c]));
+  });
 }
+
+/** A hit that isn't its class's most recent yet (only then is it re-put to mark it used: not on every hit). */
+export const staleUse = (keys: readonly string[], url: string): boolean => keys.filter((k) => classOf(k) === classOf(url)).at(-1) !== url;
 
 export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);
 export const isVillagerArt = (path: string): boolean => path.includes('/art/villagers/');
