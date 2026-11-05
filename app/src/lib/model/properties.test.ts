@@ -6,7 +6,8 @@
 import { describe, expect, it } from 'vitest';
 import type { EventRow, MetricRow } from '#lib/contract/api.ts';
 import type { PersonId, RingFruit } from '#lib/types.ts';
-import { RING_FRUITS, RULES, SHOP, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
+import { RING_FRUITS, RULES, STRETCH, stretchOf } from '#lib/config/rules.ts';
+import { SHOP, shopPrice } from '#lib/contract/rules.ts';
 import { addDays, localDateAt, weekDays } from '#lib/time/dates.ts';
 import { mulberry32 } from '#lib/random.ts';
 import { earnWeek, type EarnDay } from '#lib/scoring/bells.ts';

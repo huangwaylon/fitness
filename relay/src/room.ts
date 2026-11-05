@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, sameWalk, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, sameWalk, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 import { served } from './weather.ts';

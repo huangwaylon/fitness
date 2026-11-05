@@ -1,6 +1,6 @@
 // The rules as data: what earns, the two rewards, the cutoffs and the read-time limits. Everything is computed on read
 // from the raw rows, so a value here applies to every week (docs/design.md#economy).
-import type { PersonId, RingFruit, ShopItemId } from '#lib/types.ts';
+import type { PersonId, RingFruit } from '#lib/types.ts';
 
 /** The four ring fruits in display order, Apple's rings first: 🍐 Move, 🍑 Exercise, 🍒 Stand, then 🍎 steps. Every
  *  list of fruits (the tree, きろく) follows this, except けんこう and the tree's popup (steps first). */
@@ -32,15 +32,6 @@ export const STRETCH = { multiplier: 1.5, perGoal: 1, cap: 2 } as const;
 /** A goal's stretch target: 1.5 × the goal (60 → 90 min, 8,000 → 12,000 steps, 600 → 900 kcal). */
 export const stretchOf = (goal: number): number => goal * STRETCH.multiplier;
 
-/** The two rewards (one shared wallet): a buy must name one of these ids at exactly its price. */
-export const SHOP = [
-  { id: 'snack', bells: 40 },
-  { id: 'dinner', bells: 70 }
-] as const satisfies readonly { id: ShopItemId; bells: number }[];
-
-/** A reward's price, or undefined for anything that isn't one. */
-export const shopPrice = (id: unknown): number | undefined => SHOP.find((x) => x.id === id)?.bells;
-
 /**
  * The default villager names (until changed in むらびと) and birthdays ('MM-DD', Tokyo; null turns the island's birthday off for that person: docs/design.md "Birthdays").
  */
@@ -59,11 +50,6 @@ export const GUEST = { villager: 'おきゃくさん' } as const;
 export const CUTOFFS = {
   provisional: { hour: 19, minute: 30 },
   final: { hour: 4, minute: 0 }
-} as const;
-
-/** Read-time checks on event rows: an event outside them is ignored (the server would have refused it). */
-export const LIMITS = {
-  villagerNameMaxChars: 20
 } as const;
 
 /**

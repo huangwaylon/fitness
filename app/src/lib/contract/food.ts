@@ -124,7 +124,7 @@ function snapOf(f: unknown): FoodSnap | null {
 }
 
 /** A `food` op's data, its known keys only, each well-formed (the food's name cleaned, the grams to one decimal), or
- *  null. The record keeps it as returned here. Whether its day is too far ahead is the record's (model/record.ts). */
+ *  null. The record keeps it as returned here. Whether its day is too far ahead is the record's (contract/record.ts). */
 export function foodOp(d: unknown): FoodOp | null {
   if (!isRec(d) || typeof d.id !== 'string' || !ID.test(d.id) || !isMs(d.at)) return null;
   const keys = Object.keys(d).filter((k) => d[k] !== undefined);
@@ -163,7 +163,7 @@ export const weekdayBit = (date: string): number => 1 << ((new Date(Date.parse(`
 
 /** A `food_repeat` op's data, its known keys only, each well-formed (each item as a `food` op's; `to` null read as
  *  absent; `sk` sorted, once each, within its days; an empty `sk` dropped), or null. The record keeps it as returned
- *  here. Whether its first day is too far ahead is the record's (model/record.ts). `nx` (the repeat that follows this
+ *  here. Whether its first day is too far ahead is the record's (contract/record.ts). `nx` (the repeat that follows this
  *  op's end: `repeatNext`) is the record's to check and never kept: dropped here. */
 export function foodRepeatOp(raw: unknown): RepeatOp | null {
   if (!isRec(raw) || (raw.nx !== undefined && repeatNext(raw) === undefined)) return null;

@@ -2,7 +2,7 @@
 // from parts, or their roster villager (the `villager` pref says which). Two prefs, each the sender's own (members and
 // the guest alike, never another's): `look` (the look worn, or null for いつもの) and `savedLooks` (their コーデ, the
 // whole list). いつもの, the default look, is code (DEFAULT_LOOKS), never stored: no `look` pref means it. What the record
-// accepts (model/record.ts validEventData: lookPrefOk, savedLooksOk) and how a phone reads it (resolveLook,
+// accepts (contract/record.ts validEventData: lookPrefOk, savedLooksOk) and how a phone reads it (resolveLook,
 // readSavedLooks: an unknown or broken part reads as the default look's, never a crash). Pure, relative imports only
 // (the relay imports it).
 import { isRec } from './api.ts';
@@ -117,7 +117,7 @@ export function lookPrefOk(v: unknown): v is LookPref | null {
   return v.kind === 'player' && keys.length === 2 && isPlayerLook(v.look);
 }
 
-/** Whether a phone reads this `look` pref value (the model's and the slot's rule, model/record.ts prefTaken): null, a
+/** Whether a phone reads this `look` pref value (the model's and the slot's rule, contract/record.ts prefTaken): null, a
  *  villager, or a player with any look (read part by part: resolveLook). The record's own check is lookPrefOk. */
 export const lookPrefRead = (v: unknown): boolean =>
   v === null || (isRec(v) && (v.kind === 'villager' || (v.kind === 'player' && isRec(v.look))));

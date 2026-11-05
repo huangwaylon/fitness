@@ -2,7 +2,7 @@
 // the sheet's day rows folded in; a reload needs nothing but what's new.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
-import type { Intent, Relayed } from '#lib/sync/live-protocol.ts';
+import type { Intent, Relayed } from '#lib/contract/live-protocol.ts';
 import type { Live, LiveStatus } from '#lib/sync/live.ts';
 import { caught, lying, takenIds } from '#lib/sync/world-day.ts';
 import { world } from './world.svelte.ts';

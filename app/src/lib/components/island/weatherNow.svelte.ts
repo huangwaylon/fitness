@@ -15,7 +15,7 @@ import { sound } from '#lib/sound/sound.svelte.ts';
 import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { heldWx, onWx } from '#lib/sync/wx.ts';
-import type { Wx } from '#lib/sync/live-protocol.ts';
+import type { Wx } from '#lib/contract/live-protocol.ts';
 import { isWeatherMode, type WeatherMode } from '#lib/contract/api.ts';
 import { hook, hookOneOf, islandSeed } from './devHooks.ts';
 import { FORCED, isRain, musicWeather, realWeatherAt, weatherAt, type Forced, type Sky, type WeatherNow } from './weather.ts';

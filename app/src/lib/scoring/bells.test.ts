@@ -4,7 +4,8 @@
 import { describe, expect, it } from 'vitest';
 import type { PersonId, RingFruit } from '#lib/types.ts';
 import { weekDays } from '#lib/time/dates.ts';
-import { RING_FRUITS, RULES, SHOP, STRETCH, shopPrice, stretchOf } from '#lib/config/rules.ts';
+import { RING_FRUITS, RULES, STRETCH, stretchOf } from '#lib/config/rules.ts';
+import { SHOP, shopPrice } from '#lib/contract/rules.ts';
 import { GOALS } from '#lib/contract/goals.ts';
 import { allMet, earnWeek, ringBells, togetherDays, type EarnDay, type WeekEarning } from './bells.ts';
 

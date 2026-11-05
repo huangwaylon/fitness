@@ -3,6 +3,9 @@
 // imports only).
 import type { PersonId, Who } from '../types.ts';
 
+/** The people (types.ts), for the relay: it imports only contract/ (deps.test). @public (relay/) */
+export type { PersonId, Who };
+
 /** The event types the server accepts and the model reads (anything else is refused with `bad_request`). */
 export const EVENT_TYPES = ['spend', 'spend_void', 'harvest', 'pref', 'find', 'tally', 'island', 'decor', 'board', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'sell', 'buy'] as const;
 export type EventType = (typeof EVENT_TYPES)[number];

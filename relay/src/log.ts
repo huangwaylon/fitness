@@ -17,7 +17,7 @@ import {
   cleanData, isLogEvent, isLogId, isToken, levelOf, LOG_BATCH_MAX, LOG_EVENTS, LOG_V,
   type LogData, type LogEventName, type LogLevel
 } from '../../app/src/lib/contract/log.ts';
-import type { Who } from '../../app/src/lib/types.ts';
+import type { Who } from '../../app/src/lib/contract/api.ts';
 
 export interface LogIO {
   sql: Sql;

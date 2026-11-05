@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
 import { BOARD_MAX, boardOpOf, boardPosts, type BoardEntry } from '../../app/src/lib/contract/board.ts';
-import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);

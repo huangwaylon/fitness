@@ -4,7 +4,7 @@
   // tile's top-right a small round ⓘ (a 44px target) shows what counts as that reward (おやつ: たこやき・アイス…) in a
   // little cream speech bubble under it: ⓘ again, a tap anywhere else or Esc folds it; one at a time.
   import type { ShopItemId } from '#lib/types.ts';
-  import { SHOP } from '#lib/config/rules.ts';
+  import { SHOP } from '#lib/contract/rules.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { itemArt } from './icons.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';

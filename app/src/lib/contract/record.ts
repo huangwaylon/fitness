@@ -1,21 +1,22 @@
 // The rules of the record shared by its writers (docs/backend.md#events): what an `event` must look like to be
 // accepted (relay/src/store.ts checks it), and which events replace an earlier one (the
 // store's slots: a tally and an island day per person and day, a cosmetic pref per person, a goal per person and
-// Tokyo day, a board post, a meal entry, a repeat, a recipe and a custom food per id). Pure, over the contract only (relative imports), since the relay imports it from here.
-import { isFind, isId, isLocalDate, isWeatherMode, nextDay, PREF_KEYS, type EventType } from '../contract/api.ts';
-import { GOAL_IDS, GOALS, goalOfKey, goalPrefTaken } from '../contract/goals.ts';
-import { isTally } from '../contract/tally.ts';
-import { isIslandDay } from '../contract/island.ts';
-import { decorOpOf } from '../contract/decor.ts';
-import { tentOpOf } from '../contract/tent.ts';
-import { layoutOpOf } from '../contract/layout.ts';
-import { boardOpOf } from '../contract/board.ts';
-import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from '../contract/food.ts';
-import { shopPriced } from '../contract/shop.ts';
-import { LIMITS, shopPrice } from '../config/rules.ts';
-import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from '../contract/profile.ts';
-import { lookPrefOk, lookPrefRead, savedLooksOk } from '../contract/look.ts';
-import { localDateAt } from '../time/dates.ts';
+// Tokyo day, a board post, a meal entry, a repeat, a recipe and a custom food per id). Pure, over the contract only (relative imports), since the relay imports it from here (deps.test: the relay imports
+// only contract/).
+import { isFind, isId, isLocalDate, isWeatherMode, nextDay, PREF_KEYS, type EventType } from './api.ts';
+import { GOAL_IDS, GOALS, goalOfKey, goalPrefTaken } from './goals.ts';
+import { isTally } from './tally.ts';
+import { isIslandDay } from './island.ts';
+import { decorOpOf } from './decor.ts';
+import { tentOpOf } from './tent.ts';
+import { layoutOpOf } from './layout.ts';
+import { boardOpOf } from './board.ts';
+import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
+import { shopPriced } from './shop.ts';
+import { LIMITS, shopPrice } from './rules.ts';
+import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from './profile.ts';
+import { lookPrefOk, lookPrefRead, savedLooksOk } from './look.ts';
+import { localDateAt } from './tokyo.ts';
 import type { Who } from '../types.ts';
 
 type Rec = Record<string, unknown>;

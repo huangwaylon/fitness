@@ -3,7 +3,7 @@ import { RECENT_MAX, SAY_GAP_MS, recentSays, rememberSay, sayGate } from './say.
 import { DEVICE, type KV } from '#lib/sync/storage.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
-import { SAY_MAX } from '#lib/sync/live-protocol.ts';
+import { SAY_MAX } from '#lib/contract/live-protocol.ts';
 import { REACTIONS } from '../motion/reactions.ts';
 
 const kv = (): KV & { m: Map<string, string> } => {

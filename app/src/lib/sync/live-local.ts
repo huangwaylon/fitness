@@ -6,7 +6,7 @@
 // run on it. Its clock is the island's (clock.ts now(): a `?date=` preview moves the shared day too). Never used
 // outside the demo.
 import { DEMO, localKV, readJson, writeJson } from './storage.ts';
-import { LIVE_V, NEST_GAP_MS, claimOf, guestMaySend, isStored, tokyoDay, type Gone, type Intent, type Relayed, type Who } from './live-protocol.ts';
+import { LIVE_V, NEST_GAP_MS, claimOf, guestMaySend, isStored, tokyoDay, type Gone, type Intent, type Relayed, type Who } from '../contract/live-protocol.ts';
 import { peerOf, type Live, type LiveStatus } from './live.ts';
 import { now } from '#lib/time/clock.ts';
 

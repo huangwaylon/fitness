@@ -5,7 +5,7 @@ import { configureStorage, type KV } from '#lib/sync/storage.ts';
 import { configureTransport } from '#lib/sync/transport.ts';
 import { configureCache, saveCache } from '#lib/sync/cache.ts';
 import { setKey } from '#lib/sync/pairing.ts';
-import type { Intent } from '#lib/sync/live-protocol.ts';
+import type { Intent } from '#lib/contract/live-protocol.ts';
 import type { SheetChange } from '#lib/sync/live.ts';
 import { LiveBackend } from './live.ts';
 import { asRecord } from '#lib/sync/fake-record.ts';

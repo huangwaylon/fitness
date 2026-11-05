@@ -41,7 +41,7 @@
   import { tallyTotals } from '#lib/model/tally.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
-  import type { Intent, Pt as WirePt, Relayed } from '#lib/sync/live-protocol.ts';
+  import type { Intent, Pt as WirePt, Relayed } from '#lib/contract/live-protocol.ts';
   import { hook } from '../island/devHooks.ts';
   import { now } from '#lib/time/clock.ts';
   import { ENTRANCE, wingHeld, type Pt, type Wing } from './plan.ts';

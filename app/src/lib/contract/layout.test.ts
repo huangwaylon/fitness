@@ -2,8 +2,8 @@ import { describe, expect, test } from 'vitest';
 import { LAYOUT_MAX, layoutAccept, layoutOpOf, mergeLayout, scopeMayWrite, type LayoutEntry } from './layout.ts';
 import { guestMayWrite } from './guest.ts';
 import { TENT_MAX, tentAccept, tentOpOf, type TentEntry } from './tent.ts';
-import { parseClient, scopeMaySend } from '../sync/live-protocol.ts';
-import { validEventData, eventSlot } from '../model/record.ts';
+import { parseClient, scopeMaySend } from './live-protocol.ts';
+import { validEventData, eventSlot } from './record.ts';
 
 const T0 = 1_800_000_000_000;
 
@@ -86,7 +86,7 @@ describe('layout ops (contract/layout.ts)', () => {
   });
 });
 
-describe('layout intents on the wire (sync/live-protocol.ts)', () => {
+describe('layout intents on the wire (contract/live-protocol.ts)', () => {
   const parse = (m: object) => parseClient(JSON.stringify({ v: 3, ...m }));
   test('an outdoor op, a chunk, a reset, a home look, a room of うめ’s', () => {
     expect(parse({ kind: 'decor', sc: 'o', id: 'goal-A', at: T0, k: 'goal-tree', x: 3, z: 10, f: 1, s: 'a' })).toMatchObject({ kind: 'decor', sc: 'o', id: 'goal-A', x: 3 });

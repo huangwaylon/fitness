@@ -10,7 +10,7 @@ import {
   recipePortion, recipeSnap, type CustomOp, type FoodCustom, type FoodEntry, type FoodOp, type FoodRecipe, type FoodRepeat, type RecipeOp,
   type RepeatOp
 } from '../../app/src/lib/contract/food.ts';
-import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a'.repeat(64);

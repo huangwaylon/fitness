@@ -2,7 +2,7 @@
 // same start at the same time (caught up when late, a big gap a jump), their villager the relay's to move while they're
 // here; and two phones linked through a fake relay end with both villagers at the same points.
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Intent } from '#lib/sync/live-protocol.ts';
+import type { Intent } from '#lib/contract/live-protocol.ts';
 
 type Walk = Extract<Intent, { kind: 'walk' }>;
 

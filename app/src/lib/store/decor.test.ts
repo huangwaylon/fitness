@@ -2,7 +2,7 @@
 // sheet); the partner's heard, live or replayed; the sheet's rows merged in; the layout the same whatever the order.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { configureStorage, type KV } from '#lib/sync/storage.ts';
-import type { Intent, Relayed } from '#lib/sync/live-protocol.ts';
+import type { Intent, Relayed } from '#lib/contract/live-protocol.ts';
 import type { Live, LiveStatus } from '#lib/sync/live.ts';
 import { DECOR_MAX, type DecorEntry } from '#lib/contract/decor.ts';
 import { decor } from './decor.svelte.ts';

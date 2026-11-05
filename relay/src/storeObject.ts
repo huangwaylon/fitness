@@ -4,7 +4,7 @@
 // the JSON happen here, on the object's CPU budget. After a write it tells the room, which passes `changed` to the
 // open phones.
 import { DurableObject } from 'cloudflare:workers';
-import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { StoreCore, type Sql } from './store.ts';
 import type { StoreRoom } from './storeRoute.ts';
 import type { Env } from './index.ts';

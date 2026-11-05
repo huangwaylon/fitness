@@ -71,7 +71,7 @@
   import { partnerTurnTo, sendTo, turnTo } from './avatar.ts';
   import { world as shared } from '#lib/store/world.svelte.ts';
   import { caught } from '#lib/sync/world-day.ts';
-  import type { FishPhase, How, Relayed, Who } from '#lib/sync/live-protocol.ts';
+  import type { FishPhase, How, Relayed, Who } from '#lib/contract/live-protocol.ts';
   import { GLIDE_U, STILL, bubblesAt, bugAt, bugPath, clamp, critterId, fishPath, freshWater, groundOk, inWater, legAt, type BugOpts, type Flying, type Leg } from './critterPath.ts';
   import { tellPartner } from './partnerNews.ts';
   import { actors, holdNaps, inMotion, livePos, wake as wakeUp } from '../motion/director.svelte.ts';

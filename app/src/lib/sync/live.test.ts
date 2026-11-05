@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIVE_URL, backoff, bestOffset, createLive, type Live, type LiveEnv, type LiveStatus, type SinceStore } from './live.ts';
-import { dayStart, tokyoDay, type Relayed } from './live-protocol.ts';
+import { dayStart, tokyoDay, type Relayed } from '../contract/live-protocol.ts';
 
 const KEY = 'ab'.repeat(32);
 

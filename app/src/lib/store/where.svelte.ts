@@ -6,7 +6,7 @@
 // they're in that one. Someone who goes quiet while inside (the app closed, the phone offline) leaves it when the
 // relay's leave time + GONE_MS comes (`goneMs` after the island heard it when the relay doesn't say): back on the
 // island where it went in. The screens feed it what their relay hears.
-import type { Relayed } from '#lib/sync/live-protocol.ts';
+import type { Relayed } from '#lib/contract/live-protocol.ts';
 import type { Who } from '#lib/types.ts';
 import { whoOf } from '#lib/ui-state/cast.ts';
 

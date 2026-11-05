@@ -3,7 +3,7 @@
 // the same intents (the relay's replay, the partner's live ones, my own as I send them, the sheet's day rows) into
 // the same day, so they show the same island: what is caught or picked up is gone on both, a tree's drops lie on both,
 // each villager stands where its person sent it. Pure: no clock, no storage (store/world.svelte.ts keeps it).
-import { claimOf, tokyoDay, type Drop, type How, type Intent, type Pt, type Target, type Who } from './live-protocol.ts';
+import { claimOf, tokyoDay, type Drop, type How, type Intent, type Pt, type Target, type Who } from '../contract/live-protocol.ts';
 import { ISLAND_MAX } from '#lib/contract/island.ts';
 import { fnv1a } from '#lib/random.ts';
 

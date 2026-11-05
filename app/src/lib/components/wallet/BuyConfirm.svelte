@@ -7,7 +7,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { itemArt } from './icons.ts';
   import type { ShopItemId } from '#lib/types.ts';
-  import { shopPrice } from '#lib/config/rules.ts';
+  import { shopPrice } from '#lib/contract/rules.ts';
   import { formatBells, t } from '#lib/i18n/index.ts';
 
   interface Props {

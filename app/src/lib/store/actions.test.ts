@@ -338,7 +338,7 @@ describe('recurring meals (いつもの)', () => {
 
   it('updateRepeat is both or neither: the new one refused by the record, the old one’s end is too and it goes on', async () => {
     const { startRepeat, updateRepeat } = await import('./actions.ts');
-    const { validEventData } = await import('#lib/model/record.ts');
+    const { validEventData } = await import('#lib/contract/record.ts');
     const { repeatNext } = await import('#lib/contract/food.ts');
     const { reduce } = await import('#lib/model/state.ts');
     const { repeats } = await import('#lib/model/food.ts');
@@ -350,7 +350,7 @@ describe('recurring meals (いつもの)', () => {
     vi.setSystemTime(Date.parse('2026-11-18T15:30:00.000Z'));
     expect(updateRepeat(id!, { w: 31 }).ok).toBe(true);
     // the queue sends in order, a refused event dropped and the rest going on (sync/queue.ts flush); the record by its
-    // rules (model/record.ts), an end naming a repeat it doesn't hold refused (relay/src/store.ts)
+    // rules (contract/record.ts), an end naming a repeat it doesn't hold refused (relay/src/store.ts)
     const kept: string[][] = [], held = new Set<string>(), refused: Record<string, unknown>[] = [];
     for (const e of queued()) {
       const d = e.data, nx = repeatNext(d);

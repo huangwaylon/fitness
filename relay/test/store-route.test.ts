@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { adminRoute, apiRoute, type StoreRoom } from '../src/storeRoute.ts';
 import { notifySecret, notifySig } from '../src/notify.ts';
 import { StoreCore } from '../src/store.ts';
-import type { Notice } from '../../app/src/lib/sync/live-protocol.ts';
+import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
 const KEY_A = 'a1'.repeat(16);

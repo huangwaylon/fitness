@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { heardHighFive } from './highFives.ts';
 import { SCENE, type KV } from '#lib/sync/storage.ts';
-import { dayStart, tokyoDay } from '#lib/sync/live-protocol.ts';
+import { dayStart, tokyoDay } from '#lib/contract/live-protocol.ts';
 
 const kv = (): KV & { m: Map<string, string> } => {
   const m = new Map<string, string>();

@@ -2,7 +2,8 @@
 // read-time rules here (an invalid or unknown event is ignored, not refused), so the sheet stays a dumb append-only log.
 // Health data comes only from the Shortcut's `metrics` rows: Apple Health is the source of truth.
 import type { LocalDate, PersonId, ShopItemId, WeekKey, Who } from '#lib/types.ts';
-import { CUTOFFS, LIMITS, shopPrice } from '#lib/config/rules.ts';
+import { CUTOFFS } from '#lib/config/rules.ts';
+import { LIMITS, shopPrice } from '#lib/contract/rules.ts';
 import { addDays, jstMs, localDateAt, toLocalDate, weekKeyOf } from '#lib/time/dates.ts';
 import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';

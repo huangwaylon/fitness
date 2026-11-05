@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { CLOSE, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/sync/live-protocol.ts';
+import { CLOSE, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { HELLO_MS, MAX_SOCKETS, RING_MAX, RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
 
 const KEY_A = 'a1'.repeat(16);

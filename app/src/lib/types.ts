@@ -23,7 +23,7 @@ export type RingBells = Record<RingFruit, number>;
 
 // ---- View model computed in the browser by lib/model (snapshot → UI). Both players see all data. ----
 
-/** The two rewards (config/rules.ts SHOP): 🍡 おやつ and 🍜 外食. */
+/** The two rewards (contract/rules.ts SHOP): 🍡 おやつ and 🍜 外食. */
 export type ShopItemId = 'snack' | 'dinner';
 
 /** The shared wallet as the island shows it. */
