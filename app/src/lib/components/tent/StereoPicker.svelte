@@ -4,15 +4,28 @@
   // (sound.svelte.ts playKK(id, 'aircheck')): `onpick` gets it.
   import { t } from '#lib/i18n/index.ts';
   import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';
-  import { prefetchKK } from '#lib/sound/sound.svelte.ts';
+  import { dropPrefetched, prefetchKK } from '#lib/sound/sound.svelte.ts';
 
   let { last = null, onpick, onclose }: { last?: string | null; onpick: (song: KKTrack) => void; onclose: () => void } = $props();
   /** The songs (kk.ts: their own chunk, loaded as the list opens; null until then). */
   let kkTracks = $state.raw<readonly KKTrack[] | null>(null);
   $effect(() => void loadKK().then((l) => (kkTracks = l.tracks)));
+  // closed: the songs pressed and not picked let go of (the picked one is the track's by then)
+  $effect(() => () => dropPrefetched());
   function surprise() {
     const s = kkPick(Math.random, last, kkTracks ?? []);
     if (s) onpick(s);
+  }
+  /** A press on a song: its aircheck fetched as it's let go of without scrolling the list (a scroll's press, on iOS
+   *  a pointercancel, fetches nothing: on each pointerdown a scroll of the list had fetched dozens of songs). */
+  let press: { id: number; x: number; y: number } | null = null;
+  const down = (e: PointerEvent) => void (press = { id: e.pointerId, x: e.clientX, y: e.clientY });
+  function moved(e: PointerEvent) {
+    if (press?.id === e.pointerId && Math.hypot(e.clientX - press.x, e.clientY - press.y) > 8) press = null;
+  }
+  function up(e: PointerEvent, s: KKTrack) {
+    if (press?.id === e.pointerId) prefetchKK(s.id, 'aircheck');
+    press = null;
   }
 </script>
 
@@ -24,8 +37,8 @@
     <button type="button" class="song any" data-sfx="confirm" data-song="any" onclick={surprise}>{t('tent.stereo.any')}</button>
     <ul>
       {#each kkTracks as s (s.id)}
-        <!-- (its aircheck fetched on the press: the click that picks it then starts it at once) -->
-        <li><button type="button" class="song" class:last={s.id === last} data-sfx="confirm" data-song={s.id} onpointerdown={() => prefetchKK(s.id, 'aircheck')} onclick={() => onpick(s)}>{kkTitle(s)}</button></li>
+        <!-- (its aircheck fetched as the press lets go, not scrolled: the click that picks it then starts it sooner) -->
+        <li><button type="button" class="song" class:last={s.id === last} data-sfx="confirm" data-song={s.id} onpointerdown={down} onpointermove={moved} onpointercancel={() => (press = null)} onpointerup={(e) => up(e, s)} onclick={() => onpick(s)}>{kkTitle(s)}</button></li>
       {/each}
     </ul>
   {:else if kkTracks}

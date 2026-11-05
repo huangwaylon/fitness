@@ -8,7 +8,7 @@
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
-// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
+// time; DWELL: ms in a room, default 1500), dressrace (すがた closed while a top it was tapped for still loads), stereo (the tent's jukebox list scrolled, closed: blob URLs), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
 // button on, off), bench (sit on a bench, a tap on the floor), curator (IDLE_MS there), hours (the aquarium's hour on x3), rebuild (a find kept off
 // and let back x2: the aquarium rebuilt as a new find rebuilds it).
 // FILL=1 (a room flow): the room furnished with the starter set first. --snap: heap snapshots at cycle SNAP_AT (default 3; 0: none, the end's whole heap) and the end, diffed by constructor; --path=<name>: the retainer
@@ -77,6 +77,11 @@ await ctx.addInitScript(() => {
     P.deleteTexture = function (this: object, ...a: unknown[]) { if (a[0]) texN.set(this, (texN.get(this) ?? 0) - 1); return d0.apply(this, a); };
   }
   W.__newestTex = () => { const c = gls.map((r) => r.deref()).filter(Boolean).at(-1); return c ? texN.get(c) ?? 0 : 0; };
+  // blob URLs alive (the music's files: sound/engine.ts #blobs)
+  const blobs = new Set<string>(), cu0 = URL.createObjectURL, ru0 = URL.revokeObjectURL;
+  URL.createObjectURL = (o: Blob | MediaSource) => { const u = cu0(o); blobs.add(u); return u; };
+  URL.revokeObjectURL = (u: string) => { blobs.delete(u); ru0(u); };
+  W.__blobs = () => blobs.size;
   W.__probe = () => ({ gl: gls.filter((r) => r.deref()).length, ivs: ivs.size, ls: Object.fromEntries([...net].filter(([, n]) => n > 0)) });
 });
 const page = await ctx.newPage();
@@ -246,6 +251,9 @@ let looks = 0;
 /** The dressrace flow's turn (its top), and the players' texture holds after each (player3d.ts texStats refs). */
 let races = 0;
 const playerRefs: number[] = [];
+/** The stereo flow's blob URLs alive after each cycle. */
+const blobsBy: number[] = [];
+let stereoTurn = 0;
 if (flow === 'dressrace') await page.route(/\/room\/player\/(mesh|tex)\//, async (r) => { await new Promise((ok) => setTimeout(ok, 600)); await r.continue(); });
 let snap0: Map<string, [number, number]> | null = SNAP && process.env.SNAP_AT === '0' ? new Map() : null;
 const cycle = async () => {
@@ -321,6 +329,32 @@ const cycle = async () => {
     const st = await page.evaluate(() => (window as unknown as { __player3d: { texs(): { refs: number } } }).__player3d.texs());
     console.log('player3d', JSON.stringify(st));
     playerRefs.push(st.refs);
+  } else if (flow === 'stereo') {
+    // the tent's jukebox: its song list opened, scrolled (10 songs pressed by the finger a scroll starts on, as iOS
+    // gives it: a pointerdown, its pointercancel as the list scrolls), closed with ✕; the blob URLs alive after each
+    // (the music's files: a press had fetched its song)
+    if (!(await page.evaluate(() => location.pathname.includes('tent')))) {
+      // (ミュージック on, the tent loaded afresh with it)
+      await page.evaluate(() => localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: true, volume: 0.8 })));
+      await page.goto(`${BASE}tent${Q}`); await tentUp();
+      await page.evaluate(() => (window as any).__tent.fill(['f791']));
+      await page.waitForFunction(() => (window as any).__tent.loading() === 0, null, { timeout: 30_000 });
+    }
+    const p = (await page.evaluate(() => (window as any).__tent.pieces()))[0] as { x: number; z: number };
+    const [x, y] = (await page.evaluate(([x, z]) => (window as any).__tent.tile(x, z), [p.x, p.z])) as [number, number];
+    await page.mouse.click(x, y); await sel('[data-stereo-picker] [data-song]:not([data-song=any])');
+    await page.evaluate((from) => {
+      const songs = [...document.querySelectorAll('[data-stereo-picker] [data-song]:not([data-song=any])')].slice(from, from + 10);
+      for (const b of songs) {
+        const o = { bubbles: true, pointerId: 7, pointerType: 'touch', clientX: 100, clientY: 300 };
+        b.dispatchEvent(new PointerEvent('pointerdown', o));
+        b.dispatchEvent(new PointerEvent('pointermove', { ...o, clientY: 260 }));
+        b.dispatchEvent(new PointerEvent('pointercancel', o));
+      }
+    }, (stereoTurn++ * 10) % 60);
+    await page.waitForTimeout(2500);
+    await page.locator('[data-stereo-picker] .close').click(); await page.waitForTimeout(1500);
+    blobsBy.push(await page.evaluate(() => (window as unknown as { __blobs(): number }).__blobs()));
   } else if (flow === 'eye') {
     // the eye button inside: first person on (at the eyes) and off (the room's camera)
     await inMuseum();
@@ -466,6 +500,14 @@ if (flow === 'look' || flow === 'clothes') {
   const grown = stageTex.slice(1).map((s) => s[s.length - 1] - s[0]); // (the warm cycle's first portraits and the shots' own player made)
   console.log(`WebGL contexts ${first.gl} → ${last.gl}; stage textures by top, each cycle ${JSON.stringify(stageTex)}`);
   if (last.gl > first.gl || grown.some((g) => g > 0)) {
+    console.log('LEAK');
+    process.exitCode = 1;
+  }
+}
+// stereo: the blob URLs no more after the last list than after the first (the track's own and the two fetched ahead)
+if (flow === 'stereo') {
+  console.log(`blob URLs alive by cycle ${JSON.stringify(blobsBy)}`);
+  if (blobsBy.at(-1)! > blobsBy[0] + 2) {
     console.log('LEAK');
     process.exitCode = 1;
   }

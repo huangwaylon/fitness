@@ -32,6 +32,8 @@ const LAZY_LATE_MS = 2500;
 const LAZY_CAP = 2;
 /** After ミュージック goes off (release), the files are let go once the fade-out is over. */
 const RELEASE_MS = 1000;
+/** How many files fetched ahead only (prefetch) are kept beyond the track's and the pins (K.K.'s two offered songs). */
+const AHEAD_KEEP = 2;
 /** A lazy file that failed (offline) isn't asked for again for this long: its placeholder plays meanwhile. */
 const LAZY_RETRY_MS = 5 * 60_000;
 /** Voice clips (ききみみ) kept decoded at once, the least recently asked for going first: ~3 s of speech each. */
@@ -141,6 +143,10 @@ export class Engine {
   /** The same, resolved (path → URL): a file already here starts inside the tap that asks for it (setTrack). */
   #urls = new Map<string, string>();
   #pinned: string[] = [];
+  /** The files fetched ahead only (prefetch: the next hour's, a song K.K. offers or a stereo's list pressed), oldest
+   *  first: AHEAD_KEEP at most, the older let go of (a scroll of the 70 songs had fetched dozens, ~0.5 MB each, kept
+   *  till the next track change). A track change or a pin takes its file out of here. */
+  #ahead: string[] = [];
   /** The sounding layers and their buffers, by bed and variant (`birds:spring`). */
   #ambient = new Map<string, { src: AudioBufferSourceNode; gain: GainNode }>();
   #ambientBuffers = new Map<string, Promise<AudioBuffer | null>>();
@@ -632,13 +638,37 @@ export class Engine {
   /** Fetch a file now so a later change starts at once (the next hour a minute before it; the current hour at
    *  launch when ミュージック is on, so the first tap can start it inside the tap). Needs no context. */
   prefetch(path: string): void {
+    const i = this.#ahead.indexOf(path);
+    // (here for a track or a pin already: not one fetched ahead)
+    if (i < 0 && this.#blobs.has(path)) return;
+    if (i >= 0) this.#ahead.splice(i, 1);
+    this.#ahead.push(path);
     void this.#blob(path);
+    while (this.#ahead.length > AHEAD_KEEP) this.#forget(this.#ahead.shift()!);
+  }
+
+  /** Let go of the files fetched ahead only (a stereo's list closed: the song picked is a track's by then). */
+  dropAhead(): void {
+    for (const p of this.#ahead.splice(0)) this.#forget(p);
+  }
+
+  /** A file's blob and its URL let go of (unless pinned). */
+  #forget(path: string): void {
+    const i = this.#ahead.indexOf(path);
+    if (i >= 0) this.#ahead.splice(i, 1);
+    if (this.#pinned.includes(path)) return;
+    const p = this.#blobs.get(path);
+    if (!p) return;
+    this.#blobs.delete(path);
+    this.#urls.delete(path);
+    void p.then((url) => url && URL.revokeObjectURL(url));
   }
 
   /** Files a track change keeps (and fetches now): during a cut-in, the track it interrupted (so coming back starts
    *  at once) and the wasps' sting after their chase. `[]` lets them go at the next change. */
   pin(paths: string[]): void {
     this.#pinned = paths;
+    this.#ahead = this.#ahead.filter((p) => !paths.includes(p));
     for (const p of paths) void this.#blob(p);
   }
 
@@ -661,12 +691,7 @@ export class Engine {
 
   /** Drop every blob but these paths (and the pinned ones). */
   #trimBlobs(keep: string[]): void {
-    for (const [path, p] of this.#blobs) {
-      if (keep.includes(path) || this.#pinned.includes(path)) continue;
-      this.#blobs.delete(path);
-      this.#urls.delete(path);
-      void p.then((url) => url && URL.revokeObjectURL(url));
-    }
+    for (const path of [...this.#blobs.keys()]) if (!keep.includes(path)) this.#forget(path);
   }
 
   /** Play `track` under `key` (an hour like 'sunny/07', or 'opening'), crossfading from the one playing
@@ -688,6 +713,9 @@ export class Engine {
     const plan = crossfadePlan(ctx.currentTime, playing, fade);
     this.#fadeOut(cur, plan.outFrom, plan.outTo);
     if (!key || !track) return;
+    // (its file a track's now, not one fetched ahead)
+    const ahead = this.#ahead.indexOf(track.file);
+    if (ahead >= 0) this.#ahead.splice(ahead, 1);
     // Already fetched (prefetched at launch, or heard this session): no await, so when this runs inside a tap the
     // deck's play() below is inside it too, and iOS can't refuse it. Otherwise wait for the file; the deck was
     // unlocked by its silent clip in the first tap, and a refused play() is retried by the next tap. Meanwhile

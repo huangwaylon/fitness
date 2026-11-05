@@ -348,6 +348,11 @@ export function prefetchKK(id: string, source: KKSource = 'live'): void {
   if (k) engine?.prefetch(k.track.file);
 }
 
+/** Let go of the songs fetched ahead (a stereo's list closed): the one picked is the track's by then. */
+export function dropPrefetched(): void {
+  engine?.dropAhead();
+}
+
 /** The island's own cut-ins (events.ts CutInId): `aerobics` for the stretch, `happy-birthday` at the cake, Franklin's
  *  cooking, the wasps'. A one-shot plays once (a list: one after another); with `loopMs` it loops that long. Then the
  *  island's music fades back. Only with ミュージック on, audio unlocked and the file there: false, and the caller plays

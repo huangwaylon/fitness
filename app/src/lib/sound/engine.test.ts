@@ -286,6 +286,44 @@ describe('release (ミュージック off)', () => {
   });
 });
 
+describe('files fetched ahead (prefetch)', () => {
+  it('keeps the last two fetched ahead only, never the track’s or a pin’s; dropAhead lets them go, not the track picked', async () => {
+    const { e } = await unlocked();
+    void e.setTrack('10', HOUR);
+    await settle();
+    e.pin(['music/pinned.m4a']);
+    await settle();
+    const urlOf = new Map<string, string>();
+    vi.mocked(URL.createObjectURL).mockClear();
+    const songs = ['a', 'b', 'c', 'd', 'e'].map((s) => `kk/${s}.m4a`);
+    for (const s of songs) {
+      e.prefetch(s);
+      await settle();
+      urlOf.set(s, vi.mocked(URL.createObjectURL).mock.results.at(-1)!.value as string);
+    }
+    // the track's and the pin's, asked for ahead: theirs already, nothing fetched
+    e.prefetch(HOUR.file);
+    e.prefetch('music/pinned.m4a');
+    await settle();
+    const revoked = () => vi.mocked(URL.revokeObjectURL).mock.calls.map(([u]) => u);
+    expect(revoked()).toEqual(['a', 'b', 'c'].map((s) => urlOf.get(`kk/${s}.m4a`)));
+    // one asked for again is the newest: the older of the other goes on the next
+    e.prefetch('kk/d.m4a');
+    e.prefetch('kk/f.m4a');
+    await settle();
+    urlOf.set('kk/f.m4a', vi.mocked(URL.createObjectURL).mock.results.at(-1)!.value as string);
+    expect(revoked()).toContain(urlOf.get('kk/e.m4a'));
+    expect(revoked()).not.toContain(urlOf.get('kk/d.m4a'));
+    // a song picked (the track's now) stays as the list closes; the other goes
+    void e.setTrack('kk/d', { file: 'kk/d.m4a', start: 0 }, false, 'cut');
+    e.dropAhead();
+    await settle();
+    expect(revoked()).toContain(urlOf.get('kk/f.m4a'));
+    expect(revoked()).not.toContain(urlOf.get('kk/d.m4a'));
+    expect(e.track).toBe('kk/d');
+  });
+});
+
 describe('the idle suspend', () => {
   it('a track held from outside (⏸ on the lock screen) lets the context sleep; the playing one never does', async () => {
     const { e, ctx } = await unlocked();
