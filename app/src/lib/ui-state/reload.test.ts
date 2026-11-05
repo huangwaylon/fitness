@@ -135,6 +135,22 @@ describe('newWorker (a deploy\'s reload waits for its service worker)', () => {
     expect(await newWorker(sw)).toBe(true);
     expect(reg.update).toHaveBeenCalledTimes(1);
   });
+  it('a worker gone redundant for a newer one (a deploy during its install): the newer one is waited for', async () => {
+    const listeners: (() => void)[] = [];
+    const w1 = { state: 'installing', on: [] as (() => void)[], addEventListener(_: string, f: () => void) { this.on.push(f); } };
+    const w2 = { state: 'installing', on: [] as (() => void)[], addEventListener(_: string, f: () => void) { this.on.push(f); } };
+    const reg = { installing: null as unknown, waiting: null, update: vi.fn(async () => {
+      reg.installing = w1;
+      setTimeout(() => {
+        reg.installing = w2;
+        w1.state = 'redundant';
+        w1.on.forEach((f) => f());
+        setTimeout(() => listeners.forEach((f) => f()), 10);
+      }, 10);
+    }) };
+    const sw = { controller: {}, getRegistration: async () => reg, addEventListener: (_: string, f: () => void) => listeners.push(f) } as unknown as ServiceWorkerContainer;
+    expect(await newWorker(sw)).toBe(true);
+  });
   it('never on a timer: a slow install is waited for, however long', async () => {
     vi.useFakeTimers();
     try {
