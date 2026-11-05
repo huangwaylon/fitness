@@ -45,6 +45,13 @@ describe('audio cache (an LRU per class)', () => {
     expect(lruEvict(many)).toEqual(many.slice(0, 2));
   });
 
+  it('ききみみ’s clips have their own 24: a quiz’s decks never push the effects out', () => {
+    const kiki = (id: string) => `https://x.example/fitness/audio/kikimimi/${id}.m4a?v=1`;
+    const clips = Array.from({ length: 26 }, (_, i) => kiki(`q${i}`));
+    expect(lruEvict([fx('coin'), ...clips, fx('tap')])).toEqual(clips.slice(0, 2));
+    expect([staleUse([kiki('q1'), fx('coin')], kiki('q1')), precachable('audio/kikimimi/q1.m4a')]).toEqual([false, false]);
+  });
+
   it('a hit is re-put only when it isn’t its class’s most recent already', () => {
     const keys = [m('07'), m('08'), kk('kk-a'), fx('coin')];
     expect([staleUse(keys, m('08')), staleUse(keys, m('07')), staleUse(keys, kk('kk-a')), staleUse(keys, fx('coin'))]).toEqual([false, true, false, false]);
