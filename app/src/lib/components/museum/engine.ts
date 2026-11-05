@@ -10,7 +10,7 @@
 import {
   AmbientLight, Box3, BoxGeometry, CanvasTexture, CircleGeometry, Color, CylinderGeometry, DirectionalLight, Frustum, Group, HemisphereLight,
   Matrix4, Mesh, Sphere, MeshBasicMaterial, MeshLambertMaterial, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping,
-  Scene, SRGBColorSpace, TextureLoader, Vector2, Vector3, WebGLRenderer, type Material, type Object3D, type Texture
+  Scene, SRGBColorSpace, TextureLoader, Vector3, WebGLRenderer, type Material, type Object3D, type Texture
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -23,6 +23,7 @@ import { pacer } from '../world3d/pace.ts';
 import { plainImages } from '../world3d/gltf.ts';
 import M from './models.json' with { type: 'json' };
 import { modelBounds } from '../world3d/models3d.ts';
+import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, wrapAngle } from '../rooms/firstPerson.ts';
 import {
   BUG_WING, DESK, DOOR_HALF, DOORMAT, FISH_WING, HALL, HALL_H, OPENING, WALLS, WING_H, inRect, navOf, roomAt, walkable, wallEnds, wingAt,
@@ -357,6 +358,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const scene = new Scene();
   scene.background = new Color(0x1d1712);
   const camera = new PerspectiveCamera(FOV, 1, 4, 3000);
+  const screen = roomScreen(camera, canvas), { client, project, inView } = screen;
   let insets: Insets = { top: 0, bottom: 0 };
   let disposed = false;
   /** The first-person view (rooms/firstPerson.ts), at the followed villager's eyes. */
@@ -714,7 +716,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     pos: [number, number];
     was: [number, number];
     yaw: number;
-    path: { from: Pt; pts: Pt[]; t0: number; ms: number; lens: number[]; total: number } | null;
+    path: Walk | null;
     hop: number;
     posing: boolean;
     /** Its seat (villager3d sitAt: the model sits itself there; `pos` is its step in front), or null standing. */
@@ -777,17 +779,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     w.v3.group.position.set(w.pos[0], lift, w.pos[1]);
     w.v3.group.rotation.set(0, w.yaw, 0);
   }
-  function walkLens(from: Pt, pts: readonly Pt[]) {
-    const lens: number[] = [];
-    let a = from, total = 0;
-    for (const p of pts) {
-      const l = Math.hypot(p[0] - a[0], p[1] - a[1]);
-      lens.push(l);
-      total += l;
-      a = p;
-    }
-    return { lens, total };
-  }
   function walk(who: Who, pts: readonly Pt[], p: { from?: Pt; ago?: number; ms?: number } = {}): number {
     const w = villagers.get(who);
     if (!w || !pts.length) return 0;
@@ -798,21 +789,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     w.path = { from, pts: [...pts], t0: now() - (p.ago ?? 0), ms: Math.max(1, ms), lens, total };
     invalidate();
     return ms;
-  }
-  function along(w: Walker, t: number): { p: [number, number]; d: [number, number]; done: boolean } {
-    const P = w.path!;
-    const k = Math.max(0, Math.min(1, (t - P.t0) / P.ms));
-    let d = k * P.total, a: Pt = P.from;
-    for (let i = 0; i < P.pts.length; i++) {
-      const b = P.pts[i];
-      if (d <= P.lens[i] || i === P.pts.length - 1) {
-        const f = P.lens[i] ? Math.min(1, d / P.lens[i]) : 1;
-        return { p: [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], d: [b[0] - a[0], b[1] - a[1]], done: k >= 1 };
-      }
-      d -= P.lens[i];
-      a = b;
-    }
-    return { p: [P.from[0], P.from[1]], d: [0, 0], done: true };
   }
   const headV = new Vector3();
   function headPoint(who: Who): [number, number, number] | null {
@@ -831,7 +807,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const dt = lastV ? Math.min(100, t - lastV) : 16;
     let busy = false;
     if (w.path) {
-      const a = along(w, t);
+      const a = along(w.path!, t);
       w.pos = a.p;
       if (Math.hypot(a.d[0], a.d[1]) > 0.01) w.yaw += wrapAngle(Math.atan2(a.d[0], a.d[1]) - w.yaw) * Math.min(1, (14 * dt) / 1000);
       if (a.done) w.path = null;
@@ -1021,25 +997,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
 
   // ---- taps ----
   const ray = new Raycaster();
-  const ndc = new Vector2();
-  const toNdc = (cx: number, cy: number) => {
-    const r = canvas.getBoundingClientRect();
-    ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
-    ray.setFromCamera(ndc, camera);
-  };
+  const toNdc = (cx: number, cy: number) => screen.aim(ray, cx, cy);
   const floorPlane = new Plane(new Vector3(0, 1, 0), 0);
   const hitV = new Vector3();
-  function client(x: number, y: number, z: number): [number, number] {
-    const r = canvas.getBoundingClientRect();
-    const v = new Vector3(x, y, z).project(camera);
-    return [r.left + ((v.x + 1) / 2) * r.width, r.top + ((1 - v.y) / 2) * r.height];
-  }
-  const project = (x: number, y: number, z: number): [number, number] | null => {
-    const v = new Vector3(x, y, z).project(camera);
-    if (v.z > 1 || v.z < -1) return null;
-    const r = canvas.getBoundingClientRect();
-    return [r.left + ((v.x + 1) / 2) * r.width, r.top + ((1 - v.y) / 2) * r.height];
-  };
   function hit(cx: number, cy: number): Hit | null {
     toNdc(cx, cy);
     // at the eyes: what's tapped is nearer than the first wall (a cornice, a lintel, the door, a ceiling) on the ray;
@@ -1111,11 +1071,6 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (!on && w) (w.yaw = fp.yaw), (w.posing = true);
     fp.set(on, now(), w?.yaw ?? Math.PI, snap);
     invalidate();
-  }
-  const frontV = new Vector3();
-  function inView(x: number, y: number, z: number): boolean {
-    const v = frontV.set(x, y, z).project(camera);
-    return v.z > -1 && v.z < 1 && Math.abs(v.x) <= 1.05 && Math.abs(v.y) <= 1.05;
   }
 
   // ---- what isn't on screen yet made ready once everything is in: its textures up a few at a time and its programs

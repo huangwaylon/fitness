@@ -8,7 +8,7 @@ import {
   AmbientLight, BoxGeometry, CanvasTexture, CircleGeometry, Color, DirectionalLight, DoubleSide, Group, HemisphereLight,
   LineBasicMaterial, LineSegments, BufferGeometry, Float32BufferAttribute, Material, Mesh, MeshBasicMaterial, MeshStandardMaterial,
   Box3, Object3D, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, PointLight, Raycaster, RepeatWrapping, Scene, Sprite,
-  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector2, Vector3, WebGLRenderer
+  SpriteMaterial, SRGBColorSpace, Texture, DataTexture, TextureLoader, Vector3, WebGLRenderer
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -21,6 +21,7 @@ import { drawOff } from '../../ui-state/testMode.ts';
 import { lean } from '../world3d/release.ts';
 import { plainImages } from '../world3d/gltf.ts';
 import { due, frameRate } from '#lib/store/frameRate.svelte.ts';
+import { along, roomScreen, walkLens, type Walk } from '../rooms/view.ts';
 import { EYE_MARGIN, camAz, clampEye, firstPerson as createFirstPerson, headAnchor, type Rect } from '../rooms/firstPerson.ts';
 
 /** The walls' height (RoomMdlWall: 40 model units, four tiles). */
@@ -292,6 +293,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   const scene = new Scene();
   scene.background = new Color(0x2a1f17);
   const camera = new PerspectiveCamera(FOV, 1, 10, 2000);
+  const screen = roomScreen(camera, canvas), { client, inView } = screen;
   let insets: Insets = { top: 0, bottom: 0 };
   /** The first-person view (rooms/firstPerson.ts) and whose eyes it's at. */
   const fp = createFirstPerson();
@@ -854,7 +856,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     pos: [number, number];
     /** -1 left, 1 right. */
     face: number;
-    path: { from: [number, number]; pts: Pt[]; t0: number; ms: number; lens: number[]; total: number } | null;
+    path: Walk | null;
     hop: number;
     /** Sitting or lying (a walk stands it up). */
     pose: Pose | null;
@@ -1000,17 +1002,6 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     place(w);
     invalidate();
   }
-  function walkLens(from: Pt, pts: readonly Pt[]) {
-    const lens: number[] = [];
-    let a = from, total = 0;
-    for (const p of pts) {
-      const l = Math.hypot(p[0] - a[0], p[1] - a[1]);
-      lens.push(l);
-      total += l;
-      a = p;
-    }
-    return { lens, total };
-  }
   function walk(who: Who, pts: readonly Pt[], o: { from?: Pt; ago?: number; ms?: number } = {}): number {
     const w = villagers.get(who);
     if (!w || !pts.length) return 0;
@@ -1021,23 +1012,6 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     w.path = { from, pts: [...pts], t0: now() - (o.ago ?? 0), ms: Math.max(1, ms), lens, total };
     invalidate();
     return ms;
-  }
-  /** Where a walk has a villager by now, and which way it's heading (null: over). */
-  function along(w: Walker, t: number): { p: [number, number]; d: [number, number]; done: boolean } {
-    const P = w.path!;
-    // (a walk heard before it sets off, by a clock a little behind: at its start till then)
-    const k = Math.max(0, Math.min(1, (t - P.t0) / P.ms));
-    let d = k * P.total, a: Pt = P.from;
-    for (let i = 0; i < P.pts.length; i++) {
-      const b = P.pts[i];
-      if (d <= P.lens[i] || i === P.pts.length - 1) {
-        const f = P.lens[i] ? Math.min(1, d / P.lens[i]) : 1;
-        return { p: [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f], d: [b[0] - a[0], b[1] - a[1]], done: k >= 1 };
-      }
-      d -= P.lens[i];
-      a = b;
-    }
-    return { p: [P.from[0], P.from[1]], d: [0, 0], done: true };
   }
   /** Left (-1) or right (1) on screen for a heading (x, z) in the room, as the camera now looks. */
   const screenSide = (dx: number, dz: number) => {
@@ -1309,22 +1283,14 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     fp.set(!!who, now(), w?.heading ?? Math.PI, snap);
     invalidate();
   }
-  const frontV = new Vector3();
-  function inView(x: number, y: number, z: number): boolean {
-    const v = frontV.set(x, y, z).project(camera);
-    return v.z > -1 && v.z < 1 && Math.abs(v.x) <= 1.05 && Math.abs(v.y) <= 1.05;
-  }
 
   // ---- taps ----
   const ray = new Raycaster();
-  const ndc = new Vector2();
   const ground = new Plane(new Vector3(0, 1, 0), 0);
   const toNdc = (cx: number, cy: number) => {
-    const r = canvas.getBoundingClientRect();
-    ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
     // what changed since the last frame (a piece just placed, a frame not drawn yet) is where it is
     scene.updateMatrixWorld();
-    ray.setFromCamera(ndc, camera);
+    screen.aim(ray, cx, cy);
   };
   function floorAt(cx: number, cy: number): [number, number] | null {
     toNdc(cx, cy);
@@ -1415,10 +1381,6 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const p = floorAt(cx, cy);
     return p ? { kind: 'floor', x: p[0], z: p[1] } : null;
   }
-  function client(x: number, y: number, z: number): [number, number] {
-    const p = new Vector3(x, y, z).project(camera), r = canvas.getBoundingClientRect();
-    return [r.left + ((p.x + 1) / 2) * r.width, r.top + ((1 - p.y) / 2) * r.height];
-  }
 
   // ---- the frames: on demand ----
   let raf = 0, frames = 0, disposed = false, shadowsDirty = true;
@@ -1436,7 +1398,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     const v = w.v3!, dt = lastT3 ? Math.min(100, t - lastT3) : 16;
     let busy = false;
     if (w.path) {
-      const a = along(w, t);
+      const a = along(w.path!, t);
       w.pos = a.p;
       if (Math.hypot(a.d[0], a.d[1]) > 0.01) {
         w.heading = Math.atan2(a.d[0], a.d[1]);
@@ -1604,7 +1566,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
         continue;
       }
       if (w.path) {
-        const a = along(w, t);
+        const a = along(w.path!, t);
         w.pos = a.p;
         if (Math.hypot(a.d[0], a.d[1]) > 0.01) w.heading = Math.atan2(a.d[0], a.d[1]);
         const side = screenSide(a.d[0], a.d[1]);
