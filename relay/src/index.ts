@@ -6,7 +6,6 @@ import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, 
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
 import { HELLO_MS, RoomCore, type Held, type Kept, type Meta } from './room.ts';
-import { isOldPushPath, pushGone } from './pushGone.ts';
 import { IslandStore } from './storeObject.ts';
 import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
@@ -78,7 +77,7 @@ export class IslandRoom extends DurableObject<Env> {
         saveGone: (g) => void ctx.storage.put(GONE, g),
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
         onHello: (who, v, build) => {
-          // each phone's protocol version and build (docs/backend.md: when v1/v2 can go)
+          // each phone's protocol version and build (the log's ws.hello: which phones speak what)
           this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}) } }]);
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
@@ -221,8 +220,6 @@ export default {
     }
     if (url.pathname === '/health/log') return logHealthRoute(req, env.HEALTH_TOKEN, logObj);
     if (url.pathname === '/admin') return adminRoute(req, () => env.STORE.get(env.STORE.idFromName('record')));
-    // notifications are gone: an old app's /push/* gets 410 (pushGone.ts)
-    if (isOldPushPath(url.pathname)) return pushGone(req, env.ALLOWED_ORIGINS ?? '');
     if (url.pathname !== '/room') return new Response('not found', { status: 404 });
     if (!originAllowed(req.headers.get('Origin'), env.ALLOWED_ORIGINS ?? '')) return new Response('forbidden', { status: 403 });
     if (req.headers.get('Upgrade')?.toLowerCase() !== 'websocket') return new Response('expected a WebSocket', { status: 426 });

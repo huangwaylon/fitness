@@ -23,7 +23,7 @@ function fakeRelay() {
     start() {}, stop() {}, send: (i) => (sent.push(i), true), on: (fn) => ((sub = fn), () => (sub = null)),
     onChange: () => () => {}, onStatus: (fn) => (fn(st), () => {}), status: () => st, serverNow: () => Date.now()
   };
-  return { live, sent, hear: (m: Intent & { who: 'A' | 'B'; t: number }) => sub?.({ v: 2, ...m } as Relayed) };
+  return { live, sent, hear: (m: Intent & { who: 'A' | 'B'; t: number }) => sub?.({ v: 3, ...m } as Relayed) };
 }
 
 const T0 = Date.UTC(2026, 10, 1, 3); // 2026-11-01 12:00 Tokyo

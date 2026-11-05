@@ -12,12 +12,12 @@ export const LOG_V = 1;
 export type LogLevel = 0 | 1 | 2 | 3;
 
 /** The record's API actions (relay/src/store.ts route), and `other`. @public (relay/src/reqMeta.ts) */
-export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', 'uploads', 'whoami', 'telemetry', 'other'] as const;
+export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', 'uploads', 'whoami', 'other'] as const;
 /** A request's outcome: `ok`, the record's error codes, the phone's own (`offline`, `http`, `json`), `none` (no answer). @public (relay/src/reqMeta.ts) */
 export const LOG_STATUS = ['ok', 'unauthorized', 'forbidden', 'bad_request', 'too_large', 'busy', 'unavailable', 'offline', 'http', 'json', 'none'] as const;
 /** The app's routes (their first segment). */
 export const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor', '/dev', '/world3d', 'other'] as const;
-const EV_TYPES = [...EVENT_TYPES, 'highfive', 'other'] as const;
+const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
 
 /** A field's kind: `n` a number (rounded to 0.1, within ±1e7), `b` a boolean, `t` a token, a closed set (an array),
  *  `msg` / `stack` scrubbed text. */

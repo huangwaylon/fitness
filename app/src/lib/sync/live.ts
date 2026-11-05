@@ -277,9 +277,8 @@ export function createLive(o: LiveOptions): Live {
       if (!key) return drop();
       // a new Tokyo day since the page loaded: that day's whole world
       lastWorld = Math.max(lastWorld, dayStart(tokyoDay(Date.now() + offset)));
-      // batch: the day in a few replay messages, mine included
       const build = o.build?.();
-      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, batch: true, ...(build ? { build } : {}) });
+      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, ...(build ? { build } : {}) });
     };
     s.onmessage = (e: MessageEvent) => {
       if (typeof e.data === 'string') {
