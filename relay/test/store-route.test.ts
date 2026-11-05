@@ -47,7 +47,7 @@ describe('/api', () => {
     expect((await apiRoute(req('', { Origin: ALLOWED }, 'OPTIONS'), ALLOWED, () => room)).status).toBe(204);
   });
 
-  it('garbage, an empty or an oversized body is a JSON refusal (status 200, as Apps Script answered)', async () => {
+  it('garbage, an empty or an oversized body is a JSON refusal (status 200)', async () => {
     for (const [body, error] of [['{oops', 'bad_request'], ['', 'bad_request'], ['[1]', 'bad_request'], ['x'.repeat(1_000_001), 'too_large']] as const) {
       const res = await apiRoute(req(body), ALLOWED, () => room);
       expect([res.status, await res.json()]).toEqual([200, { ok: false, error }]);

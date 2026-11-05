@@ -658,7 +658,7 @@ describe('the shared world (v2, docs/backend.md#shared-world)', () => {
   });
 });
 
-describe('high-fives (v2: the relay only, never the sheet)', () => {
+describe('high-fives (the relay only, never the record)', () => {
   const join2 = (key: string) => {
     const s = new FakeSock();
     socks.push(s);

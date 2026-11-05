@@ -11,7 +11,7 @@ const now = 1_793_000_000_000;
 const hex = (key: string, msg: string) => createHmac('sha256', key).update(msg).digest('hex');
 
 describe('the notify secret', () => {
-  it('is HMAC-SHA256 of the label under "keyA:keyB" (what Apps Script computes with Utilities)', async () => {
+  it('is HMAC-SHA256 of the label under "keyA:keyB" (what relay/scripts/admin.ts computes)', async () => {
     expect(await notifySecret(keys)).toBe(hex(`${KEY_A}:${KEY_B}`, NOTIFY_LABEL));
     expect(await notifySecret({ KEY_A: ` ${KEY_A.toUpperCase()}\n`, KEY_B })).toBe(await notifySecret(keys));
   });

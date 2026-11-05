@@ -1,5 +1,5 @@
-// The `uploads` audit row of an ingest (docs/backend.md#ingest): the body's shape, never the body or the key, as the
-// Apps Script wrote it while the sheet was the record (relay/test/ingest-golden.test.ts holds the record to it).
+// The `uploads` audit row of an ingest (docs/backend.md#ingest): the body's shape, never the body or the key
+// (relay/test/ingest-golden.test.ts holds the record to it).
 import { isRec } from '../../app/src/lib/contract/api.ts';
 
 /**

@@ -80,9 +80,6 @@ export class IslandRoom extends DurableObject<Env> {
         onHello: () => void this.weatherTick().catch((e) => console.warn('wx-fail', e))
       }, ring, rec, held, gone, this.wx.wx);
     });
-    // the Web Push subscriptions and the goal days, kept until notifications were removed (2026-11-02): gone
-    ctx.storage.sql.exec('DROP TABLE IF EXISTS push_subs');
-    ctx.storage.sql.exec('DROP TABLE IF EXISTS push_sent');
   }
 
   async fetch(req: Request): Promise<Response> {
