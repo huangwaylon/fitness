@@ -2,7 +2,7 @@
 // the results and its review list; two players over the demo's relay (`?demo` and `?demo&as=B`, two tabs of one
 // browser: sync/live-local.ts plays the room) from B's invite banner to both phones' results, scored alike; and the
 // 「やめる？」 path (mid-game a backdrop tap or Esc keeps the sheet; ✕ asks first). `?kikimimi=fast` shortens the
-// answer and reveal windows (session.ts FAST_WINDOWS) on every phone. The logic tier: no clip has to sound (a
+// reveal (session.ts FAST_WINDOWS; the answer window stays 8 s: a tab behind is throttled) on every phone. The logic tier: no clip has to sound (a
 // headless browser's audio is a null sink), the schedule is the relay clock's.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { fromMenu, hudMenu } from './hud.ts';
@@ -40,12 +40,14 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   test.slow();
   await open(page);
   await play(page);
-  // my own lobby at once (no one's invite waiting): level, おなじへや, me, the sound check, はじめる
+  // my own lobby at once (no one's invite waiting), on this phone alone: level, the sound check, ひとりで はじめる
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   await expect(sheet(page).locator('[data-level="1"]')).toHaveAttribute('aria-checked', 'true');
   await sheet(page).locator('[data-level="2"]').click();
   await expect(sheet(page).locator('[data-level="2"]')).toHaveAttribute('aria-checked', 'true');
-  await expect(sheet(page).locator('[data-player="A"]')).toBeVisible();
+  await expect(sheet(page).locator('[data-kiki-players]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-kiki-invite-all]')).toBeVisible();
+  await expect(sheet(page).locator('[data-kiki-start]')).toHaveText('ひとりで はじめる');
   await sheet(page).locator('[data-kiki-test]').click();
   // the island is idle under it (as under けんこう, ごはん)
   await expect(page.locator('.if-scene')).toHaveAttribute('data-covered', 'true');
@@ -108,6 +110,10 @@ test('two players: A’s lobby invites B (the banner’s さんか), they play t
   await a.bringToFront();
   await play(a);
   await expect(sheet(a)).toHaveAttribute('data-phase', 'lobby');
+  // nobody's invited till みんなを さそう
+  await expect(b.locator('.banner', { hasText: 'ききとりクイズに さそっています' })).toHaveCount(0);
+  await sheet(a).locator('[data-kiki-invite-all]').click();
+  await expect(sheet(a).locator('[data-kiki-players]')).toBeVisible();
   // B: the invite banner, 「ウェイが ききとりクイズに さそっています」 [さんか]
   const banner = b.locator('.banner', { hasText: 'ききとりクイズに さそっています' });
   await expect(banner).toBeVisible({ timeout: 15_000 });
@@ -119,6 +125,7 @@ test('two players: A’s lobby invites B (the banner’s さんか), they play t
   await expect(sheet(b).locator('[data-kiki-start]')).toHaveCount(0);
   await a.bringToFront();
   await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-state', 'answered');
+  await expect(sheet(a).locator('[data-kiki-start]')).toHaveText('はじめる（2にん）');
   await sheet(a).locator('[data-kiki-start]').click();
   await expect(sheet(b)).not.toHaveAttribute('data-phase', 'lobby', { timeout: 10_000 });
   for (let i = 0; i < 8; i++) {

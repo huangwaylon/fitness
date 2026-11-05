@@ -1,10 +1,10 @@
 // ききみみ クイズ's state machine (docs/kikimimi.md "Sync"): pure (no I/O, no timers, no clock of its own). It folds
 // the quiz intents heard (live.on), who is here (live status().here) and the relay's clock (live.serverNow(), passed in
-// as `now` to every call) into a view: {phase, players, answers, scores, i, …}. The schedule is computed, not driven:
-// from `go`'s `at` and each question's clip length every phone works out every question's start on its own; the host's
-// `skip` re-bases it from a question on. Each call returns the intents to send (my taps, the host's skips and its
-// re-sends when someone comes back), which the caller hands to live.send; the UI only renders `view(now)`.
-// The deck comes in through an interface (QuizDeck), never the bank itself.
+// as `now` to every call) into a view: {phase, players, answers, scores, i, …}. The host is the clock: every phone
+// computes the schedule from `go`'s `at` and each question's clip length, and adopts the host's position (its `skip`:
+// question i starts at `at`, sent as it changes and every few seconds as a beacon) whenever it hears it. Each call
+// returns the intents to send (my taps, the host's skips and beacons, the re-sends when someone comes back), which the
+// caller hands to live.send; the UI only renders `view(now)`. The deck comes in through an interface (QuizDeck).
 import type { Live } from '../sync/live.ts';
 import { points } from './score.ts';
 import { QUIZ_MAX_S, QUIZ_QS, type QuizLv, type QuizWire, type Relayed, type Who } from '../contract/live-protocol.ts';
@@ -33,34 +33,34 @@ export interface QuizWindows {
   answer: number;
   /** The reveal. */
   reveal: number;
-  /** A `go` or `skip` heard at most this late plays at once (from when it's heard); later, the questions whose clip
-   *  already began are sat out. */
+  /** The host's position heard more than this after its question's clip began: that question is sat out. */
   late: number;
   /** A lobby not started within this of its `open` is dropped. */
   openTtl: number;
-  /** A lobby whose host has been away this long is dropped (a moment's reconnect keeps it). */
+  /** The host away this long has gone (a moment's reconnect hasn't): its lobby is dropped, and in a game each phone
+   *  moves on by itself. */
   hostGrace: number;
+  /** The host's beacon: its position at least this often while a game runs. */
+  beacon: number;
 }
-/** @public (UI, phase 2) */
-export const WINDOWS: QuizWindows = { countdown: 4000, lead: 1500, answer: 15_000, reveal: 8000, late: 5000, openTtl: 600_000, hostGrace: 15_000 };
-/** The `?kikimimi=fast` test hook's: shorter answer and reveal windows. @public (UI, phase 2) */
-export const FAST_WINDOWS: QuizWindows = { ...WINDOWS, answer: 3000, reveal: 1500 };
+export const WINDOWS: QuizWindows = { countdown: 4000, lead: 1500, answer: 15_000, reveal: 8000, late: 5000, openTtl: 600_000, hostGrace: 15_000, beacon: 3000 };
+/** The `?kikimimi=fast` test hook's: a shorter reveal (the answer window still roomy: a throttled tab's taps). */
+export const FAST_WINDOWS: QuizWindows = { ...WINDOWS, answer: 8000, reveal: 1500 };
 
 /** A quiz intent to send (live.send), and one heard (live.on). */
 export type QuizOut = { kind: 'quiz' } & QuizWire;
 export type QuizIn = Extract<Relayed, { kind: 'quiz' }>;
 
-
-/** @public (UI, phase 2) An answer: the choice, whether the clip was replayed or slowed first, when it was given or heard (relay clock). */
-export interface QuizAnswer {
+/** An answer: the choice, whether the clip was replayed or slowed first, when it was given or heard (relay clock). */
+interface QuizAnswer {
   k: number;
   rp: boolean;
   t: number;
 }
 
-/** @public (UI, phase 2) A player in the game: here or away (a locked phone), whether they answered the current question (never what,
+/** A player in the game: here or away (a locked phone), whether they answered the current question (never what,
  *  until its reveal: `pick` then), their score. */
-export interface QuizPlayer {
+interface QuizPlayer {
   who: Who;
   here: boolean;
   answered: boolean;
@@ -69,8 +69,8 @@ export interface QuizPlayer {
   score: number;
 }
 
-/** @public (UI, phase 2) A lobby or game someone else opened that I haven't joined: the invite banner's. */
-export interface QuizInvite {
+/** A lobby or game someone else opened that I haven't joined: the invite banner's. */
+interface QuizInvite {
   g: string;
   host: Who;
   lv: QuizLv;
@@ -88,6 +88,8 @@ export interface QuizView {
   g: string | null;
   host: Who | null;
   amHost: boolean;
+  /** My lobby, on this phone only (not announced: みんなを さそう not tapped). */
+  local: boolean;
   lv: QuizLv;
   same: boolean;
   seed: number;
@@ -95,7 +97,7 @@ export interface QuizView {
   speaks: boolean;
   /** Who joined, A B G order. */
   players: QuizPlayer[];
-  /** The current question (0-based), -1 before the first. */
+  /** The current question (0-based), -1 before the first, n at the results. */
   i: number;
   /** The game's questions. */
   n: number;
@@ -106,7 +108,7 @@ export interface QuizView {
   playAt: number;
   playEnd: number;
   limit: number;
-  /** This question is sat out (its clip began before this phone was in: a late `go`, a rejoin, a join mid-game). */
+  /** This question is sat out (its clip began well before this phone heard of it: a late `go`, a lock, a join mid-game). */
   out: boolean;
   /** My answer to each question (null: none), for the reveal and the review list. */
   answers: (QuizAnswer | null)[];
@@ -125,13 +127,15 @@ interface Game {
   same: boolean;
   deck: QuizDeck;
   n: number;
-  /** When this phone first heard of it (the lobby's TTL). */
+  /** When this phone first heard of it, or announced it (the lobby's TTL). */
   opened: number;
+  /** My lobby not announced yet: nothing of it is sent. */
+  local?: boolean;
   /** Who joined (the host too). */
   joined: Set<Who>;
-  /** `go`'s `at` as sent (the host's re-send). */
+  /** `go`'s `at` (the host's re-send). */
   goAt?: number;
-  /** Question starts this phone fixed (`go`: 0; a `skip`: its i), the rest follow from the one before. */
+  /** Question starts fixed here (`go`: 0; the host's position; n: the results); the rest follow from the one before. */
   starts: Map<number, number>;
   /** When this phone came into the schedule: questions whose clip began before are sat out. */
   inAt: number;
@@ -140,13 +144,14 @@ interface Game {
   totals: Map<Who, { i: number; s: number }>;
   /** When everyone joined and here had answered question i (its early reveal). */
   allIn: Map<number, number>;
-  /** The host's last skip (its re-send). */
-  lastSkip?: { i: number; at: number };
-  /** The last question's reveal cut short (the host's つぎへ): the results from then. */
-  done?: number;
+  /** The host's position (its own phone's): the latest start it fixed or the question it's in. */
+  pos?: { i: number; at: number };
+  /** The host's last position sent, and when. */
+  beaconed?: { i: number; at: number; t: number };
 }
 
-const ORDER: readonly Who[] = ['A', 'B', 'G'];
+/** The players' order (A B G), as the chips show them. */
+export const ORDER: readonly Who[] = ['A', 'B', 'G'];
 const GAME_ID = 'abcdefghijklmnopqrstuvwxyz0123456789';
 
 export interface QuizSessionOptions {
@@ -167,6 +172,8 @@ export class QuizSession {
   /** The others here now, and since when each other has been away. */
   private here = new Set<Who>();
   private away = new Map<Who, number>();
+  /** My own socket is down (who's here unknown). */
+  private offline = false;
   /** Joins heard before their game's `open` (a re-send's race). */
   private early = new Map<string, Set<Who>>();
   /** Games I left: their later messages are ignored. */
@@ -221,13 +228,16 @@ export class QuizSession {
         return [];
       case 'go':
         if (gm && m.who === gm.host && gm.goAt === undefined) {
+          this.adopt(gm, 0, m.at, now);
           gm.goAt = m.at;
-          this.anchor(gm, 0, m.at, now);
         }
         return [];
       case 'skip':
-        // a question not started here yet (a re-send of one that has: nothing)
-        if (gm && m.who === gm.host && gm.goAt !== undefined && m.i < gm.n && now < this.start(gm, m.i)) this.anchor(gm, m.i, m.at, now);
+        // the host's position (its clock): adopted even for a question already under way here, or one I raced past
+        if (gm && m.who === gm.host && m.i <= gm.n) {
+          this.adopt(gm, m.i, m.at, now);
+          gm.goAt ??= m.at;
+        }
         return [];
       case 'a': {
         if (!gm || m.i >= gm.n) return [];
@@ -242,13 +252,19 @@ export class QuizSession {
     }
   }
 
-  /** Who else is here (live status().here). Someone back: the host re-sends its `open` (and once started `go` and
-   *  its last `skip`), a player its `join`, so a phone back from a lock rejoins the schedule. Someone gone: they no
-   *  longer hold up the early reveal. */
-  presence(here: readonly Who[], now: number): QuizOut[] {
+  /** Who else is here (live status().here; null while my own socket is down: unknown, so nobody counts as gone).
+   *  Someone back (everyone, as my socket comes back): the host re-sends its `open` (and once started `go` and its
+   *  position), a player its `join`, so a phone back from a lock rejoins the schedule. Someone gone: they no longer
+   *  hold up the early reveal. */
+  presence(here: readonly Who[] | null, now: number): QuizOut[] {
+    if (!here) {
+      this.offline = true;
+      return [];
+    }
     const next = new Set(here.filter((w) => w !== this.me));
-    const back = [...next].filter((w) => !this.here.has(w));
+    const back = [...next].filter((w) => this.offline || !this.here.has(w));
     const gone = [...this.here].filter((w) => !next.has(w));
+    this.offline = false;
     for (const w of gone) this.away.set(w, now);
     for (const w of back) this.away.delete(w);
     this.here = next;
@@ -257,19 +273,33 @@ export class QuizSession {
     const gm = this.mine();
     if (!gm || this.over(gm, now)) return out;
     if (back.length) {
-      if (gm.host === this.me) {
+      if (gm.host !== this.me) out.push({ kind: 'quiz', g: gm.g, op: 'join' });
+      else if (!gm.local) {
         out.push({ kind: 'quiz', g: gm.g, op: 'open', seed: gm.seed, lv: gm.lv, same: gm.same });
-        if (gm.goAt !== undefined) out.push({ kind: 'quiz', g: gm.g, op: 'go', at: gm.goAt });
-        if (gm.lastSkip) out.push({ kind: 'quiz', g: gm.g, op: 'skip', ...gm.lastSkip });
-      } else out.push({ kind: 'quiz', g: gm.g, op: 'join' });
+        if (gm.goAt !== undefined) out.push({ kind: 'quiz', g: gm.g, op: 'go', at: gm.goAt }, this.beacon(gm, now));
+      }
     }
     if (gone.length) out.push(...this.checkNow(gm, now));
     return out;
   }
 
+  /** Time passing (the UI's wake-ups, at least every `beacon` ms in a game): the host's beacon, its position when it
+   *  changed or every `beacon` ms; a player's moving on once the host has really gone (its grace over). */
+  tick(now: number): QuizOut[] {
+    this.prune(now);
+    const gm = this.mine();
+    if (!gm || gm.goAt === undefined || this.over(gm, now)) return [];
+    if (gm.host !== this.me) return this.checkNow(gm, now);
+    if (gm.local) return [];
+    const p = this.position(gm, now);
+    const b = gm.beaconed;
+    return b && b.i === p.i && b.at === p.at && now - b.t < this.w.beacon ? [] : [this.beacon(gm, now)];
+  }
+
   // ---------- my taps ----------
 
-  /** Open a lobby (せってい's あそぶ, then the level): I'm its host. Leaves the game I was in. */
+  /** Open a lobby of mine (せってい's あそぶ), on this phone only until I invite the others: I'm its host. Leaves the
+   *  game I was in. */
   open(o: { lv: QuizLv; same?: boolean }, now: number): QuizOut[] {
     const out = this.leave(now);
     this.notice = null;
@@ -280,18 +310,27 @@ export class QuizSession {
     } while (this.games.has(g));
     const seed = Math.floor(this.random() * 2 ** 32) >>> 0;
     const gm = this.game(g, this.me, seed, o.lv, o.same ?? false, now);
-    gm.joined.add(this.me);
-    out.push({ kind: 'quiz', g, op: 'open', seed, lv: gm.lv, same: gm.same });
+    gm.local = true;
     return out;
   }
 
-  /** The host changes its lobby's level or おなじへや (sent again as an `open`). */
+  /** みんなを さそう: my lobby is announced (an `open`: everyone here gets the invite). */
+  invite(now: number): QuizOut[] {
+    this.prune(now);
+    const gm = this.mine();
+    if (!gm || gm.host !== this.me || !gm.local || gm.goAt !== undefined) return [];
+    gm.local = false;
+    gm.opened = now;
+    return [this.opening(gm)];
+  }
+
+  /** The host changes its lobby's level or おなじへや (sent again as an `open` once announced). */
   configure(o: { lv?: QuizLv; same?: boolean }, now: number): QuizOut[] {
     this.prune(now);
     const gm = this.mine();
     if (!gm || gm.host !== this.me || gm.goAt !== undefined) return [];
     this.setup(gm, gm.seed, o.lv ?? gm.lv, o.same ?? gm.same);
-    return [{ kind: 'quiz', g: gm.g, op: 'open', seed: gm.seed, lv: gm.lv, same: gm.same }];
+    return this.send(gm, this.opening(gm));
   }
 
   /** Join the invite (さんか; a game already going: from its next question). Leaves the game I was in. */
@@ -315,20 +354,11 @@ export class QuizSession {
     this.games.delete(gm.g);
     this.left.add(gm.g);
     if (this.over(gm, now)) return [];
-    return [{ kind: 'quiz', g: gm.g, op: gm.host === this.me && gm.goAt === undefined ? 'end' : 'leave' }];
+    return this.send(gm, { kind: 'quiz', g: gm.g, op: gm.host === this.me && gm.goAt === undefined ? 'end' : 'leave' });
   }
 
-  /** The host cancels the game for everyone. */
-  end(now: number): QuizOut[] {
-    this.prune(now);
-    const gm = this.mine();
-    if (!gm || gm.host !== this.me) return [];
-    this.games.delete(gm.g);
-    this.left.add(gm.g);
-    return this.over(gm, now) ? [] : [{ kind: 'quiz', g: gm.g, op: 'end' }];
-  }
-
-  /** The host starts the game (はじめる): the 3-2-1, then question 0 at now + the countdown. */
+  /** The host starts the game (はじめる): the 3-2-1, then question 0 at now + the countdown (alone, not announced:
+   *  nothing sent). */
   go(now: number): QuizOut[] {
     this.prune(now);
     const gm = this.mine();
@@ -336,7 +366,9 @@ export class QuizSession {
     const at = now + this.w.countdown;
     gm.goAt = at;
     gm.starts.set(0, at);
-    return [{ kind: 'quiz', g: gm.g, op: 'go', at }];
+    gm.pos = { i: 0, at };
+    gm.beaconed = { i: 0, at, t: now };
+    return this.send(gm, { kind: 'quiz', g: gm.g, op: 'go', at });
   }
 
   /** My answer to the current question (one tap, final; in its answer window only). `rp`: I replayed or slowed it. */
@@ -350,22 +382,17 @@ export class QuizSession {
     gm.answers.set(this.me, mine);
     if (mine.has(at.i)) return [];
     mine.set(at.i, { k, rp, t: now });
-    const s = Math.min(QUIZ_MAX_S, this.myScore(gm));
-    return [{ kind: 'quiz', g: gm.g, op: 'a', i: at.i, k, rp, s }, ...this.check(gm, at.i, now)];
+    const s = Math.min(QUIZ_MAX_S, this.sum(gm, this.me));
+    return [...this.send(gm, { kind: 'quiz', g: gm.g, op: 'a', i: at.i, k, rp, s }), ...this.check(gm, at.i, now)];
   }
 
-  /** The host's つぎへ in a reveal: the next question now (the last's: the results). */
+  /** The host's つぎへ in a reveal: the next question now (the last's: the results, on every phone). */
   next(now: number): QuizOut[] {
     this.prune(now);
     const gm = this.mine();
     if (!gm || gm.host !== this.me) return [];
     const at = this.at(gm, now);
-    if (at.phase !== 'reveal') return [];
-    if (at.i === gm.n - 1) {
-      gm.done = now;
-      return [];
-    }
-    return this.skip(gm, at.i + 1, now);
+    return at.phase === 'reveal' ? this.skip(gm, at.i + 1, now, now) : [];
   }
 
   /** Done with the results or a notice: back to idle. */
@@ -382,8 +409,8 @@ export class QuizSession {
     this.prune(now);
     const gm = this.mine();
     const none: QuizView = {
-      phase: 'idle', g: null, host: null, amHost: false, lv: 1, same: false, seed: 0, speaks: true, players: [], i: -1, n: 0, from: 0, until: Infinity,
-      playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], scores: {}, canNext: false, invite: null, notice: this.notice
+      phase: 'idle', g: null, host: null, amHost: false, local: false, lv: 1, same: false, seed: 0, speaks: true, players: [], i: -1, n: 0, from: 0,
+      until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], scores: {}, canNext: false, invite: null, notice: this.notice
     };
     if (!gm) {
       const o = this.offer(now);
@@ -402,7 +429,7 @@ export class QuizSession {
     });
     const mine = gm.answers.get(this.me);
     return {
-      ...none, phase: at.phase, g: gm.g, host: gm.host, amHost: gm.host === this.me, lv: gm.lv, same: gm.same, seed: gm.seed,
+      ...none, phase: at.phase, g: gm.g, host: gm.host, amHost: gm.host === this.me, local: !!gm.local, lv: gm.lv, same: gm.same, seed: gm.seed,
       speaks: !gm.same || gm.host === this.me, players, i: at.i, n: gm.n, from: at.from, until: at.until, playAt: at.playAt, playEnd: at.playEnd,
       limit: at.limit, out: at.out, answers: Array.from({ length: gm.n }, (_, i) => mine?.get(i) ?? null), scores,
       canNext: gm.host === this.me && at.phase === 'reveal'
@@ -412,11 +439,11 @@ export class QuizSession {
   // ---------- inside ----------
 
   private game(g: string, host: Who, seed: number, lv: QuizLv, same: boolean, now: number): Game {
+    const deck = this.deckOf(seed, lv);
     const gm: Game = {
-      g, host, seed, lv, same, deck: this.deckOf(seed, lv), n: 0, opened: now, joined: new Set([host]), starts: new Map(), inAt: now,
+      g, host, seed, lv, same, deck, n: questions(deck), opened: now, joined: new Set([host]), starts: new Map(), inAt: now,
       answers: new Map(), totals: new Map(), allIn: new Map()
     };
-    gm.n = Math.max(0, Math.min(QUIZ_QS, gm.deck.count));
     this.games.set(g, gm);
     return gm;
   }
@@ -424,7 +451,7 @@ export class QuizSession {
   private setup(gm: Game, seed: number, lv: QuizLv, same: boolean): void {
     if (seed !== gm.seed || lv !== gm.lv) {
       gm.deck = this.deckOf(seed, lv);
-      gm.n = Math.max(0, Math.min(QUIZ_QS, gm.deck.count));
+      gm.n = questions(gm.deck);
     }
     Object.assign(gm, { seed, lv, same });
   }
@@ -452,30 +479,69 @@ export class QuizSession {
   private prune(now: number): void {
     for (const gm of [...this.games.values()]) {
       if (gm.goAt === undefined) {
-        const gone = gm.host !== this.me && !this.here.has(gm.host) && now - (this.away.get(gm.host) ?? gm.opened) >= this.w.hostGrace;
-        if (gone) this.drop(gm, 'host-left');
+        if (this.hostGone(gm, now)) this.drop(gm, 'host-left');
         else if (now - gm.opened >= this.w.openTtl) this.drop(gm, 'stale');
       } else if (!gm.joined.has(this.me) && this.over(gm, now)) this.games.delete(gm.g);
     }
   }
 
-  /** Question i starts at `at` (a `go`'s 0, a `skip`'s i), heard at `now`: on time as it says; at most `late` late, at
-   *  once (from now); later, as it says, and the questions whose clip began before now are sat out. */
-  private anchor(gm: Game, i: number, at: number, now: number): void {
-    const late = now - at;
-    let start = at;
-    if (late > this.w.late) gm.inAt = Math.max(gm.inAt, now);
-    else if (late > 0) start = now;
-    gm.starts.set(i, start);
+  /** The host has really gone: it left, or its phone has been away past the grace (a moment's reconnect isn't). */
+  private hostGone(gm: Game, now: number): boolean {
+    if (gm.host === this.me) return false;
+    if (!gm.joined.has(gm.host)) return true;
+    return !this.here.has(gm.host) && now - (this.away.get(gm.host) ?? gm.opened) >= this.w.hostGrace;
+  }
+
+  /** Question i (n: the results) starts at `at` here; the later ones follow from it. */
+  private fix(gm: Game, i: number, at: number): void {
+    gm.starts.set(i, at);
     for (const j of [...gm.starts.keys()]) if (j > i) gm.starts.delete(j);
   }
 
-  /** The host's skip to question i at `at` (applied here, sent to the others) when it's sooner than the schedule. */
-  private skip(gm: Game, i: number, at: number): QuizOut[] {
-    if (i >= gm.n || at >= this.start(gm, i)) return [];
-    this.rebase(gm, i, at);
-    gm.lastSkip = { i, at };
-    return [{ kind: 'quiz', g: gm.g, op: 'skip', i, at }];
+  /** The host's position, heard at `now`: question i starts at `at` (even under way here, or behind where this phone
+   *  got to by itself). A question whose clip began more than `late` before it came is sat out. */
+  private adopt(gm: Game, i: number, at: number, now: number): void {
+    if (this.start(gm, i) === at && ![...gm.starts.keys()].some((j) => j > i)) return;
+    this.fix(gm, i, at);
+    if (i < gm.n && now - (at + this.w.lead) > this.w.late) gm.inAt = Math.max(gm.inAt, now);
+  }
+
+  /** Question i starts at `at` here when that's sooner than the schedule (the host's skip; a player's with the host
+   *  gone). */
+  private rebase(gm: Game, i: number, at: number): boolean {
+    if (at >= this.start(gm, i)) return false;
+    this.fix(gm, i, at);
+    return true;
+  }
+
+  /** The host's skip to question i (n: the results) at `at`: applied here and sent, when sooner than the schedule. */
+  private skip(gm: Game, i: number, at: number, now: number): QuizOut[] {
+    if (i > gm.n || !this.rebase(gm, i, at)) return [];
+    gm.pos = { i, at };
+    return gm.local ? [] : [this.beacon(gm, now)];
+  }
+
+  /** The host's position now: the latest start it fixed, or the question its schedule is in if that's later. */
+  private position(gm: Game, now: number): { i: number; at: number } {
+    const cur = Math.max(0, this.at(gm, now).i);
+    if (!gm.pos || cur > gm.pos.i) gm.pos = { i: cur, at: this.start(gm, cur) };
+    return gm.pos;
+  }
+
+  /** The host's position as a `skip` (noted as sent). */
+  private beacon(gm: Game, now: number): QuizOut {
+    const p = this.position(gm, now);
+    gm.beaconed = { ...p, t: now };
+    return { kind: 'quiz', g: gm.g, op: 'skip', i: p.i, at: p.at };
+  }
+
+  private opening(gm: Game): QuizOut {
+    return { kind: 'quiz', g: gm.g, op: 'open', seed: gm.seed, lv: gm.lv, same: gm.same };
+  }
+
+  /** Mine to the others (nothing of a lobby of mine not announced). */
+  private send(gm: Game, m: QuizOut): QuizOut[] {
+    return gm.local ? [] : [m];
   }
 
   /** A full question: lead-in, clip, answer window, reveal. */
@@ -483,92 +549,86 @@ export class QuizSession {
     return this.w.lead + Math.max(0, gm.deck.dur(i)) + this.w.answer + this.w.reveal;
   }
 
-  /** When question i starts on this phone (i = n: the end of the schedule, without the last reveal cut short). */
-  private start(gm: Game, i: number): number {
-    let s = gm.starts.get(0) ?? gm.goAt ?? Infinity;
-    for (let j = 1; j <= i; j++) s = gm.starts.get(j) ?? s + this.full(gm, j - 1);
+  /** Every question's start here, 0 to n (n: the results), never decreasing: a start fixed sooner than the schedule
+   *  had the ones before it cuts them short (none shown once it has come). */
+  private schedule(gm: Game): number[] {
+    const s: number[] = [gm.starts.get(0) ?? gm.goAt ?? Infinity];
+    for (let j = 1; j <= gm.n; j++) s.push(gm.starts.get(j) ?? s[j - 1] + this.full(gm, j - 1));
+    for (let j = gm.n - 1; j >= 0; j--) s[j] = Math.min(s[j], s[j + 1]);
     return s;
   }
 
-  /** Question i's times: its start, clip, limit, reveal and end (the next's start; the last's: its reveal's end). */
-  private times(gm: Game, i: number) {
-    const start = this.start(gm, i);
-    const playAt = start + this.w.lead;
-    const playEnd = playAt + Math.max(0, gm.deck.dur(i));
-    const limit = playEnd + this.w.answer;
-    const last = i === gm.n - 1;
-    const nextAt = last ? Infinity : this.start(gm, i + 1);
-    const reveal = Math.max(playEnd, Math.min(limit, gm.allIn.get(i) ?? Infinity, nextAt - this.w.reveal));
-    const end = last ? Math.min(gm.done ?? Infinity, reveal + this.w.reveal) : nextAt;
-    return { start, playAt, playEnd, limit, reveal, end };
+  private start(gm: Game, i: number): number {
+    return this.schedule(gm)[i];
   }
 
-  /** Where the game is at `now`. */
+  /** Where the game is at `now`: in the last question started (the end of the schedule started: the results). */
   private at(gm: Game, now: number): { phase: QuizPhase; i: number; from: number; until: number; playAt: number; playEnd: number; limit: number; out: boolean } {
     const base = { i: -1, from: gm.opened, until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false };
     if (gm.goAt === undefined || gm.n === 0) return { ...base, phase: gm.n === 0 && gm.goAt !== undefined ? 'results' : 'lobby' };
-    const s0 = this.start(gm, 0);
-    if (now < s0) return { ...base, phase: 'countdown', from: s0 - this.w.countdown, until: s0 };
-    let i = 0;
-    while (i < gm.n - 1 && this.start(gm, i + 1) <= now) i++;
-    const t = this.times(gm, i);
+    const s = this.schedule(gm);
+    if (now < s[0]) return { ...base, phase: 'countdown', from: s[0] - this.w.countdown, until: s[0] };
+    let i = gm.n;
+    while (i > 0 && s[i] > now) i--;
+    if (i === gm.n) return { ...base, phase: 'results', i, from: s[i] };
+    const t = this.times(gm, i, s);
     const q = { i, playAt: t.playAt, playEnd: t.playEnd, limit: t.limit, out: t.playAt < gm.inAt };
-    if (now >= t.end) return { ...base, phase: 'results', i: gm.n, from: t.end };
-    if (now < t.playAt) return { ...q, phase: 'lead', from: t.start, until: t.playAt };
+    if (now < t.playAt) return { ...q, phase: 'lead', from: s[i], until: t.playAt };
     if (now < t.playEnd) return { ...q, phase: 'play', from: t.playAt, until: t.playEnd };
     if (now < t.reveal) return { ...q, phase: 'answer', from: t.playEnd, until: t.reveal };
-    return { ...q, phase: 'reveal', from: t.reveal, until: t.end };
+    return { ...q, phase: 'reveal', from: t.reveal, until: s[i + 1] };
+  }
+
+  /** Question i's clip, limit and reveal (it ends as the next starts). */
+  private times(gm: Game, i: number, s = this.schedule(gm)) {
+    const playAt = s[i] + this.w.lead;
+    const playEnd = playAt + Math.max(0, gm.deck.dur(i));
+    const limit = playEnd + this.w.answer;
+    const reveal = Math.max(playEnd, Math.min(limit, gm.allIn.get(i) ?? Infinity, s[i + 1] - this.w.reveal));
+    return { playAt, playEnd, limit, reveal };
   }
 
   private over(gm: Game, now: number): boolean {
     return gm.goAt !== undefined && this.at(gm, now).phase === 'results';
   }
 
-  /** The current question's early reveal, when someone gone or leaving was the one not in. */
+  /** The current question's early reveal and moving on (someone gone or leaving was the one not in; the host gone). */
   private checkNow(gm: Game, now: number): QuizOut[] {
-    if (gm.goAt === undefined) return [];
-    const at = this.at(gm, now);
-    return at.i >= 0 && at.i < gm.n ? this.check(gm, at.i, now) : [];
+    return gm.goAt === undefined ? [] : this.check(gm, this.at(gm, now).i, now);
   }
 
   /** Everyone joined and here has answered question i: its reveal starts now (here), and the host skips the next
-   *  question to the reveal's end. */
+   *  question (after the last: the results) to the reveal's end. With the host really gone no skip will come: each
+   *  phone moves on by itself, nothing sent. */
   private check(gm: Game, i: number, now: number): QuizOut[] {
-    if (gm.allIn.has(i) || !gm.joined.has(this.me) || gm.goAt === undefined) return [];
-    const players = [...gm.joined].filter((w) => w === this.me || this.here.has(w));
-    if (!players.every((w) => gm.answers.get(w)?.has(i))) return [];
-    gm.allIn.set(i, now);
-    if (i >= gm.n - 1) return [];
+    if (!gm.joined.has(this.me) || gm.goAt === undefined || i < 0 || i >= gm.n) return [];
+    if (!gm.allIn.has(i)) {
+      const players = [...gm.joined].filter((w) => w === this.me || this.here.has(w));
+      if (!players.every((w) => gm.answers.get(w)?.has(i))) return [];
+      gm.allIn.set(i, now);
+    }
     const at = this.times(gm, i).reveal + this.w.reveal;
-    if (gm.host === this.me) return this.skip(gm, i + 1, at);
-    // the host gone (left, or its phone away): no skip will come, so each phone moves on from its own reveal's end
-    if (!gm.joined.has(gm.host) || !this.here.has(gm.host)) this.rebase(gm, i + 1, at);
+    if (gm.host === this.me) return this.skip(gm, i + 1, at, now);
+    if (this.hostGone(gm, now)) this.rebase(gm, i + 1, Math.max(at, now));
     return [];
   }
 
-  /** Question i starts at `at` here (sooner than the schedule), with nothing sent. */
-  private rebase(gm: Game, i: number, at: number): void {
-    if (at >= this.start(gm, i)) return;
-    gm.starts.set(i, at);
-    for (const j of [...gm.starts.keys()]) if (j > i) gm.starts.delete(j);
-  }
-
-  private myScore(gm: Game): number {
+  /** A player's answers' points counted here (おなじへや: no first-listen bonus, only the host's phone can replay). */
+  private sum(gm: Game, w: Who): number {
     let s = 0;
-    for (const [i, a] of gm.answers.get(this.me) ?? []) s += points(a.k === gm.deck.answer(i), a.rp);
+    for (const [i, a] of gm.answers.get(w) ?? []) s += points(a.k === gm.deck.answer(i), a.rp || gm.same);
     return s;
   }
 
   /** Mine counted here; another's their latest running total (else what I heard of theirs). */
   private scoreOf(gm: Game, w: Who): number {
-    if (w === this.me) return this.myScore(gm);
-    const t = gm.totals.get(w);
-    if (t) return t.s;
-    let s = 0;
-    for (const [i, a] of gm.answers.get(w) ?? []) s += points(a.k === gm.deck.answer(i), a.rp);
-    return s;
+    const t = w === this.me ? undefined : gm.totals.get(w);
+    return t ? t.s : this.sum(gm, w);
   }
 }
+
+/** A deck's questions (at most a game's). */
+const questions = (deck: QuizDeck): number => Math.max(0, Math.min(QUIZ_QS, deck.count));
 
 // ---------- the wiring (the UI's) ----------
 
@@ -579,11 +639,11 @@ export interface QuizLink {
   send(m: QuizOut): boolean;
   /** Quiz intents heard. */
   on(fn: (m: QuizIn) => void): () => void;
-  /** Who else is here (called at once). */
-  onHere(fn: (here: readonly Who[]) => void): () => void;
+  /** Who else is here (called at once; null while this phone's own socket is down). */
+  onHere(fn: (here: readonly Who[] | null) => void): () => void;
 }
 
-/** A Live as a QuizLink. @public (UI, phase 2) */
+/** A Live as a QuizLink. */
 export function quizLink(live: Pick<Live, 'send' | 'on' | 'onStatus' | 'serverNow'>): QuizLink {
   return {
     now: () => live.serverNow(),
@@ -595,15 +655,20 @@ export function quizLink(live: Pick<Live, 'send' | 'on' | 'onStatus' | 'serverNo
         const key = st.connected ? st.here.join() : '-';
         if (key === was) return;
         was = key;
-        fn(st.connected ? st.here : []);
+        fn(st.connected ? st.here : null);
       });
     }
   };
 }
 
 /** Wire a session to a link: what's heard and who's here go in (their outputs sent), `changed` after each. The UI's
- *  taps go through `act` (`act((s, now) => s.answer(k, rp, now))`). @public (UI, phase 2) */
-export function wireQuiz(session: QuizSession, link: QuizLink, changed: () => void): { act(f: (s: QuizSession, now: number) => QuizOut[] | void): void; stop(): void } {
+ *  taps go through `act` (`act((s, now) => s.answer(k, rp, now))`); its wake-ups call `tick` (the host's beacon: sent,
+ *  `changed` not called). */
+export function wireQuiz(
+  session: QuizSession,
+  link: QuizLink,
+  changed: () => void
+): { act(f: (s: QuizSession, now: number) => QuizOut[] | void): void; tick(): void; stop(): void } {
   const send = (out: QuizOut[] | void) => {
     for (const m of out ?? []) link.send(m);
     changed();
@@ -611,6 +676,9 @@ export function wireQuiz(session: QuizSession, link: QuizLink, changed: () => vo
   const offs = [link.on((m) => send(session.receive(m, link.now()))), link.onHere((here) => send(session.presence(here, link.now())))];
   return {
     act: (f) => send(f(session, link.now())),
+    tick: () => {
+      for (const m of session.tick(link.now())) link.send(m);
+    },
     stop: () => {
       for (const off of offs) off();
     }

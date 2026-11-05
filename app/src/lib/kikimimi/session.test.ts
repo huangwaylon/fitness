@@ -24,16 +24,20 @@ function room(whos: Who[] = ['A', 'B', 'G']) {
     }
   };
   const act = (w: Who, f: (x: QuizSession, now: number) => QuizOut[], drop: Who[] = []) => deliver(w, f(s[w], now), drop);
+  /** Every phone here ticks (the host's beacon; a player's moving on once the host has really gone). */
+  const tick = (drop: Who[] = []) => {
+    for (const w of whos) if (here.has(w)) deliver(w, s[w].tick(now), drop);
+  };
   /** Everyone's status: a phone away hears nobody (its socket's down), and what it sends goes nowhere. */
   const presence = () => {
     for (const w of whos) {
-      const out = s[w].presence(here.has(w) ? [...here].filter((x) => x !== w) : [], now);
+      const out = s[w].presence(here.has(w) ? [...here].filter((x) => x !== w) : null, now);
       if (here.has(w)) deliver(w, out);
     }
   };
   presence();
   return {
-    s, sent, here, act, deliver, presence,
+    s, sent, here, act, deliver, presence, tick,
     get now() {
       return now;
     },
@@ -50,25 +54,33 @@ function seq(n: number) {
   return () => (x = (x * 9301 + 0.49297) % 1);
 }
 
-/** Open (A hosts), B and G join, A starts: returns question 0's start. */
+/** Open (A hosts) and invite, B and G join, A starts: returns question 0's start. */
 function started(r: ReturnType<typeof room>, joiners: Who[] = ['B', 'G']): number {
   r.act('A', (x, n) => x.open({ lv: 1 }, n));
+  if (joiners.length) r.act('A', (x, n) => x.invite(n));
   for (const w of joiners) r.act(w, (x, n) => x.join(n));
   r.act('A', (x, n) => x.go(n));
   return r.now + WINDOWS.countdown;
 }
 
 describe('ききみみ session: the lobby', () => {
-  it('an open is an invite to the others; さんか joins; the host sees who joined; level and おなじへや change by a new open', () => {
+  it('a lobby is mine alone until みんなを さそう: then an open invites the others; さんか joins; the host sees who joined; level and おなじへや change by a new open', () => {
     const r = room();
     expect(r.view('B').phase).toBe('idle');
     r.act('A', (x, n) => x.open({ lv: 2, same: true }, n));
+    expect(r.sent).toEqual([]); // nothing on the wire: no invite yet
+    expect(r.view('A')).toMatchObject({ phase: 'lobby', amHost: true, local: true });
+    expect(r.view('B')).toMatchObject({ phase: 'idle', invite: null });
+    r.act('A', (x, n) => x.configure({ lv: 2 }, n));
+    expect(r.sent).toEqual([]);
+    r.act('A', (x, n) => x.invite(n));
+    expect(r.s.A.invite(r.now)).toEqual([]); // once
     const open = r.sent[0].m as QuizOut & { op: 'open' };
     expect(open).toMatchObject({ kind: 'quiz', op: 'open', lv: 2, same: true });
     expect(open.g).toMatch(/^[a-z0-9]{6}$/);
     expect(open.seed).toBeGreaterThanOrEqual(0);
     expect(open.seed).toBeLessThan(2 ** 32);
-    expect(r.view('A')).toMatchObject({ phase: 'lobby', amHost: true, g: open.g, players: [{ who: 'A' }], speaks: true, invite: null });
+    expect(r.view('A')).toMatchObject({ phase: 'lobby', amHost: true, local: false, g: open.g, players: [{ who: 'A' }], speaks: true, invite: null });
     expect(r.view('B')).toMatchObject({ phase: 'idle', invite: { g: open.g, host: 'A', lv: 2, same: true, started: false } });
     r.act('B', (x, n) => x.join(n));
     expect(r.view('B')).toMatchObject({ phase: 'lobby', amHost: false, speaks: false, invite: null });
@@ -83,7 +95,7 @@ describe('ききみみ session: the lobby', () => {
 
   it('the host leaving its lobby cancels it (end); a player leaving just goes', () => {
     const r = room();
-    r.act('A', (x, n) => x.open({ lv: 1 }, n));
+    r.act('A', (x, n) => [...x.open({ lv: 1 }, n), ...x.invite(n)]);
     r.act('B', (x, n) => x.join(n));
     r.act('G', (x, n) => x.join(n));
     r.act('G', (x, n) => x.leave(n));
@@ -99,7 +111,7 @@ describe('ききみみ session: the lobby', () => {
 
   it('a stale open: dropped 10 min after it came, or once its host has been away 15 s (a moment away keeps it)', () => {
     const r = room();
-    r.act('A', (x, n) => x.open({ lv: 1 }, n));
+    r.act('A', (x, n) => [...x.open({ lv: 1 }, n), ...x.invite(n)]);
     r.act('B', (x, n) => x.join(n));
     // A's phone gone a moment, then back: the lobby stays, and the host sends its open again
     r.here.delete('A');
@@ -120,7 +132,7 @@ describe('ききみみ session: the lobby', () => {
     expect(r.view('G').invite).toBeNull();
     // never started: 10 minutes
     const q = room();
-    q.act('A', (x, n) => x.open({ lv: 1 }, n));
+    q.act('A', (x, n) => [...x.open({ lv: 1 }, n), ...x.invite(n)]);
     q.act('B', (x, n) => x.join(n));
     q.now += WINDOWS.openTtl - 1;
     expect(q.view('B').phase).toBe('lobby');
@@ -205,24 +217,20 @@ describe('ききみみ session: the schedule', () => {
     for (const w of ['A', 'B', 'G'] as const) expect(r.view(w)).toMatchObject({ phase: 'lead', i: 2, from: r.now });
   });
 
-  it('the last question: everyone in, the results after its reveal; the host’s つぎへ, its results at once', () => {
+  it('the last question: everyone in, the host sends the end (its reveal’s end) and the results come on every phone', () => {
     const r = room();
     const s0 = started(r);
     const s7 = s0 + 7 * FULL;
     r.now = s7 + 4000;
     for (const w of ['A', 'B', 'G'] as const) r.act(w, (x, n) => x.answer(3, false, n));
-    expect(r.sent.at(-1)!.m.op).toBe('a'); // no skip past the end
-    r.now = s7 + 4000 + WINDOWS.reveal;
-    for (const w of ['A', 'B', 'G'] as const) expect(r.view(w)).toMatchObject({ phase: 'results', scores: { A: 130, B: 130, G: 130 } });
-    const q = room(['A', 'B']);
-    const t0 = started(q, ['B']);
-    q.now = t0 + 7 * FULL + 19_000; // the reveal
-    q.act('A', (x, n) => x.next(n));
-    expect(q.view('A').phase).toBe('results');
-    expect(q.view('B').phase).toBe('reveal');
+    expect(r.sent.at(-1)!.m).toMatchObject({ op: 'skip', i: 8, at: s7 + 4000 + WINDOWS.reveal }); // the end
+    r.now = s7 + 4000 + WINDOWS.reveal - 1;
+    expect(r.view('B').phase).toBe('reveal');
+    r.now += 1;
+    for (const w of ['A', 'B', 'G'] as const) expect(r.view(w)).toMatchObject({ phase: 'results', i: 8, scores: { A: 130, B: 130, G: 130 } });
   });
 
-  it('solo: one player, the same game', () => {
+  it('solo: one player, the same game, nothing on the wire', () => {
     const r = room(['A']);
     const s0 = started(r, []);
     let t = s0;
@@ -235,7 +243,8 @@ describe('ききみみ session: the schedule', () => {
     }
     r.now = t;
     expect(r.view('A')).toMatchObject({ phase: 'results', scores: { A: 7 * 130 + 100 }, players: [{ who: 'A', score: 1010 }] });
-    expect(r.sent.filter((x) => x.m.op === 'skip').map((x) => (x.m as { i: number }).i)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(r.sent).toEqual([]);
+    expect(r.s.A.tick(r.now - 1)).toEqual([]);
   });
 
   it('the fast windows (?kikimimi=fast) shorten the answer and the reveal', () => {
@@ -276,7 +285,7 @@ describe('ききみみ session: lost and late messages', () => {
     expect(r.view('G').players.find((p) => p.who === 'B')!.score).toBe(230);
   });
 
-  it('a lost `skip`: that phone falls back on the full schedule, and the next skip brings it back', () => {
+  it('a lost `skip`: till the host’s next beacon that phone has the full schedule, and the next skip brings it back', () => {
     const r = room();
     const s0 = started(r);
     r.now = s0 + 4000;
@@ -297,17 +306,17 @@ describe('ききみみ session: lost and late messages', () => {
     expect(r.view('B')).toMatchObject({ phase: 'lead', i: 2, from: r.now });
   });
 
-  it('a late go: ≤ 5 s late plays at once (from when it came, no 3-2-1); later, the question under way is sat out', () => {
+  it('a late go: the host’s times kept; its clip begun ≤ 5 s before, the question is played; later, sat out', () => {
     const r = room();
-    r.act('A', (x, n) => x.open({ lv: 1 }, n));
+    r.act('A', (x, n) => [...x.open({ lv: 1 }, n), ...x.invite(n)]);
     r.act('B', (x, n) => x.join(n));
     r.act('G', (x, n) => x.join(n));
     const go = r.s.A.go(r.now)[0] as QuizIn & { op: 'go' };
     const s0 = go.at;
-    // B hears it 3 s after question 0 began: question 0 starts for B as it hears it
+    // B hears it 3 s after question 0 began (its clip 1.5 s in): on the host's clock, played
     r.now = s0 + 3000;
     r.s.B.receive({ ...go, v: 3, who: 'A', t: r.now }, r.now);
-    expect(r.view('B')).toMatchObject({ phase: 'lead', i: 0, from: s0 + 3000, out: false });
+    expect(r.view('B')).toMatchObject({ phase: 'play', i: 0, from: s0 + 1500, out: false });
     // G hears it 10 s after: question 0's clip is long over, sat out; question 1 on the schedule
     r.now = s0 + 10_000;
     r.s.G.receive({ ...go, v: 3, who: 'A', t: r.now }, r.now);
@@ -315,11 +324,12 @@ describe('ききみみ session: lost and late messages', () => {
     expect(r.s.G.answer(0, false, r.now)).toEqual([]);
     r.now = s0 + FULL;
     expect(r.view('G')).toMatchObject({ phase: 'lead', i: 1, out: false });
-    // a sat-out player doesn't answer, so the early reveal waits for the time limit: B didn't either
-    expect(r.view('B').i).toBe(0);
+    // every phone on the host's clock
+    expect(r.view('B')).toMatchObject({ phase: 'lead', i: 1, from: s0 + FULL });
+    expect(r.view('A')).toMatchObject({ phase: 'lead', i: 1, from: s0 + FULL });
   });
 
-  it('a late skip: ≤ 5 s late starts at once, later on the schedule (the question under way sat out)', () => {
+  it('a late skip: the host’s times kept; its clip begun ≤ 5 s before, played; later, sat out', () => {
     const r = room();
     const s0 = started(r);
     r.now = s0 + 4000;
@@ -329,18 +339,17 @@ describe('ききみみ session: lost and late messages', () => {
     const skip = r.sent.at(-1)!.m as QuizOut & { op: 'skip' };
     r.now = skip.at + 4000;
     r.s.B.receive({ ...skip, v: 3, who: 'A', t: r.now }, r.now);
-    expect(r.view('B')).toMatchObject({ phase: 'lead', i: 1, from: skip.at + 4000, out: false });
-    r.now = skip.at + 6000;
+    expect(r.view('B')).toMatchObject({ phase: 'answer', i: 1, playAt: skip.at + 1500, out: false });
+    r.now = skip.at + 7000;
     r.s.G.receive({ ...skip, v: 3, who: 'A', t: r.now }, r.now);
-    expect(r.view('G')).toMatchObject({ phase: 'answer', i: 1, out: true });
+    expect(r.view('G')).toMatchObject({ phase: 'answer', i: 1, playAt: skip.at + 1500, out: true });
   });
 
-  it('the host gone mid-game: the game goes on to the results, each phone moving on when everyone left has answered', () => {
+  it('the host gone mid-game (its leave, or away past the grace): each phone moves on when everyone left has answered', () => {
     const r = room();
     const s0 = started(r);
     r.now = s0 + 5000;
-    r.here.delete('A');
-    r.presence();
+    r.act('A', (x, n) => x.leave(n));
     r.act('B', (x, n) => x.answer(0, false, n));
     const sent = r.sent.length;
     r.act('G', (x, n) => x.answer(0, true, n));
@@ -353,8 +362,28 @@ describe('ききみみ session: lost and late messages', () => {
     // nobody answers question 1: its full length
     r.now = s0 + 5000 + WINDOWS.reveal + FULL;
     expect(r.view('B')).toMatchObject({ phase: 'lead', i: 2 });
-    r.now = s0 + 8 * FULL;
-    expect(r.view('B')).toMatchObject({ phase: 'results', scores: { B: 130, G: 100 } });
+    // the last question, everyone left in: the results after its reveal, each phone by itself
+    r.now = s0 + 5000 + WINDOWS.reveal + 6 * FULL + 4000;
+    expect(r.view('B')).toMatchObject({ phase: 'answer', i: 7 });
+    r.act('B', (x, n) => x.answer(3, false, n));
+    r.act('G', (x, n) => x.answer(0, false, n));
+    r.now += WINDOWS.reveal;
+    expect(r.view('B')).toMatchObject({ phase: 'results', scores: { B: 260, G: 100 } });
+    expect(r.view('G')).toMatchObject({ phase: 'results' });
+    // the host's phone away: not gone till the grace is over (a lock, a tunnel), then the same
+    const p = room();
+    const u0 = started(p);
+    p.now = u0 + 4000;
+    p.here.delete('A');
+    p.presence();
+    p.act('B', (x, n) => x.answer(0, false, n));
+    p.act('G', (x, n) => x.answer(0, false, n));
+    p.now = u0 + 4000 + WINDOWS.hostGrace - 1;
+    p.tick();
+    expect(p.view('B')).toMatchObject({ phase: 'reveal', i: 0 });
+    p.now += 1;
+    p.tick();
+    expect(p.view('B')).toMatchObject({ phase: 'lead', i: 1, from: p.now });
     // a player's leave mid-game: the others don't wait for them
     const q = room();
     const t0 = started(q);
@@ -428,6 +457,126 @@ describe('ききみみ session: lost and late messages', () => {
   });
 });
 
+describe('ききみみ session: the host is the clock', () => {
+  it('one lost skip: the host’s beacon brings that phone back to the question under way (not 15 s behind for the rest)', () => {
+    const r = room();
+    const s0 = started(r);
+    r.now = s0 + 4000;
+    r.act('B', (x, n) => x.answer(0, false, n));
+    r.act('G', (x, n) => x.answer(0, false, n));
+    r.act('A', (x, n) => x.answer(0, false, n), ['G']); // the skip to question 1 (at s0 + 12 s) lost to G
+    r.now = s0 + 12_000 + 1000; // the others in question 1's lead-in; G still in question 0
+    expect(r.view('G')).toMatchObject({ i: 0 });
+    r.tick();
+    expect(r.view('G')).toMatchObject({ phase: 'lead', i: 1, from: s0 + 12_000, out: false });
+    expect(r.view('G').from).toBe(r.view('B').from);
+    // a beacon that changes nothing changes nothing
+    const before = r.view('B');
+    r.now += WINDOWS.beacon;
+    r.tick();
+    expect(r.view('B')).toMatchObject({ i: 1, playAt: before.playAt });
+  });
+
+  it('the host beacons its position when it changes and every few seconds while a game runs, never in the lobby or once over', () => {
+    const r = room(['A', 'B']);
+    r.act('A', (x, n) => x.open({ lv: 1 }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('B', (x, n) => x.join(n));
+    expect(r.s.A.tick(r.now)).toEqual([]); // the lobby
+    r.act('A', (x, n) => x.go(n));
+    const s0 = r.now + WINDOWS.countdown;
+    expect(r.s.A.tick(r.now)).toEqual([]); // just sent (the go)
+    r.now += WINDOWS.beacon;
+    expect(r.s.A.tick(r.now)).toEqual([{ kind: 'quiz', g: expect.any(String), op: 'skip', i: 0, at: s0 }]);
+    expect(r.s.B.tick(r.now)).toEqual([]); // a player never beacons
+    r.now = s0 + FULL; // question 1 on the schedule: a new position, sent at once
+    expect(r.s.A.tick(r.now)).toMatchObject([{ op: 'skip', i: 1, at: s0 + FULL }]);
+    expect(r.s.A.tick(r.now + 100)).toEqual([]);
+    r.now = s0 + 8 * FULL;
+    expect(r.s.A.tick(r.now)).toEqual([]); // over
+  });
+
+  it('back from a lock: the host’s position is adopted, the question it’s in shown (its clip long begun: sat out), never an old one', () => {
+    const r = room();
+    const s0 = started(r);
+    r.here.delete('G');
+    r.presence();
+    // A and B answer quickly: questions 0-3 cut short (13 s each); G's phone, asleep, has the full schedule
+    let t = s0;
+    for (let i = 0; i < 4; i++) {
+      r.now = t + 5000;
+      r.act('A', (x, n) => x.answer(0, false, n));
+      r.act('B', (x, n) => x.answer(0, false, n));
+      t = r.now + WINDOWS.reveal;
+    }
+    expect(r.view('A')).toMatchObject({ i: 3, phase: 'reveal' });
+    r.now = t + 10_000; // question 4 began 10 s ago
+    expect(r.view('A')).toMatchObject({ i: 4 });
+    r.here.add('G');
+    r.presence();
+    expect(r.view('G')).toMatchObject({ i: 4, out: true, from: r.view('A').from });
+    expect(r.s.G.answer(0, false, r.now)).toEqual([]);
+    r.now = t + FULL;
+    expect(r.view('G')).toMatchObject({ phase: 'lead', i: 5, out: false });
+  });
+
+  it('the host locked: the players wait for it (no racing ahead) and adopt its clock when it’s back; gone past the grace, they move on and go back to its position when it returns', () => {
+    const r = room();
+    const s0 = started(r);
+    r.now = s0 + 1000;
+    r.here.delete('A');
+    r.presence();
+    r.now = s0 + 4000;
+    r.act('B', (x, n) => x.answer(0, false, n));
+    r.act('G', (x, n) => x.answer(0, false, n));
+    expect(r.view('B')).toMatchObject({ phase: 'reveal', i: 0 });
+    r.now = s0 + 12_000;
+    r.tick();
+    expect(r.view('B')).toMatchObject({ phase: 'reveal', i: 0 }); // not on to question 1 without the host
+    // the host away past the grace: each phone moves on (nothing sent)
+    r.now = s0 + 1000 + WINDOWS.hostGrace;
+    const n = r.sent.length;
+    r.tick();
+    expect(r.sent.length).toBe(n);
+    expect(r.view('B')).toMatchObject({ phase: 'lead', i: 1, from: r.now });
+    expect(r.view('G')).toMatchObject({ phase: 'lead', i: 1, from: r.now });
+    // the host back (its phone kept the full schedule: still question 0): everyone on its clock again
+    r.now = s0 + 20_000;
+    r.here.add('A');
+    r.presence();
+    for (const w of ['A', 'B', 'G'] as const) expect(r.view(w)).toMatchObject({ i: 0, phase: 'reveal' });
+    r.now = s0 + FULL;
+    for (const w of ['A', 'B', 'G'] as const) expect(r.view(w)).toMatchObject({ i: 1, phase: 'lead', from: s0 + FULL });
+  });
+
+  it('my own phone’s short disconnect isn’t the host gone: no early reveal, no moving on', () => {
+    const r = room();
+    const s0 = started(r);
+    r.now = s0 + 4000;
+    r.act('B', (x, n) => x.answer(0, false, n));
+    r.now = s0 + 5000;
+    expect(r.s.B.presence(null, r.now)).toEqual([]); // B's socket down: who's here unknown, not gone
+    expect(r.view('B')).toMatchObject({ phase: 'answer', i: 0 });
+    r.now = s0 + 5000 + WINDOWS.hostGrace + 1000;
+    r.s.B.tick(r.now);
+    expect(r.view('B')).toMatchObject({ phase: 'reveal', i: 0 }); // the time limit, on the host's schedule
+    r.now = s0 + FULL;
+    expect(r.view('B')).toMatchObject({ phase: 'lead', i: 1, from: s0 + FULL });
+    // back: B's join again (the others may have missed what it sent)
+    expect(r.s.B.presence(['A', 'G'], r.now)).toEqual([{ kind: 'quiz', g: expect.any(String), op: 'join' }]);
+  });
+
+  it('the host’s つぎへ on the last question ends the game on every phone; everyone in, the end broadcast too', () => {
+    const q = room(['A', 'B']);
+    const t0 = started(q, ['B']);
+    q.now = t0 + 7 * FULL + 19_000; // the last reveal
+    q.act('A', (x, n) => x.next(n));
+    expect(q.sent.at(-1)!.m).toMatchObject({ op: 'skip', i: 8, at: q.now });
+    expect(q.view('A').phase).toBe('results');
+    expect(q.view('B').phase).toBe('results');
+  });
+});
+
 describe('ききみみ session: the wiring', () => {
   it('quizLink and wireQuiz: quiz intents and who’s here in, the outputs sent, the clock the relay’s', () => {
     const subs: ((m: Relayed) => void)[] = [];
@@ -456,6 +605,30 @@ describe('ききみみ session: the wiring', () => {
     st = { ...st, here: ['A'] };
     for (const f of statusSubs) f(st);
     expect(out).toHaveLength(2);
+    // my own socket down a moment: who's here unknown (nothing), then everyone back to me: my join again
+    st = { ...st, connected: false };
+    for (const f of statusSubs) f(st);
+    expect(out).toHaveLength(2);
+    st = { ...st, connected: true };
+    for (const f of statusSubs) f(st);
+    expect(out).toHaveLength(3);
+    // the host's beacon goes out through tick (a player's: nothing)
+    w.tick();
+    expect(out).toHaveLength(3);
     w.stop();
+  });
+
+  it('おなじへや: no first-listen bonus (only the host’s phone can replay), for everyone alike', () => {
+    const r = room(['A', 'B']);
+    r.act('A', (x, n) => x.open({ lv: 1, same: true }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('B', (x, n) => x.join(n));
+    r.act('A', (x, n) => x.go(n));
+    r.now += WINDOWS.countdown + 4000;
+    r.act('A', (x, n) => x.answer(0, false, n));
+    r.act('B', (x, n) => x.answer(0, false, n));
+    expect(r.sent.at(-2)!.m).toMatchObject({ op: 'a', s: 100 });
+    expect(r.view('A').scores).toEqual({ A: 100, B: 100 });
+    expect(r.view('B').scores).toEqual({ A: 100, B: 100 });
   });
 });

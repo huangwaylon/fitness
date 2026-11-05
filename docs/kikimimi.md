@@ -54,7 +54,7 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
   - `tts` is what `say` reads when it isn't `en` as written (unused so far).
   - Aim for **≥ 40 items per level in v1**, templates included. Grow towards 80 or more. v1 has 46 / 49 / 49 (144 items).
 - **`deck.ts`**: `deck(seed, lv): Item[]` is pure and deterministic. It follows the per-level mix, never puts the same type more than twice in a row, and shuffles the choices by the seed. Every phone builds the same deck from `{seed, lv}`, so no text goes on the wire. The returned items are copies: `choices` is the shuffled order and `answer` the right choice's index in it. Num items from the same template aren't drawn together while the pool allows.
-- **`score.ts`**: pure scoring: `points(right, replayed)`, `MAX_SCORE` (1040).
+- **`score.ts`**: pure scoring: `points(right, replayed)` (the most a game scores is the protocol's `QUIZ_MAX_S`, 1040; deck.test checks it and `QUIZ_QS` against the deck).
 - **`clips.ts`**: `clipUrl(id, slow?)`, the path under audio/ that `loadVoice` takes (`kikimimi/<id>.m4a?v=<hash>`), and `clipDur(id)`, from clips.json.
 
 ## Audio
@@ -90,42 +90,42 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
 
 | op | sender | fields | meaning |
 |---|---|---|---|
-| `open` | host | `g, seed, lv, same` | a lobby is open; the others see an invite banner (TTL: dropped if the host leaves or after 10 min) |
+| `open` | host | `g, seed, lv, same` | a lobby is open to the others (sent on みんなを さそう, never for a lobby kept alone); they see an invite banner (TTL: dropped if the host leaves or after 10 min) |
 | `join` / `leave` | anyone | `g` | joining or leaving the lobby or game |
 | `go` | host | `g, at` | the game starts at relay time `at` (now + 4 s) |
 | `a` | player | `g, i, k, rp, s` | the answer to question i: choice k, `rp` whether it replayed, `s` the sender's running total |
-| `skip` | host | `g, i, at` | question i starts at `at` (the early つぎへ, or everyone done) |
+| `skip` | host | `g, i, at` | the host's position: question i starts at `at` (i = 8: the results). Sent when it changes (everyone answered, つぎへ, the next question on the schedule) and every 3 s while a game runs (the beacon) |
 | `end` | host | `g` | the game is cancelled |
 
 Field validation:
 - `g`: `/^[a-z0-9]{4,8}$/`
 - `lv`: 1-3
-- `i`: 0-7
+- `i`: 0-7 (`a`), 0-8 (`skip`; 8 is the end, added 2026-11-05: the relay must be deployed for it)
 - `k`: 0-3
 - `s`: 0-1040
 - `seed`: a 32-bit unsigned int
 
-**The schedule is computed, not driven.**
+**The host is the clock** (2026-11-05, after a review reproduced drift with two sessions on one clock).
 - Every phone has the deck and each clip's `dur`. So from `go.at` it computes every question's start on its own: the lead (1.5 s) + `dur` + the answer window (15 s) + the reveal (8 s).
-- A `skip` re-bases the schedule from question i, and the host sends it when its own reveal ends early: everyone answered, or つぎへ.
-- Lost messages are harmless. A lost `skip` falls back to the full-length schedule, and a lost `a` is corrected by the next `s`. The game finishes even if the host leaves.
+- The host's `skip` is its position: question i starts at `at`. The host sends it as it changes (its reveal ending early: everyone answered, or つぎへ; the end after the last question, i = 8) and every 3 s while a game runs. Every other phone **adopts** it, even for a question already under way there or one it got past by itself (it goes back). Starts never decrease: a start fixed sooner than the schedule had cuts the questions before it short, and the phone shows the last question started, never an old one.
+- A lost `skip` costs at most one beacon (3 s), not the rest of the game. A lost `a` is corrected by the next `s`.
+- Players only move on by themselves when the host has really gone: its `leave`, or its presence gone for 15 s (`hostGrace`). Then each phone moves on once everyone left has answered (the next question at its reveal's end, nothing sent), and the game finishes. A host back after that is adopted again. A phone whose own socket is down ignores presence (who's here is unknown, nobody counts as gone).
 
-**Late messages.** A `go` or `skip` that arrives late plays at once if it's ≤ 5 s late; otherwise that question is skipped. Each phone's answer timing is local.
+**Late messages.** The host's times are kept as sent. A question whose clip began more than 5 s before its start was heard (a late `go`, a lock, a join mid-game) is sat out (`out`, not answerable); one heard sooner is played (its clip whole from then) on the host's answer window.
 
-**Re-sends.** The host re-sends `open`, and once the game has started `go` plus the last `skip`, when someone's presence comes back. So a phone back from a lock rejoins the schedule.
+**Re-sends.** When someone's presence comes back (and to everyone when this phone's own socket comes back) the host re-sends `open`, and once the game has started `go` plus its position; a player re-sends `join`. So a phone back from a lock rejoins the host's clock at once.
 
-**The client state machine.** `kikimimi/session.ts` is pure. It folds intents and the clock into `{phase: idle|lobby|countdown|lead|play|answer|reveal|results, players, answers, scores, i}`. It's unit-tested with fake time and covers: lost `a`/`skip`, the host gone mid-game, a stale `open`, a late `go`, and a phone rejoining. The Svelte UI only renders it.
-- Built: `new QuizSession({me, deckOf, windows?})`, `deckOf(seed, lv)` → `{count, dur(i) (ms), answer(i)}` (the deck's interface, not the bank). In: `receive(m, now)`, `presence(here, now)`. Taps: `open({lv, same}, now)`, `configure`, `join`, `leave` (the host's lobby: `end`; a game going goes on), `end`, `go`, `answer(k, rp, now)`, `next` (つぎへ), `close`. Each returns the intents to send; `now` is the relay's clock. `view(now)` gives `{phase, i, n, from, until, playAt, playEnd, limit, out, players, answers, scores, speaks, canNext, invite, notice}`. `quizLink(live)` and `wireQuiz(session, link, changed)` do the wiring. `WINDOWS` / `FAST_WINDOWS` (`?kikimimi=fast`, on every phone: the schedule is each phone's own).
-- As built: a lobby whose host has been away 15 s is dropped (a moment's reconnect keeps it). A late `go` or `skip` > 5 s keeps its times, and the questions whose clip began before it came are sat out (`out`). The same goes for a join mid-game. The host's skip on everyone answered is `at` = its reveal's start + 8 s, sent as the reveal starts. The last question has no skip: each phone's results come after its own reveal. Players re-send `join` when someone comes back too, so a phone back from a lock knows who to wait for.
-
-- As built (phase 2): with the host gone (its `leave`, or its phone away), each phone moves on by itself once everyone left has answered: the next question at its reveal's end, nothing sent.
+**The client state machine.** `kikimimi/session.ts` is pure. It folds intents and the clock into `{phase: idle|lobby|countdown|lead|play|answer|reveal|results, players, answers, scores, i}`. It's unit-tested with fake time and covers: lost `a`/`skip`, the beacon, the host gone (left, or away past the grace) and locked (no racing ahead, adopted when back), my own short disconnect, a stale `open`, a late `go`, a phone back from a lock (the host's question, sat out, never an old one), the end broadcast. The Svelte UI only renders it.
+- Built: `new QuizSession({me, deckOf, windows?})`, `deckOf(seed, lv)` → `{count, dur(i) (ms), answer(i)}` (the deck's interface, not the bank). In: `receive(m, now)`, `presence(here | null, now)`, `tick(now)` (the host's beacon; a player's moving on with the host gone). Taps: `open({lv, same}, now)` (on this phone only), `invite` (みんなを さそう: the `open`), `configure`, `join`, `leave` (the host's lobby: `end`; a game going goes on), `go`, `answer(k, rp, now)`, `next` (つぎへ), `close`. Each returns the intents to send; `now` is the relay's clock. `view(now)` gives `{phase, i, n, from, until, playAt, playEnd, limit, out, local, players, answers, scores, speaks, canNext, invite, notice}`. `quizLink(live)` (here: null while disconnected) and `wireQuiz(session, link, changed)` (`act`, `tick`) do the wiring; game.svelte.ts wakes at least every 3 s. `WINDOWS` / `FAST_WINDOWS` (`?kikimimi=fast`, on every phone: a 1.5 s reveal; the answer window 8 s, as a tab behind is throttled).
+- As built: a lobby whose host has been away 15 s is dropped (a moment's reconnect keeps it). The host's skip on everyone answered is `at` = its reveal's start + 8 s, sent as the reveal starts; after the last question it's i = 8, the results on every phone, as is つぎへ on the last reveal. Players re-send `join` when someone comes back too, so a phone back from a lock knows who to wait for. A lobby kept alone and its game send nothing at all.
+- Scoring in おなじへや: no first-listen bonus for anyone (only the host's phone can replay), so 100 a right answer.
 
 **The demo relay.** The banner and the sheet reuse the island's existing Live (`relay ?? demoRelay`, IslandScene). They never create a second one: a second local live sends its own hi/bye.
 
 ## UI
 
-- **Starting a game.** せってい → the row 「えいご ききとり」 [あそぶ] opens `components/kikimimi/KikimimiSheet.svelte`, a lazy chunk (`lazy(() => import(...))`, as Hud's sheets do).
-- **The lobby** has the level, 「おなじへや」, who's here and who joined, 🔊 test, and [はじめる].
+- **Starting a game.** せってい → the row 「えいご ききとり」 [あそぶ] (「さそわれています！」 under it while someone's invite is live: invite.svelte.ts `invitedNow()`) opens `components/kikimimi/KikimimiSheet.svelte`, a lazy chunk (`lazy(() => import(...))`, as Hud's sheets do; a chunk that fails to load leaves it closed and ends the voice session).
+- **The lobby** opens on this phone alone (nothing sent): the level, 🔊 「きこえる？」 (full width), and 「ひとりで はじめる」 (primary) over 「みんなを さそう」. さそう sends the `open`; then who's here and who joined, 「おなじ へやで あそぶ」 (its sub-label only when on), and 「はじめる（Nにん）」.
 - **The invite banner** is a tiny always-loaded listener on the shared Live. It shows 「ウェイが ききとりクイズに さそっています」 [さんか], through the existing toast/banner host.
 - **Mid-game,** a backdrop tap or Esc doesn't close the sheet. ✕ asks 「やめる？」.
 - **Look.** The paper theme with `ui/Sheet.svelte`, villager art via `villagerArt()`, critters, fruit and items via the art manifest.
@@ -138,7 +138,8 @@ Field validation:
   - `components/kikimimi/KikimimiHost.svelte` + `invite.svelte.ts` (always loaded): `quiz` {mounted, open, join}, `openQuiz(join?)` (calls `voiceSession(true)` in the tap), `listenQuiz(live, invited, ended)` keeping the last 10 min of quiz intents (`heardQuiz()`, replayed into the sheet's session as it opens), the banner via `toasts.show(…, {person, low, action: さんか})`, dropped when the host ends or leaves that lobby. Mounted in IslandScene with `relay ?? demoRelay`; `quiz.open` covers the island (its 3D engine paused).
   - `KikimimiSheet.svelte` (lazy, `Sheet` variant `pop`): from せってい a lobby of mine at once unless an invite is waiting (then the invite and 「じぶんで はじめる」); the level last played is kept (`DEVICE.kikimimiLv`). `Lobby.svelte`, `Play.svelte`, `Results.svelte`, `PlayerChip.svelte`; `game.svelte.ts` (the session wired to the Live, the deck adapter, clip scheduling and prefetch, cues `quiz-pop` / `quiz-right` / `quiz-wrong` / `quiz-end`).
   - `Sheet.svelte` gained `ondismiss` (false keeps it open: the game's 「やめる？」).
-  - おなじへや: 🔁 / 🐢 show only on the phone that speaks (the host's); the others hear the host's replays.
+  - おなじへや: 🔁 / 🐢 play only on the phone that speaks (the host's); the others show them disabled with 「ホストの スマホで ながれます」 (game.svelte.ts `listenOnly`) and hear the host's replays.
+  - Notices: 「ホストが ゲームを とじました」 (cancelled), 「ホストが いなくなりました」, 「じかんが たったので おわりました」 (stale).
   - e2e: `app/e2e/kikimimi.spec.ts` (solo, やめる？, two players from the banner to both results).
 
 ## Performance

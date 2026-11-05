@@ -1,8 +1,10 @@
 <script lang="ts">
   // ききみみ クイズ's lobby (docs/kikimimi.md "UI"): しずえ's welcome, the level (the host picks; the others see it),
-  // 「おなじへや」 (only the host's phone speaks), who's here and who joined, 🔊 「きこえる？」 (with 音量 0's hint), and the
-  // host's はじめる (the others wait for it).
+  // 🔊 「きこえる？」 (with 音量 0's hint). My lobby starts on this phone alone: 「ひとりで はじめる」, or 「みんなを さそう」
+  // (the invite goes out); once shared, who's here and who joined, 「おなじ へやで あそぶ」 (only the host's phone speaks)
+  // and the host's 「はじめる（Nにん）」 (the others wait for it).
   import type { Who } from '#lib/types.ts';
+  import { ORDER } from '#lib/kikimimi/session.ts';
   import type { Level } from '#lib/kikimimi/bank.ts';
   import type { QuizGame } from './game.svelte.ts';
   import Host from '../characters/Host.svelte';
@@ -16,7 +18,6 @@
   let { game, onlevel }: { game: QuizGame; onlevel: (lv: Level) => void } = $props();
   const v = $derived(game.view);
   const LEVELS: readonly Level[] = [1, 2, 3];
-  const ORDER: readonly Who[] = ['A', 'B', 'G'];
   /** Everyone in the lobby or on the island: joined first (A B G), then those here who haven't. */
   const people = $derived(ORDER.filter((w) => w === game.me || v.players.some((p) => p.who === w) || game.here.includes(w)));
   const joined = (w: Who) => v.players.some((p) => p.who === w);
@@ -59,36 +60,41 @@
     </div>
   </section>
 
-  {#if v.amHost}
-    <button type="button" class="row" role="switch" aria-checked={v.same} data-kiki-same data-sfx="self" onclick={same}>
-      <span class="rl">{t('kiki.same')}<small>{t(v.same ? 'kiki.sameOn' : 'kiki.sameOff')}</small></span>
-      <span class="sw" aria-hidden="true"><i></i></span>
-    </button>
-  {:else}
-    <p class="row static"><span class="rl">{t('kiki.same')}<small>{t(v.same ? 'kiki.sameOn' : 'kiki.sameOff')}</small></span>
-      <span class="flag">{v.same ? '✓' : '—'}</span></p>
+  {#if !v.local}
+    <section class="sec" aria-labelledby="kk-who" data-kiki-players>
+      <h3 id="kk-who" class="sec-label">{t('kiki.players')}</h3>
+      <div class="who card">
+        {#each people as w (w)}
+          <PlayerChip who={w} state={joined(w) ? 'answered' : 'away'} note={joined(w) ? null : t('kiki.notYet')} size={48} />
+        {/each}
+      </div>
+      {#if people.length === 1}<p class="hint">{t('kiki.soloOk')}</p>{/if}
+    </section>
+
+    {#if v.amHost}
+      <button type="button" class="row" role="switch" aria-checked={v.same} data-kiki-same data-sfx="self" onclick={same}>
+        <span class="rl">{t('kiki.same')}{#if v.same}<small>{t('kiki.sameOn')}</small>{/if}</span>
+        <span class="sw" aria-hidden="true"><i></i></span>
+      </button>
+    {:else}
+      <p class="row static"><span class="rl">{t('kiki.same')}{#if v.same}<small>{t('kiki.sameOn')}</small>{/if}</span>
+        <span class="flag">{v.same ? '✓' : '—'}</span></p>
+    {/if}
   {/if}
 
-  <section class="sec" aria-labelledby="kk-who">
-    <h3 id="kk-who" class="sec-label">{t('kiki.players')}</h3>
-    <div class="who card">
-      {#each people as w (w)}
-        <PlayerChip who={w} state={joined(w) ? 'answered' : 'away'} note={joined(w) ? null : t('kiki.notYet')} size={48} />
-      {/each}
-    </div>
-    {#if people.length === 1}<p class="hint">{t('kiki.soloOk')}</p>{/if}
-  </section>
-
   <div class="test">
-    <button type="button" class="btn small paper" data-kiki-test data-sfx="tick" onclick={test}>🔊 {t('kiki.test')}</button>
+    <button type="button" class="btn paper" data-kiki-test data-sfx="tick" onclick={test}>🔊 {t('kiki.test')}</button>
     {#if zero}<p class="hint warn" data-kiki-zero>{t('kiki.testZero')}</p>
     {:else if tested}<p class="hint">{t('kiki.testHint')}</p>{/if}
   </div>
 </div>
 
 <div class="level-acts">
-  {#if v.amHost}
-    <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => game.go()}>{t('kiki.start')}</button>
+  {#if v.amHost && v.local}
+    <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => game.go()}>{t('kiki.startSolo')}</button>
+    <button type="button" class="btn paper wide" data-kiki-invite-all data-sfx="open" onclick={() => game.invite()}>{t('kiki.inviteAll')}</button>
+  {:else if v.amHost}
+    <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => game.go()}>{t('kiki.startN', { n: v.players.length })}</button>
   {:else}
     <p class="wait" role="status">{t('kiki.waitHost', { name: hostName })}</p>
   {/if}
@@ -131,7 +137,9 @@
   .row[aria-checked='true'] .sw i { translate: 24px 0; }
   .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .who { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; padding: 14px 10px 12px; }
-  .test { display: grid; justify-items: start; gap: 6px; }
+  .test { display: grid; gap: 6px; }
+  .test .btn { width: 100%; }
+  .level-acts > .wide { flex: 1 1 100%; }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .hint.warn { color: var(--c-coral); }
   .wait { flex: 1; margin: 0; padding: 14px 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }

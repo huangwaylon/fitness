@@ -49,11 +49,11 @@
     }
   }
 
-  // Each opening: a game of its own (what the island heard handed to it), joined or opened; closing leaves it.
+  // Each opening: a game of its own (what the island heard handed to it), joined or opened (mine: on this phone till
+  // みんなを さそう); closing leaves it. Who I am may come a moment after the sheet (the week's first load).
+  const me = $derived(week.view?.viewer);
   $effect(() => {
-    if (!open) return;
-    const me = untrack(() => week.view?.viewer);
-    if (!me) return;
+    if (!open || !me) return;
     const g = new QuizGame({ live: quizLive(), me, fast: hook('kikimimi') === 'fast', heard: heardQuiz() });
     untrack(() => {
       if (join) g.join(join);
@@ -63,10 +63,13 @@
     if (hooksOn()) (window as unknown as { __kiki?: unknown }).__kiki = { view: () => g.view, right: () => g.items[g.view.i]?.answer ?? -1, items: () => g.items.map((it) => it.id) };
     return () => {
       g.dispose();
-      voiceSession(false);
       game = null;
       asking = false;
     };
+  });
+  // The voice session the opening tap began ends as the sheet closes (a game or not).
+  $effect(() => {
+    if (open) return () => voiceSession(false);
   });
 
   // Its open and close tunes (it mounts on the first tap, already open: that is an open too).
@@ -100,12 +103,16 @@
   function closed() {
     if (toasts.current) toasts.dismiss();
   }
-  /** Play again: the host opens a new lobby at the same level; another goes back to the invite (the host's next). */
+  /** Play again: the host opens a new lobby at the same level (the others invited again if they were); another goes
+   *  back to the invite (the host's next). */
   function again() {
     if (!game || !v) return;
-    const host = v.amHost, lv = v.lv;
+    const host = v.amHost, lv = v.lv, same = v.same, shared = !v.local;
     game.close();
-    if (host || !game.view.invite) game.open(lv as Level, v.same);
+    if (host || !game.view.invite) {
+      game.open(lv as Level, same);
+      if (host && shared) game.invite();
+    }
   }
   function startOwn() {
     game?.open(lastLv());

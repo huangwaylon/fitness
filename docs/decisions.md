@@ -973,3 +973,18 @@ otherwise never hear the lobby. The session's scoring is score.ts's (one `points
 phone moves on by itself once everyone left has answered (a reveal's length later), as no skip will come. Mid-game the
 sheet isn't closed by a backdrop tap or Esc (Sheet's `ondismiss`); ✕ asks first. Why: the user's game for several
 players, with nothing heavy before it's opened (docs/kikimimi.md "Performance").
+
+### ききみみ クイズ: the host is the clock; a lobby is mine alone till さそう (2026-11-05)
+A correctness review ran two sessions on one clock and found the computed schedule drifting: one lost `skip` left a
+phone ~15 s behind for the rest of the game, a phone back from a lock could show (and answer) an old question, players
+raced ahead of a locked host and never met it again (in おなじへや the clip and the screen disagreed), a phone's own
+blip counted as "host gone", and つぎへ on the last question ended only the host's phone. Now the host's `skip` is its
+position, sent as it changes and every 3 s while a game runs (a few dozen bytes, unstored), and every phone adopts it
+even for a question already under way or one it passed (starts never decrease; a question whose clip began over 5 s
+before is sat out). Players move on by themselves only when the host has really gone (its `leave`, or away 15 s), and
+presence is ignored while the phone's own socket is down. The end is `skip` with i = 8 (the protocol's bound relaxed, the
+relay redeployed with it) rather than a new op. Rejected: each phone voting on a shared position (no single clock to
+agree on, more traffic) and the host only re-sending on presence (a lost skip mid-game had no repair). Opening from
+せってい no longer invites everyone: the lobby is local (nothing sent, a solo game sends nothing at all) until
+「みんなを さそう」; in おなじへや the first-listen bonus is off for everyone, since only the host's phone can replay. Why:
+the review's repro and the game designer's P0s (an accidental invite to the whole island; an unfair +30).
