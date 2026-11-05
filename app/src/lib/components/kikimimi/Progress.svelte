@@ -25,7 +25,7 @@
   const path = $derived(pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' '));
   const delta = $derived(report.recent.delta === null ? null : Math.round(report.recent.delta * 100));
   const daysN = $derived(report.days.filter(Boolean).length);
-  const TYPES: readonly ItemType[] = ['pic', 'word', 'num', 'reply', 'mean'];
+  const TYPES: readonly ItemType[] = ['pic', 'word', 'num', 'reply', 'mean', 'gist', 'next'];
   const ACCENTS: readonly Accent[] = ['us', 'uk', 'au'];
   const levels = $derived(Object.keys(s.byLevel).map(Number).sort());
 </script>

@@ -88,8 +88,8 @@ export function tagsOf(it: Pick<Item, 'id' | 'tags'>): { features: readonly Feat
 export const tagged = (id: string): boolean => id in L13;
 
 /**
- * An item's sub-skills: the primary (its type: `pic` だいじな ところ, `num` すうじ, `mean` ほんね, `reply` うけこたえ or ほんね
- * when its pragmatic layer is unsaid; `word` its first feature's, にた しいん with none) and the others its features give
+ * An item's sub-skills: the primary (its type: `pic` だいじな ところ, `num` すうじ, `mean` ほんね, `reply` and `next` うけこたえ
+ * or ほんね when its pragmatic layer is unsaid, `gist` だいじな ところ or ほんね likewise; `word` its first feature's, にた しいん with none) and the others its features give
  * (counted at half weight by the stats).
  */
 export function skillsOf(it: Pick<Item, 'id' | 'type' | 'tags'>): { primary: Skill; also: Skill[] } {
@@ -98,10 +98,11 @@ export function skillsOf(it: Pick<Item, 'id' | 'type' | 'tags'>): { primary: Ski
     it.type === 'pic' ? 'detail'
     : it.type === 'num' ? 'num'
     : it.type === 'mean' ? 'indirect'
-    : it.type === 'reply' ? (NOT_SAID.has(pragmatic) ? 'indirect' : 'reply')
+    : it.type === 'reply' || it.type === 'next' ? (NOT_SAID.has(pragmatic) ? 'indirect' : 'reply')
+    : it.type === 'gist' ? (NOT_SAID.has(pragmatic) ? 'indirect' : 'detail')
     : features.length ? FEATURE_SKILL[features[0]] : 'cons';
   const also = [...new Set(features.map((f) => FEATURE_SKILL[f]))].filter((s) => s !== primary);
   // an unsaid layer on a non-reply item (a pic's understatement) is ほんね too
-  if (it.type !== 'reply' && it.type !== 'mean' && NOT_SAID.has(pragmatic) && !also.includes('indirect')) also.push('indirect');
+  if (it.type !== 'reply' && it.type !== 'mean' && it.type !== 'next' && it.type !== 'gist' && NOT_SAID.has(pragmatic) && !also.includes('indirect')) also.push('indirect');
   return { primary, also };
 }

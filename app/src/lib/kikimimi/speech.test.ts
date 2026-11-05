@@ -2,9 +2,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
-import { BANK, type CastId } from './bank.ts';
+import { BANK as ITEMS, clipItems, type CastId } from './bank.ts';
 import { CAST } from './bank4.ts';
 import { CAST_IDS, SLOTS, castOf, numberWords, ordinalWords, sayNumbers, spokenText } from './speech.ts';
+
+/** What's spoken, one per clip (a dialogue's lines each its own: bank.ts clipItems), as the audio script sees it. */
+const BANK = ITEMS.flatMap(clipItems);
 
 const CAST_JSON: Record<string, { accent: string; gender: string; source: string; description: string; seed: number; ref: { text: string; licence: string; origin: string; attribution?: string } }> =
   JSON.parse(readFileSync(join(import.meta.dirname, '../../../scripts/tts/cast.json'), 'utf8'));

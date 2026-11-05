@@ -385,6 +385,7 @@ export class QuizSession {
     const gm = this.mine();
     if (!gm || gm.host !== this.me || gm.goAt !== undefined) return [];
     const at = now + this.w.countdown;
+    gm.n = questions(gm.deck); // (a deck settled in the lobby: にがて れんしゅう's own, on this phone alone)
     gm.goAt = at;
     gm.starts.set(0, at);
     gm.pos = { i: 0, at };

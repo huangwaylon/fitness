@@ -1,23 +1,45 @@
 // ききみみ クイズ: a game's 8 questions from {seed, lv} (docs/kikimimi.md "Content"). Pure and deterministic: every
 // phone builds the same deck from the `open` intent's seed and level, so no text goes on the wire.
 import { mulberry32, shuffle } from '#lib/random.ts';
-import { BANK, type Item, type ItemType, type Level } from './bank.ts';
-import { CLIPS } from './clips.ts';
+import { BANK, DIALOGUE_TYPES, type Item, type ItemType, type Level } from './bank.ts';
+import { CLIPS, voiced } from './clips.ts';
 
 export const DECK_SIZE = 8;
 
-/** How many of each type a level's game has (8 in all). Level 5 has none yet (the protocol's room for the next). */
-export const MIX: Readonly<Partial<Record<Level, Readonly<Record<ItemType, number>>>>> = {
-  1: { pic: 3, word: 3, num: 2, reply: 0, mean: 0 },
-  2: { pic: 2, word: 2, num: 2, reply: 2, mean: 0 },
-  3: { pic: 1, word: 2, num: 2, reply: 3, mean: 0 },
-  4: { pic: 0, word: 2, num: 2, reply: 2, mean: 2 }
-};
+type Mix = Readonly<Partial<Record<ItemType, number>>>;
+type Mixes = Readonly<Partial<Record<Level, Mix>>>;
 
-/** The levels a phone offers (the lobby's): those with a mix and a clip for every item, so a level whose audio isn't
- *  made yet (level 4 till the neural cast, docs/curriculum.md §14) stays hidden and main stays shippable. */
-export const playable = (clips: Readonly<Record<string, unknown>>): Level[] =>
-  ([1, 2, 3, 4, 5] as const).filter((lv) => MIX[lv] && BANK.some((it) => it.lv === lv) && BANK.every((it) => it.lv !== lv || it.id in clips));
+/** How many of each type a level's game has (8 in all). Level 5 has none yet (the protocol's room for the next). */
+const BASE: Mixes = {
+  1: { pic: 3, word: 3, num: 2 },
+  2: { pic: 2, word: 2, num: 2, reply: 2 },
+  3: { pic: 1, word: 2, num: 2, reply: 3 },
+  4: { word: 2, num: 2, reply: 2, mean: 2 }
+};
+/** Level 4 once its dialogues have their clips (every line: dialogues.ts): one `gist` and one `next` a game. */
+const WITH_DIALOGUES: Mix = { word: 2, num: 1, reply: 1, mean: 2, gist: 1, next: 1 };
+
+/** The mixes for a set of clips: level 4 takes dialogues only once every dialogue item is voiced (they wait for the
+ *  neural pipeline apart from level 4's single lines, so either can land first). */
+export function mixes(clips: Readonly<Record<string, unknown>>): Mixes {
+  const ready = BANK.filter((it) => DIALOGUE_TYPES.includes(it.type)).every((it) => voiced(it, clips));
+  return ready ? { ...BASE, 4: WITH_DIALOGUES } : BASE;
+}
+export const MIX: Mixes = mixes(CLIPS);
+
+/** Whether a mix draws this item (its level's mix has its type: dialogues not yet voiced stay out, of にがて れんしゅう
+ *  too). */
+export const inMix = (it: Pick<Item, 'lv' | 'type'>, mix: Mixes = MIX): boolean => (mix[it.lv]?.[it.type] ?? 0) > 0;
+
+/** The levels a phone offers (the lobby's): those with a mix and every clip of the items it draws, so a level whose
+ *  audio isn't made yet (level 4 till the neural cast, docs/curriculum.md §14) stays hidden and main stays shippable. */
+export const playable = (clips: Readonly<Record<string, unknown>>): Level[] => {
+  const mix = mixes(clips);
+  return ([1, 2, 3, 4, 5] as const).filter((lv) => {
+    const items = BANK.filter((it) => it.lv === lv && inMix(it, mix));
+    return mix[lv] && items.length && items.every((it) => voiced(it, clips));
+  });
+};
 export const LEVELS: readonly Level[] = playable(CLIPS);
 
 /** Never more than this many of one type in a row. */
@@ -40,11 +62,11 @@ function pick(pool: readonly Item[], n: number, r: () => number): Item[] {
 
 /**
  * The deck for a game: the level's mix of types (MIX), items drawn by the seed, ordered so no type comes more than
- * twice in a row, and each item's choices shuffled by the seed. The items are copies: `choices` is the shuffled order
- * and `answer` the right choice's index in it.
+ * twice in a row, and each item's choices shuffled by the seed (`all`: the mixes, a test's own). The items are copies:
+ * `choices` is the shuffled order and `answer` the right choice's index in it.
  */
-export function deck(seed: number, lv: Level): Item[] {
-  const mix = MIX[lv];
+export function deck(seed: number, lv: Level, all: Mixes = MIX): Item[] {
+  const mix = all[lv];
   if (!mix) return []; // a level this bank hasn't (another phone's newer one): no questions
   const r = mulberry32((seed ^ Math.imul(lv, 0x9e3779b9)) >>> 0);
   const byType = new Map<ItemType, Item[]>();

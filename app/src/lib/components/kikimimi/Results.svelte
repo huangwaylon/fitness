@@ -5,7 +5,8 @@
   // moment: every sentence's English (its key words marked) and Japanese (a reply's on two lines), ▶︎ and 🐢 (levels
   // 1-2), ○ / × for my answer and on a miss what I picked, and 「まちがえた だけ」 to show only the missed.
   import type { QuizGame } from './game.svelte.ts';
-  import { PIC_JA, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
+  import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
+  import Transcript from './Transcript.svelte';
   import Bubble from '../ui/Bubble.svelte';
   import PlayerChip from './PlayerChip.svelte';
   import { week } from '#lib/store/week.svelte.ts';
@@ -105,8 +106,13 @@
         <li class="item card" data-review={r.i} data-ok={r.ok}>
           <span class="sym" class:ok={r.ok} aria-label={r.ok ? t('kiki.right') : t('kiki.wrong')}>{r.ok ? '○' : '×'}</span>
           <div class="txt">
-            <p class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
-            <p class="ja">{#each jaLines(r.it) as l, n (n)}<span>{l}</span>{/each}</p>
+            {#if isDialogue(r.it)}
+              <Transcript it={r.it} compact talk={game.talk?.i === -1 && game.talk.at === r.it.id ? game.talk.k : -1} />
+              {#if r.it.type === 'gist'}<p class="ans" lang="en">→ {r.it.choices[r.it.answer]}<span>{r.it.ja}</span></p>{/if}
+            {:else}
+              <p class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
+              <p class="ja">{#each jaLines(r.it) as l, n (n)}<span>{l}</span>{/each}</p>
+            {/if}
             {#if r.it.type === 'pic' || r.it.type === 'num'}<p class="ans">→ {choiceText(r.it, r.it.answer)}</p>{/if}
             {#if !r.ok}<p class="tags">{tripKeys(r.it.id).map((x) => tripLabel(x.key)).join(' · ')}</p>{/if}
             {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
@@ -169,7 +175,7 @@
   .en { margin: 0; font: 700 17px/1.4 var(--font-ui); }
   .en mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--c-yuzu) 85%, transparent) 55%); color: inherit; }
   .ja, .ans, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
-  .ja span { display: block; }
+  .ja span, .ans span { display: block; }
   .picked { color: var(--c-coral); }
   .hear { display: flex; gap: 6px; }
   .ib {

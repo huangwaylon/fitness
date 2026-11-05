@@ -9,13 +9,18 @@
 //   Every item is spoken by scripts/kikimimi-audio.ts (the neural cast, docs/kikimimi.md "Audio") into
 // static/audio/kikimimi/<id>.m4a; changing an item's `en`, `tts`, `voice` or speaker's voice regenerates its clip. Ids
 // are file names: keep them stable. The lobby offers a level only once every item of it has a clip (deck.ts LEVELS).
+// Level 4's dialogues (`gist`, `next`: dialogues.ts) are one clip per line and have a gate of their own (deck.ts mixes).
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { QuizLv } from '../contract/live-protocol.ts';
 import { BANK4 } from './bank4.ts';
+import { DIALOGUES } from './dialogues.ts';
 
 /** `mean` (level 4): what the speaker really means, from 3 English paraphrases (the literal reading, the opposite and
- *  a plausible wrong inference as distractors). */
-export type ItemType = 'pic' | 'word' | 'num' | 'reply' | 'mean';
+ *  a plausible wrong inference as distractors). `gist` and `next` (level 4, dialogues.ts): over a 2-4-line dialogue
+ *  between two villagers, what's going on or will happen, and the best next line. */
+export type ItemType = 'pic' | 'word' | 'num' | 'reply' | 'mean' | 'gist' | 'next';
+/** The dialogue types (an item with `lines`). */
+export const DIALOGUE_TYPES: readonly ItemType[] = ['gist', 'next'];
 /** The protocol's levels (1-5); the bank has 1-4 (5 is room for the next without a relay deploy). */
 export type Level = QuizLv;
 export type Accent = 'us' | 'uk' | 'au';
@@ -43,6 +48,16 @@ export interface Tags {
 export type Feature = 'contraction' | 'weak-form' | 'flap' | 'yod' | 'gonna' | 'wanna' | 'gotta' | 'lemme' | 'dunno' | 'kinda' |
   'can-cant' | 't-glottal' | 'teen-ty' | 'self-repair' | 'numbers' | 'ellipsis' | 'idiom' | 'intonation' |
   'l-r' | 'vowel' | 'b-v' | 'th' | 'sh-s' | 'f-h' | 'ending' | 'katakana' | 'contrast' | 'clock';
+
+/** A dialogue's line: who says it (their cast voice), what's shown and its Japanese, what's spoken when it differs. Each
+ *  line is its own clip (clips.ts clipIds: `<item>-<n>`). */
+export interface Line {
+  who: RosterId;
+  cast: CastId;
+  en: string;
+  ja: string;
+  tts?: string;
+}
 
 export interface Item {
   /** Stable: the clip's file name. */
@@ -75,6 +90,27 @@ export interface Item {
   cast?: CastId;
   /** Level 4: the scenario it was made from. */
   tags?: Tags;
+  /** A dialogue's lines (`gist`, `next`): played in turn, one clip each; `en` is them joined, `speaker` the first's. */
+  lines?: readonly Line[];
+}
+
+/** Whether an item is a dialogue (its lines are its clips). */
+export const isDialogue = (it: Pick<Item, 'lines'>): it is Item & { lines: readonly Line[] } => !!it.lines?.length;
+
+/** An item's clip ids: its own id, or a dialogue's one per line, `<id>-<n>` (n from 1). */
+export const clipIds = (it: Pick<Item, 'id' | 'lines'>): string[] => (isDialogue(it) ? it.lines.map((_, n) => `${it.id}-${n + 1}`) : [it.id]);
+
+/** What the audio script speaks, one item per clip (scripts/kikimimi-audio.ts maps it over the bank; here, not in clips.ts, so
+ *  the script needn't load clips.json): the item itself,
+ *  or each of a dialogue's lines as an item of its own (its clip id, its speaker and cast voice, its `en`, `tts` and
+ *  `ja`; no lines), so the script's voice and text rules (speech.ts castOf, spokenText) need no dialogue case. */
+export function clipItems(it: Item): Item[] {
+  if (!isDialogue(it)) return [it];
+  const ids = clipIds(it);
+  return it.lines.map((l, n): Item => {
+    const { lines: _, tts: __, ...rest } = it;
+    return { ...rest, id: ids[n], en: l.en, ja: l.ja, speaker: l.who, voice: l.cast.slice(0, 2) as Accent, cast: l.cast, ...(l.tts && { tts: l.tts }) };
+  });
 }
 
 /** Japanese names of the `pic` art (the choices' VoiceOver labels and the review list: the English isn't given away). */
@@ -425,5 +461,6 @@ export const BANK: readonly Item[] = [
   ...WORD.map(([lv, ...r]) => word(lv)(r)),
   ...NUM.flatMap(numItems),
   ...REPLY.map(([lv, ...r]) => make(lv, 'reply')(r)),
-  ...BANK4
+  ...BANK4,
+  ...DIALOGUES
 ];

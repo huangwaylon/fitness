@@ -1,10 +1,12 @@
 // ききみみ クイズ's game on this phone (docs/kikimimi.md "Sync", "Audio"): the session (kikimimi/session.ts, pure) wired to
 // the island's Live (or to nothing: solo without a relay), its view refreshed at each phase's end and at each message,
 // and the clips: each question's played at its start on the relay's clock (playVoice's relayAt), the next one fetched
-// meanwhile, the reveal's replay, and the player's 🔁 / 🐢. Loaded with the sheet only.
-import { BANK, type Item, type Level } from '#lib/kikimimi/bank.ts';
+// meanwhile, the reveal's replay, and the player's 🔁 / 🐢. A dialogue's lines are a sequence of clips (playSequence:
+// each line scheduled on the relay's clock after the one before, LINE_GAP apart; the session's schedule has their summed
+// length, clips.ts itemDur). Loaded with the sheet only.
+import { BANK, clipIds, isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
 import { deck } from '#lib/kikimimi/deck.ts';
-import { clipDur, clipUrl } from '#lib/kikimimi/clips.ts';
+import { LINE_GAP, clipDur, clipUrl, itemDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
 import { FAST_WINDOWS, QuizSession, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizView } from '#lib/kikimimi/session.ts';
 import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
@@ -36,11 +38,22 @@ function usePractice(seed: number, lv: Level, items: Item[]): void {
 
 const BY_ID = new Map(BANK.map((it) => [it.id, it]));
 
-/** The deck as the session sees it: how many, each clip's length (ms, clips.json) and its right choice. */
+/** The deck as the session sees it: how many, each item's length as played (ms, clips.json: a dialogue's lines and
+ *  the gaps) and its right choice. Read through at each call: にがて れんしゅう puts its own items in before the start
+ *  (usePractice), and the session counts them again at `go`. */
 const deckOf: DeckOf = (seed, lv) => {
-  const items = itemsOf(seed, lv);
-  return { count: items.length, dur: (i) => Math.round((clipDur(items[i]?.id ?? '') ?? 2) * 1000), answer: (i) => items[i]?.answer ?? -1 };
+  const at = (i: number) => itemsOf(seed, lv)[i];
+  return {
+    get count() {
+      return itemsOf(seed, lv).length;
+    },
+    dur: (i) => Math.round((at(i) ? (itemDur(at(i)) ?? 2) : 2) * 1000),
+    answer: (i) => at(i)?.answer ?? -1
+  };
 };
+
+/** A dialogue's lines' lengths (s, clips.json; 2 s while one has no clip). */
+const lineDurs = (it: Item): number[] => clipIds(it).map((id) => clipDur(id) ?? 2);
 
 /** No relay (a dev build without one): a game alone, on the device's clock. */
 const soloLink = (): QuizLink => ({ now: () => Date.now(), send: () => false, on: () => () => {}, onHere: (fn) => (fn([]), () => {}) });
@@ -62,6 +75,9 @@ export class QuizGame {
   replayed = $state<boolean[]>([]);
   /** A replay sounding (🔁, 🐢, the reveal's), on the relay's clock: the bubble's bar. */
   sounding = $state.raw<{ i: number; from: number; until: number; slow: boolean } | null>(null);
+  /** A dialogue's line being spoken (its speaker bobs): question i (-1: a review row), line k of item `at`; on every
+   *  phone, from the schedule (おなじへや's others hear the host's). */
+  talk = $state.raw<{ i: number; k: number; at: string } | null>(null);
   /** Who else has the island open (the lobby's list). */
   here = $state.raw<readonly Who[]>([]);
   /** おなじへや on a phone that doesn't speak: 🔁 / 🐢 shown disabled (「ホストの スマホで ながれます」), and no
@@ -93,6 +109,9 @@ export class QuizGame {
   #recordedG = '';
   readonly #record: ((row: ListenRow) => void) | undefined;
   #soundingTimer: ReturnType<typeof setTimeout> | undefined;
+  #talkTimers: ReturnType<typeof setTimeout>[] = [];
+  /** The first play whose lines' turns were planned (its question and start). */
+  #talked = '';
   #offHere: () => void;
 
   constructor(o: { live: Live | null; me: Who; fast?: boolean; heard?: readonly QuizIn[]; record?: (row: ListenRow) => void }) {
@@ -189,6 +208,7 @@ export class QuizGame {
     this.#gone = true;
     clearTimeout(this.#timer);
     clearTimeout(this.#soundingTimer);
+    this.#untalk();
     this.#wire.stop();
     this.#offHere();
     this.#stopAll();
@@ -231,13 +251,14 @@ export class QuizGame {
     // the lobby: the deck's clips fetched into the cache (8 × ~15 KB), the first one decoded
     if (v.g && (v.phase === 'lobby' || v.phase === 'countdown') && this.#fetched !== `${v.seed}:${v.lv}` && items.length) {
       this.#fetched = `${v.seed}:${v.lv}`;
-      for (const it of items) void fetch(audioUrl(clipUrl(it.id))).then((r) => (this.#gone ? null : r.arrayBuffer())).catch(() => {});
-      if (v.speaks) void loadVoice(clipUrl(items[0].id));
+      for (const id of items.flatMap((it) => clipIds(it))) void fetch(audioUrl(clipUrl(id))).then((r) => (this.#gone ? null : r.arrayBuffer())).catch(() => {});
+      if (v.speaks) void loadVoice(clipUrl(clipIds(items[0])[0]));
     }
     if (v.phase === 'idle' || v.phase === 'lobby' || v.phase === 'results') {
       if (this.#planned || this.#handles.size) this.#stopAll();
       this.#planned = null;
       this.#revealed = -1;
+      this.#untalk();
       return;
     }
     const it = items[v.i];
@@ -251,13 +272,15 @@ export class QuizGame {
       this.#planned?.h?.stop();
       const plan: { i: number; at: number; h: Handle | null } = { i: v.i, at: v.playAt, h: null };
       this.#planned = plan;
-      void loadVoice(clipUrl(it.id)).then((buf) => {
-        if (!buf || this.#gone || this.#planned !== plan) return;
-        plan.h = this.#track(playVoice(buf, { relayAt: plan.at, now: () => this.#link.now() }));
-      });
-      // the next question's clip decoded meanwhile (the engine keeps the last 4)
+      void this.#playSequence(it, plan.at, () => this.#planned === plan).then((h) => (plan.h = h));
+      // the next question's (first) clip decoded meanwhile (the engine keeps the last 4)
       const after = items[v.i + 1];
-      if (after) void loadVoice(clipUrl(after.id));
+      if (after) void loadVoice(clipUrl(clipIds(after)[0]));
+    }
+    // a dialogue's turns (the speaker who bobs), from the schedule, on every phone
+    if (first && !v.out && isDialogue(it) && this.#talked !== `${v.i}:${v.playAt}`) {
+      this.#talked = `${v.i}:${v.playAt}`;
+      this.#turns(it, v.i, v.playAt);
     }
     if (v.phase === 'reveal' && this.#revealed !== v.i) {
       this.#revealed = v.i;
@@ -300,19 +323,56 @@ export class QuizGame {
     } else if (v.phase === 'results' && v.g) cue('quiz-end');
   }
 
+  /**
+   * An item's clips played as one, from `at` on the relay's clock: a single clip, or a dialogue's lines each after the
+   * one before with LINE_GAP between (sequenceStarts: heard late, a line over is skipped and the one under way plays
+   * whole from now). Each line through playVoice; the buffers decoded first (all held here, whatever the engine's LRU
+   * drops). `at` null: now, once decoded. `still()`: false once it's no longer wanted (the plan moved); `before()` runs
+   * as it starts (a replay stops what sounds). One handle stops them all, with its start and length (ms).
+   */
+  async #playSequence(it: Item, at: number | null, still: () => boolean, o: { slow?: boolean; before?: () => void } = {}): Promise<(Handle & { from: number; ms: number }) | null> {
+    const bufs = await Promise.all(clipIds(it).map((id) => loadVoice(clipUrl(id, o.slow))));
+    if (bufs.some((b) => !b) || this.#gone || !still()) return null;
+    o.before?.();
+    const now = () => this.#link.now();
+    const from = at ?? now();
+    const starts = sequenceStarts(bufs.map((b) => b!.duration), from, now());
+    const hs = bufs.flatMap((b, k) => (starts[k] < 0 ? [] : [this.#track(playVoice(b!, { relayAt: starts[k], now }))])).filter((h) => !!h);
+    if (!hs.length) return null;
+    const last = starts.length - 1;
+    return { stop: () => hs.forEach((h) => h.stop()), from, ms: Math.max(0, starts[last] + bufs[last]!.duration * 1000 - from) };
+  }
+
+  /** A dialogue's turns from `from` (relay clock): `talk` follows its lines (clips.json lengths), then clears. */
+  #turns(it: Item, i: number, from: number): void {
+    this.#untalk();
+    const now = this.#link.now();
+    let t = from;
+    lineDurs(it).forEach((d, k) => {
+      const start = t, end = t + d * 1000;
+      t = end + LINE_GAP * 1000;
+      if (end <= now) return;
+      this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = { i, k, at: it.id }), Math.max(0, start - now)));
+    });
+    this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = null), Math.max(0, t - LINE_GAP * 1000 - now)));
+  }
+
+  #untalk(): void {
+    for (const h of this.#talkTimers) clearTimeout(h);
+    this.#talkTimers = [];
+    this.talk = null;
+  }
+
   async #playNow(it: Item, i: number, slow: boolean): Promise<void> {
     const at = this.view.i;
-    const buf = await loadVoice(clipUrl(it.id, slow));
     // gone, or the game moved on while it loaded (a replay of the last question over the next one's clip: dropped)
-    if (!buf || this.#gone || (i >= 0 && this.view.i !== at)) return;
-    this.#stopAll(true);
-    const h = this.#track(playVoice(buf));
+    const h = await this.#playSequence(it, null, () => i < 0 || this.view.i === at, { slow: slow && !isDialogue(it), before: () => this.#stopAll(true) });
     if (!h) return;
-    const from = this.#link.now();
-    const s = { i, from, until: from + buf.duration * 1000, slow };
+    if (isDialogue(it)) this.#turns(it, i, h.from);
+    const s = { i, from: h.from, until: h.from + h.ms, slow };
     this.sounding = s;
     clearTimeout(this.#soundingTimer);
-    this.#soundingTimer = setTimeout(() => this.sounding === s && (this.sounding = null), buf.duration * 1000 + 50);
+    this.#soundingTimer = setTimeout(() => this.sounding === s && (this.sounding = null), h.ms + 50);
   }
 
   #track(h: { stop(): void } | null): Handle | null {

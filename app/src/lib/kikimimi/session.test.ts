@@ -3,6 +3,9 @@ import { points } from './score.ts';
 import { FAST_WINDOWS, QuizSession, WINDOWS, quizLink, versus, wireQuiz, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
 import type { LiveStatus } from '../sync/live.ts';
 import type { Relayed, Who } from '../contract/live-protocol.ts';
+import { DIALOGUES } from './dialogues.ts';
+import { LINE_GAP, itemDur } from './clips.ts';
+import { clipIds } from './bank.ts';
 
 /** 8 questions, each clip 2 s, question i's right choice i % 4. */
 const DUR = 2000;
@@ -11,9 +14,9 @@ const FULL = WINDOWS.lead + DUR + WINDOWS.answer + WINDOWS.reveal; // 26.5 s
 const T0 = 1_793_527_000_000;
 
 /** Three phones on one fake relay: each one's outputs go to the others here (unless dropped). */
-function room(whos: Who[] = ['A', 'B', 'G']) {
+function room(whos: Who[] = ['A', 'B', 'G'], dk: QuizDeck = deck) {
   let now = T0;
-  const s = Object.fromEntries(whos.map((w, n) => [w, new QuizSession({ me: w, deckOf: () => deck, random: seq(n) })])) as Record<Who, QuizSession>;
+  const s = Object.fromEntries(whos.map((w, n) => [w, new QuizSession({ me: w, deckOf: () => dk, random: seq(n) })])) as Record<Who, QuizSession>;
   const here = new Set<Who>(whos);
   const sent: { from: Who; m: QuizOut }[] = [];
   /** Deliver `out` from `from` to everyone else here (drop: those who don't hear it). */
@@ -254,6 +257,26 @@ describe('ききみみ session: the schedule', () => {
     const s0 = T0 + WINDOWS.countdown;
     expect(s.view(s0 + 1500 + DUR + FAST_WINDOWS.answer)).toMatchObject({ phase: 'reveal' });
     expect(s.view(s0 + 1500 + DUR + FAST_WINDOWS.answer + FAST_WINDOWS.reveal)).toMatchObject({ phase: 'lead', i: 1 });
+  });
+});
+
+describe('ききみみ session: dialogues', () => {
+  it('a dialogue’s sequence: its clip length is its lines’ and the gaps (clips.ts itemDur), and the schedule runs on it alike on every phone', () => {
+    const d = DIALOGUES.find((it) => it.id === 'd4-train-cancelled')!;
+    const clips = Object.fromEntries(clipIds(d).map((id, n) => [id, { dur: 1.5 + n }])); // 1.5, 2.5, 3.5, 4.5 s
+    const seqMs = Math.round(itemDur(d, clips)! * 1000);
+    expect(seqMs).toBe(12_000 + 3 * LINE_GAP * 1000);
+    // question 1 the dialogue, the others 2 s
+    const dd: QuizDeck = { count: 8, dur: (i) => (i === 1 ? seqMs : DUR), answer: (i) => i % 4 };
+    const r = room(['A', 'B'], dd);
+    const s0 = started(r, ['B']);
+    const s1 = s0 + FULL;
+    for (const w of ['A', 'B'] as const) {
+      expect(r.s[w].view(s1 + 1)).toMatchObject({ phase: 'lead', i: 1, playAt: s1 + WINDOWS.lead, playEnd: s1 + WINDOWS.lead + seqMs });
+      expect(r.s[w].view(s1 + WINDOWS.lead + seqMs - 1).phase).toBe('play');
+      expect(r.s[w].view(s1 + WINDOWS.lead + seqMs).phase).toBe('answer');
+      expect(r.s[w].view(s1 + WINDOWS.lead + seqMs + WINDOWS.answer + WINDOWS.reveal)).toMatchObject({ phase: 'lead', i: 2 });
+    }
   });
 });
 

@@ -6,7 +6,7 @@ import { mulberry32, shuffle } from '#lib/random.ts';
 import type { LocalDate } from '../types.ts';
 import type { Accent, Feature, Item, Level } from './bank.ts';
 import { BANK } from './bank.ts';
-import { DECK_SIZE } from './deck.ts';
+import { DECK_SIZE, inMix } from './deck.ts';
 import { dayNum, type Answer, type Stats } from './progress.ts';
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
 
@@ -76,16 +76,16 @@ function fits(it: Item, focus: Focus): boolean {
 const DUE_MAX = 4;
 
 /**
- * にがて れんしゅう: DECK_SIZE items of the offered levels, never one twice: my due item cards first (lowest box, most
- * overdue; at most 4), then items carrying my weakest features (due ones first; another item than the one missed when
- * there is one, nearest my comfortable level), then my weakest skills' items, then any; all within `focus`. Choices
- * shuffled by `seed`, as deck() does; deterministic.
+ * にがて れんしゅう: DECK_SIZE items of the offered levels (the types their mix draws), never one twice: my due item cards
+ * first (lowest box, most overdue; at most 4), then items carrying my weakest features (due ones first; another item
+ * than the one missed when there is one, nearest my comfortable level), then my weakest skills' items, then any; all
+ * within `focus`. Choices shuffled by `seed`, as deck() does; deterministic.
  */
 export function practiceDeck(o: { answers: readonly Answer[]; stats: Stats; today: LocalDate; seed: number; levels: readonly Level[]; focus?: Focus }): Item[] {
   const r = mulberry32(o.seed >>> 0);
   const t = dayNum(o.today);
   const focus = o.focus ?? null;
-  const pool = shuffle(BANK.filter((it) => o.levels.includes(it.lv) && fits(it, focus)), r);
+  const pool = shuffle(BANK.filter((it) => o.levels.includes(it.lv) && inMix(it) && fits(it, focus)), r);
   const cards = cardsOf(o.answers);
   const lastSeen = new Map<string, number>();
   for (const a of o.answers) lastSeen.set(a.id, dayNum(a.d));
