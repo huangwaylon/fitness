@@ -6,7 +6,7 @@ import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts
 import { fnv1a } from '../random.ts';
 import { log } from './log.ts';
 import { takeWx } from './wx.ts';
-import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isLayoutIntent, isStored, parseClient, parseServer, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
+import { CLOSE, HB_PING, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isLayoutIntent, isStored, parseClient, parseServer, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
 export const LIVE_URL: string = (import.meta.env?.VITE_LIVE_URL as string | undefined) ?? 'wss://island-fund-relay.island-fund-relay.workers.dev/room';
@@ -152,6 +152,9 @@ const BACKOFF = { base: 1000, max: 60_000 } as const;
  *  PONG_WAIT_MS. */
 const PING_MS = [0, 2000] as const;
 const PING_EVERY_MS = 20_000;
+/** A room that answers the heartbeat (its welcome's `hb`) is asked with it, which never wakes it (live-protocol HB_PING);
+ *  the relay's clock is still the timed ping's, at most this long apart. */
+const CLOCK_EVERY_MS = 5 * 60_000;
 /** After a ping, nothing at all heard for this long: the socket is dead (closed here, and a new one opened at once). */
 const PONG_WAIT_MS = 10_000;
 /** A kept intent's ack is due within this long; overdue with nothing heard since it went, the socket is dead; with the
@@ -239,6 +242,9 @@ export function createLive(o: LiveOptions): Live {
   let pings: ReturnType<typeof setTimeout>[] = [];
   let pingEvery: ReturnType<typeof setTimeout> | null = null;
   const sent = new Set<number>(); // the c (Date.now() at sending) of each ping awaiting its pong
+  /** The room answers the heartbeat (its welcome said `hb`), and when the last timed ping went. */
+  let hbOk = false;
+  let lastTimed = 0;
   let samples: { rtt: number; off: number }[] = [];
   /** The relay's clock less the device's: the last one measured, kept across reloads, so what this phone stamps before
    *  the first welcome (a layout or a room op made offline, or in the second after opening) is on the relay's clock
@@ -322,21 +328,36 @@ export function createLive(o: LiveOptions): Live {
   const ping = () => {
     const c = Date.now();
     if (!raw({ v: LIVE_V, kind: 'ping', c })) return;
+    lastTimed = c;
     // a pong lost on a socket open for days: only the last few awaited
     for (const old of sent) if (sent.size >= 8) sent.delete(old);
     sent.add(c);
   };
 
-  /** Ask the socket whether it's alive: a ping, and nothing at all heard within PONG_WAIT_MS gives it up. */
+  /** Ask the socket whether it's alive: the heartbeat (the room left asleep) or, for the clock every CLOCK_EVERY_MS
+   *  and to a room without it, a ping; nothing at all heard within PONG_WAIT_MS gives it up. */
   const probe = () => {
     if (!st.connected) return;
     const at = Date.now();
-    ping();
+    if (hbOk && at - lastTimed < CLOCK_EVERY_MS) beat();
+    else ping();
     if (pongWait) return;
     pongWait = setTimeout(() => {
       pongWait = null;
       if (heardAt < at) stale();
     }, PONG_WAIT_MS);
+  };
+
+  /** The heartbeat: exactly HB_PING (the runtime answers only that very text). */
+  const beat = () => {
+    if (!ws || ws.readyState !== 1 || ws.bufferedAmount > MAX_BUFFERED) return;
+    try {
+      ws.send(HB_PING);
+      mx.sent++;
+      mx.sentBytes += HB_PING.length;
+    } catch {
+      /* closing: its close handler tidies up */
+    }
   };
 
   /** Quiet for PING_EVERY_MS (nothing heard): probe; looked at again PING_EVERY_MS after the last thing heard. */
@@ -451,6 +472,7 @@ export function createLive(o: LiveOptions): Live {
           log('ws.open', { ms: welcomedAt - madeAt, retries: fails });
           fails = 0;
           offset = m.t - Date.now(); // a first guess until the pings refine it
+          hbOk = m.hb === true;
           keepOffset();
           samples = [];
           setStatus({ connected: true, me: m.me, peer: m.peer, here: m.here ?? (m.peer ? [partnerOf(m.me)] : []), rec: m.rec, gone: m.gone ?? {} });
