@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, FOOD_CACHE, ROOM_CACHE, SHELL, foodFetch, isAudio, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { AUDIO_CACHE, FOOD_CACHE, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, type RoomIndex, isAudio, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -82,6 +82,54 @@ self.addEventListener('activate', (event) => {
     })()
   );
 });
+
+// The room cache's bound (caches.ts roomEvict): its index (each file's bytes and last use) in memory while the worker
+// runs, kept in the cache itself a moment after a change, with the files it lets go deleted then. Read back (and
+// matched to the cache's files: one put as the worker was stopped is counted then) the first time the room is asked
+// for. A cache from before the index is counted whole once, every file used now in the cache's order (the older
+// versions go at once; the rest only after ROOM_KEEP_MS unused).
+const ROOM_INDEX_URL = new URL(ROOM_INDEX, self.registration.scope).href;
+let roomIndex: Promise<RoomIndex> | null = null;
+const sizeOf = async (res: Response): Promise<number> => (await res.blob()).size;
+function roomIndexOf(cache: Cache): Promise<RoomIndex> {
+  return (roomIndex ??= (async () => {
+    let idx: RoomIndex = {};
+    try {
+      const kept = await cache.match(ROOM_INDEX_URL);
+      if (kept) idx = (await kept.json()) as RoomIndex;
+    } catch {
+      idx = {};
+    }
+    const urls = (await cache.keys()).map((k) => k.url).filter((u) => u !== ROOM_INDEX_URL);
+    const have = new Set(urls), now = Date.now();
+    for (const u of Object.keys(idx)) if (!have.has(u)) delete idx[u];
+    for (let i = 0; i < urls.length; i++) {
+      if (idx[urls[i]]) continue;
+      const res = await cache.match(urls[i]);
+      idx[urls[i]] = [res ? await sizeOf(res).catch(() => 0) : 0, now - urls.length + i];
+    }
+    return idx;
+  })().catch((e: unknown) => {
+    roomIndex = null;
+    throw e;
+  }));
+}
+let roomTidy: Promise<void> | null = null;
+/** A room file used (and its bytes, when it was just stored); the index kept and the files over the bound let go a
+ *  moment later (one write for a model's burst of files). */
+async function roomUsed(url: string, bytes?: number): Promise<void> {
+  const cache = await caches.open(ROOM_CACHE);
+  const idx = await roomIndexOf(cache);
+  idx[url] = [bytes ?? idx[url]?.[0] ?? 0, Date.now()];
+  return (roomTidy ??= new Promise((r) => setTimeout(r, 2000)).then(async () => {
+    roomTidy = null;
+    for (const u of roomEvict(idx, Date.now())) {
+      await cache.delete(u);
+      delete idx[u];
+    }
+    await cache.put(ROOM_INDEX_URL, new Response(JSON.stringify(idx), { headers: { 'content-type': 'application/json' } }));
+  }));
+}
 
 /** Ours first (a static file may change under the same path), then the previous generation's. */
 async function cached(req: Request | string): Promise<Response | undefined> {
@@ -174,9 +222,16 @@ self.addEventListener('fetch', (event) => {
         if (precached) return precached;
         const cache = await caches.open(font ? FONTS : room ? ROOM_CACHE : VILLAGERS);
         const hit = await cache.match(req);
-        if (hit) return hit;
+        if (hit) {
+          if (room) event.waitUntil(roomUsed(req.url).catch(() => {}));
+          return hit;
+        }
         const res = await fetch(req);
-        if (res.ok) await cache.put(req, res.clone());
+        if (res.ok) {
+          const sized = room ? res.clone() : null;
+          await cache.put(req, res.clone());
+          if (sized) event.waitUntil(sizeOf(sized).then((n) => roomUsed(req.url, n)).catch(() => {}));
+        }
         return res;
       })()
     );

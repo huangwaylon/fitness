@@ -886,6 +886,15 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   reload after its worker is in, an install that fails (no reload; the next resume installs and reloads), a slow one
   (20 s: no reload before it's in) and a static file that 404s (the install still whole).
 - **Notifications:** none (no `push` or `notificationclick` handler: [decisions](decisions.md#no-notifications-2026-11-02)).
+- **Room cache** (`island-room-v1`: the tent's, the museum's and the 3D island's models, the players' parts, the
+  villagers' models; cache-first on first use, outliving builds): bounded (`caches.ts roomEvict`). Its index (each
+  URL's bytes and last use) is kept in the cache itself (`__room-index`), 2 s after a change. A file's older versions
+  (the same path under another `?v=`, used less recently: a re-converted model, never asked for again) go at once;
+  then, while the rest is over 40 MB, the least recently used, never one used within 3 days (what the island, the tent
+  and the museum show now). It grew without end (the players' parts alone ~30 MB, the villagers' models ~29 MB): with
+  the shell and the record's IndexedDB under one origin, WebKit may evict all of it at once. A cache from before the
+  index is counted whole once (each file used now, in the cache's order); a file put as the worker was stopped is
+  counted the next time it starts.
 - **Runtime:** fonts, villager, critter, find and present art cache-first on first use; audio (`island-audio-v1`)
   cache-first and never revalidated: every audio URL carries its file's content hash (`?v=`, `lib/sound/manifest.ts`;
   `/audio/*` is served immutable, `scripts/headers.ts`), so a re-cut file is a new URL. An LRU per class keeps the 3
