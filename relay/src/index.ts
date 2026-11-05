@@ -77,7 +77,11 @@ export class IslandRoom extends DurableObject<Env> {
         hold: (h) => void ctx.storage.put(HELD, h),
         saveGone: (g) => void ctx.storage.put(GONE, g),
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
-        onHello: () => void this.weatherTick().catch((e) => console.warn('wx-fail', e))
+        onHello: (who, v, build) => {
+          // each phone's protocol version and build (docs/backend.md: when v1/v2 can go)
+          this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}) } }]);
+          void this.weatherTick().catch((e) => console.warn('wx-fail', e));
+        }
       }, ring, rec, held, gone, this.wx.wx);
     });
   }

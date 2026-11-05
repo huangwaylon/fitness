@@ -33,9 +33,13 @@
   import { queued } from '#lib/sync/queue.ts';
   import { frameRate } from '#lib/store/frameRate.svelte.ts';
   import { version } from '$app/env';
+  import { setLiveBuild } from '#lib/sync/live.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
+
+  // the live socket's hello says the build (the relay logs it: docs/ops/observability.md)
+  setLiveBuild(version);
 
   const route = $derived(routeOf(page.url.pathname));
   const onPair = $derived(route.startsWith('/pair'));

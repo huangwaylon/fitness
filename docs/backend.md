@@ -303,7 +303,9 @@ catches an offline phone up.
   routes, for an app build from before their removal: `relay/src/pushGone.ts`).
 - **Admission:** the Worker accepts `/room` upgrades only from `ALLOWED_ORIGINS` (`https://island-fund.pages.dev`) and
   `http://localhost|127.0.0.1`; everything else 403. The origin only keeps other sites out; the key is the auth.
-- **Auth:** the first message is `hello {key, since?}`. The room compares it in constant time with the secrets
+- **Auth:** the first message is `hello {key, since?, batch?, build?}` (`build`, 2026-11-05: the app's version, ≤ 24 of
+  `[0-9A-Za-z.-]`, else left out; the room logs each welcomed hello as `ws.hello {v, build}` with who:
+  [observability](ops/observability.md)). The room compares it in constant time with the secrets
   `KEY_A`/`KEY_B`/`KEY_C` (unset = nobody gets in) and answers `welcome {me, peer, t, rec?, here?, gone?}` (`rec`: the record's
   last change; `here`, v3: everyone else who is here; `gone`, v3: when the room saw each person's last socket close,
   for those not here and my own last one, kept in its storage: one gone quiet inside a room leaves it then,

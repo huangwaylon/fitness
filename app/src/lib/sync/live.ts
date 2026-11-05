@@ -44,6 +44,8 @@ export interface LiveOptions {
   url?: string;
   /** The person key (read at each connect). */
   key: () => string | null;
+  /** The app's version, said in the hello (the relay logs it: `ws.hello`). */
+  build?: () => string | undefined;
   WebSocket?: typeof WebSocket;
   env?: LiveEnv;
   /** The relay time of the last shared-world change this phone heard (the hello's `since`), kept across reloads: a
@@ -276,7 +278,8 @@ export function createLive(o: LiveOptions): Live {
       // a new Tokyo day since the page loaded: that day's whole world
       lastWorld = Math.max(lastWorld, dayStart(tokyoDay(Date.now() + offset)));
       // batch: the day in a few replay messages, mine included
-      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, batch: true });
+      const build = o.build?.();
+      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, batch: true, ...(build ? { build } : {}) });
     };
     s.onmessage = (e: MessageEvent) => {
       if (typeof e.data === 'string') {
@@ -460,11 +463,15 @@ function safe(f: () => void): void {
 }
 
 let shared: Live | null = null;
+let appBuild: string | undefined;
+
+/** The app's version for the hello (+layout.svelte, from `$app/env`). */
+export const setLiveBuild = (b: string): void => void (appBuild = b);
 
 /**
  * The phone's one relay socket, keyed by the paired key. Everything that talks to the relay shares it (the sync's push
  * now, the island's presence later): a second socket of the same person would replace this one (4002).
  */
 export function liveRelay(): Live {
-  return (shared ??= createLive({ key: getKey }));
+  return (shared ??= createLive({ key: getKey, build: () => appBuild }));
 }

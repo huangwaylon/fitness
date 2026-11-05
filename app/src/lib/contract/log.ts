@@ -56,6 +56,7 @@ export const LOG_EVENTS = {
   req: { src: 'r', f: { action: LOG_ACTIONS, st: LOG_STATUS, ms: 'n', inB: 'n', outB: 'n', n: 'n', rej: 'n', why: 't', m: 'n', sk: 'n', w: 'n', dup: 'n', exc: 't' } },
   "room.close": { src: 'r', f: { code: 'n', secs: 'n', socks: 'n' } },
   "room.full": { src: 'r', f: { socks: 'n' } },
+  "ws.hello": { src: 'r', f: { v: 'n', build: 't' } },
   "cron.wx": { src: 'r', f: { ok: 'b', fetched: 'b', fail: 't', hours: 'n', age: 'n', ms: 'n' } },
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },
   admin: { src: 'r', f: { op: 't', st: 't' } },

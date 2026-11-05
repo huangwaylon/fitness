@@ -121,6 +121,10 @@ function report(rows: Row[], since: number): void {
     ['long frames in 5 s', frames.length, ms(pct(frames.map((r) => Number(r.d.long)), 0.5)), ms(pct(frames.map((r) => Number(r.d.long)), 0.95))]
   ].filter((r) => Number(r[1]) > 0));
   table('Builds', ['build', 'sessions', 'events', 'errors', 'os'], countBy(rows.filter((r) => r.src === 'c'), (r) => r.build ?? '-').map(([b, xs]) => [b, new Set(xs.map((x) => x.sid)).size, xs.length, xs.filter((x) => x.lvl === 3).length, [...new Set(xs.map((x) => x.os ?? '-'))].join(' ')]));
+  // each person's newest live hello: the protocol version and build their phone speaks (docs/backend.md: dropping v1/v2)
+  const hellos = new Map<string, Row>();
+  for (const r of rows) if (r.ev === 'ws.hello' && r.role && (!hellos.has(r.role) || hellos.get(r.role)!.id < r.id)) hellos.set(r.role, r);
+  table('Live hellos (each person\'s newest)', ['who', 'v', 'build', 'when (Tokyo)'], [...hellos].sort().map(([w, r]) => [w, String(r.d.v), String(r.d.build ?? '-'), tokyo(r.ts)]));
   const use = new Map<string, number>();
   for (const r of rows) if (r.ev === 'use') for (const [k, v] of Object.entries(r.d)) use.set(k, (use.get(k) ?? 0) + Number(v));
   table('Usage (counters)', ['n', 'what'], [...use.entries()].sort((a, b) => b[1] - a[1]).slice(0, 20).map(([k, n]) => [n, k]));
