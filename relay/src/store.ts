@@ -69,6 +69,10 @@ const EVENTS_MAX = 50;
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
 export const LATE_MARGIN_MS = 10_000;
 const KEY_RE = /^[0-9a-fA-F]{32,128}$/;
+/** The admin ops taken once per signature (a replay within the window would restore, start an epoch or purge again). */
+const ADMIN_ONCE = ['restore', 'rev', 'logpurge'];
+/** How long their signatures are remembered: past the signature's own window (±5 minutes) on both sides. */
+const ADMIN_SEEN_MS = 10 * 60_000;
 const utf8 = new TextEncoder();
 const ISO_AT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
@@ -88,6 +92,8 @@ const SCHEMA = [
   'CREATE INDEX IF NOT EXISTS events_at ON events (at)',
   'CREATE INDEX IF NOT EXISTS events_type ON events (type)',
   'CREATE INDEX IF NOT EXISTS events_late ON events (late) WHERE late IS NOT NULL',
+  // the signatures of the admin's one-shot ops (ADMIN_ONCE) of the last ADMIN_SEEN_MS: a replay is refused
+  'CREATE TABLE IF NOT EXISTS admin_seen (sig TEXT PRIMARY KEY, t INTEGER NOT NULL) WITHOUT ROWID',
   // every event id ever accepted, also of events a later one replaced
   'CREATE TABLE IF NOT EXISTS ids (id TEXT PRIMARY KEY) WITHOUT ROWID',
   'CREATE TABLE IF NOT EXISTS uploads (seq INTEGER PRIMARY KEY, at TEXT NOT NULL, person TEXT NOT NULL, status TEXT NOT NULL, bytes INTEGER NOT NULL, notes TEXT NOT NULL, UNIQUE (at, person))',
@@ -229,7 +235,20 @@ export class StoreCore {
     } catch {
       return { status: 400, body: 'bad request' };
     }
-    return isRec(o) && typeof o.op === 'string' ? { op: o } : { status: 400, body: 'bad request' };
+    if (!isRec(o) || typeof o.op !== 'string') return { status: 400, body: 'bad request' };
+    if (ADMIN_ONCE.includes(o.op) && sig && !this.firstSeen(sig)) return { status: 409, body: 'replayed' };
+    return { op: o };
+  }
+
+  /** Whether a one-shot admin op's signature is new (and remember it; the old ones let go). */
+  private firstSeen(sig: string): boolean {
+    return this.io.tx(() => {
+      const now = this.io.now();
+      this.io.sql.exec('DELETE FROM admin_seen WHERE t < ?', now - ADMIN_SEEN_MS);
+      if (this.io.sql.exec('SELECT 1 AS x FROM admin_seen WHERE sig = ?', sig).toArray().length) return false;
+      this.io.sql.exec('INSERT INTO admin_seen (sig, t) VALUES (?, ?)', sig, now);
+      return true;
+    });
   }
 
   /** The admin `load {rows}`: rows that already have their `at` (a dump's), by the record's rules. */

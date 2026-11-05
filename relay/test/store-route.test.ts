@@ -114,6 +114,24 @@ describe('/admin', () => {
     expect(core.counts().metrics).toBe(1);
   });
 
+  it('a signed restore, rev or logpurge is taken once: its replay within the window is refused (409)', async () => {
+    // 2026-11-05 review: a logged signed request could be sent again for 5 minutes (a second restore, a second purge)
+    for (const op of ['rev', 'restore', 'logpurge']) {
+      const body = JSON.stringify({ op });
+      const s = await signed(body);
+      const again = new Request(s.url, { method: 'POST', body, headers: s.headers });
+      expect((await adminRoute(s, () => room, () => NOW)).status, op).toBe(200);
+      expect((await adminRoute(again, () => room, () => NOW)).status, op).toBe(409);
+      // signed anew (a ms later): its own
+      expect((await adminRoute(await signed(body, NOW + 1), () => room, () => NOW)).status, op).toBe(200);
+    }
+    // a read may be sent again
+    const body = '{"op":"counts"}';
+    const s = await signed(body);
+    expect((await adminRoute(s, () => room, () => NOW)).status).toBe(200);
+    expect((await adminRoute(new Request(s.url, { method: 'POST', body, headers: s.headers }), () => room, () => NOW)).status).toBe(200);
+  });
+
   it('a missing, malformed or stale signature is refused in the Worker: the record never hears it', async () => {
     let heard = 0;
     const counting: StoreRoom = { ...room, adminSigned: (...x) => (heard++, room.adminSigned(...x)) };
