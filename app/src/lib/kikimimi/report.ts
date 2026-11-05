@@ -6,7 +6,7 @@ import type { LocalDate, Who } from '../types.ts';
 import { BANK, type Item, type Level } from './bank.ts';
 import { answersOf, daysPlayed, gamesOf, recentOf, statsOf, together, trendOf, weekDays, type Game, type OtherGame, type Stats } from './progress.ts';
 import { cardsOf, dueOf, practiceDeck, type Focus } from './srs.ts';
-import { recommend, type Rec } from './advice.ts';
+import { feedback, recommend, type Feedback, type Rec } from './advice.ts';
 
 export interface Report {
   today: LocalDate;
@@ -44,4 +44,12 @@ export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, l
 /** にがて れんしゅう's deck for this report (a recommendation's focus, or every weak spot). */
 export function practiceFor(r: Report, levels: readonly Level[], seed: number, focus: Focus = null): Item[] {
   return practiceDeck({ answers: answersOf(r.games), stats: r.stats, today: r.today, seed, levels, focus });
+}
+
+/** Game `g`'s feedback: the stats without it and with it, and the advice after it (null: not in the report). */
+export function feedbackFor(r: Report, g: string): Feedback | null {
+  const game = r.games.find((x) => x.g === g);
+  if (!game) return null;
+  const before = statsOf(answersOf(r.games.filter((x) => x !== game)), r.today);
+  return feedback({ game, before, after: r.stats, recs: r.recs });
 }

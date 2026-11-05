@@ -106,7 +106,7 @@ export function feedback(o: { game: Game; before: Stats; after: Stats; recs: rea
 
 /** What tripped me in a game: each missed answer's features (`f:<feature>`), or its primary skill with none
  *  (`s:<skill>`), counted, most first, each with its skill. */
-export function tripsOf(game: Pick<Game, 'r'>): { key: string; skill: Skill; n: number }[] {
+export function tripsOf(game: { r: readonly Pick<Game['r'][number], 'id' | 'ok'>[] }): { key: string; skill: Skill; n: number }[] {
   const n = new Map<string, { key: string; skill: Skill; n: number }>();
   for (const a of game.r) {
     if (a.ok) continue;
@@ -120,7 +120,7 @@ export function tripsOf(game: Pick<Game, 'r'>): { key: string; skill: Skill; n: 
 }
 
 /** An item's trip keys (tripsOf): its features, else its primary skill. */
-function tripKeys(id: string): { key: string; skill: Skill }[] {
+export function tripKeys(id: string): { key: string; skill: Skill }[] {
   const it = itemOf(id);
   if (!it) return [];
   const fs = tagsOf(it).features;

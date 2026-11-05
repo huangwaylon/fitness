@@ -17,6 +17,7 @@
   import { currentReport, recordGame } from './progress.svelte.ts';
   import { practiceFor } from '#lib/kikimimi/report.ts';
   import type { Focus } from '#lib/kikimimi/srs.ts';
+  import type { Rec } from '#lib/kikimimi/advice.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
   import type { Level } from '#lib/kikimimi/bank.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
@@ -126,6 +127,22 @@
     if (!game || !r) return;
     game.practice(practiceFor(r, LEVELS, game.view.seed, focus));
   }
+  /** The lobby's tab: あそぶ or きろく (back to あそぶ whenever the lobby is left). */
+  let tab = $state<'play' | 'record'>('play');
+  $effect(() => {
+    if (v?.phase !== 'lobby') tab = 'play';
+  });
+  const report = $derived(tab === 'record' && v?.phase === 'lobby' ? currentReport() : null);
+  /** A recommendation's start: a level's game, or にがて れんしゅう narrowed to its skill or accent. */
+  function startRec(r: Rec) {
+    if (!game || !v?.amHost || !v.local) return;
+    tab = 'play';
+    if (r.kind === 'level') {
+      game.configure({ lv: r.lv });
+      keepLv(r.lv);
+      game.go();
+    } else practice(r.kind === 'skill' || r.kind === 'try' ? { skill: r.skill } : r.kind === 'accent' ? { accent: r.accent } : null);
+  }
   function startOwn() {
     game?.open(lastLv());
   }
@@ -156,7 +173,18 @@
           <button type="button" class="btn paper" data-kiki-own data-sfx="open" onclick={startOwn}>{t('kiki.openOwn')}</button>
         </div>
       {:else if v.phase === 'lobby'}
-        <Lobby {game} onlevel={keepLv} onpractice={() => practice()} />
+        <div class="tabs" role="tablist" aria-label={t('kiki.title')}>
+          {#each ['play', 'record'] as const as k (k)}
+            <button type="button" role="tab" class="tab" aria-selected={tab === k} data-kiki-tab={k} data-sfx={tab === k ? 'none' : 'tick'} onclick={() => (tab = k)}>{t(`kiki.tab.${k}`)}</button>
+          {/each}
+        </div>
+        {#if tab === 'record'}
+          {#await import('./Progress.svelte') then { default: Progress }}
+            {#if report}<Progress {report} guest={week.guest} canStart={v.amHost && v.local} onstart={startRec} />{/if}
+          {/await}
+        {:else}
+          <Lobby {game} onlevel={keepLv} onpractice={() => practice()} />
+        {/if}
       {:else if v.phase === 'countdown'}
         <div class="center count" data-kiki-count={count}>
           <Host pose="stand" size={110} />
@@ -230,6 +258,13 @@
   .ask .row { display: flex; gap: 10px; width: 100%; }
   .ask .row .btn { flex: 1; }
   .resume { cursor: pointer; }
+  /* the lobby's two tabs: a segmented pair (the chosen one yuzu, as a level's) */
+  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: var(--r-pill); background: var(--ctl-off); }
+  .tab {
+    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill); background: transparent;
+    color: var(--text-soft); font: 700 var(--fs-body)/1 var(--font-ui);
+  }
+  .tab[aria-selected='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: var(--sh-ctl); }
   .resume b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .resume small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   @media (prefers-reduced-motion: reduce) { .num { animation: none; } }

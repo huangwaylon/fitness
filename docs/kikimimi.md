@@ -176,7 +176,7 @@ The user asked for "a mechanic for progress and improvement and learning trackin
   | `indirect` | ほんね | type `mean`; a `reply` whose pragmatic layer is indirect, a refusal, a hedge, understatement, sarcasm, humour, attitude or deception; `intonation` |
 
 - **Tags.** Level 4 has `tags` already (bank4.ts). Levels 1-3 get a compact table keyed by item id (`kikimimi/tags.ts`: features plus, for replies, a pragmatic layer), with the same vocabulary plus S0's segmentals (curriculum §3): `l-r`, `vowel`, `b-v`, `th`, `sh-s`, `f-h`, `ending`, `katakana`, `contrast`, `clock`. bank.test checks every item has tags and every tag maps to a skill.
-- **Mastery** of a skill (0-1): a recency-weighted (half-life 21 days), smoothed (prior 0.7 × 2 answers) mean of answer scores, **first listen right = 1, right after a replay = 0.6, wrong = 0** (curriculum §10: a first-play correct answer counts more). Shown only past 3 answers' weight (else 「まだ データが すくない」).
+- **Mastery** of a skill (0-1): a recency-weighted (half-life 21 days), smoothed (prior 0.7 × 2 answers) mean of answer scores, **first listen right = 1, right after a replay = 0.6, wrong = 0** (curriculum §10: a first-play correct answer counts more). Shown from 3 answers (else 「まだ」).
 - **Also per type, per accent (US / UK / AU) and per level:** plain accuracy and first-listen accuracy, with counts.
 - **The level estimate:** an Elo-style ability θ (curriculum §10: updates go to the learner, never the items). An item's difficulty is its level (L1 −1, L2 0, L3 1, L4 2) plus a type offset (pic −0.3, reply +0.2, mean +0.4); after each answer θ += K × (score − expected), K 0.3 for the first 24 answers, then 0.15. The **comfortable level** is where θ predicts 80 % (θ − ln 4, on the levels' scale), capped at the hardest level played + 0.5, and shown as the curriculum's stage: below L2.5 S0 はまべ ★ (A2-B1), below L3.5 S1 かわ ★★ (B1+), below L4.5 S2 もり ★★★ (B2), else S3 やま ★★★★ (B2+). 「はかっている とちゅう」 until 16 answers.
 - **Trend:** first-listen accuracy per game, the last 12 games (a sparkline), and the last 5 games' against the 5 before.
@@ -209,9 +209,10 @@ The user asked for "a mechanic for progress and improvement and learning trackin
 
 ### UI
 
-- **The lobby** gets two tabs: 「あそぶ」 (as now, plus 「にがて れんしゅう」 under ひとりで はじめる once there's a game recorded) and 「きろく」.
+- **The lobby** gets two tabs: 「あそぶ」 (as now, plus 「🎯 にがて れんしゅう」 under ひとりで はじめる; with no games yet it draws a spread of skills) and 「きろく」.
 - **「きろく」** (`Progress.svelte`, its own lazy chunk inside the sheet's): the stage and its bar (the comfortable level within it); the sub-skills as horizontal bars (mastery, one hue, the value at the bar's end, unmeasured shown as an outline: bars, not a radar, read better at 8 skills on a phone); the trend sparkline with its last value; the week's 7 dots; the recommendations with their start buttons; the couple summary 「ふたりで こんしゅう: いっしょに Nかい · Mふん」 (games both played, by `g`, and both people's minutes; never a level); details (per type, per accent, per level) folded under 「くわしく」. The guest sees its own きろく and no couple summary.
 - **Results:** しずえ's line from the feedback, 「つまずいた ところ」 chips above the review list.
+- **Built (2026-11-05):** `Progress.svelte` (lazy, `{#await import()}` in the sheet), `progress.svelte.ts` (`recordGame`, the phone's copy, `currentReport`, `recWords`), the tabs in KikimimiSheet; Results' feedback card (`data-kiki-feedback`, `data-trip`) and each missed row's feature labels. The bars and sparkline follow the dataviz rules (one series, one hue, labelled directly, no legend; bars 12 px with a 4 px data end; the line 2 px with an 8 px end dot): day `#3E9E4C` (passes the palette checks on the cream card), night `--c-leaf` (≥ 3:1 on the navy card), the track a light step of the same leaf. Demo rows: 5 of A's games, 2 with B (store/demo/rows.ts). e2e: `e2e/kikimimi-progress.spec.ts` (`KIKI_SHOTS=1` writes /tmp/kikimimi-shots/progress/).
 - **The paper style** of the sheets (cards, lips, the AC palette: leaf for the bars, coral only for "missed"); tap targets ≥ 44 px; reduced motion honoured.
 
 ### Tests

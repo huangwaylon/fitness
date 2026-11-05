@@ -92,7 +92,7 @@
 <div class="level-acts">
   {#if v.amHost && v.local}
     <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => game.go()}>{t('kiki.startSolo')}</button>
-    <button type="button" class="btn paper" data-kiki-practice data-sfx="confirm" onclick={onpractice}>🎯 {t('kiki.practice')}</button>
+    <button type="button" class="btn paper wide" data-kiki-practice data-sfx="confirm" onclick={onpractice}>🎯 {t('kiki.practice')}</button>
     <button type="button" class="btn paper wide" data-kiki-invite-all data-sfx="open" onclick={() => game.invite()}>{t('kiki.inviteAll')}</button>
   {:else if v.amHost}
     <button type="button" class="btn" data-kiki-start data-sfx="confirm" onclick={() => game.go()}>{t('kiki.startN', { n: v.players.length })}</button>
