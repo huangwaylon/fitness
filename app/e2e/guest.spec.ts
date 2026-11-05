@@ -57,7 +57,7 @@ test('the guest’s phone: the members’ activity and ベル, never a からだ
   // せってい (the HUD menu's): the villager, the sound and the language; no もようがえ or つうしん (and no つうち: gone for everyone)
   await fromMenu(page, 'settings');
   await expect(panel.locator('[data-guest-note]')).toBeVisible();
-  await expect(panel.locator('[data-push="villager"]')).toBeVisible();
+  await expect(panel.locator('[data-push="look"]')).toBeVisible();
   await expect(panel.locator('[data-decor-start]')).toHaveCount(0);
   await expect(panel.locator('#sec-notify, #sec-sync')).toHaveCount(0);
   await expect(panel.locator('#sec-lang')).toBeVisible();

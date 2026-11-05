@@ -1,16 +1,17 @@
 <script lang="ts">
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
-  // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: むらびと (かえる → the
-  // picker), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
+  // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: すがた (the look's portrait,
+  // the よびな; かえる → the すがた level, whose foot pushes the villager picker over it), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
   // the guest's) and もようがえ (one row: はじめる; not
   // the guest's).
-  // The picker pushes a level with ‹; ✕, the backdrop and Esc close it, and the next opening starts at
-  // its top.
+  // Each pushes a level with ‹ (the picker over すがた, which stays mounted under it: its edits are sent as it's left);
+  // ✕, the backdrop and Esc close it, and the next opening starts at its top.
   import { tick } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
-  import Avatar from '../characters/Avatar.svelte';
   import VillagerPicker from './VillagerPicker.svelte';
+  import LookPage from '../look/LookPage.svelte';
+  import LookPortrait from '../look/LookPortrait.svelte';
   import SoundSection from './SoundSection.svelte';
   import LangSection from './LangSection.svelte';
   import SeasonSection from './SeasonSection.svelte';
@@ -22,6 +23,8 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
+  import { lookOf, mySavedLooks } from '#lib/store/look.ts';
+  import { DEFAULT_LOOKS, playerOf, sameLook } from '#lib/contract/look.ts';
   import { ROSTER } from '#lib/villagers/roster.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -29,8 +32,9 @@
 
   let { open = $bindable() }: { open: boolean } = $props();
 
-  /** A level of its own: the villager picker. */
-  let push = $state<'villager' | null>(null);
+  /** The levels pushed: すがた, and the villager picker over it. */
+  let stack = $state<('look' | 'villager')[]>([]);
+  const push = $derived(stack.at(-1) ?? null);
   let body: HTMLElement | undefined = $state();
   let savedTop = 0;
 
@@ -38,13 +42,22 @@
   const title = $derived(push ? t(`panel.${push}`) : t('island.settings'));
   /** This phone's villager (the guest's own on the guest's phone). */
   const me = $derived(view ? mine(view) : null);
-  const myLook = $derived(me ? resolveLook({ villager: me.villager, person: me.who }).id : null);
+  const myVillager = $derived(me ? resolveLook({ villager: me.villager, person: me.who }).id : null);
+  /** The look worn (the row's portrait) and what it's called: the roster villager's name, いつもの, or the コーデ's. */
+  const worn = $derived(me ? lookOf(me.who) : null);
+  const wornName = $derived.by(() => {
+    if (!me || !worn) return null;
+    if (worn.kind === 'villager') return myVillager ? (i18n.locale === 'ja' ? ROSTER[myVillager].nameJa : ROSTER[myVillager].nameEn) : null;
+    const p = playerOf(worn, me.who);
+    if (me.who !== 'G' && sameLook(p, DEFAULT_LOOKS[me.who])) return t('look.usual');
+    return mySavedLooks().find((s) => sameLook(s.look, p))?.name ?? null;
+  });
   /** The guest's phone (docs/design.md "The guest"): no もようがえ, no つうしん. */
   const guest = $derived(isGuest(view));
 
-  async function go(to: 'villager') {
-    savedTop = body?.scrollTop ?? 0;
-    push = to;
+  async function go(to: 'look' | 'villager') {
+    if (!stack.length) savedTop = body?.scrollTop ?? 0;
+    stack = [...stack, to];
     await tick();
     body?.scrollTo({ top: 0 });
   }
@@ -53,16 +66,16 @@
   async function back() {
     cue('back');
     const from = push;
-    push = null;
+    stack = stack.slice(0, -1);
     await tick();
-    body?.scrollTo({ top: savedTop });
+    if (!stack.length) body?.scrollTo({ top: savedTop });
     document.querySelector<HTMLElement>(`[data-push="${from}"]`)?.focus({ preventScroll: true });
   }
 
   /** Closing ends its banner too, and the next open starts at the top. */
   function closed() {
     if (toasts.current) toasts.dismiss();
-    push = null;
+    stack = [];
   }
 
   // Its open and close tunes (it mounts on the first tap, already open: that is an open too).
@@ -77,16 +90,19 @@
 
 <Sheet bind:open label={t('island.settings')} variant="pop" onclose={closed}>
   <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (open = false)} sfx="self" /></div>
-  <div class="panel-body" class:fill={push === 'villager'} data-settings bind:this={body}>
+  <div class="panel-body" class:fill={push !== null} data-settings bind:this={body}>
+    {#if stack.includes('look') && view}
+      <div class="page" hidden={push !== 'look'}><LookPage {view} onvillager={() => go('villager')} /></div>
+    {/if}
     {#if push === 'villager' && view}
       <div class="page"><VillagerPicker {view} /></div>
-    {:else if view && me}
-      <section class="sec" aria-labelledby="sec-villager">
-        <h2 id="sec-villager" class="sec-label">{t('panel.villager')}</h2>
-        <div class="prow static me">
-          <Avatar person={me.who} villager={me.villager} size={48} />
-          <span class="prl">{me.villagerName}{#if myLook}<small>{i18n.locale === 'ja' ? ROSTER[myLook].nameJa : ROSTER[myLook].nameEn}</small>{/if}</span>
-          <button type="button" class="btn small paper" data-push="villager" data-sfx="page" onclick={() => go('villager')}>{t('panel.change')}</button>
+    {:else if !push && view && me && worn}
+      <section class="sec" aria-labelledby="sec-look">
+        <h2 id="sec-look" class="sec-label">{t('panel.look')}</h2>
+        <div class="prow static me" data-look-row={worn.kind}>
+          <LookPortrait who={me.who} look={worn} size={48} />
+          <span class="prl">{me.villagerName}{#if wornName}<small data-look-worn>{wornName}</small>{/if}</span>
+          <button type="button" class="btn small paper" data-push="look" data-sfx="page" onclick={() => go('look')}>{t('panel.change')}</button>
         </div>
         {#if guest}<p class="guest" data-guest-note>{t('guest.note')}</p>{/if}
       </section>
@@ -124,6 +140,8 @@
   /* the villager picker pins its head and scrolls its own grid (to the bottom edge): the body holds still */
   .panel-body.fill { overflow: hidden; padding-bottom: 0; }
   .panel-body.fill > .page { flex: 1; min-height: 0; }
+  /* すがた under the picker: kept (its edits are sent as it's left), not shown */
+  .page[hidden] { display: none; }
   /* a pushed level slides in from the right (design.md "Navigation") */
   .page { display: flex; flex-direction: column; gap: 14px; animation: slide 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes slide { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }

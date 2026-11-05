@@ -596,15 +596,15 @@ test('navigation: every sheet and level has a visible ✕ (top-right) or ‹ (to
   const wallet = sheet(page).locator('[data-wallet]');
   await expect(bar.locator('.close')).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
-  // せってい (the HUD menu's): ✕ at its top, ‹ + ✕ in the picker
+  // せってい (the HUD menu's): ✕ at its top, ‹ + ✕ in すがた
   await openSettings(page);
   await expect(bar.locator('.close')).toBeVisible();
   await expect(bar.locator('.back')).toHaveCount(0);
-  await sheet(page).locator('[data-push=villager]').click();
+  await sheet(page).locator('[data-push=look]').click();
   await expect(bar.locator('.back')).toBeVisible();
   expect((await box(bar.locator('.back'))).width).toBeGreaterThanOrEqual(44);
   await bar.locator('.back').click();
-  await expect(sheet(page).locator('[data-push=villager]')).toBeVisible();
+  await expect(sheet(page).locator('[data-push=look]')).toBeVisible();
   // the ledger: a day, then ‹ back to the wallet, where it was scrolled to
   await toPanel(page);
   await sheet(page).locator('button.dbtn').first().scrollIntoViewIfNeeded();
@@ -678,7 +678,7 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
 test('focus ring: none on せってい’s かえる after tap → ‹ back; the keyboard still shows it', async ({ page, browserName }) => {
   await page.goto('?demo');
   await fromMenu(page, 'settings', 'tap');
-  const tile = sheet(page).locator('[data-push=villager]');
+  const tile = sheet(page).locator('[data-push=look]');
   await tile.tap();
   await sheet(page).locator('.titlebar .back').tap();
   await expect(tile).toBeFocused();
@@ -696,9 +696,10 @@ test('focus ring: none on せってい’s かえる after tap → ‹ back; the
   expect(await ring()).not.toBe('none');
 });
 
-test('むらびと: the panel shows my villager; かえる → とくべつ (たぬきち, しずえ…) first, then むらびと; picking しずえ makes たぬきち the host', async ({ page }) => {
+test('むらびと: すがた → むらびとの すがたに する → とくべつ (たぬきち, しずえ…) first, then むらびと; picking しずえ makes たぬきち the host', async ({ page }) => {
   await page.goto('?demo');
   await openSettings(page);
+  await sheet(page).locator('[data-push=look]').click();
   await sheet(page).locator('[data-push=villager]').click();
   const dlg = sheet(page);
   await expect(dlg.locator('.grp')).toHaveText(['とくべつ', 'むらびと']);
