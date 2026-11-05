@@ -199,7 +199,9 @@ export const wishesFor = (d: WorldDay, date: string): number => Object.values(d.
 /** One person's day as the sheet keeps it (one row per person and day: the `island` event): enough to put the island
  *  back together when both apps were closed and the relay has nothing (another day's watering, a long outage). */
 export interface DayRow {
-  /** Ids this person picked up, dug, pulled or opened. */
+  /** Ids this person picked up, dug, pulled or opened; and the critters they caught (or that got away from them), each
+   *  as its claim `catch:<id>` (2026-11-05: a catch made offline is on the record too, so the partner can't catch it
+   *  again; an older phone reads it as a pick of an id nothing has). */
   taken: string[];
   /** What they put down that day: [id, what, x, z]. */
   puts: [string, string, number, number][];
@@ -213,10 +215,13 @@ export interface DayRow {
   at?: Pt;
 }
 
+/** A row's id at most this long (contract/island.ts): a catch's claim longer than that stays off the row. */
+const ROW_ID_MAX = 32;
+
 /** `who`'s part of the day, as the sheet row keeps it. */
 export function rowOf(d: WorldDay, who: Who): DayRow {
   const row: DayRow = {
-    taken: Object.entries(d.claims).filter(([k, c]) => k.startsWith('pick:') && c.who === who).map(([k]) => k.slice(5)).slice(-ISLAND_MAX.taken),
+    taken: Object.entries(d.claims).flatMap(([k, c]) => (c.who !== who ? [] : k.startsWith('pick:') ? [k.slice(5)] : k.length <= ROW_ID_MAX ? [k] : [])).slice(-ISLAND_MAX.taken),
     // things that stay (presents; a bug out of a bush is gone in seconds)
     puts: Object.values(d.puts).filter((p) => p.who === who && !p.what.startsWith('bug:')).map((p) => [p.id, p.what, p.at[0], p.at[1]] as DayRow['puts'][number]).slice(-ISLAND_MAX.puts),
     shakes: d.shakes.filter((s) => s.who === who && s.drop !== 'none').map((s) => [s.tree, s.drop, s.t] as DayRow['shakes'][number]).slice(-ISLAND_MAX.shakes),
@@ -231,7 +236,10 @@ export function rowOf(d: WorldDay, who: Who): DayRow {
 /** A sheet row folded back into the day as `who`'s events at `t` (the row's time: its claims count as theirs then, so
  *  the relay's own events, earlier, keep their order). Fills in what the relay didn't bring; never undoes it. */
 export function applyRow(d: WorldDay, row: DayRow, who: Who, t: number, me: Who | null): void {
-  for (const id of row.taken) if (!taken(d, id)) d.claims[`pick:${id}`] = { who, t, what: 'row' };
+  for (const id of row.taken) {
+    const k = id.startsWith('catch:') ? id : `pick:${id}`;
+    if (!d.claims[k]) d.claims[k] = { who, t, what: 'row' };
+  }
   for (const [id, what, x, z] of row.puts) apply(d, { kind: 'put', id, what, at: [x, z], who, t }, me);
   for (const [tree, drop, ts] of row.shakes) apply(d, { kind: 'shake', tree, drop, at: ts, who, t }, me, true);
   for (const id of row.watered) d.watered[id] ??= who;

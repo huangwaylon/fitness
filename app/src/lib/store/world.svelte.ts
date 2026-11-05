@@ -10,7 +10,7 @@
 //   world.onHere(fn)             who else is here now, and each change
 //   world.day                    today's WorldDay (reactive through `world.rev`)
 import { emptyDay, apply, applyRow, rowOf, type Applied, type Claim, type DayEvent, type DayRow, type WorldDay } from '#lib/sync/world-day.ts';
-import { guestMaySend, tokyoDay, type Intent, type Relayed, type Who } from '#lib/contract/live-protocol.ts';
+import { claimOf, guestMaySend, tokyoDay, type Intent, type Relayed, type Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { dayKey, now } from '#lib/time/clock.ts';
@@ -299,6 +299,11 @@ class SharedWorld {
     if (i.kind === 'shake') i = { ...i, at: Math.round(t) };
     const e = { ...i, who: me, t } as DayEvent;
     const d = this.#today();
+    // the record's day row says the partner has it (a catch or a pick-up of theirs the relay hasn't brought: made
+    // offline, or the relay lost its day): theirs, as if the relay had said so (apply lets the relay's own verdict
+    // override a row, not my new try)
+    const k = claimOf(e);
+    if (k && d.claims[k]?.what === 'row' && d.claims[k].who !== me) return { fresh: false, beat: null };
     // a walk I make now is my villager's newest, whatever the clock says of the last one (a `?date=` preview against
     // the relay's stamps)
     if (e.kind === 'walk') delete d.walks[me];
@@ -309,9 +314,10 @@ class SharedWorld {
       if (e.kind !== 'act') {
         this.#keep(e);
         this.rev++;
-        // the sheet keeps my part of the day (when the relay has nothing: both apps closed past its day); a walk's row
-        // waits for the next change or the hold (where my villager stands is the relay's to carry)
-        if (e.kind !== 'catch' && e.kind !== 'walk' && this.#me) this.#sink?.(dayKey(now()), rowOf(d, this.#me));
+        // the sheet keeps my part of the day (when the relay has nothing: both apps closed past its day; a catch made
+        // offline, which the partner mustn't catch again); a walk's row waits for the next change or the hold (where my
+        // villager stands is the relay's to carry)
+        if (e.kind !== 'walk' && this.#me) this.#sink?.(dayKey(now()), rowOf(d, this.#me));
       }
     }
     return a;

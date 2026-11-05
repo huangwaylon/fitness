@@ -2,7 +2,8 @@
 // closed when it is hidden or offline (zero cost then), reconnecting with backoff, estimating the relay's clock from
 // pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
-import { LIVE, getKey, localKV, readJson, writeJson } from './storage.ts';
+import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
+import { fnv1a } from '../random.ts';
 import { log } from './log.ts';
 import { takeWx } from './wx.ts';
 import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isStored, parseClient, parseServer, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
@@ -54,6 +55,22 @@ export interface LiveOptions {
   /** The relay time of the last shared-world change this phone heard (the hello's `since`), kept across reloads: a
    *  phone opening later hears today's world from there (docs/backend.md#shared-world). Default: localStorage. */
   since?: SinceStore;
+  /** Where the outbox is kept across a reload or a kill (default: localStorage). */
+  outbox?: OutboxStore;
+}
+
+/** A kept intent as the outbox store keeps it: its number, the message as sent, its Tokyo day of making. */
+export interface KeptOut {
+  c: number;
+  m: object;
+  d: number;
+}
+
+/** Where the outbox is kept: `get(key)` what was waiting for this person key (another key's is dropped), `set` it all
+ *  again after each change. */
+export interface OutboxStore {
+  get(key: string | null): KeptOut[];
+  set(key: string | null, es: readonly KeptOut[]): void;
 }
 
 /** Where `since` is kept: `get()` the last heard today (or today's start: the whole day), `set(t)` after each one. */
@@ -72,6 +89,21 @@ const storedSince: SinceStore = {
     writeJson(localKV(), LIVE.since, { day: tokyoDay(t), t });
   }
 };
+
+/** The outbox in localStorage (`island.liveOutbox` = `{k, es}`: whose key, by a hash, and its entries). */
+const storedOutbox: OutboxStore = {
+  get(key) {
+    const o = readJson<{ k?: unknown; es?: unknown }>(localKV(), LIVE.outbox);
+    if (!o || !key || o.k !== keyTag(key) || !Array.isArray(o.es)) return [];
+    return (o.es as Partial<KeptOut>[]).filter((e): e is KeptOut => typeof e?.c === 'number' && typeof e.d === 'number' && !!e.m && typeof e.m === 'object');
+  },
+  set(key, es) {
+    if (!es.length) remove(localKV(), LIVE.outbox);
+    else if (key) writeJson(localKV(), LIVE.outbox, { k: keyTag(key), es });
+  }
+};
+/** A person key's tag (never the key itself in storage twice): its FNV-1a hash. */
+const keyTag = (key: string): string => fnv1a(key.toLowerCase()).toString(36);
 
 /** What the socket did (counters since the page loaded, and the last acks' round trips): for the budget and the e2e.
  *  @public (the e2e) */
@@ -184,6 +216,7 @@ export function createLive(o: LiveOptions): Live {
   const WS = o.WebSocket ?? (typeof WebSocket !== 'undefined' ? WebSocket : undefined);
   const env = o.env ?? documentEnv();
   const since = o.since ?? storedSince;
+  const store = o.outbox ?? storedOutbox;
 
   let ws: WebSocket | null = null;
   let st: LiveStatus = { connected: false, me: null, peer: false, here: [] };
@@ -210,7 +243,20 @@ export function createLive(o: LiveOptions): Live {
   /** Kept intents sent (or not yet: offline) and not acked, by their sequence number, in order: they go again after a
    *  reconnect (the relay knows a resend by its number). A walk replaces the walk before it. */
   const outbox = new Map<number, Out>();
-  let seq = 0;
+  // what a reload or a kill left unsent (≤ OUTBOX_MAX): it goes after the first welcome, as a reconnect's would
+  const keptKey = o.key();
+  for (const e of store.get(keptKey).slice(-OUTBOX_MAX)) outbox.set(e.c, { m: e.m, d: e.d, at: 0, due: Infinity, n: 0 });
+  let seq = Math.max(0, ...outbox.keys());
+  /** The outbox written once per burst of changes. */
+  let saving = false;
+  const save = () => {
+    if (saving) return;
+    saving = true;
+    queueMicrotask(() => {
+      saving = false;
+      store.set(o.key(), [...outbox].map(([c, e]) => ({ c, m: e.m, d: e.d })));
+    });
+  };
   const nextSeq = () => (seq = Math.max(Date.now(), seq + 1));
   const mx: LiveMetrics = { sent: 0, sentBytes: 0, recv: 0, recvBytes: 0, resent: 0, ackMs: [], pending: 0, closed: 0, busy: 0 };
   let resend: ReturnType<typeof setTimeout>[] = [];
@@ -396,7 +442,7 @@ export function createLive(o: LiveOptions): Live {
           // what never got its ack goes again (the relay acks a repeat without relaying it twice); another day's is
           // that day's, gone
           const today = tokyoDay(m.t);
-          for (const [k, o] of outbox) if (o.d !== today) outbox.delete(k);
+          for (const [k, o] of outbox) if (o.d !== today) (outbox.delete(k), save());
           [...outbox.values()].forEach((o, i) => {
             const go = () => {
               o.n = 0;
@@ -414,6 +460,7 @@ export function createLive(o: LiveOptions): Live {
           const o = outbox.get(m.c);
           if (!o) return;
           outbox.delete(m.c);
+          save();
           mx.ackMs = [...mx.ackMs, Date.now() - o.at].slice(-ACKS_KEPT);
           armAcks();
           return;
@@ -532,6 +579,7 @@ export function createLive(o: LiveOptions): Live {
         if (i.kind === 'walk') for (const [k, o] of outbox) if ((o.m as Intent).kind === 'walk') outbox.delete(k);
         outbox.set(c, { m, d: tokyoDay(now + offset), at: went ? now : 0, due: went ? now + ACK_MS : Infinity, n: 0 });
         while (outbox.size > OUTBOX_MAX) outbox.delete(outbox.keys().next().value!);
+        save();
         if (went && !ackTimer) armAcks();
       }
       return went;
