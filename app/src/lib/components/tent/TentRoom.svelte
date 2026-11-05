@@ -631,8 +631,12 @@
         e.onDrawn(() => says?.track());
         eng = e;
         partnerShown();
-        walkTo([sideX(me, 7), me === 'G' ? 26 : 22]);
-        void e.ready.then(() => alive && doorReady());
+        // (once the room's first frame is drawn, the iris opening: it waits for my villager's model, engine.ts holding)
+        void e.ready.then(() => {
+          if (!alive) return;
+          walkTo([sideX(me, 7), me === 'G' ? 26 : 22]);
+          doorReady();
+        });
         // after the door's iris and the walk in
         hhaTimer = setTimeout(() => alive && !editing && rateOnEntry(), HHA_AFTER_MS);
         hooks();
@@ -751,7 +755,7 @@
       /** A full turn of the camera, a frame at a time: the frames' own cost (ms) and the time between them. */
       orbitBench: async (steps = 180) => {
         const gaps: number[] = [];
-        const c0 = eng?.stats().cost.length ?? 0;
+        const c0 = eng?.stats().cost.length ?? 0, f0 = eng?.stats().frames ?? 0;
         eng?.moving(true);
         let last = performance.now();
         for (let i = 0; i < steps; i++) {
@@ -762,7 +766,8 @@
           last = t;
         }
         eng?.moving(false);
-        const cost = (eng?.stats().cost ?? []).slice(-(steps - 1));
+        // (the frames it drew: at 30 a second half the steps; the last steps − 1 had the entry's frames in them)
+        const cost = (eng?.stats().cost ?? []).slice(-Math.max(1, Math.min(steps - 1, (eng?.stats().frames ?? 0) - f0)));
         const q = (xs: number[], p: number) => [...xs].sort((a, b) => a - b)[Math.min(xs.length - 1, Math.floor(xs.length * p))];
         return { frames: steps, c0, cost: { p50: q(cost, 0.5), p95: q(cost, 0.95), max: Math.max(...cost) }, gap: { p50: q(gaps, 0.5), p95: q(gaps, 0.95), max: Math.max(...gaps) }, stats: eng?.stats() && { calls: eng.stats().calls, tris: eng.stats().tris, dpr: eng.stats().dpr } };
       }

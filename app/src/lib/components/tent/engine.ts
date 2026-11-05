@@ -40,6 +40,8 @@ const FOV = 32;
 const DPR_MAX = 2;
 /** …and while the camera moves (a gesture under way). */
 const DPR_MOVING = 1.5;
+/** The longest the first frame waits for the villagers' models (ms): engine.ts holding. */
+const ENTRY_HOLD_MS = 1500;
 /** How many lamps light the room at night (a point light each, nearest the middle first). */
 const LIGHTS_MAX = 4;
 
@@ -898,7 +900,8 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
    *  swapped in place, the walk, the seat and the first person going on with the new model). */
   function model3(who: Who, w: Walker, look: Look) {
     const p = look.person?.create(who.charCodeAt(0) * 0.7);
-    if (p) void p.then((v) => {
+    if (p) v3Pending++;
+    if (p) void p.finally(() => v3Pending--).then((v) => {
       if (disposed || villagers.get(who) !== w || w.look !== look) return v.dispose();
       if (w.v3) w.v3.dispose();
       else w.yaw = az + w.face * 0.5;
@@ -1425,6 +1428,12 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
 
   // ---- the frames: on demand ----
   let raf = 0, frames = 0, disposed = false, shadowsDirty = true;
+  /** The first frame waits for the villagers' models asked for by then (up to ENTRY_HOLD_MS): their programs (skinned,
+   *  ~6) compile with the room's in that one frame, behind the door's black; drawn in a frame of their own once the
+   *  iris had opened, they froze it (the iOS Simulator, cold: 1039 ms, after the room's own first frame of 654 ms). */
+  let v3Pending = 0;
+  const born = now(), holding = () => !frames && v3Pending > 0 && now() - born < ENTRY_HOLD_MS;
+  const holdT = setTimeout(() => invalidate(), ENTRY_HOLD_MS + 20);
   const cost: number[] = [];
   let readyFn: () => void = () => {};
   const ready = new Promise<void>((r) => (readyFn = r));
@@ -1487,7 +1496,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   let drawn: (() => void) | null = null;
   function frame(vsync = now()) {
     raf = 0;
-    if (disposed) return;
+    if (disposed || holding()) return;
     if (!due(vsync, lastVsync, frameRate.fps)) {
       raf = requestAnimationFrame(frame);
       return;
@@ -1768,6 +1777,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       disposed = true;
       cancelAnimationFrame(raf);
       clearTimeout(blinkT);
+      clearTimeout(holdT);
       document.removeEventListener('visibilitychange', onVis);
       clearTimeout(warmT);
       for (const w of villagers.values()) w.v3?.dispose();
