@@ -156,6 +156,9 @@ export type ServerMsg =
   | { v: LiveV; kind: 'welcome'; me: Who; peer: boolean; t: number; rec?: RecordMark; here?: Who[]; gone?: Gone }
   | { v: LiveV; kind: 'pong'; c: number; t: number }
   | { v: LiveV; kind: 'ack'; c: number; t: number; ok: boolean }
+  /** My numbered intent `c` came over the room's rate limit (2026-11-05): dropped, neither relayed nor kept; send it
+   *  again later. Its own kind, so a phone that doesn't know it ignores it and keeps the intent for its next resend. */
+  | { v: LiveV; kind: 'busy'; c: number; t: number }
   | { v: LiveV; kind: 'replay'; es: Relayed[]; t: number }
   | { v: LiveV; kind: 'presence'; who: Who; on: boolean; t: number }
   | ({ v: LiveV; kind: 'changed'; t: number } & Notice)
@@ -520,6 +523,8 @@ export function parseServer(raw: unknown): ServerMsg | null {
   switch (o.kind) {
     case 'ack':
       return isSeq(o.c) && typeof o.ok === 'boolean' ? { v: LIVE_V, kind: 'ack', c: o.c, t, ok: o.ok } : null;
+    case 'busy':
+      return isSeq(o.c) ? { v: LIVE_V, kind: 'busy', c: o.c, t } : null;
     case 'replay':
       return Array.isArray(o.es) ? { v: LIVE_V, kind: 'replay', es: o.es.map(relayedOf).filter((e): e is Relayed => !!e), t } : null;
     case 'welcome': {

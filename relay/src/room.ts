@@ -148,13 +148,21 @@ export class RoomCore<S extends Sock> {
 
   message(s: S, raw: unknown): void {
     const now = this.io.now();
-    let b = this.buckets.get(s);
-    if (!b) this.buckets.set(s, (b = new Bucket(BURST, PER_SEC, now)));
-    if (!b.take(now)) return;
     const meta = this.io.meta(s);
     // a socket let go (swept, or making room) before its hello: whatever it says now goes nowhere
     if (!meta || (!meta.who && meta.opened === 0)) return;
     const msg = parseClient(raw);
+    // the bucket: a ping and a got never wait on it (the clock, a held high-five let go); over it, a welcomed phone's
+    // numbered intent hears `busy {c}` (resend it later), anything else is dropped
+    if (!(meta.who && (msg?.kind === 'ping' || msg?.kind === 'got'))) {
+      let b = this.buckets.get(s);
+      if (!b) this.buckets.set(s, (b = new Bucket(BURST, PER_SEC, now)));
+      if (!b.take(now)) {
+        const c = meta.who && msg && 'c' in msg ? msg.c : undefined;
+        if (c !== undefined) this.send(s, { v: LIVE_V, kind: 'busy', c, t: now });
+        return;
+      }
+    }
     if (!msg) {
       const v = otherVersion(raw);
       if (v !== null) this.shut(s, CLOSE.version, versionReason(v));
