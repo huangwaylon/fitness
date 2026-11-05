@@ -51,6 +51,8 @@ const RING = 'ring';
 const DAY = 'day';
 /** The record's last change (welcome `rec`). */
 const REC = 'rec';
+/** The last change the guest heard of (room.ts guestNotice: no member's ingest), its welcome's `rec`. */
+const REC_G = 'rec-g';
 /** The high-fives held for a partner who was away (room.ts Held). */
 const HELD = 'held';
 /** When each person's phone last left (room.ts gone: the welcome's). */
@@ -80,6 +82,7 @@ export class IslandRoom extends DurableObject<Env> {
       const held = (await ctx.storage.get<Held>(HELD)) ?? {};
       const gone = (await ctx.storage.get<Gone>(GONE)) ?? {};
       const day = (await ctx.storage.get<DayIndex>(DAY)) ?? null;
+      const recG = (await ctx.storage.get<RecordMark>(REC_G)) ?? null;
       this.wx = (await ctx.storage.get<WxState>(WX)) ?? WX_EMPTY;
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
@@ -90,6 +93,7 @@ export class IslandRoom extends DurableObject<Env> {
         save: (r) => void ctx.storage.put(RING, r),
         saveDay: (d) => void ctx.storage.put(DAY, d),
         saveRec: (r) => void ctx.storage.put(REC, r),
+        saveRecG: (r) => void ctx.storage.put(REC_G, r),
         hold: (h) => void ctx.storage.put(HELD, h),
         saveGone: (g) => void ctx.storage.put(GONE, g),
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
@@ -98,7 +102,7 @@ export class IslandRoom extends DurableObject<Env> {
           this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}) } }]);
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
-      }, ring, rec, held, gone, this.wx.wx, day);
+      }, ring, rec, held, gone, this.wx.wx, day, recG);
     });
   }
 
@@ -154,8 +158,8 @@ export class IslandRoom extends DurableObject<Env> {
   }
 
   /** RPC from the record (and the Worker's /notify): pass the change to the connected phones. */
-  notify(n: Notice): number {
-    return this.core.notify(n);
+  notify(n: Notice, guest?: boolean): number {
+    return this.core.notify(n, guest);
   }
 
   /**

@@ -26,7 +26,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       tx: (fn) => ctx.storage.transactionSync(fn),
       keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
       now: () => Date.now(),
-      notify: (n) => this.tellRoom(n),
+      notify: (n, guest) => this.tellRoom(n, guest),
       // a stored row that isn't JSON, skipped by a fold: a warning in the log (store.ts rowRec)
       corrupt: (where) => this.log([{ e: 'store.corrupt', l: 2, d: { where } }])
     });
@@ -44,9 +44,9 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
 
   /** The record changed: the room passes `changed` to the open phones (after the commit, off the reply's path; once
    *  more, on a fresh stub, if the first call fails: a phone's push is otherwise only caught up by its next poll). */
-  private tellRoom(n: Notice): void {
+  private tellRoom(n: Notice, guest?: boolean): void {
     const room = () => this.env.ROOM.get(this.env.ROOM.idFromName('island'));
-    this.ctx.waitUntil(twice(() => Promise.resolve(room().notify(n))).then(() => undefined, (e) => console.warn('notify the room', errName(e))));
+    this.ctx.waitUntil(twice(() => Promise.resolve(room().notify(n, guest))).then(() => undefined, (e) => console.warn('notify the room', errName(e))));
   }
 
   /** RPC from the room's alarm after a restore (index.ts restoring): this is the restored record's first session, so

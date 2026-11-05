@@ -108,6 +108,27 @@ describe('the island room', () => {
     expect(a.closed).toBeNull();
   });
 
+  it('refuses a malformed numbered intent with its ack (ok: false), so the phone lets it go rather than resending it all day', () => {
+    // 2026-11-05 client review: dropped silently, the phone resent it on every reconnect until midnight
+    const a = join(KEY_A);
+    const b = join(KEY_B);
+    a.sent = [];
+    b.sent = [];
+    say(a, { kind: 'act', act: 'explode', c: 7 });
+    say(a, { kind: 'walk', to: 'no such node!!', c: 8 });
+    expect(a.sent).toEqual([
+      { v: 3, kind: 'ack', c: 7, t: expect.any(Number), ok: false },
+      { v: 3, kind: 'ack', c: 8, t: expect.any(Number), ok: false }
+    ]);
+    expect(b.sent).toEqual([]);
+    // a number that isn't one, or no number: nothing to ack
+    say(a, { kind: 'act', act: 'explode', c: -1 });
+    say(a, { kind: 'act', act: 'explode' });
+    room.message(a, '{"kind":');
+    expect(a.sent).toHaveLength(2);
+    expect(a.closed).toBeNull();
+  });
+
   it('closes an unknown version before or after the hello with a reason that says so', () => {
     const x = new FakeSock();
     socks.push(x);
@@ -284,12 +305,22 @@ describe('the island room', () => {
     expect(a3.sent[0]).not.toHaveProperty('gone');
   });
 
-  it('closes sockets that never say hello within 3 s and says when to look again', () => {
+  it('a slow phone (a 5 s round trip, a long task at boot) still gets in: its hello is waited for 12 s', () => {
+    // 2026-11-05 client review: at 3 s, a 3.2 s RTT never connected (every hello closed 4003)
+    const s = join();
+    now += 5000;
+    expect(room.sweep()).not.toBeNull();
+    expect(s.closed).toBeNull();
+    say(s, { kind: 'hello', key: KEY_A });
+    expect(s.sent[0]).toMatchObject({ kind: 'welcome', me: 'A' });
+  });
+
+  it('closes sockets that never say hello within 12 s and says when to look again', () => {
     const quiet = join();
     now += 1000;
     const later = join();
     const a = join(KEY_A);
-    expect(HELLO_MS).toBe(3000);
+    expect(HELLO_MS).toBe(12_000);
     expect(room.sweep()).toBe(now - 1000 + HELLO_MS);
     now += HELLO_MS - 1000;
     expect(room.sweep()).toBe(now + 1000);
@@ -325,6 +356,31 @@ describe('the island room', () => {
     bye(a);
     bye(b);
     expect(room.notify(n)).toBe(0); // nobody there: a no-op
+  });
+
+  it('never tells the guest of a member’s からだ-only ingest: events’, activity ingests’ and a new epoch’s notices, and its welcome’s mark is theirs', () => {
+    // 2026-11-05 client review: `changed {what: 'ingest', who, at}` told the guest when each Shortcut ran, and its
+    // snapshot (no からだ rows) could never reach the ingest's mark
+    const a = join(KEY_A), g = join(KEY_C);
+    a.sent = [];
+    g.sent = [];
+    const ing = { what: 'ingest', who: 'B', at: '2026-11-01T01:02:03.456Z', rev: 'e1' } as const;
+    const ev = { what: 'event', who: 'A', at: '2026-11-01T01:00:00.000Z', rev: 'e1' } as const;
+    room.notify(ev);
+    room.notify(ing);
+    expect(a.kinds()).toEqual(['changed', 'changed']);
+    expect(g.sent).toEqual([{ v: 3, kind: 'changed', ...ev, t: now }]);
+    // an ingest that brought activity rows (the trees, today's ベル: the guest's too), the record says so
+    room.notify({ ...ing, at: '2026-11-01T01:30:00.000Z' }, true);
+    expect(g.sent.at(-1)).toMatchObject({ kind: 'changed', what: 'ingest', at: '2026-11-01T01:30:00.000Z' });
+    // a new epoch (the admin's, sent as `ingest`) it hears
+    room.notify({ ...ing, at: '2026-11-01T02:00:00.000Z', rev: 'e2' });
+    expect(g.sent.at(-1)).toMatchObject({ kind: 'changed', rev: 'e2' });
+    // the welcomes: a member's mark is the record's last change, the guest's the last it may hear of
+    bye(g);
+    room.notify({ ...ing, at: '2026-11-01T03:00:00.000Z', rev: 'e2' });
+    expect(join(KEY_B).sent[0]).toMatchObject({ kind: 'welcome', rec: { at: '2026-11-01T03:00:00.000Z', rev: 'e2' } });
+    expect(join(KEY_C).sent[0]).toMatchObject({ kind: 'welcome', rec: { at: '2026-11-01T02:00:00.000Z', rev: 'e2' } });
   });
 
   it('a welcome carries the record’s last change it heard of (kept across restarts), so a phone that has it needn’t fetch', () => {
