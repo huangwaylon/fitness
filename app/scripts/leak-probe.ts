@@ -4,7 +4,7 @@
 // island's renderer.info.
 //   npm run leak -- <flow> [cycles] [--snap] [--path=<name>]     (the build served at E2E_PORT, default 4693)
 // flows: shop tent home museum fpv (the museum in first person) editor (the island ⇄ there), all (the four rooms), food
-// health zukan settings bells sheets (open, close), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
+// health zukan settings bells sheets (open, close), look (すがた: a villager's look, then いつもの), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
 // time; DWELL: ms in a room, default 1500), fish (10 casts and reels; Q='&critter=fish'), sell (the shop's うる, 5 sells). Inside the museum: eye (the eye
@@ -230,6 +230,8 @@ const rows = [];
 /** The fish flow's taps, by what each did (__fish.why()). */
 const fished: Record<string, number> = {};
 let fishAt: [number, number] | null = null;
+/** The look flow's turn (its villager by turns). */
+let looks = 0;
 let snap0: Map<string, [number, number]> | null = SNAP && process.env.SNAP_AT === '0' ? new Map() : null;
 const cycle = async () => {
   if (flow in ROOMS) {
@@ -255,6 +257,21 @@ const cycle = async () => {
     const ms = await page.locator('[data-home-picker] [data-model]').count();
     for (let k = 0; k < Math.min(ms, 4); k++) { await page.locator('[data-home-picker] [data-model]').nth(k).click(); await page.waitForTimeout(700); }
     await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('[data-home-picker]'), null, { timeout: 10_000 }); await page.waitForTimeout(500);
+  } else if (flow === 'look') {
+    // せってい → すがた: a villager's look (two, by turns), then いつもの (the human player): each a model swapped on the
+    // island where it stands (person3d), the old one let go of
+    const sheet = page.locator('dialog[open]').first(), name = ++looks % 2 ? 'ジョッキー' : 'ニコバン';
+    const visit = async (wear: () => Promise<void>) => {
+      await SHEETS.settings(); await sel('[data-push=look]'); await sheet.locator('[data-push=look]').click(); await sel('[data-look-page]');
+      if (!process.env.LOOK_NOOP) await wear();
+      await sheet.locator('.titlebar .back').click(); await page.waitForTimeout(300);
+      await page.keyboard.press('Escape'); await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10_000 }); await page.waitForTimeout(2000);
+    };
+    await visit(async () => {
+      await sheet.locator('[data-push=villager]').click(); await sheet.getByRole('searchbox').fill(name);
+      await sheet.getByRole('radio', { name }).click(); await sheet.locator('.titlebar .back').click(); await page.waitForTimeout(300);
+    });
+    await visit(() => sheet.locator('[data-look-chip="usual"]').click());
   } else if (flow === 'eye') {
     // the eye button inside: first person on (at the eyes) and off (the room's camera)
     await inMuseum();

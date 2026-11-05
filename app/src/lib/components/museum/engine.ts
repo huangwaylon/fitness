@@ -14,7 +14,8 @@ import {
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
-import { createVillager, type Villager3D } from '../villager3d/villager3d.ts';
+import type { Villager3D } from '../villager3d/villager3d.ts';
+import type { Person3 } from '../person3d/person3d.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
 import { decal } from './geometry.ts';
@@ -46,7 +47,8 @@ const AMBIENT = 30;
 const WALL_FADE = 220;
 
 export type Who = 'A' | 'B' | 'G';
-export interface Look { model: string | null; id: string }
+/** Who draws a villager here (person3d: the look they wear). */
+export type Look = Person3;
 export interface Insets { top: number; bottom: number }
 export type Hit = { kind: 'villager'; who: Who } | { kind: 'creature'; id: string } | { kind: 'seat'; id: string } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 
@@ -95,6 +97,8 @@ export interface Museum {
   /** The camera at rest (no easing under way): the e2e's taps aim then. */
   still(): boolean;
   villager(who: Who, look: Look | null): void;
+  /** The model drawn for `who` (person3d's key: `v:<roster id>`, `p:…` a human player), null till one is in. */
+  model(who: Who): string | null;
   at(who: Who): [number, number] | null;
   put(who: Who, p: Pt, yaw?: number): void;
   walk(who: Who, pts: readonly Pt[], o?: { from?: Pt; ago?: number; ms?: number }): number;
@@ -730,9 +734,34 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   const shadowMat = decal(new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false }), 5);
   disposables.push(shadowGeo, shadowMat);
   let followed: Who = 'A';
+  /** Its 3D model up (`look`), placed where the walker is, once loaded; over the one it had (another look: swapped in
+   *  place, the walk and the seat going on with the new model). */
+  function model3(who: Who, w: Walker, look: Look) {
+    const p = look.create(who.charCodeAt(0) * 0.7);
+    if (p) void p.then((v) => {
+      if (disposed || villagers.get(who) !== w || w.look !== look) return v.dispose();
+      w.v3?.dispose();
+      w.v3 = v;
+      v.group.scale.setScalar(V3_SCALE);
+      v.lift(0.32);
+      v.group.traverse((n) => (n.userData.who = who));
+      // (where it stands first: one already seated sits down from its step, not from the middle of the floor)
+      v.group.position.set(w.pos[0], 0, w.pos[1]);
+      v.group.rotation.set(0, w.yaw, 0);
+      scene.add(v.group);
+      w.posing = true;
+      place(w);
+      invalidate();
+    }, () => {});
+  }
   function villager(who: Who, look: Look | null) {
     const was = villagers.get(who);
-    if (was && (!look || was.look.id !== look.id)) {
+    if (was && look && was.look.key !== look.key) {
+      // another look (theirs or mine changed): the model swapped where it is
+      was.look = look;
+      return model3(who, was, look);
+    }
+    if (was && !look) {
       scene.remove(was.shadow);
       if (was.v3) (scene.remove(was.v3.group), was.v3.dispose());
       villagers.delete(who);
@@ -745,19 +774,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     const w: Walker = { look, v3: null, shadow, pos: [0, 50], was: [0, 50], yaw: Math.PI, path: null, hop: 0, posing: true, seat: null };
     villagers.set(who, w);
     scene.add(shadow);
-    if (look.model) void createVillager(look.id, look.model, who.charCodeAt(0) * 0.7).then((v) => {
-      if (disposed || villagers.get(who) !== w) return v.dispose();
-      w.v3 = v;
-      v.group.scale.setScalar(V3_SCALE);
-      v.lift(0.32);
-      v.group.traverse((n) => (n.userData.who = who));
-      // (where it stands first: one already seated sits down from its step, not from the middle of the floor)
-      v.group.position.set(w.pos[0], 0, w.pos[1]);
-      v.group.rotation.set(0, w.yaw, 0);
-      scene.add(v.group);
-      place(w);
-      invalidate();
-    }, () => {});
+    model3(who, w, look);
     place(w);
     invalidate();
   }
@@ -1249,6 +1266,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     },
     still: () => !easing && !gesturing && !pace.asked() && !fp.busy(),
     villager,
+    model: (who) => (villagers.get(who)?.v3 ? villagers.get(who)!.look.key : null),
     at: (who) => (villagers.get(who) ? [villagers.get(who)!.pos[0], villagers.get(who)!.pos[1]] : null),
     put(who, p, yaw) {
       const w = villagers.get(who);

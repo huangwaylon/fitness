@@ -14,7 +14,8 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { HALF, ROOM, TILE, centreOf, isSurface, isWallItem, onTop, wallSpot, type Facing, type Pt, type Spot } from './grid.ts';
 import { footprint, floorUrl, ITEMS, modelUrl, wallUrl } from './items.ts';
-import { createVillager, VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
+import { VILLAGER_S, type Villager3D } from '../villager3d/villager3d.ts';
+import type { Person3 } from '../person3d/person3d.ts';
 import { seatOf } from '../villager3d/poses.ts';
 import type { Anchor } from '../villager3d/seats3d.ts';
 import { drawOff } from '../../ui-state/testMode.ts';
@@ -50,9 +51,8 @@ export interface Look {
   /** The render looks toward the viewer's right as drawn; never mirror it (a logo on the outfit). */
   looksRight: boolean;
   noMirror: boolean;
-  /** Its 3D model (villager3d manifest url3d) and roster id, when NH has one: drawn instead of the render. */
-  model?: string | null;
-  id?: string;
+  /** Its 3D model (person3d: the villager's, when NH has one, or the human player's): drawn instead of the render. */
+  person?: Person3;
 }
 export type Hit = { kind: 'piece'; id: string } | { kind: 'villager'; who: Who } | { kind: 'door' } | { kind: 'floor'; x: number; z: number };
 export interface Placed extends Spot {
@@ -130,6 +130,8 @@ export interface Tent {
   /** The test hook's: a 3D villager's state and the box its skinned meshes fill now (bones applied), relative to its
    *  feet (room units), or null (no model, or a card). */
   v3(who: Who): { state: string; box: [number[], number[]] } | null;
+  /** The model drawn for `who` (person3d's key: `v:<roster id>`, `p:…` a human player), null till one is in. */
+  model(who: Who): string | null;
   /** Where a villager stands now (model units). */
   at(who: Who): [number, number] | null;
   /** Put a villager at a point, facing left (-1) or right (1). */
@@ -879,8 +881,33 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
   const cardGeo = new PlaneGeometry(1, 1).translate(0, 0.5, 0);
   const shadowGeo = new CircleGeometry(4.2, 24);
   const shadowMat = new MeshBasicMaterial({ map: disc, transparent: true, depthWrite: false });
+  /** Its 3D model up (`look`'s person), placed where the walker is, once loaded; over the one it had (another look:
+   *  swapped in place, the walk, the seat and the first person going on with the new model). */
+  function model3(who: Who, w: Walker, look: Look) {
+    const p = look.person?.create(who.charCodeAt(0) * 0.7);
+    if (p) void p.then((v) => {
+      if (disposed || villagers.get(who) !== w || w.look !== look) return v.dispose();
+      if (w.v3) w.v3.dispose();
+      else w.yaw = az + w.face * 0.5;
+      w.v3 = v;
+      v.group.scale.setScalar(V3_SCALE);
+      v.lift(v3Lift());
+      scene.add(v.group);
+      // the card stays as its tap area, undrawn; the model has its own shadow
+      w.mat.visible = false;
+      w.shadow.visible = false;
+      w.posing = true;
+      place(w);
+      invalidate();
+    }, () => {});
+  }
   function villager(who: Who, look: Look | null) {
     const was = villagers.get(who);
+    // the same render, another model (a look changed: theirs or mine): swapped in place
+    if (was && look && was.look.url === look.url && (was.look.person?.key ?? null) !== (look.person?.key ?? null)) {
+      was.look = look;
+      return model3(who, was, look);
+    }
     if (was && (!look || was.look.url !== look.url)) {
       scene.remove(was.card, was.shadow);
       was.v3?.dispose();
@@ -903,19 +930,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
     w.was = [...w.pos];
     villagers.set(who, w);
     scene.add(card, shadow);
-    if (look.model && look.id) void createVillager(look.id, look.model, who.charCodeAt(0) * 0.7).then((v) => {
-      if (disposed || villagers.get(who) !== w) return v.dispose();
-      w.v3 = v;
-      v.group.scale.setScalar(V3_SCALE);
-      v.lift(v3Lift());
-      scene.add(v.group);
-      // the card stays as its tap area, undrawn; the model has its own shadow
-      mat.visible = false;
-      shadow.visible = false;
-      w.yaw = az + w.face * 0.5;
-      place(w);
-      invalidate();
-    }, () => {});
+    model3(who, w, look);
     tex.loadAsync(look.url).then((t) => {
       if (disposed || villagers.get(who) !== w) return t.dispose();
       t.colorSpace = SRGBColorSpace;
@@ -1689,6 +1704,7 @@ export function createTent(canvas: HTMLCanvasElement): Tent {
       place(w);
       invalidate();
     },
+    model: (who) => (villagers.get(who)?.v3 ? (villagers.get(who)!.look.person?.key ?? null) : null),
     v3(who) {
       const w = villagers.get(who), v = w?.v3;
       if (!v) return null;

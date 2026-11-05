@@ -54,6 +54,8 @@
   import { STUNG_SWEAT_MS, SWOLLEN_MS, goalTree, shakeTap, treeById, type ShakeTree } from './treeShake.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
+  import { lookOf as wornOf } from '#lib/store/look.ts';
+  import type { Look as Worn } from '#lib/contract/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
   import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
@@ -144,9 +146,9 @@
   setCast(view.viewer);
   const sideOf = (pid: Who): 'left' | 'right' => (pid === 'A' ? 'left' : 'right');
   /** Who each villager actor draws: its person, name and look, today's ベル (null: the guest's, which has none). */
-  type Look = { person: Who; villagerName: string; villager: string | null; bells: number | null };
-  const lookOf = (w: Who): Look => (w === 'G' ? { person: 'G', villagerName: view.guest.villagerName, villager: view.guest.villager, bells: null }
-    : { person: w, villagerName: view.people[w].villagerName, villager: view.people[w].villager, bells: view.people[w].today.bells });
+  type Look = { person: Who; villagerName: string; villager: string | null; bells: number | null; worn: Worn };
+  const lookOf = (w: Who): Look => (w === 'G' ? { person: 'G', villagerName: view.guest.villagerName, villager: view.guest.villager, bells: null, worn: wornOf('G') }
+    : { person: w, villagerName: view.people[w].villagerName, villager: view.people[w].villager, bells: view.people[w].today.bells, worn: wornOf(w) });
   const homeOf = (w: Who): readonly [number, number] => (w === 'G' ? guestSpot() : HOMES[w]);
   const VILLAGERS = ['mine', 'partner', 'third'] as const;
   const sides = $derived.by(() => {
@@ -1095,7 +1097,7 @@
   /** The goal trees' spots (world.ts's, on the island's layout: site.rev). */
   const goalTrees = $derived((void site.rev, GOAL_TREES));
   const cast3 = () => VILLAGERS.map((id) => ({
-    id, person: sides[id].person.person, villager: sides[id].person.villager, side: sides[id].side,
+    id, person: sides[id].person.person, villager: sides[id].person.villager, look: sides[id].person.worn, side: sides[id].side,
     shown: onIsland(id) && !inTent(id), seated: !!seated[id], seat: seated[id], stung: swollen[id], rep: repping[id], hat: hatOf(id, sides[id].person)
   }));
 </script>

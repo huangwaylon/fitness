@@ -22,8 +22,10 @@
   import MuseumCard from './MuseumCard.svelte';
   import { SAY_TAG, rememberSay, sayGate, type SaySpeaker } from '../island/say.ts';
   import { url3d } from '../villager3d/manifest.ts';
+  import { person3 } from '../person3d/person3d.ts';
+  import { drawOff } from '#lib/ui-state/testMode.ts';
+  import { lookOf as wornOf } from '#lib/store/look.ts';
   import type { WeekView } from '#lib/types.ts';
-  import { resolveLook } from '#lib/villagers/look.ts';
   import { theme } from '#lib/ui-state/theme.svelte.ts';
   import { doorReady, provideDoor } from '#lib/ui-state/doorTransition.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -137,11 +139,20 @@
 
   // ---- the others: each here only while they're in the museum (store/where.svelte.ts) ----
   const theirAt = new Map<Who, Pt>(others.map((w) => [w, [ENTRANCE[0] + sideX(w), ENTRANCE[1] - 10] as Pt]));
+  /** Who draws them (person3d: the look they wear, their villager or their human player). */
   function lookOf(w: Who) {
     const villager = w === 'G' ? view.guest.villager : view.people[w].villager;
-    const l = resolveLook({ villager, person: w });
-    return { id: l.id, model: url3d(l.id, asset('room/villagers3d/' as Parameters<typeof asset>[0])) };
+    return person3(w, wornOf(w), villager, asset('room/villagers3d/' as Parameters<typeof asset>[0]));
   }
+  // a look changed (on leaving すがた, or the partner's phone): the model swapped where it is
+  $effect(() => {
+    for (const w of [me, ...others]) void wornOf(w);
+    untrack(() => {
+      if (!eng) return;
+      if (eng.at(me)) eng.villager(me, lookOf(me));
+      othersShown();
+    });
+  });
   function othersShown() {
     if (!eng) return;
     for (const w of others) {
@@ -444,13 +455,15 @@
     return { top: rc && tb ? Math.max(0, tb.bottom - rc.top) : 0, bottom: 72 };
   }
 
-  /** The e2e's and the console's hooks (dev builds and ?demo). */
+  /** The e2e's and the console's hooks (dev builds, ?demo and the logic tier). */
   function hooks() {
-    if (!import.meta.env.DEV && !new URLSearchParams(location.search).has('demo')) return;
+    if (!import.meta.env.DEV && !new URLSearchParams(location.search).has('demo') && !drawOff()) return;
     (window as unknown as { __museum?: unknown }).__museum = {
       stats: () => eng?.stats(),
       mine: () => eng?.at(me),
       at: (w: Who) => eng?.at(w),
+      /** The model drawn for `w` (person3d's key), null till one is in. */
+      model: (w: Who) => eng?.model(w) ?? null,
       walking: (w: Who) => eng?.walking(w),
       still: () => !!eng?.still(),
       /** A floor point's client px. */

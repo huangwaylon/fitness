@@ -10,6 +10,8 @@
   import { asset } from '$app/paths';
   import { art, artUrl, villagerArt } from '#lib/art.ts';
   import { resolveLook } from '#lib/villagers/look.ts';
+  import type { Look as Worn } from '#lib/contract/look.ts';
+  import { person3 } from '../person3d/person3d.ts';
   import type { Who } from '#lib/types.ts';
   import type { VillagerActor } from '#lib/ui-state/cast.ts';
   import type { Season } from '#lib/ui-state/theme.svelte.ts';
@@ -34,7 +36,6 @@
   import { createVillagers, type VSpec, type Villagers3 } from './villagers.ts';
   import { createBalloon3, type Balloon3 } from './balloon3d.ts';
   import { LINE_MAX, blocksOf, liftOf, linePoints, pointsFor, type Block } from './fishLine.ts';
-  import { has3d } from '../villager3d/manifest.ts';
   import { BufferGeometry, Float32BufferAttribute, Line, LineBasicMaterial, Vector3, type Object3D } from 'three';
   import type { FxKind } from './effects.ts';
   import { pace, SLOW_PX } from './pace.ts';
@@ -61,11 +62,16 @@
   import { weather } from '../island/weatherNow.svelte.ts';
   import { createPrecip, type Precip } from './precip.ts';
 
+  /** The villagers' GLBs (person3d, world3d/villagers.ts). */
+  const villagersDir = asset('room/villagers3d/' as Parameters<typeof asset>[0]);
+
   /** A villager on this island now (IslandScene's cast). */
   export interface Cast {
     id: VillagerActor;
     person: Who;
     villager: string | null;
+    /** The look they wear (store/look.ts lookOf): who draws them (person3d). */
+    look: Worn;
     side: 'left' | 'right';
     /** On the island and out of the tent. */
     shown: boolean;
@@ -286,11 +292,11 @@
     world.eachV3(onV3);
     for (let i = 0; i < visN; i++) specs.push(visSpecs[i]);
     for (const c of cast()) {
-      const a = actors[c.id], look = resolveLook({ villager: c.villager, person: c.person });
-      if (!has3d(look.id)) continue;
+      const a = actors[c.id], p = person3(c.person, c.look, c.villager, villagersDir);
+      if (!p.has3d) continue;
       const [x, z] = livePos(c.id);
       specs.push({
-        slot: c.id, id: look.id, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
+        slot: c.id, id: p.villager, model: p, x, z, y: feetOf(x, z), walking: a.walking, face: a.face, side: c.side, asleep: a.asleep,
         seat: c.seat ? seatTop(c.seat) : null, lift: c.rep ? pullLift(t) : 0, motion: a.motion, motionN: a.motionN, emote: a.emote, stung: c.stung, shown: c.shown,
         away: inFocusWay(x, z), hat: c.hat, tool: c.id === 'mine' && fishing ? 'tools/rod' : null
       });
@@ -298,8 +304,8 @@
     const r = vil3?.frame(t, specs, active) ?? { cards: new Set<string>(specs.map((s) => s.slot)), moving: false };
     moving = r.moving;
     for (const c of cast()) {
-      const a = actors[c.id], look = resolveLook({ villager: c.villager, person: c.person });
-      const card = !has3d(look.id) || r.cards.has(c.id);
+      const a = actors[c.id], p = person3(c.person, c.look, c.villager, villagersDir), look = resolveLook({ villager: p.villager, person: c.person });
+      const card = !p.has3d || r.cards.has(c.id);
       // drawn in 3D: its marks too (the DOM's hidden: IslandScene's [data-v3])
       const in3 = c.shown && !card, node = scene.querySelector(`.actor[data-actor="${c.id}"]`);
       // (checked each frame: the node is the DOM island's, made anew when its villager comes back)
@@ -857,7 +863,7 @@
     };
     world.useThree(proj);
     let camWas = NaN, horizonWas = NaN, revWas = -1;
-    vil3 = createVillagers((o) => e.add(o), asset('room/villagers3d/' as Parameters<typeof asset>[0]), () => e.kick());
+    vil3 = createVillagers((o) => e.add(o), villagersDir, () => e.kick());
     vil3.lift(LIFT[todNow()]);
     b3 = createBalloon3((o) => e.add(o), heightOf, () => e.kick());
     b3.lift(LIFT[todNow()]);
