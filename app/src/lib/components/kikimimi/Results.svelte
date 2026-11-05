@@ -1,6 +1,7 @@
 <script lang="ts">
   // ききみみ クイズ's results (docs/kikimimi.md "Results"): しずえ reads them out like the morning broadcast (the ranking,
-  // the winner's row with 🏆, and how many I got right under her line), then the review list, the game's main learning
+  // the winner's row with 🏆, and how many I got right under her line; co-op, the default with several players: the
+  // team's 「ふたりで 7/8」 and 「そろって せいかい」 instead, no ranking, no one's points), then the review list, the game's main learning
   // moment: every sentence's English (its key words marked) and Japanese (a reply's on two lines), ▶︎ and 🐢 (levels
   // 1-2), ○ / × for my answer and on a miss what I picked, and 「まちがえた だけ」 to show only the missed.
   import type { QuizGame } from './game.svelte.ts';
@@ -23,8 +24,12 @@
     const rows = [...v.players].sort((a, b) => b.score - a.score);
     return rows.map((p) => ({ ...p, rank: rows.findIndex((q) => q.score === p.score) + 1 }));
   });
+  /** Co-op (several players, not たいせん): the team's tally, no ranking and no one's points. */
+  const coop = $derived(v.players.length > 1 && !v.vs);
+  const teamKey = $derived(v.players.length >= 3 ? 'kiki.team.3' : 'kiki.team.2');
   const line = $derived.by(() => {
     if (ranking.length <= 1) return t('kiki.hostSolo', { score: ranking[0]?.score ?? 0 });
+    if (coop) return t(v.team.right >= v.n ? 'kiki.hostTeam.all' : v.team.right * 4 >= v.n * 3 ? 'kiki.hostTeam.good' : 'kiki.hostTeam.try');
     const top = ranking.filter((r) => r.rank === 1);
     return top.length > 1 || !week.view ? t('kiki.hostTie') : t('kiki.hostTop', { name: villagerNameOf(week.view, top[0].who) });
   });
@@ -53,7 +58,13 @@
 <div class="results" data-kiki-results>
   <div class="host">
     <Bubble text={line} host="wave" size={64} />
-    <p class="tally" data-kiki-tally={tally}>{t('kiki.tally', { n: items.length, k: tally })}</p>
+    {#if coop}
+      <div class="team card" data-kiki-team={v.team.right}>
+        <b>{t(teamKey, { k: v.team.right, n: v.n })}</b>
+        {#if v.team.all}<span data-kiki-team-all={v.team.all}>{t('kiki.teamAll', { k: v.team.all })}</span>{/if}
+      </div>
+    {/if}
+    <p class="tally" data-kiki-tally={tally}>{t(coop ? 'kiki.tallyMine' : 'kiki.tally', { n: items.length, k: tally })}</p>
   </div>
 
   {#if recorded}
@@ -70,7 +81,7 @@
     </section>
   {/if}
 
-  {#if ranking.length > 1}
+  {#if ranking.length > 1 && !coop}
     <ol class="rank card">
       {#each ranking as r (r.who)}
         <li data-rank={r.rank} class:first={r.rank === 1}>
@@ -119,6 +130,10 @@
   .results { display: grid; gap: 14px; }
   .results :global(.bubble) { margin-bottom: 0; }
   .host { display: grid; gap: 6px; }
+  /* co-op's team tally: one big number, the together count under it (never who missed) */
+  .team.card { display: grid; justify-items: center; gap: 4px; padding: 12px 14px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
+  .team b { font: 700 var(--fs-title)/1.2 var(--font-num, var(--font-ui)); }
+  .team span { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .tally { margin: 0; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text-soft); }
   .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .fb { display: grid; gap: 10px; padding: 12px 14px; }

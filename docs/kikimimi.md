@@ -21,7 +21,7 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
   - the speaker reacts (✨ or 💦), and so does each player's chip.
 - **Scoring.** A correct answer is **100**, plus **30 if it was answered with no replay or slow play** (「1かいで！」). Wrong or timed out is 0. There's no speed bonus: it rewarded guessing.
 - **Results.**
-  - しずえ reads them out like the morning broadcast: a ranking with reactions.
+  - しずえ reads them out like the morning broadcast: co-op (the default with several), the team's 「ふたりで n/8」; たいせん, a ranking with reactions ("Co-op and たいせん" below).
   - Then a **review list** of every sentence: its English, its Japanese, ▶︎ and 🐢 (L1/L2). A 「まちがえた だけ」 filter shows only the missed ones.
   - The review list is the main learning moment.
 - **Solo** works the same way, with one player.
@@ -40,9 +40,17 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
 - **`num`**: prices in ベル, times and dates, as text choices with close distractors: 2:15 / 2:50, quarter past / to, 1,500 / 15,000 ベル, the 13th / 30th. These are built from **templates** (speaker × phrase × number), which also makes the bank big cheaply.
 - **`reply`**: a villager asks something, and you pick the best reply from 3 written replies (like TOEIC Part 2). Example: "What're you up to?" → "Just fishing." This is level 2 and 3 only.
 - **`mean`** (level 4): what the speaker really means, from 3 English paraphrases. The distractors are the literal reading, the opposite and a plausible wrong inference. Its `ask` is 「つまり、どういうこと？」; it renders like `reply`.
-- **Later (v2):** level 3 chunk tiles, co-op mode 「ふたりで」 (a combined grade against しずえ), bests, and missed items drawn more often.
+- **Later (v2):** level 3 chunk tiles, a shared co-op best, たいせん scored against expectation (curriculum §11: needs per-player stages), and missed items drawn more often.
 
 **Mix per 8 questions.** L1: 3 pic, 3 word, 2 num. L2: 2 pic, 2 word, 2 num, 2 reply. L3: 1 pic, 2 word, 2 num, 3 reply. L4: 2 word, 2 num, 2 reply, 2 mean.
+
+## Co-op and たいせん (docs/curriculum.md §14, increment 3; built 2026-11-06)
+
+- **Co-op is the default** for a game of several (the user's choice). The results read **「ふたりで n/8」** (3 players: 「さんにんで」): a question counts for the team when **at least one player got it right**. Answers are hidden till the reveal, so nobody can lean on the other; the team covers each other's gaps, which suits two strong listeners with different weak spots, and a miss never costs the team anything the partner caught. Under it, **「そろって せいかい m もん」**: the questions every player in them got right (a player who joined later doesn't hold back the ones before; a soft, celebratory count). Fair: the same on every phone (from the `a`s heard; a lost `a` costs that question's credit on that phone only).
+- **Never shame:** in co-op the others' chips show only ✓ (answered), never right or wrong, and no one's points; the reveal says how many got it (「2にん せいかい！」, none: 「むずかしかったね！」), never who. The results have no ranking; each phone shows its own tally (「じぶんは 8もん中 6もん」) and its own review list.
+- **「たいせん」** is a lobby switch, set by the host (others see it): the points, the chips' ✓ / × at the reveal and the ranking as before. It rides on the `open`'s **seed's lowest bit** (1: たいせん; a new lobby's seed is even), so no new field and **no relay deploy** (the relay passes known fields only). Flipping it deals a new deck, which nobody has seen yet. A phone from before reads any seed as before (it ranks, as it always did). もういっかい keeps the mode. Expectation scoring (curriculum §11) waits for per-player stages.
+- **Level names:** neutral places with ★ counts, never やさしい/むずかしい (curriculum §3): ★ はまべ, ★★ いりえ, ★★★ かわぐち, ★★★★ かわ・もり.
+- Built: session.ts `versus(seed)`, `open({vs})`, `configure({vs})`, the view's `vs`, `team {right, all, done}` (over the questions revealed) and `rightNow` (a reveal's count); Lobby's `data-kiki-vs`; Play's `data-kiki-team-now`; Results' `data-kiki-team`. Tests: session.test "co-op and たいせん", e2e kikimimi (co-op and たいせん, two players).
 
 ## Level 4 「かわ・もり」 (docs/curriculum.md §14, increment 1)
 
@@ -98,7 +106,7 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
 
 | op | sender | fields | meaning |
 |---|---|---|---|
-| `open` | host | `g, seed, lv, same` | a lobby is open to the others (sent on みんなを さそう, never for a lobby kept alone); they see an invite banner (TTL: dropped if the host leaves or after 10 min) |
+| `open` | host | `g, seed, lv, same` | a lobby is open to the others (sent on みんなを さそう, never for a lobby kept alone); they see an invite banner (TTL: dropped if the host leaves or after 10 min). The seed's lowest bit is たいせん |
 | `join` / `leave` | anyone | `g` | joining or leaving the lobby or game |
 | `go` | host | `g, at` | the game starts at relay time `at` (now + 4 s) |
 | `a` | player | `g, i, k, rp, s` | the answer to question i: choice k, `rp` whether it replayed, `s` the sender's running total |
