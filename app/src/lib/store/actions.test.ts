@@ -54,14 +54,15 @@ describe('wallet actions', () => {
     for (const bad of [99, 2001, NaN, Infinity]) expect(setGoal('move', 'A', bad)).toEqual({ ok: false });
     expect(queued()).toEqual([]);
     expect(setGoal('move', 'B', 549.6).ok).toBe(true);
-    expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'moveGoal', value: 550 }]]);
+    // with the phone's Tokyo day it was set on (21:00 Tokyo): a goal set before midnight is that day's
+    expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'moveGoal', value: 550, day: '2026-11-18' }]]);
   });
 
   it('setGoal steps sends pref stepsGoal for either person: a whole 500 in 1,000–30,000, refuses the rest', () => {
     for (const bad of [500, 30500, 8250, 8000.5, NaN, Infinity]) expect(setGoal('steps', 'A', bad)).toEqual({ ok: false });
     expect(queued()).toEqual([]);
     expect(setGoal('steps', 'B', 10000).ok).toBe(true);
-    expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'stepsGoal', value: 10000 }]]);
+    expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'stepsGoal', value: 10000, day: '2026-11-18' }]]);
   });
 });
 
@@ -90,7 +91,7 @@ describe('the goals name whose goal', () => {
     expect([setGoal('exercise', 'A', 45).ok, setGoal('exercise', 'A', null).ok, setGoal('stand', 'B', 125).ok, setGoal('bmi', 'B', 22.04).ok, setGoal('lean_kg', 'A', null).ok, setGoal('bmi', 'G', 22).ok])
       .toEqual([true, false, false, true, true, false]);
     expect(queued().map((e) => e.data)).toEqual([
-      { person: 'A', key: 'exerciseGoal', value: 45 }, { person: 'B', key: 'goalBmi', value: 22 }, { person: 'A', key: 'goalLean', value: null }
+      { person: 'A', key: 'exerciseGoal', value: 45, day: '2026-11-18' }, { person: 'B', key: 'goalBmi', value: 22 }, { person: 'A', key: 'goalLean', value: null }
     ]);
   });
 });
