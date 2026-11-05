@@ -6,7 +6,8 @@
   // they answer. The reveal: ○ on the right choice, × on a wrong pick, the English (its key words marked), the Japanese
   // (a reply's on two lines) and the accent, +100 and 「いっぱつ せいかい！ +30」 apart, a missed picture's name, the
   // speaker's ✨ / 💦 and each player's, the host's word, the host's つぎへ. The question sits mid-screen on a tall phone.
-  // A dialogue (gist, next): both speakers' heads, the one talking bobbing, and at the reveal its two-sided transcript
+  // A dialogue (gist, next): both speakers' heads, the one talking bobbing; at the reveal the verdict and only the right
+  // choice and my pick (never under the sticky つぎへ), then its two-sided transcript
   // (Transcript.svelte) with the focus marked; level 4's `note` (the trap) under the accent. Co-op (several, not
   // たいせん): the others' chips only ✓, no points, and how many got it at the reveal (「2にん せいかい！」), never who.
   // A staged item (level 4: a scene, or a phone, PA or video call) shows the scene card instead of the plain stage from
@@ -128,9 +129,12 @@
           {:else if reveal && parts}
             <p class="en" data-kiki-en><SoundLine en={it.en} focus={it.focus} marks={it.marks} clip={it.id} from={playFrom} {clock} /></p>
             <p class="ja">{#each jaLines(it) as l, n (n)}<span>{l}</span>{/each}</p>
-            <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
+            <!-- the accent and the marks' key on one row (the key wraps under it when long) -->
+            <div class="meta">
+              <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
+              {#if it.marks}<MarkLegend marks={it.marks} />{/if}
+            </div>
             {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
-            {#if it.marks}<MarkLegend marks={it.marks} />{/if}
           {:else}
             <p class="notes" aria-label={t('kiki.listen')}>♪…</p>
             <span class="track" aria-hidden="true">
@@ -141,8 +145,6 @@
         {@render hearRow()}
       </div>
     {/if}
-
-    {#if reveal && dlg}<Transcript it={dlg} talk={talking} from={game.talk && game.talk.i === v.i ? game.talk.from : null} {clock} />{/if}
 
     {#if !reveal}
       {#if ask}<p class="ask">{ask}</p>{/if}
@@ -167,12 +169,14 @@
     <div class="choices" class:pics={it.type === 'pic'} class:dim={!open && !reveal && !mine} role="group" aria-label={t('kiki.pick')}>
       {#each it.choices as c, k (k)}
         {@const m = mark(k)}
+        {#if !(reveal && dlg) || m}
         <button type="button" class="ch" data-choice={k} data-mark={m ?? undefined} aria-pressed={mine?.k === k}
           aria-disabled={!open} aria-label={it.type === 'pic' ? (PIC_JA[c] ?? '') : undefined} data-sfx={open ? 'choice-pick' : 'none'}
           onclick={() => open && game.answer(k)}>
           {#if it.type === 'pic'}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={it.type === 'num' ? undefined : 'en'}>{c}</span>{/if}
           {#if m === 'right'}<span class="sym ok" aria-hidden="true">○</span>{:else if m === 'wrong'}<span class="sym ng" aria-hidden="true">×</span>{/if}
         </button>
+        {/if}
       {/each}
     </div>
 
@@ -186,6 +190,9 @@
       {:else if mine && !reveal && !solo}{t('kiki.answered')} {t('kiki.waitOthers')}
       {:else if v.phase === 'lead' || v.phase === 'play'}{t('kiki.listen')}{/if}
     </p>
+
+    <!-- a dialogue's transcript under its verdict and choices, so the answer is never under the sticky つぎへ -->
+    {#if reveal && dlg}<Transcript it={dlg} talk={talking} from={game.talk && game.talk.i === v.i ? game.talk.from : null} {clock} />{/if}
   </div>
 
   {#if v.canNext}
@@ -227,6 +234,7 @@
   .en { margin: 0; font: 700 max(17px, var(--fs-talk))/1.4 var(--font-ui); position: relative; }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; }
   .ja span { display: block; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; position: relative; }
   .accent {
     justify-self: start; position: relative; padding: 3px 10px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink);
     font: 700 var(--fs-xs)/1.2 var(--font-ui);
@@ -236,7 +244,7 @@
   .line { font-size: max(17px, var(--fs-body)); }
   .blank { display: inline-block; min-width: 3.5em; border-bottom: 3px solid var(--text); margin: 0 4px; }
   .verdict { display: grid; justify-items: center; gap: 6px; }
-  .verdict p { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--c-coral); }
+  .verdict p { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--coral-text); }
   .verdict.ok p { color: var(--leaf-text); }
   .verdict b { font-family: var(--font-num, var(--font-ui)); }
   .verdict .sym { font-size: 1.2em; }
@@ -263,7 +271,7 @@
   .choices:has([data-mark='right']) .ch:not([data-mark]) { opacity: .55; }
   .ch .sym { position: absolute; top: 4px; right: 10px; font: 700 26px/1 var(--font-ui); }
   .ch .sym.ok { color: var(--c-leaf-text, var(--c-ink)); }
-  .ch .sym.ng { color: var(--c-coral); }
+  .ch .sym.ng { color: var(--c-coral-text); }
   .tx { overflow-wrap: anywhere; }
 
   .timer { display: block; height: 6px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; }
@@ -271,11 +279,10 @@
   .status { min-height: 1.4em; margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   /* the host's word on the verdict (しずえ's head) */
   .cheer { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-body); color: var(--text); }
-  /* 🔁 🐢 under the bubble (the bubble's column), small; おなじへや's others: off, with why */
-  /* the scene card, 🔁 🐢 centred under it */
+  /* 🔁 🐢 in one row under the speaker and the bubble, centred, small; おなじへや's others: off, with why */
+  /* the scene card, 🔁 🐢 under it */
   .staged { display: grid; gap: 10px; }
-  .staged .hear { grid-column: auto; justify-content: center; }
-  .hear { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .hear { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
   .hear .btn.small { flex: 0 1 auto; white-space: nowrap; }
   .hint { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
   /* つぎへ: the host's one action at the foot */

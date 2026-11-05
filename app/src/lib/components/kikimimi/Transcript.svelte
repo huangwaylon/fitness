@@ -49,10 +49,11 @@
 
 <style>
   .tr { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .ln { display: grid; grid-template-columns: auto 1fr; align-items: end; gap: 8px; margin-right: 28px; }
-  .ln.right { grid-template-columns: 1fr auto; margin: 0 0 0 28px; }
+  /* the heads' column a fixed 36px, so every bubble on a side starts and ends at one line */
+  .ln { display: grid; grid-template-columns: 36px 1fr; align-items: end; gap: 8px; margin-right: 28px; }
+  .ln.right { grid-template-columns: 1fr 36px; margin: 0 0 0 28px; }
   .ln.right .head { order: 2; }
-  .head { line-height: 0; }
+  .head { line-height: 0; justify-self: center; }
   .b {
     position: relative; display: grid; gap: 2px; padding: 8px 12px; border-radius: 18px; background: var(--c-card); color: var(--c-ink);
     box-shadow: 0 var(--lip-h) 0 var(--c-lip); transition: transform var(--dur-quick);
