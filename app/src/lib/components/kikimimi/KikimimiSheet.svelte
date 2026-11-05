@@ -19,6 +19,7 @@
   import type { QuizPhase } from '#lib/kikimimi/session.ts';
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
+  import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -109,10 +110,7 @@
   function startOwn() {
     game?.open(lastLv());
   }
-  const hostName = (w: 'A' | 'B' | 'G') => {
-    const view = week.view;
-    return !view ? '' : w === 'G' ? view.guest.villagerName : view.people[w].villagerName;
-  };
+  const hostName = (w: 'A' | 'B' | 'G') => (week.view ? villagerNameOf(week.view, w) : '');
   /** The 3-2-1. */
   const count = $derived(v && v.phase === 'countdown' ? Math.max(1, Math.ceil((v.until - game!.now) / 1000)) : 0);
 </script>

@@ -13,5 +13,8 @@ export function mine(v: WeekView): { who: Who; villagerName: string; villager: s
   return { who: v.me, villagerName: p.villagerName, villager: p.villager };
 }
 
+/** A person's villager's name (a member's, or the guest's). */
+export const villagerNameOf = (v: Pick<WeekView, 'people' | 'guest'>, w: Who): string => (w === 'G' ? v.guest.villagerName : v.people[w].villagerName);
+
 /** A person's chip colour (yuzu A, mint B, lilac the guest). */
 export const tagOf = (w: Who): string => (w === 'A' ? 'var(--c-yuzu)' : w === 'B' ? 'var(--c-mint)' : 'var(--c-lilac)');

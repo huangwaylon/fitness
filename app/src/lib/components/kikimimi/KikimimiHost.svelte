@@ -7,6 +7,7 @@
   import { lazy } from '#lib/ui-state/reload.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
+  import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
   import { listenQuiz, openQuiz, quiz } from './invite.svelte.ts';
 
@@ -24,8 +25,7 @@
       (host, g) => {
         const v = week.view;
         if (!v) return;
-        const name = host === 'G' ? v.guest.villagerName : v.people[host].villagerName;
-        toasts.show(t('kiki.invite', { name }), INVITE_MS, { person: host as Who, low: true, action: { label: t('kiki.join'), run: () => openQuiz(g) } });
+        toasts.show(t('kiki.invite', { name: villagerNameOf(v, host) }), INVITE_MS, { person: host as Who, low: true, action: { label: t('kiki.join'), run: () => openQuiz(g) } });
         shownFor = { g, id: toasts.current?.id ?? 0 };
       },
       (g) => {
