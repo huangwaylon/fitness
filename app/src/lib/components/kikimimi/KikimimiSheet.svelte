@@ -14,6 +14,9 @@
   import Play from './Play.svelte';
   import Results from './Results.svelte';
   import { QuizGame } from './game.svelte.ts';
+  import { currentReport, recordGame } from './progress.svelte.ts';
+  import { practiceFor } from '#lib/kikimimi/report.ts';
+  import type { Focus } from '#lib/kikimimi/srs.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
   import type { Level } from '#lib/kikimimi/bank.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
@@ -55,7 +58,8 @@
   const me = $derived(week.view?.viewer);
   $effect(() => {
     if (!open || !me) return;
-    const g = new QuizGame({ live: quizLive(), me, fast: hook('kikimimi') === 'fast', heard: heardQuiz() });
+    const who = me;
+    const g = new QuizGame({ live: quizLive(), me, fast: hook('kikimimi') === 'fast', heard: heardQuiz(), record: (row) => recordGame(who, row) });
     untrack(() => {
       if (join) g.join(join);
       else if (!g.view.invite) g.open(lastLv());
@@ -108,12 +112,19 @@
    *  back to the invite (the host's next). */
   function again() {
     if (!game || !v) return;
-    const host = v.amHost, lv = v.lv, same = v.same, shared = !v.local;
+    const host = v.amHost, lv = v.lv, same = v.same, shared = !v.local, practicing = game.practicing;
     game.close();
     if (host || !game.view.invite) {
       game.open(lv as Level, same);
       if (host && shared) game.invite();
+      else if (practicing) practice();
     }
+  }
+  /** にがて れんしゅう: my lobby kept alone starts with a deck of my weak spots (`focus`: a recommendation's). */
+  function practice(focus: Focus = null) {
+    const r = currentReport();
+    if (!game || !r) return;
+    game.practice(practiceFor(r, LEVELS, game.view.seed, focus));
   }
   function startOwn() {
     game?.open(lastLv());
@@ -145,7 +156,7 @@
           <button type="button" class="btn paper" data-kiki-own data-sfx="open" onclick={startOwn}>{t('kiki.openOwn')}</button>
         </div>
       {:else if v.phase === 'lobby'}
-        <Lobby {game} onlevel={keepLv} />
+        <Lobby {game} onlevel={keepLv} onpractice={() => practice()} />
       {:else if v.phase === 'countdown'}
         <div class="center count" data-kiki-count={count}>
           <Host pose="stand" size={110} />

@@ -27,7 +27,7 @@
   const open = $derived(v.phase === 'answer' && !mine && !v.out);
   /** 🔁 / 🐢 once the first play is over, on a phone that speaks. */
   const canHear = $derived(v.speaks && !v.out && (v.phase === 'answer' || reveal));
-  const slowOk = $derived(v.lv <= 2);
+  const slowOk = $derived((game.items[v.i]?.lv ?? v.lv) <= 2); // the item's level (にがて れんしゅう mixes levels)
   const solo = $derived(v.players.length <= 1);
   const name = (id: RosterId) => (i18n.locale === 'ja' ? ROSTER[id].nameJa : ROSTER[id].nameEn);
 

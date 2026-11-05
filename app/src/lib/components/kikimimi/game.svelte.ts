@@ -11,6 +11,8 @@ import type { Who } from '#lib/types.ts';
 import { loadVoice, playVoice } from '#lib/sound/sound.svelte.ts';
 import { audioUrl } from '#lib/sound/manifest.ts';
 import { cue } from '#lib/sound/cues.ts';
+import { localDateAt } from '#lib/contract/tokyo.ts';
+import type { ListenRow } from '#lib/contract/listen.ts';
 
 /** The last decks built (the session's and the UI's are the same items), by seed and level. */
 const decks = new Map<string, Item[]>();
@@ -24,6 +26,15 @@ function itemsOf(seed: number, lv: Level): Item[] {
   }
   return d;
 }
+
+/** にがて れんしゅう's deck (srs.ts practiceDeck) for a lobby of mine kept alone: its seed and level stand for it, as a
+ *  shared deck's would (nothing goes on the wire). */
+function usePractice(seed: number, lv: Level, items: Item[]): void {
+  decks.delete(`${seed}:${lv}`);
+  decks.set(`${seed}:${lv}`, items);
+}
+
+const BY_ID = new Map(BANK.map((it) => [it.id, it]));
 
 /** The deck as the session sees it: how many, each clip's length (ms, clips.json) and its right choice. */
 const deckOf: DeckOf = (seed, lv) => {
@@ -56,6 +67,10 @@ export class QuizGame {
   /** おなじへや on a phone that doesn't speak: 🔁 / 🐢 shown disabled (「ホストの スマホで ながれます」), and no
    *  first-listen bonus for anyone (session.ts). */
   listenOnly = $derived(!!this.view?.same && !this.view.speaks);
+  /** This game is にがて れんしゅう (a solo deck of my weak spots). */
+  practicing = $state(false);
+  /** My answers of the last game, as recorded (the results' feedback), or null. */
+  recorded = $state.raw<ListenRow | null>(null);
 
   readonly me: Who;
   readonly #link: QuizLink;
@@ -70,11 +85,19 @@ export class QuizGame {
   #cued = '';
   #fetched = '';
   #gone = false;
+  /** My replays per question before answering (the row's `rp`), the questions sat out, when the game began, the game
+   *  recorded. */
+  #rp: number[] = [];
+  #outs = new Set<number>();
+  #began = 0;
+  #recordedG = '';
+  readonly #record: ((row: ListenRow) => void) | undefined;
   #soundingTimer: ReturnType<typeof setTimeout> | undefined;
   #offHere: () => void;
 
-  constructor(o: { live: Live | null; me: Who; fast?: boolean; heard?: readonly QuizIn[] }) {
+  constructor(o: { live: Live | null; me: Who; fast?: boolean; heard?: readonly QuizIn[]; record?: (row: ListenRow) => void }) {
     this.me = o.me;
+    this.#record = o.record;
     this.#link = o.live ? quizLink(o.live) : soloLink();
     this.#session = new QuizSession({ me: o.me, deckOf, windows: o.fast ? FAST_WINDOWS : undefined });
     // what the island heard before this sheet opened: as if heard now (a host re-sends only when someone comes back)
@@ -89,7 +112,17 @@ export class QuizGame {
 
   /** Open a lobby (I host it), on this phone only until `invite`. */
   open(lv: Level, same = false): void {
+    this.practicing = false;
     this.#act((s, now) => s.open({ lv, same }, now));
+  }
+  /** にがて れんしゅう: my lobby kept alone starts at once with `items` (srs.ts practiceDeck) as its deck. */
+  practice(items: Item[]): void {
+    const v = this.view;
+    if (!v?.g || v.phase !== 'lobby' || !v.local || !v.amHost || !items.length) return;
+    usePractice(v.seed, v.lv as Level, items);
+    this.#fetched = '';
+    this.practicing = true;
+    this.go();
   }
   /** みんなを さそう: my lobby announced to everyone here. */
   invite(): void {
@@ -127,7 +160,10 @@ export class QuizGame {
     const it = this.items[this.view.i];
     if (!it) return;
     const i = this.view.i;
-    if (this.view.phase === 'answer' && !this.view.answers[i]) this.replayed = Object.assign([...this.replayed], { [i]: true });
+    if (this.view.phase === 'answer' && !this.view.answers[i]) {
+      this.replayed = Object.assign([...this.replayed], { [i]: true });
+      this.#rp[i] = (this.#rp[i] ?? 0) + 1;
+    }
     void this.#playNow(it, i, slow);
   }
 
@@ -147,6 +183,8 @@ export class QuizGame {
   /** The sheet closed: leave the game, stop listening and every clip. */
   dispose(): void {
     if (this.#gone) return;
+    // a game left mid-way: the questions I answered still count
+    if (this.view?.g && this.view.phase !== 'lobby' && this.view.phase !== 'idle') this.#keep(this.view, this.#link.now(), false);
     this.leave();
     this.#gone = true;
     clearTimeout(this.#timer);
@@ -169,7 +207,15 @@ export class QuizGame {
     this.#wire?.tick(); // (undefined while wireQuiz itself calls in, at the start)
     const now = this.#link.now();
     const v = this.#session.view(now);
-    if (this.view && v.g !== this.view.g) this.replayed = [];
+    if (this.view && v.g !== this.view.g) {
+      this.replayed = [];
+      this.#rp = [];
+      this.#outs.clear();
+      this.#began = 0;
+    }
+    if (v.g && v.phase !== 'lobby' && v.phase !== 'idle' && !this.#began) this.#began = now;
+    if (v.out && v.i >= 0) this.#outs.add(v.i);
+    if (v.phase === 'results' && v.g) this.#keep(v, now, true);
     this.view = v;
     this.now = now;
     this.#sounds(v, now);
@@ -217,6 +263,30 @@ export class QuizGame {
       this.#revealed = v.i;
       if (v.speaks && !v.out) void this.#playNow(it, v.i, false);
     }
+  }
+
+  /** My answers of this game as a `listen` row (contract/listen.ts), recorded once: at the results (an unanswered
+   *  question timed out) or when I leave mid-way (only those answered). Questions sat out aren't in it. */
+  #keep(v: QuizView, now: number, done: boolean): void {
+    if (!v.g || this.#recordedG === v.g) return;
+    const items = itemsOf(v.seed, v.lv as Level);
+    const r: ListenRow['r'] = [];
+    items.forEach((it, i) => {
+      if (this.#outs.has(i) || r.length >= 12) return;
+      const a = v.answers[i];
+      if (!a && !done) return;
+      const authored = BY_ID.get(it.id);
+      const pick = a ? (authored?.choices.indexOf(it.choices[a.k]) ?? -1) : -1;
+      r.push([it.id, a && a.k === it.answer ? 1 : 0, pick, Math.min(99, this.#rp[i] ?? 0)]);
+    });
+    if (!r.length) return;
+    this.#recordedG = v.g;
+    const row: ListenRow = {
+      d: localDateAt(now), g: v.g, lv: v.lv, n: Math.max(1, Math.min(3, v.players.length)),
+      ms: Math.max(0, Math.min(3_600_000, Math.round(now - (this.#began || now)))), ...(this.practicing && { p: 1 as const }), r
+    };
+    this.recorded = row;
+    this.#record?.(row);
   }
 
   #cues(v: QuizView): void {
