@@ -608,7 +608,8 @@
     }
     // the partner's change, just made: it bumps where it lands and their villager turns to it
     offs.push(room.on(({ e, live }) => {
-      edit?.changedThere(e.id, !!e.rm);
+      // (a light's switch alone never moves the piece: a piece in my hands stays there)
+      if (e.lt === undefined) edit?.changedThere(e.id, !!e.rm);
       if (!live || e.rm || !eng) return;
       const p = room.byId(e.id);
       if (!p) return;
