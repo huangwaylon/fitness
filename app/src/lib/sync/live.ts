@@ -2,10 +2,11 @@
 // closed when it is hidden or offline (zero cost then), reconnecting with backoff, estimating the relay's clock from
 // pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
-import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
+import { LIVE, getKey, getStoredMe, localKV, readJson, remove, writeJson } from './storage.ts';
 import { fnv1a } from '../random.ts';
 import { log } from './log.ts';
 import { takeWx } from './wx.ts';
+import { ROOM_PROTOCOL, TICKET_TTL_MS, makeTicket } from '../contract/ticket.ts';
 import { CLOSE, HB_PING, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isLayoutIntent, isStored, parseClient, parseServer, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from '../contract/live-protocol.ts';
 
 /** The relay's socket URL; VITE_LIVE_URL overrides it (empty = live off). */
@@ -48,6 +49,9 @@ export interface LiveOptions {
   url?: string;
   /** The person key (read at each connect). */
   key: () => string | null;
+  /** Whose key it is (read at each connect): with it, each socket offers the room an admission ticket (contract/ticket.ts)
+   *  made under the key; without (the demo's test relays), none. */
+  me?: () => Who | null;
   /** The app's version, said in the hello (the relay logs it: `ws.hello`). */
   build?: () => string | undefined;
   WebSocket?: typeof WebSocket;
@@ -192,6 +196,11 @@ const WELCOME_MS = 10_000;
 const STUCK_MS = 4000;
 /** A kept intent the socket's buffer turned away goes as it drains: looked at again this often while any wait. */
 const DRAIN_MS = 30;
+/** Ticketed sockets that failed before opening (a 403: a stale ticket, or a relay that can't answer one) before one goes
+ *  without (still taken while the relay doesn't require it); such a fallback is kept this long (`island.liveTicket`),
+ *  so a relay without the ticket costs one page load two failed handshakes, not every one. */
+const TICKET_TRIES = 2;
+const TICKET_OFF_MS = 6 * 3_600_000;
 /** Offset samples kept; the one with the shortest round trip wins. */
 const SAMPLES = 8;
 /** Beyond this much unsent, send() drops (a stalled socket never piles up). */
@@ -403,6 +412,8 @@ export function createLive(o: LiveOptions): Live {
     welcomeTimer = null;
   };
 
+  /** When this socket last sent anything (the room's ghost watch: a beating phone sends at least every PING_EVERY_MS). */
+  let sentAt = 0;
   const raw = (m: object): boolean => {
     if (!ws || ws.readyState !== 1 || ws.bufferedAmount > MAX_BUFFERED) return false;
     try {
@@ -410,6 +421,7 @@ export function createLive(o: LiveOptions): Live {
       ws.send(s);
       mx.sent++;
       mx.sentBytes += s.length;
+      sentAt = Date.now();
       return true;
     } catch {
       return false;
@@ -446,14 +458,17 @@ export function createLive(o: LiveOptions): Live {
       ws.send(HB_PING);
       mx.sent++;
       mx.sentBytes += HB_PING.length;
+      sentAt = Date.now();
     } catch {
       /* closing: its close handler tidies up */
     }
   };
 
-  /** Quiet for PING_EVERY_MS (nothing heard): probe; looked at again PING_EVERY_MS after the last thing heard. */
+  /** Quiet for PING_EVERY_MS either way (nothing heard, or nothing sent: a phone hearing the partner's news and saying
+   *  nothing; its hello said `beat`, and the room lets a beating socket it hears nothing from for 60 s go as a ghost):
+   *  probe; looked at again PING_EVERY_MS after the older of the two. */
   const quiet = () => {
-    const now = Date.now(), still = now - heardAt;
+    const now = Date.now(), still = now - Math.min(heardAt, sentAt);
     if (still >= PING_EVERY_MS) probe();
     pingEvery = setTimeout(quiet, still >= PING_EVERY_MS ? PING_EVERY_MS : PING_EVERY_MS - still);
   };
@@ -585,12 +600,36 @@ export function createLive(o: LiveOptions): Live {
   /** When this socket was made, and when its welcome came (0: not yet): the log's ws.open and ws.close. */
   let madeAt = 0, welcomedAt = 0;
 
+  /** A ticket being made for the next socket (Web Crypto: a tick or two), and the ticketed sockets in a row that failed
+   *  before they opened. */
+  let ticketing = false;
+  let ticketFails = 0;
+  const ticketOff = () => {
+    const t = readJson<{ until?: unknown }>(localKV(), LIVE.ticket);
+    return !!t && typeof t.until === 'number' && t.until > Date.now() && t.until - Date.now() <= TICKET_OFF_MS;
+  };
+
+  /** A socket, with an admission ticket when this phone knows whose key it holds (made fresh for each, on the relay's
+   *  clock), else without; two ticketed ones failing before they open, the next goes without. */
   function connect() {
-    if (ws || !wanted()) return;
+    if (ws || ticketing || !wanted()) return;
     rekey();
+    const key = o.key(), who = o.me?.() ?? null;
+    if (!key || !who || ticketFails >= TICKET_TRIES || ticketOff() || typeof crypto === 'undefined' || !crypto.subtle) return open(null);
+    ticketing = true;
+    makeTicket(key, who, Date.now() + offset + TICKET_TTL_MS).then(
+      (t) => t,
+      () => null
+    ).then((t) => {
+      ticketing = false;
+      if (!ws && wanted()) open(t);
+    });
+  }
+
+  function open(ticket: string | null) {
     let s: WebSocket;
     try {
-      s = new WS!(url);
+      s = ticket ? new WS!(url, [ROOM_PROTOCOL, ticket]) : new WS!(url);
     } catch {
       schedule();
       return;
@@ -598,6 +637,7 @@ export function createLive(o: LiveOptions): Live {
     ws = s;
     madeAt = Date.now();
     welcomedAt = 0;
+    let opened = false;
     // no welcome in time (a handshake or a hello lost on a bad link, a socket iOS froze while it opened): another
     welcomeTimer = setTimeout(() => {
       welcomeTimer = null;
@@ -606,12 +646,15 @@ export function createLive(o: LiveOptions): Live {
       schedule();
     }, Math.min(3, 1 + fails) * WELCOME_MS);
     s.onopen = () => {
+      opened = true;
       const key = o.key();
       if (!key) return drop();
       // a new Tokyo day since the page loaded: that day's whole world
       lastWorld = Math.max(lastWorld, dayStart(tokyoDay(Date.now() + offset)));
       const build = o.build?.();
-      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, ...(build ? { build } : {}) });
+      // `beat`: this phone sends something at least every PING_EVERY_MS (quiet), so the room may take one it hears
+      // nothing from for a minute for a ghost
+      raw({ v: LIVE_V, kind: 'hello', key, since: lastWorld, ...(build ? { build } : {}), beat: true });
     };
     s.onmessage = (e: MessageEvent) => {
       heardAt = Date.now();
@@ -624,6 +667,10 @@ export function createLive(o: LiveOptions): Live {
       switch (m.kind) {
         case 'welcome': {
           welcomedAt = Date.now();
+          if (ticket) {
+            ticketFails = 0;
+            if (ticketOff()) remove(localKV(), LIVE.ticket);
+          }
           if (welcomeTimer) clearTimeout(welcomeTimer);
           welcomeTimer = null;
           log('ws.open', { ms: welcomedAt - madeAt, retries: fails });
@@ -718,6 +765,12 @@ export function createLive(o: LiveOptions): Live {
     };
     s.onclose = (e: CloseEvent) => {
       if (ws !== s) return;
+      // never opened: a ticketed one counts toward going without; one without failing too, tickets again next
+      if (!opened && ticket && ++ticketFails >= TICKET_TRIES) writeJson(localKV(), LIVE.ticket, { until: Date.now() + TICKET_OFF_MS });
+      if (!opened && !ticket) {
+        ticketFails = 0;
+        remove(localKV(), LIVE.ticket);
+      }
       mx.closed = e.code;
       ws = null;
       clearTimers();
@@ -879,5 +932,5 @@ export const setLiveBuild = (b: string): void => void (appBuild = b);
  * now, the island's presence later): a second socket of the same person would replace this one (4002).
  */
 export function liveRelay(): Live {
-  return (shared ??= createLive({ key: getKey, build: () => appBuild }));
+  return (shared ??= createLive({ key: getKey, me: getStoredMe, build: () => appBuild }));
 }

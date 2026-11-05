@@ -115,9 +115,11 @@ export function newIsland() {
 
   return {
     ctl,
+    /** The island's person keys (the relay's: a ticket's check). */
+    keys: KEYS,
     /** A context's phones paired as `who` (the live app, its record and its socket this island's). */
     async pair(context: BrowserContext, who: Who) {
-      await context.addInitScript((key) => localStorage.setItem('island.key', key), KEY_OF[who]);
+      await context.addInitScript(([key, me]) => (localStorage.setItem('island.key', key), localStorage.setItem('island.me', JSON.stringify(me))), [KEY_OF[who], who] as const);
       await context.routeWebSocket(/\/room$/, (ws) => socket(who, ws));
       await context.addInitScript(buffered);
       await api(context, who);
@@ -182,6 +184,15 @@ function buffered(): void {
     const n = typeof d === 'string' ? new TextEncoder().encode(d).length : 'size' in d ? d.size : d.byteLength;
     this.__buf += n;
     setTimeout(() => void (this.__buf = Math.max(0, this.__buf! - n)), 0);
+  };
+  // (and what each socket offered as its subprotocols: the admission ticket, `window.__wsProtocols`)
+  const W = WebSocket;
+  const seen: (string[] | null)[] = ((window as unknown as { __wsProtocols: (string[] | null)[] }).__wsProtocols = []);
+  window.WebSocket = class extends W {
+    constructor(url: string | URL, protocols?: string | string[]) {
+      super(url, protocols);
+      seen.push(protocols === undefined ? null : [protocols].flat());
+    }
   };
 }
 

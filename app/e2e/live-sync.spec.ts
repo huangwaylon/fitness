@@ -11,6 +11,7 @@
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { DEMO_CTX, newIsland, setVisible } from './liveRoom.ts';
 import { hudMenu } from './hud.ts';
+import { ROOM_PROTOCOL, ticketOwner } from '../src/lib/contract/ticket.ts';
 
 type Island = ReturnType<typeof newIsland>;
 type Who = 'A' | 'B';
@@ -68,6 +69,21 @@ test('E15: back from a 3.5 s app switch, a phone fetches what the partner wrote 
   await expect.poll(() => island.sockets('A'), { timeout: 10_000 }).toBe(1);
   // the welcome said the record moved on: fetched, inside the 30 s floor
   await expect.poll(() => island.fetches('A'), { timeout: 5000 }).toBeGreaterThan(before);
+});
+
+test('a paired phone’s socket offers the room an admission ticket the relay’s check takes, fresh for each socket', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const island = newIsland();
+  const a = await phone(browser, island, 'A');
+  const offered = () => a.evaluate(() => (window as unknown as { __wsProtocols: (string[] | null)[] }).__wsProtocols);
+  const [first] = await offered();
+  expect(first?.[0]).toBe(ROOM_PROTOCOL);
+  expect(await ticketOwner(first![1], island.keys, Date.now())).toBe('A');
+  island.drop('A', 1012);
+  await expect.poll(() => island.sockets('A'), { timeout: 10_000 }).toBe(1);
+  const again = (await offered()).at(-1)!;
+  expect(await ticketOwner(again[1], island.keys, Date.now())).toBe('A');
+  expect(again[1]).not.toBe(first![1]);
 });
 
 test('E14: after the relay restarts (1012), a phone fetches what the partner wrote while its socket was down', async ({ browser }) => {
