@@ -141,7 +141,7 @@ describe('the visitors’ spots: the members’ marks (spots.ts markerSpot)', ()
     expect([sand.length > 0, bad]).toEqual([true, []]);
   });
   test('an op of the new kinds passes the contract as it is (no relay change; an older app keeps it as a thing it doesn’t know)', () => {
-    expect([layoutOpOf({ sc: 'o', id: 'o1', at: 1.8e12, k: 'plaza', x: 9, z: 30, f: 0 }), layoutOpOf({ sc: 'o', id: 'o2', at: 1.8e12, k: 'beach-spot', x: 9, z: 3, f: 0 })].map((o) => o?.k)).toEqual(['plaza', 'beach-spot']);
+    expect([layoutOpOf({ sc: 'o', id: 'o1', at: 1.8e12, k: 'plaza', x: 9, z: 30, f: 0 }), layoutOpOf({ sc: 'o', id: 'o2', at: 1.8e12, k: 'beach-spot', x: 9, z: 3, f: 0 })].map((o) => (o && 'k' in o ? o.k : null))).toEqual(['plaza', 'beach-spot']);
   });
 });
 
