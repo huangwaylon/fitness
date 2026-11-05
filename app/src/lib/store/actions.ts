@@ -292,6 +292,11 @@ export function sendDecor(op: object): void {
   if (week.model) week.send('decor', { ...op });
 }
 
+/** A burst of layout ops (the editor's save, a clash settled) for the record: one queue write, one recompute. */
+export function sendDecors(ops: readonly object[]): void {
+  if (week.model && ops.length) week.sendMany('decor', ops.map((op) => ({ ...op })));
+}
+
 // ---- The meal log (ごはん, docs/backend.md#events `food`): each change of mine is one op carrying the entry's whole
 // state, sent at once and shown at once (the model folds the queued ops: contract/food.ts foodFold). Only my own
 // entries change; a typed-in meal never earns ベル.

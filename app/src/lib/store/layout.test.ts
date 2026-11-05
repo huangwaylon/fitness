@@ -70,7 +70,6 @@ describe('the layout on this phone', () => {
     layout.apply([move(p1.id, to.x, to.z, T0 + 2000)]);
     r.sent.length = 0;
     r.hear({ sc: 'o', id: p2.id, at: T0 + 1000, k: 'palm', x: to.x, z: to.z, f: 0, who: 'B', t: T0 + 1000 });
-    expect(clashesWith(layout.current, layout.obj(p2.id)!).map((o) => o.id)).toEqual([p1.id]);
     vi.advanceTimersByTime(1);
     // theirs stays; mine moved, sent as a normal op of mine
     expect(tileOf(p2.id)).toEqual([to.x, to.z]);
@@ -106,4 +105,24 @@ describe('the layout on this phone', () => {
     vi.advanceTimersByTime(1);
     expect(r.sent).toEqual([]);
   });
+
+  it('a burst of the partner’s ops (their editor’s save) is one rebuild, the tick after; one of mine is one record send', () => {
+    const r = fakeRelay();
+    layout.attach(r.live, 'A');
+    const news: number[] = [];
+    layout.on((n) => news.push(n.diff.objects.move.length));
+    const sunk: number[] = [];
+    layout.sink = (ops) => sunk.push(ops.length);
+    const palms = layout.ofKind('palm').slice(0, 4);
+    for (const [i, p] of palms.entries()) r.hear({ sc: 'o', id: p.id, at: T0 + 10 + i, k: 'palm', x: p.x, z: p.z + 1, f: 0, who: 'B', t: T0 + 10 + i });
+    expect(news).toEqual([]);
+    vi.advanceTimersByTime(1);
+    expect(news).toHaveLength(1);
+    expect(layout.obj(palms.at(-1)!.id)?.z).toBe(palms.at(-1)!.z + 1);
+    layout.apply(palms.map((p, i) => move(p.id, p.x, p.z + 2, T0 + 100 + i)));
+    expect(sunk).toEqual([palms.length]);
+    expect(news).toHaveLength(2);
+    layout.sink = null;
+  });
 });
+

@@ -82,6 +82,14 @@ export class DemoBackend implements Backend {
     return { ok: true, undo, hold: (ms) => ms ?? HOLD_MAX_MS };
   }
 
+  sendMany(events: readonly { type: EventType; data: Record<string, unknown> }[]): void {
+    if (!events.length) return;
+    const now = this.now();
+    for (const { type, data } of events) this.#events.push({ id: `demo-${now.toString(36)}-${this.#events.length}`, type, data, queuedAt: now, tries: 0, nextAt: now, person: this.#me });
+    this.#save();
+    this.#host.changed();
+  }
+
   /** `?demo=harvest` shows last week's harvest whatever the day (the model opens it only from Sunday 19:30). */
   decorate(m: ComposedModel, v: WeekView): void {
     if (this.#mode !== 'harvest' || v.harvest) return;

@@ -6,7 +6,7 @@ import type { EventRow, EventType } from '#lib/contract/api.ts';
 import { t } from '#lib/i18n/index.ts';
 import { toasts } from '#lib/ui-state/toast.svelte.ts';
 import { getKey, getStoredMe, onStorageProblem, type StorageProblem } from '#lib/sync/storage.ts';
-import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued, retryNow, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
+import { ackedEvents, enqueue, enqueueAll, flush, holdEvent, keepAcked, nextRetryAt, queued, retryNow, unqueue, type QueuedEvent } from '#lib/sync/queue.ts';
 import { addOwnRows, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
@@ -295,6 +295,12 @@ export class LiveBackend implements Backend {
       return until - now;
     };
     return { ok: true, undo, hold };
+  }
+
+  sendMany(events: readonly { type: EventType; data: Record<string, unknown> }[]): void {
+    if (!enqueueAll(events).length) return;
+    this.#host.changed();
+    void this.#flush(true);
   }
 
   async #flush(reconcile: boolean): Promise<void> {

@@ -121,6 +121,15 @@ class WeekStore implements Host {
    * Record an action and show it at once (the model applies it like the server will). Live: queued and retried
    * until the server acks; the demo keeps it and never sends it. `holdMs`: an undo window (see SendResult).
    */
+  /** Several events at once (a burst: the editor's save), as `send` each but one queue write and one recompute. */
+  sendMany(type: EventType, datas: readonly Record<string, unknown>[]): void {
+    const ok = this.guest ? datas.filter((d) => guestMayWrite(type, d)) : datas;
+    const b = this.#backend ?? (this.demo ? null : (this.#getBackend() as Backend));
+    if (!b || !ok.length) return;
+    if (b.sendMany) b.sendMany(ok.map((data) => ({ type, data })));
+    else for (const data of ok) b.send(type, data, {});
+  }
+
   send(type: EventType, data: Record<string, unknown>, opts: SendOptions = {}): SendResult {
     // the guest's phone sends only what the record takes from it (its finds, tallies, the tent, its look): the rest
     // would be refused `forbidden` (contract/guest.ts), so it never leaves the phone or shows

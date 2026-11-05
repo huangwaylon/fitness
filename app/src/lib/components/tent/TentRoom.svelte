@@ -46,7 +46,7 @@
   import { where } from '#lib/store/where.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { leaveBy } from '../island/doorOut.ts';
-  import { sendDecor } from '#lib/store/actions.ts';
+  import { sendDecor, sendDecors } from '#lib/store/actions.ts';
   import { LIVE_URL, createLive, liveRelay, type Live } from '#lib/sync/live.ts';
   import { createLocalLive } from '#lib/sync/live-local.ts';
   import { tokyoDay, type Intent, type SayScope, type Pt as WirePt, type Relayed } from '#lib/contract/live-protocol.ts';
@@ -580,7 +580,7 @@
     room.attach(relay, me, demo);
     // the island's layout too (a home's look changed in here goes out as its op; this home's door on the way out)
     islandLayout.attach(relay, me, demo);
-    islandLayout.sink = (op) => sendDecor(op);
+    islandLayout.sink = (ops) => sendDecors(ops);
     // the shared island hears the partner while I'm in here too (their walks, their exit at the door): on the phone's
     // one socket it already does; the demo's tabs have a relay per screen
     shared.attach(relay, me, demo);
