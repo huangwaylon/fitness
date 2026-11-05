@@ -62,6 +62,8 @@ export const MAX_BODY_CHARS = 1_000_000;
 export const RATE_PER_MINUTE = 120;
 const MAX_EVENT_DATA_CHARS = 20_000;
 const UPLOADS_SHOWN = 20;
+/** The ingest audit keeps this long (ms): each ingest lets older rows go. */
+export const UPLOADS_KEEP_MS = 60 * 86_400_000;
 /** At most this many events in one `events` request (a queue that grew offline goes in a few). */
 const EVENTS_MAX = 50;
 /** A late row is returned to a poll whose `since` is at most this much after its arrival (the servers' clocks). */
@@ -299,7 +301,7 @@ export class StoreCore {
       parsed = parseShortcut(body);
     } catch (err) {
       const msg = (err instanceof Error ? err.message : String(err)).slice(0, 300);
-      this.io.tx(() => this.addUpload(auditRow(this.nextAt(), me, 'error', bytes, msg, body)));
+      this.io.tx(() => this.audit(auditRow(this.nextAt(), me, 'error', bytes, msg, body)));
       return fail('bad_request', msg);
     }
     const added = this.io.tx(() => {
@@ -322,7 +324,7 @@ export class StoreCore {
         this.io.sql.exec('INSERT INTO metrics (at, person, date, metric, value) VALUES (?, ?, ?, ?, ?)', at, me, m.date, m.metric, m.value);
         n++;
       }
-      this.addUpload(auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, auditNotes(parsed), body));
+      this.audit(auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, auditNotes(parsed), body));
       return n ? { n, at } : { n, at: null };
     });
     if (added.at) this.io.notify({ what: 'ingest', who: me, at: added.at, rev: this.rev() });
@@ -331,6 +333,12 @@ export class StoreCore {
       ...(parsed.skipped ? { skipped: parsed.skipped } : {}),
       ...(parsed.warnings.length ? { warnings: parsed.warnings } : {})
     };
+  }
+
+  /** An ingest's audit row, and the rows older than UPLOADS_KEEP_MS let go (the (at, person) key's index). */
+  private audit(r: readonly unknown[]): void {
+    this.addUpload(r);
+    this.io.sql.exec('DELETE FROM uploads WHERE at < ?', new Date(this.io.now() - UPLOADS_KEEP_MS).toISOString());
   }
 
   private addUpload(r: readonly unknown[]): void {

@@ -86,6 +86,22 @@ describe('ingest', () => {
   });
 });
 
+describe('the ingest audit', () => {
+  it('keeps 60 days: an ingest lets older audit rows go', () => {
+    // 2026-11-05 review: the `uploads` table was never pruned (~50 rows a day, each up to ~2.3 KB)
+    const body = { dates: 'Oct 1, 2026', steps: '4000' };
+    a('ingest', body);
+    tick(30 * 86_400_000);
+    b('ingest', body);
+    expect(store.counts().uploads).toBe(2);
+    tick(30 * 86_400_000 + 1000);
+    a('ingest', { ...body, steps: '4100' });
+    expect(store.counts().uploads).toBe(2); // the first one, 60 days and a second old, went
+    expect(a('uploads').rows).toHaveLength(1);
+    expect(b('uploads').rows).toHaveLength(1);
+  });
+});
+
 describe('events', () => {
   const ev = (id: string, type: string, data: object) => ({ id, type, data });
 
