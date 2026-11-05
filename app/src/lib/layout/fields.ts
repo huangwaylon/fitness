@@ -71,11 +71,43 @@ export interface Fields {
   along(x: number, z: number): [number, number] | null;
 }
 
+/** What a layout's fields are made of: each channel's raster and the river stems' (computeFields; a worker's
+ *  result, structured-cloned: fieldsPrime.ts). */
+export interface RawFields { ch: Float32Array[]; sf: ReturnType<typeof stemField> | null }
+
 const cache = new WeakMap<Layout, Fields>();
+/** What the fields read of a layout, as a key: its codes and its bridges (two layouts alike there share them: the
+ *  island's layout object is replaced as its store attaches, with the same tiles). */
+const keyOf = (l: Pick<Layout, 'codes' | 'objects'>): string => {
+  let k = '';
+  for (let i = 0; i < l.codes.length; i++) k += String.fromCharCode(l.codes[i]);
+  for (const o of l.objects.values()) if (o.k === 'bridge') k += `|${o.x},${o.z},${o.f}`;
+  return k;
+};
+/** The latest fields by key (a worker's, or a layout's built here; one: a set is ~8 MB, the layouts' own hold theirs). */
+const byKey = new Map<string, Fields>();
+const keep = (k: string, f: Fields) => {
+  byKey.delete(k);
+  byKey.set(k, f);
+  if (byKey.size > 1) byKey.delete(byKey.keys().next().value!);
+};
 export function fieldsOf(layout: Layout): Fields {
   let f = cache.get(layout);
-  if (!f) cache.set(layout, (f = build(layout)));
+  if (!f) {
+    const k = keyOf(layout);
+    f = byKey.get(k) ?? wrap(computeFields(layout));
+    keep(k, f);
+    cache.set(layout, f);
+  }
   return f;
+}
+/** Whether the layout's fields are built (or adopted). */
+export const hasFields = (layout: Layout): boolean => cache.has(layout) || byKey.has(keyOf(layout));
+/** A layout's fields computed elsewhere (computeFields in a worker: the same code, the same numbers), kept unless
+ *  they were built here meanwhile; any layout with the same tiles and bridges takes them. */
+export function adoptFields(layout: Layout, raw: RawFields): void {
+  const k = keyOf(layout);
+  if (!cache.has(layout) && !byKey.has(k)) keep(k, wrap(raw));
 }
 
 /** A chamfer distance transform (3 × 3, steps 1 and √2) of a boolean raster: each cell's distance to the nearest set
@@ -142,10 +174,11 @@ const smin = (a: number, b: number, k: number) => {
   return Math.min(a, b) - (h * h * k) / 4;
 };
 
-function build(layout: Layout): Fields {
-  const ms = masks(layout);
+/** The fields' rasters (pure: the codes and the bridges are all it reads). */
+export function computeFields(layout: Pick<Layout, 'codes' | 'objects'>): RawFields {
+  const ms = masks(layout as Layout);
   // the rivers' main stems are drawn from their curves (river.ts), not their tiles
-  const stems = riverStems(layout);
+  const stems = riverStems(layout as Layout);
   const onStem = new Set(stems.flatMap((s) => s.tiles));
   const freshTiles = ms[Ch.fresh];
   if (onStem.size) ms[Ch.fresh] = (c, r) => freshTiles(c, r) && !(onGrid(c, r) && onStem.has(idx(c, r)));
@@ -202,6 +235,10 @@ function build(layout: Layout): Fields {
     const fr = ch[Ch.fresh];
     for (let i = 0; i < W * H; i++) fr[i] = Math.max(-FAR, Math.min(FAR, smin(fr[i], sf.d[i], 10)));
   }
+  return { ch, sf };
+}
+
+function wrap({ ch, sf }: RawFields): Fields {
   return {
     w: W,
     h: H,

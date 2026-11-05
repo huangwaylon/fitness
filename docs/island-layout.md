@@ -182,8 +182,12 @@ for their spots with no visual change (the default's offsets); the 3D island rea
   `height.ts`: the beach sloping into the sea, the banks to a river's bed, a path a little sunk.
 - **The distance fields** (`layout/fields.ts`): each region's signed distance (u, 2.5u raster, ±48u) to its rounded
   edge: the land, the beach's sand, the fresh water, the paths, each tier. The heights, the bake, the sea's shore wash
-  and the fresh water's edge all read them, so every edge is soft and round and follows the tiles (~30 ms for the whole
-  island on a desktop).
+  and the fresh water's edge all read them, so every edge is soft and round and follows the tiles (~110 ms for the
+  whole island on a desktop, a few hundred on a phone). Built once per tiles and bridges (a new layout object with the
+  same ones shares them); on `/` a worker builds them as the app starts (`fieldsPrime.ts`, `fields.worker.ts`: the
+  same `computeFields`, bit for bit, `fields.test.ts`), from the layout kept in localStorage, so the 3D island finds
+  them built as it mounts; it never waits for the worker (if the worker is late or the island's layout another, the
+  main thread builds them, as before).
 - **Soft edges** (the user, 2026-11-02: "smooth the coast and grass edges", NH's coast is round): the terrain data
   and the objects stay on tiles, only the drawn edge is round. The coast (land/sea), the beach's sand (grass/sand),
   the fresh water and the paths are rounded on **half a tile**; a convex corner whose two diagonal neighbours carry the
