@@ -62,8 +62,9 @@ screen).
 
 ## 5. A new epoch (rev)
 The record's `rev` (`e1`, `e2`, …) is the data revision: when it changes, each phone drops its cache and refetches
-every row on its next sync. Nothing changes it by itself (nobody edits the record by hand); after a restore (§13),
-`node scripts/record.ts rev`.
+every row on its next sync (an open phone at once: a new epoch sends `changed`). Nothing changes it but a restore
+(§13: a new epoch follows by itself a few seconds after the restart) or `node scripts/record.ts rev` (nobody edits the
+record by hand; run it after a restore whose reply says the room wasn't told).
 
 ## 6. When sync fails
 | Symptom | Check |
@@ -94,7 +95,7 @@ re-sent: [shortcut §5](shortcut-health-sync.md#5-one-time-baseline-optional)). 
 - **The dump:** monthly, `node scripts/record.ts dump > island-record-YYYY-MM-DD.json` from `relay/` (§13),
   kept somewhere private (never in the repo).
 
-**Restore** after a bad change: the record to a bookmark from before it (§13), then `rev`. From a dump into a new, empty record: `load <file>`, then `rev`.
+**Restore** after a bad change: the record to a bookmark from before it (§13; the new epoch follows by itself: `counts` shows the new rev a few seconds on). From a dump into a new, empty record: `load <file>`, then `rev`.
 
 ## 8. Refresh the official art
 The art in `app/static/art/` comes from Nookipedia. Edit `SPECS` in `app/scripts/fetch-assets.ts`, then
@@ -139,7 +140,7 @@ keys; without either, the keys file: §4). It signs `POST /admin` with the serve
 - **`counts`**: rows per table, the revision (`e1`, `e2`, …: the epoch), the newest `at`.
 - **Backups:** point-in-time recovery works on the Free plan (tested on the test relay: a bookmark from before an
   ingest restored the empty record). `bookmark [ms]` prints the bookmark now and `ms` ago (any moment of the
-  last 30 days); `restore <bookmark>` restarts the object on it; then `rev`, so every phone refetches. Beyond 30 days:
+  last 30 days); `restore <bookmark>` restarts the object on it, and the room (told before the restart, its own storage) calls the restored record ~5 s later (retrying every 30 s, 10 tries) to start a new epoch, so every phone refetches; only when the reply's `note` says the room wasn't told, run `rev` yourself. Beyond 30 days:
   `dump > island-record-YYYY-MM-DD.json` (every row; keep it off the repo) and `load <file>` into an empty record.
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
 

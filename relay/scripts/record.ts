@@ -5,7 +5,7 @@
 // .smoke-keys (--test) or ~/.config/island-fund/keys (admin.ts).
 //   counts              rows per table, the revision, the newest `at`
 //   bookmark [ms]       point-in-time recovery: the bookmark now and `ms` ago (default 1 h)
-//   restore <bookmark>  restore the record to a bookmark (then `rev`)
+//   restore <bookmark>  restore the record to a bookmark (a new epoch follows by itself; `rev` only if its note says so)
 //   rev                 a new epoch: every phone refetches everything
 //   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`)
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped)
