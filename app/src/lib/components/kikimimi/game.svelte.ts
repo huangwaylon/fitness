@@ -6,7 +6,7 @@
 // length, clips.ts itemDur). Loaded with the sheet only.
 import { BANK, clipIds, isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
 import { deck } from '#lib/kikimimi/deck.ts';
-import { LINE_GAP, clipDur, clipUrl, itemDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
+import { clipDur, clipUrl, itemDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
 import { FAST_WINDOWS, QuizSession, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizView } from '#lib/kikimimi/session.ts';
 import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
@@ -356,14 +356,12 @@ export class QuizGame {
   #turns(it: Item, i: number, from: number): void {
     this.#untalk();
     const now = this.#link.now();
-    let t = from;
-    lineDurs(it).forEach((d, k) => {
-      const start = t, end = t + d * 1000;
-      t = end + LINE_GAP * 1000;
-      if (end <= now) return;
-      this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = { i, k, at: it.id, from: start }), Math.max(0, start - now)));
+    const durs = lineDurs(it), starts = sequenceStarts(durs, from, from); // the schedule as planned (none heard late)
+    const ends = starts.map((start, k) => start + durs[k] * 1000);
+    starts.forEach((start, k) => {
+      if (ends[k] > now) this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = { i, k, at: it.id, from: start }), Math.max(0, start - now)));
     });
-    this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = null), Math.max(0, t - LINE_GAP * 1000 - now)));
+    this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = null), Math.max(0, ends.at(-1)! - now)));
   }
 
   #untalk(): void {

@@ -18,15 +18,14 @@
   import SceneCard from './scene/SceneCard.svelte';
   import SoundLine from './scene/SoundLine.svelte';
   import MarkLegend from './scene/MarkLegend.svelte';
-  import { isStaged } from './scene/stage.ts';
+  import { isStaged, rosterName as name, speakersOf } from './scene/stage.ts';
   import { FIRST_LISTEN, RIGHT } from '#lib/kikimimi/score.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Host from '../characters/Host.svelte';
   import Mark from '../ui/Mark.svelte';
   import PlayerChip from './PlayerChip.svelte';
   import { villagerArt } from '#lib/art.ts';
-  import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
-  import { i18n, t } from '#lib/i18n/index.ts';
+  import { t } from '#lib/i18n/index.ts';
 
   let { game }: { game: QuizGame } = $props();
   const v = $derived(game.view);
@@ -34,7 +33,7 @@
   const reveal = $derived(v.phase === 'reveal');
   /** A dialogue (gist, next): its two speakers' heads while it plays, the one talking bobbing; its transcript at the reveal. */
   const dlg = $derived(it && isDialogue(it) ? it : null);
-  const duo = $derived(dlg ? [...new Set(dlg.lines.map((l) => l.who))] : []);
+  const duo = $derived(dlg ? speakersOf(dlg) : []);
   const talking = $derived(game.talk && game.talk.i === v.i ? game.talk.k : -1);
   /** Who's talking now (before the first turn's timer: the first speaker). */
   const talker = $derived(dlg ? dlg.lines[Math.max(0, talking)].who : null);
@@ -53,7 +52,6 @@
   const solo = $derived(v.players.length <= 1);
   /** Co-op (a game of several, not たいせん): no one's score or right / wrong on the others' chips, only how many got it. */
   const coop = $derived(!solo && !v.vs);
-  const name = (id: RosterId) => (i18n.locale === 'ja' ? ROSTER[id].nameJa : ROSTER[id].nameEn);
 
   /** The bubble's bar: a replay sounding, else the first play (on every phone: おなじへや's others hear the host's). */
   const bar = $derived.by(() => {

@@ -23,14 +23,15 @@ const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'src/lib/kikimimi/words.json');
 const CLIPS = JSON.parse(readFileSync(join(APP, 'src/lib/kikimimi/clips.json'), 'utf8')) as Record<string, { dur: number; hash: string }>;
 const MODEL = process.env.WHISPER_MODEL ?? join(homedir(), '.cache/whisper/ggml-large-v3-turbo.bin');
+const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const force = process.argv.includes('--force');
 const onlyAt = process.argv.indexOf('--only');
 const only = onlyAt > 0 ? new RegExp(process.argv[onlyAt + 1]) : null;
 
 type Row = [string, ...number[]];
-const words: Record<string, Row> = existsSync(OUT) && !force ? JSON.parse(readFileSync(OUT, 'utf8')) : {};
+const words: Record<string, Row> = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : {};
 const clips = BANK.flatMap(clipItems).filter((c) => CLIPS[c.id] && (!only || only.test(c.id)));
-const todo = clips.filter((c) => words[c.id]?.[0] !== CLIPS[c.id].hash);
+const todo = clips.filter((c) => force || words[c.id]?.[0] !== CLIPS[c.id].hash);
 console.log(`${clips.length} clips, ${todo.length} to align`);
 
 const norm = (w: string) => w.toLowerCase().replace(/[’']/g, '').replace(/[^a-z0-9]/g, '');
@@ -85,12 +86,13 @@ function align(shown: string[], heard: { w: string; from: number; to: number }[]
   return [...out.map((t) => Math.min(t, dur)), dur];
 }
 
+if (todo.length && !existsSync(MODEL)) throw new Error(`${MODEL} missing: the one-time setup in docs/kikimimi.md "Audio" (or WHISPER_MODEL)`);
 if (todo.length) {
   const tmp = mkdtempSync(join(tmpdir(), 'kiki-words-'));
   try {
     const files = todo.map((c) => {
       const wav = join(tmp, `${c.id}.wav`);
-      execFileSync('ffmpeg', ['-loglevel', 'error', '-y', '-i', join(APP, 'static/audio/kikimimi', `${c.id}.m4a`), '-ar', '16000', '-ac', '1', wav]);
+      execFileSync(FFMPEG, ['-loglevel', 'error', '-y', '-i', join(APP, 'static/audio/kikimimi', `${c.id}.m4a`), '-ar', '16000', '-ac', '1', wav]);
       return wav;
     });
     const t = Date.now();

@@ -20,7 +20,8 @@ export function olderShells(keys: readonly string[], current: string): string[] 
  *  lib/sound/manifest.ts), so a hit is never stale and is served without asking the network; a re-cut file is a new
  *  URL, and the old one ages out of its class's LRU. Four classes, each keeping its most recently used few: the music
  *  (the hours, the event music, the rooms: 0.1–1.1 MB each), K.K.'s songs (a song or two heard: they never push the
- *  hours out), ききみみ's spoken clips (a game's deck or three: ~25 KB each, never pushing the effects out) and the rest
+ *  hours out), ききみみ's spoken clips (~18 KB each; 40 hold any one game: 8 clips and 8 slow ones at levels 1-2, level 4's dialogues
+ *  up to 4 lines each, にがて れんしゅう's 8 items all dialogues at worst 32; never pushing the effects out) and the rest
  *  (the effects and beds: small). */
 export const AUDIO_CACHE = 'island-audio-v1';
 export const isAudio = (path: string): boolean => path.includes('/audio/');
@@ -28,7 +29,7 @@ export const isMusic = (path: string): boolean => path.includes('/audio/music/')
 const isKK = (path: string): boolean => path.includes('/audio/kk/');
 const isKiki = (path: string): boolean => path.includes('/audio/kikimimi/');
 type AudioClass = 'music' | 'kk' | 'kiki' | 'sfx';
-const KEEP: Record<AudioClass, number> = { music: 3, kk: 2, kiki: 24, sfx: 8 };
+const KEEP: Record<AudioClass, number> = { music: 3, kk: 2, kiki: 40, sfx: 8 };
 const classOf = (url: string): AudioClass => {
   const p = new URL(url, 'https://x/').pathname;
   return isMusic(p) ? 'music' : isKK(p) ? 'kk' : isKiki(p) ? 'kiki' : 'sfx';

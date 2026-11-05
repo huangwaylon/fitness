@@ -38,7 +38,6 @@
   let missedOnly = $state(false);
   const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null })).filter((r) => !missedOnly || !r.ok));
   const tally = $derived(items.filter((_, i) => ok(i)).length);
-  /** A choice as written (a picture's Japanese name: the English isn't given away). */
   /** My feedback (docs/kikimimi.md "Recommendations and feedback"): しずえ's line from my きろく with this game in it,
    *  and what tripped me (this game's missed features). Mine alone, on my phone. */
   const recorded = $derived(game.recorded && game.recorded.g === v.g ? game.recorded : null);
@@ -53,6 +52,7 @@
   });
   const trips = $derived(recorded ? tripsOf({ r: recorded.r.map(([id, ok]) => ({ id, ok: ok === 1 })) }) : []);
   const tripLabel = (key: string) => (key.startsWith('f:') ? t(`kiki.f.${key.slice(2)}`) : t(`kiki.skill.${key.slice(2)}`));
+  /** A choice as written (a picture's Japanese name: the English isn't given away). */
   const choiceText = (it: Item, k: number) => (it.type === 'pic' ? (PIC_JA[it.choices[k]] ?? '') : it.choices[k]);
 </script>
 

@@ -2,3 +2,4 @@
 mlx-audio==0.6.4
 misaki[en]==0.9.4
 soundfile==0.14.0
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl  # misaki's G2P; else it tries a pip install at run time
