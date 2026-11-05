@@ -203,26 +203,31 @@ describe('IndexedDB cache', () => {
     expect(listed(await raw()).events).toHaveLength(2);
   });
 
-  it('moves the older layouts (v 1: one record; v 2: meta + every row in `rows`) to segments in place: no full refetch', async () => {
+  it("an older layout (v 1's `snapshot`, v 2's `rows`) reads as no cache: fetched whole, and the save clears it", async () => {
     const old = { ...applySnapshot(null, { me: 'A', rev: 'r1', now: '2026-11-02T05:00:00.000Z', rows: rows(2) }, 3) };
     const { v: _v, rows: oldRows, ...rest } = old;
     for (const before of [{ snapshot: old }, { meta: { ...rest, v: 2 }, rows: oldRows }]) {
       await raw(Object.fromEntries(Object.keys(await raw()).map((k) => [k, undefined])));
       await raw(before);
       configureCache({ indexedDB: idb });
-      expect(await loadCache()).toEqual(old);
+      expect(await loadCache()).toBeNull();
       calls = [];
-      reply = () => ({ ok: true, me: 'A', now: '2026-11-02T06:00:00.000Z', rev: 'r1', rows: { metrics: [], events: [] } });
-      const r = await refreshSnapshot();
-      expect(calls.map((c) => c.since)).toEqual(['2026-11-02T01:00:00.000Z']);
-      expect(r.ok && r.cache.rows).toEqual(rows(2));
+      await refreshSnapshot();
+      expect(calls.at(-1)).not.toHaveProperty('since');
       await cacheWritten();
       const disk = await raw();
-      expect(listed(disk)).toMatchObject({ metrics: [expect.any(String)], events: [expect.any(String)] });
+      expect(disk).not.toHaveProperty('snapshot');
+      expect(disk).not.toHaveProperty('rows');
       expect(disk.meta).toMatchObject({ v: 3, rev: 'r1' });
-      await reload();
-      expect((await loadCache())?.rows).toEqual(rows(2));
     }
+  });
+
+  it("the guest's cache survives a reload too", async () => {
+    setKey('ef'.repeat(32), 'G');
+    reply = () => ({ ok: true, me: 'G', now: '2026-11-02T05:00:00.000Z', rev: 'r1', rows: rows() });
+    await refreshSnapshot();
+    await reload();
+    expect((await loadCache())?.me).toBe('G');
   });
 
   it('a clear removes every record, the old one too', async () => {
