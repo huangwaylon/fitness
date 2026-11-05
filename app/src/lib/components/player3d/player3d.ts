@@ -47,6 +47,13 @@ const ORNAMENT_ON: Record<string, { at: V3; turn?: V3; scale?: number }> = {
 /** The slots a look's parts go in (each a mesh of its own, or none). */
 const SLOTS = ['hair', 'top', 'bottom', 'shoes', 'glasses', 'ornament', 'hat'] as const;
 type Slot = (typeof SLOTS)[number];
+/** A near-black garment's self-light (a flat charcoal, times the island's lift). */
+const DARK_LIFT = 0x2e2e2e;
+/** A colour's luma (sRGB, Rec. 709). */
+const luma = (hex: string) => {
+  const n = parseInt(hex.slice(1), 16);
+  return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
+};
 /** The self-light (villager3d's: lit a little by its own colour). */
 const LIFT = 0.32;
 
@@ -319,6 +326,12 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
         const spec: TexSpec = item.tex[n] ?? Object.values(item.tex)[0] ?? {};
         const map = spec.file ? await tex(texUrl(spec, dir)!) : null;
         mat = partMaterial(n, map, spec, spec.tint === 'hair' ? hair : spec.tint === 'skin' ? skin : null);
+        // a near-black garment (B's polo and long skirt): its self-light a flat charcoal, not its texture's (black: no
+        // light of its own at all, a black hole on a phone's island at dusk; NH's blacks read as charcoal)
+        if (map && !spec.tint && item.sw && luma(item.sw) < 0.12) {
+          mat.emissiveMap = null;
+          mat.emissive = new Color(DARK_LIFT);
+        }
       }
       if (m.material !== mat && !w.mats.includes(m.material as Material)) (m.material as Material).dispose?.();
       m.material = mat;
@@ -338,6 +351,8 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     for (const m of w.meshes) {
       m.removeFromParent();
       m.geometry.dispose();
+      // (its skeleton's bone texture, three's float texture kept on the GPU till the skeleton goes)
+      m.skeleton.dispose();
     }
     for (const m of w.mats) disposeMat(m);
     worn.delete(slot);

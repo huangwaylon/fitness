@@ -235,14 +235,21 @@ test('3D fishing: the rod stays in the hand, its tip where the line starts, at e
   }
 });
 
-// A human player fishing (A's いつもの, player3d): the same flow's line-up as a villager's
-test.fixme('3D fishing as a human player: facing, rod and line in one line, the tip steady', {
-  annotation: { type: 'fixme', description: 'owner: the 3D engineer (player3d, the fishing pose and grip), since 2026-11-05: as a player the line-up is 9–58° off in the river (the line from the tip, the float near the bank) and ~10° in the sea now and then, and the tip moves 12–17 u with the zoom flow (the villagers: < 5°, < 8 u)' }
-}, async ({ page }) => {
-  await page.goto('?demo&visitor=none&critter=fish&date=2026-11-04T12:00');
+// A human player fishing (A's いつもの, player3d): the same flow's line-up as a villager's, at sea and in the river
+// (its float near the bank: a player's hand nearer it than a villager's)
+for (const [water, q] of [['sea', '&critter=fish&date=2026-11-04T12:00'], ['river', '&critter=river&date=2026-11-04T21:00']] as const)
+test(`3D fishing as a human player in the ${water}: facing, rod and line in one line, the tip steady`, async ({ page }) => {
+  test.setTimeout(60_000);
+  // (A's いつもの, the player: the villager look the others seed taken back off)
+  await page.addInitScript(() => {
+    const e = JSON.parse(localStorage.getItem('island-demo.events') ?? 'null') as { events: { id: string }[] } | null;
+    if (e?.events.some((x) => x.id === 'seed-look')) localStorage.removeItem('island-demo.events');
+  });
+  await page.goto(`?demo&visitor=none${q}`);
   await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
+  if (water === 'river') await camTo(page, (await geo(page)).CAMS.oku, false);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { player(s: string): boolean } }).__villagers3.player('mine')), { timeout: 30_000 }).toBe(true);
-  const [rx, ry] = await toTheWater(page, 'sea');
+  const [rx, ry] = await toTheWater(page, water);
   await page.mouse.click(rx, ry);
   await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
   await expect.poll(() => page.evaluate(() => {
@@ -250,4 +257,22 @@ test.fixme('3D fishing as a human player: facing, rod and line in one line, the 
     const d = (x: number, y: number) => Math.abs(((x - y + 540) % 360) - 180);
     return a ? Math.max(d(a.facing, a.rod), d(a.rod, a.line), d(a.facing, a.line)) : Infinity;
   }), { timeout: 5000 }).toBeLessThan(5);
+  // the tip steady against the feet at every zoom (the villagers' bound and flow: at sea), the float out on the water
+  if (water !== 'sea') return;
+  await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
+  type V = V3 & { last(slot: string): { x: number; z: number } };
+  type G = { view(): { camZ: number }; go(z: number, k: number): void; camStill(): boolean };
+  const tipNow = () => page.evaluate(() => {
+    const v = (window as unknown as { __villagers3: V }).__villagers3, t = v.tip('mine'), l = v.last('mine');
+    return t && [t[0] - l.x, t[1], t[2] + l.z];
+  });
+  const camZ = await page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.view().camZ);
+  let first: number[] | null = null;
+  for (const k of [1, 2, 3.2, 1]) {
+    await page.evaluate(([z, k]) => (window as unknown as { __world3d: G }).__world3d.go(z, k), [camZ, k]);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: G }).__world3d.camStill()), { timeout: 5000 }).toBe(true);
+    const t = (await tipNow())!;
+    first ??= t;
+    expect(Math.hypot(t[0] - first[0], t[1] - first[1], t[2] - first[2])).toBeLessThan(8);
+  }
 });

@@ -16,7 +16,7 @@
 //   - Faces: the player's 16 eye and 9 mouth frames hold the same expressions in another order (PLAYER_EYE,
 //     PLAYER_MOUTH); its resting mouth is the look's own (B's an open smile).
 import { Box3, Euler, Matrix4, Quaternion, Vector3, type Bone, type Object3D, type SkinnedMesh } from 'three';
-import { action as villagerAction, type Action, type Body, type Pose } from '../villager3d/poses.ts';
+import { action as villagerAction, type Action, type Body, type Pose, type State } from '../villager3d/poses.ts';
 import type { Face } from '../villager3d/faces.ts';
 import type { Kind } from '../villager3d/villager3d.ts';
 
@@ -35,6 +35,19 @@ const LIE_TUCK = [0.45, 0.2] as const, PRONE_LIFT = [-0.45, -0.25] as const, PRO
  *    mouths: 0 closed smile · 1 open smile · 2 big grin · 3 frown · 4 upset · 5 open "ah" · 6 flat · 7 small "o" · 8 open "o" */
 export const PLAYER_EYE: Readonly<Record<number, number>> = { 0: 0, 3: 13, 8: 4, 9: 5, 10: 6, 11: 7, 14: 2, 15: 3 };
 export const PLAYER_MOUTH: Readonly<Record<number, number>> = { 0: 0, 1: 7, 2: 8, 3: 3, 5: 5, 6: 4, 7: 1, 8: 2 };
+
+/** Fishing: the rod's hand in at the chest, the elbow well bent (a player's arm is twice a villager's: held out as
+ *  theirs, its hand stood a third of the way to a float near the bank, the line from its tip all angles as the float
+ *  bobbed). FISH_ARM: [Arm_1_R, Arm_2_R] over poses.ts fish's. */
+/** poses.ts fish's rod arm: Arm_1_R x, y, z (ROD_X, 0.25, ARMS - 0.55) and Arm_2_R y. */
+const VILLAGER_FISH = [-1.05, 0.25, 1.22 - 0.55, 0.75] as const;
+const FISH_ARM: readonly [V3, V3] = [[-0.35, 0.55, 1.1], [0, 1.35, 0]];
+const playerPose = (st: State, p: Pose): Pose => {
+  if (st !== 'fish') return p;
+  const a1 = p.j.Arm_1_R ?? [0, 0, 0];
+  // (the breath's bob on the arm kept)
+  return { ...p, j: { ...p.j, Arm_1_R: [FISH_ARM[0][0] + (a1[0] - VILLAGER_FISH[0]), FISH_ARM[0][1], FISH_ARM[0][2]], Arm_2_R: FISH_ARM[1] } };
+};
 
 /** A villager face's cell → the player's frame: the resting mouth (cell 0) is the look's own `rest` frame, but asleep
  *  (a closed smile). */
@@ -270,6 +283,7 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
     body,
     depth: torso.isEmpty() ? undefined : { back: Math.max(1, -torso.min.z), front: Math.max(1, torso.max.z) },
     cell: (part, i, face) => playerCell(part, i, face, rest),
+    pose: playerPose,
     action(a: Action, u: number) {
       const res = villagerAction(a, u);
       if (a === 'sting') {
@@ -279,6 +293,13 @@ export function playerKind(model: Object3D, rest = 0): Kind & { rebind(): void }
           res.p.j.Arm_1_L = [sting.a1[0], sting.a1[1], sting.a1[2] + 0.04 * wob];
           res.p.j.Arm_2_L = sting.a2;
         }
+      }
+      // the rod's moves (the cast, the bite's tug, the reel) from the player's own fishing hold: poses.ts gives their
+      // arm as its fish arm and a move; the move kept, on FISH_ARM (else the arm sprang back out to a villager's hold)
+      if (a === 'cast' || a === 'tug' || a === 'reel') {
+        const a1 = res.p.j.Arm_1_R, a2 = res.p.j.Arm_2_R;
+        if (a1) res.p.j.Arm_1_R = [FISH_ARM[0][0] + (a1[0] - VILLAGER_FISH[0]), FISH_ARM[0][1] + (a1[1] - VILLAGER_FISH[1]), FISH_ARM[0][2] + (a1[2] - VILLAGER_FISH[2])];
+        if (a2) res.p.j.Arm_2_R = [a2[0], FISH_ARM[1][1] + (a2[1] - VILLAGER_FISH[3]), a2[2]];
       }
       if (a === 'cast') {
         const k = u / 620, back = k < 0.4 ? ease(k / 0.4) : 1 - ease((k - 0.4) / 0.3);
