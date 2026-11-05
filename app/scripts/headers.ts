@@ -8,7 +8,8 @@
 // - index.html (the SPA shell every route opens with) preloads the island's page too: Kit's fallback page preloads
 //   only the root layout's chunks, so the island page's chunk and its own imports were asked for only once the
 //   layout's had run (the startup review). Its chunk and its static imports, transitively, as modulepreload; its
-//   stylesheets as preload. (Before 404.html is copied from it: `npm run build`.)
+//   stylesheets as preload, crossorigin as Vite asks for them (else the preload goes unused and they come twice).
+//   (Before 404.html is copied from it: `npm run build`.)
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -35,7 +36,7 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
   };
   walk(key);
   const has = (f: string) => html.includes(`"${base}/${f}"`);
-  const links = [...[...js].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="modulepreload">`), ...[...css].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="preload" as="style">`)];
+  const links = [...[...js].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="modulepreload">`), ...[...css].filter((f) => !has(f)).map((f) => `<link href="${base}/${f}" rel="preload" as="style" crossorigin>`)];
   const at = html.lastIndexOf('rel="modulepreload">');
   if (at < 0) throw new Error('headers: no modulepreload in build-pages/index.html');
   const end = at + 'rel="modulepreload">'.length;
