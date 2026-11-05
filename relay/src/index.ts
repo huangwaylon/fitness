@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
-import { HELLO_MS, RoomCore, type Held, type Kept, type Meta } from './room.ts';
+import { HELLO_MS, RoomCore, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { IslandLog } from './logObject.ts';
 import { adminRoute, apiRoute } from './storeRoute.ts';
@@ -43,6 +43,8 @@ export interface Env {
 export type WxHealth = ReturnType<typeof wxHealth>;
 
 const RING = 'ring';
+/** The day's claims and nests (room.ts DayIndex): apart from the ring, which trims. */
+const DAY = 'day';
 /** The record's last change (welcome `rec`). */
 const REC = 'rec';
 /** The high-fives held for a partner who was away (room.ts Held). */
@@ -64,6 +66,7 @@ export class IslandRoom extends DurableObject<Env> {
       const rec = (await ctx.storage.get<RecordMark>(REC)) ?? null;
       const held = (await ctx.storage.get<Held>(HELD)) ?? {};
       const gone = (await ctx.storage.get<Gone>(GONE)) ?? {};
+      const day = (await ctx.storage.get<DayIndex>(DAY)) ?? null;
       this.wx = (await ctx.storage.get<WxState>(WX)) ?? WX_EMPTY;
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
@@ -72,6 +75,7 @@ export class IslandRoom extends DurableObject<Env> {
         keys: { KEY_A: env.KEY_A, KEY_B: env.KEY_B, KEY_C: env.KEY_C },
         now: () => Date.now(),
         save: (r) => void ctx.storage.put(RING, r),
+        saveDay: (d) => void ctx.storage.put(DAY, d),
         saveRec: (r) => void ctx.storage.put(REC, r),
         hold: (h) => void ctx.storage.put(HELD, h),
         saveGone: (g) => void ctx.storage.put(GONE, g),
@@ -81,7 +85,7 @@ export class IslandRoom extends DurableObject<Env> {
           this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}) } }]);
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
-      }, ring, rec, held, gone, this.wx.wx);
+      }, ring, rec, held, gone, this.wx.wx, day);
     });
   }
 

@@ -572,6 +572,55 @@ describe('the shared world (docs/backend.md#shared-world)', () => {
     expect(ring[1].id).toBe('w11');
   });
 
+  it('a claim outlives the ring: one pick, 400 more changes and a restart, and a second pick of it is refused', () => {
+    // 2026-11-05 review: past RING_MAX the pick was trimmed, and claims were rebuilt from the ring alone after a wake
+    let day: unknown = null;
+    room = new RoomCore({ ...io(), saveDay: (d) => void (day = structuredClone(d)) });
+    const a = join(KEY_A);
+    say(a, { kind: 'pick', id: 's4560', what: 'shell:conch', at: [150, 40], c: 1 });
+    for (let i = 0; i < RING_MAX; i++) {
+      now += 100;
+      say(a, { kind: 'world', op: 'watered', id: `w${i}` });
+    }
+    say(a, { kind: 'shake', tree: 'oak-p1', drop: 'nest', c: 2 });
+    for (let i = 0; i < RING_MAX; i++) {
+      now += 100;
+      say(a, { kind: 'world', op: 'wished', id: `x${i}` });
+    }
+    // the hibernation wake: the ring as saved, and the day's claims and nests
+    socks = [];
+    room = new RoomCore({ ...io(), saveDay: (d) => void (day = structuredClone(d)) }, saved.at(-1) as never, null, {}, {}, null, day as never);
+    const b = join(KEY_B, 0);
+    b.sent = [];
+    say(b, { kind: 'pick', id: 's4560', what: 'shell:conch', at: [150, 40], c: 9 });
+    expect(b.sent).toEqual([{ v: 3, kind: 'ack', c: 9, t: expect.any(Number), ok: false }]);
+    say(b, { kind: 'shake', tree: 'oak-p1', drop: 'nest', c: 10 });
+    expect(b.sent.at(-1)).toMatchObject({ kind: 'ack', c: 10, ok: false });
+    // its sender's resend of the very pick (an ack lost with the socket) is still acked, never relayed again
+    const a2 = join(KEY_A);
+    b.sent = [];
+    say(a2, { kind: 'pick', id: 's4560', what: 'shell:conch', at: [150, 40], c: 1 });
+    expect(a2.sent.at(-1)).toMatchObject({ kind: 'ack', c: 1, ok: true });
+    expect(b.sent).toEqual([]);
+    // the next Tokyo day forgets them
+    now = Date.UTC(2026, 10, 1, 15, 1);
+    say(b, { kind: 'pick', id: 's4560', what: 'shell:conch', at: [150, 40], c: 11 });
+    expect(b.sent.at(-1)).toMatchObject({ kind: 'ack', c: 11, ok: true });
+  });
+
+  it('past RING_MAX the oldest change that claims nothing goes first', () => {
+    const a = join(KEY_A);
+    say(a, { kind: 'catch', what: 'tarantula', id: 'bug:77', at: [60, 300], how: 'net' });
+    for (let i = 0; i < RING_MAX; i++) {
+      now += 100;
+      say(a, { kind: 'world', op: 'watered', id: `w${i}` });
+    }
+    const ring = saved.at(-1) as { kind: string; id?: string }[];
+    expect(ring).toHaveLength(RING_MAX);
+    expect(ring[0]).toMatchObject({ kind: 'catch', id: 'bug:77' });
+    expect(ring[1].id).toBe('w1');
+  });
+
   it('keeps each shared intent within the size budget (≤ 100 bytes sent, ≤ 140 relayed)', () => {
     const t = Date.UTC(2026, 10, 1, 3);
     for (const m of [
