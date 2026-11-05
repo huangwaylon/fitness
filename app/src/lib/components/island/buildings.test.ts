@@ -1,19 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import { doorAt, partnerOnline } from './buildings.ts';
-import { findPath, nav, reachable } from './nav.ts';
-import { BUILDINGS, HOMES } from './world.ts';
+import { walkNav } from './nav.ts';
+import { worldOf } from './layoutWorld.ts';
+import { BUILDINGS, HOMES, setWorld } from './world.ts';
+import { findPath, reachable } from '#lib/layout/nav.ts';
+import { defaultLayout } from '#lib/layout/model.ts';
 
 describe('the campsite', () => {
   it('is the one building left', () => {
     expect(BUILDINGS.map((b) => b.id)).toEqual(['campsite']);
   });
 
-  it('its door is on the main ground, reachable from home, in front of the tent', () => {
-    const g = nav(), b = BUILDINGS[0], d = doorAt(b.id);
-    expect(reachable(g, d[0], d[1])).toBe(true);
-    expect(findPath(g, [...HOMES.A], d)).not.toBeNull();
-    expect(d[1]).toBeLessThan(b.z);
-    expect(Math.abs(d[0] - b.x)).toBeLessThan(1);
+  it('on the layout, its door is on the main ground, reachable from home, in front of the tent', () => {
+    setWorld(worldOf(defaultLayout()));
+    try {
+      const g = walkNav(), b = BUILDINGS.find((x) => x.id === 'campsite')!, d = doorAt(b.id);
+      expect(reachable(g, d[0], d[1])).toBe(true);
+      expect(findPath(g, [...HOMES.A], d)).not.toBeNull();
+      expect(d[1]).toBeLessThan(b.z);
+      expect(Math.abs(d[0] - b.x)).toBeLessThan(1);
+    } finally {
+      setWorld(null);
+    }
   });
 });
 
