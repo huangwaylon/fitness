@@ -80,6 +80,8 @@ const ADMIN_SEEN_MS = 10 * 60_000;
  *  index, its unique key, the meta) against the Free plan's 100,000 a day; a week brings ~2,000 new rows to drop, so a
  *  run a day keeps up and a year's backlog goes in a few weeks. */
 export const COMPACT_MAX = 5_000;
+/** What the admin's `compact` must say to run (compactOp): it deletes Health history rows. */
+export const COMPACT_CONFIRM = 'delete-health-history';
 /** The cron's tick that compacts the record (index.ts scheduled): 19:15 UTC, 04:15 Tokyo, once a day. */
 export const isCompactTick = (t: number): boolean => Math.floor((t % 86_400_000) / 60_000) === 19 * 60 + 15;
 /** Seqs per DELETE (Durable Objects' SQLite binds at most 100 parameters). */
@@ -962,6 +964,16 @@ export class StoreCore {
   }
 
   // ---------------------------------------------------------------- compaction
+
+  /** The admin's `compact {confirm, max?, rev?}`: deletes Health history rows (the locked weeks' superseded values),
+   *  so only with `confirm: 'delete-health-history'` (the user's rule, 2026-11-05: every Health row is kept until they
+   *  decide; a dump first). Without it, refused and nothing read. `rev: true`: a new epoch after it. */
+  compactOp(o: Rec): Record<string, unknown> {
+    if (o.confirm !== COMPACT_CONFIRM) return { ok: false, error: 'bad_request', detail: `compact deletes Health history rows: pass confirm: '${COMPACT_CONFIRM}' (dump first)` };
+    const max = typeof o.max === 'number' && Number.isInteger(o.max) && o.max > 0 ? o.max : undefined;
+    const r = this.compact(max);
+    return { ok: true, ...r, ...(o.rev === true ? { rev: this.bumpRev() } : {}) };
+  }
 
   /**
    * Drop the `metrics` rows of locked weeks the model can no longer read (contract/compact.ts compactKeep, the phones'

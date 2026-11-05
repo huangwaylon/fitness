@@ -148,7 +148,8 @@ keys; without either, the keys file: §4). It signs `POST /admin` with the serve
   "Latest wins"), never served; each with when it was first and last sent and how often. **`promote <person> <date>
   <metric> [value]`**: one of them made a row of that day (the day's latest from then on, the phones get it at their
   next refresh); the held row stays, marked. Refused when nothing is held or it is already the latest.
-- **`compact [max] [rev]`**: the record's compaction now ([backend](../backend.md#the-record) "Compaction": the
+- **`compact --delete-health-history [max] [rev]`** (refused without the flag; the admin op refuses without `confirm:
+  'delete-health-history'`: it **deletes Health history rows**, and the user's rule is to keep them all): the record's compaction now ([backend](../backend.md#the-record) "Compaction": the
   `metrics` rows of locked weeks the model no longer reads, by the phones' rule; at most `max` deletes, default 5,000).
   **On hold (the user, 2026-11-05):** the cron runs it at 04:15 Tokyo only with `COMPACT_CRON = "1"` in wrangler.toml's
   `[vars]`, unset now, so nothing is compacted until the user decides (dump first, then turn it on; the log's

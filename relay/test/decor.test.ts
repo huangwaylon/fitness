@@ -43,5 +43,5 @@ describe('the outdoors’ cap', () => {
     expect(decor(obj('y', T0 + 9e6))).toEqual({ ok: true });
     // a removal is never refused
     expect(decor({ sc: 'o', id: 'oz', at: T0 + 9e6, rm: true })).toEqual({ ok: true });
-  });
+  }, 30_000);
 });

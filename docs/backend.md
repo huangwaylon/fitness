@@ -216,8 +216,10 @@ lands after pairing again is dropped.
 On each merge `model/compact.ts` drops `metrics` rows of locked weeks the model can no longer read: per (person, date,
 metric) it keeps the latest row at the lock and the latest overall; per person the newest row. Weight keeps the newest
 row per day. Views are unchanged; ~90% of rows go. The rule is the contract's (`contract/compact.ts compactKeep`,
-`weekLockMs` = the model's `finalMs`, checked equal), and **the record compacts its own rows by it** (2026-11-05,
-[The record](#the-record) Compaction), so a cold fetch brings what a compacted cache holds. A `tally` replaced by a later one of the same person and day goes
+`weekLockMs` = the model's `finalMs`, checked equal). **The record does not compact its rows** (the user's rule,
+2026-11-05: every Health row is kept): it has the same rule (`store.ts compact`, [The record](#the-record)
+"Compaction"), but the cron runs it only with `COMPACT_CRON=1` (unset) and the admin's `compact` only with `confirm:
+'delete-health-history'`; so a cold fetch brings the whole history and the phone's cache compacts it by the rule. A `tally` replaced by a later one of the same person and day goes
 too (the record no longer has it), and so does a `food`, `food_recipe` or `food_custom` op the meal log's fold no longer reads
 (`model/food.ts foldedAway`: one replaced by a later op of the same id, or refused): per id the op the record keeps,
 a removal with the op it removed (alone the fold would read it as stale). ~20 % of the meal log's rows (edits) go.
@@ -338,7 +340,9 @@ made after it carries no `l`, the switch's op keeps the light.
   transaction, at most 5,000 rows deleted a run (each delete writes ~4 rows against the Free plan's 100,000 a day): the
   Worker's cron at 19:15 UTC (04:15 Tokyo, just after a Wednesday's lock) once a day (`compactTick`, the log's
   `cron.compact`) **only with the var `COMPACT_CRON=1`, unset (off) since the user's hold of 2026-11-05: the locked
-  days' history is kept until they decide**, or the admin's `compact {max?, rev?}` by hand. Each run looks at the dates with rows written or loaded since
+  days' history is kept until they decide**, or the admin's `compact {confirm: 'delete-health-history', max?, rev?}` by
+  hand (refused without the confirm, 2026-11-05: it deletes Health history rows; `record.ts compact
+  --delete-health-history`). Each run looks at the dates with rows written or loaded since
   the last run and those whose week locked since (the first run: every date); a run stopped at its cap leaves the mark
   where it was, so the next looks again (a compacted date is a fixed point: read, nothing deleted). No new epoch: a
   phone's cache holds a superset and compacts it by the same rule, so its views are the same; `compact {rev: true}`

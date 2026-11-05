@@ -2,7 +2,7 @@
 // (rowsPage), over a synthetic year of both phones' Shortcut runs and the meal log; the year's numbers printed (docs/backend.md
 // "Snapshot size").
 import { beforeEach, describe, expect, it } from 'vitest';
-import { COMPACT_MAX, isCompactTick, StoreCore } from '../src/store.ts';
+import { COMPACT_CONFIRM, COMPACT_MAX, isCompactTick, StoreCore } from '../src/store.ts';
 import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
 import type { EventRow, MetricRow } from '../../app/src/lib/contract/api.ts';
 import { memSql } from './sqlite.ts';
@@ -167,6 +167,18 @@ describe('the paged snapshot', () => {
 });
 
 describe('the record’s compaction', () => {
+  it('by hand only with its confirm: it deletes Health history rows (the user’s rule: keep them all)', () => {
+    // 2026-11-05 relay review R4: the admin `compact` deleted metric rows on a bare {op: 'compact'}
+    const y = year('2026-08-01', 70);
+    store.import(y);
+    const before = store.counts();
+    for (const o of [{}, { max: 10 }, { confirm: true }, { confirm: 'yes' }]) {
+      expect(store.compactOp(o), JSON.stringify(o)).toMatchObject({ ok: false, error: 'bad_request', detail: expect.stringContaining('delete-health-history') });
+    }
+    expect(store.counts()).toEqual(before);
+    expect(store.compactOp({ confirm: COMPACT_CONFIRM, max: 10 }).deleted).toBeGreaterThan(0);
+  });
+
   it('drops exactly what the phones’ rule drops, keeps every event and id, and is a fixed point', () => {
     const y = year('2026-08-01', 70);
     store.import(y);
