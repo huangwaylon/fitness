@@ -1260,6 +1260,9 @@
   /* (!important: over an art's own animated opacity, a high five's zap, which else showed through as a blurry 2D star) */
   /* (each also --art3d: off, inherited: the art under it waits with no download, characters/artGate.ts) */
   .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .fl > .b, .tree > .oak)) { opacity: 0 !important; --art3d: off; }
+  /* (a winter flower's snow cap is the canvas's too, world3d/objects.ts: the DOM's, 28 painted layers riding every
+     scroll under the wet sky's url() tint, held a snowy scroll at ~35 fps) */
+  .scene[data-r3] :global(.fl > .cap) { display: none; }
   .scene[data-r3] :global(.m3on :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global([data-m3]:not(.m3off) :is([data-m3art], .official)) { opacity: 0 !important; --art3d: off; }
   .scene[data-r3] :global(.mover.m3on > *) { opacity: 0 !important; --art3d: off; }

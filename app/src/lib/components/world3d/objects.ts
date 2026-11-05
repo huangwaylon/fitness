@@ -110,6 +110,10 @@ const SEASONAL = new Set(['beach-chair', 'sandcastle', 'snowboy']);
 const SLOT_KINDS = new Set(['park-bench', 'log-bench', 'hammock', 'rod-stand', 'pump', 'shishiodoshi', 'pullup', 'firewood', ...SEASONAL]);
 
 
+/** A winter flower's snow cap (proc/snow-cap, unit wide): its foot's height and its half width, as shares of the
+ *  flower's height (the 2D cap's: near the top, half the flower's width). */
+const SNOW_CAP = [0.86, 0.24] as const;
+
 /** The whole island: its models, and its stand-ins for what has none yet. */
 export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standins: Standin[] } {
   const { season, foliage, month } = day;
@@ -187,7 +191,10 @@ export function placeObjects(layout: Layout, day: Day): { insts: Inst[]; standin
         const [colour, kind] = [fid.slice(0, fid.indexOf('-')), fid.slice(fid.indexOf('-') + 1)];
         const own = assetFor(`flowers/${fid}`)?.m as ModelName | undefined;
         const m = own ?? FLOWER_MODEL[kind] ?? 'flower-cosmos';
-        thing(m, (FLOWER_U * 0.8 * flowerScale(fid as Parameters<typeof flowerScale>[0])) / modelH(m), { yaw: ((Math.round(x) * 7 + Math.round(z) * 13) % 6) * 0.5, tint: m === own ? undefined : (COLOUR[colour] ?? 0xffffff) });
+        const fh = FLOWER_U * 0.8 * flowerScale(fid as Parameters<typeof flowerScale>[0]);
+        thing(m, fh / modelH(m), { yaw: ((Math.round(x) * 7 + Math.round(z) * 13) % 6) * 0.5, tint: m === own ? undefined : (COLOUR[colour] ?? 0xffffff) });
+        // winter: a little cap of snow on its top (proc3d.ts; the 2D island's is Flowers.svelte's .cap)
+        if (season === 'winter') out.push({ id: `${o.id}:snow-cap`, model: 'proc/snow-cap' as ModelName, x, z, lift: fh * SNOW_CAP[0], scale: fh * SNOW_CAP[1] });
         break;
       }
       case 'rock':
