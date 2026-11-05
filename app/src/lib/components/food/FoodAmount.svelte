@@ -80,7 +80,7 @@
       typed = gramsText(Math.max(0, Math.min(FOOD_GRAMS.max, Math.round(g + d * 10))));
       return;
     }
-    const s = serving ? 1 : stepOf(ps[pi].label);
+    const s = serving ? 1 : stepOf(ps[pi].label, item.name);
     mult = Math.max(s, Math.min(20, Math.round((mult + d * s) / s) * s));
   }
   function onGrams() {

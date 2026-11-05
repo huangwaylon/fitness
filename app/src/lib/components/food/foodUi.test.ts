@@ -65,6 +65,13 @@ describe('the amount: start, step, label', () => {
     for (const l of ['1本', '1個', '1缶', '1枚', '2切れ', '1貫', '1パック（110g）', '中ジョッキ（350ml）', '1/2枚']) expect(stepOf(l), l).toBe(1);
     for (const l of ['茶碗1杯', '1人前', '100g', '200ml', '1食分']) expect(stepOf(l), l).toBe(0.5);
   });
+  it('steps a piece food’s 1人前 by the piece (おにぎり ＋ is one more, not ×1.5); a dish’s by half', () => {
+    const fails: string[] = [];
+    for (const n of ['おにぎり（鮭）', '塩むすび', '天むす', 'ゆで卵', '温泉卵', '目玉焼き', 'ハンバーグ', 'ホットドッグ', '梅干し（1個）']) if (stepOf('1人前', n) !== 1) fails.push(n);
+    for (const n of ['カレーライス（ポーク）', '親子丼', '肉じゃが', '味噌汁（豆腐とわかめ）', '']) if (stepOf('1人前', n) !== 0.5) fails.push(n);
+    if (stepOf('茶碗1杯', 'おにぎり（鮭）') !== 0.5 || stepOf('100g', 'ゆで卵') !== 0.5) fails.push('rice and grams stay by half');
+    expect(fails).toEqual([]);
+  });
   it('keeps no label for 100 g or ml', () => {
     expect(portionLabel(ps[0], 1)).toBe('茶碗1杯');
     expect(portionLabel(ps[0], 2)).toBe('茶碗1杯×2');
@@ -131,7 +138,7 @@ describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
   });
   it('needs a name and kcal; the weight and nutrients may be blank; a weight too light for the kcal is wrong', () => {
     const d = customDraft(null, '  会社の弁当 ');
-    expect(d).toMatchObject({ n: '会社の弁当', u: '1食', g: '', k: '' });
+    expect(d).toMatchObject({ n: '会社の弁当', u: '', g: '', k: '' }); // 1食: the field's placeholder, not a value
     expect([...customErrors(d)]).toEqual(['k']);
     expect(customErrors({ ...d, k: '６５０' }).size).toBe(0);
     expect(customOf({ ...d, k: '６５０' })).toEqual({ n: '会社の弁当', u: '1食', k: 650, p: null, fa: null, c: null, s: null });
