@@ -217,11 +217,14 @@ class TentRoom {
     return !!this.#mine({ sc: this.sc, id, at, item: code, x: 0, z: 0, f: 0, p: known && !known.rm ? known.p : at });
   }
 
-  /** A light's switch (a lamp, the lantern, the fireplace): the piece's whole state again, its `l` flipped. */
+  /** A light's switch (a lamp, the lantern, the fireplace): the piece's whole state again, its `l` flipped, stamped just
+   *  after the piece's own last op rather than now: an op carries the whole piece (last writer wins per id), so a
+   *  switch stamped now beat a move the partner made meanwhile and put the piece back where this phone last saw it;
+   *  now that move (later) wins and the switch is the one lost (both phones agree: the light as the move left it). */
   switchLight(id: string, on: boolean): boolean {
-    const p = this.byId(id);
-    if (!p) return false;
-    return this.set({ id: p.id, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p, on: p.on, l: on ? 1 : 0 });
+    const p = this.byId(id), known = this.#map.get(id);
+    if (!p || !known || known.rm) return false;
+    return !!this.#mine({ sc: this.sc, id: p.id, at: known.at + 1, item: p.item, x: p.x, z: p.z, f: p.f, p: p.p, ...(p.on ? { on: p.on } : {}), l: on ? 1 : 0 });
   }
   /** NH's room light switch. */
   switchRoom(on: boolean): boolean {

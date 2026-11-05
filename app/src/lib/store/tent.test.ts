@@ -104,4 +104,24 @@ describe('the tent on this phone', () => {
     expect((JSON.parse(kv.getItem(LIVE.tent)!) as TentEntry[]).map((e) => e.id).sort()).toEqual(['dtabone1', 'dtabtwo2']);
     expect(tent.byId('dtabtwo2')).toMatchObject({ x: 1, z: 1 });
   });
+
+  it('a light switched while the partner moved the piece: their move stands (the switch never puts it back)', () => {
+    const r = fakeRelay();
+    tent.attach(r.live, 'A');
+    expect(tent.set({ id: 'dlamp0001', item: 'f3672', x: 1, z: 1, f: 0, l: 1 })).toBe(true);
+    const at0 = tent.byId('dlamp0001')!.p;
+    // うめ moves it (her op at +1 s); before it reaches me I switch it off, 5 s on
+    vi.advanceTimersByTime(5000);
+    expect(tent.switchLight('dlamp0001', false)).toBe(true);
+    expect(tent.byId('dlamp0001')).toMatchObject({ x: 1, z: 1, l: 0 });
+    r.hear({ sc: 't', id: 'dlamp0001', at: at0 + 1000, item: 'f3672', x: 5, z: 6, f: 0, p: at0, l: 1, who: 'B', t: at0 + 1000 });
+    expect(tent.byId('dlamp0001')).toMatchObject({ x: 5, z: 6, l: 1 });
+    // switched again now that I have her move: it stays where she put it
+    expect(tent.switchLight('dlamp0001', false)).toBe(true);
+    expect(tent.byId('dlamp0001')).toMatchObject({ x: 5, z: 6, l: 0 });
+    expect(r.sent.at(-1)).toMatchObject({ kind: 'decor', id: 'dlamp0001', at: at0 + 1001, x: 5, z: 6, l: 0 });
+    expect(tent.switchLight('dlamp0001', true)).toBe(true);
+    expect(r.sent.at(-1)).toMatchObject({ at: at0 + 1002, l: 1 });
+  });
 });
+
