@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { LIVE_URL, backoff, bestOffset, createLive, type KeptOut, type Live, type LiveEnv, type LiveStatus, type OutboxStore, type SinceStore } from './live.ts';
 import { dayStart, tokyoDay, type Relayed } from '../contract/live-protocol.ts';
 import { configureStorage, type KV } from './storage.ts';
+import { ROOM_PROTOCOL, ticketOwner } from '../contract/ticket.ts';
 
 const KEY = 'ab'.repeat(32);
 
@@ -15,7 +16,7 @@ class FakeWS {
   onmessage: ((e: { data: string }) => void) | null = null;
   onclose: ((e: { code: number }) => void) | null = null;
   onerror: (() => void) | null = null;
-  constructor(public url: string) {
+  constructor(public url: string, public protocols?: string[]) {
     FakeWS.all.push(this);
   }
   /** Answer each ping at once (a live relay). */
@@ -112,7 +113,7 @@ describe('live: connecting', () => {
     expect(FakeWS.all).toHaveLength(1);
     last().open();
     // a page's first hello asks for today's whole shared world (from Tokyo midnight)
-    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())) });
+    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: dayStart(tokyoDay(Date.now())), beat: true });
     last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
     expect(live.status()).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {} });
     expect(seen.at(-1)).toEqual({ connected: true, me: 'A', peer: false, here: [], gone: {} });
@@ -363,7 +364,7 @@ describe('live: messages', () => {
     last().drop();
     vi.advanceTimersByTime(2000);
     last().open();
-    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: 1_790_000_000_600 });
+    expect(last().sent[0]).toEqual({ v: 3, kind: 'hello', key: KEY, since: 1_790_000_000_600, beat: true });
     // the page reloads: the kept since
     live.stop();
     live = make();
@@ -519,7 +520,7 @@ describe('live: the heartbeat (a room that answers it without waking)', () => {
 describe('live: liveness (a socket open but carrying nothing)', () => {
   const pings = (ws: FakeWS) => ws.sent.filter((m) => m.kind === 'ping').length;
 
-  it('a quiet socket is pinged every 20 s; one hearing things isn’t', async () => {
+  it('a quiet socket is pinged every 20 s, one only hearing things too; one hearing and sending isn’t', async () => {
     live.start();
     const ws = last();
     ws.welcome();
@@ -528,13 +529,21 @@ describe('live: liveness (a socket open but carrying nothing)', () => {
     const p0 = pings(ws);
     await vi.advanceTimersByTimeAsync(60_000);
     expect(pings(ws) - p0).toBe(3);
-    // the partner walking every 5 s: no ping needed
+    // the partner walking every 5 s and this phone saying nothing: still asked every 20 s (the room's ghost watch hears
+    // a beating phone at least that often); this phone walking every 5 s too: no ping needed
     const p1 = pings(ws);
     for (let i = 0; i < 12; i++) {
       ws.recv({ kind: 'walk', to: [1, 2], who: 'B', t: Date.now() });
       await vi.advanceTimersByTimeAsync(5000);
     }
-    expect(pings(ws) - p1).toBe(0);
+    expect(pings(ws) - p1).toBe(3);
+    const p2 = pings(ws);
+    for (let i = 0; i < 12; i++) {
+      ws.recv({ kind: 'walk', to: [1, 2], who: 'B', t: Date.now() });
+      live.send({ kind: 'walk', to: [3, i] });
+      await vi.advanceTimersByTimeAsync(5000);
+    }
+    expect(pings(ws) - p2).toBe(0);
   });
 
   it('an idle hour on screen: 3 pings and 3 pongs a minute (was 1 and 1)', async () => {
@@ -965,5 +974,68 @@ describe('live: the kept relay clock goes stale', () => {
     m.set('island.liveOffset', JSON.stringify({ off: -3_600_000, at: Date.now() + 60_000 }));
     expect(make().serverNow() - Date.now()).toBe(0);
     configureStorage({ local: null });
+  });
+});
+
+describe('live: the room’s admission ticket', () => {
+  let m: Map<string, string>;
+  beforeEach(() => {
+    m = new Map();
+    configureStorage({ local: { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) } });
+  });
+  afterEach(() => configureStorage({ local: null }));
+  const ticketed = () => createLive({ url: 'wss://relay.test/room', key: () => key, me: () => 'A', WebSocket: FakeWS as never, env, since });
+  const made = async (n: number) => vi.waitFor(() => expect(FakeWS.all).toHaveLength(n));
+
+  it('each socket offers a fresh ticket the relay’s check takes (the person’s, on the relay’s clock), its hello the same key', async () => {
+    const a = ticketed();
+    a.start();
+    await made(1);
+    const [proto, t] = last().protocols!;
+    expect(proto).toBe(ROOM_PROTOCOL);
+    expect(await ticketOwner(t, { KEY_A: KEY }, Date.now())).toBe('A');
+    expect(await ticketOwner(t, { KEY_A: 'cd'.repeat(32) }, Date.now())).toBeNull();
+    last().open();
+    expect(last().sent[0]).toMatchObject({ kind: 'hello', key: KEY, beat: true });
+    last().recv({ kind: 'welcome', me: 'A', peer: false, t: Date.now() });
+    last().drop(1012);
+    await vi.advanceTimersByTimeAsync(1300);
+    await made(2);
+    expect(last().protocols![1]).not.toBe(t);
+    a.stop();
+  });
+
+  it('two ticketed handshakes failing (a relay that can’t take one): the next goes without, for 6 hours, a reload too', async () => {
+    const a = ticketed();
+    a.start();
+    await made(1);
+    last().drop(1006); // refused before it opened
+    await vi.advanceTimersByTimeAsync(1300);
+    await made(2);
+    expect(last().protocols).toHaveLength(2);
+    last().drop(1006);
+    await vi.advanceTimersByTimeAsync(2600);
+    await made(3);
+    expect(last().protocols).toBeUndefined();
+    last().welcome();
+    expect(a.status().connected).toBe(true);
+    a.stop();
+    const b = ticketed();
+    b.start();
+    await made(4);
+    expect(last().protocols).toBeUndefined();
+    b.stop();
+    // past the 6 hours: tickets again
+    vi.setSystemTime(Date.now() + 6 * 3_600_000 + 1);
+    const c = ticketed();
+    c.start();
+    await made(5);
+    expect(last().protocols).toHaveLength(2);
+    c.stop();
+  });
+
+  it('none without knowing whose key it is (the demo’s test relays)', () => {
+    live.start();
+    expect(last().protocols).toBeUndefined();
   });
 });

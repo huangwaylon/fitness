@@ -24,6 +24,9 @@ export const LIVE = {
   /** `{ off }`: the relay's clock less this device's, as last measured (sync/live.ts): what the phone stamps before the
    *  first welcome is on the relay's clock too. */
   offset: 'island.liveOffset',
+  /** `{ until }`: the live socket goes without its admission ticket until then (sync/live.ts: two ticketed handshakes in
+   *  a row failed, a relay that can't answer one; ≤ 6 h). */
+  ticket: 'island.liveTicket',
   /** `{ me, d, cs }`: the day's claims I counted (`cs`: claim → tally key; store/actions.ts): a race lost after a reload
    *  or a kill still takes its catch back. Today's only, mine only. */
   counted: 'island.counted',

@@ -390,7 +390,13 @@ catches an offline phone up.
   Worker), the room answers with `island-v1` (a browser drops a socket whose answer names no subprotocol it offered),
   its hello must be that person's (else 4001 `not the ticket's`) and it is never let go to make room for another
   (`makeRoom` lets go only unticketed ones; it still says hello within 12 s). A socket without a ticket is let in as
-  before, for now.
+  before, for now. **The phones' half** (2026-11-05, client round 2): a paired phone (it knows whose key it holds,
+  `island.me`) makes a fresh ticket for each socket (`makeTicket(key, me, now + offset + 5 min)`, the kept relay clock)
+  and opens it with `[island-v1, ticket]`; two ticketed sockets in a row failing before they open (a 403, or a relay
+  that can't answer one) and the next goes without, kept 6 hours (`island.liveTicket`) so a relay without the ticket
+  costs one page load two failed handshakes; a ticketed welcome clears it, and one without failing too tries tickets
+  again. The demo's test relays (no `me`) offer none. Safe to require tickets once both phones run this build (the
+  log's `ws.hello` build) and the deployed relay answers `island-v1`: a phone whose ticket fails then has no fallback.
 - **Auth:** the first message is `hello {key, since?, build?}` (`build`, 2026-11-05: the app's version, ≤ 24 of
   `[0-9A-Za-z.-]`, else left out; the room logs each welcomed hello as `ws.hello {v, build}` with who:
   [observability](ops/observability.md)). The room compares it in constant time with the secrets
@@ -444,7 +450,9 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   *heard* nothing for 20 s, so one only listening to the partner may be silent for minutes) is never closed for its
   silence. An alarm watches while a beating socket is in (`sweepSilent`, at most every 30 s, shared with the hello
   sweep's and a restore's), and each hello sweeps first, so a newcomer never hears a ghost is here. A message the
-  room's code throws on is caught (the log's `do.error`, `where: ws.message`), the socket kept.
+  room's code throws on is caught (the log's `do.error`, `where: ws.message`), the socket kept. The phones say `beat`
+  since 2026-11-05 (client round 2: sync/live.ts probes when either nothing was heard or nothing was sent for 20 s;
+  `live-room.test.ts` runs the client against the real room for 4 minutes of only the partner's news: connected).
 - **Replay:** the room keeps today's shared world in DO storage ([Shared world](#shared-world)); a hello with `since`
   (the last such `t` that phone heard, kept across reloads: `island.liveSince`) gets the newer ones after the welcome,
   all of them, mine too (a phone that lost its record gets it back), in `replay {es}` messages of ≤ 16,000 bytes (~150
