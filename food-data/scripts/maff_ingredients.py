@@ -771,6 +771,8 @@ def grams(text, ent):
     t = re.sub(r'(\d)[こけヶ](?![a-zぁ-ん])', r'\1個', t).replace('莢', 'さや')
     if t in ('半分', '半量'):
         return 0.5 * (ent['pcs'].get('個') or 0) if ent and ent['pcs'].get('個') else None
+    if re.search(r'\d+(?:\.\d+)?cm厚', t) and not re.search(r'\d\s*k?g(?![a-z])', t):
+        return None   # '大根3cm厚さ 8個': slices, not whole pieces
     t = re.sub(r'\d+(?:\.\d+)?mm厚?|厚さ\d+(?:\.\d+)?(?:mm|cm)の?(?:もの)?|\d+cm角|長さ\d+cm', '', t)
     t = t.replace('コ', '個').replace('一握り', 'ひとにぎり').replace('一掴み', 'ひとつかみ').replace('ケ', '個').replace('ヶ', '個')
     t = t.replace('ふたつまみ', '2つまみ').replace('数本', '3本').replace('数枚', '3枚').replace('数個', '3個').replace('数切れ', '3切れ')
@@ -786,10 +788,15 @@ def grams(text, ent):
         if '少々' in t or '少量' in t or 'ひとふり' in t:
             return 0.5
         return 0.0
-    # explicit grams anywhere (e.g. '2枚(100g)', '1/2本(約80g)')
-    m = re.search(r'(?:約)?(\d+(?:\.\d+)?)\s*(kg|g)(?![a-z])', t)
+    # a count and the weight of one: '16枚(1枚30g)', '4本(1本/約250~350g)' -> 16 x 30, 4 x 300
+    m = re.match(r'^(\d[\d./と]*)([^\d()]{1,4})\(1\2/?(?:約)?(\d+(?:\.\d+)?)(?:[~〜～](\d+(?:\.\d+)?))?(kg|g)\)', t)
+    if m and _num(m.group(1)) is not None:
+        one = (float(m.group(3)) + float(m.group(4) or m.group(3))) / 2 * (1000 if m.group(5) == 'kg' else 1)
+        return _num(m.group(1)) * one
+    # explicit grams anywhere (e.g. '2枚(100g)', '1/2本(約80g)'; a range '250~350g' -> its middle)
+    m = re.search(r'(?:約)?(\d+(?:\.\d+)?)(?:[~〜～](\d+(?:\.\d+)?))?\s*(kg|g)(?![a-z])', t)
     if m and not re.match(r'^\d+(?:\.\d+)?(?:ml|cc|l)', t):
-        v = float(m.group(1)) * (1000 if m.group(2) == 'kg' else 1)
+        v = (float(m.group(1)) + float(m.group(2) or m.group(1))) / 2 * (1000 if m.group(3) == 'kg' else 1)
         mm = re.search(r'(\d+(?:\.\d+)?)\s*g\s*[x×]\s*(\d+)', t)
         if mm:
             v = float(mm.group(1)) * float(mm.group(2))

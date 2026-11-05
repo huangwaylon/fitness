@@ -261,7 +261,7 @@ def build_tokyo_hokeniryo(b):
 LUNCH_COLS = {'name': ['料理名称'], 'lid': ['料理ID'], 'date': ['提供年月日'], 'g': ['分量', '分量（g）'],
               'kcal': ['エネルギー', 'エネルギー（kcal）'], 'p': ['たんぱく質', 'たんぱく質（g）'], 'f': ['脂質', '脂質（g）'],
               'c': ['炭水化物', '炭水化物（g）'], 'salt': ['食塩相当量', '食塩相当量（g）'], 'fid': ['食品番号', '食品ID']}
-LUNCH_SKIP_BASE = r'牛乳|ごはん|玄米入りごはん|.*パン.*|.*ふりかけ.*|.*ソース|.*ドレッシング|タルタルソース|ミルククリーム|.*ジャム.*|.*マーガリン.*'
+LUNCH_SKIP_BASE = r'牛乳|ごはん|玄米入りごはん|.*パン.*|.*ふりかけ.*|.*ソース|ソース ?クラス.*|.*(?<!シュー)クリーム|チルドチョコ|.*ドレッシング|タルタルソース|ミルククリーム|.*ジャム.*|.*マーガリン.*'
 LUNCH = {
     # fid_is_mext: 食品番号 column is the MEXT 食品番号 (Kumagaya's 食品ID are city-local codes, e.g. 01192 = its
     # たけのこごはん premix), files: in priority order (first occurrence of a cleaned name wins)
@@ -358,6 +358,31 @@ def component_name(name):
     return None
 
 
+def blank_null(rs, tot, share=0.2):
+    """A dish's rows leave some cells blank (Kumagaya's older files: 食塩相当量 and 炭水化物 of whole rows). A blank is
+    a zero only where the row needs none: salt, in a row with no protein (oil, sugar); carbohydrate, in a row whose
+    energy protein and fat explain. When rows with a telling blank hold >= `share` of the dish's kcal, the nutrient is
+    unknown (None), not 0 (さわらの西京焼 salt 0, いかフライ C 0.5); salt only when the rest adds up to none. So are P/F/C when a row's protein and fat alone
+    exceed its energy (a typo: ホッケみりん干し 40 g, 47 kcal, P 14.6)."""
+    kcal = tot['kcal'] or 0
+    if kcal <= 0:
+        return
+    def v(r, k):
+        return lib.fnum(r[k], 0.0)
+    def blank(r, k):
+        return not (r[k] or '').strip()
+    salt_gap = sum(v(r, 'kcal') for r in rs if blank(r, 'salt') and v(r, 'p') >= 1)
+    c_gap = sum(v(r, 'kcal') for r in rs if blank(r, 'c') and v(r, 'kcal') >= 10
+                and 4 * v(r, 'p') + 9 * v(r, 'f') < 0.8 * v(r, 'kcal'))
+    typo = sum(v(r, 'kcal') for r in rs if 4 * v(r, 'p') + 9 * v(r, 'f') > 1.3 * v(r, 'kcal') + 5)
+    if salt_gap >= share * kcal and (tot['salt'] or 0) < 0.05:   # partial blanks (a miso soup's tofu) stay counted
+        tot['salt'] = None
+    if c_gap >= share * kcal and tot['c'] is not None:
+        tot['c'] = None
+    if typo >= 0.1 * kcal or any(4 * v(r, 'p') + 9 * v(r, 'f') > 1.3 * v(r, 'kcal') + 5 and v(r, 'p') >= 3 for r in rs):
+        tot.update(p=None, f=None, c=None)
+
+
 def build_lunch(b, city):
     """Rows (one ingredient each: raw g + nutrients) summed per 料理ID -> one school serving. Weight = raw sum +
     water gained by raw rice/dry noodles (MEXT 表12; by 食品番号, or by composition for city-local codes); soups:
@@ -403,6 +428,7 @@ def build_lunch(b, city):
             k = 100.0 / w
             if 4 * tot['p'] + 9 * tot['f'] + 4 * tot['c'] < 0.6 * tot['kcal']:   # blank nutrient cells, not zeros
                 tot.update(p=None, f=None, c=None)
+            blank_null(rs, tot)
             fat = (tot['f'] or 0) * k
             if sum(tot[n] or 0 for n in 'pfc') * k > 105 or tot['kcal'] * k > 4 * (100 - fat) + 9 * fat + 30 \
                     or (cat in ('副菜', '汁物') and tot['kcal'] * k > 250):

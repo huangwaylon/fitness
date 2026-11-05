@@ -108,9 +108,15 @@ def parse_takatsuki(path):
 
 # ---------------------------------------------------------------- recipe -> nutrients
 DEFAULT_PORTION = {'主食': 250, '丼・定食': 400, '麺': 450, '汁物': 250, '主菜': 150, '副菜': 80, '寿司': 250, '菓子・デザート': 60, 'パン': 80}
-SKIP_TITLE = re.compile(r'漬|なれずし|熟鮓|塩辛|干物|ぬか|糠|佃煮|つくだ煮|ひしお|味噌$|みそ$|酒$|甘酒|茶$|たれ$|タレ$|だし$|ごしょう|こしょう|胡椒')
+SKIP_TITLE = re.compile(r'干しいも|干し芋|ほしいも|切り干しいも|漬|なれずし|熟鮓|塩辛|干物|ぬか|糠|佃煮|つくだ煮|ひしお|味噌$|みそ$|酒$|甘酒|茶$|たれ$|タレ$|だし$|ごしょう|こしょう|胡椒')
 DOUGH = re.compile(r'焼き|焼|もち|餅|だんご|団子|まんじゅう|饅頭|うどん|そば|すいとん|もんじゃ|お好み|ほうとう|おやき|ちまき|ういろう|ようかん|羊羹|かん$|寒天|よせ|豆腐')
 FRYTITLE = re.compile(r'揚|フライ|ふらい|天ぷら|てんぷら|天麩羅|コロッケ|カツ|かつ丼|唐揚|からあげ|竜田|ザンギ|ざんぎ|フリッター|かき揚|がんも|メンチ')
+
+
+# ごはん, 精白米, もち, ゆでうどん/そば/中華めん/そうめん, スパゲッティ: a dish's staple (適量 of one -> unknown weight)
+STAPLE_IDS = {'01088', '01083', '01117', '01039', '01128', '01048', '01044', '01064', '01038', '01127'}
+MAX_BATCH_G = 10000   # a recipe's cooked weight, and a serving's; above them, a bulk recipe (see compute)
+MAX_SERVING_G = 1500
 
 
 def servings_of(head):
@@ -136,8 +142,8 @@ def compute(rec, foods, gain):
     title = rec['title']
     soup = any(k in title for k in SOUP_WORDS) and 'カレー' not in title
     tot = dict.fromkeys(NUTS, 0.0)
-    weight = flour_w = plain_water = fry_base = 0.0
-    fry = has_rice = has_vin = False
+    weight = flour_w = plain_water = fry_base = dry_soy = 0.0
+    fry = has_rice = has_vin = salt_unknown = False
     unmapped = []   # grams of ingredients with no MEXT match (None = amount unknown)
     for g in rec['materials']:
         for cells in g['items']:
@@ -169,6 +175,14 @@ def compute(rec, foods, gain):
                     not any(MI.norm(k) in MI.norm(title) for k in ('昆布', 'こぶ', '煮干', 'にぼし', 'いりこ', 'かつお', '鰹')):
                 continue
             if gr == 0:
+                nn = MI.norm(name)
+                stem = re.sub(r'[(（【].*?[)）】]|\(.*$', '', nn)[:3]
+                if '好み' not in amt and (ent['id'] in STAPLE_IDS or
+                                         (ent['id'][:2] in ('10', '11') and len(stem) >= 2 and stem in MI.norm(title))):
+                    return None   # the staple or the dish's own fish/meat 適量 (タレかつ丼's ごはん): its weight is unknown
+                    # (an optional one, 「お好みで」, is left out: 水炊き's しめ)
+                if ent['kind'] in ('salt', 'soy', 'miso'):
+                    salt_unknown = True
                 continue
             fid, nn = ent['id'], MI.norm(name)
             if '用' in nn and ent['kind'] in ('vinegar', 'salt', 'soy', 'sake', 'mirin', 'sugar') and \
@@ -189,6 +203,7 @@ def compute(rec, foods, gain):
             if ent['kind'] in ('flour', 'starch') or fid in ('09027', '09049', '09028', '01120', '01114', '01121',
                                                             '01158', '01015', '01018', '01020', '01122'):
                 flour_w += gr
+            dry_soy += gr if fid in ('04023', '04025') else 0.0
             has_rice = has_rice or fid in ('01083', '01088', '01151')
             has_vin = has_vin or fid in ('17016', '17101')
             weight += w
@@ -205,6 +220,15 @@ def compute(rec, foods, gain):
     um_mass = sum(x or 0 for x in unmapped)
     if unmapped and (None in unmapped or um_mass > 0.05 * max(weight + um_mass, 1)):
         return None
+    srv, piece = servings_of(rec['materials'][0]['head'] if rec['materials'] else '')
+    n = srv or (piece[0] if piece and piece[1] not in ('合', '升', 'cm') else None)
+    if (weight / n > MAX_SERVING_G) if n else weight > MAX_BATCH_G:
+        return None   # a bulk recipe (あらの姿煮: a 10 kg fish as 1尾 = 100 g, 12.6 kg of sake), or whole pieces read for
+        # slices (くじら汁's 寒大根 10個, 2.3 kg a serving): its pieces' weights are guesses
+    if '豆腐' in title and dry_soy >= 0.3 * weight:
+        return None   # tofu made from dry soybeans (菜豆腐): the curd's yield is not modelled
+    if salt_unknown and tot['salt'] < 0.001 * weight:
+        tot['salt'] = None   # its seasoning 適量 (どんこ汁's 味噌): unknown, not salt-free
     return tot, weight, has_rice and has_vin
 
 
@@ -242,8 +266,8 @@ def build(recs, source, foods, gain, en_names={}):
         if r is None or r[1] < 30:
             continue
         tot, w, sushi_rice = r
-        per = {k: v * 100 / w for k, v in tot.items()}
-        if not (5 <= per['kcal'] <= 650) or per['salt'] > 5:
+        per = {k: None if v is None else v * 100 / w for k, v in tot.items()}
+        if not (5 <= per['kcal'] <= 650) or (per['salt'] or 0) > 5:
             continue
         cat = cat_guess(names[0] + ' ' + names_part)
         if sushi_rice and cat in ('主菜', '主食', '副菜') and re.search(r'すし|寿司|ずし|鮨|巻', names_part):
@@ -270,6 +294,7 @@ def build(recs, source, foods, gain, en_names={}):
             portions = [{'label': '1個（目安）', 'g': 60}]
         elif g0 > 700 or g0 < 15:
             portions = [{'label': '1人前（目安）', 'g': DEFAULT_PORTION.get(cat, 150)}]
+        portions = portions[:1] + [p for p in portions[1:] if p['g'] <= 1500]   # すしこ's 「1個」: an 18 L barrel
         if portions[0]['g'] < 5:
             continue
         aliases = []
