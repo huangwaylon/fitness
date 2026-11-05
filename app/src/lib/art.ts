@@ -57,6 +57,15 @@ export function artUrl(key: string | null | undefined): string | null {
   return e ? asset(`art/${e.path}` as Parameters<typeof asset>[0]) : null;
 }
 
+/** ききみみ クイズ's scene backdrop (static/art/scene/<id>.webp: painted, scripts/scenes/scenes.ts). */
+export const sceneArt = (id: string): string => `scene/${id}`;
+
+/** A scene backdrop's srcset: the 1x file and its @2x and @3x beside it (only the 1x is in the manifest). */
+export function sceneSrcset(id: string): string | null {
+  const u = artUrl(sceneArt(id));
+  return u && `${u} 1x, ${u.replace(/\.webp$/, '@2x.webp')} 2x, ${u.replace(/\.webp$/, '@3x.webp')} 3x`;
+}
+
 /** Roster villager → full-body render, or the round head icon. Unknown ids → null (use fan-art). */
 export function villagerArt(id: string | null | undefined, icon = false): string | null {
   if (!id) return null;

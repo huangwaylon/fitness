@@ -1,0 +1,19 @@
+{
+ "model": "~/.cache/island-fund/zimg-q6",
+ "baseModel": "z-image-turbo",
+ "seed": 7,
+ "steps": 9,
+ "width": 1344,
+ "height": 768,
+ "style": "Cozy storybook background painting, gouache and soft watercolor on warm cream paper, rounded chunky simplified shapes, soft edges, pastel palette of butter yellow, sage green, peach, mint and sky blue, warm gentle daylight from the upper left, soft lavender-brown shadows, subtle paper grain, low contrast, slightly soft focus, cute miniature toy-town diorama feel like a cozy life-sim video game, frontal eye-level view, an open empty floor area across the lower third, completely empty of people and animals, no characters, no text, no letters, no signs with writing, no logos",
+ "scenes": {
+  "cafe": "the inside of a small cozy café: a wooden service counter with an espresso machine, glass jars of pastries, hanging pendant lamps, a chalkboard without writing, potted plants",
+  "platform": "a small friendly train station platform: a painted bench, a roof with round lamps, a station clock, tracks beside the platform, distant green hills under a clear sky",
+  "pharmacy": "the inside of a small neighbourhood pharmacy: a clean counter with a little bell, white shelves of colourful medicine boxes and bottles, a green cross symbol, a potted fern",
+  "office": "a bright friendly small office: two wooden desks with computer monitors, a window with blinds, a cork board, bookshelves with binders, a water cooler, a potted plant",
+  "door": "the outside hallway of a small apartment building: a wooden front door with a round brass knob, a doormat, a potted plant, a wall lamp, a mailbox, warm painted walls",
+  "gate": "an airport departure gate: rows of rounded seats, a large window showing a small airplane on the tarmac and blue sky, a gate desk, a departure screen with no text",
+  "street": "a cheerful small-town shopping street: pastel shop fronts with striped awnings, flower boxes, a lamp post, a cobblestone pavement, round trees, blue sky with puffy clouds",
+  "living": "a cozy living room: a soft sofa with cushions, a round rug, a low wooden table with a telephone, a floor lamp, a window with curtains, a bookshelf, houseplants"
+ }
+}

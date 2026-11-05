@@ -72,6 +72,8 @@ describe('audio cache (an LRU per class)', () => {
 describe('precache', () => {
   it('leaves the critters (fish, bugs, junk), the beach finds and the presents out: they are cached on first use', () => {
     for (const p of ['art/critters/sea-bass.webp', '/fitness/art/critters/common-butterfly.webp', 'art/finds/cowrie.webp', '/fitness/art/finds/t-rex-skull.webp', 'art/presents/froggy-chair.webp']) expect(precachable(p)).toBe(false);
+    // ききみみ's scene backdrops, at every scale
+    for (const p of ['art/scene/cafe.webp', '/fitness/art/scene/gate@2x.webp', 'art/scene/living@3x.webp']) expect(precachable(p)).toBe(false);
   });
   it('leaves the app icons out: the OS fetches them when the app is added', () => {
     // the tent's room: its models, surfaces and icons, cached on first use (megabytes: never at install)

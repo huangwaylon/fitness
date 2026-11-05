@@ -14,6 +14,7 @@
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Accent, Item, ItemType, Line, Tags } from './bank.ts';
 import { CAST } from './bank4.ts';
+import { MARKS, staged } from './staging.ts';
 
 /** A `next` item's question while it plays (a `gist` has its own). */
 const NEXT_ASK = 'つぎの ひとことは？';
@@ -36,17 +37,20 @@ interface Row {
 const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
   ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
 
-const line = ([who, en, ja, tts]: L): Line => {
+/** A line, `<item>-<n>` its clip id (its sound marks'). */
+const line = (id: string) => ([who, en, ja, tts]: L, n: number): Line => {
   const cast = CAST[who];
   if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
-  return { who, cast, en, ja, ...(tts && { tts }) };
+  const marks = MARKS[`${id}-${n + 1}`];
+  return { who, cast, en, ja, ...(tts && { tts }), ...(marks && { marks }) };
 };
 
 const item = (r: Row): Item => {
-  const lines = r.lines.map(line);
+  const lines = r.lines.map(line(r.id));
   return {
     id: r.id, lv: 4, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: r.tags, lines
+    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: r.tags, lines,
+    ...staged(r.id)
   };
 };
 
