@@ -95,3 +95,15 @@ describe('the consistency check (/editor/?check)', () => {
     expect(insts.find((i) => i.id === oak.id)?.model).toBe('oak-summer');
   });
 });
+
+describe("winter's flowers", () => {
+  test('each wears a snow cap of its own in the world (proc/snow-cap on its top), none the rest of the year', () => {
+    const d = defaultLayout(), flowers = [...d.objects.values()].filter((o) => o.k === 'flower');
+    const day = (season: 'winter' | 'summer') => placeObjects(d, { season, foliage: season, month: season === 'winter' ? 1 : 7 }).insts;
+    const caps = day('winter').filter((i) => i.model === 'proc/snow-cap');
+    expect(flowers.length).toBeGreaterThan(0);
+    expect(caps.map((c) => c.id).sort()).toEqual(flowers.map((f) => `${f.id}:snow-cap`).sort());
+    expect(caps.every((c) => (c.lift ?? 0) > 5 && c.scale > 1 && !!modelBounds(c.model))).toBe(true);
+    expect(day('summer').some((i) => i.model === 'proc/snow-cap')).toBe(false);
+  });
+});
