@@ -143,3 +143,25 @@ test('the weekday rotation brings its visitor with no hook: Redd on Wednesday No
   await tapFigure(page, '[data-visitor="redd"] .art');
   await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('つねきち');
 });
+
+test('a tap in a visitor’s reach (a finger’s slack beside its figure) with nothing exact under it still talks', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-04T12:00&critter=none');
+  await expect(hudMenu(page)).toBeVisible();
+  const { CAMS } = await geo(page);
+  await camTo(page, CAMS.mae, false);
+  const art = page.locator('[data-visitor="redd"] .art');
+  await expect(art).toBeVisible();
+  // a point 5 px off its figure, on bare ground: no control there, no small thing's box (theirs would win: SceneTaps)
+  const p = await art.evaluate((el) => {
+    const r = el.getBoundingClientRect(), mid = (r.top + r.bottom) / 2;
+    const things = [...document.querySelectorAll('[data-care], [data-find], [data-branch], [data-wood], [data-present]')].map((e) => e.getBoundingClientRect());
+    for (const [x, y] of [[r.left - 5, mid], [r.right + 5, mid], [r.left - 5, r.bottom - 10], [r.right + 5, r.bottom - 10]]) {
+      const at = document.elementFromPoint(x, y);
+      if (at?.classList.contains('stage') && !things.some((b) => Math.abs(x - (b.left + b.right) / 2) < 30 && Math.abs(y - (b.top + b.bottom) / 2) < 30)) return { x, y };
+    }
+    return null;
+  });
+  expect(p).not.toBeNull();
+  await page.mouse.click(p!.x, p!.y);
+  await expect(page.locator('[data-fx="talk"].placed .who')).toHaveText('つねきち');
+});

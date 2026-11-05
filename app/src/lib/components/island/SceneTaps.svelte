@@ -125,7 +125,7 @@
   let critters = $state<ReturnType<typeof Critters>>();
   let finds = $state<ReturnType<typeof Finds>>();
   let care = $state<ReturnType<typeof Care>>();
-  let visitor = $state<{ tap(px: number, py: number): boolean }>();
+  let visitor = $state<{ tap(px: number, py: number, body?: boolean): boolean }>();
   let deck = $state<{ tap(px: number, py: number, seen?: Seen): boolean }>();
   let cakeEl = $state<{ tap(px: number, py: number, seen?: Seen): boolean }>();
   // Loaded the first time they're due (their chunks stay out of the first load), then kept: a visitor (who leaves
@@ -269,11 +269,13 @@
     if (deck?.tap(cx, cy)) return;
     // a birthday's cake: a music box, the candles out
     if (cakeEl?.tap(cx, cy)) return;
-    // a visitor answers with a line (K.K. with a song); then the day's finds (a shell, a fragment, the bottle, a dig
-    // spot, a present) and the island's care (a weed to pull, the rock)
-    if (visitor?.tap(cx, cy)) return;
+    // what's exactly under the finger wins: a tap on a visitor's figure answers with a line (K.K. with a song); then
+    // the day's finds (a shell, a fragment, the bottle, a dig spot, a present) and the island's care (a weed to pull,
+    // the rock) on their own boxes; only then the visitor's reach (a finger's slack round it, its spot)
+    if (visitor?.tap(cx, cy, true)) return;
     if (finds?.tap(cx, cy)) return;
     if (care?.tap(cx, cy)) return;
+    if (visitor?.tap(cx, cy)) return;
     // the water under the finger, nothing of the island's over it (a canopy over the pond shakes its tree): a cast from
     // where my villager stands (NH), however far
     if (!t.closest('[data-tree], [data-bush], [data-campfire], [data-sit], [data-fixture], [data-flower]') && critters?.fish(cx, cy)) return;
