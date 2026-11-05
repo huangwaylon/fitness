@@ -117,6 +117,26 @@ const SCHEMA = [
   'DROP TABLE IF EXISTS telemetry'
 ];
 
+/**
+ * The ordered migrations (meta `schema_v`: how many have run). Each runs once, in its own transaction, after SCHEMA;
+ * a new table or index is a new step at the end, never an edit of one that shipped. A step that fills a table from the
+ * rows already there is how it starts out right; from then on the writes keep it.
+ */
+const MIGRATIONS: readonly ((sql: Sql) => void)[] = [
+  // 1 (2026-11-05): the shop's and the tallies' reads by person (O5)
+  (sql) => void sql.exec('CREATE INDEX IF NOT EXISTS events_type_person ON events (type, person)'),
+  // 2 (2026-11-05): each day's latest value per person and metric, so an ingest compares against it without reading
+  // the body's days of history (O8). The history (`metrics`) is unchanged, append-only.
+  (sql) => {
+    sql.exec('CREATE TABLE IF NOT EXISTS metrics_latest (person TEXT NOT NULL, date TEXT NOT NULL, metric TEXT NOT NULL, at TEXT NOT NULL, seq INTEGER NOT NULL, value REAL NOT NULL, PRIMARY KEY (person, date, metric)) WITHOUT ROWID');
+    sql.exec(`INSERT OR REPLACE INTO metrics_latest (person, date, metric, at, seq, value)
+      SELECT person, date, metric, at, seq, value FROM (
+        SELECT person, date, metric, at, seq, value, row_number() OVER (PARTITION BY person, date, metric ORDER BY at DESC, seq DESC) AS rn FROM metrics
+      ) WHERE rn = 1`);
+  }
+];
+export const SCHEMA_V = MIGRATIONS.length;
+
 /** The rows a load brings (the admin `load`: a dump's; once the sheet's history and Apps Script's copies), each with its `at`. */
 export interface ImportRows {
   metrics?: unknown[][];
@@ -137,8 +157,50 @@ export class StoreCore {
 
   constructor(private io: StoreIO) {
     for (const s of SCHEMA) io.sql.exec(s);
+    this.migrate();
     this.lastAt = Number(this.meta('last_at') ?? 0);
     if (this.meta('rev') === null) this.setMeta('rev', 'e1');
+  }
+
+  /** The migrations not run yet, in order (meta `schema_v`), each with its mark in one transaction. */
+  private migrate(): void {
+    const v = Number(this.meta('schema_v') ?? 0);
+    for (let i = v; i < MIGRATIONS.length; i++) {
+      this.io.tx(() => {
+        MIGRATIONS[i](this.io.sql);
+        this.setMeta('schema_v', String(i + 1));
+      });
+    }
+  }
+
+  /** The schema's version (the migrations run): `counts` says it. */
+  schemaV(): number {
+    return Number(this.meta('schema_v') ?? 0);
+  }
+
+  /** A metrics row appended (or loaded): the day's latest value moves to it when it is later (metrics_latest). */
+  private noteLatest(person: string, date: string, metric: string, at: string, seq: number, value: number): void {
+    this.io.sql.exec(
+      `INSERT INTO metrics_latest (person, date, metric, at, seq, value) VALUES (?, ?, ?, ?, ?, ?)
+       ON CONFLICT (person, date, metric) DO UPDATE SET at = excluded.at, seq = excluded.seq, value = excluded.value
+       WHERE excluded.at > metrics_latest.at OR (excluded.at = metrics_latest.at AND excluded.seq > metrics_latest.seq)`,
+      person, date, metric, at, seq, value
+    );
+  }
+
+  /** A date's latest values again from its rows (after rows of it were deleted). */
+  private relatest(date: string): void {
+    this.io.sql.exec('DELETE FROM metrics_latest WHERE date = ?', date);
+    this.io.sql.exec(`INSERT INTO metrics_latest (person, date, metric, at, seq, value)
+      SELECT person, date, metric, at, seq, value FROM (
+        SELECT person, date, metric, at, seq, value, row_number() OVER (PARTITION BY person, metric ORDER BY at DESC, seq DESC) AS rn FROM metrics WHERE date = ?
+      ) WHERE rn = 1`, date);
+  }
+
+  /** Append a metrics row and keep the day's latest (the one way rows go into `metrics`). */
+  private addMetric(at: string, person: string, date: string, metric: string, value: number, late: number | null): void {
+    const r = this.io.sql.exec<{ seq: number }>('INSERT INTO metrics (at, person, date, metric, value, late) VALUES (?, ?, ?, ?, ?, ?) RETURNING seq', at, person, date, metric, value, late).toArray()[0];
+    this.noteLatest(person, date, metric, at, Number(r.seq), value);
   }
 
   private meta(k: string): string | null {
@@ -391,12 +453,12 @@ export class StoreCore {
     const added = this.io.tx(() => {
       const at = this.nextAt();
       // Apple Health's current total is the truth: a day's value is its latest row, and a different one is appended
-      // (up or down). Read from the (person, date, metric, at) key over the body's days only.
+      // (up or down). Read from metrics_latest over the body's days only (one row a day and metric, never the history).
       const latest = new Map<string, number>();
       const days = parsed.metrics.map((m) => m.date).sort();
       if (days.length) {
         const rows = this.io.sql.exec<{ date: string; metric: string; value: number }>(
-          'SELECT date, metric, value FROM metrics WHERE person = ? AND date >= ? AND date <= ? ORDER BY at, seq', me, days[0], days[days.length - 1]
+          'SELECT date, metric, value FROM metrics_latest WHERE person = ? AND date >= ? AND date <= ?', me, days[0], days[days.length - 1]
         ).toArray();
         for (const r of rows) latest.set(`${r.date}|${r.metric}`, r.value);
       }
@@ -412,7 +474,7 @@ export class StoreCore {
           continue;
         }
         latest.set(k, m.value);
-        this.io.sql.exec('INSERT INTO metrics (at, person, date, metric, value) VALUES (?, ?, ?, ?, ?)', at, me, m.date, m.metric, m.value);
+        this.addMetric(at, me, m.date, m.metric, m.value, null);
         n++;
         act ||= isActivityMetric(m.metric);
       }
@@ -743,7 +805,7 @@ export class StoreCore {
     if (typeof at !== 'string' || !ISO_AT.test(at) || !isPersonId(person) || typeof date !== 'string' || !isMetricKey(metric) || typeof value !== 'number' || !Number.isFinite(value)) return 'skipped';
     const sql = this.io.sql;
     if (sql.exec('SELECT 1 AS x FROM metrics WHERE person = ? AND date = ? AND metric = ? AND at = ?', person, date, metric, at).toArray().length) return 'had';
-    sql.exec('INSERT INTO metrics (at, person, date, metric, value, late) VALUES (?, ?, ?, ?, ?, ?)', at, person, date, metric, value, this.seeAt(at) ? arrived : null);
+    this.addMetric(at, person, date, metric, value, this.seeAt(at) ? arrived : null);
     return 'added';
   }
 
@@ -874,6 +936,8 @@ export class StoreCore {
             const part = gone.slice(k, k + DELETE_CHUNK);
             sql.exec(`DELETE FROM metrics WHERE seq IN (${part.map(() => '?').join(', ')})`, ...part);
           }
+          // (the day's latest values from the rows kept: compactKeep keeps them, this keeps metrics_latest true anyway)
+          if (gone.length) this.relatest(date);
           n += gone.length;
           done++;
         }
