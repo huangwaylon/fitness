@@ -298,7 +298,7 @@ def category(rec, name):
 
 # exact MEXT token (or "GG:token" scoped to food group) -> extra search terms
 TOKEN_ALIASES_SRC = '''
-こめ:米,お米,ライス|おにぎり:おむすび|赤飯:おこわ|もち:餅,おもち|オートミール:オーツ|キヌア:quinoa
+こめ:米,お米|おにぎり:おむすび|赤飯:おこわ|もち:餅,おもち|オートミール:オーツ|キヌア:quinoa
 そば:蕎麦,ソバ|うどん:饂飩,ウドン|中華めん:ラーメン,中華麺|蒸し中華めん:焼きそば,中華麺
 マカロニ・スパゲッティ:パスタ,スパゲティ,ぱすた|そうめん・ひやむぎ:素麺,そうめん,冷麦|手延そうめん・手延ひやむぎ:素麺,そうめん
 即席中華めん:インスタントラーメン,袋麺|中華スタイル即席カップめん:カップラーメン,カップ麺|和風スタイル即席カップめん:カップうどん,カップ麺
@@ -370,6 +370,9 @@ TOKEN_ALIASES_SRC = '''
 ぎょうざ:餃子,ギョーザ|しゅうまい:焼売,シュウマイ|チャーハン:炒飯|麻婆豆腐:マーボー豆腐|えびフライ:エビフライ|コーンクリームスープ:コーンスープ
 '''
 TOKEN_ALIASES = {}
+# The animal's own aliases (豚肉, 牛肉, 鶏肉) belong to its cuts, not to the processed meats made of it
+PROCESSED_MEAT = re.compile(r'［(?:ハム類|ベーコン類|ソーセージ類|その他)］|副生物|加工品')
+MEAT_ANIMALS = ('うし', 'ぶた', 'にわとり')
 for chunk in re.split(r'[|\n]', TOKEN_ALIASES_SRC):
     chunk = chunk.strip()
     if not chunk:
@@ -571,8 +574,11 @@ def build(recs):
         # aliases
         al = list(o.get('aliases', []))
         toks = split_tokens(r['name'])
+        processed = PROCESSED_MEAT.search(r['name'])
         for t in toks:
             t2 = t.strip('［］（）＜＞')
+            if processed and t2 in MEAT_ANIMALS:
+                continue   # ベーコン, ハム, ソーセージ: not 豚肉 (豚肉 found ベーコン first)
             for key in (t2, r['group'] + ':' + t2):
                 al.extend(TOKEN_ALIASES.get(key, []))
         al.extend(parse_betsumei(r['note']))

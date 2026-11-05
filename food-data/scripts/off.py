@@ -55,18 +55,19 @@ NAME_RULES = [
     (('コーンフレーク', 'シリアル', 'グラノーラ', 'オートミール'), '主食'),
     (('ビール', '発泡酒', 'チューハイ', 'サワー', 'ハイボール', '日本酒', '焼酎', 'ワイン', '梅酒', 'ウイスキー'), '酒'),
     (('ラーメン', 'らーめん', 'うどん', 'そば', '焼そば', '焼きそば', 'パスタ', 'スパゲッティ', 'ヌードル', '麺', 'めん', 'メンマ', 'カップヌードル'), '麺'),
-    (('おにぎり', '寿司', 'すし', '巻'), '寿司'),
+    (('おにぎり', '寿司', 'すし', '巻き寿司', '巻寿司', '太巻', '細巻', '中巻', '手巻', '恵方巻', '海苔巻', 'のり巻', '海鮮巻',
+      '鉄火巻', 'かっぱ巻', '納豆巻'), '寿司'),
     (('味噌汁', 'みそ汁', 'スープ', '汁'), '汁物'),
     (('チョコ', 'クッキー', 'ビスケット', 'ポテトチップ', 'チップス', 'スナック', 'ガム', 'キャンディ', 'グミ', 'アイス',
       'プリン', 'ゼリー', 'ケーキ', 'せんべい', '煎餅', 'あられ', '饅頭', 'まんじゅう', '大福', 'ようかん', '羊羹', 'ポッキー',
       'キャラメル', 'ウエハース', 'クラッカー', 'もち', '団子', 'だんご', 'あん', 'おはぎ', 'マドレーヌ', '菓子', 'かりんとう', 'たけのこの里', 'きのこの山',
       'バナナチップ', 'カステラ', 'ワッフル', 'タルト', 'パイ', 'マカロン'), '菓子・デザート'),
-    (('カレー', 'シチュー', 'グラタン', 'ドリア', 'パスタソース', 'ぎょうざ', '餃子', 'しゅうまい', '焼売'), '主菜'),
-    (('パン', 'バーガー', 'サンド', 'ロール', 'クロワッサン', 'ドーナツ', 'ベーグル'), 'パン'),
+    (('カレー', 'シチュー', 'グラタン', 'ドリア', 'パスタソース', 'ぎょうざ', '餃子', 'しゅうまい', '焼売', '春巻'), '主菜'),
+    (('パン', 'バーガー', 'サンド', 'ロール', 'クロワッサン', 'ドーナツ', 'ベーグル', 'ブレッド'), 'パン'),
     (('ヨーグルト', '牛乳', 'ミルク', 'チーズ', 'ちーず', '乳酸菌'), '乳製品'),
     (('茶', 'コーヒー', '珈琲', 'ジュース', 'ウォーター', '水', 'サイダー', 'コーラ', 'ソーダ', 'ドリンク', '飲料', 'ラテ', '豆乳'), '飲料'),
     (('豆腐', '厚揚', '油揚', '納豆', '大豆', '豆'), '大豆・豆'),
-    (('卵', 'たまご', 'エッグ'), '卵'),
+    (('卵', 'たまご', 'エッグ', '玉子'), '卵'),
     (('鮭', 'さけ', 'サーモン', 'まぐろ', 'ツナ', 'さば', '鯖', 'いわし', 'えび', 'エビ', 'いか', 'イカ', 'たこ', 'あじ', 'ししゃも', 'たらこ', 'たら子', '明太', 'しらす', 'カレイ', 'かつお',
       'ほっけ', '貝', 'あさり', 'ほたて', 'うなぎ', '鰻', 'ひれ', 'かに', 'ちくわ', 'かまぼこ', '魚'), '魚介'),
     (('丼', '定食', '弁当'), '丼・定食'),
@@ -90,6 +91,7 @@ NAME_RULES = [
       '酢', 'ルウ', 'ルー', 'つゆ', '塩', '砂糖', 'ジャム', 'はちみつ', '調味', 'スパイス', 'にんにく', 'しょうが', 'わさび', 'からし'), '調味料'),
     (('ポテト', 'じゃがいも', 'さつまいも', '芋', 'こんにゃく', 'とろろ'), 'いも'),
     (('ごはん', 'ご飯', '米', 'シリアル', 'グラノーラ', 'オートミール', 'もち麦'), '主食'),
+    (('巻',), '寿司'),   # last: トロたく巻, 鉄火花巻 (チーズ巻, 春巻 and 昆布巻 have matched before)
 ]
 
 
@@ -114,6 +116,15 @@ def pick_name(p):
     return name, has_ja
 
 
+# Words that hold a keyword without being one (さば水煮 is no 水, 茶碗蒸し no 茶, 出汁の唐揚げ no 汁, パンプキン no パン,
+# サワードウ no サワー, だし巻き no だし): rewritten before the name keywords are matched.
+NAME_FALSE_FRIENDS = {'水煮': '煮', '水炊': '炊', '水ようかん': 'ようかん', '水羊羹': '羊羹', '水まんじゅう': 'まんじゅう',
+                      '茶碗': '碗', '茶漬': 'ちゃづけ', '茶巾': '巾', '紅茶鴨': '鴨', '出汁': '', 'だし汁': '', '肉汁': '肉',
+                      'パンプキン': 'かぼちゃ', 'ジャパン': '', 'サワードウ': '', 'サワークリーム': 'クリーム',
+                      'だし巻': '卵焼', 'だし巻き': '卵焼'}
+_FALSE_RE = re.compile('|'.join(sorted(map(re.escape, NAME_FALSE_FRIENDS), key=len, reverse=True)))
+
+
 def pick_cat(tags, name, kcal=0):
     tags = [t.split(':', 1)[-1] for t in (tags or []) if isinstance(t, str)]
     # most specific tag is usually last in OFF; walk from the end
@@ -121,7 +132,7 @@ def pick_cat(tags, name, kcal=0):
         for keys, cat in TAG_RULES:
             if t in keys:
                 return cat
-    low = name.lower()
+    low = _FALSE_RE.sub(lambda m: NAME_FALSE_FRIENDS[m.group(0)], name.lower())
     for keys, cat in NAME_RULES:
         if cat == '酒' and kcal > 300:   # サワークリーム chips, サワーグミ, ビール酵母: not a drink
             continue
@@ -195,6 +206,14 @@ def protein_kind(name, kcal):
     return 'powder' if kcal >= 250 else 'drink'
 
 
+CREATINE_NOTE = 'クレアチンは表示上たんぱく質に含まれますが、たんぱく質にもエネルギー源にもならないため 0 として扱います'
+ALCOHOL_RE = re.compile(r'ストロング|チューハイ|酎ハイ|サワー|檸檬堂|ハイボール|ビール|発泡酒|ワイン|梅酒|日本酒|焼酎|ウイスキー|'
+                        r'ほろよい|氷結|\d+(?:\.\d)?\s*%')
+NON_ALCOHOL_RE = re.compile(r'ノンアル|アルコールフリー|0\.00|オールフリー|ドライゼロ|ビアリー|ゼロカク|酵母|グミ|キャンディ|飴|'
+                            r'サワークリーム|ソース|酢|ドレッシング')
+CREATINE_RE = re.compile(r'クレアチン|クレアルカリン|creatine', re.I)
+
+
 def plausible(kcal, p, f, c, salt, cat='その他', name=''):
     """-> (kcal, p, f, c, salt) with implausible values corrected/nulled, or None to drop the product; + flags.
     Order: kJ typed as kcal -> /4.184; kcal outside 0-900 (oils <= 950) -> drop; a macro outside 0-100 -> null it;
@@ -203,6 +222,13 @@ def plausible(kcal, p, f, c, salt, cat='その他', name=''):
     category cap (protein supplements: their own caps) / 60 g -> null salt."""
     flags = []
     nm = name or ''
+    if kcal == 0 and ALCOHOL_RE.search(nm) and not NON_ALCOHOL_RE.search(nm):
+        return None, ['alcohol_zero']   # an alcoholic drink at 0 kcal: the label's energy is missing (檸檬堂)
+    if CREATINE_RE.search(nm) and not protein_kind(nm, kcal) and not re.search(r'プロテイン|ホエイ|whey|protein', nm, re.I):
+        # Japanese labels show creatine's nitrogen as protein (クレアチン 5 g: P 4.4 g, 18 kcal); it is neither a
+        # protein nor an energy source
+        p, kcal = 0.0, 4 * (c or 0) + 9 * (f or 0)   # what's left: a flavoured one's sugar
+        flags.append('creatine')
     if None not in (p, f, c) and cat != '酒':
         est = 4 * p + 9 * f + 4 * c
         if est > 30 and kcal > 1.6 * est and abs(kcal - 4.184 * est) < 0.08 * 4.184 * est:
@@ -342,6 +368,8 @@ def build(indir):
         it['jan'] = jan
         it['cat'] = cat
         it.update(nutrients(dict(zip(NUTS, vals))))
+        if 'creatine' in flags:
+            it['note'] = CREATINE_NOTE
         por = portions(p, cat, vals[0])
         if por:
             it['portions'] = por
