@@ -25,7 +25,8 @@ async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Pa
 const play = (page: Page) => fromMenu(page, 'kikimimi');
 /** Answer the current question: the right choice, or (`wrong`) another; waits for the answer window first. */
 async function answer(page: Page, wrong = false) {
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 15_000 });
+  // (a dialogue's lines play first: 10-20 s of real clips)
+  await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 40_000 });
   const right = await kiki(page, (k) => k.right());
   const k = wrong ? (right + 1) % (await sheet(page).locator('[data-choice]').count()) : right;
   await sheet(page).locator(`[data-choice="${k}"]`).click();
@@ -106,12 +107,12 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
   await play(page);
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   // (level 4's dialogues wait for their clips: the test hook starts my lobby on them, as にがて れんしゅう would; no clip
-  // sounds here, the schedule runs on the 2 s stand-in)
+  // sounds here, but the schedule runs on the lines' real lengths)
   await kiki(page, (k) => k.deck(['d4-oat-latte', 'd4-train-cancelled']));
   await expect.poll(() => kiki(page, (k) => k.items())).toEqual(['d4-oat-latte', 'd4-train-cancelled']);
   const shots = process.env.KIKI_SHOTS ? '/tmp/kikimimi-shots/inc34' : null;
   for (const [i, lines, next] of [[0, 3, true], [1, 4, false]] as const) {
-    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 15_000 }).toBe(i);
+    await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 40_000 }).toBe(i);
     await expect(sheet(page).locator(`[data-kiki-q="${i}"]`)).toHaveAttribute('data-type', next ? 'next' : 'gist');
     // while it plays: both speakers' heads, no text
     await expect(sheet(page).locator('[data-kiki-duo] .one')).toHaveCount(2);
