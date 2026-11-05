@@ -29,7 +29,7 @@
 
   onMount(() => {
     let gone = false, stop = () => {};
-    void Promise.all([import('three'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/structure.ts'), import('../world3d/release.ts')]).then(
+    void Promise.all([import('../world3d/threePreview.ts'), import('three/examples/jsm/controls/OrbitControls.js'), import('../world3d/terrain.ts'), import('../world3d/objects.ts'), import('../world3d/things.ts'), import('../world3d/bend.ts'), import('../world3d/water.ts'), import('../world3d/home.ts'), import('../world3d/structure.ts'), import('../world3d/release.ts')]).then(
       ([T, { OrbitControls }, { buildGround }, { placeObjects, homePlaces }, { createThings }, { bendU, bend, bendPoint, unbendRay }, { waterU, waterFog }, { buildHome }, { structurePlaces, buildStructure }, { releaseAll, resourcesOf }]) => {
         if (gone || !canvas) return;
         let renderer: InstanceType<typeof T.WebGLRenderer>;
