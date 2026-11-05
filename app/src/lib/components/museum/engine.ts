@@ -41,8 +41,10 @@ const FOV = 32;
 /** How much of the floor the default view shows across (model units): about fifteen tiles. */
 const VIEW_W = 92;
 const DPR_MAX = 2, DPR_MOVING = 1.5;
-/** The exhibits' rate (a second) while only they move. */
-const AMBIENT = 30;
+/** The exhibits' rate (a second) while only they move; no finger on the room for REST_MS (the island's rest:
+ *  world3d/engine.ts), REST_FPS, and REST_FAR_FPS while those moving are only seen through an opening (a wing's
+ *  tanks and bugs from the hall, the hall's from a wing): the battery and the phone's heat at rest. */
+const AMBIENT = 30, REST_MS = 8000, REST_FPS = 20, REST_FAR_FPS = 12;
 /** The longest the first frame waits for the villagers' models (ms): holding. */
 const ENTRY_HOLD_MS = 1500;
 /** How long a wall takes to fade out or in (ms), the cutaway's. */
@@ -867,6 +869,9 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
   let baseD = 400, shiftY = 0;
   let easing: { from: typeof DEF; t0: number } | null = null;
   let gesturing = false;
+  /** A finger's last on the room (a drag, a pinch, a tap, the first person's look): the exhibits' rest after REST_MS. */
+  let lastInput = now();
+  const touched = () => void (lastInput = now());
   function fit() {
     const W = canvas.clientWidth || 1, H = canvas.clientHeight || 1;
     renderer.setSize(W, H, false);
@@ -1238,16 +1243,17 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     // the hall's view of the wings' far ends is still)
     projScreen.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     frustum.setFromProjectionMatrix(projScreen);
-    let ambient = false;
+    let ambient = false, near = false;
     ambientOn = 0;
     // (at the eyes a wing shows only through its opening: one behind the hall's walls is hidden and rests)
-    const inside = fp.inside(), eyeWing = inside ? wingAt(fp.eye.x) : null;
+    const inside = fp.inside(), eyeWing = inside ? wingAt(fp.eye.x) : null, here = eyeWing ?? wingAt(target.x);
     wingSeen.bug = !inside || eyeWing === 'bug' || frustum.intersectsBox(PORTAL.bug);
     wingSeen.fish = !inside || eyeWing === 'fish' || frustum.intersectsBox(PORTAL.fish);
     for (const e of exhibits) {
       e.group.visible = wingSeen[e.wing];
       if (!e.group.visible || !e.frame(t, dt, seen)) continue;
       ambient = true;
+      if (e.wing === here) near = true;
       ambientOn++;
     }
     // (only when it changes: three's setPixelRatio sets the canvas's size, which reallocates its buffers, every frame;
@@ -1265,7 +1271,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     if (full) invalidate();
     // (one ambient timer at a time, and a frame for anything else in between — a tap, a load — brings it forward: two
     // chains side by side ran on together at 60 a second)
-    else if (ambient) pace.later(Math.min(AMBIENT, frameRate.fps));
+    else if (ambient) pace.later(Math.min(t - lastInput > REST_MS ? (near ? REST_FPS : REST_FAR_FPS) : AMBIENT, frameRate.fps));
   }
 
   fit();
@@ -1335,25 +1341,32 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       followed = who;
       invalidate();
     },
-    firstPerson,
+    firstPerson(on, snap) {
+      touched();
+      firstPerson(on, snap);
+    },
     look(dx, dy) {
+      touched();
       fp.look(dx, dy, canvas.clientWidth);
       invalidate();
     },
     fpv: () => ({ on: fp.on, inside: fp.inside(), busy: fp.busy(), yaw: fp.yaw, pitch: fp.pitch, eye: [fp.eye.x, fp.eye.y, fp.eye.z] }),
     inView,
     orbit(dAz, dPitch) {
+      touched();
       easing = null;
       view.az = wrapAngle(view.az + dAz);
       view.pitch = Math.max(PITCH_MIN, Math.min(PITCH_MAX, view.pitch + dPitch));
       invalidate();
     },
     zoom(f) {
+      touched();
       easing = null;
       view.k = Math.max(K_MIN, Math.min(K_MAX, view.k / f));
       invalidate();
     },
     resetView() {
+      touched();
       easing = { from: { ...view }, t0: now() };
       invalidate();
     },
@@ -1362,6 +1375,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
       drawn = fn;
     },
     moving(on) {
+      touched();
       gesturing = on;
       invalidate();
     },
@@ -1369,7 +1383,7 @@ export function createMuseum(canvas: HTMLCanvasElement, o: { base: string; world
     exhibit,
     drop,
     exhibits: () => exhibits,
-    hit,
+    hit: (cx, cy) => (touched(), hit(cx, cy)),
     client,
     nav: () => nav,
     walls: () => walls.map((w) => (w.cut ? 1 : 0)).join(''),
