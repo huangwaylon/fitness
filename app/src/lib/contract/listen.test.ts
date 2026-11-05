@@ -15,6 +15,19 @@ describe('listenOf', () => {
       { ...row, p: true }, { ...row, r: 'x' }, { ...row, r: [['w2-read', 1, 0]] }, { ...row, r: [['w2-read', 1, -2, 0]] }, { ...row, d: '2026-11-31' }])
       expect(listenOf(bad), JSON.stringify(bad)).toBeNull();
   });
+  it('a later game’s row (docs/kikimimi-framework.md §4.4): `gm` and `u` optional, `pick` −1…4095, `lv` and `ok` as they were', () => {
+    const tile = { ...row, gm: 'tile', u: 'u03-kawa', r: [['w2-read', 0, 4095, 0], ['n2-price-1', 1, -1, 99]] };
+    expect(listenOf(tile)).toEqual(tile);
+    expect(listenOf({ ...row, gm: 'quiz' })).toEqual({ ...row, gm: 'quiz' });
+    expect(listenOf({ ...row, u: 'a' })).toEqual({ ...row, u: 'a' });
+    expect(listenOf({ ...row, r: [['w2-read', 1, 4, 0]] })).toEqual({ ...row, r: [['w2-read', 1, 4, 0]] });
+    for (const bad of [{ ...row, gm: 'q' }, { ...row, gm: 'abcdefghi' }, { ...row, gm: '1abc' }, { ...row, gm: 'Tile' }, { ...row, gm: 3 }, { ...row, gm: null },
+      { ...row, u: '' }, { ...row, u: 'abcdefghijklm' }, { ...row, u: 'U1' }, { ...row, u: 1 },
+      { ...row, r: [['w2-read', 1, 4096, 0]] }, { ...row, r: [['w2-read', 1, 1.5, 0]] }, { ...row, r: [['w2-read', 2, 0, 0]] }, { ...row, lv: 6 }])
+      expect(listenOf(bad), JSON.stringify(bad)).toBeNull();
+    // the other member's summary carries neither
+    expect(JSON.parse(listenSummaryJson(JSON.stringify(tile))!)).toEqual({ d: '2026-11-05', g: 'ab12', n: 2, ms: 180_000 });
+  });
   it('summarises without the level, the answers or the practice flag', () => {
     expect(JSON.parse(listenSummaryJson(JSON.stringify({ ...row, p: 1 }))!)).toEqual({ d: '2026-11-05', g: 'ab12', n: 2, ms: 180_000 });
     expect(listenSummaryJson('{')).toBeNull();

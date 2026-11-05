@@ -506,6 +506,37 @@ describe('the island room', () => {
     expect(join(KEY_B, 0).kinds()).not.toContain('quiz');
   });
 
+  it('a game op (`play`, ききみみ’s games) goes live to everyone else here, the guest’s too; never kept, acked or replayed; an unknown game passes, an oversize one is dropped', () => {
+    const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
+    for (const s of [a, b, g]) s.sent = [];
+    const T = 1_793_527_259_353;
+    const P = { kind: 'play', g: 'k3x9a2', gm: 'tile' };
+    say(a, { ...P, op: 'open', cv: '0a1b2c', seed: 12345, f: 1, o: [3], u: 'u03-kawa', extra: 1 });
+    say(g, { ...P, op: 'join', tr: 2 });
+    say(a, { ...P, op: 'go', at: T, pl: 5 });
+    say(g, { ...P, op: 'a', i: 0, k: [1, 5, 9], rp: 1, s: 130 });
+    say(b, { ...P, op: 'a', i: 0, k: [64], rp: 0, s: 0 }); // no such tile: dropped
+    say(b, { ...P, gm: 'zzgame9', op: 'join' }); // a game the relay has never heard of: passed on
+    say(b, { ...P, op: 'ev', i: 0, e: 1, pad: 'x'.repeat(300) }); // over MAX_BYTES: dropped unread
+    say(a, { ...P, op: 'skip', i: 1, at: T + 30_000 });
+    expect(b.sent).toEqual([
+      { v: 3, ...P, op: 'open', cv: '0a1b2c', seed: 12345, f: 1, o: [3], u: 'u03-kawa', who: 'A', t: expect.any(Number) },
+      { v: 3, ...P, op: 'join', tr: 2, who: 'G', t: expect.any(Number) },
+      { v: 3, ...P, op: 'go', at: T, pl: 5, who: 'A', t: expect.any(Number) },
+      { v: 3, ...P, op: 'a', i: 0, k: [1, 5, 9], rp: 1, s: 130, who: 'G', t: expect.any(Number) },
+      { v: 3, ...P, op: 'skip', i: 1, at: T + 30_000, who: 'A', t: expect.any(Number) }
+    ]);
+    expect(a.sent.map((m) => [(m as { op?: string }).op, (m as { gm?: string }).gm, (m as { who?: string }).who]))
+      .toEqual([['join', 'tile', 'G'], ['a', 'tile', 'G'], ['join', 'zzgame9', 'B']]);
+    expect(g.sent.map((m) => [(m as { op?: string }).op, (m as { who?: string }).who])).toEqual([['open', 'A'], ['go', 'A'], ['join', 'B'], ['skip', 'A']]);
+    // nobody hears an ack (none was numbered) or anything of their own
+    for (const s of [a, b, g]) expect(s.sent.map((m) => m.kind)).not.toContain('ack');
+    expect(saved).toEqual([]);
+    for (const s of [a, b, g]) expect(s.closed).toBeNull();
+    // a phone opening later hears none of it
+    expect(join(KEY_B, 0).kinds()).not.toContain('play');
+  });
+
   it('relays walks only to points within the world plan', () => {
     const a = join(KEY_A);
     const b = join(KEY_B);

@@ -55,6 +55,22 @@ describe('gamesOf', () => {
   });
 });
 
+describe('gamesOf: a newer build’s rows', () => {
+  it('skips answers whose ids this build doesn’t know: a row from a newer game leaves the games and the stats unchanged', () => {
+    const quiz = { d: TODAY, g: 'ab12', lv: 2, n: 1, ms: 120_000, r: [['w2-read', 1, 0, 0], ['n2-price-1', 0, 2, 1]] };
+    const tile = { d: TODAY, g: 'ef56', gm: 'tile', u: 'u03-kawa', lv: 3, n: 2, ms: 90_000, r: [['zz-new-tile-1', 0, 4095, 0], ['zz-new-tile-2', 1, 0, 0]] };
+    const mixed = { d: TODAY, g: 'gh78', gm: 'review', lv: 2, n: 1, ms: 60_000, r: [['zz-new-1', 1, 7, 0], ['w2-cats', 0, -1, 2]] };
+    const ev = (id: string, data: object, s = 1): EventRow => [`2026-11-05T03:00:0${s}.000Z`, 'A', id, 'listen', JSON.stringify(data)];
+    const before = gamesOf([ev('e1', quiz)], 'A');
+    const after = gamesOf([ev('e1', quiz), ev('e2', tile, 2)], 'A');
+    expect(after).toEqual(before);
+    expect(statsOf(answersOf(after.mine), TODAY)).toEqual(statsOf(answersOf(before.mine), TODAY));
+    // a row of known and unknown items: the known ones only
+    const m = gamesOf([ev('e1', quiz), ev('e3', mixed, 3)], 'A').mine;
+    expect(m.map((x) => [x.g, x.r.map((a) => a.id)])).toEqual([['ab12', ['w2-read', 'n2-price-1']], ['gh78', ['w2-cats']]]);
+  });
+});
+
 describe('listenAnswers: a game’s answers as a row', () => {
   const items = BANK.filter((it) => it.lv === 2).slice(0, 4);
   const pick = (n: number) => ({ k: items[n].answer });

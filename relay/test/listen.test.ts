@@ -53,10 +53,15 @@ describe('ききみみ progress rows', () => {
     ok(game('ab22', { r: [] }), false);
     ok(game('ab23', { r: Array.from({ length: 13 }, () => ['w3-gotta', 1, 0, 0]) }), false);
     ok(game('ab24', { r: [['w3-gotta', 2, 0, 0]] }), false);
-    ok(game('ab25', { r: [['w3-gotta', 1, 4, 0]] }), false);
+    ok(game('ab25', { r: [['w3-gotta', 1, 4096, 0]] }), false);
     ok(game('ab26', { r: [['W3 gotta', 1, 0, 0]] }), false);
     ok(game('ab27', { r: [['w3-gotta', 1, 0, 100]] }), false);
     ok(game('ab28', { score: 1040 }), false);
+    // a later game's row (docs/kikimimi-framework.md §4.4): `gm`, `u`, a pick up to 4095 (a tile round's bitmask)
+    ok(game('ab29', { gm: 'tile', u: 'u03-kawa', r: [['w3-gotta', 0, 4095, 0]] }), true);
+    ok(game('ab30', { r: [['w3-gotta', 1, 4, 0]] }), true);
+    ok(game('ab31', { gm: 'T' }), false);
+    ok(game('ab32', { u: 'a'.repeat(13) }), false);
     expect(bad).toEqual([]);
   });
 
