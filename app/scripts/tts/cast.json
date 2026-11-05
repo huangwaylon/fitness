@@ -45,14 +45,14 @@
   "accent": "us",
   "gender": "m",
   "source": "design",
-  "seed": 11,
+  "seed": 23,
   "kokoro": "am_echo",
-  "description": "An energetic young American man in his early twenties with a standard General American accent. Upbeat, sporty and enthusiastic, like a friendly gym buddy. Clear articulation, natural lively pace, medium pitch.",
+  "description": "A friendly, laid-back American man in his late twenties with a standard General American accent. Warm, relaxed and sporty, like an easygoing gym buddy chatting between sets. Clear articulation, natural conversational pace, medium-low pitch.",
   "ref": {
    "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
-   "mos": 4.185
+   "mos": 4.444
   }
  },
  "us-m2": {

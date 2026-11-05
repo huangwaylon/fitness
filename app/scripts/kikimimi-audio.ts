@@ -8,6 +8,7 @@
 //     --only <regex>            item ids to speak (the rest keep their clips)
 //     --out <dir>               a scratch dir instead of static/: clips.json, clips.src.json and report.json land there too
 //     --force                   re-speak every selected item
+//     --seed 1234               the first take's seed (a re-roll of a weak take: --only <id> --force --seed 2000)
 //     --retries 5               the gate: re-roll a clip with the next seed while whisper mishears a content word or
 //                               its voice drifts (--min-sim 0.5: ECAPA cosine to the reference)
 //     --l1-tempo 0.92           level 1's normal clips gently slowed (atempo); 1 = as spoken
@@ -61,8 +62,6 @@ const EVAL = process.env.KIKIMIMI_TTS_EVAL;
 
 /** Bump to re-speak everything after a change to the processing below (neural engines; `say` keeps v1's hashes). */
 const PIPELINE = 2;
-/** The clip seeds: the first try's, then +1 per re-roll. */
-const SEED = 1234;
 const SLOW = 0.75;
 const hasSlow = (it: Item): boolean => it.lv <= 2;
 
@@ -96,6 +95,8 @@ const CASTS: Record<CastId, CastEntry> = JSON.parse(readFileSync(CAST_FILE, 'utf
 const args = process.argv.slice(2);
 const flag = (f: string) => args.includes(f);
 const opt = (f: string): string | undefined => (args.includes(f) ? args[args.indexOf(f) + 1] : undefined);
+/** The clip seeds: the first try's (--seed), then +1 per re-roll. */
+const SEED = Number(opt('--seed') ?? 1234);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
 const RETRIES = Number(opt('--retries') ?? 5);
 /** Level 1's normal clips a touch slower (Qwen speaks L1 lines at ~205 wpm; 0.92 → ~190, `say` v1 was 160): within

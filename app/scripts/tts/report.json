@@ -14,43 +14,34 @@
    "by": "atempo"
   },
   "l1Tempo": 0.92,
-  "at": "2026-11-05T16:15:18.299Z",
-  "wallSeconds": 209,
-  "spokenNow": 84,
+  "at": "2026-11-05T17:27:59.886Z",
+  "wallSeconds": 28,
+  "spokenNow": 2,
   "clips": 295,
   "perfect": 290,
   "contentClean": 292,
-  "rerolled": 31,
+  "rerolled": 30,
   "flagged": [
    "d4-installer-3",
    "d4-landlord-1",
-   "d4-landlord-3",
-   "d4-meeting-room-2",
-   "d4-squat-form-2",
-   "d4-taxi-street-2",
-   "d4-taxi-street-4",
-   "n1-reps-3",
-   "n4-dollars",
-   "p2-tire",
-   "r3-working-out",
    "w2-read",
    "w3-gotta",
    "w3-shouldve"
   ],
-  "mos": 4.208,
-  "mosMin": 2.398,
-  "sim": 0.684,
-  "simMin": 0.217,
-  "rtf": 0.31,
+  "mos": 4.245,
+  "mosMin": 3.295,
+  "sim": 0.689,
+  "simMin": 0.503,
+  "rtf": 0.309,
   "wer": 0.002,
   "wpm": {
-   "1": 192.13,
-   "2": 250.367,
-   "3": 242.347,
-   "4": 211.205
+   "1": 193.043,
+   "2": 248.469,
+   "3": 242.204,
+   "4": 211.046
   },
   "files": 390,
-  "kb": 6424,
+  "kb": 6458,
   "perVoice": {
    "au-f1": {
     "n": 24,
@@ -70,10 +61,10 @@
    },
    "au-m2": {
     "n": 14,
-    "mos": 4.172,
+    "mos": 4.179,
     "mosMin": 3.694,
-    "sim": 0.636,
-    "simMin": 0.217,
+    "sim": 0.675,
+    "simMin": 0.518,
     "misheard": 0
    },
    "uk-f1": {
@@ -86,34 +77,34 @@
    },
    "uk-m1": {
     "n": 27,
-    "mos": 4.369,
+    "mos": 4.37,
     "mosMin": 4.032,
-    "sim": 0.695,
+    "sim": 0.696,
     "simMin": 0.521,
     "misheard": 0
    },
    "uk-m2": {
-    "n": 22,
-    "mos": 4.307,
+    "n": 23,
+    "mos": 4.304,
     "mosMin": 4.156,
-    "sim": 0.668,
+    "sim": 0.667,
     "simMin": 0.508,
     "misheard": 0
    },
    "us-f1": {
     "n": 25,
-    "mos": 4.091,
+    "mos": 4.109,
     "mosMin": 3.295,
-    "sim": 0.707,
-    "simMin": 0.502,
+    "sim": 0.711,
+    "simMin": 0.536,
     "misheard": 1
    },
    "us-f2": {
     "n": 24,
-    "mos": 4.262,
+    "mos": 4.258,
     "mosMin": 3.768,
-    "sim": 0.687,
-    "simMin": 0.452,
+    "sim": 0.694,
+    "simMin": 0.528,
     "misheard": 0
    },
    "us-f3": {
@@ -125,11 +116,11 @@
     "misheard": 0
    },
    "us-m1": {
-    "n": 31,
-    "mos": 3.854,
-    "mosMin": 2.398,
-    "sim": 0.659,
-    "simMin": 0.486,
+    "n": 30,
+    "mos": 4.195,
+    "mosMin": 3.554,
+    "sim": 0.684,
+    "simMin": 0.509,
     "misheard": 0
    },
    "us-m2": {
@@ -734,23 +725,21 @@
    "mos": 4.302
   },
   "d4-landlord-3": {
-   "src": "9419f6d6a1",
+   "src": "37345ce95f",
    "cast": "us-f1",
    "engine": "qwen3",
    "text": "That's what you said last month.",
-   "dur": 1.33,
-   "wpm": 283,
-   "seed": 1234,
+   "dur": 1.34,
+   "wpm": 281,
+   "seed": 2000,
    "tries": 1,
-   "flags": [
-    "low-mos"
-   ],
+   "flags": [],
    "hyp": "That's what you said last month.",
    "wer": 0,
    "content": 0,
-   "sim": 0.502,
-   "rtf": 0.331,
-   "mos": 3.326
+   "sim": 0.583,
+   "rtf": 0.325,
+   "mos": 3.763
   },
   "d4-landlord-4": {
    "src": "b1776b5b85",
@@ -787,24 +776,21 @@
    "mos": 4.361
   },
   "d4-meeting-room-2": {
-   "src": "36467777bc",
+   "src": "4e20615535",
    "cast": "us-m1",
    "engine": "qwen3",
-   "text": "Yeah, why?",
-   "dur": 0.95,
-   "wpm": 135,
+   "text": "Yeah, why? What's up?",
+   "dur": 1.33,
+   "wpm": 189,
    "seed": 1235,
-   "tries": 6,
-   "flags": [
-    "low-sim",
-    "low-mos"
-   ],
-   "hyp": "Yeah, why?",
+   "tries": 2,
+   "flags": [],
+   "hyp": "Yeah? Why? What's up?",
    "wer": 0,
    "content": 0,
-   "sim": 0.486,
-   "rtf": 0.346,
-   "mos": 2.398
+   "sim": 0.555,
+   "rtf": 0.324,
+   "mos": 3.976
   },
   "d4-meeting-room-3": {
    "src": "39d613cd6a",
@@ -841,21 +827,21 @@
    "mos": 4.25
   },
   "d4-misheard-name-2": {
-   "src": "fb73f5a916",
+   "src": "ab1b1329fc",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "It's Wei. W, E, I.",
-   "dur": 2,
-   "wpm": 155,
-   "seed": 1234,
-   "tries": 1,
+   "dur": 2.59,
+   "wpm": 119,
+   "seed": 1235,
+   "tries": 2,
    "flags": [],
-   "hyp": "It's WEI, W-E-I.",
+   "hyp": "It's Wei W-E-I.",
    "wer": 0,
    "content": 0,
-   "sim": 0.592,
-   "rtf": 0.32,
-   "mos": 3.835
+   "sim": 0.662,
+   "rtf": 0.348,
+   "mos": 4.319
   },
   "d4-misheard-name-3": {
    "src": "f3c62ca4b6",
@@ -943,21 +929,21 @@
    "mos": 4.358
   },
   "d4-oat-latte-2": {
-   "src": "39bdc96c38",
+   "src": "545282095e",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Uh, I think that's mine, but I asked for almond milk.",
-   "dur": 2.47,
-   "wpm": 274,
+   "dur": 2.73,
+   "wpm": 247,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Uh, I think that's mine, but I asked for almond milk.",
    "wer": 0,
    "content": 0,
-   "sim": 0.594,
-   "rtf": 0.281,
-   "mos": 4.081
+   "sim": 0.712,
+   "rtf": 0.276,
+   "mos": 3.914
   },
   "d4-oat-latte-3": {
    "src": "bf18a034e1",
@@ -1215,74 +1201,72 @@
    "mos": 3.795
   },
   "d4-squat-form-1": {
-   "src": "d63b2cb55f",
+   "src": "fffa1b4b91",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Okay, ten more squats. Keep your chest up!",
-   "dur": 2.38,
-   "wpm": 207,
+   "dur": 2.32,
+   "wpm": 212,
    "seed": 1234,
    "tries": 1,
    "flags": [],
-   "hyp": "Okay, 10 more squats. Keep your chest up.",
+   "hyp": "Okay, ten more squats. Keep your chest up.",
    "wer": 0,
    "content": 0,
-   "sim": 0.689,
-   "rtf": 0.298,
-   "mos": 3.786
+   "sim": 0.703,
+   "rtf": 0.286,
+   "mos": 4.222
   },
   "d4-squat-form-2": {
-   "src": "ab928548bf",
+   "src": "dc1c903bc9",
    "cast": "us-f2",
    "engine": "qwen3",
-   "text": "Like this?",
-   "dur": 0.59,
-   "wpm": 226,
-   "seed": 1238,
-   "tries": 6,
-   "flags": [
-    "low-sim"
-   ],
-   "hyp": "Like this?",
+   "text": "Like this? Is that right?",
+   "dur": 1.58,
+   "wpm": 197,
+   "seed": 1234,
+   "tries": 1,
+   "flags": [],
+   "hyp": "Like this? Is that right?",
    "wer": 0,
    "content": 0,
-   "sim": 0.452,
-   "rtf": 0.418,
-   "mos": 3.904
+   "sim": 0.623,
+   "rtf": 0.328,
+   "mos": 3.815
   },
   "d4-squat-form-3": {
-   "src": "8ebc7a39c3",
+   "src": "1e904e0d1d",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Almost. You're kinda leaning forward. Try sittin' back, like there's a chair behind ya.",
-   "dur": 4.4,
-   "wpm": 194,
+   "dur": 5.02,
+   "wpm": 169,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Almost. You're kind of leaning forward. Try sitting back like there's a chair behind you.",
    "wer": 0,
    "content": 0,
-   "sim": 0.783,
-   "rtf": 0.267,
-   "mos": 4.291
+   "sim": 0.749,
+   "rtf": 0.261,
+   "mos": 4.42
   },
   "d4-store-credit-1": {
-   "src": "637e8a0e75",
+   "src": "db78cfe0ac",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Hi, I'd like to return these headphones. They stopped working after a week.",
-   "dur": 3.9,
-   "wpm": 203,
+   "dur": 4.01,
+   "wpm": 197,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Hi, I'd like to return these headphones. They stopped working after a week.",
    "wer": 0,
    "content": 0,
-   "sim": 0.795,
-   "rtf": 0.272,
-   "mos": 4.163
+   "sim": 0.742,
+   "rtf": 0.273,
+   "mos": 4.269
   },
   "d4-store-credit-2": {
    "src": "5b12442878",
@@ -1302,21 +1286,21 @@
    "mos": 4.228
   },
   "d4-store-credit-3": {
-   "src": "16fbb5c3d7",
+   "src": "a7be0d3676",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Uh, no, it was a gift.",
-   "dur": 1.9,
-   "wpm": 196,
+   "dur": 1.45,
+   "wpm": 259,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Uh, no, it was a gift.",
    "wer": 0,
    "content": 0,
-   "sim": 0.539,
-   "rtf": 0.311,
-   "mos": 3.537
+   "sim": 0.6,
+   "rtf": 0.325,
+   "mos": 4.073
   },
   "d4-store-credit-4": {
    "src": "3702c57099",
@@ -1353,23 +1337,21 @@
    "mos": 3.895
   },
   "d4-taxi-street-2": {
-   "src": "60b4647eeb",
+   "src": "0235bb4e78",
    "cast": "au-m2",
    "engine": "qwen3",
-   "text": "Brunswick Road? No worries.",
-   "dur": 2.14,
-   "wpm": 115,
-   "seed": 1237,
-   "tries": 6,
-   "flags": [
-    "low-sim"
-   ],
-   "hyp": "Brunswick Road? No worries.",
+   "text": "Brunswick Road? No worries, mate.",
+   "dur": 2.28,
+   "wpm": 135,
+   "seed": 1235,
+   "tries": 2,
+   "flags": [],
+   "hyp": "Brunswick Road? No worries, mate.",
    "wer": 0,
    "content": 0,
-   "sim": 0.414,
-   "rtf": 0.362,
-   "mos": 3.887
+   "sim": 0.518,
+   "rtf": 0.43,
+   "mos": 4.189
   },
   "d4-taxi-street-3": {
    "src": "58b9f0a66c",
@@ -1389,23 +1371,21 @@
    "mos": 3.794
   },
   "d4-taxi-street-4": {
-   "src": "906c08762b",
+   "src": "cbddca6471",
    "cast": "au-m2",
    "engine": "qwen3",
-   "text": "Ah, righto. Totally different direction. Good thing ya said.",
-   "dur": 4.52,
-   "wpm": 121,
-   "seed": 1239,
-   "tries": 6,
-   "flags": [
-    "drift"
-   ],
-   "hyp": "Ah, righto. Totally different direction. Good thing you said.",
+   "text": "Ah, righto. Totally different direction. Good thing ya said something.",
+   "dur": 5.5,
+   "wpm": 110,
+   "seed": 2003,
+   "tries": 4,
+   "flags": [],
+   "hyp": "Ah, righto. Totally different direction. Good thing you said something.",
    "wer": 0,
    "content": 0,
-   "sim": 0.217,
-   "rtf": 0.358,
-   "mos": 4.347
+   "sim": 0.656,
+   "rtf": 0.304,
+   "mos": 4.148
   },
   "d4-train-cancelled-1": {
    "src": "d611b522a9",
@@ -1612,21 +1592,21 @@
    "mos": 4.126
   },
   "m4-brilliant": {
-   "src": "c7293c3d24",
+   "src": "457f15c489",
    "cast": "uk-m1",
    "engine": "qwen3",
-   "text": "Oh, brilliant. Two hours of my life I'll never get back.",
-   "dur": 3.2,
-   "wpm": 210,
+   "text": "That film? Oh, brilliant. Two hours of my life I'll never get back.",
+   "dur": 4.3,
+   "wpm": 184,
    "seed": 1234,
    "tries": 1,
    "flags": [],
-   "hyp": "Oh, brilliant. Two hours of my life I'll never get back.",
+   "hyp": "That film? Oh, brilliant. Two hours of my life I'll never get back.",
    "wer": 0,
    "content": 0,
-   "sim": 0.782,
-   "rtf": 0.282,
-   "mos": 4.429
+   "sim": 0.811,
+   "rtf": 0.277,
+   "mos": 4.457
   },
   "m4-cat": {
    "src": "97b09c0fd2",
@@ -1850,21 +1830,21 @@
    "mos": 4.405
   },
   "m4-swing-by": {
-   "src": "f490d25009",
+   "src": "1c9faccfef",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Saturday? Yeah, I'll try 'n' swing by, if I'm not too wiped out.",
-   "dur": 3.56,
-   "wpm": 223,
+   "dur": 4.62,
+   "wpm": 171,
    "seed": 1234,
    "tries": 1,
    "flags": [],
-   "hyp": "Saturday? Yeah, I'll try and swing by if I'm not too wiped out.",
+   "hyp": "Saturday? Yeah, I'll try and swing by, if I'm not too wiped out.",
    "wer": 0,
    "content": 0,
-   "sim": 0.727,
-   "rtf": 0.28,
-   "mos": 4.225
+   "sim": 0.78,
+   "rtf": 0.263,
+   "mos": 4.417
   },
   "m4-upgrade": {
    "src": "8dc2793c99",
@@ -2037,38 +2017,38 @@
    "mos": 4.287
   },
   "n1-price-3": {
-   "src": "521673334c",
+   "src": "526a26ed32",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "That'll be four thousand Bells, please.",
-   "dur": 2.2,
-   "wpm": 168,
+   "dur": 2,
+   "wpm": 186,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "That'll be 4,000 bells, please.",
    "wer": 0,
    "content": 0,
-   "sim": 0.653,
-   "rtf": 0.292,
-   "mos": 4.023
+   "sim": 0.745,
+   "rtf": 0.297,
+   "mos": 4.33
   },
   "n1-reps-1": {
-   "src": "56ce996695",
+   "src": "30043ad5ce",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Come on, let's do fifteen push-ups!",
-   "dur": 2.44,
-   "wpm": 176,
+   "dur": 2.3,
+   "wpm": 188,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Come on, let's do 15 push-ups.",
    "wer": 0,
    "content": 0,
-   "sim": 0.67,
-   "rtf": 0.288,
-   "mos": 3.705
+   "sim": 0.794,
+   "rtf": 0.283,
+   "mos": 4.232
   },
   "n1-reps-2": {
    "src": "3d0717c5e1",
@@ -2088,23 +2068,21 @@
    "mos": 3.704
   },
   "n1-reps-3": {
-   "src": "f0dbcd9cfb",
+   "src": "816d29c562",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Come on, let's do forty push-ups!",
-   "dur": 2.04,
-   "wpm": 212,
+   "dur": 1.91,
+   "wpm": 227,
    "seed": 1234,
    "tries": 1,
-   "flags": [
-    "low-mos"
-   ],
+   "flags": [],
    "hyp": "Come on, let's do 40 push-ups.",
    "wer": 0,
    "content": 0,
-   "sim": 0.6,
-   "rtf": 0.295,
-   "mos": 2.951
+   "sim": 0.62,
+   "rtf": 0.292,
+   "mos": 4.251
   },
   "n1-turnips-1": {
    "src": "ec3ec2a778",
@@ -2345,21 +2323,21 @@
    "mos": 4.388
   },
   "n2-tourney-1": {
-   "src": "bfea6ed6c5",
+   "src": "5262eddec3",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "The fishing tourney is on the thirteenth.",
-   "dur": 1.8,
-   "wpm": 241,
+   "dur": 1.88,
+   "wpm": 231,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "The fishing tourney is on the 13th.",
    "wer": 0,
    "content": 0,
-   "sim": 0.677,
-   "rtf": 0.304,
-   "mos": 4.295
+   "sim": 0.608,
+   "rtf": 0.288,
+   "mos": 4.398
   },
   "n2-tourney-2": {
    "src": "60287d7a1b",
@@ -2498,38 +2476,38 @@
    "mos": 4.107
   },
   "n3-reps-2": {
-   "src": "1f9bdb1139",
+   "src": "8bf1738213",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Hold a plank for sixty seconds. Actually, no, make it seventy!",
-   "dur": 4.24,
-   "wpm": 158,
+   "dur": 3.65,
+   "wpm": 184,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Hold a plank for 60 seconds. Actually, no, make it 70.",
    "wer": 0,
    "content": 0,
-   "sim": 0.794,
+   "sim": 0.734,
    "rtf": 0.269,
-   "mos": 4.143
+   "mos": 4.405
   },
   "n3-steal-1": {
-   "src": "2738fe8ddf",
+   "src": "9a998c9e5e",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "It's a steal at one hundred fifteen thousand Bells!",
-   "dur": 2.38,
-   "wpm": 233,
+   "dur": 2.66,
+   "wpm": 208,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "It's a steal at 115,000 bells.",
    "wer": 0,
    "content": 0,
-   "sim": 0.615,
-   "rtf": 0.296,
-   "mos": 4.307
+   "sim": 0.786,
+   "rtf": 0.276,
+   "mos": 4.367
   },
   "n3-steal-2": {
    "src": "41c4361f49",
@@ -2617,23 +2595,21 @@
    "mos": 4.187
   },
   "n4-dollars": {
-   "src": "5f6d3c9aa5",
+   "src": "941d2d7994",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Parts and labor, you're lookin' at about three-forty.",
-   "dur": 2.56,
-   "wpm": 216,
+   "dur": 2.63,
+   "wpm": 210,
    "seed": 1234,
    "tries": 1,
-   "flags": [
-    "low-mos"
-   ],
-   "hyp": "Parts and labor, you're looking at about 340.",
+   "flags": [],
+   "hyp": "Parts and labor? You're looking at about 340.",
    "wer": 0,
    "content": 0,
-   "sim": 0.717,
-   "rtf": 0.294,
-   "mos": 3.388
+   "sim": 0.751,
+   "rtf": 0.285,
+   "mos": 3.973
   },
   "n4-flight": {
    "src": "fd8d1f335b",
@@ -2755,21 +2731,21 @@
    "mos": 4.477
   },
   "n4-reps": {
-   "src": "1c6eb933fc",
+   "src": "55c2877705",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Three sets of twelve. Actually, let's make it fifteen.",
-   "dur": 2.81,
-   "wpm": 196,
+   "dur": 2.7,
+   "wpm": 205,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Three sets of 12. Actually, let's make it 15.",
    "wer": 0,
    "content": 0,
-   "sim": 0.734,
-   "rtf": 0.298,
-   "mos": 3.994
+   "sim": 0.683,
+   "rtf": 0.282,
+   "mos": 4.306
   },
   "n4-split": {
    "src": "9f4ee80976",
@@ -2823,21 +2799,21 @@
    "mos": 4.446
   },
   "p1-bike": {
-   "src": "259d217a52",
+   "src": "dca922f07c",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "I ride my bike to the beach every morning. Great for the legs!",
-   "dur": 3.32,
-   "wpm": 239,
+   "dur": 3.5,
+   "wpm": 227,
    "seed": 1234,
    "tries": 1,
    "flags": [],
-   "hyp": "I ride my bike to the beach every morning. Great for the legs.",
+   "hyp": "I ride my bike to the beach every morning. Great for the legs?",
    "wer": 0,
    "content": 0,
-   "sim": 0.75,
-   "rtf": 0.265,
-   "mos": 4.001
+   "sim": 0.747,
+   "rtf": 0.266,
+   "mos": 4.075
   },
   "p1-cake": {
    "src": "980c29e814",
@@ -2891,21 +2867,21 @@
    "mos": 4.36
   },
   "p1-dumbbell": {
-   "src": "7f0ba3ea10",
+   "src": "f8b87c4208",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Grab a dumbbell. Not the kettlebell, the dumbbell!",
-   "dur": 3.12,
-   "wpm": 157,
+   "dur": 2.9,
+   "wpm": 169,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Grab a dumbbell. Not the kettlebell, the dumbbell.",
    "wer": 0,
    "content": 0,
-   "sim": 0.61,
-   "rtf": 0.27,
-   "mos": 3.579
+   "sim": 0.703,
+   "rtf": 0.278,
+   "mos": 4.364
   },
   "p1-guitar": {
    "src": "c537936236",
@@ -2925,21 +2901,21 @@
    "mos": 4.323
   },
   "p1-octopus": {
-   "src": "9a7a6cf988",
+   "src": "9ea41c9bf3",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Hey, that's not a fish. It's an octopus!",
-   "dur": 2.7,
-   "wpm": 182,
+   "dur": 2.86,
+   "wpm": 171,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Hey, that's not a fish. It's an octopus.",
    "wer": 0,
    "content": 0,
-   "sim": 0.682,
-   "rtf": 0.276,
-   "mos": 3.946
+   "sim": 0.707,
+   "rtf": 0.274,
+   "mos": 4.213
   },
   "p1-peach": {
    "src": "20e1d02ec2",
@@ -2959,21 +2935,21 @@
    "mos": 4.117
   },
   "p1-protein": {
-   "src": "fca0bfd2f2",
+   "src": "cc99d26a7a",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "After training, I always drink a protein shake!",
-   "dur": 2.81,
-   "wpm": 175,
+   "dur": 2.76,
+   "wpm": 178,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "After training, I always drink a protein shake.",
    "wer": 0,
    "content": 0,
-   "sim": 0.724,
-   "rtf": 0.272,
-   "mos": 4.352
+   "sim": 0.771,
+   "rtf": 0.275,
+   "mos": 4.427
   },
   "p1-shovel": {
    "src": "83812fe69c",
@@ -3010,21 +2986,21 @@
    "mos": 4.141
   },
   "p1-squid": {
-   "src": "97435d5811",
+   "src": "7c9e04e4b1",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "I didn't catch a tuna, but I got a squid!",
-   "dur": 2.16,
-   "wpm": 286,
+   "dur": 2.31,
+   "wpm": 267,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "I didn't catch a tuna, but I got a squid.",
    "wer": 0,
    "content": 0,
-   "sim": 0.636,
-   "rtf": 0.284,
-   "mos": 3.988
+   "sim": 0.713,
+   "rtf": 0.281,
+   "mos": 4.144
   },
   "p1-tarantula": {
    "src": "e56612bae9",
@@ -3231,23 +3207,21 @@
    "mos": 4.445
   },
   "p2-tire": {
-   "src": "eeee8a7385",
+   "src": "1a8672769f",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "I thought I'd hooked a shark, but it was just an old tire.",
-   "dur": 2.64,
-   "wpm": 302,
+   "dur": 2.91,
+   "wpm": 274,
    "seed": 1234,
    "tries": 1,
-   "flags": [
-    "low-mos"
-   ],
+   "flags": [],
    "hyp": "I thought I'd hooked a shark, but it was just an old tire.",
    "wer": 0,
    "content": 0,
-   "sim": 0.682,
-   "rtf": 0.277,
-   "mos": 3.352
+   "sim": 0.748,
+   "rtf": 0.271,
+   "mos": 4.329
   },
   "p2-violin": {
    "src": "1f7f2c67b6",
@@ -3573,21 +3547,21 @@
    "mos": 4.415
   },
   "r2-sofa": {
-   "src": "915344f740",
+   "src": "c4237ccd78",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Can you help me move this sofa?",
-   "dur": 1.34,
-   "wpm": 328,
+   "dur": 1.41,
+   "wpm": 311,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "Can you help me move this sofa?",
    "wer": 0,
    "content": 0,
-   "sim": 0.575,
-   "rtf": 0.333,
-   "mos": 3.659
+   "sim": 0.565,
+   "rtf": 0.311,
+   "mos": 3.554
   },
   "r2-tea": {
    "src": "7fa02c5ea9",
@@ -3624,21 +3598,21 @@
    "mos": 4.252
   },
   "r2-workout": {
-   "src": "304e927463",
+   "src": "4896a3c4a3",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "How was your workout?",
-   "dur": 0.88,
-   "wpm": 293,
+   "dur": 0.98,
+   "wpm": 261,
    "seed": 1235,
    "tries": 2,
    "flags": [],
    "hyp": "How was your workout?",
    "wer": 0,
    "content": 0,
-   "sim": 0.535,
-   "rtf": 0.38,
-   "mos": 3.913
+   "sim": 0.608,
+   "rtf": 0.339,
+   "mos": 4.185
   },
   "r3-boxes": {
    "src": "229d04210a",
@@ -3896,23 +3870,21 @@
    "mos": 3.771
   },
   "r3-working-out": {
-   "src": "7a7f4071a9",
+   "src": "67b6355939",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "You've been working out, haven't you?",
    "dur": 1.29,
    "wpm": 293,
-   "seed": 1235,
-   "tries": 2,
-   "flags": [
-    "low-mos"
-   ],
+   "seed": 1234,
+   "tries": 1,
+   "flags": [],
    "hyp": "You've been working out, haven't you?",
    "wer": 0,
    "content": 0,
-   "sim": 0.688,
-   "rtf": 0.323,
-   "mos": 3.299
+   "sim": 0.509,
+   "rtf": 0.321,
+   "mos": 3.812
   },
   "r4-anything-else": {
    "src": "bd779e8c43",
@@ -4051,21 +4023,21 @@
    "mos": 4.133
   },
   "r4-name": {
-   "src": "31c019fa7f",
+   "src": "88d97ed05b",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Sorry, what was the name again? It's a bit loud in here.",
-   "dur": 3.38,
-   "wpm": 217,
+   "dur": 2.94,
+   "wpm": 250,
    "seed": 1234,
    "tries": 1,
    "flags": [],
-   "hyp": "Sorry, what was the name again? It's a bit loud in here.",
+   "hyp": "Sorry? What was the name again? It's a bit loud in here.",
    "wer": 0,
    "content": 0,
-   "sim": 0.761,
-   "rtf": 0.28,
-   "mos": 4.166
+   "sim": 0.75,
+   "rtf": 0.274,
+   "mos": 4.003
   },
   "r4-noise": {
    "src": "8e6828c2bc",
@@ -4170,21 +4142,21 @@
    "mos": 4.456
   },
   "r4-service-charge": {
-   "src": "06b438981c",
-   "cast": "us-m1",
+   "src": "e1189f1f04",
+   "cast": "uk-m2",
    "engine": "qwen3",
-   "text": "There's a twelve and a half percent service charge on here. Didja know?",
-   "dur": 3.07,
-   "wpm": 259,
+   "text": "There's a twelve and a half per cent service charge on here. Didja know?",
+   "dur": 2.97,
+   "wpm": 289,
    "seed": 1234,
    "tries": 1,
    "flags": [],
-   "hyp": "There's a 12.5% service charge on here. Did you know?",
+   "hyp": "There's a 12.5% service charge on here, did you know?",
    "wer": 0,
    "content": 0,
-   "sim": 0.658,
-   "rtf": 0.283,
-   "mos": 4.095
+   "sim": 0.637,
+   "rtf": 0.297,
+   "mos": 4.248
   },
   "r4-so-done": {
    "src": "a8c629cae8",
@@ -4459,21 +4431,21 @@
    "mos": 4.211
   },
   "w1-rock": {
-   "src": "d78cbce423",
+   "src": "568a142bb4",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "Whoa, look at that big rock!",
-   "dur": 2.42,
-   "wpm": 153,
+   "dur": 2.09,
+   "wpm": 177,
    "seed": 1234,
    "tries": 1,
    "flags": [],
-   "hyp": "Whoa! Look at that big rock!",
+   "hyp": "Whoa, look at that big rock.",
    "wer": 0,
    "content": 0,
-   "sim": 0.665,
-   "rtf": 0.287,
-   "mos": 3.684
+   "sim": 0.516,
+   "rtf": 0.288,
+   "mos": 4.107
   },
   "w1-ship": {
    "src": "78fcc59ec8",
@@ -4612,21 +4584,21 @@
    "mos": 4.086
   },
   "w2-first": {
-   "src": "1787263f1b",
+   "src": "f2b0c8343b",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "I was first in the race today!",
-   "dur": 1.47,
-   "wpm": 298,
+   "dur": 1.5,
+   "wpm": 292,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "I was first in the race today.",
    "wer": 0,
    "content": 0,
-   "sim": 0.578,
-   "rtf": 0.313,
-   "mos": 4.185
+   "sim": 0.543,
+   "rtf": 0.298,
+   "mos": 4.166
   },
   "w2-flight": {
    "src": "c6c53163b0",
@@ -4767,21 +4739,21 @@
    "mos": 3.798
   },
   "w3-fishing": {
-   "src": "7e71a4ea98",
+   "src": "7f7515dbb4",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "I was fishing all day yesterday.",
-   "dur": 1.56,
-   "wpm": 240,
+   "dur": 1.61,
+   "wpm": 232,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "I was fishing all day yesterday.",
    "wer": 0,
    "content": 0,
-   "sim": 0.615,
-   "rtf": 0.31,
-   "mos": 4.218
+   "sim": 0.673,
+   "rtf": 0.297,
+   "mos": 4.343
   },
   "w3-gotta": {
    "src": "a7464c8992",
@@ -4975,21 +4947,21 @@
    "mos": 4.45
   },
   "w4-can-us": {
-   "src": "cd5118dc0c",
+   "src": "a96a911b40",
    "cast": "us-m1",
    "engine": "qwen3",
    "text": "I can make it between eight and one.",
-   "dur": 1.64,
-   "wpm": 304,
+   "dur": 1.74,
+   "wpm": 286,
    "seed": 1234,
    "tries": 1,
    "flags": [],
    "hyp": "I can make it between 8 and 1.",
    "wer": 0,
    "content": 0,
-   "sim": 0.592,
-   "rtf": 0.317,
-   "mos": 3.908
+   "sim": 0.733,
+   "rtf": 0.314,
+   "mos": 4.26
   },
   "w4-cant-uk": {
    "src": "2d3cfb4566",
