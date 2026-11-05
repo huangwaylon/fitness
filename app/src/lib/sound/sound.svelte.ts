@@ -8,10 +8,11 @@
 //   waspMusic('chase') · playKK('kk-march') · stopKK()    // cut-ins over the island's music (events.ts, kk.ts)
 //   eventJingle('happy-birthday') · stopJingle('aerobics') // the island's own cut-ins (events.ts CutInId)
 //   setPlace('shop') · setPlace(null)                     // a building's room plays its own track (places.ts)
+//   voiceSession(true) · loadVoice(p) · playVoice(buf, …)  // ききみみ's spoken clips, even with sound set silent
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
-import { Engine } from './engine.ts';
-import { HourClock, type Gesture } from './session.ts';
+import { Engine, applySession } from './engine.ts';
+import { HourClock, QUEUED_DROP_MS, type Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
 import { msToNextHour, type Fade, type Weather } from './hourly.ts';
@@ -35,6 +36,14 @@ export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: 
   /** The K.K. song playing (kk.ts id) and where from (K.K. on the island, or a room's stereo: its aircheck). */
   kk: null
 });
+
+/** ききみみ's voice session (voiceSession): `on` while a game is open; `state` the context's then ('running',
+ *  'suspended', WebKit's 'interrupted'; null: none). On and not running after a lock or an app switch: the game shows
+ *  its 「タップして つづける」 card, whose tap (any tap does) resumes it. */
+export const voice = $state<{ on: boolean; state: string | null }>({ on: false, state: null });
+/** The audio session's type before the game set 'playback' (null: not set by it, or not supported). */
+let sessionWas: string | null = null;
+const watched = new WeakSet<AudioContext>();
 
 /** The cut-in playing (choose.ts CutIn): it ends by itself (a one-shot's end, a loop's `loopMs`) or is cleared. */
 let cutIn: CutIn | null = null;
@@ -115,7 +124,12 @@ const audible = (): boolean => musicOn(sound.settings) && sound.settings.volume 
  *  unlocks the rest. Never waits for a click (iOS fires none on plain scenery). */
 function unlock(ev?: Event): void {
   const s = sound.settings;
-  if (typeof window === 'undefined' || silent(s)) return;
+  if (typeof window === 'undefined') return;
+  if (silent(s)) {
+    // a game's voice suspended by a lock: a real activation wakes it (a pointerdown isn't one on a touch screen)
+    if (voice.on && voice.state !== 'running' && ev?.type !== 'pointerdown') voiceSession(true);
+    return;
+  }
   const e = eng();
   const music = musicOn(s);
   const act = e.gesture((ev?.type ?? 'click') as Gesture, music);
@@ -143,6 +157,54 @@ function apply(): void {
     e.resume();
     syncMusic();
   }
+}
+
+/** ききみみ on (`true`, **inside a tap**: さんか, はじめる, あそぶ, the 「タップして つづける」 card) or over (`false`). On:
+ *  the context created or woken even while every sound setting is off, held awake between clips, and the audio
+ *  session 'playback' (WebKit: the clips play with the Ring/Silent switch on); the voice's level is 音量 alone. Off:
+ *  the clips stop and go, the session's type comes back, and the settings rule again (all off: it sleeps). Calling it
+ *  on again resumes a context a lock suspended. False where Web Audio is missing. */
+export function voiceSession(on: boolean): boolean {
+  if (typeof window === 'undefined') return false;
+  const e = eng();
+  if (!on) {
+    if (!voice.on) return true;
+    voice.on = false;
+    e.clearVoice();
+    e.holdAwake(false);
+    if (sessionWas !== null) applySession(sessionWas);
+    sessionWas = null;
+    apply();
+    return true;
+  }
+  if (!e.wakeVoice()) return false;
+  const ctx = e.ctx!;
+  if (!watched.has(ctx)) {
+    watched.add(ctx);
+    ctx.addEventListener('statechange', () => (voice.state = ctx.state));
+  }
+  e.holdAwake(true);
+  if (!voice.on) sessionWas = applySession('playback');
+  voice.on = true;
+  // a resume asked for in a tap counts as running (session.ts canSound); if it didn't take, the card shows
+  voice.state = 'running';
+  setTimeout(() => (voice.state = ctx.state), QUEUED_DROP_MS);
+  apply();
+  return true;
+}
+
+/** A voice clip (`kikimimi/<id>.m4a?v=<hash>`, under audio/) decoded, from the last few kept (engine.ts loadClip).
+ *  Null before voiceSession(true) made the context, offline and never cached, or undecodable. */
+export const loadVoice = (path: string): Promise<AudioBuffer | null> => engine?.loadClip(path) ?? Promise.resolve(null);
+
+/** Play a decoded clip now, or at `relayAt` (ms on the relay's clock; `now`: that clock's reading, default the
+ *  device's), on the voice bus with the music ducked. Null when it can't sound (no session, locked, interrupted).
+ *  `endsAt` is on the audio clock (engine.ts playClip). */
+export function playVoice(buf: AudioBuffer, o: { relayAt?: number; now?: () => number } = {}): { stop(): void; endsAt: number } | null {
+  const ctx = engine?.ctx;
+  if (!ctx) return null;
+  const at = o.relayAt === undefined ? undefined : ctx.currentTime + (o.relayAt - (o.now ?? Date.now)()) / 1000;
+  return engine!.playClip(buf, { at });
 }
 
 /** What the settings' note and the Now Playing tile say about the music (null: none). */
@@ -360,6 +422,7 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   const onVisible = () => {
     if (document.hidden) return onHide();
     hourClock.start(); // even before the first tap: the tap's syncMusic needs the hour change after it
+    if (voice.on) engine?.resume(); // may be refused outside a tap: the game's card asks for one then
     if (!engine?.ctx || silent(sound.settings)) return;
     engine.resume();
     syncMusic();

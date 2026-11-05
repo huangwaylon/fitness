@@ -12,7 +12,10 @@ class FakeParam {
   setValueAtTime(v: number) {
     this.value = v;
   }
-  linearRampToValueAtTime(v: number) {
+  /** The ramps scheduled (value, time): the fake jumps to each at once. */
+  ramps: [number, number][] = [];
+  linearRampToValueAtTime(v: number, t: number) {
+    this.ramps.push([v, t]);
     this.value = v;
   }
   setTargetAtTime(v: number) {
@@ -27,8 +30,10 @@ class FakeNode {
   Q = new FakeParam();
   type = '';
   connected = 0;
+  to: unknown[] = [];
   connect<T>(n: T): T {
     this.connected++;
+    this.to.push(n);
     return n;
   }
   disconnect() {
@@ -42,7 +47,10 @@ class FakeSource extends FakeNode {
   playbackRate = new FakeParam();
   onended: (() => void) | null = null;
   stopped: number | 'now' | null = null;
-  start() {}
+  at: number | null = null;
+  start(at = 0) {
+    this.at = at;
+  }
   stop(at?: number) {
     this.stopped = at ?? 'now';
   }
@@ -60,8 +68,11 @@ class FakeContext {
   constructor() {
     FakeContext.last = this;
   }
+  gains: FakeNode[] = [];
   createGain() {
-    return new FakeNode();
+    const g = new FakeNode();
+    this.gains.push(g);
+    return g;
   }
   createBiquadFilter() {
     return new FakeNode();
@@ -91,6 +102,10 @@ class FakeContext {
   async suspend() {
     this.suspends++;
     this.state = 'suspended';
+  }
+  /** A statechange the fake didn't fire itself (a lock's suspend). */
+  dispatch() {
+    this.#listeners.forEach((f) => f());
   }
 }
 
@@ -497,5 +512,155 @@ describe('lazy effects (ids.ts `lazy`: the radio jingles)', () => {
     new Engine().play('radio-morning-3');
     await vi.advanceTimersByTimeAsync(0);
     expect(fetched('sfx/radio-morning-3.m4a')).toBe(0);
+  });
+});
+
+describe('the voice bus (ききみみ: engine.ts wakeVoice, holdAwake, loadClip, playClip)', () => {
+  const SILENT = { music: false, sfx: false, volume: 0.5 };
+  const fetched = (path: string) => vi.mocked(fetch).mock.calls.filter(([u]) => String(u).includes(path)).length;
+  const clip = (ctx: FakeContext) => ctx.createBuffer(1, 8000) as unknown as AudioBuffer; // 1 s
+
+  /** A context woken for the voice alone, every sound setting off. */
+  async function voiced() {
+    const { Engine } = await import('./engine.ts');
+    const e = new Engine();
+    expect(e.wakeVoice()).toBe(true);
+    e.setLevels(SILENT);
+    e.holdAwake(true);
+    return { e, ctx: FakeContext.last };
+  }
+
+  it('wakes the context with nothing else: no decks, no effect files, no renderer', async () => {
+    const { ctx } = await voiced();
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(ctx.state).toBe('running');
+    expect(FakeAudio.all).toHaveLength(0);
+    expect(vi.mocked(fetch)).not.toHaveBeenCalled();
+  });
+
+  it('its level is 音量 alone: the same with 効果音 and ミュージック off or on', async () => {
+    const { e, ctx } = await voiced();
+    e.playClip(clip(ctx));
+    const bus = ctx.sources.at(-1)!.to[0] as FakeNode;
+    const master = bus.to[0] as FakeNode;
+    expect([bus.gain.value, master.gain.value]).toEqual([1, 0.25]); // 0.5²
+    e.setLevels({ music: true, sfx: true, volume: 1 });
+    expect([bus.gain.value, master.gain.value]).toEqual([1, 1]);
+    e.setLevels({ ...SILENT, volume: 0 });
+    expect(master.gain.value).toBe(0);
+  });
+
+  it('ducks the music under a clip; stopped early, the music comes back', async () => {
+    const { e, ctx } = await voiced();
+    ctx.currentTime = 3;
+    const c = e.playClip(clip(ctx), { at: 4 })!;
+    expect(c.endsAt).toBe(5);
+    expect(ctx.sources.at(-1)!.at).toBe(4);
+    const lowpass = (n: unknown) => (n as FakeNode).type === 'lowpass';
+    // the duck: the gain feeding the low-pass
+    const duck = (ctx as unknown as { gains: FakeNode[] }).gains.find((g) => g.to.some(lowpass))!;
+    expect(duck.gain.ramps.map(([v]) => v)).toEqual([0.25, 0.25, 1]);
+    expect(duck.gain.ramps[1][1]).toBe(5);
+    duck.gain.ramps = [];
+    c.stop();
+    expect(ctx.sources.at(-1)!.stopped).toBe('now');
+    expect(duck.gain.ramps.at(-1)![0]).toBe(1);
+  });
+
+  it('a clip asked for in the past plays whole from now; none while the context is suspended (a lock)', async () => {
+    const { e, ctx } = await voiced();
+    ctx.currentTime = 10;
+    expect(e.playClip(clip(ctx), { at: 8 })!.endsAt).toBe(11);
+    e.pause(); // the background: the playing clip stops, nothing more sounds
+    expect(ctx.sources.at(-1)!.stopped).toBe('now');
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(e.playClip(clip(ctx))).toBeNull();
+    e.wakeVoice(); // the card's tap
+    expect(e.playClip(clip(ctx))).not.toBeNull();
+  });
+
+  it('held awake, neither the idle timer nor everything off suspends it; let go, the idle timer does', async () => {
+    const { e, ctx } = await voiced();
+    e.playClip(clip(ctx));
+    e.sleep(); // apply() with every setting off
+    await vi.advanceTimersByTimeAsync(1000);
+    e.hush(); // 音量 at 0
+    await vi.advanceTimersByTimeAsync(IDLE_SUSPEND_MS * 3);
+    expect(ctx.suspends).toBe(0);
+    e.holdAwake(false);
+    ctx.sources.at(-1)!.onended?.();
+    await vi.advanceTimersByTimeAsync(IDLE_SUSPEND_MS + 100);
+    expect(ctx.suspends).toBe(1);
+  });
+
+  it('keeps 4 decoded, the least recently asked for going first; one asked twice at once is fetched once; a failure isn’t kept', async () => {
+    const { e } = await voiced();
+    const p = (n: number) => `kikimimi/q${n}.m4a?v=1`;
+    const [a, b] = [e.loadClip(p(1)), e.loadClip(p(1))];
+    expect(await a).not.toBeNull();
+    expect(await b).toBe(await a);
+    for (const n of [2, 3, 4]) await e.loadClip(p(n));
+    await e.loadClip(p(1)); // the newest again
+    await e.loadClip(p(5)); // q2 goes
+    await e.loadClip(p(1));
+    await e.loadClip(p(2));
+    expect([fetched('q1.m4a'), fetched('q2.m4a'), fetched('q5.m4a')]).toEqual([1, 2, 1]);
+    vi.mocked(fetch).mockImplementationOnce(async () => ({ ok: false }) as Response);
+    expect(await e.loadClip(p(6))).toBeNull();
+    expect(await e.loadClip(p(6))).not.toBeNull(); // tried again
+    e.clearVoice();
+    await e.loadClip(p(6));
+    expect(fetched('q6.m4a')).toBe(3);
+  });
+
+  it('no context, no clip', async () => {
+    const { Engine } = await import('./engine.ts');
+    expect(await new Engine().loadClip('kikimimi/q1.m4a?v=1')).toBeNull();
+  });
+});
+
+describe('voiceSession (sound.svelte.ts)', () => {
+  beforeEach(() => vi.resetModules());
+
+  it('inside a tap with sound set silent it still unlocks, at 音量, held awake, the session "playback"; off restores it and sleeps', async () => {
+    const session = { type: 'auto' };
+    vi.stubGlobal('navigator', { audioSession: session });
+    const m = await import('./sound.svelte.ts');
+    expect(m.voiceSession(true)).toBe(true);
+    const ctx = FakeContext.last;
+    expect([ctx.state, session.type, m.voice.on, m.voice.state]).toEqual(['running', 'playback', true, 'running']);
+    const buf = ctx.createBuffer(1, 8000) as unknown as AudioBuffer;
+    ctx.currentTime = 10;
+    const c = m.playVoice(buf, { relayAt: 7000, now: () => 5000 })!; // 2 s ahead on the relay's clock
+    expect(c.endsAt).toBe(13);
+    const master = (ctx.sources.at(-1)!.to[0] as FakeNode).to[0] as FakeNode;
+    expect(master.gain.value).toBeCloseTo(0.64); // the default 音量 0.8, squared
+    await vi.advanceTimersByTimeAsync(IDLE_SUSPEND_MS * 2);
+    expect(ctx.suspends).toBe(0);
+    m.voiceSession(true); // again (はじめる after さんか): the type it restores stays the one from before
+    m.voiceSession(false);
+    expect([session.type, m.voice.on]).toEqual(['ambient', false]); // the engine's own (set as it made the context)
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(ctx.suspends).toBe(1); // every setting off: it sleeps
+    expect(await m.loadVoice('kikimimi/q1.m4a?v=1')).not.toBeNull(); // the context lives on (suspended)
+  });
+
+  it('the state follows the context: suspended by a lock, running again after the card’s tap', async () => {
+    const m = await import('./sound.svelte.ts');
+    m.voiceSession(true);
+    const ctx = FakeContext.last;
+    await ctx.suspend();
+    ctx.dispatch();
+    expect(m.voice.state).toBe('suspended');
+    m.voiceSession(true);
+    await vi.advanceTimersByTimeAsync(400);
+    expect(m.voice.state).toBe('running');
+  });
+
+  it('without Web Audio or audioSession it says so and throws nothing', async () => {
+    vi.stubGlobal('window', {});
+    const m = await import('./sound.svelte.ts');
+    expect(m.voiceSession(true)).toBe(false);
+    expect(m.playVoice({ duration: 1 } as AudioBuffer)).toBeNull();
   });
 });

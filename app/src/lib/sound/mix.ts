@@ -2,9 +2,9 @@
 // pitch jitter and the music duck under a jingle.
 import { SOUNDS, type SoundId } from './ids.ts';
 
-/** Bus levels at full volume (engine.ts). NH's BGM is gentle and sits well under the effects.
- *  scripts/music.ts reads `music` for the tracks' true-peak ceiling. */
-export const LEVELS = { music: 0.3, ambient: 0.28, sfx: 0.9 } as const;
+/** Bus levels at full volume (engine.ts). NH's BGM is gentle and sits well under the effects; ききみみ's voice is the
+ *  loudest (speech to be understood). scripts/music.ts reads `music` for the tracks' true-peak ceiling. */
+export const LEVELS = { music: 0.3, ambient: 0.28, sfx: 0.9, voice: 1 } as const;
 
 /** At most this many effects sound at once (NH stays sparse: one or two things at a time). */
 export const MAX_VOICES = 6;
