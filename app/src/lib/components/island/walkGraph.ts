@@ -145,7 +145,7 @@ export function walkGeo(extra: WalkExtra = {}): WalkGeo {
   const ln = layoutNav();
   if (ln) {
     const n = walkNav();
-    return { obstacles: [], extra: extra.obstacles ?? [], nodes: { ...n.named, ...(extra.nodes ?? {}) }, pad: PAD, lnav: n as onGrid.LayoutNav };
+    return { obstacles: [], extra: extra.obstacles ?? [], nodes: { ...n.named, ...(extra.nodes ?? {}) }, pad: PAD, lnav: n };
   }
   const s = build();
   const nodes = { ...namedNodes(), ...(extra.nodes ?? {}) };

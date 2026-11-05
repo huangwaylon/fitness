@@ -1,10 +1,9 @@
 // Tap-to-walk (spec §4, docs/design.md "Walking"): what a tap on the ground does with my villager. Pure: nothing here
 // touches the DOM, so every rule is a unit test.
-//   A tap → nav.ts snaps it (a building's door, a bank facing the water, the nearest walkable point) and finds the way;
+//   A tap → layout/nav.ts snaps it (a building's door, a bank facing the water, the nearest walkable point) and finds the way;
 //   my villager runs it at SPEED.run (walkGraph.ts: 300 u/s; idle strolls and visitors 90 u/s). The cream tap ring marks
 //   where it ends. The camera never moves for it (only the finger scrolls the island).
-import { findPath, pathLength, snapTap, type Extra, type Nav, type Snap } from './nav.ts';
-import * as onLayout from '#lib/layout/nav.ts';
+import { findPath, pathLength, snapTap, type Extra, type LayoutNav, type Snap } from '#lib/layout/nav.ts';
 import type { Pt, Surface } from './world.ts';
 import { SPEED } from './speed.ts';
 import type { Cue } from '#lib/sound/cues.ts';
@@ -21,24 +20,23 @@ export interface TapPlan {
   len: number;
   ms: number;
   /** How the tap was snapped (here, door, bank, near), the building whose door it is, the face on arrival. */
-  snap: Snap | onLayout.Snap;
+  snap: Snap;
 }
 
 /** Where feet may stand for world (x, z), as a tap there would end (a building's door, a bank, the nearest walkable
  *  point, reachable), or null: nowhere near. */
-export function standAt(g: Nav | onLayout.LayoutNav, x: number, z: number): Pt | null {
-  const s = onLayout.isLayoutNav(g) ? onLayout.snapTap(g, x, z) : snapTap(g as Nav, x, z);
+export function standAt(g: LayoutNav, x: number, z: number): Pt | null {
+  const s = snapTap(g, x, z);
   return s && [Math.round(s.to[0]), Math.round(s.to[1])];
 }
 
 /** The walk a tap at world (x, z) starts from `from`, or null when it goes nowhere (nothing walkable near, no way
- *  there, or already there). `g`: today's island's nav, or a layout's (layout/nav.ts navOf: the same rules). */
-export function planTap(g: Nav | onLayout.LayoutNav, from: Pt, x: number, z: number, extra?: Extra): TapPlan | null {
-  const lay = onLayout.isLayoutNav(g) ? g : null;
-  const snap = lay ? onLayout.snapTap(lay, x, z, extra) : snapTap(g as Nav, x, z, extra);
+ *  there, or already there). `g`: the island's walk grid (nav.ts walkNav: its layout's, layout/nav.ts navOf). */
+export function planTap(g: LayoutNav, from: Pt, x: number, z: number, extra?: Extra): TapPlan | null {
+  const snap = snapTap(g, x, z, extra);
   if (!snap) return null;
   const to: Pt = [Math.round(snap.to[0]), Math.round(snap.to[1])];
-  const path = (p: Pt) => (lay ? onLayout.findPath(lay, from, p, extra) : findPath(g as Nav, from, p, extra));
+  const path = (p: Pt) => findPath(g, from, p, extra);
   const pts = path(to) ?? path(snap.to);
   if (!pts) return null;
   const len = pathLength(from, pts);

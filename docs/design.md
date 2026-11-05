@@ -2336,14 +2336,11 @@ camera's two ends; `mine()`, `partner()`, `geo()`, `site()`, …) for the e2e an
   nodes (homes, the trees, the shore, both ends of the bridge and of the stairs, every door, the pondside, the river's
   casting spots, centre stage) and the obstacles' padded corners make a visibility graph built once (~15 ms); a
   straight segment when clear, else Dijkstra through it. Outings, goal walks and the meet-up use it.
-- **Navigation for taps** (`nav.ts`): the same ground as convex polygons grown by an 8u pad (the river a chain of
-  quads cut at the bridge's deck, the pond a 16-gon, the cliff two strips either side of the stairs, the footprints,
-  trunks, bushes, props, the hedge, the fences, the bamboo, the rocks; off the land is the sea, and the land is convex, so two points on
-  it see each other unless a polygon is between). Nodes: the polygons' corners a step outside plus the named nodes
-  (the walk mask's names, so a relayed node id means the same); only bitangent edges up to 320u are kept. ~400 nodes,
-  ~2,060 edges, 119 polygons; built in ~2.8 ms (median, M-series Mac; the walk mask's grid takes ~80 ms there), a
-  tap's snap and A* p50 0.05 ms, p95 0.15 ms (`PERF=1 npx vitest run nav` checks the budget; CI only catches blow-ups). Each node knows its connected region, so a tap
-  never aims at a pocket nobody can reach.
+- **Navigation for taps** (`layout/nav.ts` navOf, the layout's walk grid; `island/nav.ts walkNav` adds the island's
+  named spots, the walk mask's names, so a relayed node id means the same): a tap's snap (`snapTap`), its way
+  (`findPath`) and each spot's connected region, so a tap never aims at a pocket nobody can reach. The old fixed
+  island's polygon navigation is gone (2026-11-05): the island reads its layout from IslandScene's first line, and
+  off it (the unit tests' fixed island only) the walk is the default layout's grid.
 - **Footsteps** by the ground under the walker (`tapWalk.ts stepCue` over `world.ts surfaceAt`): grass, sand, snow
   (grass and dirt in winter), the stairs' and the stone bridge's stone; a rainy day splashes.
 - **Rendering:** the feet are a world node whose position is read each frame from the director (`livePos`: along the
