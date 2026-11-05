@@ -2056,7 +2056,8 @@ DEFAULT_LOOKS, the signed-off looks), assembled at runtime from parts converted 
   ~12 KB), swapped by texture offset as the villagers' are; the three blush shapes `face/cheek<n>.webp`.
 - **Parts:** one GLB per mesh (`mesh/<key>.glb`: each hairstyle with its greyscale texture, each top's and bottom's
   shape, each shoe's, glasses' and ornament's geometry, their colours sharing it), bound to the body's joints by name;
-  one WebP per item (`tex/<id>.webp`, its colour baked, ~1 KB). A colour change of a part is a texture swap.
+  the body's ten meshes and every part on one skeleton per player (`player3d/skin.ts`: one bone texture computed and
+  uploaded a frame, not one a mesh; a mesh whose rest isn't the body's keeps its own); one WebP per item (`tex/<id>.webp`, its colour baked, ~1 KB). A colour change of a part is a texture swap.
 - **The part table:** per item its slot, mesh, textures (per material: file, cutout or see-through, tinted by the hair
   or the skin), colour line (its id without the digit), swatch `sw` (its texture's own dominant colour: the closet's
   dot and colour filter, the pixels shared by its line's other colours left out) and closet icon (the catalogue's
