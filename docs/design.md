@@ -822,7 +822,8 @@ What a launch waits for, and what it doesn't (the startup review, 2026-11-05; me
 with gzip at Fast 4G, Chromium 393 × 852 at 4× CPU, `?demo`):
 - **The shell:** a second visit's page is the service worker's cached shell at once (docs/backend.md "Service worker").
 - **The players:** drawn from the bundled part table; the whole one (~1.1 MB) only for a part it lacks
-  ([Players](#players)).
+  ([Players](#players)). Not fetched (offline, or a reply that isn't ok): the bundled one for now, asked for again
+  the next time a look needs it (a 404 or 5xx was kept for the page's life).
 - **The island page's chunks:** `index.html` (the SPA shell every route opens with) modulepreloads the island page's
   chunk and its static imports (`scripts/headers.ts`, after the build: Kit's fallback page preloads only the root
   layout's), and `+layout.ts` load() starts the 3D island's import (three.js and its scene) on `/` while the page
