@@ -102,6 +102,22 @@ describe('a new epoch', () => {
   });
 });
 
+describe('ingest: a past day never drops to 0', () => {
+  it('a 0 for a past Tokyo day whose latest is above 0 is ignored; today, a first 0 and a lower value are kept', () => {
+    // 2026-11-05 review: one bad Shortcut run (Health locked: Fill Missing's 0 for every day) rewrote the history
+    const steps = (rows: [string, string][]) => ({ dates: rows.map((r) => r[0]).join('\n'), steps: rows.map((r) => r[1]).join('\n') });
+    expect(a('ingest', steps([['Oct 30, 2026', '8000'], ['Oct 31, 2026', '0'], ['Nov 2, 2026', '500']]))).toEqual({ ok: true, metrics: 3 });
+    tick();
+    expect(a('ingest', steps([['Oct 30, 2026', '0'], ['Oct 31, 2026', '0'], ['Nov 2, 2026', '0']]))).toEqual({ ok: true, metrics: 1 });
+    tick();
+    expect(a('ingest', steps([['Oct 30, 2026', '7900'], ['Nov 1, 2026', '0']]))).toEqual({ ok: true, metrics: 2 });
+    const latest = new Map<string, number>();
+    for (const r of a('snapshot').rows.metrics as [string, string, string, string, number][]) latest.set(r[2], r[4]);
+    expect(Object.fromEntries(latest)).toEqual({ '2026-10-30': 7900, '2026-10-31': 0, '2026-11-01': 0, '2026-11-02': 0 });
+    expect(a('uploads').rows[1].notes).toMatch(/^1 past zeros ignored \|/);
+  });
+});
+
 describe('the ingest audit', () => {
   it('keeps 60 days: an ingest lets older audit rows go', () => {
     // 2026-11-05 review: the `uploads` table was never pruned (~50 rows a day, each up to ~2.3 KB)

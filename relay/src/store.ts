@@ -344,15 +344,23 @@ export class StoreCore {
         ).toArray();
         for (const r of rows) latest.set(`${r.date}|${r.metric}`, r.value);
       }
-      let n = 0;
+      // a past Tokyo day never drops to 0 from a value above it: a run that read nothing (Health locked, Fill
+      // Missing's 0 for every day) would rewrite the history; today may still go down to 0
+      const today = new Date(this.io.now() + 9 * 3600_000).toISOString().slice(0, 10);
+      let n = 0, zeros = 0;
       for (const m of parsed.metrics) {
         const k = `${m.date}|${m.metric}`;
         if (latest.get(k) === m.value) continue;
+        if (m.value === 0 && m.date < today && (latest.get(k) ?? 0) > 0) {
+          zeros++;
+          continue;
+        }
         latest.set(k, m.value);
         this.io.sql.exec('INSERT INTO metrics (at, person, date, metric, value) VALUES (?, ?, ?, ?, ?)', at, me, m.date, m.metric, m.value);
         n++;
       }
-      this.audit(auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, auditNotes(parsed), body));
+      const notes = [zeros ? `${zeros} past zeros ignored` : '', auditNotes(parsed)].filter(Boolean).join('; ');
+      this.audit(auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, notes, body));
       return n ? { n, at } : { n, at: null };
     });
     if (added.at) this.io.notify({ what: 'ingest', who: me, at: added.at, rev: this.rev() });

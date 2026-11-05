@@ -160,7 +160,11 @@ a day unreadable in one list takes the other). Without `steps_watch`, `steps` is
 validated like the other lists (Text, length = `dates`, ≤ 100,000).
 
 **Latest wins:** Apple Health is the source of truth, so a row is appended whenever a value differs from the last row
-for (person, date, metric), lower or higher (weight with one decimal); the same value is never appended twice. The
+for (person, date, metric), lower or higher (weight with one decimal); the same value is never appended twice.
+One exception (2026-11-05): a `0` for a **past** Tokyo day (before the record's today) whose latest row is above 0 is
+ignored (counted in the audit's notes, `N past zeros ignored`): a run that read nothing (Health locked while the phone
+is, the Shortcut's Fill Missing then sends 0 for every day) would otherwise rewrite the history. Today may still go
+down to 0; a past day's first 0 (a day without the Watch) and any lower value above 0 are kept as before. The
 model reads a day's latest row ([design.md](design.md#health-data)); a locked week reads it as of its lock (Wednesday
 04:00), so a later sync never moves locked earnings. The Shortcut posts to the record's `/api` with `"key"` and
 `"action": "ingest"` (`docs/ops/shortcut-health-sync.md`).
