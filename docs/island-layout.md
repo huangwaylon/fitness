@@ -85,6 +85,15 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
 - The room relays a layout op live but never keeps it in the day's ring (an afternoon in the editor would push the
   shared world out of it); a phone opening later reads it from the record. A `drag` with `sc: 'o'` is an outdoor
   object being moved (x, z its middle in world units): presence, as the tent's.
+- **Two edits on one tile** (2026-11-05, the sync review's E13): each phone's op is fine on its own island, but two
+  phones moving different pieces onto one tile at once left both there (last writer wins only per id). When the
+  partner's ops land (live, or the record's rows), a piece of theirs that overlaps one of mine (validate.ts's
+  `overlap`) is looked at: if my op is the later of the two (`at`, then who: the merge's order, the same on both
+  phones), my piece moves to the nearest tile where it stands clear (`layout/resolve.ts clearTile`: rings outwards
+  in a fixed order, on land of one tier, out of the water, on grass when it belongs there, overlapping nothing, making
+  no error the island doesn't have without it: a door, K.K.'s front, a way blocked), as a normal op of mine; else it
+  is theirs to move. Only one phone moves, onto a tile clear as merged, so nothing ping-pongs. Never the guest's
+  phone; bridges and stairs (one place only) stay and show the editor's overlap.
 - Ids: a default object's (`goal-A`, `fl:52:180`), a new one `o<time><random>` (`model.ts newObjId`); tokens
   (`k`, `s`, `m`) are lower-case; home parts (`w`, `r`, `d`) `[A-Za-z0-9.]`.
 

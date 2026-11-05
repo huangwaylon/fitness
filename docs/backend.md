@@ -266,6 +266,11 @@ rooms (`store/layout.svelte.ts`, `store/tent.svelte.ts`: every op's winning entr
 in storage before they write, never writing a stale whole map over the other tab's ops, and fold the other tab's
 writes as their `storage` events land.
 
+**Conflicts:** every op merges commutatively per id (last writer wins: `at`, then who), so the phones always agree;
+two edits of different things that clash are settled by one phone: a layout piece moved onto one the partner moved
+to the same tile at once moves off, by the later op's phone ([island-layout.md](island-layout.md#ops-the-record-and-the-relay)
+"Two edits on one tile").
+
 <a id="the-record"></a>
 ## The record
 

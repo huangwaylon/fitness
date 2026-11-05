@@ -9,7 +9,8 @@
 //   layout.apply(ops)                changes of mine: merged, kept, sent (the editor's save, the phone's もようがえ)
 //   layout.on(fn)                    every change as it lands, with what changed (diff.ts)
 import { layoutOpOf, mergeLayout, type LayoutEntry, type LayoutOp } from '#lib/contract/layout.ts';
-import { defaultLayout, layoutOf, objMid, type Layout, type Obj } from '#lib/layout/model.ts';
+import { defaultLayout, layoutOf, objMid, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
+import { clashesWith, clearTile } from '#lib/layout/resolve.ts';
 import { diffLayouts, type LayoutDiff } from '#lib/layout/diff.ts';
 import { migrationOps } from '#lib/layout/migrate.ts';
 import type { Placed } from '#lib/contract/decor.ts';
@@ -163,15 +164,57 @@ class IslandLayout {
   rows(rows: readonly LayoutEntry[]): void {
     this.#load();
     let any: Who | null = null;
-    for (const r of rows) if (this.#merge(r)) any = r.who;
+    for (const r of rows) {
+      const e = this.#merge(r);
+      if (!e) continue;
+      any = r.who;
+      this.#landed(e);
+    }
     if (any) this.#changed(any, false);
+  }
+
+  /** The partner's objects that just landed, to look at for a clash with one of mine (#resolve). */
+  #landedIds = new Set<string>();
+  #landed(e: LayoutEntry): void {
+    if (e.sc !== 'o' || e.rm || e.who === this.#me) return;
+    this.#landedIds.add(e.id);
+    if (this.#landedIds.size === 1) setTimeout(() => this.#resolve(), 0);
+  }
+  /**
+   * The partner's pieces that landed on one of mine (two edits of different objects on one tile at once: each fine
+   * alone): when my op is the later of the two (their `at`, then who, as the merge orders them: the same on both
+   * phones), my piece moves to the nearest clear tile (layout/resolve.ts), as an op of mine like any; else it's
+   * theirs to move. Never the guest's (the outdoors is the members').
+   */
+  #resolve(): void {
+    const ids = [...this.#landedIds];
+    this.#landedIds.clear();
+    const me = this.#me;
+    if (!me || me === 'G') return;
+    let l = this.#layout;
+    const ops: LayoutOp[] = [];
+    for (const rid of ids) {
+      const r = l.objects.get(rid), er = this.#map.get(`o|${rid}`);
+      if (!r || !er) continue;
+      for (const m of clashesWith(l, r)) {
+        const em = this.#map.get(`o|${m.id}`);
+        if (!em || em.sc !== 'o' || em.rm || em.who !== me || !(em.at > er.at || (em.at === er.at && em.who > er.who))) continue;
+        const to = clearTile(l, m.id);
+        if (!to) continue;
+        ops.push({ sc: 'o', id: m.id, at: this.stamp(), k: m.k, x: to[0], z: to[1], f: m.f, ...(m.s !== undefined ? { s: m.s } : {}) });
+        l = withChanges(l, { set: [{ ...m, x: to[0], z: to[1], n: undefined }] });
+      }
+    }
+    if (ops.length) this.apply(ops);
   }
 
   #heard(m: Relayed): void {
     if (m.kind !== 'decor' || !LAYOUT_SCOPES.includes(m.sc)) return;
     this.#load();
     const { v: _v, t, kind: _k, ...d } = m;
-    if (!this.#merge(d)) return;
+    const e = this.#merge(d);
+    if (!e) return;
+    this.#landed(e);
     this.#changed(m.who, world.now() - t < 12_000);
   }
 
@@ -232,6 +275,7 @@ class IslandLayout {
     this.#loaded = false;
     this.#last = 0;
     this.#subs.clear();
+    this.#landedIds.clear();
     this.rev++;
   }
 }

@@ -5,6 +5,7 @@
 //   E14  the relay closes the socket (1012, a deploy) while the partner writes: fetched after the reconnect
 //   dead a socket that stays open and carries nothing: found out and replaced, what was sent goes again
 //   kill an intent made offline and the app killed before it went: sent when the app opens again
+//   E13  both phones move a different piece onto one tile at once: the later op's phone moves its piece off
 //   tabs two tabs of one phone (the second's socket replaces the first's): neither's layout ops written over
 import { expect, test, type Browser, type Page } from '@playwright/test';
 import { DEMO_CTX, newIsland, setVisible } from './liveRoom.ts';
@@ -182,4 +183,32 @@ test('two tabs of one phone: each one’s layout op is kept, and the other tab f
   await a1.evaluate(() => window.removeEventListener('storage', (window as unknown as { __deaf: (e: Event) => void }).__deaf, true));
   const moved3 = await nudge(a2, p3);
   await expect.poll(() => lay(a1, (l, id) => l.obj(id)?.x, p3)).toBe(moved3.x);
+});
+
+test('E13: both phones move a different piece onto one tile at once: the later one’s phone moves its piece off, both agree', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const island = newIsland();
+  const { page: a } = await demoPhone(browser, island, 'A');
+  const { page: b } = await demoPhone(browser, island, 'B');
+  await connected(a);
+  await connected(b);
+  const [p1, p2] = (await lay(a, (l) => l.ids('palm'))).slice(0, 2);
+  const o1 = (await lay(a, (l, id) => l.obj(id), p1))!, o2 = (await lay(a, (l, id) => l.obj(id), p2))!;
+  const to = { x: o1.x + 1, z: o1.z };
+  // each phone's op fine on its own island; sent before either hears the other's
+  const op = (o: Obj, at: number) => ({ sc: 'o', id: o.id, at, k: o.k, x: to.x, z: to.z, f: o.f });
+  const [ta, tb] = await Promise.all([w<number>(a, 'layoutStamp'), w<number>(b, 'layoutStamp')]);
+  await Promise.all([w<number>(a, 'layoutApply', [op(o1, ta)]), w<number>(b, 'layoutApply', [op(o2, tb)])]);
+  const where = (p: Page) => Promise.all([p1, p2].map((id) => lay(p, (l, id) => { const o = l.obj(id)!; return `${o.x},${o.z}`; }, id)));
+  await expect.poll(async () => {
+    const [wa, wb] = await Promise.all([where(a), where(b)]);
+    return wa.join() === wb.join() && wa[0] !== wa[1];
+  }, { timeout: 10_000 }).toBe(true);
+  // the earlier op stood: its piece is on the tile
+  const [wa] = await Promise.all([where(a)]);
+  expect(wa).toContain(`${to.x},${to.z}`);
+  // and it stays settled (nothing ping-pongs)
+  await a.waitForTimeout(1000);
+  expect((await where(a)).join()).toBe(wa.join());
+  expect((await where(b)).join()).toBe(wa.join());
 });
