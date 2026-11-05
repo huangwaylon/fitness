@@ -156,5 +156,10 @@
   "food.quickAdd": "Add “{name}” as it is",
   "food.addedHead": "Added ({n})",
   "food.finish": "Done",
-  "food.unadd": "Remove “{name}”"
+  "food.unadd": "Remove “{name}”",
+  "food.copy.yesterday": "Same as yesterday",
+  "food.copy.prev": "Same as the day before",
+  "food.copy.of": "Same as {name}",
+  "food.copy.meta": "{n} · {k} kcal",
+  "food.copied": "Copied {n} to {meal}"
 }

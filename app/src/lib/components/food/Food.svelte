@@ -21,16 +21,16 @@
   import { flushSync, tick, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
   import { customSnap, FOOD_GOAL_OF, MEALS, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
-  import { customs, foodDay, foodEntries, foodGoal, foodWeek, recipes, repeatOn, repeats, type Recipe } from '#lib/model/food.ts';
+  import { copySources, customs, foodDay, foodEntries, foodGoal, foodWeek, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
-    detachDay, editFood, logCustom, logFood, logRecipe, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, startRepeat,
+    copyMeal, detachDay, editFood, logCustom, logFood, logRecipe, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, startRepeat,
     stopRepeat, updateRepeat
   } from '#lib/store/actions.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { addDays } from '#lib/time/dates.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { formatNum, t } from '#lib/i18n/index.ts';
   import { PERIODS, type Period } from '#lib/model/health.ts';
   import { FOOD_TAB_ART } from '#lib/art.ts';
   import Segmented from '../ui/Segmented.svelte';
@@ -268,6 +268,24 @@
     if (r.ok) said('food.added', { meal: t(`food.meal.${v.m}`) });
     logged(r.id);
   }
+  /** My meal's copies (きのうと おなじ, 〇〇と おなじ: model/food.ts copySources), on my day while it is empty. */
+  function copiesOf(meal: Meal) {
+    if (!mine || !m || byMeal(meal).length) return [];
+    return copySources(m.state, me, order, date, meal).map((src) => ({
+      key: src.who === me ? 'prev' : src.who,
+      label: src.who !== me ? t('food.copy.of', { name: names[src.who] }) : t(date === today ? 'food.copy.yesterday' : 'food.copy.prev'),
+      meta: t('food.copy.meta', { n: src.items.length, k: formatNum(Math.round(src.items.reduce((a, x) => a + (x.f.k * x.g) / 100, 0))) }),
+      run: () => copy(src, meal)
+    }));
+  }
+  /** One tap: the meal's items new entries of mine, its banner's とりけす removing them again. */
+  function copy(src: CopySource, meal: Meal) {
+    const r = copyMeal({ who: src.who, d: src.date, m: meal }, { d: date, m: meal });
+    if (!r.ok) return;
+    toasts.show(t('food.copied', { meal: mealName(meal), n: r.ids.length }), 5000, {
+      low: true, reaction: 'pleased', action: { label: t('common.undo'), run: () => r.ids.forEach((id) => removeFood(id)) }
+    });
+  }
   /** けす, one tap: its banner's とりけす logs it again (a removal is final: the same food, day, meal and grams). */
   function remove(v: FoodEntry) {
     const e = real(v);
@@ -475,7 +493,7 @@
                none: いつものに する on my today only (from a past day it would fill every day since, today's doubled) -->
           {@const live = mine ? liveRepeat(k) : null}
           {@const r = live ?? repeatOn(m.state, who, k, date)}
-          <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => openSearch(k)}
+          <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)}
             onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget} />
         {/each}
         {#if avgWeek}<FoodWeek week={avgWeek} {goals} />{/if}

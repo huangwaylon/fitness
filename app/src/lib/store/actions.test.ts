@@ -188,6 +188,40 @@ describe('the meal log', () => {
     expect(food()[1]).toEqual({ id, at: expect.any(Number), rm: true });
   });
 
+  it('copyMeal: each item of anyone’s meal a new entry of mine (new ids, the same snapshots), the source untouched', async () => {
+    const { copyMeal } = await import('./actions.ts');
+    const { foodDay } = await import('#lib/model/food.ts');
+    const { reduce } = await import('#lib/model/state.ts');
+    const NATTO = { id: 'mext:04046', n: '納豆', k: 190, p: 16.5, fa: 10, c: 12.1, s: null, u: '1パック' };
+    // B's breakfast yesterday, in the rows
+    const rows = [
+      ['2026-11-17T22:00:00.000Z', 'B', 'e1', 'food', JSON.stringify({ id: 'fcopyb01', at: NOW - 5e6, d: '2026-11-18', m: 'b', g: 150, f: RICE })],
+      ['2026-11-17T22:00:01.000Z', 'B', 'e2', 'food', JSON.stringify({ id: 'fcopyb02', at: NOW - 5e6 + 1, d: '2026-11-18', m: 'b', g: 45, f: NATTO })]
+    ];
+    const as = (me: 'A' | 'G') => {
+      const mine = queued().map((e, i) => [new Date(NOW + i).toISOString(), me, e.id, e.type, JSON.stringify(e.data)]);
+      week.model = { state: reduce({ metrics: [], events: [...rows, ...mine] as never }), me, now: NOW } as unknown as typeof week.model;
+    };
+    as('A');
+    expect(copyMeal({ who: 'A', d: '2026-11-17', m: 'b' }, { d: '2026-11-18', m: 'b' })).toEqual({ ok: false, ids: [] }); // nothing there
+    const r = copyMeal({ who: 'B', d: '2026-11-18', m: 'b' }, { d: '2026-11-18', m: 'd' });
+    expect(r.ok).toBe(true);
+    expect(food()).toEqual([
+      { id: r.ids[0], at: expect.any(Number), d: '2026-11-18', m: 'd', g: 150, f: RICE },
+      { id: r.ids[1], at: expect.any(Number), d: '2026-11-18', m: 'd', g: 45, f: NATTO }
+    ]);
+    as('A');
+    const s = week.model!.state;
+    expect(foodDay(s, 'A', '2026-11-18').entries.map((e) => [e.id, e.who, e.m, e.f.n])).toEqual([[r.ids[0], 'A', 'd', 'ごはん'], [r.ids[1], 'A', 'd', '納豆']]);
+    expect(foodDay(s, 'B', '2026-11-18').entries.map((e) => e.id)).toEqual(['fcopyb01', 'fcopyb02']);
+    // the guest copies a member's meal into its own day
+    as('G');
+    const g = copyMeal({ who: 'B', d: '2026-11-18', m: 'b' }, { d: '2026-11-18', m: 'b' });
+    expect(g.ids).toHaveLength(2);
+    as('G');
+    expect(foodDay(week.model!.state, 'G', '2026-11-18').entries.filter((e) => e.m === 'b').map((e) => e.id)).toEqual(g.ids);
+  });
+
   it('setGoal (food): each in its range and step or null; a member for either member, the guest its own', async () => {
     await model();
     for (const bad of [950, 1825, 5050, NaN]) expect(setGoal('k', 'A', bad).ok).toBe(false);

@@ -358,6 +358,12 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   once, it was only just logged) and おわり (the day). Each food row of a meal's search (the catalog's, さいきん's,
   マイ食品's) has its own ＋ beside it (FoodMeal's ＋ object): one tap logs it as it comes, its default portion (a recent
   one as I had it; a custom food by its serving), no amount level.
+  **Copy a meal** (the user approved, 2026-11-05): on my day an empty meal offers, as small links under its header
+  (いつものに する's weight), 「きのうと おなじ」 (my own the day before; 「前の日と おなじ」 on a past day) and 「〇〇と おなじ」 for
+  each other person whose same meal that day has something (the partner, the guest: everyone sees every meal), each
+  with what it holds (「2品 322 kcal」; `model/food.ts` copySources). One tap copies it in: each item (a いつもの's too) a
+  new entry of mine, its snapshot as logged (`store/actions.ts` copyMeal: ordinary `food` ops, nothing new on the
+  record); its banner (「昼ごはんに 2品 コピーしました」) has とりけす.
 - **The week** (`FoodWeek`, `model/food.ts` foodWeek), after the four meals: さいきん 7日の 平均, the 7 finished days to the
   day shown (to yesterday on today: today is never finished; 「10/28〜11/3 · 記録 n日」), a day with nothing logged left out
   as グラフ's averages: the average day's kcal against the goal (目標の はんい within its band, else 目標より N kcal 少なめ /

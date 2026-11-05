@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { customs, foodDay, foodEntries, foodGoal, foodSeries, foodWeek, mealProtein, pfcShare, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
+import { copySources, customs, foodDay, foodEntries, foodGoal, foodSeries, foodWeek, mealItems, mealProtein, pfcShare, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
 import { mealProteinTarget } from './profile.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -389,3 +389,35 @@ describe('the balance views: a meal’s protein, the share of energy, a week’s
     ]);
   });
 });
+
+describe('copying a meal: mealItems and copySources (きのうと おなじ, 〇〇と おなじ)', () => {
+  const rep = (who: 'A' | 'B' | 'G', id: string, at: number) =>
+    ev(who, at, { id, at, m: 'l', it: [{ g: 100, f: NATTO }], w: 127, from: '2026-11-01' }, 'food_repeat');
+  const s = reduce({
+    metrics: [],
+    events: [
+      set('A', 'fcopy001', T, { d: '2026-11-02', m: 'b' }), // my day before's breakfast
+      set('A', 'fcopy002', T + 1, { d: '2026-11-02', m: 'b', f: NATTO, g: 45 }),
+      set('A', 'fcopy003', T + 2, { d: '2026-11-01', m: 'd' }), // two days back: not offered
+      set('B', 'fcopy004', T + 3, { d: '2026-11-03', m: 'b', g: 200 }), // the partner's same day
+      set('B', 'fcopy005', T + 4, { d: '2026-11-02', m: 'd' }), // the partner's day before: not offered
+      set('G', 'fcopy006', T + 5, { d: '2026-11-03', m: 'd', g: 120 }), // the guest's dinner
+      rep('B', 'rcopy001', T + 6) // the partner's lunch, a いつもの
+    ]
+  });
+  const offer = (me: 'A' | 'B' | 'G', others: ('A' | 'B' | 'G')[], meal: 'b' | 'l' | 'd' | 's') =>
+    copySources(s, me, others, '2026-11-03', meal).map((c) => [c.who, c.date, c.items.map((x) => `${x.f.n} ${x.g}`)]);
+
+  it('offers my own meal of the day before, then each other person’s of the same day (a いつもの’s too), only those with something', () => {
+    expect([offer('A', ['B', 'G'], 'b'), offer('A', ['B', 'G'], 'l'), offer('A', ['B', 'G'], 'd'), offer('A', ['B', 'G'], 's')]).toEqual([
+      [['A', '2026-11-02', ['ごはん 150', '納豆 45']], ['B', '2026-11-03', ['ごはん 200']]],
+      [['B', '2026-11-03', ['納豆 100']]],
+      [['G', '2026-11-03', ['ごはん 120']]],
+      []
+    ]);
+    // the guest's phone: the members' meals too (everyone sees every meal); me among `others` is skipped
+    expect(offer('G', ['A', 'B', 'G'], 'b')).toEqual([['B', '2026-11-03', ['ごはん 200']]]);
+    expect(mealItems(s, 'B', '2026-11-04', 'l')).toEqual([{ g: 100, f: NATTO }]); // a repeat's day: its items
+  });
+});
+

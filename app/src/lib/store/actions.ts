@@ -17,7 +17,7 @@ import {
   customSnap, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, newCustomId, newFoodId, newRecipeId, newRepeatId, recipeSnap, repeatCovers,
   type FoodEntry, type FoodRepeat, type FoodSnap, type Meal, type RepeatItem, type RepeatOp
 } from '#lib/contract/food.ts';
-import { customs, foodDay, foodEntries, recipes, repeats } from '#lib/model/food.ts';
+import { customs, foodDay, foodEntries, mealItems, recipes, repeats } from '#lib/model/food.ts';
 import { buyPrice, sellPrice, stockOf } from '#lib/contract/shop.ts';
 import { GOODS } from '#lib/contract/pocket.ts';
 import { shopView } from '#lib/model/shop.ts';
@@ -269,6 +269,22 @@ export function logFood(e: { d: LocalDate; m: Meal; g: number; f: FoodSnap }): S
   const id = newFoodId(at);
   const res = sendFood({ id, at, d: e.d, m: e.m, g: Math.round(e.g * 10) / 10, f: e.f });
   return res.ok ? { ...res, id } : res;
+}
+
+/**
+ * Copy a meal, anyone's (everyone sees every meal: my day before's, the partner's, the guest's), into mine: each of its
+ * items (a いつもの's too) a new entry of mine on `to.d` at `to.m`, its snapshot as it was logged. `ids`: the new entries',
+ * in order (none: nothing to copy, or nothing sent).
+ */
+export function copyMeal(from: { who: Who; d: LocalDate; m: Meal }, to: { d: LocalDate; m: Meal }): SendResult & { ids: string[] } {
+  const m = week.model;
+  const ids: string[] = [];
+  if (!m) return { ok: false, ids };
+  for (const { g, f } of mealItems(m.state, from.who, from.d, from.m)) {
+    const r = logFood({ d: to.d, m: to.m, g, f });
+    if (r.id) ids.push(r.id);
+  }
+  return { ok: ids.length > 0, ids };
 }
 
 /** One of my entries, as the model has it (queued changes included). */

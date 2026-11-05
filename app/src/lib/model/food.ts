@@ -9,7 +9,7 @@
 import type { LocalDate, Who } from '#lib/types.ts';
 import {
   entryOrder, foodAccept, foodCustomFold, foodCustomOp, foodOp, foodRecipeFold, foodRecipeOp, foodRepeatFold, foodRepeatOp, MEALS, recipePortion,
-  recipeTotals, repeatCovers, round1, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp,
+  recipeTotals, repeatCovers, round1, FOOD_GOALS, type CustomOp, type FoodCustom, type FoodEntry, type FoodGoalOf, type FoodOp, type FoodSnap, type FoodRecipe, type FoodRepeat, type Meal, type RecipeOp, type RepeatItem,
   type RepeatOp
 } from '#lib/contract/food.ts';
 import { isPersonId, isRec, type EventRow } from '#lib/contract/api.ts';
@@ -193,6 +193,27 @@ export function foodDay(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, date: L
   const t = emptyTotals();
   for (const { g, f } of entries) addTo(t, g, f);
   return { entries, kcal: Math.round(t.k), p: round1(t.p), fa: round1(t.fa), c: round1(t.c), s: round1(t.s), fi: t.fi === null ? null : round1(t.fi), al: round1(t.al) };
+}
+
+/** A meal as it was eaten: `who`'s `meal` on `date` (a いつもの's items too), each its grams and snapshot, to log afresh
+ *  as someone's own (store/actions.ts copyMeal: new entries of the copier's). */
+export function mealItems(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, date: LocalDate, meal: Meal): RepeatItem[] {
+  return foodDay(s, who, date).entries.filter((e) => e.m === meal).map(({ g, f }) => ({ g, f }));
+}
+
+/** A meal to copy into mine (きのうと おなじ, 〇〇と おなじ): whose, which day, what it holds. */
+export interface CopySource { who: Who; date: LocalDate; items: RepeatItem[] }
+/** Where my `meal` on `date` can be copied from: my own the day before, then each of `others`' (everyone sees every
+ *  meal, the guest's too) on the same day, in that order; only those with something in them. */
+export function copySources(s: Pick<State, 'food' | 'foodRepeat'>, me: Who, others: readonly Who[], date: LocalDate, meal: Meal): CopySource[] {
+  const out: CopySource[] = [];
+  const add = (who: Who, d: LocalDate) => {
+    const items = mealItems(s, who, d, meal);
+    if (items.length) out.push({ who, date: d, items });
+  };
+  add(me, addDays(date, -1));
+  for (const w of others) if (w !== me) add(w, date);
+  return out;
 }
 
 /** A day's unrounded totals: kcal and each nutrient (g), as a snapshot's keys; fibre null while no entry knows it. */
