@@ -8,6 +8,8 @@ import { art } from '#lib/art.ts';
 import { BANK, CHANNELS, SCENE_IDS, channelOf, isDialogue, type SoundMark } from './bank.ts';
 import { MARKS, PLACES } from './staging.ts';
 import { findWords, markKinds, placeMark, soundLine, wordSpans } from './marks.ts';
+import { CLIPS, wordTimes } from './clips.ts';
+import aligned from './words.json';
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const SCRIPT = JSON.parse(readFileSync(join(import.meta.dirname, '../../../scripts/scenes/scenes.json'), 'utf8')) as { scenes: Record<string, string> };
@@ -104,5 +106,30 @@ describe('kikimimi sound marks', () => {
     const p = soundLine('That comes to £8.49. Do you', undefined, [['say', '£8.49', 'eight forty-nine']]);
     expect(p.map((g) => g.segs.map((s) => s.t).join(''))).toEqual(['That comes to ', '£8.49', '. Do you']);
     expect(p[2].segs[0]).toEqual({ t: '.', w: 3 });
+  });
+});
+
+describe('kikimimi karaoke timings', () => {
+  const W = aligned as unknown as Record<string, [string, ...number[]]>;
+  const texts = new Map(BANK.flatMap((it) => (isDialogue(it) ? it.lines.map((l, n) => [`${it.id}-${n + 1}`, l.en] as const) : [[it.id, it.en] as const])));
+
+  it('words.json: each current clip one start per shown word and its end, never backwards, within the clip', () => {
+    for (const [id, [hash, ...cs]] of Object.entries(W)) {
+      expect(texts.has(id), id).toBe(true);
+      if (hash !== CLIPS[id]?.hash) continue; // re-spoken since: ignored (wordTimes) till scripts/kikimimi-words.ts runs
+      expect(cs.length, id).toBe(wordSpans(texts.get(id)!).length + 1);
+      for (let k = 1; k < cs.length; k++) expect(cs[k], id).toBeGreaterThanOrEqual(cs[k - 1]);
+      expect(cs.at(-1)! / 100, id).toBeCloseTo(CLIPS[id].dur, 1);
+    }
+  });
+
+  it('wordTimes: the aligned starts for the current clip, else the clip spread over the words', () => {
+    const id = Object.keys(W).find((k) => W[k][0] === CLIPS[k]?.hash)!;
+    expect(wordTimes(id, texts.get(id)!)).toEqual(W[id].slice(1).map((c) => (c as number) / 100));
+    const t = wordTimes('no-such-clip', 'One two, three.');
+    expect(t).toHaveLength(4);
+    expect(t[0]).toBe(0);
+    expect(t.at(-1)).toBe(2);
+    expect(t[1]).toBeLessThan(t[2]);
   });
 });
