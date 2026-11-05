@@ -6,7 +6,6 @@
 //   bookmark [ms]       point-in-time recovery: the bookmark now and `ms` ago (default 1 h)
 //   restore <bookmark>  restore the record to a bookmark (then `rev`)
 //   rev                 a new epoch: every phone refetches everything
-//   export              the export to the sheet now (the cron does it every 15 minutes when the record changed)
 //   dump                every row as JSON on stdout (a backup: `> island-record-YYYY-MM-DD.json`)
 //   load <file>         a dump into the record (its rows by the record's rules, in chunks; what it has is skipped)
 //   telemetry [n]       the phones' newest anonymous records (errors, sessions' frames and load times; default 50)
@@ -72,7 +71,6 @@ switch (cmd) {
   }
   case 'counts':
   case 'rev':
-  case 'export':
     console.log(JSON.stringify(await signed({ op: cmd })));
     break;
   case 'bookmark':
@@ -88,6 +86,6 @@ switch (cmd) {
     await load((JSON.parse(readFileSync(arg, 'utf8')) as { rows: Record<string, unknown[][]> }).rows);
     break;
   default:
-    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | export | dump | load <file>  [--test]');
+    console.error('commands: counts | bookmark [ms] | restore <bookmark> | rev | dump | load <file> | telemetry [n]  [--test]');
     process.exit(1);
 }

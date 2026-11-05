@@ -24,8 +24,6 @@ export interface Env {
   KEY_B?: string;
   /** The guest's key (docs/backend.md#the-guest): a secret like the others; unset = no guest. */
   KEY_C?: string;
-  /** The Apps Script web app's /exec URL the cron exports the record to (docs/backend.md#the-record "Export"); unset: no export (the test copy). */
-  EXPORT_URL?: string;
   /** Where the real weather is fetched for (weather.ts): central Tokyo, by the 東京 AMeDAS station. */
   WX_LAT?: string;
   WX_LON?: string;
@@ -163,14 +161,9 @@ export class IslandRoom extends DurableObject<Env> {
 /** A weather tick's outcome (the cron's log, the `/admin` op). */
 type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; heard: number; health: WxHealth };
 
-/** The cron's nightly run (UTC 18:00 = Tokyo 03:00): the export goes whatever changed. */
-const NIGHTLY = '0 18 * * *';
-
 export default {
-  /** Every 15 minutes, the record's export to the sheet when it changed (storeObject.ts exportTick), and the real
-   *  weather when it's due (IslandRoom weatherTick). */
-  async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-    ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).exportTick(ev.cron === NIGHTLY).then((r) => console.log('export', JSON.stringify(r).slice(0, 200))));
+  /** Every 15 minutes: the real weather when it's due (IslandRoom weatherTick). */
+  async scheduled(_ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     ctx.waitUntil(
       env.ROOM.get(env.ROOM.idFromName('island')).weatherTick().then(
         (r) => r.fetched && console.log('wx', JSON.stringify(r).slice(0, 200)),

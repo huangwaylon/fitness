@@ -239,21 +239,12 @@ describe('events (a batch)', () => {
 });
 
 describe('snapshot', () => {
-  it('the export: every row, signed for Apps Script, ASCII; again only after a change, or forced', async () => {
-    expect(await store.exportBody(false)).toBeNull();
+  it('the dump (the backup): every row, as `load` takes them, text as it came', () => {
     a('event', { id: 'n1', type: 'pref', data: { key: 'villagerName', value: 'うめ' } });
-    const x = (await store.exportBody(false))!;
-    const body = JSON.parse(x.body);
-    expect(body).toMatchObject({ action: 'export', t: String(now) });
-    expect(/^[\x20-\x7e]*$/.test(body.data)).toBe(true);
-    const secret = createHmac('sha256', `${KEY_A}:${KEY_B}`).update('island-relay-notify/1').digest('hex');
-    expect(body.sig).toBe(createHmac('sha256', secret).update(`${body.t}.${body.data}`).digest('hex'));
-    const data = JSON.parse(body.data);
-    expect(data).toMatchObject({ rev: 'e1', upto: '2026-11-02T03:00:00.000Z', rows: { metrics: [], uploads: [] } });
-    expect(JSON.parse(data.rows.events[0][4]).value).toBe('うめ');
-    store.exported(x.upto);
-    expect(await store.exportBody(false)).toBeNull();
-    expect(await store.exportBody(true)).not.toBeNull();
+    const d = store.dump();
+    expect(d.rows).toMatchObject({ metrics: [], uploads: [] });
+    expect(d.rows.events.map((r) => [r[0], r[1], r[2], r[3]])).toEqual([['2026-11-02T03:00:00.000Z', 'A', 'n1', 'pref']]);
+    expect(JSON.parse(String(d.rows.events[0][4])).value).toBe('うめ');
   });
 
   it('every row of both people, then only the rows after `since`; `at` strictly increases', () => {

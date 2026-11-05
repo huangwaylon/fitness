@@ -151,11 +151,9 @@ describe('the record and the guest', () => {
     expect(a('snapshot').rows).toEqual(before);
   });
 
-  it('the export (every row) carries the guest’s rows with person G', async () => {
+  it('the dump (every row) carries the guest’s rows with person G', () => {
     g('event', ev('g1', 'find', { kind: 'fish', id: 'koi' }));
-    const body = (await (store as unknown as { exportBody(f: boolean): Promise<{ body: string } | null> }).exportBody(true))!.body;
-    const data = JSON.parse(JSON.parse(body).data);
-    expect(data.rows.events.map((r: unknown[]) => [r[1], r[3]])).toEqual([['G', 'find']]);
+    expect(store.dump().rows.events.map((r) => [r[1], r[3]])).toEqual([['G', 'find']]);
   });
 });
 
