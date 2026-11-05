@@ -224,7 +224,7 @@
     cue('fruit-pick');
     rec = markPicked(date, fruitId(person.person, f));
     addFx('sparkles', s.gx, s.gz, FRUIT_U * 0.4);
-    recordGoods(f);
+    recordGoods(f, `pick:${sid}`);
   }
 
   /** `sound`: a tap or a real event rustles; idle life's shake stays silent. */

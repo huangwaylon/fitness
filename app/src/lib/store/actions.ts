@@ -126,11 +126,13 @@ export function setVillager(villager: string) {
 /** A catch's tally waits this long before it is sent, and the next catches ride along: a busy minute is one request
  *  (the server keeps one row per person and day, docs/backend.md#tally). */
 const TALLY_HOLD_MS = 60_000;
-/** The tally waiting to be sent: a newer one replaces it within the same window. */
-let held: { date: LocalDate; until: number; undo: () => boolean; hold?: (ms: number | null) => number } | null = null;
+/** The tally waiting to be sent (its counts as sent): a newer one replaces it within the same window. Still queued
+ *  past its window (offline), it can still be taken back (`undo`), for a race lost late (`lostRace`). */
+let held: { date: LocalDate; until: number; counts: Record<string, number>; undo: () => boolean; hold?: (ms: number | null) => number } | null = null;
 
-/** One more of `key` (`kind:id`) in my tally of today (the model's day, so the demo's `?date=` too). */
-function countOne(key: string): void {
+/** One more of `key` (`kind:id`) in my tally of today (the model's day, so the demo's `?date=` too). `claim`: the
+ *  shared world's claim it came with (`catch:<id>`, `pick:<id>`), so a race lost on it takes it back. */
+function countOne(key: string, claim?: string): void {
   const m = week.model;
   if (!m) return;
   const date = localDateAt(m.now);
@@ -141,7 +143,52 @@ function countOne(key: string): void {
   const holdMs = same ? same.until - now : TALLY_HOLD_MS;
   same?.undo();
   const r = week.send('tally', { date, counts }, { holdMs });
-  held = r.undo ? { date, until: now + holdMs, undo: r.undo, hold: r.hold } : null;
+  held = r.undo ? { date, until: now + holdMs, counts, undo: r.undo, hold: r.hold } : null;
+  if (claim) {
+    counted.set(claim, key);
+    if (counted.size > COUNTED_MAX) counted.delete(counted.keys().next().value!);
+  }
+}
+
+/** The claims of mine this session and the tally key each counted (a race lost on one takes that one back). */
+const counted = new Map<string, string>();
+const COUNTED_MAX = 400;
+
+/**
+ * The partner got there first (store/world.svelte.ts: the relay heard their claim before mine, `beat`): what my claim
+ * put in my pocket comes out again, by the same `tally` event, and a gentle line says who has it. A day's counts only
+ * grow on the record (contract/tally.ts mergeTally), so it's taken back from the tally still waiting to be sent (held
+ * a minute, or queued while offline): true when it was. One the record already has can't be (false; the line still
+ * shows unless `quiet`: the island's own news says so).
+ */
+export function lostRace(claim: string, who: Who, quiet = false): boolean {
+  const key = counted.get(claim);
+  counted.delete(claim);
+  if (key === undefined) return false;
+  const took = uncount(key);
+  if (!quiet) {
+    const v = week.view;
+    const name = !v ? '' : who === 'G' ? v.guest.villagerName : v.people[who].villagerName;
+    toasts.show(t('world.partner.first', { who: name }), 3200, { reaction: 'sheepishness' });
+  }
+  return took;
+}
+
+// (wherever the app is: the island, a room, a panel; a live catch's own news on the island already says who had it)
+world.lost = (claim, who, live, kind) => void lostRace(claim, who, kind === 'catch' && live);
+
+/** One `key` less in the tally waiting to be sent (its window kept): false when none waits, or it was sent. */
+function uncount(key: string): boolean {
+  const h = held;
+  if (!h || !(h.counts[key] > 0) || !h.undo()) return false;
+  const { [key]: n, ...rest } = h.counts;
+  const counts = n > 1 ? { ...rest, [key]: n - 1 } : rest;
+  held = null;
+  if (!Object.keys(counts).length) return true;
+  const holdMs = Math.max(0, h.until - Date.now());
+  const r = week.send('tally', { date: h.date, counts }, { holdMs });
+  held = r.undo ? { date: h.date, until: h.until, counts, undo: r.undo, hold: r.hold } : null;
+  return true;
 }
 
 /** Send the held tally now (the shop: the record sells only what it holds of my catches). */
@@ -152,19 +199,19 @@ function releaseTally(): void {
 
 /** Record a catch or a pick-up: counted in today's tally, and a find for the shared ずかん unless one of us already
  *  found it (the model includes queued events, so a second catch before the first is acked sends no find). True when
- *  it was new. */
-export function recordFind(kind: FindKind, id: string): boolean {
+ *  it was new. `claim`: the shared world's claim it came with (lostRace takes it back). */
+export function recordFind(kind: FindKind, id: string, claim?: string): boolean {
   const m = week.model;
   if (!m) return false;
-  countOne(findKey(kind, id));
+  countOne(findKey(kind, id), claim);
   if (findsView(m.state).has(findKey(kind, id))) return false;
   return week.send('find', { kind, id }).ok;
 }
 
 /** Record a pick-up the ずかん has no page for (contract/pocket.ts GOODS: wood, a branch, fruit, a weed…): one more in
- *  today's tally, so in my pocket for the shop; never a find. */
-export function recordGoods(id: string): void {
-  if (Object.hasOwn(GOODS, id)) countOne(`goods:${id}`);
+ *  today's tally, so in my pocket for the shop; never a find. `claim` as recordFind's. */
+export function recordGoods(id: string, claim?: string): void {
+  if (Object.hasOwn(GOODS, id)) countOne(`goods:${id}`, claim);
 }
 
 // ---- The shop (docs/design.md "The shop", contract/shop.ts): my pocket's catches sold and the day's stock bought, with

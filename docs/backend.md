@@ -531,7 +531,13 @@ a person does is a small intent over the relay, kept by the room for the day, fo
   the relay's order: claims (`catch:<id>`, `pick:<id>`: who got it, what, how, where), puts, the shakes in order,
   watered cells, wishes, each person's last walk. First wins, and the relay's order makes it so: a partner's claim of
   something I claimed too means the relay heard theirs first (it drops a later claim, never relaying or keeping it),
-  so theirs replaces mine (`beat`) and my phone shows it caught by them. A repeat changes nothing; another day's is
+  so theirs replaces mine (`beat`) and my phone shows it caught by them. **A race lost** (2026-11-05): what my claim
+  put in my pocket comes out again (`world.lost` → `store/actions.ts lostRace`: each catch and pick-up counted with
+  its claim key; the tally still waiting to be sent, held a minute or queued while offline, is sent again one less,
+  by the same `tally` event), with a line 「〇〇が さきに とったよ」 (a live catch's own news on the island says it
+  instead). A day's counts only grow on the record (`mergeTally`), so a tally the record already has can't be taken
+  back: a race lost after its minute (a catch made offline, resolved at the reconnect) leaves it in the pocket, as
+  before. A repeat changes nothing; another day's is
   ignored. A claim in the day is gone on every phone, mine too (`lying`, `takenIds`; the island's finds, care, fruit,
   branches and wood): a phone that lost its own scene record (a new origin, Safari's cleared storage) gets my claims
   back in the replay and the day's row, and a claim can't be made twice, so a thing kept lying for one was drawn but

@@ -936,15 +936,15 @@
       const n = ++seq;
       await loadNames().catch(() => {});
       if (seq !== n) return;
-      recordGoods('water-egg');
+      recordGoods('water-egg', cid && `catch:${cid}`);
       showCatch(x, y, findArt('water-egg'), t('beach.fished', { name: t('beach.name.water-egg') }));
       return;
     }
     // the shared ずかん: the first catch of each fish, bug or sea creature (junk isn't a find; the pearl is a shell) gets
     // a second page saying so
-    const added = kind ? recordFind(kind, item) : false;
+    const added = kind ? recordFind(kind, item, cid && `catch:${cid}`) : false;
     // junk is no find, but it's kept (the shop buys it: contract/pocket.ts goods)
-    if (!kind) recordGoods(item);
+    if (!kind) recordGoods(item, cid && `catch:${cid}`);
     // a fish tells the island (Turkey Day: Franklin is waiting for one)
     if (kind === 'fish') scene?.dispatchEvent(new CustomEvent('island:catch', { detail: { kind: 'fish', id: item } }));
     const n = ++seq;
