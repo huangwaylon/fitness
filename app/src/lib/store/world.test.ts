@@ -156,3 +156,29 @@ describe('the shared island on this phone', () => {
     expect([...kv.m.keys()].filter((k) => k.startsWith('island-demo.world')).sort()).toEqual(['island-demo.world.A', 'island-demo.world.B']);
   });
 });
+
+describe('a claim the room refused (its winner never heard here)', () => {
+  it('is a race lost: the catch is taken back, the claim the partner’s, kept across a reload; one settled already is left', async () => {
+    const r = fakeRelay();
+    let refuse: ((i: Intent) => void) | null = null;
+    const live: Live = { ...r.live, onRefused: (fn) => ((refuse = fn), () => (refuse = null)) };
+    world.attach(live, 'A');
+    const lost: unknown[] = [];
+    world.lost = (claim, who, isLive, kind) => void lost.push([claim, who, isLive, kind]);
+    expect(world.share({ kind: 'catch', what: 'koi', id: 'fresh:3', how: 'net' }).fresh).toBe(true);
+    refuse!({ v: 3, c: 17, kind: 'catch', what: 'koi', id: 'fresh:3', how: 'net' } as Intent);
+    expect(lost).toEqual([['catch:fresh:3', 'B', false, 'catch']]);
+    expect(caught(world.day, 'fresh:3')?.who).toBe('B');
+    // a race heard as it happened (the beat) and then refused: told once
+    expect(world.share({ kind: 'pick', id: 's4', what: 'shell:conch' }).fresh).toBe(true);
+    r.hear({ kind: 'pick', id: 's4', what: 'shell:conch', who: 'B', t: T0 - 10 });
+    refuse!({ v: 3, c: 18, kind: 'pick', id: 's4', what: 'shell:conch' } as Intent);
+    expect(lost).toHaveLength(2);
+    // reloaded: still theirs
+    await Promise.resolve();
+    world.reset();
+    world.attach(fakeRelay().live, 'A');
+    expect(caught(world.day, 'fresh:3')?.who).toBe('B');
+    world.lost = null;
+  });
+});

@@ -696,6 +696,26 @@ describe('live: the outbox kept across a kill', () => {
     expect(disk[KEY]).toEqual([]);
   });
 
+  it('paired again as someone else (the same page: the backend stops and starts the socket): the last person’s outbox is neither sent nor kept as the new one’s', async () => {
+    const a = boot();
+    online = false;
+    a.start();
+    a.send({ kind: 'world', op: 'watered', id: 'fl:1:2' });
+    await Promise.resolve();
+    a.stop();
+    key = 'cd'.repeat(32);
+    online = true;
+    a.start();
+    last().welcome();
+    expect(last().sent.some((m) => m.kind === 'world')).toBe(false);
+    expect(a.metrics!().pending).toBe(0);
+    a.send({ kind: 'world', op: 'watered', id: 'fl:3:4' });
+    await Promise.resolve();
+    expect(disk[KEY].map((e) => (e.m as { id: string }).id)).toEqual(['fl:1:2']);
+    expect(disk[key].map((e) => (e.m as { id: string }).id)).toEqual(['fl:3:4']);
+    a.stop();
+  });
+
   it('another key’s outbox (paired as someone else) and another day’s are dropped; at most 120 kept', async () => {
     disk = { [KEY]: [{ c: 5, d: tokyoDay(Date.now()) - 1, m: { v: 3, c: 5, kind: 'world', op: 'watered', id: 'fl:1:1' } }] };
     disk['cd'.repeat(32)] = [{ c: 6, d: tokyoDay(Date.now()), m: { v: 3, c: 6, kind: 'world', op: 'watered', id: 'fl:1:3' } }];

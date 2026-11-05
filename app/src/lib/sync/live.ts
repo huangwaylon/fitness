@@ -308,7 +308,7 @@ export function createLive(o: LiveOptions): Live {
   const outbox = new Map<number, Out>();
   const kept = (e: KeptOut): Out => ({ m: e.m, d: e.d, at: 0, due: Infinity, n: 0, tries: typeof e.n === 'number' ? e.n : 0, off: false, busy: false });
   // what a reload or a kill left unsent (≤ OUTBOX_MAX): it goes after the first welcome, as a reconnect's would
-  const keptKey = o.key();
+  let keptKey = o.key();
   for (const e of store.get(keptKey).slice(-OUTBOX_MAX)) outbox.set(e.c, kept(e));
   let seq = Math.max(0, ...outbox.keys());
   /** Two tabs, one stored outbox: the numbers it held as this tab last read or wrote it, and those this tab took out
@@ -337,6 +337,20 @@ export function createLive(o: LiveOptions): Live {
     if (st.connected) for (const k of fresh) put(k, Date.now(), ACK_MS);
     if (fresh.length && !ackTimer) armAcks();
   };
+  /** Paired again as someone else (the pairing page: the same page, this one socket, which the backend's reset stops
+   *  and starts again): the outbox is that person's, never the last one's sent or kept under the new key, and a socket
+   *  the last key said hello on goes. */
+  const rekey = (): void => {
+    const key = o.key();
+    if (key === keptKey) return;
+    keptKey = key;
+    outbox.clear();
+    gone.clear();
+    for (const e of store.get(key).slice(-OUTBOX_MAX)) outbox.set(e.c, kept(e));
+    stored = new Set(outbox.keys());
+    seq = Math.max(seq, ...outbox.keys());
+    if (ws) drop(1000, 'rekey');
+  };
   /** The outbox written once per burst of changes (another tab's entries since merged in first, never written over). */
   let saving = false;
   const save = () => {
@@ -344,8 +358,9 @@ export function createLive(o: LiveOptions): Live {
     saving = true;
     queueMicrotask(() => {
       saving = false;
-      const key = o.key();
-      if (key === keptKey) adopt(store.get(key));
+      rekey();
+      const key = keptKey;
+      adopt(store.get(key));
       store.set(key, [...outbox].map(([c, e]) => ({ c, m: e.m, d: e.d, ...(e.tries ? { n: e.tries } : {}) })));
       stored = new Set(outbox.keys());
     });
@@ -572,6 +587,7 @@ export function createLive(o: LiveOptions): Live {
 
   function connect() {
     if (ws || !wanted()) return;
+    rekey();
     let s: WebSocket;
     try {
       s = new WS!(url);
@@ -751,7 +767,7 @@ export function createLive(o: LiveOptions): Live {
       // back in front (pageshow, focus): a socket that looks open is asked whether it still is
       const offWake = env.wake?.(() => (st.connected ? probe() : react()));
       // another tab's write of the outbox we share
-      const offStore = store.watch?.(() => void (o.key() === keptKey && adopt(store.get(keptKey))));
+      const offStore = store.watch?.(() => (rekey(), adopt(store.get(keptKey))));
       unwatch = () => (offWatch(), offWake?.(), offStore?.());
       react();
     },

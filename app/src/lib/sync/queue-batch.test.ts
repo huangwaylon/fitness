@@ -51,6 +51,15 @@ describe('a batch to the record', () => {
     expect(queued()).toEqual([]);
   });
 
+  it('a tally_back never passes a held tally (the record takes one only while the day’s tally covers it)', async () => {
+    const tally = enqueue('tally', { date: '2026-11-18', counts: { 'fish:koi': 1 } }, T, 60_000);
+    const back = enqueue('tally_back', { date: '2026-11-18', counts: { 'fish:koi': 1 } }, T);
+    await flush(() => T);
+    expect(bodies).toEqual([]);
+    await flush(() => T + 60_000);
+    expect(bodies[0].body.events.map((e: { id: string }) => e.id)).toEqual([tally.id, back.id]);
+  });
+
   it('each id’s answer: acked (a duplicate without a row), dropped (it can never succeed), or held with all after it', async () => {
     const [a, b, c, d] = ['a', 'b', 'c', 'd'].map((x) => enqueue('find', { kind: 'fish', id: x }, T));
     answer = () => ({ ok: true, results: [

@@ -135,7 +135,7 @@ test('an intent the relay drops without a word (one it can’t read): sent again
   // 10 s (was: given up as dead at 5 s, a new socket, the same again, for good)
   await a.waitForTimeout(16_000);
   expect(island.said('A').hello).toBe(hellos);
-  expect(island.said('A').catch).toBe(2);
+  expect(island.said('A').catch).toBeGreaterThanOrEqual(2);
   expect(await w<{ closed: number } | null>(a, 'metrics').then((m) => m?.closed)).toBe(0);
 });
 

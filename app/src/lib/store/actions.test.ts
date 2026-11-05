@@ -196,7 +196,7 @@ describe('the island’s finds (the ずかん)', () => {
     world.reset();
   });
 
-  it('a race lost on a claim this phone never counted (a reload since): nothing taken, no line', async () => {
+  it('a race lost on a claim this phone never counted: nothing taken, no line', async () => {
     const { lostRace } = await import('./actions.ts');
     const { toasts } = await import('#lib/ui-state/toast.svelte.ts');
     toasts.dismiss();
