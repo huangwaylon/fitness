@@ -5,9 +5,10 @@
 // centre stage. Pure (dates only). No ベル.
 import { daysBetween } from '#lib/time/dates.ts';
 import { addDays } from '#lib/time/dates.ts';
+import { WEDDING } from '#lib/time/holidays.ts';
 
-/** Our wedding day (Tokyo). */
-export const WEDDING = '2027-10-08';
+/** Our wedding day (Tokyo): time/holidays.ts's (shared with the music). */
+export { WEDDING };
 /** The days to go on which Reese and Cyrus come (0: the day itself). */
 export const MILESTONES: readonly number[] = [365, 200, 100, 50, 30, 7, 1, 0];
 /** Their hours on a milestone day (they come for the day). */

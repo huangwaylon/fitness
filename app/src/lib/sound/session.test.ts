@@ -13,7 +13,8 @@ import {
   wrapTarget,
   type Gesture
 } from './session.ts';
-import { trackLevel } from './hourly.ts';
+import { msToNextHour, trackLevel } from './hourly.ts';
+import { msToNextEdge } from './events.ts';
 
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
@@ -194,6 +195,22 @@ describe('the hour clock (HourClock)', () => {
     c.start();
     vi.advanceTimersByTime(2 * HOUR);
     expect(calls).toEqual(['prefetch 01:00', 'change 01:00', 'prefetch 02:00', 'change 02:00']);
+    c.stop();
+  });
+
+  it('with an earlier boundary (the countdown\'s 23:30): prefetches a minute before it and changes on it', () => {
+    vi.setSystemTime(new Date('2026-12-31T14:10:00Z')); // 23:10 Tokyo
+    const calls: string[] = [];
+    const c = new HourClock(
+      () => new Date(),
+      (at) => calls.push(`prefetch ${at.toISOString().slice(11, 16)}`),
+      () => calls.push(`change ${new Date().toISOString().slice(11, 16)}`),
+      undefined,
+      (d) => Math.min(msToNextHour(d), msToNextEdge(d) ?? Infinity)
+    );
+    c.start();
+    vi.advanceTimersByTime(20 * 60_000 + 100);
+    expect(calls).toEqual(['prefetch 14:30', 'change 14:30']);
     c.stop();
   });
 

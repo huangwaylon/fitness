@@ -17,6 +17,7 @@
   import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
+  import { eventJingle } from '#lib/sound/sound.svelte.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { POSES, POSE_MS, STRETCH_MS, deckOut, sawIsland, stretched, stretchedToday } from './stretching.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -61,7 +62,8 @@
   function play() {
     playing = true;
     stretched(date);
-    cue('stretch');
+    // NH's aerobics music cuts in for the stretch (ミュージック on, its file there), else the tape's little tune
+    if (!eventJingle('aerobics', STRETCH_MS)) cue('stretch');
     groupStretch(POSES, POSE_MS, () => {
       playing = false;
       bump++;

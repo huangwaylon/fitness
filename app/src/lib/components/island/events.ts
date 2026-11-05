@@ -6,8 +6,10 @@
 // or ?demo, and せってい's きせつ: ui-state/preview.svelte.ts) shows one on, its main part included; what the island
 // yields on it (Bunny Day's eggs in place of a find) follows the real day's, or the dev param only.
 import { dayKey, jst, now } from '#lib/time/clock.ts';
-import { daysBetween, easter, nthWeekday } from '#lib/time/dates.ts';
+import { HOLIDAYS, fromEaster } from '#lib/time/holidays.ts';
 import { hook } from './devHooks.ts';
+
+export { turkeyDay } from '#lib/time/holidays.ts';
 
 export type EventId = 'halloween' | 'turkey-day' | 'toy-day' | 'bunny-day' | 'bunny-week';
 
@@ -18,22 +20,13 @@ interface Rule {
   night: number;
 }
 
-/** A fixed day every year, 'MM-DD'. */
-const fixedDay = (md: string) => (date: string): boolean => date.slice(5) === md;
-
-const yearOf = (date: string): number => Number(date.slice(0, 4));
-/** Days from that year's Easter Sunday (negative: before). */
-const fromEaster = (date: string): number => daysBetween(easter(yearOf(date)), date);
-
-/** Turkey Day: the fourth Thursday of November. */
-export const turkeyDay = (year: number): string => nthWeekday(year, 11, 4, 4);
-
-// the order is the priority when two fall on one day (Bunny Day's Zipper days before its week)
+// the dates are time/holidays.ts's (shared with the music); the order is the priority when two fall on one day (Bunny
+// Day's Zipper days before its week)
 const RULES: Record<EventId, Rule> = {
-  halloween: { on: fixedDay('10-31'), night: 17 },
-  'turkey-day': { on: (d) => d === turkeyDay(yearOf(d)), night: 9 },
-  'toy-day': { on: fixedDay('12-24'), night: 5 },
-  'bunny-day': { on: (d) => fromEaster(d) === 0 || fromEaster(d) === -7, night: 5 },
+  halloween: { on: HOLIDAYS.halloween.on, night: HOLIDAYS.halloween.from },
+  'turkey-day': { on: HOLIDAYS['turkey-day'].on, night: HOLIDAYS['turkey-day'].from },
+  'toy-day': { on: HOLIDAYS['toy-day'].on, night: HOLIDAYS['toy-day'].from },
+  'bunny-day': { on: (d) => HOLIDAYS['bunny-day'].on(d) || fromEaster(d) === -7, night: HOLIDAYS['bunny-day'].from },
   'bunny-week': { on: (d) => fromEaster(d) > -7 && fromEaster(d) < 0, night: 24 }
 };
 const IDS = Object.keys(RULES) as EventId[];

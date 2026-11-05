@@ -6,17 +6,11 @@
 // like the custom-design fireworks Isabelle launches. Pure: the schedule, the shapes and where a burst may open.
 import { hits, type Box } from './geom.ts';
 import { pickOne, weighted } from '#lib/random.ts';
+import type { Show } from '#lib/time/holidays.ts';
 
-export type Show = 'show' | 'countdown';
+// the schedule is time/holidays.ts's (shared with the music: sound/events.ts)
+export { showAt, type Show } from '#lib/time/holidays.ts';
 
-/** The show on at this Tokyo moment: NH's August Sundays 19:00–24:00, and New Year's (Dec 31 from 23:00 the
- *  countdown, sparser; Jan 1 00:00–01:00 the show). */
-export function showAt(month: number, day: number, weekday: number, hour: number): Show | null {
-  if (month === 8 && weekday === 0 && hour >= 19) return 'show';
-  if (month === 12 && day === 31 && hour === 23) return 'countdown';
-  if (month === 1 && day === 1 && hour === 0) return 'show';
-  return null;
-}
 /** The first minute of the year: a volley (VOLLEY bursts) as the clock strikes midnight. */
 export const isMidnight = (month: number, day: number, hour: number, minute: number): boolean =>
   month === 1 && day === 1 && hour === 0 && minute === 0;

@@ -11,7 +11,7 @@
 // 20–40 MB of PCM on a phone); their levels are gain nodes, because iOS ignores HTMLMediaElement.volume. Each hour is
 // one loop period plus a copy of its first seconds (scripts/music.ts): the two decks hand over inside that copy, so
 // the loop never relies on `<audio loop>`'s seek at the end. Effects are small decoded buffers.
-import { SOUNDS, SOUND_IDS, type Bus, type SoundId } from './ids.ts';
+import { SOUNDS, SYNTH_IDS, type Bus, type SoundId, type SynthId } from './ids.ts';
 import { LEVELS, VoiceLimiter, duckPlan, jitterRate } from './mix.ts';
 import { crossfadePlan, trackLevel, type MusicTrack } from './hourly.ts';
 import { AUDIO, audioUrl } from './manifest.ts';
@@ -23,6 +23,12 @@ import type { SoundSettings } from './settings.ts';
 const MUFFLE_HZ = 900;
 /** A sound asked for while the renderer is still loading plays if it arrives within this long (the first tap). */
 const LATE_MS = 400;
+/** A lazy file (ids.ts `lazy`: the day's radio jingle) fetched at its first play sounds if it arrives within this long. */
+const LAZY_LATE_MS = 2500;
+/** Lazy files kept decoded at once (a 6 s stereo jingle is ~2 MB of PCM): the oldest goes first. */
+const LAZY_CAP = 4;
+/** A lazy file that failed (offline) isn't asked for again for this long: its placeholder plays meanwhile. */
+const LAZY_RETRY_MS = 5 * 60_000;
 
 interface Deck {
   el: HTMLAudioElement;
@@ -109,6 +115,10 @@ export class Engine {
   #prerendering = false;
   #buffers = new Map<SoundId, AudioBuffer>();
   #files: Promise<void> | null = null;
+  /** The lazy files decoded, oldest first (LAZY_CAP), those on their way, and when one last failed. */
+  #lazyKept: SoundId[] = [];
+  #lazyLoading = new Map<SoundId, Promise<void>>();
+  #lazyFailed = new Map<SoundId, number>();
   #limiter = new VoiceLimiter();
   #live = new Map<number, AudioBufferSourceNode>();
   #decks: Deck[] = [];
@@ -251,8 +261,8 @@ export class Engine {
   #prerender(): void {
     if (this.#prerendering || !this.ctx || !this.#synth) return;
     this.#prerendering = true;
-    const first: SoundId[] = ['chime', 'fanfare', 'heart', 'miles'];
-    const order = [...first, ...SOUND_IDS.filter((id) => !first.includes(id))];
+    const first: SynthId[] = ['chime', 'fanfare', 'heart', 'miles'];
+    const order = [...first, ...SYNTH_IDS.filter((id) => !first.includes(id))];
     const step = () => {
       const ctx = this.ctx;
       const s = this.#levels;
@@ -304,7 +314,7 @@ export class Engine {
   /** Real files from the manifest replace their placeholders as they decode. */
   #loadFiles(): void {
     if (this.#files || !this.ctx) return;
-    const entries = Object.entries(AUDIO.sfx) as [SoundId, string][];
+    const entries = (Object.entries(AUDIO.sfx) as [SoundId, string][]).filter(([id]) => !SOUNDS[id].lazy);
     let failed = false;
     this.#files = Promise.all(
       entries.map(async ([id, path]) => {
@@ -327,12 +337,40 @@ export class Engine {
     }
   }
 
-  /** The buffer of an id: its decoded file, else the placeholder (rendered on first use, then kept). Null while the
-   *  renderer is still loading. */
+  /** A lazy id's file, fetched now (once at a time) and kept among the last LAZY_CAP. */
+  #loadLazy(id: SoundId, path: string): Promise<void> {
+    let p = this.#lazyLoading.get(id);
+    if (!p) {
+      p = this.#decode(path).then((b) => {
+        this.#lazyLoading.delete(id);
+        if (!b) return void this.#lazyFailed.set(id, clock());
+        this.#buffers.set(id, b);
+        this.#lazyKept.push(id);
+        while (this.#lazyKept.length > LAZY_CAP) this.#buffers.delete(this.#lazyKept.shift()!);
+      });
+      this.#lazyLoading.set(id, p);
+    }
+    return p;
+  }
+
+  /** A lazy id whose file should be fetched before it plays (it has one, not decoded, not failed lately). */
+  #lazyPath(id: SoundId): string | null {
+    const path = AUDIO.sfx[id];
+    if (!SOUNDS[id].lazy || !path || this.#buffers.has(id)) return null;
+    const failed = this.#lazyFailed.get(id);
+    return failed !== undefined && clock() - failed < LAZY_RETRY_MS ? null : path;
+  }
+
+  /** The buffer of an id: its decoded file, else its `like`'s buffer, else its placeholder (rendered on first use,
+   *  then kept). Null while the renderer is still loading. */
   #buffer(ctx: AudioContext, id: SoundId): AudioBuffer | null {
     let b = this.#buffers.get(id);
+    const kept = b && SOUNDS[id].lazy ? this.#lazyKept.indexOf(id) : -1;
+    if (kept >= 0) this.#lazyKept.push(...this.#lazyKept.splice(kept, 1)); // the newest again
+    const like = SOUNDS[id].like;
+    if (!b && like) return this.#buffer(ctx, like);
     if (!b && this.#synth) {
-      const data = this.#synth.render(id, ctx.sampleRate);
+      const data = this.#synth.render(id as SynthId, ctx.sampleRate);
       b = ctx.createBuffer(1, data.length, ctx.sampleRate);
       b.getChannelData(0).set(data);
       this.#buffers.set(id, b);
@@ -359,6 +397,12 @@ export class Engine {
   play(id: SoundId, o: { gain?: number; rate?: number; delay?: number } = {}, late = false): void {
     const ctx = this.#ready();
     if (!ctx) return;
+    const lazy = late ? null : this.#lazyPath(id);
+    if (lazy) {
+      const t0 = clock();
+      void this.#loadLazy(id, lazy).then(() => clock() - t0 < LAZY_LATE_MS && this.play(id, o, true));
+      return;
+    }
     const buf = this.#buffer(ctx, id);
     if (!buf) {
       // the renderer is still loading (the first tap): play when it arrives, if that's soon

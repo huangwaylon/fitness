@@ -2243,13 +2243,21 @@ plays the opening theme first. Under a sheet, the panel or the harvest the music
 
 ### Event music
 
-On NH's event days its track replaces the hour's (`events.ts eventMusicAt`, Tokyo date and hour), with the hour's
-crossfade at the boundaries:
+On NH's event days its track replaces the hour's (`events.ts eventMusicAt`, one table over the shared dates of
+`time/holidays.ts`, which the island's events, fireworks and wedding read too), with the hour's crossfade at the
+boundaries. The boundaries inside an hour (the countdown's) get one timer each (`msToNextEdge`), never a poll. A
+track without its file is the hour's music (or its `alt`):
 
 | When (Tokyo) | Track |
 | --- | --- |
+| Festivale: the Monday before Ash Wednesday (Easter − 48) 05:00–24:00 | カーニバル (Festivale) |
+| Bunny Day: Easter Sunday 05:00–24:00 (not the celebrations before it) | イースター (Bunny Day) |
+| Aug Sundays 19:00–24:00 | 花火大会 (Fireworks Show) |
+| Our wedding day (2027-10-08) 06:00–19:00, 19:00–24:00 | ウエディング, then ウエディングパーティー (each the other's `alt`) |
 | Oct 31 17:00–24:00 | ハロウィン (Halloween) |
 | 4th Thursday of Nov 09:00–24:00 | サンクスギビングデー (Turkey Day) |
+| Dec 24 05:00–24:00 | クリスマス (Toy Day); in snow クリスマス（雪） (NH's snowy northern arrangement) |
+| Dec 31 23:00 / 23:30 / 23:50 / 23:55 | カウントダウン (Countdown), four tracks, each to the next |
 | Jan 1 00:00 | ニューイヤー（Happy New Year）, once, within 2 minutes of midnight |
 | Jan 1 00:00–02:00 | ニューイヤー（午前0時）, the fireworks |
 | Jan 1 02:00–05:00 | ニューイヤー（午前2時） |
@@ -2257,7 +2265,12 @@ crossfade at the boundaries:
 
 **Cut-ins** (`sound.svelte.ts`) swap at once over the island's music and hand back to it: the wasps (`waspMusic`):
 Chased by Bees loops from the nest's fall; a net brings the island's music back; a sting plays Stung by Bees once. K.K.'s
-songs are cut-ins too. The settings' note and the Now Playing tile name the event track or song.
+songs are cut-ins too, and the island's own (`eventJingle`, only with ミュージック on and the file there, else the
+moment's effect plays): the tape deck's stretch plays ラジオ体操 (aerobics) for its ~6 s, then the music crossfades
+back (else the tape's `stretch-song`); the birthday cake plays ハッピーバースデー (else the music box); Franklin, fed his
+fish on Turkey Day, cooks: the cooking jingle, then the dish's. Festivale's キメダンス tracks are in the catalogue with no
+moment yet (the island has no Pavé). The settings' note and the Now Playing tile (and the Media Session) name the event
+track or song, NH's titles in ja/en (`sound.title.<id>`).
 
 ### Place music
 
@@ -2306,7 +2319,13 @@ Soft mallets and bells for the panel, cursor, confirm and cancel. Dialogue is si
 
 `cues.ts CUES` maps moments to sounds, levels and delays; nothing calls `play()` directly. Reactions name a cue per
 step, taps in `data-sfx`, outcomes call `cue()` (tree tap → rustle, fruit lands → thud, each coin → a climbing
-pentatonic run, 受け取る → fanfare, buy → purchase, first open of the day → chime, scenery → `scene-<kind>`). **World
+pentatonic run, 受け取る and a present → NH's get fanfare, both of us meeting all four goals (the celebration's
+fireworks) → the complete fanfare, buy → purchase, scenery → `scene-<kind>`). The first open of the day (しずえ's
+`announce`) plays the **radio jingle** that opens NH's island broadcast (`radio.ts radioJingleAt`): morning 05–11,
+noon 11–17, evening 17–05, one of six picked by the Tokyo date's seed (both phones hear the same), or the holiday's own
+all its date (Bunny Day, Halloween, Turkey Day, Toy Day, the countdown on Dec 31, the carnival on Festivale). A sound
+without its file borrows a `like`'s (`ids.ts`): a radio jingle the broadcast's (`island-broadcast`), that the PA
+chime; the fanfares the item-get placeholder. **World
 cues** (the island's own sounds) are skipped while a sheet, the panel or the harvest covers the scene; UI cues always
 play.
 
@@ -2319,7 +2338,9 @@ plays `boop`. Enforced by `taps.test.ts`, walked by `e2e/sound.spec.ts`.
 ### Mix
 
 Buses: music 0.30, ambience 0.28, effects 0.90; master 音量 squared (default 0.8). ≤ 6 voices and a cap per sound
-(`ids.ts`); jingles (fanfare, miles, chime) never overlap and duck the music to 25%. Effects jitter pitch.
+(`ids.ts`); jingles (the fanfares, miles, the radio jingles) never overlap and duck the music to 25%. Effects decode
+on the unlock, except the `lazy` ones (the 24 radio jingles, the broadcast, the complete fanfare): fetched at their
+first play (it waits up to 2.5 s for the file, else plays the placeholder) and kept decoded four at most. Effects jitter pitch.
 
 ### Engine lifecycle
 

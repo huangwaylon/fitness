@@ -20,6 +20,8 @@ export type Cue =
   | 'panel-open' | 'panel-close' | 'back'
   // money and the harvest
   | 'buy' | 'badge-met' | 'harvest-receive'
+  // both of us met all four goals today (our celebration's volley)
+  | 'goals-complete'
   // scenery taps (island/sceneTaps.ts sceneSfx)
   | `scene-${SceneSfx}`
   // a walking villager's footsteps (island/IslandScene: by the ground under it; a splash on a rainy day)
@@ -77,7 +79,10 @@ export const CUES: Record<Cue, CueDef> = {
   back: { sound: 'cancel' },
   buy: { sound: 'purchase' },
   'badge-met': { sound: 'miles' },
-  'harvest-receive': { sound: 'fanfare' },
+  // NH's item-get fanfare (受け取る, a birthday's or the wedding's present)
+  'harvest-receive': { sound: 'get-fanfare' },
+  // NH's set-complete fanfare as our celebration's fireworks go up (island/Fireworks.svelte; once a day per phone)
+  'goals-complete': { sound: 'complete-fanfare', world: true },
   // scenery (docs/design.md#scene-interactions): quiet world sounds, muted under a sheet like the rest of the island
   'scene-bush': { sound: 'rustle', gain: 0.7, world: true },
   'scene-flower': { sound: 'swish', world: true },
@@ -144,9 +149,11 @@ export const CUES: Record<Cue, CueDef> = {
   // fireworks (island/Fireworks.svelte): the rocket's whistle as it rises, the burst as it opens
   'scene-launch': { sound: 'whistle', world: true },
   'scene-firework': { sound: 'firework', world: true },
-  // group stretching (island/stretching.ts): the tape deck's tune under the ~6 s routine (a jingle: the music ducks)
+  // group stretching (island/stretching.ts): the tape deck's tune under the ~6 s routine (a jingle: the music ducks);
+  // with ミュージック on and NH's track there, its aerobics music cuts in instead (sound.svelte.ts eventJingle)
   stretch: { sound: 'stretch-song', world: true },
-  // a birthday's cake (island/Cake.svelte): its music box as the candles go out
+  // a birthday's cake (island/Cake.svelte): its music box as the candles go out (with ミュージック on and the file there,
+  // NH's Happy Birthday cuts in instead)
   'birthday-cake': { sound: 'music-box', world: true }
 };
 

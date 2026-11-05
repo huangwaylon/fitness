@@ -19,6 +19,7 @@
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { uiBoxes } from './placement.ts';
   import { sceneSfx } from './sceneTaps.ts';
+  import { cue } from '#lib/sound/cues.ts';
   import { PAIR_ODDS, burstPlan, burstSpot, celebrationDue, isMidnight, nextBurstMs, showAt, volley, type Shape, type Spark } from './fireworks.ts';
 
   interface Props {
@@ -106,7 +107,10 @@
     if (!enabled() || !celebrationDue(allMet, readJson<string>(localKV(), SCENE.fireworks), date, t.hour)) return;
     untrack(() => {
       writeJson(localKV(), SCENE.fireworks, date);
-      later(() => salvo(volley(rand)), 1200);
+      later(() => {
+        cue('goals-complete');
+        salvo(volley(rand));
+      }, 1200);
     });
   });
 

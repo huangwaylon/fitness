@@ -3,7 +3,7 @@
 // built from a few soft mallets, bells, glides and filtered noise. None of them copies a game melody: the jingles
 // are plain arpeggios and the announcement chime is the generic Japanese PA ピンポンパンポン (F-A-C-F).
 // A file in static/audio/manifest.json replaces the placeholder of its id.
-import type { SoundId } from './ids.ts';
+import type { SynthId } from './ids.ts';
 import { seeded } from '#lib/random.ts';
 
 type Wave = 'sine' | 'tri' | 'sq';
@@ -57,7 +57,7 @@ const vibe = (m: number, t: number, d: number, g: number): Tone => ({
   kind: 'tone', f: hz(m), t, d, g, attack: 0.004, partials: [[4, 0.12, 0.3], [3, 0.05, 0.4]], trem: [5, 0.18]
 });
 
-const RECIPES: Record<SoundId, Ev[]> = {
+const RECIPES: Record<SynthId, Ev[]> = {
   cursor: [{ kind: 'tone', f: hz(C7), t: 0, d: 0.045, g: 0.6, attack: 0.001, partials: [[2, 0.2, 0.5]] }],
   // "pi-pon": up a fifth
   confirm: [mallet(E6, 0, 0.16, 0.8), mallet(B6, 0.075, 0.24, 0.9)],
@@ -346,10 +346,10 @@ function addNoise(out: Float32Array, sr: number, e: Noise, rand: () => number): 
 }
 
 /** Length of a recipe (s), with a short tail. */
-export const durationOf = (id: SoundId): number => Math.max(...RECIPES[id].map((e) => e.t + e.d)) + 0.02;
+export const durationOf = (id: SynthId): number => Math.max(...RECIPES[id].map((e) => e.t + e.d)) + 0.02;
 
 /** The placeholder of `id` as mono samples at `sr`, peaking at 0.8, with a 5 ms fade at the end (no click). */
-export function render(id: SoundId, sr: number): Float32Array {
+export function render(id: SynthId, sr: number): Float32Array {
   const out = new Float32Array(Math.ceil(durationOf(id) * sr));
   const rand = seeded(id);
   for (const e of RECIPES[id]) {
