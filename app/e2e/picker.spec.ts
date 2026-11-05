@@ -9,6 +9,7 @@ const sheet = (page: Page) => page.locator('dialog[open]');
 async function openPicker(page: Page) {
   await page.goto('?demo');
   await fromMenu(page, 'settings');
+  await sheet(page).locator('[data-push=look]').click();
   await sheet(page).locator('[data-push=villager]').click();
   await expect(sheet(page).getByRole('radio')).toHaveCount(Object.keys(ROSTER).length);
   // the level's slide-in done (it moves the head sideways)

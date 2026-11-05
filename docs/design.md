@@ -152,11 +152,38 @@ A day of the ledger pushes a level with ‹ (the wallet stays mounted under it, 
 scrolled where it was); ✕, the backdrop and Esc close the panel.
 
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
-pill (Sheet's `pop`), title せってい: **むらびと** (my villager and よびな; かえる → the picker: 23 special characters
+pill (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
+or the villager's; かえる → [the すがた level](#sugata), whose foot pushes the villager picker: 23 special characters
 and all 417 NH villagers, its head pinned over the scrolling grid), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
 English), **きせつ** ([Seasonal preview](#seasonal-preview)), **てんき** (ほんもの / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), and **もようがえ** (one row with its
-はじめる; not the guest's). The picker pushes a level with ‹; ✕, the backdrop and Esc close it,
+はじめる; not the guest's). すがた pushes a level with ‹, the picker another over it; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
+
+<a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/ClosetGrid.svelte`, `look/closet.ts`, `store/look.ts`,
+`e2e/look.spec.ts`; [design/avatar/customization.md](../app/design/avatar/customization.md) §3, the user's 2026-11-05
+sign-off): each person's NH human player, the whole closet free (no ベル, no shop, no unlocks), for A, B and the guest alike.
+- **The head** (pinned): the preview (a tap hops it), よびな, and **もどす** once something changed this visit (back to
+  what was worn on opening).
+- **コーデ** (one sideways row of 60px portraits, names under them): **★いつもの** first (the signed-off default; one tap
+  wears it; never stored, so it can't be overwritten or deleted; the guest's is its villager), then the saved ones newest
+  first, then **＋ ほぞん** (a name, 「コーデ 3」 by default, 1–12 characters; at 20 it's sunk and says 「コーデは 20こまで。
+  いっぱいだよ」). The chip last tapped carries **⋯**, a small sheet: **うわがき** (with the look now; sunk while they're the
+  same), **なまえを かえる**, **けす** (「この コーデを けしますか？」, then とりけす on the banner for 5 s: sent after).
+- **The closet:** chips かお · かみ · トップス · ボトムス · ワンピース · くつした · くつ · こもの (held at the top as it
+  scrolls); for garments a colour filter (すべて · あか · きいろ · みどり · あお · むらさき · ピンク · ちゃ · しろ · くろ);
+  NH's wardrobe grid, five a row, a tile per item showing its variant worn or last chosen; a tap wears it and opens its
+  colour dots under that row. なし first for くつした, くつ, めがね, かみかざり. A ワンピース clears the bottoms, a bottom the
+  ワンピース. かお: め, めの いろ, くち, はだ, ほお, はな; かみ: かみがた, かみの いろ. No search, no names (a tile is
+  「トップス 3」 to VoiceOver, a dot its colour).
+- **The foot:** 「むらびとの すがたに する」 → the villager picker (すがた stays mounted under it); its pick is sent at once,
+  the villager look with the rest.
+- **Sending:** wearing only changes the preview; the look goes out once, one `look` pref, when the level is left (‹, ✕,
+  Esc, the backdrop, or the app going to the background), and only if it changed. A member's いつもの is sent as null.
+  コーデ edits go out as they're made, the whole `savedLooks` list ([backend](backend.md#events)).
+- **Until the closet pipeline lands:** the grid reads `look/closet.ts`'s `Closet` interface, today a stub (every
+  hairstyle, eye and mouth, the default looks' garments and the art scout's palette, swatches by hand, no icons), and the
+  preview and portraits are a flat stand-in figure (`look/PlayerFigure.svelte`); `useCloset` takes the part table's, and
+  `LookPreview` / `LookPortrait` the 3D player and its portraits.
 
 <a id="profile"></a>**プロフィール** (`panel/ProfileSection.svelte`, `model/profile.ts`, `e2e/profile.spec.ts`; the user: "store the
 user's gender and birthdate so that the calculations and recommendations can account for that"): one card. Whose, in
@@ -1038,7 +1065,7 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
 - **What it sees:** our island, the trees and their popups, the HUD menu's ベル row, ごほうび (to look at: the balance, today's ベル (the members') and the
   buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×; the ledger), the ずかん and
   けんこう's かつどう (whose data: either member; no からだ switch) with its goals read-only (no chip to tap). Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
-  none: the record leaves them out). せってい: its villager and name (the same picker, its own prefs), the sound, the
+  none: the record leaves them out). せってい: its すがた and name (the same closet and picker, its own prefs and コーデ), the sound, the
   language and きせつ; no もようがえ or つうしん, and a line saying it's visiting.
 - **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its
   finds and counts its own in the shared ずかん (each entry credited to its first finder, the guest's

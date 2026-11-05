@@ -1,0 +1,241 @@
+// せってい → すがた (docs/design.md "すがた", design/avatar/customization.md §3): on phones paired with a record of their own
+// (e2e/record.ts: the relay's real code), the closet's edits stay in the preview and go out as one `look` pref when the
+// level is left; the コーデ (save, wear, うわがき, なまえを かえる, けす with とりけす, full at 20) go out as they're made, as
+// one `savedLooks` pref; いつもの is one tap back (no pref: null); the foot's 「むらびとの すがたに する」 wears the villager.
+// What's kept is on the record: a phone opening later, and the partner's, have it. The guest has its own look and
+// コーデ, the same closet.
+import { expect, test, type Browser, type Page } from '@playwright/test';
+import { fromMenu, hudMenu } from './hud.ts';
+import { newRecord } from './record.ts';
+import { DEFAULT_LOOKS } from '../src/lib/contract/look.ts';
+import { ROSTER } from '../src/lib/villagers/roster.ts';
+
+type Rec = ReturnType<typeof newRecord>;
+type Who = 'A' | 'B' | 'G';
+
+/** A fresh phone paired as `who` on `rec`, its せってい open. */
+async function phone(browser: Browser, rec: Rec, who: Who) {
+  const context = await browser.newContext({ viewport: { width: 393, height: 852 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo', serviceWorkers: 'block' });
+  await context.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+  await rec.pair(context, who);
+  const page = await context.newPage();
+  await page.goto('?critter=none&visitor=none');
+  await expect(hudMenu(page)).toBeVisible();
+  await fromMenu(page, 'settings');
+  await expect(settings(page).locator('[data-look-row]')).toBeVisible();
+  return page;
+}
+
+const settings = (page: Page) => page.locator('dialog[open]').first();
+/** The ⋯ card (a sheet over せってい). */
+const card = (page: Page) => page.locator('dialog[open]').nth(1);
+const chip = (page: Page, id: string) => settings(page).locator(`[data-look-chip="${id}"]`);
+const back = (page: Page) => settings(page).locator('.titlebar .back').click();
+
+async function openLook(page: Page) {
+  await settings(page).locator('[data-push=look]').click();
+  await expect(settings(page).locator('[data-look-page]')).toBeVisible();
+}
+
+/** The `pref` events `who` sent with `key`, in order, as [ok, value]. */
+const sentPrefs = (rec: Rec, who: Who, key: string) =>
+  rec.sent.filter((e) => e.type === 'pref' && e.who === who && e.data.key === key).map((e) => [e.ok, e.data.value] as [boolean, unknown]);
+const lastValue = (rec: Rec, who: Who, key: string) => sentPrefs(rec, who, key).at(-1)?.[1];
+type Saved = { id: string; name: string; look: Record<string, unknown> }[];
+
+test('コーデ: save, wear, うわがき, なまえを かえる, けす with とりけす; the look goes out once, on leaving; a phone opening later has it all', async ({ browser }) => {
+  test.setTimeout(60_000);
+  const rec = newRecord();
+  const a = await phone(browser, rec, 'A');
+  await expect(settings(a).locator('[data-look-worn]')).toHaveText('いつもの');
+  await openLook(a);
+  await expect(chip(a, 'usual')).toHaveAttribute('aria-pressed', 'true');
+  await expect(settings(a).locator('[data-look-revert]')).toHaveCount(0);
+
+  // トップス (the first chips' default): the worn cable knit is checked; a tap opens its colours, a dot wears the cream one
+  const aran = settings(a).locator('[data-closet=top] [data-item=TopsTexTopOuterLAran]');
+  await expect(aran).toHaveAttribute('aria-checked', 'true');
+  await aran.click();
+  await settings(a).locator('[data-colours=TopsTexTopOuterLAran] [data-part=TopsTexTopOuterLAran1]').click();
+  await expect(aran).toHaveAttribute('data-part', 'TopsTexTopOuterLAran1');
+  if (process.env.SHOTS) await a.screenshot({ path: `${process.env.SHOTS}/look-tops.png` });
+  await expect(chip(a, 'usual')).toHaveAttribute('aria-pressed', 'true'); // still the chip last tapped
+  await expect(settings(a).locator('[data-look-revert]')).toBeVisible();
+  // nothing sent while editing
+  expect(sentPrefs(rec, 'A', 'look')).toEqual([]);
+
+  // ＋ ほぞん: 「コーデ 1」 by default, renamed here to 「ふゆ」
+  await settings(a).locator('[data-look-save]').click();
+  await expect(card(a).locator('[data-look-name]')).toHaveValue('コーデ 1');
+  await card(a).locator('[data-look-name]').fill('ふゆ');
+  await card(a).locator('[data-look-ok]').click();
+  await expect(card(a)).toHaveCount(0);
+  await expect.poll(() => (lastValue(rec, 'A', 'savedLooks') as Saved | undefined)?.map((s) => [s.name, s.look.top])).toEqual([['ふゆ', 'TopsTexTopOuterLAran1']]);
+  const id = (lastValue(rec, 'A', 'savedLooks') as Saved)[0].id;
+  await expect(chip(a, id)).toHaveAttribute('aria-pressed', 'true');
+
+  // ボトムス: blue denim, then ⋯ → うわがき (its name and place kept)
+  await settings(a).locator('[data-cat=bottoms]').click();
+  await settings(a).locator('[data-closet=bottom] [data-item=BottomsTexPantsNormalDenim]').click();
+  await settings(a).locator('[data-colours=BottomsTexPantsNormalDenim] [data-part=BottomsTexPantsNormalDenim0]').click();
+  await settings(a).locator('[data-look-more]').click();
+  await card(a).locator('[data-look-overwrite]').click();
+  await expect.poll(() => (lastValue(rec, 'A', 'savedLooks') as Saved).map((s) => [s.id, s.name, s.look.bottom])).toEqual([[id, 'ふゆ', 'BottomsTexPantsNormalDenim0']]);
+
+  // ⋯ → なまえを かえる
+  await settings(a).locator('[data-look-more]').click();
+  await card(a).locator('[data-look-rename]').click();
+  await expect(card(a).locator('[data-look-name]')).toHaveValue('ふゆ');
+  await card(a).locator('[data-look-name]').fill('おでかけ');
+  await card(a).locator('[data-look-ok]').click();
+  await expect(chip(a, id)).toContainText('おでかけ');
+  await expect.poll(() => (lastValue(rec, 'A', 'savedLooks') as Saved).map((s) => s.name)).toEqual(['おでかけ']);
+
+  // いつもの is one tap back; the コーデ wears it again (its ⋯ back)
+  await chip(a, 'usual').click();
+  await expect(settings(a).locator('[data-closet=bottom] [data-item=BottomsTexPantsNormalSlacks]')).toHaveAttribute('aria-checked', 'true');
+  await expect(settings(a).locator('[data-look-revert]')).toHaveCount(0); // back to what was worn: nothing to undo
+  await chip(a, id).click();
+  await expect(settings(a).locator('[data-closet=bottom] [data-item=BottomsTexPantsNormalDenim]')).toHaveAttribute('aria-checked', 'true');
+
+  // ⋯ → けす → the confirm → とりけす on the banner: the コーデ comes back, nothing sent
+  const sends = sentPrefs(rec, 'A', 'savedLooks').length;
+  await settings(a).locator('[data-look-more]').click();
+  await card(a).locator('[data-look-delete]').click();
+  await expect(card(a)).toContainText('この コーデを けしますか？');
+  if (process.env.SHOTS) await a.screenshot({ path: `${process.env.SHOTS}/look-delete.png` });
+  await card(a).locator('[data-look-confirm]').click();
+  await expect(chip(a, id)).toHaveCount(0);
+  await a.getByRole('button', { name: 'とりけす' }).click();
+  await expect(chip(a, id)).toBeVisible();
+  await a.waitForTimeout(5500); // the hold's whole window: nothing goes out after an undo
+  expect(sentPrefs(rec, 'A', 'savedLooks')).toHaveLength(sends);
+
+  // leaving sends the look once: the コーデ being worn
+  await chip(a, id).click();
+  await back(a);
+  await expect.poll(() => sentPrefs(rec, 'A', 'look')).toHaveLength(1);
+  expect(lastValue(rec, 'A', 'look')).toMatchObject({ kind: 'player', look: { top: 'TopsTexTopOuterLAran1', bottom: 'BottomsTexPantsNormalDenim0' } });
+  expect(sentPrefs(rec, 'A', 'look')[0][0]).toBe(true);
+  await expect(settings(a).locator('[data-look-worn]')).toHaveText('おでかけ');
+  await a.context().close();
+
+  // ウェイ's phone opening later: the look worn and the コーデ, from the record
+  const a2 = await phone(browser, rec, 'A');
+  await expect(settings(a2).locator('[data-look-worn]')).toHaveText('おでかけ');
+  await openLook(a2);
+  await expect(chip(a2, id)).toHaveAttribute('aria-pressed', 'true');
+  await settings(a2).locator('[data-cat=bottoms]').click();
+  await expect(settings(a2).locator('[data-closet=bottom] [data-item=BottomsTexPantsNormalDenim]')).toHaveAttribute('aria-checked', 'true');
+  await a2.context().close();
+
+  // うめ's phone: ウェイ's look is on its snapshot (the island draws it); its own すがた is still its いつもの
+  const b = await phone(browser, rec, 'B');
+  expect(rec.prefs('B').filter(([w, d]) => w === 'A' && d.key === 'look').map(([, d]) => d.value)).toEqual([lastValue(rec, 'A', 'look')]);
+  await expect(settings(b).locator('[data-look-worn]')).toHaveText('いつもの');
+  await openLook(b);
+  await expect(chip(b, 'usual')).toHaveAttribute('aria-pressed', 'true');
+  await expect(settings(b).locator('[data-look-chip]')).toHaveCount(1); // ウェイ's コーデ aren't hers
+  await expect(settings(b).locator('[data-closet=top] [data-item=TopsTexTopYshirtsHPolo]')).toHaveAttribute('aria-checked', 'true');
+  await b.context().close();
+});
+
+test('けす goes out after its banner; もどす undoes this visit; full at 20 says 「いっぱいだよ」', async ({ browser }) => {
+  test.setTimeout(45_000);
+  const rec = newRecord();
+  const full = Array.from({ length: 20 }, (_, i) => ({ id: `look${String(i).padStart(4, '0')}`, name: `コーデ ${i + 1}`, look: { ...DEFAULT_LOOKS.A, top: 'TopsTexTopOuterLAran1' } }));
+  expect(rec.event('A', 'pref', { key: 'savedLooks', value: full })).toMatchObject({ ok: true });
+  const a = await phone(browser, rec, 'A');
+  await openLook(a);
+  await expect(settings(a).locator('[data-look-chip]')).toHaveCount(21);
+  if (process.env.SHOTS) await a.screenshot({ path: `${process.env.SHOTS}/look-full.png` });
+  const save = settings(a).locator('[data-look-save]');
+  await expect(save).toHaveClass(/\boff\b/);
+  await save.click();
+  await expect(a.getByRole('status').filter({ hasText: 'コーデは 20こまで。いっぱいだよ' })).toBeVisible();
+  await expect(card(a)).toHaveCount(0);
+
+  // もどす: a change, then back to what was worn when the level opened
+  await settings(a).locator('[data-cat=acc]').click();
+  await settings(a).locator('[data-closet=glasses] [data-item=none]').click();
+  await expect(settings(a).locator('[data-closet=glasses] [data-item=none]')).toHaveAttribute('aria-checked', 'true');
+  await settings(a).locator('[data-look-revert]').click();
+  await expect(settings(a).locator('[data-closet=glasses] [data-item=AccessoryGlassCircle]')).toHaveAttribute('aria-checked', 'true');
+  await expect(settings(a).locator('[data-look-revert]')).toHaveCount(0);
+
+  // けす, not taken back: sent once the banner's 5 s are over
+  await chip(a, 'look0003').click();
+  await settings(a).locator('[data-look-more]').click();
+  await card(a).locator('[data-look-delete]').click();
+  await card(a).locator('[data-look-confirm]').click();
+  await expect(settings(a).locator('[data-look-chip]')).toHaveCount(20);
+  await a.mouse.move(200, 120); // off the banner (docked low, where けす was): a pointer resting on it holds the send
+  await expect(save).not.toHaveClass(/\boff\b/);
+  await expect.poll(() => (lastValue(rec, 'A', 'savedLooks') as Saved | undefined)?.length, { timeout: 10_000 }).toBe(19);
+  expect((lastValue(rec, 'A', 'savedLooks') as Saved).some((s) => s.id === 'look0003')).toBe(false);
+  // nothing else changed: leaving sends no look
+  await chip(a, 'usual').click();
+  await back(a);
+  await a.waitForTimeout(300);
+  expect(sentPrefs(rec, 'A', 'look')).toEqual([]);
+  await a.context().close();
+});
+
+test('むらびとの すがたに する wears the villager; いつもの brings the player back (no look pref)', async ({ browser }) => {
+  test.setTimeout(45_000);
+  const rec = newRecord();
+  const a = await phone(browser, rec, 'A');
+  await openLook(a);
+  await settings(a).locator('[data-push=villager]').click();
+  await expect(settings(a).locator('.picker')).toBeVisible();
+  await expect(settings(a).locator('[data-look-page]')).toBeHidden(); // kept under the picker
+  const jun = ROSTER.raymond.nameJa;
+  await settings(a).getByRole('searchbox').fill(jun);
+  await settings(a).getByRole('radio', { name: jun }).click();
+  await back(a); // to すがた: the preview is the villager now
+  await expect(settings(a).locator('[data-look-preview=villager]')).toBeVisible();
+  await back(a); // to the list: sent
+  await expect.poll(() => lastValue(rec, 'A', 'look')).toEqual({ kind: 'villager' });
+  expect(lastValue(rec, 'A', 'villager')).toBe('raymond');
+  await expect(settings(a).locator('[data-look-row]')).toHaveAttribute('data-look-row', 'villager');
+  await expect(settings(a).locator('[data-look-worn]')).toHaveText(jun);
+
+  await openLook(a);
+  await expect(chip(a, 'usual')).toHaveAttribute('aria-pressed', 'false');
+  await chip(a, 'usual').click();
+  await expect(settings(a).locator('[data-look-preview=player]')).toBeVisible();
+  await back(a);
+  await expect.poll(() => sentPrefs(rec, 'A', 'look').map(([ok, v]) => [ok, v])).toEqual([[true, { kind: 'villager' }], [true, null]]);
+  await expect(settings(a).locator('[data-look-row]')).toHaveAttribute('data-look-row', 'player');
+  await expect(settings(a).locator('[data-look-worn]')).toHaveText('いつもの');
+  await a.context().close();
+});
+
+test('the guest: its villager is its いつもの; the same closet; its own look and コーデ, none of the members’', async ({ browser }) => {
+  test.setTimeout(45_000);
+  const rec = newRecord();
+  const g = await phone(browser, rec, 'G');
+  await expect(settings(g).locator('[data-look-row]')).toHaveAttribute('data-look-row', 'villager');
+  await openLook(g);
+  await expect(chip(g, 'usual')).toHaveAttribute('aria-pressed', 'true');
+  await expect(settings(g).locator('[data-look-preview=villager]')).toBeVisible();
+  // a dress: the player, from A's starting look
+  await settings(g).locator('[data-cat=onepiece]').click();
+  await settings(g).locator('[data-closet=onepiece] [data-item=TopsTexOnepieceBalloonHDolly]').click();
+  await expect(settings(g).locator('[data-look-preview=player]')).toBeVisible();
+  if (process.env.SHOTS) await g.screenshot({ path: `${process.env.SHOTS}/look-guest-dress.png` });
+  await settings(g).locator('[data-look-save]').click();
+  await card(g).locator('[data-look-ok]').click();
+  await expect.poll(() => (lastValue(rec, 'G', 'savedLooks') as Saved | undefined)?.map((s) => [s.name, s.look.top, s.look.bottom])).toEqual([['コーデ 1', 'TopsTexOnepieceBalloonHDolly0', null]]);
+  await back(g);
+  await expect.poll(() => lastValue(rec, 'G', 'look')).toMatchObject({ kind: 'player', look: { top: 'TopsTexOnepieceBalloonHDolly0', bottom: null } });
+  expect(rec.sent.filter((e) => e.type === 'pref').every((e) => e.who === 'G' && e.ok)).toBe(true);
+  await expect(settings(g).locator('[data-look-row]')).toHaveAttribute('data-look-row', 'player');
+  // いつもの: back to its villager (no pref)
+  await openLook(g);
+  await chip(g, 'usual').click();
+  await back(g);
+  await expect.poll(() => lastValue(rec, 'G', 'look')).toBeNull();
+  await expect(settings(g).locator('[data-look-row]')).toHaveAttribute('data-look-row', 'villager');
+  await g.context().close();
+});
