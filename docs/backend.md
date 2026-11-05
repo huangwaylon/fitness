@@ -287,7 +287,12 @@ made after it carries no `l`, the switch's op keeps the light.
   `IslandStore` (`idFromName('record')`, `storeObject.ts`), apart from the island room. Tables: `metrics` (`seq`, `at`,
   `person`, `date`, `metric`, `value` REAL, `late`; unique (person, date, metric, at), index on `at`), `events` (`seq`,
   `id` unique, `at`, `person`, `type`, `data`, `slot` unique, `late`; indexes on `at` and `type`), `ids` (every event id
-  ever accepted), `uploads` (the ingest audit), `meta` (`last_at`, `rev`).
+  ever accepted), `uploads` (the ingest audit), `meta` (`last_at`, `rev`, `schema_v`, …), `metrics_latest` (each
+  person's day's latest value per metric: an ingest's comparison; kept in the same transaction as each `metrics` row).
+- **Schema:** `SCHEMA` (the base tables, `IF NOT EXISTS`) and then `MIGRATIONS`, an ordered list run once each on the
+  object's start, each step and its mark (`meta.schema_v`, the steps run; the admin `counts` says it) one transaction; a
+  new table or index is a new step at the end, never an edit of one that shipped; a step that adds a derived table fills
+  it from the rows there. 1: index `events (type, person)`; 2: `metrics_latest`, filled from `metrics`.
 - **API:** `POST /api` (`{key, action, ...}` as text/plain JSON; `ingest`, `event`,
   `snapshot`, `uploads`, `whoami`, keyless `health` → `{ok, build: 'relay-2'}`), every reply JSON with status 200;
   CORS for the allowed origins, none needed for a Shortcut. The Worker checks the origin, method and size, and that
@@ -305,7 +310,8 @@ made after it carries no `l`, the switch's op keeps the light.
   no slot. A `highfive` event (high-fives go over the room) is acknowledged and kept nowhere; an old row of one is ignored
   by the model.
 - **Ingest:** `relay/src/parse.ts` and the audit row (`relay/src/audit.ts`); a day's latest
-  row read from the (person, date, metric) key over the body's days. `relay/test/ingest-golden.test.ts` runs a week of
+  value read from `metrics_latest` over the body's days (one row a day and metric: a 32-day body reads ≤ 32 × its
+  metrics, never the history; until 2026-11-05 every row of the 32 days, ~23,000 after a month of hourly runs). `relay/test/ingest-golden.test.ts` runs a week of
   both phones' Shortcut bodies (their real shapes: A's iPhone-only body with English dates, B's with the Watch's steps
   and Japanese dates; made-up values) and checks the record's replies, rows, `at`s and audit rows against a recorded golden
   (`fixtures/ingest-golden.json`).
@@ -742,7 +748,7 @@ writes/day (unused). A generous day for two phones:
 | Intents kept for the day (the room's ring), nudges | ~2,000 | 0 | 100 | ~100 | | ~2,000 |
 | Record reads: snapshots (opens not current, pushes, taps; ~5 rows each; a full one is the whole compacted record: ~13k rows a year, below) | ~300 | 300 | 300 | ~30 | ~3,000 (+ ~13k per full fetch) | |
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
-| Shortcut ingests (2 phones, ~24 runs each; ~300 rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
+| Shortcut ingests (2 phones, ~24 runs each; ≤ ~260 latest rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The record's compaction (the cron's 04:15 run; a Wednesday's drops the week that locked, ~2,000 rows; the other days' nothing) | 1 | 0 | 1 | ~1 | ~2,000 (that week's dates) | ~8,000 on a Wednesday, else ~0 (not in the total) |
 | The real weather (the same cron: the room's tick, a fetch at :15 and :45, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
 | The log ([observability](ops/observability.md): a `req` RPC each `/api`, the phones' batches, room closes; a row and a cap row each write, the prune 30 days on) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |

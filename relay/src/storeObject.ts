@@ -111,7 +111,7 @@ export class IslandStore extends DurableObject<Env> implements StoreRoom {
       case 'wx':
         return this.env.ROOM.get(this.env.ROOM.idFromName('island')).wxAdmin(o);
       case 'counts':
-        return { ok: true, counts: this.core.counts(), rev: this.core.rev(), newest: this.core.newestAt() };
+        return { ok: true, counts: this.core.counts(), rev: this.core.rev(), newest: this.core.newestAt(), schema_v: this.core.schemaV() };
       case 'bookmark': {
         const ms = typeof o.ms === 'number' ? o.ms : 3600_000;
         return { ok: true, now: await storage.getCurrentBookmark(), ago: await storage.getBookmarkForTime(Date.now() - ms) };
