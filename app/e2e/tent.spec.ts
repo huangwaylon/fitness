@@ -443,3 +443,29 @@ test('the HHA: the first time in after a day’s decorating, ハニワくん’s
   await page.locator('[data-tent-hha]').click();
   await expect(letter).toHaveAttribute('data-tent-letter', String(want.total));
 });
+
+test('a stereo: a tap opens K.K.’s song list, おまかせ plays his aircheck (else his live file), a tap again stops it', async ({ page }) => {
+  const audio: string[] = [];
+  page.on('request', (r) => r.url().includes('/audio/kk/') && audio.push(new URL(r.url()).pathname.replace(/^.*\/audio\//, '')));
+  await page.addInitScript(() => {
+    if (!localStorage.getItem('tent-hifi')) localStorage.removeItem('island-demo.tent'), localStorage.setItem('tent-hifi', '1');
+    localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: true, volume: 0.8 }));
+    (window as { __cues?: string[] }).__cues = [];
+  });
+  await page.goto('tent' + Q);
+  await page.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  // the jukebox, on a free spot in the room's middle
+  expect(await use(page, (t) => t.fill(['f791']))).toBe(1);
+  await page.waitForFunction(() => (window as unknown as { __tent: { loading(): number } }).__tent.loading() === 0);
+  const p = (await use(page, (t) => t.pieces()))[0];
+  const [x, y] = await tile(page, p.x, p.z);
+  await page.mouse.click(x, y);
+  await expect(page.locator('[data-stereo-picker]')).toBeVisible();
+  await page.locator('[data-song="any"]').click();
+  await expect(page.locator('[data-stereo-picker]')).toHaveCount(0);
+  await expect.poll(() => audio.length).toBeGreaterThan(0);
+  expect(audio[0]).toMatch(/^kk\/(aircheck\/)?kk-[a-z-]+\.m4a$/);
+  await page.mouse.click(x, y);
+  await expect.poll(() => page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('toggle-off');
+  await expect(page.locator('[data-stereo-picker]')).toHaveCount(0);
+});

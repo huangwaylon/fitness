@@ -16,6 +16,10 @@
   import TentEdit from './TentEdit.svelte';
   import HomePicker from '../homes/HomePicker.svelte';
   import HhaLetter from './HhaLetter.svelte';
+  import StereoPicker from './StereoPicker.svelte';
+  import { isStereo, stereoTap } from './stereo.ts';
+  import { playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
+  import type { KKTrack } from '#lib/sound/kk.ts';
   import Says from '../island/Says.svelte';
   import SayPicker from '../island/SayPicker.svelte';
   import SayButton from '../island/SayButton.svelte';
@@ -435,6 +439,18 @@
       const at = spots().find((q) => q.id === h.id);
       if (at) eng.face(me, centreOf(at));
       eng.bump(h.id);
+      // a music player (stereo.ts): playing, a tap stops it; else its song list (this phone's music only)
+      if (p && isStereo(p.item)) {
+        if (stereoTap(p.id, stereo, sound.kkFrom === 'aircheck') === 'stop') {
+          stopKK('aircheck');
+          stereo = null;
+          cue('toggle-off');
+        } else {
+          stereoPick = p.id;
+          cue('open');
+        }
+        return;
+      }
       if (p && meta?.lt && canEdit) {
         const on = (p.l ?? 1) !== 1;
         room.switchLight(p.id, on);
@@ -444,6 +460,29 @@
     }
     walkTo([h.x, h.z]);
   }
+
+  /** The music player playing (its piece's id) and the one whose song list is open; the last song it played. */
+  let stereo = $state<string | null>(null);
+  let stereoPick = $state<string | null>(null);
+  let stereoLast = $state<string | null>(null);
+  function playStereo(song: KKTrack) {
+    const id = stereoPick;
+    stereoPick = null;
+    if (!id || !playKK(song.id, 'aircheck')) return void cue('boop');
+    stereo = id;
+    stereoLast = song.id;
+    eng?.bump(id);
+  }
+  // its song over (or cut off: K.K. on the island, the music turned off): nothing plays there now
+  $effect(() => {
+    if (sound.kkFrom !== 'aircheck') untrack(() => (stereo = null));
+  });
+  // the room left (or its player put away): its song stops, the island's music comes back
+  $effect(() => () => untrack(() => stopKK('aircheck')));
+  $effect(() => {
+    const id = stereo;
+    if (id && !room.pieces.some((p) => p.id === id)) untrack(() => (stopKK('aircheck'), (stereo = null)));
+  });
 
   function leave() {
     if (leaving) return;
@@ -778,6 +817,7 @@
     <!-- my villager's eyes, the say button's mirror at the bottom left -->
     <div class="eye-dock"><EyeToggle /></div>
   {/if}
+  {#if stereoPick && !editing}<StereoPicker last={stereoLast} onpick={playStereo} onclose={() => (stereoPick = null)} />{/if}
   {#if letter}<HhaLetter rating={letter} onclose={() => (letter = null)} />{/if}
   {#if picking}<HomePicker bind:open={picking} who={home} />{/if}
   {#if failed}<p class="fail" role="alert">{t('tent.failed')}</p>{/if}

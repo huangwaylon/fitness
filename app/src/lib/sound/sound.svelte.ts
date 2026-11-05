@@ -14,7 +14,7 @@ import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettin
 import { AUDIO, hasMusic } from './manifest.ts';
 import { trackAt, type MusicTrack, type Weather } from './hourly.ts';
 import { eventMusicAt, type EventMusicId } from './events.ts';
-import { kkTracks } from './kk.ts';
+import { kkFile, kkTracks, type KKSource } from './kk.ts';
 import { pickMusic, placeTrack, type PlaceId } from './places.ts';
 import { HourClock } from './session.ts';
 import { ambientFor } from './ambient.ts';
@@ -27,7 +27,7 @@ import { asset } from '$app/paths';
  *  (places.ts), a K.K. song, or nothing. */
 export type Playing = 'opening' | 'hour' | EventMusicId | PlaceId | 'kk' | null;
 
-export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; kk: string | null }>({
+export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; kk: string | null; kkFrom: KKSource | null }>({
   settings: { ...DEFAULT_SOUND },
   weather: 'sunny',
   /** A downpour: the rain bed louder (ambient.ts). */
@@ -35,7 +35,9 @@ export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: 
   /** What the music is (for the settings' note and the Now Playing tile). */
   playing: null,
   /** The K.K. song playing (kk.ts id), else null. */
-  kk: null
+  kk: null,
+  /** Where it plays from: K.K. on the island, or a room's stereo (its aircheck). */
+  kkFrom: null
 });
 
 /** A track the engine should play: its key, whether it loops, and `cut` for a cut-in's quick swap. */
@@ -49,7 +51,7 @@ interface Want {
 
 /** A cut-in over the island's music, as in NH: the wasps' chase (loops until they're netted or sting), their sting
  *  (once) or a K.K. song (once). It ends by itself (a one-shot's end, CUT_IN_MAX_MS for the chase) or is cleared. */
-let cutIn: (Want & { kk?: string }) | null = null;
+let cutIn: (Want & { kk?: string; kkFrom?: KKSource }) | null = null;
 let cutInTimer: ReturnType<typeof setTimeout> | undefined;
 /** A chase the scene never ended (it went away mid-swarm) lets the island's music back after this long. */
 const CHASE_MAX_MS = 6000;
@@ -152,7 +154,7 @@ export function playingLabel(playing: Playing, hour: number, kk: string | null =
   if (playing === 'hour') return t('sound.nowPlaying', { hour });
   if (playing === 'kk') {
     const k = kkTracks.find((s) => s.id === kk);
-    return k ? t('sound.nowPlayingTitle', { title: i18n.locale === 'en' ? k.en : k.ja }) : null;
+    return k ? t(sound.kkFrom === 'aircheck' ? 'sound.nowPlayingAircheck' : 'sound.nowPlayingTitle', { title: i18n.locale === 'en' ? k.en : k.ja }) : null;
   }
   return playing ? t('sound.nowPlayingTitle', { title: t(`sound.title.${playing}`) }) : null;
 }
@@ -161,17 +163,19 @@ function endCutIn(): void {
   clearTimeout(cutInTimer);
   cutIn = null;
   sound.kk = null;
+  sound.kkFrom = null;
   engine?.pin([]);
 }
 
 /** Start a cut-in (when ミュージック can sound) and play it at once. False: it can't sound now. */
-function startCutIn(want: Want & { kk?: string }, maxMs?: number): boolean {
+function startCutIn(want: Want & { kk?: string; kkFrom?: KKSource }, maxMs?: number): boolean {
   const s = sound.settings;
   if (!musicOn(s) || s.volume <= 0 || !engine?.ctx || document.hidden) return false;
   clearTimeout(cutInTimer);
   const base = baseAt(now());
   cutIn = want;
   sound.kk = want.kk ?? null;
+  sound.kkFrom = want.kkFrom ?? null;
   // keep the interrupted track (coming back starts at once) and, during the chase, the sting that may follow
   engine.pin([...(base ? [base.track.file] : []), ...(want.playing === 'bee-chase' && AUDIO.events['bee-stung'] ? [AUDIO.events['bee-stung'].file] : [])]);
   if (maxMs) cutInTimer = setTimeout(() => cutIn === want && (endCutIn(), syncMusic()), maxMs);
@@ -322,16 +326,18 @@ export function waspMusic(phase: 'nest' | 'chase' | 'caught' | 'stung'): void {
 }
 
 /** K.K. plays song `id` (kk.ts kkTracks) over the island's music, which stops for it and comes back after (NH's
- *  show). Only with ミュージック on and audio unlocked (call it from a tap). `sound.kk` is the song while it plays.
- *  False: it can't sound now (no such song, music off, locked or muted). */
-export function playKK(id: string): boolean {
+ *  show): `source` `live` K.K. on his stool, `aircheck` a room's stereo (the song's aircheck, else its live file).
+ *  Only with ミュージック on and audio unlocked (call it from a tap). `sound.kk` is the song while it plays,
+ *  `sound.kkFrom` its source. False: it can't sound now (no such song, music off, locked or muted). */
+export function playKK(id: string, source: KKSource = 'live'): boolean {
   const k = kkTracks.find((s) => s.id === id);
-  return !!k && startCutIn({ key: `kk/${k.id}`, track: k, playing: 'kk', loop: false, cut: true, kk: k.id });
+  return !!k && startCutIn({ key: `kk/${source}/${k.id}`, track: kkFile(k, source), playing: 'kk', loop: false, cut: true, kk: k.id, kkFrom: source });
 }
 
-/** Stop K.K.'s song early (the show ends, he leaves): the island's music fades back in. */
-export function stopKK(): void {
-  if (!cutIn?.kk) return;
+/** Stop a K.K. song early (the show ends, a stereo's tapped off, the room is left): the island's music fades back
+ *  in. `source`: only a song from there (leaving the tent never stops K.K.'s own, nor he a stereo's). */
+export function stopKK(source?: KKSource): void {
+  if (!cutIn?.kk || (source && cutIn.kkFrom !== source)) return;
   endCutIn();
   syncMusic();
 }

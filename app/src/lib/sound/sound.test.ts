@@ -103,6 +103,7 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       ambient: { waves: 'ambient/waves.m4a', traffic: 'x' },
       events: { halloween: { file: 'music/h.m4a', start: 2, end: 80, gain: -1 }, easter: 'music/e.m4a' },
       kk: [{ id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a.m4a', start: 5 }, { id: 'kk-b', file: 'kk/b.m4a' }, { id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a2.m4a' }],
+      kkAircheck: { 'kk-a': { file: 'kk/aircheck/kk-a.m4a', start: 3, gain: -1 }, 'kk-b': 'kk/b.m4a' },
       opening: 4
     });
     expect(manifest).toEqual({
@@ -120,12 +121,14 @@ describe('audio manifest (static/audio/manifest.json)', () => {
       ambient: { waves: 'ambient/waves.m4a' },
       events: { halloween: { file: 'music/h.m4a', start: 2, end: 80, gain: -1 } },
       places: {},
-      kk: [{ id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a.m4a', start: 0 }]
+      kk: [{ id: 'kk-a', ja: 'あ', en: 'A', file: 'kk/a.m4a', start: 0 }],
+      // (an aircheck is a one-shot: from its start)
+      kkAircheck: { 'kk-a': { file: 'kk/aircheck/kk-a.m4a', start: 0, gain: -1 } }
     });
-    expect(problems).toEqual(['sfx.nope', 'sfx.pop', 'music.sunny.24', 'music.fog', 'ambient.traffic', 'opening', 'events.easter', 'kk.1', 'kk.2']);
+    expect(problems).toEqual(['sfx.nope', 'sfx.pop', 'music.sunny.24', 'music.fog', 'ambient.traffic', 'opening', 'events.easter', 'kk.1', 'kk.2', 'kkAircheck.kk-b']);
   });
   it('an empty or broken manifest is just silence', () => {
-    expect(parseManifest(null)).toEqual({ manifest: { sfx: {}, opening: null, music: {}, ambient: {}, events: {}, places: {}, kk: [] }, problems: [] });
+    expect(parseManifest(null)).toEqual({ manifest: { sfx: {}, opening: null, music: {}, ambient: {}, events: {}, places: {}, kk: [], kkAircheck: {} }, problems: [] });
   });
 });
 
