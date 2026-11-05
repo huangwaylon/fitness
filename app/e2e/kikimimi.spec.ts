@@ -172,7 +172,7 @@ async function together(ctx: BrowserContext, vs = false): Promise<[Page, Page]> 
   await expect(sheet(b).locator('.wait')).toContainText('はじめるのを まっています');
   await expect(sheet(b).locator('[data-kiki-start]')).toHaveCount(0);
   await a.bringToFront();
-  await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-state', 'answered');
+  await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-state', 'here'); // joined: neutral, not an answer's ✓
   if (vs) {
     await sheet(a).locator('[data-kiki-vs]').click();
     await expect(sheet(a).locator('[data-kiki-vs]')).toHaveAttribute('aria-checked', 'true');

@@ -1,7 +1,7 @@
 <script lang="ts">
   // ききみみ クイズ's sheet (docs/kikimimi.md "UI"), its own chunk with the bank, the deck, the session and the strings:
   // full height (Sheet's `pop`), one title bar (the game's name, or the question 3 / 8; ✕) over one scroller showing
-  // the game's phase: a notice (the host cancelled), the invite or my own lobby (idle), the lobby, the 3-2-1, a
+  // the game's phase: a notice (the host cancelled), the invite or my own lobby (idle), the lobby, よーい 3-2-1, a
   // question (Play), the results. Opened from せってい's あそぶ (a lobby of mine at once, unless someone's invite is
   // waiting) or the banner's さんか (that game joined). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks
   // 「やめる？」. The voice session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip.
@@ -153,7 +153,7 @@
     game?.open(lastLv());
   }
   const hostName = (w: 'A' | 'B' | 'G') => (week.view ? villagerNameOf(week.view, w) : '');
-  /** The 3-2-1. */
+  /** The countdown (WINDOWS.countdown, 4 s): 「よーい」 for its first second (4), then 3-2-1. */
   const count = $derived(v && v.phase === 'countdown' ? Math.max(1, Math.ceil((v.until - game!.now) / 1000)) : 0);
 </script>
 
@@ -195,7 +195,7 @@
         <div class="center count" data-kiki-count={count}>
           <Host pose="stand" size={110} />
           <p class="say">{t('kiki.ready')}</p>
-          {#key count}<span class="num" aria-live="assertive">{count}</span>{/key}
+          {#key count}<span class="num" class:set={count > 3} aria-live="assertive">{count > 3 ? t('kiki.set') : count}</span>{/key}
         </div>
       {:else if v.phase === 'results'}
         <Results {game} onagain={again} ondone={() => (open = false)} />
@@ -211,8 +211,9 @@
         <h3 id="kk-quit">{t('kiki.quit')}</h3>
         <p>{t('kiki.quitBody')}</p>
         <div class="row">
-          <button type="button" class="btn paper small" data-kiki-stay data-sfx="back" onclick={() => (asking = false)}>{t('kiki.quitNo')}</button>
-          <button type="button" class="btn small" data-kiki-quit-yes data-sfx="confirm" onclick={quit}>{t('kiki.quitYes')}</button>
+          <!-- つづける the primary (the safe choice), やめる the paper one -->
+          <button type="button" class="btn paper small" data-kiki-quit-yes data-sfx="back" onclick={quit}>{t('kiki.quitYes')}</button>
+          <button type="button" class="btn small" data-kiki-stay data-sfx="confirm" onclick={() => (asking = false)}>{t('kiki.quitNo')}</button>
         </div>
       </div>
     </div>
@@ -249,9 +250,11 @@
   .idle .btn { width: 100%; }
   .invite { width: 100%; display: grid; gap: 12px; padding: 16px; box-sizing: border-box; }
   .num {
-    font: 700 96px/1 var(--font-num, var(--font-ui)); color: var(--c-coral); text-shadow: 0 4px 0 var(--c-lip);
+    font: 700 96px/1 var(--font-num, var(--font-ui)); color: var(--coral-text); text-shadow: 0 4px 0 var(--lip);
     animation: count 900ms var(--ease-bounce) both;
   }
+  /* 「よーい」: a word, not a digit (the same line's height, so 3 doesn't jump) */
+  .num.set { font: 700 56px/96px var(--font-ui); }
   @keyframes count { from { transform: scale(1.6); opacity: 0; } 30% { opacity: 1; } to { transform: none; } }
 
   .veil {

@@ -12,7 +12,6 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
-  import Host from '../characters/Host.svelte';
   import { currentReport, recWords } from './progress.svelte.ts';
   import { feedbackFor } from '#lib/kikimimi/report.ts';
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
@@ -68,20 +67,7 @@
     <p class="tally" data-kiki-tally={tally}>{t(coop ? 'kiki.tallyMine' : 'kiki.tally', { n: items.length, k: tally })}</p>
   </div>
 
-  {#if recorded}
-    <section class="fb card" data-kiki-feedback={fb?.kind ?? ''}>
-      {#if fbLine}
-        <div class="fb-line"><span class="fb-host" aria-hidden="true"><Host head size={44} animate={false} eager /></span><p>{fbLine}</p></div>
-      {/if}
-      <div class="trips" data-kiki-trips={trips.length}>
-        <h3 class="sec-label in">{t('kiki.trips')}</h3>
-        {#if trips.length}
-          <ul>{#each trips as x (x.key)}<li data-trip={x.key}>{tripLabel(x.key)}{#if x.n > 1} <b>×{x.n}</b>{/if}</li>{/each}</ul>
-        {:else}<p class="none">{t('kiki.tripsNone')}</p>{/if}
-      </div>
-    </section>
-  {/if}
-
+  <!-- たいせん: the ranking first (the game's outcome), then my feedback -->
   {#if ranking.length > 1 && !coop}
     <ol class="rank card">
       {#each ranking as r (r.who)}
@@ -92,6 +78,21 @@
         </li>
       {/each}
     </ol>
+  {/if}
+
+  {#if recorded}
+    <section class="fb card" data-kiki-feedback={fb?.kind ?? ''}>
+      {#if fbLine}
+        <!-- しずえ's already speaking in the bubble above: her line here without a second head -->
+        <p class="fb-line">{fbLine}</p>
+      {/if}
+      <div class="trips" data-kiki-trips={trips.length}>
+        <h3 class="sec-label in">{t('kiki.trips')}</h3>
+        {#if trips.length}
+          <ul>{#each trips as x (x.key)}<li data-trip={x.key}>{tripLabel(x.key)}{#if x.n > 1} <b>×{x.n}</b>{/if}</li>{/each}</ul>
+        {:else}<p class="none">{t('kiki.tripsNone')}</p>{/if}
+      </div>
+    </section>
   {/if}
 
   <section class="sec" aria-labelledby="kk-review">
@@ -143,9 +144,7 @@
   .tally { margin: 0; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text-soft); }
   .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .fb { display: grid; gap: 10px; padding: 12px 14px; }
-  .fb-line { display: flex; align-items: center; gap: 10px; }
-  .fb-line p { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
-  .fb-host { flex: none; line-height: 0; }
+  .fb-line { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .trips { display: grid; gap: 6px; }
   .trips .sec-label.in { margin: 0; }
   .trips ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
@@ -161,22 +160,25 @@
   .rank li.first { margin: 0 -8px; padding: 2px 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 40%, transparent); }
   .cup { margin-right: 2px; font-size: .85em; }
   .no { font: 700 var(--fs-body)/1 var(--font-num, var(--font-ui)); color: var(--text-soft); white-space: nowrap; }
-  .no.top { color: var(--c-coral); font-size: var(--fs-title); }
+  .no.top { color: var(--coral-text); font-size: var(--fs-title); }
   .rank :global(.pc) { grid-auto-flow: column; justify-items: start; align-items: center; max-width: none; gap: 10px; }
   .pts { justify-self: end; font: 700 var(--fs-talk)/1 var(--font-num, var(--font-ui)); }
   .sec { display: grid; gap: 8px; }
   .rev-head { display: flex; align-items: center; justify-content: space-between; }
+  .rev-head .chip { min-height: var(--hit); }
   .none { margin: 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--leaf-text); }
   .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .item { display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 10px; padding: 12px 10px 12px 14px; }
-  .sym { font: 700 22px/1.2 var(--font-ui); color: var(--c-coral); }
+  /* ▶︎ / 🐢 under the text (the text's column), so the Japanese has the card's width */
+  .item { display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 8px 10px; padding: 12px 14px; }
+  .item .hear { grid-column: 2; }
+  .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
   .sym.ok { color: var(--leaf-text); }
   .txt { min-width: 0; display: grid; gap: 4px; }
   .en { margin: 0; font: 700 17px/1.4 var(--font-ui); }
   .en mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--c-yuzu) 85%, transparent) 55%); color: inherit; }
   .ja, .ans, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .ja span, .ans span { display: block; }
-  .picked { color: var(--c-coral); }
+  .picked { color: var(--coral-text); }
   .hear { display: flex; gap: 6px; }
   .ib {
     appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center;
