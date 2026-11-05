@@ -319,7 +319,9 @@ The learning scientist (`/tmp/modes/science.md`), the EFL teacher with the curri
 
 **Two design changes the scientist flagged:**
 - the speed ladder must reward rungs climbed in order and stop at the first miss, not pay out top-heavy;
-- the 「いっぱつ」 +30 bonus discourages replaying, which helps learning. To decide with the user: keep, shrink, or replace it with a badge.
+- the 「いっぱつ」 +30 bonus discourages replaying, which helps learning. **The user's decision (2026-11-06): a badge only, no points.**
+
+**The user's order (2026-11-06):** once the framework (increment 8) lands, しずえの しゅうまつ たいかい and おやすみ ものがたり come first, then the rest of Tier 1.
 
 ## 8. The visual system
 
