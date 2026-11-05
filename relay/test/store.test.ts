@@ -78,6 +78,15 @@ describe('ingest', () => {
     expect(a('uploads').rows[0]).toMatchObject({ status: 'partial' });
   });
 
+  it('tells the room whether the guest may hear of it: an ingest that brought activity rows, never one of からだ rows alone', () => {
+    const told: [Notice, boolean | undefined][] = [];
+    store = new StoreCore({ sql: db.sql, tx: db.tx, keys: { KEY_A, KEY_B }, now: () => now, notify: (n, g) => void told.push([n, g]) });
+    a('ingest', { dates: 'Sep 29, 2026 at 7:55 AM', weight: '68.4' });
+    tick();
+    a('ingest', { dates: 'Sep 29, 2026 at 7:55 AM', weight: '68.4', steps: '9106' });
+    expect(told.map(([n, g]) => [n.what, g])).toEqual([['ingest', false], ['ingest', true]]);
+  });
+
   it('tells the room after rows were added, never for a run that changed nothing', () => {
     a('ingest', body);
     expect(notices).toEqual([{ what: 'ingest', who: 'A', at: '2026-11-02T03:00:00.000Z', rev: 'e1' }]);

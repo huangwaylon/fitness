@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 import { served } from './weather.ts';
@@ -31,6 +31,8 @@ export interface RoomIO<S extends Sock> {
   save(ring: Kept[]): void;
   /** Persist the record's last change (`notify`), for the welcomes (fire and forget). */
   saveRec?(rec: RecordMark): void;
+  /** The same, of the last change the guest hears of (no member's ingest: guestNotice). */
+  saveRecG?(rec: RecordMark): void;
   /** Persist the high-fives held for a partner who was away (fire and forget). */
   hold?(held: Held): void;
   /** Persist when each person's phone last left (fire and forget). */
@@ -60,8 +62,10 @@ export interface DayIndex {
  *  socket it came on (`sk`: a walk's numbers are compared on one socket only). Neither goes out again. */
 export type Kept = Relayed & { c?: number; sk?: string };
 
-/** A socket must say hello within this long (a phone says it on open, one round trip). */
-export const HELLO_MS = 3_000;
+/** A socket must say hello within this long: one round trip and the phone's onopen (at boot a 1.5 s long task; a 3–5 s
+ *  round trip on a poor line). 3 s locked such a phone out (2026-11-05: 3.2 s RTT, every hello closed 4003); MAX_PENDING
+ *  keeps the silent sockets few however long this is. */
+export const HELLO_MS = 12_000;
 /** The day's world kept for a phone that opens later (docs/backend.md#shared-world): today's (Tokyo) changes, the
  *  last RING_MAX, and each person's last walk (never trimmed, carried into each new day). */
 export const RING_MAX = 400;
@@ -101,7 +105,7 @@ export class RoomCore<S extends Sock> {
   /** Tokyo's real sky by the hour (weather.ts), sent after each welcome and to everyone when it changes. */
   private wx: Wx | null;
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null) {
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null) {
     this.wx = wx;
     this.held = { ...held };
     this.gone = { ...gone };
@@ -189,7 +193,13 @@ export class RoomCore<S extends Sock> {
       const v = otherVersion(raw);
       if (v !== null) this.shut(s, CLOSE.version, versionReason(v));
       else if (!meta.who) this.shut(s, CLOSE.unauthorized, 'hello first');
-      return; // a malformed intent from a known person: dropped
+      else {
+        // a malformed intent from a known person: dropped, but a numbered one is refused by its ack, so the phone
+        // lets it go (unacked, it was resent on every reconnect until the day turned)
+        const c = seqOf(raw);
+        if (c !== null) this.ack(s, c, this.stamp(), false);
+      }
+      return;
     }
     if (msg.kind === 'hello') return this.hello(s, meta, msg.key, msg.since, msg.v, msg.build);
     if (!meta.who) return this.shut(s, CLOSE.unauthorized, 'hello first');
@@ -278,7 +288,8 @@ export class RoomCore<S extends Sock> {
     for (const w of ['A', 'B', 'G'] as const) if (this.gone[w] !== undefined && !here.includes(w)) gone[w] = this.gone[w];
     if (this.gone[who] !== undefined) this.setGone(who, undefined);
     // `hb`: this room answers the heartbeat (HB_PING) without waking (2026-11-05)
-    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(this.rec ? { rec: this.rec } : {}), here, ...(Object.keys(gone).length ? { gone } : {}), hb: true });
+    const rec = who === 'G' ? this.recG : this.rec;
+    this.send(s, { v: LIVE_V, kind: 'welcome', me: who, peer, t, ...(rec ? { rec } : {}), here, ...(Object.keys(gone).length ? { gone } : {}), hb: true });
     // the real sky, when the room has one that still serves
     const wx = served(this.wx, t);
     if (wx) this.send(s, { v: LIVE_V, kind: 'wx', ...wx, t });
@@ -321,16 +332,32 @@ export class RoomCore<S extends Sock> {
     this.io.hold?.(this.held);
   }
 
-  /** The record changed (its RPC after a write, or a signed /notify): every connected phone hears it, the writer's own too. Returns how many. */
-  notify(n: Notice): number {
+  /** The record changed (its RPC after a write, or a signed /notify): every connected phone hears it, the writer's own
+   *  too, but the guest only what it may see of (guestNotice; `guest`: the record's word on it). Returns how many. */
+  notify(n: Notice, guest?: boolean): number {
+    const forG = this.guestNotice(n, guest);
     if (!this.rec || n.at > this.rec.at || n.rev !== this.rec.rev) {
       this.rec = { at: n.at, rev: n.rev };
       this.io.saveRec?.(this.rec);
     }
-    const to = this.authed();
+    if (forG && (!this.recG || n.at > this.recG.at || n.rev !== this.recG.rev)) {
+      this.recG = { at: n.at, rev: n.rev };
+      this.io.saveRecG?.(this.recG);
+    }
+    const to = this.authed().filter((s) => forG || this.io.meta(s)?.who !== 'G');
     const m: ServerMsg = { v: LIVE_V, kind: 'changed', what: n.what, who: n.who, at: n.at, rev: n.rev, t: this.io.now() };
     for (const s of to) this.send(s, m);
     return to.length;
+  }
+
+  /** Whether the guest hears of this change: an event's, a member's ingest that brought activity rows (the record says
+   *  so: `guest`; the guest's snapshot holds them, so it reaches the mark), or a new epoch (its cache refetched). Never
+   *  an ingest of からだ rows alone: when one ran is the member's (docs/backend.md#the-guest), and the guest's
+   *  snapshot, which holds none of them, could never reach its mark. (A signed /notify's ingest, and an admin load at
+   *  the same epoch, told as an ingest: the guest has them at its next poll.) */
+  private guestNotice(n: Notice, guest?: boolean): boolean {
+    const was = this.recG ?? this.rec;
+    return n.what !== 'ingest' || guest === true || (was !== null && n.rev !== was.rev);
   }
 
   /** A socket closed (or errored). Its person's partner hears they left, unless another socket of theirs is open. */
@@ -462,6 +489,20 @@ export class RoomCore<S extends Sock> {
     if (this.index(e)) this.io.saveDay?.(this.dayIndex());
     this.io.save(this.ring);
   }
+}
+
+/** The sequence number `c` of a message the protocol couldn't read (a whole number, as live-protocol's isSeq), or null. */
+function seqOf(raw: unknown): number | null {
+  if (typeof raw !== 'string' || raw.length > MAX_BYTES) return null;
+  let o: unknown;
+  try {
+    o = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  const c = o !== null && typeof o === 'object' ? (o as { c?: unknown; kind?: unknown }).c : undefined;
+  const kind = (o as { kind?: unknown } | null)?.kind;
+  return kind !== 'ping' && kind !== 'hello' && Number.isInteger(c) && (c as number) > 0 && (c as number) < 1e15 ? (c as number) : null;
 }
 
 /** A kept change's intent alone (as its sender sent it). */

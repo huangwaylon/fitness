@@ -289,7 +289,8 @@ describe('the room with three villagers (v3)', () => {
 
   it('a record change reaches the guest too, and the guest’s own write every phone', () => {
     const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
-    expect(room.notify({ what: 'ingest', who: 'A', at: '2026-11-02T03:00:00.000Z', rev: 'e1' })).toBe(3);
+    // (an ingest that brought activity rows: the record says the guest may hear of it)
+    expect(room.notify({ what: 'ingest', who: 'A', at: '2026-11-02T03:00:00.000Z', rev: 'e1' }, true)).toBe(3);
     expect(room.notify({ what: 'event', who: 'G', at: '2026-11-02T03:00:01.000Z', rev: 'e1' })).toBe(3);
     for (const s of [a, b, g]) expect(of(s, 'changed')).toHaveLength(2);
   });

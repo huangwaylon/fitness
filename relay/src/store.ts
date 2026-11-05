@@ -17,7 +17,7 @@ import { parseShortcut } from './parse.ts';
 import { auditNotes, auditRow } from './audit.ts';
 import { eventSlot, validEventData } from '../../app/src/lib/contract/record.ts';
 import {
-  CURSOR_RE, eventSubject, EVENT_TYPES, isId, isMetricKey, isPersonId, isRec, isWho, SNAPSHOT_PAGE_MAX,
+  CURSOR_RE, eventSubject, EVENT_TYPES, isActivityMetric, isId, isMetricKey, isPersonId, isRec, isWho, SNAPSHOT_PAGE_MAX,
   type ApiError, type EventRow, type Fail, type MetricRow, type SnapshotRows
 } from '../../app/src/lib/contract/api.ts';
 import { compactKeep, weekLockMs } from '../../app/src/lib/contract/compact.ts';
@@ -51,8 +51,9 @@ export interface StoreIO {
   tx<R>(fn: () => R): R;
   keys: Keys;
   now(): number;
-  /** Tell the open phones the record changed (the room's `changed`); best effort, after the commit. */
-  notify(n: Notice): void;
+  /** Tell the open phones the record changed (the room's `changed`); best effort, after the commit. `guest`: whether
+   *  the guest may hear of it (an ingest that brought activity rows; room.ts guestNotice). */
+  notify(n: Notice, guest?: boolean): void;
   /** A stored row that isn't JSON (or not an object) was skipped, at `where` (a fold's name): the log's warning
    *  (`store.corrupt`), once a request per place. */
   corrupt?(where: string): void;
@@ -402,7 +403,7 @@ export class StoreCore {
       // a past Tokyo day never drops to 0 from a value above it: a run that read nothing (Health locked, Fill
       // Missing's 0 for every day) would rewrite the history; today may still go down to 0
       const today = new Date(this.io.now() + 9 * 3600_000).toISOString().slice(0, 10);
-      let n = 0, zeros = 0;
+      let n = 0, zeros = 0, act = false;
       for (const m of parsed.metrics) {
         const k = `${m.date}|${m.metric}`;
         if (latest.get(k) === m.value) continue;
@@ -413,12 +414,14 @@ export class StoreCore {
         latest.set(k, m.value);
         this.io.sql.exec('INSERT INTO metrics (at, person, date, metric, value) VALUES (?, ?, ?, ?, ?)', at, me, m.date, m.metric, m.value);
         n++;
+        act ||= isActivityMetric(m.metric);
       }
       const notes = [zeros ? `${zeros} past zeros ignored` : '', auditNotes(parsed)].filter(Boolean).join('; ');
       this.audit(auditRow(at, me, parsed.skipped ? 'partial' : 'ok', bytes, notes, body));
-      return n ? { n, at } : { n, at: null };
+      return n ? { n, at, act } : { n, at: null, act };
     });
-    if (added.at) this.io.notify({ what: 'ingest', who: me, at: added.at, rev: this.rev() });
+    // (the guest hears of it only when it brought rows the guest sees: room.ts guestNotice)
+    if (added.at) this.io.notify({ what: 'ingest', who: me, at: added.at, rev: this.rev() }, added.act);
     return {
       ok: true, metrics: added.n,
       ...(parsed.skipped ? { skipped: parsed.skipped } : {}),

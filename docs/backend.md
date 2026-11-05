@@ -358,7 +358,7 @@ catches an offline phone up.
   last change; `here`: everyone else who is here; `gone`: when the room saw each person's last socket close,
   for those not here and my own last one, kept in its storage: one gone quiet inside a room leaves it then,
   `store/where.svelte.ts`), or
-  closes 4001. No hello within 3 s (a DO alarm sweeps): 4003. A second socket of the same person replaces the first
+  closes 4001. No hello within 12 s (a DO alarm sweeps; a slow phone, a 3–5 s round trip and a long task at boot, still gets in; MAX_PENDING caps the silent ones): 4003. A second socket of the same person replaces the first
   (4002, no presence flicker), so there are at most three welcomed sockets. At most 4 sockets wait for their hello: a
   new one lets the oldest of them go (4003, the log's `room.full`), so silent sockets never keep a phone out; a socket
   is never refused.
@@ -512,7 +512,11 @@ claims, the ずかん, the tent's decor, pairing.
   join and leave is told to everyone else who can hear of it; `peer` stays the partner for a member (the guest never
   counts) and either member for the guest. A high-five names whom it is for (`to`; a member's to the partner may leave
   it out), and the room holds the last one per (sender, recipient) pair for a recipient who is away (`Held`, `<from>><to>`).
-- **Push:** the members' `changed` notices reach it like anyone's, and its own reach every phone.
+- **Push:** its own `changed` notices reach every phone; of the members' it hears an event's, an ingest's only when
+  that ingest brought activity rows (the record says so: `notify(n, guest)`), and a new epoch's. A members' ingest of
+  からだ rows alone never reaches it: when one ran is theirs, and its snapshot (no からだ row) could never reach that
+  mark (2026-11-05 client review). Its welcome's `rec` is the last change it heard of (the room's `rec-g`), not the
+  record's.
 - **The phones** ([design](design.md#the-guest)): a member's draws the guest's villager while it's `here`, as a third
   villager actor (`ui-state/cast.ts`: `mine`, `partner`, `third`; on the guest's phone `third` is B); the guest's
   phone guards what it sends by the same rules (`week.send` by `guestMayWrite`, the socket by `guestMaySend`), so
@@ -710,7 +714,8 @@ up a phone that missed it.
   a bad notice (400), and answers 204 with `X-Island-Heard: <sockets>` (`relay/src/notify.ts`). The secret never
   travels and no key is in a URL or a log.
 - **Relay → phones:** the room sends `changed {what, who, at, rev, t}` to every authenticated socket, the writer's
-  too (a Shortcut upload reaches its own phone). Nothing is stored.
+  too (a Shortcut upload reaches its own phone), the guest's only of what it may see ([The guest](#the-guest)). Only
+  the last mark is kept (the welcomes' `rec`).
 - **The nudge:** after the queue gets an ack, the phone sends `saved {}` over its socket; the room relays it to the
   partner like any intent (only when they are there). It stops (sent and heeded) once a `changed` has reached the
   phone this session (with the record, at once).
