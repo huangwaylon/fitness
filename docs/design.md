@@ -2337,7 +2337,7 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
   kept on the phone), 「おなじへや」 (only the host's phone speaks), who's here and who joined, 🔊 「きこえる？」 (a clip from no
   game; 音量 0 says so), the host's はじめる (the others wait for it). Opening it with someone's lobby waiting shows that
   invite and 「じぶんで はじめる」 instead.
-- **A question** (`Play.svelte`): the 3-2-1 once, then each question's speaker pops in with a little pop, bobbing while
+- **A question** (`Play.svelte`): 「よーい」 then 3-2-1 once, then each question's speaker pops in with a little pop, bobbing while
   their clip plays, their bubble an empty 「♪…」 with a bar the clip's length; under it the item's `ask` (a word item: its
   line with the blank). The choices (pic: 2 × 2 NH art, VoiceOver labels from PIC_JA; else text ≥ 17 px) stay dimmed
   until the first play ends; one tap is final. 🔁 もういちど and 🐢 ゆっくり (levels 1-2) after the first play, on a phone
