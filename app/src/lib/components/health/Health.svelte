@@ -11,27 +11,25 @@
   // on each opening; switching keeps the period, range and person) and one period for every chart (1週 / 1か月 / 3か月 /
   // 1年, a dropdown) beside it; then a sticky row with ‹ the visible range › and きょう; then a card per metric in the group's CARDS order: かつどう 🍎 Steps,
   // 🍐 Move, 🍑 Exercise, 🍒 Stand; からだ 体重, 体脂肪率, BMI, 除脂肪体重. A horizontal drag on any chart turns the page; a tap shows a bar's numbers.
-  // Each goal sits at its card's upper right (GoalEdit: the steps, Move, weight and body fat goals, tapped to set in
-  // place); either person sets either person's, the guest's phone none (shown read-only; it has no からだ cards).
+  // Each card's goal sits at its upper right (ChartCard, GoalEdit: every chart has one, set in place, its direction
+  // shown); either person sets either person's, the guest's phone none (shown read-only; it has no からだ cards).
   // The charts are read-only, computed on read from the store's model (model/health.ts); loaded with the popup, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
   import type { Snippet } from 'svelte';
-  import type { LocalDate, PersonId } from '#lib/types.ts';
-  import { isBodyMetric, type BodyMetric } from '#lib/contract/api.ts';
-  import { setGoalBodyFat, setGoalWeight, setMoveGoal, setStepsGoal } from '#lib/store/actions.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
-  import { CARDS, canShift, GROUPS, healthSeries, PERIODS, rangeFor, shiftAnchor, type Group, type Metric } from '#lib/model/health.ts';
+  import type { PersonId } from '#lib/types.ts';
+  import { CARDS, GROUPS, healthSeries, metricSeries, PERIODS, type Group, type Metric } from '#lib/model/health.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
   import Segmented from '../ui/Segmented.svelte';
   import RangeNav from './RangeNav.svelte';
+  import RangeLabel from './RangeLabel.svelte';
   import Pick from './Pick.svelte';
   import { GROUP_ART } from '#lib/art.ts';
-  import MetricCard from './MetricCard.svelte';
-  import WeightCard from './WeightCard.svelte';
+  import BarCard from './BarCard.svelte';
   import BodyCard from './BodyCard.svelte';
-  import { rangeLabel } from './fmt.ts';
+  import { goalName, saveGoal } from './goals.ts';
+  import { RangePager } from './pager.svelte.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
 
   let { lead = $bindable(null) }: { lead?: Snippet | null } = $props();
@@ -52,71 +50,38 @@
   let picked = $state<PersonId | null>(last.who);
   /** Whose data every card shows. */
   const who = $derived<PersonId>(picked ?? me);
-  /** The last day shown (null: today, following the clock). */
-  let anchor = $state<LocalDate | null>(null);
-  let slide = $state<-1 | 0 | 1>(0);
-  /** The one open callout: a metric's bar, or a weight or body metric's dot. */
-  let sel = $state<{ k: Card; i: number } | null>(null);
 
   const today = $derived(hs?.to ?? '');
-  const range = $derived(hs ? rangeFor(period, anchor ?? today) : null);
-  const can = $derived(hs && range ? canShift(range, hs.from, today) : { back: false, on: false });
-  const unitKey = $derived(range?.unit ?? 'day');
+  const pager = new RangePager(() => ({ period, today, first: hs?.from ?? today }));
+  const range = $derived(pager.range);
 
   function setPeriod(p: Period) {
     if (p === period || !PERIODS.includes(p)) return;
     cue('tick');
     period = last.period = p;
-    slide = 0;
-    sel = null;
+    pager.reset();
   }
   /** The other cards: the same period, range and person. */
   function setGroup(g: Group) {
     if (g === group || guest) return;
     pickedGroup = last.group = g;
-    sel = null;
+    pager.sel = null;
   }
   /** Another person: the same period and range, their numbers. */
   function setWho(p: PersonId) {
     if (p === who || (p !== 'A' && p !== 'B')) return;
     cue('tick');
     picked = last.who = p;
-    sel = null;
-  }
-  /** ‹ / ›, a swipe: one whole period older (−1) or newer (+1). */
-  function go(dir: -1 | 1, swiped = false) {
-    if (!hs || !(dir < 0 ? can.back : can.on)) return;
-    const next = shiftAnchor(period, anchor ?? today, dir, today);
-    anchor = next >= today ? null : next;
-    slide = dir < 0 ? -1 : 1;
-    sel = null;
-    if (swiped) cue('tick');
-  }
-  function jumpToday() {
-    if (anchor === null) return;
-    anchor = null;
-    slide = 1;
-    sel = null;
-  }
-  const swipe = (dir: -1 | 1) => go(dir, true);
-  type Card = Metric | 'weight' | BodyMetric;
-  function pick(k: Card, i: number | null) {
-    sel = i === null ? null : { k, i };
-    if (i !== null) cue('tick');
+    pager.sel = null;
   }
 
   $effect(() => {
     lead = hs ? whoPill : null;
   });
-  /** Sets the shown person's goal (either person sets either person's; never the guest), and says so. */
-  function saveGoal(k: 'move' | 'steps' | 'weight' | 'fat', v: number | null) {
-    if (guest) return;
-    const p = who;
-    const ok = k === 'move' ? v !== null && setMoveGoal(p, v).ok : k === 'steps' ? v !== null && setStepsGoal(p, v).ok
-      : k === 'weight' ? setGoalWeight(p, v).ok : setGoalBodyFat(p, v).ok;
-    const msg = k === 'move' ? 'goal.moveSaved' : k === 'steps' ? 'goal.stepsSaved' : v === null ? 'weight.goalCleared' : 'weight.goalSaved';
-    if (ok) toasts.show(t(msg), 2500, { reaction: 'pleased' });
-  }
+  /** The shown person's goal setter: either member sets either member's; the guest's phone none (read-only chips). */
+  const saver = (k: Parameters<typeof saveGoal>[0]) => (guest ? null : (v: number | null) => saveGoal(k, who, v));
+  /** An activity goal in force today (the editor starts from it). */
+  const nowGoal = (k: Metric) => hs?.people[who].goals[k].at(-1) ?? null;
 </script>
 
 {#snippet whoPill()}
@@ -135,29 +100,19 @@
       <Pick kind="period" value={period} options={PERIODS.map((id) => ({ id, label: t(`health.period.${id}`) }))} label={t('health.period')} onpick={setPeriod} />
     </div>
 
-    <RangeNav earlier={t('health.earlier')} later={t('health.later')} today={t('health.today')} canBack={can.back} canOn={can.on} atToday={anchor === null}
-      onback={() => go(-1)} onon={() => go(1)} ontoday={jumpToday}>
-      <span class="rl" aria-live="polite">
-        <!-- the range wraps after its dash when a long one (2024/10–2026/10) doesn't fit beside the buttons -->
-        <b class="money">{#each rangeLabel(range, today).split('–') as part, i (i)}{#if i}–<wbr />{/if}<span>{part}</span>{/each}</b>
-        <small>{t(`health.unit.${unitKey}`)}</small>
-      </span>
+    <RangeNav earlier={t('health.earlier')} later={t('health.later')} today={t('health.today')} canBack={pager.can.back} canOn={pager.can.on} atToday={pager.anchor === null}
+      onback={() => pager.go(-1)} onon={() => pager.go(1)} ontoday={() => pager.jumpToday()}>
+      <RangeLabel {range} {today} />
     </RangeNav>
 
     {#each CARDS[group] as k (k)}
-      {#if guest && k !== 'steps' && k !== 'move' && k !== 'exercise' && k !== 'stand'}
-        <!-- (never on the guest's phone) -->
-      {:else if k === 'weight'}
-        <WeightCard {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
-          selected={sel?.k === 'weight' ? sel.i : null} onselect={(i) => pick('weight', i)} onsavegoal={(v) => saveGoal('weight', v)} />
-      {:else if isBodyMetric(k)}
-        <BodyCard metric={k} {hs} {range} p={who} name={names[who]} {slide} onswipe={swipe}
-          selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)} onsavegoal={(v) => saveGoal('fat', v)} />
-      {:else}
-        {@const now = view && !guest && (k === 'steps' || k === 'move') ? view.people[who][k === 'steps' ? 'stepsGoal' : 'moveGoal'] : null}
-        <MetricCard metric={k} {hs} {range} p={who} {slide} onswipe={swipe}
-          selected={sel?.k === k ? sel.i : null} onselect={(i) => pick(k, i)}
-          goal={now === null ? null : { value: now, onsave: (v) => saveGoal(k === 'steps' ? 'steps' : 'move', v) }} />
+      {#if k === 'steps' || k === 'move' || k === 'exercise' || k === 'stand'}
+        <BarCard id={k} ds={metricSeries(hs, who, k)} {range} {today} p={who} name={names[who]} title={goalName(k)} empty={!hs.any} now={nowGoal(k)} onsave={saver(k)}
+          selected={pager.selected(k)} onselect={(i) => pager.pick(k, i)} onswipe={pager.swipe} slide={pager.slide} />
+      {:else if !guest}
+        <!-- からだ: never on the guest's phone -->
+        <BodyCard id={k} {hs} {range} p={who} name={names[who]} slide={pager.slide} onswipe={pager.swipe}
+          selected={pager.selected(k)} onselect={(i) => pager.pick(k, i)} onsave={saver(k)} />
       {/if}
     {/each}
     {#if group === 'activity' && hs.any}<p class="note">{t('health.note')}</p>{/if}
@@ -169,9 +124,5 @@
   /* かつどう · からだ, the period pill beside them at its own width (the guest's: the pill alone, at the right) */
   .sel { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
   .sel > :global(:only-child) { grid-column: 2; }
-  .rl { flex: 1; min-width: 0; display: grid; justify-items: center; gap: 3px; text-align: center; }
-  .rl b { font-size: var(--fs-talk); line-height: 1.1; text-wrap: balance; }
-  .rl b span { white-space: nowrap; }
-  .rl small { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); white-space: nowrap; }
   .note { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
 </style>

@@ -18,7 +18,7 @@ import { rowAt } from './snapshot.ts';
 import { weighIns } from './weight.ts';
 import { kcalDefault, profileOf, ageAt, proteinRda, saltDefault } from './profile.ts';
 import { addDays, daysBetween } from '#lib/time/dates.ts';
-import { GOALS, type LatestGoalKey } from '#lib/contract/goals.ts';
+import { GOALS, goalMet, type LatestGoalKey } from '#lib/contract/goals.ts';
 import type { DaySeries } from './health.ts';
 
 /** A day's entries and what they add up to: kcal (whole), protein, fat, carbs and salt (g, one decimal; an unknown
@@ -245,7 +245,7 @@ const seriesMemo = new WeakMap<object, Map<string, Omit<DaySeries, 'goal'>>>();
  * its bucket and stat rules apply: seriesBuckets, seriesStats): from their first day with a meal (logged, or a
  * repeat's) to `today`, each day's total as foodDay rounds it (repeats included); a day with nothing in it is null
  * (記録なし, never a 0), while a 0 kcal entry is a record. The goal: theirs as of `t` (foodGoal; one for every day;
- * none: null). The days memoised per State, person, day and what.
+ * none: null), met the goal's way (contract/goals.ts goalMet: protein at least, salt at most, kcal near it). The days memoised per State, person, day and what.
  */
 export function foodSeries(s: State, who: Who, today: LocalDate, n: FoodGoalOf = 'k', t = Infinity): DaySeries {
   let byKey = seriesMemo.get(s);
@@ -264,7 +264,7 @@ export function foodSeries(s: State, who: Who, today: LocalDate, n: FoodGoalOf =
     byKey.set(key, (hit = { from, to: today, first: from, vals }));
   }
   const goal = foodGoal(s, who, n, t);
-  return { ...hit, goal: () => goal };
+  return { ...hit, goal: () => goal, met: goal === null ? undefined : (v) => goalMet(n, v, goal) };
 }
 
 /** What a recipe, or one serving of it, adds up to: `g` grams, kcal (whole), protein, fat, carbs and salt (g, one

@@ -4,15 +4,12 @@
 // as a food (マイレシピ: its portions), and a custom food as a food and its editor's fields (マイ食品).
 import type { Who } from '#lib/types.ts';
 import {
-  CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GOALS, FOOD_GRAMS, isFoodGoal, isKcalGoal, recipePortion, recipeSnap, type FoodCustom,
-  type FoodEntry, type FoodGoalOf, type FoodSnap, type RepeatItem
+  CUSTOM, customDensityOk, customPortions, customSnap, FOOD_GRAMS, recipePortion, recipeSnap, type FoodCustom,
+  type FoodEntry, type FoodSnap, type RepeatItem
 } from '#lib/contract/food.ts';
-import type { GoalSpec } from '../health/goals.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
-import { setFoodGoal } from '#lib/store/actions.ts';
-import { toasts } from '#lib/ui-state/toast.svelte.ts';
 
 let dbP: Promise<FoodDb> | null = null;
 let ready: FoodDb | null = null;
@@ -149,63 +146,6 @@ export function uniqueItems(items: readonly Item[]): Item[] {
     seen.add(k);
     return true;
   });
-}
-
-/** The lowest kcal goal ごはん offers (the coach: 1,200 is the usual unsupervised floor; the record still takes
- *  FOOD_GOALS.k's 1,000). */
-export const KCAL_GOAL_MIN = 1200;
-
-/** What was typed as a daily kcal goal → kcal, or null: `1800`, `2,000`, full-width `１８００`, a trailing `kcal`;
- *  KCAL_GOAL_MIN up to FOOD_GOALS.k's max, in whole steps only. */
-export function parseKcalGoal(text: string): number | null {
-  const s = halfWidth(text.trim()).replace(/\s*kcal$/i, '').replace(/,/g, '');
-  if (!/^\d{1,4}$/.test(s)) return null;
-  const n = Number(s);
-  return isKcalGoal(n) && n >= KCAL_GOAL_MIN ? n : null;
-}
-
-/** What was typed as a daily nutrient goal (`n`) → g, or null: `120`, `7.5`, full-width, a decimal comma, a trailing
- *  `g`; in its range and step (FOOD_GOALS). */
-export function parseGramGoal(n: Exclude<FoodGoalOf, 'k'>, text: string): number | null {
-  const s = halfWidth(text.trim()).replace(/\s*(g|グラム)$/i, '').replace(',', '.');
-  if (!/^\d{1,3}(\.\d+)?$/.test(s)) return null;
-  const v = Math.round(Number(s) * 10) / 10;
-  return isFoodGoal(n, v) ? v : null;
-}
-
-/** A goal as its chip shows it: `2,200 kcal`, `110 g`, `7.5 g`. */
-export const foodGoalText = (n: FoodGoalOf, v: number): string =>
-  n === 'k' ? t('kiroku.kcal', { n: formatNum(v) }) : t('food.g', { n: FOOD_GOALS[n].step < 1 ? v.toFixed(1) : formatNum(v) });
-
-/** Sets `who`'s goal of `n` (GoalEdit's onsave; null clears it) and says so, low as ごはん's confirmations are. */
-export function saveFoodGoal(who: Who, n: FoodGoalOf, v: number | null): void {
-  if (!setFoodGoal(who, n, v).ok) return;
-  const what = t(n === 'k' ? 'food.kcal' : `food.${n}`);
-  toasts.show(v === null ? t('food.goalCleared') : t('food.goalSaved', { what }), 2200, { low: true, reaction: 'pleased' });
-}
-
-/** ごはん's goals for GoalEdit (けんこう's control): kcal from KCAL_GOAL_MIN, the nutrients over their whole range;
- *  each may be cleared (protein, and with a profile kcal and salt, then fall back to their defaults: model/food.ts
- *  foodGoal). −/＋ start from about a
- *  day's usual when none is set. */
-export const FOOD_GOAL_SPECS: Record<FoodGoalOf, GoalSpec> = {
-  k: {
-    head: () => t('food.goalHead.k'), unit: () => 'kcal', decimals: 0, min: KCAL_GOAL_MIN, max: FOOD_GOALS.k.max, step: FOOD_GOALS.k.step,
-    parse: parseKcalGoal, clearable: true, start: 2000, note: () => t('food.goalNote.k'),
-    hint: () => t('food.goalRange', { min: formatNum(KCAL_GOAL_MIN), max: formatNum(FOOD_GOALS.k.max), step: FOOD_GOALS.k.step })
-  },
-  p: gramSpec('p', 100, () => t('food.goalNote.p')),
-  fa: gramSpec('fa', 60),
-  c: gramSpec('c', 250),
-  s: gramSpec('s', 7.5, () => t('food.goalNote.s'))
-};
-function gramSpec(n: Exclude<FoodGoalOf, 'k'>, start: number, note?: () => string): GoalSpec {
-  const g = FOOD_GOALS[n];
-  return {
-    head: () => t(`food.goalHead.${n}`), unit: () => 'g', decimals: g.step < 1 ? 1 : 0, min: g.min, max: g.max, step: g.step,
-    parse: (text) => parseGramGoal(n, text), clearable: true, start, note,
-    hint: () => t('food.goalRangeG', { min: g.min, max: g.max, step: g.step })
-  };
 }
 
 /** The day's kcal against the goal, in words and tone: today 「あと N kcal」 / 「N kcal オーバー」, a past day

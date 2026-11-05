@@ -85,7 +85,7 @@ test('another person’s day is read-only; the guest sees the members’ meals a
   await expect(sheet(page).locator('button[data-goal=kcal-goal]')).toHaveCount(1);
   await sheet(page).locator('select[data-pick=who]').selectOption('B');
   await expect(sheet(page).locator('[data-food-summary]')).toHaveClass(/pB/);
-  await expect(sheet(page).locator('[data-goal=kcal-goal]')).toHaveText('目標 1,700 kcal');
+  await expect(sheet(page).locator('[data-goal=kcal-goal]')).toHaveText('目標 1,700 kcal 前後');
   expect(await sheet(page).locator('div.row[data-entry]').count()).toBeGreaterThan(0); // うめ's meals, shown
   await expect(sheet(page).locator('button[data-entry], [data-add], button[data-goal], button[data-repeat], [data-repeat-new]')).toHaveCount(0); // never changed here
   // the day before: still うめ's, still read-only; きょう comes back
@@ -289,14 +289,14 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await openFood(page);
   // きろく: the kcal goal's chip; a tap opens its tray in the summary, no level
   const kcal = sheet(page).locator('button[data-goal=kcal-goal]');
-  await expect(kcal).toHaveText('目標 2,200 kcal');
+  await expect(kcal).toHaveText('目標 2,200 kcal 前後');
   await kcal.click();
   const tray = sheet(page).locator('[data-food-summary] form.tray');
   await expect(tray).toContainText('カロリーの目標（1日）');
   await expect(tray.getByRole('textbox')).toHaveValue('2,200');
   await tray.getByRole('button', { name: 'ふやす' }).click();
   await tray.getByRole('button', { name: 'けってい' }).click();
-  await expect(kcal).toHaveText('目標 2,250 kcal');
+  await expect(kcal).toHaveText('目標 2,250 kcal 前後');
   await expect(sheet(page).getByRole('status')).toContainText('カロリーの目標を かえました');
   await sheet(page).getByRole('status').getByRole('button', { name: 'とじる' }).click();
   // the nutrient tiles: protein's default goal (1.6 g × ウェイ's weigh-in), salt's from the demo's profile (a man: 7.5 g,
@@ -311,36 +311,39 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await expect(cards).toHaveCount(5);
   expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-food-chart')))).toEqual(['k', 'p', 'fa', 'c', 's']);
   await expect(sheet(page).locator('[data-food-chart] h3')).toHaveText(['たべた カロリー', 'たんぱく質', '脂質', '炭水化物', '塩分']);
-  await expect(sheet(page).locator('[data-food-chart=k] button[data-goal]')).toHaveText('目標 2,250 kcal');
+  // each its direction: kcal near a value, protein at least, fat at most, carbs near a value, salt at most
+  expect(await cards.evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'atLeast', 'atMost', 'target', 'atMost']);
+  await expect(sheet(page).locator('[data-food-chart=k] [data-goal-line]')).toHaveText(/^目標 2,250\skcal\s前後$/);
+  await expect(sheet(page).locator('[data-food-chart=k] button[data-goal]')).toHaveText('目標 2,250 kcal 前後');
   const protein = sheet(page).locator('[data-food-chart=p]');
   await expect(protein.locator('[data-intake-avg]')).toHaveText(/^\d+\.\d g$/);
   await expect(protein.locator('path.bar')).toHaveCount(4);
   await expect(protein.locator('path.goal')).toHaveCount(1); // the default, dashed
   const salt = sheet(page).locator('[data-food-chart=s]');
-  await expect(salt.locator('button[data-goal]')).toHaveText('目標 7.5 g'); // the profile's default
+  await expect(salt.locator('button[data-goal]')).toHaveText('目標 7.5 g 以下'); // the profile's default
   await expect(salt.locator('path.goal')).toHaveCount(1);
   // salt: 0.5 g steps from 7.5; 7.3 refused
   await salt.locator('button[data-goal]').click();
   const sTray = salt.locator('form.tray');
-  await expect(sTray).toContainText('これより ひかえめに');
+  await expect(sTray).toContainText('塩分の目標（1日）');
   await sTray.getByRole('textbox').fill('7.3');
   await sTray.getByRole('button', { name: 'けってい' }).click();
   await expect(sTray.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true');
-  await expect(sTray.locator('.hint')).toHaveText('1〜20 g、0.5 g ずつで入れてね');
+  await expect(sTray.locator('.hint')).toHaveText('1〜20 g、0.5 gずつで入れてね');
   await sTray.getByRole('textbox').fill('');
   await sTray.getByRole('button', { name: 'へらす' }).click();
   await expect(sTray.getByRole('textbox')).toHaveValue('7.0');
   await sTray.getByRole('button', { name: 'けってい' }).click();
-  await expect(salt.locator('button[data-goal]')).toHaveText('目標 7.0 g');
+  await expect(salt.locator('button[data-goal]')).toHaveText('目標 7.0 g 以下');
   await expect(salt.locator('path.goal')).toHaveCount(1);
   // protein: set over the default, then cleared back to it
   await protein.locator('button[data-goal]').click();
   await protein.locator('form.tray').getByRole('textbox').fill('130');
   await protein.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
-  await expect(protein.locator('button[data-goal]')).toHaveText('目標 130 g');
+  await expect(protein.locator('button[data-goal]')).toHaveText('目標 130 g 以上');
   await protein.locator('button[data-goal]').click();
   await protein.locator('form.tray').getByRole('button', { name: '目標をなくす' }).click();
-  await expect(protein.locator('button[data-goal]')).not.toHaveText('目標 130 g');
+  await expect(protein.locator('button[data-goal]')).not.toHaveText('目標 130 g 以上');
   expect(await overflowOf(page)).toEqual([]);
 
   // きろく shows them: salt's goal on its tile
@@ -348,7 +351,7 @@ test('the goals: set in place on my cards (kcal, protein, salt), shown on the da
   await expect(sheet(page).locator('[data-nutrient=s] small')).toHaveText('目標 7.0 g 以下');
   // うめ's: shown, never set here
   await sheet(page).locator('select[data-pick=who]').selectOption('B');
-  await expect(sheet(page).locator('span[data-goal=kcal-goal]')).toHaveText('目標 1,700 kcal');
+  await expect(sheet(page).locator('span[data-goal=kcal-goal]')).toHaveText('目標 1,700 kcal 前後');
   await sheet(page).locator('[data-tab=chart]').click();
   await expect(sheet(page).locator('[data-food-chart] span[data-goal]')).toHaveCount(5);
   await expect(sheet(page).locator('[data-food-chart] button[data-goal]')).toHaveCount(0);

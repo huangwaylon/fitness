@@ -5,8 +5,8 @@ import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import {
-  amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, goalChip, itemOf, KCAL_GOAL_MIN, matchPortion,
-  FOOD_GOAL_SPECS, foodGoalText, parseAmount, parseGramGoal, parseKcalGoal, portionLabel, portionText, recentOf, sameItems, servingText, startOf, stepOf, uniqueItems, unitOf
+  amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, goalChip, itemOf, matchPortion,
+  parseAmount, portionLabel, portionText, recentOf, sameItems, servingText, startOf, stepOf, uniqueItems, unitOf
 } from './foodUi.ts';
 
 const snap = (id: string, u?: string): FoodSnap => ({ id, n: id, k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, ...(u ? { u } : {}) });
@@ -97,18 +97,6 @@ describe('lists', () => {
 });
 
 describe('the kcal goal', () => {
-  it('reads a typed goal from 1,200 in whole steps', () => {
-    expect(KCAL_GOAL_MIN).toBe(1200);
-    for (const [s, v] of [['1800', 1800], ['2,000', 2000], ['１８００', 1800], ['1850 kcal', 1850], ['1200', 1200]] as const) expect(parseKcalGoal(s), s).toBe(v);
-    for (const s of ['1000', '1150', '1825', '5050', 'abc', '']) expect(parseKcalGoal(s), s).toBeNull();
-  });
-  it('reads a nutrient goal in its range and step: protein, fat, carbs whole 5s, salt halves; −/＋ and the chip agree', () => {
-    for (const [n, s, v] of [['p', '120', 120], ['p', '１２０g', 120], ['fa', '60 g', 60], ['c', '250', 250], ['s', '7.5', 7.5], ['s', '7,5', 7.5], ['s', '６', 6]] as const)
-      expect(parseGramGoal(n, s), `${n} ${s}`).toBe(v);
-    for (const [n, s] of [['p', '122'], ['p', '5'], ['s', '7.3'], ['s', '21'], ['c', 'abc'], ['fa', '']] as const) expect(parseGramGoal(n, s), `${n} ${s}`).toBeNull();
-    expect([foodGoalText('k', 2200), foodGoalText('p', 110), foodGoalText('s', 7)]).toEqual(['2,200 kcal', '110 g', '7.0 g']);
-    for (const [n, v] of [['k', 2250], ['p', 115], ['s', 6.5]] as const) expect(FOOD_GOAL_SPECS[n].parse(String(v))).toBe(v);
-  });
   it('today あと / オーバー, a past day 少なめ / 多め; coral only past 20 % over', () => {
     expect(goalChip(1500, 2000, true)).toEqual({ text: 'あと 500 kcal', over: false });
     expect(goalChip(2300, 2000, true)).toEqual({ text: '300 kcal オーバー', over: false });

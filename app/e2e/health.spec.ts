@@ -60,9 +60,9 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(move.locator('.chg .cv')).toHaveText(/^[↑↓→] [+−±]\d+%$/);
   await expect(move.locator('.sub')).toContainText(/目標 \d+\/\d+日（\d+%）/);
   await expect(move.locator('.sub')).toContainText(/ベスト [\d,]+ kcal（\d+\/\d+）/);
-  await expect(sheet(page).locator('.mc[data-metric=steps] header [data-goal]')).toHaveText('目標 8,000歩');
-  await expect(sheet(page).locator('.mc header button[data-goal]')).toHaveCount(2); // steps and Move set there; exercise and stand fixed
-  await expect(sheet(page).locator('.mc[data-metric=stand] header span[data-goal]')).toHaveText('目標 120分');
+  await expect(sheet(page).locator('.mc[data-metric=steps] header [data-goal]')).toHaveText('目標 8,000歩 以上');
+  await expect(sheet(page).locator('.mc header button[data-goal]')).toHaveCount(4); // every card's goal is set there
+  await expect(sheet(page).locator('.mc[data-metric=stand] header button[data-goal]')).toHaveText('目標 120分 以上'); // the ring's 120 until set
   await expect(sheet(page).locator('.health > .note')).toContainText('数字を そのまま');
   // one series: every bar in this phone's person's colour
   await expect(sheet(page).locator('.mc path.bar.pB')).toHaveCount(0);
@@ -105,8 +105,8 @@ test('whose data: this phone’s person by default; switching changes the number
   expect(await fill()).not.toBe(barB);
   await sheet(page).locator('[data-group=body]').click(); // the body cards: still ウェイ's, the same range
   await expect(range(page)).toHaveText('10/18–10/24');
-  await expect(sheet(page).locator('.wc')).toHaveAttribute('data-person', 'A');
-  await expect(sheet(page).locator('.wc').getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1);
+  await expect(sheet(page).locator('.bc[data-metric=weight]')).toHaveAttribute('data-person', 'A');
+  await expect(sheet(page).locator('.bc[data-metric=weight]').getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1);
   // the same period and visible range
   await expect(periodSel(page)).toHaveValue('week');
   await expect(range(page)).toHaveText('10/18–10/24');
@@ -142,7 +142,7 @@ test('every day with data is its bar, as reported; only a day with no row is a s
 test('体重: the period’s plain change (first week → last week, else first → last weigh-in), no trend words', async ({ page }) => {
   await openHealth(page);
   await sheet(page).locator('[data-group=body]').click();
-  const card = sheet(page).locator('.wc');
+  const card = sheet(page).locator('.bc[data-metric=weight]');
   const chg = card.locator('.chips .chg');
   await pickPeriod(page, 'month');
   await chg.scrollIntoViewIfNeeded();
@@ -305,15 +305,15 @@ test('no Health data yet (a new couple): every card is there with its goal, sayi
   await expect(sheet(page).locator('.health svg[role=img]')).toHaveCount(0); // no empty charts
   await expect(sheet(page).locator('.health .note')).toHaveCount(0);
   const steps = sheet(page).locator('button[data-goal=steps-goal]');
-  await expect(steps).toHaveText(/8,000歩/);
+  await expect(steps).toHaveText(/8,000歩\s以上/);
   await steps.click();
   await sheet(page).locator('#goal-steps-goal [data-goal-step="1"]').click();
   await sheet(page).locator('#goal-steps-goal button[type=submit]').click();
-  await expect(steps).toHaveText(/8,500歩/);
+  await expect(steps).toHaveText(/8,500歩\s以上/);
   await sheet(page).locator('[data-group=body]').click();
   await expect(cards.locator('[data-health-empty]')).toHaveCount(4);
-  await expect(sheet(page).locator('button[data-goal=weight-goal]')).toHaveText(/66.0 kg/); // the demo's goal, kept without a weigh-in
-  await expect(sheet(page).locator('button[data-goal=fat-goal]')).toBeVisible();
+  await expect(sheet(page).locator('button[data-goal=weight-goal]')).toHaveText(/66\.0\skg\s前後/); // the demo's goal, kept without a weigh-in
+  await expect(sheet(page).locator('button[data-goal=body_fat_pct-goal]')).toBeVisible();
 });
 
 for (const [w, h] of [[390, 844], [320, 568]]) {
@@ -353,3 +353,40 @@ for (const [w, h] of [[390, 844], [320, 568]]) {
     await navPut();
   });
 }
+
+test('every chart has its goal: a chip at the card’s upper right with its direction, set in place, labelled on the chart the same way', async ({ page }) => {
+  await openHealth(page);
+  const chips = sheet(page).locator('.health section.card > header button[data-goal]');
+  await expect(chips).toHaveText(['目標 8,000歩 以上', '目標 600 kcal 以上', '目標 60分 以上', '目標 120分 以上']);
+  expect(await sheet(page).locator('.health section.card').evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['atLeast', 'atLeast', 'atLeast', 'atLeast']);
+  // Exercise: per person from today on; the ベル still go by the fixed 60 (the editor says so)
+  const ex = sheet(page).locator('.mc[data-metric=exercise]');
+  await ex.locator('button[data-goal]').click();
+  await expect(ex.locator('form.tray')).toContainText('エクササイズの目標（1日）');
+  await expect(ex.locator('form.tray')).toContainText('ベルは 60分のまま');
+  await ex.locator('form.tray').getByRole('textbox').fill('33');
+  await ex.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
+  await expect(ex.locator('form.tray').getByRole('textbox')).toHaveAttribute('aria-invalid', 'true'); // in 5s
+  await ex.locator('form.tray').getByRole('textbox').fill('30');
+  await ex.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
+  await expect(ex.locator('button[data-goal]')).toHaveText('目標 30分 以上');
+  await expect(sheet(page).getByRole('status')).toContainText('エクササイズの目標を かえました');
+  await expect(ex.locator('[data-goal-line]')).toHaveText(/^目標 30分\s以上$/); // the chart's line, worded as the chip
+  await expect(ex.locator('svg[role=img]')).toHaveAttribute('aria-label', /目標 30分\s以上/);
+  // からだ: each its own, its direction (weight and BMI near a value, body fat at most, lean mass at least)
+  await sheet(page).locator('[data-group=body]').click();
+  await expect(chips).toHaveText(['目標 66.0 kg 前後', /^目標 (まだ|[\d.]+%\s以下)$/, '目標 まだ', '目標 まだ']);
+  expect(await sheet(page).locator('.health section.card').evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'atMost', 'target', 'atLeast']);
+  const bmi = sheet(page).locator('.bc[data-metric=bmi]');
+  await bmi.locator('button[data-goal]').click();
+  await expect(bmi.locator('form.tray')).toContainText('目標BMI');
+  await bmi.locator('form.tray').getByRole('textbox').fill('22');
+  await bmi.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
+  await expect(bmi.locator('button[data-goal]')).toHaveText('目標 22.0 前後');
+  const lean = sheet(page).locator('.bc[data-metric=lean_kg]');
+  await lean.locator('button[data-goal]').click();
+  await lean.locator('form.tray').getByRole('textbox').fill('52.5');
+  await lean.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
+  await expect(lean.locator('button[data-goal]')).toHaveText('目標 52.5 kg 以上');
+  await expect(lean.locator('.key .k-goal')).toHaveCount(1);
+});

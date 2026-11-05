@@ -16,9 +16,9 @@ export interface EarnDay {
   moveKcal: number | null;
   /** Health Stand Time, minutes. */
   standMin: number | null;
-  /** kcal (`pref` moveGoal in force that day, else PEOPLE[p].moveGoal). */
+  /** kcal (`pref` moveGoal in force that day, else the member's default: GOALS.move). */
   moveGoal: number;
-  /** Steps (`pref` stepsGoal in force that day, else STEPS_GOAL.fallback). */
+  /** Steps (`pref` stepsGoal in force that day, else its default: contract/goals.ts GOALS.steps). */
   stepsGoal: number;
 }
 

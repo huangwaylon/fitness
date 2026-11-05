@@ -112,3 +112,10 @@ export function goalMet(id: GoalId, v: number, goal: number): boolean {
   if (g.dir === 'atMost') return v <= goal;
   return Math.abs(v - goal) <= goal * (g.band ?? 0) + 1e-9;
 }
+
+/** Whether `v` is past a ceiling: over an at-most goal, or over a near-a-value one by more than its band (ごはん's tiles
+ *  turn coral then). A floor is never "over". */
+export function goalOver(id: GoalId, v: number, goal: number): boolean {
+  const g = GOALS[id];
+  return g.dir === 'atMost' ? v > goal : g.dir === 'target' ? v > goal * (1 + (g.band ?? 0)) + 1e-9 : false;
+}

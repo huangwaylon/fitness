@@ -7,7 +7,7 @@ import { queued } from '#lib/sync/queue.ts';
 import { setKey } from '#lib/sync/pairing.ts';
 import type { WeekView } from '#lib/types.ts';
 import { week } from './week.svelte.ts';
-import { buy, setGoalBodyFat, setGoalWeight, setMoveGoal, setStepsGoal, undoSpend } from './actions.ts';
+import { buy, setGoal, undoSpend } from './actions.ts';
 import type { ShopItemId } from '#lib/types.ts';
 
 vi.mock('$app/navigation', () => ({ goto: vi.fn() }));
@@ -50,26 +50,26 @@ describe('wallet actions', () => {
     expect(queued().map((e) => [e.type, e.data])).toEqual([['spend_void', { spendId: 's1' }]]);
   });
 
-  it('setMoveGoal sends pref moveGoal as a rounded integer within 100–2,000 kcal, refuses the rest', () => {
-    for (const bad of [99, 2001, NaN, Infinity]) expect(setMoveGoal('A', bad)).toEqual({ ok: false });
+  it('setGoal move sends pref moveGoal as a rounded integer within 100–2,000 kcal, refuses the rest', () => {
+    for (const bad of [99, 2001, NaN, Infinity]) expect(setGoal('move', 'A', bad)).toEqual({ ok: false });
     expect(queued()).toEqual([]);
-    expect(setMoveGoal('B', 549.6).ok).toBe(true);
+    expect(setGoal('move', 'B', 549.6).ok).toBe(true);
     expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'moveGoal', value: 550 }]]);
   });
 
-  it('setStepsGoal sends pref stepsGoal for either person: a whole 500 in 1,000–30,000, refuses the rest', () => {
-    for (const bad of [500, 30500, 8250, 8000.5, NaN, Infinity]) expect(setStepsGoal('A', bad)).toEqual({ ok: false });
+  it('setGoal steps sends pref stepsGoal for either person: a whole 500 in 1,000–30,000, refuses the rest', () => {
+    for (const bad of [500, 30500, 8250, 8000.5, NaN, Infinity]) expect(setGoal('steps', 'A', bad)).toEqual({ ok: false });
     expect(queued()).toEqual([]);
-    expect(setStepsGoal('B', 10000).ok).toBe(true);
+    expect(setGoal('steps', 'B', 10000).ok).toBe(true);
     expect(queued().map((e) => [e.type, e.data])).toEqual([['pref', { person: 'B', key: 'stepsGoal', value: 10000 }]]);
   });
 });
 
 describe('the goals name whose goal', () => {
-  it('setGoalWeight carries an explicit person, mine or the partner’s, rounded to one decimal; null clears it', () => {
-    expect(setGoalWeight('B', 58.04).ok).toBe(true);
-    expect(setGoalWeight('A', null).ok).toBe(true);
-    expect(setGoalWeight('A', 19).ok).toBe(false);
+  it('setGoal weight carries an explicit person, mine or the partner’s, rounded to one decimal; null clears it', () => {
+    expect(setGoal('weight', 'B', 58.04).ok).toBe(true);
+    expect(setGoal('weight', 'A', null).ok).toBe(true);
+    expect(setGoal('weight', 'A', 19).ok).toBe(false);
     expect(queued().map((e) => [e.type, e.data])).toEqual([
       ['pref', { person: 'B', key: 'goalWeight', value: 58 }],
       ['pref', { person: 'A', key: 'goalWeight', value: null }]
@@ -77,13 +77,20 @@ describe('the goals name whose goal', () => {
     // a goal is sent at once (no undo window)
     expect(queued().every((e) => e.nextAt === e.queuedAt)).toBe(true);
   });
-  it('setGoalBodyFat: the same, in % within 3–60', () => {
-    expect(setGoalBodyFat('B', 18.04).ok).toBe(true);
-    expect(setGoalBodyFat('A', null).ok).toBe(true);
-    for (const bad of [2.9, 60.1, NaN]) expect(setGoalBodyFat('A', bad).ok).toBe(false);
+  it('setGoal body_fat_pct: the same, in % within 3–60', () => {
+    expect(setGoal('body_fat_pct', 'B', 18.04).ok).toBe(true);
+    expect(setGoal('body_fat_pct', 'A', null).ok).toBe(true);
+    for (const bad of [2.9, 60.1, NaN]) expect(setGoal('body_fat_pct', 'A', bad).ok).toBe(false);
     expect(queued().map((e) => [e.type, e.data])).toEqual([
       ['pref', { person: 'B', key: 'goalBodyFat', value: 18 }],
       ['pref', { person: 'A', key: 'goalBodyFat', value: null }]
+    ]);
+  });
+  it('the new goals: Exercise / Stand per day (never cleared), BMI / lean mass the latest; never the guest’s', () => {
+    expect([setGoal('exercise', 'A', 45).ok, setGoal('exercise', 'A', null).ok, setGoal('stand', 'B', 125).ok, setGoal('bmi', 'B', 22.04).ok, setGoal('lean_kg', 'A', null).ok, setGoal('bmi', 'G', 22).ok])
+      .toEqual([true, false, false, true, true, false]);
+    expect(queued().map((e) => e.data)).toEqual([
+      { person: 'A', key: 'exerciseGoal', value: 45 }, { person: 'B', key: 'goalBmi', value: 22 }, { person: 'A', key: 'goalLean', value: null }
     ]);
   });
 });
@@ -181,19 +188,18 @@ describe('the meal log', () => {
     expect(food()[1]).toEqual({ id, at: expect.any(Number), rm: true });
   });
 
-  it('setFoodGoal: each in its range and step or null; a member for either member, the guest its own', async () => {
-    const { setFoodGoal } = await import('./actions.ts');
+  it('setGoal (food): each in its range and step or null; a member for either member, the guest its own', async () => {
     await model();
-    for (const bad of [950, 1825, 5050, NaN]) expect(setFoodGoal('A', 'k', bad).ok).toBe(false);
-    expect([setFoodGoal('A', 'p', 122).ok, setFoodGoal('A', 's', 7.3).ok, setFoodGoal('A', 'c', 900).ok]).toEqual([false, false, false]);
-    expect(setFoodGoal('G', 'k', 2000).ok).toBe(false);
-    expect(setFoodGoal('B', 'k', 1800).ok).toBe(true);
-    expect(setFoodGoal('A', 'k', null).ok).toBe(true);
-    expect(setFoodGoal('A', 's', 7.5).ok).toBe(true);
+    for (const bad of [950, 1825, 5050, NaN]) expect(setGoal('k', 'A', bad).ok).toBe(false);
+    expect([setGoal('p', 'A', 122).ok, setGoal('s', 'A', 7.3).ok, setGoal('c', 'A', 900).ok]).toEqual([false, false, false]);
+    expect(setGoal('k', 'G', 2000).ok).toBe(false);
+    expect(setGoal('k', 'B', 1800).ok).toBe(true);
+    expect(setGoal('k', 'A', null).ok).toBe(true);
+    expect(setGoal('s', 'A', 7.5).ok).toBe(true);
     week.model = { ...week.model!, me: 'G' };
-    expect(setFoodGoal('A', 'k', 2000).ok).toBe(false);
-    expect(setFoodGoal('G', 'k', 2200).ok).toBe(true);
-    expect(setFoodGoal('G', 'p', 90).ok).toBe(true);
+    expect(setGoal('k', 'A', 2000).ok).toBe(false);
+    expect(setGoal('k', 'G', 2200).ok).toBe(true);
+    expect(setGoal('p', 'G', 90).ok).toBe(true);
     expect(queued().filter((e) => e.type === 'pref').map((e) => e.data)).toEqual([
       { person: 'B', key: 'kcalGoal', value: 1800 },
       { person: 'A', key: 'kcalGoal', value: null },

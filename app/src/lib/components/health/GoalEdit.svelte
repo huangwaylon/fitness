@@ -11,7 +11,7 @@
   // with its keypad (nothing focused, so no keyboard until the field is tapped), the range (coral after a refused
   // けってい), then 目標をなくす (a goal that may be cleared, once set), やめる and けってい. Esc, やめる or a tap
   // anywhere else close it unchanged; the focus goes back to the chip. Read-only (the guest's, a fixed goal): the
-  // label alone. One shared control for けんこう's and ごはん's goals (`goals.ts` GOALS, ごはん's own specs).
+  // label alone. One shared control for every goal, けんこう's and ごはん's (`goals.ts` GOAL_SPECS).
   // Placed in a card's `header` (display: flex; flex-wrap: wrap): the chip and the tray are its items.
   import { tick } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
@@ -21,8 +21,8 @@
   interface Props {
     /** What it is and how it's typed (absent: read-only, as without `onsave`). */
     spec?: GoalSpec | null;
-    /** The goal as the chip shows it (`8,000歩`), or null: none set (「目標 まだ」). */
-    text: string | null;
+    /** The chip's words, the goal with its direction (goals.ts goalLabel: 「目標 8,000歩 以上」, 「目標 まだ」). */
+    label: string;
     /** The goal in force now, what the field starts from (null: none). */
     value: number | null;
     /** Sets it (null: cleared); the caller says so (its toast). Absent: read-only. */
@@ -34,7 +34,7 @@
     /** A hook for tests and the focus: `data-goal`. */
     id: string;
   }
-  let { spec = null, text, value, onsave = null, tone = 'soft', start = null, id }: Props = $props();
+  let { spec = null, label, value, onsave = null, tone = 'soft', start = null, id }: Props = $props();
 
   const me = nextId++;
   const open = $derived(openId === me && !!onsave && !!spec);
@@ -42,7 +42,6 @@
   let tried = $state(false);
   const v = $derived(spec?.parse(field) ?? null);
   const bad = $derived(tried && v === null);
-  const chipText = $derived(text === null ? t('goal.none') : t('goal.of', { g: text }));
   let chip: HTMLButtonElement | undefined = $state();
   let tray: HTMLFormElement | undefined = $state();
 
@@ -99,11 +98,11 @@
 
 {#if onsave && spec}
   <button type="button" class="gchip" class:open data-goal={id} data-sfx={open ? 'back' : 'page'} aria-expanded={open} aria-controls="goal-{id}"
-    aria-label={t('goal.change', { what: spec.head(), g: text ?? t('goal.notSet') })} bind:this={chip} onclick={show}>
-    <span class="pill"><i class="gl {tone}" aria-hidden="true"></i><span>{chipText}</span><Glyph kind="pen" size={14} /></span>
+    aria-label={t('goal.change', { what: spec.head(), g: value === null ? t('goal.notSet') : label })} bind:this={chip} onclick={show}>
+    <span class="pill"><i class="gl {tone}" aria-hidden="true"></i><span>{label}</span><Glyph kind="pen" size={14} /></span>
   </button>
 {:else}
-  <span class="gchip ro" data-goal={id}><i class="gl {tone}" aria-hidden="true"></i>{chipText}</span>
+  <span class="gchip ro" data-goal={id}><i class="gl {tone}" aria-hidden="true"></i>{label}</span>
 {/if}
 
 {#if open && spec}

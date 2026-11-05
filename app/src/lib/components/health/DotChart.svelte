@@ -1,17 +1,17 @@
 <script lang="ts">
-  // One person's sparse series (けんこう): weight, body fat %, BMI or lean body mass. A dot per day with a measurement (or
-  // per week / month: the average of its measurements), the dots joined by a thin line across the gaps between them, the
-  // goal (weight's, body fat's) dashed, on an axis fitted to the values. A tap shows that day's numbers; a horizontal drag turns the
-  // page. No good / bad colours.
+  // One person's sparse series (からだ: weight, body fat %, BMI or lean body mass). A dot per day with a measurement (or
+  // per week / month: the average of its measurements), the dots joined by a thin line across the gaps between them,
+  // the goal dashed with its words (ChartFrame), on an axis fitted to the values: the goal too when it is near, else
+  // its words at that edge with ↑ / ↓ (to scale it would flatten the dots). A tap shows that bucket's numbers; a
+  // horizontal drag turns the page. No good / bad colours on the dots.
   import type { LocalDate, PersonId } from '#lib/types.ts';
   import type { DotBucket, Range } from '#lib/model/health.ts';
-  import { formatDate } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { rangeLabel, xLabels } from './fmt.ts';
-  import { chartGestures } from './gestures.ts';
+  import ChartFrame from './ChartFrame.svelte';
+  import { axisNum } from './fmt.ts';
 
   interface Props {
-    /** Which series (unique per chart: its clip path's id). */
+    /** Unique per chart on the page (its SVG defs' ids). */
     id: string;
     person: PersonId;
     range: Range;
@@ -21,6 +21,8 @@
     /** The narrowest axis span (weight 2 kg: a flat week isn't magnified into a cliff). */
     minSpan?: number;
     goal: number | null;
+    /** The goal's words (goals.ts goalLabel). */
+    goalText: string;
     today: LocalDate;
     label: string;
     selected: number | null;
@@ -28,29 +30,26 @@
     onswipe: (dir: -1 | 1) => void;
     slide: -1 | 0 | 1;
   }
-  let { id, person, range, buckets, fmt, minSpan = 2, goal, today, label, selected, onselect, onswipe, slide }: Props = $props();
+  let { id, person, range, buckets, fmt, minSpan = 2, goal, goalText, today, label, selected, onselect, onswipe, slide }: Props = $props();
 
-  let w = $state(0);
-  let dx = $state(0);
   const H = 148;
   const pad = { l: 38, r: 6, t: 10, b: 22 };
-  const n = $derived(range.buckets.length);
-  const plotW = $derived(Math.max(1, w - pad.l - pad.r));
-  const bw = $derived(plotW / n);
-  const cx = (i: number) => pad.l + i * bw + bw / 2;
 
-  const dataVals = $derived(buckets.map((b) => b.v).filter((v): v is number => v !== null));
-  /** A goal far from the period's weights isn't drawn to scale (it would flatten them): a label at that edge instead. */
+  const ext = $derived.by(() => {
+    let lo = Infinity, hi = -Infinity;
+    for (const b of buckets) if (b.v !== null) (lo = Math.min(lo, b.v)), (hi = Math.max(hi, b.v));
+    return lo <= hi ? { lo, hi } : null;
+  });
+  /** A goal far from the period's values isn't drawn to scale: its words at that edge instead. */
   const goalOff = $derived.by((): 'above' | 'below' | null => {
-    if (goal === null || !dataVals.length) return null;
-    const lo = Math.min(...dataVals), hi = Math.max(...dataVals), span = Math.max(minSpan, hi - lo);
-    return goal < lo - span ? 'below' : goal > hi + span ? 'above' : null;
+    if (goal === null || !ext) return null;
+    const span = Math.max(minSpan, ext.hi - ext.lo);
+    return goal < ext.lo - span ? 'below' : goal > ext.hi + span ? 'above' : null;
   });
   const domain = $derived.by(() => {
-    const vals = [...dataVals];
-    if (goal !== null && vals.length && !goalOff) vals.push(goal);
-    if (!vals.length) return { lo: 0, hi: 1 };
-    let lo = Math.min(...vals), hi = Math.max(...vals);
+    if (!ext) return { lo: 0, hi: 1 };
+    let lo = ext.lo, hi = ext.hi;
+    if (goal !== null && !goalOff) (lo = Math.min(lo, goal)), (hi = Math.max(hi, goal));
     if (hi - lo < minSpan) {
       const mid = (hi + lo) / 2;
       lo = mid - minSpan / 2;
@@ -59,106 +58,43 @@
     const m = (hi - lo) * 0.08;
     return { lo: lo - m, hi: hi + m };
   });
-  const y = (kg: number) => pad.t + (1 - (kg - domain.lo) / (domain.hi - domain.lo)) * (H - pad.t - pad.b);
+  const y = (v: number) => pad.t + (1 - (v - domain.lo) / (domain.hi - domain.lo)) * (H - pad.t - pad.b);
+  /** Two to five lines at a round step (1, 2, 5, 10, 20 …), whatever the span. */
   const ticks = $derived.by(() => {
-    const range = domain.hi - domain.lo;
-    const step = range <= 3.5 ? 1 : range <= 8 ? 2 : 5;
-    const out: number[] = [];
-    for (let v = Math.ceil(domain.lo / step) * step; v <= domain.hi; v += step) out.push(v);
+    const span = domain.hi - domain.lo;
+    const pow = 10 ** Math.floor(Math.log10(span / 3));
+    const step = [1, 2, 5, 10].map((k) => k * pow).find((s) => span / s <= 3.5) ?? 10 * pow;
+    const out: { v: number; y: number; text: string }[] = [];
+    for (let k = Math.ceil(domain.lo / step); k * step <= domain.hi + 1e-9; k++) {
+      const v = Math.round(k * step * 1000) / 1000;
+      out.push({ v, y: y(v), text: axisNum(v) });
+    }
     return out;
   });
-  /** The weigh-ins in order, one thin line through them (a gap without one is bridged, not broken). */
-  const linePath = $derived.by(() => {
-    let d = '';
-    let pen = false;
-    buckets.forEach((b, i) => {
-      if (b.v === null) return;
-      d += `${pen ? 'L' : 'M'}${cx(i).toFixed(1)} ${y(b.v).toFixed(1)}`;
-      pen = true;
-    });
-    return d;
-  });
-  const any = $derived(buckets.some((b) => b.v !== null));
-  const xl = $derived(xLabels(range, plotW));
-  const r = $derived(Math.max(1.8, Math.min(3.4, bw / 2.4)));
-
-  let box: HTMLElement | undefined = $state();
-  /** A tap picks the bar under it (again: closes); the chart scrolls fully into view so its callout isn't under the range row. */
-  function tap(px: number) {
-    const i = Math.floor((px - pad.l) / bw);
-    const next = i < 0 || i >= n || i === selected ? null : i;
-    onselect(next);
-    if (next !== null) box?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }
-  const sel = $derived(selected !== null && selected < n ? selected : null);
-  /** The callout sits inside the plot's top, on the half away from the picked bar, so the bar stays in sight. */
-  const tipLeftSide = $derived(sel !== null && cx(sel) > pad.l + plotW / 2);
-  const title = (i: number) => {
-    const b = range.buckets[i];
-    return range.unit === 'day' ? formatDate(b.from) : rangeLabel({ ...range, from: b.from, to: b.to, unit: 'day' }, today);
-  };
+  const goalMark = $derived(goal === null || !ext ? null : { ys: buckets.map(() => (goalOff ? null : y(goal))), y: goalOff ? 0 : y(goal), text: goalText, off: goalOff, tone: 'yuzu' as const });
 </script>
 
-<div class="chart" bind:this={box} bind:clientWidth={w} style:height="{H}px" use:chartGestures={{ tap, swipe: onswipe, drag: (d) => (dx = d) }}>
-  {#if w > 0}
-    <svg width={w} height={H} viewBox="0 0 {w} {H}" role="img" aria-label={label}>
-      <defs><clipPath id="clip-{id}{person}"><rect x={pad.l - 4} y="0" width={plotW + 8} height={H} /></clipPath></defs>
-      {#each ticks as v (v)}
-        <line class="grid" x1={pad.l} x2={w - pad.r} y1={y(v)} y2={y(v)} />
-        <text class="ax" x={pad.l - 5} y={y(v)} text-anchor="end" dominant-baseline="middle">{v}</text>
-      {/each}
-      <g clip-path="url(#clip-{id}{person})">
-        {#key range.from + range.period}
-          <g class="plot" class:dragging={dx !== 0} style:--slide="{slide * 28}px" style:transform="translateX({dx * 0.5}px)">
-            {#if sel !== null}<rect class="hl" x={pad.l + sel * bw} y={pad.t - 4} width={bw} height={H - pad.b - pad.t + 4} rx="4" />{/if}
-            {#if goal !== null && any && !goalOff}<line class="goal" x1={pad.l} x2={w - pad.r} y1={y(goal)} y2={y(goal)} />{/if}
-            {#each buckets as b, i (i)}
-              {#if b.v !== null}<circle class="dot p{person}" cx={cx(i)} cy={y(b.v)} {r} />{/if}
-            {/each}
-            {#if linePath}<path class="line p{person}" d={linePath} />{/if}
-          </g>
-        {/key}
-      </g>
-      {#if goal !== null && any}
-        <text class="ax" x={pad.l + 4} y={goalOff === 'below' ? H - pad.b - 5 : goalOff === 'above' ? pad.t + 8 : y(goal) - 5}>{t('weight.goalShort', { kg: goal.toFixed(1) })}{goalOff === 'below' ? ' ↓' : goalOff === 'above' ? ' ↑' : ''}</text>
-      {/if}
-      {#each xl as l (l.i)}
-        <text class="ax" x={Math.min(Math.max(cx(l.i), pad.l + 14), w - pad.r - 14)} y={H - 6} text-anchor="middle">{l.text}</text>
-      {/each}
-    </svg>
-    {#if sel !== null}
-      {@const b = buckets[sel]}
-      <div class="tip" style:left={tipLeftSide ? `${pad.l + 4}px` : null} style:right={tipLeftSide ? null : `${pad.r + 4}px`} aria-live="polite">
-        <b>{title(sel)}</b>
-        {#if b.v === null}<span class="soft">{t('health.noData')}</span>
-        {:else}<span><span class="money">{fmt(b.v)}</span>{#if b.n > 1}<span class="soft"> {t('health.weight.avgOf', { n: b.n })}</span>{/if}</span>{/if}
-      </div>
-    {/if}
-  {/if}
-</div>
+<ChartFrame id="{id}{person}" {H} {pad} {range} {today} {label} {ticks} goal={goalMark} {selected} {onselect} {onswipe} {slide} bleed={4}>
+  {#snippet plot(g)}
+    {@const r = Math.max(1.8, Math.min(3.4, g.bw / 2.4))}
+    {#each buckets as b, i (i)}
+      {#if b.v !== null}<circle class="dot p{person}" cx={g.cx(i)} cy={y(b.v)} {r} />{/if}
+    {/each}
+    <!-- the measurements in order, one thin line through them (a gap without one is bridged, not broken) -->
+    <path class="line p{person}" d={buckets.reduce((d, b, i) => (b.v === null ? d : `${d}${d ? 'L' : 'M'}${g.cx(i).toFixed(1)} ${y(b.v).toFixed(1)}`), '')} />
+  {/snippet}
+  {#snippet tip(i)}
+    {@const b = buckets[i]}
+    {#if b.v === null}<span class="soft">{t('health.noData')}</span>
+    {:else}<span><span class="money">{fmt(b.v)}</span>{#if b.n > 1}<span class="soft"> {t('health.weight.avgOf', { n: b.n })}</span>{/if}</span>{/if}
+  {/snippet}
+</ChartFrame>
 
 <style>
-  /* scroll-margin: clear of the sticky range row when a tap scrolls the chart into view */
-  .chart { position: relative; width: 100%; scroll-margin: 84px 0 12px; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: pointer; }
-  svg { display: block; overflow: visible; }
-  .grid { stroke: color-mix(in srgb, var(--text-soft) 16%, transparent); stroke-width: 1; }
-  .ax { fill: var(--text-soft); font: 700 var(--fs-s)/1 var(--font-num); }
-  .plot { animation: slide 220ms cubic-bezier(.2, .8, .2, 1); }
-  .plot:not(.dragging) { transition: transform 200ms cubic-bezier(.2, .8, .2, 1); }
-  @keyframes slide { from { opacity: .2; translate: var(--slide) 0; } to { opacity: 1; translate: 0 0; } }
-  .hl { fill: var(--hl); }
-  .goal { stroke: var(--c-yuzu-lip); stroke-width: 1.5; stroke-dasharray: 5 4; }
   .dot { opacity: .55; }
   .dot.pA { fill: var(--person-a); }
   .dot.pB { fill: var(--person-b); }
   .line { fill: none; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; opacity: .6; }
   .line.pA { stroke: var(--person-a); }
   .line.pB { stroke: var(--person-b); }
-  .tip {
-    position: absolute; top: 2px; pointer-events: none; white-space: nowrap; z-index: 1;
-    display: grid; gap: 3px; padding: 7px 11px; border-radius: var(--r-chip); background: var(--c-cream); color: var(--c-ink);
-    box-shadow: var(--sh-float); font-size: var(--fs-s); font-weight: 700;
-  }
-  .tip .money { font-size: var(--fs-body); }
-  .tip .soft { color: var(--c-ink-soft); }
 </style>

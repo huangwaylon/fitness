@@ -238,14 +238,14 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   const bells = await hudBells(page).getAttribute('aria-label');
   await toHealth(page);
   await sheet(page).locator('[data-group=body]').click(); // からだ
-  const card = sheet(page).locator('.wc');
+  const card = sheet(page).locator('.bc[data-metric=weight]');
   await expect(card.getByRole('heading', { name: '体重' })).toBeVisible();
   await expect(card.getByRole('img', { name: /^ウェイの体重 / })).toHaveCount(1); // this phone's person's (the tab shows one person)
   await expect(card.locator('.pen-btn, .acts')).toHaveCount(0); // nothing to log or fix by hand
   await expect(sheet(page).locator('.goals')).toHaveCount(0); // no goals card: each goal is on its own card
   // the goal chip in the card's header (the demo's 66.0); a tap opens its editor in place, under the header (no level, no ‹)
   const chip = goalChip(page, 'weight-goal');
-  await expect(chip).toHaveText('目標 66.0 kg');
+  await expect(chip).toHaveText('目標 66.0 kg 前後');
   await chip.click();
   await expect(chip).toHaveAttribute('aria-expanded', 'true');
   await expect(sheet(page).locator('.titlebar .back')).toHaveCount(0);
@@ -264,15 +264,15 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   await input.fill('65');
   await ed.getByRole('button', { name: 'けってい' }).click();
   await expect(ed).toHaveCount(0);
-  await expect(chip).toHaveText('目標 65.0 kg');
+  await expect(chip).toHaveText('目標 65.0 kg 前後');
   await expect(chip).toBeFocused(); // back on its chip
   // its banner drops over the title bar (and a pointer resting on it holds it there): tap it away, as a thumb would
   const saved = sheet(page).getByRole('status');
-  await expect(saved).toContainText('目標を決めました');
+  await expect(saved).toContainText('体重の目標を かえました');
   await saved.getByRole('button', { name: 'とじる' }).click();
   await expect(saved).toHaveCount(0);
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(sheet(page).locator('.wc[data-person=A] svg[role=img]')).toContainText('目標 65.0');
+  await expect(sheet(page).locator('.bc[data-metric=weight][data-person=A] svg[role=img]')).toContainText('目標 65.0');
   // −/＋ step by 0.5 kg from the goal; やめる changes nothing
   await chip.click();
   await expect(input).toHaveValue('65.0');
@@ -281,7 +281,7 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   await expect(input).toHaveValue('64.0');
   await ed.getByRole('button', { name: 'やめる' }).click();
   await expect(ed).toHaveCount(0);
-  await expect(chip).toHaveText('目標 65.0 kg');
+  await expect(chip).toHaveText('目標 65.0 kg 前後');
   // weight never earns: today's ベル didn't move
   await page.keyboard.press('Escape');
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
@@ -300,11 +300,11 @@ test('けんこう: a goal\'s editor: one open at a time; Esc or a tap elsewhere
   await page.keyboard.press('Escape');
   await expect(tray(page)).toHaveCount(0);
   await expect(sheet(page)).toBeVisible(); // the sheet stays
-  await expect(goalChip(page, 'move-goal')).toHaveText('目標 600 kcal');
+  await expect(goalChip(page, 'move-goal')).toHaveText('目標 600 kcal 以上');
   await goalChip(page, 'move-goal').click();
   await sheet(page).locator('.mc[data-metric=exercise] h3').click(); // elsewhere
   await expect(tray(page)).toHaveCount(0);
-  await expect(goalChip(page, 'move-goal')).toHaveText('目標 600 kcal');
+  await expect(goalChip(page, 'move-goal')).toHaveText('目標 600 kcal 以上');
 });
 
 test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the body fat chart; cleared, no line', async ({ page }) => {
@@ -313,27 +313,29 @@ test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the
   await sheet(page).locator('[data-group=body]').click(); // からだ
   const fat = sheet(page).locator('.bc[data-metric=body_fat_pct][data-person=A]');
   await expect(fat.getByRole('heading', { name: '体脂肪率' })).toBeVisible();
-  await expect(fat.locator('line.goal')).toHaveCount(0); // no goal yet: no line, no label
+  await expect(fat.locator('path.goal')).toHaveCount(0); // no goal yet: no line, no label
   await expect(fat.locator('svg[role=img]')).not.toContainText(/目標 \d/);
-  // BMI and lean mass never have one
-  await expect(sheet(page).locator('.bc[data-metric=bmi] .k-goal, .bc[data-metric=lean_kg] .k-goal, .bc[data-metric=bmi] [data-goal], .bc[data-metric=lean_kg] [data-goal]')).toHaveCount(0);
-  const chip = goalChip(page, 'fat-goal');
+  // BMI and lean mass have their own (none set in the demo): a chip each, no line
+  await expect(goalChip(page, 'bmi-goal')).toHaveText('目標 まだ');
+  await expect(goalChip(page, 'lean_kg-goal')).toHaveText('目標 まだ');
+  await expect(sheet(page).locator('.bc[data-metric=bmi] .k-goal, .bc[data-metric=lean_kg] .k-goal')).toHaveCount(0);
+  const chip = goalChip(page, 'body_fat_pct-goal');
   await chip.click();
   const input = tray(page).getByRole('textbox');
   await expect(input).toHaveAttribute('inputmode', 'decimal');
   await input.fill('61');
   await tray(page).getByRole('button', { name: 'けってい' }).click();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
-  await expect(tray(page).getByText('3〜60%で 入れてね')).toBeVisible();
+  await expect(tray(page).locator('.hint')).toHaveText('3〜60%、0.5%ずつで入れてね');
   await input.fill('19.5');
   await tray(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(chip).toHaveText('目標 19.5%');
+  await expect(chip).toHaveText('目標 19.5% 以下');
   const saved = sheet(page).getByRole('status');
-  await expect(saved).toContainText('目標を決めました');
+  await expect(saved).toContainText('体脂肪率の目標を かえました');
   await saved.getByRole('button', { name: 'とじる' }).click();
   await expect(saved).toHaveCount(0);
   // drawn on the body fat chart as the weight goal is: the dashed line, its label and the key
-  await expect(fat.locator('line.goal')).toHaveCount(1);
+  await expect(fat.locator('path.goal')).toHaveCount(1);
   await expect(fat.locator('svg[role=img]')).toContainText('目標 19.5');
   await expect(fat.locator('.key .k-goal')).toHaveCount(1);
   // cleared: no line
@@ -345,7 +347,7 @@ test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the
   await cleared.getByRole('button', { name: 'とじる' }).click();
   await expect(cleared).toHaveCount(0);
   await expect(fat).toBeVisible();
-  await expect(fat.locator('line.goal')).toHaveCount(0);
+  await expect(fat.locator('path.goal')).toHaveCount(0);
   await expect(fat.locator('svg[role=img]')).not.toContainText('目標 19.5');
 });
 
@@ -438,7 +440,7 @@ test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, f
   await page.goto('?demo');
   await toHealth(page);
   const chip = goalChip(page, 'move-goal');
-  await expect(chip).toHaveText('目標 600 kcal');
+  await expect(chip).toHaveText('目標 600 kcal 以上');
   await chip.click();
   await expect(tray(page)).toContainText('ムーブの目標（1日）');
   await expect(tray(page)).toContainText('きょうから');
@@ -452,7 +454,7 @@ test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, f
   await input.fill('2000');
   await tray(page).getByRole('button', { name: 'けってい' }).click();
   await expect(page.getByText('ムーブの目標を かえました')).toBeVisible();
-  await expect(chip).toHaveText('目標 2,000 kcal');
+  await expect(chip).toHaveText('目標 2,000 kcal 以上');
   // today's tree popup reads the new goal: no day reaches 2,000 kcal, so no ✓
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
@@ -469,16 +471,16 @@ test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, f
   await expect(tray(page).getByRole('textbox')).toHaveValue('460');
   await tray(page).getByRole('textbox').fill('520');
   await tray(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(chip).toHaveText('目標 520 kcal');
+  await expect(chip).toHaveText('目標 520 kcal 以上');
   await whoSel.selectOption({ index: 0 });
-  await expect(chip).toHaveText('目標 2,000 kcal');
+  await expect(chip).toHaveText('目標 2,000 kcal 以上');
 });
 
 test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by 500, from today on; either person’s; the tree and the chart follow it', async ({ page }) => {
   await page.goto('?demo');
   await toHealth(page);
   const chip = goalChip(page, 'steps-goal');
-  await expect(chip).toHaveText('目標 8,000歩');
+  await expect(chip).toHaveText('目標 8,000歩 以上');
   await chip.click();
   const input = tray(page).getByRole('textbox');
   await expect(input).toHaveAttribute('inputmode', 'numeric');
@@ -496,7 +498,7 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await input.fill('30,000');
   await tray(page).getByRole('button', { name: 'けってい' }).click();
   await expect(page.getByText('歩数の目標を かえました')).toBeVisible();
-  await expect(chip).toHaveText('目標 30,000歩');
+  await expect(chip).toHaveText('目標 30,000歩 以上');
   // today's tree popup and けんこう read the new goal: no demo day reaches 30,000 steps
   await page.keyboard.press('Escape');
   await page.locator('button.canopy').nth(0).click();
@@ -504,17 +506,17 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await expect(page.locator('.detail .row[data-row=apple] .amt svg')).toHaveCount(0);
   await page.keyboard.press('Escape');
   await toHealth(page);
-  await expect(chip).toHaveText('目標 30,000歩');
+  await expect(chip).toHaveText('目標 30,000歩 以上');
   // the partner's: the person dropdown, the chip sets theirs; mine stays
   const whoSel = sheet(page).locator('select[data-pick=who]');
   await whoSel.selectOption({ index: 1 });
-  await expect(chip).toHaveText('目標 8,000歩');
+  await expect(chip).toHaveText('目標 8,000歩 以上');
   await chip.click();
   await tray(page).getByRole('textbox').fill('6500');
   await tray(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(chip).toHaveText('目標 6,500歩');
+  await expect(chip).toHaveText('目標 6,500歩 以上');
   await whoSel.selectOption({ index: 0 });
-  await expect(chip).toHaveText('目標 30,000歩');
+  await expect(chip).toHaveText('目標 30,000歩 以上');
 });
 
 /** A tap on goal tree `i` where nothing covers it: its canopy, else its trunk (both toggle its popup); where an open
