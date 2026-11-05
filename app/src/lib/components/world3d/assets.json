@@ -1,7 +1,7 @@
 {
   "_": "scripts/world3d-models.ts (scripts/world3d-assets.ts): the island's NH models (docs/world3d-assets.md). models: under static/room/world3d/<name>.glb, bounds in model units, triangles, KB, content hash, lit (an emissive). keys: an art key → its model (m), kind, scale (u per model unit), anchor (feet: the origin on the ground; centre: the bounds' centre), footprint (tiles, unturned), hit radius (u), shadow, lit, yaw (degrees), winter (the key of its winter look), lazy (loaded with its group), standIn (no NH model of its own)",
   "budgetKb": {"bug":40,"fish":40,"shadow":4,"sea":40,"find":30,"fruit":30,"flower":24,"bush":90,"tree":160,"deco":120,"decor":120,"event":160,"scenery":200,"fx":30,"tool":40,"accessory":40},
-  "kb": {"accessory":52.6,"bug":1020,"bush":287,"deco":895.5,"decor":372.8,"event":115.2,"find":406.8,"fish":891.5,"flower":551.5,"fruit":47.9,"fx":45.8,"scenery":68.2,"sea":495,"shadow":41.9,"tool":18.3,"tree":325.1},
+  "kb": {"accessory":52.6,"bug":1020,"bush":287,"deco":895.5,"decor":373.6,"event":115.2,"find":406.8,"fish":891.5,"flower":551.5,"fruit":47.9,"fx":45.8,"scenery":68.2,"sea":495,"shadow":41.9,"tool":18.3,"tree":325.1},
   "models": {
     "accessories/birthday-hat-blue": {"min":[-5.28,0,-5.14],"max":[5.28,5.18,5.14],"tris":1172,"kb":20.6,"v":"1f242d20"},
     "accessories/birthday-hat-pink": {"min":[-5.28,0,-5.14],"max":[5.28,5.18,5.14],"tris":1172,"kb":20.8,"v":"a7abeda3"},
@@ -290,7 +290,7 @@
     "decor/treadmill": {"min":[-8.44,0,-4.75],"max":[8.39,11.28,4.75],"tris":1810,"kb":20.5,"v":"1ea4801f","lit":1},
     "decor/upright-locker": {"min":[-3.9,0,-3.5],"max":[3.9,18.5,3.82],"tris":946,"kb":13.9,"v":"9f5166f2"},
     "decor/water-cooler": {"min":[-2.78,0,-3.4],"max":[2.78,17.12,2.92],"tris":1132,"kb":21.6,"v":"98d37be7"},
-    "decor/weight-bench": {"min":[-9.23,0,-4.97],"max":[9.08,17.25,4.97],"tris":2206,"kb":21.5,"v":"49821b55"},
+    "decor/weight-bench": {"min":[-9.23,0,-4.97],"max":[9.08,17.25,4.97],"tris":2206,"kb":22.3,"v":"359a053f","part":{"name":"bar","rest":[-6.276,14.294,0],"axis":"z","len":9.949}},
     "decor/wheelbarrow": {"min":[-4.96,0,-4.96],"max":[4.95,6.38,4.95],"tris":1198,"kb":17.2,"v":"f6ec389b"},
     "events/birthday-cake": {"min":[-4,0,-4],"max":[4,4.88,4],"tris":1178,"kb":17.2,"v":"f47e58f0"},
     "events/countdown-board": {"min":[-14.04,0.04,8.8],"max":[14.04,27.46,18.62],"tris":1554,"kb":28.5,"v":"c04e7154","lit":1},

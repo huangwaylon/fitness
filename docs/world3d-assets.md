@@ -53,6 +53,16 @@ zzz, the sweat drop, the confetti, the campfire's flame (`lit`) and the pond's l
 NH's own (its item icons UnitIconLove, UnitIconMusic). The rain's streaks and rings and the snow's flakes have no assets: they're drawn in their shaders
 (`world3d/precip.ts`, design.md "Weather").
 
+Parts split out (`split` in the map: scripts/world3d-page.js splitOff): NH's weight bench (FtrPressBench) is one mesh
+skinned to one joint, its barbell baked in, but the bar, its two plates and two collars are pieces of their own in the
+mesh (no shared vertices with the rack), so the converter lifts the mesh's connected pieces wholly above 10 model units
+(the rack's uprights stand on the ground) into a node of their own, `bar` (672 of its 2,206 triangles, the same material
+and texture: +1 draw for every bench on the island), its geometry about its middle and the node there; its extras and
+assets.json's `part` say where it rests (−6.28, 14.29, 0: over the head's end, across the bench along z, 9.95 long).
+gltfpack keeps the nodes and the extras for these (`-kn -ke`). At runtime (world3d/things.ts lift/rest) the bar is
+drawn on the rack with the bench's instances; pressed (world3d/benchBar.ts), that instance's bar is emptied and drawn as
+a mesh of its own (the instanced geometry and bent material, no shadow while off) at the presser's hands.
+
 Held tools and accessories: the bug net, the rod and its bobber (NH's wooden ones: the plain ones have no textures
 in the files; the fishing line is the runtime's, a line from the rod's tip), the birthday's cake hats (pink, blue)
 and NH's party glasses, at the villagers' scale, `anchor: joint`.
@@ -144,7 +154,7 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | fish | 83 | 83 | 891.5 | lazily (fish) |
 | deco | 48 | 39 | 895.5 | with the island |
 | event | 6 | 6 | 115.2 | lazily (event) |
-| decor | 88 | 22 | 372.8 | with the island |
+| decor | 88 | 22 | 373.6 | with the island |
 | flower | 42 | 42 | 551.5 | with the island |
 | fruit | 4 | 4 | 47.9 | with the island |
 | fx | 15 | 15 | 45.8 | with the island |
@@ -693,10 +703,10 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | decor/water-cooler-1 | decor/water-cooler | 3 | feet | 1×1 | 12 | 21.6 | yaw 90° |
 | decor/water-cooler-2 | decor/water-cooler | 3 | feet | 1×1 | 12 | 21.6 | yaw 180° |
 | decor/water-cooler-3 | decor/water-cooler | 3 | feet | 1×1 | 12 | 21.6 | yaw 270° |
-| decor/weight-bench-0 | decor/weight-bench | 3 | feet | 2×1 | 27 | 21.5 |  |
-| decor/weight-bench-1 | decor/weight-bench | 3 | feet | 2×1 | 27 | 21.5 | yaw 90° |
-| decor/weight-bench-2 | decor/weight-bench | 3 | feet | 2×1 | 27 | 21.5 | yaw 180° |
-| decor/weight-bench-3 | decor/weight-bench | 3 | feet | 2×1 | 27 | 21.5 | yaw 270° |
+| decor/weight-bench-0 | decor/weight-bench | 3 | feet | 2×1 | 27 | 22.3 |  |
+| decor/weight-bench-1 | decor/weight-bench | 3 | feet | 2×1 | 27 | 22.3 | yaw 90° |
+| decor/weight-bench-2 | decor/weight-bench | 3 | feet | 2×1 | 27 | 22.3 | yaw 180° |
+| decor/weight-bench-3 | decor/weight-bench | 3 | feet | 2×1 | 27 | 22.3 | yaw 270° |
 | decor/wheelbarrow-0 | decor/wheelbarrow | 3 | feet | 1×1 | 15 | 17.2 |  |
 | decor/wheelbarrow-1 | decor/wheelbarrow | 3 | feet | 1×1 | 15 | 17.2 | yaw 90° |
 | decor/wheelbarrow-2 | decor/wheelbarrow | 3 | feet | 1×1 | 15 | 17.2 | yaw 180° |
@@ -827,9 +837,9 @@ base colour where the source has one. The 60 plain tops are the files' own: the 
 | --- | --- |
 | villagers/* | not here: the villagers and the visitors are skinned models of their own (scripts/villagers3d-models.ts); a villager with none is its card |
 | bushes/white-plumeria, bushes/pink-plumeria | no plumeria in NH’s files (no other name either): NH’s hibiscus (the closest shape) in the plumeria’s white and pink (`standIn`) |
-| trees/*-canopy, trees/*-trunk | kept for the DOM: the oak's tap-area clips (Scenery's two layers); the 3D tree is one model |
+| trees/*-canopy, trees/*-trunk | 2D only: the 2D oak’s two layers; the 3D tree is one model |
 | reactions/* | billboard: the villagers’ emotes |
-| fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the art’s colours (scripts/world3d-fx.ts) |
+| fx/* (sparkle, bang, dust, splash, ripple) | not NH’s: NH’s files have no effect models (no Eff*/Emo*), so these are stylised meshes in the 2D’s colours (scripts/world3d-fx.ts) |
 | deco/airport | not on the island: the pairing page’s map icon |
 | host/*, items/snack, items/dinner, money/* | not on the island: the panels’ and the HUD’s art |
 | finds/items/*, finds/recipes/* | not on the island: the balloon catalogue’s icons, on the catch plate |

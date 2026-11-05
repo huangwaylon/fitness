@@ -204,6 +204,47 @@ function plain(mesh) {
   return g;
 }
 
+/** A non-indexed geometry's connected pieces (its vertices welded by position: NH's seams split them by normal and
+ *  uv) that lie wholly above `above` (model units), lifted out: { part, rest, tris } (null: none there, or all of it). */
+function splitOff(geo, above) {
+  const pos = geo.attributes.position, n = pos.count, key = new Map(), weld = new Int32Array(n);
+  for (let i = 0; i < n; i++) {
+    const k = `${pos.getX(i).toFixed(3)},${pos.getY(i).toFixed(3)},${pos.getZ(i).toFixed(3)}`;
+    if (!key.has(k)) key.set(k, key.size);
+    weld[i] = key.get(k);
+  }
+  const par = Int32Array.from({ length: key.size }, (_, i) => i);
+  const root = (x) => {
+    while (par[x] !== x) x = par[x] = par[par[x]];
+    return x;
+  };
+  for (let t = 0; t < n; t += 3) {
+    const a = root(weld[t]);
+    par[root(weld[t + 1])] = a;
+    par[root(weld[t + 2])] = root(a);
+  }
+  const low = new Map();
+  for (let i = 0; i < n; i++) {
+    const r = root(weld[i]);
+    low.set(r, Math.min(low.get(r) ?? Infinity, pos.getY(i)));
+  }
+  const up = [], rest = [];
+  for (let t = 0; t < n; t += 3) (low.get(root(weld[t])) > above ? up : rest).push(t);
+  if (!up.length || !rest.length) return null;
+  const pick = (ts) => {
+    const g = new THREE.BufferGeometry();
+    for (const [name, a] of Object.entries(geo.attributes)) {
+      const out = new Float32Array(ts.length * 3 * a.itemSize);
+      ts.forEach((t, j) => {
+        for (let v = 0; v < 3; v++) for (let c = 0; c < a.itemSize; c++) out[(j * 3 + v) * a.itemSize + c] = a.getComponent(t + v, c);
+      });
+      g.setAttribute(name, new THREE.BufferAttribute(out, a.itemSize));
+    }
+    return g;
+  };
+  return { part: pick(up), rest: pick(rest), tris: up.length };
+}
+
 /** o: { parts: [{folder, dae}], files: [[folder, names]], maxTex, maxEmi, grdRow?, hide? } → the glTF (JSON, images
  *  as PNG data URIs), the bounds, triangles and materials, and the doorway's place (a frame's DoorModel0 joint: a wall's,
  *  where a door family stands; a door part converted with its frame is put there already). */
@@ -259,9 +300,28 @@ window.convert = async (o) => {
   const box = new THREE.Box3();
   const parts = [];
   let lit = false;
+  let split = null;
   for (const [key, gs] of byKey) {
     const b = baked.get(key);
-    const mesh = new THREE.Mesh(gs.length > 1 ? mergeGeometries(gs) : gs[0], b.mat);
+    let geo = gs.length > 1 ? mergeGeometries(gs) : gs[0];
+    // a part lifted out as its own node, the same material (the weight bench's barbell: `split`)
+    const lifted = o.split && !split ? splitOff(geo, o.split.above) : null;
+    if (lifted) {
+      geo = lifted.rest;
+      lifted.part.computeBoundingBox();
+      const bb = lifted.part.boundingBox, c = bb.getCenter(new THREE.Vector3()), size = bb.getSize(new THREE.Vector3());
+      box.union(bb);
+      // (its geometry about its own middle, the node there: where it rests in the model)
+      lifted.part.translate(-c.x, -c.y, -c.z);
+      const bar = new THREE.Mesh(lifted.part, b.mat);
+      bar.name = o.split.name;
+      bar.position.copy(c);
+      const axis = size.x >= size.y && size.x >= size.z ? 'x' : size.z >= size.y ? 'z' : 'y';
+      split = { name: bar.name, rest: c.toArray().map((n) => +n.toFixed(3)), axis, len: +Math.max(size.x, size.y, size.z).toFixed(3), tris: lifted.tris };
+      bar.userData = { rest: split.rest, axis, len: split.len };
+      scene.add(bar);
+    }
+    const mesh = new THREE.Mesh(geo, b.mat);
     mesh.name = key.split('|').pop();
     mesh.geometry.computeBoundingBox();
     box.union(mesh.geometry.boundingBox);
@@ -272,7 +332,7 @@ window.convert = async (o) => {
   const gltf = await exporter.parseAsync(scene, { binary: false, onlyVisible: true });
   return {
     gltf: JSON.stringify(gltf), box: [box.min.toArray(), box.max.toArray()], tris: Math.round(tris),
-    mats: [...baked.keys()].map((k) => k.split('|').pop()), lit, parts,
+    mats: [...baked.keys()].map((k) => k.split('|').pop()), lit, parts, split,
     door: doorway ? new THREE.Vector3().setFromMatrixPosition(doorway).toArray().map((n) => +n.toFixed(3)) : null
   };
 };
