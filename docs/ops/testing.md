@@ -168,7 +168,9 @@ macOS), opens the live site's demo (`--url` for another, e.g. a local build), an
 `report.md` / `report.json` (the 3D island's load time, idle and scrolling fps with the frames' p50/p95 and the long
 ones, the engine's stats and the frames it draws a second idle; then けんこう (1週, 1年) and ごはん (きろく, グラフ)
 opened from the HUD: the island's frames under each (0: it pauses), the CSS animations still running, and the
-sheet's own scroll's fps; the page's errors) and four screenshots. Exit 1 when the island didn't come up or it failed.
+sheet's own scroll's fps; the page's errors) and four screenshots. `--seed FILE` puts localStorage entries in first (`{"island-demo.layout": …}`: the demo island with
+things on it), `--then FILE` runs a script in the page once the island is up (my villager onto a piece), so an A/B of a
+change is the same island twice (the gym's ten pieces: design.md "Decorating"). Exit 1 when the island didn't come up or it failed.
 
 The indoor scenes likewise: `npm run ios:indoor -- --url <base>` (`--fpv`: every room at my villager's eyes; `--room N`: the tent and うめ's room furnished first with N pieces, `--varied` each a different model; scripts/ios-sim-indoor.ts; the base, e.g. a local
 `vite preview`'s `http://127.0.0.1:4962/fitness/`) seeds a full museum (every fish and bug found), opens the island,

@@ -18,7 +18,7 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { lean } from '../world3d/release.ts';
-import { ACTION_MS, FADE_MS, action, base, mix, over, strideOf, type Action, type Pose, type State } from './poses.ts';
+import { ACTION_MS, FADE_MS, action, base, isGym, mix, over, strideOf, type Action, type Pose, type State } from './poses.ts';
 import { cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { rigOf, type Rig } from './rig.ts';
 import type { Anchor } from './seats3d.ts';
@@ -83,6 +83,9 @@ export interface Villager3D {
   sitAt(a: Anchor | null): void;
   /** On a seat (sitting down or seated), else null: its anchor. */
   seat(): Anchor | null;
+  /** On a gym piece and settled, using it (a loop, looped while it's on it): the last step() moved it for that alone
+   *  (the island draws it at the ambient rate, not the full one). */
+  looping(): boolean;
   /** Hold a pose as it is (a test's, a still): null lets the states and actions move it again. */
   hold(p: Pose | null): void;
   rig: Rig;
@@ -259,6 +262,8 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
   type Tf = { x: number; y: number; z: number; yaw: number };
   /** On a seat (since t0, from where it stood), or getting up off one (since t0). */
   let seat: { a: Anchor; t0: number; from: Tf } | null = null, leaving: { a: Anchor; t0: number; on: Tf } | null = null, fadeMs = FADE_MS;
+  /** The last step moved it only for its gym piece's loop (looping()). */
+  let loopOnly = false;
   const tfOf = (): Tf => ({ x: group.position.x, y: group.position.y, z: group.position.z, yaw: group.rotation.y });
   const ease3 = (v: number) => {
     const k = Math.max(0, Math.min(1, v));
@@ -269,6 +274,10 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
    *  bed from the head's end, lifted by its back's depth. */
   const onSeat = (a: Anchor): Tf => {
     const U = VILLAGER_S * group.scale.x, fx = Math.sin(a.yaw), fz = Math.cos(a.yaw);
+    // a gym piece used in place: its feet on the anchor (the treadmill's belt, by the bag, under the bar), or its hips
+    // (the bike's saddle, the ball's top)
+    if (a.use && a.stand) return { x: a.x, y: a.y, z: a.z, yaw: a.yaw };
+    if (a.use && !a.lie) return { x: a.x, y: a.y + (SINK - rig.body.hip) * U, z: a.z, yaw: a.yaw };
     if (!a.lie) {
       const out = a.back > 0 ? Math.min(backDepth * U * 0.8, a.depth * 0.55) : a.depth * 0.5;
       return { x: a.x + fx * out, y: a.y + (SINK - rig.body.hip) * U, z: a.z + fz * out, yaw: a.yaw };
@@ -335,14 +344,14 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       if (a) {
         seat = { a, t0: lastT, from: leaving ? tfOf() : tfOf() };
         leaving = null;
-        const s: State = a.lie ? (cur === 'nap' ? 'nap' : 'lie') : 'sit';
+        const s: State = a.use ?? (a.lie ? (cur === 'nap' ? 'nap' : 'lie') : 'sit');
         if (s !== cur) {
           prev = cur;
           cur = s;
           since = lastT;
         }
         fadeMs = SIT_MS;
-        o.seatH = a.lie ? undefined : (a.y - a.floor) / (VILLAGER_S * group.scale.x) + SINK;
+        o.seatH = a.lie || a.stand ? undefined : (a.y - a.floor) / (VILLAGER_S * group.scale.x) + SINK;
         o.back = a.back > 0;
         o.sway = a.sway ? 1 : 0;
         return;
@@ -351,7 +360,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       leaving = { a: seat.a, t0: lastT, on: onSeat(seat.a) };
       seat = null;
       o.sway = 0;
-      if (cur === 'sit' || cur === 'lie' || cur === 'nap') {
+      if (cur === 'sit' || cur === 'lie' || cur === 'nap' || isGym(cur)) {
         prev = cur;
         cur = 'idle';
         since = lastT;
@@ -359,6 +368,7 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       fadeMs = SIT_MS;
     },
     seat: () => seat?.a ?? null,
+    looping: () => loopOnly,
     state: () => cur,
     act(a) {
       act = { a, t0: lastT };
@@ -493,8 +503,9 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
           group.rotation.z = 0.05 * Math.sin(t / 1300);
           moving = true;
         }
-        // its body straight on the seat (the pose's own lift and the legacy lying offsets aside)
-        inner.position.set(0, 0, 0);
+        // its body straight on the seat (the pose's own lift and the legacy lying offsets aside; on a gym piece its own
+        // lift: the run's bounce, a pull-up, the ball's hop)
+        inner.position.set(0, seat?.a.use && !seat.a.lie ? p.y * VILLAGER_S : 0, 0);
         blob.position.y = (anchored.a.floor - tf.y) / group.scale.x + 0.6;
       } else {
         // lying on its back: lifted onto it; on its front (prone): lifted onto its front (its beak, its belly: sunk a
@@ -510,7 +521,10 @@ export async function createVillager(id: string, url: string, seed = 0): Promise
       // (still moving: a crossfade between states, an action under way, getting on or off a seat)
       // the rod aimed at the float, once the pose and the body are set
       orient();
-      return k < 1 || !!act || moving;
+      // (on a gym piece, using it: its loop moves it frame by frame)
+      const loop = !!seat?.a.use && isGym(cur);
+      loopOnly = loop && !(k < 1 || act || moving);
+      return k < 1 || !!act || moving || loop;
     },
     nextBlink(t) {
       const end = act ? act.t0 + ACTION_MS[act.a] - t : Infinity;

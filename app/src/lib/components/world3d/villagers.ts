@@ -317,14 +317,18 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         // (the hand in the body's own frame, three's)
         want = faceFloat(s.x, s.z, ang.x, ang.z, ox * c + oz * sn, -ox * sn + oz * c);
       }
-      const to = s.seat !== null ? 0 : want;
+      // on a seat: its anchor's way (a turned chair, the bike and the treadmill side on), so it isn't turning to the
+      // front each frame only to be put back (that kept the island at its full rate)
+      const anchor = s.seat !== null ? anchorAt(s) : null;
+      const to = anchor ? anchor.yaw : s.seat !== null ? 0 : want;
       w.yaw = turn(w.yaw, to, dt, s.walking ? 14 : aiming ? FACE_FLOAT_K : 6);
       const turning = Math.abs(Math.atan2(Math.sin(to - w.yaw), Math.cos(to - w.yaw))) > 0.005;
       // its state, and its moment (the director's motion, once each)
       // on a seat: on its model's own (villager3d sitAt: the villager sits down there itself), dozing off on it asleep
-      const anchor = s.seat !== null ? anchorAt(s) : null;
-      // (lying on one, the hammock: asleep it naps there)
-      const state: State = anchor ? (anchor.lie ? (s.asleep ? 'nap' : 'lie') : 'sit') : s.prone ? 'prone' : s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
+      // (lying on one, the hammock: asleep it naps there; on a gym piece it uses it: asleep, it dozes there)
+      const state: State = anchor
+        ? anchor.use && !s.asleep ? anchor.use : anchor.lie ? (s.asleep ? 'nap' : 'lie') : anchor.stand ? 'doze' : 'sit'
+        : s.prone ? 'prone' : s.asleep ? (s.seat !== null ? 'nap' : 'doze') : s.seat !== null ? 'sit' : s.walking ? 'walk' : rod ? 'fish' : 'idle';
       if (v.state() !== state) w.posing = true;
       v.set(state);
       if (s.motionN !== w.motionN) {
@@ -358,7 +362,9 @@ export function createVillagers(add: (o: Object3D) => () => void, dir: string, k
         // (posed till it settles: a state's crossfade, an action, and once more after it stops)
         const going = v.step(t, s.walking ? moved : 0, s.walking ? (moved / Math.max(1, dt)) * 1000 : 0);
         w.posing = active || busy || going;
-        if (going) moving = true;
+        // (a gym piece's loop alone is the island's ambience: its ambient rate, the frames it draws anyway while a
+        // villager shows, not the full one)
+        if (going && !v.looping()) moving = true;
       } else v.blink(t);
     }
     for (const [slot, w] of ws) if (!seen.has(slot)) {

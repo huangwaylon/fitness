@@ -40,9 +40,32 @@ describe('sitting.ts: the island\'s seats', () => {
     const [l, r] = [seatNamed(l0, 'seatMaeL')!, seatNamed(l0, 'seatMaeR')!];
     expect(l.piece).toBe('bench-mae');
     expect(l.at[0]).toBeLessThan(r.at[0]);
-    // the pull-up bar is no seat
-    expect(seatSpots(l0, l0.objects.get('pullup')!)).toEqual([]);
+    // the pull-up bar is the gym's: its spot keeps its name (the idle life's bar), one on it does pull-ups
+    expect(seatSpots(l0, l0.objects.get('pullup')!).map((q) => q.name)).toEqual(['pullup']);
     expect(seatsOf(l0, l0.objects.get('pullup')!).map(([n]) => n)).toEqual(['pullup']);
+    expect(seatAnchor(l0, 'pullup', 0)).toMatchObject({ use: 'pullup', stand: true });
+  });
+
+  test('the gym: each piece one uses walks up to its spot and on (its anchor\'s use), every facing', () => {
+    const USES = { 'weight-bench': ['press', false], 'exercise-bike': ['pedal', false], treadmill: ['run', true], 'punching-bag': ['punch', true], 'exercise-ball': ['bounce', false], pullup: ['pullup', true] } as const;
+    const bad: string[] = [];
+    for (const [k, [use, stand]] of Object.entries(USES))
+      for (const f of [0, 1, 2, 3] as const) {
+        const o: Obj = { id: 'g1', k, x: 8, z: 20, f };
+        const l = at(o), spots = seatSpots(l, o), a = spots[0] && seatAnchor(l, spots[0].name, 0);
+        if (spots.length !== 1 || !a) {
+          bad.push(`${k} f${f}: no spot`);
+          continue;
+        }
+        if (a.use !== use || !!a.stand !== stand || a.lie !== (use === 'press')) bad.push(`${k} f${f}: ${a.use} ${a.stand} ${a.lie}`);
+        // (where the walk ends is where the 3D villager steps on from)
+        if (Math.hypot(a.from[0] - spots[0].at[0], -a.from[1] - spots[0].at[1]) >= 1.5) bad.push(`${k} f${f}: from ${a.from} spot ${spots[0].at}`);
+        const [mx, mz] = objMid(l, o);
+        if (Math.hypot(a.x - mx, -a.z - mz) >= 30) bad.push(`${k} f${f}: off its piece`);
+      }
+    // the rest of the gym is to look at: a tap answers where it stands
+    for (const k of ['barbell', 'kettlebell', 'protein-shaker', 'water-cooler', 'digital-scale', 'climbing-wall', 'upright-locker']) if (seatSpots(at({ id: 'g1', k, x: 8, z: 20, f: 0 }), { id: 'g1', k, x: 8, z: 20, f: 0 }).length) bad.push(`${k}: a seat`);
+    expect(bad).toEqual([]);
   });
 
   test('one villager a seat: the nearest free one, a bench two, none when all are taken', () => {
@@ -70,7 +93,9 @@ describe('sitting.ts: the island\'s seats', () => {
 
   test('a seat\'s look sits (its tap area); a tap on the ground at a seat\'s foot finds its piece', () => {
     expect(['deco/park-bench', 'deco/log-bench', 'deco/log-stool', 'deco/hammock', 'deco/beach-chair'].every(sitLook)).toBe(true);
-    expect(['deco/picnic-set', 'deco/illumi-tree', 'deco/pump', 'deco/pullup'].some(sitLook)).toBe(false);
+    expect(['deco/picnic-set', 'deco/illumi-tree', 'deco/pump'].some(sitLook)).toBe(false);
+    // (the pull-up bar's look is the gym's: a tap walks up to it)
+    expect(sitLook('deco/pullup')).toBe(true);
     const o: Obj = { id: 'c1', k: 'iron-chair', x: 8, z: 20, f: 1 }, l = at(o), [mx, mz] = objMid(l, o);
     expect(seatPieceAt(l, mx + 4, mz - 6)?.id).toBe('c1');
     expect(seatPieceAt(l, mx + 60, mz)).toBeNull();

@@ -207,9 +207,10 @@ export function worldOf(l: Layout, nav: LayoutNav = navOf(l)): WorldGeo {
     const [x, z] = objMid(l, o);
     const def = kindDef(o.k);
     for (const [name, p] of seatsOf(l, o)) {
-      if (o.k === 'pullup') {
-        if (name === 'pullup' || PULLUP_AT === WORLD_2D.PULLUP_AT) PULLUP_AT = p;
-      } else SEATS[name] = p;
+      // (a pull-up bar's spot is a seat too, a gym piece's: one standing still there does pull-ups; the default's is
+      // also the idle life's bar)
+      if (o.k === 'pullup' && (name === 'pullup' || PULLUP_AT === WORLD_2D.PULLUP_AT)) PULLUP_AT = p;
+      SEATS[name] = p;
     }
     if (o.k === 'flower') {
       FLOWERS.push({ id: o.id, x: Math.round(x), z: Math.round(z), clump: Number(o.s?.slice(1)) || 0 });

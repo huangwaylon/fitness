@@ -57,6 +57,11 @@ export const STARTER: readonly string[] = Object.keys(ITEMS).filter((c) => ITEMS
 const BY_CAT = new Map(Object.entries(ITEMS).flatMap(([c, m]) => (m.cat ? [[m.cat, c] as const] : [])));
 /** A ずかん catalogue id → the tent's code, when NH has a model of it. */
 export const codeOfFind = (cat: string): string | null => BY_CAT.get(cat) ?? null;
+/** NH's fitness furniture the rooms have (the island's ジム, layout/catalog.ts group 'gym', by its ずかん id): the
+ *  もようがえ's ジム tab gathers the ones found or bought (the rooms' pieces stay the shop's and the balloons': NH's
+ *  barbell and kettlebell are crafted, in neither). */
+const GYM_CATS = ['pull-up-bar-stand', 'weight-bench', 'exercise-bike', 'treadmill', 'punching-bag', 'exercise-ball', 'protein-shaker-bottle', 'water-cooler', 'digital-scale', 'climbing-wall', 'upright-locker'];
+export const GYM: ReadonlySet<string> = new Set(GYM_CATS.flatMap((c) => BY_CAT.get(c) ?? []));
 
 /** An item's footprint (tiles: across, deep) turned to facing `f` (a quarter turn each). */
 export function footprint(code: string, f: number): [number, number] {

@@ -4,12 +4,19 @@ import { describe, expect, it } from 'vitest';
 import catalog from '../island/catalog.json';
 import ja from '#lib/i18n/tent.ja.json';
 import en from '#lib/i18n/tent.en.json';
-import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, ITEMS, STARTER, WALLS, codeOfFind, iconUrl } from './items.ts';
+import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, STARTER, WALLS, codeOfFind, iconUrl } from './items.ts';
 
 const STATIC = join(import.meta.dirname, '..', '..', '..', '..', 'static');
 const JA = ja as Record<string, string>, EN = en as Record<string, string>;
 
 describe('the tent’s catalogue (scripts/room-models.ts)', () => {
+  it('has NH’s fitness furniture for the ジム tab (the island’s gym, less the crafted barbell and kettlebell), none of it free', () => {
+    expect(GYM.size).toBe(11);
+    expect([...GYM].every((c) => ITEMS[c] && !ITEMS[c].starter)).toBe(true);
+    // the weight bench is lain on, as NH's Bed
+    expect(ITEMS.f1452.u).toBe('l');
+  });
+
   it('a starter set of about thirty pieces and a few rugs for a campsite tent', () => {
     const rugs = STARTER.filter((c) => ITEMS[c].rug);
     expect(STARTER.length - rugs.length).toBeGreaterThanOrEqual(28);

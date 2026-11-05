@@ -3,16 +3,19 @@
 // opened as the demo on the 3D island; screenshots, the frames (idle and while scrolling), long frames, the load's
 // time and the page's errors into a short report. CI's software GL is no judge of the phones' rendering: this is.
 //
-//   npm run ios:check -- [--url URL] [--device "iPhone 17"] [--out DIR] [--keep]
+//   npm run ios:check -- [--url URL] [--device "iPhone 17"] [--out DIR] [--keep] [--seed FILE] [--then FILE]
 //
 //   --url     the page (default: the live site, https://island-fund.pages.dev/?demo)
 //   --device  a simulator by name (default: the first available "iPhone 1…" of the newest iOS)
 //   --out     where the report and screenshots go (default: app/test-results/ios-sim/<date>)
 //   --keep    leave the simulator booted
+//   --seed    a JSON file of localStorage entries ({key: value}) put in before the island loads (the page is opened,
+//             seeded, and opened again): a demo island with things on it (the gym's ten pieces: docs/design.md)
+//   --then    a JS file run in the page once the island is up, before the measures (put my villager on a piece)
 // Once per Mac: nothing (the script turns on Safari's Remote Automation in the simulator); safaridriver ships with
 // macOS. Nightly: a launchd agent (docs/ops/testing.md has the plist) runs `npm run ios:check` and keeps its reports.
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const args = process.argv.slice(2);
@@ -83,6 +86,11 @@ try {
   }
   const t0 = Date.now();
   await wd('POST', `/session/${sid}/url`, { url: URL_ });
+  const seed = opt('--seed', '');
+  if (seed) {
+    await run(`for (const [k, v] of Object.entries(arguments[0])) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));`, JSON.parse(readFileSync(seed, 'utf8')));
+    await wd('POST', `/session/${sid}/url`, { url: URL_ });
+  }
   // the page's errors from here on (the load's own are in its console: the 3D island's loaded() says it came up)
   await run(`window.__iosErrs = []; addEventListener('error', (e) => __iosErrs.push(String(e.message).slice(0, 200))); addEventListener('unhandledrejection', (e) => __iosErrs.push('rejection: ' + String(e.reason).slice(0, 200)));`);
   let loaded = false;
@@ -92,6 +100,8 @@ try {
   }
   report.loadMs = loaded ? Date.now() - t0 : null;
   report.island3d = loaded;
+  const then = opt('--then', '');
+  if (then) report.then = await run(readFileSync(then, 'utf8'));
   await sleep(3000);
   await shot('island');
   report.idle = await runAsync(FRAMES, 5000);

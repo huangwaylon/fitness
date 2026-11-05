@@ -15,7 +15,7 @@
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { TENT_MAX } from '#lib/contract/tent.ts';
-  import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, ITEMS, STARTER, WALLS, footprint, iconUrl } from './items.ts';
+  import { DEFAULT_FLOOR, DEFAULT_WALL, FLOORS, GYM, ITEMS, STARTER, WALLS, footprint, iconUrl } from './items.ts';
   import { HALF, ROOM, TILE, centreOf, fitsOn, isSmall, isSurface, isWallItem, kidSpot, tilesOf, wallSnap, wallSteps, wallWhy, nearestFree, placeWhy, resolve, slotTaken, snapTo, surfaceAt, tileToSlot, type Facing, type Spot, type Why } from './grid.ts';
   import type { Tent } from './engine.ts';
   import type { DragLink } from './dragLink.ts';
@@ -39,15 +39,17 @@
   }
   let { room, eng, link, finds, bought, villagers, relayNow, holderName, ondone }: Props = $props();
 
-  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'bought' | 'wall' | 'floor';
+  type Tab = 'recent' | 'furniture' | 'rugs' | 'walled' | 'finds' | 'bought' | 'gym' | 'wall' | 'floor';
+  /** The gym's pieces I have (found or bought: items.ts GYM), gathered on a tab of their own. */
+  const gym = $derived([...new Set([...finds, ...bought])].filter((c) => GYM.has(c)));
   /** The pieces I picked last (this phone's, newest first): NH's quick access to what's at hand. */
   const RECENT_MAX = 12;
   let recent = $state<string[]>(((r) => (Array.isArray(r) ? r.filter((c): c is string => typeof c === 'string' && !!ITEMS[c]) : []))(readJson<unknown>(localKV(), DEVICE.tentRecent)));
-  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', 'finds', ...(bought.length ? ['bought' as const] : []), 'wall', 'floor']);
+  const TABS = $derived<Tab[]>([...(recent.length ? ['recent' as const] : []), 'furniture', 'rugs', 'walled', 'finds', ...(bought.length ? ['bought' as const] : []), ...(gym.length ? ['gym' as const] : []), 'wall', 'floor']);
   let tab = $state<Tab>('furniture');
   const list = $derived(
     tab === 'recent' ? recent : tab === 'furniture' ? STARTER.filter((c) => !ITEMS[c].rug && !ITEMS[c].wl) : tab === 'rugs' ? STARTER.filter((c) => ITEMS[c].rug)
-      : tab === 'walled' ? [...new Set([...STARTER, ...finds, ...bought].filter((c) => ITEMS[c].wl))] : tab === 'finds' ? finds : tab === 'bought' ? bought
+      : tab === 'walled' ? [...new Set([...STARTER, ...finds, ...bought].filter((c) => ITEMS[c].wl))] : tab === 'finds' ? finds : tab === 'bought' ? bought : tab === 'gym' ? gym
       : tab === 'wall' ? WALLS : FLOORS
   );
   /** How many of each piece stand in the room (the icons' counts). */

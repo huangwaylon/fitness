@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import MANIFEST from './villagers.json' with { type: 'json' };
 import MAP from '../../../../scripts/villagers3d-map.json' with { type: 'json' };
 import { ROSTER_IDS } from '#lib/villagers/roster.ts';
-import { ACTION_MS, FADE_MS, STRIDE, action, base, idle, mix, over, sit, walk, type Body } from './poses.ts';
+import { ACTION_MS, FADE_MS, GYM_USES, REP_MS, STRIDE, action, base, idle, mix, over, sit, walk, type Body } from './poses.ts';
 import { BLINK, FACES, cellTransform, eyeAt, faceChangeIn, mouthAt, type Face } from './faces.ts';
 import { has3d, url3d } from './manifest.ts';
 
@@ -93,6 +93,25 @@ describe('the villagers’ motion (poses.ts)', () => {
     const a = idle(0), b = idle(1000);
     expect(a.sq).not.toBeCloseTo(b.sq, 4);
     expect(JSON.stringify(idle(1234, 2))).toBe(JSON.stringify(idle(1234, 2)));
+  });
+
+  it('uses a gym piece in a loop: each rep moves it, the next rep the same again; pressing lies on its back', () => {
+    const o = { phase: 0, speed: 0, body: BODY, seed: 0, seatH: 4.8 }, bad: string[] = [];
+    // (what each moves: the arms' bend, the legs, the body's lift; the breath and the look about drift on as ever)
+    const KEY = { press: 'Arm_2_R', pedal: 'Leg_1_L', run: 'Leg_1_L', punch: 'Spine_1', bounce: 'y', pullup: 'y' } as const;
+    for (const u of GYM_USES) {
+      const T = REP_MS[u], at = (t: number) => {
+        const p = base(u, t, o), k = KEY[u];
+        return k === 'y' ? p.y.toFixed(4) : JSON.stringify(p.j[k]?.map((v) => v.toFixed(4)));
+      };
+      // (a quarter rep in it has moved; two reps on it's back where it was)
+      if (at(1000) === at(1000 + T / 4)) bad.push(`${u}: still`);
+      if (at(1000) !== at(1000 + T * 2)) bad.push(`${u}: no loop`);
+    }
+    expect(bad).toEqual([]);
+    expect(base('press', 0, o).pitch).toBeCloseTo(-Math.PI / 2);
+    // a pull-up lifts it, the run bounces it
+    expect(Math.max(...[0, 300, 600, 900].map((t) => base('pullup', t, o).y))).toBeGreaterThan(1);
   });
 
   it('crossfades: mix is the first pose at 0, the second at 1, between in between', () => {

@@ -56,8 +56,7 @@
   import { resolveLook } from '#lib/villagers/look.ts';
   import { IslandLife } from './islandLife.svelte.ts';
   import { VILLAGER, eventsAt, u, wildFlower, type Tod } from './scene.ts';
-  import { todayPct } from './progress.ts';
-  import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, PULLUP_AT, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
+  import { CAMS, CENTRE_STAGE, FLOWERS, GOAL_TREES, HOMES, SEAT_DROP, flowerById, freshWhere, seatAt, surfaceAt, worldGen, BUILDINGS, LAWN_SPOTS, type BuildingId } from './world.ts';
   import { GUEST_ARRIVAL, guestSpot, doorAt, outOf, partnerOnline } from './buildings.ts';
   import { site } from './site.svelte.ts';
   import { digSpots, spotsOn } from './beach.ts';
@@ -436,14 +435,17 @@
   const feet = (id: VillagerActor) => livePos(id);
 
   // Sitting (docs/design.md "Decor: sitting"): a villager standing still on a seat's spot (world.ts SEATS: a step in
-  // front of a bench's seat, a stool, a chair, the hammock) is on it (the 3D villager sits or lies down there itself:
-  // world3d/villagers.ts; a card sinks behind it); one at the pull-up bar on its person's exercise day does a
-  // few pull-ups. From where it stands only, so both phones draw the same. Both on one bench: a heart each.
+  // front of a bench's seat, a stool, a chair, the hammock, a piece of the gym) is on it (the 3D villager sits or lies
+  // down there itself, or uses the gym's piece: world3d/villagers.ts; a card sinks behind it); one at a pull-up bar does
+  // a few pull-ups (the idle life takes it there on its person's exercise day). From where it stands only, so both
+  // phones draw the same. Both on one bench: a heart each.
   // (asleep too: it dozes off on it; a seat whose spot has another piece today is none: seatHere)
   const seated = $derived(Object.fromEntries(VILLAGERS.map((id) => [id, actors[id].walking ? null : seatHere(seatAt(Math.round(actors[id].x), Math.round(actors[id].y)))])) as Record<VillagerActor, string | null>);
+  // (the pull-up bar is a seat of the gym's: one on its spot does pull-ups there, the 3D villager by its pose; a card
+  // without a model is lifted, Island3D's pullLift)
   const repping = $derived(Object.fromEntries(VILLAGERS.map((id) => {
-    const a = actors[id], pid = whoOf(id);
-    return [id, pid !== 'G' && !a.walking && !a.asleep && Math.abs(a.x - PULLUP_AT[0]) <= 3 && Math.abs(a.y - PULLUP_AT[1]) <= 3 && todayPct(view.people[pid].rings.peach) >= 100];
+    const l = site.layout, s = seated[id] && l ? seatNamed(l, seated[id]) : null;
+    return [id, !actors[id].asleep && s?.kind === 'pullup'];
   })) as Record<VillagerActor, boolean>);
   /** The bench (a piece of two seats) a seat is on, or null. */
   const benchOf = (seat: string | null) => {
@@ -1145,7 +1147,7 @@
 
         <Flowers {season} {hybrid} />
 
-        <Decor editing={decorating} />
+        <Decor editing={decorating} sit={sitOn} />
         <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
         <Board enabled={() => !covered && !life.hidden && !decorating} night={tod === 'night'} {season} />
         <!-- the もようがえ: the layout's own (IslandEdit over the 3D camera) -->

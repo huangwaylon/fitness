@@ -10,6 +10,21 @@ describe('seats3d: the seats and beds from the models', () => {
     for (const k of ['f4081', 'f4041', 'f1434', 'f3230', 'f1620']) expect(shapeOf('tent', k)?.k).toBe('l');
     for (const k of ['park-bench', 'log-bench', 'log-stool']) expect(shapeOf('island', k)?.k).toBe('s');
     expect(shapeOf('island', 'hammock')).toMatchObject({ k: 'l', sway: 1 });
+    // the gym's: the weight bench lain on to press, the rest used in place
+    expect(shapeOf('island', 'weight-bench')).toMatchObject({ k: 'l', use: 'press' });
+    for (const [k, use] of [['exercise-bike', 'pedal'], ['treadmill', 'run'], ['punching-bag', 'punch'], ['exercise-ball', 'bounce'], ['pullup', 'pullup']]) expect(shapeOf('island', k), k).toMatchObject({ k: 'u', use });
+  });
+
+  it('a gym piece used in place: its spot turned with the piece, facing its own way, stood on or sat on', () => {
+    const [run] = anchorsOf(shapeOf('island', 'treadmill'), { x: 0, z: 0, y: 2, yaw: 0, s: 3 });
+    // on the belt, facing its console (−x), its feet's anchor
+    expect(run).toMatchObject({ use: 'run', stand: true, lie: false });
+    expect(run.y).toBeCloseTo(2 + 1.2 * 3);
+    expect(Math.sin(run.yaw)).toBeCloseTo(-1);
+    const [bike] = anchorsOf(shapeOf('island', 'exercise-bike'), { x: 0, z: 0, y: 0, yaw: Math.PI / 2, s: 3 });
+    expect(bike).toMatchObject({ use: 'pedal', stand: false });
+    // turned a quarter: it faces the console's way turned with it (−x → +z)
+    expect(Math.cos(bike.yaw)).toBeCloseTo(1);
   });
 
   it('a sofa or a bench seats two side by side, a double bed sleeps two; a chair has its back, a stool none', () => {

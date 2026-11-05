@@ -35,7 +35,11 @@ export interface Body {
   hip: number;
 }
 
-export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish' | 'prone';
+export type State = 'idle' | 'walk' | 'sit' | 'lie' | 'nap' | 'doze' | 'fish' | 'prone' | GymUse;
+/** The gym's uses (villager3d/seats3d.ts Use), each a base state looped while it's on its piece. */
+export type GymUse = 'press' | 'pedal' | 'run' | 'punch' | 'bounce' | 'pullup';
+export const GYM_USES: readonly GymUse[] = ['press', 'pedal', 'run', 'punch', 'bounce', 'pullup'];
+export const isGym = (s: State): s is GymUse => (GYM_USES as readonly string[]).includes(s);
 export type Action = 'hop' | 'wave' | 'highfive' | 'surprise' | 'sting' | 'cast' | 'tug' | 'reel' | 'warmup' | 'sidebend' | 'jump' | 'twitch';
 export const ACTION_MS: Record<Action, number> = {
   hop: 720, wave: 1700, highfive: 1000, surprise: 650, sting: 1400, cast: 620, tug: 420, reel: 700, twitch: 460,
@@ -240,8 +244,122 @@ function fish(t: number, seed = 0): Pose {
   return p;
 }
 
+// ---- the gym (seats3d.ts Use: its piece's anchor places it; NH's use, looped while it's on it) ---------------------
+
+/** One rep's length (ms) of each. */
+export const REP_MS: Record<GymUse, number> = { press: 1800, pedal: 760, run: 330, punch: 1100, bounce: 900, pullup: 4200 };
+const cyc = (t: number, ms: number, seed = 0) => ((((t + seed * 137) % ms) + ms) % ms) / ms;
+
+/** Lying on the weight bench pressing the bar: the arms from the chest (elbows out, bent) straight up and down again,
+ *  the knees bent over the bench's end, feet on the ground. */
+function press(t: number, seed = 0): Pose {
+  const p = lie(t, seed);
+  // 0 at the chest, 1 locked out: up quicker than down
+  const k = cyc(t, REP_MS.press, seed), up = k < 0.4 ? ease(k / 0.4) : k < 0.55 ? 1 : 1 - ease((k - 0.55) / 0.45);
+  // (lying, the body's forward is up: the arms forward point at the sky)
+  const fwd = -0.75 - 0.8 * up, down = ARMS * (0.45 + 0.45 * up), elbow = 1.35 * (1 - up);
+  p.j.Arm_1_L = [fwd, 0, -down];
+  p.j.Arm_1_R = [fwd, 0, down];
+  p.j.Arm_2_L = [0, -elbow, 0];
+  p.j.Arm_2_R = [0, elbow, 0];
+  p.j.Leg_1_L = [-0.5, 0, -0.12];
+  p.j.Leg_1_R = [-0.5, 0, 0.12];
+  p.j.Leg_2_L = [1.1, 0, 0];
+  p.j.Leg_2_R = [1.1, 0, 0];
+  p.j.Head = [-0.2 + 0.08 * up, 0, 0];
+  return p;
+}
+
+/** On the exercise bike's saddle (sitOn's legs), pedalling: each thigh rising and falling half a turn from the other,
+ *  the knee folding with it, leaning in to the handlebars, the hands on them. */
+function pedal(t: number, body: Body, h: number, seed = 0): Pose {
+  const p = sitOn(t, body, h, false, seed);
+  const a = cyc(t, REP_MS.pedal) * TAU, sL = Math.sin(a), cL = Math.cos(a);
+  p.j.Leg_1_L = [-1.15 + 0.38 * sL, 0, -0.08];
+  p.j.Leg_1_R = [-1.15 - 0.38 * sL, 0, 0.08];
+  p.j.Leg_2_L = [1.25 + 0.4 * cL, 0, 0];
+  p.j.Leg_2_R = [1.25 - 0.4 * cL, 0, 0];
+  p.j.Ankle_L = [-0.2, 0, 0];
+  p.j.Ankle_R = [-0.2, 0, 0];
+  p.j.Arm_1_L = [-1.25, 0, -(ARMS - 0.25)];
+  p.j.Arm_1_R = [-1.25, 0, ARMS - 0.25];
+  p.j.Arm_2_L = [0, -0.35, 0];
+  p.j.Arm_2_R = [0, 0.35, 0];
+  p.j.Spine_1 = [0.24, 0, 0.04 * sL];
+  p.j.Head = [-0.12, 0, 0];
+  p.y += 0.06 * Math.abs(sL);
+  return p;
+}
+
+/** Running in place on the treadmill's belt: the run's own stride (walk at a run's speed), the belt carrying the feet
+ *  back under it. */
+function run(t: number): Pose {
+  return walk(t, t / (REP_MS.run * 2), 300);
+}
+
+/** At the punching bag: the guard up (the fists by the chin), a jab with one hand then the other, the body turning into
+ *  each and bobbing on its toes. */
+function punch(t: number, seed = 0): Pose {
+  const p = arms(rest(), ARMS - 0.15, -1.0, 1.4);
+  breathe(p, t, 1800, 1);
+  const k = cyc(t, REP_MS.punch, seed), half = k < 0.5 ? 0 : 1, u = (k % 0.5) / 0.5;
+  // out fast, back slower
+  const hit = u < 0.18 ? ease(u / 0.18) : u < 0.45 ? 1 - ease((u - 0.18) / 0.27) : 0;
+  const L = half ? 0 : hit, R = half ? hit : 0;
+  p.j.Arm_1_L = [-1.0 - 0.6 * L, 0, -(ARMS - 0.15) + 0.2 * L];
+  p.j.Arm_1_R = [-1.0 - 0.6 * R, 0, ARMS - 0.15 - 0.2 * R];
+  p.j.Arm_2_L = [0, -1.4 * (1 - L) - 0.1, 0];
+  p.j.Arm_2_R = [0, 1.4 * (1 - R) + 0.1, 0];
+  p.j.Spine_1 = [0.12, 0.22 * (R - L), 0];
+  p.j.Head = [0.06, -0.1 * (R - L), 0];
+  p.j.Leg_1_L = [-0.18, 0, -0.08];
+  p.j.Leg_1_R = [0.12, 0, 0.08];
+  p.y = 0.12 * Math.abs(Math.sin(k * TAU * 2));
+  return p;
+}
+
+/** Bouncing on the exercise ball: seated on its top, a little hop up and the squash back down, the arms out for
+ *  balance. */
+function bounce(t: number, body: Body, h: number, seed = 0): Pose {
+  const p = sitOn(t, body, h, false, seed);
+  const b = Math.abs(Math.sin(cyc(t, REP_MS.bounce * 2) * TAU));
+  p.y += 0.55 * b;
+  p.sq *= 1 - 0.05 * (1 - b);
+  p.j.Arm_1_L = [-0.35, 0, -(ARMS - 0.55)];
+  p.j.Arm_1_R = [-0.35, 0, ARMS - 0.55];
+  p.j.Head = [-0.05 * b, 0, 0];
+  return p;
+}
+
+/** At the pull-up bar (the island's old rhythm, Island3D's pullLift: two pull-ups, a rest): its hands up and forward on
+ *  the bar, pulled up by the arms' bend, the legs hanging and tucking a little at the top. */
+function pullup(t: number, seed = 0): Pose {
+  const p = rest();
+  const k = cyc(t, REP_MS.pullup, seed);
+  const step = (a: number, b: number, c: number, d: number) => (k < a || k > d ? 0 : k < b ? ease((k - a) / (b - a)) : k <= c ? 1 : 1 - ease((k - c) / (d - c)));
+  const up = Math.max(step(0, 0.08, 0.16, 0.24), step(0.32, 0.4, 0.48, 0.56));
+  // (out wide, up and forward to the bar's ends beside its head; the elbows bend as it pulls)
+  p.j.Arm_1_L = [-2.0 + 0.3 * up, 0, -0.6 + 0.3 * up];
+  p.j.Arm_1_R = [-2.0 + 0.3 * up, 0, 0.6 - 0.3 * up];
+  p.j.Arm_2_L = [0, -0.9 * up, 0];
+  p.j.Arm_2_R = [0, 0.9 * up, 0];
+  p.j.Leg_2_L = [0.45 * up, 0, 0];
+  p.j.Leg_2_R = [0.45 * up, 0, 0];
+  p.j.Head = [-0.15, 0, 0];
+  // (its chin over the bar at the top: 16u, in model units at the villagers' 5.4u)
+  p.y = 3 * up;
+  breathe(p, t, 2600, 0.6);
+  return p;
+}
+
 export function base(state: State, t: number, o: { phase: number; speed: number; body: Body; seed: number; seatH?: number; back?: boolean }): Pose {
   switch (state) {
+    case 'press': return press(t, o.seed);
+    case 'pedal': return pedal(t, o.body, o.seatH ?? o.body.hip, o.seed);
+    case 'run': return run(t);
+    case 'punch': return punch(t, o.seed);
+    case 'bounce': return bounce(t, o.body, o.seatH ?? o.body.hip, o.seed);
+    case 'pullup': return pullup(t, o.seed);
     case 'fish': return fish(t, o.seed);
     case 'walk': return walk(t, o.phase, o.speed);
     case 'sit': return o.seatH !== undefined ? sitOn(t, o.body, o.seatH, !!o.back, o.seed) : sit(t, o.body, o.seed);
