@@ -46,7 +46,7 @@ const g = (at: string): SoundMark => ['drop', at, 'g'];
 /** clip id (an item's, or a dialogue line's `<item>-<n>`) → its sound marks. */
 export const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'r4-reschedule': [['link', 'move it'], ['say', '24', 'twenty-four']],
-  'r4-service-charge': [['say', '12.5%', 'twelve and a half percent'], ['say', 'Did you', 'didja']],
+  'r4-service-charge': [['say', '12.5%', 'twelve and a half per cent'], ['say', 'Did you', 'didja']],
   'm4-swing-by': [['say', 'try and', "try 'n'"], ['link', 'wiped out']],
   'm4-be-good': [['say', 'kind of', 'kinda'], g('trying')],
   'm4-cat': [['say', 'you', 'ya']],

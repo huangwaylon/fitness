@@ -59,7 +59,7 @@ const item = (type: ItemType) => ([id, speaker, en, ja, note, choices, tags, x =
 
 const REPLY: readonly Row[] = [
   ['r4-overbooked', 'orville', "We're overbooked on this flight. Would you be willing to take a later one?",
-    'この便はオーバーブッキングでして。後の便に変更していただけませんか？ →「条件次第です。何か見返りはありますか？」',
+    'この便はオーバーブッキングでして。後の便に変更していただけませんか？ →「条件によります。何か補償はありますか？」',
     'overbooked＝定員超過の予約。まず条件を聞くのが自然',
     ["That depends. Is there any compensation?", 'No, I booked it months ago.', 'Yes, a window seat, please.'],
     tg(1, 'service', 'formula', ['desk'])],
@@ -159,12 +159,12 @@ const REPLY: readonly Row[] = [
     'store credit＝店で使える金券。現金の返金ではない',
     ['Hmm. Could you look it up on my card instead?', 'Great, so I get my money back?', "I'll pay by card, then."],
     tg(26, 'service', 'refusal')],
-  ['r4-service-charge', 'stitches', "There's a 12.5% service charge on here. Did you know?",
+  ['r4-service-charge', 'apollo', "There's a 12.5% service charge on here. Did you know?",
     'これ、12.5%のサービス料が入ってるよ。知ってた？ →「えっ、チップは任意だと思ってた。」',
     'service charge＝サービス料。充電の charge と聞き分け',
     ['No! I thought tips were up to us.', 'Yeah, I charged it this morning.', 'About twelve, I think.'],
     tg(27, 'friend', 'literal', [], ['yod', 'numbers']),
-    { tts: "There's a twelve and a half percent service charge on here. Didja know?" }]
+    { tts: "There's a twelve and a half per cent service charge on here. Didja know?" }]
 ];
 
 // ---- mean: what they really mean ------------------------------------------------------------------------------------
@@ -271,13 +271,13 @@ const MEAN: readonly Row[] = [
 const WORD: readonly Row[] = [
   ['w4-shouldve', 'wilbur', "You should've checked the gate before going for coffee.",
     'コーヒーを買いに行く前に、搭乗口を確認しておくべきだったね。',
-    "should've は「シュダヴ」。shouldn't の n't を聞く",
+    "should've は「シュダ」。shouldn't なら n't が聞こえる",
     ["should've", "shouldn't have", "could've"],
     tg(2, 'friend', 'literal', [], ['contraction', 'weak-form']),
     { tts: "You shoulda checked the gate before goin' for coffee." }],
   ['w4-wouldnt-have', 'coco', "I wouldn't have booked it if I'd known about the fee.",
     '手数料のことを知ってたら、予約しなかったのに。',
-    "wouldn't have は t が消えて「ウドゥンナヴ」",
+    "wouldn't have は t が消えて「ウドゥナヴ」",
     ["wouldn't have", "would've", "couldn't have"],
     tg(16, 'friend', 'literal', [], ['contraction', 'weak-form']),
     { tts: "I wouldn't've booked it if I'd known about the fee." }],
@@ -300,7 +300,7 @@ const WORD: readonly Row[] = [
     { tts: "You've gotta change at Shinagawa for the airport." }],
   ['w4-didja', 'orville', 'Did you pack this bag yourself?',
     'このバッグはご自身で荷造りされましたか？',
-    'Did you は「ディジュ」とつながる',
+    'Did you は「ディジャ」とつながる',
     ['Did you', 'Do you', 'Would you'],
     tg(1, 'service', 'formula', ['desk'], ['yod']),
     { tts: 'Didja pack this bag yourself?' }],
