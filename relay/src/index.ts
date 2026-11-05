@@ -38,6 +38,9 @@ export interface Env {
   /** Where the real weather is fetched for (weather.ts): central Tokyo, by the 東京 AMeDAS station. */
   WX_LAT?: string;
   WX_LON?: string;
+  /** `1`: the cron compacts the record once a day (04:15 Tokyo). Unset: it doesn't (the user's hold, 2026-11-05: the
+   *  locked days' history is kept); the admin `compact` still runs it by hand. */
+  COMPACT_CRON?: string;
 }
 
 /** What `/health` and the room's weather ops say of the real weather (weather.ts wxHealth). */
@@ -229,11 +232,11 @@ type WxTick = { ok: boolean; fetched: boolean; fail?: string; sent?: boolean; he
 
 export default {
   /** Every 15 minutes: the real weather when it's due (IslandRoom weatherTick); once a day, at 04:15 Tokyo (just after a
-   *  Wednesday's week lock), the record's compaction (store.ts compact). */
+   *  Wednesday's week lock), the record's compaction (store.ts compact) when COMPACT_CRON is `1`. */
   async scheduled(ev: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
     const t0 = Date.now();
     const log = sinkOf(env, ctx);
-    if (isCompactTick(ev.scheduledTime)) {
+    if (env.COMPACT_CRON === '1' && isCompactTick(ev.scheduledTime)) {
       ctx.waitUntil(env.STORE.get(env.STORE.idFromName('record')).compactTick().then(
         (r) => console.log('compact', JSON.stringify(r)),
         (e) => {
