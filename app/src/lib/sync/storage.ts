@@ -21,6 +21,9 @@ export const LIVE = {
   /** `{ k, es }`: the live socket's kept intents not yet acked (sync/live.ts's outbox: ≤ 120, today's), whose person key
    *  by its hash `k`: a kill or a reload offline loses none, they go after the next welcome. */
   outbox: 'island.liveOutbox',
+  /** `{ off }`: the relay's clock less this device's, as last measured (sync/live.ts): what the phone stamps before the
+   *  first welcome is on the relay's clock too. */
+  offset: 'island.liveOffset',
   /** `{ day, events }`: today's shared world as this phone folded it (store/world.svelte.ts: mine and the partner's). */
   world: 'island.world',
   /** `{ <morning>: { A?, B? } }`: both people's wishes on shooting stars by the morning each brings its fragment

@@ -670,3 +670,26 @@ describe('live: the outbox kept across a kill', () => {
     configureStorage({ local: null });
   });
 });
+
+describe('live: the relay clock kept across reloads', () => {
+  it('a reload starts from the offset last measured: what it stamps before the welcome is on the relay’s clock', () => {
+    const m = new Map<string, string>();
+    configureStorage({ local: { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => void m.set(k, v), removeItem: (k) => void m.delete(k) } });
+    const a = createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since });
+    expect(a.serverNow() - Date.now()).toBe(0);
+    a.start();
+    // this phone's clock runs an hour fast: the relay's is an hour behind it
+    last().welcome(true, Date.now() - 3_600_000);
+    expect(a.serverNow() - Date.now()).toBe(-3_600_000);
+    a.stop();
+    // opened again, offline: before any welcome, the relay's clock as last measured
+    online = false;
+    const b = createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since });
+    expect(b.serverNow() - Date.now()).toBe(-3_600_000);
+    // nonsense kept (more than a day): none
+    m.set('island.liveOffset', JSON.stringify({ off: 9e12 }));
+    expect(createLive({ url: 'wss://relay.test/room', key: () => key, WebSocket: FakeWS as never, env, since }).serverNow() - Date.now()).toBe(0);
+    configureStorage({ local: null });
+  });
+});
+
