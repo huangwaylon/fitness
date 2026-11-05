@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { customs, foodDay, foodEntries, foodGoal, foodSeries, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
+import { customs, foodDay, foodEntries, foodGoal, foodSeries, foodWeek, mealProtein, pfcShare, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
+import { mealProteinTarget } from './profile.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { guestRows } from '#lib/contract/guest.ts';
@@ -348,3 +349,43 @@ describe('customs: everyone’s custom foods', () => {
   });
 });
 
+
+describe('the balance views: a meal’s protein, the share of energy, a week’s average', () => {
+  const BROC = { id: 'mext:06263', n: 'ブロッコリー', k: 37, p: 5.4, fa: 0.6, c: 6.6, s: 0, fi: 5.1 };
+  const BEER = { id: 'mext:16006', n: 'ビール', k: 39, p: 0.3, fa: 0, c: 3.1, s: 0, fi: 0, al: 3.7 };
+  it('a meal’s protein (an unknown one as none) and the per-meal target: a third of the day’s, at least 20; none: 25', () => {
+    expect([
+      mealProtein([{ g: 150, f: RICE }, { g: 50, f: NATTO }, { g: 100, f: { ...RICE, p: null } }]), mealProtein([]),
+      mealProteinTarget(null), mealProteinTarget(111), mealProteinTarget(45), mealProteinTarget(60)
+    ]).toEqual([12, 0, 25, 37, 20, 20]);
+  });
+  it('protein, fat and carbs as shares of energy (4/9/4, alcohol 7 its own share), each against the DRI’s range', () => {
+    const r = (x: ReturnType<typeof pfcShare>) => x && { p: Math.round(x.p), fa: Math.round(x.fa), c: Math.round(x.c), al: Math.round(x.al), at: x.at };
+    expect([
+      r(pfcShare({ p: 30, fa: 20, c: 100 })), r(pfcShare({ p: 30, fa: 20, c: 100, al: 20 })), r(pfcShare({ p: 10, fa: 40, c: 50 })),
+      pfcShare({ p: 0, fa: 0, c: 0 }), pfcShare({ p: 0, fa: 0, c: 0, al: 10 })?.al
+    ]).toEqual([
+      { p: 17, fa: 26, c: 57, al: 0, at: { p: 0, fa: 0, c: 0 } },
+      { p: 14, fa: 21, c: 48, al: 17, at: { p: 0, fa: 0, c: -1 } },
+      { p: 7, fa: 60, c: 33, al: 0, at: { p: -1, fa: 1, c: -1 } },
+      null, 100
+    ]);
+  });
+  it('a week’s average: the 7 days to the end given, a day with nothing logged left out, fibre over the days that know it', () => {
+    const day = (who: 'A' | 'B', id: string, d: string, f: object, g: number) => ev(who, T, { id, at: T, d, m: 'l', g, f });
+    const s = reduce({
+      metrics: [],
+      events: [
+        day('A', 'fwk00001', '2026-10-27', RICE, 500), // the day before the week: out
+        day('A', 'fwk00002', '2026-10-28', RICE, 200),
+        day('A', 'fwk00003', '2026-11-01', BROC, 200), day('A', 'fwk00004', '2026-11-01', BEER, 200),
+        day('A', 'fwk00005', '2026-11-04', RICE, 500), // after its end: out
+        day('B', 'fwk00006', '2026-11-01', RICE, 900)
+      ]
+    });
+    // 10-28: 312 kcal, P 5, F 0.6, C 74.2, no fibre known; 11-01: 152 kcal, P 11.4, F 1.2, C 19.4, fibre 10.2, alcohol 7.4
+    expect([foodWeek(s, 'A', '2026-11-03'), foodWeek(s, 'A', '2026-10-26'), foodWeek(s, 'B', '2026-11-03')?.days]).toEqual([
+      { from: '2026-10-28', to: '2026-11-03', days: 2, kcal: 232, p: 8.2, fa: 0.9, c: 46.8, s: 0, fi: 10.2, al: 3.7 }, null, 1
+    ]);
+  });
+});

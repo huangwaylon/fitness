@@ -150,6 +150,11 @@ describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
   it('a saved one round-trips through the editor', () => {
     expect(customOf(customDraft(bar))).toEqual({ n: bar.n, u: bar.u, g: 120, k: 240, p: 20, fa: 8, c: 22, s: 0.4 });
     expect(customDraft(bento).g).toBe('');
+    // fibre and alcohol: typed only when known, kept per serving, back in the editor; blank: not sent
+    const hb = customOf({ ...customDraft(null, 'ハイボール'), u: '1杯', g: '350', k: '150', al: '２８', fi: 'x' });
+    const hbOk = customOf({ ...customDraft(null, 'ハイボール'), u: '1杯', g: '350', k: '150', al: '２８' });
+    expect([hb.fi, hbOk.al, 'fi' in hbOk, customDraft({ ...bar, fi: 3.5, al: undefined }).fi, customErrors({ ...customDraft(null, 'x'), k: '1', fi: '501' }).has('fi')])
+      .toEqual([undefined, 28, false, '3.5', true]);
   });
   it('as a food: per 100 g with its serving first; no weight: one nominal serving, shown without grams', () => {
     expect(customItem(bar)).toMatchObject({ id: 'custom:mabc5678', kcal: 200, portions: [{ label: '1本', g: 120 }, { label: '100g', g: 100 }] });

@@ -4,7 +4,9 @@
   // over: goalChip; the goal at the upper right, GoalEdit, set there on my own day), then protein, fat, carbs and salt,
   // each with its goal and its direction when there is one (「目標 110 g 以上」: グラフ sets them; protein's default
   // 1.6 g × the latest weigh-in, a member's with a weight) and a small bar, coral once past a ceiling (salt and fat at
-  // most, carbs past their band: contract/goals.ts goalOver). BarCard's tokens, one row of four. A day with nothing logged: 「きろく
+  // most, carbs past their band: contract/goals.ts goalOver). BarCard's tokens, a row of four, then fibre (データなし while no
+  // entry knows it) and alcohol (on a day with any); then the PFC balance (PfcBar: the shares of energy against the
+  // 食事摂取基準's ranges). A day with nothing logged: 「きろく
   // なし」 on a past one (not 0 kcal, which reads as eaten nothing), 0 kcal today; no nutrient tiles either way.
   import type { Who } from '#lib/types.ts';
   import type { FoodDay } from '#lib/model/food.ts';
@@ -15,6 +17,7 @@
   import { goalOver } from '#lib/contract/goals.ts';
   import { GOAL_SPECS, goalLabel } from '../health/goals.ts';
   import { goalChip } from './foodUi.ts';
+  import PfcBar from './PfcBar.svelte';
 
   interface Props {
     day: FoodDay;
@@ -35,7 +38,11 @@
   const empty = $derived(day.entries.length === 0);
   const chip = $derived(goal === null || when === 'next' || (empty && when === 'past') ? null : goalChip(day.kcal, goal, when === 'today'));
   const gText = (n: number) => t('food.g', { n: n.toFixed(1) });
-  const cells = $derived((['p', 'fa', 'c', 's'] as const).map((k) => ({ k, v: day[k], goal: goals[k] })));
+  /** The tiles: the four, fibre, and alcohol on a day with some. */
+  const cells = $derived([
+    ...(['p', 'fa', 'c', 's', 'fi'] as const).map((k) => ({ k, v: day[k], goal: goals[k] })),
+    ...(day.al > 0 ? [{ k: 'al' as const, v: day.al, goal: goals.al }] : [])
+  ]);
 </script>
 
 <section class="card sum p{who}" data-food-summary aria-labelledby="fs-h">
@@ -58,11 +65,16 @@
     {#each cells as c (c.k)}
       <div class="cell" data-nutrient={c.k}>
         <dt>{t(`food.${c.k}`)}</dt>
-        <dd class="money">{gText(c.v)}{#if c.goal !== null}<small>{goalLabel(c.k, c.goal)}</small>{/if}</dd>
-        {#if c.goal}<div class="bar mini" class:over={goalOver(c.k, c.v, c.goal)} data-over={goalOver(c.k, c.v, c.goal) || undefined} role="presentation"><i style:width="{Math.min(1, c.v / c.goal) * 100}%"></i></div>{/if}
+        {#if c.v === null}
+          <dd class="money unknown" data-unknown>{t('food.unknown')}<small>{t('food.fiNone')}</small></dd>
+        {:else}
+          <dd class="money">{gText(c.v)}{#if c.goal !== null}<small>{goalLabel(c.k, c.goal)}</small>{/if}</dd>
+          {#if c.goal}<div class="bar mini" class:over={goalOver(c.k, c.v, c.goal)} data-over={goalOver(c.k, c.v, c.goal) || undefined} role="presentation"><i style:width="{Math.min(1, c.v / c.goal) * 100}%"></i></div>{/if}
+        {/if}
       </div>
     {/each}
-  </dl>{/if}
+  </dl>
+  <PfcBar id="day" p={day.p} fa={day.fa} c={day.c} al={day.al} />{/if}
 </section>
 
 <style>
@@ -85,6 +97,7 @@
   .bar.mini { height: 5px; margin-top: 4px; }
   .bar.over i { background: var(--c-coral); }
   .cells { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 2px 0 0; }
+  dd.unknown { color: var(--text-soft); }
   .cell { min-width: 0; padding: 8px 6px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
   dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   dd { margin: 4px 0 0; font-size: var(--fs-body); white-space: nowrap; }

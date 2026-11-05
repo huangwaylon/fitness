@@ -29,30 +29,30 @@ function rng(seed: string): () => number {
   return mulberry32(h);
 }
 
-/** The demo's foods, per 100 g as the food data has them (app/static/food: MEXT, dishes). */
+/** The demo's foods, per 100 g as the food data has them (app/static/food: MEXT, dishes; fibre since 2026-11-05). */
 const FOODS: Record<string, FoodSnap> = {
-  rice: { id: 'mext:01088', n: 'ごはん（精白米）', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, u: '茶碗1杯' },
-  natto: { id: 'dishes:natto', n: '納豆（たれ・からし付き）', k: 163, p: 14.5, fa: 8.6, c: 11.3, s: 0.9, u: '1人前' },
-  toast: { id: 'mext:01026', n: '食パン', k: 248, p: 8.9, fa: 4.1, c: 46.4, s: 1.2, u: '6枚切1枚' },
-  yogurt: { id: 'mext:13025', n: 'ヨーグルト（無糖）', k: 56, p: 3.6, fa: 3, c: 4.9, s: 0.1, u: '1食' },
-  banana: { id: 'mext:07107', n: 'バナナ', k: 93, p: 1.1, fa: 0.2, c: 22.5, s: 0, u: '1本' },
-  egg: { id: 'mext:12005', n: 'ゆで卵', k: 134, p: 12.5, fa: 10.4, c: 0.3, s: 0.3, u: '1個（M）' },
-  onigiri: { id: 'dishes:onigiri-shake', n: 'おにぎり（鮭）', k: 161, p: 5.3, fa: 1.5, c: 33.2, s: 0.5, u: '1人前' },
-  curry: { id: 'dishes:curry-chicken', n: 'カレーライス（チキン）', k: 143, p: 4, fa: 4.5, c: 23, s: 0.8, u: '1人前' },
-  salmon: { id: 'dishes:teishoku-yakizake', n: '焼き鮭定食', k: 84, p: 4.6, fa: 1.8, c: 13.4, s: 0.7, u: '1人前' },
-  shogayaki: { id: 'dishes:teishoku-shogayaki', n: '生姜焼き定食', k: 110, p: 4.5, fa: 4.2, c: 13.9, s: 0.7, u: '1人前' },
-  udon: { id: 'mext:01039', n: 'うどん（ゆで）', k: 95, p: 2.6, fa: 0.4, c: 21.6, s: 0.3, u: '1玉' },
-  karaage: { id: 'dishes:karaage', n: '鶏の唐揚げ', k: 256, p: 20, fa: 14.9, c: 11.9, s: 2, u: '1個' }
+  rice: { id: 'mext:01088', n: 'ごはん（精白米）', k: 156, p: 2.5, fa: 0.3, c: 37.1, s: 0, fi: 1.5, u: '茶碗1杯' },
+  natto: { id: 'dishes:natto', n: '納豆（たれ・からし付き）', k: 163, p: 14.5, fa: 8.6, c: 11.3, s: 0.9, fi: 8.1, u: '1人前' },
+  toast: { id: 'mext:01026', n: '食パン', k: 248, p: 8.9, fa: 4.1, c: 46.4, s: 1.2, fi: 4.2, u: '6枚切1枚' },
+  yogurt: { id: 'mext:13025', n: 'ヨーグルト（無糖）', k: 56, p: 3.6, fa: 3, c: 4.9, s: 0.1, fi: 0, u: '1食' },
+  banana: { id: 'mext:07107', n: 'バナナ', k: 93, p: 1.1, fa: 0.2, c: 22.5, s: 0, fi: 1.1, u: '1本' },
+  egg: { id: 'mext:12005', n: 'ゆで卵', k: 134, p: 12.5, fa: 10.4, c: 0.3, s: 0.3, fi: 0, u: '1個（M）' },
+  onigiri: { id: 'dishes:onigiri-shake', n: 'おにぎり（鮭）', k: 161, p: 5.3, fa: 1.5, c: 33.2, s: 0.5, fi: 1.9, u: '1人前' },
+  curry: { id: 'dishes:curry-chicken', n: 'カレーライス（チキン）', k: 143, p: 4, fa: 4.5, c: 23, s: 0.8, fi: 1.4, u: '1人前' },
+  salmon: { id: 'dishes:teishoku-yakizake', n: '焼き鮭定食', k: 84, p: 4.6, fa: 1.8, c: 13.4, s: 0.7, fi: 1.4, u: '1人前' },
+  shogayaki: { id: 'dishes:teishoku-shogayaki', n: '生姜焼き定食', k: 110, p: 4.5, fa: 4.2, c: 13.9, s: 0.7, fi: 1.2, u: '1人前' },
+  udon: { id: 'mext:01039', n: 'うどん（ゆで）', k: 95, p: 2.6, fa: 0.4, c: 21.6, s: 0.3, fi: 1.3, u: '1玉' },
+  karaage: { id: 'dishes:karaage', n: '鶏の唐揚げ', k: 256, p: 20, fa: 14.9, c: 11.9, s: 2, fi: 1, u: '1個' }
 };
 /** A's recipe: 「おうちカレー」 4人前, its ingredients per 100 g as the food data has them (MEXT). */
 const CURRY_RECIPE = {
   id: 'cdemoa1', n: 'おうちカレー', sv: 4,
   it: [
-    { g: 300, f: { id: 'mext:11221', n: '若どり もも 皮つき 生', k: 190, p: 16.6, fa: 14.2, c: 0, s: 0.2 } },
-    { g: 400, f: { id: 'mext:06153', n: 'たまねぎ 生', k: 33, p: 1, fa: 0.1, c: 8.4, s: 0 } },
-    { g: 150, f: { id: 'mext:06212', n: 'にんじん 皮つき 生', k: 35, p: 0.7, fa: 0.2, c: 9.3, s: 0.1 } },
-    { g: 300, f: { id: 'mext:02017', n: 'じゃがいも 生', k: 59, p: 1.8, fa: 0.1, c: 17.3, s: 0 } },
-    { g: 80, f: { id: 'mext:17051', n: 'カレールウ', k: 474, p: 6.5, fa: 34.1, c: 44.7, s: 10.6 } },
+    { g: 300, f: { id: 'mext:11221', n: '若どり もも 皮つき 生', k: 190, p: 16.6, fa: 14.2, c: 0, s: 0.2, fi: 0 } },
+    { g: 400, f: { id: 'mext:06153', n: 'たまねぎ 生', k: 33, p: 1, fa: 0.1, c: 8.4, s: 0, fi: 1.5 } },
+    { g: 150, f: { id: 'mext:06212', n: 'にんじん 皮つき 生', k: 35, p: 0.7, fa: 0.2, c: 9.3, s: 0.1, fi: 2.8 } },
+    { g: 300, f: { id: 'mext:02017', n: 'じゃがいも 生', k: 59, p: 1.8, fa: 0.1, c: 17.3, s: 0, fi: 8.9 } },
+    { g: 80, f: { id: 'mext:17051', n: 'カレールウ', k: 474, p: 6.5, fa: 34.1, c: 44.7, s: 10.6, fi: 6.4 } },
     { g: 600, f: FOODS.rice }
   ]
 };

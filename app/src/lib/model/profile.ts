@@ -136,6 +136,12 @@ export const proteinRda = (sex: Sex, age: number): number => (sex === 'f' ? 50 :
 /** A day's protein goal split over three meals (g, whole): the per-meal hint. */
 export const perMeal = (g: number): number => Math.round(g / 3);
 
+/** A meal's protein to aim for (g, whole; きろく's chip turns green at it): a third of the day's goal (perMeal), at
+ *  least MEAL_PROTEIN.min (about the least a meal needs to build muscle: 0.4 g/kg, 20 g or more); with no day goal,
+ *  MEAL_PROTEIN.none (the 25–30 g a meal of a lifter's usual aims at). */
+const MEAL_PROTEIN = { min: 20, none: 25 } as const;
+export const mealProteinTarget = (dayGoal: number | null): number => (dayGoal === null ? MEAL_PROTEIN.none : Math.max(MEAL_PROTEIN.min, perMeal(dayGoal)));
+
 /** A BMI's category by a standard: `asia` (JASSO: 肥満 from 25; WHO's Asian cut-off 23 for 過体重), `who` (25, 30);
  *  under 18.5 低体重 in both. */
 export type BmiCategory = 'under' | 'normal' | 'over' | 'obese';

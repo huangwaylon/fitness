@@ -4,10 +4,13 @@
   // remove it; anyone else's day is read-only (only the owner changes an entry). いつもの (a repeat): its weekdays as a
   // chip in the header (my day: a tap manages it; else only shown), its entries marked 🔁 (a day taken out of it shows
   // its own entries, unmarked, under the same chip); on my today a meal with entries and no repeat ends with a small
-  // 「いつものに する」 link (not a ＋-sized button: it is for one meal of the four, if any).
+  // 「いつものに する」 link (not a ＋-sized button: it is for one meal of the four, if any). Under the header, with
+  // entries, the meal's protein as a chip (「たんぱく質 28g」, the leaf's once at the per-meal target: profile.ts
+  // mealProteinTarget).
   import type { FoodEntry, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { amountText, daysText } from './foodUi.ts';
+  import { mealProtein } from '#lib/model/food.ts';
   import RepeatMark from './RepeatMark.svelte';
 
   interface Props {
@@ -22,8 +25,11 @@
     onrepeat: (() => void) | null;
     onadd: () => void;
     onpick: (e: FoodEntry) => void;
+    /** A meal's protein to aim for (g): its chip turns the leaf's at it. */
+    ptarget: number;
   }
-  let { meal, entries, mine, days, onrepeat, onadd, onpick }: Props = $props();
+  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget }: Props = $props();
+  const protein = $derived(mealProtein(entries));
   const kcalOf = (e: FoodEntry) => Math.round((e.f.k * e.g) / 100);
   const total = $derived(entries.reduce((s, e) => s + (e.f.k * e.g) / 100, 0));
   const label = $derived(t(`food.meal.${meal}`));
@@ -55,6 +61,7 @@
     {/if}
   </header>
   {#if entries.length}
+    <p class="pm" class:met={protein >= ptarget} data-meal-protein={protein} data-met={protein >= ptarget || undefined}>{t('food.mealP', { n: Math.round(protein) })}<span class="sr-only">{t('food.mealPAim', { goal: ptarget })}</span></p>
     <ul>
       {#each entries as e (e.id)}
         <li>
@@ -91,6 +98,12 @@
   .add:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
   .add svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
   ul { list-style: none; margin: 0; padding: 0; }
+  /* the meal's protein: a soft chip, the leaf's once at the per-meal target */
+  .pm {
+    justify-self: start; margin: 0 0 2px; padding: 3px 9px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.2 var(--font-ui);
+    color: var(--text-soft); background: color-mix(in srgb, var(--lip) 35%, transparent); font-variant-numeric: tabular-nums;
+  }
+  .pm.met { color: var(--leaf-text); background: color-mix(in srgb, var(--c-leaf) 24%, transparent); }
   li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   .row {
     appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; width: 100%;

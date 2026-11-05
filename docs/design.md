@@ -282,7 +282,7 @@ Health data over time for the personal trainer, one person at a time, computed o
     BMI 15–40, 除脂肪体重 10–150 kg.
   - The guest's phone: the chips read-only (and no からだ card, so no からだ goal: the record never sends it one).
 - <a id="goal-directions"></a>**Goal directions** (`contract/goals.ts` GOALS `dir`, why: [decisions](decisions.md#goal-directions)):
-  at least: 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, たんぱく質; at most: 体脂肪率, 脂質, 塩分; near a value
+  at least: 歩数, ムーブ, エクササイズ, スタンド, 除脂肪体重, たんぱく質, 食物繊維; at most: 体脂肪率, 脂質, 塩分, アルコール; near a value
   (前後, met within a band): 体重 (±1.5 %), BMI (±4 %), カロリー (±10 %), 炭水化物 (±15 %). The chip, the chart's line
   words, the bar shading, 目標 n/N日, ごはん's tiles and the goal month all follow it.
 - **Rules:** a day's value is Health's latest, as reported: every day with a row counts, whatever its value; 記録なし is
@@ -321,23 +321,32 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   colour and, today, あと N kcal / N kcal オーバー, a past day 目標より N kcal 少なめ / 多め; coral only past 20 % over
   (the lifter's surplus is no fault). Then たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, each with its goal and direction when there is
   one (「目標 110 g 以上」, 「目標 60 g 以下」, 「目標 250 g 前後」, 「目標 7.0 g 以下」; set on グラフ; it wraps only after 目標) and a small bar, coral once past
-  a ceiling (an at-most goal, or a near-a-value one past its band: `goalOver`). A day with nothing logged: no tiles; a past one 「きろく なし」 (not 0 kcal).
+  a ceiling (an at-most goal, or a near-a-value one past its band: `goalOver`); then 食物繊維 (「–」 データなし while no entry
+  knows its fibre: an older entry, most products) and, on a day with any, アルコール. Under them the **PFC balance**
+  (`PfcBar`, `model/food.ts` pfcShare): protein, fat and carbohydrate as shares of the energy (their Atwater kcal 4/9/4 over
+  their sum, alcohol at 7 a share of its own, so the bar is whole), one bar (leaf, yuzu, mint; alcohol lilac), each
+  share's % with the 食事摂取基準 2025's 目標量 (13–20 %, 20–30 %, 50–65 %: `PFC_RANGES`): within it ✓ and the range in
+  leaf text, else ひくめ / たかめ（range） (never coral: a day off balance is no error). A day with nothing logged: no tiles; a past one 「きろく なし」 (not 0 kcal).
 - **Goals** (the registry `contract/goals.ts` GOALS, prefs per person, as the health goals: [backend](backend.md#events)): kcal
   1,200–5,000 by 50 (the record takes 1,000+), protein, fat and carbs in g by 5 (10–400, 10–300, 20–800), salt 1–20 g
-  by 0.5; each set and cleared (目標をなくす) with けんこう's control (`health/GoalEdit`, `health/goals.ts`
+  by 0.5, fibre 5–60 g and alcohol 1–100 g by 1 (−/＋ by 1 and 5); each set and cleared (目標をなくす) with けんこう's control (`health/GoalEdit`, `health/goals.ts`
   GOAL_SPECS) on my own cards only, anyone else's shown read-only (the guest has its own). Directions: kcal near a value
   (±10 %: a low day is no win, the lifter's surplus no fault), protein at least, fat at most, carbs near a value (±15 %), salt at most
-  ([Goal directions](#goal-directions)). **Defaults:** protein
+  ([Goal directions](#goal-directions)), fibre at least, alcohol at most. **Defaults:** protein
   1.6 g × the latest weigh-in (a lifter's usual aim; a member with a weight, until set, and again once cleared:
   「なしなら 体重×1.6 g」; at least the 推奨量 with a profile); with a profile ([Profile](#profile)) kcal from the daily
   energy and salt the 食事摂取基準's ceiling by sex (「なしなら からだと 活動からの めやす」, 「なしなら 食事摂取基準の めやす」);
-  none for fat and carbs (they depend on the plan). A default never overrides a goal that's set.
+  fibre the 食事摂取基準 2025's 目標量 by sex and age (men 20 g, 22 from 30 to 64; women 18; 「なしなら 食事摂取基準の めやす」);
+  alcohol 20 g for everyone (厚労省's 節度ある適度な飲酒: [decisions](decisions.md#fibre-and-alcohol-2026-11-05)); none for fat and
+  carbs (they depend on the plan). A default never overrides a goal that's set.
   **Warn, allow** (the user, 2026-11-05; [decisions](decisions.md#low-kcal-goals-warn-allow)): a kcal goal typed under my resting energy (with a profile,
   [Profile](#profile)) gets a gentle note under the field, 「きそたいしゃ（約1,630 kcal）より ひくい めやす です。きんにくが
   へりやすく なります」; else under the safe floor (1,500 a man, 1,200 a woman or unknown), 「1日 1,500 kcal より ひくい
   めやす です…」 (`model/profile.ts` `lowKcal`, `health/goals.ts` `kcalWarn`, GoalEdit `warn`: on the summary's and
   グラフ's kcal chip). Never coral, never blocking: けってい still saves it. No note for the other goals.
-- **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal and a row per entry (the food, its
+- **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal, under its header (with entries) its protein as
+  a chip (「たんぱく質 28g」, the leaf's once at the per-meal aim: `profile.ts` mealProteinTarget, a third of the day's
+  protein goal, at least 20 g; 25 g with none; the aim in its spoken words), and a row per entry (the food, its
   amount in one format, a weight once: 「茶碗1杯（150g）」, 「1パック（110g）」, 「中ジョッキ×2（700ml）」; kcal). On my
   day ＋ → the search (its field focused in the same tap, so the iPhone's keyboard comes up), an entry → its amount
   at once (from its snapshot: its own portion; the catalog's portions swapped in when they come); anyone else's day is
@@ -349,6 +358,11 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   once, it was only just logged) and おわり (the day). Each food row of a meal's search (the catalog's, さいきん's,
   マイ食品's) has its own ＋ beside it (FoodMeal's ＋ object): one tap logs it as it comes, its default portion (a recent
   one as I had it; a custom food by its serving), no amount level.
+- **The week** (`FoodWeek`, `model/food.ts` foodWeek), after the four meals: さいきん 7日の 平均, the 7 finished days to the
+  day shown (to yesterday on today: today is never finished; 「10/28〜11/3 · 記録 n日」), a day with nothing logged left out
+  as グラフ's averages: the average day's kcal against the goal (目標の はんい within its band, else 目標より N kcal 少なめ /
+  多め, so one big day reads against the week), its protein, fat, carbs, salt and fibre a day, and its PFC balance. None
+  when those days hold no meal.
 - **Search:** a 16px field (no search mid-IME composition), its ✕ the app's 44px lipped round button; under it, side
   by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる, hidden once
   something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,
@@ -388,9 +402,10 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   solid without a goal); today outlined and uncounted; a day with nothing logged is
   記録なし (the stub, never a 0). 1日の平均（n日分） and 期間の合計 over the finished days with a meal; 目標 n/N日 (with a goal) · 記録 n日 ·
   記録なし m日; the goal at the upper right (GoalEdit) and dashed on the chart with its words, the average a flat solid line (「平均」 in
-  the key). Then the same card for たんぱく質, 脂質, 炭水化物 and 塩分 (grams, one decimal; foodSeries per nutrient from the same
-  pass; salt's bars one decimal), each with its catalogue icon (`art.ts` NUTRIENT_ART: the barbecue, the cream and
-  sugar, the sticky rice, the spice rack) and its goal; with nothing logged yet, each card its goal chip over 「まだ きろくが ないよ」
+  the key). Then the same card for たんぱく質, 脂質, 炭水化物, 塩分, 食物繊維 and アルコール (grams, one decimal; foodSeries per
+  nutrient from the same pass; salt's bars one decimal; a day whose entries none knows the fibre of is 記録なし on the
+  fibre card, alcohol unknown counts as none), each with its catalogue icon (`art.ts` NUTRIENT_ART: the barbecue, the
+  cream and sugar, the sticky rice, the spice rack, the veggie plate, the green bottles) and its goal; with nothing logged yet, each card its goal chip over 「まだ きろくが ないよ」
   (so the goals are set before the first meal).
 - **マイレシピ:** everyone's recipes (`food_recipe`), in a meal's search: all after さいきん (the latest changed first),
   the matching ones above the catalog's; a row: its name, who set it and how many servings, a serving's kcal. One →
@@ -406,7 +421,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   serving. Both searches (a meal's and a recipe's ingredient) list them under マイ食品 (all after さいきん / マイレシピ,
   the matching ones above the catalog's); ＋ 食品を つくる under the field, and when nothing matches a card saying so with
   a line on what it is for and 「＋ じぶんで つくる」, open the editor, the typed text its name. The editor (`FoodCustom`): なまえ, 1食の めやす (「1食」 its
-  placeholder, not a value: typing 1杯 gives 1杯; blank logs as 1食) and その重さ g (may stay blank: then it logs by the serving), カロリー kcal (needed) and P/F/C/塩分 g (only
+  placeholder, not a value: typing 1杯 gives 1杯; blank logs as 1食) and その重さ g (may stay blank: then it logs by the serving), カロリー kcal (needed) and P/F/C/塩分/食物繊維/アルコール g (only
   what is known), all per serving, full-width digits welcome; a weight too light for its values (denser than any food:
   `customDensityOk`) is refused before ほぞん. ほぞん goes on where it came from: its amount (a meal's ついか, or the
   ingredient's); a custom food's amount (from the search) has 「マイ食品を ひらく」: mine in the editor (ほぞん and けす,

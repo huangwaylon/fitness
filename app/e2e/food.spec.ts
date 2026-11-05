@@ -953,3 +953,63 @@ test('several foods a trip: a row’s ＋ logs it at once, ついか comes back 
   await expect(dinner.nth(n0)).toContainText('ごはん（精白米）');
   await expect(dinner.nth(n0 + 1)).toContainText('卵（全卵・生）');
 });
+
+// The balance views (docs/design.md "Gohan", the food review's approved features): each meal's protein chip (the leaf's at
+// a third of the day's goal), the day's PFC balance against the 食事摂取基準's ranges, the week's average, and the fibre
+// and alcohol cards with their goals (fibre from the profile: ウェイ, a man of 35, 22 g; alcohol 20 g until set).
+test('the balance views: a meal’s protein chip, the PFC bar, the week’s average, fibre and alcohol with their goals', async ({ page }) => {
+  await openFood(page);
+  const s = sheet(page);
+  // each meal with entries has its protein, green once at the per-meal target (its words say the target)
+  const chips = s.locator('[data-meal] [data-meal-protein]');
+  expect(await chips.count()).toBeGreaterThan(0);
+  for (const c of await chips.all()) {
+    const n = Number(await c.getAttribute('data-meal-protein'));
+    const aim = Number((await c.locator('.sr-only').textContent())!.replace(/\D/g, ''));
+    await expect(c).toHaveText(new RegExp(`^たんぱく質 ${Math.round(n)}g（めやす ${aim}g）$`));
+    expect([aim, (await c.getAttribute('data-met')) === ''].join()).toBe([aim, n >= aim].join());
+  }
+  // the breakfast (いつもの: rice and natto, 11.6 g) is under ウェイ's per-meal aim
+  await expect(s.locator('section[data-meal=b] [data-meal-protein]')).toHaveText(/^たんぱく質 12g/);
+  await expect(s.locator('section[data-meal=b] [data-meal-protein]')).not.toHaveAttribute('data-met');
+  // the day's PFC: three shares adding up to 100 %, each against its range
+  const pfc = s.locator('[data-food-summary] [data-pfc=day]');
+  await expect(pfc.locator('[data-pfc-of]')).toHaveCount(3);
+  const pcts = await pfc.locator('.bar i').evaluateAll((is) => is.map((i) => Number(i.getAttribute('data-pct'))));
+  expect(Math.abs(pcts.reduce((a, b) => a + b, 0) - 100)).toBeLessThanOrEqual(2);
+  await expect(pfc.locator('[data-pfc-of=p] small')).toContainText('13〜20%');
+  await expect(pfc.locator('[data-pfc-of=fa] small')).toContainText('20〜30%');
+  await expect(pfc.locator('[data-pfc-of=c] small')).toContainText('50〜65%');
+  await expect(pfc.locator('.bar')).toHaveAttribute('aria-label', /^たんぱく質 \d+%、脂質 \d+%、炭水化物 \d+%$/);
+  // fibre: the day's tile with its default goal (the 食事摂取基準's by the profile)
+  await expect(s.locator('[data-food-summary] [data-nutrient=fi] small')).toHaveText(/^目標 22\sg\s以上$/);
+  // the week: the 7 finished days to yesterday, 記録 n日, with its own PFC bar
+  const wk = s.locator('[data-food-week]');
+  await expect(wk.locator('h3')).toHaveText('さいきん 7日の 平均');
+  await expect(wk.locator('[data-week-range]')).toHaveText(/^10\/28〜11\/3 · 記録 [1-7]日$/);
+  await expect(wk.locator('[data-week-kcal]')).toHaveText(/^[\d,]+ kcal$/);
+  await expect(wk.locator('[data-pfc=week] [data-pfc-of]')).toHaveCount(3);
+  // a past day's week ends that day
+  await s.locator('[data-nav=back]').click();
+  await expect(wk.locator('[data-week-range]')).toHaveText(/^10\/28〜11\/3 /);
+  await s.locator('[data-nav=back]').click();
+  await expect(wk.locator('[data-week-range]')).toHaveText(/^10\/27〜11\/2 /);
+  expect(await overflowOf(page)).toEqual([]);
+
+  // グラフ: fibre at least its default, alcohol at most 20 g
+  await s.locator('[data-tab=chart]').click();
+  const fi = s.locator('[data-food-chart=fi]');
+  await expect(fi.locator('button[data-goal]')).toHaveText('目標 22 g 以上');
+  await expect(fi.locator('path.bar')).toHaveCount(4);
+  await expect(fi.locator('path.goal')).toHaveCount(1);
+  await expect(s.locator('[data-food-chart=al] button[data-goal]')).toHaveText('目標 20 g 以下');
+  // fibre's goal set in place: whole grams, 5–60
+  await fi.locator('button[data-goal]').click();
+  const tray = fi.locator('form.tray');
+  await expect(tray).toContainText('食物繊維の目標（1日）');
+  await tray.getByRole('textbox').fill('25');
+  await tray.getByRole('button', { name: 'けってい' }).click();
+  await expect(fi.locator('button[data-goal]')).toHaveText('目標 25 g 以上');
+  await s.locator('[data-tab=log]').click();
+  await expect(s.locator('[data-food-summary] [data-nutrient=fi] small')).toHaveText(/^目標 25\sg\s以上$/);
+});
