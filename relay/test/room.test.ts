@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { CLOSE, HB_PING, HB_PONG, parseServer, type ServerMsg, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
-import { HELLO_MS, MAX_PENDING, RING_MAX, RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
+import { HELLO_MS, MAX_PENDING, PROBE_AFTER_MS, PROBE_WAIT_MS, RING_MAX, RoomCore, SILENT_MS, WATCH_MIN_MS, type Held, type Meta, type RoomIO } from '../src/room.ts';
 
 const KEY_A = 'a1'.repeat(16);
 const KEY_B = 'b2'.repeat(16);
@@ -465,6 +465,75 @@ describe('the island room', () => {
     say(a, { kind: 'walk', to: [1.5, 2] });
     expect(b.sent.map((m) => (m as { to: unknown }).to)).toEqual([[-230, 2500], 'bridgeStoneN']);
     expect(a.closed).toBeNull();
+  });
+});
+
+describe('ghosts (a phone gone without closing its socket: relay review O2)', () => {
+  /** When the runtime last answered each socket's heartbeat (the auto-response: the room never hears it). */
+  let beats: Map<FakeSock, number>;
+  beforeEach(() => {
+    beats = new Map();
+    room = new RoomCore({ ...io(), heardAt: (s) => beats.get(s) ?? null });
+  });
+
+  it('a silent socket is asked (a fresh welcome); a phone that answers stays, one that doesn’t is closed and gone', () => {
+    const a = join(KEY_A), b = join(KEY_B);
+    expect(room.sweepSilent()).toBe(now + PROBE_AFTER_MS);
+    now += PROBE_AFTER_MS;
+    a.sent = [];
+    b.sent = [];
+    expect(room.sweepSilent()).toBe(now + WATCH_MIN_MS); // (at least WATCH_MIN_MS on)
+    expect(a.sent).toEqual([{ v: 3, kind: 'welcome', me: 'A', peer: true, t: now, here: ['B'], hb: true }]);
+    expect(b.kinds()).toEqual(['welcome']);
+    // A's phone answers with its ping (a welcome starts them); B's is a ghost
+    now += 500;
+    say(a, { kind: 'ping', c: 1 });
+    now += PROBE_WAIT_MS;
+    room.sweepSilent();
+    expect(a.closed).toBeNull();
+    expect(b.closed).toEqual({ code: CLOSE.timeout, reason: 'silent' });
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'presence', who: 'B', on: false });
+    // B's next phone is welcomed with A here, and B is no longer `here` for the guest
+    expect(join(KEY_C).sent[0]).toMatchObject({ kind: 'welcome', here: ['A'] });
+  });
+
+  it('the heartbeat (answered by the runtime, never a message) keeps a socket in, unasked', () => {
+    const a = join(KEY_A);
+    for (let i = 0; i < 20; i++) {
+      now += 20_000;
+      beats.set(a, now);
+      room.sweepSilent();
+    }
+    expect(a.kinds()).toEqual(['welcome']);
+    expect(a.closed).toBeNull();
+  });
+
+  it('a phone hearing the others’ news (so never pinging) is asked, answers, and is never flapped', () => {
+    const a = join(KEY_A), b = join(KEY_B);
+    for (let i = 0; i < 12; i++) {
+      now += 10_000;
+      say(b, { kind: 'act', act: 'rock' }); // B taps away; A only hears
+      if (room.sweepSilent() !== null && a.raw.at(-1)?.kind === 'welcome') say(a, { kind: 'ping', c: i + 1 });
+    }
+    expect(a.closed).toBeNull();
+    expect(a.kinds().filter((k) => k === 'welcome').length).toBeLessThanOrEqual(3);
+  });
+
+  it('a hello sweeps the ghosts first: the newcomer never hears a ghost is here', () => {
+    const b = join(KEY_B);
+    now += PROBE_AFTER_MS;
+    room.sweepSilent(); // asked
+    now += SILENT_MS;
+    const a = join(KEY_A);
+    expect(b.closed?.reason).toBe('silent');
+    expect(a.sent[0]).toMatchObject({ kind: 'welcome', peer: false, here: [] });
+  });
+
+  it('nobody in: nothing to watch', () => {
+    expect(room.sweepSilent()).toBeNull();
+    const x = join();
+    expect(room.sweepSilent()).toBeNull(); // (a socket before its hello is the hello sweep's)
+    expect(x.closed).toBeNull();
   });
 });
 

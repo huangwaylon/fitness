@@ -422,6 +422,16 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
   the app; the old one goes once the log's `ws.hello` (`npm run logs -- report`, *Live hellos*) shows every phone on
   the new one.
 - **Limits:** per socket a token bucket of 20, refilled 20/s; beyond it messages are dropped, not queued, and a welcomed phone's numbered intent hears `busy {c, t}` (2026-11-05: neither relayed nor kept; the phone sends it again later; its own kind, so an older phone ignores it and resends after its next welcome as before). `ping` and `got` never wait on the bucket.
+- **Ghosts** (2026-11-05, relay review O2): the heartbeat never reaches the room, so a phone gone without closing its
+  socket (asleep, out of signal) stayed `here`. The room watches each welcomed socket's last sign of life (its hello,
+  its last message: the attachment's `hd`, kept every 10 s at most; the runtime's
+  `getWebSocketAutoResponseTimestamp`: the last heartbeat answered): silent 45 s, it is asked whether it's there, a
+  fresh `welcome` (what its hello's says now), which a live phone answers at once with its pings (a welcome starts
+  them; a phone hearing the others' news may not ping on its own, so it is asked, never just closed); still nothing 15 s
+  after, 60 s in all, it is closed (4003 `silent`) and its person gone for the others (presence off, `gone`). An alarm
+  watches while anyone is in (`sweepSilent`, at most every 30 s, the hello sweep's alarm shared), and each hello sweeps
+  first, so a newcomer never hears a ghost is here. A message the room's code throws on is caught (the log's
+  `do.error`, `where: ws.message`), the socket kept.
 - **Replay:** the room keeps today's shared world in DO storage ([Shared world](#shared-world)); a hello with `since`
   (the last such `t` that phone heard, kept across reloads: `island.liveSince`) gets the newer ones after the welcome,
   all of them, mine too (a phone that lost its record gets it back), in `replay {es}` messages of ≤ 16,000 bytes (~150
