@@ -14,6 +14,7 @@
 // AU 3 each), for the neural TTS (scripts/tts/cast.json).
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Accent, CastId, Item, ItemType, Tags } from './bank.ts';
+import { staged } from './staging.ts';
 
 /** Who speaks with which cast voice, for good (12 core voices, US weighted: 3 a gender; UK and AU 3 each, men's lines
  *  outnumbering women's there: uk-f1, uk-m1, uk-m2, au-f1, au-m1, au-m2; speech.ts SLOTS, scripts/tts/cast.json).
@@ -50,7 +51,7 @@ const item = (type: ItemType) => ([id, speaker, en, ja, note, choices, tags, x =
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : undefined);
   return {
     id, lv: 4, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags,
-    ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask })
+    ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }), ...staged(id)
   };
 };
 

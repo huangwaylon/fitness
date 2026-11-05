@@ -49,10 +49,11 @@ export const staleUse = (keys: readonly string[], url: string): boolean => keys.
 export const isFont = (path: string): boolean => /\.(woff2?|ttf)$/.test(path);
 export const isVillagerArt = (path: string): boolean => path.includes('/art/villagers/');
 /** The island's scenery art: the catches (fish, bugs, junk), the beach finds (shells, fossils, fragments, the bottle),
- *  the balloon presents and the visitors' extras (shown only when one is about or in the ずかん), and NH's ground
- *  textures (terrain/nh/: the layout's terrain): cached on first use, not at install. */
+ *  the balloon presents and the visitors' extras (shown only when one is about or in the ずかん), NH's ground
+ *  textures (terrain/nh/: the layout's terrain) and ききみみ's scene backdrops (art/scene/, level 4 only, ~45 KB a scene
+ *  at 3 scales: the phone's one): cached on first use, not at install. */
 export const isCritterArt = (path: string): boolean =>
-  path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/') || path.includes('/terrain/');
+  path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/') || path.includes('/terrain/') || path.includes('/art/scene/');
 /** The world's dressing for a season or the night and its decor (island/scene.ts, world.ts): the buildings' and the
  *  cedar's winter looks, the lit windows, the fences, lanterns, rocks, bamboo and the wild flowers (a season's kinds
  *  and their hybrids): cached on first use, not at install. */

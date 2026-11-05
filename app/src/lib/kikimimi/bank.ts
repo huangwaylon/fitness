@@ -57,6 +57,8 @@ export interface Line {
   en: string;
   ja: string;
   tts?: string;
+  /** The sound marks over this line at the reveal (staging.ts MARKS, by its clip id). */
+  marks?: readonly SoundMark[];
 }
 
 export interface Item {
@@ -92,6 +94,36 @@ export interface Item {
   tags?: Tags;
   /** A dialogue's lines (`gist`, `next`): played in turn, one clip each; `en` is them joined, `speaker` the first's. */
   lines?: readonly Line[];
+  /** Where it's heard (level 4, staging.ts PLACES): the scene card's backdrop while it plays. None: the plain stage. */
+  scene?: SceneId;
+  /** How it's heard (staging.ts PLACES): face to face, a phone, a PA, a video call; else from `tags.conditions`
+   *  (channelOf). */
+  channel?: Channel;
+  /** The sound marks over `en` at the reveal (staging.ts MARKS; a dialogue's are its lines'). */
+  marks?: readonly SoundMark[];
+}
+
+// ---- staging: the scene, the channel and the sound marks (docs/kikimimi.md "Visuals") --------------------------------
+
+/** The scene backdrops (static/art/scene/<id>{,@2x,@3x}.webp, painted by scripts/scenes/scenes.ts). */
+export const SCENE_IDS = ['cafe', 'platform', 'pharmacy', 'office', 'door', 'gate', 'street', 'living'] as const;
+export type SceneId = (typeof SCENE_IDS)[number];
+/** How a clip reaches the listener: face to face, a phone call (voicemail too), a PA announcement, a video call. */
+export const CHANNELS = ['live', 'phone', 'pa', 'video'] as const;
+export type Channel = (typeof CHANNELS)[number];
+/**
+ * A sound mark over the revealed text (docs/curriculum.md §8), on whole words of the line (`at`, its first whole-word
+ * match): `say` the shape it's said in above the spelling (going to → gonna, 14 → fourTEEN); `link` arcs between the
+ * words of `at` (pick‿it‿up); `drop` the letters swallowed, greyed (the last `drop` in the word: tryin(g)); `stress` ●
+ * over each word of `at` (space-separated, each its first whole-word match).
+ */
+export type SoundMark = readonly ['say', at: string, said: string] | readonly ['link', at: string] | readonly ['drop', at: string, letters: string] | readonly ['stress', words: string];
+
+/** An item's channel: its own, else from its conditions (a phone or voicemail, a PA, a video call), else face to face. */
+export function channelOf(it: Pick<Item, 'channel' | 'tags'>): Channel {
+  if (it.channel) return it.channel;
+  const c = it.tags?.conditions ?? [];
+  return c.includes('phone') || c.includes('voicemail') ? 'phone' : c.includes('pa') ? 'pa' : c.includes('video') ? 'video' : 'live';
 }
 
 /** Whether an item is a dialogue (its lines are its clips). */

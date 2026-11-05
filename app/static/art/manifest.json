@@ -1,5 +1,5 @@
 {
-  "version": 56,
+  "version": 57,
   "files": {
     "bridges/stone-front": {
       "path": "bridges/stone-front.webp",
@@ -2910,6 +2910,54 @@
       "w": 96,
       "h": 96,
       "source": "https://nookipedia.com/wiki/File:Emotion_Worry_NH_Icon.png"
+    },
+    "scene/cafe": {
+      "path": "scene/cafe.webp",
+      "w": 393,
+      "h": 224,
+      "source": "rendered by Z-Image-Turbo (Apache-2.0; MFlux Q6) from scripts/scenes/scenes.json, seed 7 (scripts/scenes/scenes.ts)"
+    },
+    "scene/door": {
+      "path": "scene/door.webp",
+      "w": 393,
+      "h": 224,
+      "source": "rendered by Z-Image-Turbo (Apache-2.0; MFlux Q6) from scripts/scenes/scenes.json, seed 7 (scripts/scenes/scenes.ts)"
+    },
+    "scene/gate": {
+      "path": "scene/gate.webp",
+      "w": 393,
+      "h": 224,
+      "source": "rendered by Z-Image-Turbo (Apache-2.0; MFlux Q6) from scripts/scenes/scenes.json, seed 7 (scripts/scenes/scenes.ts)"
+    },
+    "scene/living": {
+      "path": "scene/living.webp",
+      "w": 393,
+      "h": 224,
+      "source": "rendered by Z-Image-Turbo (Apache-2.0; MFlux Q6) from scripts/scenes/scenes.json, seed 7 (scripts/scenes/scenes.ts)"
+    },
+    "scene/office": {
+      "path": "scene/office.webp",
+      "w": 393,
+      "h": 224,
+      "source": "rendered by Z-Image-Turbo (Apache-2.0; MFlux Q6) from scripts/scenes/scenes.json, seed 7 (scripts/scenes/scenes.ts)"
+    },
+    "scene/pharmacy": {
+      "path": "scene/pharmacy.webp",
+      "w": 393,
+      "h": 224,
+      "source": "rendered by Z-Image-Turbo (Apache-2.0; MFlux Q6) from scripts/scenes/scenes.json, seed 7 (scripts/scenes/scenes.ts)"
+    },
+    "scene/platform": {
+      "path": "scene/platform.webp",
+      "w": 393,
+      "h": 224,
+      "source": "rendered by Z-Image-Turbo (Apache-2.0; MFlux Q6) from scripts/scenes/scenes.json, seed 7 (scripts/scenes/scenes.ts)"
+    },
+    "scene/street": {
+      "path": "scene/street.webp",
+      "w": 393,
+      "h": 224,
+      "source": "rendered by Z-Image-Turbo (Apache-2.0; MFlux Q6) from scripts/scenes/scenes.json, seed 7 (scripts/scenes/scenes.ts)"
     },
     "season/maple-leaf": {
       "path": "season/maple-leaf.webp",
