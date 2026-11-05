@@ -1060,3 +1060,35 @@ test('copy a meal: the members’ on the guest’s phone, きのうと おなじ
   await expect(dinner.locator('[data-entry]')).toHaveCount(1);
   await expect(dinner.locator('[data-entry]')).toContainText('焼き鮭定食');
 });
+
+// 最新の値にする (docs/design.md "Gohan"): the food data fixed since an entry was logged (here: the shipped dishes.json
+// served with カレーライス（チキン） at 150 kcal / 100 g, not the 143 the demo's lunch was logged with). My entry offers the
+// food as it is now; a tap re-snapshots it (an ordinary edit); nothing changes by itself; anyone else's day never offers it.
+test('最新の値にする: an entry whose food was corrected since offers its values now; a tap takes them, mine only', async ({ page }) => {
+  await page.route('**/food/dishes.json*', async (route) => {
+    const res = await route.fetch();
+    const d = (await res.json()) as { items: { id: string; kcal: number }[] };
+    for (const it of d.items) if (it.id === 'dishes:curry-chicken') it.kcal = 150;
+    await route.fulfill({ response: res, json: d });
+  });
+  await openFood(page);
+  const s = sheet(page);
+  const before = await kcalOf(page);
+  const lunch = s.locator('section[data-meal=l]');
+  const curry = lunch.locator('[data-entry]', { hasText: 'カレーライス（チキン）' });
+  await expect(curry).toContainText('729');
+  // the catalogue comes a moment after the day: only the corrected food offers it
+  const fresh = s.locator('[data-fresh]');
+  await expect(fresh).toHaveCount(1, { timeout: 15_000 });
+  await expect(lunch.locator('[data-fresh]')).toHaveText('最新の値にする（729→765 kcal）');
+  await lunch.locator('[data-fresh]').click();
+  await expect(s.getByRole('status')).toContainText('「カレーライス（チキン）」を 最新の値に しました');
+  await expect(curry).toContainText('765');
+  await expect(fresh).toHaveCount(0);
+  expect(await kcalOf(page)).toBe(before + 36);
+  // the partner's day: read-only, never offered (only the owner edits an entry)
+  await s.locator('select[data-pick=who]').selectOption('B');
+  await expect(s.locator('[data-food-summary]')).toHaveClass(/pB/);
+  await expect(s.locator('[data-entry]').first()).toBeVisible();
+  await expect(fresh).toHaveCount(0);
+});

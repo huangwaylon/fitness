@@ -8,8 +8,9 @@
   // entries, the meal's protein as a chip (「たんぱく質 28g」, the leaf's once at the per-meal target: profile.ts
   // mealProteinTarget). On my day an empty meal offers its copies (`copies`), small links of いつものに する's weight:
   // 「きのうと おなじ」 (my own the day before) and 「〇〇と おなじ」 (another's that day), each with what it holds; one tap
-  // copies it in.
-  import type { FoodEntry, Meal } from '#lib/contract/food.ts';
+  // copies it in. An entry of mine whose food has changed since (fresh.ts) has a small 「最新の値にする」 under its
+  // row (with the kcal it goes from and to): a tap re-snapshots it.
+  import type { FoodEntry, FoodSnap, Meal } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { amountText, daysText } from './foodUi.ts';
   import { mealProtein } from '#lib/model/food.ts';
@@ -31,8 +32,11 @@
     ptarget: number;
     /** Meals to copy into this one (shown while it is empty on my day): their words, what they hold, the copy. */
     copies?: readonly { key: string; label: string; meta: string; run: () => void }[];
+    /** My entries' foods as they are now, where they changed since logged (entry id → snapshot): 最新の値にする. */
+    fresh?: ReadonlyMap<string, FoodSnap>;
+    onfresh?: (e: FoodEntry, f: FoodSnap) => void;
   }
-  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [] }: Props = $props();
+  let { meal, entries, mine, days, onrepeat, onadd, onpick, ptarget, copies = [], fresh, onfresh }: Props = $props();
   const protein = $derived(mealProtein(entries));
   const kcalOf = (e: FoodEntry) => Math.round((e.f.k * e.g) / 100);
   const total = $derived(entries.reduce((s, e) => s + (e.f.k * e.g) / 100, 0));
@@ -73,6 +77,13 @@
             <button type="button" class="row" data-entry={e.id} data-rep={e.rep} data-sfx="page" onclick={() => onpick(e)}>
               {@render cells(e)}
             </button>
+            {@const f = fresh?.get(e.id)}
+            {#if f && onfresh}
+              {@const k1 = Math.round((f.k * e.g) / 100)}
+              <button type="button" class="fresh" data-fresh={e.id} data-sfx="page" onclick={() => onfresh(e, f)}>
+                {k1 === kcalOf(e) ? t('food.fresh.act') : t('food.fresh.actK', { from: formatNum(kcalOf(e)), to: formatNum(k1) })}
+              </button>
+            {/if}
           {:else}
             <div class="row" data-entry={e.id} data-rep={e.rep}>
               {@render cells(e)}
@@ -130,6 +141,12 @@
   .amt { grid-area: amt; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .kc { grid-area: kc; font-size: var(--fs-body); }
   .rm { display: inline-flex; }
+  /* 最新の値にする: a text link's weight under its row (as いつものに する), a 44px target all the same */
+  .fresh {
+    appearance: none; border: 0; background: none; cursor: pointer; display: block; min-height: var(--hit); margin: -6px 0 0 -4px; padding: 0 6px;
+    font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--leaf-text); text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px;
+  }
+  .fresh:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; border-radius: var(--r-chip); }
   .amt .rm { margin-right: 4px; vertical-align: -1px; }
   /* the repeat's chip: FoodAmount's chip, small; shown only (another's day): the soft pill, no edge */
   .rep {

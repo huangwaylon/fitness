@@ -24,7 +24,7 @@
   import { copySources, customs, foodDay, foodEntries, foodGoal, foodWeek, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
-    copyMeal, detachDay, editFood, logCustom, logFood, logRecipe, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, startRepeat,
+    copyMeal, detachDay, editFood, logCustom, logFood, logRecipe, refreshFood, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, startRepeat,
     stopRepeat, updateRepeat
   } from '#lib/store/actions.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -38,7 +38,8 @@
   import Pick from '../health/Pick.svelte';
   import FoodChart from './FoodChart.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { portionsOf, toSnap, type Item } from '#lib/food/index.ts';
+  import { portionsOf, toSnap, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { latestSnap } from './fresh.ts';
   import { dayTitle } from '../kiroku/fmt.ts';
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
@@ -406,6 +407,35 @@
     swap({ k: 'custom', id: res.id, then: l.then });
     said('food.my.copied');
   }
+
+  // ---- 最新の値にする (fresh.ts): my own day's entries (not a いつもの's) whose food has changed since they were logged
+  // (the data fixed, the recipe or custom food edited). The catalogue loads for it once my day shows an entry of it,
+  // a moment after the day (it is the search's data too); the products when they come. Never updated by itself.
+  let catalog = $state.raw<FoodDb | null>(foodDbNow());
+  let catalogRev = $state(0);
+  $effect(() => {
+    if (catalog || !mine || !day?.entries.some((e) => !e.rep && !/^(recipe|custom):/.test(e.f.id))) return;
+    const wait = setTimeout(() => foodDb().then((db) => {
+      catalog = db;
+      void db.more.then(() => catalogRev++);
+    }, () => {}), 600);
+    return () => clearTimeout(wait);
+  });
+  /** Entry id → its food as it is now, for my day's entries whose food changed. */
+  const fresh = $derived.by(() => {
+    void catalogRev;
+    const out = new Map<string, FoodSnap>();
+    if (!mine || !day) return out;
+    const src = { db: catalog, recipes: allRecipes, customs: allCustoms };
+    for (const e of day.entries) {
+      const f = e.rep ? null : latestSnap(e.f, src);
+      if (f) out.set(e.id, f);
+    }
+    return out;
+  });
+  function refresh(e: FoodEntry, f: FoodSnap) {
+    if (refreshFood(e.id, f).ok) said('food.fresh.done', { name: f.n });
+  }
 </script>
 
 {#snippet whoPill()}
@@ -494,7 +524,8 @@
           {@const live = mine ? liveRepeat(k) : null}
           {@const r = live ?? repeatOn(m.state, who, k, date)}
           <FoodMeal meal={k} entries={byMeal(k)} {mine} days={r?.w ?? null} onadd={() => openSearch(k)} copies={copiesOf(k)}
-            onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget} />
+            onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget}
+            {fresh} onfresh={refresh} />
         {/each}
         {#if avgWeek}<FoodWeek week={avgWeek} {goals} />{/if}
         <FoodCredits />
