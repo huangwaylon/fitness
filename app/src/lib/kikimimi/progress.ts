@@ -62,8 +62,8 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
       const x = listenOf(data);
       if (!x) continue;
       const p = x.p === 1;
-      // only the items this build knows: a newer game's row (docs/kikimimi-framework.md §4.4) leaves the stats as they were
-      const r = x.r.filter(([id]) => BY_ID.has(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
+      // only the items this build knows: a newer game's row (docs/kikimimi-framework.md §4.4) leaves the stats as they were (a スピード はしご rung is known: speedOf)
+      const r = x.r.filter(([id]) => BY_ID.has(id) || isRungId(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
       if (!r.length) continue;
       const was = mine.get(x.g);
       if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r });

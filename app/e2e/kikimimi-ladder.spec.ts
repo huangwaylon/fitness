@@ -38,7 +38,7 @@ async function answer(page: Page, o: { wrong?: boolean; replay?: boolean } = {})
 }
 
 test('solo: the mode in the lobby, two ladders climbed (a miss and a replay stop a climb), the line only at the top, the results and きろく', async ({ page }) => {
-  test.slow();
+  test.setTimeout(180_000); // (8 rungs of 4-9 s lines, two tabs: past test.slow()'s 90 s under a full parallel run)
   await open(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
@@ -104,7 +104,7 @@ test('solo: the mode in the lobby, two ladders climbed (a miss and a replay stop
 });
 
 test('two players: the host’s mode reaches B’s invite and lobby; both climb, co-op’s tally and the same points on each phone', async ({ browser }) => {
-  test.slow();
+  test.setTimeout(180_000); // (8 rungs of 4-9 s lines, two tabs: past test.slow()'s 90 s under a full parallel run)
   const ctx = await browser.newContext();
   const a = await open(ctx, 'A');
   const b = await open(ctx, 'B');

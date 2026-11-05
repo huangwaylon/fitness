@@ -294,6 +294,12 @@ describe('スピード はしご: the fastest comfortable speed', () => {
     const quick = [...quiz, ladderGame('sp-platform', 'sp-gate', { miss: ['sp-platform-4'] }), ladderGame('sp-water', 'sp-yen', { miss: ['sp-water-4'] })];
     expect(rec(quick).map((r) => r.kind)).not.toContain('speed');
   });
+  it('gamesOf keeps a ladder game’s rung answers (a known item, not a newer game’s)', () => {
+    const row = { d: TODAY, g: 'lad1', lv: 4, n: 1, ms: 90_000, r: [['sp-platform-1', 1, 0, 0], ['sp-platform-2', 0, 1, 0]] };
+    const { mine } = gamesOf([['2026-11-05T03:00:01.000Z', 'A', 'e1', 'listen', JSON.stringify(row)]], 'A');
+    expect(mine.map((g) => g.r.map((a) => a.id))).toEqual([['sp-platform-1', 'sp-platform-2']]);
+    expect(speedOf(mine)).toMatchObject({ ladders: 1, best: 0.8 });
+  });
   it('a ladder game’s row keeps each pick as authored', () => {
     const items = ladderDeck(8).slice(0, 4);
     const r = listenAnswers(items, items.map((it) => ({ k: it.answer })), items.map(() => true), [0, 0, 0, 0], true);
