@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
-import { HELLO_MS, RoomCore, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
+import { HELLO_MS, PROBE_AFTER_MS, RoomCore, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
 import { IslandLog } from './logObject.ts';
@@ -96,10 +96,14 @@ export class IslandRoom extends DurableObject<Env> {
         saveRecG: (r) => void ctx.storage.put(REC_G, r),
         hold: (h) => void ctx.storage.put(HELD, h),
         saveGone: (g) => void ctx.storage.put(GONE, g),
+        // the heartbeat's last answer (the runtime's: HB_PING never wakes the room), for the ghosts' watch
+        heardAt: (s) => ctx.getWebSocketAutoResponseTimestamp(s)?.getTime() ?? null,
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
         onHello: (who, v, build) => {
           // each phone's protocol version and build (the log's ws.hello: which phones speak what)
           this.log([{ e: 'ws.hello', l: 1, role: who, d: { v, ...(build ? { build } : {}) } }]);
+          // the ghosts' watch (room.ts sweepSilent) while anyone is in
+          void this.alarmBy(Date.now() + PROBE_AFTER_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
       }, ring, rec, held, gone, this.wx.wx, day, recG);
@@ -133,7 +137,14 @@ export class IslandRoom extends DurableObject<Env> {
   }
 
   webSocketMessage(ws: WebSocket, message: string | ArrayBuffer): void {
-    this.core.message(ws, typeof message === 'string' ? message : null);
+    // a throw here (a bug, a storage hiccup) would be the runtime's: an error logged nowhere we read, the socket
+    // possibly reset. Caught: the log's do.error (its class only), the socket kept
+    try {
+      this.core.message(ws, typeof message === 'string' ? message : null);
+    } catch (e) {
+      console.error('ws.message', errName(e));
+      this.log([{ e: 'do.error', l: 3, d: { where: 'ws.message', name: errName(e) } }]);
+    }
   }
 
   webSocketClose(ws: WebSocket, code: number): void {
@@ -209,7 +220,9 @@ export class IslandRoom extends DurableObject<Env> {
   }
 
   async alarm(): Promise<void> {
-    let next = this.core.sweep();
+    // the hello sweep's and the ghosts' watch (while anyone is in), the sooner
+    const a = this.core.sweep(), b = this.core.sweepSilent();
+    let next = a === null ? b : b === null ? a : Math.min(a, b);
     const r = await this.ctx.storage.get<{ due: number; tries: number }>(RESTORE);
     if (r) {
       let due: number | null = r.due;
