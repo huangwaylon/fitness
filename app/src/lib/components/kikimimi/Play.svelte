@@ -9,9 +9,16 @@
   // A dialogue (gist, next): both speakers' heads, the one talking bobbing, and at the reveal its two-sided transcript
   // (Transcript.svelte) with the focus marked; level 4's `note` (the trap) under the accent. Co-op (several, not
   // たいせん): the others' chips only ✓, no points, and how many got it at the reveal (「2にん せいかい！」), never who.
+  // A staged item (level 4: a scene, or a phone, PA or video call) shows the scene card instead of the plain stage from
+  // the lead-in to the reveal (scene/SceneCard.svelte); at the reveal the English carries its sound marks and the karaoke
+  // as it replays (scene/SoundLine.svelte), the marks' key under it.
   import type { QuizGame } from './game.svelte.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
+  import SceneCard from './scene/SceneCard.svelte';
+  import SoundLine from './scene/SoundLine.svelte';
+  import MarkLegend from './scene/MarkLegend.svelte';
+  import { isStaged } from './scene/stage.ts';
   import { FIRST_LISTEN, RIGHT } from '#lib/kikimimi/score.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Host from '../characters/Host.svelte';
@@ -31,6 +38,11 @@
   const talking = $derived(game.talk && game.talk.i === v.i ? game.talk.k : -1);
   /** Who's talking now (before the first turn's timer: the first speaker). */
   const talker = $derived(dlg ? dlg.lines[Math.max(0, talking)].who : null);
+  /** The scene card in place of the stage: a staged item, before its reveal. */
+  const card = $derived(!!it && !reveal && isStaged(it));
+  /** A single item's clip replaying at the reveal: when it started (its karaoke). */
+  const playFrom = $derived(!dlg && game.sounding && game.sounding.i === v.i ? game.sounding.from : null);
+  const clock = () => game.clock();
   const mine = $derived(v.answers[v.i] ?? null);
   const right = $derived(!!mine && !!it && mine.k === it.answer);
   /** The choices take a tap: the answer window, not answered, not sat out. */
@@ -70,6 +82,17 @@
   }
 </script>
 
+{#snippet hearRow()}
+  {#if (v.speaks || game.listenOnly) && !v.out}
+    <!-- 🔁 / 🐢 under the bubble, the clip's own controls (おなじへや on another's phone: shown, never live; the host's phone plays them for the room) -->
+    <div class="hear">
+      <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
+      {#if slowOk}<button type="button" class="btn small paper" data-kiki-slow aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(true)}>🐢 {t('kiki.slow')}</button>{/if}
+      {#if game.listenOnly}<small class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</small>{/if}
+    </div>
+  {/if}
+{/snippet}
+
 {#if it}
   <div class="q" data-kiki-q={v.i} data-type={it.type} data-phase={v.phase}>
     {#if !solo}
@@ -78,50 +101,50 @@
       </div>
     {/if}
 
-    <div class="stage" class:dlg={reveal && dlg}>
-      {#if dlg}
-        <span class="speaker duo" class:pop={v.phase === 'lead'} data-kiki-duo>
-          {#each duo as who (who)}
-            <span class="one" class:talk={!!bar && talker === who}>
-              <OfficialArt key={villagerArt(who, true)} alt={name(who)} size={reveal ? 44 : 56} eager />
-            </span>
-          {/each}
-          {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
-        </span>
-      {:else}
-        <span class="speaker" class:pop={v.phase === 'lead'} class:talk={!!bar}>
-          <OfficialArt key={villagerArt(it.speaker, true)} alt={name(it.speaker)} size={76} eager />
-          {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
-        </span>
-      {/if}
-      <div class="bubble" class:open={reveal} aria-live="polite">
-        {#if reveal && dlg}
-          <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
-          {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
-        {:else if reveal && parts}
-          {@const [pre, focus, post] = parts}
-          <p class="en" lang="en" data-kiki-en>{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</p>
-          <p class="ja">{#each jaLines(it) as l, n (n)}<span>{l}</span>{/each}</p>
-          <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
-          {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+    {#if card}
+      <div class="staged" data-kiki-card>
+        <SceneCard {it} {talker} {bar} now={game.now} pop={v.phase === 'lead'} {name} />
+        {@render hearRow()}
+      </div>
+    {:else}
+      <div class="stage" class:dlg={reveal && dlg}>
+        {#if dlg}
+          <span class="speaker duo" class:pop={v.phase === 'lead'} data-kiki-duo>
+            {#each duo as who (who)}
+              <span class="one" class:talk={!!bar && talker === who}>
+                <OfficialArt key={villagerArt(who, true)} alt={name(who)} size={reveal ? 44 : 56} eager />
+              </span>
+            {/each}
+            {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
+          </span>
         {:else}
-          <p class="notes" aria-label={t('kiki.listen')}>♪…</p>
-          <span class="track" aria-hidden="true">
-            {#if bar}{#key bar.key}<i style:animation-duration="{Math.max(1, bar.until - bar.from)}ms" style:animation-delay="{-Math.max(0, game.now - bar.from)}ms"></i>{/key}{/if}
+          <span class="speaker" class:pop={v.phase === 'lead'} class:talk={!!bar}>
+            <OfficialArt key={villagerArt(it.speaker, true)} alt={name(it.speaker)} size={76} eager />
+            {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
           </span>
         {/if}
-      </div>
-      {#if (v.speaks || game.listenOnly) && !v.out}
-        <!-- 🔁 / 🐢 under the bubble, the clip's own controls (おなじへや on another's phone: shown, never live; the host's phone plays them for the room) -->
-        <div class="hear">
-          <button type="button" class="btn small paper" data-kiki-replay aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(false)}>🔁 {t('kiki.replay')}</button>
-          {#if slowOk}<button type="button" class="btn small paper" data-kiki-slow aria-disabled={!canHear} data-sfx="tick" onclick={() => canHear && game.replay(true)}>🐢 {t('kiki.slow')}</button>{/if}
-          {#if game.listenOnly}<small class="hint" data-kiki-host-plays>{t('kiki.replayHost')}</small>{/if}
+        <div class="bubble" class:open={reveal} aria-live="polite">
+          {#if reveal && dlg}
+            <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
+            {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+          {:else if reveal && parts}
+            <p class="en" data-kiki-en><SoundLine en={it.en} focus={it.focus} marks={it.marks} clip={it.id} from={playFrom} {clock} /></p>
+            <p class="ja">{#each jaLines(it) as l, n (n)}<span>{l}</span>{/each}</p>
+            <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
+            {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+            {#if it.marks}<MarkLegend marks={it.marks} />{/if}
+          {:else}
+            <p class="notes" aria-label={t('kiki.listen')}>♪…</p>
+            <span class="track" aria-hidden="true">
+              {#if bar}{#key bar.key}<i style:animation-duration="{Math.max(1, bar.until - bar.from)}ms" style:animation-delay="{-Math.max(0, game.now - bar.from)}ms"></i>{/key}{/if}
+            </span>
+          {/if}
         </div>
-      {/if}
-    </div>
+        {@render hearRow()}
+      </div>
+    {/if}
 
-    {#if reveal && dlg}<Transcript it={dlg} talk={talking} />{/if}
+    {#if reveal && dlg}<Transcript it={dlg} talk={talking} from={game.talk && game.talk.i === v.i ? game.talk.from : null} {clock} />{/if}
 
     {#if !reveal}
       {#if ask}<p class="ask">{ask}</p>{/if}
@@ -204,7 +227,6 @@
   .track { position: relative; display: block; height: 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-edge) 25%, transparent); overflow: hidden; }
   .track i { position: absolute; inset: 0; transform-origin: 0 50%; background: var(--c-leaf); border-radius: inherit; animation: grow linear both; }
   .en { margin: 0; font: 700 max(17px, var(--fs-talk))/1.4 var(--font-ui); position: relative; }
-  .en mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--c-yuzu) 85%, transparent) 55%); color: inherit; padding: 0 1px; }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; }
   .ja span { display: block; }
   .accent {
@@ -252,6 +274,9 @@
   /* the host's word on the verdict (しずえ's head) */
   .cheer { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-body); color: var(--text); }
   /* 🔁 🐢 under the bubble (the bubble's column), small; おなじへや's others: off, with why */
+  /* the scene card, 🔁 🐢 centred under it */
+  .staged { display: grid; gap: 10px; }
+  .staged .hear { grid-column: auto; justify-content: center; }
   .hear { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   .hear .btn.small { flex: 0 1 auto; white-space: nowrap; }
   .hint { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }

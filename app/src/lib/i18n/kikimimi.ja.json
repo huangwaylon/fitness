@@ -181,5 +181,22 @@
   "kiki.f.numbers": "おおきな すうじ",
   "kiki.f.ellipsis": "しょうりゃく",
   "kiki.f.idiom": "いいまわし",
-  "kiki.f.intonation": "イントネーション"
+  "kiki.f.intonation": "イントネーション",
+  "kiki.scene.cafe": "カフェ",
+  "kiki.scene.platform": "えきの ホーム",
+  "kiki.scene.pharmacy": "くすりや",
+  "kiki.scene.office": "オフィス",
+  "kiki.scene.door": "げんかん",
+  "kiki.scene.gate": "くうこうの ゲート",
+  "kiki.scene.street": "しょうてんがい",
+  "kiki.scene.living": "いえ",
+  "kiki.chan.phone": "でんわ",
+  "kiki.chan.voicemail": "るすでん",
+  "kiki.chan.pa": "アナウンス",
+  "kiki.chan.video": "ビデオ かいぎ",
+  "kiki.chan.calling": "つうわちゅう",
+  "kiki.mark.say": "こう きこえる",
+  "kiki.mark.link": "つながる",
+  "kiki.mark.drop": "きえる",
+  "kiki.mark.stress": "つよく いう"
 }

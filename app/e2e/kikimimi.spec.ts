@@ -53,6 +53,8 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   // each question: the choices dimmed while the clip plays, one final tap in the answer window, the reveal
   for (let i = 0; i < 8; i++) {
     await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 15_000 }).toBe(i);
+    // levels 1-3: the plain stage, never a scene card
+    await expect(sheet(page).locator('[data-kiki-card]')).toHaveCount(0);
     await answer(page, i === 3);
     // alone, everyone's in: the reveal at once, the English shown
     await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
@@ -114,8 +116,8 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
   for (const [i, lines, next] of [[0, 3, true], [1, 4, false]] as const) {
     await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 40_000 }).toBe(i);
     await expect(sheet(page).locator(`[data-kiki-q="${i}"]`)).toHaveAttribute('data-type', next ? 'next' : 'gist');
-    // while it plays: both speakers' heads, no text
-    await expect(sheet(page).locator('[data-kiki-duo] .one')).toHaveCount(2);
+    // while it plays: both speakers standing in its scene (level 4's scene card, kikimimi-scenes.spec), no text
+    await expect(sheet(page).locator('[data-kiki-card] [data-vill]')).toHaveCount(2);
     await expect(sheet(page).locator('[data-kiki-transcript]')).toHaveCount(0);
     await expect(sheet(page).locator('.ask')).toHaveText(next ? 'つぎの ひとことは？' : '男性は このあと どうする？');
     if (shots && i === 1) await page.screenshot({ path: `${shots}/dialogue-play.png` });
@@ -125,7 +127,7 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
     await expect(tr.locator('[data-line]')).toHaveCount(lines);
     // the second speaker's lines on the right; the focus marked in its line
     await expect(tr.locator('[data-line="1"]')).toHaveClass(/right/);
-    await expect(tr.locator('mark')).toHaveCount(1);
+    await expect(tr.locator('[data-line]:has(.focus)')).toHaveCount(1);
     await expect(tr.locator('[data-kiki-next-line]')).toHaveCount(next ? 1 : 0);
     if (next) await expect(tr.locator('[data-kiki-next-line] .en')).toHaveText("No worries, I'm not in a rush.");
     await expect(sheet(page).locator('[data-kiki-note]')).toBeVisible();

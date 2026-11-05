@@ -6,7 +6,7 @@ import type { SoundMark } from './bank.ts';
 /** A piece of the line: a word's text (`w` its index; a word cut by a mark is in several pieces) or the space between
  *  two (`w` -1; `link`: an arc instead, the words joined). `focus`: the item's key words; `drop`: swallowed letters;
  *  `stress`: ● over it (a stressed word's first piece). */
-export interface Seg {
+interface Seg {
   t: string;
   w: number;
   focus?: true;
