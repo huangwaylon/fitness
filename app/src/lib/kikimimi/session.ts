@@ -80,9 +80,10 @@ interface QuizInvite {
 }
 
 /** A multiplayer game's team result (co-op, the default: docs/kikimimi.md "Co-op and たいせん"), over the questions
- *  revealed so far: `right` those at least one player got right (the team covers it: 「ふたりで n/8」), `all` those
- *  every player who had the question got right (「そろって せいかい」), `done` the questions counted. From what this
- *  phone heard (a lost `a` costs that question's credit here only). Never who missed. */
+ *  revealed so far: `right` those at least one player got right (the team covers it: 「ふたりで n/8」; a player who
+ *  left still counts for the ones they answered), `all` those every player who had the question got right (「そろって
+ *  せいかい」: had it, answered it or was in the game as its clip began), `done` the questions counted. From what this
+ *  phone heard, the same on every phone (a lost `a` costs that question's credit here only). Never who missed. */
 interface QuizTeam {
   right: number;
   all: number;
@@ -152,8 +153,13 @@ interface Game {
   opened: number;
   /** My lobby not announced yet: nothing of it is sent. */
   local?: boolean;
-  /** Who joined (the host too). */
+  /** Who joined (the host too), and still in it. */
   joined: Set<Who>;
+  /** Everyone who has been in it (never shrinks: a player who left keeps their answers in the team's tally). */
+  played: Set<Who>;
+  /** When each player in it came in (relay clock, as heard: their `join`; the host, -Infinity): they had every question
+   *  whose clip began from then on (the team's そろって, the same on every phone). */
+  since: Map<Who, number>;
   /** `go`'s `at` (the host's re-send). */
   goAt?: number;
   /** Question starts fixed here (`go`: 0; the host's position; n: the results); the rest follow from the one before. */
@@ -225,12 +231,12 @@ export class QuizSession {
         // a host has one lobby: an older one of theirs not started goes
         for (const o of this.games.values()) if (o.host === m.who && o.goAt === undefined) this.drop(o, 'cancelled');
         const fresh = this.game(m.g, m.who, m.seed, m.lv, m.same, now);
-        for (const w of this.early.get(m.g) ?? []) fresh.joined.add(w);
+        for (const w of this.early.get(m.g) ?? []) enter(fresh, w, now);
         this.early.delete(m.g);
         return [];
       }
       case 'join':
-        if (gm) gm.joined.add(m.who);
+        if (gm) enter(gm, m.who, now);
         else {
           if (this.early.size > 8) this.early.clear();
           this.early.set(m.g, (this.early.get(m.g) ?? new Set()).add(m.who));
@@ -262,7 +268,8 @@ export class QuizSession {
         return [];
       case 'a': {
         if (!gm || m.i >= gm.n) return [];
-        gm.joined.add(m.who);
+        // their join unheard: in from this question at the latest
+        enter(gm, m.who, gm.goAt === undefined ? now : Math.min(now, this.times(gm, m.i).playAt));
         const mine = gm.answers.get(m.who) ?? new Map<number, QuizAnswer>();
         gm.answers.set(m.who, mine);
         if (!mine.has(m.i)) mine.set(m.i, { k: m.k, rp: m.rp, t: now });
@@ -361,7 +368,7 @@ export class QuizSession {
     if (!gm || gm.joined.has(this.me) || this.over(gm, now)) return [];
     const out = this.leave(now);
     this.notice = null;
-    gm.joined.add(this.me);
+    enter(gm, this.me, now);
     gm.inAt = now;
     out.push({ kind: 'quiz', g: gm.g, op: 'join' });
     return out;
@@ -466,7 +473,8 @@ export class QuizSession {
   private game(g: string, host: Who, seed: number, lv: QuizLv, same: boolean, now: number): Game {
     const deck = this.deckOf(seed, lv);
     const gm: Game = {
-      g, host, seed, lv, same, deck, n: questions(deck), opened: now, joined: new Set([host]), starts: new Map(), inAt: now,
+      g, host, seed, lv, same, deck, n: questions(deck), opened: now, joined: new Set([host]), played: new Set([host]), since: new Map([[host, -Infinity]]),
+      starts: new Map(), inAt: now,
       answers: new Map(), totals: new Map(), allIn: new Map()
     };
     this.games.set(g, gm);
@@ -645,27 +653,27 @@ export class QuizSession {
     return s;
   }
 
-  /** The team's tally over questions 0 … upto − 1: right by at least one player, right by every player who had it
-   *  (answered it, or was in the game for it and let it time out; a player who joined later and has no answer from
-   *  then on doesn't hold it back). */
+  /** The team's tally over questions 0 … upto − 1, over everyone who has played (a player who left too): right by at
+   *  least one player, right by every player who had it. */
   private team(gm: Game, upto: number): QuizTeam {
     const t: QuizTeam = { right: 0, all: 0, done: 0 };
+    const who = [...gm.played];
     for (let i = 0; i < Math.min(upto, gm.n); i++) {
-      const picks = [...gm.joined].map((w) => gm.answers.get(w)?.get(i));
-      const oks = picks.map((a) => !!a && a.k === gm.deck.answer(i));
+      const oks = who.map((w) => gm.answers.get(w)?.get(i)?.k === gm.deck.answer(i));
       t.done++;
-      if (oks.some(Boolean)) t.right++;
-      // everyone in it right: each player answered it right, or (joined later: no answer to it nor before) wasn't in it
-      if (oks.some(Boolean) && [...gm.joined].every((w, n) => oks[n] || !this.hadQuestion(gm, w, i))) t.all++;
+      if (!oks.some(Boolean)) continue;
+      t.right++;
+      if (who.every((w, n) => oks[n] || !this.hadQuestion(gm, w, i))) t.all++;
     }
     return t;
   }
 
-  /** Whether a player was in question i (an answer to it or one before; me: not sat out). */
+  /** Whether a player had question i, from what every phone hears alike: they answered it, or they're in the game and
+   *  were when its clip began (their `join` heard before it; me too, whatever I sat out: the others can't know). A
+   *  player who joined later doesn't hold back the ones before; one who left, the ones they didn't answer. */
   private hadQuestion(gm: Game, w: Who, i: number): boolean {
-    if (w === this.me) return this.times(gm, i).playAt >= gm.inAt;
-    const mine = gm.answers.get(w);
-    return !!mine && [...mine.keys()].some((j) => j <= i);
+    if (gm.answers.get(w)?.has(i)) return true;
+    return gm.joined.has(w) && this.times(gm, i).playAt >= (gm.since.get(w) ?? Infinity);
   }
 
   /** Mine counted here; another's their latest running total (else what I heard of theirs). */
@@ -673,6 +681,13 @@ export class QuizSession {
     const t = w === this.me ? undefined : gm.totals.get(w);
     return t ? t.s : this.sum(gm, w);
   }
+}
+
+/** A player comes into a game at `at` (relay clock; a re-sent `join` from one already in changes nothing). */
+function enter(gm: Game, w: Who, at: number): void {
+  if (!gm.joined.has(w)) gm.since.set(w, at);
+  gm.joined.add(w);
+  gm.played.add(w);
 }
 
 /** A deck's questions (at most a game's). */

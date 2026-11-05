@@ -334,6 +334,32 @@ describe('ききみみ session: co-op and たいせん', () => {
     r.act('B', (x, n) => x.answer(1, false, n));
     for (const w of ['A', 'B'] as const) expect(r.view(w).team).toEqual({ right: 2, all: 2, done: 2 });
   });
+
+  it('そろって is the same on every phone: a player in the game who lets a question time out holds it back on all of them', () => {
+    const r = room(['A', 'B']);
+    const s0 = started(r, ['B']);
+    r.now = s0 + 1500 + DUR + 500;
+    r.act('B', (x, n) => x.answer(0, false, n)); // right; A lets it time out
+    r.now = s0 + 1500 + DUR + WINDOWS.answer + 100; // the reveal
+    for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ phase: 'reveal', i: 0, team: { right: 1, all: 0, done: 1 } });
+    // and the same when the one who timed out answered nothing before (B's phone knows A was in from the start)
+    r.now = s0 + FULL + 1500 + DUR + 500;
+    r.act('A', (x, n) => x.answer(1, false, n));
+    r.act('B', (x, n) => x.answer(1, false, n));
+    for (const w of ['A', 'B'] as const) expect(r.view(w).team).toEqual({ right: 2, all: 1, done: 2 });
+  });
+
+  it('a player who leaves keeps the answers they gave in the team’s tally', () => {
+    const r = room();
+    const s0 = started(r);
+    r.now = s0 + 1500 + DUR + 500;
+    r.act('A', (x, n) => x.answer(1, false, n)); // wrong
+    r.act('G', (x, n) => x.answer(1, false, n)); // wrong
+    r.act('B', (x, n) => x.answer(0, false, n)); // right: the team has question 0
+    r.act('B', (x, n) => x.leave(n));
+    r.now += WINDOWS.reveal + 1;
+    for (const w of ['A', 'G'] as const) expect(r.view(w).team).toEqual({ right: 1, all: 0, done: 1 });
+  });
 });
 
 describe('ききみみ session: lost and late messages', () => {
