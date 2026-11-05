@@ -123,7 +123,33 @@ describe('ingest: a past day never drops to 0', () => {
     const latest = new Map<string, number>();
     for (const r of a('snapshot').rows.metrics as [string, string, string, string, number][]) latest.set(r[2], r[4]);
     expect(Object.fromEntries(latest)).toEqual({ '2026-10-30': 7900, '2026-10-31': 0, '2026-11-01': 0, '2026-11-02': 0 });
-    expect(a('uploads').rows[1].notes).toMatch(/^1 past zeros ignored \|/);
+    expect(a('uploads').rows[1].notes).toMatch(/^1 past zeros held \|/);
+  });
+
+  it('a past day’s 0 is never thrown away: held apart (never served), listed and promoted by the admin', () => {
+    // 2026-11-05 relay review R3 (the user's rule: keep all Health data): a legitimate correction to 0 was discarded
+    const steps = (rows: [string, string][]) => ({ dates: rows.map((r) => r[0]).join('\n'), steps: rows.map((r) => r[1]).join('\n') });
+    a('ingest', steps([['Oct 30, 2026', '8000']]));
+    tick();
+    expect(a('ingest', steps([['Oct 30, 2026', '0']]))).toEqual({ ok: true, metrics: 0 });
+    tick();
+    a('ingest', steps([['Oct 30, 2026', '0']])); // again: the same held row, seen twice
+    expect(a('snapshot').rows.metrics.map((r: unknown[]) => r[4])).toEqual([8000]);
+    const held = store.heldRows();
+    expect(held).toEqual([{ person: 'A', date: '2026-10-30', metric: 'steps', value: 0, at: '2026-11-02T03:00:01.000Z', last: '2026-11-02T03:00:02.000Z', n: 2, promoted: null }]);
+    // promoted: a row of the day like any (the latest now), the held row kept with its mark
+    tick();
+    expect(store.promoteHeld({ person: 'A', date: '2026-10-30', metric: 'steps' })).toMatchObject({ ok: true, at: '2026-11-02T03:00:03.000Z' });
+    expect(a('snapshot').rows.metrics.map((r: unknown[]) => r[4])).toEqual([8000, 0]);
+    expect(store.heldRows()[0].promoted).toBe('2026-11-02T03:00:03.000Z');
+    expect(store.promoteHeld({ person: 'A', date: '2026-10-31', metric: 'steps' })).toEqual({ ok: false, error: 'bad_request', detail: 'nothing held' });
+    // the dump carries them (a load of it is the record), and a load takes them back
+    const dump = store.dump();
+    expect(dump.rows.held).toEqual([['2026-11-02T03:00:01.000Z', 'A', '2026-10-30', 'steps', 0, '2026-11-02T03:00:02.000Z', 2, '2026-11-02T03:00:03.000Z']]);
+    db = memSql();
+    store = make();
+    store.load({ rows: dump.rows });
+    expect(store.heldRows()).toEqual(held.map((h) => ({ ...h, promoted: '2026-11-02T03:00:03.000Z' })));
   });
 });
 

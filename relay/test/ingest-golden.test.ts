@@ -6,7 +6,7 @@
 // fakes, before step 5 removed it); the record matched it then, run for run, and must go on matching it. One change
 // since, on purpose (2026-11-05, store.ts ingest): a past day's 0 over a value above it is ignored, so four rows went
 // (B's exercise on 10-03 and 10-04 shifted to 0, A's steps on 10-07 and 10-08 read 0 from an unreadable line) and
-// three audit rows say `N past zeros ignored`.
+// three audit rows say `N past zeros held`.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

@@ -84,7 +84,7 @@ record by hand; run it after a restore whose reply says the room wasn't told).
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data "{\"key\":\"$KEY\",\"action\":\"uploads\"}"
 ```
 
-Every list should have as many lines as `dates`. Each run replaces a day's values with Health's current totals (latest wins; a locked week's ベル stay put), except that a past day never drops to 0 from a value above it (`N past zeros ignored` in the notes: a run that read nothing, Health locked).
+Every list should have as many lines as `dates`. Each run replaces a day's values with Health's current totals (latest wins; a locked week's ベル stay put), except that a past day never drops to 0 from a value above it (`N past zeros held` in the notes: a run that read nothing, Health locked; the 0 is kept apart, never served: §13 `held`, and `promote` when it was a real correction).
 Shortcut fixes: [shortcut §6](shortcut-health-sync.md#6-troubleshooting).
 
 ## 7. Backups
@@ -144,6 +144,10 @@ keys; without either, the keys file: §4). It signs `POST /admin` with the serve
   last 30 days); `restore <bookmark>` restarts the object on it, and the room (told before the restart, its own storage) calls the restored record ~5 s later (retrying every 30 s, 10 tries) to start a new epoch, so every phone refetches; only when the reply's `note` says the room wasn't told, run `rev` yourself. Beyond 30 days:
   `dump > island-record-YYYY-MM-DD.json` (every row; keep it off the repo) and `load <file>` into an empty record.
 - **`rev`**: a new epoch: every phone drops its cache and fetches everything on its next refresh.
+- **`held [A|B]`**: the values an ingest held back (a past day's 0 over a value above it, [backend](../backend.md#ingest)
+  "Latest wins"), never served; each with when it was first and last sent and how often. **`promote <person> <date>
+  <metric> [value]`**: one of them made a row of that day (the day's latest from then on, the phones get it at their
+  next refresh); the held row stays, marked. Refused when nothing is held or it is already the latest.
 - **`compact [max] [rev]`**: the record's compaction now ([backend](../backend.md#the-record) "Compaction": the
   `metrics` rows of locked weeks the model no longer reads, by the phones' rule; at most `max` deletes, default 5,000).
   **On hold (the user, 2026-11-05):** the cron runs it at 04:15 Tokyo only with `COMPACT_CRON = "1"` in wrangler.toml's
