@@ -163,7 +163,7 @@ a2.send({ kind: 'hello', key: KEY_A });
 await a2.next((m) => m.kind === 'welcome');
 check((await a.closed) === 4002, 'a second A replaces the first (4002)');
 
-// The push (docs/backend.md#push): a signed /notify, as Apps Script sends it, reaches both phones as `changed`.
+// The push (docs/backend.md#push): a signed /notify reaches both phones as `changed` (the record's own goes by RPC).
 const notifyUrl = new URL('/notify', http);
 const unsigned = await fetch(notifyUrl, { method: 'POST', body: '{}' });
 check(unsigned.status === 401, `an unsigned notify is refused (${unsigned.status})`);

@@ -1,11 +1,10 @@
 // The record's HTTP side (docs/backend.md#the-record), free of the Workers runtime so it is unit-testable. The Worker
 // only checks the origin, the method and the size and hands the body on: the parsing, the signature and the JSON reply
 // happen in the Durable Object, whose CPU budget is far larger than the Free plan's ~10 ms per Worker request.
-// - `POST /api`: the app's and the Shortcut's requests, the same body as Apps Script's web app took (`{key, action, ...}`
-//   as text/plain JSON, a simple request: no preflight from a page, no key in a URL or a header); every reply is
-//   JSON with status 200, as Apps Script's were (`{ok:false, error}` included), so a client tells a refusal from an outage.
-// - `POST /admin`: the record tool's operations (relay/scripts/record.ts: counts, bookmarks, restore, a new epoch, the
-//   a dump, a load, the log, the weather), signed like `/notify` (notify.ts): only who holds both keys can sign.
+// - `POST /api`: the app's and the Shortcut's requests, one body (`{key, action, ...}` as text/plain JSON, a simple
+//   request: no preflight from a page, no key in a URL or a header); every reply is JSON with status 200 (`{ok:false,
+//   error}` included), so a client tells a refusal from an outage.
+// - `POST /admin`: the record tool's operations (relay/scripts/record.ts: counts, bookmarks, restore, a new epoch, a dump, a load, the log, the weather), signed like `/notify` (notify.ts): only who holds both keys can sign.
 // Each `/api` request is timed here (the wall time of the record's answer: in a Worker the clock moves only across
 // I/O, so this is the round trip to the object, its queue and its work) and handed to `onReq` with the record's meta
 // (reqMeta.ts): the relay's `req` event in the log (docs/ops/observability.md).

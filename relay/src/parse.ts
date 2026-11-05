@@ -22,7 +22,7 @@
 // stand > 1,440) is skipped, and so is a weight or body value outside WEIGHT_KG / BODY_BOUNDS.
 //
 // Body fat: Shortcuts may write Health's percentage as a fraction (0.223) or as a percent (22.3, or "22.3%"). A
-// plausible body fat is 2–70 %, so a value of at most 1 can only be a fraction: it is ×100. Stored as % with one decimal. It runs in the record (relay/src/store.ts); it ran in Apps Script until 2026-11-02, unchanged.
+// plausible body fat is 2–70 %, so a value of at most 1 can only be a fraction: it is ×100. Stored as % with one decimal. It runs in the record (relay/src/store.ts).
 import { BODY_BOUNDS, isBodyMetric, isRec, METRIC_BOUNDS, roundKg, WEIGHT_KG, type MetricKey } from '../../app/src/lib/contract/api.ts';
 
 interface ParsedMetric { date: string; metric: MetricKey; value: number }
