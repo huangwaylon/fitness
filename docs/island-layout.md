@@ -9,12 +9,14 @@ editor; the homes, their looks and their rooms; the phone's もようがえ. Pho
 - **One tile = 30 world units** = one NH tile (10 model units of NH's furniture at the island's scale, world.ts
   `DECOR_U` = 3u a model unit: a 2-tile bench is 60u, an 80u villager is NH's chibi). The tent's room uses the same
   tile (10 model units), so an outdoor footprint and a room footprint mean the same thing.
-- **20 × 60 tiles**, x −90…510, z −90…1710 (`layout/grid.ts` `GRID`): the long island (land x −30…480, z −30…1680:
+- **20 × 80 tiles**, x −90…510, z −90…2310 (`layout/grid.ts` `GRID`): the long island (land x −30…480, z −30…1680:
   the user's call, 2026-11-02, first twice today's length, then 60 tiles: room for the homes and what comes) with a ring of
-  sea; everything off the grid is sea. Tile (c, r) covers x `−90 + 30c … +30`, z `−90 + 30r … +30`; `r` grows into
+  sea, and 20 more rows of sea behind it (2026-11-06) for the island to grow back into (the editor's しまの おおきさ);
+  everything off the grid is sea. A band of chunks that is all sea (and a field's reach round it) has no bake or mesh
+  (`terrain.ts`: the deep plane shows there), so the empty rows cost the phones nothing on the GPU. Tile (c, r) covers x `−90 + 30c … +30`, z `−90 + 30r … +30`; `r` grows into
   the island (away from the camera), as world z does. Read the extent from the layout (`model.ts extentOf`), never
   a constant.
-- **Chunks of 8 × 8 tiles** (3 × 8 of them; the last column sticks out past the grid and is sea): the unit of a
+- **Chunks of 8 × 8 tiles** (3 × 10 of them; the last column sticks out past the grid and is sea): the unit of a
   terrain op. The ops allow up to 16 × 16 chunks (128 × 128 tiles), so the grid can grow again without a relay deploy.
 
 ## The layout is data

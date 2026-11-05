@@ -16,7 +16,7 @@ import {
 } from 'three';
 import { bend, BEND_GLSL, bendU } from './bend.ts';
 import { waterU } from './water.ts';
-import { CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf, idx, kindOf } from '#lib/layout/grid.ts';
+import { CHUNK, CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf, idx, kindOf } from '#lib/layout/grid.ts';
 import { chunkMesh, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
 import { FAR, STEP, fieldsOf } from '#lib/layout/fields.ts';
 import { SWASH_GLSL } from '#lib/layout/swash.ts';
@@ -604,7 +604,8 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     row: number;
     z0: number;
     z1: number;
-    rt: WebGLRenderTarget;
+    /** Its bake (none while the band is open sea: the deep plane shows there). */
+    rt: WebGLRenderTarget | null;
     top: Mesh;
     walls: Mesh;
     falls: Mesh;
@@ -662,7 +663,21 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     g.setAttribute('aPath', new Float32BufferAttribute(p.path, 4));
     return g;
   }
+  /** Whether a band is open sea, its neighbours' tiles a field's reach (FAR) away too: nothing to draw or bake (the
+   *  grid has rows of sea behind the island for it to grow into). */
+  function openSea(row: number): boolean {
+    const m = Math.ceil(FAR / TILE);
+    for (let r = Math.max(0, row * CHUNK - m); r < Math.min(GRID.rows, (row + 1) * CHUNK + m); r++)
+      for (let c = 0; c < GRID.cols; c++) if (kindOf(lay.codes[idx(c, r)]) !== 'sea') return false;
+    return true;
+  }
+  function bandRt(): WebGLRenderTarget {
+    const rt = new WebGLRenderTarget(Math.round(GW * px), Math.round(BAND_D * px), { generateMipmaps: true, minFilter: LinearMipmapLinearFilter, magFilter: LinearFilter, colorSpace: SRGBColorSpace });
+    rt.texture.anisotropy = 4;
+    return rt;
+  }
   function bake(b: Band) {
+    if (!b.rt) return;
     bakeMat.uniforms.uBox.value = [GRID.x0, b.z0, GRID.x0 + GW, b.z1];
     const was = renderer.getRenderTarget();
     renderer.setRenderTarget(b.rt);
@@ -670,8 +685,21 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     renderer.setRenderTarget(was);
   }
   function build(b: Band) {
-    const ms = Array.from({ length: CHUNKS_X }, (_, cx) => chunkMesh(lay, b.row * CHUNKS_X + cx));
     for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.geometry.dispose();
+    const sea = openSea(b.row);
+    for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.visible = !sea;
+    if (sea) {
+      for (const mesh of [b.top, b.walls, b.falls, b.water]) mesh.geometry = new BufferGeometry();
+      b.rt?.dispose();
+      b.rt = null;
+      return;
+    }
+    if (!b.rt) {
+      b.rt = bandRt();
+      (b.top.material as MeshLambertMaterial).map = b.rt.texture;
+      (b.top.material as MeshLambertMaterial).needsUpdate = true;
+    }
+    const ms = Array.from({ length: CHUNKS_X }, (_, cx) => chunkMesh(lay, b.row * CHUNKS_X + cx));
     b.top.geometry = geometry(join(ms.map((m) => m.top), []), (x, z) => [(x - GRID.x0) / GW, (z - b.z0) / BAND_D]);
     b.top.geometry.computeVertexNormals();
     b.walls.geometry = wallGeometry(join(ms.map((m) => m.walls), ['nrm', 'uv']));
@@ -679,9 +707,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     b.water.geometry = waterGeometry(join(ms.map((m) => m.water), ['flow', 'path']));
   }
   for (let row = 0; row < CHUNKS_Z; row++) {
-    const rt = new WebGLRenderTarget(Math.round(GW * px), Math.round(BAND_D * px), { generateMipmaps: true, minFilter: LinearMipmapLinearFilter, magFilter: LinearFilter, colorSpace: SRGBColorSpace });
-    rt.texture.anisotropy = 4;
-    const tm = bend(washed(new MeshLambertMaterial({ map: rt.texture, color: 0xf4f4f4 }), washU));
+    const tm = bend(washed(new MeshLambertMaterial({ map: null, color: 0xf4f4f4 }), washU));
     topMats.push(tm);
     const top = new Mesh(new BufferGeometry(), tm);
     top.receiveShadow = true;
@@ -695,7 +721,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       mm.frustumCulled = false;
       group.add(mm);
     }
-    const b: Band = { row, z0: GRID.z0 + row * BAND_D, z1: GRID.z0 + (row + 1) * BAND_D, rt, top, walls, falls, water };
+    const b: Band = { row, z0: GRID.z0 + row * BAND_D, z1: GRID.z0 + (row + 1) * BAND_D, rt: null, top, walls, falls, water };
     bands.push(b);
     build(b);
   }
@@ -783,11 +809,11 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
       wallMat.needsUpdate = true;
       for (const b of bands) bake(b);
     },
-    chunks: () => bands.map((b) => ({ z0: b.z0, z1: b.z1, meshes: [b.top, b.walls, b.falls, b.water] })),
+    chunks: () => bands.filter((b) => b.rt).map((b) => ({ z0: b.z0, z1: b.z1, meshes: [b.top, b.walls, b.falls, b.water] })),
     dispose() {
       disposed = true;
       for (const b of bands) {
-        b.rt.dispose();
+        b.rt?.dispose();
         for (const m of [b.top, b.walls, b.falls, b.water]) m.geometry.dispose();
       }
       stairs.geometry.dispose();
