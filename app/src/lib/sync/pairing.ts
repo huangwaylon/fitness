@@ -3,12 +3,14 @@ import type { Who } from '#lib/types.ts';
 import { LIVE, getStoredMe, localKV, storeMe, writeRaw } from './storage.ts';
 import { clearCache } from './cache.ts';
 import { clearQueue } from './queue.ts';
+import { clearLog } from './log.ts';
 
 /** Store the key for `me`. A different person than before drops that person's cache and unsent queue. */
 export function setKey(key: string, me: Who): void {
   if (getStoredMe() !== me) {
     void clearCache();
     clearQueue();
+    clearLog();
   }
   writeRaw(localKV(), LIVE.key, key);
   storeMe(me);

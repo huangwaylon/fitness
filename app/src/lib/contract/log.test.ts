@@ -17,11 +17,14 @@ describe('scrubMsg', () => {
       [`bad key ${KEY} for Umeko`, 'bad key <id> for Umeko'],
       ['weight 68.4 out of range on 2026-11-01', 'weight # out of range on #-#-#'],
       ['鮭の塩焼き is missing', '… is missing'],
+      ["TypeError: forced e2e error: weight 68.4, 鮭の塩焼き, 'a.b2'", "TypeError: forced e#e error: weight #, …, 'a.b#'"],
       ['a {"steps":8564} b [1,2]', 'a {…} b {…}'],
       ['x'.repeat(300), 'x'.repeat(120).replace(/x{16,}/, '<id>').slice(0, 120)]
     ];
     const bad: string[] = [];
     for (const [i, want] of cases) if (scrubMsg(i) !== want) bad.push(`${i.slice(0, 40)} → ${scrubMsg(i)} (want ${want})`);
+    // the relay scrubs again: a second pass changes nothing
+    for (const [i] of cases) if (scrubMsg(scrubMsg(i)) !== scrubMsg(i)) bad.push(`twice: ${scrubMsg(i)} → ${scrubMsg(scrubMsg(i))}`);
     expect(bad).toEqual([]);
   });
 

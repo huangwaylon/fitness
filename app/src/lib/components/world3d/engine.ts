@@ -29,6 +29,7 @@ import { drawOff } from '../../ui-state/testMode.ts';
 import { releaseAll, resourcesOf } from './release.ts';
 import { frameRate } from '#lib/store/frameRate.svelte.ts';
 import { pacer } from './pace.ts';
+import { log } from '#lib/sync/log.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -825,9 +826,14 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (!document.hidden && !paused) kick();
   };
   document.addEventListener('visibilitychange', onVis);
-  // a lost context (the phone reclaiming the GPU): three restores what it can; draw again once it's back
-  const onLost = (e: Event) => e.preventDefault();
+  // a lost context (the phone reclaiming the GPU): three restores what it can; draw again once it's back (the log's
+  // gl.lost: how often iOS takes the island's memory back)
+  const onLost = (e: Event) => {
+    e.preventDefault();
+    log('gl.lost', { where: 'island', restored: false }, 2);
+  };
   const onRestored = () => {
+    log('gl.lost', { where: 'island', restored: true });
     shadowsDirty = true;
     resize();
   };

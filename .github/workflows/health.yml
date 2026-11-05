@@ -1,7 +1,9 @@
 # Backend monitor (docs/ops/runbook.md §3): the relay's /health (the Worker and the room) and a keyless
 # {"action":"health"} to the record's /api (its Durable Object). It fails, so GitHub e-mails the owner, unless both
 # answer JSON with ok:true; and the app's site (https://island-fund.pages.dev: a build, its CSP header, the relay's
-# CORS for its origin).
+# CORS for its origin). Then the log's alert (docs/ops/observability.md "The alert"): /health/log's counts (with the
+# HEALTH_TOKEN secret) over the thresholds open one issue labelled `alert` (counts only: the repo is public), a change
+# comments on it, a green run closes it.
 name: Backend health
 
 on:
@@ -11,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   health:
@@ -37,3 +40,42 @@ jobs:
           cors=$(curl -sS --max-time 30 -o /dev/null -D - -H "Origin: $site" -H 'Content-Type: text/plain' --data '{"action":"health"}' https://island-fund-relay.island-fund-relay.workers.dev/api | grep -i '^access-control-allow-origin:' | tr -d '\r' | awk '{print $2}')
           [ "$cors" = "$site" ] || { echo "::error::the relay's /api doesn't allow $site (ALLOWED_ORIGINS, docs/backend.md)"; exit 1; }
           echo "site $v, with its CSP; the relay allows its origin"
+
+      - name: The log's alert
+        env:
+          HEALTH_TOKEN: ${{ secrets.HEALTH_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if [ -z "$HEALTH_TOKEN" ]; then echo "::warning::no HEALTH_TOKEN secret: the log's alert is off (docs/ops/observability.md)"; exit 0; fi
+          s=$(curl -sS --max-time 30 -H "Authorization: Bearer $HEALTH_TOKEN" https://island-fund-relay.island-fund-relay.workers.dev/health/log)
+          echo "$s" | jq -e '.ok == true' > /dev/null || { echo "::error::/health/log did not answer: $(echo "$s" | head -c 200)"; exit 1; }
+          echo "$s" | jq -c .
+          # the thresholds (the last 6 hours): errors (not while leaving), the record's `unavailable`, a cap reached,
+          # the day's events past half the cap, the prune dead (an event older than 32 days)
+          why=$(echo "$s" | jq -r '[
+            (if .e6h > 20 then "\(.e6h) errors in 6 h" else empty end),
+            (if .unavailable6h > 5 then "the record answered unavailable \(.unavailable6h) times in 6 h" else empty end),
+            (if (.capped | length) > 0 then "a day cap reached: \(.capped | join(", "))" else empty end),
+            (if .budgetPct > 50 then "\(.budgetPct) % of the day'"'"'s log cap used" else empty end),
+            (if .oldestDays > 32 then "the oldest event is \(.oldestDays) days old (the prune)" else empty end)
+          ] | join("; ")')
+          [ "$(echo "$s" | jq '.phones24h')" = 0 ] && echo "::warning::no phone events in 24 h: the phones' log may be broken, or nobody opened the app"
+          open=$(gh issue list --label alert --state open --json number --jq '.[0].number // empty')
+          counts=$(echo "$s" | jq -r '"errors 1 h \(.e1h), 6 h \(.e6h); warnings 6 h \(.w6h); unavailable 6 h \(.unavailable6h); phones 24 h \(.phones24h); today \(.today) (\(.budgetPct) %); oldest \(.oldestDays) d"')
+          body="$why
+
+          $counts
+
+          Investigate: docs/ops/observability.md \"Investigating\" (\`cd relay && npm run logs -- report --since 6h\`). Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          if [ -n "$why" ]; then
+            echo "::warning::$why"
+            gh label create alert --color B60205 --description "the relay's log alert (health.yml)" 2>/dev/null || true
+            if [ -z "$open" ]; then gh issue create --label alert --title "Relay alert: $why" --body "$body"
+            else
+              last=$(gh issue view "$open" --json comments,body --jq '(.comments | last | .body) // .body' | head -1)
+              [ "$last" = "$why" ] || gh issue comment "$open" --body "$body"
+            fi
+          elif [ -n "$open" ]; then
+            gh issue close "$open" --comment "Back under the thresholds: $counts"
+          fi

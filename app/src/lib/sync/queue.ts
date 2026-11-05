@@ -4,6 +4,7 @@ import type { EventType } from '#lib/contract/api.ts';
 import type { Who } from '#lib/types.ts';
 import { LIVE, getKey, localKV, readJson, remove, writeJson } from './storage.ts';
 import { post, type GasError } from './transport.ts';
+import { count, log } from './log.ts';
 
 export interface QueuedEvent {
   id: string;
@@ -79,6 +80,7 @@ export function keepAcked(list: QueuedEvent[]): void {
 export function enqueue(type: EventType, data: Record<string, unknown>, now = Date.now(), holdMs = 0): QueuedEvent {
   const ev: QueuedEvent = { id: newId(), type, data, queuedAt: now, tries: 0, nextAt: now + holdMs };
   saveQueue([...queued(), ev]);
+  count(`ev:${type}`);
   return ev;
 }
 
@@ -188,7 +190,8 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       keepAcked([...ackedEvents().filter((x) => x.id !== ev.id), { ...ev, ackedAt: now() }]);
       saveQueue(queued().filter((x) => x.id !== ev.id));
     };
-    const drop = (ev: QueuedEvent) => {
+    const drop = (ev: QueuedEvent, error: GasError) => {
+      log('queue.drop', { type: ev.type, err: error, tries: ev.tries + 1 }, 3);
       out.dropped.push(ev);
       saveQueue(queued().filter((x) => x.id !== ev.id));
     };
@@ -196,6 +199,8 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
       out.error = error;
       if (error === 'unauthorized') return;
       const tries = ev.tries + 1;
+      // the first and every fifth (offline, it retries for as long as it takes)
+      if (tries === 1 || tries % 5 === 0) log('queue.retry', { type: ev.type, err: error, tries, n: queued().length }, 2);
       saveQueue(queued().map((x) => (x.id === ev.id ? { ...x, tries, nextAt: now() + backoffMs(tries) } : x)));
     };
     for (;;) {
@@ -226,7 +231,7 @@ export function flush(now: () => number = Date.now): Promise<FlushResult> {
         const x = results[i];
         if (x?.ok) ack(ev, x.at);
         // (`forbidden`: the guest's phone asked for what only a member may: never again)
-        else if (x && (x.error === 'bad_request' || x.error === 'too_large' || x.error === 'forbidden')) drop(ev);
+        else if (x && (x.error === 'bad_request' || x.error === 'too_large' || x.error === 'forbidden')) drop(ev, x.error);
         else {
           // it and the rest wait (in order): the record already has any of them it took, and acks a repeat as a duplicate
           backOff(ev, x?.error ?? 'unavailable');

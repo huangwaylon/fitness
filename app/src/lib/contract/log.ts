@@ -79,7 +79,7 @@ export const isLogId = (v: unknown): v is string => typeof v === 'string' && ID.
 export const isLogEvent = (e: unknown): e is LogEventName => typeof e === 'string' && Object.hasOwn(LOG_EVENTS, e);
 
 /** Quoted text kept when it reads as code (`'e.stats().fps'`, Safari's `evaluating '…'`): no blank, a `.` or a `(`. */
-const CODE = /^[\w$.()[\]]{1,60}$/;
+const CODE = /^[\w$.()[\]#]{1,60}$/;
 
 /**
  * A JS error's message as its fingerprint, scrubbed in this order (each step sees the last's output): a URL →
@@ -91,7 +91,9 @@ export function scrubMsg(s: unknown): string {
   return String(s ?? '')
     .replace(/\b[a-z][a-z0-9+.-]*:\/\/\S*/gi, '<url>')
     .replace(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g, '<email>')
-    .replace(/[?#]\S*/g, '')
+    // (a fragment is `#` and a word with = / & after it: never the `#` this leaves for a number, so a second pass, the
+    // relay's, changes nothing)
+    .replace(/\?\S*|#(?=[A-Za-z_][\w-]*[=/&])\S*/g, '')
     .replace(/[0-9A-Za-z+/=_-]{16,}/g, '<id>')
     .replace(/(["'`])([^"'`]{0,400}?)\1/g, (_, q: string, x: string) => (CODE.test(x) && /[.(]/.test(x) ? `${q}${x}${q}` : '"…"'))
     .replace(/\{[^{}]{0,400}\}|\[[^[\]]{0,400}\]/g, '{…}')
@@ -102,7 +104,7 @@ export function scrubMsg(s: unknown): string {
     .slice(0, 120);
 }
 
-/** A file's name from a URL or path (the hashed chunk's): its query and fragment cut first (`/pair#key=…`). @public (sync/log.ts) */
+/** A file's name from a URL or path (the hashed chunk's): its query and fragment cut first (`/pair#key=…`). */
 export const baseName = (u: string): string => (u.split(/[?#]/)[0].split('/').pop() ?? '').replace(/[^\w.-]/g, '').slice(0, 60);
 
 /**
@@ -163,7 +165,7 @@ export function logRoute(path: string): (typeof LOG_ROUTES)[number] {
   return (LOG_ROUTES as readonly string[]).includes(r) ? (r as (typeof LOG_ROUTES)[number]) : 'other';
 }
 
-/** A phone's event as it sends it (the batch's `es`): its clock, level, name, sequence in the session, request id, payload. @public (sync/log.ts) */
+/** A phone's event as it sends it (the batch's `es`): its clock, level, name, sequence in the session, request id, payload. */
 export interface LogEventIn {
   t: number;
   l: LogLevel;
@@ -175,7 +177,7 @@ export interface LogEventIn {
   d?: LogData;
 }
 
-/** A phone's batch (`POST /log`): who (the key: the relay keeps only the role), the batch id, the session, the build. @public (sync/log.ts) */
+/** A phone's batch (`POST /log`): who (the key: the relay keeps only the role), the batch id, the session, the build. */
 export interface LogBatch {
   v: typeof LOG_V;
   key: string;

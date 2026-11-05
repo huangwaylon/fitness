@@ -1,107 +1,157 @@
-# Observability: logs, metrics, alerts
+# Observability: the log, its reader, the alert
 
-DRAFT for review (2026-11-05). What the app and the relay log, where it goes, how to read it, what it costs.
-
-## Goals
-- Root-cause an issue after the fact: what a phone did, what the relay answered, how long it took, which build.
-- Errors are never the first thing dropped; logging never costs a frame; the record never pays for it.
-- Within the Workers Free plan, with room to spare. Nothing personal: no keys, health values, food names, free text, IPs.
+What the phones and the relay log, where it goes, how to read it, what it costs. The decisions and why:
+[decisions](../decisions.md#logging-and-observability-2026-11-05). Code: `app/src/lib/contract/log.ts` (the schema),
+`app/src/lib/sync/log.ts` (the phone), `relay/src/log.ts` · `logRoute.ts` · `reqMeta.ts` · `logObject.ts` (the relay),
+`relay/scripts/logs.ts` (the reader).
 
 ## Pieces
-| Piece | Holds | Retention | Read with |
+| Piece | Holds | Kept | Read with |
 |---|---|---|---|
-| **The log** (`IslandLog`, a third SQLite Durable Object, `LOG`) | structured events from the phones (`src c`) and the relay (`src r`) | 30 days (its alarm prunes daily) | `npm run logs` (signed `/admin` op `logs`) |
-| **Workers Logs** (`[observability]`, head sampling 1.0) | every Worker / DO invocation's own trace + `console.*` (JSON lines) | 3 days (Free: 200k/day) | dashboard → Workers → Logs, `npx wrangler tail` |
-| **`/health`** | the last hour's and 6 hours' error counts (numbers only) | — | `health.yml` (opens an issue on a spike) |
+| **The log** (`IslandLog`, the relay's third SQLite Durable Object, binding `LOG`) | the phones' events (`src c`) and the relay's own (`src r`) | 30 days | `npm run logs` (the signed `/admin` op `logs`) |
+| **Workers Logs** (`[observability]`, sampling 1, no invocation logs) | the relay's `console` lines: an error's class, the weather's fetch | 3 days | dashboard → Workers → island-fund-relay → Logs; `npx wrangler tail` |
+| **`/health/log`** (with `HEALTH_TOKEN`) | the log's counts (errors in 1 h / 6 h, warnings, `unavailable` answers, caps, oldest) | — | `.github/workflows/health.yml` (opens an issue on a spike) |
 
-Not used: Logpush (paid); Workers Analytics Engine (free, 3 months, but its SQL API needs an account API token with
-Analytics read on every reader and in CI; the log's ~2k events a day don't need it); the record's own SQLite (a
-restore of the record would roll back the logs of the very incident; the dump would carry them).
+Not used: Logpush (paid); Workers Analytics Engine (free, 3 months, but its SQL API needs an account API token on
+every reader and in CI, and the log's few thousand events a day don't need it); the record's own SQLite (a restore
+of the record would roll back the logs of the very incident, and the dump would carry them); Workers Logs' invocation
+logs (each request's IP, headers and place).
 
-## The event (contract/log.ts, `LOG_V = 1`)
-`{ t, l, e, r?, d? }` in a batch `{ v, key, b, s, build, os, pwa, es: [...] }`:
-- `t` client ms (the relay clamps to ±1 day of its own clock and keeps both: `ts` its receipt, `ct` the phone's);
-- `l` level 0 debug · 1 info · 2 warn · 3 error; `e` the event name (a registry: unknown names are refused);
-- `s` the session id (random, per app load), `b` the batch id (dedupe), `r` a request id (`api.*`: the one sent in
-  the `/api` body and echoed in `X-Request-Id`, so a phone's failure joins the relay's `req` row);
-- `d` the payload: only the registry's fields for that event, each a number (finite, rounded), a boolean, or an
-  enum string (`[A-Za-z0-9_.:/-]{1,40}`); `js.error`'s `msg` and `stack` scrubbed (below). Anything else is dropped
-  by the relay, whatever the phone sent.
-- the caller's role `A` / `B` / `G` from the key, set by the relay (never the key).
+## The event (`contract/log.ts`, `LOG_V = 1`)
+A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepalive` when the page is going):
+`{v: 1, key, b, s, build, os, es: [{t, l, e, q, r?, d}]}`. The relay stores, per event:
 
-### Events
-| Event | Level | Payload | When |
+| Column | What |
+|---|---|
+| `id` | the receipt time's key (ms × 1000 + a counter): the primary key, so a time range needs no index |
+| `ct` | the phone's clock (ms), kept only within a day of the relay's |
+| `lvl` | 0 debug · 1 info · 2 warn · 3 error |
+| `ev` | the event's name (the registry's; anything else is dropped) |
+| `src`, `role` | `c` a phone / `r` the relay; `A` · `B` · `G` from the key (the key itself is never kept) |
+| `sid`, `rid`, `q` | the app session's id (random, per load), a request's id (`api.*` ↔ the relay's `req`), the event's number in its session |
+| `build`, `os` | the app's version (`2026-11-05.ef93d8b`), the device in a word (`ios27.1`) |
+| `d` | the payload: **only the registry's fields for that event, each of its kind** (a number within ±1e7, rounded to 0.1; a boolean; a value from a closed set; a token: ≤ 40 of `[A-Za-z0-9_.:/-]`, never 16+ letters and digits in a row; `js.error`'s scrubbed `msg` and `stack`). Enforced by the relay whatever a phone sends. |
+
+### What we log
+| Event | Level | Fields | When |
 |---|---|---|---|
-| `app.open` | info | `nav` (navigate/reload/back_forward), `route`, `pwa`, `w`, `h`, `dpr` | each load |
-| `app.ready` | info | `ms` (navigation start → the 3D island's first frame), `route` | once a load |
-| `app.show` / `app.hide` | info | `awayS` / `shownS` | visibility changes |
-| `perf.frames` | info | `p50`, `p95`, `fps`, `long` (>50 ms), `drawFps`, `mode`, `heapMb` (Chrome only) | 10 s after ready, 5 s of rAF; again on a show after ≥ 10 min |
-| `js.error` | error | `kind` (error/rejection), `msg`, `stack`, `src`, `n` (repeats folded) | window `error`, `unhandledrejection` |
-| `api.fail` | warn | `action`, `err`, `http`, `ms` | a `/api` call that didn't answer ok |
-| `api.ok` | info, 10 % sampled | `action`, `ms` | a `/api` call that did |
-| `queue.retry` / `queue.drop` | warn / error | `type`, `err`, `tries`, `n` | the write queue backs off / drops (never sendable) |
-| `sync.fail` | warn | `err`, `cached` | a refresh that failed |
-| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `shownS`, `clean` | the live socket |
-| `use` | info | counters: `sheet:<i18n key>`, `ev:<event type>`, `route:<route>` | folded per flush |
-| `log.drop` | warn | `n`, `why` (cap/full) | the logger dropped events |
-| relay `req` | info / warn / error | `action`, `st` (ok or the error code), `ms`, `inB`, `outB`, `n`, `rej`, `why` (the first refusal's rule), ingest's `m`, `sk`, `w` | every `/api` request (rate-limit hits: `st busy`) |
-| relay `room.close` / `room.full` | info / warn | `code`, `secs` | the live room |
-| relay `cron.wx` | info / warn | `ok`, `fail`, `hours`, `ms` | a weather fetch |
-| relay `do.error` | error | `where`, `name` | a caught exception in an object |
-| relay `admin` | info | `op` | each signed admin op (an audit) |
-| relay `log.cap` | warn | `src`, `role` | a day's cap reached (once) |
+| `app.open` | info | `nav`, `route`, `pwa`, `w`, `h`, `dpr`, `crashed` (the last load died while shown), `lt` (long-frame API there), `q`/`qAgeS` (the write queue), `fpsPref` | each load |
+| `app.ready` | info | `ms` (navigation start → the 3D island loaded), `route` | once a load |
+| `app.show` | info | `awayS`, `route` | shown again |
+| `app.reload` | info | `why` (update, chunk) | the app reloads itself |
+| `perf.frames` | info | `p50`, `p95` (ms), `fps`, `long` (> 50 ms), `drawFps` (the island's own), `hz`, `mode`, `when` | 10 s after ready (5 s of rAF); again after 10 min away |
+| `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src`, `n` (folded repeats), `leaving`, `route` | `error`, `unhandledrejection` |
+| `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`; `r` | a `/api` call |
+| `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
+| `sync.fail` | info offline / warn | `err`, `cached` | a refresh failed |
+| `queue.retry` / `queue.drop` | warn / error | `type`, `err`, `tries` | the write queue backs off (1st and every 5th) / drops an event |
+| `ws.open` / `ws.close` / `ws.park` | info / info / warn | `ms`, `retries`; `code`, `secs`, `welcomed`; `code` | the live socket (closes the relay or the network made) |
+| `gl.lost` | warn | `where`, `restored` | WebGL context lost / back |
+| `chunk.fail` | warn | | a chunk failed to load |
+| `storage.fail` | warn | `store`, `kind` | storage refused a write |
+| `use` | info | counters `sheet:<i18n key>`, `ev:<event type>`, `route:<route>` | summed, one a flush |
+| `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
+| `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); `exc` (a thrown class) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |
+| `room.close` / `room.full` | info / warn | `code`, `secs`, `socks` | the live room |
+| `cron.wx` | info; warn failed | `ok`, `fetched`, `fail`, `hours`, `age`, `ms` | a weather fetch (the cron at :15, :45) |
+| `admin` | info | `op`, `st` | each signed admin op (an audit) |
+| `log.cap` | warn | `bucket` | a day's cap reached (once) |
 
-### Scrubbing (`js.error`)
-`msg`: digits → `#`, quoted strings → `"…"`, non-ASCII runs → `…`, 32+ hex → `<hex>`, 160 chars. `stack`: the
-top 4 frames as `fn@file:line:col` (the file's basename: hashed chunks). The relay scrubs again. A message is the
-error's fingerprint (numbers out, so the same bug groups).
+**Never logged:** keys (or a piece of one), health values, food names, board text, names, e-mails, URLs (their query
+or fragment: `#key=`), IP addresses, user agents (only `os`), the record's `detail` / ingest `warnings` text (they
+name values). A `js.error` message is scrubbed, in order: a URL → `<url>`, an e-mail → `<email>`, a query or fragment
+cut, 16+ letters and digits → `<id>`, quoted text → `"…"` (unless it reads as code: `'e.stats().fps'`), `{…}` /
+`[…]`, non-ASCII → `…`, numbers → `#`, 120 characters; a stack is its top four frames as `fn@file:line:col` (the
+file's base name). Residual risk: unquoted ASCII words in a thrown message (the app's own messages have none). The
+tests: `contract/log.test.ts` (the scrubbers, every field of every event filled with canaries), `relay/test/log.test.ts`
+("privacy": every event, every field and failing `/api` requests carrying a key, weights, a food's name, a board note,
+`#key=`: none of it in any stored row), `sync/log.test.ts` (the key only in the batch's `key` field), and
+`e2e/log.spec.ts` (a forced error on a paired phone reaches the relay's real code, scrubbed; with
+`E2E_TEST_RELAY=1` it goes to the test relay and is read back with `npm run logs -- --test --sid …`).
 
-## The phone (sync/log.ts)
-- `log(e, d, level)` only pushes onto a ring (no I/O, no JSON): **300 events**, evicting the oldest of the lowest
-  level first (debug, info, warn; an error only when the ring is all errors). Per session: 600 events, 50 errors (the
-  same message folds into `n`). Per device and day: 1,500.
-- Persisted to `localStorage` (`island.log`) when idle (`requestIdleCallback`, a timeout on Safari) and synchronously on
-  `pagehide`/hidden; read back at load, so a crash or a kill loses nothing written.
-- Flushed: 30 s after the first event (5 s after an error), at 50 events, and on hidden (`fetch` with `keepalive`,
-  ≤ 32 KB a batch); a batch stays stored until the relay acks its id (`b`), so a killed page re-sends it next load and
-  the relay drops the repeat. Failure: backoff 5 s → 5 min; offline: wait for `online`.
-- Not in the demo, not under automation (unless `?log=on`), not unpaired (kept until paired, then sent).
-- Nothing runs in the render loop: frame samples are the one 5 s rAF sampler, off the 3D engine.
+**Who reads it:** only the signed `/admin` ops (`logs`, `logstats`, `logpurge`), whose secret derives from both member
+keys: the operator. No phone reads the log, the guest's events included. `/health/log` gives counts only, with its
+own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` deletes sooner.
+
+## The phone (`sync/log.ts`)
+- `log()` only pushes onto a ring: no I/O, no JSON beyond the payload's check, never in the render loop (the frames
+  sample is its own rAF loop of 5 s, once a load). The ring: 300 events, evicting the oldest of the lowest level
+  first (debug, info, warn), keeping the 15 before each error; caps: 600 a session (50 errors; a repeated message
+  folds into `n`), 1,500 a day on the phone; dropped ones counted (`log.drop`).
+- Persisted to `localStorage` (`island.log`, ≤ 24 KB: errors and warnings first, then the newest 100) 2 s after a
+  change and at once when hidden, on `pagehide` and before the app reloads itself; read back on the next load (its
+  events go as a batch of their own session). On a quota error the log's key goes first, never the user's data.
+- Flushed 30 s after the first event (5 s after an error), at 50 events, and when hidden (`fetch` with `keepalive`,
+  one batch ≤ 32 KB in flight). A batch stays stored until the relay acks its id; a re-sent one is a `dup`. Failure:
+  backoff 5 s → 5 min; offline: until `online`. A capped day (`closed`): errors only until midnight UTC.
+- Off in the demo and under automation (`navigator.webdriver`, unless `?log=on`). Unpaired, events wait for a key;
+  pairing as someone else clears them.
+- `/api` requests carry `rid` (per request) and `sid` (per load) in the body; the relay logs them on `req` and echoes
+  `X-Request-Id`.
 
 ## The relay
-- `POST /log` (Worker): origin, method, ≤ 64 KB, then the text to `IslandLog.ingest` (parsing on the object's budget).
-  It checks the key (role), the version, each event against the registry, the caps, and the batch id (seen in 2 days:
-  `{ok, dup}`). Replies `{ok, kept, dropped}`.
-- `/api` (Worker): times the record's answer, which returns its reply and a small `meta` (action, role, status, the
-  refusals' rules: enums only, counts) → one `req` event via `ctx.waitUntil` to the log (never in the reply's path).
-- The room, the cron, the admin ops: their events go to the log by RPC, best effort.
-- **Caps (UTC day, the object's):** phones 1,000 info/warn + 200 error per role; the relay 4,000 `req`/other + 500
-  error. Over a cap: dropped and counted (`log.cap` once). Worst case ~7k events a day.
-- **Storage:** `log (seq, ts, ct, lvl, ev, src, role, sid, rid, build, d)` with one index `(ts)`; `batches (b, ts)`.
-  ~250 bytes an event: ~2k events a day typical is ~0.5 MB a day, 15 MB for 30 days.
-- **Retention:** the alarm runs daily: events older than 30 days, batch ids older than 2 days, 20k at a time.
+- `POST /log` (the Worker, `logRoute.ts`): origin, size (64 KB), **the key checked before any request to the object**
+  (a stranger's flood never spends Durable Object requests), and a role whose day is capped is answered by the Worker
+  until midnight; then the text to `IslandLog.ingest` (parsing on the object's budget). `LOG_OFF=1` (a var): acked,
+  nothing kept.
+- `/api`: the Worker times the record's answer (wall time: in a Worker the clock moves only across I/O, so it is the
+  round trip to the object, its queue and its work); the record returns its reply with a small `meta`
+  (`reqMeta.ts`: enums and counts) and the Worker sends a `req` event by RPC in `ctx.waitUntil`, never in the reply's
+  path. An object still on the old code (no `apiMeta`, the seconds after a deploy) is asked the plain way.
+- The room (`room.close`, `room.full`), the cron (`cron.wx`) and the admin ops (`admin`) send theirs the same way,
+  best effort.
+- **Caps** (UTC day, `caps` table, one row written per write): phones 1,000 info/warn and 200 errors per role; the
+  relay 4,000 and 500; 8,000 in all (the hard guard on the account's rows written). Over a cap: dropped, `log.cap`
+  once.
+- **Tables:** `log` (primary key `id`, no other index), `batches (b, ts)` (two days), `caps (day, bucket, n)`.
+- **Retention:** the object's alarm, daily: events older than 30 days (5,000 a chunk, 4 chunks; a backlog goes on
+  hourly), batch ids and caps older than 2 days.
 
 ## Reading
+From `relay/`; the keys from `KEY_A`/`KEY_B`, `KEYS_FILE`, else `~/.config/island-fund/keys` (production) or
+`.smoke-keys` (`--test`). Times are `90m`, `2h`, `7d`, an ISO time, or ms; printed in Tokyo time.
 ```sh
-cd relay
-KEYS_FILE=~/.config/island-fund/keys npm run logs -- --since 2h --level warn
-npm run logs -- --since 1d --event js.error --person A        # (keys as above)
-npm run logs -- --rid <id>  |  --sid <id>                       # one request, one session, both sides
-npm run logs -- report --since 7d                               # errors by fingerprint, p50/p95 per action, per build
-npm run logs -- --test ...                                      # the test relay (KEYS_FILE=.smoke-keys)
+npm run logs -- --since 2h --level warn                    # newest last; --limit 200 (≤ 1000)
+npm run logs -- --since 1d --event js.error --person A     # an event, or a prefix: --event api. / --event js.*
+npm run logs -- --rid 0ny9a14zf0                           # one request, the phone's side and the relay's
+npm run logs -- --sid ra3im9x4q5                           # one app session, start to end
+npm run logs -- --src relay --event req --since 6h --json  # raw rows
+npm run logs -- report --since 7d                          # errors by fingerprint, /api p50/p95 by action, refusals by rule,
+                                                           # the phones' view, sync, socket closes, load and frames, builds, usage
+npm run logs -- stats                                      # the alert's numbers
+npm run logs -- --test ...                                 # the test relay
 ```
-## Alerts
-`/health` adds `log: {e1h, e6h, w6h}` (counts only). `health.yml` (every 6 h) opens a GitHub issue labelled `alert`
-(or comments on the open one) when `e6h` > 20 or the relay's own `req` errors (`unavailable`) > 5; the issue says
-counts only and points here.
 
-## Costs (Free plan, verified on developers.cloudflare.com 2026-11-05)
+### Investigating (a checklist)
+1. `npm run logs -- stats`: errors in the last 1 h / 6 h, `unavailable` answers, caps, the oldest event.
+2. `npm run logs -- report --since 1d`: what fails, for whom, since which build.
+3. `npm run logs -- --since 6h --level warn`, then `--sid` of a session in trouble (its whole story) and `--rid` of a
+   failed request (the relay's `req`: its status, rule, time).
+4. The relay live: `npx wrangler tail`; the dashboard's Workers Logs (3 days).
+5. The Free plan's use: dashboard → Workers & Pages → the relay's Metrics (requests), Durable Objects (rows
+   written/read against 100k / 5M a day).
+6. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy.
+7. Close the alert's issue with the cause.
+
+## The alert
+`health.yml` (every 6 hours and on demand) reads `/health/log` with the `HEALTH_TOKEN` secret (a Worker secret and a
+repo secret: counts only) and opens one GitHub issue labelled `alert` (or comments on the open one when the state
+changes) when, in the last 6 hours, errors > 20 (not counting errors while leaving), the relay answered `unavailable`
+> 5 times, a cap was reached, the day's events passed 50 % of the cap, or the oldest event is older than 32 days (the
+prune is dead); it closes the issue on a green run. The issue holds counts and a link here, never a message (the repo
+is public). A failing `/health` still fails the job (GitHub's e-mail). Scheduled workflows stop after 60 days without
+a commit in a public repo: re-enable it in Actions.
+Set up once (done 2026-11-05): `openssl rand -hex 32` → `npx wrangler secret put HEALTH_TOKEN` (and `--env test`) and
+`gh secret set HEALTH_TOKEN`.
+
+## Costs (Free plan, developers.cloudflare.com, checked 2026-11-05)
 | | Free limit | The log adds (typical / worst) |
 |---|---|---|
-| Worker requests | 100k/day | ~60 `/log` / ~300 |
-| DO requests | 100k/day | ~1,100 (a `req` RPC each `/api`, `/log`) / ~5k |
-| Rows written (each index row counts, deletes too) | 100k/day | ~8k / ~28k |
-| Rows read | 5M/day | queries: a day's scan ~2k |
-| Storage | 5 GB | ~15 MB |
-| Worker CPU | 10 ms/request | `/log`: none parsed in the Worker; `/api`: one RPC more |
-| Workers Logs | 200k/day, 3 days | ~5k |
+| Worker requests | 100k/day | ~100 `/log` / ~1k |
+| DO requests | 100k/day | ~1,100 (a `req` RPC each `/api`, the `/log` batches, room closes) / ~9k |
+| Rows written (an index row counts; a delete counts) | 100k/day | ~4k (an insert, a cap row a write; the prune 30 days later) / ~20k |
+| Rows read | 5M/day | queries only: a day's report ~2k, 30 days ~60k |
+| Storage | 5 GB | ~250 B an event: ~0.5 MB a day, ~15 MB for 30 days |
+| Worker CPU | 10 ms/request | `/log`: one JSON.parse of ≤ 64 KB for the key; `/api`: one more RPC in the background |
+| Workers Logs | 200k/day, 3 days | a few hundred lines |
+| The phone | — | `log()` ~µs; a flush: one JSON.stringify of ≤ 32 KB and one fetch; a persist ≤ 24 KB, debounced |

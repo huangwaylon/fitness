@@ -60,7 +60,8 @@ describe('post', () => {
     handler = () => ({ ok: true, me: 'A' });
     const r = await post('whoami');
     expect(r).toEqual({ ok: true, me: 'A' });
-    expect(calls[0]).toEqual({ key: KEY, action: 'whoami' });
+    // with a request id and the session's (the log joins the relay's `req` to the phone's: sync/log.ts)
+    expect(calls[0]).toEqual({ key: KEY, action: 'whoami', rid: expect.stringMatching(/^[0-9a-z]{10}$/), sid: expect.stringMatching(/^[0-9a-z]{10}$/) });
   });
   it('maps failures to the error taxonomy', async () => {
     handler = () => new TypeError('Load failed');

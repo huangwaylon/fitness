@@ -6,18 +6,23 @@
 // fetch fails too, so a chunk failure reloads only once one more request gets through.
 // The send queue and the key live in storage, so a reload loses nothing but an open sheet.
 
+import { log, persistLog } from '#lib/sync/log.ts';
+
 const KEY = 'island.reloadAt';
 /** One automatic reload per this window: a build that still fails after reloading shows its error instead of looping. */
 export const RELOAD_WINDOW_MS = 30_000;
 
-/** Reloads the page unless it already reloaded itself in the last RELOAD_WINDOW_MS. Returns whether it did. */
-export function safeReload(now = Date.now()): boolean {
+/** Reloads the page unless it already reloaded itself in the last RELOAD_WINDOW_MS. Returns whether it did. `why`: the
+ *  log's `app.reload` (written before the page goes: a reload fires no hidden event). */
+export function safeReload(now = Date.now(), why: 'update' | 'chunk' | 'other' = 'other'): boolean {
   try {
     if (now - Number(sessionStorage.getItem(KEY) ?? 0) < RELOAD_WINDOW_MS) return false;
     sessionStorage.setItem(KEY, String(now));
   } catch {
     return false; // no storage: no loop guard, so no automatic reload
   }
+  log('app.reload', { why });
+  persistLog();
   location.reload();
   return true;
 }
@@ -31,7 +36,7 @@ async function reachable(): Promise<boolean> {
 
 /** A chunk failed to load: reload once, unless the page is leaving (or offline: the next open retries). */
 export async function reloadUnlessLeaving(alive: () => Promise<boolean> = reachable): Promise<boolean> {
-  return (await alive().catch(() => false)) && safeReload();
+  return (await alive().catch(() => false)) && safeReload(Date.now(), 'chunk');
 }
 
 /** A memoised lazy import that forgets a failed load (the next open retries) and reloads once (reloadUnlessLeaving). */

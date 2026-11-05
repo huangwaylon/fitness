@@ -57,7 +57,7 @@
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import { drawOff } from '../../ui-state/testMode.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
-  import { setDrawnFps } from '#lib/sync/telemetry.ts';
+  import { setDrawnFps } from '#lib/sync/log.ts';
   import { weather } from '../island/weatherNow.svelte.ts';
   import { createPrecip, type Precip } from './precip.ts';
 
