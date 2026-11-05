@@ -191,8 +191,41 @@ const segDist = (e: FallEdge, x: number, z: number) => {
   return Math.hypot(x - e.ax - ex * t, z - e.az - ez * t);
 };
 
+/** What a layout's ground is built from, as a key: its tiles, its pieces and its homes (two layouts alike there have
+ *  the same chunks). Kept a layout. */
+const meshKeys = new WeakMap<Layout, string>();
+const meshKeyOf = (l: Layout): string => {
+  let k = meshKeys.get(l);
+  if (k === undefined) {
+    k = '';
+    for (let i = 0; i < l.codes.length; i++) k += String.fromCharCode(l.codes[i]);
+    k += JSON.stringify([[...l.objects], l.homes]);
+    meshKeys.set(l, k);
+  }
+  return k;
+};
+/** Chunks built elsewhere (the fields' worker, layout/fields.worker.ts: this very code, so the same numbers), by key:
+ *  one set, each chunk handed out once (the ground's first build), dropped once another layout is asked for. */
+let adopted: { key: string; chunks: (ChunkMesh | undefined)[] } | null = null;
+/** A layout's chunks computed in the worker, for chunkMesh to hand out (all CHUNK_COUNT of them, in order). */
+export function adoptChunks(layout: Layout, chunks: ChunkMesh[]): void {
+  if (chunks.length === CHUNK_COUNT) adopted = { key: meshKeyOf(layout), chunks: chunks.slice() };
+}
+
 /** One chunk's ground. */
 export function chunkMesh(layout: Layout, chunk: number): ChunkMesh {
+  if (adopted) {
+    if (adopted.key === meshKeyOf(layout)) {
+      const pre = adopted.chunks[chunk];
+      adopted.chunks[chunk] = undefined;
+      if (adopted.chunks.every((c) => !c)) adopted = null;
+      if (pre) return pre;
+    } else adopted = null;
+  }
+  return buildChunk(layout, chunk);
+}
+
+function buildChunk(layout: Layout, chunk: number): ChunkMesh {
   const field = fieldOf(layout);
   let fl = flowCache.get(layout);
   if (!fl) flowCache.set(layout, (fl = flows(layout)));

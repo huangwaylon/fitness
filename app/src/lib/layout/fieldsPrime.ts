@@ -1,11 +1,14 @@
-// The layout's distance fields (fields.ts) primed in a worker (fields.worker.ts) while the 3D island's chunk (three.js
-// and its scene) is still loading: on a phone they're a few hundred ms of the main thread before the island's first
-// frame. The worker runs the very same computeFields, so its numbers are the main thread's, bit for bit (fields.test).
+// The layout's distance fields (fields.ts) and its ground's chunks (mesh.ts) primed in a worker (fields.worker.ts)
+// while the 3D island's chunk (three.js and its scene) is still loading: on a phone they're a few hundred ms of the
+// main thread before the island's first frame. The worker runs the very same computeFields and chunkMesh, so its
+// numbers are the main thread's, bit for bit (fields.test).
 // The 3D island waits for them as it mounts (fieldsSoon, a few hundred ms at most: its mount is a long task, and the
 // worker's answer, a task of its own, would only be read after it, when the ground had already built them).
 // Never needed: no worker (the tests, an old browser), an error or a slow one (past `timeoutMs`) and fieldsOf builds
 // them on the main thread when first asked, as before.
-import { adoptFields, hasFields, type RawFields } from './fields.ts';
+import { adoptFields, hasFields } from './fields.ts';
+import { adoptChunks } from './mesh.ts';
+import type { Primed } from './fields.worker.ts';
 import type { Layout } from './model.ts';
 
 /** The prime in flight (one: the launch's). */
@@ -27,14 +30,18 @@ export function primeFields(layout: Layout, timeoutMs = 4000): Promise<void> {
       done();
     };
     const timer = setTimeout(end, timeoutMs);
-    w.onmessage = (e: MessageEvent<RawFields>) => {
-      adoptFields(layout, e.data);
+    w.onmessage = (e: MessageEvent<Primed>) => {
+      // (the chunks only with their fields: a late answer, its fields dropped, is dropped whole)
+      if (!hasFields(layout)) {
+        adoptFields(layout, e.data.raw);
+        if (hasFields(layout)) adoptChunks(layout, e.data.chunks);
+      }
       end();
     };
     w.onerror = end;
     w.onmessageerror = end;
     try {
-      w.postMessage({ codes: layout.codes, objects: layout.objects });
+      w.postMessage({ codes: layout.codes, objects: layout.objects, homes: layout.homes });
     } catch {
       end();
     }
