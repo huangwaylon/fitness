@@ -231,6 +231,30 @@ describe('events (a batch)', () => {
     expect(events().map((e) => e[1])).toEqual(['s1', 'v1', 'p1']);
   });
 
+  it('one event that throws is `unavailable` alone: the others are kept, one notice for what committed', () => {
+    // 2026-11-05 review: a throw in one event's write threw the whole batch (`unavailable`), after its earlier events
+    // had committed, and told no phone
+    const inner = db.sql;
+    const sql = { exec: (q: string, ...b: (string | number | null)[]) => {
+      if (q.startsWith('INSERT INTO events') && b.includes('boom1')) throw new RangeError('disk I/O');
+      return inner.exec(q, ...b);
+    } } as typeof inner;
+    store = new StoreCore({ sql, tx: db.tx, keys: { KEY_A, KEY_B }, now: () => now, notify: (n) => notices.push(n) });
+    const pref = (id: string, value: string) => ({ id, type: 'pref', data: { key: 'locale', value } });
+    const r = a('events', { events: [pref('p1', 'en'), { ...pref('boom1', 'ja') }, { id: 'v9', type: 'pref', data: { key: 'villagerName', value: 'うめ' } }] });
+    expect(r).toEqual({ ok: true, results: [
+      { id: 'p1', ok: true, at: '2026-11-02T03:00:00.000Z' },
+      { id: 'boom1', ok: false, error: 'unavailable' },
+      { id: 'v9', ok: true, at: expect.any(String) }
+    ] });
+    expect(store.lastError()).toBe('RangeError');
+    expect(notices).toEqual([{ what: 'event', who: 'A', at: r.results[2].at, rev: 'e1' }]);
+    expect(events().map((e) => e[1])).toEqual(['p1', 'v9']);
+    // nothing of it was kept: its id is free for the phone's retry
+    store = make();
+    expect(a('event', pref('boom1', 'ja'))).toEqual({ ok: true });
+  });
+
   it('an empty, oversized or missing list is bad_request', () => {
     for (const events of [undefined, [], 'x', Array.from({ length: 51 }, (_, i) => ({ id: `p${i}`, type: 'pref', data: { key: 'locale', value: 'en' } }))]) {
       expect(a('events', { events })).toEqual({ ok: false, error: 'bad_request' });

@@ -69,6 +69,9 @@ export function apiWithMeta(core: StoreCore, text: string, roleOf: (key: unknown
     meta.dup = results.filter((x) => x.ok === true && x.duplicate === true).length;
     const refused = results.map((x, i) => [x, i] as const).filter(([x]) => x.ok !== true);
     meta.rej = refused.length;
+    // an event whose write threw (`unavailable` alone, store.ts events): its class
+    const exc = core.lastError();
+    if (exc) meta.exc = exc;
     if (refused.length) {
       const [x, i] = refused[0];
       meta.why = ruleOf(isRec(sent[i]) ? sent[i].type : undefined, x);

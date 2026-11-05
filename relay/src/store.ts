@@ -349,14 +349,23 @@ export class StoreCore {
   /**
    * `events: [{id, type, data}, …]` (≤ EVENTS_MAX), kept in order, each as `event` would: `{ok, results}`, one per
    * event (`{id, ok, duplicate?, at?}` or `{id, ok: false, error, detail?}`), `at` the stored row's. One notice for
-   * the lot.
+   * the lot. An event whose write throws is `unavailable` alone (nothing of it kept), never the batch.
    */
   private events(me: Who, body: Rec): Reply {
     const list = body.events;
     if (!Array.isArray(list) || !list.length || list.length > EVENTS_MAX) return fail('bad_request');
     let last: string | null = null;
     const results = list.map((e) => {
-      const r = isRec(e) ? this.keep(me, e) : fail('bad_request');
+      let r: Reply & { at?: string };
+      try {
+        r = isRec(e) ? this.keep(me, e) : fail('bad_request');
+      } catch (err) {
+        // that event alone (its transaction rolled back, its id still free for a retry): the others go on, and the
+        // notice tells of what committed. Its class only (a message can quote the body).
+        this.exc = errName(err);
+        console.error('store', this.exc, scrubMsg(err instanceof Error ? err.message : ''));
+        r = fail('unavailable');
+      }
       if (r.ok && r.at) last = r.at;
       return { id: isRec(e) && typeof e.id === 'string' ? e.id : null, ...r };
     });
