@@ -38,7 +38,7 @@
   import { toSnap, type Item } from '#lib/food/index.ts';
   import { dayTitle } from '../kiroku/fmt.ts';
   import FoodSummary from './FoodSummary.svelte';
-  import { saveGoal } from '../health/goals.ts';
+  import { kcalWarn, saveGoal } from '../health/goals.ts';
   import FoodMeal from './FoodMeal.svelte';
   import FoodSearch from './FoodSearch.svelte';
   import FoodAmount from './FoodAmount.svelte';
@@ -422,7 +422,8 @@
           <b class="rl money" aria-live="polite" data-food-date={date}>{dayTitle(date)}</b>
         </RangeNav>
 
-        <FoodSummary {day} {who} {goals} when={date < today ? 'past' : date > today ? 'next' : 'today'} onsavegoal={mine ? (v) => saveGoal('k', me, v) : null} />
+        <FoodSummary {day} {who} {goals} when={date < today ? 'past' : date > today ? 'next' : 'today'} onsavegoal={mine ? (v) => saveGoal('k', me, v) : null}
+          warngoal={mine && m ? kcalWarn(m.state, me, m.now) : null} />
         {#each MEALS as k (k)}
           <!-- the 🔁 chip: on my day my repeat still going (a tap manages it), else the one filling the day (shown only);
                none: いつものに する on my today only (from a past day it would fill every day since, today's doubled) -->

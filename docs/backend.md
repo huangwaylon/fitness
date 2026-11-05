@@ -165,6 +165,12 @@ model reads a day's latest row ([design.md](design.md#health-data)); a locked we
 04:00), so a later sync never moves locked earnings. The Shortcut posts to the record's `/api` with `"key"` and
 `"action": "ingest"` (`docs/ops/shortcut-health-sync.md`).
 
+**A day without the Watch:** the Shortcut's **Fill Missing** sends `0` for a day Health has no samples, so a day the
+Watch wasn't worn is stored as Move 0, Exercise 0, Stand 0 (with the phone's steps): real rows, kept as sent. The
+model reads such a day (all three 0 or absent) as no data for those three (`model/health.ts` `activityOn`, the one
+reader for けんこう and the TDEE's Move; [design.md](design.md#kenkou)); steps stay. The ベル need no rule: a 0 and a missing
+value earn no fruit alike. An empty line (the Shortcut's optional §2 step 8d) writes no row, counted under `skipped`.
+
 ## Client sync
 
 `lib/sync/` (storage, transport, pairing, queue, cache) and `lib/store/` (the week store, actions, `live.ts`,

@@ -16,7 +16,7 @@
   import RangeLabel from '../health/RangeLabel.svelte';
   import Pick from '../health/Pick.svelte';
   import BarCard from '../health/BarCard.svelte';
-  import { goalName, saveGoal } from '../health/goals.ts';
+  import { goalName, kcalWarn, saveGoal } from '../health/goals.ts';
   import { RangePager } from '../health/pager.svelte.ts';
 
   let { who, name, period, onperiod }: { who: Who; name: string; period: Period; onperiod: (p: Period) => void } = $props();
@@ -52,7 +52,7 @@
 
   {#each all as { n, ds } (n)}
     <BarCard id={n} {ds} {range} {today} p={who} {name} title={n === 'k' ? t('food.chart.head') : goalName(n)} empty={!any} food
-      now={setGoal(m.state, who, n)} start={ds.goal(0)} onsave={mine ? (v) => saveGoal(n, who, v) : null}
+      now={setGoal(m.state, who, n)} start={ds.goal(0)} onsave={mine ? (v) => saveGoal(n, who, v) : null} warn={n === 'k' && mine ? kcalWarn(m.state, who, m.now) : null}
       selected={pager.selected(n)} onselect={(i) => pager.pick(n, i)} onswipe={pager.swipe} slide={pager.slide} />
   {/each}
   {#if any}<p class="note">{t('food.chart.note')}</p>{/if}

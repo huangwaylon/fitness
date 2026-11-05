@@ -308,6 +308,22 @@ day with no row; today is drawn but not counted. Periods by day, week or month s
 numbers, no trend lines or smoothing (weight's change is first week → last week). No export. Why: a trainer needs
 exact, comparable numbers anyone can check against the bars.
 
+### No-watch days
+<a id="no-watch-days"></a>A day with Move, Exercise and Stand all 0 (or absent) is read as no data for those three, everywhere
+outside the ベル (けんこう's series, bars, averages, goal days; the TDEE's Move): one pure helper, `model/health.ts`
+`activityOn`. Steps stay. The stored rows are never rewritten. Why: the Shortcut's Fill Missing sends `0` for a day
+Health has no samples; on the live record that was 27 of A's last 28 days and 13 of B's in October, which pinned both
+TDEEs at the 1.2 × resting floor and pulled down けんこう's averages (the user, 2026-11-05: "treat as missing"). Partial
+wear (Stand 9 with Move 0) stays a real day. The ベル needed no change: a 0 and a missing value earn no fruit alike
+(`health.test.ts` checks the earnings are equal). The Shortcut may send empty lines instead
+(`ops/shortcut-health-sync.md` §2 step 8d); the app copes either way.
+
+### Low kcal goals: warn, allow
+<a id="low-kcal-goals-warn-allow"></a>A kcal goal under the person's resting energy (Mifflin–St Jeor, with a profile)
+or the safe floor (1,500 kcal a man, 1,200 a woman or unknown) gets a gentle inline note in the editor and still saves
+(the user, 2026-11-05: "warn, allow"). Why: a goal is the person's own call; a hard floor would refuse a supervised
+plan, while the note says why it matters (muscle loss, nutrients). The editor's own range still starts at 1,200.
+
 ### きろく is earnings only
 The ledger shows what was earned, by week; the buys and the balance live on ごほうび (no all-time 「これまでに ためた ベル」
 row, 2026-11-02). Why: one home per datum.

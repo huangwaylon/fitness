@@ -282,6 +282,36 @@ test('グラフ on the guest’s phone: its own kcal only, a member’s too', as
   expect(await overflowOf(page)).toEqual([]);
 });
 
+// "Warn, allow" (design.md "Gohan"): a kcal goal under my resting energy (the demo's profile: ウェイ, a man) or the safe
+// floor gets a gentle note under the field as it's typed, and still saves; none for a usual goal or another nutrient.
+test('a low kcal goal: a gentle note under the field (the resting energy), and it still saves; none for a usual one', async ({ page }) => {
+  await openFood(page);
+  const kcal = sheet(page).locator('button[data-goal=kcal-goal]');
+  await kcal.click();
+  const tray = sheet(page).locator('[data-food-summary] form.tray');
+  const warn = tray.locator('[data-goal-warn]');
+  await expect(warn).toHaveCount(0); // 2,200: a usual goal
+  await tray.getByRole('textbox').fill('1300');
+  await expect(warn).toHaveText(/^きそたいしゃ（約1,[5-9]\d\d kcal）より ひくい めやす です。きんにくが へりやすく なります$/);
+  await tray.getByRole('textbox').fill('1900');
+  await expect(warn).toHaveCount(0);
+  await tray.getByRole('textbox').fill('1300');
+  await expect(warn).toHaveCount(1);
+  await tray.getByRole('button', { name: 'けってい' }).click(); // allowed
+  await expect(kcal).toHaveText('目標 1,300 kcal 前後');
+  await expect(tray).toHaveCount(0);
+  // the same note on グラフ's kcal card; not on another nutrient's
+  await sheet(page).locator('[data-tab=chart]').click();
+  const k = sheet(page).locator('[data-food-chart=k]');
+  await k.locator('button[data-goal]').click();
+  await expect(k.locator('form.tray [data-goal-warn]')).toContainText('きそたいしゃ');
+  await k.locator('form.tray').getByRole('button', { name: 'やめる' }).click();
+  const p = sheet(page).locator('[data-food-chart=p]');
+  await p.locator('button[data-goal]').click();
+  await p.locator('form.tray').getByRole('textbox').fill('10');
+  await expect(p.locator('form.tray [data-goal-warn]')).toHaveCount(0);
+});
+
 // The goals (design.md "Gohan"): kcal at the summary's and the kcal chart's upper right, protein, fat, carbs and salt
 // on their charts, each set in place with けんこう's control (GoalEdit), mine only; protein's default 1.6 g × the latest
 // weigh-in until set, the others none.

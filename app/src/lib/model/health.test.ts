@@ -1,4 +1,5 @@
-// けんこう's numbers (model/health.ts): Apple Health's values as is (nothing cut off), only a missing row is no record, today
+// けんこう's numbers (model/health.ts): Apple Health's values as is (nothing cut off), only a missing row (or a watch metric
+// on a day without the Watch: 0/0/0) is no record, today
 // left out of the stats, weekly and monthly buckets, the change against the previous period, goal-met counts, the
 // ranges and their navigation, and the edge cases (no data, one person only, sparse weight).
 import { describe, expect, it } from 'vitest';
@@ -7,7 +8,7 @@ import type { PersonId } from '#lib/types.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { reduce } from './state.ts';
 import {
-  bucketValues, CARDS, canShift, dotSeries, dotStats, GROUPS, healthSeries, metricStats, previousRange, rangeFor, shiftAnchor
+  activityOn, bucketValues, CARDS, canShift, dotSeries, dotStats, GROUPS, healthSeries, metricStats, noWatch, previousRange, rangeFor, shiftAnchor
 } from './health.ts';
 import { weekBells } from './bells.ts';
 import { weekKeyOf } from '#lib/time/dates.ts';
@@ -27,7 +28,7 @@ describe('as reported, and days with no record', () => {
   // 10-25..10-30 finished, 10-31 today
   const r = rows([
     ...day('A', '2026-10-25', { steps: 9000, ex: 70, kcal: 650, stand: 130 }),
-    ...day('A', '2026-10-26', { steps: 66, ex: 0, kcal: 0, stand: 0 }), // barely moved: every value is real
+    ...day('A', '2026-10-26', { steps: 66, ex: 0, kcal: 0, stand: 2 }), // barely moved, the Watch on (Stand 2): every value is real
     m('A', '2026-10-27', 'steps', 5000), // steps only: no Move, Exercise or Stand row that day
     ...day('A', '2026-10-28', { steps: 7000, ex: 0, kcal: 200, stand: 90 }),
     // 10-29: no row at all
@@ -203,6 +204,54 @@ describe('edge cases', () => {
   });
 });
 
+describe('a day without the Watch (Move, Exercise and Stand all 0 or absent)', () => {
+  // Mon 10/26–Fri 10/30: worn, 0/0/0 (the Shortcut's zeros for no samples), Stand 9 only (worn: its zeros real),
+  // Move 0 and Exercise 0 with no Stand row (no Watch), worn
+  const metrics = [
+    ...day('A', '2026-10-26', { steps: 9000, ex: 70, kcal: 650, stand: 130 }),
+    ...day('A', '2026-10-27', { steps: 8200 }),
+    ...day('A', '2026-10-28', { steps: 3000, stand: 9 }),
+    m('A', '2026-10-29', 'steps', 4000), m('A', '2026-10-29', 'move_kcal', 0), m('A', '2026-10-29', 'exercise_min', 0),
+    ...day('A', '2026-10-30', { steps: 10000, ex: 60, kcal: 700, stand: 120 })
+  ];
+  const s = reduce(rows(metrics));
+  const hs = healthSeries(s, NOW);
+  const r = rangeFor('week', TODAY);
+
+  it('is no data for the three watch metrics (steps stay); partial wear keeps its zeros; the stats leave it out', () => {
+    const bad: unknown[] = [];
+    const check = (what: string, got: unknown, want: unknown) => JSON.stringify(got) === JSON.stringify(want) || bad.push({ what, got, want });
+    check('noWatch 0/0/0', noWatch({ steps: 8200, move: 0, exercise: 0, stand: 0 }), true);
+    check('noWatch absent', noWatch({ steps: 8200, move: null, exercise: null, stand: null }), true);
+    check('noWatch 0, 0, absent', noWatch({ steps: 4000, move: 0, exercise: 0, stand: null }), true);
+    check('noWatch Stand 9', noWatch({ steps: 3000, move: 0, exercise: 0, stand: 9 }), false);
+    check('noWatch Move 3', noWatch({ steps: 0, move: 3, exercise: 0, stand: 0 }), false);
+    check('activityOn 0/0/0', activityOn(s, 'A', '2026-10-27', NOW), { steps: 8200, move: null, exercise: null, stand: null });
+    check('activityOn Stand 9', activityOn(s, 'A', '2026-10-28', NOW), { steps: 3000, move: 0, exercise: 0, stand: 9 });
+    check('activityOn 0, 0, absent', activityOn(s, 'A', '2026-10-29', NOW), { steps: 4000, move: null, exercise: null, stand: null });
+    // the series and the bars: 記録なし (null) on the two no-watch days, steps every day
+    check('move values', hs.people.A.values.move, [650, null, 0, null, 700, null]);
+    check('steps values', hs.people.A.values.steps, [9000, 8200, 3000, 4000, 10000, null]);
+    check('move bars', bucketValues(hs, 'A', 'move', r).slice(1, 6).map((b) => b.v), [650, null, 0, null, 700]);
+    // the averages, goal days and 記録なし: the worn days only (10/26, 10/28, 10/30); steps over all five
+    check('move', metricStats(hs, 'A', 'move', r), { avg: 1350 / 3, days: 3, missing: 2, met: 2, best: { date: '2026-10-30', v: 700 }, change: null });
+    check('exercise', metricStats(hs, 'A', 'exercise', r), { avg: 130 / 3, days: 3, missing: 2, met: 2, best: { date: '2026-10-26', v: 70 }, change: null });
+    check('stand days', metricStats(hs, 'A', 'stand', r).days, 3);
+    check('steps', metricStats(hs, 'A', 'steps', r).days, 5);
+    // the record is untouched: the stored rows still hold the zeros
+    check('stored', s.metrics.A.get('2026-10-27')?.move_kcal?.at(-1)?.v, 0);
+    expect(bad).toEqual([]);
+  });
+
+  it('earns the same ベル as the same day with no watch rows at all (0 or missing: no fruit either way), steps’ fruit kept', () => {
+    const omitted = metrics.filter(([, , d, k]) => !((d === '2026-10-27' || d === '2026-10-29') && k !== 'steps'));
+    const wk = weekKeyOf('2026-10-26');
+    const zeros = weekBells(s, wk, NOW), none = weekBells(reduce(rows(omitted)), wk, NOW);
+    const days = (w: typeof zeros) => w.A.days.map((d) => ({ bells: d.bells, met: d.met, stretch: d.stretch }));
+    expect({ days: days(zeros), apple: zeros.A.days[1].met.apple, pear: zeros.A.days[1].met.pear }).toEqual({ days: days(none), apple: true, pear: false });
+  });
+});
+
 describe('nothing cut off', () => {
   const week = () => rangeFor('week', TODAY);
 
@@ -214,7 +263,7 @@ describe('nothing cut off', () => {
     expect(metricStats(hs, 'A', 'move', week())).toMatchObject({ avg: null, days: 0 });
   });
 
-  it('real week (Mon 10/26–Fri 10/30): 66 steps and 0 kcal days are plotted and counted', () => {
+  it('real week (Mon 10/26–Fri 10/30): 66 steps days are plotted and counted; a 0/0/0 day is no Watch (記録なし), a 3 kcal day is real', () => {
     const steps = [66, 7000, 4963, 12268, 3404], kcalA = [0, 0, 0, 527, 615], standA = [0, 0, 0, 80, 95];
     const kcalB = [89, 3, 0, 26, 141], standB = [22, 0, 0, 4, 36];
     const hs = series(rows(steps.flatMap((st, i) => [
@@ -223,11 +272,12 @@ describe('nothing cut off', () => {
     ])));
     const r = week();
     expect(metricStats(hs, 'A', 'steps', r)).toMatchObject({ avg: (66 + 7000 + 4963 + 12268 + 3404) / 5, days: 5, missing: 0, best: { date: '2026-10-29', v: 12268 } });
-    expect(metricStats(hs, 'A', 'move', r)).toMatchObject({ avg: (527 + 615) / 5, days: 5, missing: 0, met: 1 });
-    expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: (89 + 3 + 26 + 141) / 5, days: 5, missing: 0, met: 0 });
-    expect(metricStats(hs, 'B', 'stand', r)).toMatchObject({ avg: (22 + 4 + 36) / 5, days: 5 });
+    // A's first three days and B's 10/28 are Move 0, Exercise 0, Stand 0: the Watch off, so no Move / Stand that day
+    expect(metricStats(hs, 'A', 'move', r)).toMatchObject({ avg: (527 + 615) / 2, days: 2, missing: 3, met: 1 });
+    expect(metricStats(hs, 'B', 'move', r)).toMatchObject({ avg: (89 + 3 + 26 + 141) / 4, days: 4, missing: 1, met: 0 });
+    expect(metricStats(hs, 'B', 'stand', r)).toMatchObject({ avg: (22 + 0 + 4 + 36) / 4, days: 4 });
     expect(bucketValues(hs, 'A', 'steps', r).slice(1, 6).map((b) => b.v)).toEqual([66, 7000, 4963, 12268, 3404]);
-    expect(bucketValues(hs, 'B', 'move', r).slice(1, 6).map((b) => b.v)).toEqual([89, 3, 0, 26, 141]);
+    expect(bucketValues(hs, 'B', 'move', r).slice(1, 6).map((b) => b.v)).toEqual([89, 3, null, 26, 141]);
   });
 
   it('1か月 on the real shape: the low days (168, 140, 100, 66 steps) are in the average, the best and the goal days', () => {

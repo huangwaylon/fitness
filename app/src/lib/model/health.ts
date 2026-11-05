@@ -5,9 +5,15 @@
 // - A day's value is Apple Health's latest row (metricAsOf at `now`), the truth for a trainer. (The ベル of a locked
 //   week stay as of its lock, so a sync after a lock can show here and not in the ledger.)
 // - As reported: every day with a row for a metric is a data point, whatever its value (0 steps, 66 steps, 12 kcal):
-//   drawn as its bar and counted in the averages, best day, goal days and change. Nothing is cut off.
-// - No record: only a day with no row for that metric (nothing received: before the first sync, a day the Shortcut
-//   didn't cover). It has no bar (a short faint stub at the axis instead), stays out of the stats and is counted as 記録なし.
+//   drawn as its bar and counted in the averages, best day, goal days and change. Nothing is cut off, but for:
+// - No watch (activityOn, the one reader of a day's activity: けんこう here, the TDEE's Move in model/profile.ts): the
+//   Shortcut sends "0" when Health has no samples, so a day without the Watch arrives as Move 0, Exercise 0, Stand 0
+//   (with the phone's steps). A day whose three watch metrics are all 0 or absent is a day the Watch wasn't worn: those
+//   three are unknown that day (記録なし), steps stay. Read-time only: the stored rows stay as they are. The ベル need no
+//   such rule (a 0 and a missing value earn no fruit alike: scoring/bells.ts).
+// - No record: a day with no row for that metric (nothing received: before the first sync, a day the Shortcut didn't
+//   cover), or a watch metric on a no-watch day. It has no bar (a short faint stub at the axis instead), stays out of
+//   the stats and is counted as 記録なし.
 // - Weight: the period's weigh-ins, their average and the plain change (model/weight.ts plainChange: the first week's
 //   average → the last week's, else the first weigh-in → the last), and from it the goal month.
 // - Body fat %, BMI, lean body mass (the body metrics): like weight, a day's latest row, sparse; the period's
@@ -76,6 +82,22 @@ export interface HealthSeries {
   people: Record<PersonId, PersonSeries>;
 }
 
+/** The metrics only the Apple Watch records (Move, Exercise, Stand); steps come from the phone too. */
+const WATCH = ['move', 'exercise', 'stand'] as const satisfies readonly Metric[];
+
+/** Whether a day's values say the Watch wasn't worn: its three watch metrics all 0 or absent (the Shortcut's "0" for
+ *  no samples). Any of them above 0 (Stand 9, say) is a worn day, its zeros real. */
+export const noWatch = (v: Readonly<Record<Metric, number | null>>): boolean => WATCH.every((m) => !v[m]);
+
+/** A day's activity as of `t` (each metric's latest row, null: none), its watch metrics null on a no-watch day
+ *  (noWatch). Every reader of a day's activity outside the ベル goes through this. */
+export function activityOn(s: State, p: PersonId, d: LocalDate, t: number): Record<Metric, number | null> {
+  const v = { steps: 0, move: 0, exercise: 0, stand: 0 } as Record<Metric, number | null>;
+  for (const m of METRICS) v[m] = metricAsOf(s, p, d, ROW[m], t);
+  if (noWatch(v)) for (const m of WATCH) v[m] = null;
+  return v;
+}
+
 const memo = new WeakMap<State, Map<LocalDate, HealthSeries>>();
 
 /** Both people's daily series from the first record to today. Memoised per State and day (a State is never mutated). */
@@ -104,8 +126,9 @@ function buildSeries(s: State, to: LocalDate, now: number): HealthSeries {
     const kgBy = new Map(weighIns(s, p, now).map((x) => [x.date, x.kg] as const));
     const dots = { weight: [], body_fat_pct: [], bmi: [], lean_kg: [] } as Record<BodyId, (number | null)[]>;
     for (let i = 0, d = from; i < n; i++, d = addDays(d, 1)) {
+      const day = activityOn(s, p, d, now);
       for (const m of METRICS) {
-        values[m].push(metricAsOf(s, p, d, ROW[m], now));
+        values[m].push(day[m]);
         goals[m].push(dailyGoalOn(s, p, m, d));
       }
       dots.weight.push(kgBy.get(d) ?? null);

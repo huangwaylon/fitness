@@ -11,7 +11,8 @@
   // with its keypad (nothing focused, so no keyboard until the field is tapped), the range (coral after a refused
   // けってい), then 目標をなくす (a goal that may be cleared, once set), やめる and けってい. Esc, やめる or a tap
   // anywhere else close it unchanged; the focus goes back to the chip. Read-only (the guest's, a fixed goal): the
-  // label alone. One shared control for every goal, けんこう's and ごはん's (`goals.ts` GOAL_SPECS).
+  // label alone. A goal that may be unwise (`warn`: the kcal goal under the person's resting energy or the safe floor)
+  // gets a gentle note under the range as it's typed, and still saves ("warn, allow"). One shared control for every goal, けんこう's and ごはん's (`goals.ts` GOAL_SPECS).
   // Placed in a card's `header` (display: flex; flex-wrap: wrap): the chip and the tray are its items.
   import { tick } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
@@ -31,10 +32,12 @@
     tone?: 'soft' | 'yuzu';
     /** Where −/＋ start when none is set (the latest weigh-in, say); else the spec's. */
     start?: number | null;
+    /** A gentle note on a value it still takes (goals.ts kcalWarn), null: none. */
+    warn?: ((v: number) => string | null) | null;
     /** A hook for tests and the focus: `data-goal`. */
     id: string;
   }
-  let { spec = null, label, value, onsave = null, tone = 'soft', start = null, id }: Props = $props();
+  let { spec = null, label, value, onsave = null, tone = 'soft', start = null, warn = null, id }: Props = $props();
 
   const me = nextId++;
   const open = $derived(openId === me && !!onsave && !!spec);
@@ -42,6 +45,7 @@
   let tried = $state(false);
   const v = $derived(spec?.parse(field) ?? null);
   const bad = $derived(tried && v === null);
+  const note = $derived(v !== null && warn ? warn(v) : null);
   let chip: HTMLButtonElement | undefined = $state();
   let tray: HTMLFormElement | undefined = $state();
 
@@ -120,6 +124,7 @@
       <button type="button" class="nb" data-sfx="tick" data-goal-step="1" aria-label={t('goal.more')} onclick={() => step(1)}>＋</button>
     </div>
     <p id="goal-{id}-hint" class="hint" class:bad>{spec.hint()}</p>
+    {#if note}<p class="warn" data-goal-warn role="status">{note}</p>{/if}
     <div class="acts">
       {#if spec.clearable && value !== null}<button type="button" class="clr" data-sfx="undo" onclick={clear}>{t('weight.clearGoal')}</button>{/if}
       <button type="button" class="btn paper small" data-sfx="back" onclick={() => close()}>{t('kiroku.cancel')}</button>
@@ -182,6 +187,11 @@
   .hint { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); line-height: var(--lh); }
   .hint.bad { color: var(--text); }
   .hint.bad::before { content: '! '; color: var(--c-coral); }
+  /* the gentle note: the panel's ink on a soft yuzu wash, never coral (the goal is still allowed) */
+  .warn {
+    margin: 0; padding: 6px 10px; border-radius: 10px; font-size: var(--fs-s); font-weight: 700; line-height: var(--lh); color: var(--text);
+    background: color-mix(in srgb, var(--c-yuzu-lip) 22%, transparent);
+  }
   .acts { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 2px; }
   .acts .btn { margin: 0; width: auto; padding: 0 16px; }
   /* 目標をなくす: a quiet text button at the left, 44px tall */

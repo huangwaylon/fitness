@@ -25,8 +25,10 @@
     when: 'past' | 'today' | 'next';
     /** Sets the kcal goal (my own day only; absent: read-only). */
     onsavegoal?: ((v: number | null) => void) | null;
+    /** The kcal editor's gentle note on a low goal (goals.ts kcalWarn). */
+    warngoal?: ((v: number) => string | null) | null;
   }
-  let { day, who, goals, when, onsavegoal = null }: Props = $props();
+  let { day, who, goals, when, onsavegoal = null, warngoal = null }: Props = $props();
   const goal = $derived(goals.k);
 
   const share = $derived(goal ? Math.min(1, day.kcal / goal) : 0);
@@ -39,7 +41,7 @@
 <section class="card sum p{who}" data-food-summary aria-labelledby="fs-h">
   <header>
     <h3 id="fs-h">{t('food.kcalHead')}</h3>
-    <GoalEdit id="kcal-goal" spec={GOAL_SPECS.k} label={goalLabel('k', goal)} value={goal} onsave={onsavegoal} />
+    <GoalEdit id="kcal-goal" spec={GOAL_SPECS.k} label={goalLabel('k', goal)} value={goal} onsave={onsavegoal} warn={warngoal} />
   </header>
   <div class="srow">
     {#if empty && when === 'past'}

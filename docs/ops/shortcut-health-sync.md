@@ -68,6 +68,7 @@ Shortcuts → **+** → name it **しまの同期** [U: action names]:
 | 8a | **Find Health Samples** | **Body Fat Percentage** (体脂肪率), same as step 8 → **Value** → `BodyFatValues` (no sample = 0) |
 | 8b | **Find Health Samples** | **Body Mass Index** (ボディマス指数), same as step 8 → **Value** → `BMIValues` |
 | 8c | **Find Health Samples** | **Lean Body Mass** (除脂肪体重), same as step 8 → **Value** → `LeanValues` |
+| 8d | *(optional)* **Repeat with Each** | Blank the Watch's zeros: [below](#a-day-without-the-watch-optional-step-8d) |
 | 9 | **Get Contents of URL** | `https://island-fund-relay.island-fund-relay.workers.dev/api`, **POST**, Request Body **JSON**, each field type **Text**: `key` = Key, `action` = `ingest`, `dates` = Dates, `steps` = StepValues, `steps_watch` = StepWatchValues, `exercise_minutes` = ExValues, `calories` = CalValues, `stand_minutes` = StandValues, `weight` = WeightValues, `body_fat_percentage` = BodyFatValues, `body_mass_index` = BMIValues, `lean_body_mass` = LeanValues |
 
 Every list must use the same range (the last 1 month), **Group by Day** and **Fill Missing** (a day without samples
@@ -77,6 +78,22 @@ Body Mass when asked. Body fat may come through as `0.223` or `22.3` [U: which];
 out step 4 and `steps_watch`.
 
 **Test:** tap ▶. Expect `{"ok":true,…}` with no `warnings`.
+
+### A day without the Watch (optional step 8d)
+**Fill Missing** turns a day with no samples into `0`, so a day the Watch stayed off arrives as Move 0, Exercise 0,
+Stand 0. The app copes (since 2026-11-05 it reads a day with all three 0 as no data for them: [design](../design.md#kenkou)),
+so this step is optional; it only makes the record say what happened. Recommended: send an **empty line** instead of
+`0` for those three on such a day (an empty line writes no row; the reply counts it under `skipped`, harmless). Blank
+only a day where all three are 0: a worn day's Exercise 0 is real. [U: action names]
+
+1. After step 8c, **Repeat with Each** on `CalValues`. Inside it: **Get Item from List** `ExValues`, **Item at Index**
+   = **Repeat Index** → `Ex`; the same on `StandValues` → `Stand`.
+2. **If** **Repeat Item** is `0` and `Ex` is `0` and `Stand` is `0` (three nested **If**s, or **Calculate** Repeat Item
+   + Ex + Stand and **If** the result is `0`): **Text** with nothing in it → **Add to Variable** `CalOut`, `ExOut`,
+   `StandOut`. **Otherwise**: **Add to Variable** Repeat Item → `CalOut`, `Ex` → `ExOut`, `Stand` → `StandOut`.
+3. After the repeat, **Combine Text** `CalOut` with **New Lines** �� `CalValues`; the same for `ExOut` → `ExValues` and
+   `StandOut` → `StandValues` (each list keeps one line per date, so nothing is dropped).
+4. Step 9 sends them as before. Tap ▶: on a day without the Watch the reply's `skipped` grows by 3, with no `warnings`.
 
 ### Adding body fat, BMI and lean body mass to an existing Shortcut
 On each iPhone, open **しまの同期** and:
@@ -136,3 +153,5 @@ trend.
 | `steps_watch: … lines but … dates` | Step 4 differs from step 2 in range, **Group by Day** or **Fill Missing** |
 | A banner every time LINE opens | **Notify When Run** off [U: iOS may still flash one] |
 | Nothing arrives | Settings → Health → Data Access & Devices → Shortcuts: allow the eight types |
+| `calories: … lines but … dates` after step 8d | An empty item was dropped from a list: each pass of the repeat must add one item to each `…Out` (the empty **Text** too) |
+| けんこう shows 記録なし for Move on a day I wore the Watch | Move, Exercise and Stand were all 0 that day (the Watch hadn't synced to the iPhone yet): the next run fixes it |
