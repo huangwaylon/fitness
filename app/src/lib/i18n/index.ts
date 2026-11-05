@@ -48,6 +48,13 @@ function has(key: string, locale: Locale = i18n.locale): boolean {
   return key in catalogs[locale] || key in catalogs.ja;
 }
 
+/** The key whose string `text` is (in either language), or null: the log names a sheet by its title's key, never its
+ *  text (sync/log.ts `use`). A walk over the catalog, once per sheet opened. */
+export function keyOfText(text: string): string | null {
+  for (const c of [catalogs.ja, catalogs.en]) for (const k in c) if (c[k] === text) return k;
+  return null;
+}
+
 /** Translate `key`; falls back to Japanese, then to the key itself. */
 export function t(key: string, params?: Params, locale: Locale = i18n.locale): string {
   const msg = catalogs[locale][key] ?? catalogs.ja[key];

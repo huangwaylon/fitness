@@ -3,6 +3,7 @@
 // pings. send() is a no-op unless the socket is up (and, for what the room doesn't keep, the partner is there too); it
 // never throws and never waits. Plain TS: the socket, the visibility source and the key are injectable for tests.
 import { LIVE, getKey, localKV, readJson, writeJson } from './storage.ts';
+import { log } from './log.ts';
 import { takeWx } from './wx.ts';
 import { CLOSE, LIVE_V, MAX_BYTES, dayStart, guestMaySend, isAcked, isStored, parseClient, parseServer, tokyoDay, type Gone, type Intent, type Notice, type RecordMark, type Relayed, type Who } from './live-protocol.ts';
 
@@ -254,6 +255,9 @@ export function createLive(o: LiveOptions): Live {
     }, backoff(fails++));
   };
 
+  /** When this socket was made, and when its welcome came (0: not yet): the log's ws.open and ws.close. */
+  let madeAt = 0, welcomedAt = 0;
+
   function connect() {
     if (ws || !wanted()) return;
     let s: WebSocket;
@@ -264,6 +268,8 @@ export function createLive(o: LiveOptions): Live {
       return;
     }
     ws = s;
+    madeAt = Date.now();
+    welcomedAt = 0;
     s.onopen = () => {
       const key = o.key();
       if (!key) return drop();
@@ -281,6 +287,8 @@ export function createLive(o: LiveOptions): Live {
       if (!m) return;
       switch (m.kind) {
         case 'welcome': {
+          welcomedAt = Date.now();
+          log('ws.open', { ms: welcomedAt - madeAt, retries: fails });
           fails = 0;
           offset = m.t - Date.now(); // a first guess until the pings refine it
           samples = [];
@@ -353,8 +361,12 @@ export function createLive(o: LiveOptions): Live {
       ws = null;
       clearTimers();
       setStatus({ connected: false, peer: false, here: [], rec: undefined, gone: undefined });
-      if (e.code === CLOSE.unauthorized || e.code === CLOSE.replaced || e.code === CLOSE.version) parked = true;
-      else schedule();
+      log('ws.close', { code: e.code, secs: Math.round((Date.now() - (welcomedAt || madeAt)) / 1000), welcomed: welcomedAt > 0 });
+      if (e.code === CLOSE.unauthorized || e.code === CLOSE.replaced || e.code === CLOSE.version) {
+        parked = true;
+        log('ws.park', { code: e.code }, e.code === CLOSE.replaced ? 1 : 2);
+        if (e.code === CLOSE.unauthorized) log('auth.lost', { from: 'ws', code: e.code }, 2);
+      } else schedule();
     };
     s.onerror = () => {
       /* onclose follows */

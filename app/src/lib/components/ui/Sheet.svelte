@@ -20,6 +20,8 @@
   import { withKeyboardInset } from './keyboardInset.svelte.ts';
   import { lockScroll } from './scrollLock.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { count, logOn } from '#lib/sync/log.ts';
+  import { keyOfText } from '#lib/i18n/index.ts';
 
   interface Props {
     open: boolean;
@@ -41,6 +43,8 @@
     if (!open) return;
     untrack(() => {
       ui.sheets = [...ui.sheets.filter((x) => x !== id), id];
+      // the log's usage counter: the sheet by its title's i18n key (never its text: sync/log.ts)
+      if (logOn()) count(`sheet:${keyOfText(label) ?? 'other'}`);
     });
     return () =>
       untrack(() => {

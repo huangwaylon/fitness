@@ -31,6 +31,37 @@ signed with a secret from both keys, on the way to making the repo private. The 
 Google account for the user to delete. (Before: the sheet was a one-way export, rewritten from the record within 15
 minutes of a change and nightly, its web app taking only that export, signed in the body.)
 
+### Logging and observability (2026-11-05)
+The user: "a robust, reliable logging system ... used for future investigations". Designed with a client engineer, a
+relay engineer, an SRE and a privacy reviewer, each challenging the draft; what was decided
+([observability](ops/observability.md)):
+- **Its own Durable Object** (`IslandLog`), not the record's SQLite: a restore of the record would roll back the logs
+  of the very incident, and the dump would carry them. Not Analytics Engine (free, but its SQL API needs an account
+  token on every reader and in CI) nor Logpush (paid). Workers Logs stays for the relay's console lines (3 days), with
+  invocation logs off: they hold each request's IP, headers and place.
+- **One table keyed by the receipt time** (ms × 1000 + a counter), no index: on the Free plan each index row is a row
+  written and a delete is one too, so an index would double the log's cost; a time range is a range of the key.
+- **Caps that bound the account, not just the log:** per UTC day and role in a `caps` table written once a write
+  (counters only in memory would reset when the object is evicted), 8,000 events in all (rows written are the
+  account's: a runaway log must never stop the record's writes); `/log` checks the key in the Worker before any
+  object request, and a capped role is answered there until midnight.
+- **An allow-list registry, enforced by the relay:** each event's fields and their kinds (bounded numbers, closed
+  sets, tokens that can't hold 16 letters and digits in a row); a JS error's message scrubbed (URLs, fragments, ids,
+  quoted text, non-ASCII, numbers) the same on both sides, idempotent. Never the record's `detail` or an ingest's
+  warnings (they name values): a refusal is logged as its rule (`buy.pocket_short`).
+- **The phone never drops an error first:** a ring that evicts by level and keeps the trail before an error; persisted
+  (≤ 24 KB, the log goes first when storage is full) and sent with `keepalive` when hidden; a batch stays until the
+  relay acks its id. Off in the demo and under automation (`?log=on` for the e2e).
+- **`req` from the Worker:** the wall time of the record's answer, sent by RPC in `waitUntil` (about 1 % of the
+  Free plan's object requests); the record returns a meta beside its reply. An object still on the old code is asked
+  the plain way (the first deploy without that gave ~25 s of `unavailable`).
+- **Who reads it:** only the signed admin ops (the operator); no phone, the guest's events included. Retention 30
+  days (the same rows a day as 14; storage is nothing), a purge op for sooner.
+- **The alert:** `health.yml` every 6 h reads counts from `/health/log` behind its own token (public `/health` would
+  tell when the phones are in use), one `alert` issue with counts only (the repo is public).
+- The record's old `telemetry` (anonymous errors and frames) is superseded: acknowledged, not kept, its table dropped
+  (its messages weren't scrubbed).
+
 ### Per-person keys
 Two keys, `KEY_A` and `KEY_B`, as Worker secrets (the guest's `KEY_C` too); a key identifies the person. It travels in the POST body, never the URL; requests are `text/plain` (no CORS preflight). A
 phone pairs with a `#key=…` link or by typing the key. Why: no accounts for two people.

@@ -10,6 +10,7 @@ import { ackedEvents, enqueue, flush, holdEvent, keepAcked, nextRetryAt, queued,
 import { addOwnRows, loadCache, refreshSnapshot, type SnapshotCache } from '#lib/sync/cache.ts';
 import { keyFromHash } from '#lib/sync/pairing.ts';
 import { LIVE_URL, liveRelay, type Live, type SheetChange } from '#lib/sync/live.ts';
+import { log, persistLog } from '#lib/sync/log.ts';
 import { pendingAcked } from './view.ts';
 import { world } from './world.svelte.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from './backend.ts';
@@ -85,6 +86,7 @@ export class LiveBackend implements Backend {
     onStorageProblem((p) => {
       if (this.#told.has(p)) return;
       this.#told.add(p);
+      log('storage.fail', { store: 'ls', kind: p }, 2);
       toasts.show(t(p === 'full' ? 'state.storageFull' : 'state.storageUnavailable'), 8000, { reaction: 'sheepishness' });
     });
   }
@@ -145,9 +147,13 @@ export class LiveBackend implements Backend {
     }
     if (r.error === 'unauthorized') {
       h.status = 'ready';
+      log('auth.lost', { from: 'refresh' }, 2);
+      persistLog();
       await goto(resolve('/pair'));
       return;
     }
+    // offline is the phone's (a train, a lift): info; anything else a warning
+    log('sync.fail', { err: r.error, cached: !!this.#cache }, r.error === 'offline' ? 1 : 2);
     if (this.#cache) h.offline = true;
     else h.status = 'error';
   }
@@ -243,6 +249,8 @@ export class LiveBackend implements Backend {
       this.#host.changed();
     }
     if (r.error === 'unauthorized') {
+      log('auth.lost', { from: 'flush' }, 2);
+      persistLog();
       await goto(resolve('/pair'));
       return;
     }

@@ -44,7 +44,7 @@ curl -sS https://island-fund-relay.island-fund-relay.workers.dev/health         
 curl -sS https://island-fund-relay.island-fund-relay.workers.dev/api --data '{"action":"health"}'   # the record
 ```
 Both `{"ok":true,…}`. `.github/workflows/health.yml` runs these every 6 hours (and on demand) and fails (GitHub e-mails
-the owner) unless both are ok. The relay's `wx` is the real weather ([backend](../backend.md#the-real-weather)):
+the owner) unless both are ok, and opens an `alert` issue when the log spikes (§15). The relay's `wx` is the real weather ([backend](../backend.md#the-real-weather)):
 `age` (minutes since the last good fetch) under ~35 and `hours` ahead over 30 is normal. An older one or `fails` > 0
 means Open-Meteo is failing (`npx wrangler tail` shows `wx-fail <why>`); the phones keep the last timeline for 36
 hours, then the game's weather. The workflow warns past 3 hours. A fetch now: the signed `/admin` op
@@ -121,14 +121,15 @@ umeway1122@gmail.com account. Once per machine: `npx wrangler login`. Then, from
 1. `npm ci`, `npm run check`, `npm test`.
 2. `npm run deploy:test`, then `npm run smoke` (the test copy; its keys are in the gitignored `relay/.smoke-keys`,
    `KEY_A=…`/`KEY_B=…` lines; new ones: `openssl rand -hex 32` twice, then `npx wrangler secret bulk .smoke-keys --env
-   test`). Every line should say `ok`, including the push's (a signed `/notify` reaches both test clients; an unsigned
+   test`). Every line should say `ok`, including the push's and the log's (a signed `/notify` reaches both test clients; an unsigned
    or 6-minute-old one gets 401).
-3. `npm run deploy` (production). `curl https://island-fund-relay.island-fund-relay.workers.dev/health` → `ok:true`.
+3. `npm run deploy` (production), only from a commit that is on `origin/main` (push first: the Durable Object
+   migrations are the account's, so a deploy from a branch blocks everyone else's from main). `curl https://island-fund-relay.island-fund-relay.workers.dev/health` → `ok:true`.
 
 **Keys:** the relay's `KEY_A`/`KEY_B` are the record's keys. Set or rotate (§4) with
 `npx wrangler secret put KEY_A` and `npx wrangler secret put KEY_B` from `relay/` (it prompts; takes effect at once,
 open sockets keep their session until they reconnect). Without them the relay lets nobody in and the app simply has no
-live presence. **Logs:** `npx wrangler tail`. **Off switch:** build the app with `VITE_LIVE_URL=` (empty), or
+live presence. **Logs:** the log (§15, `npm run logs`); live: `npx wrangler tail`. **Off switch:** build the app with `VITE_LIVE_URL=` (empty), or
 `npx wrangler delete` (the app keeps working without it). A protocol change (`live-protocol.ts`) needs the relay
 deployed before the app: an older relay refuses the new kinds.
 
@@ -180,16 +181,19 @@ app. Then the Shortcut: [shortcut-health-sync.md](shortcut-health-sync.md) §2�
 
 The app then opens on the island as 「おきゃくさん」; its villager comes ashore while its app is open.
 
-## Telemetry (the phones' health of the app)
+## 15. The log (logging and observability)
 
-The paired phones (the guest's too) send the relay a small anonymous record (app/src/lib/sync/telemetry.ts → the
-record's `telemetry` action): a JS error's message, the top of its stack and its file:line (at most three a session,
-each once), and once a session, 10 s after the 3D island is up, its cold load's time and the display's frames over
-5 s (p50 / p95 frame time, fps, long frames, the island's own drawn rate), with the device in a word (iOS's version,
-the Home Screen app or Safari, the screen's size). Who sent it isn't kept, nor anything of theirs; never the demo,
-never under automation. The record keeps the newest 500 and takes at most 200 a day (store.ts TELEMETRY_KEEP /
-TELEMETRY_PER_DAY: well inside the Free plan). Read them from `relay/`:
+The phones' and the relay's structured events (errors, `/api` requests with their time and outcome, the Shortcut's
+ingests, the live socket, the write queue, the app's load and frames, coarse usage) in the relay's `IslandLog`
+object for 30 days, numbers and enums only (never a key, a health value, a food's name or free text). What is logged,
+how to read it and the alert: [observability.md](observability.md). In short, from `relay/`:
 
-    KEY_A=… KEY_B=… node scripts/record.ts telemetry [n]
+    npm run logs -- --since 2h --level warn          # (production: the keys from ~/.config/island-fund/keys)
+    npm run logs -- report --since 1d                # errors by fingerprint, /api p50/p95, refusals, builds, usage
+    npm run logs -- --sid <session> | --rid <request>
+    npm run logs -- --test ...                       # the test relay
 
-(`--test` and `KEYS_FILE=…` for the test relay, as the other commands.)
+`health.yml` opens an issue labelled `alert` on a spike (`HEALTH_TOKEN`: a Worker secret, `--env test` too, and a
+repo secret). Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]`. Until 2026-11-05 the phones sent the record a
+small anonymous `telemetry` record (errors and a session's frames); the record now acknowledges an old app's and keeps
+nothing, its table dropped.

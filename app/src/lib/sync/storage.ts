@@ -37,7 +37,10 @@ export const LIVE = {
    *  who I am (components/board/posts.svelte.ts: the 「！」 over the board). */
   boardSeen: 'island.boardSeen',
   /** The relay's `wx` (live-protocol.ts Wx): Tokyo's real sky by the hour, for opening offline (sync/wx.ts). */
-  wx: 'island.wx'
+  wx: 'island.wx',
+  /** `{ v, s, build, os, ring, pending, day }`: the phone's log (sync/log.ts): its events not yet sent, the batches the
+   *  relay hasn't acked, today's count. Dropped first when storage is full. */
+  log: 'island.log'
 } as const;
 
 export const DEMO = {

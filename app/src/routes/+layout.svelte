@@ -28,7 +28,11 @@
   import { startExactTaps } from '#lib/ui-state/exactTaps.ts';
   import { startModality } from '#lib/components/ui/modality.ts';
   import { dropPush } from '#lib/sync/pushGone.ts';
-  import { startTelemetry } from '#lib/sync/telemetry.ts';
+  import { count, startLog } from '#lib/sync/log.ts';
+  import { logUrl } from '#lib/sync/transport.ts';
+  import { queued } from '#lib/sync/queue.ts';
+  import { frameRate } from '#lib/store/frameRate.svelte.ts';
+  import { version } from '$app/env';
   import { t } from '#lib/i18n/index.ts';
 
   let { children }: { children: Snippet } = $props();
@@ -60,7 +64,12 @@
   // A new deploy (Kit checks _app/version.json when the app comes back to the front): reload into it once nothing
   // is open, so a resident PWA never keeps running an old build against new chunks.
   $effect(() => {
-    if (updated.current && !onPair && !showHarvest && !ui.sheets.length) safeReload();
+    if (updated.current && !onPair && !showHarvest && !ui.sheets.length) safeReload(Date.now(), 'update');
+  });
+
+  // the log's coarse usage: which routes are opened (sync/log.ts `use`)
+  $effect(() => {
+    count(`route:${route.split('/')[1] || 'island'}`);
   });
 
   // 島 ⇄ テント: NH's door, a black iris on the door we go through.
@@ -89,10 +98,18 @@
     const stopTaps = startTaps();
     // no focus ring after a touch (focus is still restored for keyboard and VoiceOver users)
     const stopModality = startModality();
-    // the app's health, sparsely and anonymously (sync/telemetry.ts): an error, once a session the island's frames
-    const stopTelemetry = startTelemetry(() => !!document.querySelector('canvas[data-w3d][data-loaded]'), !!week.demo);
+    // the log (sync/log.ts, docs/ops/observability.md): errors, the lifecycle, the island's load and frames
+    const stopLog = startLog({
+      build: version, url: logUrl(), demo: !!week.demo, route: () => routeOf(location.pathname),
+      ready: () => !!document.querySelector('canvas[data-w3d][data-loaded]'),
+      queue: () => {
+        const q = queued();
+        return { n: q.length, ageMs: q.length ? Date.now() - Math.min(...q.map((e) => e.queuedAt)) : 0 };
+      },
+      fpsPref: () => frameRate.fps
+    });
     return () => {
-      stopTelemetry();
+      stopLog();
       stopModality();
       stopTaps();
       stopSound();

@@ -299,7 +299,7 @@ steps, each deployed and green before the next, the old path working through eac
 - **Revision:** `rev` is an epoch (`e1`, `e2`, …), changed only when the record is rebuilt (`node scripts/record.ts
   rev`, after a restore). Nothing edits the record by hand.
 - **Admin:** `POST /admin`, signed like `/notify` ([Push](#push) "Auth"), takes the record tool's ops (`{op}`: counts
-  and who came which way, bookmarks, a restore, a new epoch, a dump, the telemetry, the weather, and `load`: rows that already have
+  and who came which way, bookmarks, a restore, a new epoch, a dump, the log (`logs`, `logstats`, `logpurge`: the log's own object, [observability](ops/observability.md)), the weather, and `load`: rows that already have
   their `at`, by the same rules, idempotent). During step 1 the same signed path took the script's copy of each write
   (sent as ASCII: a Shortcut's dates carry U+202F, and a copy with it failed the signature until it was escaped).
 - **Push-driven:** after a write the object tells the room (`changed`, [Push](#push)); the room keeps the last one
@@ -673,7 +673,8 @@ writes/day (unused). A generous day for two phones:
 | Record writes: `events` batches (~100 events) and their notice to the room | ~100 | 100 | 200 | ~10 | ~1,000 (ids, slots, decor) | ~1,000 (a row, its id, its indexes, `last_at`) |
 | Shortcut ingests (2 phones, ~24 runs each; ~300 rows read for 32 days) | ~50 | 50 | 100 | ~5 | ~15,000 | ~1,500 |
 | The real weather (the same cron: the room's tick, a fetch at :15 and :45, a `wx` on change) | 96 ticks, ~48 fetches | 0 | 96 | ~10 | | ~48 (one storage key) |
-| **Total** (Free plan limit) | | **~570 (0.6 % of 100,000)** | **~930 (0.9 % of 100,000)** | **~610 (4.7 % of 13,000)** | **~20,000 (0.4 % of 5 M)** | **~4,550 (4.6 % of 100,000)** |
+| The log ([observability](ops/observability.md): a `req` RPC each `/api`, the phones' batches, room closes; a row and a cap row each write, the prune 30 days on) | ~600 RPCs, ~60 batches | ~60 | ~700 | ~10 | ~2,000 (queries) | ~2,500 |
+| **Total** (Free plan limit) | | **~630 (0.6 % of 100,000)** | **~1,630 (1.6 % of 100,000)** | **~620 (4.8 % of 13,000)** | **~22,000 (0.4 % of 5 M)** | **~7,050 (7 % of 100,000)** |
 
 Measured 2026-11-01 (a UTC day, test traffic included, before the record): Worker 1.8k requests, DO 9.9k (the
 smoke and latency runs), 3.7k rows written, 346 rows read, ~25 GB-s. Duration stays the binding limit and under a

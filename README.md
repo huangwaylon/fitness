@@ -44,4 +44,4 @@ python3 -I -m unittest discover -s food-data/scripts/tests
 
 ## Docs
 - [Design](docs/design.md) · [Backend](docs/backend.md) · [Decisions](docs/decisions.md) · [Food data](docs/food-data.md)
-- [Runbook](docs/ops/runbook.md) · [Testing](docs/ops/testing.md) · [Health sync Shortcut](docs/ops/shortcut-health-sync.md)
+- [Runbook](docs/ops/runbook.md) · [Observability](docs/ops/observability.md) · [Testing](docs/ops/testing.md) · [Health sync Shortcut](docs/ops/shortcut-health-sync.md)
