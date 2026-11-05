@@ -924,6 +924,24 @@ describe('high-fives (the relay only, never the record)', () => {
     expect(fives(b)).toHaveLength(2);
   });
 
+  it('remembers what it acked across a restart (a wake), so the resend after it is still acked, not delivered twice', () => {
+    // 2026-11-05 relay review R2: the memory was the object's, gone with a hibernation's wake
+    let kept: unknown = null;
+    room = new RoomCore({ ...io(), saveAcked: (x) => void (kept = structuredClone(x)) });
+    const a = join(KEY_A, 0);
+    join(KEY_B, 0);
+    say(a, { kind: 'highfive', at: now - 20, c: 7 });
+    const t = now;
+    // the room wakes from hibernation: a new object with what it saved
+    now += 2000;
+    room = new RoomCore(io(), [], null, {}, {}, null, null, null, kept as never);
+    socks = [];
+    const b2 = join(KEY_B, 0), a2 = join(KEY_A, 0);
+    say(a2, { kind: 'highfive', at: t - 20, c: 7 });
+    expect(fives(b2)).toEqual([]);
+    expect(a2.sent.at(-1)).toEqual({ v: 3, kind: 'ack', c: 7, t, ok: true });
+  });
+
   it('refuses a bad time', () => {
     const a = join(KEY_A, 0), b = join(KEY_B, 0);
     b.sent = [];

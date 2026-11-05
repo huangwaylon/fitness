@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { originAllowed } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
-import { HELLO_MS, PROBE_AFTER_MS, RoomCore, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
+import { HELLO_MS, PROBE_AFTER_MS, RoomCore, type Acked, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
 import { IslandLog } from './logObject.ts';
@@ -53,6 +53,8 @@ const DAY = 'day';
 const REC = 'rec';
 /** The last change the guest heard of (room.ts guestNotice: no member's ingest), its welcome's `rec`. */
 const REC_G = 'rec-g';
+/** What the room acked but doesn't keep (room.ts Acked): a resend after a wake is acked again. */
+const ACKED = 'acked';
 /** The high-fives held for a partner who was away (room.ts Held). */
 const HELD = 'held';
 /** When each person's phone last left (room.ts gone: the welcome's). */
@@ -83,6 +85,7 @@ export class IslandRoom extends DurableObject<Env> {
       const gone = (await ctx.storage.get<Gone>(GONE)) ?? {};
       const day = (await ctx.storage.get<DayIndex>(DAY)) ?? null;
       const recG = (await ctx.storage.get<RecordMark>(REC_G)) ?? null;
+      const acked = (await ctx.storage.get<Acked>(ACKED)) ?? [];
       this.wx = (await ctx.storage.get<WxState>(WX)) ?? WX_EMPTY;
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
@@ -94,6 +97,7 @@ export class IslandRoom extends DurableObject<Env> {
         saveDay: (d) => void ctx.storage.put(DAY, d),
         saveRec: (r) => void ctx.storage.put(REC, r),
         saveRecG: (r) => void ctx.storage.put(REC_G, r),
+        saveAcked: (a) => void ctx.storage.put(ACKED, a),
         hold: (h) => void ctx.storage.put(HELD, h),
         saveGone: (g) => void ctx.storage.put(GONE, g),
         // the heartbeat's last answer (the runtime's: HB_PING never wakes the room), for the ghosts' watch
@@ -106,7 +110,7 @@ export class IslandRoom extends DurableObject<Env> {
           void this.alarmBy(Date.now() + PROBE_AFTER_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
-      }, ring, rec, held, gone, this.wx.wx, day, recG);
+      }, ring, rec, held, gone, this.wx.wx, day, recG, acked);
     });
   }
 
