@@ -15,6 +15,7 @@ import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.
 import { buyOf, sellOf, type ShopRowAt } from '#lib/contract/shop.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, PROFILE_KEYS, type BmiStd, type ProfileKey, type Sex } from '#lib/contract/profile.ts';
 import { lookPrefRead, readSavedLooks, type SavedLook } from '#lib/contract/look.ts';
+import { goalDay } from '#lib/contract/record.ts';
 import type { TallyRow } from './tally.ts';
 import { rowAt } from './snapshot.ts';
 import {
@@ -132,7 +133,8 @@ export interface State {
   weatherMode?: WeatherMode;
   /** The goals a day keeps (`pref` stepsGoal, moveGoal, exerciseGoal, standGoal) per person, each ascending `at`
    *  (`goalOn` picks the one in force on a day). */
-  dailyGoals: Record<PersonId, Record<DailyGoalId, Timed<number>[]>>;
+  /** Each goal a day keeps, in `at` order, with the Tokyo day it applies from (contract/record.ts goalDay). */
+  dailyGoals: Record<PersonId, DayGoals>;
   /** Newest metrics row per person (the sheet keeps no per-upload row in the snapshot). */
   lastSync: Record<PersonId, string | null>;
   /** The economy's first week (`firstWeek`). */
@@ -385,8 +387,9 @@ const members = (fn: MemberEvent): OnEvent => (s, person, at, d) => {
 /** The prefs the guest has (its villager, name, look, コーデ, language, meal-log goals and profile): anything else of `G`
  *  is ignored. */
 const GUEST_PREFS: readonly unknown[] = ['locale', 'villagerName', 'villager', 'look', 'savedLooks', ...goalKeysOf('food'), ...PROFILE_KEYS];
-const noGoals = (): Record<DailyGoalId, Timed<number>[]> => ({ steps: [], move: [], exercise: [], stand: [] });
-const copyGoals = (g: Record<DailyGoalId, Timed<number>[]>): Record<DailyGoalId, Timed<number>[]> =>
+type DayGoals = Record<DailyGoalId, (Timed<number> & { day: LocalDate })[]>;
+const noGoals = (): DayGoals => ({ steps: [], move: [], exercise: [], stand: [] });
+const copyGoals = (g: DayGoals): DayGoals =>
   ({ steps: [...g.steps], move: [...g.move], exercise: [...g.exercise], stand: [...g.stand] });
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
@@ -457,7 +460,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     const id = goalOfKey(d.key);
     if (id !== null && GOALS[id].history === 'daily') {
       // in its range and on its grid; anything else is ignored (the previous goal stays)
-      if (isPersonId(person) && isGoalValue(id, d.value)) s.dailyGoals[person][id as DailyGoalId].push({ at, v: d.value });
+      if (isPersonId(person) && isGoalValue(id, d.value)) s.dailyGoals[person][id as DailyGoalId].push({ at, v: d.value, day: goalDay(d, at) });
       return;
     }
     const p = s.prefs[person];
@@ -498,8 +501,8 @@ export const moveGoalOn = (s: Pick<State, 'dailyGoals'>, person: PersonId, date:
 export const stepsGoalOn = (s: Pick<State, 'dailyGoals'>, person: PersonId, date: LocalDate, t = Infinity): number => dailyGoalOn(s, person, 'steps', date, t);
 
 /** The latest goal made on or before that Tokyo date (and stamped by t), or undefined. */
-function goalOn(list: Timed<number>[], date: LocalDate, t: number): number | undefined {
-  for (let i = list.length - 1; i >= 0; i--) if (list[i].at <= t && localDateAt(list[i].at) <= date) return list[i].v;
+function goalOn(list: (Timed<number> & { day: LocalDate })[], date: LocalDate, t: number): number | undefined {
+  for (let i = list.length - 1; i >= 0; i--) if (list[i].at <= t && list[i].day <= date) return list[i].v;
   return undefined;
 }
 

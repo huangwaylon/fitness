@@ -210,6 +210,20 @@ describe('events', () => {
     expect(events().map((r) => r[1])).toEqual(['n2', 'n3', 'n4', 'w2', 'f2', 'f3', 'f4', 'i2', 'l1', 'e2', 's1', 'g3', 'g4', 'k1', 'e3']);
   });
 
+  it("a goal a day keeps is the phone's Tokyo day's (`day`), within a day of the record's", () => {
+    now = Date.parse('2026-11-02T14:59:59.000Z'); // 23:59:59 Tokyo
+    a('event', ev('d1', 'pref', { key: 'moveGoal', value: 400 }));
+    now = Date.parse('2026-11-02T15:00:02.000Z'); // 00:00:02 the next day: set at 23:59:59 on the phone
+    expect(a('event', ev('d2', 'pref', { key: 'moveGoal', value: 450, day: '2026-11-02' }))).toEqual({ ok: true }); // replaces d1
+    expect(a('event', ev('d3', 'pref', { key: 'moveGoal', value: 500, day: '2026-11-03' }))).toEqual({ ok: true });
+    // two days off (a goal queued offline): the record's day, as an older phone's
+    expect(a('event', ev('d4', 'pref', { key: 'moveGoal', value: 550, day: '2026-10-31' }))).toEqual({ ok: true }); // replaces d3
+    // a day that isn't one, or on a goal that keeps only its latest: refused
+    expect(a('event', ev('d5', 'pref', { key: 'moveGoal', value: 550, day: '11/02' }))).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(a('event', ev('d6', 'pref', { key: 'goalWeight', value: 60, day: '2026-11-03' }))).toMatchObject({ ok: false, error: 'bad_request' });
+    expect(events().map((r) => r[1])).toEqual(['d2', 'd4']);
+  });
+
   it("the island's weather mode: one row for the island, the last a member set", () => {
     expect(a('event', ev('m1', 'pref', { key: 'weatherMode', value: 'game' }))).toEqual({ ok: true });
     expect(b('event', ev('m2', 'pref', { key: 'weatherMode', value: 'real' }))).toEqual({ ok: true });
