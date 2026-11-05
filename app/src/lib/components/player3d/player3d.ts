@@ -10,7 +10,7 @@
 //   - Colours are tints: the skin (its texture's alpha says where), the hair, the hair-coloured parts.
 //   - dress(look) swaps what changed in place: a colour or a texture is a material's change, a new shape a mesh's.
 import {
-  Bone, Color, DoubleSide, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Skeleton, Texture, TextureLoader, Vector3,
+  Bone, Color, DoubleSide, MeshLambertMaterial, Quaternion, RepeatWrapping, SRGBColorSpace, Texture, TextureLoader, Vector3,
   type Material, type Mesh, type MeshStandardMaterial, type Object3D, type SkinnedMesh, type WebGLProgramParametersWithUniforms
 } from 'three';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -19,6 +19,7 @@ import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js
 import { lean } from '../world3d/release.ts';
 import { animateModel, type Villager3D } from '../villager3d/villager3d.ts';
 import { PARTS, bodyUrl, covers, faceUrl, irisUrl, loadParts, meshUrl, texUrl, type ItemSpec, type PartTable, type TexSpec } from './parts.ts';
+import { sharedSkin } from './skin.ts';
 import { playerKind } from './tune.ts';
 
 /** @public (the 2D heads' portraits, the closet's tiles) */
@@ -196,6 +197,9 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     anchors[k] = b;
   }
   model.updateMatrixWorld(true);
+  // one skeleton for the body and every part (skin.ts: one bone set a frame, not one a mesh)
+  const rigSkin = sharedSkin(model);
+  for (const m of skinned) rigSkin.bind(m, m.skeleton.bones);
 
   let cur: PlayerLook = { ...look };
   const skin = new Color(cur.skin), hair = new Color(cur.hairColor), eyeColour = new Color(cur.eyeColor);
@@ -322,15 +326,14 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
         c.quaternion.copy(b.quaternion);
         c.scale.copy(b.scale);
         parent.add(c);
+        rigSkin.graft(c);
         bones.set(c.name, c);
         added.push(c);
       }
-      model.updateMatrixWorld(true);
-      const skel = new Skeleton(m.skeleton.bones.map((b) => lookup(nm(b.name))!), m.skeleton.boneInverses.map((x) => x.clone()));
-      const bind = m.bindMatrix.clone();
+      const to = m.skeleton.bones.map((b) => lookup(nm(b.name))!);
       model.add(m);
       m.updateMatrixWorld(true);
-      m.bind(skel, bind);
+      rigSkin.bind(m, to);
       m.frustumCulled = false;
     }
     const w: Worn = { key: p.key, meshes: ms, bones: added, mats: [] };
@@ -376,15 +379,13 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     if (!w) return;
     for (const m of w.meshes) {
       m.removeFromParent();
-      m.geometry.dispose();
-      // (its skeleton's bone texture, three's float texture kept on the GPU till the skeleton goes)
-      m.skeleton.dispose();
+      rigSkin.drop(m);
     }
     for (const m of w.mats) disposeMat(m);
     worn.delete(slot);
     // its own joints go, but those another part binds to too (a top's hem joints under a long skirt's): theirs now
     for (const b of w.bones.reverse()) {
-      const other = [...worn.values()].find((o) => o.meshes.some((m) => m.skeleton.bones.includes(b)));
+      const other = [...worn.values()].find((o) => o.meshes.some((m) => rigSkin.uses(m).includes(b)));
       if (other) {
         other.bones.unshift(b);
         continue;
@@ -409,6 +410,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
     held = now;
   };
   hold();
+  const allSkinned = () => [...skinned, ...[...worn.values()].flatMap((w) => w.meshes)];
   const kind = playerKind(model, cur.mouthFrame);
   const v = animateModel(id, model, seed, kind);
   const tints = () => {
@@ -457,7 +459,10 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
       if (b) worn.set(slot, await put(slot, b));
       skeletal = true;
     }
-    if (skeletal) kind.rebind();
+    if (skeletal) {
+      rigSkin.compact(allSkinned());
+      kind.rebind();
+    }
     // (the resting mouth: the face's next frame)
     restMouth.value = cur.mouthFrame;
     hold();
@@ -481,6 +486,7 @@ export async function createPlayer(id: string, look: PlayerLook, dir: string, se
         letGo(t);
       }
       held.clear();
+      rigSkin.dispose(allSkinned());
       for (const m of owned) m.dispose();
       for (const t of Object.values(faceTex)) t?.dispose();
     }
