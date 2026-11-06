@@ -11,8 +11,8 @@ import { decorOpOf } from './decor.ts';
 import { tentOpOf } from './tent.ts';
 import { layoutOpOf } from './layout.ts';
 import { boardOpOf } from './board.ts';
-import { packOpOf, packSlot } from './pack.ts';
-import { wedOpOf, wedSlot } from './wedding.ts';
+import { isPackType, packOpOf, packSlot } from './pack.ts';
+import { isWedType, wedOpOf, wedSlot } from './wedding.ts';
 import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
 import { shopPriced } from './shop.ts';
 import { AHEAD_MS } from './ops.ts';
@@ -31,6 +31,12 @@ type Rec = Record<string, unknown>;
  * `now`: the server's clock (a tally's or island day's date may not be after tomorrow). @public (relay/src/store.ts)
  */
 export function validEventData(type: string, d: Rec, now: number): boolean {
+  // a trip's packing list, a person's tick or reset, a trip's private note (contract/pack.ts: its texts already clean,
+  // its `at` not over a day past the record's)
+  if (isPackType(type)) return packOpOf(type, d, now) !== null;
+  // the wedding board (contract/wedding.ts: its texts already clean, its `at` not over a day past the record's, never
+  // `imported` or a note's `was`: the admin's load's and the record's own)
+  if (isWedType(type)) return wedOpOf(type, d, { now }) !== null;
   switch (type) {
     case 'spend':
       return isId(d.spendId) && shopPrice(d.item) !== undefined && d.bells === shopPrice(d.item);
@@ -87,20 +93,6 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // the shop (contract/shop.ts): a sell at its species' price, a buy at its piece's from a stock of about today;
       // whether the pocket or the かいがら cover it is the record's check against the person's rows (shopRefusal)
       return shopPriced(type, d, localDateAt(now));
-    case 'pack':
-    case 'pack_chk':
-    case 'pack_reset':
-    case 'trip_note':
-      // a trip's packing list, a person's tick or reset, a trip's private note (contract/pack.ts: its texts already
-      // clean, its `at` not over a day past the record's)
-      return packOpOf(type, d, now) !== null;
-    case 'wtask':
-    case 'wdone':
-    case 'wconf':
-    case 'wnote':
-      // the wedding board (contract/wedding.ts: its texts already clean, its `at` not over a day past the record's,
-      // never `imported` or a note's `was`: the admin's load's and the record's own)
-      return wedOpOf(type, d, { now }) !== null;
     case 'listen': {
       // a ききみみ game's answers (contract/listen.ts), its day not after tomorrow
       const row = listenOf(d);
@@ -178,6 +170,8 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  * A pref the model would ignore takes no slot, so it never replaces one it takes. `subject`: `eventSubject`.
  */
 export function eventSlot(type: EventType | string, sender: Who, subject: Who, d: Rec, at: number): string | null {
+  if (isPackType(type)) return packSlot(type, sender, d);
+  if (isWedType(type)) return wedSlot(type, d);
   switch (type) {
     case 'tally':
     case 'tally_back':
@@ -190,16 +184,6 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
       return typeof d.id === 'string' ? `board|${d.id}` : null;
     case 'food':
       return typeof d.id === 'string' ? `food|${d.id}` : null;
-    case 'pack':
-    case 'pack_chk':
-    case 'pack_reset':
-    case 'trip_note':
-      return packSlot(type, sender, d);
-    case 'wtask':
-    case 'wdone':
-    case 'wconf':
-    case 'wnote':
-      return wedSlot(type, d);
     case 'food_repeat':
     case 'food_recipe':
     case 'food_custom':
