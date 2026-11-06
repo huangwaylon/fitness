@@ -454,6 +454,7 @@ def cmd_gen(keys=None):
             tmp.rename(p)
             p.with_suffix('.json').write_text(json.dumps({'quant': QUANT, 'steps': STEPS, 'px': GEN_PX, 'seed': seed(r['key'], roll), 'prompt_v': PROMPT_V}))
             print(f'gen {r["key"]} r{roll} {time.time() - t:.1f}s', flush=True)
+            time.sleep(float(os.environ.get("FI_PAUSE", 0)))  # FI_PAUSE: seconds of rest after each image (a shared machine)
 
 
 # ---------- the vision check (qwen via ollama)

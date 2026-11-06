@@ -2,12 +2,11 @@
 // (Seattle's guide is English only; a text-only side like 'SNA 021' is the guide's own), and its inline tokens as
 // parts: `{km:}` in the phone's units (units.ts), `{m:}` / `{c:}` metric or imperial with it, `{p:key}` the trip
 // note's value, or locked while the note isn't in; its Japanese cut where a line may break (between words, never
-// inside one: ニュープリマス, 予約番号); and where a trip stands, in words.
+// inside one: ニュープリマス, 予約番号).
 import { parseTokens } from '#lib/travel/tokens.ts';
 import type { L } from '#lib/travel/types.ts';
-import { t, type Locale } from '#lib/i18n/index.ts';
+import type { Locale } from '#lib/i18n/index.ts';
 import { fmtKm, units } from './units.ts';
-import type { Phase } from './when.ts';
 
 /** The reader's side of a pair, else the other ('' for none). */
 export const pick = (l: L | undefined | null, locale: Locale): string => (l ? (l[locale] ?? l[locale === 'ja' ? 'en' : 'ja'] ?? '') : '');
@@ -52,12 +51,6 @@ export function hrefOf(href: string, note: Record<string, string> | null): strin
   return /^https:\/\//.test(parts[0].s) ? parts[0].s : null;
 }
 
-/** A string with its private values as plain text (a locked one as ・・・): Orville's line. */
-export const plain = (s: string, note: Record<string, string> | null): string => render(s, note).map((p) => (p.k === 'text' ? p.s : '・・・')).join('');
-
-/** Where a trip stands, in words: 「あと 97にち」, 「あした しゅっぱつ」, 「いま 2日目」, 「いってきた」. */
-export const phaseLabel = (p: Phase): string =>
-  p.k === 'now' ? t('travel.nowAria', { n: p.day }) : p.k === 'past' ? t('travel.stamp') : p.days === 1 ? t('travel.tomorrowAria') : t('travel.soonAria', { n: p.days });
 
 const JA = /[\u3040-\u30ff\u3400-\u9fff]/;
 const KANA = /^[\u30a0-\u30ffー]+$/;

@@ -18,6 +18,7 @@ export const seattle: Trip = {
     {
       n: 1,
       date: "2026-07-02",
+      look: "travel",
       icon: "plane-landing",
       title: { en: "Arrival & Errands" },
       rows: [
@@ -69,7 +70,7 @@ export const seattle: Trip = {
         time: { en: "3 h 17 min" },
         pass: { en: "NW Forest Pass or day-use fee" },
         where: { en: "Granite Falls, WA" },
-        gpx: "https://huangwaylon.github.io/gpx/#/trail/lake-22"
+        gpx: "https://huangwaylon.github.io/hiking-trails/#/trail/lake-22"
       }
     },
     {
@@ -154,7 +155,7 @@ export const seattle: Trip = {
         time: { en: "3 h 40 min" },
         pass: { en: "NW Forest Pass or day-use fee" },
         where: { en: "Snoqualmie Pass, WA" },
-        gpx: "https://huangwaylon.github.io/gpx/#/trail/snow-lake"
+        gpx: "https://huangwaylon.github.io/hiking-trails/#/trail/snow-lake"
       }
     },
     {
@@ -197,7 +198,7 @@ export const seattle: Trip = {
         time: { en: "~3 h 30 min" },
         pass: { en: "Mount Rainier NP entrance fee" },
         where: { en: "Paradise, Mt. Rainier NP" },
-        gpx: "https://huangwaylon.github.io/gpx/#/trail/skyline-loop"
+        gpx: "https://huangwaylon.github.io/hiking-trails/#/trail/skyline-loop"
       }
     },
     {
@@ -258,7 +259,7 @@ export const seattle: Trip = {
         time: { en: "10–13 h" },
         pass: { en: "Overnight permit (lottery)" },
         where: { en: "Leavenworth, WA" },
-        gpx: "https://huangwaylon.github.io/gpx/#/trail/enchantments"
+        gpx: "https://huangwaylon.github.io/hiking-trails/#/trail/enchantments"
       }
     },
     {
@@ -309,7 +310,7 @@ export const seattle: Trip = {
         time: { en: "5 h 10 min" },
         pass: { en: "NW Forest Pass" },
         where: { en: "Gold Bar, WA" },
-        gpx: "https://huangwaylon.github.io/gpx/#/trail/bridal-veil"
+        gpx: "https://huangwaylon.github.io/hiking-trails/#/trail/bridal-veil"
       }
     },
     {
@@ -340,7 +341,7 @@ export const seattle: Trip = {
         time: { en: "~3 h 30 min" },
         pass: { en: "NW Forest Pass" },
         where: { en: "Granite Falls, WA" },
-        gpx: "https://huangwaylon.github.io/gpx/#/trail/mount-pilchuck"
+        gpx: "https://huangwaylon.github.io/hiking-trails/#/trail/mount-pilchuck"
       }
     },
     {
@@ -388,7 +389,7 @@ export const seattle: Trip = {
         time: { en: "3 h 16 min" },
         pass: { en: "NW Forest Pass or parking fee" },
         where: { en: "Leavenworth, WA" },
-        gpx: "https://huangwaylon.github.io/gpx/#/trail/lake-valhalla"
+        gpx: "https://huangwaylon.github.io/hiking-trails/#/trail/lake-valhalla"
       }
     },
     {
@@ -439,12 +440,13 @@ export const seattle: Trip = {
         time: { en: "1 h 42 min" },
         pass: { en: "NW Forest Pass" },
         where: { en: "Snoqualmie Pass, WA" },
-        gpx: "https://huangwaylon.github.io/gpx/#/trail/talapus-lake"
+        gpx: "https://huangwaylon.github.io/hiking-trails/#/trail/talapus-lake"
       }
     },
     {
       n: 18,
       date: "2026-07-19",
+      look: "travel",
       icon: "plane-takeoff",
       title: { en: "Fly Home to Japan" },
       rows: [
@@ -504,5 +506,6 @@ export const seattle: Trip = {
         ]
       }
     ]
-  }
+  },
+  classic: true
 };

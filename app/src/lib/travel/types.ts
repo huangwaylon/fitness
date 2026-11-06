@@ -22,7 +22,7 @@ export interface Photo { src: string; w: number; h: number; alt?: L; caption?: L
 export interface Row { t?: string; text: L; note?: L }
 
 /** A headed list inside a card: `tl` an hour-by-hour timeline (rows carry `t`), `bul` bullets. */
-export interface Section { head?: L; kind: 'tl' | 'bul'; rows: Row[] }
+interface Section { head?: L; kind: 'tl' | 'bul'; rows: Row[] }
 
 interface Stat { k: L; v: L }
 
@@ -41,7 +41,7 @@ interface Hike {
   pass: L;
   /** Where the trailhead is ('Granite Falls, WA'). */
   where: L;
-  /** The trail map (huangwaylon.github.io/gpx). */
+  /** The trail map (huangwaylon.github.io/hiking-trails; the old /gpx site is gone). */
   gpx?: string;
 }
 
@@ -61,6 +61,10 @@ export interface Day {
   note?: L;
   photo?: Photo;
   hike?: Hike;
+  /** The old site's card for the day (a classic guide's, components/travel/classic): 'day' an itinerary day (its
+   *  card open, the accent node), 'travel' a flight day (the second accent's ringed node); none a plain day (or a
+   *  hike's, by its `hike`). */
+  look?: 'day' | 'travel';
 }
 
 export interface Place {
@@ -129,6 +133,9 @@ export interface Camp {
 
 export interface Trip {
   id: TripId;
+  /** Drawn like its original guide (components/travel/classic/: Okinawa, Seattle), its packing list frozen there;
+   *  any other trip is the quiet TripView's. */
+  classic?: true;
   /** The place ('沖縄'); its year is the start's. */
   title: L;
   eyebrow: L;

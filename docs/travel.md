@@ -17,6 +17,18 @@ The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Document
 - Past trips download nothing ahead of time (no offline maps, no photo prefetch).
 - A km / mi switch per device. No ベル / economy tie-in.
 
+## Classic guides (the user, 2026-11-06)
+
+Okinawa and Seattle are over: `classic: true` on their data opens them as the old travel-plans site showed them
+(`components/travel/classic/ClassicGuide.svelte`), not in the app's style: the site's stylesheet ported under one root
+class (`classic.css`, `.classic …` only; `.card`/`.chip` renamed against the app's globals), its icons (`icons.ts`),
+the hero with 本棚 back to the passes, the spine day cards (`Day.look`: an itinerary day open, a flight day ringed, a
+hike filled), the logistics cards, the campsites (one criterion at a time, as the site's), the bottom tab bar. The
+map tab is the site's map card with the app's live TripMap in it (online only: Okinawa's offline maps are gone; day 0
+= 全3日間). The packing list is **frozen**: the seed as it is, no boxes, no edits, nothing read from or sent to the
+relay. The guide's own words are in its language (Seattle's English), the tab bar and 本棚 in the reader's.
+`e2e/travel-classic.spec.ts`.
+
 ## Content
 
 | Trip | Dates (local) | tz | Days | Has |
@@ -182,7 +194,7 @@ island's centroid).
 
 - Restored in the old repo from its last state before it was rebuilt around Okinawa: kept so the trip is not lost, not
   because it is being planned (it is in the past).
-- Hike data from WTA and AllTrails; the trail maps link out to `huangwaylon.github.io/gpx`.
+- Hike data from WTA and AllTrails; the trail maps link out to `huangwaylon.github.io/hiking-trails/#/trail/<slug>` (the old `/gpx` site moved; a later hiking port makes them in-app).
 - Only the itinerary and the packing list: no map, no campsites. English-only by design; only the chrome follows the
   language.
 

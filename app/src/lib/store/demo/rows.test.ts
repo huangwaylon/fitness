@@ -92,11 +92,11 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect(recipes(reduce(demoCache(now, 'G').rows))).toEqual(recipes(s));
   });
 
-  it('Okinawa’s packing list as two phones left it: うめ’s ticks and item, A’s tick, a made-up note each trip; the guest’s too', () => {
-    const seed = { cats: [{ id: 'ok-0', name: { ja: '書類' }, icon: 'file', items: [{ id: 'ok-0-0', text: { ja: 'ID' } }, { id: 'ok-0-1', text: { ja: '免許' } }] }] };
+  it('NZ’s packing list as two phones left it: うめ’s ticks and item, A’s tick, a made-up note each trip; the guest’s too', () => {
+    const seed = { cats: [{ id: 'nz-0', name: { ja: '書類' }, icon: 'file', items: [{ id: 'nz-0-0', text: { ja: 'パスポート' } }, { id: 'nz-0-1', text: { ja: 'NZeTA' } }] }] };
     for (const rows of [s.pack, reduce(demoCache(now, 'G').rows).pack]) {
       const b = packFold(rows);
-      expect(packList('okinawa', seed, b)[0].items.map((i) => [i.id, i.ticks.join('')])).toEqual([['ok-0-0', 'AB'], ['ok-0-1', 'B'], ['_demob001', 'B']]);
+      expect(packList('nz', seed, b)[0].items.map((i) => [i.id, i.ticks.join('')])).toEqual([['nz-0-0', 'AB'], ['nz-0-1', 'B'], ['_demob001', 'B']]);
       for (const trip of ['okinawa', 'seattle', 'nz']) expect(tripNoteOf(trip, b)).toMatchObject({ flightRef: 'DEMO01' });
     }
   });
