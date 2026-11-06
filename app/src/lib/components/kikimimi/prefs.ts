@@ -2,7 +2,7 @@
 // じかん last set, the next lobby's. Full or private storage: level 1 and 30 s.
 import type { Level } from '#lib/kikimimi/bank.ts';
 import { LEVELS } from '#lib/kikimimi/deck.ts';
-import { TIMERS, type QuizTimer } from '#lib/kikimimi/session.ts';
+import { TIMERS, type QuizTimer } from '#lib/kikimimi/seed.ts';
 import { DEVICE, localKV } from '#lib/sync/storage.ts';
 
 function keep(key: string, value: number): void {

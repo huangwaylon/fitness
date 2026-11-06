@@ -7,7 +7,8 @@
   // its rule in place of the level; no にがて れんしゅう, a quiz's).
   // 「こたえる じかん」 (20 / 30 / 60 びょう / なし: the host's, the others see it; remembered on this phone) under the level.
   import type { Who } from '#lib/types.ts';
-  import { ORDER, type QuizTimer } from '#lib/kikimimi/session.ts';
+  import { ORDER } from '#lib/kikimimi/session.ts';
+  import type { QuizTimer } from '#lib/kikimimi/seed.ts';
   import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';

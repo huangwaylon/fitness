@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { points } from './score.ts';
-import { FAST_WINDOWS, QuizSession, WINDOWS, isLadder, quizLink, timerOf, versus, wireQuiz, withLadder, type DeckOf, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
+import { FAST_WINDOWS, QuizSession, WINDOWS, quizLink, wireQuiz, type DeckOf, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
+import { isLadder, timerOf, versus, withLadder } from './seed.ts';
 import { ladderDeck, ladderPoints } from './ladder.ts';
 import { LADDERS } from './ladders.ts';
 import type { LiveStatus } from '../sync/live.ts';
