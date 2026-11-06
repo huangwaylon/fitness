@@ -12,7 +12,7 @@ The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Document
   **all three keys** (the guest too).
 - Maps: MapLibre GL JS on OpenFreeMap's public vector tiles in our own NookPhone style, **online only** (no download,
   no self-hosting for now; Protomaps on R2 rejected: decisions.md "The trip map"). Neither MapLibre (chunk, worker,
-  CSS) nor anything under `travel/` is precached. No terrain shading.
+  CSS, and `map/engine.ts`'s chunk: vite.config.ts `maplibre-names`) nor anything under `travel/` is precached. No terrain shading.
 - A "you are here" dot; **the position never leaves the phone** (never logged, sent or kept).
 - Past trips download nothing ahead of time (no offline maps, no photo prefetch).
 - A km / mi switch per device. No ベル / economy tie-in.

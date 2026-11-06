@@ -124,21 +124,32 @@ const globsUncached: Plugin = {
 
 /** The trip map's MapLibre chunk and its CSS under a stable name (`_app/immutable/chunks/maplibre.<hash>.js`,
  *  `assets/maplibre.<hash>.css`; its worker is `workers/maplibre-gl-worker-<hash>.js` already), so the service worker
- *  leaves them out of its precache (caches.ts isMapLibre: the map is online only). Kit enforces its own file names in
- *  the client build; this wraps them. */
+ *  leaves them out of its precache (caches.ts isMapLibre: the map is online only). So are the maps' engines (travel's
+ *  and トレイル's map/engine.ts: their basemap, fonts and layers, ~40 KB gzipped), which import MapLibre and run only
+ *  with it; the bundle's check keeps any other chunk from importing MapLibre. Kit enforces its own file names in the
+ *  client build; this wraps them. */
+const MAP_ENGINE = /\/src\/lib\/components\/(travel|hiking)\/map\/engine\.ts$/;
 const mapLibreNames: Plugin = {
   name: 'maplibre-names',
   applyToEnvironment: (env) => env.name === 'client',
   outputOptions(o) {
     const chunk = o.chunkFileNames, asset = o.assetFileNames;
     if (typeof chunk !== 'function' || typeof asset !== 'string' || !asset.endsWith('/[name].[hash][extname]')) throw new Error("vite.config.ts maplibre-names: Kit's client file names changed; recheck the map's chunk names");
-    const ours = (ids: readonly string[] | undefined) => !!ids?.some((id) => id.includes('/node_modules/maplibre-gl/'));
+    const ours = (c: { moduleIds?: readonly string[]; facadeModuleId?: string | null }) =>
+      !!c.moduleIds?.some((id) => id.includes('/node_modules/maplibre-gl/')) || MAP_ENGINE.test(c.facadeModuleId ?? '');
     return {
       ...o,
-      chunkFileNames: (c) => (ours(c.moduleIds) ? chunk(c).replace('[hash]', 'maplibre.[hash]') : chunk(c)),
+      chunkFileNames: (c) => (ours(c) ? chunk(c).replace('[hash]', 'maplibre.[hash]') : chunk(c)),
       // (a chunk's CSS has no module ids: MapLibre's is told by its own selectors)
       assetFileNames: (a) => (a.names.some((n) => n.endsWith('.css')) && String(a.source).includes('.maplibregl-map') ? asset.replace('[name]', 'maplibre') : asset)
     };
+  },
+  generateBundle(_, bundle) {
+    // a chunk that imports MapLibre is only of use with it (online): out of the precache with it, by its name
+    const isMap = (f: string) => /(^|\/)maplibre\./.test(f.slice(f.lastIndexOf('/') + 1));
+    for (const c of Object.values(bundle)) {
+      if (c.type === 'chunk' && !isMap(c.fileName) && c.imports.some(isMap)) throw new Error(`vite.config.ts maplibre-names: ${c.fileName} imports MapLibre statically (${[...c.moduleIds].find((id) => id.includes('/src/'))}); name it a map chunk or import MapLibre lazily`);
+    }
   }
 };
 
