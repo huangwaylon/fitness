@@ -216,7 +216,7 @@ test('edit: place a piece from the tray, turn it, drag it, put it away; the wall
   await expect.poll(() => te(page, (t) => t.edit()?.sel?.id)).toBe(p.id);
   await page.locator('[data-act="remove"]').click();
   await expect.poll(() => te(page, (t) => t.pieces())).toEqual([]);
-  await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '取り消す' })).toBeVisible();
 });
 
 test('みつけた: what either of us found in a balloon that NH has a model of, newest first, placeable like the rest', async ({ page }) => {
@@ -276,7 +276,7 @@ test('up to 60 pieces a room: past 40 from the tray, the 61st refused', async ({
   expect(await furnish(page, 20, false)).toBe(60);
   await expect(page.locator('[data-tent-count]')).toHaveText('60/60');
   await page.locator('[data-tent-item="f4038"]').click();
-  await expect(page.getByText('これ以上 おけません（60こまで）')).toBeVisible();
+  await expect(page.getByText('これ以上置けません（60個まで）')).toBeVisible();
   expect([await te(page, (t) => t.edit()?.sel ?? null), (await te(page, (t) => t.pieces())).length]).toEqual([null, 60]);
 });
 
@@ -325,7 +325,7 @@ test('on a table: a small thing stands on its top, rides along when the table mo
   await page.mouse.click(x, y);
   await expect.poll(() => te(page, (t) => t.edit()?.sel?.id)).toBe(table.id);
   await page.locator('[data-act="remove"]').click();
-  await expect(page.getByText('うえの ものを さきに しまってね')).toBeVisible();
+  await expect(page.getByText('上のものを先に片付けてください')).toBeVisible();
   expect((await te(page, (t) => t.pieces())).length).toBe(2);
   // nor does the lamp block the floor: a walk goes round the table, not round a lamp
   at = (await placedOf(page)).find((p) => p.id === lamp.id)!;

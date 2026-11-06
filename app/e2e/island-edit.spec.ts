@@ -58,7 +58,7 @@ test('pick up a placed thing, drag it two tiles, ✓; red over the river; 🗑 n
   await page.locator('[data-island-item="oak"]').click();
   const river = (await page.evaluate(() => (window as unknown as { __islandEdit: IE }).__islandEdit.tileScreen(5, 24)))!;
   await page.mouse.click(river[0], river[1]);
-  await expect.poll(() => ie(page, (e) => e.sel()?.why ?? null)).toContain('みず');
+  await expect.poll(() => ie(page, (e) => e.sel()?.why ?? null)).toContain('水');
   await expect(page.locator('[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
 });
 

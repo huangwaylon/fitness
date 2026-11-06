@@ -87,6 +87,6 @@ test('now and then the bubbles hold a pearl: picked up, a shell in the ずかん
   await fromMenu(page, 'zukan');
   await expect(page.locator('[data-zukan="shell"]')).toContainText('1 / 9');
   await expect(page.locator('[data-zukan="sea"]')).toContainText('0 / 40');
-  await expect(page.locator('[data-zukan="sea"]')).toContainText('うみのさち');
+  await expect(page.locator('[data-zukan="sea"]')).toContainText('海の幸');
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/critters-zukan-rows.png` });
 });

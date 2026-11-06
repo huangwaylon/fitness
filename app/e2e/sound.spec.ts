@@ -198,11 +198,11 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   if (await cant.count()) await step('ごほうび', 'a reward it can\'t afford', () => cant.first().tap({ force: true }), ['boop']);
   await step('ごほうび', 'a reward', () => shop.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
   await step('ごほうび', '買う！', () => btn('買う！', dlg).tap(), ['buy']);
-  const undo = btn('とりけす');
+  const undo = btn('取り消す');
   await step('ごほうび', 'とりけす', () => undo.tap(), ['undo']);
   await page.waitForTimeout(400);
   await step('ごほうび', 'a reward, then やめる', () => shop.locator('button.item:not([aria-disabled="true"])').first().tap(), ['open']);
-  await step('ごほうび', 'やめる (buy confirm)', () => btn('やめる', dlg).tap(), ['back']);
+  await step('ごほうび', 'やめる (buy confirm)', () => btn('キャンセル', dlg).tap(), ['back']);
   await expect(dlg).toHaveCount(1); // the panel stays
 
   await step('パネル', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);
@@ -265,7 +265,7 @@ test('the tap walk: each tap plays its one cue', async ({ page }) => {
   await step('けんこう', 'the Move goal', () => dlg.locator('button[data-goal=move-goal]').tap(), ['page']);
   await step('けんこう', 'Move goal field', () => dlg.getByRole('textbox').tap(), []);
   await step('けんこう', '＋ (Move goal)', () => dlg.locator('[data-goal-step="1"]').tap(), ['tick']);
-  await step('けんこう', 'やめる (Move goal)', () => btn('やめる', dlg).tap(), ['back']);
+  await step('けんこう', 'やめる (Move goal)', () => btn('キャンセル', dlg).tap(), ['back']);
   await step('けんこう', 'the steps goal', () => dlg.locator('button[data-goal=steps-goal]').tap(), ['page']);
   await step('けんこう', 'the steps goal again (closes it)', () => dlg.locator('button[data-goal=steps-goal]').tap(), ['back']);
   await step('けんこう', 'close (×)', () => dlg.locator('.titlebar .close').tap(), ['panel-close']);

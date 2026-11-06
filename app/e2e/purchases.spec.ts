@@ -37,7 +37,7 @@ async function noOverlap(page: Page) {
 
 test('buy → it heads the history → erase it (はい) → the ベル come back; いいえ keeps it', async ({ page }) => {
   await page.goto('jar?demo');
-  await expect(page.locator('.hist').getByRole('heading', { name: /^かいもの きろく\s*\d+件$/ })).toBeVisible();
+  await expect(page.locator('.hist').getByRole('heading', { name: /^買い物の記録\s*\d+件$/ })).toBeVisible();
   const hist = await history(page);
   const before = await balance(page);
   const rowsBefore = await hist.locator('li').count();
@@ -52,22 +52,22 @@ test('buy → it heads the history → erase it (はい) → the ベル come bac
   await expect(hist.locator('li')).toHaveCount(Math.min(rowsBefore + 1, 10));
 
   // いいえ: nothing changes
-  await first.getByRole('button', { name: /おやつの かいものを けす/ }).click();
-  await expect(sheet(page)).toContainText('このかいものを けしますか？');
-  await expect(sheet(page)).toContainText(/40\sベル もどります/);
+  await first.getByRole('button', { name: /おやつの買い物を削除/ }).click();
+  await expect(sheet(page)).toContainText('この買い物を削除しますか？');
+  await expect(sheet(page)).toContainText(/40\sベルが戻ります/);
   await sheet(page).getByRole('button', { name: 'いいえ' }).click();
   await expect(page.locator('dialog[open]')).toHaveCount(1); // the panel stays
   await expect.poll(() => balance(page)).toBe(before - 40);
 
   // はい: the line goes and the ベル come back (with とりけす on the banner)
   const id = await first.getAttribute('data-spend');
-  await first.getByRole('button', { name: /おやつの かいものを けす/ }).click();
+  await first.getByRole('button', { name: /おやつの買い物を削除/ }).click();
   await sheet(page).getByRole('button', { name: 'はい' }).click();
   await expect.poll(() => balance(page)).toBe(before);
   await expect(hist.locator(`li[data-spend="${id}"]`)).toHaveCount(0);
-  await expect(page.getByText(/おやつを けしました \+40\sベル/)).toBeVisible();
+  await expect(page.getByText(/おやつを削除しました \+40\sベル/)).toBeVisible();
   // とりけす on the banner brings the buy back
-  await page.getByRole('button', { name: 'とりけす' }).click();
+  await page.getByRole('button', { name: '取り消す' }).click();
   await expect.poll(() => balance(page)).toBe(before - 40);
   await expect(hist.locator(`li[data-spend="${id}"]`)).toHaveCount(1);
 });

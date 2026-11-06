@@ -78,7 +78,7 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   await expect(page.locator('.detail')).toHaveCount(0);
   await page.waitForTimeout(700); // (a tap on a popup eats the click after it for 700 ms: IslandScene)
   await openRewards(page);
-  await expect(sheet(page).locator('[data-wallet] .hero .today')).toHaveText(/^\s*きょうの ベル\s*\+12\s*ベル\s*$/);
+  await expect(sheet(page).locator('[data-wallet] .hero .today')).toHaveText(/^\s*今日のベル\s*\+12\s*ベル\s*$/);
 });
 
 test('no stretch: no chip, only its faint ghosts, and がんばり +0 in the ledger', async ({ page }) => {

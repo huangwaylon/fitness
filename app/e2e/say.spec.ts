@@ -125,7 +125,7 @@ test('the picker closes on ✕, Esc and a tap elsewhere (which walks nobody); th
   await open(page);
   const home = await feet(page), lawn = await lawnTap(page, 240, 380);
   await sayBtn(page).click();
-  await picker(page).getByRole('button', { name: 'とじる' }).click();
+  await picker(page).getByRole('button', { name: '閉じる' }).click();
   await expect(picker(page)).toHaveCount(0);
   await expect(sayBtn(page)).toBeFocused();
   await sayBtn(page).click();

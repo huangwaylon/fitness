@@ -27,7 +27,7 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
   // the pocket by its sections (むし, さかな, …, かいがら), each dearest first
   const pocket = page.locator('[data-shop-pocket] [data-shop-catch]');
   await expect(pocket).toHaveCount(3);
-  await expect(page.locator('[data-shop-sec]')).toHaveText(['むし', 'さかな', 'かいがら']);
+  await expect(page.locator('[data-shop-sec]')).toHaveText(['虫', '魚', 'かいがら']);
   await expect(pocket.nth(1)).toHaveAttribute('data-shop-catch', 'fish:whale-shark');
   await expect(pocket.nth(1)).toHaveAttribute('data-n', '2');
   // pick one whale shark: the offer; a third tap past the pocket goes back to none (never more than it holds)
@@ -69,7 +69,7 @@ test('a catch is in my pocket; sold, かいがら rise; a piece bought from the 
 test('the beach’s finds and the island’s goods sell too: a coral, a fossil, wood; never the ずかん’s page', async ({ page }) => {
   await seed(page, [tally({ 'shell:coral': 2, 'fossil:amber': 1, 'goods:hardwood': 3, 'item:froggy-chair': 1 }), ['find', { kind: 'shell', id: 'coral' }, 'A']]);
   await page.goto(`shop${Q}`);
-  await expect(page.locator('[data-shop-sec]')).toHaveText(['かいがら', 'しげん', 'かせき']); // never a present's piece
+  await expect(page.locator('[data-shop-sec]')).toHaveText(['かいがら', '資源', '化石']); // never a present's piece
   await page.locator('[data-shop-catch="shell:coral"]').click();
   await page.locator('[data-shop-sell]').click();
   await expect.poll(() => shells(page)).toBe(25); // NH's 500 ÷ 20

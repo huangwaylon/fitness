@@ -61,13 +61,13 @@ test('buy: a reward comes back with とりけす', async ({ page }) => {
   await shop.locator('button[data-item="dinner"]').click();
   await expect(sheet(page).locator('.price')).toContainText('70');
   await sheet(page).getByRole('button', { name: '買う！' }).click();
-  await expect(page.getByText(/外食を 買いました！ −70\sベル/)).toBeVisible();
+  await expect(page.getByText(/外食を買いました！ −70\sベル/)).toBeVisible();
   await expect.poll(balance).toBe(before - 70);
-  await page.getByRole('button', { name: 'とりけす' }).click();
+  await page.getByRole('button', { name: '取り消す' }).click();
   await expect.poll(balance).toBe(before);
   // やめる closes the confirm without spending
   await shop.locator('button[data-item="snack"]').click();
-  await sheet(page).getByRole('button', { name: 'やめる' }).click();
+  await sheet(page).getByRole('button', { name: 'キャンセル' }).click();
   await expect(page.locator('dialog[open]')).toHaveCount(1); // the panel stays
   await expect.poll(balance).toBe(before);
 });
@@ -102,7 +102,7 @@ test('ごほうび: a small ⓘ at each reward\'s top-right (a 44px target) show
   const tip = shop.locator('[data-info-tip]');
   for (const [id, ex] of [['snack', 'たこやき'], ['dinner', 'マーラータン']]) {
     const info = shop.locator(`[data-info=${id}]`), tile = shop.locator(`button[data-item=${id}]`);
-    await expect(info).toHaveAccessibleName(id === 'snack' ? 'おやつって なに？' : '外食って なに？');
+    await expect(info).toHaveAccessibleName(id === 'snack' ? 'おやつとは？' : '外食とは？');
     // small to the eye, in the tile's top-right corner, 44px to the thumb
     const [ib, tb] = [(await info.boundingBox())!, (await tile.boundingBox())!];
     expect(ib.width).toBeLessThanOrEqual(28);
@@ -201,13 +201,13 @@ test('harvest: a recap of the week: each of us, ふたりで ぜんぶ, the tota
   const tally = page.locator('.overlay .tally');
   await expect(tally.locator('.trow:not(.duo)')).toHaveCount(2);
   for (const row of await tally.locator('.trow:not(.duo) .plus').all()) await expect(row).toHaveText(/^\+\d+\sベル$/);
-  await expect(tally.locator('.duo')).toContainText('ふたりで ぜんぶ');
+  await expect(tally.locator('.duo')).toContainText('ふたりで全部');
   await expect(tally.locator('.duo .hint')).toHaveText(/^\d+日 · 1日 \+2\sベル$/);
-  await expect(tally.locator('.total')).toContainText('今週の ベル');
+  await expect(tally.locator('.total')).toContainText('今週のベル');
   await expect(tally.getByText(/バッジ|ボーナス/)).toHaveCount(0);
   await page.getByRole('button', { name: '受け取る！' }).click();
-  await expect(page.getByText('おさいふに 入りました！')).toBeVisible();
-  await page.getByRole('button', { name: '島へもどる' }).click();
+  await expect(page.getByText('お財布に入りました！')).toBeVisible();
+  await page.getByRole('button', { name: '島へ戻る' }).click();
   await expect(page.getByRole('button', { name: '受け取る！' })).toHaveCount(0);
 });
 
@@ -221,7 +221,7 @@ test('the ベル ledger: per day each of us four goals and ふたりで ぜん�
   await sheet(page).getByRole('button', { name: /\(月\)/ }).first().click();
   await expect(sheet(page).locator('.pc')).toHaveCount(2);
   for (const p of ['A', 'B']) await expect(sheet(page).locator(`.pc[data-person=${p}] .row`)).toHaveCount(4);
-  await expect(sheet(page).locator('.duo')).toContainText('ふたりで ぜんぶ');
+  await expect(sheet(page).locator('.duo')).toContainText('ふたりで全部');
   await expect(sheet(page).locator('.pen-btn, .atm, input, .log')).toHaveCount(0);
   // the goals are けんこう's now: none here
   await page.locator('.titlebar .back').click();
@@ -250,34 +250,34 @@ test('けんこう: body weight (from Health, no logging by hand); its goal is s
   const ed = tray(page);
   await expect(card.locator('header form.tray')).toHaveCount(1);
   await expect(ed).toContainText('目標体重');
-  await expect(ed.getByRole('button', { name: '目標をなくす' })).toBeVisible();
+  await expect(ed.getByRole('button', { name: '目標を外す' })).toBeVisible();
   const input = ed.getByRole('textbox');
   await expect(input).toHaveValue('66.0');
   await expect(input).toHaveAttribute('inputmode', 'decimal');
   await expect(input).not.toBeFocused(); // no keyboard until the field is tapped
   expect(await input.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
   await input.fill('300.5');
-  await ed.getByRole('button', { name: 'けってい' }).click();
+  await ed.getByRole('button', { name: '決定' }).click();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
   await input.fill('65');
-  await ed.getByRole('button', { name: 'けってい' }).click();
+  await ed.getByRole('button', { name: '決定' }).click();
   await expect(ed).toHaveCount(0);
   await expect(chip).toHaveText('目標 65.0 kg 前後');
   await expect(chip).toBeFocused(); // back on its chip
   // its banner drops over the title bar (and a pointer resting on it holds it there): tap it away, as a thumb would
   const saved = sheet(page).getByRole('status');
-  await expect(saved).toContainText('体重の目標を かえました');
-  await saved.getByRole('button', { name: 'とじる' }).click();
+  await expect(saved).toContainText('体重の目標を変更しました');
+  await saved.getByRole('button', { name: '閉じる' }).click();
   await expect(saved).toHaveCount(0);
   await expect(sheet(page).locator('[data-group=body]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('.bc[data-metric=weight][data-person=A] svg[role=img]')).toContainText('目標 65.0');
   // −/＋ step by 0.5 kg from the goal; やめる changes nothing
   await chip.click();
   await expect(input).toHaveValue('65.0');
-  await ed.getByRole('button', { name: 'へらす' }).click();
-  await ed.getByRole('button', { name: 'へらす' }).click();
+  await ed.getByRole('button', { name: '減らす' }).click();
+  await ed.getByRole('button', { name: '減らす' }).click();
   await expect(input).toHaveValue('64.0');
-  await ed.getByRole('button', { name: 'やめる' }).click();
+  await ed.getByRole('button', { name: 'キャンセル' }).click();
   await expect(ed).toHaveCount(0);
   await expect(chip).toHaveText('目標 65.0 kg 前後');
   // weight never earns: today's ベル didn't move
@@ -314,23 +314,23 @@ test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the
   await expect(fat.locator('path.goal')).toHaveCount(0); // no goal yet: no line, no label
   await expect(fat.locator('svg[role=img]')).not.toContainText(/目標 \d/);
   // BMI and lean mass have their own (none set in the demo): a chip each, no line
-  await expect(goalChip(page, 'bmi-goal')).toHaveText('目標 まだ');
-  await expect(goalChip(page, 'lean_kg-goal')).toHaveText('目標 まだ');
+  await expect(goalChip(page, 'bmi-goal')).toHaveText('目標なし');
+  await expect(goalChip(page, 'lean_kg-goal')).toHaveText('目標なし');
   await expect(sheet(page).locator('.bc[data-metric=bmi] .k-goal, .bc[data-metric=lean_kg] .k-goal')).toHaveCount(0);
   const chip = goalChip(page, 'body_fat_pct-goal');
   await chip.click();
   const input = tray(page).getByRole('textbox');
   await expect(input).toHaveAttribute('inputmode', 'decimal');
   await input.fill('61');
-  await tray(page).getByRole('button', { name: 'けってい' }).click();
+  await tray(page).getByRole('button', { name: '決定' }).click();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
-  await expect(tray(page).locator('.hint')).toHaveText('3〜60%、0.5%ずつで入れてね');
+  await expect(tray(page).locator('.hint')).toHaveText('3〜60%、0.5%単位で入力してください');
   await input.fill('19.5');
-  await tray(page).getByRole('button', { name: 'けってい' }).click();
+  await tray(page).getByRole('button', { name: '決定' }).click();
   await expect(chip).toHaveText('目標 19.5% 以下');
   const saved = sheet(page).getByRole('status');
-  await expect(saved).toContainText('体脂肪率の目標を かえました');
-  await saved.getByRole('button', { name: 'とじる' }).click();
+  await expect(saved).toContainText('体脂肪率の目標を変更しました');
+  await saved.getByRole('button', { name: '閉じる' }).click();
   await expect(saved).toHaveCount(0);
   // drawn on the body fat chart as the weight goal is: the dashed line, its label and the key
   await expect(fat.locator('path.goal')).toHaveCount(1);
@@ -338,11 +338,11 @@ test('けんこう: the body fat goal, set on its card (3–60 %), dashed on the
   await expect(fat.locator('.key .k-goal')).toHaveCount(1);
   // cleared: no line
   await chip.click();
-  await tray(page).getByRole('button', { name: '目標をなくす' }).click();
-  await expect(chip).toHaveText('目標 まだ');
+  await tray(page).getByRole('button', { name: '目標を外す' }).click();
+  await expect(chip).toHaveText('目標なし');
   const cleared = sheet(page).getByRole('status');
-  await expect(cleared).toContainText('目標をなくしました');
-  await cleared.getByRole('button', { name: 'とじる' }).click();
+  await expect(cleared).toContainText('目標を外しました');
+  await cleared.getByRole('button', { name: '閉じる' }).click();
   await expect(cleared).toHaveCount(0);
   await expect(fat).toBeVisible();
   await expect(fat.locator('path.goal')).toHaveCount(0);
@@ -441,17 +441,17 @@ test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, f
   await expect(chip).toHaveText('目標 600 kcal 以上');
   await chip.click();
   await expect(tray(page)).toContainText('ムーブの目標（1日）');
-  await expect(tray(page)).toContainText('きょうから');
+  await expect(tray(page)).toContainText('今日から');
   const input = tray(page).getByRole('textbox');
   await expect(input).toHaveValue('600');
   await expect(input).toHaveAttribute('inputmode', 'numeric');
   expect(await input.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
   await input.fill('50');
-  await tray(page).getByRole('button', { name: 'けってい' }).click();
+  await tray(page).getByRole('button', { name: '決定' }).click();
   await expect(input).toHaveAttribute('aria-invalid', 'true');
   await input.fill('2000');
-  await tray(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(page.getByText('ムーブの目標を かえました')).toBeVisible();
+  await tray(page).getByRole('button', { name: '決定' }).click();
+  await expect(page.getByText('ムーブの目標を変更しました')).toBeVisible();
   await expect(chip).toHaveText('目標 2,000 kcal 以上');
   // today's tree popup reads the new goal: no day reaches 2,000 kcal, so no ✓
   await page.keyboard.press('Escape');
@@ -465,10 +465,10 @@ test('けんこう: the Move goal, a numeric field ≥ 16px, 100–2,000 kcal, f
   await whoSel.selectOption({ index: 1 });
   await expect(sheet(page).locator('.mc[data-metric=move]')).toHaveAttribute('data-person', 'B');
   await chip.click();
-  await tray(page).getByRole('button', { name: 'ふやす' }).click(); // +10 from うめ's 450
+  await tray(page).getByRole('button', { name: '増やす' }).click(); // +10 from うめ's 450
   await expect(tray(page).getByRole('textbox')).toHaveValue('460');
   await tray(page).getByRole('textbox').fill('520');
-  await tray(page).getByRole('button', { name: 'けってい' }).click();
+  await tray(page).getByRole('button', { name: '決定' }).click();
   await expect(chip).toHaveText('目標 520 kcal 以上');
   await whoSel.selectOption({ index: 0 });
   await expect(chip).toHaveText('目標 2,000 kcal 以上');
@@ -483,19 +483,19 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   const input = tray(page).getByRole('textbox');
   await expect(input).toHaveAttribute('inputmode', 'numeric');
   expect(await input.evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThanOrEqual(16);
-  await expect(tray(page).locator('.hint')).toHaveText('1,000〜30,000歩、500歩ずつで入れてね');
+  await expect(tray(page).locator('.hint')).toHaveText('1,000〜30,000歩、500歩単位で入力してください');
   for (const bad of ['500', '8250', '30500']) {
     await input.fill(bad);
-    await tray(page).getByRole('button', { name: 'けってい' }).click();
+    await tray(page).getByRole('button', { name: '決定' }).click();
     await expect(input).toHaveAttribute('aria-invalid', 'true');
   }
   // ＋ from what the field holds, onto the 500s: 8,250 → 8,500
-  await tray(page).getByRole('button', { name: 'ふやす' }).click();
+  await tray(page).getByRole('button', { name: '増やす' }).click();
   await expect(input).toHaveValue('8,500');
   await expect(input).toHaveAttribute('aria-invalid', 'false');
   await input.fill('30,000');
-  await tray(page).getByRole('button', { name: 'けってい' }).click();
-  await expect(page.getByText('歩数の目標を かえました')).toBeVisible();
+  await tray(page).getByRole('button', { name: '決定' }).click();
+  await expect(page.getByText('歩数の目標を変更しました')).toBeVisible();
   await expect(chip).toHaveText('目標 30,000歩 以上');
   // today's tree popup and けんこう read the new goal: no demo day reaches 30,000 steps
   await page.keyboard.press('Escape');
@@ -511,7 +511,7 @@ test('けんこう: the steps goal, 8,000 for both by default, 1,000–30,000 by
   await expect(chip).toHaveText('目標 8,000歩 以上');
   await chip.click();
   await tray(page).getByRole('textbox').fill('6500');
-  await tray(page).getByRole('button', { name: 'けってい' }).click();
+  await tray(page).getByRole('button', { name: '決定' }).click();
   await expect(chip).toHaveText('目標 6,500歩 以上');
   await whoSel.selectOption({ index: 0 });
   await expect(chip).toHaveText('目標 30,000歩 以上');
@@ -659,7 +659,7 @@ test('サウンド: all off by default; toggles persist on this phone; ミュー
   await row('ミュージック').click();
   await expect(row('ミュージック')).toHaveAttribute('aria-checked', 'true');
   // the opening theme plays while the panel is up (NH's title screen); closing the panel hands over to the hour
-  await expect(sheet(page).getByText('いまは オープニングテーマ')).toBeVisible();
+  await expect(sheet(page).getByText('今はオープニングテーマ')).toBeVisible();
   await expect.poll(() => audio).toContain(`${BASE}/audio/music/opening.m4a`);
   await sheet(page).getByRole('slider', { name: '音量' }).fill('4');
   await sheet(page).locator('.titlebar .close').click();
@@ -700,14 +700,14 @@ test('むらびと: すがた → the むらびと tab → とくべつ (たぬ�
   await sheet(page).locator('[data-push=look]').click();
   await sheet(page).locator('[data-look-tab=villager]').click();
   const dlg = sheet(page);
-  await expect(dlg.locator('.grp')).toHaveText(['とくべつ', 'むらびと']);
+  await expect(dlg.locator('.grp')).toHaveText(['特別', '住民']);
   await expect(dlg.getByRole('radio').first()).toHaveAccessibleName('たぬきち');
   await dlg.getByRole('searchbox').fill('とたけけ');
-  await expect(dlg.locator('.grp')).toHaveText(['とくべつ']);
+  await expect(dlg.locator('.grp')).toHaveText(['特別']);
   await expect(dlg.getByRole('radio')).toHaveCount(1);
   await dlg.getByRole('searchbox').fill('しずえ');
   await dlg.getByRole('radio', { name: 'しずえ' }).click();
-  await expect(dlg.locator('[data-look-status]')).toHaveText('むらびと · しずえ');
+  await expect(dlg.locator('[data-look-status]')).toHaveText('住民 · しずえ');
   await dlg.locator('.titlebar .back').click(); // kept as the level is left
   await page.goto('?demo=harvest');
   await expect(page.locator('.bubble .who').first()).toHaveText('たぬきち');
@@ -716,7 +716,7 @@ test('むらびと: すがた → the むらびと tab → とくべつ (たぬ�
 test('404 at 320: the page fits the screen (ja breaks only at its spaces) and no harvest covers it', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 568 });
   await page.goto('nope?demo=harvest');
-  await expect(page.getByRole('heading', { name: /このページは 見つかりませんでした/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /このページは見つかりませんでした/ })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   await expect(page.locator('.overlay')).toHaveCount(0);
 });
@@ -725,7 +725,7 @@ test('with the undo banner up, a sheet’s footer (買う！) rises above it: a 
   await page.goto('jar?demo');
   await page.locator('.shop button.item:not([aria-disabled="true"])').first().click();
   await sheet(page).getByRole('button', { name: '買う！' }).click();
-  await expect(page.getByRole('button', { name: 'とりけす' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '取り消す' })).toBeVisible();
   await page.locator('.shop button.item:not([aria-disabled="true"])').first().click();
   const buy = sheet(page).getByRole('button', { name: '買う！' });
   await expect(buy).toBeVisible();
@@ -764,7 +764,7 @@ test('the old /jar link lands on the island with the panel open on ごほうび 
 test('the ベル ledger: no 「これまでに ためた ベル」 row: the weeks come first, under 「ためた ベル」', async ({ page }) => {
   await page.goto('?demo');
   await openLedger(page);
-  await expect(sheet(page).locator('[data-ledger] h2')).toHaveText('ためた ベル');
+  await expect(sheet(page).locator('[data-ledger] h2')).toHaveText('貯めたベル');
   await expect(sheet(page).getByText('これまでに ためた ベル')).toHaveCount(0);
   await expect(sheet(page).locator('[data-ledger] .card.earned')).toHaveCount(0);
 });
@@ -775,8 +775,8 @@ test('the ベル ledger opens light: the newest three weeks of ベル; 「まえ
   const weeks = sheet(page).locator('section.week');
   await expect(weeks).toHaveCount(3);
   // earnings only: the demo buys most weeks, and none of it shows here (the buys live on ごほうび)
-  await expect(weeks.first()).not.toContainText(/おやつ|外食|とりけす/);
-  await sheet(page).getByRole('button', { name: 'まえの週も 見る' }).first().click();
+  await expect(weeks.first()).not.toContainText(/おやつ|外食|取り消す/);
+  await sheet(page).getByRole('button', { name: '前の週も見る' }).first().click();
   await expect.poll(() => weeks.count()).toBeGreaterThan(3);
 });
 
@@ -906,14 +906,14 @@ test('the menu\'s 「ベル」 row shows ごほうび\'s balance, follows a buy 
   await row.click();
   const total = sheet(page).locator('.hero .total');
   await expect.poll(async () => Number((await total.innerText()).replace(/\D/g, ''))).toBe(bells);
-  await expect(sheet(page).locator('.hero .today')).toHaveText(new RegExp(`^\\s*きょうの ベル\\s*\\+${today}\\s*ベル\\s*$`));
+  await expect(sheet(page).locator('.hero .today')).toHaveText(new RegExp(`^\\s*今日のベル\\s*\\+${today}\\s*ベル\\s*$`));
   // a buy takes its price out at once; とりけす puts it back (a refund, not earnings: no flash)
   const n = (await flashes()).length;
   await page.locator('.shop button[data-item="snack"]').click();
   await sheet(page).getByRole('button', { name: '買う！' }).click();
   await expect(row.locator('.num')).toHaveText(bellsText(bells - 40));
   await expect(sheet(page).locator('.hero .today')).toHaveAttribute('data-today', String(today)); // a buy isn't today's
-  await page.getByRole('button', { name: 'とりけす' }).click();
+  await page.getByRole('button', { name: '取り消す' }).click();
   await expect(row.locator('.num')).toHaveText(bellsText(bells));
   await page.keyboard.press('Escape');
   await page.waitForTimeout(800); // (proving nothing flashes: the count-up is 600 ms)
@@ -928,7 +928,7 @@ test('ごほうび: today’s ベル in a yuzu pill under the balance (both of u
   expect(today).toBeGreaterThan(0);
   await openPanel(page);
   const pill = sheet(page).locator('[data-wallet] .hero .today');
-  await expect(pill).toHaveText(new RegExp(`^\\s*きょうの ベル\\s*\\+${today}\\s*ベル\\s*$`));
+  await expect(pill).toHaveText(new RegExp(`^\\s*今日のベル\\s*\\+${today}\\s*ベル\\s*$`));
   await expect(pill).not.toHaveClass(/none/);
   await expect(pill.locator('.bag')).toHaveCount(1); // the tiny ベル bag
   // under the balance, smaller than it
@@ -941,7 +941,7 @@ test('ごほうび: today’s ベル in a yuzu pill under the balance (both of u
   await expect(row).toHaveAttribute('data-today', '0');
   await expect(row).toHaveAttribute('aria-label', / · きょう 0\sベル$/);
   await openPanel(page);
-  await expect(pill).toHaveText(/^\s*きょうの ベル\s*0\s*ベル\s*$/);
+  await expect(pill).toHaveText(/^\s*今日のベル\s*0\s*ベル\s*$/);
   await expect(pill).toHaveClass(/none/);
 });
 

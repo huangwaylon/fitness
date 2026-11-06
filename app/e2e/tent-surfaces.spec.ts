@@ -74,7 +74,7 @@ for (const { code, what } of CASES) {
     await page.mouse.click(x, y);
     await expect.poll(() => te(page, (t) => t.edit()?.sel?.id)).toBe(piece.id);
     await page.locator('[data-act="remove"]').click();
-    await expect(page.getByText('うえの ものを さきに しまってね')).toBeVisible();
+    await expect(page.getByText('上のものを先に片付けてください')).toBeVisible();
     expect((await te(page, (t) => t.pieces())).length).toBe(2);
   });
 }

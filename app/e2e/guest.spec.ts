@@ -98,7 +98,7 @@ test('the guest’s ごほうび shows today’s ベル under the balance: the m
   await openRewards(g);
   const panel = g.locator('dialog[open]');
   await expect(panel.locator('[data-guest-jar]')).toBeVisible();
-  await expect(panel.locator('.hero .today')).toHaveText(new RegExp(`^\\s*きょうの ベル\\s*\\+${today}\\s*ベル\\s*$`));
+  await expect(panel.locator('.hero .today')).toHaveText(new RegExp(`^\\s*今日のベル\\s*\\+${today}\\s*ベル\\s*$`));
   await ctx.close();
 });
 
@@ -126,7 +126,7 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   await expect(a.locator('[data-zukan-first="G"]')).toContainText('1');
   await a.locator('button.tile[data-entry="common-butterfly"]').click();
   const detail = a.locator('[data-zukan-detail="common-butterfly"]');
-  await expect(detail).toContainText('7/4 おきゃくさんが 見つけた');
+  await expect(detail).toContainText('7/4 おきゃくさんが見つけた');
   await expect(detail.locator('[data-zukan-person="G"]')).toContainText('おきゃくさん ×1', { timeout: 5000 });
   // and after a reload, as it was: the record's rows say who found it
   await a.reload();
@@ -134,7 +134,7 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   await fromMenu(a, 'zukan');
   await a.locator('[data-zukan="bug"]').click();
   await a.locator('button.tile[data-entry="common-butterfly"]').click();
-  await expect(a.locator('[data-zukan-detail="common-butterfly"]')).toContainText('7/4 おきゃくさんが 見つけた');
+  await expect(a.locator('[data-zukan-detail="common-butterfly"]')).toContainText('7/4 おきゃくさんが見つけた');
   await ctx.close();
 });
 

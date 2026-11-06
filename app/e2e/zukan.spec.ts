@@ -45,7 +45,7 @@ test('a netted butterfly appears in the ずかん with who found it and when; th
   await page.locator('button.tile[data-entry="common-butterfly"]').click();
   const detail = page.locator('[data-zukan-detail="common-butterfly"]');
   await expect(detail).toContainText('モンシロチョウ');
-  await expect(detail).toContainText('7/4 ウェイが 見つけた');
+  await expect(detail).toContainText('7/4 ウェイが見つけた');
   await expect(detail.locator('.line')).toHaveText(CATCH_LINES['common-butterfly'][0].replace(/\s+/g, ' '));
   // the silhouettes' icons load lazily
   expect(await page.locator('.tile.unknown img').first().getAttribute('loading')).toBe('lazy');

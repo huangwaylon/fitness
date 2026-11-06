@@ -25,20 +25,20 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await openHealth(page);
   await expect(periodSel(page)).toHaveValue('week'); // it opens on 1週
   await expect(sheet(page).locator('[data-group=activity]')).toHaveAttribute('aria-pressed', 'true'); // and on かつどう
-  await expect(sheet(page).locator('[data-group]')).toHaveText(['かつどう', 'からだ']);
+  await expect(sheet(page).locator('[data-group]')).toHaveText(['活動', '体']);
   await pickPeriod(page, 'month');
   // whose data in the title bar, left of けんこう (centred), ✕ at the right; then one row: かつどう / からだ and the
   // period beside them; then the range row
   const bar = sheet(page).locator('.navbar');
   const [w, ttl, x] = [(await whoSel(page).boundingBox())!, (await bar.locator('h2').boundingBox())!, (await bar.locator('button.close').boundingBox())!];
-  await expect(bar.locator('h2')).toHaveText('けんこう');
+  await expect(bar.locator('h2')).toHaveText('健康');
   expect(w.x + w.width).toBeLessThanOrEqual(ttl.x + 1); // left of the title
   expect(Math.abs(w.y + w.height / 2 - (ttl.y + ttl.height / 2))).toBeLessThan(4); // one row
   const sheetBox = (await sheet(page).boundingBox())!;
   expect(Math.abs(ttl.x + ttl.width / 2 - (sheetBox.x + sheetBox.width / 2))).toBeLessThan(3); // the title still centred
   expect(x.x).toBeGreaterThan(ttl.x + ttl.width); // ✕ right of it
   await expect(sheet(page).locator('.health > *').first()).toHaveClass(/sel/);
-  await expect(sheet(page).locator('.health > .sel > .seg')).toHaveAttribute('aria-label', 'どの データ');
+  await expect(sheet(page).locator('.health > .sel > .seg')).toHaveAttribute('aria-label', 'データ');
   await expect(sheet(page).locator('.health > .sel > .seg + .dd select')).toHaveAttribute('data-pick', 'period');
   await expect(sheet(page).locator('.health > .sel + .nav')).toHaveCount(1);
   const [g, p] = [(await sheet(page).locator('[data-group=body]').boundingBox())!, (await periodSel(page).boundingBox())!];
@@ -48,8 +48,8 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   expect(p.x + p.width).toBeLessThanOrEqual(sheetBox.x + sheetBox.width); // nothing past the edge at 393
   await expect(whoSel(page).locator('option')).toHaveText(['ウェイ', 'うめ']);
   await expect(periodSel(page).locator('option')).toHaveText(['1週', '1か月', '3か月', '1年']);
-  await expect(periodSel(page)).toHaveAccessibleName('きかん');
-  await expect(whoSel(page)).toHaveAccessibleName('だれの データ');
+  await expect(periodSel(page)).toHaveAccessibleName('期間');
+  await expect(whoSel(page)).toHaveAccessibleName('誰のデータ');
   await expect(sheet(page).locator('.health .wk')).toHaveCount(0); // no week card: the charts carry the trends
   await expect(sheet(page).locator('.health section.card h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(range(page)).toHaveText('10/2–10/31'); // 1か月 = the 30 days to today
@@ -63,7 +63,7 @@ test('the tab: one person at a time, a card per metric; かつどう (steps, the
   await expect(sheet(page).locator('.mc[data-metric=steps] header [data-goal]')).toHaveText('目標 8,000歩 以上');
   await expect(sheet(page).locator('.mc header button[data-goal]')).toHaveCount(4); // every card's goal is set there
   await expect(sheet(page).locator('.mc[data-metric=stand] header button[data-goal]')).toHaveText('目標 120分 以上'); // the ring's 120 until set
-  await expect(sheet(page).locator('.health > .note')).toContainText('数字を そのまま');
+  await expect(sheet(page).locator('.health > .note')).toContainText('数字をそのまま');
   // one series: every bar in this phone's person's colour
   await expect(sheet(page).locator('.mc path.bar.pB')).toHaveCount(0);
   expect(await sheet(page).locator('.mc path.bar.pA').count()).toBeGreaterThan(100);
@@ -219,7 +219,7 @@ test('period: 1週 by day, 3か月 by week, 1年 by month; ‹ › page through 
   await expect(range(page)).toHaveText('10/25–10/31');
   await expect(bars('A')).toHaveCount(7);
   await pickPeriod(page, 'quarter');
-  await expect(sheet(page).locator('.health .nav .rl small')).toHaveText('1週ごとの 1日平均');
+  await expect(sheet(page).locator('.health .nav .rl small')).toHaveText('1週ごとの1日平均');
   await expect(bars('A')).toHaveCount(9); // 13 weeks, the demo's data in the last 9
   await pickPeriod(page, 'year');
   await expect(range(page)).toHaveText('2025/11–2026/10');
@@ -283,7 +283,7 @@ test('a tap on a bar shows that day’s one value (and again closes it)', async 
   await chart.click({ position: at(5) });
   await expect(tip).toHaveCount(0);
   await chart.click({ position: at(6) }); // today: still running
-  await expect(tip.locator('b')).toContainText('きょう（とちゅう）');
+  await expect(tip.locator('b')).toContainText('今日（途中）');
   await pickWho(page, 'B');
   await expect(tip).toHaveCount(0); // another person closes the callout
 });
@@ -299,7 +299,7 @@ test('the dumbbell opens it at 1週, every time; whose data is kept for the sess
   await bell.click();
   await expect(sheet(page).locator('.health .mc')).toHaveCount(4);
   await expect(sheet(page).locator('.tabs')).toHaveCount(0); // a popup of its own, not a panel tab
-  await expect(sheet(page).locator('h2')).toHaveText('けんこう');
+  await expect(sheet(page).locator('h2')).toHaveText('健康');
   expect(js.length).toBeGreaterThan(before); // its own chunk
   await expect(whoSel(page)).toHaveValue('A');
   await pickPeriod(page, 'quarter');
@@ -323,7 +323,7 @@ test('no Health data yet (a new couple): every card is there with its goal, sayi
   const cards = sheet(page).locator('.health section.card');
   await expect(cards.locator('h3')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(cards.locator('[data-health-empty]')).toHaveCount(4);
-  await expect(cards.locator('[data-health-empty]').first()).toHaveText('まだ きろくが ないよ');
+  await expect(cards.locator('[data-health-empty]').first()).toHaveText('まだ記録がありません');
   await expect(sheet(page).locator('.health svg[role=img]')).toHaveCount(0); // no empty charts
   await expect(sheet(page).locator('.health .note')).toHaveCount(0);
   const steps = sheet(page).locator('button[data-goal=steps-goal]');
@@ -385,30 +385,30 @@ test('every chart has its goal: a chip at the card’s upper right with its dire
   const ex = sheet(page).locator('.mc[data-metric=exercise]');
   await ex.locator('button[data-goal]').click();
   await expect(ex.locator('form.tray')).toContainText('エクササイズの目標（1日）');
-  await expect(ex.locator('form.tray')).toContainText('ベルは 60分のまま');
+  await expect(ex.locator('form.tray')).toContainText('ベルは60分のまま');
   await ex.locator('form.tray').getByRole('textbox').fill('33');
-  await ex.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
+  await ex.locator('form.tray').getByRole('button', { name: '決定' }).click();
   await expect(ex.locator('form.tray').getByRole('textbox')).toHaveAttribute('aria-invalid', 'true'); // in 5s
   await ex.locator('form.tray').getByRole('textbox').fill('30');
-  await ex.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
+  await ex.locator('form.tray').getByRole('button', { name: '決定' }).click();
   await expect(ex.locator('button[data-goal]')).toHaveText('目標 30分 以上');
-  await expect(sheet(page).getByRole('status')).toContainText('エクササイズの目標を かえました');
+  await expect(sheet(page).getByRole('status')).toContainText('エクササイズの目標を変更しました');
   await expect(ex.locator('[data-goal-line]')).toHaveText(/^目標 30分\s以上$/); // the chart's line, worded as the chip
   await expect(ex.locator('svg[role=img]')).toHaveAttribute('aria-label', /目標 30分\s以上/);
   // からだ: each its own, its direction (weight and BMI near a value, body fat at most, lean mass at least)
   await sheet(page).locator('[data-group=body]').click();
-  await expect(chips).toHaveText(['目標 66.0 kg 前後', /^目標 (まだ|[\d.]+%\s以下)$/, '目標 まだ', '目標 まだ']);
+  await expect(chips).toHaveText(['目標 66.0 kg 前後', /^目標(なし| [\d.]+%\s以下)$/, '目標なし', '目標なし']);
   expect(await sheet(page).locator('.health section.card').evaluateAll((cs) => cs.map((c) => c.getAttribute('data-goal-dir')))).toEqual(['target', 'atMost', 'target', 'atLeast']);
   const bmi = sheet(page).locator('.bc[data-metric=bmi]');
   await bmi.locator('button[data-goal]').click();
   await expect(bmi.locator('form.tray')).toContainText('目標BMI');
   await bmi.locator('form.tray').getByRole('textbox').fill('22');
-  await bmi.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
+  await bmi.locator('form.tray').getByRole('button', { name: '決定' }).click();
   await expect(bmi.locator('button[data-goal]')).toHaveText('目標 22.0 前後');
   const lean = sheet(page).locator('.bc[data-metric=lean_kg]');
   await lean.locator('button[data-goal]').click();
   await lean.locator('form.tray').getByRole('textbox').fill('52.5');
-  await lean.locator('form.tray').getByRole('button', { name: 'けってい' }).click();
+  await lean.locator('form.tray').getByRole('button', { name: '決定' }).click();
   await expect(lean.locator('button[data-goal]')).toHaveText('目標 52.5 kg 以上');
   await expect(lean.locator('.key .k-goal')).toHaveCount(1);
 });

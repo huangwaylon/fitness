@@ -30,16 +30,16 @@ async function openBoard(p: Page) {
 }
 async function write(p: Page, text: string) {
   // a note being read: put it back first (the controls are under it)
-  if (await view(p).locator('[data-board-read]').count()) await view(p).getByRole('button', { name: 'とじる' }).click();
-  await view(p).getByRole('button', { name: 'かきこむ' }).click();
+  if (await view(p).locator('[data-board-read]').count()) await view(p).getByRole('button', { name: '閉じる' }).click();
+  await view(p).getByRole('button', { name: '書き込む' }).click();
   const field = view(p).getByRole('textbox', { name: 'メモ' });
   await expect(field).toBeFocused();
   await field.fill(text);
-  await view(p).getByRole('button', { name: 'はる' }).click();
+  await view(p).getByRole('button', { name: '貼る' }).click();
   await expect(note(p, text)).toBeVisible();
 }
 async function close(p: Page) {
-  await view(p).getByRole('button', { name: /もどる/ }).click();
+  await view(p).getByRole('button', { name: /戻る/ }).click();
   await expect(view(p)).toBeHidden();
 }
 
@@ -56,14 +56,14 @@ test('a tap walks my villager up to the board, it opens, and a note written ther
   await expect(view(a)).toContainText('1 / 1');
   await write(a, 'きょうは 1まんぽ あるいた！');
   // the counter and the caps: 4 lines and 100 characters at most, as typed
-  await view(a).getByRole('button', { name: 'かきこむ' }).click();
+  await view(a).getByRole('button', { name: '書き込む' }).click();
   const field = view(a).getByRole('textbox', { name: 'メモ' });
   await field.fill('1\n2\n3\n4\n5');
   await expect(field).toHaveValue('1\n2\n3\n4');
   await field.fill('あ'.repeat(120));
   await expect(field).toHaveValue('あ'.repeat(100));
-  await expect(view(a)).toContainText('あと 0もじ');
-  await view(a).getByRole('button', { name: 'やめる' }).click();
+  await expect(view(a)).toContainText('あと0文字');
+  await view(a).getByRole('button', { name: 'キャンセル' }).click();
   // a note reads in full; text is only ever text
   await write(a, '<b>やあ</b>');
   await note(a, '<b>やあ</b>').click();
@@ -89,9 +89,9 @@ test('a second phone sees the note at once; an author edits and takes down their
   // ウェイ edits it: うめ sees the new text
   await a.bringToFront();
   await note(a, 'つりたいかい 3じから').click();
-  await view(a).getByRole('button', { name: 'かきなおす' }).click();
+  await view(a).getByRole('button', { name: '編集' }).click();
   await view(a).getByRole('textbox', { name: 'メモ' }).fill('つりたいかい 4じから');
-  await view(a).getByRole('button', { name: 'なおす' }).click();
+  await view(a).getByRole('button', { name: '保存' }).click();
   await expect(note(a, 'つりたいかい 4じから')).toBeVisible();
   await expect(note(a, 'つりたいかい 3じから')).toHaveCount(0);
   await close(a);
@@ -99,16 +99,16 @@ test('a second phone sees the note at once; an author edits and takes down their
   await expect(note(b, 'つりたいかい 4じから')).toBeVisible();
   // うめ can't edit ウェイ's note, but may take it down
   await note(b, 'つりたいかい 4じから').click();
-  await expect(view(b).getByRole('button', { name: 'かきなおす' })).toHaveCount(0);
+  await expect(view(b).getByRole('button', { name: '編集' })).toHaveCount(0);
   await write(b, 'うめの メモ');
   await note(b, 'つりたいかい 4じから').click();
-  await view(b).getByRole('button', { name: 'はがす' }).click();
-  await view(b).getByRole('button', { name: 'ほんとうに はがす？' }).click();
+  await view(b).getByRole('button', { name: '削除' }).click();
+  await view(b).getByRole('button', { name: '本当に削除しますか？' }).click();
   await expect(note(b, 'つりたいかい 4じから')).toHaveCount(0);
   // うめ takes down her own
   await note(b, 'うめの メモ').click();
-  await view(b).getByRole('button', { name: 'はがす' }).click();
-  await view(b).getByRole('button', { name: 'ほんとうに はがす？' }).click();
+  await view(b).getByRole('button', { name: '削除' }).click();
+  await view(b).getByRole('button', { name: '本当に削除しますか？' }).click();
   await expect(view(b).locator('[data-note]')).toHaveCount(0);
   await expect(view(b)).toHaveAttribute('data-board-view', '3d');
   await close(b);
@@ -127,20 +127,20 @@ test('the guest posts and edits its own, and takes down anyone’s as a member d
   await openBoard(g);
   await expect(note(g, 'ようこそ！')).toBeVisible();
   await note(g, 'ようこそ！').click();
-  await expect(view(g).getByRole('button', { name: 'はがす' })).toBeVisible();
-  await expect(view(g).getByRole('button', { name: 'かきなおす' })).toHaveCount(0);
+  await expect(view(g).getByRole('button', { name: '削除' })).toBeVisible();
+  await expect(view(g).getByRole('button', { name: '編集' })).toHaveCount(0);
   await write(g, 'おじゃまします');
   await note(g, 'おじゃまします').click();
-  await view(g).getByRole('button', { name: 'かきなおす' }).click();
+  await view(g).getByRole('button', { name: '編集' }).click();
   await view(g).getByRole('textbox', { name: 'メモ' }).fill('おじゃましました');
-  await view(g).getByRole('button', { name: 'なおす' }).click();
+  await view(g).getByRole('button', { name: '保存' }).click();
   await expect(note(g, 'おじゃましました')).toBeVisible();
   await close(g);
   // ウェイ sees the guest's note, and may take it down
   await openBoard(a);
   await expect(note(a, 'おじゃましました')).toBeVisible();
   await note(a, 'おじゃましました').click();
-  await expect(view(a).getByRole('button', { name: 'はがす' })).toBeVisible();
+  await expect(view(a).getByRole('button', { name: '削除' })).toBeVisible();
   await ctx.close();
 });
 
@@ -173,7 +173,7 @@ test('「もどる」 sits under the HUD, never over it, and the face under both
   const hud = (await hudMenu(page).boundingBox())!;
   await openBoard(page);
   await expect(view(page)).toHaveAttribute('data-board-view', '3d');
-  const back = (await view(page).getByRole('button', { name: /もどる/ }).boundingBox())!;
+  const back = (await view(page).getByRole('button', { name: /戻る/ }).boundingBox())!;
   expect(back.y).toBeGreaterThanOrEqual(hud.y + hud.height);
   // the face (its notes' tap areas lie over the 3D board's, once the camera is there)
   const face = view(page).getByRole('group', { name: 'けいじばん' });
@@ -243,7 +243,7 @@ test('on the 3D island the face rides on the board’s cork, in front of NH’s 
     return w.__world3d.away(...w.__world.mine());
   });
   await expect.poll(away).toBe(true);
-  await view(page).getByRole('button', { name: 'もどる' }).click();
+  await view(page).getByRole('button', { name: '戻る' }).click();
   await expect.poll(away).toBe(false);
 });
 
@@ -256,7 +256,7 @@ test('writing with the keyboard up: the field, its controls and the face with th
   await openBoard(page);
   await expect(view(page)).toHaveAttribute('data-board-view', '3d');
   await expect(view(page)).toHaveAttribute('data-ready', 'true', { timeout: 10_000 });
-  await view(page).getByRole('button', { name: 'かきこむ' }).click();
+  await view(page).getByRole('button', { name: '書き込む' }).click();
   const field = view(page).getByRole('textbox', { name: 'メモ' });
   await expect(field).toBeFocused();
   await keyboard(page, KEYBOARD_PX);
@@ -279,15 +279,15 @@ test('writing with the keyboard up: the field, its controls and the face with th
   await expect.poll(async () => (await aboveKeyboard(page, '[data-board-face-box]')).ok, { timeout: 10_000 }).toBe(true);
   // up again and posted: the note on the face, the face above the keyboard
   await keyboard(page, KEYBOARD_PX);
-  await view(page).getByRole('button', { name: 'はる' }).click();
+  await view(page).getByRole('button', { name: '貼る' }).click();
   await expect(view(page).locator('[data-note]')).toHaveCount(1);
   expect(await drawn(page)).toEqual([text]);
   await expect.poll(async () => (await aboveKeyboard(page, '[data-board-face-box]')).ok, { timeout: 10_000 }).toBe(true);
-  // a draft given up (やめる) leaves the face as it was
-  await view(page).getByRole('button', { name: 'かきこむ' }).click();
+  // a draft given up (キャンセル) leaves the face as it was
+  await view(page).getByRole('button', { name: '書き込む' }).click();
   await view(page).getByRole('textbox', { name: 'メモ' }).fill('やっぱり やめ');
   expect(await drawn(page)).toEqual(['やっぱり やめ', text]);
-  await view(page).getByRole('button', { name: 'やめる' }).click();
+  await view(page).getByRole('button', { name: 'キャンセル' }).click();
   expect(await drawn(page)).toEqual([text]);
 });
 
