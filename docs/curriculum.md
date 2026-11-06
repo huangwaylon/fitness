@@ -438,6 +438,7 @@ Each increment takes 1–3 agent-days, lands on main green, and ships something 
 | 5 | Visuals v1: the SVG scene kit (8 backdrops), channel frames, transcript karaoke and sound marks at the reveal. | 2–3 |
 | 6 | ✅ **Done 2026-11-06.** Conditions in the pipeline: noise beds, phone band, PA reverb; the アナウンス pack (30 PA, voicemail and IVR items) as a quiz level mix. As built: level 5 「アナウンス」; beds synthesised from our own clips (no third-party audio) at +15 / +10 dB; 79 level-4 clips re-mixed (docs/kikimimi.md "Conditions", "The アナウンス pack"). | 2 |
 | 7 | ✅ **Done 2026-11-06.** スピード はしご as a quiz mode: 30 ladders (0.8× → 1.4× by atempo, a different question a rung, the score the rungs climbed in order on the first listen; the mode on the seed's bit 1, no relay change; きろく's fastest comfortable speed; docs/kikimimi.md "スピード はしご"). | 1–2 |
+| — | ✅ **Content sprint, 2026-11-06.** More content and variety in the harder levels (the user: "too much repetition"): もり +170 items into level 4 (261 in all), やま 200 as level 6, ほし 115 as level 7 (news, talks, debates; 2-4 sentences); `lv` 1-8; the host's seed with the least overlap with its last 6 games, solo and にがて れんしゅう decks fresh first; a cross-bank near-duplicate test (docs/kikimimi.md "Levels 6 and 7", "Variety"). | 1 |
 | 8 | Framework: `RoundSession`, `GameDef`, `play` intent (relay first), the quiz migrated. | 3 |
 | 9 | YAML content compiler and packs, SW cache class, `/dev/listen`. | 3 |
 | 10 | ことば タイル with reductions: 60 sentences. | 2 |
