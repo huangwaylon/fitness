@@ -25,7 +25,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import type { Who } from '#lib/types.ts';
-  import { DEVICE, localKV } from '#lib/sync/storage.ts';
+  import { DEVICE, firstOn, localKV } from '#lib/sync/storage.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
@@ -55,7 +55,7 @@
   let greeting = $state<{ text: string; late: boolean } | null>(null);
   function greet() {
     const day = board.today, days = board.countdown, late = canEdit && tasks.length ? board.overall.overdue : 0;
-    if (!day || kv?.getItem(DEVICE.weddingGreet) === day) return;
+    if (!day || !firstOn(DEVICE.weddingGreet, day)) return;
     greeting =
       days === null ? { text: t('wed.hello.none'), late: false }
       : days === 0 ? { text: t('wed.hello.day'), late: false }
@@ -63,11 +63,6 @@
       : !tasks.length ? { text: t('wed.hello.empty'), late: false }
       : late > 0 ? { text: t(late === 1 ? 'wed.hello.late1' : 'wed.hello.late', { n: late }), late: true }
       : { text: days <= 30 ? t('wed.hello.near') : t('wed.hello.days', { n: formatNum(days) }), late: false };
-    try {
-      kv?.setItem(DEVICE.weddingGreet, day);
-    } catch {
-      /* full or private: the line again next time */
-    }
   }
   function heard() {
     if (greeting?.late) {

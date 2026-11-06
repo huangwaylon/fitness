@@ -10,10 +10,3 @@ export function dayRecord<T extends object>(key: string, blank: T) {
   };
   return { read, patch: (date: string, p: Partial<T>): void => void writeJson(localKV(), key, { ...read(date), ...p }) };
 }
-
-/** True the first time this is asked on `date` on this phone (it then remembers the date under `key`). */
-export function firstOn(key: string, date: string): boolean {
-  if (readJson<string>(localKV(), key) === date) return false;
-  writeJson(localKV(), key, date);
-  return true;
-}

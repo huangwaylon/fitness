@@ -4,14 +4,13 @@
   // greet the island in a wedding pose: they turn to each other, bow and glow with hearts, under a burst of confetti
   // (the confetti the first time the island opens that day on this phone). Fireworks at night: IslandScene's sky.
   // Reese and Cyrus are visitors (Visitor.svelte). Decoration only: no taps, no ベル.
-  import { firstOn } from './dayRecord.ts';
   import { onMount } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { su } from './scene.ts';
   import { ARCH } from './world.ts';
   import { site } from './site.svelte.ts';
   import { useWorld } from './camera.svelte.ts';
-  import { SCENE } from '#lib/sync/storage.ts';
+  import { SCENE, firstOn } from '#lib/sync/storage.ts';
   import { actors, addFx, later, setEmote, setMotion } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
 
