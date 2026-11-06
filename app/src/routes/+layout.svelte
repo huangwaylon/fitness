@@ -159,7 +159,7 @@
 <!-- The harvest is a real modal, so everything behind it is inert. -->
 <div class="page" data-page={onPair ? 'pair' : pageKind} inert={showHarvest && !!Harvest}>
 {#if week.status === 'unconfigured'}
-  <main class="state">
+  <main class="state sheet-copy">
     <span class="nook"><OfficialArt key="host/tom-nook" alt="" size="var(--nook-h)" eager>
       {#snippet fallback()}<Host pose="stand" size={96} />{/snippet}
     </OfficialArt></span>
@@ -169,7 +169,7 @@
 {:else if onPair}
   {@render children()}
 {:else if !week.view && week.status === 'error'}
-  <main class="state">
+  <main class="state sheet-copy">
     <span class="nook"><OfficialArt key="host/tom-nook" alt="" size="var(--nook-h)" eager>
       {#snippet fallback()}<Host pose="stand" size={96} />{/snippet}
     </OfficialArt></span>
@@ -177,7 +177,7 @@
     <button type="button" class="btn" data-sfx="sync" onclick={() => week.refresh()}>{t('state.retry')}</button>
   </main>
 {:else if !week.view}
-  <main class="state" aria-busy="true">
+  <main class="state sheet-copy" aria-busy="true">
     <span class="bob"><Host size={96} animate={false} eager /></span>
     <p>{t('state.loading')}</p>
   </main>

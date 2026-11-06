@@ -64,7 +64,7 @@
 <!-- The key field and the button ride above the on-screen keyboard (--kb, withKeyboardInset): the page gains --kb of
      bottom padding so it can scroll, and on focus the whole form (field + つなぐ) scrolls to just above the keyboard
      (data-kb-scroll). No transform and no sticky lift: either would move the button over the art or the field. -->
-<main class="pair" {@attach withKeyboardInset}>
+<main class="pair sheet-copy" {@attach withKeyboardInset}>
   <button type="button" class="lang" data-sfx="tick" onclick={() => setLocale(i18n.locale === 'ja' ? 'en' : 'ja')}>
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-globe" /></svg>{i18n.locale === 'ja' ? 'English' : '日本語'}
   </button>

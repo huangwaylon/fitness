@@ -491,7 +491,7 @@
   export const snapshot = () => ({ sel: sel ? { ...sel, x: at[0], z: at[1], on: onto?.id ?? null } : null, why, tab, note: note?.k ?? null });
 </script>
 
-<div class="te edit-tray" data-tent-edit>
+<div class="te edit-tray sheet-copy" data-tent-edit>
   {#if sel}
     <div class="bar" role="toolbar" aria-label={nameOf(sel.item)}>
       <span class="say" class:bad={!!why || !!note} data-why={why ?? ''} data-note={note?.k ?? ''} aria-live="polite">{note ? note.text : why ? t(`tent.why.${why}`) : nameOf(sel.item)}</span>

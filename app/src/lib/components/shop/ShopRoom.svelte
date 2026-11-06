@@ -213,7 +213,7 @@
     <div class="desk" aria-hidden="true"><span class="register"></span></div>
   </section>
 
-  <section class="menu">
+  <section class="menu sheet-copy">
     <Segmented items={[{ id: 'sell', label: t('shop.tab.sell') }, { id: 'buy', label: t('shop.tab.buy') }]} value={tab} label={t('shop.title')} attr="shop-tab" onpick={switchTab} />
 
     {#if tab === 'sell'}

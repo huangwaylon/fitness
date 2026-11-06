@@ -575,7 +575,7 @@
   const footText = (o: Obj) => footOf(cur, o).join('×');
 </script>
 
-<div class="ed" data-editor data-tool={tool}>
+<div class="ed sheet-copy" data-editor data-tool={tool}>
   <aside class="tools">
     <h1>しまの エディター <small>{me === 'A' ? 'ウェイ' : me === 'B' ? 'うめ' : 'おきゃくさん'}</small></h1>
     <div class="row" role="group" aria-label="tools">

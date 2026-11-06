@@ -25,9 +25,14 @@ body {
   transition: background-color var(--dur-base) var(--ease-soft), color var(--dur-base);
 }
 html[lang="ja"] * { letter-spacing: 0 !important; }
-/* Japanese lines break only where the copy has a space (the kids-style 分かち書き) or after 、。！, never inside
-   a word (ごほう / び, がんばろ / う), the same on iPhone Safari and in Chrome (keep-all is WebKit-safe; auto-phrase is not) */
+/* Two zones (docs/design.md "Copy"). The world (the island and its rooms: lines, bubbles, signs, the HUD, the menu's
+   pills) is kids-style spaced kana (分かち書き): its lines break only at a space or after 、。！, never inside a word
+   (ごほう / び), the same on iPhone Safari and in Chrome (keep-all is WebKit-safe; auto-phrase is not). Everything
+   opened from it (a sheet, panel, dialog, form, a page of its own: `.sheet-copy`) is normal Japanese with kanji and
+   breaks as such, between any two characters, kinsoku kept (line-break: strict above). A bubble is always the world's. */
 html[lang="ja"] body { word-break: keep-all; }
+html[lang="ja"] :is(dialog, [role="dialog"], .sheet-copy) { word-break: normal; }
+html[lang="ja"] .bubble { word-break: keep-all; }
 h1, h2, h3 { font-family: var(--font-ui); font-weight: 700; margin: 0; line-height: 1.2; font-size: var(--fs-title); }
 button { font: inherit; color: inherit; }
 button, [role="button"], [role="switch"], a {
