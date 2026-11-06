@@ -710,19 +710,21 @@ test('search rows: a product’s brand on its second line, the same name, brand 
   expect(await overflowOf(page)).toEqual([]);
 });
 
-// The everyday name (foodUi.ts glossOf): a lab name's Japanese alias under it, never the English, else nothing; and
-// each row's category tile (FoodThumb, 48 px; the recipe's ingredients 40 px), the rows no taller.
-test('search rows: a category tile and the everyday name (キャッサバでん粉: タピオカ), the rows as tall; the recipe’s ingredients’ tiles', async ({ page }) => {
+// The everyday name (foodUi.ts glossOf): an older snapshot's catalogue name now, else the data's vetted gloss (none
+// shipped yet: never a raw alias or the English); and each row's category tile (FoodThumb, 48 px; the recipe's
+// ingredients 40 px), the rows no taller.
+test('search rows: a category tile, no raw alias or English under the name, the rows as tall; the recipe’s ingredients’ tiles and 鶏もも肉', async ({ page }) => {
   await openFood(page, '&as=B');
   await sheet(page).locator('[data-add=d]').click();
   await sheet(page).locator('[data-food-q]').fill('キャッサバでん粉');
   const row = sheet(page).locator('[data-food-results] button.it', { hasText: 'キャッサバでん粉' }).first();
-  await expect(row.locator('[data-gloss]')).toHaveText('タピオカ', { timeout: 15_000 });
+  await expect(row).toBeVisible({ timeout: 15_000 });
+  await expect(row.locator('[data-gloss]')).toHaveCount(0); // its alias タピオカ: until the data vets it
   await expect(row.locator('.meta')).not.toContainText('100gあたり');
   await sheet(page).locator('[data-food-q]').fill('コーヒー牛乳');
   const milk = sheet(page).locator('[data-food-results] button.it', { hasText: 'コーヒー牛乳' }).first();
   await expect(milk).toBeVisible();
-  await expect(milk.locator('[data-gloss]')).toHaveCount(0); // 珈琲 is a spelling, Coffee milk English
+  await expect(milk.locator('[data-gloss]')).toHaveCount(0); // never Coffee milk
   await sheet(page).locator('[data-food-q]').fill('うど');
   const rows = sheet(page).locator('[data-food-results] button.it');
   await expect(rows.first()).toBeVisible();
@@ -746,6 +748,24 @@ test('search rows: a category tile and the everyday name (キャッサバでん�
   expect([b!.width, b!.height].map(Math.round)).toEqual([40, 40]);
   await expect(th.first()).toHaveAttribute('data-cat', '肉');
   await expect(sheet(page).locator('[data-recipe-items] li').first().locator('[data-gloss]')).toHaveText('鶏もも肉'); // the snapshot's older name
+  expect(await overflowOf(page)).toEqual([]);
+});
+
+// The amount's picture (FoodThumb, 160 px across the card; its category's tile until there are pictures) above the
+// name, and no line under it without an everyday name or a 「これは…」 description.
+test('the amount: the category’s picture above the name, no line under it without a gloss or a description', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('キャッサバでん粉');
+  await sheet(page).locator('[data-food-results] button.it', { hasText: 'キャッサバでん粉' }).first().click({ timeout: 15_000 });
+  const head = sheet(page).locator('.card.head');
+  await sheet(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished))); // the level's slide-in
+  const [pic, name, card] = await Promise.all([head.locator('[data-thumb]').boundingBox(), head.locator('h3').boundingBox(), head.boundingBox()]);
+  expect(Math.round(pic!.height)).toBe(160);
+  expect(pic!.width).toBeGreaterThan(card!.width - 40); // the card's width
+  expect(pic!.y + pic!.height).toBeLessThan(name!.y);
+  await expect(head.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'cat');
+  await expect(head.locator('[data-food-about]')).toHaveCount(0);
   expect(await overflowOf(page)).toEqual([]);
 });
 

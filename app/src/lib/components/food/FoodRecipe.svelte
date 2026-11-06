@@ -10,7 +10,7 @@
   import { kcalText } from '../kiroku/fmt.ts';
   import Avatar from '../characters/Avatar.svelte';
   import FoodThumb from './FoodThumb.svelte';
-  import { amountText, catalogOf, catOf, commonAliases, foodDbNow, glossOf, itemOf, servingOnly, type RecipeDraft } from './foodUi.ts';
+  import { amountText, catalogOf, catOf, foodDbNow, glossOf, itemOf, servingOnly, type RecipeDraft } from './foodUi.ts';
 
   interface Props {
     draft: RecipeDraft;
@@ -47,7 +47,7 @@
 
 {#snippet cells(it: RepeatItem)}
   {@const db = foodDbNow()}
-  {@const gl = glossOf(catalogOf(db, it.f.id) ?? itemOf(it.f, null), it.f.n, commonAliases(db))}
+  {@const gl = glossOf(catalogOf(db, it.f.id) ?? itemOf(it.f, null), it.f.n)}
   <FoodThumb cat={catOf(db, it.f.id)} size={40} />
   <span class="nm">{it.f.n}</span>
   <small class="amt"><span>{amountText(it)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
