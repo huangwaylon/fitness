@@ -22,7 +22,7 @@
   import type { Trip } from '#lib/travel/types.ts';
   import type { Who } from '#lib/types.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { undoBanner } from '#lib/store/actions.ts';
+  import { undoBanner, UNDO_MS } from '#lib/store/actions.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { tagOf, villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
@@ -31,8 +31,6 @@
 
   let { trip }: { trip: Trip } = $props();
 
-  /** A removal's and a reset's とりけす window (the banner's life; sent after it). */
-  const UNDO_MS = 5000;
   /** A name on the one-line undo banner at most (characters). */
   const BANNER_NAME = 12;
   /** The celebration's length: the stamp's slam, Orville's line. */

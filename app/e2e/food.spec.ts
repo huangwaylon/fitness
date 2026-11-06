@@ -21,7 +21,7 @@ async function openFood(page: Page, as = '', date = `&date=${DATE}`) {
 /** What sticks out past the open sheet's right edge (its first three, by class): nothing, on every level (once a
  *  level's slide-in has played). */
 const overflowOf = (page: Page) => sheet(page).evaluate(async (d) => {
-  await Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished));
+  await Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))); // (one cancelled: done too)
   const right = d.getBoundingClientRect().right;
   return [...d.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > right + 0.5).map((e) => e.className).slice(0, 3);
 });
@@ -815,7 +815,7 @@ test('pictures: ごはん’s row and amount show its イメージ (badge, alt),
   await sheet(page).getByRole('button', { name: 'もどる' }).click();
   await sheet(page).getByRole('button', { name: 'もどる' }).click();
   await sheet(page).locator('[data-food-credits] button').click();
-  await expect(sheet(page).locator('[data-credit-img]')).toContainText('AI生成のイメージ');
+  await expect(sheet(page).locator('[data-credit-img]')).toContainText('AI生成の イメージ');
 });
 
 test('pictures: a sheet that fails to load leaves the category’s tile, no broken image', async ({ page }) => {
@@ -828,6 +828,54 @@ test('pictures: a sheet that fails to load leaves the category’s tile, no brok
   await expect(th.locator('img')).toHaveCount(0); // the failed cell is taken out
   await expect(th).toHaveAttribute('data-thumb', 'cat');
   await expect(th).toHaveAttribute('data-cat', '主食');
+});
+
+// じょうたい (a food in its states): one chip per state with that state's kcal; a portion label the state also has stays
+// picked at its own grams (1/2枚 125 g 生 → 90 g 焼き), typed grams stay; the line says why for 生 or 乾; ついか logs the
+// state picked, and さいきん keeps it.
+test('じょうたい: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼き, さいきん keeps it; typed grams stay; スパゲッティ 乾’s line', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('鶏もも');
+  await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^鶏もも肉 皮つき(✓|$)/ }) }).click({ timeout: 15_000 });
+  const chips = sheet(page).locator('[data-states] [data-state]');
+  await expect(chips).toHaveText([/^生/, /^ゆで/, /^焼き/]);
+  await expect(sheet(page).locator('[data-state=生]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-state-why]')).toHaveText('パックの重さなら 生');
+  await expect(sheet(page).locator('.chip[aria-pressed=true][data-portion]')).toContainText('1/2枚');
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('125');
+  await expect(sheet(page).locator('[data-state=焼き] small')).toHaveText('198 kcal'); // its kcal at 90 g, before it is picked
+  await sheet(page).locator('[data-state=焼き]').click();
+  await expect(sheet(page).locator('[data-state=焼き]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('.card.head h3')).toHaveText('鶏もも肉 皮つき 焼き');
+  await expect(sheet(page).locator('.chip[aria-pressed=true][data-portion]')).toContainText('1/2枚');
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('90');
+  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('198');
+  await expect(sheet(page).locator('[data-state-why]')).toHaveCount(0);
+  // typed grams stay typed across a switch
+  await sheet(page).locator('[data-grams]').fill('150');
+  await sheet(page).locator('[data-state=ゆで]').click();
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('150');
+  await sheet(page).locator('[data-state=焼き]').click();
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('150');
+  await sheet(page).locator('[data-done]').click();
+  await expect(sheet(page).locator('[data-food-added] [data-added]').first()).toContainText('鶏もも肉 皮つき 焼き');
+  // さいきん: the state as logged, its amount opened on it
+  await sheet(page).locator('[data-food-q]').fill('');
+  const recent = sheet(page).locator('[data-food-recent] button.it').first();
+  await expect(recent.locator('.nm')).toHaveText('鶏もも肉 皮つき 焼き');
+  await recent.click();
+  await expect(sheet(page).locator('[data-state=焼き]')).toHaveAttribute('aria-pressed', 'true');
+  await sheet(page).getByRole('button', { name: 'もどる' }).click();
+  // スパゲッティ: ゆで by default, no line; 乾 first, its line
+  await sheet(page).locator('[data-food-q]').fill('スパゲッティ');
+  await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^スパゲッティ(✓|$)/ }) }).first().click();
+  await expect(chips.first()).toHaveText(/^乾/);
+  await expect(sheet(page).locator('[data-state=ゆで]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-state-why]')).toHaveCount(0);
+  await sheet(page).locator('[data-state=乾]').click();
+  await expect(sheet(page).locator('[data-state-why]')).toHaveText('ゆでる前の重さなら 乾');
+  expect(await overflowOf(page)).toEqual([]);
 });
 
 test('category tiles: the night’s tint is darker than the day’s', async ({ page }) => {

@@ -5,7 +5,7 @@
 // the same sentence twice in the game: rewrite one of them (en and ja, before it's voiced).
 import { describe, expect, it } from 'vitest';
 import { isDialogue } from './bank.ts';
-import { BANK } from './source.ts';
+import { AUTHORED as BANK } from './source.ts';
 import { LADDERS } from './ladders.ts';
 
 const STOP = new Set(('a an the to of and or but in on at for is are was were be been it its i you we he she they this that so just do did ' +

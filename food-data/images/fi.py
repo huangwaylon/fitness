@@ -41,6 +41,9 @@ PROMPT = ("A hand-drawn illustration in coloured pencil and soft watercolour of 
           "background is flat plain warm beige kraft paper, colour #F5E4BC, with nothing else in frame: no table, no cloth, "
           "no chopsticks, no garnish that is not described, no text, no border.")
 GEN_PX, STEPS, MAX_ROLL = 512, 9, 2
+# The weights' quantisation: 4 since 2026-11-06 (half the memory, faster on the shared GPU, the same look in a probe);
+# the first ~260 images were q8. Each image's settings are in its sidecar (<png>.json).
+QUANT = int(os.environ.get('FI_QUANT', 4))
 # The checks run only when asked (FI_CHECKS=1: verify and checksheet's rows need 2 vetted references).
 CHECKS = os.environ.get('FI_CHECKS') == '1'
 
@@ -439,7 +442,7 @@ def cmd_gen(keys=None):
             time.sleep(60)  # FI_WATCH=1: keep the model loaded and pick up rows as they are written
             continue
         if model is None:
-            model = ZImage(model_config=ModelConfig.z_image_turbo(), quantize=8)
+            model = ZImage(model_config=ModelConfig.z_image_turbo(), quantize=QUANT)
         for r, roll in due:
             p = gen_path(r, roll)
             p.parent.mkdir(parents=True, exist_ok=True)
@@ -449,6 +452,7 @@ def cmd_gen(keys=None):
             tmp = p.with_suffix('.tmp.png')
             img.save(path=str(tmp))
             tmp.rename(p)
+            p.with_suffix('.json').write_text(json.dumps({'quant': QUANT, 'steps': STEPS, 'px': GEN_PX, 'seed': seed(r['key'], roll), 'prompt_v': PROMPT_V}))
             print(f'gen {r["key"]} r{roll} {time.time() - t:.1f}s', flush=True)
 
 
@@ -556,6 +560,13 @@ def paper_even(im):
     return Image.merge('RGB', [ch.point(lambda v, g=PAPER[i] / med[i]: min(255, round(v * g))) for i, ch in enumerate(im.convert('RGB').split())])
 
 
+def model_of(png):
+    """An image's generator settings, from its sidecar (none: the first images, q8)."""
+    side = png.with_suffix('.json')
+    c = json.loads(side.read_text()) if side.exists() else {'quant': 8, 'steps': 9, 'px': 512}
+    return f"Z-Image-Turbo q{c['quant']} {c['steps']} steps {c['px']}px"
+
+
 def cmd_pack():
     from PIL import Image
     vs = verdicts()
@@ -606,7 +617,7 @@ def cmd_pack():
         if p.name not in keep:
             p.unlink()
     shipped = [{'key': k, 'ja': ship[k]['ja'], 'desc': ship[k]['desc'], 'items': ship[k]['items'], 'roll': state(ship[k], vs)[1],
-                'seed': seed(k, state(ship[k], vs)[1]), 'prompt': desc_hash(ship[k]), 'model': 'Z-Image-Turbo q8 9 steps 512px',
+                'seed': seed(k, state(ship[k], vs)[1]), 'prompt': desc_hash(ship[k]), 'model': model_of(gen_path(ship[k], state(ship[k], vs)[1])),
                 'checked': checked(ship[k], vs)} for k in keys]
     (HERE / 'shipped.json').write_text(json.dumps(shipped, ensure_ascii=False, indent=0) + '\n')
     total = sum((OUT / n).stat().st_size for n in keep)
