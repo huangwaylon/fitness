@@ -1,12 +1,12 @@
 // The demo's relay (docs/backend.md#shared-world): the demo's two players are two tabs of one browser (`?demo` and
 // `?demo&as=B`), so their island is shared through a BroadcastChannel, with the room's rules played by whichever tab
 // sends (the day's world kept in localStorage: first claim wins, one nest per tree per hour, each person's last walk,
-// carried into the next day).
+// carried into the next day; the music stages' last records, newerMusic's rule, replayed to a tab as it opens).
 // The same `Live` as the real socket (sync/live.ts), so the island can't tell them apart; the e2e's two-player tests
 // run on it. Its clock is the island's (clock.ts now(): a `?date=` preview moves the shared day too). Never used
 // outside the demo.
 import { DEMO, localKV, readJson, writeJson } from './storage.ts';
-import { LIVE_V, NEST_GAP_MS, claimOf, guestMaySend, isStored, tokyoDay, type Gone, type Intent, type Relayed, type Who } from '../contract/live-protocol.ts';
+import { LIVE_V, NEST_GAP_MS, claimOf, guestMaySend, isStored, musicLive, newerMusic, tokyoDay, type Gone, type Intent, type MusicRec, type MusicSrc, type Relayed, type Who } from '../contract/live-protocol.ts';
 import { peerOf, type Live, type LiveStatus } from './live.ts';
 import { now } from '#lib/time/clock.ts';
 
@@ -67,6 +67,18 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
     if (m.kind === 'shake' && m.drop === 'nest' && l.log.some((x) => x.kind === 'shake' && x.drop === 'nest' && x.tree === m.tree && m.t - x.t < NEST_GAP_MS)) return false;
     const log = m.kind === 'walk' ? l.log.filter((x) => !(x.kind === 'walk' && x.who === m.who)) : l.log;
     writeJson(localKV(), DEMO.relay, { day: l.day, log: [...log, m].slice(-MAX) });
+    return true;
+  };
+  /** The music stages (the room's `music`): a record kept when it beats the stage's and still says something, else
+   *  the stage's goes back to its sender (as the room tells it what won). */
+  const stages = (): Partial<Record<MusicSrc, MusicRec>> => readJson<Partial<Record<MusicSrc, MusicRec>>>(localKV(), DEMO.music) ?? {};
+  const stageKeep = (m: MusicRec): boolean => {
+    const all = stages(), cur = all[m.src];
+    if ((cur && !newerMusic(m, cur)) || !musicLive(m, m.t)) {
+      if (cur) deliver(cur);
+      return false;
+    }
+    writeJson(localKV(), DEMO.music, { ...all, [m.src]: m });
     return true;
   };
   const post = (w: Wire) => {
@@ -163,6 +175,8 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
           if (c && m.who === me) mine.set(c, { t: m.t });
           if (m.who !== me && (!c || first.get(c) === m)) deliver(m);
         }
+        // the music stages still playing (or stopped lately), mine too
+        for (const m of Object.values(stages())) if (m && musicLive(m, Date.now())) deliver(m);
       });
     },
     stop() {
@@ -177,11 +191,12 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
       setStatus({ connected: false, peer: false, here: [], gone: undefined });
     },
     send(i: Intent) {
-      if (!st.connected || (!st.here.length && !isStored(i))) return false;
+      if (!st.connected || (!st.here.length && !isStored(i) && i.kind !== 'music')) return false;
       if (me === 'G' && !guestMaySend(i)) return false;
       lastT = Math.max(now().getTime(), lastT + 1);
       const m = { ...i, v: LIVE_V, who: me, t: lastT } as Relayed;
       if (isStored(m) && !keep(m)) return true; // refused by the room: it went, and nobody hears it
+      if (m.kind === 'music' && !stageKeep(m)) return true;
       const c = claimOf(m);
       if (c) mine.set(c, { t: m.t });
       post({ k: 'm', m });

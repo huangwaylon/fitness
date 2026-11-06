@@ -89,6 +89,7 @@
   import { actors, addFx, applyStep, busy, eventsQuiet, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { prefetchPlace } from '#lib/sound/sound.svelte.ts';
+  import { enterStage } from '#lib/sound/stage.svelte.ts';
   import { walkGeo, walkable } from './walkGraph.ts';
   import { weedsAt } from './care.ts';
   import { mushroomSpots } from './mushrooms.ts';
@@ -633,7 +634,10 @@
     });
     ro.observe(scroller);
     const hooks = expose();
+    // the island's music stage (K.K., the island's cut-ins: sound/stage.svelte.ts) is heard here
+    const leaveStage = enterStage('isl');
     return () => {
+      leaveStage();
       // (the hooks hold this island: its DOM and its renderer, through a room's visit)
       if (window.__world === hooks) delete window.__world;
       offMove();

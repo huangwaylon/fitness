@@ -29,7 +29,8 @@ const ALLOW: Record<string, string[]> = {
   'ui-state': [...DOMAIN, 'i18n', 'sync'],
   art: ['types', 'ui-state'],
   villagers: ['types', 'art', 'i18n'],
-  sound: ['types', 'time', 'sync', 'i18n', 'random'],
+  // (contract: the music stages' records and their rule, sound/stage.svelte.ts)
+  sound: ['types', 'contract', 'time', 'sync', 'i18n', 'random'],
   // ききみみ クイズ (docs/kikimimi.md): the session's pure state machine over the quiz intent (sync: the Live's type), the
   // bank naming roster ids (a type), the deck seeded by random
   kikimimi: ['types', 'contract', 'sync', 'random', 'villagers'],

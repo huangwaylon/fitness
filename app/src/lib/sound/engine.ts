@@ -937,6 +937,12 @@ export class Engine {
     return this.#decks[this.#front]?.key ?? null;
   }
 
+  /** How far into its file the playing track is (s), or null (none, or not playing). */
+  position(): number | null {
+    const d = this.#decks[this.#front];
+    return d?.key && !d.el.paused ? d.el.currentTime : null;
+  }
+
   stopMusic(): void {
     ++this.#token;
     this.#cancelWrap();

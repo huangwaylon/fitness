@@ -121,7 +121,7 @@ describe('his week', () => {
     // every hour of every day offers a song (the bug: a request only some of the time, for some of the phones)
     for (let wd = 0; wd < 7; wd++) for (let h = 0; h < 24; h++) expect(kkGreeting(kkMode(wd, h), true).asks, `${wd} ${h}`).toBe(true);
     expect(KK_MODES.map(kkBye)).toEqual(['chat.sp.kk-slider.bye', 'chat.sp.kk-slider.byeDay', 'chat.sp.kk-slider.byeNight']);
-    for (const k of ['hello', 'dayHello', 'wake', 'tuning', 'asleep', 'bye', 'byeDay', 'byeNight', 'noSound', 'which', 'playing'])
+    for (const k of ['hello', 'dayHello', 'wake', 'tuning', 'asleep', 'bye', 'byeDay', 'byeNight', 'which', 'playing'])
       for (const c of [ja, en] as Record<string, string>[]) expect(c[`chat.sp.kk-slider.${k}`], k).toBeTruthy();
   });
   test('a beat: asleep a snore; playing a strum (woken at night too); else a strum or an emote; nothing while he speaks', () => {

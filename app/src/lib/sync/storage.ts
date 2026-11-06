@@ -68,7 +68,9 @@ export const DEMO = {
   health: 'island-demo.health',
   /** localStorage: the demo's relay (sync/live-local.ts): `{ day, log }`, the day's shared world both tabs keep. */
   relay: 'island-demo.relay',
-  /** localStorage: when each player's tab last left (sync/live-local.ts: the relay's welcome `gone`). */
+  /** localStorage: the demo's music stages (sync/live-local.ts: the room's `music`, the last record per stage). */
+  music: 'island-demo.music',
+    /** localStorage: when each player's tab last left (sync/live-local.ts: the relay's welcome `gone`). */
   gone: 'island-demo.gone',
   /** localStorage `island-demo.world.<A|B>`: the demo's shared world as each player's tab folded it (store/world.svelte.ts). */
   world: 'island-demo.world',

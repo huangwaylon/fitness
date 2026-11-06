@@ -23,7 +23,10 @@
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
   import { isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
-  import { startSound } from '#lib/sound/sound.svelte.ts';
+  import { musicNow, startSound } from '#lib/sound/sound.svelte.ts';
+  import { acked, bindStage, hear, hush, request, stage } from '#lib/sound/stage.svelte.ts';
+  import { hooksOn } from '#lib/ui-state/preview.ts';
+  import { world } from '#lib/store/world.svelte.ts';
   import { startTaps } from '#lib/sound/taps.ts';
   import { startExactTaps } from '#lib/ui-state/exactTaps.ts';
   import { startModality } from '#lib/components/ui/modality.ts';
@@ -108,6 +111,10 @@
     const stopExactTaps = startExactTaps();
     // Sound (all off by default): unlocks on the first tap, muffles the music under a sheet, the panel or the harvest.
     const stopSound = startSound({ muffled: () => ui.sheets.length > 0 || showHarvest });
+    // the shared music stages (K.K., the stereos: sound/stage.svelte.ts) over the shared world's relay; the e2e's look
+    bindStage({ send: (i) => i.kind === 'music' && world.tell(i), serverNow: () => world.serverNow(), me: () => world.me });
+    const offStage = [world.hear((m) => m.kind === 'music' && hear(m)), world.onAck(acked)];
+    if (hooksOn(new URLSearchParams(location.search))) window.__music = { now: musicNow, stage: () => $state.snapshot(stage), request, hush };
     // every tap's sound (data-sfx) and the "can't" boop (aria-disabled): after startSound, so its unlock runs first
     const stopTaps = startTaps();
     // no focus ring after a touch (focus is still restored for keyboard and VoiceOver users)
@@ -127,6 +134,7 @@
       stopModality();
       stopTaps();
       stopSound();
+      offStage.forEach((f) => f());
       stopViewport();
       stopExactTaps();
       stopTheme();

@@ -57,11 +57,12 @@ export function placeMusic(place: PlaceId | null, files: Files): Want | null {
 /** The opening theme while it plays (a one-shot). */
 export const openingMusic = (files: Files): Want | null => (files.opening ? { key: 'opening', track: files.opening, playing: 'opening', loop: false } : null);
 
-/** What sounds, by priority (the first there): the opening theme (NH's title screen, while it plays), a cut-in (the
- *  wasps, a K.K. song: over everything, indoors too), the room's track (indoors NH plays the building's music even on
- *  an event day), then the island's (the event's track on its day, else the hour's). */
-export function pickMusic<T>(o: { opening?: T | null; cutIn?: T | null; place?: T | null; island?: T | null }): T | null {
-  return o.opening ?? o.cutIn ?? o.place ?? o.island ?? null;
+/** What sounds, by priority (the first there): the opening theme (NH's title screen, while it plays), a cut-in of my
+ *  own (the wasps: over everything, indoors too), the shared stage where I am (K.K., a room's stereo, the island's
+ *  cut-ins: stage.svelte.ts), the room's track (indoors NH plays the building's music even on an event day), then the
+ *  island's (the event's track on its day, else the hour's). */
+export function pickMusic<T>(o: { opening?: T | null; cutIn?: T | null; stage?: T | null; place?: T | null; island?: T | null }): T | null {
+  return o.opening ?? o.cutIn ?? o.stage ?? o.place ?? o.island ?? null;
 }
 
 /** The files a change keeps fetched (engine.ts pin): under a cut-in, what it interrupted (the room's and the island's,
@@ -75,13 +76,10 @@ export function pinsFor(o: { cutIn: CutIn | null; place: Want | null; island: Wa
 }
 
 /** What the settings' note and the Now Playing tile say about the music (null: none); a K.K. song's title is the
- *  cut-in's. */
-export function playingLabel(playing: Playing, hour: number, cutIn: CutIn | null): string | null {
+ *  stage's (`kk`: its song, and whether a stereo's). */
+export function playingLabel(playing: Playing, hour: number, kk: { song: KKTrack; aircheck: boolean } | null): string | null {
   if (playing === 'opening') return t('sound.opening');
   if (playing === 'hour') return t('sound.nowPlaying', { hour });
-  if (playing === 'kk') {
-    const k = cutIn?.kk;
-    return k ? t(cutIn?.from === 'aircheck' ? 'sound.nowPlayingAircheck' : 'sound.nowPlayingTitle', { title: kkTitle(k) }) : null;
-  }
+  if (playing === 'kk') return kk ? t(kk.aircheck ? 'sound.nowPlayingAircheck' : 'sound.nowPlayingTitle', { title: kkTitle(kk.song) }) : null;
   return playing ? t('sound.nowPlayingTitle', { title: t(`sound.title.${playing}`) }) : null;
 }

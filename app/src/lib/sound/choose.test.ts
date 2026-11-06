@@ -35,7 +35,13 @@ describe('musicAt: the island’s own', () => {
   });
 });
 
-describe('pickMusic: opening > cut-in > place > island (event, else hour)', () => {
+describe('pickMusic: opening > cut-in > stage > place > island (event, else hour)', () => {
+  it('the shared stage under my own cut-in and the opening, over the room and the island', () => {
+    expect(pickMusic({ opening: 'o', cutIn: 'wasps', stage: 'kk', place: 'shop', island: 'hour' })).toBe('o');
+    expect(pickMusic({ cutIn: 'wasps', stage: 'kk', place: 'shop', island: 'hour' })).toBe('wasps');
+    expect(pickMusic({ stage: 'stereo', place: 'shop', island: 'hour' })).toBe('stereo');
+    expect(pickMusic({ stage: null, place: 'shop', island: 'hour' })).toBe('shop');
+  });
   it('the first there wins', () => {
     expect(pickMusic({ opening: 'o', cutIn: 'kk', place: 'shop', island: 'hour' })).toBe('o');
     expect(pickMusic({ cutIn: 'kk', place: 'shop', island: 'halloween' })).toBe('kk');
@@ -75,8 +81,8 @@ describe('playingLabel', () => {
     expect(playingLabel('opening', 10, null)).toBeTruthy();
     expect(playingLabel('halloween', 20, null)).toContain(ja ? 'ハロウィン' : 'Halloween');
     const song = { id: 'kk-march', ja: 'けけマーチ', en: 'K.K. March', file: 'kk/kk-march.m4a', start: 0 };
-    const live = playingLabel('kk', 20, { key: 'kk/live/kk-march', track: song, playing: 'kk', loop: false, kk: song, from: 'live' });
-    const air = playingLabel('kk', 20, { key: 'kk/aircheck/kk-march', track: song, playing: 'kk', loop: false, kk: song, from: 'aircheck' });
+    const live = playingLabel('kk', 20, { song, aircheck: false });
+    const air = playingLabel('kk', 20, { song, aircheck: true });
     expect(live).toContain(ja ? 'けけマーチ' : 'K.K. March');
     expect(air).toContain(ja ? 'けけマーチ' : 'K.K. March');
     expect(air).not.toBe(live);

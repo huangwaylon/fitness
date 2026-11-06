@@ -161,9 +161,10 @@ export interface Live {
   serverNow(): number;
   /** Counters (optional: the demo's relay has none). */
   metrics?(): LiveMetrics;
-  /** A kept intent the room refused (its `ack` said `ok: false`: a claim already made, a nest too soon, one it couldn't
-   *  read): called with the intent as sent (optional: the demo's relay has none). */
-  onRefused?(fn: (i: Intent) => void): () => void;
+  /** A numbered intent's `ack`: called with the intent as sent, whether the room took it (`ok` false: refused, a claim
+   *  already made, a nest too soon, one it couldn't read, a music stage stale or over) and its stamp `t` (optional: the
+   *  demo's relay has none). */
+  onAck?(fn: (i: Intent, ok: boolean, t: number) => void): () => void;
 }
 
 /** Reconnect delays: 1 s doubling to 60 s, ±25 % jitter. */
@@ -376,7 +377,7 @@ export function createLive(o: LiveOptions): Live {
   };
   const nextSeq = () => (seq = Math.max(Date.now(), seq + 1));
   const mx: LiveMetrics = { sent: 0, sentBytes: 0, recv: 0, recvBytes: 0, resent: 0, ackMs: [], pending: 0, held: 0, unacked: 0, closed: 0, busy: 0 };
-  const refusedSubs = new Set<(i: Intent) => void>();
+  const ackSubs = new Set<(i: Intent, ok: boolean, t: number) => void>();
   let resend: ReturnType<typeof setTimeout>[] = [];
   /** When the socket last heard anything (liveness), the pong's wait after a probe, the acks' look. */
   let heardAt = 0;
@@ -708,8 +709,8 @@ export function createLive(o: LiveOptions): Live {
           save();
           if (o.at) mx.ackMs = [...mx.ackMs, Date.now() - o.at].slice(-ACKS_KEPT);
           armAcks();
-          // refused (a claim already made: a race lost whose winner this phone never heard, the room's ring past it)
-          if (!m.ok) for (const f of refusedSubs) safe(() => f(o.m as Intent));
+          // (refused: a claim already made, a race lost whose winner this phone never heard, the room's ring past it)
+          for (const f of ackSubs) safe(() => f(o.m as Intent, m.ok, m.t));
           return;
         }
         case 'replay':
@@ -755,7 +756,8 @@ export function createLive(o: LiveOptions): Live {
           return;
         }
         default:
-          if (m.who === st.me) return;
+          // (a music stage of mine: the room's record of it, at its hello or when mine lost)
+          if (m.who === st.me && m.kind !== 'music') return;
           if (m.kind === 'saved') return changed({ who: m.who, what: 'event' });
           if (isStored(m) && m.t > lastWorld) since.set((lastWorld = m.t));
           for (const f of subs) safe(() => f(m));
@@ -872,9 +874,9 @@ export function createLive(o: LiveOptions): Live {
     status: () => st,
     serverNow: () => Date.now() + offset,
     metrics: () => ({ ...mx, pending: outbox.size, held: [...outbox.values()].filter((o) => o.off).length }),
-    onRefused(fn) {
-      refusedSubs.add(fn);
-      return () => void refusedSubs.delete(fn);
+    onAck(fn) {
+      ackSubs.add(fn);
+      return () => void ackSubs.delete(fn);
     }
   };
 

@@ -6,6 +6,7 @@
 //   setSound({ music: true })                             // from a tap (the settings app)
 //   sound.weather = 'rain'; sound.heavy = true            // set by the island's weather (island/weatherNow.svelte.ts)
 //   waspMusic('chase') · playKK('kk-march') · stopKK()    // cut-ins over the island's music (events.ts, kk.ts)
+//   (the shared stages: K.K., the stereos, stage.svelte.ts request / hush; syncMusic plays the one where I am)
 //   eventJingle('happy-birthday') · stopJingle('aerobics') // the island's own cut-ins (events.ts CutInId)
 //   setPlace('shop') · setPlace(null)                     // a building's room plays its own track (places.ts)
 //   voiceSession(true) · loadVoice(p) · playVoice(buf, …)  // ききみみ's spoken clips, even with sound set silent
@@ -16,17 +17,18 @@ import { HourClock, QUEUED_DROP_MS, type Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
 import { msToNextHour, type Fade, type Weather } from './hourly.ts';
-import { msToNextEdge, type CutInId } from './events.ts';
+import { msToNextEdge, type CutInId, type EventMusicId } from './events.ts';
 import { radioJingleAt } from './radio.ts';
-import { kkTrack, loadKK, type KKSource } from './kk.ts';
+import { kkLoaded, kkTrack, loadKK, type KKSource } from './kk.ts';
+import { live, onStage, skew, stage, stageTrack } from './stage.svelte.ts';
 import { placeTrack, type PlaceId } from './places.ts';
-import { musicAt, openingMusic, pickMusic, pinsFor, placeMusic, playingLabel as labelOf, type CutIn, type Playing } from './choose.ts';
+import { musicAt, openingMusic, pickMusic, pinsFor, placeMusic, playingLabel as labelOf, type CutIn, type Playing, type Want } from './choose.ts';
 import { initMediaSession, nowPlaying, tilePaused } from './mediaSession.ts';
 import { ambientFor } from './ambient.ts';
 import { DEVICE, localKV } from '#lib/sync/storage.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 
-export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; kk: { id: string; from: KKSource } | null }>({
+export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; kk: { id: string; from: KKSource } | null; unlocked: boolean }>({
   settings: { ...DEFAULT_SOUND },
   weather: 'sunny',
   /** A downpour: the rain bed louder (ambient.ts). */
@@ -34,7 +36,9 @@ export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: 
   /** What the music is (for the settings' note and the Now Playing tile). */
   playing: null,
   /** The K.K. song playing (kk.ts id) and where from (K.K. on the island, or a room's stereo: its aircheck). */
-  kk: null
+  kk: null,
+  /** Audio is unlocked (a tap made the context): a shared stage's song can be heard (else its caption says 🔇). */
+  unlocked: false
 });
 
 /** ききみみ's voice session (voiceSession): `on` while a game is open; `state` the context's then ('running',
@@ -80,8 +84,29 @@ const room = () => placeMusic(place, AUDIO);
 /** What plays under a cut-in (and is fetched ahead): the room's track indoors, else the island's. */
 const baseAt = (d: Date) => pickMusic({ place: room(), island: island(d) });
 
+/** The stage's song where I am (stage.svelte.ts), from where it is now (`from`: its position 0 on this device's
+ *  clock); null: none, it ended here (its file shorter than its record), or its file isn't known yet. */
+function staged(): Want | null {
+  const s = stage.here && live(stage.here);
+  if (!s) return null;
+  const key = `st/${s.src}/${s.song}/${s.at}`;
+  if (key === stageDone) return null;
+  const tr = stageTrack(s.src, s.song);
+  if (!tr) {
+    if (!kkLoaded()) void loadKK().then(() => syncMusic());
+    return null;
+  }
+  return { key, track: { ...tr, from: s.at - skew() }, playing: s.song.startsWith('ev-') ? (s.song.slice(3) as EventMusicId) : 'kk', loop: !!tr.end, fade: 'cut' };
+}
+/** The stage's song that ended here (its key): the island's music again till the record ends everywhere. */
+let stageDone: string | null = null;
+
 /** A one-shot ended, or a track couldn't play (a one-shot would never end): what it held back comes back. */
 function ended(key: string): void {
+  if (key.startsWith('st/')) {
+    stageDone = key;
+    return syncMusic();
+  }
   switch (key === cutIn?.key ? 'cut-in' : key) {
     case 'opening':
       opening = false;
@@ -147,6 +172,7 @@ function apply(): void {
   if (!e?.ctx) return;
   const s = sound.settings;
   e.setLevels(s);
+  sound.unlocked = true;
   if (!anyOn(s)) e.sleep();
   else if (s.volume <= 0) {
     // muted, not off: the track keeps its place; a cut-in (a K.K. song, its caption) ends, as nobody hears it
@@ -208,7 +234,14 @@ export function playVoice(buf: AudioBuffer, o: { relayAt?: number; now?: () => n
 }
 
 /** What the settings' note and the Now Playing tile say about the music (null: none). */
-export const playingLabel = (playing: Playing, hour: number): string | null => labelOf(playing, hour, cutIn);
+export function playingLabel(playing: Playing, hour: number): string | null {
+  const s = stage.here && live(stage.here);
+  const k = s ? kkTrack(s.song, 'live')?.song : null;
+  return labelOf(playing, hour, cutIn?.kk ? { song: cutIn.kk, aircheck: cutIn.from === 'aircheck' } : k ? { song: k, aircheck: s!.src !== 'isl' } : null);
+}
+
+/** What the music deck plays now and how far in (s): the e2e's look (window.__music), never the app's. */
+export const musicNow = (): { key: string | null; pos: number | null } => ({ key: engine?.track ?? null, pos: engine?.position() ?? null });
 
 function endCutIn(): void {
   clearTimeout(cutInTimer);
@@ -253,9 +286,9 @@ function syncMusic(fade: Fade = 'hour'): void {
   e.muffle(coveredBy() && !opening);
   const d = now();
   const { hour, month } = jst(d);
-  const out = island(d), inside = room();
-  const want = pickMusic({ opening: opening ? openingMusic(AUDIO) : null, cutIn, place: inside, island: out });
-  e.pin(pinsFor({ cutIn, place: inside, island: out, files: AUDIO }));
+  const out = island(d), inside = room(), st = staged();
+  const want = pickMusic({ opening: opening ? openingMusic(AUDIO) : null, cutIn, stage: st, place: inside, island: out });
+  e.pin(pinsFor({ cutIn: cutIn ?? st, place: inside, island: out, files: AUDIO }));
   sound.playing = want?.playing ?? null;
   void e.setTrack(want?.key ?? null, want?.track ?? null, want?.loop, want?.fade ?? fade);
   nowPlaying(playingLabel(sound.playing, hour));
@@ -419,6 +452,8 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   // the renderer is pure and small: fetch it ahead of the first tap when a setting is on (nothing loads while off);
   // with ミュージック on, the hour's file too, so the first tap anywhere starts it inside that tap (no fetch to wait for)
   const first = silent(sound.settings) ? undefined : setTimeout(prefetchFirst, 1000);
+  // a stage started, replaced, stopped or over, or I went where another plays: inside the tap that asked, if one did
+  const offStage = onStage(() => syncMusic());
   const onHide = () => {
     hourClock.stop();
     engine?.pause();
@@ -461,6 +496,7 @@ export function startSound(o: { muffled: () => boolean }): () => void {
   hourClock.start();
   return () => {
     clearTimeout(first);
+    offStage();
     for (const g of gestures) document.removeEventListener(g, unlock, { capture: true });
     document.removeEventListener('visibilitychange', onVisible);
     window.removeEventListener('pagehide', onHide);

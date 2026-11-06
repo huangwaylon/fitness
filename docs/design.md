@@ -2200,9 +2200,10 @@ and seemed to stand on the spot with no stool. One source for both: the piece's 
 clock (`kkMode`; `?kk=show|day|asleep` in dev or `?demo`):
 - **His show, Saturday 18:00–24:00** (NH's concert; the plaza has no visitor then): a tap is his
   greeting with NH's choice box, **リクエスト** (two songs, or ほかの 曲) or **おまかせ**. The island's music stops for
-  the song ([K.K. Slider](#kk-slider): his live file), he strums harder, ♪ float up, the villagers sway and a
-  「♪ けけボッサ」 caption sits by him. A tap mid-song offers ストップ / つづけて. At its end his sign-off (「また 来週の
-  土曜に な」) and the island's music returns.
+  the song ([K.K. Slider](#kk-slider): his live file, on the island's shared stage), he strums harder, ♪ float up, the
+  villagers sway and a 「♪ けけボッサ」 caption sits by him, on every phone. A tap mid-song offers ストップ / つづけて
+  (and, where it can't be heard, きく). At its end his sign-off (「また 来週の 土曜に な」) and the island's music
+  returns.
 - **By day** (06:00–24:00 the rest of the week): he strums quietly to himself, no sound (a nod to the beat on idle
   life's beat, an emote now and then). NH's K.K. only plays on Saturdays; here he lives on the island, so a tap is a
   chat that offers a song all the same (「なにか 一曲 どうだい？」, リクエスト / おまかせ, the same song flow; his
@@ -2210,14 +2211,17 @@ clock (`kkMode`; `?kk=show|day|asleep` in dev or `?demo`):
 - **Asleep, 00:00–06:00** (after the show too): nodded off on his stool (villager3d's `nap`, a sleepy face, zzz); a
   tap wakes him groggily and he offers one all the same (「…ん…？ ムニャ… リクエスト かい？ ふぁ～… いいぜ、 一曲
   やろう」, the same song flow; awake while it plays, his sign-off 「…ふぁ～ サンキュー… じゃ、 おやすみ…」, then back
-  to sleep). The clock reaching midnight mid-song (the show's last one) still stops it.
+  to sleep). A song asked for before midnight plays to its end.
 - **Anyone, any time** (the user, 2026-11-06: "everyone should be able to request songs at any time"): A, B and the
-  guest alike, whatever ミュージック is: with it off, picking a song turns it on (the tap that asked for a song wants
-  to hear it); with the volume at 0 he says the sound isn't getting through. The song is each phone's own (a cut-in
-  on this phone, as a stereo's: nothing of it goes through the relay). Usage counters `act:kk.tap.<mode>`,
-  `act:kk.song.<mode>`, `act:kk.mute` (the log's `use`). With no song files he's tuning his guitar (asleep a mumble).
-  A tap turns my villager to him where it stands (he's an interactable: no walk). Leaving the island stops his song
-  (`stopKK('live')`: never a stereo's).
+  guest alike, whatever ミュージック is: with it off, picking a song turns it on on that phone (the tap that asked for
+  a song wants to hear it). **The song is everyone's** (the user, 2026-11-06: "the music should be synced across
+  players: anyone can request and stop KK music"): it plays on the island's music stage ([Shared music](#shared-music)),
+  heard on every phone outdoors from the same point, its caption and the swaying on all of them; anyone's ストップ stops
+  it for all, a phone opening mid-song comes in where it is. Where it can't be heard (ミュージック off, 音量 0, or no
+  tap yet since the app opened) his caption reads 「♪ title 🔇 タップで きく」 and his tap menu offers きく (ミュージック
+  on). It plays to its end, whoever leaves the island. Usage counters `act:kk.tap.<mode>`, `act:kk.song.<mode>` (the
+  log's `use`). With no song files he's tuning his guitar (asleep a mumble). A tap turns my villager to him where it
+  stands (he's an interactable: no walk).
 
 ### Visitors: life
 
@@ -2610,7 +2614,7 @@ track without its file is the hour's music (or its `alt`):
 **Cut-ins** (`sound.svelte.ts`) swap at once over the island's music and hand back to it: the wasps (`waspMusic`):
 the nest's fall only fetches Chased by Bees ahead; it cuts in and loops as the wasps come out (`chase`; 6 s at most if
 the scene never ends it); a net brings the island's music back; a sting plays Stung by Bees once (kept fetched during
-the chase). K.K.'s songs are cut-ins too, and the island's own (`eventJingle(id | ids, loopMs?)`, `events.ts
+the chase). The island's own cut-ins (`eventJingle(id | ids, loopMs?)`, `events.ts
 CutInId`, only with ミュージック on and the file there, else the moment's effect plays): the tape deck's stretch plays
 ラジオ体操 (aerobics) for its ~6 s, then the music crossfades back (else the tape's `stretch-song`; a stretch cut short or
 the deck leaving stops it: `stopJingle`); the birthday cake plays ハッピーバースデー (else the music box); Franklin, fed
@@ -2626,7 +2630,7 @@ Happy New Year! is remembered by its Tokyo date on the phone (`island.newYearInt
 As in NH, a building's room plays its own track in place of the island's (`places.ts`, `sound.svelte.ts setPlace`),
 with a short fade under the door's black going in and coming back out (`hourly.ts` DOOR: 0.65 s), the hour's 3 s
 crossfade between a building's rooms. What sounds, first there wins (`choose.ts pickMusic`): the opening
-theme, a cut-in (K.K., the wasps), the room's track, the island's (the event's on its day, else the hour's). So indoors
+theme, a cut-in (the wasps), a shared stage (K.K., a stereo), the room's track, the island's (the event's on its day, else the hour's). So indoors
 on an event day the room's music plays, as in NH; a cut-in still plays over a room.
 
 | Where | Track (`places.<id>`) |
@@ -2644,17 +2648,32 @@ museum fetches its two wings' 4 s after the hall opens; indoors the island's fil
 starts it at once, and the room's is released on the way out. Nothing is fetched while ミュージック is off. The settings' note and the Now Playing
 tile name the room's track (`sound.title.<id>`, NH's names).
 
+### Shared music
+
+`sound/stage.svelte.ts`, [sound-sync.md](sound-sync.md), the relay's `music` ([backend.md](backend.md#live-relay)).
+Continuous music someone starts is a **stage**, one record per source, the same on every phone: `isl` the island's
+(K.K.; the island's cut-ins), `t` / `u` / `v` a room's stereo. A record says which song plays from when (`at`, the
+relay's clock: its position 0) for how long (`ms`, the file's `d`); `request(src, song)` and `hush(src)` (from a tap)
+apply it here at once and send it; the room keeps the last one per source and hands the live ones to every phone at
+its hello. Last writer wins by `(at, who)` (`newerMusic`, the relay's rule too); a tap always replaces what plays.
+Nothing goes out when a song ends: each phone drops the record at `at + ms` (one timer). Each phone projects it:
+visuals follow the record for everyone; the sound plays only where the stage is (`enterStage`: the island page `isl`,
+a home's room its own) with ミュージック on, 音量 above 0 and audio unlocked, seeked to `serverNow − at` (`MusicTrack.from`:
+the engine seeks once the file is in, re-seeks a deck that drifted 0.3 s, and a song already over ends at once). Mute
+and volume stay local: turning sound off sends nothing. A stage outranks the room's and the island's music, under the
+opening and a cut-in of my own (`choose.ts pickMusic`); its key is `st/<src>/<song>/<at>`. The first tap after the app
+opens (iOS: audio needs one) picks the song up mid-song inside that tap.
+
 ### K.K. Slider
 
-`kk.ts loadKK()`: K.K.'s songs from `static/audio/kk.json` (its `kk` list, `{ id, ja, en, file, gain, v }`, NH's
+`kk.ts loadKK()`: K.K.'s songs from `static/audio/kk.json` (its `kk` list, `{ id, ja, en, file, gain, v, d }`, NH's
 official titles; one-shots under `audio/kk/`; their airchecks, NH's stereo versions, at `kkAircheck.<id>`), a chunk of
 its own loaded the first time K.K. or a stereo's list shows, or a song is asked for (13 KB the first load doesn't
-carry). `playKK(id, source)` plays one over the island's (or a room's) music: `live` K.K. on his stool, `aircheck` a
-room's stereo ([the tent's stereos](#the-tent): its aircheck, else the live file, `kkTrack`); `stopKK(source?)` ends
-it (only a song from that source); `sound.kk` is `{ id, from }` while one plays; `kkPick` never repeats the last one;
+carry). K.K. on his stool plays his live file on the island's stage ([Shared music](#shared-music)); `playKK(id,
+'aircheck')` plays a room's stereo ([the tent's stereos](#the-tent): its aircheck, else the live file, `kkTrack`) over
+the room's music; `stopKK('aircheck')` ends it; `sound.kk` is `{ id, from }` while one plays; `kkPick` never repeats the last one;
 `kkTitle` is the title in the app's language. The two songs K.K.'s リクエスト offers are fetched as he offers them
-(`prefetchKK`), a stereo's on the press of its row. One cut-in path for both: the room's or the island's music stops
-for it and comes back after.
+(`prefetchKK`), a stereo's on the press of its row.
 
 ### Ambience
 

@@ -859,7 +859,7 @@ describe('live: an intent never acked (a relay that drops it without a word)', (
 
   it('a refused one (`ack ok:false`: a claim already made) is told with the intent as sent', () => {
     const refused: unknown[] = [];
-    live.onRefused!((i) => refused.push(i));
+    live.onAck!((i, ok) => !ok && refused.push(i));
     live.start();
     last().welcome();
     live.send({ kind: 'catch', what: 'koi', id: 'k9', how: 'rod' });
