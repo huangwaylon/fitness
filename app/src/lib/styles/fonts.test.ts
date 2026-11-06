@@ -12,13 +12,15 @@ import jaFood from '#lib/i18n/food.ja.json';
 import enFood from '#lib/i18n/food.en.json';
 import jaKiki from '#lib/i18n/kikimimi.ja.json';
 import enKiki from '#lib/i18n/kikimimi.en.json';
+import jaTravel from '#lib/i18n/travel.ja.json';
+import enTravel from '#lib/i18n/travel.en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
 import enNames from '#lib/i18n/catch.en.json';
 import jaCatalog from '#lib/i18n/catalog.ja.json';
 import enCatalog from '#lib/i18n/catalog.en.json';
 
-const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaKiki };
-const en = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enKiki };
+const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaKiki, ...jaTravel };
+const en = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enKiki, ...enTravel };
 import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');
@@ -59,6 +61,6 @@ describe('trimmed Zen Maru Gothic', () => {
     expect(String.fromCodePoint(...missing)).toBe('');
   });
   it('stays far below the full font CSS (250 rules)', () => {
-    expect((css.match(/@font-face/g) ?? []).length).toBeLessThan(150); // (132 with the C1 notes' kanji, 2026-11-06; each rule's file loads only when a glyph in it shows)
+    expect((css.match(/@font-face/g) ?? []).length).toBeLessThan(150); // (146 with the trip guides' kanji, lib/travel, 2026-11-06: 132 before; each rule's file loads only when a glyph in it shows)
   });
 });

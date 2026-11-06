@@ -15,6 +15,8 @@ import jaFood from '#lib/i18n/food.ja.json';
 import enFood from '#lib/i18n/food.en.json';
 import jaKiki from '#lib/i18n/kikimimi.ja.json';
 import enKiki from '#lib/i18n/kikimimi.en.json';
+import jaTravel from '#lib/i18n/travel.ja.json';
+import enTravel from '#lib/i18n/travel.en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
 import enNames from '#lib/i18n/catch.en.json';
 import jaCatalog from '#lib/i18n/catalog.ja.json';
@@ -66,8 +68,8 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 
 /** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), the catchables' names (loaded with the first catch or the
  *  ずかん), the balloon catalogue's and the rooms' (tent.*), as `t()` sees them once all are in. */
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki };
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki, ...jaTravel };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki, ...enTravel };
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach)\.name\.|^fossil\.set\./;
 /** The balloon catalogue's names (i18n/catalog.ts, per language). */
@@ -81,6 +83,11 @@ describe('i18n catalogs', () => {
   it('keep ごはん’s strings (food.*) in its own catalog, out of the first load', () => {
     for (const c of [jaFood, enFood]) expect(Object.keys(c).filter((k) => !k.startsWith('food.'))).toEqual([]);
     for (const c of [jaMain, enMain, jaTab, enTab]) expect(Object.keys(c).filter((k) => k.startsWith('food.'))).toEqual([]);
+  });
+  it('keep りょこう’s strings (travel.*) in its own catalog, but the menu pill’s, out of the first load', () => {
+    for (const c of [jaTravel, enTravel]) expect(Object.keys(c).filter((k) => !k.startsWith('travel.'))).toEqual([]);
+    for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('travel.'))).toEqual([]);
+    expect(Object.keys(jaTravel).sort()).toEqual(Object.keys(enTravel).sort());
   });
   it('keep ききみみ クイズ’s strings (kiki.*) in its own catalog, but the invite banner’s, out of the first load', () => {
     for (const c of [jaKiki, enKiki]) expect(Object.keys(c).filter((k) => !k.startsWith('kiki.'))).toEqual([]);

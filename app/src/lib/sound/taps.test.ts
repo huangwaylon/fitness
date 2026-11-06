@@ -51,6 +51,7 @@ const NONE: Record<string, string> = {
   'lib/components/panel/SeasonSection.svelte': 'the choice already made does nothing',
   'lib/components/panel/ProfileSection.svelte': 'the choice already made does nothing; the birthday field opens the system date picker',
   'lib/components/panel/FpsSection.svelte': 'the frame rate already chosen does nothing',
+  'lib/components/travel/PackList.svelte': 'the add and rename fields: the system keyboard clicks',
   'lib/components/panel/WeatherSection.svelte': "the weather already chosen does nothing, nor either on the guest's phone (it only shows the island's)",
   'lib/components/ui/Segmented.svelte': 'the group or tab already shown does nothing (けんこう, ごはん)',
   'lib/components/health/Pick.svelte': 'a dropdown (けんこう, ごはん): its value already shown does nothing; it ticks on change (setWho, setPeriod)',
@@ -63,6 +64,7 @@ const NONE: Record<string, string> = {
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks',
   'lib/components/kikimimi/Lobby.svelte': 'the level already chosen does nothing',
   'lib/components/kikimimi/KikimimiSheet.svelte': 'the lobby tab already chosen does nothing',
+  'lib/components/travel/CampList.svelte': 'the campsites\' kind already chosen does nothing',
   'lib/components/kikimimi/Play.svelte': 'よみおわった once tapped does nothing',
   'lib/components/kikimimi/ChoiceGrid.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)'
 };

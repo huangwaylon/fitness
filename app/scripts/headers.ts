@@ -2,6 +2,8 @@
 // - The Content-Security-Policy is the one SvelteKit wrote into index.html's <meta> (vite.config.ts `csp`: the relay's
 //   origins, data:/blob: images and media, the hash of its inline bootstrap script, inline styles), plus what a <meta>
 //   can't carry: frame-ancestors 'none'. The <meta> stays (the same policy; both apply).
+// - The Permissions-Policy turns every powerful feature off but geolocation, which only our origin may ask for (the
+//   trip map's locate button).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
 //   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts); everything else keeps Pages' default
 //   (revalidated).
@@ -49,8 +51,10 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
 const csp = /<meta http-equiv="content-security-policy" content="([^"]+)"/.exec(html)?.[1];
 if (!csp) throw new Error('headers: no content-security-policy <meta> in build-pages/index.html');
 
-const permissions = ['camera', 'microphone', 'geolocation', 'payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'accelerometer', 'gyroscope', 'magnetometer', 'display-capture', 'browsing-topics']
+const permissions = ['camera', 'microphone', 'payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'accelerometer', 'gyroscope', 'magnetometer', 'display-capture', 'browsing-topics']
   .map((f) => `${f}=()`)
+  // the trip map's location dot (docs/travel.md "Maps"): our own origin only, asked when its button is tapped
+  .concat('geolocation=(self)')
   .join(', ');
 
 const headers = `${base}/*

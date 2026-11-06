@@ -122,6 +122,26 @@ const globsUncached: Plugin = {
   }
 };
 
+/** The trip map's MapLibre chunk and its CSS under a stable name (`_app/immutable/chunks/maplibre.<hash>.js`,
+ *  `assets/maplibre.<hash>.css`; its worker is `workers/maplibre-gl-worker-<hash>.js` already), so the service worker
+ *  leaves them out of its precache (caches.ts isMapLibre: the map is online only). Kit enforces its own file names in
+ *  the client build; this wraps them. */
+const mapLibreNames: Plugin = {
+  name: 'maplibre-names',
+  applyToEnvironment: (env) => env.name === 'client',
+  outputOptions(o) {
+    const chunk = o.chunkFileNames, asset = o.assetFileNames;
+    if (typeof chunk !== 'function' || typeof asset !== 'string' || !asset.endsWith('/[name].[hash][extname]')) throw new Error("vite.config.ts maplibre-names: Kit's client file names changed; recheck the map's chunk names");
+    const ours = (ids: readonly string[] | undefined) => !!ids?.some((id) => id.includes('/node_modules/maplibre-gl/'));
+    return {
+      ...o,
+      chunkFileNames: (c) => (ours(c.moduleIds) ? chunk(c).replace('[hash]', 'maplibre.[hash]') : chunk(c)),
+      // (a chunk's CSS has no module ids: MapLibre's is told by its own selectors)
+      assetFileNames: (a) => (a.names.some((n) => n.endsWith('.css')) && String(a.source).includes('.maplibregl-map') ? asset.replace('[name]', 'maplibre') : asset)
+    };
+  }
+};
+
 // A static SPA (GitHub Pages). The backend is the relay: the record at its /api (lib/sync/transport.ts), the room at /room.
 // Output goes to build-pages/.
 export default defineConfig({
@@ -131,18 +151,21 @@ export default defineConfig({
     preloadListenersOff,
     swPrecacheOnly,
     globsUncached,
+    mapLibreNames,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },
       paths: { base: (process.env.BASE_PATH ?? '') as '' | `/${string}` },
       // SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its inline bootstrap script to
       // script-src; scripts/headers.ts copies it into build-pages/_headers too. Only the relay (its socket, lib/sync/live.ts LIVE_URL, and the record's /api,
-      // lib/sync/transport.ts) is reachable besides our own.
+      // lib/sync/transport.ts) and the trip map's tiles are reachable besides our own.
       csp: {
         mode: 'hash',
         directives: {
           'default-src': ['self'],
-          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'blob:'],
+          // + the trip map's basemap (components/travel/map/style.ts BASEMAP: OpenFreeMap's TileJSON and tiles, fetched by
+          // MapLibre's worker; its fonts are ours): the one third party the phones contact
+          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://tiles.openfreemap.org', 'blob:'],
           // the tent's models carry their textures inside (three.js decodes them from blob: URLs)
           'img-src': ['self', 'data:', 'blob:'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip

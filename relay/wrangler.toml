@@ -9,9 +9,9 @@ workers_dev = true
 preview_urls = false
 
 [vars]
-# the app's page origin (src/auth.ts): Cloudflare Pages (GitHub Pages' was dropped 2026-11-05); the りょこう branch's
-# preview (docs/travel.md) beside it, comma-separated, exact origins only
-ALLOWED_ORIGINS = "https://island-fund.pages.dev,https://travel.island-fund.pages.dev"
+# the app's page origin (src/auth.ts): Cloudflare Pages (GitHub Pages' was dropped 2026-11-05); exact origins,
+# comma-separated
+ALLOWED_ORIGINS = "https://island-fund.pages.dev"
 # The real weather's point (relay/src/weather.ts, docs/backend.md "The real weather"): central Tokyo, by the 東京 AMeDAS
 # station, rounded to ~1 km. Open-Meteo sees only this (and a Cloudflare IP).
 WX_LAT = "35.69"
