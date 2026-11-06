@@ -47,7 +47,7 @@ export interface Tags {
 
 /** The sound and listening features an item trains (curriculum §3): level 4's (bank4.ts `tags`) and S0's segmentals
  *  (levels 1-3, tags.ts): L/R, the vowel contrasts, b/v/f/p, th, s/sh/ch, f/h, word endings (-s, -ed), katakana
- *  traps, a "not X but Y" contrast, clock talk (quarter past, half seven); `accent-exposure`, a UK or AU voice heard on
+ *  traps, a "not X but Y" contrast, clock talk (a quarter after, a quarter of); `accent-exposure`, a UK or AU voice heard on
  *  purpose (やま and ほし only, about a tenth of each, standard English without slang; American is the default). */
 export type Feature = 'contraction' | 'weak-form' | 'flap' | 'yod' | 'gonna' | 'wanna' | 'gotta' | 'lemme' | 'dunno' | 'kinda' |
   'can-cant' | 't-glottal' | 'teen-ty' | 'self-repair' | 'numbers' | 'ellipsis' | 'idiom' | 'intonation' |

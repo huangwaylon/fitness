@@ -86,11 +86,10 @@ describe('kikimimi bank', () => {
     }
   });
 
-  it('accents: level 1 US only, level 2 adds UK, level 3 adds AU (and uses all three), levels 4-7 all three', () => {
+  it('accents: American at levels 1-3 (US only), levels 4-7 by their villagers’ cast voices', () => {
     const all = ['us', 'uk', 'au'];
-    const allowed: Partial<Record<Level, string[]>> = { 1: ['us'], 2: ['us', 'uk'], 3: all, 4: all, 5: all, 6: all, 7: all };
+    const allowed: Partial<Record<Level, string[]>> = { 1: ['us'], 2: ['us'], 3: ['us'], 4: all, 5: all, 6: all, 7: all };
     for (const it of BANK) expect(allowed[it.lv], it.id).toContain(it.voice);
-    for (const lv of [1, 2, 3, 4, 5, 6, 7] as Level[]) expect(new Set(BANK.filter((it) => it.lv === lv).map((it) => it.voice)).size).toBe(Math.min(lv, 3));
   });
 
   it('splitFocus and jaLines: the focus marked in place; a reply on two lines, the question, then → the reply', () => {

@@ -126,7 +126,8 @@ describe('statsOf', () => {
     const s = statsOf(answersOf([game(['w2-cats', 'w2-live', 'r2-up-to'], { miss: ['w2-cats'], replayed: ['w2-live'] })]), TODAY);
     expect(s.byType.word).toEqual({ n: 2, right: 0.5, first: 0 });
     expect(s.byType.reply).toEqual({ n: 1, right: 1, first: 1 });
-    expect(s.byAccent.uk).toEqual({ n: 1, right: 0, first: 0 });
+    expect(s.byAccent.us).toEqual({ n: 3, right: 2 / 3, first: 1 / 3 });
+    expect(s.byAccent.uk).toBeUndefined();
     expect(s.byLevel[2]!.n).toBe(3);
   });
   it('raises the comfortable level with right answers and caps it by the levels played', () => {

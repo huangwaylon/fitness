@@ -11,7 +11,7 @@
 // gonna, a number as said), the joins (`link`), the swallowed letters (`drop`), the stressed words (`stress`).
 //   Noise (`NOISE`): a speech condition where the scene has one (docs/kikimimi.md "Conditions"): a café's murmur, a
 // street, a station or an airport concourse; mostly light (+15 dB), heavy (+10 dB) only where the noise is the scene's
-// point (a name misheard over the café's noise) or the meaning survives it (a ferry PA in the wind: what it means, not a
+// point (Thanksgiving plans over a packed café) or the meaning survives it (a ferry PA in the wind: what it means, not a
 // number). `word` items stay clean: their contrasts are fine detail, and level 4 stays fair. A phone or PA channel
 // with no entry gets its light condition anyway (conditions.ts condOf).
 import type { Channel, Cond, Item, SceneId, SoundMark } from './bank.ts';
@@ -20,10 +20,10 @@ import type { Channel, Cond, Item, SceneId, SoundMark } from './bank.ts';
 export const PLACES: Readonly<Record<string, readonly [SceneId | null, Channel?]>> = {
   // reply
   'r4-overbooked': ['gate'], 'r4-room-ready': [null], 'r4-anything-else': ['pharmacy'], 'r4-triage': ['living'],
-  'r4-reschedule': ['living'], 'r4-leak': ['living'], 'r4-noise': ['door'], 'r4-parcel': ['door'], 'r4-cut-out': ['office'],
+  'r4-reschedule': ['living'], 'r4-leak': ['living'], 'r4-noise': ['street'], 'r4-parcel': ['living'], 'r4-cut-out': ['office'],
   'r4-weekend': ['office'], 'r4-lunch': ['office'], 'r4-tricky': ['office'], 'r4-feedback': ['office'], 'r4-housewarming': ['street'],
   'r4-come-up': ['living'], 'r4-name': ['cafe'], 'r4-not-fussed': ['street'], 'r4-so-done': ['cafe'], 'r4-ginza': ['platform'],
-  'r4-store-credit': ['street'], 'r4-service-charge': ['cafe'],
+  'r4-store-credit': [null], 'r4-service-charge': ['cafe'],
   // mean
   'm4-upgrade': [null], 'm4-see-what': ['living'], 'm4-brilliant': ['living'], 'm4-not-ideal': ['office'], 'm4-not-bad': ['office'],
   'm4-easy': ['living'], 'm4-swing-by': ['street'], 'm4-be-good': ['street'], 'm4-freezing': ['living'], 'm4-cat': ['living'],
@@ -31,7 +31,7 @@ export const PLACES: Readonly<Record<string, readonly [SceneId | null, Channel?]
   'm4-dessert': ['cafe'], 'm4-way-down': [null], 'm4-sailings': [null],
   // word
   'w4-shouldve': ['gate'], 'w4-wouldnt-have': ['living'], 'w4-cant-uk': ['living'], 'w4-wanna': ['living'], 'w4-gotta': ['platform'],
-  'w4-didja': ['gate'], 'w4-them': ['street'], 'w4-a-lot-of': ['office'], 'w4-were-gonna': ['gate'], 'w4-can-us': ['living'],
+  'w4-didja': ['gate'], 'w4-them': [null], 'w4-a-lot-of': ['office'], 'w4-were-gonna': ['gate'], 'w4-can-us': ['living'],
   'w4-id-ill': ['living'], 'w4-youll-need': [null], 'w4-better': ['office'], 'w4-dunno': ['street'], 'w4-lemme': ['living'],
   // num
   'n4-platform': ['platform'], 'n4-gate': ['gate'], 'n4-pounds': ['pharmacy'], 'n4-dollars': [null], 'n4-yen': ['living'],
@@ -77,8 +77,9 @@ const g = (at: string): SoundMark => ['drop', at, 'g'];
 /** clip id (an item's, or a dialogue line's `<item>-<n>`) → its sound marks. */
 export const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'r4-reschedule': [['link', 'move it'], ['say', '24', 'twenty-four']],
-  'r4-service-charge': [['say', '12.5%', 'twelve and a half per cent'], ['say', 'Did you', 'didja']],
-  'm4-swing-by': [['say', 'try and', "try 'n'"], ['link', 'wiped out']],
+  'r4-noise': [['say', 'kind of', 'kinda']],
+  'r4-service-charge': [['say', '18%', 'eighteen percent'], ['say', 'Did you', 'didja']],
+  'm4-swing-by': [['say', 'try and', "try 'n'"], ['link', 'swing by']],
   'm4-be-good': [g('watching')],
   'm4-cat': [['say', 'you', 'ya']],
   'm4-put-through': [['say', 'Let me', 'lemme'], ['link', 'put you']],
@@ -94,7 +95,7 @@ export const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'w4-lemme': [['say', 'Let me', 'lemme'], ['link', 'pull up']],
   'n4-platform': [['say', '6:40', 'six forty'], ['say', '14', 'fourTEEN'], ['say', '12', 'TWELVE']],
   'n4-gate': [['say', '815', 'eight fifteen'], ['say', '50', 'FIFty'], ['say', '15', 'fifTEEN']],
-  'n4-pounds': [['say', '£8.49', 'eight forty-nine'], ['say', 'Do you', "d'you"]],
+  'n4-pounds': [['say', '$8.49', 'eight forty-nine'], ['say', 'Do you', "d'you"]],
   'n4-dollars': [g('looking'), ['say', '$340', 'three-forty']],
   'n4-yen': [['say', '¥68,000', 'sixty-eight thousand yen'], ['say', '¥5,000', 'five thousand']],
   'n4-water': [['stress', 'Sorry 3']],
@@ -102,7 +103,7 @@ export const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'n4-highs': [['say', '31', 'THIRty-one'], ['say', '13', 'thirTEEN']],
   'n4-flight': [['say', '9:05', 'nine-oh-five'], ['say', '762', 'seven six two']],
   'n4-claim': [['say', '30th', 'THIRtieth']],
-  'n4-split': [['say', '$186', 'a hundred and eighty-six'], ['say', '$47', 'forty-seven']],
+  'n4-split': [['say', '$46.80', 'forty-six eighty'], ['say', '$47', 'forty-seven']],
   'n4-reps': [['say', '12', 'twelve'], ['stress', 'Actually'], ['say', '15', 'fifTEEN']],
   'd4-oat-latte-3': [['say', 'Let me', 'lemme'], ['link', 'remake it'], ['say', 'you', 'ya']],
   'd4-train-cancelled-1': [['say', '8:40', 'eight forty']],
@@ -113,26 +114,27 @@ export const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'd4-gate-change-2': [['say', '52', 'fifty-two']],
   'd4-squat-form-3': [['say', 'kind of', 'kinda'], g('sitting'), ['say', 'you', 'ya']],
   'd4-parcel-1': [['say', '12', 'TWELVE']],
-  'd4-parcel-3': [['say', 'and', "an'"], ['link', 'pop a']],
+  'd4-parcel-3': [['say', 'and', "an'"], ['link', 'leave a']],
   'd4-taxi-street-4': [['say', 'you', 'ya']],
   'd4-pizza-diet-1': [['say', 'Want to', 'wanna']],
   'd4-pizza-diet-2': [['say', 'kind of', 'kinda'], g('trying')],
   'd4-installer-3': [['say', '18', 'eighTEEN'], ['say', 'them', "'em"]],
-  'd4-service-charge-1': [['link', 'Hang on'], ['say', '15%', 'fifteen per cent']],
+  'd4-service-charge-1': [['link', 'Hang on'], ['say', '15%', 'fifteen percent']],
+  'd4-im-easy-1': [['say', 'What do you', 'whaddaya'], ['say', 'want to', 'wanna']],
   // the アナウンス pack
   'a5-track': [['say', '10:12', 'ten twelve'], ['stress', '3 5']],
   'a5-behind': [['say', '15', 'fifTEEN']],
-  'a5-final-call': [['say', '212', 'two-one-two'], ['say', '64', 'sixty-four']],
+  'a5-final-call': [['say', '212', 'two-twelve'], ['say', '64', 'sixty-four']],
   'a5-gate-moved': [['say', '838', 'eight-three-eight'], ['say', '71', 'SEVenty-one']],
   'a5-boarding-time': [['say', '409', 'four-oh-nine'], ['say', '7:50', 'seven fifty']],
   'a5-press-three': [['link', 'lost or stolen'], ['stress', '3']],
   'a5-queue': [['stress', '6 12']],
   'a5-dentist': [['say', '14th', 'fourTEENTH'], ['say', '3:15', 'three fifteen']],
-  'a5-key-code': [['say', '4719', 'four-seven-one-nine'], ['say', '4791', 'four-seven-nine-one'], ['say', 'you', 'ya']],
+  'a5-key-code': [['say', '214', 'two-fourteen'], ['say', '241', 'two-forty-one'], ['say', 'you', 'ya']],
   'a5-closing': [['say', '15', 'fifTEEN'], ['say', '8', 'eight']],
-  'a5-coats': [['say', '30', 'THIRty'], ['say', '40%', 'FORty per cent']],
+  'a5-coats': [['say', '30', 'THIRty'], ['say', '40%', 'FORty percent']],
   'a5-typhoon': [['say', '90', 'NINEty'], ['say', '40', 'FORty']],
-  'a5-cover-shift': [['say', 'and', "an'"], g('flying')],
+  'a5-cover-shift': [['say', 'and', "an'"], ['say', 'give me', 'gimme'], g('morning')],
   'a5-plumber': [g('running'), ['link', 'hold your']],
   'a5-rows': [['say', '30', 'THIRty']],
   'a5-make-known': [['say', '22', 'twenty-two']],
