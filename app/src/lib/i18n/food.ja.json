@@ -51,7 +51,7 @@
   "food.recent": "さいきん",
   "food.img.badge": "イメージ",
   "food.img.alt": "{name}の イメージ",
-  "food.img.credit": "AI生成のイメージ（実物と異なる場合があります）",
+  "food.img.credit": "AI生成の イメージ（実物と ちがう ことが あります）",
   "food.st.more": "ほか {n}",
   "food.recentEmpty": "たべたものが ここに ならぶよ",
   "food.loading": "よみこみちゅう…",
