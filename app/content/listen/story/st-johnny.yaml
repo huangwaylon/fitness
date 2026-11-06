@@ -34,9 +34,9 @@ items:
       - { who: dom, en: "Nope, it's just our island. But hey, welcome back, Gulliver. This is, like, your fifth time.", tts: "Nope, it's jus' our island. But hey, welcome back, Gulliver. This is, like, your fifth time." }
       - { who: narrator, en: "Gulliver did not remember the island. He never did, no matter how many times he washed up on it. But he remembered the coffee." }
       - { who: narrator, en: "By evening, word had gotten around. A small fire was crackling on the beach, and a few neighbors had come down with mugs of cocoa." }
-      - { who: goldie, en: "So, where were you this time? Last time it was Peru? Portugal? Some place with a P.", tts: "So, where were ya this time? Last time it was... Peru? Portugal? Someplace with a P." }
+      - { who: goldie, en: "So, where were you this time? Last time it was Peru? Portugal? Someplace with a P.", tts: "So, where were ya this time? Last time it was... Peru? Portugal? Someplace with a P." }
       - { who: gulliver, en: "Taiwan! Taipei, to be exact. And let me tell you, I have never eaten so well in my whole life." }
-      - { who: narrator, en: "His ship had stopped in Taipei for two nights. On the first evening, the captain told the crew to go out and find dinner on their own." }
+      - { who: narrator, en: "His ship had docked near Taipei for two nights. On the first evening, the captain told the crew to go find their own dinner." }
       - { who: narrator, en: "So Gulliver followed the crowd, and the crowd led him to a night market on a long, narrow street near the river." }
       - { who: gulliver, en: "At one end there's this temple, all lit up in red and gold. And from there, the food stalls just go on and on." }
       - { who: narrator, en: "The air was warm and smelled like a hundred dinners at once. Grilled squid. Sweet sausage. Something fried." }
@@ -89,9 +89,9 @@ items:
     segments:
       - { who: narrator, en: "The next night was cooler, and the fire was a little bigger. Maple had brought a thermos of hot cider, and Kicks had brought his own folding chair." }
       - { who: kicks, en: "Okay, okay, so you lost the compass. Then what? Did you get on the wrong ship or something?", tts: "Okay, okay, so ya lost the compass. Then what? Didja get on the wrong ship or somethin'?" }
-      - { who: gulliver, en: "How did you know? That's exactly what happened. I got on a big cargo ship, and three weeks later, I was in Boston." }
-      - { who: narrator, en: "Boston in January is not a place for a sailor in a thin jacket. The wind came off the harbor like it had something personal against him." }
-      - { who: narrator, en: "So Gulliver did what any sensible bird would do. He bought a wool hat, a cup of very large coffee, and a bus ticket north." }
+      - { who: gulliver, en: "How did you know? That's exactly what happened. I got on a big cargo ship, and a month later, I was in Boston." }
+      - { who: narrator, en: "Boston in March is not a place for a sailor in a thin jacket. The wind came off the harbor like it had something personal against him." }
+      - { who: narrator, en: "So Gulliver did what any sensible bird would do. He bought a wool hat, a very large coffee, and a bus ticket north." }
       - { who: gulliver, en: "I have an old shipmate in Vermont. Ruth. We sailed together for years, and then she retired to a cabin in the woods." }
       - { who: narrator, en: "The bus wound its way up into the hills. Little white churches, red barns, and snow on everything, like someone had covered the world in frosting." }
       - { who: narrator, en: "Ruth met him at the bus stop in an old pickup truck. She was wearing a red plaid coat and the same big grin he remembered." }
@@ -117,12 +117,12 @@ items:
       - { who: narrator, en: "It showed a small white ferry on a calm blue sea, with green islands all around." }
       - { who: gulliver, en: "She said, it's in Japan. The Seto Inland Sea. I always meant to go and never did. So you go, and tell me about it." }
       - { who: narrator, en: "Gulliver put the postcard in his inside pocket, right where the compass used to be. And that's where he kept it, the whole way across the world." }
-      - { who: kicks, en: "Dude, that's actually really sweet. Did you ever write back to her?", tts: "Dude, that's actually really sweet. Didja ever write back to her?" }
+      - { who: kicks, en: "Dude, that's actually really sweet. Did you ever write to her?", tts: "Dude, that's actually really sweet. Didja ever write to her?" }
       - { who: gulliver, en: "Not yet. I'm still working on it. But first, I have to tell you about the ferry. Tomorrow night." }
       - { who: narrator, en: "Maple poured the last of the cider. And somewhere far away, it was snowing on a little log cabin in the woods." }
     ph:
       - { id: ph-snowed-in, en: "snowed in", ja: "ゆきで とじこめられる", match: "snowed in", register: friend, scene: "a cabin in a storm", trap: "in が だいじ。ゆきの なかに とじこめられる" }
-      - { id: ph-something-against, en: "have something against", ja: "〜に うらみが ある", match: "something (personal )?against", register: friend, scene: "a cold wind", trap: "against＝はんたい。うらみが ある みたい" }
+      - { id: ph-something-against, en: "have something against", ja: "〜を きらって いる", match: "something (personal )?against", register: friend, scene: "a cold wind", trap: "against＝はんたい。わけあって きらう かんじ" }
       - { id: ph-wait-it-out, en: "wait it out", ja: "おさまるまで まつ", register: friend, scene: "a long snowstorm", trap: "it は あらし。おわるまで じっと まつ" }
       - { id: ph-making-it-up, en: "make it up", ja: "つくりばなしを する", match: "making (that|it) up", register: friend, scene: "an unlikely story", trap: "make up＝けしょう だけでなく つくりばなし" }
       - { id: ph-i-swear, en: "I swear", ja: "ほんとうだって", match: "\\bI swear\\b", register: friend, scene: "being doubted", trap: "swear＝ちかう。ののしる では ない" }
@@ -147,7 +147,7 @@ items:
     scene: platform
     segments:
       - { who: narrator, en: "On the third night, there was no wind at all. The sea was flat and silver under the moon, which, Gulliver said, was perfect for a ferry story." }
-      - { who: narrator, en: "Cherry had come down with a bag of roasted marshmallows, and Dom was back, still in his running shorts, even though it was cold." }
+      - { who: narrator, en: "Cherry had come down with a bag of marshmallows to roast, and Dom was back, still in his running shorts, even though it was cold." }
       - { who: cherry, en: "So you went to Japan, just because of a postcard? Like, that's it? That's the whole reason?", tts: "So ya went to Japan, just 'cause of a postcard? Like, that's it? That's the whole reason?" }
       - { who: gulliver, en: "My dear, a postcard is the best reason there is. Most of my trips start with worse ones." }
       - { who: narrator, en: "He got a job on a ship heading for Japan, peeling potatoes in the kitchen. Six weeks of potatoes, he said. He still dreams about them." }
@@ -200,7 +200,7 @@ items:
     chapter: 4
     title: "Pie on Route Sixty-Six"
     line: "ジョニーが さばくの ダイナーの はなしを します"
-    ja: "ロサンゼルスに着いたジョニーは、トラック運転手のアールの車に乗せてもらい、夜の砂漠を東へ。ネオンの光るダイナーで、だれのことも hon と呼ぶウェイトレスのダーリーンに会う。おかわり自由のコーヒー、アイスをのせたチェリーパイ、満天の星。チップのことも教わる。最後にダーリーンが、メイン州で灯台守をしている兄の話をする。"
+    ja: "ロサンゼルスに着いたジョニーは、トラック運転手のアールの車に乗せてもらい、砂漠を東へ。ネオンの光るダイナーで、だれのことも hon と呼ぶウェイトレスのダーリーンに会う。おかわり自由のコーヒー、アイスをのせたチェリーパイ、満天の星。チップのことも教わる。最後にダーリーンが、メイン州で灯台守をしている兄の話をする。"
     scene: cafe
     segments:
       - { who: narrator, en: "On the fourth night, Bunnie came early with a basket of snacks, and Redd showed up late, claiming he just happened to be walking by." }
@@ -256,7 +256,7 @@ items:
     chapter: 5
     title: "The Lighthouse in the Fog"
     line: "ジョニーが きりの とうだいの はなしを します"
-    ja: "ジョニーは列車で大陸を横断し、メイン州へ。灯台守のウォルトと冬をすごす。らせん階段のペンキぬり、霧笛、ロブスターロール。ある霧の夜、帰れない漁船のために鐘を鳴らしつづけ、船は無事にもどる。お礼にもらった新しいコンパスで帰る途中、嵐にあって……この島に流れついた。コンパスはまたなくなっていた。翌朝、ジョニーの姿はなく、砂に書きおきが残っていた。"
+    ja: "ジョニーは列車で大陸を横断し、メイン州へ。灯台守のウォルトと冬をすごす。レンズみがき、らせん階段のペンキぬり、ロブスターロール。ある霧の夜、霧笛がこわれ、帰れない漁船のために古い鐘を鳴らしつづけ、船は無事にもどる。お礼にもらった新しいコンパスで帰る途中、嵐にあって……この島に流れついた。コンパスはまたなくなっていた。翌朝、ジョニーの姿はなく、砂に書きおきが残っていた。"
     scene: living
     segments:
       - { who: narrator, en: "On the fifth night, more neighbors came than ever. Maple, Dom, and Goldie sat closest to the fire, with blankets over their knees." }
@@ -266,12 +266,12 @@ items:
       - { who: narrator, en: "At the end of it was a rocky coast, cold and gray and beautiful, and on the very last rock, a white lighthouse with a red roof." }
       - { who: narrator, en: "Darlene's brother was named Walt. He was tall and quiet and had a beard like a winter storm. He shook Gulliver's wing and said, you're late." }
       - { who: gulliver, en: "I said, I'm a sailor, Walt, I'm always late. And he laughed. Just once. I found out later that's about once a month for Walt." }
-      - { who: narrator, en: "The work was simple, but there was a lot of it. Gulliver cleaned the big glass lens until it shined." }
+      - { who: narrator, en: "The work was simple, but there was a lot of it. Gulliver cleaned the big glass lens until it sparkled." }
       - { who: narrator, en: "And he painted the spiral stairs, all one hundred and twelve of them." }
       - { who: dom, en: "A hundred and twelve stairs? Every day? Dude, that's a serious leg workout. I'm kind of jealous.", tts: "A hundred an' twelve stairs? Every day? Dude, that's a serious leg workout. I'm kinda jealous." }
       - { who: narrator, en: "On Sundays, Walt drove them into town for lobster rolls. Big pieces of lobster in a buttered, toasted bun, eaten on a bench by the harbor." }
       - { who: gulliver, en: "Walt said, you don't eat a lobster roll inside. It's against the rules. So we sat outside and froze, and it was wonderful." }
-      - { who: narrator, en: "Then one night in February, the fog came in. Thick, white fog, so thick you couldn't see your own feet. The foghorn started its long, low call." }
+      - { who: narrator, en: "Then one February night, the fog rolled in, so thick you couldn't see your own feet. And the old foghorn coughed once and went quiet." }
       - { who: narrator, en: "Walt listened to the radio and frowned. A small fishing boat was still out there. The captain couldn't find the harbor in the fog." }
       - { who: maple, en: "Oh no. That's so scary. Couldn't they just follow the light from the lighthouse?", tts: "Oh no. That's so scary. Couldn't they jus' follow the light from the lighthouse?" }
       - { who: gulliver, en: "That's what I thought, too. But in fog like that, the light just disappears. You can't see a thing. But you can still hear." }
