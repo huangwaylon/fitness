@@ -34,7 +34,7 @@ export interface UnitSource {
 
 const UNITS_DIR = new URL('../../../content/units/', import.meta.url);
 
-/** app/content/units/*.yaml, parsed, by file name (none yet: an empty list). */
+/** app/content/units/*.yaml, parsed, by file name (no directory: an empty list). */
 export function readUnits(dir: URL = UNITS_DIR): UnitSource[] {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) }));

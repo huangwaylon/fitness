@@ -203,7 +203,7 @@ Every lesson id that isn't under `review` is homed in the unit. The unit's own i
 - The levels' chunks are byte-identical with and without units.
 - `kikimimi/decks.golden.json` holds a digest of the decks for seeds 0–99 per level. A re-tagging commit must leave it unchanged. A deliberate change to the bank's content updates it with `vitest -u`.
 
-No unit is committed yet. The もり re-tag dry run is `npm run kikimimi:units-dry-run` (scripts/kikimimi-units-dry-run.ts), and its report is docs/reviews/2026-11-06-mori-retag-dry-run.md.
+Wave 1's もり units are written (draft, §12): app/content/units/tr-guide.yaml, tr-hotel.yaml and wk-chat.yaml. The もり re-tag dry run is `npm run kikimimi:units-dry-run` (scripts/kikimimi-units-dry-run.ts), and its report is docs/reviews/2026-11-06-mori-retag-dry-run.md.
 
 ## 12. Wave-1 can-dos (draft, 2026-11-06)
 

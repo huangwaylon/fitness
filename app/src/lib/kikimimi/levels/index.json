@@ -1,5 +1,9 @@
-{"units":{"1":{"parts":["lv1"],"n":46,"cv":"6a0695"},"2":{"parts":["lv2"],"n":49,"cv":"353bf6"},"3":{"parts":["lv3"],"n":49,"cv":"d4f6ce"},"4":{"parts":["lv4-1","lv4-2"],"n":261,"cv":"b45c76"},"5":{"parts":["lv5"],"n":30,"cv":"e97c1e"},"6":{"parts":["lv6-1","lv6-2"],"n":200,"cv":"a57c91"},"7":{"parts":["lv7"],"n":115,"cv":"8e3808"},"ladder":{"parts":["ladder"],"n":30,"cv":"25f34e"}},"offered":[1,2,3,4,5,6,7],"dialogues":true,"ladder":true,"test":["p1-squid",{"dur":2.31,"hash":"43aebdd8","slow":"c486cfbe"}],
-"paths":[],
+{"units":{"1":{"parts":["lv1"],"n":46,"cv":"6a0695"},"2":{"parts":["lv2"],"n":49,"cv":"353bf6"},"3":{"parts":["lv3"],"n":49,"cv":"d4f6ce"},"4":{"parts":["lv4-1","lv4-2"],"n":261,"cv":"b45c76"},"5":{"parts":["lv5"],"n":30,"cv":"e97c1e"},"6":{"parts":["lv6-1","lv6-2"],"n":200,"cv":"a57c91"},"7":{"parts":["lv7"],"n":115,"cv":"8e3808"},"ladder":{"parts":["ladder"],"n":30,"cv":"25f34e"},"tr-guide":{"parts":["u-tr-guide"],"n":30,"cv":"fa197d"},"tr-hotel":{"parts":["u-tr-hotel"],"n":32,"cv":"228e62"},"wk-chat":{"parts":["u-wk-chat"],"n":31,"cv":"bc6d53"}},"offered":[1,2,3,4,5,6,7],"dialogues":true,"ladder":true,"test":["p1-squid",{"dur":2.31,"hash":"43aebdd8","slow":"c486cfbe"}],
+"paths":[
+["tr-guide","ともだちを あんない","mori","tabi","gulliver","draft",31],
+["tr-hotel","ホテルで こまった","mori","tabi","diana","draft",31],
+["wk-chat","しごとの ざつだん","mori","shigoto","raymond","draft",31]
+],
 "items":[
 ["p1-squid",1,"pic","us","literal",["contrast"]],
 ["p1-peach",1,"pic","us","literal",["contrast"]],
