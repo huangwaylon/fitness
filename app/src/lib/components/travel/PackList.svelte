@@ -6,8 +6,9 @@
   // dot). 編集 (once the phone knows who I am): no ticks on the rows; a row or a category tapped opens its actions
   // (ActionSheet: 名前を変更 · 上へ · 下へ · 削除), 「＋ 追加」 under each category, a new category, チェックをリセット
   // (mine only). An item's 削除 is at once with とりけす on the banner; a category's and the reset ask first, then
-  // とりけす too. The guest adds, and changes only what it added. A trip that's over: a quiet count, no bar (ticking
-  // still works). The name form: the kit's form sheet (ui/Sheet, 保存 in its footer; the return key saves too).
+  // とりけす too. The guest adds, and changes only what it added. A trip that's over (when.ts readOnly) is frozen: the
+  // seed list as it was, 「終わった旅」 and its count, no ticks, no 編集 (packing.svelte.ts reads and sends nothing for
+  // it). The name form: the kit's form sheet (ui/Sheet, 保存 in its footer; the return key saves too).
   //   <PackList trip={nz} />
   import Icon from '../ui/Icon.svelte';
   import ProgressBar from '../ui/ProgressBar.svelte';
@@ -17,13 +18,11 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { packing } from './packing.svelte.ts';
   import { catIcon, clip, myProgress, packView, type PackCatView } from './packView.ts';
-  import { phaseOf } from './when.ts';
   import { PACK_NAME } from '#lib/contract/pack.ts';
   import type { Trip } from '#lib/travel/types.ts';
   import type { Who } from '#lib/types.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { undoBanner, UNDO_MS } from '#lib/store/actions.ts';
-  import { minuteNow } from '#lib/time/clock.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
 
@@ -35,12 +34,12 @@
   const TONE: Record<Who, string> = { A: 'var(--person-a)', B: 'var(--person-b)', G: 'var(--text-soft)' };
 
   const locale = $derived(i18n.locale);
-  const me = $derived(packing.me);
+  /** The trip is over: the list frozen. */
+  const frozen = $derived(packing.frozen(trip.id));
+  const me = $derived(frozen ? null : packing.me);
   const seed = $derived(trip.packing);
   const view = $derived(packView(packing.list(trip.id, seed), me, locale));
   const prog = $derived(myProgress(view));
-  /** The trip is over: no bar; a quiet count. */
-  const past = $derived(phaseOf(trip, minuteNow().getTime()).k === 'past');
   const nameOf = (w: Who): string => (week.view ? villagerNameOf(week.view, w) : w);
 
   let editing = $state(false);
@@ -124,13 +123,15 @@
   }
 </script>
 
-<div class="pack" data-pack={trip.id} data-pack-editing={editing || undefined} data-pack-mine={prog.mine} data-pack-total={prog.total}>
-  <div class="prog" class:past>
-    {#if editing}
+<div class="pack" data-pack={trip.id} data-pack-frozen={frozen || undefined} data-pack-editing={editing || undefined} data-pack-mine={prog.mine} data-pack-total={prog.total}>
+  <div class="prog">
+    {#if frozen}
+      <span class="sticker coral" data-pack-past>{t('travel.pack.past')}</span><span class="pastl">{t('travel.pack.items', { n: prog.total })}</span>
+    {:else if editing}
       <span class="eh" data-pack-editbar>{t('travel.pack.editing')}{#if me === 'G'}<small>{t('travel.pack.guestNote')}</small>{/if}</span>
     {:else}
       <span class="big">{prog.mine}<span class="of"> / {prog.total}</span></span>
-      {#if past}<span class="pastl" data-pack-past>{t('travel.pack.past')}</span>{:else}<ProgressBar value={prog.mine} max={prog.total} label={t('travel.pack.mine')} />{/if}
+      <ProgressBar value={prog.mine} max={prog.total} label={t('travel.pack.mine')} />
     {/if}
     {#if me}
       <button type="button" class="chip s ed" aria-pressed={editing} data-pack-edit data-sfx={editing ? 'toggle-off' : 'toggle-on'} onclick={() => (editing = !editing)}>
@@ -149,7 +150,7 @@
           {#if 'emoji' in ic}{ic.emoji}{:else if 'art' in ic}<OfficialArt key={ic.art} size={26}>{#snippet fallback()}<Icon name="shopping-bag" size={18} />{/snippet}</OfficialArt>{:else}<Icon name={ic.icon} size={18} />{/if}
         </span>
         <span class="cn" id="pc-{c.id}">{c.name}</span>
-        {#if editing}{#if c.editable}<span class="mo"><Icon name="more" size={20} /></span>{/if}{:else}<span class="cc" data-pack-cat-mine={c.mine}>{t('travel.pack.count', { n: c.mine, m: c.total })}</span>{/if}
+        {#if editing}{#if c.editable}<span class="mo"><Icon name="more" size={20} /></span>{/if}{:else if frozen}<span class="cc">{c.total}</span>{:else}<span class="cc" data-pack-cat-mine={c.mine}>{t('travel.pack.count', { n: c.mine, m: c.total })}</span>{/if}
       {/snippet}
       {#if editing}
         <button type="button" class="row ch" class:sel={acting && target?.kind === 'cat' && target.cat.id === c.id} aria-disabled={c.editable ? undefined : 'true'} aria-label={t('travel.pack.actsOf', { name: c.name })} data-pack-acts={c.id} data-sfx="open"
@@ -160,7 +161,10 @@
 
       {#each c.rows as r, ri (r.id)}
         <div class="row pr" class:mine={r.mine} class:er={editing} data-pack-item={r.id} data-mine={r.mine || undefined} data-ticks={r.item.ticks.join('')}>
-          {#if !editing}
+          {#if frozen}
+            <span class="dot" aria-hidden="true"></span>
+            <span class="tx"><span class="it">{r.text}</span>{#if r.note}<small>{r.note}</small>{/if}</span>
+          {:else if !editing}
             <Tick checked={r.mine} onchange={(v) => packing.tick(trip.id, r.id, v)}
               label={r.item.ticks.length ? `${r.text} ${t('travel.pack.packedBy', { names: r.item.ticks.map(nameOf).join(locale === 'ja' ? '、' : ', ') })}` : r.text} />
             <span class="tx"><span class="it">{r.text}</span>{#if r.note}<small>{r.note}</small>{/if}</span>
@@ -221,7 +225,9 @@
   .big { font: 600 var(--fs-title)/1 var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
   /* (svelte trims the span's leading space) */
   .of { padding-left: .2em; font-size: var(--fs-body); color: var(--text-soft); }
-  .pastl { flex: 1; font-size: var(--fs-s); color: var(--text-soft); }
+  .pastl { flex: 1; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
+  /* a frozen row's bullet, where the Tick would be */
+  .dot { flex: none; width: 6px; height: 6px; margin: 8px 7px 0; border-radius: 50%; background: var(--stitch); }
   .eh { flex: 1; display: grid; font: 700 var(--fs-s)/1.35 var(--font-ui); color: var(--text-soft); }
   .eh small { font: 400 var(--fs-s)/1.35 var(--font-body); }
   .ed { margin-left: auto; }

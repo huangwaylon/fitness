@@ -3,12 +3,14 @@
 // (a row's or a category's actions: 名前を変更 · 上へ · 下へ · 削除; 「＋ 追加」 under each category; a new
 // category; 削除 with とりけす, a category's asked first), リセット inside 編集 (mine only, asked first, とりけす), the
 // guest's own only, two tabs in step (the demo's tabs share the record's rows through localStorage, as phones share
-// the record), and a trip that's over (a quiet count). SHOTS=<dir>: screenshots of the list.
+// the record), and a trip that's over: frozen (when.ts readOnly: the seed as it was, no ticks, no 編集, nothing sent:
+// NZ after its dates, Okinawa and Seattle now). SHOTS=<dir>: screenshots of the list.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { BASE, islandQuery } from './island.ts';
 import { shot } from './shots.ts';
 import { openTrip } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
+import { okinawa } from '../src/lib/travel/trips/okinawa.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 /** Before the trip (Feb 11), and after it. */
@@ -16,10 +18,10 @@ const BEFORE = '2027-01-20T12:00', AFTER = '2027-03-01T12:00';
 /** The guide's items and the demo's one of うめ's (_demob001, in 書類). */
 const TOTAL = nz.packing.cats.reduce((n, c) => n + c.items.length, 0) + 1;
 
-async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G' = 'A', date = BEFORE) {
+async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G' = 'A', date = BEFORE, trip = 'nz') {
   const page = await ctx.newPage();
   await page.goto(`${BASE}/${islandQuery(`demo&date=${date}${as === 'A' ? '' : `&as=${as}`}`)}`);
-  await openTrip(page, 'nz', 'pack');
+  await openTrip(page, trip, 'pack');
   await expect(page.locator('[data-pack-item]').first()).toBeVisible();
   return page;
 }
@@ -193,13 +195,32 @@ test('the guest ticks and adds, and changes only what it added', async ({ contex
   await expect(cat(g, 'nz-0').getByText('おみやげ')).toHaveCount(0);
 });
 
-test('a trip that’s over: a quiet count, no bar; ticking still works', async ({ context }) => {
+/** The packing ops this page has sent (the demo keeps its taps under `island-demo.*`, store/demo/backend.ts). */
+const sends = (p: Page) => p.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('island-demo.')).map((k) => localStorage.getItem(k) ?? '').join('').match(/"pack(_chk|_reset)?"/g)?.length ?? 0);
+
+test('a trip that’s over is frozen: the seed as it was (no one’s ticks, nothing added), no Tick, no 編集; a tap sends nothing', async ({ context }) => {
   const a = await open(context, 'A', AFTER);
-  await expect(a.locator('[data-pack-past]')).toBeVisible();
-  await expect(a.locator('[role=progressbar]')).toHaveCount(0);
-  await tick(a, 'nz-0-1').click();
-  await expect(mine(a)).toHaveAttribute('data-pack-mine', '2');
+  const list = a.locator('[data-pack]');
+  await expect(list).toHaveAttribute('data-pack-frozen', 'true');
+  await expect(a.locator('[data-pack-past]')).toHaveText('終わった旅');
+  await expect(list).toHaveAttribute('data-pack-total', String(TOTAL - 1));
+  await expect(item(a, '_demob001')).toHaveCount(0);
+  await expect(list.locator('[data-chip]')).toHaveCount(0);
+  await expect(list.locator('button, input, [role="checkbox"], [role="progressbar"]')).toHaveCount(0);
+  const before = await sends(a);
+  await item(a, 'nz-0-1').click();
+  expect(await sends(a)).toBe(before);
   await shot(a, 'pack-A-past');
+});
+
+test('Okinawa’s list (over): its six categories and 35 items, each category its NH item, nothing to tick or edit', async ({ context }) => {
+  const a = await open(context, 'A', BEFORE, 'okinawa');
+  const list = a.locator('[data-pack="okinawa"]');
+  await expect(list).toHaveAttribute('data-pack-frozen', 'true');
+  await expect(list.locator('[data-pack-cat]')).toHaveCount(okinawa.packing.cats.length);
+  await expect(list.locator('[data-pack-item]')).toHaveCount(okinawa.packing.cats.reduce((n, c) => n + c.items.length, 0));
+  await expect(list.locator('[data-pack-cat] .ci img')).toHaveCount(okinawa.packing.cats.length);
+  await expect(list.locator('button, input, [role="checkbox"]')).toHaveCount(0);
 });
 
 test('two tabs: a tick and an item on one are on the other at once', async ({ context }) => {
