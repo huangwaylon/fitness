@@ -149,7 +149,7 @@
         {#if editing}{#if c.editable}<span class="mo"><Icon name="more" size={22} /></span>{/if}{:else}<span class="cc" data-pack-cat-mine={c.mine}>{t('travel.pack.count', { n: c.mine, m: c.total })}</span>{/if}
       {/snippet}
       {#if editing}
-        <button type="button" class="ch" aria-disabled={c.editable ? undefined : 'true'} aria-label={t('travel.pack.actsOf', { name: c.name })} data-pack-acts={c.id} data-sfx="open"
+        <button type="button" class="ch" class:sel={acting && target?.kind === 'cat' && target.cat.id === c.id} aria-disabled={c.editable ? undefined : 'true'} aria-label={t('travel.pack.actsOf', { name: c.name })} data-pack-acts={c.id} data-sfx="open"
           onclick={() => act({ kind: 'cat', cat: c, i: ci, n: view.length })}>{@render catHead()}</button>
       {:else}
         <h3 class="ch">{@render catHead()}</h3>
@@ -167,7 +167,7 @@
               {/if}
             </button>
           {:else}
-            <button type="button" class="q-row pr er" aria-disabled={r.editable ? undefined : 'true'} aria-label={t('travel.pack.actsOf', { name: r.text })} data-pack-acts={r.id} data-sfx="open"
+            <button type="button" class="q-row pr er" class:sel={acting && target?.kind === 'item' && target.id === r.id} aria-disabled={r.editable ? undefined : 'true'} aria-label={t('travel.pack.actsOf', { name: r.text })} data-pack-acts={r.id} data-sfx="open"
               onclick={() => act({ kind: 'item', id: r.id, name: r.text, i: ri, n: c.rows.length })}>
               <span class="grip" aria-hidden="true"><Icon name="grip" size={20} stroke={2.6} /></span>
               <span class="tx"><span class="it">{r.text}</span></span>
@@ -213,7 +213,8 @@
   .tx, .cn { word-break: normal; overflow-wrap: anywhere; }
   .prog { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0 0 0 4px; margin-top: -4px; }
   .big { font-size: var(--q-fs-title); line-height: 1; white-space: nowrap; }
-  .of { font: var(--q-w) var(--q-fs-body)/1 var(--q-font-title); color: var(--q-muted); }
+  /* (svelte trims the span's leading space) */
+  .of { padding-left: .25em; font: var(--q-w) var(--q-fs-body)/1 var(--q-font-title); color: var(--q-muted); }
   .pastl { flex: 1; font-size: var(--q-fs-s); color: var(--q-muted); }
   .eh { flex: 1; display: grid; color: var(--q-ink-2); }
   .eh small { font-size: var(--q-fs-s); color: var(--q-muted); }
@@ -246,7 +247,9 @@
   .er { align-items: center; }
   .er[aria-disabled='true'] { opacity: .55; }
   .grip { color: var(--q-faint); display: flex; flex: none; margin-right: -2px; }
-  .add { color: var(--q-accent-ink); font-weight: var(--q-w-b); gap: 8px; padding: 11px 16px 11px 14px; border-top: 1px solid var(--q-hairline); }
+  /* the row (or category) whose actions are open */
+  .q-row.sel, .ch.sel { background: var(--q-accent-soft); }
+  .q-row.add { color: var(--q-accent-ink); font-weight: var(--q-w-b); gap: 8px; padding: 11px 16px 11px 14px; border-top: 1px solid var(--q-hairline); }
   .q-card > .add:first-child { border-top: 0; }
   .reset { color: var(--q-ink-2); gap: 8px; border-top: 1px solid var(--q-hairline); }
   .none { margin: 0; padding: 10px 16px 12px; border-top: 1px solid var(--q-hairline); font-size: var(--q-fs-s); color: var(--q-muted); }

@@ -219,9 +219,14 @@ test.describe('pictures', () => {
       await shot(page, `01-list-${tod}`);
       await pickTrip(page, 'nz');
       await shot(page, `02-nz-${tod}`);
-      await sheet(page).locator('[data-day="2"]').evaluate((el) => el.scrollIntoView({ block: 'start' }));
+      // the trip's own scroller only (scrollIntoView moves every ancestor: at the list's end, the sheet itself)
+      const to = (sel: string) => sheet(page).locator(sel).evaluate((el) => {
+        const s = el.closest('.scroll')!;
+        s.scrollTop += el.getBoundingClientRect().top - s.getBoundingClientRect().top - 56;
+      });
+      await to('[data-day="2"]');
       await shot(page, `02b-nz-scrolled-${tod}`);
-      await sheet(page).locator('[data-prep]').evaluate((el) => el.scrollIntoView({ block: 'start' }));
+      await to('[data-prep]');
       await shot(page, `03-nz-prep-${tod}`);
       await tab(page, 'map').click();
       await shot(page, `04-nz-map-${tod}`);
