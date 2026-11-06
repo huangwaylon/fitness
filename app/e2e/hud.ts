@@ -1,5 +1,5 @@
 // The HUD's top-right cluster (docs/design.md "Island"): [the health button] [the meal button] [the menu]. The menu
-// (NH's leaf, at the screen's side) drops 「ベル 121」 (→ the panel, ごほうび), ずかん, えいご ききとり and せってい; each opens
+// (NH's leaf, at the screen's side) drops 「ベル 121」 (→ the panel, ごほうび), ずかん, えいご ききとり, りょこう and せってい; each opens
 // its own sheet.
 // Shared by the specs that reach any of them.
 import { expect, type Page } from '@playwright/test';
@@ -10,9 +10,9 @@ export const hudMenu = (page: Page) => page.locator('[data-hud-menu]');
 /** The menu's ベル row (the wallet's balance in data-bells, today's in data-today; hidden while folded). */
 export const hudBells = (page: Page) => page.locator('[data-hud-bells]');
 
-const PILL = { bells: '[data-hud-bells]', zukan: '[data-hud-zukan]', kikimimi: '[data-hud-kikimimi]', settings: '[data-hud-settings]' };
+const PILL = { bells: '[data-hud-bells]', zukan: '[data-hud-zukan]', kikimimi: '[data-hud-kikimimi]', travel: '[data-hud-travel]', settings: '[data-hud-settings]' };
 const SHEET = {
-  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', kikimimi: 'dialog[open] [data-kikimimi]', settings: 'dialog[open] [data-settings]'
+  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', kikimimi: 'dialog[open] [data-kikimimi]', travel: 'dialog[open] [data-travel]', settings: 'dialog[open] [data-settings]'
 };
 
 /** Unfold the menu (if folded) and wait for its pills to be in place. They drop out of the leaf one after the other

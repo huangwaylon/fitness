@@ -130,7 +130,10 @@ export const DEVICE = {
   travelUnits: 'island.travel.units',
   /** localStorage: `[<who>|<trip>…]`: the packing lists this phone celebrated 「じゅんび OK！」 for, by who I am (once
    *  per trip and person; components/travel/PackList.svelte). */
-  travelPacked: 'island.travel.packed'
+  travelPacked: 'island.travel.packed',
+  /** localStorage: the Tokyo date Orville last said his line at the りょこう counter on this phone (once a day:
+   *  components/travel/TravelSheet.svelte). */
+  travelHello: 'island.travelHello'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

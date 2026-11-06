@@ -6,9 +6,10 @@ import jaTab from './kenkou.ja.json';
 import jaFood from './food.ja.json';
 import jaKiki from './kikimimi.ja.json';
 import jaPack from './travelPack.ja.json';
+import jaTravel from './travel.ja.json';
 import jaNames from './catch.ja.json';
 
-const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaKiki, ...jaPack };
+const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaKiki, ...jaPack, ...jaTravel };
 
 /** The longest stretch of a string with no break opportunity under keep-all, in characters ({n} counts as one). */
 function longestRun(s: string): number {

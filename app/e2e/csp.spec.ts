@@ -43,7 +43,7 @@ test('the island, its sheets, the music and the rooms: no CSP violation', async 
   const s = (await page.locator('.if-scene').boundingBox())!;
   await page.mouse.click(s.x + s.width / 2, s.y + 60);
   await expect.poll(() => audio.some((u) => u.includes('/audio/music/'))).toBe(true);
-  for (const which of ['bells', 'zukan', 'settings'] as const) {
+  for (const which of ['bells', 'zukan', 'travel', 'settings'] as const) {
     await fromMenu(page, which);
     await page.keyboard.press('Escape');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
