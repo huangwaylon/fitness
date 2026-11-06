@@ -28,7 +28,7 @@ const item = (type: ItemType) => ([id, speaker, en, ja, note, choices, tags, con
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : undefined);
   return {
     ...single(5, type, id, speaker, en, ja, note, choices, tags), cond,
-    ...(x.tts && { tts: x.tts }), ...(x.focus && { focus: x.focus }), ...(ask && { ask }), ...staged(id)
+    ...(x.tts && { tts: x.tts }), ...(x.focus && { focus: x.focus }), ...(ask && { ask }), ...staged(id), ...HELP[id]
   };
 };
 
@@ -173,12 +173,12 @@ const MEAN: readonly Row[] = [
     'no further service＝この後はない',
     ['If you miss this one, there are no more trains tonight.', 'This train will stop before Newark tonight.', 'The next train to Newark leaves from another track.'],
     tg(5, 'official', 'literal', ['pa', 'station']), light('pa', 'station')],
-  ['a5-plumber', 'tom-nook', "Hi, it's Tom from the management office. Just a heads-up, the plumber's running late tomorrow. I wouldn't hold your breath before lunch.",
-    '管理会社のトムです。念のため、明日は配管工が遅れそうです。お昼前はあまり期待しないでください。 → つまり、午前中は来ない。',
+  ['a5-plumber', 'tom-nook', "Hi, it's Tom from the management office. Just a heads-up, the plumber's running late tomorrow, so if you're hoping to see him before lunch, I wouldn't hold your breath.",
+    '管理会社のトムです。念のため、明日は配管工が遅れそうです。お昼前に来てほしいなら、あまり期待しないでください。 → つまり、午前中は来ない。',
     "don't hold your breath＝期待しないで",
     ["The plumber probably won't come in the morning.", 'The plumber will come early tomorrow.', 'You should call the plumber before lunch.'],
     tg(30, 'neighbour', 'hedge', ['voicemail'], ['idiom', 'contraction']), light('voicemail'),
-    { tts: "Hi, it's Tom from the management office. Just a heads-up, the plumber's runnin' late tomorrow. I wouldn't hold your breath before lunch." }],
+    { tts: "Hi, it's Tom from the management office. Just a heads-up, the plumber's runnin' late tomorrow, so if you're hopin' to see him before lunch, I wouldn't hold your breath." }],
   ['a5-rows', 'orville', "At this time, we'd like to invite passengers seated in rows 30 and higher to board. All other passengers, please remain seated.",
     'ただいまより、30列目以降のお客様のご搭乗をご案内いたします。その他のお客様はお座りのままお待ちください。 → つまり、後方の席の人だけ。',
     'rows 30 and higher＝30列目以降（機体の後方）',
@@ -224,6 +224,75 @@ const REPLY: readonly Row[] = [
     { tts: "Sorry, buddy, this train's not in service. You'll want the next one, on track two." }]
 ];
 
+// ---- the Japanese help (bank.ts cja, why, ctx; docs/kikimimi.md "Japanese help") -----------------------------------
+
+const HELP: Readonly<Record<string, Pick<Item, 'cja' | 'why' | 'ctx'>>> = {
+  // num
+  'a5-track': { cja: ['7時45分', '7時5分', '8時5分'],
+    why: 'pushed back from A to B＝AからBへ遅らせた。後ろの seven forty-five が新しい開始時刻。seven-oh-five は元の時刻。', ctx: '野球場の場内アナウンス' },
+  'a5-behind': { cja: ['15分', '50分', '5分'],
+    why: 'running about fifteen minutes behind schedule＝約15分遅れ。fifTEEN は後ろが長く強い。FIFty なら前が強い。', ctx: '電車の車内アナウンス' },
+  'a5-final-call': { cja: ['64番', '46番', '212番'],
+    why: 'proceed immediately to gate 64＝すぐに64番搭乗口へ。212は便名。sixty-four と forty-six の順番に注意。', ctx: '空港のアナウンス' },
+  'a5-gate-moved': { cja: ['9時15分', '7時30分', '9時50分'],
+    why: 'opening act（前座）は7時30分、headliner（メイン）は about nine fifteen。fifTEEN と FIFty の強勢に注意。', ctx: 'コンサート会場のアナウンス' },
+  'a5-boarding-time': { cja: ['4時30分', '5時', '4時50分'],
+    why: 'All-aboard time＝乗船の締め切り、four thirty。The ship sails at five は出港時刻なので、それより前に戻る。', ctx: 'クルーズ船の朝の船内放送' },
+  'a5-press-three': { cja: ['3', '1', 'そのまま待つ'],
+    why: 'To report a lost or stolen card, press three＝紛失・盗難は3。自動音声は「用件 → 番号」の順なので、用件を聞いてから番号を待つ。', ctx: 'カード会社に電話しています' },
+  'a5-queue': { cja: ['12分', '6分', '20分'],
+    why: 'caller number six は順番（6番目）。wait time is twelve minutes＝待ち時間は約12分。twelve と twenty も聞き分ける。', ctx: 'サポート窓口に電話しています' },
+  'a5-dentist': { cja: ['14日', '15日', '4日'],
+    why: 'Thursday the fourteenth＝14日の木曜。three fifteen は時刻（3時15分）。fourth（4日）より長く、teenth がある。', ctx: '歯医者からの留守電' },
+  'a5-key-code': { cja: ['90歳', '19歳', '80歳'],
+    why: 'turning ninety＝90歳になる。NINEty は前が強い。nineteen なら後ろの teen が長い。number candles＝数字の形のろうそく。', ctx: '家族からの留守電' },
+  'a5-closing': { cja: ['20時', '20時15分', '19時45分'],
+    why: 'in fifteen minutes＝あと15分で、at eight p.m.＝午後8時に。閉店は8時。15分を足したり引いたりしないこと。', ctx: 'お店の閉店前の放送' },
+  'a5-coats': { cja: ['40%オフ', '30%オフ', '13%オフ'],
+    why: 'for the next thirty minutes は時間（30分間）。割引は forty percent off＝40%オフ。third floor（3階）も混ざるので注意。', ctx: 'デパートの店内放送' },
+  'a5-typhoon': { cja: ['90キロ', '40キロ', '19キロ'],
+    why: 'gusts of up to ninety＝最大90キロの突風。easing to forty は木曜朝に弱まった後。NINEty は前が強い。', ctx: 'カフェで、ラジオのニュース' },
+  // gist
+  'a5-suspended': { cja: ['別の路線で行く。', 'ホームで次の電車を待つ。', '三鷹で乗り換える。'],
+    why: 'services are suspended＝運転見合わせ。use Tokyo Metro services instead＝代わりに東京メトロを使って。待っても電車は来ない。', ctx: '東京駅のホームのアナウンス' },
+  'a5-other-side': { cja: ['反対側のドアから降りる。', '次の駅は閉鎖中。', 'こちら側のドアは壊れている。'],
+    why: 'will not open at the next station＝次の駅では開かない。use the doors on the opposite side＝反対側のドアを使って。', ctx: '電車の車内アナウンス' },
+  'a5-wind': { cja: ['展示はもうすぐ閉まるが、ショップは少し長く開いている。', 'ギフトショップは20分で閉まる。', '博物館は今夜遅くまで開いている。'],
+    why: '博物館は in twenty minutes で閉館、ギフトショップは stay open for another half hour＝さらに30分営業。ショップのほうが遅い。', ctx: '博物館の館内放送' },
+  'a5-burst-pipe': { cja: ['切らずに待つ。', '明日の朝かけ直す。', '電話を切ってメールを送る。'],
+    why: 'office is now closed で切りたくなるが、burst pipe（水道管の破裂）なら please stay on the line＝切らずにお待ちください。', ctx: '夜、水道局に電話しています' },
+  'a5-cover-shift': { cja: ['土曜に空港まで車で送ってほしい。', '土曜のフライトが欠航した。', '土曜に一緒に飛行機に乗ってほしい。'],
+    why: '長い前置きの後、but の後が用件：give me a ride to the airport＝空港まで車で送って。ride は「乗せてもらうこと」。', ctx: '友だちからの留守電' },
+  'a5-alarm-test': { cja: ['何もしない。ただの試験。', 'すぐに建物から出る。', '次の指示を待つ。'],
+    why: 'This is a test＝試験。No action is required＝対応は不要。normal activities を続けて＝いつもどおりに。', ctx: '職場のビルの館内放送' },
+  // mean
+  'a5-high-volume': { cja: ['電話ではたぶん長く待つ。', 'ウェブサイトは今使えない。', 'すぐ折り返しの電話が来る。'],
+    why: 'high volume of calls＝電話が混んでいる。quicker to visit our website＝サイトのほうが早い、は「電話は長く待つ」という遠回しな案内。', ctx: 'サポート窓口に電話しています' },
+  'a5-passing': { cja: ['車から降りずに待てば、子どもを連れてきてくれる。', '車を停めて、中に迎えに行く。', '今日は送迎の列が閉まっている。'],
+    why: 'stay in your vehicles＝車から降りないで。A staff member will walk your child out＝職員が子どもを車まで連れてくる。', ctx: '学校のお迎えの車の列で' },
+  'a5-alight': { cja: ['レジがもう一つ開く。', '6番レジは今閉まる。', '全員が列を変えなければならない。'],
+    why: "We're opening register six＝6番レジを開けます。come on over＝こちらへどうぞ。移っていいのは並んでいる人で、全員ではない。", ctx: 'スーパーの店内放送' },
+  'a5-last-train': { cja: ['これを逃すと、今夜はもう電車がない。', '今夜はニューアークの手前で止まる。', '次のニューアーク行きは別のホームから出る。'],
+    why: 'the last train＝最終列車。no further service tonight＝今夜はこの後の運行なし。次の電車はない。', ctx: 'ニューヨークの駅のアナウンス' },
+  'a5-plumber': { cja: ['配管工はたぶん午前中には来ない。', '配管工は明日早く来る。', 'お昼前に配管工に電話するべき。'],
+    why: "I wouldn't hold your breath＝期待しないほうがいい（息を止めて待つな）。遅れる上に、お昼前は期待できない＝午前中は来ない。", ctx: 'アパートの管理会社からの留守電' },
+  'a5-rows': { cja: ['今は飛行機の後ろの席の人だけ搭乗できる。', '今は全員が搭乗できる。', '30列目の人は席を変える必要がある。'],
+    why: 'rows 30 and higher＝30列目以降で、機体の後ろの席。All other passengers, please remain seated＝ほかの人は座って待つ。', ctx: '空港の搭乗口で' },
+  // reply
+  'a5-reason': { cja: ['問題の報告。', 'はい、できます。', 'ひとことでお願いします。'],
+    why: '自動音声の In a few words＝ひとことで用件を。例の report a problem のように短く言う。質問を繰り返したり Yes で答えたりしない。', ctx: '銀行の自動音声に電話しています' },
+  'a5-intercom': { cja: ['はい、2回。まだエラーが出ます。', 'いいえ、黄色いカードは持っていません。', '駅事務室に行ってみます。'],
+    why: 'Have you tried tapping～?＝〜をタッチしてみた？ 試したかどうかと結果を答える。yellow は読み取り機の色で、カードの色ではない。', ctx: '改札で、インターホンを押しました' },
+  'a5-make-known': { cja: ['うちの子です！ 大丈夫ですか？', 'サービスカウンターは正面入口のそばです。', 'たしか5歳くらいです。'],
+    why: "迷子の呼び出し。He's looking for his mom＝お母さんを探している。名乗り出る親なら「うちの子です」が自然。場所や年齢の繰り返しは罠。", ctx: 'ショッピングモールで、子どもとはぐれました' },
+  'a5-leave-message': { cja: ['ケン・モリです。予約の件で折り返しお願いします。', 'じゃあ、2時にお昼を食べます。', 'もしもし？ リベラ先生？ いますか？'],
+    why: 'after the tone＝発信音の後に。名前・番号・用件を残すのが自然。録音に話しかける Are you there? や、lunch の繰り返しは罠。', ctx: '病院に電話したら、留守電でした' },
+  'a5-did-you-say': { cja: ['いいえ、注文の変更です。', 'はい、聞き取れませんでした。', 'すみません、あとで注文します。'],
+    why: "Did you say 'cancel my order'?＝「注文のキャンセル」と言いましたか？ 違うなら No と正しい用件を言う。didn't catch の繰り返しは罠。", ctx: '通販の自動音声に電話しています' },
+  'a5-out-of-service': { cja: ['あ、すみません。2番線でしたっけ？', 'はい、運行中です。', 'じゃあ、最終に乗ります。'],
+    why: "not in service＝回送（客を乗せない）。You'll want the next one＝次のに乗るといいよ。番線を確かめるのが自然。in service の罠に注意。", ctx: '駅で、電車に乗ろうとしたら' }
+};
+
 /** Level 5's items. */
 export const BANK5: readonly Item[] = [
   ...NUM.map(item('num')),
@@ -231,3 +300,4 @@ export const BANK5: readonly Item[] = [
   ...MEAN.map(item('mean')),
   ...REPLY.map(item('reply'))
 ];
+for (const id of Object.keys(HELP)) if (!BANK5.some((it) => it.id === id)) throw new Error(`kikimimi: help for ${id}, not an item`);
