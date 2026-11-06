@@ -7,6 +7,7 @@ import { BANK, type Item, type Level } from './bank.ts';
 import { answersOf, daysPlayed, gamesOf, recentOf, speedOf, statsOf, together, trendOf, weekDays, type Game, type OtherGame, type Speed, type Stats } from './progress.ts';
 import { cardsOf, dueOf, practiceDeck, type Focus } from './srs.ts';
 import { feedback, recommend, type Feedback, type Rec } from './advice.ts';
+import type { Recent } from './recent.ts';
 
 export interface Report {
   today: LocalDate;
@@ -45,8 +46,8 @@ export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, l
 }
 
 /** にがて れんしゅう's deck for this report (a recommendation's focus, or every weak spot). */
-export function practiceFor(r: Report, levels: readonly Level[], seed: number, focus: Focus = null): Item[] {
-  return practiceDeck({ answers: answersOf(r.games), stats: r.stats, today: r.today, seed, levels, focus });
+export function practiceFor(r: Report, levels: readonly Level[], seed: number, focus: Focus = null, recent: Recent = []): Item[] {
+  return practiceDeck({ answers: answersOf(r.games), stats: r.stats, today: r.today, seed, levels, focus, recent });
 }
 
 /** Game `g`'s feedback: the stats without it and with it, and the advice after it (null: not in the report). */

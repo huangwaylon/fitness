@@ -6,7 +6,7 @@
 // length, clips.ts itemDur). Loaded with the sheet only.
 import { BANK, clipIds, isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
 import { clipDur, clipUrl, itemDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
-import { SPEEDS, ladderPoints } from '#lib/kikimimi/ladder.ts';
+import { SPEEDS, ladderDeck, ladderPoints } from '#lib/kikimimi/ladder.ts';
 import { FAST_WINDOWS, QuizSession, isLadder, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizTimer, type QuizView } from '#lib/kikimimi/session.ts';
 import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
@@ -18,6 +18,9 @@ import type { ListenRow } from '#lib/contract/listen.ts';
 import { listenAnswers } from '#lib/kikimimi/progress.ts';
 import { preloadStage } from './scene/stage.ts';
 import { itemsOf, pinDeck, usePractice } from './decks.ts';
+import { deck } from '#lib/kikimimi/deck.ts';
+import { agesOf, freshSeed } from '#lib/kikimimi/recent.ts';
+import { recentGames, rememberGame } from './progress.svelte.ts';
 
 /** The deck as the session sees it: how many, each item's length as played (ms, clips.json: a dialogue's lines and
  *  the gaps) and its right choice. Read through at each call: にがて れんしゅう puts its own items in before the start
@@ -44,6 +47,10 @@ const lineDurs = (it: Item): number[] => clipIds(it).map((id) => clipDur(id) ?? 
 
 /** No relay (a dev build without one): a game alone, on the device's clock. */
 const soloLink = (): QuizLink => ({ now: () => Date.now(), send: () => false, on: () => () => {}, onHere: (fn) => (fn([]), () => {}) });
+
+/** The host's seed (recent.ts): of SEED_TRIES, the deck that overlaps this phone's last games least, its flags kept. */
+const seedFor = ({ lv, flags, random }: { lv: Level; flags: number; random: () => number }): number =>
+  freshSeed({ random, flags, recent: recentGames(), ids: (s) => (isLadder(s) ? ladderDeck(s) : deck(s, lv)).map((it) => it.id) });
 
 /** The lobby's sound check: a clip from no game (the bank's first L1 item; nothing of the deck given away). */
 const TEST_CLIP = BANK.find((it) => it.lv === 1)!.id;
@@ -94,6 +101,8 @@ export class QuizGame {
   #rp: number[] = [];
   #began = 0;
   #recordedG = '';
+  /** The game whose items went into this phone's history. */
+  #remembered = '';
   readonly #record: ((row: ListenRow) => void) | undefined;
   #soundingTimer: ReturnType<typeof setTimeout> | undefined;
   #talkTimers: ReturnType<typeof setTimeout>[] = [];
@@ -105,7 +114,7 @@ export class QuizGame {
     this.me = o.me;
     this.#record = o.record;
     this.#link = o.live ? quizLink(o.live) : soloLink();
-    this.#session = new QuizSession({ me: o.me, deckOf, windows: o.fast ? FAST_WINDOWS : undefined });
+    this.#session = new QuizSession({ me: o.me, deckOf, seedFor, windows: o.fast ? FAST_WINDOWS : undefined });
     // what the island heard before this sheet opened: as if heard now (a host re-sends only when someone comes back)
     const now = this.#link.now();
     for (const m of o.heard ?? []) this.#session.receive(m, now);
@@ -142,6 +151,12 @@ export class QuizGame {
     this.#act((s, now) => s.join(now, g));
   }
   go(): void {
+    // a solo game (my lobby kept alone, a quiz): its own deck, the items not heard lately first (nothing on the wire)
+    const v = this.view;
+    if (v?.g && v.phase === 'lobby' && v.local && v.amHost && !this.practicing && !v.ladder) {
+      usePractice(v.seed, v.lv as Level, deck(v.seed, v.lv as Level, undefined, agesOf(recentGames())));
+      this.#fetched = '';
+    }
     this.#act((s, now) => s.go(now));
   }
   /** My one, final answer to the current question. */
@@ -232,6 +247,11 @@ export class QuizGame {
     // the game I'm in keeps its deck whatever other phones' lobbies build (decks.ts)
     pinDeck(v.g ? v.seed : null, v.lv as Level);
     if (v.g && v.phase !== 'lobby' && v.phase !== 'idle' && !this.#began) this.#began = now;
+    // a game begun: its items first in this phone's history (recent.ts)
+    if (v.g && v.phase !== 'lobby' && v.phase !== 'idle' && this.#remembered !== v.g) {
+      this.#remembered = v.g;
+      rememberGame(itemsOf(v.seed, v.lv as Level).map((it) => it.id));
+    }
     if (v.phase === 'results' && v.g) this.#keep(v, now, true);
     this.view = v;
     this.now = now;
