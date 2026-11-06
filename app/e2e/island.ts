@@ -26,7 +26,7 @@ export type W3 = {
 export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 
 /** The island's hooks there to read: __world and the 3D island's __world3d (it comes a moment after __world). */
-export async function ready3d(page: Page) {
+async function ready3d(page: Page) {
   await page.waitForFunction(() => { const w = window as unknown as { __world?: unknown; __world3d?: unknown }; return !!w.__world && !!w.__world3d; }, null, { timeout: 30_000 });
 }
 

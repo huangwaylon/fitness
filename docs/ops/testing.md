@@ -107,7 +107,7 @@ that morning.
   or a house's tap area comes in between the check and the click (its lazy art); `castIn` checks and clicks in one
   step and tries again. A plain click or touch only where the tap itself is the test (fishing-taps, exact-taps).
 - **Read the hooks once they're there**: `__world` comes before `__world3d`; `camTo` and `settled` wait for both
-  (`ready3d`), a spec reading `__world3d` straight after `goto` waits on `is3d` or `ready3d` first.
+  (`ready3d`); a spec reading `__world3d` straight after `goto` waits on `is3d` first.
 - **Silent**: Chromium runs with `--mute-audio` (the music, K.K. and the effects never sound on a dev's Mac); WebKit
   headless makes no sound.
 - **No new fixed wait.** `page.waitForTimeout` or a `setTimeout` promise needs `// hold: <why>` on its line (a wait
