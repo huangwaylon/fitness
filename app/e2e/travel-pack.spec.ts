@@ -177,7 +177,7 @@ test('the guest ticks and adds, and changes only what it added', async ({ contex
   await expect(g.locator('[data-pack-editbar]')).toContainText('自分で追加したものだけ');
   // a seed item and category, and うめ's item: shown, but no actions (a tap boops)
   for (const id of ['nz-0-0', '_demob002', 'nz-0']) await expect(g.locator(`[data-pack-acts="${id}"]`)).toHaveAttribute('aria-disabled', 'true');
-  await g.locator('[data-pack-acts="nz-0-0"]').click();
+  await g.locator('[data-pack-acts="nz-0-0"]').click({ force: true });
   await expect(g.locator('dialog[open] [data-action]')).toHaveCount(0);
   // its own: added, renamed, removed
   await cat(g, 'nz-0').locator('[data-pack-add]').click();
