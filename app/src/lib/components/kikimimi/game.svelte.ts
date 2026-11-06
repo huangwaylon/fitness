@@ -22,7 +22,9 @@ import { itemsOf, pinDeck, usePractice } from './decks.ts';
 import { deck } from '#lib/kikimimi/deck.ts';
 import { agesOf, freshSeed } from '#lib/kikimimi/recent.ts';
 import { recentGames, rememberGame } from './progress.svelte.ts';
-import { TEST_CLIP, ladders, load, loaded, type Unit } from '#lib/kikimimi/pool.ts';
+import { TEST_CLIP, ladders, load, loaded, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
+import { lessonDeck, lessonL, stageLevel, type Lesson, type Tier, type UnitChunk, type UnitPlay } from '#lib/kikimimi/lesson.ts';
+import type { Stage } from '#lib/kikimimi/stages.ts';
 
 /** The deck as the session sees it: how many, each item's length as played (ms, clips.json: a dialogue's lines and
  *  the gaps) and its right choice. Read through at each call: にがて れんしゅう puts its own items in before the start
@@ -91,6 +93,9 @@ export class QuizGame {
   practicing = $state<false | 'weak' | 'missed'>(false);
   /** My answers of the last game, as recorded (the results' feedback), or null. */
   recorded = $state.raw<ListenRow | null>(null);
+  /** A unit's lesson (docs/curriculum-units.md §3): its unit, which lesson, my tier, whether it's the 30-day recheck;
+   *  its deck dealt into my lobby kept alone (`lesson`), which shows its intro card till はじめる. Null: a quiz. */
+  lesson = $state.raw<{ unit: UnitPlay; lesson: Lesson; tier?: Tier; recheck: boolean } | null>(null);
 
   readonly me: Who;
   readonly #link: QuizLink;
@@ -141,6 +146,7 @@ export class QuizGame {
   open(lv: Level, same = false, vs = false, ladder = false, timer?: QuizTimer): void {
     this.#then(() => [ladder ? 'ladder' : lv], () => {
       this.practicing = false;
+      this.lesson = null;
       this.#act((s, now) => s.open({ lv, same, vs, ladder, timer }, now));
     });
   }
@@ -153,8 +159,29 @@ export class QuizGame {
       usePractice(v.seed, v.lv as Level, items);
       this.#fetched = '';
       this.practicing = kind;
+      this.lesson = null;
       this.go();
     });
+  }
+  /** A unit's lesson (lesson.ts): once the unit's chunk is in, my lobby kept alone (a quiz's, not a ladder's) takes the
+   *  lesson's 6 questions by its seed, at my tier (`tier`), and waits on the lesson's intro card for はじめる (`go`).
+   *  `recheck`: the 30-day おさらい チェック (a チェック like any). Nothing on the wire. */
+  playLesson(unit: string, lesson: Lesson, o: { tier?: Tier | ((stage: Stage) => Tier | undefined); recheck?: boolean } = {}): void {
+    this.#then(() => [unit as Unit], () => {
+      const v = this.view, part = unitPart(unit) as UnitChunk | undefined;
+      if (!part || !v?.g || v.phase !== 'lobby' || !v.local || !v.amHost || v.ladder) return;
+      const tier = typeof o.tier === 'function' ? o.tier(part.unit.stage) : o.tier;
+      const items = lessonDeck(part, lesson, v.seed, tier);
+      if (!items.length) return;
+      usePractice(v.seed, v.lv as Level, items);
+      this.#fetched = '';
+      this.practicing = false;
+      this.lesson = { unit: part.unit, lesson, ...(tier && { tier }), recheck: !!o.recheck };
+    });
+  }
+  /** Back from a lesson's intro card to the lobby (its quiz deck again at はじめる). */
+  dropLesson(): void {
+    this.#then(() => [], () => (this.lesson = null));
   }
   /** みんなを さそう: my lobby announced to everyone here. */
   invite(): void {
@@ -171,7 +198,7 @@ export class QuizGame {
     this.#then(() => [], () => {
       // a solo game (my lobby kept alone, a quiz): its own deck, the items not heard lately first (nothing on the wire)
       const v = this.view;
-      if (v?.g && v.phase === 'lobby' && v.local && v.amHost && !this.practicing && !v.ladder) {
+      if (v?.g && v.phase === 'lobby' && v.local && v.amHost && !this.practicing && !this.lesson && !v.ladder) {
         usePractice(v.seed, v.lv as Level, deck(v.seed, v.lv as Level, undefined, agesOf(recentGames())));
         this.#fetched = '';
       }
@@ -366,8 +393,11 @@ export class QuizGame {
     const r = listenAnswers(itemsOf(v.seed, v.lv as Level), v.answers, v.had, this.#rp, done);
     if (!r.length) return;
     this.#recordedG = v.g;
+    // a unit's lesson: its unit and lesson (the stamps, stamps.ts), the stage's level; co-op, the team's first listens (§10)
+    const ls = this.lesson, n = Math.max(1, Math.min(3, v.players.length));
+    const unit = ls ? { u: ls.unit.id, l: lessonL(ls.lesson), ...(n > 1 && !v.vs && { tm: Math.min(6, v.teamFirst) }) } : null;
     const row: ListenRow = {
-      d: localDateAt(now), g: v.g, lv: v.lv, n: Math.max(1, Math.min(3, v.players.length)),
+      d: localDateAt(now), g: v.g, ...unit, lv: ls ? stageLevel(ls.unit.stage) : v.lv, n,
       ms: Math.max(0, Math.min(3_600_000, Math.round(now - (this.#began || now)))), ...(this.practicing !== false && { p: 1 as const }), r
     };
     this.recorded = row;

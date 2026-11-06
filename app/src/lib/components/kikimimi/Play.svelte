@@ -103,6 +103,12 @@
   }
 </script>
 
+{#snippet noteOf(note: string)}
+  <!-- a lesson's reveal folds the trap's note under 「くわしく」 (docs/curriculum-units.md §3: depth optional) -->
+  {#if game.lesson}<details class="more" data-kiki-more><summary>{t('kiki.more')}</summary><p class="note" data-kiki-note>{note}</p></details>
+  {:else}<p class="note" data-kiki-note>{note}</p>{/if}
+{/snippet}
+
 {#snippet hearRow()}
   {#if (v.speaks || game.listenOnly) && !v.out && !(reveal && hidesLine(it))}
     <!-- 🔁 / 🐢 under the bubble, the clip's own controls (おなじへや on another's phone: shown, never live; the host's phone plays them for the room) -->
@@ -157,7 +163,7 @@
         <div class="bubble" class:open={reveal} aria-live="polite">
           {#if reveal && dlg}
             <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
-            {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+            {#if it.note}{@render noteOf(it.note)}{/if}
           {:else if reveal && hidesLine(it)}
             <!-- a rung below the top: the line stays a secret till the top's reveal -->
             <p class="notes" aria-label={t('kiki.listen')}>♪…</p>
@@ -171,7 +177,7 @@
               <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
               {#if it.marks}<MarkLegend marks={it.marks} />{/if}
             </div>
-            {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+            {#if it.note}{@render noteOf(it.note)}{/if}
           {:else}
             <p class="notes" aria-label={t('kiki.listen')}>♪…</p>
             <span class="track" aria-hidden="true">
@@ -243,7 +249,11 @@
     </p>
 
     <!-- a dialogue's transcript under its verdict and choices, so the answer is never under the sticky つぎへ -->
-    {#if reveal && dlg}<Transcript it={dlg} talk={talking} from={game.talk && game.talk.i === v.i ? game.talk.from : null} {clock} />{/if}
+    {#if reveal && dlg}
+      {#if game.lesson}
+        <details class="more" data-kiki-more><summary>{t('kiki.more')}</summary><Transcript it={dlg} talk={talking} from={game.talk && game.talk.i === v.i ? game.talk.from : null} {clock} /></details>
+      {:else}<Transcript it={dlg} talk={talking} from={game.talk && game.talk.i === v.i ? game.talk.from : null} {clock} />{/if}
+    {/if}
   </div>
 
   {#if v.canNext}
@@ -277,6 +287,8 @@
   .duo { display: flex; gap: 2px; }
   .duo .one { line-height: 0; transform-origin: 50% 100%; transition: opacity var(--dur-quick); }
   .duo:has(.talk) .one:not(.talk) { opacity: .6; }
+  .more summary { cursor: pointer; font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
+  .more[open] summary { margin-bottom: 4px; }
   .note { margin: 0; font: 700 var(--fs-xs)/1.45 var(--font-ui); color: var(--c-ink); position: relative; padding: 4px 8px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
   .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: pop-in 320ms var(--ease-bounce) both; }
   .react :global(svg) { width: 100%; height: 100%; }

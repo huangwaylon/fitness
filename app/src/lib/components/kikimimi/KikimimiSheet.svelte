@@ -13,6 +13,8 @@
   import Lobby from './Lobby.svelte';
   import Play from './Play.svelte';
   import Results from './Results.svelte';
+  import LessonIntro from './LessonIntro.svelte';
+  import UnitList from './UnitList.svelte';
   import { QuizGame, unitFor } from './game.svelte.ts';
   import { currentReport, recentGames, recordGame } from './progress.svelte.ts';
   import { practiceFor } from '#lib/kikimimi/report.ts';
@@ -20,7 +22,8 @@
   import type { Rec } from '#lib/kikimimi/advice.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
   import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
-  import { itemOf, load, loadIds } from '#lib/kikimimi/pool.ts';
+  import { addUnit, itemOf, load, loadIds } from '#lib/kikimimi/pool.ts';
+  import { tierFor, type Lesson, type UnitPlay } from '#lib/kikimimi/lesson.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
   import { TIMERS, type QuizPhase, type QuizTimer } from '#lib/kikimimi/session.ts';
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
@@ -30,7 +33,7 @@
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { hook, hooksOn } from '../island/devHooks.ts';
+  import { hook, hookFlag, hooksOn } from '../island/devHooks.ts';
 
   let { open = $bindable(), join = null }: { open: boolean; join?: string | null } = $props();
 
@@ -40,7 +43,16 @@
   const v = $derived(game?.view ?? null);
   const MID: readonly QuizPhase[] = ['countdown', 'lead', 'play', 'answer', 'reveal'];
   const mid = $derived(!!v && MID.includes(v.phase));
-  const title = $derived(v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n }) : t('kiki.title'));
+  /** A unit's lesson on this phone (its intro card in the lobby; its name over the game). */
+  const lesson = $derived(game?.lesson ?? null);
+  const title = $derived(
+    v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
+      : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`)) : t('kiki.title')
+  );
+  /** The units' test entry on the lobby (before しまの みち): the dev hook `?units`. A fixture put in (the e2e's: the
+   *  `__kiki.unit` hook) bumps the list. */
+  const unitsOn = hookFlag('units');
+  let unitsBump = $state(0);
 
   /** The level last played on this phone (the next lobby's). */
   const lastLv = (): Level => {
@@ -91,7 +103,14 @@
           (window as unknown as { __kiki?: unknown }).__kiki = {
             view: () => it.view, right: () => it.items[it.view.i]?.answer ?? -1, items: () => it.items.map((x) => x.id),
             deck: (ids: string[]) => loadIds(ids).then(() => it.practice(ids.map(itemOf).filter((x) => !!x))),
-            talk: () => it.talk
+            talk: () => it.talk,
+            // (a fixture unit put in from the bank's items, as if its chunk were the build's: the units' e2e)
+            unit: (unit: UnitPlay, ids: string[]) => loadIds(ids).then(() => {
+              addUnit(unit.id, { unit, items: ids.map(itemOf).filter((x) => !!x) });
+              unitsBump++;
+            }),
+            lesson: () => it.lesson && { u: it.lesson.unit.id, lesson: it.lesson.lesson, tier: it.lesson.tier ?? null },
+            recorded: () => it.recorded
           };
       });
     return () => {
@@ -141,6 +160,15 @@
    *  back to the invite (the host's next). */
   function again() {
     if (!game || !v) return;
+    // a lesson: again at once (a チェック retried as often as wanted; never locks), a new deal
+    const ls = game.lesson;
+    if (ls && v.local) {
+      game.close();
+      game.open(lastLv(), false, false, false, v.timer);
+      game.playLesson(ls.unit.id, ls.lesson, { tier: ls.tier, recheck: ls.recheck });
+      game.go();
+      return;
+    }
     const host = v.amHost, lv = v.lv, same = v.same, vs = v.vs, ladder = v.ladder, timer = v.timer, shared = !v.local, practicing = game.practicing;
     game.close();
     if (host || !game.view.invite) {
@@ -187,6 +215,14 @@
       game.go();
     } else practice(r.kind === 'skill' || r.kind === 'try' ? { skill: r.skill } : r.kind === 'accent' ? { accent: r.accent } : null);
   }
+  /** A unit's lesson from the list: my lobby (a quiz's) takes its deck, at my tier (my comfortable level against the
+   *  unit's stage), and shows its intro card. */
+  function startLesson(unit: string, l: Lesson, recheck: boolean) {
+    if (!game || !v?.amHost || !v.local) return;
+    if (v.ladder) game.configure({ ladder: false });
+    const level = currentReport()?.stats.level ?? null;
+    game.playLesson(unit, l, { tier: (stage) => tierFor(level, stage), recheck });
+  }
   function startOwn() {
     game?.open(lastLv(), false, false, false, lastTimer());
   }
@@ -216,6 +252,8 @@
           {/if}
           <button type="button" class="btn paper" data-kiki-own data-sfx="open" onclick={startOwn}>{t('kiki.openOwn')}</button>
         </div>
+      {:else if v.phase === 'lobby' && lesson}
+        <LessonIntro unit={lesson.unit} lesson={lesson.lesson} recheck={lesson.recheck} onstart={() => game?.go()} onback={() => game?.dropLesson()} />
       {:else if v.phase === 'lobby'}
         <div class="tabs" role="tablist" aria-label={t('kiki.title')}>
           {#each ['play', 'record'] as const as k (k)}
@@ -227,6 +265,7 @@
             {#if report}<Progress {report} guest={week.guest} canStart={v.amHost && v.local} onstart={startRec} onplay={() => (tab = 'play')} />{/if}
           {/await}
         {:else}
+          {#if unitsOn && v.amHost && v.local}<UnitList bump={unitsBump} onlesson={startLesson} />{/if}
           <Lobby {game} onlevel={keepLv} ontimer={keepTimer} onpractice={() => practice()} />
         {/if}
       {:else if v.phase === 'countdown'}

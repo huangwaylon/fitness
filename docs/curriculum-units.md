@@ -288,3 +288,28 @@ These are written to the §2 template before any content (§10). units.test chec
 - **でんわを おえる** checks pre-closings with `mean` and `next` ("Anyway, I'll let you go", "Listen, I've gotta run").
 - **ともだちを あんない** makes the learner the host. The friend's questions are the listening, and the replies are the learner's lines.
 - Every dialogue opens and closes naturally (§10), and each unit ends with 「きょうの ひとこと」.
+
+## 13. U2–U3 as built (2026-11-06): solo lessons and stamps
+
+**A lesson's deck** is `kikimimi/lesson.ts` `lessonDeck(chunk, lesson, seed, tier?)`, over the unit's chunk (pool.ts `unitPart`, loaded like a level):
+- 6 questions drawn by the seed, choices shuffled by it as `deck()` does: the same deck for the same seed, so co-op (8c) can share it;
+- であい opens on its model dialogue;
+- the チェック plays only items held out of であい and ばめん (`playIds`, besides the compiler's check);
+- じっせん's ladders stay with はしご for now (its items only);
+- a tier (`easy`/`hard`) swaps in that item's choice set on the same audio; `tierFor` picks it from きろく's comfortable level against the unit's stage (half a step below: easy; a step above: hard).
+
+**Solo play** goes through the quiz's session and UI: `QuizGame.playLesson(unit, lesson)` deals the deck into my lobby kept alone and shows the lesson's intro card (LessonIntro.svelte). The チェック's card is the phone errand: 「{host}から でんわ！ ようじを ききとろう」, with the 5-of-6 rule. A reveal in a lesson folds the note and a dialogue's transcript under 「くわしく」. Results add a strip: the unit's dots, the next core lesson, and on a チェック the stamp with my own first-listen tally (and the team's). もういっかい deals the lesson again at once.
+
+**The row** carries `u`, `l` and the stage's level; a co-op lesson would add `tm` from the session's `teamFirst` (questions someone got right on the first listen), wired but unused until 8c.
+
+**Stamps** (`kikimimi/stamps.ts` `unitsOf`, from gamesOf's games, which keep a lesson row's `u`, `l`, `tm`, every answer and `stampsUnit`):
+- a lesson's dot: a row of it with a whole game's answers (quick play never moves dots);
+- my stamp: the first stamping row's day and tally;
+- the partner's: their summary's `stamped`; both: the double stamp;
+- the recheck: due 30 days after the stamp, done once by a solo チェック on or after that day; `rechecksDue` lists them (for hub card 1).
+
+**The phrase ずかん** (srs.ts): `phrasesOf` (caught: right on the first listen in 3 different items on ≥ 2 days, any mode) and `phraseReview` (a Leitner card per phrase, a new clip each, ≤ 8 a day, counting those reviewed today).
+
+**The test entry** until しまの みち: the dev hook `?units` (a dev build or `?demo`) lists the units on the lobby (UnitList.svelte: dots, stamps, phrases caught, the recheck when due). The e2e puts a fixture unit in through `__kiki.unit` (pool.ts `addUnit`).
+
+**Left for later:** the phone-band condition on the チェック's audio; the real ずかん, hub cards and path UI (U4); co-op lessons (8c); じっせん's ladders as a lesson.
