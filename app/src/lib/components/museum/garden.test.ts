@@ -1,8 +1,8 @@
 // The bug wing as built (museum/garden.ts) with a stub kit (no GPU, every bug a box): this hour's ten (bugShow.ts), each
 // its own InstancedMesh, its model loaded only when picked; the hour turning off screen swaps them at once, on screen
 // the outgoing fade out and the new fade in, their models' geometry and materials released as they go.
-import { describe, expect, test } from 'vitest';
-import { BoxGeometry, Group, InstancedMesh, Mesh, MeshLambertMaterial, type Sphere } from 'three';
+import { describe, expect, test, vi } from 'vitest';
+import { BoxGeometry, BufferGeometry, Group, InstancedMesh, Mesh, MeshLambertMaterial, type Sphere } from 'three';
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { Kit } from './engine.ts';
 import { BUGS_SHOWN, bugsOnDisplay } from './bugShow.ts';
@@ -71,5 +71,24 @@ describe('the bug wing as built', () => {
     expect(meshes().length).toBe(BUGS_SHOWN);
     expect(meshes().every((m) => (Array.isArray(m.material) ? m.material : [m.material]).every((x) => !x.alphaHash && x.opacity === 1))).toBe(true);
     g.dispose();
+  });
+
+  test('a model whose parts won’t merge draws nothing of that bug and keeps none of its parts’ geometry (they leaked)', async () => {
+    const all = onShow(new Map(BUG_IDS.map((id) => [findKey('bug', id), { date: '2026-11-04', at: 0, person: 'A' }] as const)) as never);
+    // (one part indexed, one not: mergeGeometries gives up)
+    const odd = { ...kit, critter: async () => ({ scene: new Group().add(new Mesh(new BoxGeometry(2, 1, 4)), new Mesh(new BoxGeometry(1, 1, 1).toNonIndexed())) }) as unknown as GLTF } as Kit;
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const disposed = vi.spyOn(BufferGeometry.prototype, 'dispose');
+    const g = buildGarden(odd, all, () => Date.parse('2026-11-04T12:00:00+09:00'));
+    await settle();
+    let meshes = 0;
+    g.group.traverse((o) => void ((o as InstancedMesh).isInstancedMesh && meshes++));
+    expect(meshes).toBe(0);
+    // (each bug's unindexed part's copy: 36 points, a box's six faces)
+    const parts = (disposed.mock.contexts as BufferGeometry[]).filter((x) => !x.index && x.getAttribute('position')?.count === 36);
+    expect(parts.length).toBe(BUGS_SHOWN);
+    g.dispose();
+    disposed.mockRestore();
+    quiet.mockRestore();
   });
 });

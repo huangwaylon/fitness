@@ -21,7 +21,8 @@ import {
   type Material, type Texture
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
-import { WALKERS, hourOf, onDisplay, type Specimen, type TankId } from './species.ts';
+import { WALKERS, onDisplay, type Specimen, type TankId } from './species.ts';
+import { ditherMaterial, fadeMaterial, fadeStep, hourWatch } from './hourFader.ts';
 import { TANKS, alongX, bodyIn, openOf, piecesOf, propsOf, waterOf, type Body, type Box, type Tank } from './tanks.ts';
 import { bandOf, cruiseOf, poseOf, spawn, stepSchool, stepWalker, type Swimmer } from './boids.ts';
 import { FEEDERS, FEEDER_R, PREDATORS, feedersIn, feedingOf, stepFeeding, type Feeding } from './feeding.ts';
@@ -125,8 +126,6 @@ function sphereOf(b: Box): Sphere {
   return new Sphere(c, Math.hypot(b.x1 - b.x0, b.y1 - b.y0, b.z1 - b.z0) / 2);
 }
 
-/** How long a fish takes to fade out or in as the hour's pick changes (s). */
-const FADE = 1.6;
 /** The corners' plants ([model, x, z, scale]); the aisle's benches are seats.ts's. */
 const PLANTS: readonly [string, number, number, number][] = [['heliconia', 70, 90, 1.8], ['anthurium', 290, 90, 2.6], ['heliconia', 278, -72, 2]];
 
@@ -340,16 +339,10 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
   const onScreen: Record<TankId, boolean> = { sea: false, deep: false, river: false };
   /** Each tank's open water, in front of its props (tanks.ts openOf): its fish swim and walk only there. */
   const waters = new Map<TankId, Box>(TANKS.map((t) => [t.id, openOf(t)]));
-  /** A fish's fading: dithered (alphaHash: still opaque and unsorted) only while it fades, solid again after. */
+  /** A fish's fading (hourFader.ts: dithered only while it fades). */
   const fadeTo = (s: School, k: number) => {
     s.fade = k;
-    if (!s.mat) return;
-    const mid = k < 1;
-    if (s.mat.alphaHash !== mid) {
-      s.mat.alphaHash = mid;
-      s.mat.needsUpdate = true;
-    }
-    s.mat.opacity = k;
+    if (s.mat) fadeMaterial(s.mat, k);
   };
   function add(sp: Specimen, fadeIn: boolean) {
     const tank = tankOfId.get(sp.tank as TankId);
@@ -404,9 +397,9 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     }
   }
   /** The hour's pick in: the fish it drops fade out and the new ones in where a tank is on screen, at once where not. */
-  let hour = hourOf(clock()), checked = -Infinity;
+  const hour = hourWatch(clock);
   function pick(seen: ((s: Sphere) => boolean) | null) {
-    const want = new Set([...onDisplay(list, hour).values()].flat().map((s) => s.id));
+    const want = new Set([...onDisplay(list, hour.hour).values()].flat().map((s) => s.id));
     const shows = (s: School) => !!seen && seen(spheres.get(s.tank.id)!);
     for (const s of [...schools.values()]) {
       if (want.has(s.sp.id)) {
@@ -446,15 +439,8 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     blocks,
     seats,
     frame(t, dt, seen) {
-      // (a new hour: a new pick; the clock read once a second)
-      if (!(t - checked < 1000)) {
-        checked = t;
-        const h = hourOf(clock());
-        if (h !== hour) {
-          hour = h;
-          pick(seen);
-        }
-      }
+      // (a new hour: a new pick)
+      if (hour.tick(t)) pick(seen);
       // (the water's shimmer and the bubbles with any tank on screen; a school only with its own: each tank's test
       // once a frame)
       let any = false;
@@ -464,8 +450,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
       for (const s of schools.values()) {
         if (!s.dir) continue;
         // (a fade off screen is over at once)
-        const k = onScreen[s.tank.id] ? s.fade + (s.dir * dt) / 1000 / FADE : s.dir > 0 ? 1 : 0;
-        fadeTo(s, Math.max(0, Math.min(1, k)));
+        fadeTo(s, fadeStep(s.fade, s.dir, dt, onScreen[s.tank.id]));
         if (s.fade >= 1 && s.dir > 0) s.dir = 0;
         else if (s.fade <= 0 && s.dir < 0 && s.mesh) drop(s);
       }
@@ -518,7 +503,7 @@ export function buildAquarium(kit: Kit, list: readonly Specimen[], clock: () => 
     },
     dither(on) {
       // (one program for every fish: the first settled one's compiles it for the hour's fades)
-      for (const s of schools.values()) if (s.mat && !s.dir && s.mat.alphaHash !== on) (s.mat.alphaHash = on), (s.mat.needsUpdate = true);
+      for (const s of schools.values()) if (s.mat && !s.dir) ditherMaterial(s.mat, on);
     },
     dispose() {
       disposed = true;

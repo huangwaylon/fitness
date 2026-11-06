@@ -15,7 +15,8 @@ import {
   ShaderMaterial, Sphere, Vector2, Vector3, Vector4, AdditiveBlending, BoxGeometry, type Material, type Texture
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
-import { hourOf, type Habitat, type Specimen } from './species.ts';
+import type { Habitat, Specimen } from './species.ts';
+import { ditherMaterial, fadeMaterial, fadeStep, hourWatch } from './hourFader.ts';
 import { bugsOnDisplay, type Shown } from './bugShow.ts';
 import type { Pt, Rect } from './plan.ts';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -25,8 +26,6 @@ import { BUG_S, CASE, CASES, CASE_AGAVE, FLOWERS, OAKS, OAK_S, PALM, PALM_S, PAT
 import { FLAPS, flapGlsl, wingHinge } from '../world3d/wings.ts';
 
 export { CASES };
-/** How long a bug takes to fade out or in as the hour's pick changes (s): the fish's. */
-const FADE = 1.6;
 /** A display case's pieces (its middle at x, z): a wooden stand, its soil, its glass (open below: its floor the soil's
  *  top) and its frame (geometry.ts frameOf), the posts' feet a little under the soil (their bottoms were the soil's
  *  underside's plane). */
@@ -225,15 +224,10 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
   };
   /** The bugs drawn (this hour's, and the last hour's fading out), by key. */
   const bugs = new Map<string, Bug>();
-  /** A bug's fading: dithered (alphaHash: still opaque and unsorted) only while it fades, solid again after. */
+  /** A bug's fading (hourFader.ts: dithered only while it fades; its glow by its own opacity, write's). */
   const fadeTo = (b: Bug, k: number) => {
     b.fade = k;
-    for (const m of b.mats) {
-      if (m instanceof SpriteMaterial) continue;
-      const mid = k < 1;
-      if (m.alphaHash !== mid) (m.alphaHash = mid), (m.needsUpdate = true);
-      m.opacity = k;
-    }
+    for (const m of b.mats) if (!(m instanceof SpriteMaterial)) fadeMaterial(m, k);
   };
   function add(sh: Shown, fadeIn: boolean) {
     const { sp, slot } = sh, hab = sp.tank as Habitat, key = `${sp.id}@${slot}`;
@@ -254,8 +248,9 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
         if (!p.getAttribute(name)) p.setAttribute(name, new Float32BufferAttribute(new Float32Array(p.getAttribute('position').count * a.itemSize), a.itemSize));
       }
       const all = plain.length > 1 ? mergeGeometries(plain, true) : plain[0];
-      if (!all) return;
+      // (the parts released once merged, and when they won't merge: nothing of this bug is drawn then)
       if (plain.length > 1) for (const p of plain) p.dispose();
+      if (!all) return;
       all.computeBoundingBox();
       const bb = all.boundingBox!;
       all.translate(-(bb.min.x + bb.max.x) / 2, -bb.min.y, -(bb.min.z + bb.max.z) / 2);
@@ -293,9 +288,9 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
   }
   /** The hour's bugs in (bugShow.ts): those it drops fade out and the new ones in where they're on screen, at once
    *  where not. */
-  let hour = hourOf(clock()), checked = -Infinity;
+  const hour = hourWatch(clock);
   function pick(seen: ((s: Sphere) => boolean) | null) {
-    const want = bugsOnDisplay(list, hour), keys = new Set(want.map((w) => `${w.sp.id}@${w.slot}`));
+    const want = bugsOnDisplay(list, hour.hour), keys = new Set(want.map((w) => `${w.sp.id}@${w.slot}`));
     for (const b of [...bugs.values()]) {
       if (keys.has(b.key)) {
         if (b.dir < 0) b.dir = 1;
@@ -367,22 +362,15 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
     wing: 'bug',
     blocks,
     frame(t, dt, seen) {
-      // (a new hour: a new pick; the clock read once a second)
-      if (!(t - checked < 1000)) {
-        checked = t;
-        const h = hourOf(clock());
-        if (h !== hour) {
-          hour = h;
-          pick(seen);
-        }
-      }
+      // (a new hour: a new pick)
+      if (hour.tick(t)) pick(seen);
       let any = false, k = 0;
       // (deleting the one at hand while going through a Map is safe: nothing allocated)
       for (const b of bugs.values()) {
         // (off screen it rests: its room unseen, nothing of it is worked out; a fade there is over at once)
         const on = !!b.mesh && seen(b.sphere);
         if (b.dir) {
-          fadeTo(b, Math.max(0, Math.min(1, on ? b.fade + (b.dir * dt) / 1000 / FADE : b.dir > 0 ? 1 : 0)));
+          fadeTo(b, fadeStep(b.fade, b.dir, dt, on));
           if (b.fade >= 1 && b.dir > 0) b.dir = 0;
           else if (b.fade <= 0 && b.dir < 0) {
             drop(b);
@@ -430,7 +418,7 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
       // (the bugs' fading programs compiled with the rest, for the hour's fades: only those settled)
       for (const b of bugs.values()) {
         if (b.dir) continue;
-        for (const m of b.mats) if (!(m instanceof SpriteMaterial) && m.alphaHash !== on) (m.alphaHash = on), (m.needsUpdate = true);
+        for (const m of b.mats) if (!(m instanceof SpriteMaterial)) ditherMaterial(m, on);
       }
     },
     night(n) {
