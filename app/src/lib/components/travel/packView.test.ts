@@ -1,12 +1,10 @@
 // PackList's view of a trip's list (packView.ts): my counts, the text's language, what A, B and the guest may change
-// (nothing before I'm known), the banner's clipped name, the icons, and the 「じゅんび OK！」 celebration once per trip
-// and person.
+// (nothing before I'm known), the banner's clipped name, a category's icon.
 import { describe, expect, it } from 'vitest';
 import { packFold, packList, type PackEntry, type PackSeed } from '#lib/contract/pack.ts';
 import { packMayEdit } from '#lib/contract/pack.ts';
-import { celebrate, clip, myProgress, packView } from './packView.ts';
+import { catIcon, clip, myProgress, packView } from './packView.ts';
 import { pick } from './text.ts';
-import { glyphOf, iconOf } from './icons.ts';
 
 const T = Date.parse('2026-11-06T03:00:00.000Z');
 const SEED: PackSeed = {
@@ -76,28 +74,11 @@ describe('packView', () => {
     expect([packMayEdit('A', gc.cat), packMayEdit('G', gc.cat)]).toEqual([true, false]);
   });
 
-  it('icons: the guides’ names as NH art, an emoji as itself, anything else a bag', () => {
-    expect(iconOf('file')).toEqual({ art: 'finds/items/antique-map' });
-    expect(iconOf('gift')).toEqual({ art: 'deco/present' });
-    expect(iconOf('plane-takeoff')).toEqual({ art: 'finds/items/shopping-bag' });
-    expect(iconOf('🍙')).toEqual({ emoji: '🍙' });
-    expect(iconOf('')).toEqual({ art: 'finds/items/shopping-bag' });
-    // the cards' glyphs, from the same table
-    expect(glyphOf('tent')).toBe('⛺');
-    expect(glyphOf('nope')).toBe('📍');
-  });
-});
-
-describe('the 「じゅんび OK！」 celebration', () => {
-  it('once per trip and person on a phone', () => {
-    const first = celebrate([], 'A', 'okinawa');
-    expect(first).toEqual({ now: true, seen: ['A|okinawa'] });
-    expect(celebrate(first.seen, 'A', 'okinawa').now).toBe(false);
-    // another person on this phone (the demo's tabs), another trip: their own
-    expect(celebrate(first.seen, 'B', 'okinawa')).toEqual({ now: true, seen: ['A|okinawa', 'B|okinawa'] });
-    expect(celebrate(first.seen, 'A', 'nz').now).toBe(true);
-    // kept short: the latest 24
-    const many = Array.from({ length: 30 }, (_, i) => `A|t${i}`);
-    expect(celebrate(many, 'G', 'nz').seen).toHaveLength(24);
+  it('icons: the guides’ names drawn by the kit, an emoji as itself, anything else a bag', () => {
+    expect(catIcon('shirt')).toEqual({ icon: 'shirt' });
+    expect(catIcon('file')).toEqual({ icon: 'wallet' });
+    expect(catIcon('no-such-icon')).toEqual({ icon: 'shopping-bag' });
+    expect(catIcon('🍙')).toEqual({ emoji: '🍙' });
+    expect(catIcon('')).toEqual({ icon: 'shopping-bag' });
   });
 });

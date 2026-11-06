@@ -18,7 +18,7 @@ export interface TripMapProps {
   places: readonly Place[];
   legs: readonly Leg[];
   dayColors: readonly string[];
-  /** The day shown (1-based): its stops and legs. */
+  /** The day shown (1-based): its stops and legs; 0 every day's. */
   day: number;
   /** A place's id: its pin raised and labelled, the map brought to it. */
   selected?: string;

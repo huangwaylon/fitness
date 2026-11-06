@@ -1,18 +1,20 @@
 <script lang="ts">
-  // けっこんしき's メモ (docs/wedding.md "Notes"): the one shared note as an NH letter (cream stationery, ruled lines,
-  // a pink heart stamp), rendered from its small markdown (Markdown.svelte). A member's ✎ かく opens the field with the
-  // format buttons (みだし, リスト, ふとじ, ななめ: lib/wedding/markdown.ts' toggles, the selection kept; リンク) and
-  // やめる / ほぞん pinned at the scroller's foot (over the keyboard). The draft and its save are notepad.svelte.ts'.
-  // When the store flags a conflict (two saves crossed: the held one and the one it was saved over) both versions
-  // show instead, each under its writer (mine marked), with これに する (とりけす on its banner) and ふたつ あわせる (the
-  // editor with both). The old Sheet's note says so in a soft line until it's saved again. The guest reads only.
+  // けっこんしき's メモ (docs/wedding.md "Notes"): the one shared note as a document (16/1.65 in a card), rendered from its
+  // small markdown (Markdown.svelte), who saved it last over it (「11月4日に はなこ が更新」; the old Sheet's note says
+  // so instead). A member's 編集 (in the title bar) opens the field with the format tools at its foot, over the
+  // keyboard (見出し, 太字, リスト, リンク: lib/wedding/markdown.ts' toggles, the selection kept) and 完了; the draft and
+  // its save are notepad.svelte.ts'. When the store flags a conflict (two saves crossed) both versions show instead,
+  // each under its writer (mine marked), with これに する (とりけす on its banner) and ふたつ あわせる (the editor with
+  // both). The guest reads only.
   import { tick } from 'svelte';
   import Markdown from './Markdown.svelte';
-  import Icon from './Icon.svelte';
+  import Icon, { type IconName } from '../quiet/Icon.svelte';
   import { board } from './board.svelte.ts';
-  import { cancel, merge, pad, pick, save, write } from './notepad.svelte.ts';
-  import { toggleBold, toggleBullets, toggleHeading, toggleItalic, type Edit } from '#lib/wedding/markdown.ts';
+  import { merge, pad, pick, save } from './notepad.svelte.ts';
+  import { toggleBold, toggleBullets, toggleHeading, type Edit } from '#lib/wedding/markdown.ts';
+  import { formatDate } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
+  import { todayIn } from '#lib/time/zone.ts';
   import { WNOTE_CHARS } from '#lib/contract/wedding.ts';
   import type { Who } from '#lib/types.ts';
 
@@ -26,6 +28,7 @@
       ? (['current', 'other'] as const).map((k) => [k, board.conflict![k]] as const).filter(([, v]) => v.md.trim())
       : []
   );
+  const updated = $derived(note && !note.imported && pad.picked === null ? t('wed.note.updated', { date: formatDate(todayIn(board.config.tz, note.at)), name: names[note.who] }) : '');
 
   /** `[label](https://)`, the URL selected to paste over. */
   function toggleLink(text: string, a: number, b: number): Edit {
@@ -40,98 +43,80 @@
     area.focus({ preventScroll: true });
     area.setSelectionRange(e.start, e.end);
   }
-  const TOOLS = [
-    { k: 'h', fn: toggleHeading, glyph: 'H' },
-    { k: 'ul', fn: toggleBullets, glyph: '•' },
-    { k: 'b', fn: toggleBold, glyph: 'B' },
-    { k: 'i', fn: toggleItalic, glyph: 'I' },
-    { k: 'link', fn: toggleLink, glyph: '' }
-  ] as const;
+  const TOOLS: readonly { k: string; fn: (text: string, a: number, b: number) => Edit; icon: IconName }[] = [
+    { k: 'h', fn: toggleHeading, icon: 'heading' },
+    { k: 'b', fn: toggleBold, icon: 'bold' },
+    { k: 'ul', fn: toggleBullets, icon: 'list' },
+    { k: 'link', fn: toggleLink, icon: 'link' }
+  ];
 </script>
 
-<div class="notes">
-  {#if pad.editing}
+{#if pad.editing}
+  <div class="editor">
+    <div class="pad">
+      <textarea class="q-card" bind:this={area} bind:value={pad.draft} maxlength={WNOTE_CHARS} aria-label={t('wed.note.field')} data-wed-note-field data-sfx="none"></textarea>
+    </div>
     <div class="tools" role="toolbar" aria-label={t('wed.note.fmt')}>
       {#each TOOLS as tl (tl.k)}
-        <button type="button" class="chip big tool {tl.k}" aria-label={t(`wed.note.${tl.k}`)} data-wed-fmt={tl.k} data-sfx="tick"
-          onpointerdown={(e) => e.preventDefault()} onclick={() => fmt(tl.fn)}>{#if tl.glyph}<span aria-hidden="true">{tl.glyph}</span>{:else}<Icon name="link" />{/if}<small>{t(`wed.note.${tl.k}`)}</small></button>
+        <button type="button" class="tool" aria-label={t(`wed.note.${tl.k}`)} data-wed-fmt={tl.k} data-sfx="tick"
+          onpointerdown={(e) => e.preventDefault()} onclick={() => fmt(tl.fn)}><Icon name={tl.icon} size={20} /></button>
       {/each}
+      <button type="button" class="q-btn text done" data-wed-note-save data-sfx="confirm" onclick={save}>{t('common.done')}</button>
     </div>
-    <textarea bind:this={area} bind:value={pad.draft} maxlength={WNOTE_CHARS} aria-label={t('wed.note.field')} data-wed-note-field data-sfx="none"></textarea>
-    <div class="level-acts">
-      <button type="button" class="btn small paper" data-sfx="back" onclick={cancel}>{t('wed.cancel')}</button>
-      <button type="button" class="btn small" data-wed-note-save data-sfx="confirm" onclick={save}>{t('wed.save')}</button>
-    </div>
-  {:else if versions.length}
+  </div>
+{:else if versions.length}
+  <div class="pad">
     <p class="ask" data-wed-conflict>{t('wed.note.conflict')}</p>
     {#each versions as [k, v] (k)}
-      <article class="letter small" data-wed-version={k} data-wed-who={v.who}>
-        <h4 class="whose">{t('wed.note.whose', { name: names[v.who] })}{#if v.who === board.me}<span class="mine" data-wed-mine>{t('wed.note.mine')}</span>{/if}</h4>
-        <Markdown text={v.md} />
-        <button type="button" class="btn small" data-wed-pick={k} data-sfx="confirm" onclick={() => pick(v.md)}>{t('wed.note.pick')}</button>
+      <article class="q-card ver" data-wed-version={k} data-wed-who={v.who}>
+        <h4 class="whose">{t('wed.note.whose', { name: names[v.who] })}{#if v.who === board.me}<span class="q-badge mine" data-wed-mine>{t('wed.note.mine')}</span>{/if}</h4>
+        <div class="vdoc"><Markdown text={v.md} /></div>
+        <button type="button" class="q-btn primary" data-wed-pick={k} data-sfx="confirm" onclick={() => pick(v.md)}>{t('wed.note.pick')}</button>
       </article>
     {/each}
     {#if versions.length === 2}
-      <button type="button" class="btn small paper both" data-wed-merge data-sfx="open" onclick={merge}>{t('wed.note.merge')}</button>
+      <button type="button" class="q-btn both" data-wed-merge data-sfx="open" onclick={merge}>{t('wed.note.merge')}</button>
     {/if}
-  {:else}
-    <article class="letter" data-wed-letter>
-      <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10.1C4.5 7.6 6.6 5.5 9.2 5.5c1.3 0 2.2.6 2.8 1.5.6-.9 1.5-1.5 2.8-1.5 2.6 0 4.7 2.1 4.7 4.9 0 5.5-7.5 10.1-7.5 10.1z" /></svg></span>
-      <h4 class="whose">{t('wed.note.title')}</h4>
-      {#if note?.imported && pad.picked === null}<p class="old" data-wed-imported>{t('wed.imported.note')}</p>{/if}
+  </div>
+{:else}
+  <div class="pad">
+    {#if note?.imported && pad.picked === null}<p class="by" data-wed-imported>{t('wed.imported.note')}</p>{:else if updated}<p class="by">{updated}</p>{/if}
+    <article class="q-card doc" data-wed-letter>
       {#if md.trim()}
         <Markdown text={md} />
       {:else}
         <p class="none">{t('wed.note.empty')}</p>
       {/if}
-      {#if board.canEdit && pad.picked === null}
-        <button type="button" class="btn small paper write" data-wed-note-edit data-sfx="open" onclick={write}><Icon name="pen" />{t('wed.note.write')}</button>
-      {/if}
     </article>
-  {/if}
-</div>
+  </div>
+{/if}
 
 <style>
-  .notes { display: flex; flex-direction: column; gap: 12px; }
-  /* NH's letter: cream stationery ruled every 32px (the text's own line height, so lines sit on the rules), a pink
-     band at its head, a heart stamp tilted in the corner; a game object (cream at every time of day) */
-  .letter {
-    --doc-lh: 32px;
-    position: relative; display: grid; gap: 0; padding: 18px 20px 20px; border-radius: 18px 22px 20px 24px;
-    color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 8px 18px rgb(80 50 30 / .10);
-    background:
-      linear-gradient(#FBD3E0 0 10px, transparent 10px) top / 100% 100% no-repeat,
-      #FFF8EC;
-  }
-  /* the rules under the text itself: every line of it is 32px (Markdown.svelte), so each sits on its rule */
-  .letter :global(.doc) { background: repeating-linear-gradient(transparent 0 30px, color-mix(in srgb, #E9B9C9 60%, transparent) 30px 32px); }
-  .whose { margin: 6px 0 14px; font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .04em; }
-  .mine { margin-left: 8px; padding: 3px 8px 2px; border-radius: var(--r-pill); background: var(--c-leaf); color: var(--c-ink); font: 700 var(--fs-xs)/1 var(--font-ui); letter-spacing: 0; vertical-align: 2px; }
-  .old { margin: -8px 0 10px; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink-soft); }
-  .stamp {
-    position: absolute; top: 18px; right: 16px; width: 38px; height: 44px; display: grid; place-items: center; transform: rotate(8deg);
-    background: #FFEFF4; border-radius: 4px; box-shadow: 0 0 0 2px #F3B5CA, 0 0 0 4px #FFEFF4, 0 0 0 5px #F3B5CA;
-  }
-  .stamp svg { width: 24px; height: 24px; fill: #F07AA2; }
-  .none { margin: 0; color: var(--c-ink-soft); font-weight: 700; line-height: var(--doc-lh); }
-  .write { justify-self: end; margin: 16px 0 var(--lip-h); gap: 6px; }
-  .letter.small { padding-top: 16px; background: #FFF8EC; }
+  .pad { padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .by { margin: 0 4px; font-size: var(--q-fs-s); color: var(--q-muted); }
+  .doc { padding: 20px; }
+  .none { margin: 0; color: var(--q-muted); }
+  .ask { margin: 4px 4px 0; font-size: var(--q-fs-body); line-height: 1.5; }
+  .ver { padding: 16px 18px; display: grid; gap: 10px; }
+  .whose { margin: 0; display: flex; align-items: center; gap: 8px; font: var(--q-w-b) var(--q-fs-s)/1.3 var(--q-font); color: var(--q-muted); }
   /* each version scrolls on its own: both choices in reach */
-  .letter.small :global(.doc) { max-height: 34dvh; overflow: auto; overscroll-behavior: contain; }
-  .letter.small .btn { margin: 14px 0 var(--lip-h); }
-  .both { align-self: center; margin: 0 0 var(--lip-h); }
-  .ask { margin: 0; font: 700 var(--fs-body)/1.5 var(--font-ui); }
-  .tools { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .tool { flex-direction: column; gap: 2px; padding: 4px 0 2px; min-height: 52px; }
-  .tool span { font: 700 var(--fs-talk)/1 var(--font-num); }
-  .tool.b span { font-weight: 800; }
-  .tool.i span { font-style: italic; }
-  .tool small { font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); }
-  /* the field takes the room left (the head and the tabs are away while writing), never under 160px */
+  .vdoc { max-height: 30dvh; overflow: auto; overscroll-behavior: contain; }
+  .ver .q-btn { justify-self: end; }
+  .both { align-self: center; }
+  /* writing: the field takes the room, the tools at its foot over the keyboard */
+  .editor { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  .editor .pad { flex: 1; min-height: 0; padding-bottom: 10px; }
   textarea {
-    flex: 1 0 160px; width: 100%; box-sizing: border-box; resize: none; padding: 12px 14px; border: 0; border-radius: 16px;
-    font: 500 var(--fs-input)/1.6 var(--font-ui); color: var(--c-ink); background: #FFF8EC; box-shadow: inset 0 0 0 2px var(--c-edge);
+    flex: 1; min-height: 160px; width: 100%; box-sizing: border-box; resize: none; padding: 18px 20px; border-color: var(--q-accent);
+    box-shadow: 0 0 0 3px var(--q-accent-soft); font: 400 16px/1.65 var(--q-font); color: var(--q-ink); background: var(--q-surface);
   }
-  textarea:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .level-acts { margin-top: -12px; }
+  textarea:focus { outline: none; }
+  .tools {
+    flex: none; display: flex; align-items: center; gap: 2px; height: 48px; padding: 0 8px 0 6px; margin-bottom: var(--kb, 0px);
+    border-top: 1px solid var(--q-hairline); background: var(--q-tabbg);
+  }
+  .tool { appearance: none; border: 0; background: none; cursor: pointer; width: 44px; height: 44px; display: grid; place-items: center; color: var(--q-ink); border-radius: 10px; }
+  .tool:active { background: var(--q-sunken); }
+  .tool:focus-visible { outline: 2px solid var(--q-accent); outline-offset: -4px; }
+  .done { margin-left: auto; }
 </style>

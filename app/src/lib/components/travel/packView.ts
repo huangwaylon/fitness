@@ -1,10 +1,10 @@
 // The packing list as PackList draws it (docs/travel.md "Packing list (relay)"), pure: each category with my count of
 // it, each item's text in the reader's language (else the other side), my tick, who has packed it, and what I may
-// change (contract/pack.ts packMayEdit; nothing before I'm known). And the 「じゅんび OK！」 stamp's one celebration
-// per trip and person.
+// change (contract/pack.ts packMayEdit; nothing before I'm known), and a category's icon.
 import { packMayEdit, type PackCat, type PackItem } from '#lib/contract/pack.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { Who } from '#lib/types.ts';
+import { isIcon } from '../quiet/Icon.svelte';
 import { pick } from './text.ts';
 
 interface PackRowView { id: string; text: string; note: string; mine: boolean; editable: boolean; item: PackItem }
@@ -34,9 +34,9 @@ export function clip(s: string, max: number): string {
   return cs.length <= max ? s : `${cs.slice(0, max - 1).join('').trimEnd()}…`;
 }
 
-/** Whether this completion is the one to celebrate (not yet in `seen`: one per trip and person on a phone), and
- *  `seen` with it. */
-export function celebrate(seen: readonly string[], who: Who, trip: string): { now: boolean; seen: string[] } {
-  const k = `${who}|${trip}`;
-  return seen.includes(k) ? { now: false, seen: [...seen] } : { now: true, seen: [...seen, k].slice(-24) };
+/** A category's icon: an emoji the guest picked as itself; a guide's lucide name drawn by the kit's Icon (the
+ *  documents' file a wallet), any name it lacks a bag. */
+export function catIcon(s: string): { emoji: string } | { icon: string } {
+  if (s && !/^[a-z][a-z0-9-]*$/.test(s)) return { emoji: s };
+  return { icon: s === 'file' ? 'wallet' : isIcon(s) ? s : 'shopping-bag' };
 }
