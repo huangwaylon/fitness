@@ -25,8 +25,9 @@ import { localDateAt } from '../../app/src/lib/contract/tokyo.ts';
 import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contract/decor.ts';
 import { isTentPiece, tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isStanding, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
-import { BOARD_MAX, boardAccept, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
-import { isPackType, packClean, PackBook, packRowOf, PACK_TYPES, type PackVerdict } from '../../app/src/lib/contract/pack.ts';
+import { BOARD_MAX, boardAccept, boardBeats, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
+import { isPackType, packClean, PackBook, packRowOf, packSlot, PACK_TYPES, type PackVerdict } from '../../app/src/lib/contract/pack.ts';
+import { isWedType, WedBook, wedClean, wedNeeds, wedRowOf, wedSlot, WNOTE_DATA_CHARS, type WedVerdict } from '../../app/src/lib/contract/wedding.ts';
 import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { verifyNotify } from './notify.ts';
@@ -631,13 +632,16 @@ export class StoreCore {
     const data: Rec = body.type === 'board' && typeof sent.t === 'string' ? { ...sent, t: cleanText(sent.t) }
       : isFoodType(body.type) ? (FOOD_PARSE[body.type](sent) ?? sent)
       // a packing list's names and notes, a trip note's values: one clean line each (contract/pack.ts packClean)
-      : isPackType(body.type) ? packClean(body.type, sent) : sent;
+      : isPackType(body.type) ? packClean(body.type, sent)
+      // the wedding board's titles, categories and settings: one clean line each (contract/wedding.ts wedClean)
+      : isWedType(body.type) ? wedClean(body.type, sent) : sent;
     // the guest writes only its finds, tallies, notes, meals, the tent's decor and its own prefs (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
     // a scoped decor op: the outdoors the members', a home's look and room its owner's (contract/layout.ts)
     if (body.type === 'decor' && !scopeMayWrite(me, data)) return fail('forbidden');
     const json = JSON.stringify(data);
-    if (json.length > MAX_EVENT_DATA_CHARS) return fail('too_large');
+    // (the wedding note its own cap: a document, contract/wedding.ts)
+    if (json.length > (body.type === 'wnote' ? WNOTE_DATA_CHARS : MAX_EVENT_DATA_CHARS)) return fail('too_large');
     const subject = eventSubject(body.type, data, me);
     if (!subject || !validEventData(body.type, data, this.io.now())) return fail('bad_request');
     const type = body.type;
@@ -686,6 +690,21 @@ export class StoreCore {
         packDrop = v.drop;
       }
       let kept = json;
+      let wedDrop: string[] = [];
+      if (isWedType(type)) {
+        // the wedding board: the members' (the guest's is refused above, and here), an op beaten by the one held
+        // acknowledged, a subtask only under a task held, the cap; kept as the rules keep it (a note saved over one it
+        // wasn't edited from carries that one: contract/wedding.ts WedBook)
+        const v = this.wedTarget(me, type, data);
+        if (v.v !== 'append') {
+          if (v.v === 'forbidden') return fail('forbidden');
+          if (v.v !== 'stale') return fail('bad_request', v.v === 'full' ? 'wedding full' : 'wedding parent');
+          this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+          return { ok: true, duplicate: true };
+        }
+        wedDrop = v.drop;
+        kept = JSON.stringify(v.row.op);
+      }
       if (isFoodType(type)) {
         // only its owner changes an entry, a repeat, a recipe or a custom food; an op beaten by the one held is
         // acknowledged (contract/food.ts foodAccept); a repeat's skipped days are never lost (repeatAccept)
@@ -713,7 +732,7 @@ export class StoreCore {
       }
       const at = this.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
-      for (const sl of packDrop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', sl);
+      for (const sl of [...packDrop, ...wedDrop]) this.io.sql.exec('DELETE FROM events WHERE slot = ?', sl);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
       const slot = eventSlot(type, me, subject, data, Date.parse(at));
       const wasDecor = type === 'decor' && slot ? this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
@@ -891,6 +910,27 @@ export class StoreCore {
     return row ? this.packBook(row.op.trip).accept(row) : { v: 'stale' };
   }
 
+  /** A wedding op against the rows of the slots it touches (contract/wedding.ts wedNeeds, WedBook accept) and the
+   *  record's count of tasks. */
+  private wedTarget(me: Who, type: string, d: Rec): WedVerdict {
+    const row = wedRowOf(type, d, me);
+    if (!row) return { v: 'stale' };
+    const b = new WedBook();
+    const slots = wedNeeds(type, d);
+    for (const r of this.io.sql.exec<{ person: string; type: string; data: string }>(`SELECT person, type, data FROM events WHERE slot IN (${slots.map(() => '?').join(', ')})`, ...slots).toArray()) {
+      const x = this.rowRec(r.data, 'wedding');
+      const held = x && isWho(r.person) ? wedRowOf(r.type, x, r.person) : null;
+      if (held) b.put(held);
+    }
+    const tasks = Number(this.io.sql.exec<{ n: number }>("SELECT count(*) AS n FROM events WHERE type = 'wtask'").toArray()[0]?.n ?? 0);
+    return b.accept(row, tasks);
+  }
+
+  /** A slot's row (its sender, type and data), or null. */
+  private slotRow(slot: string): { person: string; type: string; data: string } | null {
+    return this.io.sql.exec<{ person: string; type: string; data: string }>('SELECT person, type, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null;
+  }
+
   /** A meal, a repeat, a recipe or a custom food op against the entry's (the repeat's, the recipe's) latest op the record holds (its
    *  slot's row, with who sent it): `forbidden`, `stale` (nothing to keep), or the op its slot then keeps (a repeat's
    *  with every op's skipped days: contract/food.ts repeatAccept). */
@@ -1057,7 +1097,9 @@ export class StoreCore {
   /**
    * Take rows that already have their `at` (the sheet's history, or Apps Script's copy of a write it just made), by
    * the same rules as the record's own writes: an event id once, a slot's latest (by `at`) kept, a decor op by the
-   * merge's rules; rows the model can't read (an old high-five's) are skipped. Idempotent: an import again adds nothing.
+   * merge's rules, a board post's, a packing list's and the wedding board's row as the record had it (unless its slot's
+   * row beats it: a restore is faithful); rows the model can't read (an old high-five's) are skipped. Idempotent: an
+   * import again adds nothing.
    */
   import(rows: ImportRows): ImportResult {
     // in `at` order across the tables, so a batch is late only where it is older than what the record had
@@ -1104,23 +1146,50 @@ export class StoreCore {
     const subject = isRec(d) ? eventSubject(type, d, person) : null;
     if (!isRec(d) || !subject) return 'skipped';
     const sql = this.io.sql;
+    // A board post's, a packing list's and the wedding board's rows are taken as the record had them (a dump holds each
+    // slot's latest row only: an edited post's first posting, an item's creation, a tick's task may be long gone, so
+    // the rules for a phone's op would drop them), kept unless the row its slot holds beats it. What the guest could
+    // never write (a trip note, the wedding board) is never taken from it.
     if (type === 'board') {
-      if (!boardOpOf(d)) return 'skipped';
-      const v = this.boardTarget(person, d);
-      if (v.v !== 'append') {
+      const op = boardOpOf(d);
+      if (!op) return 'skipped';
+      const h = this.slotRow(`board|${op.id}`);
+      const hx = h && isWho(h.person) ? this.rowRec(h.data, 'board') : null;
+      const held = hx ? boardOpOf(hx) : null;
+      if (held && !boardBeats({ ...op, who: person }, { ...held, who: h!.person as Who })) {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
         return 'had';
       }
-      if (v.drop) sql.exec('DELETE FROM events WHERE slot = ?', `board|${v.drop}`);
     }
+    if ((isPackType(type) || isWedType(type)) && person === 'G' && !guestMayWrite(type, d)) return 'skipped';
     if (isPackType(type)) {
-      if (!packRowOf(type, d, person)) return 'skipped';
-      const v = this.packTarget(person, type, d);
-      if (v.v !== 'append') {
+      const row = packRowOf(type, d, person);
+      const slot = packSlot(type, person, d);
+      if (!row || !slot) return 'skipped';
+      const b = new PackBook();
+      const h = this.slotRow(slot);
+      const hx = h && isWho(h.person) ? this.rowRec(h.data, 'pack') : null;
+      const held = hx ? packRowOf(h!.type, hx, h!.person as Who) : null;
+      if (held) b.put(held);
+      b.merge(row);
+      if (b.rows.get(slot) !== row) {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
         return 'had';
       }
-      for (const sl of v.drop) sql.exec('DELETE FROM events WHERE slot = ?', sl);
+    }
+    if (isWedType(type)) {
+      const row = wedRowOf(type, d, person);
+      const slot = wedSlot(type, d);
+      if (!row || !slot) return 'skipped';
+      const b = new WedBook();
+      const h = this.slotRow(slot);
+      const hx = h && isWho(h.person) ? this.rowRec(h.data, 'wedding') : null;
+      const held = hx ? wedRowOf(h!.type, hx, h!.person as Who) : null;
+      if (held) b.put(held);
+      if (!b.merge(row)) {
+        sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+        return 'had';
+      }
     }
     let json = raw || '{}';
     if (isFoodType(type)) {
@@ -1138,7 +1207,7 @@ export class StoreCore {
     }
     const slot = eventSlot(type, person, subject, d, Date.parse(at));
     const wasDecor = type === 'decor' && slot ? sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
-    if (slot && type !== 'decor' && type !== 'board' && !isFoodType(type) && !isPackType(type)) {
+    if (slot && type !== 'decor' && type !== 'board' && !isFoodType(type) && !isPackType(type) && !isWedType(type)) {
       const held = sql.exec<{ at: string }>('SELECT at FROM events WHERE slot = ?', slot).toArray()[0];
       if (held && held.at >= at) {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // a later one of the slot is there already
