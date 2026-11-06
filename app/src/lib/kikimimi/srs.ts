@@ -133,6 +133,76 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
   };
 }
 
+// ---- the phrase ずかん (docs/curriculum-units.md §2) ---------------------------------------------------------------------
+
+/** A phrase is caught once right on the first listen in this many different clips (items), on at least this many days. */
+export const CAUGHT_CLIPS = 3;
+export const CAUGHT_DAYS = 2;
+/** The phrase review's daily cap (§2; the UX's おさらい: 「しずえが 6もん えらびました」, never "14 overdue"). */
+export const REVIEW_CAP = 8;
+
+/** A unit's key phrase as its chunk holds it: its id and the items it's heard in (lesson.ts UnitPlay's `ph`). */
+type PhraseIn = { id: string; in: readonly string[] };
+
+export interface PhraseState {
+  /** Heard at all (an answer on one of its items, any mode: quick play counts, §5). */
+  heard: boolean;
+  /** The different items it was right in on the first listen, and on how many days. */
+  clips: number;
+  days: number;
+  caught: boolean;
+}
+
+/** Each phrase's state from my answers (in order, every mode's: a unit's lesson or quick play alike). */
+export function phrasesOf(phrases: readonly PhraseIn[], answers: readonly Answer[]): Map<string, PhraseState> {
+  const out = new Map<string, PhraseState>();
+  for (const ph of phrases) {
+    const ids = new Set(ph.in);
+    const mine = answers.filter((a) => ids.has(a.id));
+    const first = mine.filter((a) => a.ok && a.rp === 0);
+    const clips = new Set(first.map((a) => a.id)).size, days = new Set(first.map((a) => a.d)).size;
+    out.set(ph.id, { heard: mine.length > 0, clips, days, caught: clips >= CAUGHT_CLIPS && days >= CAUGHT_DAYS });
+  }
+  return out;
+}
+
+/**
+ * Today's phrase review: the phrases heard but not caught whose card is due (a Leitner card per phrase, stepped by
+ * each answer on its items: srs's `step`), lowest box and most overdue first, at most REVIEW_CAP a day (those already
+ * reviewed today count against it, and aren't asked again till tomorrow). Each with the item to hear it in: one of its items not yet right on the first
+ * listen (a new clip toward caught), else the least recently answered; only items in `playable` when given (a loaded
+ * unit's). Deterministic.
+ */
+export function phraseReview(phrases: readonly PhraseIn[], answers: readonly Answer[], today: LocalDate, playable?: ReadonlySet<string>): { phrase: string; item: string }[] {
+  const t = dayNum(today);
+  const states = phrasesOf(phrases, answers);
+  const due: { phrase: string; item: string; card: Card }[] = [];
+  let reviewed = 0;
+  for (const ph of phrases) {
+    const st = states.get(ph.id)!;
+    if (!st.heard || st.caught) continue;
+    const ids = new Set(ph.in);
+    let card: Card | undefined;
+    const last = new Map<string, number>(), right = new Set<string>();
+    for (const a of answers) {
+      if (!ids.has(a.id)) continue;
+      card = step(card, gradeOf(a), dayNum(a.d));
+      last.set(a.id, dayNum(a.d));
+      if (a.ok && a.rp === 0) right.add(a.id);
+    }
+    if (!card) continue;
+    if (card.last === t) {
+      reviewed++; // (once a day each)
+      continue;
+    }
+    if (card.due > t) continue;
+    const pool = ph.in.filter((id) => !playable || playable.has(id));
+    const item = pool.find((id) => !right.has(id)) ?? [...pool].sort((a, b) => (last.get(a) ?? -1) - (last.get(b) ?? -1))[0];
+    if (item) due.push({ phrase: ph.id, item, card });
+  }
+  return due.sort((a, b) => a.card.box - b.card.box || a.card.due - b.card.due).slice(0, Math.max(0, REVIEW_CAP - reviewed)).map(({ phrase, item }) => ({ phrase, item }));
+}
+
 type PracticeOpts = { answers: readonly Answer[]; stats: Stats; today: LocalDate; seed: number; levels: readonly Level[]; focus?: Focus; recent?: Recent };
 
 /** にがて れんしゅう's deck (practicePicks), its levels already loaded. */

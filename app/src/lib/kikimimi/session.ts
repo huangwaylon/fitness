@@ -168,6 +168,9 @@ export interface QuizView {
   scores: Partial<Record<Who, number>>;
   /** The team's tally so far (counted in the reveal and the results). */
   team: QuizTeam;
+  /** Of those, the questions at least one player got right on the first listen (no replay): a co-op lesson's `tm`
+   *  (docs/curriculum-units.md §10, contract/listen.ts), the same on every phone. */
+  teamFirst: number;
   /** In a reveal: how many players got this question right (「2にん せいかい」). */
   rightNow: number;
   /** I may tap つぎへ: the host in its reveal (any player once the host has gone). */
@@ -537,7 +540,7 @@ export class QuizSession {
     const gm = this.mine();
     const none: QuizView = {
       phase: 'idle', g: null, host: null, amHost: false, local: false, lv: 1, same: false, seed: 0, vs: false, ladder: false, timer: 30, speaks: true, players: [],
-      i: -1, n: 0, from: 0, until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], had: [], scores: {}, team: { right: 0, all: 0, done: 0 },
+      i: -1, n: 0, from: 0, until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], had: [], scores: {}, team: { right: 0, all: 0, done: 0 }, teamFirst: 0,
       rightNow: 0, canNext: false, canReady: false, ready: { n: 0, of: 0 }, invite: null, notice: this.notice
     };
     if (!gm) {
@@ -562,6 +565,7 @@ export class QuizSession {
     return {
       ...none, phase: at.phase, g: gm.g, host: gm.host, amHost: gm.host === this.me, local: !!gm.local, lv: gm.lv, same: gm.same, seed: gm.seed,
       vs: versus(gm.seed), ladder: isLadder(gm.seed), timer: timerOf(gm.seed), team: this.team(gm, at.phase === 'results' ? gm.n : reveal ? at.i + 1 : Math.max(0, at.i)),
+      teamFirst: this.teamFirst(gm, at.phase === 'results' ? gm.n : reveal ? at.i + 1 : Math.max(0, at.i)),
       rightNow: at.phase === 'reveal' ? players.filter((p) => p.pick?.ok).length : 0,
       speaks: !gm.same || gm.host === this.me, players, i: at.i, n: gm.n, from: at.from, until: at.until, playAt: at.playAt, playEnd: at.playEnd,
       limit: at.limit, out: at.out, answers: Array.from({ length: gm.n }, (_, i) => mine?.get(i) ?? null),
@@ -830,6 +834,17 @@ export class QuizSession {
       if (who.every((w, n) => oks[n] || !this.hadQuestion(gm, w, i))) t.all++;
     }
     return t;
+  }
+
+  /** The questions 0 … upto − 1 someone who has played got right on the first listen (their answer's `rp` unset). */
+  private teamFirst(gm: Game, upto: number): number {
+    const first = (w: Who, i: number) => {
+      const a = gm.answers.get(w)?.get(i);
+      return !!a && !a.rp && a.k === gm.deck.answer(i);
+    };
+    let n = 0;
+    for (let i = 0; i < Math.min(upto, gm.n); i++) if ([...gm.played].some((w) => first(w, i))) n++;
+    return n;
   }
 
   /** Whether a player had question i, from what every phone hears alike: they answered it, or they're in the game and
