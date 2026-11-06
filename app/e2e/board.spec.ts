@@ -1,7 +1,7 @@
 // The island's bulletin board (docs/board.md): a tap walks my villager up to it and opens it (the camera dollies to
 // its face); a note written there is on the board, on every phone at once (the demo's tabs share
 // the record's rows through localStorage, as phones share the record), with a 「！」 over the board for the others; an
-// author edits and takes down their own, a member takes down anyone's, the guest posts and changes only its own.
+// author edits their own, and anyone (the guest too) takes down anyone's.
 import { expect, test, type BrowserContext, type Page, PINNED_DATE } from './fixtures.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { hudMenu } from './hud.ts';
@@ -116,7 +116,7 @@ test('a second phone sees the note at once; an author edits and takes down their
   await ctx.close();
 });
 
-test('the guest posts and edits its own, but can’t take down another’s', async ({ browser }) => {
+test('the guest posts and edits its own, and takes down anyone’s as a member does', async ({ browser }) => {
   const ctx = await browser.newContext({ viewport: { width: 393, height: 852 } });
   const a = await open(ctx, 'A'), g = await open(ctx, 'G');
   await openBoard(a);
@@ -125,7 +125,7 @@ test('the guest posts and edits its own, but can’t take down another’s', asy
   await openBoard(g);
   await expect(note(g, 'ようこそ！')).toBeVisible();
   await note(g, 'ようこそ！').click();
-  await expect(view(g).getByRole('button', { name: 'はがす' })).toHaveCount(0);
+  await expect(view(g).getByRole('button', { name: 'はがす' })).toBeVisible();
   await expect(view(g).getByRole('button', { name: 'かきなおす' })).toHaveCount(0);
   await write(g, 'おじゃまします');
   await note(g, 'おじゃまします').click();
