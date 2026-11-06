@@ -48,8 +48,6 @@ export interface OtherGame {
   stamped?: 1;
 }
 
-/** An item of this build by id, as the index knows it (no level loaded: pool.ts). */
-export const itemOf = (id: string): Entry | undefined => entryOf(id);
 
 /** My games (in the order played) and the others' summaries, from the `listen` rows this phone holds; of mine, only
  *  the answers whose items this build knows (none: not a game here). A game id
@@ -123,7 +121,8 @@ export const scoreOf = (a: Pick<Answer, 'ok' | 'rp'>): number => (a.ok ? (a.rp =
 export function dayNum(d: LocalDate): number {
   return Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 86_400_000);
 }
-const dayOf = (n: number): LocalDate => new Date(n * 86_400_000).toISOString().slice(0, 10);
+/** dayNum's inverse. */
+export const dayOf = (n: number): LocalDate => new Date(n * 86_400_000).toISOString().slice(0, 10);
 
 /** Mastery's recency half-life (days), its prior and the prior's weight (answers). */
 const HALF_LIFE = 21;

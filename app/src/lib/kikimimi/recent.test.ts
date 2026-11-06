@@ -4,7 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '#lib/random.ts';
 import { type Level } from './bank.ts';
 import { BANK } from './source.ts';
-import { deck, inMix } from './deck.ts';
+import { MIX, deck } from './deck.ts';
+import { drawn } from './mix.ts';
 import { skillsOf } from './tags.ts';
 import { RECENT_GAMES, SEED_TRIES, agesOf, freshSeed, overlap, remember, seedWith, staleness, type Recent } from './recent.ts';
 import { FLAG_BITS, isLadder, timerOf, versus } from './seed.ts';
@@ -117,7 +118,7 @@ describe('kikimimi recent history', () => {
     // had no unheard item left to draw
     const repeats = again.filter((id) => first.includes(id));
     expect(repeats.length).toBeLessThan(first.length / 2);
-    const pool = BANK.filter((it) => it.lv === 4 && inMix(it) && [skillsOf(it).primary, ...skillsOf(it).also].includes('indirect'));
+    const pool = BANK.filter((it) => it.lv === 4 && drawn(it, MIX) && [skillsOf(it).primary, ...skillsOf(it).also].includes('indirect'));
     for (const id of repeats) {
       const s = skillsOf(BANK.find((it) => it.id === id)!).primary;
       const fresh = pool.filter((it) => skillsOf(it).primary === s && !first.includes(it.id)).map((it) => it.id);

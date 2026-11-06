@@ -163,8 +163,8 @@ function cv(items: readonly Item[], mix: unknown, clips: Readonly<Record<string,
   return createHash('sha256').update(JSON.stringify([mix, shape])).digest('hex').slice(0, 6);
 }
 
-/** A level's items in contiguous parts, each under PART_AIM gzipped (one part when it fits). */
-function split(items: readonly Item[], file: (items: readonly Item[]) => string): Item[][] {
+/** A level's items in contiguous parts, each under PART_AIM gzipped (one part when it fits), as their files. */
+function split(items: readonly Item[], file: (items: readonly Item[]) => string): string[] {
   for (let n = 1; n <= items.length; n++) {
     const sizes = items.map((it) => JSON.stringify(it).length), total = sizes.reduce((a, b) => a + b, 0);
     const parts: Item[][] = Array.from({ length: n }, () => []);
@@ -173,7 +173,13 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
       parts[Math.min(n - 1, Math.floor((run / total) * n))].push(it);
       run += sizes[i];
     });
-    if (parts.every((p) => p.length && gz(file(p)) <= PART_AIM)) return parts;
+    const files: string[] = [];
+    for (const p of parts) {
+      const f = p.length ? file(p) : '';
+      if (!f || gz(f) > PART_AIM) break;
+      files.push(f);
+    }
+    if (files.length === n) return files;
   }
   throw new Error('kikimimi: a level that no split fits');
 }
@@ -192,7 +198,7 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     const items = BANK.filter((it) => it.lv === lv);
     const parts = split(items, (p) => partFile({ items: p }, clips, words, places));
     const names = parts.length === 1 ? [`lv${lv}`] : parts.map((_, i) => `lv${lv}-${i + 1}`);
-    parts.forEach((p, i) => out.set(`parts/${names[i]}.json`, partFile({ items: p }, clips, words, places)));
+    parts.forEach((file, i) => out.set(`parts/${names[i]}.json`, file));
     units[lv] = { parts: names, n: items.length, cv: cv(items, mix[lv] ?? null, clips) };
   }
   const ladders = partFile({ ladders: LADDERS }, clips, words, places);

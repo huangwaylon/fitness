@@ -3,7 +3,7 @@
 // loaded (pool.ts levelItems: the level's chunk must be in first, game.svelte.ts waits for it).
 import { mulberry32, shuffle } from '#lib/random.ts';
 import { shuffleChoices, type Item, type ItemType, type Level } from './bank.ts';
-import { drawn, mixFor, type Mixes } from './mix.ts';
+import { mixFor, type Mixes } from './mix.ts';
 import { INDEX, levelItems } from './pool.ts';
 import { staleness } from './recent.ts';
 
@@ -11,10 +11,6 @@ export const DECK_SIZE = 8;
 
 /** The mixes this build plays (mix.ts: level 4's dialogues once all are voiced, as compiled: levels/index.json). */
 export const MIX: Mixes = mixFor(INDEX.dialogues);
-
-/** Whether a mix draws this item (its level's mix has its type: dialogues not yet voiced stay out, of にがて れんしゅう
- *  too). */
-export const inMix = (it: Pick<Item, 'lv' | 'type'>, mix: Mixes = MIX): boolean => drawn(it, mix);
 
 /** The levels a phone offers (the lobby's): those with a mix and every clip of the items it draws, so a level whose
  *  audio isn't made yet (level 4 till the neural cast, docs/curriculum.md §14) stays hidden and main stays shippable
