@@ -3,7 +3,8 @@
   // toggle; aria-expanded) that drops four pills down under it, right-aligned, one after the other on a small spring:
   // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび), ずかん (NH's
   // agrias butterfly), えいご ききとり (しずえ's head: ききみみ クイズ, its sheet opened here, the voice session begun in the
-  // tap itself; 「さそわれています！」 on it, and a dot on the leaf, while someone's invite is live) and せってい (a gear);
+  // tap itself; 「さそわれています！」 on it, and a dot on the leaf, while someone's invite is live), けっこんしき (パニエル's
+  // head: the wedding board, its sheet opened here: components/wedding) and せってい (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
   // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), then its sheet grows out of
@@ -18,6 +19,7 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Host from '../characters/Host.svelte';
   import { invitedNow, openQuiz, wakeQuizVoice } from '../kikimimi/invite.svelte.ts';
+  import { openWedding } from '../wedding/open.svelte.ts';
   import { coinsInFlight } from './HudCoins.svelte';
   import { react } from '../motion/director.svelte.ts';
   import { popFrom } from './popFrom.ts';
@@ -190,7 +192,12 @@
       <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{/if}</span>
       <span class="ic"><Host head size={30} animate={false} eager /></span>
     </button>
-    <button type="button" class="item" style="--i: 3" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
+    <!-- (merge: the travel branch's りょこう goes between えいご and this; けっこんしき stays just before せってい) -->
+    <button type="button" class="item" style="--i: 3" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, openWedding)}>
+      <span class="lbl">{t('panel.wedding')}</span>
+      <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
+    </button>
+    <button type="button" class="item" style="--i: 4" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
       <span class="ic">
         <!-- a gear in the say button's soft brown (no settings icon in NH's art) -->
@@ -238,7 +245,7 @@
     pointer-events: none;
   }
   .item {
-    --n: 4;
+    --n: 5;
     position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; height: var(--hit); margin: 0; padding: 0 4px 0 14px;
     appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);
