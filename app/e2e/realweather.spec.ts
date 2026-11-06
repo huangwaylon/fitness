@@ -2,7 +2,7 @@
 // scene clock, or one planted in the phone's cache as the relay would have left it) sets the sky by the hour, the same
 // on two phones; offline the cached one serves until it no longer covers the hour or is 36 hours old, then the seeded
 // day; せってい's てんき switches the island between ほんもの and ゲーム, with the data's credit; the guest's phone only shows it.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 const H = 3600_000;
@@ -33,30 +33,35 @@ async function seededSky(page: Page): Promise<string> {
 test.describe('the real weather', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
-  test('a fixture timeline gives both phones the same sky by the hour', async ({ page, browser }) => {
-    const other = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo' });
-    const both = async (q: string, want: string) => {
+  // one case a test: the eight in one (two phones, sixteen loads) took ~30 s on a loaded CI shard and ran out of its
+  // time there in most runs (the top of the flaky list, 2026-11-05)
+  const CASES: [string, string, string][] = [
+    ['rain in the afternoon', '&date=2026-06-10T13:00&wx=rain-pm', 'rain'],
+    ['before the rain', '&date=2026-06-10T10:00&wx=rain-pm', 'clear'],
+    ['a typhoon', '&date=2026-06-10T10:00&wx=typhoon', 'heavy'],
+    ['snow', '&date=2026-06-10T10:00&wx=snow', 'snow'],
+    ['cloudy', '&date=2026-06-10T10:00&wx=cloudy', 'cloudy'],
+    // the rain clears at 14:00: the rainbow, on both
+    ['the rain clears, a rainbow', '&date=2026-06-10T14:20&wx=clears', 'clear'],
+    // winter rain falls as snow; an August Sunday's fireworks night is fine whatever Tokyo does
+    ['winter rain falls as snow', '&date=2027-01-20T13:00&wx=rain-pm', 'snow'],
+    ['a fireworks night is fine', '&date=2026-08-09T20:00&wx=typhoon', 'clear']
+  ];
+  for (const [name, q, want] of CASES)
+    test(`a fixture timeline gives both phones the same sky by the hour: ${name}`, async ({ page, browser }) => {
+      const other = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo' });
       await open(page, q);
-      await other.goto(page.url().replace('?demo', '?demo&as=B'));
+      await other.goto(`?demo${q}&as=B`);
       await expect(hudMenu(other)).toBeVisible();
       await expect(scene(page)).toHaveAttribute('data-sky', want);
       await expect(scene(other)).toHaveAttribute('data-sky', want);
-    };
-    await both('&date=2026-06-10T13:00&wx=rain-pm', 'rain');
-    await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { precip(): { kind: string | null } | null } }).__world3d?.precip()?.kind)).toBe('rain');
-    await both('&date=2026-06-10T10:00&wx=rain-pm', 'clear');
-    await both('&date=2026-06-10T10:00&wx=typhoon', 'heavy');
-    await both('&date=2026-06-10T10:00&wx=snow', 'snow');
-    await both('&date=2026-06-10T10:00&wx=cloudy', 'cloudy');
-    // the rain clears at 14:00: the rainbow, on both
-    await both('&date=2026-06-10T14:20&wx=clears', 'clear');
-    await expect(page.locator('.rainbow')).toBeVisible();
-    await expect(other.locator('.rainbow')).toHaveAttribute('data-rainbow', (await page.locator('.rainbow').getAttribute('data-rainbow'))!);
-    // winter rain falls as snow; an August Sunday's fireworks night is fine whatever Tokyo does
-    await both('&date=2027-01-20T13:00&wx=rain-pm', 'snow');
-    await both('&date=2026-08-09T20:00&wx=typhoon', 'clear');
-    await other.close();
-  });
+      if (want === 'rain') await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { precip(): { kind: string | null } | null } }).__world3d?.precip()?.kind)).toBe('rain');
+      if (q.includes('wx=clears')) {
+        await expect(page.locator('.rainbow')).toBeVisible();
+        await expect(other.locator('.rainbow')).toHaveAttribute('data-rainbow', (await page.locator('.rainbow').getAttribute('data-rainbow'))!);
+      }
+      await other.close();
+    });
 
   test('cloudy: a paler grey sky, nothing falling; a change of sky on screen fades out over a minute', async ({ page }) => {
     await page.clock.install({ time: NOON });
