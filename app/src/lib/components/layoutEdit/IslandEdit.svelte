@@ -371,7 +371,7 @@
 </script>
 
 <!-- the taps over the island are the mode's (a drag on empty ground still reaches the island under it) -->
-<div class="ie" data-island-edit>
+<div class="ie sheet-copy" data-island-edit>
   <svg class="over" viewBox={`0 0 ${size[0]} ${size[1]}`} aria-hidden="true">
     {#each markShown as m (m.id)}
       <polygon points={m.poly} class="mark" class:usual={m.k === 'usual'} class:bad={!m.ok} />

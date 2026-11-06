@@ -13,7 +13,7 @@
 
 <svelte:head><title>{t('app.name')}</title></svelte:head>
 
-<main class="err">
+<main class="err sheet-copy">
   <span class="nook"><OfficialArt key="host/tom-nook" alt="" size="var(--nook-h)" eager>
     {#snippet fallback()}<Host pose="stand" size={96} animate={false} />{/snippet}
   </OfficialArt></span>

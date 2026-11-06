@@ -201,7 +201,7 @@
   const label = (p: Post) => t('board.note', { name: board.author(p.who).name, text: p.t });
 </script>
 
-<div class="bv" class:three={mode === '3d'} class:night class:writing={!!writing} class:kb={kbi.open} bind:this={root} data-board-view={mode} data-ready={ready || undefined}
+<div class="bv sheet-copy" class:three={mode === '3d'} class:night class:writing={!!writing} class:kb={kbi.open} bind:this={root} data-board-view={mode} data-ready={ready || undefined}
   data-keyboard={kbi.keyboard || undefined} style:top={kbi.height ? `${kbi.top}px` : null} style:height={kbi.height ? `${kbi.height}px` : null}
   role="dialog" aria-modal="true" aria-label={t('board.name')}>
   {#if mode === 'sheet'}
