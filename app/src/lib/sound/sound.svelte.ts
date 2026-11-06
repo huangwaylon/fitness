@@ -17,10 +17,10 @@ import { HourClock, QUEUED_DROP_MS, type Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
 import { msToNextHour, type Fade, type Weather } from './hourly.ts';
-import { msToNextEdge, type CutInId, type EventMusicId } from './events.ts';
+import { msToNextEdge, type CutInId } from './events.ts';
 import { radioJingleAt } from './radio.ts';
 import { kkLoaded, kkTrack, loadKK, type KKSource } from './kk.ts';
-import { heardHere, onStage, skew, stageTrack } from './stage.svelte.ts';
+import { cutInOf, heardHere, onStage, skew, stageTrack } from './stage.svelte.ts';
 import { placeTrack, type PlaceId } from './places.ts';
 import { musicAt, openingMusic, pickMusic, pinsFor, placeMusic, playingLabel as labelOf, type CutIn, type Playing, type Want } from './choose.ts';
 import { initMediaSession, nowPlaying, tilePaused } from './mediaSession.ts';
@@ -94,7 +94,7 @@ function staged(): Want | null {
     if (!kkLoaded()) void loadKK().then(() => syncMusic());
     return null;
   }
-  return { key, track: { ...tr, from: s.at - skew() }, playing: s.song.startsWith('ev-') ? (s.song.slice(3) as EventMusicId) : 'kk', loop: !!tr.end, fade: 'cut' };
+  return { key, track: { ...tr, from: s.at - skew() }, playing: cutInOf(s.song) ?? 'kk', loop: !!tr.end, fade: 'cut' };
 }
 /** The stage's song that ended here (its key): the island's music again till the record ends everywhere. */
 let stageDone: string | null = null;

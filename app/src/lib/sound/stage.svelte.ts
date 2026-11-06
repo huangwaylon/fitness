@@ -61,10 +61,17 @@ const changed = () => subs.forEach((f) => f());
 /** Something `plays` reads changed (a room's stereo put away or back). */
 export const restage = (): void => changed();
 
-/** The file a stage's song plays from: an island cut-in (`ev-<id>`, events.ts), else a K.K. song, his live file on
- *  the island, its aircheck on a room's stereo. Null: no such song, or K.K.'s list not loaded yet (kk.ts loadKK). */
+/** An island cut-in's stage song: `ev-<id>` (events.ts EventMusicId), the rest K.K.'s. */
+const CUT_IN = 'ev-';
+export const cutInSong = (id: EventMusicId): string => `${CUT_IN}${id}`;
+/** The cut-in a stage song is (events.ts id), null for a K.K. song. */
+export const cutInOf = (song: string): EventMusicId | null => (song.startsWith(CUT_IN) ? (song.slice(CUT_IN.length) as EventMusicId) : null);
+
+/** The file a stage's song plays from: an island cut-in (cutInOf), else a K.K. song, his live file on the island, its
+ *  aircheck on a room's stereo. Null: no such song, or K.K.'s list not loaded yet (kk.ts loadKK). */
 export function stageTrack(src: MusicSrc, song: string): MusicTrack | null {
-  if (song.startsWith('ev-')) return AUDIO.events[song.slice(3) as EventMusicId] ?? null;
+  const ev = cutInOf(song);
+  if (ev) return AUDIO.events[ev] ?? null;
   return kkTrack(song, src === 'isl' ? 'live' : 'aircheck')?.track ?? null;
 }
 
@@ -98,7 +105,7 @@ const pcOf = (pc: string | undefined): { pc?: string } => (pc ? { pc } : {});
 /** Play `song` on stage `src` for everyone (from a tap): `ms` its length (else the file's `d`), `pc` the stereo. A
  *  K.K. song asked for before his list is here (his menus load it first) waits for it, for its length. */
 export function request(src: MusicSrc, song: string, o: { ms?: number; pc?: string } = {}): void {
-  if (o.ms === undefined && !stageTrack(src, song) && !song.startsWith('ev-') && !kkLoaded()) return void loadKK().then(() => kkLoaded() && request(src, song, o));
+  if (o.ms === undefined && !stageTrack(src, song) && !cutInOf(song) && !kkLoaded()) return void loadKK().then(() => kkLoaded() && request(src, song, o));
   const at = nextAt(src);
   const ms = Math.min(MUSIC_MS_MAX, Math.max(1, Math.round(o.ms ?? (stageTrack(src, song)?.dur ?? DEFAULT_S) * 1000)));
   put({ src, song, at, ms, who: net.me() ?? 'A', ...pcOf(o.pc) });
