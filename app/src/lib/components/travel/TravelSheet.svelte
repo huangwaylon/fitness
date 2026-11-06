@@ -11,6 +11,7 @@
   import NavBar from '../ui/NavBar.svelte';
   import TripList from './TripList.svelte';
   import TripView, { type Tab } from './TripView.svelte';
+  import ClassicGuide from './classic/ClassicGuide.svelte';
   import type { Trip, TripId } from '#lib/travel/types.ts';
   import { TRIP_IDS, loadTrip } from '#lib/travel/trips/index.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -115,7 +116,9 @@
     {:else}
       {#key sel}
         <div class="lvl">
-          {#if trip}
+          {#if trip?.classic}
+            <ClassicGuide {trip} onback={back} />
+          {:else if trip}
             <TripView {trip} {now} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
           {:else}
             <TripList {trips} {now} {hello} onopen={(id) => (sel = id)} />
