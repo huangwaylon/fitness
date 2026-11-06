@@ -9,6 +9,7 @@ import { okinawa } from './trips/okinawa.ts';
 import { seattle } from './trips/seattle.ts';
 import { nz } from './trips/nz.ts';
 import { TRIP_IDS, loadTrip } from './trips/index.ts';
+import { TRIP_META } from './trips/meta.ts';
 
 const TRIPS: Record<TripId, Trip> = { okinawa, seattle, nz };
 const STATIC = join(import.meta.dirname, '..', '..', '..', 'static');
@@ -184,5 +185,17 @@ describe('tokens', () => {
     ]);
     expect(parseTokens('{x:1} {km:} plain')).toEqual([{ t: 'text', s: '{x:1} {km:} plain' }]);
     expect(privateKeys('{p:a} and {p:b}')).toEqual(['a', 'b']);
+  });
+});
+
+describe('the list\'s meta (trips/meta.ts)', () => {
+  it('is each guide\'s own: title, area, dates, zone, cover, and the rows on another date', () => {
+    expect(TRIP_META.map((m) => m.id).sort()).toEqual([...TRIP_IDS].sort());
+    for (const m of TRIP_META) {
+      const t = TRIPS[m.id];
+      expect({ title: m.title, eyebrow: m.eyebrow, start: m.start, end: m.end, tz: m.tz, cover: m.cover }, m.id).toEqual({ title: t.title, eyebrow: t.eyebrow, start: t.start, end: t.end, tz: t.tz, cover: t.cover });
+      const edge = (days: Trip['days']) => days.flatMap((d) => d.rows.filter((r) => r.dd).map((r) => ({ n: d.n, date: d.date, t: r.t, dd: r.dd, tz: r.tz })));
+      expect(edge(m.days), m.id).toEqual(edge(t.days));
+    }
   });
 });
