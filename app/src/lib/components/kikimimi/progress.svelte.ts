@@ -6,12 +6,13 @@
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf, type ListenRow } from '#lib/contract/listen.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
-import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
+import { levelMark } from '#lib/kikimimi/bank.ts';
 import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
 import { reportOf, type Report } from '#lib/kikimimi/report.ts';
+import { answersOf, type Answer } from '#lib/kikimimi/progress.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import type { Who } from '#lib/types.ts';
+import type { LocalDate, Who } from '#lib/types.ts';
 import type { Rec } from '#lib/kikimimi/advice.ts';
 import { sx } from '#lib/kikimimi/ladder.ts';
 import { remember, type Recent } from '#lib/kikimimi/recent.ts';
@@ -65,19 +66,36 @@ function progressRows(me: Who, record: readonly EventRow[]): EventRow[] {
   return local.length ? [...record, ...local] : [...record];
 }
 
-/** My report now (null before the week's first load). Reactive: call it in a $derived. */
-export function currentReport(levels: readonly Level[] = LEVELS): Report | null {
-  void kept;
+/** The report as last built, and what it was built from: the record's `listen` rows (the model keeps them while no
+ *  event changes them), who I am, today and the phone's rows. The lobby's view refreshes about once a second and
+ *  several parts read the report each time; it's folded again only when one of those changes. Its units and answers
+ *  are worked out once, on first ask. */
+let memo: { listen: readonly EventRow[]; me: Who; day: LocalDate; kept: number; report: Report; units?: Map<string, UnitState>; answers?: Answer[] } | null = null;
+function memoNow(): typeof memo {
+  const k = kept;
   const m = week.model;
   if (!m) return null;
-  return reportOf(progressRows(m.me, m.state.listen), m.me, localDateAt(m.now), levels, LADDER_OK);
+  const listen = m.state.listen, me = m.me, day = localDateAt(m.now);
+  if (memo && memo.listen === listen && memo.me === me && memo.day === day && memo.kept === k) return memo;
+  return (memo = { listen, me, day, kept: k, report: reportOf(progressRows(me, listen), me, day, LEVELS, LADDER_OK) });
+}
+
+/** My report now (null before the week's first load). Reactive: call it in a $derived. */
+export function currentReport(): Report | null {
+  return memoNow()?.report ?? null;
 }
 
 /** Each unit's dots, stamps and recheck now (stamps.ts, from my report's games and the partner's summaries); empty
  *  before the week's first load. Reactive: call it in a $derived. */
 export function currentUnits(): Map<string, UnitState> {
-  const r = currentReport();
-  return r ? unitsOf(r.games, r.others) : new Map();
+  const m = memoNow();
+  return m ? (m.units ??= unitsOf(m.report.games, m.report.others)) : new Map();
+}
+
+/** Every answer of my report's games (srs.ts's phrases); empty before the week's first load. Reactive. */
+export function currentAnswers(): Answer[] {
+  const m = memoNow();
+  return m ? (m.answers ??= answersOf(m.report.games)) : [];
 }
 
 /** Bumped as a unit's chunk is put in at run time (the e2e's fixture: pool.ts addUnit), so the path lists it. */
@@ -105,7 +123,7 @@ export function pathUnits(): PathUnit[] {
  *  Reactive: call it in a $derived. */
 export function currentPath(filter: Filter = 'all'): Path {
   const r = currentReport();
-  const states = r ? unitsOf(r.games, r.others) : new Map<string, UnitState>();
+  const states = currentUnits();
   const played = r ? r.games.flatMap((g) => (g.u !== undefined && g.l !== undefined ? [g.u] : [])) : [];
   return pathOf({ units: pathUnits(), states, level: r?.stats.level ?? null, played, filter });
 }

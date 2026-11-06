@@ -46,6 +46,9 @@
   const v = $derived(game?.view ?? null);
   const MID: readonly QuizPhase[] = ['countdown', 'lead', 'play', 'answer', 'reveal'];
   const mid = $derived(!!v && MID.includes(v.phase));
+  /** In a lobby (a boolean: the view itself is a new object at each refresh, about once a second, and what hangs off
+   *  the lobby (the report, the path) is folded again only when this changes). */
+  const inLobby = $derived(v?.phase === 'lobby');
   /** A unit's lesson on this phone (its intro card in the lobby; its name over the game). */
   const lesson = $derived(game?.lesson ?? null);
   /** The pages pushed over my lobby (docs/kikimimi-ux.md §5's one stack, until the hub): しまの みち › a unit, and the
@@ -55,9 +58,9 @@
   let pages = $state<Page[]>([]);
   const page = $derived(pages.at(-1) ?? null);
   /** A page shows over my own lobby only (solo: co-op lessons wait for framework 8c). */
-  const paged = $derived(!!page && v?.phase === 'lobby' && !lesson && v.local && v.amHost);
+  const paged = $derived(!!page && inLobby && !lesson && !!v?.local && !!v.amHost);
   let pathFilter = $state<Filter>('all');
-  const path = $derived(v?.phase === 'lobby' ? currentPath(pathFilter) : null);
+  const path = $derived(inLobby ? currentPath(pathFilter) : null);
   const pageTitle = (p: Page) =>
     p.k === 'path' ? t('kiki.path.title') : p.k === 'zukan' ? t('kiki.zukan.title') : (path?.stages.flatMap((s) => s.stops).find((s) => s.id === p.id)?.name ?? t('kiki.path.title'));
   const title = $derived(
@@ -133,6 +136,7 @@
     return () => {
       gone = true;
       g?.dispose();
+      if (hooksOn()) delete (window as unknown as { __kiki?: unknown }).__kiki;
       game = null;
       asking = false;
       pages = [];
@@ -244,11 +248,8 @@
     void practiceFor(r, LEVELS, g.view.seed, focus, recentGames()).then((items) => g.practice(items, 'weak'), () => {});
   }
   /** The lobby's tab: あそぶ or きろく (back to あそぶ whenever the lobby is left). */
-  let tab = $state<'play' | 'record'>('play');
-  $effect(() => {
-    if (v?.phase !== 'lobby') tab = 'play';
-  });
-  const report = $derived(tab === 'record' && v?.phase === 'lobby' ? currentReport() : null);
+  let tab = $derived.by<'play' | 'record'>(() => (void inLobby, 'play'));
+  const report = $derived(tab === 'record' && inLobby ? currentReport() : null);
   /** A recommendation's start: a level's game, or にがて れんしゅう narrowed to its skill or accent. */
   function startRec(r: Rec) {
     if (!game || !v?.amHost || !v.local) return;
