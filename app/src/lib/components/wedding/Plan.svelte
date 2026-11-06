@@ -68,7 +68,7 @@
       </h3>
       <div class="rows">
         {#each g.tasks as task (task.id)}
-          <TaskCard {task} today={board.today} {canEdit} {names} {onopen} {ontick} />
+          <TaskCard {task} today={board.today} {canEdit} {names} wedding={board.config.date} {onopen} {ontick} />
         {/each}
       </div>
     </section>

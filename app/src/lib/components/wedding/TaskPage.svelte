@@ -167,7 +167,7 @@
   .top { display: flex; align-items: flex-start; gap: 8px; min-height: 26px; }
   .top .pen-btn { margin-left: auto; margin-top: -4px; margin-right: -4px; }
   .pen-btn svg, .rm svg, .srm svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-  .cat { padding: 4px 10px 3px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-lip) 40%, var(--card)); font: 700 var(--fs-s)/1 var(--font-ui); }
+  .cat { padding: 4px 10px 3px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1 var(--font-ui); }
   .ttl { font: 700 var(--fs-title)/1.25 var(--font-ui); overflow-wrap: anywhere; }
   .done .ttl { color: var(--text-soft); }
   .dates { margin: 0; display: grid; gap: 4px; }
