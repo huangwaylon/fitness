@@ -55,7 +55,7 @@ test('after a solo game: my feedback, then きろく with it, and a recommendati
   await sheet(page).locator('[data-kiki-tab="record"]').click();
   const prog = sheet(page).locator('[data-kiki-progress]');
   await expect(prog).toBeVisible();
-  await expect(prog.locator('[data-kiki-stage]')).toHaveAttribute('data-kiki-stage', /^s[0-3]$/);
+  await expect(prog.locator('[data-kiki-stage]')).toHaveAttribute('data-kiki-stage', /^(hama|kawa|mori|yama)$/);
   await expect(prog.locator('[data-skill]')).toHaveCount(8);
   await expect(prog.locator('[data-skill="lr"]')).not.toHaveAttribute('data-m', '');
   // this week: the demo's Monday-to-Wednesday games and today's
