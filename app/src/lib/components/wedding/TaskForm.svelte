@@ -1,14 +1,15 @@
 <script lang="ts">
-  // A task's form (けっこんしき's ＋ and 編集), a BottomSheet (キャンセル / 保存): the title, the category (the board's
+  // A task's form (けっこんしき's ＋ and 編集), the kit's form sheet (ui/Sheet: ✕ in its title bar, 保存 at its foot;
+  // Enter in a field saves, the checklist's adds an item): the title, the category (the board's
   // list as chips; one no longer in it stays a chip while it's this task's; a tap on the picked one clears it), the
   // start day (optional, クリア) and the due day (必須), the checklist (renamed, removed and added here, all applied on
   // 保存), and in 編集 the task's 削除 (the banner's とりけす brings it back). Every missing field is said at once. A
   // task promoted from a checklist (it names a parent the board no longer holds) has no dates and no checklist.
   import { tick } from 'svelte';
-  import BottomSheet from '../quiet/BottomSheet.svelte';
-  import Chip from '../quiet/Chip.svelte';
-  import ChipRow from '../quiet/ChipRow.svelte';
-  import Icon from '../quiet/Icon.svelte';
+  import Sheet from '../ui/Sheet.svelte';
+  import Chip from '../ui/Chip.svelte';
+  import ChipRow from '../ui/ChipRow.svelte';
+  import Icon from '../ui/Icon.svelte';
   import { board } from './board.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -50,6 +51,10 @@
     await tick();
     subEl?.focus({ preventScroll: true });
   }
+  function submit(e: SubmitEvent) {
+    e.preventDefault();
+    if (save()) open = false;
+  }
   function save(): boolean {
     const title = draft.title.trim();
     errors = { title: !title, due: !promoted && !draft.due };
@@ -87,11 +92,15 @@
   }
 </script>
 
-<BottomSheet bind:open title={task ? t('wed.editTask') : t('wed.newTask')} onsave={save}>
-  <div class="form" data-wed-form>
+{#snippet footer()}
+  <button type="submit" form="{uid}-f" class="btn" data-wed-save data-sfx="confirm">{t('common.save')}</button>
+{/snippet}
+
+<Sheet bind:open label={task ? t('wed.editTask') : t('wed.newTask')} title={task ? t('wed.editTask') : t('wed.newTask')} focusField {footer}>
+  <form class="form" id="{uid}-f" data-wed-form onsubmit={submit}>
     <label class="f">
       <span class="fl">{t('wed.field.title')}<b class="req">{t('wed.field.required')}</b></span>
-      <input class="q-field" type="text" enterkeyhint="done" maxlength={WTASK_TITLE} bind:value={draft.title} aria-required="true" data-wed-field="title" data-sfx="none"
+      <input class="fld" type="text" enterkeyhint="done" maxlength={WTASK_TITLE} bind:value={draft.title} aria-required="true" data-wed-field="title" data-sfx="none"
         aria-invalid={errors.title || undefined} aria-describedby={errors.title ? `${uid}-t` : undefined} />
       {#if errors.title}<span class="err" id="{uid}-t" role="alert" data-wed-error="title">{t('wed.needTitle')}</span>{/if}
     </label>
@@ -100,14 +109,14 @@
       <div class="two">
         <label class="f">
           <span class="fl">{t('wed.field.start')}</span>
-          <span class="row">
-            <input class="q-field" type="date" bind:value={draft.start} data-wed-field="start" data-sfx="none" />
-            {#if draft.start}<button type="button" class="q-btn text clear" data-sfx="tick" onclick={() => (draft.start = '')}>{t('wed.clear')}</button>{/if}
+          <span class="pair">
+            <input class="fld" type="date" bind:value={draft.start} data-wed-field="start" data-sfx="none" />
+            {#if draft.start}<button type="button" class="chip s clear" data-sfx="tick" onclick={() => (draft.start = '')}>{t('wed.clear')}</button>{/if}
           </span>
         </label>
         <label class="f">
           <span class="fl">{t('wed.field.due')}<b class="req">{t('wed.field.required')}</b></span>
-          <input class="q-field" type="date" bind:value={draft.due} aria-required="true" data-wed-field="due" data-sfx="none" aria-invalid={errors.due || undefined}
+          <input class="fld" type="date" bind:value={draft.due} aria-required="true" data-wed-field="due" data-sfx="none" aria-invalid={errors.due || undefined}
             aria-describedby={errors.due ? `${uid}-d` : undefined} />
           {#if errors.due}<span class="err" id="{uid}-d" role="alert" data-wed-error="due">{t('wed.needDue')}</span>{/if}
         </label>
@@ -130,59 +139,63 @@
     {#if !promoted}
       <div class="f">
         <span class="fl">{t('wed.checklist')}</span>
-        <ul class="q-card subs">
+        <ul class="card dense subs">
           {#each items as it, i (it.id ?? `n${i}`)}
             {#if !it.gone}
-              <li class="q-row">
+              <li class="row">
                 <span class="ring" aria-hidden="true"></span>
                 <input class="sname" type="text" bind:value={it.title} maxlength={WTASK_TITLE} enterkeyhint="done" aria-label={t('wed.renameSub', { title: it.was ?? it.title })}
                   data-wed-sub-name={it.id ?? ''} data-sfx="none" onkeydown={(e) => e.key === 'Enter' && e.preventDefault()} />
                 <button type="button" class="rm" aria-label={t('wed.removeSub', { title: it.title })} data-wed-sub-remove={it.id ?? ''} data-sfx="tick"
-                  onclick={() => (it.id ? (it.gone = true) : items.splice(i, 1))}><Icon name="close" size={16} /></button>
+                  onclick={() => (it.id ? (it.gone = true) : items.splice(i, 1))}><Icon name="close" size={18} /></button>
               </li>
             {/if}
           {/each}
-          <li class="q-row add">
-            <Icon name="plus" size={18} />
+          <li class="row add">
+            <Icon name="plus" size={20} />
             <input class="sname" type="text" bind:this={subEl} bind:value={sub} placeholder={t('wed.addSub')} maxlength={WTASK_TITLE} enterkeyhint="done"
               aria-label={t('wed.addSub')} data-wed-sub-field data-sfx="none"
               onkeydown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void addItem(); } }} />
-            {#if sub.trim()}<button type="button" class="q-btn text" data-wed-sub-add data-sfx="confirm" onclick={addItem}>{t('wed.set.addCat')}</button>{/if}
+            {#if sub.trim()}<button type="button" class="chip s" data-wed-sub-add data-sfx="confirm" onclick={addItem}>{t('wed.set.addCat')}</button>{/if}
           </li>
         </ul>
       </div>
     {/if}
 
     {#if task}
-      <button type="button" class="q-btn danger" data-wed-remove data-sfx="tick" onclick={remove}><Icon name="trash" size={16} />{t('wed.remove')}</button>
+      <div class="card dense"><button type="button" class="row danger" data-wed-remove data-sfx="tick" onclick={remove}><Icon name="trash" size={20} />{t('wed.remove')}</button></div>
     {/if}
-  </div>
-</BottomSheet>
+  </form>
+</Sheet>
 
 <style>
-  .form { display: grid; gap: 14px; }
+  .form { display: grid; gap: 14px; padding-bottom: 4px; }
   .f { display: grid; gap: 6px; min-width: 0; }
-  .fl { font: var(--q-w-b) var(--q-fs-s)/1.2 var(--q-font); color: var(--q-muted); letter-spacing: .03em; padding-left: 2px; }
-  .req { margin-left: 6px; font-weight: var(--q-w); color: var(--q-coral); }
-  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .row { display: flex; gap: 4px; align-items: center; min-width: 0; }
-  .row input { flex: 1; min-width: 0; }
-  .clear { flex: none; padding: 0 6px; }
-  input[type='date'] { display: block; text-align: start; -webkit-appearance: none; appearance: none; min-width: 0; }
-  :global(.q-field[aria-invalid='true']) { border-color: var(--q-coral) !important; }
-  .err { font-size: var(--q-fs-s); color: var(--q-coral); padding-left: 2px; }
-  .cats { margin: -6px -16px 0; }
-  .subs { list-style: none; margin: 0; padding: 0; }
-  .subs .q-row { padding: 0 6px 0 14px; gap: 10px; }
-  .ring { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--q-faint); box-sizing: border-box; flex: none; }
-  .sname {
-    flex: 1; min-width: 0; min-height: 44px; border: 0; background: none; padding: 0; color: var(--q-ink);
-    font: 400 16px/1.3 var(--q-font);
+  .fl { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); letter-spacing: .03em; padding-left: 4px; }
+  .req { margin-left: 6px; color: var(--coral-text); }
+  /* a field: the cream control with the edge, 16px (no iOS zoom) */
+  .fld {
+    width: 100%; min-width: 0; min-height: var(--hit); box-sizing: border-box; padding: 8px 12px; border: 0; border-radius: var(--r-btn);
+    font: 400 var(--fs-input)/1.3 var(--font-body); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
   }
+  .fld:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .fld[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pair { display: flex; gap: 6px; align-items: center; min-width: 0; }
+  .pair input { flex: 1; min-width: 0; }
+  input[type='date'] { display: block; text-align: start; -webkit-appearance: none; appearance: none; }
+  .err { font-size: var(--fs-s); color: var(--coral-text); padding-left: 4px; }
+  .cats { margin: 0 calc(-1 * var(--side)); }
+  .cats :global(.chip-row) { padding: 0 var(--side) 4px; }
+  .subs { list-style: none; margin: 0; }
+  .subs .row { padding: 0 4px 0 12px; }
+  .ring { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--edge); flex: none; }
+  .sname { flex: 1; min-width: 0; min-height: var(--hit); border: 0; background: none; padding: 0; color: var(--text); font: 400 var(--fs-input)/1.3 var(--font-body); }
   .sname:focus { outline: none; }
-  .sname::placeholder { color: var(--q-accent-ink); font-weight: var(--q-w-b); }
-  .add { color: var(--q-accent-ink); }
-  .rm { appearance: none; border: 0; background: none; cursor: pointer; width: 44px; height: 44px; display: grid; place-items: center; color: var(--q-muted); flex: none; }
-  .q-btn.danger { color: var(--q-coral); justify-self: start; border: 0; background: none; padding: 0 2px; }
+  .sname::placeholder { color: var(--leaf-text); font-weight: 600; }
+  .add { color: var(--leaf-text); }
+  .add .chip { margin-right: 6px; }
+  .rm { appearance: none; border: 0; background: none; cursor: pointer; width: var(--hit); height: var(--hit); display: grid; place-items: center; color: var(--text-soft); flex: none; }
+  .danger { color: var(--coral-text); font: 700 var(--fs-body)/1.2 var(--font-ui); }
   @media (max-width: 359px) { .two { grid-template-columns: 1fr; } }
 </style>

@@ -1,26 +1,24 @@
 <script lang="ts">
   // けっこんしき (docs/wedding.md): the wedding board's sheet, its own chunk with its strings, full height (Sheet's
-  // `quiet`, grown out of the menu's pill), over the board's store (board.svelte.ts), in the quiet kit's look (following
-  // the time of day). One title bar (けっこんしき, ✕; on メモ a member's 編集), one scroller, the bottom tab bar
-  // (プラン / メモ). プラン: our photo band (the names, the day and venue, the countdown, a member's ⚙), the progress
-  // strip, the filters and the months (Plan); a row opens in place, its 編集 and the ＋ over the tab bar open the form
-  // (TaskForm, a bottom sheet). メモ: the note (Notes); writing it, the title bar says so (キャンセル) and the format
-  // tools take the tab bar's place. 設定 is a level with ‹ (back on the plan where it was scrolled). The guest's phone
-  // (board.canEdit false) reads it all: no tick, 編集, ＋ or ⚙.
+  // `full`, the unified kit: docs/design.md), over the board's store (board.svelte.ts), following the time of day. One
+  // title bar (NavBar s: けっこんしき, ✕), one scroller, the bottom tab bar (プラン / メモ). プラン: the banner (Head),
+  // the filters and the months (Plan); a row opens in place, its 編集 and the ＋ over the tab bar open the form
+  // (TaskForm, a form sheet). メモ: the letter (Notes, its 編集 inside it); writing it, the title bar says so (キャンセル)
+  // and the format tools take the tab bar's place. 設定 is a level with ‹ (back on the plan where it was scrolled). The
+  // guest's phone (board.canEdit false) reads it all: no tick, 編集, ＋ or ⚙.
   import { tick } from 'svelte';
   import '#lib/i18n/wedding.ts';
-  import '../quiet/quiet.css';
   import Sheet from '../ui/Sheet.svelte';
-  import SheetHeader from '../quiet/SheetHeader.svelte';
-  import TabBar from '../quiet/TabBar.svelte';
-  import Icon from '../quiet/Icon.svelte';
+  import NavBar from '../ui/NavBar.svelte';
+  import TabBar from '../ui/TabBar.svelte';
+  import Icon from '../ui/Icon.svelte';
   import Head from './Head.svelte';
   import Plan from './Plan.svelte';
   import Notes from './Notes.svelte';
   import TaskForm from './TaskForm.svelte';
   import Settings from './Settings.svelte';
   import { board } from './board.svelte.ts';
-  import { cancel, flush, pad, write } from './notepad.svelte.ts';
+  import { cancel, flush, pad } from './notepad.svelte.ts';
   import type { Filter } from './view.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
@@ -119,17 +117,13 @@
   });
 </script>
 
-{#snippet trailing()}
-  {#if writing}
-    <button type="button" class="q-btn text" data-wed-note-cancel data-sfx="back" onclick={cancel}>{t('common.cancel')}</button>
-  {:else if tab === 'notes' && level === 'home' && canEdit && !board.conflict}
-    <button type="button" class="q-btn text" data-wed-note-edit data-sfx="open" onclick={write}>{t('common.edit')}</button>
-  {/if}
+{#snippet cancelNote()}
+  <button type="button" class="chip s" data-wed-note-cancel data-sfx="back" onclick={cancel}>{t('common.cancel')}</button>
 {/snippet}
 
-<Sheet bind:open label={t('wed.title')} variant="quiet" onclose={closed}>
+<Sheet bind:open label={t('wed.title')} variant="full" onclose={closed}>
   <div class="wd">
-    <SheetHeader {title} onback={level === 'settings' ? back : null} onclose={() => (open = false)} {trailing} />
+    <NavBar size="s" {title} onback={level === 'settings' ? back : null} onclose={() => (open = false)} trailing={writing ? cancelNote : null} />
     <div class="wd-body" class:writing class:plan={tab === 'plan' && level === 'home'} bind:this={body} data-wedding data-level={level} data-tab={tab} data-guest={!canEdit || undefined}>
       {#if level === 'settings' && canEdit}
         <Settings />
@@ -142,7 +136,7 @@
       {/if}
     </div>
     {#if level === 'home' && tab === 'plan' && canEdit}
-      <button type="button" class="fab" aria-label={t('wed.add')} data-wed-add data-sfx="open" onclick={() => edit(null)}><Icon name="plus" size={26} stroke={2.2} /></button>
+      <button type="button" class="fab" aria-label={t('wed.add')} data-wed-add data-sfx="open" onclick={() => edit(null)}><Icon name="plus" size={24} stroke={2.6} /></button>
     {/if}
     {#if level === 'home' && !writing}
       <TabBar items={[{ id: 'plan', label: t('wed.tab.plan'), icon: 'clipboard' }, { id: 'notes', label: t('wed.tab.notes'), icon: 'file' }]} value={tab} label={t('wed.tab')} attr="wed-tab" onpick={pickTab} />
@@ -156,21 +150,25 @@
 </Sheet>
 
 <style>
-  /* the sheet's column (Sheet's quiet skin: edge to edge), the title bar under the safe area */
+  /* the sheet's column (Sheet's full: edge to edge), the title bar under the safe area */
   .wd { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; padding: var(--ui-top) var(--safe-right) 0 var(--safe-left); }
+  .wd > :global(.navbar) { padding: 0 4px; }
   /* the one scroller */
   .wd-body { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; display: flex; flex-direction: column; padding-bottom: 24px; }
   /* the plan's last row clear of ＋ */
-  .wd-body.plan { padding-bottom: 88px; }
+  .wd-body.plan { padding-bottom: 80px; }
   .wd-body.writing { overflow: hidden; padding-bottom: 0; }
   .wd-body > :global(*) { flex: none; }
   .wd-body.writing > :global(*) { flex: 1; }
-  /* ＋: over the tab bar's top edge, at the right */
+  /* ＋: a 48px leaf disc with the game lip, over the tab bar's top edge at the right */
   .fab {
-    appearance: none; border: 0; cursor: pointer; position: absolute; z-index: 6; right: calc(16px + var(--safe-right)); bottom: calc(49px + max(var(--safe-bottom), 8px) + 14px);
-    width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--q-accent); color: var(--q-on-accent);
-    box-shadow: 0 2px 4px rgb(30 60 35 / .2), 0 8px 20px rgb(30 60 35 / .25); -webkit-tap-highlight-color: transparent;
+    appearance: none; border: 0; cursor: pointer; position: absolute; z-index: 6; right: calc(14px + var(--safe-right)); bottom: calc(60px + max(var(--safe-bottom), 6px) + 14px);
+    width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: var(--c-leaf); color: var(--c-ink);
+    box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge), 0 8px 16px rgb(40 60 30 / .22);
+    transition: transform var(--dur-base) var(--ease-bounce), box-shadow var(--dur-base) var(--ease-bounce); -webkit-tap-highlight-color: transparent;
   }
-  .fab:active { transform: scale(.96); }
-  .fab:focus-visible { outline: 2px solid var(--q-accent); outline-offset: 3px; }
+  .fab::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }
+  .fab:active { transform: translateY(3px); box-shadow: inset 0 0 0 2px var(--c-leaf-edge), 0 1px 0 var(--c-leaf-edge); transition-duration: var(--dur-tap); }
+  .fab:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { .fab:active { transform: none; } }
 </style>

@@ -22,27 +22,29 @@ app: the HUD menu's けっこんしき pill.
   countdown in days in the board's time zone (default Asia/Tokyo).
 - **Notes:** one shared markdown note (headings, lists, bold, italic, http(s) links).
 - **Settings (members):** the names, the date and time, the venue, the time zone, the categories; the deleted tasks
-  with もどす, and ぜんぶ けす (final).
+  with 戻す, and 完全に削除 (final).
 - Dropped from the old board: the accent colours, the edit link and read-only toggle (the keys replace them), the
   starter templates.
 
 UI (`components/wedding/`, the [unified kit](design.md#unified-kit), following the time of day): its own chunk, a
 `lazySheet` (`wedding/open.svelte.ts`, like りょこう's: offline before it's cached, a banner with もういちど), on Sheet's
-`quiet` variant; the island is paused under it. The title bar (けっこんしき, ✕), a bottom tab bar プラン / メモ, ＋ over it
-(a member's).
+`full` variant; the island is paused under it. The title bar (NavBar s: けっこんしき, ✕), the TabBar プラン / メモ, ＋ over
+it (a member's 48px leaf disc).
 
 - **プラン** (`Head`, `Plan`, `TaskRow`): one banner, our photo (`static/wedding/hero.webp`) under the big 「あと 336 日」,
   the names on a yuzu plate, the day · venue, the rose ring (percent, done / total) on a paper disc and a member's ⚙ 設定;
-  one row of filter chips; pinned month headings (期限切れ coral, 今月 green, the year only where it changes) over one card per month, each row
-  tick · month over day · title, category tag, checklist count · the relative due. A row opens in place: its checklist
-  ticks, who finished it (「うめ が完了」; the old Sheet's 「まえの ボードで おわった」), 編集 / 完了.
-- **The form** (`TaskForm`, a BottomSheet for ＋ and 編集): title, start, due, category chips, the checklist renamed /
-  removed / added (applied on 保存), 削除 with the banner's とりけす.
-- **メモ** (`Notes`): a document (16/1.65); 編集 in the title bar turns it into the field with 見出し / 太字 / リスト /
-  リンク and 完了 at its foot, over the keyboard. The draft is held in memory on the phone (`notepad.svelte.ts`): it
-  outlives a level, a tab and ✕. Two crossed saves show both versions under their writers (mine あなた), with これに
-  する (とりけす on its banner) and ふたつ あわせる (both in the editor).
-- **設定** (`Settings`): a grouped list, a level with ‹. The guest's sheet has no tick, 編集, ＋ or ⚙.
+  one ChipRow of filters; pinned month heads (`.sec-label.head`: 期限切れ coral, 今月 leaf, the year only where it
+  changes) over one dense card per month, each row Tick · month over day · title, category tag, ☑ count · the relative
+  due. A row opens in place: its checklist Ticks (who ticked each), who finished it (「うめ が完了」; the old Sheet's
+  「前のボードで完了」), 編集 / 完了.
+- **The form** (`TaskForm`, the kit's form sheet for ＋ and 編集: ✕, 保存 at its foot): title, start, due, category
+  chips, the checklist renamed / removed / added (applied on 保存), 削除 with the banner's とりけす.
+- **メモ** (`Notes`): a letter (cream paper with grain at every time of day, a `--c-rose` band, rules every 30px under
+  15/30 text, a tilted heart stamp, 「ふたりのメモ」); its 編集 turns it into the ruled field with 見出し / 太字 / リスト /
+  リンク and 完了 at its foot, over the keyboard (キャンセル in the title bar). The draft is held in memory on the phone (`notepad.svelte.ts`): it
+  outlives a level, a tab and ✕. Two crossed saves show both versions as small letters under their writers (mine
+  あなた), with これにする (とりけす on its banner) and ふたつを合わせる (both in the editor).
+- **設定** (`Settings`): grouped dense cards, a level with ‹; 完全に削除 asks first (ActionSheet). The guest's sheet has no tick, 編集, ＋ or ⚙.
 
 Rules: `lib/wedding/progress.ts`, `time/zone.ts` (ported from the old board); the store `board.svelte.ts`; the plan's
 view rules `view.ts`. The demo (`?demo`, `?demo&as=G`) draws an invented board (`store/demo/rows.ts`, its day the
