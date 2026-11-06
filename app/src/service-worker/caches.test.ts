@@ -152,6 +152,12 @@ describe('travel photos', () => {
   });
 });
 
+describe('trail photos and tracks', () => {
+  it('are never precached (a trail fetches its own as it shows)', () => {
+    for (const p of ['hiking/photos/lake-22.webp', '/fitness/hiking/tracks/kinpu-odarumi.json']) expect(precachable(p)).toBe(false);
+  });
+});
+
 describe('food data cache', () => {
   it('is never precached, and kept apart from the art', () => {
     for (const p of ['food/index.json', 'food/products.json', '/fitness/food/verify.json']) expect(precachable(p)).toBe(false);

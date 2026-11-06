@@ -1,7 +1,8 @@
 <script lang="ts">
   // A classic itinerary day (the site's details.card): its spine node, date chip, icon, title and line, the chevron;
   // inside, the timeline, the headed lists, a hike's details (the photo with its place, the difficulty pill and the
-  // date, the six stats, the trail map), the day's note and links. Open as the site had it (Okinawa's days).
+  // date, the six stats, the trail map: one of トレイル's opens in the app, hiking/open.svelte.ts openTrail, else the
+  // link out), the day's note and links. Open as the site had it (Okinawa's days).
   import type { Day } from '#lib/travel/types.ts';
   import { t, type Locale } from '#lib/i18n/index.ts';
   import CText from './CText.svelte';
@@ -12,6 +13,8 @@
   import { dayLook, dayOpen, leadChip, shortDate } from './guide.ts';
   import { fmtM } from '../text.ts';
   import { fmtKm } from '../units.ts';
+  import { openTrail } from '../../hiking/open.svelte.ts';
+  import { hikeSlugOf } from '#lib/hiking/trails.ts';
 
   let { day, note, lang }: { day: Day; note: Record<string, string> | null; lang: Locale } = $props();
   const chip = $derived(leadChip(day.date, lang));
@@ -50,7 +53,10 @@
         <div class="stat"><div class="k">{t('travel.classic.hike.time', undefined, lang)}</div><div class="v"><CText l={h.time} {note} /></div></div>
         <div class="stat"><div class="k">{t('travel.classic.hike.pass', undefined, lang)}</div><div class="v"><CText l={h.pass} {note} /></div></div>
       </div>
-      {#if h.gpx}<CLinks links={[{ label: { [lang]: t('travel.classic.hike.map', undefined, lang) }, href: h.gpx }]} {note} />{/if}
+      {@const trail = hikeSlugOf(h.gpx)}
+      {#if trail}
+        <button type="button" class="outlink" data-sfx="open" data-trail-open={trail} onclick={() => openTrail(trail)}>{t('travel.classic.hike.map', undefined, lang)} <CIcon name="chevron-right" /></button>
+      {:else if h.gpx}<CLinks links={[{ label: { [lang]: t('travel.classic.hike.map', undefined, lang) }, href: h.gpx }]} {note} />{/if}
     {:else if day.photo}
       <CPhoto photo={day.photo} />
     {/if}

@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!-- An invented trail for e2e/hiking.spec.ts (no real place): ~1 km up a slope from 100 m to 300 m and back down. -->
+<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="island-fund e2e">
+  <wpt lat="35.005" lon="139.0001">
+    <name><![CDATA[Bridge ]]></name>
+  </wpt>
+  <trk>
+    <name>Fixture</name>
+    <trkseg>
+      <trkpt lat="35.00000" lon="139.00000"><ele>98.5</ele></trkpt>
+      <trkpt lat="35.00050" lon="139.00020"><ele>111.5</ele></trkpt>
+      <trkpt lat="35.00100" lon="139.00000"><ele>118.5</ele></trkpt>
+      <trkpt lat="35.00150" lon="139.00020"><ele>131.5</ele></trkpt>
+      <trkpt lat="35.00200" lon="139.00000"><ele>138.5</ele></trkpt>
+      <trkpt lat="35.00250" lon="139.00020"><ele>151.5</ele></trkpt>
+      <trkpt lat="35.00300" lon="139.00000"><ele>158.5</ele></trkpt>
+      <trkpt lat="35.00350" lon="139.00020"><ele>171.5</ele></trkpt>
+      <trkpt lat="35.00400" lon="139.00000"><ele>178.5</ele></trkpt>
+      <trkpt lat="35.00450" lon="139.00020"><ele>191.5</ele></trkpt>
+      <trkpt lat="35.00500" lon="139.00000"><ele>198.5</ele></trkpt>
+      <trkpt lat="35.00550" lon="139.00020"><ele>211.5</ele></trkpt>
+      <trkpt lat="35.00600" lon="139.00000"><ele>218.5</ele></trkpt>
+      <trkpt lat="35.00650" lon="139.00020"><ele>231.5</ele></trkpt>
+      <trkpt lat="35.00700" lon="139.00000"><ele>238.5</ele></trkpt>
+      <trkpt lat="35.00750" lon="139.00020"><ele>251.5</ele></trkpt>
+      <trkpt lat="35.00800" lon="139.00000"><ele>258.5</ele></trkpt>
+      <trkpt lat="35.00850" lon="139.00020"><ele>271.5</ele></trkpt>
+      <trkpt lat="35.00900" lon="139.00000"><ele>278.5</ele></trkpt>
+      <trkpt lat="35.00950" lon="139.00020"><ele>291.5</ele></trkpt>
+      <trkpt lat="35.01000" lon="139.00000"><ele>298.5</ele></trkpt>
+      <trkpt lat="35.00950" lon="139.00030"><ele>291.5</ele></trkpt>
+      <trkpt lat="35.00900" lon="139.00030"><ele>278.5</ele></trkpt>
+      <trkpt lat="35.00850" lon="139.00030"><ele>271.5</ele></trkpt>
+      <trkpt lat="35.00800" lon="139.00030"><ele>258.5</ele></trkpt>
+      <trkpt lat="35.00750" lon="139.00030"><ele>251.5</ele></trkpt>
+      <trkpt lat="35.00700" lon="139.00030"><ele>238.5</ele></trkpt>
+      <trkpt lat="35.00650" lon="139.00030"><ele>231.5</ele></trkpt>
+      <trkpt lat="35.00600" lon="139.00030"><ele>218.5</ele></trkpt>
+      <trkpt lat="35.00550" lon="139.00030"><ele>211.5</ele></trkpt>
+      <trkpt lat="35.00500" lon="139.00030"><ele>198.5</ele></trkpt>
+      <trkpt lat="35.00450" lon="139.00030"><ele>191.5</ele></trkpt>
+      <trkpt lat="35.00400" lon="139.00030"><ele>178.5</ele></trkpt>
+      <trkpt lat="35.00350" lon="139.00030"><ele>171.5</ele></trkpt>
+      <trkpt lat="35.00300" lon="139.00030"><ele>158.5</ele></trkpt>
+      <trkpt lat="35.00250" lon="139.00030"><ele>151.5</ele></trkpt>
+      <trkpt lat="35.00200" lon="139.00030"><ele>138.5</ele></trkpt>
+      <trkpt lat="35.00150" lon="139.00030"><ele>131.5</ele></trkpt>
+      <trkpt lat="35.00100" lon="139.00030"><ele>118.5</ele></trkpt>
+      <trkpt lat="35.00050" lon="139.00030"><ele>111.5</ele></trkpt>
+      <trkpt lat="35.00000" lon="139.00030"><ele>98.5</ele></trkpt>
+    </trkseg>
+  </trk>
+</gpx>

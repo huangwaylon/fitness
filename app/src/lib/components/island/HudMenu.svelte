@@ -1,11 +1,12 @@
 <script lang="ts">
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
-  // toggle; aria-expanded) that drops six pills down under it, right-aligned, one after the other on a small spring:
+  // toggle; aria-expanded) that drops seven pills down under it, right-aligned, one after the other on a small spring:
   // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび), ずかん (NH's
   // agrias butterfly), えいご ききとり (しずえ's head: ききみみ クイズ, its sheet opened here, the voice session begun in the
   // tap itself; 「さそわれています！」 on it, and a dot on the leaf, while someone's invite is live), りょこう (Orville's
   // head: the trips' sheet, travel/open.svelte.ts), けっこんしき (パニエル's
-  // head: the wedding board, its sheet opened here: components/wedding) and せってい (a gear);
+  // head: the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
+  // hiking/open.svelte.ts) and せってい (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
   // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), then its sheet grows out of
@@ -22,6 +23,7 @@
   import { invitedNow, openQuiz, wakeQuizVoice } from '../kikimimi/invite.svelte.ts';
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
+  import { openTrails } from '../hiking/open.svelte.ts';
   import { coinsInFlight } from './HudCoins.svelte';
   import { react } from '../motion/director.svelte.ts';
   import { popFrom } from './popFrom.ts';
@@ -204,7 +206,14 @@
       <span class="lbl">{t('panel.wedding')}</span>
       <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
     </button>
-    <button type="button" class="item" style="--i: 5" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
+    <!-- トレイル: the hiking trails (no mountain in NH's art: drawn in the gear's soft brown, its snow cream) -->
+    <button type="button" class="item" style="--i: 5" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, openTrails)}>
+      <span class="lbl">{t('panel.hiking')}</span>
+      <span class="ic">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M1.8 20.2 8.6 8.4c.4-.7 1.4-.7 1.8 0l2.3 4 2.2-3.2c.4-.6 1.3-.6 1.7 0l5.6 8.4c.5.7 0 1.6-.8 1.6H2.7c-.8 0-1.3-.9-.9-1.6Z" /><path class="snow" d="M7.1 11 8.6 8.4c.4-.7 1.4-.7 1.8 0L12 11.2l-1.6 1-1-1.1-1 1.2Z" /></svg>
+      </span>
+    </button>
+    <button type="button" class="item" style="--i: 6" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
       <span class="ic">
         <!-- a gear in the say button's soft brown (no settings icon in NH's art) -->
@@ -252,7 +261,7 @@
     pointer-events: none;
   }
   .item {
-    --n: 6;
+    --n: 7;
     position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; height: var(--hit); margin: 0; padding: 0 4px 0 14px;
     appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);
@@ -278,6 +287,7 @@
   .ic { flex: none; width: 36px; height: 36px; display: grid; place-items: center; line-height: 0; }
   .ic svg { width: 26px; height: 26px; }
   .gear { fill: #A88B68; }
+  .snow { fill: var(--c-cream); }
   circle { fill: var(--c-cream); }
   /* the ベル row: no icon; the balance where the others' icons are, in the money font, centred in the icons' column */
   .bells { padding-right: 14px; }
