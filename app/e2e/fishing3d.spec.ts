@@ -5,7 +5,7 @@
 // away and the float stays out till a tap reels it in. Where the 3D island draws the shadow and the float is where their
 // tap areas are (the DOM's nodes, placed through the same camera): a tap on what's drawn is a tap on it.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, toTheWater } from './island.ts';
+import { camTo, castIn, geo, toTheWater } from './island.ts';
 import { markShown, overHead, type Mark } from './biteMark.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -51,10 +51,7 @@ for (const [water, q, cam, sel, miss] of [
   // no tap in the bite's window: it gets away, and the 「！」 goes with it
   ['sea', '&critter=fish&date=2026-11-04T12:00', null, '[data-critter="fish"]', true]
 ] as const) {
-  // (the pond's: quarantined, red on main twice in run 41831949563 and ~2 in 45 locally before 81ba4a56; pond fishing
-  // stays in the gate through pond.spec's catch)
-  const quarantine = water === 'pond' ? { tag: '@quarantine', annotation: { type: 'quarantine', description: 'owner: the bite-mark (fishing 3D) agent, since 2026-11-04: the pond row fails under load: "no bite" (the in-page wait for the 「！」, the float under and the 3D mark shown together never met in 12 s, CI run 41831949563), the rod state "sit" not "fish", the line-up 7° over 5°, the mark still shown 2 s after the catch (local, 3-4 workers)' } } : {};
-  test(`3D fishing in the ${water}: cast, the rod and its line, the bite, ${miss ? 'too late: it gets away' : 'the catch'}`, quarantine, async ({ page }) => {
+  test(`3D fishing in the ${water}: cast, the rod and its line, the bite, ${miss ? 'too late: it gets away' : 'the catch'}`, async ({ page }) => {
     test.setTimeout(90_000);
     // TODO(3D engine): on CI's drawn tier (software GL) the rod and the line-up pass, but the bite's 「！」 or the reel's
     // catch plate is missed (the bite's window under CI's load); the logic tier (E2E_RENDER=none) runs it
@@ -67,7 +64,8 @@ for (const [water, q, cam, sel, miss] of [
     await expect(page.locator(sel)).toBeAttached({ timeout: 10_000 });
     // my villager on its bank (NH casts from where it stands), the camera on the shadow; the reel's tap
     // later where the cast's was (open water: no door, nothing over it)
-    const [rx, ry] = await toTheWater(page, water);
+    // (a float out past the rod's tip: under it the line has no direction to line up)
+    const [rx, ry] = await toTheWater(page, water, 1, 100);
     // my villager in 3D (its model in: under CI's software GL that takes a while)
     await expect.poll(() => v3(page, (v) => v.state('mine')), { timeout: 30_000 }).not.toBeNull();
     // the shadow drawn where its tap area is (it swims: a few px of lag between the two at most): the model's spot is its
@@ -211,8 +209,7 @@ test('3D fishing: the rod stays in the hand, its tip where the line starts, at e
     await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { last(s: string): { x: number } | null } }).__villagers3.last('mine')?.x), { timeout: 5000 }).toBeCloseTo(x, 0);
   }
   // (the shadow drifts: cast by where it is now, on open water)
-  const [cx, cy] = await toTheWater(page, 'sea');
-  await page.mouse.click(cx, cy);
+  await castIn(page, 'sea');
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 8000 });
   await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
   type V = V3 & { last(slot: string): { x: number; z: number }; unbent(slot: string): string[] };
@@ -249,8 +246,8 @@ test(`3D fishing as a human player in the ${water}: facing, rod and line in one 
   await page.waitForFunction(() => (window as unknown as { __world3d?: W3 }).__world3d?.loaded(), null, { timeout: 30_000 });
   if (water === 'river') await camTo(page, (await geo(page)).CAMS.oku, false);
   await expect.poll(() => page.evaluate(() => (window as unknown as { __villagers3: { player(s: string): boolean } }).__villagers3.player('mine')), { timeout: 30_000 }).toBe(true);
-  const [rx, ry] = await toTheWater(page, water);
-  await page.mouse.click(rx, ry);
+  // (a float out past the rod's tip: under it the line has no direction to line up; the cast checked, castIn)
+  await castIn(page, water, 1, 100);
   await expect.poll(() => v3(page, (v) => [v.tool('mine'), v.state('mine')]), { timeout: 15_000 }).toEqual(['tools/rod', 'fish']);
   await expect.poll(() => page.evaluate(() => {
     const a = (window as unknown as { __world3d: { angler(): { facing: number; rod: number; line: number } | null } }).__world3d.angler();

@@ -25,6 +25,11 @@ export type W3 = {
 };
 export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;
 
+/** The island's hooks there to read: __world and the 3D island's __world3d (it comes a moment after __world). */
+export async function ready3d(page: Page) {
+  await page.waitForFunction(() => { const w = window as unknown as { __world?: unknown; __world3d?: unknown }; return !!w.__world && !!w.__world3d; }, null, { timeout: 30_000 });
+}
+
 /** The island up on this page and drawn in 3D, its first models loaded (false: no WebGL, the island's message). */
 export async function is3d(page: Page): Promise<boolean> {
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
@@ -80,14 +85,19 @@ export async function tapThing(page: Page, id: string, { lift = 0 }: { lift?: nu
 }
 
 /** The 3D island at rest: its camera still and nothing moving (polled; a villager wandering by doesn't count). */
-export const settled = (page: Page) => expect.poll(() => w3(page, (w) => w.camStill() && w.idle()), { timeout: 20_000, message: 'the 3D island at rest' }).toBe(true);
+export async function settled(page: Page) {
+  await ready3d(page);
+  await expect.poll(() => w3(page, (w) => w.camStill() && w.idle()), { timeout: 20_000, message: 'the 3D island at rest' }).toBe(true);
+}
 
 /** The camera to world z and held there (again till it holds: the scene may still re-fit its camera as it opens, a
  *  loaded runner's late), then the island at rest (`settled`: its nodes placed for that camera, so a DOM box read
  *  next is where the island draws it, not where the last camera had it). `rest` false: the camera still only (a
  *  critter swimming or flying keeps the island's frames coming: never at rest). */
 export async function camTo(page: Page, z: number, rest = true) {
-  await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
+  // (the 3D island's hooks too: __world comes first, and a camStill read before __world3d was there threw: holidays'
+  // and finds' "reading 'camStill'" in every full-tier run)
+  await ready3d(page);
   await expect.poll(async () => {
     await page.evaluate((z) => (window as unknown as { __world: { go(z: number): void } }).__world.go(z), z);
     await page.waitForTimeout(250);
@@ -173,9 +183,10 @@ type Fishing = {
 };
 /** My villager on the bank near the shadow in `water` (NH casts from where it stands; any water casts, this one's the
  *  near case): open ground near it, behind it on screen where there's any (so it never stands over the shadow), put
- *  there; the camera on the shadow first (at `zoom`: a side of the island shows zoomed in). Where the shadow is seen
- *  now (client px). */
-export async function toTheWater(page: Page, water: string, zoom = 1): Promise<[number, number]> {
+ *  there, `away` u from it at least; the camera on the shadow first (at `zoom`: a side of the island shows zoomed in).
+ *  Where the shadow is seen now (client px). A spec that reads the line's direction wants `away` past the rod's reach
+ *  (~36u from the feet to the tip): a float landing under the tip has no direction (fishing3d's line-up read 180°). */
+export async function toTheWater(page: Page, water: string, zoom = 1, away = 40): Promise<[number, number]> {
   // (the opening beats over: a greeting's balloon at the bottom of the screen lies over the sea)
   await quiet(page);
   // (the camera where the shadow is a little below the screen's middle, at the whole island's zoom: a shadow far up
@@ -192,19 +203,19 @@ export async function toTheWater(page: Page, water: string, zoom = 1): Promise<[
     w.go(best![0], k, f.x);
   }, [water, zoom] as const);
   await expect.poll(() => w3(page, (w) => w.camStill()), { message: 'the camera still' }).toBe(true);
-  const spot = await page.evaluate((water) => {
+  const spot = await page.evaluate(([water, away]) => {
     const w = window as unknown as Fishing, f = w.__fish.fish().find((f) => f.water === water)!;
     // (behind it; else off to its side, never just in front, where my villager would stand over it on screen: a shadow
     // off the back beach has no ground behind it)
     for (const where of ['behind', 'beside', 'any'])
-      for (let r = 40; r <= 160; r += 8)
+      for (let r = away; r <= away + 120; r += 8)
         for (let a = 0; a < 24; a++) {
           const x = Math.round(f.x + Math.cos((a / 24) * Math.PI * 2) * r), z = Math.round(f.z + Math.sin((a / 24) * Math.PI * 2) * r);
           if (where === 'behind' ? z < f.z + 20 : where === 'beside' ? Math.abs(x - f.x) < 60 : false) continue;
           if (w.__world.free(x, z, 0)) return [x, z] as [number, number];
         }
     return null;
-  }, water);
+  }, [water, away] as const);
   expect(spot, `open ground near the ${water}'s shadow`).not.toBeNull();
   await page.evaluate(([x, z]) => (window as unknown as Fishing).__world.put(x, z), spot!);
   await expect.poll(() => page.evaluate(() => (window as unknown as Fishing).__world.mine()).then(([x, z]) => Math.hypot(x - spot![0], z - spot![1]))).toBeLessThan(1);
@@ -247,9 +258,9 @@ const TAPS = 'button, a, [role="button"], [data-bush], [data-tree], [data-flower
  *  step in the page (a tree's tap area on the bank comes in as its lazy art loads, between a check and a click from
  *  here: the tap was the tree's), and tried again where the shadow has gone (at most four) until the tap cast. Where
  *  it cast (client px): a reel's tap there is on the island, never on a door (a door with the line out goes in). */
-export async function castIn(page: Page, water: string, zoom = 1): Promise<[number, number]> {
+export async function castIn(page: Page, water: string, zoom = 1, away = 40): Promise<[number, number]> {
   for (let i = 0; i < 4; i++) {
-    const [x, y] = await toTheWater(page, water, zoom);
+    const [x, y] = await toTheWater(page, water, zoom, away);
     const tapped = await page.evaluate(([x, y, taps]) => {
       const el = document.elementFromPoint(x, y);
       if (!el || el.closest(taps)) return false;
