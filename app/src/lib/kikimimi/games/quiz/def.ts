@@ -39,9 +39,12 @@ export const quizSeedBits = (ladder: boolean) => ({
   of: (o: { timer: QuizTimer }, f: number): number => withTimer(withLadder(withVersus(0, (f & F_VS) !== 0), ladder), o.timer)
 });
 
-/** A quiz-family deck over its rounds: at most the quiz's 8, each with the lobby's lead-in and answer window; graded by
- *  its kind; `score` when the game scores its rounds together (スピード はしご). */
-export function quizDeck(rounds: () => readonly QuizRound[], o: { timer: QuizTimer }, w: RoundWindows, score?: (rs: readonly QuizRound[], answers: ReadonlyMap<number, RoundAnswer>) => number): RoundDeck {
+/** A quiz-family deck over its rounds: at most the quiz's 8 (`max`: みみ チェック's 12, never on the wire), each with the
+ *  lobby's lead-in and answer window; graded by its kind; `score` when the game scores its rounds together (スピード
+ *  はしご). */
+export function quizDeck(
+  rounds: () => readonly QuizRound[], o: { timer: QuizTimer }, w: RoundWindows, score?: (rs: readonly QuizRound[], answers: ReadonlyMap<number, RoundAnswer>) => number, max = QUIZ_QS
+): RoundDeck {
   const answer = w.answers[Math.max(0, TIMERS.indexOf(o.timer))];
   const at = (i: number) => {
     const r = rounds()[i];
@@ -50,7 +53,7 @@ export function quizDeck(rounds: () => readonly QuizRound[], o: { timer: QuizTim
   const none: Graded = { ok: false, pts: 0 };
   return {
     get count() {
-      return Math.min(QUIZ_QS, rounds().length);
+      return Math.min(max, rounds().length);
     },
     round: (i) => rounds()[i],
     timing: (i) => {
