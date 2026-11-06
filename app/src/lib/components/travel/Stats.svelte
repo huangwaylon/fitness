@@ -1,15 +1,18 @@
 <script lang="ts">
-  // A guide card's figures (a flight's times, the Jimny's bill, a dive's plan): a two-column grid of small labels over
-  // their values, on a soft strip.
-  import type { Stat } from '#lib/travel/types.ts';
+  // A card's figures (a flight's times, the Jimny's bill, a dive's plan, a hike's distance and climb): a two-column
+  // grid of small labels over their values, on a soft strip; a label or value our own string, or the guide's text.
+  import type { L } from '#lib/travel/types.ts';
   import Txt from './Txt.svelte';
 
-  let { stats, note }: { stats: readonly Stat[]; note: Record<string, string> | null } = $props();
+  type Cell = L | string;
+  let { stats, note }: { stats: readonly { k: Cell; v: Cell }[]; note: Record<string, string> | null } = $props();
 </script>
+
+{#snippet cell(c: Cell)}{#if typeof c === 'string'}{c}{:else}<Txt l={c} {note} />{/if}{/snippet}
 
 <dl class="stats">
   {#each stats as s, i (i)}
-    <div><dt><Txt l={s.k} {note} /></dt><dd><Txt l={s.v} {note} /></dd></div>
+    <div><dt>{@render cell(s.k)}</dt><dd>{@render cell(s.v)}</dd></div>
   {/each}
 </dl>
 

@@ -1,10 +1,11 @@
 <script lang="ts">
   // A campsite's card (キャンプ's list, and the sheet a camp pin on ちず opens): the photo, the name and where, our
-  // nights' chips first in yuzu, the road time and fee, the description, Maps.
+  // nights' chips first in yuzu, the road time and fee, the description, Maps (Links).
   import type { Camp } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import Txt from './Txt.svelte';
   import Photo from './Photo.svelte';
+  import Links from './Links.svelte';
   import { pick } from './text.ts';
   import { fmtKm } from './units.ts';
 
@@ -27,9 +28,7 @@
       <div><dt>{t('travel.camps.fee')}</dt><dd><Txt l={camp.fee} {note} /></dd></div>
     </dl>
     <p class="desc"><Txt l={camp.desc} {note} /></p>
-    <a class="lk" href={camp.maps} target="_blank" rel="noopener noreferrer" data-sfx="open" data-camp-maps aria-label="{t('travel.camps.maps')} ({t('travel.opens')})">
-      <span>{t('travel.camps.maps')}</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3h7v7M13 3 4 12" /></svg>
-    </a>
+    <Links links={[{ label: { [i18n.locale]: t('travel.camps.maps') }, href: camp.maps }]} {note} attr="camp-maps" />
   </div>
 </article>
 
@@ -48,10 +47,4 @@
   .facts dt { flex: none; min-width: 4.6em; color: var(--text-soft); }
   .facts dd { margin: 0; }
   .desc { font: 500 var(--fs-s)/1.6 var(--font-ui); }
-  .lk {
-    justify-self: start; display: inline-flex; align-items: center; gap: 6px; min-height: var(--hit); padding: 0 14px; border-radius: var(--r-pill);
-    background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); text-decoration: none; margin-bottom: var(--lip-h);
-    font: 700 var(--fs-s)/1.2 var(--font-ui); -webkit-tap-highlight-color: transparent;
-  }
-  .lk:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .lk svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }</style>
+</style>

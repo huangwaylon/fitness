@@ -1,12 +1,10 @@
-// The nz guide (docs/travel.md "Content"), generated once by scripts/travel-extract.ts from the old travel-plans
-// site (index.html, the .map tables and OSRM legs), then the source: edit here. Private values are {p:key} tokens
-// (the trip note on the relay).
+// The nz guide (docs/travel.md "Content"), ported from the old travel-plans site (its page, map tables and OSRM
+// legs) and edited here since. Private values are {p:key} tokens (the trip note on the relay).
 import type { Trip } from '../types.ts';
 
 export const nz: Trip = {
   id: "nz",
-  lang: "en",
-  title: { ja: "ニュージーランド 2027", en: "New Zealand 2027" },
+  title: { ja: "ニュージーランド", en: "New Zealand" },
   eyebrow: { ja: "北島 · 6日間", en: "North Island · 6 days" },
   sub: { ja: "2月11日 – 2月16日 · オークランド・タラナキ", en: "Feb 11 – Feb 16 · Auckland & Taranaki" },
   start: "2027-02-11",
@@ -20,7 +18,6 @@ export const nz: Trip = {
     {
       n: 1,
       date: "2027-02-11",
-      kind: "day",
       icon: "plane-landing",
       title: { ja: "到着", en: "Arrival" },
       sub: { ja: "成田 → オークランド → ニューリン", en: "Narita → Auckland → New Lynn" },
@@ -32,7 +29,8 @@ export const nz: Trip = {
             ja: "2月10日発 · 10時間30分 · 予約番号 {p:flightRef}",
             en: "Leaves Feb 10 · 10 h 30 m · confirmation {p:flightRef}"
           },
-          dd: -1
+          dd: -1,
+          tz: "Asia/Tokyo"
         },
         { t: "09:00", text: { ja: "オークランド空港（AKL）着", en: "Land at Auckland (AKL)" }, place: "s1-0" },
         {
@@ -84,7 +82,6 @@ export const nz: Trip = {
     {
       n: 2,
       date: "2027-02-12",
-      kind: "day",
       icon: "teacup",
       title: { ja: "カランガハペ・ロード", en: "Karangahape Road" },
       sub: { ja: "コーヒー、本、アウトドア用品", en: "Coffee, books, gear" },
@@ -136,7 +133,6 @@ export const nz: Trip = {
     {
       n: 3,
       date: "2027-02-13",
-      kind: "day",
       icon: "car",
       title: { ja: "マーケット、そして南へ", en: "Market, then south" },
       sub: { ja: "パーネル → ワイトモ → ニュープリマス", en: "Parnell → Waitomo → New Plymouth" },
@@ -180,7 +176,6 @@ export const nz: Trip = {
     {
       n: 4,
       date: "2027-02-14",
-      kind: "day",
       icon: "mountain-snow",
       title: { ja: "ポウアカイ・ターン", en: "Pouākai Tarns" },
       sub: { ja: "日の出、そしてオークランドへ", en: "Sunrise, then back to Auckland" },
@@ -233,7 +228,6 @@ export const nz: Trip = {
     {
       n: 5,
       date: "2027-02-15",
-      kind: "day",
       icon: "sailboat",
       title: { ja: "ワイヘキ島", en: "Waiheke Island" },
       sub: { ja: "オリーブ、ワイン、フェリー往復", en: "Olives, wine, ferry both ways" },
@@ -294,7 +288,6 @@ export const nz: Trip = {
     {
       n: 6,
       date: "2027-02-16",
-      kind: "day",
       icon: "plane-takeoff",
       title: { ja: "ノースショア、そして帰国", en: "North Shore, then home" },
       sub: { ja: "ウィンターガーデン → ノースコート → デボンポート", en: "Wintergardens → Northcote → Devonport" },
