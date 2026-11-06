@@ -48,9 +48,12 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   // my own lobby at once (no one's invite waiting), on this phone alone: the hub; ひとこと クイズ's page from あそぶ
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   await toMode(page, 'quiz');
-  await expect(sheet(page).locator('[data-level="1"]')).toHaveAttribute('aria-checked', 'true');
-  await sheet(page).locator('[data-level="2"]').click();
+  // おまかせ before any data and any みみ チェック: はまべ 2; a tap picks はまべ 1 over it
   await expect(sheet(page).locator('[data-level="2"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(sheet(page).locator('[data-kiki-omakase]')).toBeVisible();
+  await sheet(page).locator('[data-level="1"]').click();
+  await expect(sheet(page).locator('[data-level="1"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(sheet(page).locator('[data-kiki-omakase-reset]')).toBeVisible();
   await expect(sheet(page).locator('[data-kiki-players]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-kiki-invite-all]')).toBeVisible();
   await expect(sheet(page).locator('[data-kiki-start]')).toHaveText('はじめる');

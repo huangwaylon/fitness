@@ -2,6 +2,7 @@
 // situation), length, question count and whether it can be shared; which are playable on this build (only those show:
 // never a 「もうすぐ」 wall, an empty group hidden); and the ばしょ ladder over the contract's levels (§4: はまべ 1 / 2,
 // かわ, もり, やま, ほし; level 5 is the アナウンス mode, not a place). Pure.
+import { levelAt } from './bank.ts';
 
 /** The modes built so far. The quiz family (ひとこと クイズ, アナウンス, スピード はしご) is one lobby's game; おさらい a
  *  solo practice deck; おやすみ ものがたり the bedtime serials (no lobby, no score: components/kikimimi/story/); しずえの
@@ -92,3 +93,11 @@ export function lvOfPlace(place: Place, levels: readonly number[], lv?: number):
 
 /** The level a mode opens at: アナウンス 5; the quiz the one remembered unless that's アナウンス's (then はまべ 1). */
 export const lvForMode = (id: ModeId, last: number): number => (id === 'announce' ? 5 : last === 5 ? 1 : last);
+
+/** おまかせ's level (§4, kikimimi-ux.md §6.12): みみ チェック's placed one; before a check, my comfortable level
+ *  (progress.ts, levelRank's scale); before any data はまべ 2. One this build offers (not アナウンス's). */
+export function omakaseLv(placed: number | null, level: number | null, levels: readonly number[]): number {
+  const quiz = levels.filter((x) => x !== 5);
+  const want = placed ?? (level === null ? 2 : levelAt(Math.min(6, Math.max(1, Math.round(level)))));
+  return quiz.includes(want) ? want : (quiz.filter((x) => x <= want).at(-1) ?? quiz[0] ?? 1);
+}

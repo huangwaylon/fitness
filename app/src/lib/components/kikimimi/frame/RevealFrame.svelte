@@ -11,7 +11,7 @@
     right: boolean;
     /** I answered (else time ran out). */
     picked: boolean;
-    /** A right answer's points (+100). */
+    /** A right answer's points (+100; 0: none shown, みみ チェック's). */
     pts: number;
     /** いっぱつ: right on the first listen (a stamp, no points). */
     badge?: boolean;
@@ -30,7 +30,7 @@
     {#if line}{@render line()}
     {:else}
       <p>
-        {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')} <b>+{pts}</b>
+        {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')}{#if pts} <b>+{pts}</b>{/if}
         {:else}<span class="sym" aria-hidden="true">×</span>{picked ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
       </p>
       {#if badge}<span class="bonus" data-kiki-bonus>{t('kiki.firstTry')}</span>{/if}

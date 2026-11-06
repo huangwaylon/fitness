@@ -20,7 +20,6 @@
   import type { Who } from '#lib/types.ts';
   import Host from '../../characters/Host.svelte';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
-  import { levelAt } from '#lib/kikimimi/bank.ts';
   import { MODE_IDS, placeOfLv, playable, shelves, PLACES } from '#lib/kikimimi/catalog.ts';
   import { stageAt } from '#lib/kikimimi/stages.ts';
   import { isLadderGame } from '#lib/kikimimi/progress.ts';
@@ -29,7 +28,7 @@
   import { nextOf, pickSerial } from '#lib/kikimimi/bedtime.ts';
   import { SERIALS, STORY_OK, serialOf, storyProgress } from '../story/serials.svelte.ts';
   import MorningCard from './MorningCard.svelte';
-  import { currentPath, currentReport, currentUnits } from '../progress.svelte.ts';
+  import { currentOmakase, currentPath, currentPlacement, currentReport, currentUnits } from '../progress.svelte.ts';
   import { weekCard } from '#lib/kikimimi/week.ts';
   import { weekGoal } from '../prefs.ts';
   import WeekCard from './WeekCard.svelte';
@@ -53,8 +52,10 @@
     onact: (a: Act) => void;
     /** The たいかい banner: its lobby. */
     ontaikai: () => void;
+    /** The みみ チェック card: the check, at once. */
+    oncheck: () => void;
   }
-  let { here, me, invite = null, onjoin, onupdate, ontile, onact, ontaikai }: Props = $props();
+  let { here, me, invite = null, onjoin, onupdate, ontile, onact, ontaikai, oncheck }: Props = $props();
   const TILES: readonly { k: Tile; icon: string }[] = [
     { k: 'asobu', icon: '🎧' },
     { k: 'together', icon: '👥' },
@@ -66,11 +67,10 @@
   const hour = jst().hour;
   const greet = t(hour < 5 || hour >= 18 ? 'kiki.hub.evening' : hour < 11 ? 'kiki.hub.morning' : 'kiki.hub.day');
   const stage = $derived(report?.stats.level == null ? null : stageAt(report.stats.level));
-  /** Today's quiz: my comfortable level (はまべ 1 before any data), one this build offers. */
-  const lv = $derived.by(() => {
-    const want = levelAt(Math.min(6, Math.max(1, Math.round(report?.stats.level ?? 1))));
-    return LEVELS.includes(want) ? want : (LEVELS.find((x) => x !== 5) ?? 1);
-  });
+  /** Today's quiz: おまかせ's level (みみ チェック's placed one, else my comfortable one, else はまべ 2). */
+  const lv = $derived(currentOmakase());
+  /** No みみ チェック yet: its card (the first run put off, or a player from before it). */
+  const unplaced = $derived(!!report && !currentPlacement());
   const placeOf = (x: number) => PLACES.find((p) => p.id === placeOfLv(x));
   const path = $derived(currentPath());
   const stops = $derived(path.stages.flatMap((s) => s.stops));
@@ -174,6 +174,13 @@
     {#if !night}<MorningCard {me} today={report!.today} />{/if}
     <p class="ok" data-kiki-ok-line>{t(menu.all ? 'kiki.menu.all' : menu.ok ? 'kiki.menu.ok' : 'kiki.menu.hint')}</p>
   {/if}
+  {#if unplaced}
+    <div class="check card" data-kiki-check-card>
+      <span class="ear" aria-hidden="true">👂</span>
+      <span class="ctxt"><b>{t('kiki.check.title')}</b><small>{t('kiki.check.card')}</small></span>
+      <button type="button" class="btn small paper" data-kiki-check-start data-sfx="confirm" onclick={oncheck}>{t('kiki.startSolo')}</button>
+    </div>
+  {/if}
   <nav class="tiles" aria-label={t('kiki.title')}>
     {#each TILES as tile (tile.k)}
       <button type="button" class="tile tile-btn" data-kiki-tile={tile.k} data-sfx="open" onclick={() => ontile(tile.k)}>
@@ -222,6 +229,13 @@
     font: 700 20px/1 var(--font-ui); color: var(--c-coral-text); box-shadow: inset 0 0 0 2px var(--c-coral);
   }
   .ok { margin: -4px 6px 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
+  /* みみ チェック not taken yet: a small card, never the green button (the menu's) */
+  .check { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
+  .ear { flex: none; font-size: 24px; line-height: 1; }
+  .ctxt { flex: 1; min-width: 0; display: grid; gap: 2px; }
+  .ctxt b { font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .ctxt small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
+  .check .btn { flex: none; margin-bottom: var(--lip-h); }
   /* the four entry tiles: one row in the thumb's arc, each ≥ 84 × 92 */
   .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
   .tile {
