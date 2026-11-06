@@ -281,14 +281,15 @@
 .classic .stat .k { font-size: 10px; font-weight: 700; letter-spacing: .12em !important; text-transform: uppercase; color: var(--muted); }
 .classic .stat .v { font-size: 16px; font-weight: 700; margin-top: 5px; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -.2px !important; }
 
-/* Outbound link — Google Maps, trail maps, operator sites */
-.classic a.outlink {
+/* Outbound link — Google Maps, trail maps, operator sites (a trail of トレイル's: a button, opening it in the app) */
+.classic a.outlink, .classic button.outlink {
   display: inline-flex; align-items: center; gap: 8px; margin: 16px 8px 0 0; background: var(--surface-2);
   color: var(--ink); text-decoration: none; font-weight: 700; font-size: 14px; padding: 11px 16px;
   border-radius: var(--r-chip); border: 1px solid var(--line-strong); transition: background .15s, transform .1s, border-color .15s;
 }
-.classic a.outlink .ic { width: 14px; height: 14px; color: var(--acc); }
-.classic a.outlink:active { transform: scale(.97); }
+.classic button.outlink { font-family: inherit; cursor: pointer; }
+.classic a.outlink .ic, .classic button.outlink .ic { width: 14px; height: 14px; color: var(--acc); }
+.classic a.outlink:active, .classic button.outlink:active { transform: scale(.97); }
 .classic a.outlink.alt { font-weight: 600; font-size: 13px; background: none; border-color: var(--line); color: var(--muted); }
 .classic a.outlink.alt .ic { color: var(--muted); }
 .classic a.outlink.off { opacity: .55; }
