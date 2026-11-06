@@ -249,6 +249,8 @@ export async function foodFetch(req: Request, cache: FoodCacheLike, net: (r: Req
 const isAppIcon = (path: string): boolean => path.includes('/icons/');
 /** The trips' photos (static/travel/; docs/travel.md): fetched as a trip is read, never at install. */
 const isTravel = (path: string): boolean => path.includes('/travel/');
+/** トレイル's photos and tracks (static/hiking/; docs/hiking.md): fetched as a trail is read, never at install. */
+const isHiking = (path: string): boolean => path.includes('/hiking/');
 /** The trip map's MapLibre: its chunk (`maplibre.*.js`, named so by vite.config.ts), its worker and its CSS (~1.8 MB
  *  in all): online only, like the tiles, so fetched when a map is drawn and never at install. */
 const isMapLibre = (path: string): boolean => /\/_app\/immutable\/(chunks\/maplibre\.|workers\/maplibre-gl-worker-|assets\/maplibre\.)/.test(path);
@@ -258,11 +260,11 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: font subsets (cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the trips' photos (travel/), the trip map's MapLibre, the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the trips' photos (travel/), トレイル's photos and tracks (hiking/), the maps' MapLibre, the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isTravel(p) || isMapLibre(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isTravel(p) || isHiking(p) || isMapLibre(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

@@ -15,6 +15,7 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { trips } from '#lib/components/travel/open.svelte.ts';
   import { weddingSheet } from '#lib/components/wedding/open.svelte.ts';
+  import { hiking } from '#lib/components/hiking/open.svelte.ts';
   import { quiz } from '#lib/components/kikimimi/invite.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -29,7 +30,7 @@
   let healthOpen = $state(false);
   let foodOpen = $state(false);
   /** A full-height sheet is open: the island pauses under it, no coins fly. */
-  const sheetOpen = $derived(panelOpen || healthOpen || foodOpen || trips.open || weddingSheet.open);
+  const sheetOpen = $derived(panelOpen || healthOpen || foodOpen || trips.open || weddingSheet.open || hiking.open);
   /** しずえ's box's height while it shows: the island's say button (bottom right) stands over it. */
   let newsH = $state(0);
 
