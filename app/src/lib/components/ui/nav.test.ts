@@ -17,8 +17,9 @@ const files = [...svelteFiles(join(SRC, 'lib/components')), ...svelteFiles(join(
 const uses = (src: string, name: string) => new RegExp(`import ${name} from '[^']*/${name}\\.svelte'`).test(src);
 
 describe('navigation', () => {
-  it('every modal <dialog> carries the shared close (NavBar or NavButton; banners are not modals)', () => {
-    const bad = files.filter((x) => /<dialog\b/.test(x.src) && !/Toast/.test(x.f) && !uses(x.src, 'NavBar') && !uses(x.src, 'NavButton')).map((x) => x.f);
+  it('every modal <dialog> carries the shared close (NavBar or NavButton), or a labelled キャンセル (the quiet kit\'s action and form sheets: data-q-cancel); banners are not modals', () => {
+    const closes = (src: string) => uses(src, 'NavBar') || uses(src, 'NavButton') || /<button\b[^\n]*\sdata-q-cancel\b[^\n]*\{t\('common\.cancel'\)\}<\/button>/.test(src);
+    const bad = files.filter((x) => /<dialog\b/.test(x.src) && !/Toast/.test(x.f) && !closes(x.src)).map((x) => x.f);
     expect(bad).toEqual([]);
   });
   it('a paper sheet always renders the title bar with ✕', () => {
@@ -32,6 +33,12 @@ describe('navigation', () => {
   });
   it('nothing draws a grabber (swipe-down is never advertised)', () => {
     expect(files.filter((x) => /grabber/.test(x.src)).map((x) => x.f)).toEqual([]);
+  });
+  it('a quiet sheet\'s title bar is SheetHeader, on NavButton (its ‹ and ✕ the shared buttons)', () => {
+    const hdr = files.find((x) => x.f.endsWith('quiet/SheetHeader.svelte'))!.src;
+    expect(uses(hdr, 'NavButton')).toBe(true);
+    expect(hdr).toMatch(/<NavButton kind="back"[^>]*onclick=\{onback\}/);
+    expect(hdr).toMatch(/<NavButton kind="close"[^>]*onclick=\{onclose\}/);
   });
   it('back and close buttons are the shared NavButton (no ad-hoc ones)', () => {
     const adhoc = files.filter((x) => !x.f.endsWith('NavButton.svelte') && /href="#i-(back|close)"/.test(x.src) && !/class="rm"/.test(x.src)).map((x) => x.f);
