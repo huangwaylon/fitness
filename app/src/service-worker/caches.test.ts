@@ -75,6 +75,14 @@ describe('precache', () => {
     // ききみみ's scene backdrops, at every scale
     for (const p of ['art/scene/cafe.webp', '/fitness/art/scene/gate@2x.webp', 'art/scene/living@3x.webp']) expect(precachable(p)).toBe(false);
   });
+  it("leaves the trips' photos out: fetched as a trip is read", () => {
+    for (const p of ['travel/okinawa/cover.webp', '/fitness/travel/nz/hero.webp']) expect(precachable(p)).toBe(false);
+  });
+  it("leaves the trip map's MapLibre out (its chunk, worker and CSS): the map is online only", () => {
+    for (const p of ['_app/immutable/chunks/maplibre.D4lzds31.js', '/fitness/_app/immutable/workers/maplibre-gl-worker-Br3j0JGE.js', '_app/immutable/assets/maplibre.qvkd0SPb.css']) expect(precachable(p)).toBe(false);
+    // the map's own light component and the rest of the chunks stay
+    for (const p of ['_app/immutable/chunks/LRf9-Dmh.js', '_app/immutable/assets/TravelSheet.oVavZwKD.css']) expect(precachable(p)).toBe(true);
+  });
   it('leaves the app icons out: the OS fetches them when the app is added', () => {
     // the tent's room: its models, surfaces and icons, cached on first use (megabytes: never at install)
     for (const p of ['room/models/f4041.glb', '/fitness/room/wall/w4840.webp', 'room/floor/g5018.webp', 'room/icons/f4081.webp']) expect(precachable(p)).toBe(false);
@@ -130,6 +138,12 @@ describe('the offline shell from a navigation (keepShell)', () => {
     const c = fakeCache(false);
     await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('nope', { status: 404 }), '2026-11-05.abc1234');
     expect(c.puts).toEqual([]);
+  });
+});
+
+describe('travel photos', () => {
+  it('are never precached (a guide fetches its own when it shows them)', () => {
+    for (const p of ['travel/okinawa/hero.webp', '/fitness/travel/okinawa/camps/katsuren-beach.webp', 'travel/seattle/lake-22.webp', '/fitness/travel/nz/cover.webp']) expect(precachable(p)).toBe(false);
   });
 });
 

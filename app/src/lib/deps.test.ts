@@ -36,7 +36,10 @@ const ALLOW: Record<string, string[]> = {
   // ききみみ クイズ (docs/kikimimi.md): the session's pure state machine over the quiz intent (sync: the Live's type), the
   // bank naming roster ids (a type), the deck seeded by random
   kikimimi: ['types', 'contract', 'sync', 'random', 'villagers'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random']
+  // りょこう (docs/travel.md): the guides' data and its tokens, pure; the packing seed is the relay contract's type
+  // (contract/pack.ts PackSeed)
+  travel: ['contract'],
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel']
 };
 
 function files(dir: string): string[] {
@@ -69,7 +72,7 @@ for (const f of files(LIB)) {
     if (spec.startsWith('#lib/')) target = join(LIB, spec.slice(5));
     else if (spec.startsWith('$lib/')) target = join(LIB, spec.slice(5));
     else if (spec.startsWith('.')) target = resolve(dirname(f), spec);
-    else if (/^\$app\/|^\$service-worker$/.test(spec) || /^(@[\w.-]+\/)?[\w.-]+(\/[\w./-]+)?$|^node:/.test(spec)) continue; // packages, Kit's modules
+    else if (/^\$app\/|^\$service-worker$/.test(spec) || /^(@[\w.-]+\/)?[\w.-]+(\/[\w./-]+)?(\?(worker&)?url)?$|^node:/.test(spec)) continue; // packages (a file of one as a URL: `?url`, `?worker&url`), Kit's modules
     else { unknown.push(`${relative(LIB, f)}: ${spec}`); continue; }
     out.push(fileOf(target));
     const from = folderOf(f);

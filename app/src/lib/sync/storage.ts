@@ -128,7 +128,15 @@ export const DEVICE = {
   kikimimiGames: 'island.kikimimiGames',
   /** localStorage: `string[][]`, the item ids of my last ききみみ games on this phone, newest first (kikimimi/recent.ts:
    *  the host's seed with the least overlap, a solo game's and にがて れんしゅう's freshest items; at most 6 games). */
-  kikimimiRecent: 'island.kikimimiRecent'
+  kikimimiRecent: 'island.kikimimiRecent',
+  /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
+  travelUnits: 'island.travel.units',
+  /** localStorage: `[<who>|<trip>…]`: the packing lists this phone celebrated 「じゅんび OK！」 for, by who I am (once
+   *  per trip and person; components/travel/PackList.svelte). */
+  travelPacked: 'island.travel.packed',
+  /** localStorage: the Tokyo date Orville last said his line at the りょこう counter on this phone (once a day:
+   *  components/travel/TravelSheet.svelte). */
+  travelHello: 'island.travelHello'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */
