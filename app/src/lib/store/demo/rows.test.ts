@@ -11,6 +11,7 @@ import { shopPrice } from '#lib/contract/rules.ts';
 import { isActivityMetric } from '#lib/contract/api.ts';
 import { customs, foodDay, recipes, setGoal } from '#lib/model/food.ts';
 import { localDateAt } from '#lib/time/dates.ts';
+import { packFold, packList, tripNoteOf } from '#lib/contract/pack.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
   const now = Date.parse(iso);
@@ -54,7 +55,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   });
 
   it('Move and Stand every day; うめ’s Move goal applies from its day', () => {
-    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'listen'].includes(e[3]))).toEqual([]);
+    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'listen', 'pack', 'pack_chk', 'trip_note'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['bmi', 'body_fat_pct', 'exercise_min', 'lean_kg', 'move_kcal', 'stand_min', 'steps', 'weight']);
     const settled = economyWeeks(s, now).filter((wk) => provisionalMs(wk) <= now);
@@ -87,6 +88,15 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     expect(r.per.kcal).toBeGreaterThan(500);
     expect(r.per.kcal).toBeLessThan(900);
     expect(recipes(reduce(demoCache(now, 'G').rows))).toEqual(recipes(s));
+  });
+
+  it('Okinawa’s packing list as two phones left it: うめ’s ticks and item, A’s tick, a made-up note each trip; the guest’s too', () => {
+    const seed = { cats: [{ id: 'ok-0', name: { ja: '書類' }, icon: 'file', items: [{ id: 'ok-0-0', text: { ja: 'ID' } }, { id: 'ok-0-1', text: { ja: '免許' } }] }] };
+    for (const rows of [s.pack, reduce(demoCache(now, 'G').rows).pack]) {
+      const b = packFold(rows);
+      expect(packList('okinawa', seed, b)[0].items.map((i) => [i.id, i.ticks.join('')])).toEqual([['ok-0-0', 'AB'], ['ok-0-1', 'B'], ['_demob001', 'B']]);
+      for (const trip of ['okinawa', 'seattle', 'nz']) expect(tripNoteOf(trip, b)).toMatchObject({ flightRef: 'DEMO01' });
+    }
   });
 
   it('a custom food each: A’s with no weight (a nominal 100 g), B’s by weight; seen by the guest too', () => {
