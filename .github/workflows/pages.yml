@@ -151,9 +151,14 @@ jobs:
   # A changed spec, five times (docs/ops/testing.md): the e2e specs this push (or pull request) added or edited, each
   # test 5× over in the logic tier (scripts/e2e-changed.ts; none when over 8 changed: a sweep, the logic tier runs them
   # all once). One failure in five is a flake the push brought: red, and the deploy waits, before it reaches every run.
+  # Three runners share the repeats (a big spec, demo's ~3 min, five times over took one ~8 min).
   e2e-changed:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     defaults:
       run:
         working-directory: app
@@ -178,7 +183,7 @@ jobs:
         run: |
           list=$(node scripts/e2e-changed.ts "$BASE" "$HEAD_SHA" | tr '\n' ' ')
           echo "list=$list" >> "$GITHUB_OUTPUT"
-          if [ -n "$list" ]; then printf '### Changed specs, 5× each\n\n%s\n' "$list" >> "$GITHUB_STEP_SUMMARY"; fi
+          if [ -n "$list" ]; then printf '### Changed specs, 5× each (shard ${{ matrix.shard }}/3)\n\n%s\n' "$list" >> "$GITHUB_STEP_SUMMARY"; fi
       - if: steps.specs.outputs.list != ''
         run: npm ci --ignore-scripts --no-audit --no-fund
       - if: steps.specs.outputs.list != ''
@@ -198,7 +203,7 @@ jobs:
         env:
           SPECS: ${{ steps.specs.outputs.list }}
         # ($SPECS unquoted: the list splits into its files)
-        run: npx playwright test --project=chromium --grep-invert "@render|@quarantine" --repeat-each=5 $SPECS
+        run: npx playwright test --project=chromium --grep-invert "@render|@quarantine" --repeat-each=5 --shard=${{ matrix.shard }}/3 --pass-with-no-tests $SPECS
       - if: failure()
         run: |
           node scripts/e2e-report.ts playwright-results.json "A changed spec failed in its 5 runs (a flake the push brought: fix its cause)" >> "$GITHUB_STEP_SUMMARY"
