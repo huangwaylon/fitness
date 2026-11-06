@@ -15,8 +15,8 @@ iPhone 15 / 16 Safari. Branch `travel` (worktree `.claude/worktrees/travel`); th
   readable by **all three keys** (the guest too).
 - Entry: a 「りょこう」 pill in the leaf menu (Dodo Airlines flavour: Orville / Wilbur, the airport art).
 - A km / mi switch, per device.
-- Real maps replace the generated SVG: MapLibre GL JS drawing OpenStreetMap vector tiles (Protomaps), our own
-  NookPhone-style theme, self-hosted. A "you are here" dot (geolocation for our origin only; the position never leaves
+- Real maps replace the generated SVG: MapLibre GL JS drawing OpenStreetMap vector tiles from OpenFreeMap, online
+  only, our own NookPhone-style theme. A "you are here" dot (geolocation for our origin only; the position never leaves
   the phone). No terrain shading.
 - Past trips download nothing ahead of time (no offline maps, no photo prefetch).
 - No ベル / economy tie-in.
