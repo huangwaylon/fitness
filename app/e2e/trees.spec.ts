@@ -1,7 +1,7 @@
 // The trees' fruit through a day (docs/design.md "Trees"): each person's tree beside their villager; grey in the canopy
 // at 0, colouring with progress; once met it falls to the ground (once); a tap picks it up and it stays gone for the
 // Tokyo day (this phone's fruit-day); all four met, the canopy glints. Picking up never changes ベル. The demo's progress follows ?date= (no sync before 06:40; most
-// goals settled by 23:00).
+// goals settled by 23:00). The popup's 朝 / 昼 / 夜 fill as meals are logged in ごはん.
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { hudBells } from './hud.ts';
@@ -77,6 +77,34 @@ test('met fruit falls to the ground in colour; unmet ones colour with progress; 
   // the next Tokyo day: everything back in the canopy, grey
   await open(page, '2026-11-05T05:30');
   await expect(page.locator('[data-stage="tree"]')).toHaveCount(8);
+});
+
+test('the popup’s 朝 / 昼 / 夜: a meal logged in ごはん fills its circle with a ✓', async ({ page }) => {
+  await open(page, '2026-11-04T12:30');
+  // my tree (A's): its canopy controls the same popup as its fruit row
+  const canopy = page.locator(`button.canopy[aria-controls="${await page.locator('[data-tree-row=A]').getAttribute('aria-controls')}"]`);
+  const circles = page.locator('.detail [data-meals] [data-meal]');
+  await canopy.click();
+  await expect(circles).toHaveText(['朝', '昼', '夜']);
+  const meal = await circles.evaluateAll((els) => els.find((e) => !e.hasAttribute('data-logged'))?.dataset.meal);
+  expect(meal).toBeTruthy();
+  await expect(page.locator(`.detail [data-meal=${meal}] .ok.todo`)).toBeVisible();
+
+  // log it in ごはん (the bowl), then back on the island the popup shows it ✓
+  await page.getByRole('button', { name: 'ごはん', exact: true }).click();
+  const sheet = page.locator('dialog[open]');
+  await sheet.locator(`[data-add=${meal}]`).click();
+  await sheet.locator('[data-food-q]').fill('ごはん');
+  const rice = sheet.locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
+  await expect(rice).toBeVisible({ timeout: 15_000 }); // the catalog's first fetch
+  await rice.click();
+  await sheet.locator('[data-done]').click();
+  await sheet.locator('[data-food-finish]').click();
+  await page.keyboard.press('Escape');
+  await expect(sheet).toHaveCount(0);
+  if (!(await circles.count())) await canopy.click();
+  await expect(page.locator(`.detail [data-meal=${meal}]`)).toHaveAttribute('data-logged', 'true');
+  await expect(page.locator(`.detail [data-meal=${meal}] svg.ok`)).toBeVisible();
 });
 
 test('with nothing fallen, the fruit row still opens the popup; from the keyboard it picks up the first fallen fruit', async ({ page }) => {
