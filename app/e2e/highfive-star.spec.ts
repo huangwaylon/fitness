@@ -45,8 +45,12 @@ test('20 high fives in a row: each flies the star from mine to the partner on bo
   for (let i = 0; i < 20; i++) {
     const [m0, p0] = [await mx(), await px()];
     const wa = watch(a, 800), wb = watch(b, 800);
-    const tap = await a.evaluate(() => performance.timeOrigin + performance.now());
+    // (the tap's own time, in the page as its click comes: read before the click, Playwright's checks before it lands
+    // (stable over two frames) put the flight ~0.1–0.2 s later on a loaded machine, and its first mid-flight frames
+    // looked starless)
+    await a.evaluate(() => document.addEventListener('click', () => ((window as unknown as { __tapAt: number }).__tapAt = performance.timeOrigin + performance.now()), { capture: true, once: true }));
     await a.locator('[data-actor="partner"] .vil').click();
+    const tap = await a.evaluate(() => (window as unknown as { __tapAt: number }).__tapAt);
     const [ra, rb] = await Promise.all([wa, wb]);
     for (const [who, r] of [['A', ra], ['B', rb]] as const) {
       const on = r.filter((f) => f.n > 0);
