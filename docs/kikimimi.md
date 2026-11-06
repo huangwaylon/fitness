@@ -181,7 +181,7 @@ Draft 1 was reviewed by an English teacher (Japanese learners), a game/UX design
 
 Field validation:
 - `g`: `/^[a-z0-9]{4,8}$/`
-- `lv`: 1-5 (4 かわ・もり; 5 room for the next level without a relay deploy; a phone offers only the levels it has every clip of)
+- `lv`: 1-8 (4 もり, 5 アナウンス, 6 やま, 7 ほし, 8 room for the next level without a relay deploy; widened from 1-5 on 2026-11-06, a relay deploy; a phone offers only the levels it has every clip of)
 - `i`: 0-7 (`a`), 0-8 (`skip`; 8 is the end, added 2026-11-05: the relay must be deployed for it)
 - `k`: 0-3
 - `s`: 0-1040 (8 × 130 from the first-listen bonus's days; now at most 800, the bound kept for older phones)
@@ -259,7 +259,7 @@ The user asked for "a mechanic for progress and improvement and learning trackin
 
 ### Storage: one `listen` row per person per game
 
-- **The row** (docs/backend.md "Events", `contract/listen.ts`): `listen {d, g, lv, n, ms, p?, r}`. `d` the Tokyo day; `g` the game id (the session's, `[a-z0-9]{4,12}`); `lv` 1-5; `n` the players 1-3; `ms` the game's length (0-1 h); `p: 1` にがて れんしゅう; `r` 1-12 answers `[id, ok, pick, rp]` (`id` an item id, `ok` 0/1, `pick` the authored choice index or −1 timed out, `rp` replays 0-99). Only the questions I had (the session view's `had`: answered, or its clip began after I came in), so those before a mid-game join or slept through in a lock aren't in it, never counted as misses (progress.ts `listenAnswers`). ~200 bytes.
+- **The row** (docs/backend.md "Events", `contract/listen.ts`): `listen {d, g, lv, n, ms, p?, r}`. `d` the Tokyo day; `g` the game id (the session's, `[a-z0-9]{4,12}`); `lv` 1-8 (1-5 till 2026-11-06); `n` the players 1-3; `ms` the game's length (0-1 h); `p: 1` にがて れんしゅう; `r` 1-12 answers `[id, ok, pick, rp]` (`id` an item id, `ok` 0/1, `pick` the authored choice index or −1 timed out, `rp` replays 0-99). Only the questions I had (the session view's `had`: answered, or its clip began after I came in), so those before a mid-game join or slept through in a lock aren't in it, never counted as misses (progress.ts `listenAnswers`). ~200 bytes.
 - **Why per game, not per day** (curriculum §12 proposed a day slot): a game is written once, at its results, with its own event id, so a retry is a duplicate and two phones of one person never overwrite each other's day; no slot and no merge on the record. A game left and joined again (the sheet closed and opened) writes a second row with the same `g`: the fold (progress.ts `gamesOf`) makes them one game, each answer once (the first kept), the minutes summed; the partner's summaries by `g` alike. ~3 games a day × 2 people is ~2,000 rows (~400 KB) a year. Never compacted (the record never compacts events).
 - **Who sees it** (`contract/guest.ts rowsFor`, server-enforced, in every snapshot and delta): its owner the whole row; the other member only the summary `{d, g, n, ms}` (that a game was played, when, how long, with how many: the couple summary; never the level, the answers or the score); the guest's rows reach only the guest, and the members' never reach the guest. The guest writes its own (`guestMayWrite`).
 - **Relay change:** a new event type is refused by an older relay (`bad_request`), so the relay deploys before a phone sends one. An app from before it ignores the rows (`EVENT_TYPES`).
