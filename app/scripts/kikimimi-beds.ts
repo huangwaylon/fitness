@@ -3,7 +3,7 @@
 // (how each was made). Silent: it never plays a sound.
 //   node scripts/kikimimi-beds.ts [--only cafe,street,station]
 // No third-party audio, so no licence to track: every sound is made here. The babble is our own TTS clips (levels 1-3's
-// normal clips in static/audio/kikimimi/, spoken by the cast) reversed, started part-way in and layered many deep at
+// normal clips, unpacked from their packs into .cache/tts/clips/, spoken by the cast) reversed, started part-way in and layered many deep at
 // low levels, so no word is intelligible (whisper is run over each bed to check: it should hear nothing). The rest is
 // seeded shaped noise and simple synthesis: cup clinks and spoon taps, a steam wand, footsteps, cars passing, a train
 // arriving, air handling hum. A room or hall impulse response (dsp.ts impulse) pushes each bed back. Deterministic: the
@@ -16,9 +16,11 @@ import { join } from 'node:path';
 import { mulberry32, shuffle } from '../src/lib/random.ts';
 import { BEDS, type Bed } from '../src/lib/kikimimi/bank.ts';
 import { SR, convolve, filter, gain, impulse, lufs, noise, readPcm, scratch, writeWav } from './tts/dsp.ts';
+import { WORK, unpackClips } from './kikimimi-packs.ts';
 
 const APP = join(import.meta.dirname, '..');
-const CLIPS = join(APP, 'static/audio/kikimimi');
+/** The clips as loose files (the packs unpacked into the work folder: kikimimi-packs.ts). */
+const CLIPS = WORK;
 const OUT = join(import.meta.dirname, 'tts/beds');
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const MODEL = process.env.WHISPER_MODEL ?? join(homedir(), '.cache/whisper/ggml-large-v3-turbo.bin');
@@ -32,6 +34,7 @@ const arg = process.argv.indexOf('--only');
 const only = arg > 0 ? process.argv[arg + 1].split(',') : null;
 
 /** Levels 1-3's normal clips, ours: the babble's voices. */
+unpackClips();
 const sources = readdirSync(CLIPS).filter((f) => /^[a-z][1-3]-.*\.m4a$/.test(f) && !f.endsWith('-slow.m4a')).sort();
 const decoded = new Map<string, Float32Array>();
 const clip = (f: string) => decoded.get(f) ?? decoded.set(f, readPcm(join(CLIPS, f))).get(f)!;
@@ -202,7 +205,7 @@ for (const [k, id] of BEDS.entries()) {
   }
   manifest[id] = {
     seconds: LEN, seed: SEED + k, lufs: BED_LUFS, made: BUILD[id].what,
-    voices: `${sources.length} of our own level 1-3 clips (static/audio/kikimimi, ${sha(sources.join())}), reversed`,
+    voices: `${sources.length} of our own level 1-3 clips (the work folder's, ${sha(sources.join())}), reversed`,
     licence: 'ours: synthesised by scripts/kikimimi-beds.ts from seeded noise and the project\'s own TTS clips; no third-party audio',
     whisper: heard, kb: Math.round(statSync(file).size / 1024)
   };

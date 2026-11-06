@@ -6,7 +6,7 @@
 // Decks read only loaded levels (levelItems throws on one that isn't: a deck from half a bank would differ between phones).
 import INDEX_JSON from './levels/index.json';
 import type { Accent, Entry, Feature, Item, ItemType, Level, Tags } from './bank.ts';
-import { addClips, type Clip, type Words } from './clips.ts';
+import { addClips, type ChunkClip, type Words } from './clips.ts';
 import type { Ladder } from './ladder.ts';
 
 /** What a chunk holds: a level's items (or the ladders; a unit's: the unit, its lessons' items and ladders) and their
@@ -15,7 +15,9 @@ interface Part {
   unit?: unknown;
   items?: Item[];
   ladders?: Ladder[];
-  clips: Record<string, Clip>;
+  /** The audio packs its clips are in (stems: `lv4-2.1a2b3c4d`). */
+  packs: string[];
+  clips: Record<string, ChunkClip>;
   words: Record<string, Words>;
 }
 
@@ -33,8 +35,8 @@ export interface Index {
   dialogues: boolean;
   /** スピード はしご is offered (every rung's clip). */
   ladder: boolean;
-  /** The lobby's sound check: a clip from no game (the bank's first level-1 item). */
-  test: [string, Clip];
+  /** The lobby's sound check: a clip from no game (the bank's first level-1 item), and its pack. */
+  test: [string, ChunkClip, string[]];
   /** The units, in file order (units.ts's `status` gates them on the phone, a later step). */
   paths: PathEntry[];
   /** Every item, in the bank's order: id, level, type, accent, pragmatic layer, features. */
@@ -68,7 +70,7 @@ export const rungAt = (id: string): { ladder: string; n: number } | undefined =>
 /** The unit an item's chunk is: its level's, or the ladders' for a rung. */
 export const unitOf = (id: string): Unit | undefined => (RUNGS.has(id) ? 'ladder' : BY_ID.get(id)?.lv);
 
-addClips(Object.fromEntries([INDEX.test]), {});
+addClips(INDEX.test[2], { [INDEX.test[0]]: INDEX.test[1] }, {});
 /** The sound check's clip id. */
 export const TEST_CLIP = INDEX.test[0];
 
@@ -90,7 +92,7 @@ export const loaded = (u: Unit): boolean => partsOf(u).every((p) => got.has(p));
 
 function take(name: string, part: Part): void {
   got.set(name, part);
-  addClips(part.clips, part.words);
+  addClips(part.packs, part.clips, part.words);
   for (const it of part.items ?? []) ITEMS.set(it.id, it);
   for (const l of part.ladders ?? []) for (const it of l.rungs) ITEMS.set(it.id, it);
 }
@@ -154,7 +156,7 @@ export function addUnit(id: string, part: { unit: unknown; items: Item[]; ladder
   if (INDEX.units[id]) throw new Error(`kikimimi: unit ${id} is this build's`);
   const name = `u-${id}`;
   EXTRA.set(id, name);
-  take(name, { ...part, clips: {}, words: {} });
+  take(name, { ...part, packs: [], clips: {}, words: {} });
 }
 
 /** The units this phone can play: the build's (the index's path lines) and any put in at run time (addUnit). */

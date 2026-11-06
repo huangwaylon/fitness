@@ -29,6 +29,7 @@
     "audio:kikimimi": "node scripts/kikimimi-audio.ts",
     "audio:kikimimi-words": "node scripts/kikimimi-words.ts",
     "kikimimi:levels": "node scripts/kikimimi-levels.ts",
+    "kikimimi:packs": "node scripts/kikimimi-packs.ts",
     "kikimimi:units-dry-run": "node scripts/kikimimi-units-dry-run.ts",
     "audio:kikimimi-beds": "node scripts/kikimimi-beds.ts",
     "art:scenes": "node scripts/scenes/scenes.ts",

@@ -9,7 +9,7 @@
 //   (the shared stages: K.K., the stereos, stage.svelte.ts request / hush; syncMusic plays the one where I am)
 //   eventJingle(['turkey-cooking-start', …])             // a cut-in of my own (events.ts CutInId: Franklin's)
 //   setPlace('shop') · setPlace(null)                     // a building's room plays its own track (places.ts)
-//   voiceSession(true) · loadVoice(p) · playVoice(buf, …)  // ききみみ's spoken clips, even with sound set silent
+//   voiceSession(true) · loadVoice(key, bytes) · playVoice(buf, …)  // ききみみ's spoken clips, even with sound set silent
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
 import { Engine, applySession } from './engine.ts';
@@ -225,9 +225,11 @@ export function voiceSession(on: boolean): boolean {
   return true;
 }
 
-/** A voice clip (`kikimimi/<id>.m4a?v=<hash>`, under audio/) decoded, from the last few kept (engine.ts loadClip).
- *  Null before voiceSession(true) made the context, offline and never cached, or undecodable. */
-export const loadVoice = (path: string): Promise<AudioBuffer | null> => engine?.loadClip(path) ?? Promise.resolve(null);
+/** A voice clip decoded from the bytes `fetchBytes` gives (ききみみ's: a slice of its pack, components/kikimimi/packs.ts),
+ *  from the last few kept by `key` (engine.ts loadBytes). Null before voiceSession(true) made the context, with no
+ *  bytes (offline and never cached), or undecodable. */
+export const loadVoice = (key: string, fetchBytes: () => Promise<ArrayBuffer | null>): Promise<AudioBuffer | null> =>
+  engine?.loadBytes(key, fetchBytes) ?? Promise.resolve(null);
 
 /** Play a decoded clip now, or at `relayAt` (ms on the relay's clock; `now`: that clock's reading, default the
  *  device's), on the voice bus with the music ducked. Null when it can't sound (no session, locked, interrupted).

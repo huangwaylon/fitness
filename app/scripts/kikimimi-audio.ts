@@ -1,12 +1,14 @@
-// ききみみ クイズ: every bank item spoken into static/audio/kikimimi/ (docs/kikimimi.md "Audio"). Silent: never plays a
-// sound itself except `--listen`, which a person runs.
+// ききみみ クイズ: every bank item spoken (docs/kikimimi.md "Audio"), each clip a loose m4a in the work folder
+// (.cache/tts/clips/), then packed into static/audio/listen/ (scripts/kikimimi-packs.ts: only the packs whose clips
+// changed get a new hash). Silent: never plays a sound itself except `--listen`, which a person runs.
 //   node scripts/kikimimi-audio.ts [options]       make what's new or changed (by each clip's source hash), print a report
 //     --engine qwen3            the engine (default qwen3); per accent: `qwen3,au=voxcpm2` or `us=kokoro,uk=kokoro,au=qwen3`
 //                               qwen3 / voxcpm2 clone each cast voice's reference clip; kokoro uses cast.json `kokoro`
 //                               voices (US and UK only); say is the legacy macOS voice (levels 1-3 only, never 4-7)
 //     --levels 1,2,3,4,5,6,7    the levels to speak (default all; say: 1-3)
 //     --only <regex>            item ids to speak (the rest keep their clips)
-//     --out <dir>               a scratch dir instead of static/: clips.json, clips.src.json and report.json land there too
+//     --out <dir>               a scratch dir instead of the work folder (no packs): clips.json, clips.src.json and
+//                               report.json land there too
 //     --force                   re-speak every selected item
 //     --seed 1234               the first take's seed (a re-roll of a weak take: --only <id> --force --seed 2000)
 //     --retries 5               the gate: re-roll a clip with the next seed while whisper mishears a content word or
@@ -40,6 +42,9 @@
 // normalised) re-rolls it with the next seed, up to --retries times, then it's flagged. UTMOS (SpeechMOS utmos22) and
 // ECAPA cosine to the voice's reference (drift < 0.3 flagged) are measured. scripts/tts/report.json gets every clip's
 // numbers, and a summary prints.
+// Before a run the work folder gets every clip from the packs (kikimimi-packs.ts unpackClips: what's missing or stale),
+// so a clip whose source didn't change is never spoken again; after it, the packs are written (kikimimi-packs.ts
+// writePacks) and the levels compiled with their offsets (kikimimi-levels.ts).
 // src/lib/kikimimi/clips.json gets {id: {dur, hash, slow?}} (compiled into the levels' chunks: kikimimi-levels.ts, run at
 // the end) and scripts/kikimimi-clips.src.json
 // {id: src}: `src` hashes the engine, its model, the cast voice and its reference, the text and this pipeline's version.
@@ -65,6 +70,7 @@ import { fnv1a, mulberry32 } from '../src/lib/random.ts';
 import { NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
 import { LADDERS as ALL_LADDERS } from '../src/lib/kikimimi/ladders.ts';
 import { writeLevels } from './kikimimi-levels.ts';
+import { WORK, unpackClips, writePacks } from './kikimimi-packs.ts';
 import { unitItems } from '../src/lib/kikimimi/compile.ts';
 
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
@@ -157,7 +163,7 @@ const LEVELS = (opt('--levels') ?? (SAY ? '1,2,3' : '1,2,3,4,5,6,7')).split(',')
 if (SAY && LEVELS.some((lv) => lv > 3)) throw new Error('levels 4-7 are never spoken by say (docs/curriculum.md §9)');
 
 const SCRATCH = opt('--out') ? resolve(opt('--out')!) : null;
-const OUT = SCRATCH ?? join(APP, 'static/audio/kikimimi');
+const OUT = SCRATCH ?? WORK;
 const CLIPS = SCRATCH ? join(SCRATCH, 'clips.json') : join(APP, 'src/lib/kikimimi/clips.json');
 const SRCS = SCRATCH ? join(SCRATCH, 'clips.src.json') : join(import.meta.dirname, 'kikimimi-clips.src.json');
 const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(TTS, 'report.json');
@@ -580,6 +586,7 @@ function speak(plans: Plan[]): Map<string, Take> {
 }
 
 function listen(): void {
+  if (!SCRATCH) unpackClips();
   for (const it of BANK) {
     if (only && !only.test(it.id)) continue;
     console.log(`\n${it.id}  [${castOf(it)}, ${ROSTER[it.speaker].nameEn}]\n  ${it.en}\n  ${it.ja}`);
@@ -604,6 +611,7 @@ function printList(c: Record<string, Clip>): void {
 function run(): void {
   const t0 = Date.now();
   mkdirSync(OUT, { recursive: true });
+  if (!SCRATCH) console.log(`${unpackClips()} clips unpacked from the packs into ${OUT}`);
   const old: Record<string, Clip> = existsSync(CLIPS) ? JSON.parse(readFileSync(CLIPS, 'utf8')) : {};
   const oldSrc: Record<string, string> = existsSync(SRCS) ? JSON.parse(readFileSync(SRCS, 'utf8')) : {};
   const clips: Record<string, Clip> = { ...old }, srcs: Record<string, string> = { ...oldSrc };
@@ -716,7 +724,7 @@ function run(): void {
       }
     }
   }
-  // clips of items no longer in the bank (a whole run into static/ only)
+  // clips of items no longer in the bank (a whole run into the work folder only)
   const ids = new Set([...ALL.map((it) => it.id), ...RUNG_IDS]);
   for (const id of Object.keys(clips)) if (!ids.has(id)) { delete clips[id]; delete srcs[id]; }
   if (!SCRATCH && !only) {
@@ -727,7 +735,10 @@ function run(): void {
   const sorted = <T>(o: Record<string, T>) => Object.fromEntries(Object.keys(o).sort().map((k) => [k, o[k]]));
   writeFileSync(CLIPS, JSON.stringify(sorted(clips), null, 1).replace(/\n  +/g, ' ').replace(/\n \}/g, ' }') + '\n');
   writeFileSync(SRCS, JSON.stringify(sorted(srcs), null, 1) + '\n');
-  if (!SCRATCH) writeLevels(true); // the levels' chunks with the new clips (docs/kikimimi.md "Loading")
+  if (!SCRATCH) {
+    writePacks(); // the packs whose clips changed (docs/kikimimi.md "Audio")
+    writeLevels(true); // the levels' chunks with the new clips and their packs (docs/kikimimi.md "Loading")
+  }
   const files = readdirSync(OUT).filter((f) => f.endsWith('.m4a'));
   const bytes = files.reduce((s, f) => s + statSync(join(OUT, f)).size, 0);
   if (SAY) return console.log(`\n${todo.length} items spoken by say; ${files.length} files, ${(bytes / 1024).toFixed(0)} KB`);

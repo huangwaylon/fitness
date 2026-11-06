@@ -25,6 +25,7 @@ const { RUNG_ITEMS } = await import('../src/lib/kikimimi/ladders.ts');
 const { writeLevels } = await import('./kikimimi-levels.ts');
 const { unitItems } = await import('../src/lib/kikimimi/compile.ts');
 const { wordSpans } = await import('../src/lib/kikimimi/marks.ts');
+const { WORK, unpackClips } = await import('./kikimimi-packs.ts');
 
 const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'src/lib/kikimimi/words.json');
@@ -98,6 +99,7 @@ function align(shown: string[], heard: { w: string; from: number; to: number }[]
 
 if (todo.length && !existsSync(MODEL)) throw new Error(`${MODEL} missing: the one-time setup in docs/kikimimi.md "Audio" (or WHISPER_MODEL)`);
 if (todo.length) {
+  unpackClips(); // the clips as loose files (from the packs, where the work folder hasn't them)
   const tmp = mkdtempSync(join(tmpdir(), 'kiki-words-'));
   try {
     /** A mixed clip's clean take and the speech's offset in the clip (s), while it's this clip's; else the clip. */
@@ -107,7 +109,7 @@ if (todo.length) {
       const clean = existsSync(side) ? (JSON.parse(readFileSync(side, 'utf8')) as { hash: string; lead: number }) : null;
       const use = clean?.hash === CLIPS[c.id].hash && existsSync(join(CLEAN, `${c.id}.m4a`));
       if (use) leads.set(c.id, clean!.lead);
-      execFileSync(FFMPEG, ['-loglevel', 'error', '-y', '-i', use ? join(CLEAN, `${c.id}.m4a`) : join(APP, 'static/audio/kikimimi', `${c.id}.m4a`), '-ar', '16000', '-ac', '1', wav]);
+      execFileSync(FFMPEG, ['-loglevel', 'error', '-y', '-i', use ? join(CLEAN, `${c.id}.m4a`) : join(WORK, `${c.id}.m4a`), '-ar', '16000', '-ac', '1', wav]);
       return wav;
     });
     const t = Date.now();

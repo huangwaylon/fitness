@@ -1,9 +1,12 @@
 // ききみみ クイズ: the spoken clips (docs/kikimimi.md "Audio"). clips.json is written by scripts/kikimimi-audio.ts:
-// each item's clip length (`dur`, s: the schedule is computed from it) and its files' content hashes (`?v=`: audio is
-// cached first and never revalidated, so a re-spoken clip must be a new URL). The app never imports it whole: each
-// level's chunk (compile.ts) carries its clips and word timings, added here as it loads (pool.ts).
+// each item's clip length (`dur`, s: the schedule is computed from it) and its files' content hashes. The clips ship
+// in packs (packing.ts: static/audio/listen/<pack>.<hash>.pak, a re-spoken clip a new pack hash). The app never
+// imports clips.json whole: each level's chunk (compile.ts) carries its clips (length, hash, and where each is in its
+// pack: ChunkClip) and word timings, added here as it loads (pool.ts); components/kikimimi/packs.ts fetches and
+// slices the packs.
 import { clipIds, type Item } from './bank.ts';
 import { wordSpans } from './marks.ts';
+import type { PackRef } from './packing.ts';
 
 export interface Clip {
   /** The normal clip's length (s). */
@@ -14,30 +17,39 @@ export interface Clip {
   slow?: string;
 }
 
+/** A clip as a chunk carries it (compile.ts): its length (cs), hash, and its pack (an index into the chunk's
+ *  `packs`), offset and bytes; then its slow take's pack, offset and bytes (levels 1 and 2). */
+export type ChunkClip =
+  | [dur: number, hash: string, pack: number, offset: number, bytes: number]
+  | [dur: number, hash: string, pack: number, offset: number, bytes: number, slowPack: number, slowOffset: number, slowBytes: number];
+
 /** A clip's word timings (words.json): `[hash, start…, end]`, centiseconds. */
 export type Words = readonly [string, ...number[]];
 
+/** A loaded clip: its length (s), hash, and where it and its slow take are. */
+interface Placed {
+  dur: number;
+  hash: string;
+  at: PackRef;
+  slow?: PackRef;
+}
+
 /** The clips of the levels loaded so far, and their word timings. */
-const CLIPS: Record<string, Clip> = {};
+const CLIPS: Record<string, Placed> = {};
 const WORDS: Record<string, Words> = {};
 
-/** A level's chunk loaded (pool.ts): its clips and word timings. */
-export function addClips(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>): void {
-  Object.assign(CLIPS, clips);
+/** A level's chunk loaded (pool.ts): its packs (stems), clips and word timings. */
+export function addClips(packs: readonly string[], clips: Readonly<Record<string, ChunkClip>>, words: Readonly<Record<string, Words>>): void {
+  for (const [id, [cs, hash, p, offset, bytes, sp, so, sb]] of Object.entries(clips))
+    CLIPS[id] = { dur: cs / 100, hash, at: [packs[p], offset, bytes], ...(sp !== undefined && { slow: [packs[sp], so!, sb!] as const }) };
   Object.assign(WORDS, words);
 }
 
 /** The clip's length (s), or undefined if it has none. */
 export const clipDur = (id: string): number | undefined => CLIPS[id]?.dur;
 
-/** An item's clip (or its slow clip) as the engine asks for it: the path under audio/ with `?v=` its hash
- *  (`kikimimi/p1-squid.m4a?v=60016cae`), for sound.svelte.ts loadVoice. */
-export function clipUrl(id: string, slow = false): string {
-  const c = CLIPS[id];
-  const v = slow ? c?.slow : c?.hash;
-  const path = `kikimimi/${id}${slow ? '-slow' : ''}.m4a`;
-  return v ? `${path}?v=${v}` : path;
-}
+/** Where a loaded clip (or its slow take) is: its pack's stem, offset and bytes (components/kikimimi/packs.ts). */
+export const clipAt = (id: string, slow = false): PackRef | undefined => (slow ? CLIPS[id]?.slow : CLIPS[id]?.at);
 
 // ---- an item's clips: one, or a dialogue's lines --------------------------------------------------------------------
 
