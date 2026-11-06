@@ -3,7 +3,7 @@
 // the location dot) and its pins are buttons. The drawn smoke (@render): MapLibre on the fixture tiles (never the
 // network), the NH pins on the map, a day chip refits it, a pin selects and is tagged; offline, the route alone with a
 // note; the map's chunk not fetched, a retry.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { drawn, fixtureTiles, gotoTrip, mapReady, mapState } from './travelMap.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -99,7 +99,7 @@ test('the locate button: asks only when tapped, the dot on with a fix, off when 
   const locate = page.locator('dialog[open] .locate');
   await expect(locate).toHaveAttribute('data-locate', 'off');
   // nothing asked before the tap
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(300); // hold: proves no location request starts by itself
   expect((await mapState(page)).loc).toBe('off');
   await locate.click();
   await expect(locate).toHaveAttribute('data-locate', 'on');
@@ -150,7 +150,7 @@ test('drawn: MapLibre on the fixture tiles, the NH pins, a day chip refits, a pi
   await expect(markers).toHaveCount(9);
   // day 3 (the south, then back up to Naha) fits somewhere else than day 1 (Naha to the north)
   await expect.poll(async () => (await mapState(page)).center![1], { timeout: 10_000 }).toBeLessThan(c1[1] - 0.05);
-  await page.waitForTimeout(1000); // the fit's flight (700 ms) over
+  await page.waitForTimeout(1000); // hold: the fit's flight (700 ms) settles before the centre is read (no moving state exposed)
   const c3 = (await mapState(page)).center!;
   // a pin: selected, tagged with its name, the map brought to it; day 3's chip again: back to the route
   const pin = page.locator('dialog[open] .maplibregl-marker[data-pin="s3-2"]');

@@ -83,7 +83,7 @@ test('the trip map: its worker, fonts, tiles and the location dot, no CSP violat
   await expect(page.locator('dialog[open] .locate')).toHaveAttribute('data-locate', 'on');
   // the labels drawn: their font slices fetched
   await expect.poll(() => page.evaluate(() => performance.getEntriesByType('resource').some((r) => /zen-maru-gothic-.+-700-normal.*\.woff2/.test(r.name)))).toBe(true);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(1000); // hold: proves no CSP violation follows the map's draw
   expect(net.tiles.length).toBeGreaterThan(0);
   expect(net.stray).toEqual([]);
   expect(seen).toEqual([]);
