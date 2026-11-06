@@ -31,7 +31,7 @@ interface LineSrc {
   marks?: readonly SoundMark[];
 }
 
-export interface LadderSrc {
+interface LadderSrc {
   /** `sp-<name>`: the rung clips are `<id>-1` … `<id>-4`. */
   id: string;
   /** Level 4's item whose line (and take) it climbs, or the line itself. */

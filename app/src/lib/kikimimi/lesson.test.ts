@@ -6,9 +6,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { EventRow } from '../contract/api.ts';
 import type { ListenRow } from '../contract/listen.ts';
-import clipsJson from './clips.json';
-import wordsJson from './words.json';
-import type { Clip, Words } from './clips.ts';
+import { CLIPS, WORDS } from './testdata.ts';
 import { compile } from './compile.ts';
 import { isDialogue } from './bank.ts';
 import { lessonDeck, lessonL, lessonOf, playIds, stageLevel, tierFor, type UnitChunk } from './lesson.ts';
@@ -17,9 +15,6 @@ import { gamesOf, type Answer } from './progress.ts';
 import { RECHECK_DAYS, rechecksDue, unitsOf } from './stamps.ts';
 import { CAUGHT_CLIPS, CAUGHT_DAYS, REVIEW_CAP, phraseReview, phrasesOf } from './srs.ts';
 import { LESSONS, LESSON_QS } from './stages.ts';
-
-const CLIPS = clipsJson as Readonly<Record<string, Clip>>;
-const WORDS = wordsJson as unknown as Readonly<Record<string, Words>>;
 
 const LESSON_IDS = {
   deai: ['d4-hotel-suite', 'r4-room-ready', 'm4-upgrade', 'r4-overbooked', 'ml-m-quieter-room', 'r4-anything-else', 'd4-receptionist'],
@@ -51,7 +46,7 @@ beforeAll(async () => {
   const part = JSON.parse(files.get('parts/u-tr-testinn.json')!);
   addUnit('tr-testinn', part);
   await load('tr-testinn');
-  chunk = unitPart('tr-testinn') as UnitChunk;
+  chunk = unitPart('tr-testinn')!;
 });
 
 describe('lessons: the deck', () => {
@@ -123,7 +118,7 @@ describe('lessons: the deck', () => {
     const ids = INDEX.paths.map((p) => p[0]);
     await load(...(ids as Unit[]));
     for (const id of ids) {
-      const c = unitPart(id) as UnitChunk;
+      const c = unitPart(id)!;
       for (const l of LESSONS) {
         if (!c.unit.lessons[l]) continue;
         const d = lessonDeck(c, l, 99);
