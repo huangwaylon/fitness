@@ -8,34 +8,20 @@ import { ROSTER } from '#lib/villagers/roster.ts';
 import { CHANNELS, DIALOGUE_TYPES, SCENE_IDS, clipIds, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
 import type { Ladder } from './ladder.ts';
 import { CAST_IDS } from './speech.ts';
+import { LESSONS, LESSON_QS, STAGES, type Stage } from './stages.ts';
 
-/** The stages a unit sits at (curriculum §3; plan §1), each with its place on levelRank's scale (an item may be one
- *  step from it) and the sound features a unit's main one is taken from (curriculum §3's sequence, in the bank's and
- *  the drafts' vocabulary). */
-export const STAGES = {
-  hama: { rank: 2, sounds: ['l-r', 'vowel', 'teen-ty', 'can-cant', 'ending', 'katakana', 'numbers', 'clock'] },
-  kawa: { rank: 3, sounds: ['weak-form', 'contraction', 'flap', 'elision', 'yod', 'gonna', 'wanna', 'gotta', 't-glottal', 'linking', 'lemme', 'numbers'] },
-  mori: { rank: 4, sounds: ['chain', 'dunno', 'lemme', 'kinda', 'h-drop', 'assimilation', 'stress', 'contrast', 'intonation', 'filler', 'self-repair', 'numbers'] },
-  yama: { rank: 5, sounds: ['overlap', 'intonation', 'chain', 'filler', 'idiom', 'stress', 'self-repair'] },
-  hoshi: { rank: 6, sounds: ['stress', 'numbers', 'filler', 'overlap', 'intonation', 'ellipsis'] }
-} as const;
-export type Stage = keyof typeof STAGES;
+export { LESSONS, LESSON_QS, STAGES, type Stage } from './stages.ts';
 
 /** The nine domains (plan §1: ともだち, いえ, たべもの, かいもの, たび, しごと, イベント, まち, からだ), a tag on each unit; `glue` the anchor units (introducing, inviting, asking for
  *  clarification, ending a conversation) that open each stage and count toward no domain. */
 export const DOMAINS = ['tomodachi', 'ie', 'tabemono', 'kaimono', 'tabi', 'shigoto', 'ibento', 'machi', 'karada'] as const;
 type Domain = (typeof DOMAINS)[number];
 
-/** A unit's lessons (plan §3): the 3 core, then the 2 optional extras that never block the stamp. Their order is the
- *  `listen` row's `l` (contract/listen.ts: 1 であい … 3 チェック, the stamp's). */
-export const LESSONS = ['deai', 'bamen', 'check', 'oto', 'jissen'] as const;
 type Lesson = (typeof LESSONS)[number];
 const CORE: readonly Lesson[] = ['deai', 'bamen', 'check'];
 /** The lesson recipes this build knows (plan §3: the version on the recipe; v1 the interim チェック, a mixed check on
  *  held-out items behind a "phone errand" card, until ようじ でんわ and たちぎき are built). */
 const RECIPES = [1] as const;
-/** A lesson is one 6-question game (plan §3). */
-export const LESSON_QS = 6;
 
 const REGISTERS: readonly Tags['register'][] = ['service', 'colleague', 'boss', 'friend', 'partner', 'neighbour', 'stranger', 'official', 'broadcast'];
 const ITEM_TYPES: readonly ItemType[] = ['pic', 'word', 'num', 'reply', 'mean', 'gist', 'next'];

@@ -631,6 +631,21 @@ describe('ききみみ session: co-op and たいせん', () => {
     r.act('A', (x, n) => x.next(n));
     for (const w of ['A', 'G'] as const) expect(r.view(w).team).toEqual({ right: 1, all: 0, done: 1 });
   });
+
+  it('the team’s first listens (a co-op lesson’s tm): right by someone with no replay, the same on every phone', () => {
+    const r = room(['A', 'B']);
+    const s0 = started(r, ['B']);
+    r.now = s0 + OPEN + 500;
+    r.act('A', (x, n) => x.answer(0, true, n)); // right after a replay
+    r.act('B', (x, n) => x.answer(1, false, n)); // wrong
+    for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ team: { right: 1 }, teamFirst: 0 });
+    r.now += 3000;
+    r.act('A', (x, n) => x.next(n));
+    r.now += OPEN + 500;
+    r.act('A', (x, n) => x.answer(1, false, n)); // wrong
+    r.act('B', (x, n) => x.answer(0, false, n)); // right, first listen: the team has it
+    for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ team: { right: 2 }, teamFirst: 1 });
+  });
 });
 
 describe('ききみみ session: lost and late messages', () => {

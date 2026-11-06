@@ -80,7 +80,10 @@ const ITEMS = new Map<string, Item>();
 const LEVEL = new Map<Unit, Item[]>();
 let LADDERS: Ladder[] | null = null;
 
-const partsOf = (u: Unit): readonly string[] => INDEX.units[u]?.parts ?? [];
+/** Units put in at run time (addUnit: a test's or the dev hook's fixture, never a build's), by id → its chunk's name. */
+const EXTRA = new Map<string, string>();
+
+const partsOf = (u: Unit): readonly string[] => INDEX.units[u]?.parts ?? (EXTRA.has(String(u)) ? [EXTRA.get(String(u))!] : []);
 
 /** Whether a unit's chunks are all in (a unit with none, a level this build hasn't: yes). */
 export const loaded = (u: Unit): boolean => partsOf(u).every((p) => got.has(p));
@@ -134,6 +137,28 @@ export function ladders(): readonly Ladder[] {
   }
   return LADDERS;
 }
+
+/** A loaded unit's chunk (a lesson's deck: lesson.ts): the unit as compiled (compile.ts unitChunk) and its lessons'
+ *  items and ladders, as authored; undefined while it isn't loaded or this build hasn't it. */
+export function unitPart(id: string): { unit: unknown; items: readonly Item[]; ladders: readonly Ladder[] } | undefined {
+  const names = partsOf(id as Unit);
+  if (!names.length || !names.every((p) => got.has(p))) return undefined;
+  const parts = names.map((p) => got.get(p)!);
+  const unit = parts.find((p) => p.unit)?.unit;
+  return unit ? { unit, items: parts.flatMap((p) => p.items ?? []), ladders: parts.flatMap((p) => p.ladders ?? []) } : undefined;
+}
+
+/** A unit's chunk put in at run time, as if loaded (the lessons' unit tests, the e2e's fixture through the dev hook:
+ *  docs/curriculum-units.md §8 U2-U3). Its id must not be a build's. */
+export function addUnit(id: string, part: { unit: unknown; items: Item[]; ladders?: Ladder[] }): void {
+  if (INDEX.units[id]) throw new Error(`kikimimi: unit ${id} is this build's`);
+  const name = `u-${id}`;
+  EXTRA.set(id, name);
+  take(name, { ...part, clips: {}, words: {} });
+}
+
+/** The units this phone can play: the build's (the index's path lines) and any put in at run time (addUnit). */
+export const unitIds = (): string[] => [...INDEX.paths.map((p) => p[0]), ...[...EXTRA.keys()].filter((id) => !INDEX.units[id])];
 
 /** A loaded item by id (a rung too), as authored. */
 export const itemOf = (id: string): Item | undefined => ITEMS.get(id);

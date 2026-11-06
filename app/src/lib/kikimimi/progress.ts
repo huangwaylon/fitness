@@ -2,7 +2,7 @@
 // mastery per sub-skill and feature, accuracy per type, accent and level, the comfortable level (an Elo-style
 // ability), the first-listen trend, the days played this week and the couple summary. Folded from the record's
 // `listen` rows (contract/listen.ts: mine whole, the partner's as summaries) on the phone, never stored. Pure.
-import { listenOf, listenSummaryOf, type ListenRow } from '../contract/listen.ts';
+import { listenOf, listenSummaryOf, stampsUnit, type ListenRow } from '../contract/listen.ts';
 import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { levelRank, type Accent, type Entry, type Feature, type Item, type ItemType } from './bank.ts';
@@ -31,6 +31,9 @@ export interface Game extends Omit<ListenRow, 'r' | 'p'> {
   r: Answer[];
   /** When the record kept it (ms; a queued one: when it was sent). */
   at: number;
+  /** A unit's lesson (`u`, `l`): my answers right on the first listen, of how many (the row's, every item: the unit's
+   *  own aren't in the index), and whether the row stamps its unit (contract/listen.ts stampsUnit). */
+  unit?: { first: number; of: number; stamped: boolean };
 }
 
 /** A game of another member's, as its summary (contract/listen.ts): never its level or answers; a unit's passed チェック
@@ -66,15 +69,24 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
       const x = listenOf(data);
       if (!x) continue;
       const p = x.p === 1;
-      // only the items this build knows: a newer game's row (docs/kikimimi-framework.md §4.4) leaves the stats as they were (a スピード はしご rung is known: speedOf)
-      const r = x.r.filter(([id]) => !!entryOf(id) || isRungId(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
+      // only the items this build knows: a newer game's row (docs/kikimimi-framework.md §4.4) leaves the stats as they were (a スピード はしご rung is known: speedOf);
+      // a ききみみ unit's lesson keeps every answer (its own items are in its chunk, not the index: the stats pass them by, the phrase ずかん reads them)
+      const lesson = x.u !== undefined && x.l !== undefined && x.gm === undefined;
+      const r = x.r.filter(([id]) => lesson || !!entryOf(id) || isRungId(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
       if (!r.length) continue;
+      const unit = lesson ? { u: x.u!, l: x.l!, ...(x.tm !== undefined && { tm: x.tm }) } : null;
+      const tally = unit ? { first: x.r.filter(([, ok, , rp]) => ok === 1 && rp === 0).length, of: x.r.length, stamped: stampsUnit(x) } : null;
       const was = mine.get(x.g);
-      if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r });
+      if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r, ...unit, ...(tally && { unit: tally }) });
       else {
         const sooner = at < was.at, [early, late] = sooner ? [r, was.r] : [was.r, r];
         const have = new Set(early.map((y) => y.id));
-        mine.set(x.g, { ...was, ...(sooner && { d: x.d, at }), n: Math.max(was.n, x.n), ms: was.ms + x.ms, p: was.p || p, r: [...early, ...late.filter((y) => !have.has(y.id))] });
+        const all = [...early, ...late.filter((y) => !have.has(y.id))];
+        // a lesson joined again: its tally over the answers once each (a stamp from either row)
+        const merged = was.unit && tally
+          ? { first: all.filter((y) => y.ok && y.rp === 0).length, of: all.length, stamped: was.unit.stamped || tally.stamped || stampsUnit({ ...unit!, r: all.map((y) => [y.id, y.ok ? 1 : 0, y.pick, y.rp] as const) as ListenRow['r'] }) }
+          : (was.unit ?? tally ?? undefined);
+        mine.set(x.g, { ...was, ...(sooner && { d: x.d, at }), n: Math.max(was.n, x.n), ms: was.ms + x.ms, p: was.p || p, r: all, ...(merged && { unit: merged }) });
       }
     } else {
       const s = listenSummaryOf(data);
