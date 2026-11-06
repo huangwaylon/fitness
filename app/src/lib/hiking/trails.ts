@@ -301,7 +301,7 @@ export const WPT_JA: Record<string, string> = {
 };
 
 /** A trail's slug from the hiking app's link (`https://huangwaylon.github.io/hiking-trails/#/trail/lake-22`, the
- *  Seattle guide's `hike.gpx`), if it is one of ours; else null (classic/CDay.svelte: openTrail). */
+ *  Seattle guide's `hike.gpx`), if it is one of ours; else null (travel/DayCard.svelte: openTrail). */
 export function hikeSlugOf(url: string | undefined | null): string | null {
   const slug = /#\/trail\/([a-z0-9-]+)/.exec(url ?? '')?.[1];
   return slug && trailOf(slug) ? slug : null;
