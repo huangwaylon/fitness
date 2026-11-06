@@ -10,6 +10,7 @@ import { doorOf, extentOf, footOf, objMid, objTiles, originOf, type Layout, type
 import { isMarker, kindDef } from './catalog.ts';
 import { navOf, reachable } from './nav.ts';
 import { onBuilding, tapCovered } from './clear.ts';
+import { FIGURE_HIDES } from './hides.ts';
 
 type Pt = readonly [number, number];
 
@@ -59,9 +60,9 @@ function spread(from: readonly [number, number][], n: number, rand: () => number
 /** How far behind the villagers' spots the visitors' stage is looked for (u): mid-screen as the island opens (the
  *  camera's first stop frames the villagers a little below the middle). */
 const STAGE_BACK = 200;
-/** How far in front of a thing (u, a share of its height) it hides what stands behind it on screen, and how far behind
- *  it a figure's head reaches over it: the camera looks down at 58°, a card stands taller than its model. */
-const HIDES = 1.1, OVER = 60;
+/** How far in front of a thing a figure's head reaches over it (u); how far behind it hides one is hides.ts
+ *  FIGURE_HIDES of its height. */
+const OVER = 60;
 /** A villager standing at its spot: its height (u). */
 const VILLAGER_H = 70;
 const stages = new WeakMap<Layout, Pt | null>();
@@ -101,7 +102,7 @@ function groundOf(layout: Layout): Ground {
     // (nothing over a figure there on screen, nor under it: its half width 30, Reese and Cyrus side by side)
     seen(c, r) {
       const [x, z] = tileMid(c, r);
-      return !things.some((b) => x + 30 > b.x0 && x - 30 < b.x1 && z > b.z0 - OVER && z < b.z1 + b.h * HIDES);
+      return !things.some((b) => x + 30 > b.x0 && x - 30 < b.x1 && z > b.z0 - OVER && z < b.z1 + b.h * FIGURE_HIDES);
     }
   };
   grounds.set(layout, g);

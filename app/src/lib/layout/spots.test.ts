@@ -2,6 +2,8 @@ import { describe, expect, test } from 'vitest';
 import { defaultLayout, extentOf, layoutOf, objMid, objTiles, withChanges, type Layout } from './model.ts';
 import { beachOk, daySpots, markerOf, openGrass, plazaOk, stageOf, washedUp } from './spots.ts';
 import { validate } from './validate.ts';
+import { frontRows } from './hides.ts';
+import { tapCovered } from './clear.ts';
 import { navOf, reachable } from './nav.ts';
 import RECORD from './record-2026-11-03.json' with { type: 'json' };
 import { layoutOpOf, mergeLayout } from '#lib/contract/layout.ts';
@@ -49,19 +51,28 @@ function userLayout(): Layout {
   return layoutOf(m);
 }
 
-describe('the bulletin board’s art keeps the day’s spots off the ground behind it (clear.ts tapCovered)', () => {
-  // (its 60u art, a button, covers the ground to ~88u past its back on screen at every zoom: a dig spot there hid once
-  // the camera settled and showed while it moved, flickering behind the board: 2026-11-06 on the user's island)
-  for (const [name, g] of [['the default', l], ['the user’s record', userLayout()]] as const)
-    test(`${name}: no weed or dig spot within three rows behind it, nor a tile each side`, () => {
-      const b = [...g.objects.values()].find((o) => o.k === 'board')!;
-      const tiles = objTiles(g, b), behind = (c: number, r: number) => tiles.some(([bc, br]) => Math.abs(c - bc) <= 1 && r - br >= 1 && r - br <= 3);
-      for (const [c, r] of openGrass(g)) expect(behind(c, r), `${c},${r}`).toBe(false);
-      for (let d = 1; d <= 61; d++) {
-        const date = new Date(Date.UTC(2026, 10, d)).toISOString().slice(0, 10), { dig, lawn } = daySpots(g, date, 'island-fund');
-        for (const [x, z] of [...dig, ...lawn]) expect(behind(...tileAt(x, z)), `${date} ${x},${z}`).toBe(false);
-      }
-    });
+describe('what one stands before keeps the day’s spots off the ground its art covers behind it (clear.ts tapCovered)', () => {
+  // (the board's 60u art, a button, covers the ground to ~88u past its back on screen at every zoom: a dig spot there
+  // hid once the camera settled and showed while it moved, flickering behind the board: 2026-11-06 on the user's
+  // island. K.K. on his stool stands 75u: four rows, where the board's three left his fourth open)
+  for (const [k, rows] of [['board', 3], ['kk-stool', 4]] as const)
+    for (const [name, g] of [['the default', l], ['the user’s record', userLayout()]] as const)
+      test(`${k}, ${name}: no weed or dig spot within ${rows} rows behind it, nor a tile each side`, () => {
+        expect(frontRows(k)).toBe(rows);
+        const b = [...g.objects.values()].find((o) => o.k === k)!;
+        const tiles = objTiles(g, b), behind = (c: number, r: number) => tiles.some(([bc, br]) => Math.abs(c - bc) <= 1 && r - br >= 1 && r - br <= rows);
+        for (const [c, r] of openGrass(g)) expect(behind(c, r), `${c},${r}`).toBe(false);
+        for (let d = 1; d <= 61; d++) {
+          const date = new Date(Date.UTC(2026, 10, d)).toISOString().slice(0, 10), { dig, lawn } = daySpots(g, date, 'island-fund');
+          for (const [x, z] of [...dig, ...lawn]) expect(behind(...tileAt(x, z)), `${date} ${x},${z}`).toBe(false);
+        }
+      });
+  test('K.K. moved onto the open lawn: the fourth row behind him kept clear too (the board’s three left it open)', () => {
+    const k = [...l.objects.values()].find((o) => o.k === 'kk-stool')!, m = withChanges(l, { set: [{ ...k, x: 8, z: 8 }] });
+    expect(m.kind(8, 12)).toBe('grass');
+    for (let i = -1; i <= 1; i++) expect(tapCovered(m).has(`${8 + i},12`), `${8 + i},12`).toBe(true);
+    expect(openGrass(m).some(([c, r]) => r === 12 && Math.abs(c - 8) <= 1)).toBe(false);
+  });
 });
 
 describe('the visitors’ stage and Gulliver’s beach, from the layout (spots.ts)', () => {

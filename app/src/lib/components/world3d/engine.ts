@@ -32,6 +32,7 @@ import { frameRate } from '#lib/store/frameRate.svelte.ts';
 import { pacer } from './pace.ts';
 import { log } from '#lib/sync/log.ts';
 import { SEA_X, midXOf } from '#lib/layout/model.ts';
+import { PITCH } from '#lib/layout/hides.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -97,9 +98,9 @@ interface Stats {
   drawn: boolean;
 }
 
-/** The camera: vertical field of view (a long lens), the pitch at zoom 1 / fully in / fully out, the zoom's range. */
+/** The camera: vertical field of view (a long lens), the pitch at zoom 1 / fully in / fully out (layout/hides.ts PITCH:
+ *  what a tall thing hides by it), the zoom's range. */
 const FOV = 30;
-const PITCH = { def: 58, near: 40, far: 63 };
 /** The zoom's range: the default (1) is the widest the island rests at (the user: zoomed out past it, a pinch gives
  *  rubber-band resistance and springs back on release, ZOOM_BACK_MS); fully in (the user: "increase the maximum zoom
  *  level", 1.8 before) close enough for a villager's face and a flower: the camera ~420u off, its near plane 20. */
