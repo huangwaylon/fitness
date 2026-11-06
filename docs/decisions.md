@@ -1062,6 +1062,20 @@ send them (5 stays the アナウンス pack, 8 the next room). Rejected: sending
 relay change), a shared history between the partners (each phone hears its own games), a new level value for やま
 inside 1-5 (5 is the pack's, and the ladder of places needs two more).
 
+### ききみみ: American English first; UK/AU only as tagged exposure at やま and ほし (2026-11-06)
+The user: "there is too much Australian and British slang. I want the focus to be American English." Every item,
+dialogue line and unit is now American by default: US vocabulary, idioms, spelling, dates, dollars and social norms,
+and a US voice. UK and AU stay only as deliberate accent exposure at やま and ほし (B2+, C1): at most 10% of each of those
+levels, every such item tagged `accent-exposure` and written in standard international English, never slang; none at
+はまべ, かわ, もり or in a unit (bank.test enforces the shares). The cast grew from 12 to 18 voices so the variety comes
+from Americans: six more designed US voices (ages twenty-two to sixty-five, deep to bright, a light Southern and a light
+New York one), and every villager's voice for good (`CAST`) is a US one. The six UK/AU voices are kept, in a separate
+villager → voice map (`EXPOSURE`) that only an exposure item uses, so a villager sounds American everywhere else and
+the content's authors pick exposure by a tag, not by casting. Rejected: dropping UK/AU entirely (the learners will meet
+them at work and travel, and a little at the top keeps the ear flexible), an exposure share per unit (units teach one
+can-do, an accent change there is noise), designed UK/AU voices (VoiceDesign can't do them; the Phonon and VCTK
+references stay).
+
 ### ききみみ クイズ level 4: content before its voices, hidden till its clips exist (2026-11-05)
 Level 4 「かわ・もり」 (docs/curriculum.md §14, increment 1) landed as content only: 67 real-life items (`bank4.ts`) with
 `tts`, `note`, an abstract `cast` voice id per villager and the scenario `tags`, and no audio. The lobby offers a level

@@ -16,6 +16,7 @@ v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Jap
 | やま | B2+ | |
 | ほし | C1 | news and long-form |
 
+- **American English throughout** (the user, 2026-11-06; curriculum.md "American English first"): every unit item and dialogue line is US English with a US voice (`voice: us`, a `us-*` cast), at every stage. UK/AU accent exposure lives only in the やま/ほし level banks (tagged `accent-exposure`, ≤ 10%), never in a unit.
 - **No Duolingo score mapping:** the learners don't have a Duolingo score.
 - **A domain is a tag, not a place on the map.** Each unit shows a small icon and tint, and the path has a row of filter chips. The nine domains:
   - ともだち (friends, partner and family)
@@ -48,7 +49,7 @@ v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Jap
   3. **チェック:** a mission. Pass with 5 of 6 right on the first listen. You can retry, and it never locks.
 - **2 optional extras that never block the stamp:**
   - **おと:** catch the chunks in connected speech (word / ことば タイル).
-  - **じっせん:** faster, over noise, other accents (はしご / conditions / アナウンス).
+  - **じっせん:** faster, over noise, other American voices (はしご / conditions / アナウンス).
 - **Notes and transcripts** fold under 「くわしく」 on the reveal screen.
 - **Until ようじ でんわ / たちぎき are built,** チェック is a mixed check on held-out items behind a "phone errand" intro card. Lesson recipes carry a version number.
 - **Skipping:** 「とばして チェック」 lets you go straight to the check. Each stamped unit returns once, after about 30 days, as a 6-question recheck.
@@ -194,6 +195,7 @@ Every lesson id that isn't under `review` is homed in the unit. The unit's own i
 - the can-do's one line, `short`: ≤ 25 characters, one line, no 。 or 、 (optional in a draft, required once voiced). The unit page, a path stop's subtitle and a lesson's intro card show it; the full sentence stays under 「くわしく」 on the unit page;
 - the recipe: a known `v`, the 3 core lessons, ≥ 6 ids each, であい with a dialogue, チェック held out with ≥ 2 voices, おと mostly words;
 - the tiers on lesson items only;
+- American only: every inline item `voice: us` and every line a `us-*` cast (bank.test's accent policy);
 - every clip, for a unit past draft;
 - each phrase in ≥ 3 items by ≥ 2 voices (over the bank and the units; a warning in a draft, an error past it);
 - recycling: ≥ 20 % of a unit's items carry a lower stage's or the stage's anchors' phrase (a warning until 7 units are past draft);

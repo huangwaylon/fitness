@@ -30,7 +30,7 @@ export interface Ladder {
 
 // ---- the deck ----------------------------------------------------------------------------------------------------
 
-/** A ladder game's deck from its seed: PER_GAME ladders (two different speakers, and two accents where the draw
+/** A ladder game's deck from its seed: PER_GAME ladders (two different speakers, and two voices where the draw
  *  allows), each's rungs in order, slowest first, each rung's choices shuffled. Copies, as deck.ts's: `answer` is the
  *  right choice's index after the shuffle. */
 export function ladderDeck(seed: number, all: readonly Ladder[]): Item[] {
@@ -40,7 +40,7 @@ export function ladderDeck(seed: number, all: readonly Ladder[]): Item[] {
   for (const pass of [true, false])
     for (const l of order) {
       if (picked.length >= PER_GAME || picked.includes(l)) continue;
-      const clash = picked.some((p) => p.line.speaker === l.line.speaker || (pass && p.line.voice === l.line.voice));
+      const clash = picked.some((p) => p.line.speaker === l.line.speaker || (pass && p.line.cast === l.line.cast));
       if (!clash) picked.push(l);
     }
   return picked.flatMap((l) => l.rungs.map((it) => {

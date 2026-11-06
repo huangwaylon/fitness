@@ -31,7 +31,7 @@ describe('スピード はしご: the ladders', () => {
     expect([...SPEEDS]).toEqual([...SPEEDS].sort((a, b) => a - b));
   });
 
-  it('ten climb level 4’s own lines (their take, Japanese and staging), twenty are new; US, UK and AU all well used', () => {
+  it('ten climb level 4’s own lines (their take, Japanese and staging), twenty are new; all American, in at least 10 of the 12 US voices', () => {
     const reused = LADDER_SRC.filter((s) => typeof s.line === 'string');
     expect(reused).toHaveLength(10);
     for (const s of reused) {
@@ -40,8 +40,8 @@ describe('スピード はしご: the ladders', () => {
       expect([l.en, l.tts, l.speaker, l.cast, l.scene, l.marks]).toEqual([it.en, it.tts, it.speaker, it.cast, it.scene, it.marks]);
       expect(l.ja).not.toContain('→');
     }
-    const by = (a: string) => LADDERS.filter((l) => l.line.voice === a).length;
-    for (const a of ['us', 'uk', 'au']) expect(by(a), a).toBeGreaterThanOrEqual(6);
+    expect(LADDERS.filter((l) => l.line.voice !== 'us').map((l) => l.id)).toEqual([]);
+    expect(new Set(LADDERS.map((l) => l.line.cast)).size).toBeGreaterThanOrEqual(10);
   });
 
   it('each line: a roster speaker with a cast voice, its note ≤ 40 字, its tts spoken with no digit, its marks on whole words', () => {
@@ -118,13 +118,13 @@ describe('スピード はしご: the deck and the mode', () => {
       }
       expect(ladderDeck(seed, LADDERS)).toEqual(d);
     }
-    // most pairs are two accents, and every ladder comes up
+    // most pairs are two voices, and every ladder comes up
     const seen = new Set<string>();
     let mixed = 0;
     for (let seed = 0; seed < 600; seed++) {
       const d = ladderDeck(seed, LADDERS);
       for (const it of d) seen.add(it.rung!.ladder);
-      if (d[0].voice !== d[4].voice) mixed++;
+      if (d[0].cast !== d[4].cast) mixed++;
     }
     expect(seen.size).toBe(30);
     expect(mixed).toBeGreaterThan(540);
