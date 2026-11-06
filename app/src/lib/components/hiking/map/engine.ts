@@ -17,6 +17,8 @@ export interface Engine {
   /** The whole track in the band between the header and the sheet (`bottom` px kept clear). */
   fit(bottom: number): void;
   zoom(by: 1 | -1): void;
+  /** What's on screen (the specs' hook: TrailMap's `window.__trailMap`): the track's and the scrub's drawn features. */
+  state(): { track: number; scrub: number };
   destroy(): void;
 }
 
@@ -125,6 +127,7 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
       if (by > 0) map.zoomIn({ duration: reduced() ? 0 : 250 });
       else map.zoomOut({ duration: reduced() ? 0 : 250 });
     },
+    state: () => ({ track: map.queryRenderedFeatures({ layers: ['track'] }).length, scrub: map.queryRenderedFeatures({ layers: ['scrub'] }).length }),
     destroy() {
       map.remove();
       // (the trip map's leak fix: reading the dispatcher's abort reason's stack lets remove()'s frames go: travel/map/engine.ts)
