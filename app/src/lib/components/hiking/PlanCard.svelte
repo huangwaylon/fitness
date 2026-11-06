@@ -64,7 +64,8 @@
   .head :global(.ic) { width: 16px; height: 16px; color: var(--pine-d); }
   .lbl { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--pine-d); }
   .yamap {
-    margin: -7px -6px -7px auto; flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; padding: 7px 10px; border-radius: 999px;
+    /* (beside the label, as the hiking app's margin shorthand had it) */
+    margin: -7px -6px -7px 0; flex-shrink: 0; display: inline-flex; align-items: center; gap: 3px; padding: 7px 10px; border-radius: 999px;
     font-size: 11.5px; font-weight: 700; color: var(--pine-d); text-decoration: none; white-space: nowrap; transition: background .15s;
   }
   .yamap :global(.ic) { width: 13px; height: 13px; }
@@ -81,7 +82,7 @@
   .lock { display: inline-block; padding: 0 6px; border-radius: 999px; background: var(--paper-2); color: var(--muted); font-size: .9em; letter-spacing: .08em; }
 
   .tl-wrap { margin-top: 14px; border-top: 1px solid var(--pine-ring); padding-top: 12px; }
-  .tl-title { display: flex; align-items: center; gap: 6px; min-height: 28px; cursor: pointer; list-style: none; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--pine-d); }
+  .tl-title { display: flex; align-items: center; gap: 6px; cursor: pointer; list-style: none; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--pine-d); }
   .tl-title::-webkit-details-marker { display: none; }
   .caret { margin-left: auto; display: flex; color: var(--muted); transition: transform .2s; }
   .caret :global(.ic) { width: 16px; height: 16px; }

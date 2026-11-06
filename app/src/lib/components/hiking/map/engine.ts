@@ -64,7 +64,9 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
   function fit(): void {
     if (!track) return;
     const h = el.clientHeight || 600;
-    map.fitBounds(boundsOf(track), { padding: { top: 70, bottom: Math.min(h * 0.9 - 70, bottom + 30), left: 30, right: 30 }, animate: false, maxZoom: 16 });
+    const cam = map.cameraForBounds(boundsOf(track), { padding: { top: 70, bottom: Math.min(h * 0.9 - 70, bottom + 30), left: 30, right: 30 }, maxZoom: 16 });
+    // a whole zoom, as Leaflet fitted it: the topo's tiles at their own scale (a fractional zoom blurs their labels)
+    if (cam) map.jumpTo({ center: cam.center, zoom: Math.floor(cam.zoom ?? 13) });
   }
   function drawTrack(): void {
     if (!loaded) return;

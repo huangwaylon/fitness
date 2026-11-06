@@ -89,7 +89,7 @@
     overflow: hidden; background: var(--paper); color: var(--ink);
     font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
     /* its Japanese wraps as the hiking app's did (anywhere, kinsoku kept), not the island's keep-all */
-    word-break: normal; line-break: strict; overscroll-behavior: none;
+    word-break: normal; line-break: strict; overscroll-behavior: none; font-feature-settings: normal;
   }
   /* ✕ and ‹: NavButton in the hiking app's frosted round button (its .hbtn) */
   .x { position: absolute; z-index: 1100; top: calc(var(--safe-t) + 5px); right: calc(12px + var(--safe-r)); }

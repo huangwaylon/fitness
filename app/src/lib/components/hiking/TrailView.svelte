@@ -188,9 +188,9 @@
     content: ''; position: absolute; z-index: 900; top: 0; left: 0; right: 0; height: calc(52px + var(--safe-t)); pointer-events: none;
     background: linear-gradient(to bottom, rgba(243, 245, 241, .92), rgba(243, 245, 241, 0));
   }
-  /* zoom: the hiking app's frosted bar, under ✕ */
+  /* zoom: the hiking app's frosted bar, under ✕ (and under the sheet when it's up) */
   .zoom {
-    position: absolute; z-index: 1000; top: calc(var(--safe-t) + 62px); right: calc(14px + var(--safe-r)); display: flex; flex-direction: column;
+    position: absolute; z-index: 500; top: calc(var(--safe-t) + 62px); right: calc(14px + var(--safe-r)); display: flex; flex-direction: column;
     border-radius: 14px; overflow: hidden; box-shadow: var(--sh-fab);
   }
   .zoom button {
