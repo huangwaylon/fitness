@@ -69,16 +69,19 @@ test('a kit trip: the photo, its pages on the tab bar, a chip a day, 準備; the
   await expect(dayChip(page, 1)).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-day]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-day="1"] [data-row]')).toHaveCount(nz.days[0].rows.length);
-  // a chip shows its day (the 5th: the longest, taller than the page; a short one fits under the photo, no scroll)
-  await dayChip(page, 5).click();
-  await expect(dayChip(page, 5)).toHaveAttribute('aria-pressed', 'true');
+  // a chip shows its day
+  await dayChip(page, 2).click();
+  await expect(dayChip(page, 2)).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-day]')).toHaveCount(1);
-  await expect(sheet(page).locator('[data-day="5"] [data-row]')).toHaveCount(nz.days[4].rows.length);
-  // scrolled past the photo: the title bar with the place, the chips held under it
-  await sheet(page).locator('.scroll').evaluate((el) => (el.scrollTop = 600));
+  await expect(sheet(page).locator('[data-day="2"] [data-row]')).toHaveCount(nz.days[1].rows.length);
+  // scrolled past the photo: the title bar with the place, the chips held under it (on a short page: a dense day
+  // fits under the photo at 852 px, by how the fonts wrap, with nothing to scroll)
+  await page.setViewportSize({ width: 393, height: 480 });
+  await expect.poll(() => sheet(page).locator('.scroll').evaluate((el) => ((el.scrollTop = 600), el.scrollTop))).toBeGreaterThan(150);
   await expect(sheet(page).locator('.hd.solid')).toBeVisible();
   await expect(hdr(page).locator('h2')).toContainText('ニュージーランド');
-  await expect(dayChip(page, 5)).toBeInViewport();
+  await expect(dayChip(page, 2)).toBeInViewport();
+  await page.setViewportSize({ width: 393, height: 852 });
   // 準備: a card opens to its lists; the demo's trip note fills the private values
   await dayChip(page, 'prep').click();
   await expect(sheet(page).locator('[data-day]')).toHaveCount(0);
