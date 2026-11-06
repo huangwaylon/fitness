@@ -11,7 +11,8 @@
   // others only a summary (contract/guest.ts rowsFor).
   import type { Report } from '#lib/kikimimi/report.ts';
   import type { Rec } from '#lib/kikimimi/advice.ts';
-  import { SPEED_MIN, stageOf } from '#lib/kikimimi/progress.ts';
+  import { SPEED_MIN } from '#lib/kikimimi/progress.ts';
+  import { stageAt } from '#lib/kikimimi/stages.ts';
   import { SKILLS } from '#lib/kikimimi/tags.ts';
   import { levelAt, levelMark, type Accent, type ItemType } from '#lib/kikimimi/bank.ts';
   import { SPEEDS, sx } from '#lib/kikimimi/ladder.ts';
@@ -21,7 +22,7 @@
 
   let { report, canStart, onstart, onplay }: { report: Report; canStart: boolean; onstart: (r: Rec) => void; onplay: () => void } = $props();
   const s = $derived(report.stats);
-  const stage = $derived(s.level === null ? null : stageOf(s.level));
+  const stage = $derived(s.level === null ? null : stageAt(s.level));
   /** The level to play next (the comfortable one, a level that exists: やま and ほし above level 4): the next step within
    *  the stage, not a second stage. */
   const comfy = $derived(levelAt(Math.min(6, Math.max(1, Math.round(s.level ?? 1)))));
@@ -53,11 +54,11 @@
     <button type="button" class="btn" data-kiki-prog-play data-sfx="tick" onclick={onplay}>{t('kiki.tab.play')}</button>
   {:else}
     <!-- the stage: a stat tile with a meter -->
-    <section class="tile card" aria-labelledby="kp-level" data-kiki-stage={stage?.stage.id}>
+    <section class="tile card" aria-labelledby="kp-level" data-kiki-stage={stage?.id}>
       <h3 id="kp-level" class="sec-label in">{t('kiki.prog.level')}</h3>
       {#if stage}
-        <p class="stage"><span class="stars" aria-hidden="true">{'★'.repeat(stage.stage.stars)}</span>{t(`kiki.stage.${stage.stage.id}`)}<small>{stage.stage.cefr}</small></p>
-        <div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow={pct(stage.into)} aria-label={t(`kiki.stage.${stage.stage.id}`)}><i style:width="{Math.max(4, pct(stage.into))}%"></i></div>
+        <p class="stage"><span class="stars" aria-hidden="true">{'★'.repeat(stage.stars)}</span>{t(`kiki.stage.${stage.id}`)}<small>{stage.cefr}</small></p>
+        <div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow={pct(stage.into)} aria-label={t(`kiki.stage.${stage.id}`)}><i style:width="{Math.max(4, pct(stage.into))}%"></i></div>
         <p class="note">{s.measuring ? t('kiki.prog.measuring', { n: 16 - s.answers }) : t('kiki.prog.comfort', { stars: levelMark(comfy), name: t(`kiki.lv.${comfy}`) })}</p>
       {/if}
     </section>

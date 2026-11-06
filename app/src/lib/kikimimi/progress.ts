@@ -239,22 +239,6 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
   };
 }
 
-/** The curriculum's stages (§3) a comfortable level falls in, with each one's range on the levels' scale. */
-const STAGES = [
-  { id: 's0', stars: 1, cefr: 'A2–B1', from: 1, to: 2.5 },
-  { id: 's1', stars: 2, cefr: 'B1+', from: 2.5, to: 3.5 },
-  { id: 's2', stars: 3, cefr: 'B2', from: 3.5, to: 4.5 },
-  { id: 's3', stars: 4, cefr: 'B2+', from: 4.5, to: 5.5 },
-  { id: 's4', stars: 5, cefr: 'C1', from: 5.5, to: 6.5 }
-] as const;
-export type Stage = (typeof STAGES)[number];
-
-/** The stage of a comfortable level and how far into it (0-1). */
-export function stageOf(level: number): { stage: Stage; into: number } {
-  const stage = STAGES.find((s) => level < s.to) ?? STAGES[STAGES.length - 1];
-  return { stage, into: Math.max(0, Math.min(1, (level - stage.from) / (stage.to - stage.from))) };
-}
-
 /** A スピード はしご game (its answers are rungs': ladder.ts). Its first listens fail by design at the top, so the
  *  trend and the level nudge leave it out; it has its own measure (speedOf). */
 export const isLadderGame = (g: Pick<Game, 'r'>): boolean => g.r.some((a) => isRungId(a.id));

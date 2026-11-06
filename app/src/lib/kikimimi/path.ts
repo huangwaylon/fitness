@@ -4,7 +4,7 @@
 // and the one current unit with 「つづける」. Every stage stays playable: one far above my comfortable level is only shown
 // softly (the stage gate is placement's, みみ チェック, not built yet). Pure: the path index's lines, my unit states
 // (stamps.ts) and my report's level and games in, the path out.
-import { LESSONS, STAGES, type Lesson, type Stage } from './stages.ts';
+import { LESSONS, STAGES, STAGE_IDS, type Lesson, type Stage } from './stages.ts';
 import type { UnitState } from './stamps.ts';
 
 /** The nine domains (plan §1) and the anchors' `glue`, each with its icon and tint (a theme token: day and night). */
@@ -26,7 +26,6 @@ export const isDomain = (d: string): d is Domain => d in DOMAINS;
 /** The path's filter: every unit, or one domain's (the anchors stay: they're reused across domains). */
 export type Filter = 'all' | Exclude<Domain, 'glue'>;
 
-const STAGE_ORDER = Object.keys(STAGES) as Stage[];
 /** The lessons that make a unit's stamp (plan §3): であい, ばめん, チェック; おと and じっせん are extras. */
 export const CORE: readonly Lesson[] = ['deai', 'bamen', 'check'];
 
@@ -111,28 +110,28 @@ export function pathOf(o: {
 }): Path {
   const filter = o.filter ?? 'all';
   const level = o.level ?? START_LEVEL;
-  const byStage = new Map<Stage, PathUnit[]>(STAGE_ORDER.map((s) => [s, []]));
+  const byStage = new Map<Stage, PathUnit[]>(STAGE_IDS.map((s) => [s, []]));
   for (const u of o.units) byStage.get(u.stage as Stage)?.push(u);
-  const ordered = STAGE_ORDER.flatMap((s) => {
+  const ordered = STAGE_IDS.flatMap((s) => {
     const us = byStage.get(s)!;
     return [...us.filter((u) => u.domain === 'glue'), ...us.filter((u) => u.domain !== 'glue')];
   });
   const open = (u: PathUnit) => !o.states.get(u.id)?.stamped;
   const known = new Set(ordered.map((u) => u.id));
   const last = [...(o.played ?? [])].reverse().find((id) => known.has(id) && open(ordered.find((u) => u.id === id)!));
-  const comfy = [...STAGE_ORDER].reverse().find((s) => STAGES[s].rank <= level + 0.5) ?? STAGE_ORDER[0];
-  const from = STAGE_ORDER.indexOf(comfy);
-  const current = last ?? ordered.find((u) => STAGE_ORDER.indexOf(u.stage as Stage) >= from && open(u))?.id ?? ordered.find(open)?.id ?? null;
+  const comfy = [...STAGE_IDS].reverse().find((s) => STAGES[s].rank <= level + 0.5) ?? STAGE_IDS[0];
+  const from = STAGE_IDS.indexOf(comfy);
+  const current = last ?? ordered.find((u) => STAGE_IDS.indexOf(u.stage as Stage) >= from && open(u))?.id ?? ordered.find(open)?.id ?? null;
   const chips = (Object.keys(DOMAINS) as Domain[]).filter(
     (d): d is Exclude<Domain, 'glue'> => d !== 'glue' && o.units.some((u) => u.domain === d || u.also?.includes(d))
   );
-  const stages = STAGE_ORDER.map((stage, i): StageRow => {
+  const stages = STAGE_IDS.map((stage): StageRow => {
     const us = ordered.filter((u) => u.stage === stage);
     const stops = us.map((u): Stop => {
       const state = o.states.get(u.id);
       return { ...u, state, anchor: u.domain === 'glue', current: u.id === current, hidden: !matches(u, filter), next: nextLesson(u.lessons, state) };
     });
-    return { stage, stars: i + 1, stops, stamped: stops.filter((s) => s.state?.stamped).length, soft: STAGES[stage].rank > level + 1 };
+    return { stage, stars: STAGES[stage].stars, stops, stamped: stops.filter((s) => s.state?.stamped).length, soft: STAGES[stage].rank > level + 1 };
   });
   return { stages, current, chips };
 }
