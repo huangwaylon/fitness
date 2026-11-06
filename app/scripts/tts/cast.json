@@ -41,6 +41,48 @@
    "mos": 4.466
   }
  },
+ "us-f4": {
+  "accent": "us",
+  "gender": "f",
+  "source": "design",
+  "seed": 7,
+  "kokoro": "af_bella",
+  "description": "A confident American woman in her early thirties with a standard General American accent. Quick, witty and a little dry, like a busy project manager who jokes with her team between meetings. Clear articulation, brisk natural pace, medium-low pitch with a slightly husky warmth.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.478
+  }
+ },
+ "us-f5": {
+  "accent": "us",
+  "gender": "f",
+  "source": "design",
+  "seed": 11,
+  "kokoro": "af_kore",
+  "description": "A warm older American woman in her mid sixties with a standard General American accent. Kind, sharp and quietly funny, like a retired schoolteacher chatting on her porch. Slightly raspy but clear voice, unhurried natural pace, low pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.52
+  }
+ },
+ "us-f6": {
+  "accent": "us",
+  "gender": "f",
+  "source": "design",
+  "seed": 7,
+  "kokoro": "af_jessica",
+  "description": "A friendly American woman in her late thirties with a light Southern American accent, gently drawn-out vowels but easy to follow. Chatty, upbeat and welcoming, like a diner owner in Texas greeting a regular. Clear articulation, relaxed natural pace, medium pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.316
+  }
+ },
  "us-m1": {
   "accent": "us",
   "gender": "m",
@@ -81,6 +123,48 @@
    "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
    "licence": "Apache-2.0 (the model)",
    "mos": 4.46
+  }
+ },
+ "us-m4": {
+  "accent": "us",
+  "gender": "m",
+  "source": "design",
+  "seed": 7,
+  "kokoro": "am_puck",
+  "description": "An energetic young American man of about twenty-two with a standard General American accent. Enthusiastic, casual and quick, like a college student telling friends about his weekend. Clear articulation, fast lively pace, bright medium pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.205
+  }
+ },
+ "us-m5": {
+  "accent": "us",
+  "gender": "m",
+  "source": "design",
+  "seed": 31,
+  "kokoro": "am_onyx",
+  "description": "A calm, confident American man in his mid thirties with a standard General American accent. Steady, thoughtful and reassuring, like a team lead walking a new hire through their first day. Clear articulation, measured natural pace, deep low pitch with a rich resonant tone.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.43
+  }
+ },
+ "us-m6": {
+  "accent": "us",
+  "gender": "m",
+  "source": "design",
+  "seed": 11,
+  "kokoro": "am_michael",
+  "description": "A brisk American man in his early fifties with a light New York City accent, clear and easy to follow. Direct, fast-talking and good-humored, like a deli owner in Manhattan who knows every customer by name. Clear articulation, quick natural pace, medium pitch.",
+  "ref": {
+   "text": "Hi there! Welcome to the island. I hope you're having a lovely day. If you need anything at all, just come and find me, okay?",
+   "origin": "Qwen3-TTS 1.7B VoiceDesign from the description: a designed voice, no real person",
+   "licence": "Apache-2.0 (the model)",
+   "mos": 4.273
   }
  },
  "uk-f1": {

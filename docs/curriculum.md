@@ -4,6 +4,8 @@ This is the lead curriculum designer's synthesis of six round-1 proposals (lingu
 
 **The user's input overrides the brief.** The learner is at "high school level and higher": TOEIC 700+ years ago, and listening "quite proficient". So the core band is **B1+ → B2 → C1**. A1/A2 material is only a warm-up and a placement floor. The user wants (a) lots of realistic, harder content, (b) a systematic way to make harder, more useful daily-life scenarios, (c) new visuals, (d) incremental releases that show study progress, and (e) natural neural TTS with a large, consistent cast.
 
+**American English first (the user, 2026-11-06: "too much Australian and British slang; I want the focus to be American English").** Every item and dialogue line is American by default: US vocabulary, idioms and spelling (color, apartment, check, elevator, line, vacation, cell phone, fall), US dates and times, dollars where money isn't yen or ベル, US social norms (tipping, small talk), and a US voice (`accent: 'us'`, cast `us-*`). UK/AU slang and phrasing (mate, cheers for thanks, brilliant, rubbish, queue, flat, lift, loo, fortnight, arvo, heaps, reckon, keen, sorted, half nine, fancy a…, how are you going) is gone. UK and AU survive only as **deliberate accent exposure at やま and ほし**: at most 10% of each of those stages, every such item tagged `accent-exposure`, in standard international English rather than slang. はまべ, かわ, もり and every unit lesson are 100% US (bank.test enforces the shares). This overrides the US/UK/AU mix wherever it appears below.
+
 ---
 
 ## 1. Goals and learner profile
@@ -21,11 +23,11 @@ This is the lead curriculum designer's synthesis of six round-1 proposals (lingu
 
 ## 2. Principles
 
-1. **Real life in island clothes.** Villagers are the cast and the NH world is the stage dressing, but the situations, money, places and stakes are adult and real (yen, dollars and pounds; Haneda, a GP surgery, a landlord). Never childish (§5.4).
+1. **Real life in island clothes.** Villagers are the cast and the NH world is the stage dressing, but the situations, money, places and stakes are adult and real (yen and dollars; Haneda, a doctor's office, a landlord). Never childish (§5.4).
 2. **Listen first, read after.** No text before or during the clip. The transcript, the sound marks and the Japanese come at the reveal.
 3. **The first listen is the score.** 「いっぱつ せいかい」 (no replay) is the main measure of automaticity. Replays are free but count as "hard" for spaced repetition.
 4. **Conditions, not vocabulary.** Difficulty comes from levers (§5.3), each tagged, so the system can turn one at a time.
-5. **Many talkers.** High-variability training: every contrast and phrase is heard from ≥ 4 voices, and every accent × gender from ≥ 2 voices before it counts as covered.
+5. **Many talkers.** High-variability training: every contrast and phrase is heard from ≥ 4 voices before it counts as covered: the variety comes from many American voices (ages, timbres, a light Southern and a light New York voice), not from many accents.
 6. **Co-op over ranking (adopted default).** Live games show a shared score (「ふたりで 7/8」). A ranking is an opt-in たいせん mode.
 7. **Results private, summaries shared (adopted default).** Each person's answers, review list and feature profile stay on their own record. Others see only counts and shared summaries (§11).
 8. **Teach the trap, not grammar.** One Japanese line on why the sound or the logic fooled you (`note`, ≤ 40 字). No grammar terms.
@@ -38,11 +40,11 @@ Stages are named after places, never やさしい/むずかしい (the panel fou
 
 | Stage | CEFR | Role | Listening can-do ("I can…") | Rate (syl/s) | Conditions |
 |---|---|---|---|---|---|
-| **S0 はまべ** ★ | A2–B1 | Floor and warm-up only (today's L1–L2) | catch numbers, prices and key words in clear single sentences | 3.0–3.8 | studio-clean, US + UK |
-| **S1 かわ** ★★ | B1+ | Entry for ウェイ (today's L3 and up) | follow casual exchanges with common reductions (gonna, didja, lemme), phrasal verbs and indirect replies; catch details in service talk | 3.8–4.5 | 1–2 speakers, light café or street noise, US/UK/AU |
-| **S2 もり** ★★★ | B2 | Core | follow native-speed conversation between 2–3 people, phone calls and announcements; tell attitude (annoyed, unsure, joking) and implied refusals; follow self-corrections ("Thursday — no, Friday") | 4.5–5.2 | overlap, phone band, PA reverb, SNR to +10 dB |
-| **S3 やま** ★★★★ | B2+ | Core | follow fast group talk with interruptions, workplace meetings, voicemail and support calls with complications; catch sarcasm, hedging and humour; cope with less familiar accents | 5.0–5.8 | 3 speakers, interruptions, SNR to +5 dB, IE/SC/NZ/IN accents for exposure |
-| **S4 ほし** ★★★★★ | C1 | Stretch | follow podcasts, news, lectures and debates on unfamiliar topics; infer stance; take notes on structure; follow non-native speakers | casual 5.5–6.2, news ~4.5 dense | long-form (2–6 min, segmented), mixed accents, non-native English |
+| **S0 はまべ** ★ | A2–B1 | Floor and warm-up only (today's L1–L2) | catch numbers, prices and key words in clear single sentences | 3.0–3.8 | studio-clean, US only |
+| **S1 かわ** ★★ | B1+ | Entry for ウェイ (today's L3 and up) | follow casual exchanges with common reductions (gonna, didja, lemme), phrasal verbs and indirect replies; catch details in service talk | 3.8–4.5 | 1–2 speakers, light café or street noise, US only |
+| **S2 もり** ★★★ | B2 | Core | follow native-speed conversation between 2–3 people, phone calls and announcements; tell attitude (annoyed, unsure, joking) and implied refusals; follow self-corrections ("Thursday — no, Friday") | 4.5–5.2 | overlap, phone band, PA reverb, SNR to +10 dB, US only |
+| **S3 やま** ★★★★ | B2+ | Core | follow fast group talk with interruptions, workplace meetings, voicemail and support calls with complications; catch sarcasm, hedging and humour; cope with a less familiar accent | 5.0–5.8 | 3 speakers, interruptions, SNR to +5 dB; mostly US, UK/AU as tagged exposure (≤ 10%) |
+| **S4 ほし** ★★★★★ | C1 | Stretch | follow podcasts, news, lectures and debates on unfamiliar topics; infer stance; take notes on structure; follow non-native speakers | casual 5.5–6.2, news ~4.5 dense | long-form (2–6 min, segmented); mostly US, UK/AU (later non-native) as tagged exposure (≤ 10%) |
 
 **The existing levels map** as L1 → S0, L2 → S0 high, L3 → S1 low. The first increment adds **L4 = S1/S2** content to the existing quiz (§14).
 
@@ -51,10 +53,10 @@ Stages are named after places, never やさしい/むずかしい (the panel fou
 | Stage | Primary features |
 |---|---|
 | S0 | L/R, the æ/ʌ/ɑ contrasts, -teen/-ty, can/can't, final -s/-ed, katakana stress (a warm-up drill, 「みみ トレーニング」) |
-| S1 | weak forms (to/for/of/and/can/have/them), contractions ('d, 'll, 've, I'd've), US flapping, t/d elision, yod coalescence (did you, would you), gonna/wanna/gotta, UK t-glottalling |
-| S2 | reduction chains (whaddaya, dunno, lemme, 'cause), h-dropping (tell 'im), assimilation (ten minutes, good boy), contrastive stress, attitude intonation, fillers and false starts, AU vowels |
-| S3 | very fast casual speech, overlap and turn-taking, sarcasm prosody, upspeak, regional accents (IE/SC/NZ/IN) |
-| S4 | news-reader density, academic stress shifts (PHOtograph/phoTOgraphy), signposting, argument structure, non-native accents |
+| S1 | weak forms (to/for/of/and/can/have/them), contractions ('d, 'll, 've, I'd've), US flapping, t/d elision, yod coalescence (did you, would you), gonna/wanna/gotta, the US glottal stop (button, can't be) |
+| S2 | reduction chains (whaddaya, dunno, lemme, 'cause), h-dropping (tell 'im), assimilation (ten minutes, good boy), contrastive stress, attitude intonation, fillers and false starts |
+| S3 | very fast casual speech, overlap and turn-taking, sarcasm prosody, upspeak, light US regional voices; UK/AU accent exposure (tagged, ≤ 10%) |
+| S4 | news-reader density, academic stress shifts (PHOtograph/phoTOgraphy), signposting, argument structure, UK/AU accent exposure (tagged, ≤ 10%; non-native later) |
 
 ## 4. Tracks
 
@@ -80,7 +82,7 @@ A scenario seed is one value from each dimension. Authors (LLM draft, then a per
 | **Complication** | something sold out or cancelled, a delay or gate/platform change, a wrong item or bill, a misunderstanding (a name, a number, a homophone), a mind changed midway, a policy refusal, being transferred or put on hold, a bad line, a second speaker cutting in, a time conflict, a missing document, a language barrier, an emergency |
 | **Relationship and register** | stranger/service (polite), colleague (neutral), boss/client (deferential), friend (casual), partner (intimate, teasing), neighbour/landlord (careful), official (formal, scripted), broadcaster (read speech) |
 | **Speech conditions** | rate (careful → fast), reduction density, overlap and interruption, noise (café, street, station, rain, wind; SNR +20 → +5 dB), channel (phone band, voicemail, PA reverb, video call dropouts), accent, hesitation, fillers and self-correction, 2–3 speakers |
-| **Pragmatic layer** | literal; indirect request ("It's a bit cold in here"); implied refusal ("I'll see what I can do"); hedging; sarcasm/irony; humour and puns; understatement (UK "not bad", "a bit of a problem"); politeness formula vs real meaning; small-talk ritual; a cliffhanger (what will happen next?) |
+| **Pragmatic layer** | literal; indirect request ("It's a bit cold in here"); implied refusal ("I'll see what I can do"); hedging; sarcasm/irony; humour and puns; understatement ("not bad", "kind of a problem"); politeness formula vs real meaning; small-talk ritual; a cliffhanger (what will happen next?) |
 
 **The generator step.** An LLM receives a seed, the stage's rate and feature targets, the cast list, the scenario's AC frame (§5.4) and the item schema. It returns a script (lines with `spk`, `en`, `tts`, `ja`, `note`) plus 2–4 questions, each tagged with what it tests (gist, detail, number, inference, attitude, next-line). A lint checks the stage's limits; an agent teacher reviews; a person signs off (§9).
 
@@ -109,7 +111,7 @@ Each lever has steps. An item's difficulty is the sum of its steps, and the adap
 | Speakers | 1 | 2, turn by turn | 2 with overlap | 3 with interruptions |
 | Noise (SNR) | clean | +20 dB | +10 dB | +5 dB |
 | Channel | studio | room | phone/voicemail | PA reverb, video dropouts |
-| Accent | US | UK | AU | IE/SC/NZ/IN/non-native |
+| Accent | General American, one voice | many US voices | light US regional (Southern, New York) | UK/AU exposure (S3–S4 only, tagged, ≤ 10%) |
 | Disfluency | none | fillers | false starts | self-correction that changes the answer |
 | Pragmatics | literal | indirect | implied refusal/hedge | sarcasm, irony, humour |
 | Distractors | far | heard in the clip | the corrected value | the plausible inference that's wrong |
@@ -127,7 +129,7 @@ Rule: **the frame is AC, the content is real.** Villagers play people; scenes us
 | Office, city hall, ward office | Resident Services: しずえ as the colleague, たぬきち as the manager |
 | Shops, returns, konbini | まめきち・つぶきち at the counter; エイブル姉妹 for clothes and sizes |
 | Café, restaurant | マスター (Brewster) at the café; villagers as diners and staff |
-| Doctor, pharmacy | a normal or smug villager as the GP or pharmacist; a jock as the patient |
+| Doctor, pharmacy | a normal or smug villager as the doctor or pharmacist; a jock as the patient |
 | Bank, phone support, scams | the NookPhone call screen; つねきち (Redd) as the suspicious caller |
 | Landlord, repairs, contractors | たぬきち as the landlord; a cranky villager as the neighbour |
 | Friends, parties, group chat | villagers by personality (§5.6) |
@@ -149,7 +151,7 @@ Stage is where a seed first appears; each can be re-cut harder with the levers. 
 | 6 | Lost luggage desk: report a bag → missing form, a reference number read fast | neutral / phone-fast numbers / literal | S2 |
 | 7 | Car rental: pick up → insurance upsell, deposit hold explained fast | polite / brisk / hedge | S3 |
 | 8 | Missed connection: rebook → three options, each with a catch | neutral / overlap with another passenger / implied | S3 |
-| 9 | Immigration: questions → an officer's dry joke | formal / IE accent / humour | S3 |
+| 9 | Immigration: questions → an officer's dry joke | formal / desk / humour | S3 |
 | 10 | Airbnb host voicemail: directions to the key box → self-corrects the code | casual / voicemail / self-repair | S2 |
 | 11 | Ferry PA in wind: departure → weather cancellation | official / wind +5 dB / literal | S3 |
 | 12 | Strangers on a train overheard: plans → you infer where they get off | casual / train noise / inference | S3 |
@@ -159,7 +161,7 @@ Stage is where a seed first appears; each can be re-cut harder with the levers. 
 | # | Seed | R / C / P | Stage |
 |---|---|---|---|
 | 13 | Pharmacy: buy cold medicine → "Are you taking anything else?" drowsiness warning | polite / counter / literal | S1 |
-| 14 | GP phone booking: an appointment → only a callback slot, "it's triage" | polite / phone / policy refusal | S2 |
+| 14 | Doctor's office phone booking: an appointment → only a callback slot, "the nurse will call you" | polite / phone / policy refusal | S2 |
 | 15 | Doctor: describe symptoms → follow-up questions fast, dosage instructions | neutral / brisk / literal | S2 |
 | 16 | Dentist reception: reschedule → cancellation fee hinted | polite / phone / implied | S2 |
 | 17 | Gym trainer: instructions → corrects form mid-set | casual / gym music / self-repair | S1 |
@@ -206,7 +208,7 @@ Stage is where a seed first appears; each can be re-cut harder with the levers. 
 | 43 | Onboarding: instructions → acronyms, "does that make sense?" | neutral / brisk / literal | S2 |
 | 44 | Stand-up: three updates → overlap, find who's blocked | casual / 3 speakers fast / inference | S3 |
 | 45 | Colleague's voicemail: a favour → rambling, the ask at the end | casual / voicemail / indirect | S2 |
-| 46 | Job interview: a tricky question → interviewer's dry humour | formal / UK / humour | S3 |
+| 46 | Job interview: a tricky question → interviewer's dry humour | formal / office / humour | S3 |
 | 47 | Conference talk Q&A: a question → speaker deflects | formal / hall reverb / evasive | S4 |
 
 **F. Social, plans and misunderstandings**
@@ -217,10 +219,10 @@ Stage is where a seed first appears; each can be re-cut harder with the levers. 
 | 49 | Cancelling plans: last minute → excuse, an offer to reschedule | casual / phone / apology | S1 |
 | 50 | Group voice chat: choose a restaurant → three opinions, one changes mind | casual / overlap / tracking | S2 |
 | 51 | Misheard name at a café: "Wei?" → "Way?" "May?" repair | casual / café noise / repair | S1 |
-| 52 | Friends' banter: a bad film → sarcasm ("Oh, it was *brilliant*") | casual / UK / sarcasm | S2 |
+| 52 | Friends' banter: a bad movie → sarcasm ("Oh, it was *amazing*") | casual / fast / sarcasm | S2 |
 | 53 | Barbecue overheard: gossip → who's dating whom | casual / outdoor, 3 speakers / inference | S3 |
 | 54 | Birthday planning: a surprise → keep it secret from the one who walks in | casual / interruption / code-switching | S3 |
-| 55 | Pub quiz: questions read fast, banter in between | casual / bar noise, AU / humour | S3 |
+| 55 | Bar trivia night: questions read fast, banter in between | casual / bar noise / humour | S3 |
 | 56 | Date planning: a misunderstanding over "next Friday" | intimate / casual / ambiguity | S2 |
 | 57 | Complaint to a friend: venting → you pick the supportive reply | casual / emotional / attitude | S2 |
 | 58 | Stranger asks directions in Tokyo: you follow their paraphrase back | polite / street / repair | S1 |
@@ -346,13 +348,13 @@ Everything uses the app's paper theme (cream paper, rounded cards, the NH brown 
 
 **Resolution (slow clips).** The linguist wanted a separate careful-speech take; the engineer, a time-stretch. Adopted: S0–S1 🐢 is a **separate careful take** (「ゆっくり ていねいに」), never a stretch (stretching undoes reductions). From S2 there's no 🐢: support is **segment replay** (one sentence) and the transcript.
 
-**The cast.** At least 2 voices per accent × gender for US, UK and AU (≥ 12 core voices), with ages young, middle and older; ≥ 4 voices per minimal-pair contrast and per target phrase; plus exposure voices at S3–S4: Irish, Scottish, NZ, Indian, Singaporean, and non-native English (e.g. Spanish-, French-, Chinese- and Korean-accented), where the chosen model can do them convincingly. A cast "announcer" (PA) and a "newsreader" voice. Each villager maps to one cast voice for good (`Voices`: villager → cast). Designed voices only; no cloning of real people without their consent.
+**The cast (American first, 2026-11-06).** 18 voices: **12 US** (`us-f1…f6`, `us-m1…m6`: ages early twenties to sixties, bright to deep, brisk to unhurried; ten General American, `us-f6` a light Southern and `us-m6` a light New York accent for variety), and 6 kept only for exposure (`uk-f1`, `uk-m1`, `uk-m2`, `au-f1`, `au-m1`, `au-m2`). Nearly every villager's one voice for good (`CAST`: villager → cast) is a US voice; the handful of UK/AU villagers speak only the やま/ほし `accent-exposure` items (≤ 10% of each stage; none at はまべ/かわ/もり or in units). ≥ 4 voices per minimal-pair contrast and per target phrase, from the US cast. Later exposure voices (Irish, Scottish, Indian, non-native English) only at S3–S4, tagged the same way, where the model does them convincingly. A cast "announcer" (PA) and a "newsreader" voice are US. Designed voices only; no cloning of real people without their consent.
 
 **Script rules.**
 
 | Rule | Detail |
 |---|---|
-| `en` ≠ `tts` | `en` is standard spelling (shown); `tts` is spelled as said: gonna, wanna, lemme, dunno, 'cause, d'you, whaddaya, I'd've. Contractions everywhere. |
+| `en` ≠ `tts` | `en` is standard American spelling (shown); `tts` is spelled as said, the American way: gonna, wanna, lemme, dunno, 'cause, d'you, whaddaya, I'd've. Contractions everywhere. |
 | Numbers as spoken | "six forty", "fifteen hundred yen", "the thirteenth", "oh-nine-oh". Never digits for the engine. |
 | Punctuation is prosody | comma = tone-unit break; none where speech runs on; "—" a break or self-repair; "…" trailing off. |
 | Disfluency on purpose | fillers (um, like, y'know), false starts, self-corrections, written in. |
@@ -367,7 +369,7 @@ Everything uses the app's paper theme (cream paper, rounded cards, the NH brown 
 | Japanese | `ja` and an optional `note` (≤ 40 字) that explains the trap; from S2 the Japanese is collapsed at the reveal, tap to open. |
 | Licence | all scripts original. No copyrighted lyrics, broadcasts or news audio: the news is written news-style by us. |
 
-**The model choice** (being made now) should be judged on: reductions and flaps on demand, natural two-voice dialogue, accent stability across a long script (no drift towards US), disfluency that sounds real, and speed on the M5 Max for ~16 hours of audio.
+**The model choice** (being made now) should be judged on: reductions and flaps on demand, natural two-voice dialogue, accent stability across a long script (a UK/AU exposure voice not drifting towards US), disfluency that sounds real, and speed on the M5 Max for ~16 hours of audio.
 
 ## 10. Placement, adaptivity and spaced repetition
 
@@ -431,8 +433,8 @@ Each increment takes 1–3 agent-days, lands on main green, and ships something 
 
 | # | Increment | Ships | Days |
 |---|---|---|---|
-| **1** | **ききみみ L4 「かわ・もり」: realistic, harder content in the existing quiz.** ~64 new items from §5.5 seeds (travel, phone, health, work, plans): `reply` with indirect and implied answers, `num` at natural speed in real contexts (platforms, flight numbers, prices in yen/dollars/pounds, self-corrected times), `word` with reductions in context (should've/shouldn't have, I'd/I'll, can/can't in UK), and the new `mean` type (what do they really mean? English paraphrases). `tts` respellings, `note` lines, Japanese collapsed at L4. Contract `lv` 1–3 → 1–5 (relay deploys first; 5 is headroom). Voices: the neural candidate if picked, else the best `say` voices (the `src` hash re-voices it later automatically). | 2–3 |
-| 2 | Neural cast v1: the engine adapter, 12 core voices, villager → voice map, forced-alignment check; re-voice all items; careful takes for S0. | 2–3 |
+| **1** | **ききみみ L4 「かわ・もり」: realistic, harder content in the existing quiz.** ~64 new items from §5.5 seeds (travel, phone, health, work, plans): `reply` with indirect and implied answers, `num` at natural speed in real contexts (platforms, flight numbers, prices in yen/dollars, self-corrected times), `word` with reductions in context (should've/shouldn't have, I'd/I'll, can/can't by vowel and stress), and the new `mean` type (what do they really mean? English paraphrases). `tts` respellings, `note` lines, Japanese collapsed at L4. Contract `lv` 1–3 → 1–5 (relay deploys first; 5 is headroom). Voices: the neural candidate if picked, else the best `say` voices (the `src` hash re-voices it later automatically). | 2–3 |
+| 2 | Neural cast v1: the engine adapter, 12 core voices (18 since 2026-11-06, 12 of them US), villager → voice map, forced-alignment check; re-voice all items; careful takes for S0. | 2–3 |
 | 3 | Co-op default and privacy: 「ふたりで n/8」 results, たいせん toggle, copy fixes (おしい！, いっぱつ せいかい！, ★ level names); log each answer to the `listen` day row (owner-only). Progress data starts accruing. | 2 |
 | 4 | Dialogue items in the quiz: `gist` / `next` over 2–4-line dialogues (`playSequence`), 24 overheard and service dialogues. | 2–3 |
 | 5 | Visuals v1: the SVG scene kit (8 backdrops), channel frames, transcript karaoke and sound marks at the reveal. | 2–3 |
@@ -469,14 +471,15 @@ Each increment takes 1–3 agent-days, lands on main green, and ships something 
 | Japanese shown | After the reveal only; collapsed from S2; `note` explains the trap. |
 | L/R and vowel drills | A floor warm-up and a side drill (みみ トレーニング), not the core quiz. |
 | Island currency vs real | Real currencies and places in real-world scenarios; ベル only in island content. |
+| US/UK/AU mix (v1) vs the user's American focus (2026-11-06) | American English everywhere; UK/AU only as tagged accent exposure at やま/ほし (≤ 10%). |
 
 ## 16. Open questions for the user
 
 1. **うめ's level.** Is the partner also around B1+, or lower? This decides how much S0 and parallel-deck work comes early.
-2. **Accents.** Which do you meet most (US, UK, AU, or Indian, Singaporean and non-native English at work)? This sets the cast order.
+2. ~~**Accents.**~~ Answered 2026-11-06: American English. UK/AU only as tagged exposure at やま/ほし (≤ 10%).
 3. **Work content.** What's your field? Meeting and client scenarios can use your real domain's vocabulary.
 4. **Realism of language.** Is mild swearing ("damn", "crap", "pissed off") in realistic speech fine at S3–S4?
-5. **Real-world vs island framing.** Are real currencies and places (yen, Haneda, a London GP) in scenarios fine, with ベル only for island content?
+5. **Real-world vs island framing.** Are real currencies and places (yen, dollars, Haneda, a doctor's office in Seattle) in scenarios fine, with ベル only for island content?
 6. **Japanese at the reveal.** Collapsed by default from S2 (tap to open): OK?
 7. **Generated illustrations.** Are local AI-generated backdrops fine, or should we stay with NH art plus the SVG scene kit?
 8. **たいせん mode.** Do you want a ranking mode at all, or co-op only?

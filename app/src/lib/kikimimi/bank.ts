@@ -27,10 +27,10 @@ export const levelRank = (lv: number): number => (lv === 5 ? 4 : lv > 5 ? lv - 1
 export const levelAt = (rank: number): Level => (rank > 4 ? rank + 1 : rank) as Level;
 /** A level's mark beside its name: its ★s (its place on the ladder), the pack 📢. */
 export const levelMark = (lv: number): string => (lv === 5 ? '📢' : '★'.repeat(levelRank(lv)));
-/** A cast voice of the neural TTS (docs/curriculum.md §9; 12 voices, US weighted: speech.ts SLOTS lists the ones that
- *  exist, scripts/tts/cast.json describes them): accent, gender, slot. Each villager speaks with one for good (bank4.ts
- *  CAST). */
-export type CastId = `${Accent}-${'f' | 'm'}${1 | 2 | 3}`;
+/** A cast voice of the neural TTS (docs/curriculum.md §9; 18 voices, 12 of them US: speech.ts SLOTS lists the ones that
+ *  exist, scripts/tts/cast.json describes them): accent, gender, slot. Each villager speaks with a US one for good
+ *  (bank4.ts CAST), a few with a UK or AU one too on the やま/ほし accent-exposure items (EXPOSURE). */
+export type CastId = `${Accent}-${'f' | 'm'}${1 | 2 | 3 | 4 | 5 | 6}`;
 
 /** The scenario generator's dimensions an item was made from (docs/curriculum.md §5): they drive the levers, review
  *  and coverage later. */

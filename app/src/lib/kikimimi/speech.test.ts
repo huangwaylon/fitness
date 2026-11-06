@@ -14,8 +14,8 @@ const CAST_JSON: Record<string, { accent: string; gender: string; source: string
   JSON.parse(readFileSync(join(import.meta.dirname, '../../../scripts/tts/cast.json'), 'utf8'));
 
 describe('kikimimi cast', () => {
-  it('cast.json describes exactly the 12 voices, US weighted, each with a reference transcript and its licence', () => {
-    expect(CAST_IDS).toHaveLength(12);
+  it('cast.json describes exactly the 18 voices, 12 of them US, each with a reference transcript and its licence', () => {
+    expect(CAST_IDS).toHaveLength(18);
     expect(Object.keys(CAST_JSON).sort()).toEqual([...CAST_IDS].sort());
     for (const id of CAST_IDS) {
       const c = CAST_JSON[id];
@@ -28,7 +28,7 @@ describe('kikimimi cast', () => {
       if (c.source === 'vctk') expect(c.ref.attribution, id).toContain('10.7488/ds/2645');
     }
     const n = (a: string) => CAST_IDS.filter((id) => id.startsWith(a)).length;
-    expect([n('us'), n('uk'), n('au')]).toEqual([6, 3, 3]);
+    expect([n('us'), n('uk'), n('au')]).toEqual([12, 3, 3]);
     for (const a of ['us', 'uk', 'au'] as const) expect(SLOTS[a].f + SLOTS[a].m).toBe(n(a));
   });
 
@@ -55,17 +55,17 @@ describe('kikimimi cast', () => {
     for (const it of BANK) expect(CAST[it.speaker], it.speaker).toBeDefined();
   });
 
-  it('every voice speaks, and the load is spread (no voice over a fifth of the bank or under 5 lines)', () => {
+  it('every voice speaks, and the load is spread (no voice over a tenth of the bank; a US voice 30 lines or more)', () => {
     const n = new Map<CastId, number>();
     for (const it of BANK) n.set(castOf(it), (n.get(castOf(it)) ?? 0) + 1);
     expect([...n.keys()].sort()).toEqual([...CAST_IDS].sort());
     for (const [c, k] of n) {
-      expect(k, c).toBeGreaterThanOrEqual(5);
-      expect(k, c).toBeLessThanOrEqual(BANK.length / 5);
+      if (c.startsWith('us')) expect(k, c).toBeGreaterThanOrEqual(30);
+      expect(k, c).toBeLessThanOrEqual(BANK.length / 10);
     }
-    // US weighted: the US voices speak most of the bank
+    // American first: UK and AU only on the やま/ほし exposure items (bank.test's accent policy), a few percent
     const us = BANK.filter((it) => castOf(it).startsWith('us')).length;
-    expect(us / BANK.length).toBeGreaterThan(0.5);
+    expect(us / BANK.length).toBeGreaterThan(0.95);
   });
 });
 

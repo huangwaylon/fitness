@@ -5,9 +5,10 @@ import { ROSTER } from '#lib/villagers/roster.ts';
 import type { Accent, CastId, Item } from './bank.ts';
 import { CAST } from './bank4.ts';
 
-/** The cast's slots per accent and gender (12 voices, US weighted: the player hears mostly US English). */
+/** The cast's slots per accent and gender (18 voices, American first: every villager's voice is US; UK and AU only speak
+ *  the やま/ほし accent-exposure items, docs/curriculum.md "American English first"). */
 export const SLOTS: Readonly<Record<Accent, Readonly<Record<'f' | 'm', number>>>> = {
-  us: { f: 3, m: 3 },
+  us: { f: 6, m: 6 },
   uk: { f: 1, m: 2 },
   au: { f: 1, m: 2 }
 };

@@ -19,13 +19,11 @@ interface Want {
   words: number;
   /** A dialogue's fewest lines. */
   lines: number;
-  /** US voices only (もり: American English; UK and AU only as accent exposure at やま and ほし). */
-  us?: true;
 }
 
 const WANT: Record<string, Want> = {
-  'mori-life': { lv: 4, items: 70, dialogues: [8, 7], prefix: ['ml', 'dml'], least: 15, families: [13, 3], words: 26, lines: 2, us: true },
-  'mori-work': { lv: 4, items: 70, dialogues: [8, 7], prefix: ['mw', 'dmw'], least: 10, words: 26, lines: 2, us: true },
+  'mori-life': { lv: 4, items: 70, dialogues: [8, 7], prefix: ['ml', 'dml'], least: 15, families: [13, 3], words: 26, lines: 2 },
+  'mori-work': { lv: 4, items: 70, dialogues: [8, 7], prefix: ['mw', 'dmw'], least: 10, words: 26, lines: 2 },
   'yama-a': { lv: 6, items: 80, dialogues: [10, 10], prefix: ['ya', 'dya'], least: 12, words: 26, lines: 2 },
   'yama-b': { lv: 6, items: 80, dialogues: [10, 10], prefix: ['yb', 'dyb'], least: 15, families: [12, 7], words: 26, lines: 2 },
   hoshi: { lv: 7, items: 90, dialogues: [13, 12], prefix: ['ho', 'dho'], least: 6, families: [10, 5], words: 45, lines: 3 }
@@ -57,15 +55,6 @@ describe('kikimimi content sets', () => {
       }
       for (const it of all) for (const s of spoken(it)) expect(s.split(/\s+/).length, `${it.id}: ${s}`).toBeLessThanOrEqual(w.words);
       for (const it of dialogues) expect(it.lines!.length, it.id).toBeGreaterThanOrEqual(w.lines);
-      // US only, or all three accents with US the most
-      const by = (a: string) => all.flatMap((it) => (isDialogue(it) ? it.lines.map((l) => l.cast) : [it.cast!])).filter((c) => c.startsWith(a)).length;
-      if (w.us) {
-        expect(by('uk') + by('au')).toBe(0);
-        return;
-      }
-      expect(by('us')).toBeGreaterThan(by('uk'));
-      expect(by('us')).toBeGreaterThan(by('au'));
-      expect(Math.min(by('uk'), by('au'))).toBeGreaterThan(0);
     });
 
   it('ほし: single-clip gists (what a bulletin or talk is about) and nexts (what the speaker says next) beside its dialogues', () => {

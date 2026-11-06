@@ -20,8 +20,8 @@
 //   node scripts/kikimimi-audio.ts --list           the listen-through list (each clip with its cast voice and text)
 //   node scripts/kikimimi-audio.ts --listen [--only <regex>]   play each clip (afplay) with its text: a person's check
 //
-// The cast (docs/curriculum.md §9): scripts/tts/cast.json, 12 voices (US 3 a gender; UK and AU 3), each villager one voice
-// for good (bank4.ts CAST, speech.ts castOf). Every voice is a reference clip with its exact transcript, cloned for
+// The cast (docs/curriculum.md §9): scripts/tts/cast.json, 18 voices (US 6 a gender; UK and AU 3, only for the やま/ほし
+// accent-exposure items), each villager one US voice for good (bank4.ts CAST, EXPOSURE; speech.ts castOf). Every voice is a reference clip with its exact transcript, cloned for
 // every line: US voices designed by Qwen3-TTS VoiceDesign from a text description (no real person), UK voices spoken by
 // Phonon's synthetic catalogue voices, AU voices from the VCTK corpus (CC BY 4.0; credited in docs/kikimimi.md).
 // Spoken text: speech.ts spokenText (`tts`, else `en` with its numbers written out).

@@ -5,7 +5,7 @@ import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
 import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitFocus, type Item, type ItemType, type Level } from './bank.ts';
 import { BANK } from './source.ts';
-import { CAST } from './bank4.ts';
+import { CAST, EXPOSURE } from './bank4.ts';
 import { LEVELS, MIX } from './deck.ts';
 import { mixes, unitItems } from './compile.ts';
 import type { Clip } from './clips.ts';
@@ -86,10 +86,23 @@ describe('kikimimi bank', () => {
     }
   });
 
-  it('accents: American at levels 1-3 (US only), levels 4-7 by their villagers’ cast voices', () => {
-    const all = ['us', 'uk', 'au'];
-    const allowed: Partial<Record<Level, string[]>> = { 1: ['us'], 2: ['us'], 3: ['us'], 4: all, 5: all, 6: all, 7: all };
-    for (const it of BANK) expect(allowed[it.lv], it.id).toContain(it.voice);
+  it('accent policy (docs/curriculum.md "American English first"): US only at はまべ, かわ, もり (levels 1-5) and in every unit; at most 10% of やま and of ほし (6, 7) UK or AU, each item tagged accent-exposure', () => {
+    const accents = (it: Item) => (isDialogue(it) ? it.lines.map((l) => l.cast.slice(0, 2)) : [it.voice]);
+    const foreign = (it: Item) => accents(it).some((a) => a !== 'us');
+    const tagged = (it: Item) => it.tags?.features?.includes('accent-exposure') ?? false;
+    for (const it of [...BANK.filter((it) => it.lv <= 5), ...UNIT_ITEMS]) {
+      expect(foreign(it) ? accents(it).join('+') : 'us', `${it.id}: American only below やま and in units`).toBe('us');
+      expect(tagged(it), `${it.id}: accent exposure only at やま and ほし`).toBe(false);
+    }
+    for (const lv of [6, 7] as Level[]) {
+      const items = BANK.filter((it) => it.lv === lv), out = items.filter(foreign);
+      expect(out.length / items.length, `level ${lv}: the UK/AU share`).toBeLessThanOrEqual(0.1);
+      for (const it of out) expect(tagged(it), `${it.id}: UK/AU only as tagged accent exposure`).toBe(true);
+      for (const it of items.filter(tagged)) expect(foreign(it), `${it.id}: tagged but all US (its speaker needs an EXPOSURE voice)`).toBe(true);
+    }
+    // every EXPOSURE villager speaks in an exposure item (no stale entries)
+    const speaks = (it: Item, w: string) => (isDialogue(it) ? it.lines.some((l) => l.who === w) : it.speaker === w);
+    expect(Object.keys(EXPOSURE).filter((w) => !BANK.some((it) => tagged(it) && speaks(it, w)))).toEqual([]);
   });
 
   it('splitFocus and jaLines: the focus marked in place; a reply on two lines, the question, then → the reply', () => {
@@ -136,16 +149,19 @@ describe('kikimimi bank', () => {
     }
   });
 
-  it('levels 4-7: a cast voice of its accent and its speaker’s gender, one per villager, all 12 used', () => {
+  it('levels 4-7: a cast voice of its accent and its speaker’s gender, a US one per villager (an exposure item its UK or AU one), all 12 US voices used', () => {
     const l4 = BANK.filter((it) => it.lv >= 4);
+    const voiceOf = (it: Item, who: keyof typeof CAST) => (it.tags?.features?.includes('accent-exposure') && EXPOSURE[who]) || CAST[who];
     for (const it of l4) {
-      expect(it.cast, it.id).toBe(CAST[it.speaker]);
-      expect(it.cast, it.id).toMatch(/^(us|uk|au)-[fm][123]$/);
+      expect(it.cast, it.id).toBe(voiceOf(it, it.speaker));
+      expect(it.cast, it.id).toMatch(/^(us|uk|au)-[fm][1-6]$/);
       expect(it.cast!.slice(0, 2), it.id).toBe(it.voice);
       expect(it.cast![3], it.id).toBe(ROSTER[it.speaker].gender);
     }
-    for (const [id, cast] of Object.entries(CAST)) expect(cast![3], id).toBe(ROSTER[id as keyof typeof ROSTER].gender);
-    expect(new Set(l4.map((it) => it.cast)).size).toBe(12);
+    for (const [id, cast] of [...Object.entries(CAST), ...Object.entries(EXPOSURE)]) expect(cast![3], id).toBe(ROSTER[id as keyof typeof ROSTER].gender);
+    expect(Object.values(CAST).filter((c) => !c!.startsWith('us-'))).toEqual([]);
+    expect(Object.values(EXPOSURE).filter((c) => c!.startsWith('us-'))).toEqual([]);
+    expect(new Set(l4.map((it) => it.cast).filter((c) => c!.startsWith('us-'))).size).toBe(12);
     // every cast villager speaks (no stale entries); levels 1-3 carry no `cast` (speech.ts castOf derives theirs)
     expect(Object.keys(CAST).filter((id) => !BANK.some((it) => it.speaker === id))).toEqual([]);
     for (const it of BANK.filter((it) => it.lv < 4)) expect(it.cast, it.id).toBeUndefined();
@@ -187,7 +203,7 @@ describe('kikimimi bank', () => {
       expect(new Set(lines.map((l) => l.cast)).size, `${it.id}: two voices`).toBe(2);
       for (const [n, l] of lines.entries()) {
         if (n) expect(l.who, `${it.id} line ${n + 1}: a turn each`).not.toBe(lines[n - 1].who);
-        expect(l.cast, it.id).toBe(CAST[l.who]);
+        expect(l.cast, it.id).toBe((it.tags?.features?.includes('accent-exposure') && EXPOSURE[l.who]) || CAST[l.who]);
         expect(l.cast[3], it.id).toBe(ROSTER[l.who].gender);
         expect(l.ja, it.id).toMatch(/[ぁ-んァ-ン一-龯]/);
         expect(l.en.trim(), it.id).toBe(l.en);
