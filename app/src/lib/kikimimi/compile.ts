@@ -30,8 +30,8 @@ import { LESSONS, candoText, checkUnits, lessonIds, manifestOf, type UnitManifes
 import { BUILD_V } from './games/versions.ts';
 import { chapterPart, chapters, type ChapterEntry, type StoryEntry, type StorySource } from './story.ts';
 
-/** A unit's chunk's budget (gzipped; plan §8). */
-export const UNIT_MAX = 20 * 1024;
+/** A unit's chunk's budget (gzipped; plan §8: 20 KB, raised to 32 for the Japanese help, cja, why and ctx, ~0.3 KB an item). */
+export const UNIT_MAX = 32 * 1024;
 
 /** A unit's manifest as read: its file's name and its parsed YAML. */
 export interface UnitSource {

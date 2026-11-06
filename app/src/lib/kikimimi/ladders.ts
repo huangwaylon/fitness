@@ -302,7 +302,7 @@ function lineOf(src: LadderSrc): Item {
   if (typeof src.line === 'string') {
     const it = BANK4.find((x) => x.id === src.line);
     if (!it) throw new Error(`kikimimi: ladder ${src.id} climbs ${src.line}, not in level 4`);
-    const { choices: _, answer: __, focus: ___, ask: ____, cond: _____, ...rest } = it; // (rungs are clean: speed is the lever)
+    const { choices: _, answer: __, focus: ___, ask: ____, cond: _____, cja: _c, why: _w, ...rest } = it; // (rungs are clean: speed is the lever; their own asks, so not the line's help)
     return { ...rest, id: src.id, type: 'gist', ja: it.ja.split('→')[0].trim(), choices: [], answer: 0 };
   }
   const l = src.line;

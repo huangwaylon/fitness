@@ -3,7 +3,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
-import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitFocus, type Item, type ItemType, type Level } from './bank.ts';
+import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, helpProblems, isDialogue, jaLines, shuffleChoices, splitFocus, type Item, type ItemType, type Level } from './bank.ts';
+import { mulberry32 } from '#lib/random.ts';
 import { AUTHORED as BANK, BANK as PLAYED } from './source.ts';
 import { CAST, EXPOSURE } from './cast.ts';
 import { LEVELS, MIX } from './deck.ts';
@@ -36,6 +37,37 @@ const clipCap = (it: Item): number => {
 };
 
 describe('kikimimi bank', () => {
+  it('the Japanese help (cja, why, ctx): cja one per choice and no English, why ≤ 90 字, ctx one line ≤ 30 字', () => {
+    for (const it of [...BANK, ...UNIT_ITEMS]) expect(helpProblems(it), it.id).toEqual([]);
+    const ok = { choices: ['a', 'b', 'c'], cja: ['あ', '15ドル', 'う'], why: '「gonna」は going to です。', ctx: 'カフェで、店員が 話しかけてきました' };
+    expect(helpProblems(ok)).toEqual([]);
+    expect(helpProblems({ ...ok, cja: ['あ', 'い'] })).toEqual(['cja: 2 for 3 choices']);
+    expect(helpProblems({ ...ok, cja: ['あ', 'い', 'OK'] })).toEqual(['cja: English in 「OK」']);
+    expect(helpProblems({ ...ok, cja: ['あ', '', 'う'] })).toHaveLength(1);
+    expect(helpProblems({ ...ok, why: 'あ'.repeat(91) })).toHaveLength(1);
+    expect(helpProblems({ ...ok, why: 'It is the answer.' })).toHaveLength(1);
+    expect(helpProblems({ ...ok, ctx: 'あ'.repeat(31) })).toHaveLength(1);
+    expect(helpProblems({ ...ok, ctx: 'カフェで\n店員が' })).toHaveLength(1);
+  });
+
+  it('shuffleChoices keeps cja aligned with the choices; another choice set brings its own or none', () => {
+    const it0 = { ...BANK.find((it) => it.type === 'reply')!, choices: ['A', 'B', 'C', 'D'], answer: 2, cja: ['あ', 'い', 'う', 'え'] } as Item;
+    const ja: Record<string, string> = { A: 'あ', B: 'い', C: 'う', D: 'え' };
+    const orders = new Set<string>();
+    for (let seed = 0; seed < 20; seed++) {
+      const s = shuffleChoices(it0, mulberry32(seed));
+      orders.add(s.choices.join(''));
+      expect(s.cja, String(seed)).toEqual(s.choices.map((c) => ja[c]));
+      expect(s.choices[s.answer]).toBe('C');
+    }
+    expect(orders.size).toBeGreaterThan(1);
+    expect(shuffleChoices(it0, mulberry32(1), { choices: ['X', 'Y'], answer: 0 }).cja).toBeUndefined();
+    const tier = shuffleChoices(it0, mulberry32(1), { choices: ['X', 'Y'], answer: 0, cja: ['エックス', 'ワイ'] });
+    expect(tier.cja).toEqual(tier.choices.map((c) => (c === 'X' ? 'エックス' : 'ワイ')));
+    const { cja: _, ...plain } = it0;
+    expect('cja' in shuffleChoices(plain, mulberry32(1))).toBe(false);
+  });
+
   it('has unique, file-safe ids', () => {
     const ids = BANK.map((it) => it.id);
     expect(new Set(ids).size).toBe(ids.length);

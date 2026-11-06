@@ -7,7 +7,7 @@
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { ITEM_ID_RE } from '../contract/listen.ts';
 import { QUIZ_LVS } from '../contract/live-protocol.ts';
-import { CHANNELS, DIALOGUE_TYPES, ITEM_TYPES, REGISTERS, SCENE_IDS, clipIds, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
+import { CHANNELS, DIALOGUE_TYPES, ITEM_TYPES, REGISTERS, SCENE_IDS, clipIds, helpProblems, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
 import type { Ladder } from './ladder.ts';
 import { CAST_IDS } from './speech.ts';
 import { CORE, DOMAINS, LESSONS, LESSON_QS, STAGES, type Domain, type Lesson, type Stage } from './stages.ts';
@@ -60,6 +60,8 @@ export interface CanDo {
 interface ChoiceSet {
   choices: string[];
   answer: number;
+  /** Its choices in Japanese (bank.ts Item.cja). */
+  cja?: string[];
 }
 
 export interface UnitManifest {
@@ -139,6 +141,7 @@ function itemProblems(it: unknown): string[] {
   if (it.tts !== undefined && (!isStr(it.tts) || /\d/.test(it.tts))) at('tts: no digits');
   if (isStr(it.en) && /\d/.test(it.en) && it.tts === undefined && !isDialogue(it as Pick<Item, 'lines'>)) at('a digit in en needs a tts');
   if (it.note !== undefined && (!isStr(it.note) || chars(it.note) > NOTE_MAX)) at(`note ≤ ${NOTE_MAX} characters`);
+  for (const p of helpProblems(it)) at(p);
   if (it.type === 'word' && (!isStr(it.focus) || !isStr(it.en) || !it.en.includes(it.focus))) at('a word item’s focus is in en');
   if (it.scene !== undefined && !(SCENE_IDS as readonly unknown[]).includes(it.scene)) at(`scene ${String(it.scene)}`);
   if (it.channel !== undefined && !(CHANNELS as readonly unknown[]).includes(it.channel)) at(`channel ${String(it.channel)}`);
@@ -156,7 +159,8 @@ function itemProblems(it: unknown): string[] {
 }
 
 const choiceSetOk = (s: unknown): boolean => isObj(s) && strs(s.choices) && s.choices.length >= 2 && s.choices.length <= 4 &&
-  new Set(s.choices).size === s.choices.length && isInt(s.answer, 0, s.choices.length - 1) && Object.keys(s).every((k) => k === 'choices' || k === 'answer');
+  new Set(s.choices).size === s.choices.length && isInt(s.answer, 0, s.choices.length - 1) && Object.keys(s).every((k) => k === 'choices' || k === 'answer' || k === 'cja') &&
+  !helpProblems(s).length;
 
 /** A manifest as parsed (YAML), checked on its own; `file` its file name (`<unit>.yaml`). The checks against the bank
  *  and the other units are `checkUnits`'. */
@@ -226,7 +230,7 @@ export function manifestOf(raw: unknown, file: string): { unit: UnitManifest | n
     if (!isObj(raw.tiers)) at('tiers: {itemId: {easy?, hard?}}');
     else for (const [id, t] of Object.entries(raw.tiers)) {
       if (!isObj(t) || Object.keys(t).some((k) => k !== 'easy' && k !== 'hard') || (!t.easy && !t.hard)) at(`tiers.${id}: {easy?, hard?}`);
-      else for (const k of ['easy', 'hard'] as const) if (t[k] !== undefined && !choiceSetOk(t[k])) at(`tiers.${id}.${k}: {choices (2-4, distinct), answer}`);
+      else for (const k of ['easy', 'hard'] as const) if (t[k] !== undefined && !choiceSetOk(t[k])) at(`tiers.${id}.${k}: {choices (2-4, distinct), answer, cja? (one per choice, no English)}`);
     }
   }
   return { unit: errors.length ? null : (raw as unknown as UnitManifest), errors };

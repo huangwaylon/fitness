@@ -105,7 +105,14 @@ describe('units: the manifest', () => {
       ['unknown lesson', (r) => ((r.lessons as Raw).quiz = []), /unknown lesson/],
       ['tier shape', (r) => ((r.tiers as Raw)['r4-room-ready'] = { easy: { choices: ['a'], answer: 0 } }), /tiers/],
       ['tier answer', (r) => ((r.tiers as Raw)['r4-room-ready'] = { hard: { choices: ['a', 'b'], answer: 2 } }), /tiers/],
-      ['tier key', (r) => ((r.tiers as Raw)['r4-room-ready'] = { medium: { choices: ['a', 'b'], answer: 0 } }), /tiers/]
+      ['tier key', (r) => ((r.tiers as Raw)['r4-room-ready'] = { medium: { choices: ['a', 'b'], answer: 0 } }), /tiers/],
+      ['tier cja length', (r) => ((r.tiers as Raw)['r4-room-ready'] = { easy: { choices: ['a', 'b'], answer: 0, cja: ['あ'] } }), /tiers/],
+      ['cja length', (r) => ((r.items as Raw[])[0].cja = ['もちろん']), /cja: 1 for 3/],
+      ['cja English', (r) => ((r.items as Raw[])[0].cja = ['もちろん', 'きのう', 'on the left']), /cja: English/],
+      ['why long', (r) => ((r.items as Raw[])[0].why = 'あ'.repeat(91)), /why/],
+      ['why English only', (r) => ((r.items as Raw[])[0].why = 'Because it is right.'), /why/],
+      ['ctx long', (r) => ((r.items as Raw[])[0].ctx = 'あ'.repeat(31)), /ctx/],
+      ['ctx two lines', (r) => ((r.items as Raw[])[0].ctx = 'ホテルで\nスタッフが'), /ctx/]
     ];
     for (const [what, edit, want] of bad) {
       const r = hotel();
@@ -114,6 +121,12 @@ describe('units: the manifest', () => {
       expect(errs.some((e) => want.test(e)), `${what}: ${errs.join('; ')}`).toBe(true);
     }
     expect(errorsOf(hotel(), 'other.yaml').some((e) => /file's name/.test(e))).toBe(true);
+    // the Japanese help, well formed: no errors (a dialogue's too, and a tier's cja)
+    const r = hotel(), items = r.items as Raw[];
+    Object.assign(items[0], { cja: ['もちろん、大丈夫です。', '昨日でした。', '左です。'], why: '「I\'m afraid」は「あいにく」。断りの前置きです。', ctx: 'ホテルで、スタッフが 話しかけてきました' });
+    Object.assign(items[4], { cja: ['チェックアウトを遅らせたい', 'タクシー', '返金'], why: '正午まで いられるか 聞いています。', ctx: 'ホテルの フロントで' });
+    (r.tiers as Raw)['r4-room-ready'] = { easy: { choices: ['OK, I can wait.', 'It is a big room.'], answer: 0, cja: ['待てます。', '大きい部屋です。'] } };
+    expect(errorsOf(r)).toEqual([]);
     expect(errorsOf(null as unknown as Raw, 'x.yaml')).toEqual(['x.yaml: not a unit']);
   });
 
@@ -305,7 +318,7 @@ describe('units: compiled', () => {
     expect(() => compile(CLIPS, WORDS, [src({ ...hotel(), host: 'nobody' })])).toThrow(/host nobody/);
   });
 
-  it('budgets: a unit’s chunk ≤ 20 KB gzipped; the path index ≤ 12 KB gzipped at 200 units', () => {
+  it('budgets: a unit’s chunk ≤ 32 KB gzipped; the path index ≤ 12 KB gzipped at 200 units', () => {
     const many = [...synthetic('kawa', 50), ...synthetic('mori', 50), ...synthetic('yama', 50), ...synthetic('hoshi', 50)].map((r) => src(r));
     const files = compile(CLIPS, WORDS, many);
     const index = JSON.parse(files.get('index.json')!);
