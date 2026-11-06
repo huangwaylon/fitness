@@ -25,7 +25,7 @@
     { key: 'tod', values: TODS }
   ];
   /** What's showing, in the folded row. */
-  const summary = $derived(GROUPS.flatMap((g) => (choice[g.key] === null ? [] : [previewLabel(g.key, choice[g.key]!, view)])).join(' · ') || t('preview.auto'));
+  const summary = $derived(GROUPS.flatMap((g) => (choice[g.key] === null ? [] : [previewLabel(g.key, choice[g.key]!, view, 'season')])).join(' · ') || t('preview.auto'));
   let open = $state(false);
 </script>
 
@@ -47,7 +47,7 @@
             {@const sel = choice[g.key] === v}
             <button type="button" class="chip" role="radio" aria-checked={sel} tabindex={sel ? 0 : -1} data-preview={`${g.key}:${v ?? 'auto'}`}
               data-sfx={sel ? 'none' : 'tick'} onclick={() => !sel && setPreview({ [g.key]: v })}>
-              {v === null ? t('preview.auto') : previewLabel(g.key, v, view)}
+              {v === null ? t('preview.auto') : previewLabel(g.key, v, view, 'season')}
             </button>
           {/each}
         </div>

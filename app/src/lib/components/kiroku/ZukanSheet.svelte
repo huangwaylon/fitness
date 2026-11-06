@@ -54,8 +54,8 @@
   });
 </script>
 
-<Sheet bind:open label={t('zukan.title')} variant="pop" onclose={closed}>
-  <div class="titlebar"><NavBar title={kind ? t(`zukan.kind.${kind}`) : t('zukan.title')} onback={kind ? back : null} onclose={() => (open = false)} sfx="self" /></div>
+<Sheet bind:open label={t('title.zukan')} variant="pop" onclose={closed}>
+  <div class="titlebar"><NavBar title={kind ? t(`zukan.kind.${kind}`) : t('title.zukan')} onback={kind ? back : null} onclose={() => (open = false)} sfx="self" /></div>
   <div class="zs-body" class:fill={kind !== null} data-zukan-sheet>
     {#if m && finds}
       {#key kind}

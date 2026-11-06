@@ -35,8 +35,8 @@
   });
 </script>
 
-<Sheet bind:open label={t('island.health')} variant="pop" onclose={closed}>
-  <div class="titlebar"><NavBar title={t('island.health')} {lead} onclose={() => (open = false)} sfx="self" /></div>
+<Sheet bind:open label={t('title.health')} variant="pop" onclose={closed}>
+  <div class="titlebar"><NavBar title={t('title.health')} {lead} onclose={() => (open = false)} sfx="self" /></div>
   <div class="hs-body" data-health-sheet>
     {#if week.view}
       {#await loadHealth() then { default: Health }}<Health bind:lead />{/await}

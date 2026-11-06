@@ -38,7 +38,7 @@
   let savedTop = 0;
 
   const view = $derived(week.view);
-  const title = $derived(push ? t(`panel.${push}`) : t('island.settings'));
+  const title = $derived(push ? t(`panel.${push}`) : t('title.settings'));
   /** This phone's villager (the guest's own on the guest's phone). */
   const me = $derived(view ? mine(view) : null);
   const myVillager = $derived(me ? resolveLook({ villager: me.villager, person: me.who }).id : null);
@@ -87,7 +87,7 @@
   });
 </script>
 
-<Sheet bind:open label={t('island.settings')} variant="pop" onclose={closed}>
+<Sheet bind:open label={t('title.settings')} variant="pop" onclose={closed}>
   <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (open = false)} sfx="self" /></div>
   <div class="panel-body" class:fill={push !== null} data-settings bind:this={body}>
     {#if push === 'look' && view}

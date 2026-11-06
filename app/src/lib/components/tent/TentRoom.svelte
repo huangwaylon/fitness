@@ -817,7 +817,7 @@
     {#if !editing && mine}
       <button type="button" class="edit look" data-home-look data-sfx="open" onclick={() => (picking = true)}>
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11 12 4l9 7M5.5 9.5V20h13V9.5" /><path d="M10 20v-5h4v5" /></svg>
-        <span>{t('homes.title')}</span>
+        <span>{t('tent.homeLook')}</span>
       </button>
     {/if}
     {#if !editing && canEdit}
