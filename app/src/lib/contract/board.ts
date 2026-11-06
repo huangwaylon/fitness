@@ -144,11 +144,20 @@ export function boardAccept(held: readonly BoardEntry[] | ReadonlyMap<string, Bo
   return { v: 'append', drop: null };
 }
 
-/** The board as the record keeps it, from its ops in the order they came (the model's rows, then this phone's queued
- *  ones): each taken or not by the record's rules (`boardAccept`), so a phone shows what the record will. */
-export function boardFold(entries: Iterable<BoardEntry>): Map<string, BoardEntry> {
+/** A row as the model holds it: the record's, or this phone's not yet sent (`queued`). */
+export type BoardRow = BoardEntry & { queued?: true };
+
+/** The board as the record keeps it, from the model's rows in the order they came: the record's own taken as they are
+ *  (each post's latest: merged), this phone's queued ones through the record's rules (`boardAccept`), so a phone shows
+ *  what the record will. (The record's rows aren't judged again: it keeps a post's latest row only, so an edited post's
+ *  first posting, which the rules need, is gone from them.) */
+export function boardFold(rows: Iterable<BoardRow>): Map<string, BoardEntry> {
   const m = new Map<string, BoardEntry>();
-  for (const e of entries) {
+  for (const e of rows) {
+    if (!e.queued) {
+      mergeBoard(m, e);
+      continue;
+    }
     const r = boardAccept(m, e);
     if (r.v !== 'append') continue;
     if (r.drop) m.delete(r.drop);

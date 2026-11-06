@@ -77,6 +77,9 @@ seconds); the board follows `world.rest.three` (`world.three` isn't reactive).
   ≤ 100 characters); an edit only by the post's author; a removal by its author or a member; an op on a post it doesn't
   hold is acknowledged and dropped unless it is a new post; **at most 50 posts** kept: a new one past them drops the
   oldest (by `p`). The phones show the same 50.
+- The phone (`boardFold`): the record's rows taken as they are (merged: an edited post is only its edit's row, its
+  first posting replaced), only this phone's queued ops judged by the record's rules (`boardAccept`), as the packing
+  list's `packFold`.
 - Live: a post goes to the record at once; the record's notice reaches every open phone over the room, which fetch it
   (the room's 256-byte messages are too small for a post's text, so there is no live intent of its own).
 - The dump carries the `board` rows like every event.
