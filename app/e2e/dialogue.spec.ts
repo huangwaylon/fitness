@@ -1,6 +1,6 @@
 // NH's dialogue box (docs/design.md "Dialogue"): the speech balloon and the catch plate type their text in, two lines a
 // page; a tap finishes the page, the next turns it (a ▼ bobs only while a page follows), the last tap closes it.
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { reelOnBite, tapFigure, toTheWater } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

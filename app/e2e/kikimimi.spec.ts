@@ -5,7 +5,7 @@
 // つぎへ, B taps よみおわった and A's つぎへ counts it. `?kikimimi=fast` shortens the answer window (session.ts
 // FAST_WINDOWS: 8 s, a tab behind is throttled) on every phone. The logic tier: no clip has to sound (a
 // headless browser's audio is a null sink), the schedule is the relay clock's.
-import { expect, test, type BrowserContext, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

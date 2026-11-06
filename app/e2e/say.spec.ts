@@ -5,7 +5,7 @@
 // walks anyone, never sits under the HUD, closes on ✕, Esc or a tap elsewhere; the button hides under a sheet and in
 // もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
 //   SHOTS=<dir> npm run e2e -- say      also writes iPhone-sized screenshots to <dir>/say-*.png
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { lawnTap, quiet } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';

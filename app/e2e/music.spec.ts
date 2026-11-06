@@ -1,7 +1,7 @@
 // Event music and cut-ins in the built app (docs/design.md "Event music", "K.K. Slider"): on an event's date and hour
 // its track plays instead of the hour's; the wasps' chase and sting cut in over the island's music; a tap on K.K. plays
 // one of his songs. Dates are mocked with ?date= (Tokyo). Checked by the files the engine fetches.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { BASE, is3d, quiet } from './island.ts';
 import { hudMenu } from './hud.ts';
 

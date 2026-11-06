@@ -2,7 +2,7 @@
 // pop up to pop up": once the return from the old ごほうび page). No tap falls through to the HUD target under the
 // finger, with real touch taps (on a phone with a notch the ✕ sits near the HUD) and a pointerdown → pointerup →
 // click sequence, from the health popup's ✕ nor from the panel's.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { hudBells, hudMenu, openRewards } from './hud.ts';
 
 const panel = (page: Page) => page.locator('dialog[open]');

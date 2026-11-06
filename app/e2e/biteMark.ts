@@ -1,6 +1,6 @@
 // The bite's 「！」 as the 3D island draws it (world3d/biteMark.ts: __world3d.bite(slot), canvas px), for the specs that
 // fish: where it is against its villager's head on screen.
-import type { Page } from '@playwright/test';
+import type { Page } from './fixtures.ts';
 
 export type Mark = {
   shown: boolean;

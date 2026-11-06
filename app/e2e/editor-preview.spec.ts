@@ -3,7 +3,7 @@
 // 3d editor"): a pond put down on the plan is the island's pond there (its water, bed and stones), K.K. sits on his
 // stool and goes with it when it's moved and turned, a drag on open ground pans the phone view (kept over the island)
 // and ⌖ puts it back, a press on a piece is still the もようがえ's; and a still preview draws nothing.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 

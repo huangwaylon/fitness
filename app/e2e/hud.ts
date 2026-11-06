@@ -2,7 +2,7 @@
 // (NH's leaf, at the screen's side) drops 「ベル 121」 (→ the panel, ごほうび), ずかん, えいご ききとり and せってい; each opens
 // its own sheet.
 // Shared by the specs that reach any of them.
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page } from './fixtures.ts';
 
 /** The menu's leaf (aria-expanded). */
 export const hudMenu = (page: Page) => page.locator('[data-hud-menu]');

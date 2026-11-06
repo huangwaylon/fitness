@@ -2,7 +2,7 @@
 // its face); a note written there is on the board, on every phone at once (the demo's tabs share
 // the record's rows through localStorage, as phones share the record), with a 「！」 over the board for the others; an
 // author edits and takes down their own, a member takes down anyone's, the guest posts and changes only its own.
-import { expect, test, type BrowserContext, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page, PINNED_DATE } from './fixtures.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { hudMenu } from './hud.ts';
 
@@ -182,8 +182,8 @@ test('「もどる」 sits under the HUD, never over it, and the face under both
 // ---- the record's posts on a paired phone (the relay mocked: its snapshot holds one of うめ's notes) ----
 const RELAY = 'https://island-fund-relay.island-fund-relay.workers.dev';
 async function pairedWithPost(page: Page) {
-  // noon today in Tokyo, the scene's clock pinned there (a run at night had my villager asleep, so it never walked up)
-  const day = new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
+  // the pinned day's noon (e2e/fixtures.ts; a run at night had my villager asleep, so it never walked up)
+  const day = PINNED_DATE.slice(0, 10);
   const now = Date.parse(`${day}T12:00:00+09:00`), at = now - 3_600_000;
   const iso = (ms: number) => new Date(ms).toISOString();
   const snap = {

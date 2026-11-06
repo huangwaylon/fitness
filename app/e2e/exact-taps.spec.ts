@@ -5,7 +5,7 @@
 // went through the door (ui-state/exactTaps.ts: the click from the pointerup's own point). And a beach find's
 // thumb-size tap box (hitbox.ts pick) is the sea's where it reaches over the water: a tap on the sea beside a dig spot
 // by the back beach casts. Real touches (page.touchscreen.tap), a pause between them past a double tap's time.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
 import { is3d, quiet } from './island';
 

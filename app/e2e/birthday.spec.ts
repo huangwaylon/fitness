@@ -2,7 +2,7 @@
 // villagers, the cake in front of centre stage (world.ts CAKE, the plaza on the front lawn; a tap: its music box, the candles out for the day), confetti the first
 // time the island opens, しずえ's line; an NH villager's own birthday puts the hat on that villager and a line in its
 // chats. Nothing over a control; no ベル.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures.ts';
 import { camTo, controlsUnder, geo, offFrom, sawIt, stageCam, tapFigure, watchFor } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

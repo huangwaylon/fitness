@@ -3,7 +3,7 @@
 // transition from a flat offset at its spot's scale, 30–110 px off the model as a percher flew in to its trunk, so a tap
 // on what's drawn startled it off; my villager in front of a bug took the tap; and a tarantula's rear (its first tap)
 // showed nothing in 3D, so the second tap came while it was reared and it charged off every time.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { is3d } from './island';
 
 test.use({ viewport: { width: 393, height: 852 } });

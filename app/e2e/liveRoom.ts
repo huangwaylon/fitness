@@ -13,7 +13,7 @@
 //                                                one-way latency both ways, the room's real hello sweep
 // Each page's socket keeps a browser's `bufferedAmount` (Playwright's routed socket says 0 always): a send adds its
 // bytes at once and they drain a task later, as Chromium and WebKit do, so a burst of sends in one task sees it grow.
-import type { BrowserContext, Page, WebSocketRoute } from '@playwright/test';
+import { pinnedClock, type BrowserContext, type Page, type WebSocketRoute } from './fixtures.ts';
 import { HELLO_MS, RoomCore, type Meta } from '../../relay/src/room.ts';
 import { StoreCore } from '../../relay/src/store.ts';
 import { memSql } from '../../relay/test/sqlite.ts';
@@ -43,18 +43,21 @@ export const DEMO_CTX = { viewport: { width: 390, height: 844 }, bypassCSP: true
 export function newIsland() {
   let socks: Sock[] = [];
   const db = memSql();
+  // the pinned time, the room's and its phones' devices' (e2e/fixtures.ts)
+  const clock = pinnedClock(), now = clock.now;
   const room: RoomCore<Sock> = new RoomCore<Sock>({
     sockets: () => socks.filter((s) => !s.closed),
     meta: (s) => s.meta,
     setMeta: (s, m) => void (s.meta = m),
     keys: KEYS,
-    now: () => Date.now(),
+    now,
     save: () => {}
   });
-  const store = new StoreCore({ sql: db.sql, tx: db.tx, keys: KEYS, now: () => Date.now(), notify: (n) => void room.notify(n) });
+  const store = new StoreCore({ sql: db.sql, tx: db.tx, keys: KEYS, now, notify: (n) => void room.notify(n) });
   /** Per phone: offline (no socket, no `/api`). */
   const offlineOf = new Set<Who>();
   const fetchesOf: Record<Who, number> = { A: 0, B: 0, G: 0 };
+  let events = 0; // (event()'s ids: unique in this room's store, the same every run)
   /** What each phone said to the room, by kind (pings, hellos, intents). */
   const saidOf: Record<Who, Record<string, number>> = { A: {}, B: {}, G: {} };
   /** `drop(who, text)`: the room never hears that message (no ack, no word back); `lag`: ms each way; `sweep`: the room
@@ -119,6 +122,7 @@ export function newIsland() {
     keys: KEYS,
     /** A context's phones paired as `who` (the live app, its record and its socket this island's). */
     async pair(context: BrowserContext, who: Who) {
+      await clock.device(context);
       await context.addInitScript(([key, me]) => (localStorage.setItem('island.key', key), localStorage.setItem('island.me', JSON.stringify(me))), [KEY_OF[who], who] as const);
       await context.routeWebSocket(/\/room$/, (ws) => socket(who, ws));
       await context.addInitScript(buffered);
@@ -126,6 +130,7 @@ export function newIsland() {
     },
     /** A context's demo phones (`demoUrl(who)`) talking to this island's room. */
     async demo(context: BrowserContext, who: Who) {
+      await clock.device(context);
       await context.routeWebSocket(DEMO_WS, (ws) => socket(who, ws));
       await context.addInitScript(buffered);
     },
@@ -155,6 +160,8 @@ export function newIsland() {
         }
       } else offlineOf.delete(who);
     },
+    /** The room's clock (ms): the phones' devices' too. */
+    now,
     /** How many record fetches (`snapshot`) `who`'s phones made. */
     fetches: (who: Who) => fetchesOf[who],
     /** What `who`'s phones said to the room, by kind. */
@@ -163,7 +170,7 @@ export function newIsland() {
     sockets: (who: Who) => socks.filter((s) => s.who === who && !s.closed && s.meta?.who === who).length,
     /** An event straight to the record as `who`'s phone would send it (the room pushes `changed` to the phones). */
     event(who: Who, type: string, data: Record<string, unknown>) {
-      return store.handle({ key: KEY_OF[who], action: 'event', id: `e2e${Math.random().toString(36).slice(2, 10)}`, type, data }, 100);
+      return store.handle({ key: KEY_OF[who], action: 'event', id: `e2e${++events}`, type, data }, 100);
     },
     reset() {
       socks = [];

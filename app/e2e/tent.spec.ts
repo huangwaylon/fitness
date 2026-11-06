@@ -1,7 +1,7 @@
 // The tent (docs/design.md "The tent"): the campsite's door opens its inside, NH's largest room in 3D, as a screen of
 // its own: the room's code and three.js come only then (the island never loads them); my villager walks where the
 // floor is tapped; the doormat and ‹ 島へ go back out, to the island as it was.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { campDoor, camTo, geo, is3d, islandURL, tapOn } from './island.ts';
 
 /** The edit tray open, and the room re-centred above it (a tap's px only holds once the camera is at rest). */

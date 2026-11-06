@@ -1,6 +1,6 @@
 // The museum (docs/design.md "The museum"): its inside (the hall and its two wings) with every fish and bug anyone has
 // found on show, a creature's card. In by its door and back out: positions.spec (both islands), leaks.spec.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { balloonState, expectWhole } from './balloon.ts';
 
 const MUSEUM = 'museum?demo&date=2026-11-04T12:00';

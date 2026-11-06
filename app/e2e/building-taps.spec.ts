@@ -6,7 +6,7 @@
 // short of its roof. Now it's its model's silhouette. Every point of the screen where the ground under it is water
 // that no building stands in front of (beside its footprint, or before it) must not be a building's, at the whole
 // island's zoom and zoomed in, all down the island; and a far building's, past the horizon, nowhere.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
 import { is3d, settled } from './island';
 import { layoutOpOf, mergeLayout, type LayoutEntry } from '../src/lib/contract/layout.ts';

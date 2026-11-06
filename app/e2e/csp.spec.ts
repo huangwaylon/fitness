@@ -2,7 +2,7 @@
 // Pages serves it; the same policy in index.html's <meta>, vite.config.ts `csp`): a click-through of the island, its
 // sheets, the music, the shop, the museum, the tent and the editor with no violation (every `securitypolicyviolation`
 // event and every console line of a refused load, the page's and its workers').
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
 import { is3d } from './island.ts';
 

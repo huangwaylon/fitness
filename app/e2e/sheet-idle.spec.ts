@@ -1,7 +1,7 @@
 // Under a full-height sheet (けんこう, ごはん: docs/design.md "Island scene") the island does nothing: the 3D island
 // draws no frame (its engine paused) and no CSS animation runs in the page but the sheet's own, so nothing behind the
 // sheet asks the compositor for frames while someone reads their charts; closed, the island runs again.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 type W3 = { loaded(): boolean; stats(): { frames: number; paused: boolean } };
 const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toString()})(window.__world3d)`) as Promise<R>;

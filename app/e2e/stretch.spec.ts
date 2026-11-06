@@ -5,7 +5,7 @@
 // ふたりでぜんぶ, the pair's) and in today's total (ごほうび's 「きょうの ベル +N」, the HUD menu's ベル row's label);
 // in ごほうび's ベル ledger as its own line per day and per person, and in the day. The demo's days (seeded, ?date=):
 // 11-03 ウェイ steps at 1.5× (3 goals + 1); 12-07 うめ all four, Move, Stand and steps at 1.5× (4 + 2, capped).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { hudBells, hudMenu, openRewards } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });

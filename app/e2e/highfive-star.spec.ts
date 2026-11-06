@@ -3,7 +3,7 @@
 // flourish (world3d/effects.ts `zap`: a star in code, unlit, warmed with the island): before, it was a lit model
 // instance of the island's things, loaded on first use (the first high five after opening had none: it came after the
 // flight was over) and drawn black (no normals, its colours ignored). Two tabs of the demo, its relay between them.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { quiet } from './island.ts';
 
 const q = (who: 'A' | 'B') => `?demo&date=2026-11-04T12:00&critter=none${who === 'B' ? '&as=B' : ''}`;

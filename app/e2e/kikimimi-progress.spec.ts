@@ -3,7 +3,7 @@
 // sub-skills' bars, the trend, this week, the couple summary, the recommendations), and a recommendation's start or
 // 「にがて れんしゅう」 begins a solo game of my weak spots. The logic tier (no clip has to sound). Screenshots to
 // /tmp/kikimimi-shots/progress/ with KIKI_SHOTS=1.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

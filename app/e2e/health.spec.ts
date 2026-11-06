@@ -2,7 +2,7 @@
 // page through the history (‹ ›, a drag on a chart, きょう), tap a bar for its numbers, switch whose data (one person
 // at a time: whose data in the title bar left of けんこう, the かつどう / からだ switch with the period beside it), each
 // goal at its card's upper right (setting them: demo.spec); on `?demo` and a longer `?demo&weeks=60`, at 390 and 320.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 const sheet = (page: Page) => page.locator('dialog[open]');
 

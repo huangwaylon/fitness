@@ -2,7 +2,7 @@
 // first tap, where it is, with no jump of the list (the user: "I can't select the bottom leftmost item ... It jumps
 // the list to the right"); the floor's middle sits at the middle of what the controls leave of the screen, at NH's view,
 // after a turn and back, and with the edit tray open.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
 type C = { at: [number, number]; band: [number, number] };

@@ -2,7 +2,7 @@
 // network; once installed, a navigation is this version's cached shell at once (the network not waited on, however
 // slow); a deploy (a new worker, _app/version.json naming a new version) reloads the page only once the new worker
 // controls it, so the reload is served the new build's own shell.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
 
 test.use({ serviceWorkers: 'allow' });

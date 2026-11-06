@@ -1,7 +1,7 @@
 // Weather days in the built app (docs/design.md "Weather"): forced with ?weather= (dev or ?demo). Rain and snow fall
 // in the 3D island's world (world3d/precip.ts: `__world3d.precip()`, one draw call an effect), under every control, the ambience gets its rain, footsteps splash, no shooting stars or fireflies;
 // the rainbow, the fog and the aurora show at their moments. Screenshots at 390 and 320.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
 
 

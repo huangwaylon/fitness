@@ -3,7 +3,7 @@
 // its head, through the room's camera), following it as it walks, gone after ~4 s. In the tent, うめ's house and for
 // the guest alike; hidden in もようがえ. Who else sees it (only the phones in the same room): e2e/sync-harness.spec.ts.
 //   SHOTS=<dir> npm run e2e -- say-rooms      also writes iPhone-sized screenshots to <dir>/say-room-*.png
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { sayOwn } from './say.ts';
 import { balloonState, expectWhole } from './balloon.ts';
 

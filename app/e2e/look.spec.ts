@@ -5,7 +5,7 @@
 // with とりけす. The コーデ (save, wear, うわがき, なまえ, けす with とりけす, full at 20) go out as they're made, as one
 // `savedLooks` pref; いつもの is one tap back (no pref: null). What's kept is on the record: a phone opening later, and
 // the partner's, have it. The guest has its own look and コーデ, the same closet; its いつもの is its villager.
-import { expect, test, type Browser, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { DEFAULT_LOOKS } from '../src/lib/contract/look.ts';

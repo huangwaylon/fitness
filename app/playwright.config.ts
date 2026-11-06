@@ -2,7 +2,8 @@
 // Pages (scripts/serve-build.ts), in Playwright's WebKit as an iPhone 15 — the users' phones are an iPhone 15 and an iPhone 16 on
 // Safari, and Playwright's two profiles have the same 393×659 viewport, so one project covers both — and in Chromium.
 // `npm run e2e -- --project=webkit`.
-// Rules for stable specs: docs/ops/testing.md.
+// Rules for stable specs: docs/ops/testing.md. Specs import `test` from e2e/fixtures.ts: the scene clock pinned, no network
+// outside the local preview (docs/ops/testing.md "Hermetic").
 import { defineConfig, devices } from '@playwright/test';
 
 const PORT = Number(process.env.E2E_PORT ?? 4173);
@@ -42,7 +43,17 @@ export default defineConfig({
         channel: process.env.CI ? undefined : 'chrome',
         // the tent's room is WebGL: headless Chromium draws it in software (SwiftShader)
         // (E2E_SWIFTSHADER=1: software GL on a Mac too, as CI's Linux runners draw: a slow GPU's timing)
-        launchOptions: { args: ['--enable-unsafe-swiftshader', ...(process.env.E2E_SWIFTSHADER ? ['--use-angle=swiftshader', '--use-gl=angle'] : [])] }
+        // --mute-audio: never a sound out loud from a test (the music, K.K., the effects play on a dev's Mac too);
+        // --host-resolver-rules: no host but the local preview resolves (docs/ops/testing.md "Hermetic"; e2e/fixtures.ts
+        // fails a test that tried, in every browser), but for the real relay's harness (RELAY_E2E=1)
+        launchOptions: {
+          args: [
+            '--enable-unsafe-swiftshader',
+            '--mute-audio',
+            ...(process.env.RELAY_E2E ? [] : ['--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost']),
+            ...(process.env.E2E_SWIFTSHADER ? ['--use-angle=swiftshader', '--use-gl=angle'] : [])
+          ]
+        }
       }
     }
   ],

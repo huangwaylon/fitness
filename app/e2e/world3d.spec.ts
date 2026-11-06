@@ -1,7 +1,7 @@
 // The island in 3D (docs/decisions.md "The island in 3D"): it draws its canvas under the DOM island, a tap on open
 // lawn walks my villager, one finger scrolls along the island only (z, never x), two pinch the zoom, and /world3d (the
 // POC's address) opens it.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { openRewards } from './hud.ts';
 import { islandURL, lawnTap } from './island.ts';
 

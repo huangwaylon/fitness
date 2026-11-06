@@ -2,7 +2,7 @@
 // island in 3D, a tap pops it and its present falls to open ground in the front of the view; a fish shadow can be
 // fished (caught on the bite, scared off by an early tap); a bug can be netted. None of it changes ベル, opens a sheet or
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { plateOnly, reelOnBite, toTheWater } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';

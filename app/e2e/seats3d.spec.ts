@@ -1,7 +1,7 @@
 // Sitting and lying on NH's furniture with NH's 3D villagers (villager3d seats: the seat and bed anchors from the
 // models' geometry, villager3d sitAt / lieAt): in the tent, my villager sits on a chair, the log sofa and a stool and
 // lies on the cot and the log bed; its hips on the seat, its body inside the piece's bounds, never through it.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { geo } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

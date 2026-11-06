@@ -1,6 +1,6 @@
 // つうち is gone (2026-11-02): せってい has no つうち, nothing asks for notification permission or subscribes, and nothing
 // is sent to the relay's old /push/* routes (gone too, 2026-11-05: every phone let its subscription go by then).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 /** The page's browser with a service worker holding a subscription (Playwright blocks real ones), and a probe. */

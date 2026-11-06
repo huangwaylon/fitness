@@ -1,6 +1,6 @@
 // せってい → フレームレート (docs/design.md "Frame rate"): 30 by default, 60 kept on this phone (localStorage), and the
 // 3D island paced to it: at 30 never two frames a display frame apart while the camera moves.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
 
 /** The island's frames drawn while the camera pans each display frame for `ms`: the median gap between them (ms). */

@@ -1,7 +1,7 @@
 // Villager taps (docs/design.md "Villager taps"): a tap on my villager squishes it, nothing more (no Talk balloon, no
 // sheet, no picker: the phrases open from the say button, e2e/say.spec.ts); a tap on the partner is a high-five (no
 // card, no balloon: e2e/demo.spec.ts). No ベル.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures.ts';
 import { quiet } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

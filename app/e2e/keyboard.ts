@@ -3,7 +3,7 @@
 // 15's keyboard with its suggestions bar, KEYBOARD_PX), `keyboard(page, 0)` hides it. As on iOS the layout viewport
 // stays (documentElement.clientHeight, a fixed box's inset 0) while visualViewport.height and innerHeight shrink, so a
 // view that reads `innerHeight − vv.height` sees no keyboard, as it did on the phones.
-import type { Page } from '@playwright/test';
+import type { Page } from './fixtures.ts';
 
 /** An iPhone 15's keyboard (Japanese or English) with its suggestions bar, in CSS px. */
 export const KEYBOARD_PX = 336;

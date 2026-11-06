@@ -1,6 +1,6 @@
 // The island's ambience in the built app (docs/design.md "Ambience"): with ミュージック on, the procedural beds for the
 // Tokyo hour and season sound under the music after the first tap. Read from the engine's test hook (window.__ambient).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });

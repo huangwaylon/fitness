@@ -1,6 +1,6 @@
 // Saying something (docs/design.md "Villager taps"): only my own words, no presets. Shared by say.spec.ts,
 // say-rooms.spec.ts and sync-harness.spec.ts.
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page } from './fixtures.ts';
 
 /** Open the picker and write `text` (straight on the field when nothing's kept yet, else through じぶんで かく…), Enter
  *  sends; the picker is closed when this returns. */

@@ -8,7 +8,7 @@
 //   E13  both phones move a different piece onto one tile at once: the later op's phone moves its piece off
 //   burst 40 layout ops at once (the editor's save): what each phone's main thread spends on them
 //   tabs two tabs of one phone (the second's socket replaces the first's): neither's layout ops written over
-import { expect, test, type Browser, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { DEMO_CTX, newIsland, setVisible } from './liveRoom.ts';
 import { hudMenu } from './hud.ts';
 import { ROOM_PROTOCOL, ticketOwner } from '../src/lib/contract/ticket.ts';
@@ -78,11 +78,11 @@ test('a paired phone’s socket offers the room an admission ticket the relay’
   const offered = () => a.evaluate(() => (window as unknown as { __wsProtocols: (string[] | null)[] }).__wsProtocols);
   const [first] = await offered();
   expect(first?.[0]).toBe(ROOM_PROTOCOL);
-  expect(await ticketOwner(first![1], island.keys, Date.now())).toBe('A');
+  expect(await ticketOwner(first![1], island.keys, island.now())).toBe('A');
   island.drop('A', 1012);
   await expect.poll(() => island.sockets('A'), { timeout: 10_000 }).toBe(1);
   const again = (await offered()).at(-1)!;
-  expect(await ticketOwner(again[1], island.keys, Date.now())).toBe('A');
+  expect(await ticketOwner(again[1], island.keys, island.now())).toBe('A');
   expect(again[1]).not.toBe(first![1]);
 });
 

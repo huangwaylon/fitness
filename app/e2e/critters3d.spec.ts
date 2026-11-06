@@ -4,7 +4,7 @@
 // world3d/things.ts) and out where they go; they move smoothly (no jump between frames, glide.ts); my cast's fish turns
 // to the float and each nibble is its nose touching it; scared, it darts off fast and fades as it goes. The game's state
 // says where each model is (__world3d.where: its spot, its fade, its scale), sampled every frame in the page.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { is3d, toTheWater, w3 } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

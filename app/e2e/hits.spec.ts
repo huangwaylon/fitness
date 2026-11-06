@@ -2,7 +2,7 @@
 // base, not just its top (the user: "only tapping the top of the trees works; the base of the tree is unresponsive",
 // "the tap boxes of items seem very small and typically skewed towards the top"). Each kind is tapped at both points
 // and answers there; nothing walks.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { quiet } from './island.ts';
 import { hudMenu } from './hud.ts';
 

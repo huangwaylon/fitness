@@ -1,7 +1,7 @@
 // The tent's surfaces (docs/design.md "The tent", "Table tops"): every piece NH calls a surface holds small things on its
 // top, at its model's top (not its bounds): a low table, a bookshelf, a chest, the log shelves (whose bounds are their
 // ornaments). A small thing held over one goes on it, stands at that height, and the piece won't go away under it.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import items from '../src/lib/components/tent/items.json' with { type: 'json' };
 
 test.use({ viewport: { width: 393, height: 852 } });

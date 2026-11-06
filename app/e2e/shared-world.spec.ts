@@ -3,7 +3,7 @@
 // the relay (sync/live-local.ts plays the room: first claim wins, the day's world kept for a tab opening later).
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { geo, openNear, plateOnly, quiet } from './island.ts';
 import { hudMenu } from './hud.ts';
 import { SPEED } from '../src/lib/components/island/speed.ts';

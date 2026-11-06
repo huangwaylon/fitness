@@ -2,7 +2,7 @@
 // the top of the panel while the roster's heads scroll under it, on a small phone too, and with the on-screen keyboard
 // up (iOS: --kb; Android: a shorter screen): the stage is a 76 px strip then. A pick swaps the stage; nothing is sent
 // until the level is left.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 

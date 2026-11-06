@@ -1,7 +1,7 @@
 // Stale-build recovery: a lazy chunk that fails to load (the deploy replaced it) reloads the page once into the newer
 // deployed build, and the next open works; the failed import is not remembered. Not on a page that is leaving (its
 // every load fails), nor offline, nor when the build deployed is the one running (a reload into it cures nothing).
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures.ts';
 import { is3d } from './island.ts';
 import { hudBells, hudMenu, openRewards, unfoldMenu } from './hud.ts';
 

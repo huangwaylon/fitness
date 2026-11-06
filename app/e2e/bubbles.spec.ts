@@ -1,7 +1,7 @@
 // Speech balloons by their speakers (docs/design.md "Dialogue"): every speaker's balloon stands by them, the tail at
 // them, never over the HUD, never off screen, never over the speaker's face; it follows a speaker who moves. The bug: a
 // visitor's balloon floated above a building (the museum then), 100px+ off their head.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { expectWhole, fingers, liftFingers, spreading } from './balloon.ts';
 import { camTo, tapFigure } from './island.ts';
 

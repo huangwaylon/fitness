@@ -1,7 +1,7 @@
 // ごはん (docs/design.md "Gohan"): the meal log, the HUD cluster's bowl (between the dumbbell and the leaf). Open it, search ごはん, add
 // 茶碗1杯 to 朝ごはん and see the day's total go up; another person's day is read-only (no ＋, no entry to tap), and the
 // guest sees the members' meals and logs its own. On `?demo` (its meal rows: model/food.ts over store/demo/rows.ts).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 const DATE = '2026-11-04T12:30';
 const sheet = (page: Page) => page.locator('dialog[open]');

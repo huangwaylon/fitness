@@ -2,7 +2,7 @@
 // [the bowl] [the menu], top right) drops 「ベル 121」, ずかん and せってい under it, right-aligned; folded by default (the
 // pills hidden), it folds again on a second tap, a tap elsewhere, Esc, or a pick; the ベル row opens the panel
 // (ごほうび), the others their own sheet (the ずかん's kinds, せってい's sections).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudBells, hudMenu, unfoldMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

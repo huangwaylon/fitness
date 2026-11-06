@@ -4,7 +4,7 @@
 // shadow at it is the angler's while it is (another's float by it, it never notices). A phone coming while a line is
 // out hears its step again; an angler whose phone goes is no longer fishing. The demo's players are two
 // tabs of one browser (sync/live-local.ts plays the room).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { islandURL } from './island.ts';
 import { is3d, reelOnBite, sawIt, tapOn, toTheWater, watchFor } from './island';
 import { overHead, type Mark } from './biteMark.ts';
