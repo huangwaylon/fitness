@@ -29,5 +29,5 @@ export function stageAt(level: number): { id: Stage; stars: number; cefr: string
  *  `listen` row's `l` (contract/listen.ts: 1 であい … 3 チェック, the stamp's). */
 export const LESSONS = ['deai', 'bamen', 'check', 'oto', 'jissen'] as const;
 export type Lesson = (typeof LESSONS)[number];
-/** A lesson is one 6-question game (plan §3). */
-export const LESSON_QS = 6;
+/** A lesson is one 6-question game (plan §3; the `listen` row's bound). */
+export { LESSON_QS } from '../contract/listen.ts';

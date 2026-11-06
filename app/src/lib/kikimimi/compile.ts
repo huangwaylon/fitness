@@ -12,6 +12,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { parse } from 'yaml';
+import { QUIZ_LVS } from '../contract/live-protocol.ts';
 import { clipIds, isDialogue, type Item, type Level } from './bank.ts';
 import type { ChunkClip, Clip, Words } from './clips.ts';
 import { voiced } from './clips.ts';
@@ -109,7 +110,7 @@ export const mixes = (clips: Readonly<Record<string, unknown>>, bank: readonly I
  *  audio isn't made yet stays hidden and main stays shippable. */
 export function playable(clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = joined(clips)): Level[] {
   const mix = mixes(clips, bank);
-  return ([1, 2, 3, 4, 5, 6, 7, 8] as const).filter((lv) => {
+  return QUIZ_LVS.filter((lv) => {
     const items = bank.filter((it) => it.lv === lv && drawn(it, mix));
     return !!mix[lv] && items.length > 0 && items.every((it) => voiced(it, clips));
   });
