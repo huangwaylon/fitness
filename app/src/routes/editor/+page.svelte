@@ -54,7 +54,7 @@
 
 <svelte:head>
   <meta name="robots" content="noindex,nofollow" />
-  <title>しまの エディター</title>
+  <title>島のエディター</title>
 </svelte:head>
 
 {#if orbit}

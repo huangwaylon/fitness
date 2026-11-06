@@ -53,7 +53,7 @@ test("the plan's pond and K.K.'s stool in the preview: the pond the island's, K.
   await expect.poll(() => pv(page, (p) => p.groups())).toContain(`pond:${pond}`);
 
   // K.K.'s stool dragged a tile to the left (えらぶ): he sits on it there; R turns him with it
-  await page.getByRole('button', { name: 'えらぶ' }).click();
+  await page.getByRole('button', { name: '選択' }).click();
   const st = (await ed(page, (e) => { const o = e.layout().objects.get('kk-slider')!; return [o.x, o.z] as [number, number]; }));
   await dragTile(page, st, [st[0] - 1, st[1]]);
   await expect.poll(() => ed(page, (e) => e.layout().objects.get('kk-slider')!.x)).toBe(st[0] - 1);

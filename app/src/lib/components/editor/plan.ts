@@ -52,7 +52,7 @@ const GROUP_COLOUR: Record<string, string> = {
   tree: '#2f8a3f', bush: '#3f9a4f', flower: '#d2589b', rock: '#7d7468', light: '#e6b22e', furniture: '#937047',
   season: '#5aa0d0', structure: '#6b5544', home: '#2f86bd', spot: '#d2701f', visitor: '#c2477a'
 };
-const OWNER: Record<string, [string, string]> = { 'home-A': ['#8fd3ff', 'ウェイ'], 'home-B': ['#ffb8cc', 'うめ'], 'home-G': ['#cdb4f2', 'おきゃくさん'] };
+const OWNER: Record<string, [string, string]> = { 'home-A': ['#8fd3ff', 'ウェイ'], 'home-B': ['#ffb8cc', 'うめ'], 'home-G': ['#cdb4f2', 'お客さん'] };
 
 export interface Draw {
   layout: Layout;
@@ -321,9 +321,9 @@ function drawObj(ctx: CanvasRenderingContext2D, d: Draw, o: Obj, selected: boole
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     if (home) {
-      ctx.fillText(`${name}のいえ`, x + W / 2, y + H / 2 - T * 0.15);
+      ctx.fillText(`${name}の家`, x + W / 2, y + H / 2 - T * 0.15);
       ctx.font = `500 ${Math.max(8, Math.min(12, T * 0.32))}px system-ui, sans-serif`;
-      ctx.fillText(style.m === 'campsite' ? 'テント' : style.m.startsWith('tent') ? 'テント' : 'いえ', x + W / 2, y + H / 2 + T * 0.32);
+      ctx.fillText(style.m === 'campsite' ? 'テント' : style.m.startsWith('tent') ? 'テント' : '家', x + W / 2, y + H / 2 + T * 0.32);
     } else ctx.fillText(name, x + W / 2, y + H / 2);
     // the door: a notch on the front edge
     const door = doorOf(l, o).at, [dx, dy] = toScreen(v, door[0], door[1]);

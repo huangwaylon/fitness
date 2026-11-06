@@ -41,11 +41,11 @@ export const FAMILIES = (HOMES_JSON as unknown as { families: Record<string, Fam
 /** The house shapes: their footprint (tiles across × deep, the porch in it), the porch's depth in front of the wall
  *  (u), and their names. PA04 is the player's house (NH's last); NA … ND the villagers'. */
 export const SHAPES: Record<string, { foot: readonly [number, number]; porch: number; ja: string; en: string }> = {
-  PA04: { foot: [5, 3], porch: 15, ja: 'プレイヤーのいえ', en: 'Your house' },
-  NA: { foot: [4, 3], porch: 15, ja: 'ようふう', en: 'Western' },
+  PA04: { foot: [5, 3], porch: 15, ja: 'プレイヤーの家', en: 'Your house' },
+  NA: { foot: [4, 3], porch: 15, ja: '洋風', en: 'Western' },
   NB: { foot: [4, 3], porch: 15, ja: 'ログハウス', en: 'Log house' },
-  NC: { foot: [4, 3], porch: 15, ja: 'わふう', en: 'Japanese' },
-  ND: { foot: [4, 4], porch: 16, ja: 'こや', en: 'Cabin' }
+  NC: { foot: [4, 3], porch: 15, ja: '和風', en: 'Japanese' },
+  ND: { foot: [4, 4], porch: 16, ja: '小屋', en: 'Cabin' }
 };
 /** The tents' and the campsite's. */
 const OTHER: Record<string, { foot: readonly [number, number]; porch: number }> = {

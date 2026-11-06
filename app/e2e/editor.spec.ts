@@ -59,7 +59,7 @@ test('paint a stroke of sand, take it back with ⌘Z; R turns a bench; Delete ne
   await openEditor(page);
   const kind = (c: number, r: number) => page.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.layout().kind(c, r), [c, r] as const);
   expect(await kind(5, 14)).toBe('grass');
-  await page.getByRole('button', { name: 'ぬる' }).click();
+  await page.getByRole('button', { name: '塗る' }).click();
   await page.locator('[data-brush="sand"]').click();
   await dragTile(page, [5, 14], [7, 14]);
   await expect.poll(() => kind(6, 14)).toBe('sand');
@@ -69,7 +69,7 @@ test('paint a stroke of sand, take it back with ⌘Z; R turns a bench; Delete ne
   await page.keyboard.press('Meta+Shift+z');
   await expect.poll(() => kind(6, 14)).toBe('sand');
   // a bench: select it, R turns it a quarter
-  await page.getByRole('button', { name: 'えらぶ' }).click();
+  await page.getByRole('button', { name: '選択' }).click();
   const bench = (await objAt(page, 'bench-mae'))!;
   const [bx, by] = await page.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), bench as [number, number]);
   await page.mouse.click(bx, by);
@@ -81,7 +81,7 @@ test('paint a stroke of sand, take it back with ⌘Z; R turns a bench; Delete ne
   const [tx, ty] = await page.evaluate(([c, r]) => (window as unknown as { __editor: E }).__editor.tileScreen(c, r), tree as [number, number]);
   await page.mouse.click(tx, ty);
   await page.keyboard.press('Delete');
-  await expect(page.getByRole('status')).toContainText('けせません');
+  await expect(page.getByRole('status')).toContainText('削除できません');
   expect(await objAt(page, 'goal-A')).not.toBeNull();
 });
 
@@ -92,7 +92,7 @@ test('place from the palette; the check shows a tree in the river; reset to the 
   const [rx, ry] = await page.evaluate(() => (window as unknown as { __editor: E }).__editor.tileScreen(15, 30));
   await page.mouse.move(rx, ry);
   await page.mouse.click(rx, ry);
-  await expect(page.getByRole('status')).toContainText('おけません');
+  await expect(page.getByRole('status')).toContainText('置けません');
   // on the lawn it goes
   const before = await page.evaluate(() => (window as unknown as { __editor: E }).__editor.layout().objects.size);
   const [gx, gy] = await page.evaluate(() => (window as unknown as { __editor: E }).__editor.tileScreen(12, 20));
@@ -118,7 +118,7 @@ test('the museum: on the palette (greyed while it stands, one to an island), pic
   await page.keyboard.press('r');
   await expect.poll(f).toBe(1);
   await page.keyboard.press('Delete');
-  await expect(page.getByRole('status')).toContainText('けせません');
+  await expect(page.getByRole('status')).toContainText('削除できません');
   expect(await objAt(page, 'museum')).not.toBeNull();
 });
 
@@ -134,7 +134,7 @@ test('the shop: on the palette (greyed while it stands, one to an island), picke
   await page.keyboard.press('r');
   await expect.poll(f).toBe(1);
   await page.keyboard.press('Delete');
-  await expect(page.getByRole('status')).toContainText('けせません');
+  await expect(page.getByRole('status')).toContainText('削除できません');
   expect(await objAt(page, 'shop')).not.toBeNull();
 });
 
@@ -200,9 +200,9 @@ test('しまの おおきさ: a pull blocked by a home lists what’s in the way
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/editor-blocked-home.png` });
   // the shop (7 wide) has nowhere near to go: うごかす leaves it all as it was, the shop marked
   await page.locator('[data-resize-move]').click();
-  await expect(list.locator('[data-blocker="shop"]')).toContainText('うごかせない');
+  await expect(list.locator('[data-blocker="shop"]')).toContainText('動かせない');
   await expect(readout(page)).toHaveText('15 × 57');
-  await list.getByRole('button', { name: 'やめる' }).click();
+  await list.getByRole('button', { name: 'キャンセル' }).click();
   await expect(list).toHaveCount(0);
   await page.keyboard.press('Meta+z');
   await expect.poll(() => objAt(page, 'home-B')).toEqual(home);
@@ -250,5 +250,5 @@ test('しまの おおきさ: what’s in the way goes with the layout it was tr
 test('the guest has the editor as a member does (2026-11-06)', async ({ page }) => {
   await page.goto(`editor/?demo&as=G&date=${DATE}`);
   await expect(page.locator('[data-editor]')).toBeVisible();
-  await expect(page.locator('[data-editor] h1')).toContainText('おきゃくさん');
+  await expect(page.locator('[data-editor] h1')).toContainText('お客さん');
 });
