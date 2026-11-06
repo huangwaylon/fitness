@@ -26,7 +26,7 @@ app: the HUD menu's けっこんしき pill.
 - Dropped from the old board: the accent colours, the edit link and read-only toggle (the keys replace them), the
   starter templates.
 
-UI (`components/wedding/`, the [quiet kit](design.md#quiet-sheets), following the time of day): its own chunk, a
+UI (`components/wedding/`, the [unified kit](design.md#unified-kit), following the time of day): its own chunk, a
 `lazySheet` (`wedding/open.svelte.ts`, like りょこう's: offline before it's cached, a banner with もういちど), on Sheet's
 `quiet` variant; the island is paused under it. The title bar (けっこんしき, ✕), a bottom tab bar プラン / メモ, ＋ over it
 (a member's).

@@ -2,11 +2,12 @@
   // The one back / close button (docs/design.md "Navigation"): a round cream NH game-object button (the
   // edged tier, 44px), ‹ back always top-left, ✕ close always top-right. `text` adds a visible label to the
   // back pill (‹ 島へ on a full page).
-  // `look`: `quiet` the quiet kit's bare line glyph (SheetHeader, docs/design.md "Quiet sheets"), `photo` the same on a
-  // round smoked disc over a photo (a trip's hero).
-  //   <NavButton kind="close" onclick={…} />   <NavButton kind="back" text="島へ" onclick={…} />
+  // `size="s"` (the info sheets' NavBar s, docs/design.md "Unified kit"): a 32px cream disc with the small edge in the
+  // same 44px hit. `look="photo"`: the glyph on a round smoked disc over a photo (a trip's hero, a trail's map).
+  // `look="quiet"`: the old quiet kit's bare glyph (quiet/SheetHeader), deleted with it.
+  //   <NavButton kind="close" onclick={…} />   <NavButton kind="back" text="島へ" onclick={…} />   <NavButton kind="close" size="s" onclick={…} />
   import { t } from '#lib/i18n/index.ts';
-  import Icon from '../quiet/Icon.svelte';
+  import Icon from './Icon.svelte';
 
   interface Props {
     kind: 'back' | 'close';
@@ -18,20 +19,23 @@
     /** `self`: the handler plays its own cue (the phone's close tune). */
     sfx?: 'back' | 'self';
     look?: 'game' | 'quiet' | 'photo';
+    size?: 'm' | 's';
   }
-  let { kind, onclick, text, label, sfx = 'back', look = 'game' }: Props = $props();
+  let { kind, onclick, text, label, sfx = 'back', look = 'game', size = 'm' }: Props = $props();
   const name = $derived(label ?? text ?? t(kind === 'back' ? 'common.back' : 'common.close'));
 </script>
 
 {#snippet glyph()}
-  {#if look === 'game'}
+  {#if look === 'game' && size === 'm'}
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{kind === 'back' ? 'i-back' : 'i-close'}" /></svg>
+  {:else if look === 'quiet'}
+    <Icon name={kind} size={kind === 'back' ? 24 : 22} stroke={1.75} />
   {:else}
-    <Icon name={kind} size={look === 'photo' ? (kind === 'back' ? 20 : 18) : kind === 'back' ? 24 : 22} />
+    <Icon name={kind} size={kind === 'back' ? 20 : 18} stroke={look === 'photo' ? 1.75 : 2.4} />
   {/if}
 {/snippet}
 
-<button type="button" class="nav {kind} {look}" class:pill={!!text} aria-label={text ? undefined : name} data-sfx={sfx === 'self' ? 'self' : 'back'} {onclick}>{@render glyph()}{#if text}<span>{text}</span>{/if}</button>
+<button type="button" class="nav {kind} {look}" class:s={size === 's'} class:pill={!!text} aria-label={text ? undefined : name} data-sfx={sfx === 'self' ? 'self' : 'back'} {onclick}>{@render glyph()}{#if text}<span>{text}</span>{/if}</button>
 
 <style>
   .nav {
@@ -45,16 +49,25 @@
   .close svg { width: 20px; height: 20px; }
   /* ‹ + where it goes (a page's way back): the same button, grown into a pill */
   .pill { width: auto; display: inline-flex; gap: 4px; padding: 0 16px 0 10px; border-radius: var(--r-btn); font: 700 var(--fs-body)/1 var(--font-ui); }
-  /* the quiet kit's: a bare glyph in a 44px hit; on a photo a 32px smoked disc */
+  /* small: the disc drawn at 32px (::before) in the 44px hit, the small edge; cream by day, the control's navy at night */
+  .nav.s.game { position: relative; background: none; box-shadow: none; color: var(--text); }
+  .nav.s.game::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
+  .nav.s.game:active { transform: none; box-shadow: none; }
+  .nav.s.game:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
+  .nav.s :global(svg) { position: relative; width: 18px; height: 18px; }
+  .nav.s.back :global(svg) { width: 20px; height: 20px; }
+  /* bare glyph (quiet) / on a photo: a 32px smoked disc */
   .nav.quiet, .nav.photo { background: none; box-shadow: none; border-radius: 12px; transition: opacity var(--dur-quick); }
   .nav.quiet { color: var(--q-ink-2, var(--text)); }
   .nav.quiet.back { color: var(--q-ink, var(--text)); }
   .nav.photo { position: relative; color: #fff; }
   .nav.photo::before {
-    content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--q-photo-btn, rgb(30 24 18 / .35));
+    content: ''; position: absolute; inset: 6px; border-radius: 50%; background: rgb(30 24 18 / .35);
     -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   }
   .nav.photo :global(svg) { position: relative; }
   .nav.quiet:active, .nav.photo:active { transform: none; box-shadow: none; opacity: .55; }
-  .nav.quiet:focus-visible, .nav.photo:focus-visible { outline: 2px solid var(--q-accent, var(--focus)); outline-offset: -4px; }
+  .nav.quiet:focus-visible { outline: 2px solid var(--q-accent, var(--focus)); outline-offset: -4px; }
+  .nav.photo:focus-visible, .nav.s:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
+  @media (prefers-reduced-motion: reduce) { .nav.s.game:active::before { transform: none; } }
 </style>

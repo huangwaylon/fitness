@@ -2,14 +2,14 @@
    The single source of CSS custom properties. Loaded globally from routes/+layout.svelte BEFORE
    styles/theme.css (element styles and the few shared building blocks).
 
-   One system: 15 colours, 5 radii (+ pill for the plate / choices / HUD pills), 5 type sizes, weights 500/700,
+   One system: 17 colours, 5 radii (+ pill for the plate / choices / HUD pills), 5 type sizes, weights 500/700,
    outlines only on tappable things (--sh-ctl), one depth rule (a 4px lip; --sh-float only on floating layers).
    Time of day re-tints the chrome from <html data-tod> (ui-state/theme.svelte.ts); the phone's dark mode is
    ignored. Game objects (the HUD, plate, dialogue box, choices) stay cream / yellow at every time of day.
    Scene tokens (season x time of day) live in the Builder A block at the end, on .if-scene. */
 
 :root {
-  /* ---------- palette (15) ---------- */
+  /* ---------- palette (17) ---------- */
   --c-ink:#4A3A2C;   --c-ink-soft:#6B5544;              /* text (never black) */
   --c-cream:#FFF9E3; --c-paper:#F5E4BC; --c-lip:#E0C48A; /* surfaces + the lip under them. Paper is
                                                            NH's tan list panel, a step darker than the cards */
@@ -26,6 +26,8 @@
   --c-lilac:#CDB4F2;                                     /* the guest's chip (おきゃくさん) */
   --c-coral:#FF8F7A;                                     /* errors only */
   --person-a:#2F86BD; --person-b:#D2701F;           /* けんこう's charts: ウェイ blue, うめ orange (CVD-safe pair, >= 3:1 on the card) */
+  --c-sky:#4F9BE0;                                       /* the info sheets' sky: the airline strip, map water, the "now" marker (fills) */
+  --c-rose:#E88FAE;                                      /* the wedding's rose: the ring, the letter's band and rules, the heart stamp */
 
   /* ---------- semantic chrome (re-tinted by time of day below) ---------- */
   --bg: var(--c-paper); --surface: var(--c-paper); --lip: var(--c-lip);
@@ -36,6 +38,9 @@
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
   --hl: color-mix(in srgb, var(--c-yuzu) 30%, transparent); /* a highlighted strip / pressed row (night: cream, yuzu over navy turns grey) */
+  --sky-text:#24609A;          /* sky TEXT on the panel / card (5.2:1 on paper, 5:1 at dusk; night: a light sky, 5:1 on navy) */
+  --rose-soft: color-mix(in srgb, var(--c-rose) 22%, var(--card)); /* the letter's rules, a rose tint */
+  --stitch: color-mix(in srgb, var(--edge) 35%, transparent);     /* the 1.5px dashed stitch between dense rows, a ticket's perforation */
   /* --sea-flat (the NH-blue sea under 島's chrome = the scene's open sea through its tint) lives in the
      Builder A block below */
 
@@ -48,14 +53,21 @@
   --fs-xs:.6875rem; --fs-s:.8125rem; --fs-body:.9375rem; --fs-talk:1.125rem;
   --fs-title: clamp(1.375rem, 6.4vw, 1.625rem); --fs-hero: clamp(2.25rem, 11vw, 2.75rem);
   --fs-input: max(16px, 1rem);
+  /* dense body text (13-15px) in the info sheets (りょこう, けっこんしき, トレイル): the system font; titles, labels and
+     numbers stay --font-ui / --font-num */
+  --font-body: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
   --lh:1.45;
 
   /* ---------- radius: 8 chips · 16 buttons · 24 cards/dialogue · 32 sheets/panel ---------- */
   --r-chip:8px; --r-btn:16px; --r-card:24px; --r-sheet:32px; --r-pill:999px;
+  --r-row:14px;     /* dense cards (the info sheets) */
 
   /* ---------- depth: one lip (chrome) + one float (floating layers only) ---------- */
   --lip-h:4px;      /* the one lip depth */
   --sh-lip:0 var(--lip-h) 0 var(--lip);
+  /* the small lip: dense cards and rows (the 4px lip stays for game chrome and CTAs) */
+  --lip-s:2px;
+  --sh-lip-s:0 var(--lip-s) 0 var(--lip);
   --sh-float:0 12px 32px rgba(74, 58, 44, .18);
 
   /* ---------- motion ---------- */
@@ -127,6 +139,9 @@
   --sh-ctl-press: inset 0 0 0 2px var(--edge), 0 1px 0 var(--edge);
   --sh-obj: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge);
   --sh-obj-press: inset 0 0 0 2px var(--c-edge), 0 1px 0 var(--c-edge);
+  /* a small control (32px chips, ticks, icon buttons in the info sheets): a 1.5px edge, a 2px lip */
+  --sh-ctl-s: inset 0 0 0 1.5px var(--edge), 0 2px 0 var(--edge);
+  --sh-ctl-s-press: inset 0 0 0 1.5px var(--edge), 0 0 0 var(--edge);
   --fill-on-surface: var(--ctl);
 
   /* ---------- the ground ellipse under villagers / props (the depth rule; also read outside .if-scene) ---------- */
@@ -143,6 +158,7 @@
   --text:#FFF6E0; --text-soft:#D2D9F5; --focus:#FFF6E0; --leaf-text:#9EE6A6; --coral-text:#FFD0C6;
   --person-a:#7EC8F0; --person-b:#FFB066;             /* the same pair lightened for the navy card (>= 3:1) */
   --scrim: rgba(30, 36, 80, .45); --hl: rgba(255, 246, 224, .14);
+  --sky-text:#9CCBF5;
   color-scheme: dark;
 }
 
