@@ -129,6 +129,13 @@ export const DEVICE = {
   /** localStorage: `string[][]`, the item ids of my last ききみみ games on this phone, newest first (kikimimi/recent.ts:
    *  the host's seed with the least overlap, a solo game's and にがて れんしゅう's freshest items; at most 6 games). */
   kikimimiRecent: 'island.kikimimiRecent',
+  /** localStorage: `3` | `5` | `7`: ききみみ's weekly target in days on this phone (its せってい; 3 by default). */
+  kikiWeekGoal: 'island.kikiWeekGoal',
+  /** localStorage: `1` | `0`: ききみみ's 「おとを 1だいに まとめる」 default for a new lobby on this phone (off by default). */
+  kikiSame: 'island.kikiSame',
+  /** localStorage: `always` | `missed` | `never`: when ききみみ shows the Japanese at a reveal and in the review (always
+   *  by default). */
+  kikiJa: 'island.kikiJa',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */

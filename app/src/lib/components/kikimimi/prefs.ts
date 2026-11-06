@@ -26,3 +26,28 @@ export const lastTimer = (): QuizTimer => {
   return TIMERS.find((x) => raw !== null && raw !== undefined && x === Number(raw)) ?? 30;
 };
 export const keepTimer = (timer: QuizTimer): void => keep(DEVICE.kikimimiTimer, timer);
+
+/** The weekly target in days (せってい's こんしゅうの めあて; 3 by default). */
+export const WEEK_GOALS = [3, 5, 7] as const;
+export type WeekGoal = (typeof WEEK_GOALS)[number];
+export const weekGoal = (): WeekGoal => WEEK_GOALS.find((x) => x === Number(localKV()?.getItem(DEVICE.kikiWeekGoal))) ?? 3;
+export const keepWeekGoal = (x: WeekGoal): void => keep(DEVICE.kikiWeekGoal, x);
+
+/** 「おとを 1だいに まとめる」 for a new lobby on this phone (off by default). */
+export const sameDefault = (): boolean => localKV()?.getItem(DEVICE.kikiSame) === '1';
+export const keepSame = (on: boolean): void => keep(DEVICE.kikiSame, on ? 1 : 0);
+
+/** When the Japanese shows (a reveal, the review): always, only for a miss, never. */
+export const JA_MODES = ['always', 'missed', 'never'] as const;
+export type JaMode = (typeof JA_MODES)[number];
+export function jaMode(): JaMode {
+  const raw = localKV()?.getItem(DEVICE.kikiJa);
+  return JA_MODES.find((x) => x === raw) ?? 'always';
+}
+export function keepJa(m: JaMode): void {
+  try {
+    localKV()?.setItem(DEVICE.kikiJa, m);
+  } catch {
+    /* full or private: always next time */
+  }
+}

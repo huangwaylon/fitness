@@ -23,7 +23,7 @@
   import { gameIn } from '#lib/kikimimi/round/wire.ts';
   import { currentPath, currentReport, currentUnits, recordGame, unitAdded } from './progress.svelte.ts';
   import { KikiActions } from './actions.ts';
-  import { keepLv, keepTimer, lastLv, lastTimer } from './prefs.ts';
+  import { jaMode, keepJa, keepLv, keepTimer, lastLv, lastTimer, sameDefault, type JaMode } from './prefs.ts';
   import { packs } from './packs.ts';
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
   import type { Filter } from '#lib/kikimimi/path.ts';
@@ -125,7 +125,7 @@
           if (joining) {
             it.join(joining);
             pages = inviteStack();
-          } else if (!it.view.invite) it.open(lastLv(), { timer: lastTimer() });
+          } else if (!it.view.invite) it.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
         });
         game = it;
         // (tests: `deck(ids)` starts my lobby kept alone on these items, as おさらい does: a dialogue before its clips)
@@ -177,6 +177,10 @@
     if (idle && !inv && invited) untrack(() => act.startOwn());
     invited = idle && inv;
   });
+  /** When the Japanese shows (せってい's にほんごやく): every reveal and review row, only a miss's, or never. */
+  let ja = $state<JaMode>(jaMode());
+  /** My answer to the reveal's question was right (a miss's Japanese only: hidden then). */
+  const right = $derived(v?.phase === 'reveal' && !!game && v.answers[v.i]?.k === game.items[v.i]?.answer);
   /** The games I've been in (an invite still heard for one of them isn't offered again). */
   const been = new Set<string>();
   $effect(() => {
@@ -262,7 +266,8 @@
 
 <Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss}>
   <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub ? gear : null} /></div>
-  <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={atHub ? 'hub' : hosting && page ? page.k : guest ? 'lobby' : undefined}>
+  <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={atHub ? 'hub' : hosting && page ? page.k : guest ? 'lobby' : undefined}
+    data-kiki-ja={ja} data-kiki-right={right || undefined}>
     {#if game && v}
       {#if v.notice}
         <div class="center" data-kiki-notice={v.notice}>
@@ -292,7 +297,7 @@
           {/await}
         {:else if page.k === 'settings'}
           {#await import('./settings/KikiSettings.svelte') then { default: KikiSettings }}
-            <KikiSettings {game} />
+            <KikiSettings {game} {ja} onja={(m) => ((ja = m), keepJa(m))} />
           {/await}
         {:else if page.k === 'path' && path}
           {#await import('./path/IslandPath.svelte') then { default: IslandPath }}
@@ -372,6 +377,10 @@
   .kk-body > :global(*) { flex: none; }
   /* a page's actions stay at the foot of the screen, even on a short page */
   .kk-body > :global(.level-acts) { margin-top: auto; }
+  /* にほんごやく: never, or only for a miss (the reveal answered right; a review row right) */
+  .kk-body[data-kiki-ja='never'] :global(.ja),
+  .kk-body[data-kiki-ja='missed'][data-kiki-right] :global(.ja),
+  .kk-body[data-kiki-ja='missed'] :global([data-ok='true'] .ja) { display: none; }
   .center { display: grid; justify-items: center; align-content: center; gap: 14px; flex: 1 0 auto; text-align: center; padding: 12px 0; }
   .say { margin: 0; font: 700 var(--fs-talk)/1.4 var(--font-ui); }
   .num {
