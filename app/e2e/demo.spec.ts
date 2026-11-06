@@ -795,58 +795,65 @@ test('the panel: titled ごほうび, no tabs, and it reaches the screen’s bot
 /** The ベル row's number as written (the digits, grouped). */
 const bellsText = (n: number) => n.toLocaleString('en-US');
 
-test('the HUD row: [the dumbbell] [the bowl] [the menu] in the top-right corner, the leaf at the screen\'s side, no jar, the sky\'s left clear, every target ≥ 44px, on screen at 320–402 with a notch, day and night', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
+// (one width and hour a test: the six in one averaged 22 s alone and ran out of its 30 s on loaded CI shards, 10 runs in
+// a day)
+const HUD_NOTCH = () => document.addEventListener('DOMContentLoaded', () => {
+  const s = document.createElement('style');
+  s.textContent = 'html:root { --safe-top: 59px !important; }';
+  document.head.append(s);
+});
+for (const [w, h] of [[393, 852], [402, 874], [320, 568]])
+  for (const at of ['2026-10-28T12:00', '2026-10-28T22:00'])
+test(`the HUD row at ${w}, ${at.slice(11)}: [the dumbbell] [the bowl] [the menu] in the top-right corner, the leaf at the screen's side, no jar, the sky's left clear, every target ≥ 44px, under a notch`, { tag: '@logic', annotation: { type: 'logic', description: 'drawn: a wait sized for the game at full speed (an animation, a spawn, a sync within its seconds); software GL slows the game itself' } }, async ({ page }) => {
   // an iPhone 15/16's top inset (59px): the row stays where it was, under it
-  await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => {
-    const s = document.createElement('style');
-    s.textContent = 'html:root { --safe-top: 59px !important; }';
-    document.head.append(s);
-  }));
-  for (const [w, h] of [[393, 852], [402, 874], [320, 568]]) {
-    for (const at of ['2026-10-28T12:00', '2026-10-28T22:00']) {
-      await page.setViewportSize({ width: w, height: h });
-      await page.goto(`?demo&date=${at}`);
-      await islandReady(page);
-      await expect(page.locator('.ribbon, .hud-jar')).toHaveCount(0);
-      await expect(page.getByRole('button', { name: /^きょう / })).toHaveCount(0);
-      const btn = page.getByRole('button', { name: 'けんこう', exact: true });
-      const [mb, fb, bb] = [(await hudMenu(page).boundingBox())!, (await page.locator('.hud-food').boundingBox())!, (await btn.boundingBox())!];
-      for (const b of [mb, fb, bb]) {
-        expect(b.height).toBeGreaterThanOrEqual(44);
-        expect(b.width).toBeGreaterThanOrEqual(44);
-        expect(b.y).toBeGreaterThanOrEqual(59);
-        expect(Math.abs(b.y - mb.y)).toBeLessThan(1); // one row
-      }
-      // one cluster, right-aligned: the dumbbell, the bowl, the menu, in that order, apart, the leaf 14px in
-      expect(bb.x + bb.width).toBeLessThanOrEqual(fb.x);
-      expect(fb.x + fb.width).toBeLessThanOrEqual(mb.x);
-      expect(Math.abs(fb.width - bb.width)).toBeLessThan(1);
-      expect(Math.abs(w - mb.x - mb.width - 14)).toBeLessThan(1.5);
-      // the sky's left clear (the sun, the moon, the balloon: a third of it from 393 up), and the menu's pills folded away
-      expect(bb.x).toBeGreaterThan(w >= 393 ? w / 3 : w / 6);
-      await expect(page.locator('[data-hud-bells], [data-hud-zukan], [data-hud-settings]')).toHaveCount(3);
-      for (const pill of await page.locator('[data-hud-bells], [data-hud-zukan], [data-hud-settings]').all()) await expect(pill).toBeHidden();
-      // NH's dumbbell, a little taller than the pill; no number, no ▶ dot
-      const img = btn.locator('img');
-      await expect(img).toHaveAttribute('src', /items\/dumbbell\.webp/);
-      await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
-      expect((await btn.locator('.art').boundingBox())!.y).toBeLessThan(bb.y);
-      await expect(btn).toHaveText('');
-      await expect(btn.locator('svg')).toHaveCount(0);
-      // unfolded, the pills hang under the leaf, right-aligned to it, on screen: 「ベル 121」 first
-      await unfoldMenu(page); // (the spring settled: a fixed 600 ms wasn't, on a busy machine)
-      const pills = page.locator('#hud-menu-items > button');
-      for (const p of await pills.all()) {
-        const b = (await p.boundingBox())!;
-        expect(b.x).toBeGreaterThanOrEqual(0);
-        expect(Math.abs(b.x + b.width - (mb.x + mb.width))).toBeLessThan(1.5);
-        expect(b.y).toBeGreaterThan(mb.y + mb.height);
-      }
-      await page.keyboard.press('Escape');
-      await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
-    }
+  await page.addInitScript(HUD_NOTCH);
+  await page.setViewportSize({ width: w, height: h });
+  await page.goto(`?demo&date=${at}`);
+  await islandReady(page);
+  await expect(page.locator('.ribbon, .hud-jar')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^きょう / })).toHaveCount(0);
+  const btn = page.getByRole('button', { name: 'けんこう', exact: true });
+  const [mb, fb, bb] = [(await hudMenu(page).boundingBox())!, (await page.locator('.hud-food').boundingBox())!, (await btn.boundingBox())!];
+  for (const b of [mb, fb, bb]) {
+    expect(b.height).toBeGreaterThanOrEqual(44);
+    expect(b.width).toBeGreaterThanOrEqual(44);
+    expect(b.y).toBeGreaterThanOrEqual(59);
+    expect(Math.abs(b.y - mb.y)).toBeLessThan(1); // one row
   }
-  // the taps stay apart: the ベル row opens the panel (ごほうび; no せってい there: the menu's), the dumbbell the health popup
+  // one cluster, right-aligned: the dumbbell, the bowl, the menu, in that order, apart, the leaf 14px in
+  expect(bb.x + bb.width).toBeLessThanOrEqual(fb.x);
+  expect(fb.x + fb.width).toBeLessThanOrEqual(mb.x);
+  expect(Math.abs(fb.width - bb.width)).toBeLessThan(1);
+  expect(Math.abs(w - mb.x - mb.width - 14)).toBeLessThan(1.5);
+  // the sky's left clear (the sun, the moon, the balloon: a third of it from 393 up), and the menu's pills folded away
+  expect(bb.x).toBeGreaterThan(w >= 393 ? w / 3 : w / 6);
+  await expect(page.locator('[data-hud-bells], [data-hud-zukan], [data-hud-settings]')).toHaveCount(3);
+  for (const pill of await page.locator('[data-hud-bells], [data-hud-zukan], [data-hud-settings]').all()) await expect(pill).toBeHidden();
+  // NH's dumbbell, a little taller than the pill; no number, no ▶ dot
+  const img = btn.locator('img');
+  await expect(img).toHaveAttribute('src', /items\/dumbbell\.webp/);
+  await expect.poll(() => img.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+  expect((await btn.locator('.art').boundingBox())!.y).toBeLessThan(bb.y);
+  await expect(btn).toHaveText('');
+  await expect(btn.locator('svg')).toHaveCount(0);
+  // unfolded, the pills hang under the leaf, right-aligned to it, on screen: 「ベル 121」 first
+  await unfoldMenu(page); // (the spring settled: a fixed 600 ms wasn't, on a busy machine)
+  const pills = page.locator('#hud-menu-items > button');
+  for (const p of await pills.all()) {
+    const b = (await p.boundingBox())!;
+    expect(b.x).toBeGreaterThanOrEqual(0);
+    expect(Math.abs(b.x + b.width - (mb.x + mb.width))).toBeLessThan(1.5);
+    expect(b.y).toBeGreaterThan(mb.y + mb.height);
+  }
+  await page.keyboard.press('Escape');
+  await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('the HUD row\'s taps stay apart: the ベル row opens the panel (ごほうび; no せってい there: the menu\'s), the dumbbell the health popup', async ({ page }) => {
+  await page.addInitScript(HUD_NOTCH);
+  await page.setViewportSize({ width: 320, height: 568 });
+  await page.goto('?demo&date=2026-10-28T22:00');
+  await islandReady(page);
   await expect(hudBells(page)).toHaveAttribute('aria-expanded', 'false');
   await openRewards(page);
   await expect(sheet(page).locator('.shop')).toBeVisible();
