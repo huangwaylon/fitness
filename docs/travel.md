@@ -111,21 +111,47 @@ and stay in the content.
 
 ## Packing list (relay)
 
-Built like the board (docs/board.md): one op per thing, last writer wins by the relay clock, then who.
+Built like the board (docs/board.md): one op per thing, last writer wins by the relay clock, then who (G over B over
+A). The contract is `app/src/lib/contract/pack.ts` (shared by the record and the phones; `PackSeed` is exported there),
+the record's branch `relay/src/store.ts` (`packTarget`: the trip's rows as a `PackBook`), the phone's store
+`components/travel/packing.svelte.ts`; the shapes in full: docs/backend.md#events.
 
 | type | data | slot | who may write |
 |---|---|---|---|
-| `pack` | `{trip, id, at, kind: 'cat' \| 'item', cat?, ord, name: L, note?: L, icon?}` or `{trip, id, at, rm: true}` | `pack\|<trip>\|<id>` | members: any; guest: only ids they created |
+| `pack` | `{trip, id, at, kind: 'cat' \| 'item', ord, name: L, cat?, note?: L, icon?, by?}` or `{trip, id, at, rm: true}` | `pack\|<trip>\|<id>` | members: any; guest: only ids it created |
 | `pack_chk` | `{trip, id, at, v: 0 \| 1}` | `pack_chk\|<trip>\|<id>\|<who>` | each person their own |
-| `pack_reset` | `{trip, at}` (ticks older than it are off) | `pack_reset\|<trip>\|<who>` | each person their own |
+| `pack_reset` | `{trip, at}` (their ticks no later than it are off) | `pack_reset\|<trip>\|<who>` | each person their own |
 | `trip_note` | `{trip, at, v: {[key]: string}}` | `trip_note\|<trip>` | members (and the admin load); all three read |
 
-- The seed (the trip data's `packing`) is the list until someone touches it; ops override seed ids, `rm` hides one; a
-  removal is final. Seed items count as nobody's, so the guest can't edit or remove them.
-- Caps: name ≤ 80 chars, note ≤ 120, 300 ops per trip kept, removals pruned oldest first.
+- **Trips:** `trip` is any `[a-z0-9-]{1,24}` slug (okinawa, seattle, nz today), so a new trip needs no relay deploy.
+- **Ids:** a seed id (the trip data's, `[a-z][a-z0-9-]{0,31}`: `ok-0`, `ok-0-1`) is nobody's; an id an op made is
+  `_` + base36 (`newPackId`), never a seed id's shape, and its creator rides on every set as `by` (the record keeps
+  only an id's latest row, so the creator travels with it; a set whose `by` isn't the creator's is `bad_request`
+  `pack owner`). A category is `kind: 'cat'` with an `icon` (the guide's icon names, `file`, `plane-takeoff`, or an
+  emoji; ≤ 32); an item `kind: 'item'` in a `cat`. `ord` is fractional: the seed's are their indexes (0, 1, 2 …), a move
+  goes between its new neighbours (`ordBetween`), a new one after the last.
+- The seed (the trip data's `packing`) is the list until someone touches it; a set op replaces its id's whole state
+  (a seed id's too), `rm` hides one; a removal is final; an item whose category is gone is hidden with it. Seed items
+  count as nobody's, so the guest can't edit or remove them; the guest removes a category of its own only while every
+  item in it is its own too (the phone's rule).
+- **Ticks** are per person: the list shows an item packed by each person whose latest `pack_chk` is `v: 1` and later
+  than their own `pack_reset`. A removal takes the item's ticks with it; a late tick of a removed item is dropped.
+- **Caps:** name ≤ 80 chars, note ≤ 120 (one clean line each, `cleanLine`, cleaned by the record as on the phone), an
+  `at` at most a day past the record's clock; 300 `pack` rows per trip kept: a new one past them drops the oldest
+  removal of an id an op made (never a seed id's: the seed item would come back), else `bad_request` `pack full`; 300
+  ticks per trip and person. Refusals are logged as rules only (`pack.pack_full`, `pack.pack_owner`, `pack.forbidden`).
+- **The phone:** the model keeps the rows in `state.pack` (a queued one marked); `packFold` takes the record's rows as
+  they are (a slot's latest: the record's own judgement, made while it held the item's creation) and judges this
+  phone's queued ones by the record's rules, so the list shows what the record will. `packing.list(trip, seed)`,
+  `counts` (mine, everyone's), `addItem` / `addCat` / `rename` (in my language: the other side of the name goes) /
+  `move` / `remove` / `tick` / `reset`, each op stamped on the relay clock after the one it replaces; `mayEdit`.
+- **Trip note:** `packing.note(trip)` is its values by key (null: none yet); `{p:key}` tokens read it. The demo has a
+  made-up note for each trip and うめ's ticks on Okinawa's list.
 - The UI: a card per category, a row per item with a check bubble and three small chips (ウェイ yuzu, うめ mint,
   おきゃくさん lilac) showing who has packed it; 「N / M」 for me; ✎ for add / rename / reorder / delete; 「リセット」 clears
   only mine (with a confirm). All done (me): Orville's 「じゅんび OK！」 stamp.
+- **Deploy order:** the relay first (an older relay refuses the four types `bad_request`; an older app ignores their
+  rows), then the app.
 
 ## Photos
 
