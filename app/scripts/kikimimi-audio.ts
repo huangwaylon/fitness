@@ -127,8 +127,12 @@ const PINNED: Readonly<Record<string, number>> = {
   'd4-landlord-3': 2000, 'd4-taxi-street-4': 2000,
   // wave 1's units (docs/reviews/2026-11-06-wave1-review.md): the corrected detail heard over the heavy street
   // (dk-fast-replan's "seven", "did you say the pub"), Ikebukuro heard as said, and short exclamations off-voice
-  'dk-fast-replan-4': 2000, 'dk-fast-replan-5': 3005, 'dmu-wrong-train-1': 3006, 'dk-wrong-time-4': 2003,
-  'dk-loud-toast-4': 2003, 'dk-toast-2': 3009, 'dmu-bins-5': 3003
+  'dk-fast-replan-4': 2000, 'dk-fast-replan-5': 3005, 'dmu-wrong-train-1': 5000, 'dk-wrong-time-4': 2003,
+  'dk-loud-toast-4': 2003, 'dk-toast-2': 3009, 'dmu-bins-5': 3003,
+  // the re-voicing (2026-11-06): Ikebukuro heard as said again, "Thursday? We'll be…" no longer "Thursday will be…",
+  // and short lines nearer their voice than all six default takes
+  'dvm-ac-out-3': 4000, 'dho-lab-notes-3': 4000, 'dmu-wrong-dates-6': 4000, 'dya-best-man-3': 4000,
+  'd4-video-call-3': 4000
 };
 const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
