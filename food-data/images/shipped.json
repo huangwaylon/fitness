@@ -8324,6 +8324,1076 @@
 "checked": false
 },
 {
+"key": "maff_kyodo-35_16_kanagawa",
+"ja": "サンマーメン",
+"desc": "sanma-men, ramen noodles in a clear soy soup under a thick glossy sauce of stir-fried bean sprouts, napa cabbage, wood ear mushroom, carrot and pork, in a large white bowl",
+"items": [
+"maff_kyodo:35_16_kanagawa"
+],
+"roll": 0,
+"seed": 64814,
+"prompt": "42464256a8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_17_kanagawa",
+"ja": "牛鍋",
+"desc": "gyu nabe, a shallow iron pan of beef slices simmered in sweet soy with leek, grilled tofu, shiitake, shungiku and shirataki, with a dish of raw beaten egg beside it",
+"items": [
+"maff_kyodo:35_17_kanagawa"
+],
+"roll": 0,
+"seed": 49840,
+"prompt": "36c0b67773",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_18_kanagawa",
+"ja": "石垣団子",
+"desc": "ishigaki dango, round steamed wheat flour dumplings, white and lumpy like a stone wall, studded with bright yellow sweet potato cubes, on a dark plate",
+"items": [
+"maff_kyodo:35_18_kanagawa"
+],
+"roll": 0,
+"seed": 65149,
+"prompt": "6f5ef6d33f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_20_kanagawa",
+"ja": "奈良茶飯",
+"desc": "nara chameshi, rice cooked in green tea, pale beige, mixed with chestnuts and reddish azuki or soybeans, in a bowl",
+"items": [
+"maff_kyodo:35_20_kanagawa",
+"maff_kyodo:nara_chameshi_nara"
+],
+"roll": 0,
+"seed": 60808,
+"prompt": "20353275b0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_21_kanagawa",
+"ja": "田にしの味噌煮",
+"desc": "tanishi no misoni, small dark pond snail meat and burdock simmered in thick brown sweet miso until glossy, piled in a small footed dish with a sprig of green",
+"items": [
+"maff_kyodo:35_21_kanagawa"
+],
+"roll": 0,
+"seed": 62262,
+"prompt": "59b67fefc2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_22_kanagawa",
+"ja": "シューマイ",
+"desc": "shumai, open-topped steamed pork dumplings in thin yellow-white wrappers with pleated sides, each topped with one green pea, in a round bamboo steamer",
+"items": [
+"maff_kyodo:35_22_kanagawa"
+],
+"roll": 0,
+"seed": 23381,
+"prompt": "d56325c7fa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_23_kanagawa",
+"ja": "茹で落花生",
+"desc": "yude rakkasei, boiled peanuts still in their beige wrinkled shells, damp and soft, piled in a bowl",
+"items": [
+"maff_kyodo:35_23_kanagawa"
+],
+"roll": 0,
+"seed": 9547,
+"prompt": "a0a55c5715",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_2_kanagawa",
+"ja": "大山の豆腐料理",
+"desc": "oyama tofu, a smooth white block of chilled silken tofu topped with grated ginger, chopped green onion and bonito flakes, with soy sauce, on a plate",
+"items": [
+"maff_kyodo:35_2_kanagawa"
+],
+"roll": 0,
+"seed": 63347,
+"prompt": "ebff0ea5a0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_3_kanagawa",
+"ja": "生しらす丼",
+"desc": "nama shirasu don, a bowl of white rice heaped with glistening translucent grey-white raw baby sardines, topped with a raw egg yolk, grated ginger, shiso and green onion",
+"items": [
+"maff_kyodo:35_3_kanagawa",
+"maff_kyodo:36_23_shizuoka"
+],
+"roll": 0,
+"seed": 95405,
+"prompt": "c87cb0bc4e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_4_kanagawa",
+"ja": "へらへら団子",
+"desc": "herahera dango, flattened boiled white flour dumplings, soft and wavy like spatulas, coated in sweet dark red azuki paste, in a bowl",
+"items": [
+"maff_kyodo:35_4_kanagawa"
+],
+"roll": 0,
+"seed": 67220,
+"prompt": "ef3132cd45",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_5_kanagawa",
+"ja": "よこすか海軍カレー",
+"desc": "Yokosuka navy curry, white rice with a thick brown curry stew of diced beef, potato, carrot and onion on a white plate, with a side salad, a glass of milk and chutney",
+"items": [
+"maff_kyodo:35_5_kanagawa"
+],
+"roll": 0,
+"seed": 75562,
+"prompt": "5f6a8db0a2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-35_7_kanagawa",
+"ja": "酒まんじゅう",
+"desc": "saka manju, round domed steamed buns with a soft smooth white skin, slightly fermented and puffy, filled with azuki paste, on a red lacquered plate",
+"items": [
+"maff_kyodo:35_7_kanagawa",
+"maff_kyodo:sakemanju_oita"
+],
+"roll": 0,
+"seed": 18807,
+"prompt": "3add67622f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_10_shizuoka",
+"ja": "ぼくめし",
+"desc": "bokumeshi, rice mixed with finely chopped brown simmered eel and burdock shavings, topped with diagonal slices of green beans and yellow shredded egg, in a bowl",
+"items": [
+"maff_kyodo:36_10_shizuoka"
+],
+"roll": 0,
+"seed": 74178,
+"prompt": "15aecadc77",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_11_shizuoka",
+"ja": "げんなり寿司",
+"desc": "gennari-zushi, rectangular blocks of pressed white sushi rice with a hidden layer of sweet orange carrot shreds, topped with a thick layer of fluffy pink-orange flaked golden-eye snapper, on a plate",
+"items": [
+"maff_kyodo:36_11_shizuoka"
+],
+"roll": 0,
+"seed": 33084,
+"prompt": "a3f48ef49f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_13_shizuoka",
+"ja": "沖あがり",
+"desc": "okiagari, small whole translucent pink sakura shrimp simmered in sweet soy with large cubes of tofu stained brown and long green onion pieces, in a black earthenware pot",
+"items": [
+"maff_kyodo:36_13_shizuoka"
+],
+"roll": 0,
+"seed": 94177,
+"prompt": "be13224f7b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_14_shizuoka",
+"ja": "おざく",
+"desc": "ozaku, chunky irregular cuts of taro, carrot, burdock, daikon, shiitake and torn konjac with fried tofu, simmered in sweet soy until the broth is nearly gone, in a pot",
+"items": [
+"maff_kyodo:36_14_shizuoka"
+],
+"roll": 0,
+"seed": 32824,
+"prompt": "bc8102fb6a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_16_shizuoka",
+"ja": "静岡おでん",
+"desc": "Shizuoka oden, skewered pieces simmered in a very dark brown broth: grey-black fish cake, beef tendon, daikon, konjac and boiled eggs, sprinkled with green laver and fish powder, with yellow mustard",
+"items": [
+"maff_kyodo:36_16_shizuoka"
+],
+"roll": 0,
+"seed": 41125,
+"prompt": "e4999ece79",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_17_shizuoka",
+"ja": "金目の煮付け",
+"desc": "kinme no nitsuke, whole bright red golden-eye snapper with big eyes simmered in dark sweet soy until glossy, with ginger slices and burdock sticks, on a large blue plate",
+"items": [
+"maff_kyodo:36_17_shizuoka"
+],
+"roll": 0,
+"seed": 53019,
+"prompt": "181fe52bc8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_18_shizuoka",
+"ja": "安倍川もち",
+"desc": "abekawa mochi, soft pieces of fresh pounded mochi completely coated in a thick dusting of sweet golden-yellow roasted soybean flour, on an octagonal plate",
+"items": [
+"maff_kyodo:36_18_shizuoka"
+],
+"roll": 0,
+"seed": 38198,
+"prompt": "02c94050cd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_1_shizuoka",
+"ja": "黒はんぺんフライ",
+"desc": "kuro hanpen fry, grey-black sardine fish cakes in a fine golden-brown breadcrumb coating, deep-fried crisp, with lemon wedges and brown sauce, on a green plate",
+"items": [
+"maff_kyodo:36_1_shizuoka"
+],
+"roll": 0,
+"seed": 65285,
+"prompt": "f8da13d5d5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_20_shizuoka",
+"ja": "筍のアラメ煮",
+"desc": "takenoko no arame-ni, pale yellow bamboo shoot pieces and tan dried daikon strands simmered with glossy black arame seaweed, in a white bowl",
+"items": [
+"maff_kyodo:36_20_shizuoka"
+],
+"roll": 0,
+"seed": 92035,
+"prompt": "7852494237",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_21_shizuoka",
+"ja": "落花生なます",
+"desc": "rakkasei namasu, julienned white daikon and orange carrot dressed in a creamy beige sweet vinegar sauce of ground roasted peanuts, a small heap in a bowl",
+"items": [
+"maff_kyodo:36_21_shizuoka"
+],
+"roll": 0,
+"seed": 52061,
+"prompt": "d285caf4a0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_22_shizuoka",
+"ja": "折戸なすの田楽",
+"desc": "orido nasu no dengaku, a round eggplant halved and pan-grilled, its cut face spread with thick glossy reddish-brown sweet miso and sprinkled with white sesame, on a plate",
+"items": [
+"maff_kyodo:36_22_shizuoka"
+],
+"roll": 0,
+"seed": 29822,
+"prompt": "ca22544976",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_25_shizuoka",
+"ja": "なまり節と白玉葱のサラダ",
+"desc": "namaribushi to shiro-tamanegi salad, flakes of pale pinkish-brown boiled bonito mixed with thin white onion slices and green vegetables in a light dressing, in a bowl",
+"items": [
+"maff_kyodo:36_25_shizuoka"
+],
+"roll": 0,
+"seed": 4903,
+"prompt": "337e4f381e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_26_shizuoka",
+"ja": "たまごふわふわ",
+"desc": "tamago fuwafuwa, a pot of very fluffy pale yellow whipped egg risen like a souffle over clear dashi, with a pinch of green or nori on top, in a small earthenware pot",
+"items": [
+"maff_kyodo:36_26_shizuoka"
+],
+"roll": 0,
+"seed": 94244,
+"prompt": "ab46a931ec",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_27_shizuoka",
+"ja": "へそもち",
+"desc": "heso mochi, flattened round white steamed rice-flour dumplings each with a navel-like dent pressed in the centre, lined up on a plate with dark azuki paste beside them",
+"items": [
+"maff_kyodo:36_27_shizuoka"
+],
+"roll": 0,
+"seed": 36730,
+"prompt": "d80834496c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_28_shizuoka",
+"ja": "サクラエビのかき揚げ",
+"desc": "sakura ebi kakiage, a round loose cluster of tiny translucent pink sakura shrimp fried together in light batter, crisp and lacy, in a dark bowl",
+"items": [
+"maff_kyodo:36_28_shizuoka"
+],
+"roll": 0,
+"seed": 77335,
+"prompt": "19f2e27286",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_2_shizuoka",
+"ja": "がわ",
+"desc": "gawa, a cold soup of finely chopped pink raw bonito mashed with miso and pickled plum in icy water, with sliced cucumber, onion, shiso and ginger floating, in a white bowl",
+"items": [
+"maff_kyodo:36_2_shizuoka"
+],
+"roll": 0,
+"seed": 4838,
+"prompt": "761782018d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_4_shizuoka",
+"ja": "とろろ汁",
+"desc": "tororo-jiru, smooth frothy pale grey-white grated wild yam thinned with miso dashi, topped with shredded nori and green onion, in a bowl beside barley rice",
+"items": [
+"maff_kyodo:36_4_shizuoka"
+],
+"roll": 0,
+"seed": 94241,
+"prompt": "3eaab32f60",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_7_shizuoka",
+"ja": "染飯",
+"desc": "someii, glutinous rice dyed bright yellow with gardenia, packed flat in a lacquered box and decorated with green leaves",
+"items": [
+"maff_kyodo:36_7_shizuoka"
+],
+"roll": 0,
+"seed": 9282,
+"prompt": "7f80957ea6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_8_shizuoka",
+"ja": "鯖の箱寿司",
+"desc": "saba hakozushi, pressed sushi in a wooden box, the white rice covered in sections with sweet flaked mackerel, sliced lotus root, carrot, shiitake, yellow egg and pink kamaboko",
+"items": [
+"maff_kyodo:36_8_shizuoka"
+],
+"roll": 0,
+"seed": 49359,
+"prompt": "51f28940e9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-36_9_shizuoka",
+"ja": "御厨そば",
+"desc": "mikuriya soba, grey buckwheat noodles in a hot dark soy broth topped with chicken pieces, julienned orange carrot, sliced shiitake and green leaves, in a lacquered bowl",
+"items": [
+"maff_kyodo:36_9_shizuoka"
+],
+"roll": 0,
+"seed": 41073,
+"prompt": "137dd4f5ea",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_10_toyama",
+"ja": "昆布巻き",
+"desc": "konbumaki, short dark brown-black rolls of glossy simmered kelp wrapped around dried herring, each tied in the middle with a pale gourd strip, cut to show the spiral, on a long plate",
+"items": [
+"maff_kyodo:37_10_toyama",
+"maff_kyodo:kobumaki_fukui",
+"maff_kyodo:kobumaki_hokkaido"
+],
+"roll": 0,
+"seed": 61993,
+"prompt": "9af905e6c7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_11_toyama",
+"ja": "黒豆おこわ",
+"desc": "kuromame okowa, sticky white glutinous rice dotted with plump glossy black soybeans, in a white bowl",
+"items": [
+"maff_kyodo:37_11_toyama"
+],
+"roll": 0,
+"seed": 3991,
+"prompt": "5a504e6193",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_12_toyama",
+"ja": "昆布〆",
+"desc": "kobujime, thin slices of white fish and pink swordfish cured between sheets of kelp, slightly translucent and tinged amber at the edges, fanned on a long plate with garnish",
+"items": [
+"maff_kyodo:37_12_toyama"
+],
+"roll": 0,
+"seed": 50804,
+"prompt": "fefe15e64e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_14_toyama",
+"ja": "よごし",
+"desc": "yogoshi, chopped boiled dark green daikon leaves stir-fried in sesame oil and coated in miso, a glossy dark green heap on a plate",
+"items": [
+"maff_kyodo:37_14_toyama"
+],
+"roll": 0,
+"seed": 86995,
+"prompt": "a5556dc17f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_15_toyama",
+"ja": "おすわい",
+"desc": "osuwai, julienned white daikon and orange carrot in sweet vinegar mixed with thin brown strips of simmered fried tofu, sprinkled with white sesame, in a glass bowl",
+"items": [
+"maff_kyodo:37_15_toyama"
+],
+"roll": 0,
+"seed": 64717,
+"prompt": "3c59a263f4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_16_toyama",
+"ja": "ばいの煮もの",
+"desc": "bai no nimono, simmered Japanese ivory whelks, several whole glossy cream-white spiral sea-snail shells with brown-orange openings sitting in shallow clear amber dashi broth in a white bowl with a blue rim",
+"items": [
+"maff_kyodo:37_16_toyama"
+],
+"roll": 0,
+"seed": 74574,
+"prompt": "8810819c7d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_17_toyama",
+"ja": "焼き付け",
+"desc": "yakitsuke, flat round dark-green mugwort rice-flour patties pan-grilled golden at the edges, topped with a glossy brown sweet miso glaze and white sesame seeds, three overlapping on a white plate",
+"items": [
+"maff_kyodo:37_17_toyama"
+],
+"roll": 0,
+"seed": 74352,
+"prompt": "57f8ce6838",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_18_toyama",
+"ja": "ぶりしゃぶ",
+"desc": "buri shabu, yellowtail shabu-shabu, thin raw slices of pink-red and white yellowtail being swished in clear kombu broth in a pot, with a square of kelp in the steaming pale broth",
+"items": [
+"maff_kyodo:37_18_toyama"
+],
+"roll": 0,
+"seed": 1212,
+"prompt": "943aa2fbcd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_19_toyama",
+"ja": "いかと里いもの煮もの",
+"desc": "ika to satoimo no nimono, glossy brown simmered squid rings and tentacles with whole round peeled taro potatoes in a little brown sauce, a sprig of green leaf, in a white bowl",
+"items": [
+"maff_kyodo:37_19_toyama"
+],
+"roll": 0,
+"seed": 55042,
+"prompt": "251d84d66b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_1_toyama",
+"ja": "ほたるいかの酢味噌和え",
+"desc": "hotaruika no sumiso ae, a small heap of whole boiled firefly squid, glossy dark red-purple bodies with tentacles, on a pool of yellow mustard-vinegar miso sauce in a white bowl",
+"items": [
+"maff_kyodo:37_1_toyama"
+],
+"roll": 0,
+"seed": 53774,
+"prompt": "e9d7e1092d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_20_toyama",
+"ja": "ます寿司",
+"desc": "masu-zushi, pressed trout sushi, wedge slices cut from a round cake with a thick top layer of pale orange-pink cured trout over a deep layer of white vinegared rice, on green bamboo leaves",
+"items": [
+"maff_kyodo:37_20_toyama"
+],
+"roll": 0,
+"seed": 2572,
+"prompt": "68e0e249d7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_21_toyama",
+"ja": "たけのこの味噌煮",
+"desc": "takenoko no misoni, thick pale-yellow bamboo-shoot rounds and wedges simmered in light miso with dark green softened kombu pieces and a few green leaf garnishes, in a square white dish",
+"items": [
+"maff_kyodo:37_21_toyama"
+],
+"roll": 0,
+"seed": 51122,
+"prompt": "b38b4a453f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_22_toyama",
+"ja": "報恩講料理",
+"desc": "houonko ryori, a Buddhist memorial feast on a bright red lacquered tray, small red lacquered bowls of white rice, clear soup with tofu, simmered vegetables, red adzuki beans, wild greens and tofu pieces",
+"items": [
+"maff_kyodo:37_22_toyama"
+],
+"roll": 0,
+"seed": 82417,
+"prompt": "7aea48d3ab",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_24_toyama",
+"ja": "みょうが寿司",
+"desc": "myoga zushi, pressed sushi squares of white vinegared rice mixed with pink trout flakes, topped with a slice of pink trout and a pink-tipped pickled myoga ginger bud, on long green bamboo leaves",
+"items": [
+"maff_kyodo:37_24_toyama"
+],
+"roll": 0,
+"seed": 77814,
+"prompt": "61de8c3e1d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_25_toyama",
+"ja": "白えび素干だしのそうめん",
+"desc": "shiro-ebi suboshi dashi no somen, a nest of chilled thin white somen noodles in a glass bowl beside a black cup of dark dipping broth, small dishes of dried pink white shrimp, green onion and ginger",
+"items": [
+"maff_kyodo:37_25_toyama"
+],
+"roll": 0,
+"seed": 65448,
+"prompt": "dca55c359c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_26_toyama",
+"ja": "すり身揚げ",
+"desc": "surimi age, deep-fried fish paste fritters, rough golden-brown round lumps flecked with orange carrot and green onion, piled on a white plate with green shiso and maple leaves",
+"items": [
+"maff_kyodo:37_26_toyama"
+],
+"roll": 0,
+"seed": 60779,
+"prompt": "953ecc0da2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_27_toyama",
+"ja": "げんげの味噌汁",
+"desc": "genge no misoshiru, a black lacquered bowl of pale cloudy miso soup with soft chunks of white gelatinous eelpout fish and thin rings of green onion",
+"items": [
+"maff_kyodo:37_27_toyama"
+],
+"roll": 0,
+"seed": 70485,
+"prompt": "bd02b0de27",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_28_toyama",
+"ja": "三日の団子汁",
+"desc": "mikka no dango jiru, a red lacquered lidded bowl of miso soup with smooth white round glutinous rice dumplings, strips of brown taro stalk and pale bonito flakes on top",
+"items": [
+"maff_kyodo:37_28_toyama"
+],
+"roll": 0,
+"seed": 53337,
+"prompt": "c74d66d145",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_29_toyama",
+"ja": "つぼ煮",
+"desc": "tsuboni, a deep red lacquered bowl heaped with simmered brown coiled ostrich-fern fiddleheads, orange carrot chunks, white taro pieces and fried tofu strips",
+"items": [
+"maff_kyodo:37_29_toyama"
+],
+"roll": 0,
+"seed": 68679,
+"prompt": "7c1cc56625",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_2_toyama",
+"ja": "たら汁",
+"desc": "tara jiru, a big bowl of cloudy pale miso soup with chunky pieces of white cod on the bone, grey skin, pink cod liver and roe, thin burdock and green onion",
+"items": [
+"maff_kyodo:37_2_toyama"
+],
+"roll": 0,
+"seed": 12045,
+"prompt": "5f56c2c358",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_30_toyama",
+"ja": "べっこう",
+"desc": "bekko, amber-brown translucent soy-sauce agar jelly cut into squares and triangles, with fine threads of set yellow egg suspended inside, arranged on a white plate with blue pattern",
+"items": [
+"maff_kyodo:37_30_toyama"
+],
+"roll": 0,
+"seed": 34479,
+"prompt": "f513fad6b5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_3_toyama",
+"ja": "酢ずき",
+"desc": "suzuki, vinegared taro stalk, a heap of short magenta-red batons of zuiki stems glossy with sweet vinegar in a pale blue bowl",
+"items": [
+"maff_kyodo:37_3_toyama"
+],
+"roll": 0,
+"seed": 46163,
+"prompt": "0b08b0e243",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_5_toyama",
+"ja": "かぶらずし",
+"desc": "kabura zushi, a thick round of pale white turnip sandwiching a slice of salted yellowtail, coated in white fermented rice koji with thin orange carrot shreds, on a plate",
+"items": [
+"maff_kyodo:37_5_toyama"
+],
+"roll": 0,
+"seed": 41460,
+"prompt": "9d1664037d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_6_toyama",
+"ja": "いとこ煮",
+"desc": "itokoni, a small bowl of soupy simmered stew of tiny dice of daikon, carrot, taro, konnyaku and fried tofu with whole red-brown adzuki beans in pale broth",
+"items": [
+"maff_kyodo:37_6_toyama",
+"maff_kyodo:43_3_yamaguchi",
+"maff_kyodo:itokoni_shiga"
+],
+"roll": 0,
+"seed": 39863,
+"prompt": "18f52e2093",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_7_toyama",
+"ja": "とろろ昆布のおにぎり",
+"desc": "tororo kombu onigiri, triangular rice balls fully wrapped in fluffy, fine shaved pale olive-brown kelp threads, a fuzzy texture, several on a white plate with a green leaf",
+"items": [
+"maff_kyodo:37_7_toyama"
+],
+"roll": 0,
+"seed": 36841,
+"prompt": "ad98413199",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-37_8_toyama",
+"ja": "おせずし",
+"desc": "osezushi, rectangular pressed sushi slabs with a top of glossy black nori over layers of white rice and flaked grilled mackerel, three lined up on a white plate",
+"items": [
+"maff_kyodo:37_8_toyama"
+],
+"roll": 0,
+"seed": 79973,
+"prompt": "1d2375bb08",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_11_gifu",
+"ja": "大歳のごっつぉ",
+"desc": "otoshi no gottso, New Year's Eve dish, a black lacquered bowl of simmered daikon, carrot, taro, tofu and thin threads of dark kombu in broth, beside a lidded black bowl",
+"items": [
+"maff_kyodo:38_11_gifu"
+],
+"roll": 0,
+"seed": 36387,
+"prompt": "1589a4f707",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_12_gifu",
+"ja": "ねずし",
+"desc": "nezushi, a small bowl heaped with fermented sushi of white rice koji mixed with thin white daikon strips, orange carrot shreds and pink salted trout pieces",
+"items": [
+"maff_kyodo:38_12_gifu"
+],
+"roll": 0,
+"seed": 79981,
+"prompt": "a3add36af8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_13_gifu",
+"ja": "もろこずし",
+"desc": "morokozushi, a long pressed sushi bar with small whole dark amber-brown sweet-soy simmered moroko river fish laid over white rice, a stripe of yellow shredded egg down the middle",
+"items": [
+"maff_kyodo:38_13_gifu",
+"maff_kyodo:morokozushi_aichi"
+],
+"roll": 0,
+"seed": 98536,
+"prompt": "3d245eaa31",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_14_gifu",
+"ja": "いももち",
+"desc": "imo mochi, flat round pale white-cream patties of mashed taro and rice, lightly toasted with small brown scorched spots, plain, on a plate",
+"items": [
+"maff_kyodo:38_14_gifu",
+"maff_kyodo:44_20_tokushima",
+"maff_kyodo:imomochi_hokkaido",
+"maff_kyodo:imomochi_wakayama"
+],
+"roll": 0,
+"seed": 59824,
+"prompt": "7455aa4d7e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_16_gifu",
+"ja": "すったて汁",
+"desc": "suttate jiru, a small black pot of thick creamy off-white ground-soybean soup with slices of meat, dark mushrooms and green onion floating in it",
+"items": [
+"maff_kyodo:38_16_gifu"
+],
+"roll": 0,
+"seed": 88923,
+"prompt": "6854a2b51f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_18_gifu",
+"ja": "水まんじゅう",
+"desc": "mizu manju, clear glassy domed kudzu cakes, each with a round of dark red bean paste or green filling visible through the transparent jelly, on a glass dish on a bamboo mat",
+"items": [
+"maff_kyodo:38_18_gifu"
+],
+"roll": 0,
+"seed": 78987,
+"prompt": "fe7073ec0e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_19_gifu",
+"ja": "煮たくもじ",
+"desc": "nita kumoji, a tangle of simmered pickled turnip greens, olive and dark green leaves and pale yellow-green stems glossy with sesame oil, sprinkled with white sesame, on a patterned plate",
+"items": [
+"maff_kyodo:38_19_gifu"
+],
+"roll": 0,
+"seed": 66158,
+"prompt": "a43105cbd2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_1_gifu",
+"ja": "朴葉ずし",
+"desc": "hoba zushi, a mound of white vinegared rice on a large green magnolia leaf, topped with pink salmon slices, pink pickled ginger, brown simmered mountain vegetables and shredded egg",
+"items": [
+"maff_kyodo:38_1_gifu"
+],
+"roll": 0,
+"seed": 87514,
+"prompt": "e08db5b94c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_21_gifu",
+"ja": "柿なます",
+"desc": "kaki namasu, thin julienne of white daikon and orange carrot in vinegar mixed with soft dark orange shreds of dried persimmon, served in a hollowed orange persimmon cup",
+"items": [
+"maff_kyodo:38_21_gifu",
+"maff_kyodo:kaki_namasu_miyagi",
+"maff_kyodo:kaki_namasu_nara"
+],
+"roll": 0,
+"seed": 87550,
+"prompt": "fa82deafb9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_22_gifu",
+"ja": "赤だつの酢ぶて",
+"desc": "akadatsu no subute, short glossy dark red-purple strips of red taro stalk dressed in vinegar, a small heap in a brown ceramic dish",
+"items": [
+"maff_kyodo:38_22_gifu"
+],
+"roll": 0,
+"seed": 15760,
+"prompt": "bfa91ef998",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_23_gifu",
+"ja": "千石豆のかきまわし",
+"desc": "sengoku mame no kakimawashi, a bowl of light-brown seasoned mixed rice with green sliced hyacinth bean pods, chicken, burdock and carrot bits mixed through",
+"items": [
+"maff_kyodo:38_23_gifu"
+],
+"roll": 0,
+"seed": 12501,
+"prompt": "869f1a160b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_25_gifu",
+"ja": "初午だんご",
+"desc": "hatsu-uma dango, small oval cocoon-shaped steamed white rice-flour dumplings thickly dusted in golden-tan kinako soybean flour, on a square pale green plate",
+"items": [
+"maff_kyodo:38_25_gifu"
+],
+"roll": 0,
+"seed": 59176,
+"prompt": "041af1b9f4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_27_gifu",
+"ja": "寒干大根煮",
+"desc": "kanboshi daikon ni, simmered thick rounds and rings of pale beige winter-dried daikon radish in light soy broth, with grey konnyaku triangles and fish cakes, in a white bowl",
+"items": [
+"maff_kyodo:38_27_gifu"
+],
+"roll": 0,
+"seed": 25891,
+"prompt": "a352d9ba87",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_28_gifu",
+"ja": "桑の木豆煮",
+"desc": "kuwanoki mame ni, simmered mulberry beans, long slender dark reddish-brown speckled bean pods laid neatly side by side, glossy with sweet soy, topped with green onion bits, in a blue and white dish",
+"items": [
+"maff_kyodo:38_28_gifu"
+],
+"roll": 0,
+"seed": 93750,
+"prompt": "ab4fda0af9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_29_gifu",
+"ja": "こも豆腐",
+"desc": "komo dofu, thick round slices of pale beige firm tofu with a porous spongy hole-riddled texture and faint straw-mat ridges on the outside, simmered and plain, on a long plate",
+"items": [
+"maff_kyodo:38_29_gifu",
+"maff_kyodo:komo_toufu_tottori",
+"maff_kyodo:komodofu_ibaraki"
+],
+"roll": 0,
+"seed": 63059,
+"prompt": "75ec76da9d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_2_gifu",
+"ja": "鶏ちゃん",
+"desc": "keichan, a shallow iron pan of miso-sauced chicken pieces stir-fried with plenty of pale green shredded cabbage and onion, glistening brown sauce bubbling at the edges",
+"items": [
+"maff_kyodo:38_2_gifu"
+],
+"roll": 0,
+"seed": 17588,
+"prompt": "aa2cf3bc3d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_30_gifu",
+"ja": "鮎の塩焼",
+"desc": "ayu no shioyaki, whole salt-grilled sweetfish skewered on long sticks in a wavy swimming pose, silvery grey-green skin lightly charred, white crusted salt on fins and tail",
+"items": [
+"maff_kyodo:38_30_gifu"
+],
+"roll": 0,
+"seed": 19567,
+"prompt": "a814a3ce41",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_3_gifu",
+"ja": "からすみ",
+"desc": "karasumi, Gifu rice-flour sweet, long ridged bars with a wavy mountain-shaped cross-section in white, purple, green and brown, smooth chewy surface, lined up on a plate",
+"items": [
+"maff_kyodo:38_3_gifu"
+],
+"roll": 0,
+"seed": 12113,
+"prompt": "f6dedbc462",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_4_gifu",
+"ja": "鮎ぞうすい",
+"desc": "ayu zosui, a black earthenware pot of thin white rice porridge with flakes of grilled sweetfish, topped with a small mound of finely chopped bright green herbs",
+"items": [
+"maff_kyodo:38_4_gifu"
+],
+"roll": 0,
+"seed": 90857,
+"prompt": "dda2ae8b5c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_6_gifu",
+"ja": "みょうがぼち",
+"desc": "myogabochi, smooth white flour dumplings filled with pale brown broad-bean paste, one cut to show the filling, each wrapped in a long green myoga ginger leaf",
+"items": [
+"maff_kyodo:38_6_gifu"
+],
+"roll": 0,
+"seed": 81378,
+"prompt": "58a9500dc1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-38_8_gifu",
+"ja": "五平餅",
+"desc": "gohei mochi, flat oval cakes of pounded rice on wooden skewers, grilled over charcoal and spread with a glossy dark brown walnut miso sauce, slightly charred",
+"items": [
+"maff_kyodo:38_8_gifu",
+"maff_kyodo:gohei_mochi_nagano",
+"maff_kyodo:goheimochi_aichi"
+],
+"roll": 0,
+"seed": 13298,
+"prompt": "ba5637841a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-39_10_osaka",
+"ja": "若ごぼうの炒め煮",
+"desc": "wakagobo no itamenimono, young burdock stir-simmered, a bowl of thin pale green burdock stems and leaf stalks with slender tan root shavings and fried tofu strips, glossy with soy",
+"items": [
+"maff_kyodo:39_10_osaka"
+],
+"roll": 0,
+"seed": 10054,
+"prompt": "9323feaeb2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-39_11_osaka",
+"ja": "鱧皮ザクザク",
+"desc": "hamokawa zakuzaku, chopped dark brown grilled pike-conger skin tossed with thin translucent green cucumber slices in sweet vinegar, a small heap in a clear glass bowl",
+"items": [
+"maff_kyodo:39_11_osaka"
+],
+"roll": 0,
+"seed": 80498,
+"prompt": "169d6fd64d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01004",
 "ja": "オートミール",
 "desc": "a small bowl heaped with dry rolled oats: many thin flat irregular pale beige oat flakes, matte and papery, a few loose flakes beside the bowl, with a wooden spoon",
