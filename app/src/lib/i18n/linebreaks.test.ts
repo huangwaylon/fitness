@@ -24,11 +24,11 @@ const WORLD: RegExp[] = [
   /^kiki\.(invite|join|host)/, /^guest\.(arrived|welcome)$/, /^zukan\.added$/, /^island\.(highfive|balloon|no3d|me$)/,
   // the HUD, its menu's pills, the island's own controls and plates
   /^island\.(health|food|bells|menu|settings)/, /^panel\.(travel|hiking|wedding|kikimimi)/, /^zukan\.title$/, /^wallet\.title$/,
-  /^say\./, /^room\./, /^tree\./, /^preview\.chip/, /^sound\.tapToHear$/, /^sync\./, /^board\.(name|open|new|empty)$/,
+  /^say\./, /^room\./, /^tree\./, /^preview\.chip/, /^preview\.(event|season|weather|tod)\./, /^sound\.tapToHear$/, /^sync\./, /^board\.(name|open|new|empty)$/,
   // the rooms' signs and HUD
-  /^museum\.(title|room)$/, /^shop\.(title|sign|out|wallet|counter|twins)$/, /^tent\.(title|room|back|whose|failed|lights|resetView|edit)$/,
+  /^museum\.(title|room)$/, /^shop\.(title|sign|out|wallet|counter|twins)$/, /^tent\.(title|room|back|whose|failed|lights|resetView|edit|homeLook)$/,
   // official names
-  /\.name\./, /^fossil\.set\./, /^decor\.item\./
+  /\.name\./, /^fossil\.set\./, /^decor\.item\./, /^travel\.airline$/
 ];
 const isWorld = (k: string): boolean => WORLD.some((r) => r.test(k));
 
@@ -52,6 +52,22 @@ describe('ja copy: the sheets (word-break: normal)', () => {
   it('has no Latin or digit run longer than 16 characters', () => {
     const long = Object.entries(ja).filter(([k, v]) => !isWorld(k) && longestLatin(v) > 16).map(([k, v]) => `${k}: ${v}`);
     expect(long).toEqual([]);
+  });
+});
+
+/** Sheets still being converted by their own sessions (2026-11-07): out of the sheets' spelling rules until they land. */
+const PENDING = /^(food|kiki)\./;
+const sheet = Object.entries(ja).filter(([k]) => !isWorld(k) && !PENDING.test(k));
+const JA = '[\\u3040-\\u30ff\\u4e00-\\u9fff々ー]';
+
+describe('ja copy: the sheets are normal Japanese', () => {
+  it('has no space between two Japanese characters (no 分かち書き; around a number or Latin is fine)', () => {
+    const spaced = new RegExp(`${JA} +${JA}`);
+    expect(sheet.filter(([, v]) => spaced.test(v)).map(([k, v]) => `${k}: ${v}`)).toEqual([]);
+  });
+  it('spells a term one way (docs/design.md "Copy": 取り消す, もう一度, 保存, 決定, 設定, 記録, 目標, 編集, 削除, 閉じる, 戻る, 今日)', () => {
+    const kana = /とりけす|もういちど|ほぞん|けってい|せってい|きろく|もくひょう|へんしゅう|さくじょ|とじる|もどる|きょう/;
+    expect(sheet.filter(([, v]) => kana.test(v)).map(([k, v]) => `${k}: ${v}`)).toEqual([]);
   });
 });
 
