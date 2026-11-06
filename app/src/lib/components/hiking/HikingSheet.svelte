@@ -50,13 +50,15 @@
   });
 
   const close = () => (open = false);
+  /** The native close (Esc, ✕): a late one, after it was opened again at once (Chromium queues it), isn't a close. */
+  const closed = () => !dlg?.open && (open = false);
   function cancel(e: Event) {
     if (view?.escape()) e.preventDefault();
   }
 </script>
 
 <dialog bind:this={dlg} class="trails" lang={i18n.locale} aria-label={pick(S.title, i18n.locale)} tabindex="-1" data-sfx="self" data-hiking
-  data-level={sel ? 'trail' : 'list'} onclose={() => (open = false)} oncancel={cancel}>
+  data-level={sel ? 'trail' : 'list'} onclose={closed} oncancel={cancel}>
   {#if open}
     <TrailList hidden={!!sel} onopen={(t) => (sel = t)} />
     {#if sel}

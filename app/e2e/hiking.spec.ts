@@ -67,8 +67,8 @@ test('a trail: the peek shows the whole chart; the scrub moves the map\'s dot an
   await expect(elev).toBeVisible();
   await expect(elev.locator('[data-elev-range]')).toHaveText(/^\d+～\d+ m$/);
   // the peek reaches just under the chart: the chart all on screen, the sheet's top above it
-  const card = (await elev.boundingBox())!;
-  expect(card.y + card.height).toBeLessThanOrEqual(852);
+  // (once the sheet has eased up to it)
+  await expect.poll(async () => ((b) => b.y + b.height)((await elev.boundingBox())!)).toBeLessThanOrEqual(852);
   await expect(view).toHaveAttribute('data-sheet', 'peek');
 
   // press at the middle: the readout and the map's dot; drag to three quarters; let go: it stays

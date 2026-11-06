@@ -16,7 +16,8 @@ function walk(dir: string, out: string[] = []): string[] {
   for (const f of readdirSync(dir)) {
     const p = join(dir, f);
     if (statSync(p).isDirectory()) {
-      if (f !== 'fixtures') walk(p, out);
+      // (トレイル's text is in the system fonts, its own look: docs/hiking.md)
+      if (f !== 'fixtures' && f !== 'hiking') walk(p, out);
     } else if (/\.(svelte|ts|json)$/.test(f) && !/\.test\.ts$/.test(f)) out.push(p);
   }
   return out;
