@@ -4,7 +4,7 @@ import { defaultLayout, doorOf, extentOf, layoutOf, objMid, objTiles, opsBetween
 import { CHUNK_COUNT, chunkMesh, stairsMesh } from './mesh.ts';
 import { DEFAULT_HOMES, FAMILIES, catalogue, homeFoot, partsOf } from './homes.ts';
 import { diffLayouts } from './diff.ts';
-import { heightAt, fieldOf, GRASS_Y } from './height.ts';
+import { heightAt, fieldOf, DEEP_Y, GRASS_Y } from './height.ts';
 import { Ch, fieldsOf } from './fields.ts';
 import { riverStems } from './river.ts';
 import { navOf, findPath, snapTap, reachable, walkable } from './nav.ts';
@@ -213,6 +213,29 @@ describe('heights', () => {
     expect(mid).toBeLessThan(40 + GRASS_Y - 10);
     // the bridge's deck over the stream
     expect(heightAt(l, 195, 646)).toBeGreaterThan(GRASS_Y);
+  });
+  test('a river runs out into the sea without a step: its bed shallows into the seabed (the user\'s 2026-11-06 hard line at the shore)', () => {
+    const { ground, fields } = fieldOf(l);
+    // the stream's mouth on the left beach (column 2, rows 23-24): across the shore along its middle, from its bed
+    // inland out past where its stem runs on into the sea
+    let z = 600, best = Infinity;
+    for (let k = 600; k <= 660; k += 2.5) if (fields.at(Ch.fresh, -30, k) < best) (best = fields.at(Ch.fresh, -30, k)), (z = k);
+    expect(best).toBeLessThan(-5);
+    let prev = ground(40, z);
+    expect(prev).toBeLessThan(-3);
+    for (let x = 39; x >= -85; x--) {
+      const y = ground(x, z);
+      expect(Math.abs(y - prev)).toBeLessThan(0.6);
+      prev = y;
+    }
+  });
+  test('by the grid\'s edge the seabed is down at the deep plane\'s level (no ledge where the ground\'s mesh ends)', () => {
+    const { ground } = fieldOf(l);
+    // the back of the island: the land a tile from the grid's far edge (z 1710)
+    expect(ground(200, 1709)).toBeCloseTo(DEEP_Y, 1);
+    expect(ground(-89, 600)).toBeCloseTo(DEEP_Y, 1);
+    // and nearer the land, the shelf as it was
+    expect(ground(200, 1690)).toBeGreaterThan(DEEP_Y + 0.5);
   });
   test('the corners are round: a convex cliff corner is cut', () => {
     const { tierAt } = fieldOf(l);

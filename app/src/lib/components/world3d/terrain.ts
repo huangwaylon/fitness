@@ -12,7 +12,7 @@
 import {
   BufferGeometry, ClampToEdgeWrapping, Color, DataTexture, DoubleSide, Float32BufferAttribute, GLSL3, Group, LinearFilter, LinearMipmapLinearFilter, Mesh,
   MeshLambertMaterial, NearestFilter, OrthographicCamera, PlaneGeometry, RawShaderMaterial, RepeatWrapping, RGBAFormat, SRGBColorSpace,
-  Scene, ShaderMaterial, Texture, TextureLoader, Uint32BufferAttribute, UnsignedByteType, WebGLRenderTarget, type WebGLRenderer
+  Scene, ShaderChunk, ShaderMaterial, Texture, TextureLoader, Uint32BufferAttribute, UnsignedByteType, WebGLRenderTarget, type WebGLRenderer
 } from 'three';
 import { bend, BEND_GLSL, bendU } from './bend.ts';
 import { waterU } from './water.ts';
@@ -219,11 +219,18 @@ void main(){
   vec3 wet = mix(SAND_WET*1.04, SAND_WET*0.9, smoothstep(-6.0, 4.0, dn));
   wet = mix(wet, mix(wet, vec3(1.0), 0.3), smoothstep(0.5, 0.85, gn(vec2(p.x/9.0, p.y/1.8), 254))*0.3*smoothstep(-4.0, 2.0, dn));
   sc = mix(sc, wet, smoothstep(-9.0, -3.5, dn) * float(tier == 0));
-  // (the bed is the deep plane's colour by the field's reach: past it the sea's own colour carries the shallows, so the
-  // grid's edge never shows)
-  vec3 bed = mix(SAND_WET*0.95, vec3(0.40,0.74,0.79), smoothstep(1.0, 20.0, dL));
-  bed = mix(bed, vec3(0.18,0.45,0.72), smoothstep(20.0, 46.0, dL));
-  sc = mix(sc, bed, smoothstep(-1.0, 3.0, dn) * float(tier == 0));
+  // the seabed fading with depth: at the waterline the wet sand, paling and cooling under the water (NH's shallows are
+  // a light sand going aqua, never a darker band), then the turquoise, then the deep blue; one long eased ramp, no
+  // knee for a line to show at. (The bed is the deep plane's colour by the field's reach: past it the sea's own colour
+  // carries the shallows, so the grid's edge never shows)
+  float bl = dL + 1.2*gn(p/11.0, 255);
+  vec3 bed = mix(mix(mix(SAND, SAND_WET, 0.5), vec3(0.62, 0.90, 0.86), 0.3), mix(SAND_HI, vec3(0.62, 0.90, 0.86), 0.62), smoothstep(-2.0, 6.0, bl));
+  bed = mix(bed, vec3(0.40,0.74,0.79), smoothstep(4.0, 22.0, bl));
+  // (the deep plane's colour by the grid's edge too, where the land comes nearer it than the field's reach: its seabed
+  // goes down to the plane there, layout/height.ts EDGE_FADE)
+  vec2 ge = min(p - uGrid.xy, uGrid.xy + uGrid.zw - p);
+  bed = mix(bed, vec3(0.18,0.45,0.72), max(smoothstep(20.0, 46.0, dL), smoothstep(30.0, 4.0, min(ge.x, ge.y))));
+  sc = mix(sc, bed, smoothstep(-2.0, 4.0, dn) * float(tier == 0));
   c = mix(c, sc, aa(ds, 1.4));
   // paths: dirt worn soft, stone, brick and planks NH's
   if (dP < 4.0){
@@ -239,11 +246,14 @@ void main(){
     c = mix(c, pc, edge);
   }
   // fresh water: a darker earthy rim on the bank, the bed sandy at the edge going deep blue-green
+  // where a river meets the sea (its stem runs on out past the shore, layout/river.ts) its bed and its bank's rim fade
+  // into the seabed's over the shore, as its channel shallows into it (layout/height.ts): no dark band out to sea
   float dw = dW + 0.8*gn(p/6.0, 27);
-  c = mix(c, c*vec3(0.78,0.74,0.62), (1.0 - smoothstep(0.0, 3.5, dw)) * step(0.0, dw) * 0.6);
+  float sea = smoothstep(-10.0, 6.0, dL) * float(tier == 0);
+  c = mix(c, c*vec3(0.78,0.74,0.62), (1.0 - smoothstep(0.0, 3.5, dw)) * step(0.0, dw) * 0.6 * (1.0 - sea));
   vec3 wb = mix(vec3(0.72,0.66,0.48), vec3(0.20,0.42,0.48), smoothstep(-1.0, -12.0, dW));
   wb *= 1.0 + 0.08*fbm(p/7.0, 33, 3);
-  c = mix(c, wb, aa(dw, 1.0));
+  c = mix(c, mix(wb, bed, sea), aa(dw, 1.0));
   // the cliffs: a shade at their foot, the top edge a little darker
   if (tier < 3){
     float df = tier == 0 ? t1 : tier == 1 ? t2 : t3;
@@ -288,9 +298,11 @@ varying vec2 vW;
 varying vec4 vFlow;
 varying vec4 vPath;
 varying float vDepth;
+varying float vLow;
 void main() {
   vec4 wp = modelMatrix * vec4(position, 1.0);
   vW = vec2(wp.x, -wp.z);
+  vLow = step(wp.y, 5.0);
   vFlow = aFlow;
   vPath = aPath;
   vec4 mv = viewMatrix * bendW(wp);
@@ -301,14 +313,19 @@ const FRESH_FRAG = /* glsl */ `
 ${W_COMMON}
 varying vec4 vFlow;
 varying vec4 vPath;
+varying float vLow;
 uniform sampler2D uSdfA;
 uniform vec4 uGrid;
 uniform float uFar;
 void main() {
   vec2 p = vW;
   // the edge is the field's (fields.ts, soft and round), not where the mesh's bank crosses the surface (its 5u cells)
-  float dW = (texture2D(uSdfA, (p - uGrid.xy) / uGrid.zw).b * 2.0 - 1.0) * uFar;
+  vec4 f = texture2D(uSdfA, (p - uGrid.xy) / uGrid.zw);
+  float dW = (f.b * 2.0 - 1.0) * uFar;
   float edge = smoothstep(-1.2, -2.0, dW);
+  // a river on the sea's level runs out into the sea: its surface (a little over the sea's) fades into it over its last
+  // few u, the sea's own water there under it already (the sea is drawn 6u in), not cut square at the shore
+  edge *= 1.0 - vLow * smoothstep(-7.0, -0.5, (f.r * 2.0 - 1.0) * uFar);
   if (edge <= 0.0) discard;
   float still = vFlow.z, foot = vFlow.w, lip = vPath.w;
   // the hand-made river's look (water.ts RIVER_FRAG): streaks on the length along the stem and across it, so a bend
@@ -397,16 +414,19 @@ float boxD(vec2 p) {
 void main() {
   vec2 p = vW;
   vec2 uv = (p - uGrid.xy) / uGrid.zw;
-  float near = (texture2D(uSdfA, clamp(uv, 0.0, 1.0)).r * 2.0 - 1.0) * uFar;
-  float inside = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
-  float d = mix(max(boxD(p), uFar), near < uFar - 1.0 ? near : max(near, boxD(p)), inside);
+  // off the grid: the field at its edge and on out (as layout/fields.ts at() reads it), so the shallows carry on across
+  // the grid's edge where the land is nearer it than the field's reach (no step in the water's colour there)
+  vec2 off = max(max(uGrid.xy - p, p - uGrid.xy - uGrid.zw), 0.0);
+  vec4 sdf = texture2D(uSdfA, clamp(uv, 0.0, 1.0));
+  float near = (sdf.r * 2.0 - 1.0) * uFar + length(off);
+  float d = near < uFar - 1.0 ? near : max(near, boxD(p));
   if (d < -6.0) discard;
   // NH's shallows (the user: "double it … make the transition smooth into the deep water … seeing fish easier"): the
   // turquoise reaches ~70u out (twice the old band), then fades into the deep blue over a long ~200u gradient, never a
   // step. Translucent over the baked shallows near the shore; past the field's reach (the bed is the deep plane's blue
   // there) the sea's own turquoise carries them, still see-through over the fishing water (a fish's shadow reads under
   // it), opaque only far out
-  float a = mix(0.16, 0.56, smoothstep(3.0, 70.0, d));
+  float a = mix(0.22, 0.56, smoothstep(3.0, 70.0, d));
   a = mix(a, 0.72, smoothstep(60.0, 130.0, d));
   a = mix(a, 1.0, smoothstep(130.0, 340.0, d));
   vec3 col = mix(vec3(0.44, 0.89, 0.91), vec3(0.17, 0.50, 0.86), smoothstep(50.0, 280.0, d));
@@ -419,10 +439,9 @@ void main() {
   // foam on it fading as it goes; a thin lace always where the water meets the sand. The coast's phase is its point on
   // the shoreline's (the field's normal back along the distance), so a front stays a line along the coast.
   float sw = SW_WATERLINE - d;
-  if (sw > -SW_APPROACH - 4.0 && near < uFar - 1.0) {
+  if (sw > -SW_APPROACH - 8.0 && near < uFar - 1.0) {
     vec2 st = 5.0 / uGrid.zw;
-    vec2 gr = vec2(texture2D(uSdfA, clamp(uv + vec2(st.x, 0.0), 0.0, 1.0)).r, texture2D(uSdfA, clamp(uv + vec2(0.0, st.y), 0.0, 1.0)).r)
-      - texture2D(uSdfA, clamp(uv, 0.0, 1.0)).r;
+    vec2 gr = vec2(texture2D(uSdfA, clamp(uv + vec2(st.x, 0.0), 0.0, 1.0)).r, texture2D(uSdfA, clamp(uv + vec2(0.0, st.y), 0.0, 1.0)).r) - sdf.r;
     vec2 cp = p - normalize(gr + 1e-6) * d;
     vec3 fr = swashFront(cp, uTime);
     float lace = 0.55 + 0.45 * noise(p * 0.24 + vec2(uTime * 0.25, -uTime * 0.18));
@@ -438,6 +457,10 @@ void main() {
     fo = max(fo, up * smoothstep(-6.0, 0.0, sw) * 0.35 * lace);
     // the rim where the water meets the sand
     fo = max(fo, smoothstep(-2.4, 0.0, sw) * 0.4 * lace);
+    // (where a river runs out into the sea, its outflow: the surf's lines broken up over it, no white bar across a mouth;
+    // and all of it faded in at the block's outer edge, the incoming line's trail never cut square there)
+    fo *= mix(0.3, 1.0, smoothstep(-10.0, 4.0, (sdf.b * 2.0 - 1.0) * uFar))
+      * smoothstep(-SW_APPROACH - 8.0, -SW_APPROACH - 2.0, sw);
     col = mix(col, vec3(0.97, 1.0, 1.0), fo);
     a = max(a, fo * 0.9);
   }
@@ -461,7 +484,8 @@ function washed(m: MeshLambertMaterial, u: Record<string, { value: unknown }>): 
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     sh.vertexShader = 'varying vec3 vWashP;\n' + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvWashP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
-    sh.fragmentShader = WASH_HEAD + sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' + WASH_SAND);
+    sh.fragmentShader = (WASH_HEAD + sh.fragmentShader.replace('#include <map_fragment>', '#include <map_fragment>\n' + WASH_SAND))
+      .replace('#include <lights_fragment_begin>', ShaderChunk.lights_fragment_begin.replaceAll('directionalLightShadow.shadowIntensity', 'directionalLightShadow.shadowIntensity * wShadowK'));
   };
   m.customProgramCacheKey = () => 'wash';
   return m;
@@ -472,6 +496,7 @@ uniform sampler2D uWashSdf;
 uniform vec4 uWashGrid;
 uniform float uWashFar;
 varying vec3 vWashP;
+float wShadowK = 1.0;
 ${SWASH_GLSL}
 float wHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float wNoise(vec2 p) {
@@ -482,6 +507,9 @@ float wNoise(vec2 p) {
 `;
 const WASH_SAND = /* glsl */ `
 {
+  // a shadow on the seabed (a cliff's, by the sea) fading with the water's depth over it, the sunlight scattered in the
+  // water: no hard-edged shadow out across the shallows (the sea's surface is SEA_Y −0.5)
+  wShadowK = 1.0 - 0.8 * smoothstep(-0.4, -3.5, vWashP.y);
   vec2 wp = vec2(vWashP.x, -vWashP.z);
   vec2 wuv = (wp - uWashGrid.xy) / uWashGrid.zw;
   vec4 wA = texture2D(uWashSdf, wuv);
@@ -503,7 +531,7 @@ const WASH_SAND = /* glsl */ `
     c *= mix(vec3(1.0), vec3(0.70, 0.71, 0.77), wet * (1.0 - cov));
     // the sheet of water: thin at its front, the sea's turquoise deeper down (linear colours: the sand's are)
     float depth = smoothstep(0.0, 8.0, front - s);
-    vec3 sheet = mix(c * vec3(0.66, 0.70, 0.74), vec3(0.30, 0.74, 0.78), 0.14 + 0.36 * depth);
+    vec3 sheet = mix(c * vec3(0.78, 0.84, 0.86), vec3(0.36, 0.80, 0.82), 0.2 + 0.34 * depth);
     float glint = smoothstep(0.86, 0.97, wNoise(wp * vec2(0.18, 0.3) + vec2(uTime * 0.5, uTime * 0.2))) * 0.12 * depth;
     c = mix(c, sheet + glint, cov * step(0.0, front));
     // the foam: a lacy edge on the front (thinning as it drains back), a fainter line inside the sheet as it runs up
