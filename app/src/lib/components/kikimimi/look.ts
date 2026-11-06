@@ -26,3 +26,6 @@ export const levelMark = (lv: number): string => (lv === 5 ? '📢' : '★'.repe
 
 /** A speed as shown: one decimal (0.8, 1.0, 1.4). */
 export const sx = (x: number): string => x.toFixed(1);
+
+/** A tournament's trophy as shown (しずえの しゅうまつ たいかい: the hub's banner, its results, きろく's shelf). */
+export const MEDAL: Readonly<Record<'bronze' | 'silver' | 'gold', string>> = { bronze: '🥉', silver: '🥈', gold: '🥇' };

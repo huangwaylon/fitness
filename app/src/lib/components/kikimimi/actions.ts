@@ -12,7 +12,7 @@ import type { Focus } from '#lib/kikimimi/srs.ts';
 import type { Act } from '#lib/kikimimi/today.ts';
 import { currentReport, recentGames } from './progress.svelte.ts';
 import { keepLv, lastLv, lastTimer, sameDefault } from './prefs.ts';
-import { modeStack, type Page } from './nav.ts';
+import { modeStack, taikaiStack, type Page } from './nav.ts';
 
 /** The sheet's side: close it, and its stack of pages over the hub (nav.ts). */
 export interface SheetUi {
@@ -55,6 +55,13 @@ export class KikiActions {
     const g = this.#game(), v = g?.view;
     if (!g || !v) return;
     const ls = g.lesson;
+    if (v.gm === 'taikai' && v.amHost) {
+      const shared = !v.local, vs = v.vs;
+      g.close();
+      g.openTaikai({ vs });
+      if (shared) g.invite();
+      return;
+    }
     if (ls && v.local) {
       this.relesson(ls.unit.id, ls.lesson, ls.recheck, true);
       return;
@@ -170,6 +177,13 @@ export class KikiActions {
     if (!g) return;
     if (g.view.ladder) g.configure({ ladder: false });
     this.#lesson(g, unit, l, recheck);
+  };
+  /** The hub's たいかい banner: the tournament's lobby, mine (kept alone till さそう), its page over the hub. */
+  taikai = (): void => {
+    const g = this.#game();
+    if (!g) return;
+    g.openTaikai();
+    this.#ui.setPages(taikaiStack());
   };
   /** 「じぶんで ひらく」 from an invite: a lobby of my own, as last set on this phone. */
   startOwn = (): void => {

@@ -2,7 +2,8 @@
   // ききみみ's sheet (docs/kikimimi-ux.md §5; docs/kikimimi.md "UI"), its own chunk with the bank, the deck, the session
   // and the strings: full height (Sheet's `pop`), one title bar (the page's name, the game's question 3 / 8; ‹ and ✕,
   // ⚙ at the root) over one scroller. The root is the hub (an invite on top while one waits); its pages are pushed on
-  // one stack (nav.ts): あそぶ › a mode, みんなで, きろく, せってい, しまの みち › a unit › the ずかん. ‹ pops one (a
+  // one stack (nav.ts): あそぶ › a mode, みんなで, きろく, せってい, しまの みち › a unit › the ずかん, the weekend's
+  // たいかい (its lobby, show and results: taikai/, their own chunks). ‹ pops one (a
   // shared lobby popped is cancelled), ✕ closes the sheet from any page (asking first when others are in my lobby), a
   // backdrop tap or Esc pops (closes at the hub). A game sits over the stack: its notice, よーい 3-2-1, a question (Play),
   // the results (おわる back to the hub; a lesson's back to its page). Another's lobby I joined is みんなで (‹ leaves it
@@ -29,7 +30,7 @@
   import type { Filter } from '#lib/kikimimi/path.ts';
   import { heardQuiz, liveInvite, quizLive } from './invite.svelte.ts';
   import { levelMark } from './look.ts';
-  import { inviteStack, pop, push as pushOn, type Page } from './nav.ts';
+  import { inviteStack, pop, push as pushOn, taikaiStack, type Page } from './nav.ts';
   import type { Tile, HubInvite } from './hub/Hub.svelte';
   import { INDEX, addUnit, itemOf, load, loadIds, unitPart } from '#lib/kikimimi/pool.ts';
   import { tierFor, type UnitPlay } from '#lib/kikimimi/lesson.ts';
@@ -82,13 +83,14 @@
       case 'path': return t('kiki.path.title');
       case 'zukan': return t('kiki.zukan.title');
       case 'story': return t('kiki.mode.story');
+      case 'taikai': return t('kiki.mode.taikai');
       case 'unit': return path?.stages.flatMap((s) => s.stops).find((s) => s.id === p.id)?.name ?? t('kiki.path.title');
     }
   };
   const title = $derived(
     story ? t('kiki.mode.story') : v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
       : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`))
-      : hosting && page ? pageTitle(page) : guest ? t('kiki.tile.together') : t('kiki.title')
+      : hosting && page ? pageTitle(page) : guest ? t(v?.gm === 'taikai' ? 'kiki.mode.taikai' : 'kiki.tile.together') : t('kiki.title')
   );
   /** A page pushed (from the idle hub, an invite waiting: a lobby of my own first). */
   function enter(p: Page) {
@@ -102,6 +104,7 @@
     else if (lesson || guest) act.toHub();
     else {
       if (page?.k === 'lobby' && v && !v.local) game?.open(lastLv(), { timer: v.timer });
+      else if (page?.k === 'taikai') game?.open(lastLv(), { timer: lastTimer(), same: sameDefault() }); // (the hub's lobby is a quiz's)
       pages = pop(pages);
     }
   }
@@ -123,7 +126,7 @@
         if (gone) return;
         const it = new QuizGame({
           live: quizLive(), me: who, fast: hook('kikimimi') === 'fast', wire: wireHook(), heard: heardQuiz(), record: (row) => recordGame(who, row),
-          tierOf: (stage) => tierFor(currentReport()?.stats.level ?? null, stage)
+          tierOf: (stage) => tierFor(currentReport()?.stats.level ?? null, stage), level: () => currentReport()?.stats.level ?? null
         });
         g = it;
         untrack(() => {
@@ -246,7 +249,7 @@
     if (!v) return null;
     const iv = v.invite;
     if (v.phase === 'idle' && iv) {
-      const what = iv.blocked ? t('kiki.update.why') : iv.lesson && iv.u ? `${unitName(iv.u)} · ${t(`kiki.lesson.${iv.lesson}`)}`
+      const what = iv.blocked ? t('kiki.update.why') : iv.gm === 'taikai' ? t('kiki.mode.taikai') : iv.lesson && iv.u ? `${unitName(iv.u)} · ${t(`kiki.lesson.${iv.lesson}`)}`
         : iv.ladder ? t('kiki.mode.ladder') : iv.lv === 5 ? t('kiki.mode.announce') : `${t('kiki.mode.quiz')} · ${levelMark(iv.lv)} ${t(`kiki.lv.${iv.lv}`)}`;
       return { g: iv.g, name: hostName(iv.host), what: iv.started ? `${what} · ${t('kiki.started')}` : what, blocked: !!iv.blocked };
     }
@@ -274,6 +277,11 @@
   function tile(k: Tile) {
     enter(k === 'asobu' ? { k: 'asobu' } : k === 'together' ? { k: 'lobby' } : k === 'zukan' ? { k: 'zukan', unit: null } : { k: 'record' });
   }
+  // My tournament's lobby is its page (the hub's lobby is a quiz's): one left at the hub (a results' もういっかい from
+  // there) gets its page back.
+  $effect(() => {
+    if (hosting && !page && v?.gm === 'taikai') untrack(() => (pages = taikaiStack()));
+  });
   /** A co-op lesson in my shared lobby: who's in it, whether I start it, the others' wait line. */
   const shared = $derived(v && !v.local && lesson ? { players: v.players.map((p) => p.who), host: v.amHost, wait: t('kiki.waitHost', { name: v.host ? hostName(v.host) : '' }) } : null);
   /** The countdown (WINDOWS.countdown, 4 s): 「よーい」 for its first second (4), then 3-2-1. */
@@ -306,7 +314,7 @@
         </div>
       {:else if atHub}
         {#await import('./hub/Hub.svelte') then { default: Hub }}
-          <Hub here={game.here} me={game.me} invite={hubInvite} onjoin={joinIt} onupdate={() => void reloadForUpdate()} ontile={tile} onact={act.menu} />
+          <Hub here={game.here} me={game.me} invite={hubInvite} onjoin={joinIt} onupdate={() => void reloadForUpdate()} ontile={tile} onact={act.menu} ontaikai={act.taikai} />
         {/await}
       {:else if hosting && page}
         {#if page.k === 'asobu'}
@@ -341,6 +349,10 @@
           {#await import('./story/StoryList.svelte') then { default: StoryList }}
             <StoryList me={game.me} onplay={playStory} />
           {/await}
+        {:else if page.k === 'taikai'}
+          {#await import('./taikai/TaikaiLobby.svelte') then { default: TaikaiLobby }}
+            <TaikaiLobby {game} />
+          {/await}
         {:else if page.k === 'zukan'}
           {#await import('./path/PhraseZukan.svelte') then { default: PhraseZukan }}
             <PhraseZukan unit={page.unit} onreview={act.reviewPhrases} />
@@ -348,6 +360,10 @@
         {/if}
       {:else if v.phase === 'lobby' && lesson}
         <LessonIntro unit={lesson.unit} lesson={lesson.lesson} recheck={lesson.recheck} {shared} onstart={() => game?.go()} onback={back} />
+      {:else if v.phase === 'lobby' && v.gm === 'taikai'}
+        {#await import('./taikai/TaikaiLobby.svelte') then { default: TaikaiLobby }}
+          <TaikaiLobby {game} />
+        {/await}
       {:else if v.phase === 'lobby'}
         <Lobby {game} onlevel={keepLv} ontimer={keepTimer} />
       {:else if v.phase === 'countdown'}
@@ -356,8 +372,16 @@
           <p class="say">{t('kiki.ready')}</p>
           {#key count}<span class="num" class:set={count > 3} aria-live="assertive">{count > 3 ? t('kiki.set') : count}</span>{/key}
         </div>
+      {:else if v.phase === 'results' && v.gm === 'taikai'}
+        {#await import('./taikai/TaikaiResults.svelte') then { default: TaikaiResults }}
+          <TaikaiResults {game} onagain={act.again} onmissed={act.replayMissed} ondone={act.done} />
+        {/await}
       {:else if v.phase === 'results'}
         <Results {game} onagain={act.again} onmissed={act.replayMissed} ondone={act.done} onnext={(l) => game?.lesson && act.relesson(game.lesson.unit.id, l)} />
+      {:else if v.gm === 'taikai'}
+        {#await import('./taikai/TaikaiPlay.svelte') then { default: TaikaiPlay }}
+          <TaikaiPlay {game} />
+        {/await}
       {:else}
         <Play {game} />
       {/if}
