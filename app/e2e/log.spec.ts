@@ -10,8 +10,8 @@ import { StoreCore } from '../../relay/src/store.ts';
 import { LogCore } from '../../relay/src/log.ts';
 import { memSql } from '../../relay/test/sqlite.ts';
 import { hudMenu } from './hud.ts';
+import { KEYS, RELAY } from './relay.ts';
 
-const RELAY = 'https://island-fund-relay.island-fund-relay.workers.dev';
 const TEST_RELAY = 'https://island-fund-relay-test.island-fund-relay.workers.dev';
 const SMOKE_KEYS = `${import.meta.dirname}/../../relay/.smoke-keys`;
 const LIVE = process.env.E2E_TEST_RELAY === '1' && existsSync(SMOKE_KEYS);
@@ -19,8 +19,8 @@ const testKeyA = () => Object.fromEntries(readFileSync(SMOKE_KEYS, 'utf8').trim(
 
 test('a forced error reaches the log, scrubbed, with the session, the role and the build', async ({ browser }) => {
   test.setTimeout(60_000);
-  const KEY_A = LIVE ? testKeyA() : 'a1'.repeat(32);
-  const keys = { KEY_A, KEY_B: 'b2'.repeat(32), KEY_C: 'c3'.repeat(32) };
+  const KEY_A = LIVE ? testKeyA() : KEYS.KEY_A;
+  const keys = { ...KEYS, KEY_A };
   const db = memSql();
   const store = new StoreCore({ sql: db.sql, tx: db.tx, keys, now: () => Date.now(), notify: () => {} });
   const logs = new LogCore({ sql: memSql().sql, tx: (fn) => fn(), keys, now: () => Date.now() });

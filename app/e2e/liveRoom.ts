@@ -17,13 +17,10 @@ import { pinnedClock, type BrowserContext, type Page, type WebSocketRoute } from
 import { HELLO_MS, RoomCore, type Meta } from '../../relay/src/room.ts';
 import { StoreCore } from '../../relay/src/store.ts';
 import { memSql } from '../../relay/test/sqlite.ts';
+import { KEYS, KEY_OF, RELAY as API, type Who } from './relay.ts';
 
-type Who = 'A' | 'B' | 'G';
-const API = 'https://island-fund-relay.island-fund-relay.workers.dev';
 /** The demo's relay URL (`?relay=`): an address nothing answers on, so a socket the route missed goes nowhere. */
 const DEMO_WS = 'ws://127.0.0.1:9/room';
-const KEYS = { KEY_A: 'a1'.repeat(32), KEY_B: 'b2'.repeat(32), KEY_C: 'c3'.repeat(32) };
-const KEY_OF = { A: KEYS.KEY_A, B: KEYS.KEY_B, G: KEYS.KEY_C } as const;
 
 /** One phone's socket as the room holds it. */
 interface Sock {
