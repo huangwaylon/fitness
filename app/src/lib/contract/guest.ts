@@ -102,7 +102,8 @@ export function guestRows(rows: SnapshotRows): SnapshotRows {
 
 /**
  * A `listen` row (ききみみ クイズ's answers, contract/listen.ts) as `me` gets it: its owner's whole; the other member's
- * summary only (`{d, g, n, ms}`: a game played, never the level or the answers); null between the guest and a member,
+ * summary only (`{d, g, n, ms}`: a game played, never the level or the answers; a passed unit チェック adds `{u, stamped}`,
+ * docs/curriculum-units.md §4); null between the guest and a member,
  * or for a row that isn't one. Any other row as it is.
  */
 function listenFor(me: Who, r: EventRow): EventRow | null {

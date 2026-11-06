@@ -1,7 +1,7 @@
 // contract/listen.ts: ききみみ クイズ's progress rows (docs/kikimimi.md "Storage") and who gets what of them
 // (contract/guest.ts rowsFor, which the demo applies too).
 import { describe, expect, it } from 'vitest';
-import { listenOf, listenSeen, listenSummaryJson, listenSummaryOf } from './listen.ts';
+import { CHECK_LESSON, STAMP_MIN, listenOf, listenSeen, listenSummaryJson, listenSummaryOf, stampsUnit, type ListenRow } from './listen.ts';
 import { rowsFor } from './guest.ts';
 import type { EventRow, SnapshotRows } from './api.ts';
 
@@ -29,6 +29,40 @@ describe('listenOf', () => {
     // the other member's summary carries neither
     expect(JSON.parse(listenSummaryJson(JSON.stringify(tile))!)).toEqual({ d: '2026-11-05', g: 'ab12', n: 2, ms: 180_000 });
   });
+  it('a unit’s lesson (docs/curriculum-units.md §10): `l` 1-5 with `u`, `tm` 0-6 with `l`', () => {
+    const lesson = { ...row, gm: 'unit', u: 'tr-hotel', l: 3, tm: 5 };
+    expect(listenOf(lesson)).toEqual(lesson);
+    for (const l of [1, 5]) expect(listenOf({ ...row, u: 'tr-hotel', l }), String(l)).toEqual({ ...row, u: 'tr-hotel', l });
+    for (const tm of [0, 6]) expect(listenOf({ ...row, u: 'tr-hotel', l: 3, tm }), String(tm)).toEqual({ ...row, u: 'tr-hotel', l: 3, tm });
+    for (const bad of [{ ...row, l: 1 }, { ...row, u: 'tr-hotel', l: 0 }, { ...row, u: 'tr-hotel', l: 6 }, { ...row, u: 'tr-hotel', l: 1.5 }, { ...row, u: 'tr-hotel', l: '3' },
+      { ...row, u: 'tr-hotel', tm: 5 }, { ...row, u: 'tr-hotel', l: 3, tm: -1 }, { ...row, u: 'tr-hotel', l: 3, tm: 7 }, { ...row, u: 'tr-hotel', l: 3, tm: 2.5 }, { ...row, u: 'tr-hotel', l: 3, tm: null }])
+      expect(listenOf(bad), JSON.stringify(bad)).toBeNull();
+  });
+  const six = (rights: number, rp = 0): ListenRow['r'] => Array.from({ length: 6 }, (_, i) => [`it-${i}`, i < rights ? 1 : 0, 0, i < rights ? rp : 0]);
+  it('a stamp (§3, §10): a チェック with ≥ 5 of 6 right on the first listen, or a team’s ≥ 5; never another lesson, a replay’s right or no unit', () => {
+    expect([CHECK_LESSON, STAMP_MIN]).toEqual([3, 5]);
+    const check: Parameters<typeof stampsUnit>[0] = { u: 'tr-hotel', l: 3, r: six(5) };
+    expect(stampsUnit(check)).toBe(true);
+    expect(stampsUnit({ ...check, r: six(6) })).toBe(true);
+    expect(stampsUnit({ ...check, r: six(4) })).toBe(false);
+    expect(stampsUnit({ ...check, r: six(6, 1) })).toBe(false); // right only after a replay
+    expect(stampsUnit({ ...check, r: six(3), tm: 5 })).toBe(true); // a pair's pass carries the weaker player
+    expect(stampsUnit({ ...check, r: six(3), tm: 4 })).toBe(false);
+    expect(stampsUnit({ ...check, l: 2 })).toBe(false);
+    expect(stampsUnit({ ...check, l: undefined })).toBe(false);
+    expect(stampsUnit({ ...check, u: undefined })).toBe(false);
+  });
+  it('the summary: a stamped unit and `stamped`, never its answers, the team’s count or a lesson not passed', () => {
+    const pass = { ...row, gm: 'unit', u: 'tr-hotel', l: 3, r: six(5) };
+    const sum = { d: '2026-11-05', g: 'ab12', n: 2, ms: 180_000 };
+    expect(JSON.parse(listenSummaryJson(JSON.stringify(pass))!)).toEqual({ ...sum, u: 'tr-hotel', stamped: 1 });
+    expect(JSON.parse(listenSummaryJson(JSON.stringify({ ...pass, r: six(2), tm: 6 }))!)).toEqual({ ...sum, u: 'tr-hotel', stamped: 1 });
+    expect(JSON.parse(listenSummaryJson(JSON.stringify({ ...pass, r: six(4) }))!)).toEqual(sum);
+    expect(JSON.parse(listenSummaryJson(JSON.stringify({ ...pass, l: 1 }))!)).toEqual(sum);
+    expect(listenSummaryOf({ ...sum, u: 'tr-hotel', stamped: 1 })).toEqual({ ...sum, u: 'tr-hotel', stamped: 1 });
+    for (const odd of [{ ...sum, stamped: 1 }, { ...sum, u: 'tr-hotel' }, { ...sum, u: 'TR', stamped: 1 }, { ...sum, u: 'tr-hotel', stamped: true }])
+      expect(listenSummaryOf(odd), JSON.stringify(odd)).toEqual(sum);
+  });
   it('summarises without the level, the answers or the practice flag', () => {
     expect(JSON.parse(listenSummaryJson(JSON.stringify({ ...row, p: 1 }))!)).toEqual({ d: '2026-11-05', g: 'ab12', n: 2, ms: 180_000 });
     expect(listenSummaryJson('{')).toBeNull();
@@ -50,6 +84,13 @@ describe('rowsFor and listen rows', () => {
     expect(seen('A')).toEqual([['A', row], ['B', sum], ['A', { junk: 1 }]]);
     expect(seen('B')).toEqual([['A', sum], ['B', row]]);
     expect(seen('G')).toEqual([['G', row]]);
+  });
+  it('a stamped チェック reaches the partner as its unit and `stamped`, the guest never', () => {
+    const pass = { ...row, gm: 'unit', u: 'tr-hotel', l: 3, tm: 5 };
+    const both: SnapshotRows = { metrics: [], events: [ev('A', 'a1', pass), ev('G', 'g1', pass)] };
+    expect(rowsFor('B', both).events.map((r) => JSON.parse(r[4]))).toEqual([{ ...sum, u: 'tr-hotel', stamped: 1 }]);
+    expect(rowsFor('A', both).events.map((r) => JSON.parse(r[4]))).toEqual([pass]);
+    expect(rowsFor('G', both).events.map((r) => r[1])).toEqual(['G']);
   });
   it('leaves rows without a listen row as they are', () => {
     const plain: SnapshotRows = { metrics: [], events: [['2026-11-05T03:00:00.000Z', 'A', 'p1', 'find', '{"kind":"fish","id":"tuna"}']] };

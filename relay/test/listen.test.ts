@@ -63,6 +63,13 @@ describe('ききみみ progress rows', () => {
     ok(game('ab30', { r: [['w3-gotta', 1, 4, 0]] }), true);
     ok(game('ab31', { gm: 'T' }), false);
     ok(game('ab32', { u: 'a'.repeat(13) }), false);
+    // a unit's lesson (docs/curriculum-units.md §10): `l` 1-5 with `u`, `tm` 0-6 with `l`
+    ok(game('ab33', { gm: 'unit', u: 'tr-hotel', l: 3, tm: 6 }), true);
+    ok(game('ab34', { u: 'tr-hotel', l: 1 }), true);
+    ok(game('ab35', { l: 1 }), false);
+    ok(game('ab36', { u: 'tr-hotel', l: 6 }), false);
+    ok(game('ab37', { u: 'tr-hotel', l: 3, tm: 7 }), false);
+    ok(game('ab38', { u: 'tr-hotel', tm: 5 }), false);
     expect(bad).toEqual([]);
   });
 
@@ -87,5 +94,19 @@ describe('ききみみ progress rows', () => {
     send(KEY_C, game('gh78'));
     expect(listens(KEY_A, since)).toEqual([['B', { d: '2026-11-05', g: 'ef56', n: 1, ms: 240_000 }]]);
     expect(listens(KEY_C, since)).toEqual([['G', game('gh78')]]);
+  });
+
+  it('a passed unit チェック reaches the other member as its unit and `stamped` (never the answers or the team’s count), the guest never', () => {
+    const six = (rights: number) => Array.from({ length: 6 }, (_, i) => [`w3-gotta`, i < rights ? 1 : 0, 0, 0]);
+    send(KEY_A, game('ab12', { n: 2, gm: 'unit', u: 'tr-hotel', l: 3, tm: 5, r: six(3) })); // carried by the team
+    send(KEY_A, game('ab13', { gm: 'unit', u: 'tr-hotel', l: 3, r: six(4) })); // not passed
+    send(KEY_A, game('ab14', { gm: 'unit', u: 'ev-bday', l: 2, r: six(6) })); // not a チェック
+    send(KEY_C, game('zz99', { gm: 'unit', u: 'tr-hotel', l: 3, r: six(6) }));
+    const base = { d: '2026-11-05', ms: 240_000 };
+    expect(listens(KEY_B)).toEqual([
+      ['A', { ...base, g: 'ab12', n: 2, u: 'tr-hotel', stamped: 1 }], ['A', { ...base, g: 'ab13', n: 1 }], ['A', { ...base, g: 'ab14', n: 1 }]
+    ]);
+    expect(listens(KEY_A).map(([, d]) => d.g)).toEqual(['ab12', 'ab13', 'ab14']);
+    expect(listens(KEY_C).map(([w, d]) => [w, d.g])).toEqual([['G', 'zz99']]);
   });
 });

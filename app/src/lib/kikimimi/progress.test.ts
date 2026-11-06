@@ -62,6 +62,17 @@ describe('gamesOf', () => {
   });
 });
 
+describe('gamesOf: the partner’s stamps', () => {
+  it('a stamped unit in the partner’s summary is kept, a second row of the game never takes it away', () => {
+    const rows: EventRow[] = [
+      ['2026-11-05T03:00:01.000Z', 'B', 'e1', 'listen', JSON.stringify({ d: TODAY, g: 'ef56', n: 2, ms: 60_000 })],
+      ['2026-11-05T03:00:02.000Z', 'B', 'e2', 'listen', JSON.stringify({ d: TODAY, g: 'ef56', n: 2, ms: 30_000, u: 'tr-hotel', stamped: 1 })],
+      ['2026-11-05T03:00:03.000Z', 'B', 'e3', 'listen', JSON.stringify({ d: TODAY, g: 'ef56', n: 2, ms: 10_000 })]
+    ];
+    expect(gamesOf(rows, 'A').others).toEqual([{ who: 'B', d: TODAY, g: 'ef56', n: 2, ms: 100_000, u: 'tr-hotel', stamped: 1 }]);
+  });
+});
+
 describe('gamesOf: a newer build’s rows', () => {
   it('skips answers whose ids this build doesn’t know: a row from a newer game leaves the games and the stats unchanged', () => {
     const quiz = { d: TODAY, g: 'ab12', lv: 2, n: 1, ms: 120_000, r: [['w2-read', 1, 0, 0], ['n2-price-1', 0, 2, 1]] };
