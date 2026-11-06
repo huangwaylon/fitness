@@ -30,7 +30,7 @@ UTC with milliseconds, strictly increasing (all rows of one ingest share it). Da
 ## Events
 
 Exactly the types in `EVENT_TYPES`; another type or a bad shape is refused with `bad_request`. `data` is an object,
-≤ 20,000 characters as JSON. The server checks shapes (and a spend's item and price, `SHOP` in `contract/rules.ts`);
+≤ 20,000 characters as JSON (a `wnote`'s 140,000: its own cap; past either `too_large`). The server checks shapes (and a spend's item and price, `SHOP` in `contract/rules.ts`);
 wallet cover is a read-time rule in the model, which ignores an invalid row.
 
 | type | data | Rules |
@@ -56,6 +56,10 @@ wallet cover is a read-time rule in the model, which ignores an invalid row.
 | `pack_chk` | `{trip, id, at, v}` | (2026-11-06) one person's tick of a trip's item (`v` 1 packed, 0 not): slot `pack_chk\|<trip>\|<id>\|<sender>` (each person only their own, the guest too), the latest `at`. A tick of a removed item, or of an id an op made that the record doesn't hold, is acknowledged and dropped; at most 300 a trip and person (`pack full`) |
 | `pack_reset` | `{trip, at}` | (2026-11-06) one person's 「リセット」: their ticks no later than its `at` read as off (the others' stay). Slot `pack_reset\|<trip>\|<sender>`, the latest `at` |
 | `trip_note` | `{trip, at, v}` | (2026-11-06) a trip's private values ([travel.md](travel.md#private-values): booking refs, names, a personal URL; the guide's `{p:key}` tokens), never in the repo: `v` at most 64 keys `[A-Za-z0-9_-]{1,40}` → one clean line ≤ 500 characters each (cleaned by the record). Written by a member (or the admin's `load`), the whole note at once; the guest's is `forbidden`. All three keys read it. Slot `trip_note\|<trip>`, the latest `at`, then who |
+| `wtask` | `{id, at, c, title, cat, due?, start?, parent?, del?, imported?}` or `{id, at, rm: true}` | (2026-11-06) the wedding board's task or subtask ([wedding.md](wedding.md#the-record-relay), `contract/wedding.ts`): its whole state (set) or a purge (final). `id` `[A-Za-z0-9_-]{1,64}` (the old Sheet's UUIDs, a new one `newTaskId`); `at` the sender's relay clock in ms, at most a day past the record's; `c` when it was created (ms: a checklist's order); `title` one clean line, 1–500 code points, `cat` 0–40 (cleaned by the record: `cleanLine`); `due` / `start` real `YYYY-MM-DD`s; `parent` a subtask's task (not itself, never with a date; the record refuses, `bad_request` `wedding parent`, one whose parent it doesn't hold as a task that is no subtask); `del` when it was soft-deleted (ms; a set without it restores). Slot `wtask\|<id>`; the latest `at` wins, then who, a purge beats everything and drops the task's tick; a purge of a task not held is acknowledged and dropped. At most 2,000 rows (`wedding full`). The members' (the guest's `forbidden`). `imported: true` (on all four types) only on the admin's load's rows from the old Sheet (`relay/scripts/wedding-import.ts`): a phone's is `bad_request` |
+| `wdone` | `{id, at, v, imported?}` | (2026-11-06) a wedding task's tick, shared (`v` 1 done, 0 not): slot `wdone\|<id>`, the latest `at`, then who; a tick of a task not held or purged is acknowledged and dropped. The members' |
+| `wconf` | `{k, at, v, imported?}` | (2026-11-06) one wedding setting: `k` `p1` / `p2` (the names, ≤ 40), `date` (`YYYY-MM-DD`), `time` (`HH:MM`), `venue` (≤ 200), `tz` (an IANA name's shape), each `''` to clear, or `cats` (≤ 30 distinct categories, 1–40 each; `[]`: the starter list). Texts one clean line (cleaned by the record). Slot `wconf\|<k>`, the latest `at`, then who. The members' |
+| `wnote` | `{at, md, base?, imported?}` (kept with `was?`) | (2026-11-06) the wedding board's notes, one markdown document ≤ 64,000 characters, kept exactly as sent; `base` the `at` of the note it was edited from. Slot `wnote`, the latest `at`, then who. A save whose `base` isn't the held note's `at` (absent over a held note too) is kept with the note it replaced beside it (`was: {at, md, who}`, the record's own: a phone's `was` is `bad_request`), so the phones show both until a save from the new one. The members' |
 
 **Finds:** the client sends a `find` only the first time either person finds that `kind:id` (the model holds queued
 events too, so a second catch before the ack sends nothing; a race between the two phones only adds a duplicate the
@@ -352,7 +356,10 @@ made after it carries no `l`, the switch's op keeps the light.
   signature or a time outside the 5-minute window with 401 before the object, which checks the signature; a `restore`,
   `rev` or `logpurge` is taken once per signature: its replay within 10 minutes is 409, table `admin_seen`), takes the record tool's ops (`{op}`: counts
   and who came which way, bookmarks, a restore, a new epoch, a dump (paged: `limit`, `after`), a compaction, the log (`logs`, `logstats`, `logpurge`: the log's own object, [observability](ops/observability.md)), the weather, and `load`: rows that already have
-  their `at`, by the same rules, idempotent).
+  their `at`, by the same rules, idempotent; a board post's, a packing list's and the wedding board's rows as the record
+  had them, kept unless the row their slot holds beats them, since a dump holds each slot's latest only: until
+  2026-11-06 a restore into an empty record dropped edited posts, a guest's item a member edited, an added item's
+  removal and a tick older than its item's row, `test/restore.test.ts`).
 - **Push-driven:** after a write the object tells the room (`changed`, [Push](#push); a failed call is tried once more); the room keeps the last one
   (`rec {at, rev}`, in its storage) and hands it to each phone in its `welcome`, so a phone that has it needn't fetch
   on opening ([When it syncs](#when-it-syncs)).
