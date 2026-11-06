@@ -126,12 +126,14 @@ export default defineConfig({
       paths: { base: (process.env.BASE_PATH ?? '') as '' | `/${string}` },
       // SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its inline bootstrap script to
       // script-src; scripts/headers.ts copies it into build-pages/_headers too. Only the relay (its socket, lib/sync/live.ts LIVE_URL, and the record's /api,
-      // lib/sync/transport.ts) is reachable besides our own.
+      // lib/sync/transport.ts) and the trip map's tiles are reachable besides our own.
       csp: {
         mode: 'hash',
         directives: {
           'default-src': ['self'],
-          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'blob:'],
+          // + the trip map's basemap (components/travel/map/source.ts: OpenFreeMap's TileJSON and tiles, fetched by
+          // MapLibre's worker; its glyphs and fonts are ours): the one third party the phones contact
+          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://tiles.openfreemap.org', 'blob:'],
           // the tent's models carry their textures inside (three.js decodes them from blob: URLs)
           'img-src': ['self', 'data:', 'blob:'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip
