@@ -534,6 +534,33 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
 ‹ 島へ. Backdrop tap and Esc also close. `ui/NavBar.svelte` + `ui/NavButton.svelte`; `ui/nav.test.ts` fails on a
 modal without them. Sheets rise and levels slide in over 240 ms.
 
+### Quiet sheets
+
+The info sheets (りょこう, けっこんしき; the user, 2026-11-06: "more compact and elegant, focus on the info, not too much on
+the theme") wear a quieter skin than the game chrome: no characters, no pills and lips, the original guides' look.
+`components/quiet/` is its kit; a sheet opts in with `class="quiet"` on its root and `import
+'#lib/components/quiet/quiet.css'`.
+
+- **Tokens** (`quiet.css`, on `.quiet`; dusk and night from `:root[data-tod]`): `--q-bg` (paper #FAF6EC) ·
+  `--q-surface` (a white card) · `--q-sunken` · `--q-hairline` / `-2` · `--q-ink` / `--q-ink-2` / `--q-muted` /
+  `--q-faint` · `--q-accent` (leaf #3E9A52), `--q-accent-ink`, `--q-accent-soft` · `--q-coral` / `-soft` ·
+  `--q-shadow`, `--q-shadow-float`; type `--q-fs-s` 13 · `--q-fs-body` 15 · `--q-fs-head` 17 · `--q-fs-title` 22 ·
+  `--q-fs-big` 28 (`--q-fs-xs` 11 for the tab labels and tags only), weights `--q-w` 400 / `--q-w-b` 600; space
+  `--q-1…6` 4 / 8 / 12 / 16 / 24; radii card 18 · control 12 · chip 16 · tag 6. Body text is the system font
+  (`--q-font`: -apple-system, Hiragino Sans); Zen Maru Gothic (`--q-font-title`, 700) only for titles and big numbers.
+- **Classes:** `.q-card` (white, hairline, soft shadow, 18), `.q-row` (44 px+, 12 / 16 padding; rows in a card split by
+  a hairline; a `button.q-row` is a tappable row), `.q-sec` (a section head: 13/600 muted), `.q-kv` (key · value rows),
+  `.q-badge`, `.q-tag`, `.q-btn` (`.primary`, `.text`), `.q-title`, `.q-ell`.
+- **Components:** `Icon` (one lucide-style set, 1.75 stroke, `name size fill stroke`; the guides' lucide names too) ·
+  `SheetHeader` (44 px: title left, 17 Zen Maru, optional `sub`; ‹ / ✕ are `NavButton look="quiet"`, `over` puts them
+  on smoked discs over a photo; `trailing` snippet) · `TabBar` (a sheet's bottom tabs: `items {id,label,icon}`, `value`,
+  `attr`, `onpick`; frosted, the safe area under it) · `Chip` + `ChipRow` (32 px chips with a 44 px hit, the selected
+  one accent-filled; one sideways-scrolling line fading at the right while there is more) · `Segmented` (small: km | mi)
+  · `ProgressBar` · `ActionSheet` (iOS-like grouped actions, a caption, キャンセル) · `BottomSheet` (a form sheet:
+  キャンセル / title / 保存; `.q-field` inputs at 16 px).
+- **Rules kept:** every tappable has its `data-sfx` (the shown tab / chip / option `none`), ‹ ✕ are the shared
+  NavButton (nav.test.ts also accepts a kit dialog's labelled キャンセル, `data-q-cancel`), fields 16 px+, no grabber.
+
 ## Economy
 
 A stamp card with small numbers. Rule `scoring/bells.ts`, economy on read `model/bells.ts`, values `config/rules.ts`
