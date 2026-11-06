@@ -141,6 +141,7 @@
   /** Push a level; `focus`: what opened it (a selector, found again once the level below is back: Safari never
    *  focuses a tapped button, so it is named, not read off document.activeElement). */
   function go(l: Level, focus: string | null = null) {
+    leave();
     under = [...under.slice(0, stack.length), { top: sheet()?.scrollTop ?? 0, focus }];
     stack = [...stack, l];
     void tick().then(() => sheet()?.scrollTo({ top: 0 }));
@@ -156,8 +157,14 @@
       if (was.focus) root?.querySelector<HTMLElement>(was.focus)?.focus({ preventScroll: true });
     });
   }
+  /** A level left by hand: its banner goes with it (its とりけす would undo what is no longer on screen). One shown by
+   *  what moved the level (追加しました, then back to the search) stays. */
+  function leave() {
+    if (toasts.current && !toasts.current.code) toasts.dismiss();
+  }
   function up() {
     cue('back');
+    leave();
     backTo(stack.length - 1);
   }
   const home = () => backTo(0);

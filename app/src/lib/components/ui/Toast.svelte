@@ -58,6 +58,21 @@
     gone = true;
     ondismiss?.();
   }
+  /** A low banner over a sheet's level with actions at its foot (theme.css .level-acts): its bottom just above them,
+   *  wherever they sit (a short level holds them mid-screen, not at the foot): never on them. */
+  let over = $state<number | null>(null);
+  $effect(() => {
+    if ((!action && !low) || document.querySelector('[data-shop]')) return;
+    const place = () => {
+      const acts = document.querySelector('dialog[open] .level-acts');
+      const top = acts?.getBoundingClientRect().top;
+      over = top === undefined || top <= 0 || top >= innerHeight ? null : innerHeight - top + 8;
+    };
+    place();
+    const f = requestAnimationFrame(place); // the level under it may be rendered in the same update
+    addEventListener('resize', place);
+    return () => { cancelAnimationFrame(f); removeEventListener('resize', place); };
+  });
   const hold = (on: boolean) => () => onhold?.(on);
   /** Focus leaving the banner altogether (not moving between its two buttons). */
   function blur(e: FocusEvent) {
@@ -66,7 +81,7 @@
 </script>
 
 {#if !gone}
-  <div bind:this={el} class="banner" class:undo={!!action || low} class:leaving role="status" popover="manual" use:topLayer
+  <div bind:this={el} class="banner" class:undo={!!action || low} class:leaving style:bottom={over === null ? undefined : `${over}px`} role="status" popover="manual" use:topLayer
     onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur}>
     <!-- With an undo, a tap only holds the banner (so it can be read and undone); a vertical swipe scrolls the page (a
          swipe: a move while pressed, never a mouse passing over a banner that slid in under it). Then
@@ -116,8 +131,7 @@
   :global(:root:has([data-shop])) .banner.undo { top: calc(var(--ui-top) + 56px); bottom: auto; animation-name: none; }
   /* …and on the island with no sheet up: over the say button at the bottom right (IslandScene .say-dock: 44px, 8px up), never on it */
   :global(:root:has(.island .say-dock):not(:has(dialog[open], [data-shop]))) .banner.undo { bottom: calc(var(--pad-bottom) + 8px + var(--hit) + 10px); }
-  /* …and over a sheet's level whose actions sit at its foot (theme.css .level-acts: a long level holds them there): above them, never on them */
-  :global(:root:has(dialog[open] .level-acts)) .banner.undo { bottom: calc(var(--pad-bottom) + 16px + var(--hit) + var(--lip-h) + 20px); }
+  /* …and over a sheet's level with actions at its foot (theme.css .level-acts): above them, never on them (`over`, measured) */
   .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-s); line-height: 1.25; }
   @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
   .re { flex: none; line-height: 0; }
