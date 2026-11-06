@@ -1,11 +1,11 @@
 <script lang="ts">
   // 島's HUD, NH island-view light: the sky clean, one small cluster in its top-right corner (docs/design.md "Island"):
   // [the health button] [the meal button] [the menu]. The health button (NH's dumbbell) → the health popup (けんこう);
-  // the meal button (NH's ramen bowl) → the meal log (ごはん); the menu (NH's leaf, at the screen's side) drops
-  // 「ベル 121」, ずかん and せってい under it: the ベル row (the shared wallet's balance; today's +N flashing by the leaf as
-  // coins land) → the island panel slides down (ごほうび), the others each open their own sheet grown out of them. Only
-  // when sync is not ok, the sync chip centred under the row; under it, while せってい's きせつ is on, its chip. The
-  // panel, the popups and the two sheets are their own chunks, loaded on first open.
+  // the meal button (NH's ramen bowl) → the meal log (ごはん); the menu (NH's leaf, at the screen's side) drops six
+  // pills under it (HudMenu): the ベル row (the shared wallet's balance; today's +N flashing by the leaf as coins land)
+  // → the island panel slides down (ごほうび), the others (ずかん, えいご, りょこう, けっこんしき, せってい) each open their own
+  // sheet grown out of them. Only when sync is not ok, the sync chip centred under the row; under it, while せってい's
+  // きせつ is on, its chip. The panel, the popups and every sheet are their own chunks, loaded on first open.
   import { onMount } from 'svelte';
   import { replaceState } from '$app/navigation';
   import { page } from '$app/state';

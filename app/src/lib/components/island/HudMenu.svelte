@@ -260,7 +260,7 @@
     transform-origin: calc(100% - 22px) -30px;
     opacity: 0; visibility: hidden; transform: translateY(calc(-14px - var(--i) * 40px)) scale(.4);
     transition: transform 160ms var(--ease-squash) calc((var(--n) - 1 - var(--i)) * 30ms), opacity 120ms linear calc((var(--n) - 1 - var(--i)) * 30ms),
-      visibility 0s linear 220ms;
+      visibility 0s linear calc((var(--n) - 1) * 30ms + 160ms);
   }
   .open .item {
     opacity: 1; visibility: visible; transform: none; pointer-events: auto;
