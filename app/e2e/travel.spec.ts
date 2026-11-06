@@ -73,7 +73,8 @@ test('a quiet trip: the photo, its pages on the tab bar, the days open, じゅ�
   // じゅんび after the days: a card opens to its lists; the demo's trip note fills the private values
   const card = sheet(page).locator('[data-card="flights"]');
   await card.locator('.tog').click();
-  await expect(card.locator('[data-row]').first()).toBeVisible();
+  await expect(card).toHaveAttribute('data-open', 'true');
+  await expect(card.locator('li').first()).toBeVisible();
   await expect(card.locator('[data-locked]')).toHaveCount(0);
   for (const id of ['map', 'pack']) {
     await tab(page, id).click();

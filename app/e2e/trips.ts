@@ -22,7 +22,7 @@ export const mapState = (page: Page) => page.evaluate(() => (window as unknown a
 export type TripTab = 'days' | 'map' | 'pack' | 'camps';
 /** The trips' sheet. */
 export const tripsSheet = (page: Page) => page.locator('dialog[open] [data-travel]');
-/** From the island already up: the menu's りょこう pill, the passes. */
+/** From the island already up: the menu's りょこう pill: the list (or the trip on now). */
 async function openTrips(page: Page) {
   // the island's first models in first: drawn (drawn(), software GL on CI) their load starved the menu's spring, and
   // its unfold timed out. (A boolean, not island.ts is3d's wait: the JSHandle a waitForFunction returns to the island's
@@ -33,7 +33,8 @@ async function openTrips(page: Page) {
   }, null, { timeout: 30_000 });
   await expect(hudMenu(page)).toBeVisible();
   await fromMenu(page, 'travel');
-  await expect(tripsSheet(page).locator('[data-trip]').first()).toBeVisible();
+  // the list, or (during a trip) that trip
+  await expect(tripsSheet(page).locator('[data-trip], [data-trip-view]').first()).toBeVisible();
 }
 /** From the passes: `trip`'s, its page `tab` (the plan, にってい, first). */
 export async function pickTrip(page: Page, trip: string, tab: TripTab = 'days') {

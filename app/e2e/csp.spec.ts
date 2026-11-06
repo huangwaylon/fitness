@@ -78,7 +78,6 @@ test('the trip map: its worker, fonts, tiles and the location dot, no CSP violat
   await context.setGeolocation({ latitude: 26.6944, longitude: 127.8779, accuracy: 25 });
   await gotoTrip(page);
   await mapReady(page);
-  await page.locator('dialog[open] [data-map-layer="camp"]').click();
   await page.locator('dialog[open] .locate').click();
   await expect(page.locator('dialog[open] .locate')).toHaveAttribute('data-locate', 'on');
   // the labels drawn: their font slices fetched

@@ -34,7 +34,9 @@ test('the stub: the day chips, the pins and the list, a pin and a row select', a
   // day 2: its stops, how each is reached
   await pane(page).locator('[data-map-day="2"]').click();
   await expect(map).toHaveAttribute('data-day', '2');
-  await expect(stub).toHaveAttribute('data-stops', stopsOf(2).map((p) => p.id).join(' '));
+  // the stub's pins (one spot's stops on one: New Lynn's out and back) and the list's rows in order
+  await expect.poll(async () => (await stub.getAttribute('data-stops'))?.split(' ').sort()).toEqual(stopsOf(2).map((p) => p.id).sort());
+  expect(await pane(page).locator('[data-stop]').evaluateAll((els) => els.map((e) => e.getAttribute('data-stop')))).toEqual(stopsOf(2).map((p) => p.id));
   await expect(pane(page).locator('[data-stop]').first()).toContainText('出発');
   const s = stopsOf(2)[1].id;
   await stub.locator(`[data-pin="${s}"]`).click();
