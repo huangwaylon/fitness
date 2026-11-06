@@ -14,10 +14,10 @@
 // Shared by the record (relay/src/store.ts), the model (model/state.ts) and the board's store
 // (components/wedding/board.svelte.ts); pure and dependency-free (the plain text rules: contract/text.ts).
 import { cleanLine } from './text.ts';
-import { isLocalDate } from './api.ts';
+import { isLocalDate, isWho, type Who } from './api.ts';
+import { AHEAD_MS, isMs, newOpId, only } from './ops.ts';
 
-/** Who wrote it: the merge's tie-break is a fixed order, A < B < G. */
-type Who = 'A' | 'B' | 'G';
+// (who wrote it: the merge's tie-break is a fixed order, A < B < G)
 type Rec = Record<string, unknown>;
 
 /** The four event types. */
@@ -48,21 +48,14 @@ export const VENUE_CHARS = 200;
 export const WCATS_MAX = 30;
 const TZ = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+){0,2}$/;
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
-/** An op's `at` (the sender's relay clock) at most this far past the record's (as contract/pack.ts). */
-const AHEAD_MS = 24 * 60 * 60 * 1000;
 
 /** A task's id: the old Sheet's (UUIDs) or one a phone made (newTaskId). */
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
 const isTaskId = (v: unknown): v is string => typeof v === 'string' && ID.test(v);
-const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
-/** A time in ms since the epoch (2001 … 5138). */
-const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
-const isWho = (v: unknown): v is Who => v === 'A' || v === 'B' || v === 'G';
-const only = (d: Rec, keys: readonly string[]): boolean => Object.keys(d).every((k) => keys.includes(k));
 const isClean = (v: unknown, max: number): v is string => typeof v === 'string' && cleanLine(v, max) === v;
 
 /** A new task's id. */
-export const newTaskId = (at: number): string => `t${at.toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;
+export const newTaskId = (at: number): string => newOpId('t', at);
 
 /** A task set: `c` when it was created (ms: a checklist reads in the order it was typed), `del` when it was
  *  soft-deleted (restorable: a set without it), `parent` a subtask's task. */

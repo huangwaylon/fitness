@@ -8,6 +8,7 @@
 // drawn as text. Shared by the record (relay/src/store.ts), the model and the board; pure and dependency-free (the plain text
 // rules: contract/text.ts).
 import { BREAKS, STRIP } from './text.ts';
+import { isMs, newOpId } from './ops.ts';
 
 /** Who wrote it: the merge's tie-break is a fixed order, A < B < G. */
 type Who = 'A' | 'B' | 'G';
@@ -35,9 +36,6 @@ export interface Post {
 }
 
 const ID = /^b[0-9a-z]{6,24}$/;
-const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
-/** A time in ms since the epoch (2001 … 5138). */
-const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
 
 /**
  * A note's text as the board keeps it: line breaks made `\n` (also `\r\n`, `\r`, U+2028/9), the control characters
@@ -61,7 +59,7 @@ export function cleanText(raw: unknown): string {
 export const textLength = (s: string): number => Array.from(s).length;
 
 /** A new post's id. */
-export const newPostId = (at: number): string => `b${at.toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;
+export const newPostId = (at: number): string => newOpId('b', at);
 
 /** A `board` op's data, its known keys only, each well-formed (the text clean and not empty), or null. */
 export function boardOpOf(d: Record<string, unknown>): BoardOp | null {

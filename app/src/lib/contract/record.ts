@@ -15,6 +15,7 @@ import { packOpOf, packSlot } from './pack.ts';
 import { wedOpOf, wedSlot } from './wedding.ts';
 import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
 import { shopPriced } from './shop.ts';
+import { AHEAD_MS } from './ops.ts';
 import { listenOf } from './listen.ts';
 import { LIMITS, shopPrice } from './rules.ts';
 import { isBirth, isBmiStd, isProfileKey, isSex, profileValueOk } from './profile.ts';
@@ -110,10 +111,9 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
   }
 }
 
-/** A meal op's `at` (the sender's clock) at most this far past the record's (ms). A phone's clock far ahead would
- *  otherwise stamp ops no later edit could beat (foodAccept: an op no later than the one held is stale). */
-const FOOD_AHEAD_MS = 24 * 60 * 60 * 1000;
-const atNear = (at: number, now: number): boolean => at <= now + FOOD_AHEAD_MS;
+/** A meal op's `at` (the sender's clock) at most AHEAD_MS past the record's (foodAccept: an op no later than the one
+ *  held is stale, so a clock far ahead would stamp ops no later edit could beat). */
+const atNear = (at: number, now: number): boolean => at <= now + AHEAD_MS;
 
 /** Whether `key` is a goal a day keeps (contract/goals.ts history `daily`). */
 const isDailyGoalKey = (key: unknown): boolean => {

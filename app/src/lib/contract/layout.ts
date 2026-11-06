@@ -7,6 +7,7 @@
 //   r  a reset `{id: 'reset', at}`: every o and c op older than it is void (the default layout again)
 //   h  a home's look `{id: 'hA' | 'hB' | 'hG', at, m, w?, r?, d?, f?}` (f its facing 0–3): its owner's alone
 //   t, u, v  the interiors of ウェイ's, うめ's and the guest's homes (contract/tent.ts's ops)
+import { isInt, isMs, only } from './ops.ts';
 
 /** Who sent it: the merge's tie-break is a fixed order, A < B < G. */
 type Who = 'A' | 'B' | 'G';
@@ -36,10 +37,6 @@ const TOKEN = /^[a-z][a-z0-9-]{0,23}$/;
 /** A home part (homes.json's ids: `NABrickC`, `SimpleAR`). */
 const PART = /^[A-Za-z0-9.]{1,24}$/;
 
-const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
-/** A time in ms since the epoch (2001 … 5138). */
-const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
-const onlyKeys = (d: Record<string, unknown>, keys: readonly string[]) => Object.keys(d).every((k) => keys.includes(k));
 
 type ObjOp =
   | { sc: 'o'; id: string; at: number; k: string; x: number; z: number; f: Facing; s?: string; rm?: undefined }
@@ -56,19 +53,19 @@ export function layoutOpOf(d: Record<string, unknown>): LayoutOp | null {
   switch (d.sc) {
     case 'o': {
       if (!OBJ_ID.test(d.id)) return null;
-      if (d.rm !== undefined) return d.rm === true && onlyKeys(d, ['sc', 'id', 'at', 'rm']) ? { sc: 'o', id: d.id, at: d.at, rm: true } : null;
-      if (!onlyKeys(d, ['sc', 'id', 'at', 'k', 'x', 'z', 'f', 's'])) return null;
+      if (d.rm !== undefined) return d.rm === true && only(d, ['sc', 'id', 'at', 'rm']) ? { sc: 'o', id: d.id, at: d.at, rm: true } : null;
+      if (!only(d, ['sc', 'id', 'at', 'k', 'x', 'z', 'f', 's'])) return null;
       if (typeof d.k !== 'string' || !TOKEN.test(d.k) || !isInt(d.x, 0, TILES_MAX) || !isInt(d.z, 0, TILES_MAX) || !isInt(d.f, 0, 3)) return null;
       if (d.s !== undefined && (typeof d.s !== 'string' || !TOKEN.test(d.s))) return null;
       return { sc: 'o', id: d.id, at: d.at, k: d.k, x: d.x, z: d.z, f: d.f as Facing, ...(d.s !== undefined ? { s: d.s as string } : {}) };
     }
     case 'c':
-      if (!CHUNK_ID.test(d.id) || !onlyKeys(d, ['sc', 'id', 'at', 'g']) || typeof d.g !== 'string' || !TILE_RE.test(d.g)) return null;
+      if (!CHUNK_ID.test(d.id) || !only(d, ['sc', 'id', 'at', 'g']) || typeof d.g !== 'string' || !TILE_RE.test(d.g)) return null;
       return { sc: 'c', id: d.id, at: d.at, g: d.g };
     case 'r':
-      return d.id === 'reset' && onlyKeys(d, ['sc', 'id', 'at']) ? { sc: 'r', id: 'reset', at: d.at } : null;
+      return d.id === 'reset' && only(d, ['sc', 'id', 'at']) ? { sc: 'r', id: 'reset', at: d.at } : null;
     case 'h': {
-      if (!HOME_ID.test(d.id) || !onlyKeys(d, ['sc', 'id', 'at', 'm', 'w', 'r', 'd', 'f'])) return null;
+      if (!HOME_ID.test(d.id) || !only(d, ['sc', 'id', 'at', 'm', 'w', 'r', 'd', 'f'])) return null;
       if (typeof d.m !== 'string' || !TOKEN.test(d.m) || (d.f !== undefined && !isInt(d.f, 0, 3))) return null;
       for (const k of ['w', 'r', 'd'] as const) if (d[k] !== undefined && (typeof d[k] !== 'string' || !PART.test(d[k] as string))) return null;
       return {

@@ -13,6 +13,7 @@
 import { isLocalDate, isRec } from './api.ts';
 import { cleanLine } from './text.ts';
 import { GOALS, isGoalValue } from './goals.ts';
+import { isMs, newOpId } from './ops.ts';
 
 /** Who logged it: the owner, the only one who edits or removes it. */
 type Who = 'A' | 'B' | 'G';
@@ -81,7 +82,6 @@ const OPTIONAL_NUTRIENTS = ['fi', 'al'] as const;
 
 const ID = /^f[0-9a-z]{6,24}$/;
 const REPEAT_ID = /^r[0-9a-z]{6,24}$/;
-const isMs = (n: unknown): n is number => Number.isInteger(n) && (n as number) >= 1e12 && (n as number) <= 1e14;
 const inRange = (n: unknown, lo: number, hi: number): n is number => typeof n === 'number' && Number.isFinite(n) && n >= lo && n <= hi;
 const isMeal = (v: unknown): v is Meal => (MEALS as readonly unknown[]).includes(v);
 const oneDecimal = (n: number): boolean => Math.abs(n * 10 - Math.round(n * 10)) < 1e-6;
@@ -94,7 +94,7 @@ export const isKcalGoal = (v: unknown): v is number => isFoodGoal('k', v);
 export const foodGoalOf = (key: unknown): FoodGoalOf | null => FOOD_GOAL_OF.find((n) => FOOD_GOALS[n].key === key) ?? null;
 
 /** A new entry's id. */
-export const newFoodId = (at: number, p = 'f'): string => `${p}${at.toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;
+export const newFoodId = (at: number, p = 'f'): string => newOpId(p, at);
 /** A new repeat's id. */
 export const newRepeatId = (at: number): string => newFoodId(at, 'r');
 

@@ -16,6 +16,7 @@
 import type { Who } from '../types.ts';
 import { isWho } from './api.ts';
 import { cleanLine } from './text.ts';
+import { AHEAD_MS, isMs, newOpId, only } from './ops.ts';
 
 // (who wrote it: the merge's tie-break is a fixed order, A < B < G)
 type Rec = Record<string, unknown>;
@@ -50,9 +51,6 @@ export const PACK_MAX = 300;
 const NOTE_KEYS = 64;
 const NOTE_KEY = /^[A-Za-z0-9_-]{1,40}$/;
 const NOTE_CHARS = 500;
-/** An op's `at` (the sender's relay clock) at most this far past the record's: a clock far ahead would stamp an op no
- *  later change could beat (as contract/record.ts atNear for the meal log). */
-const AHEAD_MS = 24 * 60 * 60 * 1000;
 
 /** A trip's id: okinawa, seattle, nz, or any short slug (a new trip needs no relay deploy). */
 const TRIP = /^[a-z0-9-]{1,24}$/;
@@ -66,13 +64,9 @@ const isTripId = (v: unknown): v is string => typeof v === 'string' && TRIP.test
 const isSeedId = (v: unknown): v is string => typeof v === 'string' && SEED_ID.test(v);
 const isNewId = (v: unknown): v is string => typeof v === 'string' && NEW_ID.test(v);
 const isPackId = (v: unknown): v is string => isSeedId(v) || isNewId(v);
-const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
-/** A time in ms since the epoch (2001 … 5138). */
-const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
-const only = (d: Rec, keys: readonly string[]): boolean => Object.keys(d).every((k) => keys.includes(k));
 
 /** A new category's or item's id (the guest's and the members' alike). */
-export const newPackId = (at: number): string => `_${at.toString(36)}${Math.floor(Math.random() * 36 ** 4).toString(36).padStart(4, '0')}`;
+export const newPackId = (at: number): string => newOpId('_', at);
 
 type PackSet = { trip: string; id: string; at: number; kind: 'cat' | 'item'; cat?: string; ord: number; name: L; note?: L; icon?: string; by?: Who; rm?: undefined };
 type PackRm = { trip: string; id: string; at: number; rm: true };

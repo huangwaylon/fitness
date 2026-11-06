@@ -5,6 +5,7 @@
 // everything, else the latest `at` (then G over B over A). The merge is commutative, so the relay, the record and either phone
 // reach the same layout whatever order the ops arrive in; the record keeps only each id's latest op. Shared by the
 // record (relay/src/store.ts), the model, the relay protocol and the island; pure and dependency-free.
+import { isInt, isMs } from './ops.ts';
 
 /** The ten items (island/decor.ts has their art and footprints). @public (the island) */
 export const DECOR_ITEMS = [
@@ -39,9 +40,6 @@ export interface Placed {
 }
 
 const ID = /^d[0-9a-z]{6,24}$/;
-const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
-/** A time in ms since the epoch (2001 … 5138). */
-const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
 const isDecorItem = (v: unknown): v is DecorItemId => (DECOR_ITEMS as readonly unknown[]).includes(v);
 
 /** A `decor` op's data, its known keys only, each well-formed, or null. */

@@ -6,6 +6,7 @@
 // model reads each person's latest. Shared by the record (relay/src/store.ts) and the model; pure.
 import { isLocalDate, isRec, nextDay } from './api.ts';
 import type { LocalDate } from '../types.ts';
+import { isInt } from './ops.ts';
 
 export interface IslandDayData {
   date: LocalDate;
@@ -31,7 +32,6 @@ const WHAT = /^[a-z][\w:.-]{0,63}$/;
 /** What a shake can leave (the relay protocol's drops but `none`). */
 const DROPS = ['branch', 'nest', 'bagworm', 'spider', 'coconut'] as const;
 type IslandDrop = (typeof DROPS)[number];
-const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
 /** A world point within the plan (live-protocol WORLD_X × WORLD_Z, kept equal by island.test). */
 export const PLAN_X = [-230, 620] as const, PLAN_Z = [-460, 2650] as const;
 const isPt = (p: unknown): p is [number, number] => Array.isArray(p) && p.length === 2 && isInt(p[0], PLAN_X[0], PLAN_X[1]) && isInt(p[1], PLAN_Z[0], PLAN_Z[1]);

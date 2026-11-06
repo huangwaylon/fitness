@@ -8,6 +8,7 @@
 // moving or turning carries it, in one op. The same merge as the island's: a removal beats everything, else the latest `at`, then G over B over A; the record
 // keeps each id's latest op. Shared by the record (relay/src/store.ts), the model, the relay protocol and the tent; pure and
 // dependency-free (the items themselves are the app's: components/tent/items.json).
+import { isInt, isMs } from './ops.ts';
 
 /** At most this many pieces in the tent, shared (the rugs count; the wallpaper and the floor don't). */
 export const TENT_MAX = 60;
@@ -52,8 +53,6 @@ export interface TentPiece {
 const ID = /^d[0-9a-z]{6,24}$/;
 /** An item's code (NH's internal id with its kind: f furniture or a rug, w a wallpaper, g a floor; r the room's light). */
 const ITEM = /^[fwgr]\d{1,6}$/;
-const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
-const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
 
 /** A room op's data (`sc` one of t, u, v), its known keys only, each well-formed, or null. */
 export function tentOpOf(d: Record<string, unknown>): TentOp | null {
