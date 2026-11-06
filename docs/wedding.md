@@ -79,29 +79,13 @@ draws its own invented board (`store/demo/rows.ts`), which the e2e (`e2e/wedding
 
 ## Migration
 
-The source is the old Apps Script's `doGet` reply (`{ok, tasks, config, sheetTimeZone}`, every cell a string),
-`~/Documents/island-backups/wedding-doget-2026-11-06.json` (mode 600): it matches the user's CSV export of both tabs
-byte for byte (52 rows, 10 columns, 8 config keys), so no `.xlsx` is needed. Steps:
-
-1. Convert: `cd relay && node scripts/wedding-import.ts ~/Documents/island-backups/wedding-doget-2026-11-06.json`
-   writes `…/wedding-doget-2026-11-06.load.json` (mode 600) and prints the report (counts; findings by rule, row,
-   column and id, never a value). It exits 1 until every finding is a note (`(info)`). The rules
-   (`scripts/wedding-sheet.ts`):
-   - a task's `at` = `updated_at`, else `created_at`; `c` = `created_at`; person `A`, `imported: true`; `wdone` (v 1)
-     at `done_at`; `del` = `deleted_at`; the old reader's trimmed cells; dates as its `normalizeDay`;
-   - a row without an id, a repeated id (the first wins), a row without a title: not loaded;
-   - a subtask with a date: under a live task its dates go; else (the old board showed it as a task) its parent goes;
-   - the config's keys to `p1`, `p2`, `date`, `time`, `venue`, `tz`, `cats` (comma-separated, trimmed, deduplicated),
-     a blank one left to the default; `notes` → the `wnote` byte for byte; their `at` the Sheet's newest timestamp;
-   - event ids `wed-<id>-wtask`, `wed-<id>-wdone`, `wed-conf-<key>`, `wed-note`: a load again adds nothing.
-   The real Sheet (2026-11-06): 63 events (52 `wtask`, 3 `wdone`, 7 `wconf`, 1 `wnote`), the report clean.
-2. Test relay: `node scripts/record.ts bookmark --test`, `node scripts/record.ts load <load.json> --test`,
-   `node scripts/record.ts dump --test > <dump.json>` (mode 600, off the repo), then
-   `node scripts/wedding-parity.ts <doget.json> <dump.json>`: per id title, category, due, start, done, deleted,
-   parent; every setting; the notes byte for byte; mismatches by id and field (a conversion rule's named), exit 1 on
-   one without a rule. Load again: `loaded {… "events":0 …}`.
-3. Production: the same without `--test`, then both phones check.
-4. Rotate the old Apps Script `APP_KEY` so the Sheet can't be written; the user takes the old site down.
+Done 2026-11-06: the old Apps Script's `doGet` reply (`{ok, tasks, config, sheetTimeZone}`, every cell a string),
+converted to a `load` file and loaded into production: 63 events (52 `wtask`, 3 `wdone`, 7 `wconf`, 1 `wnote`), each
+`imported: true`, person `A`, event ids `wed-<id>-wtask`, `wed-<id>-wdone`, `wed-conf-<key>`, `wed-note` (a load again
+adds nothing). The tools (`relay/scripts/wedding-import.ts`, `wedding-sheet.ts` with the conversion's rules,
+`wedding-parity.ts`, their test and invented fixture) were deleted after it; they live at the git tag `wedding-import`.
+The record's rules must keep those rows valid: `relay/test/wedding.test.ts` loads their shapes ("the imported shapes").
+Then: rotate the old Apps Script `APP_KEY` so the Sheet can't be written; the user takes the old site down.
 
 ## Open questions
 

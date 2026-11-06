@@ -216,6 +216,42 @@ describe('the wedding board in the record', () => {
       expect(tasks().find((x) => x.id === 'p')?.title).toBe('Hall (booked)');
     });
 
+    it('the imported shapes (the 2026-11-06 load into production, its fields as the deleted wedding-sheet.ts wrote them; values invented) stay valid and editable', () => {
+      const t0 = Date.parse('2026-08-01T01:00:00.000Z');
+      const r = (id: string, type: string, d: Record<string, unknown>) => [new Date(d.at as number).toISOString(), 'A', id, type, JSON.stringify({ ...d, imported: true })];
+      const big = ('# Venue\n\n- **Hall** [map](https://map.example/a_(b))\n1. deposit 50%\n\n' + 'メモ '.repeat(40) + '\n').repeat(200).slice(0, 63_468);
+      const rows = [
+        r('wed-u1-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000001', at: t0 + 9e8, c: t0, title: 'Visit three halls', cat: 'Venue', due: '2026-09-30' }),
+        r('wed-u1-wdone', 'wdone', { id: '00000000-0000-4000-8000-000000000001', at: t0 + 9e8, v: 1 }),
+        r('wed-u2-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000002', at: t0, c: t0, title: 'Guest list', cat: 'Guests', due: '2026-12-01', start: '2026-11-01' }),
+        r('wed-u3-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000003', at: t0 + 1e8, c: t0 + 1000, title: 'Family', cat: '', parent: '00000000-0000-4000-8000-000000000002' }),
+        r('wed-u3-wdone', 'wdone', { id: '00000000-0000-4000-8000-000000000003', at: t0 + 1e8, v: 1 }),
+        r('wed-u8-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000008', at: t0 + 5e9, c: t0, title: 'Book a band', cat: 'Music', due: '2027-02-01', del: t0 + 5e9 }),
+        r('wed-u12-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000012', at: t0, c: t0, title: 'Self parent', cat: '' }),
+        ...(['p1', 'p2', 'date', 'time', 'venue', 'tz'] as const).map((k) => r(`wed-conf-${k}`, 'wconf', { k, at: t0 + 5e9, v: { p1: 'Taro Test', p2: 'Hanako Test', date: '2027-04-18', time: '09:30', venue: 'Example Chapel', tz: 'Asia/Tokyo' }[k] })),
+        r('wed-conf-cats', 'wconf', { k: 'cats', at: t0 + 5e9, v: ['Venue', 'Guests', 'Food', 'Other'] }),
+        r('wed-note', 'wnote', { at: t0 + 5e9, md: big })
+      ];
+      expect(store.load({ rows: { events: rows } })).toMatchObject({ ok: true, events: rows.length, skipped: 0 });
+      // every row the record holds still reads (the phone's model drops one that doesn't)
+      for (const x of wedRows()) expect(wedRowOf(x[3] as string, JSON.parse(x[4] as string), x[1] as W), String(x[2])).not.toBeNull();
+      const b = book();
+      expect(wedTasks(b)).toHaveLength(5);
+      expect(wedConfig(b)).toMatchObject({ venue: 'Example Chapel', cats: ['Venue', 'Guests', 'Food', 'Other'] });
+      expect(wedNote(b)).toMatchObject({ md: big, imported: true });
+      // and each takes a phone's change: an edit, a subtask's, a tick, a delete, a restore, a purge, a setting, the note
+      const u = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+      expect(task('A', u(1), 'Visit three halls (done)', { due: '2026-09-30' })).toMatchObject({ ok: true });
+      expect(send('B', 'wtask', { id: u(3), at: at(), c: t0 + 1000, title: 'Family (all)', cat: '', parent: u(2) })).toMatchObject({ ok: true });
+      expect(send('B', 'wdone', { id: u(3), at: at(), v: 0 })).toMatchObject({ ok: true });
+      expect(task('A', u(2), 'Guest list', { del: now })).toMatchObject({ ok: true });
+      expect(task('A', u(8), 'Book a band')).toMatchObject({ ok: true });
+      expect(send('A', 'wtask', { id: u(12), at: at(), rm: true })).toMatchObject({ ok: true });
+      expect(send('A', 'wconf', { k: 'cats', at: at(), v: ['Venue', 'Food'] })).toMatchObject({ ok: true });
+      expect(send('A', 'wnote', { at: at(), md: big + '\n- more', base: t0 + 5e9 })).toMatchObject({ ok: true });
+      expect(wedNote(book())?.was).toBeUndefined();
+    });
+
     it('a guest row, or a malformed one, is not taken', () => {
       const g = imp('g1', 'wconf', { k: 'p2', v: 'x' });
       g[1] = 'G';
