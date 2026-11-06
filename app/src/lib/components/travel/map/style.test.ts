@@ -4,12 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { validateStyleMin } from '@maplibre/maplibre-gl-style-spec';
 import { labelField } from './basemap.ts';
 import { FONT, fontFaces } from './fonts.ts';
-import { buildStyle, haloRadius, labelLayers, overlayLayers, SRC } from './style.ts';
-import { ATTRIBUTION, TILEJSON } from './source.ts';
+import { BASEMAP, buildStyle, haloRadius, labelLayers, overlayLayers, SRC } from './style.ts';
 import { NOOK } from './theme.ts';
 
 const BASE = 'https://example.test/fitness/';
-const style = (locale: 'ja' | 'en' = 'ja') => buildStyle({ locale, base: BASE, fontFaces: fontFaces(BASE) });
+const style = (locale: 'ja' | 'en' = 'ja') => buildStyle(locale, fontFaces(BASE));
 
 describe('the map style', () => {
   it('is a valid style (the spec validator), with the font faces', () => {
@@ -26,18 +25,24 @@ describe('the map style', () => {
     for (const l of s.layers.filter((x) => ids.includes(x.id))) {
       const layout = (l as { layout: Record<string, unknown> }).layout;
       expect(layout['text-field'], l.id).toEqual(labelField('en'));
+      expect(layout['text-max-width'], l.id).toBe(9);
       // one font, the app's; no italics, no capitals
       expect(layout['text-font'], l.id).toEqual([FONT]);
       expect(layout['text-transform'], l.id).toBeUndefined();
     }
   });
 
-  it('draws with the app\'s Zen Maru Gothic (Latin first, every Japanese slice), glyph PBFs of our own as the fallback', () => {
+  it('wraps Japanese labels at 12 ems, so a name like エメラルドビーチ stays whole', () => {
+    const s = style('ja');
+    for (const l of s.layers.filter((x) => labelLayers(s).includes(x.id))) expect((l as { layout: Record<string, unknown> }).layout['text-max-width'], l.id).toBe(12);
+  });
+
+  it('draws with the app\'s Zen Maru Gothic (Latin first, every Japanese slice), no glyphs URL', () => {
     const faces = fontFaces(BASE)[FONT] as { url: string; 'unicode-range': string[] }[];
     expect(faces.length).toBeGreaterThan(100);
     expect(faces[0]['unicode-range'][0]).toBe('U+0000-00FF');
     for (const f of faces) expect(f.url).toMatch(/^https:\/\/example\.test\/.+\.woff2/);
-    expect(style().glyphs).toBe('https://example.test/fitness/travel/glyphs/{fontstack}/{range}.pbf');
+    expect(style().glyphs).toBeUndefined();
   });
 
   it('is the NookPhone palette: the sea, the land, sand and the roads from the theme; no sprite, no basemap icons', () => {
@@ -53,12 +58,10 @@ describe('the map style', () => {
   });
 
   it('reads OpenFreeMap\'s TileJSON with the attribution OpenStreetMap\'s licence asks for', () => {
-    const src = style().sources[SRC.base] as { url: string; attribution: string };
-    expect(src.url).toBe(TILEJSON);
-    expect(src.attribution).toBe(ATTRIBUTION);
-    expect(ATTRIBUTION).toContain('© OpenStreetMap');
-    expect(ATTRIBUTION).toContain('OpenMapTiles');
-    expect(buildStyle({ locale: 'ja', tiles: '/fixture/tiles.json', base: BASE }).sources[SRC.base]).toMatchObject({ url: '/fixture/tiles.json' });
+    expect(style().sources[SRC.base]).toEqual(BASEMAP);
+    expect(BASEMAP.url).toBe('https://tiles.openfreemap.org/planet');
+    expect(BASEMAP.attribution).toContain('© OpenStreetMap');
+    expect(BASEMAP.attribution).toContain('OpenMapTiles');
   });
 
   it('draws the legs over the roads and under the labels in the day colours: drive and bus solid, walk dashed, boat dotted', () => {

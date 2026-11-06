@@ -61,5 +61,15 @@
   "travel.map.layer.food": "たべもの",
   "travel.map.stops": "{n}かしょ",
   "travel.more": "もっと よむ",
-  "travel.less": "とじる"
+  "travel.less": "とじる",
+  "travel.map.locate.off": "いまいる ばしょ",
+  "travel.map.locate.asking": "さがしています…",
+  "travel.map.locate.on": "いまいる ばしょへ",
+  "travel.map.locate.denied": "いちじょうほうが オフです",
+  "travel.map.locate.unavailable": "ばしょが わかりません",
+  "travel.map.note.denied": "いちじょうほうが オフです — せってい › Safari › いちじょうほう",
+  "travel.map.note.far": "たびさきから とおいよ",
+  "travel.map.note.offline": "ちずは オフライン — ルートだけ",
+  "travel.map.failed": "ちずが よみこめません",
+  "travel.map.retry": "もういちど"
 }
