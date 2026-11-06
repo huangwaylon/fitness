@@ -152,8 +152,8 @@ export default defineConfig({
         mode: 'hash',
         directives: {
           'default-src': ['self'],
-          // + the trip map's basemap (components/travel/map/source.ts: OpenFreeMap's TileJSON and tiles, fetched by
-          // MapLibre's worker; its glyphs and fonts are ours): the one third party the phones contact
+          // + the trip map's basemap (components/travel/map/style.ts BASEMAP: OpenFreeMap's TileJSON and tiles, fetched by
+          // MapLibre's worker; its fonts are ours): the one third party the phones contact
           'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://tiles.openfreemap.org', 'blob:'],
           // the tent's models carry their textures inside (three.js decodes them from blob: URLs)
           'img-src': ['self', 'data:', 'blob:'],

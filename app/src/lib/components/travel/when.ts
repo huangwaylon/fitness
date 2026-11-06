@@ -1,4 +1,4 @@
-// りょこう's clock (docs/travel.md "The sheet"): where a trip stands against now, in the trip's own time zone (its
+// りょこう's clock (docs/design.md §Trips): where a trip stands against now, in the trip's own time zone (its
 // dates and row times are local to `trip.tz`; a row with its own `tz`, Narita's departure, on that zone's clock): the
 // boarding pass's 「あと 97にち」 / 「いま 2日目」 / おもいで, the list's order, the day card open today and the timeline
 // row that is now (NZ's flights cross midnight: a row's `dd` puts it on the eve or the morning after its day). Pure:

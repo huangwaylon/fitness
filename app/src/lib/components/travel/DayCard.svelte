@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A day of a trip (docs/travel.md "The sheet", にってい), a Fold: its head the day on a yuzu plate, its date and
+  // A day of a trip (docs/design.md §Trips, にってい), a Fold: its head the day on a yuzu plate, its date and
   // weekday in the reader's locale, the title and the route, the day's icon; open, a hike's figures, the hour-by-hour
   // timeline (the row that is now marked, or the next one), the free day's lists, the note, the photo, the links out.
   import type { Day } from '#lib/travel/types.ts';

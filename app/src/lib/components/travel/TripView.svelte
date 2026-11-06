@@ -3,7 +3,7 @@
 </script>
 
 <script lang="ts">
-  // A trip (docs/travel.md "The sheet", level 2): the hero photo band (where it stands, the year and the trip's line,
+  // A trip (docs/design.md §Trips, level 2): the hero photo band (where it stands, the year and the trip's line,
   // its dates), then the pages under a Segmented that stays at the top as the trip scrolls: にってい (the day cards,
   // today's open and in view as the trip opens, the row that is now marked or the next one; then じゅんび, the
   // logistics cards; the guide's foot), ちず (when the trip has a route), もちもの, and キャンプ when it has campsites.

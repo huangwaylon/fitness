@@ -1,5 +1,5 @@
 <script lang="ts">
-  // ちず (docs/travel.md "The sheet", "Maps"): the day chips (each the day's route colour, kept under the page's tabs as
+  // ちず (docs/design.md §Trips, docs/travel.md "Maps"): the day chips (each the day's route colour, kept under the page's tabs as
   // the page scrolls; the day's chip again re-fits its route), the map, and the chosen day's stops in order (a numbered
   // pin in the day's colour, the arrival time, the name). The pane holds the state the map shares: the day and the
   // stop selected (a row tapped selects it, the map flies there; a pin tapped selects it, its row and the rows it
