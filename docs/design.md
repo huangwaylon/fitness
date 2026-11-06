@@ -45,7 +45,10 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   steps first, then Move, Exercise, Stand) today's amount against the goal (「14,164 / 8,000歩」), ✓ once met and a yuzu
   「がんばり」 chip at 1.5× ([Goals](#goals)); no ベル on the rows. Until then each holds its place faintly: a dashed
   ring where the ✓ comes and a dashed ghost of the chip (gone once the day's がんばり cap is paid), so an early morning's
-  popup shows what will fill in. Then the ledger, always all three lines, a zero faint: 「もくひょう +3」, 「がんばり +1」
+  popup shows what will fill in. Under the goals one ごはん row (the bowl): 朝 / 昼 / 夜, each the same dashed ring
+  until that person's meal log has anything in that meal today (a いつもの on its day too; おやつ never counts), then ✓
+  (2026-11-06, the user: "it's too easy to forget"; `island/mealChecks.ts`; display only: the bowl opens the log).
+  Everyone's meals are seen by all three, so the guest sees them too. Then the ledger, always all three lines, a zero faint: 「もくひょう +3」, 「がんばり +1」
   (「がんばり（上限 2） +2」 when three or four were reached) and this person's total 「うめの きょう +6 ベル」; then
   ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
   totals plus it make today's total (ごほうび's 「きょう +N ベル」). The last line says when that person's data last arrived (「15:24 に とどいた」), with
