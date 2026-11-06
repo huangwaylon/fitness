@@ -644,6 +644,30 @@ describe('the voice bus (ききみみ: engine.ts wakeVoice, holdAwake, loadBytes
     expect(duck.gain.ramps.at(-1)![0]).toBe(1);
   });
 
+  it('a bedtime story: the music held down across its clips and gaps, then let up; the voice fades by points and comes back', async () => {
+    const { e, ctx } = await voiced();
+    ctx.currentTime = 3;
+    const lowpass = (n: unknown) => (n as FakeNode).type === 'lowpass';
+    const duck = (ctx as unknown as { gains: FakeNode[] }).gains.find((g) => g.to.some(lowpass))!;
+    e.holdDuck(true);
+    expect(duck.gain.ramps).toEqual([[0.25, 3.12]]);
+    duck.gain.ramps = [];
+    e.playClip(clip(ctx), { at: 4 })!.stop(); // a clip's own dip and its early stop's let-up: skipped while held
+    expect(duck.gain.ramps).toEqual([]);
+    e.holdDuck(false);
+    expect(duck.gain.ramps).toEqual([[1, 3.92]]);
+    // the voice bus: a fade from 0.5 to silence over 10 s, then full again at once
+    e.playClip(clip(ctx));
+    const bus = ctx.sources.at(-1)!.to[0] as FakeNode;
+    e.fadeVoice([{ t: 0, gain: 0.5 }, { t: 10, gain: 0 }]);
+    expect([bus.gain.ramps.at(-1), bus.gain.value]).toEqual([[0, 13], 0]);
+    e.fadeVoice([]);
+    expect(bus.gain.value).toBe(1);
+    e.fadeVoice([{ t: 0, gain: 0.2 }]);
+    e.clearVoice(); // the session's end: full again
+    expect(bus.gain.value).toBe(1);
+  });
+
   it('a clip asked for in the past plays whole from now; none while the context is suspended (a lock)', async () => {
     const { e, ctx } = await voiced();
     ctx.currentTime = 10;

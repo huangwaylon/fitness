@@ -241,6 +241,13 @@ export function playVoice(buf: AudioBuffer, o: { relayAt?: number; now?: () => n
   return engine!.playClip(buf, { at });
 }
 
+/** The music held down under a bedtime story's run of clips (on), or let back up (engine.ts holdDuck). */
+export const holdVoiceDuck = (on: boolean): void => engine?.holdDuck(on);
+
+/** The voice's level over time (a sleep timer's fade: `{t: s from now, gain}`), or none: full again (engine.ts
+ *  fadeVoice). */
+export const fadeVoice = (points: readonly { t: number; gain: number }[]): void => engine?.fadeVoice(points);
+
 /** What the settings' note and the Now Playing tile say about the music (null: none). */
 export function playingLabel(playing: Playing, hour: number): string | null {
   const s = heardHere();
