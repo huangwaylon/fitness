@@ -103,6 +103,9 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
  *  doesn't. */
 export const FOOD_CACHE = 'island-food-v1';
 export const isFoodData = (path: string): boolean => /\/food\/[\w-]+\.json$/.test(path);
+/** The りょこう guides' photos (static/travel/<trip>/, docs/travel.md "Photos"): ~2.4 MB, fetched when a guide shows them,
+ *  never precached. */
+export const isTravelPhoto = (path: string): boolean => /^(?:\/[\w-]+)?\/travel\/[\w-]+\/[\w/-]+\.webp$/.test(path);
 /** The cached food files of another data version than `v` (`keys`: their URLs). */
 export const staleFood = (keys: readonly string[], v: string): string[] =>
   keys.filter((k) => {
@@ -200,7 +203,7 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
  *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the app icons and macOS litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isTravelPhoto(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

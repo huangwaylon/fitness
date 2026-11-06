@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, isAudio, isFoodData, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, isAudio, isFoodData, isMusic, isTravelPhoto, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -130,6 +130,13 @@ describe('the offline shell from a navigation (keepShell)', () => {
     const c = fakeCache(false);
     await keepShell(c.cache as unknown as Cache, '/fitness/', new Response('nope', { status: 404 }), '2026-11-05.abc1234');
     expect(c.puts).toEqual([]);
+  });
+});
+
+describe('travel photos', () => {
+  it('are never precached (a guide fetches its own when it shows them)', () => {
+    for (const p of ['travel/okinawa/hero.webp', '/fitness/travel/okinawa/camps/katsuren-beach.webp', 'travel/seattle/lake-22.webp', '/fitness/travel/nz/cover.webp']) expect(precachable(p)).toBe(false);
+    expect([isTravelPhoto('/fitness/travel/nz/hero.webp'), isTravelPhoto('/fitness/art/scene/travel.webp'), isTravelPhoto('/fitness/art/travel/x/y.webp')]).toEqual([true, false, false]);
   });
 });
 
