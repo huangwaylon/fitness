@@ -55,10 +55,11 @@
   "travel.camps.fee": "Fee",
   "travel.camps.maps": "Open in Maps",
   "travel.map.days": "Route days",
-  "travel.map.soon": "Map coming soon",
+  "travel.map.layers": "Show on the map",
+  "travel.map.layer.camp": "Camps",
+  "travel.map.layer.nature": "Nature",
+  "travel.map.layer.food": "Food",
   "travel.map.stops": "{n} stops",
-  "travel.pack.soon": "Checklist coming soon",
-  "travel.pack.count": "{n} items",
   "travel.more": "Read more",
   "travel.less": "Less"
 }

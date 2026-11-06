@@ -5,7 +5,7 @@
 // on the cached home models held the picker's renderer), one more an /editor visit (and a document keydown listener).
 import { expect, test, type Page } from '@playwright/test';
 import { BASE } from './island.ts';
-import { drawn, fixtureTiles, mapReady } from './travelMap.ts';
+import { drawn, fixtureTiles, mapReady, openTrip } from './travelMap.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&as=B';
@@ -147,8 +147,8 @@ test('the museum in first person and out, the eye button, a bench: no context or
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
 });
 
-// The trip map (docs/travel.md "Maps"), drawn: in and out three times (the shop between, a page without WebGL). Its
-// context goes with it (map.remove() loses it; before engine.ts read the workers' abort Error's stack, that Error held
+// The trip map (docs/travel.md "Maps"), drawn: in and out three times (its trip's ちず in the trips' sheet on the
+// island, then the shop, a page without WebGL, between). Its context goes with it (map.remove() loses it; before engine.ts read the workers' abort Error's stack, that Error held
 // the last map and its context till the next), and so do its listeners (MapLibre's one page-wide visibilitychange
 // listener, added with the first map, stays: none more after it).
 test('the trip map in and out: no WebGL context or window listener left behind', { tag: '@chromium' }, async ({ page }) => {
@@ -159,9 +159,12 @@ test('the trip map in and out: no WebGL context or window listener left behind',
   await page.goto(`${BASE}/shop${Q}`);
   await expect(page.locator('[data-shop]')).toBeVisible();
   const round = async () => {
-    await nav(page, `${BASE}/dev/map${Q}&day=2`);
+    await nav(page, `${BASE}/${Q}`);
+    await openTrip(page);
     await mapReady(page);
-    await page.locator('[data-day-chip="1"]').click();
+    await page.locator('dialog[open] [data-map-day="2"]').click();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
     await nav(page, `${BASE}/shop${Q}`);
     await expect(page.locator('[data-shop]')).toBeVisible();
   };
@@ -169,7 +172,8 @@ test('the trip map in and out: no WebGL context or window listener left behind',
   const first = await measure(page);
   for (let i = 0; i < 2; i++) await round();
   const after = await measure(page);
-  expect(first.gl, 'WebGL contexts alive after the map closed').toBe(0);
-  expect(after.gl, 'WebGL contexts alive after three').toBe(0);
+  // (at most an island's, held a while by the page, as in the island's own rounds above: never a map's)
+  expect(first.gl, 'WebGL contexts alive after the map closed').toBeLessThanOrEqual(1);
+  expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
 });

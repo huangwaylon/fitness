@@ -1,10 +1,12 @@
-// The trip map in the specs (components/travel/map, docs/travel.md "Maps"): its hook (window.__travelMap), the dev page,
+// The trip map in the specs (components/travel/map, docs/travel.md "Maps"): its hook (window.__travelMap), a trip's page
+// in the trips' sheet (the menu's りょこう pill, on the demo),
 // and OpenFreeMap answered from fixtures (e2e/fixtures/travel/: a trimmed TileJSON and the tiles round Motobu, z6-12),
 // so no spec ever reaches the network. Any other tile is an empty 204; any other request to that origin fails the spec.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, type Page } from '@playwright/test';
 import { BASE } from './island.ts';
+import { fromMenu, hudMenu } from './hud.ts';
 
 const FIX = join(import.meta.dirname, 'fixtures', 'travel');
 
@@ -23,8 +25,22 @@ export type MapState = {
 };
 export const mapState = (page: Page) => page.evaluate(() => (window as unknown as { __travelMap: { state(): unknown } }).__travelMap.state()) as Promise<MapState>;
 
-/** The dev map (routes/dev/map, the sample Okinawa trip), `q` its query (`day=2`, `lang=en`…). */
-export const devMap = (page: Page, q = '') => page.goto(`${BASE}/dev/map?demo${q ? `&${q}` : ''}`);
+export type TripTab = 'days' | 'map' | 'pack' | 'camps';
+/** From the island already up: the menu's りょこう pill, `trip`'s pass, its page `tab`. */
+export async function openTrip(page: Page, trip = 'okinawa', tab: TripTab = 'map') {
+  await expect(hudMenu(page)).toBeVisible();
+  await fromMenu(page, 'travel');
+  const sheet = page.locator('dialog[open] [data-travel]');
+  await sheet.locator(`[data-trip="${trip}"]`).click();
+  await expect(sheet.locator(`[data-trip-view="${trip}"]`)).toBeVisible();
+  if (tab !== 'days') await sheet.locator(`[data-trip-tab="${tab}"]`).click();
+  await expect(sheet.locator(`[data-pane="${tab}"]`)).toBeVisible();
+}
+/** The demo (Nov 4: every Okinawa page opens on day 1), then `trip`'s page `tab`; `q` more of the query (`as=B`). */
+export async function gotoTrip(page: Page, trip = 'okinawa', tab: TripTab = 'map', q = '') {
+  await page.goto(`${BASE}/?demo&date=2026-11-04T12:00&critter=none&visitor=none${q ? `&${q}` : ''}`);
+  await openTrip(page, trip, tab);
+}
 
 /** OpenFreeMap from the fixtures; returns the requests to it that weren't the fixture's (expected: none). */
 export async function fixtureTiles(page: Page): Promise<{ tiles: string[]; stray: string[] }> {

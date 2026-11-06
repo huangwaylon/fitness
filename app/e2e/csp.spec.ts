@@ -5,7 +5,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { fromMenu } from './hud.ts';
 import { is3d } from './island.ts';
-import { devMap, drawn, fixtureTiles, mapReady } from './travelMap.ts';
+import { drawn, fixtureTiles, gotoTrip, mapReady } from './travelMap.ts';
 
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
 
@@ -76,10 +76,11 @@ test('the trip map: its worker, fonts, tiles and the location dot, no CSP violat
   const net = await fixtureTiles(page);
   await context.grantPermissions(['geolocation']);
   await context.setGeolocation({ latitude: 26.6944, longitude: 127.8779, accuracy: 25 });
-  await devMap(page, 'day=2&layers=camp');
+  await gotoTrip(page);
   await mapReady(page);
-  await page.locator('.locate').click();
-  await expect(page.locator('.locate')).toHaveAttribute('data-locate', 'on');
+  await page.locator('dialog[open] [data-map-layer="camp"]').click();
+  await page.locator('dialog[open] .locate').click();
+  await expect(page.locator('dialog[open] .locate')).toHaveAttribute('data-locate', 'on');
   // the labels drawn: their font slices fetched
   await expect.poll(() => page.evaluate(() => performance.getEntriesByType('resource').some((r) => /zen-maru-gothic-.+-700-normal.*\.woff2/.test(r.name)))).toBe(true);
   await page.waitForTimeout(1000);

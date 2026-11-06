@@ -1,18 +1,24 @@
-// りょこう's packing list (docs/travel.md "Packing list (relay)", components/travel/PackList.svelte), on /dev/pack over
-// the demo's record until the trips sheet mounts it: my ticks and counts, the chips of who has packed it, ✎ (add, rename,
+// りょこう's packing list (docs/travel.md "Packing list (relay)", components/travel/PackList.svelte): a trip's もちもの
+// in the trips' sheet, over the demo's record: my ticks and counts, the chips of who has packed it, ✎ (add, rename,
 // 🗑 with とりけす, a category's NH confirm), リセット (mine only), the guest's own only, two tabs in step (the demo's tabs
 // share the record's rows through localStorage, as phones share the record), and 「じゅんび OK！」 once.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { fromMenu, hudMenu } from './hud.ts';
+import { gotoTrip, openTrip } from './travelMap.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';
 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G' = 'A', trip = 'okinawa') {
   const page = await ctx.newPage();
-  await page.goto(`dev/pack?demo&date=${DATE}${as === 'A' ? '' : `&as=${as}`}${trip === 'okinawa' ? '' : `&trip=${trip}`}`);
+  await gotoTrip(page, trip, 'pack', as === 'A' ? '' : `as=${as}`);
   await expect(page.locator('[data-pack-item]').first()).toBeVisible();
   return page;
+}
+/** A reload: the island again, the same trip's もちもの. */
+async function reopen(page: Page, trip = 'okinawa') {
+  await page.reload();
+  await openTrip(page, trip, 'pack');
 }
 const item = (p: Page, id: string) => p.locator(`[data-pack-item="${id}"]`);
 const tick = (p: Page, id: string) => item(p, id).getByRole('checkbox');
@@ -41,7 +47,7 @@ test('my ticks: the bubble, my counts, and the others’ chips', async ({ contex
   await expect(tick(a, 'ok-0-1')).toHaveAttribute('aria-checked', 'false');
   await expect(mine(a)).toHaveAttribute('data-pack-mine', '1');
   // after a reload, as left
-  await a.reload();
+  await reopen(a);
   await expect(mine(a)).toHaveAttribute('data-pack-mine', '1');
 });
 
@@ -158,7 +164,7 @@ test('all packed: Orville’s 「じゅんび OK！」, celebrated once', async 
   await expect(a.locator('[data-pack-stamp]')).toHaveAttribute('data-pack-stamp', 'cheer');
   await expect(a.getByText('ばっちり！ いい たびを！')).toBeVisible();
   // again (a reload): the stamp, no celebration
-  await a.reload();
+  await reopen(a, 'seattle');
   await expect(a.locator('[data-pack-stamp]')).toHaveAttribute('data-pack-stamp', 'on');
   await expect(a.getByText('ばっちり！ いい たびを！')).toHaveCount(0);
   // one unticked: no stamp

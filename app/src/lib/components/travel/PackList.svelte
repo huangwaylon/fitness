@@ -14,7 +14,8 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Glyph from '../kiroku/Glyph.svelte';
   import { packing } from './packing.svelte.ts';
-  import { celebrate, iconOf, myProgress, packView, type PackCatView } from './packView.ts';
+  import { celebrate, myProgress, packView, type PackCatView } from './packView.ts';
+  import { iconOf } from './icons.ts';
   import { PACK_NAME } from '#lib/contract/pack.ts';
   import type { Trip } from '#lib/travel/types.ts';
   import type { Who } from '#lib/types.ts';

@@ -2,7 +2,8 @@
 // may change, the icons, and the 「じゅんび OK！」 celebration once per trip and person.
 import { describe, expect, it } from 'vitest';
 import { packFold, packList, type PackEntry, type PackSeed } from '#lib/contract/pack.ts';
-import { celebrate, chipsOf, iconOf, mayEditAs, myProgress, packView, pick } from './packView.ts';
+import { celebrate, chipsOf, mayEditAs, myProgress, packView, pick } from './packView.ts';
+import { glyphOf, iconOf } from './icons.ts';
 
 const T = Date.parse('2026-11-06T03:00:00.000Z');
 const SEED: PackSeed = {
@@ -76,6 +77,9 @@ describe('packView', () => {
     expect(iconOf('plane-takeoff')).toEqual({ art: 'finds/items/shopping-bag' });
     expect(iconOf('🍙')).toEqual({ emoji: '🍙' });
     expect(iconOf('')).toEqual({ art: 'finds/items/shopping-bag' });
+    // the cards' glyphs, from the same table
+    expect(glyphOf('tent')).toBe('⛺');
+    expect(glyphOf('nope')).toBe('📍');
   });
 });
 
