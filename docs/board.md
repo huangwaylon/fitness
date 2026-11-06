@@ -63,8 +63,7 @@ seconds); the board follows `world.rest.three` (`world.three` isn't reactive).
   `overflow: hidden`) moves nothing out of sight. Fields are ≥ 16 px (no zoom on focus); `focus({ preventScroll })`.
   Why: iOS never resizes the layout viewport for the keyboard, and `innerHeight` follows the visual viewport, so
   `innerHeight − vv.height − vv.offsetTop` reads 0 (the iOS 26 simulator: innerHeight 714 → 377, vv offsetTop 337).
-- **Editing:** an author edits or deletes their own; ウェイ and うめ may delete anyone's; the guest posts and edits or
-  deletes their own, nothing else.
+- **Editing:** an author edits their own; anyone deletes anyone's, the guest as ウェイ and うめ (2026-11-06).
 - **Notices:** a post by someone else since I last opened the board puts a 「！」 over it, cleared when I open it.
 
 ## The data (docs/backend.md#events `board`)
@@ -87,7 +86,7 @@ seconds); the board follows `world.rest.three` (`world.three` isn't reactive).
 ## Checked (`app/e2e/board.spec.ts`)
 
 - The walk up, the note written on it, a second phone seeing it at once, the author's edit and removal and a member's,
-  the guest's own only, a note after a reload and from the record's snapshot, 「もどる」 under the HUD and the face under
+  the guest's removal of a member's, a note after a reload and from the record's snapshot, 「もどる」 under the HUD and the face under
   both. The face's notes are a canvas: the specs read what it drew through `window.__board.drawn()` (the page's texts)
   and `__board.face3()` (the 3D face's box in the scene: on the cork, in front of NH's notes).
 - The keyboard: `e2e/keyboard.ts` stubs `visualViewport` as iOS changes it (336 px: an iPhone 15's keyboard and its

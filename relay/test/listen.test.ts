@@ -80,33 +80,34 @@ describe('ききみみ progress rows', () => {
     expect(listens(KEY_A).map(([, d]) => d.g)).toEqual(['ab12', 'cd34']);
   });
 
-  it('sends a row whole to its owner, the other member its summary only, and nothing between the guest and a member', () => {
+  it('sends a row whole to its owner and its summary only to everyone else, the guest and the members alike', () => {
     send(KEY_A, game('ab12', { n: 2 }));
     send(KEY_B, game('ab12', { n: 2, lv: 3 }));
     expect(send(KEY_C, game('zz99', { n: 1 })).ok).toBe(true); // the guest writes its own
     const summary = { d: '2026-11-05', g: 'ab12', n: 2, ms: 240_000 };
-    expect(listens(KEY_A)).toEqual([['A', game('ab12', { n: 2 })], ['B', summary]]);
-    expect(listens(KEY_B)).toEqual([['A', summary], ['B', game('ab12', { n: 2, lv: 3 })]]);
-    expect(listens(KEY_C)).toEqual([['G', game('zz99', { n: 1 })]]);
+    const gSummary = { d: '2026-11-05', g: 'zz99', n: 1, ms: 240_000 };
+    expect(listens(KEY_A)).toEqual([['A', game('ab12', { n: 2 })], ['B', summary], ['G', gSummary]]);
+    expect(listens(KEY_B)).toEqual([['A', summary], ['B', game('ab12', { n: 2, lv: 3 })], ['G', gSummary]]);
+    expect(listens(KEY_C)).toEqual([['A', summary], ['B', summary], ['G', game('zz99', { n: 1 })]]);
     // a delta likewise
     const since = new Date(now).toISOString();
     send(KEY_B, game('ef56'));
     send(KEY_C, game('gh78'));
-    expect(listens(KEY_A, since)).toEqual([['B', { d: '2026-11-05', g: 'ef56', n: 1, ms: 240_000 }]]);
-    expect(listens(KEY_C, since)).toEqual([['G', game('gh78')]]);
+    expect(listens(KEY_A, since)).toEqual([['B', { d: '2026-11-05', g: 'ef56', n: 1, ms: 240_000 }], ['G', { d: '2026-11-05', g: 'gh78', n: 1, ms: 240_000 }]]);
+    expect(listens(KEY_C, since)).toEqual([['B', { d: '2026-11-05', g: 'ef56', n: 1, ms: 240_000 }], ['G', game('gh78')]]);
   });
 
-  it('a passed unit チェック reaches the other member as its unit and `stamped` (never the answers or the team’s count), the guest never', () => {
+  it('a passed unit チェック reaches the other member as its unit and `stamped` (never the answers or the team’s count), the guest’s and to the guest too', () => {
     const six = (rights: number) => Array.from({ length: 6 }, (_, i) => [`w3-gotta`, i < rights ? 1 : 0, 0, 0]);
     send(KEY_A, game('ab12', { n: 2, gm: 'unit', u: 'tr-hotel', l: 3, tm: 5, r: six(3) })); // carried by the team
     send(KEY_A, game('ab13', { gm: 'unit', u: 'tr-hotel', l: 3, r: six(4) })); // not passed
     send(KEY_A, game('ab14', { gm: 'unit', u: 'ev-bday', l: 2, r: six(6) })); // not a チェック
     send(KEY_C, game('zz99', { gm: 'unit', u: 'tr-hotel', l: 3, r: six(6) }));
     const base = { d: '2026-11-05', ms: 240_000 };
-    expect(listens(KEY_B)).toEqual([
-      ['A', { ...base, g: 'ab12', n: 2, u: 'tr-hotel', stamped: 1 }], ['A', { ...base, g: 'ab13', n: 1 }], ['A', { ...base, g: 'ab14', n: 1 }]
-    ]);
-    expect(listens(KEY_A).map(([, d]) => d.g)).toEqual(['ab12', 'ab13', 'ab14']);
-    expect(listens(KEY_C).map(([w, d]) => [w, d.g])).toEqual([['G', 'zz99']]);
+    const theirs = [['A', { ...base, g: 'ab12', n: 2, u: 'tr-hotel', stamped: 1 }], ['A', { ...base, g: 'ab13', n: 1 }], ['A', { ...base, g: 'ab14', n: 1 }]];
+    const guests = ['G', { ...base, g: 'zz99', n: 1, u: 'tr-hotel', stamped: 1 }];
+    expect(listens(KEY_B)).toEqual([...theirs, guests]);
+    expect(listens(KEY_A).map(([w, d]) => [w, d.g, d.stamped])).toEqual([['A', 'ab12', undefined], ['A', 'ab13', undefined], ['A', 'ab14', undefined], ['G', 'zz99', 1]]);
+    expect(listens(KEY_C)).toEqual([...theirs, ['G', game('zz99', { gm: 'unit', u: 'tr-hotel', l: 3, r: six(6) })]]);
   });
 });

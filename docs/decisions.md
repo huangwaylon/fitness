@@ -134,6 +134,23 @@ week's ベル, ふたりでぜんぶ, the goals), and a privacy rule only the UI
 went to v3 beside v2 (relay first), so a phone not yet updated plays on without hearing of the guest. Not done: more
 than one guest; the guest's villager in the members' ambient life (it moves only by its own phone).
 
+### The guest plays the island as a member does (2026-11-06)
+(Amends *A guest, not a third member*.) Nothing on the island is the members' alone: the guest arranges the outdoors
+(もようがえ on the phone and しまの エディター: objects, terrain, a reset), places and moves the island's decorations, keeps
+its part of the island's day in the record (`island`: what it picked up and put down, its shakes, the flowers it
+watered, its wishes), waters flowers, wishes on stars and wakes a sleeping visitor (`world` ops), sets the island's
+weather (`pref weatherMode`), takes any note off the board, and sees the members' ききみみ summaries as they see its
+own (and each other's): `{d, g, n, ms}` and a unit's stamp, never the answers. Each home stays its owner's (its look
+and its room, the tent's room all three's), for everyone alike. What stays the members': the からだ figures (weight,
+body fat, BMI, lean mass and their goals: never in the guest's snapshot, the record enforces it) and their profiles
+(sex, birth date, BMI standard); and, until the user decides, the economy and the real-world records: ベル spent on
+ごほうび (`spend`, `spend_void`), the harvest, the members' goals, a trip's notes, the wedding board, the Health
+ingest and its audit. Why: the user ("nothing on the main island should be members only, all players + guests
+should be treated equally; the only thing the guest can't see is the からだ information"). The record's and the room's
+rules changed first (`guestMayWrite`, `scopeMayWrite` / `scopeMaySend`, `boardMayWrite`, `listenSeen`;
+`guestMaySend` is gone: the room takes from the guest what it takes from anyone), the relay deployed before the
+phones offered it.
+
 ### No notifications (2026-11-02)
 (Replaces *One notification: the partner met every goal*.) The app sends no notification of any kind: せってい's つうち
 switch, the Web Push subscription, the service worker's `push` and `notificationclick`, the relay's `/push/*` routes,
@@ -744,8 +761,8 @@ The outdoors (terrain per 30u tile: a kind and a cliff tier; objects on tiles wi
 owner's style) is `layout/` data: the default (today's island on the grid, world.ts's ids and exact spots kept) with
 the record's ops over it. Its changes are `decor` ops with scopes `o` (an object), `c` (an 8 × 8 chunk of tiles), `r`
 (a reset to the default), `h` (a home's look), and the homes' rooms `t` / `u` / `v` (the tent's ops): last writer wins
-per id, the record keeps each id's latest, a reset drops what it voids. The outdoors are the members' alone, a home's
-look and room its owner's (the tent all three), enforced by the record and the room. Nav, heights and validation are
+per id, the record keeps each id's latest, a reset drops what it voids. The outdoors are anyone's (the guest's too
+since 2026-11-06), a home's look and room its owner's (the tent all three), enforced by the record and the room. Nav, heights and validation are
 derived from the layout, never hand-made. Why: the user asked for an outer world "fully customizable… similar to the
 inside of the tent… the same grid system", with everything movable (trees, the pond, the river, the tent) and three
 homes; one record path (the decorations' and the tent's guarantees carry over: commutative, no leader), and the

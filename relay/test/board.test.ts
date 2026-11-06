@@ -94,24 +94,23 @@ describe('the board in the record', () => {
     expect(posts()[0].t).toBe('ウェイの');
   });
 
-  it('lets the members remove any post, the guest only its own; a removal is final', () => {
+  it('lets anyone remove any post, the guest as a member; a removal is final', () => {
     const p = now + 1000;
     post('G', 'bpost040', 'ゲストのメモ', p);
     post('A', 'bpost041', 'ウェイのメモ', p + 10);
     // the guest posts and edits its own
     expect(send('G', { id: 'bpost040', at: p + 2000, p, t: 'ゲストのメモ（なおした）' })).toMatchObject({ ok: true });
-    // but can't remove another's
-    expect(send('G', { id: 'bpost041', at: p + 3000, rm: true })).toMatchObject({ ok: false, error: 'forbidden' });
+    // but edits nobody else's
+    expect(send('G', { id: 'bpost041', at: p + 2500, p: p + 10, t: 'かきかえ' })).toMatchObject({ ok: false, error: 'forbidden' });
     // a member removes the guest's
     expect(send('B', { id: 'bpost040', at: p + 3000, rm: true })).toMatchObject({ ok: true });
     expect(posts().map((x) => x.id)).toEqual(['bpost041']);
     // final: a later set doesn't bring it back
     expect(send('G', { id: 'bpost040', at: p + 9000, p, t: 'もどれ' })).toMatchObject({ ok: true, duplicate: true });
     expect(posts().map((x) => x.id)).toEqual(['bpost041']);
-    // the guest removes its own
-    post('G', 'bpost042', 'またね', p + 20);
-    expect(send('G', { id: 'bpost042', at: p + 4000, rm: true })).toMatchObject({ ok: true });
-    expect(posts().map((x) => x.id)).toEqual(['bpost041']);
+    // the guest removes a member's, as a member may
+    expect(send('G', { id: 'bpost041', at: p + 3000, rm: true })).toMatchObject({ ok: true });
+    expect(posts()).toEqual([]);
   });
 
   it('drops an op on a post it doesn’t hold, unless it is a new one', () => {

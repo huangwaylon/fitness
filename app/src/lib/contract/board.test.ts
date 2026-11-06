@@ -98,14 +98,15 @@ describe('the merge', () => {
 
 describe('who may write', () => {
   const mine = set('b1234567', 'G', T);
-  it('anyone posts; only the author edits; the author or a member removes', () => {
+  it('anyone posts; only the author edits; anyone removes, the guest as a member', () => {
     for (const w of ['A', 'B', 'G'] as const) expect(boardMayWrite(w, set('bnew0000', w, T), null)).toBe(true);
     expect(boardMayWrite('G', set('b1234567', 'G', T + 1, 'x', T), mine)).toBe(true);
     expect(boardMayWrite('A', set('b1234567', 'A', T + 1, 'x', T), mine)).toBe(false);
     expect(boardMayWrite('A', rm('b1234567', 'A', T + 1), mine)).toBe(true);
     expect(boardMayWrite('B', rm('b1234567', 'B', T + 1), mine)).toBe(true);
     const theirs = set('b7654321', 'A', T);
-    expect(boardMayWrite('G', rm('b7654321', 'G', T + 1), theirs)).toBe(false);
+    expect(boardMayWrite('G', rm('b7654321', 'G', T + 1), theirs)).toBe(true);
+    expect(boardAccept([theirs], rm('b7654321', 'G', T + 1))).toEqual({ v: 'append', drop: null });
     expect(boardMayWrite('G', set('b7654321', 'G', T + 1, 'x', T), theirs)).toBe(false);
     expect(boardMayWrite('B', set('b7654321', 'B', T + 1, 'x', T), theirs)).toBe(false);
   });

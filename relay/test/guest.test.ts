@@ -1,8 +1,8 @@
 // The guest (docs/backend.md#the-guest): a third key, KEY_C (who `G`). The record leaves every からだ row (weight, body
 // fat, BMI, lean mass) and the weight goal out of the guest's snapshot and deltas, keeps the activity, the ベル's rows
-// and the rest, and takes from the guest only its finds, tallies, the tent's decor and its own cosmetic prefs. The room
-// carries three villagers: presence for each, the guest's intents to both members (never to a phone before v3), and
-// refuses what the guest may not do.
+// and the rest, and takes from the guest everything on the island a member writes (2026-11-06), never the economy, a
+// member's goal or the members' own records. The room carries three villagers: presence for each, the guest's intents
+// to both members, anything a member may send.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
 import { RoomCore, type Held, type Meta, type RoomIO } from '../src/room.ts';
@@ -140,14 +140,40 @@ describe('the record and the guest', () => {
       ev('x6e', 'pref', { key: 'exerciseGoal', value: 30 }),
       ev('x6s', 'pref', { key: 'standGoal', value: 100, person: 'A' }),
       ev('x7', 'pref', { key: 'villagerName', value: 'うめ', person: 'B' }),
-      ev('x7w', 'pref', { key: 'weatherMode', value: 'game' }), // the island's weather: the members'
-      ev('x8', 'decor', { id: 'dabc1234', at: T0, item: 'tanuki', x: 100, z: 200, f: 0, p: T0 }),
-      ev('x9', 'island', { date: '2026-11-02', taken: [], puts: [], shakes: [], watered: [], wishes: {} })
+      ev('x7w', 'pref', { key: 'weatherMode', value: 'game', person: 'A' }), // never a `person`
+      ev('x8', 'trip_note', { trip: 'okinawa', at: T0, v: { ref: 'ABC123' } }),
+      ev('x9', 'wtask', { id: 't1', at: T0, c: T0, title: 'venue', cat: 'party' })
     ];
     for (const e of refused) expect(g('event', e), e.id).toEqual({ ok: false, error: 'forbidden' });
     const batch = g('events', { events: refused.map((e) => ({ ...e, id: `${e.id}b` })) });
     expect(batch.results.every((x: { error?: string }) => x.error === 'forbidden')).toBe(true);
     expect(a('snapshot').rows).toEqual(before);
+  });
+
+  it('takes everything on the island a member writes from the guest: the decorations, the layout, its island day, the weather, the board', () => {
+    const island = { date: '2026-11-02', taken: ['p1'], puts: [], shakes: [], watered: ['fl:1:2'], wishes: { '2026-11-03': 1 } };
+    const r = g('events', { events: [
+      ev('g1', 'decor', { id: 'dabc1234', at: T0, item: 'tanuki', x: 100, z: 200, f: 0, p: T0 }),
+      ev('g2', 'decor', { sc: 'o', id: 'oak9', at: T0, k: 'oak', x: 3, z: 4, f: 0 }),
+      ev('g3', 'decor', { sc: 'c', id: 'c0x0', at: T0, g: 'g'.repeat(64) }),
+      ev('g4', 'island', island),
+      ev('g5', 'pref', { key: 'weatherMode', value: 'game' }),
+      ev('g6', 'decor', { sc: 'h', id: 'hG', at: T0, m: 'log' })
+    ] });
+    expect(r.results.map((x: { ok: boolean; error?: string }) => x.error ?? x.ok)).toEqual([true, true, true, true, true, true]);
+    const rows = (a('snapshot').rows.events as unknown[][]).map((x) => [x[1], x[2], x[3]]);
+    expect(rows).toEqual([['G', 'g1', 'decor'], ['G', 'g2', 'decor'], ['G', 'g3', 'decor'], ['G', 'g4', 'island'], ['G', 'g5', 'pref'], ['G', 'g6', 'decor']]);
+    // a reset of the outdoors too, as a member's
+    tick();
+    expect(g('event', ev('g7', 'decor', { sc: 'r', id: 'reset', at: now }))).toMatchObject({ ok: true });
+    // a member's note the guest takes down, as a member may
+    expect(a('event', ev('a1', 'board', { id: 'b1234567', at: now, p: now, t: 'やあ' }))).toMatchObject({ ok: true });
+    tick();
+    expect(g('event', ev('g8', 'board', { id: 'b1234567', at: now, rm: true }))).toMatchObject({ ok: true });
+    // still never another's home: its owner's alone, as for a member
+    expect(g('event', ev('g9', 'decor', { sc: 'h', id: 'hA', at: now, m: 'log' }))).toEqual({ ok: false, error: 'forbidden' });
+    expect(g('event', ev('g10', 'decor', { sc: 'u', id: 'dg1abc23', at: now, item: 'f1234', x: 2, z: 3, f: 0, p: now }))).toEqual({ ok: false, error: 'forbidden' });
+    expect(a('event', ev('a2', 'decor', { sc: 'h', id: 'hG', at: now, m: 'log' }))).toEqual({ ok: false, error: 'forbidden' });
   });
 
   it('the dump (every row) carries the guest’s rows with person G', () => {
@@ -255,14 +281,18 @@ describe('the room with three villagers (v3)', () => {
     expect(a.sent.at(-1)).toMatchObject({ kind: 'ack', c: 10, ok: false });
   });
 
-  it('refuses what the guest may not do: the island’s decor, world ops, nudges', () => {
+  it('takes from the guest what it takes from a member: the island’s decor, world ops (watering, a wish, a wake), nudges', () => {
     const a = join(KEY_A), g = join(KEY_C);
     a.sent = [];
     say(g, { kind: 'decor', id: 'dabc1234', at: now, item: 'tanuki', x: 100, z: 200, f: 0, p: now, c: 1 });
     say(g, { kind: 'world', op: 'watered', id: 'fl:1:2', c: 2 });
+    say(g, { kind: 'world', op: 'wished', id: '2026-11-03', c: 3 });
+    say(g, { kind: 'world', op: 'woke', id: 'gulliver', c: 4 });
     say(g, { kind: 'saved' });
-    expect(a.sent).toEqual([]);
-    expect(of(g, 'ack').map((m) => (m as { ok: boolean }).ok)).toEqual([false, false]);
+    expect(a.sent.map((m) => [m.kind, (m as { op?: string }).op, (m as { who?: string }).who])).toEqual([
+      ['decor', undefined, 'G'], ['world', 'watered', 'G'], ['world', 'wished', 'G'], ['world', 'woke', 'G'], ['saved', undefined, 'G']
+    ]);
+    expect(of(g, 'ack').map((m) => (m as { ok: boolean }).ok)).toEqual([true, true, true, true]);
   });
 
   it('a high-five goes to whose villager was tapped, and is held for them while they’re away', () => {
@@ -317,13 +347,16 @@ describe('the layout’s permissions', () => {
   const room = (sc: string) => ({ sc, id: 'dpiece123', at: T0, item: 'f1234', x: 2, z: 3, f: 0, p: T0 });
   const rows = () => (store.handle({ key: KEY_A, action: 'snapshot' }, 100) as Record<string, any>).rows.events as unknown[][];
 
-  it('the record: the guest never writes the outdoors, only its own home', () => {
+  it('the record: the guest writes the outdoors as a member does; a home only its own', () => {
     const forbidden = { ok: false, error: 'forbidden' };
-    for (const d of [obj(), chunk, reset, look('A'), look('B'), room('u')]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toEqual(forbidden);
-    for (const d of [look('G'), room('v'), room('t'), { ...look('G'), at: T0 + 1, f: 2 }]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toMatchObject({ ok: true });
+    for (const d of [look('A'), look('B'), room('u')]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toEqual(forbidden);
+    for (const d of [obj(), chunk, look('G'), room('v'), room('t'), { ...look('G'), at: T0 + 1, f: 2 }]) expect(call(KEY_C, ev(d)), JSON.stringify(d)).toMatchObject({ ok: true });
     // turning a home is its look: the owner's alone
     expect(call(KEY_A, ev({ ...look('G'), at: T0 + 2, f: 3 }))).toEqual(forbidden);
-    expect(rows().map((r) => r[1])).toEqual(['G', 'G', 'G']);
+    expect(rows().map((r) => r[1])).toEqual(['G', 'G', 'G', 'G', 'G']);
+    // and a reset of the outdoors: the object's and the chunk's ops go, as a member's reset drops them
+    expect(call(KEY_C, ev(reset))).toMatchObject({ ok: true });
+    expect(rows().map((r) => JSON.parse(r[4] as string).sc).sort()).toEqual(['h', 'r', 't', 'v']);
   });
 
   it('the record: the members write the outdoors; each only their own home', () => {
@@ -375,7 +408,7 @@ describe('the room and the layout', () => {
   };
   const say = (s: FakeSock, m: object) => room.message(s, JSON.stringify({ v: 3, ...m }));
 
-  it('relays a member’s outdoor op live (never replayed: the record keeps it); refuses the guest’s', () => {
+  it('relays anyone’s outdoor op live, the guest’s too (never replayed: the record keeps it); a home’s look its owner’s', () => {
     const a = join(KEY_A), b = join(KEY_B), g = join(KEY_C);
     for (const s of [a, b, g]) s.sent = [];
     say(a, { kind: 'decor', sc: 'o', id: 'oak-m1', at: now, k: 'oak', x: 3, z: 20, f: 0, c: 1 });
@@ -386,8 +419,8 @@ describe('the room and the layout', () => {
     say(g, { kind: 'decor', sc: 'o', id: 'oak-m1', at: now + 1, k: 'oak', x: 4, z: 20, f: 0, c: 2 });
     say(g, { kind: 'decor', sc: 'c', id: 'c0x0', at: now + 1, g: '4'.repeat(64), c: 3 });
     say(g, { kind: 'decor', sc: 'h', id: 'hA', at: now + 1, m: 'tent-n', c: 4 });
-    expect(g.sent.filter((m) => m.kind === 'ack').map((m) => (m as { ok: boolean }).ok)).toEqual([false, false, false]);
-    expect(b.sent.map((m) => m.kind)).toEqual(['decor', 'drag']);
+    expect(g.sent.filter((m) => m.kind === 'ack').map((m) => (m as { ok: boolean }).ok)).toEqual([true, true, false]);
+    expect(b.sent.map((m) => [m.kind, (m as { sc?: string }).sc, (m as { who?: string }).who])).toEqual([['decor', 'o', 'A'], ['drag', 'o', 'A'], ['decor', 'o', 'G'], ['decor', 'c', 'G']]);
     // a phone opening later hears none of it from the room
     const late = join(KEY_B);
     const replayed = late.sent.filter((m) => m.kind === 'replay').flatMap((m) => (m as { es: { kind: string; sc?: string }[] }).es);

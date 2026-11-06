@@ -635,9 +635,10 @@ export class StoreCore {
       : isPackType(body.type) ? packClean(body.type, sent)
       // the wedding board's titles, categories and settings: one clean line each (contract/wedding.ts wedClean)
       : isWedType(body.type) ? wedClean(body.type, sent) : sent;
-    // the guest writes only its finds, tallies, notes, meals, the tent's decor and its own prefs (contract/guest.ts)
+    // the guest writes everything on the island a member does, never the economy, a goal of the members' or the
+    // members' own records (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
-    // a scoped decor op: the outdoors the members', a home's look and room its owner's (contract/layout.ts)
+    // a scoped decor op: a home's look and room its owner's, the outdoors anyone's (contract/layout.ts)
     if (body.type === 'decor' && !scopeMayWrite(me, data)) return fail('forbidden');
     const json = JSON.stringify(data);
     // (the wedding note its own cap: a document, contract/wedding.ts)

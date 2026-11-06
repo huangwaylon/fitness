@@ -69,9 +69,9 @@ describe('listenOf', () => {
     expect(listenSummaryOf({ d: '2026-11-05', g: 'ab12', n: 2, ms: 180_000 })).toEqual({ d: '2026-11-05', g: 'ab12', n: 2, ms: 180_000 });
     expect(listenSummaryOf({ d: 'x' })).toBeNull();
   });
-  it('lets the owner see all, the other member a summary, and nothing cross the guest', () => {
+  it('lets the owner see all and anyone else a summary, the guest and the members alike', () => {
     expect([listenSeen('A', 'A'), listenSeen('A', 'B'), listenSeen('B', 'A'), listenSeen('G', 'A'), listenSeen('A', 'G'), listenSeen('G', 'G')])
-      .toEqual(['all', 'summary', 'summary', 'none', 'none', 'all']);
+      .toEqual(['all', 'summary', 'summary', 'summary', 'summary', 'all']);
   });
 });
 
@@ -80,17 +80,18 @@ describe('rowsFor and listen rows', () => {
   const rows: SnapshotRows = { metrics: [], events: [ev('A', 'a1', row), ev('B', 'b1', row), ev('G', 'g1', row), ev('A', 'a2', { junk: 1 })] };
   const seen = (me: 'A' | 'B' | 'G') => rowsFor(me, rows).events.map((r) => [r[1], JSON.parse(r[4])]);
   const sum = { d: '2026-11-05', g: 'ab12', n: 2, ms: 180_000 };
-  it('owner whole, partner summary, guest apart', () => {
-    expect(seen('A')).toEqual([['A', row], ['B', sum], ['A', { junk: 1 }]]);
-    expect(seen('B')).toEqual([['A', sum], ['B', row]]);
-    expect(seen('G')).toEqual([['G', row]]);
+  it('owner whole, everyone else a summary: the partner, the guest, the members on the guest’s phone', () => {
+    expect(seen('A')).toEqual([['A', row], ['B', sum], ['G', sum], ['A', { junk: 1 }]]);
+    expect(seen('B')).toEqual([['A', sum], ['B', row], ['G', sum]]);
+    expect(seen('G')).toEqual([['A', sum], ['B', sum], ['G', row]]);
   });
-  it('a stamped チェック reaches the partner as its unit and `stamped`, the guest never', () => {
+  it('a stamped チェック reaches everyone else as its unit and `stamped`, the guest’s too', () => {
     const pass = { ...row, gm: 'unit', u: 'tr-hotel', l: 3, tm: 5 };
     const both: SnapshotRows = { metrics: [], events: [ev('A', 'a1', pass), ev('G', 'g1', pass)] };
-    expect(rowsFor('B', both).events.map((r) => JSON.parse(r[4]))).toEqual([{ ...sum, u: 'tr-hotel', stamped: 1 }]);
-    expect(rowsFor('A', both).events.map((r) => JSON.parse(r[4]))).toEqual([pass]);
-    expect(rowsFor('G', both).events.map((r) => r[1])).toEqual(['G']);
+    const stamp = { ...sum, u: 'tr-hotel', stamped: 1 };
+    expect(rowsFor('B', both).events.map((r) => JSON.parse(r[4]))).toEqual([stamp, stamp]);
+    expect(rowsFor('A', both).events.map((r) => JSON.parse(r[4]))).toEqual([pass, stamp]);
+    expect(rowsFor('G', both).events.map((r) => JSON.parse(r[4]))).toEqual([stamp, pass]);
   });
   it('leaves rows without a listen row as they are', () => {
     const plain: SnapshotRows = { metrics: [], events: [['2026-11-05T03:00:00.000Z', 'A', 'p1', 'find', '{"kind":"fish","id":"tuna"}']] };

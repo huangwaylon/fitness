@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, MUSIC_SKEW_MS, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicLive, newerMusic, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, MUSIC_SKEW_MS, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicLive, newerMusic, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 import { served } from './weather.ts';
@@ -249,9 +249,7 @@ export class RoomCore<S extends Sock> {
       return;
     }
     const { v: _v, c, ...intent } = msg;
-    // the guest's phone may only walk, act, claim, say, high-five and arrange the tent (docs/backend.md#the-guest)
-    if (who === 'G' && !guestMaySend(intent)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
-    // a scoped decor op: the outdoors the members', a home's look and room its owner's (contract/layout.ts)
+    // a scoped decor op: a home's look and room its owner's (the outdoors anyone's, the guest's too: contract/layout.ts)
     if (intent.kind === 'decor' && !scopeMaySend(who, intent.sc, intent.id)) return c !== undefined ? this.ack(s, c, this.stamp(), false) : undefined;
     const stored = isStored(intent);
     if (stored && c !== undefined) {

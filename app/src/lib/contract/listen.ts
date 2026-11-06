@@ -1,9 +1,9 @@
 // ききみみ クイズ's progress rows (docs/kikimimi.md "Progress & feedback", docs/backend.md "Events" `listen`): one row
 // per person per game, written once at its results, with every answer of theirs. The record checks the shape
-// (validEventData) and sends a row whole to its owner only; the other member gets its summary (that a game was played,
-// when, how long, with how many: the couple summary), and nothing goes between the guest and the members
+// (validEventData) and sends a row whole to its owner only; everyone else gets its summary (that a game was played,
+// when, how long, with how many: the together summary), the guest and the members alike
 // (contract/guest.ts rowsFor). Pure, over the contract only (the relay imports it).
-import { isLocalDate, isPersonId } from './api.ts';
+import { isLocalDate } from './api.ts';
 import type { LocalDate, Who } from '../types.ts';
 
 /** One answer: the item's id, right (1) or not (0), the authored choice picked (−1: timed out; another game's, up to
@@ -107,12 +107,12 @@ const summaryOf = (row: ListenRow): ListenSummary =>
   ({ d: row.d, g: row.g, n: row.n, ms: row.ms, ...(stampsUnit(row) && { u: row.u, stamped: 1 as const }) });
 
 /**
- * What `viewer` gets of a `listen` row `sender` wrote: its own whole (`all`), the other member's summary (`summary`),
- * and nothing between the guest and a member (`none`). @public (contract/guest.ts)
+ * What `viewer` gets of a `listen` row `sender` wrote: its own whole (`all`), anyone else's summary (`summary`: the
+ * other member's, and since 2026-11-06 the guest's to the members and theirs to the guest alike).
+ * @public (contract/guest.ts)
  */
-export function listenSeen(viewer: Who, sender: Who): 'all' | 'summary' | 'none' {
-  if (viewer === sender) return 'all';
-  return isPersonId(viewer) && isPersonId(sender) ? 'summary' : 'none';
+export function listenSeen(viewer: Who, sender: Who): 'all' | 'summary' {
+  return viewer === sender ? 'all' : 'summary';
 }
 
 /** A row's summary as JSON (the other member's copy), or null for a row that isn't one. */
