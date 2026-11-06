@@ -107,6 +107,8 @@ the network and the browser's HTTP cache. There is no prefetch, for any trip.
 
 - Not yet checked on a real iPhone (Safari's `text-wrap: pretty`, the hero crops, the map on Metal).
 - The map has no night tint (the day palette at every hour).
+- Offline, then back: in Playwright's WebKit the pill's import can still fail after もういちど's reload (no request
+  made; `travel.spec` "offline before the first opening" fails about half its WebKit runs). Check on the phone.
 - Packing: no icon picker (a new category is always the shopping bag), no note editing, no UI to move an item to
   another category (`packing.move(…, cat)` exists).
 
