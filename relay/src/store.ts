@@ -26,6 +26,7 @@ import { decorAccept, decorOpOf, type DecorEntry } from '../../app/src/lib/contr
 import { isTentPiece, tentAccept, tentOpOf, type TentEntry } from '../../app/src/lib/contract/tent.ts';
 import { isRoomScope, isStanding, layoutAccept, layoutOpOf, scopeMayWrite, type LayoutEntry } from '../../app/src/lib/contract/layout.ts';
 import { BOARD_MAX, boardAccept, boardOpOf, cleanText, type BoardEntry } from '../../app/src/lib/contract/board.ts';
+import { isPackType, packClean, PackBook, packRowOf, PACK_TYPES, type PackVerdict } from '../../app/src/lib/contract/pack.ts';
 import { foodAccept, foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp, repeatAccept, repeatNext, type RepeatOpBy } from '../../app/src/lib/contract/food.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { verifyNotify } from './notify.ts';
@@ -628,7 +629,9 @@ export class StoreCore {
     // a meal entry, a repeat, a recipe or a custom food as the phone keeps it: names cleaned, grams to one decimal
     // (contract/food.ts)
     const data: Rec = body.type === 'board' && typeof sent.t === 'string' ? { ...sent, t: cleanText(sent.t) }
-      : isFoodType(body.type) ? (FOOD_PARSE[body.type](sent) ?? sent) : sent;
+      : isFoodType(body.type) ? (FOOD_PARSE[body.type](sent) ?? sent)
+      // a packing list's names and notes, a trip note's values: one clean line each (contract/pack.ts packClean)
+      : isPackType(body.type) ? packClean(body.type, sent) : sent;
     // the guest writes only its finds, tallies, notes, meals, the tent's decor and its own prefs (contract/guest.ts)
     if (me === 'G' && !guestMayWrite(body.type, data)) return fail('forbidden');
     // a scoped decor op: the outdoors the members', a home's look and room its owner's (contract/layout.ts)
@@ -669,6 +672,19 @@ export class StoreCore {
         }
         if (v.v === 'append') drop = v.drop;
       }
+      let packDrop: string[] = [];
+      if (isPackType(type)) {
+        // a trip's packing list: the guest changes only what it added, each person only their own ticks, the members
+        // the notes; an op beaten by the one held is acknowledged; the trip's cap (contract/pack.ts PackBook)
+        const v = this.packTarget(me, type, data);
+        if (v.v !== 'append') {
+          if (v.v === 'forbidden') return fail('forbidden');
+          if (v.v !== 'stale') return fail('bad_request', v.v === 'full' ? 'pack full' : 'pack owner');
+          this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+          return { ok: true, duplicate: true };
+        }
+        packDrop = v.drop;
+      }
       let kept = json;
       if (isFoodType(type)) {
         // only its owner changes an entry, a repeat, a recipe or a custom food; an op beaten by the one held is
@@ -697,6 +713,7 @@ export class StoreCore {
       }
       const at = this.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
+      for (const sl of packDrop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', sl);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
       const slot = eventSlot(type, me, subject, data, Date.parse(at));
       const wasDecor = type === 'decor' && slot ? this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
@@ -850,6 +867,28 @@ export class StoreCore {
   private pruneBoard(): void {
     const gone = this.boardRows().filter((r) => r.rm).sort((a, b) => b.at - a.at || b.seq - a.seq);
     for (const r of gone.slice(BOARD_MAX)) this.io.sql.exec('DELETE FROM events WHERE seq = ?', r.seq);
+  }
+
+  /** A trip's packing rows (its list's ops, everyone's ticks and resets, its note), each slot's latest. */
+  private packBook(trip: string): PackBook {
+    const b = new PackBook();
+    // (a trip id is [a-z0-9-]: nothing GLOB reads as a pattern)
+    const rows = this.io.sql.exec<{ person: string; type: string; data: string }>(
+      `SELECT person, type, data FROM events WHERE type IN (${PACK_TYPES.map(() => '?').join(', ')}) AND (slot GLOB ? OR slot GLOB ? OR slot GLOB ? OR slot = ?)`,
+      ...PACK_TYPES, `pack|${trip}|*`, `pack_chk|${trip}|*`, `pack_reset|${trip}|*`, `trip_note|${trip}`
+    ).toArray();
+    for (const r of rows) {
+      const x = this.rowRec(r.data, 'pack');
+      const row = x && isWho(r.person) ? packRowOf(r.type, x, r.person) : null;
+      if (row) b.put(row);
+    }
+    return b;
+  }
+
+  /** A packing op against the trip's rows the record holds (contract/pack.ts PackBook accept). */
+  private packTarget(me: Who, type: string, d: Rec): PackVerdict {
+    const row = packRowOf(type, d, me);
+    return row ? this.packBook(row.op.trip).accept(row) : { v: 'stale' };
   }
 
   /** A meal, a repeat, a recipe or a custom food op against the entry's (the repeat's, the recipe's) latest op the record holds (its
@@ -1074,6 +1113,15 @@ export class StoreCore {
       }
       if (v.drop) sql.exec('DELETE FROM events WHERE slot = ?', `board|${v.drop}`);
     }
+    if (isPackType(type)) {
+      if (!packRowOf(type, d, person)) return 'skipped';
+      const v = this.packTarget(person, type, d);
+      if (v.v !== 'append') {
+        sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+        return 'had';
+      }
+      for (const sl of v.drop) sql.exec('DELETE FROM events WHERE slot = ?', sl);
+    }
     let json = raw || '{}';
     if (isFoodType(type)) {
       if (!FOOD_PARSE[type](d)) return 'skipped';
@@ -1090,7 +1138,7 @@ export class StoreCore {
     }
     const slot = eventSlot(type, person, subject, d, Date.parse(at));
     const wasDecor = type === 'decor' && slot ? sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
-    if (slot && type !== 'decor' && type !== 'board' && !isFoodType(type)) {
+    if (slot && type !== 'decor' && type !== 'board' && !isFoodType(type) && !isPackType(type)) {
       const held = sql.exec<{ at: string }>('SELECT at FROM events WHERE slot = ?', slot).toArray()[0];
       if (held && held.at >= at) {
         sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id); // a later one of the slot is there already
