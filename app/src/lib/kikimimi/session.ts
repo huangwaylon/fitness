@@ -26,6 +26,9 @@ export interface QuizDeck {
   /** A player's points from their answers, when the deck scores its own way (スピード はしご: the rungs climbed,
    *  ladder.ts ladderPoints); else each answer's points.ts `points`. */
   score?(answers: ReadonlyMap<number, { k: number; rp: boolean }>): number;
+  /** Question i's reveal moves on by itself after `windows.auto` (スピード はしご's rungs below the top: their reveal
+   *  hides the line, nothing to read); else it waits for つぎへ. */
+  auto?(i: number): boolean;
 }
 /** The deck every phone builds from an `open`'s seed and level. */
 export type DeckOf = (seed: number, lv: QuizLv) => QuizDeck;
@@ -48,8 +51,10 @@ export interface QuizWindows {
   hostGrace: number;
   /** The host's beacon: its position at least this often while a game runs. */
   beacon: number;
+  /** A reveal that moves on by itself (QuizDeck.auto): the next question this long after it began. */
+  auto: number;
 }
-export const WINDOWS: QuizWindows = { countdown: 4000, lead: 1500, answers: [30_000, 20_000, 60_000, Infinity], late: 5000, openTtl: 600_000, hostGrace: 15_000, beacon: 3000 };
+export const WINDOWS: QuizWindows = { countdown: 4000, lead: 1500, answers: [30_000, 20_000, 60_000, Infinity], late: 5000, openTtl: 600_000, hostGrace: 15_000, beacon: 3000, auto: 3000 };
 /** The `?kikimimi=fast` test hook's: a shorter time limit (still roomy: a throttled tab's taps); none stays none. */
 export const FAST_WINDOWS: QuizWindows = { ...WINDOWS, answers: [8000, 8000, 8000, Infinity] };
 
@@ -562,7 +567,7 @@ export class QuizSession {
       limit: at.limit, out: at.out, answers: Array.from({ length: gm.n }, (_, i) => mine?.get(i) ?? null),
       had: Array.from({ length: gm.n }, (_, i) => !!mine?.has(i) || this.times(gm, i).playAt >= gm.inAt), scores,
       canNext: at.phase === 'reveal' && (gm.host === this.me || gone),
-      canReady: at.phase === 'reveal' && gm.host !== this.me && !gone,
+      canReady: at.phase === 'reveal' && gm.host !== this.me && !gone && !gm.deck.auto?.(at.i),
       ready: { n: others.filter((p) => p.ready).length, of: others.length }
     };
   }
@@ -733,7 +738,19 @@ export class QuizSession {
   private schedule(gm: Game): number[] {
     const s: number[] = [gm.starts.get(0) ?? gm.goAt ?? Infinity];
     for (let j = 1; j <= gm.n; j++) s.push(gm.starts.get(j) ?? Infinity);
-    for (let j = gm.n - 1; j >= 0; j--) s[j] = Math.min(s[j], s[j + 1]);
+    const down = () => {
+      for (let j = gm.n - 1; j >= 0; j--) s[j] = Math.min(s[j], s[j + 1]);
+    };
+    down();
+    // a reveal that moves on by itself (スピード はしご's lower rungs): the next start `auto` after it, on every phone (the
+    // host's beacon still has the last word)
+    if (gm.deck.auto)
+      for (let j = 0; j < gm.n; j++) {
+        if (s[j + 1] !== Infinity || !gm.deck.auto(j)) continue;
+        const r = this.times(gm, j, s).reveal;
+        if (Number.isFinite(r)) s[j + 1] = r + this.w.auto;
+      }
+    down();
     return s;
   }
 
