@@ -10,6 +10,7 @@ import { addClips, type ChunkClip, type Words } from './clips.ts';
 import type { Ladder } from './ladder.ts';
 import type { UnitChunk, UnitPlay } from './lesson.ts';
 import type { LetterText } from './letters.ts';
+import type { ListenEntry, ListenPart } from './listen.ts';
 import type { Chapter, StoryEntry } from './story.ts';
 
 /** What a chunk holds: a level's items (or the ladders; a unit's: the unit, its lessons' items and ladders) and their
@@ -22,6 +23,8 @@ interface Part {
   story?: Chapter;
   /** The villagers' letters by unit (parts/letters.json, letters.ts). */
   letters?: Record<string, LetterText>;
+  /** A listening file (listen.ts: tiles, calls, たちぎき), as played. */
+  listen?: ListenPart;
   /** The audio packs its clips are in (stems: `lv4-2.1a2b3c4d`). */
   packs: string[];
   clips: Record<string, ChunkClip>;
@@ -49,6 +52,8 @@ export interface Index {
   test: [string, ChunkClip, string[]];
   /** The bedtime serials (おやすみ ものがたり, story.ts): each one's name, host, status and chapters (their chunks). */
   stories: Record<string, StoryEntry>;
+  /** The listening files (content/listen/*.yaml, listen.ts) by unit: game, stage and status; their chunks in `units`. */
+  listen: Record<string, ListenEntry>;
   /** The units, in file order (units.ts's `status` gates them on the phone, a later step). */
   paths: PathEntry[];
   /** Every item, in the bank's order: id, level, type, accent, pragmatic layer, features. */

@@ -38,6 +38,9 @@
 // master's hash, so re-mixing never re-speaks. The strict gate runs on the clean take; the conditioned clip is only
 // checked loosely (whisper's WER ≤ the condition's bound, else flagged `cond-wer`), and UTMOS is the clean take's. The
 // clean take is kept under .cache/tts/clean/ (with the speech's offset in the mixed clip) for the karaoke's alignment.
+// The listening kinds (ことば タイル, ようじ でんわ, たちぎき; content/listen/*.yaml, listen.ts): a tile's clip is its id, a
+// call's or たちぎき's lines `<item>-<n>` (a call's `me` in the file's cast.me), at their stage's level (S1 かわ → 3), a
+// call's lines in its phone band; a draft file only under --only. A derived tile plays its bank item's clip.
 // The bedtime serials (おやすみ ものがたり, content/listen/story/, story.ts): each segment a clip (`<chapter>-<n>`), the
 // narrator's voice or the villager's CAST voice, as spoken (no tempo change: the engine has no pace setting), no
 // condition, a little softer than the quiz (−18 LUFS: heard in bed, one after another); --levels doesn't select them.
@@ -75,7 +78,8 @@ import { NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
 import { LADDERS as ALL_LADDERS } from '../src/lib/kikimimi/ladders.ts';
 import { writeLevels } from './kikimimi-levels.ts';
 import { WORK, unpackClips, writePacks } from './kikimimi-packs.ts';
-import { readStories, unitItems } from '../src/lib/kikimimi/compile.ts';
+import { readListen, readStories, unitItems } from '../src/lib/kikimimi/compile.ts';
+import { listenClipItems } from '../src/lib/kikimimi/listen.ts';
 import { storyItems } from '../src/lib/kikimimi/story.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -185,10 +189,14 @@ const STORY: ReadonlySet<string> = new Set(STORY_ITEMS.map((it) => it.id));
 /** The stories' loudness: a little softer than the quiz's −16. */
 const STORY_LUFS = -18;
 const lufsOf = (it: Item): number => (STORY.has(it.id) ? STORY_LUFS : -16);
+/** The listening kinds' clips (content/listen/*.yaml, listen.ts listenClipItems: a tile's own, each line of a call or a
+ *  たちぎき, `<item>-<n>`, at its stage's level): a draft file's only when --only names them (it's voiced after its
+ *  review, wave 2 §3.4). */
+const LISTEN_ITEMS = readListen().filter(({ raw }) => only || (raw as { status: string }).status !== 'draft').flatMap(({ raw }) => listenClipItems(raw));
 /** One entry per clip: an item, or each line of a dialogue as its own (bank.ts clipItems: `<item>-<n>`); the bank's
  *  items, then the units' own (app/content/units/*.yaml, inline: same cast, `tts`, conditions and beds; their ids are
- *  never the bank's: units.ts checkUnits), then the stories' segments. */
-const ALL: readonly Item[] = [...[...ITEMS, ...unitItems()].flatMap(clipItems), ...STORY_ITEMS];
+ *  never the bank's: units.ts checkUnits), the listening kinds', then the stories' segments. */
+const ALL: readonly Item[] = [...[...ITEMS, ...unitItems()].flatMap(clipItems), ...LISTEN_ITEMS, ...STORY_ITEMS];
 const BANK = ALL.filter((it) => (STORY.has(it.id) ? !SAY : LEVELS.includes(it.lv)));
 /** スピード はしご (ladder.ts): each ladder's line spoken once (the gate as any clip's), its rungs that take stretched. */
 const LADDERS = ALL_LADDERS.filter((l) => LEVELS.includes(l.line.lv));

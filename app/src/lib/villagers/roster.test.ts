@@ -96,6 +96,7 @@ describe('villager roster', () => {
       .sort();
     expect(importers).toEqual([
       'lib/components/dev/Gallery.svelte', 'lib/components/kikimimi/scene/stage.ts', 'lib/components/kikimimi/zukan/Friends.svelte', 'lib/components/look/LookPage.svelte', 'lib/components/look/VillagerGrid.svelte', 'lib/components/panel/SettingsSheet.svelte',
+      'lib/kikimimi/listen.ts', // the compiler's, the audio scripts' and tests' (compile.ts: the listening files)
       'lib/kikimimi/speech.ts', // the audio script's, the tests' and ききみみ's sheet (zukan.ts: a voice's items)
       'lib/kikimimi/units.ts', // the compiler's and tests' only (compile.ts: the units' manifests)
       'lib/villagers/search.ts'

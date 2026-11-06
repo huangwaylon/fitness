@@ -362,6 +362,17 @@ Each later game: GameDef + kinds + components + content (curriculum's 2–3 days
 - **Results:** co-op (default) counts the team's rounds against しずえ's target (`taikaiTarget`: the rounds someone should get at their tier, rounded, short of all; gold two more); `trophyOf` bronze / silver / gold. The row: `gm` 'taikai', `u` the trophy, `lv` the tier's level (`taikaiRow`); `trophiesOf(rows)` the best per weekend for the tent. しょうぶ ranks by points plus chips.
 - **For the UI:** `source.ts` (`taikaiSource`, `TAIKAI_IDS`, `taikaiPool`, `taikaiLevels` to load, `taikaiDeals`), `taikaiGame(taikaiSource)` into the registry; the recorder's pick is `choiceOf(a)`.
 
+### Listen parts as built (W2-C1, 2026-11-07)
+
+The listening kinds (`tile`, `call`, `tachi`; content/listen/*.yaml, not story/) compile with the levels (`npm run kikimimi:levels`). `kikimimi/listen.ts` holds their types, the checker and the clip ids. It is for the compiler, the scripts and the tests (it reads the roster); the phone imports its types only. A problem in any file stops the compiler, and content.test runs the same checker.
+
+- **Part** `levels/parts/<unit>.json` (≤ 32 KB gz), pool.ts `Part.listen`: `{"listen": {unit, game, stage, status, cando, items}, packs, clips, words}`. `items` are as authored (listen.ts `TileItem`, `CallItem`, `TachiItem`) minus `tts`, with a `clip` id on every tile and on every line of a call or a たちぎき (the stories' `segments[].clip` pattern), so a game never derives an id. A derived tile's `clip` is its bank item's id, and it carries that item's `speaker`.
+- **Index** (pool.ts `Index`): `units[<unit>] = {parts: [<unit>], n, cv}`, so `load(<unit>)` works as it does for a level; `listen[<unit>] = [game, stage, status]` for the catalog, with no part loaded; `games['<gm>:<unit>']` (`tile:s1-tile-a`) = `gameCv(gm, cv)`, written only once games/versions.ts `BUILD_V` has the game (re-run kikimimi:levels after adding it). The cv covers ids, kinds and answer shapes (tiles and decoys; halves and the memo's option counts and answers; speakers, `at` and round answers) and clip lengths, never text.
+- **Gate:** every status compiles. Past `draft`, every clip must exist, or the compiler fails; the games show `listened` only (§6).
+- **Clip ids** (`listenClipIds`): a tile's id, or its `clip`; a call's or a たちぎき's lines are `<id>-<n>` (n from 1). The audio script speaks them at level stage + 1 (S1 かわ → 3: no slow take), a call's `me` in the file's `cast.me`, a call in its phone band. It reads a draft file only under `--only`. Each file's clips go in its own pack (`s1-tile-a`, kikimimi-packs.ts).
+- **Checks** (beyond the README's): US voices only; the US-only lint (`notUs`, over `en`, lines and plan choices, never `tts`; `accent-exposure` exempt), an error on content/listen and on the units' items and a warning on the bank (none today); ids apart from every bank, unit and rung clip. **Japanese help** (bank.ts helpProblems) is checked wherever it appears, and required past draft at these places: a tile's `ctx` and `why`; a call's `ctx`, each memo round's `why` and each slot's `cja` (one per option); each たちぎき round's `ctx` and `why` (the plan round's `cja`, one per choice, optional).
+- **Not yet:** `rush` and `news`, which their lanes add to listen.ts as kinds (W2-4, W2-5).
+
 ## 10. Risks
 
 1. **Subtle regressions in the extraction** (lateness, co-op `had`, beacon timing were each hard-won). Mitigation: the parity test before deleting `QuizSession`, porting session.test case for case, no behaviour change in 8b.

@@ -24,7 +24,8 @@ const { clipItems } = await import('../src/lib/kikimimi/bank.ts');
 const { AUTHORED: BANK } = await import('../src/lib/kikimimi/source.ts');
 const { RUNG_ITEMS } = await import('../src/lib/kikimimi/ladders.ts');
 const { writeLevels } = await import('./kikimimi-levels.ts');
-const { readStories, unitItems } = await import('../src/lib/kikimimi/compile.ts');
+const { readListen, readStories, unitItems } = await import('../src/lib/kikimimi/compile.ts');
+const { listenClipItems } = await import('../src/lib/kikimimi/listen.ts');
 const { storyItems } = await import('../src/lib/kikimimi/story.ts');
 const { wordSpans } = await import('../src/lib/kikimimi/marks.ts');
 const { WORK, unpackClips } = await import('./kikimimi-packs.ts');
@@ -40,8 +41,8 @@ const only = onlyAt > 0 ? new RegExp(process.argv[onlyAt + 1]) : null;
 type Row = [string, ...number[]];
 const words: Record<string, Row> = existsSync(OUT) ? JSON.parse(readFileSync(OUT, 'utf8')) : {};
 // (the units' own items, app/content/units/, スピード はしご's rung clips too: each the ladder's line at its speed,
-// its karaoke at the top rung's reveal; and the bedtime stories' segments, a StoryFrame's karaoke)
-const clips = [...[...BANK, ...unitItems()].flatMap(clipItems), ...RUNG_ITEMS, ...storyItems(readStories())].filter((c) => CLIPS[c.id] && (!only || only.test(c.id)));
+// its karaoke at the top rung's reveal; the listening kinds' clips; and the bedtime stories' segments, a StoryFrame's karaoke)
+const clips = [...[...BANK, ...unitItems()].flatMap(clipItems), ...RUNG_ITEMS, ...readListen().flatMap(({ raw }) => listenClipItems(raw)), ...storyItems(readStories())].filter((c) => CLIPS[c.id] && (!only || only.test(c.id)));
 const todo = clips.filter((c) => force || words[c.id]?.[0] !== CLIPS[c.id].hash);
 console.log(`${clips.length} clips, ${todo.length} to align`);
 
