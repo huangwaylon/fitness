@@ -24,6 +24,7 @@
   import { kcalText } from '../kiroku/fmt.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
+  import NavButton from '../ui/NavButton.svelte';
   import { amountText, catalogOf, catOf, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems, withImages } from './foodUi.ts';
 
   interface Props {
@@ -180,7 +181,7 @@
     <input bind:this={input} bind:value={text} type="search" data-sfx="none" data-food-q enterkeyhint="search" autocomplete="off"
       autocapitalize="off" spellcheck="false" aria-label={t('food.search')} placeholder={t('food.searchHint')}
       oninput={onInput} oncompositionend={() => (q = text)} />
-    {#if text}<button type="button" class="x" data-sfx="tick" aria-label={t('food.clear')} onclick={clear}>✕</button>{/if}
+    {#if text}<span class="x"><NavButton kind="close" label={t('food.clear')} sfx="tick" onclick={clear} /></span>{/if}
   </form>
 
   {#if onfinish && added.length}
@@ -195,7 +196,7 @@
             <span class="nm">{e.f.n}</span>
             <small class="meta">{amountText(e)}</small>
             <b class="kc money">{kcalText(Math.round((e.f.k * e.g) / 100))}</b>
-            <button type="button" class="un" data-sfx="undo" data-unadd={e.id} aria-label={t('food.unadd', { name: e.f.n })} onclick={() => onunadd?.(e)}>✕</button>
+            <span class="un"><NavButton kind="close" label={t('food.unadd', { name: e.f.n })} sfx="undo" data-unadd={e.id} onclick={() => onunadd?.(e)} /></span>
           </li>
         {/each}
       </ul>
@@ -318,17 +319,8 @@
   }
   input::-webkit-search-cancel-button { display: none; }
   input::placeholder { color: color-mix(in srgb, var(--text-soft) 70%, transparent); font-weight: 500; }
-  /* ✕: the app's round control with its lip (NavButton's look, smaller type) inside the pill's right end: 44px with
-     the lip, its tap target 44 × 44 (the ::before) */
-  .x {
-    position: relative; appearance: none; border: 0; cursor: pointer; width: calc(var(--hit) - var(--lip-h)); height: calc(var(--hit) - var(--lip-h));
-    margin: 0 -2px var(--lip-h) 0; border-radius: 50%; flex: none;
-    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
-    font: 700 var(--fs-body)/1 var(--font-ui);
-  }
-  .x::before { content: ''; position: absolute; inset: -2px -2px calc(-2px - var(--lip-h)); }
-  .x:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .x:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  /* ✕: the app's NavButton inside the pill's right end */
+  .x { display: flex; margin-right: -6px; }
   .lh { margin: 4px 2px 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .it {
@@ -392,12 +384,7 @@
   }
   .added li + li { border-top: 1px dashed color-mix(in srgb, var(--lip) 70%, transparent); }
   .added .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .un {
-    grid-area: un; position: relative; appearance: none; border: 0; cursor: pointer; width: 36px; height: 36px; border-radius: 50%;
-    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); font: 700 var(--fs-s)/1 var(--font-ui);
-  }
-  .un::before { content: ''; position: absolute; inset: -4px; }
-  .un:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
+  .un { grid-area: un; display: flex; margin-right: -6px; }
   .none { display: grid; gap: 8px; padding: 12px 14px; }
   .none .note { margin: 0 2px; }
   .more { height: 1px; }

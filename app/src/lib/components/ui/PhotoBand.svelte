@@ -1,7 +1,7 @@
 <script lang="ts">
   // A photo band (docs/design.md "Unified kit"): a photo across the sheet, `height` px (a trip's hero 150, a trail's
   // card 120), a soft dark gradient at its foot for the words over it (`children`), and `nav` laid over its top (a
-  // NavBar size="s" over). The wedding banner keeps its own markup on this frame.
+  // NavBar over). The wedding banner keeps its own markup on this frame.
   //   <PhotoBand src={trip.photo} height={150}>{#snippet nav()}<NavBar over … />{/snippet}<h2>{trip.title}</h2></PhotoBand>
   import type { Snippet } from 'svelte';
 

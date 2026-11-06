@@ -1,66 +1,59 @@
 <script lang="ts">
-  // The one back / close button (docs/design.md "Navigation"): a round cream NH game-object button (the
-  // edged tier, 44px), ‹ back always top-left, ✕ close always top-right. `text` adds a visible label to the
-  // back pill (‹ 島へ on a full page).
-  // `size="s"` (the info sheets' NavBar s, docs/design.md "Unified kit"): a 32px cream disc with the small edge in the
-  // same 44px hit. `look="photo"`: the glyph on a round smoked disc over a photo (a trip's hero, a trail's map).
-  //   <NavButton kind="close" onclick={…} />   <NavButton kind="back" text="島へ" onclick={…} />   <NavButton kind="close" size="s" onclick={…} />
+  // The one title-bar button (docs/design.md "Navigation"): ‹ back (top-left, only on a level), ✕ close (top-right, every
+  // sheet), or a `tool` (⚙ ＋, km|mi…: the lead slot on a top level, or before ✕). One size app-wide: a 32px disc drawn in
+  // the 44px hit, the kit's control (`--ctl`, `--sh-ctl-s`: cream by day, navy at night), the glyph `ui/Icon` at stroke 2.4.
+  // `look="photo"`: the same disc smoked, over a photo (a trip's hero, a trail's map, the wedding banner).
+  // `text`: ‹ grown into a labelled pill, a full page's way back (‹ 島へ in a room).
+  //   <NavButton kind="close" onclick={…} />   <NavButton kind="back" text="島へ" onclick={…} />
+  //   <NavButton kind="tool" icon="gear" label="設定" sfx="open" onclick={…} />
   import { t } from '#lib/i18n/index.ts';
-  import Icon from './Icon.svelte';
+  import Icon, { type IconName } from './Icon.svelte';
 
   interface Props {
-    kind: 'back' | 'close';
+    kind: 'back' | 'close' | 'tool';
     onclick: () => void;
     /** A visible label beside ‹ (where it goes). */
     text?: string;
-    /** The accessible name (defaults to もどる / とじる, or `text`). */
+    /** The accessible name (defaults to 戻る / 閉じる, or `text`; a tool's own). */
     label?: string;
-    /** `self`: the handler plays its own cue (the phone's close tune). */
-    sfx?: 'back' | 'self';
+    /** The cue: `back` (‹ ✕), `self` (the handler plays its own), a tool's (`open`, `tick`). */
+    sfx?: 'back' | 'self' | 'open' | 'tick' | 'undo';
     look?: 'game' | 'photo';
-    size?: 'm' | 's';
+    /** A tool's glyph. */
+    icon?: IconName;
+    /** A tool that toggles. */
+    pressed?: boolean;
   }
-  let { kind, onclick, text, label, sfx = 'back', look = 'game', size = 'm' }: Props = $props();
+  let { kind, onclick, text, label, sfx = kind === 'tool' ? 'tick' : 'back', look = 'game', icon, pressed, ...rest }: Props & Record<`data-${string}`, unknown> = $props();
   const name = $derived(label ?? text ?? t(kind === 'back' ? 'common.back' : 'common.close'));
+  const glyph = $derived<IconName>(kind === 'tool' ? (icon ?? 'gear') : kind);
 </script>
 
-{#snippet glyph()}
-  {#if look === 'game' && size === 'm'}
-    <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{kind === 'back' ? 'i-back' : 'i-close'}" /></svg>
-  {:else}
-    <Icon name={kind} size={kind === 'back' ? 20 : 18} stroke={look === 'photo' ? 1.75 : 2.4} />
-  {/if}
-{/snippet}
-
-<button type="button" class="nav {kind} {look}" class:s={size === 's'} class:pill={!!text} aria-label={text ? undefined : name} data-sfx={sfx === 'self' ? 'self' : 'back'} {onclick}>{@render glyph()}{#if text}<span>{text}</span>{/if}</button>
+<button type="button" class="nav {kind} {look}" class:pill={!!text} aria-label={text ? undefined : name} aria-pressed={pressed}
+  data-sfx={sfx === 'self' ? 'self' : sfx === 'open' ? 'open' : sfx === 'tick' ? 'tick' : sfx === 'undo' ? 'undo' : 'back'} {...rest} {onclick}><Icon name={glyph} size={kind === 'back' ? 20 : 18} stroke={2.4} />{#if text}<span>{text}</span>{/if}</button>
 
 <style>
   .nav {
-    appearance: none; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); border-radius: 50%; padding: 0; border: 0;
-    display: inline-grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
-    transition: transform var(--dur-base) var(--ease-bounce); -webkit-tap-highlight-color: transparent;
+    appearance: none; cursor: pointer; flex: none; position: relative; width: var(--hit); height: var(--hit); padding: 0; border: 0;
+    border-radius: 50%; display: inline-grid; place-items: center; background: none; color: var(--text);
+    -webkit-tap-highlight-color: transparent;
   }
-  .nav:active { transform: translateY(2px) scale(1.06, .92); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap); }
-  .nav:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .nav svg { width: 22px; height: 22px; }
-  .close svg { width: 20px; height: 20px; }
-  /* ‹ + where it goes (a page's way back): the same button, grown into a pill */
-  .pill { width: auto; display: inline-flex; gap: 4px; padding: 0 16px 0 10px; border-radius: var(--r-btn); font: 700 var(--fs-body)/1 var(--font-ui); }
-  /* small: the disc drawn at 32px (::before) in the 44px hit, the small edge; cream by day, the control's navy at night */
-  .nav.s.game { position: relative; background: none; box-shadow: none; color: var(--text); }
-  .nav.s.game::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
-  .nav.s.game:active { transform: none; box-shadow: none; }
-  .nav.s.game:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
-  .nav.s :global(svg) { position: relative; width: 18px; height: 18px; }
-  .nav.s.back :global(svg) { width: 20px; height: 20px; }
-  /* on a photo: a 32px smoked disc */
-  .nav.photo { position: relative; color: #fff; background: none; box-shadow: none; border-radius: 12px; transition: opacity var(--dur-quick); }
-  .nav.photo::before {
-    content: ''; position: absolute; inset: 6px; border-radius: 50%; background: rgb(30 24 18 / .35);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-  }
-  .nav.photo :global(svg) { position: relative; }
-  .nav.photo:active { transform: none; box-shadow: none; opacity: .55; }
-  .nav.photo:focus-visible, .nav.s:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
-  @media (prefers-reduced-motion: reduce) { .nav.s.game:active::before { transform: none; } }
+  /* the disc, 32px in the 44px hit */
+  .nav::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
+  .nav:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
+  .nav[aria-pressed='true']::before { background: var(--ctl-sel); }
+  .nav :global(svg) { position: relative; }
+  .nav:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
+  /* on a photo: the disc smoked */
+  .nav.photo { color: #fff; transition: opacity var(--dur-quick); }
+  .nav.photo::before { background: rgb(30 24 18 / .35); box-shadow: none; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+  .nav.photo:active { opacity: .55; }
+  .nav.photo:active::before { transform: none; }
+  .nav.photo[aria-pressed='true'] { color: var(--c-ink); }
+  .nav.photo[aria-pressed='true']::before { background: var(--c-yuzu); }
+  /* ‹ + where it goes (a page's way back): the same control, grown into a pill */
+  .pill { width: auto; display: inline-flex; gap: 2px; padding: 0 14px 0 8px; border-radius: var(--r-pill); font: 700 var(--fs-body)/1 var(--font-ui); }
+  .pill::before { inset: 6px 0; border-radius: var(--r-pill); }
+  .pill span { position: relative; }
+  @media (prefers-reduced-motion: reduce) { .nav:active::before { transform: none; } }
 </style>
