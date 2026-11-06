@@ -1,6 +1,6 @@
 // The island room's logic, free of the Workers runtime so it is unit-testable: sockets, their attachments, the clock
 // and storage come in through RoomIO. The Durable Object (index.ts) is a thin adapter over this.
-import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, NEST_GAP_MS, REPLAY_BYTES, claimOf, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { CLOSE, HB_PING, HB_PONG, HIGHFIVE_HOLD_MS, LIVE_V, LIVE_VS, MAX_BYTES, MUSIC_SKEW_MS, NEST_GAP_MS, REPLAY_BYTES, claimOf, musicLive, newerMusic, guestMaySend, isStored, scopeMaySend, otherVersion, parseClient, tokyoDay, type Gone, type LiveV, type MusicRec, type MusicSrc, type Notice, type RecordMark, type Relayed, type ServerMsg, type Who, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
 import { keyOwner, type Keys } from './auth.ts';
 import { Bucket } from './bucket.ts';
 import { served } from './weather.ts';
@@ -47,6 +47,8 @@ export interface RoomIO<S extends Sock> {
   saveGone?(gone: Gone): void;
   /** Persist what the room acked but doesn't keep (fire and forget): a resend after a wake is acked again. */
   saveAcked?(acked: Acked): void;
+  /** Persist the music stages (fire and forget). */
+  saveMusic?(music: Music): void;
   /** Persist the day's claims and nests (fire and forget): they outlive the ring's trimming and a restart. */
   saveDay?(d: DayIndex): void;
   /** When the runtime last answered this socket's heartbeat (ms; the auto-response's timestamp: HB_PING never reaches
@@ -61,6 +63,9 @@ export interface RoomIO<S extends Sock> {
  *  the last one only, a newer one of the pair replacing it; when it was tapped (`at`, its identity) and when the room
  *  heard it (`t`). */
 export type Held = Partial<Record<string, { from: Who; to: Who; at: number; t: number }>>;
+
+/** The music stages (docs/sound-sync.md): the last record per source (newerMusic), replayed at hello while musicLive. */
+export type Music = Partial<Record<MusicSrc, MusicRec>>;
 
 /** What the room acked but doesn't keep, as its storage holds it: `[<who>:<c>, {same, t}]`, oldest first. */
 export type Acked = [string, { same: string; t: number }][];
@@ -134,7 +139,8 @@ export class RoomCore<S extends Sock> {
   /** Tokyo's real sky by the hour (weather.ts), sent after each welcome and to everyone when it changes. */
   private wx: Wx | null;
 
-  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = []) {
+  constructor(private readonly io: RoomIO<S>, private ring: Kept[] = [], private rec: RecordMark | null = null, private held: Held = {}, gone: Gone = {}, wx: Wx | null = null, private kept: DayIndex | null = null, private recG: RecordMark | null = null, acked: Acked = [], private music: Music = {}) {
+    this.music = { ...music };
     this.acked = new Map(Array.isArray(acked) ? acked.slice(-ACKED_MAX) : []);
     this.wx = wx;
     this.held = { ...held };
@@ -269,6 +275,18 @@ export class RoomCore<S extends Sock> {
       this.said.set(who, now);
     }
     const out: Relayed = { ...intent, v: LIVE_V, who, t: this.stamp() };
+    if (out.kind === 'music') {
+      // a wrong clock can't pin the stage; a stale record (a resend, a race lost) or one already over goes nowhere, its
+      // sender told what won
+      if (Math.abs(out.at - out.t) > MUSIC_SKEW_MS) out.at = out.t;
+      const cur = this.music[out.src];
+      if ((cur && !newerMusic(out, cur)) || !musicLive(out, out.t)) {
+        if (cur) this.send(s, cur);
+        return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
+      }
+      this.music = { ...this.music, [out.src]: out };
+      this.io.saveMusic?.(this.music);
+    }
     // the shared world: a claim already made today, a second nest within the hour, or a walk older than the one kept
     // goes nowhere
     if (stored && !this.admit(out, c, meta.sk)) return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
@@ -331,6 +349,13 @@ export class RoomCore<S extends Sock> {
     // the real sky, when the room has one that still serves
     const wx = served(this.wx, t);
     if (wx) this.send(s, { v: LIVE_V, kind: 'wx', ...wx, t });
+    // the music stages still playing (or stopped lately), mine too; the ones over let go
+    const live = Object.values(this.music).filter((m) => musicLive(m, t));
+    for (const m of live) this.send(s, m);
+    if (live.length < Object.keys(this.music).length) {
+      this.music = Object.fromEntries(live.map((m) => [m.src, m]));
+      this.io.saveMusic?.(this.music);
+    }
     if (since !== undefined) {
       // the day in as few `replay` messages as fit (mine too: a phone that lost its own record gets it back)
       const day = this.fresh().filter((e) => e.t > since);
