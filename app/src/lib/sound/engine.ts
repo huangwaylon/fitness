@@ -175,7 +175,7 @@ export class Engine {
   #held = false;
   /** Held awake (holdAwake: a ききみみ game): neither the idle timer nor everything off (sleep, hush) suspends it. */
   #awake = false;
-  /** Decoded voice clips by path, least recently asked for first (CLIP_CAP), and the playing ones' keys (in #live). */
+  /** Decoded voice clips by key, least recently asked for first (CLIP_CAP), and the playing ones' keys (in #live). */
   #clips = new Map<string, Promise<AudioBuffer | null>>();
   #clipKey = 0;
   /** Called when a one-shot track (the opening, a jingle, a sting, a K.K. song) ends. */
@@ -288,22 +288,42 @@ export class Engine {
     } else this.#idle.poke();
   }
 
-  /** A voice clip (a path under audio/, `kikimimi/<id>.m4a?v=<hash>`) fetched and decoded, kept among the last
-   *  CLIP_CAP asked for. Null without a context, offline and never cached, or undecodable (not kept: asked again, it
-   *  tries again). */
-  loadClip(path: string): Promise<AudioBuffer | null> {
-    let p = this.#clips.get(path);
-    if (p) this.#clips.delete(path);
+  /** A voice clip decoded from the bytes `fetchBytes` gives (ききみみ's: a slice of its pack, components/kikimimi/packs.ts),
+   *  kept by `key` among the last CLIP_CAP asked for; asked again while it decodes, the same promise. Null without a
+   *  context, when there are no bytes (offline and never cached: `fetchBytes` gives null or throws), or undecodable
+   *  (not kept: asked again, it tries again). */
+  loadBytes(key: string, fetchBytes: () => Promise<ArrayBuffer | null>): Promise<AudioBuffer | null> {
+    let p = this.#clips.get(key);
+    if (p) this.#clips.delete(key);
     else {
-      const q: Promise<AudioBuffer | null> = this.#decode(path).then((b) => {
-        if (!b && this.#clips.get(path) === q) this.#clips.delete(path);
+      const q: Promise<AudioBuffer | null> = this.#decodeBytes(fetchBytes).then((b) => {
+        if (!b && this.#clips.get(key) === q) this.#clips.delete(key);
         return b;
       });
       p = q;
     }
-    this.#clips.set(path, p);
+    this.#clips.set(key, p);
     while (this.#clips.size > CLIP_CAP) this.#clips.delete(this.#clips.keys().next().value!);
     return p;
+  }
+
+  /** A voice clip by its path under audio/ (`kikimimi/<id>.m4a?v=<hash>`): loadBytes over the whole file. */
+  loadClip(path: string): Promise<AudioBuffer | null> {
+    return this.loadBytes(path, async () => {
+      const res = await fetch(audioUrl(path));
+      return res.ok ? res.arrayBuffer() : null;
+    });
+  }
+
+  async #decodeBytes(fetchBytes: () => Promise<ArrayBuffer | null>): Promise<AudioBuffer | null> {
+    try {
+      if (!this.ctx) return null;
+      const bytes = await fetchBytes();
+      if (!bytes || !this.ctx) return null;
+      return await this.ctx.decodeAudioData(bytes);
+    } catch {
+      return null;
+    }
   }
 
   /** Play a voice clip on the voice bus at `at` (the audio clock; now if missing or past: a late one plays whole, from

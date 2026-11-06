@@ -592,7 +592,7 @@ describe('lazy effects (ids.ts `lazy`: the radio jingles)', () => {
   });
 });
 
-describe('the voice bus (ききみみ: engine.ts wakeVoice, holdAwake, loadClip, playClip)', () => {
+describe('the voice bus (ききみみ: engine.ts wakeVoice, holdAwake, loadBytes, playClip)', () => {
   const SILENT = { music: false, sfx: false, volume: 0.5 };
   const fetched = (path: string) => vi.mocked(fetch).mock.calls.filter(([u]) => String(u).includes(path)).length;
   const clip = (ctx: FakeContext) => ctx.createBuffer(1, 8000) as unknown as AudioBuffer; // 1 s
@@ -670,29 +670,40 @@ describe('the voice bus (ききみみ: engine.ts wakeVoice, holdAwake, loadClip,
     expect(ctx.suspends).toBe(1);
   });
 
-  it('keeps 4 decoded, the least recently asked for going first; one asked twice at once is fetched once; a failure isn’t kept', async () => {
+  it('keeps 4 decoded by key, the least recently asked for going first; one asked twice at once is fetched once; no bytes or a throw isn’t kept', async () => {
     const { e } = await voiced();
-    const p = (n: number) => `kikimimi/q${n}.m4a?v=1`;
-    const [a, b] = [e.loadClip(p(1)), e.loadClip(p(1))];
+    const asked = new Map<string, number>();
+    let fail = false;
+    const bytes = (k: string) => async () => {
+      asked.set(k, (asked.get(k) ?? 0) + 1);
+      if (fail) throw new Error('offline');
+      return new ArrayBuffer(8);
+    };
+    const load = (n: number) => e.loadBytes(`lv1.abcd:${n}`, bytes(`q${n}`));
+    const [a, b] = [load(1), load(1)];
     expect(await a).not.toBeNull();
     expect(await b).toBe(await a);
-    for (const n of [2, 3, 4]) await e.loadClip(p(n));
-    await e.loadClip(p(1)); // the newest again
-    await e.loadClip(p(5)); // q2 goes
-    await e.loadClip(p(1));
-    await e.loadClip(p(2));
-    expect([fetched('q1.m4a'), fetched('q2.m4a'), fetched('q5.m4a')]).toEqual([1, 2, 1]);
-    vi.mocked(fetch).mockImplementationOnce(async () => ({ ok: false }) as Response);
-    expect(await e.loadClip(p(6))).toBeNull();
-    expect(await e.loadClip(p(6))).not.toBeNull(); // tried again
+    for (const n of [2, 3, 4]) await load(n);
+    await load(1); // the newest again
+    await load(5); // q2 goes
+    await load(1);
+    await load(2);
+    expect([asked.get('q1'), asked.get('q2'), asked.get('q5')]).toEqual([1, 2, 1]);
+    expect(await e.loadBytes('none', async () => null)).toBeNull();
+    fail = true;
+    expect(await load(6)).toBeNull();
+    fail = false;
+    expect(await load(6)).not.toBeNull(); // tried again
     e.clearVoice();
-    await e.loadClip(p(6));
-    expect(fetched('q6.m4a')).toBe(3);
+    await load(6);
+    expect(asked.get('q6')).toBe(3);
   });
 
-  it('no context, no clip', async () => {
+  it('no context, no clip (and its bytes never asked for)', async () => {
     const { Engine } = await import('./engine.ts');
-    expect(await new Engine().loadClip('kikimimi/q1.m4a?v=1')).toBeNull();
+    const fetchBytes = vi.fn(async () => new ArrayBuffer(8));
+    expect(await new Engine().loadBytes('lv1.abcd:0', fetchBytes)).toBeNull();
+    expect(fetchBytes).not.toHaveBeenCalled();
   });
 });
 
