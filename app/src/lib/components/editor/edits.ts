@@ -8,6 +8,7 @@ import { footOf, newObjId, originOf, withChanges, type Layout, type Obj } from '
 import { diffLayouts } from '#lib/layout/diff.ts';
 import { HOME_IDS, WHO_OF_HOME, type HomeStyle, type Who } from '#lib/layout/homes.ts';
 import { validate } from '#lib/layout/validate.ts';
+import { moveInside, resizeEdge, withTiles, type Blocker, type Edge } from '#lib/layout/resize.ts';
 
 type Facing = Obj['f'];
 
@@ -171,6 +172,19 @@ export function objectAt(l: Layout, c: number, r: number): Obj | null {
     }
   }
   return best;
+}
+
+/** The island's edge pushed out or pulled in (layout/resize.ts), one action: the new layout, or null with what's in the
+ *  way (`blocked`, each a piece to select; `moveIn`: those moved inside, the ones with nowhere near put away, never a
+ *  fixed one: one of those stuck leaves it null). */
+export function resize(l: Layout, edge: Edge, by: number, moveIn = false): { layout: Layout | null; blocked: Blocker[]; stuck: string[]; removed: string[] } {
+  const r = resizeEdge(l, edge, by);
+  if (!r.codes) return { layout: null, blocked: [], stuck: [], removed: [] };
+  const next = withTiles(l, r.codes);
+  if (!r.blocked.length) return { layout: next, blocked: [], stuck: [], removed: [] };
+  if (!moveIn) return { layout: null, blocked: r.blocked, stuck: [], removed: [] };
+  const m = moveInside(next, r.blocked);
+  return { layout: m.stuck.length ? null : m.layout, blocked: r.blocked, stuck: m.stuck, removed: m.removed };
 }
 
 /** Undo one action (before → after) over the layout as it is now: the chunks and the objects the action touched go

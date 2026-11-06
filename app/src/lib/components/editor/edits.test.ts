@@ -1,7 +1,8 @@
 import { describe, expect, test } from 'vitest';
 import { defaultLayout, doorOf, withChanges } from '#lib/layout/model.ts';
 
-import { brushTiles, cliff, copy, inBox, move, objectAt, paint, paste, place, remove, revert, rotate, sameLayout } from './edits.ts';
+import { brushTiles, cliff, copy, inBox, move, objectAt, paint, paste, place, remove, resize, revert, rotate, sameLayout } from './edits.ts';
+import { opsBetween } from '#lib/layout/model.ts';
 
 const T0 = 1_800_000_000_000;
 const l = defaultLayout();
@@ -78,5 +79,27 @@ describe('turning a home', () => {
     const d = doorOf(turned, turned.objects.get('home-B')!).tiles;
     const walled = withChanges(l, { set: d.map(([c, r], i) => ({ id: `w${i}`, k: 'garden-rock', x: c, z: r, f: 0 as const })) });
     expect(rotate(walled, ['home-B'], 1, 'B').objects.get('home-B')!.f).toBe(0);
+  });
+  test('しまの おおきさ: the back a row out is one action (its chunks’ ops), undone over a partner’s change since; a pull waits on what’s in the way, moved inside on うごかす', () => {
+    const out = resize(l, 'back', 1);
+    expect(out.blocked).toEqual([]);
+    const ops = opsBetween(l, out.layout!, T0);
+    expect(ops.every((o) => o.sc === 'c')).toBe(true);
+    expect(ops.map((o) => o.id)).toEqual(['c0x7', 'c1x7', 'c2x7']);
+    // undo with the partner's bench moved since: the island's back as it was, the bench where they put it
+    const since = move(out.layout!, ['bench-mae'], 1, 0);
+    const back = revert(since, l, out.layout!);
+    expect(sameLayout(back, move(l, ['bench-mae'], 1, 0))).toBe(true);
+    // the front a row in: the sandcastle (fixed) in the way; うごかす moves it inside, the tiles and the move one action
+    const held = resize(l, 'front', -1);
+    expect([held.layout, held.blocked.map((b) => b.id)]).toEqual([null, ['sandcastle']]);
+    const moved = resize(l, 'front', -1, true);
+    expect(moved.stuck).toEqual([]);
+    const sc = moved.layout!.objects.get('sandcastle')!;
+    expect(moved.layout!.kind(sc.x, sc.z)).not.toBe('sea');
+    expect(opsBetween(l, moved.layout!, T0).filter((o) => o.sc === 'o').map((o) => o.id)).toEqual(['sandcastle']);
+    // the museum can't fit on a shallower clifftop: the pull waits
+    const museum = resize(l, 'back', -2, true);
+    expect([museum.layout, museum.stuck]).toEqual([null, ['museum']]);
   });
 });

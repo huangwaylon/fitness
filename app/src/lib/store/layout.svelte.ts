@@ -170,7 +170,7 @@ class IslandLayout {
     if (typeof window !== 'undefined' && (import.meta.env.DEV || demo))
       window.__layout = {
         pos: (id: string) => this.pos(id), obj: (id: string) => this.obj(id), home: (w: Who) => this.home(w), count: (k: string) => this.ofKind(k).length,
-        ids: (k: string) => this.ofKind(k).map((o) => o.id)
+        ids: (k: string) => this.ofKind(k).map((o) => o.id), kind: (c: number, r: number) => this.current.kind(c, r)
       };
   }
 
