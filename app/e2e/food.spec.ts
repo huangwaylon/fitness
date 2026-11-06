@@ -751,9 +751,9 @@ test('search rows: a category tile, no raw alias or English under the name, the 
   expect(await overflowOf(page)).toEqual([]);
 });
 
-// The amount: no picture area while there are no pictures (the compact card: the name first), and no line under the
-// name without an everyday name or a 「これは…」 description.
-test('the amount: the compact card while there are no pictures, no line under the name without a gloss or a description', async ({ page }) => {
+// The amount: no picture area while there are no pictures (the compact card: the name first), the data's 「これは…」
+// line under the name (food-data descriptions.json), and no line without an everyday name or a description.
+test('the amount: the compact card while there are no pictures, its 「これは…」 line, none without a gloss or a description', async ({ page }) => {
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
   await sheet(page).locator('[data-food-q]').fill('キャッサバでん粉');
@@ -761,8 +761,14 @@ test('the amount: the compact card while there are no pictures, no line under th
   const head = sheet(page).locator('.card.head');
   await expect(head.locator('h3')).toHaveText('キャッサバでん粉');
   await expect(head.locator('[data-thumb]')).toHaveCount(0);
-  await expect(head.locator('[data-food-about]')).toHaveCount(0);
+  await expect(head.locator('[data-food-about] [data-desc]')).toHaveText('キャッサバの根のでん粉。タピオカとも');
   expect(await overflowOf(page)).toEqual([]);
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('キャベツ');
+  await sheet(page).locator('[data-food-results] button.it', { hasText: 'キャベツ 生' }).first().click({ timeout: 15_000 });
+  await expect(head.locator('h3')).toHaveText('キャベツ 生');
+  await expect(head.locator('[data-food-about]')).toHaveCount(0); // an everyday food: no line
 });
 
 test('category tiles: the night’s tint is darker than the day’s', async ({ page }) => {

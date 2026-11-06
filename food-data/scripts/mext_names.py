@@ -12,7 +12,7 @@ OVR = os.path.join(HERE, 'mext_overrides.txt')
 META = {
     'source': 'mext',
     'label': '日本食品標準成分表（八訂）増補2023年',
-    'attribution': '日本食品標準成分表（八訂）増補2023年から引用（文部科学省）。表示名・別名・目安量は本アプリで加工・追加。',
+    'attribution': '日本食品標準成分表（八訂）増補2023年から引用（文部科学省）。表示名・別名・目安量・説明文は本アプリで加工・追加。',
     'license': '公共データ利用規約1.0 / CC BY 4.0 compatible',
     'url': 'https://www.mext.go.jp/a_menu/syokuhinseibun/mext_00001.html',
 }

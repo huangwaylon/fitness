@@ -23,6 +23,8 @@ export interface Item {
   jan?: string;
   /** How the values were derived. */
   note?: string;
+  /** A short 「これは…」 line: what the food is and looks like (food-data/data_src/descriptions.json, two sources each). */
+  desc?: string;
   /** kcal an integer; the rest 1 decimal, null when unknown. `c` total carbohydrate, `salt` 食塩相当量. */
   kcal: number;
   p?: number | null;

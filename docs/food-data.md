@@ -54,6 +54,7 @@ header fields as they are written in the file.
 | `vg`, `st` | MEXT only, optional: one food in its states (豚ロース 脂身つき 生 · 焼き · ゆで; `mext_names.py` variant_groups): `vg` the group's default item's id, `st` the item's state as the app's chip says it (乾 生 ゆで 水煮 蒸し 焼き レンジ いため ソテー). The items whose official name differs only in its last word, a state; 2+ in distinct states, none named as the stem alone; fried ones and a state with a note stay apart. The default: the most popular, then 生, then ゆで. 281 groups, 647 items |
 | `jan`, `brand` | packaged products only |
 | `note` | how the value was derived, shown in the picker |
+| `desc` | optional 「これは…」 line (≤ 40 characters, no final 。): what an unfamiliar food or dish is and what it looks like. See [Descriptions](#descriptions) |
 
 MEXT markers are converted as follows: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`/`alc`), a footnote mark
 dropped (還元水あめ's fibre `14.0†`). kcal is MEXT's energy as given: it already holds alcohol's 7 kcal/g. Recipe datasets don't ship their ingredient lists.
@@ -124,6 +125,22 @@ Search aliases come from Wikidata (CC0) and ja.wikipedia (CC BY-SA, short names 
 in `data_src/aliases_*.json`. MEXT's rule-based aliases (`mext_names.py` TOKEN_ALIASES) give an animal's own names
 (豚肉, 牛肉, 鶏肉) to its cuts, not to its processed meats or offal (`PROCESSED_MEAT`: 豚肉 found ベーコン first), and ライス only
 to cooked rice (01088's override), not to every 米 food (米粉, おもゆ).
+
+## Descriptions
+`data_src/descriptions.json` holds our own one-line descriptions, `{"mext" | "dishes" | "eatout" | "maff_kyodo": {key:
+{"d": line, "src": [source, ...]}}}`; the build sets an item's `desc` from them (`build.py` `attach_desc`). A MEXT key is
+the food's group and the tokens of its official name, the class marks dropped (`10 しろさけ イクラ`; a generic first token
+keeps its class: `06 なす 漬物 しば漬`); the longest key matching the start of a food's tokens wins, `*` stands for any one
+token, so cuts and raw/boiled variants share a line. The other sections key by the item's local id. `"d": ""` gives no
+line (also a narrower key's way to drop a broader one's), and a key matching no item fails the build.
+- **Two sources per line.** Every fact in a line is stated by at least two independent sources, listed in `src`
+  (build-time only, never shipped): `mext:<食品番号>` (the 成分表's 食品群別留意点, 備考 or 別名), `wp:<title>` (ja.wikipedia),
+  `wd:<QID>` (the Wikidata description), `maff:<page>` (うちの郷土料理). A line the sources don't both confirm stays empty.
+  Each batch is checked by an independent pass against the same sources before it ships.
+- **Plain and factual.** No health or nutrition claims (`DESC_BANNED`), no Wikipedia sentence copied: the lines are
+  ours, written from the facts. Everyday foods (ごはん, 牛乳) have none.
+- **Credit.** MEXT's attribution says the descriptions are ours (「説明文は本アプリで加工・追加」); the MAFF dataset's covers
+  its dishes'. Wikipedia and Wikidata are only sources of facts for our own wording (no text is shipped).
 
 ## Verification
 
