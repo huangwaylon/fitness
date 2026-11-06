@@ -30,7 +30,7 @@ const ROUTED: Record<string, string> = {
   'relay.ts': 'the address record.ts, liveRoom.ts, board.spec and log.spec route',
   'sync-harness.spec.ts': 'RELAY_E2E=1 only: the test relay',
   'no-notify.spec.ts': "a push subscription's endpoint string, never fetched",
-  'travelMap.ts': 'OpenFreeMap answered from e2e/fixtures/travel by page.route (fixtureTiles), never fetched',
+  'trips.ts': 'OpenFreeMap answered from e2e/fixtures/travel by page.route (fixtureTiles), never fetched',
   'travel-map.spec.ts': 'OpenFreeMap aborted by page.route (the offline case), never fetched',
   'wedding-board.spec.ts': "a checklist link's href asserted, never fetched"
 };

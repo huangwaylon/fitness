@@ -54,7 +54,7 @@ The tiers and why: [test-strategy.md](test-strategy.md).
   tiles: its worker, fonts and OpenFreeMap's origin) and fails on any CSP violation.
 - **The trip map.** In the logic tier no map is made: `TripMap` is a stub with its pins as buttons
   (`travel-map.spec.ts`, `window.__travelMap`). The drawn ones (its `@render` smoke, `csp.spec`, `leaks.spec`) get
-  OpenFreeMap answered from `e2e/fixtures/travel/` (`e2e/travelMap.ts`, with the refresh recipe): no spec reaches the
+  OpenFreeMap answered from `e2e/fixtures/travel/` (`e2e/trips.ts`, with the refresh recipe): no spec reaches the
   network.
 - Playwright's browsers are cached by its version; bumping `@playwright/test` downloads them once.
 

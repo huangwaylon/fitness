@@ -1,5 +1,5 @@
-// The trip map in the specs (components/travel/map, docs/travel.md "Maps"): its hook (window.__travelMap), a trip's page
-// in the trips' sheet (the menu's りょこう pill, on the demo), and OpenFreeMap answered from fixtures
+// りょこう in the specs: the trips' sheet (the menu's りょこう pill, on the demo), a trip's page in it, and the trip map
+// (components/travel/map, docs/travel.md "Maps"): its hook (window.__travelMap) and OpenFreeMap answered from fixtures
 // (e2e/fixtures/travel/: a trimmed TileJSON and the tiles round Motobu, z6-12), so no spec ever reaches the network. Any
 // other tile is an empty 204; any other request to that origin fails the spec.
 //
@@ -12,7 +12,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, type Page } from './fixtures.ts';
 import type { MapState } from '../src/lib/components/travel/map/types.ts';
-import { BASE } from './island.ts';
+import { BASE, islandQuery } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 const FIX = join(import.meta.dirname, 'fixtures', 'travel');
@@ -20,8 +20,10 @@ const FIX = join(import.meta.dirname, 'fixtures', 'travel');
 export const mapState = (page: Page) => page.evaluate(() => (window as unknown as { __travelMap: { state(): unknown } }).__travelMap.state()) as Promise<MapState>;
 
 export type TripTab = 'days' | 'map' | 'pack' | 'camps';
-/** From the island already up: the menu's りょこう pill, `trip`'s pass, its page `tab`. */
-export async function openTrip(page: Page, trip = 'okinawa', tab: TripTab = 'map') {
+/** The trips' sheet. */
+export const tripsSheet = (page: Page) => page.locator('dialog[open] [data-travel]');
+/** From the island already up: the menu's りょこう pill, the passes. */
+async function openTrips(page: Page) {
   // the island's first models in first: drawn (drawn(), software GL on CI) their load starved the menu's spring, and
   // its unfold timed out. (A boolean, not island.ts is3d's wait: the JSHandle a waitForFunction returns to the island's
   // hooks object kept every island alive, which leaks.spec counts.)
@@ -31,16 +33,30 @@ export async function openTrip(page: Page, trip = 'okinawa', tab: TripTab = 'map
   }, null, { timeout: 30_000 });
   await expect(hudMenu(page)).toBeVisible();
   await fromMenu(page, 'travel');
-  const sheet = page.locator('dialog[open] [data-travel]');
+  await expect(tripsSheet(page).locator('[data-trip]').first()).toBeVisible();
+}
+/** From the passes: `trip`'s, its page `tab` (the plan, にってい, first). */
+export async function pickTrip(page: Page, trip: string, tab: TripTab = 'days') {
+  const sheet = tripsSheet(page);
   await sheet.locator(`[data-trip="${trip}"]`).click();
   await expect(sheet.locator(`[data-trip-view="${trip}"]`)).toBeVisible();
   if (tab !== 'days') await sheet.locator(`[data-trip-tab="${tab}"]`).click();
   await expect(sheet.locator(`[data-pane="${tab}"]`)).toBeVisible();
 }
-/** The demo (Nov 4: every Okinawa page opens on day 1), then `trip`'s page `tab`; `q` more of the query (`as=B`). */
+/** From the island already up: the menu's りょこう pill, `trip`'s pass, its page `tab`. */
+export async function openTrip(page: Page, trip = 'okinawa', tab: TripTab = 'map') {
+  await openTrips(page);
+  await pickTrip(page, trip, tab);
+}
+/** The demo on `date` (Nov 4 by default: every Okinawa page opens on day 1), the passes; `q` more of the query (`as=B`). */
+export async function gotoTrips(page: Page, date = '2026-11-04T12:00', q = '') {
+  await page.goto(`${BASE}/${islandQuery(`demo&date=${date}${q ? `&${q}` : ''}`)}`);
+  await openTrips(page);
+}
+/** The demo (Nov 4), then `trip`'s page `tab`; `q` more of the query. */
 export async function gotoTrip(page: Page, trip = 'okinawa', tab: TripTab = 'map', q = '') {
-  await page.goto(`${BASE}/?demo&date=2026-11-04T12:00&critter=none&visitor=none${q ? `&${q}` : ''}`);
-  await openTrip(page, trip, tab);
+  await gotoTrips(page, undefined, q);
+  await pickTrip(page, trip, tab);
 }
 
 /** OpenFreeMap from the fixtures; returns the requests to it that weren't the fixture's (expected: none). */
