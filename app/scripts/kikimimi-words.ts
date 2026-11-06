@@ -20,7 +20,7 @@ registerHooks({
   load: (url, ctx, next) => (url.endsWith('.json') ? next(url, { ...ctx, importAttributes: { type: 'json' } }) : next(url, ctx))
 });
 const { clipItems } = await import('../src/lib/kikimimi/bank.ts');
-const { BANK } = await import('../src/lib/kikimimi/source.ts');
+const { AUTHORED: BANK } = await import('../src/lib/kikimimi/source.ts');
 const { RUNG_ITEMS } = await import('../src/lib/kikimimi/ladders.ts');
 const { writeLevels } = await import('./kikimimi-levels.ts');
 const { unitItems } = await import('../src/lib/kikimimi/compile.ts');

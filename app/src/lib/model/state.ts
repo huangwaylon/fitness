@@ -345,9 +345,9 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     // A type the server doesn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, person);
-    const shopN = s.shop.length, packN = s.pack.length, boardN = s.board.length, wedN = s.wedding.length;
+    const from = queuedFrom(s);
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    if (queued?.has(id)) markQueued(s, shopN, packN, boardN, wedN);
+    if (queued?.has(id)) markQueued(s, from);
   }
   return s;
 }
@@ -501,20 +501,23 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     const d = parseData(row[4]);
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, row[1]);
-    const shopN = s.shop.length, packN = s.pack.length, boardN = s.board.length, wedN = s.wedding.length;
+    const from = queuedFrom(s);
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    markQueued(s, shopN, packN, boardN, wedN);
+    markQueued(s, from);
   }
   return s;
 }
 
-/** The shop rows from `from` on (the packing rows from `packFrom` on, the board's from `boardFrom` on, the wedding
- *  board's from `wedFrom` on) are queued ones (not the record's yet). */
-function markQueued(s: State, from: number, packFrom: number, boardFrom: number, wedFrom: number): void {
-  for (let i = from; i < s.shop.length; i++) s.shop[i] = { ...s.shop[i], queued: true };
-  for (let i = packFrom; i < s.pack.length; i++) s.pack[i] = { ...s.pack[i], queued: true };
-  for (let i = boardFrom; i < s.board.length; i++) s.board[i] = { ...s.board[i], queued: true };
-  for (let i = wedFrom; i < s.wedding.length; i++) s.wedding[i] = { ...s.wedding[i], queued: true };
+/** The lists whose rows a queued event marks `queued` (not the record's yet). */
+const QUEUED_LISTS = ['shop', 'pack', 'board', 'wedding'] as const;
+/** Each such list's length: where an event's rows will start. */
+const queuedFrom = (s: State): number[] => QUEUED_LISTS.map((k) => s[k].length);
+/** The rows each list gained from `from` on are queued ones. */
+function markQueued(s: State, from: readonly number[]): void {
+  QUEUED_LISTS.forEach((k, j) => {
+    const list = s[k] as { queued?: true }[];
+    for (let i = from[j]; i < list.length; i++) list[i] = { ...list[i], queued: true };
+  });
 }
 
 // ---------- events ----------
@@ -536,21 +539,12 @@ const noGoals = (): DayGoals => ({ steps: [], move: [], exercise: [], stand: [] 
 const copyGoals = (g: DayGoals): DayGoals =>
   ({ steps: [...g.steps], move: [...g.move], exercise: [...g.exercise], stand: [...g.stand] });
 
-/** A packing row (contract/pack.ts), anyone's: the record has judged it (the guest's trip note it never keeps). */
-function packEvent(type: 'pack' | 'pack_chk' | 'pack_reset' | 'trip_note'): OnEvent {
-  return (s, person, _at, d) => {
-    const r = packRowOf(type, d, person);
-    if (r) s.pack.push(r);
-  };
-}
-
-/** A wedding board row (contract/wedding.ts), the members' (the record never keeps the guest's). */
-function wedEvent(type: 'wtask' | 'wdone' | 'wconf' | 'wnote'): OnEvent {
-  return (s, person, _at, d) => {
-    const r = isPersonId(person) ? wedRowOf(type, d, person) : null;
-    if (r) s.wedding.push(r);
-  };
-}
+/** A packing row (contract/pack.ts, anyone's: the guest's trip note the record never keeps) or a wedding board row
+ *  (contract/wedding.ts, the members' alone: `members`), as the record judged it, onto its list. */
+const rowEvent = <K extends 'pack' | 'wedding'>(list: K, rowOf: (type: string, d: Data, who: Who) => State[K][number] | null, type: string): OnEvent => (s, person, _at, d) => {
+  const r = rowOf(type, d, person);
+  if (r) (s[list] as State[K][number][]).push(r);
+};
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
@@ -613,14 +607,14 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     const op = boardOpOf(d);
     if (op) s.board.push({ ...op, who: person } as BoardRow);
   },
-  pack: packEvent('pack'),
-  pack_chk: packEvent('pack_chk'),
-  pack_reset: packEvent('pack_reset'),
-  trip_note: packEvent('trip_note'),
-  wtask: wedEvent('wtask'),
-  wdone: wedEvent('wdone'),
-  wconf: wedEvent('wconf'),
-  wnote: wedEvent('wnote'),
+  pack: rowEvent('pack', packRowOf, 'pack'),
+  pack_chk: rowEvent('pack', packRowOf, 'pack_chk'),
+  pack_reset: rowEvent('pack', packRowOf, 'pack_reset'),
+  trip_note: rowEvent('pack', packRowOf, 'trip_note'),
+  wtask: members(rowEvent('wedding', wedRowOf, 'wtask')),
+  wdone: members(rowEvent('wedding', wedRowOf, 'wdone')),
+  wconf: members(rowEvent('wedding', wedRowOf, 'wconf')),
+  wnote: members(rowEvent('wedding', wedRowOf, 'wnote')),
   pref(s, person, at, d) {
     if (d.key === 'weatherMode') {
       // the island's, whoever set it (no `person`; the guest too); anything else is ignored (the mode stays)

@@ -5,7 +5,7 @@ unit: s1-call
 game: call
 stage: 2
 track: life
-seeds: [13, 16, 35, 37, 49]
+seeds: [16, 27, 35, 37, 49]
 features: { primary: self-repair, review: weak-form }
 cando: "でんわで とちゅうの へんこうや いいなおしを ききとって メモできる"
 status: draft
@@ -35,24 +35,24 @@ items:
 
   - kind: call
     id: call-prescription-ready
-    ask: "薬局に でんわ。メモしよう"
+    ask: "レストランから でんわ。メモしよう"
     scene: living
     channel: phone
     lines:
-      - { who: me, en: "Hi, I'm just calling to check if my prescription's ready. It's under Wei.", ja: "もしもし、処方薬ができているか確認したくてお電話しました。ウェイの名前です。" }
-      - { who: tia, en: "Let me take a look. Wei... It's not quite ready yet, sorry. We're still waiting on one of the meds.", tts: "Lemme take a look. Wei... It's not quite ready yet, sorry. We're still waitin' on one of the meds.", ja: "お調べしますね。ウェイ様…すみません、まだ少しかかります。お薬の一つが入荷待ちでして。" }
-      - { who: me, en: "Oh, okay. When should I come in?", ja: "そうですか。いつ伺えばいいですか？" }
-      - { who: tia, en: "It should be in by four. Actually, make it four-thirty, just to be safe.", tts: "It should be in by four. Actually, make it four-thirty, just ta be safe.", ja: "4時までには届くはずです。いえ、念のため4時半にしておきましょう。", repair: true }
-      - { who: tia, en: "Oh, and could you bring your insurance card? The one we have on file expired.", tts: "Oh, an' couldja bring yer insurance card? The one we have on file expired.", ja: "あと、保険証をお持ちいただけますか？こちらで控えているものは期限が切れていまして。" }
-      - { who: me, en: "Will do. Thanks so much.", ja: "わかりました。ありがとうございます。" }
+      - { who: tia, en: "Hi, this is Tia from Rosa's Kitchen. I'm just calling to confirm your table for Saturday at seven-thirty, for six people.", tts: "Hi, this is Tia from Rosa's Kitchen. I'm just callin' ta confirm yer table for Saturday at seven-thirty, for six people.", ja: "もしもし、ローザズ・キッチンのティアです。土曜7時半、6名様のお席の確認でお電話しました。" }
+      - { who: me, en: "Yes, that's right. Oh, and one of us has a peanut allergy.", ja: "はい、そうです。あ、それと一人ピーナッツアレルギーなんです。" }
+      - { who: tia, en: "No problem, I'll put it on the reservation. Most of the menu's fine. Just skip the satay and the brownie.", ja: "大丈夫です、予約に書いておきますね。メニューのほとんどは問題ありません。サテとブラウニーだけ避けてください。" }
+      - { who: tia, en: "Oh, wait, sorry, I see a note here. You called back and made it eight, right? So that's eight people.", tts: "Oh, wait, sorry, I see a note here. You called back an' made it eight, right? So that's eight people.", ja: "あ、すみません、メモがありました。かけ直して8名に変更されたんですよね？ では8名様ですね。", repair: true }
+      - { who: me, en: "Oh, right! Eight. My cousins are coming.", ja: "あ、そうでした！ 8人です。いとこが来るので。" }
+      - { who: tia, en: "Great. And just so you know, for eight or more, a twenty percent tip is added to the check.", tts: "Great. An' just so ya know, for eight or more, a twenty percent tip is added to the check.", ja: "承知しました。念のため、8名様以上は20%のチップがお会計に加算されます。" }
     half: [0, 0, 0, 1, 1, 1]
     memo:
       - slots:
-          - { ask: "何時に 行く？", options: ["4時", "4時半", "5時半"], answer: 1 }
-          - { ask: "持っていく ものは？", options: ["保険証", "処方せん", "お薬手帳"], answer: 0 }
-          - { ask: "まだ できていない 理由は？", options: ["薬が 1つ 届いていない", "名前の まちがい", "保険証の 期限切れ"], answer: 0 }
-    note: "make it four-thirty＝4時半に。actually の後が答え"
-    tags: { seed: 13, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, clock, lemme] }
+          - { ask: "何人？", options: ["6人", "8人", "20人"], answer: 1 }
+          - { ask: "さける りょうりは？", options: ["サテと ブラウニー", "サラダと パン", "ぜんぶ だいじょうぶ"], answer: 0 }
+          - { ask: "8人 いじょうだと？", options: ["チップ 20%が つく", "こしつに なる", "まえばらい"], answer: 0 }
+    note: "made it eight＝8人に変更。So that's の後が答え"
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, numbers, weak-form] }
 
   - kind: call
     id: call-redelivery
@@ -78,25 +78,25 @@ items:
 
   - kind: call
     id: call-dentist-move
-    ask: "歯医者から でんわ"
+    ask: "どうぶつ病院から でんわ"
     scene: living
     channel: phone
     lines:
-      - { who: francine, en: "Hi, this is Francine from Bayside Dental. I'm calling about your appointment on Thursday.", ja: "ベイサイド歯科のフランシーヌです。木曜日のご予約の件でお電話しました。" }
-      - { who: francine, en: "Unfortunately Dr. Lee is out sick, so we need to move you. Would Tuesday at a quarter after three work?", tts: "Unfortunately Doctor Lee is out sick, so we need ta move you. Would Tuesday at a quarter after three work?", ja: "あいにくリー先生が病欠でして、ご予約を移させていただきたいんです。火曜の3時15分はいかがですか？" }
-      - { who: me, en: "Tuesday afternoon's tough. Do you have anything in the morning?", ja: "火曜の午後はちょっと厳しくて。午前中は空いてますか？" }
-      - { who: francine, en: "Let me see... Wednesday at ten-forty? Oh, no, sorry, someone just took that one. Friday at ten-forty, then.", tts: "Lemme see... Wednesday at ten-forty? Oh, no, sorry, someone just took that one. Friday at ten-forty, then.", ja: "ええと…水曜の10時40分は？あ、いえ、すみません、今埋まってしまいました。では金曜の10時40分で。", repair: true }
-      - { who: me, en: "Friday works.", ja: "金曜で大丈夫です。" }
-      - { who: francine, en: "Great. And since we're the ones moving it, there's no change fee, of course. Just come in ten minutes early to fill out a form.", tts: "Great. An' since we're the ones movin' it, there's no change fee, of course. Just come in ten minutes early ta fill out a form.", ja: "よかったです。こちらの都合なので、もちろん変更手数料はかかりません。問診票の記入があるので10分前にお越しください。" }
+      - { who: francine, en: "Hi, this is Francine from Bayside Vet. I'm calling with Biscuit's blood test results.", tts: "Hi, this is Francine from Bayside Vet. I'm callin' with Biscuit's blood test results.", ja: "ベイサイド動物病院のフランシーヌです。ビスケットちゃんの血液検査の結果でお電話しました。" }
+      - { who: francine, en: "So, good news first. His kidneys look totally fine. But he's put on a little weight since spring.", ja: "まずいい知らせから。腎臓はまったく問題ありません。ただ、春から少し体重が増えていますね。" }
+      - { who: me, en: "Yeah, my mom keeps giving him treats. What should I do?", ja: "ええ、母がおやつをあげちゃうんです。どうすればいいですか？" }
+      - { who: francine, en: "Let's cut his food to half a cup, twice a day. Oh, no, wait, that's what you're giving him now. Make it a third of a cup.", tts: "Let's cut his food ta half a cup, twice a day. Oh, no, wait, that's what you're givin' him now. Make it a third of a cup.", ja: "ごはんを1回カップ半分、1日2回に減らしましょう。あ、いえ、待って、それが今の量ですね。3分の1カップにしてください。", repair: true }
+      - { who: me, en: "A third of a cup. Got it.", ja: "3分の1カップですね。了解です。" }
+      - { who: francine, en: "And no more than two treats a day. Maybe tell your mom that part. We'd like to weigh him again in three months.", tts: "An' no more than two treats a day. Maybe tell yer mom that part. We'd like ta weigh him again in three months.", ja: "それとおやつは1日2個まで。そこはお母さまに伝えたほうがいいかも。3か月後にまた体重を測りましょう。" }
     half: [0, 0, 0, 1, 1, 1]
     memo:
       - slots:
-          - { ask: "新しい 予約は？", options: ["火曜", "水曜", "金曜"], answer: 2 }
-          - { ask: "何時？", options: ["3時15分", "10時30分", "10時40分"], answer: 2 }
-          - { ask: "手数料は？", options: ["かからない", "かかる", "当日なら かかる"], answer: 0 }
-          - { ask: "変更の 理由は？", options: ["先生が 休み", "予約の まちがい", "改装工事"], answer: 0 }
-    note: "someone just took that one＝今埋まった。水曜は消える"
-    tags: { seed: 16, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, lemme, clock] }
+          - { ask: "ごはんの 量は？", options: ["3分の1カップ", "半カップ", "1カップ"], answer: 0 }
+          - { ask: "おやつは？", options: ["1日 2こまで", "なし", "1日 3こまで"], answer: 0 }
+          - { ask: "つぎは いつ？", options: ["1か月後", "3か月後", "半年後"], answer: 1 }
+          - { ask: "けんさの けっかは？", options: ["じんぞうは もんだい ない", "じんぞうが わるい", "まだ わからない"], answer: 0 }
+    note: "Oh, no, wait の あと：半カップは 今の 量"
+    tags: { seed: 16, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, numbers, weak-form] }
 
   - kind: call
     id: call-film-rebook
