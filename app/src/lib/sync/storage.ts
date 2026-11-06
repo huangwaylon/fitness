@@ -137,9 +137,6 @@ export const DEVICE = {
   /** localStorage: the Tokyo date Orville last said his line at the りょこう counter on this phone (once a day,
    *  firstOn: components/travel/TravelSheet.svelte). */
   travelHello: 'island.travelHello',
-  /** localStorage: the board's day this phone last showed けっこんしき's greeting (パニエル's line: the day's first opening
-   *  only, firstOn; components/wedding/WeddingSheet.svelte). */
-  weddingGreet: 'island.weddingGreet',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
   weddingDone: 'island.weddingDone'
 } as const;

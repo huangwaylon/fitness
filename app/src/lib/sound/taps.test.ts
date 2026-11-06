@@ -73,10 +73,8 @@ const NONE: Record<string, string> = {
   'lib/components/quiet/TabBar.svelte': 'the tab already shown does nothing',
   'lib/components/quiet/Segmented.svelte': 'the option already picked does nothing',
   'lib/components/wedding/Notes.svelte': 'the note field: the system keyboard clicks',
-  'lib/components/wedding/Plan.svelte': 'the filter already chosen does nothing',
   'lib/components/wedding/Settings.svelte': 'the names, day, venue, time zone and category fields: the system keyboard clicks (the zone a native dropdown)',
-  'lib/components/wedding/TaskFields.svelte': 'a task\'s fields (its name, category, dates): the system keyboard and pickers',
-  'lib/components/wedding/TaskPage.svelte': 'the new checklist item\'s field: the system keyboard clicks'
+  'lib/components/wedding/TaskForm.svelte': 'a task\'s fields (its title, dates, checklist items): the system keyboard and pickers'
 };
 
 /** A real `disabled` swallows the tap (no boop). Only where silence is right; elsewhere use aria-disabled. */
