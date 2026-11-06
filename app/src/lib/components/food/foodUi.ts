@@ -9,6 +9,7 @@ import {
 } from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
+import { loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
@@ -24,6 +25,12 @@ export function foodDb(): Promise<FoodDb> {
       throw e;
     }
   ));
+}
+/** The pictures' index into `set` once it is in (none: every food keeps its tile); a component's $effect. */
+export function withImages(set: (ix: FoodImageIndex) => void): () => void {
+  let live = true;
+  void loadFoodImages().then((ix) => live && ix && set(ix));
+  return () => void (live = false);
 }
 /** The catalog if it is in already (else null: open from the snapshot, swap the catalog's portions in later). */
 export const foodDbNow = (): FoodDb | null => ready;
@@ -183,11 +190,14 @@ export function portionLabel(p: Portion | null, mult: number): string | null {
   return mult === 1 ? p.label : `${p.label}×${mult}`;
 }
 
-/** An item's default portion in words and its kcal (search rows: 「茶碗1杯（150g）」 234 kcal). */
+/** An item's default portion in a few words and its kcal (search rows: 「茶碗1杯 150g」 234 kcal): its label without
+ *  its notes in brackets (「1枚（とんかつ用）」 → 1枚), then its weight. */
 export function defaultPortion(it: Item): { label: string; kcal: number } {
   const ps = portionsOf(it);
   const p = ps[0];
-  return { label: portionText(p.label, p.g, ps.some((q) => unitOf(q.label) === 'ml') ? 'ml' : 'g'), kcal: Math.round((it.kcal * p.g) / 100) };
+  const w = `${gramsText(p.g)}${ps.some((q) => unitOf(q.label) === 'ml') ? 'ml' : 'g'}`;
+  const base = p.label.replace(/[（(][^（）()]*[）)]/g, '').trim();
+  return { label: !base || /^\d+(\.\d+)?\s*(g|ml)$/i.test(base.normalize('NFKC')) ? w : `${base} ${w}`, kcal: Math.round((it.kcal * p.g) / 100) };
 }
 
 /** The search's rows with the true duplicates gone (the same name, brand and kcal: the products' copies of one). */

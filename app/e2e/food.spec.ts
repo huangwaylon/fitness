@@ -634,7 +634,7 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await sheet(page).locator('[data-food-q]').fill('ごはん');
   const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
   await expect(rice).toBeVisible();
-  await expect(rice.locator('.kc small')).toHaveText('茶碗1杯（150g）'); // the portion with its weight, once
+  await expect(rice.locator('.kc small')).toHaveText('茶碗1杯 150g'); // the portion in a few words, its weight once
   await rice.click();
   await sheet(page).locator('[data-step="1"]').click();
   await expect(sheet(page).locator('.mult')).toHaveText('×1.5'); // 茶碗: by half
@@ -730,7 +730,7 @@ test('search rows: a category tile, no raw alias or English under the name, the 
   await expect(rows.first()).toBeVisible();
   for (let i = 0; i < 3; i++) {
     const th = rows.nth(i).locator('[data-thumb]');
-    await expect(th).toHaveAttribute('data-thumb', 'cat'); // no pictures yet: the category's tile
+    await expect(th).toHaveAttribute('data-thumb', /^(cat|img)$/); // a picture, else the category's tile
     const [b, r] = await Promise.all([th.boundingBox(), rows.nth(i).boundingBox()]);
     expect([b!.width, b!.height].map(Math.round)).toEqual([48, 48]);
     expect(r!.height).toBeLessThanOrEqual(72);
@@ -782,7 +782,7 @@ test('search: one row per food in its states, the state filled; 豚ロース 焼
   const loin = rows.filter({ has: page.locator('.nm', { hasText: /^豚ロース 脂身つき$/ }) });
   await expect(loin).toHaveCount(1, { timeout: 15_000 });
   await expect(loin.locator('[data-state]')).toHaveText('生');
-  await expect(loin.locator('.st')).toHaveText(['生', 'ゆで', '焼き']); // the shown one, then the rest in process order
+  await expect(loin.locator('.sts')).toHaveText('生・ゆで・焼き'); // in process order, plain text
   await expect(rows.filter({ hasText: /豚ロース 脂身つき (焼き|ゆで)$/ })).toHaveCount(0);
   await sheet(page).locator('[data-food-q]').fill('豚ロース 焼き');
   await expect(rows.first().locator('[data-state]')).toHaveText('焼き');
@@ -790,6 +790,44 @@ test('search: one row per food in its states, the state filled; 豚ロース 焼
   await expect(rows.first().locator('.nm')).toHaveText(/^焼きいも(✓|$)/);
   await expect(rows.first().locator('[data-state]')).toHaveText('焼き');
   expect(await overflowOf(page)).toEqual([]);
+});
+
+// The pictures (static/food-img: generated イメージ in sprite sheets, lib/food/images.ts imgOf): a food with one shows
+// it in its row's box (no size change) and on its amount at 160 px with the イメージ badge; a sheet that fails to load
+// leaves the category's tile; データの出典 says they are generated.
+test('pictures: ごはん’s row and amount show its イメージ (badge, alt), the box unchanged; a broken sheet keeps the tile; the credit', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('ごはん');
+  const rice = sheet(page).locator('[data-food-results] button.it', { hasText: 'ごはん（精白米）' }).first();
+  const th = rice.locator('[data-thumb]');
+  await expect(th).toHaveAttribute('data-thumb', 'img', { timeout: 15_000 });
+  const b = (await th.boundingBox())!;
+  expect([b.width, b.height].map(Math.round)).toEqual([48, 48]);
+  await rice.click();
+  const pic = sheet(page).locator('[data-food-pic]');
+  await expect(pic.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'img');
+  await expect(pic.getByRole('img', { name: 'ごはん（精白米）の イメージ' })).toBeVisible();
+  await expect(pic.locator('.badge')).toHaveText('イメージ');
+  const p = (await pic.locator('[data-thumb]').boundingBox())!;
+  expect([p.width, p.height].map(Math.round)).toEqual([160, 160]);
+  expect(await overflowOf(page)).toEqual([]);
+  await sheet(page).getByRole('button', { name: 'もどる' }).click();
+  await sheet(page).getByRole('button', { name: 'もどる' }).click();
+  await sheet(page).locator('[data-food-credits] button').click();
+  await expect(sheet(page).locator('[data-credit-img]')).toContainText('AI生成のイメージ');
+});
+
+test('pictures: a sheet that fails to load leaves the category’s tile, no broken image', async ({ page }) => {
+  await page.route('**/food-img/t-*.webp', (r) => r.abort());
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('ごはん');
+  const th = sheet(page).locator('[data-food-results] button.it', { hasText: 'ごはん（精白米）' }).first().locator('[data-thumb]');
+  await expect(th).toBeVisible({ timeout: 15_000 });
+  await expect(th.locator('img')).toHaveCount(0); // the failed cell is taken out
+  await expect(th).toHaveAttribute('data-thumb', 'cat');
+  await expect(th).toHaveAttribute('data-cat', '主食');
 });
 
 test('category tiles: the night’s tint is darker than the day’s', async ({ page }) => {

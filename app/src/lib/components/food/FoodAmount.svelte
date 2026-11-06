@@ -1,5 +1,6 @@
 <script lang="ts">
-  // ごはん's amount (a level over the search or the day): the food's name, its everyday name (glossOf) and 「これは…」
+  // ごはん's amount (a level over the search or the day): its picture when it has one (160 px, the イメージ badge: every
+  // picture is generated; none: no picture area), the food's name, its everyday name (glossOf) and 「これは…」
   // line (`desc`, when it has one), its values per 100 g; its portions as chips
   // (the first the default; 100 g last), −/＋ by a whole portion for the things you count (本, 個, 杯 …) and by half
   // one for the rest (茶碗, 人前; ±10 g once grams are typed: stepOf), the grams field (ml for a drink; typed grams leave
@@ -15,7 +16,9 @@
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
   import { nutrientsFor, portionsOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { catalogOf, foodDbNow, glossOf, gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf } from './foodUi.ts';
+  import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
+  import FoodThumb from './FoodThumb.svelte';
+  import { catalogOf, foodDbNow, glossOf, gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf, withImages } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -67,6 +70,9 @@
   const g = $derived(custom ? (Number.isFinite(typedG) ? Math.round(typedG * 10) / 10 : 0) : Math.round(ps[pi].g * mult * 10) / 10);
   const ok = $derived(g >= FOOD_GRAMS.min && g <= FOOD_GRAMS.max);
   const n = $derived(nutrientsFor(item, ok ? g : 0));
+  let imgs = $state.raw<FoodImageIndex | null>(null);
+  $effect(() => withImages((ix) => (imgs = ix)));
+  const pic = $derived(imgOf(imgs, item.id, 160));
   const gloss = $derived.by(() => {
     const db = foodDbNow();
     return glossOf(catalogOf(db, item.id) ?? item, item.name);
@@ -101,6 +107,7 @@
 
 <form class="amt" onsubmit={(e) => { e.preventDefault(); done(); }}>
   <section class="card head">
+    {#if pic}<div class="pic" data-food-pic><FoodThumb cat={item.cat} size={160} img={pic} alt={t('food.img.alt', { name: item.name })} /><span class="badge">{t('food.img.badge')}</span></div>{/if}
     <h3>{item.name}</h3>
     {#if gloss || desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && desc}{' — '}{/if}{#if desc}<span data-desc>{desc}</span>{/if}</p>{/if}
     <p class="per money">{serving ? t('food.my.per', { u: ps[0].label, k: formatNum(item.kcal) }) : t('food.per100', { k: formatNum(item.kcal) })} · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>
@@ -156,6 +163,11 @@
   .amt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
   .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
   .head { gap: 4px; }
+  .pic { position: relative; justify-self: center; margin-bottom: 8px; }
+  .badge {
+    position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.1 var(--font-ui);
+    color: var(--c-ink); background: color-mix(in srgb, var(--c-card) 92%, transparent);
+  }
   .gl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text); line-height: 1.4; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }

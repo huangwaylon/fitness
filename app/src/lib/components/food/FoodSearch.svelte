@@ -22,8 +22,9 @@
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
+  import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
-  import { amountText, catalogOf, catOf, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
+  import { amountText, catalogOf, catOf, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems, withImages } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -82,6 +83,9 @@
   $effect(() => {
     if (matchMedia('(hover: hover)').matches) input?.focus();
   });
+  /** The pictures (a food without one: its category's tile). */
+  let imgs = $state.raw<FoodImageIndex | null>(null);
+  $effect(() => withImages((ix) => (imgs = ix)));
 
   /** A kcal typed, offered as a quick entry. */
   const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);
@@ -217,7 +221,7 @@
       {#each recent as e (e.id)}
         {@const gl = glossOf(catalogOf(db, e.f.id) ?? itemOf(e.f, null), e.f.n)}
         <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
-          <FoodThumb cat={catOf(db, e.f.id)} />
+          <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} />
           <span class="nm">{e.f.n}</span>
           <small class="meta"><span>{amountText(e)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(Math.round((e.f.k * e.g) / 100))}</b>
@@ -229,12 +233,11 @@
   {/if}
 {/snippet}
 
-<!-- a food's states on its row: the one its kcal is for filled, the others outlined (past three: ほか N) -->
+<!-- a food's states on its row, as plain text in process order (生・ゆで・焼き), the one its kcal is for in ink; past four:
+     that one and ほか N (the chips themselves are the amount's) -->
 {#snippet states(it: Item, vs: Item[])}
-  <span class="sts" data-states={vs.length}>
-    <i class="st on" data-state={it.st}>{it.st}</i>{#if vs.length > 3}<i class="st">{t('food.st.more', { n: vs.length - 1 })}</i>
-    {:else}{#each vs.filter((x) => x !== it) as x (x.id)}<i class="st">{x.st}</i>{/each}{/if}
-  </span>
+  <span class="sts" data-states={vs.length}>{#if vs.length > 4}<b data-state={it.st}>{it.st}</b>・{t('food.st.more', { n: vs.length - 1 })}
+    {:else}{#each vs as x, i (x.id)}{#if i}・{/if}{#if x === it}<b data-state={it.st}>{x.st}</b>{:else}<span class="st">{x.st}</span>{/if}{/each}{/if}</span>
 {/snippet}
 
 {#snippet catalog()}
@@ -264,7 +267,7 @@
         {@const gl = glossOf(it, it.name)}
         {@const vs = variantsOf(db, it)}
         <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={it.id} data-per100={it.kcal} onclick={() => onpick(it)}>
-          <FoodThumb cat={it.cat} />
+          <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} />
           <span class="nm">{vs.length ? stemName(it) : it.name}{#if v && v.n >= 2}<i class="ok" role="img" data-verified={v.n} aria-label={t('food.verified', { n: v.n })}>{t('food.verifiedBadge', { n: v.n })}</i>{/if}</span>
           <small class="meta">{#if vs.length}{@render states(it, vs)}{#if gl || it.brand}{' · '}{/if}{/if}{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{:else if !it.brand && !vs.length}{'\u00a0'}{/if}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
@@ -321,12 +324,9 @@
   }
   .meta { grid-area: meta; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow-wrap: anywhere; }
   .br { color: var(--text); }
-  .sts { display: inline-flex; flex: none; gap: 4px; vertical-align: 1px; }
-  .st {
-    font: 700 var(--fs-xs)/1 var(--font-ui); font-style: normal; padding: 2px 6px; border-radius: var(--r-pill); color: var(--text-soft);
-    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text-soft) 45%, transparent);
-  }
-  .st.on { color: var(--c-ink); background: var(--c-yuzu); box-shadow: none; }
+  .sts { white-space: nowrap; }
+  .sts b { color: var(--text); }
+  .sts .st { font-weight: 500; }
   /* the everyday name: one line, cut short (the row keeps its two lines) */
   .meta:has(.gl) { display: flex; min-width: 0; white-space: pre; }
   .gl, .meta:has(.gl) .br { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
