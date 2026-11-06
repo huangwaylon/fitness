@@ -1,6 +1,6 @@
 // けっこんしき (docs/wedding.md): the wedding board's sheet from the menu's pill, over the demo's made-up board
 // (store/demo/rows.ts: the record's rows through the store, components/wedding/board.svelte.ts), in the quiet kit: the
-// photo band (the names, the day, the countdown, ⚙), the rose ring and the count, the chips and their counts (pinned),
+// banner (the photo under the countdown, the names' plate, the day, the rose ring with its percent and count, ⚙), the chips and their counts (pinned),
 // the lifted sections and the months, ticking (a ticked row stays put), a row opened in place (its checklist ticked,
 // who finished it, the old Sheet's tick in a soft line, 完了), 編集 and ＋ in a bottom sheet (every missing field said
 // at once, the checklist renamed and grown, 削除 with とりけす), the note (rendered safely, written with the format
@@ -55,7 +55,7 @@ test('the menu\'s けっこんしき opens the board over the island, with its �
   await expect(root(page).locator('[data-wed-tab="plan"]')).toHaveAttribute('aria-current', 'page');
   await expect(sheet(page).locator('[data-wed-tick]').first()).toBeVisible();
   // our photo, in
-  await expect.poll(() => sheet(page).locator('[data-wed-top] img').evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBe(1200);
+  await expect.poll(() => sheet(page).locator('[data-wed-top] > img').evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth)).toBe(1200);
   await bar(page).locator('.close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect(hudMenu(page)).toBeFocused();
@@ -67,7 +67,8 @@ test('the plan: the countdown, the ring, the chips\' counts, 期限切れ and �
   await expect(sheet(page).locator('[data-wed-names]')).toHaveText('たろう & はなこ');
   // (2 done + 1/3 + 1/3 of 8)
   await expect(sheet(page).locator('[data-wed-progress]')).toHaveAttribute('data-wed-progress', '33');
-  await expect(sheet(page).locator('[data-wed-progress] [data-wed-tally]')).toHaveText('8件中2件完了');
+  await expect(sheet(page).locator('[data-wed-top] [data-wed-progress]')).toHaveAccessibleName('準備 33%、8件中2件完了');
+  await expect(sheet(page).locator('[data-wed-progress] [data-wed-tally]')).toHaveText('2 / 8');
   const counts = Object.fromEntries(await sheet(page).locator('[data-wed-filter]').evaluateAll((els) => els.map((e) => [e.getAttribute('data-wed-filter'), Number(e.getAttribute('data-count'))])));
   expect(counts).toEqual({ all: 8, overdue: 1, soon: 1, later: 4, done: 2 });
   // the chips in one row
@@ -238,8 +239,16 @@ test('the ＋ sits over the tab bar, clear of every row\'s tick (659 px tall)', 
   await sheet(page).evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
   const last = (await sheet(page).locator('[data-wed-task]').last().boundingBox())!;
   expect(last.y + last.height).toBeLessThanOrEqual(add.y);
-  // the first row in view under the head
+  // the first row in view under the banner, its ring whole on the photo, clear of ⚙ and the type
   await sheet(page).evaluate((el) => el.scrollTo({ top: 0 }));
+  const top = (await sheet(page).locator('[data-wed-top]').boundingBox())!;
+  const ring = (await sheet(page).locator('[data-wed-progress]').boundingBox())!;
+  const gear = (await sheet(page).locator('[data-wed-gear]').boundingBox())!;
+  const days = (await sheet(page).locator('[data-wed-days]').boundingBox())!;
+  expect(ring.height).toBeGreaterThanOrEqual(100);
+  expect(ring.y).toBeGreaterThanOrEqual(gear.y + gear.height);
+  expect(ring.y + ring.height).toBeLessThanOrEqual(top.y + top.height);
+  expect(days.x + days.width).toBeLessThanOrEqual(ring.x);
   const first = (await sheet(page).locator('[data-wed-task]').first().boundingBox())!;
   expect(first.y + first.height).toBeLessThan(tabs.y);
   await shot(page, 'e2e-659');
@@ -406,6 +415,9 @@ test('設定: the names, a category added and removed, a deleted task restored, 
 test('the guest reads everything and has nothing to tick or edit', async ({ page }) => {
   await board(page, 'G');
   await expect(sheet(page)).toHaveAttribute('data-guest', 'true');
+  // the same banner, read-only
+  await expect(sheet(page).locator('[data-wed-days]')).toHaveAttribute('data-wed-days', '336');
+  await expect(sheet(page).locator('[data-wed-top] [data-wed-progress]')).toHaveAttribute('data-wed-progress', '33');
   await expect(card(page, 'wdemo02')).toBeVisible();
   await expect(root(page).locator(':is([data-wed-tick], [data-wed-add], [data-wed-gear])')).toHaveCount(0);
   await sheet(page).locator('[data-wed-showdone]').click();
