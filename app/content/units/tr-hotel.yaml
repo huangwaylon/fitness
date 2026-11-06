@@ -33,13 +33,13 @@ items:
   - id: dmu-twin-beds
     lv: 4
     type: gist
-    en: Hi, checking in. Lopez, two nights. Welcome. Ah, I'm afraid you've been put in a twin, not a double, and we're fully booked tonight. Sorry, did you say a twin? Oh. That's not ideal. It's kind of our anniversary. What I can do is move you to a double tomorrow, and breakfast is complimentary both mornings. OK, that works. Thanks for sorting it out. My pleasure. Enjoy your stay.
-    ja: 明日ダブルに移れて、朝食が無料。
+    en: Hi, checking in. Lopez, two nights. Welcome. Ah, I'm afraid you've been booked into two queens, not a king, and we're fully booked tonight. Sorry, did you say two queens? Oh. That's not ideal. It's kind of our anniversary. What I can do is move you to a king tomorrow, and breakfast is complimentary both mornings. OK, that works. Thanks for taking care of it. My pleasure. Enjoy your stay.
+    ja: 明日キングの部屋に移れて、朝食が無料。
     note: 今夜は満室で無理。What I can do is の後が代案
     speaker: lopez
     voice: us
     cast: us-m2
-    choices: [ "A double tomorrow, plus free breakfast.", "A double tonight, for a small charge.", A free upgrade to a suite tonight. ]
+    choices: [ "A king tomorrow, plus free breakfast.", "A king tonight, for a small charge.", A free upgrade to a suite tonight. ]
     answer: 0
     focus: What I can do is
     ask: ホテルが できる ことは？
@@ -50,24 +50,24 @@ items:
         en: Hi, checking in. Lopez, two nights.
         ja: こんにちは、チェックインを。ロペスで2泊です。
       - who: diana
-        cast: uk-f1
-        en: Welcome. Ah, I'm afraid you've been put in a twin, not a double, and we're fully booked tonight.
-        ja: ようこそ。あ、申し訳ありません、ダブルではなくツインになっておりまして、今夜は満室なんです。
+        cast: us-f1
+        en: Welcome. Ah, I'm afraid you've been booked into two queens, not a king, and we're fully booked tonight.
+        ja: ようこそ。あ、申し訳ありません、キングではなくクイーン2台のお部屋になっておりまして、今夜は満室なんです。
       - who: lopez
         cast: us-m2
-        en: Sorry, did you say a twin? Oh. That's not ideal. It's kind of our anniversary.
-        ja: すみません、ツインって言いました？ えっ。それはちょっと。一応、記念日なんですよ。
-        tts: Sorry, did you say a twin? Oh. That's not ideal. It's kinda our anniversary.
+        en: Sorry, did you say two queens? Oh. That's not ideal. It's kind of our anniversary.
+        ja: すみません、クイーン2台って言いました？ えっ。それはちょっと。一応、記念日なんですよ。
+        tts: Sorry, did you say two queens? Oh. That's not ideal. It's kinda our anniversary.
       - who: diana
-        cast: uk-f1
-        en: What I can do is move you to a double tomorrow, and breakfast is complimentary both mornings.
-        ja: かわりに、明日ダブルにお移りいただけます。朝食も2日とも無料でご用意します。
+        cast: us-f1
+        en: What I can do is move you to a king tomorrow, and breakfast is complimentary both mornings.
+        ja: かわりに、明日キングのお部屋にお移りいただけます。朝食も2日とも無料でご用意します。
       - who: lopez
         cast: us-m2
-        en: OK, that works. Thanks for sorting it out.
+        en: OK, that works. Thanks for taking care of it.
         ja: わかりました、それで大丈夫です。対応ありがとう。
       - who: diana
-        cast: uk-f1
+        cast: us-f1
         en: My pleasure. Enjoy your stay.
         ja: どういたしまして。ごゆっくりどうぞ。
   - id: mu-r-fully-booked
@@ -79,7 +79,7 @@ items:
     speaker: audie
     voice: us
     cast: us-f2
-    choices: [ Could you call and check they've got a room?, "Great, so I can stay here tonight?", "Five minutes? Sure, I can wait." ]
+    choices: [ Could you call and check they have a room?, "Great, so I can stay here tonight?", "Five minutes? Sure, I can wait." ]
     answer: 0
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ], features: [ contrast ] }
   - id: mu-m-complimentary
@@ -89,8 +89,8 @@ items:
     ja: お待たせして申し訳ありません。お部屋の準備ができるまで、バーのお飲み物は無料です。 → つまり、待つ間はタダで飲める。
     note: complimentary＝無料。compliment（ほめる）と混同注意
     speaker: keaton
-    voice: uk
-    cast: uk-m1
+    voice: us
+    cast: us-m1
     choices: [ You can have free drinks while you wait., They'd like you to say something nice about the bar., You'll pay for the drinks at checkout. ]
     answer: 0
     ask: つまり、どういうこと？
@@ -98,7 +98,7 @@ items:
   - id: dmu-aircon
     lv: 4
     type: next
-    en: Hi, I'm in 804. The air conditioning's making this weird rattling noise. Oh dear, I am sorry. I'll send someone up to take a look. Thanks. Will it be long? We're about to go to bed. It could be half an hour, honestly. In the meantime, shall I bring up a fan?
+    en: Hi, I'm in 804. The air conditioning's making this weird rattling noise. Oh, I'm so sorry about that. I'll send someone up to take a look. Thanks. Will it be long? We're about to go to bed. It could be half an hour, honestly. In the meantime, would you like me to bring up a fan?
     ja: お願いします。扇風機、助かります。
     note: in the meantime＝修理までのつなぎの提案
     speaker: francine
@@ -117,27 +117,27 @@ items:
         ja: もしもし、804号室です。エアコンが変なガタガタ音を立ててて。
         tts: Hi, I'm in eight-oh-four. The air conditioning's making this weird rattling noise.
       - who: jacques
-        cast: uk-m2
-        en: Oh dear, I am sorry. I'll send someone up to take a look.
+        cast: us-m3
+        en: Oh, I'm so sorry about that. I'll send someone up to take a look.
         ja: それは大変失礼いたしました。すぐに係の者を伺わせます。
       - who: francine
         cast: us-f3
         en: Thanks. Will it be long? We're about to go to bed.
         ja: どうも。時間かかります？ もう寝るところなんですけど。
       - who: jacques
-        cast: uk-m2
-        en: It could be half an hour, honestly. In the meantime, shall I bring up a fan?
+        cast: us-m3
+        en: It could be half an hour, honestly. In the meantime, would you like me to bring up a fan?
         ja: 正直、30分ほどかかるかもしれません。それまでの間、扇風機をお持ちしましょうか？
   - id: mu-r-send-up
     lv: 4
     type: reply
-    en: No worries, I'll send some fresh towels up in ten minutes.
-    ja: 大丈夫ですよ、10分で新しいタオルをお部屋にお持ちします。 →「助かります、ありがとう。」
+    en: Sure thing. I'll send some fresh towels up in ten minutes.
+    ja: かしこまりました、10分で新しいタオルをお部屋にお持ちします。 →「助かります、ありがとう。」
     note: send up＝部屋に届ける。下に取りに行く必要なし
     speaker: saharah
-    voice: au
-    cast: au-f1
-    choices: [ "Lovely, thanks a lot.", Ten minutes? I can come down for them., "No, they're not fresh, they're wet." ]
+    voice: us
+    cast: us-f3
+    choices: [ "Great, thanks so much.", Ten minutes? I can come down for them., "No, they're not fresh, they're wet." ]
     answer: 0
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ phone ] }
     channel: phone
@@ -161,8 +161,8 @@ items:
     ja: シャワーが使えなかったので、今夜のリゾート料金は免除いたします。 →「ありがとう、それは助かります。」
     note: waive＝免除。wave（手を振る）と同じ音
     speaker: curt
-    voice: au
-    cast: au-m1
+    voice: us
+    cast: us-m3
     choices: [ "Thanks, that's really fair.", "Can I pay it by card, then?", "Oh, is it working now?" ]
     answer: 0
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ] }
@@ -182,7 +182,7 @@ items:
   - id: dmu-no-hot-water
     lv: 4
     type: gist
-    en: Hi, sorry to bother you. There's no hot water in 1112. Ah, I'm so sorry. They're working on the boiler this morning. It should be back by ten. Sorry, did you say ten? I've got a meeting at nine. In the meantime, what I can do is open the spa for you. The showers there are fine, and it's complimentary. Perfect. I'll head down now. Thanks.
+    en: Hi, sorry to bother you. There's no hot water in 1112. Ah, I'm so sorry. They're working on the water heater this morning. It should be back by ten. Sorry, did you say ten? I've got a meeting at nine. In the meantime, what I can do is open the spa for you. The showers there are fine, and it's complimentary. Perfect. I'll head down now. Thanks.
     ja: スパのシャワーを無料で使う。
     note: 10時に直るが会議は9時。代案はスパ
     speaker: kabuki
@@ -200,15 +200,15 @@ items:
         ja: すみません、お手数ですが、1112号室でお湯が出ないんです。
         tts: Hi, sorry to bother you. There's no hot water in eleven twelve.
       - who: olivia
-        cast: uk-f1
-        en: Ah, I'm so sorry. They're working on the boiler this morning. It should be back by ten.
-        ja: あっ、申し訳ございません。今朝ボイラーの工事をしておりまして。10時には戻るはずです。
+        cast: us-f2
+        en: Ah, I'm so sorry. They're working on the water heater this morning. It should be back by ten.
+        ja: あっ、申し訳ございません。今朝給湯器の工事をしておりまして。10時には戻るはずです。
       - who: kabuki
         cast: us-m1
         en: Sorry, did you say ten? I've got a meeting at nine.
         ja: すみません、10時って言いました？ 9時から会議なんですけど。
       - who: olivia
-        cast: uk-f1
+        cast: us-f2
         en: In the meantime, what I can do is open the spa for you. The showers there are fine, and it's complimentary.
         ja: それまでの間、スパを開けることができます。そちらのシャワーは使えますし、無料です。
       - who: kabuki
@@ -218,25 +218,25 @@ items:
   - id: mu-r-sea-view
     lv: 4
     type: reply
-    en: The sea-view rooms are all taken, I'm afraid, but I can put you on the list for tomorrow.
+    en: The ocean-view rooms are all taken, I'm afraid, but I can put you on the list for tomorrow.
     ja: あいにく海側のお部屋は埋まっておりますが、明日の分のキャンセル待ちにお入れできます。 →「お願いします。明日で入れてください。」
     note: all taken＝埋まっている。今日は無理、明日なら
     speaker: bud
-    voice: au
-    cast: au-m2
-    choices: [ "Yes, please. Put me down for tomorrow.", "Thanks, I'm not afraid of the sea.", "I'll take the list, then." ]
+    voice: us
+    cast: us-m1
+    choices: [ "Yes, please. Put me down for tomorrow.", "Thanks, I'm not afraid of the ocean.", "I'll take the list, then." ]
     answer: 0
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ], features: [ contrast ] }
   - id: mu-n-extra-bed
     lv: 4
     type: num
-    en: The extra bed's ¥1,500 a night. Sorry, I meant ¥2,500. It went up in April.
-    tts: The extra bed's fifteen hundred yen a night. Sorry, I meant twenty-five hundred. It went up in April.
+    en: The rollaway bed's ¥1,500 a night. Sorry, I meant ¥2,500. It went up in April.
+    tts: The rollaway bed's fifteen hundred yen a night. Sorry, I meant twenty-five hundred. It went up in April.
     ja: エキストラベッドは1泊1,500円です。失礼、2,500円でした。4月に値上がりしまして。
     note: Sorry, I meant の後が訂正値
     speaker: pashmina
-    voice: uk
-    cast: uk-f1
+    voice: us
+    cast: us-f1
     choices: [ "¥2,500", "¥1,500", "¥4,000" ]
     answer: 0
     ask: ベッドは いっぱく いくら？
@@ -246,10 +246,10 @@ items:
     type: word
     en: I'm afraid we can't do a room change tonight.
     ja: あいにく、今夜はお部屋の変更ができません。
-    note: 英国の can't は［カーント］。can と母音で聞き分け
+    note: can't は［キャーント］と強く、can は弱く［クン］
     speaker: jacques
-    voice: uk
-    cast: uk-m2
+    voice: us
+    cast: us-m3
     choices: [ can't, can, couldn't ]
     answer: 0
     focus: can't
@@ -275,8 +275,8 @@ items:
     ja: それまでの間、ロビーのコーヒーをご自由にどうぞ。
     note: in the meantime＝それまでの間。in a minute ではない
     speaker: curt
-    voice: au
-    cast: au-m1
+    voice: us
+    cast: us-m3
     choices: [ In the meantime, In the morning, In a minute ]
     answer: 0
     focus: In the meantime
@@ -289,8 +289,8 @@ items:
     ja: お電話するつもりでしたが、予約の番号がつながらなくて。
     note: would've［ウダヴ］＝実際は電話していない
     speaker: olivia
-    voice: uk
-    cast: uk-f1
+    voice: us
+    cast: us-f2
     choices: [ would've, would, wouldn't ]
     answer: 0
     focus: would've
@@ -302,8 +302,8 @@ items:
     ja: あいにく、日曜まで満室です。
     note: till Sunday＝日曜まで ずっと 満室
     speaker: bud
-    voice: au
-    cast: au-m2
+    voice: us
+    cast: us-m1
     choices: [ till Sunday, this Sunday, on Sunday ]
     answer: 0
     focus: till Sunday
@@ -315,8 +315,8 @@ items:
     ja: 今回は料金を免除いたします。
     note: waive＝免除。raise（上げる）だと真逆
     speaker: keaton
-    voice: uk
-    cast: uk-m1
+    voice: us
+    cast: us-m1
     choices: [ waive, raise, charge ]
     answer: 0
     focus: waive
@@ -339,12 +339,12 @@ items:
   - id: dmu-luggage
     lv: 4
     type: next
-    en: Hi, we've checked out, but our flight's not till nine tonight. Could we leave our bags? Of course. I'm afraid the luggage room's full, so they'll go behind the desk. There's a small charge after six. Sorry, did you say after six? Our train to the airport's at half six. Ah, then just pick them up by six and there's nothing to pay.
+    en: Hi, we've checked out, but our flight's not till nine tonight. Could we leave our bags? Of course. I'm afraid the luggage room's full, so they'll go behind the desk. There's a small charge after six. Sorry, did you say after six? Our train to the airport's at six-thirty. Ah, then just pick them up by six and there's nothing to pay.
     ja: よかった、6時前に戻ります。
     note: by six なら無料。after six から有料
     speaker: melba
-    voice: au
-    cast: au-f1
+    voice: us
+    cast: us-f2
     choices: [ "Great, we'll be back before six.", "OK, we'll pay the small charge now.", "Could we leave them till nine, then?" ]
     answer: 0
     focus: nothing to pay
@@ -353,19 +353,19 @@ items:
     cond: &a1 { kind: cafe, level: light }
     lines:
       - who: melba
-        cast: au-f1
+        cast: us-f2
         en: Hi, we've checked out, but our flight's not till nine tonight. Could we leave our bags?
         ja: チェックアウトしたんですけど、飛行機が夜9時なんです。荷物を預けられますか？
       - who: keaton
-        cast: uk-m1
+        cast: us-m1
         en: Of course. I'm afraid the luggage room's full, so they'll go behind the desk. There's a small charge after six.
         ja: もちろんです。あいにく荷物室がいっぱいなので、フロントの裏でお預かりします。6時以降は少し料金がかかります。
       - who: melba
-        cast: au-f1
-        en: Sorry, did you say after six? Our train to the airport's at half six.
+        cast: us-f2
+        en: Sorry, did you say after six? Our train to the airport's at six-thirty.
         ja: すみません、6時以降って言いました？ 空港行きの電車は6時半なんです。
       - who: keaton
-        cast: uk-m1
+        cast: us-m1
         en: Ah, then just pick them up by six and there's nothing to pay.
         ja: あ、では6時までに受け取れば、お支払いはありません。
   - id: mu-r-breaking-up
@@ -385,12 +385,12 @@ items:
   - id: dmu-wrong-dates
     lv: 4
     type: gist
-    en: G'day. I've got your booking here, but it's for next Friday, not tonight. Sorry, did you say next Friday? I definitely booked tonight. I've got the email right here. Let me have a look. Ah, the site's messed up the dates. We're full, but what I can do is a room at our sister hotel, and we'll cover the taxi. Fine. As long as I'm not paying for both. No, no. I'll cancel this one now, and we'll waive the fee. Great. I appreciate it.
+    en: Good evening. I have your booking here, but it's for next Friday, not tonight. Sorry, did you say next Friday? I definitely booked tonight. I've got the email right here. Let me have a look. Ah, the booking site messed up the dates. We're full, but what I can do is a room at our sister hotel, and we'll cover the taxi. Fine. As long as I'm not paying for both. No, no. I'll cancel this one now, and we'll waive the fee. Great. I appreciate it.
     ja: 系列ホテルに泊まり、タクシー代も出る。
     note: cover the taxi＝タクシー代を持つ。今夜は系列へ
     speaker: cyd
-    voice: au
-    cast: au-m2
+    voice: us
+    cast: us-m3
     choices: [ He'll stay at the sister hotel; the taxi's paid., He'll pay for two bookings., He'll come back next Friday. ]
     answer: 0
     focus: cover the taxi
@@ -399,23 +399,23 @@ items:
     cond: *a1
     lines:
       - who: cyd
-        cast: au-m2
-        en: G'day. I've got your booking here, but it's for next Friday, not tonight.
+        cast: us-m3
+        en: Good evening. I have your booking here, but it's for next Friday, not tonight.
         ja: こんにちは。ご予約はありますが、今夜ではなく来週の金曜日になってますね。
       - who: zucker
         cast: us-m2
         en: Sorry, did you say next Friday? I definitely booked tonight. I've got the email right here.
         ja: すみません、来週の金曜って言いました？ 絶対今夜で予約しました。メールもここに。
       - who: cyd
-        cast: au-m2
-        en: Let me have a look. Ah, the site's messed up the dates. We're full, but what I can do is a room at our sister hotel, and we'll cover the taxi.
+        cast: us-m3
+        en: Let me have a look. Ah, the booking site messed up the dates. We're full, but what I can do is a room at our sister hotel, and we'll cover the taxi.
         ja: 確認しますね。あ、サイトが日付を間違えてますね。満室ですが、系列ホテルのお部屋をご用意して、タクシー代もこちらで持ちます。
       - who: zucker
         cast: us-m2
         en: Fine. As long as I'm not paying for both.
         ja: いいですよ。両方払わされないなら。
       - who: cyd
-        cast: au-m2
+        cast: us-m3
         en: No, no. I'll cancel this one now, and we'll waive the fee.
         ja: いえいえ。こちらは今キャンセルして、料金は免除します。
       - who: zucker
@@ -425,10 +425,10 @@ items:
   - id: mu-n-new-room
     lv: 4
     type: num
-    en: Your new room's 917. No, hang on, sorry, I meant 971. The other one's still being cleaned.
-    tts: Your new room's nine seventeen. No, hang on, sorry, I meant nine seventy-one. The other one's still being cleaned.
+    en: Your new room's 917. No, wait, sorry, I meant 971. The other one's still being cleaned.
+    tts: Your new room's nine seventeen. No, wait, sorry, I meant nine seventy-one. The other one's still being cleaned.
     ja: 新しいお部屋は917号室です。いえ、失礼、971号室でした。もう一方はまだ清掃中で。
-    note: No, hang on の後が訂正値
+    note: No, wait の後が訂正値
     speaker: reneigh
     voice: us
     cast: us-f3
@@ -444,8 +444,8 @@ items:
     ja: マネージャーに伝えます。夕食の割引が精一杯でして。無料宿泊は、ここだけの話、難しいですね。 → つまり、無料宿泊は期待できない。
     note: between you and me＝ここだけの話。望み薄
     speaker: gruff
-    voice: au
-    cast: au-m1
+    voice: us
+    cast: us-m1
     choices: [ Don't expect a free night., The manager will give you a free night., He'll tell you a secret at dinner. ]
     answer: 0
     ask: つまり、どういうこと？
@@ -464,7 +464,7 @@ tiers:
       choices: [ Can you call the other hotel?, "Great, I can stay here." ]
       answer: 0
     hard:
-      choices: [ Could you call and check they've got a room?, "Great, so I can stay here tonight?", "Five minutes? Sure, I can wait.", "Is the sister hotel fully booked too, then?" ]
+      choices: [ Could you call and check they have a room?, "Great, so I can stay here tonight?", "Five minutes? Sure, I can wait.", "Is the sister hotel fully booked too, then?" ]
       answer: 0
   mu-m-small-charge:
     easy:
@@ -472,8 +472,8 @@ tiers:
       answer: 0
   dmu-twin-beds:
     easy:
-      choices: [ A double room tomorrow., A double room tonight. ]
+      choices: [ A king room tomorrow., A king room tonight. ]
       answer: 0
     hard:
-      choices: [ "A double tomorrow, plus free breakfast.", "A double tonight, for a small charge.", A free upgrade to a suite tonight., "Free breakfast, but a twin both nights." ]
+      choices: [ "A king tomorrow, plus free breakfast.", "A king tonight, for a small charge.", A free upgrade to a suite tonight., "Free breakfast, but two queens both nights." ]
       answer: 0

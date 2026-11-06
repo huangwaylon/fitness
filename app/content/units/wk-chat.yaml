@@ -34,12 +34,12 @@ items:
   - id: dmu-coffee-machine
     lv: 4
     type: gist
-    en: Morning! Good weekend? Yeah, it was nice, thanks. Um, we went hiking, and my legs are, like, still dead. How about you? Oh, a quiet one. Mostly the garden. Hey, we should grab lunch one of these days. Totally. Are you free Thursday? There's that new curry place downstairs. Thursday works. Half twelve? Sorry? Oh, you mean twelve thirty. Perfect. See you then.
+    en: Morning! Good weekend? Yeah, it was nice, thanks. Um, we went hiking, and my legs are, like, still dead. How about you? Oh, a quiet one. Mostly yard work. Hey, we should grab lunch one of these days. Totally. Are you free Thursday? There's that new curry place downstairs. Thursday works. Quarter after twelve? Sorry? Oh, twelve-fifteen. Perfect. See you then.
     ja: 木曜に本当にランチの約束をした。
     note: one of these days は曖昧。Thursday で本気に
     speaker: raymond
-    voice: uk
-    cast: uk-m1
+    voice: us
+    cast: us-m1
     choices: [ They made a real plan for Thursday., It's just a polite 'someday'., They're having lunch today. ]
     answer: 0
     focus: Are you free Thursday?
@@ -49,7 +49,7 @@ items:
     cond: &a1 { kind: cafe, level: light }
     lines:
       - who: raymond
-        cast: uk-m1
+        cast: us-m1
         en: Morning! Good weekend?
         ja: おはよう！ いい週末だった？
       - who: tangy
@@ -57,21 +57,21 @@ items:
         en: Yeah, it was nice, thanks. Um, we went hiking, and my legs are, like, still dead. How about you?
         ja: うん、よかったよ。えっと、ハイキングに行って、脚がまだ、なんか死んでる。そっちは？
       - who: raymond
-        cast: uk-m1
-        en: Oh, a quiet one. Mostly the garden. Hey, we should grab lunch one of these days.
+        cast: us-m1
+        en: Oh, a quiet one. Mostly yard work. Hey, we should grab lunch one of these days.
         ja: ああ、のんびり。ほとんど庭いじり。そうだ、そのうちランチでも行こうよ。
       - who: tangy
         cast: us-f1
         en: Totally. Are you free Thursday? There's that new curry place downstairs.
         ja: ぜひ。木曜あいてる？ 下に新しいカレー屋ができたでしょ。
       - who: raymond
-        cast: uk-m1
-        en: Thursday works. Half twelve?
-        ja: 木曜いいね。12時半？
+        cast: us-m1
+        en: Thursday works. Quarter after twelve?
+        ja: 木曜いいね。12時15分？
       - who: tangy
         cast: us-f1
-        en: Sorry? Oh, you mean twelve thirty. Perfect. See you then.
-        ja: え？ あ、12時半ってことね。完璧。じゃあそのときに。
+        en: Sorry? Oh, twelve-fifteen. Perfect. See you then.
+        ja: え？ あ、12時15分ね。完璧。じゃあそのときに。
   - id: mu-r-keeping-busy
     lv: 4
     type: reply
@@ -79,8 +79,8 @@ items:
     ja: やあ、久しぶり！ 忙しくしてる？ →「うん、正直バタバタ。そっちは？」
     note: Keeping busy?＝最近どう？ 一言で返す
     speaker: tex
-    voice: uk
-    cast: uk-m2
+    voice: us
+    cast: us-m3
     choices: [ "Yeah, swamped, to be honest. You?", "No, I'm not a stranger.", "Yes, I keep it in my bag." ]
     answer: 0
     tags: { seed: 38, register: colleague, pragmatic: ritual }
@@ -146,24 +146,24 @@ items:
     lv: 4
     type: reply
     en: Not much, just a quiet one at home. What about you?
-    ja: 特に何も。家でのんびりしてた。そっちは？ →「同じく。日曜にサッカーをちょっと見たくらい。」
+    ja: 特に何も。家でのんびりしてた。そっちは？ →「同じく。日曜に試合を見たくらい。」
     note: What about you?＝話を返された。自分の週末を一言
     speaker: olivia
-    voice: uk
-    cast: uk-f1
-    choices: [ "Same, really. Watched a bit of football.", "Quiet? Sorry, I'll turn it down.", At home? Which one? ]
+    voice: us
+    cast: us-f2
+    choices: [ "Same, really. Watched the game Sunday.", "Quiet? Sorry, I'll turn it down.", At home? Which one? ]
     answer: 0
     tags: { seed: 38, register: colleague, pragmatic: ritual }
     scene: office
   - id: mu-m-at-some-point
     lv: 4
     type: mean
-    en: Lunch? Yeah, we should, at some point. It's just mental at the moment.
+    en: Lunch? Yeah, we should, at some point. It's just crazy right now.
     ja: ランチ？ うん、そのうちね。今ちょっとめちゃくちゃ忙しくて。 → つまり、今は予定を決める気がない。
     note: at some point＋忙しい＝今は無理の遠回し
     speaker: kidd
-    voice: uk
-    cast: uk-m1
+    voice: us
+    cast: us-m1
     choices: [ He's too busy and isn't really making a plan., He wants lunch at a set time., He thinks lunch is a crazy idea. ]
     answer: 0
     ask: つまり、どういうこと？
@@ -185,12 +185,12 @@ items:
   - id: dmu-monday
     lv: 4
     type: gist
-    en: Morning. How was your weekend? Don't ask. I spent the whole of Saturday on that report. Oh no. Do you mean the one for Tuesday? I thought that got pushed back. Yeah, I found that out on Sunday night. Brilliant. Ouch. Well, coffee's on me, then.
+    en: Morning. How was your weekend? Don't ask. I spent all of Saturday on that report. Oh no. Do you mean the one for Tuesday? I thought that got pushed back. Yeah, I found that out on Sunday night. Awesome. Ouch. Well, coffee's on me, then.
     ja: 急ぎでなかったレポートに土曜を使った。
-    note: pushed back＝延期。Brilliant は皮肉
+    note: pushed back＝延期。Awesome は皮肉
     speaker: static
-    voice: uk
-    cast: uk-m2
+    voice: us
+    cast: us-m1
     choices: [ She worked all Saturday on a report that wasn't urgent., She had a relaxing weekend., She finished the report for Tuesday. ]
     answer: 0
     focus: pushed back
@@ -199,29 +199,29 @@ items:
     scene: office
     lines:
       - who: static
-        cast: uk-m2
+        cast: us-m1
         en: Morning. How was your weekend?
         ja: おはよう。週末どうだった？
       - who: katt
         cast: us-f2
-        en: Don't ask. I spent the whole of Saturday on that report.
+        en: Don't ask. I spent all of Saturday on that report.
         ja: 聞かないで。土曜は丸一日、例のレポートやってた。
       - who: static
-        cast: uk-m2
+        cast: us-m1
         en: Oh no. Do you mean the one for Tuesday? I thought that got pushed back.
         ja: うわ。火曜のやつのこと？ あれ延期になったと思ってた。
       - who: katt
         cast: us-f2
-        en: Yeah, I found that out on Sunday night. Brilliant.
+        en: Yeah, I found that out on Sunday night. Awesome.
         ja: そう、それを日曜の夜に知ったの。最高よね。
       - who: static
-        cast: uk-m2
+        cast: us-m1
         en: Ouch. Well, coffee's on me, then.
         ja: それはきつい。じゃあ、コーヒーおごるよ。
   - id: dmu-real-plan
     lv: 4
     type: gist
-    en: Hey, nice to finally meet you properly. You're on the design team, right? That's me. Third floor, by the window. How are you finding it so far? Good, good. Bit overwhelming. Everyone keeps saying we should grab a coffee. Ha, they mean it. I mean, some of them do. I'm free at three tomorrow, if you fancy it? Three's great. I'll come up.
+    en: Hey, nice to finally meet you for real. You're on the design team, right? That's me. Third floor, by the window. How are you liking it so far? Good, good. A little overwhelming. Everyone keeps saying we should grab a coffee. Ha, they mean it. I mean, some of them do. I'm free at three tomorrow, if you're up for it? Three's great. I'll come up.
     ja: ポーシャは本当に明日3時の約束をした。
     note: they mean it. I mean, some＝半分は社交辞令
     speaker: beau
@@ -237,19 +237,19 @@ items:
     lines:
       - who: beau
         cast: us-m1
-        en: Hey, nice to finally meet you properly. You're on the design team, right?
+        en: Hey, nice to finally meet you for real. You're on the design team, right?
         ja: やあ、やっとちゃんと会えたね。デザインチームだよね？
       - who: portia
-        cast: uk-f1
-        en: That's me. Third floor, by the window. How are you finding it so far?
+        cast: us-f2
+        en: That's me. Third floor, by the window. How are you liking it so far?
         ja: そう。3階の窓際。ここはどう、慣れた？
       - who: beau
         cast: us-m1
-        en: Good, good. Bit overwhelming. Everyone keeps saying we should grab a coffee.
+        en: Good, good. A little overwhelming. Everyone keeps saying we should grab a coffee.
         ja: いいよ、いいよ。ちょっと圧倒されてるけど。みんな「今度コーヒーでも」って言ってくれるんだ。
       - who: portia
-        cast: uk-f1
-        en: Ha, they mean it. I mean, some of them do. I'm free at three tomorrow, if you fancy it?
+        cast: us-f2
+        en: Ha, they mean it. I mean, some of them do. I'm free at three tomorrow, if you're up for it?
         ja: はは、本気だよ。というか、一部はね。私は明日3時あいてるけど、どう？
       - who: beau
         cast: us-m1
@@ -275,8 +275,8 @@ items:
     ja: そのうち飲みに行こうよ。というか、木曜どう？ ほかのみんなにも連絡するよ。 → つまり、木曜に本当に飲み会を企画している。
     note: Actually, how's Thursday?＝具体化。本気
     speaker: cyd
-    voice: au
-    cast: au-m2
+    voice: us
+    cast: us-m3
     choices: [ He's making a real plan for Thursday., He's being polite and doesn't mean it., He wants you to message the others. ]
     answer: 0
     ask: つまり、どういうこと？
@@ -300,14 +300,14 @@ items:
   - id: mu-r-get-up-to
     lv: 4
     type: reply
-    en: How was your weekend? Get up to much?
-    tts: How was your weekend? Get up ta much?
-    ja: 週末どうだった？ 何かした？ →「特に。ほとんど寝だめしてた。」
-    note: Get up to much?＝何かした？ 起きる、ではない
+    en: How was your weekend? What'd you end up doing?
+    tts: How was your weekend? Whadja end up doin'?
+    ja: 週末どうだった？ 結局何したの？ →「特に。ほとんど寝だめしてた。」
+    note: What'd you＝What did you。end up＝結局
     speaker: gruff
-    voice: au
-    cast: au-m1
-    choices: [ "Not much. Caught up on sleep, mostly.", "Yes, I got up at seven.", "It's this weekend, I think." ]
+    voice: us
+    cast: us-m1
+    choices: [ "Not much. Caught up on sleep, mostly.", "It ended at seven, I think.", "I'm doing it next weekend." ]
     answer: 0
     tags: { seed: 38, register: colleague, pragmatic: ritual, features: [ ellipsis ] }
     scene: office
@@ -318,8 +318,8 @@ items:
     ja: さて、受信箱が爆発する前に戻らなきゃ。話せてよかった！ → つまり、雑談を終えて仕事に戻る。
     note: I'd better get back＝雑談の締め。仕事に戻る
     speaker: pashmina
-    voice: uk
-    cast: uk-f1
+    voice: us
+    cast: us-f3
     choices: [ She's ending the chat to go back to work., She wants to keep chatting., Her computer is broken. ]
     answer: 0
     ask: つまり、どういうこと？
@@ -361,8 +361,8 @@ items:
     ja: 忙しくしてる？ それともやっと休ませてもらえてる？
     note: Keeping busy?＝最近どう？の決まり文句
     speaker: walker
-    voice: au
-    cast: au-m2
+    voice: us
+    cast: us-m3
     choices: [ Keeping busy, Keeping fit, Getting busy ]
     answer: 0
     focus: Keeping busy
@@ -385,12 +385,12 @@ items:
   - id: dmu-lift
     lv: 4
     type: next
-    en: Oh, hey! Long time no see. How've you been? Good! Crazy busy, but good. Hey, I heard you moved teams? Yeah, I'm in sales now. Ah, this is my floor. We should grab lunch and catch up properly.
+    en: Oh, hey! Long time no see. How've you been? Good! Crazy busy, but good. Hey, I heard you moved teams? Yeah, I'm in sales now. Ah, this is my floor. We should grab lunch and really catch up.
     ja: ぜひ。来週のこと連絡するね。
     note: this is my floor＝もう降りる。誘いに軽く乗る
     speaker: sherb
-    voice: au
-    cast: au-m2
+    voice: us
+    cast: us-m2
     choices: [ Definitely. I'll message you about next week., "Sure, I'll take the stairs.", "Sales? No, I moved floors." ]
     answer: 0
     focus: this is my floor
@@ -400,7 +400,7 @@ items:
     cond: &a2 { kind: cafe, level: heavy }
     lines:
       - who: sherb
-        cast: au-m2
+        cast: us-m2
         en: Oh, hey! Long time no see. How've you been?
         ja: おっ、やあ！ 久しぶり。元気だった？
       - who: francine
@@ -408,19 +408,19 @@ items:
         en: Good! Crazy busy, but good. Hey, I heard you moved teams?
         ja: 元気！ めちゃくちゃ忙しいけどね。ねえ、チーム異動したんだって？
       - who: sherb
-        cast: au-m2
-        en: Yeah, I'm in sales now. Ah, this is my floor. We should grab lunch and catch up properly.
+        cast: us-m2
+        en: Yeah, I'm in sales now. Ah, this is my floor. We should grab lunch and really catch up.
         ja: うん、今は営業。あ、ここ俺の階だ。今度ランチでもして、ちゃんと話そうよ。
   - id: mu-m-write-off
     lv: 4
     type: mean
-    en: Weekend? Oh, total write-off. Had a cold, binged a whole series, didn't leave the flat. What about you?
+    en: Weekend? Oh, total write-off. Had a cold, binged a whole series, didn't leave the apartment. What about you?
     ja: 週末？ もう全然ダメ。風邪ひいて、ドラマ一気見して、一歩も家を出なかった。そっちは？ → つまり、病気で家にこもっていた。
-    note: write-off＝台無し。flat＝アパート
+    note: total write-off＝まるごと台無し。病気で家に
     speaker: kitt
-    voice: au
-    cast: au-f1
-    choices: [ She was ill and stayed in all weekend., She wrote a lot over the weekend., She went away for the weekend. ]
+    voice: us
+    cast: us-f2
+    choices: [ She was sick and stayed in all weekend., She wrote a lot over the weekend., She went away for the weekend. ]
     answer: 0
     ask: つまり、どういうこと？
     tags: { seed: 38, register: colleague, pragmatic: understatement }
@@ -436,7 +436,7 @@ items:
     speaker: zucker
     voice: us
     cast: us-m2
-    choices: [ Three works. Come and grab me., "Sure, jump on.", "No, I had coffee at three." ]
+    choices: [ Three works. Come grab me., "Sure, jump on.", "No, I had coffee at three." ]
     answer: 0
     tags: { seed: 38, register: colleague, pragmatic: literal, features: [ gotta ] }
     scene: office
@@ -494,7 +494,7 @@ items:
         en: So, uh, any big plans for the weekend?
         ja: で、えーと、週末は何か大きな予定ある？
       - who: freya
-        cast: uk-f1
+        cast: us-f2
         en: Not really. Might go to that flea market by the river, if it doesn't rain.
         ja: 特に。雨が降らなければ、川沿いのフリーマーケットに行くかも。
       - who: wolfgang
@@ -502,7 +502,7 @@ items:
         en: Oh, the Sunday one? My wife loves that place. Hey, if you go, we could, um, grab a coffee there?
         ja: あ、日曜のやつ？ 妻があそこ大好きなんだ。ねえ、行くなら、えーと、そこでコーヒーでもどう？
       - who: freya
-        cast: uk-f1
+        cast: us-f2
         en: Sure, why not? Ten-ish?
         ja: いいよ、もちろん。10時ごろ？
       - who: wolfgang

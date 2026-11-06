@@ -1,17 +1,17 @@
-# ことば タイル S3 やま: fast casual speech, several reductions a sentence, UK t-glottalling and h-dropping, AU.
+# ことば タイル S3 やま: fast casual American speech, several reductions a sentence, flapped and dropped t's.
 schema: 1
 unit: s3-tile
 game: tile
 stage: 4
 track: work
 seeds: [4, 7, 8, 13, 17, 27, 32, 34, 36, 41, 42, 44, 46, 51, 53]
-features: { primary: chain, review: t-glottal }
+features: { primary: chain, review: flap }
 cando: "しゅくやくが いくつも ある はやい かいわを ことばごとに ききわけられる"
 status: draft
 items:
   - kind: tile
     id: tile-been-going-on
-    speaker: apollo
+    speaker: wolfgang
     en: "I wouldn't have said anything, but it's been going on for weeks."
     tts: "I wouldn't've said anythin', but it's been goin' on for weeks."
     ja: "言うつもりはなかったんですが、もう何週間も続いているので。"
@@ -24,27 +24,27 @@ items:
 
   - kind: tile
     id: tile-get-a-chance
-    speaker: raymond
+    speaker: henry
     en: "Did you get a chance to look at what I sent over?"
-    tts: "Didja ge' a chance ta look a' wha' I sent over?"
+    tts: "Didja geda chance ta look at whad I sent over?"
     ja: "送った資料、見てもらえた？"
     tiles: ["Did", "you", "get", "a", "chance", "to", "look", "at", "what", "I", "sent", "over"]
     decoys: ["the", "send"]
-    marks: [[say, "Did you", "Didja"], [drop, "get", "t"], [drop, "what", "t"]]
-    note: "英国の t は止まって「ゲッア」。get a chance＝時間があった"
+    marks: [[say, "Did you", "Didja"], [say, "get a", "geda"], [say, "what I", "whad I"]]
+    note: "get a は「ゲダ」。get a chance＝時間があった"
     scene: office
-    tags: { seed: 44, register: colleague, pragmatic: indirect, features: [t-glottal, yod, chain] }
+    tags: { seed: 44, register: colleague, pragmatic: indirect, features: [flap, yod, chain] }
 
   - kind: tile
     id: tile-reckon-about-ten
-    speaker: kappn
-    en: "Reckon we'll be there in about ten, if it's not too busy."
-    tts: "Reckon we'll be there in aboud ten, if it's not too busy."
-    ja: "そんなに混んでなければ、10分くらいで着くと思うよ。"
-    tiles: ["Reckon", "we'll", "be", "there", "in", "about", "ten", "if", "it's", "not", "too", "busy"]
+    speaker: lopez
+    en: "Figure we'll be there in about ten, if traffic's not too bad."
+    tts: "Figure we'll be there in aboud ten, if traffic's not too bad."
+    ja: "渋滞がひどくなければ、10分くらいで着くと思いますよ。"
+    tiles: ["Figure", "we'll", "be", "there", "in", "about", "ten", "if", "traffic's", "not", "too", "bad"]
     decoys: ["we", "then"]
     marks: [[say, "about", "aboud"], [link, "be there in about"]]
-    note: "主語を省いた Reckon＝I reckon（〜だと思う）"
+    note: "主語を省いた Figure＝I figure（〜だと思う）"
     tags: { seed: 4, register: service, pragmatic: hedge, features: [ellipsis, contraction] }
 
   - kind: tile
@@ -62,42 +62,42 @@ items:
 
   - kind: tile
     id: tile-not-been-taking
-    speaker: merengue
-    en: "You've not been taking anything else, have you?"
-    tts: "You've no' been takin' anythin' else, 'ave you?"
+    speaker: judy
+    en: "You haven't been taking anything else, have you?"
+    tts: "You haven't been takin' anything else, have ya?"
     ja: "ほかに飲んでいるお薬はありませんよね？"
-    tiles: ["You've", "not", "been", "taking", "anything", "else", "have", "you"]
-    decoys: ["haven't", "being"]
-    marks: [[drop, "not", "t"], [say, "have you", "'ave you"]]
-    note: "英国は h が落ちて 'ave you。念押しの言い方"
+    tiles: ["You", "haven't", "been", "taking", "anything", "else", "have", "you"]
+    decoys: ["You've", "being"]
+    marks: [[drop, "taking", "g"], [say, "have you", "have ya"]]
+    note: "文末の have you? は念押し。haven't の t は弱い"
     scene: pharmacy
-    tags: { seed: 13, register: service, pragmatic: literal, features: [h-drop, t-glottal] }
+    tags: { seed: 13, register: service, pragmatic: literal, features: [contraction, intonation] }
 
   - kind: tile
     id: tile-not-worth-the-hassle
-    speaker: cherry
-    en: "Let's just split it. It's not worth the hassle."
-    tts: "Let's jus' split it. It's not worth the hassle."
-    ja: "もう割り勘にしよう。めんどうだし。"
-    tiles: ["Let's", "just", "split", "it", "It's", "not", "worth", "the", "hassle"]
+    speaker: tangy
+    en: "Let's just get an Uber. It's not worth the hassle."
+    tts: "Let's jus' ged an Uber. It's not worth the hassle."
+    ja: "もうUber呼ぼう。めんどうだし。"
+    tiles: ["Let's", "just", "get", "an", "Uber", "It's", "not", "worth", "the", "hassle"]
     decoys: ["Let", "isn't"]
-    marks: [[drop, "just", "t"], [link, "split it"]]
-    note: "just の t が落ちて「ジャス」。split it はひと続き"
-    scene: cafe
-    tags: { seed: 27, register: friend, pragmatic: literal, features: [elision, linking] }
+    marks: [[drop, "just", "t"], [say, "get an", "ged an"]]
+    note: "just の t が落ちて「ジャス」。get an は「ゲダン」"
+    scene: street
+    tags: { seed: 27, register: friend, pragmatic: literal, features: [elision, flap] }
 
   - kind: tile
     id: tile-done-differently
-    speaker: julian
+    speaker: ken
     en: "What would you have done differently, looking back?"
-    tts: "Wha' wouldja've done differently, lookin' back?"
+    tts: "What wouldja've done differently, lookin' back?"
     ja: "振り返ってみて、何を違うやり方でしていたと思いますか？"
     tiles: ["What", "would", "you", "have", "done", "differently", "looking", "back"]
     decoys: ["do", "had"]
-    marks: [[say, "would you have", "wouldja've"], [drop, "What", "t"]]
+    marks: [[say, "would you have", "wouldja've"], [drop, "looking", "g"]]
     note: "would you have は「ウッジャヴ」まで縮む"
     scene: office
-    tags: { seed: 46, register: boss, pragmatic: literal, features: [chain, t-glottal] }
+    tags: { seed: 46, register: boss, pragmatic: literal, features: [chain, yod] }
 
   - kind: tile
     id: tile-nine-oclock-tight
@@ -114,11 +114,11 @@ items:
 
   - kind: tile
     id: tile-full-cover
-    speaker: saharah
-    en: "You'll want to take the full cover, trust me."
-    tts: "You'll wanna take the full cover, trust me."
+    speaker: reneigh
+    en: "You'll want to get the full coverage, trust me."
+    tts: "You'll wanna get the full coverage, trust me."
     ja: "フル補償にしておいたほうがいいですよ、ほんとに。"
-    tiles: ["You'll", "want", "to", "take", "the", "full", "cover", "trust", "me"]
+    tiles: ["You'll", "want", "to", "get", "the", "full", "coverage", "trust", "me"]
     decoys: ["You", "won't"]
     marks: [[say, "want to", "wanna"]]
     note: "You'll wanna＝〜したほうがいい（すすめ）。won't と区別"
@@ -126,16 +126,16 @@ items:
 
   - kind: tile
     id: tile-loud-in-here
-    speaker: brewster
-    en: "Sorry, was that oat or almond? It's loud in here."
-    tts: "Sorry, was tha' oat or almond? It's loud in 'ere."
-    ja: "すみません、オーツとアーモンド、どちらでしたっけ？ここうるさくて。"
-    tiles: ["Sorry", "was", "that", "oat", "or", "almond", "It's", "loud", "in", "here"]
-    decoys: ["is", "hair"]
-    marks: [[drop, "that", "t"], [link, "oat or almond"], [say, "here", "'ere"]]
-    note: "in 'ere は h が落ちる。oat or almond はひと続き"
+    speaker: sterling
+    en: "Sorry, did you say large or medium? It's loud in here."
+    tts: "Sorry, didja say large or medium? It's loud in here."
+    ja: "すみません、LとM、どちらでしたっけ？ここうるさくて。"
+    tiles: ["Sorry", "did", "you", "say", "large", "or", "medium", "It's", "loud", "in", "here"]
+    decoys: ["do", "hair"]
+    marks: [[say, "did you", "didja"], [link, "large or medium"]]
+    note: "large or は「ラージョア」とつながる。or を聞きのがさない"
     scene: cafe
-    tags: { seed: 51, register: service, pragmatic: literal, conditions: [cafe], features: [h-drop, t-glottal, linking] }
+    tags: { seed: 51, register: service, pragmatic: literal, conditions: [cafe], features: [yod, linking] }
 
   - kind: tile
     id: tile-want-it-friday
@@ -165,19 +165,19 @@ items:
 
   - kind: tile
     id: tile-back-by-two
-    speaker: fauna
-    en: "The water's off from ten, but it should be back by two."
-    tts: "The wa'er's off from ten, bu' it should be back by two."
-    ja: "10時から断水ですが、2時までには戻るはずです。"
-    tiles: ["The", "water's", "off", "from", "ten", "but", "it", "should", "be", "back", "by", "two"]
+    speaker: agnes
+    en: "The water's off from ten, but it'll be back on by two."
+    tts: "The wadder's off from ten, bud it'll be back on by two."
+    ja: "10時から断水ですが、2時までには戻ります。"
+    tiles: ["The", "water's", "off", "from", "ten", "but", "it'll", "be", "back", "on", "by", "two"]
     decoys: ["water", "at"]
-    marks: [[drop, "water's", "t"], [drop, "but", "t"], [link, "water's off"]]
-    note: "英国の t は止まり「ウォーア」。water's の s を聞く"
-    tags: { seed: 34, register: neighbour, pragmatic: literal, features: [contraction, t-glottal] }
+    marks: [[say, "water's", "wadder's"], [say, "but it'll", "bud it'll"], [link, "water's off"]]
+    note: "water の t は「ダ」で「ワダー」。water's の s を聞く"
+    tags: { seed: 34, register: neighbour, pragmatic: literal, features: [contraction, flap] }
 
   - kind: tile
     id: tile-elbows-in
-    speaker: roald
+    speaker: frett
     en: "You're going to want to keep your elbows in on this one."
     tts: "You're gonna wanna keep yer elbows in on this one."
     ja: "この種目は、ひじを締めておいたほうがいいよ。"
@@ -189,13 +189,13 @@ items:
 
   - kind: tile
     id: tile-not-the-right-time
-    speaker: ankha
+    speaker: katt
     en: "It's not a bad idea, it's just not the right time."
-    tts: "It's no' a bad idea, it's jus' no' the right time."
+    tts: "It's nod a bad idea, it's jus' not the right time."
     ja: "悪くないアイデアなんだけど、今じゃないのよね。"
     tiles: ["It's", "not", "a", "bad", "idea", "it's", "just", "not", "the", "right", "time"]
     decoys: ["isn't", "it'll"]
-    marks: [[drop, "not", "t"], [drop, "just", "t"], [stress, "bad right"]]
-    note: "not の t が止まり「ノッ」。後半が本音の断り"
+    marks: [[say, "not a", "nod a"], [drop, "just", "t"], [stress, "bad right"]]
+    note: "not a は「ナダ」。後半が本音の断り"
     scene: office
-    tags: { seed: 42, register: colleague, pragmatic: hedge, features: [t-glottal, elision] }
+    tags: { seed: 42, register: colleague, pragmatic: hedge, features: [flap, elision] }

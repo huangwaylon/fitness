@@ -63,13 +63,13 @@ items:
   - kind: tile
     id: tile-word-with-him
     speaker: tom-nook
-    en: "I'll have a word with him and get back to you."
-    tts: "I'll have a word with 'im an' get back to ya."
+    en: "I'll talk to him and get back to you."
+    tts: "I'll talk to 'im an' get back to ya."
     ja: "彼に話しておいて、また連絡します。"
-    tiles: ["I'll", "have", "a", "word", "with", "him", "and", "get", "back", "to", "you"]
+    tiles: ["I'll", "talk", "to", "him", "and", "get", "back", "to", "you"]
     decoys: ["them", "I'd"]
-    marks: [[say, "him", "'im"], [say, "and", "an'"], [link, "with him and"]]
-    note: "with 'im an' は「ウィズィマン」。have a word＝話をつける"
+    marks: [[say, "him", "'im"], [say, "and", "an'"], [link, "to him and"]]
+    note: "to 'im an' は「トゥイマン」。get back to＝あとで連絡"
     scene: living
     tags: { seed: 30, register: neighbour, pragmatic: hedge, conditions: [phone], features: [h-drop, weak-form] }
 
@@ -88,11 +88,11 @@ items:
 
   - kind: tile
     id: tile-wedve-been-fine
-    speaker: julian
-    en: "We'd have been fine if they hadn't changed the brief."
-    tts: "We'd've been fine if they hadn't changed the brief."
-    ja: "向こうが依頼内容を変えなければ、問題なかったのに。"
-    tiles: ["We'd", "have", "been", "fine", "if", "they", "hadn't", "changed", "the", "brief"]
+    speaker: zucker
+    en: "We'd have been fine if they hadn't changed the specs."
+    tts: "We'd've been fine if they hadn't changed the specs."
+    ja: "向こうが仕様を変えなければ、問題なかったのに。"
+    tiles: ["We'd", "have", "been", "fine", "if", "they", "hadn't", "changed", "the", "specs"]
     decoys: ["We'll", "had"]
     marks: [[say, "We'd have", "We'd've"], [stress, "hadn't"]]
     note: "We'd've は「ウィダヴ」。have been は弱く短い"
@@ -114,11 +114,11 @@ items:
 
   - kind: tile
     id: tile-gotta-run
-    speaker: sherb
-    en: "Sorry, mate, I've got to run. Catch you later."
-    tts: "Sorry, mate, I've gotta run. Catchya later."
+    speaker: lucky
+    en: "Sorry, man, I've got to run. Catch you later."
+    tts: "Sorry, man, I've gotta run. Catchya later."
     ja: "ごめん、もう行かなきゃ。またね。"
-    tiles: ["Sorry", "mate", "I've", "got", "to", "run", "Catch", "you", "later"]
+    tiles: ["Sorry", "man", "I've", "got", "to", "run", "Catch", "you", "later"]
     decoys: ["I", "want"]
     marks: [[say, "got to", "gotta"], [say, "Catch you", "Catchya"]]
     note: "gotta run＝もう行かなきゃ。I've の ve はほぼ消える"
@@ -127,11 +127,11 @@ items:
 
   - kind: tile
     id: tile-room-at-the-back
-    speaker: diana
-    en: "If I were you, I'd ask for a room at the back."
-    tts: "If I were you, I'd ask fer a room at the back."
+    speaker: poppy
+    en: "If I were you, I'd ask for a room in the back."
+    tts: "If I were you, I'd ask fer a room in the back."
     ja: "わたしなら、奥のお部屋をお願いしますね。"
-    tiles: ["If", "I", "were", "you", "I'd", "ask", "for", "a", "room", "at", "the", "back"]
+    tiles: ["If", "I", "were", "you", "I'd", "ask", "for", "a", "room", "in", "the", "back"]
     decoys: ["I'll", "front"]
     marks: [[say, "for a", "fer a"], [link, "I'd ask"]]
     note: "I'd＝わたしなら〜する（助言）。I'll なら今からする"
@@ -139,14 +139,14 @@ items:
 
   - kind: tile
     id: tile-too-much-on
-    speaker: coco
-    en: "I'd love to, but I've got way too much on."
-    tts: "I'd love ta, but I've got way too much on."
-    ja: "行きたいんだけど、予定が詰まりすぎてて。"
-    tiles: ["I'd", "love", "to", "but", "I've", "got", "way", "too", "much", "on"]
+    speaker: bea
+    en: "I'd love to, but I've got way too much going on."
+    tts: "I'd love ta, but I've got way too much goin' on."
+    ja: "行きたいんだけど、いろいろ立てこんでて。"
+    tiles: ["I'd", "love", "to", "but", "I've", "got", "way", "too", "much", "going", "on"]
     decoys: ["I'll", "I"]
-    marks: [[say, "to", "ta"], [link, "much on"]]
-    note: "too much on＝予定がいっぱい。I'd love to, but は断り"
+    marks: [[say, "to", "ta"], [drop, "going", "g"]]
+    note: "too much going on＝忙しい。love to, but は断り"
     scene: street
     tags: { seed: 18, register: friend, pragmatic: refusal, features: [contraction, idiom] }
 
@@ -177,7 +177,7 @@ items:
 
   - kind: tile
     id: tile-leave-it-out-front
-    speaker: punchy
+    speaker: kabuki
     en: "They said to leave it out front, so that's what I did."
     tts: "They said ta leave id out front, so that's whad I did."
     ja: "玄関の前に置いといてって言われたから、そうしたよ。"
@@ -190,7 +190,7 @@ items:
 
   - kind: tile
     id: tile-woulda-called
-    speaker: whitney
+    speaker: marina
     en: "Sorry, I would've called, but my phone died."
     tts: "Sorry, I woulda called, but my phone died."
     ja: "ごめん、電話しようと思ったんだけど、スマホの電池が切れちゃって。"
