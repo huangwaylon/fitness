@@ -5,7 +5,7 @@
 //   into the sea and the seabed falling away from the shore, a river's or a pond's banks sloping to its bed CARVE below,
 //   a path sunk a little in the grass.
 //   Stairs ramp from their tier to the next along their facing; a bridge's deck arches over its water.
-import { TIER_H, TILE, idx, kindOf, onGrid, tileAt, tileX, tileZ, type Kind } from './grid.ts';
+import { GRID, TIER_H, TILE, idx, kindOf, onGrid, tileAt, tileX, tileZ, type Kind } from './grid.ts';
 import { facingVec, footOf, type Layout } from './model.ts';
 import { Ch, fieldsOf, masks, roundedIn, type Fields } from './fields.ts';
 
@@ -15,6 +15,15 @@ const CARVE = 9;
 /** The fresh water's surface below the bank. */
 export const WATER_DROP = 2.5;
 export const SEA_Y = -0.5;
+/** The seabed's deepest, the deep plane's level under the sea past the grid (terrain.ts), and how far in from the grid's
+ *  edge the seabed goes down to it. */
+export const DEEP_Y = -7.5;
+export const EDGE_FADE = 30;
+/** How far (x, z) is inside the grid's edge (u; negative off it). */
+export const edgeDist = (x: number, z: number): number =>
+  Math.min(x - GRID.x0, GRID.x0 + GRID.cols * TILE - x, z - GRID.z0, GRID.z0 + GRID.rows * TILE - z);
+/** A river's bed where it meets the sea (it shallows to this over its last half tile, and runs on out at it). */
+const MOUTH_Y = -1.5;
 const DECK_Y = 6;
 
 const sat = (v: number) => Math.max(0, Math.min(1, v));
@@ -67,13 +76,20 @@ function build(layout: Layout): Field {
     if (tier === 0) {
       // the seabed off the land; the beach rising from the shoreline
       // (continuous at the shoreline: a step there would show the mesh's 5u cells as teeth through the shallows)
-      if (dL > 0) return -Math.min(dL * 0.3, 1.5 + dL * 0.14, 7.5);
+      // (a river's mouth: its channel runs on out into the sea, MOUTH_Y deep, until the seabed is deeper: no step where
+      // its bed meets the seabed, the user's 2026-11-06 hard line at the shore)
+      // (and by the grid's edge the seabed is down at the deep plane's level, terrain.ts: no ledge where the mesh ends)
+      if (dL > 0) {
+        const bed = Math.min(-Math.min(dL * 0.3, 1.5 + dL * 0.14, 7.5), MOUTH_Y * smooth(1, -8, dW));
+        return bed + (DEEP_Y - bed) * smooth(EDGE_FADE, 0, edgeDist(x, z));
+      }
       const shore = Math.min(SAND_Y, -dL * 0.12);
       y = shore + (GRASS_Y - shore) * smooth(-1, 5, dS);
     } else y = SAND_Y + (GRASS_Y - SAND_Y) * smooth(-1, 5, dS);
     y -= 0.35 * smooth(2, -3, dP);
-    // a river's or a pond's banks down to its bed
-    return y + (GRASS_Y - CARVE - y) * smooth(1, -8, dW);
+    // a river's or a pond's banks down to its bed; on the sea's level the bed shallows to MOUTH_Y at the shore
+    const bed = GRASS_Y - CARVE + (tier === 0 ? (MOUTH_Y - GRASS_Y + CARVE) * smooth(-14, 0, dL) : 0);
+    return y + (bed - y) * smooth(1, -8, dW);
   }
   function surfaceAt(x: number, z: number): Kind {
     if (F.at(Ch.land, x, z) > 0) return 'sea';

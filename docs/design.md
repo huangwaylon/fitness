@@ -712,6 +712,14 @@ the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/worl
     front stays a line along the coast) and travel along a beach a little. Lit like the ground: dim and moonlit at
     night, warm at dusk, nothing switched. Cheap: a shader on the ground's own material and the sea's (no geometry),
     on the water's clock (the ambient 30 fps when nothing else moves).
+  - **The shore** (the user, 2026-11-06: "a hard line marking the end of the beach that extends into the water … make
+    this transition smoother"): sand, the wet sand, a pale aqua shallows over the sand, turquoise, then deep blue, the
+    seabed's colour one long eased ramp by the depth, so no band or knee shows. Nothing is cut square: the waves'
+    phase is never wrapped along the coast (a wrap stepped the wave's reach across a fixed line); a river's bed
+    shallows into the seabed at its mouth and its colour and surface fade into the sea's (its stem runs on out into
+    the sea); a cliff's shadow on the seabed fades with the water's depth over it; and where the land comes nearer
+    the grid's edge than the field's reach, the seabed goes down to the deep plane and the shallows' colour carries
+    on across the edge. All shader maths and the heights: no pass, no texture.
 - **Layout** (`world.ts`: the old fixed island's, which the editable layout's default was drawn from: `npm run
   layout:default`; the live island reads the layout, docs/island-layout.md): まえ: the wide front beach with the island's only palms (three, out of the way: one at each of its outer corners and a
   young one by the water on the left; the palm beetles keep to them), plumeria at the
