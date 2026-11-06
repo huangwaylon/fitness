@@ -1,6 +1,6 @@
 // トレイル's always-loaded part (docs/hiking.md "Entry"): its sheet, a lazySheet (the chunk with the trails, the map's
 // light component and the sheet), and what the next opening shows. The leaf menu's トレイル pill opens the list;
-// another screen (りょこう's Seattle hike cards) opens one trail:
+// another screen (りょこう's hike days) opens one trail:
 //   openTrails()                  the list
 //   openTrail('lake-22')          that trail's view (‹ goes to the list)
 // (a Seattle hike's old trail-map link to its slug: lib/hiking/trails.ts hikeSlugOf)
@@ -18,7 +18,7 @@ export function openTrails(): void {
   hiking.show();
 }
 
-/** The classic Seattle guide's hike cards: `openTrail(hikeSlugOf(day.hike.gpx))` (classic/CDay.svelte). */
+/** りょこう's hike days: `openTrail(hikeSlugOf(day.hike.gpx))` (travel/DayCard.svelte). */
 export function openTrail(slug: string): void {
   hikingAsk.slug = slug;
   hikingAsk.n++;

@@ -36,14 +36,19 @@ export function clip(s: string, max: number): string {
 
 /** The packing categories' NH items (docs/design.md "Unified kit": the only NH art in the sheets), by the guide's icon
  *  name: 書類 the scrapbook, 服装 the pocket tee, 登山 the lace-up boots, 電子機器 the SLR camera, 手土産 the present,
- *  基本 the toothbrush and cup. */
+ *  基本 the toothbrush and cup, 海遊び the goggles, キャンプ the sleeping bag, 現地調達 the shopping basket, Hiking the
+ *  trekking shoes. */
 const CAT_ART: Record<string, string> = {
   file: 'finds/items/scrapbook',
   shirt: 'finds/items/pocket-tee',
   mountain: 'finds/items/lace-up-boots',
   camera: 'finds/items/slr-camera',
   gift: 'deco/present',
-  pin: 'finds/items/toothbrush-and-cup-set'
+  pin: 'finds/items/toothbrush-and-cup-set',
+  waves: 'finds/items/goggles',
+  tent: 'finds/items/sleeping-bag',
+  cart: 'finds/items/shopping-basket',
+  footprints: 'finds/items/trekking-shoes'
 };
 
 /** A category's icon: an emoji the guest picked as itself; a guide's name its NH item (CAT_ART), else drawn by the

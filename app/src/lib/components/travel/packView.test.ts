@@ -77,13 +77,13 @@ describe('packView', () => {
     expect([packMayEdit('A', gc.cat), packMayEdit('G', gc.cat)]).toEqual([true, false]);
   });
 
-  it('icons: the six categories their NH item (on disk), other guide names drawn by the kit, an emoji as itself, anything else a bag', () => {
-    const arts = ['file', 'shirt', 'mountain', 'camera', 'gift', 'pin'].map((n) => catIcon(n));
+  it('icons: the guides\' categories their NH item (on disk), other guide names drawn by the kit, an emoji as itself, anything else a bag', () => {
+    const arts = ['file', 'shirt', 'mountain', 'camera', 'gift', 'pin', 'waves', 'tent', 'cart', 'footprints'].map((n) => catIcon(n));
     expect(arts.map((a) => ('art' in a ? a.art : null))).toEqual([
-      'finds/items/scrapbook', 'finds/items/pocket-tee', 'finds/items/lace-up-boots', 'finds/items/slr-camera', 'deco/present', 'finds/items/toothbrush-and-cup-set'
+      'finds/items/scrapbook', 'finds/items/pocket-tee', 'finds/items/lace-up-boots', 'finds/items/slr-camera', 'deco/present', 'finds/items/toothbrush-and-cup-set',
+      'finds/items/goggles', 'finds/items/sleeping-bag', 'finds/items/shopping-basket', 'finds/items/trekking-shoes'
     ]);
     for (const a of arts) if ('art' in a) expect(existsSync(join(STATIC, `art/${a.art}.webp`)), a.art).toBe(true);
-    expect(catIcon('waves')).toEqual({ icon: 'shopping-bag' });
     expect(catIcon('car')).toEqual({ icon: 'car' });
     expect(catIcon('no-such-icon')).toEqual({ icon: 'shopping-bag' });
     expect(catIcon('🍙')).toEqual({ emoji: '🍙' });
