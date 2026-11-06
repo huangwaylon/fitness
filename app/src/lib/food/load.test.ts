@@ -106,6 +106,20 @@ describe('loadFoodDb', () => {
     expect(searchFoods(db, '4902102', 5).length).toBeGreaterThan(0); // a barcode prefix still finds products
   });
 
+  it('one row per food in its states: never two items of one vg; the default shown unless a word picks another', () => {
+    const twice: string[] = [];
+    for (const q of ['豚ロース', '鶏もも', 'スパゲッティ', 'うどん', 'じゃがいも', 'さけ', 'ブロッコリー', 'まぐろ', 'えだまめ', 'さつまいも']) {
+      const vgs = searchFoods(db, q, 60).map((x) => x.vg).filter(Boolean);
+      if (new Set(vgs).size !== vgs.length) twice.push(q);
+    }
+    expect(twice).toEqual([]);
+    const first = (q: string) => searchFoods(db, q, 5).find((x) => x.vg);
+    expect(first('豚ロース')?.name).toBe('豚ロース 脂身つき 生');
+    expect(first('豚ロース 焼き')?.st).toBe('焼き');
+    expect(first('スパゲッティ')?.st).toBe('ゆで');
+    expect(searchFoods(db, '焼きいも', 1)[0].name).toBe('焼きいも');
+  });
+
   it('ranks a score at a time exactly as one sort of every hit did (search.ts before the top-n ranking)', () => {
     const groupOf = (id: string) => db.verify?.byId[id];
     const sortAll = (query: string, limit: number): Item[] => {
@@ -121,9 +135,19 @@ describe('loadFoodDb', () => {
         const r = rep.get(g);
         if (!r || (r.pen > 0 && e.pen <= 0)) rep.set(g, e);
       }
+      // a food in its states: its best hit, its default at a tie
+      const state = new Map<string, { e: Entry; s: number }>();
+      for (const h of hits) {
+        const v = h.e.it.vg, r = v && state.get(v);
+        if (v && (!r || (h.s === r.s && h.e.it.id === v && r.e.it.id !== v))) state.set(v, h);
+      }
       const seen = new Set<string | number>();
       const out: Item[] = [];
-      for (const h of hits) {
+      for (const h0 of hits) {
+        const v = h0.e.it.vg;
+        if (v && seen.has(`v:${v}`)) continue;
+        const h = v ? state.get(v)! : h0;
+        if (v) seen.add(`v:${v}`);
         const g = groupOf(h.e.it.id);
         const e = g === undefined ? h.e : rep.get(g)!;
         const k = `${e.n}|${e.it.kcal}`;

@@ -49,6 +49,7 @@
   "food.searchHint": "れい：ごはん、おにぎり",
   "food.clear": "けす",
   "food.recent": "さいきん",
+  "food.st.more": "ほか {n}",
   "food.recentEmpty": "たべたものが ここに ならぶよ",
   "food.loading": "よみこみちゅう…",
   "food.loadFail": "データを よみこめませんでした（オフライン？）",

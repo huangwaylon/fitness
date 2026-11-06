@@ -104,6 +104,17 @@ export function glossOf(it: Item & { gloss?: string }, name = it.name): string |
   return it.gloss && says(it.gloss, name, readings) ? it.gloss : null;
 }
 
+/** A state's word as a MEXT name writes it (its chip says レンジ, いため). */
+const STATE_WORD: Record<string, string> = { レンジ: '電子レンジ調理', いため: '油いため' };
+/** A food's name without its state, for its one row (「豚ロース 脂身つき 生」 → 豚ロース 脂身つき, 「うどん（ゆで）」 →
+ *  うどん); a name with no state word of its own (焼きいも, ゆで卵, バナナ) as it is. */
+export function stemName(it: Pick<Item, 'name' | 'st'>): string {
+  if (!it.st) return it.name;
+  const w = STATE_WORD[it.st] ?? it.st;
+  for (const end of [` ${w}`, `（${w}）`]) if (it.name.endsWith(end) && it.name.length > end.length) return it.name.slice(0, -end.length);
+  return it.name;
+}
+
 /** A snapshot's values as an item's (fibre and alcohol only when known). */
 function snapValues(f: FoodSnap): Pick<Item, 'kcal' | 'p' | 'f' | 'c' | 'salt' | 'fib' | 'alc'> {
   return { kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, ...(typeof f.fi === 'number' ? { fib: f.fi } : {}), ...(typeof f.al === 'number' ? { alc: f.al } : {}) };

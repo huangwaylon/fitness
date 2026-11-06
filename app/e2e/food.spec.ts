@@ -766,9 +766,30 @@ test('the amount: the compact card while there are no pictures, its 「これは
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
   await sheet(page).locator('[data-food-q]').fill('キャベツ');
-  await sheet(page).locator('[data-food-results] button.it', { hasText: 'キャベツ 生' }).first().click({ timeout: 15_000 });
+  // (one row for キャベツ in its states: 生 shown)
+  await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^キャベツ(✓|$)/ }) }).click({ timeout: 15_000 });
   await expect(head.locator('h3')).toHaveText('キャベツ 生');
   await expect(head.locator('[data-food-about]')).toHaveCount(0); // an everyday food: no line
+});
+
+// A food in its states (food data's vg/st: 豚ロース 脂身つき 生 · 焼き · ゆで) is one row: its name without the state,
+// the state its kcal is for filled and the others after it; a word of the query picks the state.
+test('search: one row per food in its states, the state filled; 豚ロース 焼き shows 焼き; 焼きいも its own name', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  const rows = sheet(page).locator('[data-food-results] button.it');
+  await sheet(page).locator('[data-food-q]').fill('豚ロース');
+  const loin = rows.filter({ has: page.locator('.nm', { hasText: /^豚ロース 脂身つき$/ }) });
+  await expect(loin).toHaveCount(1, { timeout: 15_000 });
+  await expect(loin.locator('[data-state]')).toHaveText('生');
+  await expect(loin.locator('.st')).toHaveText(['生', 'ゆで', '焼き']); // the shown one, then the rest in process order
+  await expect(rows.filter({ hasText: /豚ロース 脂身つき (焼き|ゆで)$/ })).toHaveCount(0);
+  await sheet(page).locator('[data-food-q]').fill('豚ロース 焼き');
+  await expect(rows.first().locator('[data-state]')).toHaveText('焼き');
+  await sheet(page).locator('[data-food-q]').fill('焼きいも');
+  await expect(rows.first().locator('.nm')).toHaveText(/^焼きいも(✓|$)/);
+  await expect(rows.first().locator('[data-state]')).toHaveText('焼き');
+  expect(await overflowOf(page)).toEqual([]);
 });
 
 test('category tiles: the night’s tint is darker than the day’s', async ({ page }) => {
