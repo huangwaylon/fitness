@@ -15,7 +15,7 @@ import type { Answer } from './progress.ts';
 export const FRIEND_LEVELS = [10, 30, 70, 150, 300] as const;
 export const FRIEND_MAX = FRIEND_LEVELS.length;
 /** Each level's reward (index: level − 1). */
-export const REWARDS = ['greeting', 'letter', 'call', 'frame', 'photo'] as const;
+const REWARDS = ['greeting', 'letter', 'call', 'frame', 'photo'] as const;
 export type Reward = (typeof REWARDS)[number];
 
 /** An answer's points: understood on the first listen 2, after a replay 1, missed 0 (never below). */

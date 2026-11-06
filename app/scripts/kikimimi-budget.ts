@@ -15,7 +15,7 @@ const HUB_MAX = 25 * 1024;
 const PAGE_MAX = 15 * 1024;
 const PAGES: [src: string, max: number][] = [
   ['hub/Hub', HUB_MAX], ['asobu/Asobu', PAGE_MAX], ['mode/ModeDetail', PAGE_MAX], ['Progress', PAGE_MAX], ['settings/KikiSettings', PAGE_MAX],
-  ['path/IslandPath', PAGE_MAX], ['path/UnitPage', PAGE_MAX], ['path/PhraseZukan', PAGE_MAX],
+  ['path/IslandPath', PAGE_MAX], ['path/UnitPage', PAGE_MAX], ['zukan/KikiZukan', PAGE_MAX], ['zukan/Words', PAGE_MAX], ['zukan/Voices', PAGE_MAX], ['zukan/Friends', PAGE_MAX], ['zukan/Stamps', PAGE_MAX],
   ['story/StoryFrame', PAGE_MAX], ['story/StoryList', PAGE_MAX], ['taikai/TaikaiLobby', PAGE_MAX], ['taikai/TaikaiPlay', PAGE_MAX], ['taikai/TaikaiResults', PAGE_MAX],
   ['onboarding/Welcome', PAGE_MAX], ['onboarding/Placed', PAGE_MAX]
 ];

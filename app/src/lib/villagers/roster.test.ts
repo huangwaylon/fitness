@@ -95,8 +95,8 @@ describe('villager roster', () => {
       .filter((f) => /^\s*import (?!type )[^;]*from '(#lib\/villagers|\.)\/roster\.ts'/m.test(readFileSync(join(SRC, f), 'utf8')))
       .sort();
     expect(importers).toEqual([
-      'lib/components/dev/Gallery.svelte', 'lib/components/kikimimi/scene/stage.ts', 'lib/components/look/LookPage.svelte', 'lib/components/look/VillagerGrid.svelte', 'lib/components/panel/SettingsSheet.svelte',
-      'lib/kikimimi/speech.ts', // the audio script's and tests' only (no client code imports it)
+      'lib/components/dev/Gallery.svelte', 'lib/components/kikimimi/scene/stage.ts', 'lib/components/kikimimi/zukan/Friends.svelte', 'lib/components/look/LookPage.svelte', 'lib/components/look/VillagerGrid.svelte', 'lib/components/panel/SettingsSheet.svelte',
+      'lib/kikimimi/speech.ts', // the audio script's, the tests' and ききみみ's sheet (zukan.ts: a voice's items)
       'lib/kikimimi/units.ts', // the compiler's and tests' only (compile.ts: the units' manifests)
       'lib/villagers/search.ts'
     ]);
