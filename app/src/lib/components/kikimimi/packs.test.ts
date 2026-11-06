@@ -64,13 +64,16 @@ describe('PackStore', () => {
     expect(n.asked.filter((u) => u.endsWith('/big.pak')).length).toBe(2);
   });
 
-  it('prefetch asks for each pack once, in order', async () => {
-    const n = net({ x: 10, y: 10 });
+  it('prefetch asks for each pack once, the first alone (the rest once it is in)', async () => {
+    const n = net({ x: 10, y: 10, z: 10 });
     const s = new PackStore(n.get);
-    s.prefetch(['x', 'y', 'x']);
+    s.prefetch(['x', 'y', 'x', 'z']);
+    expect(n.asked.map((u) => u.split('/').at(-1))).toEqual(['x.pak']);
+    await s.pack('x');
+    await vi.waitFor(() => expect(n.asked.map((u) => u.split('/').at(-1))).toEqual(['x.pak', 'y.pak', 'z.pak']));
     s.prefetch(['y']);
-    await s.pack('y');
-    expect(n.asked.map((u) => u.split('/').at(-1))).toEqual(['x.pak', 'y.pak']);
+    await s.pack('z');
+    expect(n.asked).toHaveLength(3);
   });
 });
 

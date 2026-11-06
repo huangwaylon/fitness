@@ -929,11 +929,16 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   the shell and the record's IndexedDB under one origin, WebKit may evict all of it at once. A cache from before the
   index is counted whole once (each file used now, in the cache's order); a file put as the worker was stopped is
   counted the next time it starts.
+- **Listen cache** (`island-listen-v1`: ききみみ's audio packs, `/audio/listen/<pack>.<hash>.pak`, docs/kikimimi.md
+  "Audio"): cache first on first use, never revalidated (the hash is in the name), outliving builds; the room's
+  bounded-by-bytes code (`boundedCache` in the worker: an index of each pack's bytes and last use in the cache), with
+  `listenEvict`: a pack's older version (another hash) once unused for 10 minutes, then the least recently used past
+  30 MB, never a pack used in the last 10 minutes (a game in progress). Range requests pass through.
 - **Runtime:** fonts, villager, critter, find and present art cache-first on first use; audio (`island-audio-v1`)
   cache-first and never revalidated: every audio URL carries its file's content hash (`?v=`, `lib/sound/manifest.ts`;
   `/audio/*` is served immutable, `scripts/headers.ts`), so a re-cut file is a new URL. An LRU per class keeps the 3
   most recent music files (the hours, the event music, the rooms), K.K.'s 2 (a run of songs never pushes the hours
-  out), ききみみ's 24 (`/audio/kikimimi/`: a quiz's clips never push the effects out) and 8 of the rest (effects, beds: an old version ages out); a hit is re-put only when it isn't its class's
+  out) and 8 of the rest (effects, beds: an old version ages out; a loose ききみみ clip from before the packs with them); a hit is re-put only when it isn't its class's
   newest. Range requests pass through. The food data (`/food/*.json`, `island-food-v1`) cache-first by its `?v=<index.version>`, stored after it answers; `index.json` from the network within 2.5 s, else (or offline) its cached copy. A newer `index.json` waits beside the cached one until every file it names is cached; only then does it replace it and the older version's files go, so going offline mid-update leaves the last whole version, never a mix. Other GETs: this version's cache, the previous one, then the
   network. The relay is cross-origin and always live.
 
