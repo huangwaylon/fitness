@@ -109,11 +109,14 @@ test('a slice: 期限切れ only, its heading counting its rows; the chips stay 
   await expect(sheet(page).locator('[data-wed-group-tally]')).toHaveAttribute('data-wed-group-tally', '0/1');
   // the chips stay pinned as the plan scrolls
   await sheet(page).locator('[data-wed-filter="all"]').click();
-  await sheet(page).evaluate((el) => el.scrollTo({ top: 600 }));
+  expect(await sheet(page).evaluate((el) => (el.scrollTo({ top: 600 }), el.scrollTop))).toBeGreaterThan(0);
+  // the filters' band at the scroller's top (its chip inside it, under the band's padding)
+  const top = (await sheet(page).boundingBox())!.y;
+  await expect.poll(async () => Math.abs((await sheet(page).locator('.filters').boundingBox())!.y - top)).toBeLessThan(6);
   const chip = await sheet(page).locator('[data-wed-filter="soon"]').boundingBox();
-  const top = await sheet(page).boundingBox();
   expect(chip!.height).toBeGreaterThanOrEqual(32);
-  expect(Math.abs(chip!.y - top!.y)).toBeLessThan(10);
+  expect(chip!.y - top).toBeGreaterThanOrEqual(0);
+  expect(chip!.y - top).toBeLessThan(20);
 });
 
 test('reopened, the plan is すべて again', async ({ page }) => {
