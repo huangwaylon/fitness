@@ -3,7 +3,7 @@
 // asked; anyone stops it for everyone; a phone opening mid-song comes in where the song is; one that can't hear it
 // (ミュージック off) still sees it, with 🔇. The demo's players are tabs of one browser (sync/live-local.ts plays the
 // room). Never listened to: the music deck's key and position come from window.__music (in the demo).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
 
 type Now = { key: string | null; pos: number | null };

@@ -2,7 +2,7 @@
 // own pieces: `sc` u and v), each arranged by its owner alone (the tent's by all three), anyone may come in; and each
 // owner changes their home's look (いえを かえる: NH's houses, the tents), which every phone's island holds live. The demo's
 // players are tabs of one browser (`?demo&as=B`), as two phones over the relay.
-import { expect, test, type Browser, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { newRecord } from './record.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -195,7 +195,7 @@ test('ウェイ can’t arrange うめ’s house: no tray in there, and the reco
   const page = await phone(browser, rec, 'A', 'B');
   await expect(page.locator('[data-tent-edit-open]')).toHaveCount(0);
   await expect(page.locator('[data-home-look]')).toHaveCount(0);
-  const at = Date.now();
+  const at = rec.now();
   expect(rec.event('A', 'decor', { sc: 'u', id: 'dpiece123', at, item: 'f4081', x: 2, z: 3, f: 0, p: at })).toEqual({ ok: false, error: 'forbidden' });
   expect(rec.decor()).toEqual([]);
   await page.context().close();

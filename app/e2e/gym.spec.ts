@@ -2,7 +2,7 @@
 // down stays (a reload) and is on the other phone at once; a tap on it out of the mode walks my villager up to it and
 // it runs on it (the 3D villager's 'run'), and the other phone sees it running too (the walk is all the relay carries:
 // standing still on its spot is on it, island/sitting.ts).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 import { geo, openNear, tapOn } from './island.ts';
 import { HELD_SCALE } from '../src/lib/components/world3d/benchBar.ts';

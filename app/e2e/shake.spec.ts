@@ -3,7 +3,7 @@
 // a wasp nest: its wasps charge the villager on that side; a tap on them in time nets one (NH's catch line), else they
 // sting (a fright, a sweat drop and NH's swollen eye on the villager's own eye). `?shake=nest|branch|bagworm|spider`
 // forces the next shake's drop (`wood`: a piece of wood, into my pocket for the shop). Nothing changes ベル.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { is3d, quiet } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

@@ -3,7 +3,7 @@
 // nudge). They stand at centre stage (the layout's plaza, a clear patch of lawn behind the villagers, seen as the island
 // opens at まえ), Gulliver on the front beach, never under a control; a tap gives a line (an introduction first), no
 // trading, no ベル.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { camTo, controlsUnder, geo, offFrom, quiet, tapFigure } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

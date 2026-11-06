@@ -2,7 +2,7 @@
 // when it's come at and charges if you keep coming, and once it settles a tap nets it; a mole cricket chirps under a
 // mound and a tap digs it up; a tap on my villager now and then sends a flea hopping off it; the stink bugs on the
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { geo, quiet } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/components/island/critters.ts';

@@ -2,7 +2,7 @@
 // at 0, colouring with progress; once met it falls to the ground (once); a tap picks it up and it stays gone for the
 // Tokyo day (this phone's fruit-day); all four met, the canopy glints. Picking up never changes ベル. The demo's progress follows ?date= (no sync before 06:40; most
 // goals settled by 23:00).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });

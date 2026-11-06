@@ -2,7 +2,7 @@
 // my villager there along nav.ts's way (never through the water), a cream ring marks the spot, the walk stays for the
 // day, the camera stays where the finger left it; a tap on the water acts in place (no walk): a ripple. The tent's door
 // is the one exception: my villager walks up to it, then goes in.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { camTo, campDoor, geo, lawnTap, openNear, tapOn } from './island.ts';
 import { mkdirSync } from 'node:fs';
 

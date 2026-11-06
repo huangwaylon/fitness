@@ -5,7 +5,7 @@
 // open: iOS sends no click after a drag, so the next real tap was eaten), a tap on water with no shadow near it (a
 // ripple only), a tap on the bank of a narrow stream, a tap while my villager walks, a tap on my villager with the line
 // out (its squish, no reel).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import RECORD from '../src/lib/layout/record-2026-11-03.json' with { type: 'json' };
 import { is3d, lawnTap, reelOnBite, toTheWater } from './island';
 import { defaultLayout, withChanges } from '../src/lib/layout/model.ts';

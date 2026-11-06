@@ -1,7 +1,7 @@
 // The island's tap areas over the 3D canvas (docs/design.md "World"): one depth order for everything (behind a tree a
 // villager's is hidden by it; just in front it covers the trunk while the canopy covers its head; a building likewise),
 // and taps land on the tap areas far up near the horizon.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { geo, type Geo } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });

@@ -4,7 +4,7 @@
 // players over the demo's relay (`?demo` and `?demo&as=B`): the host's mode reaches B's invite and lobby, both climb, the
 // same points on each phone. The logic tier: no clip has to sound (`?kikimimi=fast`: a short time limit; the top rung's reveal waits for つぎへ, the lower ones move on after 3 s). Screenshots to
 // /tmp/kikimimi-shots/inc7/ with KIKI_SHOTS=1.
-import { expect, test, type BrowserContext, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

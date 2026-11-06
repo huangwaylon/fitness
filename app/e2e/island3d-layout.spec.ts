@@ -2,7 +2,7 @@
 // layout's (terrain.ts buildGround), its objects placeObjects' (one model an id: the rock is drawn once), the homes and
 // NH's bridges and stairs stood on it (engine.ts placeGroup), the camera's far end at ウェイ's door; the もようがえ is
 // the layout's own (layoutEdit/IslandEdit.svelte over this camera), a bench put down is drawn where it went.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

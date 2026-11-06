@@ -2,7 +2,7 @@
 // relay's real code), a member sets their own and the partner's sex, birthday and BMI standard; the partner's phone,
 // opening later, has them; the guest's phone shows only its own profile, and the record never sends it a member's.
 // The BMI card (けんこう → からだ) says the average's category by the standard. Made-up values only.
-import { expect, test, type Browser, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page, PINNED_DATE } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 
@@ -22,9 +22,9 @@ async function settings(browser: Browser, rec: Rec, who: 'A' | 'B' | 'G') {
   return { page, card };
 }
 
-/** The age on the Tokyo day now, as the app counts it. */
+/** The age on the phones' (pinned) day, as the app counts it. */
 function ageNow(birth: string): number {
-  const today = new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
+  const today = PINNED_DATE.slice(0, 10);
   const y = +today.slice(0, 4) - +birth.slice(0, 4);
   return today.slice(5) >= birth.slice(5) ? y : y - 1;
 }

@@ -2,7 +2,7 @@
 // but some aren't reflected: trees or bushes are sometimes missing"): a default oak moved, a bush placed, a copy pasted
 // and taken back with ⌘Z, each reaching the other phone (the demo's other tab, over the relay) where the editor put
 // it and drawn there as a model: never missing (a plain oak's look, `oak`, had no model: it stood as nothing).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { is3d } from './island';
 
 test.use({ viewport: { width: 1440, height: 900 } });

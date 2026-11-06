@@ -3,7 +3,7 @@
 // 33 ms, long tasks, the projector's style writes per frame), nothing pending once still, and screenshots of each stop
 // (まえ, おく) at 390 × 844 and 320 × 568, by day, at night, in rain and in snow, into /tmp/world-build/.
 // Numbers go to /tmp/world-build/perf.json.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
 const OUT = '/tmp/world-build';

@@ -1,7 +1,7 @@
 // The visitors' life (docs/design.md "Visitors: life"): every visitor is NH's own 3D model on its spot, Gulliver sleeps face down until the fifth nudge, the ones who roam stroll and come back to their
 // spot before a line (the balloon anchors to them there), they arrive from the campsite and leave to it (or by their
 // own way), and the partner comes over to say hello to a visitor near home.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { camTo, campDoor, geo, is3d, sawIt, stageCam, tapFigure, watchFor } from './island.ts';
 import { hudMenu } from './hud.ts';
 

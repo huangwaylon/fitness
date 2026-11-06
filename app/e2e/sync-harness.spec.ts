@@ -6,7 +6,7 @@
 //   npm run e2e -- sync-harness             the demo's two tabs (BroadcastChannel: no network)
 //   RELAY_E2E=1 npm run e2e -- sync-harness --workers=1   two browser contexts against the test relay (relay/.smoke-keys;
 //                                                         one at a time: each person's key opens one socket)
-import { expect, test, type Browser, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { geo, lawnTap, oku, tapOn, quiet } from './island.ts';
 import { sayOwn } from './say.ts';
 import { existsSync, readFileSync } from 'node:fs';
@@ -133,6 +133,8 @@ const settledAs = (x: Page, y: Page) =>
 const ringed = (p: Page) => p.locator('[data-ring="mine"]').first().waitFor({ state: 'attached', timeout: 300 }).then(() => true, () => false);
 
 test.skip(!!RELAY && !existsSync(KEYS_FILE), 'RELAY_E2E needs relay/.smoke-keys');
+// against the real relay: its socket is the network (e2e/fixtures.ts), and its day is today's (no pinned clock)
+if (RELAY) test.use({ network: 'any', ownClock: true });
 // every phone's context goes when the test does, passed or not (the relay's room holds 8 sockets at most)
 test.afterEach(async ({ browser }) => {
   for (const c of browser.contexts()) await c.close();

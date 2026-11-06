@@ -1,6 +1,6 @@
 // ごほうびの きろく (at the very bottom of ごほうび, the panel; the old /jar link opens it): the buys, folded under a
 // disclosure, newest first, each erasable by either of us (asked first, はい / いいえ); the ベル go back. On `?demo` (no backend, no key). Screenshots at 375x667 and 390x844 (test-results/purchases-*.png).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();

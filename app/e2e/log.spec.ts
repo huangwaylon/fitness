@@ -3,7 +3,7 @@
 // (relay/src/log.ts on node:sqlite) keeps it scrubbed with the phone's role, its session and its build, beside the
 // app's open and the `/api` requests' ids. With E2E_TEST_RELAY=1 (and relay/.smoke-keys) the batch goes to the test
 // relay instead, and the spec reads it back with the CLI (`npm run logs -- --test --sid …`), as an investigation would.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures.ts';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { StoreCore } from '../../relay/src/store.ts';

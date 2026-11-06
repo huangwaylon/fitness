@@ -1,7 +1,7 @@
 // NH's holiday hosts in the visitor slot (docs/design.md "Holiday hosts"), each on its Nookipedia date rule
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day,
 // Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { camTo, controlsUnder, fossilOnScreen, reelOnBite, stageCam, tapFigure, tapOn, toTheWater } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { hudBells, hudMenu } from './hud.ts';

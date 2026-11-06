@@ -1,7 +1,7 @@
 // The seasonal preview (docs/design.md "Seasonal preview"; ui-state/preview.svelte.ts): せってい's きせつ shows another day's
 // look on this phone for today: an event, a season, the weather, the time of day. The HUD's chip says it's on and a
 // tap on it goes back; it lapses with the day. Read by state (data-* and <html>'s data-tod/-season), not pixels.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 const chip = (page: Page) => page.locator('[data-preview-chip]');

@@ -1,6 +1,6 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { camTo, geo, lawnTap, oku } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

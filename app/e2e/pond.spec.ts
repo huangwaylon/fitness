@@ -3,7 +3,7 @@
 // the water near the shadow casts, the fish nibbles and bites, a tap on the bite catches it with NH's catch line, and
 // the first of each is a ずかん find. `?critter=pond|river|mouth|clifftop|<fresh fish id>` (with ?demo) brings one now;
 // the camera goes to where it lives (window.__world.go).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';

@@ -2,7 +2,7 @@
 // place (my villager turns to it, the tool shows at the target) and a catch is its plate, my villager where it stood; the partner's
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { lawnTap, openNear, plateOnly, quiet, sawIt, watchFor } from './island.ts';
 import { hudMenu, openRewards } from './hud.ts';
 

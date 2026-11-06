@@ -4,7 +4,7 @@
 // 30–52 px. Held up here (__world3d.pinBite: a fish's bite lasts a second) and read as drawn, against the head on
 // screen: at zoom 1, 2 and 3.2, panned up the island and sideways, standing and seated on the front bench. The real
 // bite's is fishing3d.spec's (and the partner's, on the other phone, fish-sync.spec's).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { geo } from './island.ts';
 import { overHead, type Mark } from './biteMark.ts';
 

@@ -1,7 +1,7 @@
 // Celeste and meteor showers (docs/design.md "Celeste and meteor showers"): about one night in ten, at most one a week,
 // seeded by the week (2026-11-12 is one), Celeste comes to watch from 20:00 to 04:00 and shooting stars cross every
 // 3–8 s; each wish that night is a star fragment the next morning (the season's zodiac one likelier). No ベル.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures.ts';
 import { camTo, controlsUnder, is3d, stageCam, tapFigure } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

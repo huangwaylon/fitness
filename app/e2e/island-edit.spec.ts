@@ -3,7 +3,7 @@
 // up, dragged a tile at a time and put down again; each a layout op the other phone holds at once. Here over the
 // editor's phone view without WebGL (`preview=0`: the plan; CI draws WebGL in software), the stage the 3D island
 // gives it otherwise.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 

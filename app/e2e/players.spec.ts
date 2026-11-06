@@ -2,7 +2,7 @@
 // model on the island (world3d/villagers.ts), in the tent and in the museum, and a change of look (on leaving すがた)
 // swaps it where they stand, the old one drawn till the new one is in. On a record of its own (e2e/record.ts), in the
 // logic tier's way (nothing drawn; the scenes and their hooks run).
-import { expect, test, type Browser, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';

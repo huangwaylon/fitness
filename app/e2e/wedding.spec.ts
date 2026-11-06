@@ -1,7 +1,7 @@
 // The wedding countdown (docs/design.md "Wedding countdown"): on the milestone days before 2027-10-08 Reese and Cyrus
 // visit the centre stage with a heart float and count down; on the day, confetti, the wedding pose and fireworks at
 // night; every June Sunday NH's wedding arch stands behind the centre stage. Nothing over a control; no ベル.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures.ts';
 import { camTo, controlsUnder, geo, is3d, offFrom, sawIt, stageCam, tapFigure, watchFor } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

@@ -1,7 +1,7 @@
 // A speech balloon through a camera move (docs/design.md "Dialogue"): mid-pinch or mid-scroll the balloon stays whole
 // (its cream box and tail drawn, not only its text: the user's bug, "the speech bubble disappears, leaving only the text,
 // until we let go") and by its speaker. Shared by bubbles.spec.ts, say.spec.ts and museum.spec.ts.
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page } from './fixtures.ts';
 
 type Pt = [number, number];
 /** Touch fingers on the island (synthetic touch pointers: its gestures never capture them): each frame the fingers'

@@ -4,7 +4,7 @@
 // two, one villager a seat; a tap on the ground gets up and walks there, on both tabs; two taking one seat at the same
 // moment, the earlier sit keeps it (sitting.ts yieldsSeat). The hammock is lain in. A tap on
 // another of the island's things (the pump) still answers where it stands: nobody walks.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { geo, openNear, quiet, tapOn } from './island.ts';
 import { hudMenu } from './hud.ts';
 

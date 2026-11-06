@@ -2,7 +2,7 @@
 // the morning after a wish, mushrooms in November. A tap picks one up with NH's caption; the first of each shell, fossil
 // and fragment is a ずかん `find` (mushrooms are cosmetic). None of it changes ベル, opens a sheet or navigates. The day
 // items derive from ?date= (deterministic); ?find= forces a bottle, this morning's fragments or the rare mushroom.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fossilOnScreen, is3d, quiet, settled, step } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

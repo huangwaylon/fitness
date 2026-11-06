@@ -7,11 +7,22 @@ import { createSubscriber } from 'svelte/reactivity';
 
 let offset: number | null = null;
 
+/** The e2e's pinned scene clock (`localStorage['e2e.date']`, set by playwright.config.ts for every test; docs/ops/
+ *  testing.md "Hermetic"): a `?date=` for a load that has none, so no test reads the real day, hour or seeded sky. A
+ *  live phone never sets it. */
+function e2eDate(): string | null {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage.getItem('e2e.date');
+  } catch {
+    return null;
+  }
+}
+
 function init(): number {
   if (offset !== null) return offset;
   offset = 0;
   if (typeof location === 'undefined') return offset;
-  const q = new URLSearchParams(location.search).get('date');
+  const q = new URLSearchParams(location.search).get('date') ?? e2eDate();
   if (q) {
     try {
       offset = parseInstant(q) - Date.now();

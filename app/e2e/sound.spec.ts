@@ -1,6 +1,6 @@
 // Sound in the built app (docs/design.md "Engine lifecycle", "Taps"), in Chrome with an instrumented
 // media element and AudioContext.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { quiet } from './island.ts';
 import { fromMenu } from './hud.ts';
 

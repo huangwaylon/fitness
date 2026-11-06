@@ -2,7 +2,7 @@
 // less what I sold) and かう (the day's stock), my かいがら; a bought piece in my もようがえ; the guest's pocket and
 // かいがら its own; overselling and overspending refused. On `?demo` (no backend): the demo's events in localStorage, as
 // a catch writes them. In by its door and back out: positions.spec (both islands).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';

@@ -3,7 +3,7 @@
 // ground, a drag moves it a tile at a time, a tap on the ground puts it there, red over the water, ✓ places it; a tap
 // picks a placed piece up to move, turn, put back or put away. Both players' tabs show the same island (the demo's
 // relay, as two phones over the real one), and it stays across a reload and for a tab opening later.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });

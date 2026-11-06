@@ -3,7 +3,7 @@
 // (from the eyes' own camera), the button again puts the room's camera back; the choice is kept on this phone, so
 // leaving and coming back in finds it as it was. A drag mid-walk turns the camera alone: the walk goes on to its spot,
 // the head stays where the finger left it.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { islandURL } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });

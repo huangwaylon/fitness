@@ -1,6 +1,6 @@
 // The 3D island in the specs: its being up (`is3d`: the island's hooks and its models loaded), its hooks (`w3`, window.__world3d: Island3D.svelte), and a tap on a DOM target only where it is that target's
 // (`tapOn`: in 3D the whole island is in view, so a villager or a visitor in front covers much of a small door).
-import { expect, type Locator, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from './fixtures.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
 export const BASE = process.env.BASE_PATH ?? '';

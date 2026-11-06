@@ -2,7 +2,7 @@
 // 🍑 Exercise or when the island is opened 06:00–08:00, clear of every control; a tap plays its tape (the `stretch`
 // cue) and both villagers and the visitor do the same three stretches together (~6 s); then the deck is gone for the
 // day on this phone. No ベル.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { is3d, w3 } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

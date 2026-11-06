@@ -1,6 +1,6 @@
 // Island care (docs/design.md "Island care"): weeds to pull, flowers to water (a hybrid now and then the next day), the
 // rock by the hedge. None of it changes ベル, opens a sheet or navigates; nothing sits over a control.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { geo } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 

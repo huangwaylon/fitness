@@ -2,7 +2,7 @@
 // a piece, a tap on another one doesn't take it (what I hold shakes its head, and the first few times the bar says
 // 「いまの かぐを おいてね」), a drag from another one turns the camera, a tap on the floor puts what I hold there, a long
 // press on another one puts what I hold down and takes that one, and a tap off the room puts it down.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 

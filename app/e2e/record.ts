@@ -2,7 +2,7 @@
 // (relay/src/store.ts StoreCore on node:sqlite, as relay/test does), so what a phone sends goes the real way (its queue,
 // the `events` batch, the record's permission and validation checks, the acks) and a phone opening later reads what
 // was kept. The room's socket is held shut: everything goes over the API.
-import type { BrowserContext } from '@playwright/test';
+import { pinnedClock, type BrowserContext } from './fixtures.ts';
 import { StoreCore } from '../../relay/src/store.ts';
 import { memSql } from '../../relay/test/sqlite.ts';
 
@@ -16,13 +16,19 @@ interface Sent { who: Who; type: string; data: Record<string, unknown>; ok: bool
 
 export function newRecord() {
   const db = memSql();
-  const store = new StoreCore({ sql: db.sql, tx: db.tx, keys: KEYS, now: () => Date.now(), notify: () => {} });
+  // the pinned time, the record's and its phones' devices' (e2e/fixtures.ts)
+  const clock = pinnedClock();
+  const store = new StoreCore({ sql: db.sql, tx: db.tx, keys: KEYS, now: clock.now, notify: () => {} });
   /** Every event sent, in order, with what the record said. */
   const sent: Sent[] = [];
+  let events = 0;
   return {
     sent,
+    /** The record's clock (ms): the phones' devices' too. */
+    now: clock.now,
     /** A context's phones paired as `who` on this record. */
     async pair(context: BrowserContext, who: Who) {
+      await clock.device(context);
       await context.addInitScript((key) => localStorage.setItem('island.key', key), KEY_OF[who]);
       await context.routeWebSocket(/\/room/, () => {});
       await context.route(`${RELAY}/**`, (route) => {
@@ -38,7 +44,7 @@ export function newRecord() {
     },
     /** An event straight to the record as `who`'s phone would send it: the record's reply. */
     event(who: Who, type: string, data: Record<string, unknown>) {
-      return store.handle({ key: KEY_OF[who], action: 'event', id: `e2e${sent.length}${Date.now().toString(36)}`, type, data }, 100);
+      return store.handle({ key: KEY_OF[who], action: 'event', id: `e2e${sent.length}-${++events}`, type, data }, 100);
     },
     /** The `pref` rows `who`'s phone gets (its snapshot, as the record filters it): [sender, data]. */
     prefs(who: Who): [Who, Record<string, unknown>][] {

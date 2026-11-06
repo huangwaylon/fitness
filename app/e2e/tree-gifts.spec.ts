@@ -3,7 +3,7 @@
 // it into that tree's furniture of the day (the plate's 「○○を てにいれた！」), counted in the ずかん's カタログ and placeable
 // in the tent (みつけた). Shared: the other phone sees it fall and, once opened, gone.
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { camTo, geo, type Geo, plateOnly, quiet } from './island.ts';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 

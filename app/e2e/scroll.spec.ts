@@ -3,7 +3,7 @@
 // nothing runs once it is still. At each end the HUD covers none of the key content: まえ the villagers and their goal
 // trees with a band of sea under the beach, おく the campsite. A tree's popup opens in screen space, wholly in view,
 // over the canopies when it fits, never dimmed at night.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { geo } from './island.ts';
 
 type W = { cam(): number; stops(): number[]; at(x: number, z: number): [number, number]; idle(): boolean; go(z: number): void };

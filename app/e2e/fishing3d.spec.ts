@@ -4,7 +4,7 @@
 // float under, the 「！」); a tap reels it in and the catch plate names it; the rod goes away. Missed, the fish gets
 // away and the float stays out till a tap reels it in. Where the 3D island draws the shadow and the float is where their
 // tap areas are (the DOM's nodes, placed through the same camera): a tap on what's drawn is a tap on it.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { camTo, geo, toTheWater } from './island.ts';
 import { markShown, overHead, type Mark } from './biteMark.ts';
 

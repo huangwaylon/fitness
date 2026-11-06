@@ -3,7 +3,7 @@
 // while something still holds its canvas), and the window's and document's listeners counted, after a forced GC
 // (Chromium's CDP, hence @chromium). Before the fixes: one more context a home picker opened (three's dispose listeners
 // on the cached home models held the picker's renderer), one more an /editor visit (and a document keydown listener).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { BASE } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

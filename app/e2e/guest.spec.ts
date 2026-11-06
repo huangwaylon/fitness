@@ -4,7 +4,7 @@
 // the members' activity and ベル but never a からだ figure, and nothing it may not do (a buy, an erase, a goal, the
 // island's もようがえ, つうしん); its catches go into the shared ずかん under its own name; its tent pieces reach
 // both members; and its villager is on the members' islands only while its app is open, moving only when it's moved.
-import { expect, test, type BrowserContext, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu, hudBells, hudMenu, openRewards } from './hud.ts';
 
 const VIEW = { width: 393, height: 659 };

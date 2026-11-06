@@ -4,7 +4,7 @@
 // marks and their key, a dialogue's on each line. A test hook (`__kiki.deck(ids)`, as にがて れんしゅう) deals the items.
 // The logic tier: the clips may or may not sound (headless, muted), the schedule is the relay clock's.
 // KIKI_SHOTS=1 writes the screenshot pass (393×852) into /tmp/kikimimi-shots/inc5/.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

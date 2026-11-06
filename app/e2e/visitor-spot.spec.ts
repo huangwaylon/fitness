@@ -2,7 +2,7 @@
 // puts down the plaza's mark (one on the island: the tray's item picks up the one there), a layout op every phone holds;
 // the visitors stand on it on both phones, move with it, and go back to the island's usual spot when it's taken away.
 // The editor's phone view without WebGL (`preview=0`), as island-edit.spec's.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { geo, offFrom } from './island.ts';
 import { GRID, TILE } from '../src/lib/layout/grid.ts';
 

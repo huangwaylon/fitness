@@ -2,7 +2,7 @@
 // the UI; a tap while one streaks across is a wish (a sparkle, a chime, a caption), and each wish is a star fragment on
 // the beach the next morning from 5:00. Fireworks on August Sundays and at New Year: bursts in the sky clear of the
 // UI, one more where the sky is tapped. `?shower` and `?fireworks` (with ?demo) start them now.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 /** The HUD menu's leaf (the cluster's right end). */

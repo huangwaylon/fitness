@@ -2,7 +2,7 @@
 // there dives (a splash): a slow sea creature is caught, a quick one darts off as a shadow and a second tap catches it,
 // or it gets away. Now and then the bubbles are NH's pearl. A ずかん find (kind 'sea'; the pearl a shell), never ベル.
 // `?sea=<id>|pearl` (with ?demo) brings a bubble spot at once and keeps it until dived.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { CHASE_MS, SEA } from '../src/lib/components/island/sea.ts';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';

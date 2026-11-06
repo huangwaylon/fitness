@@ -4,7 +4,7 @@
 // And the live bug (2026-11-05, the move to https://island-fund.pages.dev: a new origin, empty storage): a phone that
 // lost its own record of the day gets my claims back in the relay's replay; what I had opened lay there again on my
 // phone and a tap did nothing (my claim was the day's already: it can't be made twice). Now a claim, mine too, is gone.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { camTo, geo, openNear, quiet, type Geo } from './island.ts';
 import { hudMenu } from './hud.ts';
 import { layoutOpOf, mergeLayout, type LayoutEntry } from '../src/lib/contract/layout.ts';

@@ -2,7 +2,7 @@
 // the island (ui-state/boot.ts: the demo or a paired phone): a phone not paired yet goes to /pair without them.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { hudMenu } from './hud.ts';
 
 /** The 3D island's chunk in this build (the build's client manifest: chunks are named by hash). */

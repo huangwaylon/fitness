@@ -1,7 +1,7 @@
 // Seasonal touches in the built app (docs/design.md "Particles and events", "Pond"): snow on the campsite's tent
 // while snow lies on the ground (Dec 11 – Feb 24), petals floating on the pond in cherry-blossom week (Apr 1–10)
 // and maple leaves in maple week (Nov 16–25); none of it on an ordinary day.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { camTo, geo, is3d, oku, w3 } from './island.ts';
 import { hudMenu } from './hud.ts';
 

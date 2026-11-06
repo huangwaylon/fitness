@@ -2,7 +2,7 @@
 // island runs its game (its frames, the camera, the tap areas, the World's step) and makes no draw call; and the test
 // API that acts on the game by what it knows, not by pixels (e2e/island.ts): `tapThing` taps a model by its id where
 // the camera puts it, `settled` waits for the island at rest, `step` runs the page's clock (the engines' frames with it).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { lawnTap, settled, step, tapThing, w3 } from './island.ts';
 
 const Q = 'demo&date=2026-11-04T12:00&critter=none&visitor=none&rock=clonk&render=none';

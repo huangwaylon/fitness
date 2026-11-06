@@ -3,7 +3,7 @@
 // museum at x9 z18); the other phone sees it gone while it's in the shop, then come out there; a reload, or the next
 // day, finds it where it was, on both phones.
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { islandURL } from './island.ts';
 import { is3d, lawnTap, settled, tapOn } from './island';
 

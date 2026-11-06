@@ -1,5 +1,5 @@
 // Demo smoke test: buy, undo, the harvest recap, the ベル ledger (read-only), けんこう's goals, on `?demo` (no backend, no key).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudBells, hudMenu, openRewards, unfoldMenu } from './hud.ts';
 import { BASE, islandURL, lawnTap, quiet } from './island.ts';
 
