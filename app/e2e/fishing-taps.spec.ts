@@ -49,6 +49,9 @@ for (const layout of ['default', 'user'] as const)
         await open(page, { layout, fps, q: `&critter=${water === 'sea' ? 'fish' : water}` });
         await expect.poll(() => hooks(page, (h) => h.__fish.fish().map((f) => f.water)), { timeout: 15_000 }).toContain(water);
         const [x, y] = await toTheWater(page, water);
+        // (the ground under the finger: where the float must land. Not the shadow's spot read after the cast: it swims,
+        // and fish()[0] may be another water's; that was 21 flaky runs in a day, 2026-11-05)
+        const tapped = (await page.evaluate(([x, y]) => (window as unknown as Hooks).__world3d.ground(x, y), [x, y] as const))!;
         await page.touchscreen.tap(x, y);
         // (the river's lower reach and its mouth are one channel: a tap by a shadow at the seam may land in either)
         const ok = water === 'river' || water === 'mouth' ? ['cast in the river', 'cast in the mouth'] : [`cast in the ${water}`];
@@ -56,7 +59,6 @@ for (const layout of ['default', 'user'] as const)
         const l = (await line(page))!;
         expect(l).not.toBeNull();
         // where the tap was (pulled in off the bank a little at most), and on that water
-        const tapped = (await hooks(page, (h) => h.__fish.fish()))[0];
         expect(Math.hypot(l.x - tapped.x, l.z - tapped.z)).toBeLessThan(40);
         // the shadow notices the float and comes; it bites; the reel the moment it does
         await expect.poll(async () => (await line(page))?.fish ?? null, { timeout: 8000 }).not.toBeNull();
@@ -114,12 +116,23 @@ for (const layout of ['default', 'user'] as const)
     await toTheWater(page, 'river');
     const { min, max } = await hooks(page, (h) => h.__world3d.zoomRange());
     let casts = 0, far = 0;
-    const camZ = await page.evaluate(() => (window as unknown as { __world3d: { view(): { camZ: number } } }).__world3d.view().camZ);
     for (const k of [min, max]) {
-      const [mx] = await hooks(page, (h) => h.__world.mine());
-      await page.evaluate(([z, k, x]) => (window as unknown as Hooks).__world3d.go(z, k, x), [camZ, k, mx] as const);
+      // (each zoom framed on the river's shadow as toTheWater frames it, the shadow a little below the screen's middle:
+      // one camera z kept for both zooms, across my villager, zoomed in it now and then held two water points, "water
+      // on screen" failing in 2 of 3 runs at 6 workers)
+      await page.evaluate((k) => {
+        const h = window as unknown as Hooks & { __world3d: { view(): { camZ: number } } }, f = h.__fish.fish().find((f) => f.water === 'river')!;
+        let best: [number, number] | null = null;
+        for (let z = f.z - 700; z <= f.z + 100; z += 25) {
+          h.__world3d.go(z, k, f.x);
+          const d = Math.abs(h.__world3d.client(f.x, f.z)[1] - innerHeight * 0.58);
+          if (!best || d < best[1]) best = [h.__world3d.view().camZ, d];
+        }
+        h.__world3d.go(best![0], k, f.x);
+      }, k);
       await expect.poll(() => hooks(page, (h) => h.__world3d.camStill())).toBe(true);
-      const pts = await waterPoints(page, 36);
+      // (every 24 px: the river's narrow reach, zoomed in, held 4 points of a 36 px grid)
+      const pts = await waterPoints(page, 24);
       expect(pts.length, 'water on screen').toBeGreaterThan(2);
       for (const [x, y] of pts.slice(0, 14)) {
         // (still nothing of the island's over it: a house's tap area follows its model in as it loads)
@@ -178,8 +191,8 @@ test('a far cast: from across the island the float lands where the tap was, the 
   // the camera back on the shadow (my villager may be off the screen), and a tap on open water by it
   await page.evaluate(([x, z]) => (window as unknown as Hooks).__world3d.go(z - 200, 1, x), [f.x, f.z] as const);
   await expect.poll(() => hooks(page, (h) => h.__world3d.camStill())).toBe(true);
-  const [x, y] = await hooks(page, (h) => { const f = h.__fish.fish()[0]; return h.__world3d.client(f.x, f.z); });
-  const at = await hooks(page, (h) => { const f = h.__fish.fish()[0]; const [x, y] = h.__world3d.client(f.x, f.z); return h.__world3d.ground(x, y); });
+  // (the point and the ground under it read together: the shadow swims between two reads)
+  const [x, y, at] = await hooks(page, (h) => { const f = h.__fish.fish()[0]; const [x, y] = h.__world3d.client(f.x, f.z); return [x, y, h.__world3d.ground(x, y)] as const; });
   await page.touchscreen.tap(x, y);
   await expect.poll(() => hooks(page, (h) => h.__fish.why())).toBe('cast in the sea');
   const l = (await line(page))!;
