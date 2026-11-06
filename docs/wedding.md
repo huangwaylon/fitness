@@ -31,9 +31,9 @@ UI (`components/wedding/`, the [quiet kit](design.md#quiet-sheets), following th
 `quiet` variant; the island is paused under it. The title bar (けっこんしき, ✕), a bottom tab bar プラン / メモ, ＋ over it
 (a member's).
 
-- **プラン** (`Head`, `Plan`, `TaskRow`): our photo as a band (`static/wedding/hero.webp`: the names, the day · venue,
-  「あと336日」, a member's ⚙ 設定); the strip (the rose ring, the percent, 「8件中2件完了」); one row of filter chips;
-  pinned month headings (期限切れ coral, 今月 green, the year only where it changes) over one card per month, each row
+- **プラン** (`Head`, `Plan`, `TaskRow`): one banner, our photo (`static/wedding/hero.webp`) under the big 「あと 336 日」,
+  the names on a yuzu plate, the day · venue, the rose ring (percent, done / total) on a paper disc and a member's ⚙ 設定;
+  one row of filter chips; pinned month headings (期限切れ coral, 今月 green, the year only where it changes) over one card per month, each row
   tick · month over day · title, category tag, checklist count · the relative due. A row opens in place: its checklist
   ticks, who finished it (「うめ が完了」; the old Sheet's 「まえの ボードで おわった」), 編集 / 完了.
 - **The form** (`TaskForm`, a BottomSheet for ＋ and 編集): title, start, due, category chips, the checklist renamed /
