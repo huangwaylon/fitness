@@ -85,6 +85,9 @@ test('the lobby’s にがて れんしゅう plays a deck of my weak spots and 
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   await shot(page, '0-lobby');
   await sheet(page).locator('[data-kiki-practice]').click();
+  // (the deck in once it starts: practiceFor loads the picks' levels first, so read at once the lobby's own deck was
+  // still there, level 1's, none of the misses: 3 runs in 4 since the levels load one at a time, 54b7f0c6)
+  await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
   const items = await kiki(page, (k) => k.items());
   expect(new Set(items).size).toBe(8);
   // the demo's misses come back (w1-right, w1-fly … were missed yesterday: due today)
