@@ -108,3 +108,26 @@ describe('the toolbar', () => {
     expect(toggleBullets('\nabc', 0, 0).text).toBe('- \nabc');
   });
 });
+
+describe('parseMarkdown: a whole note in linear time', () => {
+  it('reads a 64,000-character line of unclosed marks, brackets, nested runs or URL schemes at once', () => {
+    // (each was quadratic or worse: '*a ' × 21,000 took 5 s, nested runs of growing length minutes; a busy full run
+    // takes each in tens of ms)
+    const lines = [
+      '*a '.repeat(21_000), '**a '.repeat(16_000), '***a '.repeat(12_800), '*'.repeat(64_000), '['.repeat(64_000), '[a]('.repeat(16_000),
+      'https://'.repeat(8000) + '\u0001', Array.from({ length: 300 }, (_, i) => '*'.repeat(i + 1) + 'a').join(''),
+      '['.repeat(32_000) + '](javascript:x)'
+    ];
+    for (const line of lines) {
+      const t0 = performance.now();
+      expect(parseMarkdown(line)).toHaveLength(1);
+      expect(performance.now() - t0, line.slice(0, 12)).toBeLessThan(1000);
+    }
+  });
+
+  it('still reads a link, its URL up to a space or a control character', () => {
+    expect(line0('see [the hall](https://hall.example/a_(b)) and https://x.example/\u0001y')).toEqual([
+      { text: 'see ' }, { text: 'the hall', href: 'https://hall.example/a_(b' }, { text: ') and ' }, { text: 'https://x.example/', href: 'https://x.example/' }, { text: '\u0001y' }
+    ]);
+  });
+});

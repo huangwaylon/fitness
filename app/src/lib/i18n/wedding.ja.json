@@ -87,6 +87,7 @@
   "wed.note.i": "ななめ",
   "wed.note.link": "リンク",
   "wed.note.saved": "メモを ほぞんしました",
+  "wed.note.tooBig": "メモが ながすぎて ほぞんできないよ",
   "wed.note.conflict": "ふたりの かいた メモが かさなりました。どちらに する？",
   "wed.note.whose": "{name}の メモ",
   "wed.note.mine": "あなた",

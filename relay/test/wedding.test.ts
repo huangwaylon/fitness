@@ -46,7 +46,8 @@ describe('the wedding board in the record', () => {
     const t = at();
     expect(task('B', 'venue', 'あとの', {}, t + 5000)).toMatchObject({ ok: true });
     expect(task('A', 'venue', 'まえの', {}, t + 2000)).toMatchObject({ ok: true, duplicate: true });
-    expect(tasks(KEY_C)).toMatchObject([{ id: 'venue', title: 'あとの', who: 'B' }]);
+    expect(tasks(KEY_C)).toMatchObject([{ id: 'venue', title: 'あとの' }]);
+    expect(wedRows()[0][1]).toBe('B');
     // the same `at`: B over A
     expect(task('A', 'venue', 'ウェイ', {}, t + 5000)).toMatchObject({ ok: true, duplicate: true });
     expect(tasks()[0].title).toBe('あとの');
@@ -176,6 +177,57 @@ describe('the wedding board in the record', () => {
     expect(wedRows()).toHaveLength(1);
   });
 
+  it('a note saved offline over one saved meanwhile: kept, restamped after it, the conflict on both phones', () => {
+    const a0 = at();
+    send('A', 'wnote', { at: a0, md: 'v1' });
+    // A edits offline from v1 (stamped then); B saves from v1 later, and reaches the record first
+    const aOff = at();
+    const b1 = at();
+    expect(send('B', 'wnote', { at: b1, md: 'B’s', base: a0 })).toMatchObject({ ok: true });
+    expect(send('A', 'wnote', { at: aOff, md: 'A’s', base: a0 })).toMatchObject({ ok: true });
+    expect(send('A', 'wnote', { at: aOff, md: 'A’s', base: a0 })).toMatchObject({ ok: true }); // (a retry under a new id: the same text, stale)
+    for (const k of [KEY_A, KEY_B, KEY_C]) expect(wedNote(book(k))).toEqual({ at: b1 + 1, md: 'A’s', base: a0, was: { at: b1, md: 'B’s', who: 'B' }, who: 'A' });
+    expect(wedRows()).toHaveLength(1);
+  });
+
+  it('two note saves crossing in flight: the conflict on both phones, whichever reached the record first', () => {
+    for (const first of ['A', 'B'] as const) {
+      db = memSql();
+      store = open();
+      const a0 = at();
+      send('A', 'wnote', { at: a0, md: 'v1' });
+      const ta = at(), tb = at();
+      const save = { A: () => send('A', 'wnote', { at: ta, md: 'A’s', base: a0 }), B: () => send('B', 'wnote', { at: tb, md: 'B’s', base: a0 }) };
+      save[first]();
+      save[first === 'A' ? 'B' : 'A']();
+      const n = wedNote(book(KEY_A))!;
+      expect(wedNote(book(KEY_B))).toEqual(n);
+      expect([n.md, n.was?.md].sort()).toEqual(['A’s', 'B’s']);
+    }
+  });
+
+  it('a subtask added while its parent is purged stays editable and deletable; a stale edit brings nothing back', () => {
+    task('A', 'p', 'Invitations', { del: at() });
+    // B, not yet seeing the delete, adds a subtask; A purges the task (its deleted subtasks with it)
+    expect(task('B', 's', 'Order cards', { parent: 'p', due: undefined })).toMatchObject({ ok: true });
+    task('A', 'old', 'Old card', { parent: 'p', due: undefined });
+    task('A', 'old', 'Old card', { parent: 'p', due: undefined, del: now });
+    expect(send('A', 'wtask', { id: 'p', at: at(), rm: true })).toMatchObject({ ok: true });
+    expect(send('A', 'wtask', { id: 'old', at: at(), rm: true })).toMatchObject({ ok: true });
+    // the orphan: an edit, a delete, a restore, a purge, all taken
+    expect(task('B', 's', 'Order the cards', { parent: 'p', due: undefined })).toMatchObject({ ok: true });
+    expect(task('B', 's', 'Order the cards', { parent: 'p', due: undefined, del: now })).toMatchObject({ ok: true });
+    expect(task('B', 's', 'Order the cards', { parent: 'p', due: undefined })).toMatchObject({ ok: true });
+    // the purging phone's set without the parent: a task of its own
+    expect(task('A', 's', 'Order the cards', { due: undefined })).toMatchObject({ ok: true });
+    expect(tasks().map((t) => [t.id, t.parentId])).toEqual([['s', '']]);
+    // a stale edit of the purged subtask, or a new one under the purged task, or moving one there: nothing
+    expect(task('B', 'old', 'Old card', { parent: 'p', due: undefined }, now + 60_000)).toMatchObject({ ok: true, duplicate: true });
+    expect(task('B', 'new', 'x', { parent: 'p', due: undefined })).toMatchObject({ ok: false, detail: 'wedding parent' });
+    expect(task('B', 's', 'x', { parent: 'p', due: undefined })).toMatchObject({ ok: false, detail: 'wedding parent' });
+    expect(tasks().map((t) => t.id)).toEqual(['s']);
+  });
+
   it('caps the tasks at WTASK_MAX rows', async () => {
     const { WTASK_MAX } = await import('../../app/src/lib/contract/wedding.ts');
     const rows = Array.from({ length: WTASK_MAX }, (_, i) => [new Date(T0 - 1000 + i).toISOString(), 'A', `w${i}`, 'wtask', JSON.stringify({ id: `t${i}`, at: T0 - 1000 + i, c: T0, title: `#${i}`, cat: '' })]);
@@ -203,17 +255,74 @@ describe('the wedding board in the record', () => {
       expect(store.load({ rows: { events: file() } })).toMatchObject({ ok: true, events: 8, skipped: 0 });
       expect(notices.at(-1)).toMatchObject({ what: 'ingest' });
       const t = tasks(KEY_C);
-      expect(t.map((x) => [x.id, x.parentId, !!x.doneAt, !!x.deletedAt, x.imported])).toEqual([
-        ['d', '', false, true, true], ['o', 'gone', false, false, true], ['p', '', true, false, true], ['s', 'p', false, false, true]
+      expect(t.map((x) => [x.id, x.parentId, !!x.doneAt, !!x.deletedAt])).toEqual([
+        ['d', '', false, true], ['o', 'gone', false, false], ['p', '', true, false], ['s', 'p', false, false]
       ]);
+      expect(wedRows().every((r) => JSON.parse(r[4] as string).imported === true)).toBe(true);
       expect(store.load({ rows: { events: file() } })).toMatchObject({ ok: true, events: 0, skipped: 0 });
       expect(wedRows()).toHaveLength(8);
       // a phone's edit after the load: the import's mark goes with it
       expect(task('A', 'p', 'Hall (booked)', { cat: 'Venue' })).toMatchObject({ ok: true });
-      expect(tasks().find((x) => x.id === 'p')).toMatchObject({ imported: false, title: 'Hall (booked)', doneAt: expect.any(String) });
+      expect(tasks().find((x) => x.id === 'p')).toMatchObject({ title: 'Hall (booked)', doneAt: expect.any(String) });
+      expect(JSON.parse(wedRows().find((r) => r[3] === 'wtask' && JSON.parse(r[4] as string).id === 'p')![4] as string).imported).toBeUndefined();
       // and the old rows again under other ids don't take it back (the same rows tie: the held one stays)
       expect(store.load({ rows: { events: file().map((r) => [r[0], r[1], `${String(r[2])}-again`, r[3], r[4]]) } })).toMatchObject({ events: 0 });
       expect(tasks().find((x) => x.id === 'p')?.title).toBe('Hall (booked)');
+    });
+
+    it('the imported shapes (the 2026-11-06 load into production, its fields as the deleted wedding-sheet.ts wrote them; values invented) stay valid and editable', () => {
+      const t0 = Date.parse('2026-08-01T01:00:00.000Z');
+      const r = (id: string, type: string, d: Record<string, unknown>) => [new Date(d.at as number).toISOString(), 'A', id, type, JSON.stringify({ ...d, imported: true })];
+      const big = ('# Venue\n\n- **Hall** [map](https://map.example/a_(b))\n1. deposit 50%\n\n' + 'メモ '.repeat(40) + '\n').repeat(200).slice(0, 63_468);
+      const rows = [
+        r('wed-u1-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000001', at: t0 + 9e8, c: t0, title: 'Visit three halls', cat: 'Venue', due: '2026-09-30' }),
+        r('wed-u1-wdone', 'wdone', { id: '00000000-0000-4000-8000-000000000001', at: t0 + 9e8, v: 1 }),
+        r('wed-u2-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000002', at: t0, c: t0, title: 'Guest list', cat: 'Guests', due: '2026-12-01', start: '2026-11-01' }),
+        r('wed-u3-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000003', at: t0 + 1e8, c: t0 + 1000, title: 'Family', cat: '', parent: '00000000-0000-4000-8000-000000000002' }),
+        r('wed-u3-wdone', 'wdone', { id: '00000000-0000-4000-8000-000000000003', at: t0 + 1e8, v: 1 }),
+        r('wed-u8-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000008', at: t0 + 5e9, c: t0, title: 'Book a band', cat: 'Music', due: '2027-02-01', del: t0 + 5e9 }),
+        r('wed-u12-wtask', 'wtask', { id: '00000000-0000-4000-8000-000000000012', at: t0, c: t0, title: 'Self parent', cat: '' }),
+        ...(['p1', 'p2', 'date', 'time', 'venue', 'tz'] as const).map((k) => r(`wed-conf-${k}`, 'wconf', { k, at: t0 + 5e9, v: { p1: 'Taro Test', p2: 'Hanako Test', date: '2027-04-18', time: '09:30', venue: 'Example Chapel', tz: 'Asia/Tokyo' }[k] })),
+        r('wed-conf-cats', 'wconf', { k: 'cats', at: t0 + 5e9, v: ['Venue', 'Guests', 'Food', 'Other'] }),
+        r('wed-note', 'wnote', { at: t0 + 5e9, md: big })
+      ];
+      expect(store.load({ rows: { events: rows } })).toMatchObject({ ok: true, events: rows.length, skipped: 0 });
+      // every row the record holds still reads (the phone's model drops one that doesn't)
+      for (const x of wedRows()) expect(wedRowOf(x[3] as string, JSON.parse(x[4] as string), x[1] as W), String(x[2])).not.toBeNull();
+      const b = book();
+      expect(wedTasks(b)).toHaveLength(5);
+      expect(wedConfig(b)).toMatchObject({ venue: 'Example Chapel', cats: ['Venue', 'Guests', 'Food', 'Other'] });
+      expect(wedNote(b)).toMatchObject({ md: big, imported: true });
+      // and each takes a phone's change: an edit, a subtask's, a tick, a delete, a restore, a purge, a setting, the note
+      const u = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+      expect(task('A', u(1), 'Visit three halls (done)', { due: '2026-09-30' })).toMatchObject({ ok: true });
+      expect(send('B', 'wtask', { id: u(3), at: at(), c: t0 + 1000, title: 'Family (all)', cat: '', parent: u(2) })).toMatchObject({ ok: true });
+      expect(send('B', 'wdone', { id: u(3), at: at(), v: 0 })).toMatchObject({ ok: true });
+      expect(task('A', u(2), 'Guest list', { del: now })).toMatchObject({ ok: true });
+      expect(task('A', u(8), 'Book a band')).toMatchObject({ ok: true });
+      expect(send('A', 'wtask', { id: u(12), at: at(), rm: true })).toMatchObject({ ok: true });
+      expect(send('A', 'wconf', { k: 'cats', at: at(), v: ['Venue', 'Food'] })).toMatchObject({ ok: true });
+      expect(send('A', 'wnote', { at: at(), md: big + '\n- more', base: t0 + 5e9 })).toMatchObject({ ok: true });
+      expect(wedNote(book())?.was).toBeUndefined();
+    });
+
+    it('drops what a phone’s op would have dropped with a row it takes as it was: a purged task’s tick, a removed item’s ticks, the board’s oldest removals', async () => {
+      const { BOARD_MAX } = await import('../../app/src/lib/contract/board.ts');
+      const ev = (id: string, who: W, type: string, d: object, t: number) => [new Date(t).toISOString(), who, id, type, JSON.stringify({ at: t, ...d })];
+      const t0 = T0 - 1e8;
+      const rows = [
+        // the tick before the purge in the file, and after it (a dump's order is the record's, a hand-made file's anything)
+        ev('k1', 'A', 'wdone', { id: 'w1', v: 1 }, t0), ev('w1', 'A', 'wtask', { id: 'w1', rm: true }, t0 + 1),
+        ev('w2', 'A', 'wtask', { id: 'w2', rm: true }, t0 + 2), ev('k2', 'B', 'wdone', { id: 'w2', v: 1 }, t0 + 1),
+        ev('w3', 'A', 'wtask', { id: 'w3', c: t0, title: 'kept', cat: '' }, t0), ev('k3', 'A', 'wdone', { id: 'w3', v: 1 }, t0 + 3),
+        ev('c1', 'A', 'pack_chk', { trip: 'nz', id: 'passport', v: 1 }, t0), ev('c2', 'B', 'pack_chk', { trip: 'nz', id: 'passport', v: 1 }, t0),
+        ev('r1', 'A', 'pack', { trip: 'nz', id: 'passport', rm: true }, t0 + 5), ev('c3', 'A', 'pack_chk', { trip: 'nz', id: 'socks', v: 1 }, t0),
+        ...Array.from({ length: BOARD_MAX + 3 }, (_, i) => ev(`bp${i}`, 'A', 'board', { id: `bpost${String(i).padStart(3, '0')}`, rm: true }, t0 + 10 + i))
+      ];
+      expect(store.load({ rows: { events: rows } })).toMatchObject({ ok: true, skipped: 0 });
+      const left = (call(KEY_A, 'snapshot').rows.events as unknown[][]).map((r) => `${String(r[3])}:${String(r[2])}`);
+      expect(left.filter((x) => /^(wdone|wtask|pack|pack_chk):/.test(x)).sort()).toEqual(['pack:r1', 'pack_chk:c3', 'wdone:k3', 'wtask:w1', 'wtask:w2', 'wtask:w3']);
+      expect(left.filter((x) => x.startsWith('board:'))).toHaveLength(BOARD_MAX);
     });
 
     it('a guest row, or a malformed one, is not taken', () => {

@@ -9,7 +9,7 @@ const fake = vi.hoisted(() => ({
   rows: [] as EventRow[],
   queued: [] as EventRow[]
 }));
-vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => T + 100 } }));
+vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => T + 100, serverNow: () => T + 100 } }));
 vi.mock('#lib/store/week.svelte.ts', async () => {
   const { reduce: red, foldEvents: fold } = await import('#lib/model/state.ts');
   return {

@@ -10,8 +10,8 @@ const TODAY = '2026-11-06';
 const WEDDING = '2027-04-18';
 let n = 0;
 const row = (id: string, o: Partial<WedTask> = {}): WedTask => ({
-  id, title: id, category: '', due: '', start: '', doneAt: '', doneBy: '', createdAt: new Date(Date.UTC(2026, 0, 1, 0, 0, ++n)).toISOString(), updatedAt: '',
-  deletedAt: '', parentId: '', who: 'A', imported: false, ...o
+  id, title: id, category: '', due: '', start: '', doneAt: '', doneBy: '', createdAt: new Date(Date.UTC(2026, 0, 1, 0, 0, ++n)).toISOString(),
+  deletedAt: '', parentId: '', ...o
 });
 const DONE = { doneAt: '2026-10-01T00:00:00.000Z', doneBy: 'A' as const };
 const rows: WedTask[] = [

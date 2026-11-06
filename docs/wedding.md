@@ -51,19 +51,26 @@ exact shapes):
 - `wnote` ≤ 64,000 characters, kept exactly as sent, its own data cap (140,000 as JSON; every other type keeps 20,000).
   A save names the note it was edited from (`base`); one whose `base` isn't the held note's `at` is kept with the
   replaced note beside it (`was: {at, md, who}`, written by the record), and the phones show both until someone saves
-  again from the new one (one level: a third crossing save keeps only the last one it replaced).
+  again from the new one (one level: a third crossing save keeps only the last one it replaced). A save that loses on
+  `at` to a note it wasn't edited from (saved offline, two crossing in flight) is kept the same way, restamped just
+  after the held one: both phones show the conflict whichever reached the record first.
 - `imported: true` marks a row the admin's load brought from the Sheet; a phone's is refused, and the next edit drops
   it. The sheet shows 「むかしの きろく」 for a tick from the Sheet (which never recorded who: `WedTask.doneBy` is '')
   and on the Sheet's note until it's saved again.
 - The phone folds the record's rows as they are and judges only its queued ones by the record's rules (`wedFold`), as
   the packing list and the board do. The admin's `load` takes these rows as the record had them too (only a row its slot
   holds that beats it stops one), so a dump restores faithfully; that fix covers the board and the packing list, which
-  until 2026-11-06 lost edited posts and items on a restore into an empty record.
+  until 2026-11-06 lost edited posts and items on a restore into an empty record. After the batch it drops what a
+  phone's op would have dropped with those rows: a purged task's tick, a removed packing item's ticks, the board's
+  removals past its cap.
 
 On the phone, `components/wedding/board.svelte.ts`: `tasks` (live top-level, each with its subtasks and progress),
 `overall`, `countdown`, `today` (the board's zone), `config` (over the defaults: `lib/wedding/config.ts`), `note`,
 `conflict`, `deleted`; `addTask`, `editTask`, `addSub`, `tick`, `remove` (a task and its live subtasks), `restore`
-(and the subtasks deleted with it), `purge` (one deleted task, or all), `setConfig`, `saveNote(md, from)`. The rules
+(and the subtasks deleted with it), `purge` (every deleted task; a live subtask of one, added while it was deleted,
+becomes a task of its own), `setConfig`, `saveNote(md, from)` (false for a note past the record's caps, its JSON's
+too). Changes are stamped on the relay's own clock (`world.serverNow`, never a `?date=` preview's); `today` turns at
+the board's midnight for whoever reads it. The rules
 are `lib/wedding/progress.ts` and `time.ts`, ported from the old board with their tests.
 
 The sheet (`components/wedding/WeddingSheet.svelte`, the menu's けっこんしき pill): `WeddingHost` loads it and the store
@@ -79,29 +86,13 @@ draws its own invented board (`store/demo/rows.ts`), which the e2e (`e2e/wedding
 
 ## Migration
 
-The source is the old Apps Script's `doGet` reply (`{ok, tasks, config, sheetTimeZone}`, every cell a string),
-`~/Documents/island-backups/wedding-doget-2026-11-06.json` (mode 600): it matches the user's CSV export of both tabs
-byte for byte (52 rows, 10 columns, 8 config keys), so no `.xlsx` is needed. Steps:
-
-1. Convert: `cd relay && node scripts/wedding-import.ts ~/Documents/island-backups/wedding-doget-2026-11-06.json`
-   writes `…/wedding-doget-2026-11-06.load.json` (mode 600) and prints the report (counts; findings by rule, row,
-   column and id, never a value). It exits 1 until every finding is a note (`(info)`). The rules
-   (`scripts/wedding-sheet.ts`):
-   - a task's `at` = `updated_at`, else `created_at`; `c` = `created_at`; person `A`, `imported: true`; `wdone` (v 1)
-     at `done_at`; `del` = `deleted_at`; the old reader's trimmed cells; dates as its `normalizeDay`;
-   - a row without an id, a repeated id (the first wins), a row without a title: not loaded;
-   - a subtask with a date: under a live task its dates go; else (the old board showed it as a task) its parent goes;
-   - the config's keys to `p1`, `p2`, `date`, `time`, `venue`, `tz`, `cats` (comma-separated, trimmed, deduplicated),
-     a blank one left to the default; `notes` → the `wnote` byte for byte; their `at` the Sheet's newest timestamp;
-   - event ids `wed-<id>-wtask`, `wed-<id>-wdone`, `wed-conf-<key>`, `wed-note`: a load again adds nothing.
-   The real Sheet (2026-11-06): 63 events (52 `wtask`, 3 `wdone`, 7 `wconf`, 1 `wnote`), the report clean.
-2. Test relay: `node scripts/record.ts bookmark --test`, `node scripts/record.ts load <load.json> --test`,
-   `node scripts/record.ts dump --test > <dump.json>` (mode 600, off the repo), then
-   `node scripts/wedding-parity.ts <doget.json> <dump.json>`: per id title, category, due, start, done, deleted,
-   parent; every setting; the notes byte for byte; mismatches by id and field (a conversion rule's named), exit 1 on
-   one without a rule. Load again: `loaded {… "events":0 …}`.
-3. Production: the same without `--test`, then both phones check.
-4. Rotate the old Apps Script `APP_KEY` so the Sheet can't be written; the user takes the old site down.
+Done 2026-11-06: the old Apps Script's `doGet` reply (`{ok, tasks, config, sheetTimeZone}`, every cell a string),
+converted to a `load` file and loaded into production: 63 events (52 `wtask`, 3 `wdone`, 7 `wconf`, 1 `wnote`), each
+`imported: true`, person `A`, event ids `wed-<id>-wtask`, `wed-<id>-wdone`, `wed-conf-<key>`, `wed-note` (a load again
+adds nothing). The tools (`relay/scripts/wedding-import.ts`, `wedding-sheet.ts` with the conversion's rules,
+`wedding-parity.ts`, their test and invented fixture) were deleted after it; they live at the git tag `wedding-import`.
+The record's rules must keep those rows valid: `relay/test/wedding.test.ts` loads their shapes ("the imported shapes").
+Then: rotate the old Apps Script `APP_KEY` so the Sheet can't be written; the user takes the old site down.
 
 ## Open questions
 

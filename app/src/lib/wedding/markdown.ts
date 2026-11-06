@@ -26,8 +26,8 @@ const HEADING = /^(#{1,6})[ \t]+(.+)$/;
 const BULLET = /^[ \t]{0,3}[-*][ \t]+(.+)$/;
 /** `1.` or `1)`; the number itself is dropped (an ordered list numbers itself). */
 const NUMBER = /^[ \t]{0,3}\d{1,9}[.)][ \t]+(.+)$/;
-/** `[label](url)`: the label takes no newline, the URL no whitespace or `)`. */
-const LINK = /\[([^\]\n]*)\]\(([^)\s]+)\)/y;
+/** A `[label](url)`'s URL at most (a longer one prints as typed: the scan stays linear). */
+const LINK_URL_MAX = 4096;
 
 const isSpace = (ch: string | undefined): boolean => ch === undefined || /\s/.test(ch);
 
@@ -44,27 +44,61 @@ function runBefore(text: string, at: number): number {
   return n;
 }
 
-/** Where a run of exactly `length` asterisks closes the one opened at `from`, or -1 (an opener before a non-space,
- *  a closer after one: `2 * 3 * 4` is not italic). */
-function closingRun(text: string, from: number, length: number): number {
-  if (isSpace(text[from])) return -1;
-  for (let at = from; at < text.length; at++) {
-    if (text[at] !== '*') continue;
-    if (runAt(text, at) !== length || runBefore(text, at) !== 0) continue;
-    if (isSpace(text[at - 1])) continue;
-    return at;
+/**
+ * One line's index, built in one pass so that each question the scanner asks at a character is answered without
+ * scanning the rest of the line (a line of `*a ` or `[` would be quadratic: seconds for a long note):
+ * - `run[i]`: how many asterisks start at i;
+ * - `closers`: by length, where each whole run of asterisks that can close starts (after a non-space), in order;
+ * - `bracket[i]`: the first `]` at or after i (-1: none); `stop[i]`: the first `)` or whitespace at or after i.
+ */
+interface LineIndex { run: Int32Array; closers: Map<number, number[]>; bracket: Int32Array; stop: Int32Array }
+
+function indexOf(line: string): LineIndex {
+  const n = line.length;
+  const run = new Int32Array(n + 1), bracket = new Int32Array(n + 1), stop = new Int32Array(n + 1);
+  bracket[n] = stop[n] = -1;
+  for (let i = n - 1; i >= 0; i--) {
+    run[i] = line[i] === '*' ? run[i + 1] + 1 : 0;
+    bracket[i] = line[i] === ']' ? i : bracket[i + 1];
+    stop[i] = line[i] === ')' || /\s/.test(line[i]) ? i : stop[i + 1];
   }
-  return -1;
+  const closers = new Map<number, number[]>();
+  for (let at = 0; at < n; at += run[at] || 1) {
+    if (!run[at] || isSpace(line[at - 1])) continue;
+    const list = closers.get(run[at]);
+    if (list) list.push(at);
+    else closers.set(run[at], [at]);
+  }
+  return { run, closers, bracket, stop };
 }
 
-/** A link at `at`: `[label](url)` or a bare URL, or null (an empty label or a refused scheme: the brackets print). */
-function linkAt(line: string, at: number): { spans: Span[]; href: string; length: number } | null {
+/** Where a run of exactly `length` asterisks closes the one opened at `from`, or -1 (an opener before a non-space,
+ *  a closer after one: `2 * 3 * 4` is not italic). */
+function closingRun(line: string, ix: LineIndex, from: number, length: number): number {
+  if (isSpace(line[from])) return -1;
+  const list = ix.closers.get(length);
+  if (!list) return -1;
+  // the first after `from` (binary search)
+  let lo = 0, hi = list.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (list[mid] <= from) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo < list.length ? list[lo] : -1;
+}
+
+/** A link at `at`: `[label](url)` (the label no `]`, the URL no whitespace or `)`) or a bare URL, or null (an empty
+ *  label or a refused scheme: the brackets print). */
+function linkAt(line: string, ix: LineIndex, at: number): { spans: Span[]; href: string; length: number } | null {
   if (line[at] === '[') {
-    LINK.lastIndex = at;
-    const m = LINK.exec(line);
-    if (!m || !m[1].trim()) return null;
-    const href = safeHref(m[2]);
-    return href ? { spans: spansOf(m[1]), href, length: m[0].length } : null;
+    const close = ix.bracket[at + 1];
+    if (close < 0 || line[close + 1] !== '(') return null;
+    const end = ix.stop[close + 2];
+    if (end <= close + 2 || line[end] !== ')' || end - close - 2 > LINK_URL_MAX) return null;
+    const label = line.slice(at + 1, close);
+    const href = /\S/.test(label) ? safeHref(line.slice(close + 2, end)) : '';
+    return href ? { spans: spansOf(label), href, length: end + 1 - at } : null;
   }
   const url = urlAt(line, at);
   return url ? { spans: [{ text: url }], href: url, length: url.length } : null;
@@ -72,6 +106,7 @@ function linkAt(line: string, at: number): { spans: Span[]; href: string; length
 
 /** One line's runs (one asterisk italic, two bold, three both; nesting by recursion; links first). */
 function spansOf(line: string): Span[] {
+  const ix = indexOf(line);
   const spans: Span[] = [];
   let plain = '';
   let at = 0;
@@ -80,16 +115,16 @@ function spansOf(line: string): Span[] {
     plain = '';
   };
   while (at < line.length) {
-    const link = linkAt(line, at);
+    const link = linkAt(line, ix, at);
     if (link) {
       flush();
       for (const s of link.spans) spans.push({ ...s, href: link.href });
       at += link.length;
       continue;
     }
-    const length = runAt(line, at);
+    const length = ix.run[at];
     const from = at + length;
-    const close = length ? closingRun(line, from, length) : -1;
+    const close = length ? closingRun(line, ix, from, length) : -1;
     if (close < 0) {
       plain += line[at];
       at++;

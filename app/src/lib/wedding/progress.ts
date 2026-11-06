@@ -6,7 +6,8 @@
 //     finely never changes what the rest are worth). No pace verdict: what the calendar asked for is the overdue count.
 //   - Subtasks: one level, enforced on the read; a row that can't be placed under a live top-level task is promoted,
 //     never hidden.
-import { daysBetween, monthOf, normalizeDay } from './time.ts';
+import { daysBetween } from '#lib/time/dates.ts';
+import { monthOf } from './time.ts';
 
 /** A task as the board reads it (contract/wedding.ts WedTask: the old Sheet's rows, every field a string). */
 export interface TaskRow {
@@ -17,7 +18,6 @@ export interface TaskRow {
   start: string;
   doneAt: string;
   createdAt: string;
-  updatedAt: string;
   deletedAt: string;
   parentId: string;
 }
@@ -67,12 +67,7 @@ function byCreated(a: TaskRow, b: TaskRow): number {
   return a.createdAt < b.createdAt ? -1 : 1;
 }
 
-function clamp01(value: number): number {
-  if (!Number.isFinite(value)) return 0;
-  if (value < 0) return 0;
-  if (value > 1) return 1;
-  return value;
-}
+const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
 
 export interface TaskProgress {
   /** 0–1. */
@@ -89,21 +84,21 @@ export interface TaskProgress {
 
 /** A task's progress on `today` (the board's day, todayIn), from its live subtasks. */
 export function taskProgress(task: TaskRow, today: string, subtasks: readonly TaskRow[] = []): TaskProgress {
-  const due = normalizeDay(task?.due);
+  const due = task.due;
   const dated = Boolean(due);
   const done = isDone(task);
   const days = dated ? daysBetween(today, due) : null;
   const total = subtasks.length;
   const tally = total ? { done: subtasks.filter(isDone).length, total } : null;
   // done_at > the tally > nothing, nothing blended
-  const percent = done ? 1 : clamp01(tally ? tally.done / tally.total : 0);
+  const percent = done ? 1 : tally ? tally.done / tally.total : 0;
   let state: TaskState;
   if (done) state = STATE.DONE;
   else if (!dated) state = STATE.NODATE;
   else if (days! < 0) state = STATE.OVERDUE;
   else if (days! <= SOON_DAYS) state = STATE.SOON;
   else state = STATE.LATER;
-  const start = normalizeDay(task?.start);
+  const start = task.start;
   const started = Boolean(start) && start <= today;
   const dueThisMonth = dated && monthOf(due) === monthOf(today);
   const running = started && !done && dated && days! > 0;
@@ -117,16 +112,16 @@ export function taskProgress(task: TaskRow, today: string, subtasks: readonly Ta
   };
 }
 
-export type WithProgress<T extends TaskRow> = T & { subtasks: T[]; promoted: boolean; progress: TaskProgress };
+export type WithProgress<T extends TaskRow> = T & { subtasks: T[]; progress: TaskProgress };
 
-/** Every live top-level task with its subtasks (in the order typed) and its progress, by due date then title; undated
- *  last. `promoted`: it names a parent but couldn't be placed under one. */
+/** Every live top-level task (a subtask that couldn't be placed under one too) with its subtasks (in the order typed)
+ *  and its progress, by due date then title; undated last. */
 export function withProgress<T extends TaskRow>(tasks: readonly T[], today: string): WithProgress<T>[] {
   const { parents, children } = partitionSubtasks(tasks);
   return parents
     .map((task) => {
       const subtasks = (children.get(task.id) ?? []).slice().sort(byCreated);
-      return { ...task, subtasks, promoted: Boolean(task.parentId), progress: taskProgress(task, today, subtasks) };
+      return { ...task, subtasks, progress: taskProgress(task, today, subtasks) };
     })
     .sort(compareForDisplay);
 }
@@ -151,7 +146,7 @@ export function overallProgress(tasks: readonly { progress: TaskProgress }[]): O
   return { total, percent: total ? percentSum / total : 0, ...counts };
 }
 
-/** 0–1 → a whole percent. @public (the board's header) */
+/** 0–1 → a whole percent. */
 export function toPercent(fraction: number): number {
   return Math.round(clamp01(fraction) * 100);
 }

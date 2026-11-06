@@ -87,6 +87,7 @@
   "wed.note.i": "Italic",
   "wed.note.link": "Link",
   "wed.note.saved": "Notes saved",
+  "wed.note.tooBig": "The notes are too long to save",
   "wed.note.conflict": "You both saved the notes at once. Which one?",
   "wed.note.whose": "{name}’s",
   "wed.note.mine": "You",
