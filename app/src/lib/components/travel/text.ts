@@ -2,11 +2,12 @@
 // (Seattle's guide is English only; a text-only side like 'SNA 021' is the guide's own), and its inline tokens as
 // parts: `{km:}` in the phone's units (units.ts), `{m:}` / `{c:}` metric or imperial with it, `{p:key}` the trip
 // note's value, or locked while the note isn't in; its Japanese cut where a line may break (between words, never
-// inside one: ニュープリマス, 予約番号).
+// inside one: ニュープリマス, 予約番号); and where a trip stands, in words.
 import { parseTokens } from '#lib/travel/tokens.ts';
 import type { L } from '#lib/travel/types.ts';
-import type { Locale } from '#lib/i18n/index.ts';
+import { t, type Locale } from '#lib/i18n/index.ts';
 import { fmtKm, units } from './units.ts';
+import type { Phase } from './when.ts';
 
 /** The reader's side of a pair, else the other ('' for none). */
 export const pick = (l: L | undefined | null, locale: Locale): string => (l ? (l[locale] ?? l[locale === 'ja' ? 'en' : 'ja'] ?? '') : '');
@@ -50,6 +51,10 @@ export function hrefOf(href: string, note: Record<string, string> | null): strin
   if (parts.length !== 1 || parts[0].k !== 'text') return null;
   return /^https:\/\//.test(parts[0].s) ? parts[0].s : null;
 }
+
+/** Where a trip stands, in words (its boarding pass's label): 「あと97日」, 「明日」, 「2日目」, 「行ってきた」. */
+export const phaseLabel = (p: Phase): string =>
+  p.k === 'now' ? t('travel.day', { n: p.day }) : p.k === 'past' ? t('travel.stamp') : p.days === 1 ? t('travel.tomorrow') : t('travel.soon', { n: p.days });
 
 
 const JA = /[\u3040-\u30ff\u3400-\u9fff]/;

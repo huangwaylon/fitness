@@ -2487,8 +2487,10 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   読み込めませんでした + もう一度 under the trip's own header; the trip note not in yet, each private value is 🔒 ・・・ and a
   line under the photo says 「オンラインで表示」.
 - **The list** (`TripList.svelte`, from `trips/meta.ts` only: no guide loads for it): これからの旅 (on now and coming,
-  soonest first) and これまで (newest first), a card of rows each: the cover, the place, its dates and area · days, a
-  badge 「あと97日」 / 「あした」 / 「2日目」. Under them the one km | mi switch (this phone's, `DEVICE.travelUnits`, never
+  soonest first) and これまで (newest first), a Dodo Airlines boarding pass each (`Pass.svelte`, back 2026-11-07, the
+  user: "i liked the airplane ticket design"): a quiet card (hairline, soft shadow) with the blue airline strip and
+  TYO ✈ the meta's `code` over the cover, area, place and year, dates; the perforated stub 「あと 97 日」 / 「明日」 /
+  「いま 2 日目」 (yuzu) or a past trip's tilted coral 「行ってきた」 stamp with its year; a barcode. Under them the one km | mi switch (this phone's, `DEVICE.travelUnits`, never
   synced; every `{km:}`, `{m:}`, `{c:}` follows at once: `units.ts`).
 - **A classic guide** (`classic: true`: Okinawa, Seattle; `classic/ClassicGuide.svelte`, [travel.md](travel.md)):
   identical to the original travel-plans site, its own look under `.classic`, 本棚 on the hero back to the list; its

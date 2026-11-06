@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { hrefOf, otherLang, pick, pieces, render } from './text.ts';
+import { hrefOf, otherLang, phaseLabel, pick, pieces, render } from './text.ts';
+import '#lib/i18n/travel.ts';
 import { fmtKm, setUnits } from './units.ts';
 import { configureStorage } from '#lib/sync/storage.ts';
 
@@ -50,5 +51,11 @@ describe('the guides’ text', () => {
     expect(pieces('2月10日発 · 予約番号 ')).toEqual(['2月', '10日', '発', ' ', '·', ' ', '予約', '番号', ' ']);
     expect(pieces('Land at Auckland (AKL)')).toEqual(['Land at Auckland (AKL)']);
     expect(pieces('ニュープリマスを出発')).toBe(pieces('ニュープリマスを出発'));
+  });
+  it('says where a trip stands (its boarding pass)', () => {
+    expect(phaseLabel({ k: 'soon', days: 97 })).toBe('あと97日');
+    expect(phaseLabel({ k: 'soon', days: 1 })).toBe('明日');
+    expect(phaseLabel({ k: 'now', day: 2 })).toBe('2日目');
+    expect(phaseLabel({ k: 'past' })).toBe('行ってきた');
   });
 });
