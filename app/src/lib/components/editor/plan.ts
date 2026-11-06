@@ -72,6 +72,8 @@ export interface Draw {
   issues: readonly Issue[];
   /** The issue in focus (its tiles drawn strongest). */
   focus?: Issue | null;
+  /** A resize's new coast (しまの おおきさ: its grid codes): the land it gains or loses tinted, its outline dashed. */
+  coast?: Uint8Array | null;
   /** The rivers' drawn lines and their turns' arcs (layout/river.ts), marked over the tiles; none: not shown. */
   river?: readonly Stem[] | null;
   icon(key: string): HTMLImageElement | null;
@@ -146,6 +148,7 @@ export function draw(ctx: CanvasRenderingContext2D, d: Draw): void {
     }
   }
   if (d.river) drawRiver(ctx, v, d.river);
+  if (d.coast) drawCoast(ctx, d, d.coast, cA, cB, rA, rB);
   // the objects: big ones first, the selected last
   const objs = [...l.objects.values()].sort((a, b) => {
     const [aw, ad] = footOf(l, a), [bw, bd] = footOf(l, b);
@@ -185,6 +188,40 @@ export function draw(ctx: CanvasRenderingContext2D, d: Draw): void {
     ctx.fillStyle = 'rgba(255,249,227,0.12)';
     ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
   }
+}
+
+/** A resize's ghost (the new codes over the layout): the tiles that turn land green, those the sea takes red, and the
+ *  new coast (land against the sea) a dashed line. */
+function drawCoast(ctx: CanvasRenderingContext2D, d: Draw, g: Uint8Array, cA: number, cB: number, rA: number, rB: number): void {
+  const v = d.view, T = TILE * v.s;
+  const land = (c: number, r: number) => c >= 0 && r >= 0 && c < GRID.cols && r < GRID.rows && kindOf(g[idx(c, r)]) !== 'sea';
+  ctx.save();
+  for (let r = rA; r <= rB; r++)
+    for (let c = cA; c <= cB; c++) {
+      const now = land(c, r), was = d.layout.kind(c, r) !== 'sea';
+      if (now === was) continue;
+      const [x, y] = toScreen(v, GRID.x0 + c * TILE, GRID.z0 + (r + 1) * TILE);
+      ctx.fillStyle = now ? 'rgba(120,230,110,0.55)' : 'rgba(255,70,50,0.45)';
+      ctx.fillRect(x, y, T + 0.5, T + 0.5);
+    }
+  ctx.setLineDash([Math.max(4, T * 0.3), Math.max(3, T * 0.2)]);
+  ctx.lineWidth = Math.max(2, T * 0.1);
+  ctx.strokeStyle = '#fff9e3';
+  ctx.beginPath();
+  for (let r = rA; r <= rB; r++)
+    for (let c = cA; c <= cB; c++) {
+      if (!land(c, r)) continue;
+      for (const [dc, dr] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
+        if (land(c + dc, r + dr)) continue;
+        const ex = GRID.x0 + (dc > 0 ? c + 1 : c) * TILE, ez = GRID.z0 + (dr > 0 ? r + 1 : r) * TILE;
+        const [a, b] = dc ? [[ex, GRID.z0 + r * TILE], [ex, GRID.z0 + (r + 1) * TILE]] : [[GRID.x0 + c * TILE, ez], [GRID.x0 + (c + 1) * TILE, ez]];
+        const [x0, y0] = toScreen(v, a[0], a[1]), [x1, y1] = toScreen(v, b[0], b[1]);
+        ctx.moveTo(x0, y0);
+        ctx.lineTo(x1, y1);
+      }
+    }
+  ctx.stroke();
+  ctx.restore();
 }
 
 /** The rivers as the 3D island draws them (layout/river.ts), over their tiles: the band's banks faint, the centreline,

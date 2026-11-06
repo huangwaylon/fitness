@@ -127,10 +127,17 @@ export function blockersOf(l: Layout, next: Layout): Blocker[] {
 /** An edge pushed out (`by` > 0) or pulled in (< 0) by |by| tiles: the new codes (null: it can't go that far) and what
  *  stands in the way. */
 export function resizeEdge(l: Layout, edge: Edge, by: number): Resized {
-  const codes = l.codes.slice();
-  for (let k = 0; k < Math.abs(by); k++) if (!step(codes, edge, by > 0)) return { codes: null, blocked: [] };
-  if (!by) return { codes, blocked: [] };
+  const codes = resizedCodes(l, edge, by);
+  if (!codes || !by) return { codes, blocked: [] };
   return { codes, blocked: blockersOf(l, withTiles(l, codes)) };
+}
+
+/** The grid's codes with the edge moved `by` tiles (null: it can't go that far), what's in the way not looked at (the
+ *  editor's steppers and its ghost of the new coast). */
+export function resizedCodes(l: Layout, edge: Edge, by: number): Uint8Array | null {
+  const codes = l.codes.slice();
+  for (let k = 0; k < Math.abs(by); k++) if (!step(codes, edge, by > 0)) return null;
+  return codes;
 }
 
 /** A layout with these codes (the objects as they are). */

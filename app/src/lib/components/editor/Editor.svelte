@@ -11,6 +11,7 @@
   import { extentOf, fromJson, footOf, objMid, opsBetween, toJson, type Layout, type Obj } from '#lib/layout/model.ts';
   import { validate, type Issue } from '#lib/layout/validate.ts';
   import { riverStems } from '#lib/layout/river.ts';
+  import { EDGES, landSize, resizedCodes, type Blocker, type Edge } from '#lib/layout/resize.ts';
   import { artUrl } from '#lib/art.ts';
   import type { Live } from '#lib/sync/live.ts';
   import Preview3D from './Preview3D.svelte';
@@ -18,7 +19,7 @@
   import HomePicker from '../homes/HomePicker.svelte';
   import { draw, fitView, tileUnder, toScreen, toWorld, zoomAt, type View } from './plan.ts';
   import {
-    brushTiles, cliff, copy, ghostFoot, inBox, move, objectAt, paint, paste, place, remove, removable, restyle, revert, rotate, sameLayout, wetAt, type Clip
+    brushTiles, cliff, copy, ghostFoot, inBox, move, objectAt, paint, paste, place, remove, removable, resize, restyle, revert, rotate, sameLayout, wetAt, type Clip
   } from './edits.ts';
 
   let { me, relay }: { me: 'A' | 'B'; relay: Live | null } = $props();
@@ -148,6 +149,16 @@
     for (let j = 0; j < d && ok; j++) for (let i = 0; i < w && ok; i++) if (placing.k !== 'bridge' && (wetAt(cur, x + i, z + j) || cur.kind(x + i, z + j) === 'sea')) ok = false;
     return { k: placing.k, x, z, f: placeF, ok };
   });
+  // しまの おおきさ: the land's size, which way each edge can go, the new coast's ghost (a stepper hovered, or a resize
+  // waiting on what's in its way)
+  const isle = $derived(landSize(cur));
+  const room = $derived(Object.fromEntries(EDGES.map((e) => [e, { out: !!resizedCodes(cur, e, 1), in: !!resizedCodes(cur, e, -1) }])) as Record<Edge, { out: boolean; in: boolean }>);
+  let sizeHover = $state<{ edge: Edge; by: number } | null>(null);
+  let pending = $state<{ edge: Edge; by: number; blocked: Blocker[]; stuck: string[] } | null>(null);
+  const coast = $derived.by(() => {
+    const r = sizeHover ?? pending;
+    return r ? resizedCodes(cur, r.edge, r.by) : null;
+  });
   const brushAt = $derived(hover && (tool === 'paint' || tool === 'cliff') ? brushTiles(hover[0], hover[1], size) : null);
   const box = $derived(drag?.mode === 'box' && hover ? { c0: drag.tile[0], r0: drag.tile[1], c1: hover[0], r1: hover[1] } : null);
 
@@ -163,7 +174,7 @@
       c.height = Math.round(H * dpr);
     }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    draw(ctx, { layout: cur, view, w: W, h: H, grid, selected, hover, moved, ghost, brush: brushAt, box, issues, focus, icon, river: riverLine ? stems : null });
+    draw(ctx, { layout: cur, view, w: W, h: H, grid, selected, hover, moved, ghost, brush: brushAt, box, issues, focus, icon, river: riverLine ? stems : null, coast });
   });
 
   // the issues, a moment after a change
@@ -450,6 +461,30 @@
   function setVariant(s: string) {
     if (one) commit(restyle(store.current, one.id, s), 'かえた');
   }
+  const EDGE_NAME: Record<Edge, string> = { front: 'まえ', back: 'おく', left: 'ひだり', right: 'みぎ' };
+  /** An edge a tile out or in: one action, its ops one burst (commit); what's in the way listed instead, and 「うごかす」
+   *  (`moveIn`) moves it inside first (a fixed piece never deleted: one with nowhere to go holds it). */
+  function resizeBy(edge: Edge, by: number, moveIn = false) {
+    const r = resize(store.current, edge, by, moveIn);
+    const label = `しまを ${by > 0 ? 'ひろげた' : 'せばめた'}（${EDGE_NAME[edge]}）`;
+    if (r.layout) {
+      pending = null;
+      commit(r.layout, label);
+      say(r.removed.length ? `${label} · ${r.removed.length}こ しまった` : label);
+      return;
+    }
+    if (!r.blocked.length) return say('これいじょう できません');
+    pending = { edge, by, blocked: r.blocked, stuck: r.stuck };
+    say(r.stuck.length ? 'うごかせない ものが あります（さきに うごかしてね）' : 'じゃまな ものが あります');
+  }
+  /** Select a piece and bring it to the middle of the plan. */
+  function showObj(id: string) {
+    const o = cur.objects.get(id);
+    if (!o) return;
+    selected = new Set([id]);
+    const [mx, mz] = objMid(cur, o), [x, y] = toScreen(view, mx, mz);
+    view = { ...view, ox: view.ox + W / 2 - x, oy: view.oy + H / 2 - y };
+  }
   function showIssue(is: Issue) {
     focus = focus === is ? null : is;
     if (is.ids.length) selected = new Set(is.ids.filter((id) => cur.objects.has(id)));
@@ -641,6 +676,43 @@
         </div>
       </section>
     {/if}
+    <section class="size" data-island-size>
+      <h2>しまの おおきさ <small data-size-readout>{isle.cols} × {isle.rows}</small></h2>
+      <div class="edges">
+        {#each EDGES as e (e)}
+          <div class="edge" data-edge={e}>
+            <span class="ename">{EDGE_NAME[e]}</span>
+            {#each [-1, 1] as by (by)}
+              <button
+                type="button"
+                data-resize={e}
+                data-by={by}
+                disabled={!room[e][by > 0 ? 'out' : 'in']}
+                aria-label={`${EDGE_NAME[e]}を 1マス ${by > 0 ? 'ひろげる' : 'せばめる'}`}
+                title={`${EDGE_NAME[e]}を 1マス ${by > 0 ? 'ひろげる' : 'せばめる'}`}
+                onpointerenter={() => (sizeHover = { edge: e, by })}
+                onpointerleave={() => (sizeHover = null)}
+                onclick={() => resizeBy(e, by)}>{by > 0 ? '＋' : '−'}</button>
+            {/each}
+          </div>
+        {/each}
+      </div>
+      {#if pending}
+        {@const p = pending}
+        <div class="blocked" data-resize-blocked>
+          <p>{EDGE_NAME[p.edge]}を {p.by > 0 ? 'ひろげる' : 'せばめる'}には じゃまな もの（{p.blocked.length}こ）<small>★ は きえない もの: うごかすだけ</small></p>
+          <ul>
+            {#each p.blocked as b (b.id)}
+              <li><button type="button" data-blocker={b.id} class:stuck={p.stuck.includes(b.id)} aria-pressed={selected.has(b.id)} onclick={() => showObj(b.id)}>{b.fixed ? '★ ' : ''}{kindDef(b.k)?.ja ?? b.k}<small>{b.id}{p.stuck.includes(b.id) ? ' · うごかせない' : ''}</small></button></li>
+            {/each}
+          </ul>
+          <div class="row">
+            <button type="button" data-resize-move onclick={() => resizeBy(p.edge, p.by, true)}>うごかす</button>
+            <button type="button" onclick={() => (pending = null)}>やめる</button>
+          </div>
+        </div>
+      {/if}
+    </section>
     <section class="issues" data-issues>
       <h2>チェック {#if errors}<span class="bad">{errors}</span>{:else}<span class="good">OK</span>{/if}</h2>
       <ul>
@@ -739,7 +811,18 @@
   }
   .p3d { height: 260px; border-radius: 12px; overflow: hidden; border: 2px solid var(--c-lip); }
   .bar { display: flex; gap: 6px; }
-  .inspect, .issues, .file, .mine { background: var(--c-card); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .edges { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; }
+  .edge { display: flex; align-items: center; gap: 4px; }
+  .ename { font-size: 13px; font-weight: 700; min-width: 3.2em; }
+  .edge button { padding: 2px 10px; min-width: 34px; }
+  .blocked { background: #fff8e2; border: 2px solid #d7a323; border-radius: 10px; padding: 6px 8px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+  .blocked p { margin: 0; }
+  .blocked p small { display: block; font-size: 11px; color: var(--c-ink-soft); }
+  .blocked ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; max-height: 180px; overflow-y: auto; }
+  .blocked li button { width: 100%; text-align: left; font-weight: 600; display: flex; justify-content: space-between; gap: 6px; border-width: 1.5px; }
+  .blocked li button small { font-size: 11px; color: var(--c-ink-soft); font-weight: 400; }
+  .blocked li button.stuck { border-color: #d0533c; background: #fff0ec; }
+  .inspect, .issues, .file, .mine, .size { background: var(--c-card); border-radius: 12px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
   .issues ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; max-height: 240px; overflow-y: auto; }
   .issues li button { width: 100%; text-align: left; font-weight: 500; display: flex; flex-direction: column; gap: 1px; border-width: 1.5px; }
   .issues li button small { font-size: 11px; color: var(--c-ink-soft); }
