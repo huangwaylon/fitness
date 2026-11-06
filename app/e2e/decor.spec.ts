@@ -82,7 +82,7 @@ test('on the layout: a piece from the tray goes down on fine ground, a drag move
   await expect.poll(() => ie(page, (e) => e.sel()!.f)).toBe(1);
   // over the stream it's red, and ✓ won't place it
   await tapTile(page, 5, 24);
-  await expect.poll(() => ie(page, (e) => e.sel()?.why ?? null)).toContain('みず');
+  await expect.poll(() => ie(page, (e) => e.sel()?.why ?? null)).toContain('水');
   await expect(page.locator('button[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
   await tapTile(page, fx, fz);
   await expect.poll(() => ie(page, (e) => e.sel()?.why ?? 'held')).toBe('held');

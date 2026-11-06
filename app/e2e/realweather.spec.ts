@@ -106,7 +106,7 @@ test.describe('the real weather', () => {
     const sec = page.locator('dialog[open] [data-weather-section]');
     await sec.scrollIntoViewIfNeeded();
     await expect(sec.locator('[data-wx-mode="real"]')).toHaveAttribute('aria-checked', 'true');
-    await expect(sec.locator('[data-wx-now="real"]')).toHaveText(`いま: とうきょう ${realSky === 'heavy' ? 'おおあめ' : 'はれ'}`);
+    await expect(sec.locator('[data-wx-now="real"]')).toHaveText(`現在: 東京 ${realSky === 'heavy' ? '大雨' : '晴れ'}`);
     await expect(sec.locator('[data-wx-credit]')).toHaveText('天気: Open-Meteo（気象庁モデル）');
     await sec.locator('[data-wx-mode="game"]').click();
     await expect(sec.locator('[data-wx-mode="game"]')).toHaveAttribute('aria-checked', 'true');

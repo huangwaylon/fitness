@@ -49,7 +49,7 @@ test('holding a piece, a tap on another doesn’t take it: a head-shake and 「�
   // a tap on the table: still the stool, the bar says so
   [x, y] = await tile(page, table.x + 1, table.z);
   await page.mouse.click(x, y);
-  await expect(page.locator('[data-note="hold"]')).toHaveText('いまの かぐを おいてね');
+  await expect(page.locator('[data-note="hold"]')).toHaveText('今の家具を置いてください');
   expect(await sel(page)).toMatchObject({ id: stool.id, x: stool.x, z: stool.z });
   if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/hold-hint.png` });
   // the hint the first three times only (this phone's), then only the head-shake

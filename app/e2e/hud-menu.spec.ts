@@ -133,10 +133,10 @@ test('ずかん opens the ずかん (its kinds, a kind\'s page with ‹), せっ
   await fromMenu(page, 'zukan');
   await folded(page);
   const dlg = page.locator('dialog[open]');
-  await expect(dlg.locator('.navbar')).toContainText('ずかん');
+  await expect(dlg.locator('.navbar')).toContainText('図鑑');
   await expect(dlg.locator('[data-zukan]')).toHaveCount(7);
   await dlg.locator('[data-zukan="fish"]').click();
-  await expect(dlg.locator('[data-zukan-head]')).toContainText('さかな');
+  await expect(dlg.locator('[data-zukan-head]')).toContainText('魚');
   await dlg.locator('.titlebar .back').click();
   await expect(dlg.locator('[data-zukan="fish"]')).toBeVisible();
   await page.keyboard.press('Escape');
@@ -144,7 +144,7 @@ test('ずかん opens the ずかん (its kinds, a kind\'s page with ‹), せっ
   // the next opening starts on the kinds
   await fromMenu(page, 'settings');
   await folded(page);
-  await expect(dlg.locator('.navbar')).toContainText('せってい');
+  await expect(dlg.locator('.navbar')).toContainText('設定');
   for (const id of ['#sec-look', '[data-decor-start]', '#sec-sound', '#sec-lang', '#sec-sync']) await expect(dlg.locator(id)).toBeAttached(); // (もようがえ one row since fd2966b1: its はじめる)
   await dlg.locator('.titlebar .close').click();
   await expect(dlg).toHaveCount(0);

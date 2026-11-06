@@ -166,7 +166,7 @@ test('a tap on a fish shows its card: its names, who found it first and when, ho
   await expect(card.locator('[data-museum-finder="B"]')).toContainText('11/4');
   await expect(card.locator('[data-museum-times]')).toContainText('×1');
   // ✕ closes it
-  await card.getByRole('button', { name: 'とじる' }).click();
+  await card.getByRole('button', { name: '閉じる' }).click();
   await expect(card).toHaveCount(0);
 });
 

@@ -41,7 +41,7 @@ test('a member sets both profiles; the partner’s phone has them; the guest see
   await expect(checked(a.page, 'data-bmi-std')).toHaveAttribute('data-bmi-std', 'asia'); // the default
   await a.card.locator('[data-sex=m]').click();
   await a.card.locator('[data-birth]').fill('1990-05-12');
-  await expect(a.card.locator('[data-profile-age]')).toHaveText(`${ageNow('1990-05-12')}さい`);
+  await expect(a.card.locator('[data-profile-age]')).toHaveText(`${ageNow('1990-05-12')}歳`);
   // うめ's, from ウェイ's phone (either member sets either's)
   await a.card.locator('select[data-pick=who]').selectOption('B');
   await expect(a.card).toHaveAttribute('data-profile', 'B');

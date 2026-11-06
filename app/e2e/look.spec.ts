@@ -70,7 +70,7 @@ test('コーデ: save, wear, うわがき, なまえ, けす with とりけす; 
   await expect(aran).toHaveAttribute('data-part', 'TopsTexTopOuterLAran1');
   expect(await aran.boundingBox()).toEqual(box);
   if (process.env.SHOTS) await a.screenshot({ path: `${process.env.SHOTS}/look-tops.png` });
-  await expect(status(a)).toHaveText('いつもの · アレンジちゅう');
+  await expect(status(a)).toHaveText('いつもの · アレンジ中');
   await expect(settings(a).locator('[data-look-revert]')).toBeVisible();
   // nothing sent while editing
   expect(sentPrefs(rec, 'A', 'look')).toEqual([]);
@@ -94,9 +94,9 @@ test('コーデ: save, wear, うわがき, なまえ, けす with とりけす; 
   await sub(a, 'bottoms');
   await settings(a).locator('[data-closet=bottom] [data-item=BottomsTexPantsNormalDenim]').click();
   await settings(a).locator('[data-colours=BottomsTexPantsNormalDenim] [data-part=BottomsTexPantsNormalDenim0]').click();
-  await expect(status(a)).toHaveText('ふゆ · アレンジちゅう');
+  await expect(status(a)).toHaveText('ふゆ · アレンジ中');
   await tab(a, 'coord');
-  await expect(settings(a).locator('[data-look-acts]')).toContainText('「ふゆ」と ちょっと ちがうよ');
+  await expect(settings(a).locator('[data-look-acts]')).toContainText('「ふゆ」と少し違います');
   await settings(a).locator('[data-look-overwrite]').click();
   await expect.poll(() => (lastValue(rec, 'A', 'savedLooks') as Saved).map((s) => [s.id, s.name, s.look.bottom])).toEqual([[id, 'ふゆ', 'BottomsTexPantsNormalDenim0']]);
   await expect(status(a)).toHaveText('ふゆ');
@@ -123,11 +123,11 @@ test('コーデ: save, wear, うわがき, なまえ, けす with とりけす; 
   // けす → the confirm → とりけす on the banner: the コーデ comes back, nothing sent
   const sends = sentPrefs(rec, 'A', 'savedLooks').length;
   await settings(a).locator('[data-look-delete]').click();
-  await expect(card(a)).toContainText('この コーデを けしますか？');
+  await expect(card(a)).toContainText('このコーデを削除しますか？');
   if (process.env.SHOTS) await a.screenshot({ path: `${process.env.SHOTS}/look-delete.png` });
   await card(a).locator('[data-look-confirm]').click();
   await expect(chip(a, id)).toHaveCount(0);
-  await a.getByRole('button', { name: 'とりけす' }).click();
+  await a.getByRole('button', { name: '取り消す' }).click();
   await expect(chip(a, id)).toBeVisible();
   await a.waitForTimeout(5500); // the hold's whole window: nothing goes out after an undo
   expect(sentPrefs(rec, 'A', 'savedLooks')).toHaveLength(sends);
@@ -138,7 +138,7 @@ test('コーデ: save, wear, うわがき, なまえ, けす with とりけす; 
   await expect.poll(() => sentPrefs(rec, 'A', 'look')).toHaveLength(1);
   expect(lastValue(rec, 'A', 'look')).toMatchObject({ kind: 'player', look: { top: 'TopsTexTopOuterLAran1', bottom: 'BottomsTexPantsNormalDenim0' } });
   expect(sentPrefs(rec, 'A', 'look')[0][0]).toBe(true);
-  await expect(a.getByRole('status').filter({ hasText: 'すがたを かえたよ' })).toBeVisible();
+  await expect(a.getByRole('status').filter({ hasText: '姿を変えました' })).toBeVisible();
   await expect(settings(a).locator('[data-look-worn]')).toHaveText('おでかけ');
   await a.context().close();
 
@@ -177,7 +177,7 @@ test('けす goes out after its banner; もどす undoes this visit; full at 20 
   const save = settings(a).locator('[data-look-save]');
   await expect(save).toHaveClass(/\boff\b/);
   await save.click();
-  await expect(a.getByRole('status').filter({ hasText: 'コーデは 20こまで。いっぱいだよ' })).toBeVisible();
+  await expect(a.getByRole('status').filter({ hasText: 'コーデは20個まで保存できます' })).toBeVisible();
   await expect(card(a)).toHaveCount(0);
 
   // もどす: a change, then back to what was worn when the level opened
@@ -239,7 +239,7 @@ test('むらびと tab: a pick swaps the stage, nothing goes out until leaving (
   await settings(a).getByRole('searchbox').fill(jun);
   await settings(a).getByRole('radio', { name: jun }).click();
   await expect(settings(a).locator('[data-look-preview=villager][data-look-3d=off]')).toBeVisible();
-  await expect(status(a)).toHaveText(`むらびと · ${jun}`);
+  await expect(status(a)).toHaveText(`住民 · ${jun}`);
   await a.waitForTimeout(300);
   expect(lookKeys(rec, 'A')).toEqual([]); // the draft: nothing sent yet
   await back(a); // to the list: sent, the villager first
@@ -250,7 +250,7 @@ test('むらびと tab: a pick swaps the stage, nothing goes out until leaving (
   await expect(settings(a).locator('[data-look-worn]')).toHaveText(jun);
 
   await openLook(a);
-  await expect(settings(a).locator('[data-look-villager-note]')).toContainText(`いまは ${jun}の すがた`);
+  await expect(settings(a).locator('[data-look-villager-note]')).toContainText(`今は${jun}の姿`);
   await tab(a, 'coord');
   await expect(chip(a, 'usual')).toHaveAttribute('aria-pressed', 'false');
   await chip(a, 'usual').click();
@@ -261,7 +261,7 @@ test('むらびと tab: a pick swaps the stage, nothing goes out until leaving (
   await expect(settings(a).locator('[data-look-row]')).toHaveAttribute('data-look-row', 'player');
   await expect(settings(a).locator('[data-look-worn]')).toHaveText('いつもの');
   // the banner's とりけす: Raymond again, as when the level opened
-  await a.getByRole('button', { name: 'とりけす' }).click();
+  await a.getByRole('button', { name: '取り消す' }).click();
   await expect.poll(() => sentPrefs(rec, 'A', 'look').map(([, v]) => v)).toEqual([{ kind: 'villager' }, null, { kind: 'villager' }]);
   expect(sentPrefs(rec, 'A', 'villager')).toHaveLength(1); // the pref was Raymond already
   await expect(settings(a).locator('[data-look-row]')).toHaveAttribute('data-look-row', 'villager');
@@ -289,7 +289,7 @@ test('the round trip: a villager, then a top wears the player again with this vi
   await back(a);
   await a.waitForTimeout(300);
   expect(lookKeys(rec, 'A')).toEqual([]);
-  await expect(a.getByRole('status').filter({ hasText: 'すがたを かえたよ' })).toHaveCount(0);
+  await expect(a.getByRole('status').filter({ hasText: '姿を変えました' })).toHaveCount(0);
   await a.context().close();
 });
 

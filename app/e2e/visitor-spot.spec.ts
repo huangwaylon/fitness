@@ -107,12 +107,12 @@ test('something put on the spot: red, why in the bar, the usual spot’s ring ag
   await expect.poll(() => ie(page, (e) => (e.sel() ? [e.sel()!.k, e.sel()!.why] : null))).toEqual(['park-bench', null]);
   await page.locator('[data-act="place"]').click();
   await expect(page.locator('[data-mark="plaza"][data-mark-ok="false"]')).toHaveCount(1);
-  await expect(page.locator('[data-island-warn]')).toContainText('おきゃくさんの ばしょ');
+  await expect(page.locator('[data-island-warn]')).toContainText('お客さんの場所');
   await expect(page.locator('[data-mark="usual"]')).toHaveCount(1);
   // and the mark itself won't go down where nobody can stand
   await page.locator('[data-tab="visitor"]').click();
   await page.locator('[data-island-item="plaza"]').click();
   await page.mouse.click(p[0], p[1]);
-  await expect.poll(() => ie(page, (e) => e.sel()?.why ?? null)).toContain('たてない');
+  await expect.poll(() => ie(page, (e) => e.sel()?.why ?? null)).toContain('立てない');
   await expect(page.locator('[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
 });

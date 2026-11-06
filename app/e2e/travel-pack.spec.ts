@@ -35,7 +35,7 @@ const mine = (p: Page) => p.locator('[data-pack-mine]');
 const chip = (p: Page, id: string, who: 'A' | 'B' | 'G') => item(p, id).locator(`[data-chip="${who}"]`);
 const cat = (p: Page, id: string) => p.locator(`[data-pack-cat="${id}"]`);
 const edit = (p: Page) => p.locator('[data-pack-edit]').click();
-const banner = (p: Page) => p.getByRole('button', { name: 'とりけす' });
+const banner = (p: Page) => p.getByRole('button', { name: '取り消す' });
 /** A row's (or a category's) actions, then one of them. */
 async function act(p: Page, id: string, action: 'rename' | 'up' | 'down' | 'del') {
   await p.locator(`[data-pack-acts="${id}"]`).click();

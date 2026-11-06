@@ -137,7 +137,7 @@ test('ticking: the tick marks it done with my name, it stays where it was, the c
   await expect(sheet(page).locator('[data-wed-task]')).toHaveCount(1); // (held where it was)
   await expect(sheet(page).locator('[data-wed-progress] [data-wed-tally]')).toHaveAttribute('data-wed-tally', '3/8');
   await open(page, 'wdemo03');
-  await expect(card(page, 'wdemo03').locator('[data-wed-by="A"]')).toHaveText(/ が完了$/);
+  await expect(card(page, 'wdemo03').locator('[data-wed-by="A"]')).toHaveText(/.が完了$/);
   await sheet(page).locator('[data-wed-tick="wdemo03"]').click();
   await expect(card(page, 'wdemo03')).not.toHaveAttribute('data-done', 'true');
   // choosing the filter again lets the held rows go
@@ -286,7 +286,7 @@ test('メモ: the note as a letter, links safe; 編集 with the format tools, �
   await sheet(page).locator('[data-wed-note-save]').click();
   await expect(doc.locator('li strong')).toHaveText('ケーキ');
   await expect(root(page).locator('.tabbar')).toBeVisible();
-  await expect(sheet(page)).toContainText(/\d+月\d+日\(.\)に .+ が更新/);
+  await expect(sheet(page)).toContainText(/\d+月\d+日\(.\)に.+が更新/);
   await expect(banner(page)).toContainText('保存しました');
 });
 

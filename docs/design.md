@@ -2505,7 +2505,7 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
 `full` variant; its own chunk with `i18n/travel.*.json`, loaded through `open.svelte.ts`, a `lazySheet`, mounted by
 `island/Hud.svelte`). The island is paused under it.
 - **Opening:** straight into the trip on now, else back where it was left (the trip and its page, while the app runs).
-- **Offline:** the chunk not cached yet, the pill's banner 「オフラインです」 + もう一度; a guide's chunk failing,
+- **Offline:** the chunk not cached yet, the pill's banner 「オフラインです」 + もういちど; a guide's chunk failing,
   読み込めませんでした + もう一度 under the trip's own header; the trip note not in yet, each private value is 🔒 ・・・ and a
   line under the photo says 「オンラインで表示」.
 - **The list** (`TripList.svelte`, from `trips/meta.ts` only: no guide loads for it): これからの旅 (on now and coming,

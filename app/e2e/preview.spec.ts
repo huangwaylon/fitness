@@ -69,10 +69,10 @@ test('a season, the weather and the time of day; もどす is the real day again
   await expect(chip(page)).toContainText('ふゆ');
 
   await fromMenu(page, 'settings');
-  await expect(page.locator('[data-preview-summary]')).toHaveText('ふゆ · ゆき · ゆうがた'); // folded: what's showing
+  await expect(page.locator('[data-preview-summary]')).toHaveText('冬 · 雪 · 夕方'); // folded: what's showing
   await page.locator('[data-preview-reset]').click();
   await expect(page.locator('[data-preview-reset]')).toHaveCount(0);
-  await expect(page.locator('[data-preview-summary]')).toHaveText('おまかせ');
+  await expect(page.locator('[data-preview-summary]')).toHaveText('自動');
   await unfold(page);
   await expect(page.locator('[data-preview="season:auto"]')).toHaveAttribute('aria-checked', 'true');
   await page.keyboard.press('Escape');
