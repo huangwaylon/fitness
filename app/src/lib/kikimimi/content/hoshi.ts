@@ -830,7 +830,7 @@ const DROWS: readonly DRow[] = [
     lines: [
       ['lopez', 'Crime is down 11% from last year.', '犯罪は昨年比で11%減っています。', 'Crime is down eleven percent from last year.'],
       ['agnes', "Reported crime. Which isn't quite the same thing.", '「届け出のあった」犯罪ね。それは同じとは言えないでしょ。'],
-      ['lopez', 'Meaning?', 'というと？']
+      ['lopez', 'Meaning what?', 'というと？']
     ],
     choices: ['Meaning fewer people may be bothering to report it.', 'Meaning eleven, not seven.', 'Meaning crime is up eleven percent.'],
     ja: 'つまり、わざわざ届け出る人が減っているのかもしれない。', note: 'Reported に強勢。届け出数と実数は違う',

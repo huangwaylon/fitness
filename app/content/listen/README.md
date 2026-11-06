@@ -134,6 +134,37 @@ accents wait for the cast to grow (curriculum §9).
   - `plan`: 3–4 English choices; `ja` is the right one in Japanese. Vary `answer`. Avoid villager names in the
     choices: describe roles ("the one taking her to dinner").
 
+## Stories (`story/`, おやすみ ものがたり, curriculum §7.1)
+
+Bedtime serials in the framework's `serial` shape, one file per serial (`st-johnny`, `st-cafe`): extensive listening
+at ~95 % comprehension, so no score, no questions, no notes or tags. They live in `story/` so content.test doesn't
+read them; `src/lib/kikimimi/stories.test.ts` does.
+
+```yaml
+unit: st-johnny                  # the header above, plus name (UI copy) and host; game: serial
+cast: { narrator: us-f5 }        # required: the narrator's voice
+items:
+  - kind: serial
+    id: serial-johnny-1          # serial-…
+    chapter: 1                   # 1, 2, … in order
+    title: "Washed Up Again"     # English, no digits (it may be read out)
+    line: "ジョニーが タイペイの よいちの はなしを します"   # StoryFrame's one line, UI copy
+    ja: "..."                    # the chapter's summary, natural written Japanese
+    scene: street
+    segments:                    # 6-28 words each (3-12 s at ~140 wpm); 450-700 words a chapter (3-5 min)
+      - { who: narrator, en: "..." }
+      - { who: dom, en: "Hey, buddy, are you okay? You're kind of soaked, man.", tts: "Hey, buddy, you okay? You're kinda soaked, man." }
+    ph: [{ id: ph-wash-up, en: "wash up", ja: "...", match: "wash(ed|es)? up", register: friend, scene: "...", trap: "..." }]
+    predict: { ask: "...", choices: ["...", "...", "..."], answer: 0, ja: "..." }
+```
+
+- `who` is `narrator` or a roster villager. Every voice is US (`us-*`), of the speaker's gender, and distinct within
+  a chapter. No digits in `en` either: the narrator reads it. `tts` only where a character speaks casually.
+- `ph`: 5–8 per chapter (curriculum-units.md's phrase shape). Its `match` (or `en`) must be heard in the chapter; ids
+  are unique across stories and units.
+- `predict` is for the morning after, never during the story; `answer` is what the next chapter tells. The last
+  chapter has none.
+
 ## Vocabulary
 
 - `register`: service, colleague, boss, friend, partner, neighbour, stranger, official, broadcast.

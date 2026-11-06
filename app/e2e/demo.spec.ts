@@ -380,7 +380,7 @@ test('tree popup: the four goals (steps first), today’s amount / the goal with
   const [p, r] = await Promise.all([pop, page.locator('.hud-row')].map((l) => l.boundingBox()));
   expect(p!.y).toBeGreaterThan(r!.y + r!.height);
   expect(p!.y + p!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
-  const rows = pop.locator('.row');
+  const rows = pop.locator('.row[data-row]'); // the goal rows (the meals row is .row.meals)
   await expect(rows).toHaveCount(4);
   await expect(rows.locator('.lbl')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']); // steps first, then Apple's ring order
   const units = [/歩$/, /kcal$/, /分$/, /分$/];

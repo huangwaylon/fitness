@@ -1,0 +1,300 @@
+# おやすみ ものがたり (docs/curriculum.md §7.1): ジョニーの たび, a bedtime serial in five chapters. ジョニー (Gulliver)
+# washes up on the island again and, over five nights by a beach fire, tells the neighbors how he got there: a night
+# market in Taipei, a snowed-in cabin in Vermont, a slow ferry in the Seto Inland Sea, a diner on Route 66 and a
+# lighthouse in Maine. Extensive listening at ~95 % comprehension for a B1+ ear: no score, no questions, a sleep timer.
+# The narrator is us-f5 (warm, quietly funny); every speaker is a US voice. Each chapter's `predict` is for the morning
+# after, never during the story; its `answer` is what the next chapter tells. Checks: src/lib/kikimimi/stories.test.ts.
+schema: 1
+unit: st-johnny
+game: serial
+name: ジョニーの たび
+stage: 3
+track: people
+seeds: [66, 63]
+features: { primary: linking, review: contraction }
+cando: "ねる まえに 旅の はなしを 聞いて、だいたい わかる"
+status: draft
+host: gulliver
+cast: { narrator: us-f5 }
+items:
+  - kind: serial
+    id: serial-johnny-1
+    chapter: 1
+    title: "Washed Up Again"
+    line: "ジョニーが タイペイの よいちの はなしを します"
+    ja: "朝の浜辺で、ちゃちゃまるがずぶぬれのジョニーを見つける。夜、たき火を囲んで、ジョニーは台北の夜市の話をする。行列のできる胡椒餅、臭豆腐、タピオカミルクティーのおばあさん。でも、その夜市で大事な真鍮のコンパスをなくしてしまった。"
+    scene: street
+    segments:
+      - { who: narrator, en: "It was a quiet morning on the island, the kind where the tide is low and the sand is still cool from the night." }
+      - { who: narrator, en: "Dom was out for his morning run when he spotted something blue and white near the water." }
+      - { who: narrator, en: "At first he thought it was a pile of old laundry. Then the pile of laundry started to snore." }
+      - { who: dom, en: "Whoa, whoa. Hey, buddy, are you okay? You're kind of soaked, man.", tts: "Whoa, whoa. Hey, buddy, you okay? You're kinda soaked, man." }
+      - { who: narrator, en: "The laundry sat up, blinked at the sky, and fixed a sailor's cap that had seen much better days." }
+      - { who: gulliver, en: "Ah, good morning, sailor! Tell me, is this Hawaii? It feels a little bit like Hawaii." }
+      - { who: dom, en: "Nope, it's just our island. But hey, welcome back, Gulliver. This is, like, your fifth time.", tts: "Nope, it's jus' our island. But hey, welcome back, Gulliver. This is, like, your fifth time." }
+      - { who: narrator, en: "Gulliver did not remember the island. He never did, no matter how many times he washed up on it. But he remembered the coffee." }
+      - { who: narrator, en: "By evening, word had gotten around. A small fire was crackling on the beach, and a few neighbors had come down with mugs of cocoa." }
+      - { who: goldie, en: "So, where were you this time? Last time it was Peru? Portugal? Someplace with a P.", tts: "So, where were ya this time? Last time it was... Peru? Portugal? Someplace with a P." }
+      - { who: gulliver, en: "Taiwan! Taipei, to be exact. And let me tell you, I have never eaten so well in my whole life." }
+      - { who: narrator, en: "His ship had docked near Taipei for two nights. On the first evening, the captain told the crew to go find their own dinner." }
+      - { who: narrator, en: "So Gulliver followed the crowd, and the crowd led him to a night market on a long, narrow street near the river." }
+      - { who: gulliver, en: "At one end there's this temple, all lit up in red and gold. And from there, the food stalls just go on and on." }
+      - { who: narrator, en: "The air was warm and smelled like a hundred dinners at once. Grilled squid. Sweet sausage. Something fried." }
+      - { who: narrator, en: "The first thing he noticed was a line. A long one. Maybe thirty people, all waiting patiently in front of one tiny stall." }
+      - { who: gulliver, en: "Now, I have a rule. If the locals get in line for something, you get in line too. No questions asked." }
+      - { who: narrator, en: "At the front, a man was pressing balls of dough onto the inside wall of a big clay oven." }
+      - { who: narrator, en: "They were pepper buns. Crispy and golden on the outside, and inside, juicy pork with lots of green onion and black pepper." }
+      - { who: gulliver, en: "I took one big bite, and it was so hot I burned my tongue. Totally worth it, though. Every single time." }
+      - { who: goldie, en: "Hold on. Every single time? How many did you have, exactly?", tts: "Hold on. Every single time? How many didja have, exactly?" }
+      - { who: gulliver, en: "Four. Possibly five. A sailor doesn't count, my dear. A sailor simply enjoys." }
+      - { who: narrator, en: "A little farther down, he walked past a stall where the smell hit him like a wave. Strong, sharp, and honestly, a bit like old socks." }
+      - { who: gulliver, en: "Stinky tofu. They call it that right on the sign. At least they're honest about it." }
+      - { who: dom, en: "Dude, no way. Did you actually try it? I'd be way too scared, honestly.", tts: "Dude, no way. Didja actually try it? I'd be way too scared, honestly." }
+      - { who: gulliver, en: "Of course I did. Smells like a gym bag, tastes like heaven. Crispy outside, soft inside, with pickled cabbage on top." }
+      - { who: narrator, en: "Later, with tired feet, he stopped at a little drink stand run by an older woman with very quick hands." }
+      - { who: narrator, en: "She made him a milk tea with chewy tapioca pearls at the bottom, and asked him, in careful English, where he was from." }
+      - { who: gulliver, en: "I said, I'm from the sea, ma'am. She laughed and said everybody's from somewhere. Then she gave me extra pearls." }
+      - { who: narrator, en: "He sat on a low plastic stool and watched the crowd go by, couples and families and students, all of them in no hurry at all." }
+      - { who: narrator, en: "Somewhere in all that happiness, he took his old brass compass out of his pocket to check the way back to the ship." }
+      - { who: narrator, en: "And that, he said, was the very last time he ever saw it." }
+      - { who: goldie, en: "Oh no, your compass? Is that how you ended up here again?", tts: "Oh no, your compass? Is that how ya ended up here again?" }
+      - { who: gulliver, en: "Well, one thing led to another, as they say. But that, my friends, is a story for tomorrow night." }
+      - { who: narrator, en: "And with that, Gulliver pulled his cap down over his eyes and fell asleep before the fire burned down." }
+      - { who: narrator, en: "Dom put a blanket over him. And the waves kept coming in, slow and steady, all night long." }
+    ph:
+      - { id: ph-wash-up, en: "wash up", ja: "（浜に）流れつく", match: "wash(ed|es)? up", register: friend, scene: "the beach at dawn", trap: "wash up＝あらう ではなく 流れつく" }
+      - { id: ph-word-got-around, en: "word got around", ja: "うわさが ひろまった", match: "word (had |has )?got(ten)? around", register: friend, scene: "the whole island knows", trap: "word＝ことば ではなく うわさ" }
+      - { id: ph-to-be-exact, en: "to be exact", ja: "せいかくに いうと", register: friend, scene: "telling where you were", trap: "あとから くわしく いいなおす あいず" }
+      - { id: ph-get-in-line, en: "get in line", ja: "れつに ならぶ", register: stranger, scene: "a busy food stall", trap: "line＝れつ。アメリカでは queue と いわない" }
+      - { id: ph-totally-worth-it, en: "worth it", ja: "その かちが ある", match: "\\bworth it\\b", register: friend, scene: "a burned tongue", trap: "Totally worth it＝やって よかった" }
+      - { id: ph-no-way, en: "no way", ja: "まさか、うそでしょ", match: "\\bno way\\b", register: friend, scene: "hearing something wild", trap: "みちが ない ではなく おどろき" }
+      - { id: ph-in-no-hurry, en: "in no hurry", ja: "いそいで いない", register: friend, scene: "a slow evening", trap: "no hurry＝のんびり。いそげ ではない" }
+      - { id: ph-one-thing-led, en: "one thing led to another", ja: "なんだかんだ あって", register: friend, scene: "telling a long story short", trap: "くわしく いわずに けっかへ とぶ いいかた" }
+    predict:
+      ask: "あしたの よる、ジョニーは どんな はなしを する？"
+      choices:
+        - "He tells them how he got snowed in at a cabin in Vermont."
+        - "He finds his compass in his pocket after all."
+        - "He opens a pepper bun stall on the beach."
+      answer: 0
+      ja: "バーモントの山小屋で雪に閉じこめられた話をする。"
+
+  - kind: serial
+    id: serial-johnny-2
+    chapter: 2
+    title: "Snowed In in Vermont"
+    line: "ジョニーが ゆきの やまごやの はなしを します"
+    ja: "コンパスなしで乗った船は、まちがえてボストン行きだった。ジョニーはバスで北へ向かい、バーモントの山小屋に住む昔の船乗り仲間ルースを訪ねる。大雪で停電し、3日間とじこめられる。まきストーブ、トランプ、雪にメープルシロップをかけるお菓子。帰りぎわ、ルースは日本の古い絵はがきをくれた。"
+    scene: living
+    segments:
+      - { who: narrator, en: "The next night was cooler, and the fire was a little bigger. Maple had brought a thermos of hot cider, and Kicks had brought his own folding chair." }
+      - { who: kicks, en: "Okay, okay, so you lost the compass. Then what? Did you get on the wrong ship or something?", tts: "Okay, okay, so ya lost the compass. Then what? Didja get on the wrong ship or somethin'?" }
+      - { who: gulliver, en: "How did you know? That's exactly what happened. I got on a big cargo ship, and a month later, I was in Boston." }
+      - { who: narrator, en: "Boston in March is not a place for a sailor in a thin jacket. The wind came off the harbor like it had something personal against him." }
+      - { who: narrator, en: "So Gulliver did what any sensible bird would do. He bought a wool hat, a very large coffee, and a bus ticket north." }
+      - { who: gulliver, en: "I have an old shipmate in Vermont. Ruth. We sailed together for years, and then she retired to a cabin in the woods." }
+      - { who: narrator, en: "The bus wound its way up into the hills. Little white churches, red barns, and snow on everything, like someone had covered the world in frosting." }
+      - { who: narrator, en: "Ruth met him at the bus stop in an old pickup truck. She was wearing a red plaid coat and the same big grin he remembered." }
+      - { who: gulliver, en: "First thing she said was, you look terrible. Second thing she said was, get in, there's soup." }
+      - { who: narrator, en: "The cabin was small and made of logs, with a wood stove in the middle that kept the whole place warm and smelling like pine." }
+      - { who: narrator, en: "That night, it started to snow. Not the light, pretty kind. The serious kind, the kind that doesn't plan on stopping." }
+      - { who: narrator, en: "By morning, the snow was halfway up the windows, and the power was out. They were snowed in, and the whole world was quiet and white." }
+      - { who: maple, en: "Oh my gosh, that sounds so cozy. Weren't you scared, though, being stuck out there?", tts: "Oh my gosh, that sounds so cozy. Weren'tcha scared, though, bein' stuck out there?" }
+      - { who: gulliver, en: "Not one bit. Ruth said, out here, you don't fight the snow. You just make more soup and wait it out." }
+      - { who: narrator, en: "So that's what they did. They kept the stove going, played cards by candlelight, and told the same old sea stories they had told a hundred times." }
+      - { who: narrator, en: "Ruth cheated at cards. Gulliver knew it, and Ruth knew he knew it, and neither of them said a word about it." }
+      - { who: narrator, en: "On the second day, Ruth said she had a treat for him. She heated a pot of maple syrup on the stove until it was bubbling." }
+      - { who: narrator, en: "Then she went outside, packed a pan full of clean, fresh snow, and poured the hot syrup over it in thin lines." }
+      - { who: gulliver, en: "It turns into this soft, chewy candy, right there on the snow. You pick it up with a fork. They call it sugar on snow." }
+      - { who: maple, en: "Wait, wait. Maple syrup on snow? Okay, I need to try that. Like, right now.", tts: "Wait, wait. Maple syrup on snow? Okay, I needa try that. Like, right now." }
+      - { who: gulliver, en: "And here's the strange part. She served it with a plain donut and a sour pickle on the side." }
+      - { who: kicks, en: "A pickle? Come on, man. You're making that up. Nobody eats a pickle with candy.", tts: "A pickle? C'mon, man. You're makin' that up. Nobody eats a pickle with candy." }
+      - { who: gulliver, en: "I swear on my cap. The pickle cuts the sweetness, so you can keep eating. It's a Vermont thing. And it works." }
+      - { who: narrator, en: "On the third day, they heard a low rumble through the trees." }
+      - { who: narrator, en: "It was the snowplow, pushing a clean path down the road. And the power came back on." }
+      - { who: narrator, en: "Gulliver was almost sad. He had gotten used to the quiet, and to losing at cards." }
+      - { who: narrator, en: "Before he left, Ruth took a faded postcard out of an old wooden box." }
+      - { who: narrator, en: "It showed a small white ferry on a calm blue sea, with green islands all around." }
+      - { who: gulliver, en: "She said, it's in Japan. The Seto Inland Sea. I always meant to go and never did. So you go, and tell me about it." }
+      - { who: narrator, en: "Gulliver put the postcard in his inside pocket, right where the compass used to be. And that's where he kept it, the whole way across the world." }
+      - { who: kicks, en: "Dude, that's actually really sweet. Did you ever write to her?", tts: "Dude, that's actually really sweet. Didja ever write to her?" }
+      - { who: gulliver, en: "Not yet. I'm still working on it. But first, I have to tell you about the ferry. Tomorrow night." }
+      - { who: narrator, en: "Maple poured the last of the cider. And somewhere far away, it was snowing on a little log cabin in the woods." }
+    ph:
+      - { id: ph-snowed-in, en: "snowed in", ja: "ゆきで とじこめられる", match: "snowed in", register: friend, scene: "a cabin in a storm", trap: "in が だいじ。ゆきの なかに とじこめられる" }
+      - { id: ph-something-against, en: "have something against", ja: "〜を きらって いる", match: "something (personal )?against", register: friend, scene: "a cold wind", trap: "against＝はんたい。わけあって きらう かんじ" }
+      - { id: ph-wait-it-out, en: "wait it out", ja: "おさまるまで まつ", register: friend, scene: "a long snowstorm", trap: "it は あらし。おわるまで じっと まつ" }
+      - { id: ph-making-it-up, en: "make it up", ja: "つくりばなしを する", match: "making (that|it) up", register: friend, scene: "an unlikely story", trap: "make up＝けしょう だけでなく つくりばなし" }
+      - { id: ph-i-swear, en: "I swear", ja: "ほんとうだって", match: "\\bI swear\\b", register: friend, scene: "being doubted", trap: "swear＝ちかう。ののしる では ない" }
+      - { id: ph-a-vermont-thing, en: "it's a … thing", ja: "〜では ふつうの こと", match: "it's an? [A-Z][a-z]+ thing", register: friend, scene: "a local custom", trap: "a Vermont thing＝その とちの ならわし" }
+      - { id: ph-got-used-to, en: "get used to", ja: "〜に なれる", match: "got(ten)? used to", register: friend, scene: "the quiet in the snow", trap: "used to＋ing は なれる。used to＋どうし は むかしは" }
+      - { id: ph-meant-to, en: "meant to", ja: "〜する つもりだった", match: "\\bmeant to\\b", register: friend, scene: "an old wish", trap: "meant to＝しようと おもって いたのに しなかった" }
+    predict:
+      ask: "ジョニーは 日本の フェリーで どうなる？"
+      choices:
+        - "He gets seasick and stays in his cabin the whole time."
+        - "He falls asleep on the ferry and keeps missing his stop."
+        - "He finds Ruth waiting for him on one of the islands."
+      answer: 1
+      ja: "フェリーで寝てしまい、何度も降りそびれる。"
+
+  - kind: serial
+    id: serial-johnny-3
+    chapter: 3
+    title: "The Slow Ferry"
+    line: "ジョニーが せとないかいの フェリーの はなしを します"
+    ja: "ジョニーは絵はがきを手に、瀬戸内海へ。島から島へ、のんびり進む小さなフェリーに乗る。レモン畑、港の猫、桟橋の大きな水玉のかぼちゃ。漁師のおじいさんにみかんをもらい、畳の席で昼寝をして、降りる港を3回も乗り過ごす。でも、いちばんいい間違いだった。"
+    scene: platform
+    segments:
+      - { who: narrator, en: "On the third night, there was no wind at all. The sea was flat and silver under the moon, which, Gulliver said, was perfect for a ferry story." }
+      - { who: narrator, en: "Cherry had come down with a bag of marshmallows to roast, and Dom was back, still in his running shorts, even though it was cold." }
+      - { who: cherry, en: "So you went to Japan, just because of a postcard? Like, that's it? That's the whole reason?", tts: "So ya went to Japan, just 'cause of a postcard? Like, that's it? That's the whole reason?" }
+      - { who: gulliver, en: "My dear, a postcard is the best reason there is. Most of my trips start with worse ones." }
+      - { who: narrator, en: "He got a job on a ship heading for Japan, peeling potatoes in the kitchen. Six weeks of potatoes, he said. He still dreams about them." }
+      - { who: narrator, en: "He got off in a little port town on the coast. The streets went steeply up the hill, and there were cats sleeping on almost every step." }
+      - { who: gulliver, en: "One of them followed me all the way to the ferry. Big orange fellow. I think he wanted my sandwich more than my company." }
+      - { who: narrator, en: "The ferry was small and white, just like the one in the postcard. It wasn't fast. It wasn't fancy. It was in no rush to get anywhere." }
+      - { who: narrator, en: "It went from island to island, stopping at tiny piers where a few people got off and a few people got on, and somebody always waved." }
+      - { who: narrator, en: "Inside, there was a room with a tatami floor, and people just lay down on it." }
+      - { who: narrator, en: "Grandparents, students, a man in a suit with his shoes lined up neatly by the door." }
+      - { who: dom, en: "Wait, people just sleep on the floor? On the ferry? That's awesome. I'd be out in, like, two minutes.", tts: "Wait, people jus' sleep on the floor? On the ferry? That's awesome. I'd be out in, like, two minutes." }
+      - { who: gulliver, en: "That's the thing. I meant to stay awake. I really did. I had my postcard out and everything." }
+      - { who: narrator, en: "The islands slid past the windows, green and soft and round, with lemon trees growing in rows down the hillsides, right to the water." }
+      - { who: narrator, en: "On one island, a giant yellow pumpkin with black polka dots sat at the end of a pier, like it was waiting for a boat too." }
+      - { who: cherry, en: "A giant pumpkin? With polka dots? Okay, now I know you're just messing with us.", tts: "A giant pumpkin? With polka dots? Okay, now I know you're jus' messin' with us." }
+      - { who: gulliver, en: "It's art! Famous art! People come from all over the world just to take a picture with it." }
+      - { who: narrator, en: "At the next stop, an old fisherman got on with a bucket and sat down next to Gulliver." }
+      - { who: narrator, en: "He didn't say much. He just smiled and handed him a mikan." }
+      - { who: narrator, en: "Then another mikan. Then a third. By the time they had passed two islands, Gulliver had a little pile of orange peels on his lap." }
+      - { who: gulliver, en: "We didn't share a language, him and me. But we shared a lot of fruit. I think that counts for something." }
+      - { who: narrator, en: "And then, with the sun on the tatami and the engine humming under the floor, Gulliver lay down, just to rest his eyes for a moment." }
+      - { who: narrator, en: "When he opened them again, the ferry was back where it started. He had missed his stop." }
+      - { who: dom, en: "Oh, man. That's rough. So what'd you do? Just get off and try again tomorrow?", tts: "Oh, man. That's rough. So whadja do? Just get off an' try again tomorrow?" }
+      - { who: gulliver, en: "Try again tomorrow? Nonsense. I stayed on and went right back the other way. And then I fell asleep again." }
+      - { who: narrator, en: "He missed his stop three times that day. Back and forth, back and forth, across the same calm water." }
+      - { who: narrator, en: "The ferry crew started to recognize him. On the last trip, one of them brought him a cup of green tea without being asked." }
+      - { who: gulliver, en: "Honestly, it was the best mistake I've ever made. I saw every island twice, and I've never slept better in my life." }
+      - { who: cherry, en: "Okay, I'll admit it, that's kind of perfect. So did you ever get off the boat?", tts: "Okay, I'll admit it, that's kinda perfect. So didja ever get off the boat?" }
+      - { who: gulliver, en: "Eventually. At the very last port, as the sun went down, there was a big ship in the harbor with a sign. It said, Los Angeles." }
+      - { who: narrator, en: "And Gulliver, who never could say no to a sign, picked up his bag and walked straight toward it." }
+      - { who: narrator, en: "Dom was already yawning. Cherry ate the last marshmallow. And the moon sat on the flat, silver sea, as calm as a ferry with nowhere special to be." }
+    ph:
+      - { id: ph-thats-rough, en: "that's rough", ja: "それは たいへんだ", match: "that's rough", register: friend, scene: "hearing about bad luck", trap: "あらい ではなく どうじょうの ひとこと" }
+      - { id: ph-be-out, en: "I'd be out", ja: "すぐ ねちゃう", match: "\\bbe out in\\b", register: friend, scene: "a cozy place to nap", trap: "out＝そとへ ではなく ねむって いる" }
+      - { id: ph-rest-my-eyes, en: "rest my eyes", ja: "ちょっと 目を とじる", match: "rest (my|his|her|your) eyes", register: friend, scene: "an afternoon nap", trap: "ねる つもりは ない、と いいつつ ねる" }
+      - { id: ph-messing-with, en: "mess with someone", ja: "からかう", match: "mess(in'|ing)? with", register: friend, scene: "a hard-to-believe story", trap: "mess＝ちらかす だけでなく からかう" }
+      - { id: ph-miss-my-stop, en: "miss my stop", ja: "のりすごす", match: "missed (my|his|her) stop", register: stranger, scene: "falling asleep on board", trap: "miss＝さびしい ではなく のがす" }
+      - { id: ph-that-counts, en: "that counts for something", ja: "それも だいじな こと", match: "counts for something", register: friend, scene: "sharing fruit", trap: "count＝かぞえる では なく かちが ある" }
+      - { id: ph-ill-admit, en: "I'll admit it", ja: "みとめるよ", match: "\\bI'll admit\\b", register: friend, scene: "changing your mind", trap: "さっきの うたがいを ひっこめる あいず" }
+    predict:
+      ask: "アメリカで ジョニーは どこに いく？"
+      choices:
+        - "He takes a cooking job on a cruise ship."
+        - "He gets lost in a big city and sleeps in a park."
+        - "He rides with a truck driver and stops at a diner in the desert."
+      answer: 2
+      ja: "トラックの運転手と砂漠を走り、ダイナーに寄る。"
+
+  - kind: serial
+    id: serial-johnny-4
+    chapter: 4
+    title: "Pie on Route Sixty-Six"
+    line: "ジョニーが さばくの ダイナーの はなしを します"
+    ja: "ロサンゼルスに着いたジョニーは、トラック運転手のアールの車に乗せてもらい、砂漠を東へ。ネオンの光るダイナーで、だれのことも hon と呼ぶウェイトレスのダーリーンに会う。おかわり自由のコーヒー、アイスをのせたチェリーパイ、満天の星。チップのことも教わる。最後にダーリーンが、メイン州で灯台守をしている兄の話をする。"
+    scene: cafe
+    segments:
+      - { who: narrator, en: "On the fourth night, Bunnie came early with a basket of snacks, and Redd showed up late, claiming he just happened to be walking by." }
+      - { who: redd, en: "Don't mind me, I'm just passing through. Is that a story I hear? I love a good story. Especially a free one.", tts: "Don't mind me, I'm jus' passin' through. Is that a story I hear? I love a good story. Especially a free one." }
+      - { who: narrator, en: "Gulliver cleared his throat. The ship from Japan, he said, took him all the way across the Pacific to the port of Los Angeles." }
+      - { who: gulliver, en: "Los Angeles is a lovely place, but everyone's in a car. A sailor without a car is a sailor without legs." }
+      - { who: narrator, en: "Lucky for him, a truck driver named Earl was having breakfast at the port. Earl was heading east with a load of watermelons and wanted some company." }
+      - { who: gulliver, en: "Earl didn't talk much. But when he did, it was worth waiting for. He said, the desert's got two speeds, son. Slow and slower." }
+      - { who: narrator, en: "They drove for hours. The city turned into hills, and the hills turned into desert, with mountains far away that never got any closer." }
+      - { who: narrator, en: "By the time the sun went down, they were on an old highway, the famous one, Route Sixty-Six. And up ahead, there was a light." }
+      - { who: narrator, en: "It was a neon sign, pink and blue, buzzing a little, with three big letters that said EAT. Under it was a small silver diner." }
+      - { who: bunnie, en: "Ooh, I love those! The shiny ones, with the little stools that spin around? Please tell me it had the stools.", tts: "Ooh, I love those! The shiny ones, with the li'l stools that spin around? Please tell me it had the stools." }
+      - { who: gulliver, en: "It had the stools. Red ones. I spun around on mine twice before Earl gave me a look." }
+      - { who: narrator, en: "Behind the counter was a waitress named Darlene, with big hair and a pencil behind her ear. She called everybody hon. Earl, Gulliver, even the cook." }
+      - { who: narrator, en: "She poured Gulliver a cup of coffee before he even sat down. And every time the cup got half empty, she came back and filled it up again." }
+      - { who: gulliver, en: "I asked her, how much for the refills? And she said, hon, it's bottomless. I almost cried. That's my favorite word in English." }
+      - { who: redd, en: "Bottomless, huh? Free refills? Now that's what I call a business model. I've got to get in on that.", tts: "Bottomless, huh? Free refills? Now that's what I call a business model. I gotta get in on that." }
+      - { who: narrator, en: "Earl ordered the meatloaf. Gulliver asked Darlene what was good, and she leaned in and said, the cherry pie, hon. Trust me." }
+      - { who: narrator, en: "It came warm, with a scoop of vanilla ice cream melting slowly down the side. Pie à la mode, Darlene called it." }
+      - { who: gulliver, en: "I'll tell you something. I've had pepper buns in Taipei and sugar on snow in Vermont. That pie was right up there with them." }
+      - { who: narrator, en: "In a booth, a family on a road trip was arguing about the Grand Canyon. The kids wanted to see it. The dad wanted a bed." }
+      - { who: narrator, en: "Earl turned around on his stool and told them, it's just a big hole in the ground. But it's a big hole you've got to see." }
+      - { who: narrator, en: "When it was time to pay, Gulliver counted out exactly what the check said. Earl shook his head and put a few more dollars on the counter." }
+      - { who: gulliver, en: "He said, in this country, you tip, son. Darlene's on her feet all night. So I tipped. Generously. With my last few dollars." }
+      - { who: bunnie, en: "Aw, that's so nice of you. So then what? You just got back in the truck and kept going?", tts: "Aw, that's so nice of ya. So then what? You just got back in the truck an' kept going?" }
+      - { who: gulliver, en: "Then we stepped outside, and I looked up. I've been at sea my whole life, and I have never seen so many stars." }
+      - { who: narrator, en: "There was no moon, and no city for a hundred miles. The sky was more stars than dark, and they could hear the neon sign humming." }
+      - { who: narrator, en: "Then Darlene came out with a coffee to go, for the road. She asked where Gulliver was headed, and he said he honestly had no idea." }
+      - { who: gulliver, en: "And she said, well, hon, my brother keeps a lighthouse up in Maine, and he could use some help this winter. Interested?" }
+      - { who: redd, en: "A lighthouse, huh? Let me guess. You said yes before she even finished the sentence.", tts: "A lighthouse, huh? Lemme guess. Ya said yes before she even finished the sentence." }
+      - { who: gulliver, en: "I said yes before she finished the word lighthouse. But that, my friends, is tomorrow's story. The last one." }
+      - { who: narrator, en: "Bunnie packed up the basket. Redd took the leftover snacks, for safekeeping, he said. And above the island, there seemed to be more stars than usual." }
+    ph:
+      - { id: ph-passing-through, en: "passing through", ja: "とおりかかっただけ", match: "pass(in'|ing) through", register: friend, scene: "showing up uninvited", trap: "とまる つもりは ない、と いう いいわけ" }
+      - { id: ph-worth-waiting, en: "worth waiting for", ja: "まつ かちが ある", register: friend, scene: "a quiet man talks", trap: "worth＋ing＝〜する かちが ある" }
+      - { id: ph-bottomless, en: "bottomless", ja: "おかわり じゆう", match: "\\bbottomless\\b", register: service, scene: "coffee at a diner", trap: "そこなし＝なんばいでも むりょう" }
+      - { id: ph-trust-me, en: "trust me", ja: "まかせて、ほんとうだよ", match: "\\btrust me\\b", register: service, scene: "a waitress's tip", trap: "しんじて＝ぜったい おすすめ" }
+      - { id: ph-right-up-there, en: "right up there with", ja: "〜に ならぶ ほど いい", register: friend, scene: "comparing great food", trap: "うえ ではなく おなじ トップクラス" }
+      - { id: ph-the-check, en: "the check", ja: "おかいけい（でんぴょう）", match: "\\bthe check\\b", register: service, scene: "paying at a diner", trap: "アメリカでは bill より check" }
+      - { id: ph-to-go, en: "to go", ja: "もちかえり", match: "\\bto go\\b", register: service, scene: "coffee for the road", trap: "for here or to go？ の to go" }
+      - { id: ph-could-use, en: "could use", ja: "〜が あると たすかる", match: "could use (some|a)\\b", register: friend, scene: "asking for help", trap: "つかえる ではなく ほしい、ひつよう" }
+    predict:
+      ask: "さいごの はなし、とうだいで なにが おこる？"
+      choices:
+        - "The lighthouse light breaks and he fixes it with a pie tin."
+        - "On a foggy night, he helps a lost fishing boat get home."
+        - "He finds his old compass in the lighthouse."
+      answer: 1
+      ja: "霧の夜、迷った漁船が帰れるように手伝う。"
+
+  - kind: serial
+    id: serial-johnny-5
+    chapter: 5
+    title: "The Lighthouse in the Fog"
+    line: "ジョニーが きりの とうだいの はなしを します"
+    ja: "ジョニーは列車で大陸を横断し、メイン州へ。灯台守のウォルトと冬をすごす。レンズみがき、らせん階段のペンキぬり、ロブスターロール。ある霧の夜、霧笛がこわれ、帰れない漁船のために古い鐘を鳴らしつづけ、船は無事にもどる。お礼にもらった新しいコンパスで帰る途中、嵐にあって……この島に流れついた。コンパスはまたなくなっていた。翌朝、ジョニーの姿はなく、砂に書きおきが残っていた。"
+    scene: living
+    segments:
+      - { who: narrator, en: "On the fifth night, more neighbors came than ever. Maple, Dom, and Goldie sat closest to the fire, with blankets over their knees." }
+      - { who: goldie, en: "Okay, last one. I'm kind of sad, honestly. I've gotten used to this. Same time every night, you know?", tts: "Okay, last one. I'm kinda sad, honestly. I've gotten used to this. Same time every night, y'know?" }
+      - { who: gulliver, en: "Me too, my dear. Me too. Now, where was I? Ah, yes. Maine." }
+      - { who: narrator, en: "From the desert, he took a long train all the way across the country. Four days of farms and rivers and little towns going by the window." }
+      - { who: narrator, en: "At the end of it was a rocky coast, cold and gray and beautiful, and on the very last rock, a white lighthouse with a red roof." }
+      - { who: narrator, en: "Darlene's brother was named Walt. He was tall and quiet and had a beard like a winter storm. He shook Gulliver's wing and said, you're late." }
+      - { who: gulliver, en: "I said, I'm a sailor, Walt, I'm always late. And he laughed. Just once. I found out later that's about once a month for Walt." }
+      - { who: narrator, en: "The work was simple, but there was a lot of it. Gulliver cleaned the big glass lens until it sparkled." }
+      - { who: narrator, en: "And he painted the spiral stairs, all one hundred and twelve of them." }
+      - { who: dom, en: "A hundred and twelve stairs? Every day? Dude, that's a serious leg workout. I'm kind of jealous.", tts: "A hundred an' twelve stairs? Every day? Dude, that's a serious leg workout. I'm kinda jealous." }
+      - { who: narrator, en: "On Sundays, Walt drove them into town for lobster rolls. Big pieces of lobster in a buttered, toasted bun, eaten on a bench by the harbor." }
+      - { who: gulliver, en: "Walt said, you don't eat a lobster roll inside. It's against the rules. So we sat outside and froze, and it was wonderful." }
+      - { who: narrator, en: "Then one February night, the fog rolled in, so thick you couldn't see your own feet. And the old foghorn coughed once and went quiet." }
+      - { who: narrator, en: "Walt listened to the radio and frowned. A small fishing boat was still out there. The captain couldn't find the harbor in the fog." }
+      - { who: maple, en: "Oh no. That's so scary. Couldn't they just follow the light from the lighthouse?", tts: "Oh no. That's so scary. Couldn't they jus' follow the light from the lighthouse?" }
+      - { who: gulliver, en: "That's what I thought, too. But in fog like that, the light just disappears. You can't see a thing. But you can still hear." }
+      - { who: narrator, en: "There was an old brass bell on the rocks below the lighthouse, from the days before electric foghorns. Walt handed Gulliver the rope." }
+      - { who: narrator, en: "Walt stayed on the radio, telling the captain to steer toward the sound. And Gulliver rang the bell. Slow and steady, again and again." }
+      - { who: gulliver, en: "I rang that bell for two hours. My arms were shaking. I sang every sea song I know, just to keep the rhythm." }
+      - { who: narrator, en: "And then, out of the white, they saw two small lights, red and green. The fishing boat came around the rocks and into the harbor, safe." }
+      - { who: narrator, en: "The next morning, the captain came up the hill with a bag of fresh fish and a small wooden box. Inside the box was a brand new compass." }
+      - { who: gulliver, en: "He said, a sailor should always know the way home. And I almost cried for the second time on this trip. Bottomless coffee was the first." }
+      - { who: narrator, en: "When spring came, Gulliver said goodbye to Walt and got on a ship heading south, with the new compass safe in his pocket." }
+      - { who: narrator, en: "And then, of course, there was a storm. A big one. The kind sailors tell stories about." }
+      - { who: narrator, en: "And the next thing he knew, Dom was standing over him on the beach." }
+      - { who: goldie, en: "Wait a sec. So where's the new compass? The one from the fishing captain?", tts: "Wait a sec. So where's the new compass? The one from the fishin' captain?" }
+      - { who: narrator, en: "Gulliver patted his left pocket. Then his right pocket. Then the inside of his cap. He looked up at everyone with a very small smile." }
+      - { who: gulliver, en: "Well. It seems I've lost it again. But you know, I'm starting to think that's not such a bad thing." }
+      - { who: narrator, en: "Everybody laughed, and the fire popped, and for a while nobody said anything at all. They just watched the sparks go up into the dark." }
+      - { who: narrator, en: "In the morning, Gulliver was gone. There was only a long line of footprints going down to the water, and a message written in the sand." }
+      - { who: narrator, en: "It said, thank you for the coffee. Back soon. Probably by accident." }
+      - { who: narrator, en: "And the tide came in, slowly, and smoothed the sand, the way it always does. Goodnight." }
+    ph:
+      - { id: ph-where-was-i, en: "where was I?", ja: "どこまで はなしたっけ", match: "where was I", register: friend, scene: "picking up a story", trap: "ばしょ では なく はなしの つづき" }
+      - { id: ph-against-rules, en: "it's against the rules", ja: "ルールいはん", match: "against the rules", register: friend, scene: "a lobster roll by the harbor", trap: "against＝はんする" }
+      - { id: ph-cant-see-a-thing, en: "can't see a thing", ja: "なにも みえない", match: "can't see a thing", register: friend, scene: "thick fog", trap: "a thing＝なにひとつ（ひていで）" }
+      - { id: ph-keep-the-rhythm, en: "keep the rhythm", ja: "リズムを たもつ", match: "keep (the|a) rhythm", register: friend, scene: "ringing a bell", trap: "keep＝もつ ではなく つづける" }
+      - { id: ph-next-thing-i-knew, en: "the next thing I knew", ja: "気がついたら", match: "next thing (I|he|she|we) knew", register: friend, scene: "waking up somewhere new", trap: "あいだの ことは おぼえて いない" }
+      - { id: ph-by-accident, en: "by accident", ja: "ぐうぜん", match: "\\bby accident\\b", register: friend, scene: "a note in the sand", trap: "じこ ではなく たまたま" }

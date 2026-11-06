@@ -7,7 +7,7 @@
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
-import { checkUnitSources, compile, readUnits } from '../src/lib/kikimimi/compile.ts';
+import { compile, readUnits } from '../src/lib/kikimimi/compile.ts';
 
 const KIKI = join(import.meta.dirname, '../src/lib/kikimimi');
 const OUT = join(KIKI, 'levels');
@@ -16,8 +16,7 @@ const OUT = join(KIKI, 'levels');
 export function writeLevels(quiet = false): void {
   const json = (f: string) => JSON.parse(readFileSync(join(KIKI, f), 'utf8'));
   const clips = json('clips.json'), units = readUnits();
-  const files = compile(clips, json('words.json'), units);
-  if (!quiet) for (const w of checkUnitSources(units, clips).warnings) console.warn(`units: ${w}`);
+  const files = compile(clips, json('words.json'), units, undefined, quiet ? undefined : (w) => console.warn(`units: ${w}`));
   mkdirSync(join(OUT, 'parts'), { recursive: true });
   for (const f of readdirSync(join(OUT, 'parts'))) if (!files.has(`parts/${f}`)) rmSync(join(OUT, 'parts', f));
   for (const [path, text] of files) {

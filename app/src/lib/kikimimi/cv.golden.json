@@ -1,0 +1,62 @@
+{
+ "ladder:ladder": {
+  "cv": "72488b",
+  "decks": "fe1e61ac42f69d7c"
+ },
+ "lesson:ev-bday": {
+  "cv": "3bd858",
+  "decks": "1602c949bf57a09e"
+ },
+ "lesson:fr-replan": {
+  "cv": "3521f0",
+  "decks": "ec5db70a815896bd"
+ },
+ "lesson:gl-clarify": {
+  "cv": "9425bb",
+  "decks": "08c8884cc1f7045c"
+ },
+ "lesson:gl-endcall": {
+  "cv": "d6ff72",
+  "decks": "07928598ad1e94cc"
+ },
+ "lesson:tr-guide": {
+  "cv": "b7aee3",
+  "decks": "c67127086ae8a044"
+ },
+ "lesson:tr-hotel": {
+  "cv": "10ba45",
+  "decks": "6804fe50e485fa67"
+ },
+ "lesson:wk-chat": {
+  "cv": "b0741b",
+  "decks": "281d112838be461d"
+ },
+ "quiz:1": {
+  "cv": "c36baa",
+  "decks": "7e7b1cd846500bcd"
+ },
+ "quiz:2": {
+  "cv": "536616",
+  "decks": "755bb10f78669b95"
+ },
+ "quiz:3": {
+  "cv": "ef9816",
+  "decks": "aafc4e731a2ffd80"
+ },
+ "quiz:4": {
+  "cv": "2a6b06",
+  "decks": "5f0aa74872498a7e"
+ },
+ "quiz:5": {
+  "cv": "10482d",
+  "decks": "f7ba438aaf023606"
+ },
+ "quiz:6": {
+  "cv": "d552d6",
+  "decks": "1b2eea9a3c184bbf"
+ },
+ "quiz:7": {
+  "cv": "c8b68c",
+  "decks": "04b0813402efdd12"
+ }
+}

@@ -23,7 +23,7 @@
 //   node scripts/kikimimi-audio.ts --listen [--only <regex>]   play each clip (afplay) with its text: a person's check
 //
 // The cast (docs/curriculum.md §9): scripts/tts/cast.json, 18 voices (US 6 a gender; UK and AU 3, only for the やま/ほし
-// accent-exposure items), each villager one US voice for good (bank4.ts CAST, EXPOSURE; speech.ts castOf). Every voice is a reference clip with its exact transcript, cloned for
+// accent-exposure items), each villager one US voice for good (cast.ts CAST, EXPOSURE; speech.ts castOf). Every voice is a reference clip with its exact transcript, cloned for
 // every line: US voices designed by Qwen3-TTS VoiceDesign from a text description (no real person), UK voices spoken by
 // Phonon's synthetic catalogue voices, AU voices from the VCTK corpus (CC BY 4.0; credited in docs/kikimimi.md).
 // Spoken text: speech.ts spokenText (`tts`, else `en` with its numbers written out).
@@ -56,7 +56,7 @@
 // the one-time setup is in docs/kikimimi.md "Audio" (a preflight names what's missing).
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { clipItems, type Accent, type CastId, type Item } from '../src/lib/kikimimi/bank.ts';
 import { AUTHORED as ITEMS } from '../src/lib/kikimimi/source.ts';
@@ -66,6 +66,7 @@ import { CAST_IDS, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
 import { codecArgs, condOf, condPlan, condSource, stepFilter, type CondPlan, type Step } from '../src/lib/kikimimi/conditions.ts';
 import type { Bed } from '../src/lib/kikimimi/bank.ts';
 import { SR, chime, convolve, filter, gain, impulse, lufs, noise, readPcm, writeWav } from './tts/dsp.ts';
+import { FFMPEG, FFPROBE, WHISPER_MODEL, measureLoudness, staged, writeAtomic } from './tts/tools.ts';
 import { fnv1a, mulberry32 } from '../src/lib/random.ts';
 import { NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
 import { LADDERS as ALL_LADDERS } from '../src/lib/kikimimi/ladders.ts';
@@ -73,8 +74,6 @@ import { writeLevels } from './kikimimi-levels.ts';
 import { WORK, unpackClips, writePacks } from './kikimimi-packs.ts';
 import { unitItems } from '../src/lib/kikimimi/compile.ts';
 
-const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
-const FFPROBE = process.env.FFPROBE ?? 'ffprobe';
 const APP = join(import.meta.dirname, '..');
 const TTS = join(import.meta.dirname, 'tts');
 const CAST_FILE = join(TTS, 'cast.json');
@@ -127,8 +126,12 @@ const PINNED: Readonly<Record<string, number>> = {
   'd4-landlord-3': 2000, 'd4-taxi-street-4': 2000,
   // wave 1's units (docs/reviews/2026-11-06-wave1-review.md): the corrected detail heard over the heavy street
   // (dk-fast-replan's "seven", "did you say the pub"), Ikebukuro heard as said, and short exclamations off-voice
-  'dk-fast-replan-4': 2000, 'dk-fast-replan-5': 3005, 'dmu-wrong-train-1': 3006, 'dk-wrong-time-4': 2003,
-  'dk-loud-toast-4': 2003, 'dk-toast-2': 3009, 'dmu-bins-5': 3003
+  'dk-fast-replan-4': 2000, 'dk-fast-replan-5': 3005, 'dmu-wrong-train-1': 5000, 'dk-wrong-time-4': 2003,
+  'dk-loud-toast-4': 2003, 'dk-toast-2': 3009, 'dmu-bins-5': 3003,
+  // the re-voicing (2026-11-06): Ikebukuro heard as said again, "Thursday? We'll be…" no longer "Thursday will be…",
+  // and short lines nearer their voice than all six default takes
+  'dvm-ac-out-3': 4000, 'dho-lab-notes-3': 4000, 'dmu-wrong-dates-6': 4000, 'dya-best-man-3': 4000,
+  'd4-video-call-3': 4000
 };
 const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
@@ -201,13 +204,16 @@ const PY_ENV: Record<Py, [string, string]> = {
   qa: ['KIKIMIMI_QA_PY', 'scorer/bin/python'],
   sv: ['KIKIMIMI_SV_PY', 'fish/svenv/bin/python']
 };
+const REQ: Record<Py, string> = { gen: 'gen', phonon: 'gen', kokoro: 'kokoro', qa: 'qa', sv: 'qa' };
+const venvDir = (which: Py) => join(CACHE, `venv-${REQ[which]}`);
+/** A python that needs a venv made here (uv's job): no env var, no TTS evaluation, no venv yet. */
+const needsVenv = (which: Py) => !process.env[PY_ENV[which][0]] && !EVAL && !existsSync(join(venvDir(which), 'bin/python'));
 /** The venv each python job runs in: an env var, the TTS evaluation's, or one made here with uv. */
 function python(which: Py): string {
   const [env, evalPath] = PY_ENV[which];
   if (process.env[env]) return process.env[env]!;
   if (EVAL) return join(EVAL, evalPath);
-  const req = { gen: 'gen', phonon: 'gen', kokoro: 'kokoro', qa: 'qa', sv: 'qa' }[which];
-  const dir = join(CACHE, `venv-${req}`), bin = join(dir, 'bin/python');
+  const req = REQ[which], dir = venvDir(which), bin = join(dir, 'bin/python');
   if (!existsSync(bin)) {
     console.log(`making ${dir} (uv)…`);
     execFileSync('uv', ['venv', '-q', '-p', '3.12', dir], { stdio: 'inherit' });
@@ -221,9 +227,9 @@ function py<T>(which: Py, cmd: string, jobs: unknown[], extra: string[] = []): R
   if (!jobs.length) return {};
   const dir = dirOf(CACHE, 'jobs'), n = `${process.pid}-${jobN++}`;
   const jf = join(dir, `${cmd}-${n}.json`), rf = join(dir, `${cmd}-${n}.out.json`);
-  writeFileSync(jf, JSON.stringify(jobs));
+  writeAtomic(jf, JSON.stringify(jobs));
   const r = spawnSync(python(which), [join(TTS, 'tts.py'), cmd, ...extra, '--jobs', jf, '--result', rf], {
-    stdio: 'inherit', env: { KIKIMIMI_ECAPA: join(CACHE, 'ecapa'), ...process.env }
+    stdio: 'inherit', env: { KIKIMIMI_ECAPA: join(CACHE, 'ecapa'), ...process.env, FFMPEG, WHISPER_MODEL }
   });
   if (r.status !== 0) throw new Error(`tts.py ${cmd} failed (${r.status})`);
   const out = JSON.parse(readFileSync(rf, 'utf8'));
@@ -236,21 +242,15 @@ function py<T>(which: Py, cmd: string, jobs: unknown[], extra: string[] = []): R
 const TRIM = 'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=0.05';
 /** Raw engine output → mono 24 kHz float WAV, edge silence trimmed. */
 function trim(raw: string, out: string): void {
-  ff('-i', raw, '-af', `highpass=f=50,${TRIM},areverse,${TRIM},areverse`, '-ac', '1', '-ar', '24000', '-c:a', 'pcm_f32le', out);
-}
-/** Integrated loudness and true peak (ffmpeg loudnorm's measuring pass). */
-function loudness(wav: string): { i: number; tp: number } {
-  const r = spawnSync(FFMPEG, ['-hide_banner', '-i', wav, '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'], { encoding: 'utf8' });
-  const j = JSON.parse(r.stderr.match(/\{[^{}]*"input_i"[^{}]*\}/)![0]);
-  return { i: Number(j.input_i), tp: Number(j.input_tp) };
+  ff('-i', raw, '-af', `highpass=f=50,${TRIM},areverse,${TRIM},areverse`, '-ac', '1', '-ar', String(SR), '-c:a', 'pcm_f32le', out);
 }
 /** A trimmed WAV → the shipped m4a: a gain to −16 LUFS (a limiter holds the true peak under −1.5 dBTP), a 60 ms tail. */
 function finish(wav: string, out: string): void {
-  const { i, tp } = loudness(wav);
+  const { i, tp } = measureLoudness(wav);
   const gain = Number.isFinite(i) ? -16 - i : 0;
   const limit = tp + gain > -1.5 ? `,alimiter=limit=${(10 ** (-1.6 / 20)).toFixed(3)}:attack=2:release=40:level=0` : '';
   ff('-i', wav, '-af', `volume=${gain.toFixed(2)}dB${limit},apad=pad_dur=0.06`,
-    '-ac', '1', '-ar', '24000', '-c:a', 'aac', '-b:a', '48k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', out);
+    '-ac', '1', '-ar', String(SR), '-c:a', 'aac', '-b:a', '48k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', out);
 }
 /** ffmpeg atempo (WSOLA): in the pilot it kept UTMOS (0.92: 4.36 vs 4.37 unstretched; 0.75: 4.31), where rubberband
  *  cost 0.7 (R3) to 1.9 (R2). */
@@ -354,14 +354,14 @@ function refWav(id: CastId): string {
   const wav = join(dirOf(CACHE, 'refs'), `${id}.wav`);
   if (!existsSync(wav)) {
     if (!existsSync(refM4a(id))) throw new Error(`no reference for ${id}: run with --refs`);
-    ff('-i', refM4a(id), '-ac', '1', '-ar', '24000', '-c:a', 'pcm_s16le', wav);
+    staged([wav], ([t]) => ff('-i', refM4a(id), '-ac', '1', '-ar', String(SR), '-c:a', 'pcm_s16le', t));
   }
   return wav;
 }
 const refHash = (id: CastId) => sha(readFileSync(refM4a(id)), 10);
 /** Commit-sized reference: mono AAC 64 kbps (a 15 s clip ~120 KB). */
-const encodeRef = (wav: string, id: CastId) =>
-  ff('-i', wav, '-ac', '1', '-ar', '24000', '-c:a', 'aac', '-b:a', '64k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', refM4a(id));
+const encodeRef = (wav: string, id: CastId) => staged([refM4a(id)], ([t]) =>
+  ff('-i', wav, '-ac', '1', '-ar', String(SR), '-c:a', 'aac', '-b:a', '64k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', t));
 
 function makeRefs(): void {
   const seeds = opt('--design-seeds')?.split(',').map(Number);
@@ -382,7 +382,7 @@ function makeRefs(): void {
     const src = join(VCTK, CASTS[id].ref.file!);
     if (!existsSync(src)) throw new Error(`${id}: ${src} missing (KIKIMIMI_VCTK_REFS)`);
     const wav = join(tmp, `${id}_s0.wav`);
-    ff('-i', src, '-ac', '1', '-ar', '24000', '-c:a', 'pcm_s16le', wav);
+    ff('-i', src, '-ac', '1', '-ar', String(SR), '-c:a', 'pcm_s16le', wav);
     cands.push({ id, seed: 0, wav });
   }
   if (!cands.length) return console.log('every cast voice has its reference');
@@ -394,13 +394,13 @@ function makeRefs(): void {
       .sort((a, b) => a.content - b.content || b.mos - a.mos);
     for (const c of mine) console.log(`  ${id} seed ${c.seed}: UTMOS ${c.mos.toFixed(2)}, ${c.content} content errors${c.content ? `: "${c.hyp}"` : ''}`);
     const best = mine[0];
-    copyFileSync(best.wav, join(dirOf(CACHE, 'refs'), `${id}.wav`));
+    staged([join(dirOf(CACHE, 'refs'), `${id}.wav`)], ([t]) => copyFileSync(best.wav, t));
     encodeRef(best.wav, id);
     CASTS[id].seed = best.seed;
     if (mos[best.wav]) CASTS[id].ref.mos = mos[best.wav];
     console.log(`${id}: seed ${best.seed} kept (${(statSync(refM4a(id)).size / 1024).toFixed(0)} KB)`);
   }
-  writeFileSync(CAST_FILE, JSON.stringify(CASTS, null, 1) + '\n');
+  writeAtomic(CAST_FILE, JSON.stringify(CASTS, null, 1) + '\n');
 }
 
 // ---- legacy: macOS say (levels 1-3) ----------------------------------------------------------------------------------
@@ -549,7 +549,7 @@ function speak(plans: Plan[]): Map<string, Take> {
       });
       if (jobs.length) console.log(`${engine}: ${jobs.length} clips (try ${k + 1})`);
       const res = py<{ gen: number; dur: number }>(engine === 'kokoro' ? 'kokoro' : 'gen', 'synth', jobs, ['--engine', engine, '--model', MODEL[engine]]);
-      for (const [raw, r] of Object.entries(res)) writeFileSync(`${raw}.json`, JSON.stringify(r)); // the master's timing, for RTF
+      for (const [raw, r] of Object.entries(res)) writeAtomic(`${raw}.json`, JSON.stringify(r)); // the master's timing, for RTF
     }
     for (const p of todo) {
       const t = takes.get(p.it.id)!, meta = `${t.raw}.json`;
@@ -628,113 +628,122 @@ function run(): void {
     flag('--force') || !old[r.id] || oldSrc[r.id] !== rungSrc(p.master, r.rung!.n) || !existsSync(fileOf(r.id))));
   console.log(`${plans.length} items selected, ${todo.length} to speak (engine ${JSON.stringify(ENGINE)}, slow by ${STRETCH}); ${ladderPlans.length} ladders, ${ladderTodo.length} to make`);
   const rows: Record<string, Row> = {};
+  // each clip (and its slow take) is made beside its file and renamed in with its clips.json entry (tools.ts staged),
+  // and the manifests are written however the run ends (the finally below): the files and their hashes always agree
   const record = (p: Plan, normal: string, slowWav: string | null, extra: Partial<Row>) => {
-    const out = fileOf(p.it.id);
-    copyFileSync(normal, out);
-    if (slowWav) {
-      const s = join(CACHE, 'work', `${p.it.id}-slow.wav`);
-      stretch(slowWav, SLOW, s);
-      finish(s, fileOf(p.it.id, true));
-    } else rmSync(fileOf(p.it.id, true), { force: true });
-    clips[p.it.id] = { dur: duration(out), hash: sha(readFileSync(out), 8), ...(slowWav && { slow: sha(readFileSync(fileOf(p.it.id, true)), 8) }) };
+    clips[p.it.id] = staged([fileOf(p.it.id), fileOf(p.it.id, true)], ([out, slow]) => {
+      copyFileSync(normal, out);
+      if (slowWav) {
+        const s = join(CACHE, 'work', `${p.it.id}-slow.wav`);
+        stretch(slowWav, SLOW, s);
+        finish(s, slow);
+      }
+      return { dur: duration(out), hash: sha(readFileSync(out), 8), ...(slowWav && { slow: sha(readFileSync(slow), 8) }) };
+    });
     srcs[p.it.id] = p.src;
     const dur = clips[p.it.id].dur, words = p.text.match(/[A-Za-z']+/g)?.length ?? 0;
     rows[p.it.id] = { src: p.src, cast: p.cast, engine: p.engine, text: p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60), seed: seedOf(p.it.id), tries: 1, flags: [], ...extra };
   };
-  if (SAY) {
-    for (const p of todo) {
-      const voice = sayVoice(p.it);
-      sayRender(p.text, voice, RATE[p.it.lv], fileOf(p.it.id));
-      if (hasSlow(p.it)) sayRender(p.text, voice, Math.round(RATE[p.it.lv] * SAY_SLOW), fileOf(p.it.id, true));
-      else rmSync(fileOf(p.it.id, true), { force: true });
-      const f = fileOf(p.it.id);
-      clips[p.it.id] = { dur: duration(f), hash: sha(readFileSync(f), 8), ...(hasSlow(p.it) && { slow: sha(readFileSync(fileOf(p.it.id, true)), 8) }) };
-      srcs[p.it.id] = p.src;
-      process.stdout.write(`\r${Object.keys(srcs).length} spoken: ${p.it.id.padEnd(24)}`);
-    }
-  } else {
-    const best = speak([...todo, ...ladderTodo.map((x) => x.p)]);
-    // the conditions over the clean takes that passed the gate, then whisper's loose check of the mixed clips
-    const conds = todo.filter((p) => p.cond);
-    const mixed = new Map<string, string>(), leads = new Map<string, number>();
-    if (conds.length) console.log(`conditions: ${conds.length} clips`);
-    for (const p of conds) {
-      const t = best.get(p.it.id)!, w = t.wav.replace(/\.wav$/, '-c.wav'), m = t.m4a.replace(/\.m4a$/, '-c.m4a');
-      leads.set(p.it.id, condition(t.wav, p.cond!, p.it.id, w));
-      finish(w, m);
-      mixed.set(p.it.id, m);
-    }
-    const loose = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', conds.map((p) => ({ wav: mixed.get(p.it.id)!, refs: [p.it.en, p.text] })));
-    const cleanDir = dirOf(CACHE, 'clean');
-    for (const p of todo) {
-      const t = best.get(p.it.id)!;
-      const flags = [...(t.content ? ['misheard'] : []), ...(t.sim === undefined ? [] : t.sim < 0.3 ? ['drift'] : t.sim < MIN_SIM ? ['low-sim'] : [])];
-      const m = mixed.get(p.it.id), h = m ? loose[m] : undefined;
-      if (h && h.wer > p.cond!.maxWer) flags.push('cond-wer');
-      record(p, m ?? t.m4a, hasSlow(p.it) ? t.wav : null, {
-        seed: t.seed, tries: takesOf.get(p.it.id) ?? 1, hyp: t.hyp, wer: t.wer, content: t.content, sim: t.sim, flags,
-        ...(t.gen !== undefined && t.rawDur && { rtf: Math.round((t.gen / t.rawDur) * 1000) / 1000 }),
-        ...(p.cond && h && { cond: p.cond.key, condHyp: h.hyp, condWer: h.wer,
-          wpm: Math.round(((p.text.match(/[A-Za-z']+/g)?.length ?? 0) / Math.max(duration(t.m4a) - 0.06, 0.1)) * 60) })
-      });
-      // the clean take beside the mixed clip (the karaoke aligns on it: kikimimi-words.ts), or none for a clean clip
-      if (m) {
-        copyFileSync(t.m4a, join(cleanDir, `${p.it.id}.m4a`));
-        writeFileSync(join(cleanDir, `${p.it.id}.json`), JSON.stringify({ hash: clips[p.it.id].hash, lead: leads.get(p.it.id) }));
-      } else for (const x of ['m4a', 'json']) rmSync(join(cleanDir, `${p.it.id}.${x}`), { force: true });
-    }
-    // each ladder's rungs: its take (trimmed, as spoken) stretched to each rung's speed × NATURAL_RATE, then finished
-    // as any clip; whisper hears every rung (the report's QA at speed; a mishearing at 1.4× is flagged, never re-rolled:
-    // the take passed the gate at its own pace)
-    const rungs: { id: string; p: Plan; n: number; tempo: number; rate: number; clamped: boolean }[] = [];
-    for (const { l, p } of ladderTodo) {
-      const t = best.get(p.it.id)!;
-      const rate = syllables(p.text) / Math.max(0.5, duration(t.wav));
-      for (const r of l.rungs) {
-        const n = r.rung!.n, want = (SPEEDS[n - 1] * NATURAL_RATE) / rate;
-        const tempo = Math.round(Math.min(TEMPO_MAX, Math.max(TEMPO_MIN, want)) * 1000) / 1000;
-        const wav = join(CACHE, 'work', `${r.id}-rung.wav`);
-        stretch(t.wav, tempo, wav);
-        finish(wav, fileOf(r.id));
-        clips[r.id] = { dur: duration(fileOf(r.id)), hash: sha(readFileSync(fileOf(r.id)), 8) };
-        srcs[r.id] = rungSrc(p.master, n);
-        rungs.push({ id: r.id, p, n, tempo, rate: Math.round((rate * tempo) * 100) / 100, clamped: Math.abs(tempo - want) > 0.005 });
-      }
-    }
-    if (rungs.length) {
-      const heard = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', rungs.map((r) => ({ wav: fileOf(r.id), refs: [r.p.it.en, r.p.text] })));
-      for (const r of rungs) {
-        const t = best.get(r.p.it.id)!, h = heard[fileOf(r.id)], dur = clips[r.id].dur, words = r.p.text.match(/[A-Za-z']+/g)?.length ?? 0;
-        rows[r.id] = {
-          src: srcs[r.id], cast: r.p.cast, engine: r.p.engine, text: r.p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60),
-          seed: t.seed, tries: takesOf.get(r.p.it.id) ?? 1, hyp: h.hyp, wer: h.wer, content: h.content, sim: t.sim,
-          speed: SPEEDS[r.n - 1], tempo: r.tempo, rate: r.rate, clamped: r.clamped,
-          flags: [...(h.content ? ['misheard'] : []), ...(r.clamped ? ['clamped'] : []), ...(t.content ? ['take-misheard'] : [])]
-        };
-      }
-    }
-    const made = [...todo.map((p) => p.it.id), ...rungs.map((r) => r.id)];
-    if (!flag('--no-mos')) {
-      // a mixed clip's UTMOS is its clean take's (noise is the point)
-      const fileFor = (id: string) => (mixed.has(id) ? best.get(id)!.m4a : fileOf(id));
-      const mos = py<number>('qa', 'mos', made.map(fileFor));
-      for (const id of made) {
-        rows[id].mos = mos[fileFor(id)];
-        if (rows[id].mos! < 3.5) rows[id].flags.push('low-mos');
-      }
-    }
-  }
-  // clips of items no longer in the bank (a whole run into the work folder only)
-  const ids = new Set([...ALL.map((it) => it.id), ...RUNG_IDS]);
-  for (const id of Object.keys(clips)) if (!ids.has(id)) { delete clips[id]; delete srcs[id]; }
-  if (!SCRATCH && !only) {
-    const want = new Set([...ALL.filter((it) => clips[it.id]).flatMap((it) => [`${it.id}.m4a`, ...(hasSlow(it) ? [`${it.id}-slow.m4a`] : [])]),
-      ...RUNG_IDS.filter((id) => clips[id]).map((id) => `${id}.m4a`)]);
-    for (const f of readdirSync(OUT).filter((f) => !want.has(f))) rmSync(join(OUT, f));
-  }
   const sorted = <T>(o: Record<string, T>) => Object.fromEntries(Object.keys(o).sort().map((k) => [k, o[k]]));
-  writeFileSync(CLIPS, JSON.stringify(sorted(clips), null, 1).replace(/\n  +/g, ' ').replace(/\n \}/g, ' }') + '\n');
-  writeFileSync(SRCS, JSON.stringify(sorted(srcs), null, 1) + '\n');
+  try {
+    if (SAY) {
+      for (const p of todo) {
+        const voice = sayVoice(p.it);
+        clips[p.it.id] = staged([fileOf(p.it.id), fileOf(p.it.id, true)], ([f, slow]) => {
+          sayRender(p.text, voice, RATE[p.it.lv], f);
+          if (hasSlow(p.it)) sayRender(p.text, voice, Math.round(RATE[p.it.lv] * SAY_SLOW), slow);
+          return { dur: duration(f), hash: sha(readFileSync(f), 8), ...(hasSlow(p.it) && { slow: sha(readFileSync(slow), 8) }) };
+        });
+        srcs[p.it.id] = p.src;
+        process.stdout.write(`\r${Object.keys(srcs).length} spoken: ${p.it.id.padEnd(24)}`);
+      }
+    } else {
+      const best = speak([...todo, ...ladderTodo.map((x) => x.p)]);
+      // the conditions over the clean takes that passed the gate, then whisper's loose check of the mixed clips
+      const conds = todo.filter((p) => p.cond);
+      const mixed = new Map<string, string>(), leads = new Map<string, number>();
+      if (conds.length) console.log(`conditions: ${conds.length} clips`);
+      for (const p of conds) {
+        const t = best.get(p.it.id)!, w = t.wav.replace(/\.wav$/, '-c.wav'), m = t.m4a.replace(/\.m4a$/, '-c.m4a');
+        leads.set(p.it.id, condition(t.wav, p.cond!, p.it.id, w));
+        finish(w, m);
+        mixed.set(p.it.id, m);
+      }
+      const loose = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', conds.map((p) => ({ wav: mixed.get(p.it.id)!, refs: [p.it.en, p.text] })));
+      const cleanDir = dirOf(CACHE, 'clean');
+      for (const p of todo) {
+        const t = best.get(p.it.id)!;
+        const flags = [...(t.content ? ['misheard'] : []), ...(t.sim === undefined ? [] : t.sim < 0.3 ? ['drift'] : t.sim < MIN_SIM ? ['low-sim'] : [])];
+        const m = mixed.get(p.it.id), h = m ? loose[m] : undefined;
+        if (h && h.wer > p.cond!.maxWer) flags.push('cond-wer');
+        record(p, m ?? t.m4a, hasSlow(p.it) ? t.wav : null, {
+          seed: t.seed, tries: takesOf.get(p.it.id) ?? 1, hyp: t.hyp, wer: t.wer, content: t.content, sim: t.sim, flags,
+          ...(t.gen !== undefined && t.rawDur && { rtf: Math.round((t.gen / t.rawDur) * 1000) / 1000 }),
+          ...(p.cond && h && { cond: p.cond.key, condHyp: h.hyp, condWer: h.wer,
+            wpm: Math.round(((p.text.match(/[A-Za-z']+/g)?.length ?? 0) / Math.max(duration(t.m4a) - 0.06, 0.1)) * 60) })
+        });
+        // the clean take beside the mixed clip (the karaoke aligns on it: kikimimi-words.ts), or none for a clean clip
+        if (m) {
+          staged([join(cleanDir, `${p.it.id}.m4a`)], ([c]) => copyFileSync(t.m4a, c));
+          writeAtomic(join(cleanDir, `${p.it.id}.json`), JSON.stringify({ hash: clips[p.it.id].hash, lead: leads.get(p.it.id) }));
+        } else for (const x of ['m4a', 'json']) rmSync(join(cleanDir, `${p.it.id}.${x}`), { force: true });
+      }
+      // each ladder's rungs: its take (trimmed, as spoken) stretched to each rung's speed × NATURAL_RATE, then finished
+      // as any clip; whisper hears every rung (the report's QA at speed; a mishearing at 1.4× is flagged, never re-rolled:
+      // the take passed the gate at its own pace)
+      const rungs: { id: string; p: Plan; n: number; tempo: number; rate: number; clamped: boolean }[] = [];
+      for (const { l, p } of ladderTodo) {
+        const t = best.get(p.it.id)!;
+        const rate = syllables(p.text) / Math.max(0.5, duration(t.wav));
+        for (const r of l.rungs) {
+          const n = r.rung!.n, want = (SPEEDS[n - 1] * NATURAL_RATE) / rate;
+          const tempo = Math.round(Math.min(TEMPO_MAX, Math.max(TEMPO_MIN, want)) * 1000) / 1000;
+          const wav = join(CACHE, 'work', `${r.id}-rung.wav`);
+          stretch(t.wav, tempo, wav);
+          clips[r.id] = staged([fileOf(r.id)], ([f]) => {
+            finish(wav, f);
+            return { dur: duration(f), hash: sha(readFileSync(f), 8) };
+          });
+          srcs[r.id] = rungSrc(p.master, n);
+          rungs.push({ id: r.id, p, n, tempo, rate: Math.round((rate * tempo) * 100) / 100, clamped: Math.abs(tempo - want) > 0.005 });
+        }
+      }
+      if (rungs.length) {
+        const heard = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', rungs.map((r) => ({ wav: fileOf(r.id), refs: [r.p.it.en, r.p.text] })));
+        for (const r of rungs) {
+          const t = best.get(r.p.it.id)!, h = heard[fileOf(r.id)], dur = clips[r.id].dur, words = r.p.text.match(/[A-Za-z']+/g)?.length ?? 0;
+          rows[r.id] = {
+            src: srcs[r.id], cast: r.p.cast, engine: r.p.engine, text: r.p.text, dur, wpm: Math.round((words / Math.max(dur - 0.06, 0.1)) * 60),
+            seed: t.seed, tries: takesOf.get(r.p.it.id) ?? 1, hyp: h.hyp, wer: h.wer, content: h.content, sim: t.sim,
+            speed: SPEEDS[r.n - 1], tempo: r.tempo, rate: r.rate, clamped: r.clamped,
+            flags: [...(h.content ? ['misheard'] : []), ...(r.clamped ? ['clamped'] : []), ...(t.content ? ['take-misheard'] : [])]
+          };
+        }
+      }
+      const made = [...todo.map((p) => p.it.id), ...rungs.map((r) => r.id)];
+      if (!flag('--no-mos')) {
+        // a mixed clip's UTMOS is its clean take's (noise is the point)
+        const fileFor = (id: string) => (mixed.has(id) ? best.get(id)!.m4a : fileOf(id));
+        const mos = py<number>('qa', 'mos', made.map(fileFor));
+        for (const id of made) {
+          rows[id].mos = mos[fileFor(id)];
+          if (rows[id].mos! < 3.5) rows[id].flags.push('low-mos');
+        }
+      }
+    }
+    // clips of items no longer in the bank (a whole run into the work folder only)
+    const ids = new Set([...ALL.map((it) => it.id), ...RUNG_IDS]);
+    for (const id of Object.keys(clips)) if (!ids.has(id)) { delete clips[id]; delete srcs[id]; }
+    if (!SCRATCH && !only) {
+      const want = new Set([...ALL.filter((it) => clips[it.id]).flatMap((it) => [`${it.id}.m4a`, ...(hasSlow(it) ? [`${it.id}-slow.m4a`] : [])]),
+        ...RUNG_IDS.filter((id) => clips[id]).map((id) => `${id}.m4a`)]);
+      for (const f of readdirSync(OUT).filter((f) => !want.has(f))) rmSync(join(OUT, f));
+    }
+  } finally {
+    // the manifests as the files are, however the run ends (a pass that throws keeps the clips made before it)
+    writeAtomic(CLIPS, JSON.stringify(sorted(clips), null, 1).replace(/\n  +/g, ' ').replace(/\n \}/g, ' }') + '\n');
+    writeAtomic(SRCS, JSON.stringify(sorted(srcs), null, 1) + '\n');
+  }
   if (!SCRATCH) {
     writePacks(); // the packs whose clips changed (docs/kikimimi.md "Audio")
     writeLevels(true); // the levels' chunks with the new clips and their packs (docs/kikimimi.md "Loading")
@@ -770,7 +779,7 @@ function run(): void {
         tempoMax: f('tempo').length ? Math.max(...f('tempo')) : null, clamped: rs.filter((r) => r.clamped).length, misheard: rs.filter((r) => r.content).length }];
     }))
   };
-  writeFileSync(REPORT, JSON.stringify({ summary, items: sorted(rows) }, null, 1) + '\n');
+  writeAtomic(REPORT, JSON.stringify({ summary, items: sorted(rows) }, null, 1) + '\n');
   console.log(`\n${todo.length} spoken in ${summary.wallSeconds}s. All ${R.length} clips: whisper word for word ${summary.perfect}, content clean ${summary.contentClean}, re-rolled ${summary.rerolled}`);
   console.log(`UTMOS mean ${summary.mos} (min ${summary.mosMin}); similarity to the ref mean ${summary.sim} (min ${summary.simMin}); RTF ${summary.rtf}; wpm by level ${JSON.stringify(wpm)}`);
   for (const [x, v] of Object.entries(summary.ladders)) if (v.n) console.log(`  rungs ${x}: ${v.n} clips, UTMOS ${v.mos} (min ${v.mosMin}), ${v.rate} syl/s, tempo ${v.tempoMin}-${v.tempoMax}, clamped ${v.clamped}, misheard ${v.misheard}`);
@@ -782,9 +791,9 @@ function run(): void {
 
 /** The tools a run needs, checked before minutes of synthesis (the one-time setup: docs/kikimimi.md "Audio"). */
 function preflight(): void {
-  const missing = [FFMPEG, FFPROBE, 'whisper-cli', 'uv'].filter((b) => spawnSync(b, ['-h'], { stdio: 'ignore' }).error);
-  const model = process.env.WHISPER_MODEL ?? join(process.env.HOME ?? '', '.cache/whisper/ggml-large-v3-turbo.bin');
-  if (!existsSync(model)) missing.push(model);
+  const uv = (Object.keys(PY_ENV) as Py[]).some(needsVenv) ? ['uv'] : []; // only to make a venv no env var names
+  const missing = [FFMPEG, FFPROBE, 'whisper-cli', ...uv].filter((b) => spawnSync(b, ['-h'], { stdio: 'ignore' }).error);
+  if (!existsSync(WHISPER_MODEL)) missing.push(WHISPER_MODEL);
   if (missing.length) throw new Error(`missing ${missing.join(', ')}: see the one-time setup in docs/kikimimi.md "Audio"`);
 }
 

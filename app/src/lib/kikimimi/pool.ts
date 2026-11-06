@@ -30,6 +30,9 @@ export type PathEntry = [id: string, name: string, stage: string, domain: string
 export interface Index {
   /** Each level's (and 'ladder''s, and each unit's) parts in order, its items (ladders) and its content version. */
   units: Record<string, { parts: string[]; n: number; cv: string }>;
+  /** Each game's content version by its deck's content (`<gm>:<unit>`: quiz:4, ladder:ladder, lesson:tr-hotel), the
+   *  `play` open's `cv` (compile.ts gameCv). */
+  games: Record<string, string>;
   /** The levels the lobby offers (every clip of the items their mix draws). */
   offered: Level[];
   /** Level 4's dialogues are voiced (its mix draws them). */
@@ -85,6 +88,12 @@ let LADDERS: Ladder[] | null = null;
 
 /** Units put in at run time (addUnit: a test's or the dev hook's fixture, never a build's), by id → its chunk's name. */
 const EXTRA = new Map<string, string>();
+/** Their lessons' content versions, when given. */
+const EXTRA_CV = new Map<string, string>();
+
+/** A game's content version over a unit of content (a level, the ladders, a unit: the `play` open's cv); undefined:
+ *  this build hasn't it. */
+export const gameCvOf = (gm: string, u: Unit): string | undefined => INDEX.games[`${gm}:${u}`] ?? (gm === 'lesson' ? EXTRA_CV.get(String(u)) : undefined);
 
 const partsOf = (u: Unit): readonly string[] => INDEX.units[u]?.parts ?? (EXTRA.has(String(u)) ? [EXTRA.get(String(u))!] : []);
 
@@ -152,11 +161,14 @@ export function unitPart(id: string): Required<UnitChunk> | undefined {
 }
 
 /** A unit's chunk put in at run time, as if loaded (the lessons' unit tests, the e2e's fixture through the dev hook:
- *  docs/curriculum-units.md §8 U2-U3). Its id must not be a build's. */
-export function addUnit(id: string, part: { unit: UnitPlay; items: Item[]; ladders?: Ladder[] }): void {
+ *  docs/curriculum-units.md §8 U2-U3), and its lessons' content version (`cv`: a co-op lesson's, on every phone alike).
+ *  Its id must not be a build's. */
+export function addUnit(id: string, part: { unit: UnitPlay; items: Item[]; ladders?: Ladder[] }, cv?: string): void {
   if (INDEX.units[id]) throw new Error(`kikimimi: unit ${id} is this build's`);
   const name = `u-${id}`;
   EXTRA.set(id, name);
+  if (cv !== undefined) EXTRA_CV.set(id, cv);
+  else EXTRA_CV.delete(id);
   take(name, { ...part, packs: [], clips: {}, words: {} });
 }
 

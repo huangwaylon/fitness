@@ -15,6 +15,7 @@ import {
 import { FLOWERS, surfaceAt, type FreshWhere } from './world.ts';
 import { FLOWER_U } from './scene.ts';
 import { coastOf } from './coast.ts';
+import { site } from './site.svelte.ts';
 
 /** A critter's shared id: its kind and the slot it came in (one a channel at a time, so unique for the day). */
 export const critterId = (s: Spawn): string =>
@@ -218,7 +219,7 @@ export function bugPath(id: BugId, seed: number, stayMs: number, o: BugOpts = {}
   const inPlace = flight === 'drift' || flight === 'flower' || flight === 'hop' || flight === 'crawl' || flight === 'stalk' || flight === 'burrow' || STILL.has(id);
   // a flier comes in from a little way off on the island's nearer side, at its own pace (fading in as it comes:
   // world3d/things.ts), a percher from above its trunk
-  const side = spot.x < 195 ? -1 : 1;
+  const side = spot.x < site.midX ? -1 : 1;
   const start = o.from ?? (inPlace ? spot : flight === 'perch' ? { x: spot.x + side * 90, z: spot.z, lift: spot.lift + 50 } : { x: spot.x + side * 60, z: spot.z, lift: spot.lift + 8 });
   const legs: Leg[] = [];
   let at: P3 = start, t = 60;

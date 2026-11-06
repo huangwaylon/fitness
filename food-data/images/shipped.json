@@ -97,6 +97,34 @@
 "checked": false
 },
 {
+"key": "dishes-bibimbap",
+"ja": "ビビンバ",
+"desc": "bibimbap, a bowl of rice topped with colourful namul (spinach, bean sprouts, carrot), seasoned beef, a fried egg and red gochujang",
+"items": [
+"dishes:bibimbap",
+"eatout:bibimbap",
+"kumagaya:03274-2"
+],
+"roll": 0,
+"seed": 52848,
+"prompt": "f3aa8f59a5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-broccoli-mayo",
+"ja": "ブロッコリーのマヨネーズ添え",
+"desc": "boiled broccoli florets with a dab of mayonnaise on the side",
+"items": [
+"dishes:broccoli-mayo"
+],
+"roll": 0,
+"seed": 89785,
+"prompt": "68218a7d00",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-bukkake-udon",
 "ja": "ぶっかけうどん",
 "desc": "bukkake udon, cold thick udon in a bowl with a little dark sauce, grated daikon, tempura bits, green onion and lemon",
@@ -154,6 +182,21 @@
 "checked": false
 },
 {
+"key": "dishes-butadon",
+"ja": "豚丼",
+"desc": "butadon, a bowl of white rice topped with simmered pork slices and onion in sweet soy sauce",
+"items": [
+"dishes:butadon",
+"eatout:butadon",
+"maff_kyodo:butadon_hokkaido"
+],
+"roll": 0,
+"seed": 36517,
+"prompt": "7e411a8f3c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-butakimuchi",
 "ja": "豚キムチ",
 "desc": "pork kimchi stir-fry, pork belly slices with red kimchi cabbage, onion and garlic chives",
@@ -196,6 +239,21 @@
 "checked": false
 },
 {
+"key": "dishes-champon",
+"ja": "ちゃんぽん",
+"desc": "champon, thick noodles in milky white broth heaped with cabbage, bean sprouts, pork, shrimp, squid and kamaboko",
+"items": [
+"dishes:champon",
+"eatout:champon",
+"maff_kyodo:46_8_nagasaki"
+],
+"roll": 0,
+"seed": 95474,
+"prompt": "38253a5ed7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-chanchanyaki",
 "ja": "鮭のちゃんちゃん焼き",
 "desc": "chanchan-yaki, salmon fillet grilled with cabbage, onion, carrot and shimeji mushrooms under a miso butter sauce on an iron pan",
@@ -206,6 +264,19 @@
 "roll": 0,
 "seed": 34155,
 "prompt": "f564dd8325",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-chanko-nabe",
+"ja": "ちゃんこ鍋（1人前）",
+"desc": "chanko nabe, a big pot with chicken meatballs, chicken, napa cabbage, tofu and leek in clear broth",
+"items": [
+"dishes:chanko-nabe"
+],
+"roll": 0,
+"seed": 988,
+"prompt": "8f496016c5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -221,6 +292,46 @@
 "roll": 0,
 "seed": 1375,
 "prompt": "8aa312c3d6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-chazuke-moto",
+"ja": "お茶漬け（市販の素）",
+"desc": "ochazuke, a bowl of rice in green tea with tiny rice crackers and nori strips",
+"items": [
+"dishes:chazuke-moto"
+],
+"roll": 0,
+"seed": 77345,
+"prompt": "ad6ff7fd78",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-chazuke-shake",
+"ja": "鮭茶漬け",
+"desc": "sake chazuke, a bowl of rice in green tea topped with flaked salmon, nori strips and wasabi",
+"items": [
+"dishes:chazuke-shake",
+"eatout:ochazuke"
+],
+"roll": 0,
+"seed": 61560,
+"prompt": "8357aa6d4b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-chazuke-ume",
+"ja": "梅茶漬け",
+"desc": "ume chazuke, a bowl of rice in green tea topped with a red umeboshi, nori strips and arare",
+"items": [
+"dishes:chazuke-ume"
+],
+"roll": 0,
+"seed": 57392,
+"prompt": "3ebaa9f417",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -277,6 +388,21 @@
 "roll": 0,
 "seed": 82533,
 "prompt": "a507430e00",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-chukadon",
+"ja": "中華丼",
+"desc": "chukadon, a bowl of rice topped with stir-fried cabbage, carrot, shrimp, pork, quail egg and snow peas in glossy thick sauce",
+"items": [
+"dishes:chukadon",
+"eatout:chukadon",
+"kurume:013"
+],
+"roll": 0,
+"seed": 75326,
+"prompt": "0215868a0c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -364,6 +490,20 @@
 "checked": false
 },
 {
+"key": "dishes-curry-udon",
+"ja": "カレーうどん",
+"desc": "curry udon, thick udon in thick brown Japanese curry broth with pork and green onion",
+"items": [
+"dishes:curry-udon",
+"eatout:curry_udon"
+],
+"roll": 0,
+"seed": 85545,
+"prompt": "f9ed2fcc8a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-daigaku-imo",
 "ja": "大学いも",
 "desc": "daigaku imo, fried sweet potato chunks with purple skin coated in a glossy amber honey-sugar glaze, sprinkled with black sesame",
@@ -373,6 +513,20 @@
 "roll": 0,
 "seed": 98030,
 "prompt": "0e9f6ffea6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-doria",
+"ja": "ドリア",
+"desc": "doria, rice baked under creamy white sauce and melted cheese browned in spots, in an oval baking dish",
+"items": [
+"dishes:doria",
+"eatout:doria_chicken"
+],
+"roll": 0,
+"seed": 51397,
+"prompt": "74f95c59eb",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -401,6 +555,33 @@
 "roll": 0,
 "seed": 92777,
 "prompt": "52a8bc6fbe",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-fukagawa-meshi",
+"ja": "深川めし（深川丼）",
+"desc": "fukagawa meshi, a bowl of rice topped with asari clams simmered in miso broth with green onion",
+"items": [
+"dishes:fukagawa-meshi"
+],
+"roll": 0,
+"seed": 77687,
+"prompt": "2aa026c678",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-futomaki",
+"ja": "太巻き",
+"desc": "futomaki, thick sushi rolls in nori cut in rounds showing colourful fillings of yellow egg, pink denbu, green cucumber, brown kanpyo and shiitake",
+"items": [
+"dishes:futomaki",
+"eatout:futomaki"
+],
+"roll": 0,
+"seed": 54277,
+"prompt": "374b5618f0",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -569,6 +750,20 @@
 "checked": false
 },
 {
+"key": "dishes-hayashi-rice",
+"ja": "ハヤシライス",
+"desc": "hayashi rice, white rice beside glossy reddish-brown demi-glace sauce with thin beef slices, onion and mushrooms",
+"items": [
+"dishes:hayashi-rice",
+"eatout:hayashi"
+],
+"roll": 0,
+"seed": 18568,
+"prompt": "8d4a4cce1e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-hiyashi-chuka",
 "ja": "冷やし中華",
 "desc": "hiyashi chuka, cold yellow ramen noodles topped with neat rows of julienned cucumber, ham, egg strips and tomato, with yellow mustard",
@@ -662,6 +857,48 @@
 "roll": 0,
 "seed": 70857,
 "prompt": "78fe18f8d8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-inarizushi",
+"ja": "いなり寿司",
+"desc": "inarizushi, three plump pouches of glossy brown sweet fried tofu filled with sushi rice",
+"items": [
+"dishes:inarizushi",
+"eatout:inari",
+"kurume:006"
+],
+"roll": 0,
+"seed": 8085,
+"prompt": "642e004338",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-ishikari-nabe",
+"ja": "石狩鍋（1人前）",
+"desc": "ishikari nabe, a pot of miso broth with salmon chunks, napa cabbage, tofu, potato and leek",
+"items": [
+"dishes:ishikari-nabe",
+"maff_kyodo:ishikarinabe_hokkaido"
+],
+"roll": 0,
+"seed": 67596,
+"prompt": "f36a36fbf0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-isobeyaki",
+"ja": "磯辺焼き（餅2個）",
+"desc": "isobeyaki, two grilled rice cakes glazed with soy sauce and wrapped in nori",
+"items": [
+"dishes:isobeyaki"
+],
+"roll": 0,
+"seed": 7075,
+"prompt": "1d7fd28c3f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -778,6 +1015,49 @@
 "checked": false
 },
 {
+"key": "dishes-kamonanban",
+"ja": "鴨南蛮そば",
+"desc": "kamo nanban soba, soba in hot dashi broth with slices of duck and grilled leek",
+"items": [
+"dishes:kamonanban",
+"eatout:kamonanban"
+],
+"roll": 0,
+"seed": 24032,
+"prompt": "095d10df53",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-kanpyomaki",
+"ja": "かんぴょう巻き",
+"desc": "kanpyo maki, thin sushi rolls in nori with brown simmered gourd strips in the middle",
+"items": [
+"dishes:kanpyomaki",
+"eatout:maki_kanpyo",
+"maff_kyodo:34_13_tokyo"
+],
+"roll": 0,
+"seed": 8216,
+"prompt": "318d5cddf5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-kappamaki",
+"ja": "かっぱ巻き",
+"desc": "kappa maki, thin sushi rolls in nori cut in six pieces with green cucumber in the middle",
+"items": [
+"dishes:kappamaki",
+"eatout:maki_kappa"
+],
+"roll": 0,
+"seed": 70380,
+"prompt": "0dcb28cb62",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-karaage",
 "ja": "鶏の唐揚げ",
 "desc": "a pile of five Japanese karaage fried chicken pieces, craggy crisp golden-brown coating, bite-sized irregular chunks, on a small bed of shredded cabbage with a lemon wedge",
@@ -879,6 +1159,32 @@
 "checked": false
 },
 {
+"key": "dishes-kimchi-nabe",
+"ja": "キムチ鍋（1人前）",
+"desc": "kimchi nabe, a clay pot of red spicy kimchi broth with pork, tofu, napa cabbage and enoki",
+"items": [
+"dishes:kimchi-nabe"
+],
+"roll": 0,
+"seed": 9218,
+"prompt": "dfd15f60d1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-kinako-mochi",
+"ja": "きなこ餅（2個）",
+"desc": "kinako mochi, soft white rice cakes coated in golden-tan kinako soybean flour",
+"items": [
+"dishes:kinako-mochi"
+],
+"roll": 0,
+"seed": 10619,
+"prompt": "6f28ddb8af",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-kinmedai-nitsuke",
 "ja": "金目鯛の煮付け",
 "desc": "kinmedai no nitsuke, a red-skinned golden-eye snapper piece simmered in glossy dark sweet soy broth with tofu and burdock",
@@ -916,6 +1222,20 @@
 "roll": 0,
 "seed": 70142,
 "prompt": "62ec409830",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-kitsune-soba",
+"ja": "きつねそば",
+"desc": "kitsune soba, soba noodles in hot dashi broth topped with a sweet fried tofu sheet and green onion",
+"items": [
+"dishes:kitsune-soba",
+"eatout:kitsune_soba"
+],
+"roll": 0,
+"seed": 71475,
+"prompt": "ccf26a6c12",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -960,6 +1280,20 @@
 "roll": 0,
 "seed": 95775,
 "prompt": "8f51456fdc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-mabodon",
+"ja": "麻婆丼",
+"desc": "mabodon, a bowl of rice topped with red-brown spicy mapo tofu",
+"items": [
+"dishes:mabodon",
+"eatout:mabodon"
+],
+"roll": 0,
+"seed": 88656,
+"prompt": "98efe3d188",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -1219,6 +1553,32 @@
 "checked": false
 },
 {
+"key": "dishes-mizutaki",
+"ja": "水炊き（1人前）",
+"desc": "mizutaki, a clay pot of milky white chicken broth with chicken pieces, cabbage, tofu and shungiku",
+"items": [
+"dishes:mizutaki"
+],
+"roll": 0,
+"seed": 65167,
+"prompt": "7612adeaea",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-motsunabe",
+"ja": "もつ鍋（1人前）",
+"desc": "motsunabe, a pot of soy broth with beef offal, cabbage, garlic chives, tofu and garlic slices",
+"items": [
+"dishes:motsunabe"
+],
+"roll": 0,
+"seed": 37991,
+"prompt": "af3444f9a7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-mozuku-su",
 "ja": "もずく酢",
 "desc": "mozuku-zu, slippery brown mozuku seaweed in sweet vinegar with grated ginger, in a small glass bowl",
@@ -1241,6 +1601,33 @@
 "roll": 0,
 "seed": 67397,
 "prompt": "e675243468",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-nabeyaki-udon",
+"ja": "鍋焼きうどん",
+"desc": "nabeyaki udon, udon in a small clay pot with shrimp tempura, an egg, chicken, kamaboko, shiitake and green onion",
+"items": [
+"dishes:nabeyaki-udon",
+"eatout:nabeyaki_udon"
+],
+"roll": 0,
+"seed": 68039,
+"prompt": "ba2f4f2fd4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-nanakusagayu",
+"ja": "七草粥",
+"desc": "nanakusa gayu, white rice porridge with chopped green spring herbs and small white turnip pieces",
+"items": [
+"dishes:nanakusagayu"
+],
+"roll": 0,
+"seed": 39862,
+"prompt": "1993fbd328",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -1312,6 +1699,20 @@
 "checked": false
 },
 {
+"key": "dishes-negitorodon",
+"ja": "ねぎとろ丼",
+"desc": "negitoro don, a bowl of rice topped with a mound of minced pink fatty tuna, chopped green onion and nori",
+"items": [
+"dishes:negitorodon",
+"eatout:negitoro_don"
+],
+"roll": 0,
+"seed": 85518,
+"prompt": "31bd84e1ee",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-nibitashi-komatsuna",
 "ja": "小松菜と油揚げの煮びたし",
 "desc": "komatsuna and aburaage nibitashi, green komatsuna and thin fried tofu strips in light dashi broth",
@@ -1321,6 +1722,22 @@
 "roll": 0,
 "seed": 96145,
 "prompt": "098563020b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-niku-udon",
+"ja": "肉うどん",
+"desc": "niku udon, thick udon in dashi broth topped with sweet simmered beef slices and green onion",
+"items": [
+"dishes:niku-udon",
+"eatout:niku_udon",
+"takatsuki:r54",
+"kurume:036"
+],
+"roll": 0,
+"seed": 51621,
+"prompt": "eeeda90b55",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -1366,6 +1783,20 @@
 "checked": false
 },
 {
+"key": "dishes-nyumen",
+"ja": "にゅうめん",
+"desc": "nyumen, thin somen noodles in hot clear dashi broth with kamaboko and green onion",
+"items": [
+"dishes:nyumen",
+"maff_kyodo:nyuumen_nara"
+],
+"roll": 0,
+"seed": 53749,
+"prompt": "3aa5acc942",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-oden-tamago",
 "ja": "おでん 卵",
 "desc": "an oden egg, a whole peeled boiled egg stained light brown by the broth, in clear oden dashi",
@@ -1376,6 +1807,32 @@
 "roll": 0,
 "seed": 44639,
 "prompt": "f53dc97f6b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-okayu",
+"ja": "白がゆ（梅干し添え）",
+"desc": "a bowl of plain white rice porridge (okayu) with a red umeboshi plum on top",
+"items": [
+"dishes:okayu"
+],
+"roll": 0,
+"seed": 80998,
+"prompt": "4bc74fbaf3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-okura-katsuobushi",
+"ja": "オクラのおかか和え",
+"desc": "okra okaka-ae, sliced green okra stars with bonito flakes and soy",
+"items": [
+"dishes:okura-katsuobushi"
+],
+"roll": 0,
+"seed": 27607,
+"prompt": "c87a2247e5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -1409,6 +1866,62 @@
 "checked": false
 },
 {
+"key": "dishes-onigiri-ikura",
+"ja": "おにぎり（いくら）",
+"desc": "an onigiri with dark nori and glossy orange ikura salmon roe on top",
+"items": [
+"dishes:onigiri-ikura",
+"eatout:onigiri_ikura"
+],
+"roll": 0,
+"seed": 42607,
+"prompt": "2b0c0ec421",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-onigiri-konbu",
+"ja": "おにぎり（昆布）",
+"desc": "an onigiri rice ball with dark nori and glossy dark brown simmered kombu filling visible on top",
+"items": [
+"dishes:onigiri-konbu",
+"eatout:onigiri_konbu"
+],
+"roll": 0,
+"seed": 7269,
+"prompt": "b20cbb8d84",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-onigiri-mentaiko",
+"ja": "おにぎり（明太子）",
+"desc": "an onigiri with dark nori and a piece of red-orange mentaiko visible on top",
+"items": [
+"dishes:onigiri-mentaiko",
+"eatout:onigiri_mentai"
+],
+"roll": 0,
+"seed": 70486,
+"prompt": "9f7da1c381",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-onigiri-okaka",
+"ja": "おにぎり（おかか）",
+"desc": "an onigiri with dark nori and soy-seasoned brown bonito flakes visible on top",
+"items": [
+"dishes:onigiri-okaka",
+"eatout:onigiri_okaka"
+],
+"roll": 0,
+"seed": 12635,
+"prompt": "009cc0b7a0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-onigiri-shake",
 "ja": "おにぎり（鮭）",
 "desc": "a Japanese onigiri rice ball, a white triangle of rice wrapped at the bottom with a band of dark green nori, a little flaked orange-pink salmon visible at the top",
@@ -1419,6 +1932,46 @@
 "seed": 68207,
 "prompt": "b931da228b",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-onigiri-shirasu",
+"ja": "おにぎり（しらす）",
+"desc": "a shirasu onigiri, a rice ball mixed with tiny white baby sardines, with nori",
+"items": [
+"dishes:onigiri-shirasu"
+],
+"roll": 0,
+"seed": 12375,
+"prompt": "0f511956b7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-onigiri-takana",
+"ja": "おにぎり（高菜）",
+"desc": "a takana onigiri, a rice ball wrapped in a large dark green pickled mustard leaf",
+"items": [
+"dishes:onigiri-takana"
+],
+"roll": 0,
+"seed": 73702,
+"prompt": "882a10e38b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-onigiri-tarako",
+"ja": "おにぎり（たらこ）",
+"desc": "an onigiri with dark nori and a piece of pinkish grilled tarako visible on top",
+"items": [
+"dishes:onigiri-tarako",
+"eatout:onigiri_tarako"
+],
+"roll": 0,
+"seed": 6001,
+"prompt": "3a4172d5b7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1476,6 +2029,20 @@
 "seed": 2901,
 "prompt": "89bd5f692f",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-peperoncino",
+"ja": "ペペロンチーノ",
+"desc": "spaghetti aglio olio e peperoncino, glossy spaghetti with sliced garlic, red chili flakes and parsley",
+"items": [
+"dishes:peperoncino",
+"eatout:peperoncino"
+],
+"roll": 0,
+"seed": 1681,
+"prompt": "d73181b8b3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1566,6 +2133,19 @@
 "checked": false
 },
 {
+"key": "dishes-sansai-soba",
+"ja": "山菜そば",
+"desc": "sansai soba, soba in hot dashi broth topped with brown and green wild mountain vegetables (warabi fern, nameko)",
+"items": [
+"dishes:sansai-soba"
+],
+"roll": 0,
+"seed": 8404,
+"prompt": "3ea77b501b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-sashimi-moriawase",
 "ja": "刺身盛り合わせ",
 "desc": "a sashimi platter, slices of red tuna, orange salmon and pale yellowtail with shredded daikon, a shiso leaf and wasabi",
@@ -1593,6 +2173,20 @@
 "checked": false
 },
 {
+"key": "dishes-shabushabu-pork",
+"ja": "豚しゃぶしゃぶ（1人前）",
+"desc": "shabu-shabu, a pot of clear kombu broth with thin meat slices, napa cabbage, tofu, enoki and leek, with ponzu",
+"items": [
+"dishes:shabushabu-pork",
+"dishes:shabushabu-beef"
+],
+"roll": 0,
+"seed": 38705,
+"prompt": "60aa778923",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-shigureni",
 "ja": "牛肉のしぐれ煮",
 "desc": "beef shigureni, thin beef slices simmered dark glossy brown with slivers of ginger, in a small bowl",
@@ -1602,6 +2196,19 @@
 "roll": 0,
 "seed": 78978,
 "prompt": "6cfc3bf600",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-shio-yakisoba",
+"ja": "塩焼きそば",
+"desc": "shio yakisoba, stir-fried pale noodles with cabbage, pork, bean sprouts and green onion, no dark sauce",
+"items": [
+"dishes:shio-yakisoba"
+],
+"roll": 0,
+"seed": 2934,
+"prompt": "892dc54be8",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -1616,6 +2223,19 @@
 "seed": 9922,
 "prompt": "4d707f6557",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-soboro-don",
+"ja": "三色そぼろ丼",
+"desc": "sanshoku soboro don, rice topped in three neat stripes of yellow scrambled egg, brown minced chicken and green beans",
+"items": [
+"dishes:soboro-don"
+],
+"roll": 0,
+"seed": 46092,
+"prompt": "150106cfbf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1689,6 +2309,32 @@
 "checked": false
 },
 {
+"key": "dishes-taco-rice",
+"ja": "タコライス",
+"desc": "taco rice, white rice topped with seasoned minced meat, shredded lettuce, diced tomato and grated cheese",
+"items": [
+"dishes:taco-rice"
+],
+"roll": 0,
+"seed": 62667,
+"prompt": "32f5eb3b22",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-takikomi-gohan",
+"ja": "炊き込みごはん（五目）",
+"desc": "takikomi gohan, light brown seasoned rice with bits of chicken, carrot, burdock, shiitake and konjac in a rice bowl",
+"items": [
+"dishes:takikomi-gohan"
+],
+"roll": 0,
+"seed": 36793,
+"prompt": "f178968e6b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-tako-sunomono",
 "ja": "たこときゅうりの酢の物",
 "desc": "tako su, red-skinned octopus slices with thin cucumber slices and wakame in sweet vinegar",
@@ -1745,6 +2391,34 @@
 "checked": false
 },
 {
+"key": "dishes-tanuki-soba",
+"ja": "たぬきそば",
+"desc": "tanuki soba, soba in hot dashi broth topped with tempura bits and green onion",
+"items": [
+"dishes:tanuki-soba",
+"eatout:tanuki_soba"
+],
+"roll": 0,
+"seed": 62590,
+"prompt": "cfcd544091",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tanuki-udon",
+"ja": "たぬきうどん",
+"desc": "tanuki udon, thick udon in dashi broth topped with crunchy tempura bits (tenkasu) and green onion",
+"items": [
+"dishes:tanuki-udon",
+"eatout:tanuki_udon"
+],
+"roll": 0,
+"seed": 63615,
+"prompt": "5d16fef5be",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-tara-foil",
 "ja": "たらのホイル焼き",
 "desc": "cod baked in foil, an opened foil parcel with a white cod fillet, shimeji mushrooms, onion and butter",
@@ -1754,6 +2428,33 @@
 "roll": 0,
 "seed": 47093,
 "prompt": "b8ae4728e7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tarako-spa",
+"ja": "たらこスパゲッティ",
+"desc": "tarako spaghetti, spaghetti tossed with pink cod roe and butter, topped with shredded nori",
+"items": [
+"dishes:tarako-spa",
+"eatout:tarako_pasta"
+],
+"roll": 0,
+"seed": 15416,
+"prompt": "3de0eb1c13",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tazukuri",
+"ja": "田作り",
+"desc": "tazukuri, small dried sardines candied in a glossy sweet soy glaze with sesame",
+"items": [
+"dishes:tazukuri"
+],
+"roll": 0,
+"seed": 24437,
+"prompt": "5dc3c4d6d0",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -1814,6 +2515,47 @@
 "checked": false
 },
 {
+"key": "dishes-tekkadon",
+"ja": "鉄火丼",
+"desc": "tekkadon, a bowl of sushi rice covered with slices of deep red tuna, nori strips and wasabi",
+"items": [
+"dishes:tekkadon",
+"eatout:maguro_don"
+],
+"roll": 0,
+"seed": 57191,
+"prompt": "1b2af48366",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tekkamaki",
+"ja": "鉄火巻き",
+"desc": "tekka maki, thin sushi rolls in nori cut in six pieces with deep red tuna in the middle",
+"items": [
+"dishes:tekkamaki",
+"eatout:maki_tekka"
+],
+"roll": 0,
+"seed": 8186,
+"prompt": "82aa362936",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-temakizushi",
+"ja": "手巻き寿司（4本）",
+"desc": "temaki sushi, cone-shaped hand rolls of nori filled with rice, tuna, salmon, cucumber and egg",
+"items": [
+"dishes:temakizushi"
+],
+"roll": 0,
+"seed": 82171,
+"prompt": "b5ea91fff4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-tempura-moriawase",
 "ja": "天ぷら盛り合わせ",
 "desc": "an assorted tempura platter, shrimp, squid, kisu, eggplant and sweet potato in light crisp golden batter, with a small dish of dipping sauce and grated daikon",
@@ -1824,6 +2566,20 @@
 "roll": 0,
 "seed": 80876,
 "prompt": "1def0d9d68",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tempura-soba",
+"ja": "天ぷらそば",
+"desc": "tempura soba, soba in hot dashi broth topped with shrimp tempura and green onion",
+"items": [
+"dishes:tempura-soba",
+"eatout:tenpura_soba"
+],
+"roll": 0,
+"seed": 22930,
+"prompt": "a38ca7377d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -1853,6 +2609,48 @@
 "roll": 0,
 "seed": 81872,
 "prompt": "4f5c69fdc1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tenmusu",
+"ja": "天むす",
+"desc": "tenmusu, a small rice ball with a shrimp tempura tail sticking out of the top, wrapped in nori",
+"items": [
+"dishes:tenmusu",
+"eatout:onigiri_tenmusu"
+],
+"roll": 0,
+"seed": 1831,
+"prompt": "82370cf59e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tenshindon",
+"ja": "天津飯",
+"desc": "tenshinhan, a fluffy crab omelette on rice covered in a glossy translucent amber sweet sauce, with green peas",
+"items": [
+"dishes:tenshindon",
+"eatout:tenshindon"
+],
+"roll": 0,
+"seed": 86512,
+"prompt": "96110dfd2a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tenzaru-soba",
+"ja": "天ざるそば",
+"desc": "ten zaru soba, cold soba on a bamboo tray with nori, beside shrimp and vegetable tempura and a cup of dipping sauce",
+"items": [
+"dishes:tenzaru-soba",
+"eatout:tenzaru_soba"
+],
+"roll": 0,
+"seed": 13011,
+"prompt": "01ac218460",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -1925,6 +2723,19 @@
 "checked": false
 },
 {
+"key": "dishes-tororo-soba",
+"ja": "とろろそば",
+"desc": "tororo soba, soba in broth topped with white grated yam, nori and green onion",
+"items": [
+"dishes:tororo-soba"
+],
+"roll": 0,
+"seed": 5995,
+"prompt": "831931a62b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-tsukimi-soba",
 "ja": "月見そば",
 "desc": "tsukimi soba, soba in hot dashi broth with a raw egg yolk and green onion",
@@ -1935,6 +2746,21 @@
 "roll": 0,
 "seed": 82660,
 "prompt": "27fa2615c6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tsukimi-udon",
+"ja": "月見うどん",
+"desc": "tsukimi udon, thick udon in dashi broth with a raw egg yolk like a full moon, green onion",
+"items": [
+"dishes:tsukimi-udon",
+"eatout:tsukimi_udon",
+"kurume:038"
+],
+"roll": 0,
+"seed": 98853,
+"prompt": "18a1552446",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -1953,6 +2779,48 @@
 "checked": false
 },
 {
+"key": "dishes-unadon",
+"ja": "うな丼",
+"desc": "unadon, a bowl of rice topped with glossy dark brown glazed grilled eel pieces",
+"items": [
+"dishes:unadon",
+"eatout:unadon"
+],
+"roll": 0,
+"seed": 28178,
+"prompt": "327367a750",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-vongole",
+"ja": "ボンゴレビアンコ",
+"desc": "spaghetti vongole bianco, spaghetti with open clams in white wine garlic sauce with parsley",
+"items": [
+"dishes:vongole",
+"eatout:vongole"
+],
+"roll": 0,
+"seed": 10512,
+"prompt": "a1feed59a7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-wafu-kinoko-spa",
+"ja": "和風きのこスパゲッティ",
+"desc": "Japanese mushroom spaghetti, spaghetti with shimeji, enoki and bacon in soy butter, topped with nori",
+"items": [
+"dishes:wafu-kinoko-spa",
+"eatout:wafu_kinoko_pasta"
+],
+"roll": 0,
+"seed": 63390,
+"prompt": "fb7b46e6e0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-wafu-salad",
 "ja": "大根と水菜の和風サラダ",
 "desc": "daikon and mizuna salad, thin white daikon strips and green mizuna with nori strips and bonito flakes",
@@ -1962,6 +2830,34 @@
 "roll": 0,
 "seed": 22546,
 "prompt": "8d720ef6fb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-wakame-udon",
+"ja": "わかめうどん",
+"desc": "wakame udon, thick udon in dashi broth topped with a heap of green wakame seaweed and green onion",
+"items": [
+"dishes:wakame-udon",
+"kurume:034"
+],
+"roll": 0,
+"seed": 90113,
+"prompt": "7191aa07d8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-yaki-udon",
+"ja": "焼きうどん",
+"desc": "yaki udon, stir-fried thick udon with cabbage, pork and carrot, glossy brown, topped with bonito flakes",
+"items": [
+"dishes:yaki-udon",
+"eatout:yakiudon"
+],
+"roll": 0,
+"seed": 98952,
+"prompt": "ab9b09856d",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -2120,6 +3016,20 @@
 "checked": false
 },
 {
+"key": "dishes-zaru-udon",
+"ja": "ざるうどん",
+"desc": "zaru udon, cold glossy thick white udon on a bamboo zaru tray with dipping sauce, green onion and ginger",
+"items": [
+"dishes:zaru-udon",
+"eatout:zaru_udon"
+],
+"roll": 0,
+"seed": 41904,
+"prompt": "9d90b132a0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-zoni-kansai",
 "ja": "お雑煮（関西風白味噌）",
 "desc": "Kansai-style ozoni, a creamy pale white miso soup with a round mochi, taro, daikon and carrot rounds",
@@ -2142,6 +3052,19 @@
 "roll": 0,
 "seed": 57870,
 "prompt": "866fb0818b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-zosui",
+"ja": "卵雑炊",
+"desc": "tamago zosui, a bowl of rice porridge in clear dashi with soft yellow egg ribbons and green onion",
+"items": [
+"dishes:zosui"
+],
+"roll": 0,
+"seed": 91998,
+"prompt": "228fb59f0b",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },

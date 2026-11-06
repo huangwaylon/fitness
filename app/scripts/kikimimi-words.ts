@@ -12,9 +12,10 @@
 // clean take, which the audio script keeps under .cache/tts/clean/ with the speech's offset in the mixed clip.
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { homedir, tmpdir } from 'node:os';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { registerHooks } from 'node:module';
+import { FFMPEG, WHISPER_MODEL as MODEL } from './tts/tools.ts';
 
 registerHooks({
   load: (url, ctx, next) => (url.endsWith('.json') ? next(url, { ...ctx, importAttributes: { type: 'json' } }) : next(url, ctx))
@@ -31,8 +32,6 @@ const APP = join(import.meta.dirname, '..');
 const OUT = join(APP, 'src/lib/kikimimi/words.json');
 const CLEAN = join(process.env.KIKIMIMI_TTS_CACHE ?? join(APP, '.cache/tts'), 'clean');
 const CLIPS = JSON.parse(readFileSync(join(APP, 'src/lib/kikimimi/clips.json'), 'utf8')) as Record<string, { dur: number; hash: string }>;
-const MODEL = process.env.WHISPER_MODEL ?? join(homedir(), '.cache/whisper/ggml-large-v3-turbo.bin');
-const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const force = process.argv.includes('--force');
 const onlyAt = process.argv.indexOf('--only');
 const only = onlyAt > 0 ? new RegExp(process.argv[onlyAt + 1]) : null;

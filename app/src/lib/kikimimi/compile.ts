@@ -25,6 +25,7 @@ import type { Index, PathEntry } from './pool.ts';
 import { joined } from './source.ts';
 import { tagsOf } from './tags.ts';
 import { LESSONS, candoText, checkUnits, lessonIds, manifestOf, type UnitManifest, type UnitsCheck } from './units.ts';
+import { BUILD_V } from './games/versions.ts';
 
 /** A unit's chunk's budget (gzipped; plan §8). */
 export const UNIT_MAX = 20 * 1024;
@@ -163,6 +164,14 @@ function cv(items: readonly Item[], mix: unknown, clips: Readonly<Record<string,
   return createHash('sha256').update(JSON.stringify([mix, shape])).digest('hex').slice(0, 6);
 }
 
+/** A game's content version (docs/kikimimi-framework.md §4.2), `play`'s `cv`: its deck's content's (cv above), the game
+ *  and its build's version (games/versions.ts BUILD_V), 6 hex. */
+export function gameCv(gm: string, content: string): string {
+  const v = BUILD_V[gm];
+  if (v === undefined) throw new Error(`kikimimi: no BUILD_V for the game ${gm}`);
+  return createHash('sha256').update(JSON.stringify([gm, v, content])).digest('hex').slice(0, 6);
+}
+
 /** A level's items in contiguous parts, each under PART_AIM gzipped (one part when it fits), as their files. */
 function split(items: readonly Item[], file: (items: readonly Item[]) => string): string[] {
   for (let n = 1; n <= items.length; n++) {
@@ -185,12 +194,13 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
 }
 
 /** levels/'s files (paths under it → contents) for these clips and word timings, these units (app/content/units/:
- *  a unit that fails its checks stops it) and these packs (packs.json: a clip in none stops it). */
-export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks()): Map<string, string> {
+ *  a unit that fails its checks stops it; its warnings go to `warn`) and these packs (packs.json: a clip in none stops it). */
+export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void): Map<string, string> {
   const out = new Map<string, string>();
   const places = clipPlaces(packs);
   const BANK = joined(clips), check = checkUnitSources(sources, clips, BANK);
   if (check.errors.length) throw new Error(`kikimimi: the units don't check:\n${check.errors.join('\n')}`);
+  if (warn) for (const w of check.warnings) warn(w);
   const dialogues = dialoguesVoiced(clips, BANK), mix = mixFor(dialogues);
   const units: Index['units'] = {};
   const levels = [...new Set(BANK.map((it) => it.lv))].sort((a, b) => a - b);
@@ -214,10 +224,15 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     units[u.unit] = c.entry;
     paths.push(c.path);
   }
+  // each game's cv by its deck's content (pool.ts gameCvOf): the quiz at a level, スピード はしご, a unit's lesson
+  const games: Index['games'] = {};
+  for (const lv of levels) games[`quiz:${lv}`] = gameCv('quiz', units[lv].cv);
+  games['ladder:ladder'] = gameCv('ladder', units.ladder.cv);
+  for (const u of check.units) games[`lesson:${u.unit}`] = gameCv('lesson', units[u.unit].cv);
   const first = BANK.find((it) => it.lv === 1)!;
   const test = chunkClips([first.id], clips, places);
   const index: Index = {
-    units, offered: playable(clips, BANK), dialogues, ladder: ladderReady(clips), test: [first.id, test.clips[first.id], test.packs], paths,
+    units, games, offered: playable(clips, BANK), dialogues, ladder: ladderReady(clips), test: [first.id, test.clips[first.id], test.packs], paths,
     items: BANK.map((it) => {
       const t = tagsOf(it);
       return [it.id, it.lv, it.type, it.voice, t.pragmatic, [...t.features]];

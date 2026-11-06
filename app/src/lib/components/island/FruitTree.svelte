@@ -350,7 +350,7 @@
       if (crown - 10 - h >= floor) top = crown - 10 - h;
       else {
         // no room: on this tree's side, clear of the other tree's canopy (its middle stays tappable)
-        const [ox] = w.clientAt(x < 195 ? GOAL_TREES.B[0] : GOAL_TREES.A[0], z, H * 0.7), oc = ox - st.left;
+        const [ox] = w.clientAt(x < site.midX ? GOAL_TREES.B[0] : GOAL_TREES.A[0], z, H * 0.7), oc = ox - st.left;
         left = side < 0 ? Math.max(8, Math.min(left, oc - 44 - wd)) : Math.min(st.width - 8 - wd, Math.max(left, oc + 44));
       }
     }
@@ -404,7 +404,7 @@
   <!-- all four met: glints twinkle on the canopy in turn over a soft gold glow (NH's money tree) -->
   {#if allMet}
     <span class="glints" data-tree={person.person} aria-hidden="true" style:left={u(-W / 2)} style:top={u(-H)} style:width={u(W)}
-      style:height={u(H * 0.62)} style:--g={u(24)} style:--late="{x < 195 ? 0 : 0.33}s">
+      style:height={u(H * 0.62)} style:--g={u(24)} style:--late="{x < site.midX ? 0 : 0.33}s">
       <span class="glow"></span>
       {#each GLINTS as [gx, gy], k (k)}
         <svg class="glint" viewBox="0 0 24 24" style:left="{gx}%" style:top="{gy}%" style:--k={k}>

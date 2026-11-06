@@ -1,14 +1,14 @@
 // ききみみ クイズ: the small DSP the speech conditions and their noise beds need (docs/kikimimi.md "Conditions"), for
 // scripts/kikimimi-audio.ts and scripts/kikimimi-beds.ts. Mono float PCM at 24 kHz; ffmpeg decodes, convolves (afir as a
 // plain convolution) and measures loudness. Deterministic: every random draw is seeded. Silent: nothing here plays.
-import { execFileSync, spawnSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { mulberry32 } from '../../src/lib/random.ts';
+import { FFMPEG, measureLoudness } from './tools.ts';
 
 export const SR = 24000;
-const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 
 /** Any audio file as mono float PCM at 24 kHz. */
 export function readPcm(file: string): Float32Array {
@@ -56,8 +56,7 @@ export function lufs(pcm: Float32Array): number {
   return scratch((d) => {
     const i = join(d, 'in.wav');
     writeWav(i, pcm);
-    const r = spawnSync(FFMPEG, ['-hide_banner', '-i', i, '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json', '-f', 'null', '-'], { encoding: 'utf8' });
-    const v = Number(JSON.parse(r.stderr.match(/\{[^{}]*"input_i"[^{}]*\}/)![0]).input_i);
+    const v = measureLoudness(i).i;
     return Number.isFinite(v) ? v : -70;
   });
 }

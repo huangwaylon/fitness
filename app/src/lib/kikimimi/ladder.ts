@@ -1,7 +1,7 @@
 // ききみみ クイズ's スピード はしご (docs/kikimimi.md "スピード はしご", docs/curriculum.md §7 game 2): one line heard at
 // rising speeds, a different question at each rung (ladders.ts), the score the rungs climbed in order on the first
 // listen. A game is 2 ladders of 4 rungs: the quiz's 8 questions, so the session, the protocol and the relay are the
-// quiz's own. The mode rides on the `open`'s seed (bit 1, beside たいせん's bit 0: session.ts isLadder): every phone
+// quiz's own. The mode rides on the `open`'s seed (bit 1, beside たいせん's bit 0: round/wire.ts quizIn): every phone
 // builds the same deck from {seed} as it does a quiz's from {seed, lv}. Pure; the ladders are ladders.ts's (LADDERS), compiled
 // into their own chunk (pool.ts ladders); the clips are made by scripts/kikimimi-audio.ts.
 import { mulberry32, shuffle } from '#lib/random.ts';
@@ -71,8 +71,9 @@ export function laddersIn(items: readonly Pick<Item, 'rung'>[]): { ladder: strin
   return out;
 }
 
-/** Each ladder's climb from a player's answers (question index → choice, replayed). */
-export function climbs(items: readonly Item[], answers: ReadonlyMap<number, { k: number; rp: boolean }>): number[] {
+/** Each ladder's climb from a player's answers (question index → choice, replayed): over a deck's items, or its rounds
+ *  (games/quiz/kinds.ts: the rung and the right choice are all it reads). */
+export function climbs(items: readonly Pick<Item, 'rung' | 'answer'>[], answers: ReadonlyMap<number, { k: number; rp: boolean }>): number[] {
   return laddersIn(items).map(({ from, n }) =>
     climb(Array.from({ length: n }, (_, j) => {
       const a = answers.get(from + j);
@@ -81,7 +82,7 @@ export function climbs(items: readonly Item[], answers: ReadonlyMap<number, { k:
 }
 
 /** A player's points (the session's running total, the protocol's `s`): RUNG_POINTS a rung climbed. */
-export const ladderPoints = (items: readonly Item[], answers: ReadonlyMap<number, { k: number; rp: boolean }>): number =>
+export const ladderPoints = (items: readonly Pick<Item, 'rung' | 'answer'>[], answers: ReadonlyMap<number, { k: number; rp: boolean }>): number =>
   climbs(items, answers).reduce((s, n) => s + n * RUNG_POINTS, 0);
 
 /** Where question i is on its ladder: its rung (1-based), the ladder's rungs, how high it was climbed before it, and
