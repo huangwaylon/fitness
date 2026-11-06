@@ -256,13 +256,13 @@ items:
     chapter: 5
     title: "The Lighthouse in the Fog"
     line: "ジョニーが きりの とうだいの はなしを します"
-    ja: "ジョニーは列車で大陸を横断し、メイン州へ。灯台守のウォルトと冬をすごす。レンズみがき、らせん階段のペンキぬり、ロブスターロール。ある霧の夜、霧笛がこわれ、帰れない漁船のために古い鐘を鳴らしつづけ、船は無事にもどる。お礼にもらった新しいコンパスで帰る途中、嵐にあって……この島に流れついた。コンパスはまたなくなっていた。翌朝、ジョニーの姿はなく、砂に書きおきが残っていた。"
+    ja: "ジョニーは列車で大陸を横断し、メイン州へ。灯台守のウォルトと冬をすごす。レンズみがき、らせん階段のペンキぬり、ロブスターロール。ある霧の夜、霧笛がこわれ、帰れない漁船のために古い鐘を鳴らしつづけ、船は無事にもどる。お礼に新しいコンパスをもらったその夜、ジョニーはやっとルースに手紙を書き、フェリーの話をぜんぶ伝えた。春、そのコンパスを持って帰る途中、嵐にあって……この島に流れついた。コンパスはまたなくなっていた。翌朝、ジョニーの姿はなく、砂に書きおきが残っていた。"
     scene: living
     segments:
       - { who: narrator, en: "On the fifth night, more neighbors came than ever. Maple, Dom, and Goldie sat closest to the fire, with blankets over their knees." }
       - { who: goldie, en: "Okay, last one. I'm kind of sad, honestly. I've gotten used to this. Same time every night, you know?", tts: "Okay, last one. I'm kinda sad, honestly. I've gotten used to this. Same time every night, y'know?" }
       - { who: gulliver, en: "Me too, my dear. Me too. Now, where was I? Ah, yes. Maine." }
-      - { who: narrator, en: "From the desert, he took a long train all the way across the country. Four days of farms and rivers and little towns going by the window." }
+      - { who: narrator, en: "From the desert, he took a long train across the whole country. Four days of farms and rivers and little towns going by the window." }
       - { who: narrator, en: "At the end of it was a rocky coast, cold and gray and beautiful, and on the very last rock, a white lighthouse with a red roof." }
       - { who: narrator, en: "Darlene's brother was named Walt. He was tall and quiet and had a beard like a winter storm. He shook Gulliver's wing and said, you're late." }
       - { who: gulliver, en: "I said, I'm a sailor, Walt, I'm always late. And he laughed. Just once. I found out later that's about once a month for Walt." }
@@ -281,13 +281,14 @@ items:
       - { who: narrator, en: "And then, out of the white, they saw two small lights, red and green. The fishing boat came around the rocks and into the harbor, safe." }
       - { who: narrator, en: "The next morning, the captain came up the hill with a bag of fresh fish and a small wooden box. Inside the box was a brand new compass." }
       - { who: gulliver, en: "He said, a sailor should always know the way home. And I almost cried for the second time on this trip. Bottomless coffee was the first." }
+      - { who: narrator, en: "That night, he finally wrote to Ruth and told her all about the ferry." }
       - { who: narrator, en: "When spring came, Gulliver said goodbye to Walt and got on a ship heading south, with the new compass safe in his pocket." }
       - { who: narrator, en: "And then, of course, there was a storm. A big one. The kind sailors tell stories about." }
       - { who: narrator, en: "And the next thing he knew, Dom was standing over him on the beach." }
       - { who: goldie, en: "Wait a sec. So where's the new compass? The one from the fishing captain?", tts: "Wait a sec. So where's the new compass? The one from the fishin' captain?" }
       - { who: narrator, en: "Gulliver patted his left pocket. Then his right pocket. Then the inside of his cap. He looked up at everyone with a very small smile." }
       - { who: gulliver, en: "Well. It seems I've lost it again. But you know, I'm starting to think that's not such a bad thing." }
-      - { who: narrator, en: "Everybody laughed, and the fire popped, and for a while nobody said anything at all. They just watched the sparks go up into the dark." }
+      - { who: narrator, en: "Everybody laughed, and the fire popped, and for a while nobody said anything. They just watched the sparks go up into the dark." }
       - { who: narrator, en: "In the morning, Gulliver was gone. There was only a long line of footprints going down to the water, and a message written in the sand." }
       - { who: narrator, en: "It said, thank you for the coffee. Back soon. Probably by accident." }
       - { who: narrator, en: "And the tide came in, slowly, and smoothed the sand, the way it always does. Goodnight." }
