@@ -3,9 +3,10 @@
 // or it gets away. Now and then the bubbles are NH's pearl. A ずかん find (kind 'sea'; the pearl a shell), never ベル.
 // `?sea=<id>|pearl` (with ?demo) brings a bubble spot at once and keeps it until dived.
 import { expect, test, type Page } from './fixtures.ts';
+import { islandUp } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { CHASE_MS, SEA } from '../src/lib/components/island/sea.ts';
-import { fromMenu, hudBells, hudMenu } from './hud.ts';
+import { fromMenu, hudBells } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 test.use({ viewport: { width: 390, height: 844 } });
@@ -13,7 +14,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-07-04T12:00${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await expect(page.locator('[data-bubbles]')).toBeAttached();
   await page.waitForTimeout(300);

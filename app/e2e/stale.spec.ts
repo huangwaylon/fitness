@@ -2,15 +2,15 @@
 // deployed build, and the next open works; the failed import is not remembered. Not on a page that is leaving (its
 // every load fails), nor offline, nor when the build deployed is the one running (a reload into it cures nothing).
 import { expect, test } from './fixtures.ts';
-import { is3d } from './island.ts';
-import { hudBells, hudMenu, openRewards, unfoldMenu } from './hud.ts';
+import { is3d, islandUp } from './island.ts';
+import { hudBells, openRewards, unfoldMenu } from './hud.ts';
 
 // (in Chromium: playwright.config.ts)
 test('a failed panel chunk reloads the page once, then the panel opens', { tag: '@chromium' }, async ({ page }) => {
   // (no critter or visitor coming by: each loads its own chunk when it comes, and one 404ing under the route below
   // reloaded the page before the panel was asked for, its menu then folded: CI run 41798557650)
   await page.goto('?demo&critter=none&visitor=none&date=2026-11-04T12:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   // (the 3D island's own chunks, three and its scene, come in after the HUD: all in first)
   await is3d(page);
   // The menu open and its pills in place first (their spring: on a busy runner seconds), so the only chunk asked for
@@ -35,7 +35,7 @@ test('a failed panel chunk reloads the page once, then the panel opens', { tag: 
 
 test('a chunk that fails as the page leaves (or offline: every load fails) reloads nothing', async ({ page }) => {
   await page.goto('?demo');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.route('**/*', (route) => route.abort('failed'));
   const navs: string[] = [];
   page.on('framenavigated', (f) => f === page.mainFrame() && navs.push(f.url()));
@@ -49,7 +49,7 @@ test('a chunk that fails as the page leaves (or offline: every load fails) reloa
 
 test('a chunk of the running build that keeps failing reloads nothing (the deployed build is this one)', { tag: '@chromium' }, async ({ page }) => {
   await page.goto('?demo&critter=none&visitor=none&date=2026-11-04T12:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await is3d(page);
   await unfoldMenu(page);
   await page.route('**/_app/immutable/**/*.js', (route) => route.fulfill({ status: 404, body: '' }));
@@ -65,7 +65,7 @@ test('a chunk of the running build that keeps failing reloads nothing (the deplo
 
 test('a chunk that loads but throws as it runs reloads nothing, even with a newer build deployed', { tag: '@chromium' }, async ({ page }) => {
   await page.goto('?demo&critter=none&visitor=none&date=2026-11-04T12:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await is3d(page);
   await unfoldMenu(page);
   await page.route('**/_app/immutable/**/*.js', (route) => route.fulfill({ contentType: 'text/javascript', body: 'throw new TypeError("e2e: a module that throws");' }));

@@ -5,7 +5,8 @@
 // The logic tier: the clips may or may not sound (headless, muted), the schedule is the relay clock's.
 // KIKI_SHOTS=1 writes the screenshot pass (393×852) into /tmp/kikimimi-shots/inc5/.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -31,7 +32,7 @@ const ITEMS: readonly Staged[] = [
 test('scenes: the scene card and each channel frame while it plays, the sound marks and their key at the reveal', async ({ page }) => {
   test.slow();
   await page.goto(`?demo&${Q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   await kiki(page, (k) => k.deck(['r4-name', 'd4-oat-latte', 'w4-lemme', 'n4-gate', 'r4-cut-out', 'm4-sailings', 'd4-receptionist', 'd4-video-call']));

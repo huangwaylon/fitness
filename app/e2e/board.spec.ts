@@ -3,6 +3,7 @@
 // the record's rows through localStorage, as phones share the record), with a 「！」 over the board for the others; an
 // author edits their own, and anyone (the guest too) takes down anyone's.
 import { expect, test, type BrowserContext, type Page, PINNED_DATE } from './fixtures.ts';
+import { islandUp } from './island.ts';
 import { RELAY } from './relay.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { hudMenu } from './hud.ts';
@@ -13,7 +14,7 @@ const DATE = '2026-11-04T12:00';
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G') {
   const page = await ctx.newPage();
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as === 'A' ? '' : `&as=${as}`}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   return page;
 }
@@ -150,7 +151,7 @@ const face3 = (p: Page) => p.evaluate(() => (window as unknown as { __board: Boa
 
 test('a note written is drawn on the face at once, and still after a reload', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __board?: unknown }).__board);
   await openBoard(page);
   expect(await drawn(page)).toEqual([]);
@@ -158,7 +159,7 @@ test('a note written is drawn on the face at once, and still after a reload', as
   expect(await drawn(page)).toEqual(['よみかえし テスト']);
   await close(page);
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await openBoard(page);
   await expect(note(page, 'よみかえし テスト')).toBeVisible();
   expect(await drawn(page)).toEqual(['よみかえし テスト']);
@@ -168,7 +169,7 @@ test('「もどる」 sits under the HUD, never over it, and the face under both
   // (the 3D island loads its models: 20-odd s on CI before the board opens)
   test.setTimeout(60_000);
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const hud = (await hudMenu(page).boundingBox())!;
   await openBoard(page);
   await expect(view(page)).toHaveAttribute('data-board-view', '3d');
@@ -251,7 +252,7 @@ test('writing with the keyboard up: the field, its controls and the face with th
   test.setTimeout(60_000);
   await fakeKeyboard(page);
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await openBoard(page);
   await expect(view(page)).toHaveAttribute('data-board-view', '3d');
   await expect(view(page)).toHaveAttribute('data-ready', 'true', { timeout: 10_000 });

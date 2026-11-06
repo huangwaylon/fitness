@@ -3,12 +3,12 @@
 // wanders between points of interest with footsteps under it. Neither ends up over a control, mine stays a
 // thumb-sized button while it walks, and a sheet stops them where they are.
 import { expect, test, type Page } from './fixtures.ts';
-import { lawnTap, openNear, plateOnly, quiet, sawIt, watchFor } from './island.ts';
-import { hudMenu, openRewards } from './hud.ts';
+import { islandUp, lawnTap, openNear, plateOnly, quiet, sawIt, watchFor } from './island.ts';
+import { openRewards } from './hud.ts';
 
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await quiet(page); // the opening beats are over
 }
 /** A world point on screen (client px). */
@@ -152,7 +152,7 @@ test('the partner wanders off to a point of interest and back, footsteps under i
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
     await page.goto('?demo&date=2026-11-04T12:00&wander');
     // (the island up first: under CI's load the page takes more than 5 s; ?wander's outing starts 3.2 s after it)
-    await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 });
+    await islandUp(page, { timeout: 15_000 });
     const home = await feet(page, 'partner');
     expect(await footsteps(page)).toBe(0);
     await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 6000 });
@@ -173,7 +173,7 @@ test('under a sheet the walkers stop and no footstep sounds', async ({ page }) =
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-11-04T12:00&wander');
   // (the island up first, as above: the 6 s for ?wander's outing count from there, not from the page's load)
-  await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 });
+  await islandUp(page, { timeout: 15_000 });
   await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 6000 });
   await openRewards(page);
   await expect(page.locator('dialog[open]')).toBeVisible();
@@ -187,7 +187,7 @@ test('under a sheet the walkers stop and no footstep sounds', async ({ page }) =
 test('a visitor: a tap and they speak, my villager turning to them where it stands', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('?demo&date=2026-11-04T12:00&visitor=jingle&critter=none');
-    await expect(hudMenu(page)).toBeVisible();
+    await islandUp(page);
     await page.waitForTimeout(800);
     // a host stands on centre stage, the campsite's clearing (おく)
     await page.evaluate(() => (window as unknown as { __world: { go(z: number): void } }).__world.go(642));
