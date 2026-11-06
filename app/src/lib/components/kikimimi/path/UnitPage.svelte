@@ -3,16 +3,18 @@
   // the host villager, the domain, the can-do's one line (the template's sentence folded under 「くわしく」), the stamps (mine and the partner's, the double), the 3
   // core lessons as big cards (6もん・2ぷん; ✓ once played to the end; the next one carries the only green あそぶ; the
   // チェック its 5-of-6 rule), the extras (☆ おと, ☆ じっせん) never blocking anything, the key phrases (caught or not:
-  // a tap opens the ずかん on this unit's) and 「とばして チェック」 at the foot. A lesson opens its intro card. Its own
-  // chunk with the path's.
-  import { load, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
+  // a tap opens the ずかん on this unit's) and 「とばして チェック」 at the foot. Once stamped, the host's letter under the
+  // stamps (VillagerLetter, folded). A lesson opens its intro card. Its own chunk with the path's.
+  import { load, loadLetters, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
+  import type { LetterText } from '#lib/kikimimi/letters.ts';
+  import VillagerLetter from './VillagerLetter.svelte';
   import { playIds } from '#lib/kikimimi/lesson.ts';
   import { nextLesson } from '#lib/kikimimi/path.ts';
   import { CORE, isUnitDomain } from '#lib/kikimimi/stages.ts';
   import { domainIcon, domainTint } from '../look.ts';
   import { LESSONS, type Lesson } from '#lib/kikimimi/stages.ts';
   import { phrasesOf } from '#lib/kikimimi/srs.ts';
-    import type { RosterId } from '#lib/villagers/roster.ts';
+  import type { RosterId } from '#lib/villagers/roster.ts';
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import { artUrl, villagerArt } from '#lib/art.ts';
   import { rosterName, sceneArt, sceneSrcset, SCENE_SIZES } from '../scene/stage.ts';
@@ -44,6 +46,11 @@
   const domain = $derived(u && isUnitDomain(u.domain) ? u.domain : null);
   const partner = $derived(week.view && week.view.viewer !== 'G' ? villagerNameOf(week.view, week.view.viewer === 'A' ? 'B' : 'A') : null);
   const extras = $derived(lessons.filter((l) => !CORE.includes(l)));
+  /** The host's letter, once I've stamped it (letters.ts; the chunk loaded then). */
+  let letter = $state.raw<LetterText | null>(null);
+  $effect(() => {
+    if (us?.stamped) void loadLetters().then((x) => (letter = x[id] ?? null), () => {});
+  });
 </script>
 
 {#if u}
@@ -81,6 +88,8 @@
         {#if us?.tally}<small data-kiki-tally-mine={us.tally.first}>{t('kiki.stamp.mine', { k: us.tally.first, n: us.tally.of })}</small>{/if}
       </p>
     </div>
+
+    {#if us?.stamped && letter && u}<VillagerLetter letter={{ unit: id, host: u.host, day: us.stamped, ...letter }} />{/if}
 
     <ol class="core">
       {#each CORE.filter((l) => lessons.includes(l)) as l, i (l)}

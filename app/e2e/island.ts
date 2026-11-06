@@ -420,6 +420,6 @@ export async function shakeTree(page: Page) {
     await popupStill(page);
     const c = await canopyAt(page);
     await page.mouse.click(c.x, c.y);
-    await page.waitForTimeout(120);
+    await page.waitForTimeout(120); // hold: a finger's rhythm, not a state: three taps 120 ms apart, a run within SHAKE_WINDOW_MS
   }
 }

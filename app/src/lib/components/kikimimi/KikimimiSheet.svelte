@@ -37,6 +37,7 @@
   import type { Tile, HubInvite } from './hub/Hub.svelte';
   import { INDEX, addUnit, itemOf, load, loadIds, unitPart } from '#lib/kikimimi/pool.ts';
   import { tierFor, type UnitPlay } from '#lib/kikimimi/lesson.ts';
+  import type { Item } from '#lib/kikimimi/bank.ts';
   import type { WireMode } from '#lib/kikimimi/round/wire.ts';
   import { reloadForUpdate } from '#lib/ui-state/reload.ts';
   import type { QuizPhase } from '#lib/kikimimi/games/quiz/view.ts';
@@ -144,11 +145,13 @@
           } else if (!it.view.invite) it.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
         });
         game = it;
-        // (tests: `deck(ids)` starts my lobby kept alone on these items, as おさらい does: a dialogue before its clips)
+        // (tests: `deck(ids, help?)` starts my lobby kept alone on these items, as おさらい does: a dialogue before its
+        // clips; `help` a fixture's Japanese help over an item, its cja aligned to the choices as authored)
         if (hooksOn())
           (window as unknown as { __kiki?: unknown }).__kiki = {
             view: () => it.view, right: () => it.items[it.view.i]?.answer ?? -1, items: () => it.items.map((x) => x.id),
-            deck: (ids: string[]) => loadIds(ids).then(() => it.practice(ids.map(itemOf).filter((x) => !!x))),
+            deck: (ids: string[], help: Record<string, Pick<Item, 'cja' | 'why' | 'ctx'>> = {}) =>
+              loadIds(ids).then(() => it.practice(ids.map(itemOf).filter((x) => !!x).map((x) => ({ ...x, ...help[x.id] })))),
             talk: () => it.talk,
             // (a fixture unit put in from the bank's items, as if its chunk were the build's: the units' e2e)
             unit: (unit: UnitPlay, ids: string[], cv?: string) => loadIds(ids).then(() => {

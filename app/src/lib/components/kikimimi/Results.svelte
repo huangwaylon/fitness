@@ -5,7 +5,8 @@
   // (「まちがえた だけ」 on, the first one open) and offers 「まちがえた もんだいを もういちど」 (those again, solo, as
   // practice; a quiz's). Each row: ○ / × and the sentence; tapped open, its English with the sound marks and the karaoke
   // as ▶︎ plays it (a dialogue: its whole transcript), the marks' key, the Japanese (a reply's on two lines), the trap's
-  // note, what I picked, ▶︎ and 🐢 (levels 1-2). いっぱつ (right on the first listen) a stamp.
+  // note, every choice with its Japanese (cja) and 解説 (why) where the item has them, what I picked, ▶︎ and 🐢
+  // (levels 1-2). いっぱつ (right on the first listen) a stamp.
   // スピード はしご: しずえ's line is how high I climbed; a card of my climbs (each ladder's steps, how high); the review
   // one row a ladder: its line (the chunk marked), its Japanese and note, each rung's question with my ○ / ×, and ▶︎ at
   // each speed.
@@ -19,6 +20,7 @@
   import LessonDots from './path/LessonDots.svelte';
   import ResultsFrame from './frame/Results.svelte';
   import ReviewList from './frame/ReviewList.svelte';
+  import Why from './frame/Why.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { villagerArt } from '#lib/art.ts';
   import SoundLine from './scene/SoundLine.svelte';
@@ -33,6 +35,7 @@
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
   import { SPEEDS, climbs, laddersIn, speedAt } from '#lib/kikimimi/ladder.ts';
   import { sx } from './look.ts';
+  import { loadLetters } from '#lib/kikimimi/pool.ts';
 
   let { game, onagain, onmissed, ondone, onnext, hostLine, extra }: {
     game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void; onnext?: (l: Lesson) => void; hostLine?: string; extra?: Snippet;
@@ -88,6 +91,8 @@
   /** The next core lesson not played to the end; after a チェック, none (もういっかい is the retry). */
   const nextLesson = $derived(ls?.lesson === 'check' ? null : (CORE.find((l) => l !== ls?.lesson && !unitState?.done.includes(l)) ?? null));
   const unitLessons = $derived(ls ? LESSONS.filter((l) => ls.unit.lessons[l]) : []);
+  /** This チェック stamped the unit first: its host's letter arrives (letters.ts; the component and text loaded then). */
+  const letterIn = $derived(stamped && !!recorded && unitState?.stampedIn === recorded.g);
   /** A choice as written (a picture's Japanese name: the English isn't given away). */
   const choiceText = (it: Item, k: number) => (it.type === 'pic' ? (PIC_JA[it.choices[k]] ?? '') : it.choices[k]);
 </script>
@@ -108,6 +113,11 @@
           </p>
         {:else}<p class="soon">{t('kiki.stamp.notYet')}</p>{/if}
         <p class="mine" data-kiki-tally-mine={own}>{t('kiki.stamp.mine', { k: own, n: recorded.r.length })}{#if recorded.tm !== undefined} · {t('kiki.stamp.team', { k: recorded.tm })}{/if}</p>
+        {#if letterIn}
+          {#await Promise.all([import('./path/VillagerLetter.svelte'), loadLetters()]) then [{ default: VillagerLetter }, texts]}
+            {#if texts[ls.unit.id]}<div class="mail"><VillagerLetter letter={{ unit: ls.unit.id, host: ls.unit.host, ...texts[ls.unit.id] }} open fresh /></div>{/if}
+          {/await}
+        {/if}
       {:else if nextLesson}
         <button type="button" class="btn small nextl" data-kiki-next-lesson={nextLesson} data-sfx="confirm" onclick={() => onnext?.(nextLesson!)}>
           {t('kiki.stamp.next', { lesson: t(`kiki.lesson.${nextLesson}`) })} ›
@@ -213,7 +223,20 @@
                   <p class="ja">{#each jaLines(r.it) as l, n (n)}<span>{l}</span>{/each}</p>
                 {/if}
                 {#if r.it.type === 'pic' || r.it.type === 'num'}<p class="ans">→ {choiceText(r.it, r.it.answer)}</p>{/if}
+                {#if r.it.cja && r.it.type !== 'pic'}
+                  <!-- every choice with its Japanese (the item's cja): ○ the answer, × my pick -->
+                  <ul class="opts" aria-label={t('kiki.choicesJa')} data-kiki-opts>
+                    {#each r.it.choices as c, k (k)}
+                      {@const m = k === r.it.answer ? 'right' : k === r.k ? 'wrong' : null}
+                      <li data-mark={m ?? undefined}>
+                        <span class="o" aria-hidden="true">{m === 'right' ? '○' : m === 'wrong' ? '×' : '・'}</span>
+                        <span><span lang={r.it.type === 'num' ? undefined : 'en'}>{c}</span><small data-kiki-cja={k}>{r.it.cja[k]}</small></span>
+                      </li>
+                    {/each}
+                  </ul>
+                {/if}
                 {#if r.it.note}<p class="note" data-kiki-note>{r.it.note}</p>{/if}
+                {#if r.it.why}<Why text={r.it.why} />{/if}
                 {#if !r.ok}<p class="tags">{tripKeys(r.it.id).map((x) => tripLabel(x.key)).join(' · ')}</p>{/if}
                 {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
                 <div class="hear">
@@ -239,6 +262,7 @@
   .lname { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; text-align: left; }
   .lname b { font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .nextl { justify-self: stretch; }
+  .mail { justify-self: stretch; text-align: left; }
   .got { display: flex; align-items: center; justify-content: center; gap: 6px; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--coral-text); }
   .seal { font-size: 40px; line-height: 1; display: inline-block; animation: seal 520ms var(--ease-bounce) both; }
   .seal.two { margin-left: -18px; animation-delay: 180ms; }
@@ -271,6 +295,11 @@
   .en.big { font-size: max(17px, var(--fs-talk)); }
   .note { margin: 0; font: 700 var(--fs-xs)/1.45 var(--font-ui); color: var(--c-ink); padding: 4px 8px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
   .retry { width: 100%; }
+  .opts { list-style: none; margin: 2px 0; padding: 0; display: grid; gap: 4px; }
+  .opts li { display: grid; grid-template-columns: 1.2em 1fr; gap: 4px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
+  .opts li[data-mark='right'] { color: var(--leaf-text); }
+  .opts li[data-mark='wrong'] { color: var(--coral-text); }
+  .opts small { display: block; font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--text-soft); }
   /* いっぱつ: a rubber stamp (no points), a cream sticker at any time of day (so its coral is the fixed one) */
   .stamp {
     display: inline-block; padding: 3px 10px; border-radius: 8px; rotate: -4deg; color: var(--c-coral-text);
