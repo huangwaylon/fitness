@@ -66,7 +66,10 @@ test('the plan: the countdown, the ring, the chips\' counts, 期限切れ and �
   await expect(sheet(page).locator('[data-wed-group="2027-03"] h3')).toHaveText(/^3月/);
   await expect(sheet(page).locator('[data-wed-group="2027-10"] h3')).toContainText('式の月');
   await expect(sheet(page).locator('[data-wed-group="2027-10"] [data-wed-group-tally]')).toHaveAttribute('data-wed-group-tally', '0/1');
-  // finished rows hidden under すべて; shown on asking (kept on this phone)
+});
+
+test('finished rows: hidden under すべて, shown on asking; who finished one inside it, the old Sheet\'s in a soft line', async ({ page }) => {
+  await board(page);
   await expect(card(page, 'wdemo01')).toHaveCount(0);
   await sheet(page).locator('[data-wed-showdone]').click();
   await expect(card(page, 'wdemo01')).toBeVisible();
@@ -81,7 +84,10 @@ test('the plan: the countdown, the ring, the chips\' counts, 期限切れ and �
   const all = await sheet(page).locator('[data-wed-group]').evaluateAll((els) => els.map((e) => e.getAttribute('data-wed-group')));
   expect(all.slice(0, 4)).toEqual(['overdue', '2026-10', 'thisMonth', '2026-12']);
   await shot(page, 'e2e-plan');
-  // a slice: 期限切れ only, each heading's count over its rows
+});
+
+test('a slice: 期限切れ only, its heading counting its rows; the chips stay pinned as the plan scrolls', async ({ page }) => {
+  await board(page);
   await sheet(page).locator('[data-wed-filter="overdue"]').click();
   await expect(sheet(page).locator('[data-wed-task]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-wed-group-tally]')).toHaveAttribute('data-wed-group-tally', '0/1');
@@ -121,7 +127,7 @@ test('ticking: the tick marks it done with my name, it stays where it was, the c
   await expect(card(page, 'wdemo03')).toHaveCount(0);
 });
 
-test('a row opens in place: its checklist ticks, 完了; 編集 saves its fields and checklist; 削除 with とりけす', async ({ page }) => {
+test('a row opens in place: its checklist ticks (links safe), 完了 and back', async ({ page }) => {
   await board(page);
   await open(page, 'wdemo02');
   await expect(card(page, 'wdemo02').locator('.head')).toHaveAttribute('aria-expanded', 'true');
@@ -140,7 +146,12 @@ test('a row opens in place: its checklist ticks, 完了; 編集 saves its fields
   await card(page, 'wdemo02').locator('[data-wed-page-tick]').click();
   await expect(card(page, 'wdemo02')).not.toHaveAttribute('data-done', 'true');
   await shot(page, 'e2e-task');
-  // 編集: the title and category changed, an item renamed, one added (Enter adds it, it doesn't save)
+});
+
+test('編集 in a bottom sheet: the title, category and checklist saved; キャンセル changes nothing', async ({ page }) => {
+  await board(page);
+  await open(page, 'wdemo02');
+  // the title and category changed, an item renamed, one added (Enter adds it, it doesn't save)
   await card(page, 'wdemo02').locator('[data-wed-edit]').click();
   await expect(form(page)).toBeVisible();
   await form(page).locator('[data-wed-field="title"]').fill('ゲストの リスト');
@@ -156,21 +167,24 @@ test('a row opens in place: its checklist ticks, 完了; 編集 saves its fields
   await expect(card(page, 'wdemo02').locator('[data-wed-title]')).toHaveText('ゲストの リスト');
   await expect(sheet(page).locator('[data-wed-sub="wdemo02a"]')).toContainText('しんぞく');
   await expect(card(page, 'wdemo02').locator('[data-wed-sub]')).toHaveCount(4);
-  await expect(card(page, 'wdemo02').locator('[data-wed-tally]')).toHaveAttribute('data-wed-tally', '2/4');
+  await expect(card(page, 'wdemo02').locator('[data-wed-tally]')).toHaveAttribute('data-wed-tally', '1/4');
   // キャンセル changes nothing
   await card(page, 'wdemo02').locator('[data-wed-edit]').click();
   await form(page).locator('[data-wed-field="title"]').fill('べつの なまえ');
   await form(page).locator('[data-q-cancel]').click();
   await expect(card(page, 'wdemo02').locator('[data-wed-title]')).toHaveText('ゲストの リスト');
-  // 削除 (in 編集): gone with its checklist; the banner's とりけす restores both
+});
+
+test('削除 (in 編集): gone with its checklist; the banner\'s とりけす restores both', async ({ page }) => {
+  await board(page);
+  await open(page, 'wdemo02');
   await card(page, 'wdemo02').locator('[data-wed-edit]').click();
   await form(page).locator('[data-wed-remove]').click();
   await expect(form(page)).toHaveCount(0);
   await expect(card(page, 'wdemo02')).toHaveCount(0);
   await banner(page).locator('.act').click();
   await expect(card(page, 'wdemo02')).toBeVisible();
-  await expect(card(page, 'wdemo02')).toContainText('Attire');
-  await expect(card(page, 'wdemo02').locator('[data-wed-tally]')).toHaveAttribute('data-wed-tally', '2/4');
+  await expect(card(page, 'wdemo02').locator('[data-wed-tally]')).toHaveAttribute('data-wed-tally', '1/3');
 });
 
 test('＋: a new task needs a title and a due day (both said at once); saved, it opens in its month', async ({ page }) => {

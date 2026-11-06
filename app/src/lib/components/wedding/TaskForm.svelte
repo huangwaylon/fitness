@@ -91,7 +91,7 @@
   <div class="form" data-wed-form>
     <label class="f">
       <span class="fl">{t('wed.field.title')}<b class="req">{t('wed.field.required')}</b></span>
-      <input class="q-field" type="text" enterkeyhint="done" maxlength={WTASK_TITLE} bind:value={draft.title} data-wed-field="title" data-sfx="none"
+      <input class="q-field" type="text" enterkeyhint="done" maxlength={WTASK_TITLE} bind:value={draft.title} aria-required="true" data-wed-field="title" data-sfx="none"
         aria-invalid={errors.title || undefined} aria-describedby={errors.title ? `${uid}-t` : undefined} />
       {#if errors.title}<span class="err" id="{uid}-t" role="alert" data-wed-error="title">{t('wed.needTitle')}</span>{/if}
     </label>
@@ -107,7 +107,7 @@
         </label>
         <label class="f">
           <span class="fl">{t('wed.field.due')}<b class="req">{t('wed.field.required')}</b></span>
-          <input class="q-field" type="date" bind:value={draft.due} required data-wed-field="due" data-sfx="none" aria-invalid={errors.due || undefined}
+          <input class="q-field" type="date" bind:value={draft.due} aria-required="true" data-wed-field="due" data-sfx="none" aria-invalid={errors.due || undefined}
             aria-describedby={errors.due ? `${uid}-d` : undefined} />
           {#if errors.due}<span class="err" id="{uid}-d" role="alert" data-wed-error="due">{t('wed.needDue')}</span>{/if}
         </label>
