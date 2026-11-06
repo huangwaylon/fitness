@@ -248,14 +248,36 @@ PROFILES = {   # source -> (note, dataset meta)
 }
 
 
+_KANA_READING = re.compile(r'^[ぁ-ゖァ-ヺー・\s　()（）]+$')
+
+
+def split_title(title):
+    """A recipe title's names and its reading, the trailing bracket: 「えびみそ汁（えびみそしる）」. A reading may hold a
+    bracket of its own when the name does (「味噌汁（麦味噌）（みそしる（むぎみそ)）」 → みそしる・むぎみそ; kana only, then),
+    which a flat match missed, leaving the reading in the name."""
+    t = title.rstrip()
+    if not t.endswith((')', '）')):
+        return title, ''
+    depth = 0
+    for i in range(len(t) - 1, -1, -1):
+        depth += t[i] in ')）'
+        depth -= t[i] in '(（'
+        if not depth:
+            break
+    inner = t[i + 1:-1]
+    if depth or not t[:i].strip() or (re.search(r'[()（）]', inner) and not _KANA_READING.match(inner)):
+        return title, ''
+    nested = re.findall(r'[(（]([^()（）]*)[)）]', inner)   # the bracket's reading as an alias of its own
+    return t[:i], '・'.join([re.sub(r'[(（][^()（）]*[)）]', '', inner)] + nested)
+
+
 def build(recs, source, foods, gain, en_names={}):
     note, meta = PROFILES[source]
     gain = dict(gain, **EXTRA_GAIN)
     items = []
     for rec in recs:
         title = rec['title']
-        m = re.match(r'^(.*?)[(（]([^()（）]*)[)）]\s*$', title)
-        names_part, reading = (m.group(1), m.group(2)) if m else (title, '')
+        names_part, reading = split_title(title)
         names = [x.strip() for x in re.split(r'[／/]', names_part) if x.strip()]
         readings = [x.strip() for x in re.split(r'[／/・]', reading) if x.strip()]
         head = rec['materials'][0]['head'] if rec['materials'] else ''
