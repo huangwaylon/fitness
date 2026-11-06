@@ -103,17 +103,16 @@ export function boardPosts(entries: Iterable<BoardEntry>): Post[] {
 
 /**
  * Whether `who` may write this op, given the post it changes as held (null: none): a new post anyone (the guest too);
- * an edit only its author; a removal its author or a member (ウェイ and うめ tidy the board; the guest only its own).
+ * an edit only its author; a removal anyone (everyone tidies the board, the guest as the members: 2026-11-06).
  */
 export function boardMayWrite(who: Who, op: BoardOp, held: BoardEntry | null): boolean {
-  if (!held || held.rm) return true;
-  if (op.rm) return held.who === who || who !== 'G';
+  if (!held || held.rm || op.rm) return true;
   return held.who === who;
 }
 
 /**
  * What the record does with a new op, given the posts it holds (each id's latest row, with who sent it):
- * - `forbidden`: `boardMayWrite` says no (an edit of someone else's, the guest removing another's);
+ * - `forbidden`: `boardMayWrite` says no (an edit of someone else's);
  * - `stale`: acknowledged, nothing kept (an op that beats it is there; anything after a removal; an edit or a removal
  *   of a post it doesn't hold: dropped past the cap, or never seen; a post older than every one kept when it's full);
  * - `append`: kept (the same id's row replaced); `drop` names the post a new one pushes out (the oldest), if any.

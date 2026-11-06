@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, MUSIC_MS_MAX, MUSIC_STOP_KEEP_MS, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, guestMaySend, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, MUSIC_MS_MAX, MUSIC_STOP_KEEP_MS, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/components/island/world.ts';
 
 const KEY = 'ab'.repeat(32);
@@ -262,7 +262,6 @@ describe('live protocol: the tent (v2)', () => {
     expect(isStored(cast as never)).toBe(false);
     expect(isAcked(cast as never)).toBe(false);
     expect(claimOf(cast as never)).toBeNull();
-    expect(guestMaySend(cast as never)).toBe(true);
   });
 
   it('a drag and the villager inside are presence only: never kept, never claimed, small', () => {
@@ -403,7 +402,6 @@ describe('live protocol: ききみみ クイズ (`quiz`, presence only)', () => 
       expect(isStored(o as never), o.op).toBe(false);
       expect(isAcked(o as never), o.op).toBe(false);
       expect(claimOf(o as never), o.op).toBeNull();
-      expect(guestMaySend(o as never), o.op).toBe(true);
     }
   });
 });
@@ -424,7 +422,6 @@ describe('live protocol: a music stage (`music`, docs/sound-sync.md)', () => {
     const m = { kind: 'music', src: 'isl', at } as const;
     expect(isAcked(m)).toBe(true);
     expect(isStored(m)).toBe(false);
-    expect(guestMaySend(m)).toBe(true);
   });
 
   it('newerMusic: the later at, a tie by who, the same on every side', () => {

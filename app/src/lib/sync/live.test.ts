@@ -139,17 +139,20 @@ describe('live: connecting', () => {
     expect(live.status().gone).toEqual({ A: 1_800_000_000_000 });
   });
 
-  it('on the guest’s phone: either member is its peer, and it sends only what the guest may', () => {
+  it('on the guest’s phone: either member is its peer, and it sends what a member does (a home only its own)', () => {
     live.start();
     last().open();
     last().recv({ kind: 'welcome', me: 'G', peer: true, here: ['A'], t: Date.now() });
     expect(live.status()).toMatchObject({ me: 'G', peer: true, here: ['A'] });
     const n = last().sent.length;
-    expect(live.send({ kind: 'world', op: 'watered', id: 'fl:1:2' })).toBe(false);
-    expect(live.send({ kind: 'decor', id: 'dabc1234', at: 1e12, item: 'tanuki', x: 1, z: 1, f: 0, p: 1e12 })).toBe(false);
-    expect(live.send({ kind: 'saved' })).toBe(false);
+    expect(live.send({ kind: 'world', op: 'watered', id: 'fl:1:2' })).toBe(true);
+    expect(live.send({ kind: 'decor', id: 'dabc1234', at: 1e12, item: 'tanuki', x: 1, z: 1, f: 0, p: 1e12 })).toBe(true);
+    expect(live.send({ kind: 'decor', sc: 'o', id: 'oak1', at: 1e12, k: 'oak', x: 3, z: 4, f: 0 })).toBe(true);
+    expect(live.send({ kind: 'saved' })).toBe(true);
     expect(live.send({ kind: 'say', text: 'やあ' })).toBe(true);
-    expect(last().sent.length).toBe(n + 1);
+    // another's home: its owner's alone (the room would refuse it from anyone)
+    expect(live.send({ kind: 'decor', sc: 'h', id: 'hA', at: 1e12, m: 'house' })).toBe(false);
+    expect(last().sent.length).toBe(n + 5);
   });
 
   it('does nothing hidden, offline, without a key or without a URL', () => {

@@ -32,9 +32,9 @@ describe('layout ops (contract/layout.ts)', () => {
       expect(layoutOpOf(bad), JSON.stringify(bad)).toBeNull();
   });
 
-  test('who may write what (the record and the room alike)', () => {
+  test('who may write what (the record and the room alike): the outdoors and the decorations anyone, the guest too', () => {
     const cases: [Record<string, unknown>, string][] = [
-      [{}, 'AB'], [{ sc: 'o' }, 'AB'], [{ sc: 'c' }, 'AB'], [{ sc: 'r' }, 'AB'],
+      [{}, 'ABG'], [{ sc: 'o' }, 'ABG'], [{ sc: 'c' }, 'ABG'], [{ sc: 'r' }, 'ABG'],
       [{ sc: 'h', id: 'hA' }, 'A'], [{ sc: 'h', id: 'hB' }, 'B'], [{ sc: 'h', id: 'hG' }, 'G'],
       [{ sc: 't' }, 'ABG'], [{ sc: 'u' }, 'B'], [{ sc: 'v' }, 'G'], [{ sc: 'q' }, '']
     ];
@@ -43,10 +43,16 @@ describe('layout ops (contract/layout.ts)', () => {
         expect(scopeMayWrite(who, d), `${who} ${JSON.stringify(d)}`).toBe(may.includes(who));
         expect(scopeMaySend(who, d.sc as string | undefined, (d.id as string) ?? 'x'), `send ${who} ${JSON.stringify(d)}`).toBe(may.includes(who));
       }
-    expect(guestMayWrite('decor', { sc: 'o', id: 'x' })).toBe(false);
-    expect(guestMayWrite('decor', { sc: 'v', id: 'x' })).toBe(true);
-    expect(guestMayWrite('decor', { sc: 'h', id: 'hG' })).toBe(true);
-    expect(guestMayWrite('decor', { sc: 'h', id: 'hA' })).toBe(false);
+    // the record's two checks for the guest's key: guestMayWrite, then the scope's
+    const guestMay = (d: Record<string, unknown>) => guestMayWrite('decor', d) && scopeMayWrite('G', d);
+    expect(guestMay({ sc: 'o', id: 'x' })).toBe(true);
+    expect(guestMay({ sc: 'c', id: 'c0x0' })).toBe(true);
+    expect(guestMay({ sc: 'r', id: 'reset' })).toBe(true);
+    expect(guestMay({ id: 'x' })).toBe(true);
+    expect(guestMay({ sc: 'v', id: 'x' })).toBe(true);
+    expect(guestMay({ sc: 'h', id: 'hG' })).toBe(true);
+    expect(guestMay({ sc: 'h', id: 'hA' })).toBe(false);
+    expect(guestMay({ sc: 'u', id: 'x' })).toBe(false);
   });
 
   test('the merge: later wins, then a removal, then G over B over A', () => {

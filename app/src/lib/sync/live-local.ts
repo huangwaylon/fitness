@@ -6,7 +6,7 @@
 // run on it. Its clock is the island's (clock.ts now(): a `?date=` preview moves the shared day too). Never used
 // outside the demo.
 import { DEMO, localKV, readJson, writeJson } from './storage.ts';
-import { LIVE_V, NEST_GAP_MS, claimOf, guestMaySend, isStored, musicLive, newerMusic, tokyoDay, type Gone, type Intent, type MusicRec, type MusicSrc, type Relayed, type Who } from '../contract/live-protocol.ts';
+import { LIVE_V, NEST_GAP_MS, claimOf, isStored, musicLive, newerMusic, scopeMaySend, tokyoDay, type Gone, type Intent, type MusicRec, type MusicSrc, type Relayed, type Who } from '../contract/live-protocol.ts';
 import { peerOf, type Live, type LiveStatus } from './live.ts';
 import { now } from '#lib/time/clock.ts';
 
@@ -193,7 +193,7 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
     },
     send(i: Intent) {
       if (!st.connected || (!st.here.length && !isStored(i) && i.kind !== 'music')) return false;
-      if (me === 'G' && !guestMaySend(i)) return false;
+      if (i.kind === 'decor' && !scopeMaySend(me, i.sc, i.id)) return false;
       lastT = Math.max(now().getTime(), lastT + 1);
       const m = { ...i, v: LIVE_V, who: me, t: lastT } as Relayed;
       if (isStored(m) && !keep(m)) return true; // refused by the room: it went, and nobody hears it

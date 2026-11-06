@@ -215,16 +215,18 @@ describe("the island's mode (pref weatherMode)", () => {
     ]).toEqual([undefined, 'game', 'real', 'game', 'game', undefined]);
   });
 
-  it("the record: one slot for the island, the members' alone", () => {
+  it('the record: one slot for the island, anyone’s (the guest’s too)', () => {
     const at = Date.parse('2026-11-04T01:00:00Z');
     expect([
       eventSlot('pref', 'A', 'A', { key: 'weatherMode', value: 'game' }, at),
       eventSlot('pref', 'B', 'B', { key: 'weatherMode', value: 'real' }, at),
+      eventSlot('pref', 'G', 'G', { key: 'weatherMode', value: 'real' }, at),
       eventSlot('pref', 'A', 'A', { key: 'weatherMode', value: 'x' }, at),
       prefTaken('weatherMode', 'real'),
       prefTaken('weatherMode', 'cloudy'),
       guestMayWrite('pref', { key: 'weatherMode', value: 'game' }),
+      guestMayWrite('pref', { key: 'weatherMode', value: 'game', person: 'A' }),
       guestMayWrite('pref', { key: 'villagerName', value: 'x' })
-    ]).toEqual(['pref|island|weatherMode', 'pref|island|weatherMode', null, true, false, false, true]);
+    ]).toEqual(['pref|island|weatherMode', 'pref|island|weatherMode', 'pref|island|weatherMode', null, true, false, true, false, true]);
   });
 });

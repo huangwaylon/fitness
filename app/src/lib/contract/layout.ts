@@ -82,16 +82,16 @@ export function layoutOpOf(d: Record<string, unknown>): LayoutOp | null {
   }
 }
 
-/** Whether `who` may write a `decor` op of this data's scope (docs/island-layout.md "Ops"): the outdoors the members
- *  only; a home's look its owner alone; an interior its owner's (the tent's, ウェイ's, all three as before); the
- *  island's decorations (no scope) the members. The record and the room both apply it. */
+/** Whether `who` may write a `decor` op of this data's scope (docs/island-layout.md "Ops"): the outdoors and the
+ *  island's decorations (no scope) anyone, the guest too (2026-11-06: the island is everyone's alike); a home's look its
+ *  owner alone; an interior its owner's (the tent's, ウェイ's, all three as before). The record and the room both apply it. */
 export function scopeMayWrite(who: Who, d: Record<string, unknown>): boolean {
   switch (d.sc) {
     case undefined:
     case 'o':
     case 'c':
     case 'r':
-      return who !== 'G';
+      return true;
     case 'h':
       return d.id === `h${who}`;
     case 't':

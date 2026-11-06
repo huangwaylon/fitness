@@ -424,11 +424,11 @@ function layoutWire(o: Obj): DecorWire | null | undefined {
 }
 
 /** Whether `who` may send a `decor` op of this scope (contract/layout.ts scopeMayWrite, again here: the Worker bundles
- *  this file alone): the outdoors and the island's decorations the members; a home's look and room its owner's (the
- *  tent's room all three). @public (relay/, sync/live.ts) */
+ *  this file alone): the outdoors and the island's decorations anyone, the guest too; a home's look and room its
+ *  owner's (the tent's room all three). @public (relay/, sync/live.ts) */
 export function scopeMaySend(who: Who, sc: string | undefined, id: string): boolean {
   switch (sc) {
-    case undefined: case 'o': case 'c': case 'r': return who !== 'G';
+    case undefined: case 'o': case 'c': case 'r': return true;
     case 'h': return id === `h${who}`;
     case 't': return true;
     case 'u': return who === 'B';
@@ -732,24 +732,6 @@ export const NEST_GAP_MS = 3600_000;
 
 /** A high-five the room holds for a partner who is away is theirs this long (ms); older, it's let go. @public (relay/) */
 export const HIGHFIVE_HOLD_MS = 24 * 3600_000;
-
-/**
- * What the guest's phone may send (docs/backend.md#the-guest): a walk, an act, the shared world's claims (a catch, a
- * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, its line's steps, a quiz's or a game's ops, a music stage, the tent and its own home
- * (inside, a drag, their rooms' decor, its home's look). Not the island's decor or its layout, a world op (watering, a
- * wish), an emote or a `saved` nudge: the room drops
- * those from the guest. @public (relay/, sync/live.ts)
- */
-export function guestMaySend(i: Intent): boolean {
-  switch (i.kind) {
-    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag': case 'fish': case 'quiz': case 'play': case 'music':
-      return true;
-    case 'decor':
-      return scopeMaySend('G', i.sc, i.id);
-    default:
-      return false;
-  }
-}
 
 /** Whether a phone numbers an intent (keeps it until the room's ack, sends it again after a reconnect) and sends it
  *  with the partner away: what the room keeps, a high-five (held for the partner), a music stage (the room's). */
