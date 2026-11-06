@@ -1,74 +1,79 @@
 <script lang="ts">
   // けっこんしき's せってい (members; a level behind the title bar's ⚙): the two names, the day, the venue, the time zone
-  // the board's today is read in, the categories (chips with ×, a field to add one), and the deleted tasks with もどす
-  // (a task, or a checklist item removed on its own: one deleted with its task comes back with it);
-  // ぜんぶ けす removes them for good after an NH ask (its own small sheet: はい / いいえ). A field saves as it's left
-  // (its change), each its own wconf row.
+  // the board's today is read in, the categories (chips with ×: とりけす on the banner, which says how many tasks wear
+  // it; a field to add one), and the deleted tasks with もどす (a task, or a checklist item removed on its own: one
+  // deleted with its task comes back with it); ぜんぶ けす removes them for good after an NH ask (its own small sheet,
+  // やめる focused). A field saves as it's left (its change), each its own wconf row.
+  import { tick } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
+  import { board } from './board.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { formatDate } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { WCATS_MAX, WTASK_CAT, type WedTask } from '#lib/contract/wedding.ts';
-  import type { BoardConfig } from '#lib/wedding/config.ts';
-  import { restorable, type WeddingActions } from './view.ts';
+  import { NAME_CHARS, VENUE_CHARS, WCATS_MAX, WTASK_CAT, type WedTask } from '#lib/contract/wedding.ts';
+  import { restorable } from './view.ts';
 
-  interface Props {
-    config: BoardConfig;
-    /** The store's deleted rows (tasks and subtasks). */
-    deleted: WedTask[];
-    actions?: WeddingActions;
-  }
-  let { config, deleted: all, actions }: Props = $props();
-  const deleted = $derived(restorable(all));
+  const config = $derived(board.config);
+  const deleted = $derived(restorable(board.deleted));
 
   // svelte-ignore state_referenced_locally
   let f = $state({ p1: config.p1, p2: config.p2, date: config.date, time: config.time, venue: config.venue, tz: config.tz });
   let cat = $state('');
   let asking = $state(false);
+  let no: HTMLButtonElement | undefined = $state();
   const ZONES = ['Asia/Tokyo', 'Asia/Seoul', 'Asia/Taipei', 'Asia/Shanghai', 'Asia/Singapore', 'Australia/Sydney', 'Pacific/Honolulu', 'America/Los_Angeles', 'America/New_York', 'Europe/London', 'Europe/Paris', 'UTC'];
   const zones = $derived(ZONES.includes(config.tz) || !config.tz ? ZONES : [config.tz, ...ZONES]);
 
-  const saved = () => toasts.show(t('wed.set.saved'), 1600);
+  /** The banners docked low: never over the title bar's ‹ (a field's save lands mid-tap when ‹ is what blurred it). */
+  const LOW = { low: true };
   /** One setting, saved as its field is left ('' clears it: the default again). */
   function one(k: 'p1' | 'p2' | 'date' | 'time' | 'venue' | 'tz') {
     const v = f[k].trim();
     if (v === config[k]) return;
-    if (actions?.setConfig(k, v)) saved();
+    if (board.setConfig(k, v)) toasts.show(t('wed.set.saved'), 1600, LOW);
   }
   function addCat(e: SubmitEvent) {
     e.preventDefault();
     const c = cat.trim();
     if (!c || config.cats.includes(c) || config.cats.length >= WCATS_MAX) return void (cat = '');
-    actions?.setConfig('cats', [...config.cats, c]);
+    board.setConfig('cats', [...config.cats, c]);
     cat = '';
   }
   function dropCat(c: string) {
-    actions?.setConfig('cats', config.cats.filter((x) => x !== c));
+    const was = config.cats, n = board.tasks.filter((x) => x.category === c).length;
+    board.setConfig('cats', was.filter((x) => x !== c));
+    toasts.show(t(n ? 'wed.set.catGoneN' : 'wed.set.catGone', { cat: c, n }), 5000, { action: { label: t('common.undo'), run: () => void board.setConfig('cats', [...was]) } });
   }
   function restore(d: WedTask) {
-    actions?.restore(d.id);
-    toasts.show(t('wed.set.restored', { title: d.title }), 2000);
+    board.restore(d.id);
+    toasts.show(t('wed.set.restored', { title: d.title }), 2000, LOW);
+  }
+  async function ask() {
+    asking = true;
+    // (after the sheet's own focus on itself)
+    await tick();
+    setTimeout(() => no?.focus(), 0);
   }
   function purge() {
     asking = false;
-    actions?.purge();
-    toasts.show(t('wed.set.purged'), 2000);
+    board.purge();
+    toasts.show(t('wed.set.purged'), 2000, LOW);
   }
 </script>
 
-<div class="set" data-wed-settings>
+<div class="set">
   <h4 class="sec-label">{t('wed.set.names')}</h4>
-  <div class="card grid two">
-    <label class="f"><span class="lbl">{t('wed.set.p1')}</span><input type="text" maxlength="40" bind:value={f.p1} onchange={() => one('p1')} data-wed-set="p1" data-sfx="none" /></label>
-    <label class="f"><span class="lbl">{t('wed.set.p2')}</span><input type="text" maxlength="40" bind:value={f.p2} onchange={() => one('p2')} data-wed-set="p2" data-sfx="none" /></label>
+  <div class="card grid pair">
+    <label class="f"><span class="w-lbl">{t('wed.set.p1')}</span><input class="w-in" type="text" maxlength={NAME_CHARS} bind:value={f.p1} onchange={() => one('p1')} data-wed-set="p1" data-sfx="none" /></label>
+    <label class="f"><span class="w-lbl">{t('wed.set.p2')}</span><input class="w-in" type="text" maxlength={NAME_CHARS} bind:value={f.p2} onchange={() => one('p2')} data-wed-set="p2" data-sfx="none" /></label>
   </div>
 
   <div class="card grid">
-    <label class="f"><span class="lbl">{t('wed.set.date')}</span><input type="date" bind:value={f.date} onchange={() => one('date')} data-wed-set="date" data-sfx="none" /></label>
-    <label class="f"><span class="lbl">{t('wed.set.time')}</span><input type="time" bind:value={f.time} onchange={() => one('time')} data-wed-set="time" data-sfx="none" /></label>
-    <label class="f"><span class="lbl">{t('wed.set.venue')}</span><input type="text" maxlength="80" bind:value={f.venue} onchange={() => one('venue')} data-wed-set="venue" data-sfx="none" /></label>
-    <label class="f"><span class="lbl">{t('wed.set.tz')}</span>
-      <select bind:value={f.tz} onchange={() => one('tz')} data-wed-set="tz" data-sfx="none">{#each zones as z (z)}<option value={z}>{z.replace('_', ' ')}</option>{/each}</select>
+    <label class="f"><span class="w-lbl">{t('wed.set.date')}</span><input class="w-in" type="date" bind:value={f.date} onchange={() => one('date')} data-wed-set="date" data-sfx="none" /></label>
+    <label class="f"><span class="w-lbl">{t('wed.set.time')}</span><input class="w-in" type="time" bind:value={f.time} onchange={() => one('time')} data-wed-set="time" data-sfx="none" /></label>
+    <label class="f"><span class="w-lbl">{t('wed.set.venue')}</span><input class="w-in" type="text" maxlength={VENUE_CHARS} bind:value={f.venue} onchange={() => one('venue')} data-wed-set="venue" data-sfx="none" /></label>
+    <label class="f"><span class="w-lbl">{t('wed.set.tz')}</span>
+      <select class="w-in" bind:value={f.tz} onchange={() => one('tz')} data-wed-set="tz" data-sfx="none">{#each zones as z (z)}<option value={z}>{z.replace('_', ' ')}</option>{/each}</select>
     </label>
   </div>
 
@@ -81,7 +86,7 @@
       {/each}
     </ul>
     <form class="add" onsubmit={addCat}>
-      <input type="text" maxlength={WTASK_CAT} bind:value={cat} placeholder={t('wed.set.catPlaceholder')} aria-label={t('wed.set.catPlaceholder')} data-wed-cat-field data-sfx="none" />
+      <input class="w-in" type="text" maxlength={WTASK_CAT} bind:value={cat} placeholder={t('wed.set.catPlaceholder')} aria-label={t('wed.set.catPlaceholder')} data-wed-cat-field data-sfx="none" />
       <button type="submit" class="btn small" aria-disabled={!cat.trim() ? 'true' : undefined} data-wed-cat-add data-sfx="confirm">{t('wed.set.addCat')}</button>
     </form>
   </div>
@@ -97,7 +102,7 @@
           </li>
         {/each}
       </ul>
-      <button type="button" class="btn small paper purge" data-wed-purge data-sfx="open" onclick={() => (asking = true)}>{t('wed.set.purge')}</button>
+      <button type="button" class="btn small paper purge" data-wed-purge data-sfx="open" onclick={ask}>{t('wed.set.purge')}</button>
     {:else}
       <p class="none">{t('wed.set.noneDeleted')}</p>
     {/if}
@@ -110,8 +115,8 @@
   </div>
   {#snippet footer()}
     <div class="two-btn">
-      <button type="button" class="btn paper" data-wed-purge-no data-sfx="back" onclick={() => (asking = false)}>{t('wed.set.purgeNo')}</button>
-      <button type="button" class="btn" data-wed-purge-yes data-sfx="confirm" onclick={purge}>{t('wed.set.purgeYes')}</button>
+      <button type="button" class="btn paper" bind:this={no} data-sfx="back" onclick={() => (asking = false)}>{t('wed.set.purgeNo')}</button>
+      <button type="button" class="btn coral" data-wed-purge-yes data-sfx="confirm" onclick={purge}>{t('wed.set.purgeYes')}</button>
     </div>
   {/snippet}
 </Sheet>
@@ -119,17 +124,8 @@
 <style>
   .set { display: grid; gap: 10px; }
   .grid { display: grid; gap: 12px; padding: 14px; }
-  .grid.two { grid-template-columns: 1fr 1fr; }
+  .grid.pair { grid-template-columns: 1fr 1fr; }
   .f { display: grid; gap: 5px; min-width: 0; }
-  .lbl { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); padding-left: 4px; }
-  input, select {
-    width: 100%; min-width: 0; min-height: var(--hit); padding: 8px 12px; border-radius: 14px; border: 0; box-sizing: border-box;
-    font: 500 var(--fs-input)/1.3 var(--font-ui); color: var(--c-ink); background: var(--c-card); box-shadow: inset 0 0 0 2px var(--c-edge);
-    -webkit-appearance: none; appearance: none;
-  }
-  input[type='date'] { display: block; text-align: left; }
-  select { background-image: linear-gradient(45deg, transparent 50%, var(--c-ink-soft) 50%), linear-gradient(135deg, var(--c-ink-soft) 50%, transparent 50%);
-    background-position: calc(100% - 20px) 55%, calc(100% - 14px) 55%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 34px; }
   .cats { display: grid; gap: 12px; padding: 14px; }
   .cats .chips { list-style: none; margin: 0; padding: 0; }
   .cchip {
@@ -157,5 +153,7 @@
   .ask small { color: var(--text-soft); font-size: var(--fs-s); }
   .two-btn { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .two-btn .btn { margin: 0; }
-  @media (max-width: 359px) { .grid.two { grid-template-columns: 1fr; } }
+  /* けす: final, so coral (the tap's last word), やめる the focused one */
+  .coral { --fill: var(--c-coral); --lip-c: #D9654F; }
+  @media (max-width: 359px) { .grid.pair { grid-template-columns: 1fr; } }
 </style>

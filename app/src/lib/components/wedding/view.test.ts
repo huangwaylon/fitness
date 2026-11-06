@@ -53,23 +53,24 @@ describe('filters', () => {
 
 describe('groups', () => {
   const groups = groupPlan(visibleTasks(tasks, 'all', true), tasks, TODAY, WEDDING);
-  it('期限切れ, then こんげつ, then the months in order, ひづけ なし last; a row in one place only', () => {
-    expect(groups.map((g) => g.key)).toEqual(['overdue', 'thisMonth', '2026-09', '2026-10', '2027-01', '2027-02', '2027-04', 'nodate']);
+  it('期限切れ, the months before this one, こんげつ, then the later months in order, ひづけ なし last; a row in one place only', () => {
+    expect(groups.map((g) => g.key)).toEqual(['overdue', '2026-09', '2026-10', 'thisMonth', '2027-01', '2027-02', '2027-04', 'nodate']);
     const all = groups.flatMap((g) => ids(g.tasks));
     expect(new Set(all).size).toBe(all.length);
     expect(all).toHaveLength(10);
     expect(ids(groups[0].tasks)).toEqual(['guests', 'estimate']);
   });
   it('こんげつ holds this month\'s and a task already begun (progress.thisMonth), not the overdue', () => {
-    expect(ids(groups[1].tasks)).toEqual(['dress', 'photo']);
+    expect(ids(groups[3].tasks)).toEqual(['dress', 'photo']);
   });
-  it('a month\'s tally counts the whole month (its hidden finished rows too); a filter withholds it', () => {
+  it('a month\'s tally counts the whole month (its hidden finished rows too); a lifted section and a filter count the rows drawn', () => {
     const hidden = groupPlan(visibleTasks(tasks, 'all', false), tasks, TODAY, WEDDING);
     expect(hidden.find((g) => g.month === '2026-09')).toBeUndefined(); // (all of September done and hidden)
     // October: one done and the overdue guest list, lifted into 期限切れ but still October's
     expect(groups.find((g) => g.month === '2026-10')!.tally).toEqual({ done: 1, total: 2 });
     const sliced = groupPlan(visibleTasks(tasks, 'later', false), tasks, TODAY, WEDDING, true);
-    expect(sliced.every((g) => g.tally === null)).toBe(true);
+    expect(sliced.map((g) => g.tally)).toEqual(sliced.map((g) => ({ done: 0, total: g.tasks.length })));
+    expect(groups[0].tally).toEqual({ done: 0, total: 2 });
   });
   it('the wedding month is marked', () => {
     const wm = groups.filter((g) => g.wedding);

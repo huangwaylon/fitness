@@ -42,6 +42,11 @@ class WeddingBoard {
     return this.me === 'G';
   }
 
+  /** A member's phone with its week loaded: it edits (the guest's, and a phone with nothing loaded yet, read only). */
+  get canEdit(): boolean {
+    return !!week.view && week.view.viewer !== 'G';
+  }
+
   get #book(): WedBook {
     return bookOf(week.model?.state.wedding ?? []);
   }
