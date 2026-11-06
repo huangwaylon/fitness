@@ -97,7 +97,9 @@ test.describe('the day itself', () => {
       await expect.poll(() => page.evaluate(() => (window as unknown as W).__world3d.stats().frames)).toBeGreaterThan(f0);
       return page.evaluate(() => (window as unknown as W).__world3d.stats().calls);
     };
-    for (const [q, n] of [['date=2026-06-10T11:00&weather=rain', 2], ['date=2027-01-12T10:00&weather=snow', 1]] as const) {
+    // (the scene pinned: a critter or a visitor coming into view between the three frames changed their draw calls, on
+    // and again never equal: NaN, the drawn smoke's most flaky test, 32 runs in a day)
+    for (const [q, n] of [['date=2026-06-10T11:00&weather=rain&critter=none&visitor=none', 2], ['date=2027-01-12T10:00&weather=snow&critter=none&visitor=none', 1]] as const) {
       await open(page, q);
       await expect.poll(() => precip(page).then((p) => p?.meshes.length), { timeout: 30_000 }).toBe(n);
       await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { loaded(): boolean } }).__world3d.loaded()), { timeout: 30_000 }).toBe(true);
