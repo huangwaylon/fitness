@@ -24,6 +24,7 @@
   import { visitorNow } from './visitors.ts';
   import { timers } from './timers.ts';
   import { islandSeed } from './devHooks.ts';
+  import { site } from './site.svelte.ts';
   import { scenePreview } from '#lib/ui-state/preview.svelte.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { seasonArt, type SeasonItem } from '#lib/art.ts';
@@ -364,7 +365,7 @@
       water(dayKey(), f.id);
       shared.share({ kind: 'world', op: 'watered', id: f.id });
     }
-    for (const f of near.slice(0, 2)) spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > 195 });
+    for (const f of near.slice(0, 2)) spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > site.midX });
     if (near.length) setTimeout(() => sceneSfx('water'), 420);
   }
   /** The fixed decor (fixedDecor.ts) tapped: it answers where it stands (nobody walks), my villager turns to it. */
@@ -407,7 +408,7 @@
     turnTo(f.x);
     jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
     // NH's watering can: a tilt over the bloom, a sprinkle, the flower glitters (and maybe grows a hybrid tomorrow)
-    spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color, rare, flip: f.x > 195 });
+    spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color, rare, flip: f.x > site.midX });
     sceneSfx('water');
     if (rare === 'butterfly') sceneSfx('butterfly');
   }
@@ -529,7 +530,7 @@
         const el = scene?.querySelector<HTMLElement>(`[data-flower="${f.id}"]`);
         partnerTurnTo(f.x, e.who);
         jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
-        spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > 195 });
+        spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > site.midX });
         sceneSfx('water', [f.x, f.z]);
       }
     })

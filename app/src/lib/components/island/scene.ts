@@ -27,6 +27,8 @@ export const TREE_FRUIT_U = 20;
  *  left to right, 20u apart, leaning FRUIT_LEAN u out from the island's middle. */
 export const FRUIT_SPOTS: [number, number][] = [[-30, -8], [-10, -16], [10, -16], [30, -8]];
 export const FRUIT_LEAN = 8;
+/** A goal tree's fruit row's lean (u across): out from the island's middle `mid` (site.midX), the left tree's left. */
+export const fruitLean = (x: number, mid: number): number => (x < mid ? -FRUIT_LEAN : FRUIT_LEAN);
 /** Ground item size in u: NH dropped fruit ≈ 0.3 × a villager (≈ half a tile). */
 export const FRUIT_U = 24;
 /** Villagers (the scale's reference): 80u tall. */

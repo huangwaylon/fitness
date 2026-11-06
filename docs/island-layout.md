@@ -494,7 +494,7 @@ and taken away, Kicks on it on both phones; a bench on it: red, the warning, the
 - **Live changes:** `layout.on(({ diff }) => …)` rebuilds the changed ground chunks and things
   (`store/layout.svelte.ts`; things.ts rebuilds only the models whose instances changed).
 - **The camera's ends** from `extentOf(layout.current)` (the shoreline + 60, the far home's door + 16), recomputed on
-  a change; `MID_X` 195.
+  a change; its middle across the land box's (`model.ts midXOf`: `MID_X` 195 on the default island).
 - **The homes:** `homePlaces(layout.current)` → `buildHome(style)` attached (`world3d/built.ts` createBuilt, with the bridges, stairs and ponds: the editor's preview keeps its own the same way; rebuilt on `diff.homes`); a tap on
   `home-B` / `home-G` walks to its door and goes in to `/tent?home=B|G` (the campsite's to `/tent`; back out, the
   room drops `home`); their lamps `homeTod`.
