@@ -26,23 +26,27 @@ app: the HUD menu's けっこんしき pill.
 - Dropped from the old board: the accent colours, the edit link and read-only toggle (the keys replace them), the
   starter templates.
 
-UI (`components/wedding/`): the sheet is its own chunk, a `lazySheet` (`wedding/open.svelte.ts`, like りょこう's:
-offline before it's cached, a banner with もういちど); the island is paused under it. Redesigned 2026-11-06 in the quiet
-kit (`components/quiet/`, following the time of day): the title bar (けっこんしき, ✕), a bottom tab bar プラン / メモ, ＋
-over it (a member's). プラン: our photo as a band (`static/wedding/hero.webp`: the names, the day · venue, 「あと336日」,
-a member's ⚙ 設定), the strip (the rose ring, the percent, 「8件中2件完了」), one row of filter chips (すべて · 期限切れ ·
-もうすぐ · あとで · 完了), pinned month headings (期限切れ coral, 今月 green, the year only where it changes) over one card
-per month, each row the old board's tcard (tick, month over day, title, category tag, checklist count, the relative
-due). A row opens in place: its checklist ticks, who finished it (muted, 「うめ が完了」; the old Sheet's ticks 「まえの
-ボードで おわった」), 編集 / 完了. ＋ and 編集 open a bottom sheet (キャンセル / 保存: title, start, due, category, the
-checklist renamed / removed / added, 削除 with the banner's とりけす). メモ is a document (16/1.65); 編集 in the title bar
-turns it into the field with 見出し / 太字 / リスト / リンク and 完了 at its foot, over the keyboard. The note's draft is
-held in memory on the phone (`notepad.svelte.ts`): it outlives a level, a tab and ✕. Two crossed saves show both
-versions, each under its writer (mine marked あなた), with これに する (とりけす on its banner) and ふたつ あわせる (both
-in the editor). 設定 is a grouped list (a level with ‹). The guest's sheet has no tick, 編集, ＋ or ⚙. Rules:
-`lib/wedding/progress.ts`, `time/zone.ts` (ported from the old board); the store:
-`board.svelte.ts`; the plan's view rules: `view.ts`. The demo (`?demo`, `?demo&as=G`) draws an invented board
-(`store/demo/rows.ts`, its day the fallback 2027-10-08), driven by `e2e/wedding-board.spec.ts`.
+UI (`components/wedding/`, the [quiet kit](design.md#quiet-sheets), following the time of day): its own chunk, a
+`lazySheet` (`wedding/open.svelte.ts`, like りょこう's: offline before it's cached, a banner with もういちど), on Sheet's
+`quiet` variant; the island is paused under it. The title bar (けっこんしき, ✕), a bottom tab bar プラン / メモ, ＋ over it
+(a member's).
+
+- **プラン** (`Head`, `Plan`, `TaskRow`): our photo as a band (`static/wedding/hero.webp`: the names, the day · venue,
+  「あと336日」, a member's ⚙ 設定); the strip (the rose ring, the percent, 「8件中2件完了」); one row of filter chips;
+  pinned month headings (期限切れ coral, 今月 green, the year only where it changes) over one card per month, each row
+  tick · month over day · title, category tag, checklist count · the relative due. A row opens in place: its checklist
+  ticks, who finished it (「うめ が完了」; the old Sheet's 「まえの ボードで おわった」), 編集 / 完了.
+- **The form** (`TaskForm`, a BottomSheet for ＋ and 編集): title, start, due, category chips, the checklist renamed /
+  removed / added (applied on 保存), 削除 with the banner's とりけす.
+- **メモ** (`Notes`): a document (16/1.65); 編集 in the title bar turns it into the field with 見出し / 太字 / リスト /
+  リンク and 完了 at its foot, over the keyboard. The draft is held in memory on the phone (`notepad.svelte.ts`): it
+  outlives a level, a tab and ✕. Two crossed saves show both versions under their writers (mine あなた), with これに
+  する (とりけす on its banner) and ふたつ あわせる (both in the editor).
+- **設定** (`Settings`): a grouped list, a level with ‹. The guest's sheet has no tick, 編集, ＋ or ⚙.
+
+Rules: `lib/wedding/progress.ts`, `time/zone.ts` (ported from the old board); the store `board.svelte.ts`; the plan's
+view rules `view.ts`. The demo (`?demo`, `?demo&as=G`) draws an invented board (`store/demo/rows.ts`, its day the
+fallback 2027-10-08), driven by `e2e/wedding-board.spec.ts`.
 
 ## The record (relay)
 
