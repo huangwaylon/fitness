@@ -79,7 +79,7 @@ test('the first run: welcome, the sound check, みみ チェック to its result
   await expect(placed).toHaveAttribute('data-kiki-placed', 'mori');
   await expect(sheet(page).locator('[data-kiki-placed-say]')).toHaveText('もりから はじめましょう！');
   await expect(placed.locator('li.on')).toHaveAttribute('data-stage', 'mori');
-  await expect(placed).toContainText('この けっかは あなただけに みえます。');
+  await expect(placed).toContainText('この結果はあなただけに見えます。');
   await snap(page, 'placed');
   // its row: the game 'check', the placed level, a digit a skill
   const row = await page.evaluate(() => (window as unknown as { __kiki: { recorded(): { gm?: string; lv: number; u?: string; r: unknown[] } | null } }).__kiki.recorded());
@@ -99,7 +99,7 @@ test('the first run: welcome, the sound check, みみ チェック to its result
   // a tap overrides it (kept for the mode); おまかせに もどす brings it back
   await sheet(page).locator('[data-stage="kawa"]').click();
   await expect(sheet(page).locator('[data-stage="kawa"]')).toHaveAttribute('aria-checked', 'true');
-  await expect(sheet(page).locator('[data-kiki-omakase-reset]')).toHaveText('おまかせに もどす');
+  await expect(sheet(page).locator('[data-kiki-omakase-reset]')).toHaveText('おまかせに戻す');
   await snap(page, 'mode-override');
   await page.locator('dialog[open] .navbar .back').click();
   await sheet(page).locator('[data-kiki-mode-tile="quiz"]').click();
@@ -113,7 +113,7 @@ test('the first run: welcome, the sound check, みみ チェック to its result
   await page.keyboard.press('Escape');
   await atHub(page);
   await page.locator('dialog[open] [data-kiki-gear]').click();
-  await expect(sheet(page).locator('[data-kiki-set-placed]')).toHaveText('いまの ばしょ：もり ★★★');
+  await expect(sheet(page).locator('[data-kiki-set-placed]')).toHaveText('今の場所：もり ★★★');
   await snap(page, 'settings');
   await sheet(page).locator('[data-kiki-set-check]').click();
   await expect(page.locator('dialog[open] .navbar h2')).toHaveText('みみ チェック');

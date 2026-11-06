@@ -98,7 +98,7 @@ test('しまの みち: a unit’s stop, its page, であい played solo moves i
   await expect(unit.locator('[data-kiki-short]')).toBeVisible();
   await expect(unit.locator('[data-kiki-cando]')).toBeHidden();
   await snap(page, 'unit-short');
-  await unit.getByText('くわしく', { exact: true }).click();
+  await unit.getByText('詳しく', { exact: true }).click();
   await expect(unit.locator('[data-kiki-cando]')).toBeVisible();
   await expect(unit.locator('[data-kiki-cando]')).toContainText('わかる');
   await expect(unit.locator('[data-kiki-unit-lesson]')).toHaveCount(3);

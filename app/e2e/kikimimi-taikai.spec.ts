@@ -66,12 +66,12 @@ test('solo: the Saturday banner, the lobby, seven rounds and the wager (a confid
   await atHub(page);
   const banner = sheet(page).locator('[data-kiki-taikai]');
   await expect(banner).toContainText('しずえの しゅうまつ たいかい');
-  await expect(banner).toContainText('げつようの あさ 5じまで');
+  await expect(banner).toContainText('月曜の朝5時まで');
   await snap(page, 'hub-banner');
   await page.locator('dialog[open] .navbar .close').click();
   await toTaikai(page);
   await expect(page.locator('dialog[open] .navbar h2')).toHaveText('しずえの しゅうまつ たいかい');
-  await expect(sheet(page).locator('[data-kiki-offer="A"]')).toContainText(/まちがい (\dこ|なし)/); // (the demo's games this week)
+  await expect(sheet(page).locator('[data-kiki-offer="A"]')).toContainText(/間違い (\d個|なし)/); // (the demo's games this week)
   await expect(sheet(page).locator('[data-kiki-vs]')).toHaveAttribute('data-kiki-vs', 'coop');
   await snap(page, 'lobby-solo');
   // ‹ back to the hub (a quiz lobby again), and in again
@@ -86,14 +86,14 @@ test('solo: the Saturday banner, the lobby, seven rounds and the wager (a confid
   for (let i = 0; i < 7; i++) {
     await round(page, i, i === 2);
     await expect(sheet(page)).toHaveAttribute('data-phase', 'reveal');
-    await expect(sheet(page).locator('[data-kiki-taikai-bar]')).toContainText(`だい ${i + 1}もん / 7`);
+    await expect(sheet(page).locator('[data-kiki-taikai-bar]')).toContainText(`第${i + 1}問 / 7`);
     await expect(sheet(page).locator('[data-kiki-team-right]')).toHaveAttribute('data-kiki-team-right', String(i < 2 ? i + 1 : i));
     if (i === 3) await snap(page, 'round-reveal');
     await sheet(page).locator('[data-kiki-next]').click();
   }
   // the wager: the choices wait for a bet; 80 of the round's 100 chips, missed
   await expect.poll(() => kiki(page, (k) => k.view().i), { timeout: 20_000 }).toBe(7);
-  await expect(sheet(page).locator('[data-kiki-taikai-bar]')).toContainText('かけの もんだい');
+  await expect(sheet(page).locator('[data-kiki-taikai-bar]')).toContainText('かけの問題');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'answer', { timeout: 40_000 });
   await expect(sheet(page).locator('[data-choice="0"]')).toHaveAttribute('aria-disabled', 'true');
   await sheet(page).locator('[data-kiki-bet="80"]').click();
@@ -113,7 +113,7 @@ test('solo: the Saturday banner, the lobby, seven rounds and the wager (a confid
   const cup = (await trophy.getAttribute('data-kiki-trophy'))!;
   expect(['bronze', 'silver', 'gold']).toContain(cup);
   await expect(trophy).toHaveAttribute('data-kiki-taikai-score', '6');
-  await expect(sheet(page).locator('[data-kiki-tally]')).toHaveText('6 / 8 もん せいかい');
+  await expect(sheet(page).locator('[data-kiki-tally]')).toHaveText('6 / 8 問正解');
   await expect(trophy.locator('[data-kiki-wager-result]')).toHaveAttribute('data-kiki-wager-result', '20');
   await expect(sheet(page).locator('[data-kiki-missed]')).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-review]')).toHaveCount(2);
@@ -125,7 +125,7 @@ test('solo: the Saturday banner, the lobby, seven rounds and the wager (a confid
   await snap(page, 'hub-banner-won');
   await sheet(page).locator('[data-kiki-tile="record"]').click();
   await expect(sheet(page).locator('[data-kiki-trophies="1"]')).toBeVisible();
-  await expect(sheet(page).locator(`[data-kiki-shelf="${cup}"]`)).toContainText('11/6の しゅうまつ');
+  await expect(sheet(page).locator(`[data-kiki-shelf="${cup}"]`)).toContainText('11/6の週末');
   await sheet(page).locator('[data-kiki-trophies]').scrollIntoViewIfNeeded();
   await snap(page, 'record-shelf');
 });
@@ -150,13 +150,13 @@ test('co-op on two phones: B’s misses offered as it joins, A’s deck picked a
   // B: the tournament's lobby, waiting for A, its own three misses offered
   await expect(sheet(b).locator('[data-kiki-taikai-lobby]')).toBeVisible();
   await expect(sheet(b).locator('[data-kiki-offer="B"]')).toHaveAttribute('data-kiki-offer-n', '3');
-  await expect(sheet(b).locator('.wait')).toContainText('はじめるのを まっています');
+  await expect(sheet(b).locator('.wait')).toContainText('始めるのを待っています');
   await snap(b, 'lobby-joined');
   // A: B in with 3 misses; the deck picked again with them; B deals the same
   await a.bringToFront();
   await expect(sheet(a).locator('[data-kiki-offer="B"]')).toHaveAttribute('data-kiki-offer-n', '3', { timeout: 10_000 });
   await expect.poll(() => kiki(a, (k) => k.items())).toEqual(expect.arrayContaining(['w2-cats', 'w2-live', 'w2-seat']));
-  await expect(sheet(a).locator('[data-kiki-start]')).toHaveText('はじめる（2にん）');
+  await expect(sheet(a).locator('[data-kiki-start]')).toHaveText('始める（2人）');
   await snap(a, 'lobby-host');
   const deck = await kiki(a, (k) => k.items());
   expect(deck).toHaveLength(8);

@@ -90,7 +90,7 @@ test('solo: the mode in the lobby, two ladders climbed (a miss and a replay stop
   await expect(sheet(page).locator('[data-kiki-climb-row="0"] b')).toHaveText('1.0× まで');
   await expect(sheet(page).locator('[data-review-ladder]')).toHaveCount(2);
   await expect(sheet(page).locator('[data-review-ladder] [data-kiki-hear]')).toHaveCount(8);
-  await expect(sheet(page).locator('[data-review="2"] [data-kiki-picked]')).toContainText('えらんだ');
+  await expect(sheet(page).locator('[data-review="2"] [data-kiki-picked]')).toContainText('選んだ');
   await shot(page, 'results', true);
   // もういっかい keeps the mode; きろく shows the speed
   await sheet(page).locator('[data-kiki-again]').click();

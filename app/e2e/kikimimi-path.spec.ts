@@ -68,7 +68,7 @@ test('a stamp brings the host’s letter: on the results, then on the unit’s p
   await expect(strip).toHaveAttribute('data-kiki-stamped', '1');
   const letter = strip.locator('[data-kiki-letter="tr-hotel"]');
   await expect(letter).toHaveAttribute('data-open', 'true');
-  await expect(letter).toContainText('とどきました');
+  await expect(letter).toContainText('届きました');
   await expect(letter.locator('[data-kiki-letter-en]')).toContainText("I'm afraid");
   await expect(letter.locator('[data-kiki-letter-gloss]')).toHaveCount(0);
   await snap(page, 'results-letter');
@@ -120,7 +120,7 @@ test('the placement and a landmark: 「ここから」 at かわ, もり above i
   // the celebration, scrolled to; かわ open, もり (above the placement) soft, open on the current unit; はまべ folded
   const party = kawa.locator('[data-kiki-landmark-party="kawa"]');
   await expect(party).toBeInViewport();
-  await expect(party).toContainText('かわを クリア！');
+  await expect(party).toContainText('かわをクリア！');
   await expect(party).toContainText('いかだ');
   const mori = sheet(page).locator('[data-kiki-stage="mori"]');
   await expect(mori).toHaveAttribute('data-soft', 'true');
