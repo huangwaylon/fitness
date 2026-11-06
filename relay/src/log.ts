@@ -227,6 +227,19 @@ export class LogCore {
     });
   }
 
+  /** One of today's `limit` uses of `bucket` (`stt:A`: a role's `/stt` calls, sttRoute.ts): counted and true, or false
+   *  once spent. The `caps` table's day pattern; no event, so not in `all`. */
+  spend(bucket: string, limit: number): boolean {
+    return this.io.tx(() => {
+      const day = this.today();
+      const n = this.caps.get(bucket) ?? 0;
+      if (n >= limit) return false;
+      this.caps.set(bucket, n + 1);
+      this.io.sql.exec('INSERT INTO caps (day, bucket, n) VALUES (?, ?, ?) ON CONFLICT (day, bucket) DO UPDATE SET n = excluded.n', day, bucket, n + 1);
+      return true;
+    });
+  }
+
   /** Events by the filters, oldest first (or newest first: `desc`), at most `limit` (≤ QUERY_MAX); `next`: the cursor. */
   query(q: LogQuery): { rows: LogRow[]; next: number | null } {
     const now = this.io.now();

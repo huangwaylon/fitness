@@ -1121,3 +1121,15 @@ NookPhone-styled and online; OpenFreeMap needs no ops and covers every trip worl
 extracts on R2 (19 MB for Okinawa alone, a bucket and a relay route to run; still possible: `style.ts` `BASEMAP` is
 the one place that names the source), raster tiles (blurry on a 3× screen, no restyling), Google / Apple maps (keys,
 terms, not themeable).
+
+### ききみみ's microphone: off by default, on the phone first, nothing kept (2026-11-07)
+The user approved mic modes (docs/kikimimi-mic.md) on these terms, the privacy rule in docs/kikimimi.md "マイク":
+the mic is off by default and turned on per phone; solo by default, the partner involved only when both opted in;
+recordings live in memory for their round and are never stored, synced, logged or sent to the partner; speech to
+text runs on the phone first (whisper in the page, downloaded once after consent), with Safari's recogniser (audio
+may go to Apple) or the relay's Workers AI (`POST /stt`, the request only, nothing kept, sizes and times logged, a
+daily cap and `STT_OFF`) as disclosed fallbacks; no transcript or speaking score leaves the phone, rows carry minutes
+only, and there is no speaking leaderboard. The Permissions-Policy allows `microphone=(self)`. Why: the panel is shy
+about speaking and the voice is the most personal data the app would touch. Rejected: server-first recognition
+(simplest, but every utterance leaves the phone), a pronunciation score (noise from ASR, and it shames), free LLM
+conversation (the user: no).

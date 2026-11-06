@@ -16,6 +16,13 @@ ALLOWED_ORIGINS = "https://island-fund.pages.dev"
 # station, rounded to ~1 km. Open-Meteo sees only this (and a Cloudflare IP).
 WX_LAT = "35.69"
 WX_LON = "139.75"
+# `/stt` (src/sttRoute.ts, docs/kikimimi-mic.md §3.5): "1" turns it off (503); a role's calls a UTC day (then 429)
+STT_OFF = "0"
+STT_DAY_MAX = "300"
+
+# Workers AI for `/stt` (whisper-large-v3-turbo): the audio for the request only, nothing kept. No secret.
+[ai]
+binding = "AI"
 
 # Every 15 minutes: the real weather when it's due (at :15 and :45).
 [triggers]
@@ -80,6 +87,11 @@ crons = []
 ALLOWED_ORIGINS = "https://island-fund.pages.dev"
 WX_LAT = "35.69"
 WX_LON = "139.75"
+STT_OFF = "0"
+STT_DAY_MAX = "300"
+
+[env.test.ai]
+binding = "AI"
 
 [[env.test.durable_objects.bindings]]
 name = "ROOM"

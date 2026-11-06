@@ -52,6 +52,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `storage.fail` | warn | `store`, `kind` | storage refused a write |
 | `use` | info | counters `sheet:<i18n key>`, `ev:<event type>`, `route:<route>` | summed, one a flush |
 | `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
+| `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets (docs/kikimimi-mic.md §1.1): the page's capabilities; the permission (`st`, `ms`, `again`, `asked`, `ec`, `sr`, `inp`); per earphone route the bleed (dB), round trip (ms), loudness and restore; per recogniser and step its `ms`, `mb`, `audS`, `wer` (%, computed on the phone), `ok`, `err`. **Never heard text, a device label or a sentence** | せってい's 「マイク診断（テスト）」, on 「結果を送信」 |
 | `req` (relay) | info; warn refused; error `unavailable` | `action`, `st` (ok or the error code), `ms` (the Worker's wall time), `inB`, `outB`, `n`, `rej`, `dup`, `why` (the first refusal's rule: `buy.pocket_short`, `spend_void.no_such_spend`, `ingest.parse`), ingest's `m` (added), `sk` (skipped), `w` (warnings: a count); a snapshot's `pg` (its page size; 0: unpaged, an app from before paging); `exc` (a thrown class) | every `/api` request: the Shortcut's ingests, rate-limit hits (`busy`), validation refusals |
 | `room.close` / `room.full` | info / warn | `code`, `secs`, `socks` | the live room |
 | `ws.hello` (relay) | info | `v` (the protocol version), `build` (the app's, from the hello; none before 2026-11-05); who | each welcomed hello: which phone speaks what (`report`'s *Live hellos*) |
@@ -60,6 +61,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `cron.compact` | info | `dates`, `deleted`, `more`, `metrics`, `ms` | the record's compaction (the cron at 04:15 Tokyo when COMPACT_CRON=1, on hold; `more`: a backlog left for the next day; a failure is `do.error` `where: compact`) |
 | `admin` | info | `op`, `st` | each signed admin op (an audit) |
 | `log.cap` | warn | `bucket` | a day's cap reached (once) |
+| `stt` (relay) | info; warn refused or failed | `ms`, `inB` (the WAV's bytes), `model` (turbo), `ok`, `err` (off, too_large, bad_request, capped, ai) | each keyed `POST /stt` (sttRoute.ts): never the audio or its text |
 
 **Never logged:** keys (or a piece of one), health values, food names, board text, names, e-mails, URLs (their query
 or fragment: `#key=`), IP addresses, user agents (only `os`), the record's `detail` / ingest `warnings` text (they
@@ -107,6 +109,9 @@ own token. Retention 30 days; `npm run logs -- purge --before … [--person A]` 
 - **Caps** (UTC day, `caps` table, one row written per write): phones 1,000 info/warn and 200 errors per role; the
   relay 4,000 and 500; 8,000 in all (the hard guard on the account's rows written). Over a cap: dropped, `log.cap`
   once.
+- `POST /stt` (`sttRoute.ts`): a person's key in `Authorization`, a WAV ≤ 340 KB to Workers AI and the text back;
+  nothing of either kept. A role's calls a UTC day: `STT_DAY_MAX` (300, the `caps` table's `stt:<role>` rows, not
+  in `all`), then 429. Off: `STT_OFF = "1"` in `[vars]` and deploy (503).
 - **Tables:** `log` (primary key `id`, no other index), `batches (b, ts)` (two days), `caps (day, bucket, n)`.
 - **Retention:** the object's alarm, daily: events older than 30 days (5,000 a chunk, 4 chunks; a backlog goes on
   hourly), batch ids and caps older than 2 days.
@@ -134,7 +139,8 @@ npm run logs -- --test ...                                 # the test relay
 4. The relay live: `npx wrangler tail`; the dashboard's Workers Logs (3 days).
 5. The Free plan's use: dashboard → Workers & Pages → the relay's Metrics (requests), Durable Objects (rows
    written/read against 100k / 5M a day).
-6. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy.
+6. Off switch: `LOG_OFF = "1"` in `wrangler.toml` `[vars]` and deploy (`STT_OFF = "1"` for `/stt`).
+   The mic probe's results: `npm run logs -- --event mic. --since 1d --json` and `--event stt`.
 7. Close the alert's issue with the cause.
 
 ## The alert
@@ -158,4 +164,5 @@ Set up once (done 2026-11-05): `openssl rand -hex 32` → `npx wrangler secret p
 | Storage | 5 GB | ~250 B an event: ~0.5 MB a day, ~15 MB for 30 days |
 | Worker CPU | 10 ms/request | `/log`: one JSON.parse of ≤ 64 KB for the key; `/api`: one more RPC in the background |
 | Workers Logs | 200k/day, 3 days | a few hundred lines |
+| Workers AI (`/stt`) | 10k neurons/day | whisper-large-v3-turbo, ~47 neurons an audio minute: the probe a few; the cap (300 × ≤ 10 s a person) ~2.3k |
 | The phone | — | `log()` ~µs; a flush: one JSON.stringify of ≤ 32 KB and one fetch; a persist ≤ 24 KB, debounced |
