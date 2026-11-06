@@ -50,8 +50,8 @@ export const CAST: Readonly<Partial<Record<RosterId, CastId>>> = {
 /** The few villagers who also speak UK or AU English, and only in an item tagged `accent-exposure` (やま and ほし, ≤ 10%
  *  of each: bank.test "accent policy"; source.ts puts the voice on). Their voices from before the American focus. */
 export const EXPOSURE: Readonly<Partial<Record<RosterId, CastId>>> = {
-  ankha: 'uk-f1', diana: 'uk-f1', fauna: 'uk-f1', mabel: 'uk-f1', celeste: 'uk-f1', olivia: 'uk-f1', tasha: 'uk-f1',
-  freya: 'uk-f1', vivian: 'uk-f1',
+  ankha: 'uk-f1', fauna: 'uk-f1', mabel: 'uk-f1', celeste: 'uk-f1', olivia: 'uk-f1', tasha: 'uk-f1', freya: 'uk-f1',
+  vivian: 'uk-f1',
   raymond: 'uk-m1', julian: 'uk-m1', marshal: 'uk-m1', chief: 'uk-m1', kidd: 'uk-m1', curlos: 'uk-m1',
   blathers: 'uk-m2', apollo: 'uk-m2', tex: 'uk-m2', static: 'uk-m2',
   saharah: 'au-f1', whitney: 'au-f1', faith: 'au-f1', phoebe: 'au-f1', charlise: 'au-f1',

@@ -38,7 +38,7 @@ items:
     note: 今夜は満室で無理。What I can do is の後が代案
     speaker: lopez
     voice: us
-    cast: us-m2
+    cast: us-m6
     choices: [ "A king tomorrow, plus free breakfast.", "A king tonight, for a small charge.", A free upgrade to a suite tonight. ]
     answer: 0
     focus: What I can do is
@@ -46,28 +46,28 @@ items:
     tags: { seed: 3, register: service, pragmatic: hedge, conditions: [ desk ], features: [ contrast ] }
     lines:
       - who: lopez
-        cast: us-m2
+        cast: us-m6
         en: Hi, checking in. Lopez, two nights.
         ja: こんにちは、チェックインを。ロペスで2泊です。
       - who: diana
-        cast: us-f1
+        cast: us-f4
         en: Welcome. Ah, I'm afraid you've been booked into two queens, not a king, and we're fully booked tonight.
         ja: ようこそ。あ、申し訳ありません、キングではなくクイーン2台のお部屋になっておりまして、今夜は満室なんです。
       - who: lopez
-        cast: us-m2
+        cast: us-m6
         en: Sorry, did you say two queens? Oh. That's not ideal. It's kind of our anniversary.
         ja: すみません、クイーン2台って言いました？ えっ。それはちょっと。一応、記念日なんですよ。
         tts: Sorry, did you say two queens? Oh. That's not ideal. It's kinda our anniversary.
       - who: diana
-        cast: us-f1
+        cast: us-f4
         en: What I can do is move you to a king tomorrow, and breakfast is complimentary both mornings.
         ja: かわりに、明日キングのお部屋にお移りいただけます。朝食も2日とも無料でご用意します。
       - who: lopez
-        cast: us-m2
+        cast: us-m6
         en: OK, that works. Thanks for taking care of it.
         ja: わかりました、それで大丈夫です。対応ありがとう。
       - who: diana
-        cast: us-f1
+        cast: us-f4
         en: My pleasure. Enjoy your stay.
         ja: どういたしまして。ごゆっくりどうぞ。
   - id: mu-r-fully-booked
@@ -90,7 +90,7 @@ items:
     note: complimentary＝無料。compliment（ほめる）と混同注意
     speaker: keaton
     voice: us
-    cast: us-m1
+    cast: us-m5
     choices: [ You can have free drinks while you wait., They'd like you to say something nice about the bar., You'll pay for the drinks at checkout. ]
     answer: 0
     ask: つまり、どういうこと？
@@ -103,7 +103,7 @@ items:
     note: in the meantime＝修理までのつなぎの提案
     speaker: francine
     voice: us
-    cast: us-f3
+    cast: us-f4
     choices: [ "Yes, please. A fan would be great.", "No thanks, I'll send someone up.", "OK, I'll take a look in the meantime." ]
     answer: 0
     focus: In the meantime
@@ -112,20 +112,20 @@ items:
     channel: phone
     lines:
       - who: francine
-        cast: us-f3
+        cast: us-f4
         en: Hi, I'm in 804. The air conditioning's making this weird rattling noise.
         ja: もしもし、804号室です。エアコンが変なガタガタ音を立ててて。
         tts: Hi, I'm in eight-oh-four. The air conditioning's making this weird rattling noise.
       - who: jacques
-        cast: us-m3
+        cast: us-m5
         en: Oh, I'm so sorry about that. I'll send someone up to take a look.
         ja: それは大変失礼いたしました。すぐに係の者を伺わせます。
       - who: francine
-        cast: us-f3
+        cast: us-f4
         en: Thanks. Will it be long? We're about to go to bed.
         ja: どうも。時間かかります？ もう寝るところなんですけど。
       - who: jacques
-        cast: us-m3
+        cast: us-m5
         en: It could be half an hour, honestly. In the meantime, would you like me to bring up a fan?
         ja: 正直、30分ほどかかるかもしれません。それまでの間、扇風機をお持ちしましょうか？
   - id: mu-r-send-up
@@ -136,7 +136,7 @@ items:
     note: send up＝部屋に届ける。下に取りに行く必要なし
     speaker: saharah
     voice: us
-    cast: us-f3
+    cast: us-f5
     choices: [ "Great, thanks so much.", Ten minutes? I can come down for them., "No, they're not fresh, they're wet." ]
     answer: 0
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ phone ] }
@@ -149,7 +149,7 @@ items:
     note: the best I can do＝それが限界。延長交渉は無理
     speaker: wolfgang
     voice: us
-    cast: us-m3
+    cast: us-m5
     choices: [ One o'clock is the latest he can offer., He could do later if you ask nicely., Checkout is earlier because of the group. ]
     answer: 0
     ask: つまり、どういうこと？
@@ -162,7 +162,7 @@ items:
     note: waive＝免除。wave（手を振る）と同じ音
     speaker: curt
     voice: us
-    cast: us-m3
+    cast: us-m6
     choices: [ "Thanks, that's really fair.", "Can I pay it by card, then?", "Oh, is it working now?" ]
     answer: 0
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ] }
@@ -174,7 +174,7 @@ items:
     note: no problem でも small fee＝有料。but の後に注意
     speaker: tia
     voice: us
-    cast: us-f2
+    cast: us-f4
     choices: [ "You can check in early, but before noon costs a bit extra.", Early check-in is free all morning., You can't check in before noon. ]
     answer: 0
     ask: つまり、どういうこと？
@@ -187,7 +187,7 @@ items:
     note: 10時に直るが会議は9時。代案はスパ
     speaker: kabuki
     voice: us
-    cast: us-m1
+    cast: us-m5
     choices: [ "He'll shower at the spa, for free.", He'll wait for the hot water at ten., He'll move his meeting to ten. ]
     answer: 0
     focus: what I can do is open the spa
@@ -195,24 +195,24 @@ items:
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [ desk ], features: [ contrast ] }
     lines:
       - who: kabuki
-        cast: us-m1
+        cast: us-m5
         en: Hi, sorry to bother you. There's no hot water in 1112.
         ja: すみません、お手数ですが、1112号室でお湯が出ないんです。
         tts: Hi, sorry to bother you. There's no hot water in eleven twelve.
       - who: olivia
-        cast: us-f2
+        cast: us-f4
         en: Ah, I'm so sorry. They're working on the water heater this morning. It should be back by ten.
         ja: あっ、申し訳ございません。今朝給湯器の工事をしておりまして。10時には戻るはずです。
       - who: kabuki
-        cast: us-m1
+        cast: us-m5
         en: Sorry, did you say ten? I've got a meeting at nine.
         ja: すみません、10時って言いました？ 9時から会議なんですけど。
       - who: olivia
-        cast: us-f2
+        cast: us-f4
         en: In the meantime, what I can do is open the spa for you. The showers there are fine, and it's complimentary.
         ja: それまでの間、スパを開けることができます。そちらのシャワーは使えますし、無料です。
       - who: kabuki
-        cast: us-m1
+        cast: us-m5
         en: Perfect. I'll head down now. Thanks.
         ja: 助かります。今から行きます。ありがとう。
   - id: mu-r-sea-view
@@ -223,7 +223,7 @@ items:
     note: all taken＝埋まっている。今日は無理、明日なら
     speaker: bud
     voice: us
-    cast: us-m1
+    cast: us-m4
     choices: [ "Yes, please. Put me down for tomorrow.", "Thanks, I'm not afraid of the ocean.", "I'll take the list, then." ]
     answer: 0
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ], features: [ contrast ] }
@@ -236,7 +236,7 @@ items:
     note: Sorry, I meant の後が訂正値
     speaker: pashmina
     voice: us
-    cast: us-f1
+    cast: us-f5
     choices: [ "¥2,500", "¥1,500", "¥4,000" ]
     answer: 0
     ask: ベッドは いっぱく いくら？
@@ -249,7 +249,7 @@ items:
     note: can't は強く［キャン(ト)］、can は弱く［クン］
     speaker: jacques
     voice: us
-    cast: us-m3
+    cast: us-m5
     choices: [ can't, can, couldn't ]
     answer: 0
     focus: can't
@@ -262,7 +262,7 @@ items:
     note: send someone up＝部屋に人を向かわせる
     speaker: tia
     voice: us
-    cast: us-f2
+    cast: us-f4
     choices: [ send someone up, sent someone up, send someone out ]
     answer: 0
     focus: send someone up
@@ -276,7 +276,7 @@ items:
     note: in the meantime＝それまでの間。in a minute ではない
     speaker: curt
     voice: us
-    cast: us-m3
+    cast: us-m6
     choices: [ In the meantime, In the morning, In a minute ]
     answer: 0
     focus: In the meantime
@@ -290,7 +290,7 @@ items:
     note: would've［ウダヴ］＝実際は電話していない
     speaker: olivia
     voice: us
-    cast: us-f2
+    cast: us-f4
     choices: [ would've, would, wouldn't ]
     answer: 0
     focus: would've
@@ -303,7 +303,7 @@ items:
     note: till Sunday＝日曜まで ずっと 満室
     speaker: bud
     voice: us
-    cast: us-m1
+    cast: us-m4
     choices: [ till Sunday, this Sunday, on Sunday ]
     answer: 0
     focus: till Sunday
@@ -316,7 +316,7 @@ items:
     note: waive＝免除。raise（上げる）だと真逆
     speaker: keaton
     voice: us
-    cast: us-m1
+    cast: us-m5
     choices: [ waive, raise, charge ]
     answer: 0
     focus: waive
@@ -329,7 +329,7 @@ items:
     note: free of charge＝無料。それ以降は有料
     speaker: sterling
     voice: us
-    cast: us-m1
+    cast: us-m5
     choices: [ Noon is free; later costs half a night., Noon costs half the room rate., Late checkout isn't possible today. ]
     answer: 0
     ask: つまり、どういうこと？
@@ -344,7 +344,7 @@ items:
     note: by six なら無料。after six から有料
     speaker: melba
     voice: us
-    cast: us-f2
+    cast: us-f6
     choices: [ "Great, we'll be back before six.", "OK, we'll pay the small charge now.", "Could we leave them till nine, then?" ]
     answer: 0
     focus: nothing to pay
@@ -353,19 +353,19 @@ items:
     cond: &a1 { kind: cafe, level: light }
     lines:
       - who: melba
-        cast: us-f2
+        cast: us-f6
         en: Hi, we've checked out, but our flight's not till nine tonight. Could we leave our bags?
         ja: チェックアウトしたんですけど、飛行機が夜9時なんです。荷物を預けられますか？
       - who: keaton
-        cast: us-m1
+        cast: us-m5
         en: Of course. I'm afraid the luggage room's full, so they'll go behind the desk. There's a small charge after six.
         ja: もちろんです。あいにく荷物室がいっぱいなので、フロントの裏でお預かりします。6時以降は少し料金がかかります。
       - who: melba
-        cast: us-f2
+        cast: us-f6
         en: Sorry, did you say after six? Our train to the airport's at six-thirty.
         ja: すみません、6時以降って言いました？ 空港行きの電車は6時半なんです。
       - who: keaton
-        cast: us-m1
+        cast: us-m5
         en: Ah, then just pick them up by six and there's nothing to pay.
         ja: あ、では6時までに受け取れば、お支払いはありません。
   - id: mu-r-breaking-up
@@ -390,7 +390,7 @@ items:
     note: cover the taxi＝タクシー代を持つ。今夜は系列へ
     speaker: cyd
     voice: us
-    cast: us-m3
+    cast: us-m4
     choices: [ He'll stay at the sister hotel; the taxi's paid., He'll pay for two bookings., He'll come back next Friday. ]
     answer: 0
     focus: cover the taxi
@@ -399,27 +399,27 @@ items:
     cond: *a1
     lines:
       - who: cyd
-        cast: us-m3
+        cast: us-m4
         en: Good evening. I have your booking here, but it's for next Friday, not tonight.
         ja: こんばんは。ご予約はありますが、今夜ではなく来週の金曜日になってますね。
       - who: zucker
-        cast: us-m2
+        cast: us-m6
         en: Sorry, did you say next Friday? I definitely booked tonight. I've got the email right here.
         ja: すみません、来週の金曜って言いました？ 絶対今夜で予約しました。メールもここに。
       - who: cyd
-        cast: us-m3
+        cast: us-m4
         en: Let me have a look. Ah, the booking site messed up the dates. We're full, but what I can do is a room at our sister hotel, and we'll cover the taxi.
         ja: 確認しますね。あ、サイトが日付を間違えてますね。満室ですが、系列ホテルのお部屋をご用意して、タクシー代もこちらで持ちます。
       - who: zucker
-        cast: us-m2
+        cast: us-m6
         en: Fine. As long as I'm not paying for both.
         ja: いいですよ。両方払わされないなら。
       - who: cyd
-        cast: us-m3
+        cast: us-m4
         en: No, no. I'll cancel this one now, and we'll waive the fee.
         ja: いえいえ。こちらは今キャンセルして、料金は免除します。
       - who: zucker
-        cast: us-m2
+        cast: us-m6
         en: Great. I appreciate it.
         ja: よかった。助かります。
   - id: mu-n-new-room
@@ -431,7 +431,7 @@ items:
     note: No, wait の後が訂正値
     speaker: reneigh
     voice: us
-    cast: us-f3
+    cast: us-f4
     choices: [ "971", "917", "791" ]
     answer: 0
     ask: あたらしい へやは？
@@ -445,7 +445,7 @@ items:
     note: between you and me＝ここだけの話。望み薄
     speaker: gruff
     voice: us
-    cast: us-m1
+    cast: us-m6
     choices: [ Don't expect a free night., The manager will give you a free night., He'll tell you a secret at dinner. ]
     answer: 0
     ask: つまり、どういうこと？

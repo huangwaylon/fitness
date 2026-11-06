@@ -94,6 +94,11 @@ describe('kikimimi bank', () => {
       expect(foreign(it) ? accents(it).join('+') : 'us', `${it.id}: American only below やま and in units`).toBe('us');
       expect(tagged(it), `${it.id}: accent exposure only at やま and ほし`).toBe(false);
     }
+    // a unit's voices are its villagers' own (CAST), as everywhere else
+    for (const it of UNIT_ITEMS) {
+      if (it.cast) expect(it.cast, it.id).toBe(CAST[it.speaker]);
+      for (const l of it.lines ?? []) expect(l.cast, `${it.id}: ${l.who}`).toBe(CAST[l.who]);
+    }
     for (const lv of [6, 7] as Level[]) {
       const items = BANK.filter((it) => it.lv === lv), out = items.filter(foreign);
       expect(out.length / items.length, `level ${lv}: the UK/AU share`).toBeLessThanOrEqual(0.1);

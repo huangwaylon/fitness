@@ -75,7 +75,7 @@ items:
     type: reply
     speaker: beau
     voice: us
-    cast: us-m1
+    cast: us-m4
     en: "Sorry? Did you say the lemon cake or the melon cake?"
     ja: "すみません、レモンケーキですか、メロンケーキですか？ →「レモンのほうです。」"
     note: "A or B の 質問に Yes で こたえない"
@@ -89,7 +89,7 @@ items:
     type: mean
     speaker: tia
     voice: us
-    cast: us-f2
+    cast: us-f4
     en: "Let's meet at the station on Thursday. Wait, no, I meant Tuesday. Thursday's my yoga night. See you then!"
     ja: "火曜日に会う。"
     note: "Wait, no, I meant〜の あとが 正しい 情報"
@@ -104,7 +104,7 @@ items:
     type: reply
     speaker: sterling
     voice: us
-    cast: us-m1
+    cast: us-m5
     en: "So you go out the back, hang a left at the flower shop, and it's the door right after the, um… the ramen place."
     ja: "裏から出て、花屋で左、それから、えっと…ラーメン屋のすぐ次のドア。 →「ごめん、最後のところをもう一回？」"
     note: "hang a left＝左に 曲がる。聞きのがした 所だけ きく"
@@ -118,7 +118,7 @@ items:
     type: num
     speaker: zucker
     voice: us
-    cast: us-m2
+    cast: us-m6
     en: "Sorry? Fourteen? Oh, four! Sorry, it's loud in here. Party of 4? Right this way."
     tts: "Sorry? Fourteen? Oh, four! Sorry, it's loud in here. Party of four? Right this way."
     ja: "え？ 14名様？ あ、4名様ですね！ すみません、店内がうるさくて。4名様ですね？ こちらへどうぞ。"
@@ -134,7 +134,7 @@ items:
     type: gist
     speaker: teddy
     voice: us
-    cast: us-m1
+    cast: us-m6
     en: "Hi, it's me. I got your voicemail about dinner, but it was all crackly. Do you mean Thursday or Tuesday? Tuesday! Tues-day. The day after Monday. Ha, got it. Okay, I won't keep you. Talk soon!"
     ja: "火曜日。"
     note: "火曜と木曜。the day after Monday が ヒント"
@@ -147,15 +147,15 @@ items:
     cond: { kind: phone, level: light }
     tags: { seed: 56, register: friend, pragmatic: literal, conditions: [phone], features: [th] }
     lines:
-      - { who: teddy, cast: us-m1, en: "Hi, it's me. I got your voicemail about dinner, but it was all crackly. Do you mean Thursday or Tuesday?", ja: "もしもし、ぼく。夕飯の留守電聞いたけど、音がガサガサで。木曜ってこと？ それとも火曜？" }
-      - { who: tia, cast: us-f2, en: "Tuesday! Tues-day. The day after Monday.", tts: "Tuesday! Tues, day. The day after Monday.", ja: "火曜！ か・よ・う。月曜の次の日。" }
-      - { who: teddy, cast: us-m1, en: "Ha, got it. Okay, I won't keep you. Talk soon!", ja: "はは、了解。じゃあ、引き止めないよ。またね！" }
+      - { who: teddy, cast: us-m6, en: "Hi, it's me. I got your voicemail about dinner, but it was all crackly. Do you mean Thursday or Tuesday?", ja: "もしもし、ぼく。夕飯の留守電聞いたけど、音がガサガサで。木曜ってこと？ それとも火曜？" }
+      - { who: tia, cast: us-f4, en: "Tuesday! Tues-day. The day after Monday.", tts: "Tuesday! Tues, day. The day after Monday.", ja: "火曜！ か・よ・う。月曜の次の日。" }
+      - { who: teddy, cast: us-m6, en: "Ha, got it. Okay, I won't keep you. Talk soon!", ja: "はは、了解。じゃあ、引き止めないよ。またね！" }
   - id: kr-so-thats
     lv: 3
     type: reply
     speaker: gayle
     voice: us
-    cast: us-f1
+    cast: us-f5
     en: "So that's seven at Hachiko, right? The statue, not the exit. Text me if you're running late."
     ja: "じゃあ7時にハチ公ね？ 出口じゃなくて像のほう。遅れそうならメッセージして。 →「了解。じゃあ7時に！」"
     note: "So that's 〜? は 確認。Will do で うけて おわる"
@@ -186,7 +186,7 @@ items:
     type: num
     speaker: marina
     voice: us
-    cast: us-f1
+    cast: us-f5
     en: "I'm in apartment 302. No, sorry, I meant 203. I always mix them up. Two, oh, three. Text me when you're downstairs."
     tts: "I'm in apartment three oh two. No, sorry, I meant two oh three. I always mix them up. Two, oh, three. Text me when you're downstairs."
     ja: "302号室。あ、ごめん、203だった。いつも逆にしちゃう。に、ゼロ、さん。下に着いたらメッセージしてね。"
@@ -217,14 +217,14 @@ items:
     tags: { seed: 51, register: friend, pragmatic: literal, conditions: [phone, street], features: [contraction] }
     lines:
       - { who: bea, cast: us-f1, en: "Hey! I'm at the café already, upstairs by the window. Where are you?", ja: "もしもし！ もうカフェにいるよ、2階の窓ぎわ。どこにいる？" }
-      - { who: lucky, cast: us-m1, en: "Sorry, say that again? The traffic's crazy out here.", ja: "ごめん、もう一回いって？ 外の車がすごくて。" }
+      - { who: lucky, cast: us-m4, en: "Sorry, say that again? The traffic's crazy out here.", ja: "ごめん、もう一回いって？ 外の車がすごくて。" }
       - { who: bea, cast: us-f1, en: "Up-stairs. By the window. Anyway, see you in a sec!", tts: "Up... stairs. By the window. Anyway, see you in a sec!", ja: "に・か・い。窓ぎわ。じゃ、またすぐね！" }
   - id: dk-wrong-time
     lv: 3
     type: gist
     speaker: wolfgang
     voice: us
-    cast: us-m3
+    cast: us-m5
     en: "So we're meeting at Shibuya at 6:30, right? Sorry? It's so loud in here. Did you say Shibuya? Wait, no, Ebisu. East exit. And it's 7:30, not 6:30. Sorry, long day. Ebisu, 7:30, east exit. Got it. Text me when you're there."
     ja: "恵比寿、7時半、東口。"
     note: "場所も 時間も 言いなおし。最後の くりかえしで 確認"
@@ -236,9 +236,9 @@ items:
     cond: { kind: cafe, level: heavy }
     tags: { seed: 51, register: friend, pragmatic: literal, conditions: [cafe], features: [numbers, self-repair] }
     lines:
-      - { who: wolfgang, cast: us-m3, en: "So we're meeting at Shibuya at 6:30, right?", tts: "So we're meeting at Shibuya at six thirty, right?", ja: "じゃあ渋谷に6時半だよね？" }
+      - { who: wolfgang, cast: us-m5, en: "So we're meeting at Shibuya at 6:30, right?", tts: "So we're meeting at Shibuya at six thirty, right?", ja: "じゃあ渋谷に6時半だよね？" }
       - { who: nana, cast: us-f2, en: "Sorry? It's so loud in here. Did you say Shibuya?", ja: "え？ ここすごくうるさくて。渋谷って言った？" }
-      - { who: wolfgang, cast: us-m3, en: "Wait, no, Ebisu. East exit. And it's 7:30, not 6:30. Sorry, long day.", tts: "Wait, no, Ebisu. East exit. And it's seven thirty, not six thirty. Sorry, long day.", ja: "待って、ちがう、恵比寿。東口。それに6時半じゃなくて7時半。ごめん、今日は疲れてて。" }
+      - { who: wolfgang, cast: us-m5, en: "Wait, no, Ebisu. East exit. And it's 7:30, not 6:30. Sorry, long day.", tts: "Wait, no, Ebisu. East exit. And it's seven thirty, not six thirty. Sorry, long day.", ja: "待って、ちがう、恵比寿。東口。それに6時半じゃなくて7時半。ごめん、今日は疲れてて。" }
       - { who: nana, cast: us-f2, en: "Ebisu, 7:30, east exit. Got it. Text me when you're there.", tts: "Ebisu, seven thirty, east exit. Got it. Text me when you're there.", ja: "恵比寿、7時半、東口。了解。着いたらメッセージして。" }
   - id: kn-order-no
     lv: 3
@@ -261,7 +261,7 @@ items:
     type: mean
     speaker: francine
     voice: us
-    cast: us-f3
+    cast: us-f4
     en: "It's kind of a hike. What I mean is, it's a twenty-minute walk, so maybe grab a taxi."
     tts: "It's kinda a hike. What I mean is, it's a twenty-minute walk, so maybe grab a taxi."
     ja: "タクシーを使うくらい遠い。"
@@ -277,7 +277,7 @@ items:
     type: reply
     speaker: wolfgang
     voice: us
-    cast: us-m3
+    cast: us-m5
     en: "Sorry, I didn't catch that. Did you want it warmed up?"
     ja: "すみません、聞き取れなくて。温めますか？ →「はい、温めてください。」"
     note: "店員も 聞きかえす。warmed up＝温める"
@@ -291,7 +291,7 @@ items:
     type: next
     speaker: agnes
     voice: us
-    cast: us-f1
+    cast: us-f5
     en: "Oh, the bakery we talked about? It's on the left after the bridge. Wait, do you mean the big bridge or the little one? The big one. And sorry, I meant before the bridge, not after. If you see the river, you've gone too far."
     ja: "あ、橋の手前ね。ありがとう！"
     note: "after ではなく before。訂正の あとが 正解"
@@ -303,9 +303,9 @@ items:
     cond: { kind: street, level: light }
     tags: { seed: 4, register: friend, pragmatic: literal, conditions: [street], features: [self-repair, contrast] }
     lines:
-      - { who: agnes, cast: us-f1, en: "Oh, the bakery we talked about? It's on the left after the bridge.", ja: "ああ、話してたパン屋？ 橋をこえて左だよ。" }
-      - { who: kicks, cast: us-m1, en: "Wait, do you mean the big bridge or the little one?", ja: "待って、大きい橋？ 小さいほう？" }
-      - { who: agnes, cast: us-f1, en: "The big one. And sorry, I meant before the bridge, not after. If you see the river, you've gone too far.", ja: "大きいほう。それとごめん、橋の手前だった、あとじゃなくて。川が見えたら行きすぎ。" }
+      - { who: agnes, cast: us-f5, en: "Oh, the bakery we talked about? It's on the left after the bridge.", ja: "ああ、話してたパン屋？ 橋をこえて左だよ。" }
+      - { who: kicks, cast: us-m4, en: "Wait, do you mean the big bridge or the little one?", ja: "待って、大きい橋？ 小さいほう？" }
+      - { who: agnes, cast: us-f5, en: "The big one. And sorry, I meant before the bridge, not after. If you see the river, you've gone too far.", ja: "大きいほう。それとごめん、橋の手前だった、あとじゃなくて。川が見えたら行きすぎ。" }
   - id: kw-meant
     lv: 3
     type: word
@@ -340,7 +340,7 @@ items:
     type: word
     speaker: kicks
     voice: us
-    cast: us-m1
+    cast: us-m4
     en: "Sorry, could you say that again?"
     tts: "Sorry, couldja say that again?"
     ja: "ごめん、もう一回言ってくれる？"
@@ -382,7 +382,7 @@ items:
     type: word
     speaker: tia
     voice: us
-    cast: us-f2
+    cast: us-f4
     en: "So that's Saturday at noon, right?"
     ja: "じゃあ土曜の正午ね？"
     note: "So that's は 一気に「ソザッツ」"
@@ -395,7 +395,7 @@ items:
     type: num
     speaker: ken
     voice: us
-    cast: us-m2
+    cast: us-m6
     en: "That'll be $15.80. Sorry? Yeah, fifteen eighty. You can just tap your card."
     tts: "That'll be fifteen eighty. Sorry? Yeah, fifteen eighty. You can just tap your card."
     ja: "15ドル80セントです。え？ はい、15ドル80。カードはタッチでどうぞ。"
@@ -426,7 +426,7 @@ items:
     type: reply
     speaker: tammy
     voice: us
-    cast: us-f3
+    cast: us-f6
     en: "Sorry, it's so loud in here! Did you say you're getting the curry or the pasta?"
     ja: "ごめん、ここすごい騒がしくて！ カレーって言った？ パスタ？ →「カレーで！」"
     note: "A or B の 質問。どちらかを はっきり"
@@ -440,7 +440,7 @@ items:
     type: num
     speaker: kicks
     voice: us
-    cast: us-m1
+    cast: us-m4
     en: "Movie's at 6:40. Wait, no, 6:14. Actually, no, it's 6:40. I was looking at yesterday's times."
     tts: "Movie's at six forty. Wait, no, six fourteen. Actually, no, it's six forty. I was looking at yesterday's times."
     ja: "映画は6時40分。いや、6時14分。やっぱりちがう、6時40分。昨日の時間を見てた。"
@@ -456,7 +456,7 @@ items:
     type: mean
     speaker: lucky
     voice: us
-    cast: us-m1
+    cast: us-m4
     en: "Can you grab the blue bag? Not the blue one, sorry, I meant the gray one, by the door. Anyway, I've got to run. See you at home!"
     tts: "Can you grab the blue bag? Not the blue one, sorry, I meant the gray one, by the door. Anyway, I've gotta run. See you at home!"
     ja: "ドアのそばのグレーのかばんを持ってきてほしい。"
