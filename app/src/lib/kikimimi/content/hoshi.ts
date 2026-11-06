@@ -2,8 +2,8 @@
 // unfamiliar topics; infer stance; follow argument structure). Content sprint 2026-11-06 (track D, Broadcast, with
 // some Work and People). Written by a former BBC/NPR producer and EAP lecturer's eye: news-reader density, fast
 // co-hosts, signposting in lectures, hedged academic claims, the speaker's stance (certainty, irony, concession),
-// cultural references and wordplay, dense numbers. Not wired in yet: the integrator adds ITEMS and DIALOGUES to the
-// bank, merges HOSHI_CAST into bank4.ts CAST and assigns the real level.
+// cultural references and wordplay, dense numbers. Level 7 (content/index.ts folds it into the bank; its villagers'
+// voices are in bank4.ts CAST).
 //   Families (FAMILY): news bulletins and headlines (evergreen, no real politicians), radio and podcast talk, mini-
 // lectures, documentary narration, debates and panels, interviews, TED-style talks, cultural references and
 // wordplay, dense statistics, and stance.
@@ -17,30 +17,11 @@
 //   `en` is shown (UK spelling for UK and AU voices), `tts` is spoken when it differs (§9: every number written out,
 //   reductions spelled as said). `note` is the trap (≤ 40 字).
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, CastId, Channel, Item, ItemType, Level, Line, SceneId, Tags } from '../bank.ts';
+import type { Accent, CastId, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
 import { CAST } from '../bank4.ts';
 
-/** The level these items carry for now. The integrator assigns the real level: ほし is above level 4, and the
- *  protocol's QuizLv stops at 5, so 6 is a placeholder outside it (cast through number on purpose). */
-const HOSHI_LV = 6 as number as Level;
-
-/** Voices for villagers this file adds (not in bank4.ts CAST yet; the integrator merges them). Accent and gender as
- *  CAST's rules: the slot exists (speech.ts SLOTS), the gender is the villager's; a villager another set also casts
- *  (mori-life.ts CAST_ML, yama-b.ts CAST_YB) has the same voice here. */
-export const HOSHI_CAST: Readonly<Partial<Record<RosterId, CastId>>> = {
-  poppy: 'us-f1', agnes: 'us-f1', marina: 'us-f1',
-  tia: 'us-f2', katt: 'us-f2',
-  pekoe: 'us-f3',
-  sterling: 'us-m1',
-  henry: 'us-m2', shep: 'us-m2', lopez: 'us-m2', ken: 'us-m2',
-  curt: 'au-m1',
-  freya: 'uk-f1', vivian: 'uk-f1',
-  kidd: 'uk-m1', curlos: 'uk-m1', chief: 'uk-m1',
-  tex: 'uk-m2', static: 'uk-m2',
-  phoebe: 'au-f1', charlise: 'au-f1',
-  gruff: 'au-m1',
-  walker: 'au-m2'
-};
+/** ほし's level (docs/kikimimi.md "Levels 6 and 7"): 7, above やま (6). */
+const HOSHI_LV: Level = 7;
 
 export type Family = 'news' | 'radio' | 'lecture' | 'documentary' | 'debate' | 'interview' | 'talk' | 'culture' | 'stats' | 'stance';
 
@@ -48,7 +29,7 @@ const MEAN_ASK = 'つまり、どういうこと？';
 const NEXT_ASK = 'つぎの ひとことは？';
 
 const castOf = (who: RosterId): CastId => {
-  const cast = CAST[who] ?? HOSHI_CAST[who];
+  const cast = CAST[who];
   if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
   return cast;
 };
@@ -59,6 +40,48 @@ const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic
 type Extra = { tts?: string; focus?: string; ask?: string; scene?: SceneId; channel?: Channel };
 type Row = readonly [type: Exclude<ItemType, 'pic'>, id: string, speaker: RosterId, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, extra?: Extra];
 
+// ---- sound marks: every clip with a `tts` (staging.ts's rules: the number as said, the reductions, a swallowed g) ----
+
+const g = (at: string): SoundMark => ['drop', at, 'g'];
+/** clip id (an item's, or a dialogue line's `<item>-<n>`) → its sound marks. */
+const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
+  'ho-rate-hold': [['say', '4.25%', 'four and a quarter percent']],
+  'ho-rail-strike': [['say', '40%', 'FORty per cent'], ['say', '7 p.m.', 'seven p.m.']],
+  'ho-heat-record': [['say', '47', 'forty-seven'], ['say', '1939', 'nineteen thirty-nine']],
+  'ho-quake': [['say', '6.3', 'six point three'], ['say', '4:17', 'four seventeen'], ['say', '60', 'SIXty']],
+  'ho-manuscript': [['say', '900-year-old', 'nine-hundred-year-old'], ['say', '1970s', 'nineteen seventies']],
+  'ho-typhoon': [['say', '150', 'a hundred and fifty'], ['stress', 'relative']],
+  'ho-pod-tangent': [['say', 'going to', 'gonna'], ['say', 'because', "'cause"], ['say', 'and', "an'"]],
+  'ho-pod-downloads': [['say', '980,000', 'nine hundred and eighty thousand'], g('counting')],
+  'ho-cohost-recap': [['say', 'because', "'cause"], ['stress', 'twenty-five']],
+  'ho-traffic-m1': [g('heading'), ['say', 'M1', 'M one'], ['say', '12', 'twelve'], ['say', 'and', "an'"]],
+  'ho-pod-wouldve': [['say', "would've", 'woulda']],
+  'ho-wrap-up': [['say', 'going to have to', 'gonna hafta']],
+  'ho-anchoring': [['say', '65', 'sixty-five'], ['say', 'UN', 'U N']],
+  'ho-empire': [['say', 'AD 117', 'A D one seventeen']],
+  'ho-city-growth': [['say', '1900', 'nineteen hundred'], ['say', '2050', 'twenty fifty']],
+  'ho-whale-heart': [['say', '180', 'a hundred and eighty']],
+  'ho-station-night': [['say', '1 a.m.', 'one a.m.']],
+  'ho-one-sentence': [['say', 'going to', 'gonna']],
+  'ho-school-street': [['say', '8 a.m.', 'eight a.m.']],
+  'ho-knee': [['say', 'going to', 'gonna'], ['say', 'and', "'n'"], ['say', 'you', 'ya']],
+  'ho-summit': [['say', '2 a.m.', 'two a.m.'], ['say', '11', 'eLEVen'], ['stress', '6 7']],
+  'ho-catch-22': [['say', 'Catch-22', 'Catch twenty-two']],
+  'ho-fare': [['say', '1st', 'first'], ['say', '$2.75', 'two seventy-five'], ['say', '$2.90', 'two ninety']],
+  'ho-unemployment': [['say', '4.3%', 'four point three per cent'], ['say', '4.1%', 'four point one'], ['say', '5.2%', 'five point two']],
+  'ho-survey': [['say', '62%', 'sixty-two percent'], ['say', '26%', 'twenty-six percent']],
+  'ho-one-in-three': [['say', '34%', 'thirty-four per cent']],
+  'ho-per-person': [['say', '£1.2 billion', 'one point two billion pounds'], ['say', '£18', 'eighteen pounds']],
+  'ho-population': [['say', '0.4%', 'zero point four percent'], ['say', '2.3 million', 'two point three million']],
+  'ho-marathon': [['say', '40', 'FORty'], ['say', '90', 'NINEty']],
+  'ho-rounding': [['say', '1.8%', 'one point eight per cent']],
+  'ho-rain-warning': [['say', '120', 'a hundred and twenty'], ['say', '24', 'twenty-four']],
+  'dho-nine-years-1': [['say', 'and', "an'"]],
+  'dho-let-me-finish-3': [['say', 'going to', 'gonna']],
+  'dho-reported-crime-1': [['say', '11%', 'eLEVen per cent']],
+  'dho-fewer-dates-2': [['say', '1066', 'ten sixty-six']]
+};
+
 const family: Record<string, Family> = {};
 
 const item = (fam: Family) => ([type, id, speaker, en, ja, note, choices, tags, x = {}]: Row): Item => {
@@ -68,7 +91,8 @@ const item = (fam: Family) => ([type, id, speaker, en, ja, note, choices, tags, 
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : type === 'next' ? NEXT_ASK : undefined);
   return {
     id, lv: HOSHI_LV, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags,
-    ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }), ...(x.scene && { scene: x.scene }), ...(x.channel && { channel: x.channel })
+    ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }), ...(x.scene && { scene: x.scene }), ...(x.channel && { channel: x.channel }),
+    ...(MARKS[id] && { marks: MARKS[id] })
   };
 };
 
@@ -674,10 +698,13 @@ interface DRow {
   channel?: Channel;
 }
 
-const line = ([who, en, ja, tts]: L): Line => ({ who, cast: castOf(who), en, ja, ...(tts && { tts }) });
+const line = (id: string) => ([who, en, ja, tts]: L, n: number): Line => {
+  const marks = MARKS[`${id}-${n + 1}`];
+  return { who, cast: castOf(who), en, ja, ...(tts && { tts }), ...(marks && { marks }) };
+};
 
 const dialogue = (r: DRow): Item => {
-  const lines = r.lines.map(line);
+  const lines = r.lines.map(line(r.id));
   family[r.id] = r.fam;
   return {
     id: r.id, lv: HOSHI_LV, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,

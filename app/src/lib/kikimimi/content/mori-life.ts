@@ -8,30 +8,13 @@
 //   Same shape as bank4.ts and dialogues.ts (a level-4 `Item`; `lv` is one constant, LV, for the integrator to move),
 // but staged here: each row carries its scene (or null), its channel only where the conditions don't give it, and the
 // sound marks of every clip with a `tts` (staging.ts's rules, which this file can't add to). Ids: `ml-` and `dml-`.
-//   Voices: a villager's cast voice is bank4.ts CAST's; the ones new here are in CAST_ML (same slots: US 3 a gender, UK
-// and AU 1 woman and 2 men), to be merged into CAST when this file is wired in.
+//   Voices: a villager's cast voice is bank4.ts CAST's (the villagers this set added are there too).
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Accent, CastId, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
 import { CAST } from '../bank4.ts';
 
-/** The level these are filed under (もり sits in level 4 「かわ・もり」 today). */
+/** The level these are filed under (もり, level 4). */
 const LV: Level = 4;
-
-/** Cast voices for the villagers this file adds (none of them is in CAST). */
-export const CAST_ML: Readonly<Partial<Record<RosterId, CastId>>> = {
-  tangy: 'us-f1', gayle: 'us-f1', bea: 'us-f1',
-  tia: 'us-f2', nana: 'us-f2',
-  francine: 'us-f3', tammy: 'us-f3',
-  kabuki: 'us-m1', teddy: 'us-m1', lucky: 'us-m1',
-  lopez: 'us-m2', ken: 'us-m2', zucker: 'us-m2',
-  wolfgang: 'us-m3', octavian: 'us-m3', frett: 'us-m3',
-  olivia: 'uk-f1', portia: 'uk-f1', pashmina: 'uk-f1',
-  keaton: 'uk-m1', cyrano: 'uk-m1',
-  jacques: 'uk-m2', admiral: 'uk-m2',
-  melba: 'au-f1', sylvia: 'au-f1', kitt: 'au-f1',
-  curt: 'au-m1', al: 'au-m1',
-  bud: 'au-m2'
-};
 
 /** The life family an item belongs to (coverage; the seed is the nearest §5.5 scenario). */
 export type Family = 'shop' | 'food' | 'hotel' | 'travel' | 'health' | 'bank' | 'home' | 'delivery' | 'office' | 'gym' | 'salon' | 'neighbour' | 'emergency';
@@ -63,7 +46,7 @@ const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic
 const g = (at: string): SoundMark => ['drop', at, 'g'];
 
 const castOf = (who: RosterId): CastId => {
-  const cast = CAST[who] ?? CAST_ML[who];
+  const cast = CAST[who];
   if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
   return cast;
 };

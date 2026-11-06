@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
-import { BANK, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitFocus, type ItemType, type Level } from './bank.ts';
+import { BANK, DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitFocus, type Item, type ItemType, type Level } from './bank.ts';
 import { CAST } from './bank4.ts';
 import { LEVELS, MIX, mixes } from './deck.ts';
 import { CLIPS } from './clips.ts';
@@ -13,6 +13,12 @@ import { RUNG_ITEMS } from './ladder.ts';
 const STATIC = join(import.meta.dirname, '../../../static');
 const words = (s: string) => s.toLowerCase().match(/[a-z0-9',]+/g) ?? [];
 const has = (en: string, phrase: string) => ` ${words(en).join(' ')} `.includes(` ${words(phrase).join(' ')} `);
+/** A clip's length cap by level (s): 8 a line; a PA's chime and hall add ~3; the アナウンス pack's announcements 18;
+ *  やま's denser turns 11; ほし's 2-4 sentences (news, talks, a lecture's point) 22. */
+const clipCap = (it: Item): number => {
+  const pa = channelOf(it) === 'pa' ? 3 : 0;
+  return it.lv === 5 ? 18 : it.lv === 7 ? 22 + pa : it.lv === 6 ? 11 + pa : 8 + pa;
+};
 
 describe('kikimimi bank', () => {
   it('has unique, file-safe ids', () => {
@@ -22,7 +28,12 @@ describe('kikimimi bank', () => {
   });
 
   it('has at least 40 items per level, enough of each type for a game', () => {
-    for (const lv of [1, 2, 3, 4] as Level[]) {
+    // the fixed counts: levels 1-3's first bank; level 4 bank4.ts 67 + dialogues.ts 24 + もり's 85 + 85 (content/); level 5
+    // the アナウンス pack; 6 やま's 100 + 100; 7 ほし's 115
+    const count = (lv: Level) => BANK.filter((it) => it.lv === lv).length;
+    expect([1, 2, 3, 4, 5, 6, 7].map((lv) => count(lv as Level))).toEqual([46, 49, 49, 261, 30, 200, 115]);
+    expect(count(8)).toBe(0);
+    for (const lv of [1, 2, 3, 4, 6, 7] as Level[]) {
       const items = BANK.filter((it) => it.lv === lv);
       expect(items.length, `level ${lv}`).toBeGreaterThanOrEqual(40);
       const n = (t: ItemType) => items.filter((it) => it.type === t).length;
@@ -67,10 +78,11 @@ describe('kikimimi bank', () => {
     }
   });
 
-  it('accents: level 1 US only, level 2 adds UK, level 3 adds AU (and uses all three), levels 4 and 5 all three', () => {
-    const allowed: Partial<Record<Level, string[]>> = { 1: ['us'], 2: ['us', 'uk'], 3: ['us', 'uk', 'au'], 4: ['us', 'uk', 'au'], 5: ['us', 'uk', 'au'] };
+  it('accents: level 1 US only, level 2 adds UK, level 3 adds AU (and uses all three), levels 4-7 all three', () => {
+    const all = ['us', 'uk', 'au'];
+    const allowed: Partial<Record<Level, string[]>> = { 1: ['us'], 2: ['us', 'uk'], 3: all, 4: all, 5: all, 6: all, 7: all };
     for (const it of BANK) expect(allowed[it.lv], it.id).toContain(it.voice);
-    for (const lv of [1, 2, 3, 4, 5] as Level[]) expect(new Set(BANK.filter((it) => it.lv === lv).map((it) => it.voice)).size).toBe(Math.min(lv, 3));
+    for (const lv of [1, 2, 3, 4, 5, 6, 7] as Level[]) expect(new Set(BANK.filter((it) => it.lv === lv).map((it) => it.voice)).size).toBe(Math.min(lv, 3));
   });
 
   it('splitFocus and jaLines: the focus marked in place; a reply on two lines, the question, then → the reply', () => {
@@ -79,8 +91,9 @@ describe('kikimimi bank', () => {
     expect(splitFocus({ en: 'Hello.' })).toEqual(['Hello.', '', '']);
     for (const it of BANK) {
       expect(splitFocus(it).join(''), it.id).toBe(it.en);
-      // (a single-clip gist, level 5's, too: its answer on the second line)
-      const lines = jaLines(it), two = it.type === 'reply' || it.type === 'mean' || (it.type === 'gist' && !isDialogue(it));
+      // (a single-clip gist, level 5's, too: its answer on the second line; ほし's single gists and nexts show their
+      // transcript only, the answer in English beside it)
+      const lines = jaLines(it), two = it.type === 'reply' || it.type === 'mean' || (it.type === 'gist' && it.lv === 5);
       expect(lines.length, it.id).toBe(two ? 2 : 1);
       if (it.type === 'reply') expect(lines[1], it.id).toMatch(/^→ 「.+」$/);
       expect(it.ja.split('→').length, it.id).toBe(two ? 2 : 1);
@@ -116,7 +129,7 @@ describe('kikimimi bank', () => {
     }
   });
 
-  it('levels 4-5: a cast voice of its accent and its speaker’s gender, one per villager, all 12 used', () => {
+  it('levels 4-7: a cast voice of its accent and its speaker’s gender, one per villager, all 12 used', () => {
     const l4 = BANK.filter((it) => it.lv >= 4);
     for (const it of l4) {
       expect(it.cast, it.id).toBe(CAST[it.speaker]);
@@ -131,7 +144,7 @@ describe('kikimimi bank', () => {
     for (const it of BANK.filter((it) => it.lv < 4)) expect(it.cast, it.id).toBeUndefined();
   });
 
-  it('levels 4-5: a scenario (seed 1-66, register, pragmatics), a note ≤ 40 字, and no reused distractor', () => {
+  it('levels 4-7: a scenario (seed 1-66, register, pragmatics), a note ≤ 40 字, and no reused distractor', () => {
     for (const it of BANK.filter((it) => it.lv >= 4)) {
       expect(it.tags, it.id).toBeDefined();
       expect(Number.isInteger(it.tags!.seed) && it.tags!.seed >= 1 && it.tags!.seed <= 66, it.id).toBe(true);
@@ -139,7 +152,7 @@ describe('kikimimi bank', () => {
       expect(it.note, it.id).toBeTruthy();
       expect([...it.note!].length, `${it.id}: ${it.note}`).toBeLessThanOrEqual(40);
       expect(it.ja, it.id).toMatch(/[ぁ-んァ-ン一-龯]/);
-      if (it.type === 'reply' || it.type === 'mean' || (it.type === 'gist' && !isDialogue(it))) expect(it.ja, it.id).toContain('→');
+      if (it.type === 'reply' || it.type === 'mean' || (it.type === 'gist' && it.lv === 5)) expect(it.ja, it.id).toContain('→');
     }
   });
 
@@ -152,12 +165,14 @@ describe('kikimimi bank', () => {
     for (const it of BANK.filter((it) => it.lv >= 4 && !isDialogue(it))) expect(/[0-9£$¥%]/.test(it.en) ? it.tts : 'none', it.id).toBeTruthy();
   });
 
-  it('dialogues: 24 (12 gist, 12 next), 2-4 lines between two villagers taking turns, each with its cast voice, its Japanese and its spoken text', () => {
+  it('dialogues: 24 + 30 at level 4, 40 at 6, 25 at 7 (gist and next), 2-4 lines between two villagers taking turns, each with its cast voice, its Japanese and its spoken text', () => {
     expect(DIALOGUES).toHaveLength(24);
     expect(DIALOGUES.filter((it) => it.type === 'gist')).toHaveLength(12);
     expect(DIALOGUES.filter((it) => it.type === 'next')).toHaveLength(12);
-    expect(BANK.filter(isDialogue)).toEqual(DIALOGUES);
-    for (const it of DIALOGUES) {
+    const dialogues = BANK.filter(isDialogue);
+    expect([4, 5, 6, 7].map((lv) => dialogues.filter((it) => it.lv === lv).length)).toEqual([54, 0, 40, 25]);
+    for (const it of dialogues) {
+      expect(DIALOGUE_TYPES, it.id).toContain(it.type);
       const lines = it.lines!;
       expect(lines.length, it.id).toBeGreaterThanOrEqual(2);
       expect(lines.length, it.id).toBeLessThanOrEqual(4);
@@ -231,8 +246,7 @@ describe('kikimimi bank', () => {
         const c = CLIPS[id];
         expect(c, id).toBeDefined();
         expect(c.dur, id).toBeGreaterThan(0.5);
-        // a PA's chime and hall add ~2.5 s; the アナウンス pack's announcements run longer
-        expect(c.dur, id).toBeLessThan(it.lv === 5 ? 18 : channelOf(it) === 'pa' ? 11 : 8);
+        expect(c.dur, id).toBeLessThan(clipCap(it));
         expect(c.hash).toMatch(/^[0-9a-f]{8}$/);
         expect(existsSync(join(STATIC, 'audio/kikimimi', `${id}.m4a`)), id).toBe(true);
         const slow = it.lv <= 2;
@@ -245,7 +259,7 @@ describe('kikimimi bank', () => {
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other files, and the clips stay small (each under 60 KB, the アナウンス pack’s long announcements 100 KB, a ladder rung 80 KB; all under 14 MB)', () => {
+  it('ships no other files, and the clips stay small (each under 60 KB; the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB; all under 40 MB)', () => {
     const dir = join(STATIC, 'audio/kikimimi');
     const rungs = new Set(RUNG_ITEMS.map((it) => `${it.id}.m4a`));
     const want = new Set([...BANK.flatMap((it) => clipIds(it).flatMap((id) => [`${id}.m4a`, ...(it.lv <= 2 ? [`${id}-slow.m4a`] : [])])), ...rungs]);
@@ -253,7 +267,10 @@ describe('kikimimi bank', () => {
     expect(files.filter((f) => !want.has(f))).toEqual([]);
     const sizes = files.map((f) => statSync(join(dir, f)).size);
     // (a ladder rung is a whole 5-9 s line, slowed at its foot: 2 a game, 8 clips, ~280 KB fetched in the lobby)
-    for (const [k, f] of files.entries()) expect(sizes[k], f).toBeLessThan((f.startsWith('a5-') ? 100 : rungs.has(f) ? 80 : 60) * 1024);
-    expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(14 * 1024 * 1024);
+    const lvOf = new Map(BANK.flatMap((it) => clipIds(it).map((id) => [`${id}.m4a`, it.lv])));
+    const kb = (f: string) => (rungs.has(f) ? 80 : ({ 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
+    for (const [k, f] of files.entries()) expect(sizes[k], f).toBeLessThan(kb(f) * 1024);
+    // (raised from 14 MB for the content sprint's ~700 clips; increment 9 moves the audio into packs)
+    expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(40 * 1024 * 1024);
   });
 });

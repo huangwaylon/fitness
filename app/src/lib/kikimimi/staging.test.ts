@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { art } from '#lib/art.ts';
 import { BANK, CHANNELS, SCENE_IDS, channelOf, isDialogue, type SoundMark } from './bank.ts';
-import { MARKS, PLACES } from './staging.ts';
+import { MARKS, NOISE, PLACES } from './staging.ts';
+import { CONTENT } from './content/index.ts';
 import { findWords, markKinds, placeMark, soundLine, wordSpans } from './marks.ts';
 import { CLIPS, wordTimes } from './clips.ts';
 import { RUNG_ITEMS } from './ladder.ts';
@@ -14,8 +15,10 @@ import aligned from './words.json';
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const SCRIPT = JSON.parse(readFileSync(join(import.meta.dirname, '../../../scripts/scenes/scenes.json'), 'utf8')) as { scenes: Record<string, string> };
-/** Levels 4 and 5 (the アナウンス pack): the staged levels. */
+/** Levels 4-7 (5 the アナウンス pack): the staged levels. */
 const L4 = BANK.filter((it) => it.lv >= 4);
+/** The content sprint's sets stage their own items (content/): the older banks' staging is PLACES / MARKS / NOISE. */
+const OWN = new Set(CONTENT.map((it) => it.id));
 
 describe('kikimimi scenes', () => {
   it('every scene has its three webps, its manifest entry at the card size, and its prompt', () => {
@@ -26,8 +29,10 @@ describe('kikimimi scenes', () => {
     }
   });
 
-  it('every level-4 and level-5 item is staged: a known scene or none, a valid channel', () => {
-    expect(Object.keys(PLACES).sort()).toEqual(L4.map((it) => it.id).sort());
+  it('every level-4 to level-7 item is staged: a known scene or none, a valid channel', () => {
+    expect(Object.keys(PLACES).sort()).toEqual(L4.filter((it) => !OWN.has(it.id)).map((it) => it.id).sort());
+    // the sets' items carry theirs, never in the tables too
+    for (const t of [PLACES, MARKS, NOISE]) expect(Object.keys(t).filter((id) => OWN.has(id.replace(/-\d+$/, '')) || OWN.has(id))).toEqual([]);
     for (const it of L4) {
       if (it.scene) expect(SCENE_IDS, it.id).toContain(it.scene);
       expect(CHANNELS, it.id).toContain(channelOf(it));
@@ -37,7 +42,9 @@ describe('kikimimi scenes', () => {
     // each frame and most scenes in use
     for (const c of CHANNELS) expect(L4.some((it) => channelOf(it) === c), c).toBe(true);
     for (const s of SCENE_IDS) expect(L4.some((it) => it.scene === s), s).toBe(true);
-    expect(L4.filter((it) => it.scene).length / L4.length).toBeGreaterThan(0.8);
+    // (ほし, level 7, is broadcast: radio, podcasts and TV on the plain stage)
+    const scened = L4.filter((it) => it.lv !== 7);
+    expect(scened.filter((it) => it.scene).length / scened.length).toBeGreaterThan(0.8);
     // levels 1-3 keep the plain stage
     expect(BANK.filter((it) => it.lv < 4 && (it.scene || it.channel || it.marks))).toEqual([]);
   });
@@ -55,7 +62,8 @@ describe('kikimimi sound marks', () => {
   /** Every clip's text and marks: an item's, or each dialogue line's. */
   const clips = L4.flatMap((it) => (isDialogue(it) ? it.lines.map((l, n) => ({ id: `${it.id}-${n + 1}`, en: l.en, tts: l.tts, marks: l.marks })) : [{ id: it.id, en: it.en, tts: it.tts, marks: it.marks }]));
 
-  it('every level-4 and level-5 item and line with a tts respelling has marks, and only those (by their clip ids)', () => {
+  it('every level-4 to level-7 item and line with a tts respelling has marks, and only those (by their clip ids)', () => {
+    expect(clips.filter((c) => c.marks?.length && !c.tts).map((c) => c.id)).toEqual([]);
     expect(clips.filter((c) => c.tts && !c.marks?.length).map((c) => c.id)).toEqual([]);
     expect(Object.keys(MARKS).filter((id) => !clips.some((c) => c.id === id && c.tts))).toEqual([]);
   });

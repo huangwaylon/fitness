@@ -15,6 +15,7 @@ import type { QuizLv } from '../contract/live-protocol.ts';
 import { BANK4 } from './bank4.ts';
 import { BANK5 } from './bank5.ts';
 import { DIALOGUES } from './dialogues.ts';
+import { CONTENT } from './content/index.ts';
 
 /** `mean` (level 4): what the speaker really means, from 3 English paraphrases (the literal reading, the opposite and
  *  a plausible wrong inference as distractors). `gist` and `next` (level 4, dialogues.ts): over a 2-4-line dialogue
@@ -535,5 +536,6 @@ export const BANK: readonly Item[] = [
   ...REPLY.map(([lv, ...r]) => make(lv, 'reply')(r)),
   ...BANK4,
   ...DIALOGUES,
-  ...BANK5
+  ...BANK5,
+  ...CONTENT
 ];

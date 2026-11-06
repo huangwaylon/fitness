@@ -7,7 +7,7 @@ import { LINE_GAP, clipDur, clipUrl, itemDur, sequenceStarts, voiced } from './c
 import { DIALOGUES } from './dialogues.ts';
 
 /** Every level with a bank (deck() builds a gated level's deck too: only the lobby hides it). */
-const LEVELS: Level[] = [1, 2, 3, 4, 5];
+const LEVELS: Level[] = [1, 2, 3, 4, 5, 6, 7];
 const seeds = Array.from({ length: 300 }, (_, i) => (Math.imul(i + 1, 2654435761) >>> 0));
 
 describe('kikimimi deck', () => {
@@ -68,9 +68,9 @@ describe('kikimimi deck', () => {
       // a dialogue keeps its lines; its choices shuffled like any
       for (const it of d.filter(isDialogue)) expect(it.lines.length).toBeGreaterThanOrEqual(2);
     }
-    // today (every dialogue line voiced): level 4's deck has them, and にがて れんしゅう's pool takes them (inMix)
-    for (const s of seeds.slice(0, 50)) expect(deck(s, 4).some((it) => DIALOGUE_TYPES.includes(it.type))).toBe(true);
-    expect(DIALOGUES.every((it) => inMix(it))).toBe(true);
+    // today (もり's new dialogues not voiced yet): level 4's deck goes without them, and so does にがて れんしゅう's pool
+    for (const s of seeds.slice(0, 50)) expect(deck(s, 4).some((it) => DIALOGUE_TYPES.includes(it.type))).toBe(false);
+    expect(DIALOGUES.every((it) => inMix(it))).toBe(false);
     expect(DIALOGUES.every((it) => inMix(it, all))).toBe(true);
   });
 
@@ -85,8 +85,25 @@ describe('kikimimi deck', () => {
   });
 
   it('a level this bank has no mix for (another phone’s newer level) is an empty deck, not a crash', () => {
-    expect(deck(7, 6 as Level)).toEqual([]);
+    expect(deck(7, 8)).toEqual([]);
     expect(deck(7, 5, { ...MIX, 5: undefined })).toEqual([]);
+  });
+
+  it('levels 6 (やま) and 7 (ほし): what’s meant and what’s going on (mean, gist, next, reply 6 of 8), a word and a number; dialogues and ほし’s single clips alike', () => {
+    expect(MIX[6]).toEqual({ reply: 2, mean: 2, gist: 1, next: 1, word: 1, num: 1 });
+    expect(MIX[7]).toEqual({ mean: 2, gist: 2, next: 1, reply: 1, word: 1, num: 1 });
+    for (const lv of [6, 7] as const) {
+      const seen = new Set<string>();
+      let dialogues = 0;
+      for (const s of seeds) {
+        const d = deck(s, lv);
+        dialogues += d.filter(isDialogue).length;
+        for (const it of d) seen.add(it.id);
+      }
+      // over 300 games the seeds reach nearly every item of the level, and dialogues come up in most games
+      expect(seen.size / BANK.filter((it) => it.lv === lv).length, String(lv)).toBeGreaterThan(0.9);
+      expect(dialogues / seeds.length, String(lv)).toBeGreaterThan(lv === 6 ? 1.5 : 1);
+    }
   });
 
   it('level 5, the アナウンス pack: 3 num, 2 gist, 2 mean, 1 reply, single clips (its gists too), never twice in a row', () => {
@@ -106,40 +123,49 @@ describe('kikimimi levels offered (the lobby’s gate)', () => {
   const all = Object.fromEntries(BANK.flatMap((it) => clipIds(it)).map((id) => [id, {}]));
 
   it('a level is offered only once every item of it has a clip', () => {
-    expect(playable(all)).toEqual([1, 2, 3, 4, 5]);
+    expect(playable(all)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     const oneShort: Record<string, unknown> = { ...all };
     delete oneShort[BANK.find((it) => it.lv === 4 && !isDialogue(it))!.id];
-    expect(playable(oneShort)).toEqual([1, 2, 3, 5]);
+    expect(playable(oneShort)).toEqual([1, 2, 3, 5, 6, 7]);
+    // levels 6 and 7 are gated whole: a single line or a dialogue's line missing hides them
+    for (const lv of [6, 7]) {
+      const short: Record<string, unknown> = { ...all };
+      delete short[BANK.find((it) => it.lv === lv && !isDialogue(it))!.id];
+      expect(playable(short), String(lv)).toEqual([1, 2, 3, 4, 5, 6, 7].filter((x) => x !== lv));
+      const lineShort: Record<string, unknown> = { ...all };
+      delete lineShort[clipIds(BANK.find((it) => it.lv === lv && isDialogue(it))!)[1]];
+      expect(playable(lineShort), String(lv)).toEqual([1, 2, 3, 4, 5, 6, 7].filter((x) => x !== lv));
+    }
     expect(playable({})).toEqual([]);
   });
 
   it('the アナウンス pack waits for its clips: one missing and level 5 is hidden, the rest offered as before', () => {
     const packShort: Record<string, unknown> = { ...all };
     delete packShort[BANK.find((it) => it.lv === 5)!.id];
-    expect(playable(packShort)).toEqual([1, 2, 3, 4]);
+    expect(playable(packShort)).toEqual([1, 2, 3, 4, 6, 7]);
     // its gists are single clips: the dialogue gate doesn't wait for them, nor they for it
     expect(mixes(packShort)[4]).toHaveProperty('gist', 1);
     const noPack = Object.fromEntries(BANK.filter((it) => it.lv < 5).flatMap((it) => clipIds(it)).map((id) => [id, {}]));
     expect(mixes(noPack)[4]).toHaveProperty('gist', 1);
   });
 
-  it('dialogues have a gate of their own: level 4 plays without them till every line of every dialogue has a clip', () => {
+  it('dialogues have a gate of their own: level 4 plays without them till every line of every level-4 dialogue has a clip', () => {
     const noDialogues = Object.fromEntries(BANK.filter((it) => !isDialogue(it)).map((it) => [it.id, {}]));
     expect(playable(noDialogues)).toEqual([1, 2, 3, 4, 5]);
     expect(mixes(noDialogues)[4]).toEqual({ word: 2, num: 2, reply: 2, mean: 2 });
     const lineShort: Record<string, unknown> = { ...all };
     delete lineShort[clipIds(DIALOGUES[3])[1]];
     expect(mixes(lineShort)[4]).not.toHaveProperty('gist');
-    expect(playable(lineShort)).toEqual([1, 2, 3, 4, 5]);
+    expect(playable(lineShort)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(mixes(all)[4]).toHaveProperty('gist', 1);
   });
 
   it('never a level without a mix or items, whatever the clips', () => {
-    expect(playable({ ...all, 'x6-anything': {} })).toEqual([1, 2, 3, 4, 5]);
+    expect(playable({ ...all, 'x6-anything': {} })).toEqual([1, 2, 3, 4, 5, 6, 7]);
   });
 
-  it('today: levels 1-5 (level 4 since the neural cast’s clips landed, 5 since the アナウンス pack’s)', () => {
-    expect(OFFERED).toEqual([1, 2, 3, 4, 5]);
+  it('today: levels 1-3 and 5 (4 waits for もり’s new clips, 6 and 7 for theirs: the content sprint’s audio)', () => {
+    expect(OFFERED).toEqual([1, 2, 3, 5]);
   });
 });
 

@@ -8,31 +8,21 @@
 // differs (§9: reductions as said, every number written out), `note` the trap (≤ 40 字), `tags` the scenario (§5.5
 // seed, register, pragmatics, conditions, features). Staging (scene, channel, sound marks) is written on each item
 // here instead of staging.ts, so the integrator can fold it in as is. The right choice is authored first.
-//   Speakers: bank4.ts CAST, plus CAST_YB for villagers new to ききみみ (a voice each, the CAST rules: their gender,
-// one of the 12 slots; the ones mori-life.ts's CAST_ML also casts get the same voice there).
-//   Levels: every item says `lv: 5` for now; the integrator assigns the real level.
+//   Speakers: bank4.ts CAST (this set's new villagers are there too). Level 6 (やま).
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, CastId, Channel, Item, ItemType, Line, SceneId, SoundMark, Tags } from '../bank.ts';
+import type { Accent, CastId, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
 import { CAST } from '../bank4.ts';
-
-/** Voices for this set's villagers who aren't in CAST yet (fold into CAST when wiring in). */
-export const CAST_YB: Readonly<Partial<Record<RosterId, CastId>>> = {
-  marina: 'us-f1', tia: 'us-f2', reneigh: 'us-f3',
-  beau: 'us-m1', fang: 'us-m3',
-  olivia: 'uk-f1', tasha: 'uk-f1', chief: 'uk-m1',
-  faith: 'au-f1', curt: 'au-m1', genji: 'au-m1', cyd: 'au-m2'
-};
 
 /** The content family an item was written for (this set's coverage). */
 export type Family = 'negotiate' | 'complain' | 'disagree' | 'bad-news' | 'meeting' | 'process' | 'recommend' | 'support' | 'medical' | 'contract' | 'money' | 'opinion';
 
-/** The integrator assigns the real level (QuizLv 5 is free room in the protocol). */
-const LV = 5;
+/** やま's level. */
+const LV: Level = 6;
 const MEAN_ASK = 'つまり、どういうこと？';
 const NEXT_ASK = 'つぎの ひとことは？';
 
 const castOf = (who: RosterId): CastId => {
-  const c = CAST[who] ?? CAST_YB[who];
+  const c = CAST[who];
   if (!c) throw new Error(`kikimimi: ${who} has no cast voice`);
   return c;
 };
