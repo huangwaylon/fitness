@@ -2,7 +2,9 @@
 // over it and this phone's queued ones (the model's `pack` rows folded by the record's rules: contract/pack.ts
 // packBookOf, packList), each item's ticks (each person's own, after their own reset), and my changes (each one event,
 // sent at once, its names cleaned as the record keeps them; the record's notice brings them to every open phone). The
-// trip's private values (its `trip_note`) too. Nothing is mine to change until the week's view says who I am (`me`).
+// trip's private values (its `trip_note`) too. Nothing is mine to change until the week's view says who I am (`me`),
+// and nothing at all on a trip that's over (when.ts readOnly: its list the seed, no ops read or sent).
+//   packing.frozen(trip)              the trip is over: read-only
 //   packing.list(trip, seed)          categories (by ord), each with its items (by ord)
 //   packing.addItem / addCat / rename / move              the ✎ edits (the guest: only what it added: packMayEdit)
 //   packing.removeHeld(trip, seed, id, ms)                a removal held for its とりけす
@@ -18,8 +20,11 @@ import type { SendResult } from '#lib/store/backend.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { opClock, world } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';
+import { TRIP_META } from '#lib/travel/trips/meta.ts';
+import { readOnly } from './when.ts';
 
 const EMPTY: readonly PackEntry[] = [];
+const NO_OPS = packBookOf(EMPTY);
 
 class Packing {
   #last = 0;
@@ -33,8 +38,14 @@ class Packing {
     return packBookOf(week.model?.state.pack ?? EMPTY);
   }
 
+  /** The trip is over (on the relay's clock, or a `?date=` preview's): its list frozen. */
+  frozen(trip: string): boolean {
+    const m = TRIP_META.find((x) => x.id === trip);
+    return !!m && readOnly(m, world.now());
+  }
+
   list(trip: string, seed: PackSeed | null | undefined): PackCat[] {
-    return packList(trip, seed, this.#book);
+    return packList(trip, seed, this.frozen(trip) ? NO_OPS : this.#book);
   }
 
   /** The trip note's values by key (`{p:key}` tokens in the guide), or null: none yet. */
@@ -42,8 +53,12 @@ class Packing {
     return tripNoteOf(trip, this.#book);
   }
 
-  #may(x: PackItem | PackCat): boolean {
-    const me = this.me;
+  /** Who may change the trip's list: me, once known, unless it's over. */
+  #me(trip: string): Who | null {
+    return this.frozen(trip) ? null : this.me;
+  }
+  #may(trip: string, x: PackItem | PackCat): boolean {
+    const me = this.#me(trip);
     return !!me && packMayEdit(me, x);
   }
 
@@ -82,7 +97,7 @@ class Packing {
   /** Add an item at the end of a category: its id, or null (nothing to add, or the phone can't send). */
   addItem(trip: string, seed: PackSeed | null | undefined, cat: string, text: string, locale: Locale): string | null {
     const c = this.list(trip, seed).find((x) => x.id === cat);
-    const name = cleanLine(text, PACK_NAME), me = this.me;
+    const name = cleanLine(text, PACK_NAME), me = this.#me(trip);
     if (!c || !name || !me) return null;
     const at = this.#now(), id = newPackId(at);
     const ok = week.send('pack', { trip, id, at, kind: 'item', cat, ord: ordBetween(c.items.at(-1)?.ord, undefined), name: { [locale]: name }, by: me }).ok;
@@ -91,7 +106,7 @@ class Packing {
 
   /** Add a category at the end: its id, or null. */
   addCat(trip: string, seed: PackSeed | null | undefined, text: string, locale: Locale): string | null {
-    const name = cleanLine(text, PACK_NAME), me = this.me;
+    const name = cleanLine(text, PACK_NAME), me = this.#me(trip);
     if (!name || !me) return null;
     const at = this.#now(), id = newPackId(at);
     const ok = week.send('pack', { trip, id, at, kind: 'cat', ord: ordBetween(this.list(trip, seed).at(-1)?.ord, undefined), name: { [locale]: name }, icon: 'shopping-bag', by: me }).ok;
@@ -103,7 +118,7 @@ class Packing {
     const f = this.#find(trip, seed, id);
     const x = f?.item ?? f?.cat;
     const name = cleanLine(text, PACK_NAME);
-    if (!x || !name || !this.#may(x)) return false;
+    if (!x || !name || !this.#may(trip, x)) return false;
     if (x.name[locale] === name) return true;
     return week.send('pack', this.#setOf(trip, x, { name: { [locale]: name } })).ok;
   }
@@ -115,7 +130,7 @@ class Packing {
     const f = this.#find(trip, seed, id);
     if (!f) return false;
     const x = f.item ?? f.cat;
-    if (!this.#may(x)) return false;
+    if (!this.#may(trip, x)) return false;
     const sibs: (PackCat | PackItem)[] = (f.item ? f.cat.items : f.list).filter((s) => s.id !== id);
     const i = Math.max(0, Math.min(index, sibs.length));
     const ord = ordBetween(sibs[i - 1]?.ord, sibs[i]?.ord);
@@ -123,7 +138,7 @@ class Packing {
       if (ord === x.ord) return true;
       return week.send('pack', this.#setOf(trip, x, { ord })).ok;
     }
-    if (!sibs.every((s) => this.#may(s))) return false;
+    if (!sibs.every((s) => this.#may(trip, s))) return false;
     sibs.splice(i, 0, x);
     week.sendMany('pack', sibs.flatMap((s, n) => (s.ord === n ? [] : [this.#setOf(trip, s, { ord: n })])));
     return true;
@@ -133,13 +148,13 @@ class Packing {
    *  (the 🗑's とりけす: the result's `undo` takes it back meanwhile, as store/look.ts deleteLook). */
   removeHeld(trip: string, seed: PackSeed | null | undefined, id: string, holdMs: number): SendResult {
     const f = this.#find(trip, seed, id);
-    if (!f || !this.#may(f.item ?? f.cat)) return { ok: false };
+    if (!f || !this.#may(trip, f.item ?? f.cat)) return { ok: false };
     return week.send('pack', { trip, id, at: this.#now(this.#heldAt(trip, id)), rm: true }, holdMs > 0 ? { holdMs } : {});
   }
 
   /** Tick (or untick) an item: mine only. */
   tick(trip: string, id: string, on: boolean): boolean {
-    const me = this.me;
+    const me = this.#me(trip);
     if (!me) return false;
     // after my last tick of it and my reset (a tick no later than the reset would be off)
     const b = this.#book, held = b.rows.get(`pack_chk|${trip}|${id}|${me}`), reset = b.rows.get(`pack_reset|${trip}|${me}`);
@@ -148,7 +163,7 @@ class Packing {
 
   /** Untick all of mine (the others' ticks stay), held `holdMs` for its とりけす as removeHeld. */
   resetHeld(trip: string, holdMs: number): SendResult {
-    const me = this.me;
+    const me = this.#me(trip);
     if (!me) return { ok: false };
     // after my last reset and every tick of mine it clears (one stamped ahead of this clock, by another phone of mine
     // or the demo's preview day, would outlive a reset stamped on it)

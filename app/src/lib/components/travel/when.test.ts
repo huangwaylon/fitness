@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { phaseOf, rowMin, rowNow, sortTrips, todayDay } from './when.ts';
+import { phaseOf, readOnly, rowMin, rowNow, sortTrips, todayDay } from './when.ts';
 import { okinawa } from '#lib/travel/trips/okinawa.ts';
 import { nz } from '#lib/travel/trips/nz.ts';
 import { seattle } from '#lib/travel/trips/seattle.ts';
@@ -92,5 +92,15 @@ describe('the row that is now', () => {
     expect(todayDay(nz, nzdt('2027-02-17T00:20'))).toBe(6);
     // and once the plane is well gone, nothing
     expect(rowNow(nz, nzdt('2027-02-17T09:00'))).toBeNull();
+  });
+});
+
+describe('read-only (a trip that’s over)', () => {
+  it('is the past phase, for every trip: Okinawa and Seattle now, NZ once its flight home is done', () => {
+    const now = jst('2026-11-07T12:00');
+    expect([okinawa, seattle, nz].map((t) => readOnly(t, now))).toEqual([true, true, false]);
+    expect(readOnly(okinawa, jst('2026-10-12T12:00'))).toBe(false);
+    expect(readOnly(nz, nzdt('2027-02-17T00:30'))).toBe(false);
+    expect(readOnly(nz, nzdt('2027-02-18T12:00'))).toBe(true);
   });
 });

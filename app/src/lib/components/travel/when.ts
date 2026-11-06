@@ -34,6 +34,11 @@ export function phaseOf(trip: Clock, now: number): Phase {
   return to > 0 ? { k: 'soon', days: to } : { k: 'past' };
 }
 
+/** A trip that's over is read-only (the user, 2026-11-07: "they are finished"): its packing list the seed, frozen (no
+ *  ticks, no edits, nothing read from or sent to the relay); nothing else on it changes either. The one rule, for
+ *  every trip (NZ too, once it's over). */
+export const readOnly = (trip: Clock, now: number): boolean => phaseOf(trip, now).k === 'past';
+
 /** The list's order: on now first, then the coming ones soonest first, then the past newest first (おもいで). */
 export function sortTrips<T extends Clock>(trips: readonly T[], now: number): { coming: T[]; past: T[] } {
   const coming = trips.filter((t) => phaseOf(t, now).k !== 'past').sort((a, b) => a.start.localeCompare(b.start));
