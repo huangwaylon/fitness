@@ -1,7 +1,7 @@
 // NH's dialogue box (docs/design.md "Dialogue"): the speech balloon and the catch plate type their text in, two lines a
 // page; a tap finishes the page, the next turns it (a ▼ bobs only while a page follows), the last tap closes it.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
-import { reelOnBite, tapFigure, toTheWater } from './island.ts';
+import { castIn, reelOnBite, tapFigure } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -64,8 +64,7 @@ test('the catch plate pages NH’s catch line (two lines a page) and, on a first
   await expect(hudMenu(page)).toBeVisible();
   await expect(page.locator('[data-critter="fish"]')).toBeAttached();
   // from the beach by the shadow (NH casts from where it stands)
-  const [fx, fy] = await toTheWater(page, 'sea');
-  await page.mouse.click(fx, fy);
+  const [fx, fy] = await castIn(page, 'sea');
   const bobber = page.locator('[data-bobber]');
   // the reel the moment it bites (e2e/island.ts reelOnBite)
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed

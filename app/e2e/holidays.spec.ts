@@ -2,7 +2,7 @@
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day,
 // Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, controlsUnder, fossilOnScreen, reelOnBite, stageCam, tapFigure, tapOn, toTheWater } from './island.ts';
+import { camTo, castIn, controlsUnder, fossilOnScreen, reelOnBite, stageCam, tapFigure, tapOn } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
@@ -51,8 +51,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
   await camTo(page, 114, false);
   // fish one: from the beach by the shadow (NH casts from where it stands), cast beside it, reel in on the bite
   await expect(page.locator('[data-critter="fish"]')).toBeAttached();
-  const [fx, fy] = await toTheWater(page, 'sea');
-  await page.mouse.click(fx, fy);
+  const [fx, fy] = await castIn(page, 'sea');
   // the reel the moment it bites (e2e/island.ts reelOnBite)
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
   const b = await at(page, '[data-bobber]');

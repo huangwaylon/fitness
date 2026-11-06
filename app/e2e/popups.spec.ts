@@ -3,7 +3,7 @@
 // least 12px from the screen's sides and foot and never sit over the HUD (the leaf, the bowl, the health button, the sync chip,
 // the say button). The catch plates stack at the bottom centre, the newest at the bottom, and go on their own.
 import { expect, test, type Page } from './fixtures.ts';
-import { quiet, reelOnBite, toTheWater } from './island.ts';
+import { castIn, quiet, reelOnBite } from './island.ts';
 import { hudMenu } from './hud.ts';
 
 const centre = (page: Page, sel: string) =>
@@ -66,8 +66,7 @@ for (const [w, h] of [[390, 844]] as const)
       await open(page, 'date=2026-11-04T21:00&critter=sea-bass');
       await expect(page.locator('[data-critter="fish"]')).toBeAttached();
       // from the beach by the shadow (NH casts from where it stands)
-      const [fx, fy] = await toTheWater(page, 'sea');
-      await page.mouse.click(fx, fy);
+      const [fx, fy] = await castIn(page, 'sea');
       // the reel, the moment it bites (the bobber's where the cast put it)
       await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 4000 }); // landed
       const b = await centre(page, '[data-bobber]');
