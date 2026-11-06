@@ -16,7 +16,7 @@ cando:
   cond: まちの ざつおんの なかで
   catch: あたらしい ひ・じかん・ばしょと キャンセルか どうか
   en: "I can follow a friend changing our plans on the phone, over street noise at natural speed, and catch the new day, time and place, and whether they're really cancelling."
-status: draft
+status: voiced
 ph:
   - { id: ph-come-up, en: "something's come up", ja: "きゅうようが できた", match: "something('s| has)? come up|something came up|\\bcome up\\b", register: friend, scene: "a last-minute change", trap: "come up＝きゅうに おきる。あがる ではない" }
   - { id: ph-make-it, en: "can't make it", ja: "いけない／まにあわない", match: "(can't|won't|couldn't|might not) make it", register: friend, scene: "turning down a time", trap: "make it＝いける。つくる ではない" }

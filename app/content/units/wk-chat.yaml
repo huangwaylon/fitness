@@ -18,7 +18,7 @@ cando:
   cond: オフィスの ざわざわの なかで
   catch: わだいと、「こんど ランチ」が ほんきか
   en: I can follow coworkers making small talk about the weekend and work by the coffee machine, in fast casual speech over office noise, and tell what they're talking about and whether 'let's grab lunch' is a real plan.
-status: draft
+status: voiced
 ph:
   - { id: ph-grab-lunch, en: grab lunch, match: \bgrab(bing)? (lunch|a coffee|coffee|a drink|a bite|dinner)\b, ja: ランチでも いこう, register: colleague, scene: office small talk, trap: 日時がなければ社交辞令のことも多い }
   - { id: ph-one-of-these-days, en: one of these days, match: \b(one of these days|at some point)\b, ja: そのうち, register: colleague, scene: office small talk, trap: 「そのうち」は予定ではない。社交辞令の目印 }

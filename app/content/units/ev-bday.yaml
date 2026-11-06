@@ -17,7 +17,7 @@ cando:
   cond: パーティーの にぎやかな なかで
   catch: いつ・どこで、なにを もっていくか
   en: "I can follow friends and coworkers inviting me to a birthday party and making a toast, in a lively room, and catch when and where it is, what to bring and who the surprise is for."
-status: draft
+status: voiced
 ph:
   - { id: ph-surprise, en: "it's a surprise", ja: "ないしょの おいわい", match: "\\bsurprise\\b", register: friend, scene: "planning the party", trap: "surprise party＝本人に ないしょ" }
   - { id: ph-bring-anything, en: "bring anything", ja: "なにか もっていく？", match: "bring (anything|something|yourself)", register: friend, scene: "accepting an invitation", trap: "Just bring yourself＝てぶらで いいよ" }

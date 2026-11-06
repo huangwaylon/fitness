@@ -40,6 +40,12 @@ export function readUnits(dir: URL = UNITS_DIR): UnitSource[] {
   return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) }));
 }
 
+/** The units' own items (inline in their manifests, as authored), in file order: the audio scripts voice them beside
+ *  the bank's (their ids are checked against the bank's and each other's: checkUnits). */
+export function unitItems(sources: readonly UnitSource[] = readUnits()): Item[] {
+  return sources.flatMap(({ raw }) => ((raw as { items?: unknown }).items as Item[] | undefined) ?? []);
+}
+
 /** The units read and checked (units.ts: each manifest, then all of them against the bank, the ladders and the
  *  clips): the manifests that read, and the problems (errors stop the compiler; warnings are printed). */
 export function checkUnitSources(sources: readonly UnitSource[], clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = BANK): UnitsCheck & { units: UnitManifest[] } {

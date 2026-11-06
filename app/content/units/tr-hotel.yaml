@@ -17,7 +17,7 @@ cando:
   cond: ていねいだけど はやい ことばで
   catch: できる こと・できない ことと ついかの りょうきん
   en: I can follow hotel front-desk staff explaining what they can do about a room problem, in polite but fast speech at the desk or on the phone, and catch what's possible, what isn't, and any extra charge.
-status: draft
+status: voiced
 ph:
   - { id: ph-im-afraid, en: I'm afraid, ja: あいにく, register: service, scene: hotel desk, trap: 「こわい」ではなく「あいにく」。悪い知らせの合図 }
   - { id: ph-fully-booked, en: fully booked, ja: 満室です, register: service, scene: hotel desk, trap: booked は「予約済み」。本の book ではない }

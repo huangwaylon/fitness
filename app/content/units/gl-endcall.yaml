@@ -16,7 +16,7 @@ cando:
   cond: でんわの こもった おとで
   catch: もう きりたい きもちと さいごの やくそく
   en: "I can follow a friend or a colleague winding up a phone call without saying so directly, over a phone line, and catch that they want to hang up and what we agreed at the end."
-status: draft
+status: voiced
 ph:
   - { id: ph-let-you-go, en: "I'll let you go", ja: "そろそろ 切るね", match: "let you (go|get back)", register: friend, scene: "the end of a call", trap: "いかせて あげる ではなく「もう 切るね」" }
   - { id: ph-gotta-run, en: "I've got to run", ja: "もう いかなきゃ", match: "(got to|gotta|have to|need to) (run|go|dash|jump|head off)", register: friend, scene: "a call cut short", trap: "run＝はしる ではなく「いそいで 切る」" }

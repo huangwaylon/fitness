@@ -16,7 +16,7 @@ cando:
   cond: カフェの ざわざわの なかで
   catch: なおした すうじや なまえ
   en: "I can follow a friend or a server repeating, rephrasing or correcting themselves when I ask again, at natural speed in a noisy café, and catch the corrected number, name or detail."
-status: draft
+status: voiced
 ph:
   - { id: ph-say-again, en: "say that again", ja: "もう いちど いって", match: "say (that|it) again", register: friend, scene: "a noisy café", trap: "「ワンモア」より Could you say that again?" }
   - { id: ph-i-meant, en: "I meant", ja: "いや、〜の つもりだった", register: friend, scene: "putting a detail right", trap: "mean の 過去形。まえの ことばを なおす 合図" }
@@ -147,7 +147,7 @@ items:
     tags: { seed: 56, register: friend, pragmatic: literal, conditions: [phone], features: [th] }
     lines:
       - { who: julian, cast: uk-m1, en: "Hi, it's me. I got your voice message about dinner, but it was all crackly. Do you mean Thursday or Tuesday?", ja: "もしもし、ぼく。夕飯の留守電聞いたけど、音がガサガサで。木曜ってこと？ それとも火曜？" }
-      - { who: tia, cast: us-f2, en: "Tuesday! Tues-day. The day after Monday.", ja: "火曜！ か・よ・う。月曜の次の日。" }
+      - { who: tia, cast: us-f2, en: "Tuesday! Tues-day. The day after Monday.", tts: "Tuesday! Tues, day. The day after Monday.", ja: "火曜！ か・よ・う。月曜の次の日。" }
       - { who: julian, cast: uk-m1, en: "Ha, got it. Okay, I won't keep you. Talk soon!", ja: "はは、了解。じゃあ、引き止めないよ。またね！" }
   - id: kr-so-thats
     lv: 3
@@ -217,7 +217,7 @@ items:
     lines:
       - { who: freya, cast: uk-f1, en: "Hiya! I'm at the café already, upstairs by the window. Where are you?", ja: "やっほー！ もうカフェにいるよ、2階の窓ぎわ。どこにいる？" }
       - { who: sherb, cast: au-m2, en: "Sorry, say that again? The traffic's mad out here.", ja: "ごめん、もう一回いって？ 外の車がすごくて。" }
-      - { who: freya, cast: uk-f1, en: "Up-stairs. By the window. Anyway, see you in a sec!", ja: "に・か・い。窓ぎわ。じゃ、またすぐね！" }
+      - { who: freya, cast: uk-f1, en: "Up-stairs. By the window. Anyway, see you in a sec!", tts: "Up... stairs. By the window. Anyway, see you in a sec!", ja: "に・か・い。窓ぎわ。じゃ、またすぐね！" }
   - id: dk-wrong-time
     lv: 3
     type: gist
