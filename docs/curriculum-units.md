@@ -302,7 +302,7 @@ These are written to the §2 template before any content (§10). units.test chec
 - じっせん's ladders stay with はしご for now (its items only);
 - a tier (`easy`/`hard`) swaps in that item's choice set on the same audio; `tierFor` picks it from きろく's comfortable level against the unit's stage (half a step below: easy; a step above: hard).
 
-**Solo play** goes through the quiz's session and UI: `QuizGame.playLesson(unit, lesson)` deals the deck into my lobby kept alone and shows the lesson's intro card (LessonIntro.svelte). The チェック's card is the phone errand: 「{host}から でんわ！ ようじを ききとろう」, with the 5-of-6 rule. A reveal in a lesson folds the note and a dialogue's transcript under 「くわしく」. Results add a strip: the unit's dots, the next core lesson, and on a チェック the stamp with my own first-listen tally (and the team's). もういっかい deals the lesson again at once.
+**Solo play** goes through the quiz's session and UI: `QuizGame.playLesson(unit, lesson)` deals the deck into my lobby kept alone (since framework 8b as the game `lesson`, games/lesson/def.ts, the lobby's seed kept) and shows the lesson's intro card (LessonIntro.svelte). The チェック's card is the phone errand: 「{host}から でんわ！ ようじを ききとろう」, with the 5-of-6 rule. A reveal in a lesson folds the note and a dialogue's transcript under 「くわしく」. Results add a strip: the unit's dots, the next core lesson, and on a チェック the stamp with my own first-listen tally (and the team's). もういっかい deals the lesson again at once.
 
 **The row** carries `u`, `l` and the stage's level; a co-op lesson would add `tm` from the session's `teamFirst` (questions someone got right on the first listen), wired but unused until 8c.
 
