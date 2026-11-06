@@ -541,9 +541,21 @@ def cmd_status(*keys):
 
 PAPER = (0xF5, 0xE4, 0xBC)  # --c-paper
 T_PX, T_COLS, T_PER = 128, 10, 100  # thumbnails (48 / 40 px at 3x): 10 x 10 a sheet
-D_PX, D_COLS, D_PER = 384, 4, 16    # the amount picture (160 px)
+D_PX, D_COLS, D_PER = 384, 5, 25    # the amount picture (160 px): one at a time, so bigger sheets (fewer files)
 QUALITY = 72
-# Sheets are per neighbourhood, so a search touches few: a row's bucket is its first item's category (some merged).
+# Thumbnail sheets are per search neighbourhood, so a search's rows touch few: a row whose name holds a common search
+# word sits with that word's family (カレー: the curry rice, udon, bread and roux together), the rest with its first item's
+# category (BUCKET). Detail sheets go by category only. First match wins (牛乳 before 牛, 巻き寿司 before 納豆).
+FAMILY = [('curry', 'カレー'), ('sushi', '寿司 軍艦 手巻 鉄火巻 かっぱ巻 かんぴょう巻 納豆巻 太巻 恵方巻 ネギトロ巻 サラダ巻'),
+          ('ramen', 'ラーメン 中華めん 中華そば つけ麺 担々麺 ちゃんぽん'), ('udon', 'うどん'), ('soba', 'そば'),
+          ('pasta', 'スパゲッティ パスタ マカロニ ナポリタン カルボナーラ ペペロンチーノ ボンゴレ'), ('onigiri', 'おにぎり むすび'),
+          ('don', '丼'), ('rice', 'ごはん ご飯 かゆ 粥 めし'), ('bread', 'パン トースト サンド'), ('milk', '牛乳'),
+          ('egg', '卵 たまご 玉子 エッグ オムレツ'), ('tofu', '豆腐 厚揚げ 油揚げ がんもどき'), ('natto', '納豆'),
+          ('pork', '豚 ポーク とんかつ ハム ベーコン ウインナー ソーセージ'), ('chicken', '鶏 チキン 唐揚げ から揚げ 焼き鳥 ささみ 手羽'),
+          ('beef', '牛 ビーフ ステーキ 焼肉'), ('salmon', '鮭 さけ サーモン'), ('tuna', 'まぐろ ツナ'), ('saba', 'さば'),
+          ('shrimp', 'えび エビ'), ('miso', '味噌汁 みそ汁'), ('soup', '汁 スープ'), ('salad', 'サラダ'), ('cheese', 'チーズ'),
+          ('yogurt', 'ヨーグルト'), ('cabbage', 'キャベツ'), ('tomato', 'トマト'), ('onion', 'たまねぎ 玉ねぎ'), ('carrot', 'にんじん'),
+          ('apple', 'りんご'), ('banana', 'バナナ'), ('beer', 'ビール')]
 BUCKET = {'主食': 'rice', '麺': 'noodle', '丼・定食': 'don', '主菜': 'main', '副菜': 'side', '汁物': 'soup', '寿司': 'sushi',
           'パン': 'bread', '肉': 'meat', '魚介': 'fish', '卵': 'egg', '大豆・豆': 'soy', '野菜': 'veg', '果物': 'fruit',
           'きのこ': 'veg', '海藻': 'veg', '乳製品': 'dairy', '菓子・デザート': 'sweet', '飲料': 'drink', '酒': 'drink',
@@ -567,27 +579,38 @@ def model_of(png):
     return f"Z-Image-Turbo q{c['quant']} {c['steps']} steps {c['px']}px"
 
 
+def family_of(row, byid):
+    """A row's thumbnail neighbourhood: its search word's family, else its first item's category."""
+    names = [row['ja']] + [byid[i]['name'] for i in row['items'] if i in byid]
+    for fam, words in FAMILY:
+        if any(w in n for n in names[:1] for w in words.split()):
+            return fam
+    return BUCKET.get(byid[row['items'][0]]['cat'], 'other')
+
+
 def cmd_pack():
     from PIL import Image
     vs = verdicts()
     byid = items_by_id()
     rows = [r for r in table() if state(r, vs)[0] == 'ship']
     slots = json.loads(SLOTS.read_text()) if SLOTS.exists() else {}
-    placed = {k for ks in slots.values() for k in ks}
-    # new keys join their bucket's end, popular first, then by name: shipped sheets never move
-    new = [r for r in rows if r['key'] not in placed]
+    slots = slots if set(slots) <= {'t', 'd'} else {}  # (the first layout, one map for both: laid out again)
+    slots.setdefault('t', {})
+    slots.setdefault('d', {})
+    # new keys join their bucket's end, popular first, then by name: a full sheet never changes
+    new = [r for r in rows if not any(r['key'] in ks for ks in slots['t'].values())]
     new.sort(key=lambda r: (-max(byid.get(i, {}).get('pop', 0) for i in r['items']), r['ja']))
     for r in new:
-        slots.setdefault(BUCKET.get(byid[r['items'][0]]['cat'], 'other'), []).append(r['key'])
+        slots['t'].setdefault(family_of(r, byid), []).append(r['key'])
+        slots['d'].setdefault(BUCKET.get(byid[r['items'][0]]['cat'], 'other'), []).append(r['key'])
     SLOTS.write_text(json.dumps(slots, ensure_ascii=False, indent=0, sort_keys=True) + '\n')
     ship = {r['key']: r for r in rows}
     OUT.mkdir(parents=True, exist_ok=True)
     keep, sheets, cells = set(), [], {}
-    for b in sorted(slots):
-        ks = [k for k in slots[b] if k in ship]  # a key gone to the tile leaves its cell empty
-        for px, cols, per, tag in ((T_PX, T_COLS, T_PER, 't'), (D_PX, D_COLS, D_PER, 'd')):
-            for n in range(0, len(slots[b]), per):
-                part = slots[b][n:n + per]
+    for px, cols, per, tag in ((T_PX, T_COLS, T_PER, 't'), (D_PX, D_COLS, D_PER, 'd')):
+        for b in sorted(slots[tag]):
+            for n in range(0, len(slots[tag][b]), per):
+                part = slots[tag][b][n:n + per]  # a key gone to the tile leaves its cell empty
                 if not any(k in ship for k in part):
                     continue
                 rows_n = (len(part) + cols - 1) // cols
