@@ -3,16 +3,18 @@
   // whether it can be shared), its settings (ひとこと クイズ: the ばしょ row; スピード はしご: its speeds and rule; アナウンス
   // and the quiz: こたえる じかん), the volume-0 line when the sound is off, and the foot: さそう (the みんなで page, this
   // game in it) and はじめる. おさらい: a solo deck of my weak spots, はじめる alone. Entering it sets my lobby's game to
-  // the mode (a lobby kept alone: nothing on the wire). Its own chunk.
+  // the mode (a lobby kept alone: nothing on the wire). The ばしょ is おまかせ (みみ チェック's placed stage:
+  // progress.svelte.ts currentOmakase) till a place is tapped, kept for the mode (prefs.ts stagePick) till
+  // 「おまかせに もどす」. Its own chunk.
   import { untrack } from 'svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import type { Level } from '#lib/kikimimi/bank.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
-  import { lvForMode, modeOf, type ModeId } from '#lib/kikimimi/catalog.ts';
+  import { modeOf, type ModeId } from '#lib/kikimimi/catalog.ts';
   import { REVIEW_CAP } from '#lib/kikimimi/srs.ts';
-  import { currentReport } from '../progress.svelte.ts';
-  import { keepLv, keepTimer, lastLv } from '../prefs.ts';
+  import { currentOmakase, currentReport } from '../progress.svelte.ts';
+  import { keepLv, keepStagePick, keepTimer, stagePick } from '../prefs.ts';
   import StageRow from './StageRow.svelte';
   import TimerRow from './TimerRow.svelte';
   import LadderSteps from '../LadderSteps.svelte';
@@ -26,22 +28,34 @@
   const due = $derived(Math.min(REVIEW_CAP, currentReport()?.due ?? 0));
   const zero = $derived(sound.settings.volume <= 0);
 
-  // my lobby takes this mode's game (its level: アナウンス 5, the quiz the one last played)
+  /** The ばしょ picked for this mode over おまかせ (null: おまかせ). */
+  let pick = $state(untrack(() => stagePick(m))); // (the page is keyed by its mode)
+  const omakase = $derived(currentOmakase());
+
+  // my lobby takes this mode's game (its level: アナウンス 5, the quiz its ばしょ: picked, else おまかせ)
   $effect(() => {
     const id = m;
     untrack(() => {
       const w = game.view;
       if (!w?.amHost) return;
+      const lv = (pick ?? omakase) as Level;
       if (id === 'ladder') {
         if (!w.ladder) game.configure({ ladder: true });
       } else if (id === 'announce') {
         if (w.ladder || w.lv !== 5) game.configure({ ladder: false, lv: 5 });
-      } else if (w.ladder || (id === 'quiz' && w.lv === 5)) game.configure({ ladder: false, lv: lvForMode('quiz', lastLv()) as Level });
+      } else if (id === 'quiz' && (w.ladder || w.lv !== lv)) game.configure({ ladder: false, lv });
+      else if (w.ladder) game.configure({ ladder: false });
     });
   });
+  /** A place tapped: kept for this mode (おまかせ's own: back to おまかせ). */
   function level(lv: number) {
+    pick = lv === omakase ? null : lv;
+    keepStagePick(m, pick);
     game.configure({ lv: lv as Level });
     keepLv(lv as Level);
+  }
+  function reset() {
+    level(omakase);
   }
 </script>
 
@@ -58,7 +72,7 @@
   </div>
 
   {#if m === 'quiz'}
-    <StageRow lv={v.lv} levels={LEVELS.filter((x) => x !== 5)} onpick={level} />
+    <StageRow lv={v.lv} levels={LEVELS.filter((x) => x !== 5)} onpick={level} omakase={{ on: pick === null, onreset: reset }} />
   {:else if m === 'ladder'}
     <section class="ladder card" data-kiki-ladder-about>
       <LadderSteps size="big" step={(k) => (k === SPEEDS.length - 1 ? 'up' : 'soft')} />

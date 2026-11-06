@@ -140,6 +140,12 @@ export const DEVICE = {
    *  (kikimimi/bedtime.ts SerialProgress: the chapters finished and when, where to pick up, the morning-after guess;
    *  the sleep timer last set). */
   kikiStory: 'island.kikiStory',
+  /** localStorage: `{[who]: 1}`: ききみみ's first-run welcome seen (or put off: あとで) by that player on this phone
+   *  (docs/kikimimi-ux.md §6.12). */
+  kikiOnboarded: 'island.kikiOnboarded',
+  /** localStorage: `{[mode]: level}`: a ばしょ picked over おまかせ on a mode's page on this phone (none: おまかせ, the
+   *  placed stage). */
+  kikiStage: 'island.kikiStage',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */

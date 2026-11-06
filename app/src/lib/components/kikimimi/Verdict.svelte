@@ -10,7 +10,7 @@
   import { t } from '#lib/i18n/index.ts';
   import RevealFrame from './frame/RevealFrame.svelte';
 
-  let { it, out, right, picked, replayed, same, rs, climbed, coop, rightNow }: {
+  let { it, out, right, picked, replayed, same, rs, climbed, coop, rightNow, plain = false }: {
     it: Item;
     /** I sat this question out. */
     out: boolean;
@@ -27,6 +27,8 @@
     coop: boolean;
     /** Co-op: how many got it right. */
     rightNow: number;
+    /** No points shown (みみ チェック). */
+    plain?: boolean;
   } = $props();
 </script>
 
@@ -47,7 +49,7 @@
   {#if !right && it.type === 'pic'}<span class="answer-is">{t('kiki.answerIs', { a: PIC_JA[it.choices[it.answer]] ?? '' })}</span>{/if}
 {/snippet}
 
-<RevealFrame {out} {right} {picked} pts={RIGHT} badge={!rs && firstListen(right, replayed, same)} {coop} {rightNow} line={rs ? climb : undefined} extra={missedPic} />
+<RevealFrame {out} {right} {picked} pts={plain ? 0 : RIGHT} badge={!rs && firstListen(right, replayed, same)} {coop} {rightNow} line={rs ? climb : undefined} extra={missedPic} />
 
 <style>
   /* a rung's line: the frame's ○ / × line (frame/RevealFrame.svelte), the themed coral and leaf text */

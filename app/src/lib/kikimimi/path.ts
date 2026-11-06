@@ -1,8 +1,8 @@
 // しまの みち's model (docs/kikimimi-ux.md §6.3; docs/curriculum-units.md §1, §3; the UX review's sketch A): the stages
 // as the spine (はまべ → かわ → もり → やま → ほし), each unit a stop on it with its lesson dots and stamps, a domain as a
 // tag (an icon, a tint and a filter chip, never a second map), the anchor (glue) units first under 「はじめに おすすめ」,
-// and the one current unit with 「つづける」. Every stage stays playable: one far above my comfortable level is only shown
-// softly (the stage gate is placement's, みみ チェック, not built yet). Pure: the path index's lines, my unit states
+// and the one current unit with 「つづける」. Every stage stays playable: one far above my level (みみ チェック's placed
+// one, else きろく's comfortable one: progress.svelte.ts currentPath) is only shown softly. Pure: the path index's lines, my unit states
 // (stamps.ts) and my report's level and games in, the path out.
 import { CORE, DOMAINS, LESSONS, STAGES, STAGE_IDS, type Domain, type Lesson, type Stage } from './stages.ts';
 import type { UnitState } from './stamps.ts';

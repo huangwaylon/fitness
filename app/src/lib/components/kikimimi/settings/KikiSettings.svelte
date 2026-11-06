@@ -2,14 +2,21 @@
   // ききみみ's せってい (docs/kikimimi-ux.md §6.11), pushed from the hub's ⚙: 🔊 「きこえる？」 (a clip through the game's
   // voice, with the earphones tip and the volume-0 line); 「おとを 1だいに まとめる」 as a new lobby's default; にほんごやく
   // (when the Japanese shows: いつも / まちがえた とき / みない); こんしゅうの めあて (3 / 5 / 7 にち). Each kept on this
-  // phone. (みみ チェックを もういちど comes with the placement check.) Its own chunk.
+  // phone; 「みみ チェックを もういちど」 (the placement check again, at once; the place it gave me under it). Its own chunk.
   import type { QuizGame } from '../game.svelte.ts';
   import { JA_MODES, WEEK_GOALS, keepSame, keepWeekGoal, sameDefault, weekGoal, type JaMode, type WeekGoal } from '../prefs.ts';
   import { sound } from '#lib/sound/sound.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { PLACES, placeOfLv } from '#lib/kikimimi/catalog.ts';
+  import { currentPlacement } from '../progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { game, ja, onja }: { game: QuizGame; ja: JaMode; onja: (m: JaMode) => void } = $props();
+  let { game, ja, onja, oncheck }: { game: QuizGame; ja: JaMode; onja: (m: JaMode) => void; oncheck: () => void } = $props();
+  /** Where my last みみ チェック placed me (null: none yet). */
+  const placed = $derived.by(() => {
+    const p = currentPlacement(), place = p ? PLACES.find((x) => x.id === placeOfLv(p.lv)) : undefined;
+    return place ? `${t(`kiki.stage.${place.id}`)} ${'★'.repeat(place.stars)}` : null;
+  });
   /** The sound check tried (its hint shows). */
   let tested = $state(false);
   let same = $state(sameDefault());
@@ -57,6 +64,14 @@
     </div>
   </section>
 
+  <section class="sec" aria-labelledby="kk-check">
+    <h3 id="kk-check" class="sec-label">{t('kiki.check.title')}</h3>
+    <button type="button" class="row tile-btn" data-kiki-set-check data-sfx="confirm" onclick={oncheck}>
+      <span class="rl">{t('kiki.check.again')}<small data-kiki-set-placed>{placed ? t('kiki.check.now', { stage: placed }) : t('kiki.check.none')}</small></span>
+      <span class="chev" aria-hidden="true">›</span>
+    </button>
+  </section>
+
   <section class="sec" aria-labelledby="kk-goal">
     <h3 id="kk-goal" class="sec-label">{t('kiki.set.goal')}</h3>
     <div class="chips" role="radiogroup" aria-labelledby="kk-goal" data-kiki-set-goal={goal}>
@@ -79,6 +94,7 @@
   .row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0; border-radius: var(--r-card); text-align: left; width: 100%; }
   .rl { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .rl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
+  .chev { flex: none; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--text-soft); }
   .sw {
     position: relative; flex: none; width: 56px; height: 32px; border-radius: var(--r-pill);
     background: var(--ctl-off); box-shadow: inset 0 0 0 2px var(--edge); transition: background var(--dur-quick);

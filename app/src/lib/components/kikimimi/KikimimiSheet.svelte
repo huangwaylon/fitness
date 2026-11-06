@@ -9,7 +9,9 @@
   // the results (おわる back to the hub; a lesson's back to its page). Another's lobby I joined is みんなで (‹ leaves it
   // for the hub). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks 「ここで やめる？」. Opened from the HUD's
   // ききみみ (my own lobby, kept alone: the hub) or the banner's さんか (that game joined: [hub, みんなで]). The voice
-  // session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip.
+  // session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip. A player's first
+  // open on this phone (none played yet) has the welcome in the hub's place (onboarding/: hello, the sound check, then
+  // みみ チェック, whose result is onboarding/Placed).
   import { untrack } from 'svelte';
   import '#lib/i18n/kikimimi.ts';
   import Sheet from '../ui/Sheet.svelte';
@@ -24,7 +26,8 @@
   import { gameIn } from '#lib/kikimimi/round/wire.ts';
   import { currentPath, currentReport, currentUnits, recordGame, unitAdded } from './progress.svelte.ts';
   import { KikiActions } from './actions.ts';
-  import { jaMode, keepJa, keepLv, keepTimer, lastLv, lastTimer, sameDefault, type JaMode } from './prefs.ts';
+  import { jaMode, keepJa, keepLv, keepOnboarded, keepTimer, lastLv, lastTimer, onboarded, sameDefault, type JaMode } from './prefs.ts';
+  import { CHECK_MAX } from '#lib/kikimimi/games/check/def.ts';
   import { packs } from './packs.ts';
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
   import type { Filter } from '#lib/kikimimi/path.ts';
@@ -71,6 +74,11 @@
   let story = $state<{ unit: string; ch: number; seg: number } | null>(null);
   /** The hub shows: my lobby with nothing pushed, or no game of mine yet (an invite waiting). */
   const atHub = $derived(!story && !!v && !v.notice && ((hosting && !page) || v.phase === 'idle'));
+  /** The first run's welcome in the hub's place (docs/kikimimi-ux.md §6.12): once per player on this phone, never for one
+   *  who has played (their stage is their rows'). */
+  let welcome = $state(false);
+  /** みみ チェック under way or at its result. */
+  const checking = $derived(v?.gm === 'check' && (mid || v.phase === 'results'));
   let pathFilter = $state<Filter>('all');
   const path = $derived(inLobby ? currentPath(pathFilter) : null);
   const pageTitle = (p: Page): string => {
@@ -88,7 +96,7 @@
     }
   };
   const title = $derived(
-    story ? t('kiki.mode.story') : v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
+    story ? t('kiki.mode.story') : checking ? t('kiki.check.title') : v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
       : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`))
       : hosting && page ? pageTitle(page) : guest ? t(v?.gm === 'taikai' ? 'kiki.mode.taikai' : 'kiki.tile.together') : t('kiki.title')
   );
@@ -159,8 +167,20 @@
       asking = false;
       pages = [];
       story = null;
+      welcome = false;
     };
   });
+  $effect(() => {
+    if (!open || !me || welcome) return;
+    const r = currentReport();
+    if (r && !r.games.length && !onboarded(me)) untrack(() => (welcome = true));
+  });
+  /** The welcome left: あとで (the hub, its card for the check) or on into みみ チェック. */
+  function welcomed(check: boolean) {
+    if (me) keepOnboarded(me);
+    welcome = false;
+    if (check) act.check();
+  }
   // The voice session the opening tap began ends as the sheet closes (a game or not), and the packs held go.
   $effect(() => {
     if (open)
@@ -294,9 +314,14 @@
   </button>
 {/snippet}
 
+{#snippet checkBar()}
+  <!-- みみ チェック's way through (about 12: it may stop sooner), no score -->
+  <div class="checkbar" data-kiki-check-bar={v?.i}><span style:width="{Math.min(100, Math.round((100 * ((v?.i ?? 0) + 1)) / CHECK_MAX))}%"></span></div>
+{/snippet}
+
 <Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss}>
-  <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub ? gear : null} /></div>
-  <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? 'hub' : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
+  <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub && !welcome ? gear : null} /></div>
+  <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? (welcome ? 'welcome' : 'hub') : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
     data-kiki-ja={ja} data-kiki-right={right || undefined}>
     {#if game && v}
       {#if story}
@@ -312,9 +337,14 @@
           <p class="say">{t(`kiki.notice.${v.notice}`)}</p>
           <button type="button" class="btn small" data-sfx="back" onclick={act.toHub}>{t('kiki.back')}</button>
         </div>
+      {:else if atHub && welcome}
+        {#await import('./onboarding/Welcome.svelte') then { default: Welcome }}
+          <Welcome {game} onlater={() => welcomed(false)} onstart={() => welcomed(true)} />
+        {/await}
       {:else if atHub}
         {#await import('./hub/Hub.svelte') then { default: Hub }}
-          <Hub here={game.here} me={game.me} invite={hubInvite} onjoin={joinIt} onupdate={() => void reloadForUpdate()} ontile={tile} onact={act.menu} ontaikai={act.taikai} />
+          <Hub here={game.here} me={game.me} invite={hubInvite} onjoin={joinIt} onupdate={() => void reloadForUpdate()} ontile={tile} onact={act.menu} ontaikai={act.taikai}
+            oncheck={act.check} />
         {/await}
       {:else if hosting && page}
         {#if page.k === 'asobu'}
@@ -334,7 +364,7 @@
           {/await}
         {:else if page.k === 'settings'}
           {#await import('./settings/KikiSettings.svelte') then { default: KikiSettings }}
-            <KikiSettings {game} {ja} onja={(m) => ((ja = m), keepJa(m))} />
+            <KikiSettings {game} {ja} onja={(m) => ((ja = m), keepJa(m))} oncheck={act.check} />
           {/await}
         {:else if page.k === 'path' && path}
           {#await import('./path/IslandPath.svelte') then { default: IslandPath }}
@@ -372,6 +402,10 @@
           <p class="say">{t('kiki.ready')}</p>
           {#key count}<span class="num" class:set={count > 3} aria-live="assertive">{count > 3 ? t('kiki.set') : count}</span>{/key}
         </div>
+      {:else if v.phase === 'results' && v.gm === 'check'}
+        {#await import('./onboarding/Placed.svelte') then { default: Placed }}
+          <Placed placement={game.placement} ondone={act.toHub} />
+        {/await}
       {:else if v.phase === 'results' && v.gm === 'taikai'}
         {#await import('./taikai/TaikaiResults.svelte') then { default: TaikaiResults }}
           <TaikaiResults {game} onagain={act.again} onmissed={act.replayMissed} ondone={act.done} />
@@ -382,6 +416,8 @@
         {#await import('./taikai/TaikaiPlay.svelte') then { default: TaikaiPlay }}
           <TaikaiPlay {game} />
         {/await}
+      {:else if v.gm === 'check'}
+        <Play {game} show={checkBar} />
       {:else}
         <Play {game} />
       {/if}
@@ -467,6 +503,8 @@
   .ask .row { display: flex; gap: 10px; width: 100%; }
   .ask .row .btn { flex: 1; }
   .resume { cursor: pointer; }
+  .checkbar { height: 8px; margin: 0 6px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; }
+  .checkbar span { display: block; height: 100%; border-radius: inherit; background: var(--c-leaf); transition: width var(--dur-base) var(--ease-out, ease-out); }
   .resume b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .resume small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   @media (prefers-reduced-motion: reduce) { .num { animation: none; } .gear:active { transform: none; } }

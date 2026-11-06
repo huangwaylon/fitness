@@ -19,6 +19,9 @@ import { unitsOf, type UnitState } from '#lib/kikimimi/stamps.ts';
 import { INDEX, unitIds, unitPart } from '#lib/kikimimi/pool.ts';
 import { lessonsOfMask, pathOf, type Filter, type Path, type PathUnit } from '#lib/kikimimi/path.ts';
 import { LESSONS } from '#lib/kikimimi/stages.ts';
+import { levelRank } from '#lib/kikimimi/bank.ts';
+import { omakaseLv } from '#lib/kikimimi/catalog.ts';
+import { lastPlacement } from '#lib/kikimimi/games/check/def.ts';
 import { hooksOn } from '../island/devHooks.ts';
 import { t } from '#lib/i18n/index.ts';
 
@@ -117,13 +120,25 @@ export function pathUnits(): PathUnit[] {
   return out;
 }
 
-/** しまの みち now (path.ts, from my report: the stamps, my comfortable level, the units of my lessons in order).
- *  Reactive: call it in a $derived. */
+/** My latest みみ チェック (its placed level and skills; games/check/def.ts lastPlacement), null before one. Reactive. */
+export function currentPlacement(): ReturnType<typeof lastPlacement> {
+  const r = currentReport();
+  return r ? lastPlacement(r.games) : null;
+}
+
+/** おまかせ's level now (catalog.ts omakaseLv: the placed one, else my comfortable level, else はまべ 2). Reactive. */
+export function currentOmakase(): number {
+  return omakaseLv(currentPlacement()?.lv ?? null, currentReport()?.stats.level ?? null, LEVELS);
+}
+
+/** しまの みち now (path.ts, from my report: the stamps, my level (みみ チェック's placed one, else きろく's comfortable
+ *  one: what's shown softly), the units of my lessons in order). Reactive: call it in a $derived. */
 export function currentPath(filter: Filter = 'all'): Path {
   const r = currentReport();
   const states = currentUnits();
   const played = r ? r.games.flatMap((g) => (g.u !== undefined && g.l !== undefined ? [g.u] : [])) : [];
-  return pathOf({ units: pathUnits(), states, level: r?.stats.level ?? null, played, filter });
+  const placed = currentPlacement();
+  return pathOf({ units: pathUnits(), states, level: placed ? levelRank(placed.lv) : (r?.stats.level ?? null), played, filter });
 }
 
 /** A recommendation's words: its title and why (きろく's rows, the results' 「つぎは…」). */

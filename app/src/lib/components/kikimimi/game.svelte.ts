@@ -25,11 +25,13 @@ import { currentAnswers, recentGames } from './progress.svelte.ts';
 import { tierOf, wagerAnswer } from '#lib/kikimimi/games/taikai/def.ts';
 import { offerEvents } from '#lib/kikimimi/games/taikai/pick.ts';
 import { taikaiLevels, taikaiOffer, taikaiOutcome, taikaiPickFor } from '#lib/kikimimi/games/taikai/source.ts';
-import { ladders, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
+import { ladders, load, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
+import { START_BAND, walkOf, type Placement } from '#lib/kikimimi/games/check/def.ts';
+import { checkLevels } from '#lib/kikimimi/games/check/source.ts';
 import { lessonDeck, type Lesson, type Tier, type UnitPlay } from '#lib/kikimimi/lesson.ts';
 import { ChunkQueue } from './chunkQueue.ts';
 import { ClipPlayer } from './clipPlayer.svelte.ts';
-import { GameRecorder } from './recorder.ts';
+import { GameRecorder, checkPlacement } from './recorder.ts';
 import type { Stage } from '#lib/kikimimi/stages.ts';
 import { now as sceneNow } from '#lib/time/clock.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
@@ -91,6 +93,8 @@ export class QuizGame {
   lesson = $state.raw<{ unit: UnitPlay; lesson: Lesson; tier?: Tier; recheck: boolean } | null>(null);
   /** The tournament's wager: my bet (10-100 of the round's chips), picked before the choice; null: none yet. */
   bet = $state<number | null>(null);
+  /** みみ チェック's result once finished (its placement: the starting stage and the skills), else null. */
+  placement = $state.raw<Placement | null>(null);
 
   readonly me: Who;
   readonly #link: RoundLink;
@@ -198,6 +202,17 @@ export class QuizGame {
       this.lesson = null;
       this.#picked = '';
       this.#act((s, now) => s.taikai({ tier: this.taikaiTier, timer: o.timer ?? 30, vs: o.vs, offered: this.taikaiOffer().length }, now));
+    });
+  }
+  /** みみ チェック (games/check/): my lobby, alone, starts at once at かわ, its rounds picked as I answer; the levels
+   *  around where it is load as it goes (the walk moves a band at a time: #refresh). */
+  playCheck(): void {
+    this.#queue.then(() => checkLevels(START_BAND), () => {
+      this.practicing = false;
+      this.lesson = null;
+      this.placement = null;
+      this.#act((s, now) => s.check(checkLevels(START_BAND)[1], now));
+      this.#act((s, now) => s.go(now));
     });
   }
   /** My tier for the tournament (my comfortable level's place). */
@@ -328,6 +343,12 @@ export class QuizGame {
     pinDeck(v.g ? v : null);
     this.#lessonOf(v);
     this.#taikaiOf(v);
+    // みみ チェック: the levels around its band, ready for its next round
+    if (v.gm === 'check' && v.phase !== 'results') {
+      const items = itemsOf(v), over = (i: number) => i < v.i || (i === v.i && v.phase === 'reveal');
+      const oks = v.answers.flatMap((a, i) => (over(i) ? [!!a && a.k === items[i]?.answer] : []));
+      void load(...checkLevels(walkOf(oks).band)).catch(() => {});
+    }
     this.#recorder.seen(v, now);
     if (v.phase === 'results' && v.g) this.#keep(v, now, true);
     this.view = v;
@@ -386,6 +407,7 @@ export class QuizGame {
     const row = this.#recorder.keep(v, now, done, { lesson: this.lesson, practicing: this.practicing !== false, taikai });
     if (row && taikai) row.d = localDateAt(sceneNow().getTime()); // (its weekend: the banner's clock, its trophy filed under it)
     if (!row) return;
+    if (row.gm === 'check') this.placement = checkPlacement(row.r);
     this.recorded = row;
     this.#record?.(row);
   }

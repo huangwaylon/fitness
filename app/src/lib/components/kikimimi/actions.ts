@@ -1,6 +1,6 @@
 // What the ききみみ sheet's buttons start (docs/kikimimi.md "UI"), over the sheet's game: もういっかい, a lesson again or
 // the next one, おわる (back to the hub), はまべ's quick quiz, the hub's today card, the ずかん's phrase review, the
-// misses again, おさらい, a recommendation's start, a unit's lesson, a lobby of my own. The sheet keeps its own state
+// misses again, おさらい, a recommendation's start, a unit's lesson, みみ チェック, a lobby of my own. The sheet keeps its own state
 // (open, its stack of pages: nav.ts) and hands it in as `ui`; what's solo (a practice deck, the recheck) only in my own lobby kept alone, a
 // unit's lesson in any lobby I host (shared: a co-op lesson, docs/curriculum-units.md §4).
 import type { QuizGame } from './game.svelte.ts';
@@ -184,6 +184,13 @@ export class KikiActions {
     if (!g) return;
     g.openTaikai();
     this.#ui.setPages(taikaiStack());
+  };
+  /** みみ チェック (the first run's, the hub's card, せってい's もういちど): at once, alone, over the hub. */
+  check = (): void => {
+    const g = this.#game();
+    if (!g) return;
+    this.#ui.setPages([]);
+    g.playCheck();
   };
   /** 「じぶんで ひらく」 from an invite: a lobby of my own, as last set on this phone. */
   startOwn = (): void => {

@@ -1,9 +1,12 @@
 // ききみみ クイズ's lobby settings remembered on this phone (docs/kikimimi.md "Storage"): the level last played and こたえる
-// じかん last set, the next lobby's. Full or private storage: level 1 and 30 s.
+// じかん last set, the next lobby's. Full or private storage: level 1 and 30 s. And せってい's, the first run's welcome
+// seen, a mode's ばしょ picked over おまかせ.
 import type { Level } from '#lib/kikimimi/bank.ts';
 import { LEVELS } from '#lib/kikimimi/deck.ts';
 import { TIMERS, type QuizTimer } from '#lib/kikimimi/seed.ts';
-import { DEVICE, localKV } from '#lib/sync/storage.ts';
+import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
+import type { ModeId } from '#lib/kikimimi/catalog.ts';
+import type { Who } from '#lib/types.ts';
 
 function keep(key: string, value: number): void {
   try {
@@ -50,4 +53,25 @@ export function keepJa(m: JaMode): void {
   } catch {
     /* full or private: always next time */
   }
+}
+
+/** The first-run welcome (docs/kikimimi-ux.md §6.12) seen or put off by `who` on this phone. */
+export const onboarded = (who: Who): boolean => readJson<Record<string, unknown>>(localKV(), DEVICE.kikiOnboarded)?.[who] === 1;
+export function keepOnboarded(who: Who): void {
+  const v = readJson<Record<string, unknown>>(localKV(), DEVICE.kikiOnboarded);
+  writeJson(localKV(), DEVICE.kikiOnboarded, { ...(v && typeof v === 'object' ? v : {}), [who]: 1 });
+}
+
+/** A ばしょ picked over おまかせ on a mode's page (null: おまかせ). */
+export function stagePick(m: ModeId): number | null {
+  const n = readJson<Record<string, unknown>>(localKV(), DEVICE.kikiStage)?.[m];
+  return typeof n === 'number' && LEVELS.includes(n as Level) ? n : null;
+}
+/** Keep a mode's ばしょ (null: back to おまかせ). */
+export function keepStagePick(m: ModeId, lv: number | null): void {
+  const v = readJson<Record<string, unknown>>(localKV(), DEVICE.kikiStage);
+  const next: Record<string, unknown> = { ...(v && typeof v === 'object' ? v : {}) };
+  if (lv === null) delete next[m];
+  else next[m] = lv;
+  writeJson(localKV(), DEVICE.kikiStage, next);
 }

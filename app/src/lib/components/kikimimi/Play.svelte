@@ -181,7 +181,7 @@
       <p class="line" lang="en">{parts[0]}<span class="blank"><span aria-hidden="true">　　　</span><span class="sr-only">{t('kiki.blank')}</span></span>{parts[2]}</p>
     {/if}
   {:else}
-    <Verdict {it} out={v.out} {right} picked={!!mine} replayed={!!mine?.rp} same={v.same} {rs} {climbed} {coop} rightNow={v.rightNow} />
+    <Verdict {it} out={v.out} {right} picked={!!mine} replayed={!!mine?.rp} same={v.same} {rs} {climbed} {coop} rightNow={v.rightNow} plain={v.gm === 'check'} />
   {/if}
 
   <ChoiceGrid choices={it.choices} right={it.answer} pics={it.type === 'pic'} label={it.type === 'pic' ? (c) => PIC_JA[c] ?? '' : undefined}

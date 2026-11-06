@@ -13,6 +13,8 @@
 //   request or socket to one fails the test loudly at its end, naming it (`test.use({ network: 'any' })`: the real
 //   relay's harness only, RELAY_E2E=1);
 // - storage: each test's own context (Playwright's), service workers blocked; two phones in one context share it.
+//   ききみみ's first-run welcome counts as seen for every player (DEVICE.kikiOnboarded, unless the test set it):
+//   `test.use({ kikiFirstRun: true })` keeps it for the onboarding spec.
 import { test as base, type BrowserContext, type Page } from '@playwright/test';
 
 export * from '@playwright/test';
@@ -60,13 +62,16 @@ type Options = {
   ownClock: boolean;
   /** 'local' (every test but the real relay's harness): any request off 127.0.0.1 fails the test. */
   network: 'local' | 'any';
+  /** ききみみ's first-run welcome shows (else it counts as seen: every other spec opens on the hub). */
+  kikiFirstRun: boolean;
 };
 
 export const test = base.extend<Options & { hermetic: void }>({
   ownClock: [false, { option: true }],
   network: ['local', { option: true }],
+  kikiFirstRun: [false, { option: true }],
   hermetic: [
-    async ({ context, browser, ownClock, network }, use) => {
+    async ({ context, browser, ownClock, network, kikiFirstRun }, use) => {
       const seen: string[] = [];
       const watch = async (c: BrowserContext) => {
         // (before any page script, every load: a fresh context's storage, or one the test changed)
@@ -78,6 +83,14 @@ export const test = base.extend<Options & { hermetic: void }>({
             /* about:blank: no storage */
           }
         }, ownClock ? null : PINNED_DATE);
+        if (!kikiFirstRun)
+          await c.addInitScript(() => {
+            try {
+              if (localStorage.getItem('island.kikiOnboarded') === null) localStorage.setItem('island.kikiOnboarded', '{"A":1,"B":1,"G":1}');
+            } catch {
+              /* about:blank: no storage */
+            }
+          });
         // a page that sets its device clock to a time (page.clock.install({ time }), setFixedTime, setSystemTime) owns
         // its clock: the pin is lifted for its loads (a page init script runs after the context's)
         const own = (p: Page) => {
