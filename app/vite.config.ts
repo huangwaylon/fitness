@@ -112,6 +112,16 @@ const swPrecacheOnly: Plugin = {
   }
 };
 
+/** Vitest's file-system module cache (on by default, node_modules/.vitest-cache) keys a module on its own source: an
+ *  `import.meta.glob`'s list of files was cached with it, so a file added under the glob (kikimimi's levels/parts/*.json,
+ *  a new unit's chunk) stayed unseen by vitest till the cache was cleared. A module with a glob is never cached. */
+const globsUncached: Plugin = {
+  name: 'vitest-globs-uncached',
+  configureVitest(ctx) {
+    ctx.defineCacheKeyGenerator(({ sourceCode }) => (sourceCode.includes('import.meta.glob') ? false : undefined));
+  }
+};
+
 // A static SPA (GitHub Pages). The backend is the relay: the record at its /api (lib/sync/transport.ts), the room at /room.
 // Output goes to build-pages/.
 export default defineConfig({
@@ -120,6 +130,7 @@ export default defineConfig({
     slimAudioManifest,
     preloadListenersOff,
     swPrecacheOnly,
+    globsUncached,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },
