@@ -3,7 +3,7 @@
 // and fragment is a ずかん `find` (mushrooms are cosmetic). None of it changes ベル, opens a sheet or navigates. The day
 // items derive from ?date= (deterministic); ?find= forces a bottle, this morning's fragments or the rare mushroom.
 import { expect, test, type Page } from '@playwright/test';
-import { fossilOnScreen, step } from './island.ts';
+import { fossilOnScreen, is3d, quiet, settled, step } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -69,6 +69,40 @@ test('a fossil dig spot: a tap digs it up (「化石を ほりだした！」 an
   expect(await cues(page)).toEqual(expect.arrayContaining(['scene-dig', 'scene-catch']));
   expect((await finds(page))[0]).toMatchObject({ kind: 'fossil' });
   await unchanged(page, before);
+});
+
+test('a dig spot never flickers behind the bulletin board: none drawn as the camera comes in that goes once it settles', async ({ page }) => {
+  // (2026-11-10's lay behind the board on the default island: the board's art, a button, covered it once the camera
+  // settled, so it hid then and showed again whenever the camera moved: the user's flicker, 2026-11-06. The day's
+  // spots keep off the ground behind the board now: layout/clear.ts tapCovered)
+  await open(page, '&date=2026-11-10T12:00');
+  expect(await is3d(page)).toBe(true);
+  // (the opening beats over: a greeting's balloon over a spot takes it off while it shows)
+  await quiet(page);
+  type G = { __world3d: { go(z: number, k?: number): void } };
+  for (const k of [1, 2.2, 3.2]) {
+    await page.evaluate((k) => (window as unknown as G).__world3d.go(900, k), k);
+    await settled(page);
+    // the camera to the board at once, the dig spots drawn in view sampled each frame till it has settled
+    await page.evaluate((k) => (window as unknown as G).__world3d.go(60, k), k);
+    const moving = await page.evaluate(() => new Promise<string[]>((done) => {
+      const seen = new Set<string>();
+      let n = 0;
+      const frame = () => {
+        for (const el of document.querySelectorAll<HTMLElement>('[data-find="fossil"]')) {
+          const r = el.getBoundingClientRect();
+          if (el.checkVisibility({ visibilityProperty: true }) && r.bottom > 0 && r.top < innerHeight) seen.add(el.dataset.uid!);
+        }
+        if (++n < 20) requestAnimationFrame(frame);
+        else done([...seen]);
+      };
+      requestAnimationFrame(frame);
+    }));
+    await settled(page);
+    await page.waitForTimeout(300);
+    const still = await page.locator('[data-find="fossil"]').evaluateAll((els) => els.map((el) => (el as HTMLElement).dataset.uid));
+    for (const uid of moving) expect(still, `zoom ${k}: ${uid} drawn as the camera came in, gone once it settled`).toContain(uid);
+  }
 });
 
 test('a message bottle at the water’s edge: a tap reads its note', async ({ page }) => {

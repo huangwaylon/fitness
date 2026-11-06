@@ -20,6 +20,9 @@ const HIDES = 0.65;
 const KEEP = 10;
 /** The search for a free spot: rings STEP apart out to REACH (u). */
 const STEP = 6, REACH = 240;
+/** How many rows behind a board its art (60u tall: board/spot.ts BOARD_H) covers on screen: the ground to ~88u past its
+ *  back at every zoom (pitch 58° … 40°), a 6px guard round it: three tiles (the third in part, zoomed in). */
+const FRONT_BEHIND = 3;
 
 const zoneCache = new WeakMap<LayoutNav, Box[]>();
 /** Each building's ground (u, unpadded; y is z): its footprint, its door's step(s) and the strip behind it it hides. */
@@ -70,6 +73,10 @@ export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'):
     const ROUND = def?.block === true && def.group !== 'tree' && def.group !== 'bush' && o.k !== 'home';
     const over = def?.group === 'tree' ? 2 : def?.group === 'bush' || def?.group === 'flower' || ROUND ? 1 : -1;
     for (const [c, r] of over >= 0 ? objTiles(layout, o) : []) for (let j = -1; j <= over; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
+    // what one stands before to use (the board, K.K.'s stool: catalog.ts `front`) is a button standing up over the
+    // ground behind it: on screen it covers FRONT_BEHIND rows there (and a tile each side), where a spot would hide
+    // under it once the camera settled (Finds' uncovered) and show again while the camera moved, flickering
+    if (def?.front) for (const [c, r] of objTiles(layout, o)) for (let j = 1; j <= FRONT_BEHIND; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
   }
   covered[which].set(layout, taken);
   return taken;
