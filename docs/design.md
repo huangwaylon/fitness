@@ -2418,8 +2418,9 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
   the voice is on but suspended (a lock, an app switch) a 「タップして つづける」 card wakes it.
 - **The island** is covered (`IslandScene` covered: the 3D island paused, its life still) while the sheet is open.
 - `game.svelte.ts` wires the pure `kikimimi/session.ts` to the Live (or to nothing, solo without a relay): the view at
-  each phase's end and each message; each question's clip at its start on the relay's clock (`playVoice` relayAt), the
-  next one decoded meanwhile, the deck's clips fetched into the cache in the lobby. `?kikimimi=fast` (hooks on) shortens
+  each phase's end and each message; `clipPlayer.svelte.ts` plays each question's clip at its start on the relay's clock
+  (`playVoice` relayAt), the next one decoded meanwhile, the deck's clips fetched into the cache in the lobby;
+  `chunkQueue.ts` holds what waits for a chunk, `recorder.ts` my listen row. `?kikimimi=fast` (hooks on) shortens
   the timed answer windows on every phone; `window.__kiki` (hooks on) is the e2e's view and right answer.
 
 ### Seasonal preview
