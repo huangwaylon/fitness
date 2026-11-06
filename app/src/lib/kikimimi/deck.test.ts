@@ -68,9 +68,9 @@ describe('kikimimi deck', () => {
       // a dialogue keeps its lines; its choices shuffled like any
       for (const it of d.filter(isDialogue)) expect(it.lines.length).toBeGreaterThanOrEqual(2);
     }
-    // today (もり's new dialogues not voiced yet): level 4's deck goes without them, and so does にがて れんしゅう's pool
-    for (const s of seeds.slice(0, 50)) expect(deck(s, 4).some((it) => DIALOGUE_TYPES.includes(it.type))).toBe(false);
-    expect(DIALOGUES.every((it) => inMix(it))).toBe(false);
+    // today (every dialogue line voiced): level 4's deck has them, and にがて れんしゅう's pool takes them (inMix)
+    for (const s of seeds.slice(0, 50)) expect(deck(s, 4).some((it) => DIALOGUE_TYPES.includes(it.type))).toBe(true);
+    expect(DIALOGUES.every((it) => inMix(it))).toBe(true);
     expect(DIALOGUES.every((it) => inMix(it, all))).toBe(true);
   });
 
@@ -164,8 +164,8 @@ describe('kikimimi levels offered (the lobby’s gate)', () => {
     expect(playable({ ...all, 'x6-anything': {} })).toEqual([1, 2, 3, 4, 5, 6, 7]);
   });
 
-  it('today: levels 1-3 and 5 (4 waits for もり’s new clips, 6 and 7 for theirs: the content sprint’s audio)', () => {
-    expect(OFFERED).toEqual([1, 2, 3, 5]);
+  it('today: levels 1-7 (4 since the neural cast’s clips landed, 5 since the アナウンス pack’s, 6 and 7 since the content sprint’s)', () => {
+    expect(OFFERED).toEqual([1, 2, 3, 4, 5, 6, 7]);
   });
 });
 

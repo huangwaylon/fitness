@@ -116,12 +116,12 @@ const NUM: readonly Row[] = [
 // ---- gist: what's going on, what to do (a single clip; the right one first) -----------------------------------------
 
 const GIST: readonly Row[] = [
-  ['a5-suspended', 'goldie', 'Due to an accident at Shinjuku, Chuo Line services are suspended between Tokyo and Mitaka. Passengers are advised to use the Marunouchi Line instead.',
-    '新宿駅での事故のため、中央線は東京〜三鷹間で運転を見合わせています。丸ノ内線をご利用ください。 → 別の路線で行く。',
+  ['a5-suspended', 'goldie', 'Due to an accident at Shinjuku, Chuo Line services are suspended between Tokyo and Mitaka. Passengers are advised to use Tokyo Metro services instead.',
+    '新宿駅での事故のため、中央線は東京〜三鷹間で運転を見合わせています。東京メトロをご利用ください。 → 別の路線で行く。',
     'suspended＝運転見合わせ。instead の前が代わりの手段',
     ['Take a different line.', 'Wait on the platform for the next train.', 'Change trains at Mitaka.'],
     tg(5, 'official', 'literal', ['pa', 'station']), heavy('pa', 'station'),
-    { ask: 'どうすれば いい？', focus: 'use the Marunouchi Line instead' }],
+    { ask: 'どうすれば いい？', focus: 'use Tokyo Metro services instead' }],
   ['a5-other-side', 'maple', 'The doors on this side will not open at the next station. Please use the doors on the opposite side.',
     '次の駅では、こちら側のドアは開きません。反対側のドアをご利用ください。 → 反対側のドアから降りる。',
     'opposite side＝反対側。will not open を聞き逃さない',

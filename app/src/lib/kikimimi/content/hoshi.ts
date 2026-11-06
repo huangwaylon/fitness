@@ -928,7 +928,7 @@ const DROWS: readonly DRow[] = [
     lines: [
       ['judy', 'So, does this new study prove that chocolate is good for you?', 'で、この新しい研究で、チョコが体にいいって証明されたの？'],
       ['flick', "'Prove' is a strong word. It found a link in about two hundred people, and it was funded by a chocolate company.", '「証明」は言いすぎだね。約200人で関連が見つかっただけで、しかも資金はチョコレート会社から。'],
-      ['judy', 'Ah.', 'ああ…。'],
+      ['judy', 'Ah. Funded by them. I see.', 'ああ…出資元がそこなのね。'],
       ['flick', "'Ah' is about right.", 'その「ああ」が正解。']
     ],
     choices: ['The study is weak and possibly biased.', 'Chocolate has been proven to be healthy.', 'Two hundred people got sick from chocolate.'],

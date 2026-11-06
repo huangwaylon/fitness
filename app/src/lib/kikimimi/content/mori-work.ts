@@ -8,7 +8,7 @@
 // mind") and distractors that reuse a word actually heard.
 //   Same shapes and rules as bank4.ts and dialogues.ts: the right choice first, `note` the trap (≤ 40 字), `tts` with its
 // sound marks, a scene where one of the 8 fits. Speakers are CAST villagers only (one voice each, for good), spread
-// across all 46. An integrator folds ITEMS and DIALOGUES into the bank (and their scenes into staging.ts PLACES).
+// across all 46. content/index.ts folds ITEMS and DIALOGUES into the bank, their staging as written here.
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Accent, Channel, Item, ItemType, Line, SceneId, SoundMark, Tags } from '../bank.ts';
 import { CAST } from '../bank4.ts';

@@ -13,11 +13,12 @@ import { RUNG_ITEMS } from './ladder.ts';
 const STATIC = join(import.meta.dirname, '../../../static');
 const words = (s: string) => s.toLowerCase().match(/[a-z0-9',]+/g) ?? [];
 const has = (en: string, phrase: string) => ` ${words(en).join(' ')} `.includes(` ${words(phrase).join(' ')} `);
-/** A clip's length cap by level (s): 8 a line; a PA's chime and hall add ~3; the アナウンス pack's announcements 18;
- *  やま's denser turns 11; ほし's 2-4 sentences (news, talks, a lecture's point) 22. */
+/** A clip's length cap by level (s): 8 a line at levels 1-3, 10 at level 4 (もり's numbers inside talk run to 9.7 s,
+ *  2026-11-06); a PA's chime and hall add ~3; the アナウンス pack's announcements 18; やま's denser turns 11; ほし's 2-4
+ *  sentences (news, talks, a lecture's point) 22. */
 const clipCap = (it: Item): number => {
   const pa = channelOf(it) === 'pa' ? 3 : 0;
-  return it.lv === 5 ? 18 : it.lv === 7 ? 22 + pa : it.lv === 6 ? 11 + pa : 8 + pa;
+  return it.lv === 5 ? 18 : it.lv === 7 ? 22 + pa : it.lv === 6 ? 11 + pa : it.lv === 4 ? 10 + pa : 8 + pa;
 };
 
 describe('kikimimi bank', () => {
@@ -259,7 +260,7 @@ describe('kikimimi bank', () => {
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other files, and the clips stay small (each under 60 KB; the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB; all under 40 MB)', () => {
+  it('ships no other files, and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB; all under 40 MB)', () => {
     const dir = join(STATIC, 'audio/kikimimi');
     const rungs = new Set(RUNG_ITEMS.map((it) => `${it.id}.m4a`));
     const want = new Set([...BANK.flatMap((it) => clipIds(it).flatMap((id) => [`${id}.m4a`, ...(it.lv <= 2 ? [`${id}-slow.m4a`] : [])])), ...rungs]);
@@ -268,7 +269,7 @@ describe('kikimimi bank', () => {
     const sizes = files.map((f) => statSync(join(dir, f)).size);
     // (a ladder rung is a whole 5-9 s line, slowed at its foot: 2 a game, 8 clips, ~280 KB fetched in the lobby)
     const lvOf = new Map(BANK.flatMap((it) => clipIds(it).map((id) => [`${id}.m4a`, it.lv])));
-    const kb = (f: string) => (rungs.has(f) ? 80 : ({ 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
+    const kb = (f: string) => (rungs.has(f) ? 80 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
     for (const [k, f] of files.entries()) expect(sizes[k], f).toBeLessThan(kb(f) * 1024);
     // (raised from 14 MB for the content sprint's ~700 clips; increment 9 moves the audio into packs)
     expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(40 * 1024 * 1024);

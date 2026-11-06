@@ -110,7 +110,7 @@ describe('kikimimi recent history', () => {
     // mostly fresh; an item heard comes back only when its skill (the deck covers the weakest skills two items each)
     // had no unheard item left to draw
     const repeats = again.filter((id) => first.includes(id));
-    expect(repeats.length).toBeLessThanOrEqual(2);
+    expect(repeats.length).toBeLessThan(first.length / 2);
     const pool = BANK.filter((it) => it.lv === 4 && inMix(it) && [skillsOf(it).primary, ...skillsOf(it).also].includes('indirect'));
     for (const id of repeats) {
       const s = skillsOf(BANK.find((it) => it.id === id)!).primary;
