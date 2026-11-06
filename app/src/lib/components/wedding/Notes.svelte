@@ -4,14 +4,14 @@
   // rendered from its small markdown (Markdown.svelte), 「ふたりのメモ」 over it and who saved it last
   // (「11月4日に はなこ が更新」; the old Sheet's note says so instead). A member's 編集 (on the letter) opens the field
   // with the format tools at its foot, over the keyboard (見出し, 太字, リスト, リンク: lib/wedding/markdown.ts' toggles, the
-  // selection kept) and 完了; the draft and its save are notepad.svelte.ts'. When the store flags a conflict (two saves
+  // selection kept), キャンセル and 保存; the draft and its save are notepad.svelte.ts'. When the store flags a conflict (two saves
   // crossed) both versions show instead, each a small letter under its writer (mine marked), with これにする (とりけす
   // on its banner) and ふたつを合わせる (the editor with both). The guest reads only.
   import { tick } from 'svelte';
   import Markdown from './Markdown.svelte';
   import Icon, { type IconName } from '../ui/Icon.svelte';
   import { board } from './board.svelte.ts';
-  import { merge, pad, pick, save, write } from './notepad.svelte.ts';
+  import { cancel, merge, pad, pick, save, write } from './notepad.svelte.ts';
   import { toggleBold, toggleBullets, toggleHeading, type Edit } from '#lib/wedding/markdown.ts';
   import { formatDate } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -62,7 +62,8 @@
         <button type="button" class="tool" aria-label={t(`wed.note.${tl.k}`)} data-wed-fmt={tl.k} data-sfx="tick"
           onpointerdown={(e) => e.preventDefault()} onclick={() => fmt(tl.fn)}><Icon name={tl.icon} size={20} /></button>
       {/each}
-      <button type="button" class="btn small done" data-wed-note-save data-sfx="confirm" onclick={save}>{t('common.done')}</button>
+      <button type="button" class="btn small paper done" data-wed-note-cancel data-sfx="back" onclick={cancel}>{t('common.cancel')}</button>
+      <button type="button" class="btn small" data-wed-note-save data-sfx="confirm" onclick={save}>{t('common.save')}</button>
     </div>
   </div>
 {:else if versions.length}
@@ -153,5 +154,6 @@
   }
   .tool:active { background: var(--hl); }
   .tool:focus-visible { outline-offset: -4px; }
-  .done { margin: 0 0 var(--lip-h) auto; }
+  .tools .btn { margin: 0 0 var(--lip-h); padding: 0 14px; }
+  .done { margin-left: auto; }
 </style>

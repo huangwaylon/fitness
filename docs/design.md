@@ -144,8 +144,8 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   280ms grid-row ease, WebKit animates it; reduced motion: at once), folded again on every opening of the panel.
 
 The buys list newest first (art, name, day, who, price), ten at a time
-(「もっと見る」). 🗑 on any line (either of us, any buy; ✕ is only ever a close) asks NH-style (「この買い物を削除しますか？ 40 ベルが戻ります」);
-はい sends a `spend_void`, the ベル go back, and the banner carries 取り消す for 5 s. The old `/jar` page redirects to the
+(「もっと見る」). 🗑 on any line (either of us, any buy; ✕ is only ever a close) asks first (「この買い物を削除しますか？ 40 ベルが戻ります」, キャンセル / 削除);
+削除 sends a `spend_void`, the ベル go back, and the banner carries 取り消す for 5 s. The old `/jar` page redirects to the
 island with the panel open on ごほうび (`?panel=rewards`, dropped from the URL once read).
 
 ### Panel
@@ -555,9 +555,28 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
 
 ### Navigation
 
-✕ top-right closes the whole sheet from any level; ‹ top-left only when there is a level to go up to; a full page has
-‹ 島へ. Backdrop tap and Esc also close. `ui/NavBar.svelte` + `ui/NavButton.svelte`; `ui/nav.test.ts` fails on a
-modal without them. Sheets rise and levels slide in over 240 ms.
+One rule app-wide (the user, 2026-11-07: "x and back are not consistent"); `ui/nav.test.ts` enforces it.
+
+- **The title bar** is `ui/NavBar` on every sheet, panel and level: 48px, the title centred (18, `--font-ui` 700), the
+  same in the game sheets and the kit's. ✕ top-right closes the whole sheet from any level; ‹ top-left only on a level
+  (never on a top level); they never swap or move. Backdrop tap and Esc also close.
+- **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc drawn in the 44px hit (`--ctl`,
+  `--sh-ctl-s`: cream by day, navy at night), the glyph `ui/Icon` at stroke 2.4, the cue `back`. Its disc sits on the
+  container's content edge (NavBar pulls 6px out). `look="photo"`: the same disc smoked, over a photo or a map (a
+  trip's hero, a trail's map and its zoom / locate, the wedding banner). `text`: ‹ grown into a pill, a page's way
+  back (‹ 島へ in a room, ‹ 戻る on the board). No other ✕ or ‹: no typed ✕, no hand-drawn glyph, no 閉じる button.
+  Floating cards (the museum's, the HHA letter, the say picker, the K.K. picker, a board note, ごはん's photo) put
+  the same ✕ at their top-right corner; a level inside one (the say picker's field) gets ‹ top-left.
+- **Lead and trailing:** on a top level the lead slot (‹'s place) may hold one compact control: ⚙ (`kind="tool"`,
+  ききみみ, けっこんしき), whose data (けんこう, ごはん's who pill), km | mi (りょこう). Trailing, before ✕: tool icons
+  only (＋). Never words (キャンセル, 完了) in the bar.
+- **Forms and confirms:** a form sheet (`Sheet` default) is ✕ to cancel + one action in its footer (保存, a leaf `.btn`),
+  no キャンセル. An edit mode inside a sheet or the world (メモ, the board's note, a goal's tray) has キャンセル (paper)
+  then its action at its foot. A confirm asks 「…を削除しますか？」 and answers with the verb, never はい / いいえ:
+  a list's (the kit) is an `ActionSheet` (a short question, what it takes in `note`, the coral 削除 row; ✕ cancels),
+  one with a picture (a buy, a saved look) a sheet with キャンセル + the verb (`.btn.danger`, coral, for a 削除; 買う！
+  leaf). A delete that can be undone acts at once with 取り消す on its banner.
+- Sheets rise and levels slide in over 240 ms.
 
 ### Unified kit
 
@@ -582,11 +601,11 @@ nothing feature-local (`--wed-pink` → `--c-rose`, Pass's blue → `--c-sky`, h
   row per view, under the header. Grain only on the letter: a header band is plain `--surface`, the body's colour
   (as ごはん's and けんこう's). Side padding 12, stack gap 8.
 - **Components** (ui/):
-  - `Sheet variant="full"`: the column edge to edge on `--surface`, `.kit` scope; inside: NavBar s (its band pads
+  - `Sheet variant="full"`: the column edge to edge on `--surface`, `.kit` scope; inside: NavBar (its band pads 12 and
     `--ui-top` itself, or a PhotoBand `edge`), one scroller, TabBar (pads the home indicator).
     Default (paper) is the form sheet: `title`, fields, `footer` (保存), `focusField`.
-  - `NavBar size="s"` (48px, title 18): `title`, `onback`, `onclose`, `lead`, `trailing` (＋ ⚙ before ✕), `over` (on a photo).
-    `NavButton size="s"`: a 32px disc, `--sh-ctl-s`, 44px hit; `look="photo"` a smoked disc.
+  - `NavBar` ("Navigation": 48px, title 18): `title`, `onback`, `onclose`, `lead`, `trailing`, `over` (on a photo).
+    `NavButton`: `kind` back / close / tool (`icon`, `label`, `pressed`), `look="photo"`, `text`; one size.
   - `TabBar`: `items {id,label,icon}`, `value`, `label`, `attr` (`data-<attr>`), `onpick`; a cream dock plate, the shown
     tab on a yuzu pill; 56px + the safe area.
   - `Chip` (`label`, `count`, `dot`, `selected`, `onclick`, `data-*`) in `ChipRow` (`label`; one scrolling row, end fade).
@@ -2532,7 +2551,7 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   its year; a barcode. The one km | mi switch at the left of the list's title bar (the user, 2026-11-07; a small
   Segmented, 32 px in a 44 px hit; only there: this phone's, `DEVICE.travelUnits`, never synced; every
   `{km:}`, `{m:}`, `{c:}` follows at once: `units.ts`).
-- **A trip** (`TripView.svelte`, every trip: the user, 2026-11-07 "unify okinawa and seattle with new zealand"): ‹ ✕ (NavBar s `over`) on the PhotoBand (150 px; the title, dates,
+- **A trip** (`TripView.svelte`, every trip: the user, 2026-11-07 "unify okinawa and seattle with new zealand"): ‹ ✕ (NavBar `over`) on the PhotoBand (150 px; the title, dates,
   area at its foot), the title bar once it scrolls away; a TabBar 日程 · 地図 (with a route) · キャンプ場 (with
   campsites) · 持ち物. 日程: one control
   row held under the title bar, a chip a day (「1日目 2/11」, the day's colour; the shown one yuzu) and 準備; under it the

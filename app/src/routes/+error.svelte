@@ -5,13 +5,17 @@
   import { page } from '$app/state';
   import OfficialArt from '#lib/components/characters/OfficialArt.svelte';
   import Host from '#lib/components/characters/Host.svelte';
-  import { t } from '#lib/i18n/index.ts';
+  import { loadEnglish, t as tr } from '#lib/i18n/index.ts';
 
+  // the English lines once its catalog is in (it loads lazily; until then nothing is shown twice)
+  let en = $state(false);
+  $effect(() => void loadEnglish().then(() => (en = true), () => {}));
+  const t = (key: string, params: undefined, l: 'ja' | 'en') => (l === 'en' && !en ? '' : tr(key, params, l));
   const notFound = $derived(page.status === 404);
   const title = (l: 'ja' | 'en') => t(notFound ? 'error.notFound' : 'error.title', undefined, l);
 </script>
 
-<svelte:head><title>{t('app.name')}</title></svelte:head>
+<svelte:head><title>{tr('app.name')}</title></svelte:head>
 
 <main class="err sheet-copy">
   <span class="nook"><OfficialArt key="host/tom-nook" alt="" size="var(--nook-h)" eager>
@@ -25,7 +29,7 @@
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-island" /></svg>
     <span class="two"><span lang="ja">{t('error.home', undefined, 'ja')}</span><small lang="en">{t('error.home', undefined, 'en')}</small></span>
   </a>
-  <a class="demo" href={resolve('/') + '?demo'} data-sveltekit-reload data-sfx="confirm">{t('state.tryDemo', undefined, 'ja')} · {t('state.tryDemo', undefined, 'en')}</a>
+  <a class="demo" href={resolve('/') + '?demo'} data-sveltekit-reload data-sfx="confirm">{t('state.tryDemo', undefined, 'ja')}{#if en} · {t('state.tryDemo', undefined, 'en')}{/if}</a>
 </main>
 
 <style>

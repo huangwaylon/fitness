@@ -44,7 +44,7 @@
   {/if}
   {#snippet footer()}
     <div class="two">
-      <button type="button" class="btn paper" data-sfx="back" onclick={() => (open = false)}>{t('kiroku.cancel')}</button>
+      <button type="button" class="btn paper" data-sfx="back" onclick={() => (open = false)}>{t('common.cancel')}</button>
       <button type="button" class="btn" aria-disabled={!shown || price > balance} data-sfx="self" onclick={() => shown && onconfirm(shown)}>
         {t('wallet.buy')}
       </button>

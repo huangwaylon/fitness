@@ -113,7 +113,7 @@
   <p class="foot">{t('wed.set.shared')}</p>
 </div>
 
-<ActionSheet bind:open={asking} title={t('wed.set.purgeAsk', { n: deleted.length })} groups={[[{ id: 'purge', label: t('wed.set.purgeYes'), icon: 'trash', danger: true }]]}
+<ActionSheet bind:open={asking} title={t('wed.set.purgeAsk')} note={t('wed.set.purgeNote', { n: deleted.length })} groups={[[{ id: 'purge', label: t('wed.set.purgeYes'), icon: 'trash', danger: true }]]}
   onpick={(id) => id === 'purge' && purge()} />
 
 <style>
