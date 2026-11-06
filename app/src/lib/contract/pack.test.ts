@@ -137,7 +137,7 @@ describe('the rules (PackBook)', () => {
     expect(b.apply(chk('A', '_tick0001', T + 1)).v).toBe('append');
     expect(b.apply(chk('G', '_tick0001', T + 1)).v).toBe('append');
     expect(b.apply(chk('A', '_tick0001', T)).v).toBe('stale');
-    expect(b.apply(rm('B', '_tick0001', T + 2))).toEqual({ v: 'append', drop: ['pack_chk|okinawa|_tick0001|A', 'pack_chk|okinawa|_tick0001|G'] });
+    expect(b.apply(rm('B', '_tick0001', T + 2))).toMatchObject({ v: 'append', drop: ['pack_chk|okinawa|_tick0001|A', 'pack_chk|okinawa|_tick0001|G'] });
     expect(b.apply(chk('A', '_tick0001', T + 3)).v).toBe('stale');
     expect(b.apply(chk('A', '_never001', T + 3)).v).toBe('stale');
     expect(b.apply(chk('A', 'ok-0-0', T + 3)).v).toBe('append');
@@ -150,7 +150,7 @@ describe('the rules (PackBook)', () => {
     for (let i = 0; i < PACK_MAX - 1; i++) b.apply(set('A', `_cap${String(i).padStart(5, '0')}`, T + i));
     b.apply(rm('A', '_cap00007', T + 1000));
     b.apply(rm('A', '_cap00003', T + 1001));
-    expect(b.accept(set('A', '_capnew01', T + 2000))).toEqual({ v: 'append', drop: ['pack|okinawa|_cap00007'] });
+    expect(b.accept(set('A', '_capnew01', T + 2000))).toMatchObject({ v: 'append', drop: ['pack|okinawa|_cap00007'] });
     b.apply(set('A', '_capnew01', T + 2000));
     b.apply(set('A', '_capnew02', T + 2001));
     expect(b.accept(set('A', '_capnew03', T + 2002)).v).toBe('full');

@@ -1,6 +1,6 @@
 // A trip's packing list on this phone (docs/travel.md "Packing list (relay)"): the trip's seed with the record's ops
 // over it and this phone's queued ones (the model's `pack` rows folded by the record's rules: contract/pack.ts
-// packFold, packList), each item's ticks (each person's own, after their own reset), and my changes (each one event,
+// packBookOf, packList), each item's ticks (each person's own, after their own reset), and my changes (each one event,
 // sent at once, its names cleaned as the record keeps them; the record's notice brings them to every open phone). The
 // trip's private values (its `trip_note`) too. Nothing is mine to change until the week's view says who I am (`me`).
 //   packing.list(trip, seed)          categories (by ord), each with its items (by ord)
@@ -9,7 +9,7 @@
 //   packing.tick(trip, id, on) / resetHeld(trip, ms)      my own ticks
 //   packing.note(trip)                the trip note's values by key (null: not on the record, or not loaded yet)
 import {
-  newPackId, ordBetween, PACK_NAME, packFold, packList, packMayEdit, tripNoteOf, type L, type PackBook, type PackCat,
+  newPackId, ordBetween, PACK_NAME, packBookOf, packList, packMayEdit, tripNoteOf, type L, type PackBook, type PackCat,
   type PackEntry, type PackItem, type PackSeed
 } from '#lib/contract/pack.ts';
 import { cleanLine } from '#lib/contract/text.ts';
@@ -19,13 +19,7 @@ import { week } from '#lib/store/week.svelte.ts';
 import { world } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';
 
-/** The fold of a State's rows (a State is never mutated: its list's identity is the cache key). */
-const books = new WeakMap<readonly PackEntry[], PackBook>();
-const bookOf = (rows: readonly PackEntry[]): PackBook => {
-  let b = books.get(rows);
-  if (!b) books.set(rows, (b = packFold(rows)));
-  return b;
-};
+const EMPTY: readonly PackEntry[] = [];
 
 class Packing {
   #last = 0;
@@ -36,7 +30,7 @@ class Packing {
   }
 
   get #book(): PackBook {
-    return bookOf(week.model?.state.pack ?? []);
+    return packBookOf(week.model?.state.pack ?? EMPTY);
   }
 
   list(trip: string, seed: PackSeed | null | undefined): PackCat[] {

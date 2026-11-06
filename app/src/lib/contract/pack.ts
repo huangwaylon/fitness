@@ -17,6 +17,7 @@ import type { Who } from '../types.ts';
 import { isWho } from './api.ts';
 import { cleanLine } from './text.ts';
 import { AHEAD_MS, isMs, newOpId, only } from './ops.ts';
+import { beats, Book, foldOnce, type Queued, type Verdict } from './book.ts';
 
 // (who wrote it: the merge's tie-break is a fixed order, A < B < G)
 type Rec = Record<string, unknown>;
@@ -212,55 +213,23 @@ export function packSlot(type: string, sender: Who, d: Rec): string | null {
       return null;
   }
 }
-const slotOf = (r: PackRow): string => packSlot(r.type, r.who, r.op as unknown as Rec)!;
 
-/** Whether row `a` beats `b` (the same slot): a removal beats a set; else the later `at`, then G over B over A. */
-function packBeats(a: PackRow, b: PackRow): boolean {
-  if (a.type === 'pack' && b.type === 'pack' && !!a.op.rm !== !!b.op.rm) return !!a.op.rm;
-  if (a.op.at !== b.op.at) return a.op.at > b.op.at;
-  return a.who > b.who;
-}
-
-/** What the record does with a row: `append` (its slot's row replaced, the slots in `drop` deleted with it: a removal
- *  past the cap, a removed item's ticks), `stale` (acknowledged, nothing kept), `forbidden`, `full` (the trip's cap and
- *  nothing to drop) or `owner` (a set whose `by` isn't its id's creator). */
-export type PackVerdict = { v: 'append'; drop: string[] } | { v: 'stale' | 'forbidden' | 'full' | 'owner' };
+/** What the record does with a row (contract/book.ts Verdict): `append` (the slots in `drop` deleted with it: a removal
+ *  past the cap, a removed item's ticks), `stale`, `forbidden`, `full` (the trip's cap and nothing to drop) or `owner`
+ *  (a set whose `by` isn't its id's creator). */
+export type PackVerdict = Verdict<PackRow, 'forbidden' | 'full' | 'owner'>;
 
 /**
- * A trip's packing rows as the record holds them (each slot's latest), with what the rules need counted: the record
- * builds one from a trip's rows for each op it's sent, the phone folds every row into one (packFold).
+ * A trip's packing rows as the record holds them (each slot's latest), with what the rules need counted (`pack` rows a
+ * trip, `pack_chk` rows a trip and person): the record builds one from a trip's rows for each op it's sent, the phone
+ * folds every row into one (packFold).
  */
-export class PackBook {
-  readonly rows = new Map<string, PackRow>();
-  /** `pack` rows a trip, `pack_chk` rows a trip and person. */
-  #n = new Map<string, number>();
-
-  #count(r: PackRow): string | null {
+export class PackBook extends Book<PackRow, 'forbidden' | 'full' | 'owner'> {
+  protected slotOf(r: PackRow): string {
+    return packSlot(r.type, r.who, r.op as unknown as Rec)!;
+  }
+  protected countOf(r: PackRow): string | null {
     return r.type === 'pack' ? `p|${r.op.trip}` : r.type === 'pack_chk' ? `c|${r.op.trip}|${r.who}` : null;
-  }
-  #bump(r: PackRow, by: number): void {
-    const k = this.#count(r);
-    if (k) this.#n.set(k, (this.#n.get(k) ?? 0) + by);
-  }
-
-  /** A row taken as it is (the record's own, read back), replacing its slot's. */
-  put(r: PackRow): void {
-    const s = slotOf(r);
-    const was = this.rows.get(s);
-    if (was) this.#bump(was, -1);
-    this.rows.set(s, r);
-    this.#bump(r, 1);
-  }
-  /** A row the record kept: in its slot unless the one there beats it. */
-  merge(r: PackRow): void {
-    const held = this.rows.get(slotOf(r));
-    if (!held || packBeats(r, held)) this.put(r);
-  }
-  delete(slot: string): void {
-    const was = this.rows.get(slot);
-    if (!was) return;
-    this.#bump(was, -1);
-    this.rows.delete(slot);
   }
 
   /** The `pack` row an id holds in a trip (null: none). */
@@ -286,7 +255,7 @@ export class PackBook {
 
   /** The record's rules for a new row (see PackVerdict). */
   accept(r: PackRow): PackVerdict {
-    const slot = slotOf(r);
+    const slot = this.slotOf(r);
     const held = this.rows.get(slot) ?? null;
     switch (r.type) {
       case 'pack': {
@@ -306,63 +275,43 @@ export class PackBook {
           // is gone, or never was)
           if (isNewId(op.id) && (op.rm || op.by !== r.who)) return { v: 'stale' };
         } else {
-          if (!packBeats(r, h)) return { v: 'stale' };
+          if (!beats(r, h)) return { v: 'stale' };
           if (!op.rm && (op.by ?? null) !== creator) return { v: 'owner' };
         }
         const drop: string[] = [];
-        if (!h && (this.#n.get(`p|${op.trip}`) ?? 0) >= PACK_MAX) {
+        if (!h && this.count(`p|${op.trip}`) >= PACK_MAX) {
           const gone = this.#oldestGone(op.trip);
           if (!gone) return { v: 'full' };
           drop.push(gone);
         }
         // a removed item's ticks go with it (a late tick of it is stale: the removal is held, or its id was made by an op)
         if (op.rm) for (const [s, x] of this.rows) if (x.type === 'pack_chk' && x.op.trip === op.trip && x.op.id === op.id) drop.push(s);
-        return { v: 'append', drop };
+        return { v: 'append', row: r, drop };
       }
       case 'pack_chk': {
         const it = this.item(r.op.trip, r.op.id);
         // a tick of a removed item, or of an id an op made that the record doesn't hold
         if (it?.op.rm || (!it && isNewId(r.op.id))) return { v: 'stale' };
-        if (held && !packBeats(r, held)) return { v: 'stale' };
-        if (!held && (this.#n.get(`c|${r.op.trip}|${r.who}`) ?? 0) >= PACK_MAX) return { v: 'full' };
-        return { v: 'append', drop: [] };
+        if (held && !beats(r, held)) return { v: 'stale' };
+        if (!held && this.count(`c|${r.op.trip}|${r.who}`) >= PACK_MAX) return { v: 'full' };
+        return { v: 'append', row: r, drop: [] };
       }
       case 'pack_reset':
-        return held && !packBeats(r, held) ? { v: 'stale' } : { v: 'append', drop: [] };
+        return held && !beats(r, held) ? { v: 'stale' } : { v: 'append', row: r, drop: [] };
       case 'trip_note':
         if (r.who === 'G') return { v: 'forbidden' };
-        return held && !packBeats(r, held) ? { v: 'stale' } : { v: 'append', drop: [] };
+        return held && !beats(r, held) ? { v: 'stale' } : { v: 'append', row: r, drop: [] };
     }
-  }
-
-  /** A row through the rules, kept if they take it: its verdict. */
-  apply(r: PackRow): PackVerdict {
-    const v = this.accept(r);
-    if (v.v === 'append') {
-      for (const s of v.drop) this.delete(s);
-      this.put(r);
-    }
-    return v;
   }
 }
 
 /** A row as the model holds it: the record's, or this phone's not yet sent (`queued`). */
-export type PackEntry = PackRow & { queued?: true };
+export type PackEntry = Queued<PackRow>;
 
-/**
- * The rows as the record keeps them, from the model's in the order they came: the record's own taken as they are (each
- * slot's latest: one that an older row beats is skipped), this phone's queued ones through the record's rules (accept),
- * so a phone shows what the record will. (The record's rows aren't judged again: it keeps a slot's latest row only, so
- * an item's creation, which its rules need, may be long gone from them.)
- */
-export function packFold(rows: Iterable<PackEntry>): PackBook {
-  const b = new PackBook();
-  for (const r of rows) {
-    if (r.queued) b.apply(r);
-    else b.merge(r);
-  }
-  return b;
-}
+/** The rows as the record keeps them (contract/book.ts Book.fold). */
+export const packFold = (rows: Iterable<PackEntry>): PackBook => new PackBook().fold(rows);
+/** A model's list folded, once per list (the packing list's store). */
+export const packBookOf = foldOnce(packFold);
 
 /** An item on the list. `by`: who made it (null: the seed's); `ticks`: who has it packed (after their reset). */
 export interface PackItem { id: string; cat: string; name: L; note?: L; ord: number; seed: boolean; by: Who | null; ticks: Who[] }
