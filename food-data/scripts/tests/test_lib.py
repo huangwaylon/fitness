@@ -343,7 +343,7 @@ class Validation(unittest.TestCase):
         for bad in (item(cat='肉料理'), item(id='off:1'), item(kcal=1.5), item(kcal=True), item(p='1'),
                     item(portions=[{'label': '', 'g': 1}]), item(portions=[]), item(aliases=['米']), item(pop=4),
                     item(ingredients=[]), item(name=''), item(jan='123'), item(fib=100.5), item(fib=None), item(alc='1', cat='酒'),
-                    item(alc=1.0), item(desc=''), item(desc='あ' * 41), item(desc=['x'])):   # fibre and alcohol: absent when unknown, 0-100; alcohol on a drink only
+                    item(alc=1.0), item(desc=''), item(desc='あ' * 41), item(desc=['x']), item(gloss=''), item(gloss='あ' * 21)):   # fibre and alcohol: absent when unknown, 0-100; alcohol on a drink only
             self.assertEqual(len(lib.validate(self.doc(bad))), 1, bad)
         self.assertEqual(len(lib.validate(self.doc(item(), item()))), 1)          # duplicate id
         self.assertIn('missing url', lib.validate(dict(self.doc(item()), url='')))
@@ -537,11 +537,21 @@ class Descriptions(unittest.TestCase):
                     {'mext': {'06 ずいき': 'さといもの葉柄'}}, {'eatout2': {}}):
             self.assertEqual(len(build.desc_errors(bad)), 1, bad)
 
+    def test_gloss_japanese_only(self):
+        ok = {'mext': {'06 リーキ': {'d': '西洋ねぎ', 'src': ['mext:06308', 'wp:リーキ']}}}
+        self.assertEqual(build.desc_errors(ok, 'gloss'), [])
+        for g in ('leek', '西洋 ねぎ', 'あ' * 21):
+            self.assertEqual(len(build.desc_errors({'mext': {'06 リーキ': {'d': g, 'src': ['a', 'b']}}}, 'gloss')), 1, g)
+        its = [{'id': 'mext:1'}]
+        build.attach_desc(its, {'06 リーキ': '西洋ねぎ'}, {'1': ['06', 'リーキ', 'りん茎葉', '生']}, 'gloss')
+        self.assertEqual(its, [{'id': 'mext:1', 'gloss': '西洋ねぎ'}])
+
     def test_the_shipped_lines(self):
         """The real file: valid, every line within the limit and sourced (its keys are matched by the build)."""
-        doc = lib.load_json(os.path.join(lib.SRC, 'descriptions.json'))
-        self.assertEqual(build.desc_errors(doc), [])
-        self.assertEqual(sorted(t for t in doc if not t.startswith('_')), sorted(build.DESC_TARGETS))
+        for field, (fname, _) in build.LINE_FILES.items():
+            doc = lib.load_json(os.path.join(lib.SRC, fname))
+            self.assertEqual(build.desc_errors(doc, field), [])
+            self.assertEqual(sorted(t for t in doc if not t.startswith('_')), sorted(build.DESC_TARGETS))
 
 
 if __name__ == '__main__':

@@ -55,6 +55,7 @@ header fields as they are written in the file.
 | `jan`, `brand` | packaged products only |
 | `note` | how the value was derived, shown in the picker |
 | `desc` | optional 「これは…」 line (≤ 40 characters, no final 。): what an unfamiliar food or dish is and what it looks like. See [Descriptions](#descriptions) |
+| `gloss` | optional everyday Japanese name shown under the food's own (≤ 20 characters, Japanese only): リーキ → 西洋ねぎ, しらたき → 糸こんにゃく. From `data_src/glosses.json`, as `desc` (two sources each: MEXT 別名/備考, `mext_overrides.txt`, Wikidata labels/aliases, ja.wikipedia). Never a spelling or reading, a dish or use (とんかつ for 豚ロース), a broader category, or an archaic, botanical or regional name; most foods have none |
 
 MEXT markers are converted as follows: `Tr`/`(Tr)` → 0, `(N)` → N, `-` → null (absent for `fib`/`alc`), a footnote mark
 dropped (還元水あめ's fibre `14.0†`). kcal is MEXT's energy as given: it already holds alcohol's 7 kcal/g. Recipe datasets don't ship their ingredient lists.
@@ -139,6 +140,9 @@ line (also a narrower key's way to drop a broader one's), and a key matching no 
   Each batch is checked by an independent pass against the same sources before it ships.
 - **Plain and factual.** No health or nutrition claims (`DESC_BANNED`), no Wikipedia sentence copied: the lines are
   ours, written from the facts. Everyday foods (ごはん, 牛乳) have none.
+- **Everyday names** (`gloss`, `data_src/glosses.json`) work the same way, sources `mext:` (別名), `ov:` (`mext_overrides.txt`),
+  `wd:` (labels/aliases) and `wp:`; the first batch, 26 keys on 31 MEXT foods, came from 152 alias candidates, and the
+  independent check flagged 5 of 31 (dropped).
 - **Credit.** MEXT's attribution says the descriptions are ours (「説明文は本アプリで加工・追加」); the MAFF dataset's covers
   its dishes'. Wikipedia and Wikidata are only sources of facts for our own wording (no text is shipped).
 

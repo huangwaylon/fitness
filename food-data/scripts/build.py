@@ -739,10 +739,16 @@ def mext_desc_key(group, name):
     return [group] + toks
 
 
-def desc_errors(doc):
-    """Problems in a descriptions doc: {"_…": comment, target: {key: {"d": line, "src": [source, ...]}}}. A line is one
-    short sentence, no final 。 and no health claim, backed by at least two independent sources (`src`: build-time
-    only, never shipped); "d": "" means none (also a narrower key's way to drop a broader one's line)."""
+# the hand-authored per-item lines: field -> (file in data_src, max length)
+LINE_FILES = {'desc': ('descriptions.json', lib.DESC_MAX), 'gloss': ('glosses.json', lib.GLOSS_MAX)}
+
+
+def desc_errors(doc, field='desc'):
+    """Problems in a descriptions (or glosses) doc: {"_…": comment, target: {key: {"d": line, "src": [source, ...]}}}.
+    A line is one short sentence, no final 。 and no health claim, backed by at least two independent sources (`src`:
+    build-time only, never shipped); "d": "" means none (also a narrower key's way to drop a broader one's line). A
+    gloss (an everyday name) is Japanese only: no Latin letters, no punctuation."""
+    limit = LINE_FILES[field][1]
     errs = []
     for t, lines in doc.items():
         if t.startswith('_'):
@@ -754,8 +760,9 @@ def desc_errors(doc):
             if t == 'mext' and not re.fullmatch(r'\d\d( \S+)+', k):
                 errs.append('mext key %r: not "<group> <token> ..."' % k)
             v, src = (e.get('d'), e.get('src')) if isinstance(e, dict) else (None, None)
-            if not isinstance(v, str) or len(v) > lib.DESC_MAX or v != v.strip() or re.search(r'[\n。]$|[\n\ufffd]', v) \
-                    or DESC_BANNED.search(v) or set(e) - {'d', 'src'}:
+            if not isinstance(v, str) or len(v) > limit or v != v.strip() or re.search(r'[\n。]$|[\n\ufffd]', v) \
+                    or DESC_BANNED.search(v) or set(e) - {'d', 'src'} \
+                    or field == 'gloss' and re.search(r'[A-Za-zＡ-Ｚａ-ｚ\s。、,.]', v):
                 errs.append('%s %s: bad line %r' % (t, k, e))
             elif v and (not isinstance(src, list) or len(set(src)) < 2
                         or not all(isinstance(x, str) and x.strip() for x in src)):
@@ -763,18 +770,19 @@ def desc_errors(doc):
     return errs
 
 
-def load_descriptions(path=None):
-    """{target: {key: line}} from data_src/descriptions.json (every target present, maybe empty; the sources dropped)."""
-    path = path or os.path.join(SRC, 'descriptions.json')
+def load_descriptions(path=None, field='desc'):
+    """{target: {key: line}} from data_src/descriptions.json or glosses.json (every target present, maybe empty; the
+    sources dropped)."""
+    path = path or os.path.join(SRC, LINE_FILES[field][0])
     doc = load_json(path) if os.path.exists(path) else {}
-    errs = desc_errors(doc)
+    errs = desc_errors(doc, field)
     if errs:
-        fail('descriptions.json: ' + '; '.join(errs[:10]))
+        fail('%s: %s' % (os.path.basename(path), '; '.join(errs[:10])))
     return {t: {k: e['d'] for k, e in doc.get(t, {}).items()} for t in DESC_TARGETS}
 
 
-def attach_desc(items, lines, mext_keys=None):
-    """Set each item's `desc` from `lines`: by its local id, or (mext_keys: item id -> key tokens) the longest key
+def attach_desc(items, lines, mext_keys=None, field='desc'):
+    """Set each item's `desc` (or `field`) from `lines`: by its local id, or (mext_keys: item id -> key tokens) the longest key
     matching the start of a food's tokens, '*' standing for any one token (of keys as long, the one with fewer '*'
     wins, then the first in the file). -> the keys that matched no item."""
     used = set()
@@ -790,7 +798,7 @@ def attach_desc(items, lines, mext_keys=None):
         if k is not None:
             used.add(k)
             if lines[k]:
-                it['desc'] = lines[k]
+                it[field] = lines[k]
     return sorted(set(lines) - used)
 
 
@@ -839,7 +847,7 @@ class Builder:
 
     @functools.cached_property
     def descriptions(self):
-        return load_descriptions()
+        return {f: load_descriptions(field=f) for f in LINE_FILES}
 
     def get(self, name):
         if name not in self.docs:
@@ -855,9 +863,10 @@ class Builder:
                     tidy(it)
                 if name in DESC_TARGETS:
                     mk = {r['id']: mext_desc_key(r['group'], r['name']) for r in self.mext_rows} if name == 'mext' else None
-                    unused = attach_desc(doc['items'], self.descriptions[name], mk)
-                    if unused:
-                        fail('descriptions.json %s: keys matching no item: %s' % (name, ', '.join(unused[:10])))
+                    for f, (fname_, _) in LINE_FILES.items():
+                        unused = attach_desc(doc['items'], self.descriptions[f][name], mk, f)
+                        if unused:
+                            fail('%s %s: keys matching no item: %s' % (fname_, name, ', '.join(unused[:10])))
                 self.docs[name] = doc
         return self.docs[name]
 

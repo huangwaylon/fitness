@@ -25,6 +25,8 @@ export interface Item {
   note?: string;
   /** A short 「これは…」 line: what the food is and looks like (food-data/data_src/descriptions.json, two sources each). */
   desc?: string;
+  /** An everyday name shown under the food's own (data_src/glosses.json, two sources each): リーキ → 西洋ねぎ. */
+  gloss?: string;
   /** kcal an integer; the rest 1 decimal, null when unknown. `c` total carbohydrate, `salt` 食塩相当量. */
   kcal: number;
   p?: number | null;
