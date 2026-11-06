@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, foodImgStale, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, roomEvict, type RoomIndex, isAudio, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgStale, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -78,59 +78,62 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE])) await caches.delete(key);
+      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE])) await caches.delete(key);
       await self.clients.claim();
     })()
   );
 });
 
-// The room cache's bound (caches.ts roomEvict): its index (each file's bytes and last use) in memory while the worker
-// runs, kept in the cache itself a moment after a change, with the files it lets go deleted then. Read back (and
-// matched to the cache's files: one put as the worker was stopped is counted then) the first time the room is asked
-// for. A cache from before the index is counted whole once, every file used now in the cache's order (the older
-// versions go at once; the rest only after ROOM_KEEP_MS unused).
-const ROOM_INDEX_URL = new URL(ROOM_INDEX, self.registration.scope).href;
-let roomIndex: Promise<RoomIndex> | null = null;
+// A cache bounded by bytes (the room's, caches.ts roomEvict; ききみみ's packs', listenEvict): its index (each file's
+// bytes and last use) in memory while the worker runs, kept in the cache itself a moment after a change, with the files
+// it lets go deleted then. Read back (and matched to the cache's files: one put as the worker was stopped is counted
+// then) the first time the cache is asked for. A cache from before the index is counted whole once, every file used now
+// in the cache's order (the room's older versions go at once; the rest only after its keep time unused).
 const sizeOf = async (res: Response): Promise<number> => (await res.blob()).size;
-function roomIndexOf(cache: Cache): Promise<RoomIndex> {
-  return (roomIndex ??= (async () => {
-    let idx: RoomIndex = {};
-    try {
-      const kept = await cache.match(ROOM_INDEX_URL);
-      if (kept) idx = (await kept.json()) as RoomIndex;
-    } catch {
-      idx = {};
-    }
-    const urls = (await cache.keys()).map((k) => k.url).filter((u) => u !== ROOM_INDEX_URL);
-    const have = new Set(urls), now = Date.now();
-    for (const u of Object.keys(idx)) if (!have.has(u)) delete idx[u];
-    for (let i = 0; i < urls.length; i++) {
-      if (idx[urls[i]]) continue;
-      const res = await cache.match(urls[i]);
-      idx[urls[i]] = [res ? await sizeOf(res).catch(() => 0) : 0, now - urls.length + i];
-    }
-    return idx;
-  })().catch((e: unknown) => {
-    roomIndex = null;
-    throw e;
-  }));
+function boundedCache(name: string, indexPath: string, evict: (idx: RoomIndex, now: number) => string[]): (url: string, bytes?: number) => Promise<void> {
+  const indexUrl = new URL(indexPath, self.registration.scope).href;
+  let index: Promise<RoomIndex> | null = null;
+  const indexOf = (cache: Cache): Promise<RoomIndex> =>
+    (index ??= (async () => {
+      let idx: RoomIndex = {};
+      try {
+        const kept = await cache.match(indexUrl);
+        if (kept) idx = (await kept.json()) as RoomIndex;
+      } catch {
+        idx = {};
+      }
+      const urls = (await cache.keys()).map((k) => k.url).filter((u) => u !== indexUrl);
+      const have = new Set(urls), now = Date.now();
+      for (const u of Object.keys(idx)) if (!have.has(u)) delete idx[u];
+      for (let i = 0; i < urls.length; i++) {
+        if (idx[urls[i]]) continue;
+        const res = await cache.match(urls[i]);
+        idx[urls[i]] = [res ? await sizeOf(res).catch(() => 0) : 0, now - urls.length + i];
+      }
+      return idx;
+    })().catch((e: unknown) => {
+      index = null;
+      throw e;
+    }));
+  let tidy: Promise<void> | null = null;
+  /** A file used (and its bytes, when it was just stored); the index kept and the files over the bound let go a
+   *  moment later (one write for a burst of files). */
+  return async (url, bytes) => {
+    const cache = await caches.open(name);
+    const idx = await indexOf(cache);
+    idx[url] = [bytes ?? idx[url]?.[0] ?? 0, Date.now()];
+    return (tidy ??= new Promise((r) => setTimeout(r, 2000)).then(async () => {
+      tidy = null;
+      for (const u of evict(idx, Date.now())) {
+        await cache.delete(u);
+        delete idx[u];
+      }
+      await cache.put(indexUrl, new Response(JSON.stringify(idx), { headers: { 'content-type': 'application/json' } }));
+    }));
+  };
 }
-let roomTidy: Promise<void> | null = null;
-/** A room file used (and its bytes, when it was just stored); the index kept and the files over the bound let go a
- *  moment later (one write for a model's burst of files). */
-async function roomUsed(url: string, bytes?: number): Promise<void> {
-  const cache = await caches.open(ROOM_CACHE);
-  const idx = await roomIndexOf(cache);
-  idx[url] = [bytes ?? idx[url]?.[0] ?? 0, Date.now()];
-  return (roomTidy ??= new Promise((r) => setTimeout(r, 2000)).then(async () => {
-    roomTidy = null;
-    for (const u of roomEvict(idx, Date.now())) {
-      await cache.delete(u);
-      delete idx[u];
-    }
-    await cache.put(ROOM_INDEX_URL, new Response(JSON.stringify(idx), { headers: { 'content-type': 'application/json' } }));
-  }));
-}
+const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(idx, now));
+const listenUsed = boundedCache(LISTEN_CACHE, LISTEN_INDEX, (idx, now) => listenEvict(idx, now));
 
 /** Ours first (a static file may change under the same path), then the previous generation's. */
 async function cached(req: Request | string): Promise<Response | undefined> {
@@ -171,6 +174,33 @@ self.addEventListener('fetch', (event) => {
         clearTimeout(timer);
         if (first) return first;
         return (await cached(SCOPE)) ?? net.then((r) => r ?? Response.error(), () => Response.error());
+      })()
+    );
+    return;
+  }
+
+  // ききみみ's packs: cache first and never revalidated (the hash is in the name), fetched whole (packs.ts; a Range
+  // request goes to the network), stored after the answer; each use marks the pack in the index, the least recently
+  // used going past the cache's bytes, never one used in the last 10 minutes (caches.ts listenEvict).
+  if (isListenPack(url.pathname)) {
+    if (req.headers.has('range')) return;
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(LISTEN_CACHE);
+        const hit = await cache.match(req);
+        if (hit) {
+          event.waitUntil(listenUsed(req.url).catch(() => {}));
+          return hit;
+        }
+        const res = await fetch(req);
+        if (res.ok && res.status === 200) {
+          const copy = res.clone(), sized = res.clone();
+          event.waitUntil((async () => {
+            await cache.put(req, copy);
+            await listenUsed(req.url, await sizeOf(sized));
+          })().catch(() => {}));
+        }
+        return res;
       })()
     );
     return;

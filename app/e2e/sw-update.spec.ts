@@ -3,7 +3,7 @@
 // slow); a deploy (a new worker, _app/version.json naming a new version) reloads the page only once the new worker
 // controls it, so the reload is served the new build's own shell.
 import { expect, test, type Page } from './fixtures.ts';
-import { hudMenu } from './hud.ts';
+import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ serviceWorkers: 'allow' });
 
@@ -166,4 +166,23 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
   // (every file in it, with its bytes, once the island's loads settle: it's kept 2 s after a change)
   await expect.poll(async () => Object.keys(await index()).length - ((await room()).length - 1), { timeout: 30_000 }).toBe(0);
   expect(Object.entries(await index()).find(([u]) => u.endsWith(real.url))?.[1][0]).toBeGreaterThan(100);
+});
+
+// (in Chromium, as the room's)
+test('ききみみ’s packs: the lobby’s pack goes into the listen cache whole, with its bytes in the index', { tag: '@chromium' }, async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.goto('?demo&critter=none&visitor=none&kikimimi=fast');
+  await expect(hudMenu(page)).toBeVisible();
+  await controlled(page);
+  await fromMenu(page, 'kikimimi');
+  await expect(page.locator('dialog[open] [data-kikimimi]')).toHaveAttribute('data-phase', 'lobby');
+  const listen = () => page.evaluate(async () => {
+    const c = await caches.open('island-listen-v1');
+    const idx = await c.match(new URL('__listen-index', (await navigator.serviceWorker.getRegistration())!.scope).href);
+    return { keys: (await c.keys()).map((k) => new URL(k.url).pathname), index: idx ? ((await idx.json()) as Record<string, [number, number]>) : {} };
+  });
+  await expect.poll(async () => (await listen()).keys.filter((p) => /\/audio\/listen\/lv1\.[0-9a-f]{8}\.pak$/.test(p)).length, { timeout: 20_000 }).toBe(1);
+  await expect.poll(async () => Object.entries((await listen()).index).find(([u]) => /\/lv1\.[0-9a-f]{8}\.pak$/.test(u))?.[1][0] ?? 0, { timeout: 10_000 }).toBeGreaterThan(100_000);
+  // and not in the audio LRU's cache
+  expect(await page.evaluate(async () => (await (await caches.open('island-audio-v1')).keys()).filter((k) => k.url.includes('/audio/listen/')).length)).toBe(0);
 });
