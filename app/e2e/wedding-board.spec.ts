@@ -9,7 +9,7 @@
 // ask) and the guest's read-only board (`?demo&as=G`). Logic tier: nothing here is drawn 3D. WED_SHOTS=1 saves
 // screenshots to /tmp/wedding-ui-shots/.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DAY = 'date=2026-11-06T12:00';
@@ -370,4 +370,21 @@ test('パニエル\'s line: the day\'s first opening only', async ({ page }) => 
   await fromMenu(page, 'wedding');
   await expect(sheet(page).locator('[data-wed-top]')).toBeVisible();
   await expect(sheet(page).locator('[data-wed-greet]')).toHaveCount(0);
+});
+
+test('the island paused under the board; offline before the first opening: the banner, もういちど opens it once back', async ({ page, context }) => {
+  await page.goto(`?demo&${DAY}&critter=none&visitor=none`);
+  await expect(hudMenu(page)).toBeVisible();
+  await context.setOffline(true);
+  await unfoldMenu(page);
+  await page.locator('[data-hud-wedding]').click();
+  await expect(page.getByText('オフラインです')).toBeVisible();
+  await expect(page.locator('dialog[open]')).toHaveCount(0);
+  await context.setOffline(false);
+  // Chromium fetches the chunk again; WebKit keeps a failed import for the page's life, so it reloads: the pill again
+  const how = Promise.race([page.waitForEvent('load').then(() => 'reload'), sheet(page).waitFor().then(() => 'open')]);
+  await page.getByRole('button', { name: 'もういちど' }).click();
+  if ((await how) === 'reload') await fromMenu(page, 'wedding');
+  await expect(sheet(page).locator('[data-wed-top]')).toBeVisible();
+  await expect(page.locator('[data-covered][data-sheet]')).toHaveCount(1);
 });

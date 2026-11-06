@@ -1,11 +1,5 @@
-// けっこんしき's always-loaded part (docs/wedding.md): whether the board's sheet is mounted (from its first opening)
-// and open. The leaf menu's pill opens it; IslandScene covers the island while it's open. Nothing of the board itself
-// is imported here: it comes with the sheet's chunk (WeddingSheet.svelte).
+// けっこんしき's always-loaded part (docs/wedding.md): the board's sheet, a lazySheet (the board comes with its chunk,
+// WeddingSheet.svelte); the menu's pill shows it, the HUD mounts it.
+import { lazySheet } from '#lib/ui-state/lazySheet.svelte.ts';
 
-export const weddingSheet = $state<{ mounted: boolean; open: boolean }>({ mounted: false, open: false });
-
-/** Open the board's sheet (the menu pill's pick, after its press beat). */
-export function openWedding(): void {
-  weddingSheet.mounted = true;
-  weddingSheet.open = true;
-}
+export const weddingSheet = lazySheet(() => import('./WeddingSheet.svelte'));
