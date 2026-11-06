@@ -310,6 +310,14 @@ These are written to the §2 template before any content (§10). units.test chec
 
 **The phrase ずかん** (srs.ts): `phrasesOf` (caught: right on the first listen in 3 different items on ≥ 2 days, any mode) and `phraseReview` (a Leitner card per phrase, a new clip each, ≤ 8 a day, counting those reviewed today).
 
-**The test entry** until しまの みち: the dev hook `?units` (a dev build or `?demo`) lists the units on the lobby (UnitList.svelte: dots, stamps, phrases caught, the recheck when due). The e2e puts a fixture unit in through `__kiki.unit` (pool.ts `addUnit`).
+**The test entry** (`?units`, UnitList.svelte) was replaced by しまの みち in U4 (§14). The e2e puts a fixture unit in through `__kiki.unit` (pool.ts `addUnit`).
 
-**Left for later:** the phone-band condition on the チェック's audio; the real ずかん, hub cards and path UI (U4); co-op lessons (8c); じっせん's ladders as a lesson.
+**Left for later:** the phone-band condition on the チェック's audio; hub cards (with the hub); co-op lessons (8c); じっせん's ladders as a lesson.
+
+## 14. U4 as built (2026-11-06): しまの みち
+
+docs/kikimimi-ux.md §6.3 (the path), §6.3b (a unit's page), §6.5 (the lobby's card), §6.7 (the results' strip) and §6.10 (a minimal phrase ずかん) describe what's built. In short:
+- **The model** is `kikimimi/path.ts` (pure, path.test): the stages as the spine, the anchors first in a stage, the current unit (the last one played and unstamped, else the first open one from my comfortable stage up), `nextLesson`, domain filters (other domains collapse to a dot; the anchors stay), a stage more than a step above my level shown softly but playable. progress.svelte.ts `pathUnits` / `currentPath` feed it from the index's path lines (and a fixture's chunk); a `draft` unit shows only with the dev hooks on.
+- **The UI** is `components/kikimimi/path/`: PathCard (in the lobby, until the hub), IslandPath, UnitPage and PhraseZukan (lazy chunks, ≤ 15 KB gzipped each by kikimimi-budget.ts), LessonDots (shared with the results' strip). The sheet keeps one stack over my lobby (path › unit, ずかん); a lesson's おわる comes back to it; the results' strip offers the next core lesson. Lessons stay solo until 8c.
+- **Hub card 1's recheck** is a banner on the path until the hub exists.
+- **Tests:** path.test (ordering, the current unit, filters, the soft stage, the next lesson); e2e kikimimi-units (the path from the lobby, a unit's page, であい played solo moving its dot on the page and the path, a filter; とばして チェック's mission card and stamp on the results, the unit page and the path; the ずかん on the unit's phrases). `KIKI_SHOTS=1` writes /tmp/kikimimi-shots/u4/.

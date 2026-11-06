@@ -183,25 +183,53 @@ The prototype's screens, in order. Sizes are the app's tokens: cards `--r-card` 
 - **At most one ✨ 「あたらしい」 pill** at a time: the newest mode until it's been played once.
 - **No filter UI.** At 18 modes, four labelled groups are faster than filters.
 
-### 6.3 しまの みち (the island path)
+### 6.3 しまの みち (the island path) — built (U4, 2026-11-06)
 
 ```
-│ (しずえ) どの ユニットからでも どうぞ。とばして チェックも できます。│
-│ はまべ ★  [クリア]                     📻 ラジカセ │  stage + landmark reward
-│        ┌ (✓) はまべ 1 · 2 ─────────────────┐      │
-│ かわ ★★                                🛶 いかだ   │
-│ ┌ (✓ ルル) ① えきで まちあわせ ┐                  │  zig-zag nodes
-│        ┌ (✓ ジュディ) ② ともだちと よてい ┐       │
-│ ┌ (ジュン) ③ カフェで ちゅうもん ●○○○○ [つづける]┐ │  current: green edge
-│        ┌ (ジュリー) ④ びょういんの でんわ    › ┐   │
-│ もり ★★★                               🍄 ランプ   │
-│ ░░ みみ チェックで ★★★ に なったら ひらきます ░░ │  mist, never a lock wall
+│ (‹)            しまの みち             (✕) │
+│ (しずえ) すきな ところから どうぞ。1かい 2ぷんで おわります。│
+│ ┌ おさらい チェック 「…」30にち たったよ   [あそぶ] ┐ │  only when a recheck is due
+│ [ぜんぶ][👥 ともだち][✈️ たび][💼 しごと][🎉 …] →   │  chips, one row, scrolls sideways
+│ はまべ ★                                          │
+│        ┌ (しずえ) はまべ 1・2 · ひとこと クイズ  › ┐ │  the quick quiz at はまべ (no units)
+│ かわ ★★                              ✓ 0 / 4     │
+│  はじめに おすすめ                                 │  the anchors (glue) first
+│ ┌(💬 マスター) ききかえす      [つづける] ┐          │  current: green edge
+│ │ マスター · きほん  ◉○○ ☆☆             │          │  3 core dots (next ringed yuzu) + 2 extras
+│        ┌(💬 キャラメル) でんわを おえる  › ┐        │  zig-zag
+│ もり ★★★  すこし はやいかも。でも あそべます ✓ 1 / 4│  soft: striped, still tappable
+│ ┌(✈️ ナタリー ✓) ホテルで こまった ○○● › ┐          │  ✓ my stamp; ✓✓ both; outline ✓ the partner's
+│ やま ★★★★  ░ まだ きりの なか。みちが できるのを まってね ░ │  no units yet: mist
+│ [📖 ことば ずかん                        ›]       │
 ```
 
-- **A node is a unit** (curriculum §6): its host villager, its scenario, and five lesson dots (であい, おと, ばめん, じっせん, チェック). The mode each lesson uses is chosen by the unit.
-- **Freedom:** placement opens stages; inside an open stage every unit can be played in any order. 「とばして チェック」 on any node runs lesson 5 at once (≥ 80 % on the first play stamps the unit).
-- **Couple view:** a unit both have stamped shows a double stamp. Stages are never shown side by side.
-- Built after increment 9, when `units/index.json` has each unit's stage and host. Until then, あそぶ has no path card and the menu's card 2 is 「きょうの クイズ」 at your stage.
+- **Where it lives:** until the hub is built, the lobby's first card (`path/PathCard.svelte`: the current unit's host, its domain icon, name and dots, ›) pushes it. The sheet keeps one stack over my lobby (`KikimimiSheet` `pages`: `path › unit(id)`, and `zukan(unit?)`); ‹ pops one, ✕ closes the sheet, the stack is cleared on close. A lesson's intro card and its game sit over the stack; ‹ on the intro card goes back to the page; the lesson's おわる comes back to the page it was started from. The `?units` test list is gone.
+- **The model** is `kikimimi/path.ts` (pure, path.test): `pathOf({units, states, level, played, filter})`. Stages in STAGES' order; in a stage the anchors (`glue`) first under 「はじめに おすすめ」, then the index's file order. **The current unit** is the last one I played a lesson of that isn't stamped, else the first unstamped unit from my comfortable stage up, else the first unstamped one anywhere. `nextLesson`: the first core lesson not played to the end; the チェック until stamped; stamped, an extra not played, else the チェック again.
+- **Domains** are tags (`DOMAINS`: an emoji icon on a badge over the host's face and a theme-token tint behind it). The chips are ぜんぶ plus the domains the units carry. A filter collapses other domains' stops to a dot so the stage keeps its shape; the anchors stay under every filter (they're reused across domains), and a unit's `also` counts.
+- **The stage gate:** every stage stays playable. A stage more than a step above my comfortable level (きろく's; はまべ 2's before any data) is shown softly (striped, 「すこし はやいかも。でも あそべます」), never locked. みみ チェック (placement) isn't built; when it is, it decides what's soft. A stage with no units is mist. No landmarks yet (rewards later, §6.7).
+- **Drafts:** a unit with `status: draft` (not voiced: no clips) shows only with the dev hooks on (a dev build or `?demo`), so the phones see wave 1 once it's voiced.
+- **「つづける」** on the current stop opens its next lesson's intro card at once; a tap anywhere else on a stop opens the unit's page.
+- **Couple view:** the double stamp (✓ ✓, fanned) from the partner's summary bit; the partner's stamp alone is an outlined ✓. Never their answers.
+- **Hub card 1** (the 30-day おさらい チェック, `rechecksDue`) is, until the hub, a yuzu banner on top of the path with its own あそぶ (a solo recheck, `recheck: true`).
+- Its own chunk (`{#await import()}`), as are the unit page and the ずかん; `scripts/kikimimi-budget.ts` fails the build over 15 KB gzipped each (≈ 3 KB as built).
+
+### 6.3b A unit's page — built (U4)
+
+```
+│ (‹)          ホテルで こまった          (✕) │
+│ [ scene backdrop (or the domain's tint), the host standing, ナタリー tag ] ✈️ たび │
+│ できるように なること                        │
+│ 「ホテルの スタッフが … わかる」              │  the can-do, as the chunk's sentence
+│ ( ○ じぶん ) ( ○ うめ )  チェックで いっぱつ 5もん せいかい → スタンプ │  🏅 when stamped; ふたりで スタンプ！
+│ ┌ (1) であい  かいわを まるごと · 6もん・2ぷん  [あそぶ] ┐ │  the next: green edge, the only green
+│ ┌ (2) ばめん  いろんな こえ・へんじ · 6もん・2ぷん       ┐ │
+│ ┌ (3) チェック でんわの ようじ · 6もん・2ぷん            ┐ │  ✓ once played to the end
+│ おまけ（スタンプには ひつようなし）  [☆ おと] [☆ じっせん] │  only the extras the unit has
+│ ┌ フレーズ つかまえた 0 / 8          ›  [the room is ready] … ┐ │  → ずかん on this unit
+│ [              とばして チェック              ]  │  until the チェック is next or it's stamped
+```
+
+- `path/UnitPage.svelte` loads the unit's chunk (pool.ts `load` / `unitPart`); the lessons shown are those with playable items (`playIds`). My tally under the stamp line (stamps.ts). No さそう yet: co-op lessons wait for framework 8c (the lobby card says so in a shared lobby).
 
 ### 6.4 Mode detail
 
@@ -220,7 +248,7 @@ The prototype's screens, in order. Sizes are the app's tokens: cards `--r-card` 
 ```
 
 - **The stage row** is the StagePicker inline: five places with ★, the selected one yuzu, the empty ones sunk (`--ctl-off`, `aria-disabled`). Tapping a place sets an override and the pill turns into 「おまかせに もどす」. はまべ shows its two sub-steps as dots; tapping はまべ again toggles 1 ↔ 2.
-- **Unit-based modes** add a row 「いまの ユニット ③ カフェで ちゅうもん ›」 (the unit picker lists the open units by stage, each with its stamp).
+- **No unit picker here** (U4): units live on the path and in the lobby's しまの みち card.
 - **The volume check** shows inline here only when the volume is 0 or before the day's first game: 「おとが 0 です。せってい で あげてね」 with 🔊.
 - **The たいかい's detail** has the wager explained in one line and, when the partner is on the island, the primary is 「みんなで」.
 
@@ -241,6 +269,7 @@ The prototype's screens, in order. Sizes are the app's tokens: cards `--r-card` 
 ```
 
 - **Getting here:** the hub tile, a mode's さそう (the game preselected) or an invite (joined; controls read-only, foot 「ウェイが はじめるのを まっています」).
+- **しまの みち** (U4, the UX review's sketch D): until the hub, the lobby's first card is the path's (the current unit and its dots). The host picks a unit and a lesson there; lessons are solo for now (co-op lessons wait for framework 8c), so in a shared lobby the card stays quiet with 「いまは ひとりで あそべます（ふたりでは あとで）」.
 - **きょうりょく／しょうぶ** shows only when the picked game has `modes.vs`. Each phone's tier is its own (`join.tr`) and never shown next to anyone else's.
 - **Alone:** 「ひとりでも はじめられます」 under the people card; さそう still works.
 - **Leaving:** ✕ with others joined asks first. When the host leaves, the notice shows and ‹ goes to the hub.
@@ -289,6 +318,7 @@ question                                  reveal
 
 - **The rewards card** shows only what moved: かいがら while under the cap (at the cap: 「きょうの かいがらは ここまで。ずかんと なかよしは まだ ふえます」), the day's stamp the first time, quest minutes (members), new ずかん entries, a friendship level-up.
 - **しょうぶ** adds the ranking above the rewards (as built), scored against expectation.
+- **A lesson's strip** (U4, the UX review's sketch C): the host's face, the unit's name and its dots; after であい / ばめん a green 「つぎは「ばめん」 ›」 (the next lesson's intro card at once); after a チェック the stamp (🏅 dropping in, two for ふたりで スタンプ！; reduced motion: still) with my own first-listen tally (and the team's in co-op), or 「あと すこし！」. A lesson's おわる goes back to the page it came from; もういっかい deals it again. No かいがら, no letter yet (the villager's letter and gift come with the rewards step).
 
 ### 6.8 おやすみ ものがたり (StoryFrame)
 
@@ -337,6 +367,7 @@ Segmented: **ことば · こえ · なかま · スタンプ** (four 85-px segm
 - **なかま:** villagers with NH hearts (levels only, never points) and the next reward line; unheard villagers are silhouettes.
 - **スタンプ:** unit can-do stamps, shared stamps, week stamps, the いっぱつ badge count, tournament trophies.
 - Owner-only. The partner sees only 「ふたりとも しってる: 48」 (in きろく's couple line, later).
+- **Built so far (U4, minimal):** `path/PhraseZukan.svelte`, pushed from the path's 「ことば ずかん」 or a unit page's phrases (filtered to that unit, 「ぜんぶ」 widens it). Every unit's key phrases by domain, a section's caught count and bar; a 3-column card per phrase: caught (srs.ts `phrasesOf`: right on the first listen in 3 clips on 2 days) shows the phrase, its Japanese and ★; heard, a silhouette with 「きいた」; never heard, ？. A tap opens its entry under the grid (the trap, the scene, the register). On top, 「きょうの ことば おさらい（Nもん）」 plays `phraseReview` (≤ 8, a new clip each) as a solo practice deck. こえ, なかま and スタンプ wait for U5.
 
 ### 6.11 せってい (⚙)
 
@@ -400,6 +431,8 @@ Picked from the Tokyo day (`d`, the same day key as the `listen` rows and the we
 - **The guest** has a solo quest (30 min, 100 かいがら), never inside the couple bar.
 
 ### 7.5 The island path
+**As built (U4):** the stamp needs 5 of 6 right on the first listen in the チェック (curriculum-units §3), retakeable; no かいがら (the user's decision); stage-clear landmarks and villager gifts aren't built. Wave 1 is 7 units (かわ 4, もり 3), each a 3-lesson core (~8 min) plus extras.
+
 
 47 units over five stages (curriculum §13), about 10 per stage, in any order inside an open stage. Unit stamp 200 + a villager gift; stage clear 1,000 + a landmark (§7.2). **Hours heard** is a quiet lifetime meter in きろく; K.K. songs unlock at 1, 5, 10, 25 and 50 hours for the island radio. A stage reached by placement opens without its 1,000 or landmark (open question 2).
 
