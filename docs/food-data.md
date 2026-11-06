@@ -139,10 +139,10 @@ line (also a narrower key's way to drop a broader one's), and a key matching no 
   `wd:<QID>` (the Wikidata description), `maff:<page>` (うちの郷土料理). A line the sources don't both confirm stays empty.
   Each batch is checked by an independent pass against the same sources before it ships.
 - **Plain and factual.** No health or nutrition claims (`DESC_BANNED`), no Wikipedia sentence copied: the lines are
-  ours, written from the facts. Everyday foods (ごはん, 牛乳) have none.
+  ours, written from the facts. Everyday foods (ごはん, 牛乳) have none. The amount shows a line beside the food's name
+  and `gloss`, so it never repeats them (`lib.validate`), and another name in it says so (「…。しなちくとも」, not 「…。しなちく」).
 - **Everyday names** (`gloss`, `data_src/glosses.json`) work the same way, sources `mext:` (別名), `ov:` (`mext_overrides.txt`),
-  `wd:` (labels/aliases) and `wp:`; the first batch, 26 keys on 31 MEXT foods, came from 152 alias candidates, and the
-  independent check flagged 5 of 31 (dropped).
+  `wd:` (labels/aliases) and `wp:`.
 - **Credit.** MEXT's attribution says the descriptions are ours (「説明文は本アプリで加工・追加」); the MAFF dataset's covers
   its dishes'. Wikipedia and Wikidata are only sources of facts for our own wording (no text is shipped).
 
