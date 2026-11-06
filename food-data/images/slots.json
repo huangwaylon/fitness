@@ -25,7 +25,14 @@
 "mext-15071",
 "mext-15072",
 "mext-15125",
-"mext-15181"
+"mext-15181",
+"dishes-toast-jam",
+"dishes-cheese-toast",
+"dishes-toast-medamayaki",
+"dishes-pizza-toast",
+"dishes-french-toast",
+"dishes-hotdog",
+"dishes-yo-choshoku"
 ],
 "dairy": [
 "mext-13040",
@@ -68,7 +75,40 @@
 "dishes-fukagawa-meshi",
 "dishes-butadon",
 "dishes-tekkadon",
-"dishes-mabodon"
+"dishes-mabodon",
+"dishes-teishoku-aji-fry",
+"eatout-unaju",
+"eatout-kakiage_don",
+"dishes-teishoku-tonkatsu",
+"eatout-gyudon_negitama",
+"dishes-teishoku-buri-teriyaki",
+"eatout-kaki_fry_teishoku",
+"dishes-curry-salad-set",
+"eatout-salmon_ikura_don",
+"eatout-sutadon",
+"eatout-stake_don",
+"eatout-sauce_katsudon",
+"dishes-teishoku-chicken-nanban",
+"eatout-gyudon_cheese",
+"dishes-teishoku-hamburg",
+"eatout-mixfry_teishoku",
+"eatout-nira_reba_teishoku",
+"dishes-loco-moco",
+"eatout-rosutobifu_don",
+"dishes-teishoku-sashimi",
+"dishes-tkg-choshoku",
+"dishes-wa-choshoku",
+"eatout-karaage_don",
+"dishes-teishoku-tempura",
+"dishes-bento-shake",
+"eatout-yakiniku_teishoku",
+"eatout-gyuteishoku",
+"dishes-teishoku-nikujaga",
+"eatout-butakimu_don",
+"eatout-butadon_obihiro",
+"dishes-teishoku-yasai-itame",
+"dishes-teishoku-gyoza",
+"dishes-teishoku-mabo"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -387,7 +427,24 @@
 "dishes-kimchi-nabe",
 "dishes-mizutaki",
 "dishes-ishikari-nabe",
-"dishes-shabushabu-pork"
+"dishes-shabushabu-pork",
+"dishes-oden-ganmo",
+"dishes-oden-konnyaku",
+"dishes-oden-gobomaki",
+"dishes-oden-shirataki",
+"dishes-oden-jagaimo",
+"dishes-oden-tako",
+"dishes-oden-chikuwabu",
+"dishes-oden-mochikinchaku",
+"dishes-oden-atsuage",
+"dishes-oden-konbu",
+"dishes-oden-yakidofu",
+"dishes-oden-gyusuji",
+"dishes-oden-set",
+"dishes-tara-chiri",
+"dishes-pot-au-feu",
+"dishes-roll-cabbage",
+"dishes-mabo-harusame"
 ],
 "meat": [
 "mext-11227",
@@ -536,7 +593,19 @@
 "dishes-yaki-udon",
 "dishes-niku-udon",
 "dishes-nabeyaki-udon",
-"dishes-kamonanban"
+"dishes-kamonanban",
+"eatout-kakiage_soba",
+"eatout-mori_soba",
+"eatout-korokke_soba",
+"eatout-ramen_chashu",
+"eatout-ramen_shio",
+"eatout-ramen_jiro",
+"eatout-ramen_iekei",
+"eatout-tantanmen",
+"eatout-kaedama",
+"eatout-abura_soba",
+"eatout-sara_udon",
+"eatout-niku_soba"
 ],
 "other": [
 "mext-02034",
@@ -608,7 +677,9 @@
 "dishes-takikomi-gohan",
 "dishes-okayu",
 "dishes-isobeyaki",
-"dishes-chazuke-shake"
+"dishes-chazuke-shake",
+"dishes-monjayaki",
+"dishes-modan-yaki"
 ],
 "season": [
 "mext-17007",
@@ -824,7 +895,22 @@
 "dishes-kanpyomaki",
 "dishes-futomaki",
 "dishes-temakizushi",
-"dishes-tekkamaki"
+"dishes-tekkamaki",
+"eatout-sushi_aji",
+"eatout-sushi_ika",
+"eatout-sushi_ebi",
+"eatout-sushi_engawa",
+"eatout-sushi_shimesaba",
+"eatout-sushi_tako",
+"eatout-sushi_tsubu",
+"eatout-sushi_hamachi",
+"eatout-sushi_hotate",
+"eatout-sushi_chutoro",
+"eatout-sushi_otoro",
+"eatout-sushi_aburi_salmon",
+"eatout-sushi_tamago",
+"eatout-sushi_amaebi",
+"eatout-sushi_tai"
 ],
 "sweet": [
 "mext-15103",
@@ -1060,7 +1146,9 @@
 "mext-11094",
 "mext-11092",
 "dishes-beef-steak",
-"dishes-shigureni"
+"dishes-shigureni",
+"dishes-oden-gyusuji",
+"eatout-yakiniku_teishoku"
 ],
 "beer": [
 "mext-16006",
@@ -1092,12 +1180,20 @@
 "mext-15071",
 "mext-15072",
 "mext-15125",
-"mext-15181"
+"mext-15181",
+"dishes-toast-jam",
+"dishes-cheese-toast",
+"dishes-toast-medamayaki",
+"dishes-pizza-toast",
+"dishes-french-toast",
+"dishes-hotdog",
+"dishes-yo-choshoku"
 ],
 "cabbage": [
 "mext-06061",
 "mext-06062",
-"mext-06333"
+"mext-06333",
+"dishes-roll-cabbage"
 ],
 "carrot": [
 "mext-06214",
@@ -1162,7 +1258,8 @@
 "dishes-yurinchi",
 "dishes-yakitori-shio",
 "dishes-mushidori",
-"dishes-teriyaki-chicken"
+"dishes-teriyaki-chicken",
+"dishes-teishoku-chicken-nanban"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -1174,7 +1271,8 @@
 "dishes-curry-beef",
 "mext-17051",
 "mext-17061",
-"dishes-curry-udon"
+"dishes-curry-udon",
+"dishes-curry-salad-set"
 ],
 "dairy": [
 "mext-13020",
@@ -1203,7 +1301,32 @@
 "dishes-fukagawa-meshi",
 "dishes-butadon",
 "dishes-tekkadon",
-"dishes-mabodon"
+"dishes-mabodon",
+"dishes-teishoku-aji-fry",
+"eatout-unaju",
+"eatout-kakiage_don",
+"eatout-gyudon_negitama",
+"dishes-teishoku-buri-teriyaki",
+"eatout-kaki_fry_teishoku",
+"eatout-salmon_ikura_don",
+"eatout-sutadon",
+"eatout-stake_don",
+"eatout-sauce_katsudon",
+"eatout-gyudon_cheese",
+"dishes-teishoku-hamburg",
+"eatout-mixfry_teishoku",
+"eatout-nira_reba_teishoku",
+"dishes-loco-moco",
+"eatout-rosutobifu_don",
+"dishes-teishoku-sashimi",
+"eatout-karaage_don",
+"dishes-teishoku-tempura",
+"eatout-gyuteishoku",
+"dishes-teishoku-nikujaga",
+"eatout-butakimu_don",
+"eatout-butadon_obihiro",
+"dishes-teishoku-yasai-itame",
+"dishes-teishoku-gyoza"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -1442,7 +1565,19 @@
 "dishes-motsunabe",
 "dishes-kimchi-nabe",
 "dishes-mizutaki",
-"dishes-ishikari-nabe"
+"dishes-ishikari-nabe",
+"dishes-oden-konnyaku",
+"dishes-oden-gobomaki",
+"dishes-oden-shirataki",
+"dishes-oden-jagaimo",
+"dishes-oden-tako",
+"dishes-oden-chikuwabu",
+"dishes-oden-mochikinchaku",
+"dishes-oden-konbu",
+"dishes-oden-set",
+"dishes-tara-chiri",
+"dishes-pot-au-feu",
+"dishes-mabo-harusame"
 ],
 "meat": [
 "mext-11279",
@@ -1493,7 +1628,9 @@
 "mext-01160",
 "mext-02061",
 "mext-02039",
-"dishes-nyumen"
+"dishes-nyumen",
+"eatout-ramen_chashu",
+"eatout-kaedama"
 ],
 "onigiri": [
 "dishes-onigiri-tunamayo",
@@ -1574,7 +1711,8 @@
 "dishes-nikujaga-pork",
 "dishes-kakuni",
 "dishes-butakimuchi",
-"dishes-shabushabu-pork"
+"dishes-shabushabu-pork",
+"dishes-teishoku-tonkatsu"
 ],
 "ramen": [
 "dishes-ramen-shoyu",
@@ -1587,7 +1725,11 @@
 "mext-01047",
 "eatout-tsukemen",
 "eatout-ramen_tonkotsu",
-"dishes-champon"
+"dishes-champon",
+"eatout-ramen_shio",
+"eatout-ramen_jiro",
+"eatout-ramen_iekei",
+"eatout-tantanmen"
 ],
 "rice": [
 "mext-01088",
@@ -1625,7 +1767,11 @@
 "dishes-chazuke-ume",
 "dishes-takikomi-gohan",
 "dishes-okayu",
-"dishes-isobeyaki"
+"dishes-isobeyaki",
+"dishes-monjayaki",
+"dishes-modan-yaki",
+"dishes-tkg-choshoku",
+"dishes-wa-choshoku"
 ],
 "saba": [
 "mext-10154",
@@ -1660,7 +1806,8 @@
 "mext-10149",
 "dishes-chanchanyaki",
 "dishes-sake-meuniere",
-"dishes-chazuke-shake"
+"dishes-chazuke-shake",
+"dishes-bento-shake"
 ],
 "season": [
 "mext-17007",
@@ -1795,7 +1942,12 @@
 "dishes-tenzaru-soba",
 "dishes-tempura-soba",
 "dishes-sansai-soba",
-"dishes-kamonanban"
+"dishes-kamonanban",
+"eatout-kakiage_soba",
+"eatout-mori_soba",
+"eatout-korokke_soba",
+"eatout-abura_soba",
+"eatout-niku_soba"
 ],
 "soup": [
 "mext-18005",
@@ -1858,7 +2010,22 @@
 "dishes-kanpyomaki",
 "dishes-futomaki",
 "dishes-temakizushi",
-"dishes-tekkamaki"
+"dishes-tekkamaki",
+"eatout-sushi_aji",
+"eatout-sushi_ika",
+"eatout-sushi_ebi",
+"eatout-sushi_engawa",
+"eatout-sushi_shimesaba",
+"eatout-sushi_tako",
+"eatout-sushi_tsubu",
+"eatout-sushi_hamachi",
+"eatout-sushi_hotate",
+"eatout-sushi_chutoro",
+"eatout-sushi_otoro",
+"eatout-sushi_aburi_salmon",
+"eatout-sushi_tamago",
+"eatout-sushi_amaebi",
+"eatout-sushi_tai"
 ],
 "sweet": [
 "mext-15103",
@@ -1942,7 +2109,11 @@
 "dishes-agedashi-tofu",
 "dishes-yudofu",
 "dishes-nikudofu",
-"dishes-akadashi"
+"dishes-akadashi",
+"dishes-oden-ganmo",
+"dishes-oden-atsuage",
+"dishes-oden-yakidofu",
+"dishes-teishoku-mabo"
 ],
 "tomato": [
 "mext-06182",
@@ -1976,7 +2147,8 @@
 "dishes-tsukimi-udon",
 "dishes-yaki-udon",
 "dishes-niku-udon",
-"dishes-nabeyaki-udon"
+"dishes-nabeyaki-udon",
+"eatout-sara_udon"
 ],
 "veg": [
 "mext-08001",
