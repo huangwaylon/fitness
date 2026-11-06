@@ -213,7 +213,7 @@ describe('units: against the bank', () => {
 
   it('a phrase in < 3 items or < 2 voices: a warning in a draft, an error past it', () => {
     const r = hotel();
-    (r.ph as Raw[]).push({ id: 'ph-rare', en: 'lifts are on your left', register: 'service', scene: 'desk', trap: 'lift＝エレベーター' });
+    (r.ph as Raw[]).push({ id: 'ph-rare', en: 'elevators are on your left', register: 'service', scene: 'desk', trap: 'elevator＝エレベーター' });
     expect(check([r]).warnings).toContain('tr-hotel: phrase ph-rare is in 1 items by 1 voices (needs 3 by 2)');
     expect(check([{ ...r, status: 'voiced' }]).errors).toContain('tr-hotel: phrase ph-rare is in 1 items by 1 voices (needs 3 by 2)');
   });

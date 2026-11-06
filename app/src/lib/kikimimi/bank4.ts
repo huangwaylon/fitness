@@ -40,12 +40,15 @@ export const CAST: Readonly<Partial<Record<RosterId, CastId>>> = {
   kabuki: 'us-m1', teddy: 'us-m1', lucky: 'us-m1', beau: 'us-m1', sterling: 'us-m1',
   lopez: 'us-m2', ken: 'us-m2', zucker: 'us-m2', henry: 'us-m2', shep: 'us-m2',
   wolfgang: 'us-m3', octavian: 'us-m3', frett: 'us-m3', fang: 'us-m3',
-  olivia: 'uk-f1', portia: 'uk-f1', pashmina: 'uk-f1', tasha: 'uk-f1', freya: 'uk-f1', vivian: 'uk-f1',
-  keaton: 'uk-m1', cyrano: 'uk-m1', chief: 'uk-m1', kidd: 'uk-m1', curlos: 'uk-m1',
-  jacques: 'uk-m2', admiral: 'uk-m2', tex: 'uk-m2', static: 'uk-m2',
-  melba: 'au-f1', sylvia: 'au-f1', kitt: 'au-f1', faith: 'au-f1', phoebe: 'au-f1', charlise: 'au-f1',
-  curt: 'au-m1', al: 'au-m1', genji: 'au-m1', gruff: 'au-m1',
-  bud: 'au-m2', cyd: 'au-m2', walker: 'au-m2'
+  olivia: 'uk-f1', tasha: 'uk-f1', freya: 'uk-f1', vivian: 'uk-f1',
+  chief: 'uk-m1', kidd: 'uk-m1', curlos: 'uk-m1',
+  tex: 'uk-m2', static: 'uk-m2',
+  faith: 'au-f1', phoebe: 'au-f1', charlise: 'au-f1',
+  curt: 'au-m1', genji: 'au-m1', gruff: 'au-m1',
+  cyd: 'au-m2', walker: 'au-m2',
+  // もり's own, US since the American English pass (2026-11-06)
+  melba: 'us-f1', portia: 'us-f2', sylvia: 'us-f2', pashmina: 'us-f3', kitt: 'us-f3',
+  keaton: 'us-m1', al: 'us-m1', cyrano: 'us-m2', admiral: 'us-m2', jacques: 'us-m3', bud: 'us-m3'
 };
 
 /** A `mean` item's question while it plays. */
