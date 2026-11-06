@@ -2,7 +2,7 @@
 // ladders (each rung's own question, the ladder over the stage, a rung's reveal keeping the line hidden and silent till the
 // top, the climb stopping at a miss or a replay, the results' climbs and the review's speeds), きろく's speed; and two
 // players over the demo's relay (`?demo` and `?demo&as=B`): the host's mode reaches B's invite and lobby, both climb, the
-// same points on each phone. The logic tier: no clip has to sound (`?kikimimi=fast`: a short reveal). Screenshots to
+// same points on each phone. The logic tier: no clip has to sound (`?kikimimi=fast`: a short time limit; the reveals wait for つぎへ). Screenshots to
 // /tmp/kikimimi-shots/inc7/ with KIKI_SHOTS=1.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { fromMenu, hudMenu } from './hud.ts';
@@ -134,6 +134,8 @@ test('two players: the host’s mode reaches B’s invite and lobby; both climb,
     }
     await expect(sheet(a)).toHaveAttribute('data-phase', 'reveal');
     if (i === 5 && SHOTS) await shot(a, 'two-reveal');
+    // the untimed reveal: the host's つぎへ
+    await sheet(a).locator('[data-kiki-next]').click();
   }
   for (const p of [a, b]) {
     await p.bringToFront();
