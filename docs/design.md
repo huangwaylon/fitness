@@ -439,7 +439,10 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる, hidden once
   something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,
   さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓n 一致」 when n independent
-  sources agree on its kcal (in words on the row: an iPhone never shows a title), a product's brand and kcal per 100 g, and its default portion (with its weight) and kcal;
+  sources agree on its kcal (in words on the row: an iPhone never shows a title), a product's brand, the food's
+  everyday name (`foodUi.ts` glossOf: an older snapshot's catalogue name now, else `en`, else an alias that says more
+  than the name: キャッサバでん粉 タピオカ, never a reading or a spelling of it; one line, cut short) or else its kcal per
+  100 g, and its default portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name);
   the same name, brand and kcal shown once. ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
   （オフライン？）」, もういちど, and さいきん still under it (a recent pick keeps its portion). **Ranking** (`food/search.ts`
   tierOf, each curated pop level worth 0.6 of a tier): the name exact, or its head (up to a bracket or space: 水 finds

@@ -705,8 +705,24 @@ test('search rows: a product’s brand on its second line, the same name, brand 
   // ✓n in words on the row itself (a title alone never shows on an iPhone)
   await expect(sheet(page).locator('[data-food-results] [data-verified]').first()).toHaveText(/^✓\d+ 一致$/);
   await expect.poll(() => sheet(page).locator('[data-food-results] [data-brand]').count(), { timeout: 20_000 }).toBeGreaterThan(0); // the products, lazily
-  const keys = await rows.evaluateAll((bs) => bs.map((b) => `${b.querySelector('.nm')?.textContent}|${b.querySelector('[data-brand]')?.textContent ?? ''}|${b.querySelector('.meta')?.textContent?.match(/(\d[\d,]*) kcal/)?.[1]}`));
+  const keys = await rows.evaluateAll((bs) => bs.map((b) => `${b.querySelector('.nm')?.textContent}|${b.querySelector('[data-brand]')?.textContent ?? ''}|${b.getAttribute('data-per100')}`));
   expect(new Set(keys).size).toBe(keys.length);
+  expect(await overflowOf(page)).toEqual([]);
+});
+
+// The everyday name (foodUi.ts glossOf): a lab name's alias or English under it, in the 100gあたり line's place; one
+// line, so the row is no taller.
+test('search rows: the everyday name under a lab name (キャッサバでん粉: タピオカ), one line, the row as tall', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('キャッサバでん粉');
+  const row = sheet(page).locator('[data-food-results] button.it', { hasText: 'キャッサバでん粉' }).first();
+  await expect(row.locator('[data-gloss]')).toHaveText('タピオカ', { timeout: 15_000 });
+  await expect(row.locator('.meta')).not.toContainText('100gあたり');
+  expect((await row.boundingBox())!.height).toBeLessThanOrEqual(72);
+  await sheet(page).locator('[data-food-q]').fill('コーヒー牛乳');
+  const milk = sheet(page).locator('[data-food-results] button.it', { hasText: 'コーヒー牛乳' }).first();
+  await expect(milk.locator('[data-gloss]')).toHaveText('Coffee milk');
   expect(await overflowOf(page)).toEqual([]);
 });
 
