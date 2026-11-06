@@ -444,7 +444,10 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   food data's vetted `gloss`, an alias two sources back, to come; never a raw alias, a spelling or English: mostly none,
   an empty line beats noise; one line, cut short), and its default
   portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name; the 100 g values on the
-  amount). Left of the name, the food's **category tile** (`FoodThumb`, 48 px; the recipe's ingredients 40 px): an NH
+  amount). A food in its states (the data's `vg`/`st`: 豚ロース 脂身つき 生 · ゆで · 焼き) is one row (`search.ts`: its
+  best hit, the default at a tie, so 豚ロース 焼き shows 焼き), named without its state (`foodUi.ts` stemName; 焼きいも
+  stays), its states under it, the shown one yuzu-filled and the rest outlined in process order (past three: ほか N).
+  Left of the name, the food's **category tile** (`FoodThumb`, 48 px; the recipe's ingredients 40 px): an NH
   rounded square with a brown lip, the category's tint, a plain line glyph and its word in small type (`art.ts`
   FOOD_CAT: a leaf and 野菜, never a particular food's picture; night tints darker; マイ食品 その他, マイレシピ レシピ), a fixed box over 4 px
   of the row's padding so the row is no taller; a name wraps to 2 lines at most. Its `img` (a packed sheet's cell, to

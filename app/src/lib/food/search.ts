@@ -57,9 +57,10 @@ export function tierOf(e: Entry, q: string): number {
   return 6;
 }
 
-/** Every query token (split on spaces) in an item's text, best first. One row per normalized name + kcal, and one
- *  per cross-source verify group (`groupOf`): a group shows its best non-secondary hit (else its best) at the place of
- *  its best hit, so a school lunch's closer name never hides the core item. */
+/** Every query token (split on spaces) in an item's text, best first. One row per normalized name + kcal, one per
+ *  cross-source verify group (`groupOf`): a group shows its best non-secondary hit (else its best) at the place of its
+ *  best hit, so a school lunch's closer name never hides the core item; and one per food in its states (`vg`): its
+ *  best hit, the default state among the equally good (豚ロース: 生; 豚ロース 焼き: 焼き, the one holding every word). */
 export function search(entries: readonly Entry[], query: string, limit = 60, groupOf: (id: string) => number | undefined = () => undefined): Item[] {
   const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
   if (!tokens.length) return [];
@@ -84,6 +85,15 @@ export function search(entries: readonly Entry[], query: string, limit = 60, gro
       if (h.e.pen <= 0 && (!r.core || before(h, r.core) < 0)) r.core = h;
     }
   }
+  // Each food's state to show: its best hit, the default (its own vg) at a tie.
+  const state = new Map<string, Hit>();
+  for (const h of hits) {
+    const v = h.e.it.vg;
+    if (!v) continue;
+    const r = state.get(v);
+    const dh = h.e.it.id === v, dr = r?.e.it.id === v;
+    if (!r || (h.s !== r.s ? h.s < r.s : dh !== dr ? dh : before(h, r) < 0)) state.set(v, h);
+  }
   // Ranked a score at a time (scores are a few discrete values): only as many hits sorted as the top `limit` need.
   const byScore = new Map<number, Hit[]>();
   for (const h of hits) (byScore.get(h.s) ?? byScore.set(h.s, []).get(h.s)!).push(h);
@@ -91,9 +101,13 @@ export function search(entries: readonly Entry[], query: string, limit = 60, gro
   const out: Item[] = [];
   for (const score of [...byScore.keys()].sort((x, y) => x - y)) {
     for (const h of byScore.get(score)!.sort(before)) {
-      const g = groupOf(h.e.it.id);
+      const v = h.e.it.vg;
+      if (v && seen.has(`v:${v}`)) continue;
+      const hv = v ? state.get(v)! : h;
+      const g = groupOf(hv.e.it.id);
       const r = g === undefined ? undefined : best.get(g)!;
-      const e = r ? (r.core ?? r.any).e : h.e;
+      const e = r ? (r.core ?? r.any).e : hv.e;
+      if (v) seen.add(`v:${v}`);
       const k = `${e.n}|${e.it.kcal}`;
       if (seen.has(k) || (g !== undefined && seen.has(g))) continue;
       seen.add(k);

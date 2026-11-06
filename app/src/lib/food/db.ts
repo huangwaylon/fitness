@@ -11,11 +11,13 @@ export interface FoodDb {
   /** Grows when a lazy dataset (products) is in. */
   entries: Entry[];
   verify: Verify | null;
+  /** Each food in its states (`vg` → its items, in the chips' order: variantsOf). */
+  variants: Map<string, Item[]>;
   /** Settles once the lazy datasets are in (or failed): search again then. */
   more: Promise<void>;
 }
 
-export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, more: Promise.resolve() });
+export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, variants: new Map(), more: Promise.resolve() });
 
 /** Items indexed per slice: a dataset is added a slice per task (load.ts), so no frame waits on a whole file. */
 export const SLICE = 2000;
@@ -33,8 +35,23 @@ export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number]
   const items = data.items;
   for (let i = 0; i < items.length; i += SLICE) {
     if (i && pause) await pause();
-    for (let j = i; j < Math.min(items.length, i + SLICE); j++) db.entries.push(entryOf(items[j], pen));
+    for (let j = i; j < Math.min(items.length, i + SLICE); j++) {
+      const it = items[j];
+      db.entries.push(entryOf(it, pen));
+      if (it.vg) (db.variants.get(it.vg) ?? db.variants.set(it.vg, []).get(it.vg)!).push(it);
+    }
   }
+}
+
+/** The states a food's chips offer (food-data's variant_groups), in process order; `st` the chip's label. */
+const STATES = ['乾', '生', 'ゆで', '水煮', '蒸し', '焼き', 'レンジ', 'いため', 'ソテー'] as const;
+
+/** A food's states, its own among them, in the chips' order (none for a food with one: []). */
+export function variantsOf(db: FoodDb | null, it: Item): Item[] {
+  const vs = it.vg ? db?.variants.get(it.vg) : undefined;
+  if (!vs || vs.length < 2) return [];
+  const at = (x: Item) => STATES.indexOf(x.st as (typeof STATES)[number]);
+  return [...vs].sort((a, b) => at(a) - at(b));
 }
 
 /** The best `limit` items for a query (search.ts: exact > prefix > substring > alias, one row per verify group). */

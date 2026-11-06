@@ -2,7 +2,8 @@
   // ごはん's search (a level over the day, for one meal): a 16px search field (focused by the ＋ that opened it, in the
   // tap: Food's openSearch), then さいきん (my latest entry of each food, as I last had it, its portion with it) until
   // something is typed, or the catalog's best matches (each: its category's tile (FoodThumb), the name, a product's
-  // brand, its everyday name (glossOf), its default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
+  // brand, its everyday name (glossOf), a food in its states once (its name without the state, the state shown filled
+  // and the others after it: 「(生) 焼き ゆで」, past three 「ほか N」), its default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
   // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
   // too (everyone's recipes: all of them after さいきん, the matching ones before the catalog's); a recipe opens its own.
@@ -17,12 +18,12 @@
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
-  import { searchFoods, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { searchFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import FoodThumb from './FoodThumb.svelte';
-  import { amountText, catalogOf, catOf, defaultPortion, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
+  import { amountText, catalogOf, catOf, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -228,6 +229,14 @@
   {/if}
 {/snippet}
 
+<!-- a food's states on its row: the one its kcal is for filled, the others outlined (past three: ほか N) -->
+{#snippet states(it: Item, vs: Item[])}
+  <span class="sts" data-states={vs.length}>
+    <i class="st on" data-state={it.st}>{it.st}</i>{#if vs.length > 3}<i class="st">{t('food.st.more', { n: vs.length - 1 })}</i>
+    {:else}{#each vs.filter((x) => x !== it) as x (x.id)}<i class="st">{x.st}</i>{/each}{/if}
+  </span>
+{/snippet}
+
 {#snippet catalog()}
   {#if failed}
     <div class="fail">
@@ -253,10 +262,11 @@
         {@const p = defaultPortion(it)}
         {@const v = verifyOf(db, it.id)}
         {@const gl = glossOf(it, it.name)}
+        {@const vs = variantsOf(db, it)}
         <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={it.id} data-per100={it.kcal} onclick={() => onpick(it)}>
           <FoodThumb cat={it.cat} />
-          <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" role="img" data-verified={v.n} aria-label={t('food.verified', { n: v.n })}>{t('food.verifiedBadge', { n: v.n })}</i>{/if}</span>
-          <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{' · '}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{:else if !it.brand}{'\u00a0'}{/if}</small>
+          <span class="nm">{vs.length ? stemName(it) : it.name}{#if v && v.n >= 2}<i class="ok" role="img" data-verified={v.n} aria-label={t('food.verified', { n: v.n })}>{t('food.verifiedBadge', { n: v.n })}</i>{/if}</span>
+          <small class="meta">{#if vs.length}{@render states(it, vs)}{#if gl || it.brand}{' · '}{/if}{/if}{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{:else if !it.brand && !vs.length}{'\u00a0'}{/if}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
         </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}</li>
       {/each}
@@ -311,6 +321,12 @@
   }
   .meta { grid-area: meta; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow-wrap: anywhere; }
   .br { color: var(--text); }
+  .sts { display: inline-flex; flex: none; gap: 4px; vertical-align: 1px; }
+  .st {
+    font: 700 var(--fs-xs)/1 var(--font-ui); font-style: normal; padding: 2px 6px; border-radius: var(--r-pill); color: var(--text-soft);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text-soft) 45%, transparent);
+  }
+  .st.on { color: var(--c-ink); background: var(--c-yuzu); box-shadow: none; }
   /* the everyday name: one line, cut short (the row keeps its two lines) */
   .meta:has(.gl) { display: flex; min-width: 0; white-space: pre; }
   .gl, .meta:has(.gl) .br { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
