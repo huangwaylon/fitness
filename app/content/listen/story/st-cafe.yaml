@@ -1,0 +1,296 @@
+# おやすみ ものがたり (docs/curriculum.md §7.1): ジャスミンの きっさてん, a bedtime serial in five chapters. Pekoe opens a
+# little café in the old bait shop by the pier: the lease, a suspicious espresso machine from Redd, a menu that is far
+# too long, a misspelled sign, opening day in the rain, and the first visit from Brewster, who says almost nothing. Small
+# problems, kind neighbors, nothing at stake but cups. Extensive listening at ~95 % comprehension for a B1+ ear: no
+# score, no questions, a sleep timer. The narrator is us-m5 (calm, steady); every speaker is a US voice. Each chapter's
+# `predict` is for the morning after; its `answer` is what the next chapter tells. Checks: src/lib/kikimimi/stories.test.ts.
+schema: 1
+unit: st-cafe
+game: serial
+name: ジャスミンの きっさてん
+stage: 3
+track: life
+seeds: [66, 38]
+features: { primary: contraction, review: linking }
+cando: "ねる まえに 島の 日常の はなしを 聞いて、だいたい わかる"
+status: draft
+host: pekoe
+cast: { narrator: us-m5 }
+items:
+  - kind: serial
+    id: serial-cafe-1
+    chapter: 1
+    title: "The Empty Shop by the Pier"
+    line: "ジャスミンが きっさてんを ひらこうと きめます"
+    ja: "ジャスミンは、桟橋のそばの空き家（昔のつりえさ屋）でカフェを開こうと決める。たぬきちに借りる話をして、ちゃちゃまるが掃除を手伝う。マスターに相談すると「小さく始めなさい」とひとこと。でも、いちばん大事なエスプレッソマシンを買うお金が足りない。"
+    scene: door
+    segments:
+      - { who: narrator, en: "At the end of the pier, past the place where the fishermen like to sit, there was a little wooden building that nobody had used in years." }
+      - { who: narrator, en: "It used to be a bait shop. The paint was peeling, one window was cracked, and if you stood close enough, it still smelled faintly of fish." }
+      - { who: narrator, en: "Pekoe walked past it every morning on her way to the beach. And every morning, she slowed down a little more." }
+      - { who: narrator, en: "She had been making coffee and tea for her friends for years." }
+      - { who: narrator, en: "In her kitchen, on her porch, in a thermos on picnics. Everybody said she should open a café." }
+      - { who: narrator, en: "And every time, she laughed and said, oh, someday. But one morning in October, she stopped in front of the old bait shop and didn't keep walking." }
+      - { who: pekoe, en: "Okay. Okay, Pekoe. It's now or never. You're going to go talk to Tom Nook. Today.", tts: "Okay. Okay, Pekoe. It's now or never. You're gonna go talk to Tom Nook. Today." }
+      - { who: narrator, en: "Tom Nook was behind his desk, as always, surrounded by papers and little stacks of leaf-shaped notes. He listened to her whole idea without saying a word." }
+      - { who: tom-nook, en: "A café by the pier? Yes, yes! I think that's a wonderful idea. The building does need a little work, though. Quite a bit of work, actually." }
+      - { who: pekoe, en: "I know. I don't mind. I'll fix it up myself, little by little. Could I pay the rent once a month?" }
+      - { who: tom-nook, en: "Of course. And the first month is on me. Think of it as a welcome gift. Every new business deserves a fair start." }
+      - { who: narrator, en: "Pekoe walked out holding a big, old-fashioned key, and she held it so tight that it left a little mark on her paw." }
+      - { who: narrator, en: "The next morning, Dom showed up at the shop before she did. He had a mop, two buckets, and far too much energy for seven a.m." }
+      - { who: dom, en: "Heard you're opening a café! I'm here to help. Cleaning counts as a workout, right? Let's do this!", tts: "Heard you're openin' a café! I'm here to help. Cleanin' counts as a workout, right? Let's do this!" }
+      - { who: narrator, en: "They worked all day. They scrubbed the floor, took down the old fishing nets, and opened every window to let the sea air blow the smell away." }
+      - { who: narrator, en: "Under the nets, they found a long wooden counter, old and solid and beautiful." }
+      - { who: narrator, en: "Pekoe ran her hand along it and knew right away where the coffee would go." }
+      - { who: narrator, en: "That evening, tired and happy, she walked up to the museum to visit The Roost, the island's only café. Brewster was behind the counter, drying a cup." }
+      - { who: pekoe, en: "Mr. Brewster, I'm opening a little café by the pier. I hope that's okay. I was wondering if you had any advice for me?" }
+      - { who: narrator, en: "Brewster didn't answer right away. He finished drying the cup. He put it on the shelf. Then he dried another one." }
+      - { who: brewster, en: "Start small. Learn your regulars' names. And be patient. Coffee doesn't like to be rushed. Neither do people." }
+      - { who: narrator, en: "That was all he said. But Pekoe wrote it on a napkin, and later, she taped it to the wall behind the counter." }
+      - { who: narrator, en: "There was just one problem, and it was a big one. A café needs a coffee machine. A real one, with steam and pressure and shiny handles." }
+      - { who: narrator, en: "She looked at the catalogs that night, curled up on her couch. Every machine she liked cost more than everything in her savings account." }
+      - { who: pekoe, en: "Okay, so that one's way out of my price range. And that one. And, wow, that one costs more than the building.", tts: "Okay, so that one's way outta my price range. An' that one. And, wow, that one costs more than the building." }
+      - { who: narrator, en: "She closed the catalog and looked out the window at the dark pier. The little shop was sitting there, clean and empty, waiting for her." }
+      - { who: pekoe, en: "I'll figure something out. I always do. Just maybe not tonight.", tts: "I'll figure somethin' out. I always do. Just maybe not tonight." }
+      - { who: narrator, en: "And then she went to bed." }
+      - { who: narrator, en: "Down by the pier, the waves knocked softly against the posts, and the old shop, for the first time in years, did not smell like fish." }
+    ph:
+      - { id: ph-now-or-never, en: "now or never", ja: "いまやらなきゃ いつやる", register: friend, scene: "making a big decision", trap: "いまか けっして しない か、の ふたつに ひとつ" }
+      - { id: ph-fix-up, en: "fix it up", ja: "てを いれて きれいに する", match: "fix (it|this|that) up", register: neighbour, scene: "an old building", trap: "fix＝なおす。up で すっかり" }
+      - { id: ph-on-me, en: "it's on me", ja: "わたしの おごり", match: "\\bis on me\\b|\\bit's on me\\b", register: neighbour, scene: "a landlord's gift", trap: "on me＝わたしの うえ ではなく わたしが はらう" }
+      - { id: ph-let-us-do-this, en: "let's do this", ja: "よし、やろう", register: friend, scene: "starting a big job", trap: "これを しよう ではなく きあいの ひとこと" }
+      - { id: ph-right-away, en: "right away", ja: "すぐに", match: "\\bright away\\b", register: friend, scene: "knowing at once", trap: "みぎ では なく すぐ" }
+      - { id: ph-price-range, en: "out of my price range", ja: "よさんオーバー", match: "out(ta| of) my price range", register: friend, scene: "shopping for a machine", trap: "たかすぎる を やわらかく いう" }
+      - { id: ph-figure-out, en: "figure something out", ja: "なんとか する", match: "figure (somethin'|something|it) out", register: friend, scene: "a problem with no answer yet", trap: "figure＝すうじ ではなく かんがえて みつける" }
+    predict:
+      ask: "ジャスミンは どうやって マシンを 手に いれる？"
+      choices:
+        - "Brewster gives her his old machine from The Roost."
+        - "She saves up for a whole year before opening."
+        - "She buys a suspiciously cheap one from Redd."
+      answer: 2
+      ja: "つねきちから、あやしいほど安いマシンを買う。"
+
+  - kind: serial
+    id: serial-cafe-2
+    chapter: 2
+    title: "A Bargain from Redd"
+    line: "つねきちから あやしい マシンを かいます"
+    ja: "つねきちの船に「本物のイタリア製、ほとんど新品」のエスプレッソマシンが。安すぎるけれど、ジャスミンは買ってしまう。ところが、悲しいガチョウのような音を出して、蒸気をふきだすばかり。ちゃちゃまるが直そうとしてさらに悪化。そこへマスターが来て、それが昔の自分のマシンだと気づく。"
+    scene: cafe
+    segments:
+      - { who: narrator, en: "A few days later, a small boat with a patched green sail pulled up to the pier." }
+      - { who: narrator, en: "It belonged to Redd, who sold art, furniture, and other things of questionable origin." }
+      - { who: redd, en: "Well, well. I heard a little bird say somebody's opening a café. And I just happen to have exactly what you need.", tts: "Well, well. I heard a little bird say somebody's openin' a café. And I jus' happen to have exactly what ya need." }
+      - { who: narrator, en: "He pulled back a blanket. Underneath was an espresso machine." }
+      - { who: narrator, en: "It was old, and a little dented, but it was copper and brass, and it gleamed in the sun." }
+      - { who: redd, en: "Genuine Italian. Hardly used. Belonged to a famous barista, very hush-hush. For you? Half price. Because I like your face.", tts: "Genuine Italian. Hardly used. Belonged to a famous barista, very hush-hush. For you? Half price. 'Cause I like your face." }
+      - { who: narrator, en: "Pekoe knew that a deal this good was usually too good to be true. Everyone on the island knew that about Redd." }
+      - { who: narrator, en: "But it was so beautiful. And it was, for once, almost in her price range." }
+      - { who: narrator, en: "She looked at it for a long time, and then she counted out her savings." }
+      - { who: pekoe, en: "Okay. I'll take it. But if it doesn't work, I'm coming to find you. I know where your boat is." }
+      - { who: redd, en: "Doesn't work? Please. That thing'll outlive both of us. Pleasure doing business with you, sweetheart.", tts: "Doesn't work? Please. That thing'll outlive both of us. Pleasure doin' business with ya, sweetheart." }
+      - { who: narrator, en: "And his little green sail was gone around the point before she had even plugged it in." }
+      - { who: narrator, en: "She filled it with water. She turned the big brass knob. The machine shivered. It rumbled." }
+      - { who: narrator, en: "And then it made a long, sad sound, like a goose with a broken heart." }
+      - { who: narrator, en: "A cloud of steam shot out of the side and fogged up every window in the shop. But no coffee came out. Not a single drop." }
+      - { who: narrator, en: "Dom heard the noise all the way from the beach and came running, still holding his jump rope." }
+      - { who: dom, en: "Whoa, what was that? It sounded like a goose. Is everybody okay in here? Is there a goose?", tts: "Whoa, what was that? It sounded like a goose. Is ev'rybody okay in here? Is there a goose?" }
+      - { who: pekoe, en: "No goose. Just me, and the most expensive mistake I've ever made in my whole life." }
+      - { who: dom, en: "Hey, don't worry about it. I'm pretty handy. Let me take a look. How hard can it be?", tts: "Hey, don't worry about it. I'm pretty handy. Lemme take a look. How hard can it be?" }
+      - { who: narrator, en: "It turned out to be very hard. Dom found a wrench and tightened everything he could find." }
+      - { who: narrator, en: "The machine made the goose noise again, only louder, and then it whistled." }
+      - { who: narrator, en: "By the afternoon, they were sitting on the floor in a cloud of steam, and the machine seemed to be laughing at them." }
+      - { who: narrator, en: "That's when the door opened, and Brewster walked in. He did not say hello." }
+      - { who: narrator, en: "He walked straight to the machine and looked at it for a very long time." }
+      - { who: brewster, en: "I know this machine. That dent on the side, I made that dent. This was my first machine, a long time ago." }
+      - { who: pekoe, en: "Wait, it was yours? But Redd said it belonged to a famous barista in Italy." }
+      - { who: brewster, en: "I've never been to Italy. I gave it away when I bought the new one. I'm not sure how it ended up on Redd's boat." }
+      - { who: narrator, en: "He reached behind the machine and tapped the side twice, gently, the way you might wake up a sleeping cat. Then he waited." }
+      - { who: brewster, en: "It needs a new rubber ring, here, by the handle. And you have to be patient with it. It takes a minute to wake up. Like me." }
+      - { who: narrator, en: "The next morning, there was a small paper bag on the counter. Inside was a brand new rubber ring and a note that just said, B." }
+      - { who: narrator, en: "Pekoe put the ring in, tapped the side twice, and waited. The machine hummed." }
+      - { who: narrator, en: "And then, slowly, a thin stream of dark, perfect coffee came out into her cup." }
+      - { who: pekoe, en: "Oh my gosh. Oh my gosh, it works. Dom! Dom, come here, it actually works!", tts: "Oh my gosh. Oh my gosh, it works. Dom! Dom, c'mere, it actually works!" }
+      - { who: narrator, en: "That evening, Redd's green sail came back around the point. He leaned on the doorframe and smiled his biggest smile." }
+      - { who: redd, en: "See? What did I tell you? Genuine Italian. You can't put a price on quality. Well, you can. And you did.", tts: "See? Whadda I tell ya? Genuine Italian. Ya can't put a price on quality. Well, you can. An' you did." }
+      - { who: narrator, en: "Pekoe didn't argue. She just made him a cup of coffee, on the house. And Redd, for once in his life, didn't have anything to say." }
+    ph:
+      - { id: ph-little-bird, en: "a little bird told me", ja: "うわさで きいたよ", match: "little bird", register: friend, scene: "news spreads fast", trap: "ことりでは なく だれかから きいた" }
+      - { id: ph-too-good-to-be-true, en: "too good to be true", ja: "うますぎる はなし", register: friend, scene: "a suspicious bargain", trap: "いい はなしすぎて あやしい" }
+      - { id: ph-ill-take-it, en: "I'll take it", ja: "それ ください", match: "I'll take it", register: service, scene: "deciding to buy", trap: "もっていく ではなく かいます" }
+      - { id: ph-pleasure-doing-business, en: "pleasure doing business", ja: "まいど あり", match: "pleasure do(in'|ing) business", register: service, scene: "closing a deal", trap: "とりひきの おわりの きまり もんく" }
+      - { id: ph-how-hard-can-it-be, en: "how hard can it be?", ja: "かんたんでしょ", register: friend, scene: "before it goes wrong", trap: "どれだけ むずかしい？ ではなく あまく みる いいかた" }
+      - { id: ph-ended-up, en: "end up", ja: "けっきょく 〜に なる", match: "ended up", register: friend, scene: "an object's long journey", trap: "end＝おわり。たどりつく ところ" }
+      - { id: ph-on-the-house, en: "on the house", ja: "おみせの おごり", register: service, scene: "a free coffee", trap: "やねの うえ ではなく むりょう" }
+    predict:
+      ask: "つぎに こまる ことは？"
+      choices:
+        - "Her menu is so long that nobody can choose."
+        - "The machine breaks again on the first day."
+        - "Redd opens a café right next door."
+      answer: 0
+      ja: "メニューが長すぎて、だれも選べない。"
+
+  - kind: serial
+    id: serial-cafe-3
+    chapter: 3
+    title: "Too Many Drinks"
+    line: "メニューと なまえを きめます"
+    ja: "ジャスミンのメニューは22種類。キャラメルが試しに来るが、多すぎて選べない。マスターの「いちばん得意なものは？」で、5つにしぼる。店の名前は「リトル・ケトル」。メイベルが看板とカーテンを縫ってくれたが、看板のつづりが「LITLE」になっていた。ジャスミンは青くなるが、そのままにすることにする。"
+    scene: cafe
+    segments:
+      - { who: narrator, en: "With the machine working, Pekoe sat down at the counter one night to write her menu. She was very excited. Maybe a little too excited." }
+      - { who: narrator, en: "By midnight, the menu had twenty-two drinks on it. There was a pumpkin spice latte, a lavender honey oat milk thing, and something called the Midnight Mocha Supreme." }
+      - { who: narrator, en: "The next morning, Goldie came by to be the very first taste tester. She sat down, opened the menu, and her smile slowly froze." }
+      - { who: goldie, en: "Wow. Okay. This is a lot of choices. Like, a lot. Can you give me a minute? Maybe ten minutes?", tts: "Wow. Okay. This is a lotta choices. Like, a lot. Can ya gimme a minute? Maybe ten minutes?" }
+      - { who: narrator, en: "Ten minutes later, she was still reading. Fifteen minutes later, she closed the menu, looked up, and asked very politely for a glass of water." }
+      - { who: goldie, en: "I'm sorry, I just couldn't decide. Everything sounds good, but I kind of panicked halfway down the page.", tts: "I'm sorry, I just couldn't decide. Everything sounds good, but I kinda panicked halfway down the page." }
+      - { who: narrator, en: "Pekoe made her a little of everything anyway. Goldie tried them all, bravely. By the end, she was talking very fast and her ears were twitching." }
+      - { who: goldie, en: "Okay, that one's amazing. That one's also amazing. I think I can hear colors now. Is that normal? That can't be normal." }
+      - { who: narrator, en: "That afternoon, Pekoe took the menu up to The Roost. Brewster read the whole thing from top to bottom without changing his face at all." }
+      - { who: brewster, en: "Too many. What do you make best? Not what's interesting. What do you make best, when you're tired, on a Tuesday?" }
+      - { who: narrator, en: "Pekoe thought about it on the walk home. She thought about the mornings on her porch, and what her friends always asked for again." }
+      - { who: narrator, en: "In the end, she crossed out almost everything. The new menu fit on one small card." }
+      - { who: narrator, en: "Drip coffee. A café latte. A pot of black tea. Hot cocoa. And honey toast." }
+      - { who: pekoe, en: "Five things. That's it. And I'm going to make every one of them really, really well.", tts: "Five things. That's it. An' I'm gonna make every one of 'em really, really well." }
+      - { who: narrator, en: "Then there was the question of a name. She wrote ideas on the back of receipts for days." }
+      - { who: narrator, en: "The Pier Café. Bean There. Pekoe's Place. None of them felt right." }
+      - { who: narrator, en: "And then one evening, the old kettle on her stove started to whistle, the same kettle she had used since she first moved to the island." }
+      - { who: pekoe, en: "The Little Kettle. Oh, that's it. That's the one. That's exactly what it's supposed to feel like." }
+      - { who: narrator, en: "Mabel heard about the name and offered to make a sign. She also offered to make curtains, cushions, and matching aprons, because Mabel can't help herself." }
+      - { who: mabel, en: "Oh, honey, leave it to me. I'll stitch the sign myself. It'll be ready by Friday, I promise." }
+      - { who: narrator, en: "On Friday, Mabel arrived with a big package wrapped in brown paper. The curtains were yellow with tiny white flowers. The aprons matched. Everything was perfect." }
+      - { who: narrator, en: "Then they unrolled the sign. It was beautiful, stitched in blue thread on soft cream fabric." }
+      - { who: narrator, en: "And it said, in big, proud letters, The Litle Kettle. With one T." }
+      - { who: mabel, en: "Oh no. Oh, no, no, no. I was up so late finishing it. I'm so sorry, sweetie. I can take it all out and start over." }
+      - { who: narrator, en: "Pekoe looked at the sign for a long moment. And then she started to laugh. And then Mabel started to laugh, and they couldn't stop." }
+      - { who: pekoe, en: "Don't you dare change it. I love it. It's a little kettle. It doesn't need two T's. It's little.", tts: "Don'tcha dare change it. I love it. It's a little kettle. It doesn't need two T's. It's little." }
+      - { who: narrator, en: "So they hung it over the door, just like that. And people would ask about it for years, and Pekoe would always tell them it was on purpose." }
+      - { who: narrator, en: "That night, the café was ready. The menu was short, the curtains were up, and the sign was spelled wrong. Opening day was on Sunday." }
+      - { who: narrator, en: "Pekoe checked the weather forecast on her phone before bed. She looked at it once, then twice, and then she decided not to look at it again." }
+    ph:
+      - { id: ph-a-lot-of-choices, en: "this is a lot", ja: "おおすぎて たいへん", match: "This is a lot", register: friend, scene: "a long menu", trap: "たくさん ある＝ちょっと こまる の ほのめかし" }
+      - { id: ph-give-me-a-minute, en: "give me a minute", ja: "ちょっと まって", match: "give me a minute|gimme a minute", register: friend, scene: "choosing from a menu", trap: "1ぷん きっかり では ない" }
+      - { id: ph-couldnt-decide, en: "I couldn't decide", ja: "きめられなかった", match: "couldn't decide", register: friend, scene: "too many options", trap: "could の ひていは できなかった" }
+      - { id: ph-in-the-end, en: "in the end", ja: "けっきょく", match: "\\bin the end\\b", register: friend, scene: "the final choice", trap: "さいごの ばしょ ではなく けっきょく" }
+      - { id: ph-leave-it-to-me, en: "leave it to me", ja: "まかせて", register: neighbour, scene: "offering to help", trap: "おいていく では なく まかせる" }
+      - { id: ph-cant-help-herself, en: "can't help herself", ja: "ついつい やってしまう", match: "can't help (herself|himself|myself|it)", register: friend, scene: "an eager neighbor", trap: "たすけられない ではなく がまん できない" }
+      - { id: ph-dont-you-dare, en: "don't you dare", ja: "ぜったい だめ", match: "don't you dare", register: friend, scene: "keeping a happy mistake", trap: "おこって いなくても つよい ストップ" }
+      - { id: ph-on-purpose, en: "on purpose", ja: "わざと", match: "\\bon purpose\\b", register: friend, scene: "explaining the sign", trap: "もくてき ではなく わざと" }
+    predict:
+      ask: "日曜の オープンの 日は どうなる？"
+      choices:
+        - "It's sunny, and a long line forms before she opens."
+        - "It pours rain, and at first nobody comes."
+        - "The sign falls down and lands in the sea."
+      answer: 1
+      ja: "大雨で、はじめはだれも来ない。"
+
+  - kind: serial
+    id: serial-cafe-4
+    chapter: 4
+    title: "Opening Day, in the Rain"
+    line: "あめの なか、オープンの ひです"
+    ja: "オープンの日はどしゃぶり。最初の1時間、だれも来ない。ジャスミンが泣きそうになったとき、レインコートのちゃちゃまるが来る。それからキャラメル、メイベル、たぬきちも。店はぬれた傘でいっぱいになり、牛乳がなくなって、ちゃちゃまるが雨の中を走る。ドアの前には、Bとだけ書かれたコーヒー豆の袋が置いてあった。"
+    scene: cafe
+    segments:
+      - { who: narrator, en: "Sunday morning, it rained. Not a little rain. It was the kind of rain that bounces off the pier and comes down sideways, like it's in a hurry." }
+      - { who: narrator, en: "Pekoe had been up since five. The cups were lined up. The honey toast was ready to go into the oven. The machine was warm and humming." }
+      - { who: narrator, en: "At eight o'clock exactly, she turned the little sign on the door from closed to open, and she stood behind the counter, and she waited." }
+      - { who: narrator, en: "Nobody came. The rain drummed on the roof. The clock ticked. Every now and then, a seagull walked past the window, looked inside, and kept walking." }
+      - { who: pekoe, en: "It's fine. It's totally fine. It's early, it's raining. Nobody wants to go out in this. It's fine.", tts: "It's fine. It's totally fine. It's early, it's rainin'. Nobody wants to go out in this. It's fine." }
+      - { who: narrator, en: "By nine, it didn't feel fine. She sat down on a stool and looked at the five things on her little menu, and her eyes started to sting." }
+      - { who: narrator, en: "And then the door banged open, and a big yellow raincoat came in, dripping all over the clean floor. Inside the raincoat was Dom." }
+      - { who: dom, en: "Sorry I'm late! I did my run first. Bad idea. Really bad idea. Can I get the biggest coffee you've got?", tts: "Sorry I'm late! I did my run first. Bad idea. Really bad idea. Can I get the biggest coffee you got?" }
+      - { who: narrator, en: "Pekoe made him the biggest coffee she had ever made. Her hands were shaking a little." }
+      - { who: narrator, en: "He drank it at the counter and said it was the best coffee on the island." }
+      - { who: narrator, en: "Ten minutes later, Goldie came in under a polka-dot umbrella, with a book under her arm. She sat by the window and ordered a pot of black tea." }
+      - { who: goldie, en: "I'm planning to stay a while, if that's okay. Rainy days are reading days. This is my spot now, by the way.", tts: "I'm plannin' to stay a while, if that's okay. Rainy days are reading days. This is my spot now, by the way." }
+      - { who: narrator, en: "Then Mabel came, to check that the curtains looked right in the rain. They did." }
+      - { who: narrator, en: "She ordered a café latte and stayed to fix one cushion that didn't need fixing." }
+      - { who: narrator, en: "Then Tom Nook arrived with his two nephews, who each had a hot cocoa and argued about who had more marshmallows. They had exactly the same number." }
+      - { who: tom-nook, en: "What a lovely place you've made, Pekoe. Yes, yes. And look at all these people. On a day like this, too!" }
+      - { who: narrator, en: "By ten thirty, every seat was full." }
+      - { who: narrator, en: "There was a row of wet umbrellas by the door, the windows were fogged up, and the whole café smelled like coffee and toast." }
+      - { who: narrator, en: "People who had never really talked to each other were sharing tables. Somebody was laughing in the corner. It was loud and warm, and it was exactly right." }
+      - { who: narrator, en: "And then, in the middle of all that, Pekoe opened the fridge and saw that she was almost out of milk." }
+      - { who: pekoe, en: "Oh no. No, no, no. I'm running out of milk. I've got, like, two lattes left. Maybe one and a half.", tts: "Oh no. No, no, no. I'm runnin' outta milk. I've got, like, two lattes left. Maybe one an' a half." }
+      - { who: dom, en: "Say no more. I'm on it. Nook's Cranny, right? Back in five minutes. Maybe four, if I sprint." }
+      - { who: narrator, en: "And before she could say anything, the yellow raincoat was gone, out into the rain." }
+      - { who: narrator, en: "He was back in six minutes, completely soaked, holding four bottles of milk over his head." }
+      - { who: narrator, en: "Everybody in the café clapped. Dom took a bow, slipped on the wet floor, and sat down very suddenly. Then everybody clapped again." }
+      - { who: narrator, en: "Around noon, Pekoe went to put the umbrellas in a neater row, and she found something by the door that she hadn't noticed before." }
+      - { who: narrator, en: "It was a heavy paper bag of coffee beans, the good kind, dark and shiny. There was a note tied to it with string, in very neat handwriting." }
+      - { who: narrator, en: "It said, good luck today. Remember, be patient. And under that, just one letter. B." }
+      - { who: goldie, en: "Who's B? Wait, is that from Brewster? Oh my gosh, that's so sweet. Is he coming in today?", tts: "Who's B? Wait, is that from Brewster? Oh my gosh, that's so sweet. Is he comin' in today?" }
+      - { who: narrator, en: "He didn't come that day. But Pekoe put the note up on the wall, right next to the napkin with his advice on it." }
+      - { who: narrator, en: "When the last customer left, the rain had finally stopped." }
+      - { who: narrator, en: "Pekoe sat on the counter in the empty café, surrounded by cups, and she smiled until her face hurt." }
+    ph:
+      - { id: ph-every-now-and-then, en: "every now and then", ja: "ときどき", register: friend, scene: "a slow morning", trap: "いま と それから ではなく ときどき" }
+      - { id: ph-its-fine, en: "it's fine", ja: "だいじょうぶ（の つもり）", match: "it's (totally )?fine", register: friend, scene: "telling yourself not to worry", trap: "くりかえす ほど だいじょうぶ じゃない" }
+      - { id: ph-stay-a-while, en: "stay a while", ja: "しばらく いる", match: "stay a while", register: service, scene: "a long visit", trap: "a while＝しばらく。ちょっとだけ ではない" }
+      - { id: ph-running-out, en: "run out of", ja: "〜が きれる", match: "run(nin'|ning)? out(ta| of)", register: friend, scene: "low on milk", trap: "はしりでる では なく なくなる" }
+      - { id: ph-say-no-more, en: "say no more", ja: "それ いじょう いわなくて いい", register: friend, scene: "jumping in to help", trap: "だまれ ではなく わかった、まかせて" }
+      - { id: ph-im-on-it, en: "I'm on it", ja: "すぐ やる", match: "I'm on it", register: friend, scene: "taking a job at once", trap: "うえに のる ではなく とりかかる" }
+      - { id: ph-by-the-way, en: "by the way", ja: "ところで", match: "\\bby the way\\b", register: friend, scene: "claiming a seat", trap: "みちばた ではなく ついでに" }
+    predict:
+      ask: "マスターは いつ 来る？"
+      choices:
+        - "Never. He only sends notes."
+        - "He comes on the next rainy day with an umbrella for everyone."
+        - "A few weeks later, on his day off, he finally comes in as a customer."
+      answer: 2
+      ja: "数週間後、休みの日に、ついに客として来る。"
+
+  - kind: serial
+    id: serial-cafe-5
+    chapter: 5
+    title: "Regulars"
+    line: "マスターが はじめて おきゃくさんに なります"
+    ja: "数週間たち、リトル・ケトルには常連ができた。毎朝同じものを頼むちゃちゃまる、窓ぎわで本を読むキャラメル、クロスワードをするたぬきち。ある休みの日、ついにマスターが客として来る。緊張しながらいれたコーヒーに、マスターはひとこと「うん。いいコーヒーだ」。そして、常連の名前をおぼえていることこそが仕事だと言う。閉店後、カップを洗い、灯りを消して、島は静かに眠る。"
+    scene: cafe
+    segments:
+      - { who: narrator, en: "A few weeks went by, the way weeks do on an island. The days got shorter, the mornings got colder, and The Little Kettle got a little busier." }
+      - { who: narrator, en: "Pekoe started to learn the rhythm of the place." }
+      - { who: narrator, en: "Who came early, who came late, who wanted to talk, and who just wanted to be left alone with a cup." }
+      - { who: narrator, en: "Dom came every morning at seven fifteen, right after his run. Every morning, he ordered an iced latte, even though it was almost winter." }
+      - { who: dom, en: "The usual, please! I know, I know, it's cold out. But I'm, like, super warm from running. It works, trust me.", tts: "The usual, please! I know, I know, it's cold out. But I'm, like, super warm from runnin'. It works, trust me." }
+      - { who: narrator, en: "Goldie came on Tuesdays and Thursdays and sat in her spot by the window. She read mystery novels and always guessed the ending, and always acted surprised anyway." }
+      - { who: narrator, en: "Tom Nook came every afternoon at three for a drip coffee and the crossword puzzle. He did it in pen." }
+      - { who: narrator, en: "He never asked for help, but sometimes he read a clue out loud, just in case." }
+      - { who: tom-nook, en: "Five letters, a coffee drink with lots of milk. Hmm. Yes, yes, I believe I've got it. Thank you, Pekoe." }
+      - { who: narrator, en: "She learned that Mabel liked her latte a little too hot, and that the fishermen liked their coffee black and their honey toast extra crispy." }
+      - { who: narrator, en: "She learned everyone's name, and how they took their coffee, and what kind of day they were having, just from the way they opened the door." }
+      - { who: narrator, en: "And then one quiet Wednesday morning, the door opened very slowly, and Brewster came in." }
+      - { who: narrator, en: "Not to fix anything. Not to drop anything off. He came in and sat down." }
+      - { who: narrator, en: "Pekoe almost dropped the cup she was holding. Dom stopped talking in the middle of a sentence. Even Goldie looked up from her book." }
+      - { who: brewster, en: "It's my day off. One drip coffee, please. No rush." }
+      - { who: narrator, en: "Pekoe's paws were shaking a little as she measured the beans. His beans, the ones from the paper bag." }
+      - { who: narrator, en: "She did it slowly and carefully, the way he had taught her without ever really teaching her." }
+      - { who: narrator, en: "She poured the hot water in slow circles and waited. Brewster watched every step without a word. The whole café was so quiet, you could hear the kettle." }
+      - { who: narrator, en: "She set the cup down in front of him. He picked it up. He smelled it." }
+      - { who: narrator, en: "He took one small sip. And then he put the cup down and looked at it for a very long time." }
+      - { who: brewster, en: "Hm. Good. That's good coffee, Pekoe." }
+      - { who: narrator, en: "That was all. A handful of words, which, from Brewster, is practically a speech." }
+      - { who: narrator, en: "But Dom cheered so loudly that a seagull outside flew off the railing, and Goldie had to wipe her eyes with a napkin." }
+      - { who: pekoe, en: "Thank you. Really. I couldn't have done any of this without you. The machine, the beans, the advice, all of it.", tts: "Thank you. Really. I couldn'ta done any of this without you. The machine, the beans, the advice, all of it." }
+      - { who: brewster, en: "You did the hard part yourself. You know everyone's name. You know how they like their coffee. That's the whole job." }
+      - { who: narrator, en: "He finished his coffee, left a coin on the counter, and nodded to her on his way out." }
+      - { who: narrator, en: "And the next Wednesday, he came back. And the one after that." }
+      - { who: narrator, en: "That night, after the last customer had gone home, Pekoe stayed late to close up, the way she did every night now." }
+      - { who: narrator, en: "She washed the cups, one by one, and set them upside down to dry. She wiped the long wooden counter until it shined in the lamplight." }
+      - { who: narrator, en: "She read the napkin on the wall, and the note next to it." }
+      - { who: narrator, en: "She straightened the sign that said The Litle Kettle, and smiled at the missing T, like always." }
+      - { who: narrator, en: "Then she turned off the lamps, one by one, until only the little light over the door was left. She stepped out and locked up." }
+      - { who: narrator, en: "Outside, the island was asleep. The water was calm. A few windows were still glowing up the hill, and somewhere, somebody's kettle was starting to whistle." }
+      - { who: narrator, en: "Pekoe walked home slowly, with her hands in her pockets and the smell of coffee still in her fur. Tomorrow, the usual. Goodnight." }
+    ph:
+      - { id: ph-the-usual, en: "the usual", ja: "いつもの", match: "\\bthe usual\\b", register: service, scene: "a regular's order", trap: "ふつう ではなく いつもの ちゅうもん" }
+      - { id: ph-left-alone, en: "be left alone", ja: "そっと して おいて もらう", match: "left alone", register: friend, scene: "a quiet customer", trap: "ひとりぼっち ではなく じゃまされない" }
+      - { id: ph-just-in-case, en: "just in case", ja: "ねんのため", match: "just in case", register: friend, scene: "a crossword clue", trap: "ケース では なく もしもの ため" }
+      - { id: ph-day-off, en: "day off", ja: "やすみの ひ", match: "\\bday off\\b", register: colleague, scene: "a café owner visits", trap: "off＝はずれて いる ひ" }
+      - { id: ph-no-rush, en: "no rush", ja: "いそがなくて いいよ", match: "\\bno rush\\b", register: service, scene: "ordering patiently", trap: "rush＝いそぐ。no で ゆっくりで いい" }
+      - { id: ph-couldnt-have-done, en: "I couldn't have done it without you", ja: "あなたの おかげ", match: "couldn't have done", register: friend, scene: "thanking a mentor", trap: "できなかった ではなく かんしゃの ことば" }
+      - { id: ph-close-up, en: "close up", ja: "みせを しめる", match: "close up", register: colleague, scene: "the end of the day", trap: "ちかく では なく へいてんさぎょう" }
