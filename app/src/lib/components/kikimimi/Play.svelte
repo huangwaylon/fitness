@@ -9,6 +9,8 @@
   // A dialogue (gist, next): both speakers' heads, the one talking bobbing; at the reveal the verdict and only the right
   // choice and my pick (never under the sticky つぎへ), then its two-sided transcript
   // (Transcript.svelte) with the focus marked; level 4's `note` (the trap) under the accent.
+  // A game's own parts around the round (the tournament's: taikai/TaikaiPlay.svelte): `show` above the frame (the show's
+  // bar), `gate` above the choices (the wager's bet, its reveal); the wager's choices wait for a bet.
   // A staged item (level 4: a scene, or a phone, PA or video call) shows the scene card instead of the plain stage from
   // the lead-in to the reveal (scene/SceneCard.svelte); at the reveal the English carries its sound marks and the karaoke
   // as it replays (scene/SoundLine.svelte), the marks' key under it.
@@ -17,7 +19,7 @@
   // (right on the first listen, every rung under it climbed: +100), and below the top no line and no replay (the next
   // rung's listen is the next, faster one); the top's reveal the line, its marks and how high the ladder went.
   import type { Snippet } from 'svelte';
-  import { canSlow, hidesLine, type QuizGame } from './game.svelte.ts';
+  import { canSlow, hidesLine, isWager, type QuizGame } from './game.svelte.ts';
   import { SPEEDS, laddersIn, rungState } from '#lib/kikimimi/ladder.ts';
   import { sx } from './look.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
@@ -36,7 +38,7 @@
   import { villagerArt } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { game }: { game: QuizGame } = $props();
+  let { game, show, gate }: { game: QuizGame; show?: Snippet; gate?: Snippet } = $props();
   const v = $derived(game.view);
   const it = $derived<Item | undefined>(game.items[v.i]);
   const reveal = $derived(v.phase === 'reveal');
@@ -54,7 +56,7 @@
   const mine = $derived(v.answers[v.i] ?? null);
   const right = $derived(!!mine && !!it && mine.k === it.answer);
   /** The choices take a tap: the answer window, not answered, not sat out. */
-  const open = $derived(v.phase === 'answer' && !mine && !v.out);
+  const open = $derived(v.phase === 'answer' && !mine && !v.out && !(isWager(v) && game.bet === null));
   /** 🔁 / 🐢 once the first play is over, on a phone that speaks (not at a ladder rung's reveal below the top). */
   const canHear = $derived(v.speaks && !v.out && (v.phase === 'answer' || (reveal && !hidesLine(it))));
   /** A スピード はしご rung: where it is on its ladder, which ladder of the game, and whether this rung climbs. */
@@ -172,6 +174,7 @@
 {/snippet}
 
 {#snippet input()}
+  {@render gate?.()}
   {#if !reveal}
     {#if ask}<p class="ask">{ask}</p>{/if}
     {#if it.type === 'word' && parts}
@@ -194,6 +197,7 @@
   {/if}
 {/snippet}
 
+  {@render show?.()}
   <RoundFrame {v} now={game.now} me={game.me} type={it.type} answered={!!mine} {verdict} {stage} {input} {after}
     onnext={() => game.next()} onready={() => game.ready()} />
 {/if}

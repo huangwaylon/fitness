@@ -8,14 +8,16 @@
   // yet, しずえ's hello and 「あそぶ」 (back to the lobby's first tab). スピード はしご's measure once a ladder's been
   // climbed: the fastest comfortable speed (a stat tile) over one bar a rung (the share of the recent ladders that
   // climbed it, labelled directly; one hue). Mine alone: the record sends the
-  // others only a summary (contract/guest.ts rowsFor).
+  // others only a summary (contract/guest.ts rowsFor). The trophy shelf: しずえの しゅうまつ たいかい's trophies, the best
+  // of each weekend, newest first (their place in the tent is a later step).
   import type { Report } from '#lib/kikimimi/report.ts';
   import { SPEED_MIN } from '#lib/kikimimi/progress.ts';
   import { stageAt } from '#lib/kikimimi/stages.ts';
   import { SKILLS } from '#lib/kikimimi/tags.ts';
   import { levelAt, type Accent, type ItemType } from '#lib/kikimimi/bank.ts';
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
-  import { levelMark, sx } from './look.ts';
+  import { MEDAL, levelMark, sx } from './look.ts';
+  import { trophiesOf } from '#lib/kikimimi/games/taikai/def.ts';
   import Host from '../characters/Host.svelte';
   import { t } from '#lib/i18n/index.ts';
 
@@ -26,6 +28,8 @@
    *  the stage, not a second stage. */
   const comfy = $derived(levelAt(Math.min(6, Math.max(1, Math.round(s.level ?? 1)))));
   const pct = (x: number) => Math.round(x * 100);
+  /** The trophy shelf: each weekend's best (its Friday), newest first. */
+  const trophies = $derived([...trophiesOf(report.games)].sort(([a], [b]) => (a < b ? 1 : -1)));
   // the sparkline: first-listen accuracy per game, 0-100 % on a fixed scale (one axis), the last point marked
   const W = 120, H = 36, PAD = 5;
   const pts = $derived(report.trend.map((y, i, a) => [a.length > 1 ? PAD + (i * (W - 2 * PAD)) / (a.length - 1) : W / 2, H - PAD - y * (H - 2 * PAD)] as const));
@@ -121,6 +125,17 @@
       </section>
     </div>
 
+    {#if trophies.length}
+      <section class="tile card" aria-labelledby="kp-cups" data-kiki-trophies={trophies.length}>
+        <h3 id="kp-cups" class="sec-label in">{t('kiki.prog.trophies')}</h3>
+        <ul class="shelf">
+          {#each trophies as [fri, cup] (fri)}
+            <li data-kiki-shelf={cup}><span class="cup" aria-hidden="true">{MEDAL[cup]}</span><small>{t('kiki.prog.trophyWeek', { m: +fri.slice(5, 7), d: +fri.slice(8, 10) })}</small><span class="sr-only">{t(`kiki.trophy.${cup}`)}</span></li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
+
     {#if report.together.partner}
       <section class="tile card together" aria-labelledby="kp-two" data-kiki-together>
         <h3 id="kp-two" class="sec-label in">{t('kiki.prog.together')}</h3>
@@ -157,6 +172,14 @@
   .sec { display: grid; gap: 8px; }
   .sec-label.in { margin: 0; }
   .tile { display: grid; gap: 6px; padding: 12px 14px; align-content: start; }
+  /* the trophy shelf: a wooden ledge under the cups */
+  .shelf {
+    list-style: none; margin: 0; padding: 0 4px 6px; display: flex; gap: 12px; overflow-x: auto;
+    box-shadow: inset 0 -6px 0 color-mix(in srgb, var(--c-lip) 70%, transparent);
+  }
+  .shelf li { flex: none; display: grid; justify-items: center; gap: 2px; }
+  .shelf .cup { font-size: 34px; line-height: 1.1; }
+  .shelf small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   .stage { margin: 0; display: flex; align-items: baseline; gap: 8px; font: 700 var(--fs-title)/1.2 var(--font-ui); }
   .stage small { font-size: var(--fs-s); color: var(--text-soft); }
   .stars { color: var(--c-coral); font-size: var(--fs-s); letter-spacing: 1px; }

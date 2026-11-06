@@ -1,6 +1,6 @@
 // ききみみ's one stack (docs/kikimimi-ux.md §5, SettingsSheet's pattern): the hub is the root (an empty stack) and each
 // page is pushed over it; ‹ pops one, ✕ closes the sheet, and a deep link builds the whole stack (the invite: the hub,
-// then みんなで). Pages are at most three deep. Pure: the sheet keeps the stack in its state.
+// then みんなで; the たいかい banner: its lobby). Pages are at most three deep. Pure: the sheet keeps the stack in its state.
 import type { ModeId } from '#lib/kikimimi/catalog.ts';
 
 export type Page =
@@ -12,7 +12,8 @@ export type Page =
   | { k: 'path' }
   | { k: 'unit'; id: string }
   | { k: 'zukan'; unit: string | null }
-  | { k: 'story' };
+  | { k: 'story' }
+  | { k: 'taikai' };
 
 /** The deepest stack: three pages over the hub (the path's unit's ずかん over あそぶ is the one that reaches it). */
 export const MAX_DEPTH = 4;
@@ -32,6 +33,9 @@ export const pop = (stack: readonly Page[]): Page[] => stack.slice(0, -1);
 
 /** The stack an invite's さんか builds: みんなで over the hub (‹ lands on the hub). */
 export const inviteStack = (): Page[] => [{ k: 'lobby' }];
+
+/** The stack the hub's たいかい banner opens: the tournament's lobby over the hub. */
+export const taikaiStack = (): Page[] => [{ k: 'taikai' }];
 
 /** The stack a mode opens on: あそぶ, then the mode (‹ goes to あそぶ, then the hub). */
 export const modeStack = (m: ModeId): Page[] => [{ k: 'asobu' }, { k: 'mode', m }];

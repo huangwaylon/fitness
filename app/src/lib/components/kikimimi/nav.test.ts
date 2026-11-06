@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_DEPTH, inviteStack, modeStack, pop, push, type Page } from './nav.ts';
+import { MAX_DEPTH, inviteStack, taikaiStack, modeStack, pop, push, type Page } from './nav.ts';
 
 describe('the one stack', () => {
   it('pushes over the hub and pops back to it', () => {
@@ -22,8 +22,9 @@ describe('the one stack', () => {
     expect(s).toHaveLength(MAX_DEPTH);
     expect(s.at(-1)).toEqual({ k: 'zukan', unit: null });
   });
-  it('builds the deep links: the invite lands on みんなで, a mode over あそぶ', () => {
+  it('builds the deep links: the invite lands on みんなで, a mode over あそぶ, the たいかい banner on its lobby', () => {
     expect(inviteStack()).toEqual([{ k: 'lobby' }]);
+    expect(taikaiStack()).toEqual([{ k: 'taikai' }]);
     expect(pop(inviteStack())).toEqual([]);
     expect(modeStack('ladder')).toEqual([{ k: 'asobu' }, { k: 'mode', m: 'ladder' }]);
   });

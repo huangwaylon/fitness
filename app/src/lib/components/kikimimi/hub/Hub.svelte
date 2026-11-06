@@ -13,7 +13,9 @@
   // ききみみ's hub, the sheet's root (docs/kikimimi-ux.md §6.1): an invite on top while one waits (さんか joins it; an
   // invite of content this build hasn't offers こうしんする instead), しずえ's line, today's menu (today.ts: おさらい ·
   // きょうの いっぽ · きまぐれ; a done card folds to a stamp, the first undone one has the only green button; any one
-  // means 「きょうは OK」), then the four entry tiles (あそぶ · みんなで · ずかん · きろく, each with one live line) and the week card.
+  // means 「きょうは OK」), then the four entry tiles (あそぶ · みんなで · ずかん · きろく, each with one live line), the
+  // weekend's しずえの しゅうまつ たいかい banner while it's on (Fri 18:00 – Mon 05:00: this weekend's trophy once won; its
+  // lobby) and the week card.
   // Every place is one tap from here; ⚙ is the title bar's. Its own chunk.
   import type { Who } from '#lib/types.ts';
   import Host from '../../characters/Host.svelte';
@@ -33,7 +35,10 @@
   import WeekCard from './WeekCard.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
-  import { jst } from '#lib/time/clock.ts';
+  import { jst, now } from '#lib/time/clock.ts';
+  import { taikaiAt } from '#lib/kikimimi/games/taikai/window.ts';
+  import { trophiesOf } from '#lib/kikimimi/games/taikai/def.ts';
+  import { MEDAL } from '../look.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
@@ -46,8 +51,10 @@
     ontile: (k: Tile) => void;
     /** A menu card's play. */
     onact: (a: Act) => void;
+    /** The たいかい banner: its lobby. */
+    ontaikai: () => void;
   }
-  let { here, me, invite = null, onjoin, onupdate, ontile, onact }: Props = $props();
+  let { here, me, invite = null, onjoin, onupdate, ontile, onact, ontaikai }: Props = $props();
   const TILES: readonly { k: Tile; icon: string }[] = [
     { k: 'asobu', icon: '🎧' },
     { k: 'together', icon: '👥' },
@@ -82,7 +89,7 @@
       ? pickMenu({
           day: report.today, due: report.due, recheck: rechecksDue(currentUnits(), report.today)[0] ?? null,
           next: cur ? { unit: cur.id, lesson: cur.next } : null, lv,
-          whims: MODE_IDS.filter((m) => m !== 'review' && m !== 'story' && playable(m, ctx)), night,
+          whims: MODE_IDS.filter((m) => m !== 'review' && m !== 'story' && m !== 'taikai' && playable(m, ctx)), night,
           sessions: [
             ...report.games.filter((g) => g.d === report.today && finished(g.r.length)).map((g) => ({ at: g.at, p: g.p, u: g.u, ladder: isLadderGame(g), lv: g.lv })),
             ...report.stories.filter((s) => s.d === report.today && finishedStory(s.ms)).map((s) => ({ at: s.at, p: false, ladder: false, lv: 4, story: true }))
@@ -98,6 +105,9 @@
         })
       : null
   );
+  /** The weekend's tournament (window.ts: on Fri 18:00 – Mon 05:00) and the trophy I've won in it (my best). */
+  const weekend = taikaiAt(now().getTime());
+  const won = $derived(weekend.open && report ? (trophiesOf(report.games).get(weekend.fri) ?? null) : null);
   const hello = $derived(menu?.all ? t('kiki.hub.enough') : greet);
   const firstOpen = $derived(menu?.cards.find((c) => !c.done) ?? null);
   const unitName = (id: string) => stops.find((s) => s.id === id)?.name ?? '';
@@ -173,6 +183,17 @@
       </button>
     {/each}
   </nav>
+  {#if weekend.open && LEVELS.some((x) => x !== 5)}
+    <button type="button" class="taikai tile-btn" data-kiki-taikai={won ?? 'open'} data-sfx="open" onclick={ontaikai}>
+      <span class="cup" aria-hidden="true">{won ? MEDAL[won] : '🏆'}</span>
+      <span class="ttxt">
+        <b>{t('kiki.mode.taikai')}</b>
+        <small>{won ? t('kiki.taikai.won', { trophy: t(`kiki.trophy.${won}`) }) : t('kiki.taikai.open')}</small>
+        <small class="until">{won ? t('kiki.taikai.again') : t('kiki.taikai.until')}</small>
+      </span>
+      <span class="chev" aria-hidden="true">›</span>
+    </button>
+  {/if}
   {#if weekly}<WeekCard card={weekly} />{/if}
 </div>
 
@@ -213,4 +234,19 @@
   }
   .tile b { font: 700 var(--fs-body)/1.15 var(--font-ui); }
   .tile small { font: 700 var(--fs-xs)/1.25 var(--font-ui); color: var(--text-soft); overflow-wrap: anywhere; }
+  /* しずえの しゅうまつ たいかい: the weekend's yuzu banner (a ribbon of the show), its trophy once won */
+  .taikai {
+    display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r-card); text-align: left; width: 100%;
+    background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); color: var(--c-ink);
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c-yuzu) 80%, var(--c-lip)), 0 var(--lip-h) 0 var(--c-lip);
+  }
+  .cup {
+    flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; line-height: 1;
+    background: var(--c-card); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c-yuzu) 70%, var(--c-lip));
+  }
+  .ttxt { flex: 1; min-width: 0; display: grid; gap: 2px; }
+  .ttxt b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
+  .ttxt small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink-soft); }
+  .ttxt .until { font-size: var(--fs-xs); }
+  .chev { flex: none; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--c-ink-soft); }
 </style>

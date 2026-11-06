@@ -9,6 +9,9 @@
   // スピード はしご: しずえ's line is how high I climbed; a card of my climbs (each ladder's steps, how high); the review
   // one row a ladder: its line (the chunk marked), its Japanese and note, each rung's question with my ○ / ×, and ▶︎ at
   // each speed.
+  // A game's own over it (the tournament's: taikai/TaikaiResults.svelte): しずえ's line (`hostLine`) and a card on top
+  // (`extra`: the trophy).
+  import type { Snippet } from 'svelte';
   import { canSlow, type QuizGame } from './game.svelte.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
@@ -31,7 +34,9 @@
   import { SPEEDS, climbs, laddersIn, speedAt } from '#lib/kikimimi/ladder.ts';
   import { sx } from './look.ts';
 
-  let { game, onagain, onmissed, ondone, onnext }: { game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void; onnext?: (l: Lesson) => void } = $props();
+  let { game, onagain, onmissed, ondone, onnext, hostLine, extra }: {
+    game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void; onnext?: (l: Lesson) => void; hostLine?: string; extra?: Snippet;
+  } = $props();
   const v = $derived(game.view);
   const items = $derived(game.items);
   /** Co-op (several players, not たいせん): the team's tally, no ranking and no one's points. */
@@ -88,6 +93,7 @@
 </script>
 
 {#snippet strip()}
+  {@render extra?.()}
   {#if ls && recorded}
     <section class="lesson card" class:won={stamped} data-kiki-lesson-result={ls.lesson} data-kiki-stamped={stamped ? '1' : '0'}>
       <div class="lhead">
@@ -117,7 +123,7 @@
   {/if}
 {/snippet}
 
-<ResultsFrame {v} {tally} of={items.length} {firsts} {line} top={strip} {ondone} {onagain}>
+<ResultsFrame {v} {tally} of={items.length} {firsts} line={hostLine ?? line} top={strip} {ondone} {onagain}>
   {#if ladders.length}
     <!-- スピード はしご: how high each ladder went -->
     <section class="climbs card" data-kiki-climbs={mine.join(',')}>
