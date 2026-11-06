@@ -1,7 +1,6 @@
 // A ききみみ game's record on this phone (game.svelte.ts): my replays per question, when the game began, its items into
 // this phone's history (recent.ts) and my answers as a `listen` row (contract/listen.ts), once.
-import type { Level } from '#lib/kikimimi/bank.ts';
-import type { QuizView } from '#lib/kikimimi/session.ts';
+import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
 import type { ListenRow } from '#lib/contract/listen.ts';
 import { listenAnswers } from '#lib/kikimimi/progress.ts';
@@ -34,7 +33,7 @@ export class GameRecorder {
     if (!this.#began) this.#began = now;
     if (this.#remembered !== v.g) {
       this.#remembered = v.g;
-      rememberGame(itemsOf(v.seed, v.lv as Level).map((it) => it.id));
+      rememberGame(itemsOf(v).map((it) => it.id));
     }
   }
 
@@ -44,7 +43,7 @@ export class GameRecorder {
    *  them into one game (progress.ts gamesOf). Null: already recorded, or nothing to. */
   keep(v: QuizView, now: number, done: boolean, o: { lesson: { unit: UnitPlay; lesson: Lesson } | null; practicing: boolean }): ListenRow | null {
     if (!v.g || this.#recordedG === v.g) return null;
-    const r = listenAnswers(itemsOf(v.seed, v.lv as Level), v.answers, v.had, this.#rp, done);
+    const r = listenAnswers(itemsOf(v), v.answers, v.had, this.#rp, done);
     if (!r.length) return null;
     this.#recordedG = v.g;
     // a unit's lesson: its unit and lesson (the stamps, stamps.ts), the stage's level; co-op, the team's first listens (§10)
