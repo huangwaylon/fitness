@@ -41,7 +41,7 @@ items:
     speaker: tia
     en: "Take two of these with food, and don't drive tonight."
     tts: "Take two of these with food, an' don't drive tonight."
-    ja: "食後に 2錠飲んでください。それと今夜は運転しないでくださいね。"
+    ja: "食後に2錠飲んでください。それと今夜は運転しないでくださいね。"
     tiles: ["Take", "two", "of", "these", "with", "food", "and", "don't", "drive", "tonight"]
     decoys: ["those", "won't"]
     marks: [[say, "and", "an'"], [link, "two of these"]]
@@ -157,7 +157,7 @@ items:
     speaker: label
     en: "Your room should be ready in about an hour."
     tts: "Yer room should be ready in aboud an hour."
-    ja: "お部屋は 1時間ほどでご用意できる予定です。"
+    ja: "お部屋は1時間ほどでご用意できる予定です。"
     tiles: ["Your", "room", "should", "be", "ready", "in", "about", "an", "hour"]
     decoys: ["at", "a"]
     marks: [[link, "about an hour"], [say, "about", "aboud"]]

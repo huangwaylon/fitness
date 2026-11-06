@@ -130,7 +130,7 @@ items:
     en: "Okay, everyone, grab a glass! Quick toast. Ooh, speech! Speech! Here's to Tia: the best neighbor, the worst singer, and now officially thirty! Cheers! Cheers! Happy birthday, Tia!"
     ja: "30歳になったティア。"
     note: "Here's to＝〜に 乾杯。worst singer は 冗談"
-    choices: ["Tia, who's just turned thirty.", "Poppy, the best singer.", "Their new neighbor."]
+    choices: ["Tia, who just turned thirty.", "Poppy, the best singer.", "Their new neighbor."]
     answer: 0
     focus: "Here's to Tia"
     ask: "かんぱいは だれの ため？"
@@ -151,7 +151,7 @@ items:
     en: "Hey, thanks for coming, you guys. It really means a lot."
     ja: "来てくれたお礼を言っている。"
     note: "means a lot＝とても うれしい。お礼の ことば"
-    choices: ["He's thanking her for coming.", "He's making a toast.", "He wants her to leave."]
+    choices: ["He's thanking his friends for coming.", "He's making a toast.", "He wants them to leave."]
     answer: 0
     ask: "つまり、どういうこと？"
     scene: door
@@ -241,7 +241,7 @@ items:
     speaker: wolfgang
     voice: us
     cast: us-m3
-    en: "Hey Molly, quick one. Is Kicks's party still on Friday? It moved to Saturday. Same time, but at the karaoke place in Shibuya now. Saturday at the karaoke place. Got it. Should I bring anything? Just your singing voice! Okay, I'll let you go. See you Saturday!"
+    en: "Hey Molly, quick question. Is Kicks's party still on Friday? It moved to Saturday. Same time, but at the karaoke place in Shibuya now. Saturday at the karaoke place. Got it. Should I bring anything? Just your singing voice! Okay, I'll let you go. See you Saturday!"
     ja: "土曜、渋谷のカラオケ。"
     note: "moved to Saturday＝金曜 ではない。場所も 変更"
     choices: ["Saturday, at a karaoke place.", "Friday, at a karaoke place.", "Saturday, at Kicks's place."]
@@ -253,7 +253,7 @@ items:
     cond: { kind: phone, level: light }
     tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [linking] }
     lines:
-      - { who: wolfgang, cast: us-m3, en: "Hey Molly, quick one. Is Kicks's party still on Friday?", ja: "やあモリー、ひとつだけ。キックスのパーティー、まだ金曜？" }
+      - { who: wolfgang, cast: us-m3, en: "Hey Molly, quick question. Is Kicks's party still on Friday?", ja: "やあモリー、ちょっと聞きたいんだけど。キックスのパーティー、まだ金曜？" }
       - { who: molly, cast: us-f3, en: "It moved to Saturday. Same time, but at the karaoke place in Shibuya now.", ja: "土曜になったよ。時間は同じ、でも場所は渋谷のカラオケになった。" }
       - { who: wolfgang, cast: us-m3, en: "Saturday at the karaoke place. Got it. Should I bring anything?", ja: "土曜にカラオケね。了解。何か持っていく？" }
       - { who: molly, cast: us-f3, en: "Just your singing voice! Okay, I'll let you go. See you Saturday!", ja: "歌声だけ！ じゃあ、そろそろ切るね。土曜にね！" }
@@ -346,7 +346,7 @@ items:
     cast: us-m3
     en: "The party's at my place."
     ja: "パーティーはうちでやるよ。"
-    note: "at my は「アッマイ」と つながる。place の l も"
+    note: "at my は「アッマイ」と つながる。plate と 区別"
     choices: ["at my place", "at my plate", "and my place"]
     answer: 0
     focus: "at my place"
@@ -412,7 +412,7 @@ items:
     cast: us-m3
     en: "I wouldn't miss it."
     ja: "絶対行くよ。"
-    note: "wouldn't の t は 消える。would と 区別"
+    note: "wouldn't は t が 消え「ウドゥン」。n で would と 区別"
     choices: ["wouldn't", would, "won't"]
     answer: 0
     focus: "wouldn't"

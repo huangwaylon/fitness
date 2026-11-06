@@ -16,7 +16,7 @@ cando:
   cond: まちの ざつおんの なかで
   catch: あたらしい ひ・じかん・ばしょと キャンセルか どうか
   short: よていの へんこうが わかる
-  en: "I can follow a friend changing our plans on the phone, over street noise at natural speed, and catch the new day, time and place, and whether they're really cancelling."
+  en: "I can follow a friend changing our plans on the phone, over street noise at natural speed, and catch the new day, time and place, and whether they're really canceling."
 status: voiced
 ph:
   - { id: ph-come-up, en: "something's come up", ja: "きゅうようが できた", match: "something('s| has)? come up|something came up|\\bcome up\\b", register: friend, scene: "a last-minute change", trap: "come up＝きゅうに おきる。あがる ではない" }
@@ -38,7 +38,7 @@ items:
     en: "Hey, it's me! Are we still on for dinner tonight? About that… something's come up at work. Could we push it back to Thursday? Sorry, say that again? A truck's going past. Thursday! Same place, seven o'clock. Does that work for you? Thursday at seven. Perfect, see you then!"
     ja: "木曜の7時にずれた。"
     note: "push it back＝あとに ずらす。中止 ではない"
-    choices: ["It's moved to Thursday at seven.", "It's cancelled for good.", "It's still on for tonight."]
+    choices: ["It's moved to Thursday at seven.", "It's canceled for good.", "It's still on for tonight."]
     answer: 0
     focus: "Could we push it back to Thursday?"
     ask: "ゆうごはんは どうなる？"
@@ -160,7 +160,7 @@ items:
     en: "Hey Tammy, about the beach tomorrow. Have you seen the forecast? I know, it's supposed to pour. Should we take a rain check? Yeah. How about next Saturday instead? Same time? Next Saturday works. I'll put it in my calendar. Talk soon!"
     ja: "代わりに来週の土曜に行く。"
     note: "rain check でも 日にちが 決まれば キャンセル ではない"
-    choices: ["They'll go next Saturday instead.", "They're going tomorrow in the rain.", "They've cancelled with no new date."]
+    choices: ["They'll go next Saturday instead.", "They're going tomorrow in the rain.", "They've canceled with no new date."]
     answer: 0
     focus: "How about next Saturday instead?"
     ask: "ビーチは どうなる？"
@@ -232,7 +232,7 @@ items:
     speaker: kid-cat
     voice: us
     cast: us-m1
-    en: "Hey! So, small change of plan for the movie. Uh-oh. You're not cancelling, are you? No, no! I'm just running late. Can we do the 8:40 show instead of 7:15? Sure. So that's 8:40. I'll grab dinner first, then. See you there!"
+    en: "Hey! So, small change of plan for the movie. Uh-oh. You're not canceling, are you? No, no! I'm just running late. Can we do the 8:40 show instead of 7:15? Sure. So that's 8:40. I'll grab dinner first, then. See you there!"
     ja: "8時40分の回を見る。"
     note: "instead of のあとは 前の 予定。キャンセル ではない"
     choices: ["They'll see the 8:40 show.", "He's cancelling the movie.", "They'll see the 7:15 show."]
@@ -245,7 +245,7 @@ items:
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [numbers] }
     lines:
       - { who: kid-cat, cast: us-m1, en: "Hey! So, small change of plan for the movie.", ja: "やあ！ で、映画の予定、ちょっと変更。" }
-      - { who: tia, cast: us-f2, en: "Uh-oh. You're not cancelling, are you?", ja: "あれ。キャンセルじゃないよね？" }
+      - { who: tia, cast: us-f2, en: "Uh-oh. You're not canceling, are you?", ja: "あれ。キャンセルじゃないよね？" }
       - { who: kid-cat, cast: us-m1, en: "No, no! I'm just running late. Can we do the 8:40 show instead of 7:15?", tts: "No, no! I'm just running late. Can we do the eight forty show instead of seven fifteen?", ja: "ちがうちがう！ ちょっと遅れてるだけ。7時15分のじゃなくて8時40分の回にできる？" }
       - { who: tia, cast: us-f2, en: "Sure. So that's 8:40. I'll grab dinner first, then. See you there!", tts: "Sure. So that's eight forty. I'll grab dinner first, then. See you there!", ja: "いいよ。じゃあ8時40分ね。先に夕飯食べとく。じゃあ映画館で！" }
   - id: km-start-without
@@ -440,7 +440,7 @@ items:
     en: "Honestly, I'm wiped. Can we just… do it another time? I'll message you."
     ja: "キャンセルで、新しい日にちはまだない。"
     note: "another time＋I'll message you＝ほぼ キャンセル"
-    choices: ["He's cancelling and hasn't set a new date.", "He wants to meet tomorrow.", "He's on his way."]
+    choices: ["He's canceling and hasn't set a new date.", "He wants to meet tomorrow.", "He's on his way."]
     answer: 0
     ask: "つまり、どういうこと？"
     scene: street
@@ -493,4 +493,4 @@ tiers:
   km-another-time:
     easy: { choices: ["There's no new date.", "They'll meet next week."], answer: 0 }
   km-fast-hedge:
-    hard: { choices: ["He's cancelling and hasn't set a new date.", "He's moving it to a date he'll message.", "He wants to meet but somewhere quieter.", "He's on his way, just tired."], answer: 0 }
+    hard: { choices: ["He's canceling and hasn't set a new date.", "He's moving it to a date he'll message.", "He wants to meet but somewhere quieter.", "He's on his way, just tired."], answer: 0 }

@@ -314,7 +314,7 @@ items:
     cast: us-f3
     en: "Sorry, when I said the bag, I meant the big one."
     ja: "ごめん、かばんって言ったのは、大きいほうのことだった。"
-    note: "meant の t は ほぼ 消える"
+    note: "meant の t は ほぼ 消える。mean と 母音で 区別"
     choices: [meant, mean, met]
     answer: 0
     focus: meant
