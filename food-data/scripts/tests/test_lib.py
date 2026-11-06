@@ -343,7 +343,7 @@ class Validation(unittest.TestCase):
         for bad in (item(cat='肉料理'), item(id='off:1'), item(kcal=1.5), item(kcal=True), item(p='1'),
                     item(portions=[{'label': '', 'g': 1}]), item(portions=[]), item(aliases=['米']), item(pop=4),
                     item(ingredients=[]), item(name=''), item(jan='123'), item(fib=100.5), item(fib=None), item(alc='1', cat='酒'),
-                    item(alc=1.0)):   # fibre and alcohol: absent when unknown, 0-100; alcohol on a drink only
+                    item(alc=1.0), item(desc=''), item(desc='あ' * 41), item(desc=['x'])):   # fibre and alcohol: absent when unknown, 0-100; alcohol on a drink only
             self.assertEqual(len(lib.validate(self.doc(bad))), 1, bad)
         self.assertEqual(len(lib.validate(self.doc(item(), item()))), 1)          # duplicate id
         self.assertIn('missing url', lib.validate(dict(self.doc(item()), url='')))
@@ -500,6 +500,48 @@ class VariantGroups(unittest.TestCase):
             self.assertEqual(got['mext:%d' % i], (None, None), i)
         self.assertEqual(lib.validate({**{k: 'x' for k in lib.META_KEYS}, 'source': 'mext', 'items': [
             {'id': 'mext:1', 'name': '豚ロース', 'cat': '肉', 'kcal': 1, 'p': 1, 'f': 1, 'c': 1, 'salt': 0, 'vg': 'mext:1', 'st': '生'}]}), [])
+
+
+class Descriptions(unittest.TestCase):
+    """data_src/descriptions.json: the 「これは…」 line of a food or dish, `desc` on the item."""
+    SRC2 = ['mext:06109', 'wp:芋茎']
+
+    def test_mext_key(self):
+        k = build.mext_desc_key
+        self.assertEqual(k('10', '＜魚類＞（さけ・ます類）しろさけ　イクラ'), ['10', 'しろさけ', 'イクラ'])
+        self.assertEqual(k('01', 'こむぎ　［ふ類］　焼きふ　釜焼きふ'), ['01', 'こむぎ', '［ふ類］', '焼きふ', '釜焼きふ'])
+        self.assertEqual(k('06', '（なす類）　漬物　しば漬'), ['06', 'なす', '漬物', 'しば漬'])   # a generic token keeps its class
+
+    def test_attach_longest_key_wildcard_and_blank(self):
+        mk = {'1': ['06', 'ずいき', '生ずいき', '生'], '2': ['06', 'ずいき', '干しずいき', '乾'], '3': ['06', 'かぶ', '葉'],
+              '4': ['01', 'こめ', '［水稲全かゆ］', '玄米'], '5': ['01', 'こめ', '［水稲めし］', '玄米']}
+        its = [{'id': 'mext:' + i} for i in mk]
+        lines = {'06 ずいき': 'さといもの葉柄', '06 ずいき 干しずいき': '干したもの', '06 かぶ': '',
+                 '01 こめ ［水稲全かゆ］ *': 'かゆ', '01 こめ * 玄米': '玄米', '06 ごぼう': 'x'}
+        self.assertEqual(build.attach_desc(its, lines, mk), ['06 ごぼう'])   # a key matching nothing is reported
+        self.assertEqual([it.get('desc') for it in its], ['さといもの葉柄', '干したもの', None, 'かゆ', '玄米'])
+        dishes = [{'id': 'dishes:shiraae'}, {'id': 'dishes:gyudon'}]
+        self.assertEqual(build.attach_desc(dishes, {'shiraae': '豆腐の和え物'}), [])
+        self.assertEqual([it.get('desc') for it in dishes], ['豆腐の和え物', None])
+
+    def test_lines_need_two_sources_and_no_claims(self):
+        ok = {'mext': {'06 ずいき': {'d': 'さといもの葉柄', 'src': self.SRC2}, '06 かぶ': {'d': '', 'src': []}},
+              'dishes': {'shiraae': {'d': '豆腐の和え物', 'src': ['mext:18024', 'wp:白和え']}}, '_note': 'x'}
+        self.assertEqual(build.desc_errors(ok), [])
+        for bad in ({'mext': {'ずいき': {'d': 'a', 'src': self.SRC2}}},            # no group
+                    {'mext': {'06 ずいき': {'d': 'a', 'src': ['wp:芋茎']}}},          # one source
+                    {'mext': {'06 ずいき': {'d': 'a', 'src': ['wp:a', 'wp:a']}}},     # the same one twice
+                    {'mext': {'06 ずいき': {'d': 'さといもの葉柄。', 'src': self.SRC2}}},
+                    {'mext': {'06 ずいき': {'d': '血圧を下げる', 'src': self.SRC2}}},
+                    {'mext': {'06 ずいき': {'d': 'あ' * 41, 'src': self.SRC2}}},
+                    {'mext': {'06 ずいき': 'さといもの葉柄'}}, {'eatout2': {}}):
+            self.assertEqual(len(build.desc_errors(bad)), 1, bad)
+
+    def test_the_shipped_lines(self):
+        """The real file: valid, every line within the limit and sourced (its keys are matched by the build)."""
+        doc = lib.load_json(os.path.join(lib.SRC, 'descriptions.json'))
+        self.assertEqual(build.desc_errors(doc), [])
+        self.assertEqual(sorted(t for t in doc if not t.startswith('_')), sorted(build.DESC_TARGETS))
 
 
 if __name__ == '__main__':

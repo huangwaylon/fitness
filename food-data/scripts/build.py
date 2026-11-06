@@ -715,6 +715,85 @@ def build_index(dirs):
                           'lazy': n in LAZY} for n in TARGETS if find(TARGETS[n][1])]}
 
 
+# ---------------------------------------------------------------- 「これは…」 lines (data_src/descriptions.json)
+DESC_TARGETS = ('mext', 'dishes', 'eatout', 'maff_kyodo')
+# what a line must not say: a health claim, or what a food does for the body (docs/food-data.md "desc")
+DESC_BANNED = re.compile(r'効果|効能|予防|改善|健康|美容|美肌|ダイエット|免疫|血圧|血糖|痩せ|やせる|デトックス|体に良い|'
+                         r'体にいい|栄養満点|栄養豊富|疲労回復|整腸|老化|若返')
+MEXT_TOKEN = re.compile(r'［[^］]*］|（[^）]*）|＜[^＞]*＞|[^\s　［（＜]+')
+
+
+DESC_GENERIC = {'漬物', '加工品', '缶詰', '果実飲料', '水煮缶詰', 'つくだ煮'}
+
+
+def mext_desc_key(group, name):
+    """A MEXT official name as description-key tokens: its group, then the name's tokens without the leading ＜類＞ /
+    （類） class marks ('＜魚類＞（さけ・ます類）しろさけ イクラ' -> ['10', 'しろさけ', 'イクラ']; ［…］ and （…） are tokens).
+    A generic first token keeps its class, as a name: '（なす類）漬物 しば漬' -> ['06', 'なす', '漬物', 'しば漬']."""
+    toks, cls = MEXT_TOKEN.findall(name), None
+    while toks and toks[0][0] in '＜（':
+        t = toks.pop(0)
+        cls = t if t[0] == '（' else cls
+    if cls and toks and toks[0] in DESC_GENERIC:
+        toks.insert(0, re.sub('類$', '', cls[1:-1]))
+    return [group] + toks
+
+
+def desc_errors(doc):
+    """Problems in a descriptions doc: {"_…": comment, target: {key: {"d": line, "src": [source, ...]}}}. A line is one
+    short sentence, no final 。 and no health claim, backed by at least two independent sources (`src`: build-time
+    only, never shipped); "d": "" means none (also a narrower key's way to drop a broader one's line)."""
+    errs = []
+    for t, lines in doc.items():
+        if t.startswith('_'):
+            continue
+        if t not in DESC_TARGETS or not isinstance(lines, dict):
+            errs.append('unknown section %s' % t)
+            continue
+        for k, e in lines.items():
+            if t == 'mext' and not re.fullmatch(r'\d\d( \S+)+', k):
+                errs.append('mext key %r: not "<group> <token> ..."' % k)
+            v, src = (e.get('d'), e.get('src')) if isinstance(e, dict) else (None, None)
+            if not isinstance(v, str) or len(v) > lib.DESC_MAX or v != v.strip() or re.search(r'[\n。]$|[\n\ufffd]', v) \
+                    or DESC_BANNED.search(v) or set(e) - {'d', 'src'}:
+                errs.append('%s %s: bad line %r' % (t, k, e))
+            elif v and (not isinstance(src, list) or len(set(src)) < 2
+                        or not all(isinstance(x, str) and x.strip() for x in src)):
+                errs.append('%s %s: a line needs two sources' % (t, k))
+    return errs
+
+
+def load_descriptions(path=None):
+    """{target: {key: line}} from data_src/descriptions.json (every target present, maybe empty; the sources dropped)."""
+    path = path or os.path.join(SRC, 'descriptions.json')
+    doc = load_json(path) if os.path.exists(path) else {}
+    errs = desc_errors(doc)
+    if errs:
+        fail('descriptions.json: ' + '; '.join(errs[:10]))
+    return {t: {k: e['d'] for k, e in doc.get(t, {}).items()} for t in DESC_TARGETS}
+
+
+def attach_desc(items, lines, mext_keys=None):
+    """Set each item's `desc` from `lines`: by its local id, or (mext_keys: item id -> key tokens) the longest key
+    matching the start of a food's tokens, '*' standing for any one token (of keys as long, the one with fewer '*'
+    wins, then the first in the file). -> the keys that matched no item."""
+    used = set()
+    keys = sorted(((k.split(' '), k) for k in lines), key=lambda x: (-len(x[0]), x[0].count('*'))) if mext_keys is not None else None
+    for it in items:
+        local = it['id'].split(':', 1)[1]
+        if keys is None:
+            k = local if local in lines else None
+        else:
+            toks = mext_keys[local]
+            k = next((key for ks, key in keys if len(ks) <= len(toks)
+                      and all(a == '*' or a == b for a, b in zip(ks, toks))), None)
+        if k is not None:
+            used.add(k)
+            if lines[k]:
+                it['desc'] = lines[k]
+    return sorted(set(lines) - used)
+
+
 # ================================================================ driver
 MX = 'mext/main_2023_ch2.xlsx'
 # target -> (builder, output file, required raw inputs relative to RAW)
@@ -758,6 +837,10 @@ class Builder:
     def aliases(self):
         return lib.Aliases()
 
+    @functools.cached_property
+    def descriptions(self):
+        return load_descriptions()
+
     def get(self, name):
         if name not in self.docs:
             fn, fname, inputs = TARGETS[name]
@@ -770,6 +853,11 @@ class Builder:
                     if name not in NO_ALIAS_ENRICH:
                         self.aliases.enrich(it)
                     tidy(it)
+                if name in DESC_TARGETS:
+                    mk = {r['id']: mext_desc_key(r['group'], r['name']) for r in self.mext_rows} if name == 'mext' else None
+                    unused = attach_desc(doc['items'], self.descriptions[name], mk)
+                    if unused:
+                        fail('descriptions.json %s: keys matching no item: %s' % (name, ', '.join(unused[:10])))
                 self.docs[name] = doc
         return self.docs[name]
 

@@ -19,7 +19,8 @@ CATS = ('主食', '麺', '丼・定食', '主菜', '副菜', '汁物', '寿司',
         '外食', 'その他')
 META_KEYS = ('source', 'label', 'attribution', 'license', 'url')
 ITEM_KEYS = {'id', 'name', 'full', 'en', 'aliases', 'cat', 'kcal', 'p', 'f', 'c', 'salt', 'fib', 'alc', 'portions', 'jan',
-             'brand', 'note', 'pop', 'vg', 'st'}
+             'brand', 'note', 'pop', 'vg', 'st', 'desc'}
+DESC_MAX = 40   # a 「これは…」 line (data_src/descriptions.json): one short line
 
 
 # ---------------------------------------------------------------- numbers
@@ -386,6 +387,9 @@ def _item_errors(it, source):
         if not (isinstance(p, dict) and isinstance(p.get('label'), str) and p['label']
                 and isinstance(p.get('g'), (int, float)) and p['g'] > 0):
             e.append('%s: bad portion %r' % (iid, p))
+    d = it.get('desc')
+    if 'desc' in it and (not isinstance(d, str) or not d or len(d) > DESC_MAX or '\n' in d):
+        e.append('%s: bad desc' % iid)
     if 'pop' in it and it['pop'] not in (1, 2, 3):
         e.append('%s: bad pop' % iid)
     if 'jan' in it and not re.fullmatch(r'\d{8}|\d{13}', str(it['jan'])):
