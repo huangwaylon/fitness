@@ -11,7 +11,6 @@ import { islandQuery, islandUp } from './island.ts';
 import { shot } from './shots.ts';
 import { gotoTrips, pickTrip, tripsSheet as sheet } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
-import { okinawa } from '../src/lib/travel/trips/okinawa.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const rows = (p: Page) => sheet(p).locator('[data-trip]');
@@ -171,44 +170,6 @@ test('a guide offline: 読み込めませんでした and もう一度 under the
   await expect(sheet(page).locator('[data-travel-failed]').or(sheet(page).locator('[data-trip-view="nz"] [data-pane]'))).toBeVisible();
   await expect(hdr(page).locator('h2')).toContainText('ニュージーランド');
   await context.setOffline(false);
-});
-
-// キャンプ場 (a quiet trip with campsites: Okinawa until its classic guide takes it)
-test('キャンプ場: one chip row with counts, compact rows, a row’s sheet, an empty state, すべて表示', async ({ page }) => {
-  await gotoTrips(page, '2026-11-04T12:00');
-  await sheet(page).locator('[data-trip="okinawa"]').click();
-  await expect(sheet(page).locator('[data-trip-view="okinawa"]')).toBeVisible();
-  test.skip((await sheet(page).locator('[data-classic]').count()) > 0, 'Okinawa is drawn by its classic guide');
-  await tab(page, 'camps').click();
-  const camps = sheet(page).locator('[data-camp]');
-  await expect(camps).toHaveCount(okinawa.camps!.length);
-  await expect(sheet(page).locator('[data-camp-kind="wild"] .n')).toHaveText(String(okinawa.camps!.filter((c) => c.type === 'wild').length));
-  await sheet(page).locator('[data-camp-kind="paid"]').click();
-  await expect(camps).toHaveCount(okinawa.camps!.filter((c) => c.type === 'paid').length);
-  await sheet(page).locator('[data-camp-has="shower"]').click();
-  await expect(sheet(page).locator('[data-camp-count]')).toHaveAttribute('data-camp-count', String(await camps.count()));
-  // the shortlist: ours first-class, ★
-  await sheet(page).locator('[data-camp-kind="all"]').click();
-  await sheet(page).locator('[data-camp-picks]').click();
-  await expect(sheet(page).locator('[data-camp]:not([data-camp-pick])')).toHaveCount(0);
-  // a row: its sheet, Maps in a new tab, 地図で見る brings it to the map
-  await camps.first().click();
-  const sh = page.locator('dialog[open] [data-camp-sheet]');
-  await expect(sh).toBeVisible();
-  await expect(sh.locator('[data-camp-maps]')).toHaveAttribute('target', '_blank');
-  await shot(page, 'okinawa-camp-sheet');
-  await sh.locator('[data-camp-onmap]').click();
-  await expect(sheet(page).locator('[data-pane="map"]')).toBeVisible();
-  await expect(sheet(page).locator('[data-map-pane]')).toHaveAttribute('data-selected', /.+/);
-  // nothing passes: the empty state and the way back
-  await tab(page, 'camps').click();
-  await sheet(page).locator('[data-camp-kind="wild"]').click();
-  for (const a of ['beach', 'toilet', 'shower']) await sheet(page).locator(`[data-camp-has="${a}"]`).click();
-  if ((await camps.count()) === 0) {
-    await expect(sheet(page).locator('[data-camps-empty]')).toBeVisible();
-    await sheet(page).locator('[data-camps-reset]').click();
-    await expect(camps).toHaveCount(okinawa.camps!.length);
-  } else await expect(sheet(page).locator('[data-camps-empty]')).toHaveCount(0);
 });
 
 test.describe('pictures', () => {
