@@ -51,12 +51,12 @@ test('the cap: three goals at 1.5× all show the same chip, the ledger pays +2 w
   await open(page, '2026-12-07T23:00');
   const pop = await popup(page, 1);
   await expect(pop.locator('.plate')).toHaveText('うめ');
-  await expect(pop.locator('.row .lbl')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
+  await expect(pop.locator('.row[data-row] .lbl')).toHaveText(['歩数', 'ムーブ', 'エクササイズ', 'スタンド']);
   await expect(pop.locator('.row[data-stretched]')).toHaveCount(3);
   // every stretched row shows the same chip, whichever the cap pays
-  await expect(pop.locator('.row .chip')).toHaveText(['がんばり', 'がんばり', 'がんばり']);
+  await expect(pop.locator('.row[data-row] .chip')).toHaveText(['がんばり', 'がんばり', 'がんばり']);
   await expect(pop.locator('.row[data-row=peach] .chip')).toHaveCount(0);
-  await expect(pop.locator('.row .ghost')).toHaveCount(0); // the cap is paid: no ghost hints at more
+  await expect(pop.locator('.row[data-row] .ghost')).toHaveCount(0); // the cap is paid: no ghost hints at more
   await expect(pop.locator('.sum .k')).toHaveText(['もくひょう', 'がんばり（上限 2）', 'うめの きょう']);
   await expect(pop.locator('.sum .v')).toHaveText(['+4', '+2', /^\+6\sベル$/]);
   await expect(pop.locator('.duo')).toHaveText(/^\s*ふたりで ぜんぶ！\s*\+2\s*ふたりに$/);
@@ -86,7 +86,7 @@ test('no stretch: no chip, only its faint ghosts, and がんばり +0 in the led
   const pop = await popup(page, 0);
   await expect(pop.locator('.row[data-stretched]')).toHaveCount(0);
   await expect(pop.locator('.chip')).toHaveCount(0);
-  await expect(pop.locator('.row .ghost')).toHaveCount(4);
+  await expect(pop.locator('.row[data-row] .ghost')).toHaveCount(4);
   await expect(pop.locator('.sum .k')).toHaveText(['もくひょう', 'がんばり', 'ウェイの きょう']);
   await expect(pop.locator('.sum [data-v=stretch]')).toHaveText('+0');
   await expect(pop.locator('.sum [data-v=stretch]')).toHaveClass(/zero/);
