@@ -17,17 +17,13 @@ The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Document
 - Past trips download nothing ahead of time (no offline maps, no photo prefetch).
 - A km / mi switch per device. No ベル / economy tie-in.
 
-## Classic guides (the user, 2026-11-06)
+## Past trips (the user, 2026-11-07)
 
-Okinawa and Seattle are over: `classic: true` on their data opens them as the old travel-plans site showed them
-(`components/travel/classic/ClassicGuide.svelte`), not in the app's style: the site's stylesheet ported under one root
-class (`classic.css`, `.classic …` only; `.card`/`.chip` renamed against the app's globals), its icons (`icons.ts`),
-the hero with 本棚 back to the list, the spine day cards (`Day.look`: an itinerary day open, a flight day ringed, a
-hike filled), the logistics cards, the campsites (one criterion at a time, as the site's), the bottom tab bar. The
-map tab is the site's map card with the app's live TripMap in it (online only: Okinawa's offline maps are gone; day 0
-= 全3日間). The packing list is **frozen**: the seed as it is, no boxes, no edits, nothing read from or sent to the
-relay. The guide's own words are in its language (Seattle's English), the tab bar and 本棚 in the reader's.
-`e2e/travel-classic.spec.ts`.
+Every trip is drawn by the unified kit (`TripView`; design.md §Trips): Okinawa's campsites and candidate layers and
+Seattle's hikes are pages and cards of it. A trip that's over is **read-only**, one rule for all (`when.ts`
+`readOnly`: its phase is past): its packing list is the seed as it was (`packing.frozen`: no op read from or sent to
+the relay; the trip note is still read), nothing else on it changes. Okinawa and Seattle are over; NZ will be after
+its flight home (its relay edits then no longer show).
 
 ## Content
 
@@ -45,8 +41,8 @@ relay. The guide's own words are in its language (Seattle's English), the tab ba
 sheet; the modules are the source now (edit them by hand). The schema is [`types.ts`](../app/src/lib/travel/types.ts).
 Guide text is a pair `{ja?, en?}` in the data (not catalog keys), shown in the reader's locale, else the other side;
 the chrome's strings are `i18n/travel.{ja,en}.json`. Inline tokens (`tokens.ts`): `{km:}`, `{m:}`, `{c:}` follow the
-device's units; `{p:key}` is a private value. Icons are the old site's lucide names: ui/Icon draws a
-kit guide's (trips.test checks they're all in it; a packing category's is its NH item where packView.ts has one), `classic/icons.ts` a classic guide's. Each trip's dates and `tz` drive "today" (`DayRow.dd`: a row on the eve or the morning
+device's units; `{p:key}` is a private value. A logistics card's icon is the old site's lucide name, drawn by ui/Icon
+(trips.test checks they're all in it; a packing category's is its NH item where packView.ts has one). Each trip's dates and `tz` drive "today" (`DayRow.dd`: a row on the eve or the morning
 after).
 
 ### Private values
@@ -79,11 +75,11 @@ types and their wire limits: [backend.md#events](backend.md#events) (`pack`, `pa
 | Caps | 300 `pack` rows a trip (past them the oldest removal of an op-made id is dropped, else `pack full`), 300 ticks a trip and person. |
 | The phone | `packFold` takes the record's rows as they are and judges this phone's queued ones by the record's rules, so the list shows what the record will. |
 
-The demo has a made-up note for each trip and うめ's ticks on NZ's list (the classic guides' lists are frozen).
+The demo has a made-up note for each trip and うめ's ticks on NZ's list (the past trips' lists are frozen).
 
 ## Maps
 
-`components/travel/map/`: `TripMap.svelte` (light; mounted by `MapPane.svelte` and the classic `CMap.svelte`), `engine.ts` (MapLibre, its own lazy
+`components/travel/map/`: `TripMap.svelte` (light; mounted by `MapPane.svelte`), `engine.ts` (MapLibre, its own lazy
 chunk), `style.ts` (the source and the stack), `basemap.ts` + `theme.ts` (our layers on the OpenMapTiles schema, the
 NookPhone palette), `overlay.ts` (pins, legs, candidates, the location dot), `fonts.ts`, `geo.ts`.
 
@@ -97,7 +93,7 @@ NookPhone palette), `overlay.ts` (pins, legs, candidates, the location dot), `fo
 - **Overlays:** the day's legs in its colour (drive and bus solid, walk dashed, boat dotted) over the roads and under
   the labels; the stops as numbered HTML pins, stops within 30 m **merged into one pin** (「2·6」: New Lynn), the
   selected one raised and tagged with its name; a `keepout` symbol per pin so basemap labels give way; Okinawa's
-  candidates as circles behind the classic map's layer chips (off at first).
+  candidates as circles behind MapPane's layer button (off at first).
 - **States** (`data-mode`): `loading`, `ready`; `offline` (drawn, no basemap tile came: the route alone, with
   「地図はオフライン — ルートのみ」); `failed` (the chunk or WebGL didn't come: 「地図を読み込めません」 + もう一度; offline
   the chunk isn't even asked for, and it draws by itself when the phone is back online); `lost` (iOS took the WebGL

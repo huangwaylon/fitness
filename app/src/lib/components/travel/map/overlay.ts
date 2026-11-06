@@ -26,12 +26,9 @@ const SAME_SPOT_M = 30;
  *  ('2·6'). */
 export interface Pin { id: string; ids: string[]; n: string; name: Place['name']; day: number; lat: number; lon: number }
 
-/** Whether a stop's or a leg's day `d` shows when `day` does (0: every day, the classic map's 全3日間). */
-const onDay = (d: number | undefined, day: number): boolean => day === 0 || d === day;
-
-/** A day's stops, by number (day 0: every day's, day by day). */
+/** A day's stops, by number. */
 export const stopsOf = (places: readonly Place[], day: number): Place[] =>
-  places.filter((p) => p.kind === 'stop' && onDay(p.day, day)).sort((a, b) => (a.day ?? 0) - (b.day ?? 0) || (a.i ?? 0) - (b.i ?? 0));
+  places.filter((p) => p.kind === 'stop' && p.day === day).sort((a, b) => (a.i ?? 0) - (b.i ?? 0));
 
 /** A day's pins: its stops numbered as the list's rows (the guide's `i` counts from 0), the ones at one spot merged
  *  into the first's pin. */
@@ -41,7 +38,7 @@ export function pinsOf(places: readonly Place[], day: number): Pin[] {
     const n = String((s.i ?? 0) + 1);
     const same = out.find((p) => metres(p.at, s) < SAME_SPOT_M);
     if (same) (same.ids.push(s.id), (same.n += `·${n}`));
-    else out.push({ id: s.id, ids: [s.id], n, name: s.name, day: s.day ?? day, lat: s.lat, lon: s.lon, at: s });
+    else out.push({ id: s.id, ids: [s.id], n, name: s.name, day, lat: s.lat, lon: s.lon, at: s });
   }
   return out.map(({ at: _, ...p }) => p);
 }
@@ -59,7 +56,7 @@ export type LegProps = { mode: Leg['mode']; color: string };
 export function legsData(legs: readonly Leg[], colors: readonly string[], day: number): FeatureCollection<LineString, LegProps> {
   return {
     type: 'FeatureCollection',
-    features: legs.filter((l) => onDay(l.day, day) && l.line.length > 1).map((l): Feature<LineString, LegProps> => ({
+    features: legs.filter((l) => l.day === day && l.line.length > 1).map((l): Feature<LineString, LegProps> => ({
       type: 'Feature', properties: { mode: l.mode, color: dayColor(colors, l.day) }, geometry: { type: 'LineString', coordinates: l.line }
     }))
   };
@@ -93,7 +90,7 @@ export const farFrom = (places: readonly Place[], fix: Fix): boolean => places.e
 
 /** [[west, south], [east, north]] round what a day shows (its stops and legs), or null if nothing. */
 export function boundsOf(places: readonly Place[], legs: readonly Leg[], day: number): [[number, number], [number, number]] | null {
-  const pts: [number, number][] = [...stopsOf(places, day).map((p): [number, number] => [p.lon, p.lat]), ...legs.filter((l) => onDay(l.day, day)).flatMap((l) => l.line)];
+  const pts: [number, number][] = [...stopsOf(places, day).map((p): [number, number] => [p.lon, p.lat]), ...legs.filter((l) => l.day === day).flatMap((l) => l.line)];
   if (!pts.length) return null;
   let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
   for (const [x, y] of pts) (w = Math.min(w, x), e = Math.max(e, x), s = Math.min(s, y), n = Math.max(n, y));

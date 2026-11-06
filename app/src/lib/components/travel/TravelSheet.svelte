@@ -1,18 +1,17 @@
 <script lang="ts">
   // りょこう's sheet (docs/design.md §Trips), its own chunk with its strings: a full sheet on the unified kit
   // (docs/design.md "Unified kit"). Two levels: the trips (TripList, from the small trips/meta.ts: no guide loads
-  // for it), and a trip, its guide loaded when it is opened (each its own chunk; offline before it is cached,
-  // 読み込めませんでした and もう一度). A trip drawn like the original guides (`classic`: Okinawa, Seattle) is
-  // classic/ClassicGuide's, its own screen over the app (its back button to the list); any other is TripView's (its
-  // hero, its pages, its tab bar).
+  // for it), and a trip (TripView: its hero, its pages, its tab bar), its guide loaded when it is opened (each its own
+  // chunk; offline before it is cached, 読み込めませんでした and もう一度).
+  // The list's title bar has this phone's km | mi switch at its left (units.ts; the one place it is).
   // An opening goes straight into the trip on now, else back where it was left (the trip and its page, while the app
   // runs). The island is paused under it (open.svelte.ts → the page's `paused`).
   import '#lib/i18n/travel.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
+  import Segmented from '../ui/Segmented.svelte';
   import TripList from './TripList.svelte';
   import TripView, { type Tab } from './TripView.svelte';
-  import ClassicGuide from './classic/ClassicGuide.svelte';
   import type { Trip, TripId } from '#lib/travel/types.ts';
   import { loadTrip } from '#lib/travel/trips/index.ts';
   import { TRIP_META } from '#lib/travel/trips/meta.ts';
@@ -22,6 +21,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { pick } from './text.ts';
   import { phaseOf } from './when.ts';
+  import { UNITS, setUnits, units } from './units.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -81,15 +81,17 @@
   });
 </script>
 
+{#snippet lead()}
+  <Segmented size="s" items={UNITS.map((u) => ({ id: u, label: u }))} value={units.current} label={t('travel.units')} attr="units" onpick={setUnits} />
+{/snippet}
+
 <Sheet bind:open label={t('travel.title')} variant="full" onclose={closed}>
   <div class="tv" data-travel data-level={sel ? 'trip' : 'list'}>
     {#key sel}
       <div class="lvl">
         {#if !sel}
-          <div class="top grain"><NavBar size="s" title={t('travel.title')} onclose={close} /></div>
+          <div class="top grain"><NavBar size="s" title={t('travel.title')} onclose={close} {lead} /></div>
           <TripList trips={TRIP_META} {now} onopen={show} />
-        {:else if trip?.classic}
-          <ClassicGuide {trip} onback={back} />
         {:else if trip}
           <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}

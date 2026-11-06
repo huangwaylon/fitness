@@ -2,6 +2,7 @@
   // A segmented switch (けんこう's かつどう · からだ, ごはん's きろく · グラフ): pills side by side, each an optional NH
   // icon and its name, the picked one pressed; the panel's tab look, smaller. `attr` names each pill's data attribute
   // (`data-group="body"`, `data-tab="chart"`), what the specs and the sounds read (a tap on the picked one is silent).
+  // `size="s"`: the kit's small one (32px drawn in a 44px hit, as `.chip.s`: りょこう's km | mi in its title bar).
   import OfficialArt from '../characters/OfficialArt.svelte';
 
   interface Props {
@@ -11,11 +12,12 @@
     label: string;
     attr: string;
     onpick: (id: T) => void;
+    size?: 'm' | 's';
   }
-  let { items, value, label, attr, onpick }: Props = $props();
+  let { items, value, label, attr, onpick, size = 'm' }: Props = $props();
 </script>
 
-<div class="seg" role="group" aria-label={label}>
+<div class="seg" class:s={size === 's'} role="group" aria-label={label}>
   {#each items as it (it.id)}
     <button type="button" class="sb" aria-pressed={value === it.id} {...{ [`data-${attr}`]: it.id }} data-sfx={value === it.id ? 'none' : 'tick'}
       onclick={() => onpick(it.id)}>{#if it.art}<span class="gi" aria-hidden="true"><OfficialArt key={it.art} size={22} /></span>{/if}{it.label}</button>
@@ -31,5 +33,10 @@
   }
   .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
   .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .s { gap: 4px; }
+  .s .sb { position: relative; flex: none; min-height: 32px; padding: 0 10px; font: 700 var(--fs-s)/1 var(--font-num); box-shadow: var(--sh-ctl-s); }
+  .s .sb::after { content: ''; position: absolute; inset: -6px -2px; }
+  .s .sb[aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--c-edge), 0 2px 0 var(--c-edge); }
+  .s .sb:active { box-shadow: var(--sh-ctl-s-press); }
   .gi { display: inline-flex; width: 22px; height: 22px; flex: none; line-height: 0; }
 </style>

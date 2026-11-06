@@ -195,11 +195,11 @@ test('the trip map in and out: no WebGL context or window listener left behind',
 });
 
 // The info sheets (りょこう, けっこんしき, トレイル: docs/design.md "Unified kit"), drawn, in and out three times on the
-// island: NZ's pages (its map on the fixture tiles), Okinawa's classic guide's 地図 (Motobu's labels drawn in Zen Maru),
+// island: NZ's pages (its map on the fixture tiles), Okinawa's 地図 (Motobu's labels drawn in Zen Maru; its campsites on),
 // a wedding task opened and メモ, three trails' maps (a blank topo tile). After each round no map's context, no listener,
 // no font face and no DOM node more than after the first (before remove.ts: each guide's map left its ~19 Zen Maru
 // faces in document.fonts, each holding its woff2, 171 → 235 over three).
-test('the info sheets in and out (the trips, a classic guide, the wedding board, three trails): nothing left behind', { tag: '@chromium' }, async ({ page }) => {
+test('the info sheets in and out (the trips, Okinawa’s map and campsites, the wedding board, three trails): nothing left behind', { tag: '@chromium' }, async ({ page }) => {
   test.setTimeout(180_000);
   await watch(page);
   await drawn(page);
@@ -211,7 +211,7 @@ test('the info sheets in and out (the trips, a classic guide, the wedding board,
   const closed = async () => (await page.keyboard.press('Escape'), await expect(sheet).toHaveCount(0));
   const trailUp = () => expect.poll(() => page.evaluate(() => (window as unknown as { __trailMap?: { state(): { mode: string } } }).__trailMap?.state().mode), { timeout: 30_000 }).toBe('ready');
   const round = async () => {
-    // NZ: each page, the map's drawn; ‹ to the passes; Okinawa's 地図 drawn, 日程, 本棚
+    // NZ: each page, the map's drawn; ‹ to the passes; Okinawa's 地図 drawn with its campsites, a camp's card, キャンプ場, ‹
     await openTrip(page, 'nz', 'days');
     for (const tab of ['map', 'pack', 'days']) {
       await tripsSheet(page).locator(`[data-trip-tab="${tab}"]`).click();
@@ -220,10 +220,17 @@ test('the info sheets in and out (the trips, a classic guide, the wedding board,
     }
     await sheet.locator('.navbar .back').click();
     await tripsSheet(page).locator('[data-trip="okinawa"]').click();
-    await sheet.locator('[data-classic-tab="map"]').click();
+    await sheet.locator('[data-trip-tab="map"]').click();
     await mapReady(page);
-    await sheet.locator('[data-classic-tab="itinerary"]').click();
-    await sheet.locator('[data-classic-back]').click();
+    await sheet.locator('[data-map-layers]').click();
+    await sheet.locator('[data-map-layer="camp"]').click();
+    await tripsSheet(page).locator('[data-trip-tab="camps"]').click();
+    await tripsSheet(page).locator('[data-camp]').first().click();
+    await expect(page.locator('dialog[open] [data-camp-sheet]')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog[open] [data-camp-sheet]')).toHaveCount(0);
+    await tripsSheet(page).locator('[data-trip-tab="days"]').click();
+    await sheet.locator('.navbar .back').first().click();
     await expect(tripsSheet(page).locator('[data-trip]').first()).toBeVisible();
     await closed();
     // the wedding board: a task opened, メモ, back to the plan

@@ -18,7 +18,6 @@ export const nz: Trip = {
     {
       n: 1,
       date: "2027-02-11",
-      icon: "plane-landing",
       title: { ja: "到着", en: "Arrival" },
       sub: { ja: "成田 → オークランド → ニューリン", en: "Narita → Auckland → New Lynn" },
       rows: [
@@ -82,7 +81,6 @@ export const nz: Trip = {
     {
       n: 2,
       date: "2027-02-12",
-      icon: "teacup",
       title: { ja: "カランガハペ・ロード", en: "Karangahape Road" },
       sub: { ja: "コーヒー、本、アウトドア用品", en: "Coffee, books, gear" },
       rows: [
@@ -133,7 +131,6 @@ export const nz: Trip = {
     {
       n: 3,
       date: "2027-02-13",
-      icon: "car",
       title: { ja: "マーケット、そして南へ", en: "Market, then south" },
       sub: { ja: "パーネル → ワイトモ → ニュープリマス", en: "Parnell → Waitomo → New Plymouth" },
       rows: [
@@ -176,7 +173,6 @@ export const nz: Trip = {
     {
       n: 4,
       date: "2027-02-14",
-      icon: "mountain-snow",
       title: { ja: "ポウアカイ・ターン", en: "Pouākai Tarns" },
       sub: { ja: "日の出、そしてオークランドへ", en: "Sunrise, then back to Auckland" },
       rows: [
@@ -228,7 +224,6 @@ export const nz: Trip = {
     {
       n: 5,
       date: "2027-02-15",
-      icon: "sailboat",
       title: { ja: "ワイヘキ島", en: "Waiheke Island" },
       sub: { ja: "オリーブ、ワイン、フェリー往復", en: "Olives, wine, ferry both ways" },
       rows: [
@@ -288,7 +283,6 @@ export const nz: Trip = {
     {
       n: 6,
       date: "2027-02-16",
-      icon: "plane-takeoff",
       title: { ja: "ノースショア、そして帰国", en: "North Shore, then home" },
       sub: { ja: "ウィンターガーデン → ノースコート → デボンポート", en: "Wintergardens → Northcote → Devonport" },
       rows: [

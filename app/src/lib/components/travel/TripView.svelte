@@ -1,11 +1,10 @@
 <script module lang="ts">
-  export type Tab = 'days' | 'map' | 'pack';
+  export type Tab = 'days' | 'map' | 'camps' | 'pack';
 </script>
 
 <script lang="ts">
-  // A trip on the unified kit (docs/design.md §Trips, level 2; any trip not drawn like its original guide): its pages
-  // under one TabBar, 日程 · 地図 (with a route) · 持ち物 (campsites and candidate layers are the classic guides' only:
-  // trips.test keeps them off any other trip). 日程 opens on the trip's photo (PhotoBand, 150 px, ‹ ✕ on it; the
+  // A trip on the unified kit (docs/design.md §Trips, level 2): its pages under one TabBar, 日程 · 地図 (with a
+  // route) · キャンプ場 (with campsites: Okinawa's) · 持ち物 (frozen once the trip is over: when.ts readOnly). 日程 opens on the trip's photo (PhotoBand, 150 px, ‹ ✕ on it; the
   // title, dates, area at its foot), then its one control row, held under the title bar as the page scrolls: a chip a
   // day (its route colour, the date; the shown one yuzu) and 準備, then the day shown (DayCard: its timeline, the row
   // that is now marked) or the logistics cards (PrepCard) and the guide's foot. Scrolled past the photo, the title bar
@@ -27,6 +26,7 @@
   import PrepCard from './PrepCard.svelte';
   import MapPane from './MapPane.svelte';
   import PackList from './PackList.svelte';
+  import CampList from './CampList.svelte';
   import Txt from './Txt.svelte';
   import { listSpan, monthDay } from './dates.ts';
   import { pick } from './text.ts';
@@ -52,6 +52,7 @@
   const items = $derived<{ id: Tab; label: string; icon: IconName }[]>([
     { id: 'days', label: t('travel.tab.days'), icon: 'calendar' },
     ...(trip.places.length ? [{ id: 'map' as const, label: t('travel.tab.map'), icon: 'map' as const }] : []),
+    ...(trip.camps?.length ? [{ id: 'camps' as const, label: t('travel.tab.camps'), icon: 'tent' as const }] : []),
     { id: 'pack', label: t('travel.tab.pack'), icon: 'backpack' }
   ]);
   const tabName = $derived(items.find((x) => x.id === tab)?.label ?? '');
@@ -133,6 +134,8 @@
         {/if}
       {:else if tab === 'map'}
         <MapPane {trip} {note} start={mark?.day ?? today ?? 1} />
+      {:else if tab === 'camps'}
+        <CampList {trip} {note} />
       {:else}
         <PackList {trip} />
       {/if}
@@ -159,7 +162,7 @@
   .ctl { position: sticky; top: calc(var(--ui-top) + 48px); z-index: 4; background: var(--surface); padding: 4px 0 2px; }
   .hint { margin: 8px 16px 0; display: flex; align-items: center; gap: 6px; font-size: var(--fs-s); color: var(--text-soft); }
   .pane { display: grid; grid-template-columns: minmax(0, 1fr); }
-  .pane[data-pane='days'], .pane[data-pane='pack'] { padding: 6px 12px 0; }
+  .pane[data-pane='days'], .pane[data-pane='camps'], .pane[data-pane='pack'] { padding: 6px 12px 0; }
   .cards { display: grid; gap: 8px; }
   .foot { margin: 14px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }
 </style>

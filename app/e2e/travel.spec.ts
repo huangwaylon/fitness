@@ -1,18 +1,19 @@
 // りょこう (docs/design.md §Trips) on the unified kit: the menu's pill opens the trips' sheet (the island paused under
 // it): the list's boarding passes (しまの そら便; on now and coming first, then これまで; the stub 「あと 99 日」 /
-// 「いま 2 日目」, a past trip's 「行ってきた」 stamp; km | mi under it), a
-// kit trip (NZ): its photo with ‹ ✕ on it, the title bar once scrolled, the bottom tab bar (日程 · 地図 · 持ち物; no
-// キャンプ場 without campsites), a day chip each and 準備 (the day shown: the first outside the trip, the one on now
-// inside it, with the row that is now: the trip's clock), 準備's cards, reopening into the trip on now, ‹ back and ✕,
-// the pill offline. A trip drawn like its
-// original guide (`classic`) is the classic guide's (its own specs). The logic tier: the photos may come late, nothing
-// waits on them. Pictures (SHOTS=<dir>) of each screen, by day and at night.
+// 「いま 2 日目」, a past trip's 「行ってきた」 stamp; km | mi at the title bar's left), a trip (NZ): its photo with ‹ ✕
+// on it, the title bar once scrolled, the bottom tab bar (日程 · 地図 · 持ち物; no キャンプ場 without campsites), a day
+// chip each and 準備 (the day shown: the first outside the trip, the one on now inside it, with the row that is now:
+// the trip's clock), 準備's cards, reopening into the trip on now, ‹ back and ✕, the pill offline; the past trips on
+// the same pages: Okinawa's days and キャンプ場 (the filter, a site's card), Seattle's hikes (トレイル's trail in the
+// app). The logic tier: the photos may come late, nothing waits on them. Pictures (SHOTS=<dir>) of each screen, by
+// day and at night.
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, unfoldMenu } from './hud.ts';
 import { islandQuery, islandUp } from './island.ts';
 import { shot } from './shots.ts';
 import { gotoTrips, pickTrip, tripsSheet as sheet } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
+import { okinawa } from '../src/lib/travel/trips/okinawa.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const rows = (p: Page) => sheet(p).locator('[data-trip]');
@@ -43,15 +44,84 @@ test('the pill opens the list: coming first, then これまで; ✕ closes', asy
   await expect(rows(page)).toHaveCount(3);
 });
 
-test('km | mi under the list: kept on this phone', async ({ page }) => {
+test('km | mi at the left of the list’s title bar (only there): kept on this phone', async ({ page }) => {
   await gotoTrips(page, '2026-11-04T12:00');
-  await sheet(page).locator('[data-units="mi"]').click();
+  const mi = hdr(page).locator('[data-units="mi"]');
+  await expect(mi).toBeVisible();
+  // small to the eye (once the sheet has grown in), left of the title, ✕ at the right
+  await expect.poll(async () => Math.round((await mi.boundingBox())!.height)).toBe(32);
+  const [m, title, close] = await Promise.all([mi.boundingBox(), hdr(page).locator('h2').boundingBox(), hdr(page).locator('.close').boundingBox()]);
+  expect(m!.x + m!.width).toBeLessThan(title!.x);
+  expect(close!.x).toBeGreaterThan(title!.x + title!.width);
+  await expect(sheet(page).locator('[data-units]')).toHaveCount(2);
+  await mi.click();
   await expect(sheet(page).locator('[data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
   expect(await page.evaluate(() => localStorage.getItem('island.travel.units'))).toBe('mi');
   await page.reload();
   await islandUp(page);
   await fromMenu(page, 'travel');
   await expect(sheet(page).locator('[data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
+  // a trip's pages have none (the list is the one place)
+  await pickTrip(page, 'nz');
+  await expect(sheet(page).locator('[data-units]')).toHaveCount(0);
+});
+
+test('Okinawa (over): 日程 地図 キャンプ場 持ち物, a day at a time, 準備; キャンプ場: one criterion at a time, a site’s card', async ({ page }) => {
+  await gotoTrips(page, '2026-11-04T12:00');
+  await pickTrip(page, 'okinawa');
+  await expect(sheet(page).locator('[data-trip-tab]')).toHaveText(['日程', '地図', 'キャンプ場', '持ち物']);
+  // a past trip opens on its first day
+  await expect(sheet(page).locator('[data-day-pick]')).toHaveCount(okinawa.days.length + 1);
+  await expect(dayChip(page, 1)).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-day]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-day="1"] [data-row]')).toHaveCount(okinawa.days[0].rows.length);
+  await dayChip(page, 'prep').click();
+  const flights = sheet(page).locator('[data-card="flights"]');
+  await expect(flights.locator('.row.kv')).toHaveCount(okinawa.logistics[0].stats!.length);
+  await expect(flights.locator('[data-locked]')).toHaveCount(0);
+
+  await tab(page, 'camps').click();
+  const camps = sheet(page).locator('[data-camp]');
+  await expect(camps).toHaveCount(okinawa.camps!.length);
+  await expect(sheet(page).locator('[data-camp-filter]')).toHaveText([`すべて${okinawa.camps!.length}`, '無料', '有料', 'ビーチ', 'トイレ', 'シャワー']);
+  await expect(sheet(page).locator('[data-camp-filter="all"]')).toHaveAttribute('aria-pressed', 'true');
+  await sheet(page).locator('[data-camp-filter="paid"]').click();
+  await expect(camps).toHaveCount(okinawa.camps!.filter((c) => c.type === 'paid').length);
+  await sheet(page).locator('[data-camp-filter="shower"]').click();
+  await expect(sheet(page).locator('[data-camp-filter="paid"]')).toHaveAttribute('aria-pressed', 'false');
+  await expect(camps).toHaveCount(okinawa.camps!.filter((c) => c.shower).length);
+  // a row: its card over the trip (the photo, the facts, Maps out); Esc closes only it
+  const first = okinawa.camps!.find((c) => c.shower)!;
+  await camps.first().click();
+  const card = page.locator(`dialog[open] [data-camp-sheet="${first.id}"]`);
+  await expect(card).toBeVisible();
+  await expect(card.locator('img')).toHaveCount(1);
+  await expect(card.locator('.row.kv')).toHaveCount(3);
+  await expect(card.locator('[data-link]')).toHaveAttribute('target', '_blank');
+  await page.keyboard.press('Escape');
+  await expect(card).toHaveCount(0);
+  await expect(sheet(page).locator('[data-pane="camps"]')).toBeVisible();
+});
+
+test('Seattle (over, English only): 日程 and 持ち物, no 地図; a hike day’s photo, level, figures and its trail in トレイル', async ({ page }) => {
+  await gotoTrips(page, '2026-11-04T12:00');
+  await pickTrip(page, 'seattle');
+  await expect(sheet(page).locator('[data-trip-tab]')).toHaveText(['日程', '持ち物']);
+  await expect(sheet(page).locator('[data-day-pick]')).toHaveCount(18);
+  await dayChip(page, 2).click();
+  const hike = sheet(page).locator('[data-day="2"] [data-hike="mod"]');
+  await expect(hike.locator('.band img')).toHaveCount(1);
+  await expect(hike.locator('.sticker')).toHaveText('普通');
+  await expect(hike).toContainText('Granite Falls, WA');
+  await expect(hike.locator('.cell dt')).toHaveText(['距離', '登り', '時間']);
+  await expect(hike.locator('.cell dd').first()).toHaveText('9.8km');
+  await expect(hike.locator('.row.kv dd')).toHaveText(['1h 30m', 'Out & back', 'NW Forest Pass or day-use fee']);
+  // トレイル's own Lake 22 over the trip; ✕ back to the day
+  await hike.locator('[data-trail-open="lake-22"]').click();
+  await expect(page.locator('dialog[open] [data-hiking] [data-trail-view="lake-22"]')).toBeVisible();
+  await page.locator('dialog[open] [data-hiking] .nav.close:visible').click();
+  await expect(page.locator('dialog[open] [data-hiking]')).toHaveCount(0);
+  await expect(hike).toBeVisible();
 });
 
 test('a kit trip: the photo, its pages on the tab bar, a chip a day, 準備; the title bar once scrolled; ‹ back', async ({ page }) => {
