@@ -70,9 +70,11 @@ export class PackStore {
     return b && offset + n <= b.byteLength ? b.slice(offset, offset + n) : null;
   }
 
-  /** These packs fetched ahead, in this order. */
+  /** These packs fetched ahead: the first alone, the rest once it's in (on 4G a level-4 deck's six packs at once took
+   *  the first question's 6.3 s; alone, ~1.2 s). */
   prefetch(stems: Iterable<string>): void {
-    for (const s of new Set(stems)) void this.pack(s);
+    const [first, ...rest] = new Set(stems);
+    if (first) void this.pack(first).then(() => rest.forEach((s) => void this.pack(s)));
   }
 
   /** Every pack let go (the sheet closed). */

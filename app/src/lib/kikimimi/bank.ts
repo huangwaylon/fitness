@@ -3,8 +3,8 @@
 // dialogues.ts, bank5.ts and content/ (all of them in source.ts BANK), and compiled into levels/ (compile.ts), which the
 // sheet loads a level at a time (pool.ts).
 //   Every item is spoken by scripts/kikimimi-audio.ts (the neural cast, docs/kikimimi.md "Audio") into
-// static/audio/kikimimi/<id>.m4a; changing an item's `en`, `tts`, `voice` or speaker's voice regenerates its clip. Ids
-// are file names: keep them stable. The lobby offers a level only once every item of it has a clip (compile.ts
+// a slice of its pack (static/audio/listen/, packing.ts); changing an item's `en`, `tts`, `voice` or speaker's voice regenerates its clip. Ids
+// key the clips in their packs: keep them stable. The lobby offers a level only once every item of it has a clip (compile.ts
 // playable). Level 4's dialogues (`gist`, `next`: dialogues.ts) are one clip per line and have a gate of their own.
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { QuizLv } from '../contract/live-protocol.ts';

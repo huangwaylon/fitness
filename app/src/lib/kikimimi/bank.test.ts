@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
@@ -7,13 +7,17 @@ import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitF
 import { BANK } from './source.ts';
 import { CAST, EXPOSURE } from './bank4.ts';
 import { LEVELS, MIX } from './deck.ts';
-import { mixes, unitItems } from './compile.ts';
+import { mixes, readPacks, unitItems } from './compile.ts';
+import { clipPlaces, packFile } from './packing.ts';
 import type { Clip } from './clips.ts';
 import clipsJson from './clips.json';
 import { DIALOGUES } from './dialogues.ts';
 import { RUNG_ITEMS } from './ladders.ts';
 
 const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
+/** Where each clip ships: its pack and its slow pack (packs.json; packing.test checks the bytes). */
+const PACKS = readPacks();
+const PLACES = clipPlaces(PACKS);
 /** The units' own items (app/content/units/*.yaml), voiced beside the bank's (their units' status: units.test). */
 const UNIT_ITEMS = unitItems();
 
@@ -264,7 +268,7 @@ describe('kikimimi bank', () => {
     expect(Object.keys(PIC_JA).filter((k) => !used.has(k))).toEqual([]);
   });
 
-  it('every item of an offered level has its clip (and levels 1 and 2 a slow one) on disk and in clips.json', () => {
+  it('every item of an offered level has its clip (and levels 1 and 2 a slow one) in a pack and in clips.json', () => {
     // a level is offered (deck.ts LEVELS) only once all of its clips exist: level 4's wait for the neural cast
     expect(LEVELS).toEqual(expect.arrayContaining([1, 2, 3]));
     // (a dialogue's: one per line, `<id>-<n>`, once its level offers dialogues)
@@ -276,10 +280,10 @@ describe('kikimimi bank', () => {
         expect(c.dur, id).toBeGreaterThan(0.5);
         expect(c.dur, id).toBeLessThan(clipCap(it));
         expect(c.hash).toMatch(/^[0-9a-f]{8}$/);
-        expect(existsSync(join(STATIC, 'audio/kikimimi', `${id}.m4a`)), id).toBe(true);
+        expect(PLACES.normal.has(id), id).toBe(true);
         const slow = it.lv <= 2;
         expect(Boolean(c.slow), id).toBe(slow);
-        expect(existsSync(join(STATIC, 'audio/kikimimi', `${id}-slow.m4a`)), id).toBe(slow);
+        expect(PLACES.slow.has(id), id).toBe(slow);
       }
     }
     // the units' own items: every clip once any is made (a unit past draft needs them all: units.ts checkUnits); a
@@ -292,7 +296,7 @@ describe('kikimimi bank', () => {
         expect(c, id).toBeDefined();
         expect(c.dur, id).toBeGreaterThan(0.5);
         expect(c.dur, id).toBeLessThan(clipCap({ ...it, lv: Math.max(it.lv, 4) as Level }));
-        expect(existsSync(join(STATIC, 'audio/kikimimi', `${id}.m4a`)), id).toBe(true);
+        expect(PLACES.normal.has(id), id).toBe(true);
         expect(c.slow, id).toBeUndefined();
       }
     }
@@ -301,18 +305,19 @@ describe('kikimimi bank', () => {
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other files, and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB; all under 40 MB)', () => {
-    const dir = join(STATIC, 'audio/kikimimi');
-    const rungs = new Set(RUNG_ITEMS.map((it) => `${it.id}.m4a`));
-    const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [`${id}.m4a`, ...(it.lv <= 2 ? [`${id}-slow.m4a`] : [])])), ...rungs]);
-    const files = readdirSync(dir);
-    expect(files.filter((f) => !want.has(f))).toEqual([]);
-    const sizes = files.map((f) => statSync(join(dir, f)).size);
-    // (a ladder rung is a whole 5-9 s line, slowed at its foot: 2 a game, 8 clips, ~280 KB fetched in the lobby)
-    const lvOf = new Map([...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).map((id) => [`${id}.m4a`, it.lv])));
+  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB; all the packs under 50 MB)', () => {
+    expect(existsSync(join(STATIC, 'audio/kikimimi')), 'the loose clips are gone (increment 9: the packs)').toBe(false);
+    const rungs = new Set(RUNG_ITEMS.map((it) => it.id));
+    const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [id, ...(it.lv <= 2 ? [`${id}-slow`] : [])])), ...rungs]);
+    const clips = Object.values(PACKS).flatMap((e) => e.clips.map(([id, , bytes]) => [e.slow ? `${id}-slow` : id, bytes] as const));
+    expect(clips.map(([f]) => f).filter((f) => !want.has(f))).toEqual([]);
+    // (a ladder rung is a whole 5-9 s line, slowed at its foot: 2 a game, 8 clips)
+    const lvOf = new Map([...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [[id, it.lv], [`${id}-slow`, it.lv]] as const)));
     const kb = (f: string) => (rungs.has(f) ? 80 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
-    for (const [k, f] of files.entries()) expect(sizes[k], f).toBeLessThan(kb(f) * 1024);
-    // (raised from 14 MB for the content sprint's ~700 clips; increment 9 moves the audio into packs)
-    expect(sizes.reduce((a, b) => a + b, 0)).toBeLessThan(40 * 1024 * 1024);
+    for (const [f, bytes] of clips) expect(bytes, f).toBeLessThan(kb(f) * 1024);
+    // (raised from 14 MB for the content sprint's ~700 clips, 40 MB for the loose files; in packs, a file a pack, so
+    // Pages' 20,000 files no longer bind: past 50 MB the packs move to R2 behind PACK_BASE, docs/kikimimi-framework.md §6)
+    const files = Object.entries(PACKS).map(([name, e]) => statSync(join(STATIC, 'audio/listen', packFile(name, e))).size);
+    expect(files.reduce((a, b) => a + b, 0)).toBeLessThan(50 * 1024 * 1024);
   });
 });
