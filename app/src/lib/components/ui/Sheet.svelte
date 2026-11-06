@@ -11,7 +11,9 @@
   // variant="top": the island panel, sliding down from the top (the leaf menu's ベル row opens it) (rounded at the bottom, the safe area on top).
   // It does not scroll itself: it is a flex column, and the panel puts its own title bar (with ‹) and its one
   // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (the health popup), grown out of
-  // the HUD's dumbbell (--pop-x / --pop-y on the root, set by the button) instead of sliding down.
+  // the HUD's dumbbell (--pop-x / --pop-y on the root, set by the button) instead of sliding down. variant="quiet": the
+  // pop's column in the quiet kit's skin (docs/design.md "Quiet sheets": its paper, edge to edge; its own SheetHeader
+  // and scroller inside: りょこう).
   import { untrack, type Snippet } from 'svelte';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
@@ -28,7 +30,7 @@
     label: string;
     /** The title bar's title (centred). */
     title?: string;
-    variant?: 'paper' | 'top' | 'pop';
+    variant?: 'paper' | 'top' | 'pop' | 'quiet';
     onclose?: () => void;
     /** A backdrop tap or Esc: false keeps the sheet open (a game going asks first: ききみみ's 「やめる？」). */
     ondismiss?: () => boolean;
@@ -96,7 +98,7 @@
   }
 </script>
 
-<dialog bind:this={dlg} class={variant} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
+<dialog bind:this={dlg} class={variant === 'quiet' ? 'pop quiet q-sheet' : variant} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
   onclose={closed} oncancel={dismissed} onclick={backdrop} data-sfx="self" {@attach open && withKeyboardInset}>
   {#if open}
     {#if hosts}<ToastHost />{/if}
@@ -166,6 +168,9 @@
   dialog.top.toasting > .inner, dialog.pop.toasting > .inner { padding-bottom: 0; }
   dialog.top.toasting, dialog.pop.toasting { --body-pad: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }
   @keyframes down { from { transform: translateY(-100%); } to { transform: none; } }
+  /* the quiet skin: its own paper, the column edge to edge (the sheet's header and scroller pad themselves) */
+  dialog.q-sheet { background: var(--q-bg); color: var(--q-ink); border-radius: 0; }
+  dialog.q-sheet > .inner { padding: 0; }
   @keyframes pop { from { opacity: 0; transform: scale(.08); } 40% { opacity: 1; } to { transform: none; } }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
 </style>

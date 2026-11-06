@@ -131,12 +131,6 @@ export const DEVICE = {
   kikimimiRecent: 'island.kikimimiRecent',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
-  /** localStorage: `[<who>|<trip>…]`: the packing lists this phone celebrated 「じゅんび OK！」 for, by who I am (once
-   *  per trip and person; components/travel/PackList.svelte). */
-  travelPacked: 'island.travel.packed',
-  /** localStorage: the Tokyo date Orville last said his line at the りょこう counter on this phone (once a day,
-   *  firstOn: components/travel/TravelSheet.svelte). */
-  travelHello: 'island.travelHello',
   /** localStorage: the board's day this phone last showed けっこんしき's greeting (パニエル's line: the day's first opening
    *  only, firstOn; components/wedding/WeddingSheet.svelte). */
   weddingGreet: 'island.weddingGreet',

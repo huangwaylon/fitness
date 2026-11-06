@@ -169,6 +169,18 @@ describe('packing', () => {
     expect(ticks()).toEqual(['B', '', '']);
   });
 
+  it('a reset clears my ticks stamped ahead of this phone’s clock too (another phone of mine, the demo’s preview day)', () => {
+    fake.rows = [
+      rec(T + 3_600_000, 'A', 'pack_chk', { trip: 'okinawa', id: 'ok-0-0', at: T + 3_600_000, v: 1 }),
+      rec(T + 7_200_000, 'B', 'pack_chk', { trip: 'okinawa', id: 'ok-0-1', at: T + 7_200_000, v: 1 }),
+      rec(T + 9_000_000, 'A', 'pack_chk', { trip: 'nz', id: 'nz-0-0', at: T + 9_000_000, v: 1 })
+    ];
+    expect(packing.resetHeld('okinawa', 0).ok).toBe(true);
+    // after my own tick of this trip, not the others' nor another trip's
+    expect(fake.sent.at(-1)!.data.at).toBe(T + 3_600_001);
+    expect(packing.list('okinawa', SEED)[0].items.map((i) => i.ticks.join(''))).toEqual(['', 'B']);
+  });
+
   it('the guest changes only what it added; the trip note is everyone’s to read', () => {
     fake.me = 'G';
     fake.rows = [rec(T - 5, 'A', 'trip_note', { trip: 'okinawa', at: T - 5, v: { flightRef: 'X1' } })];
