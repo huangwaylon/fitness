@@ -13,7 +13,8 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from 'node:f
 import { join, resolve } from 'node:path';
 import { clipIds } from '../src/lib/kikimimi/bank.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
-import { readStories, readUnits } from '../src/lib/kikimimi/compile.ts';
+import { readListen, readStories, readUnits } from '../src/lib/kikimimi/compile.ts';
+import { listenClipIds, listenUnit } from '../src/lib/kikimimi/listen.ts';
 import { LADDERS } from '../src/lib/kikimimi/ladders.ts';
 import { PACK_MAX, SLOW_PACK_MAX, packFile, planHome, type PackEntry, type Packs } from '../src/lib/kikimimi/packing.ts';
 import { joined } from '../src/lib/kikimimi/source.ts';
@@ -34,8 +35,8 @@ const readJson = <T,>(f: string, def: T): T => (existsSync(f) ? (JSON.parse(read
 const fileName = (id: string, slow: boolean) => `${id}${slow ? '-slow' : ''}.m4a`;
 
 /** Each clip's home, in order (the bank's items by level in the bank's order, the ladders' rungs, each unit's own
- *  items in file order, each story chapter's segments: a chapter's own pack, `st-johnny-3`, fetched when it's played):
- *  home → ids. */
+ *  items in file order, each listening file's own clips in its pack, `s1-tile-a`, each story chapter's segments: a
+ *  chapter's own pack, `st-johnny-3`, fetched when it's played): home → ids. */
 function homes(clips: Readonly<Record<string, Clip>>): Map<string, string[]> {
   const out = new Map<string, string[]>();
   const add = (home: string, id: string) => {
@@ -51,6 +52,10 @@ function homes(clips: Readonly<Record<string, Clip>>): Map<string, string[]> {
   for (const { raw } of readUnits()) {
     const u = raw as { unit: string; items?: { id: string; lines?: unknown[] }[] };
     for (const it of u.items ?? []) for (const id of clipIds(it as never)) add(`u-${u.unit}`, id);
+  }
+  for (const { raw } of readListen()) {
+    const u = listenUnit(raw);
+    for (const it of u.items) if (it.kind !== 'tile' || !it.clip) for (const id of listenClipIds(it)) add(u.unit, id);
   }
   for (const s of readStories()) for (const ch of chapters(s)) for (const seg of ch.segments) add(chapterPart(s.unit, ch.chapter), seg.clip);
   const homed = new Set([...out.values()].flat());

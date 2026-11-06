@@ -291,7 +291,7 @@ One agent per increment, disjoint files, each landing green on main and playable
 | **W2-6** | Tone spike | scripts/tts/ (an experiment outside the build), a report | – | 1 d, GPU idle |
 | **W2-9** | Recipe v2 (the lesson loads its kinds' chunks before its deck) | kikimimi/lesson.ts, units.ts (RECIPES [1, 2]), stages.ts, games/lesson/ | W2-1, W2-3 | 1.5 d |
 
-After W2-C1/C2 a game lane adds only its own folder, i18n file and one registry line. W2-C1 ∥ W2-C2 (disjoint). W2-1 ∥ W2-2 ∥ W2-3. W2-4 ∥ W2-5.
+After W2-C1/C2 a game lane adds only its own folder, i18n file and one registry line. **W2-C1 landed 2026-11-07.** The part and index shapes, the clip ids and where the help goes are in kikimimi-framework.md "Listen parts as built". W2-C1 ∥ W2-C2 (disjoint). W2-1 ∥ W2-2 ∥ W2-3. W2-4 ∥ W2-5.
 
 **Content lanes** (YAML/text only, one author per file; each batch reviewed before its audio):
 

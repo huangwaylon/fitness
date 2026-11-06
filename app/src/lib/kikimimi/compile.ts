@@ -11,6 +11,9 @@
 //   The bedtime serials (app/content/listen/story/*.yaml, story.ts) compile too: each chapter a chunk of its own
 // (`parts/<unit>-<chapter>.json`: the chapter, its segments' clips and word timings) and a line in the index's `stories`.
 //   The units' villager letters (U7, letters.ts) are one small chunk, `parts/letters.json`, loaded when one is shown.
+//   The listening kinds (app/content/listen/*.yaml, listen.ts: tiles, calls, たちぎき) are checked (a problem stops it)
+// and each file becomes a chunk of its own (`parts/<unit>.json`: the file as played, its clips and timings), an entry in
+// `units` and `listen`, and its game's line in `games` (`tile:s1-tile-a`) once games/versions.ts has the game.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
@@ -30,6 +33,7 @@ import { tagsOf } from './tags.ts';
 import { LESSONS, candoText, checkUnits, lessonIds, manifestOf, type UnitManifest, type UnitsCheck } from './units.ts';
 import { BUILD_V } from './games/versions.ts';
 import { chapterPart, chapters, type ChapterEntry, type StoryEntry, type StorySource } from './story.ts';
+import { checkListenAll, listenClipIds, listenPart, listenShape, usProblems, type ListenSource } from './listen.ts';
 
 /** A unit's chunk's budget (gzipped; plan §8: 20 KB, raised to 32 for the Japanese help, cja, why and ctx, ~0.3 KB an item). */
 export const UNIT_MAX = 32 * 1024;
@@ -56,6 +60,14 @@ export function readStories(dir: URL = STORIES_DIR): StorySource[] {
   return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((f) => parse(readFileSync(new URL(f, dir), 'utf8')) as StorySource);
 }
 
+const LISTEN_DIR = new URL('../../../content/listen/', import.meta.url);
+
+/** app/content/listen/*.yaml (the listening kinds' files; not story/), parsed, by file name. */
+export function readListen(dir: URL = LISTEN_DIR): ListenSource[] {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) }));
+}
+
 /** The units' own items (inline in their manifests, as authored), in file order: the audio scripts voice them beside
  *  the bank's (their ids are checked against the bank's and each other's: checkUnits). */
 export function unitItems(sources: readonly UnitSource[] = readUnits()): Item[] {
@@ -72,7 +84,8 @@ export function checkUnitSources(sources: readonly UnitSource[], clips: Readonly
     if (m.unit) units.push(m.unit);
   }
   const all = checkUnits(units, bank, LADDERS, clips);
-  return { ...all, errors: [...errors, ...all.errors], units };
+  const us = units.flatMap((u) => (u.items ?? []).flatMap((it) => usProblems(it).map((p) => `${u.unit} ${it.id}: ${p}`)));
+  return { ...all, errors: [...errors, ...all.errors, ...us], units };
 }
 
 const PACKS_JSON = new URL('./packs.json', import.meta.url);
@@ -187,6 +200,21 @@ function storyChunks(s: StorySource, clips: Readonly<Record<string, Clip>>, word
   return { files, entry };
 }
 
+/** A listening file's chunk (listen.ts ListenPart, its clips and word timings) and its index entries. A file past
+ *  draft has every clip. */
+function listenChunk({ file, raw }: ListenSource, bank: ReadonlyMap<string, Item>, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, places: Places) {
+  const part = listenPart(raw, bank);
+  const ids = part.items.flatMap(listenClipIds);
+  const missing = ids.filter((id) => !clips[id]);
+  if (part.status !== 'draft' && missing.length) throw new Error(`kikimimi: ${file} is ${part.status} but has no clip ${missing.join(' ')}`);
+  const { items, ...head } = part;
+  const c = chunkClips(ids, clips, places);
+  const text = `{"listen":${JSON.stringify(head).slice(0, -1)},"items":${list(items)}},\n"packs":${JSON.stringify(c.packs)},\n"clips":${dict(c.clips)},\n"words":${dict(Object.fromEntries(ids.filter((id) => id in words).map((id) => [id, words[id]])))}}\n`;
+  if (gz(text) > UNIT_MAX) throw new Error(`kikimimi: ${file}'s chunk is ${gz(text)} B gzipped, over ${UNIT_MAX}`);
+  const shape = items.map((it) => [listenShape(it), listenClipIds(it).map((id) => Math.round((clips[id]?.dur ?? 0) * 100))]);
+  return { head, text, cv: createHash('sha256').update(JSON.stringify(shape)).digest('hex').slice(0, 6) };
+}
+
 /** A unit's content version (docs/kikimimi-framework.md §4.2): what shapes its decks and schedule (ids, order, choice
  *  counts, answers, the clips' lengths to 10 ms, the mix), 6 hex. */
 function cv(items: readonly Item[], mix: unknown, clips: Readonly<Record<string, Clip>>): string {
@@ -225,13 +253,14 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
 
 /** levels/'s files (paths under it → contents) for these clips and word timings, these units (app/content/units/:
  *  a unit that fails its checks stops it; its warnings go to `warn`), these packs (packs.json: a clip in none stops it)
- *  and these bedtime serials (content/listen/story/). */
-export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void, stories: readonly StorySource[] = readStories()): Map<string, string> {
+ *  these bedtime serials (content/listen/story/) and these listening files (content/listen/: a problem stops it). The
+ *  bank's US-lint hits are warnings (wave 2 §3.4, until B7 clears them). */
+export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void, stories: readonly StorySource[] = readStories(), listen: readonly ListenSource[] = readListen()): Map<string, string> {
   const out = new Map<string, string>();
   const places = clipPlaces(packs);
   const BANK = joined(clips), check = checkUnitSources(sources, clips, BANK);
   if (check.errors.length) throw new Error(`kikimimi: the units don't check:\n${check.errors.join('\n')}`);
-  if (warn) for (const w of check.warnings) warn(w);
+  if (warn) for (const w of [...check.warnings, ...BANK.flatMap((it) => usProblems(it).map((p) => `${it.id}: ${p}`))]) warn(w);
   const dialogues = dialoguesVoiced(clips, BANK), mix = mixFor(dialogues);
   const units: Index['units'] = {};
   const levels = [...new Set(BANK.map((it) => it.lv))].sort((a, b) => a - b);
@@ -263,6 +292,19 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     for (const [path, file] of c.files) out.set(path, file);
     storyIndex[s.unit] = c.entry;
   }
+  // the listening files: derived tiles may name a voiced one-clip bank item; ids never a bank, unit or rung clip's
+  const oneClip = new Map(BANK.filter((it) => !isDialogue(it) && voiced(it, clips)).map((it) => [it.id, it]));
+  const taken = new Set([...BANK, ...check.units.flatMap((u) => u.items ?? [])].flatMap((it) => clipIds(it)).concat(rungs.map((r) => r.id)));
+  const bad = checkListenAll(listen, oneClip, taken);
+  if (bad.length) throw new Error(`kikimimi: the listening files don't check:\n${bad.join('\n')}`);
+  const listenIndex: Index['listen'] = {}, listenCv = new Map<string, string>();
+  for (const src of listen) {
+    const c = listenChunk(src, oneClip, clips, words, places);
+    out.set(`parts/${c.head.unit}.json`, c.text);
+    units[c.head.unit] = { parts: [c.head.unit], n: (src.raw as { items: unknown[] }).items.length, cv: c.cv };
+    listenIndex[c.head.unit] = [c.head.game, c.head.stage, c.head.status];
+    listenCv.set(c.head.unit, c.cv);
+  }
   // each game's cv by its deck's content (pool.ts gameCvOf): the quiz at a level, スピード はしご, a unit's lesson, the
   // tournament
   const games: Index['games'] = {};
@@ -271,10 +313,12 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   for (const u of check.units) games[`lesson:${u.unit}`] = gameCv('lesson', units[u.unit].cv);
   // the weekend tournament deals from every level by the items' places in them (games/taikai/pick.ts numbering)
   games['taikai:all'] = gameCv('taikai', levels.map((lv) => units[lv].cv).join(','));
+  // a listening file's game (`tile:s1-tile-a`), once the registry has the game (games/versions.ts BUILD_V)
+  for (const [u, [gm]] of Object.entries(listenIndex)) if (BUILD_V[gm] !== undefined) games[`${gm}:${u}`] = gameCv(gm, listenCv.get(u)!);
   const first = BANK.find((it) => it.lv === 1)!;
   const test = chunkClips([first.id], clips, places);
   const index: Index = {
-    units, games, offered: playable(clips, BANK), dialogues, ladder: ladderReady(clips), test: [first.id, test.clips[first.id], test.packs], stories: storyIndex, paths,
+    units, games, offered: playable(clips, BANK), dialogues, ladder: ladderReady(clips), test: [first.id, test.clips[first.id], test.packs], stories: storyIndex, listen: listenIndex, paths,
     items: BANK.map((it) => {
       const t = tagsOf(it);
       return [it.id, it.lv, it.type, it.voice, t.pragmatic, [...t.features]];
