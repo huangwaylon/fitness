@@ -2,7 +2,7 @@
 // its track plays instead of the hour's; the wasps' chase and sting cut in over the island's music; a tap on K.K. plays
 // one of his songs. Dates are mocked with ?date= (Tokyo). Checked by the files the engine fetches.
 import { expect, test, type Page } from './fixtures.ts';
-import { BASE, is3d, islandUp, quiet } from './island.ts';
+import { BASE, is3d, islandUp, quiet, shakeTree } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -52,11 +52,8 @@ test('the wasps: Chased by Bees cuts in as they come out, Stung by Bees after th
   await quiet(page); // the opening beats are over
   await tapSky(page);
   await expect.poll(() => audio).toContain('music/hour-12.m4a');
-  const c = (await page.locator('button.canopy').first().boundingBox())!;
-  for (let i = 0; i < 3; i++) {
-    await page.mouse.click(c.x + c.width / 2, c.y + c.height / 2);
-    await page.waitForTimeout(120);
-  }
+  // (where the popup leaves the canopy open: the first tap opens it over the canopy's middle)
+  await shakeTree(page);
   await expect(page.locator('button[data-swarm]')).toBeVisible({ timeout: 2000 });
   await expect.poll(() => audio).toContain('music/bee-chase.m4a');
   await expect(page.locator('[data-stung]')).toHaveCount(1, { timeout: 3000 }); // no tap: stung
