@@ -5,7 +5,7 @@ import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
 import type { Item, Level } from './bank.ts';
 import { ENTRIES, itemOf, loadIds } from './pool.ts';
-import { answersOf, daysPlayed, gamesOf, recentOf, speedOf, statsOf, together, trendOf, weekDays, type Game, type OtherGame, type Speed, type Stats } from './progress.ts';
+import { answersOf, daysPlayed, gamesOf, recentOf, speedOf, statsOf, together, trendOf, weekDays, type Game, type OtherGame, type Speed, type Stats, type StoryGame } from './progress.ts';
 import { cardsOf, dueOf, practicePicks, type Focus } from './srs.ts';
 import { feedback, recommend, type Feedback, type Rec } from './advice.ts';
 import type { Recent } from './recent.ts';
@@ -14,6 +14,8 @@ export interface Report {
   today: LocalDate;
   games: Game[];
   others: OtherGame[];
+  /** My bedtime stories (no answers: their minutes only). */
+  stories: StoryGame[];
   stats: Stats;
   /** Item cards due today. */
   due: number;
@@ -31,18 +33,18 @@ export interface Report {
 /** The report of `me`'s rows as of `today`, the levels this phone offers (the advice's level nudge and tries) and
  *  whether it offers スピード はしご. */
 export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, levels: readonly Level[], ladder = false): Report {
-  const { mine, others } = gamesOf(rows, me);
+  const { mine, others, stories } = gamesOf(rows, me);
   const answers = answersOf(mine);
   const stats = statsOf(answers, today);
   const due = dueOf(cardsOf(answers), today).items.length;
   const week = new Set(weekDays(today));
   const speed = speedOf(mine);
   return {
-    today, games: mine, others, stats, due, speed,
+    today, games: mine, others, stories, stats, due, speed,
     recs: recommend({ stats, games: mine, dueItems: due, levels, bank: ENTRIES, speed, ladder }),
     trend: trendOf(mine), recent: recentOf(mine), days: daysPlayed(mine, today),
     together: together(mine, others, today),
-    minutes: Math.round(mine.filter((g) => week.has(g.d)).reduce((s, g) => s + g.ms, 0) / 60_000)
+    minutes: Math.round([...mine, ...stories].filter((g) => week.has(g.d)).reduce((s, g) => s + g.ms, 0) / 60_000)
   };
 }
 

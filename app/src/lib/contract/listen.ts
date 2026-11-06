@@ -39,9 +39,13 @@ export interface ListenRow {
   ms: number;
   /** にがて れんしゅう (a solo deck of my weak spots), else absent. */
   p?: 1;
-  /** My answers, in the game's order (the questions sat out aren't). */
+  /** My answers, in the game's order (the questions sat out aren't); none in a no-answer mode (STORY_GM). */
   r: ListenAnswer[];
 }
+
+/** おやすみ ものがたり's `gm` (docs/kikimimi-ux.md §6.8): a bedtime story has no questions, so its row's `r` is empty and
+ *  only its minutes count (the week's stamp at ≥ 3 min, the couple quest); `u` its serial. */
+export const STORY_GM = 'story';
 
 /** What the other member sees of a row (docs/kikimimi.md "Storage"): never the level, the answers or the score. A
  *  unit's passed チェック adds the unit and `stamped` (docs/curriculum-units.md §4: each person's stamps are the partner's
@@ -88,7 +92,7 @@ export function listenOf(d: unknown): ListenRow | null {
   if (o.u !== undefined && (typeof o.u !== 'string' || !UNIT_RE.test(o.u))) return null;
   if (o.l !== undefined && (o.u === undefined || !int(o.l, 1, 5))) return null;
   if (o.tm !== undefined && (o.l === undefined || !int(o.tm, 0, LESSON_QS))) return null;
-  if (!Array.isArray(o.r) || o.r.length < 1 || o.r.length > LISTEN_MAX_Q) return null;
+  if (!Array.isArray(o.r) || o.r.length < (o.gm === STORY_GM ? 0 : 1) || o.r.length > LISTEN_MAX_Q) return null;
   const r: ListenAnswer[] = [];
   for (const a of o.r) {
     const x = answerOf(a);

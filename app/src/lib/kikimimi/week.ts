@@ -4,7 +4,7 @@
 // Pure.
 import type { LocalDate, Who } from '../types.ts';
 import { weekDays } from './progress.ts';
-import { finished } from './today.ts';
+import { finished, finishedStory } from './today.ts';
 
 /** The couple quest's minutes (a member's phone) and the guest's solo one. */
 const QUEST_MIN = 60;
@@ -25,13 +25,13 @@ export function weekCard(o: {
   today: LocalDate;
   me: Who;
   goal: number;
-  /** My games: their day, answers and length. */
-  mine: readonly { d: LocalDate; n: number; ms: number }[];
+  /** My games: their day, answers and length (a bedtime story: no answers, finished at ≥ 3 min). */
+  mine: readonly { d: LocalDate; n: number; ms: number; story?: boolean }[];
   /** The others' summaries: who, their day and length. */
   others: readonly { who: Who; d: LocalDate; ms: number }[];
 }): WeekCard {
   const week = weekDays(o.today), inWeek = new Set(week);
-  const played = new Set(o.mine.filter((g) => inWeek.has(g.d) && finished(g.n)).map((g) => g.d));
+  const played = new Set(o.mine.filter((g) => inWeek.has(g.d) && (g.story ? finishedStory(g.ms) : finished(g.n))).map((g) => g.d));
   const days = week.map((d) => played.has(d));
   const count = days.filter(Boolean).length;
   const solo = o.me === 'G';

@@ -78,7 +78,10 @@
   );
   const weekly = $derived(
     report
-      ? weekCard({ today: report.today, me, goal: weekGoal(), mine: report.games.map((g) => ({ d: g.d, n: g.r.length, ms: g.ms })), others: report.others })
+      ? weekCard({
+          today: report.today, me, goal: weekGoal(), others: report.others,
+          mine: [...report.games.map((g) => ({ d: g.d, n: g.r.length, ms: g.ms })), ...report.stories.map((s) => ({ d: s.d, n: 0, ms: s.ms, story: true }))]
+        })
       : null
   );
   const hello = $derived(menu?.all ? t('kiki.hub.enough') : greet);
@@ -97,6 +100,7 @@
         return { title: t('kiki.mode.quiz'), line: `${p ? `${t(`kiki.stage.${p.id}`)} ${'★'.repeat(p.stars)}・` : ''}${t('kiki.chip.qs', { n: 8 })}・${t('kiki.chip.mins', { n: 4 })}` };
       }
       case 'mode': return { title: t(`kiki.mode.${a.m}`), line: t(`kiki.modeSub.${a.m}`) };
+      case 'story': return { title: t('kiki.mode.story'), line: t('kiki.modeSub.story') };
     }
   }
   const others = $derived(here.filter((w) => w !== me));
