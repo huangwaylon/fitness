@@ -164,8 +164,9 @@ export default defineConfig({
         directives: {
           'default-src': ['self'],
           // + the trip map's basemap (components/travel/map/style.ts BASEMAP: OpenFreeMap's TileJSON and tiles, fetched by
-          // MapLibre's worker; its fonts are ours): the one third party the phones contact
-          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://tiles.openfreemap.org', 'blob:'],
+          // MapLibre's worker; its fonts are ours), and トレイル's raster topo (components/hiking/map/style.ts TOPO: USGS
+          // Topo, GSI 地理院タイル; fetched, then decoded from blob:)
+          'connect-src': ['self', 'wss://island-fund-relay.island-fund-relay.workers.dev', 'https://island-fund-relay.island-fund-relay.workers.dev', 'https://tiles.openfreemap.org', 'https://basemap.nationalmap.gov', 'https://cyberjapandata.gsi.go.jp', 'blob:'],
           // the tent's models carry their textures inside (three.js decodes them from blob: URLs)
           'img-src': ['self', 'data:', 'blob:'],
           // the hourly music plays from blob: URLs (lib/sound/engine.ts), and the first tap's silent unlock clip

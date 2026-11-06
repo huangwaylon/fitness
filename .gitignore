@@ -10,6 +10,3 @@ food-data/raw/
 food-data/out/
 food-data/.build-*/
 food-data/**/__pycache__/
-
-# トレイル: the AllTrails-derived tracks, local only until the user decides (docs/hiking.md "Pending")
-app/hiking-local/

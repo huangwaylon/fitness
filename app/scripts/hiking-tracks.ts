@@ -1,8 +1,7 @@
 // トレイル's tracks (docs/hiking.md "Data"): the hiking-trails app's GPX files (AllTrails exports) → one track file a
-// trail, simplified (Douglas–Peucker, ~5 m) with its elevation smoothed (lib/hiking/track.ts toTrack). They go to the
-// gitignored app/hiking-local/ (loaded in dev: lib/hiking/load.ts) until the user decides they may be committed; then
-// `--out static/travel/hiking/tracks` writes them where the app looks in production.
-//   node scripts/hiking-tracks.ts <the hiking-trails repo's gpx/ dir> [--out hiking-local]
+// trail, simplified (Douglas–Peucker, ~5 m) with its elevation smoothed (lib/hiking/track.ts toTrack), into
+// static/hiking/tracks/<slug>.json (lib/hiking/load.ts). Run once at the port; the files are the source now.
+//   node scripts/hiking-tracks.ts <the hiking-trails repo's gpx/ dir> [--out <dir under app/>]
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { toTrack } from '../src/lib/hiking/track.ts';
@@ -24,7 +23,7 @@ const FILES: Record<string, string> = {
 const args = process.argv.slice(2);
 const src = args.find((a) => !a.startsWith('--'));
 const oi = args.indexOf('--out');
-const out = join(import.meta.dirname, '..', oi >= 0 ? args[oi + 1] : 'hiking-local');
+const out = join(import.meta.dirname, '..', oi >= 0 ? args[oi + 1] : 'static/hiking/tracks');
 if (!src) {
   console.error('usage: node scripts/hiking-tracks.ts <gpx dir> [--out <dir under app/>]');
   process.exit(1);

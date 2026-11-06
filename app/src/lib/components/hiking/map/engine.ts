@@ -1,14 +1,12 @@
 // トレイル's map, the MapLibre side (docs/hiking.md "Map"): the lazy chunk TrailMap.svelte imports only when it draws
-// (never under drawOff()), on the trip map's CSP-safe path (its worker our own file, labels in the app's font:
+// (never under drawOff()), on the trip map's CSP-safe path (its worker our own file:
 // travel/map/engine.ts). One map per trail view; destroy() drops its WebGL context the way the trip map's does (leaks).
 import { AttributionControl, Map as GLMap, getGlobalDispatcher, setWorkerUrl, type GeoJSONSource, type LngLatBoundsLike } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-import type { Locale } from '#lib/i18n/index.ts';
 import type { Region } from '#lib/hiking/types.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
-import { fontFaces } from '../../travel/map/fonts.ts';
-import { buildStyle, SRC } from './style.ts';
+import { buildStyle, SRC, TOPO } from './style.ts';
 
 export interface Fix { lon: number; lat: number }
 export type EngineMode = 'ready' | 'offline' | 'lost';
@@ -34,18 +32,19 @@ export function boundsOf(p: Prepared): LngLatBoundsLike {
   return [[w, s], [e, n]];
 }
 
-export function createEngine(el: HTMLElement, i: { locale: Locale; region: Region; topo: boolean; center: Fix; bottom: number }, on: { mode(m: EngineMode): void }): Engine {
+export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; bottom: number }, on: { mode(m: EngineMode): void }): Engine {
   setWorkerUrl(workerUrl);
   const map = new GLMap({
     container: el,
-    style: buildStyle(i.locale, i.region, i.topo, fontFaces()),
+    style: buildStyle(i.region),
     attributionControl: false,
     dragRotate: false,
     pitchWithRotate: false,
     touchPitch: false,
     maxPitch: 0,
-    minZoom: 4,
-    maxZoom: i.topo && i.region === 'us' ? 16 : 17.5,
+    // (the hiking app's: z10 the overview, each source's own ceiling the closest)
+    minZoom: 9,
+    maxZoom: TOPO[i.region].maxzoom,
     renderWorldCopies: false,
     fadeDuration: 120,
     validateStyle: import.meta.env.DEV,
