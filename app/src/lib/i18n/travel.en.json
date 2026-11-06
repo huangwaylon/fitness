@@ -67,7 +67,7 @@
   "travel.map.locate.on": "Back to me",
   "travel.map.locate.denied": "Location is off",
   "travel.map.locate.unavailable": "Can't find you",
-  "travel.map.note.denied": "Location is off — Settings › Safari › Location",
+  "travel.map.note.denied": "Location is off\nSettings › Safari › Location",
   "travel.map.note.far": "You're far from this trip",
   "travel.map.note.offline": "Map offline — the route only",
   "travel.map.failed": "The map didn't load",
