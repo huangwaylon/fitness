@@ -17,16 +17,16 @@ items:
     lines:
       - { who: maple, at: 0, en: "Okay, Dana's going-away party is Friday, and we're standing in Target with no plan. I was thinking a nice bottle of wine.", ja: "さて、ダナの送別会は金曜なのに、ノープランでターゲットに立ってるわけ。いいワインを考えてたんだけど。" }
       - { who: beau, at: 0.3, en: "She doesn't drink, though, does she? I've never seen her have anything stronger than iced tea.", tts: "She doesn't drink, though, does she? I've never seen 'er have anything stronger than iced tea.", ja: "でも彼女、飲まないよね？アイスティーより強いものを飲んでるところ、見たことないよ。" }
-      - { who: ken, at: -0.2, en: "Yeah, no, wine's a bad call. What about a gift card? There's a whole wall of them right there.", tts: "Yeah, no, wine's a bad call. Whaddabout a gift card? There's a whole wall of 'em right there.", ja: "うん、いや、ワインはやめたほうがいい。ギフトカードは？そこに壁一面あるし。" }
-      - { who: maple, at: 0.3, en: "A gift card feels kind of lazy, doesn't it? Like we grabbed it at checkout. Which we would be.", tts: "A gift card feels kinda lazy, doesn't it? Like we grabbed it at checkout. Which we would be.", ja: "ギフトカードってちょっと手抜きっぽくない？レジでついでに取ったみたいで。実際そうなるけど。" }
+      - { who: ken, at: -0.2, en: "Yeah, no, wine's a bad call. And not a gift card, either. That's what you get your mail carrier.", tts: "Yeah, no, wine's a bad call. An' not a gift card, either. That's whatcha get yer mail carrier.", ja: "うん、いや、ワインはやめたほうがいい。ギフトカードもなしね。それって郵便屋さんにあげるものだよ。" }
+      - { who: maple, at: 0.3, en: "Ugh, but a gift card's so easy. There's a whole wall of them right there, by checkout.", tts: "Ugh, but a gift card's so easy. There's a whole wall of 'em right there, by checkout.", ja: "えー、でもギフトカードって楽なのに。レジの横に壁一面あるし。" }
       - { who: beau, at: 0.3, en: "She's moving to Denver for the hiking, isn't she? Get her something for that. Camping stuff's in the back.", tts: "She's movin' to Denver for the hiking, isn't she? Get 'er something for that. Camping stuff's in the back.", ja: "彼女、山歩きのためにデンバーに引っ越すんだよね？それ用のものにしよう。キャンプ用品は奥だよ。" }
       - { who: ken, at: -0.4, en: "Ooh, a good thermos. And the place in the mall can engrave the team name on it.", tts: "Ooh, a good thermos. An' the place in the mall can engrave the team name on it.", ja: "お、いい水筒ね。モールの店でチーム名を彫ってもらえるし。" }
       - { who: maple, at: 0.3, en: "Okay, I'm sold. A thermos from here, engraved at the mall. If we drop it off today, it's ready Thursday.", ja: "わかった、それで決まり。ここで水筒を買って、モールで名入れ。今日持っていけば木曜にできる。" }
       - { who: ken, at: 0.2, en: "You're the best. I'll grab a card and get everyone to sign it.", ja: "さすが。カードを買って、みんなに寄せ書きしてもらうよ。" }
     rounds:
-      - { type: opinions, claims: ["彼女は お酒を 飲まない", "最初は ギフトカードを すすめた", "ギフトカードは 手抜きに 見える"], answer: [beau, ken, maple] }
-      - { type: changed, answer: maple }
-      - { type: plan, ask: "プレゼントは？", choices: ["A bottle of good wine.", "A thermos from here, engraved at the mall.", "A gift card from the wall by checkout."], answer: 1, ja: "ここで買った水筒に、モールで名入れする。" }
+      - { type: opinions, claims: ["彼女は お酒を 飲まない", "ギフトカードは 気持ちが こもらない", "今日 持っていけば 木曜に できる"], answer: [beau, ken, maple], ctx: "量販店で、同僚3人が送別の贈り物を探しています", why: "ボーは She doesn't drink。ケンは not a gift card で、気持ちがこもらない派。メイプルは今日持っていけば木曜にできると言う。" }
+      - { type: changed, answer: maple, ctx: "ワイン、ギフトカードと、案が変わっていきます", why: "メイプルはワイン、次にギフトカードと言ったが、水筒の案に Okay, I'm sold＝それで決まり。sold は「納得した」。" }
+      - { type: plan, ask: "プレゼントは？", choices: ["A bottle of good wine.", "A thermos from here, engraved at the mall.", "A gift card from the wall by checkout."], answer: 1, ja: "ここで買った水筒に、モールで名入れする。", ctx: "最後に、贈り物と準備の分担が決まります", why: "ここで水筒を買い、モールで名入れする。ケンは寄せ書きのカードを買う。ワインもギフトカードも却下。", cja: ["いいワインを1本", "ここで買った水筒に、モールで名入れ", "レジ横のギフトカード"] }
     note: "Yeah, no＝いや、ちがう。I'm sold＝賛成"
     tags: { seed: 54, register: colleague, pragmatic: attitude, features: [overlap, h-drop, idiom] }
 
@@ -44,9 +44,9 @@ items:
       - { who: katt, at: -0.4, en: "Free? Well, that's different. Fine, I'll come for the free week and see.", ja: "無料？それなら話は別。いいよ、無料の週だけ行ってみる。" }
       - { who: kicks, at: 0.2, en: "Ha! Monday, six sharp. I'll pick you both up at a quarter to.", tts: "Ha! Monday, six sharp. I'll pick ya both up at a quarter to.", ja: "やった！月曜6時ぴったりね。2人とも5時45分に迎えに行くよ。" }
     rounds:
-      - { type: opinions, claims: ["「考えてみる」は 断りだと 見ぬいた", "朝 起きる きっかけが ほしい", "冬の 朝6時に 外は きつい"], answer: [kicks, bunnie, katt] }
-      - { type: changed, answer: katt }
-      - { type: plan, ask: "月曜の 朝は？", choices: ["Only two of them go, at six.", "They'll try the indoor class on a rainy day.", "All three go, and one picks the others up at 5:45."], answer: 2, ja: "3人とも行く。1人が5時45分に迎えに行く。" }
+      - { type: opinions, claims: ["「考えてみる」は 断りだと 見ぬいた", "朝 起きる きっかけが ほしい", "冬の 朝6時に 外は きつい"], answer: [kicks, bunnie, katt], ctx: "カフェで、友だちが朝のトレーニングに誘っています", why: "キックスは That's a no, isn't it? で断りを見抜いた。バニーは get me out of bed。キャットは冬の朝6時に外はきつい。" }
+      - { type: changed, answer: katt, ctx: "乗り気でなかった人に、新しい情報が届きます", why: "キャットの I'll definitely think about it は遠回しの断り。最初の1週間は無料と聞いて that's different に変わった。" }
+      - { type: plan, ask: "月曜の 朝は？", choices: ["Only two of them go, at six.", "They'll try the indoor class on a rainy day.", "All three go, and one picks the others up at 5:45."], answer: 2, ja: "3人とも行く。1人が5時45分に迎えに行く。", ctx: "最後に、月曜の朝の段取りが決まります", why: "Monday, six sharp で3人とも行く。a quarter to＝6時の15分前で、5時45分に迎えに行く。", cja: ["2人だけが6時に行く", "雨の日に室内クラスを試す", "3人とも行き、1人が5時45分に迎えに行く"] }
     note: "I'll think about it は断りのことが多い"
     tags: { seed: 18, register: friend, pragmatic: refusal, conditions: [cafe], features: [overlap, intonation, clock] }
 
@@ -64,9 +64,9 @@ items:
       - { who: audie, at: 0.3, en: "I'll check the official site Saturday morning. If it's called off, we'll just get takeout at his buddy's place.", tts: "I'll check the official site Saturday morning. If it's called off, we'll just get takeout at 'is buddy's place.", ja: "土曜の朝、公式サイトを確認するね。中止なら、その友だちの家でテイクアウトにしよう。" }
       - { who: kid-cat, at: 0.2, en: "Done deal.", ja: "決まり。" }
     rounds:
-      - { type: opinions, claims: ["少しの 雨なら 平気", "屋根が あるなら 行く", "帰りの 電車が 心配"], answer: [kid-cat, octavian, audie] }
-      - { type: changed, answer: octavian }
-      - { type: plan, ask: "土曜は どうする？", choices: ["Watch from a friend's balcony in Asakusa.", "Stand by the river in yukata.", "Stay home and watch it on TV."], answer: 0, ja: "浅草の友だちの部屋のベランダから見る。" }
+      - { type: opinions, claims: ["少しの 雨なら 平気", "屋根が あるなら 行く", "帰りの 電車が 心配"], answer: [kid-cat, octavian, audie], ctx: "家で、友だち3人が雨の予報と花火大会の話をしています", why: "キッドキャットは A little drizzle は平気。オクタヴィアンは屋根付きなら I'm in。オーディーは帰りの電車が a nightmare。" }
+      - { type: changed, answer: octavian, ctx: "見る場所について、新しい案が出てきます", why: "オクタヴィアンの Can't wait は皮肉で、行きたくない。屋根付きのベランダと聞いて Okay, I'm in に変わった。" }
+      - { type: plan, ask: "土曜は どうする？", choices: ["Watch from a friend's balcony in Asakusa.", "Stand by the river in yukata.", "Stay home and watch it on TV."], answer: 0, ja: "浅草の友だちの部屋のベランダから見る。", ctx: "最後に、土曜の見方が決まります", why: "浅草の友だちのベランダから見る。中止なら、その部屋でテイクアウト。川沿いで立つ案は皮肉で却下された。", cja: ["浅草の友だちのベランダから見る", "浴衣で川沿いに立って見る", "家でテレビで見る"] }
     note: "Can't wait は皮肉。濡れて立つのは嫌という意味"
     tags: { seed: 50, register: friend, pragmatic: sarcasm, features: [overlap, numbers, h-drop] }
 
@@ -84,9 +84,9 @@ items:
       - { who: maple, at: -0.4, en: "Oh. Well, if he's nice... maybe a friendly word is better than a note, then.", ja: "あら。いい人なら…メモより直接やんわり言ったほうがいいかもね。" }
       - { who: poppy, at: 0.2, en: "Great. We'll go up together after work. Safety in numbers.", ja: "よし。仕事のあと、一緒に行こう。人数がいれば安心。" }
     rounds:
-      - { type: opinions, claims: ["直接 ドアを ノックすべき", "管理事務所に メモで いい", "気まずく したくない"], answer: [poppy, tom-nook, maple] }
-      - { type: changed, answer: maple }
-      - { type: plan, ask: "どうする？", choices: ["They'll leave a note at the management office.", "They'll go and talk to him together after work.", "They'll wait and see if it happens again."], answer: 1, ja: "仕事のあと、一緒に直接話しに行く。" }
+      - { type: opinions, claims: ["直接 ドアを ノックすべき", "管理事務所に メモで いい", "気まずく したくない"], answer: [poppy, tom-nook, maple], ctx: "マンションで、住人3人が上の階の騒音の話をしています", why: "ポピーは knock on his door（直接ノック）。トム・ヌックは管理事務所に note。メイプルは make it awkward（気まずく）したくない。" }
+      - { type: changed, answer: maple, ctx: "騒音の主について、意外な話が出てきます", why: "メイプルは I'd rather not knock と嫌がっていたが、いい人だと聞いて a friendly word is better に変えた。" }
+      - { type: plan, ask: "どうする？", choices: ["They'll leave a note at the management office.", "They'll go and talk to him together after work.", "They'll wait and see if it happens again."], answer: 1, ja: "仕事のあと、一緒に直接話しに行く。", ctx: "最後に、どう伝えるかが決まります", why: "We'll go up together after work＝仕事のあと一緒に上へ行く。Safety in numbers＝人数がいれば安心。メモの案は採らない。", cja: ["管理事務所にメモを残す", "仕事のあと、一緒に直接話しに行く", "また起きるか様子を見る"] }
     note: "I'd rather not＝できれば嫌。遠回しな拒否"
     tags: { seed: 32, register: neighbour, pragmatic: indirect, features: [overlap, gonna, h-drop] }
 
@@ -104,8 +104,8 @@ items:
       - { who: label, at: 0.3, en: "Yeah... you're right. Okay. I'll ask her for a quick chat tomorrow. Not an angry one, just... a chat.", ja: "そうだよね…その通り。わかった。明日ちょっと話す時間をもらう。怒るんじゃなくて…話すだけ。" }
       - { who: rosie, at: 0.2, en: "Good for you. And keep your old drafts. Just in case.", tts: "Good for you. An' keep yer old drafts. Just in case.", ja: "えらい。それと、前の下書きは取っておいてね。念のため。" }
     rounds:
-      - { type: opinions, claims: ["部長に メールすべき", "まず 上司と 話すべき", "対立は 苦手"], answer: [bob, rosie, label] }
-      - { type: changed, answer: label }
-      - { type: plan, ask: "あした どうする？", choices: ["She'll email the director about the slides.", "She'll let it go this time.", "She'll have a calm chat with her manager."], answer: 2, ja: "上司と落ち着いて話す。" }
+      - { type: opinions, claims: ["部長に メールすべき", "まず 上司と 話すべき", "対立は 苦手"], answer: [bob, rosie, label], ctx: "カフェで、友だち2人が職場のぐちを聞いています", why: "ボブは部長にメール。ロージーは talk to the manager first（まず上司）。レイベルは I hate confrontation（対立は苦手）。" }
+      - { type: changed, answer: label, ctx: "流すか動くか、本人の気持ちが揺れます", why: "レイベルは I was just going to let it go と流すつもりだったが、またやられると言われて you're right に変わった。" }
+      - { type: plan, ask: "あした どうする？", choices: ["She'll email the director about the slides.", "She'll let it go this time.", "She'll have a calm chat with her manager."], answer: 2, ja: "上司と落ち着いて話す。", ctx: "最後に、明日することが決まります", why: "I'll ask her for a quick chat＝上司と少し話す。Not an angry one＝怒るのではない。部長へのメールはボブの案で、採らなかった。", cja: ["スライドの件を部長にメールする", "今回は流す", "上司と落ち着いて話す"] }
     note: "go over her head＝頭越しに上へ訴える"
     tags: { seed: 57, register: friend, pragmatic: attitude, conditions: [cafe], features: [overlap, h-drop, gonna] }
