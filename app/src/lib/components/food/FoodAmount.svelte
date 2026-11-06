@@ -1,5 +1,7 @@
 <script lang="ts">
-  // ごはん's amount (a level over the search or the day): the food and its values per 100 g; its portions as chips
+  // ごはん's amount (a level over the search or the day): the food's picture (FoodThumb, 160 px: its category's tile
+  // until there are pictures), its name, its everyday name (glossOf) and 「これは…」 line (`desc`, when it has one), its
+  // values per 100 g; its portions as chips
   // (the first the default; 100 g last), −/＋ by a whole portion for the things you count (本, 個, 杯 …) and by half
   // one for the rest (茶碗, 人前; ±10 g once grams are typed: stepOf), the grams field (ml for a drink; typed grams leave
   // the portions); what that amount holds, live; which meal; then ついか (a new entry) or ほぞん / けす (my entry). For a
@@ -14,7 +16,8 @@
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
   import { nutrientsFor, portionsOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import { gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf } from './foodUi.ts';
+  import FoodThumb from './FoodThumb.svelte';
+  import { catalogOf, catOf, foodDbNow, glossOf, gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -66,6 +69,12 @@
   const g = $derived(custom ? (Number.isFinite(typedG) ? Math.round(typedG * 10) / 10 : 0) : Math.round(ps[pi].g * mult * 10) / 10);
   const ok = $derived(g >= FOOD_GRAMS.min && g <= FOOD_GRAMS.max);
   const n = $derived(nutrientsFor(item, ok ? g : 0));
+  const gloss = $derived.by(() => {
+    const db = foodDbNow();
+    return glossOf(catalogOf(db, item.id) ?? item, item.name);
+  });
+  /** The food's one line 「これは…」 (food data's `desc`, on some foods). */
+  const desc = $derived((item as Item & { desc?: string }).desc);
   const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 
   function portion(i: number) {
@@ -94,7 +103,9 @@
 
 <form class="amt" onsubmit={(e) => { e.preventDefault(); done(); }}>
   <section class="card head">
+    <FoodThumb cat={item.cat ?? catOf(null, item.id)} size={160} wide />
     <h3>{item.name}</h3>
+    {#if gloss || desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && desc}{' — '}{/if}{#if desc}<span data-desc>{desc}</span>{/if}</p>{/if}
     <p class="per money">{serving ? t('food.my.per', { u: ps[0].label, k: formatNum(item.kcal) }) : t('food.per100', { k: formatNum(item.kcal) })} · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>
   </section>
 
@@ -148,6 +159,8 @@
   .amt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
   .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
   .head { gap: 4px; }
+  .head > :global([data-thumb]) { margin-bottom: 8px; }
+  .gl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text); line-height: 1.4; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .per { margin: 0; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }

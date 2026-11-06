@@ -68,12 +68,13 @@
 {#if !gone}
   <div bind:this={el} class="banner" class:undo={!!action || low} class:leaving role="status" popover="manual" use:topLayer
     onpointerenter={hold(true)} onpointerleave={hold(false)} onfocusin={hold(true)} onfocusout={blur}>
-    <!-- With an undo, a tap only holds the banner (so it can be read and undone); a vertical swipe scrolls the page. Then
+    <!-- With an undo, a tap only holds the banner (so it can be read and undone); a vertical swipe scrolls the page (a
+         swipe: a move while pressed, never a mouse passing over a banner that slid in under it). Then
          this layer is pointer-only (no "close" that does nothing for a screen reader or the keyboard): 取り消す is the
          one control, and the banner ends by itself. -->
     <button type="button" class="hit" data-sfx={action ? 'none' : 'back'} aria-label={action ? undefined : t('common.close')} aria-hidden={action ? true : undefined}
       tabindex={action ? -1 : undefined} onclick={() => !action && dismiss()}
-      onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => (action ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>
+      onpointerdown={(e) => (startY = e.clientY)} onpointermove={(e) => e.buttons > 0 && (action ? e.clientY - startY > 12 : e.clientY - startY < -12) && dismiss()}></button>
     <span class="pebble" aria-hidden="true">
       {#if person && lookOf(person).kind === 'player'}<Avatar worn {person} size={36} />
       {:else if person}<Villager {person} size={36} head animate={false} eager />
@@ -115,6 +116,8 @@
   :global(:root:has([data-shop])) .banner.undo { top: calc(var(--ui-top) + 56px); bottom: auto; animation-name: none; }
   /* …and on the island with no sheet up: over the say button at the bottom right (IslandScene .say-dock: 44px, 8px up), never on it */
   :global(:root:has(.island .say-dock):not(:has(dialog[open], [data-shop]))) .banner.undo { bottom: calc(var(--pad-bottom) + 8px + var(--hit) + 10px); }
+  /* …and over a sheet's level whose actions sit at its foot (theme.css .level-acts: a long level holds them there): above them, never on them */
+  :global(:root:has(dialog[open] .level-acts)) .banner.undo { bottom: calc(var(--pad-bottom) + 16px + var(--hit) + var(--lip-h) + 20px); }
   .undo .txt { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; font-size: var(--fs-s); line-height: 1.25; }
   @keyframes up-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
   .re { flex: none; line-height: 0; }

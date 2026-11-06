@@ -84,7 +84,6 @@ const headOf = (s: string): string => s.trim().split(/[\s　（(［[]/)[0];
 /** Dakuten and small っ folded, so a reading matches with its sounds voiced or not (もめんどうふ holds とうふ). */
 const fold = (k: string): string => k.normalize('NFD').replace(/[\u3099\u309a]/g, '').replace(/っ/g, 'つ');
 const READING = /^[ぁ-ゖー\s　（）()・]+$/;
-const KANJI = /[\u4e00-\u9fff々]/;
 /** Whether a name says something the shown one doesn't: not it or a part of it, nor holding its head (生うどん), nor a
  *  kana spelling of it (ウドン, トウフ: within one of its readings), nor mostly the head's own characters (焼鮭, お握り). */
 function says(a: string, name: string, readings: readonly string[]): boolean {
@@ -93,43 +92,16 @@ function says(a: string, name: string, readings: readonly string[]): boolean {
   return [...k].filter((c) => hk.includes(c)).length * 2 < k.length;
 }
 
-/** An alias's head as an everyday name for `name`: short, Japanese, no reading (nor holding one: 普通ぎゅうにゅう), no
- *  kanji spelling (珈琲, 玉子: all kanji) nor a kanji of the name's (唐揚げ for から揚げ, 合成せいしゅ), not a word a
- *  family shares (チキン, お米: `common`), and saying more (says). */
-function everyday(a: string, name: string, readings: readonly string[], common: ReadonlyMap<string, number>): boolean {
-  if (!a || a.length > 10 || READING.test(a) || /[A-Za-z\u00c0-\u024f:：]/.test(a) || !/[^\u4e00-\u9fff々]/.test(a)) return false;
-  if ([...a].some((c) => KANJI.test(c) && name.includes(c)) || (common.get(searchKey(a)) ?? 0) >= COMMON) return false;
-  const k = fold(searchKey(a));
-  return !readings.some((r) => r.length >= 2 && k.includes(r)) && says(a, name, readings);
-}
-/** An alias on this many MEXT foods is a family's word (鶏肉, チキン, お米), not one food's name. */
-const COMMON = 3;
-const commons = new WeakMap<FoodDb, { n: number; m: Map<string, number> }>();
-/** How many MEXT foods have each alias (by its head's search key), counted once a catalog (again when it grows). */
-export function commonAliases(db: FoodDb | null): ReadonlyMap<string, number> {
-  if (!db) return new Map();
-  const c = commons.get(db);
-  if (c && c.n === db.entries.length) return c.m;
-  const m = new Map<string, number>();
-  for (const { it } of db.entries) {
-    if (!it.id.startsWith('mext:')) continue;
-    for (const k of new Set((it.aliases ?? []).map((a) => searchKey(headOf(a))))) m.set(k, (m.get(k) ?? 0) + 1);
-  }
-  commons.set(db, { n: db.entries.length, m });
-  return m;
-}
-
 /** A row's everyday name under its own, in Japanese (docs/design.md "Gohan"), never repeating it: the catalog's current
- *  name when the row shows an older one (a snapshot's 「若どり もも 皮つき 生」 → 鶏もも肉), else, for a MEXT food (the
- *  lab names: a dish's or a product's is everyday already), its first alias that is an everyday name (everyday:
- *  キャッサバでん粉 → タピオカ), else nothing: the aliases are search terms, readings and spellings mostly, and an empty
- *  line beats noise. `it` is the catalog's item (or the row's own), `name` what the row shows, `common` commonAliases. */
-export function glossOf(it: Item, name = it.name, common: ReadonlyMap<string, number> = new Map()): string | null {
+ *  name when the row shows an older one (a snapshot's 「若どり もも 皮つき 生」 → 鶏もも肉), else the food data's vetted
+ *  `gloss` once it ships one (an alias at least two sources back), else nothing: the aliases themselves are search terms,
+ *  readings and spellings mostly, so none is shown. `it` is the catalog's item (or the row's own), `name` what the row
+ *  shows. */
+export function glossOf(it: Item & { gloss?: string }, name = it.name): string | null {
   const readings = [name, ...(it.aliases ?? []).filter((a) => READING.test(a))].map((r) => fold(searchKey(r)));
   const now = headOf(it.name);
   if (name !== it.name && says(now, name, readings)) return now;
-  if (!it.id.startsWith('mext:')) return null;
-  return (it.aliases ?? []).map(headOf).find((a) => everyday(a, name, readings, common)) ?? null;
+  return it.gloss && says(it.gloss, name, readings) ? it.gloss : null;
 }
 
 /** A snapshot's values as an item's (fibre and alcohol only when known). */
