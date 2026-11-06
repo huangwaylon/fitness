@@ -4,11 +4,9 @@
   // visitors, a 44px reach, while it's on screen) plays NH's Happy Birthday for everyone (the island's music stage,
   // sound/stage.svelte.ts: every phone outdoors from the same point, docs/sound-sync.md; unheard, a little music box: an
   // original tune, a jingle) and the candles go out as it starts on every phone: a puff of smoke, out for the day. No ベル.
-  import { untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { cue } from '#lib/sound/cues.ts';
-  import { hearsMusic } from '#lib/sound/sound.svelte.ts';
-  import { live, request } from '#lib/sound/stage.svelte.ts';
+  import { cutInSong, live, request } from '#lib/sound/stage.svelte.ts';
+  import { onStageStart } from '#lib/sound/stageStart.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { su } from './scene.ts';
@@ -28,24 +26,16 @@
   $effect(() => void (out = candlesOut(date)));
   let puff = $state(0);
 
-  /** The birthday song on the island's stage (events.ts `happy-birthday`), and the one whose start was seen here. */
+  /** The birthday song on the island's stage (events.ts `happy-birthday`), and whether it's playing (anyone's tap). */
   const SONG = cutInSong('happy-birthday');
-  const onStage = $derived(live('isl'));
-  let heard = 0;
+  const playing = $derived(live('isl')?.song === SONG);
   // the song starts (my tap or another's): the candles go out (the puff only as it starts); unheard, the music box
-  $effect(() => {
-    const s = onStage;
-    if (!on || s?.song !== SONG || s.at === heard) return;
-    untrack(() => {
-      heard = s.at;
-      const fresh = s.elapsedMs <= 1000;
-      if (fresh && !hearsMusic()) cue('birthday-cake');
-      if (out) return;
-      out = true;
-      blowOut(date);
-      if (fresh) puff++;
-    });
-  });
+  onStageStart(SONG, 'birthday-cake', (fresh) => {
+    if (out) return;
+    out = true;
+    blowOut(date);
+    if (fresh) puff++;
+  }, () => on);
 
   let el = $state<HTMLElement>();
   /** Its spot (world.ts CAKE, on the island's layout: site.rev). */
@@ -56,7 +46,8 @@
     const r = el?.querySelector('.cake')?.getBoundingClientRect();
     if (!on || !r || !enabled() || !w.inView(at[0], at[1]) || !seen(at[0], at[1])) return false;
     if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
-    request('isl', SONG);
+    // (playing: taken, nothing more: a tap never starts it over for everyone, the tape deck's way)
+    if (!playing) request('isl', SONG);
     return true;
   }
 </script>
