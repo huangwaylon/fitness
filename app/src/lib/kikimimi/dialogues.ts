@@ -1,7 +1,8 @@
 // ききみみ クイズ: dialogue items (docs/kikimimi.md "Dialogues", docs/curriculum.md §14 increment 4), level 4 「かわ・もり」
-// (B1+ → B2). Two villagers, 2-4 lines, overheard and service talk cut from the scenario seeds (§5.5): a café order
-// going wrong, a cancelled train, a doctor's receptionist, a friend cancelling, a coworker hinting, a landlord who
-// won't commit. Two types (TOEIC Part 3 in spirit, for listeners who are already good):
+// (B1+ → B2). Two villagers, 2-4 lines, overheard and service talk cut from the scenario seeds (§5.5): a coffee order
+// going wrong, a canceled train, a doctor's receptionist, a friend canceling, a coworker hinting, a landlord who
+// won't commit, a tip screen, Thanksgiving. American English throughout. Two types (TOEIC Part 3 in spirit, for
+// listeners who are already good):
 //   `gist`: what's going on, or what will happen (its own `ask`); the distractors a detail heard but misplaced, the
 //   literal reading, the opposite.
 //   `next`: the best next line; the traps repeat a word or a sound, answer what wasn't asked, or take the wrong role.
@@ -58,39 +59,39 @@ const ROWS: readonly Row[] = [
   {
     id: 'd4-oat-latte', type: 'next', focus: 'Let me remake it',
     lines: [
-      ['rosie', 'Large oat latte for... Dawn?', 'ラージのオーツラテ、ドーンさん？'],
-      ['dom', "Uh, I think that's mine, but I asked for almond milk.", 'たぶん僕のですけど、アーモンドミルクで頼みました。'],
+      ['rosie', 'Iced caramel macchiato for... Dawn?', 'アイスキャラメルマキアートの、ドーンさん？'],
+      ['dom', "Uh, I think that's mine, but I asked for it hot.", 'たぶん僕のですけど、ホットで頼みました。'],
       ['rosie', "Oh, shoot. Sorry about that. Let me remake it for you, it'll just be a minute.", 'あっ、すみません。作り直しますね、少々お待ちください。',
         "Oh, shoot. Sorry about that. Lemme remake it for ya, it'll just be a minute."]
     ],
-    choices: ["No worries, I'm not in a rush.", "Sorry, I'll make it again.", "Yes, it's a large one."],
+    choices: ["No problem, I'm not in a rush.", "Sorry, I'll make it again.", "Yes, it's an iced one."],
     ja: '大丈夫です、急いでないので。', note: 'lemme＝let me。作り直すのは店員の方',
     tags: tg(51, 'service', 'formula', ['cafe'], ['lemme'])
   },
   {
-    id: 'd4-train-cancelled', type: 'gist', ask: '男性は このあと どうする？', focus: 'rail replacement bus',
+    id: 'd4-train-cancelled', type: 'gist', ask: '男性は このあと どうする？', focus: 'shuttle bus',
     lines: [
-      ['raymond', 'Excuse me, is the 8:40 to Brighton still running?', 'すみません、8時40分のブライトン行きはまだ動いていますか？',
-        'Excuse me, is the eight forty to Brighton still running?'],
-      ['mabel', "It's been cancelled, I'm afraid. There's a signal fault at Haywards Heath.", 'あいにく運休です。ヘイワーズヒースで信号故障がありまして。'],
-      ['raymond', 'Brilliant. So how do I get there?', 'そりゃ最高だね。じゃあ、どうやって行けば？'],
-      ['mabel', "Your best bet's the rail replacement bus. It leaves from outside, by the taxi rank.", '代行バスがいちばんです。外のタクシー乗り場の横から出ます。']
+      ['raymond', 'Excuse me, is the 8:40 to Philadelphia still running?', 'すみません、8時40分のフィラデルフィア行きはまだ動いていますか？',
+        'Excuse me, is the eight forty to Philadelphia still running?'],
+      ['mabel', "It's been canceled, I'm afraid. There's a signal problem outside Trenton.", 'あいにく運休です。トレントンの手前で信号トラブルがありまして。'],
+      ['raymond', 'Great. So how do I get there?', 'そりゃ最高だね。じゃあ、どうやって行けば？'],
+      ['mabel', "Your best bet's the shuttle bus. It leaves from out front, by the taxi stand.", 'シャトルバスがいちばんです。正面のタクシー乗り場の横から出ます。']
     ],
-    choices: ["He'll take a bus from outside the station.", "He'll wait for the 8:40 train.", "He'll take a taxi to Brighton."],
-    ja: '駅の外からバスに乗る。', note: 'Brilliant は皮肉。taxi rank は乗り場の場所',
+    choices: ["He'll take a bus from outside the station.", "He'll wait for the 8:40 train.", "He'll take a taxi to Philadelphia."],
+    ja: '駅の外からバスに乗る。', note: 'Great は皮肉。taxi stand は乗り場の場所',
     tags: tg(5, 'service', 'sarcasm', ['station'], ['contraction'])
   },
   {
     id: 'd4-receptionist', type: 'gist', ask: '男性について 正しいのは？', focus: 'cancellation list',
     lines: [
-      ['julian', 'Hi, I was hoping to see Dr Patel sometime this week.', '今週どこかでパテル先生に診ていただきたいのですが。', 'Hi, I was hoping to see Doctor Patel sometime this week.'],
+      ['julian', 'Hi, I was hoping to see Dr. Patel sometime this week.', '今週どこかでパテル先生に診ていただきたいのですが。', 'Hi, I was hoping to see Doctor Patel sometime this week.'],
       ['merengue', "She's fully booked till the 20th, but I could put you on the cancellation list.", '20日まで予約がいっぱいですが、キャンセル待ちリストにお入れできます。',
         "She's fully booked till the twentieth, but I could put you on the cancellation list."],
-      ['julian', 'Go on, then. And if nothing comes up?', 'じゃあお願いします。もし空きが出なかったら？'],
-      ['merengue', "Then it's the 20th at ten past nine, with Dr Okafor instead.", 'その場合は20日の9時10分、オカフォー先生になります。',
-        "Then it's the twentieth at ten past nine, with Doctor Okafor instead."]
+      ['julian', 'Okay, sure. And if nothing opens up?', 'じゃあお願いします。もし空きが出なかったら？'],
+      ['merengue', "Then it's the 20th at ten after nine, with Dr. Okafor instead.", 'その場合は20日の9時10分、オカフォー先生になります。',
+        "Then it's the twentieth at ten after nine, with Doctor Okafor instead."]
     ],
-    choices: ['He might get an earlier slot if someone cancels.', "He'll see Dr Patel at ten past nine on the 20th.", 'He has to call back on the 20th.'],
+    choices: ['He might get an earlier slot if someone cancels.', "He'll see Dr. Patel at ten after nine on the 20th.", 'He has to call back on the 20th.'],
     ja: 'キャンセルが出れば、もっと早く診てもらえるかもしれない。', note: 'instead＝代わりに。20日はパテル先生ではない',
     tags: tg(14, 'service', 'literal', ['phone'], ['numbers'])
   },
@@ -118,14 +119,14 @@ const ROWS: readonly Row[] = [
     tags: tg(42, 'colleague', 'indirect')
   },
   {
-    id: 'd4-wrong-dish', type: 'next', focus: 'Would the snapper do?',
+    id: 'd4-wrong-dish', type: 'next', focus: 'Would the BLT work?',
     lines: [
-      ['coco', "Here's your chicken parmy, enjoy!", 'チキンパルミジャーナです、どうぞ！'],
-      ['sherb', "Sorry, I think there's been a mix-up. I ordered the barramundi.", 'すみません、手違いがあるみたいです。バラマンディを頼んだんですが。'],
-      ['coco', "Oh, my bad! The barramundi's sold out, though. Would the snapper do?", 'あら、ごめんなさい！ でもバラマンディは売り切れで。スナッパーでもいいですか？']
+      ['coco', "Here's your patty melt, enjoy!", 'パティメルトです、どうぞ！'],
+      ['sherb', "Sorry, I think there's been a mix-up. I ordered the club sandwich.", 'すみません、手違いがあるみたいです。クラブサンドを頼んだんですが。'],
+      ['coco', "Oh, my bad! We're out of turkey, though. Would the BLT work?", 'あら、ごめんなさい！でもターキーを切らしてて。BLTでもいいですか？']
     ],
-    choices: ["Yeah, that'd be fine, thanks.", 'No, I ordered the chicken.', "Sure, I'll pay for both."],
-    ja: 'ええ、それで大丈夫です。ありがとう。', note: 'Would ~ do?＝〜でもいい？。my bad＝ごめん',
+    choices: ["Yeah, that'd be fine, thanks.", 'No, I ordered the patty melt.', "Sure, I'll pay for both."],
+    ja: 'ええ、それで大丈夫です。ありがとう。', note: 'Would ~ work?＝〜でもいい？ my bad＝ごめん',
     tags: tg(27, 'service', 'literal', ['cafe'], ['contraction'])
   },
   {
@@ -143,24 +144,24 @@ const ROWS: readonly Row[] = [
   {
     id: 'd4-neighbour-party', type: 'next', focus: 'up till two',
     lines: [
-      ['ankha', 'Hiya! Sorry to bother you. Lovely party on Saturday, by the way.', 'こんにちは！ お邪魔してごめんなさい。ところで土曜日は楽しそうなパーティーでしたね。'],
-      ['apollo', "Oh, thanks! Hope it wasn't too loud.", 'ああ、どうも！ うるさくなかったならいいけど。'],
+      ['ankha', 'Hey! Sorry to bother you. Sounded like a fun party Saturday, by the way.', 'こんにちは！お邪魔してごめんなさい。ところで土曜日は楽しそうなパーティーでしたね。'],
+      ['apollo', "Oh, thanks! Hope it wasn't too loud.", 'ああ、どうも！うるさくなかったならいいけど。'],
       ['ankha', 'Well... the baby was up till two, to be honest.', 'まあ…正直、赤ちゃんが2時まで起きてて。']
     ],
-    choices: ["Oh no, I'm so sorry. We'll keep it down next time.", 'Great, so you enjoyed the party too?', 'Two? I thought it finished at one.'],
-    ja: 'うわ、本当にすみません。次は静かにします。', note: 'Lovely party は前置き。本題は赤ちゃんが眠れなかったこと',
+    choices: ["Oh no, I'm so sorry. We'll keep it down next time.", 'Great, so you enjoyed the party too?', 'Two? I thought it ended at one.'],
+    ja: 'うわ、本当にすみません。次は静かにします。', note: 'fun party は前置き。本題は赤ちゃんが眠れなかったこと',
     tags: tg(32, 'neighbour', 'indirect')
   },
   {
-    id: 'd4-gate-change', type: 'gist', ask: '男性の 乗り継ぎは どうなりそう？', focus: 'You should be right',
+    id: 'd4-gate-change', type: 'gist', ask: '男性の 乗り継ぎは どうなりそう？', focus: 'You should be fine',
     lines: [
-      ['roald', 'Is this the gate for Melbourne?', 'メルボルン行きのゲートはここですか？'],
+      ['roald', 'Is this the gate for Seattle?', 'シアトル行きのゲートはここですか？'],
       ['whitney', "It was, but it's moved to 52. And there's a forty-minute delay.", 'そうでしたが、52番に変わりました。それと40分遅れています。', "It was, but it's moved to fifty-two. And there's a forty-minute delay."],
-      ['roald', "Forty? I've got a connection at half six.", '40分？ 6時半に乗り継ぎがあるんですが。'],
-      ['whitney', "You should be right. They'll hold it for the Sydney passengers.", '大丈夫だと思いますよ。シドニーからの乗客を待ってくれますから。']
+      ['roald', "Forty? I've got a connection at six-thirty.", '40分？ 6時半に乗り継ぎがあるんですが。'],
+      ['whitney', "You should be fine. They're holding it for everyone on this flight.", '大丈夫だと思いますよ。この便の乗客を待ってくれますから。']
     ],
     choices: ["He'll probably still make it.", "He'll miss it and need a new ticket.", "It's been moved to gate 52."],
-    ja: 'たぶん間に合う。', note: 'You should be right＝大丈夫（豪）。hold＝出発を待つ',
+    ja: 'たぶん間に合う。', note: 'should be fine＝たぶん大丈夫。holding＝出発を待つ',
     tags: tg(8, 'service', 'literal', ['desk'], ['teen-ty', 'clock'])
   },
   {
@@ -178,12 +179,12 @@ const ROWS: readonly Row[] = [
   {
     id: 'd4-parcel', type: 'gist', ask: '荷物は どうなる？', focus: 'I can take it',
     lines: [
-      ['redd', "Parcel for number 12? No one's answering.", '12番地宛ての荷物なんですが、誰も出なくて。', "Parcel for number twelve? No one's answering."],
-      ['diana', "Oh, they're away till Friday. I can take it if you like.", 'ああ、金曜まで留守ですよ。よかったら預かりますけど。'],
-      ['redd', "Ta. Just sign here, and I'll pop a card through their door.", 'どうも。ここにサインを。お隣のドアに不在票を入れておきます。', "Ta. Just sign here, an' I'll pop a card through their door."]
+      ['redd', "Package for number 12? No one's answering.", '12番地宛ての荷物なんですが、誰も出なくて。', "Package for number twelve? No one's answering."],
+      ['diana', "Oh, they're away till Friday. I can take it if you want.", 'ああ、金曜まで留守ですよ。よかったら預かりますけど。'],
+      ['redd', "Thanks. Just sign here, and I'll leave a note on their door.", 'どうも。ここにサインを。お隣のドアにメモを残しておきます。', "Thanks. Just sign here, an' I'll leave a note on their door."]
     ],
-    choices: ['The neighbour keeps it until Friday.', 'The driver takes it back to the depot.', "It's left outside number 12."],
-    ja: '隣の人が金曜まで預かる。', note: 'Ta＝ありがとう（英口語）。pop a card＝不在票を入れる',
+    choices: ['The neighbor keeps it until Friday.', 'The driver takes it back to the warehouse.', "It's left outside number 12."],
+    ja: '隣の人が金曜まで預かる。', note: 'I can take it＝預かれる。leave a note＝メモを残す',
     tags: tg(37, 'service', 'literal', [], ['weak-form'])
   },
   {
@@ -201,13 +202,13 @@ const ROWS: readonly Row[] = [
   {
     id: 'd4-taxi-street', type: 'gist', ask: 'なにが おきた？', focus: 'Sorry, Street',
     lines: [
-      ['cherry', 'Could you take me to Brunswick Street, please?', 'ブランズウィック通り（ストリート）までお願いします。'],
-      ['kappn', 'Brunswick Road? No worries, mate.', 'ブランズウィック・ロードね、了解。'],
-      ['cherry', 'Sorry, Street. Brunswick Street, in Fitzroy.', 'すみません、ストリートです。フィッツロイのブランズウィック通り。'],
-      ['kappn', 'Ah, righto. Totally different direction. Good thing you said something.', 'あー、了解。全然逆方向だ。言ってくれてよかった。', 'Ah, righto. Totally different direction. Good thing ya said something.']
+      ['cherry', 'Could you take me to Lincoln Street, please?', 'リンカーン・ストリートまでお願いします。'],
+      ['kappn', 'Lincoln Avenue? You got it.', 'リンカーン・アベニューね、了解。'],
+      ['cherry', 'Sorry, Street. Lincoln Street, by the park.', 'すみません、ストリートです。公園のそばのリンカーン・ストリート。'],
+      ['kappn', 'Oh, gotcha. Totally different direction. Good thing you said something.', 'あー、了解。全然逆方向だ。言ってくれてよかった。', 'Oh, gotcha. Totally different direction. Good thing ya said something.']
     ],
-    choices: ['The driver nearly went to the wrong place.', "The driver doesn't know Fitzroy.", 'The passenger changed her destination.'],
-    ja: '運転手が違う場所へ行くところだった。', note: 'Street と Road の聞き違いを直しただけ。行き先は同じ',
+    choices: ['The driver nearly went to the wrong place.', "The driver doesn't know the park.", 'The passenger changed her destination.'],
+    ja: '運転手が違う場所へ行くところだった。', note: 'Street と Avenue の聞き違いを直しただけ。行き先は同じ',
     tags: tg(4, 'service', 'literal', [], ['contrast'])
   },
   {
@@ -249,7 +250,7 @@ const ROWS: readonly Row[] = [
   {
     id: 'd4-cough-drive', type: 'next', focus: 'drowsy',
     lines: [
-      ['raymond', 'Have you got anything for a really bad cough?', 'ひどいせきに効くものはありますか？'],
+      ['raymond', 'Do you have anything for a really bad cough?', 'ひどいせきに効くものはありますか？'],
       ['diana', 'This one works well, but it can make you drowsy. Are you driving today?', 'これがよく効きますが、眠くなることがあります。今日は運転されますか？'],
       ['raymond', "Yeah, I've got a long drive tonight, actually.", 'ええ、実は今夜長距離を運転するんです。']
     ],
@@ -270,61 +271,61 @@ const ROWS: readonly Row[] = [
     tags: tg(25, 'service', 'literal', ['phone'], ['weak-form', 'teen-ty'])
   },
   {
-    id: 'd4-service-charge', type: 'next', focus: 'take it off',
+    id: 'd4-service-charge', type: 'next', focus: "hit 'No tip'",
     lines: [
-      ['punchy', "Hang on, there's a 15% service charge on here.", '待って、15％のサービス料が入ってる。', "Hang on, there's a fifteen per cent service charge on here."],
-      ['coco', 'Seriously? The waiter forgot our drinks twice!', 'うそ？ 店員さん、飲み物を2回も忘れたのに！'],
-      ['punchy', 'Want me to ask them to take it off?', '外してもらうように頼もうか？']
+      ['punchy', "Hang on, the tablet's asking for a 15% tip. For one muffin?", '待って、タブレットが15％のチップを求めてる。マフィン1個で？', "Hang on, the tablet's asking for a fifteen percent tip. For one muffin?"],
+      ['coco', 'Yeah, everywhere does that now. Even the self-checkout!', 'うん、今はどこもそう。セルフレジでさえ！'],
+      ['punchy', "So is it rude if I just hit 'No tip'?", 'じゃあ「チップなし」を押したら失礼かな？']
     ],
-    choices: ["Yeah, would you? That'd be great.", 'No, two drinks is enough for me.', "Fifty per cent? That's crazy!"],
-    ja: 'うん、お願いできる？ 助かる。', note: 'take it off＝料金から外す。fifteen と fifty にも注意',
+    choices: ["Not for a counter order. It's up to you.", 'No, one muffin is enough for me.', "Fifty percent? That's crazy!"],
+    ja: 'カウンター注文なら失礼じゃないよ。君しだい。', note: 'カウンター注文のチップは任意。fifteen と fifty にも注意',
     tags: tg(27, 'friend', 'literal', ['cafe'], ['teen-ty'])
   },
   {
-    id: 'd4-misheard-name', type: 'next', focus: 'May?',
+    id: 'd4-misheard-name', type: 'next', focus: 'empty-handed',
     lines: [
-      ['goldie', 'Can I get a name for that?', 'お名前いただけますか？'],
-      ['kid-cat', "It's Wei. W, E, I.", 'ウェイです。W・E・I。'],
-      ['goldie', 'Got it. Large mocha for... May?', '了解です。ラージのモカ、メイさん？']
+      ['kid-cat', 'So what should I bring to Thanksgiving? Wine? Flowers?', '感謝祭には何を持っていけばいい？ワイン？花？'],
+      ['goldie', "Honestly, just bring yourself. My mom's been cooking since Tuesday.", '正直、手ぶらでいいよ。母が火曜から料理してるから。'],
+      ['kid-cat', "Come on, I can't show up empty-handed.", 'そんな、手ぶらで行けないよ。']
     ],
-    choices: ['Close enough, thanks!', 'Can I get a name for that?', 'No, I ordered a mocha.'],
-    ja: 'だいたい合ってるし、いいよ。ありがとう！', note: 'Wei を May と聞き違えた。Close enough＝まあいいか',
-    tags: tg(51, 'service', 'humour', ['cafe'])
+    choices: ["Okay, then grab a pie on the way. Pumpkin's always safe.", 'Sure, my mom cooks every Tuesday.', "No thanks, I'm not hungry yet."],
+    ja: 'じゃあ、途中でパイを買ってきて。パンプキンなら間違いない。', note: 'empty-handed＝手ぶら。手土産を持っていきたい',
+    tags: tg(48, 'friend', 'ritual')
   },
   {
     id: 'd4-im-easy', type: 'next', focus: "I'm easy",
     lines: [
-      ['apollo', 'What do you fancy doing this weekend?', '週末、何したい？'],
+      ['apollo', 'What do you want to do this weekend?', '週末、何したい？', 'Whaddaya wanna do this weekend?'],
       ['ankha', "Oh, I'm easy. Whatever you want.", 'なんでもいいよ。あなたの好きなので。'],
-      ['apollo', 'Great. How about the football on Saturday, then?', 'よし。じゃあ土曜はサッカー観戦は？'],
-      ['ankha', 'Hmm... we did football last weekend.', 'うーん…先週もサッカーだったよね。']
+      ['apollo', 'Great. How about the ballgame on Saturday, then?', 'よし。じゃあ土曜は野球観戦は？'],
+      ['ankha', 'Hmm... we went to a game last weekend.', 'うーん…先週も試合に行ったよね。']
     ],
-    choices: ['Fair enough. You pick, then.', "Brilliant, so Saturday it is.", 'Last weekend? No, it was the weekend before.'],
-    ja: 'それもそうだね。じゃあ君が選んで。', note: "I'm easy＝なんでもいい、でも本音は別",
-    tags: tg(36, 'partner', 'indirect')
+    choices: ['Fair enough. You pick, then.', 'Awesome, so Saturday it is.', 'Last weekend? No, it was the weekend before.'],
+    ja: 'それもそうだね。じゃあ君が選んで。', note: "I'm easy＝なんでもいい。でも本音は別",
+    tags: tg(36, 'partner', 'indirect', [], ['wanna'])
   },
   {
-    id: 'd4-hotel-suite', type: 'gist', ask: '男性が 知りたいことは？', focus: 'small supplement',
+    id: 'd4-hotel-suite', type: 'gist', ask: '男性が 知りたいことは？', focus: 'small fee',
     lines: [
       ['merengue', "Your room won't be ready till three, I'm afraid.", '申し訳ありませんが、お部屋は3時までご用意できません。'],
       ['blathers', "Ah. My meeting's at two, so I was hoping to change first.", 'ああ。2時に会議があって、先に着替えたかったんですが。'],
-      ['merengue', 'We do have a suite available now, for a small supplement.', '少々の追加料金で、今すぐご利用いただけるスイートもございます。'],
+      ['merengue', 'We do have a suite available now, for a small fee.', '少々の追加料金で、今すぐご利用いただけるスイートもございます。'],
       ['blathers', 'How small are we talking?', '少しって、どのくらいです？']
     ],
     choices: ['How much extra the suite costs.', 'Whether the meeting room is free.', 'What time his room will be ready.'],
-    ja: 'スイートの追加料金がいくらか。', note: 'supplement＝追加料金。How small…?＝いくら？',
+    ja: 'スイートの追加料金がいくらか。', note: 'for a small fee＝有料。How small…?＝いくら？',
     tags: tg(3, 'service', 'hedge', ['desk'])
   },
   {
-    id: 'd4-bank-scam', type: 'gist', ask: '男性は このあと どうする？', focus: 'ring the number on the back of my card',
+    id: 'd4-bank-scam', type: 'gist', ask: '男性は このあと どうする？', focus: 'call the number on the back of my card',
     lines: [
       ['redd', "Hi, this is Mark from your bank's fraud team. We've blocked a suspicious payment.", '銀行の不正対策チームのマークです。不審な支払いをブロックしました。'],
       ['raymond', 'Oh. Which payment?', 'えっ。どの支払いですか？'],
-      ['redd', "I'll explain in a sec. First, just read me the code we've texted you, to confirm it's you.", 'すぐご説明します。まず本人確認のため、送ったコードを読み上げてください。'],
-      ['raymond', "Hang on. I'll ring the number on the back of my card.", '待ってください。カードの裏の番号にかけ直します。']
+      ['redd', "I'll explain in a sec. First, just read me the code we texted you, to confirm it's you.", 'すぐご説明します。まず本人確認のため、送ったコードを読み上げてください。'],
+      ['raymond', "Hang on. I'll call the number on the back of my card.", '待ってください。カードの裏の番号にかけ直します。']
     ],
     choices: ['Call the bank himself to check.', 'Read out the code he was sent.', 'Ask which payment was blocked.'],
-    ja: '自分で銀行に電話して確かめる。', note: 'ring＝電話する（英）。コードを聞く銀行は詐欺のサイン',
+    ja: '自分で銀行に電話して確かめる。', note: 'コードを聞き出す「銀行」は詐欺のサイン。自分でかけ直す',
     tags: tg(23, 'stranger', 'deception', ['phone'])
   },
   {
@@ -332,9 +333,9 @@ const ROWS: readonly Row[] = [
     lines: [
       ['cherry', "Is the four o'clock ferry still going? It's pretty windy out there.", '4時のフェリーはまだ出ますか？ 外かなり風が強いですけど。'],
       ['wilbur', "Afraid not, it's been called off. The next one's at six, weather permitting.", '残念ながら欠航です。次は6時、天候次第ですね。'],
-      ['cherry', "And if that one's cancelled too?", 'それも欠航になったら？']
+      ['cherry', "And if that one's canceled too?", 'それも欠航になったら？']
     ],
-    choices: ["Then we'll put you up in a hotel for the night.", "Yes, it's at six, weather permitting.", "No worries, the wind's from the west."],
+    choices: ["Then we'll put you up in a hotel for the night.", "Yes, it's at six, weather permitting.", "Don't worry, the wind's from the west."],
     ja: 'その場合は、今夜のホテルをご用意します。', note: 'called off＝中止。put you up＝泊める',
     tags: tg(11, 'service', 'literal')
   }

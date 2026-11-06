@@ -1,4 +1,6 @@
 {"items":[
+{"id":"ml-w-lent","lv":4,"type":"word","en":"The landlord lent us a space heater till the heat's fixed.","ja":"暖房が直るまで、大家さんがヒーターを貸してくれたんだ。","speaker":"lucky","voice":"us","cast":"us-m1","choices":["lent","rent","sent"],"answer":0,"note":"lent（貸した）の L。rent と取り違えない","tags":{"seed":30,"register":"friend","pragmatic":"literal","features":["l-r"]},"focus":"lent","scene":"living"},
+{"id":"ml-w-collect","lv":4,"type":"word","en":"Could I collect it on Friday instead?","ja":"代わりに金曜日に受け取りに行ってもいいですか？","speaker":"zucker","voice":"us","cast":"us-m2","choices":["collect","correct","connect"],"answer":0,"note":"collect の L。correct と聞き分ける","tags":{"seed":31,"register":"service","pragmatic":"literal","conditions":["phone"],"features":["l-r"]},"focus":"collect"},
 {"id":"ml-w-hadnt","lv":4,"type":"word","en":"If I hadn't kept the receipt, I'd be stuck right now.","ja":"レシートを取っておかなかったら、今ごろ困ってたよ。","speaker":"lily","voice":"us","cast":"us-f1","choices":["hadn't","had","didn't"],"answer":0,"note":"hadn't の t は弱いが、n で否定とわかる","tags":{"seed":26,"register":"friend","pragmatic":"literal","features":["contraction","t-glottal"]},"focus":"hadn't","scene":"street"},
 {"id":"ml-w-arentcha","lv":4,"type":"word","en":"Aren't you supposed to fast before a blood test?","ja":"血液検査の前って、絶食しなきゃいけないんじゃなかった？","speaker":"tammy","voice":"us","cast":"us-f3","choices":["Aren't you","Are you","Weren't you"],"answer":0,"note":"aren'tcha＝Aren't you。否定疑問で確認","tags":{"seed":15,"register":"friend","pragmatic":"literal","features":["yod","weak-form"]},"tts":"Aren'tcha s'posed ta fast before a blood test?","focus":"Aren't you","scene":"living","marks":[["say","Aren't you","aren'tcha"],["say","supposed to","s'posed ta"]]},
 {"id":"ml-w-weve-got","lv":4,"type":"word","en":"We've got a table at eight, but they'll only hold it for fifteen minutes.","ja":"8時に席を取ってあるけど、15分しか待ってくれないって。","speaker":"orville","voice":"us","cast":"us-m2","choices":["We've got","We got","We'd got"],"answer":0,"note":"'ve は弱く短い。今ある予約の話","tags":{"seed":27,"register":"friend","pragmatic":"literal","features":["contraction","weak-form"]},"focus":"We've got","scene":"street"},
@@ -122,6 +124,8 @@
 {"id":"dmw-haircut","lv":4,"type":"gist","en":"Okay, I love the hair. When did you get that done? Thanks! Yesterday. The barber got a little carried away, to be honest. Well, it suits you. Shorter's definitely better.","ja":"思っていたより短く切られた。","speaker":"label","voice":"us","cast":"us-f2","choices":["It was cut shorter than he wanted.","He cut it himself yesterday.","She thinks he should grow it longer."],"answer":0,"focus":"carried away","ask":"男性の 髪について わかることは？","note":"got carried away＝やりすぎた（切りすぎ）","tags":{"seed":48,"register":"friend","pragmatic":"understatement","features":["idiom"]},"lines":[{"who":"label","cast":"us-f2","en":"Okay, I love the hair. When did you get that done?","ja":"ねえ、その髪いいね。いつ切ったの？"},{"who":"fang","cast":"us-m3","en":"Thanks! Yesterday. The barber got a little carried away, to be honest.","ja":"ありがとう！ 昨日。正直、床屋がちょっと調子に乗っちゃってさ。"},{"who":"label","cast":"us-f2","en":"Well, it suits you. Shorter's definitely better.","ja":"でも似合ってるよ。短い方が絶対いい。"}],"scene":"street","cond":{"kind":"street","level":"light"}}
 ],
 "clips":{
+"ml-w-lent":{"dur":2.76,"hash":"6a72ff1b"},
+"ml-w-collect":{"dur":1.6,"hash":"2cfc56da"},
 "ml-w-hadnt":{"dur":2.7,"hash":"db1da112"},
 "ml-w-arentcha":{"dur":2.49,"hash":"40b7598e"},
 "ml-w-weve-got":{"dur":3.29,"hash":"a908b070"},
@@ -316,6 +320,8 @@
 "dmw-haircut-3":{"dur":4.08,"hash":"ed8021a3"}
 },
 "words":{
+"ml-w-lent":["6a72ff1b",5,16,60,82,93,98,114,152,170,183,217,276],
+"ml-w-collect":["2cfc56da",8,21,32,56,62,70,95,160],
 "ml-w-hadnt":["db1da112",5,10,16,45,65,80,126,144,156,186,216,270],
 "ml-w-arentcha":["40b7598e",7,32,49,93,109,126,159,164,191,249],
 "ml-w-weve-got":["a908b070",6,25,44,45,70,82,107,144,160,182,204,215,231,264,329],
