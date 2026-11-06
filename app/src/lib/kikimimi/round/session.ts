@@ -14,7 +14,7 @@ import { PLAY_ROUNDS } from '../../contract/live-protocol.ts';
 import type { RoundIn, RoundOut } from './wire.ts';
 import { fix, schedule, times, where, type Where } from './schedule.ts';
 import { rightOf, sum, team, teamFirst, type Team } from './tally.ts';
-import { F_SAME, F_VS, type AnswerValue, type Game, type GameDef, type GameId, type RoundAnswer, type RoundDeck, type RoundPhase, type RoundWindows, type Setup } from './types.ts';
+import { F_SAME, F_VS, type AnswerValue, type Game, type GameDef, type GameId, type RoundAnswer, type RoundDeck, type RoundEvent, type RoundPhase, type RoundWindows, type Setup } from './types.ts';
 
 export const WINDOWS: RoundWindows = { countdown: 4000, lead: 1500, answers: [30_000, 20_000, 60_000, Infinity], late: 5000, openTtl: 600_000, hostGrace: 15_000, beacon: 3000, auto: 3000 };
 /** The `?kikimimi=fast` test hook's: a shorter time limit (still roomy: a throttled tab's taps); none stays none. */
@@ -117,6 +117,13 @@ export interface RoundView {
   /** Each player's role once it's going (framework §3.1): their place among the players at `go` (`pl`), modulo the
    *  game's roles; a late joiner's, their place among those and them. The same on every phone. */
   roles: Partial<Record<Who, number>>;
+  /** Each joined player's tier (GameDef.tier: the host's from the options, a player's from their join), for a game with
+   *  tiers; the same on every phone. */
+  tiers: Partial<Record<Who, number>>;
+  /** The host's pick of items (the `open`'s `ids`), [] for a game that has none. */
+  ids: readonly number[];
+  /** The game events heard and mine (`ev`, the latest per player and slot), A B G and slot order. */
+  evs: readonly RoundEvent[];
   invite: RoundInvite | null;
   notice: RoundNotice | null;
 }
@@ -210,7 +217,7 @@ export class RoundSession {
         }
         if (!def || !opts) return [];
         this.blocked.delete(m.g);
-        const set: Setup = { gm: m.gm, seed: m.seed, o: m.o, f: m.f, ...(m.u !== undefined && { u: m.u }) };
+        const set: Setup = { gm: m.gm, seed: m.seed, o: m.o, f: m.f, ...(m.u !== undefined && { u: m.u }), ...(m.ids !== undefined && { ids: m.ids }) };
         if (gm) {
           // the host's re-send, or its lobby's game, options or おなじへや changed
           if (gm.host === m.who && gm.goAt === undefined && !sameSetup(gm, set)) this.setup(gm, set);
@@ -279,6 +286,9 @@ export class RoundSession {
         this.check(gm, m.i, now);
         return [];
       }
+      case 'ev':
+        if (gm && gm.joined.has(m.who)) note(gm, { who: m.who, i: m.i, e: m.e, ...(m.x !== undefined && { x: m.x }) });
+        return [];
     }
   }
 
@@ -303,7 +313,7 @@ export class RoundSession {
     const gm = this.mine();
     if (!gm || this.over(gm, now)) return out;
     if (back.length && !gm.local) {
-      if (gm.host !== this.me) out.push(this.joining(gm));
+      if (gm.host !== this.me) out.push(this.joining(gm), ...this.events(gm));
       else {
         out.push(this.opening(gm));
         if (gm.goAt !== undefined) out.push(this.going(gm, gm.goAt), this.beacon(gm, now));
@@ -337,7 +347,7 @@ export class RoundSession {
 
   /** Open a lobby of mine (a game, its options as on the wire, おなじへや, たいせん, a unit), on this phone only until I
    *  invite the others: I'm its host. Leaves the game I was in. */
-  open(o: { gm: GameId; o: readonly number[]; same?: boolean; vs?: boolean; u?: string }, now: number): RoundOut[] {
+  open(o: { gm: GameId; o: readonly number[]; same?: boolean; vs?: boolean; u?: string; ids?: readonly number[] }, now: number): RoundOut[] {
     const out = this.leave(now);
     this.notice = null;
     let g = '';
@@ -350,7 +360,7 @@ export class RoundSession {
     const f = (o.same ? F_SAME : 0) | (o.vs ? F_VS : 0);
     const bits = seedBitsOf(def, opts, f);
     const seed = this.seedFor({ gm: o.gm, o: o.o, ...bits, random: this.random });
-    const gm = this.game(g, this.me, { gm: o.gm, seed, o: o.o, f, ...(o.u !== undefined && { u: o.u }) }, now);
+    const gm = this.game(g, this.me, { gm: o.gm, seed, o: o.o, f, ...(o.u !== undefined && { u: o.u }), ...(o.ids !== undefined && { ids: o.ids }) }, now);
     if (gm) gm.local = true;
     return out;
   }
@@ -365,10 +375,11 @@ export class RoundSession {
     return [this.opening(gm)];
   }
 
-  /** The host changes its lobby: the game, its options, おなじへや, たいせん, the unit; sent again as an `open` once
-   *  announced. A new deck (the game, its options, the unit or a seed bit changed) asks the host's seed again, unless
-   *  `seed` says which (a lesson dealt into my lobby keeps its seed: game.svelte.ts). */
-  configure(o: { gm?: GameId; o?: readonly number[]; same?: boolean; vs?: boolean; u?: string; seed?: number }, now: number): RoundOut[] {
+  /** The host changes its lobby: the game, its options, おなじへや, たいせん, the unit, the items' ids (the tournament's
+   *  pick, again as offers come); sent again as an `open` once announced. A new deck (the game, its options, the unit
+   *  or a seed bit changed; not the ids alone) asks the host's seed again, unless `seed` says which (a lesson dealt into
+   *  my lobby keeps its seed: game.svelte.ts). */
+  configure(o: { gm?: GameId; o?: readonly number[]; same?: boolean; vs?: boolean; u?: string; ids?: readonly number[]; seed?: number }, now: number): RoundOut[] {
     this.prune(now);
     const gm = this.mine();
     if (!gm || gm.host !== this.me || gm.goAt !== undefined) return [];
@@ -382,7 +393,8 @@ export class RoundSession {
     let seed = (((o.seed ?? gm.seed) & ~bits.mask) | bits.flags) >>> 0;
     if (o.seed === undefined && this.picks && (id !== gm.gm || !sameList(enc, gm.o) || u !== gm.u || (seed & bits.mask) !== (gm.seed & bits.mask)))
       seed = this.seedFor({ gm: id, o: enc, ...bits, random: this.random });
-    this.setup(gm, { gm: id, seed, o: enc, f, ...(u !== undefined && { u }) });
+    const ids = o.ids ?? (id === gm.gm ? gm.ids : undefined);
+    this.setup(gm, { gm: id, seed, o: enc, f, ...(u !== undefined && { u }), ...(ids !== undefined && { ids }) });
     return this.send(gm, this.opening(gm));
   }
 
@@ -410,6 +422,19 @@ export class RoundSession {
     if (!gm || gm.host === this.me || !gm.def.tier || gm.goAt !== undefined || gm.tiers.get(this.me) === tr) return [];
     this.setTier(gm, this.me, tr);
     return this.send(gm, this.joining(gm));
+  }
+
+  /** A game event of mine in my game (`ev`: slot `i`, kind `e`, value `x`; the tournament's offered misses), kept and
+   *  sent (again when someone comes back, a player's with its join); the same again sends nothing. */
+  event(i: number, e: number, x: number | undefined, now: number): RoundOut[] {
+    this.prune(now);
+    const gm = this.mine();
+    if (!gm || this.over(gm, now)) return [];
+    const was = gm.evs.get(this.me)?.get(i);
+    if (was && was.e === e && was.x === x) return [];
+    const ev: RoundEvent = { who: this.me, i, e, ...(x !== undefined && { x }) };
+    note(gm, ev);
+    return this.send(gm, this.evOut(gm, ev));
   }
 
   /** Leave my game (✕): the host's lobby is cancelled (`end`); a game going goes on for the others, the host's too. */
@@ -498,7 +523,7 @@ export class RoundSession {
     const none: RoundView = {
       phase: 'idle', g: null, host: null, amHost: false, local: false, gm: null, o: [], same: false, seed: 0, vs: false, speaks: true, players: [],
       i: -1, n: 0, from: 0, until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], had: [], scores: {}, team: { right: 0, all: 0, done: 0 }, teamFirst: 0,
-      rightNow: 0, canNext: false, canReady: false, ready: { n: 0, of: 0 }, roles: {}, invite: null, notice: this.notice
+      rightNow: 0, canNext: false, canReady: false, ready: { n: 0, of: 0 }, roles: {}, tiers: {}, ids: [], evs: [], invite: null, notice: this.notice
     };
     if (!gm) {
       const o = this.newest(now);
@@ -533,7 +558,8 @@ export class RoundSession {
       had: Array.from({ length: gm.n }, (_, i) => !!mine?.has(i) || this.times(gm, i).playAt >= gm.inAt), scores,
       canNext: at.phase === 'reveal' && (gm.host === this.me || gone),
       canReady: at.phase === 'reveal' && gm.host !== this.me && !gone && !gm.deck.timing(at.i).auto,
-      ready: { n: others.filter((p) => p.ready).length, of: others.length }, roles: this.roles(gm)
+      ready: { n: others.filter((p) => p.ready).length, of: others.length }, roles: this.roles(gm), tiers: this.tiersOf(gm), ids: gm.ids ?? [],
+      evs: ORDER.flatMap((w) => [...(gm.evs.get(w)?.values() ?? [])].sort((a, b) => a.i - b.i))
     };
   }
 
@@ -545,7 +571,7 @@ export class RoundSession {
     if (!made) return null;
     const gm: Game = {
       ...s, ...made, g, host, opened: now, joined: new Set([host]), played: new Set([host]), since: new Map([[host, -Infinity]]), starts: new Map(), inAt: now,
-      answers: new Map(), totals: new Map(), allIn: new Map(), ready: new Map(), tiers: new Map(), deckFor: (w) => this.deckOf(gm, w)
+      answers: new Map(), totals: new Map(), allIn: new Map(), ready: new Map(), tiers: new Map(), evs: new Map(), deckFor: (w) => this.deckOf(gm, w)
     };
     this.games.set(g, gm);
     return gm;
@@ -555,18 +581,18 @@ export class RoundSession {
   private dealt(s: Setup): { def: GameDef<unknown>; deck: RoundDeck; n: number } | null {
     const def = this.defs(s.gm), opts = def?.opts.decode(s.o);
     if (!def || !opts) return null;
-    const deck = def.deck(s.seed, opts, { u: s.u, w: this.w, enc: s.o });
+    const deck = def.deck(s.seed, opts, { u: s.u, ids: s.ids, w: this.w, enc: s.o });
     return { def, deck, n: rounds(deck) };
   }
 
   private setup(gm: Game, s: Setup): void {
-    if (s.gm !== gm.gm || s.seed !== gm.seed || !sameList(s.o, gm.o) || s.u !== gm.u) {
+    if (s.gm !== gm.gm || s.seed !== gm.seed || !sameList(s.o, gm.o) || s.u !== gm.u || !sameList(s.ids ?? [], gm.ids ?? [])) {
       const made = this.dealt(s);
       if (!made) return;
       Object.assign(gm, made);
       this.tierDecks.delete(gm);
     }
-    Object.assign(gm, { gm: s.gm, seed: s.seed, o: s.o, f: s.f, u: s.u });
+    Object.assign(gm, { gm: s.gm, seed: s.seed, o: s.o, f: s.f, u: s.u, ids: s.ids });
   }
 
   /** The game I'm in. */
@@ -668,7 +694,7 @@ export class RoundSession {
   /** My lobby's `open`, with its content version (GameDef.cv: `play` needs one). */
   private opening(gm: Game): RoundOut {
     const opts = gm.def.opts.decode(gm.o), cv = opts ? gm.def.cv?.(opts, gm.u) : undefined;
-    return { g: gm.g, gm: gm.gm, op: 'open', seed: gm.seed, f: gm.f, o: gm.o, ...(gm.u !== undefined && { u: gm.u }), ...(cv !== undefined && { cv }) };
+    return { g: gm.g, gm: gm.gm, op: 'open', seed: gm.seed, f: gm.f, o: gm.o, ...(gm.u !== undefined && { u: gm.u }), ...(gm.ids !== undefined && { ids: gm.ids }), ...(cv !== undefined && { cv }) };
   }
 
   /** My `join`, with my tier when the game has tiers. */
@@ -699,7 +725,7 @@ export class RoundSession {
     let d = by.get(x.tr);
     if (!d) {
       const o = gm.def.tier!.with(x.opts, x.tr);
-      d = gm.def.deck(gm.seed, o, { u: gm.u, w: this.w, enc: gm.def.opts.encode(o) });
+      d = gm.def.deck(gm.seed, o, { u: gm.u, ids: gm.ids, w: this.w, enc: gm.def.opts.encode(o) });
       by.set(x.tr, d);
     }
     return d;
@@ -709,6 +735,25 @@ export class RoundSession {
   private mineO(gm: Game): readonly number[] {
     const x = this.tierOf(gm, this.me);
     return x ? gm.def.opts.encode(gm.def.tier!.with(x.opts, x.tr)) : gm.o;
+  }
+
+  /** Each joined player's tier, for a game with tiers: the host's in the options, a player's as heard (else the host's). */
+  private tiersOf(gm: Game): Partial<Record<Who, number>> {
+    const t = gm.def.tier, opts = t ? gm.def.opts.decode(gm.o) : null;
+    if (!t || opts === null) return {};
+    const host = t.of(opts), out: Partial<Record<Who, number>> = {};
+    for (const w of ORDER) if (gm.joined.has(w)) out[w] = w === gm.host ? host : (gm.tiers.get(w) ?? host);
+    return out;
+  }
+
+  /** A game event as an `ev`. */
+  private evOut(gm: Game, v: RoundEvent): RoundOut {
+    return { g: gm.g, gm: gm.gm, op: 'ev', i: v.i, e: v.e, ...(v.x !== undefined && { x: v.x }) };
+  }
+
+  /** My game events, to send again (someone back). */
+  private events(gm: Game): RoundOut[] {
+    return [...(gm.evs.get(this.me)?.values() ?? [])].map((v) => this.evOut(gm, v));
   }
 
   /** Each joined player's role (framework §3.1) once the game is going: their place among the players at `go` (`pl`;
@@ -838,6 +883,13 @@ function enter(gm: Game, w: Who, at: number): void {
   gm.played.add(w);
 }
 
+/** A game event kept: the latest per player and slot. */
+function note(gm: Game, v: RoundEvent): void {
+  const by = gm.evs.get(v.who) ?? new Map<number, RoundEvent>();
+  by.set(v.i, v);
+  gm.evs.set(v.who, by);
+}
+
 /** A deck's rounds (at most a game's on the wire). */
 const rounds = (deck: RoundDeck): number => Math.max(0, Math.min(PLAY_ROUNDS, deck.count));
 
@@ -846,4 +898,5 @@ function seedBitsOf(def: GameDef<unknown>, opts: unknown, f: number): { flags: n
   return def.seedBits ? { flags: def.seedBits.of(opts, f) & def.seedBits.mask, mask: def.seedBits.mask } : { flags: 0, mask: 0 };
 }
 
-const sameSetup = (gm: Setup, s: Setup): boolean => gm.gm === s.gm && gm.seed === s.seed && gm.f === s.f && gm.u === s.u && sameList(gm.o, s.o);
+const sameSetup = (gm: Setup, s: Setup): boolean =>
+  gm.gm === s.gm && gm.seed === s.seed && gm.f === s.f && gm.u === s.u && sameList(gm.o, s.o) && sameList(gm.ids ?? [], s.ids ?? []);

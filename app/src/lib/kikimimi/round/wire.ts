@@ -20,12 +20,13 @@ export const WIRE: WireMode = !SEND_PLAY ? 'quiz' : QUIZ_ON_PLAY ? 'play' : 'gua
 
 /** A session's op (sent, before the wire's kind): every game's, `play`'s shape. */
 export type RoundOut =
-  | { g: string; gm: GameId; op: 'open'; seed: number; f: number; o: readonly number[]; u?: string; cv?: string }
+  | { g: string; gm: GameId; op: 'open'; seed: number; f: number; o: readonly number[]; u?: string; ids?: readonly number[]; cv?: string }
   | { g: string; gm: GameId; op: 'join'; tr?: number }
   | { g: string; gm: GameId; op: 'leave' | 'end' }
   | { g: string; gm: GameId; op: 'go'; at: number; pl?: number }
   | { g: string; gm: GameId; op: 'a'; i: number; k: AnswerValue; rp: number; s: number }
-  | { g: string; gm: GameId; op: 'skip'; i: number; at: number };
+  | { g: string; gm: GameId; op: 'skip'; i: number; at: number }
+  | { g: string; gm: GameId; op: 'ev'; i: number; e: number; x?: number };
 /** An op heard: who sent it and the relay's clock when it came. */
 export type RoundIn = RoundOut & { who: Who; t: number };
 
@@ -74,7 +75,7 @@ const ON_QUIZ: readonly GameId[] = ['quiz', 'ladder'];
 export function quizOut(m: RoundOut): QuizOut | null {
   switch (m.op) {
     case 'open': {
-      if (!ON_QUIZ.includes(m.gm) || m.u !== undefined) return null;
+      if (!ON_QUIZ.includes(m.gm) || m.u !== undefined || m.ids !== undefined) return null;
       const seed = withTimer(withLadder(withVersus(m.seed, (m.f & F_VS) !== 0), m.gm === 'ladder'), TIMERS[m.o[1] ?? 0] ?? 30);
       return { kind: 'quiz', g: m.g, op: 'open', seed, lv: m.o[0] as QuizLv, same: (m.f & F_SAME) !== 0 };
     }
@@ -84,17 +85,21 @@ export function quizOut(m: RoundOut): QuizOut | null {
       return { kind: 'quiz', g: m.g, op: 'go', at: m.at };
     case 'skip':
       return { kind: 'quiz', g: m.g, op: 'skip', i: m.i, at: m.at };
+    case 'ev':
+      return null;
     default:
       return { kind: 'quiz', g: m.g, op: m.op };
   }
 }
 
-/** A `play` op as the session's (its `ev`, reserved, isn't one: null). The `cv` is kept on the open (8c checks it). */
+/** A `play` op as the session's. The `cv` is kept on the open (8c checks it). */
 export function playIn(m: PlayIn): RoundIn | null {
   const { who, t, g, gm } = m;
   switch (m.op) {
     case 'open':
-      return { g, gm, op: 'open', seed: m.seed, f: m.f, o: m.o, ...(m.u !== undefined && { u: m.u }), cv: m.cv, who, t };
+      return { g, gm, op: 'open', seed: m.seed, f: m.f, o: m.o, ...(m.u !== undefined && { u: m.u }), ...(m.ids !== undefined && { ids: m.ids }), cv: m.cv, who, t };
+    case 'ev':
+      return { g, gm, op: 'ev', i: m.i, e: m.e, ...(m.x !== undefined && { x: m.x }), who, t };
     case 'a':
       return { g, gm, op: 'a', i: m.i, k: m.k, rp: m.rp, s: m.s, who, t };
     case 'go':
@@ -115,7 +120,11 @@ export function playIn(m: PlayIn): RoundIn | null {
 export function playOut(m: RoundOut): PlayOut | null {
   switch (m.op) {
     case 'open':
-      return m.cv === undefined ? null : { kind: 'play', g: m.g, gm: m.gm, op: 'open', cv: m.cv, seed: m.seed, f: m.f, o: [...m.o], ...(m.u !== undefined && { u: m.u }) };
+      return m.cv === undefined
+        ? null
+        : { kind: 'play', g: m.g, gm: m.gm, op: 'open', cv: m.cv, seed: m.seed, f: m.f, o: [...m.o], ...(m.u !== undefined && { u: m.u }), ...(m.ids !== undefined && { ids: [...m.ids] }) };
+    case 'ev':
+      return { kind: 'play', g: m.g, gm: m.gm, op: 'ev', i: m.i, e: m.e, ...(m.x !== undefined && { x: m.x }) };
     case 'a':
       return { kind: 'play', g: m.g, gm: m.gm, op: 'a', i: m.i, k: typeof m.k === 'number' ? m.k : [...m.k], rp: Math.min(99, m.rp), s: m.s };
     case 'go':
@@ -136,6 +145,6 @@ export const gameIn = (m: GameIn): RoundIn | null => (m.kind === 'quiz' ? quizIn
  *  wire can't carry), else `quiz` ('quiz': always); null: nothing. */
 export function toWire(m: RoundOut, mode: WireMode = WIRE): QuizOut | PlayOut | null {
   if (mode === 'quiz') return quizOut(m);
-  if (mode === 'play' || !ON_QUIZ.includes(m.gm) || (m.op === 'open' && m.u !== undefined)) return playOut(m) ?? quizOut(m);
+  if (mode === 'play' || !ON_QUIZ.includes(m.gm) || (m.op === 'open' && (m.u !== undefined || m.ids !== undefined)) || m.op === 'ev') return playOut(m) ?? quizOut(m);
   return quizOut(m);
 }

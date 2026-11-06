@@ -260,11 +260,14 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     for (const [path, file] of c.files) out.set(path, file);
     storyIndex[s.unit] = c.entry;
   }
-  // each game's cv by its deck's content (pool.ts gameCvOf): the quiz at a level, スピード はしご, a unit's lesson
+  // each game's cv by its deck's content (pool.ts gameCvOf): the quiz at a level, スピード はしご, a unit's lesson, the
+  // tournament
   const games: Index['games'] = {};
   for (const lv of levels) games[`quiz:${lv}`] = gameCv('quiz', units[lv].cv);
   games['ladder:ladder'] = gameCv('ladder', units.ladder.cv);
   for (const u of check.units) games[`lesson:${u.unit}`] = gameCv('lesson', units[u.unit].cv);
+  // the weekend tournament deals from every level by the items' places in them (games/taikai/pick.ts numbering)
+  games['taikai:all'] = gameCv('taikai', levels.map((lv) => units[lv].cv).join(','));
   const first = BANK.find((it) => it.lv === 1)!;
   const test = chunkClips([first.id], clips, places);
   const index: Index = {

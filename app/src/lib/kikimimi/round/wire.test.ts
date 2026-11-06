@@ -55,12 +55,18 @@ describe('round wire: play', () => {
     relayed({ kind: 'play', g: 'abcd', gm: 'quiz', op: 'end' }),
     relayed({ kind: 'play', g: 'abcd', gm: 'quiz', op: 'go', at: 77, pl: 5 }),
     relayed({ kind: 'play', g: 'abcd', gm: 'tile', op: 'a', i: 31, k: [1, 2, 63], rp: 4, s: 9999 }),
-    relayed({ kind: 'play', g: 'abcd', gm: 'quiz', op: 'skip', i: 32, at: 77 })
+    relayed({ kind: 'play', g: 'abcd', gm: 'quiz', op: 'skip', i: 32, at: 77 }),
+    relayed({ kind: 'play', g: 'abcd', gm: 'taikai', op: 'open', cv: 'a1b2c3', seed: 9, f: 0, o: [1, 0], ids: [0, 99_999, 7] }),
+    relayed({ kind: 'play', g: 'abcd', gm: 'taikai', op: 'ev', i: 3, e: 1, x: 65_535 }),
+    relayed({ kind: 'play', g: 'abcd', gm: 'taikai', op: 'ev', i: 0, e: 255 })
   ];
 
-  it('a play op is heard as the session’s (its cv kept on the open; ev, reserved, isn’t one) and goes back out the same', () => {
+  it('a play op is heard as the session’s (its cv kept on the open, its ids; a game event) and goes back out the same', () => {
     for (const m of play) expect(playOut(playIn(m)!)).toEqual(bare(m));
-    expect(playIn(relayed({ kind: 'play', g: 'abcd', gm: 'quiz', op: 'ev', i: 0, e: 1 }))).toBeNull();
+    // what the quiz wire can't carry: an open's ids, an event
+    expect(quizOut(playIn(play[8])!)).toBeNull();
+    expect(quizOut(playIn(play[9])!)).toBeNull();
+    expect(toWire(playIn(play[9])!, 'guarded')).toEqual(bare(play[9]));
     expect(gameIn(play[0])).toMatchObject({ gm: 'quiz', op: 'open', cv: 'a1b2c3', o: [3, 1], who: 'A', t: 5 });
   });
 
@@ -97,9 +103,9 @@ describe('round wire: play', () => {
       f(play[0]);
       f(relayed({ kind: 'quiz', g: 'abcd', op: 'join' }) as Relayed);
       f(relayed({ kind: 'walk', to: 'x' }) as Relayed);
-      f(relayed({ kind: 'play', g: 'abcd', gm: 'quiz', op: 'ev', i: 0, e: 1 }) as Relayed);
+      f(relayed({ kind: 'play', g: 'abcd', gm: 'taikai', op: 'ev', i: 0, e: 1, x: 4 }) as Relayed);
     }
-    expect(heard).toEqual([gameIn(play[0]), { g: 'abcd', gm: 'quiz', op: 'join', who: 'A', t: 5 }]);
+    expect(heard).toEqual([gameIn(play[0]), { g: 'abcd', gm: 'quiz', op: 'join', who: 'A', t: 5 }, { g: 'abcd', gm: 'taikai', op: 'ev', i: 0, e: 1, x: 4, who: 'A', t: 5 }]);
     expect(link.send({ g: 'abcd', gm: 'quiz', op: 'join' })).toBe(true);
     expect(link.send({ g: 'abcd', gm: 'lesson', op: 'open', seed: 1, f: 0, o: [1, 0, 1, 0], u: 'x' })).toBe(false); // (off the quiz wire)
     expect(out).toEqual([{ kind: 'quiz', g: 'abcd', op: 'join' }]);
