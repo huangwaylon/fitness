@@ -1,9 +1,9 @@
 // A round session wired to the island's Live (docs/kikimimi.md "Sync"; IslandScene's `relay ?? demoRelay`, never a
 // second one): the game intents heard on either wire (round/wire.ts) and who's here go in, the session's ops go out on
-// the wire (`quiz` in 8b), `changed` after each.
+// the wire (`play` from 8c, the quiz family on `quiz` while the rollout is guarded), `changed` after each.
 import type { Live } from '../../sync/live.ts';
 import type { Who } from '../../contract/live-protocol.ts';
-import { gameIn, isGameIn, toWire, type RoundIn, type RoundOut } from './wire.ts';
+import { gameIn, isGameIn, toWire, WIRE, type RoundIn, type RoundOut, type WireMode } from './wire.ts';
 
 /** What a session needs of the island's Live. */
 export interface RoundLink {
@@ -16,12 +16,12 @@ export interface RoundLink {
   onHere(fn: (here: readonly Who[] | null) => void): () => void;
 }
 
-/** A Live as a RoundLink. */
-export function roundLink(live: Pick<Live, 'send' | 'on' | 'onStatus' | 'serverNow'>): RoundLink {
+/** A Live as a RoundLink, sending by `mode` (wire.ts WIRE; the e2e's `?wire=`). */
+export function roundLink(live: Pick<Live, 'send' | 'on' | 'onStatus' | 'serverNow'>, mode: WireMode = WIRE): RoundLink {
   return {
     now: () => live.serverNow(),
     send: (m) => {
-      const w = toWire(m);
+      const w = toWire(m, mode);
       return !!w && live.send(w);
     },
     on: (fn) =>

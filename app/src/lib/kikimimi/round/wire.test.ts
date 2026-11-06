@@ -1,9 +1,10 @@
 // The game ops on the wire (round/wire.ts, link.ts): the `quiz` intent to the session's ops and back, unchanged both
-// ways; the `play` intent heard (an 8c phone's) and its shape out (8c's); what goes out in 8b (`quiz`).
+// ways; the `play` intent heard and its shape out; what goes out by the wire mode (8c: `play`, the quiz family on
+// `quiz` while the rollout is guarded).
 import { describe, expect, it } from 'vitest';
 import { QUIZ_LVS, type Relayed } from '../../contract/live-protocol.ts';
 import { isLadder, timerIndex, versus } from '../seed.ts';
-import { SEND_PLAY, gameIn, playIn, playOut, quizIn, quizOut, toWire, type PlayIn, type QuizIn, type QuizOut, type RoundOut } from './wire.ts';
+import { QUIZ_ON_PLAY, SEND_PLAY, WIRE, gameIn, playIn, playOut, quizIn, quizOut, toWire, type PlayIn, type QuizIn, type QuizOut, type RoundOut } from './wire.ts';
 import { roundLink } from './link.ts';
 import type { LiveStatus } from '../../sync/live.ts';
 
@@ -63,22 +64,33 @@ describe('round wire: play', () => {
     expect(gameIn(play[0])).toMatchObject({ gm: 'quiz', op: 'open', cv: 'a1b2c3', o: [3, 1], who: 'A', t: 5 });
   });
 
-  it('8b sends quiz (SEND_PLAY off); play only where it has what play needs (an open’s cv, a go’s players)', () => {
-    expect(SEND_PLAY).toBe(false);
-    const open: RoundOut = { g: 'abcd', gm: 'quiz', op: 'open', seed: 8, f: 0, o: [1, 0] };
-    expect(toWire(open)).toMatchObject({ kind: 'quiz', op: 'open', lv: 1 });
-    expect(playOut(open)).toBeNull();
-    expect(toWire(open, true)).toMatchObject({ kind: 'quiz' });
-    expect(toWire({ ...open, cv: 'abcdef' }, true)).toMatchObject({ kind: 'play', cv: 'abcdef' });
+  it('8c sends play (SEND_PLAY); by mode: quiz (8b, ?wire=quiz) always quiz, guarded the quiz family on quiz and the rest on play, play all on play; play only where it has what play needs (an open’s cv, a go’s players)', () => {
+    expect(SEND_PLAY).toBe(true);
+    expect(WIRE).toBe(QUIZ_ON_PLAY ? 'play' : 'guarded');
+    const open: RoundOut = { g: 'abcd', gm: 'quiz', op: 'open', seed: 8, f: 0, o: [1, 0], cv: 'abcdef' };
+    expect(toWire(open, 'quiz')).toMatchObject({ kind: 'quiz', op: 'open', lv: 1 });
+    expect(toWire(open, 'guarded')).toMatchObject({ kind: 'quiz', op: 'open', lv: 1 });
+    expect(toWire(open, 'play')).toMatchObject({ kind: 'play', cv: 'abcdef' });
+    const { cv: _, ...bare } = open;
+    expect(playOut(bare)).toBeNull();
+    expect(toWire(bare, 'play')).toMatchObject({ kind: 'quiz' });
     expect(playOut({ g: 'abcd', gm: 'quiz', op: 'go', at: 1 })).toBeNull();
     expect(playOut({ g: 'abcd', gm: 'quiz', op: 'a', i: 0, k: 1, rp: 140, s: 0 })).toMatchObject({ rp: 99 });
+    // a lesson: play when guarded (quiz can't carry it), its join with my tier
+    const lesson: RoundOut = { g: 'abcd', gm: 'lesson', op: 'open', seed: 1, f: 0, o: [4, 0, 3, 1], u: 'tr-hotel', cv: 'abcdef' };
+    expect(toWire(lesson, 'guarded')).toEqual({ kind: 'play', g: 'abcd', gm: 'lesson', op: 'open', seed: 1, f: 0, o: [4, 0, 3, 1], u: 'tr-hotel', cv: 'abcdef' });
+    expect(toWire(lesson, 'quiz')).toBeNull();
+    expect(toWire({ g: 'abcd', gm: 'lesson', op: 'join', tr: 2 }, 'guarded')).toEqual({ kind: 'play', g: 'abcd', gm: 'lesson', op: 'join', tr: 2 });
+    expect(toWire({ g: 'abcd', gm: 'lesson', op: 'go', at: 9, pl: 3 }, 'guarded')).toEqual({ kind: 'play', g: 'abcd', gm: 'lesson', op: 'go', at: 9, pl: 3 });
+    expect(toWire({ g: 'abcd', gm: 'quiz', op: 'join', tr: 2 }, 'guarded')).toEqual({ kind: 'quiz', g: 'abcd', op: 'join' });
+    expect(playIn(relayed({ kind: 'play', g: 'abcd', gm: 'lesson', op: 'join', tr: 1 }))).toEqual({ g: 'abcd', gm: 'lesson', op: 'join', tr: 1, who: 'A', t: 5 });
   });
 
-  it('the link hears both wires (an 8c phone’s play too) and sends quiz', () => {
+  it('the link hears both wires (an 8c phone’s play too) and sends by its mode', () => {
     const subs: ((m: Relayed) => void)[] = [];
     const out: unknown[] = [];
     const st: LiveStatus = { connected: true, me: 'B', peer: true, here: ['A'] };
-    const link = roundLink({ send: (m) => out.push(m) > 0, on: (f) => (subs.push(f), () => {}), onStatus: (f) => (f(st), () => {}), serverNow: () => 5 });
+    const link = roundLink({ send: (m) => out.push(m) > 0, on: (f) => (subs.push(f), () => {}), onStatus: (f) => (f(st), () => {}), serverNow: () => 5 }, 'quiz');
     const heard: unknown[] = [];
     link.on((m) => heard.push(m));
     for (const f of subs) {

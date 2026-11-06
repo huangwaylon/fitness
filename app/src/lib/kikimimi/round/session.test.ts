@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { points } from '../score.ts';
 import { FAST_WINDOWS, WINDOWS } from './session.ts';
 import type { RoundWindows } from './types.ts';
-import { playIn, quizIn, quizOut, toWire, type QuizIn, type QuizOut, type RoundOut } from './wire.ts';
+import { playIn, playOut, quizIn, quizOut, toWire, type QuizIn, type QuizOut, type RoundOut } from './wire.ts';
 import { registry } from './registry.ts';
 import { roundLink, wire } from './link.ts';
 import type { QuizView } from '../games/quiz/view.ts';
@@ -59,16 +59,21 @@ interface Wiring {
   stop(): void;
 }
 
+/** Every test game's content version (a `play` open's cv: the same on every test phone). */
+const CV = 'a1b2c3';
+
 /** A test deck as a quiz-family source: its rounds (a word round each, its right choice and length), or the rounds it
- *  carries. */
+ *  carries; a lesson at tier t (its options' 4th) has each right choice moved on by t (its own choices, the same
+ *  rounds). */
 function sourceOf(deckOf: TestDeckOf): QuizSource {
   return {
-    rounds: (_gm, seed, enc) => {
+    rounds: (gm, seed, enc) => {
       const o = quizOpts.decode(enc);
       if (!o) return [];
-      const d = deckOf(seed, o.lv);
-      return d.rounds ?? Array.from({ length: d.count }, (_, i): QuizRound => ({ kind: 'quiz.word', id: `q${i}`, answer: d.answer(i), play: d.dur(i) }));
-    }
+      const d = deckOf(seed, o.lv), t = gm === 'lesson' ? (enc[3] ?? 0) : 0;
+      return d.rounds ?? Array.from({ length: d.count }, (_, i): QuizRound => ({ kind: 'quiz.word', id: `q${i}`, answer: t ? (d.answer(i) + t) % 3 : d.answer(i), play: d.dur(i) }));
+    },
+    cv: () => CV
   };
 }
 
@@ -1356,13 +1361,146 @@ describe('ききみみ session: an 8c phone’s play', () => {
   it('a play open is an invite like a quiz one (its game, options and flags); joined, my ops go out on the quiz wire', () => {
     const s = new QuizRounds({ me: 'B', defs: defsOf(() => six) });
     s.presence(['A'], T0);
-    const open = playIn({ kind: 'play', g: 'abcd', gm: 'quiz', op: 'open', cv: 'a1b2c3', seed: 40, f: 2, o: [3, 1], v: 3, who: 'A', t: T0 })!;
+    const open = playIn({ kind: 'play', g: 'abcd', gm: 'quiz', op: 'open', cv: CV, seed: 40, f: 2, o: [3, 1], v: 3, who: 'A', t: T0 })!;
     s.receive(open, T0);
-    expect(s.view(T0).invite).toEqual({ g: 'abcd', host: 'A', lv: 3, ladder: false, same: false, started: false });
-    expect(s.join(T0).map((m) => toWire(m))).toEqual([{ kind: 'quiz', g: 'abcd', op: 'join' }]);
+    expect(s.view(T0).invite).toEqual({ g: 'abcd', host: 'A', gm: 'quiz', lv: 3, ladder: false, same: false, started: false });
+    expect(s.join(T0).map((m) => toWire(m, 'quiz'))).toEqual([{ kind: 'quiz', g: 'abcd', op: 'join' }]);
     expect(s.view(T0)).toMatchObject({ phase: 'lobby', gm: 'quiz', lv: 3, timer: 20, vs: true, n: 6 });
-    // a game this build doesn't know isn't offered
-    s.receive(playIn({ kind: 'play', g: 'efgh', gm: 'tile', op: 'open', cv: 'a1b2c3', seed: 40, f: 0, o: [], v: 3, who: 'A', t: T0 })!, T0);
+    // a game this build doesn't know: an update offered, the game I'm in kept
+    s.receive(playIn({ kind: 'play', g: 'efgh', gm: 'tile', op: 'open', cv: CV, seed: 40, f: 0, o: [], v: 3, who: 'G', t: T0 })!, T0);
     expect(s.view(T0).g).toBe('abcd');
+  });
+});
+
+/** Two or three round sessions on the `play` wire (playOut → playIn), each one's ops to the others. */
+function playRoom(whos: Who[], deckOf: TestDeckOf = () => six) {
+  let now = T0;
+  const s = Object.fromEntries(whos.map((w, n) => [w, new QuizRounds({ me: w, defs: defsOf(deckOf), random: seq(n) })])) as Record<Who, QuizRounds>;
+  const sent: { from: Who; m: NonNullable<ReturnType<typeof playOut>> }[] = [];
+  const deliver = (from: Who, out: RoundOut[]) => {
+    for (const m of out) {
+      const w = playOut(m);
+      if (!w) continue;
+      sent.push({ from, m: w });
+      for (const to of whos) if (to !== from) deliver(to, s[to].receive(playIn({ ...w, v: 3, who: from, t: now } as Parameters<typeof playIn>[0])!, now));
+    }
+  };
+  for (const w of whos) s[w].presence(whos.filter((x) => x !== w), now);
+  return {
+    s, sent,
+    act: (w: Who, f: (x: QuizRounds, now: number) => RoundOut[]) => deliver(w, f(s[w], now)),
+    get now() {
+      return now;
+    },
+    set now(t: number) {
+      now = t;
+    },
+    view: (w: Who) => s[w].view(now)
+  };
+}
+
+describe('ききみみ session: 8c, the content version', () => {
+  const lessonOpen = (cv: string) => playIn({ kind: 'play', g: 'abcd', gm: 'lesson', op: 'open', cv, seed: 40, f: 0, o: [4, 0, 3, 0], u: 'tr-hotel', v: 3, who: 'A', t: T0 })!;
+
+  it('my open carries my cv (play needs one); a quiz open (no cv) is never blocked', () => {
+    const r = playRoom(['A', 'B']);
+    r.act('A', (x, n) => x.open({ lv: 2 }, n));
+    r.act('A', (x, n) => x.invite(n));
+    expect(r.sent.at(-1)!.m).toMatchObject({ kind: 'play', gm: 'quiz', op: 'open', cv: CV, o: [2, 0] });
+    expect(r.view('B').invite).toMatchObject({ g: r.view('A').g, gm: 'quiz' });
+    expect(r.view('B').invite!.blocked).toBeUndefined();
+    const q = new QuizRounds({ me: 'B', defs: defsOf(() => six) });
+    q.presence(['A'], T0);
+    q.receive(quizIn({ kind: 'quiz', g: 'wxyz', op: 'open', seed: 8, lv: 1, same: false, v: 3, who: 'A', t: T0 }), T0);
+    expect(q.view(T0).invite).toMatchObject({ g: 'wxyz', gm: 'quiz' });
+    expect(q.view(T0).invite!.blocked).toBeUndefined();
+  });
+
+  it('a heard open whose cv isn’t mine: an invite blocked (「アプリを こうしんしてね」), さんか refused; the host’s open with my cv lifts it', () => {
+    const s = new QuizRounds({ me: 'B', defs: defsOf(() => six) });
+    s.presence(['A'], T0);
+    s.receive(lessonOpen('ffffff'), T0);
+    expect(s.view(T0)).toMatchObject({ phase: 'idle', g: null, invite: { g: 'abcd', host: 'A', gm: 'lesson', u: 'tr-hotel', blocked: 'update', started: false } });
+    expect(s.view(T0).invite!.lesson).toBeUndefined();
+    expect(s.join(T0)).toEqual([]);
+    expect(s.join(T0, 'abcd')).toEqual([]);
+    expect(s.view(T0).phase).toBe('idle');
+    // started: still an update offered, and gone when its host ends it
+    s.receive(playIn({ kind: 'play', g: 'abcd', gm: 'lesson', op: 'go', at: T0 + 4000, pl: 1, v: 3, who: 'A', t: T0 })!, T0);
+    expect(s.view(T0).invite).toMatchObject({ blocked: 'update', started: true });
+    s.receive(playIn({ kind: 'play', g: 'abcd', gm: 'lesson', op: 'leave', v: 3, who: 'A', t: T0 })!, T0);
+    expect(s.view(T0).invite).toBeNull();
+    // the same content: offered and joined
+    s.receive({ ...lessonOpen(CV), g: 'efgh' }, T0);
+    expect(s.view(T0).invite).toMatchObject({ g: 'efgh', gm: 'lesson', u: 'tr-hotel', lesson: 'check' });
+    expect(s.view(T0).invite!.blocked).toBeUndefined();
+    expect(s.join(T0)).toEqual([{ g: 'efgh', gm: 'lesson', op: 'join' }]);
+    // an unknown game on play: an update too
+    const t = new QuizRounds({ me: 'B', defs: defsOf(() => six) });
+    t.presence(['G'], T0);
+    t.receive(playIn({ kind: 'play', g: 'tile', gm: 'tile', op: 'open', cv: CV, seed: 1, f: 0, o: [], v: 3, who: 'G', t: T0 })!, T0);
+    expect(t.view(T0).invite).toMatchObject({ gm: 'tile', blocked: 'update' });
+  });
+
+  it('a lobby I’m in turned into content I haven’t: left for the update offered; its host gone, the offer goes', () => {
+    const r = playRoom(['A', 'B']);
+    r.act('A', (x, n) => x.open({ lv: 4 }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('B', (x, n) => x.join(n));
+    const g = r.view('A').g!;
+    expect(r.view('B')).toMatchObject({ phase: 'lobby', g });
+    r.s.B.receive(playIn({ kind: 'play', g, gm: 'lesson', op: 'open', cv: '000000', seed: 40, f: 0, o: [4, 0, 3, 0], u: 'tr-new', v: 3, who: 'A', t: T0 })!, T0);
+    expect(r.view('B')).toMatchObject({ phase: 'idle', g: null, notice: null, invite: { g, blocked: 'update', u: 'tr-new' } });
+    r.s.B.presence([], T0 + 1000);
+    r.now = T0 + 1000 + WINDOWS.hostGrace;
+    expect(r.view('B').invite).toBeNull();
+  });
+});
+
+describe('ききみみ session: 8c, roles from `pl`', () => {
+  it('go carries the players at the start; every phone has the same roles from it (a late joiner: their place among those and them)', () => {
+    const r = playRoom(['A', 'B', 'G']);
+    r.act('A', (x, n) => x.open({ lv: 1 }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('G', (x, n) => x.join(n));
+    expect(r.view('A').roles).toEqual({});
+    r.act('A', (x, n) => x.go(n));
+    expect(r.sent.at(-1)!.m).toMatchObject({ op: 'go', pl: 5 });
+    for (const w of ['A', 'G'] as const) expect(r.view(w).roles).toEqual({ A: 0, G: 1 });
+    r.act('B', (x, n) => x.join(n, r.view('A').g!));
+    for (const w of ['A', 'B', 'G'] as const) expect(r.view(w).roles).toEqual({ A: 0, B: 1, G: 1 });
+  });
+});
+
+describe('ききみみ session: 8c, a co-op lesson', () => {
+  it('each player at their own tier (the host’s in the options, a player’s on their join): their own choices over the same rounds, graded so on every phone; the team’s first listens the same on both', () => {
+    const r = playRoom(['A', 'B']);
+    r.act('A', (x, n) => x.open({ lv: 4 }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('B', (x, n) => x.join(n, undefined, 2));
+    expect(r.sent.at(-1)!.m).toEqual({ kind: 'play', g: r.view('A').g, gm: 'quiz', op: 'join' }); // (a quiz has no tiers)
+    r.act('A', (x, n) => x.lesson({ u: 'tr-hotel', lesson: 'check', tier: 'easy' }, n));
+    expect(r.sent.at(-1)!.m).toMatchObject({ gm: 'lesson', op: 'open', u: 'tr-hotel', o: [4, 0, 3, 1], cv: CV });
+    expect(r.view('B')).toMatchObject({ phase: 'lobby', gm: 'lesson', o: [4, 0, 3, 1] });
+    // B's tier for the lesson: its join again
+    r.act('B', (x, n) => x.tier(2, n));
+    expect(r.sent.at(-1)!.m).toMatchObject({ gm: 'lesson', op: 'join', tr: 2 });
+    expect(r.s.B.tier(2, r.now)).toEqual([]);
+    expect(r.view('B').o).toEqual([4, 0, 3, 2]);
+    expect(r.view('A').o).toEqual([4, 0, 3, 1]);
+    r.act('A', (x, n) => x.go(n));
+    let t = T0 + WINDOWS.countdown;
+    // A (easy: question i's right choice (i % 3 + 1) % 3) all right; B (hard: (i % 3 + 2) % 3) right only on 0 and 1
+    for (let i = 0; i < 6; i++) {
+      r.now = t + WINDOWS.lead + 2000 + 100;
+      r.act('A', (x, n) => x.answer(((i % 3) + 1) % 3, false, n));
+      r.act('B', (x, n) => x.answer(i < 2 ? ((i % 3) + 2) % 3 : ((i % 3) + 1) % 3, false, n));
+      expect(r.view('A').players.map((p) => [p.who, p.pick?.ok])).toEqual([['A', true], ['B', i < 2]]);
+      expect(r.view('B').players.map((p) => [p.who, p.pick?.ok])).toEqual([['A', true], ['B', i < 2]]);
+      r.now += 1000;
+      r.act('A', (x, n) => x.next(n));
+      t = r.now;
+    }
+    for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ phase: 'results', teamFirst: 6, team: { right: 6, all: 2, done: 6 }, scores: { A: 600, B: 200 } });
   });
 });

@@ -114,6 +114,15 @@ export interface GameDef<O = unknown> {
   seedBits?: { mask: number; of(o: O, f: number): number };
   /** Its deck: pure, deterministic for the seed, options and unit. */
   deck(seed: number, o: O, ctx: DeckCtx): RoundDeck;
+  /** Its content version for these options and unit (docs/kikimimi-framework.md §4.2: compiled, levels/index.json's
+   *  `games`), sent on a `play` open; undefined: this build hasn't that content. A heard open whose cv isn't this is
+   *  blocked (an update offered). */
+  cv?(o: O, u?: string): string | undefined;
+  /** A player's tier in its options (a lesson's: 0 the authored choices, 1 easy, 2 hard; the same audio): the host's
+   *  rides the open's `o`, each other's their `join`'s `tr`, and each phone grades each player on their own. */
+  tier?: { of(o: O): number; with(o: O, tr: number): O };
+  /** How many roles its rounds deal (a jigsaw's halves): `role = index % roles` over the players at `go` (`pl`). */
+  roles?: number;
 }
 
 /** A lobby's set-up: which game, its seed, options (as on the wire), flags (F_SAME, F_VS) and unit. */
@@ -148,6 +157,10 @@ export interface Game extends Setup {
   /** When each player in it came in (relay clock, as heard: their `join`; the host, -Infinity): they had every round
    *  whose clip began from then on (the team's そろって, the same on every phone). */
   since: Map<Who, number>;
+  /** Each player's tier heard on their `join` (`tr`; mine as I joined: GameDef.tier); the host's is in `o`. */
+  tiers: Map<Who, number>;
+  /** A player's deck: theirs at their own tier (the same rounds and timing, their choices), else `deck`. */
+  deckFor(w: Who): RoundDeck;
   /** `go`'s `at` (the host's re-send), and the players in it then (`pl`: A 1, B 2, G 4; the `play` wire's). */
   goAt?: number;
   pl?: number;

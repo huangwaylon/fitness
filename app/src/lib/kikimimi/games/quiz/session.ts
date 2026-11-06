@@ -82,8 +82,13 @@ export class QuizRounds implements Wired {
   invite(now: number): RoundOut[] {
     return this.round.invite(now);
   }
-  join(now: number, g?: string): RoundOut[] {
-    return this.round.join(now, g);
+  /** さんか, at my tier for a lesson's choices (0 the authored, 1 easy, 2 hard). */
+  join(now: number, g?: string, tr?: number): RoundOut[] {
+    return this.round.join(now, g, tr);
+  }
+  /** My tier for the lesson my game has become (a player's, before it starts). */
+  tier(tr: number, now: number): RoundOut[] {
+    return this.round.tier(tr, now);
   }
   leave(now: number): RoundOut[] {
     return this.round.leave(now);
