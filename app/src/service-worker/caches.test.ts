@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, isAudio, isFoodData, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgStale, isFoodImg, isAudio, isFoodData, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -87,6 +87,12 @@ describe('precache', () => {
     // the tent's room: its models, surfaces and icons, cached on first use (megabytes: never at install)
     for (const p of ['room/models/f4041.glb', '/fitness/room/wall/w4840.webp', 'room/floor/g5018.webp', 'room/icons/f4081.webp']) expect(precachable(p)).toBe(false);
     for (const p of ['icons/icon-192.png', 'icons/apple-touch-icon-180.png', '/fitness/icons/icon-512.webp']) expect(precachable(p)).toBe(false);
+  });
+  it("leaves ごはん's pictures out (cached on first use), and drops the sheets a new index no longer names", () => {
+    for (const p of ['/food-img/index.json', '/fitness/food-img/t-meat-0-1a2b3c4d.webp']) expect([isFoodImg(p), precachable(p)]).toEqual([true, false]);
+    const keys = ['https://x/fitness/food-img/t-meat-0-1a2b3c4d.webp', 'https://x/fitness/food-img/t-meat-0-99999999.webp', 'https://x/fitness/food-img/index.json'];
+    expect(foodImgStale(keys, JSON.stringify({ sheets: ['t-meat-0-1a2b3c4d.webp'] }))).toEqual([keys[1]]);
+    expect([foodImgStale(keys, 'not json'), foodImgStale(keys, '{}')]).toEqual([[], []]);
   });
   it('leaves the world’s winter and night looks and its decor out: cached on first use', () => {
     for (const p of ['art/deco/resident-services-winter.webp', 'art/trees/cedar-winter.webp', 'art/deco/airport-lit.webp',

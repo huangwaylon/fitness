@@ -1,0 +1,571 @@
+[
+{
+"key": "dishes-curry-pork",
+"ja": "カレーライス（ポーク）",
+"desc": "Japanese pork curry rice on a white oval plate, a mound of white steamed rice beside thick glossy brown curry sauce with chunks of pork, potato and carrot",
+"items": [
+"dishes:curry-pork"
+],
+"roll": 0,
+"seed": 87817,
+"prompt": "b2258482e0",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-gyoza",
+"ja": "焼き餃子（6個）",
+"desc": "six Japanese pan-fried gyoza dumplings in a row, pleated thin wrappers, the bottoms crisp and deep golden-brown, the tops soft and pale, on a white plate",
+"items": [
+"dishes:gyoza",
+"eatout:gyoza6"
+],
+"roll": 0,
+"seed": 70503,
+"prompt": "e9a6cd7185",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-gyudon",
+"ja": "牛丼",
+"desc": "gyudon beef bowl, a ceramic donburi of white rice topped with thin simmered beef slices and soft translucent onion in a glossy soy-sweet sauce, a little red pickled ginger on the side",
+"items": [
+"dishes:gyudon",
+"eatout:gyudon_ko",
+"eatout:gyudon_nami",
+"eatout:gyudon_oo",
+"eatout:gyudon_toku"
+],
+"roll": 0,
+"seed": 44888,
+"prompt": "99492d4229",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-kake-udon",
+"ja": "かけうどん",
+"desc": "kake udon in a large bowl, thick white udon noodles in clear light-brown hot dashi broth, topped with chopped green onion and a slice of kamaboko",
+"items": [
+"dishes:kake-udon",
+"eatout:kake_udon",
+"eatout:kake_udon_dai"
+],
+"roll": 0,
+"seed": 36996,
+"prompt": "968cf13d79",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-karaage",
+"ja": "鶏の唐揚げ",
+"desc": "a pile of five Japanese karaage fried chicken pieces, craggy crisp golden-brown coating, bite-sized irregular chunks, on a small bed of shredded cabbage with a lemon wedge",
+"items": [
+"dishes:karaage"
+],
+"roll": 0,
+"seed": 51824,
+"prompt": "6e3afbbf2d",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-miso-tofu-wakame",
+"ja": "味噌汁（豆腐とわかめ）",
+"desc": "a Japanese miso soup in a red-brown lacquered wooden bowl, cloudy light-brown miso broth with small white tofu cubes and dark green wakame seaweed pieces, a few thin green onion rings floating",
+"items": [
+"dishes:miso-tofu-wakame"
+],
+"roll": 0,
+"seed": 90817,
+"prompt": "aa83c9444d",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-onigiri-shake",
+"ja": "おにぎり（鮭）",
+"desc": "a Japanese onigiri rice ball, a white triangle of rice wrapped at the bottom with a band of dark green nori, a little flaked orange-pink salmon visible at the top",
+"items": [
+"dishes:onigiri-shake"
+],
+"roll": 0,
+"seed": 68207,
+"prompt": "b931da228b",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-oyakodon",
+"ja": "親子丼",
+"desc": "oyakodon in a ceramic donburi bowl, white rice topped with simmered chicken pieces and onion bound in soft, half-set golden egg, a few green mitsuba leaves on top",
+"items": [
+"dishes:oyakodon",
+"eatout:oyakodon"
+],
+"roll": 0,
+"seed": 2901,
+"prompt": "89bd5f692f",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-potato-salad",
+"ja": "ポテトサラダ",
+"desc": "Japanese potato salad in a small bowl, creamy mashed potato with mayonnaise mixed with thin cucumber slices, carrot and bits of ham",
+"items": [
+"dishes:potato-salad",
+"eatout:potesala"
+],
+"roll": 0,
+"seed": 76853,
+"prompt": "aa44a5d567",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-shogayaki",
+"ja": "豚の生姜焼き",
+"desc": "shogayaki ginger pork on a white plate, thin pan-fried pork loin slices glazed in a glossy brown soy-ginger sauce with soft onion, a heap of finely shredded raw cabbage beside it",
+"items": [
+"dishes:shogayaki"
+],
+"roll": 0,
+"seed": 9922,
+"prompt": "4d707f6557",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tamagoyaki",
+"ja": "卵焼き（甘口）",
+"desc": "Japanese tamagoyaki rolled omelette cut into four thick rectangular slices, pale golden-yellow, the cut faces show thin rolled layers, on a small plate",
+"items": [
+"dishes:tamagoyaki"
+],
+"roll": 0,
+"seed": 59463,
+"prompt": "e4f63b98ca",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-yakizake",
+"ja": "焼き鮭（塩鮭）",
+"desc": "a grilled salted salmon fillet (shiozake) on a rectangular plate, one thick piece with orange-pink flesh, a crisp silver-brown skin edge and light grill marks, a small mound of grated daikon",
+"items": [
+"dishes:yakizake"
+],
+"roll": 0,
+"seed": 1628,
+"prompt": "3de6614acd",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-zaru-soba",
+"ja": "ざるそば",
+"desc": "zaru soba, cold grey-brown buckwheat noodles piled on a square bamboo zaru tray, strips of dark nori seaweed on top, a small cup of dark dipping sauce with green onion and wasabi beside it",
+"items": [
+"dishes:zaru-soba",
+"eatout:zaru_soba",
+"eatout:zaru_soba_oo"
+],
+"roll": 0,
+"seed": 98289,
+"prompt": "01651012af",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01004",
+"ja": "オートミール",
+"desc": "a bowl of dry rolled oats, flat pale beige oval oat flakes, a few spilled beside the bowl",
+"items": [
+"mext:01004"
+],
+"roll": 0,
+"seed": 11004,
+"prompt": "e57d26edb1",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01015",
+"ja": "薄力粉",
+"desc": "a small mound of fine white wheat flour on a little dish, soft powdery, with a wooden scoop",
+"items": [
+"mext:01015",
+"mext:01020"
+],
+"roll": 0,
+"seed": 87243,
+"prompt": "efa0a29bd2",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01024",
+"ja": "ホットケーキミックス",
+"desc": "a small bowl of pale cream pancake mix powder beside two small fluffy golden pancakes",
+"items": [
+"mext:01024"
+],
+"roll": 0,
+"seed": 86270,
+"prompt": "88cf582ced",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01026",
+"ja": "食パン",
+"desc": "a Japanese shokupan white bread loaf with two thick square slices cut off, soft fine white crumb and a thin golden-brown crust",
+"items": [
+"mext:01026"
+],
+"roll": 0,
+"seed": 882,
+"prompt": "d02bdf645c",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01028",
+"ja": "コッペパン",
+"desc": "two soft oblong Japanese koppepan bread rolls with smooth glossy golden-brown tops",
+"items": [
+"mext:01028"
+],
+"roll": 0,
+"seed": 27829,
+"prompt": "747d820b73",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01031",
+"ja": "フランスパン",
+"desc": "a long French baguette with a crisp golden-brown crust and diagonal slashes, two round slices cut off showing an airy cream crumb",
+"items": [
+"mext:01031"
+],
+"roll": 0,
+"seed": 28144,
+"prompt": "4a19dcc507",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01088",
+"ja": "ごはん（精白米）",
+"desc": "a mound of freshly cooked plain white Japanese short-grain rice in a ceramic rice bowl (chawan), glossy plump grains sticking together slightly",
+"items": [
+"mext:01088"
+],
+"roll": 0,
+"seed": 73567,
+"prompt": "77caa480a2",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01170",
+"ja": "麦ごはん（押麦）",
+"desc": "a rice bowl of cooked white rice mixed with plump pressed barley grains, each barley grain with a thin dark line down its middle",
+"items": [
+"mext:01170"
+],
+"roll": 0,
+"seed": 11573,
+"prompt": "b58246bf12",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01174",
+"ja": "トースト（食パン焼き）",
+"desc": "a thick square slice of toasted white bread, golden-brown toasted surface with pale crust edges, on a small plate",
+"items": [
+"mext:01174"
+],
+"roll": 0,
+"seed": 7596,
+"prompt": "48834baee1",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01205",
+"ja": "山形食パン",
+"desc": "a tall Japanese loaf of white bread with a rounded double-domed top, golden-brown crust, one slice cut showing white crumb",
+"items": [
+"mext:01205"
+],
+"roll": 0,
+"seed": 71332,
+"prompt": "c942d7d4d4",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01206",
+"ja": "食パン",
+"desc": "a square Japanese white sandwich loaf (shokupan) with two thick slices cut off, soft fine white crumb and a thin golden-brown crust",
+"items": [
+"mext:01206",
+"mext:01207",
+"mext:01211"
+],
+"roll": 0,
+"seed": 80254,
+"prompt": "f6d0f239e4",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01213",
+"ja": "バンズ",
+"desc": "two round hamburger buns with glossy golden-brown tops sprinkled with sesame seeds, one cut in half showing white crumb",
+"items": [
+"mext:01213"
+],
+"roll": 0,
+"seed": 22640,
+"prompt": "d15eedc1e7",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04032",
+"ja": "木綿豆腐",
+"desc": "a block of Japanese momen (firm) tofu, a white rectangular block with a slightly rough cloth-pressed surface, one slice cut off",
+"items": [
+"mext:04032"
+],
+"roll": 0,
+"seed": 59128,
+"prompt": "0329bc9729",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04046",
+"ja": "納豆",
+"desc": "natto fermented soybeans in a small bowl, glossy small brown beans stringy and sticky with fine white threads, a dab of yellow mustard",
+"items": [
+"mext:04046"
+],
+"roll": 0,
+"seed": 28294,
+"prompt": "4d02546e3d",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06061",
+"ja": "キャベツ 生",
+"desc": "a whole round green cabbage with a quarter cut away showing tightly packed pale green and white layered leaves inside",
+"items": [
+"mext:06061"
+],
+"roll": 0,
+"seed": 61100,
+"prompt": "6c459787ff",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06153",
+"ja": "たまねぎ 生",
+"desc": "a whole brown onion with dry golden-brown papery skin and a half onion cut across showing white concentric rings",
+"items": [
+"mext:06153"
+],
+"roll": 0,
+"seed": 47412,
+"prompt": "2a7569263c",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06182",
+"ja": "トマト",
+"desc": "a whole ripe red tomato with a small green star-shaped calyx on top, and a wedge cut from a second tomato showing juicy seed chambers",
+"items": [
+"mext:06182"
+],
+"roll": 0,
+"seed": 82319,
+"prompt": "0ae673e708",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06212",
+"ja": "にんじん 皮つき 生",
+"desc": "two whole fresh orange carrots with a little green leafy top, smooth tapered roots",
+"items": [
+"mext:06212"
+],
+"roll": 0,
+"seed": 70015,
+"prompt": "1f01ca32c6",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07027",
+"ja": "みかん",
+"desc": "two Japanese mikan mandarin oranges, small round bright orange fruits with dimpled peel, one half peeled showing juicy segments",
+"items": [
+"mext:07027"
+],
+"roll": 0,
+"seed": 20984,
+"prompt": "4813ad7329",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07107",
+"ja": "バナナ",
+"desc": "a bunch of three ripe yellow bananas with green-brown tips and a few small brown freckles",
+"items": [
+"mext:07107"
+],
+"roll": 0,
+"seed": 46029,
+"prompt": "45aa2a14d5",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07176",
+"ja": "りんご 皮つき",
+"desc": "a whole red apple with a short stem and a wedge cut from it, glossy red skin and crisp pale cream flesh",
+"items": [
+"mext:07176"
+],
+"roll": 0,
+"seed": 92028,
+"prompt": "c432dc7831",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-12005",
+"ja": "ゆで卵",
+"desc": "two hard-boiled eggs, one whole peeled smooth white egg and one cut in half lengthwise showing a firm bright yellow yolk inside the white",
+"items": [
+"mext:12005",
+"dishes:yudetamago"
+],
+"roll": 0,
+"seed": 42132,
+"prompt": "ba84bf885c",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-12021",
+"ja": "目玉焼き",
+"desc": "a sunny-side-up fried egg seen from above, a round bright yellow yolk in the middle of set white egg white with lightly browned crispy edges, on a small white plate",
+"items": [
+"mext:12021",
+"dishes:medamayaki"
+],
+"roll": 0,
+"seed": 89327,
+"prompt": "8c8308fdca",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-13003",
+"ja": "牛乳",
+"desc": "a clear glass full of white cow's milk",
+"items": [
+"mext:13003"
+],
+"roll": 0,
+"seed": 70916,
+"prompt": "cabb8aae3a",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18028",
+"ja": "豚汁",
+"desc": "tonjiru pork and vegetable miso soup in a dark wooden bowl, cloudy brown miso broth full of thin pork slices, half-moon slices of daikon and carrot, burdock pieces, taro chunks and konjac, topped with green onion",
+"items": [
+"mext:18028",
+"dishes:tonjiru"
+],
+"roll": 0,
+"seed": 28847,
+"prompt": "c2c7f1c979",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18036",
+"ja": "肉じゃが",
+"desc": "nikujaga in a shallow ceramic bowl, soft simmered potato chunks with carrot, translucent onion, thin beef slices and clear shirataki noodles in a little light-brown soy broth, a few green snow peas",
+"items": [
+"mext:18036",
+"dishes:nikujaga"
+],
+"roll": 0,
+"seed": 29929,
+"prompt": "20cecdf0e5",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18049",
+"ja": "麻婆豆腐",
+"desc": "mapo tofu in a shallow dish, soft white tofu cubes in a glossy red-brown spicy chili and minced pork sauce with chili oil, scattered chopped green onion",
+"items": [
+"mext:18049",
+"dishes:mabo-tofu",
+"eatout:mabotofu"
+],
+"roll": 0,
+"seed": 54527,
+"prompt": "4d87c423fe",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18050",
+"ja": "ハンバーグ",
+"desc": "a Japanese hamburg steak on a white plate, a thick oval patty of minced meat with a browned seared surface, covered in glossy dark-brown demi-glace sauce, a few boiled carrot pieces and green beans beside it",
+"items": [
+"mext:18050",
+"dishes:hamburg"
+],
+"roll": 0,
+"seed": 8922,
+"prompt": "ad052f8847",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18057",
+"ja": "チャーハン",
+"desc": "Japanese fried rice (chahan) as a neat dome on a white plate, golden egg-coated separate rice grains with small bits of scrambled egg, diced char siu pork and chopped green onion",
+"items": [
+"mext:18057",
+"dishes:chahan",
+"eatout:chahan"
+],
+"roll": 0,
+"seed": 72473,
+"prompt": "fcac23d372",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+}
+]
