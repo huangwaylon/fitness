@@ -33,9 +33,11 @@ const nearestWeed = (page: Page) =>
 test('weeds sprout on open lawn, never over a control; a tap pulls one, and it stays pulled', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const before = await open(page, '&date=2026-11-04T12:00');
-    const weeds = page.locator('[data-care="weed"]'), day = page.locator('[data-weeds]');
-    // the day's two or three (wherever they are: on the layout they sprout all over the long island)
-    await expect(weeds.first()).toBeAttached();
+    const day = page.locator('[data-weeds]');
+    // the day's two or three (wherever they are: on the layout they sprout all over the long island; one under a
+    // control on this screen isn't drawn till the camera has it clear, and at まえ today's are all under the trees'
+    // buttons and the doors: weeds.first() was only there before the 3D camera was up, care:33's red)
+    await expect(day).toHaveAttribute('data-weeds', /^[23]$/);
     const n = Number(await day.getAttribute('data-weeds'));
     expect(n).toBeGreaterThanOrEqual(2);
     expect(n).toBeLessThanOrEqual(3);
@@ -53,8 +55,8 @@ test('weeds sprout on open lawn, never over a control; a tap pulls one, and it s
         return document.elementsFromPoint(r.left, r.top - 4).filter((e) => e.closest('button') && !e.closest('[data-actor]')).map((e) => e.className);
       }));
     expect(onControls).toEqual([]);
+    await expect.poll(() => nearestWeed(page), { message: 'a weed on screen' }).toBeGreaterThanOrEqual(0);
     const i = await nearestWeed(page);
-    expect(i, 'a weed on screen').toBeGreaterThanOrEqual(0);
     const p = await at(page, '[data-care="weed"]', i);
     await page.mouse.click(p.x, p.y - 4);
     await expect(day).toHaveAttribute('data-weeds', String(n - 1));
