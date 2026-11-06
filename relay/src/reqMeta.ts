@@ -32,7 +32,8 @@ const utf8 = new TextEncoder();
 /** The record's refusal details that are a rule's name (store.ts), as tokens; anything else is just the code. */
 const RULES: Record<string, string> = {
   'no such spend': 'no_such_spend', 'tent full': 'tent_full', 'layout full': 'layout_full', 'decor full': 'decor_full',
-  owned: 'owned', 'pocket short': 'pocket_short', 'wallet short': 'wallet_short', 'no such repeat': 'no_such_repeat'
+  owned: 'owned', 'pocket short': 'pocket_short', 'wallet short': 'wallet_short', 'no such repeat': 'no_such_repeat',
+  'pack full': 'pack_full', 'pack owner': 'pack_owner'
 };
 
 /** One refusal as a rule: `<type>.<rule or code>`. */

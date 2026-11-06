@@ -21,7 +21,9 @@ type Rec = Record<string, unknown>;
  * scopeMayWrite), a `board` note (posting; editing and removing only its own: contract/board.ts boardMayWrite), a
  * `food` entry, a `food_repeat`, a `food_recipe` or a `food_custom` (its own meals, recipes and foods: contract/food.ts
  * foodAccept), a `sell` or a
- * `buy` at the shop (its own pocket and かいがら: contract/shop.ts) and its own cosmetic `pref` or meal-log goal (no `person`).
+ * `buy` at the shop (its own pocket and かいがら: contract/shop.ts), a trip's `pack` op (adding; changing and removing
+ * only what it added: contract/pack.ts PackBook), its own `pack_chk` and `pack_reset`, and its own cosmetic `pref` or
+ * meal-log goal (no `person`). A `trip_note` is the members' (all three read it).
  * Everything else (a buy, a void, a harvest, a member's goal, the
  * island's decor and its layout, an island day, a high-five row) is the members' alone: the record answers `forbidden`.
  * @public (relay/src/store.ts)
@@ -39,9 +41,13 @@ export function guestMayWrite(type: string, d: Rec): boolean {
     case 'sell':
     case 'buy':
     case 'listen':
+    case 'pack':
+    case 'pack_chk':
+    case 'pack_reset':
       // its catches; a note on the board (its own to edit and remove: the record checks, contract/board.ts); its
       // meals, repeats, recipes and custom foods (only its own: contract/food.ts); its own pocket's sells and its own かいがら's buys
-      // (contract/shop.ts: never ベル); its own ききみみ games (contract/listen.ts: seen by it alone)
+      // (contract/shop.ts: never ベル); its own ききみみ games (contract/listen.ts: seen by it alone); a trip's packing list (adding, and changing only what it
+      // added: the record checks, contract/pack.ts), its own ticks and reset (never a trip note: the members')
       return true;
     case 'decor':
       return scopeMayWrite('G', d);
