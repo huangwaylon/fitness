@@ -22,7 +22,7 @@ export interface Photo { src: string; w: number; h: number; alt?: L; caption?: L
 export interface Row { t?: string; text: L; note?: L }
 
 /** A headed list inside a card: `tl` an hour-by-hour timeline (rows carry `t`), `bul` bullets. */
-export interface Section { head?: L; kind: 'tl' | 'bul'; rows: Row[] }
+interface Section { head?: L; kind: 'tl' | 'bul'; rows: Row[] }
 
 interface Stat { k: L; v: L }
 
@@ -129,6 +129,9 @@ export interface Camp {
 
 export interface Trip {
   id: TripId;
+  /** Drawn like its original guide (components/travel/classic/: Okinawa, Seattle), its packing list frozen there;
+   *  any other trip is the quiet TripView's. */
+  classic?: true;
   /** The place ('沖縄'); its year is the start's. */
   title: L;
   eyebrow: L;
