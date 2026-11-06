@@ -26,13 +26,15 @@ const WANT: Record<string, Want> = {
   'mori-work': { lv: 4, items: 70, dialogues: [8, 7], prefix: ['mw', 'dmw'], least: 10, words: 26, lines: 2 },
   'yama-a': { lv: 6, items: 80, dialogues: [10, 10], prefix: ['ya', 'dya'], least: 12, words: 26, lines: 2 },
   'yama-b': { lv: 6, items: 80, dialogues: [10, 10], prefix: ['yb', 'dyb'], least: 15, families: [12, 7], words: 26, lines: 2 },
-  hoshi: { lv: 7, items: 90, dialogues: [13, 12], prefix: ['ho', 'dho'], least: 6, families: [10, 5], words: 45, lines: 3 }
+  hoshi: { lv: 7, items: 90, dialogues: [13, 12], prefix: ['ho', 'dho'], least: 6, families: [10, 5], words: 45, lines: 3 },
+  'variety-mori': { lv: 4, items: 30, dialogues: [3, 3], prefix: ['vm', 'dvm'], least: 7, families: [8, 3], words: 26, lines: 2, us: true },
+  'variety-yama': { lv: 6, items: 30, dialogues: [3, 3], prefix: ['vy', 'dvy'], least: 7, families: [8, 3], words: 26, lines: 2, us: true }
 };
 
 const spoken = (it: Item) => (isDialogue(it) ? it.lines.map((l) => l.tts ?? l.en) : [it.tts ?? it.en]);
 
 describe('kikimimi content sets', () => {
-  it('the five sets, nothing else', () => expect(Object.keys(SETS).sort()).toEqual(Object.keys(WANT).sort()));
+  it('the seven sets, nothing else', () => expect(Object.keys(SETS).sort()).toEqual(Object.keys(WANT).sort()));
 
   for (const [name, w] of Object.entries(WANT))
     it(`${name}: ${w.items} items and ${w.dialogues[0] + w.dialogues[1]} dialogues at level ${w.lv}, ids ${w.prefix.join('- / ')}-, its families, clips ≤ ${w.words} words`, () => {
