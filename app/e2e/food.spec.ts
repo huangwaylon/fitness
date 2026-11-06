@@ -403,12 +403,16 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   const h2 = sheet(page).locator('.navbar h2');
   await expect(sheet(page).locator('[data-tab]')).toHaveText(['記録', 'グラフ']);
   await sheet(page).locator('[data-add=l]').click();
-  // the two ＋ buttons side by side, right under the field, inside the sheet (once the level has slid in)
+  // the つくる chips side by side, right under the field, inside the sheet (once the level has slid in)
   expect(await overflowOf(page)).toEqual([]);
   const [box, rb, cb] = await Promise.all([sheet(page).locator('form[role=search]'), sheet(page).locator('[data-recipe-new]'),
     sheet(page).locator('[data-custom-new]')].map(async (l) => (await l.boundingBox())!));
-  await expect(sheet(page).locator('[data-recipe-new]')).toHaveText('レシピを作る');
-  await expect(sheet(page).locator('[data-custom-new]')).toHaveText('食品を作る');
+  await expect(sheet(page).locator('[data-recipe-new]')).toHaveAccessibleName('レシピを作る');
+  await expect(sheet(page).locator('[data-custom-new]')).toHaveAccessibleName('食品を作る');
+  // with ⚡, one short row of chips at 最近's right end: 最近 high enough for four rows over the iPhone's keyboard (~470 px left)
+  const [rh, row4] = await Promise.all([sheet(page).locator('[data-quick-new]').boundingBox(), sheet(page).locator('[data-food-recent] li').nth(3).boundingBox()]);
+  expect(Math.abs(rh!.y - rb.y)).toBeLessThan(1);
+  expect(row4!.y + row4!.height).toBeLessThanOrEqual(470);
   expect(rb.y).toBeGreaterThan(box.y + box.height - 1);
   expect(rb.y).toBeLessThan(box.y + box.height + 24);
   expect(Math.abs(rb.y - cb.y)).toBeLessThan(1);
@@ -1035,7 +1039,7 @@ test('マイ食品 with a weight, made while adding a recipe ingredient: P/F/C, 
   await rl.locator('[data-recipe-n]').fill('バーと ごはん');
   await sheet(page).locator('[data-recipe-add]').click();
   await expect(sheet(page).locator('[data-food-customs] [data-custom]')).toHaveCount(2); // the demo's, everyone's
-  await expect(sheet(page).locator('[data-custom-new]')).toHaveText('食品を作る'); // alone under the field
+  await expect(sheet(page).locator('[data-custom-new]')).toHaveAccessibleName('食品を作る'); // alone under the field
   expect(await overflowOf(page)).toEqual([]);
   await sheet(page).locator('[data-food-q]').fill('てづくりバー');
   const none = sheet(page).locator('[data-food-none]');
