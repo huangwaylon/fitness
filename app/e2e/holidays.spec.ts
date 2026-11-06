@@ -2,9 +2,9 @@
 // (events.ts): Franklin on Turkey Day (he asks for a fish; the next catch makes him happy), Jingle on Toy Day,
 // Zipper on Bunny Day's first and last days; Bunny Day's eggs in a dig spot. No ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, castIn, controlsUnder, fossilOnScreen, reelOnBite, stageCam, tapFigure, tapOn } from './island.ts';
+import { camTo, castIn, controlsUnder, fossilOnScreen, islandUp, reelOnBite, stageCam, tapFigure, tapOn } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -27,7 +27,7 @@ test('each host on its day, at centre stage clear of every control, introducing 
     ['2027-03-21T09:00', 'zipper', 'ぴょんたろう']
   ] as const) {
     await page.goto(`?demo&date=${date}&critter=none`);
-    await expect(hudMenu(page)).toBeVisible();
+    await islandUp(page);
     const sel = `[data-visitor="${id}"] .art`;
     await camTo(page, await stageCam(page), false);
     await expect(page.locator(sel)).toBeVisible();
@@ -40,7 +40,7 @@ test('each host on its day, at centre stage clear of every control, introducing 
 test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and he stays happy after a reload', async ({ page }) => {
   test.setTimeout(45_000);
   await page.goto('?demo&date=2026-11-26T10:00&critter=sea-bass');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   // he stands at centre stage; the sea is at まえ
   await camTo(page, await stageCam(page), false);
@@ -71,7 +71,7 @@ test('Turkey Day: Franklin asks for a fish; the next catch makes him happy, and 
 
 test('Toy Day: two presents beside the goal trees (まえ)', async ({ page }) => {
   await page.goto('?demo&date=2026-12-24T12:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await camTo(page, 114);
   await expect(page.locator('[data-toy]')).toHaveCount(2);
   await expect(page.locator('[data-toy] .art').first()).toBeVisible();
@@ -80,7 +80,7 @@ test('Toy Day: two presents beside the goal trees (まえ)', async ({ page }) =>
 
 test('Bunny Day week: no Zipper mid-week, and a dig spot can hold an earth egg (no ずかん find)', async ({ page }) => {
   await page.goto('?demo&date=2027-03-24T12:00&find=earth-egg&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-visitor="zipper"]')).toHaveCount(0);
   const p = await fossilOnScreen(page);
   await page.mouse.click(p.x, p.y);

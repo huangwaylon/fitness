@@ -3,15 +3,15 @@
 // time the island opens, しずえ's line; an NH villager's own birthday puts the hat on that villager and a line in its
 // chats. Nothing over a control; no ベル.
 import { expect, test } from './fixtures.ts';
-import { camTo, controlsUnder, geo, offFrom, sawIt, stageCam, tapFigure, watchFor } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { camTo, controlsUnder, geo, islandUp, offFrom, sawIt, stageCam, tapFigure, watchFor } from './island.ts';
+import { hudBells } from './hud.ts';
 
 test("うめ's birthday: hats, the cake clear of every control, confetti and しずえ's wishes", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await watchFor(page, ['.fxa.confetti']);
   await page.goto('?demo&date=2027-03-04T12:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
   await camTo(page, await stageCam(page), false);
@@ -34,7 +34,7 @@ test("うめ's birthday: hats, the cake clear of every control, confetti and し
   expect(await at()).toEqual(first);
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-cake="out"]')).toBeAttached({ timeout: 4000 });
   await page.waitForTimeout(2000);
   await expect(page.locator('.fxa.confetti')).toHaveCount(0); // once a day
@@ -42,18 +42,18 @@ test("うめ's birthday: hats, the cake clear of every control, confetti and し
 
 test('ウェイ’s birthday too; none the day after; an NH villager’s own birthday: its hat', async ({ page }) => {
   await page.goto('?demo&date=2026-10-06T12:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('.vil [data-hat]')).toHaveCount(2);
   await expect(page.locator('.news')).toContainText('さん、おたんじょうび おめでとう！');
   await page.goto('?demo&date=2026-10-07T12:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForTimeout(800);
   await expect(page.locator('.vil [data-hat]')).toHaveCount(0);
   await expect(page.locator('[data-cake]')).toHaveCount(0);
   await expect(page.locator('.news')).toHaveCount(0);
   // Goldie (my villager in the demo) was born on Dec 27
   await page.goto('?demo&date=2026-12-27T12:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('.vil [data-hat]')).toHaveCount(1);
   await expect(page.locator('[data-cake]')).toHaveCount(0);
 });

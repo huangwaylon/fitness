@@ -3,7 +3,7 @@
 // is (deck.ts), so a co-op lesson (later, framework 8c) builds the same deck on every phone; each player's answer
 // choices may be their own tier's (same audio). Pure.
 import { mulberry32, shuffle } from '#lib/random.ts';
-import { isDialogue, levelAt, type Item, type Level } from './bank.ts';
+import { isDialogue, levelAt, shuffleChoices, type Item, type Level } from './bank.ts';
 import type { Ladder } from './ladder.ts';
 import { LESSONS, LESSON_QS, STAGES, type Lesson, type Stage } from './stages.ts';
 
@@ -78,10 +78,5 @@ export function lessonDeck(c: UnitChunk, lesson: Lesson, seed: number, tier?: Ti
     const model = picked.find((it) => isDialogue(it)) ?? pool.find((it) => isDialogue(it));
     if (model) picked = [model, ...picked.filter((it) => it !== model)].slice(0, LESSON_QS);
   }
-  return picked.map((it) => {
-    const set = tier ? c.unit.tiers?.[it.id]?.[tier] : undefined;
-    const choices = set?.choices ?? it.choices, answer = set?.answer ?? it.answer;
-    const order = shuffle(choices.map((_, i) => i), r);
-    return { ...it, choices: order.map((i) => choices[i]), answer: order.indexOf(answer) };
-  });
+  return picked.map((it) => shuffleChoices(it, r, (tier && c.unit.tiers?.[it.id]?.[tier]) || it));
 }

@@ -80,4 +80,20 @@ describe('a batch to the record', () => {
     expect(await flush(() => T)).toMatchObject({ sent: 0, error: 'unavailable', remaining: 2 });
     expect(queued().map((e) => [e.id, e.tries])).toEqual([[a.id, 1], [b.id, 0]]);
   });
+
+  it('a subtask refused for its parent while that parent failed in the same batch waits with it, never dropped', async () => {
+    // the record went on past the parent's failed write (unavailable) and refused the subtask (`wedding parent`)
+    const parent = enqueue('wtask', { id: 'p', at: T, c: T, title: 'Invitations', cat: '', due: '2027-04-18' }, T);
+    const sub = enqueue('wtask', { id: 's', at: T + 1, c: T + 1, title: 'Order cards', cat: '', parent: 'p' }, T);
+    answer = () => ({ ok: true, results: [
+      { id: parent.id, ok: false, error: 'unavailable' },
+      { id: sub.id, ok: false, error: 'bad_request', detail: 'wedding parent' }
+    ] });
+    expect(await flush(() => T)).toMatchObject({ sent: 0, dropped: [], error: 'unavailable', remaining: 2 });
+    // the retry: the parent, then its subtask, both taken
+    answer = (b) => ({ ok: true, results: b.events.map((e: { id: string }) => ({ id: e.id, ok: true, at: '2026-11-02T00:00:00.000Z' })) });
+    await flush(() => T + 60_000);
+    expect(bodies[1].body.events.map((e: { id: string }) => e.id)).toEqual([parent.id, sub.id]);
+    expect(queued()).toEqual([]);
+  });
 });

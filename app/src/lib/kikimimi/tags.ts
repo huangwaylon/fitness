@@ -2,7 +2,7 @@
 // dimensions きろく measures and にがて れんしゅう draws from. Level 4 carries its own `tags` (bank4.ts); levels 1-3 are
 // tagged here, keyed by item id, with the same vocabulary plus S0's segmentals (curriculum §3) and, for replies, the
 // pragmatic layer. bank.test checks every item of levels 1-3 has an entry. Pure.
-import type { Entry, Feature, Tags } from './bank.ts';
+import { PRAGMATICS, type Entry, type Feature, type Tags } from './bank.ts';
 
 type Pragmatic = Tags['pragmatic'];
 type Tag = Feature | Pragmatic;
@@ -52,7 +52,7 @@ const L13: Readonly<Record<string, readonly Tag[]>> = {
   'r3-picnic': ['formula'], 'r3-boxes': ['formula'], 'r3-late': []
 };
 
-const PRAGMATIC: ReadonlySet<string> = new Set<Pragmatic>(['literal', 'indirect', 'refusal', 'hedge', 'understatement', 'sarcasm', 'humour', 'formula', 'ritual', 'attitude', 'deception']);
+const PRAGMATIC: ReadonlySet<string> = new Set<Pragmatic>(PRAGMATICS);
 /** The pragmatic layers that mean "what they really mean" (ほんね). */
 const NOT_SAID: ReadonlySet<string> = new Set<Pragmatic>(['indirect', 'refusal', 'hedge', 'understatement', 'sarcasm', 'humour', 'attitude', 'deception']);
 

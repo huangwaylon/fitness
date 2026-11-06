@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
 import { apiWithMeta } from '../src/reqMeta.ts';
 import { keyOwner } from '../src/auth.ts';
-import { PACK_MAX, packFold, packList, packRowOf, tripNoteOf, type PackRow, type PackSeed } from '../../app/src/lib/contract/pack.ts';
+import { packFold, packList, packRowOf, tripNoteOf, type PackRow, type PackSeed } from '../../app/src/lib/contract/pack.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
 
@@ -23,6 +23,9 @@ const SEED: PackSeed = {
     { id: 'docs', name: { ja: 'しょるい' }, icon: '🪪', items: [{ id: 'passport', text: { ja: 'パスポート' } }] }
   ]
 };
+
+/** A trip's `pack` rows at most (contract/pack.ts). */
+const PACK_MAX = 300;
 
 describe('the packing list in the record', () => {
   let now: number;

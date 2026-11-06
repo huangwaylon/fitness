@@ -1,0 +1,2370 @@
+[
+ {
+  "key": "toyonaka-120454",
+  "ja": "もやしのサラダ（中華ドレッシング）",
+  "desc": "Bean sprout salad: a small bowl of blanched white bean sprouts with thin julienned carrot and cucumber strips, glossy with a soy-sesame Chinese dressing, a few sesame seeds",
+  "items": [
+   "toyonaka:120454"
+  ]
+ },
+ {
+  "key": "toyonaka-120426",
+  "ja": "かぼちゃのみそ汁",
+  "desc": "Kabocha miso soup: a lacquered soup bowl of cloudy tan miso broth with chunks of kabocha pumpkin showing dark green skin and orange flesh, sliced onion and green onion rings",
+  "items": [
+   "toyonaka:120426"
+  ]
+ },
+ {
+  "key": "toyonaka-120428",
+  "ja": "こんにゃくとしめじの炒め物",
+  "desc": "Stir-fried konnyaku and shimeji: a small bowl of grey speckled rubbery konnyaku strips with small beige-capped shimeji mushrooms and carrot slivers, glazed light brown with soy",
+  "items": [
+   "toyonaka:120428"
+  ]
+ },
+ {
+  "key": "toyonaka-120429",
+  "ja": "チンゲン菜とコーンの和え物",
+  "desc": "Bok choy and corn salad: a small bowl of boiled pale green chingensai stems and dark green leaves cut in short pieces, mixed with yellow sweet corn kernels, lightly dressed",
+  "items": [
+   "toyonaka:120429"
+  ]
+ },
+ {
+  "key": "toyonaka-120334",
+  "ja": "チキンカツ",
+  "desc": "Chicken katsu: a plate with a flat breaded chicken cutlet in a golden-brown crisp panko crust, cut into strips showing white meat inside",
+  "items": [
+   "toyonaka:120334",
+   "kumagaya:03356-2"
+  ]
+ },
+ {
+  "key": "toyonaka-120335",
+  "ja": "ごぼうサラダ（ごまドレッシング）",
+  "desc": "Burdock root salad: a small bowl of thin brown matchstick strips of boiled gobo and orange carrot coated in creamy beige sesame dressing, sesame seeds sprinkled on top",
+  "items": [
+   "toyonaka:120335"
+  ]
+ },
+ {
+  "key": "toyonaka-120336",
+  "ja": "ツナと大豆のケチャップ炒め",
+  "desc": "Tuna and soybean ketchup stir-fry: a small bowl of round beige boiled soybeans, flaked tuna, diced onion and carrot coated in a glossy red-orange ketchup sauce",
+  "items": [
+   "toyonaka:120336"
+  ]
+ },
+ {
+  "key": "toyonaka-122519",
+  "ja": "中華豆腐",
+  "desc": "Chinese-style tofu: a bowl of white tofu cubes in a glossy translucent brown thickened sauce with minced pork, carrot, shiitake and green onion bits",
+  "items": [
+   "toyonaka:122519"
+  ]
+ },
+ {
+  "key": "toyonaka-122520",
+  "ja": "五目厚焼き卵",
+  "desc": "Thick rolled omelette with mixed vegetables: a plate of rectangular yellow tamagoyaki slices showing layered egg dotted with bits of carrot, green peas, shiitake and green onion",
+  "items": [
+   "toyonaka:122520"
+  ]
+ },
+ {
+  "key": "toyonaka-122521",
+  "ja": "焼きビーフン",
+  "desc": "Fried rice vermicelli: a plate of thin white translucent bifun noodles stir-fried with pork, cabbage, carrot strips, green pepper and bean sprouts, lightly browned",
+  "items": [
+   "toyonaka:122521"
+  ]
+ },
+ {
+  "key": "toyonaka-108591",
+  "ja": "もやしのマスタード風味和え",
+  "desc": "Bean sprouts with mustard dressing: a small bowl of white blanched sprouts with green komatsuna pieces and carrot strips in a pale yellow mustard-soy dressing",
+  "items": [
+   "toyonaka:108591"
+  ]
+ },
+ {
+  "key": "toyonaka-108592",
+  "ja": "液体ココア",
+  "desc": "Cocoa drink: a glass of smooth milky brown cocoa, opaque, with a little light foam on top",
+  "items": [
+   "toyonaka:108592"
+  ]
+ },
+ {
+  "key": "toyonaka-112245",
+  "ja": "玉ねぎのみそ汁",
+  "desc": "Onion miso soup: a lacquered soup bowl of cloudy tan miso broth with soft translucent sliced onion, small wakame bits and green onion rings",
+  "items": [
+   "toyonaka:112245"
+  ]
+ },
+ {
+  "key": "toyonaka-112247",
+  "ja": "豚肉とくきわかめのバターしょうゆ炒め",
+  "desc": "Pork and wakame stem stir-fry: a plate of sliced pork with crunchy dark green strips of kuki-wakame seaweed stem, onion and carrot, glossy with butter-soy sauce",
+  "items": [
+   "toyonaka:112247"
+  ]
+ },
+ {
+  "key": "toyonaka-112248",
+  "ja": "ハムと野菜の和え物",
+  "desc": "Ham and vegetable salad: a small bowl of pink ham strips with shredded cabbage, cucumber and carrot strips in a light clear dressing",
+  "items": [
+   "toyonaka:112248"
+  ]
+ },
+ {
+  "key": "toyonaka-120477",
+  "ja": "さわらのゆずみそかけ",
+  "desc": "Grilled Spanish mackerel with yuzu miso: a plate with a sawara fillet, white flesh and silver-grey skin, topped with a smear of glossy yellow-tan miso sauce flecked with yuzu peel",
+  "items": [
+   "toyonaka:120477"
+  ]
+ },
+ {
+  "key": "toyonaka-120478",
+  "ja": "白桃ゼリー",
+  "desc": "White peach jelly: a small clear plastic cup of pale translucent peach-pink jelly with soft white peach pieces inside",
+  "items": [
+   "toyonaka:120478"
+  ]
+ },
+ {
+  "key": "toyonaka-120479",
+  "ja": "なすと豚肉の炒め物",
+  "desc": "Eggplant and pork stir-fry: a plate of soft glossy eggplant pieces with purple skin, sliced pork, green pepper and onion in a brown soy sauce",
+  "items": [
+   "toyonaka:120479"
+  ]
+ },
+ {
+  "key": "toyonaka-122444",
+  "ja": "パオズ",
+  "desc": "Baozi: a plate with a round fluffy white steamed bun with a pleated twisted top, one cut open showing a brown minced pork and vegetable filling",
+  "items": [
+   "toyonaka:122444"
+  ]
+ },
+ {
+  "key": "toyonaka-122273",
+  "ja": "もずく汁",
+  "desc": "Mozuku soup: a lacquered soup bowl of clear dashi broth with dark brown slippery thin threads of mozuku seaweed, tofu cubes and green onion",
+  "items": [
+   "toyonaka:122273"
+  ]
+ },
+ {
+  "key": "toyonaka-122274",
+  "ja": "豚肉の黒みつかけ",
+  "desc": "Grilled pork with kuromitsu: a plate of three grilled pork slices glazed with a shiny dark brown black-sugar syrup sauce",
+  "items": [
+   "toyonaka:122274",
+   "toyonaka:267622"
+  ]
+ },
+ {
+  "key": "toyonaka-122275",
+  "ja": "シークヮーサータルト",
+  "desc": "Shikuwasa tart: a small round tart with a golden crumbly pastry shell filled with smooth pale yellow-green citrus custard",
+  "items": [
+   "toyonaka:122275"
+  ]
+ },
+ {
+  "key": "toyonaka-122277",
+  "ja": "人参しりしり",
+  "desc": "Ninjin shirishiri: a small bowl of fine bright orange carrot shreds stir-fried with scrambled yellow egg and tuna flakes, Okinawan style",
+  "items": [
+   "toyonaka:122277",
+   "toyonaka:278195"
+  ]
+ },
+ {
+  "key": "toyonaka-121395",
+  "ja": "白いんげん豆のポタージュ",
+  "desc": "White bean potage: a soup bowl of smooth thick creamy off-white puree of white kidney beans, a little green parsley on top",
+  "items": [
+   "toyonaka:121395"
+  ]
+ },
+ {
+  "key": "toyonaka-121396",
+  "ja": "ハンバーグのケチャップかけ",
+  "desc": "Hamburg steak with ketchup: a plate with an oval browned minced-meat patty topped with glossy red ketchup sauce",
+  "items": [
+   "toyonaka:121396",
+   "toyonaka:269436"
+  ]
+ },
+ {
+  "key": "toyonaka-122287",
+  "ja": "豚肉のオイスターソース炒め",
+  "desc": "Pork stir-fried with oyster sauce: a plate of sliced pork with green pepper, onion, carrot and bamboo shoots coated in glossy dark brown oyster sauce",
+  "items": [
+   "toyonaka:122287"
+  ]
+ },
+ {
+  "key": "toyonaka-122288",
+  "ja": "豆腐しゅうまい",
+  "desc": "Tofu shumai: steamed cylindrical open-topped dumplings in thin pale yellow wrappers, showing a soft pale tofu and pork filling, a green pea on top",
+  "items": [
+   "toyonaka:122288"
+  ]
+ },
+ {
+  "key": "toyonaka-120421",
+  "ja": "さばのみりんしょうゆづけ",
+  "desc": "Grilled mackerel marinated in mirin and soy: a plate with a saba fillet, striped blue-grey skin, glossy amber-brown glaze and browned edges",
+  "items": [
+   "toyonaka:120421"
+  ]
+ },
+ {
+  "key": "toyonaka-120422",
+  "ja": "なすとピーマンのみそ炒め",
+  "desc": "Eggplant and green pepper miso stir-fry: a plate of purple-skinned eggplant chunks and bright green pepper pieces with pork, coated in glossy brown miso sauce",
+  "items": [
+   "toyonaka:120422"
+  ]
+ },
+ {
+  "key": "toyonaka-120364",
+  "ja": "じゃがいもと玉ねぎのスープ（コンソメ）",
+  "desc": "Potato and onion consomme soup: a soup bowl of clear golden broth with diced potato, soft sliced onion, carrot bits and parsley flecks",
+  "items": [
+   "toyonaka:120364"
+  ]
+ },
+ {
+  "key": "toyonaka-120365",
+  "ja": "ユーリンチー",
+  "desc": "Yuurinchi, Chinese fried chicken: a plate of crisp golden fried chicken pieces drizzled with a glossy soy-vinegar sauce with chopped green onion and ginger",
+  "items": [
+   "toyonaka:120365"
+  ]
+ },
+ {
+  "key": "toyonaka-120366",
+  "ja": "中華風サラダ（中華ドレッシング）",
+  "desc": "Chinese-style salad: a small bowl of thin clear harusame glass noodles with cucumber, carrot and ham strips in a soy-sesame dressing",
+  "items": [
+   "toyonaka:120366"
+  ]
+ },
+ {
+  "key": "toyonaka-120367",
+  "ja": "ツナとキムチの炒め物",
+  "desc": "Tuna and kimchi stir-fry: a plate of red-orange kimchi napa cabbage with flaked tuna, onion and green chives, glossy",
+  "items": [
+   "toyonaka:120367"
+  ]
+ },
+ {
+  "key": "toyonaka-120370",
+  "ja": "セルフチキンライスの具",
+  "desc": "Chicken rice mix: a small bowl of diced chicken, onion, carrot and green peas cooked in a red-orange ketchup sauce, a topping to stir into rice",
+  "items": [
+   "toyonaka:120370"
+  ]
+ },
+ {
+  "key": "toyonaka-120372",
+  "ja": "キャベツとウインナーのソテー",
+  "desc": "Cabbage and sausage saute: a plate of soft pale green cabbage pieces with sliced pink wiener sausage rounds and carrot strips, lightly glossy",
+  "items": [
+   "toyonaka:120372"
+  ]
+ },
+ {
+  "key": "toyonaka-120373",
+  "ja": "ひじきのサラダ（和風ドレッシング）",
+  "desc": "Hijiki salad: a small bowl of short black hijiki seaweed sprigs with cucumber, carrot strips, yellow corn and green edamame in a clear soy dressing",
+  "items": [
+   "toyonaka:120373"
+  ]
+ },
+ {
+  "key": "toyonaka-267580",
+  "ja": "ほっけの一夜干し",
+  "desc": "Grilled overnight-dried atka mackerel: a plate with a split butterflied hokke fish, golden-brown grilled flesh with dark grey striped skin at the edges",
+  "items": [
+   "toyonaka:267580"
+  ]
+ },
+ {
+  "key": "toyonaka-267581",
+  "ja": "豚肉とキャベツのカレー炒め",
+  "desc": "Pork and cabbage curry stir-fry: a plate of sliced pork, cabbage and onion tinted yellow-brown with curry powder",
+  "items": [
+   "toyonaka:267581"
+  ]
+ },
+ {
+  "key": "toyonaka-267549",
+  "ja": "ラビオリスープ",
+  "desc": "Ravioli soup: a soup bowl of clear consomme broth with small square ravioli pasta pillows, carrot, onion and cabbage pieces",
+  "items": [
+   "toyonaka:267549",
+   "kumagaya:03004"
+  ]
+ },
+ {
+  "key": "toyonaka-267550",
+  "ja": "フレンチポテト",
+  "desc": "French fries: a plate of golden deep-fried potato sticks, crisp outside, lightly salted",
+  "items": [
+   "toyonaka:267550"
+  ]
+ },
+ {
+  "key": "toyonaka-269269",
+  "ja": "ささみとブロッコリーのサラダ",
+  "desc": "Chicken and broccoli salad: a small bowl of shredded white chicken tenderloin with bright green broccoli florets, corn and carrot in a light dressing",
+  "items": [
+   "toyonaka:269269",
+   "toyonaka:131138"
+  ]
+ },
+ {
+  "key": "toyonaka-267560",
+  "ja": "豆腐のコンソメスープ",
+  "desc": "Tofu consomme soup: a soup bowl of clear golden broth with white tofu cubes, onion slices, carrot and green leafy vegetables",
+  "items": [
+   "toyonaka:267560"
+  ]
+ },
+ {
+  "key": "toyonaka-267561",
+  "ja": "白身魚のフリッター",
+  "desc": "White fish fritter: a plate of fish pieces in puffy smooth pale golden batter, not breadcrumbs, one cut showing white flaky fish",
+  "items": [
+   "toyonaka:267561"
+  ]
+ },
+ {
+  "key": "toyonaka-267572",
+  "ja": "味付小魚",
+  "desc": "Seasoned small fish: a small dish of tiny dried sardines, silver-brown and crunchy, with a glossy sweet soy candied coating and sesame seeds",
+  "items": [
+   "toyonaka:267572"
+  ]
+ },
+ {
+  "key": "toyonaka-267573",
+  "ja": "割干大根の味噌汁",
+  "desc": "Miso soup with dried daikon: a lacquered soup bowl of cloudy tan miso broth with thick chewy beige strips of split dried daikon, wakame and green onion",
+  "items": [
+   "toyonaka:267573"
+  ]
+ },
+ {
+  "key": "toyonaka-267574",
+  "ja": "いかのソース焼き",
+  "desc": "Grilled squid with sauce: a plate of white squid pieces, scored and curled, glazed dark brown with Worcestershire-style sauce",
+  "items": [
+   "toyonaka:267574"
+  ]
+ },
+ {
+  "key": "toyonaka-267575",
+  "ja": "豚肉とごぼうの甘辛煮",
+  "desc": "Sweet-savory simmered pork and burdock: a small bowl of thin pork slices with brown burdock root slivers and carrot in a glossy dark soy-sugar glaze",
+  "items": [
+   "toyonaka:267575"
+  ]
+ },
+ {
+  "key": "toyonaka-267576",
+  "ja": "フローズンヨーグルト",
+  "desc": "Frozen yogurt: a small cup of white frozen yogurt with a smooth icy texture, lightly frosted",
+  "items": [
+   "toyonaka:267576"
+  ]
+ },
+ {
+  "key": "toyonaka-269280",
+  "ja": "チョレギサラダ",
+  "desc": "Choregi salad: a bowl of torn green lettuce, cucumber and wakame tossed in a sesame-oil and salt dressing, sprinkled with sesame seeds and crumbled nori",
+  "items": [
+   "toyonaka:269280"
+  ]
+ },
+ {
+  "key": "toyonaka-267591",
+  "ja": "たんたんビーフン",
+  "desc": "Tantan rice noodle soup: a bowl of thin white bifun noodles in an orange-tinted sesame and chili broth with minced pork, bok choy and bean sprouts",
+  "items": [
+   "toyonaka:267591"
+  ]
+ },
+ {
+  "key": "toyonaka-267592",
+  "ja": "野菜しゅうまい",
+  "desc": "Vegetable shumai: steamed cylindrical open-topped dumplings in thin pale yellow wrappers, showing a pale pork filling with green flecks of vegetables",
+  "items": [
+   "toyonaka:267592",
+   "toyonaka:126014"
+  ]
+ },
+ {
+  "key": "toyonaka-267593",
+  "ja": "鶏肉とコーンのバター炒め",
+  "desc": "Chicken and corn butter stir-fry: a plate of diced chicken with yellow sweet corn, green peas, onion and carrot, glossy with butter",
+  "items": [
+   "toyonaka:267593"
+  ]
+ },
+ {
+  "key": "toyonaka-267594",
+  "ja": "菜飯",
+  "desc": "Nameshi, greens rice: a rice bowl of white rice mixed evenly with finely chopped bright green daikon leaves",
+  "items": [
+   "toyonaka:267594"
+  ]
+ },
+ {
+  "key": "toyonaka-267597",
+  "ja": "豚肉の唐揚げ",
+  "desc": "Pork karaage: a plate of craggy deep-fried pork pieces with a crisp golden-brown coating",
+  "items": [
+   "toyonaka:267597"
+  ]
+ },
+ {
+  "key": "toyonaka-267598",
+  "ja": "ツナともやしの炒め物",
+  "desc": "Tuna and bean sprout stir-fry: a plate of white bean sprouts with flaked tuna, carrot strips and green chives, lightly glossy",
+  "items": [
+   "toyonaka:267598"
+  ]
+ },
+ {
+  "key": "toyonaka-267601",
+  "ja": "ポークビーンズ",
+  "desc": "Pork and beans: a bowl of round beige soybeans with diced pork, potato, carrot and onion in a red-brown tomato stew",
+  "items": [
+   "toyonaka:267601",
+   "kumagaya:78"
+  ]
+ },
+ {
+  "key": "toyonaka-267602",
+  "ja": "鶏肉のステーキソースかけ",
+  "desc": "Grilled chicken with steak sauce: a plate of grilled chicken thigh pieces with browned skin, topped with a glossy dark brown sauce",
+  "items": [
+   "toyonaka:267602"
+  ]
+ },
+ {
+  "key": "toyonaka-267603",
+  "ja": "スパゲティサラダ",
+  "desc": "Spaghetti salad: a small bowl of short boiled spaghetti in creamy white mayonnaise with cucumber slices, ham strips and carrot",
+  "items": [
+   "toyonaka:267603"
+  ]
+ },
+ {
+  "key": "toyonaka-267606",
+  "ja": "わかめの味噌汁",
+  "desc": "Wakame miso soup: a lacquered soup bowl of cloudy tan miso broth with soft dark green wakame seaweed, small tofu cubes and green onion rings",
+  "items": [
+   "toyonaka:267606"
+  ]
+ },
+ {
+  "key": "toyonaka-267616",
+  "ja": "つくね団子のすまし汁",
+  "desc": "Clear soup with chicken meatballs: a lacquered soup bowl of clear golden dashi broth with round pale grey-brown tsukune meatballs, carrot, mushrooms and greens",
+  "items": [
+   "toyonaka:267616"
+  ]
+ },
+ {
+  "key": "toyonaka-267617",
+  "ja": "あじのフライ",
+  "desc": "Fried horse mackerel: a plate with a butterflied aji fillet in crisp golden panko, shaped like a flat fish, with a little brown sauce",
+  "items": [
+   "toyonaka:267617"
+  ]
+ },
+ {
+  "key": "toyonaka-267618",
+  "ja": "豚肉のスタミナ炒め",
+  "desc": "Pork stamina stir-fry: a plate of sliced pork with green garlic chives, onion, cabbage and carrot in a glossy dark garlic-soy sauce",
+  "items": [
+   "toyonaka:267618"
+  ]
+ },
+ {
+  "key": "toyonaka-267621",
+  "ja": "もずくスープ",
+  "desc": "Mozuku soup: a soup bowl of clear Chinese-style broth with dark brown slippery threads of mozuku seaweed, yellow egg ribbons and green onion",
+  "items": [
+   "toyonaka:267621",
+   "kumagaya:03442"
+  ]
+ },
+ {
+  "key": "toyonaka-267623",
+  "ja": "にんじんシリシリサラダ",
+  "desc": "Shredded carrot salad: a small bowl of fine bright orange raw carrot shreds with tuna flakes in a light dressing, sesame seeds",
+  "items": [
+   "toyonaka:267623"
+  ]
+ },
+ {
+  "key": "toyonaka-269262",
+  "ja": "とり塩ラーメン",
+  "desc": "Chicken salt ramen: a bowl of wavy yellow ramen noodles in clear pale golden broth with sliced chicken, bean sprouts, cabbage, carrot and green onion",
+  "items": [
+   "toyonaka:269262"
+  ]
+ },
+ {
+  "key": "toyonaka-269263",
+  "ja": "鱧とコーンのしんじょうフライ",
+  "desc": "Fried pike conger and corn fish cakes: a plate of round patties in golden panko crust, one cut open showing pale white fish paste dotted with yellow corn",
+  "items": [
+   "toyonaka:269263"
+  ]
+ },
+ {
+  "key": "toyonaka-269264",
+  "ja": "茎わかめの炒め物",
+  "desc": "Stir-fried wakame stems: a small bowl of thin crunchy dark green kuki-wakame strips with carrot, glossy with soy and sesame",
+  "items": [
+   "toyonaka:269264"
+  ]
+ },
+ {
+  "key": "toyonaka-267631",
+  "ja": "ミートマカロニ",
+  "desc": "Macaroni with meat sauce: a plate of short tube macaroni coated in a red-brown minced-meat tomato sauce",
+  "items": [
+   "toyonaka:267631"
+  ]
+ },
+ {
+  "key": "toyonaka-267636",
+  "ja": "米粉ビーフカレー（ごはんなし）",
+  "desc": "Japanese beef curry: a bowl of thick glossy brown curry sauce with beef pieces, potato chunks, carrot and onion, no rice",
+  "items": [
+   "toyonaka:267636"
+  ]
+ },
+ {
+  "key": "toyonaka-267637",
+  "ja": "あげかぼちゃ",
+  "desc": "Fried kabocha: a plate of deep-fried kabocha pumpkin wedges with dark green skin and bright orange flesh, lightly crisp",
+  "items": [
+   "toyonaka:267637"
+  ]
+ },
+ {
+  "key": "toyonaka-267638",
+  "ja": "プチプチサラダ",
+  "desc": "Puchipuchi salad: a small bowl of tiny round chewy grains mixed with diced cucumber, carrot, corn and ham in a light dressing, popping texture",
+  "items": [
+   "toyonaka:267638"
+  ]
+ },
+ {
+  "key": "toyonaka-267641",
+  "ja": "肉団子の甘酢煮",
+  "desc": "Sweet and sour meatballs: a bowl of round browned pork meatballs coated in a glossy translucent red-amber sweet-and-sour sauce",
+  "items": [
+   "toyonaka:267641"
+  ]
+ },
+ {
+  "key": "toyonaka-267642",
+  "ja": "太刀魚の照り焼き",
+  "desc": "Teriyaki beltfish: a plate of long flat cutlassfish pieces with shiny silver skin, glazed glossy dark amber with teriyaki sauce",
+  "items": [
+   "toyonaka:267642"
+  ]
+ },
+ {
+  "key": "toyonaka-267643",
+  "ja": "ささみともやしの中華あえ",
+  "desc": "Chicken and bean sprouts Chinese-style: a small bowl of shredded white chicken tenderloin, white bean sprouts, cucumber and carrot strips in a soy-sesame dressing",
+  "items": [
+   "toyonaka:267643"
+  ]
+ },
+ {
+  "key": "toyonaka-269301",
+  "ja": "沖縄そば",
+  "desc": "Okinawa soba: a bowl of thick flat pale yellow wheat noodles in clear bonito-pork broth topped with braised pork belly slices, fish cake, green onion and red pickled ginger",
+  "items": [
+   "toyonaka:269301"
+  ]
+ },
+ {
+  "key": "toyonaka-269302",
+  "ja": "紅芋コロッケ",
+  "desc": "Purple sweet potato croquette: an oval golden panko-crumbed croquette, cut open showing vivid purple mashed beni-imo filling",
+  "items": [
+   "toyonaka:269302"
+  ]
+ },
+ {
+  "key": "toyonaka-269303",
+  "ja": "タマナーチャンプルー",
+  "desc": "Tamana champuru: a plate of stir-fried cabbage with pork, carrot and tuna, mixed with scrambled yellow egg, Okinawan style",
+  "items": [
+   "toyonaka:269303"
+  ]
+ },
+ {
+  "key": "toyonaka-269249",
+  "ja": "三色ゼリー",
+  "desc": "Three-colour jelly: a small cup of layered translucent jelly in three bands of red, white and green",
+  "items": [
+   "toyonaka:269249"
+  ]
+ },
+ {
+  "key": "toyonaka-267664",
+  "ja": "コーンクリームスープ（米粉）",
+  "desc": "Cream of corn soup: a soup bowl of thick smooth pale yellow creamy soup with sweet corn kernels and parsley flecks",
+  "items": [
+   "toyonaka:267664"
+  ]
+ },
+ {
+  "key": "toyonaka-267665",
+  "ja": "フィッシュフライ",
+  "desc": "Fish fry: a plate of rectangular white fish pieces in crisp golden panko crust, one cut showing flaky white flesh",
+  "items": [
+   "toyonaka:267665"
+  ]
+ },
+ {
+  "key": "toyonaka-267666",
+  "ja": "チリコンカン",
+  "desc": "Chili con carne: a bowl of red kidney beans and minced meat in a thick red-brown tomato chili stew with diced onion",
+  "items": [
+   "toyonaka:267666"
+  ]
+ },
+ {
+  "key": "toyonaka-269272",
+  "ja": "トックスープ",
+  "desc": "Tteok soup: a soup bowl of clear broth with flat oval white slices of chewy Korean rice cake, beef, egg ribbons, green onion and nori",
+  "items": [
+   "toyonaka:269272",
+   "kumagaya:02570"
+  ]
+ },
+ {
+  "key": "toyonaka-269274",
+  "ja": "もやしとにらの炒め物",
+  "desc": "Bean sprout and garlic chive stir-fry: a plate of white bean sprouts with long dark green nira chives and carrot strips",
+  "items": [
+   "toyonaka:269274"
+  ]
+ },
+ {
+  "key": "toyonaka-267674",
+  "ja": "バチ汁",
+  "desc": "Bachi-jiru: a bowl of miso soup with flat irregular white wheat-flour dough pieces, pork, daikon, carrot and green onion",
+  "items": [
+   "toyonaka:267674"
+  ]
+ },
+ {
+  "key": "toyonaka-267675",
+  "ja": "星形ハンバーグの照り焼き",
+  "desc": "Star-shaped hamburg steak teriyaki: a plate with a five-pointed star-shaped browned meat patty glazed with glossy dark teriyaki sauce",
+  "items": [
+   "toyonaka:267675"
+  ]
+ },
+ {
+  "key": "toyonaka-269524",
+  "ja": "モロヘイヤのスープ",
+  "desc": "Molokhia soup: a soup bowl of clear broth with finely chopped dark green slippery molokhia leaves, egg ribbons, onion and carrot",
+  "items": [
+   "toyonaka:269524"
+  ]
+ },
+ {
+  "key": "toyonaka-122504",
+  "ja": "ャベツのピリ辛じゃこ炒め",
+  "desc": "Spicy cabbage and dried baby fish stir-fry: a plate of pale green cabbage pieces with tiny white chirimen-jako fish, carrot and flecks of red chili",
+  "items": [
+   "toyonaka:122504"
+  ]
+ },
+ {
+  "key": "toyonaka-122563",
+  "ja": "たこナゲット",
+  "desc": "Octopus nuggets: a plate of small oval golden fried nuggets, one cut showing pale fish paste with pink-purple octopus bits",
+  "items": [
+   "toyonaka:122563",
+   "kumagaya:2699"
+  ]
+ },
+ {
+  "key": "toyonaka-122564",
+  "ja": "スラッピージョー",
+  "desc": "Sloppy joe filling: a bowl of loose browned minced meat with diced onion and green pepper in a thick sweet red tomato sauce",
+  "items": [
+   "toyonaka:122564",
+   "kumagaya:506"
+  ]
+ },
+ {
+  "key": "toyonaka-122566",
+  "ja": "きゅうりのピクルス",
+  "desc": "Cucumber pickles: a small dish of crisp pale green cucumber slices in a clear sweet vinegar brine",
+  "items": [
+   "toyonaka:122566"
+  ]
+ },
+ {
+  "key": "toyonaka-124107",
+  "ja": "枝豆とコーンのソテー",
+  "desc": "Edamame and corn saute: a small bowl of bright green shelled edamame beans and yellow corn kernels, glossy with butter",
+  "items": [
+   "toyonaka:124107"
+  ]
+ },
+ {
+  "key": "toyonaka-124136",
+  "ja": "豚肉のマスタード炒め",
+  "desc": "Pork mustard stir-fry: a plate of sliced pork with cabbage, onion and carrot coated in a pale yellow grainy mustard sauce",
+  "items": [
+   "toyonaka:124136"
+  ]
+ },
+ {
+  "key": "toyonaka-124137",
+  "ja": "さわらのおろししょうゆかけ",
+  "desc": "Grilled Spanish mackerel with grated daikon: a plate with a sawara fillet, white flesh and silver skin, topped with a mound of white grated daikon and brown soy sauce",
+  "items": [
+   "toyonaka:124137"
+  ]
+ },
+ {
+  "key": "toyonaka-124138",
+  "ja": "春雨の中華炒め",
+  "desc": "Stir-fried glass noodles: a plate of translucent light brown harusame noodles stir-fried with minced pork, carrot, shiitake, cabbage and green chives",
+  "items": [
+   "toyonaka:124138"
+  ]
+ },
+ {
+  "key": "toyonaka-124140",
+  "ja": "ブロッコリーのサラダ（フレンチドレッシング白）",
+  "desc": "Broccoli salad: a small bowl of bright green boiled broccoli florets with corn and carrot, coated in a creamy opaque white French dressing",
+  "items": [
+   "toyonaka:124140"
+  ]
+ },
+ {
+  "key": "toyonaka-121671",
+  "ja": "あおさ入り厚焼き卵",
+  "desc": "Thick omelette with aosa seaweed: a plate of rectangular yellow tamagoyaki slices speckled throughout with bright green flecks of aosa seaweed",
+  "items": [
+   "toyonaka:121671"
+  ]
+ },
+ {
+  "key": "toyonaka-122178",
+  "ja": "とうがんのすまし汁",
+  "desc": "Winter melon clear soup: a lacquered soup bowl of clear golden dashi with translucent pale green soft tougan pieces, chicken, carrot and green onion",
+  "items": [
+   "toyonaka:122178"
+  ]
+ },
+ {
+  "key": "toyonaka-122179",
+  "ja": "星型ハンバーグのトマトソースかけ",
+  "desc": "Star-shaped hamburg steak with tomato sauce: a plate with a five-pointed star-shaped browned meat patty topped with red tomato sauce",
+  "items": [
+   "toyonaka:122179"
+  ]
+ },
+ {
+  "key": "toyonaka-122180",
+  "ja": "七夕ゼリー",
+  "desc": "Tanabata jelly: a small cup of translucent blue jelly like a night sky with small yellow star-shaped pieces inside",
+  "items": [
+   "toyonaka:122180"
+  ]
+ },
+ {
+  "key": "toyonaka-122181",
+  "ja": "豚肉とピーマンの炒め物",
+  "desc": "Pork and green pepper stir-fry: a plate of thin strips of pork, bright green bell pepper and bamboo shoot in a glossy brown soy-oyster sauce",
+  "items": [
+   "toyonaka:122181"
+  ]
+ },
+ {
+  "key": "toyonaka-121696",
+  "ja": "バジルチキン",
+  "desc": "Basil chicken: a plate of grilled chicken thigh pieces with browned skin, sprinkled with green basil flecks",
+  "items": [
+   "toyonaka:121696"
+  ]
+ },
+ {
+  "key": "toyonaka-122634",
+  "ja": "じゃがいもの塩こうじ煮",
+  "desc": "Potatoes simmered in shio-koji: a bowl of soft pale potato chunks with chicken, onion, carrot and green beans in a light clear broth",
+  "items": [
+   "toyonaka:122634"
+  ]
+ },
+ {
+  "key": "toyonaka-122636",
+  "ja": "ナポリタンスパゲティ",
+  "desc": "Spaghetti Napolitan: a plate of spaghetti tossed in orange-red ketchup sauce with sliced sausage, onion, green pepper and mushrooms",
+  "items": [
+   "toyonaka:122636"
+  ]
+ },
+ {
+  "key": "toyonaka-122637",
+  "ja": "もやしのドレッシング和え（かんきつドレッシング）",
+  "desc": "Bean sprouts with citrus dressing: a small bowl of white blanched sprouts with cucumber, carrot strips and green leaves in a clear light citrus dressing",
+  "items": [
+   "toyonaka:122637"
+  ]
+ },
+ {
+  "key": "toyonaka-122629",
+  "ja": "ヤンニョムチキン",
+  "desc": "Yangnyeom chicken: a plate of crisp fried chicken pieces coated in a sticky glossy red-orange sweet chili sauce, sesame seeds",
+  "items": [
+   "toyonaka:122629"
+  ]
+ },
+ {
+  "key": "toyonaka-122630",
+  "ja": "ハムのぷるぷるサラダ（中華ドレッシング）",
+  "desc": "Ham salad with jiggly agar: a small bowl of clear translucent noodle-like strips of kanten agar jelly with pink ham, cucumber and carrot strips in a soy-sesame dressing",
+  "items": [
+   "toyonaka:122630",
+   "toyonaka:121981",
+   "toyonaka:127124"
+  ]
+ },
+ {
+  "key": "toyonaka-121728",
+  "ja": "春雨の和え物",
+  "desc": "Glass noodle salad: a small bowl of clear translucent harusame noodles with cucumber, carrot and ham strips in a vinegar-soy dressing",
+  "items": [
+   "toyonaka:121728"
+  ]
+ },
+ {
+  "key": "toyonaka-124170",
+  "ja": "野菜入りオムレツ",
+  "desc": "Vegetable omelette: a plate with an oval golden-yellow omelette, cut to show soft egg with carrot, onion, spinach and green bits",
+  "items": [
+   "toyonaka:124170"
+  ]
+ },
+ {
+  "key": "toyonaka-121812",
+  "ja": "鶏肉のレモンソースかけ",
+  "desc": "Chicken with lemon sauce: a plate of grilled chicken pieces with browned skin, topped with a glossy pale yellow translucent lemon sauce",
+  "items": [
+   "toyonaka:121812"
+  ]
+ },
+ {
+  "key": "toyonaka-121813",
+  "ja": "ラタトゥイユ",
+  "desc": "Ratatouille: a bowl of stewed chunks of purple-skinned eggplant, green zucchini, red and yellow bell pepper, onion and tomato in a red tomato sauce",
+  "items": [
+   "toyonaka:121813"
+  ]
+ },
+ {
+  "key": "toyonaka-122678",
+  "ja": "かつめし",
+  "desc": "Katsumeshi: a plate of white rice topped with sliced breaded pork cutlet covered in a glossy dark brown demi-glace sauce, with boiled cabbage alongside",
+  "items": [
+   "toyonaka:122678"
+  ]
+ },
+ {
+  "key": "toyonaka-122680",
+  "ja": "キャベツのソテー",
+  "desc": "Cabbage saute: a small bowl of soft lightly browned pale green cabbage pieces with carrot strips, glossy with oil",
+  "items": [
+   "toyonaka:122680"
+  ]
+ },
+ {
+  "key": "toyonaka-269402",
+  "ja": "たこボールのすまし汁",
+  "desc": "Clear soup with octopus balls: a lacquered soup bowl of clear dashi with round pale fish-paste balls dotted with octopus, mushrooms, carrot and greens",
+  "items": [
+   "toyonaka:269402"
+  ]
+ },
+ {
+  "key": "toyonaka-269404",
+  "ja": "ごま酢炒め",
+  "desc": "Sesame vinegar stir-fry: a plate of sliced pork with cabbage, onion and carrot glazed in a light brown tangy sauce, coated in white sesame seeds",
+  "items": [
+   "toyonaka:269404"
+  ]
+ },
+ {
+  "key": "toyonaka-269405",
+  "ja": "ミルクツイスト",
+  "desc": "Milk twist bread: a plate with a soft white bread roll shaped as a twisted rope, pale golden glossy top",
+  "items": [
+   "toyonaka:269405"
+  ]
+ },
+ {
+  "key": "toyonaka-269407",
+  "ja": "ニョッキのケチャップ煮",
+  "desc": "Gnocchi in ketchup sauce: a bowl of small ridged oval potato gnocchi with sausage, onion and carrot in an orange-red ketchup sauce",
+  "items": [
+   "toyonaka:269407"
+  ]
+ },
+ {
+  "key": "toyonaka-269409",
+  "ja": "サイダーゼリー",
+  "desc": "Cider jelly: a small cup of clear colourless sparkling jelly with tiny bubbles trapped inside",
+  "items": [
+   "toyonaka:269409"
+  ]
+ },
+ {
+  "key": "toyonaka-272690",
+  "ja": "にらまんじゅう",
+  "desc": "Nira manju: a plate of steamed white dumplings with chewy semi-translucent skin, dark green garlic chives and pork showing through",
+  "items": [
+   "toyonaka:272690"
+  ]
+ },
+ {
+  "key": "toyonaka-272691",
+  "ja": "ピビンバ",
+  "desc": "Bibimbap topping: a bowl of seasoned namul in sections, white bean sprouts, green spinach, orange carrot and brown minced beef, sesame seeds",
+  "items": [
+   "toyonaka:272691"
+  ]
+ },
+ {
+  "key": "toyonaka-269429",
+  "ja": "七夕汁",
+  "desc": "Tanabata soup: a lacquered soup bowl of clear dashi with thin white somen noodles like the Milky Way, star-shaped carrot slices and star-shaped okra rounds",
+  "items": [
+   "toyonaka:269429",
+   "kumagaya:3414"
+  ]
+ },
+ {
+  "key": "toyonaka-269430",
+  "ja": "星形コロッケ",
+  "desc": "Star-shaped croquette: a plate with a five-pointed star-shaped croquette in golden panko crust",
+  "items": [
+   "toyonaka:269430"
+  ]
+ },
+ {
+  "key": "toyonaka-269431",
+  "ja": "豚肉のしぐれ煮",
+  "desc": "Pork shigure-ni: a small bowl of thin pork slices simmered in sweet soy with ginger shreds, glossy dark brown",
+  "items": [
+   "toyonaka:269431"
+  ]
+ },
+ {
+  "key": "toyonaka-269437",
+  "ja": "鶏肉とズッキーニの黒こしょう炒め",
+  "desc": "Chicken and zucchini black pepper stir-fry: a plate of diced chicken with green-skinned zucchini half-moons, onion and carrot, speckled with black pepper",
+  "items": [
+   "toyonaka:269437"
+  ]
+ },
+ {
+  "key": "toyonaka-269438",
+  "ja": "わかめごはん",
+  "desc": "Wakame rice: a rice bowl of white rice mixed with small bits of dark green chopped wakame seaweed",
+  "items": [
+   "toyonaka:269438",
+   "kumagaya:00119"
+  ]
+ },
+ {
+  "key": "toyonaka-269448",
+  "ja": "ひきわり大豆のドライカレー（ごはんなし）",
+  "desc": "Dry curry with cracked soybeans: a bowl of crumbly brown curry-spiced minced meat and cracked soybeans with diced carrot, onion and green peas, no rice",
+  "items": [
+   "toyonaka:269448"
+  ]
+ },
+ {
+  "key": "toyonaka-269366",
+  "ja": "マーボー豆腐",
+  "desc": "Mapo tofu: a bowl of white tofu cubes in a glossy red-brown thick spicy sauce with minced pork and green onion",
+  "items": [
+   "toyonaka:269366",
+   "kumagaya:03027"
+  ]
+ },
+ {
+  "key": "toyonaka-271221",
+  "ja": "豊中野菜入りコロッケ",
+  "desc": "Vegetable croquette: an oval golden panko-crumbed croquette, cut to show pale mashed potato flecked with green and orange vegetables",
+  "items": [
+   "toyonaka:271221"
+  ]
+ },
+ {
+  "key": "toyonaka-271234",
+  "ja": "のむヨーグルト",
+  "desc": "Drinking yogurt: a glass of smooth pourable white yogurt drink, thick and opaque",
+  "items": [
+   "toyonaka:271234"
+  ]
+ },
+ {
+  "key": "toyonaka-271236",
+  "ja": "あらびきフランクフルトソーセージ",
+  "desc": "Coarse-ground frankfurter: a plate with a long thick grilled reddish-brown sausage with taut, slightly split skin, the cut end showing coarse meat",
+  "items": [
+   "toyonaka:271236"
+  ]
+ },
+ {
+  "key": "toyonaka-269501",
+  "ja": "夏野菜の米粉チキンカレー（ごはんなし）",
+  "desc": "Summer vegetable chicken curry: a bowl of thick brown curry sauce with chicken, purple-skinned eggplant, zucchini, red pepper and kabocha, no rice",
+  "items": [
+   "toyonaka:269501"
+  ]
+ },
+ {
+  "key": "toyonaka-269503",
+  "ja": "冷凍みかん",
+  "desc": "Frozen mandarin: a whole unpeeled orange mikan covered in a thin white frosty ice glaze",
+  "items": [
+   "toyonaka:269503",
+   "kumagaya:00576"
+  ]
+ },
+ {
+  "key": "toyonaka-269497",
+  "ja": "鶏肉の唐揚げ",
+  "desc": "Chicken karaage: a plate of craggy bite-size deep-fried chicken thigh pieces with a crisp golden-brown coating",
+  "items": [
+   "toyonaka:269497"
+  ]
+ },
+ {
+  "key": "toyonaka-122018",
+  "ja": "フライドチキン",
+  "desc": "Fried chicken: a plate with a bone-in chicken piece in a thick crisp craggy golden-brown spiced batter",
+  "items": [
+   "toyonaka:122018"
+  ]
+ },
+ {
+  "key": "toyonaka-122019",
+  "ja": "キャベツとハムのソテー",
+  "desc": "Cabbage and ham saute: a small bowl of soft pale green cabbage with pink ham strips and carrot, glossy with oil",
+  "items": [
+   "toyonaka:122019",
+   "toyonaka:131080"
+  ]
+ },
+ {
+  "key": "toyonaka-122734",
+  "ja": "大根サラダ",
+  "desc": "Daikon salad: a small bowl of fine white raw daikon radish strips with cucumber, carrot and a little wakame in a soy dressing",
+  "items": [
+   "toyonaka:122734",
+   "kumagaya:2682"
+  ]
+ },
+ {
+  "key": "toyonaka-121522",
+  "ja": "魚介ナゲット",
+  "desc": "Seafood nuggets: a plate of small oval golden fried nuggets, one cut showing pale fish and shrimp paste",
+  "items": [
+   "toyonaka:121522"
+  ]
+ },
+ {
+  "key": "toyonaka-271198",
+  "ja": "スープカレー（ごはんなし）",
+  "desc": "Soup curry: a bowl of thin red-brown spicy curry broth with a chicken piece and large chunks of potato, carrot, kabocha, eggplant and green pepper, no rice",
+  "items": [
+   "toyonaka:271198"
+  ]
+ },
+ {
+  "key": "toyonaka-271188",
+  "ja": "肉団子のケチャップ煮",
+  "desc": "Meatballs in ketchup sauce: a bowl of round browned meatballs coated in a glossy red ketchup sauce with onion",
+  "items": [
+   "toyonaka:271188"
+  ]
+ },
+ {
+  "key": "toyonaka-271203",
+  "ja": "うどんじる",
+  "desc": "Udon soup: a bowl of thick white udon noodles in clear golden dashi broth with chicken, carrot, aburaage and green onion",
+  "items": [
+   "toyonaka:271203"
+  ]
+ },
+ {
+  "key": "toyonaka-271204",
+  "ja": "コロコロ厚揚げのチリソースかけ",
+  "desc": "Fried tofu cubes with chili sauce: a plate of small cubes of atsuage with golden-brown skin and white inside, coated in a glossy red-orange chili sauce",
+  "items": [
+   "toyonaka:271204"
+  ]
+ },
+ {
+  "key": "toyonaka-271205",
+  "ja": "豚肉の生姜炒め",
+  "desc": "Ginger pork stir-fry: a plate of thin pork slices with onion glazed in a glossy brown soy-ginger sauce",
+  "items": [
+   "toyonaka:271205"
+  ]
+ },
+ {
+  "key": "toyonaka-271210",
+  "ja": "カラフルゼリー",
+  "desc": "Colourful jelly: a small cup of clear jelly with small cubes of red, yellow and green jelly suspended inside",
+  "items": [
+   "toyonaka:271210"
+  ]
+ },
+ {
+  "key": "toyonaka-125862",
+  "ja": "防災シチュー",
+  "desc": "Emergency-stock stew: a bowl of thick creamy white stew with chicken, potato, carrot, onion and corn",
+  "items": [
+   "toyonaka:125862"
+  ]
+ },
+ {
+  "key": "toyonaka-125863",
+  "ja": "ウインナーソーセージ",
+  "desc": "Wiener sausages: a plate of small boiled pink-brown sausages with smooth taut skin",
+  "items": [
+   "toyonaka:125863"
+  ]
+ },
+ {
+  "key": "toyonaka-125864",
+  "ja": "保存食で簡単ごま炒め",
+  "desc": "Pantry sesame stir-fry: a plate of canned tuna, rehydrated beige kiriboshi daikon strands, carrot and cabbage stir-fried and coated in white sesame seeds",
+  "items": [
+   "toyonaka:125864"
+  ]
+ },
+ {
+  "key": "toyonaka-125866",
+  "ja": "ぶどうゼリー",
+  "desc": "Grape jelly: a small cup of translucent deep purple grape jelly, smooth and glossy",
+  "items": [
+   "toyonaka:125866",
+   "kumagaya:3638"
+  ]
+ },
+ {
+  "key": "toyonaka-125869",
+  "ja": "鶏肉と玉ねぎのスープ",
+  "desc": "Chicken and onion soup: a soup bowl of clear golden consomme with diced chicken, soft translucent onion slices, carrot and parsley",
+  "items": [
+   "toyonaka:125869"
+  ]
+ },
+ {
+  "key": "toyonaka-125878",
+  "ja": "ほうれん草の炒め物",
+  "desc": "Stir-fried spinach: a small bowl of soft dark green spinach pieces with carrot strips and corn, glossy with oil",
+  "items": [
+   "toyonaka:125878"
+  ]
+ },
+ {
+  "key": "toyonaka-127410",
+  "ja": "ベーコンとじゃがいもの炒め物",
+  "desc": "Bacon and potato stir-fry: a plate of pale yellow potato chunks with pink bacon pieces and onion, lightly browned, parsley flecks",
+  "items": [
+   "toyonaka:127410"
+  ]
+ },
+ {
+  "key": "toyonaka-127414",
+  "ja": "中華どん",
+  "desc": "Chuka-don topping: a bowl of glossy translucent thickened sauce with pork, shrimp, napa cabbage, carrot, shiitake, bamboo shoots and quail eggs",
+  "items": [
+   "toyonaka:127414"
+  ]
+ },
+ {
+  "key": "toyonaka-127417",
+  "ja": "パインアップル缶",
+  "desc": "Canned pineapple: a small dish of pale yellow pineapple chunks in clear syrup, glossy",
+  "items": [
+   "toyonaka:127417"
+  ]
+ },
+ {
+  "key": "toyonaka-127513",
+  "ja": "さつまいものみそ汁",
+  "desc": "Sweet potato miso soup: a lacquered soup bowl of cloudy tan miso broth with quarter-round slices of sweet potato showing purple skin and yellow flesh, onion and green onion",
+  "items": [
+   "toyonaka:127513"
+  ]
+ },
+ {
+  "key": "toyonaka-127514",
+  "ja": "さんまの竜田揚げ",
+  "desc": "Saury tatsuta-age: a plate of pacific saury pieces in a craggy dark reddish-brown crisp starch coating from a soy marinade",
+  "items": [
+   "toyonaka:127514"
+  ]
+ },
+ {
+  "key": "toyonaka-127515",
+  "ja": "高野豆腐の卵とじ",
+  "desc": "Koya tofu with egg: a bowl of simmered spongy beige freeze-dried tofu pieces in dashi with soft yellow egg, carrot, onion and green peas",
+  "items": [
+   "toyonaka:127515"
+  ]
+ },
+ {
+  "key": "toyonaka-127516",
+  "ja": "鶏肉と根菜の煮物（ごぼうｇ乱切）",
+  "desc": "Simmered chicken and root vegetables: a bowl of chicken pieces, chunky angle-cut brown burdock, carrot, lotus root slices, grey konnyaku and taro in glossy brown soy broth",
+  "items": [
+   "toyonaka:127516"
+  ]
+ },
+ {
+  "key": "toyonaka-125913",
+  "ja": "ささみのサラダ",
+  "desc": "Chicken tenderloin salad: a small bowl of shredded white chicken with cabbage, cucumber and carrot strips in a light dressing",
+  "items": [
+   "toyonaka:125913"
+  ]
+ },
+ {
+  "key": "toyonaka-125914",
+  "ja": "じゃこピーマン",
+  "desc": "Jako and green pepper: a small bowl of thin strips of bright green bell pepper stir-fried with tiny white dried baby fish, glossy with soy",
+  "items": [
+   "toyonaka:125914"
+  ]
+ },
+ {
+  "key": "toyonaka-127426",
+  "ja": "ジュリエンヌスープ（チキンスープ・出し昆布）",
+  "desc": "Julienne soup: a soup bowl of clear golden broth with fine matchstick strips of carrot, onion, celery and cabbage",
+  "items": [
+   "toyonaka:127426"
+  ]
+ },
+ {
+  "key": "toyonaka-127427",
+  "ja": "かつおフライ",
+  "desc": "Fried bonito: a plate of chunky bonito pieces in crisp golden panko crust, one cut showing dark reddish-brown fish inside",
+  "items": [
+   "toyonaka:127427"
+  ]
+ },
+ {
+  "key": "toyonaka-127428",
+  "ja": "野菜たっぷり！ドライカレー（ごはんなし）",
+  "desc": "Vegetable dry curry: a bowl of crumbly brown curry-spiced minced meat with lots of finely diced carrot, onion and green pepper, no rice",
+  "items": [
+   "toyonaka:127428"
+  ]
+ },
+ {
+  "key": "toyonaka-125931",
+  "ja": "豚肉とごぼうのみそ炒め",
+  "desc": "Pork and burdock miso stir-fry: a plate of thin pork slices with brown burdock root slivers and carrot in a glossy brown miso glaze",
+  "items": [
+   "toyonaka:125931"
+  ]
+ },
+ {
+  "key": "toyonaka-125944",
+  "ja": "肉団子のあんかけ",
+  "desc": "Meatballs with ankake: a bowl of round fried brown meatballs in a glossy translucent amber thickened sauce",
+  "items": [
+   "toyonaka:125944"
+  ]
+ },
+ {
+  "key": "toyonaka-125945",
+  "ja": "チンゲン菜とコーンのソテー",
+  "desc": "Bok choy and corn saute: a small bowl of stir-fried pale green chingensai stems and dark green leaves with yellow corn kernels, glossy with butter",
+  "items": [
+   "toyonaka:125945"
+  ]
+ },
+ {
+  "key": "toyonaka-125946",
+  "ja": "ツナと野菜のサラダ",
+  "desc": "Tuna and vegetable salad: a small bowl of shredded cabbage, cucumber and carrot strips with flaked tuna in a light dressing",
+  "items": [
+   "toyonaka:125946"
+  ]
+ },
+ {
+  "key": "toyonaka-125955",
+  "ja": "卵スープ",
+  "desc": "Egg soup: a soup bowl of clear golden broth with soft yellow egg ribbons, green onion and a little carrot",
+  "items": [
+   "toyonaka:125955"
+  ]
+ },
+ {
+  "key": "toyonaka-125956",
+  "ja": "豚肉のバーベキューソースかけ",
+  "desc": "Grilled pork with barbecue sauce: a plate of grilled pork slices topped with a glossy dark red-brown barbecue sauce",
+  "items": [
+   "toyonaka:125956"
+  ]
+ },
+ {
+  "key": "toyonaka-125959",
+  "ja": "いろどりごはん",
+  "desc": "Colourful mixed rice: a rice bowl of white rice mixed with diced orange carrot, green edamame and yellow scrambled egg",
+  "items": [
+   "toyonaka:125959"
+  ]
+ },
+ {
+  "key": "toyonaka-125963",
+  "ja": "ごぼうのごまサラダ（マヨネーズ風ドレッシング）",
+  "desc": "Burdock sesame salad: a small bowl of thin brown matchstick burdock strips, carrot and cucumber in a creamy pale beige mayonnaise-style dressing with sesame seeds",
+  "items": [
+   "toyonaka:125963"
+  ]
+ },
+ {
+  "key": "toyonaka-125967",
+  "ja": "糸寒天入りすまし汁",
+  "desc": "Clear soup with agar threads: a lacquered soup bowl of clear dashi with thin translucent threads of ito-kanten, tofu, carrot and green leaves",
+  "items": [
+   "toyonaka:125967"
+  ]
+ },
+ {
+  "key": "toyonaka-125968",
+  "ja": "鶏肉の山賊焼き",
+  "desc": "Sanzoku-yaki: a plate with a large flat piece of chicken thigh fried in a crisp golden-brown starch coating, garlic-soy marinated, cut in strips",
+  "items": [
+   "toyonaka:125968"
+  ]
+ },
+ {
+  "key": "toyonaka-125969",
+  "ja": "レタスと春雨のそぼろ炒め",
+  "desc": "Lettuce and glass noodles with minced meat: a plate of wilted pale green lettuce, translucent harusame noodles and brown minced pork, glossy",
+  "items": [
+   "toyonaka:125969"
+  ]
+ },
+ {
+  "key": "toyonaka-125970",
+  "ja": "小松菜とえのきのおかか和え",
+  "desc": "Komatsuna and enoki with bonito flakes: a small bowl of boiled dark green komatsuna pieces and thin white enoki mushrooms topped with pale brown katsuobushi flakes",
+  "items": [
+   "toyonaka:125970"
+  ]
+ },
+ {
+  "key": "toyonaka-127434",
+  "ja": "ツナとこんにゃく寒天のサラダ",
+  "desc": "Tuna and konnyaku-agar salad: a small bowl of translucent grey-white jelly noodle strips with flaked tuna, cucumber and carrot in a light dressing",
+  "items": [
+   "toyonaka:127434"
+  ]
+ },
+ {
+  "key": "toyonaka-127439",
+  "ja": "照り焼きハンバーグ",
+  "desc": "Teriyaki hamburg steak: a plate with an oval browned meat patty glazed with a glossy dark brown sweet soy teriyaki sauce",
+  "items": [
+   "toyonaka:127439",
+   "kumagaya:00857"
+  ]
+ },
+ {
+  "key": "toyonaka-127442",
+  "ja": "たれ入りみたらし団子",
+  "desc": "Mitarashi dango: small round white chewy rice dumplings on a bamboo skewer, lightly charred, coated in glossy translucent amber sweet soy glaze",
+  "items": [
+   "toyonaka:127442"
+  ]
+ },
+ {
+  "key": "toyonaka-128871",
+  "ja": "竹輪のいそべ揚げ",
+  "desc": "Isobe-age chikuwa: a plate of tube-shaped chikuwa fish cake pieces with a hole through the middle, in light golden tempura batter speckled with green aonori",
+  "items": [
+   "toyonaka:128871"
+  ]
+ },
+ {
+  "key": "toyonaka-128872",
+  "ja": "ハムとキャベツのサラダ（和風ドレッシング）",
+  "desc": "Ham and cabbage salad: a small bowl of shredded pale green cabbage with pink ham strips, cucumber and carrot in a clear soy dressing",
+  "items": [
+   "toyonaka:128872"
+  ]
+ },
+ {
+  "key": "toyonaka-126015",
+  "ja": "わかめのサラダ",
+  "desc": "Wakame salad: a small bowl of glossy dark green wakame seaweed with cucumber slices and carrot strips, sesame seeds",
+  "items": [
+   "toyonaka:126015"
+  ]
+ },
+ {
+  "key": "toyonaka-126016",
+  "ja": "さつまいものあま煮",
+  "desc": "Sweet simmered sweet potato: a small bowl of thick round slices of sweet potato with purple skin and glossy bright yellow flesh",
+  "items": [
+   "toyonaka:126016"
+  ]
+ },
+ {
+  "key": "toyonaka-126020",
+  "ja": "かぼちゃひき肉フライ",
+  "desc": "Kabocha and minced meat croquette: an oval golden panko-crumbed croquette, cut open showing orange mashed pumpkin mixed with brown minced meat",
+  "items": [
+   "toyonaka:126020",
+   "kumagaya:2578"
+  ]
+ },
+ {
+  "key": "toyonaka-276406",
+  "ja": "ミニフルーツゼリー",
+  "desc": "Mini fruit jelly: a small round cup of translucent jelly with small pieces of orange mandarin and yellow pineapple inside",
+  "items": [
+   "toyonaka:276406"
+  ]
+ },
+ {
+  "key": "toyonaka-276429",
+  "ja": "鶏肉の塩唐揚げ",
+  "desc": "Salt-seasoned chicken karaage: a plate of craggy bite-size deep-fried chicken pieces with a pale golden crisp coating",
+  "items": [
+   "toyonaka:276429"
+  ]
+ },
+ {
+  "key": "toyonaka-275089",
+  "ja": "米粉ぎょうざ",
+  "desc": "Rice flour gyoza: a plate of crescent-shaped dumplings with pleated edges, deep-fried crisp golden-brown",
+  "items": [
+   "toyonaka:275089"
+  ]
+ },
+ {
+  "key": "toyonaka-268726",
+  "ja": "さばのみりん干し",
+  "desc": "Grilled mirin-dried mackerel: a plate with a flat butterflied mackerel fillet, glossy dark amber sweet glaze sprinkled with white sesame, charred edges",
+  "items": [
+   "toyonaka:268726"
+  ]
+ },
+ {
+  "key": "toyonaka-268493",
+  "ja": "にらたまスープ",
+  "desc": "Garlic chive and egg soup: a soup bowl of clear golden broth with yellow egg ribbons and long dark green nira chive pieces",
+  "items": [
+   "toyonaka:268493"
+  ]
+ },
+ {
+  "key": "toyonaka-268494",
+  "ja": "あげたこやき",
+  "desc": "Fried takoyaki: a plate of round golden-brown deep-fried octopus balls, crisp outside, one cut showing soft batter and a piece of octopus",
+  "items": [
+   "toyonaka:268494"
+  ]
+ },
+ {
+  "key": "toyonaka-268495",
+  "ja": "ミニ塩焼きそば",
+  "desc": "Salt yakisoba: a small plate of pale yellow stir-fried noodles with cabbage, carrot, pork and bean sprouts, light salt seasoning with no brown sauce",
+  "items": [
+   "toyonaka:268495"
+  ]
+ },
+ {
+  "key": "toyonaka-268733",
+  "ja": "レモンゼリー",
+  "desc": "Lemon jelly: a small cup of translucent pale yellow lemon jelly, smooth and glossy",
+  "items": [
+   "toyonaka:268733"
+  ]
+ },
+ {
+  "key": "toyonaka-276444",
+  "ja": "みそにこみうどん",
+  "desc": "Miso-simmered udon: a bowl of thick white udon noodles in cloudy brown miso broth with chicken, aburaage, carrot, napa cabbage and green onion",
+  "items": [
+   "toyonaka:276444"
+  ]
+ },
+ {
+  "key": "toyonaka-276446",
+  "ja": "わかめのごま酢和え",
+  "desc": "Wakame with sesame vinegar: a small bowl of glossy dark green wakame with cucumber slices in a tan sesame-vinegar dressing, sesame seeds",
+  "items": [
+   "toyonaka:276446"
+  ]
+ },
+ {
+  "key": "toyonaka-268546",
+  "ja": "船場汁",
+  "desc": "Senba-jiru: a lacquered soup bowl of clear salty broth with chunks of mackerel, thin rectangles of white daikon and carrot, green onion",
+  "items": [
+   "toyonaka:268546"
+  ]
+ },
+ {
+  "key": "toyonaka-268548",
+  "ja": "ひじきの炒め煮",
+  "desc": "Simmered hijiki: a small bowl of short black hijiki seaweed sprigs with carrot strips, aburaage, soybeans and green beans, glossy with soy",
+  "items": [
+   "toyonaka:268548"
+  ]
+ },
+ {
+  "key": "toyonaka-268557",
+  "ja": "ズッキーニのスープ",
+  "desc": "Zucchini soup: a soup bowl of clear golden consomme with green-skinned zucchini half-moons, onion, carrot and bacon pieces",
+  "items": [
+   "toyonaka:268557"
+  ]
+ },
+ {
+  "key": "toyonaka-268567",
+  "ja": "塩鶏茶漬け(卵入り)",
+  "desc": "Salt chicken chazuke with egg: a bowl of clear pale dashi with shredded salted chicken, yellow egg ribbons, green onion and nori strips, to pour over rice",
+  "items": [
+   "toyonaka:268567",
+   "toyonaka:126860"
+  ]
+ },
+ {
+  "key": "toyonaka-268568",
+  "ja": "太刀魚の塩焼き",
+  "desc": "Salt-grilled beltfish: a plate of long flat cutlassfish pieces with shiny silver skin and white flesh, lightly browned",
+  "items": [
+   "toyonaka:268568"
+  ]
+ },
+ {
+  "key": "toyonaka-268569",
+  "ja": "豚肉と枝豆の味噌炒め",
+  "desc": "Pork and edamame miso stir-fry: a plate of sliced pork with bright green edamame beans, onion and carrot in a glossy brown miso sauce",
+  "items": [
+   "toyonaka:268569"
+  ]
+ },
+ {
+  "key": "toyonaka-268582",
+  "ja": "とうがん汁",
+  "desc": "Winter melon soup: a soup bowl of clear broth with translucent pale green soft tougan pieces, chicken, carrot and green onion",
+  "items": [
+   "toyonaka:268582"
+  ]
+ },
+ {
+  "key": "toyonaka-268584",
+  "ja": "豚そぼろ（醤油）",
+  "desc": "Pork soboro: a small bowl of finely crumbled minced pork cooked in sweet soy, moist and brown",
+  "items": [
+   "toyonaka:268584"
+  ]
+ },
+ {
+  "key": "toyonaka-275110",
+  "ja": "つくね団子のスープ",
+  "desc": "Chicken meatball soup: a soup bowl of clear golden broth with round pale tsukune meatballs, cabbage, carrot and onion",
+  "items": [
+   "toyonaka:275110"
+  ]
+ },
+ {
+  "key": "toyonaka-275112",
+  "ja": "イタリアンサラダ",
+  "desc": "Italian salad: a small bowl of broccoli florets, cucumber, carrot and corn in a clear herb vinaigrette with dried herb flecks",
+  "items": [
+   "toyonaka:275112"
+  ]
+ },
+ {
+  "key": "toyonaka-269147",
+  "ja": "吉野汁",
+  "desc": "Yoshino-jiru: a lacquered soup bowl of slightly thickened glossy clear dashi with chicken, carrot, daikon, shiitake and green onion",
+  "items": [
+   "toyonaka:269147"
+  ]
+ },
+ {
+  "key": "toyonaka-269148",
+  "ja": "うさぎ型ハンバーグのおろしだれかけ",
+  "desc": "Rabbit-shaped hamburg steak with grated daikon sauce: a plate with a browned meat patty shaped like a rabbit head with two long ears, topped with grated daikon in brown sauce",
+  "items": [
+   "toyonaka:269148"
+  ]
+ },
+ {
+  "key": "toyonaka-269149",
+  "ja": "鶏肉とさといもの煮物",
+  "desc": "Simmered chicken and taro: a bowl of round sticky white-brown taro pieces with chicken, carrot and green beans in a glossy light soy broth",
+  "items": [
+   "toyonaka:269149"
+  ]
+ },
+ {
+  "key": "toyonaka-269150",
+  "ja": "お月見団子",
+  "desc": "Tsukimi dango: plain round smooth white rice-flour dumplings stacked in a small pyramid on a small dish",
+  "items": [
+   "toyonaka:269150"
+  ]
+ },
+ {
+  "key": "toyonaka-268632",
+  "ja": "里芋コロッケ",
+  "desc": "Taro croquette: an oval golden panko-crumbed croquette, cut open showing a smooth pale grey-white mashed taro filling",
+  "items": [
+   "toyonaka:268632",
+   "kumagaya:02145"
+  ]
+ },
+ {
+  "key": "toyonaka-268633",
+  "ja": "キャベツとささみの甘酢和え",
+  "desc": "Cabbage and chicken with sweet vinegar: a small bowl of boiled pale green cabbage, shredded white chicken, carrot and cucumber in a clear sweet vinegar dressing",
+  "items": [
+   "toyonaka:268633"
+  ]
+ },
+ {
+  "key": "toyonaka-276472",
+  "ja": "切干大根のペペロンチーノ",
+  "desc": "Dried daikon peperoncino: a small bowl of thin beige strands of rehydrated kiriboshi daikon stir-fried with garlic, red chili flakes, bacon and green pepper",
+  "items": [
+   "toyonaka:276472"
+  ]
+ },
+ {
+  "key": "toyonaka-271605",
+  "ja": "豚肉丼の具",
+  "desc": "Pork rice bowl topping: a bowl of thin pork slices simmered with onion in sweet soy broth, glossy brown, no rice",
+  "items": [
+   "toyonaka:271605"
+  ]
+ },
+ {
+  "key": "toyonaka-268651",
+  "ja": "スープ煮",
+  "desc": "Soup stew: a bowl of clear golden broth with large chunks of cabbage, potato, carrot, onion and sausage",
+  "items": [
+   "toyonaka:268651"
+  ]
+ },
+ {
+  "key": "toyonaka-276159",
+  "ja": "じゃこ天の照り焼き",
+  "desc": "Teriyaki jakoten: a plate of flat oblong grey-brown fried fish cakes with a rough speckled texture, glazed with glossy dark sweet soy",
+  "items": [
+   "toyonaka:276159"
+  ]
+ },
+ {
+  "key": "toyonaka-276160",
+  "ja": "切干大根の炒め煮",
+  "desc": "Simmered dried daikon: a small bowl of soft beige-brown strands of kiriboshi daikon with carrot strips, aburaage and green beans in soy",
+  "items": [
+   "toyonaka:276160"
+  ]
+ },
+ {
+  "key": "toyonaka-267977",
+  "ja": "ひと口いか天ぷら",
+  "desc": "Bite-size squid tempura: a plate of small pieces of white squid in a light lacy pale golden tempura batter",
+  "items": [
+   "toyonaka:267977"
+  ]
+ },
+ {
+  "key": "toyonaka-267981",
+  "ja": "ポタージュ",
+  "desc": "Potage: a soup bowl of smooth thick creamy pale yellow pureed potato soup with parsley flecks",
+  "items": [
+   "toyonaka:267981"
+  ]
+ },
+ {
+  "key": "toyonaka-267982",
+  "ja": "ポークチャップ",
+  "desc": "Pork chop: a plate with a grilled pork slice coated in a glossy red-brown ketchup and Worcestershire sauce with onion",
+  "items": [
+   "toyonaka:267982"
+  ]
+ },
+ {
+  "key": "toyonaka-267983",
+  "ja": "豆腐とブロッコリーのサラダ",
+  "desc": "Tofu and broccoli salad: a small bowl of white tofu cubes and green broccoli florets with corn and carrot in a light soy dressing",
+  "items": [
+   "toyonaka:267983"
+  ]
+ },
+ {
+  "key": "toyonaka-278193",
+  "ja": "ほうれん草と卵のスープ",
+  "desc": "Spinach and egg soup: a soup bowl of clear golden broth with dark green spinach pieces and yellow egg ribbons",
+  "items": [
+   "toyonaka:278193"
+  ]
+ },
+ {
+  "key": "toyonaka-278194",
+  "ja": "レバー入りカレーミンチカツ",
+  "desc": "Curry minced-meat cutlet with liver: an oval golden panko-crumbed patty, cut to show a brown curry-tinged minced meat and onion filling",
+  "items": [
+   "toyonaka:278194"
+  ]
+ },
+ {
+  "key": "toyonaka-278196",
+  "ja": "ブルーベリーゼリー",
+  "desc": "Blueberry jelly: a small cup of translucent deep blue-purple jelly with whole blueberries inside",
+  "items": [
+   "toyonaka:278196",
+   "kumagaya:00903"
+  ]
+ },
+ {
+  "key": "toyonaka-268113",
+  "ja": "チキンカレー（ごはんなし）",
+  "desc": "Chicken curry: a bowl of thick glossy brown Japanese curry sauce with chicken pieces, potato, carrot and onion, no rice",
+  "items": [
+   "toyonaka:268113",
+   "kumagaya:2677"
+  ]
+ },
+ {
+  "key": "toyonaka-268088",
+  "ja": "厚揚げとかぼちゃの煮物",
+  "desc": "Simmered fried tofu and kabocha: a bowl of golden-skinned atsuage tofu pieces and green-skinned orange kabocha chunks in a light soy broth",
+  "items": [
+   "toyonaka:268088"
+  ]
+ },
+ {
+  "key": "toyonaka-268089",
+  "ja": "鮭のレモン醤油かけ",
+  "desc": "Grilled salmon with lemon soy: a plate with a salmon fillet, pale orange-pink flesh and silver skin, glistening with a thin lemon soy sauce",
+  "items": [
+   "toyonaka:268089"
+  ]
+ },
+ {
+  "key": "toyonaka-268090",
+  "ja": "ささみとチンゲンサイのサラダ",
+  "desc": "Chicken and bok choy salad: a small bowl of shredded white chicken with boiled green chingensai, carrot strips and corn in a light dressing",
+  "items": [
+   "toyonaka:268090"
+  ]
+ },
+ {
+  "key": "toyonaka-277948",
+  "ja": "卵入りクッパスープ",
+  "desc": "Gukbap-style egg soup: a soup bowl of light reddish-brown beef broth with yellow egg ribbons, bean sprouts, carrot, green onion and strips of nori",
+  "items": [
+   "toyonaka:277948"
+  ]
+ },
+ {
+  "key": "toyonaka-277950",
+  "ja": "もやしナムル",
+  "desc": "Bean sprout namul: a small bowl of white blanched bean sprouts glossy with sesame oil, with carrot strips and spinach, sesame seeds",
+  "items": [
+   "toyonaka:277950"
+  ]
+ },
+ {
+  "key": "toyonaka-268130",
+  "ja": "豚肉のりんごソースかけ",
+  "desc": "Grilled pork with apple sauce: a plate of grilled pork slices topped with a glossy amber sauce with grated apple",
+  "items": [
+   "toyonaka:268130"
+  ]
+ },
+ {
+  "key": "toyonaka-278119",
+  "ja": "じゃがいものそぼろ煮",
+  "desc": "Potatoes with minced meat sauce: a bowl of soft simmered potato chunks with brown minced chicken in a glossy thickened soy sauce, green peas",
+  "items": [
+   "toyonaka:278119",
+   "kumagaya:83"
+  ]
+ },
+ {
+  "key": "toyonaka-278120",
+  "ja": "さんまの蒲焼",
+  "desc": "Kabayaki saury: a plate of flat pieces of pacific saury fillet with a glossy dark brown sweet soy glaze, sesame seeds",
+  "items": [
+   "toyonaka:278120"
+  ]
+ },
+ {
+  "key": "toyonaka-278121",
+  "ja": "れんこんのごまサラダ",
+  "desc": "Lotus root sesame salad: a small bowl of white lotus root slices showing their ring of holes, carrot and cucumber in a creamy beige sesame dressing",
+  "items": [
+   "toyonaka:278121"
+  ]
+ },
+ {
+  "key": "toyonaka-278171",
+  "ja": "肉団子と春雨のスープ",
+  "desc": "Meatball and glass noodle soup: a soup bowl of clear broth with round pork meatballs, translucent harusame noodles, napa cabbage and carrot",
+  "items": [
+   "toyonaka:278171"
+  ]
+ },
+ {
+  "key": "toyonaka-278172",
+  "ja": "さつまきなこ",
+  "desc": "Sweet potato with kinako: a small bowl of deep-fried sweet potato cubes with purple skin and yellow inside, dusted with tan roasted soybean flour and sugar",
+  "items": [
+   "toyonaka:278172"
+  ]
+ },
+ {
+  "key": "toyonaka-278173",
+  "ja": "鶏肉と野菜のバターいため",
+  "desc": "Chicken and vegetable butter stir-fry: a plate of diced chicken with cabbage, carrot, onion and green beans, glossy with butter",
+  "items": [
+   "toyonaka:278173"
+  ]
+ },
+ {
+  "key": "toyonaka-268161",
+  "ja": "すいとん汁",
+  "desc": "Suiton soup: a bowl of clear soy dashi with irregular soft white flour dumplings, chicken, daikon, carrot, burdock and green onion",
+  "items": [
+   "toyonaka:268161"
+  ]
+ },
+ {
+  "key": "toyonaka-268163",
+  "ja": "ツナのカレー炒め",
+  "desc": "Tuna curry stir-fry: a plate of flaked tuna with cabbage, onion and carrot tinted yellow-brown with curry powder",
+  "items": [
+   "toyonaka:268163"
+  ]
+ },
+ {
+  "key": "toyonaka-276163",
+  "ja": "さつま汁",
+  "desc": "Satsuma-jiru: a lacquered soup bowl of cloudy tan miso broth with chicken, daikon, carrot, sweet potato chunks and green onion",
+  "items": [
+   "toyonaka:276163"
+  ]
+ },
+ {
+  "key": "toyonaka-276165",
+  "ja": "秋のそぼろあんかけ",
+  "desc": "Autumn soboro ankake: a bowl of chunks of sweet potato and mushrooms in a glossy translucent brown thickened sauce with minced chicken",
+  "items": [
+   "toyonaka:276165"
+  ]
+ },
+ {
+  "key": "toyonaka-278254",
+  "ja": "パーカーハウス",
+  "desc": "Parker House roll: a plate with a soft golden-brown dinner roll folded over into a half-moon shape, glossy top",
+  "items": [
+   "toyonaka:278254"
+  ]
+ },
+ {
+  "key": "toyonaka-278257",
+  "ja": "イタリアンスープ",
+  "desc": "Italian soup: a soup bowl of light red tomato broth with diced potato, carrot, onion, cabbage, bacon and small pasta",
+  "items": [
+   "toyonaka:278257"
+  ]
+ },
+ {
+  "key": "toyonaka-278391",
+  "ja": "小魚の佃煮",
+  "desc": "Small fish tsukudani: a small dish of tiny dried fish simmered in sweet soy, glossy dark brown and sticky, sesame seeds",
+  "items": [
+   "toyonaka:278391"
+  ]
+ },
+ {
+  "key": "toyonaka-278393",
+  "ja": "れんこんのはさみ揚げ",
+  "desc": "Fried stuffed lotus root: a plate of round lotus root slices with their ring of holes, sandwiching minced meat, coated in golden batter",
+  "items": [
+   "toyonaka:278393"
+  ]
+ },
+ {
+  "key": "toyonaka-268244",
+  "ja": "おじゃがもちのクリーム煮",
+  "desc": "Potato mochi in cream sauce: a bowl of small round chewy pale potato dumplings with chicken, carrot and broccoli in a white cream sauce",
+  "items": [
+   "toyonaka:268244"
+  ]
+ },
+ {
+  "key": "toyonaka-268245",
+  "ja": "玉葱入りオムレツ",
+  "desc": "Onion omelette: a plate with an oval golden-yellow omelette, cut to show soft egg with translucent chopped onion and a little minced meat",
+  "items": [
+   "toyonaka:268245",
+   "toyonaka:127160"
+  ]
+ },
+ {
+  "key": "toyonaka-268246",
+  "ja": "カラフル野菜のサラダ",
+  "desc": "Colourful vegetable salad: a small bowl of broccoli, red and yellow bell pepper strips, corn, cucumber and carrot in a clear dressing",
+  "items": [
+   "toyonaka:268246"
+  ]
+ },
+ {
+  "key": "toyonaka-126862",
+  "ja": "焼き豚ともやしの和え物",
+  "desc": "Roast pork and bean sprouts: a small bowl of strips of char siu pork with red-edged slices, white bean sprouts, cucumber and carrot in a soy-sesame dressing",
+  "items": [
+   "toyonaka:126862"
+  ]
+ },
+ {
+  "key": "toyonaka-127122",
+  "ja": "わかめスープ（ポークスープ・出し昆布）",
+  "desc": "Wakame soup: a soup bowl of clear golden pork broth with soft dark green wakame, sliced onion, carrot and sesame seeds",
+  "items": [
+   "toyonaka:127122"
+  ]
+ },
+ {
+  "key": "toyonaka-127125",
+  "ja": "ブロッコリーのチーズソテー",
+  "desc": "Broccoli cheese saute: a small bowl of bright green broccoli florets with corn, lightly browned, with melted pale yellow cheese",
+  "items": [
+   "toyonaka:127125"
+  ]
+ },
+ {
+  "key": "toyonaka-127161",
+  "ja": "キャベツとツナの中華和え",
+  "desc": "Cabbage and tuna Chinese-style salad: a small bowl of boiled pale green cabbage with flaked tuna, carrot and cucumber in a soy-sesame dressing",
+  "items": [
+   "toyonaka:127161"
+  ]
+ },
+ {
+  "key": "toyonaka-127162",
+  "ja": "チンゲン菜のにんにく炒め",
+  "desc": "Garlic stir-fried bok choy: a plate of pale green chingensai stems and dark green leaves glossy with oil, with slivers of garlic",
+  "items": [
+   "toyonaka:127162"
+  ]
+ },
+ {
+  "key": "toyonaka-125093",
+  "ja": "肉団子のスープ煮",
+  "desc": "Meatballs in soup: a bowl of clear golden broth with round meatballs, cabbage, carrot, onion and potato chunks",
+  "items": [
+   "toyonaka:125093"
+  ]
+ },
+ {
+  "key": "toyonaka-125094",
+  "ja": "あじのみりんしょうゆづけ",
+  "desc": "Grilled horse mackerel marinated in mirin and soy: a plate with an aji fillet, silver skin and glossy amber-brown glazed flesh",
+  "items": [
+   "toyonaka:125094"
+  ]
+ },
+ {
+  "key": "toyonaka-125096",
+  "ja": "さつまいもと豚肉の煮物",
+  "desc": "Simmered sweet potato and pork: a bowl of sweet potato chunks with purple skin and yellow flesh, pork slices and onion in a glossy soy broth",
+  "items": [
+   "toyonaka:125096"
+  ]
+ },
+ {
+  "key": "toyonaka-129141",
+  "ja": "きのこスープ",
+  "desc": "Mushroom soup: a soup bowl of clear golden broth with shimeji, enoki and sliced shiitake mushrooms, onion and carrot",
+  "items": [
+   "toyonaka:129141"
+  ]
+ },
+ {
+  "key": "toyonaka-127130",
+  "ja": "ブロッコリーとハムのサラダ（イタリアンドレッシング）",
+  "desc": "Broccoli and ham salad: a small bowl of green broccoli florets with pink ham strips and corn in a clear Italian herb vinaigrette",
+  "items": [
+   "toyonaka:127130"
+  ]
+ },
+ {
+  "key": "toyonaka-127707",
+  "ja": "豚肉のオニオンソース炒め",
+  "desc": "Pork with onion sauce: a plate of sliced pork stir-fried with cabbage and carrot in a glossy brown sauce with grated onion",
+  "items": [
+   "toyonaka:127707"
+  ]
+ },
+ {
+  "key": "toyonaka-127708",
+  "ja": "ブルーベリータルト",
+  "desc": "Blueberry tart: a small round tart with a golden pastry shell filled with deep purple blueberry jam",
+  "items": [
+   "toyonaka:127708",
+   "kumagaya:03262"
+  ]
+ },
+ {
+  "key": "toyonaka-127549",
+  "ja": "のっぺい汁",
+  "desc": "Noppei-jiru: a lacquered soup bowl of slightly thick glossy clear soup with taro, carrot, daikon, konnyaku, shiitake, chicken and aburaage",
+  "items": [
+   "toyonaka:127549",
+   "kumagaya:02945"
+  ]
+ },
+ {
+  "key": "toyonaka-127551",
+  "ja": "ごぼうのピリ辛みそ炒め",
+  "desc": "Spicy miso burdock stir-fry: a small bowl of brown burdock slivers and carrot with pork in a glossy dark miso glaze, red chili flecks",
+  "items": [
+   "toyonaka:127551"
+  ]
+ },
+ {
+  "key": "toyonaka-127552",
+  "ja": "白菜のゆず風味和え",
+  "desc": "Napa cabbage with yuzu: a small bowl of boiled pale white and green napa cabbage pieces with carrot strips and thin yellow yuzu peel shreds",
+  "items": [
+   "toyonaka:127552"
+  ]
+ },
+ {
+  "key": "toyonaka-127185",
+  "ja": "こんにゃくとまいたけの炒め物",
+  "desc": "Konnyaku and maitake stir-fry: a small bowl of grey speckled rubbery konnyaku pieces with frilly brown maitake mushrooms, glazed with soy",
+  "items": [
+   "toyonaka:127185"
+  ]
+ },
+ {
+  "key": "toyonaka-127186",
+  "ja": "ささみとキャベツのごま酢和え",
+  "desc": "Chicken and cabbage with sesame vinegar: a small bowl of boiled pale green cabbage, shredded white chicken and carrot in a tan sesame-vinegar dressing",
+  "items": [
+   "toyonaka:127186"
+  ]
+ },
+ {
+  "key": "toyonaka-125087",
+  "ja": "じゃがいものみそ汁",
+  "desc": "Potato miso soup: a lacquered soup bowl of cloudy tan miso broth with soft pale potato chunks, onion, wakame and green onion",
+  "items": [
+   "toyonaka:125087"
+  ]
+ },
+ {
+  "key": "toyonaka-125090",
+  "ja": "ちりめんじゃことほうれん草の炒め物",
+  "desc": "Spinach with dried baby fish: a small bowl of stir-fried dark green spinach with tiny white chirimen-jako fish and carrot strips",
+  "items": [
+   "toyonaka:125090"
+  ]
+ },
+ {
+  "key": "toyonaka-129148",
+  "ja": "きのこシチュー",
+  "desc": "Mushroom cream stew: a bowl of thick white creamy stew with shimeji and button mushrooms, chicken, potato, carrot and onion",
+  "items": [
+   "toyonaka:129148"
+  ]
+ },
+ {
+  "key": "toyonaka-129150",
+  "ja": "チンゲン菜のソテー",
+  "desc": "Bok choy saute: a small bowl of pale green chingensai stems and dark green leaves cut short, glossy with oil, with carrot strips",
+  "items": [
+   "toyonaka:129150"
+  ]
+ },
+ {
+  "key": "toyonaka-127574",
+  "ja": "きびなごカリカリフライ（尾）",
+  "desc": "Crispy fried kibinago: a plate of small slender whole silver-stripe herring in crisp golden crumb, tails sticking out",
+  "items": [
+   "toyonaka:127574"
+  ]
+ },
+ {
+  "key": "toyonaka-127575",
+  "ja": "つけあげとひじきの煮物",
+  "desc": "Simmered fried fish cake and hijiki: a small bowl of black hijiki seaweed sprigs with slices of brown fried tsukeage fish cake, carrot and soybeans in soy",
+  "items": [
+   "toyonaka:127575"
+  ]
+ },
+ {
+  "key": "toyonaka-127576",
+  "ja": "さつまいものきんぴら",
+  "desc": "Sweet potato kinpira: a small bowl of thin matchsticks of sweet potato with purple skin edges, glossy with sweet soy, sesame seeds",
+  "items": [
+   "toyonaka:127576"
+  ]
+ },
+ {
+  "key": "toyonaka-129157",
+  "ja": "豚肉とれんこんのソテー",
+  "desc": "Pork and lotus root saute: a plate of pork slices with white lotus root slices showing their ring of holes, carrot and green beans, glossy",
+  "items": [
+   "toyonaka:129157"
+  ]
+ },
+ {
+  "key": "toyonaka-129161",
+  "ja": "いろどり野菜ミンチカツのソースかけ",
+  "desc": "Colourful vegetable minced-meat cutlet: an oval golden panko-crumbed patty with brown sauce, cut to show minced meat flecked with orange carrot and green vegetables",
+  "items": [
+   "toyonaka:129161"
+  ]
+ },
+ {
+  "key": "toyonaka-129164",
+  "ja": "アセロラゼリー",
+  "desc": "Acerola jelly: a small cup of translucent bright red-pink jelly, smooth and glossy",
+  "items": [
+   "toyonaka:129164"
+  ]
+ },
+ {
+  "key": "toyonaka-125548",
+  "ja": "豆腐ナゲット",
+  "desc": "Tofu nuggets: a plate of small flat oval golden fried nuggets, one cut showing a pale soft tofu and chicken interior",
+  "items": [
+   "toyonaka:125548",
+   "kumagaya:3608"
+  ]
+ },
+ {
+  "key": "toyonaka-125549",
+  "ja": "小松菜とささみのサラダ（和風ドレッシング）",
+  "desc": "Komatsuna and chicken salad: a small bowl of boiled dark green komatsuna, shredded white chicken, carrot and corn in a clear soy dressing",
+  "items": [
+   "toyonaka:125549"
+  ]
+ },
+ {
+  "key": "toyonaka-126784",
+  "ja": "もやしのカレーソテー",
+  "desc": "Curry bean sprout saute: a small bowl of bean sprouts tinted yellow with curry powder, with carrot strips and green pepper",
+  "items": [
+   "toyonaka:126784"
+  ]
+ },
+ {
+  "key": "toyonaka-126786",
+  "ja": "すりおろし洋なしゼリー",
+  "desc": "Grated pear jelly: a small cup of pale cloudy cream-white jelly with fine grated pear pulp suspended in it",
+  "items": [
+   "toyonaka:126786"
+  ]
+ },
+ {
+  "key": "toyonaka-130610",
+  "ja": "豚どん",
+  "desc": "Butadon, pork rice bowl: a bowl of white rice topped with thin pork slices and onion glazed in a glossy sweet soy sauce",
+  "items": [
+   "toyonaka:130610"
+  ]
+ },
+ {
+  "key": "toyonaka-130613",
+  "ja": "がんもどきの煮物",
+  "desc": "Simmered ganmodoki: a bowl of round golden-brown fried tofu patties dotted with vegetable bits, soaked in brown dashi, with carrot and green beans",
+  "items": [
+   "toyonaka:130613"
+  ]
+ },
+ {
+  "key": "toyonaka-113541",
+  "ja": "豆腐チャンプルー",
+  "desc": "Tofu champuru: a plate of browned firm white tofu chunks stir-fried with cabbage, bean sprouts, pork, carrot and scrambled yellow egg",
+  "items": [
+   "toyonaka:113541"
+  ]
+ },
+ {
+  "key": "toyonaka-113543",
+  "ja": "かぼちゃのあま煮",
+  "desc": "Sweet simmered kabocha: a small bowl of chunks of kabocha pumpkin with dark green skin and glossy soft orange flesh",
+  "items": [
+   "toyonaka:113543"
+  ]
+ },
+ {
+  "key": "toyonaka-131072",
+  "ja": "マカロニのクリームシチュー",
+  "desc": "Macaroni cream stew: a bowl of thick white cream stew with short tube macaroni, chicken, carrot, onion and broccoli",
+  "items": [
+   "toyonaka:131072"
+  ]
+ },
+ {
+  "key": "toyonaka-131075",
+  "ja": "ブロッコリーのサラダ（フレンチドレッシング）",
+  "desc": "Broccoli salad with French dressing: a small bowl of bright green boiled broccoli florets with corn and carrot in a clear pale orange vinaigrette",
+  "items": [
+   "toyonaka:131075"
+  ]
+ },
+ {
+  "key": "toyonaka-131088",
+  "ja": "キャンディーチーズ",
+  "desc": "Candy cheese: a small dish of bite-size pale yellow processed cheese pieces, each wrapped in clear film twisted at both ends like sweets",
+  "items": [
+   "toyonaka:131088"
+  ]
+ },
+ {
+  "key": "toyonaka-131719",
+  "ja": "トマトとツナの豆乳煮めん",
+  "desc": "Tomato and tuna soy-milk somen: a bowl of thin white somen noodles in a pale orange creamy tomato soy-milk broth with tuna, onion and greens",
+  "items": [
+   "toyonaka:131719"
+  ]
+ },
+ {
+  "key": "toyonaka-131721",
+  "ja": "ウインナーときのこのソテー",
+  "desc": "Sausage and mushroom saute: a small bowl of sliced pink wiener sausages with shimeji mushrooms, onion and green pepper, glossy",
+  "items": [
+   "toyonaka:131721"
+  ]
+ },
+ {
+  "key": "toyonaka-131098",
+  "ja": "「かさこじぞう」の恩返しみそ汁",
+  "desc": "Hearty miso soup: a lacquered soup bowl of cloudy tan miso broth with daikon, carrot, taro, aburaage and green onion",
+  "items": [
+   "toyonaka:131098"
+  ]
+ },
+ {
+  "key": "toyonaka-131100",
+  "ja": "もやしとベーコンの炒め物",
+  "desc": "Bean sprout and bacon stir-fry: a small bowl of white bean sprouts with pink bacon pieces, carrot strips and green chives",
+  "items": [
+   "toyonaka:131100"
+  ]
+ },
+ {
+  "key": "toyonaka-131101",
+  "ja": "チンゲン菜とえのきのゆず風味和え",
+  "desc": "Bok choy and enoki with yuzu: a small bowl of boiled pale green chingensai and thin white enoki mushrooms with fine yellow yuzu peel shreds",
+  "items": [
+   "toyonaka:131101"
+  ]
+ },
+ {
+  "key": "toyonaka-131748",
+  "ja": "ハンバーグのオニオンソースかけ",
+  "desc": "Hamburg steak with onion sauce: a plate with an oval browned meat patty topped with a glossy brown sauce full of soft sauteed onion",
+  "items": [
+   "toyonaka:131748"
+  ]
+ },
+ {
+  "key": "toyonaka-131111",
+  "ja": "千草焼き（卵入り）",
+  "desc": "Chigusa-yaki: a square slice of thick baked egg, yellow with a browned top, dotted with carrot, green spinach, shiitake and minced meat",
+  "items": [
+   "toyonaka:131111"
+  ]
+ },
+ {
+  "key": "toyonaka-131112",
+  "ja": "ささみの中華和え",
+  "desc": "Chicken Chinese-style salad: a small bowl of shredded white chicken with cucumber, carrot and bean sprouts in a soy-sesame dressing",
+  "items": [
+   "toyonaka:131112"
+  ]
+ },
+ {
+  "key": "toyonaka-131119",
+  "ja": "白菜のドレッシング和え（かんきつドレッシング）",
+  "desc": "Napa cabbage with citrus dressing: a small bowl of boiled pale white-green napa cabbage, carrot and cucumber strips in a clear citrus dressing",
+  "items": [
+   "toyonaka:131119"
+  ]
+ },
+ {
+  "key": "toyonaka-131687",
+  "ja": "厚揚げと大根のごまみそ煮",
+  "desc": "Fried tofu and daikon in sesame miso: a bowl of golden atsuage tofu pieces and soft translucent daikon chunks in a thick tan sesame-miso sauce",
+  "items": [
+   "toyonaka:131687"
+  ]
+ },
+ {
+  "key": "toyonaka-131130",
+  "ja": "「りっちゃん」のサラダ",
+  "desc": "Mixed vegetable salad: a small bowl of shredded cabbage, cucumber, carrot and corn in a light oil-and-salt dressing",
+  "items": [
+   "toyonaka:131130"
+  ]
+ },
+ {
+  "key": "toyonaka-131136",
+  "ja": "豚肉のガーリックソテー",
+  "desc": "Garlic pork saute: a plate of browned pork slices with sliced garlic, onion and green pepper, glossy",
+  "items": [
+   "toyonaka:131136"
+  ]
+ }
+]

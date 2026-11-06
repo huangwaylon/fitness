@@ -5,7 +5,8 @@
 // tier: the clips may or may not sound (headless, muted), the schedule is the relay clock's.
 // KIKI_SHOTS=1 writes screenshots (393×852) into /tmp/kikimimi-shots/inc6/.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -23,7 +24,7 @@ const ITEMS = [
 test('アナウンス: level 5 in the lobby; an announcement through its frame, its marks, note and answer at the reveal, the review', async ({ page }) => {
   test.slow();
   await page.goto(`?demo&${Q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   // the pack: offered (its clips landed), its own mark and a row of its own under the four stages

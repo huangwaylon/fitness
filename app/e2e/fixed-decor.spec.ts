@@ -2,8 +2,7 @@
 // their spots; a tap answers where the piece stands (nobody walks), but for a seat (sit-outdoors.spec: walked up to and
 // sat on); the shishi-odoshi tips and knocks; the sandcastle is gone at 18:00; the seasonal lamps light at night.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, is3d, openNear, tapOn, w3 } from './island.ts';
-import { hudMenu } from './hud.ts';
+import { camTo, geo, is3d, islandUp, openNear, tapOn, w3 } from './island.ts';
 
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
 
@@ -12,7 +11,7 @@ const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] 
 async function open(page: Page, when: string, end: 'mae' | 'oku') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=${when}&critter=none&visitor=none`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await camTo(page, (await geo(page)).CAMS[end], false);
 }
 const centre = (page: Page, sel: string) =>

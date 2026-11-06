@@ -5,8 +5,7 @@
 // lost its own record of the day gets my claims back in the relay's replay; what I had opened lay there again on my
 // phone and a tap did nothing (my claim was the day's already: it can't be made twice). Now a claim, mine too, is gone.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, openNear, quiet, type Geo } from './island.ts';
-import { hudMenu } from './hud.ts';
+import { camTo, geo, type Geo, islandUp, openNear, quiet } from './island.ts';
 import { layoutOpOf, mergeLayout, type LayoutEntry } from '../src/lib/contract/layout.ts';
 import { defaultLayout, layoutOf } from '../src/lib/layout/model.ts';
 import { navOf, type LayoutNav } from '../src/lib/layout/nav.ts';
@@ -31,12 +30,12 @@ async function seed(page: Page, events: Ev[]) {
     localStorage.removeItem('scene-day');
   }, [events, DAY] as const);
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await quiet(page);
 }
 async function open(page: Page): Promise<Geo> {
   await page.goto(Q);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await quiet(page);
   return geo(page);
 }

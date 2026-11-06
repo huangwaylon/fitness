@@ -5,11 +5,13 @@
 // them (report.ts practiceFor).
 import { mulberry32, shuffle } from '#lib/random.ts';
 import type { LocalDate } from '../types.ts';
+import { firstListenRight } from '../contract/listen.ts';
 import type { Accent, Entry, Feature, Item, Level } from './bank.ts';
-import { levelRank } from './bank.ts';
+import { levelRank, shuffleChoices } from './bank.ts';
 import { ENTRIES, entryOf, itemOf } from './pool.ts';
 import { agesOf, staleness, type Recent } from './recent.ts';
-import { DECK_SIZE, inMix } from './deck.ts';
+import { DECK_SIZE, MIX } from './deck.ts';
+import { drawn } from './mix.ts';
 import { dayNum, type Answer, type Stats } from './progress.ts';
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
 
@@ -24,7 +26,7 @@ export interface Card {
   /** The day it was last answered. */
   last: number;
 }
-export type Grade = 'good' | 'hard' | 'again';
+type Grade = 'good' | 'hard' | 'again';
 
 /** Right on the first listen: good; right after a replay: hard; wrong or timed out: again. */
 export const gradeOf = (a: Pick<Answer, 'ok' | 'rp'>): Grade => (a.ok ? (a.rp === 0 ? 'good' : 'hard') : 'again');
@@ -90,7 +92,7 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
   const r = mulberry32(o.seed >>> 0);
   const t = dayNum(o.today);
   const focus = o.focus ?? null;
-  const pool = shuffle(ENTRIES.filter((it) => o.levels.includes(it.lv) && inMix(it) && fits(it, focus)), r);
+  const pool = shuffle(ENTRIES.filter((it) => o.levels.includes(it.lv) && drawn(it, MIX) && fits(it, focus)), r);
   const cards = cardsOf(o.answers);
   const lastSeen = new Map<string, number>();
   for (const a of o.answers) lastSeen.set(a.id, dayNum(a.d));
@@ -127,8 +129,7 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
     deal: (item) => shuffle(out, r).map((e) => {
       const it = item(e.id);
       if (!it) throw new Error(`kikimimi: ${e.id} isn't loaded`);
-      const order = shuffle(it.choices.map((_, i) => i), r);
-      return { ...it, choices: order.map((i) => it.choices[i]), answer: order.indexOf(it.answer) };
+      return shuffleChoices(it, r);
     })
   };
 }
@@ -159,7 +160,7 @@ export function phrasesOf(phrases: readonly PhraseIn[], answers: readonly Answer
   for (const ph of phrases) {
     const ids = new Set(ph.in);
     const mine = answers.filter((a) => ids.has(a.id));
-    const first = mine.filter((a) => a.ok && a.rp === 0);
+    const first = mine.filter(firstListenRight);
     const clips = new Set(first.map((a) => a.id)).size, days = new Set(first.map((a) => a.d)).size;
     out.set(ph.id, { heard: mine.length > 0, clips, days, caught: clips >= CAUGHT_CLIPS && days >= CAUGHT_DAYS });
   }
@@ -188,7 +189,7 @@ export function phraseReview(phrases: readonly PhraseIn[], answers: readonly Ans
       if (!ids.has(a.id)) continue;
       card = step(card, gradeOf(a), dayNum(a.d));
       last.set(a.id, dayNum(a.d));
-      if (a.ok && a.rp === 0) right.add(a.id);
+      if (firstListenRight(a)) right.add(a.id);
     }
     if (!card) continue;
     if (card.last === t) {

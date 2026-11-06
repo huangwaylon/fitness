@@ -2,8 +2,7 @@
 // spot before a line (the balloon anchors to them there), they arrive from the campsite and leave to it (or by their
 // own way), and the partner comes over to say hello to a visitor near home.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, campDoor, geo, is3d, sawIt, stageCam, tapFigure, watchFor } from './island.ts';
-import { hudMenu } from './hud.ts';
+import { campDoor, camTo, geo, is3d, islandUp, sawIt, stageCam, tapFigure, watchFor } from './island.ts';
 
 /** The campsite's door, where the visitors come from and go back to (world x, z). */
 
@@ -21,7 +20,7 @@ const feet = (page: Page, id: string) => page.locator(`[data-visitor="${id}"]`).
 for (const id of ['daisy-mae', 'wisp', 'gulliver', 'jack', 'reese'])
   test(`${id}: on its spot as NH's own 3D model (no card, no render), posed as the villagers are`, async ({ page }) => {
     await page.goto(`?demo&date=2026-11-04T${NIGHT.has(id) ? '21' : '12'}:00&visitor=${id}&critter=none`);
-    await expect(hudMenu(page)).toBeVisible();
+    await islandUp(page);
     await camTo(page, await camOf(page, id), false);
     const v = page.locator(`[data-visitor="${id}"]`);
     await expect(v).toHaveAttribute('data-phase', 'here', { timeout: 3000 });
@@ -33,7 +32,7 @@ for (const id of ['daisy-mae', 'wisp', 'gulliver', 'jack', 'reese'])
 
 test('Gulliver sleeps face down until the fifth nudge (NH), then stands and introduces himself', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const g = page.locator('[data-visitor="gulliver"]');
   await expect(g).toHaveAttribute('data-asleep', 'lie');
   await expect(g.locator('.fxa.zzz')).toHaveCount(1);
@@ -60,7 +59,7 @@ test('Gulliver sleeps face down until the fifth nudge (NH), then stands and intr
 
 test('a stroll, and back on her spot before a line: the balloon anchors next to her', async ({ page }) => {
   await page.goto('?demo&date=2026-11-01T08:00&critter=none&stroll'); // Sunday morning: Daisy Mae
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const v = page.locator('[data-visitor="daisy-mae"]');
   await expect(v.locator('.art')).toBeVisible();
   const home = await feet(page, 'daisy-mae');
@@ -117,12 +116,12 @@ test('arriving: from the campsite on foot along the paths (?arrive); leaving to 
 test('K.K. on his stool: NH’s own 3D model sitting on it by day, nodded off on it at night (zzz)', async ({ page }) => {
   const kk = () => page.evaluate(() => (window as unknown as { __villagers3: { state(s: string): string | null } }).__villagers3.state('kk'));
   await page.goto('?demo&date=2026-11-04T12:00&visitor=none&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await camTo(page, (await geo(page)).CAMS.mae, false);
   await expect(page.locator('[data-kk="day"] .art')).toBeVisible();
   await expect.poll(kk, { timeout: 15_000 }).toBe('sit');
   await page.goto('?demo&date=2026-11-05T02:00&visitor=none&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await camTo(page, (await geo(page)).CAMS.mae, false);
   await expect(page.locator('[data-kk="asleep"] .fxa.zzz')).toHaveCount(1);
   await expect.poll(kk, { timeout: 15_000 }).toBe('nap');
@@ -144,7 +143,7 @@ for (const [id, way] of [['wisp', 'float'], ['celeste', 'fly'], ['jack', 'spook'
 
 test('the partner comes over to say hello to Daisy Mae on the lawn: they face each other, she answers with an emote', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T09:00&visitor=daisy-mae&critter=none&meet');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   // (the ?meet hook sends the partner 3 s after the visitor's in, and tries again every 700 ms, 12 times, while the
   // partner is busy: up to ~11 s)
   await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 15_000 });

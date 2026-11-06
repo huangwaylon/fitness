@@ -82,17 +82,22 @@ const setsOff = (page: Page) =>
 
 /** When `key` arrived on the page (its heard log; or, when the sheet's row brought it first and it was no news, the
  *  shared day holding `needle`), waiting up to 4 s. */
-const arrived = (page: Page, key: string, needle: string, after: number) =>
-  page.evaluate(async ([key, needle, after]) => {
+/** How often `needle` is in the page's canonical day now. */
+const inCanon = (page: Page, needle: string) =>
+  page.evaluate((needle) => (window as unknown as { __world: { canon(): string } }).__world.canon().split(needle).length - 1, needle);
+/** When `key` was heard on `page` (after `after`), or its `needle` came into the canonical day (more than `base` of it:
+ *  what it held already); null after 4 s. */
+const arrived = (page: Page, key: string, needle: string, after: number, base = 0) =>
+  page.evaluate(async ([key, needle, after, base]) => {
     const w = (window as unknown as { __world: W & { canon(): string } }).__world, t0 = Date.now();
     while (Date.now() - t0 < 4000) {
       const h = w.heard()[key];
-      const t = (h !== undefined && h >= after ? h : 0) || (w.canon().includes(needle) ? Date.now() : 0);
+      const t = (h !== undefined && h >= after ? h : 0) || (w.canon().split(needle).length - 1 > base ? Date.now() : 0);
       if (t) return t;
       await new Promise((r) => setTimeout(r, 4));
     }
     return null;
-  }, [key, needle, after] as const);
+  }, [key, needle, after, base] as const);
 
 /** What two canonical days hold differently (each part's entries only one side has). */
 const diff = (x: Record<string, unknown>, y: Record<string, unknown>) =>
@@ -191,17 +196,16 @@ test('two phones, one island: a scripted session leaves both (and a phone openin
     [a, b, { kind: 'world', op: 'wished', id: '2026-11-05' }, 'world:2026-11-05']
   ];
   for (const [from, to, i, key] of changes) {
+    // the change in the other phone's canonical day too, not only heard: a shake has no id of its own, so its needle is
+    // its tree, one more of it than before (`shake:oak-m1` was null twice on 2026-11-06 and once on 11-02 with the
+    // heard time its only way: B can fold the same shake from A's island day row first, and a shake that isn't fresh
+    // is never heard, though it's there)
+    const needle = key.includes(run) ? key.slice(key.indexOf(':') + 1) : key === 'world:2026-11-05' ? '["2026-11-05",1' : '"oak-m1"';
+    const base = needle === '"oak-m1"' ? await inCanon(to, needle) : 0;
     const t0 = await from.evaluate((i) => ((window as unknown as { __world: W }).__world.share(i), Date.now()), i);
-    const t1 = await arrived(to, key, key.includes(run) ? key.slice(key.indexOf(":") + 1) : key === "world:2026-11-05" ? "[\"2026-11-05\",1" : "\u0000", t0);
+    const t1 = await arrived(to, key, needle, t0, base);
     note(`${(i as { kind: string }).kind} → there`, t1 && t1 - t0);
-    // For the CI agent (2026-11-02): `shake:oak-m1` was null here once, in the CI retry of 74fa10c's run (shard 4),
-    // and never in ~130 local runs (6 workers, repeat-each 16). The shake is the only change whose wait has no fallback
-    // needle (`\u0000`): it must arrive through heardAt, which IslandScene sets only when world.svelte.ts #heard finds
-    // it fresh. Ways it could not be: B already folded the same shake (tree, who and `at`) from A's island day row
-    // (applyRow marks it `row`, and the relay's copy only clears the mark: still fresh), or the tab's BroadcastChannel
-    // message came after the 4 s (a busy CI runner rendering two pages). If it comes back: log `w.canon()` shakes on B
-    // and A's `metrics()` at the failure, and give the shake the row's needle too (`oak-m1` in canon) to tell the two
-    // apart.
+    if (t1 === null) console.log(`${key} not on the other phone: its canon`, await to.evaluate(() => (window as unknown as { __world: { canon(): string } }).__world.canon()), 'the sender\'s metrics', JSON.stringify(await w(from, 'metrics')));
     expect(t1, key).not.toBeNull();
     await from.waitForTimeout(80);
   }

@@ -3,10 +3,10 @@
 // mound and a tap digs it up; a tap on my villager now and then sends a flea hopping off it; the stink bugs on the
 // flowers. Each keeps clear of every control and is a ずかん find, never ベル. `?critter=<id>` brings one on at once.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, quiet } from './island.ts';
+import { geo, islandUp, quiet } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { PERCH_3D, REAR_MS, type Perch } from '../src/lib/components/island/critters.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { hudBells } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 test.use({ viewport: { width: 390, height: 844 } });
@@ -14,7 +14,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   return hudBells(page).getAttribute('aria-label');
 }
 const at = (page: Page, sel: string) =>

@@ -2,13 +2,13 @@
 // seeded by the week (2026-11-12 is one), Celeste comes to watch from 20:00 to 04:00 and shooting stars cross every
 // 3–8 s; each wish that night is a star fragment the next morning (the season's zodiac one likelier). No ベル.
 import { expect, test } from './fixtures.ts';
-import { camTo, controlsUnder, is3d, stageCam, tapFigure } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { camTo, controlsUnder, is3d, islandUp, stageCam, tapFigure } from './island.ts';
+import { hudBells } from './hud.ts';
 
 test("a meteor shower's night: Celeste at centre stage, clear of every control, explains wishes", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('?demo&date=2026-11-12T21:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await camTo(page, await stageCam(page), false);
   const art = page.locator('[data-visitor="celeste"] .art');
@@ -27,7 +27,7 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
   await page.clock.install({ time: new Date('2026-11-12T22:00:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo&date=2026-11-12T22:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   // (the 3D island's whole-island view leaves the night sky a sliver under the HUD: there a streak crosses on down over
   // the island's far end)
   await is3d(page);
@@ -47,7 +47,7 @@ test('shooting stars every 3–8 s on a shower night (a clear night: 15–40 s)'
 
 test('not a shower night: no Celeste; each wish is a fragment the next morning, a shower night’s like any other', async ({ page }) => {
   await page.goto('?demo&date=2026-11-11T21:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForTimeout(500);
   await expect(page.locator('[data-visitor="celeste"]')).toHaveCount(0);
   // five wishes on the shower night of 11-12: five fragments on the 13th's beach

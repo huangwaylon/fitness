@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { art } from '#lib/art.ts';
 import { CHANNELS, SCENE_IDS, channelOf, isDialogue, type SoundMark } from './bank.ts';
-import { BANK } from './source.ts';
+import { AUTHORED as BANK } from './source.ts';
 import { MARKS, NOISE, PLACES } from './staging.ts';
 import { CONTENT } from './content/index.ts';
 import { findWords, markKinds, placeMark, soundLine, wordSpans } from './marks.ts';

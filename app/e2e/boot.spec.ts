@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
-import { hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
 
 /** The 3D island's chunk in this build (the build's client manifest: chunks are named by hash). */
 const chunk3d = (): string => {
@@ -29,7 +29,7 @@ test('not paired: to /pair without the 3D island', async ({ page }) => {
 test('the demo: the 3D island and its fields asked for at the launch', async ({ page }) => {
   const asked = watch3d(page);
   await page.goto('?demo&critter=none&visitor=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect.poll(() => asked.some((u) => u.includes('fields.worker'))).toBe(true);
   await expect.poll(() => asked.some((u) => u.endsWith(chunk3d()))).toBe(true);
 });

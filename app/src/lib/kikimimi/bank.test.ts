@@ -4,8 +4,8 @@ import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
 import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitFocus, type Item, type ItemType, type Level } from './bank.ts';
-import { BANK } from './source.ts';
-import { CAST, EXPOSURE } from './bank4.ts';
+import { AUTHORED as BANK, BANK as PLAYED } from './source.ts';
+import { CAST, EXPOSURE } from './cast.ts';
 import { LEVELS, MIX } from './deck.ts';
 import { mixes, readPacks, unitItems } from './compile.ts';
 import { clipPlaces, packFile } from './packing.ts';
@@ -40,10 +40,10 @@ describe('kikimimi bank', () => {
   });
 
   it('has at least 40 items per level, enough of each type for a game', () => {
-    // the fixed counts: levels 1-3's first bank; level 4 bank4.ts 67 + dialogues.ts 24 + もり's 85 + 85 (content/); level 5
-    // the アナウンス pack; 6 やま's 100 + 100; 7 ほし's 115
+    // the fixed counts, as written: levels 1-3's first bank; level 4 bank4.ts 67 + dialogues.ts 24 + もり's 85 + 85 + the
+    // variety set's 36 (content/); level 5 the アナウンス pack; 6 やま's 100 + 100 + the variety set's 36; 7 ほし's 115
     const count = (lv: Level) => BANK.filter((it) => it.lv === lv).length;
-    expect([1, 2, 3, 4, 5, 6, 7].map((lv) => count(lv as Level))).toEqual([46, 49, 49, 261, 30, 200, 115]);
+    expect([1, 2, 3, 4, 5, 6, 7].map((lv) => count(lv as Level))).toEqual([46, 49, 49, 297, 30, 236, 115]);
     expect(count(8)).toBe(0);
     for (const lv of [1, 2, 3, 4, 6, 7] as Level[]) {
       const items = BANK.filter((it) => it.lv === lv);
@@ -197,12 +197,12 @@ describe('kikimimi bank', () => {
     for (const it of BANK.filter((it) => it.lv >= 4 && !isDialogue(it))) expect(/[0-9£$¥%]/.test(it.en) ? it.tts : 'none', it.id).toBeTruthy();
   });
 
-  it('dialogues: 24 + 30 at level 4, 40 at 6, 25 at 7 (gist and next), 2-4 lines between two villagers taking turns, each with its cast voice, its Japanese and its spoken text', () => {
+  it('dialogues: 24 + 30 + 6 at level 4, 40 + 6 at 6, 25 at 7 (gist and next), 2-4 lines between two villagers taking turns, each with its cast voice, its Japanese and its spoken text', () => {
     expect(DIALOGUES).toHaveLength(24);
     expect(DIALOGUES.filter((it) => it.type === 'gist')).toHaveLength(12);
     expect(DIALOGUES.filter((it) => it.type === 'next')).toHaveLength(12);
     const dialogues = BANK.filter(isDialogue);
-    expect([4, 5, 6, 7].map((lv) => dialogues.filter((it) => it.lv === lv).length)).toEqual([54, 0, 40, 25]);
+    expect([4, 5, 6, 7].map((lv) => dialogues.filter((it) => it.lv === lv).length)).toEqual([60, 0, 46, 25]);
     for (const it of dialogues) {
       expect(DIALOGUE_TYPES, it.id).toContain(it.type);
       const lines = it.lines!;
@@ -271,8 +271,9 @@ describe('kikimimi bank', () => {
   it('every item of an offered level has its clip (and levels 1 and 2 a slow one) in a pack and in clips.json', () => {
     // a level is offered (deck.ts LEVELS) only once all of its clips exist: level 4's wait for the neural cast
     expect(LEVELS).toEqual(expect.arrayContaining([1, 2, 3]));
-    // (a dialogue's: one per line, `<id>-<n>`, once its level offers dialogues)
-    for (const it of BANK) {
+    // (a dialogue's: one per line, `<id>-<n>`, once its level offers dialogues; the items in play: a waiting set's join
+    // once voiced, source.ts)
+    for (const it of PLAYED) {
       if ((!LEVELS.includes(it.lv) || (isDialogue(it) && !MIX[it.lv]?.[it.type])) && !clipIds(it).some((id) => CLIPS[id])) continue;
       for (const id of clipIds(it)) {
         const c = CLIPS[id];
