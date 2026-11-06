@@ -28,10 +28,10 @@ describe('villager search', () => {
     expect(searchVillagers('ネコ ぼんやり')).toContain('bob');
   });
 
-  it('finds special characters by name and by 「とくべつ」 / special', () => {
+  it('finds special characters by name and by 「特別」 / special', () => {
     expect(searchVillagers('たぬきち')).toEqual(['tom-nook']);
     expect(searchVillagers('k.k.')).toEqual(['kk-slider']);
-    const special = searchVillagers('とくべつ');
+    const special = searchVillagers('特別');
     expect(special).toHaveLength(23);
     expect(searchVillagers('Special')).toEqual(special);
     expect(special.every((id) => ROSTER[id].special)).toBe(true);
