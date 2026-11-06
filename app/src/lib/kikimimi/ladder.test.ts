@@ -10,7 +10,7 @@ import { spokenText } from './speech.ts';
 import { LADDER_SRC, LADDERS, RUNG_ITEMS, ladderReady } from './ladders.ts';
 import { PER_GAME, RUNG_POINTS, SPEEDS, climb, climbs, ladderDeck, ladderPoints, laddersIn, rungState, speedAt } from './ladder.ts';
 import { isRungId } from './pool.ts';
-import { isLadder, versus, withLadder } from './session.ts';
+import { isLadder, versus, withLadder } from './seed.ts';
 import { QUIZ_MAX_S, QUIZ_QS } from '../contract/live-protocol.ts';
 
 const CLIPS: Readonly<Record<string, Clip>> = clipsJson;

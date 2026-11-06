@@ -162,7 +162,7 @@ export const musicAt = (at: number, t: number): number => (Math.abs(at - t) > MU
 const SONG = /^[a-z0-9-]{1,32}$/;
 
 /** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone, the
- *  seed's bit 0 たいせん and bits 1-2 こたえる じかん; `same` おなじへや: only the host's phone speaks), `join` / `leave`
+ *  seed's low bits the lobby's flags: kikimimi/seed.ts, bit 0 たいせん, 1 スピード はしご, 2-3 こたえる じかん; `same` おなじへや: only the host's phone speaks), `join` / `leave`
  *  it or the game, `go` the game starts at `at` (the relay's clock), `a` my answer to question `i` (choice `k`, `rp`
  *  replayed or slowed, `s` my running total), `skip` the host's position: question `i` starts at `at` (0-8; 8: the
  *  results), sent as it changes (つぎへ) and every few seconds as a beacon; a player's `skip` is its よみおわった (`i` the

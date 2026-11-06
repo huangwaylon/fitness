@@ -6,7 +6,8 @@
 import { isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
 import { itemDur } from '#lib/kikimimi/clips.ts';
 import { SPEEDS, ladderDeck, ladderPoints } from '#lib/kikimimi/ladder.ts';
-import { FAST_WINDOWS, QuizSession, isLadder, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizTimer, type QuizView } from '#lib/kikimimi/session.ts';
+import { FAST_WINDOWS, QuizSession, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizView } from '#lib/kikimimi/session.ts';
+import { isLadder, type QuizTimer } from '#lib/kikimimi/seed.ts';
 import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
 import { cue } from '#lib/sound/cues.ts';
