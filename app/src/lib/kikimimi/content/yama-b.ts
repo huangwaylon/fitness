@@ -8,29 +8,18 @@
 // differs (§9: reductions as said, every number written out), `note` the trap (≤ 40 字), `tags` the scenario (§5.5
 // seed, register, pragmatics, conditions, features). Staging (scene, channel, sound marks) is written on each item
 // here instead of staging.ts, so the integrator can fold it in as is. The right choice is authored first.
-//   Speakers: bank4.ts CAST (this set's new villagers are there too). Level 6 (やま). American English and US voices by
+//   Speakers: cast.ts CAST (this set's new villagers are there too). Level 6 (やま). American English and US voices by
 // default (US vocabulary, idioms, spelling, dollars); about a tenth are UK or AU voices in standard English (no slang),
 // tagged `accent-exposure`.
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, CastId, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
-import { CAST } from '../bank4.ts';
+import type { Channel, Item, ItemType, Level, SceneId, SoundMark, Tags } from '../bank.ts';
+import { MEAN_ASK, dialogueOf, g, line, single, tg, type DialogueRow, type L } from './build.ts';
 
 /** The content family an item was written for (this set's coverage). */
 export type Family = 'negotiate' | 'complain' | 'disagree' | 'bad-news' | 'meeting' | 'process' | 'recommend' | 'support' | 'medical' | 'contract' | 'money' | 'opinion';
 
 /** やま's level. */
 const LV: Level = 6;
-const MEAN_ASK = 'つまり、どういうこと？';
-const NEXT_ASK = 'つぎの ひとことは？';
-
-const castOf = (who: RosterId): CastId => {
-  const c = CAST[who];
-  if (!c) throw new Error(`kikimimi: ${who} has no cast voice`);
-  return c;
-};
-
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
 
 type Extra = { tts?: string; focus?: string; ask?: string; scene?: SceneId; channel?: Channel; marks?: readonly SoundMark[] };
 type Row = readonly [type: Exclude<ItemType, 'pic' | 'gist' | 'next'>, id: string, speaker: RosterId, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, extra?: Extra];
@@ -39,17 +28,14 @@ const FAMILY_OF: Record<string, Family> = {};
 
 const item = (family: Family) => ([type, id, speaker, en, ja, note, choices, tags, x = {}]: Row): Item => {
   FAMILY_OF[id] = family;
-  const cast = castOf(speaker);
   const focus = type === 'word' ? choices[0] : x.focus;
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : undefined);
   return {
-    id, lv: LV, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags,
+    ...single(LV, type, id, speaker, en, ja, note, choices, tags),
     ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }),
     ...(x.scene && { scene: x.scene }), ...(x.channel && { channel: x.channel }), ...(x.marks && { marks: x.marks })
   };
 };
-
-const g = (at: string): SoundMark => ['drop', at, 'g'];
 
 // ---- negotiation and persuasion ---------------------------------------------------------------------------------------
 
@@ -102,11 +88,11 @@ const NEGOTIATE: readonly Row[] = [
 // ---- complaints that escalate -----------------------------------------------------------------------------------------
 
 const COMPLAIN: readonly Row[] = [
-  ['reply', 'yb-third-time', 'pekoe', "This is the third time I've called about this, and every time I'm told someone'll call me back.",
-    'この件で電話するのは3回目で、毎回折り返すと言われるんです。 →「申し訳ありません。解決するまで私が担当します。」',
-    '「また折り返します」は火に油。担当を約束するのが正解',
-    ["I'm so sorry. I'll stay on this with you until it's resolved.", "Of course, someone will call you back.", "That's right, it's your third time."],
-    tg(22, 'service', 'attitude', ['phone'], ['contraction']), { scene: 'living' }],
+  ['reply', 'yb-third-time', 'pekoe', "This is the third time this week the dishes have sat in the sink overnight, and every time you say you'll get to them.",
+    '今週、お皿が一晩シンクに置きっぱなしなのはこれで3回目。毎回「やるから」って言うよね。 →「ほんとにごめん。今すぐ洗う。」',
+    '「あとでやる」はもう通じない。今すぐ動くのが正解',
+    ["You're right, I'm sorry. I'm doing them right now.", "Sure, I'll get to them later.", "That's right, it's the third time."],
+    tg(35, 'partner', 'attitude', [], ['contraction']), { scene: 'living' }],
   ['mean', 'yb-decision-maker', 'olivia', "I appreciate you're only following policy, but I'd like to speak to someone who can actually make a decision.",
     'あなたが規則に従っているだけなのはわかりますが、実際に判断できる方と話したいです。 → つまり、上の人を出してほしい。',
     'someone who can make a decision＝上司を出して',
@@ -129,12 +115,12 @@ const COMPLAIN: readonly Row[] = [
     'sorry to be a pain は前置き。本題は「ぬるい」',
     ["Oh, I'm so sorry. I'll have the kitchen redo it.", 'No pain, no gain!', 'Sure, the middle table is free.'],
     tg(27, 'service', 'indirect', ['cafe'], ['idiom']), { scene: 'cafe' }],
-  ['word', 'yb-supposed-to', 'francine', "It was supposed to be here by Tuesday. It's now Friday.",
-    '火曜までに届くはずだったんです。今日はもう金曜ですよ。',
+  ['word', 'yb-supposed-to', 'francine', "We were supposed to leave at noon. It's two, and you're still packing.",
+    'お昼に出発するはずだったよね。もう2時なのに、まだ荷造りしてる。',
     "supposed to は s'posta と縮む。d はほぼ聞こえない",
     ['supposed to', 'going to', 'due to'],
-    tg(26, 'service', 'understatement', ['phone'], ['weak-form']),
-    { tts: "It was s'posta be here by Tuesday. It's now Friday.", scene: 'living', marks: [['say', 'supposed to', "s'posta"]] }],
+    tg(35, 'partner', 'attitude', [], ['weak-form']),
+    { tts: "We were s'posta leave at noon. It's two, and you're still packing.", scene: 'living', marks: [['say', 'supposed to', "s'posta"]] }],
   ['mean', 'yb-before-midnight', 'kabuki', "Don't get me wrong, I love a little music. I'd just love it a lot more before midnight.",
     '誤解しないで、音楽は好きなんだ。ただ、夜中の12時前ならもっと好きなんだけどね。 → つまり、深夜の音楽をやめてほしい。',
     'ユーモアで包んだ騒音の苦情',
@@ -219,13 +205,13 @@ const BAD_NEWS: readonly Row[] = [
     "won't は want と別の母音。否定を聞き逃さない",
     ["won't", 'will', "wouldn't"],
     tg(26, 'service', 'refusal', ['phone'], ['contraction']), { scene: 'living' }],
-  ['num', 'yb-rent-up', 'curt', 'Starting in April, rent goes up from ¥142,000 to ¥149,500 a month.',
-    '4月から、家賃は月14万2千円から14万9千5百円に上がります。',
-    'from→to の to の後が新しい家賃',
-    ['149,500円', '142,000円', '7,500円'],
-    tg(30, 'neighbour', 'literal', ['voicemail'], ['numbers', 'accent-exposure']),
-    { ask: '4月からの 家賃は？', focus: '¥149,500', tts: 'Starting in April, rent goes up from a hundred and forty-two thousand to a hundred and forty-nine thousand five hundred a month.',
-      scene: 'living', marks: [['say', '¥142,000', 'a hundred and forty-two thousand'], ['say', '¥149,500', 'a hundred and forty-nine thousand five hundred']] }]
+  ['num', 'yb-rent-up', 'curt', 'From April, the swim club fee goes up from ¥8,200 to ¥8,950 a month.',
+    '4月から、スイミングクラブの月謝は8,200円から8,950円に上がります。',
+    'from→to の to の後が新しい月謝',
+    ['8,950円', '8,200円', '750円'],
+    tg(30, 'official', 'literal', ['voicemail'], ['numbers', 'accent-exposure']),
+    { ask: '4月からの 月謝は？', focus: '¥8,950', tts: 'From April, the swim club fee goes up from eight thousand two hundred to eight thousand nine hundred and fifty a month.',
+      scene: 'living', marks: [['say', '¥8,200', 'eight thousand two hundred'], ['say', '¥8,950', 'eight thousand nine hundred and fifty']] }]
 ];
 
 // ---- meetings with competing opinions ---------------------------------------------------------------------------------
@@ -352,18 +338,18 @@ const RECOMMEND: readonly Row[] = [
 // ---- customer support escalations -------------------------------------------------------------------------------------
 
 const SUPPORT: readonly Row[] = [
-  ['reply', 'yb-escalated', 'marina', "I've escalated this to our technical team. They usually respond within 48 hours.",
-    '技術チームに引き継ぎました。通常48時間以内に返答があります。 →「それまでに連絡がなかったら？」',
-    'escalate＝上に回す。まだ解決していない',
-    ["And if I don't hear back by then?", "Thanks, I'll take the escalator.", "Great, so it's fixed now?"],
-    tg(22, 'service', 'formula', ['phone'], ['numbers']),
-    { tts: "I've escalated this to our technical team. They usually respond within forty-eight hours.", scene: 'living',
+  ['reply', 'yb-escalated', 'marina', "I've passed your question on to the head coach. She usually gets back to parents within 48 hours.",
+    'ご質問はヘッドコーチに伝えました。保護者の方には、たいてい48時間以内に返事があります。 →「それまでに連絡がなかったら？」',
+    'pass on＝伝える。まだ返事は来ていない',
+    ["And if I don't hear back by then?", 'Great, so she said yes?', 'Sure, I can coach on weekends.'],
+    tg(22, 'official', 'formula', ['phone'], ['numbers']),
+    { tts: "I've passed your question on to the head coach. She usually gets back to parents within forty-eight hours.", scene: 'living',
       marks: [['say', '48', 'forty-eight']] }],
-  ['mean', 'yb-authorize', 'orville', "Unfortunately, that falls outside what I'm able to authorize. But I can put in a request for you.",
-    'あいにく、それは私の権限を超えています。ですが、代わりに申請を出すことはできます。 → つまり、自分では決められないが上に頼める。',
-    'outside what I can authorize＝権限外。依頼は可',
-    ["He can't approve it, but he can ask someone who can.", 'The request is already approved.', 'He refuses to help at all.'],
-    tg(22, 'service', 'refusal', ['phone'], ['contraction']), { scene: 'living' }],
+  ['mean', 'yb-authorize', 'orville', "I'd love to give you Friday off, but that's above my pay grade. I can ask the boss for you, though.",
+    '金曜休みにしてあげたいけど、それは僕が決められることじゃないんだ。でも、上に聞いてみるよ。 → つまり、自分では決められないが上に頼める。',
+    'above my pay grade＝自分の権限外。依頼は可',
+    ["He can't approve it, but he can ask someone who can.", "He's already approved Friday off.", 'He refuses to help at all.'],
+    tg(42, 'colleague', 'refusal', [], ['idiom', 'contraction']), { scene: 'office' }],
   ['num', 'yb-double-seven', 'ken', "Your case number is 507713. That's two sevens in the middle.",
     'お客様の受付番号は507713です。真ん中は7が二つです。',
     'two sevens＝77。0は「オー」と読む',
@@ -371,24 +357,24 @@ const SUPPORT: readonly Row[] = [
     tg(21, 'service', 'literal', ['phone'], ['numbers']),
     { ask: '受付番号は？', focus: '507713', tts: "Your case number is five-oh-seven, seven-one-three. That's two sevens in the middle.",
       scene: 'living', marks: [['say', '507713', 'five-oh-seven, seven-one-three']] }],
-  ['reply', 'yb-on-hold', 'lily', "I'm going to have to put you on hold for a moment while I check with my supervisor. Is that OK?",
-    '上の者に確認しますので、少々保留にさせていただいてもよろしいですか？ →「いいですけど、今度は切らないでくださいね。」',
-    'on hold＝保留。前回切られた不満を添える',
-    ["That's fine, but please don't cut me off this time.", "No, I'm not holding anything.", "Sure, my supervisor's out today."],
-    tg(22, 'service', 'formula', ['phone'], ['gonna']),
-    { tts: "I'm gonna have to put you on hold for a moment while I check with my supervisor. Is that OK?", scene: 'living',
+  ['reply', 'yb-on-hold', 'lily', "I'm going to have to restart your phone in recovery mode, and anything that isn't backed up is gone. Is that OK?",
+    'スマホをリカバリーモードで再起動しないといけない。バックアップしてないものは消えるけど、いい？ →「待って。先に写真がバックアップされてるか確認させて。」',
+    'isn’t backed up is gone＝消えるという警告',
+    ['Hang on. Let me make sure my photos are backed up first.', "Sure, I'm fully recovered, thanks.", "No, my phone's not that old."],
+    tg(43, 'friend', 'literal', [], ['gonna']),
+    { tts: "I'm gonna have to restart your phone in recovery mode, and anything that isn't backed up is gone. Is that OK?", scene: 'living',
       marks: [['say', 'going to', 'gonna']] }],
-  ['mean', 'yb-goodwill', 'gayle', "I can't waive the late fee completely, but as a courtesy, I can knock it down to half.",
-    '延滞料を全額免除することはできませんが、特別に半額まで下げられます。 → つまり、延滞料は半額になる。',
-    'as a courtesy＝特別対応。knock down＝下げる',
-    ['You pay half the late fee.', 'You pay no late fee at all.', 'You pay the full late fee.'],
-    tg(22, 'service', 'refusal', ['phone'], ['contraction', 'idiom']), { scene: 'living' }],
-  ['word', 'yb-hasnt-gone', 'kid-cat', "Your payment hasn't gone through on our end.",
-    'こちらでは、お支払いがまだ完了していません。',
+  ['mean', 'yb-goodwill', 'gayle', "I can't fix it for free, but since it's you, I'll knock the price down to half.",
+    'タダで直すわけにはいかないけど、あなただから半額にしとくね。 → つまり、半額で直してくれる。',
+    "since it's you＝あなただから。knock down＝下げる",
+    ['You pay half the usual price.', 'You pay nothing at all.', 'You pay the full price.'],
+    tg(31, 'friend', 'refusal', [], ['contraction', 'idiom']), { scene: 'street' }],
+  ['word', 'yb-hasnt-gone', 'kid-cat', "Hey, your Venmo for the cabin hasn't come through on my end.",
+    'ねえ、コテージ代のVenmo、こっちにまだ届いてないよ。',
     "hasn't の t はほぼ消える。n の有無で判断",
     ["hasn't", 'has', 'had'],
-    tg(21, 'service', 'literal', ['phone'], ['contraction']),
-    { tts: "Your payment hasn' gone through on our end.", scene: 'living', marks: [['drop', "hasn't", 't']] }],
+    tg(27, 'friend', 'literal', [], ['contraction']),
+    { tts: "Hey, your Venmo for the cabin hasn' come through on my end.", scene: 'living', marks: [['drop', "hasn't", 't']] }],
   ['reply', 'yb-last-four', 'tangy', "Before I can do anything, I'll just need you to verify the last four digits of the card.",
     '手続きの前に、カード番号の下4桁で本人確認をお願いします。 →「はい、6018で終わります。」',
     'verify＝本人確認。下4桁を言うのが答え',
@@ -444,11 +430,11 @@ const MEDICAL: readonly Row[] = [
 // ---- contracts in plain speech ----------------------------------------------------------------------------------------
 
 const CONTRACT: readonly Row[] = [
-  ['mean', 'yb-notice-period', 'henry', "You're free to move out, of course. It's just that the lease requires sixty days' notice, so we'd need that in writing.",
-    'もちろん退去は自由です。ただ賃貸契約で60日前の通知が必要なので、書面でいただきたいんです。 → つまり、60日前に書面で通知が必要。',
-    'notice＝事前の通知。すぐ出られるわけではない',
-    ["You must give sixty days' written notice.", 'You can move out whenever you like.', 'The lease ends in sixty days.'],
-    tg(30, 'neighbour', 'formula', ['phone'], ['contraction']), { scene: 'living' }],
+  ['mean', 'yb-notice-period', 'henry', "You're welcome to take her out of the program, of course. It's just that we require a full month's notice, and we'd need that in writing.",
+    'もちろん退園は自由です。ただ、うちでは丸1か月前の通知が必要で、それを書面でいただきたいんです。 → つまり、1か月前に書面で通知が必要。',
+    'notice＝事前の通知。すぐやめられるわけではない',
+    ["You must give a month's written notice.", 'She can leave whenever you like.', 'The program ends in a month.'],
+    tg(29, 'service', 'formula', ['phone'], ['contraction']), { scene: 'living' }],
   ['reply', 'yb-small-print', 'sterling', "Read the fine print, man. There's a twelve-month minimum, and they charge you to leave early.",
     '細かい規約を読みなよ。最低12か月で、途中解約は料金を取られるぞ。 →「本当？途中解約の料金はいくら？」',
     'fine print＝細則。文字の大きさの話ではない',
@@ -466,11 +452,11 @@ const CONTRACT: readonly Row[] = [
     'not liable＝責任を負わない。coverage＝補償',
     ["Without extra coverage, they won't pay for damage.", 'They pay for any damage.', 'The extra coverage is already included.'],
     tg(33, 'service', 'literal', ['phone'], ['contraction']), { scene: 'living' }],
-  ['word', 'yb-deductions', 'tom-nook', "You'll get your deposit back, minus any deductions for damage.",
-    '敷金は返ってくるよ。傷みの分を差し引いてね。',
-    'deductions＝差し引き。reductions と頭の音で区別',
+  ['word', 'yb-deductions', 'tom-nook', 'Your first paycheck looks small because of all the deductions for health insurance and taxes.',
+    '最初の給料が少なく見えるのは、健康保険や税金がいろいろ差し引かれるからだよ。',
+    'deductions＝天引き。reductions と頭の音で区別',
     ['deductions', 'reductions', 'deduction'],
-    tg(30, 'neighbour', 'literal', [], ['ending'])],
+    tg(46, 'boss', 'literal', [], ['ending'])],
   ['reply', 'yb-sign-today', 'fang', "We'd need you to sign today to lock in this rate.",
     'この料金を確保するには、本日ご署名いただく必要があります。 →「先に契約書を持ち帰って読みたいです。」',
     '即日署名の圧力。持ち帰るのが賢い返し',
@@ -567,32 +553,17 @@ const OPINION: readonly Row[] = [
 
 // ---- dialogues ----------------------------------------------------------------------------------------------------------
 
-type L = readonly [who: RosterId, en: string, ja: string, tts?: string, marks?: readonly SoundMark[]];
-interface DRow {
-  id: string;
+interface DRow extends DialogueRow {
   family: Family;
-  type: Extract<ItemType, 'gist' | 'next'>;
   lines: readonly L[];
-  /** A gist's question (Japanese). */
-  ask?: string;
-  /** The right one first. */
-  choices: readonly string[];
-  ja: string;
-  note: string;
-  focus: string;
-  tags: Tags;
   scene?: SceneId;
   channel?: Channel;
 }
 
-const line = ([who, en, ja, tts, marks]: L): Line => ({ who, cast: castOf(who), en, ja, ...(tts && { tts }), ...(marks && { marks }) });
-
 const dialogue = (r: DRow): Item => {
   FAMILY_OF[r.id] = r.family;
-  const lines = r.lines.map(line);
   return {
-    id: r.id, lv: LV, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: r.tags, lines,
+    ...dialogueOf(LV, r, r.lines.map(line)),
     ...(r.scene && { scene: r.scene }), ...(r.channel && { channel: r.channel })
   };
 };
@@ -705,13 +676,13 @@ const DROWS: readonly DRow[] = [
   {
     id: 'dyb-kanazawa', family: 'opinion', type: 'next', focus: 'a fraction of the crowds',
     lines: [
-      ['whitney', "We were going to do Kyoto in April, but everyone says it's wall-to-wall tourists.", '4月に京都に行くつもりだったけど、観光客でぎっしりだってみんな言うの。',
-        "We were gonna do Kyoto in April, but everyone says it's wall-to-wall tourists.", [['say', 'going to', 'gonna']]],
-      ['julian', 'It is. Have you thought about Kanazawa? Similar feel, a fraction of the crowds.', 'そうだよ。金沢は考えた？ 雰囲気は似てて、人出はずっと少ない。'],
-      ['whitney', 'Ooh. And the bullet train goes straight there now, doesn\'t it?', 'へえ。今は新幹線で直通なんだよね？']
+      ['whitney', "We were going to do Yosemite in July, but everyone says the valley's bumper-to-bumper.", '7月にヨセミテに行くつもりだったけど、谷は車でぎっしりだってみんな言うの。',
+        "We were gonna do Yosemite in July, but everyone says the valley's bumper-to-bumper.", [['say', 'going to', 'gonna']]],
+      ['julian', 'It is. Have you thought about Sequoia? Similar feel, a fraction of the crowds.', 'そうだよ。セコイアは考えた？ 雰囲気は似てて、人出はずっと少ない。'],
+      ['whitney', "Ooh. And that's an easy drive from LA, isn't it?", 'へえ。ロサンゼルスから車で行きやすいんだよね？']
     ],
-    choices: ['It does. About two and a half hours from Tokyo.', "Yes, it's wall-to-wall in April.", 'No, the bullet train only goes to Kyoto in April.'],
-    ja: 'そう。東京から2時間半くらいだよ。', note: '付加疑問は確認。所要時間で答えるのが自然',
+    choices: ['It is. About four hours, depending on traffic.', "Yes, it's bumper-to-bumper in July.", 'No, you can only drive to Yosemite in July.'],
+    ja: 'そう。渋滞しだいで4時間くらいだよ。', note: '付加疑問は確認。所要時間で答えるのが自然',
     tags: tg(12, 'friend', 'literal', [], ['gonna', 'idiom', 'accent-exposure']), scene: 'cafe'
   },
   {

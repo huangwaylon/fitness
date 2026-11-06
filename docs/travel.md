@@ -67,7 +67,6 @@ types and their wire limits: [backend.md#events](backend.md#events) (`pack`, `pa
 | Caps | 300 `pack` rows a trip (past them the oldest removal of an op-made id is dropped, else `pack full`), 300 ticks a trip and person. |
 | The phone | `packFold` takes the record's rows as they are and judges this phone's queued ones by the record's rules, so the list shows what the record will. |
 
-The record's guest-category check is in the shared contract: the relay must be redeployed (from main) with it.
 The demo has a made-up note for each trip and うめ's ticks on Okinawa's list.
 
 ## Maps

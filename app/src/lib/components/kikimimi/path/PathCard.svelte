@@ -3,7 +3,7 @@
   // review's sketch D): the current unit's host, its name, domain icon and dots, › to the path. Lessons are solo until
   // co-op lessons (framework 8c): in a shared lobby the card stays, quiet, with that note.
   import type { Path } from '#lib/kikimimi/path.ts';
-  import { DOMAINS, isDomain } from '#lib/kikimimi/path.ts';
+  import { domainIcon } from '../look.ts';
   import type { RosterId } from '#lib/villagers/roster.ts';
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import LessonDots from './LessonDots.svelte';
@@ -25,7 +25,7 @@
     <b>{t('kiki.path.title')}</b>
     {#if !solo}<small>{t('kiki.path.soloOnly')}</small>
     {:else if cur}
-      <small class="cur">{isDomain(cur.domain) ? DOMAINS[cur.domain].icon : ''} {cur.name}
+      <small class="cur">{domainIcon(cur.domain)} {cur.name}
         <LessonDots lessons={cur.lessons} done={cur.state?.done ?? []} next={cur.next} /></small>
     {:else}<small>{t('kiki.path.stamps', { k: stamped, n: stops.length })}</small>{/if}
   </span>

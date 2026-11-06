@@ -16,7 +16,7 @@ import { cleanLine } from '#lib/contract/text.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { SendResult } from '#lib/store/backend.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { world } from '#lib/store/world.svelte.ts';
+import { opClock, world } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';
 
 const EMPTY: readonly PackEntry[] = [];
@@ -49,7 +49,7 @@ class Packing {
 
   /** A change's time: the relay's clock (never a `?date=` preview's), never twice the same, after the op it replaces. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.serverNow()), this.#last + 1, after + 1);
+    this.#last = opClock(this.#last, after);
     return this.#last;
   }
   #heldAt(trip: string, id: string): number {
@@ -65,14 +65,14 @@ class Packing {
     return null;
   }
   /** A set op's data for a listed category or item with its changes (its whole state, as the record keeps it). */
-  #setOf(trip: string, x: PackCat | PackItem, ch: { name?: L; ord?: number; cat?: string }): Record<string, unknown> {
+  #setOf(trip: string, x: PackCat | PackItem, ch: { name?: L; ord?: number }): Record<string, unknown> {
     const isCat = 'items' in x;
     const data: Record<string, unknown> = {
       trip, id: x.id, at: this.#now(this.#heldAt(trip, x.id)), kind: isCat ? 'cat' : 'item', ord: ch.ord ?? x.ord, name: ch.name ?? x.name
     };
     if (isCat) data.icon = x.icon || 'shopping-bag';
     else {
-      data.cat = ch.cat ?? x.cat;
+      data.cat = x.cat;
       if (x.note) data.note = x.note;
     }
     if (x.by) data.by = x.by;
@@ -108,27 +108,24 @@ class Packing {
     return week.send('pack', this.#setOf(trip, x, { name: { [locale]: name } })).ok;
   }
 
-  /** Move a category to `index` among the categories, or an item to `index` among its category's items (another
-   *  category's with `cat`), by a fractional `ord` between its new neighbours; no room left between them, the siblings
-   *  are renumbered 0, 1, 2 … with it (all of them mine to change, else the move is refused). */
-  move(trip: string, seed: PackSeed | null | undefined, id: string, index: number, cat?: string): boolean {
+  /** Move a category to `index` among the categories, or an item to `index` among its category's items, by a
+   *  fractional `ord` between its new neighbours; no room left between them, the siblings are renumbered 0, 1, 2 …
+   *  with it (all of them mine to change, else the move is refused). */
+  move(trip: string, seed: PackSeed | null | undefined, id: string, index: number): boolean {
     const f = this.#find(trip, seed, id);
     if (!f) return false;
     const x = f.item ?? f.cat;
     if (!this.#may(x)) return false;
-    const to = f.item ? (cat ? f.list.find((c) => c.id === cat) : f.cat) : null;
-    if (f.item && !to) return false;
-    const sibs: (PackCat | PackItem)[] = (to ? to.items : f.list).filter((s) => s.id !== id);
+    const sibs: (PackCat | PackItem)[] = (f.item ? f.cat.items : f.list).filter((s) => s.id !== id);
     const i = Math.max(0, Math.min(index, sibs.length));
     const ord = ordBetween(sibs[i - 1]?.ord, sibs[i]?.ord);
-    const move = to ? { cat: to.id } : {};
     if (ord !== null) {
-      if (ord === x.ord && (!to || to.id === f.cat.id)) return true;
-      return week.send('pack', this.#setOf(trip, x, { ord, ...move })).ok;
+      if (ord === x.ord) return true;
+      return week.send('pack', this.#setOf(trip, x, { ord })).ok;
     }
     if (!sibs.every((s) => this.#may(s))) return false;
     sibs.splice(i, 0, x);
-    week.sendMany('pack', sibs.flatMap((s, n) => (s === x ? [this.#setOf(trip, x, { ord: n, ...move })] : s.ord === n ? [] : [this.#setOf(trip, s, { ord: n })])));
+    week.sendMany('pack', sibs.flatMap((s, n) => (s.ord === n ? [] : [this.#setOf(trip, s, { ord: n })])));
     return true;
   }
 

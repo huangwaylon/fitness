@@ -4,11 +4,12 @@
 // the first of each is a ずかん find. `?critter=pond|river|mouth|clifftop|<fresh fish id>` (with ?demo) brings one now;
 // the camera goes to where it lives (window.__world.go).
 import { expect, test, type Page } from './fixtures.ts';
+import { islandUp } from './island.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
 import { FISH } from '../src/lib/components/island/critters.ts';
 import { POND_FISH, freshPool } from '../src/lib/components/island/pondFish.ts';
 import { camTo, castIn, geo, reelOnBite, type Geo } from './island';
-import { fromMenu, hudBells, hudMenu } from './hud.ts';
+import { fromMenu, hudBells } from './hud.ts';
 
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
 const at = (page: Page, sel: string) =>
@@ -36,7 +37,7 @@ const stop = async (page: Page, s: 'mae' | 'oku') => (await geo(page)).CAMS[s];
 async function open(page: Page, q: string, at: 'mae' | 'oku' = 'oku') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T21:00${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await cam(page, await stop(page, at));
   return { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
 }
@@ -135,7 +136,7 @@ test('fresh-water fish come by on their own, in the fresh water their seed picks
 test('the ずかん lists every fish, the fresh waters’ and the sea’s, in NH’s order', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('?demo&date=2026-11-04T21:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'zukan');
   const total = Object.keys(FISH).length + Object.keys(POND_FISH).length;
   await expect(page.locator('[data-zukan="fish"]')).toContainText(`0 / ${total}`);
@@ -151,7 +152,7 @@ test('water bugs: a pondskater skates on fresh water on a summer day; a tap nets
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-07-04T12:00&critter=pondskater');
-  await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 });
+  await islandUp(page, { timeout: 15_000 });
   // (the camera stays where it opened: the skater comes on a fresh water in view then, the pond from まえ; a camera
   // moved to おく as it came left it off screen, its model faded out, and no bug-<n> was ever found shown)
   const bug = page.locator('[data-critter="pondskater"]');

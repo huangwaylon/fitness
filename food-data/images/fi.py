@@ -41,6 +41,9 @@ PROMPT = ("A hand-drawn illustration in coloured pencil and soft watercolour of 
           "background is flat plain warm beige kraft paper, colour #F5E4BC, with nothing else in frame: no table, no cloth, "
           "no chopsticks, no garnish that is not described, no text, no border.")
 GEN_PX, STEPS, MAX_ROLL = 512, 9, 2
+# The weights' quantisation: 4 since 2026-11-06 (half the memory, faster on the shared GPU, the same look in a probe);
+# the first ~260 images were q8. Each image's settings are in its sidecar (<png>.json).
+QUANT = int(os.environ.get('FI_QUANT', 4))
 # The checks run only when asked (FI_CHECKS=1: verify and checksheet's rows need 2 vetted references).
 CHECKS = os.environ.get('FI_CHECKS') == '1'
 
@@ -49,8 +52,9 @@ def seed(key, roll):
     return zlib.crc32(key.encode()) % 100000 + roll
 
 
-def gen_path(key, roll):
-    return RAW / 'gen' / f'v{PROMPT_V}' / f'{key}-r{roll}.png'
+def gen_path(row, roll):
+    """A row's generated image: its key, its description's hash (a new description is a new image) and the roll."""
+    return RAW / 'gen' / f'v{PROMPT_V}' / f'{row["key"]}-{desc_hash(row)}-r{roll}.png'
 
 
 # ---------- data
@@ -107,7 +111,7 @@ def state(row, vs):
     while True:
         q = [v for v in mine if v['roll'] == roll and v['check'] == 'qwen']
         r = [v for v in mine if v['roll'] == roll and v['check'] == 'eye']
-        if not gen_path(row['key'], roll).exists() and not q and not r:
+        if not gen_path(row, roll).exists() and not q and not r:
             return ('gen', roll)
         if not mine:
             return ('ship', roll)
@@ -409,7 +413,7 @@ def cmd_checksheet(out, *keys):
         st, roll = state(r, vs)
         x0, y = (i % cols) * cw, (i // cols) * (PX + 30)
         dr.text((x0 + 6, y + 4), f'{i + 1}. {r["ja"]}  [{k}] r{roll}', fill=(40, 30, 20), font=f)
-        g = gen_path(k, roll if isinstance(roll, int) else 0)
+        g = gen_path(r, roll if isinstance(roll, int) else 0)
         if g.exists():
             sheet.paste(_thumb(g, PX), (x0 + 6, y + 26))
         refs = vetted_refs(r)[:2]
@@ -428,16 +432,19 @@ def cmd_gen(keys=None):
     while True:
         vs = verdicts()
         due = [(r, s[1]) for r in table() if (not keys or r['key'] in keys) for s in [state(r, vs)] if s[0] == 'gen']
-        due = [(r, roll) for r, roll in due if not gen_path(r['key'], roll).exists()][:20]  # then re-read the table
+        pop = {i: it.get('pop', 0) for i, it in items_by_id().items()}
+        due = [(r, roll) for r, roll in due if not gen_path(r, roll).exists()]
+        due.sort(key=lambda d: -max(pop.get(i, 0) for i in d[0]['items']))  # the popular first (a stable sort: then table order)
+        due = due[:20]  # then re-read the table
         if not due:
             if os.environ.get('FI_WATCH') != '1':
                 break
             time.sleep(60)  # FI_WATCH=1: keep the model loaded and pick up rows as they are written
             continue
         if model is None:
-            model = ZImage(model_config=ModelConfig.z_image_turbo(), quantize=8)
+            model = ZImage(model_config=ModelConfig.z_image_turbo(), quantize=QUANT)
         for r, roll in due:
-            p = gen_path(r['key'], roll)
+            p = gen_path(r, roll)
             p.parent.mkdir(parents=True, exist_ok=True)
             t = time.time()
             img = model.generate_image(seed=seed(r['key'], roll), prompt=PROMPT.format(desc=r['desc']), num_inference_steps=STEPS,
@@ -445,6 +452,7 @@ def cmd_gen(keys=None):
             tmp = p.with_suffix('.tmp.png')
             img.save(path=str(tmp))
             tmp.rename(p)
+            p.with_suffix('.json').write_text(json.dumps({'quant': QUANT, 'steps': STEPS, 'px': GEN_PX, 'seed': seed(r['key'], roll), 'prompt_v': PROMPT_V}))
             print(f'gen {r["key"]} r{roll} {time.time() - t:.1f}s', flush=True)
 
 
@@ -483,7 +491,7 @@ def cmd_verify(keys=None):
         refs = [RAW / 'refs' / r['key'] / f'c{x["n"]}.jpg' for x in vetted_refs(r)[:3]]
         body = dict(model=VMODEL, stream=False, think=False, format='json', options=dict(temperature=0, seed=1),
                     prompt=VPROMPT.format(n=len(refs), last=len(refs) + 1, ja=r['ja'], desc=r['desc']),
-                    images=[_b64(p) for p in refs] + [_b64(gen_path(r['key'], roll))])
+                    images=[_b64(p) for p in refs] + [_b64(gen_path(r, roll))])
         t = time.time()
         res = json.loads(urllib.request.urlopen(urllib.request.Request('http://localhost:11434/api/generate', json.dumps(body).encode(),
                                                                        {'Content-Type': 'application/json'}), timeout=900).read())
@@ -533,9 +541,21 @@ def cmd_status(*keys):
 
 PAPER = (0xF5, 0xE4, 0xBC)  # --c-paper
 T_PX, T_COLS, T_PER = 128, 10, 100  # thumbnails (48 / 40 px at 3x): 10 x 10 a sheet
-D_PX, D_COLS, D_PER = 384, 4, 16    # the amount picture (160 px)
+D_PX, D_COLS, D_PER = 384, 5, 25    # the amount picture (160 px): one at a time, so bigger sheets (fewer files)
 QUALITY = 72
-# Sheets are per neighbourhood, so a search touches few: a row's bucket is its first item's category (some merged).
+# Thumbnail sheets are per search neighbourhood, so a search's rows touch few: a row whose name holds a common search
+# word sits with that word's family (カレー: the curry rice, udon, bread and roux together), the rest with its first item's
+# category (BUCKET). Detail sheets go by category only. First match wins (牛乳 before 牛, 巻き寿司 before 納豆).
+FAMILY = [('curry', 'カレー'), ('sushi', '寿司 軍艦 手巻 鉄火巻 かっぱ巻 かんぴょう巻 納豆巻 太巻 恵方巻 ネギトロ巻 サラダ巻'),
+          ('ramen', 'ラーメン 中華めん 中華そば つけ麺 担々麺 ちゃんぽん'), ('udon', 'うどん'), ('soba', 'そば'),
+          ('pasta', 'スパゲッティ パスタ マカロニ ナポリタン カルボナーラ ペペロンチーノ ボンゴレ'), ('onigiri', 'おにぎり むすび'),
+          ('don', '丼'), ('rice', 'ごはん ご飯 かゆ 粥 めし'), ('bread', 'パン トースト サンド'), ('milk', '牛乳'),
+          ('egg', '卵 たまご 玉子 エッグ オムレツ'), ('tofu', '豆腐 厚揚げ 油揚げ がんもどき'), ('natto', '納豆'),
+          ('pork', '豚 ポーク とんかつ ハム ベーコン ウインナー ソーセージ'), ('chicken', '鶏 チキン 唐揚げ から揚げ 焼き鳥 ささみ 手羽'),
+          ('beef', '牛 ビーフ ステーキ 焼肉'), ('salmon', '鮭 さけ サーモン'), ('tuna', 'まぐろ ツナ'), ('saba', 'さば'),
+          ('shrimp', 'えび エビ'), ('miso', '味噌汁 みそ汁'), ('soup', '汁 スープ'), ('salad', 'サラダ'), ('cheese', 'チーズ'),
+          ('yogurt', 'ヨーグルト'), ('cabbage', 'キャベツ'), ('tomato', 'トマト'), ('onion', 'たまねぎ 玉ねぎ'), ('carrot', 'にんじん'),
+          ('apple', 'りんご'), ('banana', 'バナナ'), ('beer', 'ビール')]
 BUCKET = {'主食': 'rice', '麺': 'noodle', '丼・定食': 'don', '主菜': 'main', '副菜': 'side', '汁物': 'soup', '寿司': 'sushi',
           'パン': 'bread', '肉': 'meat', '魚介': 'fish', '卵': 'egg', '大豆・豆': 'soy', '野菜': 'veg', '果物': 'fruit',
           'きのこ': 'veg', '海藻': 'veg', '乳製品': 'dairy', '菓子・デザート': 'sweet', '飲料': 'drink', '酒': 'drink',
@@ -552,27 +572,45 @@ def paper_even(im):
     return Image.merge('RGB', [ch.point(lambda v, g=PAPER[i] / med[i]: min(255, round(v * g))) for i, ch in enumerate(im.convert('RGB').split())])
 
 
+def model_of(png):
+    """An image's generator settings, from its sidecar (none: the first images, q8)."""
+    side = png.with_suffix('.json')
+    c = json.loads(side.read_text()) if side.exists() else {'quant': 8, 'steps': 9, 'px': 512}
+    return f"Z-Image-Turbo q{c['quant']} {c['steps']} steps {c['px']}px"
+
+
+def family_of(row, byid):
+    """A row's thumbnail neighbourhood: its search word's family, else its first item's category."""
+    names = [row['ja']] + [byid[i]['name'] for i in row['items'] if i in byid]
+    for fam, words in FAMILY:
+        if any(w in n for n in names[:1] for w in words.split()):
+            return fam
+    return BUCKET.get(byid[row['items'][0]]['cat'], 'other')
+
+
 def cmd_pack():
     from PIL import Image
     vs = verdicts()
     byid = items_by_id()
     rows = [r for r in table() if state(r, vs)[0] == 'ship']
     slots = json.loads(SLOTS.read_text()) if SLOTS.exists() else {}
-    placed = {k for ks in slots.values() for k in ks}
-    # new keys join their bucket's end, popular first, then by name: shipped sheets never move
-    new = [r for r in rows if r['key'] not in placed]
+    slots = slots if set(slots) <= {'t', 'd'} else {}  # (the first layout, one map for both: laid out again)
+    slots.setdefault('t', {})
+    slots.setdefault('d', {})
+    # new keys join their bucket's end, popular first, then by name: a full sheet never changes
+    new = [r for r in rows if not any(r['key'] in ks for ks in slots['t'].values())]
     new.sort(key=lambda r: (-max(byid.get(i, {}).get('pop', 0) for i in r['items']), r['ja']))
     for r in new:
-        slots.setdefault(BUCKET.get(byid[r['items'][0]]['cat'], 'other'), []).append(r['key'])
+        slots['t'].setdefault(family_of(r, byid), []).append(r['key'])
+        slots['d'].setdefault(BUCKET.get(byid[r['items'][0]]['cat'], 'other'), []).append(r['key'])
     SLOTS.write_text(json.dumps(slots, ensure_ascii=False, indent=0, sort_keys=True) + '\n')
     ship = {r['key']: r for r in rows}
     OUT.mkdir(parents=True, exist_ok=True)
     keep, sheets, cells = set(), [], {}
-    for b in sorted(slots):
-        ks = [k for k in slots[b] if k in ship]  # a key gone to the tile leaves its cell empty
-        for px, cols, per, tag in ((T_PX, T_COLS, T_PER, 't'), (D_PX, D_COLS, D_PER, 'd')):
-            for n in range(0, len(slots[b]), per):
-                part = slots[b][n:n + per]
+    for px, cols, per, tag in ((T_PX, T_COLS, T_PER, 't'), (D_PX, D_COLS, D_PER, 'd')):
+        for b in sorted(slots[tag]):
+            for n in range(0, len(slots[tag][b]), per):
+                part = slots[tag][b][n:n + per]  # a key gone to the tile leaves its cell empty
                 if not any(k in ship for k in part):
                     continue
                 rows_n = (len(part) + cols - 1) // cols
@@ -580,7 +618,7 @@ def cmd_pack():
                 for i, k in enumerate(part):
                     if k not in ship:
                         continue
-                    im = paper_even(Image.open(gen_path(k, state(ship[k], vs)[1]))).resize((px, px), Image.LANCZOS)
+                    im = paper_even(Image.open(gen_path(ship[k], state(ship[k], vs)[1]))).resize((px, px), Image.LANCZOS)
                     x, y = (i % cols) * px, (i // cols) * px
                     sh.paste(im, (x, y))
                     cells.setdefault(k, {})[tag] = (len(sheets), x, y)
@@ -602,11 +640,20 @@ def cmd_pack():
         if p.name not in keep:
             p.unlink()
     shipped = [{'key': k, 'ja': ship[k]['ja'], 'desc': ship[k]['desc'], 'items': ship[k]['items'], 'roll': state(ship[k], vs)[1],
-                'seed': seed(k, state(ship[k], vs)[1]), 'prompt': desc_hash(ship[k]), 'model': 'Z-Image-Turbo q8 9 steps 512px',
+                'seed': seed(k, state(ship[k], vs)[1]), 'prompt': desc_hash(ship[k]), 'model': model_of(gen_path(ship[k], state(ship[k], vs)[1])),
                 'checked': checked(ship[k], vs)} for k in keys]
     (HERE / 'shipped.json').write_text(json.dumps(shipped, ensure_ascii=False, indent=0) + '\n')
     total = sum((OUT / n).stat().st_size for n in keep)
     print(f'pack: {len(keys)} pictures for {len(index["ids"])} items, {len(sheets)} sheets, {total / 1e6:.2f} MB')
+
+
+def _mend(name, byname):
+    """A name whose characters came through broken (U+FFFD runs): the one draft name it can only be, else as is."""
+    if '\ufffd' not in name:
+        return name
+    pat = re.compile('^' + '.{1,2}'.join(re.escape(p) for p in re.split('\ufffd+', name)) + '$')
+    hits = [n for n in byname if pat.match(n)]
+    return hits[0] if len(hits) == 1 else name
 
 
 def cmd_rows(src, dest, phase='1'):
@@ -622,13 +669,13 @@ def cmd_rows(src, dest, phase='1'):
     p = HERE / 'table' / f'{dest}.json'
     rows = json.loads(p.read_text()) if p.exists() else []
     bad = []
-    for line in Path(src).read_text().splitlines():
+    for line in Path(src).read_bytes().decode('utf-8', 'replace').splitlines():
         if not line.strip() or line.startswith('#'):
             continue
-        if '\ufffd' in line:
-            sys.exit(f'a broken character: {line[:40]}')
         names, desc = (x.strip() for x in line.split(' = ', 1))
-        names = names.split('|')
+        if '\ufffd' in desc:
+            sys.exit(f'a broken character: {line[:40]}')
+        names = [_mend(n, byname) for n in names.split('|')]
         miss = [n for n in names if n not in byname]
         if miss:
             bad += miss
@@ -644,6 +691,30 @@ def cmd_rows(src, dest, phase='1'):
         sys.exit(f'unknown names: {bad}')
     p.write_text(json.dumps(rows, ensure_ascii=False, indent=1) + '\n')
     print(f'{p.name}: {len(rows)} rows')
+
+
+def cmd_attach(phase):
+    """A phase's items whose visual key (vnorm) is an existing row's join that row (the same dish in another source
+    shares its picture): appended to the row's items in its table file."""
+    byid = items_by_id()
+    files, owner = {}, {}
+    for p in sorted((HERE / 'table').glob('*.json')):
+        files[p] = json.loads(p.read_text())
+        for r in files[p]:
+            for i in r['items']:
+                if i in byid:
+                    owner.setdefault(vnorm(byid[i]['name']), r)
+    have = {i for rs in files.values() for r in rs for i in r['items']}
+    n = 0
+    for it in phase_items(int(phase)):
+        r = owner.get(vnorm(it['name']))
+        if r is not None and it['id'] not in have:
+            r['items'].append(it['id'])
+            have.add(it['id'])
+            n += 1
+    for p, rs in files.items():
+        p.write_text(json.dumps(rs, ensure_ascii=False, indent=1) + '\n')
+    print(f'attach: {n} items of phase {phase} joined existing rows')
 
 
 if __name__ == '__main__':

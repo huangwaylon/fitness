@@ -8,7 +8,7 @@
 //   board.unseen / board.seen() the 「！」, and clearing it
 import { boardFold, boardMayWrite, boardPosts, cleanText, newPostId, type Post } from '#lib/contract/board.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { world } from '#lib/store/world.svelte.ts';
+import { opClock, world } from '#lib/store/world.svelte.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { resolveLook } from '#lib/villagers/look.ts';
 import { artUrl, villagerArt } from '#lib/art.ts';
@@ -49,7 +49,7 @@ class BoardPosts {
   /** A change's time: the relay's own clock (never a `?date=` preview's), never twice the same, after the post it
    *  changes. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.serverNow()), this.#last + 1, after + 1);
+    this.#last = opClock(this.#last, after);
     return this.#last;
   }
 

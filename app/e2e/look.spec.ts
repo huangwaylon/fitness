@@ -6,7 +6,8 @@
 // `savedLooks` pref; いつもの is one tap back (no pref: null). What's kept is on the record: a phone opening later, and
 // the partner's, have it. The guest has its own look and コーデ, the same closet; its いつもの is its villager.
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { DEFAULT_LOOKS } from '../src/lib/contract/look.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
@@ -21,7 +22,7 @@ async function phone(browser: Browser, rec: Rec, who: Who) {
   await rec.pair(context, who);
   const page = await context.newPage();
   await page.goto('?critter=none&visitor=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'settings');
   await expect(settings(page).locator('[data-look-row]')).toBeVisible();
   return page;

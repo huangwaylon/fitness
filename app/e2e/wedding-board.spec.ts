@@ -6,10 +6,12 @@
 // page next), the note (rendered safely, written with the format buttons, ほぞん over a keyboard; the draft kept through
 // ✕; an unchanged save sends nothing; two phones' crossed saves: both versions, mine marked, これに する with とりけす,
 // ふたつ あわせる), せってい (names, ‹ right after typing, categories with とりけす, the deleted list, ぜんぶ けす after its
-// ask) and the guest's read-only board (`?demo&as=G`). Logic tier: nothing here is drawn 3D. WED_SHOTS=1 saves
-// screenshots to /tmp/wedding-ui-shots/.
+// ask) and the guest's read-only board (`?demo&as=G`). Logic tier: nothing here is drawn 3D. Pictures under
+// SHOTS=<dir>.
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
+import { islandQuery, islandUp } from './island.ts';
+import { shot } from './shots.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DAY = 'date=2026-11-06T12:00';
@@ -18,15 +20,10 @@ const card = (p: Page, id: string) => sheet(p).locator(`[data-wed-task="${id}"]`
 const bar = (p: Page) => p.locator('dialog[open] .titlebar');
 /** The island as `as` (A, B or G), the board's sheet open from the menu. */
 async function board(p: Page, as = 'A') {
-  await p.goto(`?demo&as=${as}&${DAY}&critter=none&visitor=none`);
+  await p.goto(islandQuery(`demo&as=${as}&${DAY}`));
   await fromMenu(p, 'wedding');
   await expect(sheet(p).locator('[data-wed-top]')).toBeVisible();
 }
-const shot = async (p: Page, name: string) => {
-  if (!process.env.WED_SHOTS) return;
-  await expect(p.locator('dialog[open] [data-typing="true"]')).toHaveCount(0);
-  await p.screenshot({ path: `/tmp/wedding-ui-shots/${name}.png` });
-};
 
 test('the menu\'s けっこんしき opens the board over the island, with its ⚙ and ＋; ✕ closes it', async ({ page }) => {
   await board(page);
@@ -373,8 +370,8 @@ test('パニエル\'s line: the day\'s first opening only', async ({ page }) => 
 });
 
 test('the island paused under the board; offline before the first opening: the banner, もういちど opens it once back', async ({ page, context }) => {
-  await page.goto(`?demo&${DAY}&critter=none&visitor=none`);
-  await expect(hudMenu(page)).toBeVisible();
+  await page.goto(islandQuery(`demo&${DAY}`));
+  await islandUp(page);
   await context.setOffline(true);
   await unfoldMenu(page);
   await page.locator('[data-hud-wedding]').click();

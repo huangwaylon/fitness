@@ -42,12 +42,11 @@ export const isPackType = (t: unknown): t is PackType => (PACK_TYPES as readonly
 /** A name at most (characters: code points), a note's, an icon's (the guide's icon names, `plane-takeoff`, or an emoji).
  *  @public (the packing UI's fields) */
 export const PACK_NAME = 80;
-/** @public (the packing UI's fields) */
-export const PACK_NOTE = 120;
+const PACK_NOTE = 120;
 const PACK_ICON = 32;
 /** At most this many `pack` rows a trip, and `pack_chk` rows a trip and person: a new one past them drops the oldest
  *  removal of an id an op made (a seed id's removal is kept: dropped, the seed item would come back), else is refused. */
-export const PACK_MAX = 300;
+const PACK_MAX = 300;
 /** A trip note's keys at most, a key's pattern, a value's characters at most (one clean line). */
 const NOTE_KEYS = 64;
 const NOTE_KEY = /^[A-Za-z0-9_-]{1,40}$/;

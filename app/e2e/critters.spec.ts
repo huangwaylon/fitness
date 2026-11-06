@@ -4,8 +4,8 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { castIn, plateOnly, reelOnBite, toTheWater } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { castIn, islandUp, plateOnly, reelOnBite, toTheWater } from './island.ts';
+import { hudBells } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
 const said = (id: keyof typeof CATCH_LINES) => CATCH_LINES[id][0].replace(/\s+/g, ' ');
@@ -18,7 +18,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   return { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
 }
 
@@ -311,6 +311,7 @@ test('a cicada perches on a trunk, clear of the tree, and a tap on it nets it', 
 test('a hermit crab crawls on the beach at night, clear of every control, and a tap on it nets it', async ({ page }) => {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-07-04T21:00&critter=hermit-crab');
+  await islandUp(page);
   const crab = page.locator('[data-critter="hermit-crab"]');
   await expect(crab).toBeAttached();
   await page.waitForTimeout(1000);

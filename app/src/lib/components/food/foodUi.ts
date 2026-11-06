@@ -9,6 +9,7 @@ import {
 } from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
+import { loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
@@ -24,6 +25,12 @@ export function foodDb(): Promise<FoodDb> {
       throw e;
     }
   ));
+}
+/** The pictures' index into `set` once it is in (none: every food keeps its tile); a component's $effect. */
+export function withImages(set: (ix: FoodImageIndex) => void): () => void {
+  let live = true;
+  void loadFoodImages().then((ix) => live && ix && set(ix));
+  return () => void (live = false);
 }
 /** The catalog if it is in already (else null: open from the snapshot, swap the catalog's portions in later). */
 export const foodDbNow = (): FoodDb | null => ready;
@@ -81,27 +88,21 @@ export const catOf = (db: FoodDb | null, id: string): string | undefined => cata
 
 /** A name's head: up to its first space or bracket (「鶏もも肉 皮つき 生」 → 鶏もも肉). */
 const headOf = (s: string): string => s.trim().split(/[\s　（(［[]/)[0];
-/** Dakuten and small っ folded, so a reading matches with its sounds voiced or not (もめんどうふ holds とうふ). */
-const fold = (k: string): string => k.normalize('NFD').replace(/[\u3099\u309a]/g, '').replace(/っ/g, 'つ');
-const READING = /^[ぁ-ゖー\s　（）()・]+$/;
-/** Whether a name says something the shown one doesn't: not it or a part of it, nor holding its head (生うどん), nor a
- *  kana spelling of it (ウドン, トウフ: within one of its readings), nor mostly the head's own characters (焼鮭, お握り). */
-function says(a: string, name: string, readings: readonly string[]): boolean {
+/** Whether a name says something the shown one doesn't: not it or a part of it, nor holding its head (生うどん), nor
+ *  mostly the head's own characters (焼鮭 beside 焼き鮭). */
+function says(a: string, name: string): boolean {
   const k = searchKey(a), nk = searchKey(name), hk = searchKey(headOf(name));
-  if (!k || nk.includes(k) || (hk && k.includes(hk)) || readings.some((r) => r.includes(fold(k)))) return false;
+  if (!k || nk.includes(k) || (hk && k.includes(hk))) return false;
   return [...k].filter((c) => hk.includes(c)).length * 2 < k.length;
 }
 
 /** A row's everyday name under its own, in Japanese (docs/design.md "Gohan"), never repeating it: the catalog's current
  *  name when the row shows an older one (a snapshot's 「若どり もも 皮つき 生」 → 鶏もも肉), else the food data's vetted
- *  `gloss` once it ships one (an alias at least two sources back), else nothing: the aliases themselves are search terms,
- *  readings and spellings mostly, so none is shown. `it` is the catalog's item (or the row's own), `name` what the row
- *  shows. */
-export function glossOf(it: Item & { gloss?: string }, name = it.name): string | null {
-  const readings = [name, ...(it.aliases ?? []).filter((a) => READING.test(a))].map((r) => fold(searchKey(r)));
+ *  `gloss`, else nothing. `it` is the catalog's item (or the row's own), `name` what the row shows. */
+export function glossOf(it: Item, name = it.name): string | null {
   const now = headOf(it.name);
-  if (name !== it.name && says(now, name, readings)) return now;
-  return it.gloss && says(it.gloss, name, readings) ? it.gloss : null;
+  if (name !== it.name && says(now, name)) return now;
+  return it.gloss && says(it.gloss, name) ? it.gloss : null;
 }
 
 /** A state's word as a MEXT name writes it (its chip says レンジ, いため). */
@@ -183,11 +184,14 @@ export function portionLabel(p: Portion | null, mult: number): string | null {
   return mult === 1 ? p.label : `${p.label}×${mult}`;
 }
 
-/** An item's default portion in words and its kcal (search rows: 「茶碗1杯（150g）」 234 kcal). */
+/** An item's default portion in a few words and its kcal (search rows: 「茶碗1杯 150g」 234 kcal): its label without
+ *  its notes in brackets (「1枚（とんかつ用）」 → 1枚), then its weight. */
 export function defaultPortion(it: Item): { label: string; kcal: number } {
   const ps = portionsOf(it);
   const p = ps[0];
-  return { label: portionText(p.label, p.g, ps.some((q) => unitOf(q.label) === 'ml') ? 'ml' : 'g'), kcal: Math.round((it.kcal * p.g) / 100) };
+  const w = `${gramsText(p.g)}${ps.some((q) => unitOf(q.label) === 'ml') ? 'ml' : 'g'}`;
+  const base = p.label.replace(/[（(][^（）()]*[）)]/g, '').trim();
+  return { label: !base || /^\d+(\.\d+)?\s*(g|ml)$/i.test(base.normalize('NFKC')) ? w : `${base} ${w}`, kcal: Math.round((it.kcal * p.g) / 100) };
 }
 
 /** The search's rows with the true duplicates gone (the same name, brand and kcal: the products' copies of one). */

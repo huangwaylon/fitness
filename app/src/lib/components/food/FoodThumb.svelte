@@ -3,7 +3,7 @@
   // are pictures, its category's tile (art.ts FOOD_CAT): the tint, a plain line glyph (a leaf for 野菜: never a
   // particular food) and the category's word in small type; night tints darker. `img`, a cell of a packed sprite sheet
   // (its url, the cell's x / y and size in the sheet's pixels), fades in over the tint once it decodes, the tile again if
-  // it fails: the box never changes size, so nothing shifts. Decorative: the row beside it says the name.
+  // it fails: the box never changes size, so nothing shifts. Decorative (the row beside it says the name) unless `alt`.
   import { FOOD_CAT, type FoodGlyph } from '#lib/art.ts';
 
   interface Props {
@@ -11,8 +11,10 @@
     cat?: string;
     size?: number;
     img?: { url: string; x: number; y: number; size: number } | null;
+    /** What the picture shows (the amount's: 「…の イメージ」); none: decorative. */
+    alt?: string;
   }
-  let { cat, size = 48, img = null }: Props = $props();
+  let { cat, size = 48, img = null, alt }: Props = $props();
 
   const key = $derived(cat && FOOD_CAT[cat] ? cat : 'その他');
   const tile = $derived(FOOD_CAT[key]);
@@ -54,15 +56,16 @@
   };
 </script>
 
-<span class="th" class:pic={shown} data-thumb={shown ? 'img' : 'cat'} data-cat={key} aria-hidden="true"
+<span class="th" class:pic={shown} data-thumb={shown ? 'img' : 'cat'} data-cat={key} role={alt ? 'img' : undefined} aria-label={alt} aria-hidden={alt ? undefined : 'true'}
   style:--t={tile.tint} style:--s="{size}px" style:--r="{Math.round(size / 4)}px">
   {#if !shown}
     <svg viewBox="0 0 24 24" width={Math.round(size * 0.46)} height={Math.round(size * 0.46)}><path d={GLYPH[tile.glyph]} /></svg>
     <span class="w">{tile.word}</span>
   {/if}
   {#if img && failed !== img.url}
-    <img class="cell" src={img.url} alt="" loading="lazy" decoding="async" class:in={shown}
-      style:left="{-img.x * k}px" style:top="{-img.y * k}px" style:scale={k}
+    <!-- the cell alone: an img its size showing the sheet at -x -y (object-position), scaled to the box -->
+    <img class="cell" src={img.url} alt="" loading="lazy" decoding="async" class:in={shown} width={img.size} height={img.size}
+      style:object-position="{-img.x}px {-img.y}px" style:scale={k}
       onload={() => (loaded = img.url)} onerror={() => (failed = img.url)} />
   {/if}
 </span>
@@ -78,7 +81,7 @@
   :global(:root[data-tod='night']) .pic::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 246, 224, 0.6); }
   svg { display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .w { font: 700 calc(var(--s) * 0.21)/1 var(--font-ui); white-space: nowrap; letter-spacing: -0.02em; }
-  .cell { position: absolute; max-width: none; transform-origin: 0 0; opacity: 0; }
+  .cell { position: absolute; left: 0; top: 0; max-width: none; object-fit: none; transform-origin: 0 0; opacity: 0; }
   .cell.in { opacity: 1; transition: opacity 150ms; }
   @media (prefers-reduced-motion: reduce) { .cell.in { transition: none; } }
 </style>

@@ -23,6 +23,7 @@
   {#if open}
     {#if list}
       <ul>
+        <li data-credit-img><b>{t('food.img.badge')}</b><span>{t('food.img.credit')}</span></li>
         {#each list as c (c.label)}
           <li>
             <b>{#if c.url}<a href={c.url} target="_blank" rel="noopener noreferrer" data-sfx="open">{c.label}</a>{:else}{c.label}{/if}</b>

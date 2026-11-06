@@ -1,4 +1,5 @@
 {"items":[
+{"id":"ml-w-lent","lv":4,"type":"word","en":"The landlord lent us a space heater till the heat's fixed.","ja":"暖房が直るまで、大家さんがヒーターを貸してくれたんだ。","speaker":"lucky","voice":"us","cast":"us-m4","choices":["lent","rent","sent"],"answer":0,"note":"lent（貸した）の L。rent と取り違えない","tags":{"seed":30,"register":"friend","pragmatic":"literal","features":["l-r"]},"focus":"lent","scene":"living"},
 {"id":"ml-w-collect","lv":4,"type":"word","en":"Could I collect it on Friday instead?","ja":"代わりに金曜日に受け取りに行ってもいいですか？","speaker":"zucker","voice":"us","cast":"us-m6","choices":["collect","correct","connect"],"answer":0,"note":"collect の L。correct と聞き分ける","tags":{"seed":31,"register":"service","pragmatic":"literal","conditions":["phone"],"features":["l-r"]},"focus":"collect"},
 {"id":"ml-w-hadnt","lv":4,"type":"word","en":"If I hadn't kept the receipt, I'd be stuck right now.","ja":"レシートを取っておかなかったら、今ごろ困ってたよ。","speaker":"lily","voice":"us","cast":"us-f1","choices":["hadn't","had","didn't"],"answer":0,"note":"hadn't の t は弱いが、n で否定とわかる","tags":{"seed":26,"register":"friend","pragmatic":"literal","features":["contraction","t-glottal"]},"focus":"hadn't","scene":"street"},
 {"id":"ml-w-arentcha","lv":4,"type":"word","en":"Aren't you supposed to fast before a blood test?","ja":"血液検査の前って、絶食しなきゃいけないんじゃなかった？","speaker":"tammy","voice":"us","cast":"us-f6","choices":["Aren't you","Are you","Weren't you"],"answer":0,"note":"aren'tcha＝Aren't you。否定疑問で確認","tags":{"seed":15,"register":"friend","pragmatic":"literal","features":["yod","weak-form"]},"tts":"Aren'tcha s'posed ta fast before a blood test?","focus":"Aren't you","scene":"living","marks":[["say","Aren't you","aren'tcha"],["say","supposed to","s'posed ta"]]},
@@ -124,6 +125,7 @@
 ],
 "packs":["lv4-4.e3c9b732","lv4-5.448b621e","lv4-6.38ca99e3","lv4-7.21ce5dc9","lv4-8.ae8bf503"],
 "clips":{
+"ml-w-lent":[276,"6a72ff1b",0,861229,17584],
 "ml-w-collect":[160,"2cfc56da",0,878813,11316],
 "ml-w-hadnt":[270,"db1da112",0,890129,17354],
 "ml-w-arentcha":[249,"40b7598e",0,907483,15972],
@@ -319,6 +321,7 @@
 "dmw-haircut-3":[408,"ed8021a3",4,918565,25937]
 },
 "words":{
+"ml-w-lent":["6a72ff1b",5,16,60,82,93,98,114,152,170,183,217,276],
 "ml-w-collect":["2cfc56da",8,21,32,56,62,70,95,160],
 "ml-w-hadnt":["db1da112",5,10,16,45,65,80,126,144,156,186,216,270],
 "ml-w-arentcha":["40b7598e",7,32,49,93,109,126,159,164,191,249],

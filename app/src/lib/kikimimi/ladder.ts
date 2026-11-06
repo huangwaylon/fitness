@@ -5,7 +5,7 @@
 // builds the same deck from {seed} as it does a quiz's from {seed, lv}. Pure; the ladders are ladders.ts's (LADDERS), compiled
 // into their own chunk (pool.ts ladders); the clips are made by scripts/kikimimi-audio.ts.
 import { mulberry32, shuffle } from '#lib/random.ts';
-import type { Item } from './bank.ts';
+import { shuffleChoices, type Item } from './bank.ts';
 
 /** Each rung's speed, × natural speech (NATURAL_RATE): careful, natural, brisk, fast casual. */
 export const SPEEDS = [0.8, 1, 1.2, 1.4] as const;
@@ -43,10 +43,7 @@ export function ladderDeck(seed: number, all: readonly Ladder[]): Item[] {
       const clash = picked.some((p) => p.line.speaker === l.line.speaker || (pass && p.line.cast === l.line.cast));
       if (!clash) picked.push(l);
     }
-  return picked.flatMap((l) => l.rungs.map((it) => {
-    const o = shuffle(it.choices.map((_, i) => i), r);
-    return { ...it, choices: o.map((i) => it.choices[i]), answer: o.indexOf(it.answer) };
-  }));
+  return picked.flatMap((l) => l.rungs.map((it) => shuffleChoices(it, r)));
 }
 
 // ---- climbing and scoring ------------------------------------------------------------------------------------------
@@ -101,6 +98,3 @@ export function rungState(items: readonly Item[], answers: readonly ({ k: number
 
 /** The speed a climb reached (0 rungs: none). */
 export const speedAt = (rungs: number): number | null => (rungs > 0 ? SPEEDS[Math.min(rungs, SPEEDS.length) - 1] : null);
-
-/** A speed as shown: one decimal (0.8, 1.0, 1.4). */
-export const sx = (x: number): string => x.toFixed(1);

@@ -9,10 +9,10 @@
 //   Same shape as bank4.ts and dialogues.ts (a level-4 `Item`; `lv` is one constant, LV, for the integrator to move),
 // but staged here: each row carries its scene (or null), its channel only where the conditions don't give it, and the
 // sound marks of every clip with a `tts` (staging.ts's rules, which this file can't add to). Ids: `ml-` and `dml-`.
-//   Voices: a villager's cast voice is bank4.ts CAST's (the villagers this set added are there too, all US).
+//   Voices: a villager's cast voice is cast.ts CAST's (the villagers this set added are there too, all US).
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, CastId, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
-import { CAST } from '../bank4.ts';
+import type { Channel, Item, ItemType, Level, SceneId, SoundMark, Tags } from '../bank.ts';
+import { MEAN_ASK, dialogueOf, g, line, single, tg, type DialogueRow, type L } from './build.ts';
 
 /** The level these are filed under (もり, level 4). */
 const LV: Level = 4;
@@ -20,47 +20,23 @@ const LV: Level = 4;
 /** The life family an item belongs to (coverage; the seed is the nearest §5.5 scenario). */
 export type Family = 'shop' | 'food' | 'hotel' | 'travel' | 'health' | 'bank' | 'home' | 'delivery' | 'office' | 'gym' | 'salon' | 'neighbour' | 'emergency';
 
-const MEAN_ASK = 'つまり、どういうこと？';
-const NEXT_ASK = 'つぎの ひとことは？';
-
 type X = { tts?: string; focus?: string; ask?: string; marks?: readonly SoundMark[]; channel?: Channel };
 type Row = readonly [id: string, fam: Family, speaker: RosterId, scene: SceneId | null, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, x?: X];
-type L = readonly [who: RosterId, en: string, ja: string, tts?: string, marks?: readonly SoundMark[]];
-interface DRow {
-  id: string;
+interface DRow extends DialogueRow {
   fam: Family;
-  type: Extract<ItemType, 'gist' | 'next'>;
   scene: SceneId | null;
   lines: readonly L[];
-  ask?: string;
-  /** The right one first. */
-  choices: readonly string[];
-  ja: string;
-  note: string;
-  focus: string;
-  tags: Tags;
   channel?: Channel;
 }
-
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-const g = (at: string): SoundMark => ['drop', at, 'g'];
-
-const castOf = (who: RosterId): CastId => {
-  const cast = CAST[who];
-  if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
-  return cast;
-};
 
 const FAM: Record<string, Family> = {};
 
 const item = (type: ItemType) => ([id, fam, speaker, scene, en, ja, note, choices, tags, x = {}]: Row): Item => {
   FAM[id] = fam;
-  const cast = castOf(speaker);
   const focus = type === 'word' ? choices[0] : x.focus;
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : undefined);
   return {
-    id, lv: LV, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags,
+    ...single(LV, type, id, speaker, en, ja, note, choices, tags),
     ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }), ...(scene && { scene }),
     ...(x.channel && { channel: x.channel }), ...(x.marks && { marks: x.marks })
   };
@@ -68,10 +44,8 @@ const item = (type: ItemType) => ([id, fam, speaker, scene, en, ja, note, choice
 
 const dialogue = (r: DRow): Item => {
   FAM[r.id] = r.fam;
-  const lines = r.lines.map(([who, en, ja, tts, marks]): Line => ({ who, cast: castOf(who), en, ja, ...(tts && { tts }), ...(marks && { marks }) }));
   return {
-    id: r.id, lv: LV, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: r.tags, lines,
+    ...dialogueOf(LV, r, r.lines.map(line)),
     ...(r.scene && { scene: r.scene }), ...(r.channel && { channel: r.channel })
   };
 };
@@ -102,11 +76,11 @@ const REPLY: readonly Row[] = [
     'incidentals＝客室の雑費。hold＝カードの仮押さえ',
     ["The card's fine. When does the hold come off?", "I'd rather not hold on, thanks.", 'Yes, I deposited it this morning.'],
     tg(3, 'service', 'formula', ['desk'])],
-  ['ml-r-seats-together', 'travel', 'ken', 'gate', "The only seats left together are in the back row. They don't recline, just so you know.",
-    '並びで空いているのは最後列だけです。念のため、リクライニングはできません。 →「一緒に座れるなら、それで構いません。」',
+  ['ml-r-seats-together', 'travel', 'ken', 'street', "The only two spots left on the boat are up on the top deck. It gets pretty windy up there, just so you know.",
+    'ボートで残っている2席は上のデッキだけです。念のため、上はかなり風が強いですよ。 →「大丈夫です。上着を持っていきます。」',
     'just so you know の後が条件。受けるか断るか',
-    ["That's fine, as long as we're together.", "We'll wait at the back of the line.", "No, I don't need to know."],
-    tg(8, 'service', 'indirect', ['desk'])],
+    ["Fine by us. We'll bring jackets.", "Great, we'll take the bottom deck, then.", 'No thanks, I already know.'],
+    tg(8, 'service', 'indirect')],
   ['ml-r-drink', 'health', 'pashmina', 'pharmacy', "Has anyone told you not to drink while you're on these?",
     'この薬を飲んでいる間は、お酒を控えるよう言われましたか？ →「いいえ、何も。まずいですか？」',
     'drink＝お酒。on these＝この薬を服用中',
@@ -231,11 +205,11 @@ const MEAN: readonly Row[] = [
     'safe-ish＝まあまあ安全。ゴミ箱の裏が落ち',
     ["The package isn't really anywhere very safe.", 'The package has gone back to the warehouse.', "He'll try to deliver it again later."],
     tg(37, 'stranger', 'humour', ['voicemail'], ['self-repair'])],
-  ['ml-m-on-time', 'travel', 'goldie', 'gate', "We're still showing it as on time. Though I'd, um, maybe grab something to eat.",
-    'まだ定刻の表示ですね。でも、えーと、何か食べておいたほうがいいかも。 → 便は遅れそうだ。',
-    '定刻と言いつつ食事を勧める＝遅れそう',
-    ['The flight will probably be delayed.', 'The flight is definitely leaving on time.', 'A meal is included on this flight.'],
-    tg(2, 'service', 'indirect', ['desk'], ['contraction'])],
+  ['ml-m-on-time', 'travel', 'goldie', 'street', "The app says our driver's two minutes away. It's also been saying that for, like, ten minutes.",
+    'アプリだと運転手はあと2分だって。10分くらい前からずっとそう言ってるけどね。 → 運転手は、たぶんまだ近くない。',
+    '2分と言いつつ「ずっとそう」＝当てにならない',
+    ["The driver probably isn't that close.", 'The driver will be there in two minutes.', 'They have been in the car for ten minutes.'],
+    tg(2, 'friend', 'sarcasm', [], ['contraction'])],
   ['ml-m-patch', 'home', 'stitches', 'living', "I mean, I could patch it. But you'd be calling me again in a month.",
     'まあ、応急処置はできるよ。でも、1か月後にまた呼ぶことになるね。 → きちんと交換したほうがいい。',
     'could patch, but…＝応急処置では直らない',
@@ -283,12 +257,12 @@ const WORD: readonly Row[] = [
     ["would've", "wouldn't have", 'will have'],
     tg(26, 'friend', 'literal', [], ['contraction', 'weak-form']),
     { tts: "I woulda bought it, but they didn't have my size.", marks: [['say', "would've", 'woulda']] }],
-  ['ml-w-didncha', 'travel', 'kitt', 'gate', "Didn't you get the email about the gate change?",
-    'ゲート変更のメール、届かなかったの？',
+  ['ml-w-didncha', 'travel', 'kitt', 'street', "Didn't you get the email about the bike trail being closed?",
+    'サイクリングコースが閉鎖ってメール、届かなかったの？',
     "didncha＝Didn't you。n の鼻音が手がかり",
     ["Didn't you", 'Did you', "Don't you"],
     tg(2, 'partner', 'literal', [], ['yod', 't-glottal']),
-    { tts: 'Didncha get the email about the gate change?', marks: [['say', "Didn't you", 'didncha']] }],
+    { tts: 'Didncha get the email about the bike trail being closed?', marks: [['say', "Didn't you", 'didncha']] }],
   ['ml-w-hafta', 'shop', 'label', 'street', "I'd have to check with my manager first.",
     'まず店長に確認しないといけませんね。',
     "I'd hafta＝〜しないと。'd は弱く消えがち",
@@ -330,12 +304,12 @@ const WORD: readonly Row[] = [
     ['What do you', 'What would you', 'What did you'],
     tg(27, 'service', 'literal', ['cafe'], ['weak-form']),
     { tts: 'Whaddaya recommend for two people?', marks: [['say', 'What do you', 'whaddaya']] }],
-  ['ml-w-put-up', 'travel', 'shep', 'gate', 'The airline will put you up at a hotel near the airport.',
-    '航空会社が空港近くのホテルに泊めてくれますよ。',
+  ['ml-w-put-up', 'travel', 'shep', 'street', 'My cousin will put us up for the night when we get to Nashville.',
+    'ナッシュビルに着いたら、いとこが一晩泊めてくれるって。',
     'put up＝泊める。pick up（迎え）と紛らわしい',
-    ['put you up', 'pick you up', 'put you off'],
-    tg(8, 'service', 'literal', ['desk'], ['idiom', 'contraction']),
-    { tts: "The airline'll put you up at a hotel near the airport.", marks: [['say', 'airline will', "airline'll"], ['link', 'put you up']] }],
+    ['put us up', 'pick us up', 'put us off'],
+    tg(8, 'friend', 'literal', [], ['idiom', 'contraction']),
+    { tts: "My cousin'll put us up for the night when we get to Nashville.", marks: [['say', 'cousin will', "cousin'll"], ['link', 'put us up']] }],
   ['ml-w-walk-through', 'office', 'nana', 'office', "Don't worry, I'll walk you through the form.",
     'ご心配なく、書類は順番にご説明しますね。',
     'walk you through＝順を追って説明。work と母音で区別',

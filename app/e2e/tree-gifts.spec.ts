@@ -4,8 +4,8 @@
 // in the tent (みつけた). Shared: the other phone sees it fall and, once opened, gone.
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, type Geo, plateOnly, quiet } from './island.ts';
-import { fromMenu, hudBells, hudMenu } from './hud.ts';
+import { camTo, geo, type Geo, islandUp, plateOnly, quiet } from './island.ts';
+import { fromMenu, hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -20,7 +20,7 @@ const codeOf = (id: string) => Object.entries(ROOM.items).find(([, m]) => m.cat 
 
 async function open(page: Page, q = '') {
   await page.goto(Q + q);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await quiet(page); // the opening beats are over
   G = await geo(page);
@@ -90,7 +90,7 @@ test('a holding tree’s shake drops its present; opened, it’s the day’s fur
   expect(code, id).toBeTruthy();
   // a reload finds it gone (the shared day), and the tree a tree again
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForTimeout(800);
   await expect(page.locator('[data-tree-gift]')).toHaveCount(0);
   // the ずかん's カタログ has it, found by A

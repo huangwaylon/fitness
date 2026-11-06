@@ -1,58 +1,32 @@
 // ききみみ クイズ: dialogue items (docs/kikimimi.md "Dialogues", docs/curriculum.md §14 increment 4), level 4 「かわ・もり」
 // (B1+ → B2). Two villagers, 2-4 lines, overheard and service talk cut from the scenario seeds (§5.5): a coffee order
-// going wrong, a canceled train, a doctor's receptionist, a friend canceling, a coworker hinting, a landlord who
+// going wrong, a canceled train, a dog groomer's waitlist, a friend canceling, a coworker hinting, a contractor who
 // won't commit, a tip screen, Thanksgiving. American English throughout. Two types (TOEIC Part 3 in spirit, for
 // listeners who are already good):
 //   `gist`: what's going on, or what will happen (its own `ask`); the distractors a detail heard but misplaced, the
 //   literal reading, the opposite.
 //   `next`: the best next line; the traps repeat a word or a sound, answer what wasn't asked, or take the wrong role.
 // Each line is its own clip (`<id>-<n>`, bank.ts clipIds / clipItems), voiced by its villager's cast voice
-// (bank4.ts CAST) and played as a sequence (game.svelte.ts playSequence); `en` is shown, `tts` spoken when it differs
+// (cast.ts CAST) and played as a sequence (game.svelte.ts playSequence); `en` is shown, `tts` spoken when it differs
 // (§9: reductions spelled as said, numbers written out). The item's `en` is its lines joined (the focus is in one of
 // them); its `ja` the right choice's Japanese; `note` the trap (≤ 40 字).
 //   No clips yet: the neural pipeline (scripts/kikimimi-audio.ts) voices them, and until every line has a clip the
 // deck leaves these types out (compile.ts mixes) and にがて れんしゅう too.
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, Item, ItemType, Line, Tags } from './bank.ts';
-import { CAST } from './bank4.ts';
+import type { Item } from './bank.ts';
+import { dialogueOf, line, tg, type DialogueRow } from './content/build.ts';
 import { MARKS, staged } from './staging.ts';
 
-/** A `next` item's question while it plays (a `gist` has its own). */
-const NEXT_ASK = 'つぎの ひとことは？';
-
 type L = readonly [who: RosterId, en: string, ja: string, tts?: string];
-interface Row {
-  id: string;
-  type: Extract<ItemType, 'gist' | 'next'>;
+/** A dialogue (a gist's `ask` its question in Japanese; a `next` asks NEXT_ASK). */
+interface Row extends DialogueRow {
   lines: readonly L[];
-  /** A gist's question (Japanese). */
-  ask?: string;
-  /** The right one first. */
-  choices: readonly string[];
-  ja: string;
-  note: string;
-  focus: string;
-  tags: Tags;
 }
 
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-
-/** A line, `<item>-<n>` its clip id (its sound marks'). */
-const line = (id: string) => ([who, en, ja, tts]: L, n: number): Line => {
-  const cast = CAST[who];
-  if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
-  const marks = MARKS[`${id}-${n + 1}`];
-  return { who, cast, en, ja, ...(tts && { tts }), ...(marks && { marks }) };
-};
-
+/** A dialogue, each line's sound marks by its clip id (`<item>-<n>`). */
 const item = (r: Row): Item => {
-  const lines = r.lines.map(line(r.id));
-  return {
-    id: r.id, lv: 4, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: r.tags, lines,
-    ...staged(r.id)
-  };
+  const lines = r.lines.map(([who, en, ja, tts], n) => line([who, en, ja, tts, MARKS[`${r.id}-${n + 1}`]]));
+  return { ...dialogueOf(4, r, lines), ...staged(r.id) };
 };
 
 const ROWS: readonly Row[] = [
@@ -82,18 +56,18 @@ const ROWS: readonly Row[] = [
     tags: tg(5, 'service', 'sarcasm', ['station'], ['contraction'])
   },
   {
-    id: 'd4-receptionist', type: 'gist', ask: '男性について 正しいのは？', focus: 'cancellation list',
+    id: 'd4-receptionist', type: 'gist', ask: '男性について 正しいのは？', focus: 'waitlist',
     lines: [
-      ['julian', 'Hi, I was hoping to see Dr. Patel sometime this week.', '今週どこかでパテル先生に診ていただきたいのですが。', 'Hi, I was hoping to see Doctor Patel sometime this week.'],
-      ['merengue', "She's fully booked till the 20th, but I could put you on the cancellation list.", '20日まで予約がいっぱいですが、キャンセル待ちリストにお入れできます。',
-        "She's fully booked till the twentieth, but I could put you on the cancellation list."],
+      ['julian', 'Hi, I was hoping to get my dog groomed sometime this week.', '今週どこかで、うちの犬のトリミングをお願いしたいんですが。'],
+      ['merengue', "We're booked solid till the 20th, but I could put you on our waitlist.", '20日まで予約でいっぱいですが、キャンセル待ちにお入れできますよ。',
+        "We're booked solid till the twentieth, but I could put you on our waitlist."],
       ['julian', 'Okay, sure. And if nothing opens up?', 'じゃあお願いします。もし空きが出なかったら？'],
-      ['merengue', "Then it's the 20th at ten after nine, with Dr. Okafor instead.", 'その場合は20日の9時10分、オカフォー先生になります。',
-        "Then it's the twentieth at ten after nine, with Doctor Okafor instead."]
+      ['merengue', "Then it's the 20th at ten after nine. Fair warning, he'll come home in a bandana.", 'その場合は20日の9時10分です。ちなみに、バンダナを巻いて帰ってきますよ。',
+        "Then it's the twentieth at ten after nine. Fair warning, he'll come home in a bandana."]
     ],
-    choices: ['He might get an earlier slot if someone cancels.', "He'll see Dr. Patel at ten after nine on the 20th.", 'He has to call back on the 20th.'],
-    ja: 'キャンセルが出れば、もっと早く診てもらえるかもしれない。', note: 'instead＝代わりに。20日はパテル先生ではない',
-    tags: tg(14, 'service', 'literal', ['phone'], ['numbers'])
+    choices: ['His dog might get in sooner if someone cancels.', 'His dog is booked for ten after nine this week.', 'He has to call back on the 20th.'],
+    ja: 'キャンセルが出れば、もっと早く予約が取れるかもしれない。', note: 'waitlist＝キャンセル待ち。20日は空きが出なかった場合',
+    tags: tg(16, 'service', 'literal', ['phone'], ['numbers'])
   },
   {
     id: 'd4-friend-cancels', type: 'next', focus: 'wiped out',
@@ -130,16 +104,16 @@ const ROWS: readonly Row[] = [
     tags: tg(27, 'service', 'literal', ['cafe'], ['contraction'])
   },
   {
-    id: 'd4-landlord', type: 'gist', ask: '修理について わかることは？', focus: 'sometime next week',
+    id: 'd4-landlord', type: 'gist', ask: '修理について わかることは？', focus: 'once the lumber comes in',
     lines: [
-      ['bunnie', "Hi, it's Bunnie in 4B. The leak under the sink is back.", '4Bのバニーです。シンクの下の水漏れがまた始まって。', "Hi, it's Bunnie in four B. The leak under the sink is back."],
-      ['tom-nook', 'Ah. Well, it should be fine for now. Just keep a bucket under it.', 'ああ。まあ、今のところ大丈夫でしょう。バケツを置いといてください。'],
-      ['bunnie', "That's what you said last month.", '先月もそう言いましたよね。'],
-      ['tom-nook', "Right, right. I'll, uh, see if my guy can swing by sometime next week.", 'そうでしたね。業者が来週どこかで寄れるか、聞いてみます。']
+      ['bunnie', "Hi, it's Bunnie on Oak Street. The steps on the deck are wobbly again.", 'オーク通りのバニーです。デッキの階段がまたグラグラしてて。'],
+      ['tom-nook', 'Ah. Well, they should be fine for now. Just take it slow on the way down.', 'ああ。まあ、今のところ大丈夫でしょう。降りるときはゆっくりね。'],
+      ['bunnie', "That's what you said in May.", '5月にもそう言いましたよね。'],
+      ['tom-nook', "Right, right. I'll, uh, have my guy call you once the lumber comes in.", 'そうでしたね。材木が入りしだい、うちの職人から電話させます。']
     ],
-    choices: ["There's no fixed time for the repair yet.", 'A plumber is coming tomorrow.', 'The tenant has to fix it herself.'],
-    ja: '修理の日時はまだ決まっていない。', note: 'see if…sometime＝確約ではない、あいまいな返事',
-    tags: tg(30, 'service', 'hedge', ['phone'])
+    choices: ["There's no fixed time for the repair yet.", 'A carpenter is coming tomorrow.', 'She has to fix the steps herself.'],
+    ja: '修理の日時はまだ決まっていない。', note: 'once ～ comes in＝入荷しだい。日時は未定のまま',
+    tags: tg(31, 'service', 'hedge', ['phone'])
   },
   {
     id: 'd4-neighbour-party', type: 'next', focus: 'up till two',
@@ -248,27 +222,28 @@ const ROWS: readonly Row[] = [
     tags: tg(18, 'friend', 'refusal', [], ['wanna', 'kinda'])
   },
   {
-    id: 'd4-cough-drive', type: 'next', focus: 'drowsy',
+    id: 'd4-cough-drive', type: 'next', focus: 'two coats',
     lines: [
-      ['raymond', 'Do you have anything for a really bad cough?', 'ひどいせきに効くものはありますか？'],
-      ['diana', 'This one works well, but it can make you drowsy. Are you driving today?', 'これがよく効きますが、眠くなることがあります。今日は運転されますか？'],
-      ['raymond', "Yeah, I've got a long drive tonight, actually.", 'ええ、実は今夜長距離を運転するんです。']
+      ['raymond', "Do you have a paint that'll cover dark red? We're going white.", '濃い赤の上から塗れるペンキはありますか？ 白にしたいんです。'],
+      ['diana', 'This one covers well, but it takes two coats. Are you doing it this weekend?', 'これはよく隠れますが、2度塗りが必要です。今週末に塗るんですか？'],
+      ['raymond', "Yeah, my in-laws are staying with us on Sunday, actually.", 'ええ、実は日曜に妻の両親が泊まりに来るんです。']
     ],
-    choices: ["Then I'd go for this non-drowsy one instead.", 'Great, it should help you sleep in the car.', 'You can drive me there, if you like.'],
-    ja: 'それなら、眠くならないこちらの方がいいですね。', note: 'drowsy＝眠くなる。運転するなら別の薬を勧める',
-    tags: tg(13, 'service', 'literal')
+    choices: ["Then I'd go with this one-coat paint instead. It dries overnight.", 'Great, it takes about two weeks to dry.', 'You can paint them white, if you like.'],
+    ja: 'それなら、1回塗りのこちらがいいですね。ひと晩で乾きます。', note: 'coat＝塗る回数。時間がないなら別の品を勧める',
+    tags: tg(31, 'service', 'literal')
   },
   {
-    id: 'd4-installer', type: 'gist', ask: '木曜の 朝、家に いるのは？', focus: 'stay in',
+    id: 'd4-installer', type: 'gist', ask: '火曜に 犬の 散歩を するのは？', focus: 'covers for me',
     lines: [
-      ['pietro', 'We can send someone Thursday, between eight and one.', '木曜の8時から1時の間に、担当の者がお伺いします。'],
-      ['audie', 'Between eight and one? I start work at ten.', '8時から1時？ 10時から仕事なんです。'],
-      ['pietro', 'Somebody over 18 just needs to be home to let them in.', '18歳以上の方がご在宅で、中に入れていただければ大丈夫です。', "Somebody over eighteen just needs to be home to let 'em in."],
-      ['audie', "Okay, I'll ask my roommate to stay in.", 'わかりました、ルームメイトに家にいてもらいます。']
+      ['pietro', "I can walk Max at noon on weekdays, but on Tuesdays I'm out of town.", '平日の正午ならマックスの散歩に行けますけど、火曜は町を離れてるんです。'],
+      ['audie', "Tuesdays? That's my late night at the office.", '火曜？ ちょうど私が遅くまで会社にいる日だ。'],
+      ['pietro', "My sister covers for me. She's great with dogs, just kind of chatty.", '妹が代わりに行きます。犬の扱いはうまいんです、ちょっとおしゃべりなだけで。',
+        "My sister covers for me. She's great with dogs, just kinda chatty."],
+      ['audie', 'Ha, okay. As long as Max gets his walk.', 'はは、了解。マックスが散歩できるならそれでいい。']
     ],
-    choices: ['Her roommate.', 'The woman herself.', "Nobody, she'll be at work."],
-    ja: 'ルームメイト。', note: "let 'em in＝let them in。stay in＝家にいる",
-    tags: tg(25, 'service', 'literal', ['phone'], ['weak-form', 'teen-ty'])
+    choices: ["The dog walker's sister.", 'The woman herself.', 'Nobody. Max stays home.'],
+    ja: '散歩代行の人の妹。', note: 'cover for＝代わりにやる。chatty＝おしゃべり',
+    tags: tg(37, 'service', 'literal', ['phone'], ['kinda'])
   },
   {
     id: 'd4-service-charge', type: 'next', focus: "hit 'No tip'",

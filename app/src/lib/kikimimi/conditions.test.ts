@@ -10,6 +10,7 @@ import { unitItems } from './compile.ts';
 import { NOISE } from './staging.ts';
 import { COND_MAX_WER, SNR, codecArgs, condOf, condPlan, condSource, stepFilter, type Step } from './conditions.ts';
 import type { Clip } from './clips.ts';
+import { spokenText } from './speech.ts';
 import clipsJson from './clips.json';
 
 const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
@@ -142,12 +143,13 @@ describe('kikimimi conditions: the beds and the mixed clips', () => {
   });
 
   it('every conditioned clip was mixed as its plan says (the report), its clip in clips.json', () => {
-    const report = JSON.parse(readFileSync(join(SCRIPTS, 'tts/report.json'), 'utf8')) as { items: Record<string, { cond?: string; condWer?: number; src: string }> };
+    const report = JSON.parse(readFileSync(join(SCRIPTS, 'tts/report.json'), 'utf8')) as { items: Record<string, { cond?: string; condWer?: number; src: string; text: string }> };
     const src = JSON.parse(readFileSync(join(SCRIPTS, 'kikimimi-clips.src.json'), 'utf8')) as Record<string, string>;
     for (const it of [...BANK, ...unitItems()].flatMap(clipItems)) {
       if (!CLIPS[it.id]) continue; // not voiced yet (a gated pack, a unit in draft)
       const cond = condOf(it), row = report.items[it.id];
       expect(row?.src, it.id).toBe(src[it.id]);
+      if (row.text !== spokenText(it)) continue; // rewritten since it was spoken (to be re-voiced): its new condition then
       expect(row?.cond, it.id).toBe(cond ? condPlan(cond).key : undefined);
       if (cond) expect(row.condWer, it.id).toBeTypeOf('number');
     }

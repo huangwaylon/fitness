@@ -5,7 +5,7 @@
 // play never moves a unit's dots (only rows with `u` and `l` do). Pure.
 import type { LocalDate } from '../types.ts';
 import { CHECK_LESSON } from '../contract/listen.ts';
-import { dayNum, type Game, type OtherGame } from './progress.ts';
+import { dayNum, dayOf, type Game, type OtherGame } from './progress.ts';
 import { LESSONS, LESSON_QS, type Lesson } from './stages.ts';
 
 /** A stamped unit comes back once, about this many days after its stamp, as a 6-question solo recheck (§3, §10). */
@@ -26,8 +26,6 @@ export interface UnitState {
   /** The 30-day recheck: when it's due, and whether it's done (a solo チェック played on or after that day). */
   recheck: { due: LocalDate; done: boolean } | null;
 }
-
-const dayOf = (n: number): LocalDate => new Date(n * 86_400_000).toISOString().slice(0, 10);
 
 const blank = (): UnitState => ({ done: [], stamped: null, tally: null, partner: false, double: false, recheck: null });
 

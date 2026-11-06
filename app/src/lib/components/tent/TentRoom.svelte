@@ -568,10 +568,10 @@
   /** Come in through the door (the island's goIn), not a reload or a link: only then does the letter come. */
   const throughDoor = ui.islandZ !== null;
   /** The first time someone comes in after a day's decorating (mine or the partner's), ハニワくん's letter: once a day
-   *  on each phone. */
+   *  on each phone. The day on the ops' own clock (opClock: the relay's, never a `?date=` preview's). */
   function rateOnEntry(): void {
     if (!throughDoor) return;
-    const today = tokyoDay(shared.now()), key = `${demo ? 'demo.' : ''}${me}`;
+    const today = tokyoDay(shared.serverNow()), key = `${demo ? 'demo.' : ''}${me}`;
     if (!room.changed || tokyoDay(room.changed) !== today) return;
     const rated = readJson<Record<string, number>>(localKV(), DEVICE.tentRated) ?? {};
     if (rated[key] === today) return;

@@ -3,7 +3,8 @@
 // on two phones; offline the cached one serves until it no longer covers the hour or is 36 hours old, then the seeded
 // day; せってい's てんき switches the island between ほんもの and ゲーム, with the data's credit; the guest's phone only shows it.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 const H = 3600_000;
 /** 2026-06-10 11:20 Tokyo: no event night, not the snowy season. */
@@ -20,7 +21,7 @@ async function planted(page: Page, s: string, ago = H) {
 
 async function open(page: Page, q: string) {
   await page.goto(`?demo${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
 }
 
 /** The seeded day's sky at NOON (the game's weather). */
@@ -52,7 +53,7 @@ test.describe('the real weather', () => {
       const other = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo' });
       await open(page, q);
       await other.goto(`?demo${q}&as=B`);
-      await expect(hudMenu(other)).toBeVisible();
+      await islandUp(other);
       await expect(scene(page)).toHaveAttribute('data-sky', want);
       await expect(scene(other)).toHaveAttribute('data-sky', want);
       if (want === 'rain') await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d?: { precip(): { kind: string | null } | null } }).__world3d?.precip()?.kind)).toBe('rain');
@@ -113,7 +114,7 @@ test.describe('the real weather', () => {
     await expect(scene(page)).toHaveAttribute('data-sky', seeded);
     // kept in the record: still the game's after a reload
     await page.reload();
-    await expect(hudMenu(page)).toBeVisible();
+    await islandUp(page);
     await expect(scene(page)).toHaveAttribute('data-sky', seeded);
     // the guest's phone: the island's mode, its to change as a member's (2026-11-06)
     await open(page, '&as=G');

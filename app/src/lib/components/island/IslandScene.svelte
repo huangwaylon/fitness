@@ -95,7 +95,7 @@
   import { mushroomSpots } from './mushrooms.ts';
   import { giftTreesOn } from './treeGifts.ts';
   import { perches } from './critters.ts';
-  import { arrive, attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, SNAP_HOME_MS } from './avatar.ts';
+  import { arrive, attachAvatar, keepPos, partnerRestsAt, partnerTo, presence, freeze, sendTo, setInside, setPartnerRest, sitTo, snapHome, startAt, stepOut, steered, thaw, turnTo, wander, SNAP_HOME_MS } from './avatar.ts';
   import { freeSeat, seatNamed, seatOpen, seatPieceAt, seatSpots, sitTimeOf, yieldsSeat, type SeatSpot } from './sitting.ts';
   import { where } from '#lib/store/where.svelte.ts';
   import { JOIN_SAY_MS, RUN_RING_U_S, linkVillagers, playPartner, playWake } from './villagerSync.ts';
@@ -656,6 +656,9 @@
       cam: () => world.view.camZ, idle: () => world.idle(), perf: world.perf,
       /** The opening beats are over: none to come, no event playing or queued (idle life may still wander). */
       quiet: () => !life.opening && eventsQuiet(),
+      /** The partner sets off on a one-stop outing now (false: it can't yet: the opening beats, someone else out, the
+       *  island's targets not placed). The e2e's, after it has read where the partner stands. */
+      wander: () => wander('partner', 1),
       /** Put the camera at z at once (e2e). */
       go: (z: number) => goTo(z),
       at: (x: number, z: number) => world.clientAt(x, z),

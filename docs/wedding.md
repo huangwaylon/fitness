@@ -1,13 +1,13 @@
 # けっこんしき (the wedding board)
 
 The wedding planning board of `~/Documents/other/wedding` (React over an Apps Script / Google Sheet), moved into the
-app: the HUD menu's けっこんしき pill. Branch `wedding`.
+app: the HUD menu's けっこんしき pill.
 
 ## Decisions (the user, 2026-11-06)
 
 - The two members edit; the guest reads only (server-enforced). No key-less share link for now.
 - Host: Harvey (パニエル), with NH's wedding arch (`static/art/deco/wedding-arch.webp`).
-- The leaf menu has six pills once travel lands: ベル, ずかん, えいご, りょこう, けっこんしき, せってい.
+- The leaf menu has six pills: ベル, ずかん, えいご, りょこう, けっこんしき, せってい.
 - No ベル tie-in.
 - One wedding date: the board's `date` setting drives the island's countdown, its wedding-day events and music
   (`time/holidays.ts` `weddingDate`, fed by the model's rows, the guest's too; 2027-10-08 until the record has one).
@@ -26,7 +26,8 @@ app: the HUD menu's けっこんしき pill. Branch `wedding`.
 - Dropped from the old board: the accent colours, the edit link and read-only toggle (the keys replace them), the
   starter templates.
 
-UI (`components/wedding/`): ⚙ せってい and ＋ (a new task) in the title bar, a member's only; a task opens as a level
+UI (`components/wedding/`): the sheet is its own chunk, a `lazySheet` (`wedding/open.svelte.ts`, like りょこう's:
+offline before it's cached, a banner with もういちど); the island is paused under it. ⚙ せってい and ＋ (a new task) in the title bar, a member's only; a task opens as a level
 with ‹ (back where the plan was scrolled). Delete is 🗑 けす in the task's ✎ (a checklist item's 🗑 there too), with the
 banner's とりけす. The note's draft is held in memory on the phone (`notepad.svelte.ts`): it outlives a level, a tab
 and ✕. Two crossed saves show both versions, each under its writer (mine marked あなた), with これに する (とりけす on its
