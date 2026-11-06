@@ -14,9 +14,12 @@
   import Play from './Play.svelte';
   import Results from './Results.svelte';
   import LessonIntro from './LessonIntro.svelte';
-  import UnitList from './UnitList.svelte';
+  import PathCard from './path/PathCard.svelte';
   import { QuizGame, unitFor } from './game.svelte.ts';
-  import { currentReport, recentGames, recordGame } from './progress.svelte.ts';
+  import { currentPath, currentReport, currentUnits, recentGames, recordGame, unitAdded } from './progress.svelte.ts';
+  import { rechecksDue } from '#lib/kikimimi/stamps.ts';
+  import type { Filter } from '#lib/kikimimi/path.ts';
+  import type { Item } from '#lib/kikimimi/bank.ts';
   import { practiceFor } from '#lib/kikimimi/report.ts';
   import type { Focus } from '#lib/kikimimi/srs.ts';
   import type { Rec } from '#lib/kikimimi/advice.ts';
@@ -33,7 +36,7 @@
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { hook, hookFlag, hooksOn } from '../island/devHooks.ts';
+  import { hook, hooksOn } from '../island/devHooks.ts';
 
   let { open = $bindable(), join = null }: { open: boolean; join?: string | null } = $props();
 
@@ -45,14 +48,28 @@
   const mid = $derived(!!v && MID.includes(v.phase));
   /** A unit's lesson on this phone (its intro card in the lobby; its name over the game). */
   const lesson = $derived(game?.lesson ?? null);
+  /** The pages pushed over my lobby (docs/kikimimi-ux.md §5's one stack, until the hub): しまの みち › a unit, and the
+   *  ずかん. ‹ pops one; ✕ closes the sheet; a lesson's intro card and its game sit over them, and a lesson's おわる comes
+   *  back to them. */
+  type Page = { k: 'path' } | { k: 'unit'; id: string } | { k: 'zukan'; unit: string | null };
+  let pages = $state<Page[]>([]);
+  const page = $derived(pages.at(-1) ?? null);
+  /** A page shows over my own lobby only (solo: co-op lessons wait for framework 8c). */
+  const paged = $derived(!!page && v?.phase === 'lobby' && !lesson && v.local && v.amHost);
+  let pathFilter = $state<Filter>('all');
+  const path = $derived(v?.phase === 'lobby' ? currentPath(pathFilter) : null);
+  const pageTitle = (p: Page) =>
+    p.k === 'path' ? t('kiki.path.title') : p.k === 'zukan' ? t('kiki.zukan.title') : (path?.stages.flatMap((s) => s.stops).find((s) => s.id === p.id)?.name ?? t('kiki.path.title'));
   const title = $derived(
     v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
-      : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`)) : t('kiki.title')
+      : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`)) : paged && page ? pageTitle(page) : t('kiki.title')
   );
-  /** The units' test entry on the lobby (before しまの みち): the dev hook `?units`. A fixture put in (the e2e's: the
-   *  `__kiki.unit` hook) bumps the list. */
-  const unitsOn = hookFlag('units');
-  let unitsBump = $state(0);
+  const push = (p: Page) => (pages = [...pages, p]);
+  function back() {
+    if (lesson) game?.dropLesson();
+    else pages = pages.slice(0, -1);
+  }
+  const due = $derived(paged ? rechecksDue(currentUnits(), currentReport()?.today ?? '') : []);
 
   /** The level last played on this phone (the next lobby's). */
   const lastLv = (): Level => {
@@ -107,7 +124,7 @@
             // (a fixture unit put in from the bank's items, as if its chunk were the build's: the units' e2e)
             unit: (unit: UnitPlay, ids: string[]) => loadIds(ids).then(() => {
               addUnit(unit.id, { unit, items: ids.map(itemOf).filter((x) => !!x) });
-              unitsBump++;
+              unitAdded();
             }),
             lesson: () => it.lesson && { u: it.lesson.unit.id, lesson: it.lesson.lesson, tier: it.lesson.tier ?? null },
             recorded: () => it.recorded
@@ -118,6 +135,7 @@
       g?.dispose();
       game = null;
       asking = false;
+      pages = [];
     };
   });
   // The voice session the opening tap began ends as the sheet closes (a game or not).
@@ -163,10 +181,7 @@
     // a lesson: again at once (a チェック retried as often as wanted; never locks), a new deal
     const ls = game.lesson;
     if (ls && v.local) {
-      game.close();
-      game.open(lastLv(), false, false, false, v.timer);
-      game.playLesson(ls.unit.id, ls.lesson, { tier: ls.tier, recheck: ls.recheck });
-      game.go();
+      relesson(ls.unit.id, ls.lesson, ls.recheck, true);
       return;
     }
     const host = v.amHost, lv = v.lv, same = v.same, vs = v.vs, ladder = v.ladder, timer = v.timer, shared = !v.local, practicing = game.practicing;
@@ -176,6 +191,38 @@
       if (host && shared) game.invite();
       else if (practicing === 'weak') practice();
     }
+  }
+  /** A lesson after a lesson's results (もういっかい, the strip's つぎは): a new lobby of mine with that lesson's deck at
+   *  my tier; `now`: straight into it (もういっかい), else its intro card. */
+  function relesson(unit: string, l: Lesson, recheck = false, now = false) {
+    if (!game || !v) return;
+    const timer = v.timer;
+    game.close();
+    game.open(lastLv(), false, false, false, timer);
+    const level = currentReport()?.stats.level ?? null;
+    game.playLesson(unit, l, { tier: (stage) => tierFor(level, stage), recheck });
+    if (now) game.go();
+  }
+  /** おわる: a lesson's goes back to the page it came from (the unit's, the path's), a game's closes the sheet. */
+  function done() {
+    if (game?.lesson && v?.local && pages.length) {
+      game.close();
+      game.open(lastLv(), false, false, false, v.timer);
+    } else open = false;
+  }
+  /** はまべ's stop on the path: the quick quiz at はまべ, back in the lobby. */
+  function quickQuiz() {
+    pages = [];
+    if (!game || !v) return;
+    const lv: Level = v.lv === 2 ? 2 : 1;
+    game.configure({ lv, ladder: false });
+    keepLv(lv);
+  }
+  /** The ずかん's phrase review: those items as a solo deck at once (recorded as practice). */
+  function reviewPhrases(items: Item[]) {
+    if (!game || !v?.amHost || !v.local) return;
+    if (v.ladder) game.configure({ ladder: false });
+    game.practice(items, 'weak');
   }
   /** まちがえた もんだいを もういちど: the last game's misses as a solo deck (a lobby of mine kept alone: nothing on the
    *  wire), its reveals untimed as every reveal, recorded as practice. */
@@ -232,7 +279,7 @@
 </script>
 
 <Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss}>
-  <div class="titlebar"><NavBar {title} onclose={requestClose} sfx="self" /></div>
+  <div class="titlebar"><NavBar {title} onback={paged || (lesson && v?.phase === 'lobby' && pages.length) ? back : null} onclose={requestClose} sfx="self" /></div>
   <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined}>
     {#if game && v}
       {#if v.notice}
@@ -252,6 +299,21 @@
           {/if}
           <button type="button" class="btn paper" data-kiki-own data-sfx="open" onclick={startOwn}>{t('kiki.openOwn')}</button>
         </div>
+      {:else if paged && page}
+        {#if page.k === 'path' && path}
+          {#await import('./path/IslandPath.svelte') then { default: IslandPath }}
+            <IslandPath {path} bind:filter={pathFilter} {due} onunit={(id) => push({ k: 'unit', id })} onlesson={(id, l, re) => startLesson(id, l, !!re)}
+              onquiz={quickQuiz} onzukan={() => push({ k: 'zukan', unit: null })} />
+          {/await}
+        {:else if page.k === 'unit'}
+          {#await import('./path/UnitPage.svelte') then { default: UnitPage }}
+            {#key page.id}<UnitPage id={page.id} onlesson={(id, l) => startLesson(id, l, false)} onzukan={(unit) => push({ k: 'zukan', unit })} />{/key}
+          {/await}
+        {:else if page.k === 'zukan'}
+          {#await import('./path/PhraseZukan.svelte') then { default: PhraseZukan }}
+            <PhraseZukan unit={page.unit} onreview={reviewPhrases} />
+          {/await}
+        {/if}
       {:else if v.phase === 'lobby' && lesson}
         <LessonIntro unit={lesson.unit} lesson={lesson.lesson} recheck={lesson.recheck} onstart={() => game?.go()} onback={() => game?.dropLesson()} />
       {:else if v.phase === 'lobby'}
@@ -265,7 +327,7 @@
             {#if report}<Progress {report} guest={week.guest} canStart={v.amHost && v.local} onstart={startRec} onplay={() => (tab = 'play')} />{/if}
           {/await}
         {:else}
-          {#if unitsOn && v.amHost && v.local}<UnitList bump={unitsBump} onlesson={startLesson} />{/if}
+          {#if path && path.stages.some((s) => s.stops.length) && v.amHost}<PathCard {path} solo={v.local} onopen={() => push({ k: 'path' })} />{/if}
           <Lobby {game} onlevel={keepLv} ontimer={keepTimer} onpractice={() => practice()} />
         {/if}
       {:else if v.phase === 'countdown'}
@@ -275,7 +337,7 @@
           {#key count}<span class="num" class:set={count > 3} aria-live="assertive">{count > 3 ? t('kiki.set') : count}</span>{/key}
         </div>
       {:else if v.phase === 'results'}
-        <Results {game} onagain={again} onmissed={replayMissed} ondone={() => (open = false)} />
+        <Results {game} onagain={again} onmissed={replayMissed} ondone={done} onnext={(l) => game?.lesson && relesson(game.lesson.unit.id, l)} />
       {:else}
         <Play {game} />
       {/if}
