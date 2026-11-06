@@ -257,10 +257,10 @@ Field validation:
 
 ## UI
 
-- **Starting a game.** The HUD menu's pill 「えいご ききとり」 (しずえ's head, right above せってい; moved out of せってい 2026-11-05 at the user's request) opens it; the voice session begins in the pill's tap itself (`wakeQuizVoice`), the sheet after the press beat. While someone's invite is live (invite.svelte.ts `invitedNow()`) the pill says 「さそわれています！」 under its name and the folded leaf has a coral dot. It opens `components/kikimimi/KikimimiSheet.svelte`, a lazy chunk (`lazy(() => import(...))`, as Hud's sheets do; a chunk that fails to load leaves it closed and ends the voice session).
-- **The lobby** opens on this phone alone (nothing sent): the level, 🔊 「きこえる？」 (full width), and 「ひとりで はじめる」 (primary) over 「みんなを さそう」. さそう sends the `open`; then who's here and who joined, 「おなじ へやで あそぶ」 (its sub-label only when on), and 「はじめる（Nにん）」.
-- **The invite banner** is a tiny always-loaded listener on the shared Live. It shows 「ウェイが ききとりクイズに さそっています」 [さんか], through the existing toast/banner host (low: on the island it sits over the say button, Toast.svelte).
-- **Mid-game,** a backdrop tap or Esc doesn't close the sheet. ✕ asks 「やめる？」.
+- **Starting a game.** The HUD menu's pill 「ききみみ」 with its small 「えいご」 (しずえ's head, right above せってい) opens the sheet on its hub (docs/kikimimi-ux.md §5, §6.1: today's card, あそぶ · みんなで · ずかん · きろく, ⚙); the voice session begins in the pill's tap itself (`wakeQuizVoice`), the sheet after the press beat. While someone's invite is live the sub-label reads 「さそわれています！」 and the leaf has a dot.
+- **Pages.** One push/pop stack over the hub (nav.ts): あそぶ (the modes by situation) › a mode's page (ひとこと クイズ's ばしょ row, スピード はしご's speeds, アナウンス, おさらい; こたえる じかん; さそう / はじめる); みんなで (the lobby: the game, its ばしょ, who's in, 「きょうりょく ／ しょうぶ」, 「おとを 1だいに まとめる」, さそう then 「はじめる（Nにん）」); きろく; せってい (🔊 「きこえる？」); しまの みち › a unit › the ずかん. My lobby is always the one game under them, kept on this phone alone until さそう.
+- **The invite banner** is a tiny always-loaded listener on the shared Live. It shows 「ウェイが ききみみに さそっています」 [さんか], through the existing toast/banner host (low: on the island it sits over the say button, Toast.svelte); さんか opens the sheet on みんなで, joined (‹ leaves for the hub). An invite heard with the sheet open is a card on top of the hub.
+- **Mid-game,** a backdrop tap or Esc doesn't close the sheet. ✕ asks 「ここで やめる？」. Results' おわる goes back to the hub.
 - **Look.** The paper theme with `ui/Sheet.svelte`, villager art via `villagerArt()`, critters, fruit and items via the art manifest.
   - Taps are ≥ 44 px with `data-sfx`, plus the right/wrong cues.
   - Reduced motion is honoured.

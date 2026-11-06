@@ -1,7 +1,7 @@
 // What the ききみみ sheet's buttons start (docs/kikimimi.md "UI"), over the sheet's game: もういっかい, a lesson again or
-// the next one, おわる, はまべ's quick quiz, the ずかん's phrase review, the misses again, にがて れんしゅう, a
-// recommendation's start, a unit's lesson, a lobby of my own. The sheet keeps its own state (open, its pages, the
-// lobby's tab) and hands it in as `ui`; what's solo (a practice deck, the recheck) only in my own lobby kept alone, a
+// the next one, おわる (back to the hub), はまべ's quick quiz, the hub's today card, the ずかん's phrase review, the
+// misses again, おさらい, a recommendation's start, a unit's lesson, a lobby of my own. The sheet keeps its own state
+// (open, its stack of pages: nav.ts) and hands it in as `ui`; what's solo (a practice deck, the recheck) only in my own lobby kept alone, a
 // unit's lesson in any lobby I host (shared: a co-op lesson, docs/curriculum-units.md §4).
 import type { QuizGame } from './game.svelte.ts';
 import type { Item, Level } from '#lib/kikimimi/bank.ts';
@@ -12,14 +12,14 @@ import type { Focus } from '#lib/kikimimi/srs.ts';
 import type { Rec } from '#lib/kikimimi/advice.ts';
 import { currentReport, recentGames } from './progress.svelte.ts';
 import { keepLv, lastLv, lastTimer } from './prefs.ts';
+import { modeStack, type Page } from './nav.ts';
 
-/** The sheet's side: close it, its pages over my lobby, the lobby's tab back to あそぶ. */
+/** The sheet's side: close it, and its stack of pages over the hub (nav.ts). */
 export interface SheetUi {
   close(): void;
-  /** How many pages are pushed over my lobby (a lesson's おわる goes back to them). */
+  /** How many pages are pushed over the hub (a lesson's おわる goes back to them). */
   pages(): number;
-  clearPages(): void;
-  toPlay(): void;
+  setPages(p: Page[]): void;
 }
 
 export class KikiActions {
@@ -85,22 +85,39 @@ export class KikiActions {
     this.#lesson(g, unit, l, recheck);
     if (now) g.go();
   };
-  /** おわる: a lesson's goes back to the page it came from (the unit's, the path's), a game's closes the sheet. */
+  /** おわる: a lesson's goes back to the page it came from (the unit's, the path's), a game's to the hub. */
   done = (): void => {
     const g = this.#game(), v = g?.view;
     if (g?.lesson && v?.local && this.#ui.pages()) {
       g.close();
       g.open(lastLv(), { timer: v.timer });
-    } else this.#ui.close();
+    } else this.toHub();
   };
-  /** はまべ's stop on the path: the quick quiz at はまべ, back in the lobby. */
+  /** Back to the hub: a lobby of my own, kept alone (leaving the game I was in: a lobby I'd shared is cancelled). */
+  toHub = (): void => {
+    const g = this.#game();
+    if (!g) return;
+    g.close();
+    g.open(lastLv(), { timer: lastTimer() });
+    this.#ui.setPages([]);
+  };
+  /** はまべ's stop on the path: ひとこと クイズ's page at はまべ. */
   quickQuiz = (): void => {
-    this.#ui.clearPages();
     const g = this.#game(), v = g?.view;
     if (!g || !v) return;
     const lv: Level = v.lv === 2 ? 2 : 1;
     g.configure({ lv, ladder: false });
     keepLv(lv);
+    this.#ui.setPages(modeStack('quiz'));
+  };
+  /** The hub's today card: ひとこと クイズ at my place, at once. */
+  quiz = (lv: Level): void => {
+    const g = this.#game();
+    if (!g) return;
+    if (this.#solo()) g.configure({ lv, ladder: false });
+    else g.open(lv, { timer: lastTimer() }); // (from an invite's idle hub: my own lobby first)
+    keepLv(lv);
+    g.go();
   };
   /** The ずかん's phrase review: those items as a solo deck at once (recorded as practice). */
   reviewPhrases = (items: Item[]): void => {
@@ -132,7 +149,7 @@ export class KikiActions {
   startRec = (r: Rec): void => {
     const g = this.#solo();
     if (!g) return;
-    this.#ui.toPlay();
+    this.#ui.setPages([]);
     if (r.kind === 'level') {
       g.configure({ lv: r.lv, ladder: false });
       keepLv(r.lv);
