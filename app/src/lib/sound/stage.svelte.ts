@@ -11,7 +11,7 @@
 //   live('isl') · heardHere()              what plays there now (reactive through `stage.on`) · what sounds here
 import { MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicLive, newerMusic, type Intent, type MusicRec, type MusicSrc, type Who } from '#lib/contract/live-protocol.ts';
 import { AUDIO } from './manifest.ts';
-import { kkTrack } from './kk.ts';
+import { kkLoaded, kkTrack, loadKK } from './kk.ts';
 import type { EventMusicId } from './events.ts';
 import type { MusicTrack } from './hourly.ts';
 
@@ -38,6 +38,8 @@ interface Net {
 }
 let net: Net = { send: () => false, serverNow: () => Date.now(), me: () => null };
 const subs = new Set<() => void>();
+/** Each enterStage's number: only the latest one's leaving leaves. */
+let entered = 0;
 /** Whether the stage where I am sounds here (a room's: its stereo still stands), null: always. */
 let plays: ((s: Stage) => boolean) | null = null;
 let timer: ReturnType<typeof setTimeout> | undefined;
@@ -86,8 +88,10 @@ function sweep(): void {
   if (gone) changed();
 }
 
-/** Play `song` on stage `src` for everyone (from a tap): `ms` its length (else the file's `d`), `pc` the stereo. */
+/** Play `song` on stage `src` for everyone (from a tap): `ms` its length (else the file's `d`), `pc` the stereo. A
+ *  K.K. song asked for before his list is here (his menus load it first) waits for it, for its length. */
 export function request(src: MusicSrc, song: string, o: { ms?: number; pc?: string } = {}): void {
+  if (o.ms === undefined && !stageTrack(src, song) && !song.startsWith('ev-') && !kkLoaded()) return void loadKK().then(() => kkLoaded() && request(src, song, o));
   const cur = stage.on[src];
   // after the stage's record whatever this phone's clock says: a tap always replaces what plays
   const at = Math.max(Math.round(net.serverNow()), (cur?.at ?? 0) + 1);
@@ -122,11 +126,13 @@ export function acked(i: Intent, ok: boolean, t: number): void {
 /** I'm where stage `src` plays (the island page, a home's room): its sound is heard here while `p` says so (a room's:
  *  its stereo stands; restage() when that changes). Returns the leaving. */
 export function enterStage(src: MusicSrc, p?: (s: Stage) => boolean): () => void {
+  const mine = ++entered;
   stage.here = src;
   plays = p ?? null;
   changed();
   return () => {
-    if (stage.here !== src) return;
+    // (a page mounted since, the same stage too, is where I am now)
+    if (entered !== mine) return;
     stage.here = null;
     plays = null;
     changed();

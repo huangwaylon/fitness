@@ -91,6 +91,26 @@ test('a stereo in the tent is everyone’s in there, and heard only inside: A in
   await ctx.close();
 });
 
+test('the island’s moments on its stage: A’s stretch plays on B’s deck with the deck thumping there; A’s birthday song puts B’s candles out', { tag: '@logic' }, async ({ browser }) => {
+  const ctx = await browser.newContext();
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
+    await p.addInitScript(() => localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: false, volume: 0.8 })));
+    await p.goto(`?demo${as}&date=2027-03-04T12:00&critter=none&visitor=none`); // うめ's birthday
+    await expect(hudMenu(p)).toBeVisible();
+    await p.mouse.click(196, 90);
+  }
+  await h(a, (w) => w.__music.request('isl', 'ev-aerobics', { ms: 6000 }));
+  await expect.poll(() => playing(b)).toMatch(/^st\/isl\/ev-aerobics\//);
+  await expect(b.locator('[data-stretch="on"]')).toBeAttached();
+  await expect(b.locator('[data-cake="lit"]')).toBeAttached();
+  await h(a, (w) => w.__music.request('isl', 'ev-happy-birthday'));
+  await expect(b.locator('[data-cake="out"]')).toBeAttached();
+  await expect.poll(() => playing(b)).toMatch(/^st\/isl\/ev-happy-birthday\//);
+  await expect(b.locator('[data-stretch="on"]')).toHaveCount(0); // the stage's one song: the birthday's replaced it
+  await ctx.close();
+});
+
 test('with ミュージック off B sees K.K. play (his caption with 🔇) and hears nothing', { tag: '@logic' }, async ({ browser }) => {
   const ctx = await browser.newContext();
   const a = await ctx.newPage(), b = await ctx.newPage();

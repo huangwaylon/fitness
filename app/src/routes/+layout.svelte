@@ -114,7 +114,7 @@
     // the shared music stages (K.K., the stereos: sound/stage.svelte.ts) over the shared world's relay; the e2e's look
     bindStage({ send: (i) => i.kind === 'music' && world.tell(i), serverNow: () => world.serverNow(), me: () => world.me });
     const offStage = [world.hear((m) => m.kind === 'music' && hear(m)), world.onAck(acked)];
-    if (hooksOn(new URLSearchParams(location.search))) window.__music = { now: musicNow, stage: () => $state.snapshot(stage), request, hush };
+    if (week.demo || hooksOn(new URLSearchParams(location.search))) window.__music = { now: musicNow, stage: () => $state.snapshot(stage), request, hush };
     // every tap's sound (data-sfx) and the "can't" boop (aria-disabled): after startSound, so its unlock runs first
     const stopTaps = startTaps();
     // no focus ring after a touch (focus is still restored for keyboard and VoiceOver users)

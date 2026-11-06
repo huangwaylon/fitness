@@ -99,5 +99,12 @@ describe('the stage', () => {
     expect(stage.here).toBe('t');
     leaveT();
     expect(stage.here).toBeNull();
+    // a room mounted again before the last one's leaving (the same stage): still in it
+    const first = enterStage('t');
+    const again = enterStage('t');
+    first();
+    expect(stage.here).toBe('t');
+    again();
+    expect(stage.here).toBeNull();
   });
 });

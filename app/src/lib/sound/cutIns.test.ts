@@ -1,5 +1,5 @@
 // The cut-ins' rules in sound.svelte.ts (docs/design.md#sound) against a fake engine: what plays, what's pinned, and
-// how a cut-in ends (its end, its file failing, the volume at 0, stopJingle, the wasps' phases).
+// how a cut-in ends (its end, its file failing, the volume at 0, the wasps' phases). The shared stages in what plays.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 class FakeEngine {
@@ -101,15 +101,6 @@ describe('cut-ins', () => {
     expect(e.pinned).toContain(AUDIO.places.shop!.file);
     expect(e.pinned.some((p) => p.startsWith('music/'))).toBe(true);
     m.setPlace(null);
-  });
-
-  it('stopJingle ends the stretch’s music early; another id leaves it', async () => {
-    const { m, e } = await musicOn();
-    expect(m.eventJingle('aerobics', 6000)).toBe(true);
-    m.stopJingle('happy-birthday');
-    expect(e.track).toBe('event/aerobics');
-    m.stopJingle('aerobics');
-    expect(e.track).not.toBe('event/aerobics');
   });
 
   it('the wasps: the chase loops in (the sting kept fetched), a sting plays Stung by Bees, a net brings the island’s music back', async () => {

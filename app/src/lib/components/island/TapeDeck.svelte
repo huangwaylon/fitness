@@ -2,10 +2,11 @@
   // Group stretching's tape deck (docs/design.md "Group stretching"), after NH's ラジオ体操 in the plaza: it turns up on the
   // lawn's world.ts TAPE_DECK (a world node at its foot), the layout's fixed piece (world3d/objects.ts: NH's boom box at
   // the villagers' scale, there every day). Its tape is ready on a day either of us met 🍑 Exercise, or when the island
-  // is opened 06:00–08:00 (stretching.ts): a tap plays it (an original little march: the hour's music ducks) and both
-  // villagers, and the visitor if one is out and awake, do three of NH's stretches together (~6 s,
-  // motion/stretch.svelte.ts), ♪ rising from the deck; once a day per phone. Not ready, a tap says why not (done today,
-  // or when it plays), and its ♪ floats only when it's ready. No ベル.
+  // is opened 06:00–08:00 (stretching.ts): a tap plays it for everyone (the island's music stage, sound/stage.svelte.ts:
+  // NH's aerobics music on every phone outdoors from the same point, docs/sound-sync.md; unheard, the tape's little
+  // march) and both villagers, and the visitor if one is out and awake, do three of NH's stretches together (~6 s,
+  // motion/stretch.svelte.ts) on every phone as the song starts, ♪ rising from the deck; once a day (on each phone that
+  // saw it). Not ready, a tap says why not (done today, or when it plays), and its ♪ floats only when it's ready. No ベル.
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
   //   ?stretch (dev or ?demo) brings the deck out now.
   import { untrack } from 'svelte';
@@ -18,7 +19,8 @@
   import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { eventJingle, stopJingle } from '#lib/sound/sound.svelte.ts';
+  import { hearsMusic } from '#lib/sound/sound.svelte.ts';
+  import { live, request } from '#lib/sound/stage.svelte.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { POSES, POSE_MS, STRETCH_MS, deckOut, sawIsland, stretched, stretchedToday } from './stretching.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -48,7 +50,10 @@
   const date = $derived(dayKey(clock));
   /** Bumped when today's stretch is done (the deck re-derives). */
   let bump = $state(0);
-  let playing = $state(false);
+  /** The stretch's song on the island's stage (events.ts `aerobics`, looped for the routine), playing (anyone's tap). */
+  const SONG = 'ev-aerobics';
+  const onStage = $derived(live('isl'));
+  const playing = $derived(onStage?.song === SONG);
   $effect(() => sawIsland(date, jst(clock).hour));
   /** Ready to play: not played today, and an Exercise day or a morning (or the dev hook's). */
   const ready = $derived.by(() => {
@@ -60,20 +65,22 @@
   /** Its spot (world x, z): the layout's (re-read as the layout changes); off screen the projector hides it. */
   const spot = $derived((void site.rev, TAPE_DECK));
 
-  function play() {
-    playing = true;
-    stretched(date);
-    // NH's aerobics music cuts in for the stretch (ミュージック on, its file there), else the tape's little tune
-    if (!eventJingle('aerobics', STRETCH_MS)) cue('stretch');
-    const over = () => {
-      playing = false;
+  /** The stretch started here (its record's `at`). */
+  let started = 0;
+  // the stretch's record starts (my tap or another's): done for today here too, and the routine as the song starts (a
+  // phone opening a second or more into it only sees the deck play); unheard here, the tape's little tune
+  $effect(() => {
+    const s = onStage;
+    if (s?.song !== SONG || s.at === started) return;
+    untrack(() => {
+      started = s.at;
+      stretched(date);
       bump++;
-    };
-    // cut short (the actors reset): the tape stops with it, the island's music comes back
-    groupStretch(POSES, POSE_MS, over, () => (over(), stopJingle('aerobics')));
-  }
-  // the island left mid-stretch: the tape doesn't play on over the room's music
-  $effect(() => () => untrack(() => playing && stopJingle('aerobics')));
+      if (s.elapsedMs > 1000) return;
+      if (!hearsMusic()) cue('stretch');
+      groupStretch(POSES, POSE_MS);
+    });
+  });
 
   /** A tap on the scene (client px): true when the deck took it. Reach: a 44px target around the radio. Not ready (the
    *  layout's deck, every day): a line saying why. */
@@ -83,7 +90,7 @@
     if (!r || !enabled() || !w.inView(spot[0], spot[1]) || !seen(spot[0], spot[1])) return false;
     if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
     if (playing) return true;
-    if (ready) play();
+    if (ready) request('isl', SONG, { ms: STRETCH_MS });
     else if (el) {
       sceneSfx('decor');
       say?.(t('world.deck'), t(stretchedToday(date) ? 'world.deck.done' : 'world.deck.when'), el, { colour: '#FFF1C9' });

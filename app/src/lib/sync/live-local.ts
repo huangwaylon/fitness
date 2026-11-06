@@ -74,7 +74,8 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
   const stages = (): Partial<Record<MusicSrc, MusicRec>> => readJson<Partial<Record<MusicSrc, MusicRec>>>(localKV(), DEMO.music) ?? {};
   const stageKeep = (m: MusicRec): boolean => {
     const all = stages(), cur = all[m.src];
-    if ((cur && !newerMusic(m, cur)) || !musicLive(m, m.t)) {
+    // (on the relay's clock, the device's here: `t` is the island's, a `?date=` preview's)
+    if ((cur && !newerMusic(m, cur)) || !musicLive(m, Date.now())) {
       if (cur) deliver(cur);
       return false;
     }

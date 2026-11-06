@@ -7,7 +7,7 @@
 //   sound.weather = 'rain'; sound.heavy = true            // set by the island's weather (island/weatherNow.svelte.ts)
 //   waspMusic('chase')                                    // a cut-in of my own over the island's music (events.ts)
 //   (the shared stages: K.K., the stereos, stage.svelte.ts request / hush; syncMusic plays the one where I am)
-//   eventJingle('happy-birthday') · stopJingle('aerobics') // the island's own cut-ins (events.ts CutInId)
+//   eventJingle(['turkey-cooking-start', …])             // a cut-in of my own (events.ts CutInId: Franklin's)
 //   setPlace('shop') · setPlace(null)                     // a building's room plays its own track (places.ts)
 //   voiceSession(true) · loadVoice(p) · playVoice(buf, …)  // ききみみ's spoken clips, even with sound set silent
 import { untrack } from 'svelte';
@@ -238,6 +238,9 @@ export function playingLabel(playing: Playing, hour: number): string | null {
   return labelOf(playing, hour, k ? { song: k, aircheck: s!.src !== 'isl' } : null);
 }
 
+/** ミュージック can be heard now (on, 音量 above 0, unlocked, in front): else a moment's song plays its effect. */
+export const hearsMusic = (): boolean => audible();
+
 /** What the music deck plays now and how far in (s): the e2e's look (window.__music), never the app's. */
 export const musicNow = (): { key: string | null; pos: number | null } => ({ key: engine?.track ?? null, pos: engine?.position() ?? null });
 
@@ -372,21 +375,14 @@ export function dropPrefetched(): void {
   engine?.dropAhead();
 }
 
-/** The island's own cut-ins (events.ts CutInId): `aerobics` for the stretch, `happy-birthday` at the cake, Franklin's
- *  cooking, the wasps'. A one-shot plays once (a list: one after another); with `loopMs` it loops that long. Then the
+/** A cut-in of my own (events.ts CutInId): Franklin's cooking, the wasps' (the stretch and the cake are the island's
+ *  stage's: stage.svelte.ts `ev-<id>`). A one-shot plays once (a list: one after another); with `loopMs` it loops that long. Then the
  *  island's music fades back. Only with ミュージック on, audio unlocked and the file there: false, and the caller plays
  *  its effect. */
 export function eventJingle(ids: CutInId | CutInId[], loopMs?: number): boolean {
   const [id, ...next] = Array.isArray(ids) ? ids : [ids];
   const tr = AUDIO.events[id];
   return !!tr && startCutIn({ key: `event/${id}`, track: tr, playing: id, id, loop: !!loopMs, fade: 'cut', next }, loopMs);
-}
-
-/** Stop an island cut-in early (the stretch left or cut short: TapeDeck): the island's music fades back in. */
-export function stopJingle(id: CutInId): void {
-  if (cutIn?.id !== id) return;
-  endCutIn();
-  syncMusic();
 }
 
 /** The player is in a building's room (places.ts PlaceId), or back out (null): through the door the room's track

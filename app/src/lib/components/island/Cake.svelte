@@ -1,11 +1,14 @@
 <script lang="ts">
   // The birthday cake (docs/design.md "Birthdays"; birthday.ts): on one of our birthdays NH's birthday cake stands in front
   // of centre stage (world.ts CAKE, the campsite's clearing seen from おく: a world node), its candles lit. A tap (a scene item like the
-  // visitors, a 44px reach, while it's on screen) plays NH's Happy Birthday (a cut-in over the music; without the music, a little music box: an original tune, a jingle) and blows the
-  // candles out: a puff of smoke, out for the day on this phone. No ベル.
+  // visitors, a 44px reach, while it's on screen) plays NH's Happy Birthday for everyone (the island's music stage,
+  // sound/stage.svelte.ts: every phone outdoors from the same point, docs/sound-sync.md; unheard, a little music box: an
+  // original tune, a jingle) and the candles go out as it starts on every phone: a puff of smoke, out for the day. No ベル.
+  import { untrack } from 'svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { cue } from '#lib/sound/cues.ts';
-  import { eventJingle } from '#lib/sound/sound.svelte.ts';
+  import { hearsMusic } from '#lib/sound/sound.svelte.ts';
+  import { live, request } from '#lib/sound/stage.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
   import { localDateAt } from '#lib/time/dates.ts';
   import { su } from './scene.ts';
@@ -25,6 +28,25 @@
   $effect(() => void (out = candlesOut(date)));
   let puff = $state(0);
 
+  /** The birthday song on the island's stage (events.ts `happy-birthday`), and the one whose start was seen here. */
+  const SONG = 'ev-happy-birthday';
+  const onStage = $derived(live('isl'));
+  let heard = 0;
+  // the song starts (my tap or another's): the candles go out (the puff only as it starts); unheard, the music box
+  $effect(() => {
+    const s = onStage;
+    if (!on || s?.song !== SONG || s.at === heard) return;
+    untrack(() => {
+      heard = s.at;
+      const fresh = s.elapsedMs <= 1000;
+      if (fresh && !hearsMusic()) cue('birthday-cake');
+      if (out) return;
+      out = true;
+      blowOut(date);
+      if (fresh) puff++;
+    });
+  });
+
   let el = $state<HTMLElement>();
   /** Its spot (world.ts CAKE, on the island's layout: site.rev). */
   const at = $derived((void site.rev, CAKE));
@@ -34,13 +56,7 @@
     const r = el?.querySelector('.cake')?.getBoundingClientRect();
     if (!on || !r || !enabled() || !w.inView(at[0], at[1]) || !seen(at[0], at[1])) return false;
     if (!inside(grow(r, MIN_HIT, 6), px, py)) return false;
-    // NH's Happy Birthday over the island's music (ミュージック on, its file there), else the music box
-    if (!eventJingle('happy-birthday')) cue('birthday-cake');
-    if (!out) {
-      out = true;
-      blowOut(date);
-      puff++;
-    }
+    request('isl', SONG);
     return true;
   }
 </script>
