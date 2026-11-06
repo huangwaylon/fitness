@@ -23,8 +23,6 @@
     trailing?: Snippet | null;
     /** On a photo: the title hidden, ‹ ✕ on smoked discs. */
     over?: boolean;
-    /** @deprecated ignored: one size (travel's call sites, until they move). */
-    size?: 's';
   }
   let { title = '', onback = null, onclose = null, sfx = 'back', lead = null, trailing = null, over = false }: Props = $props();
   const led = $derived((!onback && !!lead) || !!trailing);

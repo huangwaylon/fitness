@@ -54,7 +54,12 @@
   .sw.pB { background: var(--person-b); }
   .sw.pG { background: var(--c-lilac); }
   /* the title bar's: as wide as the name (up to its side of the bar), the avatar and the chevron tighter */
-  .compact { max-width: 100%; }
+  .compact { max-width: 100%; background: none; box-shadow: none; }
+  /* drawn as the bar's other controls (NavButton's disc): 34px with the small edge, in the 44px hit */
+  .compact::before { content: ''; position: absolute; inset: 5px 0; border-radius: inherit; background: var(--ctl); box-shadow: var(--sh-ctl-s); pointer-events: none; }
+  .compact:active { transform: none; box-shadow: none; }
+  .compact:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
+  .compact select { position: relative; }
   .compact select { width: auto; max-width: 100%; padding: 0 28px 0 12px; }
   .compact select.withav { padding-left: 38px; }
   .compact .av { left: 8px; }

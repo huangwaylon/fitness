@@ -100,7 +100,7 @@
 
 <div class="trip" data-trip-view={trip.id} data-pane-tab={tab}>
   <div class="hd" class:over={tab === 'days'} class:solid={tab !== 'days' || past} bind:this={bar}>
-    <NavBar size="s" title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} />
+    <NavBar title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} />
   </div>
 
   <div class="scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>
@@ -149,7 +149,7 @@
   .trip { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
   /* the title bar: over the photo on 日程 (‹ ✕ on smoked discs) till the photo scrolls away; in the flow on the other
      pages */
-  .hd { flex: none; padding: var(--ui-top) calc(4px + var(--safe-right)) 0 calc(4px + var(--safe-left)); position: relative; z-index: 6; background: var(--surface); }
+  .hd { flex: none; padding: var(--ui-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); position: relative; z-index: 6; background: var(--surface); }
   .hd.over { position: absolute; top: 0; left: 0; right: 0; background: none; transition: background-color var(--dur-quick); }
   .hd.solid { background: var(--surface); box-shadow: 0 var(--lip-s) 0 var(--lip); }
   .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; padding-bottom: 24px; }

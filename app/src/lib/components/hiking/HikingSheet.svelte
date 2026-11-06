@@ -1,7 +1,7 @@
 <script lang="ts">
   // トレイル's sheet (docs/hiking.md), its own chunk: a full sheet on the unified kit (docs/design.md "Unified kit"), one
   // list and no tab bar. The list stays mounted under a trail's view (its scroll and chips kept for ‹); each level has
-  // its NavBar s, ✕ closing the whole sheet from either; Esc first folds a trail's sheet down to its peek. The island
+  // its NavBar, ✕ closing the whole sheet from either; Esc first folds a trail's sheet down to its peek. The island
   // is paused under it (+page's sheetOpen); its open and close tunes are the panel's.
   import { untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';

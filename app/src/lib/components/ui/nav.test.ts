@@ -42,8 +42,7 @@ describe('navigation', () => {
     expect(adhoc).toEqual([]);
   });
   it('one size: NavBar and NavButton take no size (the 32px disc in the 44px hit everywhere)', () => {
-    // (components/travel: until the trip guides move onto the kit, NavBar ignores their size="s")
-    const sized = files.filter((x) => !x.f.includes('components/travel/') && /<Nav(Bar|Button)\b[^>]*\bsize=/.test(x.src)).map((x) => x.f);
+    const sized = files.filter((x) => /<Nav(Bar|Button)\b[^>]*\bsize=/.test(x.src)).map((x) => x.f);
     expect(sized).toEqual([]);
   });
   it('the title bar\'s lead / trailing slots hold compact controls only (a NavButton tool, a pill), never a chip of words like キャンセル', () => {
