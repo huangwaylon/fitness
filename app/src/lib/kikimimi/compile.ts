@@ -16,6 +16,7 @@ import { clipIds, isDialogue, type Item, type Level } from './bank.ts';
 import type { ChunkClip, Clip, Words } from './clips.ts';
 import { voiced } from './clips.ts';
 import type { Ladder } from './ladder.ts';
+import type { UnitPlay } from './lesson.ts';
 import { LADDERS, ladderReady } from './ladders.ts';
 import { drawn, mixFor, type Mixes } from './mix.ts';
 import { clipPlaces, type PackRef, type Packs } from './packing.ts';
@@ -145,7 +146,7 @@ function unitChunk(u: UnitManifest, check: UnitsCheck, bank: ReadonlyMap<string,
     id: u.unit, name: u.name, stage: u.stage, domain: u.domain, ...(u.also && { also: u.also }), host: u.host, scene: u.scene, sound: u.sound, status: u.status,
     cando: { ja: candoText(u.cando), ...(u.cando.short && { short: u.cando.short.trim() }), en: u.cando.en }, lessons: u.lessons, home: ids.filter((id) => check.home.get(id) === u.unit), ...(u.tiers && { tiers: u.tiers }),
     ph: u.ph.map((p) => ({ ...p, in: check.phraseIn.get(p.id)?.items ?? [] }))
-  };
+  } satisfies UnitPlay;
   const file = partFile({ unit, items, ladders }, clips, words, places);
   if (gz(file) > UNIT_MAX) throw new Error(`kikimimi: unit ${u.unit}'s chunk is ${gz(file)} B gzipped, over ${UNIT_MAX}`);
   const lessons = LESSONS.reduce((m, l, i) => (u.lessons[l] ? m | (1 << i) : m), 0);
