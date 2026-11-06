@@ -35,7 +35,8 @@ for (const [name, ready] of [['けんこう', '.health .mc'], ['ごはん', '[da
 
 // The info sheets (りょこう, けっこんしき, トレイル: docs/design.md "Unified kit"), each at rest on its busiest page (NZ's
 // map and a trail's, drawn on fixture tiles): the island draws no frame under it, nothing behind it animates, and the
-// page asks for no animation frame at all (the maps draw only when moved; no loop left running).
+// page asks for no animation frame but the map's own (a tile in late on a slow runner, its fade: MapLibre's chunks,
+// vite.config.ts maplibre-names): no loop left running, nothing kicking the paused island.
 const infoSheets = {
   travel: async (page: Page) => { await page.locator('dialog[open] [data-trip="nz"]').click(); await page.locator('dialog[open] [data-trip-tab="map"]').click(); await mapReady(page); },
   wedding: async (page: Page) => { await page.locator('dialog[open] [data-wed-task] .head').first().click(); },
@@ -47,9 +48,14 @@ const infoSheets = {
 for (const [k, settle] of Object.entries(infoSheets))
   test(`under ${k}'s sheet at rest the island draws no frames, nothing animates behind it, no frame is asked for`, async ({ page }) => {
     await page.addInitScript(() => {
-      const W = window as unknown as { __rafs: number }, raf = requestAnimationFrame;
-      W.__rafs = 0;
-      window.requestAnimationFrame = (f) => (W.__rafs++, raf(f));
+      // (each one's caller, MapLibre's left out)
+      const W = window as unknown as { __rafs: string[] }, raf = requestAnimationFrame;
+      W.__rafs = [];
+      window.requestAnimationFrame = (f) => {
+        const at = new Error().stack?.split('\n').slice(2, 6).join(' | ') ?? '';
+        if (!/\/maplibre\.[\w-]+\.js/.test(at)) W.__rafs.push(at);
+        return raf(f);
+      };
     });
     await drawn(page);
     await fixtureTiles(page);
@@ -61,10 +67,10 @@ for (const [k, settle] of Object.entries(infoSheets))
     await page.waitForTimeout(1500); // hold: the map's last tiles in and faded, the sheet's own spring over
     await sheet(page).evaluate((d) => Promise.all(d.getAnimations().map((a) => a.finished)));
     expect(await w3(page, (w) => w.stats().paused)).toBe(true);
-    const f0 = await w3(page, (w) => w.stats().frames), r0 = await page.evaluate(() => (window as unknown as { __rafs: number }).__rafs);
+    const f0 = await w3(page, (w) => w.stats().frames), r0 = await page.evaluate(() => (window as unknown as { __rafs: string[] }).__rafs.length);
     await page.waitForTimeout(1500); // hold: proving no frame is drawn or asked for
     expect(await w3(page, (w) => w.stats().frames)).toBe(f0);
-    expect(await page.evaluate(() => (window as unknown as { __rafs: number }).__rafs) - r0, 'animation frames asked for at rest').toBe(0);
+    expect(await page.evaluate((n) => (window as unknown as { __rafs: string[] }).__rafs.slice(n), r0), 'animation frames asked for at rest (by whom)').toEqual([]);
     expect(await runningBehind(page)).toEqual([]);
     expect(await page.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running').map((a) => (a as CSSAnimation).animationName ?? a.constructor.name)), 'animations running at all').toEqual([]);
   });
