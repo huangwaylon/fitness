@@ -6,6 +6,7 @@
 // a slice of its pack (static/audio/listen/, packing.ts); changing an item's `en`, `tts`, `voice` or speaker's voice regenerates its clip. Ids
 // key the clips in their packs: keep them stable. The lobby offers a level only once every item of it has a clip (compile.ts
 // playable). Level 4's dialogues (`gist`, `next`: dialogues.ts) are one clip per line and have a gate of their own.
+import { shuffle } from '#lib/random.ts';
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { QuizLv } from '../contract/live-protocol.ts';
 
@@ -186,6 +187,13 @@ export function clipItems(it: Item): Item[] {
     const { lines: _, tts: __, ...rest } = it;
     return { ...rest, id: ids[n], en: l.en, ja: l.ja, speaker: l.who, voice: accentOf(l.cast), cast: l.cast, ...(l.tts && { tts: l.tts }), ...(l.cond && { cond: l.cond }) };
   });
+}
+
+/** A copy of an item with its choices in a seeded order: `choices` the shuffled order, `answer` the right one's index
+ *  in it (`set`: another choice set for the same audio, a lesson tier's). Every deck deals its items through this. */
+export function shuffleChoices(it: Item, r: () => number, set: Pick<Item, 'choices' | 'answer'> = it): Item {
+  const order = shuffle(set.choices.map((_, i) => i), r);
+  return { ...it, choices: order.map((i) => set.choices[i]), answer: order.indexOf(set.answer) };
 }
 
 /** Japanese names of the `pic` art (the choices' VoiceOver labels and the review list: the English isn't given away). */
