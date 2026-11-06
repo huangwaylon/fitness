@@ -9,7 +9,6 @@
   // saw it). Not ready, a tap says why not (done today, or when it plays), and its ♪ floats only when it's ready. No ベル.
   // A scene item like the visitors (aria-hidden, a 44px reach): SceneTaps asks it about each tap (`tap`).
   //   ?stretch (dev or ?demo) brings the deck out now.
-  import { untrack } from 'svelte';
   import { hookFlag } from './devHooks.ts';
   import { su } from './scene.ts';
   import { TAPE_DECK } from './world.ts';
@@ -18,9 +17,8 @@
   import { sceneSfx } from './sceneTaps.ts';
   import { MIN_HIT, SHOWN, grow, inside, type Seen } from './hitbox.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import { cue } from '#lib/sound/cues.ts';
-  import { hearsMusic } from '#lib/sound/sound.svelte.ts';
-  import { live, request } from '#lib/sound/stage.svelte.ts';
+  import { cutInSong, live, request } from '#lib/sound/stage.svelte.ts';
+  import { onStageStart } from '#lib/sound/stageStart.svelte.ts';
   import { dayKey, jst, minuteNow } from '#lib/time/clock.ts';
   import { POSES, POSE_MS, STRETCH_MS, deckOut, sawIsland, stretched, stretchedToday } from './stretching.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -65,21 +63,12 @@
   /** Its spot (world x, z): the layout's (re-read as the layout changes); off screen the projector hides it. */
   const spot = $derived((void site.rev, TAPE_DECK));
 
-  /** The stretch started here (its record's `at`). */
-  let started = 0;
   // the stretch's record starts (my tap or another's): done for today here too, and the routine as the song starts (a
   // phone opening a second or more into it only sees the deck play); unheard here, the tape's little tune
-  $effect(() => {
-    const s = onStage;
-    if (s?.song !== SONG || s.at === started) return;
-    untrack(() => {
-      started = s.at;
-      stretched(date);
-      bump++;
-      if (s.elapsedMs > 1000) return;
-      if (!hearsMusic()) cue('stretch');
-      groupStretch(POSES, POSE_MS);
-    });
+  onStageStart(SONG, 'stretch', (fresh) => {
+    stretched(date);
+    bump++;
+    if (fresh) groupStretch(POSES, POSE_MS);
   });
 
   /** A tap on the scene (client px): true when the deck took it. Reach: a 44px target around the radio. Not ready (the

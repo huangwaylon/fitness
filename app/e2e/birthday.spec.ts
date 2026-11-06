@@ -25,6 +25,13 @@ test("うめ's birthday: hats, the cake clear of every control, confetti and し
   await tapFigure(page, '[data-cake] .official');
   await expect(page.locator('[data-cake="out"]')).toBeAttached();
   expect(await page.evaluate(() => (window as { __cues?: string[] }).__cues)).toContain('birthday-cake');
+  // a tap while it plays starts nothing over for everyone (it did: a new record, the song from the top on every phone)
+  const at = () => page.evaluate(() => (window as unknown as { __music: { stage(): { on: { isl?: { song: string | null; at: number } } } } }).__music.stage().on.isl);
+  const first = await at();
+  expect(first?.song).toBe('ev-happy-birthday');
+  await tapFigure(page, '[data-cake] .official');
+  await page.waitForTimeout(300); // hold: proving nothing happens (a restart is a new record within the tap)
+  expect(await at()).toEqual(first);
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   await page.reload();
   await expect(hudMenu(page)).toBeVisible();
