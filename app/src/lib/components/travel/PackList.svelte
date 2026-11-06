@@ -125,12 +125,12 @@
   }
 </script>
 
-<div class="pack" data-pack={trip.id} data-pack-editing={editing || undefined}>
+<div class="pack" data-pack={trip.id} data-pack-editing={editing || undefined} data-pack-mine={prog.mine} data-pack-total={prog.total}>
   <div class="prog" class:past>
     {#if editing}
       <span class="eh" data-pack-editbar>{t('travel.pack.editing')}{#if me === 'G'}<small>{t('travel.pack.guestNote')}</small>{/if}</span>
     {:else}
-      <span class="big q-title" data-pack-mine={prog.mine} data-pack-total={prog.total}>{prog.mine}<span class="of"> / {prog.total}</span></span>
+      <span class="big q-title">{prog.mine}<span class="of"> / {prog.total}</span></span>
       {#if past}<span class="pastl" data-pack-past>{t('travel.pack.past')}</span>{:else}<ProgressBar value={prog.mine} max={prog.total} label={t('travel.pack.mine')} />{/if}
     {/if}
     {#if me}
