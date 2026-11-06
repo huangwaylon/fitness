@@ -50,6 +50,25 @@ describe('NH’s waves washing ashore (swash.ts)', () => {
         expect([d.front, d.wet, d.covered]).toEqual([expect.closeTo(c.front, 6), expect.closeTo(c.wet, 6), c.covered]);
       }
   });
+  test('no line across the beach: from one coast point to the next the wave’s sheet and the wet sand change smoothly, at any time (the phase is never wrapped)', () => {
+    // (the user's 2026-11-06 report: the phase wrapped to 0 … 1 stepped the wave's count, and its reach, at a fixed
+    // place on each beach: the sheet and the foam cut square there, a hard line from the sand out into the water)
+    for (let k = 0; k < 60; k++) {
+      const t = 17.3 + k * 1.37;
+      for (const s of [1, 5, 10]) {
+        let prev: ReturnType<typeof swash> | null = null;
+        for (let x = -120; x <= 520; x += 1) {
+          const w = swash(s, t, x, -30);
+          if (prev) {
+            expect(Math.abs(Math.max(0, w.front) - Math.max(0, prev.front))).toBeLessThan(0.6);
+            // (the wet sand: a step only at the wave's own front, where it covers the sand)
+            if (w.covered === prev.covered) expect(Math.abs(w.wet - prev.wet)).toBeLessThan(0.12);
+          }
+          prev = w;
+        }
+      }
+    }
+  });
   test('the next run-up: within a wave’s cycle, and the wave starts there then', () => {
     for (const [x, z, t] of [[150, -30, 0], [-40, 400, 1234.5], [500, 1700, 3599]]) {
       const w = nextRunUp(t, x, z);
