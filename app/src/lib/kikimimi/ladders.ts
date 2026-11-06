@@ -9,10 +9,11 @@
 // Ten lines are level 4's own (`from`: the same take, its Japanese, note, staging and marks), twenty are new, with
 // natural reductions spelled in `tts` (§9) and their sound marks. Each new line follows bank4.ts's rules: `en` standard
 // spelling (digits allowed), `tts` as said (every number in words), the trap in `note` (≤ 40 字), a cast voice per
-// villager (bank4.ts CAST), a scenario seed and its tags.
+// villager (cast.ts CAST), a scenario seed and its tags.
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, Item, SceneId, SoundMark, Tags } from './bank.ts';
-import { BANK4, CAST } from './bank4.ts';
+import type { Item, SceneId, SoundMark, Tags } from './bank.ts';
+import { BANK4 } from './bank4.ts';
+import { g, single, tg } from './content/build.ts';
 import { SPEEDS, type Ladder } from './ladder.ts';
 
 /** A rung's question: what to listen for (Japanese), its choices (the right one first), `num` for a number's. */
@@ -40,10 +41,6 @@ export interface LadderSrc {
   /** Rung 4's chunk (in `en`, the blank) and its two near-sound forms. */
   chunk: readonly [string, string, string];
 }
-
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-const g = (at: string): SoundMark => ['drop', at, 'g'];
 
 export const LADDER_SRC: readonly LadderSrc[] = [
   // ---- level 4's lines --------------------------------------------------------------------------------------------
@@ -308,11 +305,9 @@ function lineOf(src: LadderSrc): Item {
     const { choices: _, answer: __, focus: ___, ask: ____, cond: _____, ...rest } = it; // (rungs are clean: speed is the lever)
     return { ...rest, id: src.id, type: 'gist', ja: it.ja.split('→')[0].trim(), choices: [], answer: 0 };
   }
-  const l = src.line, cast = CAST[l.who];
-  if (!cast) throw new Error(`kikimimi: ${l.who} has no cast voice`);
+  const l = src.line;
   return {
-    id: src.id, lv: 4, type: 'gist', en: l.en, ja: l.ja, speaker: l.who, voice: cast.slice(0, 2) as Accent, cast, choices: [], answer: 0,
-    note: l.note, tags: l.tags, ...(l.tts && { tts: l.tts }), ...(l.scene && { scene: l.scene }), ...(l.marks && { marks: l.marks })
+    ...single(4, 'gist', src.id, l.who, l.en, l.ja, l.note, [], l.tags), ...(l.tts && { tts: l.tts }), ...(l.scene && { scene: l.scene }), ...(l.marks && { marks: l.marks })
   };
 }
 

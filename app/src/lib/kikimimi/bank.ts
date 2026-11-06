@@ -29,8 +29,10 @@ export const levelAt = (rank: number): Level => (rank > 4 ? rank + 1 : rank) as 
 export const levelMark = (lv: number): string => (lv === 5 ? '📢' : '★'.repeat(levelRank(lv)));
 /** A cast voice of the neural TTS (docs/curriculum.md §9; 18 voices, 12 of them US: speech.ts SLOTS lists the ones that
  *  exist, scripts/tts/cast.json describes them): accent, gender, slot. Each villager speaks with a US one for good
- *  (bank4.ts CAST), a few with a UK or AU one too on the やま/ほし accent-exposure items (EXPOSURE). */
+ *  (cast.ts CAST), a few with a UK or AU one too on the やま/ほし accent-exposure items (EXPOSURE). */
 export type CastId = `${Accent}-${'f' | 'm'}${1 | 2 | 3 | 4 | 5 | 6}`;
+/** A cast voice's accent (us-f1 → us). */
+export const accentOf = (cast: CastId): Accent => cast.slice(0, 2) as Accent;
 
 /** The scenario generator's dimensions an item was made from (docs/curriculum.md §5): they drive the levers, review
  *  and coverage later. */
@@ -182,7 +184,7 @@ export function clipItems(it: Item): Item[] {
   const ids = clipIds(it);
   return it.lines.map((l, n): Item => {
     const { lines: _, tts: __, ...rest } = it;
-    return { ...rest, id: ids[n], en: l.en, ja: l.ja, speaker: l.who, voice: l.cast.slice(0, 2) as Accent, cast: l.cast, ...(l.tts && { tts: l.tts }), ...(l.cond && { cond: l.cond }) };
+    return { ...rest, id: ids[n], en: l.en, ja: l.ja, speaker: l.who, voice: accentOf(l.cast), cast: l.cast, ...(l.tts && { tts: l.tts }), ...(l.cond && { cond: l.cond }) };
   });
 }
 
