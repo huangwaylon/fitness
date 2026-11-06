@@ -504,6 +504,9 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await expect(view).toContainText('の レシピ');
   await expect(view.locator('input, button[data-recipe-item], [data-recipe-add], [data-recipe-save], [data-recipe-remove], [data-sv-step]')).toHaveCount(0);
   await expect(view.locator('[data-recipe-items] li')).toHaveCount(6);
+  // its picture: the ingredients' with one, 2 × 2 (たまねぎ, にんじん, ごはん … have one)
+  await expect(view.locator('[data-recipe-hero] [data-thumb=img]')).toHaveCount(Number(await view.locator('[data-recipe-hero]').getAttribute('data-recipe-hero')));
+  expect(Number(await view.locator('[data-recipe-hero]').getAttribute('data-recipe-hero'))).toBeGreaterThanOrEqual(2);
   expect(await overflowOf(page)).toEqual([]);
 
   await view.locator('[data-recipe-log]').click();

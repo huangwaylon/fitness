@@ -506,7 +506,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   the matching ones above the catalog's; a row: its name, who set it and how many servings, a serving's kcal. One →
   the amount for the recipe as a food (1人前 first, ぜんぶ, 100 g; the search's meal), logging an ordinary entry of mine
   on the day shown; its 「レシピを ひらく」 (left of ついか) opens it. ＋ レシピを つくる (under the search's field) opens a
-  new one. Mine opens in the editor (`FoodRecipe`): the name, なん人前 (−/＋, 1–20), the ingredients (each a row like a
+  new one. Mine opens in the editor (`FoodRecipe`): on top its picture (the first four of its ingredients with one, 2 × 2; one alone 160 px; none: nothing), the name, なん人前 (−/＋, 1–20), the ingredients (each a row like a
   meal's; a tap → the amount: ほぞん / けす), ＋ ざいりょうを ついか (the search and the amount, no meal: ついか puts it in
   the recipe), 1人前あたり and ぜんぶで live, then けす (asked twice: ほんとうに けす？) and ほぞん (waiting until something
   changed); both go back to the meal's search. Anyone else's: the same read-only, 「〇〇の レシピ」, with 「コピーして
