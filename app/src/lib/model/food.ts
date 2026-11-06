@@ -289,24 +289,21 @@ export function foodSeries(s: State, who: Who, today: LocalDate, n: FoodGoalOf =
   return { ...hit, goal: () => goal, met: goal === null ? undefined : (v) => goalMet(n, v, goal) };
 }
 
-/** The days a week's average on きろく covers. */
-const WEEK_DAYS = 7;
-
-/** A week's daily averages (きろく's weekly card): `from`…`to` the days it covers, `days` those with a meal (記録 n日),
+/** A range's daily averages (グラフ's average card): `from`…`to` the days it covers, `days` those with a meal (記録 n日),
  *  kcal (whole) and each nutrient (g, one decimal) over them; fibre over the days that know it (null: none does). */
-export interface FoodWeek { from: LocalDate; to: LocalDate; days: number; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null; al: number }
+export interface FoodAverage { from: LocalDate; to: LocalDate; days: number; kcal: number; p: number; fa: number; c: number; s: number; fi: number | null; al: number }
 
 /**
- * `who`'s average day over the WEEK_DAYS finished days up to `end` (a day with nothing logged left out, as グラフ's
- * averages: 記録なし, never a 0; a day's repeats counted), or null with no meal in them. The weekly card passes the day
- * shown, or yesterday when that's today: today is never finished.
+ * `who`'s average day over from..to (a day with nothing logged left out, as グラフ's averages: 記録なし, never a 0; a
+ * day's repeats counted), or null with no meal in them. グラフ's average card passes its range, ended at yesterday when
+ * it holds today: today is never finished.
  */
-export function foodWeek(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, end: LocalDate): FoodWeek | null {
-  const totals = dayTotals(s, who, end);
-  const from = addDays(end, 1 - WEEK_DAYS);
+export function foodAverage(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, from: LocalDate, to: LocalDate): FoodAverage | null {
+  if (to < from) return null;
+  const totals = dayTotals(s, who, to);
   const sum = emptyTotals();
   let days = 0, fiDays = 0;
-  for (let d = from; d <= end; d = addDays(d, 1)) {
+  for (let d = from; d <= to; d = addDays(d, 1)) {
     const t = totals.get(d);
     if (!t) continue;
     days += 1;
@@ -316,7 +313,7 @@ export function foodWeek(s: Pick<State, 'food' | 'foodRepeat'>, who: Who, end: L
   if (!days) return null;
   const avg = (v: number) => round1(v / days);
   return {
-    from, to: end, days, kcal: Math.round(sum.k / days), p: avg(sum.p), fa: avg(sum.fa), c: avg(sum.c), s: avg(sum.s),
+    from, to, days, kcal: Math.round(sum.k / days), p: avg(sum.p), fa: avg(sum.fa), c: avg(sum.c), s: avg(sum.s),
     fi: sum.fi === null ? null : round1(sum.fi / fiDays), al: avg(sum.al)
   };
 }

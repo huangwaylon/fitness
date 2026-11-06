@@ -1,10 +1,10 @@
 <script lang="ts">
-  // きろく's week (docs/design.md "Gohan"): the person's average day over the 7 finished days to the day shown
-  // (model/food.ts foodWeek: yesterday back on today, a day with nothing logged left out, 記録 n日), so one day over or
-  // under (a weekend) reads against the week: its kcal against the goal (within its band: 目標の はんい; else 目標より N
-  // kcal 少なめ / 多め), protein, fat, carbs, salt and fibre a day, and the PFC balance (PfcBar). Read-only. None with
-  // nothing logged in those days.
-  import type { FoodWeek } from '#lib/model/food.ts';
+  // グラフ's average card (docs/design.md "Gohan"): the person's average day over the range shown (model/food.ts
+  // foodAverage: the range's finished days, to yesterday when it holds today; a day with nothing logged left out, 記録
+  // n日), so a day over or under reads against the period: its kcal against the goal (within its band: 目標の範囲; else
+  // 目標より N kcal 少なめ / 多め), protein, fat, carbs, salt and fibre a day, and the PFC balance (PfcBar). Read-only.
+  // None with nothing logged in those days.
+  import type { FoodAverage } from '#lib/model/food.ts';
   import type { FoodGoalOf } from '#lib/contract/food.ts';
   import { goalMet } from '#lib/contract/goals.ts';
   import { md } from '#lib/i18n/format.ts';
@@ -14,33 +14,33 @@
   import { goalChip } from './foodUi.ts';
   import PfcBar from './PfcBar.svelte';
 
-  let { week, goals }: { week: FoodWeek; goals: Record<FoodGoalOf, number | null> } = $props();
+  let { avg, goals }: { avg: FoodAverage; goals: Record<FoodGoalOf, number | null> } = $props();
 
   const kGoal = $derived(goals.k);
-  const chip = $derived(kGoal === null ? null : goalMet('k', week.kcal, kGoal) ? { text: t('food.week.ok'), over: false, ok: true } : { ...goalChip(week.kcal, kGoal, false), ok: false });
-  const cells = $derived((['p', 'fa', 'c', 's', 'fi'] as const).map((k) => ({ k, v: week[k] })));
+  const chip = $derived(kGoal === null ? null : goalMet('k', avg.kcal, kGoal) ? { text: t('food.avg.ok'), over: false, ok: true } : { ...goalChip(avg.kcal, kGoal, false), ok: false });
+  const cells = $derived((['p', 'fa', 'c', 's', 'fi'] as const).map((k) => ({ k, v: avg[k] })));
 </script>
 
-<section class="card wk" data-food-week aria-labelledby="fw-h">
+<section class="card wk" data-food-avg aria-labelledby="fw-h">
   <header>
-    <h3 id="fw-h">{t('food.week.head')}</h3>
-    <small data-week-range>{t('food.week.range', { from: md(week.from), to: md(week.to), n: week.days })}</small>
+    <h3 id="fw-h">{t('food.avg.head')}</h3>
+    <small data-avg-range>{t('food.avg.range', { from: md(avg.from), to: md(avg.to), n: avg.days })}</small>
   </header>
   <div class="srow">
-    <span class="lab">{t('food.week.kcal')}</span>
-    <b class="total money" data-week-kcal>{kcalText(week.kcal)}</b>
-    {#if chip}<span class="chg" class:over={chip.over} class:ok={chip.ok} data-week-chip>{chip.text}</span>{/if}
+    <span class="lab">{t('food.avg.kcal')}</span>
+    <b class="total money" data-avg-kcal>{kcalText(avg.kcal)}</b>
+    {#if chip}<span class="chg" class:over={chip.over} class:ok={chip.ok} data-avg-chip>{chip.text}</span>{/if}
     {#if kGoal !== null}<small class="goal">{goalLabel('k', kGoal)}</small>{/if}
   </div>
   <dl class="cells">
     {#each cells as c (c.k)}
-      <div class="cell" data-week-nutrient={c.k}>
+      <div class="cell" data-avg-nutrient={c.k}>
         <dt>{t(`food.${c.k}`)}</dt>
         <dd class="money">{c.v === null ? t('food.unknown') : t('food.g', { n: c.v.toFixed(1) })}</dd>
       </div>
     {/each}
   </dl>
-  <PfcBar id="week" p={week.p} fa={week.fa} c={week.c} al={week.al} />
+  <PfcBar id="avg" p={avg.p} fa={avg.fa} c={avg.c} al={avg.al} />
 </section>
 
 <style>

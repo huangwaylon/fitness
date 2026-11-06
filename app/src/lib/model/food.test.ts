@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { foldEvents, reduce } from './state.ts';
-import { copySources, customs, foodDay, foodEntries, foodGoal, foodSeries, foodWeek, mealItems, mealProtein, pfcShare, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
+import { copySources, customs, foodDay, foodEntries, foodGoal, foodSeries, foodAverage, mealItems, mealProtein, pfcShare, proteinDefault, recipes, repeatOn, repeats, setGoal } from './food.ts';
 import { mealProteinTarget } from './profile.ts';
 import { rangeFor, seriesBuckets, seriesStats } from './health.ts';
 import { addDays } from '#lib/time/dates.ts';
@@ -384,8 +384,12 @@ describe('the balance views: a meal’s protein, the share of energy, a week’s
       ]
     });
     // 10-28: 312 kcal, P 5, F 0.6, C 74.2, no fibre known; 11-01: 152 kcal, P 11.4, F 1.2, C 19.4, fibre 10.2, alcohol 7.4
-    expect([foodWeek(s, 'A', '2026-11-03'), foodWeek(s, 'A', '2026-10-26'), foodWeek(s, 'B', '2026-11-03')?.days]).toEqual([
-      { from: '2026-10-28', to: '2026-11-03', days: 2, kcal: 232, p: 8.2, fa: 0.9, c: 46.8, s: 0, fi: 10.2, al: 3.7 }, null, 1
+    expect([
+      foodAverage(s, 'A', '2026-10-28', '2026-11-03'), foodAverage(s, 'A', '2026-10-20', '2026-10-26'),
+      foodAverage(s, 'B', '2026-10-28', '2026-11-03')?.days, foodAverage(s, 'A', '2026-11-03', '2026-11-02'),
+      foodAverage(s, 'A', '2026-10-27', '2026-11-04')?.days
+    ]).toEqual([
+      { from: '2026-10-28', to: '2026-11-03', days: 2, kcal: 232, p: 8.2, fa: 0.9, c: 46.8, s: 0, fi: 10.2, al: 3.7 }, null, 1, null, 4
     ]);
   });
 });

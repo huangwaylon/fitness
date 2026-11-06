@@ -2,20 +2,21 @@
   // ごはん's グラフ tab (docs/design.md "Gohan"): けんこう's range row (‹ the range › きょう, then けんこう's period
   // dropdown, Food's period; a horizontal drag on a chart turns the page: RangePager), then the kcal eaten and protein,
   // fat, carbs and salt (BarCard, けんこう's card: a bar per day / the daily average per week or month, met the goal's
-  // way, the flat average line). Each card's goal at its upper right, mine to set (GoalEdit), anyone else's read-only.
+  // way, the flat average line), the range's average day on top (FoodAverage). Each card's goal at its upper right, mine to set (GoalEdit), anyone else's read-only.
   // One callout open.
   import '#lib/i18n/kenkou.ts'; // けんこう's strings: the periods, the range row
   import type { LocalDate, Who } from '#lib/types.ts';
   import { PERIODS, type Period } from '#lib/model/health.ts';
-  import { foodSeries, setGoal } from '#lib/model/food.ts';
-  import { FOOD_GOAL_OF } from '#lib/contract/food.ts';
+  import { foodAverage, foodGoal, foodSeries, setGoal } from '#lib/model/food.ts';
+  import { FOOD_GOAL_OF, type FoodGoalOf } from '#lib/contract/food.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { localDateAt } from '#lib/time/dates.ts';
+  import { addDays, localDateAt } from '#lib/time/dates.ts';
   import { t } from '#lib/i18n/index.ts';
   import RangeNav from '../health/RangeNav.svelte';
   import RangeLabel from '../health/RangeLabel.svelte';
   import Pick from '../health/Pick.svelte';
   import BarCard from '../health/BarCard.svelte';
+  import FoodAverage from './FoodAverage.svelte';
   import { goalName, kcalWarn, saveGoal } from '../health/goals.ts';
   import { RangePager } from '../health/pager.svelte.ts';
 
@@ -31,6 +32,9 @@
   const any = $derived(!!all?.[0].ds.vals.some((v) => v !== null));
 
   const pager = new RangePager(() => ({ period, today, first: all?.[0].ds.first ?? today }));
+  /** The range's average day (its finished days: to yesterday when it holds today) and whose goals it reads against. */
+  const avg = $derived(m && pager.range ? foodAverage(m.state, who, pager.range.from, pager.range.to < today ? pager.range.to : addDays(today, -1)) : null);
+  const goals = $derived(Object.fromEntries(FOOD_GOAL_OF.map((n) => [n, m ? foodGoal(m.state, who, n, m.now) : null])) as Record<FoodGoalOf, number | null>);
   /** A new period: no slide, no callout (as けんこう's setPeriod). */
   let shown: Period | null = null;
   $effect.pre(() => {
@@ -50,6 +54,7 @@
     {/snippet}
   </RangeNav>
 
+  {#if avg}<FoodAverage {avg} {goals} />{/if}
   {#each all as { n, ds } (n)}
     <BarCard id={n} {ds} {range} {today} p={who} {name} title={n === 'k' ? t('food.chart.head') : goalName(n)} empty={!any} food
       now={setGoal(m.state, who, n)} start={ds.goal(0)} onsave={mine ? (v) => saveGoal(n, who, v) : null} warn={n === 'k' && mine ? kcalWarn(m.state, who, m.now) : null}

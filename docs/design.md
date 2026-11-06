@@ -434,11 +434,6 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   **Tap counts** from the open sheet (e2e food.spec, Playwright WebKit as an iPhone 15; before → now): the same meal as
   yesterday 3 a food from さいきん → 1; a new 3-item breakfast (ご飯 · みそ汁 · 卵) 9 + 7 characters → 5 + 7; a konbini
   lunch (おにぎり ×2 · サラダチキン) 8 + 10 → 6 + 10; a 650 kcal meal out 4 + 8 (a new マイ食品) → 3 + 3.
-- **The week** (`FoodWeek`, `model/food.ts` foodWeek), after the four meals: さいきん 7日の 平均, the 7 finished days to the
-  day shown (to yesterday on today: today is never finished; 「10/28〜11/3 · 記録 n日」), a day with nothing logged left out
-  as グラフ's averages: the average day's kcal against the goal (目標の はんい within its band, else 目標より N kcal 少なめ /
-  多め, so one big day reads against the week), its protein, fat, carbs, salt and fibre a day, and its PFC balance. None
-  when those days hold no meal.
 - **Search:** a 16px field (no search mid-IME composition), its ✕ the app's 44px lipped round button; under it, side
   by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる, hidden once
   something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,
@@ -494,7 +489,11 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   verbs. Tapping one of its items opens it; ほぞん or けす changes that day only: the day leaves the repeat then (its
   items become its own, in one go; unmarked under the same chip); ‹ changes nothing.
 - **グラフ (the グラフ tab;** what was eaten only; the calories burned are けんこう's 🍐 ムーブ card**):** its range row (`health/RangeNav`, `RangeLabel`, `RangePager`: けんこう's paging, swipe included) with けんこう's period dropdown (`health/Pick`) after きょう (the
-  range's unit wraps in the narrower middle), then たべた カロリー (けんこう's `BarCard`, `BarChart` and `ChartCard`; `model/food.ts` foodSeries, one pass over the record up to today, read by
+  range's unit wraps in the narrower middle), then **この期間の平均** (`FoodAverage`, `model/food.ts` foodAverage; moved off
+  きろく, the user 2026-11-07): the average day over the range's finished days (to yesterday when it holds today;
+  「10/29〜11/3 · 記録 n日」), a day with nothing logged left out: its kcal against the goal (目標の範囲 within its band,
+  else 目標より N kcal 少なめ / 多め), protein, fat, carbs, salt and fibre a day, and its PFC balance; none when those days
+  hold no meal. Then たべた カロリー (けんこう's `BarCard`, `BarChart` and `ChartCard`; `model/food.ts` foodSeries, one pass over the record up to today, read by
   health.ts's bucket and stat rules): a bar per day (foodDay's total, repeats included) or per week / month (the daily
   average of its days with a meal), in the person's colour, solid when the goal was met its way (as けんこう's; every bar
   solid without a goal); today outlined and uncounted; a day with nothing logged is

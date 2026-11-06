@@ -22,7 +22,7 @@
   import { flushSync, tick, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
   import { customGrams, customSnap, FOOD_GOAL_OF, MEALS, newFoodId, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
-  import { copySources, customs, foodDay, foodEntries, foodGoal, foodWeek, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
+  import { copySources, customs, foodDay, foodEntries, foodGoal, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
   import { mealProteinTarget } from '#lib/model/profile.ts';
   import {
     copyMeal, detachDay, editFood, logCustom, logFood, logRecipe, refreshFood, removeCustom, removeFood, removeRecipe, saveCustom, saveRecipe, startRepeat,
@@ -45,7 +45,6 @@
   import FoodSummary from './FoodSummary.svelte';
   import { kcalWarn, saveGoal } from '../health/goals.ts';
   import FoodMeal from './FoodMeal.svelte';
-  import FoodWeek from './FoodWeek.svelte';
   import FoodSearch from './FoodSearch.svelte';
   import FoodAmount from './FoodAmount.svelte';
   import FoodCredits from './FoodCredits.svelte';
@@ -104,8 +103,6 @@
   const goals = $derived(Object.fromEntries(FOOD_GOAL_OF.map((n) => [n, m ? foodGoal(m.state, who, n, m.now) : null])) as Record<FoodGoalOf, number | null>);
   /** A meal's protein to aim for: a third of the day's (profile.ts mealProteinTarget). */
   const ptarget = $derived(mealProteinTarget(goals.p));
-  /** The week's average day: the 7 finished days to the day shown (today's not finished: to yesterday). */
-  const avgWeek = $derived(m && date ? foodWeek(m.state, who, date < today ? date : addDays(today, -1)) : null);
   const byMeal = (k: Meal) => day?.entries.filter((e) => e.m === k) ?? [];
   const recent = $derived(m ? recentOf(foodEntries(m.state, me)) : []);
   /** My repeat of a meal still going (the one to manage; an ended one only fills its days). */
@@ -567,7 +564,6 @@
             onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget}
             {fresh} onfresh={refresh} />
         {/each}
-        {#if avgWeek}<FoodWeek week={avgWeek} {goals} />{/if}
         <FoodCredits />
       {/if}
     {/if}
