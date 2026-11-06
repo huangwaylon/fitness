@@ -383,14 +383,13 @@
   .kk-body > :global(*) { flex: none; }
   /* a level's actions stay at the foot of the screen, even on a short phase */
   .kk-body > :global(.level-acts) { margin-top: auto; }
-  .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .center { display: grid; justify-items: center; align-content: center; gap: 14px; flex: 1 0 auto; text-align: center; padding: 12px 0; }
   .say { margin: 0; font: 700 var(--fs-talk)/1.4 var(--font-ui); }
   .say small { display: block; margin-top: 4px; font-size: var(--fs-s); color: var(--text-soft); }
   .idle .btn { width: 100%; }
   .invite { width: 100%; display: grid; gap: 12px; padding: 16px; box-sizing: border-box; }
   .num {
-    font: 700 96px/1 var(--font-num, var(--font-ui)); color: var(--coral-text); text-shadow: 0 4px 0 var(--lip);
+    font: 700 96px/1 var(--font-num); color: var(--coral-text); text-shadow: 0 4px 0 var(--lip);
     animation: count 900ms var(--ease-bounce) both;
   }
   /* 「よーい」: a word, not a digit (the same line's height, so 3 doesn't jump) */

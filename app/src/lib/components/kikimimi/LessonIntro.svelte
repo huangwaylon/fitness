@@ -37,7 +37,6 @@
 </div>
 
 <style>
-  .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .intro { display: grid; justify-items: center; gap: 10px; padding: 18px 16px; text-align: center; }
   .unit { margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .name { margin: 0; font: 700 var(--fs-title)/1.2 var(--font-ui); }

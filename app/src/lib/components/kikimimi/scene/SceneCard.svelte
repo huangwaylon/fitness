@@ -53,8 +53,8 @@
         <OfficialArt key={villagerArt(w)} alt={name(w)} size="min(150px, 66%)" eager />
       </span>
     {/each}
-    <div class="say {side(speaking)}" aria-label={t('kiki.listen')}>
-      <span class="notes" aria-hidden="true">♪…</span>
+    <div class="say {side(speaking)}">
+      <span class="notes" aria-hidden="true">♪…</span><span class="sr-only">{t('kiki.listen')}</span>
       <ClipBar {bar} {now} />
     </div>
   {/if}
@@ -75,7 +75,7 @@
   /* a frame over the room: the room blurred back */
   .framed .bd { filter: blur(3px) saturate(.8) brightness(1.04); transform: scale(1.06); }
   /* no backdrop of its own: paper */
-  .paper { background: radial-gradient(130% 100% at 50% 30%, var(--c-cream), color-mix(in srgb, var(--c-paper, #f3e3bd) 80%, #e6cf9e)); }
+  .paper { background: radial-gradient(130% 100% at 50% 30%, var(--c-cream), color-mix(in srgb, var(--c-paper) 80%, #e6cf9e)); }
   .place, .chan {
     position: absolute; top: 10px; z-index: 3; padding: 4px 11px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.3 var(--font-ui);
   }

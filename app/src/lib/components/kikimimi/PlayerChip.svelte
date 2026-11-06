@@ -30,7 +30,7 @@
     {#if state === 'answered'}<span class="badge ok" aria-hidden="true">✓</span>
     {:else if state === 'right'}<span class="badge mk" aria-hidden="true"><Mark id="sparkle" /></span>
     {:else if state === 'wrong'}<span class="badge mk" aria-hidden="true"><Mark id="sweat" /></span>{/if}
-    {#if ready}<span class="read" aria-label={t('kiki.readyTap')}>📖</span>{/if}
+    {#if ready}<span class="read" role="img" aria-label={t('kiki.readyTap')}>📖</span>{/if}
   </span>
   <span class="nm">{name}</span>
   {#if note}<span class="note">{note}</span>{/if}
@@ -52,7 +52,7 @@
   .mk { width: 26px; height: 26px; animation: pop 320ms var(--ease-bounce) both; }
   .mk :global(svg) { width: 100%; height: 100%; }
   .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .note { font: 700 var(--fs-xs)/1.2 var(--font-num, var(--font-ui)); color: var(--text-soft); }
+  .note { font: 700 var(--fs-xs)/1.2 var(--font-num); color: var(--text-soft); }
   @keyframes pop { from { transform: scale(.2); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .ok, .mk, .read { animation: none; } }
 </style>

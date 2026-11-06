@@ -32,7 +32,7 @@
   .tile { position: relative; border-radius: 14px; overflow: hidden; display: grid; place-items: center; background: var(--t); box-shadow: inset 0 0 0 2px rgba(74, 58, 44, .1); min-height: 0; }
   /* the head high in its tile (a horn or ears never cut at the top), its chin clear of the name tag */
   .head { line-height: 0; align-self: start; margin-top: 5px; }
-  .tile.speak { box-shadow: inset 0 0 0 4px var(--c-yuzu), 0 0 0 2px var(--c-yuzu-lip, var(--c-yuzu)); }
+  .tile.speak { box-shadow: inset 0 0 0 4px var(--c-yuzu), 0 0 0 2px var(--c-yuzu-lip); }
   .tile.talk .head { animation: bob 520ms ease-in-out infinite alternate; }
   .lbl {
     position: absolute; left: 4px; bottom: 4px; display: inline-flex; gap: 3px; align-items: center; padding: 1px 6px; border-radius: var(--r-pill);

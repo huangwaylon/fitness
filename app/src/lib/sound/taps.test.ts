@@ -63,7 +63,8 @@ const NONE: Record<string, string> = {
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks',
   'lib/components/kikimimi/Lobby.svelte': 'the level already chosen does nothing',
   'lib/components/kikimimi/KikimimiSheet.svelte': 'the lobby tab already chosen does nothing',
-  'lib/components/kikimimi/Play.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)'
+  'lib/components/kikimimi/Play.svelte': 'よみおわった once tapped does nothing',
+  'lib/components/kikimimi/ChoiceGrid.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)'
 };
 
 /** A real `disabled` swallows the tap (no boop). Only where silence is right; elsewhere use aria-disabled. */
