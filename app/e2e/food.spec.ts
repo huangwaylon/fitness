@@ -21,7 +21,7 @@ async function openFood(page: Page, as = '', date = `&date=${DATE}`) {
 /** What sticks out past the open sheet's right edge (its first three, by class): nothing, on every level (once a
  *  level's slide-in has played). */
 const overflowOf = (page: Page) => sheet(page).evaluate(async (d) => {
-  await Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished));
+  await Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))); // (one cancelled: done too)
   const right = d.getBoundingClientRect().right;
   return [...d.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > right + 0.5).map((e) => e.className).slice(0, 3);
 });
@@ -504,6 +504,9 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await expect(view).toContainText('の レシピ');
   await expect(view.locator('input, button[data-recipe-item], [data-recipe-add], [data-recipe-save], [data-recipe-remove], [data-sv-step]')).toHaveCount(0);
   await expect(view.locator('[data-recipe-items] li')).toHaveCount(6);
+  // its picture: the ingredients' with one, 2 × 2 (たまねぎ, にんじん, ごはん … have one)
+  await expect(view.locator('[data-recipe-hero] [data-thumb=img]')).toHaveCount(Number(await view.locator('[data-recipe-hero]').getAttribute('data-recipe-hero')));
+  expect(Number(await view.locator('[data-recipe-hero]').getAttribute('data-recipe-hero'))).toBeGreaterThanOrEqual(2);
   expect(await overflowOf(page)).toEqual([]);
 
   await view.locator('[data-recipe-log]').click();
@@ -634,7 +637,7 @@ test('＋ focuses the search; counted portions step whole, rice by half; drinks 
   await sheet(page).locator('[data-food-q]').fill('ごはん');
   const rice = sheet(page).locator('[data-food-results] button', { hasText: 'ごはん（精白米）' }).first();
   await expect(rice).toBeVisible();
-  await expect(rice.locator('.kc small')).toHaveText('茶碗1杯（150g）'); // the portion with its weight, once
+  await expect(rice.locator('.kc small')).toHaveText('茶碗1杯 150g'); // the portion in a few words, its weight once
   await rice.click();
   await sheet(page).locator('[data-step="1"]').click();
   await expect(sheet(page).locator('.mult')).toHaveText('×1.5'); // 茶碗: by half
@@ -708,10 +711,15 @@ test('search rows: a product’s brand on its second line, the same name, brand 
   const keys = await rows.evaluateAll((bs) => bs.map((b) => `${b.querySelector('.nm')?.textContent}|${b.querySelector('[data-brand]')?.textContent ?? ''}|${b.getAttribute('data-per100')}`));
   expect(new Set(keys).size).toBe(keys.length);
   expect(await overflowOf(page)).toEqual([]);
+  // with nothing else on its second line, ✓n goes there: the row two lines, as tall as the rest
+  await sheet(page).locator('[data-food-q]').fill('豚ロース 赤肉');
+  const lean = rows.filter({ has: page.locator('.nm', { hasText: /^豚ロース 赤肉 生$/ }) });
+  await expect(lean.locator('.meta [data-verified]')).toHaveCount(1);
+  expect((await lean.boundingBox())!.height).toBeLessThanOrEqual(72);
 });
 
-// The everyday name (foodUi.ts glossOf): an older snapshot's catalogue name now, else the data's vetted gloss (none
-// shipped yet: never a raw alias or the English); and each row's category tile (FoodThumb, 48 px; the recipe's
+// The everyday name (foodUi.ts glossOf): an older snapshot's catalogue name now, else the data's vetted gloss (never a
+// raw alias or the English); and each row's category tile (FoodThumb, 48 px; the recipe's
 // ingredients 40 px), the rows no taller.
 test('search rows: a category tile, no raw alias or English under the name, the rows as tall; the recipe’s ingredients’ tiles and 鶏もも肉', async ({ page }) => {
   await openFood(page, '&as=B');
@@ -719,7 +727,7 @@ test('search rows: a category tile, no raw alias or English under the name, the 
   await sheet(page).locator('[data-food-q]').fill('キャッサバでん粉');
   const row = sheet(page).locator('[data-food-results] button.it', { hasText: 'キャッサバでん粉' }).first();
   await expect(row).toBeVisible({ timeout: 15_000 });
-  await expect(row.locator('[data-gloss]')).toHaveCount(0); // its alias タピオカ: until the data vets it
+  await expect(row.locator('[data-gloss]')).toHaveCount(0); // its alias タピオカ: not a vetted gloss
   await expect(row.locator('.meta')).not.toContainText('100gあたり');
   await sheet(page).locator('[data-food-q]').fill('コーヒー牛乳');
   const milk = sheet(page).locator('[data-food-results] button.it', { hasText: 'コーヒー牛乳' }).first();
@@ -730,7 +738,7 @@ test('search rows: a category tile, no raw alias or English under the name, the 
   await expect(rows.first()).toBeVisible();
   for (let i = 0; i < 3; i++) {
     const th = rows.nth(i).locator('[data-thumb]');
-    await expect(th).toHaveAttribute('data-thumb', 'cat'); // no pictures yet: the category's tile
+    await expect(th).toHaveAttribute('data-thumb', /^(cat|img)$/); // a picture, else the category's tile
     const [b, r] = await Promise.all([th.boundingBox(), rows.nth(i).boundingBox()]);
     expect([b!.width, b!.height].map(Math.round)).toEqual([48, 48]);
     expect(r!.height).toBeLessThanOrEqual(72);
@@ -782,13 +790,119 @@ test('search: one row per food in its states, the state filled; 豚ロース 焼
   const loin = rows.filter({ has: page.locator('.nm', { hasText: /^豚ロース 脂身つき$/ }) });
   await expect(loin).toHaveCount(1, { timeout: 15_000 });
   await expect(loin.locator('[data-state]')).toHaveText('生');
-  await expect(loin.locator('.st')).toHaveText(['生', 'ゆで', '焼き']); // the shown one, then the rest in process order
+  await expect(loin.locator('.sts')).toHaveText('生・ゆで・焼き'); // in process order, plain text
   await expect(rows.filter({ hasText: /豚ロース 脂身つき (焼き|ゆで)$/ })).toHaveCount(0);
   await sheet(page).locator('[data-food-q]').fill('豚ロース 焼き');
   await expect(rows.first().locator('[data-state]')).toHaveText('焼き');
   await sheet(page).locator('[data-food-q]').fill('焼きいも');
   await expect(rows.first().locator('.nm')).toHaveText(/^焼きいも(✓|$)/);
   await expect(rows.first().locator('[data-state]')).toHaveText('焼き');
+  expect(await overflowOf(page)).toEqual([]);
+});
+
+// The pictures (static/food-img: generated イメージ in sprite sheets, lib/food/images.ts imgOf): a food with one shows
+// it in its row's box (no size change) and on its amount at 160 px with the イメージ badge; a sheet that fails to load
+// leaves the category's tile; データの出典 says they are generated.
+test('pictures: ごはん’s row and amount show its イメージ (badge, alt), the box unchanged; a broken sheet keeps the tile; the credit', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('ごはん');
+  const rice = sheet(page).locator('[data-food-results] button.it', { hasText: 'ごはん（精白米）' }).first();
+  const th = rice.locator('[data-thumb]');
+  await expect(th).toHaveAttribute('data-thumb', 'img', { timeout: 15_000 });
+  const b = (await th.boundingBox())!;
+  expect([b.width, b.height].map(Math.round)).toEqual([48, 48]);
+  await rice.click();
+  const pic = sheet(page).locator('[data-food-pic]');
+  await expect(pic.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'img');
+  await expect(pic).toHaveAccessibleName('ごはん（精白米）の イメージを おおきく');
+  await expect(pic.locator('.badge')).toHaveText('イメージ');
+  const p = (await pic.locator('[data-thumb]').boundingBox())!;
+  expect([p.width, p.height].map(Math.round)).toEqual([160, 160]);
+  expect(await overflowOf(page)).toEqual([]);
+  // a tap: it enlarged, its name, the badge and that it is generated; Esc, ✕ and a tap outside close it, the focus back
+  const big = page.locator('[data-food-photo]');
+  await pic.click();
+  await expect(big).toBeVisible();
+  await expect(big.getByRole('img', { name: 'ごはん（精白米）の イメージ' })).toBeVisible();
+  await expect(big.locator('h3')).toHaveText('ごはん（精白米）');
+  await expect(big.locator('.badge')).toHaveText('イメージ');
+  await expect(big.locator('[data-photo-credit]')).toHaveText('AI生成の イメージ（実物と ちがう ことが あります）');
+  await expect(big).not.toContainText('水稲めし'); // never MEXT's official name (こめ［水稲めし］精白米 うるち米)
+  await page.keyboard.press('Escape');
+  await expect(big).toHaveCount(0);
+  await expect(pic).toBeFocused();
+  await expect(page.locator('dialog[open]')).toHaveCount(1); // the sheet stays
+  await pic.click();
+  await big.getByRole('button', { name: 'とじる' }).click();
+  await expect(big).toHaveCount(0);
+  await expect(pic).toBeFocused();
+  await pic.click();
+  await page.mouse.click(10, 10); // outside its card
+  await expect(big).toHaveCount(0);
+  await sheet(page).getByRole('button', { name: 'もどる' }).click();
+  await sheet(page).getByRole('button', { name: 'もどる' }).click();
+  await sheet(page).locator('[data-food-credits] button').click();
+  await expect(sheet(page).locator('[data-credit-img]')).toContainText('AI生成の イメージ');
+});
+
+test('pictures: a sheet that fails to load leaves the category’s tile, no broken image', async ({ page }) => {
+  await page.route('**/food-img/t-*.webp', (r) => r.abort());
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('ごはん');
+  const th = sheet(page).locator('[data-food-results] button.it', { hasText: 'ごはん（精白米）' }).first().locator('[data-thumb]');
+  await expect(th).toBeVisible({ timeout: 15_000 });
+  await expect(th.locator('img')).toHaveCount(0); // the failed cell is taken out
+  await expect(th).toHaveAttribute('data-thumb', 'cat');
+  await expect(th).toHaveAttribute('data-cat', '主食');
+});
+
+// じょうたい (a food in its states): one chip per state with that state's kcal; a portion label the state also has stays
+// picked at its own grams (1/2枚 125 g 生 → 90 g 焼き), typed grams stay; the line says why for 生 or 乾; ついか logs the
+// state picked, and さいきん keeps it.
+test('じょうたい: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼き, さいきん keeps it; typed grams stay; スパゲッティ 乾’s line', async ({ page }) => {
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('鶏もも');
+  await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^鶏もも肉 皮つき(✓|$)/ }) }).click({ timeout: 15_000 });
+  const chips = sheet(page).locator('[data-states] [data-state]');
+  await expect(chips).toHaveText([/^生/, /^ゆで/, /^焼き/]);
+  await expect(sheet(page).locator('[data-state=生]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-state-why]')).toHaveText('パックの重さなら 生');
+  await expect(sheet(page).locator('.chip[aria-pressed=true][data-portion]')).toContainText('1/2枚');
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('125');
+  await expect(sheet(page).locator('[data-state=焼き] small')).toHaveText('198 kcal'); // its kcal at 90 g, before it is picked
+  await sheet(page).locator('[data-state=焼き]').click();
+  await expect(sheet(page).locator('[data-state=焼き]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('.card.head h3')).toHaveText('鶏もも肉 皮つき 焼き');
+  await expect(sheet(page).locator('.chip[aria-pressed=true][data-portion]')).toContainText('1/2枚');
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('90');
+  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('198');
+  await expect(sheet(page).locator('[data-state-why]')).toHaveCount(0);
+  // typed grams stay typed across a switch
+  await sheet(page).locator('[data-grams]').fill('150');
+  await sheet(page).locator('[data-state=ゆで]').click();
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('150');
+  await sheet(page).locator('[data-state=焼き]').click();
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('150');
+  await sheet(page).locator('[data-done]').click();
+  await expect(sheet(page).locator('[data-food-added] [data-added]').first()).toContainText('鶏もも肉 皮つき 焼き');
+  // さいきん: the state as logged, its amount opened on it
+  await sheet(page).locator('[data-food-q]').fill('');
+  const recent = sheet(page).locator('[data-food-recent] button.it').first();
+  await expect(recent.locator('.nm')).toHaveText('鶏もも肉 皮つき 焼き');
+  await recent.click();
+  await expect(sheet(page).locator('[data-state=焼き]')).toHaveAttribute('aria-pressed', 'true');
+  await sheet(page).getByRole('button', { name: 'もどる' }).click();
+  // スパゲッティ: ゆで by default, no line; 乾 first, its line
+  await sheet(page).locator('[data-food-q]').fill('スパゲッティ');
+  await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^スパゲッティ(✓|$)/ }) }).first().click();
+  await expect(chips.first()).toHaveText(/^乾/);
+  await expect(sheet(page).locator('[data-state=ゆで]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-state-why]')).toHaveCount(0);
+  await sheet(page).locator('[data-state=乾]').click();
+  await expect(sheet(page).locator('[data-state-why]')).toHaveText('ゆでる前の重さなら 乾');
   expect(await overflowOf(page)).toEqual([]);
 });
 

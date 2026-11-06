@@ -3,7 +3,8 @@
 // finger, with real touch taps (on a phone with a notch the ✕ sits near the HUD) and a pointerdown → pointerup →
 // click sequence, from the health popup's ✕ nor from the panel's.
 import { expect, test, type Page } from './fixtures.ts';
-import { hudBells, hudMenu, openRewards } from './hud.ts';
+import { islandUp } from './island.ts';
+import { hudBells, openRewards } from './hud.ts';
 
 const panel = (page: Page) => page.locator('dialog[open]');
 const center = async (page: Page, sel: string) => {
@@ -45,7 +46,7 @@ async function roundTrip(page: Page, tap: (x: number, y: number) => Promise<void
 test('no tap falls through to the HUD: the health popup’s ✕, and the panel’s', async ({ page }) => {
   await notch(page);
   await page.goto('?demo&date=2026-11-04T12:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await roundTrip(page, (x, y) => page.touchscreen.tap(x, y));
   await roundTrip(page, (x, y) => pointerTap(page, x, y));
   // the panel's ✕, then nothing under it acts (no reopen, no health popup)

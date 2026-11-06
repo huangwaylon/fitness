@@ -39,7 +39,9 @@
    "mext:06135",
    "dishes:furofuki-daikon",
    "dishes:oden-daikon",
-   "eatout:oden_daikon"
+   "eatout:oden_daikon",
+   "maff_kyodo:furofukidaikon_aichi",
+   "maff_kyodo:furofukidaikon_kyoto"
   ]
  },
  {
@@ -146,7 +148,8 @@
   "ja": "ミニトマト",
   "desc": "a small cluster of red cherry tomatoes, glossy round, some on a green vine",
   "items": [
-   "mext:06183"
+   "mext:06183",
+   "kurume:174"
   ]
  },
  {
@@ -579,7 +582,8 @@
   "ja": "いよかん",
   "desc": "an iyokan citrus, a large deep orange fruit with glossy thick peel, one half cut showing segments",
   "items": [
-   "mext:07018"
+   "mext:07018",
+   "kumagaya:00662"
   ]
  },
  {
@@ -702,7 +706,8 @@
   "ja": "さくらんぼ",
   "desc": "a few Japanese cherries, glossy bright red and yellow-blushed cherries on long stems",
   "items": [
-   "mext:07070"
+   "mext:07070",
+   "toyonaka:267633"
   ]
  },
  {
@@ -766,7 +771,8 @@
   "ja": "ぶどう",
   "desc": "a bunch of purple-black Kyoho grapes, large round grapes with a dusty bloom",
   "items": [
-   "mext:07116"
+   "mext:07116",
+   "toyonaka:268115"
   ]
  },
  {
@@ -1049,7 +1055,8 @@
   "ja": "ところてん",
   "desc": "tokoroten, long translucent pale noodles of agar jelly in a glass dish with a little vinegar sauce and nori",
   "items": [
-   "mext:09026"
+   "mext:09026",
+   "maff_kyodo:36_12_shizuoka"
   ]
  },
  {
@@ -1132,7 +1139,9 @@
   "desc": "two Japanese aji fry, butterflied horse mackerel fillets in crisp golden panko, fan-shaped, with shredded cabbage",
   "items": [
    "mext:10390",
-   "dishes:aji-fry"
+   "dishes:aji-fry",
+   "toyonaka:125962",
+   "kumagaya:277"
   ]
  },
  {
@@ -1165,7 +1174,8 @@
   "ja": "あゆ（天然） 生",
   "desc": "a whole fresh ayu sweetfish, slim olive-green and silver body with a yellow spot",
   "items": [
-   "mext:10021"
+   "mext:10021",
+   "mext:10025"
   ]
  },
  {
@@ -1406,7 +1416,10 @@
   "items": [
    "mext:10161",
    "dishes:saba-shioyaki",
-   "eatout:saba_shio_teishoku"
+   "eatout:saba_shio_teishoku",
+   "toyonaka:117813",
+   "kumagaya:2195",
+   "kumagaya:02195"
   ]
  },
  {
@@ -1464,7 +1477,8 @@
   "items": [
    "mext:10174",
    "dishes:sanma-shioyaki",
-   "dishes:teishoku-sanma"
+   "dishes:teishoku-sanma",
+   "kurume:077"
   ]
  },
  {

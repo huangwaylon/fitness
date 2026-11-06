@@ -1,0 +1,1803 @@
+[
+ {
+  "key": "mext-15088",
+  "ja": "コーヒーゼリー",
+  "desc": "coffee jelly in a glass, dark brown translucent cubes topped with a swirl of white cream",
+  "items": [
+   "mext:15088",
+   "kurume:239"
+  ]
+ },
+ {
+  "key": "mext-15091",
+  "ja": "ババロア",
+  "desc": "a bavarois, a smooth pale cream moulded dessert with a strawberry on top, on a small plate",
+  "items": [
+   "mext:15091"
+  ]
+ },
+ {
+  "key": "mext-15092",
+  "ja": "ウエハース",
+  "desc": "a few rectangular wafers, light pale golden grid-patterned layers with cream between",
+  "items": [
+   "mext:15092"
+  ]
+ },
+ {
+  "key": "mext-15094",
+  "ja": "クラッカー",
+  "desc": "a few square soda crackers, pale golden with small pin holes",
+  "items": [
+   "mext:15094"
+  ]
+ },
+ {
+  "key": "mext-15095",
+  "ja": "サブレ",
+  "desc": "a few round butter sablé cookies, golden with a crumbly sandy texture",
+  "items": [
+   "mext:15095"
+  ]
+ },
+ {
+  "key": "mext-15097",
+  "ja": "ビスケット（ハード）",
+  "desc": "a few round butter cookies, golden-brown with a pattern pressed on top",
+  "items": [
+   "mext:15097",
+   "mext:15098"
+  ]
+ },
+ {
+  "key": "mext-15102",
+  "ja": "コーンスナック",
+  "desc": "a bowl of puffy curved corn snacks, golden-yellow crunchy puffs",
+  "items": [
+   "mext:15102"
+  ]
+ },
+ {
+  "key": "mext-15103",
+  "ja": "ポテトチップス",
+  "desc": "a bowl of potato chips, thin wavy golden crisps",
+  "items": [
+   "mext:15103",
+   "eatout:potato_chips",
+   "mext:15104"
+  ]
+ },
+ {
+  "key": "mext-15105",
+  "ja": "キャラメル",
+  "desc": "a few soft milk caramels, small tan-brown cubes, some in paper wrappers",
+  "items": [
+   "mext:15105",
+   "kurume:232"
+  ]
+ },
+ {
+  "key": "mext-15113",
+  "ja": "マシュマロ",
+  "desc": "a few marshmallows, soft puffy white cylinders, one pink",
+  "items": [
+   "mext:15113"
+  ]
+ },
+ {
+  "key": "mext-15137",
+  "ja": "アーモンドチョコレート",
+  "desc": "almond chocolates, round chocolate-coated almonds, one cut showing a whole almond",
+  "items": [
+   "mext:15137"
+  ]
+ },
+ {
+  "key": "mext-15186",
+  "ja": "ブラックチョコレート（スイート）",
+  "desc": "a bar of dark chocolate broken into squares, deep brown glossy",
+  "items": [
+   "mext:15186",
+   "mext:15187"
+  ]
+ },
+ {
+  "key": "mext-15115",
+  "ja": "ホワイトチョコレート",
+  "desc": "a bar of white chocolate broken into squares, ivory cream colour",
+  "items": [
+   "mext:15115"
+  ]
+ },
+ {
+  "key": "mext-15116",
+  "ja": "ミルクチョコレート",
+  "desc": "a bar of milk chocolate broken into squares, light brown glossy",
+  "items": [
+   "mext:15116",
+   "eatout:chocolate_bar",
+   "kurume:234"
+  ]
+ },
+ {
+  "key": "mext-15118",
+  "ja": "ガム（板ガム）",
+  "desc": "a few sticks of chewing gum, thin flat pale pink strips, one half unwrapped from silver foil",
+  "items": [
+   "mext:15118"
+  ]
+ },
+ {
+  "key": "mext-15119",
+  "ja": "ガム（糖衣ガム）",
+  "desc": "a few candy-coated chewing gum pellets, small glossy white pillow shapes",
+  "items": [
+   "mext:15119"
+  ]
+ },
+ {
+  "key": "mext-15138",
+  "ja": "カスタードクリーム",
+  "desc": "a small bowl of custard cream, thick glossy pale yellow cream with a spatula",
+  "items": [
+   "mext:15138"
+  ]
+ },
+ {
+  "key": "mext-15139",
+  "ja": "おしるこ（こしあん）",
+  "desc": "oshiruko in a lacquer bowl, smooth thick dark red-purple sweet bean soup with a toasted white mochi",
+  "items": [
+   "mext:15139"
+  ]
+ },
+ {
+  "key": "mext-15140",
+  "ja": "ぜんざい（つぶあん）",
+  "desc": "zenzai in a lacquer bowl, chunky sweet red azuki bean soup with whole beans and two toasted white mochi",
+  "items": [
+   "mext:15140",
+   "dishes:zenzai"
+  ]
+ },
+ {
+  "key": "mext-16001",
+  "ja": "日本酒（普通酒）",
+  "desc": "Japanese sake, a small ceramic tokkuri flask beside a small ochoko cup of clear sake",
+  "items": [
+   "mext:16001",
+   "mext:16002",
+   "eatout:junmai",
+   "mext:16004",
+   "eatout:sake_ichigo"
+  ]
+ },
+ {
+  "key": "mext-16006",
+  "ja": "ビール",
+  "desc": "a glass mug of golden lager beer with a thick white foam head",
+  "items": [
+   "mext:16006",
+   "eatout:beer_nama",
+   "eatout:beer_bin",
+   "eatout:beer_can",
+   "mext:16009",
+   "eatout:happoshu"
+  ]
+ },
+ {
+  "key": "mext-16007",
+  "ja": "黒ビール",
+  "desc": "a glass of dark stout beer, very dark brown with a creamy tan foam head",
+  "items": [
+   "mext:16007",
+   "eatout:kurobeer"
+  ]
+ },
+ {
+  "key": "mext-16010",
+  "ja": "白ワイン",
+  "desc": "a wine glass of pale golden white wine",
+  "items": [
+   "mext:16010",
+   "eatout:wine_white"
+  ]
+ },
+ {
+  "key": "mext-16011",
+  "ja": "赤ワイン",
+  "desc": "a wine glass of deep ruby red wine",
+  "items": [
+   "mext:16011",
+   "eatout:wine_red"
+  ]
+ },
+ {
+  "key": "mext-16012",
+  "ja": "ロゼワイン",
+  "desc": "a wine glass of pink rosé wine",
+  "items": [
+   "mext:16012"
+  ]
+ },
+ {
+  "key": "mext-16013",
+  "ja": "紹興酒",
+  "desc": "a small glass of amber-brown Shaoxing rice wine beside a brown ceramic jar",
+  "items": [
+   "mext:16013",
+   "eatout:shokoshu"
+  ]
+ },
+ {
+  "key": "mext-16014",
+  "ja": "焼酎（甲類）",
+  "desc": "a short glass of clear shochu on the rocks with large ice cubes",
+  "items": [
+   "mext:16014",
+   "mext:16015",
+   "eatout:shochu_rock"
+  ]
+ },
+ {
+  "key": "mext-16060",
+  "ja": "泡盛",
+  "desc": "a small glass of clear awamori beside an Okinawan ceramic karakara flask",
+  "items": [
+   "mext:16060"
+  ]
+ },
+ {
+  "key": "mext-16016",
+  "ja": "ウイスキー",
+  "desc": "a short glass of amber whisky with a large ice cube",
+  "items": [
+   "mext:16016",
+   "eatout:whisky"
+  ]
+ },
+ {
+  "key": "mext-16017",
+  "ja": "ブランデー",
+  "desc": "a brandy snifter with a little deep amber brandy",
+  "items": [
+   "mext:16017"
+  ]
+ },
+ {
+  "key": "mext-16018",
+  "ja": "ウオッカ",
+  "desc": "a small glass of clear spirit with a slice of lime",
+  "items": [
+   "mext:16018",
+   "mext:16019"
+  ]
+ },
+ {
+  "key": "mext-16022",
+  "ja": "梅酒",
+  "desc": "a short glass of amber plum wine (umeshu) on the rocks with a whole green-brown ume plum",
+  "items": [
+   "mext:16022",
+   "eatout:umeshu_rock"
+  ]
+ },
+ {
+  "key": "mext-16025",
+  "ja": "みりん（本みりん）",
+  "desc": "a small glass bottle of mirin, clear pale golden syrupy liquid",
+  "items": [
+   "mext:16025",
+   "mext:17054"
+  ]
+ },
+ {
+  "key": "mext-16059",
+  "ja": "缶チューハイ（レモン）",
+  "desc": "a glass of lemon sour, cloudy pale fizzy drink with ice cubes and a lemon slice",
+  "items": [
+   "mext:16059",
+   "eatout:chuhai_can",
+   "eatout:lemon_sour",
+   "eatout:lemon_sour_koime",
+   "eatout:strong_chuhai"
+  ]
+ },
+ {
+  "key": "mext-16034",
+  "ja": "玉露（浸出液）",
+  "desc": "a Japanese teacup (yunomi) of green tea, clear bright yellow-green tea",
+  "items": [
+   "mext:16034",
+   "mext:16037",
+   "eatout:green_tea_pet"
+  ]
+ },
+ {
+  "key": "mext-16035",
+  "ja": "抹茶（粉）",
+  "desc": "matcha, a small heap of bright green powdered tea beside a bowl of frothy green matcha with a bamboo whisk",
+  "items": [
+   "mext:16035"
+  ]
+ },
+ {
+  "key": "mext-16039",
+  "ja": "番茶",
+  "desc": "a teacup of hojicha roasted green tea, clear amber-brown tea",
+  "items": [
+   "mext:16039",
+   "mext:16040"
+  ]
+ },
+ {
+  "key": "mext-16041",
+  "ja": "玄米茶",
+  "desc": "a teacup of genmaicha, pale yellow-green tea, beside loose tea leaves with toasted brown rice grains",
+  "items": [
+   "mext:16041"
+  ]
+ },
+ {
+  "key": "mext-16042",
+  "ja": "ウーロン茶",
+  "desc": "a glass of oolong tea with ice, clear amber-brown",
+  "items": [
+   "mext:16042"
+  ]
+ },
+ {
+  "key": "mext-16044",
+  "ja": "紅茶",
+  "desc": "a cup of black tea on a saucer, clear reddish-amber tea",
+  "items": [
+   "mext:16044",
+   "eatout:tea"
+  ]
+ },
+ {
+  "key": "mext-16045",
+  "ja": "コーヒー（ブラック）",
+  "desc": "a cup of black coffee on a saucer",
+  "items": [
+   "mext:16045",
+   "eatout:drip_coffee",
+   "mext:16064"
+  ]
+ },
+ {
+  "key": "mext-16046",
+  "ja": "インスタントコーヒー（粉）",
+  "desc": "a small jar of instant coffee granules, dark brown freeze-dried granules with a spoon",
+  "items": [
+   "mext:16046"
+  ]
+ },
+ {
+  "key": "mext-16047",
+  "ja": "缶コーヒー（加糖・ミルク入り）",
+  "desc": "a cup of milky sweet coffee, light caramel-brown",
+  "items": [
+   "mext:16047",
+   "eatout:can_coffee"
+  ]
+ },
+ {
+  "key": "mext-16048",
+  "ja": "ピュアココア（粉）",
+  "desc": "a small dish of pure cocoa powder, fine dark reddish-brown powder",
+  "items": [
+   "mext:16048"
+  ]
+ },
+ {
+  "key": "mext-16049",
+  "ja": "ミルクココア（粉）",
+  "desc": "a mug of hot cocoa, creamy light chocolate-brown with a little foam",
+  "items": [
+   "mext:16049",
+   "eatout:cocoa"
+  ]
+ },
+ {
+  "key": "mext-16056",
+  "ja": "青汁（粉・ケール）",
+  "desc": "a glass of aojiru green juice, opaque deep green, beside a little green powder",
+  "items": [
+   "mext:16056"
+  ]
+ },
+ {
+  "key": "mext-16050",
+  "ja": "甘酒",
+  "desc": "a cup of amazake, thick milky white sweet rice drink with soft rice grains",
+  "items": [
+   "mext:16050"
+  ]
+ },
+ {
+  "key": "mext-16051",
+  "ja": "昆布茶（粉）",
+  "desc": "a teacup of kombu tea, clear pale golden-brown",
+  "items": [
+   "mext:16051"
+  ]
+ },
+ {
+  "key": "mext-16057",
+  "ja": "スポーツドリンク",
+  "desc": "a glass of sports drink, pale cloudy whitish-blue translucent liquid with ice",
+  "items": [
+   "mext:16057",
+   "eatout:sports_drink"
+  ]
+ },
+ {
+  "key": "mext-16053",
+  "ja": "コーラ",
+  "desc": "a glass of cola with ice cubes, dark brown fizzy drink with bubbles",
+  "items": [
+   "mext:16053",
+   "eatout:cola_m",
+   "eatout:cola_pet"
+  ]
+ },
+ {
+  "key": "mext-16054",
+  "ja": "サイダー",
+  "desc": "a glass of clear fizzy cider soda with bubbles and ice",
+  "items": [
+   "mext:16054",
+   "eatout:cider_pet"
+  ]
+ },
+ {
+  "key": "mext-16058",
+  "ja": "ノンアルコールビール",
+  "desc": "a glass of non-alcoholic beer, golden with a white foam head",
+  "items": [
+   "mext:16058",
+   "eatout:non_alc_beer"
+  ]
+ },
+ {
+  "key": "mext-16055",
+  "ja": "麦茶",
+  "desc": "a glass of cold barley tea (mugicha), clear amber-brown with ice cubes",
+  "items": [
+   "mext:16055"
+  ]
+ },
+ {
+  "key": "mext-17001",
+  "ja": "ウスターソース",
+  "desc": "a small glass bottle of thin dark brown Worcester sauce and a small dish of sauce",
+  "items": [
+   "mext:17001"
+  ]
+ },
+ {
+  "key": "mext-17002",
+  "ja": "中濃ソース",
+  "desc": "a small dish of thick glossy dark brown Japanese sauce, with a squeeze bottle",
+  "items": [
+   "mext:17002",
+   "mext:17003",
+   "mext:17085"
+  ]
+ },
+ {
+  "key": "mext-17004",
+  "ja": "豆板醤",
+  "desc": "a small dish of doubanjiang, chunky dark red chili bean paste",
+  "items": [
+   "mext:17004"
+  ]
+ },
+ {
+  "key": "mext-17006",
+  "ja": "ラー油",
+  "desc": "a small dish of rayu chili oil, clear red oil with chili flakes at the bottom",
+  "items": [
+   "mext:17006"
+  ]
+ },
+ {
+  "key": "mext-17007",
+  "ja": "しょうゆ（濃口）",
+  "desc": "a small soy sauce cruet beside a small dish of dark brown-black soy sauce",
+  "items": [
+   "mext:17007",
+   "mext:17086",
+   "mext:17087"
+  ]
+ },
+ {
+  "key": "mext-17008",
+  "ja": "薄口しょうゆ",
+  "desc": "a small dish of light soy sauce (usukuchi), clear reddish-amber, beside a cruet",
+  "items": [
+   "mext:17008"
+  ]
+ },
+ {
+  "key": "mext-17012",
+  "ja": "塩（食塩）",
+  "desc": "a small dish of fine white table salt with a small spoon",
+  "items": [
+   "mext:17012"
+  ]
+ },
+ {
+  "key": "mext-17090",
+  "ja": "黒酢",
+  "desc": "a small glass of black vinegar, clear deep reddish-brown",
+  "items": [
+   "mext:17090"
+  ]
+ },
+ {
+  "key": "mext-17015",
+  "ja": "酢（穀物酢）",
+  "desc": "a small glass bottle of rice vinegar, clear pale golden liquid",
+  "items": [
+   "mext:17015",
+   "mext:17016"
+  ]
+ },
+ {
+  "key": "mext-17094",
+  "ja": "甘酢",
+  "desc": "a small dish of sweet vinegar, clear pale golden liquid",
+  "items": [
+   "mext:17094",
+   "mext:17101"
+  ]
+ },
+ {
+  "key": "mext-17021",
+  "ja": "かつお昆布だし",
+  "desc": "a bowl of Japanese dashi broth, clear pale golden liquid, beside a piece of kombu and bonito flakes",
+  "items": [
+   "mext:17021"
+  ]
+ },
+ {
+  "key": "mext-17024",
+  "ja": "鶏がらだし",
+  "desc": "a bowl of chicken stock, clear pale golden broth with a few droplets of fat",
+  "items": [
+   "mext:17024"
+  ]
+ },
+ {
+  "key": "mext-17027",
+  "ja": "コンソメ（固形ブイヨン）",
+  "desc": "bouillon cubes, small golden-brown square cubes, one in a cup of clear broth",
+  "items": [
+   "mext:17027"
+  ]
+ },
+ {
+  "key": "mext-17093",
+  "ja": "顆粒中華だし",
+  "desc": "a small dish of granulated soup stock, fine light golden-brown granules",
+  "items": [
+   "mext:17093",
+   "mext:17028"
+  ]
+ },
+ {
+  "key": "mext-17029",
+  "ja": "めんつゆ（ストレート）",
+  "desc": "a small cup of mentsuyu noodle dipping sauce, clear dark brown, with a bottle",
+  "items": [
+   "mext:17029",
+   "mext:17141",
+   "mext:17030"
+  ]
+ },
+ {
+  "key": "mext-17031",
+  "ja": "オイスターソース",
+  "desc": "a small dish of oyster sauce, thick glossy dark brown sauce",
+  "items": [
+   "mext:17031"
+  ]
+ },
+ {
+  "key": "mext-17107",
+  "ja": "ナンプラー",
+  "desc": "a small bottle of fish sauce, clear amber-brown",
+  "items": [
+   "mext:17107"
+  ]
+ },
+ {
+  "key": "mext-17098",
+  "ja": "ごまだれ",
+  "desc": "a small dish of sesame sauce, creamy light tan sauce",
+  "items": [
+   "mext:17098"
+  ]
+ },
+ {
+  "key": "mext-17105",
+  "ja": "デミグラスソース",
+  "desc": "a small saucepan of demi-glace sauce, glossy thick dark brown",
+  "items": [
+   "mext:17105"
+  ]
+ },
+ {
+  "key": "mext-17106",
+  "ja": "甜麺醤",
+  "desc": "a small dish of tianmianjiang, thick glossy dark brown-black sweet bean sauce",
+  "items": [
+   "mext:17106"
+  ]
+ },
+ {
+  "key": "mext-17108",
+  "ja": "冷やし中華のたれ",
+  "desc": "a small pitcher of hiyashi chuka sauce, clear amber sweet-sour soy dressing",
+  "items": [
+   "mext:17108"
+  ]
+ },
+ {
+  "key": "mext-17109",
+  "ja": "ホワイトソース",
+  "desc": "a small saucepan of white sauce (bechamel), smooth thick creamy white",
+  "items": [
+   "mext:17109"
+  ]
+ },
+ {
+  "key": "mext-17110",
+  "ja": "ぽん酢しょうゆ",
+  "desc": "a small dish of ponzu, clear brown citrus soy sauce, with half a yuzu citrus",
+  "items": [
+   "mext:17110",
+   "mext:17137"
+  ]
+ },
+ {
+  "key": "mext-17032",
+  "ja": "麻婆豆腐の素",
+  "desc": "mapo tofu sauce base, thick glossy red-brown spicy sauce with minced meat in a small dish",
+  "items": [
+   "mext:17032"
+  ]
+ },
+ {
+  "key": "mext-17033",
+  "ja": "ミートソース",
+  "desc": "a small bowl of meat sauce, thick red-brown minced meat and tomato sauce",
+  "items": [
+   "mext:17033"
+  ]
+ },
+ {
+  "key": "mext-17112",
+  "ja": "焼き鳥のたれ",
+  "desc": "a small dish of thick glossy dark brown sweet soy grilling sauce",
+  "items": [
+   "mext:17112",
+   "mext:17113"
+  ]
+ },
+ {
+  "key": "mext-17115",
+  "ja": "ゆずこしょう",
+  "desc": "a small dish of yuzu kosho, a pale green chunky citrus chili paste",
+  "items": [
+   "mext:17115"
+  ]
+ },
+ {
+  "key": "mext-17036",
+  "ja": "ケチャップ",
+  "desc": "a small dish of tomato ketchup, glossy bright red, with a squeeze bottle",
+  "items": [
+   "mext:17036"
+  ]
+ },
+ {
+  "key": "mext-17037",
+  "ja": "トマトソース",
+  "desc": "a small bowl of tomato sauce, smooth red sauce with herbs",
+  "items": [
+   "mext:17037"
+  ]
+ },
+ {
+  "key": "mext-17042",
+  "ja": "マヨネーズ（全卵型）",
+  "desc": "a soft squeeze bottle of Japanese mayonnaise beside a small dish of glossy pale yellow mayonnaise",
+  "items": [
+   "mext:17042",
+   "mext:17043",
+   "mext:17118"
+  ]
+ },
+ {
+  "key": "mext-17040",
+  "ja": "フレンチドレッシング（分離液状）",
+  "desc": "a small glass cruet of clear separated salad dressing, oil layer on brown soy vinegar",
+  "items": [
+   "mext:17040",
+   "mext:17116",
+   "mext:17039"
+  ]
+ },
+ {
+  "key": "mext-17117",
+  "ja": "ごまドレッシング",
+  "desc": "a small dish of creamy sesame dressing, smooth light tan with sesame seeds",
+  "items": [
+   "mext:17117"
+  ]
+ },
+ {
+  "key": "mext-17041",
+  "ja": "サウザンアイランドドレッシング",
+  "desc": "a small dish of Thousand Island dressing, creamy pale orange-pink with relish bits",
+  "items": [
+   "mext:17041"
+  ]
+ },
+ {
+  "key": "mext-17149",
+  "ja": "フレンチドレッシング（乳化）",
+  "desc": "a small dish of creamy French dressing, smooth pale orange",
+  "items": [
+   "mext:17149"
+  ]
+ },
+ {
+  "key": "mext-17044",
+  "ja": "白みそ（甘みそ）",
+  "desc": "a small dish of white miso (shiro miso), smooth pale cream-yellow paste",
+  "items": [
+   "mext:17044"
+  ]
+ },
+ {
+  "key": "mext-17045",
+  "ja": "みそ（淡色辛みそ）",
+  "desc": "a small wooden dish of light-coloured miso paste, smooth tan-yellow, with a wooden spatula",
+  "items": [
+   "mext:17045",
+   "mext:17120",
+   "mext:17119",
+   "mext:17050"
+  ]
+ },
+ {
+  "key": "mext-17046",
+  "ja": "赤みそ（赤色辛みそ）",
+  "desc": "a small dish of red miso, dense dark reddish-brown paste",
+  "items": [
+   "mext:17046",
+   "mext:17048"
+  ]
+ },
+ {
+  "key": "mext-17047",
+  "ja": "麦みそ",
+  "desc": "a small dish of barley miso, chunky light brown paste with barley grains",
+  "items": [
+   "mext:17047"
+  ]
+ },
+ {
+  "key": "mext-17049",
+  "ja": "インスタントみそ汁（粉末）",
+  "desc": "a cup of instant miso soup, cloudy light-brown broth with small tofu cubes, wakame and green onion",
+  "items": [
+   "mext:17049",
+   "eatout:instant_miso"
+  ]
+ },
+ {
+  "key": "mext-17051",
+  "ja": "カレールウ",
+  "desc": "a block of Japanese curry roux, a dark brown bar divided into squares",
+  "items": [
+   "mext:17051"
+  ]
+ },
+ {
+  "key": "mext-17052",
+  "ja": "ハヤシルウ",
+  "desc": "a block of hayashi rice roux, a dark reddish-brown bar divided into squares",
+  "items": [
+   "mext:17052"
+  ]
+ },
+ {
+  "key": "mext-17125",
+  "ja": "お茶漬けの素",
+  "desc": "ochazuke seasoning mix, small crisp rice crackers (arare), nori strips and green tea granules on a small dish",
+  "items": [
+   "mext:17125"
+  ]
+ },
+ {
+  "key": "mext-17053",
+  "ja": "酒かす",
+  "desc": "sheets of sake kasu, sake lees, soft pale cream-white irregular sheets",
+  "items": [
+   "mext:17053"
+  ]
+ },
+ {
+  "key": "mext-17127",
+  "ja": "ふりかけ（たまご）",
+  "desc": "a small dish of egg furikake, yellow egg granules with green nori flakes and sesame",
+  "items": [
+   "mext:17127"
+  ]
+ },
+ {
+  "key": "mext-17138",
+  "ja": "料理酒",
+  "desc": "a small bottle of clear cooking sake",
+  "items": [
+   "mext:17138"
+  ]
+ },
+ {
+  "key": "mext-17058",
+  "ja": "からし（練り）",
+  "desc": "a small dab of Japanese karashi mustard, bright yellow smooth paste on a small dish",
+  "items": [
+   "mext:17058"
+  ]
+ },
+ {
+  "key": "mext-17059",
+  "ja": "マスタード（練り）",
+  "desc": "a small dish of smooth yellow prepared mustard",
+  "items": [
+   "mext:17059"
+  ]
+ },
+ {
+  "key": "mext-17060",
+  "ja": "粒マスタード",
+  "desc": "a small dish of whole grain mustard, yellow-brown with visible seeds",
+  "items": [
+   "mext:17060"
+  ]
+ },
+ {
+  "key": "mext-17061",
+  "ja": "カレー粉",
+  "desc": "a small dish of curry powder, fine bright yellow-orange powder",
+  "items": [
+   "mext:17061"
+  ]
+ },
+ {
+  "key": "mext-17063",
+  "ja": "こしょう（黒）",
+  "desc": "a small dish of ground black pepper, beside whole black peppercorns",
+  "items": [
+   "mext:17063"
+  ]
+ },
+ {
+  "key": "mext-17064",
+  "ja": "こしょう（白）",
+  "desc": "a small dish of ground white pepper, fine pale beige powder",
+  "items": [
+   "mext:17064"
+  ]
+ },
+ {
+  "key": "mext-17073",
+  "ja": "一味唐辛子（とうがらし粉）",
+  "desc": "a small dish of ichimi chili powder, fine bright red powder, beside two dried red chilies",
+  "items": [
+   "mext:17073"
+  ]
+ },
+ {
+  "key": "mext-17081",
+  "ja": "わさび（練り）",
+  "desc": "a small mound of wasabi paste, smooth pale green, on a small dish",
+  "items": [
+   "mext:17081"
+  ]
+ },
+ {
+  "key": "mext-17084",
+  "ja": "ベーキングパウダー",
+  "desc": "a small dish of baking powder, fine bright white powder with a measuring spoon",
+  "items": [
+   "mext:17084"
+  ]
+ },
+ {
+  "key": "mext-18024",
+  "ja": "白和え",
+  "desc": "shiraae, a small mound of mashed white tofu dressing mixed with boiled spinach, thin carrot strips and konjac strips, in a small dark bowl",
+  "items": [
+   "mext:18024",
+   "dishes:shiraae"
+  ]
+ },
+ {
+  "key": "mext-18025",
+  "ja": "いんげんのごま和え",
+  "desc": "green beans with sesame dressing (goma-ae), cut green beans coated in ground brown sesame, in a small bowl",
+  "items": [
+   "mext:18025",
+   "dishes:gomaae-ingen",
+   "toyonaka:127689"
+  ]
+ },
+ {
+  "key": "mext-18026",
+  "ja": "わかめとねぎの酢みそ和え",
+  "desc": "wakame and green onion with vinegared miso dressing (nuta), green leafy pieces under a pale yellow miso sauce",
+  "items": [
+   "mext:18026"
+  ]
+ },
+ {
+  "key": "mext-18027",
+  "ja": "紅白なます",
+  "desc": "kohaku namasu, fine julienned white daikon and orange carrot in sweet vinegar, in a small bowl",
+  "items": [
+   "mext:18027",
+   "dishes:namasu",
+   "kurume:141"
+  ]
+ },
+ {
+  "key": "mext-18029",
+  "ja": "卯の花いり",
+  "desc": "unohana, moist pale beige okara simmered with small bits of carrot, shiitake and green onion, in a small bowl",
+  "items": [
+   "mext:18029",
+   "dishes:unohana"
+  ]
+ },
+ {
+  "key": "mext-18030",
+  "ja": "親子丼の具",
+  "desc": "oyakodon topping in a small pan, simmered chicken pieces and onion bound with soft golden egg, without rice",
+  "items": [
+   "mext:18030"
+  ]
+ },
+ {
+  "key": "mext-18031",
+  "ja": "牛丼の具（牛飯の具）",
+  "desc": "gyudon topping in a bowl, thin simmered beef slices and soft onion in glossy sweet soy sauce, without rice",
+  "items": [
+   "mext:18031",
+   "eatout:gyudon_atama"
+  ]
+ },
+ {
+  "key": "mext-18032",
+  "ja": "切り干し大根の煮物",
+  "desc": "kiriboshi daikon no nimono, simmered dried shredded radish strips, light brown, with carrot strips and thin aburaage, in a small bowl",
+  "items": [
+   "mext:18032",
+   "dishes:kiriboshi-ni"
+  ]
+ },
+ {
+  "key": "mext-18033",
+  "ja": "きんぴらごぼう",
+  "desc": "kinpira gobo, thin matchstick strips of burdock and carrot stir-fried glossy brown in sweet soy, sprinkled with sesame, in a small bowl",
+  "items": [
+   "mext:18033",
+   "dishes:kinpira-gobo",
+   "toyonaka:127411"
+  ]
+ },
+ {
+  "key": "mext-18034",
+  "ja": "ぜんまいのいため煮",
+  "desc": "stir-simmered zenmai fern shoots, thin curly brown stalks glossy with soy, in a small bowl",
+  "items": [
+   "mext:18034"
+  ]
+ },
+ {
+  "key": "mext-18035",
+  "ja": "筑前煮",
+  "desc": "chikuzenni, simmered chicken pieces with lotus root slices, burdock, carrot, taro, konjac and shiitake in a glossy light-brown glaze, green snow peas, in a shallow bowl",
+  "items": [
+   "mext:18035",
+   "dishes:chikuzenni",
+   "dishes:gameni",
+   "kurume:069",
+   "toyonaka:119089",
+   "kumagaya:02330"
+  ]
+ },
+ {
+  "key": "mext-18037",
+  "ja": "ひじきの煮物",
+  "desc": "hijiki no nimono, simmered black hijiki seaweed with soybeans, carrot strips and thin aburaage, in a small bowl",
+  "items": [
+   "mext:18037",
+   "dishes:hijiki-ni",
+   "toyonaka:118562"
+  ]
+ },
+ {
+  "key": "mext-18038",
+  "ja": "あじの南蛮漬け",
+  "desc": "aji nanbanzuke, fried small horse mackerel pieces marinated in sweet vinegar with sliced onion, carrot and green pepper strips and red chili",
+  "items": [
+   "mext:18038",
+   "dishes:aji-nanbanzuke",
+   "kumagaya:03286"
+  ]
+ },
+ {
+  "key": "mext-18053",
+  "ja": "お好み焼き",
+  "desc": "okonomiyaki, a thick round savory pancake with cabbage, topped with glossy brown sauce, white mayonnaise zigzags, green aonori and pink bonito flakes",
+  "items": [
+   "mext:18053",
+   "dishes:okonomiyaki",
+   "eatout:okonomiyaki",
+   "maff_kyodo:39_20_osaka",
+   "maff_kyodo:42_7_hiroshima",
+   "kurume:229",
+   "toyonaka:265163"
+  ]
+ },
+ {
+  "key": "mext-18023",
+  "ja": "松前漬け",
+  "desc": "matsumaezuke, thin strips of dried squid and kombu with golden herring roe in a sticky soy marinade, in a small dish",
+  "items": [
+   "mext:18023"
+  ]
+ },
+ {
+  "key": "mext-18040",
+  "ja": "チキンカレー（ルウのみ）",
+  "desc": "a bowl of Japanese curry sauce without rice, thick glossy brown curry with chunks of meat, potato and carrot",
+  "items": [
+   "mext:18040",
+   "mext:18001",
+   "mext:18041"
+  ]
+ },
+ {
+  "key": "mext-18043",
+  "ja": "カニクリームコロッケ",
+  "desc": "two crab cream croquettes, oval cylinders in crisp golden panko, one cut showing white creamy filling with pink crab, with shredded cabbage",
+  "items": [
+   "mext:18043",
+   "dishes:cream-croquette"
+  ]
+ },
+ {
+  "key": "mext-18044",
+  "ja": "コーンクリームコロッケ",
+  "desc": "corn cream croquettes, oval golden panko croquettes, one cut showing creamy pale yellow filling with corn kernels",
+  "items": [
+   "mext:18044"
+  ]
+ },
+ {
+  "key": "mext-18018",
+  "ja": "コロッケ（ポテト）",
+  "desc": "two Japanese potato croquettes (korokke), flat oval patties in crisp golden-brown panko, one cut showing mashed potato and minced meat, with shredded cabbage",
+  "items": [
+   "mext:18018",
+   "dishes:croquette",
+   "eatout:korokke_hot",
+   "toyonaka:268162",
+   "kumagaya:3211"
+  ]
+ },
+ {
+  "key": "mext-18045",
+  "ja": "クリームシチュー（チキン）",
+  "desc": "Japanese cream stew in a deep plate, thick white creamy sauce with chicken, potato, carrot, onion and broccoli",
+  "items": [
+   "mext:18045",
+   "dishes:cream-stew",
+   "eatout:cream_stew",
+   "kurume:074"
+  ]
+ },
+ {
+  "key": "mext-18011",
+  "ja": "ビーフシチュー",
+  "desc": "beef stew in a deep plate, thick glossy dark brown sauce with large chunks of beef, carrot and potato, a swirl of cream",
+  "items": [
+   "mext:18011",
+   "dishes:beef-stew",
+   "eatout:beef_stew",
+   "kurume:073"
+  ]
+ },
+ {
+  "key": "mext-18015",
+  "ja": "ミートボール",
+  "desc": "meatballs in glossy sweet-sour brown sauce, small round balls in a small bowl",
+  "items": [
+   "mext:18015",
+   "kumagaya:02212"
+  ]
+ },
+ {
+  "key": "mext-18042",
+  "ja": "かぼちゃのスープ",
+  "desc": "a bowl of pumpkin soup, smooth thick bright orange-yellow cream soup with a swirl of cream",
+  "items": [
+   "mext:18042"
+  ]
+ },
+ {
+  "key": "mext-18005",
+  "ja": "コーンスープ",
+  "desc": "a cup of Japanese corn potage, smooth creamy pale yellow soup with a few corn kernels and parsley",
+  "items": [
+   "mext:18005",
+   "dishes:corn-soup",
+   "eatout:corn_soup",
+   "mext:18004",
+   "kurume:200"
+  ]
+ },
+ {
+  "key": "mext-18051",
+  "ja": "チキンハンバーグ",
+  "desc": "a chicken hamburg steak, a pale golden-brown oval patty with a glossy teriyaki glaze, on a plate",
+  "items": [
+   "mext:18051"
+  ]
+ },
+ {
+  "key": "mext-18052",
+  "ja": "豆腐ハンバーグ",
+  "desc": "a tofu hamburg steak, a soft pale golden patty topped with grated daikon and shiso, with ponzu",
+  "items": [
+   "mext:18052",
+   "dishes:tofu-hamburg"
+  ]
+ },
+ {
+  "key": "mext-18019",
+  "ja": "いかフライ",
+  "desc": "squid fry, squid rings in crisp golden panko, with shredded cabbage and a lemon",
+  "items": [
+   "mext:18019",
+   "toyonaka:117825",
+   "kumagaya:02116"
+  ]
+ },
+ {
+  "key": "mext-18020",
+  "ja": "えびフライ",
+  "desc": "Japanese ebi fry, three long straight breaded fried prawns with crisp golden panko and red tails, with shredded cabbage and tartar sauce",
+  "items": [
+   "mext:18020",
+   "dishes:ebi-fry",
+   "eatout:ebi_fry_yoshoku",
+   "kurume:092",
+   "kumagaya:03370"
+  ]
+ },
+ {
+  "key": "mext-18021",
+  "ja": "白身魚フライ",
+  "desc": "white fish fry, a flat breaded fried fish fillet in golden panko, with tartar sauce and cabbage",
+  "items": [
+   "mext:18021",
+   "toyonaka:266174",
+   "kumagaya:908"
+  ]
+ },
+ {
+  "key": "mext-18022",
+  "ja": "メンチカツ",
+  "desc": "menchi katsu, a thick round minced meat cutlet in a crisp golden-brown panko crust, one cut showing juicy meat, with shredded cabbage",
+  "items": [
+   "mext:18022",
+   "dishes:menchikatsu",
+   "eatout:menchi_hot",
+   "kumagaya:02495"
+  ]
+ },
+ {
+  "key": "mext-18009",
+  "ja": "えびフライ（冷凍・揚げる前）",
+  "desc": "frozen raw breaded prawns before frying, pale white panko coating with red tails",
+  "items": [
+   "mext:18009"
+  ]
+ },
+ {
+  "key": "mext-18007",
+  "ja": "コロッケ（冷凍・揚げる前）",
+  "desc": "frozen potato croquettes before frying, pale white panko-coated oval patties",
+  "items": [
+   "mext:18007"
+  ]
+ },
+ {
+  "key": "mext-18003",
+  "ja": "えびグラタン",
+  "desc": "shrimp gratin in an oval baking dish, bubbling white sauce with macaroni and shrimp, golden-browned cheese top",
+  "items": [
+   "mext:18003",
+   "eatout:ebi_gratin"
+  ]
+ },
+ {
+  "key": "mext-18014",
+  "ja": "えびピラフ",
+  "desc": "shrimp pilaf, buttery golden rice with small shrimp, diced carrot, corn and green peas, on a plate",
+  "items": [
+   "mext:18014",
+   "dishes:ebi-pilaf",
+   "eatout:pilaf"
+  ]
+ },
+ {
+  "key": "mext-18002",
+  "ja": "ぎょうざ",
+  "desc": "gyoza dumplings, crescent pleated dumplings with crisp golden-brown bottoms, on a plate",
+  "items": [
+   "mext:18002",
+   "toyonaka:265173",
+   "kumagaya:395"
+  ]
+ },
+ {
+  "key": "mext-18012",
+  "ja": "しゅうまい",
+  "desc": "shumai, steamed open-topped pork dumplings in yellow wrappers, each topped with a green pea, in a bamboo steamer",
+  "items": [
+   "mext:18012",
+   "dishes:shumai",
+   "eatout:shumai",
+   "toyonaka:266153"
+  ]
+ },
+ {
+  "key": "mext-18046",
+  "ja": "中華ちまき",
+  "desc": "Chinese zongzi sticky rice, a triangular parcel in a bamboo leaf, opened to show brown seasoned glutinous rice with pork and shiitake",
+  "items": [
+   "mext:18046"
+  ]
+ },
+ {
+  "key": "mext-18056",
+  "ja": "春巻き",
+  "desc": "harumaki spring rolls, crisp golden-brown fried cylinders, one cut showing glass noodles, pork and vegetables",
+  "items": [
+   "mext:18056",
+   "dishes:harumaki",
+   "eatout:harumaki",
+   "toyonaka:120285",
+   "kumagaya:3041"
+  ]
+ },
+ {
+  "key": "mext-18047",
+  "ja": "酢豚",
+  "desc": "sweet and sour pork (subuta), fried pork chunks with onion, green pepper and carrot in a glossy orange-red sweet sour sauce",
+  "items": [
+   "mext:18047",
+   "dishes:subuta",
+   "eatout:subuta"
+  ]
+ },
+ {
+  "key": "mext-18048",
+  "ja": "八宝菜",
+  "desc": "happosai, stir-fried napa cabbage, carrot, shrimp, squid, pork, quail eggs and snow peas in a glossy translucent thick sauce, on a plate",
+  "items": [
+   "mext:18048",
+   "dishes:happosai",
+   "eatout:happosai"
+  ]
+ },
+ {
+  "key": "mext-18039",
+  "ja": "もやしのナムル",
+  "desc": "bean sprout namul, white bean sprouts seasoned with sesame oil and sesame seeds, in a small bowl",
+  "items": [
+   "mext:18039",
+   "dishes:moyashi-namul",
+   "kumagaya:02267"
+  ]
+ },
+ {
+  "key": "dishes-miso-tofu-negi",
+  "ja": "味噌汁（豆腐とねぎ）",
+  "desc": "miso soup in a lacquered wooden bowl, cloudy light-brown miso broth with small white tofu cubes and green onion rings",
+  "items": [
+   "dishes:miso-tofu-negi"
+  ]
+ },
+ {
+  "key": "dishes-miso-wakame-negi",
+  "ja": "味噌汁（わかめとねぎ）",
+  "desc": "miso soup in a lacquered wooden bowl, cloudy light-brown miso broth with dark green wakame and green onion rings",
+  "items": [
+   "dishes:miso-wakame-negi"
+  ]
+ },
+ {
+  "key": "dishes-miso-nameko",
+  "ja": "なめこの味噌汁",
+  "desc": "nameko miso soup in a lacquered bowl, brown miso broth with small glossy orange-brown nameko mushrooms and green onion",
+  "items": [
+   "dishes:miso-nameko",
+   "toyonaka:285963"
+  ]
+ },
+ {
+  "key": "dishes-miso-daikon-age",
+  "ja": "味噌汁（大根と油揚げ）",
+  "desc": "miso soup in a lacquered bowl with thin daikon strips and golden aburaage strips in cloudy brown broth",
+  "items": [
+   "dishes:miso-daikon-age"
+  ]
+ },
+ {
+  "key": "dishes-miso-jagaimo-tamanegi",
+  "ja": "味噌汁（じゃがいもと玉ねぎ）",
+  "desc": "miso soup in a lacquered bowl with potato chunks and soft onion slices",
+  "items": [
+   "dishes:miso-jagaimo-tamanegi"
+  ]
+ },
+ {
+  "key": "dishes-miso-shijimi",
+  "ja": "しじみの味噌汁",
+  "desc": "shijimi clam miso soup, small dark clam shells in red-brown miso broth with green onion",
+  "items": [
+   "dishes:miso-shijimi"
+  ]
+ },
+ {
+  "key": "dishes-miso-asari",
+  "ja": "あさりの味噌汁",
+  "desc": "asari clam miso soup, open clam shells in light-brown miso broth with green onion",
+  "items": [
+   "dishes:miso-asari",
+   "toyonaka:271220"
+  ]
+ },
+ {
+  "key": "dishes-miso-cabbage",
+  "ja": "味噌汁（キャベツと油揚げ）",
+  "desc": "miso soup with soft cabbage pieces and aburaage strips in a lacquered bowl",
+  "items": [
+   "dishes:miso-cabbage"
+  ]
+ },
+ {
+  "key": "dishes-miso-nasu",
+  "ja": "なすの味噌汁",
+  "desc": "eggplant miso soup, soft purple-skinned eggplant pieces in brown miso broth with myoga",
+  "items": [
+   "dishes:miso-nasu"
+  ]
+ },
+ {
+  "key": "dishes-miso-kinoko",
+  "ja": "きのこの味噌汁",
+  "desc": "mushroom miso soup with shimeji and enoki mushrooms and green onion in a lacquered bowl",
+  "items": [
+   "dishes:miso-kinoko"
+  ]
+ },
+ {
+  "key": "dishes-miso-horenso",
+  "ja": "ほうれん草の味噌汁",
+  "desc": "spinach miso soup with dark green spinach and aburaage strips in a lacquered bowl",
+  "items": [
+   "dishes:miso-horenso"
+  ]
+ },
+ {
+  "key": "dishes-miso-hakusai",
+  "ja": "白菜の味噌汁",
+  "desc": "napa cabbage miso soup with soft pale cabbage and aburaage in a lacquered bowl",
+  "items": [
+   "dishes:miso-hakusai"
+  ]
+ },
+ {
+  "key": "dishes-miso-tamago",
+  "ja": "落とし卵の味噌汁",
+  "desc": "miso soup with a whole poached egg floating in brown miso broth, green onion",
+  "items": [
+   "dishes:miso-tamago"
+  ]
+ },
+ {
+  "key": "dishes-akadashi",
+  "ja": "赤だし（豆腐となめこ）",
+  "desc": "akadashi red miso soup in a lacquered bowl, dark red-brown broth with small tofu cubes, nameko mushrooms and mitsuba",
+  "items": [
+   "dishes:akadashi",
+   "eatout:sushi_akadashi"
+  ]
+ },
+ {
+  "key": "dishes-kenchinjiru",
+  "ja": "けんちん汁",
+  "desc": "kenchinjiru, clear soy broth with crumbled tofu, daikon, carrot, burdock, taro and konjac in a wooden bowl",
+  "items": [
+   "dishes:kenchinjiru",
+   "maff_kyodo:28_24_iwate",
+   "maff_kyodo:35_1_kanagawa",
+   "toyonaka:110012",
+   "kumagaya:2715"
+  ]
+ },
+ {
+  "key": "dishes-kasujiru",
+  "ja": "粕汁",
+  "desc": "kasujiru, a milky white sake lees soup with salmon chunks, daikon, carrot and konjac",
+  "items": [
+   "dishes:kasujiru",
+   "maff_kyodo:40_13_hyogo"
+  ]
+ },
+ {
+  "key": "dishes-sumashi-kamaboko",
+  "ja": "すまし汁（かまぼこと三つ葉）",
+  "desc": "suimono clear soup in a lacquered bowl, clear golden dashi with a slice of pink-rimmed kamaboko and green mitsuba leaves",
+  "items": [
+   "dishes:sumashi-kamaboko"
+  ]
+ },
+ {
+  "key": "dishes-kakitamajiru",
+  "ja": "かきたま汁",
+  "desc": "kakitama-jiru, a clear slightly thickened soup with soft wispy yellow egg ribbons and mitsuba",
+  "items": [
+   "dishes:kakitamajiru"
+  ]
+ },
+ {
+  "key": "dishes-asari-sumashi",
+  "ja": "あさりのすまし汁",
+  "desc": "clear asari clam soup, open clam shells in clear golden broth with mitsuba",
+  "items": [
+   "dishes:asari-sumashi",
+   "kumagaya:03352"
+  ]
+ },
+ {
+  "key": "dishes-chuka-wakame-tamago",
+  "ja": "中華スープ（わかめと卵）",
+  "desc": "Chinese wakame and egg soup, clear golden broth with egg ribbons, wakame and green onion",
+  "items": [
+   "dishes:chuka-wakame-tamago",
+   "eatout:chuka_soup"
+  ]
+ },
+ {
+  "key": "dishes-consomme-soup",
+  "ja": "コンソメスープ（野菜とベーコン）",
+  "desc": "consommé soup with small cubes of carrot, cabbage, onion and bacon in clear golden broth",
+  "items": [
+   "dishes:consomme-soup"
+  ]
+ },
+ {
+  "key": "dishes-minestrone",
+  "ja": "ミネストローネ",
+  "desc": "minestrone, a red tomato soup with diced vegetables and beans in a soup bowl",
+  "items": [
+   "dishes:minestrone",
+   "toyonaka:118871",
+   "kumagaya:2651"
+  ]
+ },
+ {
+  "key": "dishes-clam-chowder",
+  "ja": "クラムチャウダー",
+  "desc": "clam chowder, a creamy white soup with clams, diced potato and bacon in a bowl",
+  "items": [
+   "dishes:clam-chowder",
+   "kumagaya:3551"
+  ]
+ },
+ {
+  "key": "dishes-zoni-kanto",
+  "ja": "お雑煮（関東風すまし）",
+  "desc": "Kanto-style ozoni, a clear soup in a lacquer bowl with a grilled square mochi, chicken, komatsuna and kamaboko",
+  "items": [
+   "dishes:zoni-kanto"
+  ]
+ },
+ {
+  "key": "dishes-zoni-kansai",
+  "ja": "お雑煮（関西風白味噌）",
+  "desc": "Kansai-style ozoni, a creamy pale white miso soup with a round mochi, taro, daikon and carrot rounds",
+  "items": [
+   "dishes:zoni-kansai"
+  ]
+ },
+ {
+  "key": "dishes-imoni",
+  "ja": "芋煮（山形風）",
+  "desc": "Yamagata imoni, a pot of soy broth with taro, thin beef slices, konjac and green onion",
+  "items": [
+   "dishes:imoni"
+  ]
+ },
+ {
+  "key": "dishes-teriyaki-chicken",
+  "ja": "鶏の照り焼き",
+  "desc": "teriyaki chicken, a pan-fried chicken thigh with glossy dark brown teriyaki glaze, sliced, with shredded cabbage",
+  "items": [
+   "dishes:teriyaki-chicken",
+   "kumagaya:2309"
+  ]
+ },
+ {
+  "key": "dishes-chicken-nanban",
+  "ja": "チキン南蛮",
+  "desc": "chicken nanban, fried chicken thigh slices soaked in sweet vinegar topped with thick white tartar sauce with egg, with cabbage",
+  "items": [
+   "dishes:chicken-nanban",
+   "maff_kyodo:chikin_nanban_miyazaki"
+  ]
+ },
+ {
+  "key": "dishes-yakitori-tare",
+  "ja": "焼き鳥（たれ・5本）",
+  "desc": "yakitori skewers with tare, grilled chicken pieces on bamboo skewers glazed with glossy dark sweet soy sauce, on a long plate",
+  "items": [
+   "dishes:yakitori-tare",
+   "eatout:yakitori_momo_tare"
+  ]
+ },
+ {
+  "key": "dishes-yakitori-shio",
+  "ja": "焼き鳥（塩・5本）",
+  "desc": "salt yakitori skewers, grilled chicken thigh pieces on bamboo skewers with golden grilled spots and salt, on a long plate with a lemon wedge",
+  "items": [
+   "dishes:yakitori-shio",
+   "eatout:yakitori_momo_shio"
+  ]
+ },
+ {
+  "key": "dishes-tebamoto-sappari",
+  "ja": "手羽元のさっぱり煮",
+  "desc": "chicken drumettes simmered in vinegar soy sauce, glossy brown, with halved boiled eggs",
+  "items": [
+   "dishes:tebamoto-sappari"
+  ]
+ },
+ {
+  "key": "dishes-bunbunji",
+  "ja": "棒棒鶏（バンバンジー）",
+  "desc": "bang bang chicken, sliced poached chicken over julienned cucumber and tomato slices, topped with creamy sesame sauce",
+  "items": [
+   "dishes:bunbunji"
+  ]
+ },
+ {
+  "key": "dishes-mushidori",
+  "ja": "蒸し鶏（ねぎソース）",
+  "desc": "sliced steamed chicken breast with a chopped green onion sauce",
+  "items": [
+   "dishes:mushidori"
+  ]
+ },
+ {
+  "key": "dishes-beef-steak",
+  "ja": "ビーフステーキ",
+  "desc": "a beef steak on a sizzling iron plate, seared brown with grill marks, sliced showing a pink centre, with corn, French fries and glazed carrots",
+  "items": [
+   "dishes:beef-steak",
+   "eatout:steak200"
+  ]
+ },
+ {
+  "key": "dishes-kakuni",
+  "ja": "豚の角煮",
+  "desc": "buta no kakuni, braised pork belly cubes with layers of fat, glossy dark brown, with a halved boiled egg and greens",
+  "items": [
+   "dishes:kakuni"
+  ]
+ },
+ {
+  "key": "dishes-nikujaga-pork",
+  "ja": "肉じゃが（豚肉）",
+  "desc": "pork nikujaga in a bowl, soft potato chunks, carrot, onion, thin pork slices and shirataki in light-brown broth, green snow peas",
+  "items": [
+   "dishes:nikujaga-pork"
+  ]
+ },
+ {
+  "key": "dishes-nikudofu",
+  "ja": "肉豆腐",
+  "desc": "niku dofu, large cubes of grilled tofu simmered with thin beef slices, green onion and shirataki in sweet soy broth",
+  "items": [
+   "dishes:nikudofu",
+   "maff_kyodo:nikudofu_kyoto",
+   "kumagaya:2684"
+  ]
+ },
+ {
+  "key": "dishes-shigureni",
+  "ja": "牛肉のしぐれ煮",
+  "desc": "beef shigureni, thin beef slices simmered dark glossy brown with slivers of ginger, in a small bowl",
+  "items": [
+   "dishes:shigureni"
+  ]
+ },
+ {
+  "key": "dishes-hoikoro",
+  "ja": "回鍋肉（ホイコーロー）",
+  "desc": "twice-cooked pork (hoikoro), stir-fried pork belly slices with cabbage and green pepper in a glossy red-brown miso sauce",
+  "items": [
+   "dishes:hoikoro"
+  ]
+ },
+ {
+  "key": "dishes-chinjao",
+  "ja": "青椒肉絲（チンジャオロース）",
+  "desc": "pepper steak (chinjao rosu), thin strips of beef, green pepper and bamboo shoot stir-fried in glossy brown sauce",
+  "items": [
+   "dishes:chinjao"
+  ]
+ },
+ {
+  "key": "dishes-mabo-nasu",
+  "ja": "麻婆なす",
+  "desc": "mapo eggplant, soft purple eggplant pieces in a glossy red-brown spicy minced pork sauce",
+  "items": [
+   "dishes:mabo-nasu"
+  ]
+ },
+ {
+  "key": "dishes-ebichili",
+  "ja": "エビチリ",
+  "desc": "shrimp in chili sauce (ebi chili), plump prawns in a glossy bright orange-red sweet chili sauce with green onion",
+  "items": [
+   "dishes:ebichili",
+   "eatout:ebichili"
+  ]
+ },
+ {
+  "key": "dishes-ebimayo",
+  "ja": "エビマヨ",
+  "desc": "shrimp mayo, crisp fried prawns coated in creamy pale orange mayonnaise sauce, on lettuce",
+  "items": [
+   "dishes:ebimayo",
+   "eatout:ebimayo"
+  ]
+ },
+ {
+  "key": "dishes-sui-gyoza",
+  "ja": "水餃子（6個）",
+  "desc": "boiled water dumplings (sui gyoza), soft translucent pleated dumplings in a bowl of clear broth",
+  "items": [
+   "dishes:sui-gyoza",
+   "eatout:suigyoza"
+  ]
+ },
+ {
+  "key": "dishes-yasai-itame",
+  "ja": "野菜炒め",
+  "desc": "Japanese stir-fried vegetables (yasai itame), cabbage, bean sprouts, carrot, green pepper and pork slices glossy on a plate",
+  "items": [
+   "dishes:yasai-itame",
+   "eatout:yasaiitame",
+   "kurume:063",
+   "toyonaka:118633",
+   "kumagaya:00505"
+  ]
+ },
+ {
+  "key": "dishes-butakimuchi",
+  "ja": "豚キムチ",
+  "desc": "pork kimchi stir-fry, pork belly slices with red kimchi cabbage, onion and garlic chives",
+  "items": [
+   "dishes:butakimuchi",
+   "toyonaka:267978"
+  ]
+ },
+ {
+  "key": "dishes-goya-champuru",
+  "ja": "ゴーヤチャンプルー",
+  "desc": "goya champuru, stir-fried bitter melon slices with tofu chunks, scrambled egg and pork, topped with bonito flakes",
+  "items": [
+   "dishes:goya-champuru",
+   "maff_kyodo:47_11_okinawa",
+   "takatsuki:r29",
+   "toyonaka:122276"
+  ]
+ },
+ {
+  "key": "dishes-nira-tama",
+  "ja": "ニラ玉",
+  "desc": "nira tama, fluffy yellow scrambled egg with dark green garlic chives",
+  "items": [
+   "dishes:nira-tama"
+  ]
+ },
+ {
+  "key": "dishes-tomato-tamago",
+  "ja": "トマトと卵の炒め物",
+  "desc": "tomato and egg stir-fry, soft yellow scrambled egg with red tomato wedges, glossy",
+  "items": [
+   "dishes:tomato-tamago"
+  ]
+ },
+ {
+  "key": "dishes-bacon-egg",
+  "ja": "ベーコンエッグ",
+  "desc": "bacon and eggs, a sunny-side-up egg on crisp strips of bacon, on a plate",
+  "items": [
+   "dishes:bacon-egg"
+  ]
+ },
+ {
+  "key": "dishes-ham-egg",
+  "ja": "ハムエッグ",
+  "desc": "ham and egg, a sunny-side-up egg on round slices of pink ham, on a plate",
+  "items": [
+   "dishes:ham-egg",
+   "kurume:113"
+  ]
+ },
+ {
+  "key": "dishes-omelette",
+  "ja": "プレーンオムレツ",
+  "desc": "a plain omelette, a smooth yellow almond-shaped omelette with a line of ketchup, on a plate",
+  "items": [
+   "dishes:omelette",
+   "kumagaya:382"
+  ]
+ },
+ {
+  "key": "dishes-chawanmushi",
+  "ja": "茶碗蒸し",
+  "desc": "chawanmushi, a savoury egg custard in a lidded cup, smooth pale yellow custard with a shrimp, mitsuba and a ginkgo nut",
+  "items": [
+   "dishes:chawanmushi",
+   "eatout:chawanmushi",
+   "kurume:110"
+  ]
+ },
+ {
+  "key": "dishes-buri-teriyaki",
+  "ja": "ぶりの照り焼き",
+  "desc": "buri teriyaki, a yellowtail fillet with glossy dark brown teriyaki glaze, on a rectangular plate",
+  "items": [
+   "dishes:buri-teriyaki",
+   "kurume:078"
+  ]
+ },
+ {
+  "key": "dishes-buri-daikon",
+  "ja": "ぶり大根",
+  "desc": "buri daikon, simmered chunks of yellowtail and thick daikon rounds, glossy brown, with slivered ginger",
+  "items": [
+   "dishes:buri-daikon",
+   "maff_kyodo:37_4_toyama",
+   "maff_kyodo:buridaikon_kagoshima",
+   "kurume:098"
+  ]
+ }
+]

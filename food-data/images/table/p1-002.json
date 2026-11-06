@@ -2,7 +2,7 @@
  {
   "key": "mext-01004",
   "ja": "オートミール",
-  "desc": "a bowl of dry rolled oats, flat pale beige oval oat flakes, a few spilled beside the bowl",
+  "desc": "a small bowl heaped with dry rolled oats: many thin flat irregular pale beige oat flakes, matte and papery, a few loose flakes beside the bowl, with a wooden spoon",
   "items": [
    "mext:01004"
   ]
@@ -30,16 +30,6 @@
   "desc": "a small bowl of pale cream pancake mix powder beside two small fluffy golden pancakes",
   "items": [
    "mext:01024"
-  ]
- },
- {
-  "key": "mext-01206",
-  "ja": "食パン",
-  "desc": "a square Japanese white sandwich loaf (shokupan) with two thick slices cut off, soft fine white crumb and a thin golden-brown crust",
-  "items": [
-   "mext:01206",
-   "mext:01207",
-   "mext:01211"
   ]
  },
  {
@@ -121,7 +111,8 @@
   "items": [
    "mext:01209",
    "eatout:croissant",
-   "mext:01035"
+   "mext:01035",
+   "toyonaka:285526"
   ]
  },
  {
@@ -299,7 +290,7 @@
  {
   "key": "mext-01066",
   "ja": "焼きふ（釜焼きふ）",
-  "desc": "several dried Japanese baked wheat gluten pieces (yaki-fu), small light puffy round crouton-like pieces with golden-brown tops",
+  "desc": "Japanese yaki-fu, a few dry baked wheat gluten rounds and small rings, very light and airy like puffed bread crust, pale golden-cream with a lightly toasted top, matte and dry, not fried, not nuggets",
   "items": [
    "mext:01066"
   ]
@@ -489,7 +480,10 @@
   "desc": "sekihan, a bowl of glutinous rice tinted soft pinkish-red with dark red azuki beans, sprinkled with black sesame",
   "items": [
    "mext:01118",
-   "dishes:sekihan"
+   "dishes:sekihan",
+   "maff_kyodo:sekihan_hokkaido",
+   "kurume:005",
+   "kumagaya:00126"
   ]
  },
  {
@@ -685,7 +679,8 @@
   "ja": "ごま豆腐",
   "desc": "a square block of goma-dofu sesame tofu, smooth pale beige-grey, topped with a dab of green wasabi, in a small dish",
   "items": [
-   "mext:02056"
+   "mext:02056",
+   "maff_kyodo:goma_toufu_wakayama"
   ]
  },
  {
@@ -918,7 +913,8 @@
   "desc": "simmered koya-dofu, soft spongy pale tan tofu squares soaked in light dashi broth, in a small bowl with a few green snow peas",
   "items": [
    "mext:04087",
-   "dishes:koya-dofu"
+   "dishes:koya-dofu",
+   "kurume:121"
   ]
  },
  {
@@ -1172,7 +1168,9 @@
    "mext:06016",
    "mext:06017",
    "dishes:edamame",
-   "eatout:edamame"
+   "eatout:edamame",
+   "kurume:117",
+   "toyonaka:112200"
   ]
  },
  {
@@ -1237,7 +1235,8 @@
   "desc": "simmered kabocha pumpkin pieces in a small bowl, chunks with dark green skin and soft deep orange-yellow flesh",
   "items": [
    "mext:06049",
-   "dishes:kabocha-ni"
+   "dishes:kabocha-ni",
+   "kurume:164"
   ]
  },
  {

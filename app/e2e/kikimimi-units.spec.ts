@@ -7,7 +7,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -48,7 +49,7 @@ const UNIT = {
 /** The lobby, the fixture unit put in, しまの みち opened from the lobby's card. */
 async function toPath(page: Page) {
   await page.goto(`?demo&${Q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   await page.evaluate(([u, ids]) => (window as unknown as { __kiki: Kiki }).__kiki.unit(u, ids as string[]), [UNIT, Object.values(LESSONS).flat()] as const);
@@ -178,7 +179,7 @@ test('a built unit’s page counts all its key phrases: tr-hotel’s 「つか�
   const ph = (JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', 'u-tr-hotel.json'), 'utf8')) as { unit: { ph: unknown[] } }).unit.ph;
   expect(ph.length).toBeGreaterThan(2);
   await page.goto(`?demo&${Q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await sheet(page).locator('[data-kiki-path-open]').click();
   await sheet(page).locator('[data-kiki-stop="tr-hotel"] [data-kiki-stop-open]').click();

@@ -54,7 +54,7 @@ The tiers and why: [test-strategy.md](test-strategy.md).
   tiles: its worker, fonts and OpenFreeMap's origin) and fails on any CSP violation.
 - **The trip map.** In the logic tier no map is made: `TripMap` is a stub with its pins as buttons
   (`travel-map.spec.ts`, `window.__travelMap`). The drawn ones (its `@render` smoke, `csp.spec`, `leaks.spec`) get
-  OpenFreeMap answered from `e2e/fixtures/travel/` (`e2e/travelMap.ts`, with the refresh recipe): no spec reaches the
+  OpenFreeMap answered from `e2e/fixtures/travel/` (`e2e/trips.ts`, with the refresh recipe): no spec reaches the
   network.
 - Playwright's browsers are cached by its version; bumping `@playwright/test` downloads them once.
 
@@ -114,8 +114,13 @@ that morning.
   step and tries again. A plain click or touch only where the tap itself is the test (fishing-taps, exact-taps).
 - **Read the hooks once they're there**: `__world` comes before `__world3d`; `camTo` and `settled` wait for both
   (`ready3d`); a spec reading `__world3d` straight after `goto` waits on `is3d` first.
-- **Silent**: Chromium runs with `--mute-audio` (the music, K.K. and the effects never sound on a dev's Mac); WebKit
-  headless makes no sound.
+- **The island after the HUD**: after a `goto` or `reload` wait with `islandUp` (e2e/island.ts), not the HUD alone. The
+  3D island mounts up to 300 ms after the HUD shows (it waits for the ground's fields from their worker), and until
+  then every island target sits hidden at the scene's corner: a box read or a tap there missed (the full tier's ~20
+  red tests from 1a786b48 on).
+- **Silent**: Chromium runs with `--mute-audio` and `--disable-audio-output` (the music, K.K. and the effects never
+  sound on a dev's Mac, and the page's audio clock is a fake output's, as on CI's Linux: the Mac's own device stalled
+  it, the decks frozen, kk-sync red locally); WebKit headless makes no sound.
 - **No new fixed wait.** `page.waitForTimeout` or a `setTimeout` promise needs `// hold: <why>` on its line (a wait
   proving nothing happens for a while); the older ones are counted per file in `e2e/waits.json` and may only go down:
   fix one, lower its count.

@@ -343,7 +343,8 @@ class Validation(unittest.TestCase):
         for bad in (item(cat='肉料理'), item(id='off:1'), item(kcal=1.5), item(kcal=True), item(p='1'),
                     item(portions=[{'label': '', 'g': 1}]), item(portions=[]), item(aliases=['米']), item(pop=4),
                     item(ingredients=[]), item(name=''), item(jan='123'), item(fib=100.5), item(fib=None), item(alc='1', cat='酒'),
-                    item(alc=1.0), item(desc=''), item(desc='あ' * 41), item(desc=['x']), item(gloss=''), item(gloss='あ' * 21)):   # fibre and alcohol: absent when unknown, 0-100; alcohol on a drink only
+                    item(alc=1.0), item(desc=''), item(desc='あ' * 41), item(desc=['x']), item(gloss=''), item(gloss='あ' * 21),
+                    item(gloss='西洋ねぎ', desc='西洋ねぎとも呼ぶねぎ'), item(desc='ふつうの' + item()['name'])):   # fibre and alcohol: absent when unknown, 0-100; alcohol on a drink only
             self.assertEqual(len(lib.validate(self.doc(bad))), 1, bad)
         self.assertEqual(len(lib.validate(self.doc(item(), item()))), 1)          # duplicate id
         self.assertIn('missing url', lib.validate(dict(self.doc(item()), url='')))

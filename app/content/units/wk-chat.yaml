@@ -102,7 +102,7 @@ items:
   - id: dmu-marinas-lunch
     lv: 4
     type: next
-    en: Oh, hey! How was your weekend? Do anything fun? Kind of. My sister's kids stayed over, so, uh... not much sleep. Ha, I bet. Hey, I've been meaning to ask. Are you free Friday? A few of us are grabbing lunch for Marina's last day.
+    en: Oh, hey! Love the haircut. Big weekend? Kind of. My sister's kids stayed over, so, uh... not much sleep. Ha, I bet. Hey, I've been meaning to ask. Are you free Friday? A few of us are grabbing lunch for Marina's last day.
     ja: 金曜は大丈夫。入れといて。
     note: are you free Friday?＝曜日つき。本気の誘い
     speaker: judy
@@ -117,8 +117,8 @@ items:
     lines:
       - who: judy
         cast: us-f1
-        en: Oh, hey! How was your weekend? Do anything fun?
-        ja: あ、どうも！ 週末どうだった？ 何か楽しいことした？
+        en: Oh, hey! Love the haircut. Big weekend?
+        ja: あ、どうも！ 髪切ったの、いいね。週末はなにか大イベントあった？
       - who: octavian
         cast: us-m4
         en: Kind of. My sister's kids stayed over, so, uh... not much sleep.
@@ -185,7 +185,7 @@ items:
   - id: dmu-monday
     lv: 4
     type: gist
-    en: Morning. How was your weekend? Don't ask. I spent all of Saturday on that report. Oh no. Do you mean the one for Tuesday? I thought that got pushed back. Yeah, I found that out on Sunday night. Awesome. Ouch. Well, coffee's on me, then.
+    en: Morning. Wow, you look like you need that coffee. Don't ask. I spent all of Saturday on that report. Oh no. Do you mean the one for Tuesday? I thought that got pushed back. Yeah, I found that out on Sunday night. Awesome. Ouch. Well, coffee's on me, then.
     ja: 急ぎでなかったレポートに土曜を使った。
     note: pushed back＝延期。Awesome は皮肉
     speaker: static
@@ -200,8 +200,8 @@ items:
     lines:
       - who: static
         cast: us-m6
-        en: Morning. How was your weekend?
-        ja: おはよう。週末どうだった？
+        en: Morning. Wow, you look like you need that coffee.
+        ja: おはよう。うわ、そのコーヒーが必要って顔してるね。
       - who: katt
         cast: us-f6
         en: Don't ask. I spent all of Saturday on that report.
@@ -285,17 +285,16 @@ items:
   - id: mu-n-call-moved
     lv: 4
     type: num
-    en: Sorry, I've got to run. My call got moved from 2:30 to 2. Actually, no, 1:45. I'm already late.
-    tts: Sorry, I've gotta run. My call got moved from two thirty to two. Actually, no, one forty-five. I'm already late.
-    ja: ごめん、もう行かなきゃ。電話会議が2時半から2時に…じゃなくて、1時45分になったんだ。もう遅刻。
-    note: Actually, no の後が訂正。gotta run＝もう行く
+    en: Lunch for Marina? We're at eight so far. Her team's another six, so that's fourteen. I'll grab the big table.
+    ja: マリーナのランチ？ 今のところ8人。彼女のチームがあと6人だから、14人だね。大きいテーブルを取っておくよ。
+    note: 8＋6。so that's の後が合計
     speaker: lopez
     voice: us
     cast: us-m6
-    choices: [ 1:45, 2:00, 2:30 ]
+    choices: [ "14", "8", "6" ]
     answer: 0
-    ask: かいぎは なんじに なった？
-    tags: { seed: 38, register: colleague, pragmatic: literal, features: [ numbers, self-repair, gotta ] }
+    ask: ランチは なんにん？
+    tags: { seed: 38, register: colleague, pragmatic: literal, features: [ numbers ] }
     scene: office
   - id: mu-r-get-up-to
     lv: 4

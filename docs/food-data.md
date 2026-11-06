@@ -139,10 +139,10 @@ line (also a narrower key's way to drop a broader one's), and a key matching no 
   `wd:<QID>` (the Wikidata description), `maff:<page>` (うちの郷土料理). A line the sources don't both confirm stays empty.
   Each batch is checked by an independent pass against the same sources before it ships.
 - **Plain and factual.** No health or nutrition claims (`DESC_BANNED`), no Wikipedia sentence copied: the lines are
-  ours, written from the facts. Everyday foods (ごはん, 牛乳) have none.
+  ours, written from the facts. Everyday foods (ごはん, 牛乳) have none. The amount shows a line beside the food's name
+  and `gloss`, so it never repeats them (`lib.validate`), and another name in it says so (「…。しなちくとも」, not 「…。しなちく」).
 - **Everyday names** (`gloss`, `data_src/glosses.json`) work the same way, sources `mext:` (別名), `ov:` (`mext_overrides.txt`),
-  `wd:` (labels/aliases) and `wp:`; the first batch, 26 keys on 31 MEXT foods, came from 152 alias candidates, and the
-  independent check flagged 5 of 31 (dropped).
+  `wd:` (labels/aliases) and `wp:`.
 - **Credit.** MEXT's attribution says the descriptions are ours (「説明文は本アプリで加工・追加」); the MAFF dataset's covers
   its dishes'. Wikipedia and Wikidata are only sources of facts for our own wording (no text is shipped).
 
@@ -185,9 +185,10 @@ not drawn yet keep their category's tile. `food-data/images/fi.py` (its docstrin
   then goes back to the tile. Every verdict is appended to `verdicts.jsonl`.
 - **Pack** (`pack`, PIL): it evens the background to the paper colour (#F5E4BC, a per-channel gain from the border's median), then
   writes webp q72 sprite sheets into `app/static/food-img/`. Thumbnail sheets hold 10 × 10 cells of 128 px (rows, 40–64 px
-  at 3×). Detail sheets hold 4 × 4 cells of 384 px (the amount's 160 px picture). Sheets are per neighbourhood
-  (`BUCKET`: a row's first item's category), with the popular items first, so a search touches few. `slots.json` is
-  append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
+  at 3×). Detail sheets hold 5 × 5 cells of 384 px (the amount's 160 px picture). Thumbnail sheets are per search
+  neighbourhood (`FAMILY`: a row whose name holds a common search word, e.g. カレー or 卵, sits with that word's family,
+  else with its category), so a common search's top 20 touch about 1–2 sheets; detail sheets go by category. Popular
+  items come first. `slots.json` is append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
   `index.json` maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
 - **Budget** (`lib/food/images.test.ts`): ≤ 400 files and 60 MB in food-img/, ≤ 400 KB a sheet, ≤ 19,000 files under
   static/ (Cloudflare Pages takes 20,000 a deploy). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),

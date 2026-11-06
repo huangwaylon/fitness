@@ -8,11 +8,12 @@ import INDEX_JSON from './levels/index.json';
 import type { Accent, Entry, Feature, Item, ItemType, Level, Tags } from './bank.ts';
 import { addClips, type ChunkClip, type Words } from './clips.ts';
 import type { Ladder } from './ladder.ts';
+import type { UnitChunk, UnitPlay } from './lesson.ts';
 
 /** What a chunk holds: a level's items (or the ladders; a unit's: the unit, its lessons' items and ladders) and their
  *  clips and word timings. */
 interface Part {
-  unit?: unknown;
+  unit?: UnitPlay;
   items?: Item[];
   ladders?: Ladder[];
   /** The audio packs its clips are in (stems: `lv4-2.1a2b3c4d`). */
@@ -142,7 +143,7 @@ export function ladders(): readonly Ladder[] {
 
 /** A loaded unit's chunk (a lesson's deck: lesson.ts): the unit as compiled (compile.ts unitChunk) and its lessons'
  *  items and ladders, as authored; undefined while it isn't loaded or this build hasn't it. */
-export function unitPart(id: string): { unit: unknown; items: readonly Item[]; ladders: readonly Ladder[] } | undefined {
+export function unitPart(id: string): Required<UnitChunk> | undefined {
   const names = partsOf(id as Unit);
   if (!names.length || !names.every((p) => got.has(p))) return undefined;
   const parts = names.map((p) => got.get(p)!);
@@ -152,7 +153,7 @@ export function unitPart(id: string): { unit: unknown; items: readonly Item[]; l
 
 /** A unit's chunk put in at run time, as if loaded (the lessons' unit tests, the e2e's fixture through the dev hook:
  *  docs/curriculum-units.md §8 U2-U3). Its id must not be a build's. */
-export function addUnit(id: string, part: { unit: unknown; items: Item[]; ladders?: Ladder[] }): void {
+export function addUnit(id: string, part: { unit: UnitPlay; items: Item[]; ladders?: Ladder[] }): void {
   if (INDEX.units[id]) throw new Error(`kikimimi: unit ${id} is this build's`);
   const name = `u-${id}`;
   EXTRA.set(id, name);

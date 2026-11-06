@@ -12,21 +12,21 @@ status: draft
 items:
   - kind: tachi
     id: tachi-leaving-gift
-    ask: "同僚への プレゼントを 決めている"
-    scene: office
+    ask: "ターゲットで 同僚への プレゼントを 決めている"
+    scene: street
     lines:
-      - { who: maple, at: 0, en: "Okay, Sato-san's going-away party is Friday, and we still need a gift. I was thinking a nice bottle of sake.", ja: "さて、佐藤さんの送別会は金曜で、まだプレゼントが決まってないの。いい日本酒を考えてたんだけど。" }
-      - { who: beau, at: 0.3, en: "She doesn't drink, though, does she? I've never seen her have anything stronger than tea.", tts: "She doesn't drink, though, does she? I've never seen 'er have anything stronger than tea.", ja: "でも彼女、飲まないよね？お茶より強いものを飲んでるところ、見たことないよ。" }
-      - { who: ken, at: -0.2, en: "Yeah, no, sake's a bad call. What about a gift card? Then she picks.", tts: "Yeah, no, sake's a bad call. Whaddabout a gift card? Then she picks.", ja: "うん、いや、日本酒はやめたほうがいい。ギフトカードは？それなら本人が選べる。" }
-      - { who: maple, at: 0.3, en: "A gift card feels kind of lazy, doesn't it? Like we didn't put any thought into it.", tts: "A gift card feels kinda lazy, doesn't it? Like we didn't put any thought into it.", ja: "ギフトカードってちょっと手抜きっぽくない？何も考えてないみたいで。" }
-      - { who: beau, at: 0.3, en: "She's moving to Fukuoka for the hiking, isn't she? Get her something for that. A good thermos, or a backpack.", tts: "She's movin' to Fukuoka for the hiking, isn't she? Get 'er something for that. A good thermos, or a backpack.", ja: "彼女、山歩きのために福岡に引っ越すんだよね？それ用のものにしよう。いい水筒とか、リュックとか。" }
-      - { who: ken, at: -0.4, en: "Ooh, the thermos. And we could get it engraved with the team name.", tts: "Ooh, the thermos. An' we could get it engraved with the team name.", ja: "お、水筒いいね。チーム名を彫ってもらえるし。" }
-      - { who: maple, at: 0.3, en: "Okay, I'm sold. An engraved thermos. I'll order it tonight so it's here by Thursday.", ja: "わかった、それで決まり。名入れの水筒ね。今夜注文して、木曜までに届くようにする。" }
-      - { who: ken, at: 0.2, en: "You're the best. I'll pass the envelope around for the money.", ja: "さすが。お金集めの封筒は僕が回すよ。" }
+      - { who: maple, at: 0, en: "Okay, Dana's going-away party is Friday, and we're standing in Target with no plan. I was thinking a nice bottle of wine.", ja: "さて、ダナの送別会は金曜なのに、ノープランでターゲットに立ってるわけ。いいワインを考えてたんだけど。" }
+      - { who: beau, at: 0.3, en: "She doesn't drink, though, does she? I've never seen her have anything stronger than iced tea.", tts: "She doesn't drink, though, does she? I've never seen 'er have anything stronger than iced tea.", ja: "でも彼女、飲まないよね？アイスティーより強いものを飲んでるところ、見たことないよ。" }
+      - { who: ken, at: -0.2, en: "Yeah, no, wine's a bad call. What about a gift card? There's a whole wall of them right there.", tts: "Yeah, no, wine's a bad call. Whaddabout a gift card? There's a whole wall of 'em right there.", ja: "うん、いや、ワインはやめたほうがいい。ギフトカードは？そこに壁一面あるし。" }
+      - { who: maple, at: 0.3, en: "A gift card feels kind of lazy, doesn't it? Like we grabbed it at checkout. Which we would be.", tts: "A gift card feels kinda lazy, doesn't it? Like we grabbed it at checkout. Which we would be.", ja: "ギフトカードってちょっと手抜きっぽくない？レジでついでに取ったみたいで。実際そうなるけど。" }
+      - { who: beau, at: 0.3, en: "She's moving to Denver for the hiking, isn't she? Get her something for that. Camping stuff's in the back.", tts: "She's movin' to Denver for the hiking, isn't she? Get 'er something for that. Camping stuff's in the back.", ja: "彼女、山歩きのためにデンバーに引っ越すんだよね？それ用のものにしよう。キャンプ用品は奥だよ。" }
+      - { who: ken, at: -0.4, en: "Ooh, a good thermos. And the place in the mall can engrave the team name on it.", tts: "Ooh, a good thermos. An' the place in the mall can engrave the team name on it.", ja: "お、いい水筒ね。モールの店でチーム名を彫ってもらえるし。" }
+      - { who: maple, at: 0.3, en: "Okay, I'm sold. A thermos from here, engraved at the mall. If we drop it off today, it's ready Thursday.", ja: "わかった、それで決まり。ここで水筒を買って、モールで名入れ。今日持っていけば木曜にできる。" }
+      - { who: ken, at: 0.2, en: "You're the best. I'll grab a card and get everyone to sign it.", ja: "さすが。カードを買って、みんなに寄せ書きしてもらうよ。" }
     rounds:
       - { type: opinions, claims: ["彼女は お酒を 飲まない", "最初は ギフトカードを すすめた", "ギフトカードは 手抜きに 見える"], answer: [beau, ken, maple] }
       - { type: changed, answer: maple }
-      - { type: plan, ask: "プレゼントは？", choices: ["A bottle of good sake.", "An engraved thermos, ordered tonight.", "A gift card for a hiking store."], answer: 1, ja: "名入れの水筒。今夜注文する。" }
+      - { type: plan, ask: "プレゼントは？", choices: ["A bottle of good wine.", "A thermos from here, engraved at the mall.", "A gift card from the wall by checkout."], answer: 1, ja: "ここで買った水筒に、モールで名入れする。" }
     note: "Yeah, no＝いや、ちがう。I'm sold＝賛成"
     tags: { seed: 54, register: colleague, pragmatic: attitude, features: [overlap, h-drop, idiom] }
 

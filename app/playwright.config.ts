@@ -44,12 +44,16 @@ export default defineConfig({
         // the tent's room is WebGL: headless Chromium draws it in software (SwiftShader)
         // (E2E_SWIFTSHADER=1: software GL on a Mac too, as CI's Linux runners draw: a slow GPU's timing)
         // --mute-audio: never a sound out loud from a test (the music, K.K., the effects play on a dev's Mac too);
+        // --disable-audio-output: a fake output's clock, never the machine's device (CI's Linux has none, so it has
+        // always been this there): on a Mac the real one stalled a page's audio clock (running, its time frozen: the
+        // music decks never moved, or each tab's apart, kk-sync red locally);
         // --host-resolver-rules: no host but the local preview resolves (docs/ops/testing.md "Hermetic"; e2e/fixtures.ts
         // fails a test that tried, in every browser), but for the real relay's harness (RELAY_E2E=1)
         launchOptions: {
           args: [
             '--enable-unsafe-swiftshader',
             '--mute-audio',
+            '--disable-audio-output',
             ...(process.env.RELAY_E2E ? [] : ['--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost']),
             ...(process.env.E2E_SWIFTSHADER ? ['--use-angle=swiftshader', '--use-gl=angle'] : [])
           ]

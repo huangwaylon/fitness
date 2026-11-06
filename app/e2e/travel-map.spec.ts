@@ -4,7 +4,7 @@
 // network), the NH pins on the map, a day chip refits it, a pin selects and is tagged; offline, the route alone with a
 // note; the map's chunk not fetched, a retry.
 import { expect, test, type Page } from './fixtures.ts';
-import { drawn, fixtureTiles, gotoTrip, mapReady, mapState } from './travelMap.ts';
+import { drawn, fixtureTiles, gotoTrip, mapReady, mapState } from './trips.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const pane = (p: Page) => p.locator('dialog[open] [data-map-pane]');

@@ -1,5 +1,5 @@
 // ききみみ クイズ stage やま (B2+, docs/curriculum.md §3 S3), set A: harder than もり (bank4.ts, dialogues.ts) in the
-// listening and the pragmatics, not in the vocabulary. American idioms and phrasal verbs in context (rain check, throw
+// listening and the pragmatics, not in the vocabulary. American idioms and phrasal verbs in context (play it by ear, throw
 // under the bus, on your watch, hang a left), slang and casual speech (yeah, no; ghosted; a parking lot of a freeway;
 // when pigs fly), sitcom- and movie-style sarcasm, banter, teasing,
 // understatement and overstatement, audible puns (knead / need the dough), heavy reductions spelled as said in `tts`
@@ -9,54 +9,39 @@
 //   LEVEL: やま is level 6 (`LV`, one place).
 //   Shape: bank4.ts's and dialogues.ts's (the existing types only: reply, mean, word, num; dialogues gist and next),
 // with the staging written in place (`scene`, `channel`, `marks`) since staging.ts is shared: the integrator may move
-// them to PLACES / MARKS. Voices: bank4.ts CAST (one cast voice per villager for good); American English and US voices
+// them to PLACES / MARKS. Voices: cast.ts CAST (one cast voice per villager for good); American English and US voices
 // by default; about a tenth are UK or AU voices in standard English (no slang), tagged `accent-exposure`.
 // `en` is shown (UK spelling for UK and AU voices), `tts` spoken when it differs (§9: every number written out).
 //   ids: `ya-` (items), `dya-` (dialogues). bank.test, staging.test and content/sets.test check them.
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
-import { CAST } from '../bank4.ts';
+import type { Channel, Item, ItemType, Level, SceneId, SoundMark, Tags } from '../bank.ts';
+import { MEAN_ASK, dialogueOf, g, line, single, tg, type DialogueRow, type L } from './build.ts';
 
 /** やま's level. */
 const LV: Level = 6;
 
-const MEAN_ASK = 'つまり、どういうこと？';
-const NEXT_ASK = 'つぎの ひとことは？';
-
 type Extra = { tts?: string; focus?: string; ask?: string; scene?: SceneId; channel?: Channel; marks?: readonly SoundMark[] };
 type Row = readonly [id: string, speaker: RosterId, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, extra?: Extra];
 
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-
-const castOf = (who: RosterId) => {
-  const cast = CAST[who];
-  if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
-  return cast;
-};
-
 const item = (type: ItemType) => ([id, speaker, en, ja, note, choices, tags, x = {}]: Row): Item => {
-  const cast = castOf(speaker);
   const focus = type === 'word' ? choices[0] : x.focus;
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : undefined);
   return {
-    id, lv: LV, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags,
+    ...single(LV, type, id, speaker, en, ja, note, choices, tags),
     ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }),
     ...(x.scene && { scene: x.scene }), ...(x.channel && { channel: x.channel }), ...(x.marks && { marks: x.marks })
   };
 };
 
-const g = (at: string): SoundMark => ['drop', at, 'g'];
-
 // ---- reply: the best reply (the right one first) --------------------------------------------------------------------
 
 const REPLY: readonly Row[] = [
-  ['ya-r-rain-check', 'kk-slider', "Can I take a rain check on tonight? Work's kind of swamped.",
-    '今夜の約束、また今度にしてもいい？仕事がちょっと立て込んでて。 →「全然いいよ。落ち着いたら連絡して。」',
-    'rain check＝また今度。天気の話ではない',
-    ['No sweat. Hit me up when things calm down.', "Yeah, it's supposed to rain all night.", "Sure, I'll check your work for you."],
-    tg(49, 'friend', 'refusal', ['phone'], ['idiom', 'kinda']),
-    { tts: "Can I take a rain check on tonight? Work's kinda swamped.", scene: 'living', marks: [['say', 'kind of', 'kinda']] }],
+  ['ya-r-rain-check', 'kk-slider', "Saturday's kind of up in the air for me. Can we just play it by ear?",
+    '土曜はまだちょっとどうなるかわからなくて。その時の流れで決めてもいい？ →「もちろん。当日の朝にメッセージして。」',
+    'play it by ear＝その場で決める。耳や楽器の話ではない',
+    ['Totally. Just text me that morning.', 'Sure, I can hear you fine.', "Yeah, I'll bring my guitar."],
+    tg(49, 'friend', 'hedge', ['phone'], ['idiom', 'kinda']),
+    { tts: "Saturday's kinda up in the air for me. Can we just play it by ear?", scene: 'living', marks: [['say', 'kind of', 'kinda']] }],
   ['ya-r-whaddaya', 'bob', 'What do you say we just order in and call it a night?',
     'もう出前にして、今日はおしまいってことでどう？ →「しょうがないなあ（大賛成）。メニュー取ってくる。」',
     'Whaddaya say…?＝〜しない？ 意見を聞いてはいない',
@@ -69,13 +54,13 @@ const REPLY: readonly Row[] = [
     ['I know, I know. That was out of line. Sorry.', 'No, I took the train this morning.', 'Yeah, the whole team was there.'],
     tg(44, 'colleague', 'attitude', [], ['yod', 'idiom']),
     { tts: 'Didja seriously just throw me under the bus in fronna the whole team?', scene: 'office', marks: [['say', 'Did you', 'didja'], ['say', 'front of', 'fronna']] }],
-  ['ya-r-ballpark', 'cj', "I'm not going to hold you to it, but what are we looking at, ballpark?",
-    '言質を取るつもりはないけど、ざっくりいくらぐらい？ →「ざっと見て、2千ドル前後かな。」',
-    'ballpark＝おおよその額。球場の話ではない',
-    ['Rough guess? Somewhere around two grand.', "It's near the ballpark, yeah.", "No, I won't hold it for you."],
-    tg(31, 'service', 'hedge', [], ['gonna', 'idiom']),
-    { tts: "I'm not gonna hold ya to it, but what're we lookin' at, ballpark?", scene: 'living',
-      marks: [['say', 'going to', 'gonna'], ['say', 'you', 'ya'], ['say', 'what are', "what're"], g('looking')] }],
+  ['ya-r-ballpark', 'cj', "I know you don't have the list on you, but off the top of your head, how many are we expecting?",
+    'リストが手元にないのはわかってるけど、パッと思いつく範囲で、何人くらい来そう？ →「ざっくり？30人、多くて35人かな。」',
+    'off the top of your head＝パッと思いつく範囲で',
+    ['Rough guess? Thirty, maybe thirty-five.', "My head's fine, thanks for asking.", "No, it's on top of the fridge."],
+    tg(31, 'friend', 'hedge', [], ['idiom', 'contraction']),
+    { tts: "I know you don't have the list on ya, but off the top of your head, how many're we expectin'?", scene: 'living',
+      marks: [['say', 'on you', 'on ya'], ['say', 'many are', "many're"], g('expecting')] }],
   ['ya-r-humblebrag', 'marshal', "Ugh, I've been so busy, what with the book deal and the podcast and everything.",
     'はあ、忙しくてさ。本の出版契約とか、ポッドキャストとか、いろいろで。 →「まあ、お気の毒に。君でいるのも大変だね。」',
     '自慢話にはからかいで返す。what with＝〜やら',
@@ -469,14 +454,14 @@ const NUM: readonly Row[] = [
     ['34度', '38度', '43度'],
     tg(60, 'friend', 'literal', [], ['numbers', 'accent-exposure']),
     { ask: '明日の 予想気温は？', focus: 'thirty-four', scene: 'street' }],
-  ['ya-n-phone', 'maple', "It's 090-4473-0186. Got that?",
-    '番号は090-4473-0186。わかった？',
-    '0 は「オー」と読む。4473 と 4743 を聞き分ける',
-    ['090-4473-0186', '090-4743-0186', '090-4473-0168'],
+  ['ya-n-phone', 'maple', "It's 090-5182-7731. Got that?",
+    '番号は090-5182-7731。わかった？',
+    '0 は「オー」と読む。5182 と 5128 を聞き分ける',
+    ['090-5182-7731', '090-5128-7731', '090-5182-7713'],
     tg(45, 'friend', 'literal', ['phone'], ['numbers']),
-    { ask: '電話番号は？', focus: '090-4473-0186', scene: 'living',
-      tts: "It's oh-nine-oh, four-four-seven-three, oh-one-eight-six. Got that?",
-      marks: [['say', '090-4473-0186', 'oh-nine-oh, four-four-seven-three, oh-one-eight-six']] }],
+    { ask: '電話番号は？', focus: '090-5182-7731', scene: 'living',
+      tts: "It's oh-nine-oh, five-one-eight-two, seven-seven-three-one. Got that?",
+      marks: [['say', '090-5182-7731', 'oh-nine-oh, five-one-eight-two, seven-seven-three-one']] }],
   ['ya-n-delay', 'orville', "We're now looking at a 9:15 departure, so if you were booked on the 7:45, that's about an hour and a half.",
     '現在、出発は9時15分の見込みです。7時45分の便をご予約の方は、約1時間半の遅れです。',
     '9:15 と 7:45 の差。15 と 45 に惑わされない',
@@ -518,14 +503,14 @@ const NUM: readonly Row[] = [
     ['$45', '$90', '$39'],
     tg(27, 'friend', 'literal', [], ['numbers']),
     { ask: '相手が はらうのは？', focus: 'your half', scene: 'cafe' }],
-  ['ya-n-room', 'molly', 'Room 1415. No, sorry, 1450. One-four-five-oh.',
-    '1415号室。いえ、失礼しました、1450号室です。',
-    'fifteen と fifty。sorry の後が正解',
-    ['1450', '1415', '1540'],
-    tg(3, 'service', 'literal', ['desk'], ['teen-ty', 'self-repair']),
-    { ask: '部屋番号は？', focus: '1450',
-      tts: 'Room fourteen fifteen. No, sorry, fourteen fifty. One-four-five-oh.',
-      marks: [['say', '1415', 'fourteen fifTEEN'], ['say', '1450', 'fourteen FIFty']] }],
+  ['ya-n-room', 'molly', "That's $16.40 before tax, so $17.80 out the door.",
+    '税抜きで16ドル40セント、税込みだと17ドル80セントです。',
+    'out the door＝税込みの総額。before tax は税抜き',
+    ['$17.80', '$16.40', '$17.18'],
+    tg(26, 'service', 'literal', [], ['teen-ty', 'numbers']),
+    { ask: '税こみで いくら？', focus: '$17.80',
+      tts: "That's sixteen forty before tax, so seventeen eighty out the door.",
+      marks: [['say', '$16.40', 'sixteen FORty'], ['say', '$17.80', 'seventeen EIGHTy']] }],
   ['ya-n-movie', 'kid-cat', "Movie's at 7:10, but there's like 20 minutes of trailers, so we're fine if we're there by half past.",
     '映画は7時10分だけど、予告が20分くらいあるから、7時半までに着けば大丈夫。',
     'half past＝7時半。開始の 7:10 ではない',
@@ -549,28 +534,14 @@ export const ITEMS: readonly Item[] = [...REPLY.map(item('reply')), ...MEAN.map(
 
 // ---- dialogues: gist and next (dialogues.ts's shape) ----------------------------------------------------------------
 
-type L = readonly [who: RosterId, en: string, ja: string, tts?: string, marks?: readonly SoundMark[]];
-interface DRow {
-  id: string;
-  type: Extract<ItemType, 'gist' | 'next'>;
+interface DRow extends DialogueRow {
   lines: readonly L[];
-  ask?: string;
-  /** The right one first. */
-  choices: readonly string[];
-  ja: string;
-  note: string;
-  focus: string;
-  tags: Tags;
   scene?: SceneId;
 }
 
-const line = ([who, en, ja, tts, marks]: L): Line => ({ who, cast: castOf(who), en, ja, ...(tts && { tts }), ...(marks && { marks }) });
-
 const dialogue = (r: DRow): Item => {
-  const lines = r.lines.map(line);
   return {
-    id: r.id, lv: LV, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: r.tags, lines,
+    ...dialogueOf(LV, r, r.lines.map(line)),
     ...(r.scene && { scene: r.scene })
   };
 };

@@ -4,8 +4,8 @@
 // opens at まえ), Gulliver on the front beach, never under a control; a tap gives a line (an introduction first), no
 // trading, no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, controlsUnder, geo, offFrom, quiet, tapFigure } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { camTo, controlsUnder, geo, islandUp, offFrom, quiet, tapFigure } from './island.ts';
+import { hudBells } from './hud.ts';
 
 /** Press a balloon's choice where it is on screen (a locator click would first scroll it "into view": the stage is
  *  sticky in the camera's scroller, so that moves the camera). */
@@ -54,10 +54,10 @@ const kkAt = (page: Page) => page.evaluate(() => (window as unknown as { __layou
 test('K.K. lives on his stool, every day (a Friday evening too); on Saturday from 18:00 his show: with the music on he asks for a request and plays (NH)', async ({ page }) => {
   await music(page);
   await page.goto('?demo&date=2026-10-23T19:00&critter=none'); // a Friday: there, strumming to himself
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', 'day');
   await page.goto('?demo&date=2026-10-24T19:00&critter=none'); // a Saturday (not Halloween: Jack's night)
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', 'show');
   const bells = await hudBells(page).getAttribute('aria-label');
   // on his stool (the layout's), in view as the island opens (まえ)
@@ -96,7 +96,7 @@ for (const as of ['A', 'B', 'G'] as const)
     test(`anyone asks K.K. for a song at any time: ${as} at ${when.slice(11)}`, async ({ page }) => {
       await music(page);
       await page.goto(`?demo&as=${as}&date=${when}&critter=none&visitor=none`); // a Wednesday afternoon; 2 a.m.
-      await expect(hudMenu(page)).toBeVisible();
+      await islandUp(page);
       await expect(page.locator('[data-kk]')).toHaveAttribute('data-kk', when.endsWith('02:00') ? 'asleep' : 'day');
       await camTo(page, (await geo(page)).CAMS.mae, false);
       await quiet(page); // (the opening beats over)
@@ -111,7 +111,7 @@ for (const as of ['A', 'B', 'G'] as const)
 
 test('K.K. with the music off still takes a request: the pick turns ミュージック on and he plays', async ({ page }) => {
   await page.goto('?demo&date=2026-10-24T20:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await camTo(page, (await geo(page)).CAMS.mae, false);
   await tapFigure(page, '[data-kk] .art');
   await expect(page.locator('[data-fx="talk"] .sr')).toContainText('リクエストは あるかな？');
@@ -125,7 +125,7 @@ test('visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gul
   await page.setViewportSize({ width: 390, height: 844 });
   for (const [q, id, name] of [['2026-11-01T08:00&critter=none', 'daisy-mae', 'ウリ'], ['2026-11-04T22:00&visitor=wisp&critter=none', 'wisp', 'ゆうたろう'], ['2026-11-04T12:00&visitor=gulliver&critter=none', 'gulliver', 'ジョニー']] as const) {
     await page.goto(`?demo&date=${q}`);
-    await expect(hudMenu(page)).toBeVisible();
+    await islandUp(page);
     const { CAMS, CENTRE_STAGE, BEACHED } = await geo(page);
     const [x, z] = id === 'gulliver' ? BEACHED : CENTRE_STAGE;
     await camTo(page, CAMS.mae, false);
@@ -156,13 +156,13 @@ test('visitors stand where NH puts them (Daisy Mae and Wisp at centre stage, Gul
 
 test('nobody visits on a quiet day (about one in ten of the rotation’s)', async ({ page }) => {
   await page.goto('?demo&date=2026-11-19T19:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-visitor]')).toHaveCount(0);
 });
 
 test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, drawn on the 3D island as her NH model, and she talks', async ({ page }) => {
   await page.goto('?demo&date=2026-11-08T09:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const { CAMS } = await geo(page);
   await camTo(page, CAMS.mae, false);
   // the 3D island stands her model where her node is (posed as the villagers are; her DOM node the tap box only), and
@@ -175,7 +175,7 @@ test('the day brings its visitor with no hook: Daisy Mae on a Sunday morning, dr
 
 test('the weekday rotation brings its visitor with no hook: Redd on Wednesday Nov 4 2026, at centre stage, and he talks', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const { CAMS, CENTRE_STAGE } = await geo(page);
   await camTo(page, CAMS.mae, false);
   await expect(page.locator('[data-visitor="redd"] .art')).toBeVisible();
@@ -187,7 +187,7 @@ test('the weekday rotation brings its visitor with no hook: Redd on Wednesday No
 
 test('a tap in a visitor’s reach (a finger’s slack beside its figure) with nothing exact under it still talks', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const { CAMS } = await geo(page);
   await camTo(page, CAMS.mae, false);
   const art = page.locator('[data-visitor="redd"] .art');

@@ -45,7 +45,10 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   steps first, then Move, Exercise, Stand) today's amount against the goal (「14,164 / 8,000歩」), ✓ once met and a yuzu
   「がんばり」 chip at 1.5× ([Goals](#goals)); no ベル on the rows. Until then each holds its place faintly: a dashed
   ring where the ✓ comes and a dashed ghost of the chip (gone once the day's がんばり cap is paid), so an early morning's
-  popup shows what will fill in. Then the ledger, always all three lines, a zero faint: 「もくひょう +3」, 「がんばり +1」
+  popup shows what will fill in. Under the goals one ごはん row (the bowl): 朝 / 昼 / 夜, each the same dashed ring
+  until that person's meal log has anything in that meal today (a いつもの on its day too; おやつ never counts), then ✓
+  (2026-11-06, the user: "it's too easy to forget"; `island/mealChecks.ts`; display only: the bowl opens the log).
+  Everyone's meals are seen by all three, so the guest sees them too. Then the ledger, always all three lines, a zero faint: 「もくひょう +3」, 「がんばり +1」
   (「がんばり（上限 2） +2」 when three or four were reached) and this person's total 「うめの きょう +6 ベル」; then
   ふたりでぜんぶ (「ふたりで ぜんぶ まで：あと 2つ」 or 「ふたりで ぜんぶ！ +2 ふたりに」), outside either total, so both
   totals plus it make today's total (ごほうび's 「きょう +N ベル」). The last line says when that person's data last arrived (「15:24 に とどいた」), with
@@ -439,19 +442,21 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる, hidden once
   something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,
   さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓n 一致」 when n independent
-  sources agree on its kcal (in words on the row: an iPhone never shows a title), a product's brand, the food's
+  sources agree on its kcal (in words on the row: an iPhone never shows a title; on the second line when nothing else is there, so a row is two lines), a product's brand, the food's
   everyday name in Japanese (`foodUi.ts` glossOf: an older snapshot's catalogue name now, 若どり もも → 鶏もも肉; else the
-  food data's vetted `gloss`, an alias two sources back, to come; never a raw alias, a spelling or English: mostly none,
-  an empty line beats noise; one line, cut short), and its default
+  food data's vetted `gloss`; never a raw alias or English: mostly none; one line, cut short), and its default
   portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name; the 100 g values on the
   amount). A food in its states (the data's `vg`/`st`: 豚ロース 脂身つき 生 · ゆで · 焼き) is one row (`search.ts`: its
   best hit, the default at a tie, so 豚ロース 焼き shows 焼き), named without its state (`foodUi.ts` stemName; 焼きいも
-  stays), its states under it, the shown one yuzu-filled and the rest outlined in process order (past three: ほか N).
+  stays), its states under it as plain text in process order, 生・ゆで・焼き, the shown one in ink (past four: ほか N).
+  MEXT's lookalikes are out unless the query names them (豚 中型種, 親鶏, 交雑牛: `search.ts` LOOKALIKE; 和牛 · 国産牛 ·
+  輸入牛 stay, they change what you buy), and a meat's 脂身 alone or a 皮 ranks a tier under the usual cuts.
   Left of the name, the food's **category tile** (`FoodThumb`, 48 px; the recipe's ingredients 40 px): an NH
   rounded square with a brown lip, the category's tint, a plain line glyph and its word in small type (`art.ts`
   FOOD_CAT: a leaf and 野菜, never a particular food's picture; night tints darker; マイ食品 その他, マイレシピ レシピ), a fixed box over 4 px
-  of the row's padding so the row is no taller; a name wraps to 2 lines at most. Its `img` (a packed sheet's cell, to
-  come: generated pictures for generic foods; products keep their tile) fades in over the tint, the tile again on error;
+  of the row's padding so the row is no taller; a name wraps to 2 lines at most. A food with a picture (`lib/food/images.ts`
+  imgOf: generated イメージ of generic foods in static/food-img sprite sheets, by the id as logged; products keep their
+  tile) shows its cell there, faded in over the tint, the tile again on error;
   the same name, brand and kcal shown once. ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
   （オフライン？）」, もういちど, and さいきん still under it (a recent pick keeps its portion). **Ranking** (`food/search.ts`
   tierOf, each curated pop level worth 0.6 of a tier): the name exact, or its head (up to a bracket or space: 水 finds
@@ -461,8 +466,15 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   Facts, JBFD) 2. `food/load.test.ts`'s golden queries (55 common ones: ご飯 · みそ汁 · 卵 · 納豆 · 鶏むね · サラダチキン ·
   プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
-- **Amount:** the food's name, then (only with one) its everyday name and its one line 「これは…」 (the data's `desc`; no
-  picture area until there are pictures); the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
+- **Amount:** the food's picture when it has one (160 px, centred, alt 「…の イメージ」, the イメージ badge at its top
+  left: every picture is generated; none: no picture area; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
+  min(100vw − 64, 360) px, with the badge, the name, the 「これは…」 line and 「AI生成の イメージ
+  …」; ✕, Esc or a tap outside close it, the focus back on the picture), its name, then (only with one) its everyday name and its
+  one line 「これは…」 (the data's `desc`); the food's values per 100 g; a food in its states, **じょうたい** above 量: a
+  chip per state (乾 生 ゆで … in process order) with its kcal at the amount it would take, picking one swaps the food
+  (its name and values follow: a portion label it also has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き;
+  typed grams stay; else its default), one leaf line for 生 (パックの重さなら 生) and for 乾 beside ゆで (ゆでる前の重さなら
+  乾); on my entry a ほぞん (`editFood` f), a recipe's ingredient alike; its portions as chips (100 g last), −/＋ by a whole portion for the things
   counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece: おにぎり,
   むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which
@@ -496,7 +508,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   the matching ones above the catalog's; a row: its name, who set it and how many servings, a serving's kcal. One →
   the amount for the recipe as a food (1人前 first, ぜんぶ, 100 g; the search's meal), logging an ordinary entry of mine
   on the day shown; its 「レシピを ひらく」 (left of ついか) opens it. ＋ レシピを つくる (under the search's field) opens a
-  new one. Mine opens in the editor (`FoodRecipe`): the name, なん人前 (−/＋, 1–20), the ingredients (each a row like a
+  new one. Mine opens in the editor (`FoodRecipe`): on top its picture (the first four of its ingredients with one, 2 × 2; one alone 160 px; none: nothing), the name, なん人前 (−/＋, 1–20), the ingredients (each a row like a
   meal's; a tap → the amount: ほぞん / けす), ＋ ざいりょうを ついか (the search and the amount, no meal: ついか puts it in
   the recipe), 1人前あたり and ぜんぶで live, then けす (asked twice: ほんとうに けす？) and ほぞん (waiting until something
   changed); both go back to the meal's search. Anyone else's: the same read-only, 「〇〇の レシピ」, with 「コピーして
@@ -514,7 +526,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   its amount). With no weight the amount steps whole servings, no grams field and no weight shown anywhere (the
   entry's snapshot says `sv`: 「1食」, 「1食×2」, a nominal 100 g a serving underneath; a recipe with such an ingredient
   logs by 1人前 alike).
-- **データの出典** at the foot: each dataset's label, attribution and license (the data's licenses ask for it).
+- **データの出典** at the foot: 「イメージ: AI生成の イメージ（実物と ちがう ことが あります）」, then each dataset's label, attribution and license (the data's licenses ask for it).
 - Food names come from the data, so their kanji are not all in the trimmed Zen Maru subset: those fall back to the
   system font (the copy's own strings are covered: `npm run fonts:subset`).
 
@@ -1027,7 +1039,8 @@ an hour's extra.
   needs it (~15 ms on the Simulator). The fade is its own level (0 … 1 over a minute, Weather.svelte's rules: from
   rain to snow at once, the opening sky at once). The island draws at its ambient rate meanwhile, as it already does
   for the water. `__world3d.precip()` (dev and ?demo) says what falls, its level, the meshes drawn and the rings'
-  surface; `precipHide(on)` for a draw-call count with and without (`e2e/weather.spec.ts`).
+  surface; `precipCalls()` the draw calls its meshes made in the last frame drawn, the scene's others not counted
+  (`e2e/weather.spec.ts`).
   Measured on the iOS Simulator (own iPhone 16, iOS 26.5, a local build, the island at rest, 8 s a sample, two
   rounds; load average 15-40): the engine at 30.0 fps and a frame's CPU 2 ms (p95) in every case; the draw calls
   176 → 178 in rain (the streaks, the rings), the winter island's 188 → 189 in snow; WebContent / GPU % of a core:
@@ -2438,8 +2451,9 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
 ### Trips
 
 りょこう, the trip guides (data, relay and map: [travel.md](travel.md)). The HUD menu's 「りょこう」 pill (Orville's
-head, between えいご ききとり and せってい) opens a full-height `pop` sheet (`components/travel/TravelSheet.svelte`, its
-own chunk with the guides and `i18n/travel.*.json`; always loaded only `open.svelte.ts`, mounted by
+head, between えいご ききとり and けっこんしき) opens a full-height `pop` sheet (`components/travel/TravelSheet.svelte`, its
+own chunk with the guides and `i18n/travel.*.json`; always loaded only `open.svelte.ts`, a `lazySheet`
+(`ui-state/lazySheet.svelte.ts`, けっこんしき's too: the chunk, its offline banner, open), mounted by
 `island/Hud.svelte` outside the island's `[data-exact-taps]`). The island is paused under it.
 - **Opening:** the Tokyo day's first opening on this phone (`DEVICE.travelHello`) is the list with Orville's one line in
   the Bubble (during a trip the next row, on the eve how the packing stands, before the days to go); a later one goes
@@ -2524,7 +2538,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
 | `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
-| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower; the partner wanders |
+| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid` | A balloon; a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower (the partner's outing: `__world.wander()`) |
 | `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
 | `?fps=30\|60` | The 3D scenes' frame rate for the tab, not kept (the e2e pin 60 in storage: `playwright.config.ts`) |
 | `?fpv=1\|0` | The rooms' first-person view for the tab, not kept ([First person](#first-person)) |

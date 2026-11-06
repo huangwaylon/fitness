@@ -2,7 +2,7 @@
 // do what, the caps, the phone's fold (the record's rows taken, its own queued ones judged) and the list over the seed.
 import { describe, expect, it } from 'vitest';
 import {
-  newPackId, ordBetween, PACK_MAX, PackBook, packClean, packFold, packList, packMayEdit, packOpOf, packRowOf,
+  newPackId, ordBetween, PackBook, packClean, packFold, packList, packMayEdit, packOpOf, packRowOf,
   packSlot, tripNoteOf, type PackEntry, type PackSeed
 } from './pack.ts';
 import { eventSlot, validEventData } from './record.ts';
@@ -21,6 +21,9 @@ const set = (who: W, id: string, at: number, extra: Record<string, unknown> = {}
   row('pack', who, { trip: 'okinawa', id, at, kind: 'item', cat: 'ok-0', ord: 9, name: { ja: id }, ...(id.startsWith('_') ? { by: who } : {}), ...extra });
 const rm = (who: W, id: string, at: number) => row('pack', who, { trip: 'okinawa', id, at, rm: true });
 const chk = (who: W, id: string, at: number, v: 0 | 1 = 1) => row('pack_chk', who, { trip: 'okinawa', id, at, v });
+
+/** A trip's `pack` rows at most (contract/pack.ts). */
+const PACK_MAX = 300;
 
 describe('the ops', () => {
   it('reads each type, its known keys only', () => {

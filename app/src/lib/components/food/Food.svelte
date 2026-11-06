@@ -287,7 +287,9 @@
   function done(l: Extract<Level, { k: 'amount' }>, v: { m: Meal; g: number; u: string | null }) {
     const e = l.entry && real(l.entry);
     if (l.entry) {
-      if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u }).ok) said('food.saved');
+      // another state of it picked (じょうたい): its food too
+      const f = e && l.item.id !== e.f.id ? snapOf(l, v.u) : undefined;
+      if (e && editFood(e.id, { m: v.m, g: v.g, u: v.u, ...(f ? { f } : {}) }).ok) said('food.saved');
       return home();
     }
     const r = l.cid ? logCustom({ customId: l.cid, d: date, m: v.m, g: v.g, u: v.u ?? undefined }) : logFood({ d: date, m: v.m, g: v.g, f: snapOf(l, v.u) });
@@ -494,6 +496,7 @@
       {#key l}
         {@const c = !l.entry && l.cid ? allCustoms.find((x) => x.id === l.cid) : undefined}
         <FoodAmount item={l.item} meal={l.meal} g0={l.g0} u0={l.u0} serving={!!l.sv} editing={!!l.entry} ondone={(v) => done(l, v)} onremove={() => l.entry && remove(l.entry)}
+          onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)}
           open={c ? { label: t('food.my.open'), run: () => openCustom(c, null, '[data-amount-open]') } : null} />
       {/key}
     {:else if top?.k === 'recipe'}
@@ -522,6 +525,7 @@
       {@const l = top}
       {#key l}
         <FoodAmount item={l.item} meal="b" g0={l.g0} u0={l.u0} serving={!!l.sv} editing={l.i !== undefined} pick ondone={(v) => itemDone(l, v)}
+          onitem={l.cid || l.snap ? undefined : (it) => (l.item = it)}
           onremove={() => l.i !== undefined && itemRemove(l.i)} />
       {/key}
     {:else if top?.k === 'rlog'}

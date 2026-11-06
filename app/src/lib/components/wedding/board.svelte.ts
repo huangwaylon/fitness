@@ -12,22 +12,23 @@ import {
   newTaskId, wedBookOf, wedClean, wedConfig, wedNote, wedOpOf, wedTasks, WNOTE_DATA_CHARS, type WConfKey, type WedBook,
   type WedEntry, type WedTask, type WTaskSet
 } from '#lib/contract/wedding.ts';
-
-const EMPTY: readonly WedEntry[] = [];
 import { overallProgress, withProgress, type Overall, type WithProgress } from '#lib/wedding/progress.ts';
 import { todayIn, untilMidnight } from '#lib/time/zone.ts';
 import { daysBetween } from '#lib/time/dates.ts';
 import { boardConfig, type BoardConfig } from '#lib/wedding/config.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { world } from '#lib/store/world.svelte.ts';
+import { opClock, world } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';
 
 /** A version of the notes: its text, when it was saved and by whom (`imported`: the old Sheet's, never saved since). */
 interface NoteVersion { md: string; at: number; who: Who; imported?: true }
 
+const EMPTY: readonly WedEntry[] = [];
 
 class WeddingBoard {
   #last = 0;
+  /** My last note save as sent (its `at` and text): the record may keep it restamped (saveNote). */
+  #sentNote: { at: number; md: string } | null = null;
   /** `today` read again at the board's midnight while something reads it (one timer, cleared when nothing does). */
   #midnight = createSubscriber((update) => {
     let timer: ReturnType<typeof setTimeout>;
@@ -48,12 +49,8 @@ class WeddingBoard {
     return week.view?.viewer ?? 'A';
   }
 
-  /** The guest's phone: it reads the board, never changes it (the record refuses its ops). */
-  get readOnly(): boolean {
-    return this.me === 'G';
-  }
-
-  /** A member's phone with its week loaded: it edits (the guest's, and a phone with nothing loaded yet, read only). */
+  /** A member's phone with its week loaded: it edits (the guest's, and a phone with nothing loaded yet, read only: the
+   *  record refuses the guest's ops). */
   get canEdit(): boolean {
     return !!week.view && week.view.viewer !== 'G';
   }
@@ -115,7 +112,7 @@ class WeddingBoard {
   /** A change's time: the relay's own clock (never a `?date=` preview's), never twice the same, after the op it
    *  replaces. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.serverNow()), this.#last + 1, after + 1);
+    this.#last = opClock(this.#last, after);
     return this.#last;
   }
   #set(id: string): WTaskSet | null {
@@ -125,7 +122,7 @@ class WeddingBoard {
   /** An op cleaned and checked as the record will, the note's size as JSON too (refused here: never queued to fail
    *  there), then sent. */
   #send(type: 'wtask' | 'wdone' | 'wconf' | 'wnote', data: Record<string, unknown>): boolean {
-    if (this.readOnly) return false;
+    if (!this.canEdit) return false;
     const d = wedClean(type, data);
     if (!wedOpOf(type, d, { now: world.serverNow() })) return false;
     if (type === 'wnote' && JSON.stringify(d).length > WNOTE_DATA_CHARS) return false;
@@ -226,9 +223,16 @@ class WeddingBoard {
    *  shown until the next save, which settles it. */
   saveNote(md: string, from?: number | null): boolean {
     const n = wedNote(this.#book);
-    const base = from === undefined ? n?.at : from ?? undefined;
+    let base = from === undefined ? n?.at : from ?? undefined;
+    // an edit begun on my own save before the record's copy came back: that copy is the version it began from, at
+    // whatever `at` the record kept it (restamped just after a note it crossed), never a conflict with myself
+    const mine = this.#sentNote;
+    if (n && mine && base === mine.at && n.at !== mine.at && n.who === this.me && n.md === mine.md) base = n.at;
     if (n && n.md === md && !n.was && base === n.at) return true;
-    return this.#send('wnote', { at: this.#now(n?.at ?? 0), md, ...(base !== undefined ? { base } : {}) });
+    const at = this.#now(n?.at ?? 0);
+    const ok = this.#send('wnote', { at, md, ...(base !== undefined ? { base } : {}) });
+    if (ok) this.#sentNote = { at, md };
+    return ok;
   }
 }
 

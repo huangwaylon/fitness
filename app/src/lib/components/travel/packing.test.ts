@@ -15,7 +15,7 @@ const fake = vi.hoisted(() => ({
   queued: [] as EventRow[],
   sent: [] as { type: string; data: Record<string, unknown> }[]
 }));
-vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => fake.now, serverNow: () => fake.server } }));
+vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => fake.now, serverNow: () => fake.server }, opClock: (last: number, after = 0) => Math.max(Math.round(fake.server), last + 1, after + 1) }));
 vi.mock('#lib/store/week.svelte.ts', async () => {
   const { reduce: red, foldEvents: fold } = await import('#lib/model/state.ts');
   return {
@@ -83,16 +83,16 @@ describe('packing', () => {
     // between the two seed items
     expect(packing.move('okinawa', SEED, id, 1)).toBe(true);
     expect(fake.sent.at(-1)!.data.ord).toBe(0.5);
-    // into another category, at its end
-    expect(packing.move('okinawa', SEED, 'ok-0-0', 9, 'ok-1')).toBe(true);
-    expect(ids()).toEqual([['ok-0', [id, 'ok-0-1']], ['ok-1', ['ok-1-0', 'ok-0-0']]]);
+    // a seed item to its category's end
+    expect(packing.move('okinawa', SEED, 'ok-0-0', 9)).toBe(true);
+    expect(ids()).toEqual([['ok-0', [id, 'ok-0-1', 'ok-0-0']], ['ok-1', ['ok-1-0']]]);
     expect(packing.rename('okinawa', SEED, 'ok-1', 'きがえ', 'ja')).toBe(true);
     expect(fake.sent.at(-1)!.data).toMatchObject({ kind: 'cat', icon: 'shirt', name: { ja: 'きがえ' } });
     expect(fake.sent.at(-1)!.data.by).toBeUndefined();
     const cat = packing.addCat('okinawa', SEED, 'おやつ', 'ja')!;
     expect(packing.list('okinawa', SEED).at(-1)).toMatchObject({ id: cat, icon: 'shopping-bag', items: [] });
     expect(packing.removeHeld('okinawa', SEED, 'ok-0-1', 0).ok).toBe(true);
-    expect(ids()[0]).toEqual(['ok-0', [id]]);
+    expect(ids()[0]).toEqual(['ok-0', [id, 'ok-0-0']]);
     // each op later than the one it replaces
     const ats = fake.sent.map((s) => s.data.at as number);
     expect(ats).toEqual([...ats].sort((a, b) => a - b));

@@ -1,0 +1,1969 @@
+[
+ {
+  "key": "dishes-saba-misoni",
+  "ja": "さばの味噌煮",
+  "desc": "saba misoni, mackerel fillet pieces simmered in a thick glossy brown miso sauce with slivered ginger, in a shallow bowl",
+  "items": [
+   "dishes:saba-misoni",
+   "dishes:teishoku-saba-misoni",
+   "eatout:saba_miso_teishoku",
+   "kurume:096"
+  ]
+ },
+ {
+  "key": "dishes-karei-nitsuke",
+  "ja": "かれいの煮付け",
+  "desc": "karei no nitsuke, a whole flatfish simmered in glossy dark brown sweet soy broth, with ginger, on a plate",
+  "items": [
+   "dishes:karei-nitsuke"
+  ]
+ },
+ {
+  "key": "dishes-kinmedai-nitsuke",
+  "ja": "金目鯛の煮付け",
+  "desc": "kinmedai no nitsuke, a red-skinned golden-eye snapper piece simmered in glossy dark sweet soy broth with tofu and burdock",
+  "items": [
+   "dishes:kinmedai-nitsuke"
+  ]
+ },
+ {
+  "key": "dishes-sake-meuniere",
+  "ja": "鮭のムニエル",
+  "desc": "salmon meunière, a pan-fried floured salmon fillet golden-brown with butter sauce, lemon and broccoli",
+  "items": [
+   "dishes:sake-meuniere",
+   "kurume:079"
+  ]
+ },
+ {
+  "key": "dishes-chanchanyaki",
+  "ja": "鮭のちゃんちゃん焼き",
+  "desc": "chanchan-yaki, salmon fillet grilled with cabbage, onion, carrot and shimeji mushrooms under a miso butter sauce on an iron pan",
+  "items": [
+   "dishes:chanchanyaki",
+   "maff_kyodo:sakenochanchanyaki_hokkaido"
+  ]
+ },
+ {
+  "key": "dishes-gindara-saikyo",
+  "ja": "銀だらの西京焼き",
+  "desc": "gindara saikyo-yaki, a grilled black cod fillet marinated in white miso, glossy with dark caramelised spots, on a rectangular plate",
+  "items": [
+   "dishes:gindara-saikyo"
+  ]
+ },
+ {
+  "key": "dishes-tara-foil",
+  "ja": "たらのホイル焼き",
+  "desc": "cod baked in foil, an opened foil parcel with a white cod fillet, shimeji mushrooms, onion and butter",
+  "items": [
+   "dishes:tara-foil"
+  ]
+ },
+ {
+  "key": "dishes-sashimi-moriawase",
+  "ja": "刺身盛り合わせ",
+  "desc": "a sashimi platter, slices of red tuna, orange salmon and pale yellowtail with shredded daikon, a shiso leaf and wasabi",
+  "items": [
+   "dishes:sashimi-moriawase",
+   "eatout:sashimi_mori"
+  ]
+ },
+ {
+  "key": "dishes-katsuo-tataki",
+  "ja": "かつおのたたき",
+  "desc": "katsuo tataki, seared skipjack tuna slices with a browned edge and deep red centre, topped with sliced onion, green onion and garlic, ponzu",
+  "items": [
+   "dishes:katsuo-tataki",
+   "maff_kyodo:katuonotataki_kochi"
+  ]
+ },
+ {
+  "key": "dishes-yamakake",
+  "ja": "まぐろの山かけ",
+  "desc": "maguro yamakake, cubes of red tuna under white grated nagaimo yam, with wasabi and nori strips, in a bowl",
+  "items": [
+   "dishes:yamakake"
+  ]
+ },
+ {
+  "key": "dishes-tempura-moriawase",
+  "ja": "天ぷら盛り合わせ",
+  "desc": "an assorted tempura platter, shrimp, squid, kisu, eggplant and sweet potato in light crisp golden batter, with a small dish of dipping sauce and grated daikon",
+  "items": [
+   "dishes:tempura-moriawase",
+   "eatout:tenpura_mori"
+  ]
+ },
+ {
+  "key": "dishes-kakiage",
+  "ja": "かき揚げ",
+  "desc": "kakiage, a round crisp golden fritter of julienned onion, carrot and small shrimp in tempura batter",
+  "items": [
+   "dishes:kakiage",
+   "eatout:kakiage"
+  ]
+ },
+ {
+  "key": "dishes-yurinchi",
+  "ja": "油淋鶏（ユーリンチー）",
+  "desc": "yurinchi, crisp fried chicken slices on lettuce topped with a soy vinegar sauce with chopped green onion",
+  "items": [
+   "dishes:yurinchi"
+  ]
+ },
+ {
+  "key": "dishes-reishabu",
+  "ja": "冷しゃぶサラダ",
+  "desc": "reishabu salad, chilled boiled pork slices on lettuce, cucumber and tomato with sesame dressing",
+  "items": [
+   "dishes:reishabu"
+  ]
+ },
+ {
+  "key": "dishes-yudofu",
+  "ja": "湯豆腐",
+  "desc": "yudofu, soft white tofu blocks simmering in a clay pot with kombu, with ponzu, green onion and bonito flakes",
+  "items": [
+   "dishes:yudofu"
+  ]
+ },
+ {
+  "key": "dishes-agedashi-tofu",
+  "ja": "揚げ出し豆腐",
+  "desc": "agedashi tofu, deep-fried tofu cubes with a thin golden crust in light brown dashi broth, topped with grated daikon and green onion",
+  "items": [
+   "dishes:agedashi-tofu",
+   "eatout:agedashi",
+   "kurume:119"
+  ]
+ },
+ {
+  "key": "dishes-atsuage-yaki",
+  "ja": "厚揚げ焼き",
+  "desc": "grilled atsuage, thick fried tofu with crisp golden-brown skin cut in squares, topped with grated ginger and green onion",
+  "items": [
+   "dishes:atsuage-yaki"
+  ]
+ },
+ {
+  "key": "dishes-natto",
+  "ja": "納豆（たれ・からし付き）",
+  "desc": "natto with tare and karashi in a small bowl, sticky brown beans with white threads, green onion and yellow mustard",
+  "items": [
+   "dishes:natto"
+  ]
+ },
+ {
+  "key": "dishes-onsen-tamago",
+  "ja": "温泉卵",
+  "desc": "an onsen tamago, a soft barely set egg with a runny yolk in a little light dashi broth in a small cup",
+  "items": [
+   "dishes:onsen-tamago"
+  ]
+ },
+ {
+  "key": "dishes-gomaae-horenso",
+  "ja": "ほうれん草のごま和え",
+  "desc": "spinach with sesame dressing (goma-ae), cut green spinach coated in ground brown sesame, in a small bowl",
+  "items": [
+   "dishes:gomaae-horenso",
+   "kurume:127"
+  ]
+ },
+ {
+  "key": "dishes-kinpira-renkon",
+  "ja": "れんこんのきんぴら",
+  "desc": "renkon kinpira, thin lotus root slices with their holes, stir-fried glossy brown in sweet soy, sprinkled with sesame",
+  "items": [
+   "dishes:kinpira-renkon",
+   "maff_kyodo:renkonnokinpira_ibaraki",
+   "toyonaka:119620"
+  ]
+ },
+ {
+  "key": "dishes-satoimo-nikkorogashi",
+  "ja": "里芋の煮っころがし",
+  "desc": "satoimo no nikkorogashi, small round taro simmered glossy brown in sweet soy, in a bowl",
+  "items": [
+   "dishes:satoimo-nikkorogashi"
+  ]
+ },
+ {
+  "key": "dishes-nibitashi-komatsuna",
+  "ja": "小松菜と油揚げの煮びたし",
+  "desc": "komatsuna and aburaage nibitashi, green komatsuna and thin fried tofu strips in light dashi broth",
+  "items": [
+   "dishes:nibitashi-komatsuna"
+  ]
+ },
+ {
+  "key": "dishes-nasu-nibitashi",
+  "ja": "なすの揚げびたし",
+  "desc": "nasu no agebitashi, fried eggplant pieces with glossy purple skin soaked in light dashi, topped with grated ginger",
+  "items": [
+   "dishes:nasu-nibitashi"
+  ]
+ },
+ {
+  "key": "dishes-yakinasu",
+  "ja": "焼きなす",
+  "desc": "yaki nasu, grilled peeled eggplant, soft pale green-gold flesh, topped with grated ginger and bonito flakes",
+  "items": [
+   "dishes:yakinasu"
+  ]
+ },
+ {
+  "key": "dishes-nasu-miso",
+  "ja": "なすの味噌炒め",
+  "desc": "eggplant and green pepper stir-fried in glossy brown miso sauce",
+  "items": [
+   "dishes:nasu-miso"
+  ]
+ },
+ {
+  "key": "dishes-hiyayakko",
+  "ja": "冷奴",
+  "desc": "hiyayakko, a chilled block of silken tofu topped with grated ginger, chopped green onion and bonito flakes, in a small dish",
+  "items": [
+   "dishes:hiyayakko",
+   "eatout:hiyayakko",
+   "kurume:118"
+  ]
+ },
+ {
+  "key": "dishes-macaroni-salad",
+  "ja": "マカロニサラダ",
+  "desc": "macaroni salad, elbow macaroni with mayonnaise, cucumber, ham and carrot",
+  "items": [
+   "dishes:macaroni-salad",
+   "toyonaka:248090"
+  ]
+ },
+ {
+  "key": "dishes-green-salad",
+  "ja": "グリーンサラダ",
+  "desc": "a green salad of lettuce, cucumber slices and tomato wedges in a bowl",
+  "items": [
+   "dishes:green-salad",
+   "eatout:konbini_salad",
+   "kumagaya:02031-2"
+  ]
+ },
+ {
+  "key": "dishes-wafu-salad",
+  "ja": "大根と水菜の和風サラダ",
+  "desc": "daikon and mizuna salad, thin white daikon strips and green mizuna with nori strips and bonito flakes",
+  "items": [
+   "dishes:wafu-salad"
+  ]
+ },
+ {
+  "key": "dishes-coleslaw",
+  "ja": "コールスロー",
+  "desc": "coleslaw, finely shredded cabbage and carrot in creamy dressing, with corn kernels",
+  "items": [
+   "dishes:coleslaw"
+  ]
+ },
+ {
+  "key": "dishes-harusame-salad",
+  "ja": "春雨サラダ",
+  "desc": "harusame salad, glass noodles with thin cucumber, ham and carrot strips, in a small bowl",
+  "items": [
+   "dishes:harusame-salad",
+   "toyonaka:118626",
+   "kumagaya:1978"
+  ]
+ },
+ {
+  "key": "dishes-kaiso-salad",
+  "ja": "海藻サラダ",
+  "desc": "seaweed salad, mixed green, red and translucent seaweeds on lettuce and cucumber",
+  "items": [
+   "dishes:kaiso-salad"
+  ]
+ },
+ {
+  "key": "dishes-caesar-salad",
+  "ja": "シーザーサラダ",
+  "desc": "Caesar salad, romaine lettuce with croutons, bacon bits, parmesan, creamy dressing and a soft egg",
+  "items": [
+   "dishes:caesar-salad",
+   "eatout:caesar_salad"
+  ]
+ },
+ {
+  "key": "dishes-gobo-salad",
+  "ja": "ごぼうサラダ",
+  "desc": "gobo salad, thin julienned burdock and carrot in mayonnaise with sesame",
+  "items": [
+   "dishes:gobo-salad",
+   "kurume:146",
+   "kumagaya:2575"
+  ]
+ },
+ {
+  "key": "dishes-kabocha-salad",
+  "ja": "かぼちゃサラダ",
+  "desc": "kabocha salad, mashed orange-yellow pumpkin with mayonnaise and raisins",
+  "items": [
+   "dishes:kabocha-salad",
+   "toyonaka:269526"
+  ]
+ },
+ {
+  "key": "dishes-tuna-salad",
+  "ja": "ツナサラダ",
+  "desc": "tuna salad, lettuce, tomato, cucumber and corn topped with flaked tuna",
+  "items": [
+   "dishes:tuna-salad",
+   "toyonaka:124106"
+  ]
+ },
+ {
+  "key": "dishes-sunomono-kyuri",
+  "ja": "きゅうりとわかめの酢の物",
+  "desc": "sunomono, thin cucumber slices and wakame in sweet vinegar with sesame in a small bowl",
+  "items": [
+   "dishes:sunomono-kyuri",
+   "kurume:139"
+  ]
+ },
+ {
+  "key": "dishes-tako-sunomono",
+  "ja": "たこときゅうりの酢の物",
+  "desc": "tako su, red-skinned octopus slices with thin cucumber slices and wakame in sweet vinegar",
+  "items": [
+   "dishes:tako-sunomono"
+  ]
+ },
+ {
+  "key": "dishes-horenso-namul",
+  "ja": "ほうれん草のナムル",
+  "desc": "spinach namul, green spinach seasoned with sesame oil and sesame seeds",
+  "items": [
+   "dishes:horenso-namul"
+  ]
+ },
+ {
+  "key": "dishes-hiyashi-tomato",
+  "ja": "冷やしトマト",
+  "desc": "hiyashi tomato, chilled sliced tomato wedges on a plate with a pinch of salt",
+  "items": [
+   "dishes:hiyashi-tomato",
+   "eatout:hiyashi_tomato"
+  ]
+ },
+ {
+  "key": "dishes-kinoko-saute",
+  "ja": "きのこのバターソテー",
+  "desc": "sautéed mixed mushrooms, shimeji, eringi and maitake glossy with butter and soy",
+  "items": [
+   "dishes:kinoko-saute"
+  ]
+ },
+ {
+  "key": "dishes-horenso-butter",
+  "ja": "ほうれん草のバターソテー",
+  "desc": "spinach sautéed with butter and bacon, glossy dark green with bacon pieces",
+  "items": [
+   "dishes:horenso-butter"
+  ]
+ },
+ {
+  "key": "dishes-german-potato",
+  "ja": "ジャーマンポテト",
+  "desc": "German potatoes, pan-fried potato chunks with bacon and onion, browned, with parsley",
+  "items": [
+   "dishes:german-potato",
+   "kurume:181",
+   "toyonaka:119202",
+   "kumagaya:00466"
+  ]
+ },
+ {
+  "key": "dishes-tororo",
+  "ja": "とろろ（長いも）",
+  "desc": "tororo, a bowl of grated nagaimo yam, frothy sticky white, topped with nori strips and a dash of soy",
+  "items": [
+   "dishes:tororo"
+  ]
+ },
+ {
+  "key": "dishes-mozuku-su",
+  "ja": "もずく酢",
+  "desc": "mozuku-zu, slippery brown mozuku seaweed in sweet vinegar with grated ginger, in a small glass bowl",
+  "items": [
+   "dishes:mozuku-su"
+  ]
+ },
+ {
+  "key": "dishes-daigaku-imo",
+  "ja": "大学いも",
+  "desc": "daigaku imo, fried sweet potato chunks with purple skin coated in a glossy amber honey-sugar glaze, sprinkled with black sesame",
+  "items": [
+   "dishes:daigaku-imo"
+  ]
+ },
+ {
+  "key": "dishes-gomoku-mame",
+  "ja": "五目豆",
+  "desc": "gomoku mame, simmered soybeans with small cubes of carrot, burdock, konjac and kombu, glossy brown",
+  "items": [
+   "dishes:gomoku-mame"
+  ]
+ },
+ {
+  "key": "dishes-kurikinton",
+  "ja": "栗きんとん",
+  "desc": "kuri kinton, glossy bright golden-yellow mashed sweet potato with whole candied chestnuts",
+  "items": [
+   "dishes:kurikinton",
+   "maff_kyodo:38_17_gifu"
+  ]
+ },
+ {
+  "key": "dishes-tazukuri",
+  "ja": "田作り",
+  "desc": "tazukuri, small dried sardines candied in a glossy sweet soy glaze with sesame",
+  "items": [
+   "dishes:tazukuri"
+  ]
+ },
+ {
+  "key": "dishes-okura-katsuobushi",
+  "ja": "オクラのおかか和え",
+  "desc": "okra okaka-ae, sliced green okra stars with bonito flakes and soy",
+  "items": [
+   "dishes:okura-katsuobushi"
+  ]
+ },
+ {
+  "key": "dishes-broccoli-mayo",
+  "ja": "ブロッコリーのマヨネーズ添え",
+  "desc": "boiled broccoli florets with a dab of mayonnaise on the side",
+  "items": [
+   "dishes:broccoli-mayo"
+  ]
+ },
+ {
+  "key": "dishes-natto-gohan",
+  "ja": "納豆ごはん",
+  "desc": "natto gohan, a bowl of white rice topped with sticky brown natto, chopped green onion and yellow mustard",
+  "items": [
+   "dishes:natto-gohan"
+  ]
+ },
+ {
+  "key": "dishes-tkg",
+  "ja": "卵かけごはん",
+  "desc": "tamago kake gohan, a bowl of white rice with a raw egg yolk and egg on top, a dash of soy sauce",
+  "items": [
+   "dishes:tkg"
+  ]
+ },
+ {
+  "key": "eatout-onigiri_sake",
+  "ja": "おにぎり（鮭）",
+  "desc": "a Japanese onigiri rice ball, a white triangle of rice wrapped at the bottom with a band of dark green nori, a little flaked orange-pink salmon visible at the top",
+  "items": [
+   "eatout:onigiri_sake"
+  ]
+ },
+ {
+  "key": "dishes-onigiri-ume",
+  "ja": "おにぎり（梅）",
+  "desc": "an onigiri rice ball, a white triangle of rice with dark nori, a red umeboshi plum visible on top",
+  "items": [
+   "dishes:onigiri-ume",
+   "eatout:onigiri_ume"
+  ]
+ },
+ {
+  "key": "dishes-onigiri-konbu",
+  "ja": "おにぎり（昆布）",
+  "desc": "an onigiri rice ball with dark nori and glossy dark brown simmered kombu filling visible on top",
+  "items": [
+   "dishes:onigiri-konbu",
+   "eatout:onigiri_konbu"
+  ]
+ },
+ {
+  "key": "dishes-onigiri-tunamayo",
+  "ja": "おにぎり（ツナマヨ）",
+  "desc": "a tuna mayo onigiri, a triangle of rice in crisp dark nori with creamy tuna mayonnaise filling visible on top",
+  "items": [
+   "dishes:onigiri-tunamayo",
+   "eatout:onigiri_tunamayo"
+  ]
+ },
+ {
+  "key": "dishes-onigiri-okaka",
+  "ja": "おにぎり（おかか）",
+  "desc": "an onigiri with dark nori and soy-seasoned brown bonito flakes visible on top",
+  "items": [
+   "dishes:onigiri-okaka",
+   "eatout:onigiri_okaka"
+  ]
+ },
+ {
+  "key": "dishes-onigiri-mentaiko",
+  "ja": "おにぎり（明太子）",
+  "desc": "an onigiri with dark nori and a piece of red-orange mentaiko visible on top",
+  "items": [
+   "dishes:onigiri-mentaiko",
+   "eatout:onigiri_mentai"
+  ]
+ },
+ {
+  "key": "dishes-onigiri-tarako",
+  "ja": "おにぎり（たらこ）",
+  "desc": "an onigiri with dark nori and a piece of pinkish grilled tarako visible on top",
+  "items": [
+   "dishes:onigiri-tarako",
+   "eatout:onigiri_tarako"
+  ]
+ },
+ {
+  "key": "dishes-onigiri-ikura",
+  "ja": "おにぎり（いくら）",
+  "desc": "an onigiri with dark nori and glossy orange ikura salmon roe on top",
+  "items": [
+   "dishes:onigiri-ikura",
+   "eatout:onigiri_ikura"
+  ]
+ },
+ {
+  "key": "dishes-onigiri-takana",
+  "ja": "おにぎり（高菜）",
+  "desc": "a takana onigiri, a rice ball wrapped in a large dark green pickled mustard leaf",
+  "items": [
+   "dishes:onigiri-takana"
+  ]
+ },
+ {
+  "key": "dishes-onigiri-shirasu",
+  "ja": "おにぎり（しらす）",
+  "desc": "a shirasu onigiri, a rice ball mixed with tiny white baby sardines, with nori",
+  "items": [
+   "dishes:onigiri-shirasu"
+  ]
+ },
+ {
+  "key": "dishes-tenmusu",
+  "ja": "天むす",
+  "desc": "tenmusu, a small rice ball with a shrimp tempura tail sticking out of the top, wrapped in nori",
+  "items": [
+   "dishes:tenmusu",
+   "eatout:onigiri_tenmusu"
+  ]
+ },
+ {
+  "key": "dishes-chazuke-shake",
+  "ja": "鮭茶漬け",
+  "desc": "sake chazuke, a bowl of rice in green tea topped with flaked salmon, nori strips and wasabi",
+  "items": [
+   "dishes:chazuke-shake",
+   "eatout:ochazuke"
+  ]
+ },
+ {
+  "key": "dishes-chazuke-ume",
+  "ja": "梅茶漬け",
+  "desc": "ume chazuke, a bowl of rice in green tea topped with a red umeboshi, nori strips and arare",
+  "items": [
+   "dishes:chazuke-ume"
+  ]
+ },
+ {
+  "key": "dishes-chazuke-moto",
+  "ja": "お茶漬け（市販の素）",
+  "desc": "ochazuke, a bowl of rice in green tea with tiny rice crackers and nori strips",
+  "items": [
+   "dishes:chazuke-moto"
+  ]
+ },
+ {
+  "key": "dishes-curry-beef",
+  "ja": "カレーライス（ビーフ）",
+  "desc": "beef curry rice on a white plate, white rice beside thick glossy dark brown curry sauce with beef chunks",
+  "items": [
+   "dishes:curry-beef",
+   "eatout:curry_beef",
+   "kurume:014"
+  ]
+ },
+ {
+  "key": "dishes-curry-chicken",
+  "ja": "カレーライス（チキン）",
+  "desc": "chicken curry rice on a white plate, white rice beside glossy brown curry sauce with chicken pieces",
+  "items": [
+   "dishes:curry-chicken",
+   "eatout:curry_chicken",
+   "takatsuki:r50"
+  ]
+ },
+ {
+  "key": "dishes-katsu-curry",
+  "ja": "カツカレー",
+  "desc": "katsu curry, a breaded pork cutlet sliced on white rice with brown curry sauce, on an oval plate",
+  "items": [
+   "dishes:katsu-curry",
+   "eatout:katsu_curry"
+  ]
+ },
+ {
+  "key": "dishes-hayashi-rice",
+  "ja": "ハヤシライス",
+  "desc": "hayashi rice, white rice beside glossy reddish-brown demi-glace sauce with thin beef slices, onion and mushrooms",
+  "items": [
+   "dishes:hayashi-rice",
+   "eatout:hayashi"
+  ]
+ },
+ {
+  "key": "dishes-butadon",
+  "ja": "豚丼",
+  "desc": "butadon, a bowl of white rice topped with simmered pork slices and onion in sweet soy sauce",
+  "items": [
+   "dishes:butadon",
+   "eatout:butadon",
+   "maff_kyodo:butadon_hokkaido"
+  ]
+ },
+ {
+  "key": "dishes-tendon",
+  "ja": "天丼",
+  "desc": "tendon, a bowl of rice topped with shrimp, squid, eggplant, kabocha and sweet potato tempura drizzled with dark sweet tare sauce",
+  "items": [
+   "dishes:tendon",
+   "eatout:tendon",
+   "kurume:012"
+  ]
+ },
+ {
+  "key": "dishes-katsudon",
+  "ja": "かつ丼",
+  "desc": "katsudon, a donburi of rice topped with a sliced breaded pork cutlet simmered with onion and soft golden egg, mitsuba leaves",
+  "items": [
+   "dishes:katsudon",
+   "eatout:katsudon",
+   "maff_kyodo:katsudon_yama_nashi",
+   "kurume:010"
+  ]
+ },
+ {
+  "key": "dishes-kaisendon",
+  "ja": "海鮮丼",
+  "desc": "kaisendon, a bowl of sushi rice topped with slices of red tuna, orange salmon, white fish, ikura, shrimp and tamagoyaki, a shiso leaf",
+  "items": [
+   "dishes:kaisendon",
+   "eatout:kaisendon"
+  ]
+ },
+ {
+  "key": "dishes-tekkadon",
+  "ja": "鉄火丼",
+  "desc": "tekkadon, a bowl of sushi rice covered with slices of deep red tuna, nori strips and wasabi",
+  "items": [
+   "dishes:tekkadon",
+   "eatout:maguro_don"
+  ]
+ },
+ {
+  "key": "dishes-negitorodon",
+  "ja": "ねぎとろ丼",
+  "desc": "negitoro don, a bowl of rice topped with a mound of minced pink fatty tuna, chopped green onion and nori",
+  "items": [
+   "dishes:negitorodon",
+   "eatout:negitoro_don"
+  ]
+ },
+ {
+  "key": "dishes-unadon",
+  "ja": "うな丼",
+  "desc": "unadon, a bowl of rice topped with glossy dark brown glazed grilled eel pieces",
+  "items": [
+   "dishes:unadon",
+   "eatout:unadon"
+  ]
+ },
+ {
+  "key": "dishes-chukadon",
+  "ja": "中華丼",
+  "desc": "chukadon, a bowl of rice topped with stir-fried cabbage, carrot, shrimp, pork, quail egg and snow peas in glossy thick sauce",
+  "items": [
+   "dishes:chukadon",
+   "eatout:chukadon",
+   "kurume:013"
+  ]
+ },
+ {
+  "key": "dishes-mabodon",
+  "ja": "麻婆丼",
+  "desc": "mabodon, a bowl of rice topped with red-brown spicy mapo tofu",
+  "items": [
+   "dishes:mabodon",
+   "eatout:mabodon"
+  ]
+ },
+ {
+  "key": "dishes-bibimbap",
+  "ja": "ビビンバ",
+  "desc": "bibimbap, a bowl of rice topped with colourful namul (spinach, bean sprouts, carrot), seasoned beef, a fried egg and red gochujang",
+  "items": [
+   "dishes:bibimbap",
+   "eatout:bibimbap",
+   "kumagaya:03274-2"
+  ]
+ },
+ {
+  "key": "dishes-soboro-don",
+  "ja": "三色そぼろ丼",
+  "desc": "sanshoku soboro don, rice topped in three neat stripes of yellow scrambled egg, brown minced chicken and green beans",
+  "items": [
+   "dishes:soboro-don"
+  ]
+ },
+ {
+  "key": "dishes-tenshindon",
+  "ja": "天津飯",
+  "desc": "tenshinhan, a fluffy crab omelette on rice covered in a glossy translucent amber sweet sauce, with green peas",
+  "items": [
+   "dishes:tenshindon",
+   "eatout:tenshindon"
+  ]
+ },
+ {
+  "key": "dishes-fukagawa-meshi",
+  "ja": "深川めし（深川丼）",
+  "desc": "fukagawa meshi, a bowl of rice topped with asari clams simmered in miso broth with green onion",
+  "items": [
+   "dishes:fukagawa-meshi"
+  ]
+ },
+ {
+  "key": "dishes-omurice",
+  "ja": "オムライス",
+  "desc": "omurice, a golden omelette wrapped over ketchup chicken rice in an oval shape on a white plate, with a red zigzag of ketchup",
+  "items": [
+   "dishes:omurice",
+   "eatout:omurice",
+   "kurume:015"
+  ]
+ },
+ {
+  "key": "dishes-takikomi-gohan",
+  "ja": "炊き込みごはん（五目）",
+  "desc": "takikomi gohan, light brown seasoned rice with bits of chicken, carrot, burdock, shiitake and konjac in a rice bowl",
+  "items": [
+   "dishes:takikomi-gohan"
+  ]
+ },
+ {
+  "key": "dishes-inarizushi",
+  "ja": "いなり寿司",
+  "desc": "inarizushi, three plump pouches of glossy brown sweet fried tofu filled with sushi rice",
+  "items": [
+   "dishes:inarizushi",
+   "eatout:inari",
+   "kurume:006"
+  ]
+ },
+ {
+  "key": "dishes-chirashizushi",
+  "ja": "ちらし寿司",
+  "desc": "chirashi sushi, a bowl of sushi rice scattered with shredded golden egg, pink shrimp, red tuna, ikura and green snow peas",
+  "items": [
+   "dishes:chirashizushi",
+   "eatout:chirashi",
+   "kurume:008"
+  ]
+ },
+ {
+  "key": "dishes-futomaki",
+  "ja": "太巻き",
+  "desc": "futomaki, thick sushi rolls in nori cut in rounds showing colourful fillings of yellow egg, pink denbu, green cucumber, brown kanpyo and shiitake",
+  "items": [
+   "dishes:futomaki",
+   "eatout:futomaki"
+  ]
+ },
+ {
+  "key": "dishes-kappamaki",
+  "ja": "かっぱ巻き",
+  "desc": "kappa maki, thin sushi rolls in nori cut in six pieces with green cucumber in the middle",
+  "items": [
+   "dishes:kappamaki",
+   "eatout:maki_kappa"
+  ]
+ },
+ {
+  "key": "dishes-tekkamaki",
+  "ja": "鉄火巻き",
+  "desc": "tekka maki, thin sushi rolls in nori cut in six pieces with deep red tuna in the middle",
+  "items": [
+   "dishes:tekkamaki",
+   "eatout:maki_tekka"
+  ]
+ },
+ {
+  "key": "dishes-kanpyomaki",
+  "ja": "かんぴょう巻き",
+  "desc": "kanpyo maki, thin sushi rolls in nori with brown simmered gourd strips in the middle",
+  "items": [
+   "dishes:kanpyomaki",
+   "eatout:maki_kanpyo",
+   "maff_kyodo:34_13_tokyo"
+  ]
+ },
+ {
+  "key": "dishes-temakizushi",
+  "ja": "手巻き寿司（4本）",
+  "desc": "temaki sushi, cone-shaped hand rolls of nori filled with rice, tuna, salmon, cucumber and egg",
+  "items": [
+   "dishes:temakizushi"
+  ]
+ },
+ {
+  "key": "dishes-zosui",
+  "ja": "卵雑炊",
+  "desc": "tamago zosui, a bowl of rice porridge in clear dashi with soft yellow egg ribbons and green onion",
+  "items": [
+   "dishes:zosui"
+  ]
+ },
+ {
+  "key": "dishes-okayu",
+  "ja": "白がゆ（梅干し添え）",
+  "desc": "a bowl of plain white rice porridge (okayu) with a red umeboshi plum on top",
+  "items": [
+   "dishes:okayu"
+  ]
+ },
+ {
+  "key": "dishes-nanakusagayu",
+  "ja": "七草粥",
+  "desc": "nanakusa gayu, white rice porridge with chopped green spring herbs and small white turnip pieces",
+  "items": [
+   "dishes:nanakusagayu"
+  ]
+ },
+ {
+  "key": "dishes-isobeyaki",
+  "ja": "磯辺焼き（餅2個）",
+  "desc": "isobeyaki, two grilled rice cakes glazed with soy sauce and wrapped in nori",
+  "items": [
+   "dishes:isobeyaki"
+  ]
+ },
+ {
+  "key": "dishes-kinako-mochi",
+  "ja": "きなこ餅（2個）",
+  "desc": "kinako mochi, soft white rice cakes coated in golden-tan kinako soybean flour",
+  "items": [
+   "dishes:kinako-mochi"
+  ]
+ },
+ {
+  "key": "dishes-doria",
+  "ja": "ドリア",
+  "desc": "doria, rice baked under creamy white sauce and melted cheese browned in spots, in an oval baking dish",
+  "items": [
+   "dishes:doria",
+   "eatout:doria_chicken"
+  ]
+ },
+ {
+  "key": "dishes-taco-rice",
+  "ja": "タコライス",
+  "desc": "taco rice, white rice topped with seasoned minced meat, shredded lettuce, diced tomato and grated cheese",
+  "items": [
+   "dishes:taco-rice"
+  ]
+ },
+ {
+  "key": "dishes-kitsune-udon",
+  "ja": "きつねうどん",
+  "desc": "kitsune udon, thick white udon in clear light-brown dashi broth topped with a large glossy sweet fried tofu sheet and green onion",
+  "items": [
+   "dishes:kitsune-udon",
+   "eatout:kitsune_udon",
+   "maff_kyodo:39_17_osaka",
+   "takatsuki:r35",
+   "kurume:035"
+  ]
+ },
+ {
+  "key": "dishes-tanuki-udon",
+  "ja": "たぬきうどん",
+  "desc": "tanuki udon, thick udon in dashi broth topped with crunchy tempura bits (tenkasu) and green onion",
+  "items": [
+   "dishes:tanuki-udon",
+   "eatout:tanuki_udon"
+  ]
+ },
+ {
+  "key": "dishes-tempura-udon",
+  "ja": "天ぷらうどん",
+  "desc": "tempura udon, thick udon in dashi broth topped with two shrimp tempura and green onion",
+  "items": [
+   "dishes:tempura-udon",
+   "eatout:tenpura_udon"
+  ]
+ },
+ {
+  "key": "dishes-tsukimi-udon",
+  "ja": "月見うどん",
+  "desc": "tsukimi udon, thick udon in dashi broth with a raw egg yolk like a full moon, green onion",
+  "items": [
+   "dishes:tsukimi-udon",
+   "eatout:tsukimi_udon",
+   "kurume:038"
+  ]
+ },
+ {
+  "key": "dishes-niku-udon",
+  "ja": "肉うどん",
+  "desc": "niku udon, thick udon in dashi broth topped with sweet simmered beef slices and green onion",
+  "items": [
+   "dishes:niku-udon",
+   "eatout:niku_udon",
+   "takatsuki:r54",
+   "kurume:036"
+  ]
+ },
+ {
+  "key": "dishes-wakame-udon",
+  "ja": "わかめうどん",
+  "desc": "wakame udon, thick udon in dashi broth topped with a heap of green wakame seaweed and green onion",
+  "items": [
+   "dishes:wakame-udon",
+   "kurume:034"
+  ]
+ },
+ {
+  "key": "dishes-curry-udon",
+  "ja": "カレーうどん",
+  "desc": "curry udon, thick udon in thick brown Japanese curry broth with pork and green onion",
+  "items": [
+   "dishes:curry-udon",
+   "eatout:curry_udon"
+  ]
+ },
+ {
+  "key": "dishes-nabeyaki-udon",
+  "ja": "鍋焼きうどん",
+  "desc": "nabeyaki udon, udon in a small clay pot with shrimp tempura, an egg, chicken, kamaboko, shiitake and green onion",
+  "items": [
+   "dishes:nabeyaki-udon",
+   "eatout:nabeyaki_udon"
+  ]
+ },
+ {
+  "key": "dishes-zaru-udon",
+  "ja": "ざるうどん",
+  "desc": "zaru udon, cold glossy thick white udon on a bamboo zaru tray with dipping sauce, green onion and ginger",
+  "items": [
+   "dishes:zaru-udon",
+   "eatout:zaru_udon"
+  ]
+ },
+ {
+  "key": "dishes-bukkake-udon",
+  "ja": "ぶっかけうどん",
+  "desc": "bukkake udon, cold thick udon in a bowl with a little dark sauce, grated daikon, tempura bits, green onion and lemon",
+  "items": [
+   "dishes:bukkake-udon",
+   "eatout:bukkake_udon"
+  ]
+ },
+ {
+  "key": "dishes-yaki-udon",
+  "ja": "焼きうどん",
+  "desc": "yaki udon, stir-fried thick udon with cabbage, pork and carrot, glossy brown, topped with bonito flakes",
+  "items": [
+   "dishes:yaki-udon",
+   "eatout:yakiudon"
+  ]
+ },
+ {
+  "key": "dishes-kake-soba",
+  "ja": "かけそば",
+  "desc": "kake soba, grey-brown buckwheat noodles in hot dark dashi broth topped with sliced green onion",
+  "items": [
+   "dishes:kake-soba",
+   "eatout:kake_soba",
+   "kurume:041"
+  ]
+ },
+ {
+  "key": "dishes-tenzaru-soba",
+  "ja": "天ざるそば",
+  "desc": "ten zaru soba, cold soba on a bamboo tray with nori, beside shrimp and vegetable tempura and a cup of dipping sauce",
+  "items": [
+   "dishes:tenzaru-soba",
+   "eatout:tenzaru_soba"
+  ]
+ },
+ {
+  "key": "dishes-kitsune-soba",
+  "ja": "きつねそば",
+  "desc": "kitsune soba, soba noodles in hot dashi broth topped with a sweet fried tofu sheet and green onion",
+  "items": [
+   "dishes:kitsune-soba",
+   "eatout:kitsune_soba"
+  ]
+ },
+ {
+  "key": "dishes-tanuki-soba",
+  "ja": "たぬきそば",
+  "desc": "tanuki soba, soba in hot dashi broth topped with tempura bits and green onion",
+  "items": [
+   "dishes:tanuki-soba",
+   "eatout:tanuki_soba"
+  ]
+ },
+ {
+  "key": "dishes-tempura-soba",
+  "ja": "天ぷらそば",
+  "desc": "tempura soba, soba in hot dashi broth topped with shrimp tempura and green onion",
+  "items": [
+   "dishes:tempura-soba",
+   "eatout:tenpura_soba"
+  ]
+ },
+ {
+  "key": "dishes-tsukimi-soba",
+  "ja": "月見そば",
+  "desc": "tsukimi soba, soba in hot dashi broth with a raw egg yolk and green onion",
+  "items": [
+   "dishes:tsukimi-soba",
+   "eatout:tsukimi_soba"
+  ]
+ },
+ {
+  "key": "dishes-sansai-soba",
+  "ja": "山菜そば",
+  "desc": "sansai soba, soba in hot dashi broth topped with brown and green wild mountain vegetables (warabi fern, nameko)",
+  "items": [
+   "dishes:sansai-soba"
+  ]
+ },
+ {
+  "key": "dishes-tororo-soba",
+  "ja": "とろろそば",
+  "desc": "tororo soba, soba in broth topped with white grated yam, nori and green onion",
+  "items": [
+   "dishes:tororo-soba"
+  ]
+ },
+ {
+  "key": "dishes-kamonanban",
+  "ja": "鴨南蛮そば",
+  "desc": "kamo nanban soba, soba in hot dashi broth with slices of duck and grilled leek",
+  "items": [
+   "dishes:kamonanban",
+   "eatout:kamonanban"
+  ]
+ },
+ {
+  "key": "dishes-somen",
+  "ja": "そうめん",
+  "desc": "somen, thin white noodles in a glass bowl of cold water with ice, a cup of dipping sauce, green onion and ginger",
+  "items": [
+   "dishes:somen",
+   "eatout:somen"
+  ]
+ },
+ {
+  "key": "dishes-nyumen",
+  "ja": "にゅうめん",
+  "desc": "nyumen, thin somen noodles in hot clear dashi broth with kamaboko and green onion",
+  "items": [
+   "dishes:nyumen",
+   "maff_kyodo:nyuumen_nara"
+  ]
+ },
+ {
+  "key": "dishes-hiyashi-chuka",
+  "ja": "冷やし中華",
+  "desc": "hiyashi chuka, cold yellow ramen noodles topped with neat rows of julienned cucumber, ham, egg strips and tomato, with yellow mustard",
+  "items": [
+   "dishes:hiyashi-chuka",
+   "eatout:hiyashi_chuka",
+   "kurume:047",
+   "toyonaka:269368"
+  ]
+ },
+ {
+  "key": "dishes-yakisoba",
+  "ja": "ソース焼きそば",
+  "desc": "sauce yakisoba, stir-fried wavy noodles glossy brown with sauce, cabbage, pork and bean sprouts, topped with aonori and red pickled ginger",
+  "items": [
+   "dishes:yakisoba",
+   "eatout:yakisoba_yatai",
+   "kurume:046"
+  ]
+ },
+ {
+  "key": "dishes-shio-yakisoba",
+  "ja": "塩焼きそば",
+  "desc": "shio yakisoba, stir-fried pale noodles with cabbage, pork, bean sprouts and green onion, no dark sauce",
+  "items": [
+   "dishes:shio-yakisoba"
+  ]
+ },
+ {
+  "key": "dishes-ramen-shoyu",
+  "ja": "しょうゆラーメン（自家製）",
+  "desc": "shoyu ramen, wavy yellow noodles in clear brown soy broth with chashu slices, menma, half a boiled egg, nori and green onion",
+  "items": [
+   "dishes:ramen-shoyu",
+   "eatout:ramen_shoyu"
+  ]
+ },
+ {
+  "key": "dishes-ramen-miso",
+  "ja": "味噌ラーメン",
+  "desc": "miso ramen, thick wavy noodles in cloudy orange-brown miso broth topped with bean sprouts, minced pork, corn and green onion",
+  "items": [
+   "dishes:ramen-miso",
+   "eatout:ramen_miso"
+  ]
+ },
+ {
+  "key": "dishes-champon",
+  "ja": "ちゃんぽん",
+  "desc": "champon, thick noodles in milky white broth heaped with cabbage, bean sprouts, pork, shrimp, squid and kamaboko",
+  "items": [
+   "dishes:champon",
+   "eatout:champon",
+   "maff_kyodo:46_8_nagasaki"
+  ]
+ },
+ {
+  "key": "dishes-napolitan",
+  "ja": "スパゲッティ ナポリタン",
+  "desc": "spaghetti Napolitan, spaghetti in glossy red ketchup sauce with sliced sausage, green pepper, onion and mushroom",
+  "items": [
+   "dishes:napolitan",
+   "eatout:napolitan",
+   "kumagaya:3514"
+  ]
+ },
+ {
+  "key": "dishes-meat-sauce",
+  "ja": "スパゲッティ ミートソース",
+  "desc": "spaghetti with meat sauce, a mound of red-brown minced meat tomato sauce on spaghetti, grated cheese",
+  "items": [
+   "dishes:meat-sauce",
+   "eatout:meatsauce"
+  ]
+ },
+ {
+  "key": "dishes-carbonara",
+  "ja": "スパゲッティ カルボナーラ",
+  "desc": "spaghetti carbonara, spaghetti in creamy pale yellow egg and cheese sauce with bacon and black pepper",
+  "items": [
+   "dishes:carbonara",
+   "eatout:carbonara"
+  ]
+ },
+ {
+  "key": "dishes-peperoncino",
+  "ja": "ペペロンチーノ",
+  "desc": "spaghetti aglio olio e peperoncino, glossy spaghetti with sliced garlic, red chili flakes and parsley",
+  "items": [
+   "dishes:peperoncino",
+   "eatout:peperoncino"
+  ]
+ },
+ {
+  "key": "dishes-tarako-spa",
+  "ja": "たらこスパゲッティ",
+  "desc": "tarako spaghetti, spaghetti tossed with pink cod roe and butter, topped with shredded nori",
+  "items": [
+   "dishes:tarako-spa",
+   "eatout:tarako_pasta"
+  ]
+ },
+ {
+  "key": "dishes-wafu-kinoko-spa",
+  "ja": "和風きのこスパゲッティ",
+  "desc": "Japanese mushroom spaghetti, spaghetti with shimeji, enoki and bacon in soy butter, topped with nori",
+  "items": [
+   "dishes:wafu-kinoko-spa",
+   "eatout:wafu_kinoko_pasta"
+  ]
+ },
+ {
+  "key": "dishes-vongole",
+  "ja": "ボンゴレビアンコ",
+  "desc": "spaghetti vongole bianco, spaghetti with open clams in white wine garlic sauce with parsley",
+  "items": [
+   "dishes:vongole",
+   "eatout:vongole"
+  ]
+ },
+ {
+  "key": "dishes-yosenabe",
+  "ja": "寄せ鍋（1人前）",
+  "desc": "yosenabe, a clay pot of clear soy dashi with napa cabbage, chicken, tofu, cod, shiitake and green onion",
+  "items": [
+   "dishes:yosenabe"
+  ]
+ },
+ {
+  "key": "dishes-sukiyaki",
+  "ja": "すき焼き（1人前）",
+  "desc": "sukiyaki, an iron pan of thin marbled beef slices, grilled tofu, napa cabbage, leek and shirataki in sweet soy broth, with a raw egg",
+  "items": [
+   "dishes:sukiyaki",
+   "maff_kyodo:32_19_gunma",
+   "maff_kyodo:34_17_tokyo"
+  ]
+ },
+ {
+  "key": "dishes-shabushabu-pork",
+  "ja": "豚しゃぶしゃぶ（1人前）",
+  "desc": "shabu-shabu, a pot of clear kombu broth with thin meat slices, napa cabbage, tofu, enoki and leek, with ponzu",
+  "items": [
+   "dishes:shabushabu-pork",
+   "dishes:shabushabu-beef"
+  ]
+ },
+ {
+  "key": "dishes-kimchi-nabe",
+  "ja": "キムチ鍋（1人前）",
+  "desc": "kimchi nabe, a clay pot of red spicy kimchi broth with pork, tofu, napa cabbage and enoki",
+  "items": [
+   "dishes:kimchi-nabe"
+  ]
+ },
+ {
+  "key": "dishes-mizutaki",
+  "ja": "水炊き（1人前）",
+  "desc": "mizutaki, a clay pot of milky white chicken broth with chicken pieces, cabbage, tofu and shungiku",
+  "items": [
+   "dishes:mizutaki"
+  ]
+ },
+ {
+  "key": "dishes-chanko-nabe",
+  "ja": "ちゃんこ鍋（1人前）",
+  "desc": "chanko nabe, a big pot with chicken meatballs, chicken, napa cabbage, tofu and leek in clear broth",
+  "items": [
+   "dishes:chanko-nabe"
+  ]
+ },
+ {
+  "key": "dishes-motsunabe",
+  "ja": "もつ鍋（1人前）",
+  "desc": "motsunabe, a pot of soy broth with beef offal, cabbage, garlic chives, tofu and garlic slices",
+  "items": [
+   "dishes:motsunabe"
+  ]
+ },
+ {
+  "key": "dishes-ishikari-nabe",
+  "ja": "石狩鍋（1人前）",
+  "desc": "ishikari nabe, a pot of miso broth with salmon chunks, napa cabbage, tofu, potato and leek",
+  "items": [
+   "dishes:ishikari-nabe",
+   "maff_kyodo:ishikarinabe_hokkaido"
+  ]
+ },
+ {
+  "key": "dishes-tara-chiri",
+  "ja": "たらちり（1人前）",
+  "desc": "tarachiri, a pot of clear kombu broth with white cod pieces, tofu, napa cabbage and leek, with ponzu",
+  "items": [
+   "dishes:tara-chiri"
+  ]
+ },
+ {
+  "key": "dishes-oden-tamago",
+  "ja": "おでん 卵",
+  "desc": "an oden egg, a whole peeled boiled egg stained light brown by the broth, in clear oden dashi",
+  "items": [
+   "dishes:oden-tamago",
+   "eatout:oden_tamago"
+  ]
+ },
+ {
+  "key": "dishes-oden-chikuwabu",
+  "ja": "おでん ちくわぶ",
+  "desc": "oden chikuwabu, a star-ridged white wheat tube softened in clear oden broth",
+  "items": [
+   "dishes:oden-chikuwabu",
+   "eatout:oden_chikuwabu"
+  ]
+ },
+ {
+  "key": "dishes-oden-gobomaki",
+  "ja": "おでん ごぼう巻き",
+  "desc": "oden gobomaki, a fried fish cake roll with a burdock stick inside, in oden broth",
+  "items": [
+   "dishes:oden-gobomaki"
+  ]
+ },
+ {
+  "key": "dishes-oden-konnyaku",
+  "ja": "おでん こんにゃく",
+  "desc": "oden konnyaku, triangles of grey konjac in clear oden broth",
+  "items": [
+   "dishes:oden-konnyaku",
+   "eatout:oden_konnyaku"
+  ]
+ },
+ {
+  "key": "dishes-oden-shirataki",
+  "ja": "おでん しらたき",
+  "desc": "oden shirataki, a tied knot of translucent konjac noodles in oden broth",
+  "items": [
+   "dishes:oden-shirataki",
+   "eatout:oden_shirataki"
+  ]
+ },
+ {
+  "key": "dishes-oden-atsuage",
+  "ja": "おでん 厚揚げ",
+  "desc": "oden atsuage, a block of fried tofu with golden skin in clear oden broth",
+  "items": [
+   "dishes:oden-atsuage",
+   "eatout:oden_atsuage"
+  ]
+ },
+ {
+  "key": "dishes-oden-ganmo",
+  "ja": "おでん がんもどき",
+  "desc": "oden ganmodoki, a round fried tofu fritter soaked in oden broth",
+  "items": [
+   "dishes:oden-ganmo",
+   "eatout:oden_ganmo"
+  ]
+ },
+ {
+  "key": "dishes-oden-konbu",
+  "ja": "おでん 昆布",
+  "desc": "oden kombu, a tied knot of dark green kelp in clear oden broth",
+  "items": [
+   "dishes:oden-konbu",
+   "eatout:oden_konbu"
+  ]
+ },
+ {
+  "key": "dishes-oden-jagaimo",
+  "ja": "おでん じゃがいも",
+  "desc": "oden potato, a whole peeled potato in clear oden broth",
+  "items": [
+   "dishes:oden-jagaimo",
+   "eatout:oden_jagaimo"
+  ]
+ },
+ {
+  "key": "dishes-oden-gyusuji",
+  "ja": "おでん 牛すじ（串）",
+  "desc": "oden gyusuji, beef tendon pieces on a skewer in clear oden broth",
+  "items": [
+   "dishes:oden-gyusuji",
+   "eatout:oden_gyusuji"
+  ]
+ },
+ {
+  "key": "dishes-oden-mochikinchaku",
+  "ja": "おでん もち巾着",
+  "desc": "oden mochi kinchaku, a fried tofu pouch tied with a kanpyo string, filled with mochi, in oden broth",
+  "items": [
+   "dishes:oden-mochikinchaku",
+   "eatout:oden_mochikinchaku"
+  ]
+ },
+ {
+  "key": "dishes-oden-tako",
+  "ja": "おでん たこ",
+  "desc": "oden tako, octopus tentacle pieces on a skewer in oden broth",
+  "items": [
+   "dishes:oden-tako"
+  ]
+ },
+ {
+  "key": "dishes-oden-yakidofu",
+  "ja": "おでん 焼き豆腐",
+  "desc": "oden yaki-dofu, a block of grilled tofu in oden broth",
+  "items": [
+   "dishes:oden-yakidofu"
+  ]
+ },
+ {
+  "key": "dishes-oden-set",
+  "ja": "おでん盛り合わせ（6品）",
+  "desc": "an oden assortment in a bowl, daikon, egg, konjac, chikuwa, atsuage and a fish cake in clear golden broth, with yellow mustard",
+  "items": [
+   "dishes:oden-set"
+  ]
+ },
+ {
+  "key": "dishes-macaroni-gratin",
+  "ja": "マカロニグラタン",
+  "desc": "macaroni gratin, a baking dish of macaroni in creamy white sauce with chicken and mushrooms, browned cheese top",
+  "items": [
+   "dishes:macaroni-gratin",
+   "kurume:050"
+  ]
+ },
+ {
+  "key": "dishes-roll-cabbage",
+  "ja": "ロールキャベツ（2個）",
+  "desc": "cabbage rolls, two soft cabbage leaf rolls filled with minced meat in a light tomato consommé",
+  "items": [
+   "dishes:roll-cabbage",
+   "eatout:oden_rollcabbage"
+  ]
+ },
+ {
+  "key": "dishes-pot-au-feu",
+  "ja": "ポトフ",
+  "desc": "pot-au-feu, large chunks of cabbage, potato, carrot, onion and sausages in clear broth",
+  "items": [
+   "dishes:pot-au-feu",
+   "takatsuki:r25",
+   "toyonaka:117780",
+   "kumagaya:00182"
+  ]
+ },
+ {
+  "key": "dishes-modan-yaki",
+  "ja": "モダン焼き",
+  "desc": "modanyaki, a thick okonomiyaki layered with fried yakisoba noodles, topped with brown sauce, mayonnaise, aonori and bonito flakes",
+  "items": [
+   "dishes:modan-yaki",
+   "eatout:hiroshimayaki"
+  ]
+ },
+ {
+  "key": "dishes-monjayaki",
+  "ja": "もんじゃ焼き",
+  "desc": "monjayaki, a runny griddled batter with chopped cabbage, mentaiko and cheese spread on an iron griddle with small spatulas",
+  "items": [
+   "dishes:monjayaki",
+   "eatout:monja",
+   "maff_kyodo:34_3_tokyo"
+  ]
+ },
+ {
+  "key": "dishes-takoyaki",
+  "ja": "たこ焼き（6個）",
+  "desc": "takoyaki, round golden-brown octopus balls in a boat-shaped tray topped with brown sauce, mayonnaise, aonori and bonito flakes",
+  "items": [
+   "dishes:takoyaki",
+   "eatout:takoyaki",
+   "maff_kyodo:39_15_osaka",
+   "kurume:228"
+  ]
+ },
+ {
+  "key": "dishes-mabo-harusame",
+  "ja": "麻婆春雨",
+  "desc": "mabo harusame, glass noodles in a red-brown spicy minced pork sauce with garlic chives",
+  "items": [
+   "dishes:mabo-harusame"
+  ]
+ },
+ {
+  "key": "dishes-toast-butter",
+  "ja": "バタートースト",
+  "desc": "a thick slice of buttered toast, golden-brown with melting butter",
+  "items": [
+   "dishes:toast-butter",
+   "eatout:butter_toast",
+   "kurume:024"
+  ]
+ },
+ {
+  "key": "dishes-toast-jam",
+  "ja": "ジャムトースト",
+  "desc": "a slice of toast spread with red strawberry jam",
+  "items": [
+   "dishes:toast-jam"
+  ]
+ },
+ {
+  "key": "dishes-pizza-toast",
+  "ja": "ピザトースト",
+  "desc": "pizza toast, a thick slice of bread topped with tomato sauce, melted cheese, sliced sausage and green pepper rings",
+  "items": [
+   "dishes:pizza-toast",
+   "eatout:pizzatoast",
+   "kurume:026"
+  ]
+ },
+ {
+  "key": "dishes-cheese-toast",
+  "ja": "チーズトースト",
+  "desc": "cheese toast, a slice of bread with bubbly melted golden cheese",
+  "items": [
+   "dishes:cheese-toast",
+   "kurume:028"
+  ]
+ },
+ {
+  "key": "dishes-mix-sandwich",
+  "ja": "ミックスサンドイッチ",
+  "desc": "mixed sandwiches, crustless white bread triangles with egg salad, ham and cheese, and lettuce and tomato fillings",
+  "items": [
+   "dishes:mix-sandwich",
+   "eatout:sand_mix"
+  ]
+ },
+ {
+  "key": "dishes-tamago-sando",
+  "ja": "たまごサンド",
+  "desc": "egg sandwiches, crustless white bread triangles filled with creamy yellow egg salad",
+  "items": [
+   "dishes:tamago-sando",
+   "eatout:sand_tamago"
+  ]
+ },
+ {
+  "key": "dishes-french-toast",
+  "ja": "フレンチトースト",
+  "desc": "French toast, thick golden-brown egg-soaked bread slices with butter, maple syrup and powdered sugar",
+  "items": [
+   "dishes:french-toast",
+   "kurume:027"
+  ]
+ },
+ {
+  "key": "dishes-hotdog",
+  "ja": "ホットドッグ",
+  "desc": "a hot dog, a long sausage in a soft bun with ketchup and mustard and shredded cabbage",
+  "items": [
+   "dishes:hotdog",
+   "eatout:hotdog"
+  ]
+ },
+ {
+  "key": "dishes-loco-moco",
+  "ja": "ロコモコ",
+  "desc": "loco moco, a hamburger patty and a sunny-side-up egg on rice with brown gravy, beside salad",
+  "items": [
+   "dishes:loco-moco",
+   "eatout:locomoco"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-yakizake",
+  "ja": "焼き鮭定食",
+  "desc": "a Japanese set meal (teishoku) on a tray, a grilled salted salmon fillet, a bowl of rice, a bowl of miso soup and small side dishes",
+  "items": [
+   "dishes:teishoku-yakizake",
+   "eatout:shake_teishoku",
+   "eatout:tamago_kake_teishoku"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-karaage",
+  "ja": "唐揚げ定食",
+  "desc": "a karaage set meal on a tray, fried chicken with cabbage, a bowl of rice, miso soup and pickles",
+  "items": [
+   "dishes:teishoku-karaage",
+   "eatout:karaage_teishoku"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-hamburg",
+  "ja": "ハンバーグ定食",
+  "desc": "a hamburg steak set meal on a tray, a patty with demi-glace sauce and salad, rice and miso soup",
+  "items": [
+   "dishes:teishoku-hamburg",
+   "eatout:hamburg_teishoku"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-gyoza",
+  "ja": "餃子定食",
+  "desc": "a gyoza set meal on a tray, a plate of pan-fried gyoza, a bowl of rice and soup",
+  "items": [
+   "dishes:teishoku-gyoza",
+   "eatout:gyoza_teishoku"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-shogayaki",
+  "ja": "生姜焼き定食",
+  "desc": "a ginger pork set meal on a tray, glossy ginger pork slices with shredded cabbage, rice, miso soup and pickles",
+  "items": [
+   "dishes:teishoku-shogayaki",
+   "eatout:shogayaki_teishoku"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-tonkatsu",
+  "ja": "とんかつ定食",
+  "desc": "a tonkatsu set meal on a tray, a sliced breaded pork cutlet with shredded cabbage, rice, miso soup and pickles",
+  "items": [
+   "dishes:teishoku-tonkatsu"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-chicken-nanban",
+  "ja": "チキン南蛮定食",
+  "desc": "a chicken nanban set meal on a tray, fried chicken with tartar sauce and cabbage, rice and miso soup",
+  "items": [
+   "dishes:teishoku-chicken-nanban"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-aji-fry",
+  "ja": "あじフライ定食",
+  "desc": "an aji fry set meal on a tray, two breaded horse mackerel fillets with cabbage, rice and miso soup",
+  "items": [
+   "dishes:teishoku-aji-fry"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-sashimi",
+  "ja": "刺身定食",
+  "desc": "a sashimi set meal on a tray, a plate of assorted sashimi, rice, miso soup and pickles",
+  "items": [
+   "dishes:teishoku-sashimi"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-tempura",
+  "ja": "天ぷら定食",
+  "desc": "a tempura set meal on a tray, a basket of shrimp and vegetable tempura, rice, miso soup and dipping sauce",
+  "items": [
+   "dishes:teishoku-tempura"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-mabo",
+  "ja": "麻婆豆腐定食",
+  "desc": "a mapo tofu set meal on a tray, a dish of red mapo tofu, rice and soup",
+  "items": [
+   "dishes:teishoku-mabo"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-yasai-itame",
+  "ja": "野菜炒め定食",
+  "desc": "a vegetable stir-fry set meal on a tray, a plate of stir-fried vegetables with pork, rice and miso soup",
+  "items": [
+   "dishes:teishoku-yasai-itame"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-nikujaga",
+  "ja": "肉じゃが定食",
+  "desc": "a nikujaga set meal on a tray, a bowl of nikujaga, rice, miso soup and pickles",
+  "items": [
+   "dishes:teishoku-nikujaga"
+  ]
+ },
+ {
+  "key": "dishes-teishoku-buri-teriyaki",
+  "ja": "ぶりの照り焼き定食",
+  "desc": "a yellowtail teriyaki set meal on a tray, a glazed buri fillet, rice, miso soup and pickles",
+  "items": [
+   "dishes:teishoku-buri-teriyaki"
+  ]
+ },
+ {
+  "key": "dishes-wa-choshoku",
+  "ja": "和朝食（ごはん・焼き鮭・味噌汁・納豆・のり）",
+  "desc": "a Japanese breakfast on a tray, grilled salmon, rice, miso soup, natto and a few sheets of nori",
+  "items": [
+   "dishes:wa-choshoku"
+  ]
+ },
+ {
+  "key": "dishes-tkg-choshoku",
+  "ja": "卵かけごはんと味噌汁",
+  "desc": "a bowl of rice with a raw egg on top beside a bowl of miso soup",
+  "items": [
+   "dishes:tkg-choshoku"
+  ]
+ },
+ {
+  "key": "dishes-toast-medamayaki",
+  "ja": "トーストと目玉焼き",
+  "desc": "a slice of buttered toast and a sunny-side-up fried egg on a plate",
+  "items": [
+   "dishes:toast-medamayaki"
+  ]
+ },
+ {
+  "key": "dishes-yo-choshoku",
+  "ja": "洋朝食（トースト・ベーコンエッグ・サラダ・ヨーグルト・牛乳）",
+  "desc": "a Western breakfast set, toast, bacon and eggs, a small salad, a cup of yogurt and a glass of milk",
+  "items": [
+   "dishes:yo-choshoku",
+   "eatout:morning_set"
+  ]
+ },
+ {
+  "key": "dishes-bento-karaage",
+  "ja": "手作り弁当（唐揚げ）",
+  "desc": "a bento box with white rice, karaage fried chicken, broccoli, cherry tomatoes and an umeboshi",
+  "items": [
+   "dishes:bento-karaage",
+   "eatout:bento_karaage"
+  ]
+ },
+ {
+  "key": "dishes-bento-shake",
+  "ja": "手作り弁当（鮭）",
+  "desc": "a bento box with white rice, a grilled salmon fillet, tamagoyaki, broccoli and cherry tomatoes",
+  "items": [
+   "dishes:bento-shake",
+   "eatout:bento_shake"
+  ]
+ },
+ {
+  "key": "dishes-curry-salad-set",
+  "ja": "カレーライスとサラダ",
+  "desc": "curry rice on a plate beside a small green salad",
+  "items": [
+   "dishes:curry-salad-set"
+  ]
+ },
+ {
+  "key": "eatout-gyudon_cheese",
+  "ja": "チーズ牛丼（並盛）",
+  "desc": "cheese gyudon, a beef bowl topped with melted white and yellow cheese",
+  "items": [
+   "eatout:gyudon_cheese"
+  ]
+ },
+ {
+  "key": "eatout-gyudon_negitama",
+  "ja": "ねぎ玉牛丼（並盛）",
+  "desc": "negitama gyudon, a beef bowl topped with a heap of green onion and a raw egg yolk",
+  "items": [
+   "eatout:gyudon_negitama"
+  ]
+ },
+ {
+  "key": "eatout-gyuteishoku",
+  "ja": "牛丼チェーン 牛皿定食",
+  "desc": "a gyu-sara set meal, a plate of simmered beef and onion, a bowl of rice, miso soup and salad on a tray",
+  "items": [
+   "eatout:gyuteishoku"
+  ]
+ },
+ {
+  "key": "eatout-butadon_obihiro",
+  "ja": "豚丼（炭火焼き・帯広風）",
+  "desc": "Obihiro-style butadon, thick charcoal-grilled pork slices glazed in sweet soy sauce on rice",
+  "items": [
+   "eatout:butadon_obihiro"
+  ]
+ },
+ {
+  "key": "eatout-sauce_katsudon",
+  "ja": "ソースカツ丼",
+  "desc": "sauce katsudon, a bowl of rice and shredded cabbage topped with breaded pork cutlets soaked in dark brown sauce",
+  "items": [
+   "eatout:sauce_katsudon"
+  ]
+ },
+ {
+  "key": "eatout-kakiage_don",
+  "ja": "かき揚げ丼",
+  "desc": "kakiage don, a round vegetable and shrimp tempura fritter on rice with sweet sauce",
+  "items": [
+   "eatout:kakiage_don"
+  ]
+ },
+ {
+  "key": "eatout-unaju",
+  "ja": "うな重",
+  "desc": "unaju, glossy glazed grilled eel on rice in a lacquered rectangular box",
+  "items": [
+   "eatout:unaju"
+  ]
+ },
+ {
+  "key": "eatout-salmon_ikura_don",
+  "ja": "サーモンいくら丼",
+  "desc": "salmon ikura don, rice topped with orange salmon slices and glossy orange salmon roe",
+  "items": [
+   "eatout:salmon_ikura_don"
+  ]
+ },
+ {
+  "key": "eatout-butakimu_don",
+  "ja": "豚キムチ丼",
+  "desc": "pork kimchi don, rice topped with stir-fried pork and kimchi and an egg yolk",
+  "items": [
+   "eatout:butakimu_don"
+  ]
+ },
+ {
+  "key": "eatout-sutadon",
+  "ja": "スタミナ丼（すた丼風）",
+  "desc": "stamina don, rice topped with garlicky soy-glazed pork slices, green onion and a raw egg yolk",
+  "items": [
+   "eatout:sutadon"
+  ]
+ },
+ {
+  "key": "eatout-stake_don",
+  "ja": "ステーキ丼",
+  "desc": "steak don, rice topped with sliced medium-rare beef steak with sauce and green onion",
+  "items": [
+   "eatout:stake_don"
+  ]
+ },
+ {
+  "key": "eatout-rosutobifu_don",
+  "ja": "ローストビーフ丼",
+  "desc": "roast beef don, rice topped with a rose of pink roast beef slices, sauce and an egg yolk",
+  "items": [
+   "eatout:rosutobifu_don"
+  ]
+ },
+ {
+  "key": "eatout-karaage_don",
+  "ja": "唐揚げ丼",
+  "desc": "karaage don, rice topped with fried chicken, shredded cabbage, sweet sauce and mayonnaise",
+  "items": [
+   "eatout:karaage_don"
+  ]
+ },
+ {
+  "key": "eatout-mixfry_teishoku",
+  "ja": "ミックスフライ定食",
+  "desc": "a mixed fry set meal, a fried shrimp, a croquette and a white fish fry with cabbage, rice and miso soup",
+  "items": [
+   "eatout:mixfry_teishoku"
+  ]
+ },
+ {
+  "key": "eatout-yakiniku_teishoku",
+  "ja": "焼肉定食",
+  "desc": "a yakiniku set meal, grilled beef slices with onion in sauce, shredded cabbage, rice and miso soup",
+  "items": [
+   "eatout:yakiniku_teishoku"
+  ]
+ },
+ {
+  "key": "eatout-nira_reba_teishoku",
+  "ja": "レバニラ定食",
+  "desc": "liver and garlic chive stir-fry, pork liver slices with nira and bean sprouts in glossy sauce",
+  "items": [
+   "eatout:nira_reba_teishoku",
+   "eatout:nirareba"
+  ]
+ },
+ {
+  "key": "eatout-kaki_fry_teishoku",
+  "ja": "カキフライ定食",
+  "desc": "a kaki fry set meal, breaded fried oysters with cabbage and tartar sauce, rice and miso soup",
+  "items": [
+   "eatout:kaki_fry_teishoku"
+  ]
+ },
+ {
+  "key": "eatout-ramen_shio",
+  "ja": "ラーメン（塩）",
+  "desc": "shio ramen, thin noodles in clear pale golden salt broth with chashu, menma, half a boiled egg and green onion",
+  "items": [
+   "eatout:ramen_shio"
+  ]
+ },
+ {
+  "key": "eatout-ramen_tonkotsu",
+  "ja": "豚骨ラーメン",
+  "desc": "tonkotsu ramen, thin straight noodles in rich milky white pork bone broth with chashu, wood ear mushroom, red pickled ginger and green onion",
+  "items": [
+   "eatout:ramen_tonkotsu"
+  ]
+ },
+ {
+  "key": "eatout-kaedama",
+  "ja": "替え玉（1玉）",
+  "desc": "kaedama, a portion of thin boiled ramen noodles in a small bowl, plain",
+  "items": [
+   "eatout:kaedama"
+  ]
+ },
+ {
+  "key": "eatout-ramen_iekei",
+  "ja": "家系ラーメン",
+  "desc": "iekei ramen, thick noodles in rich brown pork-soy broth with chashu, spinach, three large nori sheets and a boiled egg",
+  "items": [
+   "eatout:ramen_iekei"
+  ]
+ },
+ {
+  "key": "eatout-ramen_jiro",
+  "ja": "二郎系ラーメン（小）",
+  "desc": "Jiro-style ramen, thick noodles in rich broth under a towering heap of bean sprouts and cabbage, thick slabs of pork and chopped garlic",
+  "items": [
+   "eatout:ramen_jiro"
+  ]
+ },
+ {
+  "key": "eatout-ramen_chashu",
+  "ja": "チャーシュー麺",
+  "desc": "chashu men, ramen in brown soy broth covered with many slices of chashu pork, menma and green onion",
+  "items": [
+   "eatout:ramen_chashu"
+  ]
+ },
+ {
+  "key": "eatout-tsukemen",
+  "ja": "つけ麺",
+  "desc": "tsukemen, thick cold noodles on a plate beside a bowl of rich brown dipping broth with chashu, menma and a boiled egg",
+  "items": [
+   "eatout:tsukemen",
+   "eatout:tsukemen_oo"
+  ]
+ },
+ {
+  "key": "eatout-abura_soba",
+  "ja": "油そば（まぜそば）",
+  "desc": "abura soba, thick noodles without soup coated in oily soy sauce, topped with chashu, menma, green onion and an egg yolk",
+  "items": [
+   "eatout:abura_soba"
+  ]
+ },
+ {
+  "key": "eatout-tantanmen",
+  "ja": "担々麺",
+  "desc": "tantanmen, ramen in red sesame chili broth topped with minced pork and bok choy",
+  "items": [
+   "eatout:tantanmen"
+  ]
+ },
+ {
+  "key": "eatout-sara_udon",
+  "ja": "皿うどん（細麺パリパリ）",
+  "desc": "sara udon, crisp fried thin noodles under a glossy thick sauce of stir-fried cabbage, pork, shrimp, squid and vegetables",
+  "items": [
+   "eatout:sara_udon"
+  ]
+ },
+ {
+  "key": "eatout-kamatama",
+  "ja": "釜玉うどん",
+  "desc": "kamatama udon, hot thick udon in a bowl tossed with a raw egg, green onion and soy sauce",
+  "items": [
+   "eatout:kamatama"
+  ]
+ },
+ {
+  "key": "eatout-mori_soba",
+  "ja": "もりそば",
+  "desc": "mori soba, cold grey-brown soba on a bamboo tray with no nori, a cup of dark dipping sauce, green onion and wasabi",
+  "items": [
+   "eatout:mori_soba",
+   "eatout:mori_soba_oo"
+  ]
+ }
+]

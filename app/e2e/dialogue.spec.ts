@@ -1,8 +1,8 @@
 // NH's dialogue box (docs/design.md "Dialogue"): the speech balloon and the catch plate type their text in, two lines a
 // page; a tap finishes the page, the next turns it (a ▼ bobs only while a page follows), the last tap closes it.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
-import { castIn, reelOnBite, tapFigure } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { castIn, islandUp, reelOnBite, tapFigure } from './island.ts';
+import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 /** The page's clock (`page.clock.install()` before the page opens) held from now, then stepped on until `shown` is up:
@@ -19,7 +19,7 @@ async function holdTyping(page: Page, shown: Locator) {
 test('a visitor’s introduction: typed, two pages, the ▼ only before the last; tap finishes, turns, then closes', async ({ page }) => {
   await page.clock.install();
   await page.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none'); // no ambient critters to net instead
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   // he sleeps face down until the fifth nudge (NH); then his introduction
   await tapFigure(page, '[data-visitor="gulliver"] .art');
@@ -61,7 +61,7 @@ test('a visitor’s introduction: typed, two pages, the ▼ only before the last
 test('the catch plate pages NH’s catch line (two lines a page) and, on a first find, says it’s in the ずかん', async ({ page }) => {
   await page.clock.install();
   await page.goto('?demo&date=2026-07-04T12:00&critter=olive-flounder');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-critter="fish"]')).toBeAttached();
   // from the beach by the shadow (NH casts from where it stands)
   const [fx, fy] = await castIn(page, 'sea');

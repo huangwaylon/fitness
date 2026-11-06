@@ -4,8 +4,7 @@
 // Every tree shakes (NH's three quick taps): an oak's branch, a palm's coconuts; the partner's tab sees the shake,
 // their villager turns to it where it stands, and what's picked up on one tab is gone on the other.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, openNear, plateOnly, quiet } from './island.ts';
-import { hudMenu } from './hud.ts';
+import { geo, islandUp, openNear, plateOnly, quiet } from './island.ts';
 import { SPEED } from '../src/lib/components/island/speed.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -19,7 +18,7 @@ const DATE = '2026-11-04T12:00';
 
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=${DATE}&critter=none${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await quiet(page); // the opening beats are over
 }
@@ -59,7 +58,7 @@ test('every tree shakes: three quick taps on an oak drop a branch beside it; one
   await expect(twig).toHaveCount(0, { timeout: 3000 });
   // a reload finds today's island as it was: the branch is gone, and stays gone
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForTimeout(800); // (proving the branch doesn't come back)
   await expect(page.locator('button[data-branch]')).toHaveCount(0);
 });
@@ -171,7 +170,7 @@ test('two players: asleep at night on both tabs; a tap wakes my villager on both
   const a = await ctx.newPage(), b = await ctx.newPage();
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
     await p.goto(`?demo&date=2026-11-04T23:00&critter=none${as}`);
-    await expect(hudMenu(p)).toBeVisible();
+    await islandUp(p);
     await p.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   }
   const zzz = (p: Page, who: string) => p.locator(`[data-person="${who}"] .fxa.zzz`);
@@ -194,7 +193,7 @@ test('two players: Gulliver woken on one tab is up on the other too, and for a t
   const a = await ctx.newPage(), b = await ctx.newPage();
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
     await p.goto(`?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none${as}`);
-    await expect(hudMenu(p)).toBeVisible();
+    await islandUp(p);
   }
   const g = (p: Page) => p.locator('[data-visitor="gulliver"]');
   for (const p of [a, b]) await expect(g(p)).toHaveAttribute('data-asleep', 'lie', { timeout: 5000 });
@@ -208,7 +207,7 @@ test('two players: Gulliver woken on one tab is up on the other too, and for a t
   const c = await ctx.newPage();
   await c.goto('?demo&date=2026-11-04T12:00&visitor=gulliver&critter=none&as=B');
   // (its page loading: the expect's own budget, 10 s on CI, as a first wait after goto; a third tab under load took over 5 s)
-  await expect(hudMenu(c)).toBeVisible();
+  await islandUp(c);
   await expect(g(c)).toBeAttached();
   await c.waitForTimeout(800);
   await expect(g(c)).not.toHaveAttribute('data-asleep', /./);
@@ -246,7 +245,7 @@ test('two players: a bug netted on one tab is gone on the other, where their pla
   const a = await ctx.newPage(), b = await ctx.newPage();
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
     await p.goto(`?demo&date=2026-05-10T12:00&critter=ladybug${as}`);
-    await expect(hudMenu(p)).toBeVisible();
+    await islandUp(p);
   }
   for (const p of [a, b]) await expect(p.locator('[data-critter="ladybug"]')).toBeAttached({ timeout: 6000 });
   await a.waitForTimeout(900);
@@ -272,7 +271,7 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   const a = await ctx.newPage(), b = await ctx.newPage();
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
     await p.goto(`?demo&date=${DATE}&critter=none${as}`);
-    await expect(hudMenu(p)).toBeVisible();
+    await islandUp(p);
   }
   const shells = (p: Page) => p.locator('[data-find="shell"]');
   for (const p of [a, b]) await expect(shells(p)).toHaveCount(3);
@@ -297,7 +296,7 @@ test('two players: a shell picked up on one tab is gone on the other, and from a
   // B's phone again, later: the day as it is
   const c = await ctx.newPage();
   await c.goto(`?demo&date=${DATE}&critter=none&as=B`);
-  await expect(hudMenu(c)).toBeVisible();
+  await islandUp(c);
   await expect(shells(c)).toHaveCount(2);
   await ctx.close();
 });

@@ -11,70 +11,21 @@
 // distractors), `word` (reductions and contractions in context, 3 choices that all fit), `num` (natural-speed numbers
 // in real contexts, the distractors the corrected value, a heard number or a plausible sum). No `pic`: the art is
 // island things, and these scenes aren't.
-//   Voices: one US cast voice per villager for good (CAST: accent, gender, slot; 12 US voices, 6 a gender), for the
-// neural TTS (scripts/tts/cast.json); UK and AU (EXPOSURE) only on the やま/ほし accent-exposure items.
+//   Voices: one US cast voice per villager for good (cast.ts CAST: accent, gender, slot; 12 US voices, 6 a gender),
+// for the neural TTS (scripts/tts/cast.json); UK and AU (EXPOSURE) only on the やま/ほし accent-exposure items.
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, CastId, Item, ItemType, Tags } from './bank.ts';
+import type { Item, ItemType, Tags } from './bank.ts';
+import { MEAN_ASK, single, tg } from './content/build.ts';
 import { staged } from './staging.ts';
-
-/** Who speaks with which cast voice, for good: a US voice for every villager (docs/curriculum.md "American English
- *  first", 2026-11-06; 12 US voices, speech.ts SLOTS, scripts/tts/cast.json). Levels 1-3's speakers and the units' are
- *  here too. The villagers who spoke UK or AU before, and some of the busiest US ones, moved onto the second six
- *  (us-f4…f6, us-m4…m6; us-f6 a light Southern and us-m6 a light New York voice) or the first six by character, the
- *  load spread (speech.test: no voice over a tenth) and dialogue partners never sharing a voice (bank.test). */
-export const CAST: Readonly<Partial<Record<RosterId, CastId>>> = {
-  bunnie: 'us-f1', rosie: 'us-f1', lily: 'us-f1', judy: 'us-f1',
-  goldie: 'us-f2', audie: 'us-f2', label: 'us-f2',
-  maple: 'us-f3', molly: 'us-f3', 'daisy-mae': 'us-f3', merengue: 'us-f3', fauna: 'us-f3',
-  diana: 'us-f4', whitney: 'us-f4', ankha: 'us-f4',
-  saharah: 'us-f5', celeste: 'us-f5', coco: 'us-f5',
-  mabel: 'us-f6', cherry: 'us-f6',
-  dom: 'us-m1', stitches: 'us-m1', 'kid-cat': 'us-m1', cj: 'us-m1', marshal: 'us-m1',
-  'tom-nook': 'us-m2', orville: 'us-m2', hamlet: 'us-m2', gulliver: 'us-m2', wilbur: 'us-m2', kappn: 'us-m2',
-  pietro: 'us-m3', bob: 'us-m3', anchovy: 'us-m3', 'kk-slider': 'us-m3', flick: 'us-m3', brewster: 'us-m3',
-  punchy: 'us-m4', sherb: 'us-m4', kicks: 'us-m4', roald: 'us-m4',
-  raymond: 'us-m5', julian: 'us-m5', blathers: 'us-m5',
-  redd: 'us-m6', apollo: 'us-m6',
-  // the content sprint's villagers (content/: もり, やま, ほし; 2026-11-06), the same rules
-  bea: 'us-f1', nana: 'us-f2', pekoe: 'us-f3',
-  olivia: 'us-f4', tasha: 'us-f4', freya: 'us-f4', vivian: 'us-f4', tia: 'us-f4', reneigh: 'us-f4', francine: 'us-f4',
-  portia: 'us-f5', pashmina: 'us-f5', sylvia: 'us-f5', phoebe: 'us-f5', agnes: 'us-f5', marina: 'us-f5', gayle: 'us-f5',
-  melba: 'us-f6', kitt: 'us-f6', faith: 'us-f6', charlise: 'us-f6', poppy: 'us-f6', tangy: 'us-f6', katt: 'us-f6', tammy: 'us-f6',
-  walker: 'us-m1', frett: 'us-m3', admiral: 'us-m3',
-  kidd: 'us-m4', bud: 'us-m4', genji: 'us-m4', al: 'us-m4', cyd: 'us-m4', lucky: 'us-m4', beau: 'us-m4', fang: 'us-m4', octavian: 'us-m4',
-  keaton: 'us-m5', cyrano: 'us-m5', chief: 'us-m5', jacques: 'us-m5', curlos: 'us-m5', henry: 'us-m5', kabuki: 'us-m5', sterling: 'us-m5',
-  wolfgang: 'us-m5',
-  gruff: 'us-m6', tex: 'us-m6', curt: 'us-m6', static: 'us-m6', lopez: 'us-m6', shep: 'us-m6', ken: 'us-m6', teddy: 'us-m6', zucker: 'us-m6'
-};
-
-/** The few villagers who also speak UK or AU English, and only in an item tagged `accent-exposure` (やま and ほし, ≤ 10%
- *  of each: bank.test "accent policy"; source.ts puts the voice on). Their voices from before the American focus. */
-export const EXPOSURE: Readonly<Partial<Record<RosterId, CastId>>> = {
-  ankha: 'uk-f1', fauna: 'uk-f1', mabel: 'uk-f1', celeste: 'uk-f1', olivia: 'uk-f1', tasha: 'uk-f1', freya: 'uk-f1',
-  vivian: 'uk-f1',
-  raymond: 'uk-m1', julian: 'uk-m1', marshal: 'uk-m1', chief: 'uk-m1', kidd: 'uk-m1', curlos: 'uk-m1',
-  blathers: 'uk-m2', apollo: 'uk-m2', tex: 'uk-m2', static: 'uk-m2',
-  saharah: 'au-f1', whitney: 'au-f1', faith: 'au-f1', phoebe: 'au-f1', charlise: 'au-f1',
-  curt: 'au-m1', genji: 'au-m1', gruff: 'au-m1',
-  wilbur: 'au-m2', cyd: 'au-m2', walker: 'au-m2'
-};
-
-/** A `mean` item's question while it plays. */
-const MEAN_ASK = 'つまり、どういうこと？';
 
 type Extra = { tts?: string; focus?: string; ask?: string };
 type Row = readonly [id: string, speaker: RosterId, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, extra?: Extra];
 
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-
 const item = (type: ItemType) => ([id, speaker, en, ja, note, choices, tags, x = {}]: Row): Item => {
-  const cast = CAST[speaker];
-  if (!cast) throw new Error(`kikimimi: ${speaker} has no cast voice`);
   const focus = type === 'word' ? choices[0] : x.focus;
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : undefined);
   return {
-    id, lv: 4, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags,
+    ...single(4, type, id, speaker, en, ja, note, choices, tags),
     ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }), ...staged(id)
   };
 };
@@ -97,22 +48,22 @@ const REPLY: readonly Row[] = [
     'take＝薬を飲む。レジの「ほかに何か？」と混同しやすい',
     ['Just something for my blood pressure.', "No, I'll take it now.", 'Yes, a bag, please.'],
     tg(13, 'service', 'literal')],
-  ['r4-triage', 'julian', 'The earliest I can do is a callback from the doctor this afternoon.',
-    'いちばん早くて、今日の午後に医師から折り返しのお電話になります。 →「今日中なら、それで大丈夫です。」',
+  ['r4-triage', 'julian', 'The earliest I can do is Thursday, but you can drop the bike off anytime before then.',
+    'いちばん早くて木曜ですね。それまでなら、自転車はいつ持ってきてもらっても大丈夫です。 →「木曜でいいです。じゃあ明日持っていってもいいですか？」',
     'The earliest I can do is…＝最短で〜。予約枠の言い方',
-    ["Fine, as long as it's today.", "I'll call the doctor back, then.", 'No, I came in this morning.'],
-    tg(14, 'service', 'formula', ['phone'])],
+    ['Thursday works. Can I bring it in tomorrow, then?', 'No, I dropped it on Thursday.', 'The earliest train is fine.'],
+    tg(31, 'service', 'formula', ['phone'])],
   ['r4-reschedule', 'coco', "We can move it, but just so you know, there's a fee for changes within 24 hours.",
     '変更はできますが、念のため、24時間以内の変更には手数料がかかります。 →「あ、おいくらですか？」',
     'just so you know＝念のため。後ろが本題',
     ['Ah. How much would that be?', 'Thursday at four is fine.', 'Sure, I know the way.'],
     tg(16, 'service', 'indirect', ['phone']),
     { tts: "We can move it, but just so you know, there's a fee for changes within twenty-four hours." }],
-  ['r4-leak', 'tom-nook', "I'll get someone to take a look at it sometime next week.",
-    '来週のどこかで、誰かに見てもらうよ。 →「日にちを決めてもらえますか？まだ水が垂れてるんです。」',
+  ['r4-leak', 'tom-nook', "The cabinets should come in sometime next week, so we'll start after that. Depends on the supplier.",
+    '戸棚は来週のどこかで届くはずなので、作業はそのあとですね。業者しだいです。 →「日にちを決めてもらえませんか？その週末に両親が来るんです。」',
     'sometime next week は曖昧。日を確定させる返しが自然',
-    ["Could you pin down a day? It's still dripping.", 'Yes, it looked fine last week.', "I'll take one, thanks."],
-    tg(30, 'neighbour', 'hedge', ['phone'])],
+    ["Any chance you could pin down a day? My parents are visiting that weekend.", 'Yes, the cabinets look great.', "Sure, I'll supply the coffee."],
+    tg(31, 'service', 'hedge', ['phone'])],
   ['r4-noise', 'apollo', "Hey, not a big deal, but I think your car's kind of in my spot.",
     'あの、大したことじゃないんだけど、君の車、ちょっと僕の駐車スペースに入ってるみたい。 →「あっ、ごめん！すぐ動かすね。」',
     'not a big deal, but…は遠回しな苦情。but の後が本題',
@@ -264,11 +215,11 @@ const MEAN: readonly Row[] = [
     'ギフトカード払いの要求は詐欺の典型',
     ["It's almost certainly a scam.", 'Your package is free to pick up.', "He's sending you a gift."],
     tg(23, 'service', 'deception', ['phone'])],
-  ['m4-damp', 'tom-nook', 'Honestly, a little mold never hurt anyone. It should be fine.',
-    '正直、ちょっとくらいのカビで困る人はいないよ。大丈夫なはずだ。 → つまり、すぐ直す気はない。',
-    'should be fine は責任をかわす言い方',
-    ["He doesn't plan to fix it anytime soon.", "He'll fix it today.", 'He thinks the mold is dangerous.'],
-    tg(30, 'neighbour', 'hedge', ['phone'])],
+  ['m4-damp', 'tom-nook', "Honestly, those pans are better off soaking. They'll be way easier to wash tomorrow.",
+    '正直、あの鍋はつけ置きしたほうがいいって。明日のほうがずっと洗いやすいよ。 → つまり、今夜は洗わない。',
+    'better off soaking は先延ばしの言い訳',
+    ["He isn't going to wash them tonight.", "He'll wash them right now.", 'He thinks the pans are ruined.'],
+    tg(35, 'friend', 'hedge')],
   ['m4-interesting', 'julian', "That's an interesting idea. It's not quite what we agreed, though.",
     '面白いアイデアですね。ただ、合意した内容とは少し違いますね。 → つまり、その変更は受け入れない。',
     'interesting＋though は丁寧な反対',
@@ -352,11 +303,11 @@ const WORD: readonly Row[] = [
     "米国の can't は t がほぼ消える。母音の強さで判断",
     ['can', "can't", 'can only'],
     tg(25, 'service', 'literal', ['phone'], ['can-cant'])],
-  ['w4-id-ill', 'goldie', "I'd ask the pharmacist before you take both.",
-    '両方飲む前に、私なら薬剤師さんに聞くよ。',
+  ['w4-id-ill', 'goldie', "I'd ask the tailor before you try hemming them yourself.",
+    '自分で裾上げする前に、私なら仕立て屋さんに聞くよ。',
     "I'd＝私なら〜する（助言）。I'll＝今から私が聞く",
     ["I'd", "I'll", "We'll"],
-    tg(13, 'partner', 'literal', [], ['contraction'])],
+    tg(57, 'friend', 'literal', [], ['contraction'])],
   ['w4-youll-need', 'merengue', "You'll need to fill out a customs form for that.",
     'そちらは税関申告書のご記入が必要です。',
     "You'll の ll は弱い。don't の有無を聞く",
@@ -384,12 +335,12 @@ const WORD: readonly Row[] = [
 // ---- num: numbers at natural speed in real contexts (the right one first) -------------------------------------------
 
 const NUM: readonly Row[] = [
-  ['n4-platform', 'kappn', 'The 6:40 to Boston will now depart from track 14, not 12.',
-    '6時40分発のボストン行きは、12番線ではなく14番線から発車します。',
-    'not 12 は訂正前。fourTEEN は後ろに強勢',
-    ['14番線', '12番線', '40番線'],
-    tg(5, 'official', 'literal', ['pa', 'station'], ['teen-ty', 'self-repair']),
-    { ask: '何番線？', focus: 'track 14', tts: 'The six forty to Boston will now depart from track fourteen, not twelve.' }],
+  ['n4-platform', 'kappn', "The helmet's 40 bucks, so with tax you're looking at $43.20.",
+    'ヘルメットは40ドルなので、税込みだと43ドル20セントですね。',
+    '税込みの合計が答え。forty-three twenty＝43.20',
+    ['$43.20', '$40.00', '$34.20'],
+    tg(31, 'service', 'literal', [], ['numbers', 'flap']),
+    { ask: '税込みで いくら？', focus: '$43.20', tts: "The helmet's forty bucks, so with tax you're lookin' at forty-three twenty." }],
   ['n4-gate', 'orville', 'Flight 815 to Denver is now boarding at gate 50. Sorry, gate 15.',
     'デンバー行き815便は、50番…失礼しました、15番搭乗口で搭乗中です。',
     '訂正後が答え。fifTEEN／FIFty の強勢',
@@ -414,12 +365,12 @@ const NUM: readonly Row[] = [
     ['68,000円', '73,000円', '5,000円'],
     tg(33, 'service', 'hedge', ['phone'], ['numbers']),
     { ask: '基本料金は？', focus: '¥68,000', tts: "It'd be sixty-eight thousand yen, plus another five thousand if you need us to pack." }],
-  ['n4-water', 'tom-nook', 'The water will be off from 10 till 2. Sorry, till 3. That\'s this Thursday.',
-    '今週木曜、10時から2時…失礼、3時まで断水します。',
-    'sorry の後が訂正。till＝まで',
-    ['3時', '2時', '10時'],
-    tg(34, 'official', 'literal', ['pa'], ['self-repair']),
-    { ask: '断水は何時まで？', focus: 'till 3', tts: "The water will be off from ten till two — sorry, till three. That's this Thursday." }],
+  ['n4-water', 'tom-nook', "Each box covers about 10 square feet. For your bathroom, that's 5 boxes, plus 1 extra for breakage.",
+    '1箱でだいたい10平方フィート分です。お風呂場なら5箱、割れたとき用に1箱追加ですね。',
+    'plus 1 extra で合計が変わる。答えは足し算',
+    ['6箱', '5箱', '10箱'],
+    tg(31, 'service', 'literal', [], ['numbers']),
+    { ask: 'ぜんぶで 何箱？', focus: '5 boxes, plus 1 extra', tts: "Each box covers about ten square feet. For your bathroom, that's five boxes, plus one extra for breakage." }],
   ['n4-reference', 'diana', 'Your confirmation number is 47092.',
     'お客様の確認番号は47092です。',
     '0 は「オー」と読む。2〜3桁ずつ区切って聞く',

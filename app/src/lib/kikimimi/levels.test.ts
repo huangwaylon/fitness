@@ -6,9 +6,7 @@ import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import type { Level } from './bank.ts';
-import type { Clip, Words } from './clips.ts';
-import clipsJson from './clips.json';
-import wordsJson from './words.json';
+import { CLIPS, WORDS } from './testdata.ts';
 import { PART_MAX, compile, playable } from './compile.ts';
 import { LEVELS, LADDER_OK } from './deck.ts';
 import { LADDERS, RUNG_ITEMS } from './ladders.ts';
@@ -16,8 +14,6 @@ import { ENTRIES, INDEX, entryOf, isRungId, itemOf, ladders, levelItems, load, l
 import { BANK } from './source.ts';
 import { skillsOf, tagsOf } from './tags.ts';
 
-const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
-const WORDS = wordsJson as unknown as Readonly<Record<string, Words>>;
 const DIR = join(import.meta.dirname, 'levels');
 const files = compile(CLIPS, WORDS);
 const levels = [...new Set(BANK.map((it) => it.lv))];

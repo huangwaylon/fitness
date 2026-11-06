@@ -1,7 +1,8 @@
 // つうち is gone (2026-11-02): せってい has no つうち, nothing asks for notification permission or subscribes, and nothing
 // is sent to the relay's old /push/* routes (gone too, 2026-11-05: every phone let its subscription go by then).
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 /** The page's browser with a service worker holding a subscription (Playwright blocks real ones), and a probe. */
 async function fakePush(page: Page) {
@@ -26,7 +27,7 @@ test('nothing asks, subscribes or calls /push; せってい has no つうち', a
   page.on('request', (r) => r.url().includes('/push/') && pushCalls.push(r.url()));
   await fakePush(page);
   await page.goto('?demo');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   // せってい: no つうち section, no switch for it
   await fromMenu(page, 'settings');
   const panel = page.locator('dialog[open]');
@@ -36,7 +37,7 @@ test('nothing asks, subscribes or calls /push; せってい has no つうち', a
   await expect(panel).not.toContainText('しらせる');
   // a reload: still nothing
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForTimeout(500); // (proving nothing happens)
   expect(await probe(page)).toEqual({ asked: 0, subscribed: 0, unsubscribed: 0 });
   expect(pushCalls).toEqual([]);

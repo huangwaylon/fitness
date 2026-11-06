@@ -3,14 +3,16 @@
   // servings (−/＋, 1–20), its ingredients (each: its category's tile, the food, its amount and everyday name, its kcal; a tap → its amount to change or
   // take out), ＋ ざいりょうを ついか (→ the search → the amount), what it adds up to (a serving's kcal and P/F/C/salt, and
   // the whole's), then けす (a saved one; tapped twice: the board's ほんとうに？) and ほぞん. Anyone else's: the same,
-  // read-only, with who set it, 「コピーして へんしゅう」 (a copy of my own, opened here) and 「ごはんに ついか」.
+  // read-only, with who set it, 「コピーして へんしゅう」 (a copy of my own, opened here) and 「ごはんに ついか」. On top, its
+  // picture: the first four of its ingredients that have one, 2 × 2 (one alone: itself, 160 px); none: nothing.
   import type { Who } from '#lib/types.ts';
   import { RECIPE, recipeTotals, type RepeatItem } from '#lib/contract/food.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import Avatar from '../characters/Avatar.svelte';
+  import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
-  import { amountText, catalogOf, catOf, foodDbNow, glossOf, itemOf, servingOnly, type RecipeDraft } from './foodUi.ts';
+  import { amountText, catalogOf, catOf, foodDbNow, glossOf, itemOf, servingOnly, withImages, type RecipeDraft } from './foodUi.ts';
 
   interface Props {
     draft: RecipeDraft;
@@ -35,6 +37,17 @@
   const kcalOf = (it: RepeatItem) => Math.round((it.f.k * it.g) / 100);
   const ok = $derived(draft.n.trim().length > 0 && draft.it.length > 0 && !clean);
   let removing = $state(false);
+  let imgs = $state.raw<FoodImageIndex | null>(null);
+  $effect(() => withImages((ix) => (imgs = ix)));
+  /** The collage: up to four of the ingredients' pictures, in order (a food once). */
+  const hero = $derived.by(() => {
+    const seen = new Set<string>();
+    return draft.it.flatMap((x) => {
+      const img = !seen.has(x.f.id) && imgOf(imgs, x.f.id, 160);
+      seen.add(x.f.id);
+      return img ? [{ id: x.f.id, img }] : [];
+    }).slice(0, 4);
+  });
 
   function servings(d: -1 | 1) {
     draft.sv = Math.max(RECIPE.servings.min, Math.min(RECIPE.servings.max, draft.sv + d));
@@ -48,7 +61,7 @@
 {#snippet cells(it: RepeatItem)}
   {@const db = foodDbNow()}
   {@const gl = glossOf(catalogOf(db, it.f.id) ?? itemOf(it.f, null), it.f.n)}
-  <FoodThumb cat={catOf(db, it.f.id)} size={40} />
+  <FoodThumb cat={catOf(db, it.f.id)} size={40} img={imgOf(imgs, it.f.id, 40)} />
   <span class="nm">{it.f.n}</span>
   <small class="amt"><span>{amountText(it)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
   <b class="kc money">{formatNum(kcalOf(it))}</b>
@@ -56,6 +69,11 @@
 
 <form class="rcp" data-recipe-level={ro ? 'view' : 'edit'} onsubmit={(e) => { e.preventDefault(); if (ok) onsave?.(); }}>
   <section class="card">
+    {#if hero.length}
+      <div class="hero" class:one={hero.length === 1} data-recipe-hero={hero.length} aria-hidden="true">
+        {#each hero as h (h.id)}<FoodThumb size={hero.length === 1 ? 160 : 78} img={h.img} />{/each}
+      </div>
+    {/if}
     {#if ro && owner}
       <h3 class="title" data-recipe-name>{draft.n}</h3>
       <p class="who"><span class="av" aria-hidden="true"><Avatar worn person={owner.who} villager={owner.villager} size={22} /></span>{t('food.rcp.by', { name: owner.name })}</p>
@@ -126,6 +144,8 @@
   /* FoodAmount's level: one minmax(0, 1fr) column (never wider than the sheet), its cards, steppers and cells */
   .rcp { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
   .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
+  .hero { justify-self: center; display: grid; grid-template-columns: repeat(2, 78px); grid-auto-rows: 78px; gap: 4px; margin-bottom: 4px; }
+  .hero.one { grid-template-columns: 160px; grid-auto-rows: 160px; }
   .title { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   .who { margin: 0; display: flex; align-items: center; gap: 6px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .who .av { display: flex; }

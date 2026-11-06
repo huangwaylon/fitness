@@ -246,6 +246,17 @@ describe('the meal log', () => {
     expect(editFood('fnope0000', { g: 1 }).ok).toBe(false);
   });
 
+  it('editFood takes another state of the food (f: じょうたい), its label as given', async () => {
+    const { editFood, logFood } = await import('./actions.ts');
+    await model();
+    logFood({ d: '2026-11-18', m: 'l', g: 125, f: { ...RICE, id: 'mext:11221', n: '鶏もも肉 皮つき 生', u: '1/2枚' } });
+    const [{ id }] = food();
+    await model();
+    const grilled = { ...RICE, id: 'mext:11222', n: '鶏もも肉 皮つき 焼き', k: 220 };
+    expect(editFood(id as string, { g: 90, u: '1/2枚', f: grilled }).ok).toBe(true);
+    expect(food().at(-1)).toMatchObject({ id, g: 90, f: { ...grilled, u: '1/2枚' } });
+  });
+
   it('removeFood removes one of mine; someone else’s isn’t mine to change', async () => {
     const { editFood, logFood, removeFood } = await import('./actions.ts');
     await model();

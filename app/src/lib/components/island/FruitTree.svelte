@@ -11,7 +11,7 @@
   // is the one home of a person's per-fruit detail: a nameplate (whose tree), then per goal (🍎 steps first, POPUP_ORDER)
   // today's amount against the goal (met or not), ✓ once met and a 「がんばり」 chip once at 1.5× (every stretched row
   // alike, whatever the cap; no numbers on the rows), each held by a faint ghost until then (the chip's only while the
-  // cap can still pay); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
+  // cap can still pay); then the day's meals (朝 / 昼 / 夜, ✓ once logged: mealChecks.ts); then one ledger of the day, its zeros faint: もくひょう (+1 a goal met), がんばり (always; +1 a
   // goal at 1.5×, at most +2; 「（上限 2）」 when more were reached), this person's total (「うめの きょう +6 ベル」),
   // then ふたりでぜんぶ (both people, all four goals: +2, shared: shown in both popups, so ウェイ + うめ + ふたりでぜんぶ
   // is today's total, ごほうび's 「きょう +N ベル」) and when the data last arrived. It stays until this tree is tapped again, the other
@@ -47,6 +47,7 @@
   import { GOAL_TREES, offBuildingsAt } from './world.ts';
   import { site } from './site.svelte.ts';
   import { recordGoods } from '#lib/store/actions.ts';
+  import { MAIN_MEALS, mealsLogged } from './mealChecks.ts';
 
   interface Props {
     person: PersonWeekView;
@@ -117,6 +118,9 @@
   /** When this person's data last arrived (the popup's last line). Read only while the popup is open, so the minute
    *  clock ticks only then. */
   const sync = $derived(open ? lastSyncLine(person.lastSyncAt, minuteNow()) : null);
+  /** Today's 朝 / 昼 / 夜 in this person's meal log (mealChecks.ts; everyone's meals are seen by all three, the guest
+   *  too: contract/guest.ts), read only while the popup is open; none in the gallery (no model). */
+  const meals = $derived(open && week.model && week.view ? mealsLogged(week.model.state, person.person, week.view.today) : null);
   /** The fruit row leans out from the island's middle (left tree left, right tree right). */
   const lean = $derived(fruitLean(x, site.midX));
   /** The fruit row's offset off a building's ground, moved as one (world.ts offBuildingsAt round its middle, its whole
@@ -477,6 +481,21 @@
           <span class="gbc">{#if r.stretched}<span class="chip">{t('tree.stretched')}</span>{:else if stretchBells < STRETCH.cap}<span class="ghost" aria-hidden="true">{t('tree.stretched')}</span>{/if}</span>
         </span>
       {/each}
+      <!-- today's meals in the meal log: 朝 / 昼 / 夜, each ✓ once anything is logged in it (a snack doesn't count) -->
+      {#if meals}
+        <span class="row meals" data-meals>
+          <span class="ic"><OfficialArt key="items/dinner" size="20px" eager /></span>
+          <span class="lbl">{t('tree.meals')}</span>
+          <span class="mls">
+            {#each MAIN_MEALS as m (m)}
+              <span class="ml" class:on={meals[m]} data-meal={m} data-logged={meals[m] || null}
+                aria-label={t(meals[m] ? 'tree.meal.logged' : 'tree.meal.empty', { meal: t(`tree.meal.${m}`) })}>
+                {#if meals[m]}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check" /></svg>{:else}<span class="ok todo" aria-hidden="true"></span>{/if}<span aria-hidden="true">{t(`tree.meal.${m}`)}</span>
+              </span>
+            {/each}
+          </span>
+        </span>
+      {/if}
       <!-- the day's ledger: goals, がんばり (上限 when more were reached), this person's total; then ふたりでぜんぶ (shared) -->
       <span class="sum" data-sum>
         <span class="k">{t('tree.sum.goals')}</span><b class="v money" class:zero={!goalBells} data-v="goals">{signed(goalBells)}</b>
@@ -616,6 +635,10 @@
     padding: 1px 5px 2px; border-radius: var(--r-pill); border: 1px dashed color-mix(in srgb, var(--plate-ink) 30%, transparent);
     color: color-mix(in srgb, var(--plate-ink) 38%, transparent); font: 700 11px/1.1 var(--font-ui);
   }
+  /* today's meals: the goal rows' ✓ and dashed ring, one per meal, each with its 朝 / 昼 / 夜 (display only) */
+  .mls { grid-column: 3 / -1; display: flex; align-items: center; gap: 8px; }
+  .ml { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: color-mix(in srgb, var(--plate-ink) 55%, transparent); }
+  .ml.on { color: var(--c-leaf-text); }
   /* the day's ledger: word left, ベル right; this person's total under a hairline */
   .sum {
     grid-column: 1 / -1; display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 12px;
@@ -648,6 +671,7 @@
   @container (max-width: 400px) {
     .detail { grid-template-columns: 20px auto auto; }
     .lbl { display: none; }
+    .mls { grid-column: 2 / -1; padding-left: 4px; }
     .row { column-gap: 10px; }
     /* a clear gap, so the longest value (14,164 / 8,000歩) never touches its fruit */
     .amt { padding-left: 4px; }
