@@ -15,7 +15,7 @@
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
   import type { QuizGame } from './game.svelte.ts';
   import Host from '../characters/Host.svelte';
-  import PlayerChip from './PlayerChip.svelte';
+  import PlayerChip from './frame/PlayerChip.svelte';
   import LadderSteps from './LadderSteps.svelte';
   import { sound } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';

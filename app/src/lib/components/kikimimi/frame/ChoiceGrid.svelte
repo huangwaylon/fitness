@@ -1,14 +1,21 @@
 <script lang="ts">
-  // A question's choices (docs/kikimimi.md "The game"): dimmed until the first play ends, then one final tap; mine
-  // marked as picked; at the reveal ○ on the right one and × on my wrong pick (a dialogue's: only those two, so the
-  // transcript under them is never under the sticky つぎへ). Pictures in a 2×2 grid (named in Japanese for VoiceOver).
-  import type { Item } from '#lib/kikimimi/bank.ts';
-  import { PIC_JA } from '#lib/kikimimi/bank.ts';
-  import OfficialArt from '../characters/OfficialArt.svelte';
+  // A round's choices (docs/kikimimi.md "The game"; framework §5 ChoiceGrid): dimmed until the first play ends, then one
+  // final tap; mine marked as picked; at the reveal ○ on the right one and × on my wrong pick (`onlyMarked`: only those
+  // two, a dialogue's, so the transcript under them is never under the sticky つぎへ). Text, or pictures (art keys) in a
+  // 2×2 grid, each named for VoiceOver (`label`: the English never given away).
+  import OfficialArt from '../../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
 
-  let { it, open, reveal, dim, picked, onlyMarked = false, onpick }: {
-    it: Item;
+  let { choices, right, pics = false, label, english = true, open, reveal, dim, picked, onlyMarked = false, onpick }: {
+    choices: readonly string[];
+    /** The right one (marked at the reveal). */
+    right: number;
+    /** Art keys, not text. */
+    pics?: boolean;
+    /** A choice's name for VoiceOver (a picture's), else its text is read. */
+    label?: (c: string) => string;
+    /** The text is English (else Japanese: a rung's questions, numbers). */
+    english?: boolean;
     /** The choices take a tap. */
     open: boolean;
     reveal: boolean;
@@ -22,19 +29,19 @@
   } = $props();
   /** A choice's look: mine (picked, before the reveal), right (○), wrong (my pick, ×), or none. */
   function mark(k: number): 'mine' | 'right' | 'wrong' | null {
-    if (reveal) return k === it.answer ? 'right' : picked === k ? 'wrong' : null;
+    if (reveal) return k === right ? 'right' : picked === k ? 'wrong' : null;
     return picked === k ? 'mine' : null;
   }
 </script>
 
-<div class="choices" class:pics={it.type === 'pic'} class:dim role="group" aria-label={t('kiki.pick')}>
-  {#each it.choices as c, k (k)}
+<div class="choices" class:pics class:dim role="group" aria-label={t('kiki.pick')}>
+  {#each choices as c, k (k)}
     {@const m = mark(k)}
     {#if !onlyMarked || m}
     <button type="button" class="ch tile-btn" data-choice={k} data-mark={m ?? undefined} aria-pressed={picked === k}
-      aria-disabled={!open} aria-label={it.type === 'pic' ? (PIC_JA[c] ?? '') : undefined} data-sfx={open ? 'choice-pick' : 'none'}
+      aria-disabled={!open} aria-label={label?.(c)} data-sfx={open ? 'choice-pick' : 'none'}
       onclick={() => open && onpick(k)}>
-      {#if it.type === 'pic'}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={it.type === 'num' || (it.rung && it.type !== 'word') ? undefined : 'en'}>{c}</span>{/if}
+      {#if pics}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={english ? 'en' : undefined}>{c}</span>{/if}
       {#if m === 'right'}<span class="sym ok" aria-hidden="true">○</span>{:else if m === 'wrong'}<span class="sym ng" aria-hidden="true">×</span>{/if}
     </button>
     {/if}
