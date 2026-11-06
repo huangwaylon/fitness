@@ -5,7 +5,8 @@
 import { mulberry32, shuffle } from '#lib/random.ts';
 import type { LocalDate } from '../types.ts';
 import type { Accent, Feature, Item, Level } from './bank.ts';
-import { BANK } from './bank.ts';
+import { BANK, levelRank } from './bank.ts';
+import { agesOf, staleness, type Recent } from './recent.ts';
 import { DECK_SIZE, inMix } from './deck.ts';
 import { dayNum, type Answer, type Stats } from './progress.ts';
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
@@ -79,9 +80,11 @@ const DUE_MAX = 4;
  * にがて れんしゅう: DECK_SIZE items of the offered levels (the types their mix draws), never one twice: my due item cards
  * first (lowest box, most overdue; at most 4), then items carrying my weakest features (due ones first; another item
  * than the one missed when there is one, nearest my comfortable level), then my weakest skills' items, then any; all
- * within `focus`. Choices shuffled by `seed`, as deck() does; deterministic.
+ * within `focus`. Among those, items not heard lately come first, then the least recently heard (`recent`, this phone's
+ * last games: recent.ts; and answered in the last 2 days), then the nearest my level. Choices shuffled by `seed`, as
+ * deck() does; deterministic.
  */
-export function practiceDeck(o: { answers: readonly Answer[]; stats: Stats; today: LocalDate; seed: number; levels: readonly Level[]; focus?: Focus }): Item[] {
+export function practiceDeck(o: { answers: readonly Answer[]; stats: Stats; today: LocalDate; seed: number; levels: readonly Level[]; focus?: Focus; recent?: Recent }): Item[] {
   const r = mulberry32(o.seed >>> 0);
   const t = dayNum(o.today);
   const focus = o.focus ?? null;
@@ -90,8 +93,9 @@ export function practiceDeck(o: { answers: readonly Answer[]; stats: Stats; toda
   const lastSeen = new Map<string, number>();
   for (const a of o.answers) lastSeen.set(a.id, dayNum(a.d));
   const near = o.stats.level ?? 2;
-  /** Fresher and nearer my level first (the pool's seeded order breaks ties). */
-  const rank = (it: Item) => (t - (lastSeen.get(it.id) ?? -1e6) < 2 ? 10 : 0) + Math.abs(it.lv - near);
+  const ages = agesOf(o.recent ?? []);
+  /** Not heard lately first, then the least recently heard, then nearer my level (the pool's seeded order breaks ties). */
+  const rank = (it: Item) => staleness(it.id, ages) * 100 + (t - (lastSeen.get(it.id) ?? -1e6) < 2 ? 50 : 0) + Math.abs(levelRank(it.lv) - near);
   const out: Item[] = [], taken = new Set<string>();
   const take = (it: Item | undefined) => {
     if (it && !taken.has(it.id) && out.length < DECK_SIZE) (out.push(it), taken.add(it.id));

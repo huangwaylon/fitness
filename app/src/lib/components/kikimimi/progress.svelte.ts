@@ -14,6 +14,7 @@ import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import type { Who } from '#lib/types.ts';
 import type { Rec } from '#lib/kikimimi/advice.ts';
 import { sx } from '#lib/kikimimi/ladder.ts';
+import { remember, type Recent } from '#lib/kikimimi/recent.ts';
 import { t } from '#lib/i18n/index.ts';
 
 type Kept = { at: number; row: ListenRow };
@@ -25,6 +26,16 @@ function keptRows(me: Who): Kept[] {
   const v = readJson<{ who?: unknown; rows?: unknown }>(localKV(), DEVICE.kikimimiGames);
   if (!v || v.who !== me || !Array.isArray(v.rows)) return [];
   return v.rows.filter((k): k is Kept => !!k && typeof k === 'object' && typeof (k as Kept).at === 'number' && listenOf((k as Kept).row) !== null);
+}
+
+/** The item ids of my last games on this phone, newest first (kikimimi/recent.ts). */
+export function recentGames(): Recent {
+  const v = readJson<unknown>(localKV(), DEVICE.kikimimiRecent);
+  return Array.isArray(v) ? v.filter((g): g is string[] => Array.isArray(g) && g.every((id) => typeof id === 'string')) : [];
+}
+/** A game begun on this phone: its items put first in the history. */
+export function rememberGame(ids: readonly string[]): void {
+  writeJson(localKV(), DEVICE.kikimimiRecent, remember(recentGames(), ids));
 }
 
 /** A game of mine finished (or left mid-way): kept on this phone and sent to the record. A game joined again after

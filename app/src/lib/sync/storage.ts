@@ -125,7 +125,10 @@ export const DEVICE = {
   /** localStorage: `{who, rows: [{at, row}]}`, my last ききみみ games' `listen` rows (contract/listen.ts) as recorded on
    *  this phone: きろく's fallback while offline or before the record has them (components/kikimimi/progress.svelte.ts;
    *  the record's rows win, by game id). */
-  kikimimiGames: 'island.kikimimiGames'
+  kikimimiGames: 'island.kikimimiGames',
+  /** localStorage: `string[][]`, the item ids of my last ききみみ games on this phone, newest first (kikimimi/recent.ts:
+   *  the host's seed with the least overlap, a solo game's and にがて れんしゅう's freshest items; at most 6 games). */
+  kikimimiRecent: 'island.kikimimiRecent'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

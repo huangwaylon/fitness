@@ -14,7 +14,7 @@
   import Play from './Play.svelte';
   import Results from './Results.svelte';
   import { QuizGame } from './game.svelte.ts';
-  import { currentReport, recordGame } from './progress.svelte.ts';
+  import { currentReport, recentGames, recordGame } from './progress.svelte.ts';
   import { practiceFor } from '#lib/kikimimi/report.ts';
   import type { Focus } from '#lib/kikimimi/srs.ts';
   import type { Rec } from '#lib/kikimimi/advice.ts';
@@ -155,7 +155,7 @@
     const r = currentReport();
     if (!game || !r) return;
     if (game.view.ladder) game.configure({ ladder: false }); // (a quiz's: from a recommendation in スピード はしご's lobby)
-    game.practice(practiceFor(r, LEVELS, game.view.seed, focus), 'weak');
+    game.practice(practiceFor(r, LEVELS, game.view.seed, focus, recentGames()), 'weak');
   }
   /** The lobby's tab: あそぶ or きろく (back to あそぶ whenever the lobby is left). */
   let tab = $state<'play' | 'record'>('play');

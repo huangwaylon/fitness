@@ -4,11 +4,13 @@
 // computes a question's lead-in, clip and answer window from its start and the clip's length, and adopts the host's
 // position (its `skip`: question i starts at `at`, sent as it changes and every few seconds as a beacon) whenever it
 // hears it. The reveal is untimed (time to read), so the next question's start is only ever known from the host's
-// つぎへ (its skip); the answer window is the lobby's こたえる じかん (20 / 30 / 60 s, or none: everyone in). Each call
+// つぎへ (its skip), but for a reveal the deck says moves on by itself (スピード はしご's lower rungs: 3 s, on every phone);
+// the answer window is the lobby's こたえる じかん (20 / 30 / 60 s, or none: everyone in). Each call
 // returns the intents to send (my taps, the host's skips and beacons, the re-sends when someone comes back), which the
 // caller hands to live.send; the UI only renders `view(now)`. The deck comes in through an interface (QuizDeck).
 import type { Live } from '../sync/live.ts';
 import { points } from './score.ts';
+import { FLAG_BITS, seedWith } from './recent.ts';
 import { QUIZ_MAX_S, QUIZ_QS, type QuizLv, type QuizWire, type Relayed, type Who } from '../contract/live-protocol.ts';
 
 /** Where a game is: none (`idle`, an invite perhaps), the lobby, the 3-2-1, a question's lead-in (the villager pops
@@ -226,6 +228,10 @@ export interface QuizSessionOptions {
   windows?: Partial<QuizWindows>;
   /** For the game id and seed (tests: a fixed one). */
   random?: () => number;
+  /** The host's seed for a lobby's deck (recent.ts freshSeed: the least overlap with this phone's last games), its low
+   *  bits `flags` as given (たいせん, スピード はしご, こたえる じかん); else a random one. Asked at `open` and whenever
+   *  `configure` changes the level or a flag. */
+  seedFor?: (o: { lv: QuizLv; flags: number; random: () => number }) => number;
 }
 
 /** One phone's quiz: every game it hears of, the one it's in. */
@@ -234,6 +240,9 @@ export class QuizSession {
   readonly w: QuizWindows;
   private readonly deckOf: DeckOf;
   private readonly random: () => number;
+  private readonly seedFor: NonNullable<QuizSessionOptions['seedFor']>;
+  /** A seedFor given: `configure` asks it again for a new deck (else the seed's other bits stay). */
+  private readonly picks: boolean;
   private games = new Map<string, Game>();
   /** The others here now, and since when each other has been away. */
   private here = new Set<Who>();
@@ -251,6 +260,8 @@ export class QuizSession {
     this.deckOf = o.deckOf;
     this.w = { ...WINDOWS, ...o.windows };
     this.random = o.random ?? Math.random;
+    this.seedFor = o.seedFor ?? ((x) => seedWith(x.random, x.flags));
+    this.picks = !!o.seedFor;
   }
 
   // ---------- what's heard ----------
@@ -392,7 +403,8 @@ export class QuizSession {
       g = '';
       for (let n = 0; n < 6; n++) g += GAME_ID[Math.floor(this.random() * GAME_ID.length) % GAME_ID.length];
     } while (this.games.has(g));
-    const seed = withTimer(withLadder(withVersus(Math.floor(this.random() * 2 ** 32), !!o.vs), !!o.ladder), o.timer ?? 30);
+    const flags = withTimer(withLadder(withVersus(0, !!o.vs), !!o.ladder), o.timer ?? 30);
+    const seed = this.seedFor({ lv: o.lv, flags, random: this.random });
     const gm = this.game(g, this.me, seed, o.lv, o.same ?? false, now);
     gm.local = true;
     return out;
@@ -417,7 +429,10 @@ export class QuizSession {
     let seed = o.vs === undefined ? gm.seed : withVersus(gm.seed, o.vs);
     if (o.ladder !== undefined) seed = withLadder(seed, o.ladder);
     if (o.timer !== undefined) seed = withTimer(seed, o.timer);
-    this.setup(gm, seed, o.lv ?? gm.lv, o.same ?? gm.same);
+    const lv = o.lv ?? gm.lv;
+    // a new deck (the level or a flag changed): the seed asked again, its flags kept
+    if (this.picks && (lv !== gm.lv || (seed & FLAG_BITS) !== (gm.seed & FLAG_BITS))) seed = this.seedFor({ lv, flags: seed & FLAG_BITS, random: this.random });
+    this.setup(gm, seed, lv, o.same ?? gm.same);
     return this.send(gm, this.opening(gm));
   }
 

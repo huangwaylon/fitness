@@ -4,6 +4,7 @@ import { mulberry32, shuffle } from '#lib/random.ts';
 import { BANK, isDialogue, type Item, type ItemType, type Level } from './bank.ts';
 import { CLIPS, voiced } from './clips.ts';
 import { ladderReady } from './ladder.ts';
+import { staleness } from './recent.ts';
 
 export const DECK_SIZE = 8;
 
@@ -61,9 +62,11 @@ const runOk = (types: readonly ItemType[]): boolean =>
 /** A num template's items share their id up to the row number (`n1-price-2`): one per game where the pool allows. */
 const family = (it: Item): string => (it.type === 'num' ? it.id.replace(/-\d+$/, '') : it.id);
 
-/** `n` of `pool` in a seeded order, preferring one item per family. */
-function pick(pool: readonly Item[], n: number, r: () => number): Item[] {
-  const order = shuffle([...pool], r);
+/** `n` of `pool` in a seeded order, preferring one item per family (`heard`: items not heard lately first, then the
+ *  least recently heard: recent.ts). */
+function pick(pool: readonly Item[], n: number, r: () => number, heard?: ReadonlyMap<string, number>): Item[] {
+  const shuffled = shuffle([...pool], r);
+  const order = heard ? shuffled.sort((a, b) => staleness(a.id, heard) - staleness(b.id, heard)) : shuffled;
   const out: Item[] = [], seen = new Set<string>();
   for (const it of order) if (out.length < n && !seen.has(family(it))) (out.push(it), seen.add(family(it)));
   for (const it of order) if (out.length < n && !out.includes(it)) out.push(it);
@@ -73,15 +76,17 @@ function pick(pool: readonly Item[], n: number, r: () => number): Item[] {
 /**
  * The deck for a game: the level's mix of types (MIX), items drawn by the seed, ordered so no type comes more than
  * twice in a row, and each item's choices shuffled by the seed (`all`: the mixes, a test's own). The items are copies:
- * `choices` is the shuffled order and `answer` the right choice's index in it.
+ * `choices` is the shuffled order and `answer` the right choice's index in it. `seen` (a solo game's own deck, this
+ * phone's: recent.ts agesOf) draws the items not heard lately first, then the least recently heard; a shared deck never
+ * has it (every phone builds the same deck from the seed).
  */
-export function deck(seed: number, lv: Level, all: Mixes = MIX): Item[] {
+export function deck(seed: number, lv: Level, all: Mixes = MIX, seen?: ReadonlyMap<string, number>): Item[] {
   const mix = all[lv];
   if (!mix) return []; // a level this bank hasn't (another phone's newer one): no questions
   const r = mulberry32((seed ^ Math.imul(lv, 0x9e3779b9)) >>> 0);
   const byType = new Map<ItemType, Item[]>();
   for (const [type, n] of Object.entries(mix) as [ItemType, number][])
-    if (n) byType.set(type, pick(BANK.filter((it) => it.lv === lv && it.type === type), n, r));
+    if (n) byType.set(type, pick(BANK.filter((it) => it.lv === lv && it.type === type), n, r, seen));
   // the order of the types: reshuffled till no run is too long (most shuffles pass; the mixes always allow one)
   const types = [...byType].flatMap(([t, items]) => items.map(() => t));
   for (let tries = 0; !runOk(shuffle(types, r)); tries++) if (tries > 1000) throw new Error(`kikimimi: no order for level ${lv}`);
