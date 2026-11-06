@@ -6,7 +6,7 @@ by `food-data/` and shipped in `app/static/food/`. All values are estimates.
 ## Rebuild
 ```sh
 python3 -I food-data/scripts/build.py all       # rebuild every file into food-data/out/, validate, install
-cd app && npm run food:data                     # copy out/ into static/food/ (adds search keys; not jan/)
+cd app && npm run food:data                     # copy out/ into static/food/ (adds core search keys; not jan/)
 python3 -I food-data/scripts/build.py check     # rebuild into a temp dir and byte-compare with out/
 python3 -I food-data/scripts/build.py toyonaka  # one or more targets (see the docstring in build.py)
 python3 -I food-data/scripts/fetch.py <step>    # download raw inputs into food-data/raw/ (no argument: the steps)
@@ -28,7 +28,9 @@ Open Food Facts CSV dump (~1 GB) is only needed to refresh `raw/off/off_jp.jsonl
 the build reads.
 
 `npm run food:data` (`app/scripts/food-data.ts`) checks that `index.json` and the files agree, replaces
-`app/static/food/` whole, adds each item's search keys (`keys`) and drops a product's `jan` when its id has it. The
+`app/static/food/` whole, adds each core item's search keys (`keys`; a lazy dataset's, products' 239 KB gzipped, are
+built on load in `db.ts`'s slices: about 90 ms more main thread at 4× CPU, ≤ 22 ms a slice) and drops a product's `jan`
+when its id has it (`load.ts` puts it back). The
 barcode shards (`jan/`) are built but not shipped (no barcode scanning). The app fetches the files at runtime
 (`lib/food/load.ts`) under `?v=<index.version>`; the shipped `index.json` is written last, its `version` that of the
 files as shipped (so a change to the keys alone is a new version too; `load.test.ts` recomputes it). A meal keeps a per-100 g snapshot, so a data refresh never rewrites one.

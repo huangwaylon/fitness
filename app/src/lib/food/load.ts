@@ -22,15 +22,22 @@ async function json<T>(href: string, init?: RequestInit): Promise<T> {
 /** Back to the event loop: a frame, a keystroke go first. */
 const pause = (): Promise<void> => new Promise((ok) => setTimeout(ok, 0));
 
+/** A product's barcode back from its id (`off:<jan>`; scripts/food-data.ts drops it), for the search's keys. */
+function withJan(d: Dataset): Dataset {
+  for (const it of d.items) if (it.jan === undefined && it.id.startsWith('off:')) it.jan = it.id.slice(4);
+  return d;
+}
+
 /** `chance(n)`: when to fetch a failed dataset again (its `n`-th retry); none: it stays out. */
 export async function loadFoodDb(chance?: (n: number) => Promise<void>): Promise<FoodDb> {
   const index = await json<FoodIndex>(url('index.json'), { cache: 'no-cache' });
   const db = emptyDb(index);
-  // One dataset indexed at a time, in slices (the keys come built: scripts/food-data.ts), in the order they arrive.
+  // One dataset indexed at a time, in slices, in the order they arrive: a core one's keys come built
+  // (scripts/food-data.ts), a lazy one's are built in its slices (db.ts entryOf), its barcodes from the ids first.
   let indexing = Promise.resolve();
   // (a dataset that fails is fetched again at its next chance, a few times, and added when it comes; the load itself
   // never waits for it)
-  const add = (meta: FoodIndex['datasets'][number], d: Dataset) => (indexing = indexing.then(() => addDataset(db, meta, d, pause)).catch(() => {}));
+  const add = (meta: FoodIndex['datasets'][number], d: Dataset) => (indexing = indexing.then(() => addDataset(db, meta, withJan(d), pause)).catch(() => {}));
   const again = (meta: FoodIndex['datasets'][number], n: number): void =>
     void chance?.(n).then(() => json<Dataset>(url(meta.file, index.version)).then((d) => void add(meta, d), () => n < RETRIES && again(meta, n + 1)));
   const load = (meta: FoodIndex['datasets'][number]) =>

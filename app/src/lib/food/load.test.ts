@@ -86,11 +86,11 @@ describe('loadFoodDb', () => {
     expect(verifyOf(db, mabo.id)?.n).toBeGreaterThanOrEqual(2);
   });
 
-  it('searches exactly as with keys built on load (the shipped `keys`, a product’s barcode from its id)', async () => {
+  it('searches exactly as with keys built on load (a core dataset’s shipped `keys`, none in a lazy one; a product’s barcode from its id)', async () => {
     const ref = emptyDb(index);
     for (const d of index.datasets) {
       const data = JSON.parse(readFileSync(join(DIR, d.file), 'utf8')) as Dataset;
-      expect(data.items.every((it) => typeof it.keys === 'string')).toBe(true);
+      expect(data.items.every((it) => typeof it.keys === (d.lazy ? 'undefined' : 'string')), d.file).toBe(true);
       // the data as it was: no keys, every barcode
       const items = data.items.map(({ keys: _k, ...it }) => (it.id.startsWith('off:') ? { ...it, jan: it.id.slice(4) } : it));
       await addDataset(ref, d, { ...data, items });

@@ -4,8 +4,9 @@
 // Usage (from app/): npm run food:data   [-- <data dir>, default ../food-data/out]
 // Checks: index.json lists only files that are there, and every dataset file there is listed (a stray or missing
 // file fails, nothing is copied). static/food/ is replaced whole, so a dropped dataset goes too.
-// Each item gets its search keys (`keys`: lib/food/search.ts keysOf), so the app builds none while the user types; a
-// product's barcode is then dropped when the id has it (`off:<jan>`: the app reads it from `keys` only).
+// Each core item gets its search keys (`keys`: lib/food/search.ts keysOf), so the first search builds none; a lazy
+// dataset's (products: 239 KB gzipped of keys) are built on load, in db.ts's slices. A product's barcode is dropped
+// when the id has it (`off:<jan>`: load.ts puts it back).
 // index.json is written last, its `version` that of the files as shipped (fileVersion: their names and bytes, keys
 // included), so a change here (keys, a dropped field) is a new version too and every phone refetches; out/'s index
 // keeps the pipeline's own hash.
@@ -49,12 +50,14 @@ rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 let bytes = 0;
 copyFileSync(join(SRC, 'verify.json'), join(OUT, 'verify.json'));
+const lazy = new Set((index.datasets ?? []).filter((d) => (d as { lazy?: unknown }).lazy === true).map((d) => d.file));
 for (const [f, d] of data) {
   d.items = d.items.map((it) => {
     const keys = keysOf(it);
     if (keys.some((k) => k.includes(' '))) fail(`${f}: ${it.id}'s search keys hold a space`);
     const { jan, ...rest } = it;
-    return { ...(jan !== undefined && it.id.endsWith(`:${jan}`) ? rest : it), keys: keys.join(' ') };
+    const item = jan !== undefined && it.id === `off:${jan}` ? rest : it;
+    return lazy.has(f) ? item : { ...item, keys: keys.join(' ') };
   });
   writeFileSync(join(OUT, f), JSON.stringify(d));
 }
