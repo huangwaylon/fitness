@@ -18,6 +18,7 @@ import type { Put, Shake } from '#lib/sync/world-day.ts';
 import { BUGS, inHours } from './critters.ts';
 import { GOAL_TREES, SCENERY, TREE_H, offBuildingsAt, onBuildingAt, surfaceAt } from './world.ts';
 import { ISLAND_SEED, dayRand } from './daySeed.ts';
+import { site } from './site.svelte.ts';
 
 export { NEST_GAP_MS };
 
@@ -47,7 +48,8 @@ export interface ShakeTree {
   out: -1 | 1;
 }
 
-const side = (x: number): -1 | 1 => (x < 195 ? -1 : 1);
+/** Which side of the island's middle (site.midX: a lopsided resize moves it) a tree stands. */
+const side = (x: number): -1 | 1 => (x < site.midX ? -1 : 1);
 
 /** The scenery's trees (world.ts SCENERY: the oaks, the cedars, the palms; bamboo doesn't shake). */
 export const sceneryTrees = (): readonly ShakeTree[] => SCENERY.filter((s) => s.kind === 'oak' || s.kind === 'cedar' || s.kind === 'palm').map((s) => ({

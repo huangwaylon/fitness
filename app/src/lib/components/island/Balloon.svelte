@@ -49,7 +49,7 @@
         return p.visible ? [p.sx, p.sy] : null;
       },
       feet: (x, z) => w.feetAt(x, z),
-      vw: v.vw, top: hudFoot(), bottom: v.vh, horizon: v.horizon, cx: mid?.x ?? 195, z0, z1
+      vw: v.vw, top: hudFoot(), bottom: v.vh, horizon: v.horizon, cx: mid?.x ?? site.midX, z0, z1
     };
   }
 

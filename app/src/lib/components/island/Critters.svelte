@@ -57,6 +57,7 @@
   import { crittersAt, msToNextSlot, slotAt, slotStart, spawnRand, type Spawn } from './ambient.ts';
   import { relayOffset } from './ambientClock.ts';
   import { coasts } from './coast.ts';
+  import { site } from './site.svelte.ts';
   import { su, type Tod } from './scene.ts';
   import { hitWorld, sceneSfx } from './sceneTaps.ts';
   import type { Box } from './geom.ts';
@@ -734,7 +735,7 @@
     const k = path.legs.findLastIndex((l) => l.t <= e), spot = path.spot, last = k >= 0 ? path.legs[k] : null;
     bug = {
       n: ++seq, id, flight: path.flight, place: path.place, x: at.x, z: at.z, lift: at.lift, ax: spot.x, az: spot.z, g: Math.max(0.2, w.screenAt(spot.x, spot.z).ground), ms: 0,
-      flip: spot.x >= 195, gone: false, sat: !!last?.sat && e >= last.t + last.ms,
+      flip: spot.x >= site.midX, gone: false, sat: !!last?.sat && e >= last.t + last.ms,
       ...(path.flight === 'stalk' && { stalk: 'calm' as const }), cid: o.cid, legs: path.legs, start: path.start, t0: p.t0
     };
     later(fly, 60);
@@ -1119,7 +1120,7 @@
         Object.assign(b, { held: true, ms: 0, freeze: cs && cs !== 'none' ? cs : undefined });
         turnTo(b.x);
         const p = (bugEl && stageOf(bugEl)) ?? at;
-        net = { n: ++seq, ...p, in3d: fx3d('swing', b.x, b.z, b.lift, { v: 'net', dir: b.x < 195 ? -1 : 1 }) };
+        net = { n: ++seq, ...p, in3d: fx3d('swing', b.x, b.z, b.lift, { v: 'net', dir: b.x < site.midX ? -1 : 1 }) };
         sceneSfx('net');
         later(() => {
           if (bug === b) bug = null;
