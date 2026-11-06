@@ -195,6 +195,26 @@ describe('the board', () => {
     expect(board.conflict).toMatchObject({ current: { md: 'mine', who: 'A' }, other: { md: 'B’s', who: 'B' } });
   });
 
+  it('an edit begun on my own save before the record’s copy came back is from that copy, wherever the record stamped it', () => {
+    fake.rows = [rec(T - 5, 'B', 'wnote', { at: T - 5, md: 'v1' })];
+    expect(board.saveNote('mine', board.note!.at)).toBe(true);
+    // the editor opens again on my save, still queued
+    const from = board.note!.at;
+    expect(from).toBe(fake.sent.at(-1)!.data.at);
+    // the record's copy comes back restamped past B's, which it crossed (B's beside it)
+    fake.queued = [];
+    fake.rows.push(
+      rec(T - 2, 'B', 'wnote', { at: T - 2, md: 'B’s', base: T - 5 }),
+      rec(T + 3, 'A', 'wnote', { at: T - 1, md: 'mine', base: T - 5, was: { at: T - 2, md: 'B’s', who: 'B' } })
+    );
+    fake.server = T + 10;
+    expect(board.saveNote('mine, again', from)).toBe(true);
+    expect(fake.sent.at(-1)!.data).toMatchObject({ md: 'mine, again', base: T - 1 });
+    // not a conflict with my own earlier note
+    expect(board.conflict).toBeNull();
+    expect(board.note).toMatchObject({ md: 'mine, again', who: 'A' });
+  });
+
   it('settings: one op a key', () => {
     expect(board.setConfig('p1', ' たろう ')).toBe(true);
     expect(board.setConfig('cats', ['Venue', 'Food'])).toBe(true);

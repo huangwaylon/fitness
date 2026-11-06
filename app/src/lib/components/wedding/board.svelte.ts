@@ -27,6 +27,8 @@ const EMPTY: readonly WedEntry[] = [];
 
 class WeddingBoard {
   #last = 0;
+  /** My last note save as sent (its `at` and text): the record may keep it restamped (saveNote). */
+  #sentNote: { at: number; md: string } | null = null;
   /** `today` read again at the board's midnight while something reads it (one timer, cleared when nothing does). */
   #midnight = createSubscriber((update) => {
     let timer: ReturnType<typeof setTimeout>;
@@ -221,9 +223,16 @@ class WeddingBoard {
    *  shown until the next save, which settles it. */
   saveNote(md: string, from?: number | null): boolean {
     const n = wedNote(this.#book);
-    const base = from === undefined ? n?.at : from ?? undefined;
+    let base = from === undefined ? n?.at : from ?? undefined;
+    // an edit begun on my own save before the record's copy came back: that copy is the version it began from, at
+    // whatever `at` the record kept it (restamped just after a note it crossed), never a conflict with myself
+    const mine = this.#sentNote;
+    if (n && mine && base === mine.at && n.at !== mine.at && n.who === this.me && n.md === mine.md) base = n.at;
     if (n && n.md === md && !n.was && base === n.at) return true;
-    return this.#send('wnote', { at: this.#now(n?.at ?? 0), md, ...(base !== undefined ? { base } : {}) });
+    const at = this.#now(n?.at ?? 0);
+    const ok = this.#send('wnote', { at, md, ...(base !== undefined ? { base } : {}) });
+    if (ok) this.#sentNote = { at, md };
+    return ok;
   }
 }
 
