@@ -203,4 +203,88 @@ Every lesson id that isn't under `review` is homed in the unit. The unit's own i
 - The levels' chunks are byte-identical with and without units.
 - `kikimimi/decks.golden.json` holds a digest of the decks for seeds 0–99 per level. A re-tagging commit must leave it unchanged. A deliberate change to the bank's content updates it with `vitest -u`.
 
-No unit is committed yet.
+No unit is committed yet. The もり re-tag dry run is `npm run kikimimi:units-dry-run` (scripts/kikimimi-units-dry-run.ts), and its report is docs/reviews/2026-11-06-mori-retag-dry-run.md.
+
+## 12. Wave-1 can-dos (draft, 2026-11-06)
+
+These are written to the §2 template before any content (§10). units.test checks every one against it (units.ts `candoProblems`). They follow the user's brief: each is one everyday moment the couple would really meet, small enough for three 2½-minute games. The English and Japanese copy goes to the EFL teacher and the Japanese panel before voicing (§10).
+
+```yaml
+- unit: gl-clarify
+  name: ききかえす
+  stage: kawa
+  domain: glue
+  cando:
+    who: ともだちや おみせの ひと
+    does: ききかえされて いいなおす
+    cond: カフェの ざわざわの なかで
+    catch: なおした すうじや なまえ
+    en: "I can follow a friend or a server repeating, rephrasing or correcting themselves when I ask again, at natural speed in a noisy café, and catch the corrected number, name or detail."
+- unit: fr-replan
+  name: よていを かえる
+  stage: kawa
+  domain: tomodachi
+  cando:
+    who: ともだち
+    does: でんわで やくそくの よていを かえる
+    cond: まちの ざつおんの なかで
+    catch: あたらしい ひ・じかん・ばしょと キャンセルか どうか
+    en: "I can follow a friend changing our plans on the phone, over street noise at natural speed, and catch the new day, time and place, and whether they're really cancelling."
+- unit: ev-bday
+  name: おいわいする
+  stage: kawa
+  domain: ibento
+  cando:
+    who: ともだちや どうりょう
+    does: たんじょうびの パーティーに さそって、かんぱいする
+    cond: パーティーの にぎやかな なかで
+    catch: いつ・どこで、なにを もっていくか
+    en: "I can follow friends and coworkers inviting me to a birthday party and making a toast, in a lively room, and catch when and where it is, what to bring and who the surprise is for."
+- unit: gl-endcall
+  name: でんわを おえる
+  stage: kawa
+  domain: glue
+  cando:
+    who: ともだちや しごとの あいて
+    does: はっきり いわずに でんわを おえようと する
+    cond: でんわの こもった おとで
+    catch: もう きりたい きもちと さいごの やくそく
+    en: "I can follow a friend or a colleague winding up a phone call without saying so directly, over a phone line, and catch that they want to hang up and what we agreed at the end."
+- unit: tr-guide
+  name: ともだちを あんない
+  stage: mori
+  domain: tabi
+  also: [machi]
+  cando:
+    who: とうきょうに きた ともだち
+    does: いきたい ところや こまっている ことを はなす
+    cond: えきや まちの ざつおんの なかで
+    catch: なにが したいかと なにが しんぱいか
+    en: "I can follow a friend visiting Tokyo talking about where they want to go and what's confusing them, over station and street noise at natural speed, and catch what they want to do and what's worrying them."
+- unit: tr-hotel
+  name: ホテルで こまった
+  stage: mori
+  domain: tabi
+  cando:
+    who: ホテルの フロントの ひと
+    does: へやの もんだいへの たいおうを せつめいする
+    cond: ていねいだけど はやい ことばで
+    catch: できる こと・できない ことと ついかの りょうきん
+    en: "I can follow hotel front-desk staff explaining what they can do about a room problem, in polite but fast speech at the desk or on the phone, and catch what's possible, what isn't, and any extra charge."
+- unit: wk-chat
+  name: しごとの ざつだん
+  stage: mori
+  domain: shigoto
+  cando:
+    who: しょくばの どうりょう
+    does: しゅうまつや しごとの ざつだんを する
+    cond: オフィスの ざわざわの なかで
+    catch: わだいと、「こんど ランチ」が ほんきか
+    en: "I can follow coworkers making small talk about the weekend and work by the coffee machine, in fast casual speech over office noise, and tell what they're talking about and whether 'let's grab lunch' is a real plan."
+```
+
+**Notes for the writers:**
+- **ききかえす** covers both directions (teacher P1-5). One is recognising native repair ("Sorry, I meant the 15th"). The other is picking your own move as a `reply`: "Sorry, fifteen or fifty?", "Could you say the last part again?".
+- **でんわを おえる** checks pre-closings with `mean` and `next` ("Anyway, I'll let you go", "Listen, I've gotta run").
+- **ともだちを あんない** makes the learner the host. The friend's questions are the listening, and the replies are the learner's lines.
+- Every dialogue opens and closes naturally (§10), and each unit ends with 「きょうの ひとこと」.
