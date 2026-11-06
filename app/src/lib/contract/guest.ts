@@ -23,7 +23,8 @@ type Rec = Record<string, unknown>;
  * foodAccept), a `sell` or a
  * `buy` at the shop (its own pocket and かいがら: contract/shop.ts), a trip's `pack` op (adding; changing and removing
  * only what it added: contract/pack.ts PackBook), its own `pack_chk` and `pack_reset`, and its own cosmetic `pref` or
- * meal-log goal (no `person`). A `trip_note` is the members' (all three read it).
+ * meal-log goal (no `person`). A `trip_note` is the members' (all three read it), and so is the wedding board
+ * (`wtask`, `wdone`, `wconf`, `wnote`: contract/wedding.ts; the guest reads it, never ticks or edits).
  * Everything else (a buy, a void, a harvest, a member's goal, the
  * island's decor and its layout, an island day, a high-five row) is the members' alone: the record answers `forbidden`.
  * @public (relay/src/store.ts)

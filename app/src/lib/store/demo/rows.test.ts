@@ -12,6 +12,8 @@ import { isActivityMetric } from '#lib/contract/api.ts';
 import { customs, foodDay, recipes, setGoal } from '#lib/model/food.ts';
 import { localDateAt } from '#lib/time/dates.ts';
 import { packFold, packList, tripNoteOf } from '#lib/contract/pack.ts';
+import { wedConfig, wedFold, wedNote, wedTasks } from '#lib/contract/wedding.ts';
+import { overallProgress, withProgress } from '#lib/wedding/progress.ts';
 
 describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-08T11:00:00.000Z', '2026-12-20T13:00:00.000Z'])('demo at %s', (iso) => {
   const now = Date.parse(iso);
@@ -55,7 +57,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
   });
 
   it('Move and Stand every day; うめ’s Move goal applies from its day', () => {
-    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'listen', 'pack', 'pack_chk', 'trip_note'].includes(e[3]))).toEqual([]);
+    expect(cache.rows.events.filter((e) => !['spend', 'spend_void', 'harvest', 'pref', 'food', 'food_repeat', 'food_recipe', 'food_custom', 'listen', 'pack', 'pack_chk', 'trip_note', 'wtask', 'wdone', 'wconf', 'wnote'].includes(e[3]))).toEqual([]);
     const metrics = new Set(cache.rows.metrics.map((m) => m[3]));
     expect([...metrics].sort()).toEqual(['bmi', 'body_fat_pct', 'exercise_min', 'lean_kg', 'move_kcal', 'stand_min', 'steps', 'weight']);
     const settled = economyWeeks(s, now).filter((wk) => provisionalMs(wk) <= now);
@@ -96,6 +98,20 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
       const b = packFold(rows);
       expect(packList('okinawa', seed, b)[0].items.map((i) => [i.id, i.ticks.join('')])).toEqual([['ok-0-0', 'AB'], ['ok-0-1', 'B'], ['_demob001', 'B']]);
       for (const trip of ['okinawa', 'seattle', 'nz']) expect(tripNoteOf(trip, b)).toMatchObject({ flightRef: 'DEMO01' });
+    }
+  });
+
+  it('けっこんしき: a made-up board, every row taken (settings, tasks with a checklist, ticks, one deleted, the notes); the guest’s the same', () => {
+    for (const rows of [s.wedding, reduce(demoCache(now, 'G').rows).wedding]) {
+      const b = wedFold(rows);
+      expect(rows).toHaveLength(cache.rows.events.filter((e) => ['wtask', 'wdone', 'wconf', 'wnote'].includes(e[3])).length);
+      expect(wedConfig(b)).toMatchObject({ p1: 'たろう', p2: 'はなこ', venue: '架空チャペル', time: '11:00' });
+      const plan = withProgress(wedTasks(b), localDateAt(now));
+      expect(plan).toHaveLength(6);
+      expect(plan.flatMap((t) => t.subtasks)).toHaveLength(5);
+      expect(overallProgress(plan)).toMatchObject({ total: 6, done: 1, overdue: 1 });
+      expect(wedTasks(b).filter((t) => t.deletedAt)).toHaveLength(1);
+      expect(wedNote(b)?.md).toContain('# メモ');
     }
   });
 

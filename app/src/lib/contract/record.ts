@@ -12,6 +12,7 @@ import { tentOpOf } from './tent.ts';
 import { layoutOpOf } from './layout.ts';
 import { boardOpOf } from './board.ts';
 import { packOpOf, packSlot } from './pack.ts';
+import { wedOpOf, wedSlot } from './wedding.ts';
 import { foodCustomOp, foodOp, foodRecipeOp, foodRepeatOp } from './food.ts';
 import { shopPriced } from './shop.ts';
 import { listenOf } from './listen.ts';
@@ -92,6 +93,13 @@ export function validEventData(type: string, d: Rec, now: number): boolean {
       // a trip's packing list, a person's tick or reset, a trip's private note (contract/pack.ts: its texts already
       // clean, its `at` not over a day past the record's)
       return packOpOf(type, d, now) !== null;
+    case 'wtask':
+    case 'wdone':
+    case 'wconf':
+    case 'wnote':
+      // the wedding board (contract/wedding.ts: its texts already clean, its `at` not over a day past the record's,
+      // never `imported` or a note's `was`: the admin's load's and the record's own)
+      return wedOpOf(type, d, { now }) !== null;
     case 'listen': {
       // a ききみみ game's answers (contract/listen.ts), its day not after tomorrow
       const row = listenOf(d);
@@ -163,6 +171,8 @@ export function prefTaken(key: unknown, v: unknown): boolean {
  * - a `board` op: its post's id (`boardAccept` decides whether it replaces);
  * - a `pack` op: its trip and id, a `pack_chk` its trip, id and sender, a `pack_reset` its trip and sender, a
  *   `trip_note` its trip (contract/pack.ts PackBook decides whether it replaces);
+ * - a `wtask` and a `wdone` op: its task's id, a `wconf` its key, the `wnote` one for the board (contract/wedding.ts
+ *   WedBook decides whether it replaces);
  * - a `food` op: its entry's id, a `food_repeat` op its repeat's, a `food_recipe` op its recipe's, a `food_custom` op
  *   its custom food's (`foodAccept` decides whether it replaces).
  * A pref the model would ignore takes no slot, so it never replaces one it takes. `subject`: `eventSubject`.
@@ -185,6 +195,11 @@ export function eventSlot(type: EventType | string, sender: Who, subject: Who, d
     case 'pack_reset':
     case 'trip_note':
       return packSlot(type, sender, d);
+    case 'wtask':
+    case 'wdone':
+    case 'wconf':
+    case 'wnote':
+      return wedSlot(type, d);
     case 'food_repeat':
     case 'food_recipe':
     case 'food_custom':

@@ -21,6 +21,8 @@ const ALLOW: Record<string, string[]> = {
   layout: ['types', 'contract', 'random'],
   // the meal log's food catalog (lib/food/index.ts): pure but for its loader, over the contract's snapshot
   food: ['contract'],
+  // the wedding board's pure rules (lib/wedding: progress and days in the board's zone, its settings' defaults)
+  wedding: ['types', 'contract'],
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN, 'random'],
   store: [...DOMAIN, 'layout', 'sync', 'i18n', 'ui-state', 'random'],
@@ -34,7 +36,7 @@ const ALLOW: Record<string, string[]> = {
   // ききみみ クイズ (docs/kikimimi.md): the session's pure state machine over the quiz intent (sync: the Live's type), the
   // bank naming roster ids (a type), the deck seeded by random
   kikimimi: ['types', 'contract', 'sync', 'random', 'villagers'],
-  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random']
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random']
 };
 
 function files(dir: string): string[] {
