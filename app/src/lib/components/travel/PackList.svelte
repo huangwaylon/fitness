@@ -1,27 +1,29 @@
 <script lang="ts">
   // もちもの: a trip's shared packing list (docs/travel.md "Packing list (relay)"). A card per category (its icon, its
   // name, my 「N / M」), a row per item: the big check bubble is MY tick (each person ticks their own), the text and its
-  // note in the reader's language (else the other side), and the chips of who has packed it (ウェイ yuzu, うめ mint,
-  // always; おきゃくさん lilac once it has). The header holds my progress, ✎ and, all packed, Orville's 「じゅんび OK！」
-  // stamp (celebrated once per trip and person on this phone). ✎: add an item to a category (an inline field, enter
-  // adds), add a category, rename (a tap on the name), ↑ ↓, 🗑 (an item at once with とりけす on the banner; a
-  // category asks first, NH style, then とりけす too). The guest adds, and changes only what it added. 「チェックを
-  // リセット」 (mine only) asks first.
+  // note in the reader's language (else the other side), and under them one line of who has packed it (「✓ ウェイ
+  // うめ」 in their tags' colours; nothing while nobody has). The header holds my progress, ✎ and, all packed, Orville's
+  // 「じゅんび OK！」 stamp (celebrated once per trip and person on this phone); a trip that's over only a quiet count
+  // (ticking still works). ✎ (once the phone knows who I am): add an item to a category (an inline field, enter adds),
+  // add a category, rename (a tap on the name; ✎ off keeps what was typed), ↑ ↓, 🗑 (an item at once with とりけす on
+  // the banner; a category asks first, NH style, then とりけす too). The guest adds, and changes only what it added.
+  // 「チェックを リセット」 (mine only) asks first, then とりけす too.
   //   <PackList trip={okinawa} />
-  import '#lib/i18n/travelPack.ts';
+  import '#lib/i18n/travel.ts';
   import { untrack } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Glyph from '../kiroku/Glyph.svelte';
   import { packing } from './packing.svelte.ts';
-  import { celebrate, myProgress, packView, type PackCatView } from './packView.ts';
+  import { celebrate, clip, myProgress, packView, type PackCatView } from './packView.ts';
+  import { phaseOf } from './when.ts';
   import { iconOf } from './icons.ts';
   import { PACK_NAME } from '#lib/contract/pack.ts';
   import type { Trip } from '#lib/travel/types.ts';
   import type { Who } from '#lib/types.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { undoBanner } from '#lib/store/actions.ts';
-  import { toasts } from '#lib/ui-state/toast.svelte.ts';
+  import { minuteNow } from '#lib/time/clock.ts';
   import { tagOf, villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -29,8 +31,10 @@
 
   let { trip }: { trip: Trip } = $props();
 
-  /** A removal's とりけす window (the banner's life; sent after it). */
+  /** A removal's and a reset's とりけす window (the banner's life; sent after it). */
   const UNDO_MS = 5000;
+  /** A name on the one-line undo banner at most (characters). */
+  const BANNER_NAME = 12;
   /** The celebration's length: the stamp's slam, Orville's line. */
   const CHEER_MS = 4200;
 
@@ -39,6 +43,9 @@
   const seed = $derived(trip.packing);
   const view = $derived(packView(packing.list(trip.id, seed), me, locale));
   const prog = $derived(myProgress(view));
+  /** The trip is over: no nagging, no stamp; a quiet count. */
+  const past = $derived(phaseOf(trip, minuteNow().getTime()).k === 'past');
+  const done = $derived(prog.done && !past);
   const nameOf = (w: Who): string => (week.view ? villagerNameOf(week.view, w) : w);
 
   let editing = $state(false);
@@ -61,7 +68,7 @@
   // first time on this phone for this trip and person
   let cheering = $state(false);
   $effect(() => {
-    if (!prog.done) return;
+    if (!done || !me) return;
     const who = me, id = trip.id;
     untrack(() => {
       const c = celebrate(readJson<string[]>(localKV(), DEVICE.travelPacked) ?? [], who, id);
@@ -69,14 +76,18 @@
       writeJson(localKV(), DEVICE.travelPacked, c.seen);
       cheering = true;
       cue('badge-met');
-      setTimeout(() => (cheering = false), CHEER_MS);
     });
+  });
+  $effect(() => {
+    if (!cheering) return;
+    const h = setTimeout(() => (cheering = false), CHEER_MS);
+    return () => clearTimeout(h);
   });
 
   // ---- ✎
   function toggleEdit() {
+    commitRename();
     editing = !editing;
-    renaming = null;
   }
   function startRename(id: string, current: string) {
     renaming = id;
@@ -117,8 +128,8 @@
   function move(id: string, index: number) {
     packing.move(trip.id, seed, id, index);
   }
-  function removeItem(id: string, name: string) {
-    undoBanner(t('travel.pack.removed', { name }), packing.removeHeld(trip.id, seed, id, UNDO_MS), { reaction: 'pleased' });
+  function remove(id: string, name: string) {
+    undoBanner(t('travel.pack.removed', { name: clip(name, BANNER_NAME) }), packing.removeHeld(trip.id, seed, id, UNDO_MS));
   }
 
   // ---- the NH confirmations: a category's 🗑, リセット
@@ -131,8 +142,8 @@
   function yes() {
     asking = false;
     const a = ask;
-    if (a?.kind === 'cat') undoBanner(t('travel.pack.removed', { name: a.cat.name }), packing.removeHeld(trip.id, seed, a.cat.id, UNDO_MS), { reaction: 'pleased' });
-    else if (a?.kind === 'reset' && packing.reset(trip.id)) toasts.show(t('travel.pack.resetDone'), 2600, { low: true });
+    if (a?.kind === 'cat') remove(a.cat.id, a.cat.name);
+    else if (a?.kind === 'reset') undoBanner(t('travel.pack.resetDone'), packing.resetHeld(trip.id, UNDO_MS));
   }
 
   const pct = $derived(prog.total ? Math.round((prog.mine / prog.total) * 100) : 0);
@@ -144,23 +155,34 @@
 {#snippet arrow(up: boolean)}
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d={up ? 'M6 14l6-6 6 6' : 'M6 10l6 6 6-6'} /></svg>
 {/snippet}
+<!-- a row's ↑ ↓ 🗑 (`asks`: its 🗑 asks first, a category's) -->
+{#snippet acts(id: string, name: string, i: number, n: number, asks: boolean, del: () => void)}
+  <span class="acts">
+    <button type="button" class="ib" aria-label={t('travel.pack.up', { name })} aria-disabled={i === 0 || undefined} data-sfx="tick" data-pack-up={id} onclick={() => move(id, i - 1)}>{@render arrow(true)}</button>
+    <button type="button" class="ib" aria-label={t('travel.pack.down', { name })} aria-disabled={i === n - 1 || undefined} data-sfx="tick" data-pack-down={id} onclick={() => move(id, i + 1)}>{@render arrow(false)}</button>
+    <button type="button" class="ib del" aria-label={t('travel.pack.remove', { name })} data-sfx={asks ? 'open' : 'undo'} data-pack-del={id} onclick={del}>{@render trash()}</button>
+  </span>
+{/snippet}
 {#snippet icon(name: string, size: number)}
   {@const ic = iconOf(name)}
   {#if 'art' in ic}<OfficialArt key={ic.art} size="{size}px" />{:else}<span class="emoji" style:font-size="{size * 0.8}px">{ic.emoji}</span>{/if}
 {/snippet}
 
 <div class="pack" data-pack={trip.id} data-pack-editing={editing || undefined}>
-  <header class="head" class:done={prog.done}>
+  <header class="head" class:done class:past>
     <span class="bag" aria-hidden="true"><OfficialArt key="finds/items/aluminum-briefcase" size="48px" /></span>
     <div class="prog">
       <span class="pl">{t('travel.pack.mine')}</span>
-      <span class="bar" role="progressbar" aria-label={t('travel.pack.mine')} aria-valuemin={0} aria-valuemax={prog.total} aria-valuenow={prog.mine}>
-        <i style:width="{pct}%"></i>
-      </span>
+      {#if !past}
+        <span class="bar" role="progressbar" aria-label={t('travel.pack.mine')} aria-valuemin={0} aria-valuemax={prog.total} aria-valuenow={prog.mine}>
+          <i style:width="{pct}%"></i>
+        </span>
+      {/if}
       <span class="sub">
         <b class="money" data-pack-mine={prog.mine} data-pack-total={prog.total}>{t('travel.pack.count', { n: prog.mine, m: prog.total })}</b>
-        {#if prog.total && !prog.done}<span class="left">{t('travel.pack.left', { n: prog.total - prog.mine })}</span>{/if}
-        {#if prog.done}
+        {#if past}<span class="left" data-pack-past>{t('travel.pack.past')}</span>
+        {:else if prog.total && !prog.done}<span class="left">{t('travel.pack.left', { n: prog.total - prog.mine })}</span>{/if}
+        {#if done}
           <span class="stamp" class:cheer={cheering} data-pack-stamp={cheering ? 'cheer' : 'on'} role="status">
             <span class="orv" aria-hidden="true"><OfficialArt key="villagers/orville-icon" size="28px" /></span>
             <b>{t('travel.pack.done')}</b>
@@ -168,9 +190,9 @@
         {/if}
       </span>
     </div>
-    <button type="button" class="pen-btn" class:on={editing} aria-pressed={editing} aria-label={t('travel.pack.edit')} data-pack-edit data-sfx={editing ? 'toggle-off' : 'toggle-on'} onclick={toggleEdit}>
+    {#if me}<button type="button" class="pen-btn" class:on={editing} aria-pressed={editing} aria-label={t('travel.pack.edit')} data-pack-edit data-sfx={editing ? 'toggle-off' : 'toggle-on'} onclick={toggleEdit}>
       {#if editing}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>{:else}<Glyph kind="pen" size={20} />{/if}
-    </button>
+    </button>{/if}
   </header>
   {#if cheering}<p class="cheer-line" aria-hidden="true"><span class="nameplate">{t('travel.pack.orvilleName')}</span>{t('travel.pack.orville')}</p>{/if}
 
@@ -201,11 +223,7 @@
         {#if !editing}
           <span class="cc money" class:full={c.total > 0 && c.mine === c.total} data-pack-cat-mine={c.mine}>{t('travel.pack.count', { n: c.mine, m: c.total })}</span>
         {:else if c.editable && renaming !== c.id}
-          <span class="acts">
-            <button type="button" class="ib" aria-label={t('travel.pack.up', { name: c.name })} aria-disabled={ci === 0 || undefined} data-sfx="tick" data-pack-up={c.id} onclick={() => move(c.id, ci - 1)}>{@render arrow(true)}</button>
-            <button type="button" class="ib" aria-label={t('travel.pack.down', { name: c.name })} aria-disabled={ci === view.length - 1 || undefined} data-sfx="tick" data-pack-down={c.id} onclick={() => move(c.id, ci + 1)}>{@render arrow(false)}</button>
-            <button type="button" class="ib del" aria-label={t('travel.pack.remove', { name: c.name })} data-sfx="open" data-pack-del={c.id} onclick={() => askFor({ kind: 'cat', cat: c })}>{@render trash()}</button>
-          </span>
+          {@render acts(c.id, c.name, ci, view.length, true, () => askFor({ kind: 'cat', cat: c }))}
         {/if}
       </h3>
 
@@ -218,13 +236,13 @@
                   <span class="bub" class:on={r.mine} class:pop={popped === r.id && r.mine} aria-hidden="true">
                     <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
                   </span>
-                  <span class="tx"><span class="it">{r.text}</span>{#if r.note}<small>{r.note}</small>{/if}</span>
-                  <span class="who" aria-hidden="true">
-                    {#each r.chips as chip (chip.who)}
-                      <i class="tag" class:on={chip.on} style:--tag={tagOf(chip.who)} data-chip={chip.who} data-on={chip.on || undefined}>{nameOf(chip.who)}</i>
-                    {/each}
+                  <span class="tx">
+                    <span class="it">{r.text}</span>{#if r.note}<small>{r.note}</small>{/if}
+                    {#if r.item.ticks.length}
+                      <span class="by" aria-hidden="true"><span class="ck">✓</span>{#each r.item.ticks as w (w)}<i class="tag" style:--tag={tagOf(w)} data-chip={w}>{nameOf(w)}</i>{/each}</span>
+                      <span class="sr-only">{t('travel.pack.packedBy', { names: r.item.ticks.map(nameOf).join(locale === 'ja' ? '、' : ', ') })}</span>
+                    {/if}
                   </span>
-                  <span class="sr-only">{r.item.ticks.length ? t('travel.pack.packedBy', { names: r.item.ticks.map(nameOf).join('、') }) : t('travel.pack.notPacked')}</span>
                 </button>
               {:else}
                 <div class="erow" class:locked={!r.editable}>
@@ -238,13 +256,7 @@
                   {:else}
                     <span class="tx"><span class="it">{r.text}</span>{#if r.note}<small>{r.note}</small>{/if}</span>
                   {/if}
-                  {#if r.editable && renaming !== r.id}
-                    <span class="acts">
-                      <button type="button" class="ib" aria-label={t('travel.pack.up', { name: r.text })} aria-disabled={ri === 0 || undefined} data-sfx="tick" data-pack-up={r.id} onclick={() => move(r.id, ri - 1)}>{@render arrow(true)}</button>
-                      <button type="button" class="ib" aria-label={t('travel.pack.down', { name: r.text })} aria-disabled={ri === c.rows.length - 1 || undefined} data-sfx="tick" data-pack-down={r.id} onclick={() => move(r.id, ri + 1)}>{@render arrow(false)}</button>
-                      <button type="button" class="ib del" aria-label={t('travel.pack.remove', { name: r.text })} data-sfx="undo" data-pack-del={r.id} onclick={() => removeItem(r.id, r.text)}>{@render trash()}</button>
-                    </span>
-                  {/if}
+                  {#if r.editable && renaming !== r.id}{@render acts(r.id, r.text, ri, c.rows.length, false, () => remove(r.id, r.text))}{/if}
                 </div>
               {/if}
             </li>
@@ -321,6 +333,7 @@
   .sub .money { font-size: var(--fs-talk); }
   .left { font-weight: 700; font-size: var(--fs-s); color: var(--text-soft); }
   .done .sub .money { color: var(--leaf-text); }
+  .past .sub .money { font-size: var(--fs-body); color: var(--text-soft); }
   .pen-btn { margin-bottom: 0; align-self: center; }
   .pen-btn.on { background: var(--c-yuzu); }
   .pen-btn .ok { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
@@ -403,14 +416,13 @@
   .tx small { font-size: var(--fs-s); font-weight: 500; color: var(--text-soft); line-height: 1.4; }
   .row[aria-checked='true'] .it { color: var(--text-soft); }
 
-  /* who has packed it: the members' chips always (hollow until packed), the guest's once it has */
-  .who { flex: none; display: grid; gap: 3px; justify-items: end; max-width: 72px; }
+  /* who has packed it: one line, each name on its tag's colour (ink on the pastel, day and night) */
+  .by { display: flex; align-items: center; gap: 4px; min-width: 0; margin-top: 1px; overflow: hidden; white-space: nowrap; }
+  .ck { flex: none; font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--leaf-text); }
   .tag {
-    font-style: normal; display: block; max-width: 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    padding: 2px 7px 1px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.35 var(--font-ui);
-    color: var(--text-soft); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--edge) 35%, transparent); opacity: .55;
+    font-style: normal; flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+    padding: 2px 7px 1px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.35 var(--font-ui); background: var(--tag); color: var(--c-ink);
   }
-  .tag.on { background: var(--tag); color: var(--c-ink); box-shadow: none; opacity: 1; }
 
   /* ✎: a row's name to rename, ↑ ↓ 🗑 */
   .erow { display: flex; align-items: center; gap: 4px; min-height: 56px; padding: 4px 0; }
@@ -456,5 +468,5 @@
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .two .btn { margin: 0; }
 
-  @media (max-width: 359px) { .who { max-width: 56px; } .tag { max-width: 56px; } .head { gap: 8px; } .bag { display: none; } }
+  @media (max-width: 359px) { .head { gap: 8px; } .bag { display: none; } }
 </style>
