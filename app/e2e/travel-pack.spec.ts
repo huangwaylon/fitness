@@ -3,7 +3,7 @@
 // 🗑 with とりけす, a category's NH confirm), リセット (mine only, with とりけす), the guest's own only, two tabs in step
 // (the demo's tabs share the record's rows through localStorage, as phones share the record), 「じゅんび OK！」 once,
 // and a trip that's over (a quiet count). SHOTS=<dir>: WebKit screenshots of the list.
-import { expect, test, type BrowserContext, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 import { BASE } from './island.ts';
 import { openTrip } from './travelMap.ts';

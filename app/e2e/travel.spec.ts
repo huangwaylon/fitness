@@ -4,7 +4,7 @@
 // now (or next) marked with ?date inside a trip, reopening into the trip on now, the campsites' filter and its empty
 // state, ‹ back and ✕, the pill offline. The logic tier: the photos may come late, nothing waits on them. Pictures
 // (SHOTS=<dir>) of each screen, by day and at night.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

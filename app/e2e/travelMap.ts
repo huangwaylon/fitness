@@ -10,7 +10,7 @@
 //   then copy /tmp/planet.json's fields into tilejson.json, keeping its tiles as …/planet/fixture/{z}/{x}/{y}.pbf.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page } from './fixtures.ts';
 import type { MapState } from '../src/lib/components/travel/map/types.ts';
 import { BASE } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
