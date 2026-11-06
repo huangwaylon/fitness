@@ -58,6 +58,11 @@ export class QuizRounds implements Wired {
   taikai(o: { tier: number; timer: QuizTimer; vs?: boolean; ids?: readonly number[]; offered?: number }, now: number): RoundOut[] {
     return this.round.open({ gm: 'taikai', o: [...taikaiOpts.encode(o), Math.min(OFFER_MAX, o.offered ?? 0)], vs: o.vs, ids: o.ids ?? [] }, now);
   }
+  /** みみ チェック (games/check/): mine alone (never announced), starting at `lv`, 30 s an answer; its rounds dealt one by
+   *  one as I answer (GameDef.next). */
+  check(lv: QuizLv, now: number): RoundOut[] {
+    return this.round.open({ gm: 'check', o: quizOpts.encode({ lv, timer: 30 }) }, now);
+  }
   /** The tournament's host picks its deck again (the offers heard): the open's ids. */
   pick(ids: readonly number[], now: number): RoundOut[] {
     return this.round.configure({ ids }, now);

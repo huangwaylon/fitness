@@ -125,6 +125,10 @@ export interface GameDef<O = unknown> {
   tier?: { of(o: O): number; with(o: O, tr: number): O };
   /** How many roles its rounds deal (a jigsaw's halves): `role = index % roles` over the players at `go` (`pl`). */
   roles?: number;
+  /** Adaptive (みみ チェック, solo: nothing on the wire): the next round's item from the answers so far (each round's
+   *  item id and whether it was right), as a numeric id added to the game's `ids`; null: it's over. The session asks at
+   *  `go` (none yet) and at each round's reveal. */
+  next?(seed: number, o: O, done: readonly { id: string; ok: boolean }[]): number | null;
 }
 
 /** A lobby's set-up: which game, its seed, options (as on the wire), flags (F_SAME, F_VS), unit and items' ids. */
@@ -195,6 +199,8 @@ export interface Game extends Setup {
   ready: Map<Who, number>;
   /** The game events heard and mine (`ev`), by player and slot: the latest. */
   evs: Map<Who, Map<number, RoundEvent>>;
+  /** An adaptive game's (GameDef.next): the last round whose next was asked. */
+  adapted?: number;
   /** The host gone: the furthest a player's つぎへ moved the game (mine or heard), so a phone that sees the host gone a
    *  moment later follows it, and a host back from a lock behind it adopts it. */
   advance?: { i: number; at: number };

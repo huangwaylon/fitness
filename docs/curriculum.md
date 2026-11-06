@@ -379,6 +379,8 @@ Everything uses the app's paper theme (cream paper, rounded cards, the NH brown 
 
 **Spaced repetition.** The card is a **chunk, a feature or a scenario skill** ("self-correction in numbers"), never a clip. FSRS-lite intervals 1 / 3 / 7 / 16 / 35 / 90 days. Right first play = good; right after a replay = hard; wrong = again. Each review uses a different clip (voice, accent or condition). 「しずえの おさらい」 is a 3-minute due-only session, capped at 20 cards a day. No streak guilt: a missed day only means more due cards.
 
+**As built (2026-11-07, kikimimi/games/check/).** The bands are the quiz levels as places (はまべ 1, はまべ 2, かわ, もり, やま, ほし), and the walk starts at かわ, the B1+ band. The check is 8 to 12 items, about 3 minutes. The sampled skills are this build's (すうじ, つながる おと, へんじ・ほんね, にた おと, one gist); accent and phone clips wait for their content. The placed band is the reversals' mean, rounded down. Each skill's band (its answers' bands, a miss a band lower) gives the とくい / これから chips. The result is a `listen` row with `gm: 'check'`, the placed `lv` and the profile as `u`. Re-checks: せってい's 「みみ チェックを もういちど」 only (no stage-boundary offer yet).
+
 **Resolutions.** Placement length: 12 items (between the linguist's 10–12 and the curriculum designer's 14–18), with long gist as one item. Storage: the engineer's one row per person per day (below) rather than one row per answer, but each entry keeps the pick, so distractors still diagnose.
 
 ## 11. Progress and the couple experience

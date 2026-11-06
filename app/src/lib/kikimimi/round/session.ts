@@ -455,6 +455,9 @@ export class RoundSession {
     const gm = this.mine();
     if (!gm || gm.host !== this.me || gm.goAt !== undefined) return [];
     const at = now + this.w.countdown;
+    // an adaptive game (みみ チェック, mine alone): its first round, from no answers
+    const first = gm.local && !gm.ids?.length ? this.nextId(gm) : undefined;
+    if (first !== undefined && first !== null) this.setup(gm, { ...gm, ids: [first] });
     gm.n = rounds(gm.deck); // (a deck settled in the lobby: にがて れんしゅう's own, on this phone alone)
     gm.goAt = at;
     gm.pl = ORDER.reduce((m, w, k) => (gm.joined.has(w) ? m | (1 << k) : m), 0);
@@ -486,6 +489,7 @@ export class RoundSession {
     this.prune(now);
     const gm = this.mine();
     if (!gm) return [];
+    this.adapt(gm, now);
     const at = this.at(gm, now);
     if (at.phase !== 'reveal') return [];
     if (gm.host === this.me) return this.skip(gm, at.i + 1, now, now);
@@ -532,6 +536,7 @@ export class RoundSession {
       const started = b ? b.started : (o as Game).goAt !== undefined;
       return { ...none, invite: { g: o.g, host: o.host, gm: o.gm, o: o.o, ...(o.u !== undefined && { u: o.u }), same: (o.f & F_SAME) !== 0, started, ...(b && { blocked: 'update' as const }) } };
     }
+    this.adapt(gm, now);
     const at = this.at(gm, now);
     const scores: Partial<Record<Who, number>> = {};
     for (const w of gm.joined) scores[w] = this.scoreOf(gm, w);
@@ -593,6 +598,31 @@ export class RoundSession {
       this.tierDecks.delete(gm);
     }
     Object.assign(gm, { gm: s.gm, seed: s.seed, o: s.o, f: s.f, u: s.u, ids: s.ids });
+  }
+
+  /** An adaptive game's next item (GameDef.next) from my answers so far (undefined: not an adaptive game). */
+  private nextId(gm: Game): number | null | undefined {
+    const opts = gm.def.next ? gm.def.opts.decode(gm.o) : null;
+    if (!gm.def.next || opts === null) return undefined;
+    const mine = gm.answers.get(this.me);
+    const done = Array.from({ length: gm.n }, (_, i) => {
+      const r = gm.deck.round(i), a = mine?.get(i);
+      return { id: r?.id ?? '', ok: !!a && gm.deck.grade(i, a.a, a.rp).ok };
+    });
+    return gm.def.next(gm.seed, opts, gm.goAt === undefined ? [] : done);
+  }
+
+  /** An adaptive game of mine alone (framework §3.2): at the last round's reveal, its next round is dealt (its item added
+   *  to the ids), once; none: the reveal's つぎへ goes to the results. */
+  private adapt(gm: Game, now: number): void {
+    if (!gm.local || !gm.def.next || gm.goAt === undefined || gm.n === 0 || gm.adapted === gm.n - 1) return;
+    const at = this.at(gm, now);
+    if (at.i !== gm.n - 1 || at.phase !== 'reveal') return;
+    gm.adapted = at.i;
+    const x = this.nextId(gm);
+    if (x === undefined || x === null) return;
+    this.setup(gm, { ...gm, ids: [...(gm.ids ?? []), x] });
+    gm.n = rounds(gm.deck);
   }
 
   /** The game I'm in. */
