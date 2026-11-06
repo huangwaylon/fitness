@@ -22,7 +22,7 @@
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import FoodPhoto from './FoodPhoto.svelte';
-  import { catalogOf, foodDb, foodDbNow, glossOf, gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf, withImages } from './foodUi.ts';
+  import { catalogOf, foodDb, foodDbNow, glossOf, inState, gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf, withImages } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -115,7 +115,7 @@
   /** What picking state `v` keeps: the portion of the same label at its own grams, typed grams as typed, else its
    *  default; and its grams. */
   function keepIn(v: Item): { label: string; mult: number; custom: boolean; g: number } {
-    const vp = portionsOf(v);
+    const vp = portionsOf(inState(db, v));
     const same = !custom ? vp.find((p) => p.label === pl) : undefined;
     if (same) return { label: same.label, mult, custom: false, g: Math.round(same.g * mult * 10) / 10 };
     if (custom) return { label: vp[0].label, mult: 1, custom: true, g };
@@ -128,7 +128,7 @@
     pl = k.label;
     mult = k.mult;
     if (!k.custom) custom = false;
-    onitem?.(v);
+    onitem?.(inState(db, v));
   }
   /** The line under the chips, for the state picked: why that one (none for the rest). */
   const why = $derived.by(() => {

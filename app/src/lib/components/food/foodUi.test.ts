@@ -6,7 +6,7 @@ import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import {
   amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, glossOf, goalChip, itemOf, matchPortion,
-  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stepOf, typedKcal,
+  parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stateItem, stepOf, typedKcal,
   uniqueItems, unitOf
 } from './foodUi.ts';
 import { foodOp } from '#lib/contract/food.ts';
@@ -45,6 +45,23 @@ describe('itemOf: a snapshot as an item', () => {
     const cat: Item = { id: 'mext:1', name: 'ごはん', kcal: 160, portions: [{ label: '茶碗1杯', g: 150 }, { label: '小盛り', g: 100 }] };
     const db = { entries: [{ it: cat }] } as unknown as Parameters<typeof itemOf>[1];
     expect(itemOf(snap('mext:1', '茶碗1杯'), db, 150)).toMatchObject({ kcal: 156, portions: cat.portions });
+  });
+});
+
+describe('stateItem: a state keeps the food’s name and portions', () => {
+  const raw: Item = { id: 'mext:11123', vg: 'mext:11123', st: '生', name: '豚ロース 脂身つき 生', kcal: 248,
+    portions: [{ label: '1枚（とんかつ用）', g: 120 }, { label: '薄切り1枚', g: 20 }, { label: '1人前', g: 100 }, { label: '100g', g: 100 }] };
+  it('the cut’s words kept, the portions through the yield (1枚 120 g → 90 g: ×0.75)', () => {
+    const yaki: Item = { id: 'mext:11124', vg: 'mext:11123', st: '焼き', name: '豚ロース 焼き', kcal: 310, portions: [{ label: '1枚', g: 90 }, { label: '100g', g: 100 }] };
+    expect(stateItem(raw, yaki)).toMatchObject({ id: 'mext:11124', name: '豚ロース 脂身つき 焼き', kcal: 310,
+      portions: [{ label: '1枚（とんかつ用）', g: 90 }, { label: '薄切り1枚', g: 15 }, { label: '1人前', g: 75 }] });
+  });
+  it('no pair to take a yield from: the state’s own portions; the default itself unchanged; a name of its own kept', () => {
+    const yude: Item = { id: 'mext:11125', vg: 'mext:11123', st: 'ゆで', name: '豚ロース 脂身つき ゆで', kcal: 299, portions: [{ label: '100g', g: 100 }] };
+    expect(stateItem(raw, yude)).toMatchObject({ name: '豚ロース 脂身つき ゆで', portions: [{ label: '100g', g: 100 }] });
+    expect(stateItem(raw, raw)).toBe(raw);
+    const imo: Item = { id: 'x:2', vg: 'x:1', st: '焼き', name: '焼きいも', kcal: 151 };
+    expect(stateItem({ id: 'x:1', vg: 'x:1', st: '生', name: 'さつまいも 生', kcal: 126 }, imo).name).toBe('焼きいも');
   });
 });
 

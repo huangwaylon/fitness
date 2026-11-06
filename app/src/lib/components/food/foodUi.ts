@@ -76,7 +76,8 @@ export const halfWidth = (text: string): string => text.replace(/[０-９．，]
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
  *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
 export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {
-  const it = catalogOf(db, f.id);
+  const c = catalogOf(db, f.id);
+  const it = c && inState(db, c);
   const own = it ? null : snapPortion(f.u, g);
   return { ...(it ?? {}), ...(own ? { portions: [own] } : {}), id: f.id, name: f.n, ...snapValues(f) };
 }
@@ -114,6 +115,40 @@ export function stemName(it: Pick<Item, 'name' | 'st'>): string {
   const w = STATE_WORD[it.st] ?? it.st;
   for (const end of [` ${w}`, `（${w}）`]) if (it.name.endsWith(end) && it.name.length > end.length) return it.name.slice(0, -end.length);
   return it.name;
+}
+
+/** A portion label without its notes in brackets (「1枚（とんかつ用）」 → 1枚). */
+const bareLabel = (label: string): string => label.replace(/[（(][^（）()]*[）)]/g, '').trim();
+const is100 = (p: Portion): boolean => /^100\s*(g|ml)$/i.test(p.label.normalize('NFKC'));
+
+/** A food in one of its states as the amount shows it (`d` its group's default, the raw one mostly): the default's
+ *  name with this state's word (「豚ロース 焼き」 → 豚ロース 脂身つき 焼き: MEXT drops the cut's words on some states), and
+ *  the default's portions carried over (「1枚（とんかつ用）」 120 g → 90 g 焼き): a label the state has by itself, or by its
+ *  bare label (1枚), at the state's grams; the rest scaled by that pair's yield (薄切り1枚 20 g → 15 g); without such a
+ *  pair, the state's own portions only (its weight after cooking is unknown). */
+export function stateItem(d: Item, v: Item): Item {
+  if (d.id === v.id) return v;
+  const sv = stemName(v), sd = stemName(d);
+  const name = sv !== v.name && sd.startsWith(sv) ? sd + v.name.slice(sv.length) : v.name;
+  const own = (v.portions ?? []).filter((p) => !is100(p));
+  const match = (p: Portion) => own.find((q) => q.label === p.label) ?? own.find((q) => bareLabel(q.label) === bareLabel(p.label));
+  const pair = (d.portions ?? []).find((p) => !is100(p) && match(p));
+  const k = pair ? match(pair)!.g / pair.g : null;
+  const used = new Set<Portion>();
+  const portions: Portion[] = [];
+  for (const p of d.portions ?? []) {
+    if (is100(p)) continue;
+    const q = match(p);
+    if (q) used.add(q);
+    if (q || k) portions.push({ label: p.label, g: q ? q.g : Math.round(p.g * k! * 10) / 10 });
+  }
+  portions.push(...own.filter((q) => !used.has(q)));
+  return { ...v, name, portions: portions.length ? portions : v.portions };
+}
+/** An item as the amount shows it: a state of a food in its states through stateItem (else as it is). */
+export function inState(db: FoodDb | null, it: Item): Item {
+  const d = it.vg && it.id !== it.vg ? db?.variants.get(it.vg)?.find((x) => x.id === it.vg) : undefined;
+  return d ? stateItem(d, it) : it;
 }
 
 /** A snapshot's values as an item's (fibre and alcohol only when known). */
@@ -190,7 +225,7 @@ export function defaultPortion(it: Item): { label: string; kcal: number } {
   const ps = portionsOf(it);
   const p = ps[0];
   const w = `${gramsText(p.g)}${ps.some((q) => unitOf(q.label) === 'ml') ? 'ml' : 'g'}`;
-  const base = p.label.replace(/[（(][^（）()]*[）)]/g, '').trim();
+  const base = bareLabel(p.label);
   return { label: !base || /^\d+(\.\d+)?\s*(g|ml)$/i.test(base.normalize('NFKC')) ? w : `${base} ${w}`, kcal: Math.round((it.kcal * p.g) / 100) };
 }
 

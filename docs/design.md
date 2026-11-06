@@ -470,8 +470,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   …」; ✕, Esc or a tap outside close it, the focus back on the picture), its name, then (only with one) its everyday name and its
   one line 「これは…」 (the data's `desc`); the food's values per 100 g; a food in its states, **じょうたい** above 量: a
   chip per state (乾 生 ゆで … in process order) with its kcal at the amount it would take, picking one swaps the food
-  (its name and values follow: a portion label it also has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き;
-  typed grams stay; else its default), one leaf line for 生 (パックの重さなら 生) and for 乾 beside ゆで (ゆでる前の重さなら
+  (its values follow; its name keeps the cut's words, 豚ロース 脂身つき 焼き, and the raw one's portions carry over through
+  the yield of a pair they share, 1枚（とんかつ用） 120 g → 90 g, 薄切り1枚 → 15 g: `foodUi.ts` stateItem; a portion label
+  it also has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き; typed grams stay; else its default), one leaf line for 生 (パックの重さなら 生) and for 乾 beside ゆで (ゆでる前の重さなら
   乾); on my entry a ほぞん (`editFood` f), a recipe's ingredient alike; its portions as chips (100 g last), −/＋ by a whole portion for the things
   counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece: おにぎり,
   むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
