@@ -68,7 +68,7 @@
 
 <div class="classic t-{trip.id}" data-classic={trip.id} data-view={view} style:--hero-pos={HERO_POS[trip.id] ?? '50% 50%'}>
   <div class="scroller" bind:this={scroller} inert={!!camp}>
-    <article class="guide">
+    <article class="cguide">
       {#if view === 'itinerary' && onback}
         <button class="backbtn" type="button" data-sfx="back" data-classic-back onclick={onback}><CIcon name="arrow-left" /><span>{t('travel.classic.back')}</span></button>
       {/if}
