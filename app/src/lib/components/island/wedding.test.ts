@@ -1,14 +1,18 @@
-import { describe, expect, it } from 'vitest';
-import { MILESTONES, WEDDING, archOn, coupleAt, daysUntil, milestoneDates, milestoneOn, weddingDay } from './wedding.ts';
+import { afterEach, describe, expect, it } from 'vitest';
+import { MILESTONES, archOn, coupleAt, daysUntil, milestoneDates, milestoneOn, weddingDay } from './wedding.ts';
 import { visitorAt } from './visitors.ts';
 import { eventAt } from './events.ts';
 import { addDays } from '#lib/time/dates.ts';
+import { setWeddingSource, WEDDING, weddingDate } from '#lib/time/holidays.ts';
+import { eventMusicAt } from '#lib/sound/events.ts';
+import { heldFine } from './weather.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
 
 const weekday = (d: string) => new Date(`${d}T12:00:00Z`).getUTCDay();
 
 describe('the wedding countdown', () => {
+  afterEach(() => setWeddingSource(() => ''));
   it('our wedding is 2027-10-08; the milestones are 365, 200, 100, 50, 30, 7 and 1 days before, and the day', () => {
     expect(WEDDING).toBe('2027-10-08');
     expect(MILESTONES).toEqual([365, 200, 100, 50, 30, 7, 1, 0]);
@@ -36,6 +40,20 @@ describe('the wedding countdown', () => {
       expect(visitorAt(d, addDays(d, -1), 21, weekday(d))).toBe('reese');
     }
     expect(visitorAt('2027-06-29', '2027-06-28', 12, 2)).not.toBe('reese');
+  });
+  it('one date: the board’s `date` setting, else 2027-10-08 (the island, its weather and its music read it)', () => {
+    expect(weddingDate()).toBe(WEDDING);
+    setWeddingSource(() => '2028-05-20');
+    expect(weddingDate()).toBe('2028-05-20');
+    expect(weddingDay('2028-05-20')).toBe(true);
+    expect(weddingDay('2027-10-08')).toBe(false);
+    expect(milestoneOn('2027-05-21')).toBe(365);
+    expect(visitorAt('2028-05-13', '2028-05-12', 12, weekday('2028-05-13'))).toBe('reese');
+    expect(heldFine('2028-05-20', 20)).toBe(true);
+    expect(eventMusicAt(new Date('2028-05-20T03:00:00Z'))?.id).toBe('wedding'); // 12:00 Tokyo
+    expect(eventMusicAt(new Date('2027-10-08T03:00:00Z'))).toBeNull();
+    setWeddingSource(() => ''); // (none set, or cleared: the fallback)
+    expect(weddingDate()).toBe(WEDDING);
   });
   it('the arch stands on every June Sunday (NH’s Wedding Season), every year', () => {
     expect(['2027-06-06', '2027-06-13', '2027-06-20', '2027-06-27'].every((d) => archOn(d, weekday(d)))).toBe(true);

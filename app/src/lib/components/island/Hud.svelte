@@ -15,6 +15,7 @@
   import HudHealth from './HudHealth.svelte';
   import HudMenu from './HudMenu.svelte';
   import { trips } from '../travel/open.svelte.ts';
+  import WeddingHost from '../wedding/WeddingHost.svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
 
   interface Props {
@@ -81,6 +82,7 @@
 {/if}
 <!-- りょこう's sheet, its own chunk from its first opening (the menu's pill: travel/open.svelte.ts) -->
 {#if trips.Sheet}<trips.Sheet bind:open={trips.open} />{/if}
+<WeddingHost />
 {#if healthMounted}
   {#await loadHealth() then { default: HealthSheet }}<HealthSheet bind:open={healthOpen} />{/await}
 {/if}

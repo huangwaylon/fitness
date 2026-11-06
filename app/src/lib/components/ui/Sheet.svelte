@@ -86,9 +86,13 @@
     return true;
   }
 
+  /** A tap on the scrim: the click's target is the dialog and its point outside the dialog's box (a tap whose control
+   *  moved from under it mid-press, a field's blur re-laying the sheet out, lands on the dialog itself: not a dismiss). */
   function backdrop(e: MouseEvent) {
-    if (e.target !== dlg) return;
-    if (dismissed()) dlg?.close();
+    if (e.target !== dlg || !dlg) return;
+    const r = dlg.getBoundingClientRect();
+    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
+    if (dismissed()) dlg.close();
   }
 </script>
 

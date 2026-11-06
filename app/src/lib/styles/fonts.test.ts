@@ -14,13 +14,15 @@ import jaKiki from '#lib/i18n/kikimimi.ja.json';
 import enKiki from '#lib/i18n/kikimimi.en.json';
 import jaTravel from '#lib/i18n/travel.ja.json';
 import enTravel from '#lib/i18n/travel.en.json';
+import jaWed from '#lib/i18n/wedding.ja.json';
+import enWed from '#lib/i18n/wedding.en.json';
 import jaNames from '#lib/i18n/catch.ja.json';
 import enNames from '#lib/i18n/catch.en.json';
 import jaCatalog from '#lib/i18n/catalog.ja.json';
 import enCatalog from '#lib/i18n/catalog.en.json';
 
-const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaKiki, ...jaTravel };
-const en = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enKiki, ...enTravel };
+const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaKiki, ...jaTravel, ...jaWed };
+const en = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enKiki, ...enTravel, ...enWed };
 import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');

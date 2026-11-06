@@ -911,8 +911,8 @@ export class StoreCore {
     return row ? this.packBook(row.op.trip).accept(row) : { v: 'stale' };
   }
 
-  /** A wedding op against the rows of the slots it touches (contract/wedding.ts wedNeeds, WedBook accept) and the
-   *  record's count of tasks. */
+  /** A wedding op against the rows of the slots it touches (contract/wedding.ts wedNeeds, WedBook accept) and, for a
+   *  task the record doesn't hold, its count of tasks. */
   private wedTarget(me: Who, type: string, d: Rec): WedVerdict {
     const row = wedRowOf(type, d, me);
     if (!row) return { v: 'stale' };
@@ -923,7 +923,8 @@ export class StoreCore {
       const held = x && isWho(r.person) ? wedRowOf(r.type, x, r.person) : null;
       if (held) b.put(held);
     }
-    const tasks = Number(this.io.sql.exec<{ n: number }>("SELECT count(*) AS n FROM events WHERE type = 'wtask'").toArray()[0]?.n ?? 0);
+    const isNew = row.type === 'wtask' && !b.rows.has(slots[0]);
+    const tasks = isNew ? Number(this.io.sql.exec<{ n: number }>("SELECT count(*) AS n FROM events WHERE type = 'wtask'").toArray()[0]?.n ?? 0) : 0;
     return b.accept(row, tasks);
   }
 
@@ -1099,8 +1100,8 @@ export class StoreCore {
    * Take rows that already have their `at` (the sheet's history, or Apps Script's copy of a write it just made), by
    * the same rules as the record's own writes: an event id once, a slot's latest (by `at`) kept, a decor op by the
    * merge's rules, a board post's, a packing list's and the wedding board's row as the record had it (unless its slot's
-   * row beats it: a restore is faithful); rows the model can't read (an old high-five's) are skipped. Idempotent: an
-   * import again adds nothing.
+   * row beats it: a restore is faithful), then what a phone's op would have dropped with them (pruneLoaded); rows the
+   * model can't read (an old high-five's) are skipped. Idempotent: an import again adds nothing.
    */
   import(rows: ImportRows): ImportResult {
     // in `at` order across the tables, so a batch is late only where it is older than what the record had
@@ -1121,6 +1122,7 @@ export class StoreCore {
       }
       // (rows the running shop ledgers and the caps' counts never saw: folded again at the next op)
       if (out.events) {
+        this.pruneLoaded();
         this.shopForget();
         this.io.sql.exec("DELETE FROM meta WHERE k = 'decor_live'");
       }
@@ -1162,35 +1164,13 @@ export class StoreCore {
         return 'had';
       }
     }
-    if ((isPackType(type) || isWedType(type)) && person === 'G' && !guestMayWrite(type, d)) return 'skipped';
-    if (isPackType(type)) {
-      const row = packRowOf(type, d, person);
-      const slot = packSlot(type, person, d);
-      if (!row || !slot) return 'skipped';
-      const b = new PackBook();
-      const h = this.slotRow(slot);
-      const hx = h && isWho(h.person) ? this.rowRec(h.data, 'pack') : null;
-      const held = hx ? packRowOf(h!.type, hx, h!.person as Who) : null;
-      if (held) b.put(held);
-      b.merge(row);
-      if (b.rows.get(slot) !== row) {
-        sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
-        return 'had';
-      }
-    }
-    if (isWedType(type)) {
-      const row = wedRowOf(type, d, person);
-      const slot = wedSlot(type, d);
-      if (!row || !slot) return 'skipped';
-      const b = new WedBook();
-      const h = this.slotRow(slot);
-      const hx = h && isWho(h.person) ? this.rowRec(h.data, 'wedding') : null;
-      const held = hx ? wedRowOf(h!.type, hx, h!.person as Who) : null;
-      if (held) b.put(held);
-      if (!b.merge(row)) {
-        sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
-        return 'had';
-      }
+    if (isPackType(type) || isWedType(type)) {
+      if (person === 'G' && !guestMayWrite(type, d)) return 'skipped';
+      const v = isPackType(type)
+        ? this.loadBeats(packSlot(type, person, d), 'pack', new PackBook(), packRowOf, packRowOf(type, d, person))
+        : this.loadBeats(wedSlot(type, d), 'wedding', new WedBook(), wedRowOf, wedRowOf(type, d, person));
+      if (v === 'had') sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
+      if (v !== 'beats') return v;
     }
     let json = raw || '{}';
     if (isFoodType(type)) {
@@ -1219,6 +1199,31 @@ export class StoreCore {
     this.put(id, at, person, type, json, slot, this.seeAt(at) ? arrived : null);
     if (type === 'decor') this.decorNote(person, d, wasDecor); // (the caps right within the load's batch)
     return 'added';
+  }
+
+  /** A packing or wedding row a load brings against the row its slot holds, by the contract's merge (PackBook,
+   *  WedBook): `beats` it (or there's none), `had` (the held one beats it) or `skipped` (unreadable). */
+  private loadBeats<R>(slot: string | null, kind: string, book: { rows: Map<string, R>; put(r: R): void; merge(r: R): unknown }, rowOf: (type: string, d: Rec, who: Who) => R | null, row: R | null): 'beats' | 'had' | 'skipped' {
+    if (!row || !slot) return 'skipped';
+    const h = this.slotRow(slot);
+    const hx = h && isWho(h.person) ? this.rowRec(h.data, kind) : null;
+    const held = hx ? rowOf(h!.type, hx, h!.person as Who) : null;
+    if (held) book.put(held);
+    book.merge(row);
+    return book.rows.get(slot) === row ? 'beats' : 'had';
+  }
+
+  /** What a phone's op would have dropped with a row a load took as it was (the live path's drops, after the whole
+   *  batch, so the order its rows came in doesn't matter): a purged wedding task's tick, a removed packing item's
+   *  ticks, the board's removals past BOARD_MAX. */
+  private pruneLoaded(): void {
+    const sql = this.io.sql;
+    const gone = (type: string): Rec[] =>
+      sql.exec<{ data: string }>('SELECT data FROM events WHERE type = ?', type).toArray()
+        .map((r) => this.rowRec(r.data, type)).filter((x): x is Rec => x !== null && x.rm === true);
+    for (const t of gone('wtask')) sql.exec('DELETE FROM events WHERE slot = ?', `wdone|${String(t.id)}`);
+    for (const p of gone('pack')) sql.exec('DELETE FROM events WHERE slot GLOB ?', `pack_chk|${String(p.trip)}|${String(p.id)}|*`);
+    this.pruneBoard();
   }
 
   private importHeld(r: unknown[]): 'added' | 'skipped' {

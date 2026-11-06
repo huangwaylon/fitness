@@ -504,8 +504,10 @@ A shower every few minutes on a clear night; a meteor shower night (at most once
 seconds; each wish is a fragment the next morning. Why: NH's rhythm, never ベル.
 
 ### Birthdays and the wedding from the code
-Our birthdays sit in `PEOPLE` (`config/rules.ts`), the wedding date in `island/wedding.ts`; the wedding countdown is NH's
-couple visiting on milestone days. Why: they never change, both phones agree, and an event to find beats a counter.
+Our birthdays sit in `PEOPLE` (`config/rules.ts`); the wedding date comes from the けっこんしき board's `date` setting
+(2026-11-06: one date for the board and the island; `time/holidays.ts` `weddingDate`, 2027-10-08 until the record has
+one). The wedding countdown is NH's couple visiting on milestone days. Why: both phones agree, a changed date is
+changed once, and an event to find beats a counter.
 
 ### Group stretching on an Exercise day
 The tape deck comes out on a day either of us met 🍑 Exercise or on a morning opening; a tap makes everyone stretch

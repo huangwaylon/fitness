@@ -4,7 +4,7 @@
 // taken, its own queued ones judged).
 import { describe, expect, it } from 'vitest';
 import {
-  WedBook, wedClean, wedConfig, wedFold, wedNote, wedOpOf, wedRowOf, wedSlot, wedTasks, newTaskId, WTASK_MAX, type WedEntry
+  WedBook, wedBookOf, wedClean, wedConfig, wedDate, wedFold, wedNote, wedOpOf, wedRowOf, wedSlot, wedTasks, newTaskId, WTASK_MAX, type WedEntry
 } from './wedding.ts';
 import { eventSlot, validEventData } from './record.ts';
 import { guestMayWrite } from './guest.ts';
@@ -98,6 +98,27 @@ describe('the rules', () => {
     expect(b.apply(task('A', 'g', T + 2, { parent: 's', due: undefined })).v).toBe('parent');
   });
 
+  it('a subtask whose parent was purged (added while the parent was being purged) stays editable and deletable', () => {
+    const b = new WedBook();
+    b.apply(task('A', 'p', T, { del: T }));
+    // B adds a subtask under the deleted task as A purges it
+    expect(b.apply(task('B', 's', T + 1, { parent: 'p', due: undefined })).v).toBe('append');
+    expect(b.apply(row('wtask', 'A', { id: 'p', at: T + 2, rm: true })).v).toBe('append');
+    expect(b.apply(task('B', 's', T + 3, { parent: 'p', due: undefined, title: 'renamed' })).v).toBe('append');
+    expect(b.apply(task('B', 's', T + 4, { parent: 'p', due: undefined, del: T + 4 })).v).toBe('append');
+    expect(b.apply(row('wtask', 'B', { id: 's', at: T + 5, rm: true })).v).toBe('append');
+    // its parent dropped (the purging phone's set): a task of its own
+    b.apply(task('B', 't', T + 6, { parent: 'q', due: undefined }));
+    b.apply(task('A', 'q', T + 6));
+    expect(b.apply(task('B', 't', T + 7, { parent: 'q', due: undefined })).v).toBe('append');
+    expect(b.apply(task('A', 't', T + 8, { due: undefined })).v).toBe('append');
+    // but a set can't move one under a purged task, and a stale edit of a purged subtask doesn't bring it back
+    expect(b.apply(task('A', 't', T + 9, { parent: 'p', due: undefined })).v).toBe('parent');
+    expect(b.apply(task('A', 'u', T + 9, { parent: 'p', due: undefined })).v).toBe('parent');
+    expect(b.apply(task('A', 's', T + 99, { parent: 'p', due: undefined })).v).toBe('stale');
+    expect(wedTasks(b).map((t) => [t.id, t.parentId]).sort()).toEqual([['q', ''], ['t', '']]);
+  });
+
   it('a tick of a task not held is stale; the cap', () => {
     const b = new WedBook();
     expect(b.apply(row('wdone', 'B', { id: 'x', at: T, v: 1 })).v).toBe('stale');
@@ -115,6 +136,18 @@ describe('the rules', () => {
     expect(wedNote(b)).toEqual({ at: T + 2, md: 'three', base: T, was: { at: T + 1, md: 'two', who: 'B' }, who: 'A' });
     b.apply(row('wnote', 'B', { at: T + 3, md: 'four', base: T + 2 }));
     expect(wedNote(b)?.was).toBeUndefined();
+  });
+
+  it('a save that loses on `at` to a note it was not edited from is kept, restamped after it, that one beside it', () => {
+    const b = new WedBook();
+    b.apply(row('wnote', 'A', { at: T, md: 'one' }));
+    // B saved at T + 5 from `one`; A's offline save (stamped T + 2, from `one`) arrives after it
+    b.apply(row('wnote', 'B', { at: T + 5, md: 'B’s', base: T }));
+    expect(b.apply(row('wnote', 'A', { at: T + 2, md: 'A’s', base: T }))).toMatchObject({ v: 'append' });
+    expect(wedNote(b)).toEqual({ at: T + 6, md: 'A’s', base: T, was: { at: T + 5, md: 'B’s', who: 'B' }, who: 'A' });
+    // an older save of the same text, or one edited from the held note, changes nothing
+    expect(b.apply(row('wnote', 'B', { at: T + 1, md: 'A’s', base: T })).v).toBe('stale');
+    expect(b.apply(row('wnote', 'A', { at: T + 6, md: 'x', base: T + 6 })).v).toBe('stale');
   });
 });
 
@@ -135,11 +168,33 @@ describe('the phone’s fold', () => {
     expect(wedConfig(b)).toEqual({ p1: 'はなこ' });
   });
 
-  it('reads a task as the old board’s rows (ISO stamps, empty strings), imported marked', () => {
+  it('the wedding day: the `date` setting (the latest), \'\' for none or cleared; one fold a list', () => {
+    const rows = [row('wconf', 'A', { k: 'date', at: T, v: '2027-10-08' }), row('wconf', 'B', { k: 'date', at: T + 1, v: '2028-01-02' })];
+    expect(wedDate(wedBookOf(rows))).toBe('2028-01-02');
+    expect(wedBookOf(rows)).toBe(wedBookOf(rows));
+    expect(wedDate(wedFold([...rows, row('wconf', 'A', { k: 'date', at: T + 2, v: '' })]))).toBe('');
+    expect(wedDate(wedFold([]))).toBe('');
+  });
+
+  it('reads a task as the old board’s rows (ISO stamps, empty strings)', () => {
     const b = wedFold([task('A', 'p', T, { del: T + 1, start: '2027-01-01', imported: true }), row('wdone', 'A', { id: 'p', at: T + 2, v: 1 })]);
     expect(wedTasks(b)).toEqual([{
-      id: 'p', title: 'p', category: '', due: '2027-04-18', start: '2027-01-01', doneAt: new Date(T + 2).toISOString(), createdAt: new Date(T).toISOString(),
-      updatedAt: new Date(T).toISOString(), deletedAt: new Date(T + 1).toISOString(), parentId: '', who: 'A', imported: true
+      id: 'p', title: 'p', category: '', due: '2027-04-18', start: '2027-01-01', doneAt: new Date(T + 2).toISOString(), doneBy: 'A', createdAt: new Date(T).toISOString(),
+      deletedAt: new Date(T + 1).toISOString(), parentId: ''
     }]);
+  });
+  it('two note saves crossing in flight: a conflict on the phone whichever the record took first', () => {
+    const one = row('wnote', 'A', { at: T, md: 'one' });
+    const a = row('wnote', 'A', { at: T + 1, md: 'A’s', base: T }), b = row('wnote', 'B', { at: T + 2, md: 'B’s', base: T });
+    // A's phone: B's save reached the record first, A's still queued; B's phone: the other way about
+    const onA = wedNote(wedFold([one, b, { ...a, queued: true }]))!;
+    const onB = wedNote(wedFold([one, a, { ...b, queued: true }]))!;
+    expect([onA.md, onA.was?.md]).toEqual(['A’s', 'B’s']);
+    expect([onB.md, onB.was?.md]).toEqual(['B’s', 'A’s']);
+  });
+
+  it('names who ticked a task, never for the old Sheet’s tick (it never recorded who)', () => {
+    const b = wedFold([task('A', 'p', T), task('A', 'q', T), row('wdone', 'B', { id: 'p', at: T + 2, v: 1 }), row('wdone', 'A', { id: 'q', at: T + 2, v: 1, imported: true })]);
+    expect(wedTasks(b).map((t) => [t.id, t.doneBy]).sort()).toEqual([['p', 'B'], ['q', '']]);
   });
 });
