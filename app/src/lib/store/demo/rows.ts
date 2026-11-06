@@ -95,6 +95,22 @@ const DEMO_NOTE: Record<string, string> = {
 };
 const DEMO_NOTE_DAYS = 20;
 
+/** けっこんしき's made-up board (docs/wedding.md; the real one is on the relay alone): invented names, venue and tasks,
+ *  the wedding this many days ahead, the tasks written this many days back. */
+const WED_AHEAD = 160;
+const WED_DAYS = 40;
+/** A task: its id, title, category, due (days from today), start (days), subtasks [id, title, done], done, deleted. */
+const WED_TASKS: [string, string, string, number, number | null, [string, string, boolean][], boolean, boolean][] = [
+  ['wdemo01', '式場を決める', 'Venue', -20, null, [], true, false],
+  ['wdemo02', '招待客リストをつくる', 'Guests', -3, -30, [['wdemo02a', '親族', true], ['wdemo02b', '友人', false]], false, false],
+  ['wdemo03', 'カメラマンを予約', 'Photo', 9, null, [], false, false],
+  ['wdemo04', 'ドレスの試着', 'Attire', 45, 5, [['wdemo04a', '一軒目', true], ['wdemo04b', '二軒目', false], ['wdemo04c', '決める', false]], false, false],
+  ['wdemo05', '招待状を送る', 'Stationery', 70, null, [], false, false],
+  ['wdemo06', '新婚旅行の下調べ', 'Honeymoon', 120, null, [], false, false],
+  ['wdemo07', '引き出物の候補', 'Gifts', 100, null, [], false, true]
+];
+const WED_NOTE = '# メモ\n\n- 式場: 架空チャペル（見学 済み）\n- **予算** は月末に もう一度\n- 参考: [れい](https://example.com)\n';
+
 /** The demo's rows as of `now` (only rows the server would have stamped by then). */
 function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   const today = localDateAt(now);
@@ -244,6 +260,23 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   ev(tp + 300_000, 'A', 'pack_chk', { trip: 'okinawa', id: 'ok-0-0', at: tp + 300_000, v: 1 });
   for (const [i, trip] of ['okinawa', 'seattle', 'nz'].entries())
     ev(at(addDays(today, -DEMO_NOTE_DAYS), 20, i), 'A', 'trip_note', { trip, at: at(addDays(today, -DEMO_NOTE_DAYS), 20, i), v: DEMO_NOTE });
+
+  // けっこんしき (docs/wedding.md): a made-up board, the settings, the tasks (a subtask list, ticks, one deleted) and
+  // the notes, written over the last weeks by both
+  const tw = at(addDays(today, -WED_DAYS), 21, 0);
+  const conf: [string, string | string[]][] = [['p1', 'たろう'], ['p2', 'はなこ'], ['date', addDays(today, WED_AHEAD)], ['time', '11:00'], ['venue', '架空チャペル'], ['tz', 'Asia/Tokyo']];
+  conf.forEach(([k, v], i) => ev(tw + i * 1000, i % 2 ? 'B' : 'A', 'wconf', { k, at: tw + i * 1000, v }));
+  WED_TASKS.forEach(([id, title, cat, due, start, subs, done, del], i) => {
+    const t = tw + 60_000 * (i + 1), p: PersonId = i % 2 ? 'B' : 'A';
+    ev(t, p, 'wtask', { id, at: t, c: t, title, cat, due: addDays(today, due), ...(start !== null ? { start: addDays(today, start) } : {}), ...(del ? { del: t } : {}) });
+    subs.forEach(([sid, st, sd], j) => {
+      const u = t + 1000 * (j + 1);
+      ev(u, p, 'wtask', { id: sid, at: u, c: u, title: st, cat: '', parent: id });
+      if (sd) ev(u + 30 * 3600_000, p === 'A' ? 'B' : 'A', 'wdone', { id: sid, at: u + 30 * 3600_000, v: 1 });
+    });
+    if (done) ev(t + 3 * 86400_000, p, 'wdone', { id, at: t + 3 * 86400_000, v: 1 });
+  });
+  ev(tw + 7 * 86400_000, 'B', 'wnote', { at: tw + 7 * 86400_000, md: WED_NOTE });
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
   return { metrics: byAt(metrics), events: byAt(events) };
