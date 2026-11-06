@@ -231,11 +231,12 @@ describe('heights', () => {
   });
   test('by the grid\'s edge the seabed is down at the deep plane\'s level (no ledge where the ground\'s mesh ends)', () => {
     const { ground } = fieldOf(l);
-    // the back of the island: the land a tile from the grid's far edge (z 1710)
-    expect(ground(200, 1709)).toBeCloseTo(DEEP_Y, 1);
-    expect(ground(-89, 600)).toBeCloseTo(DEEP_Y, 1);
+    // at the grid's edges, however near the land comes (the editor's しまの おおきさ keeps 2 tiles of sea)
+    expect(ground(200, GRID.z0 + GRID.rows * 30 - 1)).toBeCloseTo(DEEP_Y, 1);
+    expect(ground(GRID.x0 + 1, 600)).toBeCloseTo(DEEP_Y, 1);
+    expect(ground(GRID.x0 + GRID.cols * 30 - 1, 600)).toBeCloseTo(DEEP_Y, 1);
     // and nearer the land, the shelf as it was
-    expect(ground(200, 1690)).toBeGreaterThan(DEEP_Y + 0.5);
+    expect(ground(-40, 600)).toBeGreaterThan(DEEP_Y + 0.5);
   });
   test('the corners are round: a convex cliff corner is cut', () => {
     const { tierAt } = fieldOf(l);
