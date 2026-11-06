@@ -917,6 +917,16 @@ test('状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼�
   await sheet(page).locator('[data-state=乾]').click();
   await expect(sheet(page).locator('[data-state-why]')).toHaveText('ゆでる前の重さなら乾');
   expect(await overflowOf(page)).toEqual([]);
+  // 豚ロース 脂身つき 生 → 焼き: the cut's words stay (MEXT's own name drops them), its portions through the yield
+  await sheet(page).getByRole('button', { name: '戻る' }).click();
+  await sheet(page).locator('[data-food-q]').fill('豚ロース');
+  await sheet(page).locator('[data-food-results] [data-item="mext:11123"]').click();
+  await expect(sheet(page).locator('.chip[aria-pressed=true][data-portion]')).toContainText('1枚（とんかつ用）');
+  await sheet(page).locator('[data-state=焼き]').click();
+  await expect(sheet(page).locator('.card.head h3')).toHaveText('豚ロース 脂身つき 焼き');
+  await expect(sheet(page).locator('[data-portion]')).toHaveText([/^1枚（とんかつ用）90g/, /^薄切り1枚15g/, /^1人前75g/, /^100g/]);
+  await expect(sheet(page).locator('.chip[aria-pressed=true][data-portion]')).toContainText('1枚（とんかつ用）');
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('90');
 });
 
 test('category tiles: the night’s tint is darker than the day’s', async ({ page }) => {

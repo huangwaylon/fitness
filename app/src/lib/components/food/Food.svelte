@@ -52,7 +52,7 @@
   import FoodRecipe from './FoodRecipe.svelte';
   import FoodCustom from './FoodCustom.svelte';
   import {
-    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, itemOf, portionLabel, recentOf, recipeItem,
+    customDraft, customItem, customOf, DAYS, foodDb, foodDbNow, foodLast, inState, itemOf, portionLabel, recentOf, recipeItem,
     quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
   } from './foodUi.ts';
 
@@ -254,7 +254,7 @@
   function pickOf(item: Item, f?: FoodSnap): Picked {
     const c = item.id.startsWith('custom:') ? allCustoms.find((x) => `custom:${x.id}` === item.id) : undefined;
     if (c) return { item: customItem(c), cid: c.id, sv: c.g === undefined };
-    return f && servingOnly(f) ? { item, sv: true, snap: f } : { item };
+    return f && servingOnly(f) ? { item, sv: true, snap: f } : { item: inState(foodDbNow(), item) };
   }
   /** A snapshot as logged, picked by another portion (`u`). */
   function withU(f: FoodSnap, u: string | null): FoodSnap {
