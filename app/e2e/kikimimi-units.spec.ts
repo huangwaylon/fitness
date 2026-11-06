@@ -1,6 +1,6 @@
 // ききみみ's units on しまの みち, U4 (docs/curriculum-units.md §13; docs/kikimimi-ux.md §6.3, §6.3b): a fixture unit
-// put in through the dev hook (the bank's items, never shipped) shows on the path from the lobby's card; its page has
-// the can-do and the three core lessons; であい played solo moves its dot (the unit page's and the path's); the チェック
+// put in through the dev hook (the bank's items, never shipped) shows on the path from the lobby's card, the can-do's
+// one line its subtitle; its page has the one line (the template's sentence under 「くわしく」) and the three core lessons; であい played solo moves its dot (the unit page's and the path's); the チェック
 // from 「とばして チェック」 opens on the phone errand's mission card and, all right on the first listen, stamps the unit:
 // the results' strip, the unit page and the path's stop. The logic tier (no clip has to sound).
 // KIKI_SHOTS=1 writes the 393×852 screenshot pass into /tmp/kikimimi-shots/u4/.
@@ -35,7 +35,7 @@ const LESSONS = {
 /** A unit as its chunk holds it (compile.ts unitChunk), over the bank's level-4 items. */
 const UNIT = {
   id: 'tr-testinn', name: 'ホテルで こまった', stage: 'mori', domain: 'tabi', host: 'diana', scene: 'lobby', sound: 'self-repair', status: 'draft',
-  cando: { ja: 'ホテルの スタッフが へやの もんだいへの たいおうを せつめいするのを ロビーの ざつおんの なかで きいて、できる ことと ついかの りょうきんが わかる', en: 'I can follow hotel staff…' },
+  cando: { ja: 'ホテルの スタッフが へやの もんだいへの たいおうを せつめいするのを ロビーの ざつおんの なかで きいて、できる ことと ついかの りょうきんが わかる', short: 'ホテルの もんだいを ききとれる', en: 'I can follow hotel staff…' },
   lessons: { v: 1, ...LESSONS }, home: Object.values(LESSONS).flat(),
   ph: [
     { id: 'ph-ti-room', en: 'the room is ready', ja: 'お部屋の準備ができました', register: 'service', scene: 'hotel desk', trap: 'ready = もう はいれる', in: ['r4-room-ready'] },
@@ -72,6 +72,7 @@ test('しまの みち: a unit’s stop, its page, であい played solo moves i
   const stop = sheet(page).locator('[data-kiki-stop="tr-testinn"]');
   await expect(stop).toBeVisible();
   await expect(stop.locator('[data-dot]')).toHaveCount(3);
+  await expect(stop.locator('[data-kiki-stop-short]')).toHaveText(UNIT.cando.short);
   await expect(sheet(page).locator('[data-kiki-stage="mori"]').locator('[data-kiki-stop="tr-testinn"]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-current]')).toHaveCount(1);
   await snap(page, 'path');
@@ -83,10 +84,16 @@ test('しまの みち: a unit’s stop, its page, であい played solo moves i
   await sheet(page).locator('[data-kiki-chip="all"]').click();
   await expect(stop).toBeVisible();
 
-  // its page: the can-do, the three core lessons, であい the next
+  // its page: the can-do's one line (the sentence folded under くわしく), the three core lessons, であい the next
   await stop.locator('[data-kiki-stop-open]').click();
   const unit = sheet(page).locator('[data-kiki-unit-page="tr-testinn"]');
   await expect(unit).toBeVisible();
+  await expect(unit.locator('[data-kiki-short]')).toHaveText(UNIT.cando.short);
+  await expect(unit.locator('[data-kiki-short]')).toBeVisible();
+  await expect(unit.locator('[data-kiki-cando]')).toBeHidden();
+  await snap(page, 'unit-short');
+  await unit.getByText('くわしく', { exact: true }).click();
+  await expect(unit.locator('[data-kiki-cando]')).toBeVisible();
   await expect(unit.locator('[data-kiki-cando]')).toContainText('わかる');
   await expect(unit.locator('[data-kiki-unit-lesson]')).toHaveCount(3);
   await expect(unit.locator('.lesson.next')).toHaveAttribute('data-kiki-unit-lesson', 'deai');
@@ -96,6 +103,7 @@ test('しまの みち: a unit’s stop, its page, であい played solo moves i
   // であい: its intro card, back (the unit page again), then played
   await unit.locator('[data-kiki-unit-lesson="deai"]').click();
   await expect(sheet(page).locator('[data-kiki-intro="deai"]')).toBeVisible();
+  await expect(sheet(page).locator('[data-kiki-intro-goal]')).toContainText(UNIT.cando.short);
   await snap(page, 'lesson-intro');
   await sheet(page).locator('[data-kiki-lesson-back]').click();
   await expect(unit).toBeVisible();

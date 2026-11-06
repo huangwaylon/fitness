@@ -36,6 +36,8 @@ const SCENE_RE = /^[a-z][a-z0-9-]{0,15}$/;
 /** The can-do's English (curriculum review P0-3): "I can follow [who] [function] [condition] and catch [information]". */
 const CANDO_EN_RE = /^I can follow .{8,}, and (catch|tell) .{4,}\.$/;
 const NAME_MAX = 12;
+/** The can-do's one line (the unit page, a stop on しまの みち, a lesson's intro card): kana with spaces, ≤ 25 characters. */
+export const SHORT_MAX = 25;
 const NOTE_MAX = 40;
 
 /** A key phrase (plan §2): its id, the words, when to use it (register), the scene, and the trap a Japanese speaker
@@ -57,6 +59,8 @@ export interface CanDo {
   does: string;
   cond: string;
   catch: string;
+  /** The one line: 「ホテルの もんだいを ききとれる」 (required past draft). */
+  short?: string;
   en: string;
 }
 
@@ -119,7 +123,8 @@ export function candoProblems(c: unknown): string[] {
   if (isStr(c.cond) && /きいて$/.test(c.cond)) bad.push('cando.cond: the template adds きいて');
   if (isStr(c.catch) && /(が|わかる)$/.test(c.catch)) bad.push('cando.catch: the template adds が わかる');
   if (!isStr(c.en) || !CANDO_EN_RE.test(c.en)) bad.push('cando.en: "I can follow [who] [doing what] [how heard], and catch [what]."');
-  for (const k of Object.keys(c)) if (!['who', 'does', 'cond', 'catch', 'en'].includes(k)) bad.push(`cando: unknown key ${k}`);
+  if (c.short !== undefined && (!isStr(c.short) || chars(c.short.trim()) > SHORT_MAX || /[\n。、]/.test(c.short))) bad.push(`cando.short: one line, ≤ ${SHORT_MAX} characters, no 。 or 、`);
+  for (const k of Object.keys(c)) if (!['who', 'does', 'cond', 'catch', 'short', 'en'].includes(k)) bad.push(`cando: unknown key ${k}`);
   return bad;
 }
 
@@ -180,6 +185,7 @@ export function manifestOf(raw: unknown, file: string): { unit: UnitManifest | n
   if (stage && !(stage.sounds as readonly unknown[]).includes(raw.sound)) at(`sound ${String(raw.sound)}: one of ${raw.stage}'s (${stage.sounds.join(', ')})`);
   for (const p of candoProblems(raw.cando)) at(p);
   if (!(STATUSES as readonly unknown[]).includes(raw.status)) at(`status: ${STATUSES.join(' | ')}`);
+  if (raw.status !== 'draft' && isObj(raw.cando) && raw.cando.short === undefined) at(`cando.short: the one line, required once ${String(raw.status)}`);
   // phrases
   if (!Array.isArray(raw.ph) || raw.ph.length < 1 || raw.ph.length > 10) at('ph: 1-10 key phrases (6-10 once written)');
   const phIds = new Set<string>();

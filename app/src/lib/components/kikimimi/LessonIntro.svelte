@@ -1,6 +1,6 @@
 <script lang="ts">
   // A lesson's intro card (docs/curriculum-units.md §3; the UX review's P1-6): the lesson's name, the unit's, its host
-  // villager and what I'll be able to do (the can-do), 6 もん · 2ぷんはん, and one green はじめる. The チェック is framed as
+  // villager and what I'll be able to do (the can-do's one line, else its sentence), 6 もん · 2ぷんはん, and one green はじめる. The チェック is framed as
   // a mission until ようじ でんわ and たちぎき are built: 「{host}から でんわ！ ようじを ききとろう」 over a phone, with its
   // rule (5 of 6 right on the first listen stamps the unit; try again any time). The 30-day recheck is 「おさらい チェック」.
   import type { Lesson, UnitPlay } from '#lib/kikimimi/lesson.ts';
@@ -26,7 +26,7 @@
     <p class="say" data-kiki-mission>{t('kiki.mission.call', { name: host })}<b>{t('kiki.mission.task')}</b></p>
     <p class="rule">🏅 {t('kiki.mission.rule')}<small>{t('kiki.mission.retry')}</small></p>
   {:else}
-    <p class="goal"><small>{t('kiki.lesson.goal')}</small>{unit.cando.ja}</p>
+    <p class="goal" data-kiki-intro-goal><small>{t('kiki.lesson.goal')}</small>{unit.cando.short ?? unit.cando.ja}</p>
   {/if}
   <p class="about">{t('kiki.lesson.about')}</p>
 </div>

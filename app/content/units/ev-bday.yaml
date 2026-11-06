@@ -16,6 +16,7 @@ cando:
   does: たんじょうびの パーティーに さそって、かんぱいする
   cond: パーティーの にぎやかな なかで
   catch: いつ・どこで、なにを もっていくか
+  short: パーティーの さそいが わかる
   en: "I can follow friends and coworkers inviting me to a birthday party and making a toast, in a lively room, and catch when and where it is, what to bring and who the surprise is for."
 status: voiced
 ph:

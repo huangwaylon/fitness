@@ -15,6 +15,7 @@ cando:
   does: でんわで やくそくの よていを かえる
   cond: まちの ざつおんの なかで
   catch: あたらしい ひ・じかん・ばしょと キャンセルか どうか
+  short: よていの へんこうが わかる
   en: "I can follow a friend changing our plans on the phone, over street noise at natural speed, and catch the new day, time and place, and whether they're really cancelling."
 status: voiced
 ph:

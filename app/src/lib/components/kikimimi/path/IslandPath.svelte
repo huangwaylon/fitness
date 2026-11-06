@@ -1,9 +1,9 @@
 <script lang="ts">
   // しまの みち (docs/kikimimi-ux.md §6.3; the UX review's sketch A): the stages as the spine, はまべ → ほし, each unit a
-  // stop on it. A stop: the host villager (the domain's tint behind, its icon on a badge), the unit's name, the lesson
-  // dots, my stamp (✓ on the face; two when both of us have it, the partner's alone as a soft one). The current unit has
-  // the green edge and 「つづける」 (its next lesson's intro card at once); a tap elsewhere opens the unit's page. One row
-  // of domain chips filters: other domains collapse to a dot so the stage keeps its shape. はまべ is the quick quiz's
+  // stop on it. A stop: the host villager (the domain's tint behind, its icon on a badge), the unit's name, the can-do's
+  // one line (else the host and the domain), the lesson dots, my stamp (✓ on the face; two when both of us have it, the
+  // partner's alone as a soft one). The current unit has the green edge and 「つづける」 (its next lesson's intro card at
+  // once); a tap elsewhere opens the unit's page. One row of domain chips filters: other domains collapse to a dot so the stage keeps its shape. はまべ is the quick quiz's
   // (its first two levels, no units); a stage with no units yet is mist; one far above my level is shown softly and is
   // still playable. A stamped unit's 30-day おさらい チェック, when due, is a small banner on top (hub card 1's, until
   // the hub). Its own chunk (`{#await import()}` in the sheet).
@@ -36,7 +36,7 @@
   const icon = (d: string) => (isDomain(d) ? DOMAINS[d].icon : '');
   const host = (s: Stop) => rosterName(s.host as RosterId);
   const label = (s: Stop) =>
-    [s.name, t(`kiki.domain.${s.domain}`), t('kiki.path.dots', { k: (s.state?.done ?? []).filter((l) => ['deai', 'bamen', 'check'].includes(l)).length }),
+    [s.name, s.short, t(`kiki.domain.${s.domain}`), t('kiki.path.dots', { k: (s.state?.done ?? []).filter((l) => ['deai', 'bamen', 'check'].includes(l)).length }),
       s.state?.double ? t('kiki.stamp.double') : s.state?.stamped ? t('kiki.path.stamped') : s.state?.partner ? t('kiki.stamp.partnerHas') : ''].filter(Boolean).join('、');
 </script>
 
@@ -97,7 +97,8 @@
                 </span>
                 <span class="ntxt">
                   <b>{s.name}</b>
-                  <small>{host(s)} · {t(`kiki.domain.${s.domain}`)}</small>
+                  {#if s.short}<small data-kiki-stop-short>{s.short}</small>
+                  {:else}<small>{host(s)} · {t(`kiki.domain.${s.domain}`)}</small>{/if}
                   <LessonDots lessons={s.lessons} done={s.state?.done ?? []} next={s.current ? s.next : null} />
                 </span>
                 {#if !s.current}<span class="chev" aria-hidden="true">›</span>{/if}

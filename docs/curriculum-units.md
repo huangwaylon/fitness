@@ -158,6 +158,7 @@ cando:                      # 「{who}が {does}のを {cond} きいて、{catch
   does: へやの もんだいへの たいおうを せつめいする
   cond: ロビーの ざつおんの なかで
   catch: できる ことと ついかの りょうきん
+  short: ホテルの もんだいを ききとれる   # the one line: kana with spaces, ≤ 25 characters, no 。、; required past draft
   en: "I can follow hotel staff explaining what they can do about a room problem, over lobby noise, and catch the options and any extra charge."
 status: draft               # draft | voiced | listened
 ph:                         # 1-10 key phrases (6-10 once written), ids unique across units
@@ -179,8 +180,8 @@ tiers:                      # optional, per item: an easier and a harder choice 
 Every lesson id that isn't under `review` is homed in the unit. The unit's own items always are.
 
 **The compiler** is `npm run kikimimi:levels`, with no second loader.
-- **Unit chunk:** each unit becomes `levels/parts/u-<id>.json`. It holds the unit (its can-do as one sentence; its phrases with the items they're heard in; its lessons, tiers and homes), its lessons' items as authored, and their clips and timings.
-- **Index:** gains `units[<id>]` (parts, count, cv) and one `paths` line per unit: `[id, name, stage, domain, host, status, lesson bitmask]`.
+- **Unit chunk:** each unit becomes `levels/parts/u-<id>.json`. It holds the unit (its can-do as one sentence, `cando.ja`, and its one line, `cando.short`; its phrases with the items they're heard in; its lessons, tiers and homes), its lessons' items as authored, and their clips and timings.
+- **Index:** gains `units[<id>]` (parts, count, cv) and one `paths` line per unit: `[id, name, stage, domain, host, status, lesson bitmask, short?]` (the can-do's one line last, when the unit has one).
 - **Problems:** an error stops it; warnings are printed.
 
 **The checks:**
@@ -190,6 +191,7 @@ Every lesson id that isn't under `review` is homed in the unit. The unit's own i
 - every reference exists (a rung must be named by its ladder);
 - each item within one step of the stage (levelRank);
 - the can-do template, including its English: "I can follow …, and catch/tell …";
+- the can-do's one line, `short`: ≤ 25 characters, one line, no 。 or 、 (optional in a draft, required once voiced). The unit page, a path stop's subtitle and a lesson's intro card show it; the full sentence stays under 「くわしく」 on the unit page;
 - the recipe: a known `v`, the 3 core lessons, ≥ 6 ids each, であい with a dialogue, チェック held out with ≥ 2 voices, おと mostly words;
 - the tiers on lesson items only;
 - every clip, for a unit past draft;

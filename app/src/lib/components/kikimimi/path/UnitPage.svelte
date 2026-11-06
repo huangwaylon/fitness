@@ -1,6 +1,6 @@
 <script lang="ts">
   // A unit's page (docs/kikimimi-ux.md §6.3b; the UX review's sketch B), pushed from a stop on しまの みち: its scene with
-  // the host villager, the domain, the can-do in plain Japanese, the stamps (mine and the partner's, the double), the 3
+  // the host villager, the domain, the can-do's one line (the template's sentence folded under 「くわしく」), the stamps (mine and the partner's, the double), the 3
   // core lessons as big cards (6もん・2ぷん; ✓ once played to the end; the next one carries the only green あそぶ; the
   // チェック its 5-of-6 rule), the extras (☆ おと, ☆ じっせん) never blocking anything, the key phrases (caught or not:
   // a tap opens the ずかん on this unit's) and 「とばして チェック」 at the foot. A lesson opens its intro card. Its own
@@ -58,7 +58,12 @@
 
     <div class="goal card">
       <small>{t('kiki.lesson.goal')}</small>
-      <p data-kiki-cando>「{u.cando.ja}」</p>
+      {#if u.cando.short}
+        <p class="short" data-kiki-short>{u.cando.short}</p>
+        <details class="more"><summary>{t('kiki.more')}</summary><p data-kiki-cando lang="ja">「{u.cando.ja}」</p></details>
+      {:else}
+        <p data-kiki-cando>「{u.cando.ja}」</p>
+      {/if}
     </div>
 
     <div class="stamps card" data-kiki-stamps data-stamped={us?.stamped ? '1' : undefined} data-double={us?.double ? '1' : undefined}>
@@ -150,6 +155,9 @@
   .goal { display: grid; gap: 4px; padding: 12px 16px; }
   .goal small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .goal p { margin: 0; font: 700 var(--fs-body)/1.55 var(--font-ui); }
+  .goal .short { font: 700 var(--fs-title)/1.3 var(--font-ui); }
+  .more summary { cursor: pointer; width: fit-content; font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
+  .more p { font-weight: 600; font-size: var(--fs-s); color: var(--text-soft); }
   .stamps { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
   .slot { display: grid; justify-items: center; gap: 2px; min-width: 48px; }
   .slot i { font-style: normal; font-size: 26px; line-height: 1.1; color: var(--ctl-off); }

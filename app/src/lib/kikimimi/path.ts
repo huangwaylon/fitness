@@ -40,6 +40,8 @@ export interface PathUnit {
   host: string;
   status: string;
   lessons: readonly Lesson[];
+  /** The can-do's one line (the stop's subtitle when there is one). */
+  short?: string;
 }
 
 /** A path line's lessons (its bitmask, in LESSONS' order). */
