@@ -87,6 +87,14 @@ const LISTEN_DEMO: readonly [number, number, string, number, boolean, DemoAnswer
   [1, 21, 'dm0e5', 1, false, [['w1-right', 0, 1, 1], ['p1-squid', 1, 0, 0], ['n1-reps-1', 1, 0, 0], ['w1-fly', 0, 1, 0], ['w1-hat', 1, 0, 0], ['n1-meet-1', 1, 0, 0], ['p1-coffee', 1, 0, 0], ['w1-collect', 1, 0, 1]]]
 ];
 
+/** The trip notes' made-up values (the guide's `{p:key}` tokens; the real ones are on the relay, never in the repo),
+ *  written this many days back. */
+const DEMO_NOTE: Record<string, string> = {
+  flightRef: 'DEMO01', carRef: 'DEMO-CAR-02', expediaRef: '0000000000', ticket: 'DEMO-TICKET', traveller1: 'WEI DEMO', traveller2: 'UME DEMO',
+  onboardingUrl: 'https://example.com/onboarding'
+};
+const DEMO_NOTE_DAYS = 20;
+
 /** The demo's rows as of `now` (only rows the server would have stamped by then). */
 function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   const today = localDateAt(now);
@@ -227,6 +235,15 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
     ev(at(d, h, 5), 'A', 'listen', { d, g, lv, n: both ? 2 : 1, ms: 250_000, r });
     if (both) ev(at(d, h, 6), 'B', 'listen', { d, g, lv, n: 2, ms: 250_000, r: r.map(([id]) => [id, 1, 0, 0]) });
   }
+
+  // りょこう (docs/travel.md "Packing list (relay)"): Okinawa's list as two phones left it yesterday: うめ's ticks, an
+  // item she added and one of A's, and each trip's note with made-up values (the real ones live on the relay alone)
+  const tp = at(addDays(today, -1), 21, 10);
+  ev(tp, 'B', 'pack', { trip: 'okinawa', id: '_demob001', at: tp, kind: 'item', cat: 'ok-0', ord: 4, name: { ja: '日焼け止め', en: 'Sunscreen' }, by: 'B' });
+  for (const [i, id] of ['ok-0-0', 'ok-0-1', '_demob001'].entries()) ev(tp + 60_000 * (i + 1), 'B', 'pack_chk', { trip: 'okinawa', id, at: tp + 60_000 * (i + 1), v: 1 });
+  ev(tp + 300_000, 'A', 'pack_chk', { trip: 'okinawa', id: 'ok-0-0', at: tp + 300_000, v: 1 });
+  for (const [i, trip] of ['okinawa', 'seattle', 'nz'].entries())
+    ev(at(addDays(today, -DEMO_NOTE_DAYS), 20, i), 'A', 'trip_note', { trip, at: at(addDays(today, -DEMO_NOTE_DAYS), 20, i), v: DEMO_NOTE });
 
   const byAt = <T extends readonly unknown[]>(rows: T[]) => rows.sort((x, y) => String(x[0]).localeCompare(String(y[0])));
   return { metrics: byAt(metrics), events: byAt(events) };
