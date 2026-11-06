@@ -28,7 +28,7 @@ const WORLD: RegExp[] = [
   // the rooms' signs and HUD
   /^museum\.(title|room)$/, /^shop\.(title|sign|out|wallet|counter|twins)$/, /^tent\.(title|room|back|whose|failed|lights|resetView|edit|homeLook)$/,
   // official names
-  /\.name\./, /^fossil\.set\./, /^decor\.item\./, /^travel\.airline$/
+  /\.name\./, /^fossil\.set\./, /^decor\.item\./, /^travel\.air$/ /* the boarding pass's airline */
 ];
 const isWorld = (k: string): boolean => WORLD.some((r) => r.test(k));
 
