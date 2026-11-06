@@ -1,109 +1,123 @@
-# ききみみ: life-domain units (proposal, 2026-11-06)
+# ききみみ: units (plan v2, 2026-11-06)
 
-**Sources:**
-- the content audit: docs/reviews/2026-11-06-content-coverage-audit.md;
-- the language-app research: docs/reviews/2026-11-06-language-apps-research.md (live sources);
-- docs/curriculum.md;
-- docs/kikimimi-ux.md (しまの みち).
+v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Japanese learner panel, the UX designer, and the engineering lead (/tmp/units-review/*.md). v2 resolves their reviews and adds the user's two decisions:
+- "Keep lessons fun, engaging and short, targeted at a short attention span, someone who doesn't like homework."
+- "Unit passes can be shared."
 
-**The user's focus:** conversational English for everyday use, around life and friends, travel, work, shopping, events and places.
+## 1. The spine: stages, with units as stops
 
-## Where we are
+- **The stage stays the spine** of しまの みち, as in the UX already approved.
 
-**Structure.** Content is organised by stage (はまべ → かわ → もり → やま → ほし, plus アナウンス) and by question type. Situations are only tags (scenario seeds). A game draws a mixed deck from a stage. There are no units, no phrase goals and no "you can now…" milestones.
-
-**Volume.** About 880 items: 750 in play (1,022 clips) and 100 YAML drafts.
-
-**Strengths.**
-- Domains: work (153), travel (107), news and academic at the top.
-- Functions: information, plans, requests and apologies.
-- Sounds: idioms, contractions, numbers, weak forms.
-- Speakers: 102 villagers, well spread.
-
-**Gaps that matter for everyday conversation.**
-- **Events and celebrations: 10 items.** Parties, weddings, festivals, sports, concerts.
-- **Places around town at the B1+–B2 core:** restaurants, cafés, the park, the museum, the gym, hotels, clinics. Today's place content is mostly island-themed at S0.
-- **The glue of conversation:** introducing (1), ending a conversation (3), inviting (6), asking for clarification (6), complimenting (9).
-- **Friends:** no phone calls between friends, few weekend stories, few opinions about films, music or hobbies.
-- **Repetition:** refunds (12), Osaka (11), bill splits (10), oat milk / the misheard name / the key code (4 each).
-- **Scenes:** only 8 backdrops, and none for a shop, restaurant, hotel, clinic, park or party.
-
-## What the apps do
-
-- **Duolingo:** one path of sections → units → levels, with a Guidebook of key phrases per unit. Grammar is implicit. Its score is mapped to CEFR: B1 60–99, B2 100–129.
-  - Conversation comes mostly from Stories, Roleplay, Video Call and Adventures, not the main path.
-  - Review runs on two systems: half-life regression for spacing, Birdbrain for difficulty.
-  - Critics point to isolated sentences and to rewarding the streak over the skill.
-- **Babbel:** about 6-minute situational dialogue lessons, spaced review of phrases, CEFR can-do tasks.
-- **Speak:** learn → practise → apply.
-- **Busuu:** community feedback.
-- **Pimsleur:** graduated recall.
-- **The shared pattern:** situation → model dialogue → pull out the phrases → controlled practice → a freer task → spaced review of the phrases.
-- **The British Council–EAQUALS Core Inventory** gives the B1/B2 functions, discourse markers and topics. These become our can-dos.
-
-## The proposal: path → life domain → unit → 5 lessons
-
-**Levels.** Four core bands, mapped to Duolingo's B1/B2 score bands so progress means something:
-
-| Band | Score | Stage |
+| Stage | Level | Role |
 |---|---|---|
-| B1 | 60–79 | かわ |
-| B1+ | 80–99 | もり |
-| B2- | 100–114 | やま |
-| B2 | 115–129 | ほし |
+| はまべ | A2–B1 | warm-up and placement floor |
+| かわ | B1+ | |
+| もり | B2 | |
+| やま | B2+ | |
+| ほし | C1 | news and long-form |
 
-はまべ stays as a warm-up and placement floor. アナウンス and the news become tracks that run alongside, not levels.
+- **No Duolingo score mapping:** the learners don't have a Duolingo score.
+- **A domain is a tag, not a place on the map.** Each unit shows a small icon and tint, and the path has a row of filter chips. The nine domains:
+  - ともだち (friends, partner and family)
+  - いえ (home, daily life, tech trouble)
+  - たべもの
+  - かいもの (shopping and services)
+  - たび (travel, plus showing a friend around Tokyo)
+  - しごと
+  - イベント
+  - まち (places, hobbies, going out)
+  - からだ (health and emergencies)
+- **Coverage rule, checked by the compiler:** each stage covers at least 7 of the 9 domains, and no domain is more than 25% of a stage.
+- **Glue anchor units** open each stage and are reused across domains: introducing, inviting, asking for clarification, ending a conversation.
 
-**Nine life domains** (the しまの みち path shows them as areas of the island):
-1. ともだち・ひと (friends and people: plans, invitations, small talk, catching up, feelings, opinions)
-2. いえ・まいにち (home and daily life: chores, neighbours, deliveries, repairs)
-3. たべる・のむ (food and drink: restaurants, cafés, bars, cooking, konbini)
-4. かいもの・サービス (shopping and services: shops, returns, the bank, phone support, the ward office)
-5. たび・のりもの (travel and transport: airport, trains, hotels, directions, taxis)
-6. しごと (work: meetings, small talk, feedback, requests, interviews)
-7. イベント (events: birthdays, weddings, festivals, sports, concerts, holidays)
-8. まちの ばしょ (places in town: park, museum, gym, salon, clinic, library, cinema)
-9. からだ・もしも (health and emergencies: doctor, pharmacy, lost items, accidents)
+## 2. A unit
 
-**A unit is one situation with one can-do.** For example, 「ともだちと よていを たてる・かえる」 (making and changing plans with friends):
-- a host villager and a scene backdrop;
-- **8–10 key phrases**, collected into the phrase ずかん (Duolingo's Guidebook equivalent), with B1/B2 tags from the English Vocabulary Profile;
-- **a function from the Core Inventory**, plus one sound feature (e.g. "gonna / wanna", "can / can't");
-- **5 lessons of about 4–6 minutes,** built from our existing game types:
-  1. **であい:** a model dialogue for gist (gist / next).
-  2. **フレーズ:** catch the chunks in connected speech (word, ことば タイル).
-  3. **ばめん:** variations of the dialogue, with different voices, replies and implied meaning (reply / mean).
-  4. **はやい:** the same situation faster, over noise, in another accent (the speed ladder, conditions).
-  5. **チェック:** a mission. A phone errand or an overheard conversation that uses the unit's phrases (ようじ でんわ / たちぎき). Pass at 80% on the first listen to earn the unit's stamp.
-- **Review:** the unit's phrases go into spaced repetition, and later units deliberately reuse earlier phrases in new contexts. "Caught" means heard in 3 contexts.
+- **One situation, one can-do.** The can-do follows a listening template from the CEFR Companion Volume scales: 「[だれ]が [なにを する]のを [どんな じょうけんで] きいて、[じょうほう／いと]が わかる」. For example: "I can follow a friend changing our plans on the phone, over street noise, and catch the new time and place."
+- **6–10 key phrases** with ids (`ph`). They go into the phrase ずかん with register, scene, and the trap a Japanese speaker falls into.
+  - **Caught** means right on the first listen in 3 different clips on 2 or more days.
+  - The daily review is capped at 8.
+- **A host villager, a scene backdrop, and one main sound feature** taken from that stage's list in curriculum §3.
+- **Unit names are can-do verbs:** 「よていを かえる」, 「ききかえす」, 「おいわいする」. The word 「レッスン」 is never used.
 
-**Size.** About 25 items, 4 dialogues and 1 call per unit.
-- **First wave:** 9 domains × 4 units at B1+/B2- = 36 units, about 900 items. Existing items are re-tagged into units first, since most map. The new content then targets the gaps.
-- **Long term:** about 6 units per domain per band, roughly 200 units.
+## 3. Lessons: short, fun, game-first
 
-**Repetition rules.**
-- A situation may appear in at most one unit per band.
-- Each scenario seed has a budget.
-- The near-duplicate test runs across all banks (built).
-- The anti-repetition deck (built).
+- **A lesson is one game:** 6 questions, about 2½ minutes, using the existing round types.
+- **The core is 3 lessons:**
+  1. **であい:** a model dialogue for the gist.
+  2. **ばめん:** variations: other voices, replies, implied meaning.
+  3. **チェック:** a mission. Pass with 5 of 6 right on the first listen. You can retry, and it never locks.
+- **2 optional extras that never block the stamp:**
+  - **おと:** catch the chunks in connected speech (word / ことば タイル).
+  - **じっせん:** faster, over noise, other accents (はしご / conditions / アナウンス).
+- **Notes and transcripts** fold under 「くわしく」 on the reveal screen.
+- **Until ようじ でんわ / たちぎき are built,** チェック is a mixed check on held-out items behind a "phone errand" intro card. Lesson recipes carry a version number.
+- **Skipping:** 「とばして チェック」 lets you go straight to the check. Each stamped unit returns once, after about 30 days, as a 6-question recheck.
+- **Ends with 「きょうの ひとこと」:** one line for the couple to say to each other.
 
-**Visuals.** About 10 new backdrops (shop, restaurant, izakaya, hotel lobby, clinic, park, party room, gym, museum hall, konbini). Use the same Z-Image recipe as the existing 8, about 25 s each.
+## 4. Playing together, and two levels
 
-## First units to write (the gaps first)
+- **Write once, play at both levels.** A unit is written once at its stage. Both phones hear the same audio, and each player gets answer choices at their own tier: the B1+ partner an easier set, the stronger player an extra challenge item.
+- **Lobby:** a new 「しまの みち」 entry where the host picks a unit and a lesson. Co-op is the default.
+- **Shared passes (the user's decision):**
+  - a co-op チェック at ≥ 5/6 as a pair stamps both players;
+  - each person's stamps are visible to the partner;
+  - a "double stamp" shows when both have passed;
+  - this needs a `stamped` flag in the partner summary;
+  - answers stay private.
 
-| Domain | Units |
-|---|---|
-| イベント | a birthday party; a friend's wedding; a summer festival / matsuri; watching a match at a sports bar |
-| まちの ばしょ | the park on a Sunday; the gym's front desk; a hair salon; at the museum |
-| ともだち・ひと | introducing a friend; catching up on the weekend (past stories); recommending a film or show; ending a call or chat politely |
-| たべる・のむ | ordering with dietary needs; an izakaya with friends; a café mix-up |
-| たび・のりもの | checking in at a hotel with a problem; asking for directions; a missed connection |
-| しごと | small talk with coworkers; asking for clarification in a meeting; giving and getting feedback |
-| かいもの・サービス | a gift for someone; asking for a size or colour; phone support with a hold queue |
+## 5. Quick modes stay
 
-## Build order
+- ひとこと クイズ, はしご and アナウンス keep drawing from the whole stage. Quick play counts toward ずかん phrases and the daily menu, but never moves a unit's lesson dots.
+- **Hub card 2** shows the next lesson only once a unit has been started. Otherwise it stays 「きょうの クイズ」, so quick fun stays the default.
 
-1. **Unit schema** in the increment 9 YAML compiler (`unit`, domain, can-do, phrases, function, sound feature, lessons). Re-tag the existing items into units.
-2. **しまの みち UI** (UX U7): domains as island areas, units as stops. Unit detail shows its phrases.
-3. **Content waves of about 6 units at a time,** the gaps first. Each wave goes through English and Japanese review, then batch TTS, then the listening check.
-4. **The phrase ずかん** wired to the units' phrases (UX U5).
+## 6. Rewards (no かいがら)
+
+- A villager letter with a furniture gift per stamped unit.
+- Friendship points.
+- Can-do stamps in ずかん.
+- The stage landmark, when the stage is cleared unit by unit.
+
+## 7. Size and the existing content
+
+- **48 units:** かわ 10, もり 14, やま 14, ほし 10.
+- **Re-tagging what we have:**
+  - About 22 units at もり and やま come from existing situational items. Refunds, meetings and partner plans are split across stages.
+  - Each re-tagged unit needs `ph` phrase ids and 10–15 new items, because phrase overlap inside a situation is near zero.
+  - About 26 new units, かわ first, since the partner has almost nothing there today.
+- **Stays outside units:**
+  - the 144 island lines (はまべ);
+  - the アナウンス and ほし news, lectures and talks, which remain modes and tracks;
+  - the number templates, which stay in the mixed pool.
+
+## 8. Engineering
+
+- **Manifests:** each unit is a YAML file, `content/units/<id>.yaml`, with an id of ≤ 12 characters like `ev-bday`. It points at existing item ids and defines only its new items.
+  - Each item has at most one home unit.
+  - Ids never encode a unit, and the ids already shipped are frozen.
+  - The 750 TS items keep their `lv`. Level quizzes and their decks stay byte-identical: a test checks seeds 0–99 per level.
+- **The listen row** gains `l` (lesson 1–5) next to `u`, and the partner summary gains `stamped`. The relay deploys first.
+- **Stamps** are computed from listen rows, never stored.
+- **Loading:** the units index extends the per-level chunk split (it lands first; no second loader). Per-unit content chunks are ≤ 20 KB gzipped, and the path index ≤ 12 KB gzipped at 200 units.
+- **Order:**
+  1. The chunk split lands.
+  2. **U1:** the schema, the compiler checks (coverage, phrase ids, can-do template, the level-deck invariance test), and a migration script that drafts manifests from the audit data. Its dry run re-tags もり and lists each unit's items, phrases and top-up count.
+  3. Solo lessons, then stamps.
+  4. The しまの みち UI: the path, the unit page, the results strip. This is a UX doc §6–7 update plus a WebKit prototype pass.
+  5. Co-op lessons, after framework 8c.
+  6. The TS → YAML move with 9b, and per-unit packs with 9c.
+- **Effort:** about 6 agent-days of code plus about 2 of UI. Content waves start after U1.
+
+## 9. The pilot before scaling
+
+**Wave 1:** 6 units, each a full unit with its core and extras.
+
+| # | Unit | Stage | Domain |
+|---|---|---|---|
+| 1 | ききかえす (clarify) | かわ | glue |
+| 2 | よていを かえる (change plans with a friend) | かわ | ともだち |
+| 3 | おいわいする (a birthday party) | かわ | イベント |
+| 4 | ともだちを あんない (show a friend around Tokyo) | もり | たび/まち |
+| 5 | ホテルで こまった (a hotel problem) | もり | たび |
+| 6 | しごとの ざつだん (small talk with coworkers) | もり | しごと |
+
+Both partners play wave 1 for a week. We tune from the listen rows and the user's feedback, then write the rest in waves of about 6.
