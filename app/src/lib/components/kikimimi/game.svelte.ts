@@ -145,8 +145,10 @@ export class QuizGame {
 
   // ---------- taps ----------
 
-  /** Open a lobby (I host it), on this phone only until `invite`. */
-  open(lv: Level, same = false, vs = false, ladder = false, timer?: QuizTimer): void {
+  /** Open a lobby (I host it), on this phone only until `invite`: おなじへや, たいせん, スピード はしご off and the
+   *  session's default こたえる じかん unless `o` says. */
+  open(lv: Level, o: { same?: boolean; vs?: boolean; ladder?: boolean; timer?: QuizTimer } = {}): void {
+    const { same = false, vs = false, ladder = false, timer } = o;
     this.#then(() => [ladder ? 'ladder' : lv], () => {
       this.practicing = false;
       this.lesson = null;
