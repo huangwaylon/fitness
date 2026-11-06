@@ -6,7 +6,7 @@
 // tabs of one browser (sync/live-local.ts plays the room).
 import { expect, test, type Page } from './fixtures.ts';
 import { islandURL } from './island.ts';
-import { is3d, reelOnBite, sawIt, tapOn, toTheWater, watchFor } from './island';
+import { castIn, is3d, reelOnBite, sawIt, tapOn, toTheWater, watchFor } from './island';
 import { overHead, type Mark } from './biteMark.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -27,10 +27,12 @@ async function open(page: Page, as = '') {
   expect(await is3d(page)).toBe(true);
   await expect.poll(() => h(page, (w) => w.__fish?.fish().some((f) => f.water === 'sea') ?? false), { timeout: 15_000 }).toBe(true);
 }
-/** A casts at its shadow from the beach by it (NH casts from where it stands): where its float went (world). */
+/** A casts at its shadow from the beach by it (NH casts from where it stands): where its float went (world). A's tab
+ *  in front first (the tab opened last is; a hidden tab's island takes no taps: the cast never came, fish-sync:121 red
+ *  on main 2026-11-06), the tap checked clear and retried (castIn). */
 async function cast(a: Page): Promise<Line> {
-  const [x, y] = await toTheWater(a, 'sea');
-  await a.mouse.click(x, y);
+  await a.bringToFront();
+  await castIn(a, 'sea');
   await expect.poll(() => h(a, (w) => w.__fish.casting())).toBe(true);
   return (await h(a, (w) => w.__fish.line()))!;
 }
@@ -100,7 +102,8 @@ async function intoMuseum(page: Page) {
   await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
   // (my villager a few steps off the door: in at once, the line still out)
   await page.evaluate(`window.__world.put(${door[0] + 70}, ${door[1] - 40})`);
-  await page.waitForTimeout(300);
+  await expect.poll(() => page.evaluate(`(([x, z]) => Math.hypot(x - ${door[0] + 70}, z - ${door[1] - 40}))(window.__world.mine())`)).toBeLessThan(1);
+  await expect.poll(() => page.evaluate('window.__world3d.camStill()')).toBe(true);
   await tapOn(page, page.locator('[data-building="museum"] .door'));
   await expect(page).toHaveURL(/\/museum\/?\?/, { timeout: 20_000 });
 }
