@@ -129,7 +129,7 @@
 
 <Sheet bind:open label={t('wed.title')} variant="quiet" onclose={closed}>
   <div class="wd">
-    <SheetHeader {title} onback={level === 'settings' ? back : null} onclose={() => (open = false)} sfx="self" {trailing} />
+    <SheetHeader {title} onback={level === 'settings' ? back : null} onclose={() => (open = false)} {trailing} />
     <div class="wd-body" class:writing class:plan={tab === 'plan' && level === 'home'} bind:this={body} data-wedding data-level={level} data-tab={tab} data-guest={!canEdit || undefined}>
       {#if level === 'settings' && canEdit}
         <Settings />

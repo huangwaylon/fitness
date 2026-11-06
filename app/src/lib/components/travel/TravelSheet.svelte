@@ -88,7 +88,7 @@
     {#key sel}
       <div class="lvl">
         {#if !sel}
-          <div class="top"><SheetHeader title={t('travel.title')} onclose={close} sfx="self" /></div>
+          <div class="top"><SheetHeader title={t('travel.title')} onclose={close} /></div>
           <TripList trips={TRIP_META} {now} onopen={show} />
         {:else if trip?.classic}
           <ClassicGuide {trip} onback={back} />
@@ -96,7 +96,7 @@
           <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}
           <div class="top">
-            <SheetHeader title={pick(meta?.title, i18n.locale)} sub={meta ? shortSpan(meta.start, meta.end, i18n.locale) : undefined} onback={back} onclose={close} sfx="self" />
+            <SheetHeader title={pick(meta?.title, i18n.locale)} sub={meta ? shortSpan(meta.start, meta.end, i18n.locale) : undefined} onback={back} onclose={close} />
           </div>
           <div class="scroll" data-trip-view={sel}>
             {#if failed === sel}

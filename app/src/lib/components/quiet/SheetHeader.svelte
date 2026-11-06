@@ -2,8 +2,9 @@
   // A quiet sheet's title bar (docs/design.md "Quiet sheets"; the one navigation model, ui/NavBar's rules): 44px, the
   // title on the left (17/600 Zen Maru Gothic) with an optional quiet subtitle after it, a bare ✕ on the right (it
   // closes the whole sheet, from any level), ‹ before the title when there is a level to go back to. Built on
-  // NavButton (its quiet look), so back and close stay the app's one button. `over`: laid over a photo (a trip's hero):
-  // no ground, no title, the two buttons on smoked discs. `trailing`: a control before ✕ (編集, 保存).
+  // NavButton (its quiet look; the handlers play their own cues), so back and close stay the app's one button. `over`:
+  // laid over a photo (a trip's hero): no ground, no title, the two buttons on smoked discs. `trailing`: a control
+  // before ✕ (編集, 保存).
   //   <SheetHeader title="りょこう" onclose={…} />   <SheetHeader title="沖縄" sub="10月10日 – 12日" onback={…} onclose={…} />
   import type { Snippet } from 'svelte';
   import NavButton from '../ui/NavButton.svelte';
@@ -13,19 +14,17 @@
     sub?: string;
     onback?: (() => void) | null;
     onclose?: (() => void) | null;
-    /** `self`: the handlers play their own cues. */
-    sfx?: 'back' | 'self';
     over?: boolean;
     trailing?: Snippet;
   }
-  let { title, sub, onback = null, onclose = null, sfx = 'back', over = false, trailing }: Props = $props();
+  let { title, sub, onback = null, onclose = null, over = false, trailing }: Props = $props();
 </script>
 
 <header class="q-hdr" class:over class:backed={!!onback}>
-  {#if onback}<span class="lead"><NavButton kind="back" onclick={onback} {sfx} look={over ? 'photo' : 'quiet'} /></span>{/if}
+  {#if onback}<span class="lead"><NavButton kind="back" onclick={onback} sfx="self" look={over ? 'photo' : 'quiet'} /></span>{/if}
   <h2 class="t" class:sr-only={over}>{title}{#if sub}<span class="sub">{sub}</span>{/if}</h2>
   {#if trailing}{@render trailing()}{/if}
-  {#if onclose}<span class="end"><NavButton kind="close" onclick={onclose} {sfx} look={over ? 'photo' : 'quiet'} /></span>{/if}
+  {#if onclose}<span class="end"><NavButton kind="close" onclick={onclose} sfx="self" look={over ? 'photo' : 'quiet'} /></span>{/if}
 </header>
 
 <style>
