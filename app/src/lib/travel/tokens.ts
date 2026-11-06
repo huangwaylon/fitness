@@ -1,7 +1,7 @@
 // The inline tokens of the trip text (types.ts L): `{km:9.8}`, `{m:444}`, `{c:29}` (a measure, shown metric or
 // imperial by the device switch) and `{p:key}` (a private value from the trip note). Everything else is text.
 
-export type Token =
+type Token =
   | { t: 'text'; s: string }
   | { t: 'km' | 'm' | 'c'; n: number }
   | { t: 'p'; key: string };

@@ -32,7 +32,7 @@ export const isWedType = (t: unknown): t is WedType => (WED_TYPES as readonly un
 export const WTASK_TITLE = 500;
 export const WTASK_CAT = 40;
 /** At most this many `wtask` rows (tasks, subtasks, the deleted and the purged): a new one past them is refused. */
-export const WTASK_MAX = 2000;
+const WTASK_MAX = 2000;
 /** The note's markdown at most (UTF-16 code units, as the old board's 50,000). */
 export const WNOTE_CHARS = 64_000;
 /** A sent note's data at most as JSON (its own cap: every other event's is the record's 20,000, MAX_EVENT_DATA_CHARS). */
@@ -67,7 +67,7 @@ export type WDone = { id: string; at: number; v: 0 | 1; imported?: true };
 export type WConf = { k: WConfKey; at: number; v: string | string[]; imported?: true };
 /** The note the record replaced with this one when this one's `base` didn't match it (never sent). */
 type WNoteWas = { at: number; md: string; who: Who };
-export type WNote = { at: number; md: string; base?: number; was?: WNoteWas; imported?: true };
+type WNote = { at: number; md: string; base?: number; was?: WNoteWas; imported?: true };
 
 /** A row of one of the four types as the record holds it, with who sent it. */
 export type WedRow =
