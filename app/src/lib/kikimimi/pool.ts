@@ -163,6 +163,10 @@ export function ladders(): readonly Ladder[] {
   return LADDERS;
 }
 
+/** A loaded listening file's part (listen.ts ListenPart: a tile's, a call's or a たちぎき's unit, its items as played: a
+ *  lane's deal reads it), undefined while it isn't loaded or this build hasn't it. */
+export const listenOf = (unit: string): ListenPart | undefined => partsOf(unit as Unit).map((p) => got.get(p)?.listen).find((l) => !!l);
+
 /** A loaded unit's chunk (a lesson's deck: lesson.ts): the unit as compiled (compile.ts unitChunk) and its lessons'
  *  items and ladders, as authored; undefined while it isn't loaded or this build hasn't it. */
 export function unitPart(id: string): Required<UnitChunk> | undefined {

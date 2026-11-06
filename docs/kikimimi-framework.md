@@ -373,6 +373,28 @@ The listening kinds (`tile`, `call`, `tachi`; content/listen/*.yaml, not story/)
 - **Checks** (beyond the README's): US voices only; the US-only lint (`notUs`, over `en`, lines and plan choices, never `tts`; `accent-exposure` exempt), an error on content/listen and on the units' items and a warning on the bank (none today); ids apart from every bank, unit and rung clip. **Japanese help** (bank.ts helpProblems) is checked wherever it appears, and required past draft at these places: a tile's `ctx` and `why`; a call's `ctx`, each memo round's `why` and each slot's `cja` (one per option); each たちぎき round's `ctx` and `why` (the plan round's `cja`, one per choice, optional).
 - **Not yet:** `rush` and `news`, which their lanes add to listen.ts as kinds (W2-4, W2-5).
 
+### The registry as built (W2-C2, 2026-11-07)
+
+Every game goes through `kikimimi/round/registry.ts` as a **lane**. The quiz, ladder, lesson, taikai and check lanes (`games/<gm>/lane.ts`) ride the sheet's chunk. A later game is one `LATER` line, `tile: { lane: () => import('../games/tile/lane.ts') }`, and is its own chunk. A lane implements:
+
+| Field | |
+|---|---|
+| `id`, `def(phone)` | its GameDef over the phone's deck cache (`phone.items(d)`, `phone.cv(gm, unit)`) |
+| `chunks(d)`, `deal(d)` | the pool.ts chunks a deck needs, then its items from them (pure; a listening file's part is pool.ts `listenOf(unit)`) |
+| `byIds?` | its deck is the open's `ids` (the cache keys on them) |
+| `seed?`, `solo?` | the host's seed (recent.ts), a solo game's own deck |
+| `myTier?` | my `join.tr` for a game I join |
+| `ahead?` | chunks to preload while it runs |
+| `opts?` | a lobby's options from the mode page's level and timer (default `[lv, timer]`; they always lead with those two) |
+| `title?` | the title bar's key while it runs, or in another's lobby |
+
+- **Its pages:** `components/kikimimi/<gm>/views.ts` exports `views: { lobby?, play?, results? }`, each loaded with `import()`. The sheet finds them by folder name (an eager glob) and mounts the one for the current phase with `{ game, onagain, onmissed, ondone, onhub }`. Without one it shows the quiz's Lobby, Play or Results.
+- **Strings:** `i18n/kiki-<gm>.{ja,en}.json` (keys `kiki.<gm>.*`) plus a `kiki-<gm>.ts` that calls `addCatalog`, imported by its lane.ts. usage.test, fonts.test and linebreaks.test pick the files up by glob.
+- **Loading:** game.svelte.ts loads a later game's lane before the session takes its `open` (ChunkQueue waits on it), then its deck's chunks.
+- **Catalog:** each mode has a shelf, an icon, `places` and `game` (catalog.ts). A lane's mode shows once its `LATER` line exists and a file of its game is `listened` (`LANES.ready`), or once its line's `content()` says so. The five wave-2 modes are pre-registered; their names and about lines are in the main ききみみ catalog. A mic mode brings its own `mode` on its line (`addMode`): the shelf `koe` (声に出す, last, hidden while empty), `gate()` (shown only while true on this phone) and `requires: 'mic'`. きまぐれ never picks a mic mode.
+- **Budget** (kikimimi-budget.ts): a later lane.ts chunk and every view in `components/kikimimi/<gm>/` are ≤ 15 KB gz each, and at least one view of a game folder must be lazy. frame/Sandwich is ≤ 15 KB once it exists. A listening part is ≤ 32 KB.
+- **Not here:** a game's `BUILD_V` (games/versions.ts, one line a game) comes with its deal. After adding it, re-run `npm run kikimimi:levels` and teach cv.test's `decksOf` the new deal.
+
 ## 10. Risks
 
 1. **Subtle regressions in the extraction** (lateness, co-op `had`, beacon timing were each hard-won). Mitigation: the parity test before deleting `QuizSession`, porting session.test case for case, no behaviour change in 8b.

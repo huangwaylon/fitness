@@ -20,7 +20,8 @@
   import type { Who } from '#lib/types.ts';
   import Host from '../../characters/Host.svelte';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
-  import { MODE_IDS, placeOfLv, playable, shelves, PLACES } from '#lib/kikimimi/catalog.ts';
+  import { placeOfLv, shelves, whims, PLACES } from '#lib/kikimimi/catalog.ts';
+  import { LANES } from '#lib/kikimimi/round/registry.ts';
   import { stageAt } from '#lib/kikimimi/stages.ts';
   import { isLadderGame } from '#lib/kikimimi/progress.ts';
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
@@ -75,7 +76,7 @@
   const path = $derived(currentPath());
   const stops = $derived(path.stages.flatMap((s) => s.stops));
   const cur = $derived(stops.find((s) => s.current) ?? null);
-  const ctx = $derived({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length, story: STORY_OK });
+  const ctx = $derived({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length, story: STORY_OK, games: (gm: string) => LANES.ready(gm) });
   /** After 21:00 きまぐれ is おやすみ ものがたり (today.ts isNight); by day the morning card may ask about last night's. */
   const night = isNight(hour) && STORY_OK;
   /** Tonight's story: the serial to go on with and its chapter (bedtime.ts pickSerial, nextOf). */
@@ -89,9 +90,9 @@
       ? pickMenu({
           day: report.today, due: report.due, recheck: rechecksDue(currentUnits(), report.today)[0] ?? null,
           next: cur ? { unit: cur.id, lesson: cur.next } : null, lv,
-          whims: MODE_IDS.filter((m) => m !== 'review' && m !== 'story' && m !== 'taikai' && playable(m, ctx)), night,
+          whims: whims(ctx), night,
           sessions: [
-            ...report.games.filter((g) => g.d === report.today && finished(g.r.length)).map((g) => ({ at: g.at, p: g.p, u: g.u, ladder: isLadderGame(g), lv: g.lv })),
+            ...report.games.filter((g) => g.d === report.today && finished(g.r.length)).map((g) => ({ at: g.at, p: g.p, u: g.u, ladder: isLadderGame(g), lv: g.lv, gm: g.gm })),
             ...report.stories.filter((s) => s.d === report.today && finishedStory(s.ms)).map((s) => ({ at: s.at, p: false, ladder: false, lv: 4, story: true }))
           ].sort((a, b) => a.at - b.at)
         })

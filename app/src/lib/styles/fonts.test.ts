@@ -21,8 +21,13 @@ import enNames from '#lib/i18n/catch.en.json';
 import jaCatalog from '#lib/i18n/catalog.ja.json';
 import enCatalog from '#lib/i18n/catalog.en.json';
 
-const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaKiki, ...jaTravel, ...jaWed };
-const en = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enKiki, ...enTravel, ...enWed };
+/** Each ききみみ game's own strings (i18n/kiki-<game>.*.json: `kiki.<game>.*`, merged in with its lane by addCatalog). */
+const KIKI_GAMES = {
+  ja: import.meta.glob<Record<string, string>>('../i18n/kiki-*.ja.json', { eager: true, import: 'default' }),
+  en: import.meta.glob<Record<string, string>>('../i18n/kiki-*.en.json', { eager: true, import: 'default' })
+};
+const ja = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.ja)) as Record<string, string>), ...jaTravel, ...jaWed };
+const en = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.en)) as Record<string, string>), ...enTravel, ...enWed };
 import { PKG, covers, parseRanges, wanted } from '../../../scripts/font-subsets.ts';
 
 const css = readFileSync(join(import.meta.dirname, 'fonts.css'), 'utf8');

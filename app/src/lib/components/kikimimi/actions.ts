@@ -6,6 +6,7 @@
 import type { QuizGame } from './game.svelte.ts';
 import type { Item, Level } from '#lib/kikimimi/bank.ts';
 import { LEVELS } from '#lib/kikimimi/deck.ts';
+import { modeOf } from '#lib/kikimimi/catalog.ts';
 import { tierFor, type Lesson } from '#lib/kikimimi/lesson.ts';
 import { practiceFor } from '#lib/kikimimi/report.ts';
 import type { Focus } from '#lib/kikimimi/srs.ts';
@@ -164,6 +165,7 @@ export class KikiActions {
     else if (a.k === 'lesson') this.startLesson(a.unit, a.lesson);
     else if (a.k === 'quiz') this.quiz(a.lv as Level);
     else if (a.k === 'story') this.#ui.story?.();
+    else if (modeOf(a.m).game) this.#ui.setPages(modeStack(a.m)); // (a lane's game: its page, its places)
     else {
       if (a.m === 'ladder') g.configure({ ladder: true });
       else g.configure({ ladder: false, lv: 5 });

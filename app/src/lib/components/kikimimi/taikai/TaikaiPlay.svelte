@@ -90,7 +90,7 @@
   {/if}
 {/snippet}
 
-<Play {game} {show} {gate} />
+<Play {game} {show} {gate} hold={wager && game.bet === null} />
 
 <style>
   /* しずえ's show bar: her head, the round, the team's count (or my chips) */

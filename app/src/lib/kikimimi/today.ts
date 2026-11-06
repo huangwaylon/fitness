@@ -6,7 +6,7 @@
 // first undone card, so free play is never "off menu". Same inputs, same menu, on every phone of mine. Pure.
 import type { LocalDate } from '../types.ts';
 import type { Lesson } from './stages.ts';
-import type { ModeId } from './catalog.ts';
+import { modeOf, type ModeId } from './catalog.ts';
 import { dayNum } from './progress.ts';
 
 export type Act =
@@ -25,13 +25,14 @@ export interface Card {
   done: boolean;
 }
 
-/** A finished session of today's, as the menu matches it: practice (おさらい), a unit's lesson, a ladder, its level; or
- *  a bedtime story. */
+/** A finished session of today's, as the menu matches it: practice (おさらい), a unit's lesson, a ladder, its level, a
+ *  lane's game (its `gm`); or a bedtime story. */
 export interface Session {
   p: boolean;
   u?: string;
   ladder: boolean;
   lv: number;
+  gm?: string;
   story?: boolean;
 }
 
@@ -85,7 +86,7 @@ const matches = (a: Act | null, s: Session): boolean => {
     case 'recheck':
     case 'lesson': return s.u === a.unit;
     case 'quiz': return !s.p && s.u === undefined && !s.ladder && s.lv !== 5;
-    case 'mode': return a.m === 'ladder' ? s.ladder : !s.p && s.lv === 5 && !s.ladder;
+    case 'mode': return a.m === 'ladder' ? s.ladder : a.m === 'announce' ? !s.p && s.lv === 5 && !s.ladder : s.gm !== undefined && s.gm === modeOf(a.m).game;
   }
 };
 
@@ -94,7 +95,7 @@ export function pickMenu(o: MenuIn): Menu {
   const review: Act | null = o.recheck ? { k: 'recheck', unit: o.recheck } : o.due > 0 ? { k: 'review', n: Math.min(CAP, o.due) } : null;
   const step: Act = o.next ? { k: 'lesson', ...o.next } : { k: 'quiz', lv: o.lv };
   const w = whimOf(dayNum(o.day), o.whims, step.k === 'lesson' ? 'lesson' : 'quiz');
-  const whim: Act | null = o.night ? { k: 'story' } : w === 'ladder' || w === 'announce' ? { k: 'mode', m: w } : w === 'quiz' ? { k: 'quiz', lv: o.lv } : null;
+  const whim: Act | null = o.night ? { k: 'story' } : w === 'quiz' ? { k: 'quiz', lv: o.lv } : w && w !== 'review' ? { k: 'mode', m: w } : null;
   const cards: Card[] = [
     { slot: 'review', act: review, done: !review },
     { slot: 'step', act: step, done: false },

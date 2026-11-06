@@ -1,5 +1,5 @@
 // What waits for a chunk (pool.ts) in a ききみみ game (game.svelte.ts): what's heard and my own taps run in order, each
-// once the chunks the deck it touches needs are loaded.
+// once the chunks the deck it touches needs are loaded (and a later game's lane before them: round/registry.ts).
 import { load, loaded, type Unit } from '#lib/kikimimi/pool.ts';
 
 export class ChunkQueue {
@@ -18,12 +18,15 @@ export class ChunkQueue {
    * `f` once the chunks `need()` names are loaded, after whatever waits already: at once when nothing does (the usual
    * case: the lobby's level is in before the sheet opens), else in order once loaded, then `later`. `need` is asked at
    * its turn (a configure after another's level). A chunk that won't load drops `f` (offline with the chunk never
-   * fetched: the host's re-sent `open` tries again).
+   * fetched: the host's re-sent `open` tries again). `need` may say to wait for something first (a game's lane), and is
+   * asked again after it.
    */
-  then(need: () => readonly Unit[], f: () => void): void {
+  then(need: () => readonly Unit[] | Promise<unknown>, f: () => void): void {
     const step = (later: boolean): Promise<void> | void => {
       if (this.#gone()) return;
-      const missing = need().filter((u) => !loaded(u));
+      const n = need();
+      if (n instanceof Promise) return n.then(() => step(true));
+      const missing = n.filter((u) => !loaded(u));
       if (missing.length) return load(...missing).then(() => step(true));
       f();
       if (later) this.#later();
