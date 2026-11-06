@@ -1,9 +1,10 @@
 // ききみみ クイズ's decks on this phone (game.svelte.ts): the items of each game heard of, by seed and level (the
 // session's deck and the UI's are the same items; a スピード はしご seed's are its ladders' rungs), and にがて れんしゅう's,
-// which stands in for its lobby's own deck.
+// which stands in for its lobby's own deck. A deck is built only once its level's chunk is in (game.svelte.ts).
 import { deck } from '#lib/kikimimi/deck.ts';
 import { ladderDeck } from '#lib/kikimimi/ladder.ts';
 import { isLadder } from '#lib/kikimimi/session.ts';
+import { ladders } from '#lib/kikimimi/pool.ts';
 import type { Item, Level } from '#lib/kikimimi/bank.ts';
 
 /** The last decks built, the latest read last. Other phones' lobbies build theirs here as their `open`s come (each a
@@ -22,7 +23,7 @@ export function itemsOf(seed: number, lv: Level): Item[] {
   const key = keyOf(seed, lv);
   if (practice?.key === key) return practice.items;
   if (pinned?.key === key) return pinned.items;
-  const d = decks.get(key) ?? (isLadder(seed) ? ladderDeck(seed) : deck(seed, lv));
+  const d = decks.get(key) ?? (isLadder(seed) ? ladderDeck(seed, ladders()) : deck(seed, lv));
   decks.delete(key);
   decks.set(key, d);
   while (decks.size > KEEP) decks.delete(decks.keys().next().value!);

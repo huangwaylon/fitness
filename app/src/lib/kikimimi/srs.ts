@@ -1,11 +1,13 @@
 // ききみみ クイズ's spaced repetition and にがて れんしゅう (docs/kikimimi.md "Adaptivity", curriculum §10): Leitner cards
 // for the items I missed (or got only after a replay) and for every feature I answered, folded from my answers in
 // order (never stored), and a solo deck of my weak spots. The shared deck (deck.ts) stays deterministic for every
-// multiplayer game; this is solo only. Pure.
+// multiplayer game; this is solo only. Pure over the index (pool.ts ENTRIES): only the picks' levels are loaded to deal
+// them (report.ts practiceFor).
 import { mulberry32, shuffle } from '#lib/random.ts';
 import type { LocalDate } from '../types.ts';
-import type { Accent, Feature, Item, Level } from './bank.ts';
-import { BANK, levelRank } from './bank.ts';
+import type { Accent, Entry, Feature, Item, Level } from './bank.ts';
+import { levelRank } from './bank.ts';
+import { ENTRIES, entryOf, itemOf } from './pool.ts';
 import { agesOf, staleness, type Recent } from './recent.ts';
 import { DECK_SIZE, inMix } from './deck.ts';
 import { dayNum, type Answer, type Stats } from './progress.ts';
@@ -40,7 +42,7 @@ export interface Cards {
 
 /** The cards my answers (in order) leave: an item card from its first miss or replay on, a feature card for every
  *  feature answered. */
-export function cardsOf(answers: readonly Answer[], items: ReadonlyMap<string, Item> = BY_ID): Cards {
+export function cardsOf(answers: readonly Answer[], items: { get(id: string): Entry | undefined } = { get: entryOf }): Cards {
   const out: Cards = { items: new Map(), features: new Map() };
   for (const a of answers) {
     const it = items.get(a.id);
@@ -52,7 +54,6 @@ export function cardsOf(answers: readonly Answer[], items: ReadonlyMap<string, I
   }
   return out;
 }
-const BY_ID: ReadonlyMap<string, Item> = new Map(BANK.map((it) => [it.id, it]));
 
 /** The cards due on `today`. */
 export function dueOf(cards: Cards, today: LocalDate): { items: string[]; features: Feature[] } {
@@ -66,7 +67,7 @@ export function dueOf(cards: Cards, today: LocalDate): { items: string[]; featur
 /** What a practice deck is narrowed to (a recommendation's tap): one skill or one accent; none: every weak spot. */
 export type Focus = { skill: Skill } | { accent: Accent } | null;
 
-function fits(it: Item, focus: Focus): boolean {
+function fits(it: Entry, focus: Focus): boolean {
   if (!focus) return true;
   if ('accent' in focus) return it.voice === focus.accent;
   const s = skillsOf(it);
@@ -82,22 +83,23 @@ const DUE_MAX = 4;
  * than the one missed when there is one, nearest my comfortable level), then my weakest skills' items, then any; all
  * within `focus`. Among those, items not heard lately come first, then the least recently heard (`recent`, this phone's
  * last games: recent.ts; and answered in the last 2 days), then the nearest my level. Choices shuffled by `seed`, as
- * deck() does; deterministic.
+ * deck() does; deterministic. The picks are the index's (`ids`); `deal` (once) makes the deck of them from their items as
+ * authored (their levels loaded: pool.ts loadIds).
  */
-export function practiceDeck(o: { answers: readonly Answer[]; stats: Stats; today: LocalDate; seed: number; levels: readonly Level[]; focus?: Focus; recent?: Recent }): Item[] {
+export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (id: string) => Item | undefined) => Item[] } {
   const r = mulberry32(o.seed >>> 0);
   const t = dayNum(o.today);
   const focus = o.focus ?? null;
-  const pool = shuffle(BANK.filter((it) => o.levels.includes(it.lv) && inMix(it) && fits(it, focus)), r);
+  const pool = shuffle(ENTRIES.filter((it) => o.levels.includes(it.lv) && inMix(it) && fits(it, focus)), r);
   const cards = cardsOf(o.answers);
   const lastSeen = new Map<string, number>();
   for (const a of o.answers) lastSeen.set(a.id, dayNum(a.d));
   const near = o.stats.level ?? 2;
   const ages = agesOf(o.recent ?? []);
   /** Not heard lately first, then the least recently heard, then nearer my level (the pool's seeded order breaks ties). */
-  const rank = (it: Item) => staleness(it.id, ages) * 100 + (t - (lastSeen.get(it.id) ?? -1e6) < 2 ? 50 : 0) + Math.abs(levelRank(it.lv) - near);
-  const out: Item[] = [], taken = new Set<string>();
-  const take = (it: Item | undefined) => {
+  const rank = (it: Entry) => staleness(it.id, ages) * 100 + (t - (lastSeen.get(it.id) ?? -1e6) < 2 ? 50 : 0) + Math.abs(levelRank(it.lv) - near);
+  const out: Entry[] = [], taken = new Set<string>();
+  const take = (it: Entry | undefined) => {
     if (it && !taken.has(it.id) && out.length < DECK_SIZE) (out.push(it), taken.add(it.id));
   };
   // 1. due item cards
@@ -120,8 +122,18 @@ export function practiceDeck(o: { answers: readonly Answer[]; stats: Stats; toda
   const skills = [...SKILLS].sort((a, b) => o.stats.skills[a].raw - o.stats.skills[b].raw);
   for (const s of skills) for (const it of pool.filter((x) => skillsOf(x).primary === s).sort((a, b) => rank(a) - rank(b)).slice(0, 2)) take(it);
   for (const it of [...pool].sort((a, b) => rank(a) - rank(b))) take(it);
-  return shuffle(out, r).map((it) => {
-    const order = shuffle(it.choices.map((_, i) => i), r);
-    return { ...it, choices: order.map((i) => it.choices[i]), answer: order.indexOf(it.answer) };
-  });
+  return {
+    ids: out.map((it) => it.id),
+    deal: (item) => shuffle(out, r).map((e) => {
+      const it = item(e.id);
+      if (!it) throw new Error(`kikimimi: ${e.id} isn't loaded`);
+      const order = shuffle(it.choices.map((_, i) => i), r);
+      return { ...it, choices: order.map((i) => it.choices[i]), answer: order.indexOf(it.answer) };
+    })
+  };
 }
+
+type PracticeOpts = { answers: readonly Answer[]; stats: Stats; today: LocalDate; seed: number; levels: readonly Level[]; focus?: Focus; recent?: Recent };
+
+/** にがて れんしゅう's deck (practicePicks), its levels already loaded. */
+export const practiceDeck = (o: PracticeOpts): Item[] => practicePicks(o).deal(itemOf);

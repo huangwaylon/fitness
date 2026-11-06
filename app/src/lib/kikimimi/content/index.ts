@@ -1,5 +1,5 @@
 // ききみみ クイズ: the content sprint's sets (2026-11-06; docs/kikimimi.md "Levels 6 and 7"), folded into the bank
-// (bank.ts BANK): もり's two (level 4, beside bank4.ts and dialogues.ts), やま's two (level 6) and ほし (level 7). Each set
+// (source.ts BANK): もり's two (level 4, beside bank4.ts and dialogues.ts), やま's two (level 6) and ほし (level 7). Each set
 // writes its items' staging in place (`scene`, `channel`, `marks`: staging.ts's rules, its PLACES and MARKS are the
 // older banks'); here each live item heard in a noisy scene (a café, a street, a platform or an airport gate) gets
 // that scene's bed, light (+15 dB: docs/kikimimi.md "Conditions"), as staging.ts NOISE does for bank4.ts. `word` items

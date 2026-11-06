@@ -3,12 +3,17 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
-import { BANK, DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitFocus, type Item, type ItemType, type Level } from './bank.ts';
+import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitFocus, type Item, type ItemType, type Level } from './bank.ts';
+import { BANK } from './source.ts';
 import { CAST } from './bank4.ts';
-import { LEVELS, MIX, mixes } from './deck.ts';
-import { CLIPS } from './clips.ts';
+import { LEVELS, MIX } from './deck.ts';
+import { mixes } from './compile.ts';
+import type { Clip } from './clips.ts';
+import clipsJson from './clips.json';
 import { DIALOGUES } from './dialogues.ts';
-import { RUNG_ITEMS } from './ladder.ts';
+import { RUNG_ITEMS } from './ladders.ts';
+
+const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const words = (s: string) => s.toLowerCase().match(/[a-z0-9',]+/g) ?? [];

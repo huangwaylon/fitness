@@ -5,13 +5,21 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { art } from '#lib/art.ts';
-import { BANK, CHANNELS, SCENE_IDS, channelOf, isDialogue, type SoundMark } from './bank.ts';
+import { CHANNELS, SCENE_IDS, channelOf, isDialogue, type SoundMark } from './bank.ts';
+import { BANK } from './source.ts';
 import { MARKS, NOISE, PLACES } from './staging.ts';
 import { CONTENT } from './content/index.ts';
 import { findWords, markKinds, placeMark, soundLine, wordSpans } from './marks.ts';
-import { CLIPS, wordTimes } from './clips.ts';
-import { RUNG_ITEMS } from './ladder.ts';
+import { wordTimes, type Clip } from './clips.ts';
+import clipsJson from './clips.json';
+import { RUNG_ITEMS } from './ladders.ts';
 import aligned from './words.json';
+import { loadAll } from './pool.ts';
+
+const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
+
+// (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
+await loadAll();
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const SCRIPT = JSON.parse(readFileSync(join(import.meta.dirname, '../../../scripts/scenes/scenes.json'), 'utf8')) as { scenes: Record<string, string> };

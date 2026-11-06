@@ -2,7 +2,7 @@
 // dimensions きろく measures and にがて れんしゅう draws from. Level 4 carries its own `tags` (bank4.ts); levels 1-3 are
 // tagged here, keyed by item id, with the same vocabulary plus S0's segmentals (curriculum §3) and, for replies, the
 // pragmatic layer. bank.test checks every item of levels 1-3 has an entry. Pure.
-import type { Feature, Item, Tags } from './bank.ts';
+import type { Entry, Feature, Tags } from './bank.ts';
 
 type Pragmatic = Tags['pragmatic'];
 type Tag = Feature | Pragmatic;
@@ -75,7 +75,7 @@ const isFeature = (v: string): v is Feature => v in FEATURE_SKILL;
 export const featureSkill = (f: Feature): Skill => FEATURE_SKILL[f];
 
 /** An item's features and pragmatic layer (level 4's own tags; levels 1-3's from the table; none for an unknown id). */
-export function tagsOf(it: Pick<Item, 'id' | 'tags'>): { features: readonly Feature[]; pragmatic: Pragmatic } {
+export function tagsOf(it: Pick<Entry, 'id' | 'tags'>): { features: readonly Feature[]; pragmatic: Pragmatic } {
   if (it.tags) return { features: it.tags.features ?? [], pragmatic: it.tags.pragmatic };
   const row = L13[it.id] ?? [];
   return {
@@ -92,7 +92,7 @@ export const tagged = (id: string): boolean => id in L13;
  * or ほんね when its pragmatic layer is unsaid, `gist` だいじな ところ or ほんね likewise; `word` its first feature's, にた しいん with none) and the others its features give
  * (counted at half weight by the stats).
  */
-export function skillsOf(it: Pick<Item, 'id' | 'type' | 'tags'>): { primary: Skill; also: Skill[] } {
+export function skillsOf(it: Pick<Entry, 'id' | 'type' | 'tags'>): { primary: Skill; also: Skill[] } {
   const { features, pragmatic } = tagsOf(it);
   const primary: Skill =
     it.type === 'pic' ? 'detail'

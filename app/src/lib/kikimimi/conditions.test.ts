@@ -4,10 +4,14 @@
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BANK, BEDS, COND_KINDS, channelOf, clipItems, type Cond } from './bank.ts';
+import { BEDS, COND_KINDS, channelOf, clipItems, type Cond } from './bank.ts';
+import { BANK } from './source.ts';
 import { NOISE } from './staging.ts';
 import { COND_MAX_WER, SNR, codecArgs, condOf, condPlan, condSource, stepFilter, type Step } from './conditions.ts';
-import { CLIPS } from './clips.ts';
+import type { Clip } from './clips.ts';
+import clipsJson from './clips.json';
+
+const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
 
 const SCRIPTS = join(import.meta.dirname, '../../../scripts');
 const ops = (steps: readonly Step[]) => steps.map((s) => s.op);

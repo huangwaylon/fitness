@@ -10,7 +10,7 @@
 // opposite and a plausible wrong inference) and `reply` (what to say back: an IVR, an intercom, a staff member, the
 // message to leave). `ja` gives the clip's Japanese, then 「→ the answer's」 for gist, mean and reply.
 //   Speakers keep their cast voices for good (bank4.ts CAST); station and airport PA voices are the announcers'.
-//   Gated like any level: the lobby offers it once every item has a clip (deck.ts playable).
+//   Gated like any level: the lobby offers it once every item has a clip (compile.ts playable).
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Accent, Cond, Item, ItemType, Tags } from './bank.ts';
 import { CAST } from './bank4.ts';

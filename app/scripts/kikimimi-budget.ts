@@ -1,0 +1,30 @@
+// ききみみ's chunk budget (docs/kikimimi.md "Loading"), after `vite build` (npm run build runs it): the sheet's own chunk
+// ≤ 80 KB gzipped (the code, the strings and the index: no items), each level's chunk (src/lib/kikimimi/levels/parts/,
+// compile.ts) ≤ 60 KB gzipped. Over either, the build fails: split a level (compile.ts PART_AIM) or move what grew.
+//   node scripts/kikimimi-budget.ts
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { gzipSync } from 'node:zlib';
+
+const CLIENT = join(import.meta.dirname, '../.svelte-kit/output/client');
+const SHEET_MAX = 80 * 1024;
+const PART_MAX = 60 * 1024;
+
+const manifest = JSON.parse(readFileSync(join(CLIENT, '.vite/manifest.json'), 'utf8')) as Record<string, { file: string }>;
+const gz = (file: string) => gzipSync(readFileSync(join(CLIENT, file))).length;
+const kb = (n: number) => `${(n / 1024).toFixed(1)} KB`;
+
+const checks: [name: string, bytes: number, max: number][] = [];
+const sheet = manifest['src/lib/components/kikimimi/KikimimiSheet.svelte'];
+if (!sheet) throw new Error('kikimimi-budget: no KikimimiSheet chunk in the build');
+checks.push(['the sheet', gz(sheet.file), SHEET_MAX]);
+const parts = Object.entries(manifest).filter(([src]) => src.startsWith('src/lib/kikimimi/levels/parts/'));
+if (!parts.length) throw new Error('kikimimi-budget: no level chunks in the build');
+for (const [src, { file }] of parts) checks.push([src.slice('src/lib/kikimimi/levels/parts/'.length, -'.json'.length), gz(file), PART_MAX]);
+
+const over = checks.filter(([, n, max]) => n > max);
+console.log(`ききみみ chunks (gzipped): ${checks.map(([name, n]) => `${name} ${kb(n)}`).join(', ')}`);
+if (over.length) {
+  for (const [name, n, max] of over) console.error(`kikimimi-budget: ${name} is ${kb(n)}, over ${kb(max)}`);
+  process.exit(1);
+}

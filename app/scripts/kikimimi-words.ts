@@ -1,5 +1,5 @@
 // ききみみ クイズ: the karaoke's word timings (docs/kikimimi.md "Visuals"): every clip's words aligned by whisper into
-// src/lib/kikimimi/words.json, `{clip: [hash, start…, end]}` in centiseconds, one start per word of the clip's shown
+// src/lib/kikimimi/words.json (compiled into the levels' chunks: kikimimi-levels.ts, run at the end), `{clip: [hash, start…, end]}` in centiseconds, one start per word of the clip's shown
 // `en` (marks.ts wordSpans) and the clip's end. Silent: it never plays a sound. Run after `npm run audio:kikimimi`
 // (a re-spoken clip has a new hash; its old timings are ignored by clips.ts wordTimes until this runs again).
 //   node scripts/kikimimi-words.ts [--force] [--only <regex>]
@@ -19,8 +19,10 @@ import { registerHooks } from 'node:module';
 registerHooks({
   load: (url, ctx, next) => (url.endsWith('.json') ? next(url, { ...ctx, importAttributes: { type: 'json' } }) : next(url, ctx))
 });
-const { BANK, clipItems } = await import('../src/lib/kikimimi/bank.ts');
-const { RUNG_ITEMS } = await import('../src/lib/kikimimi/ladder.ts');
+const { clipItems } = await import('../src/lib/kikimimi/bank.ts');
+const { BANK } = await import('../src/lib/kikimimi/source.ts');
+const { RUNG_ITEMS } = await import('../src/lib/kikimimi/ladders.ts');
+const { writeLevels } = await import('./kikimimi-levels.ts');
 const { wordSpans } = await import('../src/lib/kikimimi/marks.ts');
 
 const APP = join(import.meta.dirname, '..');
@@ -134,3 +136,4 @@ const keep = new Set(clips.map((c) => c.id));
 const sorted = Object.fromEntries(Object.entries(words).filter(([id]) => keep.has(id) || (only && !only.test(id) && CLIPS[id])).sort(([a], [b]) => a.localeCompare(b)));
 writeFileSync(OUT, '{\n' + Object.entries(sorted).map(([id, r]) => `  ${JSON.stringify(id)}: ${JSON.stringify(r)}`).join(',\n') + '\n}\n');
 console.log(`words.json: ${Object.keys(sorted).length} clips`);
+writeLevels(true); // the levels' chunks with the new timings (docs/kikimimi.md "Loading")

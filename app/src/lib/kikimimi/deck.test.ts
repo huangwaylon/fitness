@@ -1,10 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { BANK, DIALOGUE_TYPES, clipIds, clipItems, isDialogue, type Level } from './bank.ts';
-import { DECK_SIZE, LEVELS as OFFERED, MIX, deck, inMix, mixes, playable } from './deck.ts';
+import { DIALOGUE_TYPES, clipIds, clipItems, isDialogue, type Level } from './bank.ts';
+import { BANK } from './source.ts';
+import { DECK_SIZE, LEVELS as OFFERED, MIX, deck, inMix } from './deck.ts';
+import { mixes, playable } from './compile.ts';
 import { RIGHT, firstListen, points } from './score.ts';
 import { QUIZ_MAX_S, QUIZ_QS } from '../contract/live-protocol.ts';
-import { LINE_GAP, clipDur, clipUrl, itemDur, sequenceStarts, voiced } from './clips.ts';
+import { LINE_GAP, clipDur, clipUrl, itemDur, sequenceStarts, voiced, type Clip } from './clips.ts';
+import clipsJson from './clips.json';
 import { DIALOGUES } from './dialogues.ts';
+import { loadAll } from './pool.ts';
+
+// (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
+await loadAll();
+const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
 
 /** Every level with a bank (deck() builds a gated level's deck too: only the lobby hides it). */
 const LEVELS: Level[] = [1, 2, 3, 4, 5, 6, 7];
@@ -212,7 +220,7 @@ describe('kikimimi clips', () => {
     expect(itemDur(d, clips)).toBeCloseTo(1.5 + 2.25 + 3 + 2 * LINE_GAP);
     expect(itemDur(d, { 'd4-oat-latte-1': { dur: 1 } })).toBeUndefined();
     expect(voiced(d, clips)).toBe(true);
-    expect(voiced(d)).toBe(true); // its lines' clips landed
+    expect(voiced(d, CLIPS)).toBe(true); // its lines' clips landed
     expect(itemDur(one)).toBe(clipDur('p1-squid'));
   });
 

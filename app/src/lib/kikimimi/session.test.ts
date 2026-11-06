@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { points } from './score.ts';
 import { FAST_WINDOWS, QuizSession, WINDOWS, isLadder, quizLink, timerOf, versus, wireQuiz, withLadder, type DeckOf, type QuizDeck, type QuizIn, type QuizOut } from './session.ts';
 import { ladderDeck, ladderPoints } from './ladder.ts';
+import { LADDERS } from './ladders.ts';
 import type { LiveStatus } from '../sync/live.ts';
 import type { Relayed, Who } from '../contract/live-protocol.ts';
 import { DIALOGUES } from './dialogues.ts';
@@ -418,7 +419,7 @@ describe('ききみみ session: dialogues', () => {
 describe('ききみみ session: スピード はしご', () => {
   /** The ladder deck as the game builds it (game.svelte.ts deckOf): its rungs' lengths, answers and climb points. */
   const ladderDeckOf = (seed: number): QuizDeck => {
-    const items = isLadder(seed) ? ladderDeck(seed) : [];
+    const items = isLadder(seed) ? ladderDeck(seed, LADDERS) : [];
     return isLadder(seed)
       ? { count: items.length, dur: () => DUR, answer: (i) => items[i].answer, score: (a) => ladderPoints(items, a), auto: (i) => !!items[i].rung && items[i].rung.n < 4 }
       : deck;
@@ -452,7 +453,7 @@ describe('ききみみ session: スピード はしご', () => {
     r.act('A', (x, n) => x.invite(n));
     r.act('B', (x, n) => x.join(n));
     r.act('A', (x, n) => x.go(n));
-    const items = ladderDeck(r.view('A').seed);
+    const items = ladderDeck(r.view('A').seed, LADDERS);
     expect(items).toHaveLength(8);
     // A: all right, a replay on rung 3 of ladder 2; B: a miss on rung 2 of ladder 1, then right
     const plan: Record<'A' | 'B', (i: number) => [boolean, boolean]> = {
@@ -480,7 +481,7 @@ describe('ききみみ session: スピード はしご', () => {
     r.act('A', (x, n) => x.invite(n));
     r.act('B', (x, n) => x.join(n));
     r.act('A', (x, n) => x.go(n));
-    const items = ladderDeck(r.view('A').seed);
+    const items = ladderDeck(r.view('A').seed, LADDERS);
     let t = r.now + WINDOWS.countdown;
     for (let i = 0; i < 4; i++) {
       r.now = t + WINDOWS.lead + DUR + 500;
