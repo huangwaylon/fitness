@@ -5,6 +5,7 @@
 // them (report.ts practiceFor).
 import { mulberry32, shuffle } from '#lib/random.ts';
 import type { LocalDate } from '../types.ts';
+import { firstListenRight } from '../contract/listen.ts';
 import type { Accent, Entry, Feature, Item, Level } from './bank.ts';
 import { levelRank, shuffleChoices } from './bank.ts';
 import { ENTRIES, entryOf, itemOf } from './pool.ts';
@@ -158,7 +159,7 @@ export function phrasesOf(phrases: readonly PhraseIn[], answers: readonly Answer
   for (const ph of phrases) {
     const ids = new Set(ph.in);
     const mine = answers.filter((a) => ids.has(a.id));
-    const first = mine.filter((a) => a.ok && a.rp === 0);
+    const first = mine.filter(firstListenRight);
     const clips = new Set(first.map((a) => a.id)).size, days = new Set(first.map((a) => a.d)).size;
     out.set(ph.id, { heard: mine.length > 0, clips, days, caught: clips >= CAUGHT_CLIPS && days >= CAUGHT_DAYS });
   }
@@ -187,7 +188,7 @@ export function phraseReview(phrases: readonly PhraseIn[], answers: readonly Ans
       if (!ids.has(a.id)) continue;
       card = step(card, gradeOf(a), dayNum(a.d));
       last.set(a.id, dayNum(a.d));
-      if (a.ok && a.rp === 0) right.add(a.id);
+      if (firstListenRight(a)) right.add(a.id);
     }
     if (!card) continue;
     if (card.last === t) {

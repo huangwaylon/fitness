@@ -2,7 +2,7 @@
 // mastery per sub-skill and feature, accuracy per type, accent and level, the comfortable level (an Elo-style
 // ability), the first-listen trend, the days played this week and the couple summary. Folded from the record's
 // `listen` rows (contract/listen.ts: mine whole, the partner's as summaries) on the phone, never stored. Pure.
-import { listenOf, listenSummaryOf, stampsUnit, type ListenRow } from '../contract/listen.ts';
+import { LISTEN_MAX_Q, LISTEN_MAX_RP, firstListenRight, listenOf, listenSummaryOf, stampsUnit, type ListenRow } from '../contract/listen.ts';
 import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { levelRank, type Accent, type Entry, type Feature, type Item, type ItemType } from './bank.ts';
@@ -75,7 +75,7 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
       const r = x.r.filter(([id]) => lesson || !!entryOf(id) || isRungId(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
       if (!r.length) continue;
       const unit = lesson ? { u: x.u!, l: x.l!, ...(x.tm !== undefined && { tm: x.tm }) } : null;
-      const tally = unit ? { first: x.r.filter(([, ok, , rp]) => ok === 1 && rp === 0).length, of: x.r.length, stamped: stampsUnit(x) } : null;
+      const tally = unit ? { first: x.r.filter(firstListenRight).length, of: x.r.length, stamped: stampsUnit(x) } : null;
       const was = mine.get(x.g);
       if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r, ...unit, ...(tally && { unit: tally }) });
       else {
@@ -84,7 +84,7 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
         const all = [...early, ...late.filter((y) => !have.has(y.id))];
         // a lesson joined again: its tally over the answers once each (a stamp from either row)
         const merged = was.unit && tally
-          ? { first: all.filter((y) => y.ok && y.rp === 0).length, of: all.length, stamped: was.unit.stamped || tally.stamped || stampsUnit({ ...unit!, r: all.map((y) => [y.id, y.ok ? 1 : 0, y.pick, y.rp] as const) as ListenRow['r'] }) }
+          ? { first: all.filter(firstListenRight).length, of: all.length, stamped: was.unit.stamped || tally.stamped || stampsUnit({ ...unit!, r: all.map((y) => [y.id, y.ok ? 1 : 0, y.pick, y.rp] as const) as ListenRow['r'] }) }
           : (was.unit ?? tally ?? undefined);
         mine.set(x.g, { ...was, ...(sooner && { d: x.d, at }), n: Math.max(was.n, x.n), ms: was.ms + x.ms, p: was.p || p, r: all, ...(merged && { unit: merged }) });
       }
@@ -109,9 +109,9 @@ export function listenAnswers(
   const r: ListenRow['r'] = [];
   items.forEach((it, i) => {
     const a = answers[i];
-    if (!had[i] || r.length >= 12 || (!a && !done)) return;
+    if (!had[i] || r.length >= LISTEN_MAX_Q || (!a && !done)) return;
     const pick = a ? (loadedItem(it.id)?.choices.indexOf(it.choices[a.k]) ?? -1) : -1;
-    r.push([it.id, a && a.k === it.answer ? 1 : 0, pick, Math.min(99, rp[i] ?? 0)]);
+    r.push([it.id, a && a.k === it.answer ? 1 : 0, pick, Math.min(LISTEN_MAX_RP, rp[i] ?? 0)]);
   });
   return r;
 }
@@ -210,7 +210,7 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
       const x = (map as Map<unknown, ReturnType<typeof acc>>).get(key) ?? acc();
       x.n++;
       if (a.ok) x._r++;
-      if (a.ok && a.rp === 0) x._f++;
+      if (firstListenRight(a)) x._f++;
       (map as Map<unknown, ReturnType<typeof acc>>).set(key, x);
     }
     const b = difficulty(it);
@@ -245,7 +245,7 @@ export const isLadderGame = (g: Pick<Game, 'r'>): boolean => g.r.some((a) => isR
 
 /** First-listen accuracy per quiz game, the last `n` games (oldest first). */
 export function trendOf(games: readonly Game[], n = 12): number[] {
-  return games.filter((g) => g.r.length && !isLadderGame(g)).slice(-n).map((g) => g.r.filter((a) => a.ok && a.rp === 0).length / g.r.length);
+  return games.filter((g) => g.r.length && !isLadderGame(g)).slice(-n).map((g) => g.r.filter(firstListenRight).length / g.r.length);
 }
 
 /** The ladders a speed reading takes (the last this many climbed) and the fewest it's read from. */
