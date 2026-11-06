@@ -98,7 +98,7 @@ v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Jap
   - The 750 TS items keep their `lv`. Level quizzes and their decks stay byte-identical: a test checks seeds 0–99 per level.
 - **The listen row** gains `l` (lesson 1–5) next to `u`, and the partner summary gains `stamped`. The relay deploys first.
 - **Stamps** are computed from listen rows, never stored.
-- **Loading:** the units index extends the per-level chunk split (it lands first; no second loader). Per-unit content chunks are ≤ 20 KB gzipped, and the path index ≤ 12 KB gzipped at 200 units.
+- **Loading:** the units index extends the per-level chunk split (it lands first; no second loader). Per-unit content chunks are ≤ 32 KB gzipped, and the path index ≤ 12 KB gzipped at 200 units.
 - **Order:**
   1. The chunk split lands.
   2. **U1:** the schema, the compiler checks (coverage, phrase ids, can-do template, the level-deck invariance test), and a migration script that drafts manifests from the audit data. Its dry run re-tags もり and lists each unit's items, phrases and top-up count.
@@ -201,7 +201,7 @@ Every lesson id that isn't under `review` is homed in the unit. The unit's own i
 - recycling: ≥ 20 % of a unit's items carry a lower stage's or the stage's anchors' phrase (a warning until 7 units are past draft);
 - coverage per stage: ≥ 7 of 9 domains and none over 25 % (a warning until the stage has its planned units).
 
-**Budgets** (units.test, at 200 synthetic units): the path index ≤ 12 KB gzipped; each unit's chunk ≤ 20 KB (the compiler fails over it).
+**Budgets** (units.test, at 200 synthetic units): the path index ≤ 12 KB gzipped; each unit's chunk ≤ 32 KB (20 till the Japanese help, 2026-11-07; the compiler fails over it).
 
 **Level-deck invariance:**
 - The levels' chunks are byte-identical with and without units.

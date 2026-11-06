@@ -26,7 +26,7 @@ export interface UnitPlay {
   lessons: { v: number } & Partial<Record<Lesson, string[]>>;
   /** The lesson items whose home is this unit. */
   home: string[];
-  tiers?: Record<string, Partial<Record<Tier, { choices: string[]; answer: number }>>>;
+  tiers?: Record<string, Partial<Record<Tier, { choices: string[]; answer: number; cja?: string[] }>>>;
   /** Its key phrases, each with the items it's heard in (the bank's and the units'). */
   ph: { id: string; en: string; ja?: string; register: string; scene: string; trap: string; in: string[] }[];
 }

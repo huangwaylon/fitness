@@ -100,6 +100,13 @@ export interface Item {
   tts?: string;
   /** Level 4: why the sound or the logic fools you, in Japanese (≤ 40 字), shown at the reveal. */
   note?: string;
+  /** The choices in Japanese, aligned to `choices` as authored (shuffleChoices keeps them aligned): under each choice at
+   *  the reveal and in the review list. No English in them (helpProblems). */
+  cja?: readonly string[];
+  /** かいせつ: why the answer is right and the trap wrong, in Japanese (≤ 90 字), under the verdict and in the review. */
+  why?: string;
+  /** The situation, in Japanese (≤ 30 字, one line), under the speaker before the clip plays: 「カフェで、店員が 話しかけてきました」. */
+  ctx?: string;
   /** Level 4: the cast voice (its accent is `voice`, its gender the speaker's). */
   cast?: CastId;
   /** Level 4: the scenario it was made from. */
@@ -194,9 +201,34 @@ export function clipItems(it: Item): Item[] {
 
 /** A copy of an item with its choices in a seeded order: `choices` the shuffled order, `answer` the right one's index
  *  in it (`set`: another choice set for the same audio, a lesson tier's). Every deck deals its items through this. */
-export function shuffleChoices(it: Item, r: () => number, set: Pick<Item, 'choices' | 'answer'> = it): Item {
+export function shuffleChoices(it: Item, r: () => number, set: Pick<Item, 'choices' | 'answer' | 'cja'> = it): Item {
   const order = shuffle(set.choices.map((_, i) => i), r);
-  return { ...it, choices: order.map((i) => set.choices[i]), answer: order.indexOf(set.answer) };
+  const { cja: _, ...rest } = it, cja = set.cja;
+  return { ...rest, choices: order.map((i) => set.choices[i]), answer: order.indexOf(set.answer), ...(cja && { cja: order.map((i) => cja[i]) }) };
+}
+
+/** The Japanese help's limits (`why`, `ctx`). */
+const WHY_MAX = 90;
+const CTX_MAX = 30;
+const JA = /[\u3040-\u30ff\u4e00-\u9fff]/;
+
+/** Problems with an item's (or a tier's choice set's) Japanese help, `cja`, `why` and `ctx` (empty: fine): `cja` one
+ *  per choice, Japanese, no English letters; `why` ≤ 90 字; `ctx` one line ≤ 30 字. bank.test checks the banks, units.ts
+ *  the units' items and tiers. */
+export function helpProblems(it: { choices?: unknown; cja?: unknown; why?: unknown; ctx?: unknown }): string[] {
+  const bad: string[] = [];
+  const str = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0;
+  const n = Array.isArray(it.choices) ? it.choices.length : -1;
+  if (it.cja !== undefined) {
+    if (!Array.isArray(it.cja) || !it.cja.every(str)) bad.push('cja: a Japanese string per choice');
+    else {
+      if (it.cja.length !== n) bad.push(`cja: ${it.cja.length} for ${n} choices`);
+      for (const c of it.cja) if (/[A-Za-z]/.test(c)) bad.push(`cja: English in 「${c}」`);
+    }
+  }
+  if (it.why !== undefined && (!str(it.why) || !JA.test(it.why) || [...it.why].length > WHY_MAX)) bad.push(`why: Japanese, ≤ ${WHY_MAX} 字`);
+  if (it.ctx !== undefined && (!str(it.ctx) || !JA.test(it.ctx) || [...it.ctx].length > CTX_MAX || /\n/.test(it.ctx))) bad.push(`ctx: Japanese, one line, ≤ ${CTX_MAX} 字`);
+  return bad;
 }
 
 /** Japanese names of the `pic` art (the choices' VoiceOver labels and the review list: the English isn't given away). */
