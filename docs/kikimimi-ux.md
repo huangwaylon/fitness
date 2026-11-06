@@ -7,6 +7,9 @@ This is the lead product designer's synthesis of the UI/UX round on the English-
 
 A clickable static prototype of every screen below was built alongside this doc (plain HTML, the app's tokens, fonts and art, screenshots at 393×852 in WebKit). It isn't in the repo. The wireframes here are the reference.
 
+**Built so far:**
+- **U0 (2026-11-06):** the naming of §3 in the strings (i18n/kikimimi.*.json, ja.json): the pill 「ききみみ」 with its small 「えいご」 (「さそわれています！」 while an invite waits), the sheet 「ききみみ」, the banner 「{name}が ききみみに さそっています」 and the idle card 「{name}が さそっています」; the quiz 「ひとこと クイズ」; levels 1–4 as はまべ 1 / はまべ 2 / かわ / もり under 「ばしょ」; 「おとを 1だいに まとめる」 with its 「おなじ へやで ハモらない ように」; 「きょうりょく ／ しょうぶ」 as a Segmented (`data-kiki-vs` coop | vs); はじめる / さそう; 「ここで やめる？」 + 「ここまでの きろくは のこります」; 「けっか」; the tallies 「7 / 8 もん せいかい」, 「じぶんは 7 / 8」, 「ふたりで 7 / 8」; the notices without ホスト; the skill and chip labels (ship と sheep, b・v・th, こまかい じょうほう, へんじ, I'd / I'll, はぶかれる ことば); いっぱつ for 1かいで; しずえ's lines in です／ます (the cheers, results, feedback). The bank's translations (kanji-kana at ★1) wait for a content pass.
+
 ---
 
 ## 1. Decisions and the conflicts they settle

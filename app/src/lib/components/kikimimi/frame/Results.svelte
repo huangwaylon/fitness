@@ -37,7 +37,7 @@
   const teamKey = $derived(v.players.length >= 3 ? 'kiki.team.3' : 'kiki.team.2');
   const said = $derived.by(() => {
     if (line) return line;
-    if (ranking.length <= 1) return t('kiki.hostSolo', { score: ranking[0]?.score ?? 0 });
+    if (ranking.length <= 1) return t('kiki.hostSolo');
     if (coop) return t(v.team.right >= v.n ? 'kiki.hostTeam.all' : v.team.right * 4 >= v.n * 3 ? 'kiki.hostTeam.good' : 'kiki.hostTeam.try');
     const first = ranking.filter((r) => r.rank === 1);
     return first.length > 1 || !week.view ? t('kiki.hostTie') : t('kiki.hostTop', { name: villagerNameOf(week.view, first[0].who) });
