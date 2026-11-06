@@ -120,43 +120,45 @@ export const FOOD_TAB_ART: Record<'log' | 'chart', string> = {
 };
 
 /** ごはん's category tiles (components/food/FoodThumb.svelte; docs/design.md "Gohan"): each `Item.cat` (and レシピ: a
- *  マイレシピ) → its tint and its icon, a catalogue item where one fits, else one of FoodThumb's drawn ones (`draw`).
- *  The tints by family, mid-saturation: grains rice cream, vegetables leaf, the sea blue, meat coral-brown, fruit peach,
- *  dairy and eggs butter, beans and nuts soy tan, seaweed dark green, mushrooms brown, drinks lilac, sweets pink,
- *  seasonings sand, the rest grey-cream (night: FoodThumb darkens them). `box`: the icon's visible part in its file
- *  (x, y, w, h), what the tile fits (a catalogue icon sits small in its 96 px square). */
-export type FoodDraw = 'bowl' | 'egg' | 'beans' | 'nut' | 'imo';
+ *  マイレシピ) → its tint, its glyph (a plain line symbol drawn by FoodThumb, never a particular food: a leaf for 野菜,
+ *  not a pumpkin) and its word in small type. The tints by family, mid-saturation: grains rice cream, vegetables leaf,
+ *  the sea blue, meat coral-brown, fruit peach, dairy and eggs butter, beans and nuts soy tan, seaweed dark green,
+ *  mushrooms brown, drinks lilac, sweets pink, seasonings sand, the rest grey-cream (night: FoodThumb darkens them). */
+export type FoodGlyph =
+  | 'bowl' | 'noodles' | 'don' | 'sushi' | 'bread' | 'plate' | 'meat' | 'fish' | 'egg' | 'milk' | 'pod' | 'seed' | 'tuber'
+  | 'leaf' | 'side' | 'fruit' | 'mushroom' | 'seaweed' | 'candy' | 'cup' | 'glass' | 'soup' | 'bottle' | 'drop' | 'bag'
+  | 'cutlery' | 'pot' | 'dish';
 const T = { grain: '#F3E2B3', veg: '#C4E3A9', sea: '#B8DCEC', meat: '#EDC3A8', fruit: '#F9CBB5', dairy: '#F6E59C', soy: '#E6D2A6',
   weed: '#A3CBA6', shroom: '#DCC6AC', drink: '#DACDF2', sweet: '#F6C9D7', sand: '#EADCC0', rest: '#E7E2D4' } as const;
-export const FOOD_CAT: Record<string, { tint: string; art?: string; box?: readonly [number, number, number, number]; draw?: FoodDraw }> = {
-  主食: { tint: T.grain, draw: 'bowl' },
-  麺: { tint: T.grain, art: 'finds/items/hearty-ramen', box: [15, 19, 66, 47] },
-  '丼・定食': { tint: T.grain, art: 'finds/items/japanese-style-meal', box: [5, 36, 86, 33] },
-  寿司: { tint: T.grain, art: 'finds/items/tuna-sushi-costume', box: [21, 6, 54, 83] },
-  パン: { tint: T.grain, art: 'finds/items/pop-up-toaster', box: [12, 4, 72, 88] },
-  主菜: { tint: T.meat, art: 'finds/items/luncheon-plate-meal', box: [6, 29, 84, 41] },
-  肉: { tint: T.meat, art: 'finds/items/barbecue', box: [28, 15, 40, 71] },
-  副菜: { tint: T.veg, art: 'finds/items/veggie-plate-meal', box: [6, 29, 84, 41] },
-  野菜: { tint: T.veg, art: 'deco/pumpkin', box: [2, 2, 92, 89] },
-  魚介: { tint: T.sea, art: 'critters/horse-mackerel', box: [9, 25, 78, 46] },
-  卵: { tint: T.dairy, draw: 'egg' },
-  乳製品: { tint: T.dairy, art: 'finds/items/milk-can', box: [27, 10, 42, 77] },
-  '大豆・豆': { tint: T.soy, draw: 'beans' },
-  'ナッツ・種': { tint: T.soy, draw: 'nut' },
-  いも: { tint: T.soy, draw: 'imo' },
-  果物: { tint: T.fruit, art: 'fruit/apple', box: [22, 15, 84, 97] },
-  きのこ: { tint: T.shroom, art: 'finds/round-mushroom', box: [2, 2, 76, 52] },
-  海藻: { tint: T.weed, art: 'critters/seaweed', box: [12, 12, 72, 71] },
-  '菓子・デザート': { tint: T.sweet, art: 'items/candy', box: [10, 21, 75, 54] },
-  飲料: { tint: T.drink, art: 'finds/items/bottled-beverage', box: [33, 10, 30, 78] },
-  酒: { tint: T.drink, art: 'finds/items/decorative-bottles', box: [30, 9, 43, 77] },
-  汁物: { tint: T.sand, art: 'finds/items/soup-kettle', box: [24, 13, 49, 73] },
-  調味料: { tint: T.sand, art: 'finds/items/revolving-spice-rack', box: [18, 21, 60, 65] },
-  油脂: { tint: T.sand, art: 'finds/items/cream-and-sugar', box: [10, 28, 76, 47] },
-  コンビニ: { tint: T.rest, art: 'finds/items/store-shelf', box: [23, 5, 50, 85] },
-  外食: { tint: T.rest, art: 'finds/items/storefront', box: [14, 5, 68, 85] },
-  レシピ: { tint: T.meat, art: 'finds/items/stewpot', box: [18, 15, 60, 70] },
-  その他: { tint: T.rest, art: 'finds/items/dinnerware', box: [24, 14, 58, 64] }
+export const FOOD_CAT: Record<string, { tint: string; glyph: FoodGlyph; word: string }> = {
+  主食: { tint: T.grain, glyph: 'bowl', word: '主食' },
+  麺: { tint: T.grain, glyph: 'noodles', word: '麺' },
+  '丼・定食': { tint: T.grain, glyph: 'don', word: '丼' },
+  寿司: { tint: T.grain, glyph: 'sushi', word: '寿司' },
+  パン: { tint: T.grain, glyph: 'bread', word: 'パン' },
+  主菜: { tint: T.meat, glyph: 'plate', word: '主菜' },
+  肉: { tint: T.meat, glyph: 'meat', word: '肉' },
+  副菜: { tint: T.veg, glyph: 'side', word: '副菜' },
+  野菜: { tint: T.veg, glyph: 'leaf', word: '野菜' },
+  魚介: { tint: T.sea, glyph: 'fish', word: '魚介' },
+  卵: { tint: T.dairy, glyph: 'egg', word: '卵' },
+  乳製品: { tint: T.dairy, glyph: 'milk', word: '乳製品' },
+  '大豆・豆': { tint: T.soy, glyph: 'pod', word: '豆' },
+  'ナッツ・種': { tint: T.soy, glyph: 'seed', word: 'ナッツ' },
+  いも: { tint: T.soy, glyph: 'tuber', word: 'いも' },
+  果物: { tint: T.fruit, glyph: 'fruit', word: '果物' },
+  きのこ: { tint: T.shroom, glyph: 'mushroom', word: 'きのこ' },
+  海藻: { tint: T.weed, glyph: 'seaweed', word: '海藻' },
+  '菓子・デザート': { tint: T.sweet, glyph: 'candy', word: '菓子' },
+  飲料: { tint: T.drink, glyph: 'cup', word: '飲料' },
+  酒: { tint: T.drink, glyph: 'glass', word: '酒' },
+  汁物: { tint: T.sand, glyph: 'soup', word: '汁物' },
+  調味料: { tint: T.sand, glyph: 'bottle', word: '調味料' },
+  油脂: { tint: T.sand, glyph: 'drop', word: '油脂' },
+  コンビニ: { tint: T.rest, glyph: 'bag', word: 'コンビニ' },
+  外食: { tint: T.rest, glyph: 'cutlery', word: '外食' },
+  レシピ: { tint: T.meat, glyph: 'pot', word: 'レシピ' },
+  その他: { tint: T.rest, glyph: 'dish', word: 'その他' }
 };
 
 /** One of the four ring fruits → inventory icon key. */

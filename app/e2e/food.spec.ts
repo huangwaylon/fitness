@@ -751,20 +751,16 @@ test('search rows: a category tile, no raw alias or English under the name, the 
   expect(await overflowOf(page)).toEqual([]);
 });
 
-// The amount's picture (FoodThumb, 160 px across the card; its category's tile until there are pictures) above the
-// name, and no line under it without an everyday name or a 「これは…」 description.
-test('the amount: the category’s picture above the name, no line under it without a gloss or a description', async ({ page }) => {
+// The amount: no picture area while there are no pictures (the compact card: the name first), and no line under the
+// name without an everyday name or a 「これは…」 description.
+test('the amount: the compact card while there are no pictures, no line under the name without a gloss or a description', async ({ page }) => {
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
   await sheet(page).locator('[data-food-q]').fill('キャッサバでん粉');
   await sheet(page).locator('[data-food-results] button.it', { hasText: 'キャッサバでん粉' }).first().click({ timeout: 15_000 });
   const head = sheet(page).locator('.card.head');
-  await sheet(page).evaluate((d) => Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished))); // the level's slide-in
-  const [pic, name, card] = await Promise.all([head.locator('[data-thumb]').boundingBox(), head.locator('h3').boundingBox(), head.boundingBox()]);
-  expect(Math.round(pic!.height)).toBe(160);
-  expect(pic!.width).toBeGreaterThan(card!.width - 40); // the card's width
-  expect(pic!.y + pic!.height).toBeLessThan(name!.y);
-  await expect(head.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'cat');
+  await expect(head.locator('h3')).toHaveText('キャッサバでん粉');
+  await expect(head.locator('[data-thumb]')).toHaveCount(0);
   await expect(head.locator('[data-food-about]')).toHaveCount(0);
   expect(await overflowOf(page)).toEqual([]);
 });
