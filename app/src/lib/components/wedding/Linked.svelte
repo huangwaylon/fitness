@@ -9,5 +9,5 @@
 {#each runs as r, i (i)}{#if r.href}<a href={r.href} target="_blank" rel="noopener noreferrer" data-sfx="open">{r.text}</a>{:else}{r.text}{/if}{/each}
 
 <style>
-  a { color: var(--leaf-text); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+  a { color: var(--q-accent-ink); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
 </style>

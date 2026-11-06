@@ -32,18 +32,19 @@
 </div>
 
 <style>
-  .doc { display: grid; gap: 0; font: 500 var(--fs-body)/var(--doc-lh, 32px) var(--font-ui); color: var(--c-ink); overflow-wrap: anywhere; }
-  h4, h5 { margin: 0; font: 700 var(--fs-talk)/var(--doc-lh, 32px) var(--font-ui); color: #B44E77; }
-  h5 { font-size: var(--fs-body); color: var(--c-ink); }
-  p, ul, ol { margin: 0 0 var(--doc-lh, 32px); }
+  /* a document: 16/1.65 in the system font, headings 17/600 with room over them, quiet dots for bullets */
+  .doc { display: grid; gap: 0; font: var(--q-w) 16px/1.65 var(--q-font); color: var(--q-ink); overflow-wrap: anywhere; }
+  h4, h5 { margin: 20px 0 4px; font: var(--q-w-b) var(--q-fs-head)/1.4 var(--q-font); color: var(--q-ink); }
+  h5 { font-size: 16px; }
+  h4:first-child, h5:first-child { margin-top: 0; }
+  p, ul, ol { margin: 0 0 4px; }
   p:last-child, ul:last-child, ol:last-child { margin-bottom: 0; }
-  ul, ol { padding-left: 1.4em; }
+  ul, ol { padding-left: 16px; }
   ul { list-style: none; }
   ul li { position: relative; }
-  /* a pink petal dot for a bullet (a flower glyph would pull another font slice in) */
-  ul li::before { content: ''; position: absolute; left: -1.05em; top: calc(var(--doc-lh, 32px) / 2 - 4px); width: 8px; height: 8px; border-radius: 50% 50% 50% 0; background: #E583A6; transform: rotate(-45deg); }
-  ol li::marker { font-family: var(--font-num); font-weight: 700; color: #B44E77; }
-  strong { font-weight: 700; }
-  em { font-style: normal; background: linear-gradient(transparent 60%, color-mix(in srgb, var(--c-yuzu) 70%, transparent) 60%); }
-  a { color: var(--c-leaf-text); text-decoration: underline; text-underline-offset: 3px; }
+  ul li::before { content: ''; position: absolute; left: -13px; top: .75em; width: 5px; height: 5px; border-radius: 50%; background: var(--q-faint); }
+  ol li::marker { color: var(--q-muted); }
+  strong { font-weight: var(--q-w-b); }
+  em { font-style: italic; }
+  a { color: var(--q-accent-ink); text-decoration: underline; text-underline-offset: 3px; }
 </style>
