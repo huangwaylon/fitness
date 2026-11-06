@@ -6,13 +6,15 @@
 // a slice of its pack (static/audio/listen/, packing.ts); changing an item's `en`, `tts`, `voice` or speaker's voice regenerates its clip. Ids
 // key the clips in their packs: keep them stable. The lobby offers a level only once every item of it has a clip (compile.ts
 // playable). Level 4's dialogues (`gist`, `next`: dialogues.ts) are one clip per line and have a gate of their own.
+import { shuffle } from '#lib/random.ts';
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { QuizLv } from '../contract/live-protocol.ts';
 
 /** `mean` (level 4): what the speaker really means, from 3 English paraphrases (the literal reading, the opposite and
  *  a plausible wrong inference as distractors). `gist` and `next` (level 4, dialogues.ts): over a 2-4-line dialogue
  *  between two villagers, what's going on or will happen, and the best next line. */
-export type ItemType = 'pic' | 'word' | 'num' | 'reply' | 'mean' | 'gist' | 'next';
+export const ITEM_TYPES = ['pic', 'word', 'num', 'reply', 'mean', 'gist', 'next'] as const;
+export type ItemType = (typeof ITEM_TYPES)[number];
 /** The dialogue types (an item with `lines`). */
 export const DIALOGUE_TYPES: readonly ItemType[] = ['gist', 'next'];
 /** The protocol's levels (1-8): 1-4 the stages' quiz, 5 the アナウンス pack (bank5.ts: announcements, voicemails and
@@ -25,20 +27,24 @@ export type Accent = 'us' | 'uk' | 'au';
 export const levelRank = (lv: number): number => (lv === 5 ? 4 : lv > 5 ? lv - 1 : lv);
 /** The stage's level at a place on the ladder (levelRank's inverse, never the pack). */
 export const levelAt = (rank: number): Level => (rank > 4 ? rank + 1 : rank) as Level;
-/** A level's mark beside its name: its ★s (its place on the ladder), the pack 📢. */
-export const levelMark = (lv: number): string => (lv === 5 ? '📢' : '★'.repeat(levelRank(lv)));
 /** A cast voice of the neural TTS (docs/curriculum.md §9; 18 voices, 12 of them US: speech.ts SLOTS lists the ones that
  *  exist, scripts/tts/cast.json describes them): accent, gender, slot. Each villager speaks with a US one for good
- *  (bank4.ts CAST), a few with a UK or AU one too on the やま/ほし accent-exposure items (EXPOSURE). */
+ *  (cast.ts CAST), a few with a UK or AU one too on the やま/ほし accent-exposure items (EXPOSURE). */
 export type CastId = `${Accent}-${'f' | 'm'}${1 | 2 | 3 | 4 | 5 | 6}`;
+/** A cast voice's accent (us-f1 → us). */
+export const accentOf = (cast: CastId): Accent => cast.slice(0, 2) as Accent;
+
+/** Who's talking to whom (Tags.register) and what's meant beyond the words (Tags.pragmatic). */
+export const REGISTERS = ['service', 'colleague', 'boss', 'friend', 'partner', 'neighbour', 'stranger', 'official', 'broadcast'] as const;
+export const PRAGMATICS = ['literal', 'indirect', 'refusal', 'hedge', 'understatement', 'sarcasm', 'humour', 'formula', 'ritual', 'attitude', 'deception'] as const;
 
 /** The scenario generator's dimensions an item was made from (docs/curriculum.md §5): they drive the levers, review
  *  and coverage later. */
 export interface Tags {
   /** The scenario seed (docs/curriculum.md §5.5, 1-66): its setting, goal and complication. */
   seed: number;
-  register: 'service' | 'colleague' | 'boss' | 'friend' | 'partner' | 'neighbour' | 'stranger' | 'official' | 'broadcast';
-  pragmatic: 'literal' | 'indirect' | 'refusal' | 'hedge' | 'understatement' | 'sarcasm' | 'humour' | 'formula' | 'ritual' | 'attitude' | 'deception';
+  register: (typeof REGISTERS)[number];
+  pragmatic: (typeof PRAGMATICS)[number];
   /** Speech conditions for the mix (none: studio clean). */
   conditions?: readonly ('phone' | 'voicemail' | 'pa' | 'video' | 'cafe' | 'station' | 'street' | 'desk')[];
   /** The sound features it trains (curriculum §3). */
@@ -182,8 +188,15 @@ export function clipItems(it: Item): Item[] {
   const ids = clipIds(it);
   return it.lines.map((l, n): Item => {
     const { lines: _, tts: __, ...rest } = it;
-    return { ...rest, id: ids[n], en: l.en, ja: l.ja, speaker: l.who, voice: l.cast.slice(0, 2) as Accent, cast: l.cast, ...(l.tts && { tts: l.tts }), ...(l.cond && { cond: l.cond }) };
+    return { ...rest, id: ids[n], en: l.en, ja: l.ja, speaker: l.who, voice: accentOf(l.cast), cast: l.cast, ...(l.tts && { tts: l.tts }), ...(l.cond && { cond: l.cond }) };
   });
+}
+
+/** A copy of an item with its choices in a seeded order: `choices` the shuffled order, `answer` the right one's index
+ *  in it (`set`: another choice set for the same audio, a lesson tier's). Every deck deals its items through this. */
+export function shuffleChoices(it: Item, r: () => number, set: Pick<Item, 'choices' | 'answer'> = it): Item {
+  const order = shuffle(set.choices.map((_, i) => i), r);
+  return { ...it, choices: order.map((i) => set.choices[i]), answer: order.indexOf(set.answer) };
 }
 
 /** Japanese names of the `pic` art (the choices' VoiceOver labels and the review list: the English isn't given away). */

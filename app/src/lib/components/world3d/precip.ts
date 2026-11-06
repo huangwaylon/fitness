@@ -23,7 +23,7 @@
 // once. The island draws at its ambient rate meanwhile (≤ 30 a second: falling rain needs its frames).
 import {
   DataTexture, FloatType, InstancedBufferAttribute, InstancedBufferGeometry, Mesh, NearestFilter, PlaneGeometry, RGBAFormat, ShaderMaterial, Vector2, Vector3,
-  type Object3D
+  type Object3D, type WebGLRenderer
 } from 'three';
 import { BEND_GLSL, bendU } from './bend.ts';
 import { lampFog } from './lights.ts';
@@ -341,13 +341,12 @@ interface PrecipState {
   kind: PrecipKind | null;
   sky: Sky;
   level: number;
-  /** The particles drawn (its look's share of the set count), the meshes (one draw call each), the rings' ground. */
+  /** The particles drawn (its look's share of the set count), the meshes shown (one draw call each), the rings' ground. */
   drawn: number;
   meshes: string[];
   /** The rings' surface: its cells, the flat ones (rings land there) and the water's among them, the ms its build
    *  took; null: not built. */
   rings: { cells: number; flat: number; water: number; ms: number } | null;
-  hidden: boolean;
 }
 
 export interface Precip {
@@ -365,8 +364,9 @@ export interface Precip {
   frame(t: number, x: number, z: number, zoom: number, dist: number, h: number): 'ambient' | false;
   /** Whether the rain needs the rings' surface now (it's raining and none is built for the layout). */
   wantsSurface(): boolean;
-  /** The e2e's: hidden (a draw call count with and without). */
-  hide(on: boolean): void;
+  /** The e2e's: the draw calls its meshes made in the last frame drawn (none drawn in it: 0), the scene's others not
+   *  counted (a critter coming into view changes the frame's total, never this). */
+  calls(): number;
   state(): PrecipState;
   dispose(): void;
 }
@@ -413,14 +413,22 @@ export function createPrecip(add: (o: Object3D) => () => void, kick: () => void)
   snow.name = 'precip:snow';
   rings.name = 'precip:rings';
   const offs = [rain, snow, rings].map((m) => add(m));
+  // (three calls onAfterRender once a draw; the renderer's frame count tells the last frame's draws from older ones)
+  let drew = { frame: -1, n: 0 }, gl: WebGLRenderer | null = null;
+  for (const m of [rain, snow, rings])
+    m.onAfterRender = (r) => {
+      gl = r;
+      if (r.info.render.frame !== drew.frame) drew = { frame: r.info.render.frame, n: 0 };
+      drew.n++;
+    };
 
-  let sky: Sky = 'clear', look: PrecipLook | null = null, level = 0, goal = 0, last = 0, hidden = false, tod: Tod3 = 'day';
+  let sky: Sky = 'clear', look: PrecipLook | null = null, level = 0, goal = 0, last = 0, tod: Tod3 = 'day';
   let surfaceKey: object | null = null, surfaceN: PrecipState['rings'] = null;
   const u = (m: Mesh<InstancedBufferGeometry, ShaderMaterial>) => m.material.uniforms;
   function apply() {
     const l = look;
-    rain.visible = !hidden && l?.kind === 'rain' && level > 0;
-    snow.visible = !hidden && l?.kind === 'snow' && level > 0;
+    rain.visible = l?.kind === 'rain' && level > 0;
+    snow.visible = l?.kind === 'snow' && level > 0;
     rings.visible = rain.visible && !!surfaceKey && (l?.rings ?? 0) > 0;
     if (!l) return;
     const m = l.kind === 'rain' ? rain : snow;
@@ -528,14 +536,10 @@ export function createPrecip(add: (o: Object3D) => () => void, kick: () => void)
       }
       return 'ambient';
     },
-    hide(on) {
-      hidden = on;
-      apply();
-      kick();
-    },
+    calls: () => (gl && drew.frame === gl.info.render.frame ? drew.n : 0),
     state: () => ({
       kind: look?.kind ?? null, sky, level, drawn: look ? drawnOf(look) : 0,
-      meshes: [rain, snow, rings].filter((m) => m.visible).map((m) => m.name), rings: surfaceN, hidden
+      meshes: [rain, snow, rings].filter((m) => m.visible).map((m) => m.name), rings: surfaceN
     }),
     dispose() {
       for (const off of offs) off();

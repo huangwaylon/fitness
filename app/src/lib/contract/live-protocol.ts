@@ -162,7 +162,7 @@ export const musicAt = (at: number, t: number): number => (Math.abs(at - t) > MU
 const SONG = /^[a-z0-9-]{1,32}$/;
 
 /** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone, the
- *  seed's bit 0 たいせん and bits 1-2 こたえる じかん; `same` おなじへや: only the host's phone speaks), `join` / `leave`
+ *  seed's low bits the lobby's flags: kikimimi/seed.ts, bit 0 たいせん, 1 スピード はしご, 2-3 こたえる じかん; `same` おなじへや: only the host's phone speaks), `join` / `leave`
  *  it or the game, `go` the game starts at `at` (the relay's clock), `a` my answer to question `i` (choice `k`, `rp`
  *  replayed or slowed, `s` my running total), `skip` the host's position: question `i` starts at `at` (0-8; 8: the
  *  results), sent as it changes (つぎへ) and every few seconds as a beacon; a player's `skip` is its よみおわった (`i` the
@@ -177,7 +177,8 @@ export type QuizWire =
 /** A quiz's level: 1-3 the first bank, 4 もり (docs/curriculum.md §14), 5 the アナウンス pack, 6 やま, 7 ほし, 8 room for
  *  the next without a relay deploy (a phone offers only the levels it has every clip of: kikimimi/deck.ts LEVELS).
  *  @public (kikimimi/) */
-export type QuizLv = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+export const QUIZ_LVS = [1, 2, 3, 4, 5, 6, 7, 8] as const;
+export type QuizLv = (typeof QUIZ_LVS)[number];
 /** A quiz's questions (`a`'s `i` 0-7, `skip`'s 0-8), choices (`k` 0-3) and the most a game's `s` may say: 8 × (100 +
  *  30), the first-listen bonus's days (now 100 a right answer, いっぱつ a badge: a phone from before still sends its
  *  totals); kikimimi/deck.test.ts checks them against deck.ts and score.ts. @public (kikimimi/) */
@@ -569,7 +570,7 @@ function quizOf(o: Obj): Intent | null {
   const g = o.g;
   switch (o.op) {
     case 'open':
-      if (!Number.isInteger(o.seed) || (o.seed as number) < 0 || (o.seed as number) > 0xffff_ffff || !within(o.lv, [1, 8]) || typeof o.same !== 'boolean') return null;
+      if (!Number.isInteger(o.seed) || (o.seed as number) < 0 || (o.seed as number) > 0xffff_ffff || !within(o.lv, [1, QUIZ_LVS.length]) || typeof o.same !== 'boolean') return null;
       return { kind: 'quiz', g, op: 'open', seed: o.seed as number, lv: o.lv as QuizLv, same: o.same };
     case 'go':
       return isTime(o.at) ? { kind: 'quiz', g, op: 'go', at: o.at } : null;
@@ -583,21 +584,23 @@ function quizOf(o: Obj): Intent | null {
   }
 }
 
-const PLAY_GM = /^[a-z][a-z0-9]{1,7}$/;
+/** A game's kind (`gm`: docs/kikimimi-framework.md §4.4) and a unit's id (`u`), on the wire and in a `listen` row.
+ *  @public (contract/listen.ts) */
+export const GM_RE = /^[a-z][a-z0-9]{1,7}$/;
 const PLAY_CV = /^[0-9a-f]{6}$/;
-const PLAY_U = /^[a-z0-9-]{1,12}$/;
+export const UNIT_RE = /^[a-z0-9-]{1,12}$/;
 const PLAY_OPS: readonly unknown[] = ['open', 'join', 'leave', 'go', 'a', 'skip', 'end', 'ev'];
 const ints = (x: unknown, lo: number, hi: number, min: number, max: number): x is number[] =>
   Array.isArray(x) && x.length >= min && x.length <= max && x.every((n) => within(n, [lo, hi]));
 /** A game op's fields (known ones only, by its op), or null (docs/kikimimi-framework.md §4.1). `gm` is a shape only:
  *  the relay doesn't know the games. */
 function playOf(o: Obj): Intent | null {
-  if (typeof o.g !== 'string' || !QUIZ_G.test(o.g) || typeof o.gm !== 'string' || !PLAY_GM.test(o.gm) || !PLAY_OPS.includes(o.op)) return null;
+  if (typeof o.g !== 'string' || !QUIZ_G.test(o.g) || typeof o.gm !== 'string' || !GM_RE.test(o.gm) || !PLAY_OPS.includes(o.op)) return null;
   const { g, gm } = o;
   switch (o.op) {
     case 'open':
       if (typeof o.cv !== 'string' || !PLAY_CV.test(o.cv) || !within(o.seed, [0, 0xffff_ffff]) || !within(o.f, [0, 7]) || !ints(o.o, 0, 255, 0, 4)) return null;
-      if ((o.u !== undefined && (typeof o.u !== 'string' || !PLAY_U.test(o.u))) || (o.ids !== undefined && !ints(o.ids, 0, 99_999, 0, 8))) return null;
+      if ((o.u !== undefined && (typeof o.u !== 'string' || !UNIT_RE.test(o.u))) || (o.ids !== undefined && !ints(o.ids, 0, 99_999, 0, 8))) return null;
       return {
         kind: 'play', g, gm, op: 'open', cv: o.cv, seed: o.seed as number, f: o.f as number, o: o.o,
         ...(o.u !== undefined ? { u: o.u as string } : {}), ...(o.ids !== undefined ? { ids: o.ids as number[] } : {})

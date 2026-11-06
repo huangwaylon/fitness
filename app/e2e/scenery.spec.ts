@@ -1,14 +1,11 @@
 // Scenery taps (docs/design.md "Scene interactions"): the bushes, flowers, grass, sun and clouds answer a tap with a
 // short flourish, and nothing else: no sheet, no navigation, no ベル. The trees, the villagers and the HUD still work.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, lawnTap, oku } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { camTo, geo, islandUp, lawnTap, oku } from './island.ts';
+import { hudBells } from './hud.ts';
 
-/** The island is up: the HUD's leaf menu shows (the app asks no questions, so nothing to answer first). */
-async function islandReady(page: Page) {
-  // (its first paint: now and then over 5 s under CI's load)
-  await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 });
-}
+/** The island is up (its first paint: now and then over 5 s under CI's load). */
+const islandReady = (page: Page) => islandUp(page, { timeout: 15_000 });
 
 type W = { at: (x: number, z: number) => [number, number]; go: (z: number) => void };
 /** Open lawn at まえ: behind the partner's head, in front of the dig spots, between the trees. */

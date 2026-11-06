@@ -6,7 +6,8 @@
 // FAST_WINDOWS: 8 s, a tab behind is throttled) on every phone. The logic tier: no clip has to sound (a
 // headless browser's audio is a null sink), the schedule is the relay clock's.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -24,7 +25,7 @@ async function snap(p: Page, path: string, fullPage = false) {
 async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Page> {
   const page = 'newPage' in ctx ? await ctx.newPage() : ctx;
   await page.goto(`?demo&${Q}${as === 'A' ? '' : `&as=${as}`}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   return page;
 }
 /** The menu's えいご ききとり: the game's sheet. */

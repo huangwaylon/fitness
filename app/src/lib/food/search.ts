@@ -57,6 +57,19 @@ export function tierOf(e: Entry, q: string): number {
   return 6;
 }
 
+/** MEXT's lookalikes a shopper never picks between (the lead): 豚 中型種 beside 大型種 (the supermarket's), 親鶏 beside
+ *  若どり, 交雑牛 beside 国産牛; out of the results unless a word of the query names them (its kanji or reading). 和牛,
+ *  国産牛 and 輸入牛 stay: they change what you buy. */
+const LOOKALIKE: readonly [RegExp, readonly string[]][] = [
+  [/（中型種）/, ['中型種', 'ちゅうがた']],
+  [/^親鶏/, ['親鶏', '親どり', 'おやどり']],
+  [/^交雑牛/, ['交雑', 'こうざつ']]
+];
+/** Parts seldom eaten alone (a meat's 脂身 by itself, a 皮): a tier under the usual cuts. */
+const RARE_PART = /(^|\s)皮(\s|$)|(^|[\s（])脂身(\s|$)/;
+const lookalike = (it: Item, q: string): boolean => LOOKALIKE.some(([re, words]) => re.test(it.name) && !words.some((w) => q.includes(searchKey(w))));
+const rare = (it: Item): number => (RARE_PART.test(it.name) && (it.cat === '肉' || /(^|\s)皮(\s|$)/.test(it.name)) ? 1 : 0);
+
 /** Every query token (split on spaces) in an item's text, best first. One row per normalized name + kcal, one per
  *  cross-source verify group (`groupOf`): a group shows its best non-secondary hit (else its best) at the place of its
  *  best hit, so a school lunch's closer name never hides the core item; and one per food in its states (`vg`): its
@@ -69,7 +82,7 @@ export function search(entries: readonly Entry[], query: string, limit = 60, gro
   const hits: Hit[] = [];
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
-    if (tokens.every((t) => e.h.includes(t))) hits.push({ e, s: tierOf(e, q) + e.pen - e.pop * POP_WEIGHT, i });
+    if (tokens.every((t) => e.h.includes(t)) && !lookalike(e.it, q)) hits.push({ e, s: tierOf(e, q) + e.pen - e.pop * POP_WEIGHT + rare(e.it), i });
   }
   /** The ranking: score, then curated pop, then the shorter name, then the list's order. */
   const before = (a: Hit, b: Hit): number => a.s - b.s || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length || a.i - b.i;

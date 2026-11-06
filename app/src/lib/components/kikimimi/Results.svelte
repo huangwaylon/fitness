@@ -26,12 +26,13 @@
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
   import { currentReport, currentUnits, recWords } from './progress.svelte.ts';
-  import { stampsUnit } from '#lib/contract/listen.ts';
+  import { firstListenRight, stampsUnit } from '#lib/contract/listen.ts';
   import { LESSONS, type Lesson } from '#lib/kikimimi/stages.ts';
-  import { CORE } from '#lib/kikimimi/path.ts';
+  import { CORE } from '#lib/kikimimi/stages.ts';
   import { feedbackFor } from '#lib/kikimimi/report.ts';
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
-  import { SPEEDS, climbs, laddersIn, speedAt, sx } from '#lib/kikimimi/ladder.ts';
+  import { SPEEDS, climbs, laddersIn, speedAt } from '#lib/kikimimi/ladder.ts';
+  import { sx } from './look.ts';
 
   let { game, onagain, onmissed, ondone, onnext }: { game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void; onnext?: (l: Lesson) => void } = $props();
   const v = $derived(game.view);
@@ -90,7 +91,7 @@
   const ls = $derived(game.lesson);
   const unitState = $derived(ls && recorded ? currentUnits().get(ls.unit.id) : undefined);
   const stamped = $derived(!!recorded && stampsUnit(recorded));
-  const own = $derived(recorded ? recorded.r.filter(([, ok, , rp]) => ok === 1 && rp === 0).length : 0);
+  const own = $derived(recorded ? recorded.r.filter(firstListenRight).length : 0);
   /** The next core lesson not played to the end; after a チェック, none (もういっかい is the retry). */
   const nextLesson = $derived(ls?.lesson === 'check' ? null : (CORE.find((l) => l !== ls?.lesson && !unitState?.done.includes(l)) ?? null));
   const unitLessons = $derived(ls ? LESSONS.filter((l) => ls.unit.lessons[l]) : []);

@@ -1,0 +1,2348 @@
+[
+ {
+  "key": "mext-15124",
+  "ja": "笹だんご こしあん入り",
+  "desc": "Sasa dango: green mugwort rice dumplings wrapped in bamboo leaves tied with straw string, one unwrapped and cut showing smooth dark purple-brown koshian bean paste inside",
+  "items": [
+   "mext:15124"
+  ]
+ },
+ {
+  "key": "mext-15154",
+  "ja": "笹だんご つぶしあん入り",
+  "desc": "Sasa dango: green mugwort rice dumplings wrapped in bamboo leaves tied with straw string, one unwrapped and cut showing chunky red bean paste with visible bean skins inside",
+  "items": [
+   "mext:15154"
+  ]
+ },
+ {
+  "key": "mext-15143",
+  "ja": "ずんだあん",
+  "desc": "Zunda an: bright pale green sweet paste of mashed edamame with small bean bits, mounded in a small dish, coarse and moist, not wasabi or matcha",
+  "items": [
+   "mext:15143"
+  ]
+ },
+ {
+  "key": "mext-15144",
+  "ja": "ずんだもち",
+  "desc": "Zunda mochi: soft white round rice cakes smothered in bright pale green mashed edamame paste with coarse bean bits, on a small plate",
+  "items": [
+   "mext:15144"
+  ]
+ },
+ {
+  "key": "mext-15024",
+  "ja": "タルト（和菓子）",
+  "desc": "Wagashi taruto from Ehime: a sliced roll of soft yellow sponge cake spiralled around smooth dark red bean paste, cut rounds showing the swirl, on a plate",
+  "items": [
+   "mext:15024"
+  ]
+ },
+ {
+  "key": "mext-15025",
+  "ja": "ちまき",
+  "desc": "Chimaki: long slim cone-shaped sweet rice cakes wrapped in green bamboo leaves bound with rush string, one unwrapped showing a smooth white translucent dumpling",
+  "items": [
+   "mext:15025"
+  ]
+ },
+ {
+  "key": "mext-15026",
+  "ja": "ちゃつう",
+  "desc": "Chatsu: small round baked wagashi buns with a thin brown crust, a tea-leaf mark on top, one cut showing dark bean paste inside, on a plate",
+  "items": [
+   "mext:15026"
+  ]
+ },
+ {
+  "key": "mext-15157",
+  "ja": "生八つ橋 こしあん入り",
+  "desc": "Nama yatsuhashi: soft thin pale cinnamon-tinted mochi squares folded into triangles around smooth dark red bean paste, on a small plate",
+  "items": [
+   "mext:15157",
+   "mext:15004"
+  ]
+ },
+ {
+  "key": "mext-15158",
+  "ja": "生八つ橋 つぶしあん入り",
+  "desc": "Nama yatsuhashi: soft thin pale cinnamon-tinted mochi squares folded into triangles around chunky red bean paste with bean skins, on a small plate",
+  "items": [
+   "mext:15158"
+  ]
+ },
+ {
+  "key": "mext-15028",
+  "ja": "ねりきり",
+  "desc": "Nerikiri: a small exquisitely shaped wagashi of smooth pastel pink and white bean paste moulded like a flower with fine petal lines, on a small plate",
+  "items": [
+   "mext:15028"
+  ]
+ },
+ {
+  "key": "mext-15029",
+  "ja": "カステラまんじゅう こしあん入り",
+  "desc": "Castella manju: small round baked buns with a glossy golden-brown cake crust, one cut showing smooth dark red bean paste inside, on a plate",
+  "items": [
+   "mext:15029"
+  ]
+ },
+ {
+  "key": "mext-15159",
+  "ja": "カステラまんじゅう つぶしあん入り",
+  "desc": "Castella manju: small round baked buns with a glossy golden-brown cake crust, one cut showing chunky red bean paste with bean skins inside, on a plate",
+  "items": [
+   "mext:15159"
+  ]
+ },
+ {
+  "key": "mext-15160",
+  "ja": "かるかんまんじゅう こしあん入り",
+  "desc": "Karukan manju: pure white fluffy steamed buns of yam and rice flour with a fine spongy surface, one cut showing smooth dark red bean paste, on a plate",
+  "items": [
+   "mext:15160"
+  ]
+ },
+ {
+  "key": "mext-15161",
+  "ja": "かるかんまんじゅう つぶしあん入り",
+  "desc": "Karukan manju: pure white fluffy steamed buns of yam and rice flour with a fine spongy surface, one cut showing chunky red bean paste with skins, on a plate",
+  "items": [
+   "mext:15161"
+  ]
+ },
+ {
+  "key": "mext-15030",
+  "ja": "くずまんじゅう こしあん入り",
+  "desc": "Kuzu manju: clear glassy translucent kudzu-starch dumplings with a dark ball of smooth bean paste visible through them, glistening, on a small plate",
+  "items": [
+   "mext:15030"
+  ]
+ },
+ {
+  "key": "mext-15162",
+  "ja": "くずまんじゅう つぶしあん入り",
+  "desc": "Kuzu manju: clear glassy translucent kudzu-starch dumplings with a dark ball of chunky bean paste visible through them, glistening, on a small plate",
+  "items": [
+   "mext:15162"
+  ]
+ },
+ {
+  "key": "mext-15031",
+  "ja": "くりまんじゅう こしあん入り",
+  "desc": "Kuri manju: oval baked buns with a shiny dark egg-glazed brown top like a chestnut, one cut showing bean paste and a yellow chestnut piece, on a plate",
+  "items": [
+   "mext:15031",
+   "mext:15163"
+  ]
+ },
+ {
+  "key": "mext-15032",
+  "ja": "とうまんじゅう こしあん入り",
+  "desc": "To manju: small round baked buns with a thin glossy tan crust, one cut showing smooth dark bean paste inside, on a plate",
+  "items": [
+   "mext:15032"
+  ]
+ },
+ {
+  "key": "mext-15164",
+  "ja": "とうまんじゅう つぶしあん入り",
+  "desc": "To manju: small round baked buns with a thin glossy tan crust, one cut showing chunky red bean paste with bean skins inside, on a plate",
+  "items": [
+   "mext:15164"
+  ]
+ },
+ {
+  "key": "mext-15165",
+  "ja": "蒸しまんじゅう つぶしあん入り",
+  "desc": "Steamed manju: soft smooth white steamed buns, slightly domed, one cut showing chunky red bean paste with bean skins, on a plate",
+  "items": [
+   "mext:15165"
+  ]
+ },
+ {
+  "key": "mext-15166",
+  "ja": "中華まんじゅう あんまん つぶしあん入り",
+  "desc": "Anman: a large fluffy white Chinese steamed bun with a red dot on top, torn open to show dark sweet red bean paste, on a small plate",
+  "items": [
+   "mext:15166"
+  ]
+ },
+ {
+  "key": "mext-15167",
+  "ja": "もなか つぶしあん入り",
+  "desc": "Monaka: crisp pale beige wafer shells pressed in a flower pattern sandwiching chunky red bean paste, one broken open, on a small plate",
+  "items": [
+   "mext:15167"
+  ]
+ },
+ {
+  "key": "mext-15037",
+  "ja": "ゆべし",
+  "desc": "Yubeshi: a firm chewy brown steamed rice-flour cake flavoured with soy and walnuts, cut into slices showing walnut bits, on a small plate",
+  "items": [
+   "mext:15037"
+  ]
+ },
+ {
+  "key": "mext-15040",
+  "ja": "蒸しようかん",
+  "desc": "Mushi yokan: a bar of soft matte dark red-brown steamed bean jelly, sliced into rectangles, less glossy than regular yokan, on a small plate",
+  "items": [
+   "mext:15040"
+  ]
+ },
+ {
+  "key": "mext-15042",
+  "ja": "芋かりんとう",
+  "desc": "Imo karinto: sweet potato sticks deep fried and coated in a glossy amber sugar glaze, crunchy yellow inside, piled in a small bowl",
+  "items": [
+   "mext:15042"
+  ]
+ },
+ {
+  "key": "mext-15043",
+  "ja": "おこし",
+  "desc": "Okoshi: hard crunchy rectangular bars of puffed rice grains bound with sugar syrup, pale golden, sometimes with peanuts, on a plate",
+  "items": [
+   "mext:15043"
+  ]
+ },
+ {
+  "key": "mext-15044",
+  "ja": "おのろけ豆",
+  "desc": "Onoroke mame: peanuts coated in a crunchy shell of rice cracker, glossy brown with soy glaze, piled in a small dish",
+  "items": [
+   "mext:15044"
+  ]
+ },
+ {
+  "key": "mext-15046",
+  "ja": "かりんとう 白",
+  "desc": "White karinto: knobbly fried dough sticks coated in pale white sugar glaze, crunchy, piled in a small bowl",
+  "items": [
+   "mext:15046"
+  ]
+ },
+ {
+  "key": "mext-15047",
+  "ja": "ごかぼう",
+  "desc": "Gokabo: soft cylindrical sticks of puffed millet and rice bound with syrup and coated in roasted soybean flour, pale tan powdery, on a plate",
+  "items": [
+   "mext:15047"
+  ]
+ },
+ {
+  "key": "mext-15048",
+  "ja": "小麦粉せんべい 磯部せんべい",
+  "desc": "Isobe senbei: thin crisp light wheat crackers with a strip of dark green seaweed on each, pale cream, on a plate",
+  "items": [
+   "mext:15048"
+  ]
+ },
+ {
+  "key": "mext-15049",
+  "ja": "小麦粉せんべい かわらせんべい",
+  "desc": "Kawara senbei: large curved roof-tile shaped wheat crackers, glossy golden-brown with a stamped design, on a plate",
+  "items": [
+   "mext:15049"
+  ]
+ },
+ {
+  "key": "mext-15050",
+  "ja": "小麦粉せんべい 巻きせんべい",
+  "desc": "Maki senbei: thin crisp wheat crackers rolled into golden-brown tubes, on a plate",
+  "items": [
+   "mext:15050"
+  ]
+ },
+ {
+  "key": "mext-15051",
+  "ja": "小麦粉せんべい 南部せんべい ごま入り",
+  "desc": "Nanbu senbei: round flat pale wheat crackers with a thin crisp lacy rim, studded with black sesame seeds, on a plate",
+  "items": [
+   "mext:15051"
+  ]
+ },
+ {
+  "key": "mext-15052",
+  "ja": "小麦粉せんべい 南部せんべい 落花生入り",
+  "desc": "Nanbu senbei: round flat pale wheat crackers with a thin crisp lacy rim, studded with halved peanuts, on a plate",
+  "items": [
+   "mext:15052"
+  ]
+ },
+ {
+  "key": "mext-15053",
+  "ja": "しおがま",
+  "desc": "Shiogama: small pressed square cakes of fine white rice flour and sugar with a pale green tint and shiso flecks, dry and crumbly, on a plate",
+  "items": [
+   "mext:15053"
+  ]
+ },
+ {
+  "key": "mext-15056",
+  "ja": "ひなあられ 関西風",
+  "desc": "Kansai hina arare: small round pastel pink, white, green and yellow fried rice crackers about pea size, crunchy, in a small bowl",
+  "items": [
+   "mext:15056"
+  ]
+ },
+ {
+  "key": "mext-15055",
+  "ja": "ひなあられ 関東風",
+  "desc": "Kanto hina arare: tiny puffed rice grains coated in pastel pink, white and green sugar, light like popcorn, in a small bowl",
+  "items": [
+   "mext:15055"
+  ]
+ },
+ {
+  "key": "mext-15061",
+  "ja": "ボーロ 小粒",
+  "desc": "Small bolo: tiny round pale cream and orange cookie balls that melt in the mouth, piled in a small dish",
+  "items": [
+   "mext:15061"
+  ]
+ },
+ {
+  "key": "mext-15062",
+  "ja": "そばボーロ",
+  "desc": "Soba bolo: small flower-shaped buckwheat cookies with a shiny light brown top, crisp, on a plate",
+  "items": [
+   "mext:15062"
+  ]
+ },
+ {
+  "key": "mext-15063",
+  "ja": "松風",
+  "desc": "Matsukaze: a thin flat baked wheat cake, brown on top and sprinkled with white poppy seeds, cut into rectangles, pale underneath, on a plate",
+  "items": [
+   "mext:15063"
+  ]
+ },
+ {
+  "key": "mext-15064",
+  "ja": "みしま豆",
+  "desc": "Mishima mame: roasted soybeans coated in a thin white sugar shell with a green tint, piled in a small dish",
+  "items": [
+   "mext:15064"
+  ]
+ },
+ {
+  "key": "mext-15065",
+  "ja": "八つ橋",
+  "desc": "Yatsuhashi: hard baked curved strips of cinnamon-flavoured rice cracker, glossy tan, shaped like a koto bridge, on a plate",
+  "items": [
+   "mext:15065"
+  ]
+ },
+ {
+  "key": "mext-15066",
+  "ja": "らくがん",
+  "desc": "Rakugan: small pressed dry sugar sweets moulded into flowers and leaves, pale pink, white and green, powdery, on a small plate",
+  "items": [
+   "mext:15066"
+  ]
+ },
+ {
+  "key": "mext-15067",
+  "ja": "麦らくがん",
+  "desc": "Mugi rakugan: small pressed dry sweets of roasted barley flour and sugar, light brown, powdery, moulded in patterns, on a small plate",
+  "items": [
+   "mext:15067"
+  ]
+ },
+ {
+  "key": "mext-15068",
+  "ja": "もろこしらくがん",
+  "desc": "Morokoshi rakugan: flat square pressed sweets of red bean flour and sugar from Akita, light brown-pink with a stamped pattern, on a small plate",
+  "items": [
+   "mext:15068"
+  ]
+ },
+ {
+  "key": "mext-15126",
+  "ja": "あんパン 薄皮タイプ こしあん入り",
+  "desc": "Thin-skinned anpan: a round soft glossy brown bun with sesame on top, a very thin bread layer, cut to show a thick filling of smooth dark bean paste",
+  "items": [
+   "mext:15126"
+  ]
+ },
+ {
+  "key": "mext-15169",
+  "ja": "あんパン 薄皮タイプ つぶしあん入り",
+  "desc": "Thin-skinned anpan: a round soft glossy brown bun with sesame on top, a very thin bread layer, cut to show a thick filling of chunky red bean paste",
+  "items": [
+   "mext:15169"
+  ]
+ },
+ {
+  "key": "mext-15128",
+  "ja": "カレーパン 皮のみ",
+  "desc": "Curry bread crust: the empty fried breaded bread shell of a curry bun, golden-brown with crunchy panko crumbs, hollow inside",
+  "items": [
+   "mext:15128"
+  ]
+ },
+ {
+  "key": "mext-15129",
+  "ja": "カレーパン 具のみ",
+  "desc": "Curry bread filling: a mound of thick brown Japanese curry paste with minced meat and tiny vegetable bits, in a small dish",
+  "items": [
+   "mext:15129"
+  ]
+ },
+ {
+  "key": "mext-15130",
+  "ja": "クリームパン 薄皮タイプ",
+  "desc": "Thin-skinned cream bread: a soft glossy brown half-moon bun, cut to show a thick filling of pale yellow custard cream",
+  "items": [
+   "mext:15130"
+  ]
+ },
+ {
+  "key": "mext-15131",
+  "ja": "チョコパン 薄皮タイプ",
+  "desc": "Thin-skinned chocolate bread: a soft glossy brown bun, cut to show a thick filling of glossy chocolate cream",
+  "items": [
+   "mext:15131"
+  ]
+ },
+ {
+  "key": "mext-15075",
+  "ja": "ショートケーキ 果実なし",
+  "desc": "Plain shortcake: a wedge of white cream-covered sponge cake with layers of yellow sponge and whipped cream, no strawberries, on a plate",
+  "items": [
+   "mext:15075"
+  ]
+ },
+ {
+  "key": "mext-15133",
+  "ja": "タルト（洋菓子）",
+  "desc": "Fruit tart: a round crisp golden pastry shell filled with custard and topped with glossy fresh fruit slices, on a plate",
+  "items": [
+   "mext:15133"
+  ]
+ },
+ {
+  "key": "mext-15182",
+  "ja": "デニッシュペストリー アメリカンタイプ プレーン",
+  "desc": "American Danish pastry: a soft golden spiral pastry with a white icing drizzle, bready layers, on a plate",
+  "items": [
+   "mext:15182"
+  ]
+ },
+ {
+  "key": "mext-15076",
+  "ja": "デニッシュペストリー デンマークタイプ プレーン",
+  "desc": "Danish pastry: a flaky crisp golden pastry with many buttery layers, a folded square shape, on a plate",
+  "items": [
+   "mext:15076"
+  ]
+ },
+ {
+  "key": "mext-15183",
+  "ja": "デニッシュペストリー アメリカンタイプ あん入り こしあん",
+  "desc": "American Danish pastry: a soft golden swirled pastry with icing drizzle, filled with smooth dark red bean paste, on a plate",
+  "items": [
+   "mext:15183"
+  ]
+ },
+ {
+  "key": "mext-15184",
+  "ja": "デニッシュペストリー アメリカンタイプ あん入り つぶしあん",
+  "desc": "American Danish pastry: a soft golden swirled pastry with icing drizzle, filled with chunky red bean paste, on a plate",
+  "items": [
+   "mext:15184"
+  ]
+ },
+ {
+  "key": "mext-15171",
+  "ja": "デニッシュペストリー デンマークタイプ あん入り こしあん",
+  "desc": "Danish pastry: a flaky crisp golden layered pastry with a centre of smooth dark red bean paste, on a plate",
+  "items": [
+   "mext:15171"
+  ]
+ },
+ {
+  "key": "mext-15172",
+  "ja": "デニッシュペストリー デンマークタイプ あん入り つぶしあん",
+  "desc": "Danish pastry: a flaky crisp golden layered pastry with a centre of chunky red bean paste with bean skins, on a plate",
+  "items": [
+   "mext:15172"
+  ]
+ },
+ {
+  "key": "mext-15185",
+  "ja": "デニッシュペストリー アメリカンタイプ あん入り カスタードクリーム",
+  "desc": "American Danish pastry: a soft golden swirled pastry with icing drizzle and a centre of pale yellow custard cream, on a plate",
+  "items": [
+   "mext:15185"
+  ]
+ },
+ {
+  "key": "mext-15173",
+  "ja": "デニッシュペストリー デンマークタイプ あん入り カスタードクリーム",
+  "desc": "Danish pastry: a flaky crisp golden layered pastry with a centre of pale yellow custard cream, on a plate",
+  "items": [
+   "mext:15173"
+  ]
+ },
+ {
+  "key": "mext-15174",
+  "ja": "イーストドーナッツ あん入り こしあん",
+  "desc": "Yeast doughnut: a round fluffy fried bun with no hole, sugar-dusted golden surface, cut to show smooth dark bean paste inside, on a plate",
+  "items": [
+   "mext:15174"
+  ]
+ },
+ {
+  "key": "mext-15175",
+  "ja": "イーストドーナッツ あん入り つぶしあん",
+  "desc": "Yeast doughnut: a round fluffy fried bun with no hole, sugar-dusted golden surface, cut to show chunky red bean paste inside, on a plate",
+  "items": [
+   "mext:15175"
+  ]
+ },
+ {
+  "key": "mext-15176",
+  "ja": "イーストドーナッツ あん入り カスタードクリーム",
+  "desc": "Yeast doughnut: a round fluffy fried bun with no hole, sugar-dusted golden surface, cut to show pale yellow custard cream inside, on a plate",
+  "items": [
+   "mext:15176"
+  ]
+ },
+ {
+  "key": "mext-15177",
+  "ja": "ケーキドーナッツ あん入り こしあん",
+  "desc": "Cake doughnut: a dense round fried cake with a cracked dark golden crust, cut to show smooth dark bean paste inside, on a plate",
+  "items": [
+   "mext:15177"
+  ]
+ },
+ {
+  "key": "mext-15178",
+  "ja": "ケーキドーナッツ あん入り つぶしあん",
+  "desc": "Cake doughnut: a dense round fried cake with a cracked dark golden crust, cut to show chunky red bean paste inside, on a plate",
+  "items": [
+   "mext:15178"
+  ]
+ },
+ {
+  "key": "mext-15179",
+  "ja": "ケーキドーナッツ あん入り カスタードクリーム",
+  "desc": "Cake doughnut: a dense round fried cake with a cracked dark golden crust, cut to show pale yellow custard cream inside, on a plate",
+  "items": [
+   "mext:15179"
+  ]
+ },
+ {
+  "key": "mext-15079",
+  "ja": "パイ皮",
+  "desc": "Puff pastry: a sheet of baked puff pastry, golden and risen in many flaky thin layers, empty shell, on a plate",
+  "items": [
+   "mext:15079"
+  ]
+ },
+ {
+  "key": "mext-15081",
+  "ja": "ミートパイ",
+  "desc": "Meat pie: a round golden flaky pastry pie with a crimped edge, cut to show brown minced meat filling, on a plate",
+  "items": [
+   "mext:15081"
+  ]
+ },
+ {
+  "key": "mext-15085",
+  "ja": "ワッフル ジャム入り",
+  "desc": "Japanese waffle: a soft folded half-moon sponge cake with a grid pattern, golden, cut to show red jam inside, on a plate",
+  "items": [
+   "mext:15085"
+  ]
+ },
+ {
+  "key": "mext-15136",
+  "ja": "牛乳寒天",
+  "desc": "Milk kanten: firm opaque white milk agar jelly cut into cubes, with canned mandarin orange segments, in a small glass bowl",
+  "items": [
+   "mext:15136"
+  ]
+ },
+ {
+  "key": "mext-15089",
+  "ja": "ゼリー ミルク",
+  "desc": "Milk jelly: a smooth wobbly opaque white milk gelatin dessert in a small glass cup",
+  "items": [
+   "mext:15089"
+  ]
+ },
+ {
+  "key": "mext-15090",
+  "ja": "ゼリー ワイン",
+  "desc": "Wine jelly: a clear glossy ruby-red translucent wine gelatin dessert in a small glass cup",
+  "items": [
+   "mext:15090"
+  ]
+ },
+ {
+  "key": "mext-15141",
+  "ja": "ウエハース クリーム入り",
+  "desc": "Cream wafers: light crisp rectangular wafer biscuits with a fine grid pattern, pale beige layers sandwiching white cream, on a plate",
+  "items": [
+   "mext:15141"
+  ]
+ },
+ {
+  "key": "mext-15093",
+  "ja": "オイルスプレークラッカー",
+  "desc": "Oil spray crackers: small square crisp crackers with a glossy oiled surface and docking holes, golden, salted, on a plate",
+  "items": [
+   "mext:15093"
+  ]
+ },
+ {
+  "key": "mext-15054",
+  "ja": "中華風クッキー",
+  "desc": "Chinese-style cookie: a round thick crumbly golden cookie with cracked top and an almond in the centre, on a plate",
+  "items": [
+   "mext:15054"
+  ]
+ },
+ {
+  "key": "mext-15099",
+  "ja": "プレッツェル",
+  "desc": "Pretzels: small crisp knot-shaped baked pretzels with a shiny dark brown surface and coarse salt crystals, on a plate",
+  "items": [
+   "mext:15099"
+  ]
+ },
+ {
+  "key": "mext-15096",
+  "ja": "リーフパイ",
+  "desc": "Leaf pie: heart-shaped flaky puff pastry cookies with a leaf vein pattern and glossy caramelised sugar, on a plate",
+  "items": [
+   "mext:15096"
+  ]
+ },
+ {
+  "key": "mext-15100",
+  "ja": "ロシアケーキ",
+  "desc": "Russian cake: small baked biscuit sweets topped with jam, a cherry or chocolate, piped golden dough, on a plate",
+  "items": [
+   "mext:15100"
+  ]
+ },
+ {
+  "key": "mext-15101",
+  "ja": "小麦粉あられ",
+  "desc": "Wheat arare: small crunchy fried wheat cracker bites, irregular golden pieces glazed with soy, in a small bowl",
+  "items": [
+   "mext:15101"
+  ]
+ },
+ {
+  "key": "mext-15109",
+  "ja": "かわり玉",
+  "desc": "Kawaridama: hard round jawbreaker candies with colourful concentric layers, pink, white, yellow and blue, in a small dish",
+  "items": [
+   "mext:15109"
+  ]
+ },
+ {
+  "key": "mext-15107",
+  "ja": "ゼリーキャンデー",
+  "desc": "Jelly candy: soft chewy translucent jelly sweets dusted in sugar, orange, green, red and yellow fruit shapes, in a small dish",
+  "items": [
+   "mext:15107"
+  ]
+ },
+ {
+  "key": "mext-15108",
+  "ja": "ゼリービーンズ",
+  "desc": "Jelly beans: small glossy bean-shaped chewy candies in many bright colours, piled in a small dish",
+  "items": [
+   "mext:15108"
+  ]
+ },
+ {
+  "key": "mext-15110",
+  "ja": "ドロップ",
+  "desc": "Drops: hard clear fruit candies, small round flattened discs in translucent red, orange, yellow and green, in a small dish",
+  "items": [
+   "mext:15110"
+  ]
+ },
+ {
+  "key": "mext-15111",
+  "ja": "バタースコッチ",
+  "desc": "Butterscotch: hard glossy amber-golden candies, small rounded squares, in a small dish",
+  "items": [
+   "mext:15111"
+  ]
+ },
+ {
+  "key": "mext-15112",
+  "ja": "ブリットル",
+  "desc": "Brittle: a slab of hard glassy amber caramel with peanuts set in it, broken into shards, on a plate",
+  "items": [
+   "mext:15112"
+  ]
+ },
+ {
+  "key": "mext-15106",
+  "ja": "ラムネ",
+  "desc": "Ramune candy: small round pressed white and pastel blue tablet candies, chalky and dry, in a small dish",
+  "items": [
+   "mext:15106"
+  ]
+ },
+ {
+  "key": "mext-15114",
+  "ja": "カバーリングチョコレート",
+  "desc": "Covered chocolates: nuts or biscuits enrobed in glossy brown chocolate, small rounded pieces, one cut showing the inside, in a small dish",
+  "items": [
+   "mext:15114"
+  ]
+ },
+ {
+  "key": "mext-15117",
+  "ja": "マロングラッセ",
+  "desc": "Marron glace: whole candied chestnuts with a glossy shining sugar glaze, golden-brown, on a small plate",
+  "items": [
+   "mext:15117"
+  ]
+ },
+ {
+  "key": "mext-15120",
+  "ja": "風船ガム",
+  "desc": "Bubble gum: pink chewing gum pieces, small soft rectangles, one blown into a bubble shape",
+  "items": [
+   "mext:15120"
+  ]
+ },
+ {
+  "key": "mext-15180",
+  "ja": "チョコレートクリーム",
+  "desc": "Chocolate cream: a smooth glossy dark brown chocolate spread in a small dish",
+  "items": [
+   "mext:15180"
+  ]
+ },
+ {
+  "key": "mext-16003",
+  "ja": "清酒 本醸造酒",
+  "desc": "Honjozo sake: clear colourless rice wine in a small ceramic sake cup beside a tokkuri flask",
+  "items": [
+   "mext:16003"
+  ]
+ },
+ {
+  "key": "mext-16005",
+  "ja": "清酒 純米吟醸酒",
+  "desc": "Junmai ginjo sake: clear pale rice wine in a small glass sake cup, delicate and slightly golden",
+  "items": [
+   "mext:16005"
+  ]
+ },
+ {
+  "key": "mext-16008",
+  "ja": "ビール スタウト",
+  "desc": "Stout beer: opaque near-black beer with a thick creamy tan foam head in a tall glass",
+  "items": [
+   "mext:16008"
+  ]
+ },
+ {
+  "key": "mext-16020",
+  "ja": "ラム",
+  "desc": "Rum: clear amber-golden spirit in a small tumbler glass",
+  "items": [
+   "mext:16020"
+  ]
+ },
+ {
+  "key": "mext-16021",
+  "ja": "マオタイ酒",
+  "desc": "Maotai: clear colourless Chinese baijiu liquor in a tiny glass",
+  "items": [
+   "mext:16021"
+  ]
+ },
+ {
+  "key": "mext-16023",
+  "ja": "合成清酒",
+  "desc": "Synthetic sake: clear pale yellowish rice wine in a small ceramic cup",
+  "items": [
+   "mext:16023"
+  ]
+ },
+ {
+  "key": "mext-16024",
+  "ja": "白酒",
+  "desc": "Shirozake: thick milky white sweet sake, opaque and creamy, in a small cup for the Hinamatsuri festival",
+  "items": [
+   "mext:16024"
+  ]
+ },
+ {
+  "key": "mext-16026",
+  "ja": "みりん 本直し",
+  "desc": "Hon-naoshi mirin: clear pale golden sweet rice liquor in a small glass",
+  "items": [
+   "mext:16026"
+  ]
+ },
+ {
+  "key": "mext-16027",
+  "ja": "薬味酒",
+  "desc": "Herbal liqueur: a dark brown medicinal liqueur in a small glass",
+  "items": [
+   "mext:16027"
+  ]
+ },
+ {
+  "key": "mext-16028",
+  "ja": "キュラソー",
+  "desc": "Curacao: a clear bright blue orange liqueur in a small liqueur glass",
+  "items": [
+   "mext:16028"
+  ]
+ },
+ {
+  "key": "mext-16029",
+  "ja": "スイートワイン",
+  "desc": "Sweet wine: a rich golden-amber dessert wine in a small wine glass",
+  "items": [
+   "mext:16029"
+  ]
+ },
+ {
+  "key": "mext-16030",
+  "ja": "ペパーミント",
+  "desc": "Peppermint liqueur: a clear vivid emerald green liqueur in a small liqueur glass",
+  "items": [
+   "mext:16030"
+  ]
+ },
+ {
+  "key": "mext-16031",
+  "ja": "ベルモット 甘口タイプ",
+  "desc": "Sweet vermouth: a dark red-brown fortified wine in a small glass",
+  "items": [
+   "mext:16031"
+  ]
+ },
+ {
+  "key": "mext-16032",
+  "ja": "ベルモット 辛口タイプ",
+  "desc": "Dry vermouth: a pale straw-coloured clear fortified wine in a small glass",
+  "items": [
+   "mext:16032"
+  ]
+ },
+ {
+  "key": "mext-16033",
+  "ja": "玉露（茶葉）",
+  "desc": "Gyokuro tea leaves: fine dark deep-green needle-shaped rolled loose tea leaves, glossy, in a small dish",
+  "items": [
+   "mext:16033"
+  ]
+ },
+ {
+  "key": "mext-16036",
+  "ja": "せん茶（茶葉）",
+  "desc": "Sencha tea leaves: thin dark green needle-shaped rolled loose tea leaves in a small dish",
+  "items": [
+   "mext:16036"
+  ]
+ },
+ {
+  "key": "mext-16038",
+  "ja": "かまいり茶 浸出液",
+  "desc": "Kamairi cha: a clear pale yellow-green pan-fired green tea in a small Japanese teacup",
+  "items": [
+   "mext:16038"
+  ]
+ },
+ {
+  "key": "mext-16062",
+  "ja": "番茶（茶葉）",
+  "desc": "Bancha tea leaves: larger flat coarse olive-green and brownish loose tea leaves with stems, in a small dish",
+  "items": [
+   "mext:16062"
+  ]
+ },
+ {
+  "key": "mext-16063",
+  "ja": "ほうじ茶（茶葉）",
+  "desc": "Hojicha tea leaves: roasted loose tea leaves and stems, reddish brown, in a small dish",
+  "items": [
+   "mext:16063"
+  ]
+ },
+ {
+  "key": "mext-16043",
+  "ja": "紅茶（茶葉）",
+  "desc": "Black tea leaves: dark brown-black finely cut twisted dry tea leaves in a small dish",
+  "items": [
+   "mext:16043"
+  ]
+ },
+ {
+  "key": "mext-16052",
+  "ja": "果実色飲料",
+  "desc": "Fruit-coloured soda: a bright orange fizzy soft drink with bubbles in a clear glass",
+  "items": [
+   "mext:16052"
+  ]
+ },
+ {
+  "key": "mext-16061",
+  "ja": "なぎなたこうじゅ 浸出液",
+  "desc": "Naginata koju tea: a clear pale yellow-brown herbal infusion in a small teacup",
+  "items": [
+   "mext:16061"
+  ]
+ },
+ {
+  "key": "mext-17005",
+  "ja": "チリペッパーソース",
+  "desc": "Chili pepper sauce: a thin bright red hot sauce like Tabasco, in a small dish",
+  "items": [
+   "mext:17005"
+  ]
+ },
+ {
+  "key": "mext-17139",
+  "ja": "うすくちしょうゆ 低塩",
+  "desc": "Low-salt light soy sauce: a clear light amber-brown thin soy sauce in a small dish, paler than regular soy sauce",
+  "items": [
+   "mext:17139"
+  ]
+ },
+ {
+  "key": "mext-17009",
+  "ja": "たまりしょうゆ",
+  "desc": "Tamari soy sauce: a thick very dark nearly black glossy soy sauce in a small dish",
+  "items": [
+   "mext:17009"
+  ]
+ },
+ {
+  "key": "mext-17010",
+  "ja": "さいしこみしょうゆ",
+  "desc": "Saishikomi soy sauce: a thick rich very dark reddish-brown double-brewed soy sauce in a small dish",
+  "items": [
+   "mext:17010"
+  ]
+ },
+ {
+  "key": "mext-17011",
+  "ja": "しろしょうゆ",
+  "desc": "Shiro shoyu: a very pale clear golden-amber white soy sauce in a small dish, much lighter than regular soy",
+  "items": [
+   "mext:17011"
+  ]
+ },
+ {
+  "key": "mext-17088",
+  "ja": "照りしょうゆ",
+  "desc": "Teri shoyu: a thick glossy dark brown sweet soy glaze in a small dish",
+  "items": [
+   "mext:17088"
+  ]
+ },
+ {
+  "key": "mext-17013",
+  "ja": "並塩",
+  "desc": "Coarse table salt: slightly coarse white salt crystals in a small dish",
+  "items": [
+   "mext:17013"
+  ]
+ },
+ {
+  "key": "mext-17146",
+  "ja": "減塩タイプ食塩 調味料含む",
+  "desc": "Reduced-salt seasoned salt: fine white salt granules in a small dish",
+  "items": [
+   "mext:17146",
+   "mext:17147"
+  ]
+ },
+ {
+  "key": "mext-17014",
+  "ja": "精製塩 家庭用",
+  "desc": "Refined salt: very fine pure white free-flowing salt in a small dish",
+  "items": [
+   "mext:17014",
+   "mext:17089"
+  ]
+ },
+ {
+  "key": "mext-17091",
+  "ja": "果実酢 バルサミコ酢",
+  "desc": "Balsamic vinegar: a thick glossy very dark brown-black vinegar in a small dish",
+  "items": [
+   "mext:17091"
+  ]
+ },
+ {
+  "key": "mext-17017",
+  "ja": "果実酢 ぶどう酢",
+  "desc": "Wine vinegar: a clear pale golden grape vinegar in a small glass",
+  "items": [
+   "mext:17017"
+  ]
+ },
+ {
+  "key": "mext-17018",
+  "ja": "果実酢 りんご酢",
+  "desc": "Apple vinegar: a clear pale amber apple cider vinegar in a small glass",
+  "items": [
+   "mext:17018"
+  ]
+ },
+ {
+  "key": "mext-17130",
+  "ja": "あごだし",
+  "desc": "Ago dashi: a clear pale golden flying-fish broth in a small bowl, with a dried flying fish beside it",
+  "items": [
+   "mext:17130"
+  ]
+ },
+ {
+  "key": "mext-17019",
+  "ja": "かつおだし 荒節",
+  "desc": "Katsuo dashi: a clear light golden bonito broth in a small bowl, with pink-brown bonito flakes beside it",
+  "items": [
+   "mext:17019",
+   "mext:17131"
+  ]
+ },
+ {
+  "key": "mext-17020",
+  "ja": "昆布だし 水出し",
+  "desc": "Kombu dashi: a clear very pale yellow kelp broth in a small bowl, with a piece of dark green dried kombu beside it",
+  "items": [
+   "mext:17020",
+   "mext:17132"
+  ]
+ },
+ {
+  "key": "mext-17148",
+  "ja": "かつお・昆布だし 本枯れ節・昆布だし",
+  "desc": "Katsuo and kombu dashi: a clear golden broth in a small bowl, with bonito flakes and a piece of kombu beside it",
+  "items": [
+   "mext:17148"
+  ]
+ },
+ {
+  "key": "mext-17022",
+  "ja": "しいたけだし",
+  "desc": "Shiitake dashi: a clear light brown mushroom broth in a small bowl, with dried shiitake mushrooms beside it",
+  "items": [
+   "mext:17022"
+  ]
+ },
+ {
+  "key": "mext-17023",
+  "ja": "煮干しだし",
+  "desc": "Niboshi dashi: a clear pale golden broth in a small bowl, with small dried silver sardines beside it",
+  "items": [
+   "mext:17023"
+  ]
+ },
+ {
+  "key": "mext-17025",
+  "ja": "中華だし",
+  "desc": "Chinese stock: a clear light golden chicken soup stock with tiny fat droplets in a small bowl",
+  "items": [
+   "mext:17025"
+  ]
+ },
+ {
+  "key": "mext-17026",
+  "ja": "洋風だし",
+  "desc": "Western stock: a clear golden-brown consomme broth in a small bowl",
+  "items": [
+   "mext:17026"
+  ]
+ },
+ {
+  "key": "mext-17092",
+  "ja": "顆粒おでん用",
+  "desc": "Granulated oden soup base: fine pale yellow-tan granules in a small dish",
+  "items": [
+   "mext:17092"
+  ]
+ },
+ {
+  "key": "mext-17140",
+  "ja": "なべつゆ ストレート しょうゆ味",
+  "desc": "Hot pot soup: a light brown clear soy-flavoured broth in a small bowl",
+  "items": [
+   "mext:17140"
+  ]
+ },
+ {
+  "key": "mext-17142",
+  "ja": "ラーメンスープ 濃縮 ストレートしょうゆ味",
+  "desc": "Shoyu ramen soup: a clear brown soy broth with glistening oil droplets on top, in a small bowl",
+  "items": [
+   "mext:17142"
+  ]
+ },
+ {
+  "key": "mext-17143",
+  "ja": "ラーメンスープ 濃縮 ストレートみそ味",
+  "desc": "Miso ramen soup: an opaque light orange-brown cloudy miso broth with oil droplets, in a small bowl",
+  "items": [
+   "mext:17143"
+  ]
+ },
+ {
+  "key": "mext-17095",
+  "ja": "エビチリの素",
+  "desc": "Ebi chili sauce base: a thick glossy red-orange sweet chili sauce with flecks of garlic and green onion, in a small dish",
+  "items": [
+   "mext:17095"
+  ]
+ },
+ {
+  "key": "mext-17096",
+  "ja": "黄身酢",
+  "desc": "Kimizu: a smooth thick glossy bright yellow egg-yolk vinegar sauce in a small dish",
+  "items": [
+   "mext:17096"
+  ]
+ },
+ {
+  "key": "mext-17133",
+  "ja": "魚醤油 いかなごしょうゆ",
+  "desc": "Ikanago fish sauce: a clear dark amber-brown fish sauce in a small dish",
+  "items": [
+   "mext:17133"
+  ]
+ },
+ {
+  "key": "mext-17134",
+  "ja": "魚醤油 いしる",
+  "desc": "Ishiru fish sauce: a clear deep amber-brown fish sauce in a small dish",
+  "items": [
+   "mext:17134"
+  ]
+ },
+ {
+  "key": "mext-17135",
+  "ja": "魚醤油 しょっつる",
+  "desc": "Shottsuru fish sauce: a clear light amber-brown fish sauce in a small dish",
+  "items": [
+   "mext:17135"
+  ]
+ },
+ {
+  "key": "mext-17097",
+  "ja": "ごま酢",
+  "desc": "Goma-zu: a creamy light tan sesame vinegar dressing with ground sesame flecks, in a small dish",
+  "items": [
+   "mext:17097"
+  ]
+ },
+ {
+  "key": "mext-17099",
+  "ja": "三杯酢",
+  "desc": "Sanbaizu: a clear light amber sweet vinegar-soy dressing in a small dish",
+  "items": [
+   "mext:17099"
+  ]
+ },
+ {
+  "key": "mext-17100",
+  "ja": "二杯酢",
+  "desc": "Nihaizu: a clear light brown vinegar and soy dressing in a small dish",
+  "items": [
+   "mext:17100"
+  ]
+ },
+ {
+  "key": "mext-17102",
+  "ja": "すし酢 にぎり用",
+  "desc": "Sushi vinegar: a clear colourless seasoned rice vinegar in a small glass",
+  "items": [
+   "mext:17102",
+   "mext:17103"
+  ]
+ },
+ {
+  "key": "mext-17104",
+  "ja": "中華風合わせ酢",
+  "desc": "Chinese-style dressing: a clear brown vinegar-soy dressing with sesame oil droplets in a small dish",
+  "items": [
+   "mext:17104"
+  ]
+ },
+ {
+  "key": "mext-17111",
+  "ja": "マリネ液",
+  "desc": "Marinade: a clear pale golden oil and vinegar liquid with herb flecks in a small dish",
+  "items": [
+   "mext:17111"
+  ]
+ },
+ {
+  "key": "mext-17144",
+  "ja": "焼きそば粉末ソース",
+  "desc": "Yakisoba powder sauce: a fine dark brown seasoning powder in a small dish",
+  "items": [
+   "mext:17144"
+  ]
+ },
+ {
+  "key": "mext-17114",
+  "ja": "みたらしのたれ",
+  "desc": "Mitarashi sauce: a thick glossy translucent amber-brown sweet soy glaze in a small dish",
+  "items": [
+   "mext:17114"
+  ]
+ },
+ {
+  "key": "mext-17034",
+  "ja": "トマトピューレー",
+  "desc": "Tomato puree: a smooth thick bright red tomato puree in a small dish",
+  "items": [
+   "mext:17034"
+  ]
+ },
+ {
+  "key": "mext-17035",
+  "ja": "トマトペースト",
+  "desc": "Tomato paste: a very thick dense deep brick-red tomato paste in a small dish",
+  "items": [
+   "mext:17035"
+  ]
+ },
+ {
+  "key": "mext-17038",
+  "ja": "チリソース",
+  "desc": "Chili sauce: a thick chunky red tomato chili sauce in a small dish",
+  "items": [
+   "mext:17038"
+  ]
+ },
+ {
+  "key": "mext-17145",
+  "ja": "だし入りみそ 減塩",
+  "desc": "Dashi miso: a smooth light brown soybean paste mounded in a small dish",
+  "items": [
+   "mext:17145"
+  ]
+ },
+ {
+  "key": "mext-17121",
+  "ja": "辛子酢みそ",
+  "desc": "Karashi sumiso: a smooth thick pale yellow mustard and vinegar miso sauce in a small dish",
+  "items": [
+   "mext:17121"
+  ]
+ },
+ {
+  "key": "mext-17122",
+  "ja": "ごまみそ",
+  "desc": "Goma miso: a thick tan brown miso paste mixed with ground sesame seeds, in a small dish",
+  "items": [
+   "mext:17122"
+  ]
+ },
+ {
+  "key": "mext-17123",
+  "ja": "酢みそ",
+  "desc": "Sumiso: a smooth thick pale cream-yellow sweet vinegar miso sauce in a small dish",
+  "items": [
+   "mext:17123"
+  ]
+ },
+ {
+  "key": "mext-17124",
+  "ja": "練りみそ",
+  "desc": "Neri miso: a glossy thick sweet brown kneaded miso paste in a small dish",
+  "items": [
+   "mext:17124"
+  ]
+ },
+ {
+  "key": "mext-17136",
+  "ja": "キムチの素",
+  "desc": "Kimchi base: a thick bright red chili paste with garlic and pepper flakes in a small dish",
+  "items": [
+   "mext:17136"
+  ]
+ },
+ {
+  "key": "mext-17126",
+  "ja": "即席すまし汁",
+  "desc": "Instant clear soup: a clear pale golden suimono broth in a lacquered soup bowl with a few bits of fu and green onion",
+  "items": [
+   "mext:17126"
+  ]
+ },
+ {
+  "key": "mext-17055",
+  "ja": "オールスパイス 粉",
+  "desc": "Allspice powder: a fine reddish-brown spice powder in a small dish",
+  "items": [
+   "mext:17055"
+  ]
+ },
+ {
+  "key": "mext-17056",
+  "ja": "オニオンパウダー",
+  "desc": "Onion powder: a fine pale cream-beige powder in a small dish",
+  "items": [
+   "mext:17056"
+  ]
+ },
+ {
+  "key": "mext-17057",
+  "ja": "からし 粉",
+  "desc": "Karashi powder: a fine bright yellow mustard powder in a small dish",
+  "items": [
+   "mext:17057"
+  ]
+ },
+ {
+  "key": "mext-17062",
+  "ja": "クローブ 粉",
+  "desc": "Clove powder: a fine dark brown spice powder in a small dish",
+  "items": [
+   "mext:17062"
+  ]
+ },
+ {
+  "key": "mext-17065",
+  "ja": "こしょう 混合 粉",
+  "desc": "Mixed pepper: fine speckled grey-black and white ground pepper in a small dish",
+  "items": [
+   "mext:17065"
+  ]
+ },
+ {
+  "key": "mext-17066",
+  "ja": "さんしょう 粉",
+  "desc": "Sansho powder: a fine olive green-brown Japanese pepper powder in a small dish",
+  "items": [
+   "mext:17066"
+  ]
+ },
+ {
+  "key": "mext-17067",
+  "ja": "シナモン 粉",
+  "desc": "Cinnamon powder: a fine warm reddish-brown powder in a small dish",
+  "items": [
+   "mext:17067"
+  ]
+ },
+ {
+  "key": "mext-17068",
+  "ja": "しょうが 粉",
+  "desc": "Ginger powder: a fine pale yellow-beige powder in a small dish",
+  "items": [
+   "mext:17068"
+  ]
+ },
+ {
+  "key": "mext-17069",
+  "ja": "しょうが おろし",
+  "desc": "Grated ginger: a small moist mound of pale yellow finely grated fibrous ginger, in a small dish",
+  "items": [
+   "mext:17069"
+  ]
+ },
+ {
+  "key": "mext-17070",
+  "ja": "セージ 粉",
+  "desc": "Sage powder: a fine greyish-green ground herb in a small dish",
+  "items": [
+   "mext:17070"
+  ]
+ },
+ {
+  "key": "mext-17071",
+  "ja": "タイム 粉",
+  "desc": "Thyme powder: a fine dull olive green ground herb in a small dish",
+  "items": [
+   "mext:17071"
+  ]
+ },
+ {
+  "key": "mext-17072",
+  "ja": "チリパウダー",
+  "desc": "Chili powder: a fine deep orange-red spice powder in a small dish",
+  "items": [
+   "mext:17072"
+  ]
+ },
+ {
+  "key": "mext-17074",
+  "ja": "ナツメグ 粉",
+  "desc": "Nutmeg powder: a fine light brown spice powder in a small dish",
+  "items": [
+   "mext:17074"
+  ]
+ },
+ {
+  "key": "mext-17075",
+  "ja": "にんにく ガーリックパウダー 食塩無添加",
+  "desc": "Garlic powder: a fine pale cream powder in a small dish",
+  "items": [
+   "mext:17075",
+   "mext:17128"
+  ]
+ },
+ {
+  "key": "mext-17076",
+  "ja": "にんにく おろし",
+  "desc": "Grated garlic: a small moist mound of creamy white finely grated garlic paste in a small dish",
+  "items": [
+   "mext:17076"
+  ]
+ },
+ {
+  "key": "mext-17077",
+  "ja": "バジル 粉",
+  "desc": "Dried basil: crumbled dark green dried herb flakes in a small dish",
+  "items": [
+   "mext:17077"
+  ]
+ },
+ {
+  "key": "mext-17078",
+  "ja": "パセリ 乾",
+  "desc": "Dried parsley: tiny bright green dried flakes in a small dish",
+  "items": [
+   "mext:17078"
+  ]
+ },
+ {
+  "key": "mext-17079",
+  "ja": "パプリカ 粉",
+  "desc": "Paprika powder: a fine vivid brick-red powder in a small dish",
+  "items": [
+   "mext:17079"
+  ]
+ },
+ {
+  "key": "mext-17080",
+  "ja": "わさび 粉 からし粉入り",
+  "desc": "Wasabi powder: a fine pale green-yellow powder in a small dish",
+  "items": [
+   "mext:17080"
+  ]
+ },
+ {
+  "key": "mext-17082",
+  "ja": "パン酵母 圧搾",
+  "desc": "Fresh compressed yeast: a soft moist beige crumbly block of baker's yeast, broken edge showing, on a small plate",
+  "items": [
+   "mext:17082"
+  ]
+ },
+ {
+  "key": "mext-17083",
+  "ja": "パン酵母 乾燥",
+  "desc": "Dry yeast: tiny tan-beige dry granules in a small dish",
+  "items": [
+   "mext:17083"
+  ]
+ },
+ {
+  "key": "mext-18054",
+  "ja": "鶏のから揚げ",
+  "desc": "Karaage: Japanese fried chicken, chunky irregular nuggets with a craggy deep golden-brown crisp coating, with a lemon wedge, on a plate",
+  "items": [
+   "mext:18054",
+   "kurume:067"
+  ]
+ },
+ {
+  "key": "mext-18008",
+  "ja": "いかフライ 冷凍（揚げる前）",
+  "desc": "Frozen squid fry: raw breaded squid rings covered in pale uncooked white panko crumbs, frosty, on a plate, not yet fried",
+  "items": [
+   "mext:18008"
+  ]
+ },
+ {
+  "key": "mext-18006",
+  "ja": "クリームコロッケ 冷凍（揚げる前）",
+  "desc": "Frozen cream croquettes: raw oval cylinders covered in pale uncooked white panko crumbs, frosty, on a plate, not yet fried",
+  "items": [
+   "mext:18006"
+  ]
+ },
+ {
+  "key": "mext-18010",
+  "ja": "白身フライ 冷凍（揚げる前）",
+  "desc": "Frozen white fish fry: raw breaded flat fish fillets covered in pale uncooked white panko crumbs, frosty, on a plate, not yet fried",
+  "items": [
+   "mext:18010"
+  ]
+ },
+ {
+  "key": "mext-18016",
+  "ja": "メンチカツ 冷凍（揚げる前）",
+  "desc": "Frozen menchi katsu: raw thick round minced meat patties covered in pale uncooked white panko crumbs, frosty, on a plate, not yet fried",
+  "items": [
+   "mext:18016"
+  ]
+ },
+ {
+  "key": "takatsuki-r01",
+  "ja": "カレーピラフ",
+  "desc": "Curry pilaf: yellow curry-coloured rice with diced carrot, onion, green peas and bits of meat, on a plate",
+  "items": [
+   "takatsuki:r01"
+  ]
+ },
+ {
+  "key": "takatsuki-r02",
+  "ja": "きのこごはん",
+  "desc": "Kinoko gohan: light brown soy-seasoned mixed rice with shimeji, shiitake and enoki mushrooms and carrot, in a rice bowl",
+  "items": [
+   "takatsuki:r02",
+   "toyonaka:278117"
+  ]
+ },
+ {
+  "key": "takatsuki-r03",
+  "ja": "クファジューシー",
+  "desc": "Kufa juushii: Okinawan seasoned rice, light brown, with pork, carrot, hijiki and shiitake bits, firm grains, in a rice bowl",
+  "items": [
+   "takatsuki:r03"
+  ]
+ },
+ {
+  "key": "takatsuki-r04",
+  "ja": "さつまいもごはん",
+  "desc": "Satsumaimo gohan: white rice mixed with chunks of sweet potato with purple skin and yellow flesh, black sesame on top, in a rice bowl",
+  "items": [
+   "takatsuki:r04"
+  ]
+ },
+ {
+  "key": "takatsuki-r05",
+  "ja": "たけのこごはん",
+  "desc": "Takenoko gohan: light brown seasoned rice with thin pale bamboo shoot slices, carrot and fried tofu, in a rice bowl",
+  "items": [
+   "takatsuki:r05",
+   "kumagaya:00122"
+  ]
+ },
+ {
+  "key": "takatsuki-r06",
+  "ja": "中華おこわ",
+  "desc": "Chinese okowa: glossy brown sticky glutinous rice with pork, shiitake, bamboo shoot and carrot, in a rice bowl",
+  "items": [
+   "takatsuki:r06"
+  ]
+ },
+ {
+  "key": "takatsuki-r07",
+  "ja": "鶏めし",
+  "desc": "Tori meshi: light brown seasoned rice mixed with small pieces of chicken, burdock and carrot, in a rice bowl",
+  "items": [
+   "takatsuki:r07"
+  ]
+ },
+ {
+  "key": "takatsuki-r08",
+  "ja": "ひじきごはん",
+  "desc": "Hijiki gohan: white rice mixed with black hijiki seaweed strands, carrot and fried tofu bits, in a rice bowl",
+  "items": [
+   "takatsuki:r08"
+  ]
+ },
+ {
+  "key": "takatsuki-r09",
+  "ja": "豚キムチごはん",
+  "desc": "Pork kimchi rice: rice stir-fried with red kimchi and pork slices, reddish orange, with green onion, in a bowl",
+  "items": [
+   "takatsuki:r09"
+  ]
+ },
+ {
+  "key": "takatsuki-r10",
+  "ja": "豆ごはん",
+  "desc": "Mame gohan: white rice dotted with bright green peas, in a rice bowl",
+  "items": [
+   "takatsuki:r10"
+  ]
+ },
+ {
+  "key": "takatsuki-r11",
+  "ja": "鮭とかぶのシチュー",
+  "desc": "Salmon and turnip stew: a creamy white stew with pink salmon pieces, white turnip chunks, carrot and green turnip leaves, in a bowl",
+  "items": [
+   "takatsuki:r11"
+  ]
+ },
+ {
+  "key": "takatsuki-r12",
+  "ja": "さつまいものポタージュ",
+  "desc": "Sweet potato potage: a smooth thick pale yellow cream soup in a soup bowl with a swirl of cream",
+  "items": [
+   "takatsuki:r12"
+  ]
+ },
+ {
+  "key": "takatsuki-r13",
+  "ja": "四川風スープ",
+  "desc": "Sichuan-style soup: a slightly spicy reddish clear soup with tofu, egg ribbons, wood ear mushroom and vegetables, in a bowl",
+  "items": [
+   "takatsuki:r13"
+  ]
+ },
+ {
+  "key": "takatsuki-r14",
+  "ja": "とうがんスープ",
+  "desc": "Togan soup: a clear light soup with translucent pale green winter melon chunks, chicken and egg, in a bowl",
+  "items": [
+   "takatsuki:r14"
+  ]
+ },
+ {
+  "key": "takatsuki-r15",
+  "ja": "ハッシュドビーフ",
+  "desc": "Hashed beef: thin beef slices and onion in a glossy dark brown demi-glace sauce, in a bowl",
+  "items": [
+   "takatsuki:r15"
+  ]
+ },
+ {
+  "key": "takatsuki-r16",
+  "ja": "レタススープ",
+  "desc": "Lettuce soup: a clear light golden consomme with wilted green lettuce leaves and egg ribbons, in a bowl",
+  "items": [
+   "takatsuki:r16",
+   "toyonaka:117836"
+  ]
+ },
+ {
+  "key": "takatsuki-r17",
+  "ja": "若竹汁",
+  "desc": "Wakatake jiru: a clear soup with pale bamboo shoot pieces and soft green wakame seaweed, in a lacquered soup bowl",
+  "items": [
+   "takatsuki:r17",
+   "kurume:197",
+   "toyonaka:120166"
+  ]
+ },
+ {
+  "key": "takatsuki-r18",
+  "ja": "アドボ",
+  "desc": "Adobo: Filipino chicken braised in soy and vinegar, glossy dark brown pieces with garlic and bay leaf, on a plate",
+  "items": [
+   "takatsuki:r18"
+  ]
+ },
+ {
+  "key": "takatsuki-r19",
+  "ja": "いろいろ豆と根菜のトマト煮込み",
+  "desc": "Bean and root vegetable tomato stew: mixed beans, diced carrot, burdock and lotus root in red tomato sauce, in a bowl",
+  "items": [
+   "takatsuki:r19"
+  ]
+ },
+ {
+  "key": "takatsuki-r20",
+  "ja": "牛肉とマカロニのトマト煮",
+  "desc": "Beef and macaroni tomato stew: elbow macaroni with beef, onion and carrot in red tomato sauce, in a bowl",
+  "items": [
+   "takatsuki:r20"
+  ]
+ },
+ {
+  "key": "takatsuki-r21",
+  "ja": "凍り豆腐の甘酢あん",
+  "desc": "Koya tofu in sweet sour sauce: fried cubes of spongy freeze-dried tofu coated in a glossy orange sweet and sour sauce with vegetables, on a plate",
+  "items": [
+   "takatsuki:r21"
+  ]
+ },
+ {
+  "key": "takatsuki-r22",
+  "ja": "さばのソース煮",
+  "desc": "Saba sauce-ni: mackerel pieces simmered in dark brown Worcester-style sauce, glossy, on a plate",
+  "items": [
+   "takatsuki:r22"
+  ]
+ },
+ {
+  "key": "takatsuki-r23",
+  "ja": "大根のそぼろ煮",
+  "desc": "Daikon soboro-ni: soft translucent beige simmered daikon chunks with minced meat in a thickened clear sauce, in a bowl",
+  "items": [
+   "takatsuki:r23"
+  ]
+ },
+ {
+  "key": "takatsuki-r24",
+  "ja": "豚肉と大豆の中華煮",
+  "desc": "Pork and soybean Chinese stew: pork pieces, soybeans, carrot and bamboo shoot in a glossy brown sauce, in a bowl",
+  "items": [
+   "takatsuki:r24"
+  ]
+ },
+ {
+  "key": "takatsuki-r26",
+  "ja": "かわりきんぴら",
+  "desc": "Kawari kinpira: a variant kinpira of thin strips of burdock, carrot and other vegetables stir-fried in soy with sesame, in a small bowl",
+  "items": [
+   "takatsuki:r26"
+  ]
+ },
+ {
+  "key": "takatsuki-r27",
+  "ja": "切干し大根のごま酢いため",
+  "desc": "Kiriboshi daikon with sesame vinegar: stir-fried tangled strands of dried shredded daikon with carrot and sesame, pale tan, in a small bowl",
+  "items": [
+   "takatsuki:r27"
+  ]
+ },
+ {
+  "key": "takatsuki-r28",
+  "ja": "くきわかめのピリカラ",
+  "desc": "Spicy kuki wakame: dark green crunchy seaweed stem strips stir-fried with chili and sesame, glossy, in a small bowl",
+  "items": [
+   "takatsuki:r28"
+  ]
+ },
+ {
+  "key": "takatsuki-r30",
+  "ja": "家郷豆腐",
+  "desc": "Jiaxiang tofu: fried tofu slices simmered with pork, vegetables and wood ear mushroom in a brown sauce, on a plate",
+  "items": [
+   "takatsuki:r30"
+  ]
+ },
+ {
+  "key": "takatsuki-r31",
+  "ja": "チャプチェ",
+  "desc": "Japchae: glossy translucent sweet potato glass noodles stir-fried with beef, spinach, carrot, onion and mushroom, sesame on top, on a plate",
+  "items": [
+   "takatsuki:r31",
+   "toyonaka:117763"
+  ]
+ },
+ {
+  "key": "takatsuki-r32",
+  "ja": "青椒肉絲",
+  "desc": "Qingjiao rousi: thin strips of green bell pepper, bamboo shoot and pork stir-fried in glossy brown sauce, on a plate",
+  "items": [
+   "takatsuki:r32"
+  ]
+ },
+ {
+  "key": "takatsuki-r33",
+  "ja": "回鍋肉",
+  "desc": "Hoikoro: twice-cooked pork slices stir-fried with large cabbage pieces and green pepper in a reddish brown miso sauce, on a plate",
+  "items": [
+   "takatsuki:r33"
+  ]
+ },
+ {
+  "key": "takatsuki-r36",
+  "ja": "キムチうどん",
+  "desc": "Kimchi udon: thick white udon noodles in a red spicy kimchi broth with pork and green onion, in a bowl",
+  "items": [
+   "takatsuki:r36"
+  ]
+ },
+ {
+  "key": "takatsuki-r37",
+  "ja": "ソーススパゲッティ",
+  "desc": "Sauce spaghetti: spaghetti stir-fried with dark brown Worcester sauce, cabbage, carrot and pork, like yakisoba, on a plate",
+  "items": [
+   "takatsuki:r37"
+  ]
+ },
+ {
+  "key": "takatsuki-r38",
+  "ja": "ベトナム風汁めん",
+  "desc": "Vietnamese noodle soup: flat white rice noodles in a clear broth with chicken, bean sprouts and fresh herbs, in a bowl",
+  "items": [
+   "takatsuki:r38"
+  ]
+ },
+ {
+  "key": "takatsuki-r39",
+  "ja": "和風カレーうどん",
+  "desc": "Japanese curry udon: thick white udon noodles in a thick yellow-brown curry broth with green onion and pork, in a bowl",
+  "items": [
+   "takatsuki:r39"
+  ]
+ },
+ {
+  "key": "takatsuki-r40",
+  "ja": "かきあげ",
+  "desc": "Kakiage: a round crispy fritter of shredded onion, carrot and vegetables in light golden tempura batter, on a plate",
+  "items": [
+   "takatsuki:r40"
+  ]
+ },
+ {
+  "key": "takatsuki-r41",
+  "ja": "かつおのチリソース",
+  "desc": "Katsuo with chili sauce: fried bonito chunks coated in a glossy red-orange chili sauce, on a plate",
+  "items": [
+   "takatsuki:r41"
+  ]
+ },
+ {
+  "key": "takatsuki-r42",
+  "ja": "鯨肉のオーロラソース",
+  "desc": "Whale with aurora sauce: fried dark red whale meat pieces in a pink mayonnaise-ketchup sauce, on a plate",
+  "items": [
+   "takatsuki:r42"
+  ]
+ },
+ {
+  "key": "takatsuki-r43",
+  "ja": "コーンとアスパラガスのかきあげ",
+  "desc": "Corn and asparagus kakiage: a crispy golden tempura fritter with yellow corn kernels and green asparagus pieces, on a plate",
+  "items": [
+   "takatsuki:r43"
+  ]
+ },
+ {
+  "key": "takatsuki-r45",
+  "ja": "魚のカレー風味焼き",
+  "desc": "Curry-flavoured grilled fish: a fish fillet with a yellow curry powder crust, lightly browned, on a plate",
+  "items": [
+   "takatsuki:r45"
+  ]
+ },
+ {
+  "key": "takatsuki-r46",
+  "ja": "さわらのゆず風味焼き",
+  "desc": "Sawara yuzu grilled: a grilled Spanish mackerel fillet with a glossy golden glaze and yuzu zest flecks, on a plate",
+  "items": [
+   "takatsuki:r46"
+  ]
+ },
+ {
+  "key": "takatsuki-r48",
+  "ja": "ぶどう寒天",
+  "desc": "Grape kanten: firm translucent purple grape agar jelly cubes, in a small glass bowl",
+  "items": [
+   "takatsuki:r48"
+  ]
+ },
+ {
+  "key": "takatsuki-r51",
+  "ja": "切干し大根の甘酢",
+  "desc": "Kiriboshi daikon amazu: dried shredded daikon strands with carrot and cucumber strips in a sweet vinegar dressing, in a small bowl",
+  "items": [
+   "takatsuki:r51"
+  ]
+ },
+ {
+  "key": "takatsuki-r52",
+  "ja": "豆腐と春菊のいためもの",
+  "desc": "Tofu and shungiku stir-fry: white tofu pieces stir-fried with dark green chrysanthemum greens and pork, on a plate",
+  "items": [
+   "takatsuki:r52"
+  ]
+ },
+ {
+  "key": "takatsuki-r53",
+  "ja": "バジルパスタ",
+  "desc": "Basil pasta: spaghetti coated in bright green basil pesto, on a plate",
+  "items": [
+   "takatsuki:r53"
+  ]
+ },
+ {
+  "key": "takatsuki-r55",
+  "ja": "わかさぎのバーベキューソース",
+  "desc": "Wakasagi BBQ sauce: small whole fried smelt fish coated in a glossy dark brown barbecue sauce, on a plate",
+  "items": [
+   "takatsuki:r55"
+  ]
+ },
+ {
+  "key": "takatsuki-r56",
+  "ja": "さんまのかば焼き",
+  "desc": "Sanma kabayaki: butterflied saury fillets glazed in a glossy dark brown sweet soy sauce, on a plate",
+  "items": [
+   "takatsuki:r56",
+   "kumagaya:00275"
+  ]
+ },
+ {
+  "key": "takatsuki-r57",
+  "ja": "ポテトのピザソース焼き",
+  "desc": "Potato pizza bake: sliced potatoes topped with red pizza sauce and melted golden cheese, baked, in a small oven dish",
+  "items": [
+   "takatsuki:r57"
+  ]
+ },
+ {
+  "key": "kurume-001",
+  "ja": "ごはん",
+  "desc": "Gohan: plain steamed white rice, glossy short grains mounded in a rice bowl",
+  "items": [
+   "kurume:001"
+  ]
+ },
+ {
+  "key": "kurume-002",
+  "ja": "麦ごはん",
+  "desc": "Mugi gohan: white rice mixed with pale barley grains showing a dark line down each, in a rice bowl",
+  "items": [
+   "kurume:002",
+   "kumagaya:00117"
+  ]
+ },
+ {
+  "key": "kurume-003",
+  "ja": "きのこたっぷり混ぜご飯",
+  "desc": "Mushroom mixed rice: rice mixed with plenty of shimeji, shiitake and maitake mushrooms in soy seasoning, light brown, in a rice bowl",
+  "items": [
+   "kurume:003"
+  ]
+ },
+ {
+  "key": "kurume-004",
+  "ja": "五目炊き込みご飯",
+  "desc": "Gomoku takikomi gohan: light brown seasoned rice with chicken, carrot, burdock, shiitake and fried tofu bits, in a rice bowl",
+  "items": [
+   "kurume:004"
+  ]
+ },
+ {
+  "key": "kurume-007",
+  "ja": "巻き寿司",
+  "desc": "Maki sushi: thick sushi rolls in dark nori sliced to show white rice around colourful fillings of egg, cucumber, kanpyo and pink denbu, on a plate",
+  "items": [
+   "kurume:007"
+  ]
+ },
+ {
+  "key": "kurume-016",
+  "ja": "炒飯",
+  "desc": "Chahan: fried rice with scrambled egg, green onion, diced pork, loose golden grains, on a plate",
+  "items": [
+   "kurume:016"
+  ]
+ },
+ {
+  "key": "kurume-017",
+  "ja": "きな粉もち",
+  "desc": "Kinako mochi: soft white rice cake coated in pale tan roasted soybean flour, on a small plate",
+  "items": [
+   "kurume:017"
+  ]
+ },
+ {
+  "key": "kurume-018",
+  "ja": "磯辺焼き",
+  "desc": "Isobe yaki: grilled rice cake glazed with soy sauce and wrapped in a dark nori sheet, on a small plate",
+  "items": [
+   "kurume:018"
+  ]
+ },
+ {
+  "key": "kurume-019",
+  "ja": "卵野菜サンドイッチ",
+  "desc": "Egg and vegetable sandwich: white bread sandwich triangles with egg salad, lettuce and tomato, on a plate",
+  "items": [
+   "kurume:019"
+  ]
+ },
+ {
+  "key": "kurume-020",
+  "ja": "卵サンドイッチ",
+  "desc": "Egg sandwich: soft white crustless bread triangles filled with pale yellow mashed egg salad, on a plate",
+  "items": [
+   "kurume:020"
+  ]
+ },
+ {
+  "key": "kurume-021",
+  "ja": "チーズ野菜サンドイッチ",
+  "desc": "Cheese and vegetable sandwich: white bread sandwich triangles with cheese slices, lettuce and cucumber, on a plate",
+  "items": [
+   "kurume:021"
+  ]
+ },
+ {
+  "key": "kurume-022",
+  "ja": "ツナサンドイッチ",
+  "desc": "Tuna sandwich: white bread sandwich triangles with tuna mayonnaise and lettuce, on a plate",
+  "items": [
+   "kurume:022"
+  ]
+ },
+ {
+  "key": "kurume-023",
+  "ja": "トースト",
+  "desc": "Toast: a thick slice of Japanese white bread toasted golden-brown with a pat of butter, on a plate",
+  "items": [
+   "kurume:023"
+  ]
+ },
+ {
+  "key": "kurume-025",
+  "ja": "いちごジャムトースト",
+  "desc": "Strawberry jam toast: a thick slice of toasted white bread spread with glossy red strawberry jam, on a plate",
+  "items": [
+   "kurume:025"
+  ]
+ },
+ {
+  "key": "kurume-037",
+  "ja": "やまかけうどん",
+  "desc": "Yamakake udon: thick white udon noodles in clear brown broth topped with sticky white grated yam and nori strips, in a bowl",
+  "items": [
+   "kurume:037"
+  ]
+ },
+ {
+  "key": "kurume-039",
+  "ja": "えび天うどん",
+  "desc": "Ebi ten udon: thick white udon noodles in clear brown broth topped with a large golden fried shrimp tempura and green onion, in a bowl",
+  "items": [
+   "kurume:039"
+  ]
+ },
+ {
+  "key": "kurume-040",
+  "ja": "ごぼう天うどん",
+  "desc": "Gobo ten udon: thick white udon in clear broth topped with crispy golden fried burdock root strip tempura, in a bowl",
+  "items": [
+   "kurume:040"
+  ]
+ },
+ {
+  "key": "kurume-043",
+  "ja": "わかめそば",
+  "desc": "Wakame soba: thin grey-brown buckwheat noodles in dark broth topped with soft green wakame seaweed and green onion, in a bowl",
+  "items": [
+   "kurume:043"
+  ]
+ },
+ {
+  "key": "kurume-045",
+  "ja": "えび天そば",
+  "desc": "Ebi ten soba: thin grey-brown buckwheat noodles in dark broth topped with a large golden shrimp tempura, in a bowl",
+  "items": [
+   "kurume:045"
+  ]
+ },
+ {
+  "key": "kurume-048",
+  "ja": "ミートソーススパゲティ",
+  "desc": "Meat sauce spaghetti: spaghetti topped with red-brown minced meat bolognese sauce and parmesan, on a plate",
+  "items": [
+   "kurume:048"
+  ]
+ },
+ {
+  "key": "kurume-049",
+  "ja": "カルボナーラスパゲティ",
+  "desc": "Carbonara: spaghetti in a creamy pale yellow egg and cheese sauce with bacon bits and black pepper, on a plate",
+  "items": [
+   "kurume:049"
+  ]
+ },
+ {
+  "key": "kurume-051",
+  "ja": "豚肉のしょうが焼き",
+  "desc": "Shogayaki: thin pork slices pan-fried in glossy brown ginger soy sauce with onion, shredded cabbage beside, on a plate",
+  "items": [
+   "kurume:051",
+   "toyonaka:128870"
+  ]
+ },
+ {
+  "key": "kurume-052",
+  "ja": "鶏もも肉の照り焼き",
+  "desc": "Teriyaki chicken thigh: sliced chicken thigh with crisp skin and a glossy dark brown sweet soy glaze, on a plate",
+  "items": [
+   "kurume:052"
+  ]
+ },
+ {
+  "key": "kurume-053",
+  "ja": "鶏むね肉の味噌ダレ焼き",
+  "desc": "Miso-glazed chicken breast: grilled sliced chicken breast with a browned brown miso glaze, on a plate",
+  "items": [
+   "kurume:053"
+  ]
+ },
+ {
+  "key": "kurume-054",
+  "ja": "鶏の甘酢あんかけ",
+  "desc": "Chicken in sweet sour sauce: fried chicken pieces coated in a glossy orange sweet and sour sauce, on a plate",
+  "items": [
+   "kurume:054"
+  ]
+ },
+ {
+  "key": "kurume-055",
+  "ja": "鶏のきのこあんかけ",
+  "desc": "Chicken with mushroom ankake: fried chicken pieces under a thick glossy translucent brown sauce with shimeji and shiitake, on a plate",
+  "items": [
+   "kurume:055"
+  ]
+ },
+ {
+  "key": "kurume-056",
+  "ja": "鶏もも肉のマヨ焼き",
+  "desc": "Mayo-baked chicken thigh: chicken thigh pieces baked with a browned blistered mayonnaise topping, on a plate",
+  "items": [
+   "kurume:056"
+  ]
+ },
+ {
+  "key": "kurume-057",
+  "ja": "鶏肉のマーマレード焼き",
+  "desc": "Marmalade chicken: chicken pieces glazed in glossy orange marmalade sauce with peel strips, on a plate",
+  "items": [
+   "kurume:057"
+  ]
+ },
+ {
+  "key": "kurume-059",
+  "ja": "蓮根ハンバーグ",
+  "desc": "Renkon hamburg: a Japanese hamburger patty with crunchy lotus root bits, a lotus root slice with holes on top, on a plate",
+  "items": [
+   "kurume:059"
+  ]
+ },
+ {
+  "key": "kurume-060",
+  "ja": "豆腐ハンバーグ＿ジャポネソース",
+  "desc": "Tofu hamburg with japonaise sauce: a pale soft tofu patty with a brown soy-onion sauce and grated daikon, on a plate",
+  "items": [
+   "kurume:060"
+  ]
+ },
+ {
+  "key": "kurume-064",
+  "ja": "とんカツ（ソース付き）",
+  "desc": "Tonkatsu: a breaded deep-fried pork cutlet with a crisp golden panko crust, sliced, with dark brown sauce and shredded cabbage, on a plate",
+  "items": [
+   "kurume:064"
+  ]
+ },
+ {
+  "key": "kurume-065",
+  "ja": "ヒレカツ（ソース付き）",
+  "desc": "Hire katsu: thick round breaded fried pork tenderloin pieces with golden panko crust, with dark brown sauce and shredded cabbage, on a plate",
+  "items": [
+   "kurume:065"
+  ]
+ },
+ {
+  "key": "kurume-066",
+  "ja": "チキンカツ（ソース付き）",
+  "desc": "Chicken katsu: a breaded fried chicken cutlet with crisp golden panko crust, sliced, with dark brown sauce and cabbage, on a plate",
+  "items": [
+   "kurume:066"
+  ]
+ },
+ {
+  "key": "kurume-068",
+  "ja": "ポテトコロッケ",
+  "desc": "Potato croquette: oval breaded fried croquettes with golden panko crust, one cut showing mashed potato and minced meat, with sauce, on a plate",
+  "items": [
+   "kurume:068"
+  ]
+ },
+ {
+  "key": "kurume-071",
+  "ja": "ロールキャベツ（コンソメ味）",
+  "desc": "Rolled cabbage: soft pale green cabbage rolls stuffed with minced meat in a clear golden consomme broth, in a bowl",
+  "items": [
+   "kurume:071"
+  ]
+ },
+ {
+  "key": "kurume-072",
+  "ja": "すきやき",
+  "desc": "Sukiyaki: thin beef slices, tofu, green onion, shiitake, shirataki and greens simmered in sweet brown soy broth in a shallow iron pot",
+  "items": [
+   "kurume:072"
+  ]
+ },
+ {
+  "key": "kurume-075",
+  "ja": "冷しゃぶ",
+  "desc": "Reishabu: chilled boiled thin pork slices over lettuce and tomato with a sesame or ponzu dressing, on a plate",
+  "items": [
+   "kurume:075"
+  ]
+ },
+ {
+  "key": "kurume-076",
+  "ja": "あじの塩焼き",
+  "desc": "Aji shioyaki: a whole salt-grilled horse mackerel with charred silver skin, with grated daikon, on a long plate",
+  "items": [
+   "kurume:076"
+  ]
+ },
+ {
+  "key": "kurume-080",
+  "ja": "鰆のねぎ味噌焼き",
+  "desc": "Sawara negi miso grilled: a grilled Spanish mackerel fillet topped with a brown miso paste with chopped green onion, on a plate",
+  "items": [
+   "kurume:080"
+  ]
+ },
+ {
+  "key": "kurume-081",
+  "ja": "焼魚の野菜あんかけ",
+  "desc": "Grilled fish with vegetable ankake: a grilled fish fillet under a glossy thick sauce with shredded carrot, onion and green pepper, on a plate",
+  "items": [
+   "kurume:081"
+  ]
+ },
+ {
+  "key": "kurume-082",
+  "ja": "魚のホイル焼き",
+  "desc": "Fish foil bake: a fish fillet with mushrooms, onion and butter in an open aluminium foil parcel, on a plate",
+  "items": [
+   "kurume:082"
+  ]
+ },
+ {
+  "key": "kurume-083",
+  "ja": "サバのチリ味炒め",
+  "desc": "Mackerel chili stir-fry: fried mackerel pieces in a glossy red-orange chili sauce with green onion, on a plate",
+  "items": [
+   "kurume:083"
+  ]
+ },
+ {
+  "key": "kurume-084",
+  "ja": "エビのチリ味炒め",
+  "desc": "Ebi chili: shrimp stir-fried in a glossy red-orange sweet chili sauce with green onion, on a plate",
+  "items": [
+   "kurume:084"
+  ]
+ },
+ {
+  "key": "kurume-085",
+  "ja": "鯵フライ（ソース付き）",
+  "desc": "Aji fry: butterflied breaded fried horse mackerel with a golden panko crust, with dark sauce and shredded cabbage, on a plate",
+  "items": [
+   "kurume:085"
+  ]
+ },
+ {
+  "key": "kurume-086",
+  "ja": "南蛮漬（あじ）",
+  "desc": "Aji nanbanzuke: fried horse mackerel marinated in vinegar with thin strips of onion, carrot and green pepper, in a dish",
+  "items": [
+   "kurume:086"
+  ]
+ },
+ {
+  "key": "kurume-087",
+  "ja": "揚げ鮭のマリネ",
+  "desc": "Fried salmon marinade: fried pink salmon pieces in vinegar marinade with sliced onion, carrot and bell pepper, on a plate",
+  "items": [
+   "kurume:087"
+  ]
+ },
+ {
+  "key": "kurume-089",
+  "ja": "イカの天ぷら（大根おろし天つゆ付き）",
+  "desc": "Squid tempura: white squid pieces in light crisp golden tempura batter, with tentsuyu dipping sauce and grated daikon, on a plate",
+  "items": [
+   "kurume:089"
+  ]
+ },
+ {
+  "key": "kurume-090",
+  "ja": "エビの天ぷら（大根おろし天つゆ付き）",
+  "desc": "Shrimp tempura: straight shrimp in light crisp golden tempura batter with red tails, with tentsuyu and grated daikon, on a plate",
+  "items": [
+   "kurume:090"
+  ]
+ },
+ {
+  "key": "kurume-091",
+  "ja": "いかリング",
+  "desc": "Ika ring: breaded fried squid rings with a golden crumb coating, on a plate",
+  "items": [
+   "kurume:091"
+  ]
+ },
+ {
+  "key": "kurume-094",
+  "ja": "鯛の煮付け",
+  "desc": "Tai nitsuke: sea bream pieces with pink skin simmered in glossy dark brown sweet soy sauce, with ginger, in a shallow dish",
+  "items": [
+   "kurume:094"
+  ]
+ },
+ {
+  "key": "kurume-095",
+  "ja": "カレイの煮つけ",
+  "desc": "Karei nitsuke: a flat flounder piece with dark skin simmered in glossy brown sweet soy sauce, in a shallow dish",
+  "items": [
+   "kurume:095"
+  ]
+ },
+ {
+  "key": "kurume-097",
+  "ja": "秋刀魚のみぞれ煮",
+  "desc": "Sanma mizore-ni: a whole saury simmered in brown sauce topped with plenty of grated white daikon, in a shallow dish",
+  "items": [
+   "kurume:097"
+  ]
+ },
+ {
+  "key": "kurume-099",
+  "ja": "イカと里芋煮",
+  "desc": "Squid and taro simmered: soft white squid rings and round grey-white taro pieces simmered in soy, glossy brown, in a bowl",
+  "items": [
+   "kurume:099"
+  ]
+ },
+ {
+  "key": "kurume-100",
+  "ja": "マグロ（赤身）の刺身（5切）（醤油付き）",
+  "desc": "Maguro akami sashimi: five deep red tuna slices with shredded daikon and shiso, with a small dish of soy sauce, on a plate",
+  "items": [
+   "kurume:100"
+  ]
+ },
+ {
+  "key": "kurume-101",
+  "ja": "マグロ（とろ）の刺身（5切）（醤油付き）",
+  "desc": "Toro sashimi: five pale pink marbled fatty tuna slices with shredded daikon and shiso, with a small dish of soy sauce, on a plate",
+  "items": [
+   "kurume:101"
+  ]
+ },
+ {
+  "key": "kurume-102",
+  "ja": "タイの刺身（5切）（醤油付き）",
+  "desc": "Tai sashimi: five translucent white sea bream slices with pink edges, with shredded daikon and shiso and soy sauce, on a plate",
+  "items": [
+   "kurume:102"
+  ]
+ },
+ {
+  "key": "kurume-103",
+  "ja": "かんぱちの刺身（5切）（醤油付き）",
+  "desc": "Kanpachi sashimi: five glossy pale pink-beige amberjack slices with shredded daikon and shiso and soy sauce, on a plate",
+  "items": [
+   "kurume:103"
+  ]
+ }
+]

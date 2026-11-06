@@ -233,8 +233,8 @@ describe('the wedding board in the record', () => {
     expect(tasks().map((t) => t.id)).toEqual(['s']);
   });
 
-  it('caps the tasks at WTASK_MAX rows', async () => {
-    const { WTASK_MAX } = await import('../../app/src/lib/contract/wedding.ts');
+  it('caps the tasks at WTASK_MAX rows', () => {
+    const WTASK_MAX = 2000; // contract/wedding.ts
     const rows = Array.from({ length: WTASK_MAX }, (_, i) => [new Date(T0 - 1000 + i).toISOString(), 'A', `w${i}`, 'wtask', JSON.stringify({ id: `t${i}`, at: T0 - 1000 + i, c: T0, title: `#${i}`, cat: '' })]);
     expect(store.load({ rows: { events: rows } })).toMatchObject({ ok: true, events: WTASK_MAX });
     expect(task('A', 'onemore', 'x')).toMatchObject({ ok: false, error: 'bad_request', detail: 'wedding full' });

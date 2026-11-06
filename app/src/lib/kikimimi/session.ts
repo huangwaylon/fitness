@@ -10,7 +10,8 @@
 // caller hands to live.send; the UI only renders `view(now)`. The deck comes in through an interface (QuizDeck).
 import type { Live } from '../sync/live.ts';
 import { points } from './score.ts';
-import { FLAG_BITS, seedWith } from './recent.ts';
+import { seedWith } from './recent.ts';
+import { FLAG_BITS, isLadder, timerIndex, timerOf, versus, withLadder, withTimer, withVersus, type QuizTimer } from './seed.ts';
 import { QUIZ_MAX_S, QUIZ_QS, type QuizLv, type QuizWire, type Relayed, type Who } from '../contract/live-protocol.ts';
 
 /** Where a game is: none (`idle`, an invite perhaps), the lobby, the 3-2-1, a question's lead-in (the villager pops
@@ -104,24 +105,6 @@ interface QuizTeam {
   all: number;
   done: number;
 }
-
-/** たいせん (ranking) rides on the `open`'s seed: its lowest bit (1: たいせん; a new lobby's seed is even, co-op). No
- *  new field, so no relay deploy (the relay passes known fields only); flipping it deals a new deck, never seen yet. */
-export const versus = (seed: number): boolean => (seed & 1) === 1;
-const withVersus = (seed: number, vs: boolean): number => ((seed & ~1) | (vs ? 1 : 0)) >>> 0;
-/** スピード はしご (kikimimi/ladder.ts) rides on the seed too: its bit 1 (a quiz lobby's seed has it clear). The deck is
- *  the ladders' then, the level unused; the session is the quiz's (8 questions), its points the deck's (QuizDeck.score). */
-export const isLadder = (seed: number): boolean => (seed & 2) === 2;
-export const withLadder = (seed: number, on: boolean): number => ((seed & ~2) | (on ? 2 : 0)) >>> 0;
-
-/** こたえる じかん (the answer window, s; 0: none, the reveal once everyone in it has answered) rides on the seed too:
- *  bits 2-3 are its index here (bit 1 is スピード はしご's): 0 30 s, the default; 1 20 s; 2 60 s; 3 none. Like たいせん,
- *  no new field and no relay deploy, every phone computes the same limit from the `open`, and changing it deals a new
- *  deck. */
-export const TIMERS = [30, 20, 60, 0] as const;
-export type QuizTimer = (typeof TIMERS)[number];
-export const timerOf = (seed: number): QuizTimer => TIMERS[(seed >>> 2) & 3];
-const withTimer = (seed: number, timer: QuizTimer): number => ((seed & ~12) | (Math.max(0, TIMERS.indexOf(timer)) << 2)) >>> 0;
 
 /** Why my game went away: the host cancelled it, the host left the lobby, or it was never started. */
 export type QuizNotice = 'cancelled' | 'host-left' | 'stale';
@@ -581,7 +564,7 @@ export class QuizSession {
   private game(g: string, host: Who, seed: number, lv: QuizLv, same: boolean, now: number): Game {
     const deck = this.deckOf(seed, lv);
     const gm: Game = {
-      g, host, seed, lv, same, deck, n: questions(deck), answer: this.w.answers[(seed >>> 2) & 3], opened: now, joined: new Set([host]), played: new Set([host]),
+      g, host, seed, lv, same, deck, n: questions(deck), answer: this.w.answers[timerIndex(seed)], opened: now, joined: new Set([host]), played: new Set([host]),
       since: new Map([[host, -Infinity]]), starts: new Map(), inAt: now, answers: new Map(), totals: new Map(), allIn: new Map(), ready: new Map()
     };
     this.games.set(g, gm);
@@ -593,7 +576,7 @@ export class QuizSession {
       gm.deck = this.deckOf(seed, lv);
       gm.n = questions(gm.deck);
     }
-    Object.assign(gm, { seed, lv, same, answer: this.w.answers[(seed >>> 2) & 3] });
+    Object.assign(gm, { seed, lv, same, answer: this.w.answers[timerIndex(seed)] });
   }
 
   /** The game I'm in. */

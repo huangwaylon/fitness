@@ -4,7 +4,7 @@
 // (ミュージック off) still sees it, with 🔇. The demo's players are tabs of one browser (sync/live-local.ts plays the
 // room). Never listened to: the music deck's key and position come from window.__music (in the demo).
 import { expect, test, type Page } from './fixtures.ts';
-import { hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
 
 type Now = { key: string | null; pos: number | null };
 type H = { __music: { now(): Now; request(src: string, song: string, o?: { ms?: number; pc?: string }): void; hush(src: string): void } };
@@ -16,7 +16,7 @@ const SONG = 'kk-march';
 async function open(page: Page, as: string, music = true) {
   await page.addInitScript((m) => localStorage.setItem('island.sound', JSON.stringify({ music: m, sfx: false, volume: 0.8 })), music);
   await page.goto(`?demo${as ? `&as=${as}` : ''}&${Q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   // a tap high on the sky: unlocks audio, takes nothing
   await page.mouse.click(196, 90);
 }
@@ -97,7 +97,7 @@ test('the island’s moments on its stage: A’s stretch plays on B’s deck wit
   for (const [p, as] of [[a, ''], [b, '&as=B']] as const) {
     await p.addInitScript(() => localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: false, volume: 0.8 })));
     await p.goto(`?demo${as}&date=2027-03-04T12:00&critter=none&visitor=none`); // うめ's birthday
-    await expect(hudMenu(p)).toBeVisible();
+    await islandUp(p);
     await p.mouse.click(196, 90);
   }
   await h(a, (w) => w.__music.request('isl', 'ev-aerobics', { ms: 6000 }));

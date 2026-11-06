@@ -3,13 +3,14 @@
 // Tokyo day (this phone's fruit-day); all four met, the canopy glints. Picking up never changes ベル. The demo's progress follows ?date= (no sync before 06:40; most
 // goals settled by 23:00).
 import { expect, test, type Page } from './fixtures.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 async function open(page: Page, date: string) {
   await page.goto(`?demo&date=${date}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
 }
 const fruit = (page: Page) => page.locator('.if-scene [data-fruit]');
 
@@ -66,7 +67,7 @@ test('met fruit falls to the ground in colour; unmet ones colour with progress; 
 
   // a reload: still gone, and the others lie there without falling again
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator(`[data-fruit="${id}"][data-tree="${tree}"]`)).toHaveCount(0);
   await expect(ground).toHaveCount(met - 1);
   await expect(page.locator('[data-stage="fall"], .fruit.drop')).toHaveCount(0);

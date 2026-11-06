@@ -2,13 +2,13 @@
 // villager's is hidden by it; just in front it covers the trunk while the canopy covers its head; a building likewise),
 // and taps land on the tap areas far up near the horizon.
 import { expect, test, type Page } from './fixtures.ts';
-import { geo, type Geo } from './island.ts';
+import { geo, type Geo, islandUp } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 type W = { go(z: number): void; cam(): number; stops(): number[]; idle(): boolean; at(x: number, z: number): [number, number]; put(x: number, z: number): void };
 const world = async (page: Page) => {
-  await page.waitForFunction(() => (window as unknown as { __world?: W }).__world);
+  await islandUp(page);
   await page.waitForTimeout(500);
 };
 const call = <T,>(page: Page, fn: (w: W, a: number[]) => T, args: number[] = []) =>

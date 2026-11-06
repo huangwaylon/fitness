@@ -2,8 +2,7 @@
 // its track plays instead of the hour's; the wasps' chase and sting cut in over the island's music; a tap on K.K. plays
 // one of his songs. Dates are mocked with ?date= (Tokyo). Checked by the files the engine fetches.
 import { expect, test, type Page } from './fixtures.ts';
-import { BASE, is3d, quiet } from './island.ts';
-import { hudMenu } from './hud.ts';
+import { BASE, is3d, islandUp, quiet } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -18,7 +17,7 @@ async function open(page: Page, q: string): Promise<string[]> {
   });
   await page.goto(`?demo&date=${q}`);
   // (the island's first paint: now and then over 5 s under CI's load)
-  await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 });
+  await islandUp(page, { timeout: 15_000 });
   await is3d(page); // (the 3D island up: a while in software GL)
   return audio;
 }

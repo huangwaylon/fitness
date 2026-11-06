@@ -7,7 +7,7 @@ export type CampKind = 'all' | 'wild' | 'paid';
 export type Amenity = 'beach' | 'toilet' | 'shower';
 export const AMENITIES: readonly Amenity[] = ['beach', 'toilet', 'shower'];
 
-export interface CampFilter { kind: CampKind; has: readonly Amenity[]; picks?: boolean }
+interface CampFilter { kind: CampKind; has: readonly Amenity[]; picks?: boolean }
 
 /** On our shortlist: one of its chips is ours (1泊目 / 2泊目 / 候補). */
 export const isPicked = (c: Camp): boolean => c.chips.some((x) => x.pick);

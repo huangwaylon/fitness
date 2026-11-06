@@ -6,7 +6,8 @@
 // catches go into the shared ずかん under its own name; its tent pieces reach both members; and its villager is on the
 // members' islands only while its app is open, moving only when it's moved.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { fromMenu, hudBells, hudMenu, openRewards } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu, hudBells, openRewards } from './hud.ts';
 
 const VIEW = { width: 393, height: 659 };
 test.use({ viewport: VIEW });
@@ -18,14 +19,14 @@ const walking = (p: Page, w: string) => p.evaluate((w) => (window as unknown as 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G', more = '') {
   const page = await ctx.newPage();
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${as === 'A' ? '' : `&as=${as}`}${more}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   return page;
 }
 
 test('the guest’s phone: the members’ activity and ベル, never a からだ figure, no ベル buy or goal; the island’s settings as a member’s', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none&as=G`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const panel = page.locator('dialog[open]');
   // けんこう (the dumbbell's popup): かつどう only (no からだ switch, no weight or body card), both members' activity
   await page.getByRole('button', { name: 'けんこう', exact: true }).click();
@@ -86,12 +87,12 @@ test('the guest’s ごほうび shows today’s ベル under the balance: the m
   const at = '&date=2026-10-28T22:00&critter=none&visitor=none';
   const member = await ctx.newPage();
   await member.goto(`?demo${at}`);
-  await expect(hudMenu(member)).toBeVisible();
+  await islandUp(member);
   const today = Number(await hudBells(member).getAttribute('data-today'));
   expect(today).toBeGreaterThan(0);
   const g = await ctx.newPage();
   await g.goto(`?demo${at}&as=G`);
-  await expect(hudMenu(g)).toBeVisible();
+  await islandUp(g);
   await expect(hudBells(g)).toHaveAttribute('data-today', String(today));
   await expect(hudBells(g)).toHaveAttribute('aria-label', new RegExp(` · きょう ${today}\\sベル$`));
   await openRewards(g);
@@ -107,7 +108,7 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   const a = await open(ctx, 'A');
   const g = await ctx.newPage();
   await g.goto(`?demo&date=${DATE}&critter=common-butterfly&visitor=none&as=G`);
-  await expect(hudMenu(g)).toBeVisible();
+  await islandUp(g);
   // the butterfly flown in: on screen, and over the island's ground rather than mid-way in from the edge
   const bfl = g.locator('[data-critter="common-butterfly"]');
   await expect.poll(async () => {
@@ -129,7 +130,7 @@ test('a guest’s catch is in the members’ ずかん at once, credited to the 
   await expect(detail.locator('[data-zukan-person="G"]')).toContainText('おきゃくさん ×1', { timeout: 5000 });
   // and after a reload, as it was: the record's rows say who found it
   await a.reload();
-  await expect(hudMenu(a)).toBeVisible();
+  await islandUp(a);
   await fromMenu(a, 'zukan');
   await a.locator('[data-zukan="bug"]').click();
   await a.locator('button.tile[data-entry="common-butterfly"]').click();

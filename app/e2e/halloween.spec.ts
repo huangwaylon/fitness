@@ -3,8 +3,8 @@
 // centre stage 17:00–24:00 and asks for candy: a treat delights him, nothing earns his trick (a goofy face on my
 // villager). Never under a control; no ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, stageCam, tapFigure } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { camTo, geo, islandUp, stageCam, tapFigure } from './island.ts';
+import { hudBells } from './hud.ts';
 
 /** The controls under a figure's corners and middle (`hud`: only the HUD's, outside the stage); only what's on screen
  *  (a world node out of view is hidden). */
@@ -41,7 +41,7 @@ async function toAnswers(page: Page) {
 
 test('Oct 31 by day: pumpkins on the lawn and round the campsite, clear of every control; no Jack, no lanterns', async ({ page }) => {
   await page.goto('?demo&date=2026-10-31T16:59&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await camera(page, 114);
   await expect(page.locator('[data-halloween="day"] .pumpkin .art:visible').first()).toBeVisible();
   expect(await page.locator('.pumpkin').count()).toBeGreaterThanOrEqual(3);
@@ -55,7 +55,7 @@ test('Oct 31 by day: pumpkins on the lawn and round the campsite, clear of every
 
 test('Nov 1: no Halloween', async ({ page }) => {
   await page.goto('?demo&date=2026-11-01T00:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-halloween]')).toHaveCount(0);
   await expect(page.locator('[data-visitor="jack"]')).toHaveCount(0);
 });
@@ -63,7 +63,7 @@ test('Nov 1: no Halloween', async ({ page }) => {
 test('Halloween night: lanterns lit, Jack at centre stage (K.K. on his own stool, no visitor), a treat delights him', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('?demo&date=2026-10-31T19:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await camera(page, await stageCam(page));
   await expect(page.locator('[data-halloween="night"] .glow:visible').first()).toBeVisible();
@@ -95,7 +95,7 @@ test('Halloween night: lanterns lit, Jack at centre stage (K.K. on his own stool
 
 test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ page }) => {
   await page.goto('?demo&date=2026-10-31T23:59&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await camera(page, await stageCam(page));
   await tapFigure(page, '[data-visitor="jack"] .art');
   await toAnswers(page);
@@ -124,7 +124,7 @@ test('nothing for Jack: his trick puts goofy glasses on my villager', async ({ p
 
 test('?event=halloween brings the evening on any day', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&event=halloween&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await camera(page, await stageCam(page));
   await expect(page.locator('[data-visitor="jack"] .art')).toBeVisible();
   await expect(page.locator('[data-halloween="night"]')).toHaveCount(1);

@@ -1,15 +1,13 @@
 // Demo smoke test: buy, undo, the harvest recap, the ベル ledger (read-only), けんこう's goals, on `?demo` (no backend, no key).
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudBells, hudMenu, openRewards, unfoldMenu } from './hud.ts';
-import { BASE, islandURL, lawnTap, quiet } from './island.ts';
+import { BASE, islandUp, islandURL, lawnTap, quiet } from './island.ts';
 
 /** The topmost sheet (a confirm over the panel). */
 const sheet = (page: Page) => page.locator('dialog[open]').last();
 
-/** The island is up: the HUD's menu shows (the app asks no questions, so nothing to answer first). */
-async function islandReady(page: Page) {
-  await expect(hudMenu(page)).toBeVisible();
-}
+/** The island is up: the HUD's menu shows and the island under it (the app asks no questions, so nothing to answer first). */
+const islandReady = islandUp;
 
 /** The HUD menu's 「ベル」 row: the island panel slides down (ごほうび; no tabs). */
 async function openPanel(page: Page) {
