@@ -6,26 +6,24 @@
   import type { Trip } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import Photo from './Photo.svelte';
-  import { pick } from './text.ts';
+  import { phaseLabel, pick } from './text.ts';
   import { spanLabel } from './dates.ts';
   import type { Phase } from './when.ts';
 
   let { trip, phase, onopen }: { trip: Trip; phase: Phase; onopen: () => void } = $props();
   /** The trip's airport (a pass's flavour; a trip not listed shows only the airline). */
   const CODE: Record<string, string> = { okinawa: 'OKA', seattle: 'SEA', nz: 'AKL' };
-  const aria = $derived(
-    phase.k === 'soon' ? (phase.days === 1 ? t('travel.tomorrowAria') : t('travel.soonAria', { n: phase.days })) : phase.k === 'now' ? t('travel.nowAria', { n: phase.day }) : t('travel.stamp')
-  );
   const year = $derived(trip.start.slice(0, 4));
+  const title = $derived(pick(trip.title, i18n.locale));
 </script>
 
 <button type="button" class="pass {phase.k}" data-trip={trip.id} data-phase={phase.k} data-sfx="open" onclick={onopen}
-  aria-label="{pick(trip.title, i18n.locale)}, {spanLabel(trip.start, trip.end, i18n.locale)}, {aria}">
+  aria-label="{title} {year}, {spanLabel(trip.start, trip.end, i18n.locale)}, {phaseLabel(phase)}">
   <span class="main" aria-hidden="true">
     <span class="cover"><Photo photo={trip.cover} fill /><span class="band"><span class="air">✈ {t('travel.airline')}</span>{#if CODE[trip.id]}<span class="route money">TYO <i>✈</i> {CODE[trip.id]}</span>{/if}</span></span>
     <span class="txt">
       <span class="eyebrow">{pick(trip.eyebrow, i18n.locale)}</span>
-      <span class="dest">{pick(trip.title, i18n.locale)}</span>
+      <span class="dest">{title} <span class="money">{year}</span></span>
       <span class="dates">{spanLabel(trip.start, trip.end, i18n.locale)}</span>
     </span>
   </span>
@@ -68,6 +66,7 @@
   .txt { display: grid; gap: 3px; padding: 10px 14px 14px; }
   .eyebrow { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .03em; }
   .dest { font: 700 1.3rem/1.2 var(--font-ui); }
+  .dest .money { font-size: inherit; line-height: inherit; }
   .dates { font: 700 var(--fs-s)/1.3 var(--font-num); color: var(--c-ink-soft); }
 
   /* the stub: a dashed tear down its left edge, a notch top and bottom (the panel's colour bites the paper) */

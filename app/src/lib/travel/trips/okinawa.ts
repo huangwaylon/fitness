@@ -1,12 +1,10 @@
-// The okinawa guide (docs/travel.md "Content"), generated once by scripts/travel-extract.ts from the old travel-plans
-// site (index.html, the .map tables and OSRM legs), then the source: edit here. Private values are {p:key} tokens
-// (the trip note on the relay).
+// The okinawa guide (docs/travel.md "Content"), ported from the old travel-plans site (its page, map tables and OSRM
+// legs) and edited here since. Private values are {p:key} tokens (the trip note on the relay).
 import type { Trip } from '../types.ts';
 
 export const okinawa: Trip = {
   id: "okinawa",
-  lang: "ja",
-  title: { ja: "沖縄 2026", en: "Okinawa 2026" },
+  title: { ja: "沖縄", en: "Okinawa" },
   eyebrow: { ja: "沖縄本島 · 3日間", en: "Okinawa Main Island · 3 days" },
   sub: { ja: "10月10日 – 10月12日 · ジムニー・ルーフトップテント", en: "Oct 10 – Oct 12 · Jimny & rooftop tent" },
   start: "2026-10-10",
@@ -20,7 +18,6 @@ export const okinawa: Trip = {
     {
       n: 1,
       date: "2026-10-10",
-      kind: "day",
       icon: "plane-landing",
       title: { ja: "到着", en: "Arrival" },
       sub: { ja: "那覇 → 金武 → 名護", en: "Naha → Kin → Nago" },
@@ -88,7 +85,6 @@ export const okinawa: Trip = {
     {
       n: 2,
       date: "2026-10-11",
-      kind: "day",
       icon: "waves",
       title: { ja: "ダイビングと南下", en: "Dive, then South" },
       sub: { ja: "水納島、大家、安座真", en: "Minna Island, Ufuya, Azama" },
@@ -152,7 +148,6 @@ export const okinawa: Trip = {
     {
       n: 3,
       date: "2026-10-12",
-      kind: "day",
       icon: "plane-takeoff",
       title: { ja: "南部の海岸、出発", en: "South Coast, Departure" },
       sub: { ja: "知念、新原、喜屋武岬、秘境プール", en: "Chinen, Mibaru, Cape Kyan, the tide pool" },
@@ -498,7 +493,6 @@ export const okinawa: Trip = {
   camps: [
     {
       id: "katsuren-beach",
-      place: "katsuren-beach",
       name: { ja: "勝連ビーチ", en: "Katsuren Beach" },
       sub: { ja: "野営地 · うるま市", en: "Wild camp · Uruma" },
       type: "wild",
@@ -519,7 +513,6 @@ export const okinawa: Trip = {
     },
     {
       id: "okinawa-prefectural-people-s-forrest",
-      place: "okinawa-prefectural-people-s-forrest",
       name: { ja: "沖縄県民の森", en: "Okinawa Prefectural People's Forrest" },
       sub: { ja: "有料キャンプ場 · 恩納村", en: "Paid camp · Onna" },
       type: "paid",
@@ -544,7 +537,6 @@ export const okinawa: Trip = {
     },
     {
       id: "koki-camp-spot",
-      place: "koki-camp-spot",
       name: { ja: "幸喜（こうき）の野営地", en: "Koki Camp Spot" },
       sub: { ja: "野営地 · 名護市", en: "Wild camp · Nago" },
       type: "wild",
@@ -568,7 +560,6 @@ export const okinawa: Trip = {
     },
     {
       id: "nago-castle-bridge-spot",
-      place: "nago-castle-bridge-spot",
       name: { ja: "名護城橋の野営地", en: "Nago Castle Bridge Spot" },
       sub: { ja: "野営地 · 名護市", en: "Wild camp · Nago" },
       type: "wild",
@@ -588,7 +579,6 @@ export const okinawa: Trip = {
     },
     {
       id: "neos-outdoor-park",
-      place: "neos-outdoor-park",
       name: { ja: "NEOSアウトドアパーク", en: "NEOS Outdoor Park" },
       sub: { ja: "有料キャンプ場 · 南城市", en: "Paid camp · Nanjō" },
       type: "paid",
@@ -616,7 +606,6 @@ export const okinawa: Trip = {
     },
     {
       id: "azama-sun-beach-camping-ground",
-      place: "azama-sun-beach-camping-ground",
       name: { ja: "あざまサンサンビーチ キャンプ場", en: "Azama Sun Beach Camping Ground" },
       sub: { ja: "有料キャンプ場 · 南城市", en: "Paid camp · Nanjō" },
       type: "paid",
@@ -644,7 +633,6 @@ export const okinawa: Trip = {
     },
     {
       id: "kita-nashiro-beach",
-      place: "kita-nashiro-beach",
       name: { ja: "北名城ビーチ", en: "Kita Nashiro Beach" },
       sub: { ja: "野営地 · 糸満市", en: "Wild camp · Itoman" },
       type: "wild",
@@ -666,7 +654,6 @@ export const okinawa: Trip = {
     },
     {
       id: "kudeken-beach",
-      place: "kudeken-beach",
       name: { ja: "久手堅ビーチ", en: "Kudeken Beach" },
       sub: { ja: "野営地 · 南城市", en: "Wild camp · Nanjō" },
       type: "wild",
@@ -687,7 +674,6 @@ export const okinawa: Trip = {
     },
     {
       id: "base-camp",
-      place: "base-camp",
       name: { ja: "ベースキャンプ", en: "Base Camp" },
       sub: { ja: "有料キャンプ場 · 名護市", en: "Paid camp · Nago" },
       type: "paid",
@@ -712,7 +698,6 @@ export const okinawa: Trip = {
     },
     {
       id: "yagaji-beach-campsite",
-      place: "yagaji-beach-campsite",
       name: { ja: "屋我地ビーチ キャンプ場", en: "Yagaji Beach Campsite" },
       sub: { ja: "有料キャンプ場 · 名護市", en: "Paid camp · Nago" },
       type: "paid",
@@ -739,7 +724,6 @@ export const okinawa: Trip = {
     },
     {
       id: "inamine-camp-spot",
-      place: "inamine-camp-spot",
       name: { ja: "稲嶺の野営地", en: "Inamine Camp Spot" },
       sub: { ja: "野営地 · 名護市", en: "Wild camp · Nago" },
       type: "wild",
@@ -760,7 +744,6 @@ export const okinawa: Trip = {
     },
     {
       id: "yagajima-spot",
-      place: "yagajima-spot",
       name: { ja: "屋我地島の野営地", en: "Yagajima Spot" },
       sub: { ja: "野営地 · 名護市", en: "Wild camp · Nago" },
       type: "wild",
@@ -784,7 +767,6 @@ export const okinawa: Trip = {
     },
     {
       id: "henan-bridge",
-      place: "henan-bridge",
       name: { ja: "平南橋", en: "Henan Bridge" },
       sub: { ja: "野営地 · 大宜味村", en: "Wild camp · Ogimi" },
       type: "wild",
@@ -809,7 +791,6 @@ export const okinawa: Trip = {
     },
     {
       id: "tsuha-beach-camp-spot",
-      place: "tsuha-beach-camp-spot",
       name: { ja: "津波ビーチの野営地", en: "Tsuha Beach Camp Spot" },
       sub: { ja: "野営地 · 大宜味村", en: "Wild camp · Ogimi" },
       type: "wild",
@@ -833,7 +814,6 @@ export const okinawa: Trip = {
     },
     {
       id: "tonokiya-campsite",
-      place: "tonokiya-campsite",
       name: { ja: "渡野喜屋キャンプ場", en: "Tonokiya Campsite" },
       sub: { ja: "有料キャンプ場 · 大宜味村", en: "Paid camp · Ogimi" },
       type: "paid",
@@ -858,7 +838,6 @@ export const okinawa: Trip = {
     },
     {
       id: "kouri-island-camp-ground",
-      place: "kouri-island-camp-ground",
       name: { ja: "古宇利島キャンプ場", en: "Kouri Island Camp Ground" },
       sub: { ja: "有料キャンプ場 · 今帰仁村", en: "Paid camp · Nakijin" },
       type: "paid",
@@ -883,7 +862,6 @@ export const okinawa: Trip = {
     },
     {
       id: "daiboo-river-camp",
-      place: "daiboo-river-camp",
       name: { ja: "大保川キャンプ場", en: "Daiboo River Camp" },
       sub: { ja: "野営地 · 大宜味村", en: "Wild camp · Ogimi" },
       type: "wild",
@@ -903,7 +881,6 @@ export const okinawa: Trip = {
     },
     {
       id: "fukuchi-river-seaside-park",
-      place: "fukuchi-river-seaside-park",
       name: { ja: "福地川海浜公園", en: "Fukuchi River Seaside Park" },
       sub: { ja: "有料キャンプ場 · 東村", en: "Paid camp · Higashi" },
       type: "paid",
@@ -928,7 +905,6 @@ export const okinawa: Trip = {
     },
     {
       id: "kokyono-beach",
-      place: "kokyono-beach",
       name: { ja: "コキョウノビーチ", en: "Kokyono Beach" },
       sub: { ja: "野営地 · 国頭村", en: "Wild camp · Kunigami" },
       type: "wild",
@@ -955,7 +931,6 @@ export const okinawa: Trip = {
     },
     {
       id: "hentona-camp-spot",
-      place: "hentona-camp-spot",
       name: { ja: "辺土名の野営地", en: "Hentona Camp Spot" },
       sub: { ja: "野営地 · 国頭村", en: "Wild camp · Kunigami" },
       type: "wild",
@@ -978,7 +953,6 @@ export const okinawa: Trip = {
     },
     {
       id: "okuma-mountains",
-      place: "okuma-mountains",
       name: { ja: "奥間の山あい", en: "Okuma Mountains" },
       sub: { ja: "有料キャンプ場 · 国頭村", en: "Paid camp · Kunigami" },
       type: "paid",
@@ -1002,7 +976,6 @@ export const okinawa: Trip = {
     },
     {
       id: "benoki-camp-spot",
-      place: "benoki-camp-spot",
       name: { ja: "辺野喜の野営地", en: "Benoki Camp Spot" },
       sub: { ja: "野営地 · 国頭村", en: "Wild camp · Kunigami" },
       type: "wild",
@@ -1024,7 +997,6 @@ export const okinawa: Trip = {
     },
     {
       id: "yanbaru-discovery-forest",
-      place: "yanbaru-discovery-forest",
       name: { ja: "やんばる学びの森", en: "Yanbaru Discovery Forest" },
       sub: { ja: "有料キャンプ場 · 国頭村", en: "Paid camp · Kunigami" },
       type: "paid",
@@ -1047,7 +1019,6 @@ export const okinawa: Trip = {
     },
     {
       id: "aha-yanbaru",
-      place: "aha-yanbaru",
       name: { ja: "安波（やんばる）", en: "Aha, Yanbaru" },
       sub: { ja: "野営地 · 国頭村", en: "Wild camp · Kunigami" },
       type: "wild",
@@ -1070,7 +1041,6 @@ export const okinawa: Trip = {
     },
     {
       id: "oku-beach-road",
-      place: "oku-beach-road",
       name: { ja: "奥のビーチロード", en: "Oku Beach Road" },
       sub: { ja: "野営地 · 国頭村", en: "Wild camp · Kunigami" },
       type: "wild",
@@ -1095,7 +1065,6 @@ export const okinawa: Trip = {
     },
     {
       id: "adan-beach-campsite",
-      place: "adan-beach-campsite",
       name: { ja: "アダンビーチ キャンプ場", en: "Adan Beach Campsite" },
       sub: { ja: "有料キャンプ場 · 国頭村", en: "Paid camp · Kunigami" },
       type: "paid",
