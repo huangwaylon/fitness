@@ -9,7 +9,7 @@
 //   hear(record)  ·  acked(intent, t)      the room's records (mine too, at hello) and my own's ack (its clamp)
 //   enterStage('t', plays?)  → leave       where I am (the island page, a home's room; `plays`: a room's stereo stands)
 //   live('isl') · heardHere()              what plays there now (reactive through `stage.on`) · what sounds here
-import { MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicLive, newerMusic, type Intent, type MusicRec, type MusicSrc, type Who } from '#lib/contract/live-protocol.ts';
+import { MUSIC_MS_MAX, musicAt, musicBeats, musicEnd, musicLive, type Intent, type MusicRec, type MusicSrc, type Who } from '#lib/contract/live-protocol.ts';
 import { AUDIO } from './manifest.ts';
 import { kkLoaded, kkTrack, loadKK } from './kk.ts';
 import type { EventMusicId } from './events.ts';
@@ -25,8 +25,10 @@ export interface Stage {
   pc?: string;
 }
 
-/** A song with no length in its manifest (`d`) is taken to last this long (ms). */
-const DEFAULT_MS = 360_000;
+/** A song with no length in its manifest (`d`) is taken to last this long (s). */
+const DEFAULT_S = 360;
+/** The sweep wakes this long after the next end (ms): the record surely over by then. */
+const SWEEP_LATE_MS = 20;
 
 /** The stages' records (the stopped ones too, for a while: an older start heard late stays beaten), and where I am. */
 export const stage = $state<{ on: Partial<Record<MusicSrc, Stage>>; here: MusicSrc | null }>({ on: {}, here: null });
@@ -68,8 +70,7 @@ export function stageTrack(src: MusicSrc, song: string): MusicTrack | null {
 
 /** Take a record if it beats the stage's (newerMusic) and still says something (musicLive). */
 function put(s: Stage): boolean {
-  const cur = stage.on[s.src];
-  if ((cur && !newerMusic(s, cur)) || !musicLive({ ...s, song: s.song ?? undefined }, net.serverNow())) return false;
+  if (!musicBeats(s, stage.on[s.src], net.serverNow())) return false;
   stage.on = { ...stage.on, [s.src]: s };
   sweep();
   changed();
@@ -80,42 +81,46 @@ function put(s: Stage): boolean {
 function sweep(): void {
   clearTimeout(timer);
   const now = net.serverNow();
-  const on = Object.fromEntries(Object.entries(stage.on).filter(([, s]) => musicLive({ ...s, song: s.song ?? undefined }, now)));
+  const on = Object.fromEntries(Object.entries(stage.on).filter(([, s]) => musicLive(s, now)));
   const gone = Object.keys(on).length < Object.keys(stage.on).length;
   if (gone) stage.on = on;
-  const ends = Object.values(on).map((s) => s.at + (s.song ? s.ms : MUSIC_STOP_KEEP_MS));
-  if (ends.length) timer = setTimeout(sweep, Math.max(0, Math.min(...ends) - now) + 20);
+  const ends = Object.values(on).map(musicEnd);
+  if (ends.length) timer = setTimeout(sweep, Math.max(0, Math.min(...ends) - now) + SWEEP_LATE_MS);
   if (gone) changed();
 }
+
+/** A new record's `at` on stage `src`: now, and after the stage's record whatever this phone's clock says (a tap always
+ *  replaces what plays). */
+const nextAt = (src: MusicSrc): number => Math.max(Math.round(net.serverNow()), (stage.on[src]?.at ?? 0) + 1);
+/** A record's piece, when it has one. */
+const pcOf = (pc: string | undefined): { pc?: string } => (pc ? { pc } : {});
 
 /** Play `song` on stage `src` for everyone (from a tap): `ms` its length (else the file's `d`), `pc` the stereo. A
  *  K.K. song asked for before his list is here (his menus load it first) waits for it, for its length. */
 export function request(src: MusicSrc, song: string, o: { ms?: number; pc?: string } = {}): void {
   if (o.ms === undefined && !stageTrack(src, song) && !song.startsWith('ev-') && !kkLoaded()) return void loadKK().then(() => kkLoaded() && request(src, song, o));
-  const cur = stage.on[src];
-  // after the stage's record whatever this phone's clock says: a tap always replaces what plays
-  const at = Math.max(Math.round(net.serverNow()), (cur?.at ?? 0) + 1);
-  const ms = Math.min(MUSIC_MS_MAX, Math.max(1, Math.round(o.ms ?? (stageTrack(src, song)?.dur ?? DEFAULT_MS / 1000) * 1000)));
-  put({ src, song, at, ms, who: net.me() ?? 'A', ...(o.pc ? { pc: o.pc } : {}) });
-  net.send({ kind: 'music', src, at, song, ms, ...(o.pc ? { pc: o.pc } : {}) });
+  const at = nextAt(src);
+  const ms = Math.min(MUSIC_MS_MAX, Math.max(1, Math.round(o.ms ?? (stageTrack(src, song)?.dur ?? DEFAULT_S) * 1000)));
+  put({ src, song, at, ms, who: net.me() ?? 'A', ...pcOf(o.pc) });
+  net.send({ kind: 'music', src, at, song, ms, ...pcOf(o.pc) });
 }
 
 /** Stop stage `src` for everyone (from a tap). */
 export function hush(src: MusicSrc): void {
-  const at = Math.max(Math.round(net.serverNow()), (stage.on[src]?.at ?? 0) + 1);
+  const at = nextAt(src);
   put({ src, song: null, at, ms: 0, who: net.me() ?? 'A' });
   net.send({ kind: 'music', src, at });
 }
 
 /** A record the room sent (another's, or mine: at my hello, or the one that beat mine). */
 export function hear(m: MusicRec): void {
-  put({ src: m.src, song: m.song ?? null, at: m.at, ms: m.ms ?? 0, who: m.who, ...(m.pc ? { pc: m.pc } : {}) });
+  put({ src: m.src, song: m.song ?? null, at: m.at, ms: m.ms ?? 0, who: m.who, ...pcOf(m.pc) });
 }
 
 /** My record's ack: the room took its `at` as its own clock (`t`) when it was over MUSIC_SKEW_MS off (an offline tap,
  *  a wrong clock), so this phone does too. */
 export function acked(i: Intent, ok: boolean, t: number): void {
-  if (i.kind !== 'music' || !ok || Math.abs(i.at - t) <= MUSIC_SKEW_MS) return;
+  if (i.kind !== 'music' || !ok || musicAt(i.at, t) === i.at) return;
   const cur = stage.on[i.src];
   if (cur?.at !== i.at || cur.who !== net.me()) return;
   stage.on = { ...stage.on, [i.src]: { ...cur, at: t } };

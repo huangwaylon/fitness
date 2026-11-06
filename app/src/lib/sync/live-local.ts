@@ -6,7 +6,7 @@
 // run on it. Its clock is the island's (clock.ts now(): a `?date=` preview moves the shared day too). Never used
 // outside the demo.
 import { DEMO, localKV, readJson, writeJson } from './storage.ts';
-import { LIVE_V, NEST_GAP_MS, claimOf, isStored, musicLive, newerMusic, scopeMaySend, tokyoDay, type Gone, type Intent, type MusicRec, type MusicSrc, type Relayed, type Who } from '../contract/live-protocol.ts';
+import { LIVE_V, NEST_GAP_MS, claimOf, isStored, musicAt, musicBeats, musicLive, scopeMaySend, tokyoDay, type Gone, type Intent, type MusicRec, type MusicSrc, type Relayed, type Who } from '../contract/live-protocol.ts';
 import { peerOf, type Live, type LiveStatus } from './live.ts';
 import { now } from '#lib/time/clock.ts';
 
@@ -74,8 +74,9 @@ export function createLocalLive(me: Who, channel = 'island-demo-relay'): Live {
   const stages = (): Partial<Record<MusicSrc, MusicRec>> => readJson<Partial<Record<MusicSrc, MusicRec>>>(localKV(), DEMO.music) ?? {};
   const stageKeep = (m: MusicRec): boolean => {
     const all = stages(), cur = all[m.src];
-    // (on the relay's clock, the device's here: `t` is the island's, a `?date=` preview's)
-    if ((cur && !newerMusic(m, cur)) || !musicLive(m, Date.now())) {
+    // (on the relay's clock, the device's here: `t` is the island's, a `?date=` preview's; its skew clamp too)
+    m.at = musicAt(m.at, Date.now());
+    if (!musicBeats(m, cur, Date.now())) {
       if (cur) deliver(cur);
       return false;
     }

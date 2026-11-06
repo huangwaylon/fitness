@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, MUSIC_MS_MAX, MUSIC_STOP_KEEP_MS, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicAt, musicBeats, musicEnd, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/components/island/world.ts';
 
 const KEY = 'ab'.repeat(32);
@@ -437,5 +437,20 @@ describe('live protocol: a music stage (`music`, docs/sound-sync.md)', () => {
     expect(musicLive({ at: 0, song: 's', ms: 100 }, 100)).toBe(false);
     expect(musicLive({ at: 0 }, MUSIC_STOP_KEEP_MS - 1)).toBe(true);
     expect(musicLive({ at: 0 }, MUSIC_STOP_KEEP_MS)).toBe(false);
+  });
+
+  it('musicEnd, musicBeats, musicAt: the one rule the relay, the demo relay and the phones take a record by', () => {
+    expect(musicEnd({ at: 5, song: 's', ms: 100 })).toBe(105);
+    expect(musicEnd({ at: 5, song: null, ms: 0 })).toBe(5 + MUSIC_STOP_KEEP_MS);
+    const rec = { at: 10, song: 's', ms: 100, who: 'B' as const };
+    expect(musicBeats(rec, undefined, 50)).toBe(true);
+    expect(musicBeats(rec, { at: 9, who: 'G' }, 50)).toBe(true);
+    expect(musicBeats(rec, { at: 10, who: 'A' }, 50)).toBe(true);
+    expect(musicBeats(rec, { at: 11, who: 'A' }, 50)).toBe(false);
+    expect(musicBeats(rec, undefined, 110)).toBe(false); // over
+    expect(musicBeats({ at: 10, who: 'A' }, { at: 9, who: 'B' }, 110)).toBe(true); // a stop, kept a while
+    expect(musicAt(1000, 1000 + MUSIC_SKEW_MS)).toBe(1000);
+    expect(musicAt(1000, 1001 + MUSIC_SKEW_MS)).toBe(1001 + MUSIC_SKEW_MS);
+    expect(musicAt(1001 + MUSIC_SKEW_MS, 0)).toBe(0);
   });
 });
