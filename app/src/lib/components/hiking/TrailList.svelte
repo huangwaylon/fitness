@@ -33,7 +33,7 @@
 </script>
 
 <section class="screen" {hidden} data-trail-list>
-  <div class="top"><NavBar size="s" title={pick(S.title, L)} {onclose} /></div>
+  <div class="top"><NavBar title={pick(S.title, L)} {onclose} /></div>
   <ChipRow label={pick(S.filterBar, L)}>
     {#each FILTERS as f (f)}
       <Chip label={pick(f === 'all' ? S.all : DIFF[f], L)} count={count(f)} selected={filter === f} data-filter={f} onclick={() => (filter = f)} />
@@ -63,7 +63,7 @@
 <style>
   .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--surface); }
   .screen[hidden] { display: none; }
-  .top { flex: none; padding: var(--ui-top) calc(4px + var(--safe-right)) 0 calc(4px + var(--safe-left)); background-color: var(--surface); }
+  .top { flex: none; padding: var(--ui-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); background-color: var(--surface); }
   .div { flex: none; align-self: stretch; width: 1.5px; margin: 8px 2px; background: linear-gradient(var(--stitch) 60%, transparent 0) 0 0 / 1.5px 6px repeat-y; }
   .list {
     flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; scrollbar-width: none;

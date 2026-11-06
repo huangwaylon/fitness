@@ -109,6 +109,8 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; }
 .btn.small svg { width: 20px; height: 20px; }
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
+/* a confirm's 削除 (the action that takes something away): coral */
+.btn.danger { --fill: var(--c-coral); --lip-c: var(--c-coral-text); }
 
 /* ---------- an always-cream object (a bubble, a cream button, a transcript line, a legend, a scene's pill, 解説): cream at
    every time of day, so the theme's text colours inside it are put back to the day ones. Day-only --c-* text colours go on
@@ -117,6 +119,13 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .obj-cream, .btn.paper {
   --text: var(--c-ink); --text-soft: var(--c-ink-soft); --leaf-text: var(--c-leaf-text); --coral-text: var(--c-coral-text);
   --sky-text: var(--c-sky-text);
+}
+
+.titlebar { flex: none; position: relative; z-index: 2; margin-bottom: 4px; }
+/* a full-height sheet's NavBar (Sheet top / pop): rows scrolling up fade out under it, not cut at a hard edge */
+.titlebar::after {
+  content: ''; position: absolute; left: -8px; right: -8px; top: 100%; height: 14px; pointer-events: none;
+  background: linear-gradient(var(--surface), transparent);
 }
 
 /* ---------- a section's label: the small soft heading over a sheet's group of rows or cards (せってい's, ごほうび's

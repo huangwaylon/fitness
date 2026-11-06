@@ -3,7 +3,7 @@
   // opens this small NH-style picker above it (the reactions wheel's spirit in the app's cream): only my own words (no
   // presets; the user: "get rid of all the default messages. only custom messages"), my last RECENT_MAX (kept on this
   // phone, island/say.ts, newest first) and 「じぶんで かく…」, a field of SAY_MAX characters with いう (Enter sends); with
-  // none kept yet it opens straight on the field (no lone button), without もどる. A pick closes it and is said
+  // ‹ (top-left) back to them; none kept yet it opens straight on the field, without ‹. A pick closes it and is said
   // (IslandScene: the balloon over my villager on both phones). ✕, Esc or a tap anywhere else closes it (on the ground
   // that tap only closes: it walks nobody; on the button again it only closes). It stands above the button, its right edge at the button's (inside the screen, EDGE
   // from its sides), above the keyboard while one is up; it sits outside the scroller, so focusing its field never
@@ -105,6 +105,8 @@
 <div class="picker" class:placed={!!pos} role="dialog" aria-label={t('say.title')} data-say-picker bind:this={el}
   style:left={pos ? `${pos.x}px` : null} style:top={pos ? `${pos.y}px` : null}>
   <div class="head">
+    <!-- ‹ only with phrases to go back to (none kept: ✕ closes) -->
+    {#if writing && recent.length}<NavButton kind="back" label={t('say.back')} onclick={() => (writing = false)} />{/if}
     <b class="title">{t('say.title')}</b>
     <span class="x" data-say-close><NavButton kind="close" onclick={() => onclose()} /></span>
   </div>
@@ -122,11 +124,7 @@
       <input id="say-field" class="field" data-sfx="none" bind:this={field} bind:value={draft} oninput={cap} oncompositionend={cap} onkeydown={enter} type="text" enterkeyhint="send"
         autocomplete="off" maxlength={SAY_MAX * 2} placeholder={t('say.placeholder')} data-say-field />
       <span class="count" class:full={count >= SAY_MAX} aria-hidden="true">{count}/{SAY_MAX}</span>
-      <!-- もどる only with phrases to go back to (none kept: ✕ closes) -->
-      <div class="row" class:alone={!recent.length}>
-        {#if recent.length}
-          <button type="button" class="btn small paper" data-sfx="back" onclick={() => (writing = false)}>{t('say.back')}</button>
-        {/if}
+      <div class="row">
         <button type="button" class="btn small" data-sfx="choice-pick" data-say-send aria-disabled={!ready || undefined} onclick={send}>{t('say.send')}</button>
       </div>
     </form>
@@ -144,9 +142,9 @@
   }
   .picker.placed { opacity: 1; pointer-events: auto; animation: pop .2s cubic-bezier(.3, 1.4, .5, 1) both; }
   .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
-  .title { padding-left: 6px; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-ink-soft); }
-  /* the app's ✕ (NavButton), as every sheet's */
-  .x { display: flex; margin-bottom: var(--lip-h); }
+  .title { flex: 1; padding-left: 6px; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--c-ink-soft); }
+  /* the app's ‹ ✕ (NavButton), as every sheet's */
+  .x { display: flex; }
   .recent { display: flex; flex-direction: column; gap: 8px; }
   .phrase {
     appearance: none; border: 0; margin: 0; cursor: pointer; min-height: 48px; padding: 6px 10px; border-radius: 16px;
@@ -156,7 +154,7 @@
   .phrase:active { translate: 0 2px; box-shadow: 0 1px 0 rgba(170, 120, 60, .38); }
   .phrase:focus-visible, .field:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .phrase.own { background: #FFF3CC; }
-  /* じぶんで かく… / もどる / いう: the app's buttons (theme.css .btn; いう sunk until there's something to say) */
+  /* じぶんで かく… / いう: the app's buttons (theme.css .btn; いう sunk until there's something to say) */
   .write { width: 100%; margin-top: 8px; }
   .row .btn { width: 100%; margin-bottom: 0; }
   .form { display: grid; gap: 8px; }
@@ -166,8 +164,7 @@
   }
   .count { justify-self: end; margin-top: -4px; font: 700 var(--fs-s)/1 var(--font-num); color: var(--c-ink-soft); }
   .count.full { color: var(--c-ink); }
-  .row { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
-  .row.alone { grid-template-columns: 1fr; }
+  .row { display: grid; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @keyframes pop { from { transform: scale(.7); opacity: 0; } }
 </style>

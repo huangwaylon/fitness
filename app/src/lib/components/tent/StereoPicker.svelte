@@ -3,6 +3,7 @@
   // last one), or one of K.K.'s songs by name; ✕ or a tap outside closes it. `onpick` gets it: the room's stage plays
   // it as its aircheck for everyone (TentRoom playStereo: stage.svelte.ts request).
   import { t } from '#lib/i18n/index.ts';
+  import NavButton from '../ui/NavButton.svelte';
   import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';
   import { dropPrefetched, prefetchKK } from '#lib/sound/sound.svelte.ts';
 
@@ -44,7 +45,7 @@
   {:else if kkTracks}
     <p class="none">{t('tent.stereo.none')}</p>
   {/if}
-  <button type="button" class="close" data-sfx="back" aria-label={t('tent.stereo.close')} onclick={onclose}>✕</button>
+  <span class="x"><NavButton kind="close" onclick={onclose} /></span>
 </div>
 
 <style>
@@ -64,8 +65,5 @@
   .song:active, .song:focus-visible { background: var(--c-card); }
   .song.any { font-weight: 800; background: var(--c-card); }
   .song.last { opacity: .7; }
-  .close {
-    position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: none; color: inherit;
-    font: inherit; font-size: 18px; -webkit-tap-highlight-color: transparent;
-  }
+  .x { position: absolute; top: 4px; right: 4px; display: flex; }
 </style>

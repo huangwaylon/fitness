@@ -198,7 +198,7 @@ test('only my own words: no presets; none yet, the field at once; after five, th
   }
   expect(await clearOfHud(page)).toBe(true);
   await shot(page, 'recent-four');
-  // じぶんで かく… and もどる back to them; a quick pick goes first again
+  // じぶんで かく… and ‹ (もどる) back to them; a quick pick goes first again
   await picker(page).getByRole('button', { name: 'じぶんで かく…' }).click();
   await expect(picker(page).locator('[data-say-field]')).toBeFocused();
   await picker(page).getByRole('button', { name: 'もどる' }).click();

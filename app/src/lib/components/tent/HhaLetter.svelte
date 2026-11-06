@@ -1,8 +1,9 @@
 <!-- The Happy Home Academy's letter (tent/hha.ts): ハニワくん's rating of the tent, its points and its ハニワ (bronze,
      silver or gold), what counted, and one remark. Opened by the tent the first time someone goes in after a day's
-     decorating, or by its ハニワ button. -->
+     decorating, or by its ハニワ button. ✕ (top-right, as every dialog's) or the scrim closes it. -->
 <script lang="ts">
   import { t } from '#lib/i18n/index.ts';
+  import NavButton from '../ui/NavButton.svelte';
   import { BADGES, type HhaBadge, type HhaRating } from './hha.ts';
 
   let { rating, onclose }: { rating: HhaRating; onclose: () => void } = $props();
@@ -25,6 +26,7 @@
 <div class="scrim" data-tent-letter={rating.total} data-badge={rating.badge ?? 'none'} role="presentation"
   onpointerdown={(e) => e.target === e.currentTarget && onclose()}>
   <div class="letter" role="dialog" aria-modal="true" aria-labelledby="hha-head">
+    <span class="x"><NavButton kind="close" data-hha-close onclick={onclose} /></span>
     <p class="sender" id="hha-head">{t('tent.hha.sender')}</p>
     <p class="lead">{t('tent.hha.lead')}</p>
     <div class="badge" class:none={!rating.badge}>
@@ -47,7 +49,6 @@
     </ul>
     <p class="note" data-hha-note={rating.note.k}>{note}</p>
     <p class="next">{rating.next !== null && up ? t('tent.hha.next', { n: fmt(rating.next), badge: badgeName(up) }) : t('tent.hha.top')}</p>
-    <button type="button" class="btn small paper close" data-hha-close data-sfx="back" onclick={onclose}>{t('tent.hha.close')}</button>
   </div>
 </div>
 
@@ -59,7 +60,7 @@
   .letter {
     width: min(340px, 100%); max-height: calc(100% - 32px); overflow: auto; border-radius: 22px; padding: 18px 20px 16px;
     background: var(--c-paper); color: var(--c-ink); box-shadow: 0 4px 0 var(--c-lip), 0 12px 30px rgba(0, 0, 0, .35);
-    text-align: center; animation: rise .32s var(--ease-bounce, ease-out) both;
+    position: relative; text-align: center; animation: rise .32s var(--ease-bounce, ease-out) both;
     /* NH's letter paper: faint ruled lines */
     background-image: repeating-linear-gradient(transparent 0 27px, rgba(147, 112, 71, .12) 27px 28px);
   }
@@ -75,8 +76,8 @@
   .parts li { display: flex; justify-content: space-between; gap: 12px; }
   .pts { font-family: var(--font-num); font-variant-numeric: tabular-nums; color: var(--c-ink-soft); }
   .note { margin: 4px 0 2px; font: 700 var(--fs-body)/1.5 var(--font-ui); }
-  .next { margin: 0 0 12px; font: 500 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); }
-  .close { min-width: 120px; margin-inline: auto; }
+  .next { margin: 0 0 4px; font: 500 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); }
+  .x { position: absolute; top: 4px; right: 4px; display: flex; }
   @keyframes fade { from { opacity: 0; } }
   @keyframes rise { from { transform: translateY(24px) scale(.96); opacity: 0; } }
   @keyframes hop { 40% { transform: translateY(-8px); } }

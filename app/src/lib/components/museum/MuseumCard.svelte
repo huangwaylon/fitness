@@ -59,6 +59,6 @@
   .who { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-s); }
   .n { color: var(--c-ink-soft); font-size: var(--fs-s); }
   /* the app's ✕ (NavButton) */
-  .x { flex: none; align-self: flex-start; display: flex; margin-bottom: var(--lip-h); }
+  .x { flex: none; align-self: flex-start; display: flex; }
   @keyframes pop { from { scale: .7; opacity: 0; } }
 </style>

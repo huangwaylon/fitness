@@ -8,8 +8,6 @@
     <symbol id="f-pear" viewBox="0 0 24 24"><path d="M12 5 C9 5 9 9 8 11 C5 14 5 21 12 21 C19 21 19 14 16 11 C15 9 15 5 12 5Z" fill="#C9DE6E" stroke="#4A3A2C" stroke-width="1.8"/><path d="M12 5 Q12 2 14 1.5" stroke="#8A5A3B" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M13 4 Q16.5 1 19.5 3.4 Q16.4 6.4 13 4Z" fill="#7BC67E"/><circle cx="9.5" cy="14" r="1.6" fill="#fff" opacity=".7"/></symbol>
 
     <symbol id="i-island" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20 Q12 15 21 20"/><path d="M12 18 Q11 12 13 7"/><path d="M13 7 Q8 4 4 7 M13 7 Q18 3 21 7 M13 7 Q11 3 8 3 M13 7 Q16 9 17 12"/></g></symbol>
-    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5 L8 12 L15 19" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6 L18 18 M18 6 L6 18" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5 L10 17 L19 7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     <!-- app additions (same 2–2.6px brown-ink stroke language) -->
     <symbol id="i-globe" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12 H20.5 M12 3.5 Q7 12 12 20.5 Q17 12 12 3.5"/></g></symbol>

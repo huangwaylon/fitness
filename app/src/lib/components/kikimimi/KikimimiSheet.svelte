@@ -17,6 +17,7 @@
   import '#lib/i18n/kikimimi.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
+  import NavButton from '../ui/NavButton.svelte';
   import Host from '../characters/Host.svelte';
   import Lobby from './Lobby.svelte';
   import Play from './Play.svelte';
@@ -317,11 +318,7 @@
   const count = $derived(v && v.phase === 'countdown' ? Math.max(1, Math.ceil((v.until - game!.now) / 1000)) : 0);
 </script>
 
-{#snippet gear()}
-  <button type="button" class="gear" aria-label={t('kiki.set.title')} data-kiki-gear data-sfx="open" onclick={() => enter({ k: 'settings' })}>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 2.6h3.4l.5 2.6c.6.2 1.2.5 1.7.9l2.5-.9 1.7 2.9-2 1.7c.1.6.1 1.3 0 1.9l2 1.7-1.7 2.9-2.5-.9c-.5.4-1.1.7-1.7.9l-.5 2.6h-3.4l-.5-2.6c-.6-.2-1.2-.5-1.7-.9l-2.5.9-1.7-2.9 2-1.7c-.1-.6-.1-1.3 0-1.9l-2-1.7 1.7-2.9 2.5.9c.5-.4 1.1-.7 1.7-.9z" transform="translate(0 1)" /><circle cx="12" cy="13" r="3.2" /></svg>
-  </button>
-{/snippet}
+{#snippet gear()}<NavButton kind="tool" icon="gear" label={t('kiki.set.title')} data-kiki-gear sfx="open" onclick={() => enter({ k: 'settings' })} />{/snippet}
 
 {#snippet ownView(view: NonNullable<typeof own>)}
   <!-- a lane's own view in this phase's place (its lobby, its round, its results) -->
@@ -455,19 +452,6 @@
     --scrim: rgba(20, 24, 56, .5); --hl: rgba(255, 246, 224, .12);
     color-scheme: dark;
   }
-  .titlebar { flex: none; position: relative; z-index: 2; margin-bottom: 4px; }
-  .titlebar::after {
-    content: ''; position: absolute; left: -8px; right: -8px; top: 100%; height: 14px; pointer-events: none;
-    background: linear-gradient(var(--surface), transparent);
-  }
-  /* ⚙ at the hub, in ‹'s place: the NavButton's round cream game object */
-  .gear {
-    appearance: none; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); border-radius: 50%; padding: 0; border: 0;
-    display: inline-grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
-  }
-  .gear:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .gear svg { width: 24px; height: 24px; fill: #A88B68; }
-  .gear circle { fill: var(--c-card); }
   /* the one scroller (as the other full-height sheets'): it bleeds 8px past the side padding so focus rings and lips show */
   .kk-body {
     flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
@@ -502,5 +486,5 @@
   .resume { cursor: pointer; }
   .resume b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .resume small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  @media (prefers-reduced-motion: reduce) { .num { animation: none; } .gear:active { transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .num { animation: none; } }
 </style>

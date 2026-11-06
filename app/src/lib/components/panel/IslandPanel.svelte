@@ -83,12 +83,6 @@
 </Sheet>
 
 <style>
-  .titlebar { flex: none; position: relative; z-index: 2; margin-bottom: 4px; }
-  /* rows scrolling up fade out under the title bar instead of being cut at a hard edge */
-  .titlebar::after {
-    content: ''; position: absolute; left: -8px; right: -8px; top: 100%; height: 14px; pointer-events: none;
-    background: linear-gradient(var(--surface), transparent);
-  }
   /* The one scroller. It bleeds 8px past the side padding so focus rings and lips are not clipped by its overflow. */
   .panel-body {
     flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;

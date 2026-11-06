@@ -48,7 +48,7 @@ chunk is cached, a retry. Under drawOff() (the e2e's logic tier) a stub draws th
 
 ## Screens
 
-- **The list:** NavBar s (✕); one ChipRow: すべて 中級 上級 最上級 with their counts, then 距離順 標高差順 (a sort is off
+- **The list:** NavBar (✕); one ChipRow: すべて 中級 上級 最上級 with their counts, then 距離順 標高差順 (a sort is off
   again on a second tap); a dense card per trail: a 120px PhotoBand (the level's sticker: leaf, yuzu, coral; the name
   and area) over a StatStrip (距離 · 標高差 · 時間, `stats.ts`).
 - **A trail:** the map full screen under the game's buttons (the user: like the HUD's and the island's): NavBar's ‹ ✕,

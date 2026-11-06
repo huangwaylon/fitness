@@ -13,7 +13,7 @@
   // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (the health popup), grown out of
   // the HUD's dumbbell (--pop-x / --pop-y on the root, set by the button) instead of sliding down. variant="full": the
   // pop's column for the info sheets (docs/design.md "Unified kit": りょこう, けっこんしき, トレイル): the paper edge to
-  // edge, body text in --font-body, the kit's scope (`.kit`); the sheet puts its own NavBar size="s", one scroller and
+  // edge, body text in --font-body, the kit's scope (`.kit`); the sheet puts its own NavBar, one scroller and
   // a TabBar inside. The default (paper) is also the kit's form sheet: the fields, then 保存 (a leaf .btn) in `footer`;
   // `focusField` puts the keyboard up on its first field.
   import { untrack, type Snippet } from 'svelte';
@@ -131,10 +131,10 @@
   /* The content can scroll above the keyboard too (the footer is lifted by --kb). */
   .inner { padding: 0 calc(var(--side) + var(--safe-right)) calc(var(--safe-bottom) + 18px + var(--kb, 0px)) calc(var(--side) + var(--safe-left)); }
   dialog:has(> .foot) > .inner { padding-bottom: calc(8px + var(--kb, 0px)); }
-  /* the title bar: 14px from the sheet's top edge, the content 10px under it; it stays put while a long sheet scrolls,
+  /* the title bar: 10px from the sheet's top edge, the content 8px under it; it stays put while a long sheet scrolls,
      so ✕ is always in reach (a long sheet like the menu editor would scroll it away) */
   .bar {
-    position: sticky; top: 0; z-index: 3; padding: 14px 0 8px; margin-bottom: 2px;
+    position: sticky; top: 0; z-index: 3; padding: 10px 0 6px; margin-bottom: 2px;
     background: linear-gradient(var(--surface) 85%, transparent);
   }
   .foot {
@@ -164,7 +164,7 @@
      .inner, and must not take the panel's rules) */
   dialog.top > .inner, dialog.pop > .inner {
     flex: 1; min-height: 0; display: flex; flex-direction: column;
-    padding: calc(var(--ui-top) + 8px) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
+    padding: var(--ui-top) calc(var(--side) + var(--safe-right)) 0 calc(var(--side) + var(--safe-left));
   }
   /* An undo banner is up: the last row can scroll clear of it… */
   dialog.toasting > .inner { padding-bottom: calc(var(--safe-bottom) + 96px + var(--kb, 0px)); }

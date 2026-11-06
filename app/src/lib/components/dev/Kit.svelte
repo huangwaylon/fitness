@@ -28,11 +28,11 @@
 <Sheet bind:open label="Kit" variant="full">
   <div class="col">
     <PhotoBand src="/travel/okinawa/hero.webp" height={120} edge>
-      {#snippet nav()}<NavBar size="s" over title="Kit" onback={() => {}} onclose={() => (open = false)} />{/snippet}
+      {#snippet nav()}<NavBar over title="Kit" onback={() => {}} onclose={() => (open = false)} />{/snippet}
       <b class="ttl">PhotoBand · NavBar over</b>
     </PhotoBand>
-    <NavBar size="s" title="りょこう" onclose={() => (open = false)} trailing={add} />
-    {#snippet add()}<NavButton kind="back" size="s" label="add" onclick={() => {}} />{/snippet}
+    <NavBar title="りょこう" onclose={() => (open = false)} trailing={add} />
+    {#snippet add()}<NavButton kind="tool" icon="plus" label="add" onclick={() => {}} />{/snippet}
     <ChipRow label="filter">
       {#each ['all', 'late', 'soon', 'later'] as c (c)}<Chip label={c} count={3} dot={c === 'late' ? 'var(--c-coral)' : undefined} selected={chip === c} onclick={() => (chip = c)} />{/each}
       <Segmented items={[{ id: 'km', label: 'km' }, { id: 'mi', label: 'mi' }]} value={unit} label="units" attr="units" onpick={(u) => (unit = u)} />
@@ -49,7 +49,7 @@
       </div>
       <h3 class="sec-label head leaf">今月<span class="n">2件</span></h3>
       <div class="card dense"><StatStrip items={[{ icon: 'distance', value: '8.4', unit: 'km', label: '距離' }, { icon: 'mountain', value: 620, unit: 'm', label: '標高差' }, { icon: 'clock', value: '4:30', label: '時間' }]} /></div>
-      <div class="row-x"><ProgressBar value={12} max={35} label="12 / 35" /><span class="sticker">今日</span><span class="sticker coral">行ってきた</span><NavButton kind="close" size="s" onclick={() => {}} /></div>
+      <div class="row-x"><ProgressBar value={12} max={35} label="12 / 35" /><span class="sticker">今日</span><span class="sticker coral">行ってきた</span><NavButton kind="close" onclick={() => {}} /></div>
       <div class="icons">{#each ICONS as n (n)}<Icon name={n} size={22} /><Icon name={n} size={22} soft />{/each}</div>
       <hr class="stitch" />
       <p class="grain note">Body text in --font-body 15/1.45; a note in --fs-s.</p>

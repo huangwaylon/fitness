@@ -236,21 +236,22 @@
           placeholder={t('board.placeholder')} enterkeyhint="enter" data-sfx="none" data-board-field></textarea>
         <div class="row">
           <span class="count" class:low={left <= 10} aria-live="polite">{t('board.left', { n: left })}</span>
-          <button type="button" class="btn small paper" data-sfx="back" onclick={cancel}>{t('board.cancel')}</button>
-          <button type="submit" class="btn small" data-sfx="confirm" aria-disabled={!can} data-board-post>{writing.id ? t('board.save') : t('board.post')}</button>
+          <button type="button" class="btn small paper" data-sfx="back" onclick={cancel}>{t('common.cancel')}</button>
+          <button type="submit" class="btn small" data-sfx="confirm" aria-disabled={!can} data-board-post>{writing.id ? t('common.save') : t('board.post')}</button>
         </div>
       </form>
     {:else if picked}
       <div class="read" data-board-read={picked.id}>
-        <div class="who"><b>{board.author(picked.who).name}</b><span>{postDate(picked.p)}{picked.at > picked.p ? ` · ${t('board.edited')}` : ''}</span></div>
+        <div class="who"><b>{board.author(picked.who).name}</b><span>{postDate(picked.p)}{picked.at > picked.p ? ` · ${t('board.edited')}` : ''}</span>
+          <NavButton kind="close" onclick={() => ((face.selected = null), (removing = false))} /></div>
         <p class="text">{picked.t}</p>
+        {#if board.mayEdit(picked) || board.mayRemove(picked)}
         <div class="row">
           {#if board.mayEdit(picked)}<button type="button" class="btn small paper" data-sfx="open" data-board-edit onclick={() => startWriting(picked)}>{t('board.edit')}</button>{/if}
           {#if board.mayRemove(picked)}
             <button type="button" class="btn small paper" data-sfx={removing ? 'confirm' : 'tick'} data-board-remove onclick={() => remove(picked)}>{removing ? t('board.removeSure') : t('board.remove')}</button>
           {/if}
-          <button type="button" class="btn small paper" data-sfx="back" onclick={() => ((face.selected = null), (removing = false))}>{t('common.close')}</button>
-        </div>
+        </div>{/if}
       </div>
     {:else}
       <div class="row pager">
@@ -311,7 +312,8 @@
   .bv.night:not(.three) { background: linear-gradient(#1f2f5cee, #2c4a6cee); }
   .pager .btn.go { margin-left: 12px; }
   .read, .write { background: var(--c-card); color: var(--c-ink); border-radius: var(--r-card); padding: 12px 14px 8px; box-shadow: 0 var(--lip-h) 0 var(--c-lip), var(--sh-float); }
-  .who { display: flex; justify-content: space-between; gap: 8px; font-size: var(--fs-body); }
+  .who { display: flex; align-items: center; gap: 8px; margin: -8px -10px 0 0; font-size: var(--fs-body); }
+  .who span { margin-right: auto; }
   .who span { color: var(--c-ink-soft); }
   .text { margin: 8px 0 10px; font: 500 var(--fs-talk) / 1.45 var(--font-ui); white-space: pre-wrap; overflow-wrap: anywhere; -webkit-user-select: text; user-select: text; }
   textarea {
