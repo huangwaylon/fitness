@@ -3,7 +3,7 @@
   // for the type: the big countdown (「あと 336 日」, 「今日」 on the day, 「12 日前」 after it), the two names on a yuzu
   // plate, the day, time and venue; at the right the rose ring on a paper disc (the board's percent round a posy), the
   // percent and done / total under it; a member's ⚙ in the corner. The guest sees the same, without ⚙.
-  import Icon from '../quiet/Icon.svelte';
+  import Icon from '../ui/Icon.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { asset } from '$app/paths';
   import { formatDate } from '#lib/i18n/format.ts';
@@ -66,7 +66,7 @@
 </section>
 
 <style>
-  .band { --wed-pink: #E88FAE; position: relative; flex: none; height: 184px; overflow: hidden; background: #6E5A58; color: #fff; }
+  .band { position: relative; flex: none; height: 184px; overflow: hidden; background: var(--c-ink-soft); color: #fff; }
   img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 35%; }
   :global(:root[data-tod='night']) img { filter: brightness(.8) saturate(.9); }
   /* darker toward the foot and the left, under the type */
@@ -99,8 +99,8 @@
     background: color-mix(in srgb, var(--bg) 94%, transparent); color: var(--text); box-shadow: 0 4px 14px rgb(20 12 8 / .28);
   }
   .ring svg { position: absolute; inset: 4px; width: calc(100% - 8px); height: calc(100% - 8px); }
-  .track { fill: none; stroke: color-mix(in srgb, var(--wed-pink) 24%, var(--bg)); stroke-width: 7; }
-  .fill { fill: none; stroke: var(--wed-pink); stroke-width: 7; stroke-linecap: round; transition: stroke-dasharray 600ms cubic-bezier(.25, .8, .25, 1); }
+  .track { fill: none; stroke: color-mix(in srgb, var(--c-rose) 24%, var(--bg)); stroke-width: 7; }
+  .fill { fill: none; stroke: var(--c-rose); stroke-width: 7; stroke-linecap: round; transition: stroke-dasharray 600ms cubic-bezier(.25, .8, .25, 1); }
   .posy { position: relative; line-height: 0; margin-top: -4px; }
   .pct { position: relative; font: 600 20px/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .pct small { font-size: .6em; margin-left: 1px; }

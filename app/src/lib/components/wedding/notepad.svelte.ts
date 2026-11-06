@@ -30,7 +30,7 @@ function begin(draft: string, base: number | null, start: string | null) {
 /** ✎ かく: the held note in the field. */
 export const write = (): void => begin(board.note?.md ?? '', board.note?.at ?? null, board.note?.md ?? '');
 
-/** ふたつ あわせる: both crossed versions in the field, saved from the held one. */
+/** ふたつを合わせる: both crossed versions in the field, saved from the held one. */
 export function merge(): void {
   const c = board.conflict;
   if (c) begin([c.other.md, c.current.md].filter((m) => m.trim()).join('\n\n'), c.current.at, null);
@@ -68,7 +68,7 @@ const arm = (ms: number) => {
   timer = setTimeout(settle, ms);
 };
 
-/** これに する: shown at once, saved when its banner goes (とりけす: both versions again). */
+/** これにする: shown at once, saved when its banner goes (とりけす: both versions again). */
 export function pick(md: string): void {
   if (pad.picked !== null) settle();
   const at = board.conflict?.current.at;
