@@ -8,7 +8,7 @@ import { addDays, instantOrNull, jstMs, localDateAt, toLocalDate, weekKeyOf } fr
 import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
-import { boardOpOf, type BoardEntry } from '#lib/contract/board.ts';
+import { boardOpOf, type BoardRow } from '#lib/contract/board.ts';
 import { packRowOf, type PackEntry } from '#lib/contract/pack.ts';
 import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoalId, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
@@ -109,9 +109,9 @@ export interface State {
    *  contract/layout.ts), in server order (store/layout.svelte.ts merges them over the default). Never read by the
    *  economy. The homes' interiors (`sc` u and v) are rooms like the tent's, in `tent` with their scope. */
   layout: LayoutEntry[];
-  /** The bulletin board (`board`: each post's ops, contract/board.ts), in server order; the posts are their merge
-   *  (components/board/posts.svelte.ts). Never read by the economy. */
-  board: BoardEntry[];
+  /** The bulletin board (`board`: each post's ops, contract/board.ts), in server order, a queued one marked `queued`;
+   *  the posts are their fold (components/board/posts.svelte.ts). Never read by the economy. */
+  board: BoardRow[];
   /** The trips' packing lists and notes (`pack`, `pack_chk`, `pack_reset`, `trip_note`: contract/pack.ts), in server
    *  order, a queued one marked `queued`; a trip's list is their fold over its seed (components/travel/packing.svelte.ts).
    *  Never read by the economy. */
@@ -340,9 +340,9 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     // A type the server doesn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, person);
-    const shopN = s.shop.length, packN = s.pack.length;
+    const shopN = s.shop.length, packN = s.pack.length, boardN = s.board.length;
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    if (queued?.has(id)) markQueued(s, shopN, packN);
+    if (queued?.has(id)) markQueued(s, shopN, packN, boardN);
   }
   return s;
 }
@@ -495,17 +495,19 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     const d = parseData(row[4]);
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, row[1]);
-    const shopN = s.shop.length, packN = s.pack.length;
+    const shopN = s.shop.length, packN = s.pack.length, boardN = s.board.length;
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    markQueued(s, shopN, packN);
+    markQueued(s, shopN, packN, boardN);
   }
   return s;
 }
 
-/** The shop rows from `from` on (the packing rows from `packFrom` on) are queued ones (not the record's yet). */
-function markQueued(s: State, from: number, packFrom: number): void {
+/** The shop rows from `from` on (the packing rows from `packFrom` on, the board's from `boardFrom` on) are queued ones
+ *  (not the record's yet). */
+function markQueued(s: State, from: number, packFrom: number, boardFrom: number): void {
   for (let i = from; i < s.shop.length; i++) s.shop[i] = { ...s.shop[i], queued: true };
   for (let i = packFrom; i < s.pack.length; i++) s.pack[i] = { ...s.pack[i], queued: true };
+  for (let i = boardFrom; i < s.board.length; i++) s.board[i] = { ...s.board[i], queued: true };
 }
 
 // ---------- events ----------
@@ -593,7 +595,7 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   },
   board(s, person, _at, d) {
     const op = boardOpOf(d);
-    if (op) s.board.push({ ...op, who: person } as BoardEntry);
+    if (op) s.board.push({ ...op, who: person } as BoardRow);
   },
   pack: packEvent('pack'),
   pack_chk: packEvent('pack_chk'),

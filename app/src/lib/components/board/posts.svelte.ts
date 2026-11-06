@@ -1,5 +1,5 @@
-// The bulletin board on this phone (docs/board.md): the posts as the record keeps them (the model's `board` rows and
-// this phone's queued ones, folded by the record's rules: contract/board.ts boardFold), who wrote each (their villager
+// The bulletin board on this phone (docs/board.md): the posts as the record keeps them (the model's `board` rows as
+// they are, this phone's queued ones by the record's rules: contract/board.ts boardFold), who wrote each (their villager
 // name and head), what I may do with each, my changes (each one `board` event, sent at once: the record's notice brings
 // it to every open phone), and the 「！」: a post by someone else changed since I last opened the board.
 //   board.posts                 newest first (≤ BOARD_MAX)

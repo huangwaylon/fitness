@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BOARD_CHARS, BOARD_LINES, BOARD_MAX, boardAccept, boardBeats, boardFold, boardMayWrite, boardOpOf, boardPosts, cleanText, mergeBoard, newPostId, textLength,
-  type BoardEntry
+  type BoardEntry, type BoardRow
 } from './board.ts';
 
 const T = Date.parse('2026-11-02T03:00:00.000Z');
@@ -75,18 +75,24 @@ describe('the merge', () => {
     expect(v[0].id).toBe(`bm${String(BOARD_MAX + 6).padStart(6, '0')}`);
     expect(v.at(-1)!.id).toBe('bm000007');
   });
-  it('the phone folds the ops as the record takes them (a forbidden edit, an op after a removal and the cap)', () => {
-    const ops = [
+  it('the phone folds its queued ops as the record takes them (a forbidden edit, an op after a removal and the cap)', () => {
+    const ops: BoardRow[] = [
       set('b1111111', 'A', T, 'ウェイの'), set('b1111111', 'G', T + 1, 'ゲストが', T), set('b2222222', 'G', T + 2, 'ゲストの'),
       rm('b2222222', 'G', T + 3), set('b2222222', 'G', T + 4, 'もどれ', T + 2),
       ...Array.from({ length: BOARD_MAX }, (_, i) => set(`bz${String(i).padStart(6, '0')}`, 'B', T + 10 + i))
-    ];
+    ].map((e) => ({ ...e, queued: true }));
     const posts = boardPosts(boardFold(ops).values());
     expect(posts).toHaveLength(BOARD_MAX);
     expect(posts.find((p) => p.id === 'b1111111')).toBeUndefined();
     expect(posts.some((p) => p.t === 'ゲストが' || p.t === 'もどれ')).toBe(false);
     const small = boardPosts(boardFold(ops.slice(0, 5)).values());
     expect(small.map((p) => [p.id, p.t])).toEqual([['b1111111', 'ウェイの']]);
+  });
+  it('takes the record’s own rows as they are: an edited post is only its latest row', () => {
+    const edited = set('b1111111', 'A', T + 5, 'なおした', T);
+    expect(boardPosts(boardFold([edited]).values()).map((p) => p.t)).toEqual(['なおした']);
+    expect(boardPosts(boardFold([edited, { ...set('b1111111', 'A', T + 6, 'また', T), queued: true }]).values()).map((p) => p.t)).toEqual(['また']);
+    expect(boardFold([edited, { ...set('b1111111', 'B', T + 6, 'のっとり', T), queued: true }]).get('b1111111')).toMatchObject({ t: 'なおした' });
   });
 });
 
