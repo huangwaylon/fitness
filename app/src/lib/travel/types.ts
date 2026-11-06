@@ -61,6 +61,10 @@ export interface Day {
   note?: L;
   photo?: Photo;
   hike?: Hike;
+  /** The old site's card for the day (a classic guide's, components/travel/classic): 'day' an itinerary day (its
+   *  card open, the accent node), 'travel' a flight day (the second accent's ringed node); none a plain day (or a
+   *  hike's, by its `hike`). */
+  look?: 'day' | 'travel';
 }
 
 export interface Place {
@@ -153,4 +157,7 @@ export interface Trip {
   packing: PackSeed;
   /** The itinerary's footer ('All times JST'). */
   foot?: L;
+  /** A past trip shown as the old travel-plans site showed it (components/travel/classic/ClassicGuide.svelte): its
+   *  own look, the packing list frozen (the seed, never the relay's). */
+  classic?: true;
 }

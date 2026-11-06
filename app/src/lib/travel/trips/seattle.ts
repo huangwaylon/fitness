@@ -18,6 +18,7 @@ export const seattle: Trip = {
     {
       n: 1,
       date: "2026-07-02",
+      look: "travel",
       icon: "plane-landing",
       title: { en: "Arrival & Errands" },
       rows: [
@@ -445,6 +446,7 @@ export const seattle: Trip = {
     {
       n: 18,
       date: "2026-07-19",
+      look: "travel",
       icon: "plane-takeoff",
       title: { en: "Fly Home to Japan" },
       rows: [
@@ -504,5 +506,6 @@ export const seattle: Trip = {
         ]
       }
     ]
-  }
+  },
+  classic: true
 };
