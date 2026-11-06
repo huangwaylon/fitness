@@ -169,7 +169,7 @@ test('dialogues (gist, next): both speakers while it plays, the two-sided transc
     await expect(tr.locator('[data-line="1"]')).toHaveClass(/right/);
     await expect(tr.locator('[data-line]:has(.focus)')).toHaveCount(1);
     await expect(tr.locator('[data-kiki-next-line]')).toHaveCount(next ? 1 : 0);
-    if (next) await expect(tr.locator('[data-kiki-next-line] .en')).toHaveText("No worries, I'm not in a rush.");
+    if (next) await expect(tr.locator('[data-kiki-next-line] .en')).toHaveText("No problem, I'm not in a rush.");
     await expect(sheet(page).locator('[data-kiki-note]')).toBeVisible();
     if (shots) await snap(page, `${shots}/dialogue-reveal-${next ? 'next' : 'gist'}.png`);
     await sheet(page).locator('[data-kiki-next]').click();
