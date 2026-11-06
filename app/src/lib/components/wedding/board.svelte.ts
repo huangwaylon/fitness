@@ -12,8 +12,6 @@ import {
   newTaskId, wedBookOf, wedClean, wedConfig, wedNote, wedOpOf, wedTasks, WNOTE_DATA_CHARS, type WConfKey, type WedBook,
   type WedEntry, type WedTask, type WTaskSet
 } from '#lib/contract/wedding.ts';
-
-const EMPTY: readonly WedEntry[] = [];
 import { overallProgress, withProgress, type Overall, type WithProgress } from '#lib/wedding/progress.ts';
 import { todayIn, untilMidnight } from '#lib/time/zone.ts';
 import { daysBetween } from '#lib/time/dates.ts';
@@ -25,6 +23,7 @@ import type { Who } from '#lib/types.ts';
 /** A version of the notes: its text, when it was saved and by whom (`imported`: the old Sheet's, never saved since). */
 interface NoteVersion { md: string; at: number; who: Who; imported?: true }
 
+const EMPTY: readonly WedEntry[] = [];
 
 class WeddingBoard {
   #last = 0;
@@ -48,12 +47,8 @@ class WeddingBoard {
     return week.view?.viewer ?? 'A';
   }
 
-  /** The guest's phone: it reads the board, never changes it (the record refuses its ops). */
-  get readOnly(): boolean {
-    return this.me === 'G';
-  }
-
-  /** A member's phone with its week loaded: it edits (the guest's, and a phone with nothing loaded yet, read only). */
+  /** A member's phone with its week loaded: it edits (the guest's, and a phone with nothing loaded yet, read only: the
+   *  record refuses the guest's ops). */
   get canEdit(): boolean {
     return !!week.view && week.view.viewer !== 'G';
   }
@@ -125,7 +120,7 @@ class WeddingBoard {
   /** An op cleaned and checked as the record will, the note's size as JSON too (refused here: never queued to fail
    *  there), then sent. */
   #send(type: 'wtask' | 'wdone' | 'wconf' | 'wnote', data: Record<string, unknown>): boolean {
-    if (this.readOnly) return false;
+    if (!this.canEdit) return false;
     const d = wedClean(type, data);
     if (!wedOpOf(type, d, { now: world.serverNow() })) return false;
     if (type === 'wnote' && JSON.stringify(d).length > WNOTE_DATA_CHARS) return false;

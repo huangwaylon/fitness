@@ -25,8 +25,9 @@ import { world } from './world.svelte.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import { profileValueOk, type ProfileKey } from '#lib/contract/profile.ts';
 
-/** 買う！ and its とりけす wait this long before they are sent, with もとに戻す on the banner. */
-const UNDO_MS = 5000;
+/** 買う！ and its とりけす (and the packing list's removals and resets) wait this long before they are sent, with もとに戻す
+ *  on the banner. */
+export const UNDO_MS = 5000;
 
 /**
  * The banner for an action held UNDO_MS: it names what was done and carries もとに戻す; hovering, touching
