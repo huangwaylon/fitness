@@ -158,7 +158,7 @@ test('a long open day keeps its strip under the tabs as it scrolls', async ({ pa
   const pin = sheet(page).locator('[data-day="3"] .pin');
   await expect(pin).toContainText('3');
   const [p, t] = await Promise.all([pin.boundingBox(), sheet(page).locator('.tabs').boundingBox()]);
-  expect(Math.abs(p!.y - (t!.y + t!.height - 6))).toBeLessThan(2);
+  expect(Math.abs(p!.y - (t!.y + t!.height - 18))).toBeLessThan(2);
   await shot(page, 'okinawa-day3-pin');
 });
 
@@ -173,7 +173,10 @@ test('offline before the first opening: the pill says so, もういちど opens 
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await shot(page, 'offline-pill');
   await context.setOffline(false);
+  // Chromium fetches the chunk again; WebKit keeps a failed import for the page's life, so it reloads: the pill again
+  const how = Promise.race([page.waitForEvent('load').then(() => 'reload'), sheet(page).waitFor().then(() => 'open')]);
   await page.getByRole('button', { name: 'もういちど' }).click();
+  if ((await how) === 'reload') await fromMenu(page, 'travel');
   await expect(passes(page)).toHaveCount(3);
 });
 

@@ -63,8 +63,9 @@
   .chev { width: 18px; height: 18px; fill: none; stroke: var(--text-soft); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: transform 200ms var(--ease-soft); }
   .open .chev { transform: rotate(180deg); }
   .pin {
-    position: sticky; z-index: 1; top: calc(var(--tabs-h, 56px) - 6px); height: 36px; margin-bottom: -36px; box-sizing: border-box;
-    display: flex; align-items: center; gap: 8px; padding: 0 14px; overflow: hidden; white-space: nowrap;
+    /* up under the tabs' fading foot (no text shows through between them), its words clear of it */
+    position: sticky; z-index: 1; top: calc(var(--tabs-h, 56px) - 18px); height: 52px; margin-bottom: -52px; box-sizing: border-box;
+    display: flex; align-items: center; gap: 8px; padding: 16px 14px 0; overflow: hidden; white-space: nowrap;
     background: var(--card); box-shadow: 0 2px 0 var(--lip); font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text);
   }
   .pin :global(.pt) { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
