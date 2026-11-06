@@ -14,7 +14,7 @@ export const SAMPLE_PLACES: MapPlace[] = [
   { id: 'minna', kind: 'stop', day: 2, i: 4, name: { ja: '水納島', en: 'Minna Island' }, lat: 26.6453, lon: 127.8200 },
   { id: 'manzamo', kind: 'stop', day: 3, i: 1, name: { ja: '万座毛', en: 'Cape Manzamo' }, lat: 26.5049, lon: 127.8505 },
   { id: 'mihama', kind: 'stop', day: 3, i: 2, name: { ja: 'アメリカンビレッジ', en: 'American Village' }, lat: 26.3164, lon: 127.7571 },
-  { id: 'c-bise', kind: 'camp', name: { ja: '備瀬ビーチ', en: 'Bise Beach' }, lat: 26.7062, lon: 127.8775 },
+  { id: 'c-bise', kind: 'camp', name: { ja: '備瀬ビーチ', en: 'Bise Beach' }, lat: 26.7078, lon: 127.8822 },
   { id: 'c-nago', kind: 'camp', name: { ja: '21世紀の森ビーチ', en: '21st Century Forest Beach' }, lat: 26.5873, lon: 127.9688 },
   { id: 'n-kouri', kind: 'nature', name: { ja: '古宇利島', en: 'Kouri Island' }, lat: 26.7034, lon: 128.0233 },
   { id: 'n-yae', kind: 'nature', name: { ja: '八重岳', en: 'Mt Yae' }, lat: 26.6411, lon: 127.9306 },

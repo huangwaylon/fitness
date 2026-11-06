@@ -12,7 +12,10 @@ import type { Locale } from './types.ts';
  *  fallback for a character no font-faces slice covers. */
 const GLYPHS = 'travel/glyphs/{fontstack}/{range}.pbf';
 
-export const SRC = { base: 'basemap', legs: 'legs', cands: 'cands', loc: 'loc' } as const;
+export const SRC = { base: 'basemap', legs: 'legs', cands: 'cands', loc: 'loc', keep: 'keep' } as const;
+
+/** The keepout's blank images (engine.ts adds them): a stop pin's size (its anchor at the tip), a candidate's circle. */
+export const KEEP_IMAGES = { 'keep-pin': [34, 46], 'keep-dot': [20, 20] } as const;
 
 /** The candidate kinds' colours (pins and chips): the tent orange, the leaf, a soft coral-pink. */
 const KIND_COLOR = { camp: '#F29A4A', nature: '#4FB35C', food: '#E8708E' } as const;
@@ -47,10 +50,24 @@ export function overlayLayers(lat = 26): LayerSpecification[] {
         'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2.5
       }
     },
+    // nothing drawn: each pin's room, so the basemap's labels (placed after the layers over them) keep clear of the
+    // HTML pins instead of hiding under them
+    {
+      id: 'keepout', type: 'symbol', source: SRC.keep,
+      layout: { 'icon-image': ['match', ['get', 'pin'], 'stop', 'keep-pin', 'keep-dot'], 'icon-anchor': ['match', ['get', 'pin'], 'stop', 'bottom', 'center'], 'icon-allow-overlap': true, 'icon-ignore-placement': false },
+      paint: { 'icon-opacity': 0 }
+    },
     { id: 'loc-halo', type: 'circle', source: SRC.loc, paint: { 'circle-radius': haloRadius(lat), 'circle-color': LOC.halo, 'circle-opacity': 0.22, 'circle-stroke-color': LOC.halo, 'circle-stroke-width': 1.5, 'circle-stroke-opacity': 0.7, 'circle-pitch-alignment': 'map' } },
     { id: 'loc-edge', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 11, 'circle-color': LOC.edge } },
     { id: 'loc-dot', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 7.5, 'circle-color': LOC.dot, 'circle-stroke-color': LOC.rim, 'circle-stroke-width': 2.5 } }
   ];
+}
+
+/** The draw order: the basemap's ground and roads, the trip's legs, the basemap's labels (their halos over the legs,
+ *  never struck through), then the candidates, the pins' keepout and the location dot. */
+function stack(base: LayerSpecification[], over: LayerSpecification[]): LayerSpecification[] {
+  const isLeg = (l: LayerSpecification) => l.id.startsWith('legs-');
+  return [...base.filter((l) => l.type !== 'symbol'), ...over.filter(isLeg), ...base.filter((l) => l.type === 'symbol'), ...over.filter((l) => !isLeg(l))];
 }
 
 export interface StyleOpts {
@@ -73,8 +90,8 @@ export function buildStyle(o: StyleOpts): StyleSpecification {
     name: 'nookphone',
     glyphs: decodeURI(new URL(GLYPHS, base).href),
     ...(o.fontFaces ? { 'font-faces': o.fontFaces } : {}),
-    sources: { [SRC.base]: basemapSource(o.tiles), [SRC.legs]: { ...empty }, [SRC.cands]: { ...empty, promoteId: 'id' }, [SRC.loc]: { ...empty } },
-    layers: [...basemapLayers(SRC.base, t, { field: labelField(o.locale), font: [FONT] }), ...overlayLayers()]
+    sources: { [SRC.base]: basemapSource(o.tiles), [SRC.legs]: { ...empty }, [SRC.cands]: { ...empty, promoteId: 'id' }, [SRC.loc]: { ...empty }, [SRC.keep]: { ...empty } },
+    layers: stack(basemapLayers(SRC.base, t, { field: labelField(o.locale), font: [FONT] }), overlayLayers())
   };
 }
 

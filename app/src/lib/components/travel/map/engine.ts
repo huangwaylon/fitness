@@ -10,8 +10,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { labelField } from './basemap.ts';
 import { fontFaces, LOCAL_CJK } from './fonts.ts';
-import { boundsOf, candidatesData, legsData, locData, stopsOf, type Fix } from './overlay.ts';
-import { buildStyle, haloRadius, labelLayers, SRC } from './style.ts';
+import { boundsOf, candidatesData, keepoutData, legsData, locData, stopsOf, type Fix } from './overlay.ts';
+import { buildStyle, haloRadius, KEEP_IMAGES, labelLayers, SRC } from './style.ts';
 import { dayColor, nameOf, type Day, type Layer, type MapLeg, type MapPlace, type Locale } from './types.ts';
 
 export interface EngineInput {
@@ -102,6 +102,7 @@ export function createEngine(
   function data(i: EngineInput): void {
     src(SRC.legs)?.setData(legsData(i.legs, i.dayColors, i.day) as never);
     src(SRC.cands)?.setData(candidatesData(i.places, i.layers, i.selected) as never);
+    src(SRC.keep)?.setData(keepoutData(i.places, i.day, i.layers) as never);
   }
   function fit(i: EngineInput, animate: boolean): void {
     const b = boundsOf(i.places, i.legs, i.day);
@@ -115,6 +116,7 @@ export function createEngine(
 
   pins(input);
   map.on('load', () => {
+    for (const [id, [w, h]] of Object.entries(KEEP_IMAGES)) if (!map.hasImage(id)) map.addImage(id, { width: w, height: h, data: new Uint8Array(w * h * 4) });
     ready = true;
     data(cur);
     fit(cur, false);

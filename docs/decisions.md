@@ -384,7 +384,7 @@ row, 2026-11-02). Why: one home per datum.
 ### PWA on Cloudflare Pages (2026-11-05)
 A static SvelteKit SPA (adapter-static, at the root of https://island-fund.pages.dev, a Cloudflare Pages project fed by
 direct upload from CI after the gate), installed to the home screen, with a strict CSP (the `<meta>` and a header,
-`build-pages/_headers`) allowing only our origin and the relay's, and nosniff, no-referrer, a Permissions-Policy, no
+`build-pages/_headers`) allowing only our origin and the relay's (and, since 2026-11-06, OpenFreeMap's tiles for the trip map), and nosniff, no-referrer, a Permissions-Policy, no
 framing, HSTS. Without a key the site shows only pairing or `?demo`. Why: the pairing key is in localStorage, and on
 https://huangwaylon.github.io/fitness the origin was shared with the account's other GitHub Pages sites (any of them
 could read it); GitHub Pages can't set headers; Cloudflare's free plan already hosts the relay. The move
@@ -1040,3 +1040,18 @@ of near-sound forms of the chunk), and below the top the reveal keeps the line h
 learning-science review: a rung counts only when climbed in order on the first listen, stopping at the first miss or
 replay, a flat 100 each. Rejected: a payout weighted to the top (invites guessing), separate faster takes per rung (not
 the same line, and the engine's pace isn't steerable), a level value for the mode (contends with increment 6).
+
+### The trip map: MapLibre on OpenFreeMap's tiles, our own style, online only (2026-11-06)
+The trips' maps (docs/travel.md "Maps") are MapLibre GL JS 6 drawing OpenFreeMap's public vector tiles (OpenMapTiles
+schema, OpenStreetMap data) in a NookPhone style of our own, labels in the app's Zen Maru Gothic through the style's
+`font-faces` (the @fontsource slices we already ship). Online only: no tile download, no storage. The page's CSP gains
+one origin, `https://tiles.openfreemap.org`, in `connect-src` only (MapLibre fetches the TileJSON and the tiles; no
+sprite is used, the glyph PBFs and fonts are ours, so no `img-src` or `font-src` change); its worker is a file of our
+own origin (no `blob:` worker, no eval), like three.js's lazy chunk (the tent's precedent). The Permissions-Policy goes
+from `geolocation=()` to `geolocation=(self)` for the locate button: asked only when tapped, watched only while the map
+shows, the position never leaving the phone. OpenFreeMap is the one third party the phones contact: it sees their IP
+and the area they view; the trip's places, legs and notes never go there. Why: the user asked for real open maps,
+NookPhone-styled and online; OpenFreeMap needs no ops (no bucket, no extracts, no relay route) and covers every trip
+worldwide. Rejected: self-hosted Protomaps extracts on R2 (measured 19 MB for Okinawa and a region-by-region cut for
+each trip, a relay route and a bucket to run; kept possible: `source.ts` is the one module that names the source),
+raster tiles (blurry on a 3× screen, no restyling), Google / Apple maps (keys, terms, not themeable).
