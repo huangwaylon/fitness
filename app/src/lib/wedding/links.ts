@@ -8,8 +8,9 @@
 const SAFE_URL = /^https?:\/\/[^\s]+$/i;
 /** Control characters (how a scheme is smuggled). */
 const CONTROL = /[\x00-\x1f\x7f-\x9f]/;
-/** A URL starting exactly here (sticky: the scanner asks at every character). */
-const URL_HERE = /https?:\/\/[^\s]+/iy;
+/** A URL starting exactly here (sticky: the scanner asks at every character), up to a space or a control character
+ *  (so one that fails is only the sentence's punctuation after the scheme, and a line is scanned once). */
+const URL_HERE = /https?:\/\/[^\s\x00-\x1f\x7f-\x9f]+/iy;
 /** Punctuation a sentence puts after a URL, both alphabets. */
 const TRAILING = '.,;:!?\'"”’。、・';
 /** Closers that belong to the URL only while matched inside it. */

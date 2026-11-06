@@ -7,9 +7,10 @@
 // - `wconf` is one setting (WCONF_KEYS).
 // - `wnote` is the one shared markdown document. A save names the note it was edited from (`base`: that note's `at`);
 //   one that doesn't match the held note is kept, and the record keeps the note it replaced beside it (`was`), so the
-//   phones show both until someone saves again from the new one.
+//   phones show both until someone saves again from the new one. A save that loses on `at` to a note it wasn't
+//   edited from (an offline save, two crossing in flight) is kept the same way, restamped just after the held one.
 // The members write all four; the guest reads them and writes none (contract/guest.ts guestMayWrite). `imported`
-// marks a row the admin's load brought from the old Sheet (relay/scripts/wedding-import.ts): never sent by a phone.
+// marks a row the admin's load brought from the old Sheet (docs/wedding.md#migration): never sent by a phone.
 // Shared by the record (relay/src/store.ts), the model (model/state.ts) and the board's store
 // (components/wedding/board.svelte.ts); pure and dependency-free (the plain text rules: contract/text.ts).
 import { cleanLine } from './text.ts';
@@ -19,32 +20,31 @@ import { isLocalDate } from './api.ts';
 type Who = 'A' | 'B' | 'G';
 type Rec = Record<string, unknown>;
 
-/** The four event types. @public (relay/src/store.ts) */
-export const WED_TYPES = ['wtask', 'wdone', 'wconf', 'wnote'] as const;
+/** The four event types. */
+const WED_TYPES = ['wtask', 'wdone', 'wconf', 'wnote'] as const;
 type WedType = (typeof WED_TYPES)[number];
 /** @public (relay/src/store.ts) */
 export const isWedType = (t: unknown): t is WedType => (WED_TYPES as readonly unknown[]).includes(t);
 
 /** A task's title at most (characters: code points; the old Sheet's longest, a subtask with a link, is 269), a
- *  category's. @public (the board's fields) */
+ *  category's. */
 export const WTASK_TITLE = 500;
-/** @public (the board's fields) */
 export const WTASK_CAT = 40;
 /** At most this many `wtask` rows (tasks, subtasks, the deleted and the purged): a new one past them is refused. */
 export const WTASK_MAX = 2000;
-/** The note's markdown at most (UTF-16 code units, as the old board's 50,000). @public (the board's field) */
+/** The note's markdown at most (UTF-16 code units, as the old board's 50,000). */
 export const WNOTE_CHARS = 64_000;
-/** A sent note's data at most as JSON (its own cap: every other event's is the record's 20,000). @public
- *  (relay/src/store.ts) */
+/** A sent note's data at most as JSON (its own cap: every other event's is the record's 20,000, MAX_EVENT_DATA_CHARS). */
 export const WNOTE_DATA_CHARS = 140_000;
 /** The settings: the two names, the date, the time (`HH:MM`, the old board's `wedding_time`), the venue, the time zone
- *  (IANA), the categories. @public (relay/scripts/wedding-import.ts) */
-export const WCONF_KEYS = ['p1', 'p2', 'date', 'time', 'venue', 'tz', 'cats'] as const;
+ *  (IANA), the categories. */
+const WCONF_KEYS = ['p1', 'p2', 'date', 'time', 'venue', 'tz', 'cats'] as const;
 export type WConfKey = (typeof WCONF_KEYS)[number];
-/** A name's characters at most, and the venue's (せってい's fields). */
+/** A name's characters at most, the venue's (code points). @public (Settings' fields) */
 export const NAME_CHARS = 40;
+/** @public (Settings' fields) */
 export const VENUE_CHARS = 200;
-/** The categories at most, and each one's characters (WTASK_CAT). @public (the board's settings) */
+/** The categories at most, and each one's characters (WTASK_CAT). */
 export const WCATS_MAX = 30;
 const TZ = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+){0,2}$/;
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -128,11 +128,6 @@ function confValueOk(k: WConfKey, v: unknown): boolean {
  * op (the record's live path): its `at` at most a day past `now`, never `imported` (the admin's load's) or `was` (the
  * record's own). Otherwise as the record kept it (the model's read, the admin's load).
  */
-export function wedOpOf(type: 'wtask', d: Rec, sent?: { now: number }): WTaskOp | null;
-export function wedOpOf(type: 'wdone', d: Rec, sent?: { now: number }): WDone | null;
-export function wedOpOf(type: 'wconf', d: Rec, sent?: { now: number }): WConf | null;
-export function wedOpOf(type: 'wnote', d: Rec, sent?: { now: number }): WNote | null;
-export function wedOpOf(type: string, d: Rec, sent?: { now: number }): WTaskOp | WDone | WConf | WNote | null;
 export function wedOpOf(type: string, d: Rec, sent?: { now: number }): WTaskOp | WDone | WConf | WNote | null {
   if (!isMs(d.at) || (sent && d.at > sent.now + AHEAD_MS)) return null;
   if (d.imported !== undefined && (sent || d.imported !== true)) return null;
@@ -224,7 +219,8 @@ function wedBeats(a: WedRow, b: WedRow): boolean {
 
 /** What the record does with a row: `append` (its slot's row replaced by `row`, the slots in `drop` deleted with it: a
  *  purged task's tick), `stale` (acknowledged, nothing kept), `forbidden` (the guest), `full` (WTASK_MAX) or `parent`
- *  (a subtask whose parent isn't a task the record holds, or is itself a subtask). */
+ *  (a subtask whose parent isn't a task the record holds, or is itself a subtask; a set keeping its held `parent`
+ *  passes, so a subtask whose parent was purged stays editable). */
 export type WedVerdict = { v: 'append'; row: WedRow; drop: string[] } | { v: 'stale' | 'forbidden' | 'full' | 'parent' };
 
 /**
@@ -261,18 +257,18 @@ export class WedBook {
   }
 
   /** The record's rules for a new row (see WedVerdict). `tasks`: the record's `wtask` rows (it reads only the slots an
-   *  op needs; the phone's book holds them all). */
+   *  op needs, and counts them only for a task it doesn't hold; the phone's book holds them all). */
   accept(r: WedRow, tasks = this.#tasks): WedVerdict {
     if (r.who === 'G') return { v: 'forbidden' };
     const slot = slotOf(r);
     const held = this.rows.get(slot) ?? null;
-    if (held && !wedBeats(r, held)) return { v: 'stale' };
+    if (held && !wedBeats(r, held)) return r.type === 'wnote' && held.type === 'wnote' ? this.#crossed(r, held) : { v: 'stale' };
     switch (r.type) {
       case 'wtask': {
         const h = held?.type === 'wtask' ? held.op : null;
         // a purge is final (wedBeats: nothing beats it); a purge of a task the record doesn't hold changes nothing
         if (r.op.rm) return h ? { v: 'append', row: r, drop: this.rows.has(`wdone|${r.op.id}`) ? [`wdone|${r.op.id}`] : [] } : { v: 'stale' };
-        if (r.op.parent !== undefined) {
+        if (r.op.parent !== undefined && !(h && !h.rm && h.parent === r.op.parent)) {
           const p = this.task(r.op.parent);
           if (!p || p.rm || p.parent !== undefined) return { v: 'parent' };
         }
@@ -286,14 +282,17 @@ export class WedBook {
       }
       case 'wconf':
         return { v: 'append', row: r, drop: [] };
-      case 'wnote': {
-        // saved over a note it wasn't edited from: that note kept beside it
-        const h = held?.type === 'wnote' ? held : null;
-        const { was: _was, ...op } = r.op;
-        const kept: WNote = h && op.base !== h.op.at ? { ...op, was: { at: h.op.at, md: h.op.md, who: h.who } } : op;
-        return { v: 'append', row: { type: 'wnote', who: r.who, op: kept }, drop: [] };
-      }
+      case 'wnote':
+        return { v: 'append', row: noteOver(r, held?.type === 'wnote' ? held : null), drop: [] };
     }
+  }
+
+  /** A note save the held one beats: one edited from it (or the same text) changes nothing; else (saved offline, or
+   *  crossing another in flight) it's kept, restamped just after the held one, with the held one beside it, so neither
+   *  is lost and both phones show the conflict. */
+  #crossed(r: WedRow & { type: 'wnote' }, held: WedRow & { type: 'wnote' }): WedVerdict {
+    if (r.op.base === held.op.at || r.op.md === held.op.md) return { v: 'stale' };
+    return { v: 'append', row: noteOver({ ...r, op: { ...r.op, at: held.op.at + 1 } }, held), drop: [] };
   }
 
   /** A row through the rules, kept if they take it: its verdict. */
@@ -305,6 +304,12 @@ export class WedBook {
     }
     return v;
   }
+}
+
+/** A note save as the record keeps it: over a note it wasn't edited from, that one beside it (`was`). */
+function noteOver(r: WedRow & { type: 'wnote' }, held: (WedRow & { type: 'wnote' }) | null): WedRow & { type: 'wnote' } {
+  const { was: _was, ...op } = r.op;
+  return { type: 'wnote', who: r.who, op: held && op.base !== held.op.at ? { ...op, was: { at: held.op.at, md: held.op.md, who: held.who } } : op };
 }
 
 /** The slots the record reads for an op (accept's): its own, a task's tick, a subtask's parent, a tick's task.
@@ -334,7 +339,7 @@ export function wedFold(rows: Iterable<WedEntry>): WedBook {
 }
 
 /** A task as the old board's rows read (its `schema.js` rowToTask: the strings lib/wedding/progress.ts works on), with
- *  who last changed it and whether that was the import. */
+ *  who ticked it. */
 export interface WedTask {
   id: string;
   title: string;
@@ -346,12 +351,9 @@ export interface WedTask {
   /** Who ticked it ('' : not done, or the tick came from the old Sheet, which never recorded who). */
   doneBy: Who | '';
   createdAt: string;
-  updatedAt: string;
   /** ISO of `del` ('' : live). */
   deletedAt: string;
   parentId: string;
-  who: Who;
-  imported: boolean;
 }
 
 const iso = (ms: number): string => new Date(ms).toISOString();
@@ -366,8 +368,7 @@ export function wedTasks(book: WedBook): WedTask[] {
     out.push({
       id: op.id, title: op.title, category: op.cat, due: op.due ?? '', start: op.start ?? '',
       doneAt: done ? iso(done.op.at) : '', doneBy: done && !done.op.imported ? done.who : '',
-      createdAt: iso(op.c), updatedAt: iso(op.at), deletedAt: op.del !== undefined ? iso(op.del) : '', parentId: op.parent ?? '',
-      who: r.who, imported: op.imported === true
+      createdAt: iso(op.c), deletedAt: op.del !== undefined ? iso(op.del) : '', parentId: op.parent ?? ''
     });
   }
   return out;

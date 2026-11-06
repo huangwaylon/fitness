@@ -42,7 +42,8 @@ export const cancel = (): void => void (pad.editing = false);
  *  mine); the banner only when it was kept with no crossing. */
 export async function save(): Promise<void> {
   if (pad.draft === pad.start) return cancel();
-  if (!board.saveNote(pad.draft, pad.base)) return;
+  // refused (too big for the record, links and marks counted): the draft stays, said why
+  if (!board.saveNote(pad.draft, pad.base)) return toasts.show(t('wed.note.tooBig'), 3200, { low: true });
   pad.editing = false;
   await tick();
   if (!board.conflict) toasts.show(t('wed.note.saved'), 2000, { low: true });
