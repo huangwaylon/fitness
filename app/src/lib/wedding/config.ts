@@ -2,7 +2,7 @@
 // defaults, as the old board's `config.js` mergeConfig (a setting never set, or cleared, is its default; the categories
 // cleared are the starter list again, `lib/templates.js` CATEGORIES).
 import type { WConfKey } from '#lib/contract/wedding.ts';
-import { resolveTimeZone } from './time.ts';
+import { resolveTimeZone } from '#lib/time/zone.ts';
 
 /** The starter categories (the old board's). A task's category is free text: one not in the list shows as typed. */
 const CATEGORIES: readonly string[] = ['Budget', 'Venue', 'Guests', 'Vendors', 'Attire', 'Food', 'Stationery', 'Photo', 'Music', 'Beauty', 'Gifts', 'Paperwork', 'Honeymoon', 'Other'];

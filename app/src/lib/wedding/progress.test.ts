@@ -17,6 +17,7 @@ import {
   taskProgress,
   toPercent,
   withProgress,
+  monthOf,
   type TaskRow,
 } from './progress.ts'
 
@@ -388,3 +389,10 @@ describe('toPercent', () => {
     expect(toPercent(2)).toBe(100)
   })
 })
+
+describe('the month key', () => {
+  it('is a day’s YYYY-MM, empty for none (it groups with the undated rows)', () => {
+    expect(monthOf('2027-04-18')).toBe('2027-04');
+    expect(monthOf('')).toBe('');
+  });
+});

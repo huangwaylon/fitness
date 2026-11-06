@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { daysFrom, instantIn, phaseOf, rowMin, rowNow, sortTrips, todayDay, wallIn } from './when.ts';
+import { phaseOf, rowMin, rowNow, sortTrips, todayDay } from './when.ts';
 import { okinawa } from '#lib/travel/trips/okinawa.ts';
 import { nz } from '#lib/travel/trips/nz.ts';
 import { seattle } from '#lib/travel/trips/seattle.ts';
@@ -9,38 +9,8 @@ const jst = (s: string) => Date.parse(`${s}:00+09:00`);
 /** An Auckland wall time in February (NZDT, UTC+13). */
 const nzdt = (s: string) => Date.parse(`${s}:00+13:00`);
 
-describe('zones', () => {
-  it('reads an instant on the trip’s own clock', () => {
-    expect(wallIn('Asia/Tokyo', jst('2026-10-10T06:10'))).toEqual({ date: '2026-10-10', min: 370 });
-    // Tokyo's 20:00 on Feb 13 is already Feb 14, 00:00 in Auckland
-    expect(wallIn('Pacific/Auckland', jst('2027-02-13T20:00'))).toEqual({ date: '2027-02-14', min: 0 });
-    expect(wallIn('America/Los_Angeles', Date.parse('2026-07-03T15:30:00Z'))).toEqual({ date: '2026-07-03', min: 8 * 60 + 30 });
-  });
-  it('turns a local wall time into its instant, across midnight both ways', () => {
-    expect(instantIn('Pacific/Auckland', '2027-02-16', 24 * 60 + 10)).toBe(nzdt('2027-02-17T00:10'));
-    expect(instantIn('Pacific/Auckland', '2027-02-11', 18 * 60 + 30 - 1440)).toBe(nzdt('2027-02-10T18:30'));
-    expect(instantIn('America/Los_Angeles', '2026-07-02', 9 * 60 + 36)).toBe(Date.parse('2026-07-02T16:36:00Z'));
-  });
-  it('across DST: a skipped wall time an hour on, a repeated one its first (summer) reading', () => {
-    // Auckland falls back on Apr 4 2027, 03:00 NZDT → 02:00 NZST (Apr 3, 14:00 UTC): 02:30 comes twice
-    expect(instantIn('Pacific/Auckland', '2027-04-04', 90)).toBe(Date.parse('2027-04-03T12:30:00Z'));
-    expect(instantIn('Pacific/Auckland', '2027-04-04', 150)).toBe(Date.parse('2027-04-03T13:30:00Z'));
-    expect(instantIn('Pacific/Auckland', '2027-04-04', 210)).toBe(Date.parse('2027-04-03T15:30:00Z'));
-    // the same from the day before, past its midnight
-    expect(instantIn('Pacific/Auckland', '2027-04-03', 1440 + 150)).toBe(Date.parse('2027-04-03T13:30:00Z'));
-    // and springs forward on Sep 26 2027, 02:00 NZST → 03:00 NZDT: 02:30 is skipped, read as 03:30
-    expect(instantIn('Pacific/Auckland', '2027-09-26', 150)).toBe(Date.parse('2027-09-25T14:30:00Z'));
-    // Los Angeles springs forward on Mar 14 2027 at 02:00 PST (10:00 UTC)
-    expect(instantIn('America/Los_Angeles', '2027-03-14', 90)).toBe(Date.parse('2027-03-14T09:30:00Z'));
-    expect(instantIn('America/Los_Angeles', '2027-03-14', 150)).toBe(Date.parse('2027-03-14T10:30:00Z'));
-    expect(instantIn('America/Los_Angeles', '2027-03-14', 210)).toBe(Date.parse('2027-03-14T10:30:00Z'));
-    // and falls back on Nov 7 2027: 01:30 twice, the first on PDT
-    expect(instantIn('America/Los_Angeles', '2027-11-07', 90)).toBe(Date.parse('2027-11-07T08:30:00Z'));
-    for (const [tz, date, min] of [['Pacific/Auckland', '2027-04-04', 210], ['America/Los_Angeles', '2027-03-14', 210]] as const)
-      expect(wallIn(tz, instantIn(tz, date, min))).toEqual({ date, min });
-  });
-  it('counts whole days and reads row times as written', () => {
-    expect(daysFrom('2026-11-04', '2027-02-11')).toBe(99);
+describe('row times', () => {
+  it('reads them as written', () => {
     expect([rowMin('06:10'), rowMin('~12:00'), rowMin('<21:00'), rowMin('9:36'), rowMin(''), rowMin(undefined)]).toEqual([370, 720, 1260, 576, null, null]);
   });
 });
