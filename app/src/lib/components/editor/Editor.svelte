@@ -155,6 +155,12 @@
   const room = $derived(Object.fromEntries(EDGES.map((e) => [e, { out: !!resizedCodes(cur, e, 1), in: !!resizedCodes(cur, e, -1) }])) as Record<Edge, { out: boolean; in: boolean }>);
   let sizeHover = $state<{ edge: Edge; by: number } | null>(null);
   let pending = $state<{ edge: Edge; by: number; blocked: Blocker[]; stuck: string[] } | null>(null);
+  // what's in the way is the layout's it was tried on: any change of it (an undo, a partner's edit, a file loaded, the
+  // resize itself) lets the list and its coast's ghost go
+  $effect(() => {
+    void store.current;
+    untrack(() => (pending = null));
+  });
   const coast = $derived.by(() => {
     const r = sizeHover ?? pending;
     return r ? resizedCodes(cur, r.edge, r.by) : null;
