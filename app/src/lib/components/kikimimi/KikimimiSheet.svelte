@@ -2,7 +2,7 @@
   // ききみみ's sheet (docs/kikimimi-ux.md §5; docs/kikimimi.md "UI"), its own chunk with the bank, the deck, the session
   // and the strings: full height (Sheet's `pop`), one title bar (the page's name, the game's question 3 / 8; ‹ and ✕,
   // ⚙ at the root) over one scroller. The root is the hub (an invite on top while one waits); its pages are pushed on
-  // one stack (nav.ts): あそぶ › a mode, みんなで, きろく, せってい, しまの みち › a unit › the ずかん, the weekend's
+  // one stack (nav.ts): あそぶ › a mode, みんなで, きろく, せってい, しまの みち › a unit › the ずかん (ことば · こえ · なかま · スタンプ), the weekend's
   // たいかい (its lobby, show and results: taikai/, their own chunks). ‹ pops one (a
   // shared lobby popped is cancelled), ✕ closes the sheet from any page (asking first when others are in my lobby), a
   // backdrop tap or Esc pops (closes at the hub). A game sits over the stack: its notice, よーい 3-2-1, a question (Play),
@@ -89,7 +89,7 @@
       case 'record': return t('kiki.tile.record');
       case 'settings': return t('kiki.set.title');
       case 'path': return t('kiki.path.title');
-      case 'zukan': return t('kiki.zukan.title');
+      case 'zukan': return t('kiki.tile.zukan');
       case 'story': return t('kiki.mode.story');
       case 'taikai': return t('kiki.mode.taikai');
       case 'unit': return path?.stages.flatMap((s) => s.stops).find((s) => s.id === p.id)?.name ?? t('kiki.path.title');
@@ -384,8 +384,8 @@
             <TaikaiLobby {game} />
           {/await}
         {:else if page.k === 'zukan'}
-          {#await import('./path/PhraseZukan.svelte') then { default: PhraseZukan }}
-            <PhraseZukan unit={page.unit} onreview={act.reviewPhrases} />
+          {#await import('./zukan/KikiZukan.svelte') then { default: KikiZukan }}
+            <KikiZukan me={game.me} unit={page.unit} onreview={act.reviewPhrases} />
           {/await}
         {/if}
       {:else if v.phase === 'lobby' && lesson}

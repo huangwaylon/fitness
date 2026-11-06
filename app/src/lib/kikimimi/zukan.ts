@@ -42,7 +42,8 @@ export const STAR_MAX = 3;
 export interface PhraseBookEntry extends PhraseState {
   /** 0 (not caught) … 3. */
   stars: number;
-  /** The last day it was heard (null: never). */
+  /** The times it was heard (answers on its items) and the last day (null: never). */
+  times: number;
   last: LocalDate | null;
   /** The villagers it was heard from (in the order first heard). */
   who: RosterId[];
@@ -57,10 +58,11 @@ export function phraseBook(phrases: readonly { id: string; in: readonly string[]
     const st = states.get(ph.id)!;
     const ids = new Set(ph.in);
     const accents = new Set<Accent>(), who: RosterId[] = [];
-    let hard = false, last: LocalDate | null = null;
+    let hard = false, last = '', times = 0;
     for (const a of answers) {
       if (!ids.has(a.id)) continue;
-      last = last === null || a.d > last ? a.d : last;
+      times++;
+      if (a.d > last) last = a.d;
       const h = info(a.id);
       if (!h) continue;
       for (const w of h.who) if (!who.includes(w)) who.push(w);
@@ -69,7 +71,7 @@ export function phraseBook(phrases: readonly { id: string; in: readonly string[]
       hard ||= h.hard;
     }
     const stars = st.caught ? 1 + Number(accents.size >= 2) + Number(hard) : 0;
-    out.set(ph.id, { ...st, stars, last, who });
+    out.set(ph.id, { ...st, stars, times, last: last || null, who });
   }
   return out;
 }

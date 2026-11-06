@@ -129,6 +129,9 @@ export const DEVICE = {
   /** localStorage: `string[][]`, the item ids of my last ききみみ games on this phone, newest first (kikimimi/recent.ts:
    *  the host's seed with the least overlap, a solo game's and にがて れんしゅう's freshest items; at most 6 games). */
   kikimimiRecent: 'island.kikimimiRecent',
+  /** localStorage: `{who, fr: {[villager]: level}, ph: string[]}`: what ききみみ's ずかん last showed on this phone (the
+   *  friendship levels announced with a heart, the phrases caught marked NEW until seen; components/kikimimi/zukan/). */
+  kikiZukan: 'island.kikiZukan',
   /** localStorage: `3` | `5` | `7`: ききみみ's weekly target in days on this phone (its せってい; 3 by default). */
   kikiWeekGoal: 'island.kikiWeekGoal',
   /** localStorage: `1` | `0`: ききみみ's 「おとを 1だいに まとめる」 default for a new lobby on this phone (off by default). */
