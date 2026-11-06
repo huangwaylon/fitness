@@ -21,7 +21,7 @@ const WORLD: RegExp[] = [
   // lines: しずえ, the visitors, the curator, the twins, ハニワくん, the snowman, notes in bottles
   /^host\./, /^chat\./, /^visitor\./, /^museum\.curator/, /^shop\.say\./, /^tent\.hha\./, /^tent\.theme\./, /^tent\.colour\./,
   /^world\./, /^beach\./, /^critter\./, /^shake\./, /^present\./, /^zodiac\./, /^harvest\.(hello|doneHost)$/,
-  /^kiki\.(invite|join|host)/, /^guest\.(arrived|welcome)$/, /^zukan\.added$/, /^island\.(highfive|balloon|no3d|me$)/,
+  /^kiki\.(invite|join|host)/, /^guest\.(arrived|welcome)$/, /^panel\.sheet(Offline|Retry)$/, /^zukan\.added$/, /^island\.(highfive|balloon|no3d|me$)/,
   // the HUD, its menu's pills, the island's own controls and plates
   /^island\.(health|food|bells|menu|settings)/, /^panel\.(travel|hiking|wedding|kikimimi)/, /^zukan\.title$/, /^wallet\.title$/,
   /^say\./, /^room\./, /^tree\./, /^preview\.chip/, /^preview\.(event|season|weather|tod)\./, /^sound\.tapToHear$/, /^sync\./, /^board\.(name|open|new|empty)$/,
@@ -56,7 +56,7 @@ describe('ja copy: the sheets (word-break: normal)', () => {
 });
 
 /** Sheets still being converted by their own sessions (2026-11-07): out of the sheets' spelling rules until they land. */
-const PENDING = /^(food|kiki)\./;
+const PENDING = /^kiki\./;
 const sheet = Object.entries(ja).filter(([k]) => !isWorld(k) && !PENDING.test(k));
 const JA = '[\\u3040-\\u30ff\\u4e00-\\u9fff々ー]';
 
