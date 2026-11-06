@@ -147,8 +147,18 @@ export const MUSIC_STOP_KEEP_MS = 600_000;
 export type MusicRec = Extract<Relayed, { kind: 'music' }>;
 /** Whether stage record `a` replaces `b`: the later `at`, a tie by who (the relay, the demo relay and every phone alike). */
 export const newerMusic = (a: { at: number; who: Who }, b: { at: number; who: Who }): boolean => (a.at !== b.at ? a.at > b.at : a.who > b.who);
-/** Whether a stage record still says something at `now`: a song until its end, a stop for MUSIC_STOP_KEEP_MS. */
-export const musicLive = (m: { song?: string; at: number; ms?: number }, now: number): boolean => now < m.at + (m.song ? (m.ms ?? 0) : MUSIC_STOP_KEEP_MS);
+/** When a stage record stops saying anything: a song at its end, a stop MUSIC_STOP_KEEP_MS on (no song: undefined on
+ *  the wire, null on a phone's stage). */
+export const musicEnd = (m: { song?: string | null; at: number; ms?: number }): number => m.at + (m.song ? (m.ms ?? 0) : MUSIC_STOP_KEEP_MS);
+/** Whether a stage record still says something at `now`. */
+export const musicLive = (m: { song?: string | null; at: number; ms?: number }, now: number): boolean => now < musicEnd(m);
+/** Whether record `m` takes its stage from `cur` at `now`: it beats it (newerMusic) and still says something
+ *  (musicLive). The one rule of the relay, the demo relay and every phone. */
+export const musicBeats = (m: { song?: string | null; at: number; ms?: number; who: Who }, cur: { at: number; who: Who } | undefined, now: number): boolean =>
+  (!cur || newerMusic(m, cur)) && musicLive(m, now);
+/** A record's `at` as the relay keeps it: its own clock `t` when the sender's is more than MUSIC_SKEW_MS off (a wrong
+ *  clock, an offline tap, can't pin the stage). @public (relay/) */
+export const musicAt = (at: number, t: number): number => (Math.abs(at - t) > MUSIC_SKEW_MS ? t : at);
 const SONG = /^[a-z0-9-]{1,32}$/;
 
 /** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone, the

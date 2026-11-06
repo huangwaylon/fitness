@@ -38,4 +38,17 @@ describe('the demo relay (two tabs and the guest’s over a BroadcastChannel)', 
     expect(b.heard.map((m) => [m.who, (m as { op?: string }).op])).toEqual([['G', 'join'], ['A', 'go']]);
     expect(g.heard[0]).toMatchObject({ kind: 'quiz', op: 'go', at: 5, who: 'A' });
   });
+
+  it('a music stage set from a clock more than MUSIC_SKEW_MS off is taken at the relay’s clock, as the relay does', async () => {
+    vi.stubGlobal('addEventListener', () => {});
+    vi.stubGlobal('removeEventListener', () => {});
+    const a = open('A'), b = open('B');
+    await until(() => a.live.status().here.length === 1 && b.live.status().here.length === 1);
+    const t0 = Date.now(), late = t0 - 60_000;
+    expect(a.live.send({ kind: 'music', src: 'isl', at: late, song: 'kk-march', ms: 180_000 })).toBe(true);
+    await until(() => b.heard.some((m) => m.kind === 'music'));
+    const m = b.heard.find((x) => x.kind === 'music') as Relayed & { at: number };
+    expect(m.at).toBeGreaterThanOrEqual(t0);
+    expect(m.at).toBeLessThan(t0 + 5_000);
+  });
 });
