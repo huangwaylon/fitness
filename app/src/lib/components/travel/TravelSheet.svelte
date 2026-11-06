@@ -15,7 +15,7 @@
   import { TRIP_IDS, loadTrip } from '#lib/travel/trips/index.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import { minuteNow, dayKey } from '#lib/time/clock.ts';
-  import { DEVICE, localKV } from '#lib/sync/storage.ts';
+  import { DEVICE, firstOn } from '#lib/sync/storage.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { pick, plain } from './text.ts';
@@ -49,13 +49,7 @@
    *  straight into the trip on now, else where it was left. */
   function opening() {
     if (!trips) return;
-    const day = dayKey(), kv = localKV();
-    if (kv?.getItem(DEVICE.travelHello) !== day) {
-      try {
-        kv?.setItem(DEVICE.travelHello, day);
-      } catch {
-        /* full or private: he says it again next time */
-      }
+    if (firstOn(DEVICE.travelHello, dayKey())) {
       hello = helloLine(trips);
       sel = null;
       return;

@@ -134,11 +134,11 @@ export const DEVICE = {
   /** localStorage: `[<who>|<trip>…]`: the packing lists this phone celebrated 「じゅんび OK！」 for, by who I am (once
    *  per trip and person; components/travel/PackList.svelte). */
   travelPacked: 'island.travel.packed',
-  /** localStorage: the Tokyo date Orville last said his line at the りょこう counter on this phone (once a day:
-   *  components/travel/TravelSheet.svelte). */
+  /** localStorage: the Tokyo date Orville last said his line at the りょこう counter on this phone (once a day,
+   *  firstOn: components/travel/TravelSheet.svelte). */
   travelHello: 'island.travelHello',
   /** localStorage: the board's day this phone last showed けっこんしき's greeting (パニエル's line: the day's first opening
-   *  only; components/wedding/WeddingSheet.svelte). */
+   *  only, firstOn; components/wedding/WeddingSheet.svelte). */
   weddingGreet: 'island.weddingGreet',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
   weddingDone: 'island.weddingDone'
@@ -246,6 +246,14 @@ export function writeRaw(kv: KV | null, k: string, v: string): boolean {
 
 export function remove(kv: KV | null, k: string): void {
   safe(() => kv?.removeItem(k));
+}
+
+/** True the first time this is asked on `date` on this phone (it then remembers the date under `key`, as JSON): a
+ *  greeting's or a beat's once a day. */
+export function firstOn(key: string, date: string): boolean {
+  if (readJson<string>(local, key) === date) return false;
+  writeJson(local, key, date);
+  return true;
 }
 
 // ---------- who I am ----------

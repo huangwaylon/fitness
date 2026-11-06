@@ -1,7 +1,6 @@
 // The island's life, outside the scene's markup: reactions from the view diff, the greeting and startup
 // beats, naps at night, the motion bus, idle life, the balloon present's schedule and the page-visibility pause. Create one per
 // live scene during its init (`new IslandLife(...)`); it cleans up with the component.
-import { firstOn } from './dayRecord.ts';
 import { hookFlag } from './devHooks.ts';
 import { onMount, untrack } from 'svelte';
 import type { PersonId, RingFruit, WeekView } from '#lib/types.ts';
@@ -17,7 +16,7 @@ import type { AmbientWorld } from './ambient.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
-import { SCENE } from '#lib/sync/storage.ts';
+import { SCENE, firstOn } from '#lib/sync/storage.ts';
 
 /** Thursday–Saturday under this many ベル this week: the low-week encouragement beat (R15). */
 const LOW_WEEK_BELLS = 6;
