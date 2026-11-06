@@ -20,7 +20,7 @@ const HAYSTACK = Object.fromEntries(
   })
 ) as Record<RosterId, string[]>;
 
-/** Roster ids (picker order) whose name, species or personality (or 「とくべつ」) contains every word of `query`; all for ''. */
+/** Roster ids (picker order) whose name, species or personality (or 「特別」) contains every word of `query`; all for ''. */
 export function searchVillagers(query: string): RosterId[] {
   const words = fold(query).split(/\s+/).filter(Boolean);
   if (!words.length) return ROSTER_IDS;

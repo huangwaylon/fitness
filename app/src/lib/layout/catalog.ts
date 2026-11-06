@@ -48,28 +48,28 @@ const TREE_FOOT = [24, 12] as const;
 
 export const KIND_LIST: readonly KindDef[] = [
   // trees: one tile each, their trunk blocks
-  k({ k: 'oak', group: 'tree', ja: 'き', en: 'Hardwood', w: 1, d: 1, block: true, foot: TREE_FOOT, on: 'grass', h: 112, icon: 'trees/oak-summer' }),
-  k({ k: 'cedar', group: 'tree', ja: 'しんようじゅ', en: 'Cedar', w: 1, d: 1, block: true, foot: TREE_FOOT, on: 'grass', h: 140, icon: 'trees/cedar' }),
-  k({ k: 'palm', group: 'tree', ja: 'ヤシのき', en: 'Palm', w: 1, d: 1, block: true, foot: [16, 10], on: 'land', h: 96, icon: 'trees/palm' }),
-  k({ k: 'bamboo', group: 'tree', ja: 'たけ', en: 'Bamboo', w: 1, d: 1, block: true, foot: [14, 8], on: 'grass', h: 70, icon: 'trees/bamboo' }),
-  k({ k: 'goal-tree', group: 'tree', ja: 'もくひょうのき', en: 'Goal tree', w: 1, d: 1, block: true, foot: [26, 12], on: 'grass', h: 120, icon: 'trees/oak-summer', variants: ['a', 'b'], fixed: true }),
+  k({ k: 'oak', group: 'tree', ja: '木', en: 'Hardwood', w: 1, d: 1, block: true, foot: TREE_FOOT, on: 'grass', h: 112, icon: 'trees/oak-summer' }),
+  k({ k: 'cedar', group: 'tree', ja: '針葉樹', en: 'Cedar', w: 1, d: 1, block: true, foot: TREE_FOOT, on: 'grass', h: 140, icon: 'trees/cedar' }),
+  k({ k: 'palm', group: 'tree', ja: 'ヤシの木', en: 'Palm', w: 1, d: 1, block: true, foot: [16, 10], on: 'land', h: 96, icon: 'trees/palm' }),
+  k({ k: 'bamboo', group: 'tree', ja: '竹', en: 'Bamboo', w: 1, d: 1, block: true, foot: [14, 8], on: 'grass', h: 70, icon: 'trees/bamboo' }),
+  k({ k: 'goal-tree', group: 'tree', ja: '目標の木', en: 'Goal tree', w: 1, d: 1, block: true, foot: [26, 12], on: 'grass', h: 120, icon: 'trees/oak-summer', variants: ['a', 'b'], fixed: true }),
   // bushes: NH's bushes (a month's pair takes turns: month-a, month-b), the hedge along the stream
   k({
-    k: 'bush', group: 'bush', ja: 'かんぼく', en: 'Bush', w: 1, d: 1, block: true, foot: [32, 14], on: 'grass', h: 34, icon: 'bushes/holly',
+    k: 'bush', group: 'bush', ja: '低木', en: 'Bush', w: 1, d: 1, block: true, foot: [32, 14], on: 'grass', h: 34, icon: 'bushes/holly',
     variants: ['holly', 'month-a', 'month-b', 'white-plumeria', 'pink-plumeria', 'white-azalea', 'pink-azalea', 'red-hibiscus', 'orange-tea-olive']
   }),
-  k({ k: 'hedge', group: 'bush', ja: 'いけがき', en: 'Hedge bush', w: 1, d: 1, block: true, foot: [36, 14], on: 'grass', h: 40, icon: 'bushes/holly', variants: ['month-a', 'month-b'] }),
+  k({ k: 'hedge', group: 'bush', ja: '生け垣', en: 'Hedge bush', w: 1, d: 1, block: true, foot: [36, 14], on: 'grass', h: 40, icon: 'bushes/holly', variants: ['month-a', 'month-b'] }),
   // wild flowers: `c<n>` the scatter's clump n (its kind the season's), else a flower of its own
-  k({ k: 'flower', group: 'flower', ja: 'はな', en: 'Flower', w: 1, d: 1, block: false, on: 'grass', h: 16, icon: 'flowers/red-tulips', variants: ['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17'] }),
+  k({ k: 'flower', group: 'flower', ja: '花', en: 'Flower', w: 1, d: 1, block: false, on: 'grass', h: 16, icon: 'flowers/red-tulips', variants: ['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'c17'] }),
   // rocks: the one a shovel hits, the flat rock by the pond, a garden rock
-  k({ k: 'rock', group: 'rock', ja: 'いわ', en: 'Rock', w: 1, d: 1, block: true, foot: [24, 10], on: 'land', h: 26, icon: 'deco/garden-rock', fixed: true }),
-  k({ k: 'flat-rock', group: 'rock', ja: 'ひらたいいわ', en: 'Flat rock', w: 2, d: 1, block: true, foot: [52, 18], on: 'land', h: 12, icon: 'deco/flat-rock', turns: true }),
-  k({ k: 'garden-rock', group: 'rock', ja: 'にわいし', en: 'Garden rock', w: 1, d: 1, block: true, foot: [20, 10], on: 'land', h: 20, icon: 'deco/garden-rock' }),
+  k({ k: 'rock', group: 'rock', ja: '岩', en: 'Rock', w: 1, d: 1, block: true, foot: [24, 10], on: 'land', h: 26, icon: 'deco/garden-rock', fixed: true }),
+  k({ k: 'flat-rock', group: 'rock', ja: '平たい岩', en: 'Flat rock', w: 2, d: 1, block: true, foot: [52, 18], on: 'land', h: 12, icon: 'deco/flat-rock', turns: true }),
+  k({ k: 'garden-rock', group: 'rock', ja: '庭石', en: 'Garden rock', w: 1, d: 1, block: true, foot: [20, 10], on: 'land', h: 20, icon: 'deco/garden-rock' }),
   // lights
-  k({ k: 'streetlamp', group: 'light', ja: 'がいとう', en: 'Streetlamp', w: 1, d: 1, block: true, foot: [10, 8], on: 'land', h: 46, icon: 'deco/streetlamp' }),
+  k({ k: 'streetlamp', group: 'light', ja: '街灯', en: 'Streetlamp', w: 1, d: 1, block: true, foot: [10, 8], on: 'land', h: 46, icon: 'deco/streetlamp' }),
   k({ k: 'garden-lantern', group: 'light', ja: 'ガーデンランタン', en: 'Garden lantern', w: 1, d: 1, block: true, foot: [12, 8], on: 'land', h: 24, icon: 'deco/garden-lantern', variants: ['plain', 'white'] }),
   // NH's outdoor furniture (the fixed decor's pieces, at one scale)
-  k({ k: 'campsite-sign', group: 'furniture', ja: 'キャンプサイトのかんばん', en: 'Campsite sign', w: 1, d: 1, block: true, foot: [16, 8], on: 'land', h: 30, icon: 'deco/campsite-sign' }),
+  k({ k: 'campsite-sign', group: 'furniture', ja: 'キャンプサイトの看板', en: 'Campsite sign', w: 1, d: 1, block: true, foot: [16, 8], on: 'land', h: 30, icon: 'deco/campsite-sign' }),
   k({ k: 'campfire', group: 'furniture', ja: 'たきび', en: 'Campfire', w: 1, d: 1, block: true, foot: [22, 12], on: 'land', h: 47, icon: 'deco/campfire' }),
   k({ k: 'log-stool', group: 'furniture', ja: 'まるたのイス', en: 'Log stool', w: 1, d: 1, block: true, foot: [12, 8], on: 'land', h: 19, icon: 'deco/log-stool' }),
   k({ k: 'park-bench', group: 'furniture', ja: 'ベンチ', en: 'Park bench', w: 2, d: 1, block: true, foot: [52, 14], on: 'land', h: 30, icon: 'deco/park-bench', turns: true }),
@@ -113,33 +113,33 @@ export const KIND_LIST: readonly KindDef[] = [
   k({ k: 'climbing-wall', group: 'gym', ja: 'クライミングウォール', en: 'Climbing wall', w: 2, d: 1, block: true, foot: [60, 12], on: 'land', h: 90, icon: 'decor/climbing-wall-0', turns: true }),
   k({ k: 'upright-locker', group: 'gym', ja: 'ロッカー', en: 'Upright locker', w: 1, d: 1, block: true, foot: [24, 22], on: 'land', h: 56, icon: 'decor/upright-locker-0', turns: true }),
   // NH's bulletin board (けいじばん): one on the island, used from the tile in front of it
-  k({ k: 'board', group: 'furniture', ja: 'けいじばん', en: 'Bulletin board', w: 2, d: 1, block: true, foot: [54, 14], on: 'land', h: 44, icon: 'deco/bulletin-board', turns: true, fixed: true, front: true }),
+  k({ k: 'board', group: 'furniture', ja: '掲示板', en: 'Bulletin board', w: 2, d: 1, block: true, foot: [54, 14], on: 'land', h: 44, icon: 'deco/bulletin-board', turns: true, fixed: true, front: true }),
   // the seasonal spots (fixedDecor.ts: the season's piece stands there in its weeks)
-  k({ k: 'beach-chair', group: 'season', ja: 'ビーチチェア（なつ）', en: 'Beach chair (summer)', w: 2, d: 1, block: true, foot: [56, 22], on: 'land', h: 30, icon: 'deco/beach-chair', turns: true, fixed: true }),
-  k({ k: 'sandcastle', group: 'season', ja: 'すなのおしろ（なつ）', en: 'Sandcastle (summer)', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 30, icon: 'deco/sandcastle', fixed: true }),
-  k({ k: 'snowboy', group: 'season', ja: 'ゆきだるま（ふゆ）', en: 'Snowboy (winter)', w: 1, d: 1, block: true, foot: [30, 20], on: 'land', h: 40, icon: 'deco/snowboy-0', fixed: true }),
+  k({ k: 'beach-chair', group: 'season', ja: 'ビーチチェア（夏）', en: 'Beach chair (summer)', w: 2, d: 1, block: true, foot: [56, 22], on: 'land', h: 30, icon: 'deco/beach-chair', turns: true, fixed: true }),
+  k({ k: 'sandcastle', group: 'season', ja: 'すなのおしろ（夏）', en: 'Sandcastle (summer)', w: 1, d: 1, block: true, foot: [26, 18], on: 'land', h: 30, icon: 'deco/sandcastle', fixed: true }),
+  k({ k: 'snowboy', group: 'season', ja: 'ゆきだるま（冬）', en: 'Snowboy (winter)', w: 1, d: 1, block: true, foot: [30, 20], on: 'land', h: 40, icon: 'deco/snowboy-0', fixed: true }),
   // structures that join terrain: a bridge over water (its deck walkable), stairs up a cliff (f 0: rising away)
-  k({ k: 'bridge', group: 'structure', ja: 'はし', en: 'Bridge', w: 1, d: 3, block: false, on: 'span', h: 12, icon: 'bridges/stone-front', turns: true, variants: ['stone', 'wood', 'log', 'brick', 'red', 'iron', 'japanese', 'suspension'] }),
+  k({ k: 'bridge', group: 'structure', ja: '橋', en: 'Bridge', w: 1, d: 3, block: false, on: 'span', h: 12, icon: 'bridges/stone-front', turns: true, variants: ['stone', 'wood', 'log', 'brick', 'red', 'iron', 'japanese', 'suspension'] }),
   // a pond to put down (the old 3D island's: its water rippling, lily pads and a lily on it, stones round its edge), on
   // the grass; its water a fresh water like the painted pond's (fish come, a line goes in); the painted pond stays too
-  k({ k: 'pond', group: 'structure', ja: 'いけ', en: 'Pond', w: 3, d: 2, block: true, foot: [86, 54], on: 'grass', h: 4, icon: 'deco/pond-stone-sakura', turns: true }),
+  k({ k: 'pond', group: 'structure', ja: '池', en: 'Pond', w: 3, d: 2, block: true, foot: [86, 54], on: 'grass', h: 4, icon: 'deco/pond-stone-sakura', turns: true }),
   // NH's incline: 2 tiles across, 4 up the flight (NH's own: scripts/home-models.ts --structures)
-  k({ k: 'stairs', group: 'structure', ja: 'さか', en: 'Stairs', w: 2, d: 4, block: false, on: 'cliff', h: 40, icon: '', turns: true, variants: ['stone', 'brick', 'iron', 'wood', 'log', 'natural'] }),
+  k({ k: 'stairs', group: 'structure', ja: '坂', en: 'Stairs', w: 2, d: 4, block: false, on: 'cliff', h: 40, icon: '', turns: true, variants: ['stone', 'brick', 'iron', 'wood', 'log', 'natural'] }),
   // the island's public buildings, one of each (NH's: 7 × 4 tiles, the door the middle of the front edge, model.ts doorOf;
   // a tap walks up to it and goes in): the museum (はくぶつかん: the ずかん's finds swim and fly in it, routes/museum) and
   // the shop (タヌキ商店, NH's Nook's Cranny: the catches sold for かいがら, furniture bought, routes/shop).
-  k({ k: 'museum', group: 'building', ja: 'はくぶつかん', en: 'Museum', w: 7, d: 4, block: true, on: 'land', h: 117, icon: 'villagers/blathers-icon', turns: true, fixed: true, door: true }),
+  k({ k: 'museum', group: 'building', ja: '博物館', en: 'Museum', w: 7, d: 4, block: true, on: 'land', h: 117, icon: 'villagers/blathers-icon', turns: true, fixed: true, door: true }),
   k({ k: 'shop', group: 'building', ja: 'タヌキ商店', en: "Nook's Cranny", w: 7, d: 4, block: true, on: 'land', h: 118, icon: 'host/timmy-tommy', turns: true, fixed: true, door: true }),
   // the homes (their footprint is their style's: layout/homes.ts)
-  k({ k: 'home', group: 'home', ja: 'いえ', en: 'Home', w: 3, d: 2, block: true, on: 'land', h: 80, icon: 'deco/campsite', fixed: true, turns: true, hidden: true }),
+  k({ k: 'home', group: 'home', ja: '家', en: 'Home', w: 3, d: 2, block: true, on: 'land', h: 80, icon: 'deco/campsite', fixed: true, turns: true, hidden: true }),
   // the visitors' spots (docs/design.md "Visitors"): where the visitors stand, NH's plaza (spots.ts stageOf), and where
   // Gulliver lies washed up (spots.ts washedUp), the members' choice in the もようがえ; a mark on the ground only in it,
   // nothing in play. Without one (or where it can't be used now) the island's own spot, derived from the layout.
-  k({ k: 'plaza', group: 'visitor', ja: 'おきゃくさんの ばしょ', en: "Visitors' spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'deco/campsite-sign', one: true }),
-  k({ k: 'beach-spot', group: 'visitor', ja: 'ジョニーの ばしょ', en: "Gulliver's spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'villagers/gulliver-icon', one: true }),
+  k({ k: 'plaza', group: 'visitor', ja: 'お客さんの場所', en: "Visitors' spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'deco/campsite-sign', one: true }),
+  k({ k: 'beach-spot', group: 'visitor', ja: 'ジョニーの場所', en: "Gulliver's spot", w: 1, d: 1, block: false, on: 'land', h: 0, icon: 'villagers/gulliver-icon', one: true }),
   // named spots: where a villager stands at home, nothing drawn ('stage': the old fixed visitors' spot, kept so the
   // layouts fold as they did; the visitors' stage is derived now, spots.ts stageOf)
-  k({ k: 'spot', group: 'spot', ja: 'ばしょ', en: 'Spot', w: 1, d: 1, block: false, on: 'land', h: 0, icon: '', variants: ['villager-a', 'villager-b', 'stage'], fixed: true, hidden: true })
+  k({ k: 'spot', group: 'spot', ja: '場所', en: 'Spot', w: 1, d: 1, block: false, on: 'land', h: 0, icon: '', variants: ['villager-a', 'villager-b', 'stage'], fixed: true, hidden: true })
 ];
 
 const KINDS: Readonly<Record<string, KindDef>> = Object.fromEntries(KIND_LIST.map((d) => [d.k, d]));
