@@ -1,8 +1,8 @@
 // What lies on the ground keeps off the island's buildings (docs/design.md "Tap targets", "Shaking a tree"), pure: a
 // present, a piece of wood, a branch, a coconut, a mushroom, a shell, a weed or a dig spot never lies where a building
 // stands (its footprint: the walk grid's, nav.ts doors[].box, the layout's tiles), on its door's step (doorOf's tiles),
-// or on the strip behind it that its model hides from the camera (it looks down the island toward +z at 58°: a
-// building h tall hides ~0.62·h of the ground behind it). Drawn there it would be lost: inside the walls or behind them
+// or on the strip behind it that its model hides from the camera (hides.ts: it looks down the island toward +z at 58°,
+// a building h tall hides ~0.62·h of the ground behind it). Drawn there it would be lost: inside the walls or behind them
 // it can't be seen, and on the steps the building's tap area takes the tap (SceneTaps' notBehind: what stands within
 // its footprint is behind its front line).
 // One rule, both ways: what's placed takes a spot off them (`offBuildings` before the put, or a derived spot filtered),
@@ -13,16 +13,12 @@ import { tileAt, tileX, tileZ } from './grid.ts';
 import { doorOf, objTiles, type Layout, type Obj } from './model.ts';
 import { goesIn, isMarker, kindDef } from './catalog.ts';
 import { levelAt, walkable, type Box, type LayoutNav } from './nav.ts';
+import { BUILDING_HIDES, frontRows } from './hides.ts';
 
-/** How much of a building's height its model hides of the ground behind it (1 / tan 58°, and a little). */
-const HIDES = 0.65;
 /** What lies there keeps this far off (u): about half a find (a present is 30u across). */
 const KEEP = 10;
 /** The search for a free spot: rings STEP apart out to REACH (u). */
 const STEP = 6, REACH = 240;
-/** How many rows behind a board its art (60u tall: board/spot.ts BOARD_H) covers on screen: the ground to ~88u past its
- *  back at every zoom (pitch 58° … 40°), a 6px guard round it: three tiles (the third in part, zoomed in). */
-const FRONT_BEHIND = 3;
 
 const zoneCache = new WeakMap<LayoutNav, Box[]>();
 /** Each building's ground (u, unpadded; y is z): its footprint, its door's step(s) and the strip behind it it hides. */
@@ -34,7 +30,7 @@ export function buildingZones(g: LayoutNav): Box[] {
     const o: Obj | undefined = g.layout.objects.get(id);
     if (!o || !goesIn(o.k)) continue;
     const b = d.box, h = kindDef(o.k)?.h ?? 80;
-    out.push(b, { x0: b.x0, x1: b.x1, y0: b.y1, y1: b.y1 + h * HIDES });
+    out.push(b, { x0: b.x0, x1: b.x1, y0: b.y1, y1: b.y1 + h * BUILDING_HIDES });
     for (const [c, r] of doorOf(g.layout, o).tiles) out.push({ x0: tileX(c), x1: tileX(c + 1), y0: tileZ(r), y1: tileZ(r + 1) });
   }
   zoneCache.set(g, out);
@@ -56,6 +52,10 @@ export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'):
   if (had) return had;
   const taken = new Set<string>();
   const mark = (c: number, r: number) => taken.add(`${c},${r}`);
+  /** Its tiles' rows j0…j1 round them (behind: +), a tile each side (`side` 1) or just its own column (0). */
+  const around = (o: Obj, j0: number, j1: number, side: 0 | 1 = 1) => {
+    for (const [c, r] of objTiles(layout, o)) for (let j = j0; j <= j1; j++) for (let i = -side; i <= side; i++) mark(c + i, r + j);
+  };
   for (const o of layout.objects.values()) {
     // (a visitors' spot is a mark: nothing stands on it)
     if (isMarker(o.k) || (which === 'canopy' && kindDef(o.k)?.group !== 'tree' && kindDef(o.k)?.group !== 'bush')) continue;
@@ -63,8 +63,8 @@ export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'):
     const def = kindDef(o.k);
     // what one walks up to: its door's tiles (a home, a board) and a spot's ring stay clear
     if (o.k === 'home' || def?.front) for (const [c, r] of doorOf(layout, o).tiles) mark(c, r);
-    if (o.k === 'spot') for (const [c, r] of objTiles(layout, o)) for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
-    if (o.k === 'stairs') for (const [c, r] of objTiles(layout, o)) for (let j = -1; j <= 1; j++) mark(c, r + j);
+    if (o.k === 'spot') around(o, -1, 1);
+    if (o.k === 'stairs') around(o, -1, 1, 0);
     // a tree's canopy stands over the ground behind it and beside it on screen (its leaves take a tap there), a bush's
     // or a flower's thumb-sized tap area over the tiles round it
     // (the tile in front too: a spot's own thumb-sized tap area there would reach up over a trunk, a bush, a flower; anything
@@ -72,11 +72,12 @@ export function tapCovered(layout: Layout, which: keyof typeof covered = 'all'):
     // bench took the bench's tap)
     const ROUND = def?.block === true && def.group !== 'tree' && def.group !== 'bush' && o.k !== 'home';
     const over = def?.group === 'tree' ? 2 : def?.group === 'bush' || def?.group === 'flower' || ROUND ? 1 : -1;
-    for (const [c, r] of over >= 0 ? objTiles(layout, o) : []) for (let j = -1; j <= over; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
+    if (over >= 0) around(o, -1, over);
     // what one stands before to use (the board, K.K.'s stool: catalog.ts `front`) is a button standing up over the
-    // ground behind it: on screen it covers FRONT_BEHIND rows there (and a tile each side), where a spot would hide
-    // under it once the camera settled (Finds' uncovered) and show again while the camera moved, flickering
-    if (def?.front) for (const [c, r] of objTiles(layout, o)) for (let j = 1; j <= FRONT_BEHIND; j++) for (let i = -1; i <= 1; i++) mark(c + i, r + j);
+    // ground behind it: on screen its art covers rows there at every zoom (hides.ts frontRows: the board's three, K.K.'s
+    // four; and a tile each side), where a spot would hide under it once the camera settled (Finds' uncovered) and
+    // show again while the camera moved, flickering
+    if (def?.front) around(o, 1, frontRows(o.k));
   }
   covered[which].set(layout, taken);
   return taken;

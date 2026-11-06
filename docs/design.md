@@ -1133,7 +1133,9 @@ in front of a building's area (a tree's present lying before it, a fish in the p
 (SceneTaps: hitbox.ts `notBehind`; one behind it only where some of it shows past the building's outline). **Nothing
 lies on a building's ground** (`layout/clear.ts`, `island/offBuildings.test.ts`, `e2e/present-taps.spec.ts`): its
 footprint (the walk grid's box: its tiles, the museum's steps on its front row), its door's step, and the strip behind
-it its model hides from the camera (0.65 × its height: 58° down). Drawn there a thing was lost: in the walls or behind
+it its model hides from the camera (0.65 × its height: 58° down; `layout/hides.ts`, the one model of what a tall thing
+hides: a figure behind a thing, the visitors' stage's 1.1 × its height; what one stands before, the board's three rows
+behind it and K.K.'s four, kept clear of the day's spots at every zoom). Drawn there a thing was lost: in the walls or behind
 them unseen, on the steps behind the front line, so the building's tap area took the tap. One rule both ways, a
 function of the layout and the point alone (every phone puts it in the same place): what's dropped or spawned takes a
 spot off it (a tree's present, wood, branch, coconuts, a nest's and a bug's spot, mushrooms, the beach's shells,
