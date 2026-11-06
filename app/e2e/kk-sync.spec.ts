@@ -62,6 +62,35 @@ test('K.K. for everyone: A asks, B hears it from the same point; G opening mid-s
   await ctx.close();
 });
 
+test('a stereo in the tent is everyone’s in there, and heard only inside: A in the tent asks, G in there hears it, B on the island doesn’t', { tag: '@logic' }, async ({ browser }) => {
+  test.slow();
+  const ctx = await browser.newContext();
+  const a = await ctx.newPage(), b = await ctx.newPage(), g = await ctx.newPage();
+  await a.addInitScript(() => localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: false, volume: 0.8 })));
+  await a.goto(`tent?demo&${Q}`);
+  await a.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  // the jukebox in the room (the tent's room is everyone's to arrange)
+  const pc = await a.evaluate(() => {
+    const t = (window as unknown as { __tent: { fill(codes: string[]): number; pieces(): { id: string; item: string }[] } }).__tent;
+    t.fill(['f791']);
+    return t.pieces().find((p) => p.item === 'f791')!.id;
+  });
+  await a.mouse.click(196, 120); // unlocks audio
+  await open(b, 'B');
+  await g.addInitScript(() => localStorage.setItem('island.sound', JSON.stringify({ music: true, sfx: false, volume: 0.8 })));
+  await g.goto(`tent?demo&as=G&${Q}`);
+  await g.waitForFunction(() => ((window as unknown as { __tent?: { stats(): { frames: number } } }).__tent?.stats()?.frames ?? 0) > 0);
+  await g.mouse.click(196, 120);
+  await a.evaluate((pc) => (window as unknown as H).__music.request('t', 'kk-march', { pc }), pc);
+  for (const p of [a, g]) await expect.poll(() => playing(p), { timeout: 15_000 }).toMatch(/^st\/t\/kk-march\//);
+  await b.waitForTimeout(1500);
+  expect(await playing(b)).not.toMatch(/^st\//);
+  // G stops it: nothing in there any more
+  await g.evaluate(() => (window as unknown as H).__music.hush('t'));
+  await expect.poll(() => playing(a)).not.toMatch(/^st\//);
+  await ctx.close();
+});
+
 test('with ミュージック off B sees K.K. play (his caption with 🔇) and hears nothing', { tag: '@logic' }, async ({ browser }) => {
   const ctx = await browser.newContext();
   const a = await ctx.newPage(), b = await ctx.newPage();

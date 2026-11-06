@@ -7,8 +7,8 @@
 //   bindStage({ send, serverNow, me })     once, the layout: the relay (store/world.svelte.ts)
 //   request('isl', 'kk-march')  ·  hush('isl')    from a tap
 //   hear(record)  ·  acked(intent, t)      the room's records (mine too, at hello) and my own's ack (its clamp)
-//   enterStage('t')  → leave               where I am (the island page, a home's room)
-//   live('isl')                            what plays there now (reactive through `stage.on`)
+//   enterStage('t', plays?)  → leave       where I am (the island page, a home's room; `plays`: a room's stereo stands)
+//   live('isl') · heardHere()              what plays there now (reactive through `stage.on`) · what sounds here
 import { MUSIC_MS_MAX, MUSIC_SKEW_MS, MUSIC_STOP_KEEP_MS, musicLive, newerMusic, type Intent, type MusicRec, type MusicSrc, type Who } from '#lib/contract/live-protocol.ts';
 import { AUDIO } from './manifest.ts';
 import { kkTrack } from './kk.ts';
@@ -38,6 +38,8 @@ interface Net {
 }
 let net: Net = { send: () => false, serverNow: () => Date.now(), me: () => null };
 const subs = new Set<() => void>();
+/** Whether the stage where I am sounds here (a room's: its stereo still stands), null: always. */
+let plays: ((s: Stage) => boolean) | null = null;
 let timer: ReturnType<typeof setTimeout> | undefined;
 
 /** The relay in use (the layout, once). */
@@ -52,6 +54,8 @@ export function onStage(fn: () => void): () => void {
 }
 
 const changed = () => subs.forEach((f) => f());
+/** Something `plays` reads changed (a room's stereo put away or back). */
+export const restage = (): void => changed();
 
 /** The file a stage's song plays from: an island cut-in (`ev-<id>`, events.ts), else a K.K. song, his live file on
  *  the island, its aircheck on a room's stereo. Null: no such song, or K.K.'s list not loaded yet (kk.ts loadKK). */
@@ -115,15 +119,24 @@ export function acked(i: Intent, ok: boolean, t: number): void {
   changed();
 }
 
-/** I'm where stage `src` plays (the island page, a home's room): its sound is heard here. Returns the leaving. */
-export function enterStage(src: MusicSrc): () => void {
+/** I'm where stage `src` plays (the island page, a home's room): its sound is heard here while `p` says so (a room's:
+ *  its stereo stands; restage() when that changes). Returns the leaving. */
+export function enterStage(src: MusicSrc, p?: (s: Stage) => boolean): () => void {
   stage.here = src;
+  plays = p ?? null;
   changed();
   return () => {
     if (stage.here !== src) return;
     stage.here = null;
+    plays = null;
     changed();
   };
+}
+
+/** What plays where I am and sounds here (null: nothing, or a room's stereo put away). */
+export function heardHere(): ReturnType<typeof live> {
+  const s = stage.here && live(stage.here);
+  return s && (!plays || plays(s)) ? s : null;
 }
 
 /** What plays on stage `src` now (null: nothing, stopped or over): its record, how far in. */
@@ -140,6 +153,7 @@ export function resetStage(): void {
   clearTimeout(timer);
   stage.on = {};
   stage.here = null;
+  plays = null;
   subs.clear();
   net = { send: () => false, serverNow: () => Date.now(), me: () => null };
 }
