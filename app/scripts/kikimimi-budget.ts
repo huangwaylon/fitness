@@ -15,7 +15,8 @@ const HUB_MAX = 25 * 1024;
 const PAGE_MAX = 15 * 1024;
 const PAGES: [src: string, max: number][] = [
   ['hub/Hub', HUB_MAX], ['asobu/Asobu', PAGE_MAX], ['mode/ModeDetail', PAGE_MAX], ['Progress', PAGE_MAX], ['settings/KikiSettings', PAGE_MAX],
-  ['path/IslandPath', PAGE_MAX], ['path/UnitPage', PAGE_MAX], ['path/PhraseZukan', PAGE_MAX]
+  ['path/IslandPath', PAGE_MAX], ['path/UnitPage', PAGE_MAX], ['path/PhraseZukan', PAGE_MAX],
+  ['story/StoryFrame', PAGE_MAX], ['story/StoryList', PAGE_MAX]
 ];
 
 const manifest = JSON.parse(readFileSync(join(CLIENT, '.vite/manifest.json'), 'utf8')) as Record<string, { file: string }>;

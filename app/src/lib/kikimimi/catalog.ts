@@ -4,8 +4,8 @@
 // かわ, もり, やま, ほし; level 5 is the アナウンス mode, not a place). Pure.
 
 /** The modes built so far. The quiz family (ひとこと クイズ, アナウンス, スピード はしご) is one lobby's game; おさらい a
- *  solo practice deck. */
-export type ModeId = 'quiz' | 'ladder' | 'review' | 'announce';
+ *  solo practice deck; おやすみ ものがたり the bedtime serials (no lobby, no score: components/kikimimi/story/). */
+export type ModeId = 'quiz' | 'ladder' | 'review' | 'announce' | 'story';
 /** The あそぶ page's shelves, in order: さくっと, まちで・でんわで, じっくり, ねる まえに. */
 export type Group = 'quick' | 'scene' | 'long' | 'night';
 const GROUPS: readonly Group[] = ['quick', 'scene', 'long', 'night'];
@@ -24,18 +24,20 @@ const MODES: readonly ModeMeta[] = [
   { id: 'quiz', group: 'quick', mins: 4, qs: 8, coop: true },
   { id: 'ladder', group: 'quick', mins: 3, qs: 8, coop: true },
   { id: 'review', group: 'quick', mins: 3, qs: 8, coop: false },
-  { id: 'announce', group: 'scene', mins: 4, qs: 8, coop: true }
+  { id: 'announce', group: 'scene', mins: 4, qs: 8, coop: true },
+  { id: 'story', group: 'night', mins: 4, qs: 0, coop: false }
 ];
 /** Every mode's id, in the shelves' order. */
 export const MODE_IDS: readonly ModeId[] = MODES.map((m) => m.id);
 export const modeOf = (id: ModeId): ModeMeta => MODES.find((m) => m.id === id)!;
 
 /** What this build and this player have: the levels offered (deck.ts LEVELS), スピード はしご's clips, any game to
- *  review. */
+ *  review, a voiced bedtime serial. */
 export interface Ctx {
   levels: readonly number[];
   ladder: boolean;
   review: boolean;
+  story?: boolean;
 }
 
 /** A mode can be played now. */
@@ -49,6 +51,8 @@ export function playable(id: ModeId, c: Ctx): boolean {
       return c.ladder;
     case 'review':
       return c.review;
+    case 'story':
+      return !!c.story;
   }
 }
 

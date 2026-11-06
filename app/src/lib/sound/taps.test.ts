@@ -69,6 +69,7 @@ const NONE: Record<string, string> = {
   'lib/components/kikimimi/mode/StageRow.svelte': 'the place already chosen, or one with no level yet, does nothing',
   'lib/components/kikimimi/mode/TimerRow.svelte': 'the answer time already chosen does nothing',
   'lib/components/kikimimi/settings/KikiSettings.svelte': 'the translation or weekly target already chosen does nothing',
+  'lib/components/kikimimi/story/StoryFrame.svelte': 'おやすみ ものがたり: ⏮ ⏯ ⏭, the sleep timer and the words are silent at bedtime (no cue over the story\'s voice)',
   'lib/components/kikimimi/frame/RoundFrame.svelte': 'よみおわった once tapped does nothing',
   'lib/components/kikimimi/frame/ChoiceGrid.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)',
   'lib/components/quiet/Chip.svelte': 'the chip already picked does nothing',

@@ -7,12 +7,13 @@
   import { shelves, type ModeId } from '#lib/kikimimi/catalog.ts';
   import { currentReport } from '../progress.svelte.ts';
   import PathCard from '../path/PathCard.svelte';
+  import { STORY_OK } from '../story/serials.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { path, onpath, onmode }: { path: Path | null; onpath: () => void; onmode: (m: ModeId) => void } = $props();
   const report = $derived(currentReport());
-  const groups = $derived(shelves({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length }));
-  const ICON: Record<ModeId, string> = { quiz: '💬', ladder: '🪜', review: '🔁', announce: '📢' };
+  const groups = $derived(shelves({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length, story: STORY_OK }));
+  const ICON: Record<ModeId, string> = { quiz: '💬', ladder: '🪜', review: '🔁', announce: '📢', story: '🌙' };
 </script>
 
 <div class="asobu" data-kiki-page="asobu">
@@ -22,7 +23,7 @@
       <h3 id="kk-g-{g.group}" class="sec-label">{t(`kiki.group.${g.group}`)}<small>{t(`kiki.groupSub.${g.group}`)}</small></h3>
       <div class="grid">
         {#each g.modes as m (m.id)}
-          <button type="button" class="mode tile-btn" data-kiki-mode-tile={m.id} data-sfx="open" onclick={() => onmode(m.id)}>
+          <button type="button" class="mode tile-btn" class:night={m.id === 'story'} data-kiki-mode-tile={m.id} data-sfx="open" onclick={() => onmode(m.id)}>
             <span class="ic" aria-hidden="true">{ICON[m.id]}</span>
             <b>{t(`kiki.mode.${m.id}`)}</b>
             <small>{t(`kiki.modeSub.${m.id}`)}</small>
@@ -43,5 +44,8 @@
   .ic { font-size: 22px; line-height: 1.1; }
   .mode b { font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .mode small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
+  /* ねる まえに: the night's navy, its moon */
+  .mode.night { background: #3A4886; color: #FFF6E0; box-shadow: inset 0 0 0 2px #B9C3F0, 0 var(--lip-h) 0 #2E3A72; }
+  .mode.night small, .mode.night .meta { color: #D2D9F5; }
   .meta { margin-top: auto; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
 </style>

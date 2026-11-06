@@ -136,6 +136,10 @@ export const DEVICE = {
   /** localStorage: `always` | `missed` | `never`: when ききみみ shows the Japanese at a reveal and in the review (always
    *  by default). */
   kikiJa: 'island.kikiJa',
+  /** localStorage: `{who, s: {[serial]: {done, at?, last?, guess?, later?}}, timer?}`: おやすみ ものがたり on this phone
+   *  (kikimimi/bedtime.ts SerialProgress: the chapters finished and when, where to pick up, the morning-after guess;
+   *  the sleep timer last set). */
+  kikiStory: 'island.kikiStory',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
