@@ -439,7 +439,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる, hidden once
   something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,
   さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓n 一致」 when n independent
-  sources agree on its kcal (in words on the row: an iPhone never shows a title), a product's brand, the food's
+  sources agree on its kcal (in words on the row: an iPhone never shows a title; on the second line when nothing else is there, so a row is two lines), a product's brand, the food's
   everyday name in Japanese (`foodUi.ts` glossOf: an older snapshot's catalogue name now, 若どり もも → 鶏もも肉; else the
   food data's vetted `gloss`; never a raw alias or English: mostly none; one line, cut short), and its default
   portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name; the 100 g values on the
