@@ -27,6 +27,7 @@ const ROUTED: Record<string, string> = {
   'liveRoom.ts': 'the record and the room routed in-process',
   'log.spec.ts': 'the record and /log routed (LIVE=1 forwards to the test relay on purpose)',
   'record.ts': 'the record routed in-process',
+  'relay.ts': 'the address record.ts, liveRoom.ts, board.spec and log.spec route',
   'sync-harness.spec.ts': 'RELAY_E2E=1 only: the test relay',
   'no-notify.spec.ts': "a push subscription's endpoint string, never fetched"
 };

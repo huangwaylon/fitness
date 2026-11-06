@@ -3,6 +3,7 @@
 // the record's rows through localStorage, as phones share the record), with a 「！」 over the board for the others; an
 // author edits their own, and anyone (the guest too) takes down anyone's.
 import { expect, test, type BrowserContext, type Page, PINNED_DATE } from './fixtures.ts';
+import { RELAY } from './relay.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { hudMenu } from './hud.ts';
 
@@ -180,7 +181,6 @@ test('「もどる」 sits under the HUD, never over it, and the face under both
 });
 
 // ---- the record's posts on a paired phone (the relay mocked: its snapshot holds one of うめ's notes) ----
-const RELAY = 'https://island-fund-relay.island-fund-relay.workers.dev';
 async function pairedWithPost(page: Page) {
   // the pinned day's noon (e2e/fixtures.ts; a run at night had my villager asleep, so it never walked up)
   const day = PINNED_DATE.slice(0, 10);

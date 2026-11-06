@@ -5,12 +5,8 @@
 import { pinnedClock, type BrowserContext } from './fixtures.ts';
 import { StoreCore } from '../../relay/src/store.ts';
 import { memSql } from '../../relay/test/sqlite.ts';
+import { KEYS, KEY_OF, RELAY, type Who } from './relay.ts';
 
-const RELAY = 'https://island-fund-relay.island-fund-relay.workers.dev';
-const KEYS = { KEY_A: 'a1'.repeat(32), KEY_B: 'b2'.repeat(32), KEY_C: 'c3'.repeat(32) };
-const KEY_OF = { A: KEYS.KEY_A, B: KEYS.KEY_B, G: KEYS.KEY_C } as const;
-
-type Who = 'A' | 'B' | 'G';
 /** One event the record answered: who sent it, its type and data, and the record's reply. */
 interface Sent { who: Who; type: string; data: Record<string, unknown>; ok: boolean; error?: string }
 
