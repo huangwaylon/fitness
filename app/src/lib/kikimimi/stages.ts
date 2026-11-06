@@ -29,5 +29,16 @@ export function stageAt(level: number): { id: Stage; stars: number; cefr: string
  *  `listen` row's `l` (contract/listen.ts: 1 であい … 3 チェック, the stamp's). */
 export const LESSONS = ['deai', 'bamen', 'check', 'oto', 'jissen'] as const;
 export type Lesson = (typeof LESSONS)[number];
+/** The lessons that make a unit's stamp (plan §3): であい, ばめん, チェック; おと and じっせん are extras. */
+export const CORE: readonly Lesson[] = ['deai', 'bamen', 'check'];
+
+/** The nine domains (plan §1: ともだち, いえ, たべもの, かいもの, たび, しごと, イベント, まち, からだ), a tag on each unit (its
+ *  filter chip on the path); `glue` the anchor units (introducing, inviting, asking for clarification, ending a
+ *  conversation) that open each stage and count toward no domain. */
+export const DOMAINS = ['tomodachi', 'ie', 'tabemono', 'kaimono', 'tabi', 'shigoto', 'ibento', 'machi', 'karada'] as const;
+export type Domain = (typeof DOMAINS)[number];
+export type UnitDomain = Domain | 'glue';
+export const isUnitDomain = (d: string): d is UnitDomain => d === 'glue' || (DOMAINS as readonly string[]).includes(d);
+
 /** A lesson is one 6-question game (plan §3; the `listen` row's bound). */
 export { LESSON_QS } from '../contract/listen.ts';

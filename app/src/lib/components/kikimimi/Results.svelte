@@ -28,10 +28,11 @@
   import { currentReport, currentUnits, recWords } from './progress.svelte.ts';
   import { firstListenRight, stampsUnit } from '#lib/contract/listen.ts';
   import { LESSONS, type Lesson } from '#lib/kikimimi/stages.ts';
-  import { CORE } from '#lib/kikimimi/path.ts';
+  import { CORE } from '#lib/kikimimi/stages.ts';
   import { feedbackFor } from '#lib/kikimimi/report.ts';
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
-  import { SPEEDS, climbs, laddersIn, speedAt, sx } from '#lib/kikimimi/ladder.ts';
+  import { SPEEDS, climbs, laddersIn, speedAt } from '#lib/kikimimi/ladder.ts';
+  import { sx } from './look.ts';
 
   let { game, onagain, onmissed, ondone, onnext }: { game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void; onnext?: (l: Lesson) => void } = $props();
   const v = $derived(game.view);

@@ -2,7 +2,7 @@
 // (docs/kikimimi.md "Progress & feedback"). Pure, over made-up games.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '../contract/api.ts';
-import { levelAt, levelMark, levelRank, type Level } from './bank.ts';
+import { levelAt, levelRank, type Level } from './bank.ts';
 import { BANK } from './source.ts';
 import { DECK_SIZE } from './deck.ts';
 import { answersOf, dayNum, daysPlayed, gamesOf, isLadderGame, listenAnswers, recentOf, scoreOf, speedOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
@@ -264,10 +264,9 @@ describe('the advice', () => {
     expect(up(5)).toEqual({ kind: 'level', lv: 6 });
     expect(up(6)).toEqual({ kind: 'level', lv: 7 });
     expect(up(7)).toBeUndefined();
-    // the ladder's places: the pack beside 4, やま and ほし the next two; their marks
+    // the ladder's places: the pack beside 4, やま and ほし the next two (their marks: components/kikimimi/look.test.ts)
     expect([1, 2, 3, 4, 5, 6, 7].map(levelRank)).toEqual([1, 2, 3, 4, 4, 5, 6]);
     expect([1, 2, 3, 4, 5, 6].map(levelAt)).toEqual([1, 2, 3, 4, 6, 7]);
-    expect([4, 5, 6, 7].map(levelMark)).toEqual(['★★★★', '📢', '★★★★★', '★★★★★★']);
   });
   it('names an accent well below the others', () => {
     const uk = BANK.filter((it) => it.voice === 'uk' && it.lv === 2).map((it) => it.id).slice(0, 6);
