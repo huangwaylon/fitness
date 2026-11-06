@@ -9,17 +9,23 @@ import type { Accent, Entry, Feature, Item, ItemType, Level, Tags } from './bank
 import { addClips, type Clip, type Words } from './clips.ts';
 import type { Ladder } from './ladder.ts';
 
-/** What a chunk holds: a level's items (or the ladders) and their clips and word timings. */
+/** What a chunk holds: a level's items (or the ladders; a unit's: the unit, its lessons' items and ladders) and their
+ *  clips and word timings. */
 interface Part {
+  unit?: unknown;
   items?: Item[];
   ladders?: Ladder[];
   clips: Record<string, Clip>;
   words: Record<string, Words>;
 }
 
+/** A unit on the island path (docs/curriculum-units.md, units.ts): id, name, stage, domain, host, status, and its
+ *  lessons as a bitmask in units.ts LESSONS' order (the 3 core always; 8 おと, 16 じっせん). */
+export type PathEntry = [id: string, name: string, stage: string, domain: string, host: string, status: string, lessons: number];
+
 /** levels/index.json (compile.ts). */
 export interface Index {
-  /** Each level's (and 'ladder''s) parts in order, its items (ladders) and its content version. */
+  /** Each level's (and 'ladder''s, and each unit's) parts in order, its items (ladders) and its content version. */
   units: Record<string, { parts: string[]; n: number; cv: string }>;
   /** The levels the lobby offers (every clip of the items their mix draws). */
   offered: Level[];
@@ -29,6 +35,8 @@ export interface Index {
   ladder: boolean;
   /** The lobby's sound check: a clip from no game (the bank's first level-1 item). */
   test: [string, Clip];
+  /** The units, in file order (units.ts's `status` gates them on the phone, a later step). */
+  paths: PathEntry[];
   /** Every item, in the bank's order: id, level, type, accent, pragmatic layer, features. */
   items: [string, Level, ItemType, Accent, Tags['pragmatic'], Feature[]][];
   /** Every rung's id (`<ladder>-<n>`). */
@@ -37,8 +45,8 @@ export interface Index {
 
 export const INDEX = INDEX_JSON as unknown as Index;
 
-/** A level's items, or the ladders. */
-export type Unit = Level | 'ladder';
+/** A chunk's owner: a level's items, the ladders, or a unit's (docs/curriculum-units.md: `<domain2>-<slug>`). */
+export type Unit = Level | 'ladder' | `${string}-${string}`;
 
 const PARTS = import.meta.glob<Part>('./levels/parts/*.json', { import: 'default' });
 
@@ -105,7 +113,7 @@ export async function load(...units: readonly Unit[]): Promise<void> {
 export const loadIds = (ids: readonly string[]): Promise<void> => load(...new Set(ids.map(unitOf).filter((u) => u !== undefined)));
 
 /** Every chunk (tests). */
-export const loadAll = (): Promise<void> => load(...(Object.keys(INDEX.units).map((u) => (u === 'ladder' ? u : (Number(u) as Level)))));
+export const loadAll = (): Promise<void> => load(...Object.keys(INDEX.units).map((u): Unit => (/^\d+$/.test(u) ? (Number(u) as Level) : (u as Unit))));
 
 /** A loaded level's items, in the bank's order (deck.ts's pool). */
 export function levelItems(lv: Level): readonly Item[] {

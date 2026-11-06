@@ -97,6 +97,7 @@ describe('villager roster', () => {
     expect(importers).toEqual([
       'lib/components/dev/Gallery.svelte', 'lib/components/kikimimi/scene/stage.ts', 'lib/components/look/LookPage.svelte', 'lib/components/look/VillagerGrid.svelte', 'lib/components/panel/SettingsSheet.svelte',
       'lib/kikimimi/speech.ts', // the audio script's and tests' only (no client code imports it)
+      'lib/kikimimi/units.ts', // the compiler's and tests' only (compile.ts: the units' manifests)
       'lib/villagers/search.ts'
     ]);
   });

@@ -133,3 +133,74 @@ Both partners play wave 1 for a week. We tune from the listen rows and the user'
 - **Wave 1 gets a 7th unit:** 「でんわを おえる」 (ending a call), glue, かわ.
 - **Each wave** is reviewed by the EFL teacher and the Japanese panel (English and Japanese copy) before voicing.
 - **The 30-day recheck** shows on hub card 1 (おさらい) (UX).
+
+## 11. U1 as built (2026-11-06): the schema and the compiler
+
+**The listen row** (relay first, deployed 2026-11-06):
+- `l` is the lesson: 1 であい, 2 ばめん, 3 チェック, 4 おと, 5 じっせん (only with `u`).
+- `tm` 0–6 is the team's first-listen rights (only with `l`).
+- The partner's summary gains `{u, stamped: 1}` when the row stamps its unit. The rule is contract/listen.ts `stampsUnit`: `l` 3, with own ≥ 5 right on the first listen or `tm` ≥ 5. rowsFor computes it at each read.
+
+**A unit** is `app/content/units/<id>.yaml`. kikimimi/units.ts reads and checks it; kikimimi/compile.ts compiles it.
+
+```yaml
+schema: 1
+unit: tr-hotel              # <domain2>-<slug>, ≤ 12: the row's u; never a stage
+name: ホテルで こまった       # a can-do verb, ≤ 12 characters, never レッスン
+stage: mori                 # hama | kawa | mori | yama | hoshi
+domain: tabi                # glue | tomodachi ie tabemono kaimono tabi shigoto ibento machi karada
+also: [machi]               # optional: more chips (coverage counts domain only)
+host: diana                 # a roster villager
+scene: lobby                # the backdrop's id
+sound: self-repair          # the main feature, from the stage's list (curriculum §3; units.ts STAGES)
+cando:                      # 「{who}が {does}のを {cond} きいて、{catch}が わかる」
+  who: ホテルの スタッフ
+  does: へやの もんだいへの たいおうを せつめいする
+  cond: ロビーの ざつおんの なかで
+  catch: できる ことと ついかの りょうきん
+  en: "I can follow hotel staff explaining what they can do about a room problem, over lobby noise, and catch the options and any extra charge."
+status: draft               # draft | voiced | listened
+ph:                         # 1-10 key phrases (6-10 once written), ids unique across units
+  - { id: ph-im-afraid, en: "I'm afraid", ja: あいにく, register: service, scene: hotel desk, trap: こわい ではなく「あいにく」 }
+  - { id: ph-small-extra, en: a small charge, match: "small (additional charge|supplement|fee)", register: service, scene: hotel desk, trap: small でも お金は かかる }
+review: [m4-be-good]        # existing items the lessons reuse without homing them here
+items: [...]                # new items, in the bank's Item shape (lv, type, en, ja, speaker, voice, cast, choices, answer, lines…)
+lessons:
+  v: 1                      # the recipe's version (v1: the interim チェック, a mixed check on held-out items)
+  deai: [d4-hotel-suite, r4-room-ready, …]   # ≥ 6 ids each; であい has a dialogue
+  bamen: [...]
+  check: [...]              # held out of であい and ばめん, ≥ 2 voices
+  oto: [...]                # optional, mostly word items
+  jissen: [...]             # optional, items or ladder ids
+tiers:                      # optional, per item: an easier and a harder choice set (same audio, each player's tier)
+  r4-room-ready: { easy: { choices: [...], answer: 0 }, hard: { choices: [...], answer: 0 } }
+```
+
+Every lesson id that isn't under `review` is homed in the unit. The unit's own items always are.
+
+**The compiler** is `npm run kikimimi:levels`, with no second loader.
+- **Unit chunk:** each unit becomes `levels/parts/u-<id>.json`. It holds the unit (its can-do as one sentence; its phrases with the items they're heard in; its lessons, tiers and homes), its lessons' items as authored, and their clips and timings.
+- **Index:** gains `units[<id>]` (parts, count, cv) and one `paths` line per unit: `[id, name, stage, domain, host, status, lesson bitmask]`.
+- **Problems:** an error stops it; warnings are printed.
+
+**The checks:**
+- the schema;
+- ids unique across the bank, the ladders and the units;
+- each item has ≤ 1 home;
+- every reference exists (a rung must be named by its ladder);
+- each item within one step of the stage (levelRank);
+- the can-do template, including its English: "I can follow …, and catch/tell …";
+- the recipe: a known `v`, the 3 core lessons, ≥ 6 ids each, であい with a dialogue, チェック held out with ≥ 2 voices, おと mostly words;
+- the tiers on lesson items only;
+- every clip, for a unit past draft;
+- each phrase in ≥ 3 items by ≥ 2 voices (over the bank and the units; a warning in a draft, an error past it);
+- recycling: ≥ 20 % of a unit's items carry a lower stage's or the stage's anchors' phrase (a warning until 7 units are past draft);
+- coverage per stage: ≥ 7 of 9 domains and none over 25 % (a warning until the stage has its planned units).
+
+**Budgets** (units.test, at 200 synthetic units): the path index ≤ 12 KB gzipped; each unit's chunk ≤ 20 KB (the compiler fails over it).
+
+**Level-deck invariance:**
+- The levels' chunks are byte-identical with and without units.
+- `kikimimi/decks.golden.json` holds a digest of the decks for seeds 0–99 per level. A re-tagging commit must leave it unchanged. A deliberate change to the bank's content updates it with `vitest -u`.
+
+No unit is committed yet.

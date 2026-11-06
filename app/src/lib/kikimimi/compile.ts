@@ -4,17 +4,54 @@
 // the index the sheet opens with (each level's parts, count and content version; the gates; the sound check's clip;
 // every item's id, level, type, accent and tags for きろく; the rungs' ids). `npm run kikimimi:levels` writes them (the
 // audio scripts too, at their end); levels.test fails while the committed files differ. Node and tests only.
+//   The units (docs/curriculum-units.md §8, units.ts) extend it, with no second loader: each manifest in
+// app/content/units/ is checked against the bank and becomes a chunk of its own (`parts/u-<id>.json`: the unit, its
+// lessons' items as authored, their clips and timings) and an entry in the index (`units[<id>]` beside the levels',
+// and a line in `paths`, the island path's). The levels' chunks and decks don't change for any unit (units.test).
 import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
+import { parse } from 'yaml';
 import { clipIds, isDialogue, type Item, type Level } from './bank.ts';
 import type { Clip, Words } from './clips.ts';
 import { voiced } from './clips.ts';
 import type { Ladder } from './ladder.ts';
 import { LADDERS, ladderReady } from './ladders.ts';
 import { drawn, mixFor, type Mixes } from './mix.ts';
-import type { Index } from './pool.ts';
+import type { Index, PathEntry } from './pool.ts';
 import { BANK } from './source.ts';
 import { tagsOf } from './tags.ts';
+import { LESSONS, candoText, checkUnits, lessonIds, manifestOf, type UnitManifest, type UnitsCheck } from './units.ts';
+
+/** A unit's chunk's budget (gzipped; plan §8). */
+export const UNIT_MAX = 20 * 1024;
+
+/** A unit's manifest as read: its file's name and its parsed YAML. */
+export interface UnitSource {
+  file: string;
+  raw: unknown;
+}
+
+const UNITS_DIR = new URL('../../../content/units/', import.meta.url);
+
+/** app/content/units/*.yaml, parsed, by file name (none yet: an empty list). */
+export function readUnits(dir: URL = UNITS_DIR): UnitSource[] {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) }));
+}
+
+/** The units read and checked (units.ts: each manifest, then all of them against the bank, the ladders and the
+ *  clips): the manifests that read, and the problems (errors stop the compiler; warnings are printed). */
+export function checkUnitSources(sources: readonly UnitSource[], clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = BANK): UnitsCheck & { units: UnitManifest[] } {
+  const units: UnitManifest[] = [], errors: string[] = [];
+  for (const { file, raw } of sources) {
+    const m = manifestOf(raw, file);
+    errors.push(...m.errors);
+    if (m.unit) units.push(m.unit);
+  }
+  const all = checkUnits(units, bank, LADDERS, clips);
+  return { ...all, errors: [...errors, ...all.errors], units };
+}
 
 /** A chunk's budget (gzipped, as built: scripts/kikimimi-budget.ts checks the build's). */
 export const PART_MAX = 60 * 1024;
@@ -47,12 +84,34 @@ const dict = (o: Readonly<Record<string, unknown>>): string => {
   return ks.length ? `{\n${ks.map((k) => `${JSON.stringify(k)}:${JSON.stringify(o[k])}`).join(',\n')}\n}` : '{}';
 };
 
-/** A part's file: its items (or ladders), their clips and their word timings. */
-function partFile(of: { items?: readonly Item[]; ladders?: readonly Ladder[] }, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>): string {
+/** A part's file: its items (or ladders; a unit's: the unit, then both), their clips and their word timings. */
+function partFile(of: { unit?: unknown; items?: readonly Item[]; ladders?: readonly Ladder[] }, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>): string {
   const ids = [...(of.items ?? []).flatMap((it) => clipIds(it)), ...(of.ladders ?? []).flatMap((l) => l.rungs.map((r) => r.id))];
   const pick = <T,>(src: Readonly<Record<string, T>>) => Object.fromEntries(ids.filter((id) => id in src).map((id) => [id, src[id]]));
-  const body = of.items ? `"items":${list(of.items)}` : `"ladders":${list(of.ladders ?? [])}`;
+  const body = of.unit
+    ? `"unit":${JSON.stringify(of.unit)},\n"items":${list(of.items ?? [])},\n"ladders":${list(of.ladders ?? [])}`
+    : of.items ? `"items":${list(of.items)}` : `"ladders":${list(of.ladders ?? [])}`;
   return `{${body},\n"clips":${dict(pick(clips))},\n"words":${dict(pick(words))}}\n`;
+}
+
+/** A unit's chunk: what its lessons need (the unit as played: its can-do, phrases with the items they're heard in, the
+ *  lessons, the tiers, its homes), its lessons' items as authored (its own and the bank's, each once, in lesson order)
+ *  and the ladders its じっせん names; and its index entries. */
+function unitChunk(u: UnitManifest, check: UnitsCheck, bank: ReadonlyMap<string, Item>, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>) {
+  const own = new Map((u.items ?? []).map((it) => [it.id, it]));
+  const ids = lessonIds(u);
+  const items = ids.map((id) => own.get(id) ?? bank.get(id)).filter((it): it is Item => !!it);
+  const ladders = LADDERS.filter((l) => ids.includes(l.id));
+  const unit = {
+    id: u.unit, name: u.name, stage: u.stage, domain: u.domain, ...(u.also && { also: u.also }), host: u.host, scene: u.scene, sound: u.sound, status: u.status,
+    cando: { ja: candoText(u.cando), en: u.cando.en }, lessons: u.lessons, home: ids.filter((id) => check.home.get(id) === u.unit), ...(u.tiers && { tiers: u.tiers }),
+    ph: u.ph.map((p) => ({ ...p, in: check.phraseIn.get(p.id)?.items ?? [] }))
+  };
+  const file = partFile({ unit, items, ladders }, clips, words);
+  if (gz(file) > UNIT_MAX) throw new Error(`kikimimi: unit ${u.unit}'s chunk is ${gz(file)} B gzipped, over ${UNIT_MAX}`);
+  const lessons = LESSONS.reduce((m, l, i) => (u.lessons[l] ? m | (1 << i) : m), 0);
+  const path: PathEntry = [u.unit, u.name, u.stage, u.domain, u.host, u.status, lessons];
+  return { file, path, entry: { parts: [`u-${u.unit}`], n: items.length, cv: cv([...items, ...ladders.flatMap((l) => l.rungs)], [u.lessons, u.tiers ?? null], clips) } };
 }
 
 /** A unit's content version (docs/kikimimi-framework.md §4.2): what shapes its decks and schedule (ids, order, choice
@@ -77,9 +136,12 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
   throw new Error('kikimimi: a level that no split fits');
 }
 
-/** levels/'s files (paths under it → contents) for these clips and word timings. */
-export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>): Map<string, string> {
+/** levels/'s files (paths under it → contents) for these clips and word timings, and these units (app/content/units/:
+ *  a unit that fails its checks stops it). */
+export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits()): Map<string, string> {
   const out = new Map<string, string>();
+  const check = checkUnitSources(sources, clips);
+  if (check.errors.length) throw new Error(`kikimimi: the units don't check:\n${check.errors.join('\n')}`);
   const dialogues = dialoguesVoiced(clips, BANK), mix = mixFor(dialogues);
   const units: Index['units'] = {};
   const levels = [...new Set(BANK.map((it) => it.lv))].sort((a, b) => a - b);
@@ -95,16 +157,24 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   out.set('parts/ladder.json', ladders);
   const rungs = LADDERS.flatMap((l) => l.rungs);
   units.ladder = { parts: ['ladder'], n: LADDERS.length, cv: cv(rungs, null, clips) };
+  const byId = new Map(BANK.map((it) => [it.id, it]));
+  const paths: PathEntry[] = [];
+  for (const u of check.units) {
+    const c = unitChunk(u, check, byId, clips, words);
+    out.set(`parts/u-${u.unit}.json`, c.file);
+    units[u.unit] = c.entry;
+    paths.push(c.path);
+  }
   const first = BANK.find((it) => it.lv === 1)!;
   const index: Index = {
-    units, offered: playable(clips), dialogues, ladder: ladderReady(clips), test: [first.id, clips[first.id]],
+    units, offered: playable(clips), dialogues, ladder: ladderReady(clips), test: [first.id, clips[first.id]], paths,
     items: BANK.map((it) => {
       const t = tagsOf(it);
       return [it.id, it.lv, it.type, it.voice, t.pragmatic, [...t.features]];
     }),
     rungs: rungs.map((it) => it.id)
   };
-  const { items, rungs: rungIds, ...head } = index;
-  out.set('index.json', `${JSON.stringify(head).slice(0, -1)},\n"items":${list(items)},\n"rungs":${JSON.stringify(rungIds)}}\n`);
+  const { items, rungs: rungIds, paths: pathList, ...head } = index;
+  out.set('index.json', `${JSON.stringify(head).slice(0, -1)},\n"paths":${list(pathList)},\n"items":${list(items)},\n"rungs":${JSON.stringify(rungIds)}}\n`);
   return out;
 }
