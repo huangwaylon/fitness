@@ -111,7 +111,8 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
 | `v` | the guest's home's interior | G |
 
 - The server enforces it (`contract/layout.ts` `scopeMayWrite` in the record, `live-protocol.ts` `scopeMaySend` in the
-  room; tests in `relay/test/guest.test.ts`): the guest can never write an outdoor op.
+  room; tests in `relay/test/guest.test.ts`): the outdoors anyone's, the guest's too (2026-11-06); a home's look and
+  room its owner's alone, for everyone.
 - A room scope (`t`, `u`, `v`) is contract/tent.ts's op: its own ids, its own cap of 60 pieces.
 - The room relays a layout op live but never keeps it in the day's ring (an afternoon in the editor would push the
   shared world out of it); a phone opening later reads it from the record. A `drag` with `sc: 'o'` is an outdoor
@@ -130,8 +131,8 @@ id's latest op (slot `decor|<sc>|<id>`). An old phone ignores every new scope (i
   phones), my piece moves to the nearest tile where it stands clear (`layout/resolve.ts clearTile`: rings outwards
   in a fixed order, on land of one tier, out of the water, on grass when it belongs there, overlapping nothing, making
   no error the island doesn't have without it: a door, K.K.'s front, a way blocked), as a normal op of mine; else it
-  is theirs to move. Only one phone moves, onto a tile clear as merged, so nothing ping-pongs. Never the guest's
-  phone; bridges and stairs (one place only) stay and show the editor's overlap. **A door blocked between two edits**
+  is theirs to move. Only one phone moves, onto a tile clear as merged, so nothing ping-pongs (the guest's like a
+  member's); bridges and stairs (one place only) stay and show the editor's overlap. **A door blocked between two edits**
   (2026-11-05, round 2): a palm put east of K.K.'s stool while the other phone turns the stool to face east is fine on
   each phone, and together his front is blocked (validate's `door`: a home's, a building's, a front). When the
   partner's ops land near a door (or move its building), the merged island's `door` errors are looked at: a pair of a
@@ -317,9 +318,8 @@ extentOf(layout): { grid, land, shore, home }   // model.ts: the island's box, t
 ## The editor (phase 3)
 
 `/editor/` (`routes/editor/+page.svelte`, `components/editor/`: `Editor.svelte`, `plan.ts` the canvas,
-`edits.ts` the edits, `Preview3D.svelte`): unlinked, noindex, the members' only (the browser paired with the A or B key
-at `/pair`; the guest's key gets 「ウェイと うめだけが つかえます」, and the record refuses the guest's outdoor ops
-anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the phone).
+`edits.ts` the edits, `Preview3D.svelte`): unlinked, noindex, for anyone paired (A, B or the guest, 2026-11-06: a
+browser not paired yet gets the way to `/pair`). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the phone).
 
 - **The plan:** the layout top-down, the back of the island at the top (as the phones see it): tiles in NH's map
   colours (the higher a tier, the lighter), the cliffs' edges dark, a fall white, the objects by their icons at their
@@ -473,7 +473,7 @@ they have models); a tap on one puts it down as a ghost on the free tile nearest
 the ground green or red, the bar saying why (the checks' reason); a finger on it, or on any placed thing (picked up,
 its model hidden), drags it a tile at a time; a tap on the ground moves it there; ↻ まわす, ✕ やめる, ✓ ここに おく,
 🗑 しまう (never for a goal tree, a home, the island's one-offs). While held, the other phones see it move (`drag`,
-`sc: 'o'`); a drop is its ops at once. The members' only (the guest gets no もようがえ; the record refuses it anyway).
+`sc: 'o'`); a drop is its ops at once. Everyone's, the guest's too (2026-11-06).
 **Terraforming on the phone (paths, water, cliffs) is deferred:** the desktop editor's alone for now.
 
 It runs over any stage: `{ host, toScreen(x, z, lift), toGround(sx, sy), size(), hide(id) }`. The editor's phone
@@ -482,7 +482,7 @@ flat plan, the e2e's; `?view=orbit` the 3D preview, `&eye=x,y,z&at=x,y,z` its ca
 mounts it while せってい → もようがえ is open, the stage from the World (`host` the scene element, `toScreen` = `world.at(x, z, lift)` in its px, `toGround` =
 `world.worldAt(sx, sy)`, `hide(id)` = `things.over(id, { hidden: true })` / `over(id, null)`). The e2e:
 `e2e/island-edit.spec.ts` (a new piece placed and on the other phone; a placed one picked up, dragged and put down;
-red over the river; no 🗑 for a one-off; none for the guest), `e2e/visitor-spot.spec.ts` (the plaza put down, moved
+red over the river; no 🗑 for a one-off; the guest's piece on both members' islands), `e2e/visitor-spot.spec.ts` (the plaza put down, moved
 and taken away, Kicks on it on both phones; a bench on it: red, the warning, the usual ring).
 
 ## How the 3D island reads it

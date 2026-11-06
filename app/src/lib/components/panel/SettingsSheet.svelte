@@ -1,9 +1,9 @@
 <script lang="ts">
   // せってい (docs/design.md "Settings"): the HUD's menu's せってい button opens it, full height like the island panel,
   // grown out of the button (Sheet's `pop`, as けんこう out of the dumbbell). One scroller: すがた (the look's portrait,
-  // the よびな; かえる → the すがた level: the closet and the villagers, one dresser), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん (not
-  // the guest's), えいご ききとり (one row: あそぶ → ききみみ クイズ's sheet, its voice session started in the tap) and もようがえ (one row: はじめる; not
-  // the guest's).
+  // the よびな; かえる → the すがた level: the closet and the villagers, one dresser), プロフィール (せいべつ, たんじょうび, the BMI standard: ProfileSection), サウンド, ことば, きせつ (the seasonal preview), てんき (the island's: real or the game's), フレームレート, つうしん, えいご
+  // ききとり (one row: あそぶ → ききみみ クイズ's sheet, its voice session started in the tap) and もようがえ (one row: はじめる);
+  // the guest's the same (2026-11-06), with a line saying it's visiting.
   // Each pushes a level with ‹ (すがた's edits are sent as it's left, with a とりけす banner here);
   // ✕, the backdrop and Esc close it, and the next opening starts at its top.
   import { tick } from 'svelte';
@@ -51,7 +51,7 @@
     if (me.who !== 'G' && sameLook(p, DEFAULT_LOOKS[me.who])) return t('look.usual');
     return mySavedLooks().find((s) => sameLook(s.look, p))?.name ?? null;
   });
-  /** The guest's phone (docs/design.md "The guest"): no もようがえ, no つうしん. */
+  /** The guest's phone (docs/design.md "The guest"): a line saying it's visiting. */
   const guest = $derived(isGuest(view));
 
   async function go(to: 'look') {
@@ -106,15 +106,13 @@
       <section class="sec" aria-labelledby="sec-sound"><h2 id="sec-sound" class="sec-label">{t('panel.sound')}</h2><SoundSection /></section>
       <section class="sec" aria-labelledby="sec-lang"><h2 id="sec-lang" class="sec-label">{t('panel.lang')}</h2><LangSection /></section>
       <section class="sec" aria-labelledby="sec-season"><h2 id="sec-season" class="sec-label">{t('panel.season')}</h2><SeasonSection {view} /></section>
-      <section class="sec" aria-labelledby="sec-weather" data-weather-section><h2 id="sec-weather" class="sec-label">{t('panel.weather')}</h2><WeatherSection {guest} /></section>
+      <section class="sec" aria-labelledby="sec-weather" data-weather-section><h2 id="sec-weather" class="sec-label">{t('panel.weather')}</h2><WeatherSection /></section>
       <section class="sec" aria-labelledby="sec-fps"><h2 id="sec-fps" class="sec-label">{t('panel.fps')}</h2><FpsSection /></section>
-      {#if !guest}<section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync" class="sec-label">{t('panel.sync')}</h2><SyncSection {view} /></section>{/if}
-      {#if !guest}
-        <div class="prow static decor">
-          <span class="prl">{t('panel.decor')}</span>
-          <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
-        </div>
-      {/if}
+      <section class="sec" aria-labelledby="sec-sync"><h2 id="sec-sync" class="sec-label">{t('panel.sync')}</h2><SyncSection {view} /></section>
+      <div class="prow static decor">
+        <span class="prl">{t('panel.decor')}</span>
+        <button type="button" class="btn small paper" data-decor-start data-sfx="open" onclick={() => ((ui.decorating = true), (open = false))}>{t('panel.decorStart')}</button>
+      </div>
       {#if week.demo}<span class="demo">{t('demo.badge')}</span>{/if}
     {/if}
   </div>

@@ -306,7 +306,6 @@
   "wx.now": "いま: とうきょう {sky}",
   "wx.last": "さいご {time}",
   "wx.none": "ほんものの てんきが とれません（ゲームの てんき）",
-  "wx.guest": "てんきは ふたりが きめるよ",
   "wx.credit": "天気: Open-Meteo（気象庁モデル）",
   "wx.sky.clear": "はれ",
   "wx.sky.cloudy": "くもり",

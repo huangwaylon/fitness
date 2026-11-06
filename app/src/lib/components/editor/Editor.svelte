@@ -22,7 +22,7 @@
     brushTiles, cliff, copy, ghostFoot, inBox, move, objectAt, paint, paste, place, remove, removable, resize, restyle, revert, rotate, sameLayout, wetAt, type Clip
   } from './edits.ts';
 
-  let { me, relay }: { me: 'A' | 'B'; relay: Live | null } = $props();
+  let { me, relay }: { me: 'A' | 'B' | 'G'; relay: Live | null } = $props();
 
   type Tool = 'select' | 'paint' | 'cliff' | 'place';
   let tool = $state<Tool>('select');
@@ -577,7 +577,7 @@
 
 <div class="ed" data-editor data-tool={tool}>
   <aside class="tools">
-    <h1>しまの エディター <small>{me === 'A' ? 'ウェイ' : 'うめ'}</small></h1>
+    <h1>しまの エディター <small>{me === 'A' ? 'ウェイ' : me === 'B' ? 'うめ' : 'おきゃくさん'}</small></h1>
     <div class="row" role="group" aria-label="tools">
       <button type="button" aria-pressed={tool === 'select'} onclick={() => setTool('select')} title="V">えらぶ</button>
       <button type="button" aria-pressed={tool === 'paint'} onclick={() => setTool('paint')} title="B">ぬる</button>

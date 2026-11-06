@@ -325,7 +325,7 @@
         </div>
         {#if tab === 'record'}
           {#await import('./Progress.svelte') then { default: Progress }}
-            {#if report}<Progress {report} guest={week.guest} canStart={v.amHost && v.local} onstart={startRec} onplay={() => (tab = 'play')} />{/if}
+            {#if report}<Progress {report} canStart={v.amHost && v.local} onstart={startRec} onplay={() => (tab = 'play')} />{/if}
           {/await}
         {:else}
           {#if path && path.stages.some((s) => s.stops.length) && v.amHost}<PathCard {path} solo={v.local} onopen={() => push({ k: 'path' })} />{/if}

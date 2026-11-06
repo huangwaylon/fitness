@@ -1186,7 +1186,7 @@
         <!-- the bulletin board on the front beach (docs/board.md): a tap walks up to it and opens it -->
         <Board enabled={() => !covered && !life.hidden && !decorating} night={tod === 'night'} {season} />
         <!-- the もようがえ: the layout's own (IslandEdit over the 3D camera) -->
-        {#if decorating && IslandEditC && editStage}<IslandEditC stage={editStage} {relay} me={castMe() === 'B' ? 'B' : 'A'} ondone={() => (ui.decorating = false)} />{/if}
+        {#if decorating && IslandEditC && editStage}<IslandEditC stage={editStage} {relay} me={castMe()} ondone={() => (ui.decorating = false)} />{/if}
 
         {#each VILLAGERS as id (id)}
           {@const sd = sides[id]}

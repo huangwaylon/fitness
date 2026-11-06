@@ -634,8 +634,9 @@ decorations, its island day, the flowers, the stars and the visitors, the weathe
   placed, the prefs, `rowsFor` the guest: all but the からだ rows); `model/guest.test.ts` (credit, first finds, counts,
   the view, its island day and weather); `e2e/guest.spec.ts` (the guest's phone shows no からだ, no ベル buy or erase;
   its もようがえ, the editor, the weather and つうしん; its catch in a member's ずかん credited to it; its tent piece in
-  both members' tents; its outdoor piece on both members' islands; its villager on both islands only while open,
-  still when idle); `npm run smoke` (the test copy's guest key, when `.smoke-keys` has `KEY_C`).
+  both members' tents; its villager on both islands only while open, still when idle), `e2e/island-edit.spec.ts`
+  (its outdoor piece on both members' islands and in the record), `e2e/editor.spec.ts`, `e2e/realweather.spec.ts`,
+  `e2e/board.spec.ts`; `npm run smoke` (the test copy's guest key, when `.smoke-keys` has `KEY_C`).
 
 ## Ambient life
 

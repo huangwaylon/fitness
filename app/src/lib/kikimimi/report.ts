@@ -29,7 +29,7 @@ export interface Report {
 }
 
 /** The report of `me`'s rows as of `today`, the levels this phone offers (the advice's level nudge and tries) and
- *  whether it offers スピード はしご. The guest's has no couple summary. */
+ *  whether it offers スピード はしご. */
 export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, levels: readonly Level[], ladder = false): Report {
   const { mine, others } = gamesOf(rows, me);
   const answers = answersOf(mine);
@@ -41,7 +41,7 @@ export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, l
     today, games: mine, others, stats, due, speed,
     recs: recommend({ stats, games: mine, dueItems: due, levels, bank: ENTRIES, speed, ladder }),
     trend: trendOf(mine), recent: recentOf(mine), days: daysPlayed(mine, today),
-    together: together(mine, me === 'G' ? [] : others, today),
+    together: together(mine, others, today),
     minutes: Math.round(mine.filter((g) => week.has(g.d)).reduce((s, g) => s + g.ms, 0) / 60_000)
   };
 }

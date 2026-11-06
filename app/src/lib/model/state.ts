@@ -141,7 +141,7 @@ export interface State {
   shop: ShopRowAt[];
   /** Each person's prefs; the guest's (`G`) only ever hold its locale, name, villager and kcal goal (contract/guest.ts). */
   prefs: Record<Who, Prefs>;
-  /** The island's weather (`pref weatherMode`: the last a member set; unset, `real`): Tokyo's real sky or the game's. */
+  /** The island's weather (`pref weatherMode`: the last anyone set, the guest too; unset, `real`): Tokyo's real sky or the game's. */
   weatherMode?: WeatherMode;
   /** The goals a day keeps (`pref` stepsGoal, moveGoal, exerciseGoal, standGoal) per person, each ascending `at`
    *  (`goalOn` picks the one in force on a day). */
@@ -583,9 +583,10 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   tally_back(s, person, at, d) {
     if (isTally(d)) s.tallies.push({ at, person, date: d.date, counts: d.counts, back: true });
   },
-  island: members((s, person, at, d) => {
+  island(s, person, at, d) {
+    // anyone's part of the day, the guest's too (contract/guest.ts)
     if (isIslandDay(d)) s.islandDays.push({ at, person, data: d });
-  }),
+  },
   decor(s, person, _at, d) {
     if (isRoomScope(d.sc)) {
       const t = tentOpOf(d);
@@ -621,13 +622,12 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
   wconf: wedEvent('wconf'),
   wnote: wedEvent('wnote'),
   pref(s, person, at, d) {
-    if (!isPersonId(person)) {
-      if (!GUEST_PREFS.includes(d.key)) return;
-    } else if (d.key === 'weatherMode') {
-      // the island's, whoever set it (no `person`); anything else is ignored (the mode stays)
+    if (d.key === 'weatherMode') {
+      // the island's, whoever set it (no `person`; the guest too); anything else is ignored (the mode stays)
       if (isWeatherMode(d.value)) s.weatherMode = d.value;
       return;
     }
+    if (!isPersonId(person) && !GUEST_PREFS.includes(d.key)) return;
     const id = goalOfKey(d.key);
     if (id !== null && GOALS[id].history === 'daily') {
       // in its range and on its grid; anything else is ignored (the previous goal stays)
@@ -687,7 +687,7 @@ export function latestAt<T>(list: Timed<T>[] | undefined, t: number): T | undefi
 /** One person's island day as the sheet has it (an `island` row). */
 export interface IslandDayRow {
   at: number;
-  person: PersonId;
+  person: Who;
   data: IslandDayData;
 }
 

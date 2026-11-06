@@ -112,10 +112,10 @@ export function setVillagerName(name: string): SendResult {
   return week.send('pref', { key: 'villagerName', value: villagerName });
 }
 
-/** The island's weather (せってい → てんき): Tokyo's real sky or the game's, for the whole island. A member's alone (the
- *  guest's phone shows it, the record refuses the guest's). */
+/** The island's weather (せってい → てんき): Tokyo's real sky or the game's, for the whole island. Anyone's, the guest's
+ *  too (the last set wins). */
 export function setWeatherMode(mode: WeatherMode): SendResult {
-  if (week.guest || !isWeatherMode(mode)) return { ok: false };
+  if (!isWeatherMode(mode)) return { ok: false };
   return week.send('pref', { key: 'weatherMode', value: mode });
 }
 

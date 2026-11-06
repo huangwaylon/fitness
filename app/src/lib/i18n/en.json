@@ -306,7 +306,6 @@
   "wx.now": "Now: Tokyo, {sky}",
   "wx.last": "last {time}",
   "wx.none": "No real weather to be had (the game's for now)",
-  "wx.guest": "The two of them choose the weather",
   "wx.credit": "Weather: Open-Meteo (JMA models)",
   "wx.sky.clear": "fine",
   "wx.sky.cloudy": "cloudy",

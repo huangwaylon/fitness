@@ -94,7 +94,7 @@ test.describe('the real weather', () => {
     await expect(scene(page)).toHaveAttribute('data-sky', seeded);
   });
 
-  test("せってい's てんき: ほんもの or ゲーム for the island, what it is now and the credit; the guest's phone only shows it", async ({ page }) => {
+  test("せってい's てんき: ほんもの or ゲーム for the island, what it is now and the credit; the guest's phone changes it as a member's", async ({ page }) => {
     const seeded = await seededSky(page);
     const real = seeded === 'heavy' ? 'c' : 'h';
     const realSky = real === 'h' ? 'heavy' : 'clear';
@@ -115,15 +115,19 @@ test.describe('the real weather', () => {
     await page.reload();
     await expect(hudMenu(page)).toBeVisible();
     await expect(scene(page)).toHaveAttribute('data-sky', seeded);
-    // the guest's phone: the island's mode, shown and not changed
+    // the guest's phone: the island's mode, its to change as a member's (2026-11-06)
     await open(page, '&as=G');
     await fromMenu(page, 'settings');
     const g = page.locator('dialog[open] [data-weather-section]');
     await g.scrollIntoViewIfNeeded();
-    await expect(g.locator('[data-wx-guest]')).toBeVisible();
-    await expect(g.locator('[data-wx-mode="real"]')).toHaveAttribute('aria-disabled', 'true');
-    const before = await g.locator('[aria-checked="true"]').getAttribute('data-wx-mode');
-    await g.locator(`[data-wx-mode="${before === 'real' ? 'game' : 'real'}"]`).click({ force: true });
-    await expect(g.locator('[aria-checked="true"]')).toHaveAttribute('data-wx-mode', before!);
+    await expect(g.locator('[data-wx-mode="game"]')).toHaveAttribute('aria-checked', 'true');
+    await g.locator('[data-wx-mode="real"]').click();
+    await expect(g.locator('[data-wx-mode="real"]')).toHaveAttribute('aria-checked', 'true');
+    // kept in the record: a member's phone has it
+    await open(page, '');
+    await fromMenu(page, 'settings');
+    const m = page.locator('dialog[open] [data-weather-section]');
+    await m.scrollIntoViewIfNeeded();
+    await expect(m.locator('[data-wx-mode="real"]')).toHaveAttribute('aria-checked', 'true');
   });
 });

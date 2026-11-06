@@ -130,7 +130,7 @@ describe('the layout on this phone', () => {
     expect(validate(layout.current).filter((i) => i.code === 'door')).toEqual([]);
   });
 
-  it('the guest never moves the outdoors; my own two pieces on one tile are mine to sort out', () => {
+  it('the guest moves none of the members’ pieces; my own two pieces on one tile are mine to sort out', () => {
     const { r, p1, p2, to } = setup();
     layout.attach(r.live, 'G');
     r.hear({ sc: 'o', id: p2.id, at: T0 + 1000, k: 'palm', x: to.x, z: to.z, f: 0, who: 'A', t: T0 + 1000 });

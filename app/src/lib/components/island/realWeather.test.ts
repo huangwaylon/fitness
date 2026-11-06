@@ -203,7 +203,7 @@ describe("the island's mode (pref weatherMode)", () => {
   const ev = (when: string, who: 'A' | 'B' | 'G', data: object): EventRow => [when, who, `e${when}${who}`, 'pref', JSON.stringify(data)];
   const t = (hm: string) => new Date(`2026-11-04T${hm}:00+09:00`).toISOString();
 
-  it('one for the island: the last a member set wins; unset, none; a bad value or the guest changes nothing', () => {
+  it('one for the island: the last anyone set wins, the guest too; unset, none; a bad value changes nothing', () => {
     const mode = (events: EventRow[]) => reduce({ metrics: [], events }).weatherMode;
     expect([
       mode([]),
@@ -212,7 +212,7 @@ describe("the island's mode (pref weatherMode)", () => {
       mode([ev(t('10:00'), 'B', { key: 'weatherMode', value: 'game' }), ev(t('11:00'), 'A', { key: 'weatherMode', value: 'sunny' })]),
       mode([ev(t('10:00'), 'A', { key: 'weatherMode', value: 'game' }), ev(t('11:00'), 'G', { key: 'weatherMode', value: 'real' })]),
       mode([ev(t('10:00'), 'A', { person: 'B', key: 'weatherMode', value: 'game' })])
-    ]).toEqual([undefined, 'game', 'real', 'game', 'game', undefined]);
+    ]).toEqual([undefined, 'game', 'real', 'game', 'real', undefined]);
   });
 
   it('the record: one slot for the island, anyone’s (the guest’s too)', () => {

@@ -53,6 +53,21 @@ describe('the guest’s rows', () => {
     expect(s.tent.map((e) => e.who)).toEqual(['G']);
   });
 
+  it('its island: its part of the day, the island’s weather and the outdoors are kept as a member’s (2026-11-06)', () => {
+    const t = Date.parse(at(WK, '12:00'));
+    const g = reduce({ metrics: [], events: [
+      ev(at(WK, '12:00'), 'A', 'pref', { key: 'weatherMode', value: 'real' }),
+      ev(at(WK, '12:01'), 'G', 'pref', { key: 'weatherMode', value: 'game' }),
+      ev(at(WK, '12:02'), 'G', 'island', { date: WK, taken: ['p1'], puts: [], shakes: [], watered: ['fl:1:2'], wishes: {} }),
+      ev(at(WK, '12:03'), 'G', 'decor', { sc: 'o', id: 'oak9', at: t, k: 'oak', x: 3, z: 4, f: 0 }),
+      ev(at(WK, '12:04'), 'G', 'decor', { id: 'dabc1234', at: t, item: 'tanuki', x: 100, z: 200, f: 0, p: t })
+    ] });
+    expect(g.weatherMode).toBe('game');
+    expect(g.islandDays.map((r) => [r.person, r.data.watered])).toEqual([['G', ['fl:1:2']]]);
+    expect(g.layout.map((e) => [e.who, e.id])).toEqual([['G', 'oak9']]);
+    expect(g.decor.map((e) => e.who)).toEqual(['G']);
+  });
+
   it('a tie in `at` goes to A, then B, then the guest', () => {
     const t = at(WK, '09:00');
     const tie = reduce({ metrics: [], events: [ev(t, 'G', 'find', { kind: 'sea', id: 'octopus' }), ev(t, 'B', 'find', { kind: 'sea', id: 'octopus' })] });
