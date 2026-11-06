@@ -1,8 +1,8 @@
 <script lang="ts">
   // A food's picture enlarged (docs/design.md "Gohan" Amount): a small modal over the amount (its own <dialog>, so Esc
   // closes it, not the sheet): the picture square (min(100vw − 64, 360) px), the イメージ badge, the name large, its
-  // official name when it differs (`full`), its 「これは…」 line, and that the picture is generated. ✕, Esc and a tap
-  // outside close it; the focus goes back to what opened it (FoodAmount's picture).
+  // 「これは…」 line (`desc`), and that the picture is generated. ✕, Esc and a tap outside close it; the focus goes back
+  // to what opened it (FoodAmount's picture).
   import { t } from '#lib/i18n/index.ts';
   import type { Item } from '#lib/food/index.ts';
   import type { FoodImg } from '#lib/food/images.ts';
@@ -10,7 +10,7 @@
   import FoodThumb from './FoodThumb.svelte';
 
   interface Props {
-    item: Item & { desc?: string };
+    item: Item;
     img: FoodImg;
     onclose: () => void;
   }
@@ -18,7 +18,6 @@
 
   let dlg: HTMLDialogElement | undefined = $state();
   const size = Math.round(Math.min(window.innerWidth - 64, 360));
-  const full = $derived(item.full && item.full.replace(/\s/g, '') !== item.name.replace(/\s/g, '') ? item.full : null);
 
   $effect(() => {
     dlg?.showModal();
@@ -37,8 +36,7 @@
       <span class="badge">{t('food.img.badge')}</span>
     </div>
     <h3>{item.name}</h3>
-    {#if full}<p class="full" data-full>{full}</p>{/if}
-    {#if item.desc}<p class="desc">{item.desc}</p>{/if}
+    {#if item.desc}<p data-desc>{item.desc}</p>{/if}
     <p class="credit" data-photo-credit>{t('food.img.credit')}</p>
   </div>
 </dialog>
@@ -57,7 +55,6 @@
   }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   p { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
-  .full, .credit { color: var(--text-soft); }
-  .credit { font-size: var(--fs-xs); }
+  .credit { font-size: var(--fs-xs); color: var(--text-soft); }
   .x { position: absolute; top: -10px; right: -10px; z-index: 2; display: flex; }
 </style>

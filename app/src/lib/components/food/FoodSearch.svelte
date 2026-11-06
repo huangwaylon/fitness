@@ -3,7 +3,7 @@
   // tap: Food's openSearch), then さいきん (my latest entry of each food, as I last had it, its portion with it) until
   // something is typed, or the catalog's best matches (each: its category's tile (FoodThumb), the name, a product's
   // brand, its everyday name (glossOf; a food in its states: then its states after a wide space), a food in its states once (its name without the state, the state shown filled
-  // and the others after it: 「(生) 焼き ゆで」, past three 「ほか N」), its default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
+  // and the others after it: 「(生) 焼き ゆで」, past four 「ほか N」), its default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
   // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
   // too (everyone's recipes: all of them after さいきん, the matching ones before the catalog's); a recipe opens its own.
