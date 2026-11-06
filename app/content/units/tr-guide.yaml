@@ -21,6 +21,9 @@ cando:
   short: ともだちの したい ことが わかる
   en: I can follow a friend visiting Tokyo talking about where they want to go and what's confusing them, over station and street noise at natural speed, and catch what they want to do and what's worrying them.
 status: voiced
+letter:
+  en: "Ahoy, matey! Thanks for showing me around Tokyo. The thing is, I was nervous about getting lost, and I nearly missed the last train twice! You always knew what I was asking, even when I mumbled. And that view from the tower? Amazing. How about another adventure next time I wash ashore?"
+  ja: "やあ、あいぼう！ とうきょうを あんない して くれて ありがとう。じつは、まいごに ならないか ドキドキ してたんだ。しゅうでんにも 2かい のりおくれ そうに なったしな！ ぼくが もごもご いっても、いつも わかって くれたね。タワーからの けしき、さいこう だったな。こんど うちあげられたら、また いっしょに ぼうけん しない？"
 ph:
   - { id: ph-dunno-if, en: I don't know if, match: \b(don't know|dunno) (if|whether|which|how|where|what)\b, ja: 〜か どうか わからない, register: friend, scene: showing a friend around, trap: dunno［ダノウ］＝don't know。迷いと心配のサイン }
   - { id: ph-kinda-worried, en: kind of worried, match: \b(kind of|kinda|a bit|a little) (worried|nervous)\b, ja: ちょっと しんぱい, register: friend, scene: showing a friend around, trap: kind of でぼかしても本気の心配 }
