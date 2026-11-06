@@ -99,8 +99,15 @@ that morning.
 - **No randomness**: no `Math.random` in a spec (a counter for ids); pin the island's with `?seed=`, `?critter=`,
   `?visitor=`, `&rock=`, `&shake=` (docs/design.md "Dev params").
 - **Storage**: each test has its own context (Playwright's), service workers blocked; two phones in one context share
-  `localStorage` and a BroadcastChannel (the demo's relay). The tab opened last is in front and a hidden tab's island
-  takes no taps: `bringToFront()` the tab that acts (fish-sync's `cast`).
+  `localStorage` and a BroadcastChannel (the demo's relay). In Chromium every tab is visible and focused (Playwright
+  emulates it: rAF runs at 60 in both), so a tab that missed a tap didn't miss it for being behind; still
+  `bringToFront()` the tab that acts (rule 6 below). A second tab opened last is still loading: wait for its island
+  (`is3d`, `quiet`) before timing anything across the two (highfive-star).
+- **Casts go through `castIn`** (e2e/island.ts): `toTheWater`'s point then a plain `mouse.click` misses when a tree's
+  or a house's tap area comes in between the check and the click (its lazy art); `castIn` checks and clicks in one
+  step and tries again. A plain click or touch only where the tap itself is the test (fishing-taps, exact-taps).
+- **Read the hooks once they're there**: `__world` comes before `__world3d`; `camTo` and `settled` wait for both
+  (`ready3d`), a spec reading `__world3d` straight after `goto` waits on `is3d` or `ready3d` first.
 - **Silent**: Chromium runs with `--mute-audio` (the music, K.K. and the effects never sound on a dev's Mac); WebKit
   headless makes no sound.
 - **No new fixed wait.** `page.waitForTimeout` or a `setTimeout` promise needs `// hold: <why>` on its line (a wait
