@@ -1,10 +1,14 @@
 <script lang="ts">
-  // ききみみ クイズ's sheet (docs/kikimimi.md "UI"), its own chunk with the bank, the deck, the session and the strings:
-  // full height (Sheet's `pop`), one title bar (the game's name, or the question 3 / 8; ✕) over one scroller showing
-  // the game's phase: a notice (the host cancelled), the invite or my own lobby (idle), the lobby, よーい 3-2-1, a
-  // question (Play), the results. Opened from せってい's あそぶ (a lobby of mine at once, unless someone's invite is
-  // waiting) or the banner's さんか (that game joined). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks
-  // 「やめる？」. The voice session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip.
+  // ききみみ's sheet (docs/kikimimi-ux.md §5; docs/kikimimi.md "UI"), its own chunk with the bank, the deck, the session
+  // and the strings: full height (Sheet's `pop`), one title bar (the page's name, the game's question 3 / 8; ‹ and ✕,
+  // ⚙ at the root) over one scroller. The root is the hub (an invite on top while one waits); its pages are pushed on
+  // one stack (nav.ts): あそぶ › a mode, みんなで, きろく, せってい, しまの みち › a unit › the ずかん. ‹ pops one (a
+  // shared lobby popped is cancelled), ✕ closes the sheet from any page (asking first when others are in my lobby), a
+  // backdrop tap or Esc pops (closes at the hub). A game sits over the stack: its notice, よーい 3-2-1, a question (Play),
+  // the results (おわる back to the hub; a lesson's back to its page). Another's lobby I joined is みんなで (‹ leaves it
+  // for the hub). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks 「ここで やめる？」. Opened from the HUD's
+  // ききみみ (my own lobby, kept alone: the hub) or the banner's さんか (that game joined: [hub, みんなで]). The voice
+  // session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip.
   import { untrack } from 'svelte';
   import '#lib/i18n/kikimimi.ts';
   import Sheet from '../ui/Sheet.svelte';
@@ -23,10 +27,13 @@
   import { packs } from './packs.ts';
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
   import type { Filter } from '#lib/kikimimi/path.ts';
-  import { heardQuiz, quizLive } from './invite.svelte.ts';
+  import { heardQuiz, liveInvite, quizLive } from './invite.svelte.ts';
   import { levelMark } from './look.ts';
+  import { inviteStack, pop, push as pushOn, type Page } from './nav.ts';
+  import type { Tile, HubInvite } from './hub/Hub.svelte';
   import { INDEX, addUnit, itemOf, load, loadIds, unitPart } from '#lib/kikimimi/pool.ts';
   import { tierFor, type UnitPlay } from '#lib/kikimimi/lesson.ts';
+  import type { Level } from '#lib/kikimimi/bank.ts';
   import type { WireMode } from '#lib/kikimimi/round/wire.ts';
   import { reloadForUpdate } from '#lib/ui-state/reload.ts';
   import type { QuizPhase } from '#lib/kikimimi/games/quiz/view.ts';
@@ -41,8 +48,8 @@
   let { open = $bindable(), join = null }: { open: boolean; join?: string | null } = $props();
 
   let game = $state.raw<QuizGame | null>(null);
-  /** ✕ (or a backdrop tap, Esc) mid-game: 「やめる？」. */
-  let asking = $state(false);
+  /** ✕ (or a backdrop tap, Esc) mid-game: 「ここで やめる？」; ✕ with others in my lobby: 「みんなの へやが なくなります」. */
+  let asking = $state<false | 'quit' | 'close'>(false);
   const v = $derived(game?.view ?? null);
   const MID: readonly QuizPhase[] = ['countdown', 'lead', 'play', 'answer', 'reveal'];
   const mid = $derived(!!v && MID.includes(v.phase));
@@ -51,33 +58,56 @@
   const inLobby = $derived(v?.phase === 'lobby');
   /** A unit's lesson on this phone (its intro card in the lobby; its name over the game). */
   const lesson = $derived(game?.lesson ?? null);
-  /** The pages pushed over my lobby (docs/kikimimi-ux.md §5's one stack, until the hub): しまの みち › a unit, and the
-   *  ずかん. ‹ pops one; ✕ closes the sheet; a lesson's intro card and its game sit over them, and a lesson's おわる comes
-   *  back to them. */
-  type Page = { k: 'path' } | { k: 'unit'; id: string } | { k: 'zukan'; unit: string | null };
+  /** The stack over the hub (nav.ts). */
   let pages = $state<Page[]>([]);
   const page = $derived(pages.at(-1) ?? null);
-  /** A page shows over a lobby I host (kept alone, or shared: a co-op lesson picked for everyone). */
-  const paged = $derived(!!page && inLobby && !lesson && !!v?.amHost);
+  /** My own lobby (kept alone or shared), no lesson picked: the hub or the page on top. */
+  const hosting = $derived(inLobby && !lesson && !!v?.amHost);
+  /** Another's lobby I joined: みんなで. */
+  const guest = $derived(inLobby && !lesson && !v?.amHost);
+  /** The hub shows: my lobby with nothing pushed, or no game of mine yet (an invite waiting). */
+  const atHub = $derived(!!v && !v.notice && ((hosting && !page) || v.phase === 'idle'));
   let pathFilter = $state<Filter>('all');
   const path = $derived(inLobby ? currentPath(pathFilter) : null);
-  const pageTitle = (p: Page) =>
-    p.k === 'path' ? t('kiki.path.title') : p.k === 'zukan' ? t('kiki.zukan.title') : (path?.stages.flatMap((s) => s.stops).find((s) => s.id === p.id)?.name ?? t('kiki.path.title'));
+  const pageTitle = (p: Page): string => {
+    switch (p.k) {
+      case 'asobu': return t('kiki.tile.asobu');
+      case 'mode': return t(`kiki.mode.${p.m}`);
+      case 'lobby': return t('kiki.tile.together');
+      case 'record': return t('kiki.tile.record');
+      case 'settings': return t('kiki.set.title');
+      case 'path': return t('kiki.path.title');
+      case 'zukan': return t('kiki.zukan.title');
+      case 'unit': return path?.stages.flatMap((s) => s.stops).find((s) => s.id === p.id)?.name ?? t('kiki.path.title');
+    }
+  };
   const title = $derived(
     v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
-      : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`)) : paged && page ? pageTitle(page) : t('kiki.title')
+      : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`))
+      : hosting && page ? pageTitle(page) : guest ? t('kiki.tile.together') : t('kiki.title')
   );
-  const push = (p: Page) => (pages = [...pages, p]);
-  function back() {
-    if (lesson) game?.dropLesson();
-    else pages = pages.slice(0, -1);
+  /** A page pushed (from the idle hub, an invite waiting: a lobby of my own first). */
+  function enter(p: Page) {
+    if (v?.phase === 'idle') act.startOwn();
+    pages = pushOn(pages, p);
   }
+  /** ‹: a lesson's intro card back to its page (another's: leave it), another's lobby left for the hub, else one page
+   *  popped (my shared lobby popped: cancelled for everyone, mine kept alone again). */
+  function back() {
+    if (lesson && v?.amHost) game?.dropLesson();
+    else if (lesson || guest) act.toHub();
+    else {
+      if (page?.k === 'lobby' && v && !v.local) game?.open(lastLv(), { timer: v.timer });
+      pages = pop(pages);
+    }
+  }
+  const canBack = $derived(!!v && !v.notice && inLobby && (!!lesson || guest || (hosting && !!page)));
   /** The 30-day rechecks (solo: in my lobby kept alone). */
-  const due = $derived(paged && v?.local ? rechecksDue(currentUnits(), currentReport()?.today ?? '') : []);
+  const due = $derived(hosting && page?.k === 'path' && v?.local ? rechecksDue(currentUnits(), currentReport()?.today ?? '') : []);
 
   // Each opening: a game of its own (what the island heard handed to it), joined or opened (mine: on this phone till
-  // みんなを さそう); closing leaves it. Who I am may come a moment after the sheet (the week's first load). The game
-  // begins once the chunks it starts on are in (pool.ts): the remembered level's and those of the lobbies heard.
+  // さそう); closing leaves it. Who I am may come a moment after the sheet (the week's first load). The game begins
+  // once the chunks it starts on are in (pool.ts): the remembered level's and those of the lobbies heard.
   const me = $derived(week.view?.viewer);
   $effect(() => {
     if (!open || !me) return;
@@ -93,11 +123,13 @@
         });
         g = it;
         untrack(() => {
-          if (joining) it.join(joining);
-          else if (!it.view.invite) it.open(lastLv(), { timer: lastTimer() });
+          if (joining) {
+            it.join(joining);
+            pages = inviteStack();
+          } else if (!it.view.invite) it.open(lastLv(), { timer: lastTimer() });
         });
         game = it;
-        // (tests: `deck(ids)` starts my lobby kept alone on these items, as にがて れんしゅう does: a dialogue before its clips)
+        // (tests: `deck(ids)` starts my lobby kept alone on these items, as おさらい does: a dialogue before its clips)
         if (hooksOn())
           (window as unknown as { __kiki?: unknown }).__kiki = {
             view: () => it.view, right: () => it.items[it.view.i]?.answer ?? -1, items: () => it.items.map((x) => x.id),
@@ -139,20 +171,41 @@
     cue(o ? 'panel-open' : 'panel-close');
   });
 
-  /** ✕: mid-game asks first; otherwise closes (my lobby is cancelled for everyone: the session's leave). */
+  // An invite that lapsed while the hub waited on it (idle, no game of mine): my own lobby, so the hub's pages work.
+  let invited = false;
+  $effect(() => {
+    const idle = v?.phase === 'idle' && !v.notice, inv = !!v?.invite;
+    if (idle && !inv && invited) untrack(() => act.startOwn());
+    invited = idle && inv;
+  });
+  /** The games I've been in (an invite still heard for one of them isn't offered again). */
+  const been = new Set<string>();
+  $effect(() => {
+    if (v?.g) been.add(v.g);
+  });
+
+  /** ✕: mid-game asks first, and so does my lobby with others in it; otherwise closes (my lobby is cancelled for
+   *  everyone: the session's leave). */
   function requestClose() {
-    if (mid) {
+    if (mid || (inLobby && v?.amHost && !v.local && v.players.length > 1)) {
       cue('tick');
-      asking = true;
+      asking = mid ? 'quit' : 'close';
     } else {
       cue('back');
       open = false;
     }
   }
+  /** A backdrop tap or Esc: mid-game asks; on a page it pops; at the hub it closes. */
   const dismiss = (): boolean => {
-    if (!mid) return true;
-    asking = true;
-    return false;
+    if (mid) {
+      asking = 'quit';
+      return false;
+    }
+    if (canBack) {
+      back();
+      return false;
+    }
+    return true;
   };
   function quit() {
     asking = false;
@@ -161,15 +214,12 @@
   function closed() {
     if (toasts.current) toasts.dismiss();
   }
-  /** The lobby's tab: あそぶ or きろく (back to あそぶ whenever the lobby is left or entered). */
-  let tab = $derived.by<'play' | 'record'>(() => (void inLobby, 'play'));
-  const report = $derived(tab === 'record' && inLobby ? currentReport() : null);
-  /** What the buttons start (actions.ts), over this sheet's game and its pages. */
+  const report = $derived(page?.k === 'record' && hosting ? currentReport() : null);
+  /** What the buttons start (actions.ts), over this sheet's game and its stack. */
   const act = new KikiActions(() => game, {
     close: () => (open = false),
     pages: () => pages.length,
-    clearPages: () => (pages = []),
-    toPlay: () => (tab = 'play')
+    setPages: (p) => (pages = p)
   });
   const hostName = (w: 'A' | 'B' | 'G') => (week.view ? villagerNameOf(week.view, w) : '');
   /** The e2e's `?wire=quiz`: this phone sends as an 8b one (the dual stack). */
@@ -179,48 +229,80 @@
   };
   /** A unit's name (its chunk's, else the index's path line). */
   const unitName = (u: string) => unitPart(u)?.unit.name ?? INDEX.paths.find((p) => p[0] === u)?.[1] ?? '';
+  /** The hub's invite card: the one the session offers while I'm in no game, else (my lobby kept alone) the island's
+   *  latest live one I haven't been in. */
+  const hubInvite = $derived.by<HubInvite | null>(() => {
+    if (!v) return null;
+    const iv = v.invite;
+    if (v.phase === 'idle' && iv) {
+      const what = iv.blocked ? t('kiki.update.why') : iv.lesson && iv.u ? `${unitName(iv.u)} · ${t(`kiki.lesson.${iv.lesson}`)}`
+        : iv.ladder ? t('kiki.mode.ladder') : iv.lv === 5 ? t('kiki.mode.announce') : `${t('kiki.mode.quiz')} · ${levelMark(iv.lv)} ${t(`kiki.lv.${iv.lv}`)}`;
+      return { g: iv.g, name: hostName(iv.host), what: iv.started ? `${what} · ${t('kiki.started')}` : what, blocked: !!iv.blocked };
+    }
+    const live = hosting && v.local ? liveInvite() : null;
+    return live && !been.has(live.g) ? { g: live.g, name: hostName(live.host), what: '', blocked: false } : null;
+  });
+  function joinIt(g: string) {
+    game?.join(g);
+    pages = inviteStack();
+  }
+  function tile(k: Tile) {
+    enter(k === 'asobu' ? { k: 'asobu' } : k === 'together' ? { k: 'lobby' } : k === 'zukan' ? { k: 'zukan', unit: null } : { k: 'record' });
+  }
   /** A co-op lesson in my shared lobby: who's in it, whether I start it, the others' wait line. */
   const shared = $derived(v && !v.local && lesson ? { players: v.players.map((p) => p.who), host: v.amHost, wait: t('kiki.waitHost', { name: v.host ? hostName(v.host) : '' }) } : null);
   /** The countdown (WINDOWS.countdown, 4 s): 「よーい」 for its first second (4), then 3-2-1. */
   const count = $derived(v && v.phase === 'countdown' ? Math.max(1, Math.ceil((v.until - game!.now) / 1000)) : 0);
 </script>
 
+{#snippet gear()}
+  <button type="button" class="gear" aria-label={t('kiki.set.title')} data-kiki-gear data-sfx="open" onclick={() => enter({ k: 'settings' })}>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.3 2.6h3.4l.5 2.6c.6.2 1.2.5 1.7.9l2.5-.9 1.7 2.9-2 1.7c.1.6.1 1.3 0 1.9l2 1.7-1.7 2.9-2.5-.9c-.5.4-1.1.7-1.7.9l-.5 2.6h-3.4l-.5-2.6c-.6-.2-1.2-.5-1.7-.9l-2.5.9-1.7-2.9 2-1.7c-.1-.6-.1-1.3 0-1.9l-2-1.7 1.7-2.9 2.5.9c.5-.4 1.1-.7 1.7-.9z" transform="translate(0 1)" /><circle cx="12" cy="13" r="3.2" /></svg>
+  </button>
+{/snippet}
+
 <Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss}>
-  <div class="titlebar"><NavBar {title} onback={paged || (lesson && v?.phase === 'lobby' && pages.length) ? back : null} onclose={requestClose} sfx="self" /></div>
-  <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined}>
+  <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub ? gear : null} /></div>
+  <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={atHub ? 'hub' : hosting && page ? page.k : guest ? 'lobby' : undefined}>
     {#if game && v}
       {#if v.notice}
         <div class="center" data-kiki-notice={v.notice}>
           <Host pose="bow" size={96} />
           <p class="say">{t(`kiki.notice.${v.notice}`)}</p>
-          <button type="button" class="btn small" data-sfx="back" onclick={() => game?.close()}>{t('kiki.back')}</button>
+          <button type="button" class="btn small" data-sfx="back" onclick={act.toHub}>{t('kiki.back')}</button>
         </div>
-      {:else if v.phase === 'idle'}
-        <div class="center idle">
-          <Host size={96} />
-          {#if v.invite}
-            <div class="invite card" data-kiki-invite={v.invite.g} data-kiki-blocked={v.invite.blocked}>
-              <p class="say">{t('kiki.invited', { name: hostName(v.invite.host) })}<small>{#if v.invite.blocked}{t('kiki.update.why')}{:else if v.invite.lesson && v.invite.u}{unitName(v.invite.u)} · {t(`kiki.lesson.${v.invite.lesson}`)}{:else if v.invite.ladder}{t('kiki.mode.ladder')}{:else}{levelMark(v.invite.lv)} {t(`kiki.lv.${v.invite.lv}`)}{/if}{#if v.invite.started} · {t('kiki.started')}{/if}</small></p>
-              {#if v.invite.blocked}
-                <!-- newer content than this build's (its cv): the update, through the app's reload path -->
-                <p class="update" data-kiki-update-note>{t('kiki.update')}</p>
-                <button type="button" class="btn" data-kiki-update data-sfx="confirm" onclick={() => void reloadForUpdate()}>{t('kiki.update.now')}</button>
-              {:else}
-                <button type="button" class="btn" data-kiki-join data-sfx="confirm" onclick={() => game?.join(v.invite!.g)}>{t('kiki.joinIt')}</button>
-              {/if}
-            </div>
-          {/if}
-          <button type="button" class="btn paper" data-kiki-own data-sfx="open" onclick={act.startOwn}>{t('kiki.openOwn')}</button>
-        </div>
-      {:else if paged && page}
-        {#if page.k === 'path' && path}
+      {:else if atHub}
+        {#await import('./hub/Hub.svelte') then { default: Hub }}
+          <Hub here={game.here} me={game.me} invite={hubInvite} onjoin={joinIt} onupdate={() => void reloadForUpdate()} ontile={tile} onquiz={(lv) => act.quiz(lv as Level)} />
+        {/await}
+      {:else if hosting && page}
+        {#if page.k === 'asobu'}
+          {#await import('./asobu/Asobu.svelte') then { default: Asobu }}
+            <Asobu {path} onpath={() => enter({ k: 'path' })} onmode={(m) => enter({ k: 'mode', m })} />
+          {/await}
+        {:else if page.k === 'mode'}
+          {#await import('./mode/ModeDetail.svelte') then { default: ModeDetail }}
+            {#key page.m}<ModeDetail {game} m={page.m} oninvite={() => (game?.invite(), enter({ k: 'lobby' }))} onpractice={() => act.practice()} />{/key}
+          {/await}
+        {:else if page.k === 'lobby'}
+          {#if path && path.stages.some((s) => s.stops.length)}<PathCard {path} onopen={() => enter({ k: 'path' })} />{/if}
+          <Lobby {game} onlevel={keepLv} ontimer={keepTimer} />
+        {:else if page.k === 'record'}
+          {#await import('./Progress.svelte') then { default: Progress }}
+            {#if report}<Progress {report} canStart={v.local} onstart={act.startRec} onplay={() => (pages = [])} />{/if}
+          {/await}
+        {:else if page.k === 'settings'}
+          {#await import('./settings/KikiSettings.svelte') then { default: KikiSettings }}
+            <KikiSettings {game} />
+          {/await}
+        {:else if page.k === 'path' && path}
           {#await import('./path/IslandPath.svelte') then { default: IslandPath }}
-            <IslandPath {path} bind:filter={pathFilter} {due} onunit={(id) => push({ k: 'unit', id })} onlesson={act.startLesson}
-              onquiz={act.quickQuiz} onzukan={() => push({ k: 'zukan', unit: null })} />
+            <IslandPath {path} bind:filter={pathFilter} {due} onunit={(id) => enter({ k: 'unit', id })} onlesson={act.startLesson}
+              onquiz={act.quickQuiz} onzukan={() => enter({ k: 'zukan', unit: null })} />
           {/await}
         {:else if page.k === 'unit'}
           {#await import('./path/UnitPage.svelte') then { default: UnitPage }}
-            {#key page.id}<UnitPage id={page.id} onlesson={act.startLesson} onzukan={(unit) => push({ k: 'zukan', unit })} />{/key}
+            {#key page.id}<UnitPage id={page.id} onlesson={act.startLesson} onzukan={(unit) => enter({ k: 'zukan', unit })} />{/key}
           {/await}
         {:else if page.k === 'zukan'}
           {#await import('./path/PhraseZukan.svelte') then { default: PhraseZukan }}
@@ -228,21 +310,9 @@
           {/await}
         {/if}
       {:else if v.phase === 'lobby' && lesson}
-        <LessonIntro unit={lesson.unit} lesson={lesson.lesson} recheck={lesson.recheck} {shared} onstart={() => game?.go()} onback={() => game?.dropLesson()} />
+        <LessonIntro unit={lesson.unit} lesson={lesson.lesson} recheck={lesson.recheck} {shared} onstart={() => game?.go()} onback={back} />
       {:else if v.phase === 'lobby'}
-        <div class="tabs" role="tablist" aria-label={t('kiki.title')}>
-          {#each ['play', 'record'] as const as k (k)}
-            <button type="button" role="tab" class="tab" aria-selected={tab === k} data-kiki-tab={k} data-sfx={tab === k ? 'none' : 'tick'} onclick={() => (tab = k)}>{t(`kiki.tab.${k}`)}</button>
-          {/each}
-        </div>
-        {#if tab === 'record'}
-          {#await import('./Progress.svelte') then { default: Progress }}
-            {#if report}<Progress {report} canStart={v.amHost && v.local} onstart={act.startRec} onplay={() => (tab = 'play')} />{/if}
-          {/await}
-        {:else}
-          {#if path && path.stages.some((s) => s.stops.length) && v.amHost}<PathCard {path} onopen={() => push({ k: 'path' })} />{/if}
-          <Lobby {game} onlevel={keepLv} ontimer={keepTimer} onpractice={() => act.practice()} />
-        {/if}
+        <Lobby {game} onlevel={keepLv} ontimer={keepTimer} />
       {:else if v.phase === 'countdown'}
         <div class="center count" data-kiki-count={count}>
           <Host pose="stand" size={110} />
@@ -258,14 +328,14 @@
   </div>
 
   {#if asking}
-    <div class="veil" role="alertdialog" aria-modal="true" aria-labelledby="kk-quit" data-kiki-quit>
+    <div class="veil" role="alertdialog" aria-modal="true" aria-labelledby="kk-quit" data-kiki-quit={asking}>
       <div class="ask card">
-        <h3 id="kk-quit">{t('kiki.quit')}</h3>
-        <p>{t('kiki.quitBody')}</p>
+        <h3 id="kk-quit">{t(asking === 'quit' ? 'kiki.quit' : 'kiki.closeAsk')}</h3>
+        <p>{t(asking === 'quit' ? 'kiki.quitBody' : 'kiki.closeAskBody')}</p>
         <div class="row">
           <!-- つづける the primary (the safe choice), やめる the paper one -->
-          <button type="button" class="btn paper small" data-kiki-quit-yes data-sfx="back" onclick={quit}>{t('kiki.quitYes')}</button>
-          <button type="button" class="btn small" data-kiki-stay data-sfx="confirm" onclick={() => (asking = false)}>{t('kiki.quitNo')}</button>
+          <button type="button" class="btn paper small" data-kiki-quit-yes data-sfx="back" onclick={quit}>{t(asking === 'quit' ? 'kiki.quitYes' : 'kiki.closeYes')}</button>
+          <button type="button" class="btn small" data-kiki-stay data-sfx="confirm" onclick={() => (asking = false)}>{t(asking === 'quit' ? 'kiki.quitNo' : 'kiki.back')}</button>
         </div>
       </div>
     </div>
@@ -287,20 +357,24 @@
     content: ''; position: absolute; left: -8px; right: -8px; top: 100%; height: 14px; pointer-events: none;
     background: linear-gradient(var(--surface), transparent);
   }
+  /* ⚙ at the hub, in ‹'s place: the NavButton's round cream game object */
+  .gear {
+    appearance: none; cursor: pointer; flex: none; width: var(--hit); height: var(--hit); border-radius: 50%; padding: 0; border: 0;
+    display: inline-grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
+  }
+  .gear:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
+  .gear svg { width: 24px; height: 24px; fill: #A88B68; }
+  .gear circle { fill: var(--c-card); }
   /* the one scroller (as the other full-height sheets'): it bleeds 8px past the side padding so focus rings and lips show */
   .kk-body {
     flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain;
     margin: 0 -8px; padding: 6px 8px var(--body-pad); display: flex; flex-direction: column; gap: 14px;
   }
   .kk-body > :global(*) { flex: none; }
-  /* a level's actions stay at the foot of the screen, even on a short phase */
+  /* a page's actions stay at the foot of the screen, even on a short page */
   .kk-body > :global(.level-acts) { margin-top: auto; }
   .center { display: grid; justify-items: center; align-content: center; gap: 14px; flex: 1 0 auto; text-align: center; padding: 12px 0; }
   .say { margin: 0; font: 700 var(--fs-talk)/1.4 var(--font-ui); }
-  .say small { display: block; margin-top: 4px; font-size: var(--fs-s); color: var(--text-soft); }
-  .idle .btn { width: 100%; }
-  .invite { width: 100%; display: grid; gap: 12px; padding: 16px; box-sizing: border-box; }
-  .update { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--coral-text); }
   .num {
     font: 700 96px/1 var(--font-num); color: var(--coral-text); text-shadow: 0 4px 0 var(--lip);
     animation: count 900ms var(--ease-bounce) both;
@@ -319,14 +393,7 @@
   .ask .row { display: flex; gap: 10px; width: 100%; }
   .ask .row .btn { flex: 1; }
   .resume { cursor: pointer; }
-  /* the lobby's two tabs: a segmented pair (the chosen one yuzu, as a level's) */
-  .tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: var(--r-pill); background: var(--ctl-off); }
-  .tab {
-    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill); background: transparent;
-    color: var(--text-soft); font: 700 var(--fs-body)/1 var(--font-ui);
-  }
-  .tab[aria-selected='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: var(--sh-ctl); }
   .resume b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .resume small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  @media (prefers-reduced-motion: reduce) { .num { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .num { animation: none; } .gear:active { transform: none; } }
 </style>

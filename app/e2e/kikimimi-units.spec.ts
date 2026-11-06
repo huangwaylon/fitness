@@ -46,13 +46,14 @@ const UNIT = {
   ]
 };
 
-/** The lobby, the fixture unit put in, しまの みち opened from the lobby's card. */
+/** The hub, the fixture unit put in, しまの みち opened from あそぶ's card. */
 async function toPath(page: Page) {
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   await page.evaluate(([u, ids]) => (window as unknown as { __kiki: Kiki }).__kiki.unit(u, ids as string[]), [UNIT, Object.values(LESSONS).flat()] as const);
+  await sheet(page).locator('[data-kiki-tile="asobu"]').click();
   await sheet(page).locator('[data-kiki-path-open]').click();
   await expect(sheet(page).locator('[data-kiki-page="path"]')).toBeVisible();
 }
@@ -181,6 +182,7 @@ test('a built unit’s page counts all its key phrases: tr-hotel’s 「つか�
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
+  await sheet(page).locator('[data-kiki-tile="asobu"]').click();
   await sheet(page).locator('[data-kiki-path-open]').click();
   await sheet(page).locator('[data-kiki-stop="tr-hotel"] [data-kiki-stop-open]').click();
   const phrases = sheet(page).locator('[data-kiki-unit-page="tr-hotel"] [data-kiki-unit-phrases]');

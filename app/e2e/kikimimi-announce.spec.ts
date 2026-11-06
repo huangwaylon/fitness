@@ -7,6 +7,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
+import { kikiSheet } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -27,14 +28,12 @@ test('アナウンス: level 5 in the lobby; an announcement through its frame, 
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
-  // the pack: offered (its clips landed), its own mark and a row of its own under the four stages
-  const pack = sheet(page).locator('[data-level="5"]');
-  await expect(pack).toContainText('📢');
-  await expect(pack).toContainText('アナウンス');
-  const [one, five] = await Promise.all([sheet(page).locator('[data-level="1"]').boundingBox(), pack.boundingBox()]);
-  expect(five!.width).toBeGreaterThan(one!.width * 1.8);
-  await pack.click();
-  await expect(pack).toHaveAttribute('aria-checked', 'true');
+  // the mode: offered (its clips landed) in あそぶ's まちで・でんわで; its page sets my lobby to level 5
+  await expect(kikiSheet(page)).toHaveAttribute('data-kiki-at', 'hub');
+  await kikiSheet(page).locator('[data-kiki-tile="asobu"]').click();
+  await expect(kikiSheet(page).locator('[data-kiki-group="scene"] [data-kiki-mode-tile="announce"]')).toContainText('アナウンス');
+  await kikiSheet(page).locator('[data-kiki-mode-tile="announce"]').click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __kiki: { view(): { lv: number } } }).__kiki.view().lv)).toBe(5);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/0-lobby.png` });
 
   await kiki(page, (k) => k.deck(['a5-final-call', 'a5-press-three']));

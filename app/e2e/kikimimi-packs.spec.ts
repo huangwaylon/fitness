@@ -25,7 +25,7 @@ test('the lobby fetches its deck’s pack whole; a sliced clip decodes to its le
   await fromMenu(page, 'kikimimi');
   const sheet = page.locator('dialog[open] [data-kikimimi]');
   await expect(sheet).toHaveAttribute('data-phase', 'lobby');
-  await expect(sheet.locator('[data-level="1"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(sheet.locator('[data-kiki-page="hub"]')).toBeVisible(); // (my lobby at level 1, the default)
   // level 1's deck: its one pack, fetched whole
   const lv1 = `/audio/listen/lv1.${PACKS.lv1.hash}.pak`;
   await expect.poll(() => asked.filter((a) => a.url.endsWith(lv1)).length).toBe(1);

@@ -6,6 +6,7 @@
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
+import { kikiSheet, toMode, toTile } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -41,6 +42,7 @@ test('after a solo game: my feedback, then きろく with it, and a recommendati
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
+  await toMode(page, 'quiz');
   await sheet(page).locator('[data-kiki-start]').click();
   await playGame(page, [1, 4]);
   // the results: しずえ's line from my きろく and what tripped me (two misses)
@@ -50,10 +52,13 @@ test('after a solo game: my feedback, then きろく with it, and a recommendati
   await expect(sheet(page).locator('[data-trip]').first()).toBeVisible();
   await shot(page, '1-results-feedback');
 
-  // もういっかい → the lobby again; きろく
+  // もういっかい → the mode's page again; ‹ ‹ to the hub, きろく
   await sheet(page).locator('[data-kiki-again]').click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
-  await sheet(page).locator('[data-kiki-tab="record"]').click();
+  await expect(sheet(page).locator('[data-kiki-mode-page="quiz"]')).toBeVisible();
+  await page.locator('dialog[open] .navbar .back').click();
+  await page.locator('dialog[open] .navbar .back').click();
+  await toTile(page, 'record');
   const prog = sheet(page).locator('[data-kiki-progress]');
   await expect(prog).toBeVisible();
   await expect(prog.locator('[data-kiki-stage]')).toHaveAttribute('data-kiki-stage', /^(hama|kawa|mori|yama)$/);
@@ -78,14 +83,15 @@ test('after a solo game: my feedback, then きろく with it, and a recommendati
   expect(items).not.toEqual(shared);
 });
 
-test('the lobby’s にがて れんしゅう plays a deck of my weak spots and records it', async ({ page }) => {
+test('おさらい (あそぶ) plays a deck of my weak spots and records it', async ({ page }) => {
   test.slow();
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
-  await shot(page, '0-lobby');
-  await sheet(page).locator('[data-kiki-practice]').click();
+  await toMode(page, 'review');
+  await shot(page, '0-review');
+  await kikiSheet(page).locator('[data-kiki-start]').click();
   // (the deck in once it starts: practiceFor loads the picks' levels first, so read at once the lobby's own deck was
   // still there, level 1's, none of the misses: 3 runs in 4 since the levels load one at a time, 54b7f0c6)
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');

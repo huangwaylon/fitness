@@ -50,6 +50,7 @@ async function together(ctx: BrowserContext, o: { wireB?: string; cvB?: string }
   await fromMenu(a, 'kikimimi');
   await expect(sheet(a)).toHaveAttribute('data-phase', 'lobby');
   await addUnit(a, 'c0ffee');
+  await sheet(a).locator('[data-kiki-tile="together"]').click();
   await sheet(a).locator('[data-kiki-invite-all]').click();
   const banner = b.locator('.banner', { hasText: 'ききみみに さそっています' });
   await expect(banner).toBeVisible({ timeout: 15_000 });

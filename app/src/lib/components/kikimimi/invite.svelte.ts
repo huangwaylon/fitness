@@ -45,6 +45,12 @@ export function invitedNow(now = Date.now()): boolean {
   return !!v && (v.started ? now - v.last < GOING_MS : now - v.opened < KEEP_MS);
 }
 
+/** The live invite's game and host (the hub's card while my own lobby is open), or null. Reactive. */
+export function liveInvite(): { g: string; host: Who } | null {
+  const v = invite.v;
+  return v && invitedNow() ? { g: v.g, host: v.host } : null;
+}
+
 /** The island's Live, for the sheet (null: no relay, a solo game). */
 export const quizLive = (): Live | null => link;
 

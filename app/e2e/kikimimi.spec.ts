@@ -8,6 +8,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
+import { atHub, toMode, toTile } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -44,8 +45,9 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   test.slow();
   await open(page);
   await play(page);
-  // my own lobby at once (no one's invite waiting), on this phone alone: level, the sound check, ひとりで はじめる
+  // my own lobby at once (no one's invite waiting), on this phone alone: the hub; ひとこと クイズ's page from あそぶ
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
+  await toMode(page, 'quiz');
   await expect(sheet(page).locator('[data-level="1"]')).toHaveAttribute('aria-checked', 'true');
   await sheet(page).locator('[data-level="2"]').click();
   await expect(sheet(page).locator('[data-level="2"]')).toHaveAttribute('aria-checked', 'true');
@@ -58,7 +60,6 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   await expect(sheet(page).locator('[data-timer="60"]')).toHaveAttribute('aria-checked', 'true');
   expect(await page.evaluate(() => localStorage.getItem('island.kikimimiTimer'))).toBe('60');
   if (process.env.KIKI_SHOTS) await snap(page, '/tmp/kikimimi-shots/timers/lobby-solo.png');
-  await sheet(page).locator('[data-kiki-test]').click();
   // the island is idle under it (as under けんこう, ごはん)
   await expect(page.locator('.if-scene')).toHaveAttribute('data-covered', 'true');
   await sheet(page).locator('[data-kiki-start]').click();
@@ -116,8 +117,10 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   await expect(sheet(page)).toHaveAttribute('data-phase', 'results');
   await expect(sheet(page).locator('[data-kiki-tally]')).toHaveText('1 / 1 もん せいかい');
   await expect(sheet(page).locator('[data-kiki-retry]')).toHaveCount(0);
-  // おわる: closed, the island back
+  // おわる: back to the hub; ✕ closes, the island back
   await sheet(page).locator('[data-kiki-done]').click();
+  await atHub(page);
+  await page.locator('dialog[open] .navbar .close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect(page.locator('.if-scene')).not.toHaveAttribute('data-covered', 'true');
 });
@@ -125,6 +128,7 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
 test('mid-game, Esc and the backdrop keep the sheet; ✕ asks 「やめる？」: つづける goes on, やめる closes it', async ({ page }) => {
   await open(page);
   await play(page);
+  await toMode(page, 'quiz');
   await sheet(page).locator('[data-kiki-start]').click();
   await expect.poll(() => phase(page)).toMatch(/countdown|lead|play/);
   await page.keyboard.press('Escape');
@@ -137,9 +141,9 @@ test('mid-game, Esc and the backdrop keep the sheet; ✕ asks 「やめる？」
   await expect(page.locator('[data-kiki-quit]')).toBeVisible();
   await page.locator('[data-kiki-quit-yes]').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
-  // the lobby, unstarted: ✕ closes at once
+  // the hub, unstarted: ✕ closes at once
   await play(page);
-  await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
+  await atHub(page);
   await page.locator('dialog[open] .titlebar button').last().click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
@@ -194,7 +198,8 @@ async function together(ctx: BrowserContext, vs = false): Promise<[Page, Page]> 
   await a.bringToFront();
   await play(a);
   await expect(sheet(a)).toHaveAttribute('data-phase', 'lobby');
-  // nobody's invited till みんなを さそう
+  await toTile(a, 'together');
+  // nobody's invited till さそう
   await expect(b.locator('.banner', { hasText: 'ききみみに さそっています' })).toHaveCount(0);
   await sheet(a).locator('[data-kiki-invite-all]').click();
   await expect(sheet(a).locator('[data-kiki-players]')).toBeVisible();

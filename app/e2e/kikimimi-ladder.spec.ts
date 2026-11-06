@@ -7,6 +7,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
+import { toMode } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -43,10 +44,8 @@ test('solo: the mode in the lobby, two ladders climbed (a miss and a replay stop
   await open(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
-  // the mode: クイズ by default; スピード はしご puts its speeds and rule where the level was, and no にがて れんしゅう
-  await expect(sheet(page).locator('[data-kiki-mode="quiz"]')).toHaveAttribute('aria-checked', 'true');
-  await sheet(page).locator('[data-kiki-mode="ladder"]').click();
-  await expect(sheet(page).locator('[data-kiki-mode="ladder"]')).toHaveAttribute('aria-checked', 'true');
+  // スピード はしご's page from あそぶ: its speeds and rule where the quiz's ばしょ is
+  await toMode(page, 'ladder');
   await expect(sheet(page).locator('[data-kiki-ladder-about]')).toBeVisible();
   await expect(sheet(page).locator('[data-level]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-kiki-practice]')).toHaveCount(0);
@@ -96,8 +95,11 @@ test('solo: the mode in the lobby, two ladders climbed (a miss and a replay stop
   // もういっかい keeps the mode; きろく shows the speed
   await sheet(page).locator('[data-kiki-again]').click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
-  await expect(sheet(page).locator('[data-kiki-mode="ladder"]')).toHaveAttribute('aria-checked', 'true');
-  await sheet(page).locator('[data-kiki-tab="record"]').click();
+  await expect(sheet(page).locator('[data-kiki-mode-page="ladder"]')).toBeVisible();
+  await expect.poll(() => kiki(page, (k) => k.view().ladder)).toBe(true);
+  await page.locator('dialog[open] .navbar .back').click();
+  await page.locator('dialog[open] .navbar .back').click();
+  await sheet(page).locator('[data-kiki-tile="record"]').click();
   await expect(sheet(page).locator('[data-kiki-speed]')).toBeVisible();
   await expect(sheet(page).locator('[data-kiki-speed] [data-rung]')).toHaveCount(4);
   await expect(sheet(page).locator('[data-kiki-speed] [data-rung="1"]')).toHaveAttribute('data-m', '100');
@@ -112,8 +114,9 @@ test('two players: the host’s mode reaches B’s invite and lobby; both climb,
   const b = await open(ctx, 'B');
   await a.bringToFront();
   await fromMenu(a, 'kikimimi');
-  await sheet(a).locator('[data-kiki-mode="ladder"]').click();
+  await toMode(a, 'ladder');
   await sheet(a).locator('[data-kiki-invite-all]').click();
+  await expect(sheet(a).locator('[data-kiki-mode="ladder"]')).toHaveAttribute('aria-checked', 'true');
   const banner = b.locator('.banner', { hasText: 'ききみみに さそっています' });
   await expect(banner).toBeVisible({ timeout: 15_000 });
   await b.bringToFront();

@@ -52,7 +52,7 @@
       <p>{t('kiki.prog.empty')}</p>
     </div>
     <!-- nothing yet (a guest's first visit, a new phone): the way to a first game -->
-    <button type="button" class="btn" data-kiki-prog-play data-sfx="tick" onclick={onplay}>{t('kiki.tab.play')}</button>
+    <button type="button" class="btn" data-kiki-prog-play data-sfx="tick" onclick={onplay}>{t('kiki.tile.asobu')}</button>
   {:else}
     <!-- the stage: a stat tile with a meter -->
     <section class="tile card" aria-labelledby="kp-level" data-kiki-stage={stage?.id}>
