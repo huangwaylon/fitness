@@ -21,7 +21,8 @@ const ALLOW: Record<string, string[]> = {
   layout: ['types', 'contract', 'random'],
   // the meal log's food catalog (lib/food/index.ts): pure but for its loader, over the contract's snapshot
   food: ['contract'],
-  // the wedding board's pure rules (lib/wedding: progress and days in the board's zone, its settings' defaults)
+  // けっこんしき (docs/wedding.md): the board's pure rules (lib/wedding: progress and days in the board's zone, its
+  // settings' defaults, the note's markdown and its links)
   wedding: ['types', 'contract'],
   i18n: ['types', 'time', 'config'],
   sync: [...DOMAIN, 'random'],
