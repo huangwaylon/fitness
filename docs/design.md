@@ -445,8 +445,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   an empty line beats noise; one line, cut short), and its default
   portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name; the 100 g values on the
   amount). Left of the name, the food's **category tile** (`FoodThumb`, 48 px; the recipe's ingredients 40 px): an NH
-  rounded square with a brown lip, the category's tint and icon (`art.ts` FOOD_CAT: a catalogue icon's visible part or a
-  drawn one for 主食 · 卵 · 豆 · ナッツ · いも; night tints darker; マイ食品 その他, マイレシピ レシピ), a fixed box over 4 px
+  rounded square with a brown lip, the category's tint, a plain line glyph and its word in small type (`art.ts`
+  FOOD_CAT: a leaf and 野菜, never a particular food's picture; night tints darker; マイ食品 その他, マイレシピ レシピ), a fixed box over 4 px
   of the row's padding so the row is no taller; a name wraps to 2 lines at most. Its `img` (a packed sheet's cell, to
   come: generated pictures for generic foods; products keep their tile) fades in over the tint, the tile again on error;
   the same name, brand and kcal shown once. ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
@@ -458,8 +458,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   Facts, JBFD) 2. `food/load.test.ts`'s golden queries (55 common ones: ご飯 · みそ汁 · 卵 · 納豆 · 鶏むね · サラダチキン ·
   プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
-- **Amount:** the food's picture across its card (`FoodThumb`, 160 px: its category's tile until there are pictures),
-  its name, then (only with one) its everyday name and its one line 「これは…」 (the data's `desc`); the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
+- **Amount:** the food's name, then (only with one) its everyday name and its one line 「これは…」 (the data's `desc`; no
+  picture area until there are pictures); the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
   counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece: おにぎり,
   むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which
