@@ -447,6 +447,45 @@ describe('a room’s music (places.ts)', () => {
   });
 });
 
+describe('a shared stage’s song (`from`: docs/sound-sync.md)', () => {
+  const SONG: MusicTrack = { file: 'kk/kk-march.m4a', start: 0 };
+  it('starts where the song is now, the offset taken after a slow fetch', async () => {
+    const { e, decks } = await unlocked();
+    let arrive!: () => void;
+    vi.mocked(fetch).mockImplementationOnce(() => new Promise((ok) => (arrive = () => ok({ ok: true, blob: async () => new Blob(['x']) } as Response))));
+    const done = e.setTrack('st/isl/kk-march/1', { ...SONG, from: Date.now() - 30_000 }, false, 'cut');
+    await vi.advanceTimersByTimeAsync(2000); // the fetch takes 2 s
+    arrive();
+    await done;
+    expect(decks.find((d) => !d.paused)!.currentTime).toBeCloseTo(32, 1);
+  });
+
+  it('the same key again puts a drifted deck back (over 0.3 s), and leaves a close one', async () => {
+    const { e, decks } = await unlocked();
+    const tr = { ...SONG, from: Date.now() };
+    void e.setTrack('st/isl/kk-march/1', tr, false, 'cut');
+    await settle();
+    const deck = decks.find((d) => !d.paused)!;
+    deck.currentTime = 0.8; // ~1 s in: close enough
+    void e.setTrack('st/isl/kk-march/1', tr, false, 'cut');
+    expect(deck.currentTime).toBe(0.8);
+    await vi.advanceTimersByTimeAsync(60_000); // a lock: the element held still
+    void e.setTrack('st/isl/kk-march/1', tr, false, 'cut');
+    expect(deck.currentTime).toBeCloseTo(61, 1);
+  });
+
+  it('a song already over when its file is here ends at once (onended), nothing sounding', async () => {
+    const { e, decks } = await unlocked();
+    const ended: string[] = [];
+    e.onended = (k) => ended.push(k);
+    await e.setTrack('st/isl/kk-march/1', { ...SONG, from: Date.now() - 121_000 }, false, 'cut'); // the file: 120 s
+    expect(ended).toEqual(['st/isl/kk-march/1']);
+    expect(e.track).toBeNull();
+    await settle();
+    expect(decks.every((d) => d.paused)).toBe(true);
+  });
+});
+
 describe('lazy effects (ids.ts `lazy`: the radio jingles)', () => {
   const RADIO = (['1', '2', '3', '4', '5'] as const).map((n) => `radio-morning-${n}` as const);
   beforeEach(() => {

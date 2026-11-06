@@ -113,6 +113,15 @@ const clock = () => performance.now();
 /** The rain bed's fade in and out (a time constant, s: ~95 % in 10 s): the real weather's rain comes and goes with
  *  the hour, so it eases in and out as the rain on screen fades (island/Weather.svelte), not in a second or two. */
 const RAIN_TAU = 3.3;
+/** A shared stage's deck more than this off where the song is now (s: a hidden tab, a lock, a slow start) is put back. */
+const DRIFT_S = 0.3;
+
+/** Where a shared stage's track is now (s into its file, docs/sound-sync.md): `from` is when its position 0 played, on
+ *  this device's clock; a loop's (`end`: the period) wraps. */
+function stagePos(t: MusicTrack, nowMs = Date.now()): number {
+  const p = t.start + (nowMs - (t.from ?? nowMs)) / 1000;
+  return t.end ? p % t.end : p;
+}
 const isRainBed = (key: string): boolean => key === 'rain' || key.startsWith('rain:');
 
 export class Engine {
@@ -703,6 +712,7 @@ export class Engine {
     if (!ctx || !this.#decks.length || (key && this.#held)) return; // held: not even a cue's wake or coming back
     const cur = this.#decks[this.#front];
     if (key && cur.key === key) {
+      if (track?.from !== undefined && !cur.starting) this.#reseek(cur, track);
       const fading = cur.starting || ctx.currentTime < cur.fadeEnd;
       if (!fading && needsFadeIn(cur.el.paused, cur.gain.gain.value, cur.level)) this.#fadeIn(cur, crossfadePlan(ctx.currentTime, false));
       return;
@@ -746,14 +756,33 @@ export class Engine {
     // seek once the element knows the file (start = where the loop begins musically); an undecodable file stops
     // here (the deck's error listener has reported it: onfailed)
     if (next.el.readyState < 1 && (await firstEvent(next.el, ['loadedmetadata', 'error'])) === 'error') return void (next.starting = false);
+    if (token !== this.#token) return void (next.starting = false);
+    // a shared stage's song from where it is now (the offset taken after the fetch: a slow one still lines up); one
+    // already over by then has ended
+    const at = track.from === undefined ? track.start : stagePos(track);
+    if (at >= (next.el.duration || Infinity)) {
+      this.#fadeOut(next, ctx.currentTime, ctx.currentTime);
+      return void this.onended?.(key);
+    }
     try {
-      next.el.currentTime = track.start;
+      next.el.currentTime = at;
     } catch {
       /* plays from 0 */
     }
-    if (token !== this.#token) return void (next.starting = false);
     const lead = Math.max(0, plan.inFrom - ctx.currentTime);
     this.#fadeIn(next, { inFrom: ctx.currentTime + lead, inTo: ctx.currentTime + lead + (plan.inTo - plan.inFrom) });
+  }
+
+  /** A shared stage's deck put back where its song is now, when it drifted (DRIFT_S). */
+  #reseek(d: Deck, track: MusicTrack): void {
+    const at = stagePos(track);
+    if (at >= (d.el.duration || Infinity) || Math.abs(d.el.currentTime - at) <= DRIFT_S) return;
+    try {
+      d.el.currentTime = at;
+    } catch {
+      return;
+    }
+    if (d.end !== null) this.#armWrap();
   }
 
   #fadeIn(d: Deck, p: { inFrom: number; inTo: number }): void {

@@ -41,7 +41,7 @@ function path(v: unknown): string | null {
   return str(t.file) ? versioned(t.file, t.v) : null;
 }
 
-/** `{ file, start, end?, gain?, v? }` plays from `start` s (see MusicTrack). A bad `end` (not after `start`) falls
+/** `{ file, start, end?, gain?, v?, d? }` plays from `start` s (see MusicTrack). A bad `end` (not after `start`) falls
  *  back to `<audio loop>`; a bad `gain` to 0 dB. */
 export function track(v: unknown): MusicTrack | null {
   const t = obj(v);
@@ -50,6 +50,7 @@ export function track(v: unknown): MusicTrack | null {
   const out: MusicTrack = { file: versioned(t.file, t.v), start };
   if (num(t.end) && t.end > start) out.end = t.end;
   if (num(t.gain)) out.gain = t.gain;
+  if (num(t.d) && t.d > 0) out.dur = t.d;
   return out;
 }
 

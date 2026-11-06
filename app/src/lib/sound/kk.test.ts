@@ -29,7 +29,9 @@ describe('K.K. songs (kk.ts)', () => {
       expect(k.file).toMatch(new RegExp(`^kk/${k.id}\\.m4a\\?v=`));
       expect(k.start).toBe(0);
       expect(k.end).toBeUndefined(); // one-shots: he plays a song once
+      expect(k.dur, k.id).toBeGreaterThan(30); // its length (`d`): a shared stage's end (docs/sound-sync.md)
     }
+    for (const [id, a] of Object.entries(airchecks)) expect(a!.dur, id).toBeGreaterThan(30);
   });
   it('picks any song but the last one', () => {
     const t = parseKK(raw).list.tracks.slice(0, 3);
