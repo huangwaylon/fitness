@@ -118,8 +118,9 @@ that morning.
   3D island mounts up to 300 ms after the HUD shows (it waits for the ground's fields from their worker), and until
   then every island target sits hidden at the scene's corner: a box read or a tap there missed (the full tier's ~20
   red tests from 1a786b48 on).
-- **Silent**: Chromium runs with `--mute-audio` (the music, K.K. and the effects never sound on a dev's Mac); WebKit
-  headless makes no sound.
+- **Silent**: Chromium runs with `--mute-audio` and `--disable-audio-output` (the music, K.K. and the effects never
+  sound on a dev's Mac, and the page's audio clock is a fake output's, as on CI's Linux: the Mac's own device stalled
+  it, the decks frozen, kk-sync red locally); WebKit headless makes no sound.
 - **No new fixed wait.** `page.waitForTimeout` or a `setTimeout` promise needs `// hold: <why>` on its line (a wait
   proving nothing happens for a while); the older ones are counted per file in `e2e/waits.json` and may only go down:
   fix one, lower its count.
