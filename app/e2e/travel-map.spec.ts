@@ -1,4 +1,5 @@
-// The trip map (components/travel/map, docs/travel.md "Maps") in the trips' sheet: Okinawa's and NZ's ちず on the demo.
+// The trip map (components/travel/map, docs/travel.md "Maps") in the trips' sheet: Okinawa's (in its classic guide's
+// map card, components/travel/classic/CMap) and NZ's ちず on the demo.
 // The logic tier: under drawOff() no map is made, the stub tells its state (the day's stops, the layers, the selection,
 // the location dot) and its pins are buttons. The drawn smoke (@render): MapLibre on the fixture tiles (never the
 // network), the NH pins on the map, a day chip refits it, a pin selects and is tagged; offline, the route alone with a
@@ -40,21 +41,19 @@ test('the stub: the day chips, the pins and the list, the layers, a camp pin ope
   // a row: the map follows
   await pane(page).locator('[data-stop="s2-3"]').click();
   await expect(map).toHaveAttribute('data-selected', 's2-3');
-  // the layer chips: a full 44 px each, each with its dot's colour (camp, nature, food apart)
+  // the layer chips (Okinawa's classic map: the old site's, told apart by their swatch's shape)
   const chips = pane(page).locator('[data-map-layer]');
   await expect(chips).toHaveCount(3);
-  const dots = await chips.evaluateAll((cs) => cs.map((c) => { const r = c.getBoundingClientRect(); return [Math.round(r.height), getComputedStyle(c.querySelector('.dot')!).backgroundColor]; }));
-  for (const [h] of dots) expect(h).toBeGreaterThanOrEqual(44);
-  expect(new Set(dots.map(([, c]) => c)).size).toBe(3);
-  // the camp layer on: its 26 sites; a camp's pin opens its card in a sheet, ✕ back to the map
+  for (const k of ['camp', 'nature', 'food']) await expect(pane(page).locator(`[data-map-layer="${k}"] .sw.k-${k}`)).toHaveCount(1);
+  // the camp layer on: its 26 sites; a camp's pin opens its card in the guide's sheet, ✕ back to the map
   await pane(page).locator('[data-map-layer="camp"]').click();
   await expect(pane(page).locator('[data-map-layer="camp"]')).toHaveAttribute('aria-pressed', 'true');
   expect((await mapState(page)).candidates).toHaveLength(26);
   await stub.locator('[data-pin="katsuren-beach"]').click();
-  const card = page.locator('dialog[open] [data-map-camp="katsuren-beach"]');
+  const card = page.locator('dialog[open] [data-classic-camp="katsuren-beach"]');
   await expect(card).toBeVisible();
-  await expect(card.locator('[data-camp-maps]')).toHaveAttribute('target', '_blank');
-  await page.getByRole('dialog', { name: '勝連ビーチ' }).locator('.bar .close').click();
+  await expect(card.locator('[data-outlink]')).toHaveAttribute('target', '_blank');
+  await card.locator('[data-classic-close]').click();
   await expect(card).toHaveCount(0);
   await expect(map).toHaveAttribute('data-selected', 'katsuren-beach');
   // camps off, nature on: a nature pin selects, no card
@@ -63,7 +62,7 @@ test('the stub: the day chips, the pins and the list, the layers, a camp pin ope
   expect(await mapState(page)).toMatchObject({ layers: ['nature'] });
   await stub.locator('[data-pin="n-kouri-island"]').click();
   await expect(map).toHaveAttribute('data-selected', 'n-kouri-island');
-  await expect(page.locator('dialog[open] [data-map-camp]')).toHaveCount(0);
+  await expect(page.locator('dialog[open] [data-classic-camp]')).toHaveCount(0);
 });
 
 test("NZ day 1: New Lynn's two stops one pin 「2·6」, both rows marked; the day chips stay under the tabs; a pin doesn't scroll the map away", async ({ page }) => {

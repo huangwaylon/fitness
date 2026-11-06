@@ -28,6 +28,8 @@
   /** Where the hero photo sits in its band (the site's --hero-pos). */
   const HERO_POS: Record<string, string> = { okinawa: '50% 52%', seattle: '50% 38%' };
   const TAB_ICON: Record<View, string> = { itinerary: 'calendar', map: 'map', camps: 'tent', packing: 'backpack' };
+  /** Each view's name as the trip page's tabs have it (their hooks: data-trip-tab, data-pane; e2e/trips.ts). */
+  const HOOK: Record<View, string> = { itinerary: 'days', map: 'map', camps: 'camps', packing: 'pack' };
 
   const note = $derived(packing.note(trip.id));
   const lang = $derived(guideLang(trip, i18n.locale));
@@ -66,14 +68,14 @@
   }
 </script>
 
-<div class="classic t-{trip.id}" data-classic={trip.id} data-view={view} style:--hero-pos={HERO_POS[trip.id] ?? '50% 50%'}>
+<div class="classic t-{trip.id}" data-classic={trip.id} data-trip-view={trip.id} data-view={view} style:--hero-pos={HERO_POS[trip.id] ?? '50% 50%'}>
   <div class="scroller" bind:this={scroller} inert={!!camp}>
     <article class="cguide">
       {#if view === 'itinerary' && onback}
         <button class="backbtn" type="button" data-sfx="back" data-classic-back onclick={onback}><CIcon name="arrow-left" /><span>{t('travel.classic.back')}</span></button>
       {/if}
       <div class="views">
-        <section class="view v-itinerary" hidden={view !== 'itinerary'} data-classic-view="itinerary">
+        <section class="view v-itinerary" hidden={view !== 'itinerary'} data-classic-view="itinerary" data-pane="days">
           <header class="hero">
             <img class="hero-img" src={asset(trip.hero.src as Parameters<typeof asset>[0])} alt="" decoding="async" />
             <div class="scrim"></div>
@@ -96,12 +98,12 @@
         </section>
 
         {#if view === 'map'}
-          <section class="view v-map" data-classic-view="map"><CMap {trip} {note} oncamp={openCamp} /></section>
+          <section class="view v-map" data-classic-view="map" data-pane="map"><CMap {trip} {note} oncamp={openCamp} /></section>
         {/if}
 
         {#if trip.camps?.length}
           {@const camps = trip.camps}
-          <section class="view v-camps" hidden={view !== 'camps'} data-classic-view="camps">
+          <section class="view v-camps" hidden={view !== 'camps'} data-classic-view="camps" data-pane="camps">
             <h2 class="section" lang={lang}><CIcon name="tent" /><span id="classic-camps-h-{trip.id}">{t('travel.classic.campsites', undefined, lang)}</span></h2>
             {#if trip.campsIntro}<p class="intro"><CText l={trip.campsIntro} {note} /></p>{/if}
             <div class="filters camp-filters" role="group" aria-labelledby="classic-camps-h-{trip.id}" lang={lang}>
@@ -126,7 +128,7 @@
           </section>
         {/if}
 
-        <section class="view v-packing" hidden={view !== 'packing'} data-classic-view="packing">
+        <section class="view v-packing" hidden={view !== 'packing'} data-classic-view="packing" data-pane="pack">
           <h2 class="section" lang={lang}><CIcon name="backpack" /><span>{t('travel.classic.packing', undefined, lang)}</span></h2>
           <div class="packlist" data-frozen>
             {#each pack as c (c.id)}
@@ -146,7 +148,7 @@
   <nav class="tabbar" inert={!!camp}>
     <div class="tabbar-inner" role="tablist" aria-label={pick(trip.title, i18n.locale)}>
       {#each views as v (v)}
-        <button type="button" class="tabbtn" role="tab" aria-selected={view === v} data-classic-tab={v} data-sfx="tick" onclick={() => show(v)}><CIcon name={TAB_ICON[v]} cls="ic-tab" /><span class="lb">{t(`travel.classic.tab.${v}`)}</span></button>
+        <button type="button" class="tabbtn" role="tab" aria-selected={view === v} data-classic-tab={v} data-trip-tab={HOOK[v]} data-sfx="tick" onclick={() => show(v)}><CIcon name={TAB_ICON[v]} cls="ic-tab" /><span class="lb">{t(`travel.classic.tab.${v}`)}</span></button>
       {/each}
     </div>
   </nav>
