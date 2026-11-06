@@ -7,7 +7,7 @@
 // sea from the island's middle). Without a layout (the old fixed island) the one stretch is SEA_SWIM. Engine-proof:
 // integer tiles, the diamond angle (no trig), squared distances.
 import { GRID, TILE, onGrid, tileMid, tileX } from '#lib/layout/grid.ts';
-import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
+import { SEA_X, extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
 import { SEA_SWIM, type Swim } from './critters.ts';
 import { layoutNav, worldGen } from './world.ts';
 
@@ -18,9 +18,6 @@ export const COAST_U = 450;
 const BAND = 3;
 /** How far round the grid the sea is looked at (tiles: off the grid is sea). */
 const MARGIN = BAND + 1;
-/** How far past the land the 3D camera shows sideways (u: world3d/engine.ts SEA_X; zoomed in, panned to the side),
- *  either side of its middle (model.ts midXOf: the land's). */
-const SEA_X = 24;
 const SIDES = [[1, 0], [-1, 0], [0, 1], [0, -1]] as const;
 
 export interface Coast {
