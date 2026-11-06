@@ -518,7 +518,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   its amount). With no weight the amount steps whole servings, no grams field and no weight shown anywhere (the
   entry's snapshot says `sv`: 「1食」, 「1食×2」, a nominal 100 g a serving underneath; a recipe with such an ingredient
   logs by 1人前 alike).
-- **データの出典** at the foot: 「イメージ: AI生成のイメージ（実物と異なる場合があります）」, then each dataset's label, attribution and license (the data's licenses ask for it).
+- **データの出典** at the foot: 「イメージ: AI生成の イメージ（実物と ちがう ことが あります）」, then each dataset's label, attribution and license (the data's licenses ask for it).
 - Food names come from the data, so their kanji are not all in the trimmed Zen Maru subset: those fall back to the
   system font (the copy's own strings are covered: `npm run fonts:subset`).
 

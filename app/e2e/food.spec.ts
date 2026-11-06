@@ -815,7 +815,7 @@ test('pictures: ごはん’s row and amount show its イメージ (badge, alt),
   await sheet(page).getByRole('button', { name: 'もどる' }).click();
   await sheet(page).getByRole('button', { name: 'もどる' }).click();
   await sheet(page).locator('[data-food-credits] button').click();
-  await expect(sheet(page).locator('[data-credit-img]')).toContainText('AI生成のイメージ');
+  await expect(sheet(page).locator('[data-credit-img]')).toContainText('AI生成の イメージ');
 });
 
 test('pictures: a sheet that fails to load leaves the category’s tile, no broken image', async ({ page }) => {
