@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { weekCard } from './week.ts';
+import { weekCard, weekStamps } from './week.ts';
 
 const MIN = 60_000;
 // 2026-11-04 is a Wednesday: the week is 11/2 (Mon) – 11/8 (Sun)
@@ -41,5 +41,18 @@ describe('the week card', () => {
   it('the guest has its own solo quest of 30 minutes', () => {
     const w = weekCard({ ...base, me: 'G', mine: [{ d: '2026-11-03', n: 8, ms: 31 * MIN }], others: [{ who: 'A', d: '2026-11-03', ms: 40 * MIN }] });
     expect(w.quest).toEqual({ minutes: 31, of: 30, met: true, solo: true });
+  });
+});
+
+describe('the week stamps', () => {
+  it('a Monday for each week that met the target: finished sessions on enough days (a story from 3 minutes)', () => {
+    const mine = [
+      ...['2026-10-26', '2026-10-27', '2026-10-28'].map((d) => ({ d, n: 8, ms: MIN })), // met
+      { d: '2026-11-02', n: 8, ms: MIN }, { d: '2026-11-02', n: 8, ms: MIN }, { d: '2026-11-03', n: 3, ms: MIN }, // two sessions one day, one short
+      { d: '2026-11-04', n: 0, ms: 3 * MIN, story: true },
+      ...['2026-11-09', '2026-11-10', '2026-11-11'].map((d) => ({ d, n: 6, ms: MIN }))
+    ];
+    expect(weekStamps(mine, 3)).toEqual(['2026-10-26', '2026-11-09']);
+    expect(weekStamps(mine, 2)).toEqual(['2026-10-26', '2026-11-02', '2026-11-09']);
   });
 });
