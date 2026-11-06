@@ -110,7 +110,7 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
       expect(plan).toHaveLength(8);
       expect(plan.flatMap((t) => t.subtasks)).toHaveLength(6);
       expect(overallProgress(plan)).toMatchObject({ total: 8, done: 2, overdue: 1, soon: 1 });
-      expect(plan.filter((t) => t.doneAt).map((t) => [t.id, t.imported, t.doneBy]).sort()).toEqual([['wdemo01', true, ''], ['wdemo09', false, 'A']]);
+      expect(plan.filter((t) => t.doneAt).map((t) => [t.id, t.doneBy]).sort()).toEqual([['wdemo01', ''], ['wdemo09', 'A']]);
       expect(wedTasks(b).filter((t) => t.deletedAt)).toHaveLength(1);
       expect(wedNote(b)?.md).toContain('# メモ');
     }

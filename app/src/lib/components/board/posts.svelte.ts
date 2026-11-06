@@ -46,9 +46,10 @@ class BoardPosts {
     return boardMayWrite(this.me, { id: p.id, at: p.at + 1, rm: true }, { ...p });
   }
 
-  /** A change's time: the relay's clock, never twice the same, after the post it changes. */
+  /** A change's time: the relay's own clock (never a `?date=` preview's), never twice the same, after the post it
+   *  changes. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.now()), this.#last + 1, after + 1);
+    this.#last = Math.max(Math.round(world.serverNow()), this.#last + 1, after + 1);
     return this.#last;
   }
 

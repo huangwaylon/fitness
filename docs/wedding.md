@@ -51,19 +51,26 @@ exact shapes):
 - `wnote` ≤ 64,000 characters, kept exactly as sent, its own data cap (140,000 as JSON; every other type keeps 20,000).
   A save names the note it was edited from (`base`); one whose `base` isn't the held note's `at` is kept with the
   replaced note beside it (`was: {at, md, who}`, written by the record), and the phones show both until someone saves
-  again from the new one (one level: a third crossing save keeps only the last one it replaced).
+  again from the new one (one level: a third crossing save keeps only the last one it replaced). A save that loses on
+  `at` to a note it wasn't edited from (saved offline, two crossing in flight) is kept the same way, restamped just
+  after the held one: both phones show the conflict whichever reached the record first.
 - `imported: true` marks a row the admin's load brought from the Sheet; a phone's is refused, and the next edit drops
   it. The sheet shows 「むかしの きろく」 for a tick from the Sheet (which never recorded who: `WedTask.doneBy` is '')
   and on the Sheet's note until it's saved again.
 - The phone folds the record's rows as they are and judges only its queued ones by the record's rules (`wedFold`), as
   the packing list and the board do. The admin's `load` takes these rows as the record had them too (only a row its slot
   holds that beats it stops one), so a dump restores faithfully; that fix covers the board and the packing list, which
-  until 2026-11-06 lost edited posts and items on a restore into an empty record.
+  until 2026-11-06 lost edited posts and items on a restore into an empty record. After the batch it drops what a
+  phone's op would have dropped with those rows: a purged task's tick, a removed packing item's ticks, the board's
+  removals past its cap.
 
 On the phone, `components/wedding/board.svelte.ts`: `tasks` (live top-level, each with its subtasks and progress),
 `overall`, `countdown`, `today` (the board's zone), `config` (over the defaults: `lib/wedding/config.ts`), `note`,
 `conflict`, `deleted`; `addTask`, `editTask`, `addSub`, `tick`, `remove` (a task and its live subtasks), `restore`
-(and the subtasks deleted with it), `purge` (one deleted task, or all), `setConfig`, `saveNote(md, from)`. The rules
+(and the subtasks deleted with it), `purge` (every deleted task; a live subtask of one, added while it was deleted,
+becomes a task of its own), `setConfig`, `saveNote(md, from)` (false for a note past the record's caps, its JSON's
+too). Changes are stamped on the relay's own clock (`world.serverNow`, never a `?date=` preview's); `today` turns at
+the board's midnight for whoever reads it. The rules
 are `lib/wedding/progress.ts` and `time.ts`, ported from the old board with their tests.
 
 The sheet (`components/wedding/WeddingSheet.svelte`, the menu's けっこんしき pill): `WeddingHost` loads it and the store
