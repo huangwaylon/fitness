@@ -148,6 +148,61 @@ jobs:
           ANNOTATE=1 node scripts/e2e-report.ts first-run.json "Flaky e2e (logic tier)"
           node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): quarantine it and fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"
 
+  # A changed spec, five times (docs/ops/testing.md): the e2e specs this push (or pull request) added or edited, each
+  # test 5× over in the logic tier (scripts/e2e-changed.ts; none when over 8 changed: a sweep, the logic tier runs them
+  # all once). One failure in five is a flake the push brought: red, and the deploy waits, before it reaches every run.
+  e2e-changed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: app
+    env:
+      E2E_RENDER: none
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          # (the push's base to diff against: the history, without its blobs)
+          fetch-depth: 0
+          filter: blob:none
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - id: specs
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          list=$(node scripts/e2e-changed.ts "$BASE" "$HEAD_SHA" | tr '\n' ' ')
+          echo "list=$list" >> "$GITHUB_OUTPUT"
+          if [ -n "$list" ]; then printf '### Changed specs, 5× each\n\n%s\n' "$list" >> "$GITHUB_STEP_SUMMARY"; fi
+      - if: steps.specs.outputs.list != ''
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - if: steps.specs.outputs.list != ''
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - if: steps.specs.outputs.list != ''
+        id: browsers
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}-chromium-headless-shell
+      - if: steps.specs.outputs.list != '' && steps.browsers.outputs.cache-hit != 'true'
+        run: npx playwright install --only-shell chromium
+      - if: steps.specs.outputs.list != ''
+        run: npm run build
+      - if: steps.specs.outputs.list != ''
+        env:
+          SPECS: ${{ steps.specs.outputs.list }}
+        # ($SPECS unquoted: the list splits into its files)
+        run: npx playwright test --project=chromium --grep-invert "@render|@quarantine" --repeat-each=5 $SPECS
+      - if: failure()
+        run: |
+          node scripts/e2e-report.ts playwright-results.json "A changed spec failed in its 5 runs (a flake the push brought: fix its cause)" >> "$GITHUB_STEP_SUMMARY"
+
   # The drawn smoke (docs/ops/test-strategy.md): the tests that need the pixels (@render) and a few whole 3D flows
   # (@smoke) with real (software) GL, on one runner. Advisory (the user, Nov 2026: CI's software GL isn't the phones'
   # Metal): it never holds the deploy back (not in deploy's needs, continue-on-error); its failures are in its summary.
@@ -230,7 +285,7 @@ jobs:
   # upload, no Git integration, so this workflow stays the gate). Secrets CLOUDFLARE_API_TOKEN (Pages: Edit, this
   # account only) and CLOUDFLARE_ACCOUNT_ID (docs/ops/runbook.md §1); without them the job says so and deploys nothing.
   deploy:
-    needs: [build, checks, e2e-logic]
+    needs: [build, checks, e2e-logic, e2e-changed]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     concurrency:

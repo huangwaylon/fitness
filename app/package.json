@@ -12,6 +12,7 @@
     "e2e": "playwright test",
     "e2e:report": "node scripts/e2e-report.ts",
     "e2e:ci-like": "node scripts/e2e-ci-like.ts",
+    "e2e:changed": "node scripts/e2e-changed.ts",
     "e2e:shards": "node scripts/e2e-shards.ts",
     "e2e:timings": "node scripts/e2e-shards.ts refresh",
     "e2e:quarantine": "node scripts/e2e-quarantine.ts",
