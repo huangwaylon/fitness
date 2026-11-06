@@ -26,7 +26,7 @@
   import { jst, minuteNow } from '#lib/time/clock.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';
-  import { prefetchKK, setSound, sound } from '#lib/sound/sound.svelte.ts';
+  import { musicHeard, prefetchKK, setSound, wantMusic } from '#lib/sound/sound.svelte.ts';
   import { cutInOf, hush, live, request as requestSong } from '#lib/sound/stage.svelte.ts';
   import { count } from '#lib/sync/log.ts';
   import { tall3d } from '../villager3d/manifest.ts';
@@ -88,7 +88,7 @@
    *  hear it (ミュージック off or muted, or no tap yet). */
   const onStage = $derived(live('isl'));
   const playing = $derived<KKTrack | null>(onStage && !cutInOf(onStage.song) ? (kkTracks.find((k) => k.id === onStage.song) ?? null) : null);
-  const unheard = $derived(!sound.settings.music || sound.settings.volume <= 0 || !sound.unlocked);
+  const unheard = $derived(!musicHeard());
   /** Dozing: asleep by the clock and not playing (woken for a song, he's up till it's over). */
   const dozing = $derived(mode === 'asleep' && !playing);
   $effect(() => {
@@ -160,7 +160,7 @@
    *  is asking to hear it); the island's music stops for it; its end (or ストップ) brings his sign-off. */
   function perform(song: KKTrack) {
     if (!art()) return;
-    if (!sound.settings.music) setSound({ music: true });
+    wantMusic();
     count(`act:kk.song.${mode}`);
     requestSong('isl', song.id);
   }
