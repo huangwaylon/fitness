@@ -21,7 +21,8 @@
   // rung's listen is the next, faster one); the top's reveal the line, its marks and how high the ladder went.
   import type { Snippet } from 'svelte';
   import { canSlow, hidesLine, type QuizGame } from './game.svelte.ts';
-  import { SPEEDS, laddersIn, rungState, sx } from '#lib/kikimimi/ladder.ts';
+  import { SPEEDS, laddersIn, rungState } from '#lib/kikimimi/ladder.ts';
+  import { sx } from './look.ts';
   import { isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
   import LadderSteps from './LadderSteps.svelte';

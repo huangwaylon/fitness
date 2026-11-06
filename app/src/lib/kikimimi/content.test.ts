@@ -1,13 +1,13 @@
 // The draft listening content (app/content/listen/*.yaml, docs/kikimimi-framework.md §8, content/listen/README.md):
 // every unit parses and holds together before the compiler (increment 9) exists. Required fields per kind, speakers
-// in the roster with a cast voice (the unit's `cast`, else bank4.ts CAST) of their gender, `tts` free of digits, notes
+// in the roster with a cast voice (the unit's `cast`, else cast.ts CAST) of their gender, `tts` free of digits, notes
 // ≤ 40 字, ids unique across units, every answer in range. scripts/listen/schema.ts takes these rules over in 9b.
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { ROSTER } from '#lib/villagers/roster.ts';
-import { CHANNELS, SCENE_IDS } from './bank.ts';
-import { CAST } from './bank4.ts';
+import { CHANNELS, PRAGMATICS, REGISTERS, SCENE_IDS } from './bank.ts';
+import { CAST } from './cast.ts';
 import { CAST_IDS } from './speech.ts';
 
 const DIR = new URL('../../../content/listen/', import.meta.url);
@@ -17,8 +17,6 @@ const GAMES = ['quiz', 'ladder', 'tile', 'call', 'tachi', 'news', 'long', 'seria
 const KINDS = ['tile', 'call', 'tachi'];
 const TRACKS = ['life', 'people', 'work', 'broadcast'];
 const STATUSES = ['draft', 'voiced', 'listened'];
-const REGISTERS = ['service', 'colleague', 'boss', 'friend', 'partner', 'neighbour', 'stranger', 'official', 'broadcast'];
-const PRAGMATICS = ['literal', 'indirect', 'refusal', 'hedge', 'understatement', 'sarcasm', 'humour', 'formula', 'ritual', 'attitude', 'deception'];
 /** bank.ts Tags conditions, plus the drafts' new ones (README "Vocabulary"). */
 const CONDITIONS = ['phone', 'voicemail', 'pa', 'video', 'cafe', 'station', 'desk', 'signal', 'street', 'train', 'party'];
 /** bank.ts Feature, plus the drafts' new ones (README "Vocabulary"). */
@@ -67,7 +65,7 @@ function lint({ file, u }: { file: string; u: Unit }): string[] {
     if (who === ME) return me ? (voice(ME) ? undefined : at(where, 'a `me` line needs cast.me in the header')) : at(where, '`me` only speaks in calls');
     if (!(who in ROSTER)) return at(where, `${who} isn't in the roster`);
     const v = voice(who);
-    if (!v) return at(where, `${who} has no cast voice (bank4.ts CAST or the unit's cast)`);
+    if (!v) return at(where, `${who} has no cast voice (cast.ts CAST or the unit's cast)`);
     if (v.split('-')[1][0] !== ROSTER[who as keyof typeof ROSTER].gender) at(where, `${who}'s voice ${v} is the wrong gender`);
   };
   const spoken = (where: string, o: Obj) => {
@@ -94,8 +92,8 @@ function lint({ file, u }: { file: string; u: Unit }): string[] {
     if (!t) at(where, 'tags');
     else {
       if (!isInt(t.seed, 1, 66) || !u.seeds.includes(t.seed)) at(where, `tags.seed ${t.seed} must be one of the unit's seeds`);
-      if (!REGISTERS.includes(t.register as string)) at(where, `register ${t.register}`);
-      if (!PRAGMATICS.includes(t.pragmatic as string)) at(where, `pragmatic ${t.pragmatic}`);
+      if (!(REGISTERS as readonly unknown[]).includes(t.register)) at(where, `register ${t.register}`);
+      if (!(PRAGMATICS as readonly unknown[]).includes(t.pragmatic)) at(where, `pragmatic ${t.pragmatic}`);
       if (t.conditions !== undefined && !(strs(t.conditions) && t.conditions.every((c) => CONDITIONS.includes(c)))) at(where, `conditions ${t.conditions}`);
       if (!strs(t.features) || !t.features.length || !t.features.every((x) => FEATURES.includes(x))) at(where, `features ${t.features}`);
     }

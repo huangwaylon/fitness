@@ -23,7 +23,8 @@
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
   import type { Filter } from '#lib/kikimimi/path.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
-  import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
+  import type { Level } from '#lib/kikimimi/bank.ts';
+  import { levelMark } from './look.ts';
   import { addUnit, itemOf, load, loadIds } from '#lib/kikimimi/pool.ts';
   import type { UnitPlay } from '#lib/kikimimi/lesson.ts';
   import type { QuizPhase } from '#lib/kikimimi/session.ts';

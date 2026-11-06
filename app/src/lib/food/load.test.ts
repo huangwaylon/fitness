@@ -120,13 +120,24 @@ describe('loadFoodDb', () => {
     expect(searchFoods(db, '焼きいも', 1)[0].name).toBe('焼きいも');
   });
 
+  it('lookalikes out unless asked for (豚 中型種, 親鶏, 交雑牛); a meat’s 脂身 alone under its cuts', () => {
+    const names = (q: string) => searchFoods(db, q, 60).map((x) => x.name);
+    expect(names('豚ロース').some((n) => n.includes('中型種'))).toBe(false);
+    expect(names('豚ロース 中型種').some((n) => n.includes('中型種'))).toBe(true);
+    expect(names('鶏もも').some((n) => n.startsWith('親鶏'))).toBe(false);
+    expect(names('親鶏').some((n) => n.startsWith('親鶏'))).toBe(true);
+    const loin = names('豚ロース');
+    expect(loin.indexOf('豚ロース 脂身 生')).toBeGreaterThan(loin.indexOf('豚ロース 赤肉 生'));
+    expect(names('まぐろ 脂身').length).toBeGreaterThan(0); // toro stays where it was
+  });
+
   it('ranks a score at a time exactly as one sort of every hit did (search.ts before the top-n ranking)', () => {
     const groupOf = (id: string) => db.verify?.byId[id];
     const sortAll = (query: string, limit: number): Item[] => {
       const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
       const q = tokens.join('');
       const hits: { e: Entry; s: number }[] = [];
-      for (const e of db.entries) if (tokens.every((t) => e.h.includes(t))) hits.push({ e, s: tierOf(e, q) + e.pen - e.pop * 0.6 });
+      for (const e of db.entries) if (tokens.every((t) => e.h.includes(t)) && !/（中型種）|^親鶏|^交雑牛/.test(e.it.name)) hits.push({ e, s: tierOf(e, q) + e.pen - e.pop * 0.6 + (/(^|\s)皮(\s|$)/.test(e.it.name) || (e.it.cat === '肉' && /(^|[\s（])脂身(\s|$)/.test(e.it.name)) ? 1 : 0) });
       hits.sort((a, b) => a.s - b.s || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length);
       const rep = new Map<number, Entry>();
       for (const { e } of hits) {

@@ -7,7 +7,7 @@ export type Amenity = 'beach' | 'toilet' | 'shower';
 export const KINDS: readonly CampKind[] = ['all', 'wild', 'paid'];
 export const AMENITIES: readonly Amenity[] = ['beach', 'toilet', 'shower'];
 
-export interface CampFilter { kind: CampKind; has: readonly Amenity[] }
+interface CampFilter { kind: CampKind; has: readonly Amenity[] }
 
 /** The camps that pass the filter, in the guide's order (by road time from the office). */
 export const campsFor = (camps: readonly Camp[], f: CampFilter): Camp[] =>

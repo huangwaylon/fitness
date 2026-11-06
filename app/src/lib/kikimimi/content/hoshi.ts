@@ -4,7 +4,7 @@
 // radio news, local TV and traffic, podcasts, TED-style talks, US panels; 2026-11-06): news-reader density, fast
 // co-hosts, signposting in lectures, hedged academic claims, the speaker's stance (certainty, irony, concession),
 // cultural references and wordplay, dense numbers. Level 7 (content/index.ts folds it into the bank; its villagers'
-// voices are in bank4.ts CAST).
+// voices are in cast.ts CAST).
 //   Families (FAMILY): news bulletins and headlines (evergreen, no real politicians), radio and podcast talk, mini-
 // lectures, documentary narration, debates and panels, interviews, TED-style talks, cultural references and
 // wordplay, dense statistics, and stance.
@@ -20,36 +20,23 @@
 //   `en` is shown (UK spelling for UK and AU voices), `tts` is spoken when it differs (§9: every number written out,
 //   reductions spelled as said). `note` is the trap (≤ 40 字).
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, CastId, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
-import { CAST } from '../bank4.ts';
+import type { Channel, Item, ItemType, Level, SceneId, SoundMark, Tags } from '../bank.ts';
+import { MEAN_ASK, NEXT_ASK, dialogueOf, g, line, single, tg, type DialogueRow } from './build.ts';
 
 /** ほし's level (docs/kikimimi.md "Levels 6 and 7"): 7, above やま (6). */
 const HOSHI_LV: Level = 7;
 
 export type Family = 'news' | 'radio' | 'lecture' | 'documentary' | 'debate' | 'interview' | 'talk' | 'culture' | 'stats' | 'stance';
 
-const MEAN_ASK = 'つまり、どういうこと？';
-const NEXT_ASK = 'つぎの ひとことは？';
-
-const castOf = (who: RosterId): CastId => {
-  const cast = CAST[who];
-  if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
-  return cast;
-};
-
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-
 type Extra = { tts?: string; focus?: string; ask?: string; scene?: SceneId; channel?: Channel };
 type Row = readonly [type: Exclude<ItemType, 'pic'>, id: string, speaker: RosterId, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, extra?: Extra];
 
 // ---- sound marks: every clip with a `tts` (staging.ts's rules: the number as said, the reductions, a swallowed g) ----
 
-const g = (at: string): SoundMark => ['drop', at, 'g'];
 /** clip id (an item's, or a dialogue line's `<item>-<n>`) → its sound marks. */
 const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'ho-rate-hold': [['say', '4.25%', 'four and a quarter percent']],
-  'ho-rail-strike': [['say', '40%', 'FORty percent'], ['say', '7 p.m.', 'seven p.m.']],
+  'ho-rail-strike': [['say', '5', 'five'], ['say', '4', 'four'], ['say', '40', 'FORty']],
   'ho-heat-record': [['say', '47', 'forty-seven'], ['say', '1939', 'nineteen thirty-nine']],
   'ho-quake': [['say', '6.3', 'six point three'], ['say', '4:17', 'four seventeen'], ['say', '60', 'SIXty']],
   'ho-manuscript': [['say', '900-year-old', 'nine-hundred-year-old'], ['say', '1970s', 'nineteen seventies']],
@@ -94,12 +81,11 @@ const exposed = (id: string, tags: Tags): Tags =>
 const family: Record<string, Family> = {};
 
 const item = (fam: Family) => ([type, id, speaker, en, ja, note, choices, tags, x = {}]: Row): Item => {
-  const cast = castOf(speaker);
   family[id] = fam;
   const focus = type === 'word' ? choices[0] : x.focus;
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : type === 'next' ? NEXT_ASK : undefined);
   return {
-    id, lv: HOSHI_LV, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags: exposed(id, tags),
+    ...single(HOSHI_LV, type, id, speaker, en, ja, note, choices, exposed(id, tags)),
     ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }), ...(x.scene && { scene: x.scene }), ...(x.channel && { channel: x.channel }),
     ...(MARKS[id] && { marks: MARKS[id] })
   };
@@ -114,12 +100,12 @@ const NEWS: readonly Row[] = [
     ['2人', '1人', '12人'],
     tg(62, 'broadcast', 'literal', [], ['numbers']),
     { ask: '利下げを 求めたのは 何人？', focus: 'two of its twelve voting members', tts: 'The Fed held rates at four and a quarter percent today, but two of its twelve voting members wanted a cut, up from one last month.' }],
-  ['num', 'ho-rail-strike', 'beau', "Because of Thursday's strike, commuter trains will run at about 40% of normal service, and not at all after 7 p.m., the transit agency warns.",
-    '木曜のストライキのため、通勤電車は通常のおよそ40%の運行で、午後7時以降は全面運休になると交通局が警告しています。',
-    'FORty と fourTEEN の強勢。7は時刻の話',
-    ['40%', '14%', '7%'],
+  ['num', 'ho-rail-strike', 'beau', 'The school board voted 5 to 4 last night to push the start of the high school day back 40 minutes, beginning next fall.',
+    '教育委員会は昨夜、5対4で、来年の秋から高校の始業時刻を40分遅らせることを決めました。',
+    'FORty と fourTEEN の強勢。5対4は票数',
+    ['40分', '14分', '4分'],
     tg(62, 'broadcast', 'literal', [], ['teen-ty', 'numbers']),
-    { ask: '木曜の 運行は 通常の 何％？', focus: '40%', tts: "Because of Thursday's strike, commuter trains will run at about forty percent of normal service, and not at all after seven p.m., the transit agency warns." }],
+    { ask: '始業は 何分 おそくなる？', focus: '40 minutes', tts: 'The school board voted five to four last night to push the start of the high school day back forty minutes, beginning next fall.' }],
   ['gist', 'ho-heat-record', 'phoebe', 'Temperatures in parts of western Sydney topped 47 degrees yesterday, the highest since records began in 1939. Hospitals reported a surge in heat-related admissions.',
     '昨日、シドニー西部の一部で気温が47度を超え、1939年の観測開始以来の最高となりました。病院では熱中症などによる入院が急増しました。',
     '1939年は観測開始の年。火事や事件の年ではない',
@@ -144,12 +130,12 @@ const NEWS: readonly Row[] = [
     ['6.3', '6.0', '4.1'],
     tg(62, 'broadcast', 'literal', [], ['numbers']),
     { ask: 'マグニチュードは？', focus: 'magnitude 6.3', tts: 'The magnitude six point three quake struck at four seventeen local time, about sixty miles off the coast. No tsunami warning has been issued.' }],
-  ['mean', 'ho-trains-restored', 'kabuki', 'Tozai Line service has now resumed. However, delays of up to forty minutes are likely to continue well into the evening rush hour.',
-    '東西線は運転を再開しました。ただし、最大40分の遅れが夕方のラッシュ時まで続く見込みです。 → つまり、電車は動いているが、夜まで大幅に遅れる。',
-    'resumed＝再開。However 以降の遅れが本題',
-    ['Trains are running again, but expect long delays tonight.', 'The line stays closed until the evening rush.', 'Trains will run on time from this evening.'],
-    tg(5, 'official', 'literal', ['pa', 'station']),
-    { focus: 'has now resumed', scene: 'platform' }],
+  ['mean', 'ho-trains-restored', 'kabuki', "The Harvest Festival parade is back on after this morning's storms. However, the route's been cut in half, and it'll skip Main Street entirely.",
+    '収穫祭のパレードは、今朝の嵐のあと、実施されることになりました。ただしルートは半分に短縮され、メインストリートは通りません。 → つまり、パレードはあるが、短いルートになる。',
+    'back on＝やっぱり実施。However 以降が変更点',
+    ['The parade is happening, but on a shorter route.', 'The parade is canceled because of the storms.', 'The parade will go down Main Street as usual.'],
+    tg(62, 'broadcast', 'literal', [], ['idiom', 'contraction']),
+    { focus: 'is back on' }],
   ['gist', 'ho-manuscript', 'wolfgang', "A 900-year-old manuscript missing since the 1970s has turned up at an estate sale in Ohio. The library, which had long given it up for lost, says it'll go on display next spring.",
     '1970年代から行方不明だった900年前の写本が、オハイオ州の遺品セールで見つかりました。とうに失われたと諦めていた図書館は、来春公開するとしています。',
     'turn up＝見つかる。give up for lost＝諦める',
@@ -209,8 +195,8 @@ const RADIO: readonly Row[] = [
     ['Avoid the highway heading north.', 'Get off the highway at exit two.', 'Drive slowly past the truck.'],
     tg(62, 'broadcast', 'literal', [], ['ellipsis', 'numbers']),
     { ask: 'ドライバーへの アドバイスは？', focus: "don't", tts: "If you're headin' north on I ninety-five, don't. There's a tractor-trailer on its side just past exit twelve, two lanes are closed, an' we're hearing it'll be a couple of hours." }],
-  ['reply', 'ho-callin-line', 'kk-slider', "We've got Denise on the line from Phoenix. Denise, you're on the air. Denise? I think we lost her.",
-    'フェニックスのデニースさんとつながっています。デニースさん、オンエア中ですよ。デニースさん？ 切れちゃったかな。 →「すみません、います！ 聞こえますか？」',
+  ['reply', 'ho-callin-line', 'kk-slider', "Next up on the postgame show, Denise on the line from Phoenix, and she wants to talk bullpen. Denise, you're on the air. Denise? I think we lost her.",
+    '試合後の番組、次はフェニックスのデニースさん。リリーフ陣について話したいそうです。デニースさん、オンエア中ですよ。デニースさん？ 切れちゃったかな。 →「すみません、います！ 聞こえますか？」',
     'on the line＝電話がつながって。行列ではない',
     ["Sorry, sorry, I'm here! Can you hear me now?", 'Yes, the line was really long.', 'I lost it on the train, actually.'],
     tg(61, 'broadcast', 'literal', [], ['contraction'])],
@@ -224,11 +210,11 @@ const RADIO: readonly Row[] = [
     'this whole time＝ずっと。時間の長さを聞いていない',
     ["You're on, don't worry. We heard every word.", 'Talk to yourself, then.', 'The whole time? About ten minutes.'],
     tg(39, 'broadcast', 'literal', ['video'], ['contraction'])],
-  ['reply', 'ho-washing-machine', 'kk-slider', "Caller, you sound like you're calling from inside a washing machine.",
-    'お電話の方、洗濯機の中からかけてるみたいな音ですよ。 →「すみません、高速道路なんです。これでどうですか？」',
+  ['reply', 'ho-washing-machine', 'kk-slider', "Before we start recording, you sound like you're calling in from inside a washing machine.",
+    '収録を始める前に。洗濯機の中から参加してるみたいな音ですよ。 →「すみません、食洗機です。ドアを閉めてきます。これでどうですか？」',
     '音がひどいという冗談。実際の洗濯の話ではない',
-    ["Sorry, I'm on the highway. Is this any better?", "Yes, I'm doing my laundry.", 'No, I always call from home.'],
-    tg(61, 'broadcast', 'humour')],
+    ["Sorry, that's my dishwasher. Let me close the door. Better?", "Yes, I'm doing my laundry.", 'No, I always call from home.'],
+    tg(63, 'broadcast', 'humour', ['video'])],
   ['word', 'ho-pod-wouldve', 'audie', "Honestly, if you'd told me five years ago, I would've laughed in your face.",
     '正直、5年前にそう言われてたら、鼻で笑ってたと思う。',
     "woulda＝would've。n't の有無を聞く",
@@ -691,33 +677,18 @@ export const ITEMS: readonly Item[] = [
 // ---- dialogues: interviews, debates, co-hosts (3-4 lines, two voices) -----------------------------------------------
 
 type L = readonly [who: RosterId, en: string, ja: string, tts?: string];
-interface DRow {
-  id: string;
-  type: Extract<ItemType, 'gist' | 'next'>;
+interface DRow extends DialogueRow {
   fam: Family;
   lines: readonly L[];
-  ask?: string;
-  /** The right one first. */
-  choices: readonly string[];
-  ja: string;
-  note: string;
-  focus: string;
-  tags: Tags;
   scene?: SceneId;
   channel?: Channel;
 }
 
-const line = (id: string) => ([who, en, ja, tts]: L, n: number): Line => {
-  const marks = MARKS[`${id}-${n + 1}`];
-  return { who, cast: castOf(who), en, ja, ...(tts && { tts }), ...(marks && { marks }) };
-};
-
 const dialogue = (r: DRow): Item => {
-  const lines = r.lines.map(line(r.id));
+  const lines = r.lines.map(([who, en, ja, tts], n) => line([who, en, ja, tts, MARKS[`${r.id}-${n + 1}`]]));
   family[r.id] = r.fam;
   return {
-    id: r.id, lv: HOSHI_LV, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: exposed(r.id, r.tags), lines,
+    ...dialogueOf(HOSHI_LV, r, lines, exposed(r.id, r.tags)),
     ...(r.scene && { scene: r.scene }), ...(r.channel && { channel: r.channel })
   };
 };

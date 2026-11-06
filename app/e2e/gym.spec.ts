@@ -3,8 +3,8 @@
 // it runs on it (the 3D villager's 'run'), and the other phone sees it running too (the walk is all the relay carries:
 // standing still on its spot is on it, island/sitting.ts).
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
-import { geo, openNear, tapOn } from './island.ts';
+import { fromMenu } from './hud.ts';
+import { geo, islandUp, openNear, tapOn } from './island.ts';
 import { HELD_SCALE } from '../src/lib/components/world3d/benchBar.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -22,7 +22,7 @@ const go = (page: Page, z: number) => page.evaluate((z) => (window as unknown as
 
 async function open(page: Page, q = '') {
   await page.goto(`?demo&date=${DATE}&critter=none&visitor=none${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await expect.poll(() => v3(page, 'mine'), { timeout: 30_000 }).not.toBeNull();
 }
@@ -78,7 +78,7 @@ test('the ジム tab lists the gym; a treadmill put down stays and is on the oth
   // and it's kept: after a reload it's there, and A's villager is still on it
   await a.bringToFront();
   await a.reload();
-  await expect(hudMenu(a)).toBeVisible();
+  await islandUp(a);
   await expect.poll(() => where(a, id), { timeout: 10_000 }).toEqual([x0, z0]);
   await expect.poll(() => v3(a, 'mine'), { timeout: 30_000 }).toBe('run');
   if (process.env.SHOTS) await a.screenshot({ path: `${process.env.SHOTS}/gym-treadmill.png` });

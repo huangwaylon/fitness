@@ -6,9 +6,10 @@
   // a tap opens the ずかん on this unit's) and 「とばして チェック」 at the foot. A lesson opens its intro card. Its own
   // chunk with the path's.
   import { load, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
-  import type { UnitChunk } from '#lib/kikimimi/lesson.ts';
   import { playIds } from '#lib/kikimimi/lesson.ts';
-  import { CORE, DOMAINS, isDomain, nextLesson } from '#lib/kikimimi/path.ts';
+  import { nextLesson } from '#lib/kikimimi/path.ts';
+  import { CORE, isUnitDomain } from '#lib/kikimimi/stages.ts';
+  import { domainIcon, domainTint } from '../look.ts';
   import { LESSONS, type Lesson } from '#lib/kikimimi/stages.ts';
   import { phrasesOf } from '#lib/kikimimi/srs.ts';
     import type { RosterId } from '#lib/villagers/roster.ts';
@@ -26,7 +27,7 @@
   $effect(() => {
     void load(id as Unit).then(() => ready++, () => {});
   });
-  const part = $derived((void ready, unitPart(id) as UnitChunk | undefined));
+  const part = $derived((void ready, unitPart(id)));
   const u = $derived(part?.unit);
   const us = $derived(currentUnits().get(id));
   const lessons = $derived(u ? LESSONS.filter((l) => part && playIds(part, l).length) : []);
@@ -40,18 +41,18 @@
   const caught = $derived(phrases.filter((p) => p.caught).length);
   const scene = $derived(u && artUrl(sceneArt(u.scene)) ? u.scene : null);
   const host = $derived(u ? rosterName(u.host as RosterId) : '');
-  const domain = $derived(u && isDomain(u.domain) ? u.domain : null);
+  const domain = $derived(u && isUnitDomain(u.domain) ? u.domain : null);
   const partner = $derived(week.view && week.view.viewer !== 'G' ? villagerNameOf(week.view, week.view.viewer === 'A' ? 'B' : 'A') : null);
   const extras = $derived(lessons.filter((l) => !CORE.includes(l)));
 </script>
 
 {#if u}
   <div class="unit" data-kiki-page="unit" data-kiki-unit-page={id}>
-    <div class="hero" style:--tint={domain ? DOMAINS[domain].tint : 'var(--c-mint)'}>
+    <div class="hero" style:--tint={domainTint(domain ?? '')}>
       {#if scene}<img class="bd" src={artUrl(sceneArt(scene))} srcset={sceneSrcset(scene)} sizes={SCENE_SIZES} width="393" height="224" alt="" decoding="async" draggable="false" />{/if}
       <span class="who"><OfficialArt key={villagerArt(u.host)} alt={host} size={112} eager /></span>
       <span class="tag">{host}</span>
-      {#if domain}<span class="dom">{DOMAINS[domain].icon} {t(`kiki.domain.${domain}`)}</span>{/if}
+      {#if domain}<span class="dom">{domainIcon(domain)} {t(`kiki.domain.${domain}`)}</span>{/if}
     </div>
 
     <div class="goal card">

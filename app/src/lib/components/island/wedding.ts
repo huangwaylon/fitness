@@ -3,7 +3,10 @@
 // 30, 7 and 1 days to go, and the day itself) Reese and Cyrus, NH's wedding couple, visit the centre stage with a heart
 // float and count down: 「けっこんしき まで あと 100日！」. On the day: confetti, fireworks at night and both villagers in a
 // wedding pose. Every June Sunday (NH's Wedding Season) a wedding arch stands behind the centre stage. Pure over dates
-// (the wedding's day a parameter, weddingDate() by default). No ベル.
+// (the wedding's day a parameter, weddingDate() by default). No ベル. The days are counted on the island's Tokyo day,
+// while the board counts on its own `tz` (board.svelte.ts countdown, time/zone.ts todayIn): the same while the board's
+// zone is Asia/Tokyo (the real board's, and its default); a board set to another zone would see the two disagree for
+// the hours between the two midnights.
 import { daysBetween } from '#lib/time/dates.ts';
 import { addDays } from '#lib/time/dates.ts';
 import { weddingDate } from '#lib/time/holidays.ts';

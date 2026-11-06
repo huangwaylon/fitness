@@ -3,7 +3,7 @@
 // and fragment is a ずかん `find` (mushrooms are cosmetic). None of it changes ベル, opens a sheet or navigates. The day
 // items derive from ?date= (deterministic); ?find= forces a bottle, this morning's fragments or the rare mushroom.
 import { expect, test, type Page } from './fixtures.ts';
-import { fossilOnScreen, is3d, quiet, settled, step } from './island.ts';
+import { fossilOnScreen, is3d, islandUp, quiet, settled, step } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -12,7 +12,7 @@ test.use({ viewport: { width: 390, height: 844 } });
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   return { bells: await hudBells(page).getAttribute('aria-label'), url: page.url() };
 }
 async function unchanged(page: Page, before: { bells: string | null; url: string }) {
@@ -47,7 +47,7 @@ test('shells lie on the front beach (the newest three); a tap picks one up, and 
   expect(await finds(page)).toEqual([{ kind: 'shell', id }]);
   await unchanged(page, before);
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(shells).toHaveCount(2);
 });
 
@@ -210,6 +210,7 @@ test('what lies on the beach as the island opens just lies there: no wash-in', a
 test('wishes on shooting stars bring star fragments the next morning; a tap picks one up (the wish itself: sky.spec)', async ({ page }) => {
   await page.addInitScript(() => localStorage.getItem('scene-wish') || localStorage.setItem('scene-wish', JSON.stringify({ '2026-11-05': 3 })));
   await page.goto('?demo&date=2026-11-05T08:00');
+  await islandUp(page);
   await expect(page.locator('[data-find="fragment"]')).toHaveCount(3);
   const frags = page.locator('[data-find="fragment"]');
   await expect(frags.first()).toBeAttached();
@@ -243,7 +244,7 @@ test('mushroom season: November mushrooms beside the trees, clear of every contr
   expect(await finds(page)).toEqual([]); // no ずかん kind for mushrooms: cosmetic
   await unchanged(page, before);
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(mush).toHaveCount(n - 1);
 });
 

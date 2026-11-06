@@ -3,8 +3,8 @@
 // cue) and both villagers and the visitor do the same three stretches together (~6 s); then the deck is gone for the
 // day on this phone. No ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d, w3 } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { is3d, islandUp, w3 } from './island.ts';
+import { hudBells } from './hud.ts';
 
 /** The deck out to play (ready) or playing (the layout's deck stands every day: `idle` when it isn't its day). */
 const LIVE = '[data-stretch]:not([data-stretch="idle"])';
@@ -40,7 +40,7 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
   await page.setViewportSize({ width: 390, height: 844 });
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto('?demo&date=2026-11-01T07:00&critter=none'); // a Sunday morning: Daisy Mae is on the beach
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const bells = await hudBells(page).getAttribute('aria-label');
   await expect(deck(page)).toBeVisible();
   await expect(page.locator('[data-visitor="daisy-mae"] .art')).toBeVisible();
@@ -69,14 +69,14 @@ test('a morning: the tape deck is out, clear of every control; a tap and everyon
   await expect(hudBells(page)).toHaveAttribute('aria-label', bells!);
   // once a day per phone
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForTimeout(800);
   await expect(page.locator(LIVE)).toHaveCount(0);
 });
 
 test('no deck on a later hour without Exercise met; a morning opening keeps it out for the day', async ({ page }) => {
   await page.goto('?demo&date=2026-11-02T09:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForTimeout(800);
   await expect(page.locator(LIVE)).toHaveCount(0);
   await page.goto('?demo&date=2026-11-02T06:10');
@@ -159,7 +159,7 @@ async function allStretched(page: Page, n: number) {
 
 test('the guest’s phone: a tap on the deck and its villager stretches with both members’', async ({ page }) => {
   await page.goto('?demo&date=2026-11-01T07:00&critter=none&visitor=none&as=G');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(deck(page)).toBeVisible();
   await expect(page.locator('[data-actor] .vil')).toHaveCount(3);
   await settled(page); // its villager ashore at its spot
@@ -176,7 +176,7 @@ test('a member’s tap with the guest here: the guest’s villager stretches on 
   const open = async (more: string) => {
     const p = await ctx.newPage();
     await p.goto(`?demo&date=2026-11-01T07:00&critter=none&visitor=none${more}`);
-    await expect(hudMenu(p)).toBeVisible();
+    await islandUp(p);
     return p;
   };
   const a = await open('');

@@ -6,38 +6,22 @@
 //     finely never changes what the rest are worth). No pace verdict: what the calendar asked for is the overdue count.
 //   - Subtasks: one level, enforced on the read; a row that can't be placed under a live top-level task is promoted,
 //     never hidden.
+import type { WedTask } from '#lib/contract/wedding.ts';
 import { daysBetween } from '#lib/time/dates.ts';
 
 /** 'YYYY-MM' of a day ('' for none: it groups with the undated rows). */
 export const monthOf = (day: string): string => day.slice(0, 7);
 
-/** A task as the board reads it (contract/wedding.ts WedTask: the old Sheet's rows, every field a string). */
-export interface TaskRow {
-  id: string;
-  title: string;
-  category: string;
-  due: string;
-  start: string;
-  doneAt: string;
-  createdAt: string;
-  deletedAt: string;
-  parentId: string;
-}
+/** A task as the board reads it (contract/wedding.ts WedTask: the old Sheet's rows, every field a string; who ticked
+ *  it aside). */
+type TaskRow = Omit<WedTask, 'doneBy'>;
 
 /** How near a due date has to be to count as soon (today included). */
 export const SOON_DAYS = 14;
 
-export const STATE = {
-  DONE: 'done',
-  OVERDUE: 'overdue',
-  /** Due within SOON_DAYS, today included. */
-  SOON: 'soon',
-  LATER: 'later',
-  /** No usable date: counted in the total, 0 unless done. */
-  NODATE: 'nodate'
-} as const;
-/** A task's state (the filter chips' slices). */
-type TaskState = (typeof STATE)[keyof typeof STATE];
+/** A task's state (the filter chips' slices): `soon` due within SOON_DAYS, today included; `nodate` no usable date
+ *  (counted in the total, 0 unless done). */
+type TaskState = 'done' | 'overdue' | 'soon' | 'later' | 'nodate';
 
 const isLive = (t: TaskRow): boolean => !t.deletedAt;
 const isDone = (t: TaskRow): boolean => Boolean(t.doneAt);
@@ -47,7 +31,7 @@ const isDone = (t: TaskRow): boolean => Boolean(t.doneAt);
  * live row whose own `parentId` is empty. A grandchild, a self-parent, a two-cycle, an orphan (its parent deleted) and
  * a dangling id are all promoted. Deleted rows are dropped.
  */
-export function partitionSubtasks<T extends TaskRow>(tasks: readonly T[]): { parents: T[]; children: Map<string, T[]> } {
+function partitionSubtasks<T extends TaskRow>(tasks: readonly T[]): { parents: T[]; children: Map<string, T[]> } {
   const live = tasks.filter(isLive);
   const topLevel = new Set<string>();
   for (const task of live) if (!task.parentId) topLevel.add(task.id);
@@ -71,7 +55,7 @@ function byCreated(a: TaskRow, b: TaskRow): number {
 
 const clamp01 = (value: number): number => Math.min(1, Math.max(0, value));
 
-export interface TaskProgress {
+interface TaskProgress {
   /** 0–1. */
   percent: number;
   state: TaskState;
@@ -85,7 +69,7 @@ export interface TaskProgress {
 }
 
 /** A task's progress on `today` (the board's day, todayIn), from its live subtasks. */
-export function taskProgress(task: TaskRow, today: string, subtasks: readonly TaskRow[] = []): TaskProgress {
+function taskProgress(task: TaskRow, today: string, subtasks: readonly TaskRow[] = []): TaskProgress {
   const due = task.due;
   const dated = Boolean(due);
   const done = isDone(task);
@@ -95,11 +79,11 @@ export function taskProgress(task: TaskRow, today: string, subtasks: readonly Ta
   // done_at > the tally > nothing, nothing blended
   const percent = done ? 1 : tally ? tally.done / tally.total : 0;
   let state: TaskState;
-  if (done) state = STATE.DONE;
-  else if (!dated) state = STATE.NODATE;
-  else if (days! < 0) state = STATE.OVERDUE;
-  else if (days! <= SOON_DAYS) state = STATE.SOON;
-  else state = STATE.LATER;
+  if (done) state = 'done';
+  else if (!dated) state = 'nodate';
+  else if (days! < 0) state = 'overdue';
+  else if (days! <= SOON_DAYS) state = 'soon';
+  else state = 'later';
   const start = task.start;
   const started = Boolean(start) && start <= today;
   const dueThisMonth = dated && monthOf(due) === monthOf(today);
@@ -108,7 +92,7 @@ export function taskProgress(task: TaskRow, today: string, subtasks: readonly Ta
     percent,
     state,
     dated,
-    thisMonth: (dueThisMonth || running) && state !== STATE.OVERDUE && state !== STATE.NODATE,
+    thisMonth: (dueThisMonth || running) && state !== 'overdue' && state !== 'nodate',
     days,
     tally
   };

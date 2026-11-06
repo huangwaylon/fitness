@@ -4,7 +4,7 @@
 // taken, its own queued ones judged).
 import { describe, expect, it } from 'vitest';
 import {
-  WedBook, wedBookOf, wedClean, wedConfig, wedDate, wedFold, wedNote, wedOpOf, wedRowOf, wedSlot, wedTasks, newTaskId, WTASK_MAX, type WedEntry
+  WedBook, wedBookOf, wedClean, wedConfig, wedDate, wedFold, wedNote, wedOpOf, wedRowOf, wedSlot, wedTasks, newTaskId, type WedEntry
 } from './wedding.ts';
 import { eventSlot, validEventData } from './record.ts';
 import { guestMayWrite } from './guest.ts';
@@ -14,6 +14,9 @@ type W = 'A' | 'B' | 'G';
 const row = (type: string, who: W, d: Record<string, unknown>, queued = false): WedEntry => ({ ...wedRowOf(type, d, who)!, ...(queued ? { queued: true as const } : {}) });
 const task = (who: W, id: string, at: number, extra: Record<string, unknown> = {}, queued = false) =>
   row('wtask', who, { id, at, c: T, title: id, cat: '', due: '2027-04-18', ...extra }, queued);
+
+/** The `wtask` rows at most (contract/wedding.ts). */
+const WTASK_MAX = 2000;
 
 describe('the ops', () => {
   it('reads each type, its known keys only', () => {

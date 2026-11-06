@@ -2,7 +2,7 @@
 // mastery per sub-skill and feature, accuracy per type, accent and level, the comfortable level (an Elo-style
 // ability), the first-listen trend, the days played this week and the couple summary. Folded from the record's
 // `listen` rows (contract/listen.ts: mine whole, the partner's as summaries) on the phone, never stored. Pure.
-import { listenOf, listenSummaryOf, stampsUnit, type ListenRow } from '../contract/listen.ts';
+import { LISTEN_MAX_Q, LISTEN_MAX_RP, firstListenRight, listenOf, listenSummaryOf, stampsUnit, type ListenRow } from '../contract/listen.ts';
 import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { levelRank, type Accent, type Entry, type Feature, type Item, type ItemType } from './bank.ts';
@@ -48,8 +48,6 @@ export interface OtherGame {
   stamped?: 1;
 }
 
-/** An item of this build by id, as the index knows it (no level loaded: pool.ts). */
-export const itemOf = (id: string): Entry | undefined => entryOf(id);
 
 /** My games (in the order played) and the others' summaries, from the `listen` rows this phone holds; of mine, only
  *  the answers whose items this build knows (none: not a game here). A game id
@@ -75,7 +73,7 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
       const r = x.r.filter(([id]) => lesson || !!entryOf(id) || isRungId(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
       if (!r.length) continue;
       const unit = lesson ? { u: x.u!, l: x.l!, ...(x.tm !== undefined && { tm: x.tm }) } : null;
-      const tally = unit ? { first: x.r.filter(([, ok, , rp]) => ok === 1 && rp === 0).length, of: x.r.length, stamped: stampsUnit(x) } : null;
+      const tally = unit ? { first: x.r.filter(firstListenRight).length, of: x.r.length, stamped: stampsUnit(x) } : null;
       const was = mine.get(x.g);
       if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r, ...unit, ...(tally && { unit: tally }) });
       else {
@@ -84,7 +82,7 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
         const all = [...early, ...late.filter((y) => !have.has(y.id))];
         // a lesson joined again: its tally over the answers once each (a stamp from either row)
         const merged = was.unit && tally
-          ? { first: all.filter((y) => y.ok && y.rp === 0).length, of: all.length, stamped: was.unit.stamped || tally.stamped || stampsUnit({ ...unit!, r: all.map((y) => [y.id, y.ok ? 1 : 0, y.pick, y.rp] as const) as ListenRow['r'] }) }
+          ? { first: all.filter(firstListenRight).length, of: all.length, stamped: was.unit.stamped || tally.stamped || stampsUnit({ ...unit!, r: all.map((y) => [y.id, y.ok ? 1 : 0, y.pick, y.rp] as const) as ListenRow['r'] }) }
           : (was.unit ?? tally ?? undefined);
         mine.set(x.g, { ...was, ...(sooner && { d: x.d, at }), n: Math.max(was.n, x.n), ms: was.ms + x.ms, p: was.p || p, r: all, ...(merged && { unit: merged }) });
       }
@@ -109,9 +107,9 @@ export function listenAnswers(
   const r: ListenRow['r'] = [];
   items.forEach((it, i) => {
     const a = answers[i];
-    if (!had[i] || r.length >= 12 || (!a && !done)) return;
+    if (!had[i] || r.length >= LISTEN_MAX_Q || (!a && !done)) return;
     const pick = a ? (loadedItem(it.id)?.choices.indexOf(it.choices[a.k]) ?? -1) : -1;
-    r.push([it.id, a && a.k === it.answer ? 1 : 0, pick, Math.min(99, rp[i] ?? 0)]);
+    r.push([it.id, a && a.k === it.answer ? 1 : 0, pick, Math.min(LISTEN_MAX_RP, rp[i] ?? 0)]);
   });
   return r;
 }
@@ -123,7 +121,8 @@ export const scoreOf = (a: Pick<Answer, 'ok' | 'rp'>): number => (a.ok ? (a.rp =
 export function dayNum(d: LocalDate): number {
   return Math.round(Date.UTC(+d.slice(0, 4), +d.slice(5, 7) - 1, +d.slice(8, 10)) / 86_400_000);
 }
-const dayOf = (n: number): LocalDate => new Date(n * 86_400_000).toISOString().slice(0, 10);
+/** dayNum's inverse. */
+export const dayOf = (n: number): LocalDate => new Date(n * 86_400_000).toISOString().slice(0, 10);
 
 /** Mastery's recency half-life (days), its prior and the prior's weight (answers). */
 const HALF_LIFE = 21;
@@ -210,7 +209,7 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
       const x = (map as Map<unknown, ReturnType<typeof acc>>).get(key) ?? acc();
       x.n++;
       if (a.ok) x._r++;
-      if (a.ok && a.rp === 0) x._f++;
+      if (firstListenRight(a)) x._f++;
       (map as Map<unknown, ReturnType<typeof acc>>).set(key, x);
     }
     const b = difficulty(it);
@@ -239,29 +238,13 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
   };
 }
 
-/** The curriculum's stages (§3) a comfortable level falls in, with each one's range on the levels' scale. */
-const STAGES = [
-  { id: 's0', stars: 1, cefr: 'A2–B1', from: 1, to: 2.5 },
-  { id: 's1', stars: 2, cefr: 'B1+', from: 2.5, to: 3.5 },
-  { id: 's2', stars: 3, cefr: 'B2', from: 3.5, to: 4.5 },
-  { id: 's3', stars: 4, cefr: 'B2+', from: 4.5, to: 5.5 },
-  { id: 's4', stars: 5, cefr: 'C1', from: 5.5, to: 6.5 }
-] as const;
-export type Stage = (typeof STAGES)[number];
-
-/** The stage of a comfortable level and how far into it (0-1). */
-export function stageOf(level: number): { stage: Stage; into: number } {
-  const stage = STAGES.find((s) => level < s.to) ?? STAGES[STAGES.length - 1];
-  return { stage, into: Math.max(0, Math.min(1, (level - stage.from) / (stage.to - stage.from))) };
-}
-
 /** A スピード はしご game (its answers are rungs': ladder.ts). Its first listens fail by design at the top, so the
  *  trend and the level nudge leave it out; it has its own measure (speedOf). */
 export const isLadderGame = (g: Pick<Game, 'r'>): boolean => g.r.some((a) => isRungId(a.id));
 
 /** First-listen accuracy per quiz game, the last `n` games (oldest first). */
 export function trendOf(games: readonly Game[], n = 12): number[] {
-  return games.filter((g) => g.r.length && !isLadderGame(g)).slice(-n).map((g) => g.r.filter((a) => a.ok && a.rp === 0).length / g.r.length);
+  return games.filter((g) => g.r.length && !isLadderGame(g)).slice(-n).map((g) => g.r.filter(firstListenRight).length / g.r.length);
 }
 
 /** The ladders a speed reading takes (the last this many climbed) and the fewest it's read from. */

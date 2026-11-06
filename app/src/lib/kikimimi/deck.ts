@@ -2,8 +2,8 @@
 // the same deck from the `open` intent's seed and level, so no text goes on the wire. It draws from the level's items as
 // loaded (pool.ts levelItems: the level's chunk must be in first, game.svelte.ts waits for it).
 import { mulberry32, shuffle } from '#lib/random.ts';
-import type { Item, ItemType, Level } from './bank.ts';
-import { drawn, mixFor, type Mixes } from './mix.ts';
+import { shuffleChoices, type Item, type ItemType, type Level } from './bank.ts';
+import { mixFor, type Mixes } from './mix.ts';
 import { INDEX, levelItems } from './pool.ts';
 import { staleness } from './recent.ts';
 
@@ -11,10 +11,6 @@ export const DECK_SIZE = 8;
 
 /** The mixes this build plays (mix.ts: level 4's dialogues once all are voiced, as compiled: levels/index.json). */
 export const MIX: Mixes = mixFor(INDEX.dialogues);
-
-/** Whether a mix draws this item (its level's mix has its type: dialogues not yet voiced stay out, of にがて れんしゅう
- *  too). */
-export const inMix = (it: Pick<Item, 'lv' | 'type'>, mix: Mixes = MIX): boolean => drawn(it, mix);
 
 /** The levels a phone offers (the lobby's): those with a mix and every clip of the items it draws, so a level whose
  *  audio isn't made yet (level 4 till the neural cast, docs/curriculum.md §14) stays hidden and main stays shippable
@@ -61,9 +57,5 @@ export function deck(seed: number, lv: Level, all: Mixes = MIX, seen?: ReadonlyM
   const types = [...byType].flatMap(([t, items]) => items.map(() => t));
   for (let tries = 0; !runOk(shuffle(types, r)); tries++) if (tries > 1000) throw new Error(`kikimimi: no order for level ${lv}`);
   const next = new Map([...byType].map(([t, items]) => [t, items.values()]));
-  return types.map((t) => {
-    const it = next.get(t)!.next().value!;
-    const order = shuffle(it.choices.map((_, i) => i), r);
-    return { ...it, choices: order.map((i) => it.choices[i]), answer: order.indexOf(it.answer) };
-  });
+  return types.map((t) => shuffleChoices(next.get(t)!.next().value!, r));
 }

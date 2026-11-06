@@ -3,8 +3,7 @@
 // least 12px from the screen's sides and foot and never sit over the HUD (the leaf, the bowl, the health button, the sync chip,
 // the say button). The catch plates stack at the bottom centre, the newest at the bottom, and go on their own.
 import { expect, test, type Page } from './fixtures.ts';
-import { castIn, quiet, reelOnBite } from './island.ts';
-import { hudMenu } from './hud.ts';
+import { castIn, islandUp, quiet, reelOnBite } from './island.ts';
 
 const centre = (page: Page, sel: string) =>
   page.locator(sel).first().evaluate((el) => {
@@ -14,7 +13,7 @@ const centre = (page: Page, sel: string) =>
 
 async function open(page: Page, q: string) {
   await page.goto(`?demo&${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await quiet(page); // (the opening beats over)
 }
 

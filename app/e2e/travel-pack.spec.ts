@@ -4,8 +4,8 @@
 // (the demo's tabs share the record's rows through localStorage, as phones share the record), 「じゅんび OK！」 once,
 // and a trip that's over (a quiet count). SHOTS=<dir>: WebKit screenshots of the list.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
-import { BASE, islandQuery } from './island.ts';
+import { fromMenu } from './hud.ts';
+import { BASE, islandQuery, islandUp } from './island.ts';
 import { shot } from './shots.ts';
 import { openTrip } from './trips.ts';
 
@@ -228,7 +228,7 @@ test('all packed: Orville’s 「じゅんび OK！」, celebrated once', async 
 
 test('せってい → りょこう: km / mi, kept on this phone', async ({ page }) => {
   await page.goto(`?demo&date=${DATE}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'settings');
   const sec = page.locator('dialog[open] [data-travel-section]');
   await expect(sec.locator('[data-units="km"]')).toHaveAttribute('aria-pressed', 'true');
@@ -237,7 +237,7 @@ test('せってい → りょこう: km / mi, kept on this phone', async ({ page
   expect(await page.evaluate(() => localStorage.getItem('island.travel.units'))).toBe('mi');
   if (process.env.SHOTS) await sec.screenshot({ path: `${process.env.SHOTS}/settings-units.png` });
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'settings');
   await expect(page.locator('dialog[open] [data-travel-section] [data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
 });
