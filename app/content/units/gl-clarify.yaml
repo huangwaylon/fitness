@@ -20,7 +20,7 @@ cando:
 status: voiced
 letter:
   en: "You came by the café today and asked me to say that again. Twice, actually. Good. Most people just nod and drink the wrong coffee. So that's our deal: you ask, I repeat, and nobody walks out with decaf by mistake. I'm saving you a cup of the house blend. Coo."
-  ja: "きょう カフェで「もう いちど いって」って きいてくれたね。2かいも。それで いい。たいていの ひとは うなずいて、ちがう コーヒーを のんで しまう。じゃあ、こう しよう。きみが きいて、ぼくが くりかえす。まちがえて カフェインレスを のむ ひとは もう いない。ハウスブレンドを 1ぱい とって おくよ。クルッ。"
+  ja: "きょう カフェで「もう いちど いって」って きいてくれたね。2かいも。それで いい。たいていの ひとは うなずいて、ちがう コーヒーを のんで しまう。じゃあ、こう しよう。きみが きいて、ぼくが くりかえす。まちがえて カフェインレスを もって かえる ひとは もう いなく なる。ハウスブレンドを 1ぱい とって おくよ。クルッ。"
 ph:
   - { id: ph-say-again, en: "say that again", ja: "もう いちど いって", match: "say (that|it) again", register: friend, scene: "a noisy café", trap: "「ワンモア」より Could you say that again?" }
   - { id: ph-i-meant, en: "I meant", ja: "いや、〜の つもりだった", register: friend, scene: "putting a detail right", trap: "mean の 過去形。まえの ことばを なおす 合図" }
@@ -44,6 +44,9 @@ items:
     note: "thirTEEN と THIRty は 強く 言う 位置で 区別"
     choices: ["On Friday the 13th.", "On the 30th.", "On a Saturday."]
     answer: 0
+    ctx: "カフェで、友だちがライブのチケットの話をしています"
+    cja: ["13日の金曜日。", "30日。", "土曜日。"]
+    why: "13日を30日と聞きまちがえられ、「One, three」と言い直しています。thirTEENは後ろ、THIRtyは前を強く読みます。金曜なので土曜でもありません。"
     focus: "One, three"
     ask: "ライブは いつ？"
     scene: cafe
@@ -65,6 +68,9 @@ items:
     note: "I meant〜で 訂正。15列ではなく 50列"
     choices: ["Ha, that's fine. We'll bring binoculars!", "Row 15? We'll be so close!", "Fifty? Right by the stage, then!"]
     answer: 0
+    ctx: "ライブの席がどのあたりか、友だちに聞いています"
+    cja: ["はは、大丈夫。双眼鏡を持っていこう！", "15列？ すごく近いね！", "50列？ じゃあステージのすぐそばだ！"]
+    why: "「I meant row 50」で15列を50列に訂正。nosebleeds は天井近くの遠い席なので、双眼鏡の冗談が自然です。15列は訂正前の数字です。"
     focus: "I meant row 50"
     ask: "つぎの ひとことは？"
     scene: cafe
@@ -84,6 +90,9 @@ items:
     note: "A or B の 質問に Yes で こたえない"
     choices: ["The lemon one, please.", "Yes, both sound good.", "Sorry, I'm full."]
     answer: 0
+    ctx: "カフェで、店員が注文を聞き返しています"
+    cja: ["レモンのほうをお願いします。", "はい、両方おいしそう。", "すみません、おなかいっぱいです。"]
+    why: "「A or B?」と聞かれたら Yes ではなく、どちらかを答えます。lemon と melon は最初の音、l と m で区別します。"
     scene: cafe
     cond: { kind: cafe, level: light }
     tags: { seed: 51, register: service, pragmatic: literal, conditions: [cafe], features: [l-r] }
@@ -98,6 +107,9 @@ items:
     note: "Wait, no, I meant〜の あとが 正しい 情報"
     choices: ["They're meeting on Tuesday.", "They're meeting on Thursday.", "She's going to yoga with him on Tuesday."]
     answer: 0
+    ctx: "友だちが待ち合わせの曜日を決めています"
+    cja: ["火曜日に会う。", "木曜日に会う。", "火曜日に一緒にヨガに行く。"]
+    why: "「Wait, no, I meant Tuesday」で木曜を火曜に訂正。木曜は彼女のヨガの日なので会えません。言い直しのあとが正しい情報です。"
     ask: "つまり、どういうこと？"
     scene: cafe
     cond: { kind: cafe, level: light }
@@ -113,6 +125,9 @@ items:
     note: "hang a left＝左に 曲がる。聞きのがした 所だけ きく"
     choices: ["Sorry, could you say the last part again?", "Sure, I'll have the ramen.", "Yes, I love flowers."]
     answer: 0
+    ctx: "友だちが店までの道を説明しています"
+    cja: ["ごめん、最後のところをもう一回言ってくれる？", "うん、ラーメンにする。", "うん、花が大好き。"]
+    why: "最後の目印が聞き取りにくかったので、the last part だけ聞き返すのが便利です。ramen や flower は聞こえた単語につられたわなです。"
     scene: cafe
     cond: { kind: cafe, level: light }
     tags: { seed: 4, register: friend, pragmatic: literal, conditions: [cafe], features: [ellipsis] }
@@ -128,6 +143,9 @@ items:
     note: "Party of four＝4名様。言いなおした あとが 答え"
     choices: ["4", "14", "40"]
     answer: 0
+    ctx: "にぎやかなレストランの入口で、店員が人数を確認"
+    cja: ["4人", "14人", "40人"]
+    why: "店員は最初 fourteen と聞きまちがえ、「Oh, four!」と言い直しました。Party of four は「4名様」。訂正のあとが答えです。"
     ask: "なんにん？"
     scene: cafe
     cond: { kind: cafe, level: light }
@@ -143,6 +161,9 @@ items:
     note: "火曜と木曜。the day after Monday が ヒント"
     choices: ["Tuesday.", "Thursday.", "Monday."]
     answer: 0
+    ctx: "友だちが留守電の内容を電話で確認しています"
+    cja: ["火曜日。", "木曜日。", "月曜日。"]
+    why: "Tuesday と Thursday は似た音なので、「The day after Monday（月曜の次の日）」と言い換えています。Monday はヒントに出ただけです。"
     focus: "The day after Monday"
     ask: "ゆうはんは なんようび？"
     scene: living
@@ -164,6 +185,9 @@ items:
     note: "So that's 〜? は 確認。Will do で うけて おわる"
     choices: ["Will do. See you at seven!", "Yes, I've seen the statue.", "No, I'm not late."]
     answer: 0
+    ctx: "友だちと待ち合わせの最終確認をしています"
+    cja: ["了解。じゃあ7時に！", "うん、あの像は見たことある。", "ううん、遅れてないよ。"]
+    why: "So that's〜, right? は約束の確認なので、Will do（わかった）で受けて終わるのが自然。statue や late は聞こえた単語につられたわなです。"
     scene: street
     channel: phone
     cond: { kind: phone, level: light, bed: street }
@@ -180,6 +204,9 @@ items:
     note: "I mean の あとが 本当に 言いたい こと"
     choices: ["They should get there early to get a seat.", "The café is too small to go to.", "He doesn't think the café is cute."]
     answer: 0
+    ctx: "友だちとカフェに向かう途中です"
+    cja: ["席を取るために早めに着いたほうがいい。", "カフェが小さすぎて行けない。", "カフェがかわいいとは思っていない。"]
+    why: "I mean のあとが本音で、席が6つくらいしかないから早めに行こう、です。cute とは言っているので、行かない・かわいくない、ではありません。"
     ask: "つまり、どういうこと？"
     scene: street
     cond: { kind: street, level: light }
@@ -196,6 +223,9 @@ items:
     note: "0 を oh と 読む。I meant の あとが 正しい"
     choices: ["203", "302", "230"]
     answer: 0
+    ctx: "友だちが部屋番号を電話で伝えています"
+    cja: ["203号室", "302号室", "230号室"]
+    why: "302と言ったあと「I meant 203」と訂正し、「Two, oh, three」とくり返しています。部屋番号の0は oh と読みます。"
     ask: "なんごうしつ？"
     scene: living
     channel: phone
@@ -212,6 +242,9 @@ items:
     note: "Anyway, see you in a sec＝もう 電話を おわる 合図"
     choices: ["Got it. Coming up now.", "Sorry, I'm by the window.", "Downstairs is fine, thanks."]
     answer: 0
+    ctx: "カフェで待つ友だちから電話がかかってきました"
+    cja: ["わかった。いま上がるね。", "ごめん、窓ぎわにいるよ。", "下の階で大丈夫、ありがとう。"]
+    why: "「Up-stairs. By the window.」と言い直し、see you in a sec で電話を終えようとしています。了解して向かうのが自然。窓ぎわにいるのは相手です。"
     focus: "Up-stairs. By the window"
     ask: "つぎの ひとことは？"
     scene: street
@@ -233,6 +266,9 @@ items:
     note: "場所も 時間も 言いなおし。最後の くりかえしで 確認"
     choices: ["Ebisu, 7:30, east exit.", "Shibuya, 6:30, east exit.", "Ebisu, 6:30, west exit."]
     answer: 0
+    ctx: "にぎやかなカフェで、待ち合わせを確認しています"
+    cja: ["恵比寿、7時半、東口。", "渋谷、6時半、東口。", "恵比寿、6時半、西口。"]
+    why: "渋谷・6時半と言ったあと、恵比寿・7時半に訂正。最後に相手が「Ebisu, 7:30, east exit」とくり返して確認しています。"
     focus: "No, Ebisu"
     ask: "どこで なんじ？"
     scene: cafe
@@ -255,6 +291,9 @@ items:
     note: "I mean で 数字を 言いなおし。forty-seven ではない"
     choices: ["74", "47", "17"]
     answer: 0
+    ctx: "カフェのレジで、店員が呼び出し番号を伝えます"
+    cja: ["74番", "47番", "17番"]
+    why: "47と言ってから「I mean 74」と訂正し、「Seven, four」とくり返しています。最初の数字はわなです。"
     ask: "ばんごうは？"
     scene: cafe
     cond: { kind: cafe, level: light }
@@ -271,6 +310,9 @@ items:
     note: "kind of a hike＝けっこう 遠い。I mean で 言いかえ"
     choices: ["It's far enough to take a taxi.", "It's a short, easy walk.", "Taxis are hard to find there."]
     answer: 0
+    ctx: "友だちが駅から店までの行き方を話しています"
+    cja: ["タクシーに乗るくらい遠い。", "近くて楽な道のり。", "そこはタクシーがつかまりにくい。"]
+    why: "kind of a hike は「けっこう遠い」。I mean のあとで「歩いて20分」と言い換え、タクシーをすすめています。山歩きの意味ではありません。"
     ask: "つまり、どういうこと？"
     scene: street
     cond: { kind: street, level: light }
@@ -286,6 +328,9 @@ items:
     note: "店員も 聞きかえす。warmed up＝温める"
     choices: ["Yes, warmed up, please.", "Yes, it's warm today.", "For here, please."]
     answer: 0
+    ctx: "カフェのレジで、店員が聞き返しています"
+    cja: ["はい、温めてください。", "はい、今日は暖かいですね。", "店内で、お願いします。"]
+    why: "Did you want it warmed up? は「温めますか？」。warm を天気の話にした返事や、店内か持ち帰りかの答えは質問とずれています。"
     scene: cafe
     cond: { kind: cafe, level: light }
     tags: { seed: 51, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
@@ -300,6 +345,9 @@ items:
     note: "after ではなく before。訂正の あとが 正解"
     choices: ["Ah, before the bridge. Thanks!", "After the bridge, then.", "Got it, I'll cross the river."]
     answer: 0
+    ctx: "友だちにパン屋への道を聞いています"
+    cja: ["あ、橋の手前ね。ありがとう！", "じゃあ、橋をこえたところね。", "了解、川を渡るね。"]
+    why: "最初は after the bridge と言いましたが、「I meant before the bridge」と訂正しました。川が見えたら行きすぎなので、渡るのもまちがいです。"
     focus: "I meant before the bridge"
     ask: "つぎの ひとことは？"
     scene: street
@@ -320,6 +368,8 @@ items:
     note: "meant の t は ほぼ 消える。mean と 母音で 区別"
     choices: [meant, mean, met]
     answer: 0
+    cja: ["〜のつもりだった", "〜のつもりだ", "会った"]
+    why: "言ったことを訂正しているので過去形の meant。語尾の t はほぼ消えますが、mean より母音が短く、met と違って n が聞こえます。"
     focus: meant
     marks: [[drop, meant, t]]
   - id: kw-did-ya
@@ -334,6 +384,8 @@ items:
     note: "Did you は「ディジュ」に つながる"
     choices: ["Did you say", "Do you say", "Did you see"]
     answer: 0
+    cja: ["〜って言った？", "〜って言う？", "〜を見た？"]
+    why: "Did you は「ディジュ」とつながります。いま聞いた言葉を確認しているので過去形の Did you say。see だと「見た？」になり意味が通りません。"
     focus: "Did you say"
     scene: cafe
     cond: { kind: cafe, level: light }
@@ -350,6 +402,8 @@ items:
     note: "could you は「クッジュ」"
     choices: ["could you", "can you", "would you"]
     answer: 0
+    cja: ["〜してもらえる？（クッド）", "〜してくれる？（キャン）", "〜してくれますか？（ウッド）"]
+    why: "could you は d と y がつながって「クッジュ」。can you は「キャニュ」、would you は「ウッジュ」で、最初の音で区別します。"
     focus: "could you"
     marks: [[say, "could you", couldja]]
   - id: kw-actually
@@ -363,6 +417,8 @@ items:
     note: "make that 〜＝注文を 言いなおす 定番"
     choices: ["make that", "make it", "take that"]
     answer: 0
+    cja: ["やっぱり〜で（注文の言い直し）", "〜にして", "それを取って"]
+    why: "Make that two は「やっぱり2つで」と注文を言い直す決まり文句で。make と that がつながります。it ではなく that が聞こえます。"
     focus: "make that"
     scene: cafe
     cond: { kind: cafe, level: light }
@@ -378,6 +434,8 @@ items:
     note: "missed の ed は「ト」。the と つながる"
     choices: [missed, miss, mixed]
     answer: 0
+    cja: ["聞きのがした", "聞きのがす", "まぜた"]
+    why: "missed の ed は軽い「ト」で、次の the とつながります。もう聞きのがしたので過去形。mixed なら「クス」の音が入ります。"
     focus: missed
     marks: [[link, "missed the"]]
   - id: kw-so-thats
@@ -391,6 +449,8 @@ items:
     note: "So that's は 一気に「ソザッツ」"
     choices: ["So that's", "So that", "So it's"]
     answer: 0
+    cja: ["じゃあ〜ってことね", "だから〜", "じゃあ〜だね"]
+    why: "So that's〜, right? は聞いた内容をくり返す確認の言い方で、一気に「ソザッツ」。So it's なら th の音がなく「ソイッツ」です。"
     focus: "So that's"
     marks: [[link, "So that's"]]
   - id: kn-price-fast
@@ -405,6 +465,9 @@ items:
     note: "15.80ドルを fifteen eighty と 2つに 分けて 言う"
     choices: ["$15.80", "$18.50", "$51.80"]
     answer: 0
+    ctx: "カフェのレジで、客が値段を聞き返しました"
+    cja: ["15ドル80セント", "18ドル50セント", "51ドル80セント"]
+    why: "fifteen eighty は15ドル80セント。ドルとセントを分けて読むのがふつうです。18.50は数字の順番、51.80は fifteen と fifty のわなです。"
     ask: "いくら？"
     scene: cafe
     cond: { kind: cafe, level: heavy }
@@ -420,6 +483,9 @@ items:
     note: "最後の Actually, no の あとが 答え"
     choices: ["He wants a medium in the end.", "He wants a large.", "He doesn't want anything."]
     answer: 0
+    ctx: "友だちにコーヒーを買ってきてもらいます"
+    cja: ["結局ミディアムがほしい。", "ラージがほしい。", "何もいらない。"]
+    why: "medium → large → 「Actually, no, medium's fine」と2回言い直しています。最後の言い直しが答え。ラージは途中で取り消されました。"
     ask: "つまり、どういうこと？"
     scene: cafe
     cond: { kind: cafe, level: heavy }
@@ -435,6 +501,9 @@ items:
     note: "A or B の 質問。どちらかを はっきり"
     choices: ["The curry, please!", "Yes, both, please.", "No, it's not that loud."]
     answer: 0
+    ctx: "にぎやかなカフェで、友だちが注文を聞き返しています"
+    cja: ["カレーで！", "うん、両方で。", "ううん、そんなにうるさくないよ。"]
+    why: "A or B の質問には Yes ではなく、どちらかをはっきり答えます。うるさい店では短く「The curry!」が一番伝わります。"
     scene: cafe
     cond: { kind: cafe, level: heavy }
     tags: { seed: 51, register: friend, pragmatic: literal, conditions: [cafe], features: [contraction] }
@@ -450,6 +519,9 @@ items:
     note: "2回 言いなおす。最後の 数字が 答え"
     choices: ["6:40", "6:14", "4:40"]
     answer: 0
+    ctx: "友だちが映画の時間を調べながら話しています"
+    cja: ["6時40分", "6時14分", "4時40分"]
+    why: "2回言い直し、最後の「Actually, no, it's 6:40」が正解。forty と fourteen は強く読む位置で区別します。"
     ask: "えいがは なんじ？"
     scene: cafe
     cond: { kind: cafe, level: heavy }
@@ -460,12 +532,15 @@ items:
     speaker: lucky
     voice: us
     cast: us-m4
-    en: "Can you grab the blue bag? Not the blue one, sorry, I meant the gray one, by the door. Anyway, I've got to run. See you at home!"
-    tts: "Can you grab the blue bag? Not the blue one, sorry, I meant the gray one, by the door. Anyway, I've gotta run. See you at home!"
+    en: "Can you grab the blue bag? Wait, not the blue one, sorry, I meant the gray one, by the door. Anyway, I've got to run. See you at home!"
+    tts: "Can you grab the blue bag? Wait, not the blue one, sorry, I meant the gray one, by the door. Anyway, I've gotta run. See you at home!"
     ja: "ドアのそばのグレーのかばんを持ってきてほしい。"
     note: "I meant〜で 訂正。got to run＝もう 切る 合図"
     choices: ["He wants the gray bag by the door.", "He wants the blue bag.", "He wants both bags."]
     answer: 0
+    ctx: "外にいるパートナーから電話で頼まれごとです"
+    cja: ["ドアのそばのグレーのかばんがほしい。", "青いかばんがほしい。", "両方のかばんがほしい。"]
+    why: "blue bag と言ってから「I meant the gray one」と訂正しています。最後の Anyway, I've got to run は「もう切るね」の合図です。"
     ask: "つまり、どういうこと？"
     scene: street
     channel: phone
@@ -480,10 +555,10 @@ lessons:
   jissen: [kn-price-fast, km-fast-repair, kr-noisy-reply, kn-time-fast, km-grey-bag, dmw-which-friday]
 tiers:
   dk-gig-date:
-    easy: { choices: ["The 13th.", "The 30th."], answer: 0 }
-    hard: { choices: ["Friday the 13th, after work.", "Friday the 30th, after work.", "Saturday the 13th, in the evening.", "The 3rd, straight from work."], answer: 0 }
+    easy: { choices: ["The 13th.", "The 30th."], answer: 0, cja: ["13日。", "30日。"] }
+    hard: { choices: ["Friday the 13th, after work.", "Friday the 30th, after work.", "Saturday the 13th, in the evening.", "The 3rd, straight from work."], answer: 0, cja: ["13日の金曜日、仕事のあと。", "30日の金曜日、仕事のあと。", "13日の土曜日、夜。", "3日、仕事から直行。"] }
   kr-last-bit:
-    easy: { choices: ["Sorry, could you say the last part again?", "Yes, I like ramen."], answer: 0 }
+    easy: { choices: ["Sorry, could you say the last part again?", "Yes, I like ramen."], answer: 0, cja: ["ごめん、最後のところをもう一回言ってくれる？", "うん、ラーメン好き。"] }
   dk-wrong-time:
-    easy: { choices: ["Ebisu at 7:30.", "Shibuya at 6:30."], answer: 0 }
-    hard: { choices: ["Ebisu, 7:30, east exit.", "Ebisu, 6:30, east exit.", "Shibuya, 7:30, east exit.", "Ebisu, 7:30, west exit."], answer: 0 }
+    easy: { choices: ["Ebisu at 7:30.", "Shibuya at 6:30."], answer: 0, cja: ["恵比寿で7時半。", "渋谷で6時半。"] }
+    hard: { choices: ["Ebisu, 7:30, east exit.", "Ebisu, 6:30, east exit.", "Shibuya, 7:30, east exit.", "Ebisu, 7:30, west exit."], answer: 0, cja: ["恵比寿、7時半、東口。", "恵比寿、6時半、東口。", "渋谷、7時半、東口。", "恵比寿、7時半、西口。"] }
