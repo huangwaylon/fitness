@@ -4,6 +4,8 @@
 // task held; the admin's load takes the rows as they are (imported, idempotent) and a dump loads back the same.
 import { beforeEach, describe, expect, it } from 'vitest';
 import { StoreCore } from '../src/store.ts';
+import { apiWithMeta } from '../src/reqMeta.ts';
+import { keyOwner } from '../src/auth.ts';
 import { wedConfig, wedFold, wedNote, wedRowOf, wedTasks, WNOTE_CHARS, type WedRow } from '../../app/src/lib/contract/wedding.ts';
 import type { Notice } from '../../app/src/lib/contract/live-protocol.ts';
 import { memSql } from './sqlite.ts';
@@ -102,6 +104,9 @@ describe('the wedding board in the record', () => {
     // under a subtask, under nothing, under itself, with a date
     expect(task('A', 's2', 'x', { parent: 's1', due: undefined })).toMatchObject({ ok: false, error: 'bad_request', detail: 'wedding parent' });
     expect(task('A', 's3', 'x', { parent: 'nope', due: undefined })).toMatchObject({ ok: false, error: 'bad_request', detail: 'wedding parent' });
+    // logged as its rule
+    const r = apiWithMeta(store, JSON.stringify({ key: KEY_A, action: 'event', id: 'eparent', type: 'wtask', data: { id: 's6', at: at(), c: T0, title: 'x', cat: '', parent: 'nope' } }), (k) => keyOwner(String(k), { KEY_A, KEY_B, KEY_C }));
+    expect(r.meta).toMatchObject({ st: 'bad_request', why: 'wtask.wedding_parent' });
     expect(task('A', 's4', 'x', { parent: 's4', due: undefined })).toMatchObject({ ok: false, error: 'bad_request' });
     expect(task('A', 's5', 'x', { parent: 'p' })).toMatchObject({ ok: false, error: 'bad_request' });
   });

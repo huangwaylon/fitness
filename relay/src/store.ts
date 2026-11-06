@@ -677,33 +677,22 @@ export class StoreCore {
         }
         if (v.v === 'append') drop = v.drop;
       }
-      let packDrop: string[] = [];
-      if (isPackType(type)) {
-        // a trip's packing list: the guest changes only what it added, each person only their own ticks, the members
-        // the notes; an op beaten by the one held is acknowledged; the trip's cap (contract/pack.ts PackBook)
-        const v = this.packTarget(me, type, data);
-        if (v.v !== 'append') {
-          if (v.v === 'forbidden') return fail('forbidden');
-          if (v.v !== 'stale') return fail('bad_request', v.v === 'full' ? 'pack full' : 'pack owner');
-          this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
-          return { ok: true, duplicate: true };
-        }
-        packDrop = v.drop;
-      }
       let kept = json;
-      let wedDrop: string[] = [];
-      if (isWedType(type)) {
-        // the wedding board: the members' (the guest's is refused above, and here), an op beaten by the one held
-        // acknowledged, a subtask only under a task held, the cap; kept as the rules keep it (a note saved over one it
-        // wasn't edited from carries that one: contract/wedding.ts WedBook)
-        const v = this.wedTarget(me, type, data);
+      let bookDrop: string[] = [];
+      if (isPackType(type) || isWedType(type)) {
+        // a trip's packing list (the guest changes only what it added, each person only their own ticks, the members
+        // the notes; the trip's cap: contract/pack.ts PackBook) or the wedding board (the members' only, a subtask
+        // only under a task held, the cap: contract/wedding.ts WedBook): an op beaten by the one held is acknowledged;
+        // kept as the rules keep it (a note saved over one it wasn't edited from carries that one)
+        const kind = isPackType(type) ? 'pack' : 'wedding';
+        const v = kind === 'pack' ? this.packTarget(me, type, data) : this.wedTarget(me, type, data);
         if (v.v !== 'append') {
           if (v.v === 'forbidden') return fail('forbidden');
-          if (v.v !== 'stale') return fail('bad_request', v.v === 'full' ? 'wedding full' : 'wedding parent');
+          if (v.v !== 'stale') return fail('bad_request', `${kind} ${v.v}`);
           this.io.sql.exec('INSERT OR IGNORE INTO ids (id) VALUES (?)', id);
           return { ok: true, duplicate: true };
         }
-        wedDrop = v.drop;
+        bookDrop = v.drop;
         kept = JSON.stringify(v.row.op);
       }
       if (isFoodType(type)) {
@@ -733,7 +722,7 @@ export class StoreCore {
       }
       const at = this.nextAt();
       if (drop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', `board|${drop}`);
-      for (const sl of [...packDrop, ...wedDrop]) this.io.sql.exec('DELETE FROM events WHERE slot = ?', sl);
+      for (const sl of bookDrop) this.io.sql.exec('DELETE FROM events WHERE slot = ?', sl);
       if (type === 'decor' && data.sc === 'r' && typeof data.at === 'number') this.dropVoided(data.at);
       const slot = eventSlot(type, me, subject, data, Date.parse(at));
       const wasDecor = type === 'decor' && slot ? this.io.sql.exec<{ person: string; data: string }>('SELECT person, data FROM events WHERE slot = ?', slot).toArray()[0] ?? null : null;
