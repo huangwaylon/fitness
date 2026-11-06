@@ -1,5 +1,6 @@
 // りょこう (docs/design.md §Trips) in the quiet kit: the menu's pill opens the trips' sheet (the island paused under
-// it): the list (on now and coming first, then これまで; a trip's badge 「あと99日」 / 「2日目」; km | mi under it), a
+// it): the list's boarding passes (on now and coming first, then これまで; the stub 「あと 99 日」 / 「いま 2 日目」, a past
+// trip's 「行ってきた」 stamp; km | mi under it), a
 // quiet trip (NZ): its photo with ‹ ✕ on it, the title bar once scrolled, the bottom tab bar (日程 · 地図 · 持ち物; no
 // キャンプ場 without campsites), the days open outside the trip, today's alone inside it with the row that is now (the
 // trip's clock), じゅんび's cards, reopening into the trip on now, ‹ back and ✕, the pill offline. A trip drawn like its
@@ -24,8 +25,11 @@ test('the pill opens the list: coming first, then これまで; ✕ closes', asy
   // NZ (Feb 2027) coming, 99 days on Auckland's calendar; then the past, newest first
   const ids = await rows(page).evaluateAll((els) => els.map((e) => [e.getAttribute('data-trip'), e.getAttribute('data-phase')]));
   expect(ids).toEqual([['nz', 'soon'], ['okinawa', 'past'], ['seattle', 'past']]);
-  await expect(sheet(page).locator('[data-trip="nz"] [data-days]')).toHaveText('あと99日');
-  await expect(sheet(page).locator('[data-trip="okinawa"] [data-badge]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-trip="nz"] [data-days]')).toHaveText('99');
+  await expect(sheet(page).locator('[data-trip="nz"]')).toHaveAttribute('aria-label', /あと99日$/);
+  await expect(sheet(page).locator('[data-trip="nz"]')).toContainText('TYO ✈ AKL');
+  await expect(sheet(page).locator('[data-trip="okinawa"] [data-stamp]')).toHaveText('行ってきた2026');
+  await expect(sheet(page).locator('[data-trip="nz"] [data-stamp]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-memories]')).toHaveText('これまで');
   await expect(sheet(page).locator('[data-units="km"]')).toHaveAttribute('aria-pressed', 'true');
   await shot(page, 'list-day');
@@ -98,7 +102,9 @@ test('inside a trip: on now first, today’s card open alone, the row that is no
   await hdr(page).locator('.back').click();
   await expect(rows(page).first()).toHaveAttribute('data-trip', 'nz');
   await expect(rows(page).first()).toHaveAttribute('data-phase', 'now');
-  await expect(sheet(page).locator('[data-trip="nz"] [data-day-now]')).toHaveText('2日目');
+  await expect(sheet(page).locator('[data-trip="nz"] [data-day-now]')).toHaveText('2');
+  await expect(rows(page).first()).toHaveAttribute('aria-label', /2日目$/);
+  await shot(page, 'list-now');
   await pickTrip(page, 'nz');
   await expect(sheet(page).locator('[data-trip-status="now"]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-day][data-open]')).toHaveCount(1);
