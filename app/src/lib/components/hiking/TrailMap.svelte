@@ -3,16 +3,19 @@
   // precached: online only), the track, its ends and waypoints, the scrub's violet dot, the location dot. Under
   // drawOff() (the e2e's logic tier) no map is made: a stub that draws the track and the dots as SVG and says where
   // they are. Offline before the chunk came: a retry; the tiles not coming: the track alone, with a note.
+  // `window.__trailMap` (hooks on) is the specs' view of a drawn map.
   import { onMount } from 'svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
   import { drawOff } from '#lib/ui-state/testMode.ts';
+  import { hooksOn } from '#lib/ui-state/preview.ts';
   import type { Prepared } from '#lib/hiking/track.ts';
   import type { Region } from '#lib/hiking/types.ts';
   import { S } from '#lib/hiking/strings.ts';
   import { i18n } from '#lib/i18n/index.ts';
   import { pick } from '../travel/text.ts';
   import { C } from './map/style.ts';
-  import type { Engine, Fix } from './map/engine.ts';
+  import type { Fix } from './map/engine.ts';
+  import { EngineFeed } from './map/feed.svelte.ts';
 
   interface Props {
     region: Region;
@@ -28,13 +31,17 @@
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
   let mode = $state<'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost'>(drawOff() ? 'stub' : 'loading');
-  let engine: Engine | null = null;
   let gone = false;
-  let flyNext = false;
+  const feed = new EngineFeed({
+    get prep() { return prep; },
+    get scrub() { return scrub; },
+    get fix() { return fix; },
+    get bottom() { return bottom; }
+  });
 
-  export const zoom = (by: 1 | -1) => engine?.zoom(by);
+  export const zoom = (by: 1 | -1) => feed.engine?.zoom(by);
   /** The next fix brings the map to it (the locate button). */
-  export const flyToFix = () => (fix ? engine?.setFix(fix, true) : (flyNext = true));
+  export const flyToFix = () => (fix ? feed.engine?.setFix(fix, true) : (feed.flyNext = true));
 
   function draw() {
     if (!navigator.onLine) return void (mode = 'failed');
@@ -43,37 +50,29 @@
       ({ createEngine }) => {
         if (gone || !el) return;
         try {
-          engine = createEngine(el, { region, center, bottom }, { mode: (m) => (mode = m) });
+          // (the props follow it in: feed.svelte.ts)
+          feed.engine = createEngine(el, { region, center, bottom }, { mode: (m) => (mode = m) });
         } catch (e) {
           console.error(e);
           mode = 'failed';
-          return;
         }
-        engine.setTrack(prep);
-        engine.setScrub(scrub);
-        engine.setFix(fix, false);
       },
       () => !gone && (mode = 'failed')
     );
   }
 
-  $effect(() => engine?.setTrack(prep));
-  $effect(() => engine?.setScrub(scrub));
-  $effect(() => {
-    const f = fix;
-    engine?.setFix(f, flyNext && !!f);
-    if (f) flyNext = false;
-  });
-  $effect(() => engine?.fit(bottom));
-
   onMount(() => {
     const online = () => mode === 'failed' && draw();
     if (mode !== 'stub') (draw(), addEventListener('online', online));
+    const hook = { state: () => ({ mode, ...feed.engine?.state() }) };
+    const w = window as unknown as { __trailMap?: unknown };
+    if (hooksOn(new URLSearchParams(location.search))) w.__trailMap = hook;
     return () => {
       gone = true;
       removeEventListener('online', online);
-      engine?.destroy();
-      engine = null;
+      feed.engine?.destroy();
+      feed.engine = null;
+      if (w.__trailMap === hook) delete w.__trailMap;
     };
   });
 

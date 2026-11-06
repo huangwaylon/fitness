@@ -1,12 +1,15 @@
 // トレイル (components/hiking, docs/hiking.md), the logic tier: under drawOff() the trail's map is a stub that draws the
 // track and the scrub's dot as SVG (no MapLibre, no tiles: nothing leaves the preview). Every trail's track is the
 // invented fixture (e2e/fixtures/hiking/tiny.gpx, converted here by the app's own converter): the list, its chips, a
-// trail's peek and sheet, the elevation scrub moving the map's dot, Kinpu's plan, ‹ and ✕.
+// trail's peek and sheet, the elevation scrub moving the map's dot, Kinpu's plan, ‹ and ✕; the track on every trail
+// opened again. The drawn smoke (@render): MapLibre on a blank topo tile (never the network), the track drawn on each
+// trail opened, not just the first (the map's chunk in before the track: 2026-11-07).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { BASE } from './island.ts';
 import { fromMenu } from './hud.ts';
+import { drawn } from './trips.ts';
 import { toTrack } from '../src/lib/hiking/track.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -15,8 +18,8 @@ const TRACK = toTrack(readFileSync(join(import.meta.dirname, 'fixtures', 'hiking
 const sheet = (p: Page) => p.locator('dialog[open][data-hiking]');
 const cards = (p: Page) => sheet(p).locator('[data-trail]');
 
-async function openTrails(page: Page) {
-  await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+async function openTrails(page: Page, draw = false) {
+  if (!draw) await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   await page.route('**/hiking/tracks/*.json', (r) => r.fulfill({ json: TRACK }));
   await page.goto(`${BASE}/?demo&date=2026-11-04T12:00&critter=none&visitor=none`);
   await page.waitForFunction(() => !!(window as unknown as { __world?: unknown }).__world, null, { timeout: 30_000 });
@@ -124,4 +127,45 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
   await expect(view.locator('.attrib')).toContainText('国土地理院');
   await view.locator('.back .nav').click();
   await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
+});
+
+/** Each trail in turn, then the first again, the sheet closed and opened between; `drawnTrack` whether its track is on its map. */
+async function reopen(page: Page, drawnTrack: (view: ReturnType<Page['locator']>) => Promise<void>) {
+  for (const [i, slug] of [[0, 'lake-22'], [1, 'snow-lake'], [0, 'lake-22'], [-1, ''], [2, 'lake-valhalla'], [0, 'lake-22']] as const) {
+    if (i < 0) {
+      await sheet(page).locator('.x .nav').click();
+      await expect(page.locator('dialog[open]')).toHaveCount(0);
+      await fromMenu(page, 'hiking');
+      continue;
+    }
+    await cards(page).nth(i).click();
+    const view = sheet(page).locator(`[data-trail-view="${slug}"]`);
+    await expect(view.locator('[data-elev]')).toBeVisible();
+    await drawnTrack(view);
+    await view.locator('.back .nav').click();
+    await expect(view).toHaveCount(0);
+  }
+}
+
+test('the track on every trail opened, again after ‹ and after ✕', async ({ page }) => {
+  await openTrails(page);
+  await reopen(page, (view) => expect(view.locator('[data-map-stub] polyline')).toHaveCount(1));
+});
+
+/** A blank 1×1 topo tile (a PNG), for every tile asked. */
+const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
+type TrailMapHook = { __trailMap?: { state(): { mode: string; track?: number } } };
+
+test('drawn: the track on the map of every trail opened, not just the first', { tag: '@render' }, async ({ page }) => {
+  test.setTimeout(120_000);
+  await drawn(page);
+  await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await openTrails(page, true);
+  await reopen(page, async (view) => {
+    await expect(view.locator('[data-trail-map]')).toHaveAttribute('data-mode', 'ready', { timeout: 30_000 });
+    await expect.poll(() => page.evaluate(() => (window as unknown as TrailMapHook).__trailMap?.state().track ?? 0), { timeout: 15_000 }).toBeGreaterThan(0);
+  });
+  expect(errors).toEqual([]);
 });
