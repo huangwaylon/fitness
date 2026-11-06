@@ -1,5 +1,7 @@
 // りょこう: the trip guides' data shape (docs/travel.md "Data shape"). Pure types: the trip modules (trips/*.ts,
-// generated once by scripts/travel-extract.ts from the old travel-plans site) hold all the content.
+// generated once by scripts/travel-extract.ts from the old travel-plans site) hold all the content. The packing list's
+// seed is the relay contract's own shape (contract/pack.ts PackSeed: the record, the phones and the data agree on it).
+import type { PackSeed } from '#lib/contract/pack.ts';
 
 /** A text pair: at least one side; shown in the reader's locale, else the other. Seattle's guide is English only.
  *  Inline tokens (tokens.ts): `{km:9.8}` / `{m:444}` / `{c:29}` (distance, height, temperature: rendered metric or
@@ -123,10 +125,6 @@ export interface Camp {
   fee: L;
   maps: string;
 }
-
-interface PackItem { id: string; text: L; note?: L }
-export interface PackCat { id: string; name: L; icon: string; items: PackItem[] }
-interface PackSeed { cats: PackCat[] }
 
 export interface Trip {
   id: TripId;

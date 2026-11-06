@@ -125,7 +125,12 @@ export const DEVICE = {
   /** localStorage: `{who, rows: [{at, row}]}`, my last ききみみ games' `listen` rows (contract/listen.ts) as recorded on
    *  this phone: きろく's fallback while offline or before the record has them (components/kikimimi/progress.svelte.ts;
    *  the record's rows win, by game id). */
-  kikimimiGames: 'island.kikimimiGames'
+  kikimimiGames: 'island.kikimimiGames',
+  /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
+  travelUnits: 'island.travel.units',
+  /** localStorage: `[<who>|<trip>…]`: the packing lists this phone celebrated 「じゅんび OK！」 for, by who I am (once
+   *  per trip and person; components/travel/PackList.svelte). */
+  travelPacked: 'island.travel.packed'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */
