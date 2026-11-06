@@ -4,6 +4,8 @@
 // from 「とばして チェック」 opens on the phone errand's mission card and, all right on the first listen, stamps the unit:
 // the results' strip, the unit page and the path's stop. The logic tier (no clip has to sound).
 // KIKI_SHOTS=1 writes the 393×852 screenshot pass into /tmp/kikimimi-shots/u4/.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
@@ -170,4 +172,20 @@ test('とばして チェック: the mission card, the stamp on the results, the
   await expect(sheet(page).locator('[data-kiki-stage="mori"] [data-kiki-stage-count]')).toHaveAttribute('data-kiki-stage-count', '1');
   await stop.scrollIntoViewIfNeeded();
   await snap(page, 'path-stamped');
+});
+
+test('a built unit’s page counts all its key phrases: tr-hotel’s 「つかまえた 0 / 9」 (the fixture above, with the same name, has 2)', async ({ page }) => {
+  const ph = (JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', 'u-tr-hotel.json'), 'utf8')) as { unit: { ph: unknown[] } }).unit.ph;
+  expect(ph.length).toBeGreaterThan(2);
+  await page.goto(`?demo&${Q}`);
+  await expect(hudMenu(page)).toBeVisible();
+  await fromMenu(page, 'kikimimi');
+  await sheet(page).locator('[data-kiki-path-open]').click();
+  await sheet(page).locator('[data-kiki-stop="tr-hotel"] [data-kiki-stop-open]').click();
+  const phrases = sheet(page).locator('[data-kiki-unit-page="tr-hotel"] [data-kiki-unit-phrases]');
+  await expect(phrases).toHaveAttribute('data-kiki-unit-phrases', '0');
+  await expect(phrases).toContainText(`0 / ${ph.length}`);
+  // the ずかん on this unit's: every one of them a card
+  await phrases.click();
+  await expect(sheet(page).locator('[data-kiki-zukan="tr-hotel"] [data-kiki-phrase]')).toHaveCount(ph.length);
 });
