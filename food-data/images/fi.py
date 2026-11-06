@@ -49,8 +49,9 @@ def seed(key, roll):
     return zlib.crc32(key.encode()) % 100000 + roll
 
 
-def gen_path(key, roll):
-    return RAW / 'gen' / f'v{PROMPT_V}' / f'{key}-r{roll}.png'
+def gen_path(row, roll):
+    """A row's generated image: its key, its description's hash (a new description is a new image) and the roll."""
+    return RAW / 'gen' / f'v{PROMPT_V}' / f'{row["key"]}-{desc_hash(row)}-r{roll}.png'
 
 
 # ---------- data
@@ -107,7 +108,7 @@ def state(row, vs):
     while True:
         q = [v for v in mine if v['roll'] == roll and v['check'] == 'qwen']
         r = [v for v in mine if v['roll'] == roll and v['check'] == 'eye']
-        if not gen_path(row['key'], roll).exists() and not q and not r:
+        if not gen_path(row, roll).exists() and not q and not r:
             return ('gen', roll)
         if not mine:
             return ('ship', roll)
@@ -409,7 +410,7 @@ def cmd_checksheet(out, *keys):
         st, roll = state(r, vs)
         x0, y = (i % cols) * cw, (i // cols) * (PX + 30)
         dr.text((x0 + 6, y + 4), f'{i + 1}. {r["ja"]}  [{k}] r{roll}', fill=(40, 30, 20), font=f)
-        g = gen_path(k, roll if isinstance(roll, int) else 0)
+        g = gen_path(r, roll if isinstance(roll, int) else 0)
         if g.exists():
             sheet.paste(_thumb(g, PX), (x0 + 6, y + 26))
         refs = vetted_refs(r)[:2]
@@ -428,7 +429,10 @@ def cmd_gen(keys=None):
     while True:
         vs = verdicts()
         due = [(r, s[1]) for r in table() if (not keys or r['key'] in keys) for s in [state(r, vs)] if s[0] == 'gen']
-        due = [(r, roll) for r, roll in due if not gen_path(r['key'], roll).exists()][:20]  # then re-read the table
+        pop = {i: it.get('pop', 0) for i, it in items_by_id().items()}
+        due = [(r, roll) for r, roll in due if not gen_path(r, roll).exists()]
+        due.sort(key=lambda d: -max(pop.get(i, 0) for i in d[0]['items']))  # the popular first (a stable sort: then table order)
+        due = due[:20]  # then re-read the table
         if not due:
             if os.environ.get('FI_WATCH') != '1':
                 break
@@ -437,7 +441,7 @@ def cmd_gen(keys=None):
         if model is None:
             model = ZImage(model_config=ModelConfig.z_image_turbo(), quantize=8)
         for r, roll in due:
-            p = gen_path(r['key'], roll)
+            p = gen_path(r, roll)
             p.parent.mkdir(parents=True, exist_ok=True)
             t = time.time()
             img = model.generate_image(seed=seed(r['key'], roll), prompt=PROMPT.format(desc=r['desc']), num_inference_steps=STEPS,
@@ -483,7 +487,7 @@ def cmd_verify(keys=None):
         refs = [RAW / 'refs' / r['key'] / f'c{x["n"]}.jpg' for x in vetted_refs(r)[:3]]
         body = dict(model=VMODEL, stream=False, think=False, format='json', options=dict(temperature=0, seed=1),
                     prompt=VPROMPT.format(n=len(refs), last=len(refs) + 1, ja=r['ja'], desc=r['desc']),
-                    images=[_b64(p) for p in refs] + [_b64(gen_path(r['key'], roll))])
+                    images=[_b64(p) for p in refs] + [_b64(gen_path(r, roll))])
         t = time.time()
         res = json.loads(urllib.request.urlopen(urllib.request.Request('http://localhost:11434/api/generate', json.dumps(body).encode(),
                                                                        {'Content-Type': 'application/json'}), timeout=900).read())
@@ -580,7 +584,7 @@ def cmd_pack():
                 for i, k in enumerate(part):
                     if k not in ship:
                         continue
-                    im = paper_even(Image.open(gen_path(k, state(ship[k], vs)[1]))).resize((px, px), Image.LANCZOS)
+                    im = paper_even(Image.open(gen_path(ship[k], state(ship[k], vs)[1]))).resize((px, px), Image.LANCZOS)
                     x, y = (i % cols) * px, (i // cols) * px
                     sh.paste(im, (x, y))
                     cells.setdefault(k, {})[tag] = (len(sheets), x, y)
@@ -609,6 +613,15 @@ def cmd_pack():
     print(f'pack: {len(keys)} pictures for {len(index["ids"])} items, {len(sheets)} sheets, {total / 1e6:.2f} MB')
 
 
+def _mend(name, byname):
+    """A name whose characters came through broken (U+FFFD runs): the one draft name it can only be, else as is."""
+    if '\ufffd' not in name:
+        return name
+    pat = re.compile('^' + '.{1,2}'.join(re.escape(p) for p in re.split('\ufffd+', name)) + '$')
+    hits = [n for n in byname if pat.match(n)]
+    return hits[0] if len(hits) == 1 else name
+
+
 def cmd_rows(src, dest, phase='1'):
     """Hand-written descriptions ("name|name... = description" lines) into table rows (dest: table/<dest>.json,
     appended): a row takes every item of the listed names' draft groups (propose); names already in the table are
@@ -622,13 +635,13 @@ def cmd_rows(src, dest, phase='1'):
     p = HERE / 'table' / f'{dest}.json'
     rows = json.loads(p.read_text()) if p.exists() else []
     bad = []
-    for line in Path(src).read_text().splitlines():
+    for line in Path(src).read_bytes().decode('utf-8', 'replace').splitlines():
         if not line.strip() or line.startswith('#'):
             continue
-        if '\ufffd' in line:
-            sys.exit(f'a broken character: {line[:40]}')
         names, desc = (x.strip() for x in line.split(' = ', 1))
-        names = names.split('|')
+        if '\ufffd' in desc:
+            sys.exit(f'a broken character: {line[:40]}')
+        names = [_mend(n, byname) for n in names.split('|')]
         miss = [n for n in names if n not in byname]
         if miss:
             bad += miss
@@ -644,6 +657,30 @@ def cmd_rows(src, dest, phase='1'):
         sys.exit(f'unknown names: {bad}')
     p.write_text(json.dumps(rows, ensure_ascii=False, indent=1) + '\n')
     print(f'{p.name}: {len(rows)} rows')
+
+
+def cmd_attach(phase):
+    """A phase's items whose visual key (vnorm) is an existing row's join that row (the same dish in another source
+    shares its picture): appended to the row's items in its table file."""
+    byid = items_by_id()
+    files, owner = {}, {}
+    for p in sorted((HERE / 'table').glob('*.json')):
+        files[p] = json.loads(p.read_text())
+        for r in files[p]:
+            for i in r['items']:
+                if i in byid:
+                    owner.setdefault(vnorm(byid[i]['name']), r)
+    have = {i for rs in files.values() for r in rs for i in r['items']}
+    n = 0
+    for it in phase_items(int(phase)):
+        r = owner.get(vnorm(it['name']))
+        if r is not None and it['id'] not in have:
+            r['items'].append(it['id'])
+            have.add(it['id'])
+            n += 1
+    for p, rs in files.items():
+        p.write_text(json.dumps(rs, ensure_ascii=False, indent=1) + '\n')
+    print(f'attach: {n} items of phase {phase} joined existing rows')
 
 
 if __name__ == '__main__':
