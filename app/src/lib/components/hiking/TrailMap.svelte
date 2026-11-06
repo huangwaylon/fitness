@@ -1,0 +1,130 @@
+<script lang="ts">
+  // A trail's map (docs/hiking.md "Map"): MapLibre on the region's raster topo (map/engine.ts, its own lazy chunk, never
+  // precached: online only), the track, its ends and waypoints, the scrub's violet dot, the location dot. Under
+  // drawOff() (the e2e's logic tier) no map is made: a stub that draws the track and the dots as SVG and says where
+  // they are. Offline before the chunk came: a retry; the tiles not coming: the track alone, with a note.
+  import { onMount } from 'svelte';
+  import { lazy } from '#lib/ui-state/reload.ts';
+  import { drawOff } from '#lib/ui-state/testMode.ts';
+  import type { Prepared } from '#lib/hiking/track.ts';
+  import type { Region } from '#lib/hiking/types.ts';
+  import { S } from '#lib/hiking/strings.ts';
+  import { i18n } from '#lib/i18n/index.ts';
+  import { pick } from '../travel/text.ts';
+  import { C } from './map/style.ts';
+  import type { Engine, Fix } from './map/engine.ts';
+
+  interface Props {
+    region: Region;
+    center: Fix;
+    prep: Prepared | null;
+    scrub: Fix | null;
+    fix: Fix | null;
+    /** The px the sheet's peek covers at the bottom (the track is fitted above it). */
+    bottom: number;
+  }
+  let { region, center, prep, scrub, fix, bottom }: Props = $props();
+
+  const loadEngine = lazy(() => import('./map/engine.ts'));
+  let el: HTMLDivElement | undefined = $state();
+  let mode = $state<'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost'>(drawOff() ? 'stub' : 'loading');
+  let engine: Engine | null = null;
+  let gone = false;
+  let flyNext = false;
+
+  export const zoom = (by: 1 | -1) => engine?.zoom(by);
+  /** The next fix brings the map to it (the locate button). */
+  export const flyToFix = () => (fix ? engine?.setFix(fix, true) : (flyNext = true));
+
+  function draw() {
+    if (!navigator.onLine) return void (mode = 'failed');
+    mode = 'loading';
+    loadEngine().then(
+      ({ createEngine }) => {
+        if (gone || !el) return;
+        try {
+          engine = createEngine(el, { region, center, bottom }, { mode: (m) => (mode = m) });
+        } catch (e) {
+          console.error(e);
+          mode = 'failed';
+          return;
+        }
+        engine.setTrack(prep);
+        engine.setScrub(scrub);
+        engine.setFix(fix, false);
+      },
+      () => !gone && (mode = 'failed')
+    );
+  }
+
+  $effect(() => engine?.setTrack(prep));
+  $effect(() => engine?.setScrub(scrub));
+  $effect(() => {
+    const f = fix;
+    engine?.setFix(f, flyNext && !!f);
+    if (f) flyNext = false;
+  });
+  $effect(() => engine?.fit(bottom));
+
+  onMount(() => {
+    const online = () => mode === 'failed' && draw();
+    if (mode !== 'stub') (draw(), addEventListener('online', online));
+    return () => {
+      gone = true;
+      removeEventListener('online', online);
+      engine?.destroy();
+      engine = null;
+    };
+  });
+
+  // the stub's drawing: the track on a flat projection fitted to its box
+  const stub = $derived.by(() => {
+    if (mode !== 'stub' || !prep) return null;
+    const k = Math.cos((prep.pts[0][1] * Math.PI) / 180);
+    const xs = prep.pts.map((p) => p[0] * k), ys = prep.pts.map((p) => -p[1]);
+    const x0 = Math.min(...xs), y0 = Math.min(...ys), s = 100 / Math.max(Math.max(...xs) - x0, Math.max(...ys) - y0, 1e-9);
+    const P = (lon: number, lat: number) => `${((lon * k - x0) * s).toFixed(2)},${((-lat - y0) * s).toFixed(2)}`;
+    return { P, line: prep.pts.map((p) => P(p[0], p[1])).join(' ') };
+  });
+</script>
+
+<div class="map" data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)}
+  data-scrub={scrub ? `${scrub.lon.toFixed(5)},${scrub.lat.toFixed(5)}` : ''}>
+  {#if mode === 'stub'}
+    {#if stub}
+      <svg class="stub" viewBox="-5 -5 110 110" data-map-stub>
+        <polyline points={stub.line} fill="none" stroke={C.track} stroke-width="1.2" />
+        {#if scrub}{@const [cx, cy] = stub.P(scrub.lon, scrub.lat).split(',')}<circle {cx} {cy} r="2" fill={C.scrub} data-scrub-dot />{/if}
+      </svg>
+    {/if}
+  {:else}
+    <div class="gl" bind:this={el}></div>
+  {/if}
+  {#if mode === 'failed'}
+    <div class="failed" data-map-failed>
+      <p>{pick(S.mapFailed, i18n.locale)}</p>
+      <button type="button" class="retry" data-sfx="tick" onclick={draw}>{pick(S.retry, i18n.locale)}</button>
+    </div>
+  {:else if mode === 'offline'}
+    <p class="note" role="status" data-map-note>{pick(S.mapOffline, i18n.locale)}</p>
+  {/if}
+</div>
+
+<style>
+  .map { position: absolute; inset: 0; background: var(--paper-2); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
+  .gl { position: absolute; inset: 0; }
+  .stub { position: absolute; inset: 70px 20px 45% 20px; width: calc(100% - 40px); height: auto; max-height: 50%; }
+  .failed {
+    position: absolute; inset: 0 0 30% 0; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 16px;
+    color: var(--ink-2); font-size: 15px; font-weight: 600; text-align: center;
+  }
+  .failed p { margin: 0; }
+  .retry { height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: var(--sh-fab); }
+  .note {
+    position: absolute; z-index: 2; top: calc(var(--safe-t) + 62px); left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 32px); margin: 0;
+    padding: 7px 14px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 12.5px; font-weight: 700; box-shadow: var(--sh-pop);
+  }
+  /* MapLibre's attribution, small and frosted (the hiking app's Leaflet overrides) */
+  .map :global(.maplibregl-ctrl-attrib) { font-size: 9px; background: rgba(255, 255, 255, .86); color: var(--ink-2); }
+  .map :global(.maplibregl-ctrl-attrib a) { color: var(--pine-d); }
+</style>

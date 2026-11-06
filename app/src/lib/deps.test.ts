@@ -40,7 +40,9 @@ const ALLOW: Record<string, string[]> = {
   // りょこう (docs/travel.md): the guides' data and its tokens, pure; the packing seed is the relay contract's type
   // (contract/pack.ts PackSeed)
   travel: ['contract'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel']
+  // トレイル (docs/hiking.md): the trails' data and their tracks, pure; a text pair is the guides' (travel), a locale i18n's
+  hiking: ['travel', 'i18n'],
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking']
 };
 
 function files(dir: string): string[] {

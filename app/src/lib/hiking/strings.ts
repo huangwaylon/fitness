@@ -32,8 +32,7 @@ export const S = {
   factDogs: { ja: '犬', en: 'Dogs' },
   factPermit: { ja: '許可証', en: 'Permit' },
   factLocation: { ja: '場所', en: 'Location' },
-  attribTrail: { ja: 'コース情報：AllTrails', en: 'Trail info via AllTrails.' },
-  attribVector: { ja: '地図 © OpenFreeMap © OpenMapTiles © OpenStreetMap', en: 'Map © OpenFreeMap © OpenMapTiles © OpenStreetMap' },
+  attribTrail: { ja: 'コース情報・写真：AllTrails', en: 'Trail info & photo via AllTrails.' },
   attribUsgs: { ja: '地図 © USGS National Map', en: 'Map © USGS National Map' },
   attribGsi: { ja: '地図 © 国土地理院（地理院タイル）', en: 'Map © GSI Japan (地理院タイル)' },
   mapAria: { ja: 'コース地図', en: 'Trail map' },
@@ -42,14 +41,10 @@ export const S = {
   zoomOut: { ja: '縮小', en: 'Zoom out' },
   locate: { ja: '現在地', en: 'My location' },
   locDenied: { ja: '位置情報がオフです。設定 → プライバシーとセキュリティ → 位置情報サービス → Safari で許可してください。', en: 'Location is off. Allow it in Settings → Privacy & Security → Location Services → Safari.' },
-  trackMissing: { ja: 'このコースの軌跡は準備中です。', en: "This trail's track isn't in yet." },
   trackFailed: { ja: 'このコースの地図データを読み込めませんでした。通信を確認して開き直してください。', en: "Couldn't load this trail's map data — reconnect and reopen to try again." },
   mapFailed: { ja: '地図を読み込めませんでした', en: "The map didn't load" },
   mapOffline: { ja: '地図はオフライン — コースだけ表示', en: 'Map offline — the trail only' },
   retry: { ja: 'もういちど', en: 'Try again' },
-  photoSoon: { ja: '写真は準備中', en: 'Photo to come' },
-  trailhead: { ja: '登山口', en: 'Trailhead' },
-  end: { ja: '終点', en: 'End' },
   locked: { ja: 'オンラインで ひらくと みえます', en: 'Shows when opened online' }
 } satisfies Record<string, Required<L>>;
 

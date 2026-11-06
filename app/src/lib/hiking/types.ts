@@ -12,7 +12,7 @@ export type Dogs = 'leashed' | 'no';
 export type Region = 'us' | 'jp';
 
 /** One stop of a plan's hour-by-hour itinerary; `depart` marks a rest there (the summit's 2 h). */
-export interface PlanStop {
+interface PlanStop {
   time: string;
   depart?: string;
   type: 'start' | 'pass' | 'peak' | 'junction' | 'goal';

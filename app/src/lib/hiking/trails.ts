@@ -1,7 +1,8 @@
 // トレイル's ten trails (docs/hiking.md "Data"): eight in Washington State, two in Japan, from the hiking-trails app
 // (its trails.js, English, and i18n.js's Japanese: the user's own write-ups). Stats are AllTrails' (length, gain,
 // difficulty, time); km and m are its miles and feet converted once (the gain is the DEM figure on purpose: types.ts).
-// The tracks are separate files by slug (load.ts); the photos are not in yet (docs/hiking.md "Pending").
+// The tracks are files of their own by slug (static/hiking/tracks/, load.ts), the photos static/hiking/photos/<slug>.webp
+// (AllTrails users' photos, 1200 × 800).
 import type { Trail } from './types.ts';
 
 const NWFP = { en: 'NW Forest Pass', ja: 'ノースウエスト・フォレストパス' };
@@ -298,3 +299,10 @@ export const WPT_JA: Record<string, string> = {
   'Snow Lake Viewpoint': 'スノーレイク展望地',
   'End of Snow Trail': 'スノートレイル終点'
 };
+
+/** A trail's slug from the hiking app's link (`https://huangwaylon.github.io/gpx/#/trail/lake-22`, the Seattle guide's
+ *  `hike.gpx`), if it is one of ours; else null. @public (rd-classic's hike cards: openTrail(hikeSlugOf(day.hike.gpx))) */
+export function hikeSlugOf(url: string | undefined | null): string | null {
+  const slug = /#\/trail\/([a-z0-9-]+)/.exec(url ?? '')?.[1];
+  return slug && trailOf(slug) ? slug : null;
+}
