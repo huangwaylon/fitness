@@ -74,7 +74,7 @@ test('a trip: its pages, ‹ back to the list; Seattle has no map', async ({ pag
     await expect(sheet(page).locator(`[data-pane="${id}"]`)).toBeVisible();
   }
   await tab(page, 'map').click();
-  await expect(sheet(page).locator('[data-trip-map-slot]')).toBeVisible();
+  await expect(sheet(page).locator('[data-travel-map]')).toBeVisible();
   await sheet(page).locator('[data-map-day="2"]').click();
   await expect(sheet(page).locator('[data-stop]')).toHaveCount(6);
   await sheet(page).locator('[data-stop="s2-1"]').click();

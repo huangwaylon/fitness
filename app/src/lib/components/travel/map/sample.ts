@@ -1,5 +1,5 @@
-// A made-up Okinawa trip for the dev map (routes/dev/map) and the map's specs: real places, rough coordinates, no one's
-// plans. Three days in the trip's colours; the legs hand-drawn polylines (the real trip's come from its OSRM cache).
+// A made-up Okinawa trip for the map's unit tests (map.test.ts): real places, rough coordinates, no one's plans. Three
+// days in the trip's colours; the legs hand-drawn polylines (the real trip's come from its OSRM cache).
 import type { MapLeg, MapPlace } from './types.ts';
 
 export const SAMPLE_COLORS = ['#2F86BD', '#D2701F', '#4FA35C'];

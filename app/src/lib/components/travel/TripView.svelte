@@ -12,7 +12,7 @@
   import GuideCard from './GuideCard.svelte';
   import CampList from './CampList.svelte';
   import MapPane from './MapPane.svelte';
-  import PackPane from './PackPane.svelte';
+  import PackList from './PackList.svelte';
   import Txt from './Txt.svelte';
   import { pick } from './text.ts';
   import { spanLabel } from './dates.ts';
@@ -91,7 +91,7 @@
     {:else if tab === 'map'}
       <MapPane {trip} {note} start={nowRow?.day ?? today ?? 1} />
     {:else if tab === 'pack'}
-      <PackPane {trip} {note} />
+      <PackList {trip} />
     {:else}
       <CampList {trip} {note} />
     {/if}

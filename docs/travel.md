@@ -133,8 +133,10 @@ Business addresses and phone numbers (the Evertrail office, Dive Nuts) are publi
 
 ## Maps
 
-Built in `app/src/lib/components/travel/map/` (the trip sheet mounts `TripMap.svelte`; try it at `/dev/map` in
-`vite dev`, or `/dev/map?demo` on a build). Online only: nothing is downloaded ahead of time.
+Built in `app/src/lib/components/travel/map/`; the trip sheet's ちず (`MapPane.svelte`) mounts `TripMap.svelte` with the
+day chips, the candidate layer chips (Okinawa: キャンプ / しぜん / たべもの, off at first) and the day's stop list; a
+camp's pin opens its card (`CampCard.svelte`, as キャンプ shows it) in a sheet over the map. Online only: nothing is
+downloaded ahead of time.
 
 - **Interface:** `TripMap` takes `{ places, legs, dayColors, day, selected?, layers?, locale, tiles?, onselect? }`
   (`types.ts`: a place `{id, kind: 'stop'|'camp'|'nature'|'food', name: {ja?, en?}, lat, lon, day?, i?}`, a leg
@@ -235,8 +237,8 @@ the record's branch `relay/src/store.ts` (`packTarget`: the trip's rows as a `Pa
   category after 「「…」を けしますか？」, then とりけす too). The guest sees ✎ (it may add) and the controls on its own
   things only. 「チェックを リセット」 under the list (while I have ticks) asks first. All mine packed: the stamp beside my
   count; the first time on a phone for that trip and person (`DEVICE.travelPacked`) it slams in with Orville's line
-  and the miles chime. Mounted on `/dev/pack?demo[&as=B|G][&trip=…]` until the sheet's もちもの tab has it
-  (e2e/travel-pack.spec.ts); review notes in docs/reviews/travel-pack.md.
+  and the miles chime. The sheet's もちもの tab (e2e/travel-pack.spec.ts); review notes in
+  docs/reviews/travel-pack.md.
 - **Deploy order:** the relay first (an older relay refuses the four types `bad_request`; an older app ignores their
   rows), then the app.
 

@@ -46,26 +46,6 @@ export function myProgress(view: readonly PackCatView[]): { mine: number; total:
   return { mine, total, done: total > 0 && mine === total };
 }
 
-/** The guides' category icons (lucide names, docs/travel.md "Data shape") as NH catalogue icons; an emoji as itself. */
-const ICON_ART: Record<string, string> = {
-  file: 'finds/items/antique-map',
-  shirt: 'finds/items/pocket-tee',
-  waves: 'finds/items/surfboard',
-  tent: 'finds/items/camp-stove',
-  camera: 'finds/items/slr-camera',
-  cart: 'finds/items/shopping-cart',
-  pin: 'finds/items/sturdy-paper-bag',
-  footprints: 'finds/items/trekking-shoes',
-  mountain: 'finds/items/mountain-parka',
-  gift: 'deco/present',
-  'shopping-bag': 'finds/items/shopping-bag'
-};
-export function iconOf(icon: string): { art: string } | { emoji: string } {
-  if (ICON_ART[icon]) return { art: ICON_ART[icon] };
-  // a name we have no art for is a bag; anything else (not a lucide-style name) is an emoji
-  return /^[a-z][a-z0-9-]*$/.test(icon) || !icon ? { art: ICON_ART['shopping-bag'] } : { emoji: icon };
-}
-
 /** The 「じゅんび OK！」 celebration's mark: one per trip and person on a phone. */
 const stampKey = (who: Who, trip: string): string => `${who}|${trip}`;
 /** Whether this completion is the one to celebrate (not yet in `seen`), and `seen` with it. */

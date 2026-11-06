@@ -55,10 +55,11 @@
   "travel.camps.fee": "りょうきん",
   "travel.camps.maps": "マップで ひらく",
   "travel.map.days": "ルートの ひ",
-  "travel.map.soon": "ちずは じゅんびちゅう",
+  "travel.map.layers": "ちずに だす",
+  "travel.map.layer.camp": "キャンプ",
+  "travel.map.layer.nature": "しぜん",
+  "travel.map.layer.food": "たべもの",
   "travel.map.stops": "{n}かしょ",
-  "travel.pack.soon": "チェックは じゅんびちゅう",
-  "travel.pack.count": "{n}こ",
   "travel.more": "もっと よむ",
   "travel.less": "とじる"
 }
