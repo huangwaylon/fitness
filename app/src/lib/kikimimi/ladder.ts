@@ -1,7 +1,7 @@
 // ききみみ クイズ's スピード はしご (docs/kikimimi.md "スピード はしご", docs/curriculum.md §7 game 2): one line heard at
 // rising speeds, a different question at each rung (ladders.ts), the score the rungs climbed in order on the first
 // listen. A game is 2 ladders of 4 rungs: the quiz's 8 questions, so the session, the protocol and the relay are the
-// quiz's own. The mode rides on the `open`'s seed (bit 1, beside たいせん's bit 0: session.ts isLadder): every phone
+// quiz's own. The mode rides on the `open`'s seed (bit 1, beside たいせん's bit 0: round/wire.ts quizIn): every phone
 // builds the same deck from {seed} as it does a quiz's from {seed, lv}. Pure; the ladders are ladders.ts's (LADDERS), compiled
 // into their own chunk (pool.ts ladders); the clips are made by scripts/kikimimi-audio.ts.
 import { mulberry32, shuffle } from '#lib/random.ts';

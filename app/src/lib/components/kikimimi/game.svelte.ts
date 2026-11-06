@@ -68,7 +68,7 @@ export class QuizGame {
   /** Who else has the island open (the lobby's list). */
   here = $state.raw<readonly Who[]>([]);
   /** おなじへや on a phone that doesn't speak: 🔁 / 🐢 shown disabled (「ホストの スマホで ながれます」), and no
-   *  first-listen bonus for anyone (session.ts). */
+   *  first-listen bonus for anyone (round/session.ts). */
   listenOnly = $derived(!!this.view?.same && !this.view.speaks);
   /** This game is にがて れんしゅう (a solo deck of my weak spots: 'weak') or the last game's misses again ('missed'),
    *  else false. Both are recorded as practice (the row's `p`). */

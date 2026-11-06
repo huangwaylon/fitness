@@ -10,7 +10,9 @@ import { skillsOf } from './tags.ts';
 import { RECENT_GAMES, SEED_TRIES, agesOf, freshSeed, overlap, remember, seedWith, staleness, type Recent } from './recent.ts';
 import { FLAG_BITS, isLadder, timerOf, versus } from './seed.ts';
 import { QuizRounds } from './games/quiz/session.ts';
-import { defsOf } from './round/session.scenarios.ts';
+import { quizGame, type QuizSource } from './games/quiz/def.ts';
+import { ladderGame } from './games/ladder/def.ts';
+import { registry } from './round/registry.ts';
 import { practiceDeck } from './srs.ts';
 import { statsOf } from './progress.ts';
 import { loadAll } from './pool.ts';
@@ -131,8 +133,9 @@ describe('kikimimi recent history', () => {
 
   it('the session asks the host’s seedFor at open and when configure changes the game, its level or a flag, the flags as set', () => {
     const asked: { gm: string; lv: number; flags: number }[] = [];
+    const src: QuizSource = { rounds: () => Array.from({ length: 8 }, (_, i) => ({ kind: 'quiz.word', id: `q${i}`, answer: 0, play: 1000 })) };
     const s = new QuizRounds({
-      me: 'A', defs: defsOf(() => ({ count: 8, dur: () => 1000, answer: () => 0 })), random: mulberry32(1),
+      me: 'A', defs: registry([quizGame(src), ladderGame(src)]), random: mulberry32(1),
       seedFor: ({ gm, o, flags }) => (asked.push({ gm, lv: o[0], flags }), (0xabc0 | flags) >>> 0)
     });
     s.open({ lv: 6, vs: true, timer: 60 }, 0);
