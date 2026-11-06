@@ -468,7 +468,7 @@
   <!-- the stage's host (IslandEdit's presses come through it); ⌖ beside it, not a press on the island -->
   <div class="stage" bind:this={wrapEl}><canvas bind:this={canvas}></canvas></div>
   {#if failed}<p class="fail">WebGL could not start.</p>{/if}
-  <button type="button" class="recentre" data-recentre title="まんなかに もどす" aria-label="まんなかに もどす" onclick={() => api?.recentre()}>⌖</button>
+  <button type="button" class="recentre" data-recentre title="中央に戻す" aria-label="中央に戻す" onclick={() => api?.recentre()}>⌖</button>
 </div>
 
 <style>

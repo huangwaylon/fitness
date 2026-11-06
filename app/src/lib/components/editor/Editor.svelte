@@ -78,7 +78,7 @@
     undoStack = undoStack.slice(0, -1);
     send(revert(store.current, a.before, a.after));
     redoStack = [...redoStack, a];
-    say(`もとにもどした: ${a.label}`);
+    say(`元に戻した: ${a.label}`);
   }
   function redo(): void {
     const a = redoStack.at(-1);
@@ -86,7 +86,7 @@
     redoStack = redoStack.slice(0, -1);
     send(revert(store.current, a.after, a.before));
     undoStack = [...undoStack, a];
-    say(`やりなおした: ${a.label}`);
+    say(`やり直した: ${a.label}`);
   }
   let toastTimer: ReturnType<typeof setTimeout> | undefined;
   function say(t: string): void {
@@ -203,10 +203,10 @@
     dTimer = setTimeout(() => void import('../world3d/drawCheck.ts').then(({ undrawn }) => (undrawnList = undrawn(l))), 200);
   });
   const WHY: Record<string, string> = {
-    'unknown-kind': 'しらない しゅるい（unknown kind: nothing drawn）',
-    card: 'えの カード（a card of 2D art, not a model）',
-    'no-model': 'なにも かかれない（no model at all）',
-    'model-missing': 'モデルの ファイルが ない（model file missing）'
+    'unknown-kind': '不明な種類（unknown kind: nothing drawn）',
+    card: '絵のカード（a card of 2D art, not a model）',
+    'no-model': '何も描かれない（no model at all）',
+    'model-missing': 'モデルのファイルがない（model file missing）'
   };
 
   // ---- the pointer ----
@@ -231,12 +231,12 @@
     }
     if (tool === 'place') {
       if (!placing || !ghost) return;
-      if (!ghost.ok) return say('そこには おけません');
+      if (!ghost.ok) return say('そこには置けません');
       const fixedHere = placing.fixed && [...cur.objects.values()].some((o) => o.k === placing!.k && (o.s ?? '') === (placeS ?? placing!.variants?.[0] ?? ''));
-      if (fixedHere) return say('これは しまに ひとつだけ');
+      if (fixedHere) return say('これは島に1つだけです');
       const r = place(cur, placing.k, ghost.x, ghost.z, placeF, placeS, store.stamp());
       if (r) {
-        commit(r.layout, `${placing.ja}を おいた`);
+        commit(r.layout, `${placing.ja}を置いた`);
         if (placing.fixed) setTool('select');
       }
       return;
@@ -311,14 +311,14 @@
       const next = work;
       work = null;
       if (next) {
-        const label = d.mode === 'cliff' ? (cliffDir > 0 ? 'がけを たかく' : 'がけを ひくく') : `${BRUSH_NAME[brush]}を ぬった`;
+        const label = d.mode === 'cliff' ? (cliffDir > 0 ? '崖を高く' : '崖を低く') : `${BRUSH_NAME[brush]}を塗った`;
         // the stroke was drawn over the island as it was when it began: send its tiles over the island as it is now
         commit(revert(store.current, next, d.before!), label);
       }
     } else if (d.mode === 'move' && d.ids?.length) {
       let next = move(store.current, d.ids, d.dc ?? 0, d.dr ?? 0);
       if (d.turn) next = rotate(next, d.ids, d.turn, me);
-      commit(next, d.ids.length > 1 ? `${d.ids.length}こ うごかした` : `${kindDef(store.current.objects.get(d.ids[0])?.k ?? '')?.ja ?? ''}を うごかした`);
+      commit(next, d.ids.length > 1 ? `${d.ids.length}個動かした` : `${kindDef(store.current.objects.get(d.ids[0])?.k ?? '')?.ja ?? ''}を動かした`);
       for (const id of d.ids.slice(0, 8)) {
         const o = store.current.objects.get(id);
         if (o && relay) {
@@ -366,13 +366,13 @@
     if (cmd && e.key.toLowerCase() === 'y') return (e.preventDefault(), redo());
     if (cmd && e.key.toLowerCase() === 'c') {
       clip = copy(cur, selected);
-      if (clip) say(`${clip.items.length}こ コピーした`);
+      if (clip) say(`${clip.items.length}個コピーした`);
       return;
     }
     if (cmd && e.key.toLowerCase() === 'v') {
       if (!clip || !hover) return;
       const r = paste(store.current, clip, hover[0], hover[1], store.stamp());
-      commit(r.layout, `${r.ids.length}こ はりつけた`);
+      commit(r.layout, `${r.ids.length}個貼り付けた`);
       selected = new Set(r.ids);
       return;
     }
@@ -408,8 +408,8 @@
       case 'Delete': case 'Backspace': {
         if (!selected.size) break;
         const fixed = [...selected].map((id) => cur.objects.get(id)).filter((o) => o && !removable(o));
-        commit(remove(store.current, selected), `${selected.size - fixed.length}こ けした`);
-        if (fixed.length) say(`${fixed.map((o) => kindDef(o!.k)?.ja).join('・')}は けせません`);
+        commit(remove(store.current, selected), `${selected.size - fixed.length}個削除した`);
+        if (fixed.length) say(`${fixed.map((o) => kindDef(o!.k)?.ja).join('・')}は削除できません`);
         selected = new Set([...selected].filter((id) => store.current.objects.has(id)));
         break;
       }
@@ -417,7 +417,7 @@
         if (!selected.size) break;
         e.preventDefault();
         const [dc, dr] = e.key === 'ArrowLeft' ? [-1, 0] : e.key === 'ArrowRight' ? [1, 0] : e.key === 'ArrowUp' ? [0, 1] : [0, -1];
-        commit(move(store.current, selected, dc, dr), 'うごかした');
+        commit(move(store.current, selected, dc, dr), '動かした');
         break;
       }
       case '1': case '2': case '3':
@@ -443,10 +443,10 @@
     const homes = [...selected].filter((id) => /^home-/.test(id));
     for (const id of homes) {
       const who = id.slice(-1);
-      if (who !== me) say(`${who === 'B' ? 'うめ' : who === 'A' ? 'ウェイ' : 'おきゃくさん'}の いえは その ひとだけが まわせます`);
-      else if (next.objects.get(id)?.f === store.current.objects.get(id)?.f) say('ここでは まわせません（とびらが ふさがる）');
+      if (who !== me) say(`${who === 'B' ? 'うめ' : who === 'A' ? 'ウェイ' : 'お客さん'}の家はその人だけが回せます`);
+      else if (next.objects.get(id)?.f === store.current.objects.get(id)?.f) say('ここでは回せません（扉がふさがるため）');
     }
-    commit(next, 'まわした');
+    commit(next, '回した');
   }
   function setTool(t: Tool) {
     tool = t;
@@ -461,27 +461,27 @@
 
   // ---- the panel ----
   const BRUSHES: Kind[] = ['grass', 'sand', ...PATHS, 'river', 'pond', 'sea'];
-  const BRUSH_NAME: Record<Kind, string> = { grass: 'くさ', sand: 'すな', dirt: 'つち', stone: 'いし', brick: 'レンガ', plank: 'いた', river: 'かわ', pond: 'いけ', sea: 'うみ' };
-  const GROUPS: [string, string][] = [['tree', 'き'], ['bush', 'かんぼく'], ['flower', 'はな'], ['rock', 'いわ'], ['light', 'あかり'], ['furniture', 'かぐ'], ['gym', 'ジム'], ['season', 'きせつ'], ['structure', 'はし・さか'], ['building', 'たてもの'], ['visitor', 'おきゃくさん']];
+  const BRUSH_NAME: Record<Kind, string> = { grass: '草', sand: '砂', dirt: '土', stone: '石', brick: 'レンガ', plank: '板', river: '川', pond: '池', sea: '海' };
+  const GROUPS: [string, string][] = [['tree', '木'], ['bush', '低木'], ['flower', '花'], ['rock', '岩'], ['light', '明かり'], ['furniture', '家具'], ['gym', 'ジム'], ['season', '季節'], ['structure', '橋・坂'], ['building', '建物'], ['visitor', 'お客さん']];
   const one = $derived(selected.size === 1 ? (cur.objects.get([...selected][0]) ?? null) : null);
   function setVariant(s: string) {
-    if (one) commit(restyle(store.current, one.id, s), 'かえた');
+    if (one) commit(restyle(store.current, one.id, s), '変更した');
   }
-  const EDGE_NAME: Record<Edge, string> = { front: 'まえ', back: 'おく', left: 'ひだり', right: 'みぎ' };
+  const EDGE_NAME: Record<Edge, string> = { front: '手前', back: '奥', left: '左', right: '右' };
   /** An edge a tile out or in: one action, its ops one burst (commit); what's in the way listed instead, and 「うごかす」
    *  (`moveIn`) moves it inside first (a fixed piece never deleted: one with nowhere to go holds it). */
   function resizeBy(edge: Edge, by: number, moveIn = false) {
     const r = resize(store.current, edge, by, moveIn);
-    const label = `しまを ${by > 0 ? 'ひろげた' : 'せばめた'}（${EDGE_NAME[edge]}）`;
+    const label = `島を${by > 0 ? '広げた' : '狭めた'}（${EDGE_NAME[edge]}）`;
     if (r.layout) {
       pending = null;
       commit(r.layout, label);
-      say(r.removed.length ? `${label} · ${r.removed.length}こ しまった` : label);
+      say(r.removed.length ? `${label} · ${r.removed.length}個片付けた` : label);
       return;
     }
-    if (!r.blocked.length) return say('これいじょう できません');
+    if (!r.blocked.length) return say('これ以上できません');
     pending = { edge, by, blocked: r.blocked, stuck: r.stuck };
-    say(r.stuck.length ? 'うごかせない ものが あります（さきに うごかしてね）' : 'じゃまな ものが あります');
+    say(r.stuck.length ? '動かせない物があります（先に動かしてください）' : '邪魔な物があります');
   }
   /** Select a piece and bring it to the middle of the plan. */
   function showObj(id: string) {
@@ -514,11 +514,11 @@
     if (!f) return;
     try {
       const l = fromJson(JSON.parse(await f.text()));
-      if (!l) return say('この ファイルは よめません');
-      commit(l, 'よみこんだ');
-      say('よみこんだ');
+      if (!l) return say('このファイルは読み込めません');
+      commit(l, '読み込んだ');
+      say('読み込んだ');
     } catch {
-      say('この ファイルは よめません');
+      say('このファイルは読み込めません');
     }
     (e.target as HTMLInputElement).value = '';
   }
@@ -527,9 +527,9 @@
     const before = store.current;
     const at = store.stamp();
     store.apply([{ sc: 'r', id: 'reset', at }]);
-    undoStack = [...undoStack, { before, after: store.current, label: 'はじめの しまに もどした' }];
+    undoStack = [...undoStack, { before, after: store.current, label: '最初の島に戻した' }];
     redoStack = [];
-    say('はじめの しまに もどした');
+    say('最初の島に戻した');
   }
 
   onMount(() => {
@@ -577,11 +577,11 @@
 
 <div class="ed sheet-copy" data-editor data-tool={tool}>
   <aside class="tools">
-    <h1>しまの エディター <small>{me === 'A' ? 'ウェイ' : me === 'B' ? 'うめ' : 'おきゃくさん'}</small></h1>
+    <h1>島のエディター <small>{me === 'A' ? 'ウェイ' : me === 'B' ? 'うめ' : 'お客さん'}</small></h1>
     <div class="row" role="group" aria-label="tools">
-      <button type="button" aria-pressed={tool === 'select'} onclick={() => setTool('select')} title="V">えらぶ</button>
-      <button type="button" aria-pressed={tool === 'paint'} onclick={() => setTool('paint')} title="B">ぬる</button>
-      <button type="button" aria-pressed={tool === 'cliff'} onclick={() => setTool('cliff')} title="C">がけ</button>
+      <button type="button" aria-pressed={tool === 'select'} onclick={() => setTool('select')} title="V">選択</button>
+      <button type="button" aria-pressed={tool === 'paint'} onclick={() => setTool('paint')} title="B">塗る</button>
+      <button type="button" aria-pressed={tool === 'cliff'} onclick={() => setTool('cliff')} title="C">崖</button>
     </div>
     {#if tool === 'paint'}
       <div class="brushes">
@@ -592,23 +592,23 @@
     {/if}
     {#if tool === 'cliff'}
       <div class="row">
-        <button type="button" data-cliff="up" aria-pressed={cliffDir === 1} onclick={() => (cliffDir = 1)}>たかく ▲</button>
-        <button type="button" data-cliff="down" aria-pressed={cliffDir === -1} onclick={() => (cliffDir = -1)}>ひくく ▼</button>
+        <button type="button" data-cliff="up" aria-pressed={cliffDir === 1} onclick={() => (cliffDir = 1)}>高く ▲</button>
+        <button type="button" data-cliff="down" aria-pressed={cliffDir === -1} onclick={() => (cliffDir = -1)}>低く ▼</button>
       </div>
     {/if}
     {#if tool === 'paint' || tool === 'cliff'}
-      <div class="row small">ふでの おおきさ
+      <div class="row small">ブラシの大きさ
         {#each [1, 2, 3] as n (n)}<button type="button" aria-pressed={size === n} onclick={() => (size = n)} title={String(n)}>{n}</button>{/each}
       </div>
     {/if}
-    <h2>おく</h2>
+    <h2>置く</h2>
     <div class="palette">
       {#each GROUPS as [g, name] (g)}
         <div class="group">
           <span class="gname">{name}</span>
           <div class="items">
             {#each palette(g) as d (d.k)}
-              <button type="button" class="item" data-kind={d.k} aria-pressed={placing?.k === d.k} disabled={present(d)} title={`${d.ja} · ${d.en}${present(d) ? '（しまに ある）' : ''}`} onclick={() => pick(d)}>
+              <button type="button" class="item" data-kind={d.k} aria-pressed={placing?.k === d.k} disabled={present(d)} title={`${d.ja} · ${d.en}${present(d) ? '（島にある）' : ''}`} onclick={() => pick(d)}>
                 {#if d.icon && artUrl(d.icon)}<img src={artUrl(d.icon)} alt="" />{:else}<span class="glyph">{d.k === 'stairs' ? '⛰' : d.k === 'board' ? '📋' : '・'}</span>{/if}
                 <span class="lbl">{d.ja}</span>
               </button>
@@ -618,12 +618,12 @@
       {/each}
     </div>
     {#if placing?.variants}
-      <label class="row small">しゅるい
+      <label class="row small">種類
         <select bind:value={placeS}>{#each placing.variants as v (v)}<option value={v}>{v}</option>{/each}</select>
       </label>
     {/if}
     <p class="hint">
-      ドラッグで うごかす · R / ホイールで まわす · Delete で けす · Cmd+Z / Cmd+Shift+Z · Cmd+C / Cmd+V · G グリッド · スペース＋ドラッグで よせる · ホイールで ズーム · 0 で ぜんたい
+      ドラッグで移動 · R / ホイールで回す · Delete で削除 · Cmd+Z / Cmd+Shift+Z · Cmd+C / Cmd+V · G でグリッド · スペース＋ドラッグでパン · ホイールでズーム · 0 で全体
     </p>
   </aside>
 
@@ -642,19 +642,19 @@
     ></canvas>
     {#if toast}<div class="toast" role="status">{toast}</div>{/if}
     <div class="status" data-status>
-      <span>おくった {sent}</span>
-      {#if hover}<span>マス {hover[0]}, {hover[1]} · {BRUSH_NAME[cur.kind(hover[0], hover[1])]} {cur.tier(hover[0], hover[1])}だん</span>{/if}
+      <span>送信 {sent}</span>
+      {#if hover}<span>マス {hover[0]}, {hover[1]} · {BRUSH_NAME[cur.kind(hover[0], hover[1])]} {cur.tier(hover[0], hover[1])}段</span>{/if}
       <span>{relay ? 'ライブ' : 'オフライン'}</span>
     </div>
   </main>
 
   <aside class="side">
     <div class="bar">
-      <button type="button" onclick={undo} disabled={!undoStack.length} title="Cmd+Z">↶ もとにもどす</button>
-      <button type="button" onclick={redo} disabled={!redoStack.length} title="Cmd+Shift+Z">↷ やりなおす</button>
+      <button type="button" onclick={undo} disabled={!undoStack.length} title="Cmd+Z">↶ 元に戻す</button>
+      <button type="button" onclick={redo} disabled={!redoStack.length} title="Cmd+Shift+Z">↷ やり直す</button>
     </div>
     <label class="row small"><input type="checkbox" bind:checked={show3d} /> 3D</label>
-    <label class="row small"><input type="checkbox" data-river-line bind:checked={riverLine} /> かわの せん <small>(the river as the 3D island draws it: each turn's arc and its radius)</small></label>
+    <label class="row small"><input type="checkbox" data-river-line bind:checked={riverLine} /> 川の線 <small>(the river as the 3D island draws it: each turn's arc and its radius)</small></label>
     {#if show3d}
       <div class="p3d"><Preview3D layout={store.current} mode="orbit" /></div>
     {/if}
@@ -663,27 +663,27 @@
       <section class="inspect" data-inspect>
         <h2>{d?.ja} <small>{d?.en} · {footText(one)} · {one.id}</small></h2>
         {#if d?.variants && one.k !== 'goal-tree' && one.k !== 'spot'}
-          <label class="row small">しゅるい
+          <label class="row small">種類
             <select value={one.s ?? d.variants[0]} onchange={(e) => setVariant((e.target as HTMLSelectElement).value)}>
               {#each d.variants as v (v)}<option value={v}>{v}</option>{/each}
             </select>
           </label>
         {/if}
         <div class="row">
-          <button type="button" data-turn onclick={turnSel}>↻ まわす</button>
-          <button type="button" disabled={!removable(one)} onclick={() => commit(remove(store.current, selected), 'けした')}>🗑 けす</button>
+          <button type="button" data-turn onclick={turnSel}>↻ 回す</button>
+          <button type="button" disabled={!removable(one)} onclick={() => commit(remove(store.current, selected), '削除した')}>🗑 削除</button>
         </div>
       </section>
     {:else if selected.size > 1}
-      <section class="inspect"><h2>{selected.size}こ えらんでいる</h2>
+      <section class="inspect"><h2>{selected.size}個選択中</h2>
         <div class="row">
-          <button type="button" onclick={turnSel}>↻ まわす</button>
-          <button type="button" onclick={() => commit(remove(store.current, selected), 'けした')}>🗑 けす</button>
+          <button type="button" onclick={turnSel}>↻ 回す</button>
+          <button type="button" onclick={() => commit(remove(store.current, selected), '削除した')}>🗑 削除</button>
         </div>
       </section>
     {/if}
     <section class="size" data-island-size>
-      <h2>しまの おおきさ <small data-size-readout>{isle.cols} × {isle.rows}</small></h2>
+      <h2>島の大きさ <small data-size-readout>{isle.cols} × {isle.rows}</small></h2>
       <div class="edges">
         {#each EDGES as e (e)}
           <div class="edge" data-edge={e}>
@@ -694,8 +694,8 @@
                 data-resize={e}
                 data-by={by}
                 disabled={!room[e][by > 0 ? 'out' : 'in']}
-                aria-label={`${EDGE_NAME[e]}を 1マス ${by > 0 ? 'ひろげる' : 'せばめる'}`}
-                title={`${EDGE_NAME[e]}を 1マス ${by > 0 ? 'ひろげる' : 'せばめる'}`}
+                aria-label={`${EDGE_NAME[e]}を1マス${by > 0 ? '広げる' : '狭める'}`}
+                title={`${EDGE_NAME[e]}を1マス${by > 0 ? '広げる' : '狭める'}`}
                 onpointerenter={() => (sizeHover = { edge: e, by })}
                 onpointerleave={() => (sizeHover = null)}
                 onclick={() => resizeBy(e, by)}>{by > 0 ? '＋' : '−'}</button>
@@ -706,15 +706,15 @@
       {#if pending}
         {@const p = pending}
         <div class="blocked" data-resize-blocked>
-          <p>{EDGE_NAME[p.edge]}を {p.by > 0 ? 'ひろげる' : 'せばめる'}には じゃまな もの（{p.blocked.length}こ）<small>★ は きえない もの: うごかすだけ</small></p>
+          <p>{EDGE_NAME[p.edge]}を{p.by > 0 ? '広げる' : '狭める'}には邪魔な物があります（{p.blocked.length}個）<small>★は消せない物: 動かすのみ</small></p>
           <ul>
             {#each p.blocked as b (b.id)}
-              <li><button type="button" data-blocker={b.id} class:stuck={p.stuck.includes(b.id)} aria-pressed={selected.has(b.id)} onclick={() => showObj(b.id)}>{b.fixed ? '★ ' : ''}{kindDef(b.k)?.ja ?? b.k}<small>{b.id}{p.stuck.includes(b.id) ? ' · うごかせない' : ''}</small></button></li>
+              <li><button type="button" data-blocker={b.id} class:stuck={p.stuck.includes(b.id)} aria-pressed={selected.has(b.id)} onclick={() => showObj(b.id)}>{b.fixed ? '★ ' : ''}{kindDef(b.k)?.ja ?? b.k}<small>{b.id}{p.stuck.includes(b.id) ? ' · 動かせない' : ''}</small></button></li>
             {/each}
           </ul>
           <div class="row">
-            <button type="button" data-resize-move onclick={() => resizeBy(p.edge, p.by, true)}>うごかす</button>
-            <button type="button" onclick={() => (pending = null)}>やめる</button>
+            <button type="button" data-resize-move onclick={() => resizeBy(p.edge, p.by, true)}>動かす</button>
+            <button type="button" onclick={() => (pending = null)}>キャンセル</button>
           </div>
         </div>
       {/if}
@@ -729,13 +729,13 @@
     </section>
     {#if drawCheckOn}
       <section class="issues" data-draw-check>
-        <h2>3Dの チェック {#if undrawnList === null}…{:else if undrawnList.length}<span class="bad">{undrawnList.length}</span>{:else}<span class="good">OK</span>{/if}</h2>
+        <h2>3Dのチェック {#if undrawnList === null}…{:else if undrawnList.length}<span class="bad">{undrawnList.length}</span>{:else}<span class="good">OK</span>{/if}</h2>
         <ul>
           {#each undrawnList ?? [] as u (u.id + u.why)}
             <li><button type="button" class="error" onclick={() => (selected = new Set([u.id]))}>{u.id}（{kindDef(u.k)?.ja ?? u.k}）{u.x}, {u.z}<small>{WHY[u.why]}{u.detail ? `: ${u.detail}` : ''} · {u.seasons.join(' ')}</small></button></li>
           {/each}
         </ul>
-        <h3>かわの カーブ <small>(the river's turns, drawn on the plan in orange)</small></h3>
+        <h3>川のカーブ <small>(the river's turns, drawn on the plan in orange)</small></h3>
         <ul data-river-arcs>
           {#each stems as s, i (i)}
             {#each s.arcs as a, j (j)}
@@ -748,25 +748,25 @@
       </section>
     {/if}
     <section class="mine" data-my-home>
-      <h2>わたしの いえ <small>{store.home(me).m === 'house' ? `${store.home(me).w} · ${store.home(me).r} · ${store.home(me).d}` : store.home(me).m}</small></h2>
-      <button type="button" data-home-look onclick={() => (picking = true)}>いえを かえる</button>
+      <h2>自分の家 <small>{store.home(me).m === 'house' ? `${store.home(me).w} · ${store.home(me).r} · ${store.home(me).d}` : store.home(me).m}</small></h2>
+      <button type="button" data-home-look onclick={() => (picking = true)}>家を変更</button>
     </section>
     <section class="file">
       <div class="row">
-        <button type="button" onclick={exportJson}>JSONに かきだす</button>
-        <button type="button" onclick={() => fileInput?.click()}>JSONを よみこむ</button>
+        <button type="button" onclick={exportJson}>JSONに書き出す</button>
+        <button type="button" onclick={() => fileInput?.click()}>JSONを読み込む</button>
         <input type="file" accept="application/json,.json" bind:this={fileInput} onchange={importJson} hidden />
       </div>
       {#if confirmReset}
         <div class="confirm" role="alertdialog" aria-label="reset">
-          <p>しまを はじめの すがたに もどしますか？ ふたりの へんこうが ぜんぶ きえます（いえの みためは のこります）。</p>
+          <p>島を最初の状態に戻しますか？2人の変更はすべて消えます（家の見た目は残ります）。</p>
           <div class="row">
-            <button type="button" class="danger" data-confirm-reset onclick={resetAll}>もどす</button>
-            <button type="button" onclick={() => (confirmReset = false)}>やめる</button>
+            <button type="button" class="danger" data-confirm-reset onclick={resetAll}>戻す</button>
+            <button type="button" onclick={() => (confirmReset = false)}>キャンセル</button>
           </div>
         </div>
       {:else}
-        <button type="button" class="danger" data-reset onclick={() => (confirmReset = true)}>はじめの しまに もどす…</button>
+        <button type="button" class="danger" data-reset onclick={() => (confirmReset = true)}>最初の島に戻す…</button>
       {/if}
     </section>
   </aside>

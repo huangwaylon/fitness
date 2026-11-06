@@ -18,13 +18,13 @@
   const cat = catalogue();
   const base = new URL('room/homes/', new URL(document.baseURI)).href;
   const MAT: Record<string, string> = {
-    Stucco: 'しっくい', Brick: 'レンガ', Metal: 'トタン', Woodsiding: 'いたばり', Log: 'まるた', Stone: 'いし', Japanese: 'わふう', Oriental: 'オリエンタル',
-    Wood: 'き', Soil: 'つち', Standard: 'ふつう', Woodframe: 'もくぞう', Tile: 'かわら', Slate: 'スレート', Thatched: 'かやぶき', Woodpanel: 'いたばり',
-    Woodtile: 'こけらぶき', Stoneweight: 'いしおき', Westerntile: 'ようがわら'
+    Stucco: '漆喰', Brick: 'レンガ', Metal: 'トタン', Woodsiding: '板張り', Log: '丸太', Stone: '石', Japanese: '和風', Oriental: 'オリエンタル',
+    Wood: '木', Soil: '土', Standard: '普通', Woodframe: '木造', Tile: '瓦', Slate: 'スレート', Thatched: '茅葺き', Woodpanel: '板張り',
+    Woodtile: 'こけら葺き', Stoneweight: '石置き', Westerntile: '洋瓦'
   };
   const DOOR: Record<string, string> = {
-    Simple: 'シンプル', Standard: 'スタンダード', Simplicity: 'すっきり', Window: 'まど', VerticalWindow: 'たてまど', CercleWindow: 'まるまど', Lattice: 'こうし',
-    Iron: 'てつ', IronGrill: 'アイアングリル', Ironparts: 'かなぐ', Relief: 'レリーフ', Carving: 'ほりもの', Chinese: 'ちゅうか', Japanese: 'わふう'
+    Simple: 'シンプル', Standard: 'スタンダード', Simplicity: 'すっきり', Window: '窓', VerticalWindow: '縦窓', CercleWindow: '丸窓', Lattice: '格子',
+    Iron: '鉄', IronGrill: 'アイアングリル', Ironparts: '金具', Relief: 'レリーフ', Carving: '彫り物', Chinese: '中華', Japanese: '和風'
   };
   /** A material's or a door's name: NH's Japanese, else its English key spaced out (Woodsiding → Wood siding). */
   const named = (ja: Record<string, string>, k: string) => (i18n.locale === 'ja' ? (ja[k] ?? k) : k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^(\w)(\w*?)(siding|frame|panel|tile|weight)$/i, (_, a, b, c) => `${a}${b} ${c}`));

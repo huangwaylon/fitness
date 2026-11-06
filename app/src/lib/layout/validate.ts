@@ -63,7 +63,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     const tiles = objTiles(layout, o);
     const kinds = tiles.map(([c, r]) => kindAt(layout, c, r));
     if (tiles.some(([c, r]) => !onGrid(c, r)) || kinds.some((k) => k === 'sea')) {
-      if (o.k !== 'bridge') add('off-land', 'error', tiles, [o.id], `${def.ja}がうみのうえ`, `${def.en} is off the land`);
+      if (o.k !== 'bridge') add('off-land', 'error', tiles, [o.id], `${def.ja}が海の上`, `${def.en} is off the land`);
       continue;
     }
     if (o.k === 'bridge') {
@@ -71,13 +71,13 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
       const ends = o.f % 2 ? [[o.x, o.z], [o.x + w - 1, o.z]] : [[o.x, o.z], [o.x, o.z + d - 1]];
       const mid = tiles.filter(([c, r]) => !ends.some(([ec, er]) => ec === c && er === r));
       if (!mid.some(([c, r]) => isWater(kindAt(layout, c, r))) || ends.some(([c, r]) => isWater(kindAt(layout, c, r))) || tierAt(layout, ends[0][0], ends[0][1]) !== tierAt(layout, ends[1][0], ends[1][1]))
-        add('bridge', 'error', tiles, [o.id], 'はしは みずのうえ、りょうはしが おなじたかさの りく', 'A bridge spans water, both ends on land of one tier');
+        add('bridge', 'error', tiles, [o.id], '橋は水の上に、両端を同じ高さの陸に', 'A bridge spans water, both ends on land of one tier');
       continue;
     }
-    if (kinds.some((k) => isWater(k))) add('on-water', 'error', tiles, [o.id], `${def.ja}が みずのうえ`, `${def.en} stands in water`);
+    if (kinds.some((k) => isWater(k))) add('on-water', 'error', tiles, [o.id], `${def.ja}が水の上`, `${def.en} stands in water`);
     const tiers = new Set(tiles.map(([c, r]) => tierAt(layout, c, r)));
-    if (tiers.size > 1 && o.k !== 'stairs') add('split', 'error', tiles, [o.id], `${def.ja}が がけを またいでいる`, `${def.en} straddles a cliff`);
-    if (def.on === 'grass' && kinds.some((k) => k !== 'grass')) add('not-grass', 'warn', tiles, [o.id], `${def.ja}は くさのうえに`, `${def.en} belongs on grass`);
+    if (tiers.size > 1 && o.k !== 'stairs') add('split', 'error', tiles, [o.id], `${def.ja}が崖をまたいでいる`, `${def.en} straddles a cliff`);
+    if (def.on === 'grass' && kinds.some((k) => k !== 'grass')) add('not-grass', 'warn', tiles, [o.id], `${def.ja}は草の上に`, `${def.en} belongs on grass`);
     if (o.k === 'stairs') {
       const [w, d] = footOf(layout, o);
       const t = tierAt(layout, o.x, o.z);
@@ -93,7 +93,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
       }
       const land = (p: [number, number]) => !isWater(kindAt(layout, p[0], p[1]));
       if (tiers.size > 1 || !top.every((p) => land(p) && tierAt(layout, p[0], p[1]) === t + 1) || !foot.every((p) => land(p) && tierAt(layout, p[0], p[1]) === t))
-        add('stairs', 'error', [...tiles, ...top], [o.id], 'さかが がけに つながっていない', 'The stairs join no cliff (their top one tier up, their foot level)');
+        add('stairs', 'error', [...tiles, ...top], [o.id], '坂が崖につながっていない', 'The stairs join no cliff (their top one tier up, their foot level)');
     }
   }
   // overlaps: solid things never share ground; a flower never stands in a solid thing
@@ -102,21 +102,21 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     for (let k = i + 1; k < objs.length; k++) {
       const b = objs[k];
       if (overlap(layout, a, b))
-        add('overlap', 'error', [...objTiles(layout, a), ...objTiles(layout, b)], [a.id, b.id], `${kindDef(a.k)?.ja}と${kindDef(b.k)?.ja}が かさなっている`, `${kindDef(a.k)?.en} and ${kindDef(b.k)?.en} overlap`);
+        add('overlap', 'error', [...objTiles(layout, a), ...objTiles(layout, b)], [a.id, b.id], `${kindDef(a.k)?.ja}と${kindDef(b.k)?.ja}が重なっている`, `${kindDef(a.k)?.en} and ${kindDef(b.k)?.en} overlap`);
     }
   }
   // the homes: all three, each with a clear door
   for (const id of Object.values(HOME_IDS)) {
     const o = layout.objects.get(id);
     if (!o) {
-      add('home', 'error', [], [id], 'いえが ない', 'A home is missing');
+      add('home', 'error', [], [id], '家がない', 'A home is missing');
       continue;
     }
     const d = doorOf(layout, o);
     const at = nav.doors[id]?.at;
     const [hx, hz] = originOf(layout, o);
     if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, hx, hz)) || !at || !reachable(nav, at[0], at[1]))
-      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [id], 'いえの とびらまで いけない', "A home's door can't be reached");
+      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [id], '家の扉まで行けない', "A home's door can't be reached");
   }
   // the island's buildings (the museum): a clear door, as a home's
   for (const o of objs) {
@@ -125,7 +125,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     const d = doorOf(layout, o);
     const at = nav.doors[o.id]?.at;
     if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, o.x, o.z)) || !at || !reachable(nav, at[0], at[1]))
-      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${def.ja}の とびらまで いけない`, `The ${def.en.toLowerCase()}'s door can't be reached`);
+      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${def.ja}の扉まで行けない`, `The ${def.en.toLowerCase()}'s door can't be reached`);
   }
   // what a villager uses from in front of it (the bulletin board): its front tiles clear and reachable
   for (const o of objs) {
@@ -133,25 +133,25 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
     const d = doorOf(layout, o);
     const at = nav.named[`front-${o.id}`];
     if (d.tiles.some(([c, r]) => isWater(kindAt(layout, c, r)) || tierAt(layout, c, r) !== tierAt(layout, o.x, o.z)) || !at || !reachable(nav, at[0], at[1]))
-      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${kindDef(o.k)!.ja}の まえに たてない`, `Nobody can stand in front of the ${kindDef(o.k)!.en.toLowerCase()}`);
+      add('door', 'error', [...d.tiles, ...objTiles(layout, o)], [o.id], `${kindDef(o.k)!.ja}の前に立てない`, `Nobody can stand in front of the ${kindDef(o.k)!.en.toLowerCase()}`);
   }
   // the goal trees: one each
   for (const s of ['a', 'b'] as const) {
     const g = objs.filter((o) => o.k === 'goal-tree' && (o.s ?? 'a') === s);
-    if (g.length !== 1) add('goal', 'error', g.flatMap((o) => objTiles(layout, o)), g.map((o) => o.id), g.length ? `${s === 'a' ? 'ウェイ' : 'うめ'}の もくひょうのきが ふたつ` : `${s === 'a' ? 'ウェイ' : 'うめ'}の もくひょうのきが ない`, g.length ? `A second goal tree (${s.toUpperCase()})` : `The goal tree (${s.toUpperCase()}) is missing`);
+    if (g.length !== 1) add('goal', 'error', g.flatMap((o) => objTiles(layout, o)), g.map((o) => o.id), g.length ? `${s === 'a' ? 'ウェイ' : 'うめ'}の目標の木が2本` : `${s === 'a' ? 'ウェイ' : 'うめ'}の目標の木がない`, g.length ? `A second goal tree (${s.toUpperCase()})` : `The goal tree (${s.toUpperCase()}) is missing`);
   }
   // the named spots: reachable
   for (const o of objs) {
     if (o.k !== 'spot') continue;
     const [x, z] = objMid(layout, o);
-    if (!reachable(nav, x, z)) add('unreachable', 'error', objTiles(layout, o), [o.id], 'ばしょまで いけない', `The spot (${o.s}) can't be reached`);
+    if (!reachable(nav, x, z)) add('unreachable', 'error', objTiles(layout, o), [o.id], '場所まで行けない', `The spot (${o.s}) can't be reached`);
   }
   // the visitors' spots: where they can stand now (else the island's own spot: a warning, nothing breaks)
   for (const k of ['plaza', 'beach-spot'] as const) {
     const m = markerSpot(layout, k), o = m && layout.objects.get(m.id);
     if (!o || m.at) continue;
     const def = kindDef(k)!;
-    add('visitor-spot', 'warn', objTiles(layout, o), [o.id], `${def.ja}に たてない（いつもの ばしょに たつよ）`, `Nobody can stand at the ${def.en.toLowerCase()} (the usual spot instead)`);
+    add('visitor-spot', 'warn', objTiles(layout, o), [o.id], `${def.ja}に立てない（いつもの場所に立ちます）`, `Nobody can stand at the ${def.en.toLowerCase()} (the usual spot instead)`);
   }
   // pockets: land nobody can walk to (a tile whose every walkable cell is off the main region)
   const pocket: [number, number][] = [];
@@ -169,7 +169,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
         }
       if (any && !main) pocket.push([c, r]);
     }
-  if (pocket.length) add('pocket', 'warn', pocket, [], `いけない ばしょが ${pocket.length}マス`, `${pocket.length} tiles nobody can walk to`);
+  if (pocket.length) add('pocket', 'warn', pocket, [], `行けない場所が${pocket.length}マス`, `${pocket.length} tiles nobody can walk to`);
   // the water's shape: no diagonal-only joins, no water spilling over a cliff (a river stepping down is a fall)
   const diag: [number, number][] = [], edge: [number, number][] = [];
   for (let r = 0; r < GRID.rows; r++)
@@ -188,7 +188,7 @@ export function validate(layout: Layout, nav: LayoutNav = navOf(layout)): Issue[
         if (nt < t && k === 'pond' && nk !== 'river' && nk !== 'pond') edge.push([c, r]);
       }
     }
-  if (diag.length) add('water-diagonal', 'warn', diag, [], 'みずが ななめにしか つながっていない', 'Water joined only at a corner');
-  if (edge.length) add('water-edge', 'warn', edge, [], 'みずが がけから こぼれる（たきは かわだけ）', 'Water spills over a cliff (only a river falls)');
+  if (diag.length) add('water-diagonal', 'warn', diag, [], '水が斜めにしかつながっていない', 'Water joined only at a corner');
+  if (edge.length) add('water-edge', 'warn', edge, [], '水が崖からこぼれる（滝は川だけ）', 'Water spills over a cliff (only a river falls)');
   return out;
 }
