@@ -2,16 +2,17 @@
 // (docs/kikimimi.md "Progress & feedback"). Pure, over made-up games.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '../contract/api.ts';
-import { levelAt, levelMark, levelRank, type Level } from './bank.ts';
+import { levelAt, levelRank, type Level } from './bank.ts';
 import { BANK } from './source.ts';
 import { DECK_SIZE } from './deck.ts';
-import { answersOf, dayNum, daysPlayed, gamesOf, isLadderGame, listenAnswers, recentOf, scoreOf, speedOf, stageOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
+import { answersOf, dayNum, daysPlayed, gamesOf, isLadderGame, listenAnswers, recentOf, scoreOf, speedOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
 import { ladderDeck } from './ladder.ts';
 import { LADDERS } from './ladders.ts';
 import { loadAll } from './pool.ts';
 import { cardsOf, dueOf, gradeOf, practiceDeck, step } from './srs.ts';
 import { feedback, recommend, tripsOf } from './advice.ts';
 import { skillsOf } from './tags.ts';
+import { stageAt } from './stages.ts';
 
 // (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
 await loadAll();
@@ -138,11 +139,12 @@ describe('statsOf', () => {
     expect(strong.level!).toBeLessThanOrEqual(3.5);
     expect(strong.measuring).toBe(false);
     expect(statsOf([], TODAY).level).toBeNull();
-    expect(stageOf(3.2).stage.id).toBe('s1');
-    expect(stageOf(3.0).into).toBeCloseTo(0.5);
-    expect(stageOf(5).stage.id).toBe('s3');
-    expect(stageOf(6).stage.id).toBe('s4');
-    expect(stageOf(9).stage.id).toBe('s4');
+    expect(stageAt(3.2).id).toBe('kawa');
+    expect(stageAt(3.0).into).toBeCloseTo(0.5);
+    expect(stageAt(1.75)).toEqual({ id: 'hama', stars: 1, cefr: 'A2–B1', into: 0.5 });
+    expect(stageAt(5).id).toBe('yama');
+    expect(stageAt(6).id).toBe('hoshi');
+    expect(stageAt(9).id).toBe('hoshi');
   });
 });
 
@@ -262,10 +264,9 @@ describe('the advice', () => {
     expect(up(5)).toEqual({ kind: 'level', lv: 6 });
     expect(up(6)).toEqual({ kind: 'level', lv: 7 });
     expect(up(7)).toBeUndefined();
-    // the ladder's places: the pack beside 4, やま and ほし the next two; their marks
+    // the ladder's places: the pack beside 4, やま and ほし the next two (their marks: components/kikimimi/look.test.ts)
     expect([1, 2, 3, 4, 5, 6, 7].map(levelRank)).toEqual([1, 2, 3, 4, 4, 5, 6]);
     expect([1, 2, 3, 4, 5, 6].map(levelAt)).toEqual([1, 2, 3, 4, 6, 7]);
-    expect([4, 5, 6, 7].map(levelMark)).toEqual(['★★★★', '📢', '★★★★★', '★★★★★★']);
   });
   it('names an accent well below the others', () => {
     const uk = BANK.filter((it) => it.voice === 'uk' && it.lv === 2).map((it) => it.id).slice(0, 6);

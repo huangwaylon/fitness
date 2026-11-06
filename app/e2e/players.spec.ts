@@ -3,7 +3,8 @@
 // swaps it where they stand, the old one drawn till the new one is in. On a record of its own (e2e/record.ts), in the
 // logic tier's way (nothing drawn; the scenes and their hooks run).
 import { expect, test, type Browser, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 
@@ -15,7 +16,7 @@ async function phone(browser: Browser, rec: Rec, who: 'A' | 'B' | 'G') {
   await rec.pair(context, who);
   const page = await context.newPage();
   await page.goto('?critter=none&visitor=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   return page;
 }
 

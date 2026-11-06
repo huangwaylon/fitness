@@ -3,6 +3,7 @@
 // the beach the next morning from 5:00. Fireworks on August Sundays and at New Year: bursts in the sky clear of the
 // UI, one more where the sky is tapped. `?shower` and `?fireworks` (with ?demo) start them now.
 import { expect, test, type Page } from './fixtures.ts';
+import { islandUp } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 /** The HUD menu's leaf (the cluster's right end). */
@@ -12,7 +13,7 @@ const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] 
 async function open(page: Page, q: string) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
 }
 
 /** The most open spot of the sky (client px): the furthest from every control, the moon, the clouds and the sky's
@@ -72,10 +73,10 @@ test('a shooting star crosses the sky, never the HUD; a tap meanwhile is a wish,
   expect(JSON.parse((await page.evaluate(() => localStorage.getItem('scene-wish')))!)).toEqual({ '2026-11-05': 1 });
   // before dawn: nothing yet; from 5:00: one fragment on the beach
   await page.goto('?demo&date=2026-11-05T04:30');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-find="fragment"]')).toHaveCount(0);
   await page.goto('?demo&date=2026-11-05T08:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-find="fragment"]')).toHaveCount(1);
   const f = (await page.locator('[data-find="fragment"]').first().boundingBox())!;
   await page.mouse.click(f.x + f.width / 2, f.y + f.height / 2);
@@ -88,7 +89,7 @@ test('no showers by day; ?shower is a shower’s night at any hour (the night sk
   await page.waitForTimeout(3000); // (proving that nothing streaks for a while)
   await expect(page.locator('[data-fx="shoot"]')).toHaveCount(0);
   await page.goto('?demo&date=2026-11-04T12:00&shower');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('html')).toHaveAttribute('data-tod', 'night');
   await expect(page.locator('[data-fx="shoot"]').first()).toBeAttached({ timeout: 15_000 });
 });
@@ -134,6 +135,6 @@ test('?fireworks starts a show on any night; none on an ordinary one', async ({ 
   await page.waitForTimeout(3000);
   await expect(page.locator('[data-firework]')).toHaveCount(0);
   await page.goto('?demo&date=2026-11-04T21:00&fireworks');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(page.locator('[data-firework]').first()).toBeAttached({ timeout: 6000 });
 });

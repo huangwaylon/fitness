@@ -504,6 +504,9 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await expect(view).toContainText('の レシピ');
   await expect(view.locator('input, button[data-recipe-item], [data-recipe-add], [data-recipe-save], [data-recipe-remove], [data-sv-step]')).toHaveCount(0);
   await expect(view.locator('[data-recipe-items] li')).toHaveCount(6);
+  // its picture: the ingredients' with one, 2 × 2 (たまねぎ, にんじん, ごはん … have one)
+  await expect(view.locator('[data-recipe-hero] [data-thumb=img]')).toHaveCount(Number(await view.locator('[data-recipe-hero]').getAttribute('data-recipe-hero')));
+  expect(Number(await view.locator('[data-recipe-hero]').getAttribute('data-recipe-hero'))).toBeGreaterThanOrEqual(2);
   expect(await overflowOf(page)).toEqual([]);
 
   await view.locator('[data-recipe-log]').click();
@@ -807,11 +810,30 @@ test('pictures: ごはん’s row and amount show its イメージ (badge, alt),
   await rice.click();
   const pic = sheet(page).locator('[data-food-pic]');
   await expect(pic.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'img');
-  await expect(pic.getByRole('img', { name: 'ごはん（精白米）の イメージ' })).toBeVisible();
+  await expect(pic).toHaveAccessibleName('ごはん（精白米）の イメージを おおきく');
   await expect(pic.locator('.badge')).toHaveText('イメージ');
   const p = (await pic.locator('[data-thumb]').boundingBox())!;
   expect([p.width, p.height].map(Math.round)).toEqual([160, 160]);
   expect(await overflowOf(page)).toEqual([]);
+  // a tap: it enlarged, its name, the badge and that it is generated; Esc, ✕ and a tap outside close it, the focus back
+  const big = page.locator('[data-food-photo]');
+  await pic.click();
+  await expect(big).toBeVisible();
+  await expect(big.getByRole('img', { name: 'ごはん（精白米）の イメージ' })).toBeVisible();
+  await expect(big.locator('h3')).toHaveText('ごはん（精白米）');
+  await expect(big.locator('.badge')).toHaveText('イメージ');
+  await expect(big.locator('[data-photo-credit]')).toHaveText('AI生成の イメージ（実物と ちがう ことが あります）');
+  await page.keyboard.press('Escape');
+  await expect(big).toHaveCount(0);
+  await expect(pic).toBeFocused();
+  await expect(page.locator('dialog[open]')).toHaveCount(1); // the sheet stays
+  await pic.click();
+  await big.getByRole('button', { name: 'とじる' }).click();
+  await expect(big).toHaveCount(0);
+  await expect(pic).toBeFocused();
+  await pic.click();
+  await page.mouse.click(10, 10); // outside its card
+  await expect(big).toHaveCount(0);
   await sheet(page).getByRole('button', { name: 'もどる' }).click();
   await sheet(page).getByRole('button', { name: 'もどる' }).click();
   await sheet(page).locator('[data-food-credits] button').click();

@@ -9,10 +9,10 @@
 //   Same shape as bank4.ts and dialogues.ts (a level-4 `Item`; `lv` is one constant, LV, for the integrator to move),
 // but staged here: each row carries its scene (or null), its channel only where the conditions don't give it, and the
 // sound marks of every clip with a `tts` (staging.ts's rules, which this file can't add to). Ids: `ml-` and `dml-`.
-//   Voices: a villager's cast voice is bank4.ts CAST's (the villagers this set added are there too, all US).
+//   Voices: a villager's cast voice is cast.ts CAST's (the villagers this set added are there too, all US).
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, CastId, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
-import { CAST } from '../bank4.ts';
+import type { Channel, Item, ItemType, Level, SceneId, SoundMark, Tags } from '../bank.ts';
+import { MEAN_ASK, dialogueOf, g, line, single, tg, type DialogueRow, type L } from './build.ts';
 
 /** The level these are filed under (もり, level 4). */
 const LV: Level = 4;
@@ -20,47 +20,23 @@ const LV: Level = 4;
 /** The life family an item belongs to (coverage; the seed is the nearest §5.5 scenario). */
 export type Family = 'shop' | 'food' | 'hotel' | 'travel' | 'health' | 'bank' | 'home' | 'delivery' | 'office' | 'gym' | 'salon' | 'neighbour' | 'emergency';
 
-const MEAN_ASK = 'つまり、どういうこと？';
-const NEXT_ASK = 'つぎの ひとことは？';
-
 type X = { tts?: string; focus?: string; ask?: string; marks?: readonly SoundMark[]; channel?: Channel };
 type Row = readonly [id: string, fam: Family, speaker: RosterId, scene: SceneId | null, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, x?: X];
-type L = readonly [who: RosterId, en: string, ja: string, tts?: string, marks?: readonly SoundMark[]];
-interface DRow {
-  id: string;
+interface DRow extends DialogueRow {
   fam: Family;
-  type: Extract<ItemType, 'gist' | 'next'>;
   scene: SceneId | null;
   lines: readonly L[];
-  ask?: string;
-  /** The right one first. */
-  choices: readonly string[];
-  ja: string;
-  note: string;
-  focus: string;
-  tags: Tags;
   channel?: Channel;
 }
-
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-const g = (at: string): SoundMark => ['drop', at, 'g'];
-
-const castOf = (who: RosterId): CastId => {
-  const cast = CAST[who];
-  if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
-  return cast;
-};
 
 const FAM: Record<string, Family> = {};
 
 const item = (type: ItemType) => ([id, fam, speaker, scene, en, ja, note, choices, tags, x = {}]: Row): Item => {
   FAM[id] = fam;
-  const cast = castOf(speaker);
   const focus = type === 'word' ? choices[0] : x.focus;
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : undefined);
   return {
-    id, lv: LV, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags,
+    ...single(LV, type, id, speaker, en, ja, note, choices, tags),
     ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }), ...(scene && { scene }),
     ...(x.channel && { channel: x.channel }), ...(x.marks && { marks: x.marks })
   };
@@ -68,10 +44,8 @@ const item = (type: ItemType) => ([id, fam, speaker, scene, en, ja, note, choice
 
 const dialogue = (r: DRow): Item => {
   FAM[r.id] = r.fam;
-  const lines = r.lines.map(([who, en, ja, tts, marks]): Line => ({ who, cast: castOf(who), en, ja, ...(tts && { tts }), ...(marks && { marks }) }));
   return {
-    id: r.id, lv: LV, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: r.tags, lines,
+    ...dialogueOf(LV, r, r.lines.map(line)),
     ...(r.scene && { scene: r.scene }), ...(r.channel && { channel: r.channel })
   };
 };

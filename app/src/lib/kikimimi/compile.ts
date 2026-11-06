@@ -12,10 +12,12 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { parse } from 'yaml';
+import { QUIZ_LVS } from '../contract/live-protocol.ts';
 import { clipIds, isDialogue, type Item, type Level } from './bank.ts';
 import type { ChunkClip, Clip, Words } from './clips.ts';
 import { voiced } from './clips.ts';
 import type { Ladder } from './ladder.ts';
+import type { UnitPlay } from './lesson.ts';
 import { LADDERS, ladderReady } from './ladders.ts';
 import { drawn, mixFor, type Mixes } from './mix.ts';
 import { clipPlaces, type PackRef, type Packs } from './packing.ts';
@@ -108,7 +110,7 @@ export const mixes = (clips: Readonly<Record<string, unknown>>, bank: readonly I
  *  audio isn't made yet stays hidden and main stays shippable. */
 export function playable(clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = joined(clips)): Level[] {
   const mix = mixes(clips, bank);
-  return ([1, 2, 3, 4, 5, 6, 7, 8] as const).filter((lv) => {
+  return QUIZ_LVS.filter((lv) => {
     const items = bank.filter((it) => it.lv === lv && drawn(it, mix));
     return !!mix[lv] && items.length > 0 && items.every((it) => voiced(it, clips));
   });
@@ -145,7 +147,7 @@ function unitChunk(u: UnitManifest, check: UnitsCheck, bank: ReadonlyMap<string,
     id: u.unit, name: u.name, stage: u.stage, domain: u.domain, ...(u.also && { also: u.also }), host: u.host, scene: u.scene, sound: u.sound, status: u.status,
     cando: { ja: candoText(u.cando), ...(u.cando.short && { short: u.cando.short.trim() }), en: u.cando.en }, lessons: u.lessons, home: ids.filter((id) => check.home.get(id) === u.unit), ...(u.tiers && { tiers: u.tiers }),
     ph: u.ph.map((p) => ({ ...p, in: check.phraseIn.get(p.id)?.items ?? [] }))
-  };
+  } satisfies UnitPlay;
   const file = partFile({ unit, items, ladders }, clips, words, places);
   if (gz(file) > UNIT_MAX) throw new Error(`kikimimi: unit ${u.unit}'s chunk is ${gz(file)} B gzipped, over ${UNIT_MAX}`);
   const lessons = LESSONS.reduce((m, l, i) => (u.lessons[l] ? m | (1 << i) : m), 0);
@@ -161,8 +163,8 @@ function cv(items: readonly Item[], mix: unknown, clips: Readonly<Record<string,
   return createHash('sha256').update(JSON.stringify([mix, shape])).digest('hex').slice(0, 6);
 }
 
-/** A level's items in contiguous parts, each under PART_AIM gzipped (one part when it fits). */
-function split(items: readonly Item[], file: (items: readonly Item[]) => string): Item[][] {
+/** A level's items in contiguous parts, each under PART_AIM gzipped (one part when it fits), as their files. */
+function split(items: readonly Item[], file: (items: readonly Item[]) => string): string[] {
   for (let n = 1; n <= items.length; n++) {
     const sizes = items.map((it) => JSON.stringify(it).length), total = sizes.reduce((a, b) => a + b, 0);
     const parts: Item[][] = Array.from({ length: n }, () => []);
@@ -171,7 +173,13 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
       parts[Math.min(n - 1, Math.floor((run / total) * n))].push(it);
       run += sizes[i];
     });
-    if (parts.every((p) => p.length && gz(file(p)) <= PART_AIM)) return parts;
+    const files: string[] = [];
+    for (const p of parts) {
+      const f = p.length ? file(p) : '';
+      if (!f || gz(f) > PART_AIM) break;
+      files.push(f);
+    }
+    if (files.length === n) return files;
   }
   throw new Error('kikimimi: a level that no split fits');
 }
@@ -190,7 +198,7 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     const items = BANK.filter((it) => it.lv === lv);
     const parts = split(items, (p) => partFile({ items: p }, clips, words, places));
     const names = parts.length === 1 ? [`lv${lv}`] : parts.map((_, i) => `lv${lv}-${i + 1}`);
-    parts.forEach((p, i) => out.set(`parts/${names[i]}.json`, partFile({ items: p }, clips, words, places)));
+    parts.forEach((file, i) => out.set(`parts/${names[i]}.json`, file));
     units[lv] = { parts: names, n: items.length, cv: cv(items, mix[lv] ?? null, clips) };
   }
   const ladders = partFile({ ladders: LADDERS }, clips, words, places);

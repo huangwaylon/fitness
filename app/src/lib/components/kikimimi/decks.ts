@@ -3,7 +3,7 @@
 // which stands in for its lobby's own deck. A deck is built only once its level's chunk is in (game.svelte.ts).
 import { deck } from '#lib/kikimimi/deck.ts';
 import { ladderDeck } from '#lib/kikimimi/ladder.ts';
-import { isLadder } from '#lib/kikimimi/session.ts';
+import { isLadder } from '#lib/kikimimi/seed.ts';
 import { ladders } from '#lib/kikimimi/pool.ts';
 import type { Item, Level } from '#lib/kikimimi/bank.ts';
 

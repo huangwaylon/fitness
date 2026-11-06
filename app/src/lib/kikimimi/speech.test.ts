@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { clipItems, type CastId } from './bank.ts';
 import { BANK as ITEMS } from './source.ts';
-import { CAST } from './bank4.ts';
+import { CAST } from './cast.ts';
 import { CAST_IDS, SLOTS, castOf, numberWords, ordinalWords, sayNumbers, spokenText } from './speech.ts';
 
 /** What's spoken, one per clip (a dialogue's lines each its own: bank.ts clipItems), as the audio script sees it. */

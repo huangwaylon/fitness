@@ -3,7 +3,8 @@
 // numbers; the UI words them (i18n kiki.rec.*, kiki.fb.*). Pure.
 import { levelRank, type Accent, type Level } from './bank.ts';
 import type { Game, Speed, Stats } from './progress.ts';
-import { MIN_SHOWN, isLadderGame, itemOf } from './progress.ts';
+import { MIN_SHOWN, isLadderGame } from './progress.ts';
+import { entryOf } from './pool.ts';
 import { SKILLS, featureSkill, skillsOf, tagsOf, type Skill } from './tags.ts';
 
 export type Rec =
@@ -34,7 +35,7 @@ function offeredSkills(levels: readonly Level[], bank: readonly { lv: Level; id:
   const out = new Set<Skill>();
   for (const it of bank) {
     if (!levels.includes(it.lv)) continue;
-    const x = itemOf(it.id);
+    const x = entryOf(it.id);
     if (!x) continue;
     const s = skillsOf(x);
     out.add(s.primary);
@@ -102,7 +103,7 @@ export function feedback(o: { game: Game; before: Stats; after: Stats; recs: rea
   const next = o.recs[0] ?? null;
   const touched = new Set<Skill>();
   for (const a of o.game.r) {
-    const it = itemOf(a.id);
+    const it = entryOf(a.id);
     if (!it) continue;
     const s = skillsOf(it);
     touched.add(s.primary);
@@ -134,7 +135,7 @@ export function tripsOf(game: { r: readonly Pick<Game['r'][number], 'id' | 'ok'>
 
 /** An item's trip keys (tripsOf): its features, else its primary skill. */
 export function tripKeys(id: string): { key: string; skill: Skill }[] {
-  const it = itemOf(id);
+  const it = entryOf(id);
   if (!it) return [];
   const fs = tagsOf(it).features;
   return fs.length ? fs.map((f) => ({ key: `f:${f}`, skill: featureSkill(f) })) : [{ key: `s:${skillsOf(it).primary}`, skill: skillsOf(it).primary }];

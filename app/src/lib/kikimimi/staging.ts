@@ -15,6 +15,7 @@
 // number). `word` items stay clean: their contrasts are fine detail, and level 4 stays fair. A phone or PA channel
 // with no entry gets its light condition anyway (conditions.ts condOf).
 import type { Channel, Cond, Item, SceneId, SoundMark } from './bank.ts';
+import { g } from './content/build.ts';
 
 /** item id → [scene | null, channel?] (the channel only where `tags.conditions` don't give it). */
 export const PLACES: Readonly<Record<string, readonly [SceneId | null, Channel?]>> = {
@@ -73,7 +74,6 @@ export const NOISE: Readonly<Record<string, Cond>> = {
   'd4-friend-cancels': light('phone', 'street'), 'm4-sailings': heavy('pa')
 };
 
-const g = (at: string): SoundMark => ['drop', at, 'g'];
 
 /** clip id (an item's, or a dialogue line's `<item>-<n>`) → its sound marks. */
 export const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {

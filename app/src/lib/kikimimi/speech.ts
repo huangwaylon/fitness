@@ -3,7 +3,7 @@
 // made already), so nothing in the client bundle imports this.
 import { ROSTER } from '#lib/villagers/roster.ts';
 import type { Accent, CastId, Item } from './bank.ts';
-import { CAST } from './bank4.ts';
+import { CAST } from './cast.ts';
 
 /** The cast's slots per accent and gender (18 voices, American first: every villager's voice is US; UK and AU only speak
  *  the やま/ほし accent-exposure items, docs/curriculum.md "American English first"). */

@@ -3,7 +3,8 @@
 // opening later, has them; the guest's phone shows only its own profile, and the record never sends it a member's.
 // The BMI card (けんこう → からだ) says the average's category by the standard. Made-up values only.
 import { expect, test, type Browser, type Page, PINNED_DATE } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 import { newRecord } from './record.ts';
 
 type Rec = ReturnType<typeof newRecord>;
@@ -15,7 +16,7 @@ async function settings(browser: Browser, rec: Rec, who: 'A' | 'B' | 'G') {
   await rec.pair(context, who);
   const page = await context.newPage();
   await page.goto('?critter=none&visitor=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'settings');
   const card = page.locator('dialog[open] [data-profile]');
   await expect(card).toBeVisible();

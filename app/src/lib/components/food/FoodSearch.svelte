@@ -2,7 +2,7 @@
   // ごはん's search (a level over the day, for one meal): a 16px search field (focused by the ＋ that opened it, in the
   // tap: Food's openSearch), then さいきん (my latest entry of each food, as I last had it, its portion with it) until
   // something is typed, or the catalog's best matches (each: its category's tile (FoodThumb), the name, a product's
-  // brand, its everyday name (glossOf), a food in its states once (its name without the state, the state shown filled
+  // brand, its everyday name (glossOf; a food in its states: then its states after a wide space), a food in its states once (its name without the state, the state shown filled
   // and the others after it: 「(生) 焼き ゆで」, past three 「ほか N」), its default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
   // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
@@ -269,7 +269,7 @@
         <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={it.id} data-per100={it.kcal} onclick={() => onpick(it)}>
           <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} />
           <span class="nm">{vs.length ? stemName(it) : it.name}{#if v && v.n >= 2}<i class="ok" role="img" data-verified={v.n} aria-label={t('food.verified', { n: v.n })}>{t('food.verifiedBadge', { n: v.n })}</i>{/if}</span>
-          <small class="meta">{#if vs.length}{@render states(it, vs)}{#if gl || it.brand}{' · '}{/if}{/if}{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{:else if !it.brand && !vs.length}{'\u00a0'}{/if}</small>
+          <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if !it.brand && !gl}{'\u00a0'}{/if}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
         </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}</li>
       {/each}

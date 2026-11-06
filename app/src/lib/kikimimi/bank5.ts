@@ -11,29 +11,23 @@
 // (what's going on or what to do: a single clip, its own `ask`), `mean` (what it really means: the literal reading, the
 // opposite and a plausible wrong inference) and `reply` (what to say back: an IVR, an intercom, a staff member, the
 // message to leave). `ja` gives the clip's Japanese, then 「→ the answer's」 for gist, mean and reply.
-//   Speakers keep their cast voices for good (bank4.ts CAST); station and airport PA voices are the announcers'.
+//   Speakers keep their cast voices for good (cast.ts CAST); station and airport PA voices are the announcers'.
 //   Gated like any level: the lobby offers it once every item has a clip (compile.ts playable).
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, Cond, Item, ItemType, Tags } from './bank.ts';
-import { CAST } from './bank4.ts';
+import type { Cond, Item, ItemType, Tags } from './bank.ts';
+import { MEAN_ASK, single, tg } from './content/build.ts';
 import { staged } from './staging.ts';
 
 type Extra = { tts?: string; focus?: string; ask?: string };
 type Row = readonly [id: string, speaker: RosterId, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, cond: Cond, extra?: Extra];
 
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, conditions, ...(features?.length && { features }) });
 const light = (kind: Cond['kind'], bed?: Cond['bed']): Cond => ({ kind, level: 'light', ...(bed && { bed }) });
 const heavy = (kind: Cond['kind'], bed?: Cond['bed']): Cond => ({ kind, level: 'heavy', ...(bed && { bed }) });
 
-const MEAN_ASK = 'つまり、どういうこと？';
-
 const item = (type: ItemType) => ([id, speaker, en, ja, note, choices, tags, cond, x = {}]: Row): Item => {
-  const cast = CAST[speaker];
-  if (!cast) throw new Error(`kikimimi: ${speaker} has no cast voice`);
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : undefined);
   return {
-    id, lv: 5, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags, cond,
+    ...single(5, type, id, speaker, en, ja, note, choices, tags), cond,
     ...(x.tts && { tts: x.tts }), ...(x.focus && { focus: x.focus }), ...(ask && { ask }), ...staged(id)
   };
 };

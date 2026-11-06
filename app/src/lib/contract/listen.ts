@@ -4,12 +4,18 @@
 // when, how long, with how many: the together summary), the guest and the members alike
 // (contract/guest.ts rowsFor). Pure, over the contract only (the relay imports it).
 import { isLocalDate } from './api.ts';
+import { GM_RE, QUIZ_LVS, UNIT_RE } from './live-protocol.ts';
 import type { LocalDate, Who } from '../types.ts';
 
 /** One answer: the item's id, right (1) or not (0), the authored choice picked (−1: timed out; another game's, up to
  *  4095: a tile round's bitmask of wrong slots, a memo's per-slot result, docs/kikimimi-framework.md §4.4), the replays
  *  before it (🔁 and 🐢 alike; 0 is a first listen). */
 type ListenAnswer = [id: string, ok: 0 | 1, pick: number, rp: number];
+
+/** Right on the first listen (no 🔁 or 🐢 before it): what a stamp, the phrase ずかん and きろく's first-listen figures
+ *  count. A row's answer, or one as きろく reads it (progress.ts Answer). */
+export const firstListenRight = (a: Readonly<ListenAnswer> | { ok: boolean; rp: number }): boolean =>
+  'ok' in a ? a.ok && a.rp === 0 : a[1] === 1 && a[3] === 0;
 
 export interface ListenRow {
   /** The Tokyo day it was played. */
@@ -49,15 +55,17 @@ export const STAMP_MIN = 5;
 /** Whether a row stamps its unit (docs/curriculum-units.md §3, §10): a チェック with ≥ 5 of my answers right on the
  *  first listen, or a co-op one whose team got ≥ 5. Derived, never stored. */
 export const stampsUnit = (row: Pick<ListenRow, 'u' | 'l' | 'tm' | 'r'>): boolean =>
-  row.u !== undefined && row.l === CHECK_LESSON && ((row.tm ?? 0) >= STAMP_MIN || row.r.filter(([, ok, , rp]) => ok === 1 && rp === 0).length >= STAMP_MIN);
+  row.u !== undefined && row.l === CHECK_LESSON && ((row.tm ?? 0) >= STAMP_MIN || row.r.filter(firstListenRight).length >= STAMP_MIN);
 
-/** The most answers a row holds (a game is 8). */
-const LISTEN_MAX_Q = 12;
+/** The most answers a row holds (a game is 8), and the most replays an answer counts. */
+export const LISTEN_MAX_Q = 12;
+export const LISTEN_MAX_RP = 99;
+/** A lesson is one 6-question game (docs/curriculum-units.md §3): a co-op lesson's team tally `tm` is 0-6. */
+export const LESSON_QS = 6;
 const LISTEN_MAX_MS = 60 * 60 * 1000;
 const GAME_RE = /^[a-z0-9]{4,12}$/;
-const ITEM_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
-const GM_RE = /^[a-z][a-z0-9]{1,7}$/;
-const UNIT_RE = /^[a-z0-9-]{1,12}$/;
+/** An item's id (a clip's file name). */
+export const ITEM_ID_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
 const KEYS = new Set(['d', 'g', 'gm', 'u', 'l', 'tm', 'lv', 'n', 'ms', 'p', 'r']);
 
 const int = (v: unknown, lo: number, hi: number): v is number => Number.isInteger(v) && (v as number) >= lo && (v as number) <= hi;
@@ -65,7 +73,7 @@ const int = (v: unknown, lo: number, hi: number): v is number => Number.isIntege
 function answerOf(a: unknown): ListenAnswer | null {
   if (!Array.isArray(a) || a.length !== 4) return null;
   const [id, ok, pick, rp] = a as unknown[];
-  return typeof id === 'string' && ITEM_RE.test(id) && (ok === 0 || ok === 1) && int(pick, -1, 4095) && int(rp, 0, 99) ? [id, ok, pick, rp] : null;
+  return typeof id === 'string' && ITEM_ID_RE.test(id) && (ok === 0 || ok === 1) && int(pick, -1, 4095) && int(rp, 0, LISTEN_MAX_RP) ? [id, ok, pick, rp] : null;
 }
 
 /** A row as sent or kept, or null when it isn't one (an unknown key, a field out of range). Its day's bound (not after
@@ -74,12 +82,12 @@ export function listenOf(d: unknown): ListenRow | null {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
   const o = d as Record<string, unknown>;
   if (Object.keys(o).some((k) => !KEYS.has(k))) return null;
-  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !int(o.lv, 1, 8) || !int(o.n, 1, 3) || !int(o.ms, 0, LISTEN_MAX_MS)) return null;
+  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !int(o.lv, 1, QUIZ_LVS.length) || !int(o.n, 1, 3) || !int(o.ms, 0, LISTEN_MAX_MS)) return null;
   if (o.p !== undefined && o.p !== 1) return null;
   if (o.gm !== undefined && (typeof o.gm !== 'string' || !GM_RE.test(o.gm))) return null;
   if (o.u !== undefined && (typeof o.u !== 'string' || !UNIT_RE.test(o.u))) return null;
   if (o.l !== undefined && (o.u === undefined || !int(o.l, 1, 5))) return null;
-  if (o.tm !== undefined && (o.l === undefined || !int(o.tm, 0, 6))) return null;
+  if (o.tm !== undefined && (o.l === undefined || !int(o.tm, 0, LESSON_QS))) return null;
   if (!Array.isArray(o.r) || o.r.length < 1 || o.r.length > LISTEN_MAX_Q) return null;
   const r: ListenAnswer[] = [];
   for (const a of o.r) {

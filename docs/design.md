@@ -465,7 +465,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
 - **Amount:** the food's picture when it has one (160 px, centred, alt 「…の イメージ」, the イメージ badge at its top
-  left: every picture is generated; none: no picture area), its name, then (only with one) its everyday name and its
+  left: every picture is generated; none: no picture area; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
+  min(100vw − 64, 360) px, with the badge, the name, `full` when it differs, the 「これは…」 line and 「AI生成の イメージ
+  …」; ✕, Esc or a tap outside close it, the focus back on the picture), its name, then (only with one) its everyday name and its
   one line 「これは…」 (the data's `desc`); the food's values per 100 g; a food in its states, **じょうたい** above 量: a
   chip per state (乾 生 ゆで … in process order) with its kcal at the amount it would take, picking one swaps the food
   (its name and values follow: a portion label it also has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き;
@@ -504,7 +506,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   the matching ones above the catalog's; a row: its name, who set it and how many servings, a serving's kcal. One →
   the amount for the recipe as a food (1人前 first, ぜんぶ, 100 g; the search's meal), logging an ordinary entry of mine
   on the day shown; its 「レシピを ひらく」 (left of ついか) opens it. ＋ レシピを つくる (under the search's field) opens a
-  new one. Mine opens in the editor (`FoodRecipe`): the name, なん人前 (−/＋, 1–20), the ingredients (each a row like a
+  new one. Mine opens in the editor (`FoodRecipe`): on top its picture (the first four of its ingredients with one, 2 × 2; one alone 160 px; none: nothing), the name, なん人前 (−/＋, 1–20), the ingredients (each a row like a
   meal's; a tap → the amount: ほぞん / けす), ＋ ざいりょうを ついか (the search and the amount, no meal: ついか puts it in
   the recipe), 1人前あたり and ぜんぶで live, then けす (asked twice: ほんとうに けす？) and ほぞん (waiting until something
   changed); both go back to the meal's search. Anyone else's: the same read-only, 「〇〇の レシピ」, with 「コピーして
@@ -1062,7 +1064,8 @@ an hour's extra.
   needs it (~15 ms on the Simulator). The fade is its own level (0 … 1 over a minute, Weather.svelte's rules: from
   rain to snow at once, the opening sky at once). The island draws at its ambient rate meanwhile, as it already does
   for the water. `__world3d.precip()` (dev and ?demo) says what falls, its level, the meshes drawn and the rings'
-  surface; `precipHide(on)` for a draw-call count with and without (`e2e/weather.spec.ts`).
+  surface; `precipCalls()` the draw calls its meshes made in the last frame drawn, the scene's others not counted
+  (`e2e/weather.spec.ts`).
   Measured on the iOS Simulator (own iPhone 16, iOS 26.5, a local build, the island at rest, 8 s a sample, two
   rounds; load average 15-40): the engine at 30.0 fps and a frame's CPU 2 ms (p95) in every case; the draw calls
   176 → 178 in rain (the streaks, the rings), the winter island's 188 → 189 in snow; WebContent / GPU % of a core:
@@ -2560,7 +2563,7 @@ Read on each call by `island/devHooks.ts` (the seasonal ones by `ui-state/previe
 | `?shake=nest\|branch\|bagworm\|spider` | The next shake drops that |
 | `?rock=clonk\|sparkle\|bug` | Every rock tap has that outcome |
 | `?find=bottle\|fragment\|mushroom\|rare-mushroom\|earth-egg` | A beach find now / every dig spot that |
-| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid`, `?wander` | A balloon; a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower; the partner wanders |
+| `?balloon`, `?fireworks`, `?shower`, `?stretch`, `?hybrid` | A balloon; a show (`?event=fireworks`); a meteor shower's night at any hour (`?event=shower`); the tape deck; a hybrid flower (the partner's outing: `__world.wander()`) |
 | `?hit` | Every tap target drawn over the island (magenta: the scene's elements; cyan: the boxes a module tests) |
 | `?fps=30\|60` | The 3D scenes' frame rate for the tab, not kept (the e2e pin 60 in storage: `playwright.config.ts`) |
 | `?fpv=1\|0` | The rooms' first-person view for the tab, not kept ([First person](#first-person)) |

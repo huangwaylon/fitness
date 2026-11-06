@@ -5,8 +5,8 @@
 // state, ‹ back and ✕, the pill offline. The logic tier: the photos may come late, nothing waits on them. Pictures
 // (SHOTS=<dir>) of each screen, by day and at night.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
-import { islandQuery } from './island.ts';
+import { fromMenu, unfoldMenu } from './hud.ts';
+import { islandQuery, islandUp } from './island.ts';
 import { shot } from './shots.ts';
 import { gotoTrips, pickTrip, tripsSheet as sheet } from './trips.ts';
 
@@ -144,7 +144,7 @@ test('a long open day keeps its strip under the tabs as it scrolls', async ({ pa
 
 test('offline before the first opening: the pill says so, もういちど opens it once back', async ({ page, context }) => {
   await page.goto(islandQuery('demo&date=2026-11-04T12:00'));
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await context.setOffline(true);
   await unfoldMenu(page);
   await page.locator('[data-hud-travel]').click();

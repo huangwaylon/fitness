@@ -3,6 +3,7 @@
 // pills hidden), it folds again on a second tap, a tap elsewhere, Esc, or a pick; the ベル row opens the panel
 // (ごほうび), the others their own sheet (the ずかん's kinds, せってい's sections).
 import { expect, test, type Page } from './fixtures.ts';
+import { islandUp } from './island.ts';
 import { fromMenu, hudBells, hudMenu, unfoldMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -12,7 +13,7 @@ const settings = (page: Page) => page.locator('[data-hud-settings]');
 
 async function open(page: Page) {
   await page.goto('?demo&date=2026-11-04T12:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
 }
 const folded = async (page: Page) => {
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
@@ -119,7 +120,7 @@ test('by keyboard: the leaf, a pill, Enter opens its sheet, Esc closes it and th
 
 test('the guest has the ベル row too (the pair\'s wallet, to look at): it opens ごほうび, view-only', async ({ page }) => {
   await page.goto('?demo&as=G&date=2026-11-04T12:00');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'bells');
   const dlg = page.locator('dialog[open]');
   await expect(dlg.locator('[data-guest-jar]')).toBeVisible();

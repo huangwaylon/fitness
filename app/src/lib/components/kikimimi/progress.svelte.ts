@@ -6,7 +6,6 @@
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf, type ListenRow } from '#lib/contract/listen.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
-import { levelMark } from '#lib/kikimimi/bank.ts';
 import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
 import { reportOf, type Report } from '#lib/kikimimi/report.ts';
 import { answersOf, type Answer } from '#lib/kikimimi/progress.ts';
@@ -14,13 +13,12 @@ import { week } from '#lib/store/week.svelte.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 import type { Rec } from '#lib/kikimimi/advice.ts';
-import { sx } from '#lib/kikimimi/ladder.ts';
+import { levelMark, sx } from './look.ts';
 import { remember, type Recent } from '#lib/kikimimi/recent.ts';
 import { unitsOf, type UnitState } from '#lib/kikimimi/stamps.ts';
 import { INDEX, unitIds, unitPart } from '#lib/kikimimi/pool.ts';
 import { lessonsOfMask, pathOf, type Filter, type Path, type PathUnit } from '#lib/kikimimi/path.ts';
 import { LESSONS } from '#lib/kikimimi/stages.ts';
-import type { UnitPlay } from '#lib/kikimimi/lesson.ts';
 import { hooksOn } from '../island/devHooks.ts';
 import { t } from '#lib/i18n/index.ts';
 
@@ -110,7 +108,7 @@ export function pathUnits(): PathUnit[] {
   const out: PathUnit[] = [];
   for (const id of unitIds()) {
     const line = INDEX.paths.find((p) => p[0] === id);
-    const part = line ? null : (unitPart(id)?.unit as UnitPlay | undefined);
+    const part = line ? null : unitPart(id)?.unit;
     const u: PathUnit | null = line
       ? { id, name: line[1], stage: line[2], domain: line[3], host: line[4], status: line[5], lessons: lessonsOfMask(line[6]), ...(line[7] && { short: line[7] }) }
       : part ? { id, name: part.name, stage: part.stage, domain: part.domain, also: part.also, host: part.host, status: part.status, lessons: LESSONS.filter((l) => !!part.lessons[l]), ...(part.cando.short && { short: part.cando.short }) } : null;
