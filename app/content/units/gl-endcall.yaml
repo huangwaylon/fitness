@@ -440,21 +440,21 @@ items:
     speaker: beau
     voice: us
     cast: us-m4
-    en: "Hey, can't talk long, I'm walking to the station. Are we still on for tomorrow? Yep! Eleven at the café. Oh wait, I meant twelve. I've got a dentist thing at ten. Twelve, got it. Okay, got to run. Text me if anything changes!"
-    ja: "12時にカフェ。"
-    note: "I meant twelve で 訂正。10時は 歯医者"
-    choices: ["At twelve, at the café.", "At eleven, at the café.", "At ten, at the dentist."]
+    en: "Hey, can't talk long, I'm walking to the station. Are we still on for tomorrow? Yep! Eleven at the café. And bring cash. The farmers market after is cash only. So that's eleven, with cash. Got it. Okay, got to run. Text me if anything changes!"
+    ja: "11時にカフェ。現金を持っていく。"
+    note: "最後の かくにん：11時・カフェ・現金"
+    choices: ["Eleven at the café, and bring cash.", "Eleven at the market, and cards are fine.", "Twelve at the café, cash only."]
     answer: 0
-    focus: "I meant twelve"
-    ask: "あした なんじに どこ？"
+    focus: "cash only"
+    ask: "あしたの よていと もちものは？"
     scene: street
     channel: phone
     cond: { kind: phone, level: heavy, bed: street }
-    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [gotta, self-repair] }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [gotta] }
     lines:
       - { who: beau, cast: us-m4, en: "Hey, can't talk long, I'm walking to the station. Are we still on for tomorrow?", ja: "ねえ、長く話せない、駅に歩いてるとこ。明日の予定、変わらずでいい？" }
-      - { who: lily, cast: us-f1, en: "Yep! Eleven at the café. Oh wait, I meant twelve. I've got a dentist thing at ten.", ja: "うん！ 11時にカフェ。あ、待って、12時だった。10時に歯医者があるの。" }
-      - { who: beau, cast: us-m4, en: "Twelve, got it. Okay, got to run. Text me if anything changes!", tts: "Twelve, got it. Okay, gotta run. Text me if anything changes!", ja: "12時ね、了解。じゃ、もう行かなきゃ。何か変わったらメッセージして！" }
+      - { who: lily, cast: us-f1, en: "Yep! Eleven at the café. And bring cash. The farmers market after is cash only.", ja: "うん！ 11時にカフェ。あと現金持ってきて。そのあとのファーマーズマーケット、現金だけなの。" }
+      - { who: beau, cast: us-m4, en: "So that's eleven, with cash. Got it. Okay, got to run. Text me if anything changes!", tts: "So that's eleven, with cash. Got it. Okay, gotta run. Text me if anything changes!", ja: "じゃあ11時、現金持ってね。了解。じゃ、もう行かなきゃ。何か変わったらメッセージして！" }
   - id: km-polite-out
     lv: 3
     type: mean

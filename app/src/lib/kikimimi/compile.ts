@@ -20,7 +20,7 @@ import { LADDERS, ladderReady } from './ladders.ts';
 import { drawn, mixFor, type Mixes } from './mix.ts';
 import { clipPlaces, type PackRef, type Packs } from './packing.ts';
 import type { Index, PathEntry } from './pool.ts';
-import { BANK } from './source.ts';
+import { joined } from './source.ts';
 import { tagsOf } from './tags.ts';
 import { LESSONS, candoText, checkUnits, lessonIds, manifestOf, type UnitManifest, type UnitsCheck } from './units.ts';
 
@@ -49,7 +49,7 @@ export function unitItems(sources: readonly UnitSource[] = readUnits()): Item[] 
 
 /** The units read and checked (units.ts: each manifest, then all of them against the bank, the ladders and the
  *  clips): the manifests that read, and the problems (errors stop the compiler; warnings are printed). */
-export function checkUnitSources(sources: readonly UnitSource[], clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = BANK): UnitsCheck & { units: UnitManifest[] } {
+export function checkUnitSources(sources: readonly UnitSource[], clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = joined(clips)): UnitsCheck & { units: UnitManifest[] } {
   const units: UnitManifest[] = [], errors: string[] = [];
   for (const { file, raw } of sources) {
     const m = manifestOf(raw, file);
@@ -102,11 +102,11 @@ const dialoguesVoiced = (clips: Readonly<Record<string, unknown>>, bank: readonl
   bank.filter((it) => it.lv === 4 && isDialogue(it)).every((it) => voiced(it, clips));
 
 /** The mixes for a set of clips: level 4 takes dialogues only once every level-4 dialogue is voiced. */
-export const mixes = (clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = BANK): Mixes => mixFor(dialoguesVoiced(clips, bank));
+export const mixes = (clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = joined(clips)): Mixes => mixFor(dialoguesVoiced(clips, bank));
 
 /** The levels a phone offers (the lobby's): those with a mix and every clip of the items it draws, so a level whose
  *  audio isn't made yet stays hidden and main stays shippable. */
-export function playable(clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = BANK): Level[] {
+export function playable(clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = joined(clips)): Level[] {
   const mix = mixes(clips, bank);
   return ([1, 2, 3, 4, 5, 6, 7, 8] as const).filter((lv) => {
     const items = bank.filter((it) => it.lv === lv && drawn(it, mix));
@@ -181,7 +181,7 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
 export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks()): Map<string, string> {
   const out = new Map<string, string>();
   const places = clipPlaces(packs);
-  const check = checkUnitSources(sources, clips);
+  const BANK = joined(clips), check = checkUnitSources(sources, clips, BANK);
   if (check.errors.length) throw new Error(`kikimimi: the units don't check:\n${check.errors.join('\n')}`);
   const dialogues = dialoguesVoiced(clips, BANK), mix = mixFor(dialogues);
   const units: Index['units'] = {};
@@ -209,7 +209,7 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   const first = BANK.find((it) => it.lv === 1)!;
   const test = chunkClips([first.id], clips, places);
   const index: Index = {
-    units, offered: playable(clips), dialogues, ladder: ladderReady(clips), test: [first.id, test.clips[first.id], test.packs], paths,
+    units, offered: playable(clips, BANK), dialogues, ladder: ladderReady(clips), test: [first.id, test.clips[first.id], test.packs], paths,
     items: BANK.map((it) => {
       const t = tagsOf(it);
       return [it.id, it.lv, it.type, it.voice, t.pragmatic, [...t.features]];

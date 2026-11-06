@@ -96,17 +96,17 @@ items:
     ask: "週末の 野球、どう 見るか 決めている"
     scene: street
     lines:
-      - { who: kicks, at: 0, en: "So, the Swallows game on Saturday. Are we actually going, or just watching it at the bar?", tts: "So, the Swallows game on Saturday. Are we actually goin', or just watchin' it at the bar?", ja: "で、土曜のスワローズの試合。本当に球場に行く？それともバーで見る？" }
-      - { who: molly, at: 0.3, en: "Going, obviously. Summer at Jingu, beer vendors everywhere, the umbrella dance. You can't get that on TV.", ja: "行くに決まってるでしょ。夏の神宮、ビールの売り子さん、傘のダンス。テレビじゃ味わえないよ。" }
-      - { who: henry, at: -0.2, en: "You also can't get a seat. The outfield's sold out, and the infield's like five thousand yen each.", ja: "席も取れないけどね。外野は売り切れで、内野は1人5千円くらいするよ。" }
-      - { who: kicks, at: 0.3, en: "Five thousand? For that, I'd rather stay in and order wings.", tts: "Five thousand? For that, I'd rather stay in an' order wings.", ja: "5千円？それなら家でチキンウイングでも頼みたいな。" }
-      - { who: molly, at: 0.3, en: "Come on. My cousin can get us standing-room tickets for fifteen hundred.", ja: "ちょっと。いとこが立ち見券を1500円で取ってくれるって。" }
-      - { who: kicks, at: -0.4, en: "Fifteen hundred? Okay, that changes things. I'm in.", ja: "1500円？それなら話は別。行く。" }
+      - { who: kicks, at: 0, en: "So, the Cubs game on Saturday. Are we actually going, or just watching it at the bar?", tts: "So, the Cubs game on Saturday. Are we actually goin', or just watchin' it at the bar?", ja: "で、土曜のカブスの試合。本当に球場に行く？それともバーで見る？" }
+      - { who: molly, at: 0.3, en: "Going, obviously. Summer at Wrigley, hot dogs, the seventh-inning stretch. You can't get that on TV.", ja: "行くに決まってるでしょ。夏のリグレー、ホットドッグ、7回のストレッチタイム。テレビじゃ味わえないよ。" }
+      - { who: henry, at: -0.2, en: "You also can't get a seat. The bleachers are sold out, and the good seats are like ninety bucks each.", ja: "席も取れないけどね。外野席は売り切れで、いい席は1人90ドルくらいするよ。" }
+      - { who: kicks, at: 0.3, en: "Ninety bucks? For that, I'd rather stay in and order wings.", tts: "Ninety bucks? For that, I'd rather stay in an' order wings.", ja: "90ドル？それなら家でチキンウイングでも頼みたいな。" }
+      - { who: molly, at: 0.3, en: "Come on. My cousin can get us standing-room tickets for twenty-five.", ja: "ちょっと。いとこが立ち見券を25ドルで取ってくれるって。" }
+      - { who: kicks, at: -0.4, en: "Twenty-five? Okay, that changes things. I'm in.", ja: "25ドル？それなら話は別。行く。" }
       - { who: henry, at: 0.3, en: "Standing for three hours? Pass. But I'll meet you guys after for wings.", tts: "Standin' for three hours? Pass. But I'll meet you guys after for wings.", ja: "3時間立ちっぱなし？パス。でも、あとでチキンウイングには合流するよ。" }
-      - { who: molly, at: 0.2, en: "Deal. Gates open at four, so let's meet at the station at three-thirty.", ja: "決まり。開門は4時だから、3時半に駅で集合ね。" }
+      - { who: molly, at: 0.2, en: "Deal. Gates open at five, so let's meet at the Addison stop at four-thirty.", ja: "決まり。開門は5時だから、4時半にアディソン駅で集合ね。" }
     rounds:
       - { type: opinions, claims: ["球場で 見るのが いちばん", "3時間 立つのは いや", "安いなら 行く"], answer: [molly, henry, kicks] }
       - { type: changed, answer: kicks }
-      - { type: plan, ask: "土曜は どうなる？", choices: ["All three watch the game at the bar.", "Two of them go on cheap tickets, and all three get wings after.", "They buy infield seats for five thousand yen each."], answer: 1, ja: "2人は安い立ち見券で球場へ。あとで3人でチキンウイング。" }
+      - { type: plan, ask: "土曜は どうなる？", choices: ["All three watch the game at the bar.", "Two of them go on cheap tickets, and all three get wings after.", "They buy good seats for ninety dollars each."], answer: 1, ja: "2人は安い立ち見券で球場へ。あとで3人でチキンウイング。" }
     note: "that changes things＝それなら話は別。Pass＝やめとく"
     tags: { seed: 27, register: friend, pragmatic: attitude, conditions: [street], features: [numbers, overlap, contraction] }

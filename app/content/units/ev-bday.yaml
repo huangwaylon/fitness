@@ -293,17 +293,17 @@ items:
     speaker: dom
     voice: us
     cast: us-m1
-    en: "Can you pick up the cake? The bakery closes at 7:30. Sorry, I mean 7. It's Sunday."
-    tts: "Can you pick up the cake? The bakery closes at seven thirty. Sorry, I mean seven. It's Sunday."
-    ja: "ケーキ取ってきてくれる？ ケーキ屋は7時半に閉まる。ごめん、7時だ。日曜だから。"
-    note: "I mean のあとが 正しい 時間"
-    choices: ["7:00", "7:30", "6:30"]
+    en: "Can you grab the cake? It's $40 plus tax, so that's about $43. I'll pay you back Saturday."
+    tts: "Can you grab the cake? It's forty dollars plus tax, so that's about forty-three. I'll pay you back Saturday."
+    ja: "ケーキ取ってきてくれる？ 40ドル＋税だから、だいたい43ドル。土曜に返すね。"
+    note: "plus tax＝税別。税こみは about の あと"
+    choices: ["$43", "$40", "$34"]
     answer: 0
-    ask: "ケーキやは なんじに しまる？"
+    ask: "ケーキは ぜいこみ いくら？"
     scene: street
     channel: phone
     cond: { kind: phone, level: light, bed: street }
-    tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [numbers, self-repair, linking] }
+    tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [numbers, linking] }
   - id: dk-shh
     lv: 3
     type: next
@@ -461,17 +461,17 @@ items:
     speaker: kicks
     voice: us
     cast: us-m4
-    en: "We're in room 4 on the fifth floor. No, wait, I mean room 5 on the fourth floor. Hurry, they're singing already!"
-    tts: "We're in room four on the fifth floor. No, wait, I mean room five on the fourth floor. Hurry, they're singing already!"
-    ja: "5階の4号室。いや、待って、4階の5号室だった。急いで、もう歌ってるよ！"
-    note: "I mean で 部屋と 階が 入れかわる"
-    choices: ["room 5", "room 4", "room 45"]
+    en: "For the cake: she's turning 34, not 43. Last year someone got it backwards. I mean, she still brings it up!"
+    tts: "For the cake: she's turning thirty-four, not forty-three. Last year someone got it backwards. I mean, she still brings it up!"
+    ja: "ケーキのことだけど、34歳ね、43歳じゃなくて。去年だれかが逆にしたの。本人いまだに言ってくる！"
+    note: "not 43 の まえが 正しい 年れい"
+    choices: ["34", "43", "30"]
     answer: 0
-    ask: "なんごうしつ？"
+    ask: "なんさいに なる？"
     scene: living
     channel: phone
     cond: { kind: phone, level: heavy }
-    tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
+    tags: { seed: 54, register: friend, pragmatic: humour, conditions: [phone], features: [numbers] }
   - id: kr-fast-puppy
     lv: 3
     type: reply
