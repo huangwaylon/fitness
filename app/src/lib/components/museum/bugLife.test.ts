@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { FLY_UPS } from '../island/critterPath.ts';
 import { FLAPS } from '../world3d/wings.ts';
-import { BUG_S, CASE, CASES, POND_Y, SOLIDS, bugLife, bugSeed, pose, slotsOf, type Pose, type Size, type Solid } from './bugLife.ts';
+import { BUG_S, CASE, CASES, OAKS, POND_Y, SOLIDS, bugLife, bugSeed, pose, slotsOf, type Pose, type Size, type Solid } from './bugLife.ts';
 import { BUG_WING } from './plan.ts';
 import { BUG_IDS, habitatOf, type Habitat } from './species.ts';
 
@@ -91,6 +91,11 @@ const TOP: Record<Habitat, number> = {
 };
 
 describe('the bug wing’s bugs (bugLife.ts: the island’s motion, NH’s museum)', () => {
+  it('one bug a trunk and a branch: an oak each, the palm one', () => {
+    expect(slotsOf('walking-stick', 'trunk').map((s) => s.i)).toEqual(OAKS.map((_, i) => i));
+    expect(slotsOf('bagworm', 'dangle').map((s) => s.i)).toEqual(OAKS.map((_, i) => i));
+    expect(slotsOf('coconut-crab', 'palm').length).toBe(1);
+  });
   it('every bug stays in its enclosure or case over two minutes: never in a prop, a trunk, a flower, the glass or the ground', () => {
     const bad = runs.filter((r) => r.bad.length).map((r) => `${r.id} (${r.hab} ${r.slot}): ${r.bad.join('; ')}`);
     expect(bad).toEqual([]);

@@ -147,9 +147,9 @@ export function slotsOf(id: string, hab: Habitat): readonly Slot[] {
     case 'ground': return each(GROUND.length, 'soil').filter((s) => id !== 'spider' || s.i !== 1);
     case 'leaf': return each(LEAVES.length, 'leaf');
     case 'terrarium': return each(CASES.length, 'case');
-    case 'trunk': return each(2, 'oak');
+    case 'trunk': return each(OAKS.length, 'oak');
     case 'palm': return each(1, 'palm');
-    case 'dangle': return each(2, 'branch');
+    case 'dangle': return each(OAKS.length, 'branch');
   }
 }
 
@@ -290,10 +290,11 @@ export function bugLife(id: string, hab: Habitat, slot: number, seed: number, si
     }
     case 'trunk': case 'palm': {
       // its bark: up the trunk (x), round it (z, from its own side), out of it (lift)
-      trunk = TRUNKS[hab === 'palm' ? 2 : slot % 2];
-      const n = hab === 'palm' ? slot : slot >> 1;
+      // (one bug a trunk: slotsOf's two oaks, the palm)
+      trunk = TRUNKS[hab === 'palm' ? OAKS.length : slot % OAKS.length];
       // (on the camera's side of its trunk, each its own way round)
-      around = hab === 'palm' ? -0.9 - ((n * 0.618 + (seed % 7) * 0.1) % 1) * 0.8 : (((n * 0.618 + (seed % 7) * 0.1) % 1) - 0.5) * 3.2;
+      const way = ((seed % 7) * 0.1) % 1;
+      around = hab === 'palm' ? -0.9 - way * 0.8 : (way - 0.5) * 3.2;
       const arc = trunk.r * (hab === 'palm' ? 0.4 : 0.9);
       // (its head kept within TILT of up or down: its reach up and down the bark)
       const e = size.l / 2 + (size.w / 2) * Math.sin(TILT);
@@ -310,9 +311,10 @@ export function bugLife(id: string, hab: Habitat, slot: number, seed: number, si
     }
     default: {
       // dangle: on its thread from an oak's branch, bobbing
-      const o = OAKS[slot % 2];
-      area = box(o[0] + 10 + (slot >> 1) * 6, o[0] + 10 + (slot >> 1) * 6, o[1] + 6, o[1] + 6, 24);
-      on = [`canopy-${slot % 2}`];
+      // (one bug a branch: slotsOf's two oaks)
+      const o = OAKS[slot % OAKS.length];
+      area = box(o[0] + 10, o[0] + 10, o[1] + 6, o[1] + 6, 24);
+      on = [`canopy-${slot % OAKS.length}`];
       flight = 'dangle';
     }
   }

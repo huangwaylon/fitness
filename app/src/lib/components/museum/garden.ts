@@ -1,10 +1,11 @@
 // The bug wing's exhibits (docs/design.md "The museum"): NH's garden under glass (its stone paths, a pond, NH's oaks and
 // a palm, flower beds, bushes, a fallen log, ferns, cacti, the museum's own garden props: scripts/world3d-models.ts
-// --museum; NH's flowers from the island) and glass display cases along its back, and every bug found living there as
-// it lives (species.ts habitatOf), NH's catch models (static/room/world3d/critters/bugs/), moving as the island's do
-// (bugLife.ts: the island's critterPath motion, each kept to its enclosure): the butterflies and moths fluttering over
-// the flowers and landing on them, the bee buzzing from flower to flower, the dragonflies darting and hovering over the
-// pond, the firefly drifting over it glowing, the beetles and cicadas on the trunks, the hoppers hopping, the crawlers
+// --museum; NH's flowers from the island) and glass display cases along its back, and the hour's bugs of those found
+// (bugShow.ts: ten at most) living there as each lives (species.ts habitatOf), NH's catch models
+// (static/room/world3d/critters/bugs/), moving as the island's do (bugLife.ts: the island's critterPath motion, each
+// kept to its enclosure): the butterflies and moths fluttering over the flowers and landing on them, the bee buzzing
+// from flower to flower, the dragonflies darting and hovering over the pond, the firefly drifting over it glowing, the
+// beetles and cicadas on the trunks, the hoppers hopping, the crawlers
 // crawling and resting, the water bugs gliding on (and in) the pond, the case bugs walking their cases (the hermit
 // crab sideways), the bagworm on its thread. Their wings beat in the vertex shader (world3d/wings.ts).
 // A species is one InstancedMesh (one specimen, NH's museum's: its parts, its wings among them, one geometry), culled
@@ -316,9 +317,10 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
     const h = wingHinge(wp);
     return { at: new Vector4(h.x, h.y, h.root, h.ramp), flaps: h.flaps };
   }
-  // the danglers' threads (a line from the branch above each: its two places, bugLife.ts slotsOf)
+  // the danglers' threads (a line from the branch above each: a dangler an oak, bugLife.ts slotsOf), two points each
+  const threadsN = OAKS.length;
   const threadGeo = new BufferGeometry();
-  threadGeo.setAttribute('position', new Float32BufferAttribute(new Float32Array(2 * 6), 3));
+  threadGeo.setAttribute('position', new Float32BufferAttribute(new Float32Array(threadsN * 2 * 3), 3));
   geos.push(threadGeo);
   const threads = new LineSegments(threadGeo, new LineBasicMaterial({ color: 0xf2efe6, transparent: true, opacity: 0.7 }));
   mats.push(threads.material as Material);
@@ -382,14 +384,14 @@ export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => nu
           write(b);
           any = true;
         }
-        if (b.life && b.sp.tank === 'dangle' && k < 2) {
+        if (b.life && b.sp.tank === 'dangle' && k < threadsN) {
           const p = b.pose, i = k++;
           threadPos.setXYZ(i * 2, p.x, p.y + b.size * 0.4, p.z);
           threadPos.setXYZ(i * 2 + 1, p.x, 40, p.z);
         }
       }
       // (a thread with no dangler: none, under the floor)
-      for (let i = k * 2; i < 4; i++) threadPos.setXYZ(i, 0, -10, 0);
+      for (let i = k * 2; i < threadsN * 2; i++) threadPos.setXYZ(i, 0, -10, 0);
       // (the pond's ripples with it on screen, as a bug's wings)
       if (!any && !seen(pondSphere)) return false;
       uTime.value = t / 1000;
