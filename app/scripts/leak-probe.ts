@@ -4,7 +4,7 @@
 // island's renderer.info.
 //   npm run leak -- <flow> [cycles] [--snap] [--path=<name>]     (the build served at E2E_PORT, default 4693)
 // flows: shop tent home museum fpv (the museum in first person) editor (the island ⇄ there), all (the four rooms), food
-// health zukan settings bells sheets (open, close), trips classic wedding trails info (the info sheets, their maps drawn on
+// health zukan settings bells sheets (open, close), trips okinawa wedding trails info (the info sheets, their maps drawn on
 // fixture tiles: NZ's pages, Okinawa's 地図, a task and メモ, three trails; info: all four), look (すがた: a villager's look, then いつもの), clothes (すがた: four
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
@@ -244,11 +244,13 @@ const INFO: Record<string, () => Promise<void>> = {
     for (const t of ['days', 'map', 'pack', 'days']) { await tapIn(`dialog[open] [data-trip-tab="${t}"]`); if (t === 'map') await mapUp('__travelMap'); }
     await tapIn('dialog[open] .navbar .back'); await closeAll();
   },
-  // Okinawa's classic guide: 地図 (the map drawn), back to 日程, ✕
-  classic: async () => {
+  // Okinawa: 地図 (the map drawn, its campsites on, a camp's card), キャンプ場, 日程, back, ✕
+  okinawa: async () => {
     await pill('travel'); await tapIn('dialog[open] [data-trip="okinawa"]');
-    await tapIn('dialog[open] [data-classic-tab="map"]'); await mapUp('__travelMap');
-    await tapIn('dialog[open] [data-classic-tab="itinerary"]'); await tapIn('dialog[open] [data-classic-back]'); await closeAll();
+    await tapIn('dialog[open] [data-trip-tab="map"]'); await mapUp('__travelMap');
+    await tapIn('dialog[open] [data-map-layers]'); await tapIn('dialog[open] [data-map-layer="camp"]');
+    await tapIn('dialog[open] [data-trip-tab="camps"]'); await tapIn('dialog[open] [data-camp]'); await page.keyboard.press('Escape'); await page.waitForTimeout(400);
+    await tapIn('dialog[open] [data-trip-tab="days"]'); await tapIn('dialog[open] .navbar .back'); await closeAll();
   },
   // けっこんしき: a task opened, メモ, ✕
   wedding: async () => {

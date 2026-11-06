@@ -41,7 +41,8 @@ interface Hike {
   pass: L;
   /** Where the trailhead is ('Granite Falls, WA'). */
   where: L;
-  /** The trail map (huangwaylon.github.io/hiking-trails; the old /gpx site is gone). */
+  /** The trail map (huangwaylon.github.io/hiking-trails: トレイル's own trail opens in the app, hiking/trails.ts
+   *  hikeSlugOf; the old /gpx site is gone). */
   gpx?: string;
 }
 
@@ -50,8 +51,6 @@ export interface Day {
   n: number;
   /** YYYY-MM-DD, local to the trip's tz. */
   date: string;
-  /** The source's icon name (lucide: 'plane-landing', 'waves', 'mountain-snow', …). */
-  icon: string;
   title: L;
   sub?: L;
   /** The hour-by-hour timeline (none on a free day: its plan is in `sections`). */
@@ -60,11 +59,8 @@ export interface Day {
   links?: Link[];
   note?: L;
   photo?: Photo;
+  /** A hike's day: its photo is `photo`. */
   hike?: Hike;
-  /** The old site's card for the day (a classic guide's, components/travel/classic): 'day' an itinerary day (its
-   *  card open, the accent node), 'travel' a flight day (the second accent's ringed node); none a plain day (or a
-   *  hike's, by its `hike`). */
-  look?: 'day' | 'travel';
 }
 
 export interface Place {
@@ -133,9 +129,6 @@ export interface Camp {
 
 export interface Trip {
   id: TripId;
-  /** Drawn like its original guide (components/travel/classic/: Okinawa, Seattle), its packing list frozen there;
-   *  any other trip is the quiet TripView's. */
-  classic?: true;
   /** The place ('沖縄'); its year is the start's. */
   title: L;
   eyebrow: L;

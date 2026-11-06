@@ -594,8 +594,9 @@ nothing feature-local (`--wed-pink` → `--c-rose`, Pass's blue → `--c-sky`, h
   No emoji in chrome.
 - **NH art, only:** the pink-roses art in the wedding ring; the villager heads on the leaf-menu pills (the world);
   packing categories as NH items (32px on a cream disc): 書類 `scrapbook`, 服装 `pocket-tee`, 登山 `lace-up-boots`,
-  電子機器 `slr-camera`, 手土産 `deco/present`, 基本 `toothbrush-and-cup-set` (otherwise our icon). No characters, arch or
-  Dodo name in the sheets. The classic Okinawa and Seattle guides keep their own styles.
+  電子機器 `slr-camera`, 手土産 `deco/present`, 基本 `toothbrush-and-cup-set`, 海遊び `goggles`, キャンプ `sleeping-bag`,
+  現地調達 `shopping-basket`, Hiking `trekking-shoes` (otherwise our icon). No characters, arch or Dodo name in the
+  sheets.
 - **Rules kept:** every tappable has its `data-sfx` (the shown tab / chip `none`), ‹ ✕ are NavBar / NavButton, fields
   16px+, no grabber.
 
@@ -2518,25 +2519,33 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   airplane ticket design"): a dense card with the `--c-sky` strip 「✈ しまの そら便 · SHIMA AIR」 and TYO ✈ the meta's
   `code` (Fredoka) over the cover, area, place and year, dates; the stub torn off along a stitch, notched in the paper:
   「あと 97 日」 (Fredoka 28) / 「明日」 / 「いま 2 日目」 (yuzu) or a past trip's tilted coral sticker 「行ってきた」 with
-  its year; a barcode. Under them the one km | mi Segmented (this phone's, `DEVICE.travelUnits`, never synced; every
+  its year; a barcode. The one km | mi switch at the left of the list's title bar (the user, 2026-11-07; a small
+  Segmented, 32 px in a 44 px hit; only there: this phone's, `DEVICE.travelUnits`, never synced; every
   `{km:}`, `{m:}`, `{c:}` follows at once: `units.ts`).
-- **A classic guide** (`classic: true`: Okinawa, Seattle; `classic/ClassicGuide.svelte`, [travel.md](travel.md)):
-  identical to the original travel-plans site, its own look under `.classic`, 本棚 on the hero back to the list; its
-  map the app's live TripMap in the site's card; its packing list frozen (nothing read from or sent to the relay).
-- **A kit trip** (`TripView.svelte`, any other: NZ): ‹ ✕ (NavBar s `over`) on the PhotoBand (150 px; the title, dates,
-  area at its foot), the title bar once it scrolls away; a TabBar 日程 · 地図 (with a route) · 持ち物. 日程: one control
+- **A trip** (`TripView.svelte`, every trip: the user, 2026-11-07 "unify okinawa and seattle with new zealand"): ‹ ✕ (NavBar s `over`) on the PhotoBand (150 px; the title, dates,
+  area at its foot), the title bar once it scrolls away; a TabBar 日程 · 地図 (with a route) · キャンプ場 (with
+  campsites) · 持ち物. 日程: one control
   row held under the title bar, a chip a day (「1日目 2/11」, the day's colour; the shown one yuzu) and 準備; under it the
   day shown (`DayCard`: the day of the month big in the day's colour, month and weekday, title and route, 「今日」
-  sticker; a hike's level sticker and figures as key · value rows, the timeline, lists, note, photo, links out as
+  sticker; a hike: its photo as a PhotoBand with the level sticker and trailhead on it, 距離 · 登り · 時間 as a
+  StatStrip, the drive, route and pass as key · value rows, and 「トレイルで見る」 (`openTrail`: トレイル's own trail over
+  the trip, else the link out); the timeline, lists, note, photo, links out as
   chips) or 準備 (the logistics cards: figures, then a row that opens the rest) and the foot. The timeline (`Rows`):
   the time in Fredoka 13, a dot on a dashed spine in the day's colour, the text 14, the note 13. The trip's clock is its
   own `tz` (`when.ts`): the day shown first is the one on now (today's, or the day of the row on now: the eve's flight
   out), else the first; its row that is now lit and scrolled into view (or 「次」), a row on another date 「前日」 /
-  「翌日」. Campsites and candidate layers are the classic guides' only (trips.test keeps them off a kit trip).
+  「翌日」. A guide only in English (Seattle's) shows as it is; the chrome is the reader's.
 - **地図** (`MapPane.svelte`): the day chips (the day's colour and date; the shown one again re-fits) and the map under
   them held at the top, the day's stops in a dense card (a number dot in the day's colour, name, how it's reached,
   arrival). A row selects its stop and the map flies there; a pin marks its rows (a merged pin all of them) and
-  scrolls them into view. The locate button at the bottom right.
+  scrolls them into view. The locate button at the bottom right; a trip with candidate places (Okinawa) has one layer
+  button at the top right (the locate button's disc, yuzu while open), its panel a row per layer (キャンプ場 · 自然 ·
+  食べる, each its colour's dot; all off at first); a campsite's pin opens its card.
+- **キャンプ場** (`CampList.svelte`, `camps.ts`; Okinawa's 26): the source's intro, one ChipRow (すべて 26 · 無料 · 有料 ·
+  ビーチ · トイレ · シャワー: one criterion at a time) held at the top, the sites in one dense card (a row each: a 48 px
+  photo thumb, the name with our nights' yellow stickers, kind · town · the drive from the office, the amenities'
+  icons), the source's foot. A row opens its card (`CampSheet.svelte`, the kit's sheet: the photo, kind and town, the
+  description, its tags, 営業所から · 種別 · 料金 as key · value rows, マップで開く).
 - **持ち物** (`PackList.svelte`, view `packView.ts`): my 「12 / 35」 (Fredoka) and the bar, 編集 (a small chip; yuzu
   while editing: 完了); a dense card per category (its NH item on a cream disc, `packView.ts` CAT_ART, else our icon;
   my 「N / M」), a row per item: my `Tick` (its hit the whole row; each person ticks their own), the text and note in
@@ -2545,7 +2554,11 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   カテゴリを追加 open the form sheet (ui/Sheet, 保存 in its footer, the return key too), チェックをリセット (mine only).
   The guest adds anything and changes only what it added (the others' rows boop). An item's 削除 is at once with the
   banner's 取り消す (sent after 5 s); a category's and the reset ask first (an ActionSheet with a `note`: what it takes
-  with it), then 取り消す too. A past trip: a quiet count with 「終わった旅」, no bar (ticks still work).
+  with it), then 取り消す too.
+- **A trip that's over is read-only** (the user, 2026-11-07: "they are finished"; one rule, `when.ts` `readOnly`: its
+  phase is past, Okinawa's and Seattle's now, NZ's after its flight home): 持ち物 is the seed list as it was, frozen
+  (`packing.frozen`: no op read, none sent; a coral 「終わった旅」 sticker and the count, a bullet where the Tick would
+  be, no 編集); nothing else on a trip is editable.
 - **Rules the guides bend (the user, 2026-11-06):** the guides are reading cards, denser than §Simplicity allows (more
   than 40 characters and 3 cards a screen, more than 5 rows a card). Their text (`.guide`) is keep-all and breaks only
   between words: `Txt.svelte` puts a `<wbr>` between Intl.Segmenter's words (particles, okurigana, closing punctuation

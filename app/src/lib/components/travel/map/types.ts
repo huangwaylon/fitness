@@ -3,7 +3,7 @@
 import type { Leg, Place } from '#lib/travel/types.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 
-/** The candidate layers (Okinawa's chips): every kind but the day's stops. */
+/** The candidate layers (Okinawa's, MapPane's layer button): every kind but the day's stops. */
 export type Layer = Exclude<Place['kind'], 'stop'>;
 export const LAYERS: readonly Layer[] = ['camp', 'nature', 'food'];
 export type Layers = Partial<Record<Layer, boolean>>;
@@ -18,7 +18,7 @@ export interface TripMapProps {
   places: readonly Place[];
   legs: readonly Leg[];
   dayColors: readonly string[];
-  /** The day shown (1-based): its stops and legs; 0 every day's. */
+  /** The day shown (1-based): its stops and legs. */
   day: number;
   /** A place's id: its pin raised and labelled, the map brought to it. */
   selected?: string;

@@ -18,8 +18,6 @@ export const seattle: Trip = {
     {
       n: 1,
       date: "2026-07-02",
-      look: "travel",
-      icon: "plane-landing",
       title: { en: "Arrival & Errands" },
       rows: [
         { t: "9:36", text: { en: "Land — Flight DL166" } },
@@ -44,7 +42,6 @@ export const seattle: Trip = {
     {
       n: 2,
       date: "2026-07-03",
-      icon: "waves",
       title: { en: "Lake 22" },
       rows: [
         { t: "7:00", text: { en: "Leave house" } },
@@ -76,7 +73,6 @@ export const seattle: Trip = {
     {
       n: 3,
       date: "2026-07-04",
-      icon: "sparkles",
       title: { en: "4th of July" },
       rows: [],
       sections: [
@@ -97,7 +93,6 @@ export const seattle: Trip = {
     {
       n: 4,
       date: "2026-07-05",
-      icon: "building",
       title: { en: "Seattle City Day" },
       rows: [
         { t: "9:30", text: { en: "Depart from house" } },
@@ -130,7 +125,6 @@ export const seattle: Trip = {
     {
       n: 5,
       date: "2026-07-06",
-      icon: "waves",
       title: { en: "Snow Lake" },
       rows: [
         { t: "8:30", text: { en: "Leave house (~1 h drive)" } },
@@ -161,7 +155,6 @@ export const seattle: Trip = {
     {
       n: 6,
       date: "2026-07-07",
-      icon: "sprout",
       title: { en: "Farms & Alpacas" },
       rows: [
         { t: "9:00", text: { en: "Farrel-McWhirter Park" } },
@@ -173,7 +166,6 @@ export const seattle: Trip = {
     {
       n: 7,
       date: "2026-07-08",
-      icon: "mountain-snow",
       title: { en: "Skyline Trail Loop" },
       rows: [
         { t: "6:00", text: { en: "Depart (3 h drive)" } },
@@ -204,7 +196,6 @@ export const seattle: Trip = {
     {
       n: 8,
       date: "2026-07-09",
-      icon: "droplets",
       title: { en: "Snoqualmie Falls" },
       rows: [],
       sections: [
@@ -220,7 +211,6 @@ export const seattle: Trip = {
     {
       n: 9,
       date: "2026-07-10",
-      icon: "tent",
       title: { en: "Leavenworth" },
       rows: [],
       sections: [
@@ -236,7 +226,6 @@ export const seattle: Trip = {
     {
       n: 10,
       date: "2026-07-11",
-      icon: "mountain-snow",
       title: { en: "The Enchantments" },
       rows: [
         { t: "5:00", text: { en: "Start hike (with Chris)" } },
@@ -265,7 +254,6 @@ export const seattle: Trip = {
     {
       n: 11,
       date: "2026-07-12",
-      icon: "teacup",
       title: { en: "Bro Day" },
       rows: [],
       sections: [
@@ -285,7 +273,6 @@ export const seattle: Trip = {
     {
       n: 12,
       date: "2026-07-13",
-      icon: "waves",
       title: { en: "Lake Serene" },
       rows: [
         { t: "8:00", text: { en: "Depart (1 h drive)" } },
@@ -316,7 +303,6 @@ export const seattle: Trip = {
     {
       n: 13,
       date: "2026-07-14",
-      icon: "mountain",
       title: { en: "Mt Pilchuck" },
       rows: [
         { t: "8:00", text: { en: "Depart" } },
@@ -347,7 +333,6 @@ export const seattle: Trip = {
     {
       n: 14,
       date: "2026-07-15",
-      icon: "sailboat",
       title: { en: "SUP Day" },
       rows: [],
       sections: [
@@ -364,7 +349,6 @@ export const seattle: Trip = {
     {
       n: 15,
       date: "2026-07-16",
-      icon: "waves",
       title: { en: "Lake Valhalla" },
       rows: [
         { t: "7:30", text: { en: "Depart" } },
@@ -395,7 +379,6 @@ export const seattle: Trip = {
     {
       n: 16,
       date: "2026-07-17",
-      icon: "shopping-bag",
       title: { en: "Souvenirs & Ballard" },
       rows: [],
       sections: [
@@ -415,7 +398,6 @@ export const seattle: Trip = {
     {
       n: 17,
       date: "2026-07-18",
-      icon: "waves",
       title: { en: "Lake Talapus" },
       rows: [
         { t: "7:00", text: { en: "Depart" } },
@@ -446,8 +428,6 @@ export const seattle: Trip = {
     {
       n: 18,
       date: "2026-07-19",
-      look: "travel",
-      icon: "plane-takeoff",
       title: { en: "Fly Home to Japan" },
       rows: [
         { t: "7:30", text: { en: "Depart from home" } },
@@ -506,6 +486,5 @@ export const seattle: Trip = {
         ]
       }
     ]
-  },
-  classic: true
+  }
 };

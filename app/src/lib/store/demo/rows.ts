@@ -259,7 +259,7 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   }
 
   // りょこう (docs/travel.md "Packing list (relay)"): NZ's list as two phones left it yesterday (Okinawa's and Seattle's
-  // are frozen: their classic guides): うめ's ticks, an item she added and one of A's, and each trip's note with
+  // are frozen: the trips are over): うめ's ticks, an item she added and one of A's, and each trip's note with
   // made-up values (the real ones live on the relay alone)
   const tp = at(addDays(today, -1), 21, 10);
   ev(tp, 'B', 'pack', { trip: 'nz', id: '_demob001', at: tp, kind: 'item', cat: 'nz-0', ord: 5, name: { ja: '日焼け止め', en: 'Sunscreen' }, by: 'B' });

@@ -84,17 +84,11 @@ describe('the trips', () => {
     expect(okinawa.places.filter((p) => p.kind === 'camp').length).toBe(okinawa.camps?.length);
     expect((okinawa.camps ?? []).flatMap((c) => c.chips.filter((ch) => ch.pick).map((ch) => ch.text.en))).toEqual(expect.arrayContaining(['Night 1', 'Night 2']));
   });
-  it('a kit guide\'s icons are the kit\'s (a logistics card\'s; a packing category\'s its NH item or ours: never the fallback)', () => {
-    for (const t of Object.values(TRIPS).filter((x) => !x.classic)) {
+  it('a guide\'s icons are the kit\'s (a logistics card\'s; a packing category\'s its NH item or ours: never the fallback)', () => {
+    for (const t of Object.values(TRIPS)) {
       expect(t.logistics.map((c) => c.icon).filter((n) => !isIcon(n)), t.id).toEqual([]);
       const fallback = (n: string) => n !== 'shopping-bag' && JSON.stringify(catIcon(n)) === '{"icon":"shopping-bag"}';
       expect(t.packing.cats.map((c) => c.icon).filter(fallback), t.id).toEqual([]);
-    }
-  });
-  it('campsites and candidate layers only on a classic guide (TripView draws neither)', () => {
-    for (const t of Object.values(TRIPS).filter((x) => !x.classic)) {
-      expect(t.camps ?? [], t.id).toEqual([]);
-      expect(t.places.filter((p) => p.kind !== 'stop'), t.id).toEqual([]);
     }
   });
   it.each(TRIP_IDS)('%s: a row’s own zone is a real one, never the trip’s', (id) => {

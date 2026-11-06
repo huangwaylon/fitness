@@ -42,8 +42,8 @@ export const TRIP_META: readonly TripMeta[] = [
     tz: 'Pacific/Auckland',
     cover: { src: 'travel/nz/cover.webp', w: 560, h: 240 },
     days: [
-      { n: 1, date: '2027-02-11', icon: '', title: L0, rows: [{ t: '18:30', text: L0, dd: -1, tz: 'Asia/Tokyo' }] },
-      { n: 6, date: '2027-02-16', icon: '', title: L0, rows: [{ t: '00:10', text: L0, dd: 1 }] }
+      { n: 1, date: '2027-02-11', title: L0, rows: [{ t: '18:30', text: L0, dd: -1, tz: 'Asia/Tokyo' }] },
+      { n: 6, date: '2027-02-16', title: L0, rows: [{ t: '00:10', text: L0, dd: 1 }] }
     ]
   }
 ];

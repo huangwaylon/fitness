@@ -196,7 +196,7 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
 ## Memory
 The PWA stays open for days, so a scene's round trip must leave nothing behind. `e2e/leaks.spec.ts` (`@chromium`, in
 the gate) goes in and out of the shop, the museum and うめ's house, opening いえを かえる, and the museum in first person
-and out (the eye button, a bench), the info sheets (りょこう's pages and maps, a classic guide's 地図, けっこんしき, three
+and out (the eye button, a bench), the info sheets (りょこう's pages and maps, Okinawa's 地図 and campsites, けっこんしき, three
 trails), three rounds, and checks after a forced GC that no WebGL context (watched by
 WeakRefs) or window/document listener is left over, and that inside the museum only its own context lives. To hunt
 one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, each

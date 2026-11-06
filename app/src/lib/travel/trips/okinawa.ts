@@ -18,8 +18,6 @@ export const okinawa: Trip = {
     {
       n: 1,
       date: "2026-10-10",
-      look: "day",
-      icon: "plane-landing",
       title: { ja: "到着", en: "Arrival" },
       sub: { ja: "那覇 → 金武 → 名護", en: "Naha → Kin → Nago" },
       rows: [
@@ -86,8 +84,6 @@ export const okinawa: Trip = {
     {
       n: 2,
       date: "2026-10-11",
-      look: "day",
-      icon: "waves",
       title: { ja: "ダイビングと南下", en: "Dive, then South" },
       sub: { ja: "水納島、大家、安座真", en: "Minna Island, Ufuya, Azama" },
       rows: [
@@ -150,8 +146,6 @@ export const okinawa: Trip = {
     {
       n: 3,
       date: "2026-10-12",
-      look: "day",
-      icon: "plane-takeoff",
       title: { ja: "南部の海岸、出発", en: "South Coast, Departure" },
       sub: { ja: "知念、新原、喜屋武岬、秘境プール", en: "Chinen, Mibaru, Cape Kyan, the tide pool" },
       rows: [
@@ -1277,6 +1271,5 @@ export const okinawa: Trip = {
       }
     ]
   },
-  foot: { ja: "時刻はすべて日本時間", en: "All times JST" },
-  classic: true
+  foot: { ja: "時刻はすべて日本時間", en: "All times JST" }
 };
