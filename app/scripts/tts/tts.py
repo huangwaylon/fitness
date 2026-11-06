@@ -106,6 +106,7 @@ FOLD = [(r"\bgonna\b", 'going to'), (r"\bwanna\b", 'want to'), (r"\bgotta\b", 'g
         (r"\bgoodnight\b", 'good night'), (r"\bfairy\b", 'ferry'), (r"\bhun\b", 'hon'), (r"\blil\b", 'little'),
         (r"\bmee-?kahn\b|\bmekon\b", 'mikan'), (r"\bmissing tea\b", 'missing t'), (r"\btwo teas\b", "two t's"), (r"\bwhat'dja\b", 'what did you'), (r"\bwhat'd\b", 'what did'),
         (r"\bdon'tcha\b", "don't you"), (r"\bopen in a\b", 'opening a'),(r"\badviser", 'advisor'), (r"\bkm/h\b", 'kilometres an hour'), (r"\bkm\b", 'kilometres'),
+        (r"\bholden\b", 'holding'),  # holdin' as whisper writes it
         (r"\bbells\b", 'bell'), (r"\bokay\b", 'ok')]
 # not "content": articles and fillers (a dropped "the" or an added "oh" isn't a mishearing of the line)
 MINOR = {'a', 'an', 'the', 'um', 'uh', 'er', 'ah', 'aw', 'oh', 'hm', 'hmm', 'mm', 'so', 'well'}
@@ -121,6 +122,7 @@ def normaliser():
             t = re.sub(a, b, t)
         t = norm(re.sub(r'\b(\d{1,2})[:.](\d{2})\b', r'\1\2', t))  # 2:15 and "two fifteen" both 215
         t = re.sub(r'(?<=\d) (?=\d)', '', t)  # "four seven oh nine two" -> 4 7 0 9 2 -> 47092
+        t = re.sub(r'\+(?=\d)', 'plus ', t)  # "plus one percent" comes out +1%
         t = re.sub(r'\b(hm+|mm+)\b', '', t)
         for a, b in FOLD[-2:]:
             t = re.sub(a, b, t)
@@ -154,7 +156,9 @@ def wer(a, jobs):
         best = None
         for ref in j['refs']:
             r = n(ref)
-            o = jiwer.process_words(r, hyp or '-')
+            # a currency whisper guessed for a bare number (¥380,000 said "three hundred eighty thousand": $380000)
+            h = hyp if '$' in r else hyp.replace('$', '')
+            o = jiwer.process_words(r, h or '-')
             content = 0
             for c in o.alignments[0]:
                 if c.type == 'equal':

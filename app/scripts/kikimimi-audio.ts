@@ -138,7 +138,9 @@ const PINNED: Readonly<Record<string, number>> = {
   'd4-video-call-3': 4000,
   // the bedtime stories: "Bean There" heard as said, Walt's "you don't eat" no longer "need", and Mabel's line nearer
   // its voice
-  'serial-cafe-3-16': 2000, 'serial-johnny-5-12': 2000, 'serial-cafe-3-20': 2000
+  'serial-cafe-3-16': 2000, 'serial-johnny-5-12': 2000, 'serial-cafe-3-20': 2000,
+  // the content review's re-voicing (2026-11-07): takes nearer their voice (w1-fly's UTMOS 3.71 → 4.16 too)
+  'w1-fly': 2004, 'dmw-standup-4': 4000, 'dmw-gossip-4': 5000
 };
 const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;

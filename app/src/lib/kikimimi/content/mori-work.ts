@@ -553,7 +553,8 @@ const DROWS: readonly DRow[] = [
       ['audie', "Nice. I'm still stuck on the payments piece, waiting on the API keys from the client. Can't do much till they come through.",
         'いいね。私はまだ決済のところで止まってて、クライアントからのAPIキー待ち。届くまで何もできないの。',
         "Nice. I'm still stuck on the payments piece, waitin' on the API keys from the client. Can't do much till they come through.", [g('waiting')]],
-      ['gulliver', "Want me to follow up with them? I've got a call with them at two anyway.", '催促しようか？ どうせ2時に電話するし。']
+      ['gulliver', "Want me to follow up with them? I've got a call with them at two anyway.", '催促しようか？ どうせ2時に電話するし。'],
+      ['audie', "Would you? That'd be a huge help.", 'いいの？ すごく助かる。']
     ],
     choices: ['The woman, until the client sends the keys.', 'The man, until the tests are written.', 'The client, until the call at two.'],
     ja: '女性。クライアントがキーを送るまで。', note: 'stuck on／waiting on＝足止め。follow up＝催促',
@@ -678,7 +679,8 @@ const DROWS: readonly DRow[] = [
     lines: [
       ['judy', "Did you hear? He's moving to the Singapore office.", '聞いた？ あの人シンガポール支社に移るんだって。'],
       ['daisy-mae', "No way. Wasn't he up for the manager job here?", 'うそ。こっちのマネージャー職の候補じゃなかった？'],
-      ['judy', "That's the thing. Word is, they gave it to someone else, and he saw the writing on the wall.", 'そこなのよ。うわさでは別の人に決まったらしくて、先が見えたから自分から動いたってわけ。']
+      ['judy', "That's the thing. Word is, they gave it to someone else, and he saw the writing on the wall.", 'そこなのよ。うわさでは別の人に決まったらしくて、先が見えたから自分から動いたってわけ。'],
+      ['daisy-mae', "Huh. Can't say I blame him.", 'へえ。まあ、無理もないね。']
     ],
     choices: ["He's leaving because he didn't get the promotion.", 'He got the manager job in Singapore.', 'He was fired from his job.'],
     ja: '昇進できなかったので、自分から移る。', note: 'saw the writing on the wall＝先行きを悟った',
