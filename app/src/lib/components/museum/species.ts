@@ -7,6 +7,7 @@
 //            the mitten crab walking its sand)
 //   each tank showing at most seven of its own at a time, a new pick each hour (onDisplay), the great tank's first a
 //   caught predator (feeding.ts PREDATORS: there's always a hunter for its feeders, once one's been caught);
+//   at most ten bugs at a time, a new pick each hour (bugShow.ts), each in a place of its own;
 //   a bug where NH's garden would have it, by how it lives (island/critters.ts BUGS: its flight, its ground, its tree):
 //     fly the flowers' air (the butterflies, the moths, the bees: on paths round the beds), dart over the pond (the
 //     dragonflies), drift over it (the fireflies), flower (sat on a bloom), hop (in the grass), trunk / palm (perched on
@@ -104,15 +105,9 @@ const hourKey = (hour: number): string => `${localDateAt(hour * HOUR_MS - ZONE_O
  *  shuffle seeded by (the Tokyo date and hour, the tank): the same on every phone, a new pick each hour, none twice. The
  *  great tank's (HUNTED) first is the shuffle's first predator caught (feeding.ts PREDATORS), the rest in its order. */
 export function onDisplay(fish: readonly Specimen[], hour: number): Map<TankId, Specimen[]> {
-  const key = hourKey(hour), out = new Map<TankId, Specimen[]>(), taken = new Set<string>();
+  const out = new Map<TankId, Specimen[]>(), taken = new Set<string>();
   for (const tank of TANK_IDS) {
-    const mine = [...new Map(fish.filter((s) => s.kind === 'fish' && s.tank === tank && !taken.has(s.id)).map((s) => [s.id, s])).values()];
-    mine.sort((a, b) => (a.id < b.id ? -1 : 1));
-    const rnd = mulberry(seedOf(`${key}|${tank}`));
-    for (let i = mine.length - 1; i > 0; i--) {
-      const j = Math.floor(rnd() * (i + 1));
-      [mine[i], mine[j]] = [mine[j], mine[i]];
-    }
+    const mine = hourShuffle(fish.filter((s) => s.kind === 'fish' && s.tank === tank && !taken.has(s.id)), hour, tank);
     if (tank === HUNTED) {
       const k = mine.findIndex((s) => PREDATORS.has(s.id));
       if (k > 0) mine.unshift(...mine.splice(k, 1));
@@ -120,6 +115,17 @@ export function onDisplay(fish: readonly Specimen[], hour: number): Map<TankId, 
     const pick = mine.slice(0, PER_TANK);
     for (const s of pick) taken.add(s.id);
     out.set(tank, pick);
+  }
+  return out;
+}
+/** These specimens (one of each id) shuffled by a seed of (`hour`'s Tokyo date and hour, `what`): the same order on
+ *  every phone, a new one each hour (`hour`: hourOf's). */
+export function hourShuffle(list: readonly Specimen[], hour: number, what: string): Specimen[] {
+  const out = [...new Map(list.map((s) => [s.id, s])).values()].sort((a, b) => (a.id < b.id ? -1 : 1));
+  const rnd = mulberry(seedOf(`${hourKey(hour)}|${what}`));
+  for (let i = out.length - 1; i > 0; i--) {
+    const j = Math.floor(rnd() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
 }

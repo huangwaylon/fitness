@@ -87,7 +87,7 @@ const solid = (what: string) => SOLIDS.find((s) => s.what === what)!;
 
 const box = (x0: number, x1: number, z0: number, z1: number, l0: number, l1 = l0): Patch => ({ x0, x1, z0, z1, l0, l1 });
 /** The fliers' air: over the long row of flowers, over the row by the oak, over the flower bed (its flowers 17 high). */
-const AIR: Patch[] = [box(-158, -84, 6, 44, 12, 24), box(-252, -188, -18, 10, 12, 24), box(-150, -112, 40, 80, 24, 30)];
+const AIR: Patch[] = [box(-158, -84, 6, 44, 12, 24), box(-252, -188, -18, 10, 12, 24), box(-150, -112, 44, 80, 24, 30)];
 /** Over the pond (its water, inside its bank). */
 const POND_AIR = box(POND.x0, POND.x1, POND.z0, POND.z1, 10, 22);
 const POND_LOW = box(POND.x0, POND.x1, POND.z0, POND.z1, 4, 16);
@@ -107,8 +107,51 @@ const BED_HEADS: P3[] = [[-134, 54], [-124, 62], [-130, 70], [-118, 50], [-120, 
 const TILT = 0.5;
 /** How far out from a flower a flier comes down to land on it (u past its own reach). */
 const DOWN = 6;
+/** A half of the pond (`i` 0 the west, 1 the east): two bugs over it or on it, one each, never meet. */
+const half = (a: Patch, i: number): Patch => {
+  const mid = (a.x0 + a.x1) / 2;
+  return i % 2 ? { ...a, x0: mid } : { ...a, x1: mid };
+};
+/** The flowers a ladybug or a mantis sits on (FLOWERS' indices: clear of the props round them, a flower apart). */
+const SITS = [0, 2, 6, 8, 10];
+/** The spots a box over the garden takes: the sitting flowers under it (a flier lands there), the stink bugs' row. */
+const under = (a: Patch): string[] => [
+  ...SITS.filter((f) => {
+    const [, x, z] = FLOWERS[f];
+    return x + FLOWER_HALF > a.x0 && x - FLOWER_HALF < a.x1 && z + FLOWER_HALF > a.z0 && z - FLOWER_HALF < a.z1;
+  }).map((f) => `fl${f}`),
+  ...(ROW.x1 > a.x0 && ROW.x0 < a.x1 && ROW.z1 > a.z0 && ROW.z0 < a.z1 ? ['row'] : [])
+];
 /** A case's floor clear of its agave (its soil's top). */
 const caseFloor = ([x, z]: Pt): Patch => box(x - 3.2, x + CASE.w / 2 - 0.8, z - CASE.d / 2 + 0.8, z + CASE.d / 2 - 0.8, CASE.stand + 2);
+
+// ---------- the places: one bug on show each ----------
+
+/** A place one bug on show keeps to: its habitat's `i`-th enclosure (bugLife's `slot`) and the garden's spots it takes
+ *  (an air box, a flower, a half of the pond, a patch, a case, a trunk). No two bugs on show take one spot (bugShow.ts),
+ *  so none stacks on another or comes into its room: a flier's air takes the flowers it lands on, the stink bugs' row
+ *  its flowers. */
+export interface Slot { i: number; takes: readonly string[] }
+const each = (n: number, k: string): Slot[] => Array.from({ length: n }, (_, i) => ({ i, takes: [`${k}${i}`] }));
+/** The places a bug of `id` in `hab` may keep to, in the order they're taken. */
+export function slotsOf(id: string, hab: Habitat): readonly Slot[] {
+  switch (hab) {
+    case 'fly': return AIR.map((a, i) => ({ i, takes: [`air${i}`, ...under(a)] }));
+    case 'flower': return BUGS[id as BugId]?.flight === 'crawl' ? [{ i: 0, takes: under(ROW) }] : SITS.map((f, i) => ({ i, takes: [`fl${f}`] }));
+    // (a dragonfly and the firefly share the pond's air: a half each)
+    case 'dart': case 'drift': return each(2, 'pond');
+    case 'water': return each(2, 'water');
+    // (not the strip by the bushes: a locust's too big for it; the far corner's by the log's soil)
+    case 'hop': return [0, 1, 2, 4, 5].map((i) => ({ i, takes: [`grass${i}`, ...(i === 4 ? ['soil2'] : [])] }));
+    // (the spider, a big one, not on the ferns' little patch: it would hardly move)
+    case 'ground': return each(GROUND.length, 'soil').filter((s) => id !== 'spider' || s.i !== 1);
+    case 'leaf': return each(LEAVES.length, 'leaf');
+    case 'terrarium': return each(CASES.length, 'case');
+    case 'trunk': return each(2, 'oak');
+    case 'palm': return each(1, 'palm');
+    case 'dangle': return each(2, 'branch');
+  }
+}
 
 // ---------- a bug's life ----------
 
@@ -154,7 +197,8 @@ function inset(a: Patch, r: number, top: number): Patch {
 }
 
 /**
- * A bug's life in the garden: `id` in `hab`, the `slot`-th of its habitat's (which bed, trunk, patch or case), from
+ * A bug's life in the garden: `id` in `hab`, in the `slot`-th of its habitat's places (slotsOf: which air, flower,
+ * half of the pond, patch, case or trunk), from
  * `seed`, `size` as drawn. Its moves are the island's (bugLegs, bugAt), kept to its enclosure, played a minute at a
  * time; its head turns the way it goes (smoothly), its wings beat as the island's do.
  */
@@ -191,7 +235,7 @@ export function bugLife(id: string, hab: Habitat, slot: number, seed: number, si
     }
     case 'dart': case 'drift': {
       const bob = bobOf(hab);
-      area = inset(hab === 'dart' ? POND_AIR : POND_LOW, r + 1, reach + bob);
+      area = inset(half(hab === 'dart' ? POND_AIR : POND_LOW, slot), r + 1, reach + bob);
       area.l0 += bob;
       flight = hab;
       ways = { ...ways, pace: FLY_UPS[hab] };
@@ -216,7 +260,7 @@ export function bugLife(id: string, hab: Habitat, slot: number, seed: number, si
     case 'water': {
       // the pondskater on the water, the diving beetle and the giant water bug down in it a little (it dips under)
       const dive = id === 'pondskater' ? 0 : size.h * (id === 'diving-beetle' ? 0.8 : 0.4);
-      area = inset(box(POND.x0, POND.x1, POND.z0, POND.z1, POND_Y - dive, POND_Y - dive * 0.3), r + 0.5, 0);
+      area = inset(half(box(POND.x0, POND.x1, POND.z0, POND.z1, POND_Y - dive, POND_Y - dive * 0.3), slot), r + 0.5, 0);
       on = ['pond'];
       flight = 'crawl';
       if (id === 'diving-beetle') ways = { ...ways, rest: [600, 2400] };
@@ -238,7 +282,7 @@ export function bugLife(id: string, hab: Habitat, slot: number, seed: number, si
         break;
       }
       // a ladybug, a mantis on a bloom of its own, turning there now and then
-      const [, x, z] = FLOWERS[(slot * 5 + 1) % FLOWERS.length];
+      const [, x, z] = FLOWERS[SITS[slot % SITS.length]];
       area = box(x, x, z, z, FLOWER_TOP);
       on = ['flower'];
       flight = 'flower';

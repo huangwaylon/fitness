@@ -12,6 +12,7 @@ type M = {
   shown(): string[];
   nextHour(): void;
   creature(id: string): [number, number] | null;
+  spot(id: string): [number, number, number] | null;
   card(): string | null;
   put(x: number, z: number): void;
 };
@@ -184,6 +185,45 @@ test('the bug wing: every bug found lives there as it lives (flying, perched, cr
     return mu<string | null>(page, 'card()');
   }, { timeout: 10_000 }).toBe('tarantula');
   await expect(page.locator('[data-museum-card="tarantula"] [data-museum-finder="G"]')).toBeVisible();
+});
+
+test('ten bugs at most, from what was caught, each in a place of its own (none on another): the same ten on every phone, a new ten as the hour changes while one’s in', async ({ page, context }) => {
+  const bugs = ['common-butterfly', 'yellow-butterfly', 'tiger-butterfly', 'monarch-butterfly', 'honeybee', 'moth', 'ladybug', 'mantis', 'stinkbug', 'red-dragonfly',
+    'darner-dragonfly', 'firefly', 'robust-cicada', 'saw-stag', 'walker-cicada', 'goliath-beetle', 'cricket', 'bell-cricket', 'grasshopper', 'snail', 'pondskater',
+    'tarantula', 'hermit-crab', 'pill-bug', 'spider', 'bagworm'];
+  const finds = bugs.map((id, i) => ['bug', id, i % 2 ? 'A' : 'B'] as ['bug', string, 'A' | 'B']);
+  await seed(page, finds);
+  await open(page);
+  const bugsShown = async (p = page) => (await mu<string[]>(p, 'shown()')).filter((id) => bugs.includes(id)).sort();
+  expect((await mu<{ kind: string }[]>(page, 'specimens()')).filter((s) => s.kind === 'bug').length).toBe(bugs.length);
+  await expect.poll(async () => (await bugsShown()).length, { timeout: 15_000 }).toBe(10);
+  const first = await bugsShown();
+  // none on another: each two of them apart in the garden, a few times over as they go
+  const apart = async () => {
+    const at = await Promise.all(first.map((id) => mu<[number, number, number] | null>(page, `spot(${JSON.stringify(id)})`)));
+    let least = Infinity;
+    for (let i = 0; i < at.length; i++) for (let k = i + 1; k < at.length; k++) {
+      const a = at[i], b = at[k];
+      if (a && b) least = Math.min(least, Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]));
+    }
+    return least;
+  };
+  await page.evaluate('window.__museum.put(-170, 10)');
+  await expect.poll(() => mu<boolean>(page, 'still()')).toBe(true);
+  for (let i = 0; i < 4; i++) {
+    expect(await apart()).toBeGreaterThan(8);
+    await page.waitForTimeout(400);
+  }
+  // another tab (another phone), the same hour: the same ten
+  const other = await context.newPage();
+  await seed(other, finds);
+  await open(other);
+  await expect.poll(() => bugsShown(other), { timeout: 15_000 }).toEqual(first);
+  await other.close();
+  // in the garden as the hour turns: a new ten (the old fading out, the new in), still none but those caught
+  await page.evaluate('window.__museum.nextHour()');
+  await expect.poll(bugsShown, { timeout: 15_000 }).not.toEqual(first);
+  await expect.poll(async () => (await bugsShown()).length, { timeout: 15_000 }).toBe(10);
 });
 
 test('the guest visits too: in, walking, the finds on show', async ({ page }) => {

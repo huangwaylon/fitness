@@ -1789,7 +1789,7 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   museum's ±320; live-protocol.ts): the others' villagers are here while they are, walking as they walk, and nowhere on
   the island meanwhile (store/where.svelte.ts `home` `M`). The guest comes in like anyone.
 - **What's on show** (species.ts): one of each fish and bug in the ずかん's first finds (anyone's, the guest's too), as
-  it's found (the fish seven a tank at a time: the hour's fish, below); nothing else (the guest visits too, and its finds are on show under its name). The ずかん's alone, never the
+  it's found (the fish seven a tank at a time: the hour's fish, below; the bugs ten at a time: the hour's bugs); nothing else (the guest visits too, and its finds are on show under its name). The ずかん's alone, never the
   pockets': selling every one caught takes nothing out (NH's donation, not a catch kept). A tap on one: its card (MuseumCard: NH's icon, its Japanese and English names, 「7/4 ウェイが
   見つけた」, ×n from the tallies as the ずかん counts).
 - **The aquarium** (`aquarium.ts`, `tanks.ts`, `boids.ts`): NH's three tanks (species.ts tankOf): the great sea tank
@@ -1879,7 +1879,7 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   light drifting over it, a thin pale wavering edge at the stones; moving only while it's on screen, at the exhibits'
   30 a second), NH's oaks and a palm (the island's models), NH's flowers in rows, the museum's own garden props
   (flower beds, bushes, a fallen log with its autumn leaves, ferns, cacti, the mangroves), and five glass display
-  cases on stands along the back. Each bug found lives there as it lives (species.ts habitatOf, from island/critters.ts)
+  cases on stands along the back. Each of the hour's bugs (below) lives there as it lives (species.ts habitatOf, from island/critters.ts)
   and moves as the island's do (`bugLife.ts`, pure: the island's own `critterPath.ts` bugLegs and bugAt, NH's paces,
   meanders, landings, hops, crawls and rests, and `world3d/wings.ts` wingBeat and flapGlsl, the per-model hinge; no
   copy), each kept to its enclosure (a box of air over a row of flowers or the pond, a patch of grass or soil, a
@@ -1900,6 +1900,24 @@ in the editor and on the phone's もようがえ, never take it away. A tap on i
   exhibits' 30 a second with nothing allocated a frame. Tests: bugLife.test (every species two simulated minutes at 30
   fps: never out of its enclosure or case nor in a solid; none faster than NH's pace; the fliers fly, the crawlers and
   hoppers go and rest; the butterflies and moths land, the bee hovers, every flapping model's wings open and close).
+- **The hour's bugs** (`bugShow.ts` bugsOnDisplay, bugLife.ts slotsOf; the user: "reduce # down to 10 random ones, make
+  sure they don't stack on top of each other. Check how we do aquarium"): as the aquarium's fish, at most ten
+  (BUGS_SHOWN) of those the ずかん says were caught, none twice, by a shuffle seeded by (Tokyo's date and hour, `bug`):
+  the same ten on every phone, a new ten each hour, the outgoing fading out and the new in (1.6 s, dithered; at once off
+  screen; their fading programs compiled in the warm-up). Only those ten's models are loaded (the rest not fetched at
+  all); a bug that goes has its geometry and materials released. Each takes a **place of its own**: its habitat's
+  enclosures one bug each (the three airs over the flowers, five flowers to sit on a flower apart, the stink bugs' row,
+  the pond's air and water each in two halves, five grass patches, three soil patches, the two bushes, the five cases,
+  each oak's trunk and the palm's, a branch of each oak), each taking the garden's spots it reaches (a flier's air the
+  sitting flowers it lands on and the row under it, the far grass patch the log's soil next to it), and no two bugs on
+  show take one spot, so none stacks on another or comes into its room; one whose places are all taken that hour waits
+  for another. Tests: bugShow.test (ten at most, only the caught, none twice, no spot taken twice, the same ten through
+  the hour whatever order the finds came, a new ten the next), bugLife.test (every species in every one of its places two
+  minutes: in its enclosure, and every two in places taking no spot in common keep to rooms apart), garden.test (built
+  with a stub kit: ten meshes, only theirs loaded, the hour's swap off and on screen, the gone released), museum.spec
+  (26 caught: ten drawn, apart, the same on another tab, a new ten as the hour turns). iOS-sized Chromium on the GPU,
+  every bug caught: the wing's draw calls 185 → 104, triangles 88k → 48k. The giant stag (a part with no uv among
+  parts with) failed to merge and never showed; its part gets zero uvs and merges.
   iOS Simulator (own iPhone 16, iOS 26.5, a full museum, local builds), the bug wing at rest: 30 frames a second
   before and after, frame cost p50 1 ms, 87 → 117 draw calls (each bug's every part now drawn: a bee's and a
   dragonfly's wings were missing).

@@ -369,8 +369,8 @@
     const m = week.model;
     if (m) untrack(() => islandLayout.rows(m.state.layout));
   });
-  // the exhibits as the finds come (the museum's own chunk builds them: exhibits.ts); the aquarium's fish by the scene
-  // clock's hour (?date; the e2e's nextHour() a later one)
+  // the exhibits as the finds come (the museum's own chunk builds them: exhibits.ts); the aquarium's fish and the garden's
+  // bugs by the scene clock's hour (?date; the e2e's nextHour() a later one)
   let hoursOn = 0;
   const clock = () => now().getTime() + hoursOn * 3_600_000;
   // (none found yet: the wings built all the same, their tanks and benches empty of fish; once the record is in)
@@ -487,6 +487,8 @@
         const p = eng?.exhibits().map((x) => x.where(id)).find(Boolean);
         return p && eng ? eng.client(p[0], p[1], p[2]) : null;
       },
+      /** A creature's world point (null: not drawn). */
+      spot: (id: string) => eng?.exhibits().map((x) => x.where(id)).find(Boolean) ?? null,
       card: () => (card ? card.id : null),
       /** The aquarium's clock an hour on (its pick changes). */
       withhold: (id: string | null) => (withheld = id),
