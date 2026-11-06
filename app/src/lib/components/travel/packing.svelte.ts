@@ -150,8 +150,12 @@ class Packing {
   resetHeld(trip: string, holdMs: number): SendResult {
     const me = this.me;
     if (!me) return { ok: false };
-    const held = this.#book.rows.get(`pack_reset|${trip}|${me}`);
-    return week.send('pack_reset', { trip, at: this.#now(held?.op.at ?? 0) }, holdMs > 0 ? { holdMs } : {});
+    // after my last reset and every tick of mine it clears (one stamped ahead of this clock, by another phone of mine
+    // or the demo's preview day, would outlive a reset stamped on it)
+    let after = 0;
+    for (const r of this.#book.rows.values())
+      if ((r.type === 'pack_reset' || r.type === 'pack_chk') && r.who === me && r.op.trip === trip) after = Math.max(after, r.op.at);
+    return week.send('pack_reset', { trip, at: this.#now(after) }, holdMs > 0 ? { holdMs } : {});
   }
 }
 

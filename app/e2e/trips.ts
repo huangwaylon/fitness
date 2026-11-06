@@ -22,7 +22,7 @@ export const mapState = (page: Page) => page.evaluate(() => (window as unknown a
 export type TripTab = 'days' | 'map' | 'pack' | 'camps';
 /** The trips' sheet. */
 export const tripsSheet = (page: Page) => page.locator('dialog[open] [data-travel]');
-/** From the island already up: the menu's りょこう pill, the passes. */
+/** From the island already up: the menu's りょこう pill: the list (or the trip on now). */
 async function openTrips(page: Page) {
   // the island's first models in first: drawn (drawn(), software GL on CI) their load starved the menu's spring, and
   // its unfold timed out. (A boolean, not island.ts is3d's wait: the JSHandle a waitForFunction returns to the island's
@@ -33,7 +33,8 @@ async function openTrips(page: Page) {
   }, null, { timeout: 30_000 });
   await expect(hudMenu(page)).toBeVisible();
   await fromMenu(page, 'travel');
-  await expect(tripsSheet(page).locator('[data-trip]').first()).toBeVisible();
+  // the list, or (during a trip) that trip
+  await expect(tripsSheet(page).locator('[data-trip], [data-trip-view]').first()).toBeVisible();
 }
 /** From the passes: `trip`'s, its page `tab` (the plan, にってい, first). */
 export async function pickTrip(page: Page, trip: string, tab: TripTab = 'days') {
@@ -44,17 +45,17 @@ export async function pickTrip(page: Page, trip: string, tab: TripTab = 'days') 
   await expect(sheet.locator(`[data-pane="${tab}"]`)).toBeVisible();
 }
 /** From the island already up: the menu's りょこう pill, `trip`'s pass, its page `tab`. */
-export async function openTrip(page: Page, trip = 'okinawa', tab: TripTab = 'map') {
+export async function openTrip(page: Page, trip = 'nz', tab: TripTab = 'map') {
   await openTrips(page);
   await pickTrip(page, trip, tab);
 }
-/** The demo on `date` (Nov 4 by default: every Okinawa page opens on day 1), the passes; `q` more of the query (`as=B`). */
+/** The demo on `date` (Nov 4 by default: before NZ, its days open, its map on day 1), the list; `q` more of the query (`as=B`). */
 export async function gotoTrips(page: Page, date = '2026-11-04T12:00', q = '') {
   await page.goto(`${BASE}/${islandQuery(`demo&date=${date}${q ? `&${q}` : ''}`)}`);
   await openTrips(page);
 }
-/** The demo (Nov 4), then `trip`'s page `tab`; `q` more of the query. */
-export async function gotoTrip(page: Page, trip = 'okinawa', tab: TripTab = 'map', q = '') {
+/** The demo (Nov 4: before NZ), then `trip`'s page `tab`; `q` more of the query. */
+export async function gotoTrip(page: Page, trip = 'nz', tab: TripTab = 'map', q = '') {
   await gotoTrips(page, undefined, q);
   await pickTrip(page, trip, tab);
 }

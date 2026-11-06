@@ -72,12 +72,6 @@ export function rowNow(trip: Clock, now: number): { day: number; i: number; next
   return up ? { day: up.d.n, i: up.i, next: true } : null;
 }
 
-/** The next timed row to begin (Orville's 「つぎは …」), or null: none left. */
-export function nextRow(trip: Clock, now: number): { day: number; i: number } | null {
-  const r = timed(trip).find((x) => x.at > now);
-  return r ? { day: r.d.n, i: r.i } : null;
-}
-
 /** The trip's timed rows with their instants, in time order. */
 const timed = (trip: Clock) =>
   trip.days
