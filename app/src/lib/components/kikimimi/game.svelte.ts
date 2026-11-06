@@ -17,7 +17,7 @@ import { deck } from '#lib/kikimimi/deck.ts';
 import { agesOf, freshSeed } from '#lib/kikimimi/recent.ts';
 import { recentGames } from './progress.svelte.ts';
 import { ladders, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
-import { lessonDeck, type Lesson, type Tier, type UnitChunk, type UnitPlay } from '#lib/kikimimi/lesson.ts';
+import { lessonDeck, type Lesson, type Tier, type UnitPlay } from '#lib/kikimimi/lesson.ts';
 import { ChunkQueue } from './chunkQueue.ts';
 import { ClipPlayer } from './clipPlayer.svelte.ts';
 import { GameRecorder } from './recorder.ts';
@@ -155,7 +155,7 @@ export class QuizGame {
    *  `recheck`: the 30-day おさらい チェック (a チェック like any). Nothing on the wire. */
   playLesson(unit: string, lesson: Lesson, o: { tier?: Tier | ((stage: Stage) => Tier | undefined); recheck?: boolean } = {}): void {
     this.#queue.then(() => [unit as Unit], () => {
-      const v = this.view, part = unitPart(unit) as UnitChunk | undefined;
+      const v = this.view, part = unitPart(unit);
       if (!part || !v?.g || v.phase !== 'lobby' || !v.local || !v.amHost || v.ladder) return;
       const tier = typeof o.tier === 'function' ? o.tier(part.unit.stage) : o.tier;
       const items = lessonDeck(part, lesson, v.seed, tier);

@@ -20,7 +20,7 @@
   $effect(() => {
     void load(...(ids as Unit[])).then(() => ready++, () => {});
   });
-  const chunks = $derived((void ready, ids.map((id) => unitPart(id) as UnitChunk | undefined).filter((c): c is UnitChunk => !!c)));
+  const chunks = $derived((void ready, ids.map((id) => unitPart(id)).filter((c) => !!c)));
   const report = $derived(currentReport());
   const answers = $derived(currentAnswers());
   const shown = $derived(unit ? chunks.filter((c) => c.unit.id === unit) : chunks);

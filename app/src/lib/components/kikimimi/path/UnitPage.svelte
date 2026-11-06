@@ -6,7 +6,6 @@
   // a tap opens the ずかん on this unit's) and 「とばして チェック」 at the foot. A lesson opens its intro card. Its own
   // chunk with the path's.
   import { load, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
-  import type { UnitChunk } from '#lib/kikimimi/lesson.ts';
   import { playIds } from '#lib/kikimimi/lesson.ts';
   import { CORE, DOMAINS, isDomain, nextLesson } from '#lib/kikimimi/path.ts';
   import { LESSONS, type Lesson } from '#lib/kikimimi/stages.ts';
@@ -26,7 +25,7 @@
   $effect(() => {
     void load(id as Unit).then(() => ready++, () => {});
   });
-  const part = $derived((void ready, unitPart(id) as UnitChunk | undefined));
+  const part = $derived((void ready, unitPart(id)));
   const u = $derived(part?.unit);
   const us = $derived(currentUnits().get(id));
   const lessons = $derived(u ? LESSONS.filter((l) => part && playIds(part, l).length) : []);
