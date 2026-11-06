@@ -18,6 +18,9 @@ cando:
   short: いいなおしを ききとれる
   en: "I can follow a friend or a server repeating, rephrasing or correcting themselves when I ask again, at natural speed in a noisy café, and catch the corrected number, name or detail."
 status: voiced
+letter:
+  en: "You came by the café today and asked me to say that again. Twice, actually. Good. Most people just nod and drink the wrong coffee. So that's our deal: you ask, I repeat, and nobody walks out with decaf by mistake. I'm saving you a cup of the house blend. Coo."
+  ja: "きょう カフェで「もう いちど いって」って きいてくれたね。2かいも。それで いい。たいていの ひとは うなずいて、ちがう コーヒーを のんで しまう。じゃあ、こう しよう。きみが きいて、ぼくが くりかえす。まちがえて カフェインレスを のむ ひとは もう いない。ハウスブレンドを 1ぱい とって おくよ。クルッ。"
 ph:
   - { id: ph-say-again, en: "say that again", ja: "もう いちど いって", match: "say (that|it) again", register: friend, scene: "a noisy café", trap: "「ワンモア」より Could you say that again?" }
   - { id: ph-i-meant, en: "I meant", ja: "いや、〜の つもりだった", register: friend, scene: "putting a detail right", trap: "mean の 過去形。まえの ことばを なおす 合図" }

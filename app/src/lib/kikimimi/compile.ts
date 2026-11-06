@@ -10,6 +10,7 @@
 // and a line in `paths`, the island path's). The levels' chunks and decks don't change for any unit (units.test).
 //   The bedtime serials (app/content/listen/story/*.yaml, story.ts) compile too: each chapter a chunk of its own
 // (`parts/<unit>-<chapter>.json`: the chapter, its segments' clips and word timings) and a line in the index's `stories`.
+//   The units' villager letters (U7, letters.ts) are one small chunk, `parts/letters.json`, loaded when one is shown.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
@@ -254,6 +255,8 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     units[u.unit] = c.entry;
     paths.push(c.path);
   }
+  const letters = Object.fromEntries(check.units.flatMap((u) => (u.letter ? [[u.unit, { en: u.letter.en.trim(), ja: u.letter.ja.trim() }]] : [])));
+  out.set('parts/letters.json', `{"letters":${dict(letters)},"packs":[],"clips":{},"words":{}}\n`);
   const storyIndex: Index['stories'] = {};
   for (const s of stories) {
     const c = storyChunks(s, clips, words, places);

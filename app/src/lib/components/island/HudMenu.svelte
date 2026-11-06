@@ -255,7 +255,8 @@
      the cluster; the row's box, which the 3D island measures, stays the row: the column is out of flow), each a 44px
      cream pill with the lip, its name and its icon (the ベル row: its name and its number). They show at once on a tap
      (the user: the drop was too slow) and fold away in a quick fade; all as wide as the longest (the name left, the
-     icon or number right); folded they are hidden (visibility, after the fade). */
+     icon or number right); folded they are hidden and take no room (visibility and scale(0), after the fade:
+     the say picker and the balloons keep clear of the shown pills only). */
   .items {
     position: absolute; right: 0; top: calc(100% + 8px); display: grid; gap: 10px; width: max-content;
     pointer-events: none;
@@ -265,10 +266,10 @@
     appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);
     font: 700 var(--fs-body)/1 var(--font-ui); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-    opacity: 0; visibility: hidden;
-    transition: opacity 100ms linear, visibility 0s linear 100ms;
+    opacity: 0; visibility: hidden; transform: scale(0);
+    transition: opacity 100ms linear, visibility 0s linear 100ms, transform 0s linear 100ms;
   }
-  .open .item { opacity: 1; visibility: visible; pointer-events: auto; transition: none; }
+  .open .item { opacity: 1; visibility: visible; transform: none; pointer-events: auto; transition: none; }
   .open .item:active { transform: translateY(2px) scale(.97); box-shadow: 0 2px 0 var(--c-lip); transition: transform 80ms var(--ease-squash), box-shadow 80ms; }
   .item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .lbl { letter-spacing: .02em; }

@@ -2,7 +2,7 @@
   // ずかん › スタンプ (docs/kikimimi-ux.md §6.10, §7.6): the units' can-do stamps in the path's order (mine with its day,
   // the double stamp when both of us have it, the partner's alone a faint mark; a blank for the rest: stamps.ts), the
   // week stamps (week.ts weekStamps against my target as set now), the いっぱつ count and its badges (zukan.ts
-  // ippatsuOf), the weekend tournament's trophies (the same shelf as きろく's: taikai/def.ts trophiesOf) and the bedtime
+  // ippatsuOf), the villagers' letters from the stamped units (LetterShelf, U7), the weekend tournament's trophies (the same shelf as きろく's: taikai/def.ts trophiesOf) and the bedtime
   // chapters heard to the end. No かいがら: the stamps are the reward. Its own chunk.
   import type { Who } from '#lib/types.ts';
   import { IPPATSU_BADGES, chaptersDone, ippatsuOf, unitStamps } from '#lib/kikimimi/zukan.ts';
@@ -14,6 +14,7 @@
   import { currentAnswers, currentReport, currentUnits, pathUnits } from '../progress.svelte.ts';
   import { weekGoal } from '../prefs.ts';
   import { SERIALS, storyProgress } from '../story/serials.svelte.ts';
+  import LetterShelf from '../path/LetterShelf.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   let { me }: { me: Who } = $props();
@@ -47,6 +48,8 @@
       {/each}
     </div>
   </section>
+
+  <LetterShelf />
 
   <section class="sec card box" aria-labelledby="kk-st-week" data-kiki-week-stamps={weeks.length}>
     <h3 id="kk-st-week">🗓️ {t('kiki.zukan.weeks')}</h3>

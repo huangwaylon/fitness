@@ -35,6 +35,7 @@
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
   import { SPEEDS, climbs, laddersIn, speedAt } from '#lib/kikimimi/ladder.ts';
   import { sx } from './look.ts';
+  import { loadLetters } from '#lib/kikimimi/pool.ts';
 
   let { game, onagain, onmissed, ondone, onnext, hostLine, extra }: {
     game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void; onnext?: (l: Lesson) => void; hostLine?: string; extra?: Snippet;
@@ -90,6 +91,8 @@
   /** The next core lesson not played to the end; after a チェック, none (もういっかい is the retry). */
   const nextLesson = $derived(ls?.lesson === 'check' ? null : (CORE.find((l) => l !== ls?.lesson && !unitState?.done.includes(l)) ?? null));
   const unitLessons = $derived(ls ? LESSONS.filter((l) => ls.unit.lessons[l]) : []);
+  /** This チェック stamped the unit first: its host's letter arrives (letters.ts; the component and text loaded then). */
+  const letterIn = $derived(stamped && !!recorded && unitState?.stampedIn === recorded.g);
   /** A choice as written (a picture's Japanese name: the English isn't given away). */
   const choiceText = (it: Item, k: number) => (it.type === 'pic' ? (PIC_JA[it.choices[k]] ?? '') : it.choices[k]);
 </script>
@@ -110,6 +113,11 @@
           </p>
         {:else}<p class="soon">{t('kiki.stamp.notYet')}</p>{/if}
         <p class="mine" data-kiki-tally-mine={own}>{t('kiki.stamp.mine', { k: own, n: recorded.r.length })}{#if recorded.tm !== undefined} · {t('kiki.stamp.team', { k: recorded.tm })}{/if}</p>
+        {#if letterIn}
+          {#await Promise.all([import('./path/VillagerLetter.svelte'), loadLetters()]) then [{ default: VillagerLetter }, texts]}
+            {#if texts[ls.unit.id]}<div class="mail"><VillagerLetter letter={{ unit: ls.unit.id, host: ls.unit.host, ...texts[ls.unit.id] }} open fresh /></div>{/if}
+          {/await}
+        {/if}
       {:else if nextLesson}
         <button type="button" class="btn small nextl" data-kiki-next-lesson={nextLesson} data-sfx="confirm" onclick={() => onnext?.(nextLesson!)}>
           {t('kiki.stamp.next', { lesson: t(`kiki.lesson.${nextLesson}`) })} ›
@@ -254,6 +262,7 @@
   .lname { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; text-align: left; }
   .lname b { font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .nextl { justify-self: stretch; }
+  .mail { justify-self: stretch; text-align: left; }
   .got { display: flex; align-items: center; justify-content: center; gap: 6px; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--coral-text); }
   .seal { font-size: 40px; line-height: 1; display: inline-block; animation: seal 520ms var(--ease-bounce) both; }
   .seal.two { margin-left: -18px; animation-delay: 180ms; }

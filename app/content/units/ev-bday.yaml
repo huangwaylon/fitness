@@ -19,6 +19,9 @@ cando:
   short: パーティーの さそいが わかる
   en: "I can follow friends and coworkers inviting me to a birthday party and making a toast, in a lively room, and catch when and where it is, what to bring and who the surprise is for."
 status: voiced
+letter:
+  en: "Thank you for helping with Tia's party! You caught every detail: the time, the cake, the don't-tell-her part. She had no idea, and she totally cried when we all jumped out. I saved you a slice. Next year the party's at my place, and you'd better be there. Here's to you!"
+  ja: "ティアの パーティーを てつだってくれて ありがとう！ じかんも ケーキも「ないしょね」も、ぜんぶ ききとって くれたね。ティアは ぜんぜん きづかなくて、みんなで とびだしたら ないちゃったの。ケーキを ひときれ とって あるよ。らいねんの パーティーは うちで やるから、ぜったい きてね。あなたに かんぱい！"
 ph:
   - { id: ph-surprise, en: "it's a surprise", ja: "ないしょの おいわい", match: "\\bsurprise\\b", register: friend, scene: "planning the party", trap: "surprise party＝本人に ないしょ" }
   - { id: ph-bring-anything, en: "bring anything", ja: "なにか もっていく？", match: "bring (anything|something|yourself)", register: friend, scene: "accepting an invitation", trap: "Just bring yourself＝てぶらで いいよ" }

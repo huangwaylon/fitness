@@ -9,6 +9,7 @@ import { ITEM_ID_RE } from '../contract/listen.ts';
 import { QUIZ_LVS } from '../contract/live-protocol.ts';
 import { CHANNELS, DIALOGUE_TYPES, ITEM_TYPES, REGISTERS, SCENE_IDS, clipIds, helpProblems, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
 import type { Ladder } from './ladder.ts';
+import { letterWords, type LetterText } from './letters.ts';
 import { CAST_IDS } from './speech.ts';
 import { CORE, DOMAINS, LESSONS, LESSON_QS, STAGES, type Domain, type Lesson, type Stage } from './stages.ts';
 
@@ -31,6 +32,8 @@ const NAME_MAX = 12;
 /** The can-do's one line (the unit page, a stop on しまの みち, a lesson's intro card): kana with spaces, ≤ 25 characters. */
 export const SHORT_MAX = 25;
 const NOTE_MAX = 40;
+/** A villager's letter (U7): this many words of English. */
+export const LETTER_WORDS = [40, 60] as const;
 
 /** A key phrase (plan §2): its id, the words, when to use it (register), the scene, and the trap a Japanese speaker
  *  falls into; `match` a regex over an item's English when the words alone don't find it (inflections). */
@@ -85,6 +88,9 @@ export interface UnitManifest {
   items?: Item[];
   lessons: { v: number } & Partial<Record<Lesson, string[]>>;
   tiers?: Record<string, { easy?: ChoiceSet; hard?: ChoiceSet }>;
+  /** The host villager's letter when I stamp the unit (U7): 40-60 words of American English, using one or two of its
+   *  phrases, and a Japanese gloss. */
+  letter?: LetterText;
 }
 
 interface Problems {
@@ -98,7 +104,7 @@ const isStr = (v: unknown): v is string => typeof v === 'string' && v.trim().len
 const isInt = (v: unknown, lo: number, hi: number): v is number => Number.isInteger(v) && (v as number) >= lo && (v as number) <= hi;
 const strs = (v: unknown): v is string[] => Array.isArray(v) && v.every(isStr);
 const chars = (s: string): number => [...s].length;
-const KEYS = new Set(['schema', 'unit', 'name', 'stage', 'domain', 'also', 'host', 'scene', 'sound', 'cando', 'status', 'ph', 'review', 'items', 'lessons', 'tiers']);
+const KEYS = new Set(['schema', 'unit', 'name', 'stage', 'domain', 'also', 'host', 'scene', 'sound', 'cando', 'status', 'ph', 'review', 'items', 'lessons', 'tiers', 'letter']);
 
 /** The can-do as one Japanese sentence. */
 export const candoText = (c: CanDo): string => `${c.who}が ${c.does}のを ${c.cond} きいて、${c.catch}が わかる`;
@@ -231,6 +237,22 @@ export function manifestOf(raw: unknown, file: string): { unit: UnitManifest | n
     else for (const [id, t] of Object.entries(raw.tiers)) {
       if (!isObj(t) || Object.keys(t).some((k) => k !== 'easy' && k !== 'hard') || (!t.easy && !t.hard)) at(`tiers.${id}: {easy?, hard?}`);
       else for (const k of ['easy', 'hard'] as const) if (t[k] !== undefined && !choiceSetOk(t[k])) at(`tiers.${id}.${k}: {choices (2-4, distinct), answer, cja? (one per choice, no English)}`);
+    }
+  }
+  if (raw.letter !== undefined) {
+    const l = raw.letter;
+    if (!isObj(l) || !isStr(l.en) || !isStr(l.ja) || Object.keys(l).some((k) => k !== 'en' && k !== 'ja')) at('letter: {en, ja}');
+    else {
+      const n = letterWords(l.en);
+      if (n < LETTER_WORDS[0] || n > LETTER_WORDS[1]) at(`letter: ${n} words of English, ${LETTER_WORDS[0]}-${LETTER_WORDS[1]}`);
+      const heard = (p: unknown) => {
+        try {
+          return isObj(p) && isStr(p.en) && hears(p as unknown as Phrase, l.en as string);
+        } catch {
+          return false; // (a bad match is its phrase's error)
+        }
+      };
+      if (Array.isArray(raw.ph) && !raw.ph.some(heard)) at('letter: none of its phrases');
     }
   }
   return { unit: errors.length ? null : (raw as unknown as UnitManifest), errors };

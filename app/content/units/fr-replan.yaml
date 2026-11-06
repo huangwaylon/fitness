@@ -18,6 +18,9 @@ cando:
   short: よていの へんこうが わかる
   en: "I can follow a friend changing our plans on the phone, over street noise at natural speed, and catch the new day, time and place, and whether they're really canceling."
 status: voiced
+letter:
+  en: "Remember when I called to push our picnic back an hour? You got it right away, even with all that traffic around me. Sorry I was running late again! Are we still on for next Sunday? I'll bring the honey cakes, and you bring that big smile of yours. See you by the river!"
+  ja: "ピクニックを 1じかん おそく したいって でんわした ときの こと、おぼえてる？ まわりが くるまの おとで うるさかったのに、すぐ わかって くれたね。また おくれちゃって ごめんね！ らいしゅうの にちようびは そのままで いい？ わたしは はちみつケーキを もっていくから、あなたは いつもの えがおを もってきてね。かわの そばで まってるね！"
 ph:
   - { id: ph-come-up, en: "something's come up", ja: "きゅうようが できた", match: "something('s| has)? come up|something came up|\\bcome up\\b", register: friend, scene: "a last-minute change", trap: "come up＝きゅうに おきる。あがる ではない" }
   - { id: ph-make-it, en: "can't make it", ja: "いけない／まにあわない", match: "(can't|won't|couldn't|might not) make it", register: friend, scene: "turning down a time", trap: "make it＝いける。つくる ではない" }

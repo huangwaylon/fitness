@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { lessonsOfMask, matches, nextLesson, pathOf, type PathUnit } from './path.ts';
+import { landmarksOf, lessonsOfMask, matches, nextLesson, pathOf, type PathUnit } from './path.ts';
 import type { UnitState } from './stamps.ts';
 
 const u = (id: string, stage: string, domain: string, also?: string[]): PathUnit => ({
   id, name: id, stage, domain, host: 'diana', status: 'voiced', lessons: ['deai', 'bamen', 'check', 'oto'], ...(also && { also })
 });
-const st = (o: Partial<UnitState>): UnitState => ({ done: [], stamped: null, tally: null, partner: false, double: false, recheck: null, ...o });
+const st = (o: Partial<UnitState>): UnitState => ({ done: [], stamped: null, stampedIn: null, tally: null, partner: false, double: false, recheck: null, ...o });
 
 const UNITS = [u('fr-replan', 'kawa', 'tomodachi'), u('wk-chat', 'mori', 'shigoto'), u('gl-clarify', 'kawa', 'glue'), u('tr-guide', 'mori', 'tabi', ['machi']),
   u('ev-bday', 'kawa', 'ibento'), u('zz-odd', 'moon', 'tabi')];
@@ -58,6 +58,47 @@ describe('しまの みち', () => {
     expect(p.stages.map((s) => s.soft)).toEqual([false, false, true, true, true]);
     expect(p.stages[2].stops).toHaveLength(2);
     expect(pathOf({ units: UNITS, states: new Map(), level: 4 }).stages.map((s) => s.soft)).toEqual([false, false, false, false, true]);
+  });
+
+  it('with a placement: every stage above the placed one is soft, it is 「ここから」, the current unit’s stage open', () => {
+    // placed at かわ: もり soft (only a step up, but above the placement), かわ here and open
+    const p = pathOf({ units: UNITS, states: new Map(), level: 4, placed: 3 });
+    expect(p.stages.map((s) => s.soft)).toEqual([false, false, true, true, true]);
+    expect(p.here).toBe('kawa');
+    expect(p.current).toBe('gl-clarify');
+    expect(p.open).toBe('kawa');
+    // placed at もり: from there; nothing soft below it
+    const m = pathOf({ units: UNITS, states: new Map(), level: null, placed: 4 });
+    expect([m.here, m.current, m.open]).toEqual(['mori', 'wk-chat', 'mori']);
+    expect(m.stages.map((s) => s.soft)).toEqual([false, false, false, true, true]);
+    // placed at はまべ (no units there): 「ここから」 on はまべ, the first unit above it open
+    const h = pathOf({ units: UNITS, states: new Map(), level: null, placed: 2 });
+    expect([h.here, h.current, h.open]).toEqual(['hama', 'gl-clarify', 'kawa']);
+    // no check: no 「ここから」; the old rule (more than a step above my level)
+    const n = pathOf({ units: UNITS, states: new Map(), level: 3 });
+    expect(n.here).toBeNull();
+    expect(n.open).toBe('kawa');
+    // nothing open anywhere: the placed stage
+    const done = new Map(UNITS.map((x) => [x.id, st({ stamped: '2026-11-01' })]));
+    expect(pathOf({ units: UNITS, states: done, level: null, placed: 4 }).open).toBe('mori');
+  });
+
+  it('a landmark: a stage whose units are all stamped by me, one by one; never the placement, never the partner', () => {
+    const kawa = ['gl-clarify', 'fr-replan', 'ev-bday'];
+    const two = new Map(kawa.slice(0, 2).map((id) => [id, st({ stamped: '2026-11-02' })]));
+    expect(landmarksOf(UNITS, two).size).toBe(0);
+    const all = new Map([...two, ['ev-bday', st({ stamped: '2026-11-05' })]]);
+    expect([...landmarksOf(UNITS, all)]).toEqual([['kawa', '2026-11-05']]);
+    const p = pathOf({ units: UNITS, states: all, level: 4 });
+    expect(p.stages.map((s) => s.cleared)).toEqual([null, '2026-11-05', null, null, null]);
+    // placed above かわ (もり), nothing stamped: かわ is open to skip, never cleared; はまべ (no units) has none either
+    const placed = pathOf({ units: UNITS, states: new Map(), level: null, placed: 4 });
+    expect(placed.stages.map((s) => s.cleared)).toEqual([null, null, null, null, null]);
+    // the partner's stamps alone (their summary's bit) don't clear it
+    const theirs = new Map(kawa.map((id) => [id, st({ partner: true })]));
+    expect(landmarksOf(UNITS, theirs).size).toBe(0);
+    // a filter never changes it
+    expect(pathOf({ units: UNITS, states: all, level: 4, filter: 'shigoto' }).stages[1].cleared).toBe('2026-11-05');
   });
 
   it('the next lesson: the core in order, the チェック till stamped, then an extra', () => {
