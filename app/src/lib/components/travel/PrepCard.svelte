@@ -67,7 +67,8 @@
   .chev { color: var(--q-muted); display: flex; flex: none; }
   .body { border-top: 1px solid var(--q-hairline); padding: 12px 16px 14px; display: grid; gap: 12px; }
   .desc { margin: 0; line-height: 1.6; }
-  .sec { display: grid; gap: 6px; }
+  /* a timeline's line and dots: the accent (a day card's are the day's colour) */
+  .sec { display: grid; gap: 6px; --c: var(--q-accent); }
   .sec :global(.tl) { padding-left: 0; padding-right: 0; }
   h4 { margin: 0; font: var(--q-w-b) var(--q-fs-s)/1.3 var(--q-font); color: var(--q-muted); letter-spacing: .03em; }
 </style>

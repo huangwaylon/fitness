@@ -7,7 +7,6 @@
   // nothing read from or sent to the relay. The bottom tab bar picks the view, each starting at its top. The guide's
   // own words are in its language (Seattle's English), the tabs and the back button in the reader's.
   //   <ClassicGuide {trip} onback={…} />
-  import '#lib/i18n/travel.ts';
   import './classic.css';
   import { tick } from 'svelte';
   import { asset } from '$app/paths';
@@ -23,7 +22,7 @@
   import { pick } from '../text.ts';
   import { packing } from '../packing.svelte.ts';
 
-  let { trip, onback }: { trip: Trip; onback?: () => void } = $props();
+  let { trip, onback }: { trip: Trip; onback: () => void } = $props();
 
   /** Where the hero photo sits in its band (the site's --hero-pos). */
   const HERO_POS: Record<string, string> = { okinawa: '50% 52%', seattle: '50% 38%' };
@@ -71,7 +70,7 @@
 <div class="classic t-{trip.id}" data-classic={trip.id} data-trip-view={trip.id} data-view={view} style:--hero-pos={HERO_POS[trip.id] ?? '50% 50%'}>
   <div class="scroller" bind:this={scroller} inert={!!camp}>
     <article class="cguide">
-      {#if view === 'itinerary' && onback}
+      {#if view === 'itinerary'}
         <button class="backbtn" type="button" data-sfx="back" data-classic-back onclick={onback}><CIcon name="arrow-left" /><span>{t('travel.classic.back')}</span></button>
       {/if}
       <div class="views">

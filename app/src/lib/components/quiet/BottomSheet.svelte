@@ -6,6 +6,7 @@
   import type { Snippet } from 'svelte';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { onScrim } from '../ui/scrim.ts';
 
   interface Props {
     open: boolean;
@@ -32,11 +33,9 @@
     if (!can) return;
     if (onsave() !== false) open = false;
   }
-  /** The scrim (a tap outside the box) and Esc: back, as キャンセル. */
+  /** The scrim (ui/scrim.ts) and Esc: back, as キャンセル. */
   function backdrop(e: MouseEvent) {
-    if (e.target !== dlg || !dlg) return;
-    const r = dlg.getBoundingClientRect();
-    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
+    if (!onScrim(e, dlg)) return;
     cue('back');
     open = false;
   }
@@ -63,8 +62,8 @@
   }
   .q-bs:focus { outline: none; }
   .q-bs[open] { animation: up 240ms cubic-bezier(.2, .8, .2, 1); }
-  .q-bs::backdrop { background: rgb(30 22 14 / .32); }
-  :global(:root[data-tod='night']) .q-bs::backdrop { background: rgb(8 10 25 / .5); }
+  /* (::backdrop inherits the dialog's .quiet tokens) */
+  .q-bs::backdrop { background: var(--q-scrim); }
   .bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 52px; padding: 0 4px; border-bottom: 1px solid var(--q-hairline); }
   .t { margin: 0; font: var(--q-w-b) var(--q-fs-head)/1.2 var(--q-font); color: var(--q-ink); text-align: center; white-space: nowrap; }
   .tb {

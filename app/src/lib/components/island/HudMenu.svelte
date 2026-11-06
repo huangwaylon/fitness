@@ -194,12 +194,12 @@
       <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{/if}</span>
       <span class="ic"><Host head size={30} animate={false} eager /></span>
     </button>
-    <!-- りょこう: the trips' boarding passes (Orville at the Dodo Airlines counter) -->
+    <!-- りょこう: the trips (Orville's head on the pill only) -->
     <button type="button" class="item" style="--i: 3" data-hud-travel aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => trips.show())}>
       <span class="lbl">{t('panel.travel')}</span>
       <span class="ic"><OfficialArt key="villagers/orville-icon" size={30} eager /></span>
     </button>
-    <!-- けっこんしき: the wedding board (パニエル under the arch) -->
+    <!-- けっこんしき: the wedding board (Harvey's head on the pill only) -->
     <button type="button" class="item" style="--i: 4" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => weddingSheet.show())}>
       <span class="lbl">{t('panel.wedding')}</span>
       <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
