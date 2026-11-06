@@ -405,7 +405,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12" /></svg>
           </button>
         {/if}
-        <button type="button" class="act" data-act="cancel" data-sfx="self" aria-label={t('decor.cancel')} onclick={cancel}>
+        <button type="button" class="act" data-act="cancel" data-sfx="self" aria-label={t('common.cancel')} onclick={cancel}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7 7 17" /></svg>
         </button>
         <button type="button" class="act ok" data-act="place" data-sfx="self" aria-label={t('decor.place')} aria-disabled={!!why} onclick={place}>

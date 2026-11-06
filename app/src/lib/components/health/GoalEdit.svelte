@@ -127,7 +127,7 @@
     {#if note}<p class="warn" data-goal-warn role="status">{note}</p>{/if}
     <div class="acts">
       {#if spec.clearable && value !== null}<button type="button" class="clr" data-sfx="undo" onclick={clear}>{t('weight.clearGoal')}</button>{/if}
-      <button type="button" class="btn paper small" data-sfx="back" onclick={() => close()}>{t('kiroku.cancel')}</button>
+      <button type="button" class="btn paper small" data-sfx="back" onclick={() => close()}>{t('common.cancel')}</button>
       <button type="submit" class="btn small" class:off={v === null} data-sfx="confirm">{t('kiroku.ok')}</button>
     </div>
   </form>

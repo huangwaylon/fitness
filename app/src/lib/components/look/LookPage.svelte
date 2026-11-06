@@ -468,14 +468,11 @@
   {#snippet footer()}
     {#if card === 'confirm'}
       <div class="two">
-        <button type="button" class="btn paper" data-sfx="back" onclick={closeCard}>{t('look.cancel')}</button>
-        <button type="button" class="btn" data-look-confirm data-sfx="confirm" onclick={doDelete}>{t('look.delete')}</button>
+        <button type="button" class="btn paper" data-sfx="back" onclick={closeCard}>{t('common.cancel')}</button>
+        <button type="button" class="btn danger" data-look-confirm data-sfx="confirm" onclick={doDelete}>{t('look.delete')}</button>
       </div>
     {:else if card}
-      <div class="two">
-        <button type="button" class="btn paper" data-sfx="back" onclick={closeCard}>{t('look.cancel')}</button>
-        <button type="button" class="btn" data-look-ok aria-disabled={!nameOk} data-sfx={nameOk ? 'confirm' : 'none'} onclick={submitCard}>{t('look.ok')}</button>
-      </div>
+      <button type="button" class="btn" data-look-ok aria-disabled={!nameOk} data-sfx={nameOk ? 'confirm' : 'none'} onclick={submitCard}>{t('common.save')}</button>
     {/if}
   {/snippet}
 </Sheet>

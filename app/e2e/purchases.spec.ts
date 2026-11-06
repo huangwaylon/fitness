@@ -1,5 +1,5 @@
 // ごほうびの きろく (at the very bottom of ごほうび, the panel; the old /jar link opens it): the buys, folded under a
-// disclosure, newest first, each erasable by either of us (asked first, はい / いいえ); the ベル go back. On `?demo` (no backend, no key). Screenshots at 375x667 and 390x844 (test-results/purchases-*.png).
+// disclosure, newest first, each erasable by either of us (asked first, キャンセル / 削除); the ベル go back. On `?demo` (no backend, no key). Screenshots at 375x667 and 390x844 (test-results/purchases-*.png).
 import { expect, test, type Page } from './fixtures.ts';
 
 /** The topmost sheet (a confirm over the panel). */
@@ -35,7 +35,7 @@ async function noOverlap(page: Page) {
   for (const parts of rows) for (let i = 1; i < parts.length; i++) expect(parts[i][0]).toBeGreaterThanOrEqual(parts[i - 1][1] - 0.5);
 }
 
-test('buy → it heads the history → erase it (はい) → the ベル come back; いいえ keeps it', async ({ page }) => {
+test('buy → it heads the history → erase it (削除) → the ベル come back; キャンセル keeps it', async ({ page }) => {
   await page.goto('jar?demo');
   await expect(page.locator('.hist').getByRole('heading', { name: /^買い物の記録\s*\d+件$/ })).toBeVisible();
   const hist = await history(page);
@@ -51,18 +51,18 @@ test('buy → it heads the history → erase it (はい) → the ベル come bac
   await expect(first).toContainText(/−40\sベル/);
   await expect(hist.locator('li')).toHaveCount(Math.min(rowsBefore + 1, 10));
 
-  // いいえ: nothing changes
+  // キャンセル: nothing changes
   await first.getByRole('button', { name: /おやつの買い物を削除/ }).click();
   await expect(sheet(page)).toContainText('この買い物を削除しますか？');
   await expect(sheet(page)).toContainText(/40\sベルが戻ります/);
-  await sheet(page).getByRole('button', { name: 'いいえ' }).click();
+  await sheet(page).getByRole('button', { name: 'キャンセル' }).click();
   await expect(page.locator('dialog[open]')).toHaveCount(1); // the panel stays
   await expect.poll(() => balance(page)).toBe(before - 40);
 
-  // はい: the line goes and the ベル come back (with とりけす on the banner)
+  // 削除: the line goes and the ベル come back (with とりけす on the banner)
   const id = await first.getAttribute('data-spend');
   await first.getByRole('button', { name: /おやつの買い物を削除/ }).click();
-  await sheet(page).getByRole('button', { name: 'はい' }).click();
+  await sheet(page).getByRole('button', { name: '削除', exact: true }).click();
   await expect.poll(() => balance(page)).toBe(before);
   await expect(hist.locator(`li[data-spend="${id}"]`)).toHaveCount(0);
   await expect(page.getByText(/おやつを削除しました \+40\sベル/)).toBeVisible();
@@ -82,7 +82,7 @@ test('either of us can erase any buy, the partner\'s too', async ({ page }) => {
   const row = hist.locator('li').filter({ hasText: names.find((n) => n !== names[0])! }).first();
   const price = Number((await row.locator('.amt').innerText()).replace(/\D/g, ''));
   await row.locator('button.x').click();
-  await sheet(page).getByRole('button', { name: 'はい' }).click();
+  await sheet(page).getByRole('button', { name: '削除', exact: true }).click();
   await expect.poll(() => balance(page)).toBe(before + price);
 });
 
@@ -100,7 +100,7 @@ for (const vp of [{ width: 375, height: 667 }, { width: 390, height: 844 }]) {
     expect(await hist.locator('li').count()).toBeGreaterThan(10);
     await noOverlap(page);
     await hist.locator('li').first().locator('button.x').click();
-    await expect(sheet(page).getByRole('button', { name: 'はい' })).toBeVisible();
+    await expect(sheet(page).getByRole('button', { name: '削除', exact: true })).toBeVisible();
     if (process.env.SHOTS) await page.waitForTimeout(800); // the sheet's slide-in, for the screenshot
     if (process.env.SHOTS) await page.screenshot({ path: `${process.env.SHOTS}/purchases-confirm-${vp.width}x${vp.height}.png` });
   });

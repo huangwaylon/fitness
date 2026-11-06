@@ -4,7 +4,7 @@
 // the lifted sections and the months, ticking (a ticked row stays put), a row opened in place (its checklist ticked,
 // who finished it, the old Sheet's tick in a soft line, 完了), 編集 and ＋ in a form sheet (every missing field said
 // at once, the checklist renamed and grown, 削除 with とりけす), the letter (rendered safely, written with the format
-// tools, 完了 over a keyboard; the draft kept through ✕; an unchanged save sends nothing; two phones' crossed saves:
+// tools, キャンセル and 保存 over a keyboard; the draft kept through ✕; an unchanged save sends nothing; two phones' crossed saves:
 // both versions, mine marked, これにする with とりけす, ふたつを合わせる), 設定, the third tab (names, プラン right after typing, categories
 // with とりけす, the deleted list, 完全に削除 after its ask) and the guest's read-only board (`?demo&as=G`). Logic tier:
 // nothing here is drawn 3D. Pictures under SHOTS=<dir>.
@@ -256,7 +256,7 @@ test('the ＋ sits over the tab bar, clear of every row\'s tick (659 px tall)', 
   await shot(page, 'e2e-659');
 });
 
-test('メモ: the note as a letter, links safe; 編集 with the format tools, 完了', async ({ page }) => {
+test('メモ: the note as a letter, links safe; 編集 with the format tools, 保存', async ({ page }) => {
   await board(page);
   await root(page).locator('[data-wed-tab="notes"]').click();
   const doc = sheet(page).locator('[data-wed-letter] [data-wed-doc]');
@@ -289,16 +289,16 @@ test('メモ: the note as a letter, links safe; 編集 with the format tools, �
   await expect(banner(page)).toContainText('保存しました');
 });
 
-test('メモ being written: キャンセル in the title bar, ✕ keeps the draft, 完了 in reach over a keyboard', async ({ page }) => {
+test('メモ being written: キャンセル and 保存 with the tools, ✕ keeps the draft, 保存 in reach over a keyboard', async ({ page }) => {
   await board(page);
   await root(page).locator('[data-wed-tab="notes"]').click();
   await sheet(page).locator('[data-wed-note-edit]').click();
-  await expect(bar(page).locator('[data-wed-note-cancel]')).toBeVisible();
+  await expect(sheet(page).locator('[data-wed-note-cancel]')).toBeVisible();
   await sheet(page).locator('[data-wed-note-field]').fill('まだ とちゅう');
   await bar(page).locator('.close').click();
   await fromMenu(page, 'wedding');
   await expect(sheet(page).locator('[data-wed-note-field]')).toHaveValue('まだ とちゅう');
-  // a keyboard's worth less screen: 完了 still on it
+  // a keyboard's worth less screen: 保存 still on it
   await page.setViewportSize({ width: 393, height: 420 });
   await sheet(page).locator('[data-wed-note-field]').focus();
   await expect(sheet(page).locator('[data-wed-note-save]')).toBeInViewport({ ratio: 1 });
@@ -308,7 +308,7 @@ test('メモ being written: キャンセル in the title bar, ✕ keeps the draf
   // キャンセル: the note as it was
   await sheet(page).locator('[data-wed-note-edit]').click();
   await sheet(page).locator('[data-wed-note-field]').fill('やめる ぶん');
-  await bar(page).locator('[data-wed-note-cancel]').click();
+  await sheet(page).locator('[data-wed-note-cancel]').click();
   await expect(sheet(page).locator('[data-wed-letter]')).toContainText('まだ とちゅう');
 });
 

@@ -1,10 +1,10 @@
 <script lang="ts">
   // けっこんしき (docs/wedding.md): the wedding board's sheet, its own chunk with its strings, full height (Sheet's
   // `full`, the unified kit: docs/design.md), over the board's store (board.svelte.ts), following the time of day. One
-  // title bar (NavBar s: けっこんしき, ✕), one scroller, the bottom tab bar (プラン / メモ / 設定, 設定 a member's only). プラン: the banner (Head),
+  // title bar (NavBar: けっこんしき, ✕), one scroller, the bottom tab bar (プラン / メモ / 設定, 設定 a member's only). プラン: the banner (Head),
   // the filters and the months (Plan); a row opens in place, its 編集 and the ＋ over the tab bar open the form
-  // (TaskForm, a form sheet). メモ: the letter (Notes, its 編集 inside it); writing it, the title bar says so (キャンセル)
-  // and the format tools take the tab bar's place. 設定: the names, the day, the categories, the deleted (Settings). The
+  // (TaskForm, a form sheet). メモ: the letter (Notes, its 編集 inside it); writing it, the title bar says so and the format
+  // tools (with キャンセル and 保存) take the tab bar's place. 設定: the names, the day, the categories, the deleted (Settings). The
   // guest's phone (board.canEdit false) reads it all: no tick, 編集, ＋ or 設定.
   import { tick } from 'svelte';
   import '#lib/i18n/wedding.ts';
@@ -18,7 +18,7 @@
   import TaskForm from './TaskForm.svelte';
   import Settings from './Settings.svelte';
   import { board } from './board.svelte.ts';
-  import { cancel, flush, pad } from './notepad.svelte.ts';
+  import { flush, pad } from './notepad.svelte.ts';
   import type { Filter } from './view.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
@@ -109,13 +109,10 @@
   });
 </script>
 
-{#snippet cancelNote()}
-  <button type="button" class="chip s" data-wed-note-cancel data-sfx="back" onclick={cancel}>{t('common.cancel')}</button>
-{/snippet}
 
 <Sheet bind:open label={t('wed.title')} variant="full" onclose={closed}>
   <div class="wd">
-    <NavBar size="s" {title} onclose={() => (open = false)} trailing={writing ? cancelNote : null} />
+    <NavBar {title} onclose={() => (open = false)} />
     <div class="wd-body" class:writing class:plan={tab === 'plan'} bind:this={body} data-wedding data-tab={tab} data-guest={!canEdit || undefined}>
       {#if tab === 'settings' && canEdit}
         <Settings />
@@ -144,7 +141,7 @@
 <style>
   /* the sheet's column (Sheet's full: edge to edge), the title bar under the safe area */
   .wd { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; padding: var(--ui-top) var(--safe-right) 0 var(--safe-left); }
-  .wd > :global(.navbar) { padding: 0 4px; }
+  .wd > :global(.navbar) { margin-inline: 6px; }
   /* the one scroller */
   .wd-body { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; display: flex; flex-direction: column; padding-bottom: 24px; }
   /* the plan's last row clear of ＋ */
