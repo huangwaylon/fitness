@@ -1,8 +1,9 @@
-// The trip map (components/travel/map, docs/travel.md "Maps") in a quiet trip's 地図 (NZ on the demo; Okinawa's layers
-// and camps while it is a quiet trip). The logic tier: under drawOff() no map is made, the stub tells its state (the
-// day's stops, the layers, the selection, the location dot) and its pins are buttons. The drawn smoke (@render):
-// MapLibre on the fixture tiles (never the network), the NH pins on the map, a day chip refits it, a pin selects and is
-// tagged; offline, the route alone with a note; the map's chunk not fetched, a retry.
+// The trip map (components/travel/map, docs/travel.md "Maps") in a quiet trip's 地図 (NZ on the demo) and in Okinawa's
+// classic guide's map card (components/travel/classic/CMap: its layers and camps). The logic tier: under drawOff() no
+// map is made, the stub tells its state (the day's stops, the layers, the selection, the location dot) and its pins are
+// buttons. The drawn smoke (@render): MapLibre on the fixture tiles (never the network), the NH pins on the map, a day
+// chip refits it, a pin selects and is tagged; offline, the route alone with a note; the map's chunk not fetched, a
+// retry.
 import { expect, test, type Page } from './fixtures.ts';
 import { drawn, fixtureTiles, gotoTrip, mapReady, mapState } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
@@ -65,26 +66,30 @@ test("NZ day 1: New Lynn's two stops one pin 「2·6」, both rows marked; the m
   await expect(pane(page).locator('[data-map-day="1"]')).toBeInViewport();
 });
 
-test('Okinawa’s layers in the 表示 menu; a camp’s dot opens its sheet', async ({ page }) => {
-  await gotoTrip(page, 'okinawa', 'days').catch(() => {});
-  test.skip((await page.locator('dialog[open] [data-classic]').count()) > 0, 'Okinawa is drawn by its classic guide');
-  await page.locator('dialog[open] [data-trip-tab="map"]').click();
+test('Okinawa’s classic map: the layer chips by their swatch, the camp layer’s sites, a camp pin’s card (✕ back), a nature pin no card', async ({ page }) => {
+  await gotoTrip(page, 'okinawa', 'map');
   const map = pane(page).locator('[data-travel-map]');
   const stub = pane(page).locator('[data-map-stub]');
-  await pane(page).locator('[data-map-layers]').click();
-  const items = pane(page).locator('[data-map-layer]');
-  await expect(items).toHaveCount(3);
-  for (const b of await items.all()) expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await expect(map).toHaveAttribute('data-mode', 'stub');
+  const chips = pane(page).locator('[data-map-layer]');
+  await expect(chips).toHaveCount(3);
+  for (const k of ['camp', 'nature', 'food']) await expect(pane(page).locator(`[data-map-layer="${k}"] .sw.k-${k}`)).toHaveCount(1);
   await pane(page).locator('[data-map-layer="camp"]').click();
-  await expect(pane(page).locator('[data-map-layer="camp"]')).toHaveAttribute('aria-checked', 'true');
+  await expect(pane(page).locator('[data-map-layer="camp"]')).toHaveAttribute('aria-pressed', 'true');
   expect((await mapState(page)).candidates).toHaveLength(okinawa.camps!.length);
   await stub.locator('[data-pin="katsuren-beach"]').click();
-  const card = page.locator('dialog[open] [data-map-camp="katsuren-beach"]');
+  const card = page.locator('dialog[open] [data-classic-camp="katsuren-beach"]');
   await expect(card).toBeVisible();
-  await expect(card.locator('[data-camp-maps]')).toHaveAttribute('target', '_blank');
-  await page.getByRole('dialog', { name: '勝連ビーチ' }).locator('.close').click();
+  await expect(card.locator('[data-outlink]')).toHaveAttribute('target', '_blank');
+  await card.locator('[data-classic-close]').click();
   await expect(card).toHaveCount(0);
   await expect(map).toHaveAttribute('data-selected', 'katsuren-beach');
+  await pane(page).locator('[data-map-layer="camp"]').click();
+  await pane(page).locator('[data-map-layer="nature"]').click();
+  expect(await mapState(page)).toMatchObject({ layers: ['nature'] });
+  await stub.locator('[data-pin="n-kouri-island"]').click();
+  await expect(map).toHaveAttribute('data-selected', 'n-kouri-island');
+  await expect(page.locator('dialog[open] [data-classic-camp]')).toHaveCount(0);
 });
 
 test('the locate button: asks only when tapped, the dot on with a fix, off when refused', async ({ page, context }) => {

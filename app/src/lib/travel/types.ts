@@ -41,7 +41,7 @@ interface Hike {
   pass: L;
   /** Where the trailhead is ('Granite Falls, WA'). */
   where: L;
-  /** The trail map (huangwaylon.github.io/gpx). */
+  /** The trail map (huangwaylon.github.io/hiking-trails; the old /gpx site is gone). */
   gpx?: string;
 }
 
@@ -61,6 +61,10 @@ export interface Day {
   note?: L;
   photo?: Photo;
   hike?: Hike;
+  /** The old site's card for the day (a classic guide's, components/travel/classic): 'day' an itinerary day (its
+   *  card open, the accent node), 'travel' a flight day (the second accent's ringed node); none a plain day (or a
+   *  hike's, by its `hike`). */
+  look?: 'day' | 'travel';
 }
 
 export interface Place {

@@ -3,7 +3,8 @@
   // (docs/design.md "Quiet sheets"). Two levels: the trips (TripList, from the small trips/meta.ts: no guide loads
   // for it), and a trip, its guide loaded when it is opened (each its own chunk; offline before it is cached,
   // 読み込めませんでした and もう一度). A trip drawn like the original guides (`classic`: Okinawa, Seattle) is
-  // classic/ClassicGuide's under this sheet's header; any other is TripView's (its hero, its pages, its tab bar).
+  // classic/ClassicGuide's, its own screen over the app (its back button to the list); any other is TripView's (its
+  // hero, its pages, its tab bar).
   // An opening goes straight into the trip on now, else back where it was left (the trip and its page, while the app
   // runs). The island is paused under it (open.svelte.ts → the page's `paused`).
   import '#lib/i18n/travel.ts';
@@ -89,16 +90,16 @@
         {#if !sel}
           <div class="top"><SheetHeader title={t('travel.title')} onclose={close} sfx="self" /></div>
           <TripList trips={TRIP_META} {now} onopen={show} />
-        {:else if trip && !trip.classic}
+        {:else if trip?.classic}
+          <ClassicGuide {trip} onback={back} />
+        {:else if trip}
           <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}
           <div class="top">
             <SheetHeader title={pick(meta?.title, i18n.locale)} sub={meta ? shortSpan(meta.start, meta.end, i18n.locale) : undefined} onback={back} onclose={close} sfx="self" />
           </div>
           <div class="scroll" data-trip-view={sel}>
-            {#if trip}
-              <ClassicGuide {trip} />
-            {:else if failed === sel}
+            {#if failed === sel}
               <div class="center" data-travel-failed>
                 <p>{t('travel.loadFailed')}</p>
                 <button type="button" class="q-btn" data-sfx="tick" onclick={() => load(sel!)}>{t('travel.retry')}</button>
