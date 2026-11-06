@@ -223,6 +223,11 @@ prints what retains the ones new since the first snapshot.
   holds the GLB's whole file again). Over days they still grow, one entry a new model (a visitor's, a day's thing), and
   the island's GPU keeps each texture it drew until it goes: bounded by the models there are.
 
+## Load budget
+`npm run build` ends with `scripts/load-budget.ts`: the first load (what `index.html` loads, transitively) ≤ 400 KB of
+JS and 70 KB of CSS gzipped, none of it three.js, MapLibre or a feature's sheet, and the service worker's precache
+≤ 3 MB on the wire. Bytes only (never timing): over one, the build fails.
+
 ## Unused assets
 `npm run unused` (`scripts/unused-assets.ts`, read-only) sorts every file under `static/` and every module under `src/`
 into safe to delete, used (with who uses it) and unsure; `-- --list=safe|used|unsure` for the paths, `-- --json`. Kept
