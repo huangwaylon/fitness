@@ -392,6 +392,8 @@ def _item_errors(it, source):
     if 'desc' in it and (not isinstance(d, str) or not d or len(d) > DESC_MAX or '\n' in d):
         e.append('%s: bad desc' % iid)
     g = it.get('gloss')
+    if isinstance(d, str) and d and (isinstance(g, str) and g and g in d or it.get('name') and d.endswith(it['name'])):
+        e.append('%s: desc repeats the gloss or the name' % iid)   # shown side by side: 「西洋ねぎ — 西洋ねぎとも…」
     if 'gloss' in it and (not isinstance(g, str) or not g or len(g) > GLOSS_MAX or g == it.get('name')):
         e.append('%s: bad gloss' % iid)
     if 'pop' in it and it['pop'] not in (1, 2, 3):
