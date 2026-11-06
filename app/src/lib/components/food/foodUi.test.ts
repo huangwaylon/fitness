@@ -48,24 +48,27 @@ describe('itemOf: a snapshot as an item', () => {
   });
 });
 
-describe('glossOf: a row’s everyday name, never its own again', () => {
-  const item = (name: string, aliases: string[], en?: string): Item => ({ id: 'mext:1', name, aliases, kcal: 1, ...(en ? { en } : {}) });
-  it('the catalog’s name for an older one, else the English, else an alias that says more', () => {
-    const thigh = item('鶏もも肉 皮つき 生', ['鶏腿肉', 'チキン', 'とりももにく かわつき なま'], 'Chicken thigh, with skin (raw)');
+describe('glossOf: a row’s everyday name in Japanese, never its own again', () => {
+  const item = (name: string, aliases: string[], id = 'mext:1'): Item => ({ id, name, aliases, kcal: 1, en: 'An English name' });
+  it('the catalog’s name for an older one, else an alias that says more; never the English', () => {
+    const thigh = item('鶏もも肉 皮つき 生', ['鶏腿肉', 'チキン', 'とりももにく かわつき なま']);
     expect(glossOf(thigh, '若どり もも 皮つき 生')).toBe('鶏もも肉');
-    expect(glossOf(thigh)).toBe('Chicken thigh, with skin (raw)');
+    expect(glossOf(thigh, undefined, new Map([['ちきん', 12]]))).toBeNull(); // 鶏腿肉 a spelling, チキン the family's
     expect(glossOf(item('キャッサバでん粉', ['タピオカ', 'きゃっさばでんこ']))).toBe('タピオカ');
-    expect(glossOf(item('うど 生', ['独活', 'うど なま']))).toBe('独活');
-    expect(glossOf(item('コーヒー牛乳', ['コーヒー乳飲料', '珈琲', 'カフェオレ'], 'Coffee milk'))).toBe('Coffee milk');
+    expect(glossOf(item('はつかだいこん 生', ['ラディッシュ', 'はつかだいこん なま']))).toBe('ラディッシュ');
   });
-  it('nothing that repeats the name: its readings, kana spellings, a part of it or more of it', () => {
-    expect(glossOf(item('塩納豆', ['しおなっとう']))).toBeNull();
+  it('nothing that is only the name again: a spelling, a reading, a part of it, a family’s word, Latin', () => {
+    expect(glossOf(item('コーヒー牛乳', ['コーヒー乳飲料', '珈琲', 'こーひーぎゅうにゅう', 'coffee']))).toBeNull();
+    expect(glossOf(item('卵（全卵・生）', ['玉子', 'タマゴ', 'たまご']))).toBeNull();
+    expect(glossOf(item('うど 生', ['独活', 'うど なま']))).toBeNull();
     expect(glossOf(item('木綿豆腐', ['トウフ', 'もめんどうふ']))).toBeNull(); // a kana spelling, voiced in the reading
     expect(glossOf(item('うどん（生）', ['生うどん', 'ウドン', 'うどん 生', 'udon']))).toBeNull();
-    expect(glossOf(item('焼き鮭', ['焼鮭', 'やきさけ']))).toBeNull(); // mostly its own characters
-    expect(glossOf(item('合成清酒', ['合成せいしゅ', 'ごうせいせいしゅ']))).toBeNull(); // half read
-    expect(glossOf(item('ゴーダチーズ', ['ごーだちーず'], 'ゴーダチーズ'))).toBeNull();
+    expect(glossOf(item('焼き鮭', ['焼鮭', 'やきさけ']))).toBeNull();
+    expect(glossOf(item('鶏もも肉 から揚げ', ['唐揚げ', 'ザンギ']))).toBe('ザンギ'); // 唐揚げ: the name's kanji
+    expect(glossOf(item('牛乳', ['普通ぎゅうにゅう', 'ぎゅうにゅう']))).toBeNull(); // holds the reading
     expect(glossOf(item('キャッサバでん粉', ['タピオカでんぷん粉末']))).toBeNull(); // over 10 characters
+    expect(glossOf(item('鶏ささみ 生', ['チキン', 'ササミ']), undefined, new Map([['ちきん', 3]]))).toBeNull();
+    expect(glossOf(item('豚汁', ['とん汁', 'ぶた汁'], 'dish:1'))).toBeNull(); // a dish's name is everyday already
   });
 });
 

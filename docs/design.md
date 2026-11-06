@@ -440,9 +440,15 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,
   さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓n 一致」 when n independent
   sources agree on its kcal (in words on the row: an iPhone never shows a title), a product's brand, the food's
-  everyday name (`foodUi.ts` glossOf: an older snapshot's catalogue name now, else `en`, else an alias that says more
-  than the name: キャッサバでん粉 タピオカ, never a reading or a spelling of it; one line, cut short) or else its kcal per
-  100 g, and its default portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name);
+  everyday name in Japanese (`foodUi.ts` glossOf: an older snapshot's catalogue name now, 若どり もも → 鶏もも肉; else a
+  MEXT food's alias that says more than its name, キャッサバでん粉 タピオカ: never English, a reading, a spelling, the
+  name's own kanji or a family's word; mostly none, an empty line beats noise; one line, cut short), and its default
+  portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name; the 100 g values on the
+  amount). Left of the name, the food's **category tile** (`FoodThumb`, 48 px; the recipe's ingredients 40 px): an NH
+  rounded square with a brown lip, the category's tint and icon (`art.ts` FOOD_CAT: a catalogue icon's visible part or a
+  drawn one for 主食 · 卵 · 豆 · ナッツ · いも; night tints darker; マイ食品 その他, マイレシピ レシピ), a fixed box over 4 px
+  of the row's padding so the row is no taller; a name wraps to 2 lines at most. Its `img` (a packed sheet's cell, to
+  come: generated pictures for generic foods; products keep their tile) fades in over the tint, the tile again on error;
   the same name, brand and kcal shown once. ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
   （オフライン？）」, もういちど, and さいきん still under it (a recent pick keeps its portion). **Ranking** (`food/search.ts`
   tierOf, each curated pop level worth 0.6 of a tier): the name exact, or its head (up to a bracket or space: 水 finds

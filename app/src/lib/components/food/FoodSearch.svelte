@@ -1,8 +1,8 @@
 <script lang="ts">
   // ごはん's search (a level over the day, for one meal): a 16px search field (focused by the ＋ that opened it, in the
   // tap: Food's openSearch), then さいきん (my latest entry of each food, as I last had it, its portion with it) until
-  // something is typed, or the catalog's best matches (each: the name, a product's brand, its everyday name (glossOf)
-  // or else its kcal per 100 g, its default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
+  // something is typed, or the catalog's best matches (each: its category's tile (FoodThumb), the name, a product's
+  // brand, its everyday name (glossOf), its default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
   // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
   // too (everyone's recipes: all of them after さいきん, the matching ones before the catalog's); a recipe opens its own.
@@ -21,7 +21,8 @@
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
-  import { amountText, catalogOf, defaultPortion, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
+  import FoodThumb from './FoodThumb.svelte';
+  import { amountText, catalogOf, catOf, commonAliases, defaultPortion, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -81,6 +82,11 @@
     if (matchMedia('(hover: hover)').matches) input?.focus();
   });
 
+  /** The catalog's family words (glossOf). */
+  const common = $derived.by(() => {
+    void more;
+    return commonAliases(db);
+  });
   /** A kcal typed, offered as a quick entry. */
   const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);
   const results = $derived.by(() => {
@@ -114,7 +120,8 @@
     <h3 class="lh">{t('food.my.head')}</h3>
     <ul class="list" data-food-customs>
       {#each myFoods as c (c.id)}
-        <li class:rw={!!oncustomquick}><button type="button" class="card it" data-sfx="page" data-custom={c.id} onclick={() => oncustom?.(c)}>
+        <li class:rw={!!oncustomquick}><button type="button" class="card it tt" data-sfx="page" data-custom={c.id} onclick={() => oncustom?.(c)}>
+          <FoodThumb />
           <span class="nm">{c.n}</span>
           <small class="meta">{names?.[c.who] ?? c.who}</small>
           <span class="kc"><b class="money">{kcalText(c.k)}</b><small>{servingText(c)}</small></span>
@@ -138,7 +145,8 @@
     <h3 class="lh">{t('food.rcp.mine')}</h3>
     <ul class="list" data-food-recipes>
       {#each myRecipes as r (r.id)}
-        <li><button type="button" class="card it" data-sfx="page" data-recipe={r.id} onclick={() => onrecipe(r)}>
+        <li><button type="button" class="card it tt" data-sfx="page" data-recipe={r.id} onclick={() => onrecipe(r)}>
+          <FoodThumb cat="レシピ" />
           <span class="nm">{r.n}</span>
           <small class="meta">{names?.[r.who] ?? r.who} · {t('food.rcp.servings', { n: r.sv })}</small>
           <span class="kc"><b class="money">{kcalText(r.per.kcal)}</b><small>{t('food.rcp.one')}</small></span>
@@ -211,8 +219,9 @@
   {#if recent.length}
     <ul class="list" data-food-recent>
       {#each recent as e (e.id)}
-        {@const gl = glossOf(catalogOf(db, e.f.id) ?? itemOf(e.f, null), e.f.n)}
-        <li class:rw={!!onquick}><button type="button" class="card it" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
+        {@const gl = glossOf(catalogOf(db, e.f.id) ?? itemOf(e.f, null), e.f.n, common)}
+        <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
+          <FoodThumb cat={catOf(db, e.f.id)} />
           <span class="nm">{e.f.n}</span>
           <small class="meta"><span>{amountText(e)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(Math.round((e.f.k * e.g) / 100))}</b>
@@ -248,10 +257,11 @@
       {#each results as it (it.id)}
         {@const p = defaultPortion(it)}
         {@const v = verifyOf(db, it.id)}
-        {@const gl = glossOf(it)}
-        <li class:rw={!!onquick}><button type="button" class="card it" data-sfx="page" data-item={it.id} data-per100={it.kcal} onclick={() => onpick(it)}>
+        {@const gl = glossOf(it, it.name, common)}
+        <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={it.id} data-per100={it.kcal} onclick={() => onpick(it)}>
+          <FoodThumb cat={it.cat} />
           <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" role="img" data-verified={v.n} aria-label={t('food.verified', { n: v.n })}>{t('food.verifiedBadge', { n: v.n })}</i>{/if}</span>
-          <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{' · '}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{:else}{t('food.per100', { k: formatNum(it.kcal) })}{/if}</small>
+          <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{' · '}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{:else if !it.brand}{'\u00a0'}{/if}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
         </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}</li>
       {/each}
@@ -293,6 +303,10 @@
     display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'nm kc' 'meta kc'; align-items: center;
     column-gap: 10px; row-gap: 3px; padding: 10px 14px; min-height: var(--row-obj);
   }
+  /* with a thumbnail: it spans both lines at the left, 4px into the padding above and below (the row as tall) */
+  .it.tt { grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'th nm kc' 'th meta kc'; padding-left: 10px; }
+  .tt .nm { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; } /* the whole name on its amount */
+  .tt > :global([data-thumb]) { grid-area: th; margin: -4px 2px -4px 0; }
   .it:active { transform: translateY(2px); }
   .it:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .nm { grid-area: nm; font-weight: 700; font-size: var(--fs-body); overflow-wrap: anywhere; }
