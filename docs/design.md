@@ -2312,7 +2312,9 @@ an introduction, four lines and two villager day lines:
 Ours come from `PEOPLE` in `config/rules.ts` (ウェイ `10-06`, うめ `03-04`; null turns one off; Feb 29 falls on Feb 28).
 On one: both villagers wear NH's birthday hat; NH's cake stands in front of centre stage (else behind it), its candles
 lit; confetti over both villagers the first time that day on this phone (`scene-birthday`); しずえ's 「うめさん、
-おたんじょうび おめでとう！」. A tap on the cake plays a music box and blows the candles out for the day. Each goal the
+おたんじょうび おめでとう！」. A tap on the cake plays NH's ハッピーバースデー on the island's [shared stage](#shared-music)
+(`ev-happy-birthday`; a music box where the music can't be heard) and the candles go out for the day as it starts, on
+every phone (e2e `kk-sync.spec.ts`). Each goal the
 birthday person meets that day pops NH's party popper over their villager. An NH villager's own birthday (Nookipedia's
 dates, a small module of their own) puts the hat on that villager.
 
@@ -2361,8 +2363,11 @@ morning, the zodiac fragment twice as likely.
 `island/stretching.ts`, `island/TapeDeck.svelte`, `motion/stretch.svelte.ts`, `e2e/radio.spec.ts`. NH's tape deck comes
 out on a day either of us met 🍑 Exercise, or when the island is opened 06:00–08:00 (`scene-stretch`), on the lawn clear
 of every control. A tap plays its tape (an original ~6 s march) and both villagers, and an awake visitor, do three of
-NH's stretches together (`if-warmup`, `if-sidebend`, `if-leap`); event reactions wait (`holdEvents`). Then the deck
-goes for the day. On the island's layout the deck is a fixed piece there every day, NH's boom box at the villagers'
+NH's stretches together (`if-warmup`, `if-sidebend`, `if-leap`); event reactions wait (`holdEvents`). The tape is the
+island's: the tap plays NH's ラジオ体操 (aerobics) on the island's [shared stage](#shared-music) (`ev-aerobics`, the
+routine's 6 s), and every phone starts the routine as the song starts (a phone opening a second or more into it only
+sees the deck play), the tape's march where the music can't be heard; then the deck goes for the day on each phone
+that saw it (e2e `kk-sync.spec.ts`). On the island's layout the deck is a fixed piece there every day, NH's boom box at the villagers'
 scale (about half a villager tall): on its day a tap plays the tape (the 3D villagers do NH's three: villager3d poses
 `warmup`, `sidebend`, `jump`); any other time a tap says when it plays, or that today's is done, and no ♪ floats.
 
@@ -2644,11 +2649,10 @@ track without its file is the hour's music (or its `alt`):
 stereos are [shared stages](#shared-music)): the wasps (`waspMusic`):
 the nest's fall only fetches Chased by Bees ahead; it cuts in and loops as the wasps come out (`chase`; 6 s at most if
 the scene never ends it); a net brings the island's music back; a sting plays Stung by Bees once (kept fetched during
-the chase). The island's own cut-ins (`eventJingle(id | ids, loopMs?)`, `events.ts
-CutInId`, only with ミュージック on and the file there, else the moment's effect plays): the tape deck's stretch plays
-ラジオ体操 (aerobics) for its ~6 s, then the music crossfades back (else the tape's `stretch-song`; a stretch cut short or
-the deck leaving stops it: `stopJingle`); the birthday cake plays ハッピーバースデー (else the music box); Franklin, fed
-his fish on Turkey Day, cooks: the cooking jingle, then the dish's (fetched under the first). A cut-in ends at its end,
+the chase). Franklin, fed his fish on Turkey Day, cooks (`eventJingle(ids)`, only with ミュージック on and the file
+there): the cooking jingle, then the dish's (fetched under the first); his fed state is each phone's, so his music is
+too. The stretch's ラジオ体操 and the cake's ハッピーバースデー play on the island's shared stage instead (`ev-<id>`:
+[Group stretching](#group-stretching), [Birthdays](#birthdays)). A cut-in ends at its end,
 when its file can't play (`onfailed`: offline, undecodable, never silence for good), at 音量 0, or when ミュージック goes
 off; one asked for during the opening theme ends the opening. Under a cut-in the track it interrupted (indoors the
 room's and the island's) stays fetched (`choose.ts pinsFor`). The settings' note and the Now Playing tile (and the

@@ -153,10 +153,10 @@ export const CUES: Record<Cue, CueDef> = {
   'scene-launch': { sound: 'whistle', world: true },
   'scene-firework': { sound: 'firework', world: true },
   // group stretching (island/stretching.ts): the tape deck's tune under the ~6 s routine (a jingle: the music ducks);
-  // with ミュージック on and NH's track there, its aerobics music cuts in instead (sound.svelte.ts eventJingle)
+  // with ミュージック heard and NH's track there, its aerobics music plays on the island's stage instead
   stretch: { sound: 'stretch-song', world: true },
-  // a birthday's cake (island/Cake.svelte): its music box as the candles go out (with ミュージック on and the file there,
-  // NH's Happy Birthday cuts in instead)
+  // a birthday's cake (island/Cake.svelte): its music box as the candles go out (with ミュージック heard and the file
+  // there, NH's Happy Birthday plays on the island's stage instead)
   'birthday-cake': { sound: 'music-box', world: true },
   // ききみみ クイズ (the game's sheet: never the world's, so they sound over it): the villager pops in with a chime's
   // little pop, a right answer's sparkle, a wrong one's oops, the results' jingle

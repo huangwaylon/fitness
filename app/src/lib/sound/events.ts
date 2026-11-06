@@ -1,7 +1,7 @@
 // Event music (docs/design.md#event-music): on NH's event days its own track replaces the hourly one, by Tokyo date
 // and time like the hours (hourly.ts). Pure, one table over the island's dated days (time/holidays.ts). The wasps'
-// chase and sting (sound.svelte.ts waspMusic), K.K.'s songs (kk.ts) and the island's one-shots (sound.svelte.ts
-// eventJingle: the birthday song, Franklin's cooking, the stretch) cut in over whatever plays and hand back to it.
+// chase and sting (sound.svelte.ts waspMusic) and Franklin's cooking (eventJingle) cut in over whatever plays and hand
+// back to it; K.K.'s songs, the stretch and the birthday song play on the island's shared stage (stage.svelte.ts).
 import { dayKey, jst } from '#lib/time/clock.ts';
 import { FIREWORKS_SHOW, HOLIDAYS, WEDDING } from '#lib/time/holidays.ts';
 import type { Weather } from './hourly.ts';
@@ -11,7 +11,7 @@ export const EVENT_MUSIC_IDS = [
   'halloween', 'turkey-day', 'happy-new-year', 'new-year-0am', 'new-year-2am', 'new-years-day', 'bee-chase', 'bee-stung',
   'bunny-day', 'toy-day', 'toy-day-snow', 'festivale', 'fireworks-show', 'wedding', 'wedding-party',
   'countdown-2300', 'countdown-2330', 'countdown-2350', 'countdown-2355',
-  // cut-ins (sound.svelte.ts eventJingle): the stretch's loop; one-shots
+  // cut-ins: the stretch's loop and the birthday song (the island's stage: `ev-<id>`), Franklin's one-shots
   'aerobics', 'turkey-cooking-start', 'turkey-cooking-done', 'happy-birthday'
 ] as const;
 export type EventMusicId = (typeof EVENT_MUSIC_IDS)[number];
