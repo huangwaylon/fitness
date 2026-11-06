@@ -13,13 +13,15 @@ items:
   - kind: tile
     id: tile-gonna-pour
     speaker: rosie
-    en: "It's going to pour later, so take an umbrella."
-    tts: "It's gonna pour later, so take an umbrella."
+    en: "It's going to pour later, so grab an umbrella."
+    tts: "It's gonna pour later, so grab an umbrella."
     ja: "あとでどしゃ降りになるから、かさ持っていって。"
-    tiles: ["It's", "going", "to", "pour", "later", "so", "take", "an", "umbrella"]
+    tiles: ["It's", "going", "to", "pour", "later", "so", "grab", "an", "umbrella"]
     decoys: ["want", "the"]
-    marks: [[say, "going to", "gonna"], [link, "take an umbrella"]]
+    marks: [[say, "going to", "gonna"], [link, "grab an umbrella"]]
     note: "gonna＝going to。wanna（want to）と聞きまちがえやすい"
+    ctx: "出かける前に、パートナーが天気の話をしています"
+    why: "「ゴナ」は going to。want（ワナ）と似ているが、これからの天気の話なので going to。an umbrella は「アナンブレラ」とつながる。the ではない。"
     scene: living
     tags: { seed: 35, register: partner, pragmatic: literal, features: [gonna, linking] }
 
@@ -33,6 +35,8 @@ items:
     decoys: ["You", "in"]
     marks: [[say, "have to", "hafta"], [say, "and", "an'"], [link, "get off"]]
     note: "'ll はほぼ聞こえない。and は「ン」だけになる"
+    ctx: "駅のホームで、駅員が乗客に声をかけています"
+    why: "You'll の ll は弱く、You だけに聞こえやすい。have to は「ハフタ」。and は「ン」まで弱まり、in とまぎらわしい。"
     scene: platform
     tags: { seed: 5, register: service, pragmatic: literal, conditions: [station], features: [weak-form, contraction] }
 
@@ -46,6 +50,8 @@ items:
     decoys: ["those", "won't"]
     marks: [[say, "and", "an'"], [link, "two of these"]]
     note: "and は「ン」まで弱まる。don't の d を聞きのがさない"
+    ctx: "薬局で、薬剤師が薬の飲み方を説明しています"
+    why: "these は「ズ」で終わり、those（ゾウズ）とは母音がちがう。don't は「ドウン」、won't なら「ウォウン」と w で始まる。and は「ン」まで弱まる。"
     scene: pharmacy
     tags: { seed: 13, register: service, pragmatic: literal, features: [weak-form] }
 
@@ -59,19 +65,23 @@ items:
     decoys: ["were", "Do"]
     marks: [[link, "few of us are"], [say, "Want to", "Wanna"]]
     note: "us are は「アサ」と一続き。主語の後の are を落とさない"
+    ctx: "仕事の終わりに、同僚が声をかけてきました"
+    why: "us are は「アサ」とつながる。were（ワー）ではなく、これからの話なので are。Want to は「ワナ」。文頭の Do は省かれていて聞こえない。"
     scene: office
     tags: { seed: 48, register: colleague, pragmatic: literal, features: [weak-form, wanna, linking] }
 
   - kind: tile
     id: tile-check-that-bag
     speaker: orville
-    en: "We'll have to check that bag. It's over the limit."
-    tts: "We'll hafta check that bag. It's over the limit."
-    ja: "そのバッグはお預けいただく必要があります。制限を超えていますので。"
-    tiles: ["We'll", "have", "to", "check", "that", "bag", "It's", "over", "the", "limit"]
-    decoys: ["We", "a"]
-    marks: [[say, "have to", "hafta"]]
-    note: "We'll の ll は弱い。that bag は「ザッバッグ」と t が止まる"
+    en: "We'll have to check that bag. It won't fit in the overhead."
+    tts: "We'll hafta check that bag. It won't fit in the overhead."
+    ja: "そのバッグはお預けいただくことになります。頭上の棚に入りませんので。"
+    tiles: ["We'll", "have", "to", "check", "that", "bag", "It", "won't", "fit", "in", "the", "overhead"]
+    decoys: ["We", "want"]
+    marks: [[say, "have to", "hafta"], [link, "fit in the"]]
+    note: "We'll の ll は弱い。won't は口が丸く、want とちがう"
+    ctx: "搭乗口で、係員が乗客の荷物を見ています"
+    why: "We'll の ll は弱く、We だけに聞こえやすい。won't は「ウォウント」と口が丸く、want（ワント）とちがう。overhead＝座席の上の荷物棚。"
     scene: gate
     tags: { seed: 1, register: service, pragmatic: literal, conditions: [desk], features: [contraction, weak-form] }
 
@@ -85,6 +95,8 @@ items:
     decoys: ["I'd", "you"]
     marks: [[say, "your", "yer"], [link, "leave it"]]
     note: "your は「ヤ」と弱い。I'll は「アル」、I'd は「アイド」"
+    ctx: "玄関先で、配達員が話しています"
+    why: "your は「ヤ」と弱く、you に聞こえやすい。I'll（アル）と I'd（アイド）は一瞬のちがい。これから預けるので I'll。"
     scene: door
     tags: { seed: 37, register: stranger, pragmatic: literal, features: [weak-form, contraction] }
 
@@ -98,6 +110,8 @@ items:
     decoys: ["Were", "a"]
     marks: [[link, "going to the"], [drop, "going", "g"]]
     note: "to the は「タダ」と一続き。the thing＝例の集まり"
+    ctx: "職場で、同僚が週末前に話しかけてきました"
+    why: "Are you は「アヤ」と短い。Were なら過去の話になる。to the は「タダ」とひと続きで、a ではなく the。the thing＝例の集まり。"
     scene: office
     tags: { seed: 38, register: colleague, pragmatic: ritual, features: [weak-form, linking] }
 
@@ -111,6 +125,8 @@ items:
     decoys: ["the", "in"]
     marks: [[say, "your", "yer"], [say, "and", "an'"], [say, "to", "ta"]]
     note: "your は「ヤ」、and は「ン」、to は「タ」。3つとも弱い"
+    ctx: "ジムで、友だちがスクワットのコツを教えています"
+    why: "your は「ヤ」、and は「ン」、to は「タ」。弱い your を the と、and を in と聞きまちがえやすい。lock your knees＝ひざを伸ばしきる。"
     tags: { seed: 17, register: friend, pragmatic: literal, features: [weak-form] }
 
   - kind: tile
@@ -123,6 +139,8 @@ items:
     decoys: ["I", "can't"]
     marks: [[say, "going to", "gonna"], [say, "have to", "hafta"], [drop, "next", "t"]]
     note: "gonna hafta＝going to have to。can は弱く「クン」"
+    ctx: "電話で、友だちが今夜の約束について話しています"
+    why: "gonna hafta＝going to have to。I'm の m は弱く、I に聞こえやすい。Can we の can は弱く「クン」。can't なら「キャン」と強い。"
     scene: living
     tags: { seed: 49, register: friend, pragmatic: formula, conditions: [phone], features: [gonna, weak-form] }
 
@@ -136,6 +154,8 @@ items:
     decoys: ["four", "right"]
     marks: [[say, "and", "an'"], [link, "left at the"]]
     note: "for two は「フトゥー」で four と別。light は L"
+    ctx: "街角で、道を聞かれた人が答えています"
+    why: "for two は「フトゥー」と弱く短い。four なら長く強い。left の L と right の R に注意。at the light＝信号のところで。"
     scene: street
     tags: { seed: 58, register: stranger, pragmatic: literal, features: [weak-form, linking, l-r] }
 
@@ -149,6 +169,8 @@ items:
     decoys: ["the", "it"]
     marks: [[say, "get a", "geda"], [link, "get a coffee"]]
     note: "get a は「ゲダ」。a はほとんど聞こえない"
+    ctx: "職場の廊下で、同僚が話しかけてきました"
+    why: "get a は t がやわらかくなって「ゲダ」。a はほとんど聞こえないが、the ではない。at some point＝そのうち。社交辞令のことも多い。"
     scene: office
     tags: { seed: 38, register: colleague, pragmatic: ritual, features: [flap, weak-form] }
 
@@ -162,6 +184,8 @@ items:
     decoys: ["at", "a"]
     marks: [[link, "about an hour"], [say, "about", "aboud"]]
     note: "about an hour は「アバウダナワ」とひと息で"
+    ctx: "ホテルのフロントで、早く着いた客に係が話しています"
+    why: "about an hour は「アバウダナワ」とひと息。hour の h は読まないので an。in about an hour＝1時間ほどで。at や a ではない。"
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [desk], features: [flap, linking] }
 
   - kind: tile
@@ -174,6 +198,8 @@ items:
     decoys: ["I", "I'd"]
     marks: [[say, "you", "ya"], [link, "I've already"]]
     note: "I've の ve はほぼ消える。I'll と I'd もちがいは一瞬"
+    ctx: "カフェで、友だちと待ち合わせています"
+    why: "I've の ve はほぼ消えて I に聞こえるが、already eaten の前には have が要る。I'll（アル）と I'd（アイド）は一瞬。これからするので I'll。"
     scene: cafe
     tags: { seed: 35, register: friend, pragmatic: literal, features: [contraction] }
 
@@ -187,6 +213,8 @@ items:
     decoys: ["can't", "little"]
     marks: [[say, "can", "c'n"], [link, "send it"]]
     note: "弱い can は「クン」。can't なら「キャン」と強く長い"
+    ctx: "郵便局の窓口で、係が送り方を説明しています"
+    why: "弱い can は「クン」。can't なら「キャン」と強く長い。a lot more expensive＝ずっと高い。little ではなく a lot。"
     tags: { seed: 24, register: service, pragmatic: literal, features: [can-cant, weak-form] }
 
   - kind: tile
@@ -199,5 +227,7 @@ items:
     decoys: ["at", "or"]
     marks: [[say, "has to", "hasta"], [say, "and", "an'"]]
     note: "has to は「ハスタ」。and は「ン」で or に聞こえやすい"
+    ctx: "電話で、業者が訪問の時間を伝えています"
+    why: "has to は「ハスタ」。between A and B の形なので and。弱い and は「ン」で、or に聞こえやすい。at ではない。"
     scene: living
     tags: { seed: 25, register: service, pragmatic: literal, conditions: [phone], features: [weak-form] }

@@ -1,9 +1,9 @@
 # Listening content (`content/listen/`)
 
-Source units for the ききみみ games, one YAML file per unit (docs/kikimimi-framework.md §6 and §8, docs/curriculum.md
-§5 and §9). The content compiler (increment 9, `npm run listen:build`) turns them into `src/lib/kikimimi/units/*.json`
-and audio packs. Until it exists, `src/lib/kikimimi/content.test.ts` checks every file. Everything here is `status:
-draft`: no audio has been made, and no game shows these units yet.
+Source units for the ききみみ games, one YAML file per unit (docs/kikimimi-framework.md §6, §8 and "Listen parts as
+built", docs/curriculum.md §5 and §9, docs/curriculum-wave2.md §2.1–2.3). `npm run kikimimi:levels` checks them
+(src/lib/kikimimi/listen.ts) and compiles each into `levels/parts/<unit>.json`; a problem in any file stops it, and
+content.test runs the same checker. The games show `listened` files only.
 
 ## Files and names
 
@@ -33,8 +33,9 @@ items: [...]
 
 **Voices.** A villager speaks with their bank4.ts `CAST` voice unless the unit's `cast` says otherwise. The voice must
 be one of speech.ts `CAST_IDS` and match the villager's gender. Speakers in one item must have different voices, or
-the listener can't tell them apart. Accents come from the choice of villager (US, UK and AU, 12 voices). Other
-accents wait for the cast to grow (curriculum §9).
+the listener can't tell them apart. Every voice here is American (`us-*`), and so is the English: the US-only lint
+(listen.ts `notUs`: mate, cheers for thanks, queue, flat, lift, fortnight, reckon, half nine, -our and -ise spellings…)
+is an error over `en`, the lines and the plan choices (never `tts`).
 
 ## Every item
 
@@ -47,13 +48,20 @@ accents wait for the cast to grow (curriculum §9).
 | `scene` | optional backdrop: `cafe platform pharmacy office door gate street living` (bank.ts `SCENE_IDS`). None means the plain stage |
 | `channel` | optional: `live phone pa video`, when `tags.conditions` don't already say it |
 | `ask` | optional: what the scene card says while it plays (Japanese, UI style) |
+| `ctx` | the situation, Japanese with kanji, one line ≤ 30 字: who, where, why, never the answer (a tile's and a call's; a たちぎき's per round) |
+| `why` | 解説: why the answer fits and what each trap was, Japanese with kanji, ≤ 90 字 (a tile's; a call's per memo round; a たちぎき's per round) |
+| `cja` | the choices in Japanese, one per option in the authored order, no Latin letters (a call's per memo slot; optional on a たちぎき's plan round) |
+
+The help (bank.ts `helpProblems`) is checked wherever it is, and required once a file's status is past `draft`: a
+tile's `ctx` and `why`; a call's `ctx`, each memo round's `why` and each slot's `cja`; each たちぎき round's `ctx` and
+`why`.
 
 ## Text rules (curriculum §9)
 
-- `en` is what the reveal shows, in standard spelling (UK spelling for UK and AU speakers: neighbour, realise). Digits
+- `en` is what the reveal shows, in standard American spelling (neighbor, realize). Digits
   are fine in `en` (`¥3,000`, `090-2816-4473`, `the 14th`).
 - `tts` is what the engine says, spelled as said: gonna, hafta, lemme, d'you, didja, 'em, an', ya, yer, goin',
-  no' (a UK glottal t), 'ere (a dropped h), "bud it" (a flap). **No digits, ever**: write numbers as they are said
+  'im (a dropped h), "bud it" (a flap). **No digits, ever**: write numbers as they are said
   (oh-nine-oh, twenty-two thousand yen, the fourteenth). Whenever `en` has a digit, a `tts` is required.
 - Punctuation is prosody: a comma is a breath, "—" or "..." a break or trailing off.
 - `ja` is natural written Japanese with no spaces between Japanese words, like bank4.ts.
@@ -84,6 +92,13 @@ accents wait for the cast to grow (curriculum §9).
   auxiliary (I for I've), or a near sound (end/and, ten/then). A decoy must not also be a tile.
 - `tts` is required and differs from `en`. That respelling is the point of the item.
 - `marks` are the sound marks shown at the reveal (bank.ts `SoundMark`). Their words must appear in `en`.
+
+**Derived tiles** (`s2-tile-bank`, `s3-tile-bank`): a voiced one-clip quiz item rebuilt as a tile, playing its own clip
+(`clip: <bank id>`, the tile's id `tile-<bank id>`). Its `en` is the item's, with no `speaker` or `tts` (the clip has
+them). `npm run kikimimi:tiles` writes them from the bank: every US item in play with a reducing `tts`, 3–12 words, no
+digits and a reduction feature (a dialogue's lines aren't one-clip items). Each run rewrites what the bank owns and
+keeps the reviewed `decoys`, `marks`, `note`, `ctx` and `why`; a new tile comes with defaults and `review: true` until
+a person writes its help. A draft that says what a bank item already says is folded into that item's derived tile.
 
 ## `call` (ようじ でんわ, increment 14)
 
@@ -184,12 +199,11 @@ items:
 - `features`: bank.ts `Feature`, plus new ones from these drafts: `linking`, `h-drop`, `chain` (reduction chains:
   whatcha, whaddaya, wouldja've), `elision` (t/d dropped: jus'), `assimilation`, `overlap`, `filler`, `stress`.
 
-The compiler's schema (9b) adopts the new conditions and features into bank.ts's types. Until then, add a new value
-to the lists in content.test.ts and here, in the same commit.
+A new value goes into listen.ts's lists and here, in the same commit.
 
 ## Checks
 
-`npx vitest run src/lib/kikimimi/content.test.ts` checks:
+listen.ts `checkListen` (the compiler and content.test) checks:
 - the header;
 - each kind's required fields;
 - speakers in the roster, with a voice of the right gender and distinct voices within an item;
@@ -200,7 +214,10 @@ to the lists in content.test.ts and here, in the same commit.
 - marks that are in `en`;
 - the `half` arrays;
 - `at` offsets;
-- ids unique across files;
+- ids unique across files and apart from every bank, unit and rung clip;
+- a derived tile's `clip` (a voiced one-clip bank item, its `en`);
+- the Japanese help (above);
+- US voices and the US-only lint;
 - every answer in range.
 
 It doesn't check whether the English is natural, whether a decoy is fair, or whether a claim really belongs to one

@@ -1,0 +1,594 @@
+# ことば タイル S2 もり, from the voiced quiz: written by scripts/kikimimi-tiles.ts, which keeps decoys, marks, note,
+# ctx and why as reviewed and rewrites the rest from the bank. Each tile plays its bank clip (`clip`): no new audio.
+schema: 1
+unit: s2-tile-bank
+game: tile
+stage: 3
+track: life
+seeds: [1, 2, 5, 9, 15, 16, 18, 21, 22, 26, 27, 30, 35, 38, 39, 40, 41, 43, 44, 46, 48, 50, 53, 54, 56]
+features: { primary: weak-form, review: contraction }
+cando: "クイズで 聞いた 文を、ちぢんだ 音から ことばごとに 組み立てられる"
+status: draft
+items:
+  - kind: tile
+    id: tile-m4-be-good
+    clip: m4-be-good
+    en: "Cake? Oh, I'd better not. I'm watching what I eat this month."
+    # bunnie: Cake? Oh, I'd better not. I'm watchin' what I eat this month.
+    ja: "ケーキ？やめとこうかな。今月は食べるものに気をつけてるの。"
+    tiles: ["Cake", "Oh", "I'd", "better", "not", "I'm", "watching", "what", "I", "eat", "this", "month"]
+    decoys: ["I'll", "watch"]
+    marks: [[drop, "watching", "g"]]
+    note: "I'd better not＝やめておく。I'll ではない"
+    ctx: "カフェの前で、友だちにケーキをすすめました"
+    why: "I'd better not の I'd は「アイド」と短い。I'll では「やめておく」にならない。watching の g は落ちて「ワッチン」。watch では文にならない。"
+    scene: street
+    tags: { seed: 18, register: friend, pragmatic: refusal, features: [contraction] }
+
+  - kind: tile
+    id: tile-m4-put-through
+    clip: m4-put-through
+    en: "That's actually handled by a different department. Let me put you through."
+    # maple: That's actually handled by a different department. Lemme put you through.
+    ja: "そちらは実は別の窓口の担当なんです。おつなぎしますね。"
+    tiles: ["That's", "actually", "handled", "by", "a", "different", "department", "Let", "me", "put", "you", "through"]
+    decoys: ["Let's", "your"]
+    marks: [[say, "Let me", "lemme"], [link, "put you"]]
+    note: "lemme＝let me。put you through＝電話をつなぐ"
+    ctx: "電話で、問い合わせ先の係が答えています"
+    why: "Let me は「レミ」。Let's なら「ス」が聞こえる。put you は「プチュ」とつながり、your ではない。put you through＝担当に電話をつなぐ。"
+    scene: living
+    tags: { seed: 22, register: service, pragmatic: formula, conditions: [phone], features: [lemme] }
+
+  - kind: tile
+    id: tile-w4-shouldve
+    clip: w4-shouldve
+    en: "You should've checked the gate before going for coffee."
+    # wilbur: You shoulda checked the gate before goin' for coffee.
+    ja: "コーヒーを買いに行く前に、搭乗口を確認しておくべきだったね。"
+    tiles: ["You", "should've", "checked", "the", "gate", "before", "going", "for", "coffee"]
+    decoys: ["shouldn't have", "go"]
+    marks: [[say, "should've", "shoulda"], [drop, "going", "g"]]
+    note: "should've は「シュダ」。すべきだった（でもしなかった）"
+    ctx: "空港で、旅行仲間があせっています"
+    why: "should've は「シュダ」。shouldn't have なら n と t が聞こえ、意味が逆。before のあとは going で「ゴーイン」。go ではない"
+    scene: gate
+    tags: { seed: 2, register: friend, pragmatic: literal, features: [contraction, weak-form] }
+
+  - kind: tile
+    id: tile-w4-wouldnt-have
+    clip: w4-wouldnt-have
+    en: "I wouldn't have booked it if I'd known about the fee."
+    # coco: I wouldn't've booked it if I'd known about the fee.
+    ja: "手数料のことを知ってたら、予約しなかったのに。"
+    tiles: ["I", "wouldn't", "have", "booked", "it", "if", "I'd", "known", "about", "the", "fee"]
+    decoys: ["would've", "had"]
+    marks: [[say, "wouldn't have", "wouldn't've"]]
+    note: "wouldn't've＝wouldn't have。知ってたらしなかった"
+    ctx: "家で、友だちが予約のことでがっかりしています"
+    why: "wouldn't have は「ウドゥンタヴ」と縮む。would've なら否定がなく意味が逆。I'd known の I'd は I had の短い形で、had は要らない。"
+    scene: living
+    tags: { seed: 16, register: friend, pragmatic: literal, features: [contraction, weak-form] }
+
+  - kind: tile
+    id: tile-w4-wanna
+    clip: w4-wanna
+    en: "Do you want to order in tonight?"
+    # molly: D'you wanna order in tonight?
+    ja: "今夜はデリバリーにする？"
+    tiles: ["Do", "you", "want", "to", "order", "in", "tonight"]
+    decoys: ["Did", "won't"]
+    marks: [[say, "Do you", "d'you"], [say, "want to", "wanna"]]
+    note: "D'you wanna＝Do you want to"
+    ctx: "夕方、パートナーが夕ごはんの相談をしています"
+    why: "Do you は「ジュ」と短い。Did なら「ディ」がはっきり。want to は「ワナ」で、won't（ウォウント）とちがい口が丸くない。order in＝出前をとる。"
+    scene: living
+    tags: { seed: 35, register: partner, pragmatic: literal, features: [wanna, yod] }
+
+  - kind: tile
+    id: tile-w4-gotta
+    clip: w4-gotta
+    en: "You've got to transfer at Shinagawa for the airport."
+    # kappn: You've gotta transfer at Shinagawa for the airport.
+    ja: "空港へは品川で乗り換えないといけないよ。"
+    tiles: ["You've", "got", "to", "transfer", "at", "Shinagawa", "for", "the", "airport"]
+    decoys: ["You", "get"]
+    marks: [[say, "got to", "gotta"]]
+    note: "You've の ve は弱い。gotta＝have got to"
+    ctx: "駅のホームで、乗り換えを教えてもらっています"
+    why: "You've の ve は消えかけるが、got to の前に必要。got は「ガ」で、get（ゲッ）ではない。got to は「ガダ」で「〜しなきゃ」。"
+    scene: platform
+    tags: { seed: 5, register: stranger, pragmatic: literal, conditions: [station], features: [gotta] }
+
+  - kind: tile
+    id: tile-w4-didja
+    clip: w4-didja
+    en: "Did you pack this bag yourself?"
+    # orville: Didja pack this bag yourself?
+    ja: "このバッグはご自身で荷造りされましたか？"
+    tiles: ["Did", "you", "pack", "this", "bag", "yourself"]
+    decoys: ["Do", "these"]
+    marks: [[say, "Did you", "didja"]]
+    note: "Did you は「ディジャ」。空港の決まった質問"
+    ctx: "空港のカウンターで、係が質問しています"
+    why: "Did you は「ディジャ」。Do なら習慣を聞くことになる。this bag の this は短い「ディス」。these（ディーズ）なら長く、bags と複数になる。"
+    scene: gate
+    tags: { seed: 1, register: service, pragmatic: formula, conditions: [desk], features: [yod] }
+
+  - kind: tile
+    id: tile-w4-a-lot-of
+    clip: w4-a-lot-of
+    en: "We've got a lot of work to get through today."
+    # pietro: We've got a lotta work to get through today.
+    ja: "今日は片付けなきゃいけない仕事がたくさんあるぞ。"
+    tiles: ["We've", "got", "a", "lot", "of", "work", "to", "get", "through", "today"]
+    decoys: ["the", "have"]
+    marks: [[link, "got a"], [say, "a lot of", "a lotta"]]
+    note: "a lotta＝a lot of。of は「ア」だけ"
+    ctx: "朝の職場で、上司がみんなに話しています"
+    why: "a lot of は「アラダ」とつながり、of は「ア」だけで have とまぎらわしい。got a も「ガダ」と一続き。a は the ではない。"
+    scene: office
+    tags: { seed: 44, register: boss, pragmatic: literal, features: [flap, weak-form] }
+
+  - kind: tile
+    id: tile-w4-were-gonna
+    clip: w4-were-gonna
+    en: "We're going to start boarding shortly."
+    # orville: We're gonna start boarding shortly.
+    ja: "まもなく搭乗を開始いたします。"
+    tiles: ["We're", "going", "to", "start", "boarding", "shortly"]
+    decoys: ["want", "Were"]
+    marks: [[say, "going to", "gonna"]]
+    note: "We're gonna＝これから〜します"
+    ctx: "搭乗口で、係員がアナウンスしています"
+    why: "We're は「ウィア」と短い。Were（ワー）なら過去の話になる。going to は「ゴナ」。want（ワナ）と似ているが、これからの予定。"
+    scene: gate
+    tags: { seed: 2, register: official, pragmatic: literal, conditions: [pa], features: [gonna] }
+
+  - kind: tile
+    id: tile-w4-dunno
+    clip: w4-dunno
+    en: "I don't know. Maybe the Thai place?"
+    # sherb: Dunno, maybe the Thai place?
+    ja: "わかんない、タイ料理の店とか？"
+    tiles: ["I", "don't", "know", "Maybe", "the", "Thai", "place"]
+    decoys: ["won't", "a"]
+    marks: [[say, "I don't know", "dunno"]]
+    note: "dunno＝I don't know。I も聞こえない"
+    ctx: "街で、友だちとお昼の店を決めています"
+    why: "dunno は I don't know がまとまった形で、I も don't もほぼ聞こえない。won't なら「ウォウン」。the Thai place＝例のタイ料理の店。"
+    scene: street
+    tags: { seed: 50, register: friend, pragmatic: literal, features: [dunno] }
+
+  - kind: tile
+    id: tile-w4-lemme
+    clip: w4-lemme
+    en: "Let me just pull up your account."
+    # maple: Lemme just pull up your account.
+    ja: "お客様のアカウントをお調べしますね。"
+    tiles: ["Let", "me", "just", "pull", "up", "your", "account"]
+    decoys: ["Let's", "you"]
+    marks: [[say, "Let me", "lemme"], [link, "pull up"]]
+    note: "lemme＝let me。pull up＝画面に出す"
+    ctx: "電話で、窓口の係が対応しています"
+    why: "Let me は「レミ」。Let's なら「ス」が聞こえる。pull up は「プラップ」とつながる。your account の your は弱いが、you ではない。"
+    scene: living
+    tags: { seed: 21, register: service, pragmatic: literal, conditions: [phone], features: [lemme] }
+
+  - kind: tile
+    id: tile-ml-r-card-machine
+    clip: ml-r-card-machine
+    en: "Our card reader's acting up. Got any cash on you?"
+    # bud: Our card reader's actin' up. Got any cash on ya?
+    ja: "カードリーダーの調子が悪くて。現金、お持ちですか？"
+    tiles: ["Our", "card", "reader's", "acting", "up", "Got", "any", "cash", "on", "you"]
+    decoys: ["Are", "your"]
+    marks: [[drop, "acting", "g"], [say, "you", "ya"]]
+    note: "Our は「アワ」で Are に近い。on ya＝on you"
+    ctx: "カフェのレジで、店員が困っています"
+    why: "Our は「アワ」と短く、Are とまぎらわしい。acting の g は落ちる。on you は「オンヤ」で、your ではない。acting up＝調子が悪い。"
+    scene: cafe
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [ellipsis, contraction] }
+
+  - kind: tile
+    id: tile-ml-w-woulda
+    clip: ml-w-woulda
+    en: "I would've bought it, but they didn't have my size."
+    # gayle: I woulda bought it, but they didn't have my size.
+    ja: "買うつもりだったけど、私のサイズがなかったの。"
+    tiles: ["I", "would've", "bought", "it", "but", "they", "didn't", "have", "my", "size"]
+    decoys: ["wouldn't have", "buy"]
+    marks: [[say, "would've", "woulda"]]
+    note: "would've は「ウダ」。するつもりだった（でもしなかった）"
+    ctx: "買い物帰りの友だちが話しています"
+    why: "would've は「ウダ」。wouldn't have なら n と t が聞こえ、意味が逆。bought は「ボート」と過去の形。buy（バイ）ではない。"
+    scene: street
+    tags: { seed: 26, register: friend, pragmatic: literal, features: [contraction, weak-form] }
+
+  - kind: tile
+    id: tile-ml-w-didncha
+    clip: ml-w-didncha
+    en: "Didn't you get the email about the bike trail being closed?"
+    # kitt: Didncha get the email about the bike trail being closed?
+    ja: "サイクリングコースが閉鎖ってメール、届かなかったの？"
+    tiles: ["Didn't", "you", "get", "the", "email", "about", "the", "bike", "trail", "being", "closed"]
+    decoys: ["Did", "been"]
+    marks: [[say, "Didn't you", "didncha"]]
+    note: "Didn't you は「ディドゥンチャ」。驚きの確認"
+    ctx: "朝、友だちとサイクリングに来ました"
+    why: "Didn't you は「ディドゥンチャ」と t が消える。Did なら「知らなかったの？」の驚きがない。being closed＝閉鎖中。been（ビン）とは長さがちがう。"
+    scene: street
+    tags: { seed: 2, register: partner, pragmatic: literal, features: [yod, t-glottal] }
+
+  - kind: tile
+    id: tile-ml-w-hafta
+    clip: ml-w-hafta
+    en: "I'd have to check with my manager first."
+    # label: I'd hafta check with my manager first.
+    ja: "まず店長に確認しないといけませんね。"
+    tiles: ["I'd", "have", "to", "check", "with", "my", "manager", "first"]
+    decoys: ["I'll", "of"]
+    marks: [[say, "have to", "hafta"]]
+    note: "I'd hafta＝〜しないといけない（やわらかく）"
+    ctx: "服屋で、店員が返品の相談に答えています"
+    why: "I'd は「アイド」と短く、I'll（アル）とまぎらわしい。I'd have to は「するとしたら必要」のやわらかい言い方。have to は「ハフタ」で、of ではない。"
+    scene: street
+    tags: { seed: 26, register: service, pragmatic: hedge, features: [contraction, weak-form] }
+
+  - kind: tile
+    id: tile-ml-w-musta
+    clip: ml-w-musta
+    en: "I must've left my card at the bar last night."
+    # bob: I musta left my card at the bar last night.
+    ja: "ゆうべ、バーにカードを置いてきちゃったに違いない。"
+    tiles: ["I", "must've", "left", "my", "card", "at", "the", "bar", "last", "night"]
+    decoys: ["must", "it"]
+    marks: [[say, "must've", "musta"]]
+    note: "must've は「マスタ」。きっと〜した"
+    ctx: "朝、友だちが財布の中を探しています"
+    why: "must've は「マスタ」。must だけなら今のことになる。left の前には have が要る。at the bar の at は弱いが、it ではない。"
+    tags: { seed: 27, register: friend, pragmatic: literal, features: [contraction] }
+
+  - kind: tile
+    id: tile-ml-w-hadta
+    clip: ml-w-hadta
+    en: "We had to wait, like, three hours at immigration."
+    # gulliver: We hadta wait, like, three hours at immigration.
+    ja: "入国審査で、3時間くらい待たされたんだよ。"
+    tiles: ["We", "had", "to", "wait", "like", "three", "hours", "at", "immigration"]
+    decoys: ["have", "for"]
+    marks: [[say, "had to", "hadta"]]
+    note: "had to は「ハッタ」。〜しなきゃいけなかった"
+    ctx: "旅行から帰った友だちが話しています"
+    why: "had to は「ハッタ」とつながる。have なら今の話になる。wait のあとに for はない。like は「〜くらい」の口ぐせ。"
+    tags: { seed: 9, register: friend, pragmatic: literal, features: [weak-form, flap] }
+
+  - kind: tile
+    id: tile-ml-w-wouldja
+    clip: ml-w-wouldja
+    en: "Would you mind moving your bag? That seat's reserved."
+    # portia: Wouldja mind movin' your bag? That seat's reserved.
+    ja: "お荷物をどけていただけます？ その席、予約済みなんです。"
+    tiles: ["Would", "you", "mind", "moving", "your", "bag", "That", "seat's", "reserved"]
+    decoys: ["Do", "the"]
+    marks: [[say, "Would you", "wouldja"], [drop, "moving", "g"]]
+    note: "Would you は「ウッジャ」。ていねいなお願い"
+    ctx: "電車で、乗客が席のことで話しかけてきました"
+    why: "Would you は「ウッジャ」とつながる。Do you なら「ジュ」。your bag の your は弱いが、the ではない。seat's＝seat is。"
+    scene: platform
+    tags: { seed: 5, register: stranger, pragmatic: formula, conditions: [station], features: [yod] }
+
+  - kind: tile
+    id: tile-ml-w-tell-im
+    clip: ml-w-tell-im
+    en: "Can you tell him the water heater's making that noise again?"
+    # pashmina: Can ya tell 'im the water heater's making that noise again?
+    ja: "給湯器がまたあの音を立ててるって、彼に伝えてくれる？"
+    tiles: ["Can", "you", "tell", "him", "the", "water", "heater's", "making", "that", "noise", "again"]
+    decoys: ["your", "them"]
+    marks: [[say, "you", "ya"], [say, "tell him", "tell 'im"]]
+    note: "'im＝him。h が落ちて「テリム」"
+    ctx: "家で、ルームメイトが頼みごとをしています"
+    why: "Can you の you は「ヤ」と弱く、your に聞こえやすい。tell him は h が落ちて「テリム」。them（ゼム）とは音がちがう。"
+    scene: living
+    tags: { seed: 30, register: partner, pragmatic: literal, conditions: [phone], features: [weak-form] }
+
+  - kind: tile
+    id: tile-ml-w-whaddaya
+    clip: ml-w-whaddaya
+    en: "What do you recommend for two people?"
+    # audie: Whaddaya recommend for two people?
+    ja: "2人だと、何がおすすめですか？"
+    tiles: ["What", "do", "you", "recommend", "for", "two", "people"]
+    decoys: ["are", "did"]
+    marks: [[say, "What do you", "whaddaya"]]
+    note: "whaddaya＝what do you"
+    ctx: "レストランで、客が店員に聞いています"
+    why: "whaddaya は What do you の縮んだ形。「ダ」を did と思いやすい。whatcha（What are you）とも似ているが、ここは do。"
+    scene: cafe
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+
+  - kind: tile
+    id: tile-ml-w-arentcha
+    clip: ml-w-arentcha
+    en: "Aren't you supposed to fast before a blood test?"
+    # tammy: Aren'tcha s'posed ta fast before a blood test?
+    ja: "血液検査の前って、絶食しなきゃいけないんじゃなかった？"
+    tiles: ["Aren't", "you", "supposed", "to", "fast", "before", "a", "blood", "test"]
+    decoys: ["Are", "suppose"]
+    marks: [[say, "Aren't you", "aren'tcha"], [say, "supposed to", "s'posed ta"]]
+    note: "aren'tcha＝aren't you。〜のはずじゃない？"
+    ctx: "家で、家族が健康診断の話をしています"
+    why: "Aren't you は「アーンチャ」。Are なら「〜じゃなかった？」の驚きがない。supposed は d が消えるが、suppose ではない。〜することになっている。"
+    scene: living
+    tags: { seed: 15, register: friend, pragmatic: literal, features: [yod, weak-form] }
+
+  - kind: tile
+    id: tile-mw-where-at
+    clip: mw-where-at
+    en: "Remind me, where are we at with the Kobe proposal?"
+    # tom-nook: Remind me, where're we at with the Kobe proposal?
+    ja: "えーと、神戸の提案書はどこまで進んでる？"
+    tiles: ["Remind", "me", "where", "are", "we", "at", "with", "the", "Kobe", "proposal"]
+    decoys: ["were", "a"]
+    marks: [[say, "where are", "where're"]]
+    note: "where are we at＝どこまで進んだ？"
+    ctx: "職場で、上司が進み具合を聞いています"
+    why: "where are は「ウェアラ」と短くなる。were（ワー）なら過去の話。where are we at＝どこまで進んでいる。the は a ではない。"
+    scene: office
+    tags: { seed: 44, register: boss, pragmatic: literal, features: [weak-form] }
+
+  - kind: tile
+    id: tile-mw-gonna-hafta
+    clip: mw-gonna-hafta
+    en: "We're going to have to push the review to Thursday."
+    # pietro: We're gonna hafta push the review to Thursday.
+    ja: "レビューは木曜に延ばさざるを得ないな。"
+    tiles: ["We're", "going", "to", "have", "to", "push", "the", "review", "to", "Thursday"]
+    decoys: ["want", "of"]
+    marks: [[say, "going to have to", "gonna hafta"]]
+    note: "gonna hafta＝going to have to"
+    ctx: "会議で、上司が予定の変更を伝えています"
+    why: "going to have to は「ゴナハフタ」まで縮む。going を want（ワナ）と、have を of と聞きちがえやすい。push＝延期する。"
+    scene: office
+    tags: { seed: 40, register: boss, pragmatic: literal, features: [gonna, weak-form] }
+
+  - kind: tile
+    id: tile-mw-whaddaya
+    clip: mw-whaddaya
+    en: "What do you want to do about the printer?"
+    # kicks: Whaddaya wanna do about the printer?
+    ja: "プリンター、どうしたい？"
+    tiles: ["What", "do", "you", "want", "to", "do", "about", "the", "printer"]
+    decoys: ["are", "going"]
+    marks: [[say, "What do you", "whaddaya"], [say, "want to", "wanna"]]
+    note: "whaddaya wanna＝what do you want to"
+    ctx: "職場で、同僚が壊れたプリンターを見ています"
+    why: "whaddaya＝What do you。whatcha（What are you）と似ていて are を入れやすい。wanna は want to で、going ではない。"
+    scene: office
+    tags: { seed: 43, register: colleague, pragmatic: literal, features: [wanna, weak-form] }
+
+  - kind: tile
+    id: tile-mw-been-meaning
+    clip: mw-been-meaning
+    en: "I've been meaning to ask you about your trip."
+    # maple: I've been meanin' to ask ya about your trip.
+    ja: "旅行のこと、ずっと聞こうと思ってたんだ。"
+    tiles: ["I've", "been", "meaning", "to", "ask", "you", "about", "your", "trip"]
+    decoys: ["I", "being"]
+    marks: [[drop, "meaning", "g"], [say, "you", "ya"]]
+    note: "been meaning to＝ずっと〜しようと思ってた"
+    ctx: "職場で、同僚が話しかけてきました"
+    why: "I've の ve はほぼ消えるが、been の前に必要。been は「ビン」と短く、being ではない。meaning の g も落ちる。"
+    scene: office
+    tags: { seed: 38, register: colleague, pragmatic: ritual, features: [contraction] }
+
+  - kind: tile
+    id: tile-mw-have-you-had
+    clip: mw-have-you-had
+    en: "Have you had a chance to look at the contract?"
+    # nana: Have ya had a chance ta look at the contract?
+    ja: "契約書、もうご覧いただけましたか？"
+    tiles: ["Have", "you", "had", "a", "chance", "to", "look", "at", "the", "contract"]
+    decoys: ["your", "Did"]
+    marks: [[say, "you", "ya"], [say, "to", "ta"]]
+    note: "have ya＝have you。had a chance＝見る時間があった"
+    ctx: "職場で、取引先の人が確認しています"
+    why: "Have you は「ハヴャ」と短く、your に聞こえやすい。Did you なら「ディジャ」。had a chance は「ハダチャンス」とつながる。to は「タ」。"
+    scene: office
+    tags: { seed: 41, register: boss, pragmatic: formula, conditions: [phone], features: [weak-form, yod] }
+
+  - kind: tile
+    id: tile-mw-werent-we
+    clip: mw-werent-we
+    en: "Weren't we supposed to hear back by now?"
+    # tia: Weren't we s'posed to hear back by now?
+    ja: "もう返事が来ててもいい頃じゃなかった？"
+    tiles: ["Weren't", "we", "supposed", "to", "hear", "back", "by", "now"]
+    decoys: ["Were", "suppose"]
+    marks: [[say, "supposed", "s'posed"]]
+    note: "Weren't we＝〜じゃなかった？（驚き）"
+    ctx: "職場で、同僚が返事を待っています"
+    why: "Weren't は「ワーント」と短く、Were とまぎらわしい。否定で「〜のはずだったよね」と驚く形。supposed の d は消えるが、suppose ではない。"
+    scene: office
+    tags: { seed: 46, register: colleague, pragmatic: attitude, features: [contraction, weak-form] }
+
+  - kind: tile
+    id: tile-mw-couldja
+    clip: mw-couldja
+    en: "Could you just send me the link again?"
+    # audie: Couldja just send me the link again?
+    ja: "リンク、もう一回送ってもらえる？"
+    tiles: ["Could", "you", "just", "send", "me", "the", "link", "again"]
+    decoys: ["Can", "a"]
+    marks: [[say, "Could you", "couldja"]]
+    note: "Couldja＝Could you。ていねいなお願い"
+    ctx: "職場で、同僚が頼みごとをしています"
+    why: "Could you は「クッジャ」。Can you なら「キャニュ」。just は t が落ちて「ジャス」。the link＝さっきのリンク。a ではない。"
+    scene: office
+    tags: { seed: 39, register: colleague, pragmatic: literal, conditions: [video], features: [yod] }
+
+  - kind: tile
+    id: tile-mw-shouldnt-have
+    clip: mw-shouldnt-have
+    en: "You shouldn't have told him about the party."
+    # wolfgang: You shouldn't've told 'im about the party.
+    ja: "あいつにパーティーのこと、言うべきじゃなかったよ。"
+    tiles: ["You", "shouldn't", "have", "told", "him", "about", "the", "party"]
+    decoys: ["should've", "them"]
+    marks: [[say, "shouldn't have", "shouldn't've"], [say, "him", "'im"]]
+    note: "shouldn't've＝shouldn't have。言わなきゃよかった"
+    ctx: "パーティーのあと、友だちが文句を言っています"
+    why: "shouldn't have は「シュドゥンタヴ」。should've なら否定がなく意味が逆。told him は h が落ちて「トールディム」。them なら「ゼム」。"
+    scene: living
+    tags: { seed: 54, register: friend, pragmatic: literal, features: [contraction, weak-form] }
+
+  - kind: tile
+    id: tile-mw-used-to
+    clip: mw-used-to
+    en: "I used to play in a band, believe it or not."
+    # kk-slider: I useta play in a band, believe it or not.
+    ja: "信じないかもしれないけど、昔バンドやってたんだ。"
+    tiles: ["I", "used", "to", "play", "in", "a", "band", "believe", "it", "or", "not"]
+    decoys: ["use", "the"]
+    marks: [[say, "used to", "useta"]]
+    note: "useta＝used to。昔は〜してた"
+    ctx: "家で、友だちが昔の話をしています"
+    why: "used to は「ユースタ」で、d は聞こえない。use なら今の話。in a band の a は弱いが、the ではない。昔の習慣を言う形。"
+    scene: living
+    tags: { seed: 48, register: friend, pragmatic: literal, features: [weak-form] }
+
+  - kind: tile
+    id: tile-mw-must-have
+    clip: mw-must-have
+    en: "She must have left already. Her coat's gone."
+    # molly: She musta left already. Her coat's gone.
+    ja: "彼女もう帰ったんだね。コートがないもん。"
+    tiles: ["She", "must", "have", "left", "already", "Her", "coat's", "gone"]
+    decoys: ["much", "of"]
+    marks: [[say, "must have", "musta"]]
+    note: "musta＝must have。〜したにちがいない"
+    ctx: "パーティーで、友だちが誰かを探しています"
+    why: "must have は「マスタ」。much（マッチ）ではない。have を of と聞きやすいが、must のあとは have。Her coat's gone＝コートがない。"
+    scene: living
+    tags: { seed: 54, register: friend, pragmatic: literal, features: [weak-form] }
+
+  - kind: tile
+    id: tile-mw-youd-better
+    clip: mw-youd-better
+    en: "You'd better book it now. It'll sell out."
+    # katt: Ya better book it now. It'll sell out.
+    ja: "今すぐ予約したほうがいいよ。売り切れちゃうから。"
+    tiles: ["You'd", "better", "book", "it", "now", "It'll", "sell", "out"]
+    decoys: ["You", "I'll"]
+    marks: [[say, "You'd better", "ya better"]]
+    note: "You'd の d はほぼ消える。〜したほうがいい"
+    ctx: "街で、友だちがライブの話をしています"
+    why: "You'd better の d はほぼ消えて「ヤベター」。You だけに聞こえるが、better の前は You'd。It'll は「イドゥル」で、I'll とは別。"
+    scene: street
+    tags: { seed: 48, register: friend, pragmatic: literal, features: [contraction] }
+
+  - kind: tile
+    id: tile-mw-didncha
+    clip: mw-didncha
+    en: "Didn't you say you'd already booked it?"
+    # bunnie: Didncha say you'd already booked it?
+    ja: "もう予約したって言ってなかった？"
+    tiles: ["Didn't", "you", "say", "you'd", "already", "booked", "it"]
+    decoys: ["Did", "you'll"]
+    marks: [[say, "Didn't you", "didncha"]]
+    note: "Didncha＝Didn't you。驚いて確認"
+    ctx: "家で、友だちが旅行の予約を確かめています"
+    why: "Didn't you は「ディドゥンチャ」。Did なら否定の驚きがない。you'd は「ユード」と短く、you'll（ユール）ではない。already と合わせて過去の話。"
+    scene: living
+    tags: { seed: 56, register: partner, pragmatic: literal, features: [yod, contraction] }
+
+  - kind: tile
+    id: tile-mw-whats-he-been
+    clip: mw-whats-he-been
+    en: "What's he been up to lately?"
+    # daisy-mae: What's 'e been up to lately?
+    ja: "あの人、最近どうしてるの？"
+    tiles: ["What's", "he", "been", "up", "to", "lately"]
+    decoys: ["What", "being"]
+    marks: [[say, "he", "'e"]]
+    note: "'e＝he。h が落ちて「ワッツィ」"
+    ctx: "カフェで、友だちと知り合いの話をしています"
+    why: "What's he は h が落ちて「ワッツィ」とつながる。What だけでは文にならない。been は「ビン」と短く、being ではない。up to＝最近していること。"
+    scene: cafe
+    tags: { seed: 53, register: friend, pragmatic: literal, features: [weak-form] }
+
+  - kind: tile
+    id: tile-mw-ya-gonna
+    clip: mw-ya-gonna
+    en: "Are you going to watch the game tonight?"
+    # hamlet: Ya gonna watch the game tonight?
+    ja: "今夜の試合、見る？"
+    tiles: ["Are", "you", "going", "to", "watch", "the", "game", "tonight"]
+    decoys: ["your", "want"]
+    marks: [[say, "Are you going to", "ya gonna"]]
+    note: "Ya gonna＝Are you going to。Are は消える"
+    ctx: "カフェで、友だちが今夜の予定を聞いています"
+    why: "Are you は Are が消えて「ヤ」だけになり、your に聞こえやすい。going to は「ゴナ」で、want（ワナ）ではない。"
+    scene: cafe
+    tags: { seed: 50, register: friend, pragmatic: literal, features: [gonna, yod] }
+
+  - kind: tile
+    id: tile-mw-havent-got
+    clip: mw-havent-got
+    en: "I don't know where they went."
+    # frett: I dunno where they went.
+    ja: "あいつら、どこに行ったんだろう。わからないな。"
+    tiles: ["I", "don't", "know", "where", "they", "went"]
+    decoys: ["won't", "want"]
+    marks: [[say, "don't know", "dunno"]]
+    note: "dunno＝don't know。went は過去"
+    ctx: "カフェで、友だちが仲間を探しています"
+    why: "don't know は「ダノ」まで縮む。won't なら「ウォウン」。went（ウェント）と want（ワント）は母音がちがう。行ってしまった過去の話。"
+    scene: cafe
+    tags: { seed: 50, register: friend, pragmatic: literal, features: [contraction, weak-form] }
+
+  - kind: tile
+    id: tile-vm-w-shoulda-surprise
+    clip: vm-w-shoulda-surprise
+    en: "You should've seen his face when we all yelled \"Surprise!\""
+    # frett: You shoulda seen his face when we all yelled "Surprise!"
+    ja: "みんなで「サプライズ！」って叫んだときのあいつの顔、見せたかったよ。"
+    tiles: ["You", "should've", "seen", "his", "face", "when", "we", "all", "yelled", "Surprise"]
+    decoys: ["shouldn't have", "Your"]
+    marks: [[say, "should've", "shoulda"]]
+    note: "shoulda seen＝見せたかったよ"
+    ctx: "誕生日会のあと、友だちが話しています"
+    why: "should've は「シュダ」。shouldn't have なら意味が逆。You should've seen＝見せたかったよ、の決まり文句。Your ではない。"
+    scene: living
+    tags: { seed: 54, register: friend, pragmatic: humour, features: [contraction] }
+
+  - kind: tile
+    id: tile-vm-w-didja-text
+    clip: vm-w-didja-text
+    en: "Did you text him back yet, or are you making him sweat?"
+    # tammy: Didja text him back yet, or are you makin' him sweat?
+    ja: "もう彼に返信した？ それともじらしてるの？"
+    tiles: ["Did", "you", "text", "him", "back", "yet", "or", "are", "you", "making", "him", "sweat"]
+    decoys: ["Do", "them"]
+    marks: [[say, "Did you", "didja"], [drop, "making", "g"]]
+    note: "Didja＝Did you。making him sweat＝じらす"
+    ctx: "カフェで、友だちが恋の話を聞いています"
+    why: "Did you は「ディジャ」。Do なら習慣の話。him は弱く「イム」に近く、them に聞こえやすい。making him sweat＝相手をじらす。"
+    scene: cafe
+    tags: { seed: 56, register: friend, pragmatic: literal, features: [yod] }
+
+  - kind: tile
+    id: tile-vm-w-couldnta
+    clip: vm-w-couldnta
+    en: "Honestly, we couldn't have planned today without your dad's spreadsheets."
+    # goldie: Honestly, we couldn'ta planned today without your dad's spreadsheets.
+    ja: "正直、お父さんの表計算がなかったら、今日の段取りは無理だったよ。"
+    tiles: ["Honestly", "we", "couldn't", "have", "planned", "today", "without", "your", "dad's", "spreadsheets"]
+    decoys: ["could", "you"]
+    marks: [[say, "couldn't have", "couldn'ta"]]
+    note: "couldn'ta＝couldn't have。なしでは無理だった"
+    ctx: "結婚式のあと、新郎新婦が家族に話しています"
+    why: "couldn't have は「クドゥンタ」と縮む。could なら否定がなく、感謝の意味にならない。your dad's の your は弱いが、you ではない。"
+    scene: street
+    tags: { seed: 54, register: partner, pragmatic: humour, features: [contraction] }

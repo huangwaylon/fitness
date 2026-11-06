@@ -3,19 +3,22 @@
 // the checker catches what it's for; the kinds' clip ids and the clips the audio script speaks.
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { readListen } from './compile.ts';
+import { oneClipBank, readListen } from './compile.ts';
+import clipsJson from './clips.json' with { type: 'json' };
 import { BUILD_V } from './games/versions.ts';
 import { checkListen, checkListenAll, listenClipIds, listenClipItems, listenPart, notUs, type ListenItem, type ListenPart } from './listen.ts';
 import { INDEX } from './pool.ts';
 import { BANK } from './source.ts';
 
 const FILES = readListen();
+/** The voiced one-clip bank items a derived tile may name, as the compiler passes them. */
+const ONE_CLIP = oneClipBank(clipsJson);
 
 describe('listen content', () => {
   it('has files', () => expect(FILES.length).toBeGreaterThan(0));
-  for (const src of FILES) it(`${src.file} is well formed`, () => expect(checkListen(src)).toEqual([]));
+  for (const src of FILES) it(`${src.file} is well formed`, () => expect(checkListen(src, ONE_CLIP)).toEqual([]));
   it('ids are unique across files and apart from the bank clips', () => {
-    expect(checkListenAll(FILES)).toEqual([]);
+    expect(checkListenAll(FILES, ONE_CLIP)).toEqual([]);
     const [src] = FILES, id = (src.raw as { items: { id: string }[] }).items[0].id;
     expect(checkListenAll([src, { ...src, file: 'again.yaml' }]).join()).toContain(`id ${id} is also in`);
     expect(checkListenAll([src], new Map(), new Set([id])).join()).toContain('a bank or unit clip');
@@ -70,7 +73,8 @@ describe('listen content', () => {
     for (const { raw } of FILES) {
       const u = raw as { stage: number; cast?: Record<string, string>; items: ListenItem[] };
       const spoken = listenClipItems(raw);
-      expect(spoken.map((c) => c.id)).toEqual(u.items.flatMap(listenClipIds));
+      // a derived tile (`clip`) plays its bank item's clip: nothing of its own to speak
+      expect(spoken.map((c) => c.id)).toEqual(u.items.filter((it) => it.kind !== 'tile' || !it.clip).flatMap(listenClipIds));
       for (const c of spoken) {
         expect(c.lv).toBe(u.stage + 1);
         expect(c.cast).toMatch(/^us-/);
