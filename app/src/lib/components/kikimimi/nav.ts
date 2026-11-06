@@ -11,7 +11,8 @@ export type Page =
   | { k: 'settings' }
   | { k: 'path' }
   | { k: 'unit'; id: string }
-  | { k: 'zukan'; unit: string | null };
+  | { k: 'zukan'; unit: string | null }
+  | { k: 'story' };
 
 /** The deepest stack: three pages over the hub (the path's unit's ずかん over あそぶ is the one that reaches it). */
 export const MAX_DEPTH = 4;

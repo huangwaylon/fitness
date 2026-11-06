@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { lvForMode, lvOfPlace, placeOfLv, playable, sharable, shelves } from './catalog.ts';
 
-const ALL = { levels: [1, 2, 3, 4, 5, 6, 7], ladder: true, review: true };
+const ALL = { levels: [1, 2, 3, 4, 5, 6, 7], ladder: true, review: true, story: true };
 
 describe('the modes', () => {
   it('shows only what this build can play, grouped by situation, empty groups hidden', () => {
     expect(shelves(ALL).map((s) => [s.group, s.modes.map((m) => m.id)])).toEqual([
       ['quick', ['quiz', 'ladder', 'review']],
-      ['scene', ['announce']]
+      ['scene', ['announce']],
+      ['night', ['story']]
     ]);
     expect(shelves({ levels: [1, 2], ladder: false, review: false }).map((s) => [s.group, s.modes.map((m) => m.id)])).toEqual([['quick', ['quiz']]]);
   });
@@ -15,6 +16,7 @@ describe('the modes', () => {
     expect(playable('announce', { ...ALL, levels: [1, 2] })).toBe(false);
     expect(playable('quiz', { ...ALL, levels: [5] })).toBe(false);
     expect(playable('review', { ...ALL, review: false })).toBe(false);
+    expect(playable('story', { ...ALL, story: false })).toBe(false); // (no voiced serial)
   });
   it('shares the playable modes that can be played together (not おさらい)', () => {
     expect(sharable(ALL).map((m) => m.id)).toEqual(['quiz', 'ladder', 'announce']);

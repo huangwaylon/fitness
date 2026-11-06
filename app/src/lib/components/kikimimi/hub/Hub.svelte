@@ -23,7 +23,10 @@
   import { stageAt } from '#lib/kikimimi/stages.ts';
   import { isLadderGame } from '#lib/kikimimi/progress.ts';
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
-  import { finished, pickMenu, type Act, type Card } from '#lib/kikimimi/today.ts';
+  import { finished, finishedStory, isNight, pickMenu, type Act, type Card } from '#lib/kikimimi/today.ts';
+  import { nextOf, pickSerial } from '#lib/kikimimi/bedtime.ts';
+  import { SERIALS, STORY_OK, serialOf, storyProgress } from '../story/serials.svelte.ts';
+  import MorningCard from './MorningCard.svelte';
   import { currentPath, currentReport, currentUnits } from '../progress.svelte.ts';
   import { weekCard } from '#lib/kikimimi/week.ts';
   import { weekGoal } from '../prefs.ts';
@@ -65,14 +68,25 @@
   const path = $derived(currentPath());
   const stops = $derived(path.stages.flatMap((s) => s.stops));
   const cur = $derived(stops.find((s) => s.current) ?? null);
-  const ctx = $derived({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length });
+  const ctx = $derived({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length, story: STORY_OK });
+  /** After 21:00 きまぐれ is おやすみ ものがたり (today.ts isNight); by day the morning card may ask about last night's. */
+  const night = isNight(hour) && STORY_OK;
+  /** Tonight's story: the serial to go on with and its chapter (bedtime.ts pickSerial, nextOf). */
+  const tonight = $derived.by(() => {
+    const progress = storyProgress(me), unit = pickSerial(progress, SERIALS.map((s) => ({ unit: s.unit, chapters: s.chapters.length })));
+    const s = unit ? serialOf(unit) : undefined;
+    return s ? { name: s.name, ch: nextOf(progress[s.unit], s.chapters.length).ch } : null;
+  });
   const menu = $derived(
     report
       ? pickMenu({
           day: report.today, due: report.due, recheck: rechecksDue(currentUnits(), report.today)[0] ?? null,
           next: cur ? { unit: cur.id, lesson: cur.next } : null, lv,
-          whims: MODE_IDS.filter((m) => m !== 'review' && playable(m, ctx)),
-          sessions: report.games.filter((g) => g.d === report.today && finished(g.r.length)).map((g) => ({ p: g.p, u: g.u, ladder: isLadderGame(g), lv: g.lv }))
+          whims: MODE_IDS.filter((m) => m !== 'review' && m !== 'story' && playable(m, ctx)), night,
+          sessions: [
+            ...report.games.filter((g) => g.d === report.today && finished(g.r.length)).map((g) => ({ at: g.at, p: g.p, u: g.u, ladder: isLadderGame(g), lv: g.lv })),
+            ...report.stories.filter((s) => s.d === report.today && finishedStory(s.ms)).map((s) => ({ at: s.at, p: false, ladder: false, lv: 4, story: true }))
+          ].sort((a, b) => a.at - b.at)
         })
       : null
   );
@@ -100,11 +114,11 @@
         return { title: t('kiki.mode.quiz'), line: `${p ? `${t(`kiki.stage.${p.id}`)} ${'★'.repeat(p.stars)}・` : ''}${t('kiki.chip.qs', { n: 8 })}・${t('kiki.chip.mins', { n: 4 })}` };
       }
       case 'mode': return { title: t(`kiki.mode.${a.m}`), line: t(`kiki.modeSub.${a.m}`) };
-      case 'story': return { title: t('kiki.mode.story'), line: t('kiki.modeSub.story') };
+      case 'story': return { title: t('kiki.mode.story'), line: tonight ? `${tonight.name}・${t('kiki.story.chapter', { n: tonight.ch })}` : t('kiki.modeSub.story') };
     }
   }
   const others = $derived(here.filter((w) => w !== me));
-  const modes = $derived(shelves({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length }).reduce((n, s) => n + s.modes.length, 0));
+  const modes = $derived(shelves(ctx).reduce((n, s) => n + s.modes.length, 0));
   const lines = $derived<Record<Tile, string>>({
     asobu: t('kiki.tile.asobuLine', { n: modes }),
     together: others.length && week.view ? t('kiki.tile.togetherHere', { name: villagerNameOf(week.view, others[0]) }) : t('kiki.tile.togetherAlone'),
@@ -147,6 +161,7 @@
         </li>
       {/each}
     </ol>
+    {#if !night}<MorningCard {me} today={report!.today} />{/if}
     <p class="ok" data-kiki-ok-line>{t(menu.all ? 'kiki.menu.all' : menu.ok ? 'kiki.menu.ok' : 'kiki.menu.hint')}</p>
   {/if}
   <nav class="tiles" aria-label={t('kiki.title')}>

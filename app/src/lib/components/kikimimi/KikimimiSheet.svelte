@@ -43,6 +43,8 @@
   import { cue } from '#lib/sound/cues.ts';
   import { t } from '#lib/i18n/index.ts';
   import { hook, hooksOn } from '../island/devHooks.ts';
+  import { nextOf, pickSerial } from '#lib/kikimimi/bedtime.ts';
+  import { SERIALS, serialOf, storyProgress } from './story/serials.svelte.ts';
 
   let { open = $bindable(), join = null }: { open: boolean; join?: string | null } = $props();
 
@@ -64,8 +66,10 @@
   const hosting = $derived(inLobby && !lesson && !!v?.amHost);
   /** Another's lobby I joined: みんなで. */
   const guest = $derived(inLobby && !lesson && !v?.amHost);
+  /** おやすみ ものがたり playing (StoryFrame, a game page over the stack: no ‹): its serial, chapter and segment. */
+  let story = $state<{ unit: string; ch: number; seg: number } | null>(null);
   /** The hub shows: my lobby with nothing pushed, or no game of mine yet (an invite waiting). */
-  const atHub = $derived(!!v && !v.notice && ((hosting && !page) || v.phase === 'idle'));
+  const atHub = $derived(!story && !!v && !v.notice && ((hosting && !page) || v.phase === 'idle'));
   let pathFilter = $state<Filter>('all');
   const path = $derived(inLobby ? currentPath(pathFilter) : null);
   const pageTitle = (p: Page): string => {
@@ -77,11 +81,12 @@
       case 'settings': return t('kiki.set.title');
       case 'path': return t('kiki.path.title');
       case 'zukan': return t('kiki.zukan.title');
+      case 'story': return t('kiki.mode.story');
       case 'unit': return path?.stages.flatMap((s) => s.stops).find((s) => s.id === p.id)?.name ?? t('kiki.path.title');
     }
   };
   const title = $derived(
-    v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
+    story ? t('kiki.mode.story') : v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
       : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`))
       : hosting && page ? pageTitle(page) : guest ? t('kiki.tile.together') : t('kiki.title')
   );
@@ -100,7 +105,7 @@
       pages = pop(pages);
     }
   }
-  const canBack = $derived(!!v && !v.notice && inLobby && (!!lesson || guest || (hosting && !!page)));
+  const canBack = $derived(!story && !!v && !v.notice && inLobby && (!!lesson || guest || (hosting && !!page)));
   /** The 30-day rechecks (solo: in my lobby kept alone). */
   const due = $derived(hosting && page?.k === 'path' && v?.local ? rechecksDue(currentUnits(), currentReport()?.today ?? '') : []);
 
@@ -150,6 +155,7 @@
       game = null;
       asking = false;
       pages = [];
+      story = null;
     };
   });
   // The voice session the opening tap began ends as the sheet closes (a game or not), and the packs held go.
@@ -190,7 +196,7 @@
   /** ✕: mid-game asks first, and so does my lobby with others in it; otherwise closes (my lobby is cancelled for
    *  everyone: the session's leave). */
   function requestClose() {
-    if (mid || (inLobby && v?.amHost && !v.local && v.players.length > 1)) {
+    if (!story && (mid || (inLobby && v?.amHost && !v.local && v.players.length > 1))) {
       cue('tick');
       asking = mid ? 'quit' : 'close';
     } else {
@@ -200,6 +206,7 @@
   }
   /** A backdrop tap or Esc: mid-game asks; on a page it pops; at the hub it closes. */
   const dismiss = (): boolean => {
+    if (story) return false; // (a game page: a backdrop tap or Esc does nothing; ✕ closes)
     if (mid) {
       asking = 'quit';
       return false;
@@ -222,7 +229,8 @@
   const act = new KikiActions(() => game, {
     close: () => (open = false),
     pages: () => pages.length,
-    setPages: (p) => (pages = p)
+    setPages: (p) => (pages = p),
+    story: () => playTonight()
   });
   const hostName = (w: 'A' | 'B' | 'G') => (week.view ? villagerNameOf(week.view, w) : '');
   /** The e2e's `?wire=quiz`: this phone sends as an 8b one (the dual stack). */
@@ -249,6 +257,20 @@
     game?.join(g);
     pages = inviteStack();
   }
+  /** A bedtime chapter played at once (StoryFrame; from an invite's idle hub: my own lobby first, for after it). */
+  function playStory(unit: string, ch: number, seg = 0) {
+    if (v?.phase === 'idle') act.startOwn();
+    story = { unit, ch, seg };
+  }
+  /** The night's きまぐれ card: the serial to go on with, at its next chapter (つづき: its segment). */
+  function playTonight() {
+    const progress = me ? storyProgress(me) : {};
+    const unit = pickSerial(progress, SERIALS.map((s) => ({ unit: s.unit, chapters: s.chapters.length })));
+    const s = unit ? serialOf(unit) : undefined;
+    if (!s) return;
+    const at = nextOf(progress[s.unit], s.chapters.length);
+    playStory(s.unit, at.ch, at.seg);
+  }
   function tile(k: Tile) {
     enter(k === 'asobu' ? { k: 'asobu' } : k === 'together' ? { k: 'lobby' } : k === 'zukan' ? { k: 'zukan', unit: null } : { k: 'record' });
   }
@@ -266,10 +288,17 @@
 
 <Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss}>
   <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub ? gear : null} /></div>
-  <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={atHub ? 'hub' : hosting && page ? page.k : guest ? 'lobby' : undefined}
+  <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? 'hub' : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
     data-kiki-ja={ja} data-kiki-right={right || undefined}>
     {#if game && v}
-      {#if v.notice}
+      {#if story}
+        {#await import('./story/StoryFrame.svelte') then { default: StoryFrame }}
+          {#key `${story.unit}:${story.ch}`}
+            <StoryFrame me={game.me} unit={story.unit} ch={story.ch} seg={story.seg} onclose={() => (open = false)}
+              onlist={() => ((story = null), (pages = [{ k: 'story' }]))} />
+          {/key}
+        {/await}
+      {:else if v.notice}
         <div class="center" data-kiki-notice={v.notice}>
           <Host pose="bow" size={96} />
           <p class="say">{t(`kiki.notice.${v.notice}`)}</p>
@@ -282,7 +311,7 @@
       {:else if hosting && page}
         {#if page.k === 'asobu'}
           {#await import('./asobu/Asobu.svelte') then { default: Asobu }}
-            <Asobu {path} onpath={() => enter({ k: 'path' })} onmode={(m) => enter({ k: 'mode', m })} />
+            <Asobu {path} onpath={() => enter({ k: 'path' })} onmode={(m) => enter(m === 'story' ? { k: 'story' } : { k: 'mode', m })} />
           {/await}
         {:else if page.k === 'mode'}
           {#await import('./mode/ModeDetail.svelte') then { default: ModeDetail }}
@@ -307,6 +336,10 @@
         {:else if page.k === 'unit'}
           {#await import('./path/UnitPage.svelte') then { default: UnitPage }}
             {#key page.id}<UnitPage id={page.id} onlesson={act.startLesson} onzukan={(unit) => enter({ k: 'zukan', unit })} />{/key}
+          {/await}
+        {:else if page.k === 'story'}
+          {#await import('./story/StoryList.svelte') then { default: StoryList }}
+            <StoryList me={game.me} onplay={playStory} />
           {/await}
         {:else if page.k === 'zukan'}
           {#await import('./path/PhraseZukan.svelte') then { default: PhraseZukan }}
@@ -356,6 +389,15 @@
 </Sheet>
 
 <style>
+  /* おやすみ ものがたり: the night palette (tokens.css data-tod night) on the whole sheet, whatever the island's hour,
+     its paper a step deeper (the screen kept dim) */
+  :global(dialog:has(> .inner > .kk-body[data-kiki-night])) {
+    --bg: #2E3A72; --surface: #2E3A72; --lip: #232D5E; --card: #3A4886;
+    --ctl: #3A4886; --ctl-off: #2A3468; --edge: #B9C3F0;
+    --text: #FFF6E0; --text-soft: #C9D0EE; --focus: #FFF6E0; --leaf-text: #9EE6A6; --coral-text: #FFD0C6;
+    --scrim: rgba(20, 24, 56, .5); --hl: rgba(255, 246, 224, .12);
+    color-scheme: dark;
+  }
   .titlebar { flex: none; position: relative; z-index: 2; margin-bottom: 4px; }
   .titlebar::after {
     content: ''; position: absolute; left: -8px; right: -8px; top: 100%; height: 14px; pointer-events: none;
