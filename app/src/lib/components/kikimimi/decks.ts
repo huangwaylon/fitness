@@ -7,7 +7,7 @@ import { deck } from '#lib/kikimimi/deck.ts';
 import { ladderDeck } from '#lib/kikimimi/ladder.ts';
 import { lessonDeck } from '#lib/kikimimi/lesson.ts';
 import { itemDur } from '#lib/kikimimi/clips.ts';
-import { ladders, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
+import { gameCvOf, ladders, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
 import type { Item, Level } from '#lib/kikimimi/bank.ts';
 import { Decks, gameKey } from '#lib/kikimimi/round/decks.ts';
 import { registry } from '#lib/kikimimi/round/registry.ts';
@@ -75,7 +75,13 @@ function roundsOf(items: readonly Item[]): readonly QuizRound[] {
   return rs;
 }
 
-const source: QuizSource = { rounds: (gm, seed, o, u) => roundsOf(itemsOf({ gm, seed, o, u })) };
+const source: QuizSource = {
+  rounds: (gm, seed, o, u) => roundsOf(itemsOf({ gm, seed, o, u })),
+  cv: (gm, o, u) => {
+    const c = chunksOf(gm, o, u)[0];
+    return c === undefined ? undefined : gameCvOf(gm, c);
+  }
+};
 
 /** The games this phone plays: the quiz, スピード はしご and a unit's lesson, over these decks. */
 export const GAMES = registry([quizGame(source), ladderGame(source), lessonGame(source)]);

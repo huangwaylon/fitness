@@ -7,6 +7,8 @@ import type { RoundNotice, RoundView } from '../../round/session.ts';
 import type { GameId, RoundPhase } from '../../round/types.ts';
 import type { Team } from '../../round/tally.ts';
 import { quizOpts } from './def.ts';
+import { lessonOpts } from '../lesson/def.ts';
+import type { Lesson } from '../../lesson.ts';
 
 export type QuizPhase = RoundPhase;
 
@@ -33,6 +35,12 @@ interface QuizPlayer {
 interface QuizInvite {
   g: string;
   host: Who;
+  /** Its game (quiz, ladder, lesson) and a lesson's unit and lesson. */
+  gm: GameId;
+  u?: string;
+  lesson?: Lesson;
+  /** This build can't play it: 「アプリを こうしんしてね」 (さんか refused). */
+  blocked?: 'update';
   lv: QuizLv;
   /** スピード はしご. */
   ladder: boolean;
@@ -80,6 +88,7 @@ export interface QuizView {
   canNext: boolean;
   canReady: boolean;
   ready: { n: number; of: number };
+  roles: Partial<Record<Who, number>>;
   invite: QuizInvite | null;
   notice: RoundNotice | null;
 }
@@ -89,6 +98,7 @@ export function quizView(v: RoundView): QuizView {
   const q = quizOpts.decode(v.o);
   const { players, answers, invite, ...rest } = v;
   const inv = invite && quizOpts.decode(invite.o);
+  const lesson = invite?.gm === 'lesson' && !invite.blocked ? lessonOpts.decode(invite.o)?.lesson : undefined;
   return {
     ...rest,
     lv: q?.lv ?? 1,
@@ -96,6 +106,9 @@ export function quizView(v: RoundView): QuizView {
     ladder: v.gm === 'ladder',
     players: players.map(({ pick, ...p }) => ({ ...p, ...(pick && { pick: { k: pick.a as number, ok: pick.ok } }) })),
     answers: answers.map((a) => a && { k: a.a as number, rp: a.rp > 0, t: a.t }),
-    invite: invite && { g: invite.g, host: invite.host, lv: inv?.lv ?? 1, ladder: invite.gm === 'ladder', same: invite.same, started: invite.started }
+    invite: invite && {
+      g: invite.g, host: invite.host, gm: invite.gm, ...(invite.u !== undefined && { u: invite.u }), ...(lesson && { lesson }), ...(invite.blocked && { blocked: invite.blocked }),
+      lv: inv?.lv ?? 1, ladder: invite.gm === 'ladder', same: invite.same, started: invite.started
+    }
   };
 }

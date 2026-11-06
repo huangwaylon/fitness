@@ -7,13 +7,22 @@ import type { PlayWire, QuizLv, QuizWire, Relayed, Who } from '../../contract/li
 import { isLadder, timerIndex, versus, withLadder, withTimer, withVersus, TIMERS } from '../seed.ts';
 import { F_SAME, F_VS, type AnswerValue, type GameId } from './types.ts';
 
-/** 8c's switch: the quiz goes out as `play`. Off in 8b (the relay knows `play`, but phones before 8b don't hear it). */
-export const SEND_PLAY = false;
+/** 8c's switch: games go out as `play` (8b: off, `quiz` only). */
+export const SEND_PLAY = true;
+/** The quiz family (the quiz, スピード はしご) on `play` too; off: still on `quiz` (a guarded rollout while a phone from
+ *  before 8b, which hears only `quiz`, may be about), and only what `quiz` can't carry (a co-op lesson) on `play`. */
+export const QUIZ_ON_PLAY = false;
+
+/** How a phone sends: 'quiz' (8b: the `quiz` wire only; the e2e's `?wire=quiz`), 'guarded' (the quiz family on `quiz`,
+ *  every other game on `play`), 'play' (every game on `play`). */
+export type WireMode = 'quiz' | 'guarded' | 'play';
+export const WIRE: WireMode = !SEND_PLAY ? 'quiz' : QUIZ_ON_PLAY ? 'play' : 'guarded';
 
 /** A session's op (sent, before the wire's kind): every game's, `play`'s shape. */
 export type RoundOut =
   | { g: string; gm: GameId; op: 'open'; seed: number; f: number; o: readonly number[]; u?: string; cv?: string }
-  | { g: string; gm: GameId; op: 'join' | 'leave' | 'end' }
+  | { g: string; gm: GameId; op: 'join'; tr?: number }
+  | { g: string; gm: GameId; op: 'leave' | 'end' }
   | { g: string; gm: GameId; op: 'go'; at: number; pl?: number }
   | { g: string; gm: GameId; op: 'a'; i: number; k: AnswerValue; rp: number; s: number }
   | { g: string; gm: GameId; op: 'skip'; i: number; at: number };
@@ -93,6 +102,7 @@ export function playIn(m: PlayIn): RoundIn | null {
     case 'skip':
       return { g, gm, op: 'skip', i: m.i, at: m.at, who, t };
     case 'join':
+      return { g, gm, op: 'join', ...(m.tr !== undefined && { tr: m.tr }), who, t };
     case 'leave':
     case 'end':
       return { g, gm, op: m.op, who, t };
@@ -112,6 +122,8 @@ export function playOut(m: RoundOut): PlayOut | null {
       return m.pl === undefined ? null : { kind: 'play', g: m.g, gm: m.gm, op: 'go', at: m.at, pl: m.pl };
     case 'skip':
       return { kind: 'play', g: m.g, gm: m.gm, op: 'skip', i: m.i, at: m.at };
+    case 'join':
+      return { kind: 'play', g: m.g, gm: m.gm, op: 'join', ...(m.tr !== undefined && { tr: m.tr }) };
     default:
       return { kind: 'play', g: m.g, gm: m.gm, op: m.op };
   }
@@ -120,5 +132,10 @@ export function playOut(m: RoundOut): PlayOut | null {
 /** A game intent heard (either wire) as the session's op, or null. */
 export const gameIn = (m: GameIn): RoundIn | null => (m.kind === 'quiz' ? quizIn(m) : playIn(m));
 
-/** What goes out for a session's op: `quiz` (8b), `play` from 8c (SEND_PLAY) where it can; null: nothing. */
-export const toWire = (m: RoundOut, sendPlay = SEND_PLAY): QuizOut | PlayOut | null => (sendPlay ? (playOut(m) ?? quizOut(m)) : quizOut(m));
+/** What goes out for a session's op, by the wire mode (WIRE): `play` where it can ('play'; 'guarded': a game the `quiz`
+ *  wire can't carry), else `quiz` ('quiz': always); null: nothing. */
+export function toWire(m: RoundOut, mode: WireMode = WIRE): QuizOut | PlayOut | null {
+  if (mode === 'quiz') return quizOut(m);
+  if (mode === 'play' || !ON_QUIZ.includes(m.gm) || (m.op === 'open' && m.u !== undefined)) return playOut(m) ?? quizOut(m);
+  return quizOut(m);
+}

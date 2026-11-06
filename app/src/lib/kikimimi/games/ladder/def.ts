@@ -18,6 +18,7 @@ export function ladderGame(src: QuizSource): GameDef<QuizOpts> {
     modes: { solo: true, coop: true, vs: true, same: true },
     opts: quizOpts,
     seedBits: quizSeedBits(true),
-    deck: (seed, o, ctx) => quizDeck(() => src.rounds('ladder', seed, ctx.enc, ctx.u), o, ctx.w, ladderScore)
+    deck: (seed, o, ctx) => quizDeck(() => src.rounds('ladder', seed, ctx.enc, ctx.u), o, ctx.w, ladderScore),
+    cv: (o, u) => src.cv?.('ladder', quizOpts.encode(o), u)
   };
 }

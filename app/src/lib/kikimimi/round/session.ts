@@ -43,6 +43,21 @@ interface RoundInvite {
   same: boolean;
   /** It's already going (さんか joins at the next round). */
   started: boolean;
+  /** This build can't play it (its content version isn't mine, or a game it doesn't have): 「アプリを こうしんしてね」,
+   *  and さんか refused. */
+  blocked?: 'update';
+}
+
+/** An invite this build can't play (a `play` open whose cv isn't mine): offered as an update, never joined. */
+interface Blocked {
+  g: string;
+  host: Who;
+  gm: GameId;
+  o: readonly number[];
+  u?: string;
+  f: number;
+  opened: number;
+  started: boolean;
 }
 
 /** Why my game went away: the host cancelled it, the host left the lobby, or it was never started. */
@@ -99,6 +114,9 @@ export interface RoundView {
   canReady: boolean;
   /** In a reveal: how many of the others here (not the host) have tapped よみおわった, of how many (the host's つぎへ). */
   ready: { n: number; of: number };
+  /** Each player's role once it's going (framework §3.1): their place among the players at `go` (`pl`), modulo the
+   *  game's roles; a late joiner's, their place among those and them. The same on every phone. */
+  roles: Partial<Record<Who, number>>;
   invite: RoundInvite | null;
   notice: RoundNotice | null;
 }
@@ -154,6 +172,10 @@ export class RoundSession {
   private early = new Map<string, Set<Who>>();
   /** Games I left: their later messages are ignored. */
   private left = new Set<string>();
+  /** Invites this build can't play (a cv not mine): offered as an update. */
+  private blocked = new Map<string, Blocked>();
+  /** Each game's decks at other tiers than the one dealt (GameDef.tier), by tier. */
+  private tierDecks = new WeakMap<Game, Map<number, RoundDeck>>();
   private notice: RoundNotice | null = null;
 
   constructor(o: RoundSessionOptions) {
@@ -172,11 +194,22 @@ export class RoundSession {
     if (m.who === this.me || this.left.has(m.g)) return [];
     this.prune(now);
     const gm = this.games.get(m.g);
+    const bl = this.blocked.get(m.g);
+    if (bl && m.who === bl.host && m.op !== 'open') {
+      if (m.op === 'end' || m.op === 'leave') this.blocked.delete(m.g);
+      else if (m.op === 'go' || m.op === 'skip') bl.started = true;
+    }
     switch (m.op) {
       case 'open': {
-        // (a game this build doesn't have, or options it can't read: not offered; 8c's cv check offers an update)
-        const def = this.defs(m.gm);
-        if (!def || !def.opts.decode(m.o)) return [];
+        // a `play` open whose content isn't this build's (its cv, or a game or options it doesn't have): an update
+        // offered; a `quiz` one (no cv) of a game or options this build can't read: not offered
+        const def = this.defs(m.gm), opts = def?.opts.decode(m.o);
+        if (m.cv !== undefined && (!def || !opts || def.cv?.(opts, m.u) !== m.cv)) {
+          this.block(m, gm, now);
+          return [];
+        }
+        if (!def || !opts) return [];
+        this.blocked.delete(m.g);
         const set: Setup = { gm: m.gm, seed: m.seed, o: m.o, f: m.f, ...(m.u !== undefined && { u: m.u }) };
         if (gm) {
           // the host's re-send, or its lobby's game, options or おなじへや changed
@@ -185,6 +218,7 @@ export class RoundSession {
         }
         // a host has one lobby: an older one of theirs not started goes
         for (const o of this.games.values()) if (o.host === m.who && o.goAt === undefined) this.drop(o, 'cancelled');
+        for (const b of this.blocked.values()) if (b.host === m.who && !b.started) this.blocked.delete(b.g);
         const fresh = this.game(m.g, m.who, set, now);
         if (!fresh) return [];
         for (const w of this.early.get(m.g) ?? []) enter(fresh, w, now);
@@ -193,6 +227,7 @@ export class RoundSession {
       }
       case 'join':
         if (gm) {
+          if (m.tr !== undefined && gm.def.tier) this.setTier(gm, m.who, m.tr);
           enter(gm, m.who, now);
           // a phone joining (or back): my answer and よみおわった for the round under way, which it may have missed
           return this.resend(gm, now);
@@ -268,7 +303,7 @@ export class RoundSession {
     const gm = this.mine();
     if (!gm || this.over(gm, now)) return out;
     if (back.length && !gm.local) {
-      if (gm.host !== this.me) out.push({ g: gm.g, gm: gm.gm, op: 'join' });
+      if (gm.host !== this.me) out.push(this.joining(gm));
       else {
         out.push(this.opening(gm));
         if (gm.goAt !== undefined) out.push(this.going(gm, gm.goAt), this.beacon(gm, now));
@@ -351,17 +386,30 @@ export class RoundSession {
     return this.send(gm, this.opening(gm));
   }
 
-  /** Join the invite (さんか; a game already going: from its next round). Leaves the game I was in. */
-  join(now: number, g?: string): RoundOut[] {
+  /** Join the invite (さんか; a game already going: from its next round), at my tier `tr` for its choices (a lesson's:
+   *  GameDef.tier). Leaves the game I was in. One this build can't play (blocked) is refused. */
+  join(now: number, g?: string, tr?: number): RoundOut[] {
     this.prune(now);
-    const gm = g !== undefined ? this.games.get(g) : this.offer(now);
+    const n = g === undefined ? this.newest(now) : undefined;
+    const gm = g !== undefined ? this.games.get(g) : n && 'def' in n ? n : undefined;
     if (!gm || gm.joined.has(this.me) || this.over(gm, now)) return [];
     const out = this.leave(now);
     this.notice = null;
     enter(gm, this.me, now);
     gm.inAt = now;
-    out.push({ g: gm.g, gm: gm.gm, op: 'join' });
+    if (tr !== undefined && gm.def.tier) this.setTier(gm, this.me, tr);
+    out.push(this.joining(gm));
     return out;
+  }
+
+  /** My tier for my game's choices (a lesson's, GameDef.tier: the UI's pick for its unit), sent with a `join` again:
+   *  a player's (the host's is in its options), before it starts. */
+  tier(tr: number, now: number): RoundOut[] {
+    this.prune(now);
+    const gm = this.mine();
+    if (!gm || gm.host === this.me || !gm.def.tier || gm.goAt !== undefined || gm.tiers.get(this.me) === tr) return [];
+    this.setTier(gm, this.me, tr);
+    return this.send(gm, this.joining(gm));
   }
 
   /** Leave my game (✕): the host's lobby is cancelled (`end`); a game going goes on for the others, the host's too. */
@@ -398,7 +446,7 @@ export class RoundSession {
     const gm = this.mine();
     if (!gm) return [];
     const at = this.at(gm, now);
-    if (at.phase !== 'answer' || at.out || !gm.deck.valid(at.i, a)) return [];
+    if (at.phase !== 'answer' || at.out || !gm.deckFor(this.me).valid(at.i, a)) return [];
     const mine = gm.answers.get(this.me) ?? new Map<number, RoundAnswer>();
     gm.answers.set(this.me, mine);
     if (mine.has(at.i)) return [];
@@ -450,11 +498,14 @@ export class RoundSession {
     const none: RoundView = {
       phase: 'idle', g: null, host: null, amHost: false, local: false, gm: null, o: [], same: false, seed: 0, vs: false, speaks: true, players: [],
       i: -1, n: 0, from: 0, until: Infinity, playAt: 0, playEnd: 0, limit: 0, out: false, answers: [], had: [], scores: {}, team: { right: 0, all: 0, done: 0 }, teamFirst: 0,
-      rightNow: 0, canNext: false, canReady: false, ready: { n: 0, of: 0 }, invite: null, notice: this.notice
+      rightNow: 0, canNext: false, canReady: false, ready: { n: 0, of: 0 }, roles: {}, invite: null, notice: this.notice
     };
     if (!gm) {
-      const o = this.offer(now);
-      return o ? { ...none, invite: { g: o.g, host: o.host, gm: o.gm, o: o.o, ...(o.u !== undefined && { u: o.u }), same: (o.f & F_SAME) !== 0, started: o.goAt !== undefined } } : none;
+      const o = this.newest(now);
+      if (!o) return none;
+      const b = 'def' in o ? null : o;
+      const started = b ? b.started : (o as Game).goAt !== undefined;
+      return { ...none, invite: { g: o.g, host: o.host, gm: o.gm, o: o.o, ...(o.u !== undefined && { u: o.u }), same: (o.f & F_SAME) !== 0, started, ...(b && { blocked: 'update' as const }) } };
     }
     const at = this.at(gm, now);
     const scores: Partial<Record<Who, number>> = {};
@@ -474,7 +525,7 @@ export class RoundSession {
     const upto = at.phase === 'results' ? gm.n : reveal ? at.i + 1 : Math.max(0, at.i);
     const same = (gm.f & F_SAME) !== 0;
     return {
-      ...none, phase: at.phase, g: gm.g, host: gm.host, amHost: gm.host === this.me, local: !!gm.local, gm: gm.gm, o: gm.o, ...(gm.u !== undefined && { u: gm.u }),
+      ...none, phase: at.phase, g: gm.g, host: gm.host, amHost: gm.host === this.me, local: !!gm.local, gm: gm.gm, o: this.mineO(gm), ...(gm.u !== undefined && { u: gm.u }),
       same, seed: gm.seed, vs: (gm.f & F_VS) !== 0, team: team(gm, upto, this.w), teamFirst: teamFirst(gm, upto),
       rightNow: at.phase === 'reveal' ? players.filter((p) => p.pick?.ok).length : 0,
       speaks: !same || gm.host === this.me, players, i: at.i, n: gm.n, from: at.from, until: at.until, playAt: at.playAt, playEnd: at.playEnd,
@@ -482,7 +533,7 @@ export class RoundSession {
       had: Array.from({ length: gm.n }, (_, i) => !!mine?.has(i) || this.times(gm, i).playAt >= gm.inAt), scores,
       canNext: at.phase === 'reveal' && (gm.host === this.me || gone),
       canReady: at.phase === 'reveal' && gm.host !== this.me && !gone && !gm.deck.timing(at.i).auto,
-      ready: { n: others.filter((p) => p.ready).length, of: others.length }
+      ready: { n: others.filter((p) => p.ready).length, of: others.length }, roles: this.roles(gm)
     };
   }
 
@@ -494,7 +545,7 @@ export class RoundSession {
     if (!made) return null;
     const gm: Game = {
       ...s, ...made, g, host, opened: now, joined: new Set([host]), played: new Set([host]), since: new Map([[host, -Infinity]]), starts: new Map(), inAt: now,
-      answers: new Map(), totals: new Map(), allIn: new Map(), ready: new Map()
+      answers: new Map(), totals: new Map(), allIn: new Map(), ready: new Map(), tiers: new Map(), deckFor: (w) => this.deckOf(gm, w)
     };
     this.games.set(g, gm);
     return gm;
@@ -513,6 +564,7 @@ export class RoundSession {
       const made = this.dealt(s);
       if (!made) return;
       Object.assign(gm, made);
+      this.tierDecks.delete(gm);
     }
     Object.assign(gm, { gm: s.gm, seed: s.seed, o: s.o, f: s.f, u: s.u });
   }
@@ -531,6 +583,27 @@ export class RoundSession {
     return best;
   }
 
+  /** The newest invite: a game I can join (offer), or a newer one this build can't play (blocked). */
+  private newest(now: number): Game | Blocked | undefined {
+    const o = this.offer(now);
+    let b: Blocked | undefined;
+    for (const x of this.blocked.values()) if (this.here.has(x.host) && (!b || x.opened >= b.opened)) b = x;
+    return b && (!o || b.opened >= o.opened) ? b : o;
+  }
+
+  /** A `play` open this build can't play: kept as an update offered (its host's other lobby not started goes, and so
+   *  does its game here if it was one I could: the host changed it to one I can't). */
+  private block(m: Extract<RoundIn, { op: 'open' }>, gm: Game | undefined, now: number): void {
+    if (gm) {
+      if (gm.host !== m.who || gm.goAt !== undefined) return;
+      this.games.delete(gm.g);
+    }
+    for (const o of this.games.values()) if (o.host === m.who && o.goAt === undefined) this.drop(o, 'cancelled');
+    for (const b of this.blocked.values()) if (b.host === m.who && b.g !== m.g && !b.started) this.blocked.delete(b.g);
+    const was = this.blocked.get(m.g);
+    this.blocked.set(m.g, { g: m.g, host: m.who, gm: m.gm, o: m.o, ...(m.u !== undefined && { u: m.u }), f: m.f, opened: was?.opened ?? now, started: was?.started ?? false });
+  }
+
   private drop(gm: Game, why: RoundNotice): void {
     this.games.delete(gm.g);
     if (gm.joined.has(this.me)) this.notice = why;
@@ -544,6 +617,8 @@ export class RoundSession {
         else if (now - gm.opened >= this.w.openTtl) this.drop(gm, 'stale');
       } else if (!gm.joined.has(this.me) && this.over(gm, now)) this.games.delete(gm.g);
     }
+    for (const b of [...this.blocked.values()])
+      if (now - b.opened >= this.w.openTtl || (!this.here.has(b.host) && now - (this.away.get(b.host) ?? b.opened) >= this.w.hostGrace)) this.blocked.delete(b.g);
   }
 
   /** The host has really gone: it left, or its phone has been away past the grace (a moment's reconnect isn't). */
@@ -590,8 +665,67 @@ export class RoundSession {
     return { g: gm.g, gm: gm.gm, op: 'skip', i: p.i, at: p.at };
   }
 
+  /** My lobby's `open`, with its content version (GameDef.cv: `play` needs one). */
   private opening(gm: Game): RoundOut {
-    return { g: gm.g, gm: gm.gm, op: 'open', seed: gm.seed, f: gm.f, o: gm.o, ...(gm.u !== undefined && { u: gm.u }) };
+    const opts = gm.def.opts.decode(gm.o), cv = opts ? gm.def.cv?.(opts, gm.u) : undefined;
+    return { g: gm.g, gm: gm.gm, op: 'open', seed: gm.seed, f: gm.f, o: gm.o, ...(gm.u !== undefined && { u: gm.u }), ...(cv !== undefined && { cv }) };
+  }
+
+  /** My `join`, with my tier when the game has tiers. */
+  private joining(gm: Game): RoundOut {
+    const tr = gm.def.tier ? gm.tiers.get(this.me) : undefined;
+    return { g: gm.g, gm: gm.gm, op: 'join', ...(tr !== undefined && { tr }) };
+  }
+
+  /** A player's tier, as heard or picked. */
+  private setTier(gm: Game, w: Who, tr: number): void {
+    if (Number.isInteger(tr) && tr >= 0) gm.tiers.set(w, tr);
+  }
+
+  /** A player's tier when it isn't the dealt deck's (the host's own is in the options), with the options decoded. */
+  private tierOf(gm: Game, w: Who): { opts: unknown; tr: number } | undefined {
+    const t = gm.def.tier, tr = w === gm.host ? undefined : gm.tiers.get(w);
+    if (!t || tr === undefined) return undefined;
+    const opts = gm.def.opts.decode(gm.o);
+    return opts !== null && t.of(opts) !== tr ? { opts, tr } : undefined;
+  }
+
+  /** A player's deck: at their own tier (the same rounds and timing, their choices), built once a tier. */
+  private deckOf(gm: Game, w: Who): RoundDeck {
+    const x = this.tierOf(gm, w);
+    if (!x) return gm.deck;
+    let by = this.tierDecks.get(gm);
+    if (!by) this.tierDecks.set(gm, (by = new Map()));
+    let d = by.get(x.tr);
+    if (!d) {
+      const o = gm.def.tier!.with(x.opts, x.tr);
+      d = gm.def.deck(gm.seed, o, { u: gm.u, w: this.w, enc: gm.def.opts.encode(o) });
+      by.set(x.tr, d);
+    }
+    return d;
+  }
+
+  /** My options as I play them: the game's, at my tier. */
+  private mineO(gm: Game): readonly number[] {
+    const x = this.tierOf(gm, this.me);
+    return x ? gm.def.opts.encode(gm.def.tier!.with(x.opts, x.tr)) : gm.o;
+  }
+
+  /** Each joined player's role (framework §3.1) once the game is going: their place among the players at `go` (`pl`;
+   *  a `quiz` go has none: those in it by then), modulo the game's roles (default: one each); a late joiner's, their
+   *  place among those and them. */
+  private roles(gm: Game): Partial<Record<Who, number>> {
+    if (gm.goAt === undefined) return {};
+    const goAt = gm.goAt, pl = gm.pl;
+    const at = ORDER.filter((w, k) => (pl !== undefined ? (pl & (1 << k)) !== 0 : gm.played.has(w) && (gm.since.get(w) ?? Infinity) <= goAt));
+    const n = gm.def.roles ?? Math.max(1, at.length);
+    const out: Partial<Record<Who, number>> = {};
+    for (const w of ORDER) {
+      if (!gm.joined.has(w)) continue;
+      const k = at.indexOf(w);
+      out[w] = (k >= 0 ? k : ORDER.filter((x) => at.includes(x) || x === w).indexOf(w)) % n;
+    }
+    return out;
   }
 
   /** `go` at `at`, with the players in it at the start (`pl`, the `play` wire's: 8c's roles). */

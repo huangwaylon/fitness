@@ -18,6 +18,8 @@ export interface QuizOpts {
  *  (a deck settled in the lobby stands in for the one dealt: round/decks.ts). */
 export interface QuizSource {
   rounds(gm: GameId, seed: number, enc: readonly number[], u?: string): readonly QuizRound[];
+  /** The content version of a game's deck for these options and unit (levels/index.json's `games`: compile.ts). */
+  cv?(gm: GameId, enc: readonly number[], u?: string): string | undefined;
 }
 
 const isLv = (x: unknown): x is QuizLv => QUIZ_LVS.includes(x as QuizLv);
@@ -75,6 +77,7 @@ export function quizGame(src: QuizSource): GameDef<QuizOpts> {
     modes: { solo: true, coop: true, vs: true, same: true },
     opts: quizOpts,
     seedBits: quizSeedBits(false),
-    deck: (seed, o, ctx) => quizDeck(() => src.rounds('quiz', seed, ctx.enc, ctx.u), o, ctx.w)
+    deck: (seed, o, ctx) => quizDeck(() => src.rounds('quiz', seed, ctx.enc, ctx.u), o, ctx.w),
+    cv: (o, u) => src.cv?.('quiz', quizOpts.encode(o), u)
   };
 }

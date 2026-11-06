@@ -15,18 +15,19 @@ export interface Team {
 }
 
 /** Whether a player's answer to round i is right. */
-export function rightOf(gm: Pick<Game, 'answers' | 'deck'>, w: Who, i: number): boolean {
+export function rightOf(gm: Pick<Game, 'answers' | 'deckFor'>, w: Who, i: number): boolean {
   const a = gm.answers.get(w)?.get(i);
-  return !!a && gm.deck.grade(i, a.a, a.rp).ok;
+  return !!a && gm.deckFor(w).grade(i, a.a, a.rp).ok;
 }
 
 /** A player's points counted here: each answer's grade (100 a right one in the quiz: いっぱつ is a badge, no points), or
  *  the deck's own way (スピード はしご's climb, where a replay is the replayer's own). */
-export function sum(gm: Pick<Game, 'answers' | 'deck'>, w: Who): number {
+export function sum(gm: Pick<Game, 'answers' | 'deckFor'>, w: Who): number {
   const mine = gm.answers.get(w) ?? new Map();
-  if (gm.deck.score) return gm.deck.score(mine);
+  const deck = gm.deckFor(w);
+  if (deck.score) return deck.score(mine);
   let s = 0;
-  for (const [i, a] of mine) s += gm.deck.grade(i, a.a, a.rp).pts;
+  for (const [i, a] of mine) s += deck.grade(i, a.a, a.rp).pts;
   return s;
 }
 
@@ -55,7 +56,7 @@ export function team(gm: Game, upto: number, win: RoundWindows): Team {
 
 /** The rounds 0 … upto − 1 someone who has played got right on the first listen (no replay): a co-op lesson's `tm`
  *  (docs/curriculum-units.md §10, contract/listen.ts), the same on every phone. */
-export function teamFirst(gm: Pick<Game, 'answers' | 'deck' | 'played' | 'n'>, upto: number): number {
+export function teamFirst(gm: Pick<Game, 'answers' | 'deckFor' | 'played' | 'n'>, upto: number): number {
   const first = (w: Who, i: number) => rightOf(gm, w, i) && !gm.answers.get(w)!.get(i)!.rp;
   let n = 0;
   for (let i = 0; i < Math.min(upto, gm.n); i++) if ([...gm.played].some((w) => first(w, i))) n++;
