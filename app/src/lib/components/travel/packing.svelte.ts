@@ -16,7 +16,7 @@ import { cleanLine } from '#lib/contract/text.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { SendResult } from '#lib/store/backend.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { world } from '#lib/store/world.svelte.ts';
+import { opClock, world } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';
 
 const EMPTY: readonly PackEntry[] = [];
@@ -49,7 +49,7 @@ class Packing {
 
   /** A change's time: the relay's clock (never a `?date=` preview's), never twice the same, after the op it replaces. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.serverNow()), this.#last + 1, after + 1);
+    this.#last = opClock(this.#last, after);
     return this.#last;
   }
   #heldAt(trip: string, id: string): number {

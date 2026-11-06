@@ -406,3 +406,8 @@ class SharedWorld {
 
 /** The island's shared day: one per phone. */
 export const world = new SharedWorld();
+
+/** A change's time (an op's `at`): the relay's own clock (never a `?date=` preview's: an op stamped in a preview's
+ *  future would beat every later real change), never twice the same (after `last`, the sender's previous), after the
+ *  op it replaces (`after`). */
+export const opClock = (last: number, after = 0): number => Math.max(Math.round(world.serverNow()), last + 1, after + 1);
