@@ -5,8 +5,11 @@
 import { itemDur } from '../../clips.ts';
 import type { Item, Level } from '../../bank.ts';
 import { ENTRIES, INDEX, itemOf } from '../../pool.ts';
-import { taikaiItems, taikaiRounds, type TaikaiRound, type TaikaiSource } from './def.ts';
-import { numbering, type Numbering } from './pick.ts';
+import type { Who } from '../../../types.ts';
+import type { RoundEvent } from '../../round/types.ts';
+import { taikaiItems, taikaiRounds, taikaiTarget, tierLevel, trophyOf, type TaikaiRound, type TaikaiSource, type Trophy } from './def.ts';
+import { numbering, offerOf, offersOf, taikaiPick, weekMisses, type Numbering } from './pick.ts';
+import { taikaiAt } from './window.ts';
 
 /** This build's items numbered (the `open`'s `ids`; the same on every phone with the game's cv). */
 export const TAIKAI_IDS: Numbering = numbering(ENTRIES);
@@ -20,7 +23,8 @@ export const taikaiDeals = (id: string): boolean => {
 };
 
 /** The fillers' pool: every item of the levels this phone offers, numbered. */
-export const taikaiPool = (): number[] => ENTRIES.filter((e) => OFFERED.has(e.lv)).map((e) => TAIKAI_IDS.num(e.id)!);
+let pool: number[] | null = null;
+export const taikaiPool = (): number[] => (pool ??= ENTRIES.filter((e) => OFFERED.has(e.lv)).map((e) => TAIKAI_IDS.num(e.id)!));
 
 /** The levels a deck's ids need loaded (pool.ts load) before its rounds can be dealt. */
 export const taikaiLevels = (ids: readonly number[]): Level[] => [...new Set(ids.map((n) => TAIKAI_IDS.entry(n)?.lv).filter((lv): lv is Level => lv !== undefined))];
@@ -52,3 +56,25 @@ export const taikaiSource: TaikaiSource = {
   },
   cv: () => INDEX.games['taikai:all']
 };
+
+/** My offer for the tournament under way at `now` (or the next): my misses of its week (pick.ts weekMisses over my
+ *  answers), numbered, the first OFFER_MAX. */
+export const taikaiOffer = (answers: Parameters<typeof weekMisses>[0], now: number): number[] =>
+  offerOf(weekMisses(answers, taikaiAt(now).fri, taikaiDeals), TAIKAI_IDS);
+
+/** The host's pick (pick.ts taikaiPick) from its own offer and its lobby's view: the offers heard, everyone's tiers (the
+ *  fillers' levels); the items of its recent games (recent.ts, by string id) last among the fillers. */
+export function taikaiPickFor(o: {
+  seed: number; me: Who; mine: readonly number[]; evs: readonly RoundEvent[]; tiers: Partial<Record<Who, number>>; recent?: readonly (readonly string[])[];
+}): number[] {
+  const avoid = new Set((o.recent ?? []).flat().flatMap((id) => TAIKAI_IDS.num(id) ?? []));
+  const levels = Object.values(o.tiers).map((t) => tierLevel(t!));
+  return taikaiPick({ seed: o.seed, offers: { ...offersOf(o.evs), [o.me]: o.mine }, levels, pool: taikaiPool(), avoid, ids: TAIKAI_IDS });
+}
+
+/** A tournament's outcome on any phone alike: しずえ's target from its rounds and everyone's tiers (the session view's),
+ *  and the trophy for the team's rounds right. */
+export function taikaiOutcome(seed: number, ids: readonly number[], tiers: Partial<Record<Who, number>>, right: number): { target: ReturnType<typeof taikaiTarget>; trophy: Trophy } {
+  const target = taikaiTarget(taikaiSource.rounds(seed, ids), Object.values(tiers) as number[]);
+  return { target, trophy: trophyOf(right, target) };
+}

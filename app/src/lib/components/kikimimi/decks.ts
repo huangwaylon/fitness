@@ -16,13 +16,17 @@ import { quizGame, quizOpts, type QuizSource } from '#lib/kikimimi/games/quiz/de
 import { ladderGame } from '#lib/kikimimi/games/ladder/def.ts';
 import { lessonGame, lessonOpts } from '#lib/kikimimi/games/lesson/def.ts';
 import { roundOf, type QuizRound } from '#lib/kikimimi/games/quiz/kinds.ts';
+import { taikaiGame } from '#lib/kikimimi/games/taikai/def.ts';
+import { taikaiDeck, taikaiLevels, taikaiSource } from '#lib/kikimimi/games/taikai/source.ts';
 
-/** A game's deck as the view names it: its game, seed, options (as on the wire) and unit. */
+/** A game's deck as the view names it: its game, seed, options (as on the wire), unit and items' ids (the tournament's
+ *  pick). */
 export interface DeckOf {
   gm: GameId | null;
   seed: number;
   o: readonly number[];
   u?: string;
+  ids?: readonly number[];
 }
 
 /** The last decks built (others' lobbies build theirs here as their `open`s come), the game I'm in held, a deck of
@@ -31,6 +35,7 @@ const decks = new Decks<Item[]>(2);
 
 /** A game's items, dealt from the loaded content. */
 function deal(d: DeckOf): Item[] {
+  if (d.gm === 'taikai') return taikaiDeck(d.seed, d.ids ?? []);
   if (d.gm === 'ladder') return ladderDeck(d.seed, ladders());
   if (d.gm === 'lesson') {
     const o = lessonOpts.decode(d.o), part = d.u ? unitPart(d.u) : undefined;
@@ -40,7 +45,7 @@ function deal(d: DeckOf): Item[] {
   return d.gm === 'quiz' && o ? deck(d.seed, o.lv) : [];
 }
 
-const keyOf = (d: DeckOf): string => gameKey(d.gm ?? '', d.seed, d.o, d.u);
+const keyOf = (d: DeckOf): string => gameKey(d.gm ?? '', d.seed, d.o, d.u) + (d.gm === 'taikai' ? `#${(d.ids ?? []).join('.')}` : '');
 
 /** A game's items (outside a game: none). */
 export const itemsOf = (d: DeckOf): Item[] => (d.gm ? decks.of(keyOf(d), () => deal(d)) : []);
@@ -52,8 +57,9 @@ export const usePractice = (d: DeckOf, items: Item[]): void => decks.practice(ke
 /** The game I'm in (null: none): its deck held till another is. */
 export const pinDeck = (d: DeckOf | null): void => decks.pin(d?.gm ? keyOf(d) : null, () => deal(d!));
 
-/** The chunks a game's deck needs: its level's, the ladders', or its unit's. */
-export function chunksOf(gm: GameId, o: readonly number[], u?: string): Unit[] {
+/** The chunks a game's deck needs: its level's, the ladders', its unit's, or the levels of the tournament's ids. */
+export function chunksOf(gm: GameId, o: readonly number[], u?: string, ids?: readonly number[]): Unit[] {
+  if (gm === 'taikai') return taikaiLevels(ids ?? []);
   if (gm === 'ladder') return ['ladder'];
   if (gm === 'lesson') return u ? [u as Unit] : [];
   const q = quizOpts.decode(o);
@@ -83,5 +89,5 @@ const source: QuizSource = {
   }
 };
 
-/** The games this phone plays: the quiz, スピード はしご and a unit's lesson, over these decks. */
-export const GAMES = registry([quizGame(source), ladderGame(source), lessonGame(source)]);
+/** The games this phone plays: the quiz, スピード はしご, a unit's lesson and the tournament, over these decks. */
+export const GAMES = registry([quizGame(source), ladderGame(source), lessonGame(source), taikaiGame(taikaiSource)]);

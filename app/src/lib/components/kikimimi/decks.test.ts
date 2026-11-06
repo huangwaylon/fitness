@@ -8,6 +8,7 @@ import { ladderDeck } from '#lib/kikimimi/ladder.ts';
 import { GAMES, chunksOf, itemsOf, pinDeck, usePractice } from './decks.ts';
 import { ladders, loadAll } from '#lib/kikimimi/pool.ts';
 import type { Level } from '#lib/kikimimi/bank.ts';
+import { TAIKAI_IDS } from '#lib/kikimimi/games/taikai/source.ts';
 
 // (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
 await loadAll();
@@ -42,6 +43,11 @@ describe('the decks cache', () => {
     expect(itemsOf({ gm: 'ladder', seed: 7, o: [3, 0] })).toEqual(ladderDeck(7, ladders()));
     expect(itemsOf({ gm: null, seed: 7, o: [] })).toEqual([]);
     expect([chunksOf('quiz', [6, 0]), chunksOf('ladder', [6, 0]), chunksOf('lesson', [1, 0, 1, 0], 'tr-hotel'), chunksOf('lesson', [1, 0, 1, 0])]).toEqual([[6], ['ladder'], ['tr-hotel'], []]);
+    // the tournament: its ids' levels, its items dealt from them (its choices by the seed), the session's the same rounds
+    const ids = [TAIKAI_IDS.num(deck(3, 3)[0].id)!, TAIKAI_IDS.num(deck(3, 4)[0].id)!];
+    expect(chunksOf('taikai', [1, 0], undefined, ids)).toEqual([3, 4]);
+    expect(itemsOf({ gm: 'taikai', seed: 9, o: [1, 0], ids }).map((it) => it.id)).toEqual(ids.map((n) => TAIKAI_IDS.entry(n)!.id));
+    expect(itemsOf({ gm: 'taikai', seed: 9, o: [1, 0], ids: ids.slice(0, 1) })).toHaveLength(1);
     // the session's deck is the same items: their right choices and clip lengths
     const def = GAMES('quiz')!, w = { countdown: 0, lead: 1500, answers: [30_000, 20_000, 60_000, Infinity] as const, late: 0, openTtl: 0, hostGrace: 0, beacon: 0, auto: 0 };
     const rd = def.deck(31, def.opts.decode([4, 0])!, { w, enc: [4, 0] });

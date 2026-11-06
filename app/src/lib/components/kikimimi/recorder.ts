@@ -5,6 +5,7 @@ import { localDateAt } from '#lib/contract/tokyo.ts';
 import type { ListenRow } from '#lib/contract/listen.ts';
 import { listenAnswers } from '#lib/kikimimi/progress.ts';
 import { lessonL, stageLevel, type Lesson, type UnitPlay } from '#lib/kikimimi/lesson.ts';
+import { taikaiRow, tierLevel, type Trophy } from '#lib/kikimimi/games/taikai/def.ts';
 import { itemsOf } from './decks.ts';
 import { rememberGame } from './progress.svelte.ts';
 
@@ -40,8 +41,11 @@ export class GameRecorder {
   /** My answers of this game as a `listen` row, once: at the results (an unanswered question timed out) or when I
    *  leave mid-way (only those answered). Only the questions I had (the view's `had`): those before a mid-game join or
    *  slept through aren't in it. Joined again after leaving, the game's second row has the same `g`; the stats fold
-   *  them into one game (progress.ts gamesOf). Null: already recorded, or nothing to. */
-  keep(v: QuizView, now: number, done: boolean, o: { lesson: { unit: UnitPlay; lesson: Lesson } | null; practicing: boolean }): ListenRow | null {
+   *  them into one game (progress.ts gamesOf). The tournament's: its game, the team's trophy and my tier's level
+   *  (taikaiRow; left mid-way, no trophy). Null: already recorded, or nothing to. */
+  keep(
+    v: QuizView, now: number, done: boolean, o: { lesson: { unit: UnitPlay; lesson: Lesson } | null; practicing: boolean; taikai?: { trophy: Trophy | null; tier: number } | null }
+  ): ListenRow | null {
     if (!v.g || this.#recordedG === v.g) return null;
     const r = listenAnswers(itemsOf(v), v.answers, v.had, this.#rp, done);
     if (!r.length) return null;
@@ -51,7 +55,7 @@ export class GameRecorder {
     const unit = ls ? { u: ls.unit.id, l: lessonL(ls.lesson), ...(n > 1 && !v.vs && { tm: Math.min(6, v.teamFirst) }) } : null;
     return {
       d: localDateAt(now), g: v.g, ...unit, lv: ls ? stageLevel(ls.unit.stage) : v.lv, n,
-      ms: Math.max(0, Math.min(3_600_000, Math.round(now - (this.#began || now)))), ...(o.practicing && { p: 1 as const }), r
+      ms: Math.max(0, Math.min(3_600_000, Math.round(now - (this.#began || now)))), ...(o.practicing && { p: 1 as const }), ...(o.taikai && (o.taikai.trophy ? taikaiRow(o.taikai.trophy, o.taikai.tier) : { gm: 'taikai', lv: tierLevel(o.taikai.tier) })), r
     };
   }
 }

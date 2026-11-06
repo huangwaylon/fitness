@@ -18,8 +18,15 @@ describe('the modes', () => {
     expect(playable('review', { ...ALL, review: false })).toBe(false);
     expect(playable('story', { ...ALL, story: false })).toBe(false); // (no voiced serial)
   });
-  it('shares the playable modes that can be played together (not おさらい)', () => {
+  it('shares the playable modes that can be played together (not おさらい, nor the tournament: its own lobby)', () => {
     expect(sharable(ALL).map((m) => m.id)).toEqual(['quiz', 'ladder', 'announce']);
+    expect(sharable({ ...ALL, taikai: true }).map((m) => m.id)).toEqual(['quiz', 'ladder', 'announce']);
+  });
+  it('しずえの しゅうまつ たいかい: on no shelf, playable only on its weekend (and with a quiz level)', () => {
+    expect(playable('taikai', ALL)).toBe(false);
+    expect(playable('taikai', { ...ALL, taikai: true })).toBe(true);
+    expect(playable('taikai', { ...ALL, levels: [5], taikai: true })).toBe(false);
+    expect(shelves({ ...ALL, taikai: true }).flatMap((s) => s.modes.map((m) => m.id))).not.toContain('taikai');
   });
 });
 

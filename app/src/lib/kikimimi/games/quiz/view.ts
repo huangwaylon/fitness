@@ -4,17 +4,21 @@
 import type { QuizLv, Who } from '../../../contract/live-protocol.ts';
 import type { QuizTimer } from '../../seed.ts';
 import type { RoundNotice, RoundView } from '../../round/session.ts';
-import type { GameId, RoundPhase } from '../../round/types.ts';
+import type { AnswerValue, GameId, RoundEvent, RoundPhase } from '../../round/types.ts';
 import type { Team } from '../../round/tally.ts';
 import { quizOpts } from './def.ts';
 import { lessonOpts } from '../lesson/def.ts';
 import type { Lesson } from '../../lesson.ts';
+import { TIMERS } from '../../seed.ts';
+import { choiceOf, wagerOf } from '../taikai/def.ts';
 
 export type QuizPhase = RoundPhase;
 
-/** An answer: the choice, whether the clip was replayed or slowed first, when it was given or heard (relay clock). */
+/** An answer: the choice, whether the clip was replayed or slowed first, when it was given or heard (relay clock); the
+ *  tournament's wager, its bet too. */
 interface QuizAnswer {
   k: number;
+  bet?: number;
   rp: boolean;
   t: number;
 }
@@ -25,7 +29,7 @@ interface QuizPlayer {
   here: boolean;
   answered: boolean;
   /** Their choice for the current question, in its reveal only (and whether it was right). */
-  pick?: { k: number; ok: boolean };
+  pick?: { k: number; ok: boolean; bet?: number };
   /** In a reveal: they tapped よみおわった (done reading; the host's つぎへ counts them). */
   ready: boolean;
   score: number;
@@ -89,23 +93,33 @@ export interface QuizView {
   canReady: boolean;
   ready: { n: number; of: number };
   roles: Partial<Record<Who, number>>;
+  /** The tournament's: each player's tier, the host's pick (the open's ids) and the offers heard (round/session.ts). */
+  tiers: Partial<Record<Who, number>>;
+  ids: readonly number[];
+  evs: readonly RoundEvent[];
   invite: QuizInvite | null;
   notice: RoundNotice | null;
 }
 
-/** The quiz's view of a round game's. */
+/** An answer value as the quiz reads it: its choice (a wager's `[choice, bet / 10]`: the choice, and the bet). */
+const answerOf = (a: AnswerValue) => {
+  const w = typeof a === 'number' ? null : wagerOf(a);
+  return { k: choiceOf(a), ...(w && { bet: w.bet }) };
+};
+
+/** The quiz's view of a round game's (the tournament's too: its options [tier, timer], its wager's answers). */
 export function quizView(v: RoundView): QuizView {
-  const q = quizOpts.decode(v.o);
+  const q = v.gm === 'taikai' ? null : quizOpts.decode(v.o);
   const { players, answers, invite, ...rest } = v;
   const inv = invite && quizOpts.decode(invite.o);
   const lesson = invite?.gm === 'lesson' && !invite.blocked ? lessonOpts.decode(invite.o)?.lesson : undefined;
   return {
     ...rest,
     lv: q?.lv ?? 1,
-    timer: q?.timer ?? 30,
+    timer: q?.timer ?? (v.gm === 'taikai' ? (TIMERS[v.o[1] ?? 0] ?? 30) : 30),
     ladder: v.gm === 'ladder',
-    players: players.map(({ pick, ...p }) => ({ ...p, ...(pick && { pick: { k: pick.a as number, ok: pick.ok } }) })),
-    answers: answers.map((a) => a && { k: a.a as number, rp: a.rp > 0, t: a.t }),
+    players: players.map(({ pick, ...p }) => ({ ...p, ...(pick && { pick: { ...answerOf(pick.a), ok: pick.ok } }) })),
+    answers: answers.map((a) => a && { ...answerOf(a.a), rp: a.rp > 0, t: a.t }),
     invite: invite && {
       g: invite.g, host: invite.host, gm: invite.gm, ...(invite.u !== undefined && { u: invite.u }), ...(lesson && { lesson }), ...(invite.blocked && { blocked: invite.blocked }),
       lv: inv?.lv ?? 1, ladder: invite.gm === 'ladder', same: invite.same, started: invite.started

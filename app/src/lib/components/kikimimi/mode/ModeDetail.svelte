@@ -22,7 +22,7 @@
   let { game, m, oninvite, onpractice }: { game: QuizGame; m: ModeId; oninvite: () => void; onpractice: () => void } = $props();
   const v = $derived(game.view);
   const meta = $derived(modeOf(m));
-  const ICON: Record<ModeId, string> = { quiz: '💬', ladder: '🪜', review: '🔁', announce: '📢', story: '🌙' };
+  const ICON: Record<ModeId, string> = { quiz: '💬', ladder: '🪜', review: '🔁', announce: '📢', story: '🌙', taikai: '🏆' };
   const due = $derived(Math.min(REVIEW_CAP, currentReport()?.due ?? 0));
   const zero = $derived(sound.settings.volume <= 0);
 

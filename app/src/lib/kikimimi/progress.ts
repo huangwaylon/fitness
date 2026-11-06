@@ -89,7 +89,9 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
       const unit = lesson ? { u: x.u!, l: x.l!, ...(x.tm !== undefined && { tm: x.tm }) } : null;
       const tally = unit ? { first: x.r.filter(firstListenRight).length, of: x.r.length, stamped: stampsUnit(x) } : null;
       const was = mine.get(x.g);
-      if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r, ...unit, ...(tally && { unit: tally }) });
+      // another game's (the tournament's: its trophy as `u`, trophiesOf) keeps its gm and u
+      const game = x.gm !== undefined ? { gm: x.gm, ...(x.u !== undefined && { u: x.u }) } : null;
+      if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r, ...unit, ...game, ...(tally && { unit: tally }) });
       else {
         const sooner = at < was.at, [early, late] = sooner ? [r, was.r] : [was.r, r];
         const have = new Set(early.map((y) => y.id));

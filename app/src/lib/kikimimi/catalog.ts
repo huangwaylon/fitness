@@ -4,15 +4,17 @@
 // かわ, もり, やま, ほし; level 5 is the アナウンス mode, not a place). Pure.
 
 /** The modes built so far. The quiz family (ひとこと クイズ, アナウンス, スピード はしご) is one lobby's game; おさらい a
- *  solo practice deck; おやすみ ものがたり the bedtime serials (no lobby, no score: components/kikimimi/story/). */
-export type ModeId = 'quiz' | 'ladder' | 'review' | 'announce' | 'story';
+ *  solo practice deck; おやすみ ものがたり the bedtime serials (no lobby, no score: components/kikimimi/story/); しずえの
+ *  しゅうまつ たいかい the weekend's quiz show (games/taikai/: the hub's banner, its own lobby, on no shelf). */
+export type ModeId = 'quiz' | 'ladder' | 'review' | 'announce' | 'story' | 'taikai';
 /** The あそぶ page's shelves, in order: さくっと, まちで・でんわで, じっくり, ねる まえに. */
 export type Group = 'quick' | 'scene' | 'long' | 'night';
 const GROUPS: readonly Group[] = ['quick', 'scene', 'long', 'night'];
 
 export interface ModeMeta {
   id: ModeId;
-  group: Group;
+  /** Its shelf; 'event': none (the hub's banner while it's on: the tournament's weekend). */
+  group: Group | 'event';
   /** About how long a game takes (minutes) and its questions (clips). */
   mins: number;
   qs: number;
@@ -25,19 +27,21 @@ const MODES: readonly ModeMeta[] = [
   { id: 'ladder', group: 'quick', mins: 3, qs: 8, coop: true },
   { id: 'review', group: 'quick', mins: 3, qs: 8, coop: false },
   { id: 'announce', group: 'scene', mins: 4, qs: 8, coop: true },
-  { id: 'story', group: 'night', mins: 4, qs: 0, coop: false }
+  { id: 'story', group: 'night', mins: 4, qs: 0, coop: false },
+  { id: 'taikai', group: 'event', mins: 6, qs: 8, coop: true }
 ];
 /** Every mode's id, in the shelves' order. */
 export const MODE_IDS: readonly ModeId[] = MODES.map((m) => m.id);
 export const modeOf = (id: ModeId): ModeMeta => MODES.find((m) => m.id === id)!;
 
 /** What this build and this player have: the levels offered (deck.ts LEVELS), スピード はしご's clips, any game to
- *  review, a voiced bedtime serial. */
+ *  review, a voiced bedtime serial, the tournament's weekend now (window.ts taikaiOpen). */
 export interface Ctx {
   levels: readonly number[];
   ladder: boolean;
   review: boolean;
   story?: boolean;
+  taikai?: boolean;
 }
 
 /** A mode can be played now. */
@@ -53,6 +57,8 @@ export function playable(id: ModeId, c: Ctx): boolean {
       return c.review;
     case 'story':
       return !!c.story;
+    case 'taikai':
+      return !!c.taikai && c.levels.some((lv) => lv !== 5);
   }
 }
 
@@ -61,8 +67,8 @@ export function shelves(c: Ctx): { group: Group; modes: ModeMeta[] }[] {
   return GROUPS.map((group) => ({ group, modes: MODES.filter((m) => m.group === group && playable(m.id, c)) })).filter((s) => s.modes.length);
 }
 
-/** The playable modes that can be shared (the みんなで page's picker). */
-export const sharable = (c: Ctx): ModeMeta[] => MODES.filter((m) => m.coop && playable(m.id, c));
+/** The playable modes that can be shared (the みんなで page's picker; the tournament has its own lobby). */
+export const sharable = (c: Ctx): ModeMeta[] => MODES.filter((m) => m.coop && m.group !== 'event' && playable(m.id, c));
 
 /** The ばしょ places (§4) in order, each with its ★s and the quiz levels it holds (はまべ two sub-steps). */
 export type Place = 'hama' | 'kawa' | 'mori' | 'yama' | 'hoshi';
