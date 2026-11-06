@@ -64,7 +64,6 @@ const NONE: Record<string, string> = {
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks',
   'lib/components/kikimimi/Lobby.svelte': 'the level already chosen does nothing',
   'lib/components/kikimimi/KikimimiSheet.svelte': 'the lobby tab already chosen does nothing',
-  'lib/components/travel/MapPane.svelte': 'the day or the stop already chosen does nothing',
   'lib/components/travel/CampList.svelte': 'the campsites\' kind already chosen does nothing',
   'lib/components/kikimimi/Play.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)'
 };
