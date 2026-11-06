@@ -41,8 +41,9 @@ export const WNOTE_DATA_CHARS = 140_000;
  *  (IANA), the categories. @public (relay/scripts/wedding-import.ts) */
 export const WCONF_KEYS = ['p1', 'p2', 'date', 'time', 'venue', 'tz', 'cats'] as const;
 export type WConfKey = (typeof WCONF_KEYS)[number];
-const NAME_CHARS = 40;
-const VENUE_CHARS = 200;
+/** A name's characters at most, and the venue's (せってい's fields). */
+export const NAME_CHARS = 40;
+export const VENUE_CHARS = 200;
 /** The categories at most, and each one's characters (WTASK_CAT). @public (the board's settings) */
 export const WCATS_MAX = 30;
 const TZ = /^[A-Za-z][A-Za-z0-9_+-]*(?:\/[A-Za-z0-9_+-]+){0,2}$/;

@@ -1,20 +1,12 @@
-// けっこんしき's view (docs/wedding.md): the store's shapes as the board's components take them, and the plan's own
-// rules (the filters, their counts, the lifted sections and the month groups). Every rule of a percentage, a state, a
-// day or this month is lib/wedding/progress.ts and time.ts (the old board's, ported once); nothing here re-decides one.
-// The store (board.svelte.ts) is the `Board` and the `WeddingActions` itself: the host hands it to the sheet.
+// けっこんしき's view (docs/wedding.md): the plan's own rules (the filters, their counts, the lifted sections and the
+// month groups) over the store's tasks (board.svelte.ts). Every rule of a percentage, a state, a day or this month is
+// lib/wedding/progress.ts and time.ts (the old board's, ported once); nothing here re-decides one.
 import type { WedTask } from '#lib/contract/wedding.ts';
 import type { Overall, WithProgress } from '#lib/wedding/progress.ts';
 import { monthOf } from '#lib/wedding/time.ts';
-import type { board } from './board.svelte.ts';
-
-type Store = typeof board;
 
 /** A live top-level task with its subtasks (in the order typed) and its progress. */
 export type Task = WithProgress<WedTask>;
-/** What the sheet reads (the store's getters). */
-export type Board = Pick<Store, 'tasks' | 'overall' | 'countdown' | 'today' | 'config' | 'note' | 'conflict' | 'deleted'>;
-/** What the sheet asks of the store (members only: the guest's sheet is given none, and the store refuses anyway). */
-export type WeddingActions = Pick<Store, 'addTask' | 'addSub' | 'editTask' | 'tick' | 'remove' | 'restore' | 'purge' | 'setConfig' | 'saveNote'>;
 
 /** A task's fields as edited ('' for none). */
 export interface Fields {
@@ -53,28 +45,22 @@ export interface Group {
   month: string;
   /** The wedding's month (the arch on its plate). */
   wedding: boolean;
-  /** A month's done / total over the whole board's tasks of that month (null under a filter, and on the lifted
-   *  sections, which carry a bare count: every row there is unfinished by definition). */
-  tally: { done: number; total: number } | null;
+  /** The heading's done / total: a month's over the whole board's tasks of that month (its lifted and hidden rows
+   *  too) under すべて; else, and on the lifted sections and ひづけ なし, over the rows drawn. */
+  tally: { done: number; total: number };
   tasks: Task[];
 }
 
-/** The plan: 期限切れ, then こんげつ (both only when they hold a row: a row is in the first that claims it), then one
- *  group per month in the store's order (by due date, undated last), ひづけ なし last. `shown` the rows drawn
- *  (visibleTasks), `all` the board's (the month tallies count the whole month, the lifted and the hidden rows too);
- *  `filtered`: a chip other than すべて is on. */
+const tallyOf = (ts: readonly Task[]) => ({ done: ts.filter((t) => t.progress.state === 'done').length, total: ts.length });
+
+/** The plan: 期限切れ, the months before this one (their finished rows, when shown), こんげつ (each lifted section
+ *  only when it holds a row: a row is in the first that claims it), then one group per later month in the store's
+ *  order (by due date), ひづけ なし last. `shown` the rows drawn (visibleTasks), `all` the board's (the month tallies
+ *  count the whole month); `filtered`: a chip other than すべて is on. */
 export function groupPlan(shown: readonly Task[], all: readonly Task[], today: string, wedding: string, filtered = false): Group[] {
-  const wm = monthOf(wedding);
-  const tallies = new Map<string, { done: number; total: number }>();
-  for (const t of all) {
-    const k = monthOf(t.due);
-    const tl = tallies.get(k) ?? { done: 0, total: 0 };
-    tl.total++;
-    if (t.progress.state === 'done') tl.done++;
-    tallies.set(k, tl);
-  }
-  const overdue: Group = { key: 'overdue', kind: 'overdue', month: '', wedding: false, tally: null, tasks: [] };
-  const now: Group = { key: 'thisMonth', kind: 'thisMonth', month: monthOf(today), wedding: !!wm && monthOf(today) === wm, tally: null, tasks: [] };
+  const wm = monthOf(wedding), tm = monthOf(today);
+  const overdue: Group = { key: 'overdue', kind: 'overdue', month: '', wedding: false, tally: { done: 0, total: 0 }, tasks: [] };
+  const now: Group = { key: 'thisMonth', kind: 'thisMonth', month: tm, wedding: !!wm && tm === wm, tally: { done: 0, total: 0 }, tasks: [] };
   const months: Group[] = [];
   for (const t of shown) {
     if (t.progress.state === 'overdue') overdue.tasks.push(t);
@@ -83,11 +69,14 @@ export function groupPlan(shown: readonly Task[], all: readonly Task[], today: s
       const k = t.progress.state === 'nodate' ? '' : monthOf(t.due);
       let g = months.at(-1);
       if (!g || g.month !== k) {
-        g = { key: k || 'nodate', kind: k ? 'month' : 'nodate', month: k, wedding: !!k && k === wm, tally: filtered || !k ? null : (tallies.get(k) ?? null), tasks: [] };
+        g = { key: k || 'nodate', kind: k ? 'month' : 'nodate', month: k, wedding: !!k && k === wm, tally: { done: 0, total: 0 }, tasks: [] };
         months.push(g);
       }
       g.tasks.push(t);
     }
   }
-  return [overdue, now, ...months].filter((g) => g.tasks.length);
+  for (const g of [overdue, now, ...months])
+    g.tally = tallyOf(g.kind === 'month' && !filtered ? all.filter((t) => monthOf(t.due) === g.month) : g.tasks);
+  const past = months.filter((g) => g.kind === 'month' && g.month < tm);
+  return [overdue, ...past, now, ...months.filter((g) => !past.includes(g))].filter((g) => g.tasks.length);
 }
