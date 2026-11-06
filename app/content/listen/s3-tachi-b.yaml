@@ -24,9 +24,9 @@ items:
       - { who: wolfgang, at: -0.4, en: "The lounge? With a shower? ...Actually, that's not bad. I'll move the meeting.", ja: "ラウンジ？シャワー付き？…実はそれ、悪くないな。会議はずらすよ。" }
       - { who: judy, at: 0.3, en: "Thank you. Seriously. I owe you a drink.", ja: "ありがとうございます。本当に。一杯おごりますね。" }
     rounds:
-      - { type: opinions, claims: ["先に 並んでいたのは 自分", "子ども連れは 2席 必要", "会議は ずらせる"], answer: [judy, orville, wolfgang] }
-      - { type: changed, answer: wolfgang }
-      - { type: plan, ask: "どう なった？", choices: ["They each get one seat tonight.", "The mother takes both seats tonight, and the man flies through Hong Kong in the morning.", "The man takes a seat tonight and moves his meeting."], answer: 1, ja: "母親が今夜の2席を使い、男性は朝の香港経由便で行く。" }
+      - { type: opinions, claims: ["先に 並んでいたのは 自分", "子ども連れは 2席 必要", "会議は ずらせる"], answer: [judy, orville, wolfgang], ctx: "空港のカウンターで、乗り継ぎに遅れた客が並んでいます", why: "ジュディは I was actually here first。係は子ども連れなら both seats が必要。ウルフガングは I'll move the meeting。" }
+      - { type: changed, answer: wolfgang, ctx: "残りの席をめぐって、ある人の気持ちが変わります", why: "ウルフガングは Fantastic と皮肉で不満だったが、シャワー付きのラウンジと聞いて Actually, that's not bad に変わった。" }
+      - { type: plan, ask: "どう なった？", choices: ["They each get one seat tonight.", "The mother takes both seats tonight, and the man flies through Hong Kong in the morning.", "The man takes a seat tonight and moves his meeting."], answer: 1, ja: "母親が今夜の2席を使い、男性は朝の香港経由便で行く。", ctx: "最後に、誰がどの便に乗るかが決まります", why: "母親は子どもと今夜の2席を使い、男性は明朝7時の香港経由便。今夜はラウンジ。1席ずつにはならない。", cja: ["2人が今夜の席を1席ずつ使う", "母親が今夜の2席を使い、男性は朝の香港経由便", "男性が今夜の席に乗り、会議をずらす"] }
     note: "Fantastic は皮肉。Actually の後で気が変わる"
     tags: { seed: 8, register: service, pragmatic: sarcasm, conditions: [desk], features: [overlap, intonation, contraction] }
 
@@ -44,9 +44,9 @@ items:
       - { who: hamlet, at: 0.2, en: "Deal. Writing France.", ja: "乗った。フランスって書くよ。" }
       - { who: cj, at: -0.3, en: "Quick, quick, they're collecting the answer sheets!", ja: "早く早く、回答用紙を集めてる！" }
     rounds:
-      - { type: opinions, claims: ["海外領土が あるから フランス", "どこかで 読んだ ことが ある", "ロシアなら 次は おごり"], answer: [hamlet, cj, audie] }
-      - { type: changed, answer: audie }
-      - { type: plan, ask: "答えは？", choices: ["They write Russia.", "They skip the question.", "They write France, and if it's Russia, two of them buy drinks."], answer: 2, ja: "フランスと書く。ロシアだったら二人がおごる。" }
+      - { type: opinions, claims: ["海外領土が あるから フランス", "どこかで 読んだ ことが ある", "ロシアなら 次は おごり"], answer: [hamlet, cj, audie], ctx: "バーのクイズナイトで、3人が答えを相談しています", why: "ハムレットは海外領土があるからフランス。CJ は I read that somewhere。オーディーはロシアなら you're both buying。" }
+      - { type: changed, answer: audie, ctx: "答えをめぐって、1人が折れます", why: "オーディーは Russia. Easy. と言い張ったが、2人に押されて Ugh, fine で折れた。" }
+      - { type: plan, ask: "答えは？", choices: ["They write Russia.", "They skip the question.", "They write France, and if it's Russia, two of them buy drinks."], answer: 2, ja: "フランスと書く。ロシアだったら二人がおごる。", ctx: "最後に、書く答えが決まります", why: "Writing France＝フランスと書く。ロシアだったら the next round（次の一杯）は2人のおごり。", cja: ["ロシアと書く", "この問題を飛ばす", "フランスと書き、ロシアなら2人がおごる"] }
     note: "and stuff＝〜とか（くだけた言い方）"
     tags: { seed: 55, register: friend, pragmatic: humour, conditions: [party], features: [overlap, ellipsis, idiom] }
 
@@ -64,9 +64,9 @@ items:
       - { who: kid-cat, at: -0.4, en: "Let's put that in the team survey, then. Two days, flexible.", ja: "じゃあそれをチームのアンケートに書こう。週2日、柔軟に。" }
       - { who: francine, at: 0.2, en: "Fine, I'll back it. But I'm still coming in four.", tts: "Fine, I'll back it. But I'm still comin' in four.", ja: "いいわ、賛成する。でも私は週4で来るけどね。" }
     rounds:
-      - { type: opinions, claims: ["家より 会社の ほうが はかどる", "福岡と ビデオ会議なら 意味が ない", "週2日 なら 我慢できる"], answer: [francine, kid-cat, gayle] }
-      - { type: changed, answer: gayle }
-      - { type: plan, ask: "どうする？", choices: ["Agree to three days starting in April.", "Ask for two flexible office days in the team survey.", "Refuse to come in at all."], answer: 1, ja: "チームのアンケートで、週2日の柔軟な出社を求める。" }
+      - { type: opinions, claims: ["家より 会社の ほうが はかどる", "福岡と ビデオ会議なら 意味が ない", "週2日 なら 我慢できる"], answer: [francine, kid-cat, gayle], ctx: "職場で、同僚3人が出社の新しいルールの話をしています", why: "フランシーヌは I get more done here。キッドキャットは福岡とのビデオ会議なら意味がない。ゲイルは Two, I could live with。" }
+      - { type: changed, answer: gayle, ctx: "文句の中で、ある人が少し歩み寄ります", why: "ゲイルは片道1時間半で反対していたが、コーヒーはおいしいと認め、2日なら I could live with に変わった。" }
+      - { type: plan, ask: "どうする？", choices: ["Agree to three days starting in April.", "Ask for two flexible office days in the team survey.", "Refuse to come in at all."], answer: 1, ja: "チームのアンケートで、週2日の柔軟な出社を求める。", ctx: "最後に、チームとしての対応が決まります", why: "Let's put that in the team survey＝アンケートに週2日・柔軟と書く。フランシーヌも I'll back it。自分は週4で来る。", cja: ["4月から週3日に従う", "チームのアンケートで、週2日の柔軟な出社を求める", "出社を全部断る"] }
     note: "I could live with＝それなら我慢できる"
     tags: { seed: 38, register: colleague, pragmatic: attitude, features: [overlap, numbers, contraction] }
 
@@ -85,9 +85,9 @@ items:
       - { who: maple, at: 0.3, en: "Ha! Finally. Okay, compromise. The beer festival in the afternoon, back by six, then pizza and the show.", ja: "はは！やっと言った。じゃあ折衷案。午後はビールフェス、6時までに帰って、そのあとピザとドラマ。" }
       - { who: bob, at: -0.3, en: "...Fine. But we leave at six. Not six-thirty.", ja: "…わかった。でも6時には帰るからね。6時半じゃなく。" }
     rounds:
-      - { type: opinions, claims: ["横浜の ビールフェスに 行きたい", "「なんでも いい」と 言って 全部 却下する、と 指摘", "本当は 家で ピザと ドラマ"], answer: [ken, maple, bob] }
-      - { type: changed, answer: bob }
-      - { type: plan, ask: "日曜の 予定は？", choices: ["A whole day in Yokohama.", "Stay in all day with pizza.", "The festival in the afternoon, then home by six for pizza."], answer: 2, ja: "午後はフェスに行き、6時までに帰ってピザ。" }
+      - { type: opinions, claims: ["横浜の ビールフェスに 行きたい", "「なんでも いい」と 言って 全部 却下する、と 指摘", "本当は 家で ピザと ドラマ"], answer: [ken, maple, bob], ctx: "家で、3人が日曜の予定を決めています", why: "ケンは横浜のビールフェス。メイプルは「何でもいい」と言って shoot everything down と指摘。ボブの本音は家でピザ。" }
+      - { type: changed, answer: bob, ctx: "「何でもいい」と言った人の本音が出てきます", why: "ボブは I'm easy と言いながら全部却下し、最後に本音を言った。そのあと折衷案に ...Fine で同意した。" }
+      - { type: plan, ask: "日曜の 予定は？", choices: ["A whole day in Yokohama.", "Stay in all day with pizza.", "The festival in the afternoon, then home by six for pizza."], answer: 2, ja: "午後はフェスに行き、6時までに帰ってピザ。", ctx: "最後に、折衷案が決まります", why: "午後はビールフェス、back by six（6時までに帰る）、そのあとピザとドラマ。一日中横浜でも、一日中家でもない。", cja: ["一日中横浜で過ごす", "一日中家でピザ", "午後はフェス、6時までに帰ってピザ"] }
     note: "I'm easy と言いつつ、本音は別にある"
     tags: { seed: 36, register: partner, pragmatic: indirect, features: [overlap, chain, clock] }
 
@@ -101,13 +101,13 @@ items:
       - { who: sterling, at: 0.3, en: "Omakase's ¥20,000 a head. For ten people? That's a stretch.", tts: "Omakase's twenty thousand a head. For ten people? That's a stretch.", ja: "おまかせは1人2万円だよ。10人で？それはなかなか無理がある。" }
       - { who: marina, at: -0.3, en: "Karaoke, obviously. She's been talking about doing Celine Dion for weeks.", tts: "Karaoke, obviously. She's been talkin' about doin' Celine Dion for weeks.", ja: "カラオケでしょ、どう考えても。何週間もセリーヌ・ディオンを歌うって言ってるし。" }
       - { who: label, at: 0.3, en: "I don't know, karaoke feels kind of... last year. The rooftop has a view, and it's only five thousand with a drink.", tts: "I dunno, karaoke feels kinda... last year. The rooftop has a view, an' it's only five thousand with a drink.", ja: "うーん、カラオケってちょっと…去年っぽい。ルーフトップは眺めがいいし、ドリンク付きで5千円だけ。" }
-      - { who: sterling, at: 0.3, en: "A rooftop in November, though? We'll freeze.", ja: "でも11月にルーフトップ？凍えるよ。" }
-      - { who: label, at: -0.4, en: "They have heaters. And blankets.", ja: "ヒーターもあるし、ブランケットもあるよ。" }
+      - { who: sterling, at: 0.3, en: "A rooftop in November? Okay, but I'm bringing a jacket.", tts: "A rooftop in November? Okay, but I'm bringin' a jacket.", ja: "11月にルーフトップ？いいけど、上着は持っていくよ。" }
+      - { who: label, at: -0.4, en: "They have heaters, too. And blankets.", ja: "ヒーターもあるし、ブランケットもあるよ。" }
       - { who: marina, at: 0.3, en: "Okay, what if we do the rooftop first, then karaoke after? Everybody's happy.", ja: "じゃあ、先にルーフトップ、そのあとカラオケは？みんなハッピー。" }
       - { who: sterling, at: 0.3, en: "Now that I can get behind. As long as I'm not doing a duet.", ja: "それなら賛成できる。僕がデュエットしなくていいならね。" }
     rounds:
-      - { type: opinions, claims: ["おまかせは 高すぎる", "カラオケは 去年っぽい", "主役が 歌いたがっている"], answer: [sterling, label, marina] }
-      - { type: changed, answer: marina }
-      - { type: plan, ask: "誕生日は どうする？", choices: ["The rooftop bar first, then karaoke.", "Omakase for ten people.", "Karaoke only, all night."], answer: 0, ja: "先にルーフトップバー、そのあとカラオケ。" }
+      - { type: opinions, claims: ["おまかせは 高すぎる", "カラオケは 去年っぽい", "主役が 歌いたがっている"], answer: [sterling, label, marina], ctx: "ビデオ通話で、友だち3人が誕生日会の店を決めています", why: "スターリングは That's a stretch（おまかせは高すぎ）。レイベルはカラオケは last year っぽい。マリーナは主役が歌いたがっている。" }
+      - { type: changed, answer: marina, ctx: "ルーフトップかカラオケか、意見が分かれます", why: "マリーナは Karaoke, obviously とカラオケ一択だったが、先にルーフトップ、そのあとカラオケという案に変えた。" }
+      - { type: plan, ask: "誕生日は どうする？", choices: ["The rooftop bar first, then karaoke.", "Omakase for ten people.", "Karaoke only, all night."], answer: 0, ja: "先にルーフトップバー、そのあとカラオケ。", ctx: "最後に、当日の流れが決まります", why: "rooftop first, then karaoke＝先にルーフトップバー、そのあとカラオケ。Now that I can get behind＝それなら賛成。", cja: ["先にルーフトップバー、そのあとカラオケ", "10人でおまかせ", "一晩中カラオケだけ"] }
     note: "a stretch＝無理がある。get behind＝賛成する"
     tags: { seed: 50, register: friend, pragmatic: attitude, conditions: [video], features: [overlap, numbers, idiom] }

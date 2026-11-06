@@ -24,9 +24,9 @@ items:
       - { who: tangy, at: 0.3, en: "Fine by me, as long as we're not waiting an hour. If they're full, it's ramen, no arguments.", tts: "Fine by me, as long as we're not waitin' an hour. If they're full, it's ramen, no arguments.", ja: "私はいいよ、1時間待ちとかじゃなければ。満席ならラーメン、文句なしね。" }
       - { who: lopez, at: 0.2, en: "Deal. Calling now.", ja: "決まり。今かける。" }
     rounds:
-      - { type: opinions, claims: ["待つのは いや。満席なら ラーメン", "ラーメンは また？ 焼き鳥が いい", "ビールが 飲みたい"], answer: [tangy, lopez, dom] }
-      - { type: changed, answer: dom }
-      - { type: plan, ask: "このあと どうなる？", choices: ["They'll call the izakaya and fall back on ramen if it's full.", "They'll go straight to the ramen place by the station.", "They'll book the izakaya for next Tuesday."], answer: 0, ja: "居酒屋に電話して、満席ならラーメンにする。" }
+      - { type: opinions, claims: ["待つのは いや。満席なら ラーメン", "ラーメンは また？ 焼き鳥が いい", "ビールが 飲みたい"], answer: [tangy, lopez, dom], ctx: "金曜の夜、友だち3人が夕ごはんの店を決めています", why: "タンジーは満席ならラーメン。ロペスは Not ramen again で焼き鳥派。ドムは I could go for a beer（ビールが飲みたい）。" }
+      - { type: changed, answer: dom, ctx: "ラーメンか居酒屋か、話がまとまっていきます", why: "ドムは最初 I'm still up for ramen だったが、Actually, yeah, yakitori sounds good で焼き鳥に。Actually が合図。" }
+      - { type: plan, ask: "このあと どうなる？", choices: ["They'll call the izakaya and fall back on ramen if it's full.", "They'll go straight to the ramen place by the station.", "They'll book the izakaya for next Tuesday."], answer: 0, ja: "居酒屋に電話して、満席ならラーメンにする。", ctx: "最後に、このあとどうするかが決まります", why: "I'll call them と Deal. Calling now で居酒屋に電話する。満席なら it's ramen, no arguments。火曜はラーメンを食べた日。", cja: ["居酒屋に電話して、満席ならラーメンにする", "駅のそばのラーメン屋に直行する", "来週火曜の居酒屋を予約する"] }
     note: "Actually, yeah で意見が変わる。no arguments＝文句なし"
     tags: { seed: 50, register: friend, pragmatic: attitude, conditions: [street], features: [overlap, contraction, chain] }
 
@@ -44,9 +44,9 @@ items:
       - { who: wolfgang, at: -0.5, en: "If we must. I'll bring the blanket.", ja: "仕方ないな。レジャーシートは持っていくよ。" }
       - { who: nana, at: 0.2, en: "And I'll grab drinks. Let's say Yoyogi at one?", tts: "An' I'll grab drinks. Let's say Yoyogi at one?", ja: "飲み物は私が買ってくる。代々木に1時でどう？" }
     rounds:
-      - { type: opinions, claims: ["夜の ちょうちんが 見たい", "目黒川は 混みすぎ", "お酒も 持ちこめる 公園が いい"], answer: [rosie, wolfgang, nana] }
-      - { type: changed, answer: rosie }
-      - { type: plan, ask: "土曜の 予定は？", choices: ["A picnic in Shinjuku Gyoen with drinks.", "A picnic in Yoyogi at one, then the river in the evening.", "Meguro River all afternoon, then Yoyogi."], answer: 1, ja: "1時に代々木でピクニック、そのあと夜に川沿いへ。" }
+      - { type: opinions, claims: ["夜の ちょうちんが 見たい", "目黒川は 混みすぎ", "お酒も 持ちこめる 公園が いい"], answer: [rosie, wolfgang, nana], ctx: "カフェで、友だち3人が週末のお花見の相談をしています", why: "ロージーは夜の提灯が見たい。ウルフガングは completely packed（混みすぎ）。ナナは何でも持ち込める代々木がいい。" }
+      - { type: changed, answer: rosie, ctx: "目黒川か公園か、意見が分かれます", why: "ロージーは目黒川を推していたが、a picnic does sound nicer でピクニックに賛成した。ただし川沿いの散歩は残した。" }
+      - { type: plan, ask: "土曜の 予定は？", choices: ["A picnic in Shinjuku Gyoen with drinks.", "A picnic in Yoyogi at one, then the river in the evening.", "Meguro River all afternoon, then Yoyogi."], answer: 1, ja: "1時に代々木でピクニック、そのあと夜に川沿いへ。", ctx: "最後に、集合の時間と場所が決まります", why: "Let's say Yoyogi at one＝代々木に1時。そのあと夜に川沿いを歩く。新宿御苑はお酒禁止なのでやめた。", cja: ["新宿御苑で、飲み物を持ってピクニック", "1時に代々木でピクニック、夜は川沿いへ", "午後はずっと目黒川、そのあと代々木"] }
     note: "packed＝ぎゅうぎゅう。If we must＝仕方ない"
     tags: { seed: 50, register: friend, pragmatic: attitude, conditions: [cafe], features: [overlap, idiom, gonna] }
 
@@ -65,9 +65,9 @@ items:
       - { who: kid-cat, at: 0.4, en: "Okay, if it was the sister, that's actually pretty clever. Fine, I take it back. It was good.", ja: "そっか、妹だったなら、それはかなりうまいね。わかった、撤回する。良かったよ。" }
       - { who: zucker, at: 0.2, en: "Okay. Ramen's on me, and I'll walk you through it from the start.", tts: "Okay. Ramen's on me, an' I'll walk ya through it from the start.", ja: "よし。ラーメンおごるから、最初から説明してあげる。" }
     rounds:
-      - { type: opinions, claims: ["結末が すぐ 読めた", "結末が いちばん よかった", "中盤が 長くて 眠かった"], answer: [audie, zucker, kid-cat] }
-      - { type: changed, answer: kid-cat }
-      - { type: plan, ask: "このあと どうする？", choices: ["They'll buy tickets to see it again.", "They'll go home because it's late.", "They'll get ramen while one of them explains the plot."], answer: 2, ja: "ラーメンを食べながら、1人が話の筋を説明する。" }
+      - { type: opinions, claims: ["結末が すぐ 読めた", "結末が いちばん よかった", "中盤が 長くて 眠かった"], answer: [audie, zucker, kid-cat], ctx: "映画館を出たところで、友だち3人が感想を話しています", why: "オーディーの masterpiece は皮肉で、結末はすぐ読めた。ザッカーは結末が best part。キッドキャットは The middle dragged。" }
+      - { type: changed, answer: kid-cat, ctx: "どんでん返しの話で、ある人の評価が変わります", why: "キッドキャットは I'm with Audie と否定的だったが、妹が犯人と知って I take it back. It was good＝前言撤回。" }
+      - { type: plan, ask: "このあと どうする？", choices: ["They'll buy tickets to see it again.", "They'll go home because it's late.", "They'll get ramen while one of them explains the plot."], answer: 2, ja: "ラーメンを食べながら、1人が話の筋を説明する。", ctx: "最後に、3人はこのあとの予定を決めます", why: "Ramen's on me（ラーメンおごる）、I'll walk you through it（最初から説明する）。もう一度見る話も、帰る話も出ていない。", cja: ["もう一度見るためにチケットを買う", "遅いので家に帰る", "ラーメンを食べながら、1人が筋を説明する"] }
     note: "masterpiece は皮肉。I take it back＝前言撤回"
     tags: { seed: 52, register: friend, pragmatic: sarcasm, conditions: [street], features: [overlap, intonation, contraction] }
 
@@ -85,9 +85,9 @@ items:
       - { who: goldie, at: -0.4, en: "Then let's do Wednesday, and we'll save you a seat. Better late than never.", ja: "じゃあ水曜にして、席を取っておくよ。来ないよりずっといい。" }
       - { who: francine, at: 0.2, en: "Okay, fine. Wednesday. I'll be the one still wearing the PTA lanyard.", tts: "Okay, fine. Wednesday. I'll be the one still wearin' the P T A lanyard.", ja: "わかった、水曜ね。PTAの名札を下げたまま行くわ。" }
     rounds:
-      - { type: opinions, claims: ["木曜は 締め切り前で 避けたい", "水曜なら 遅れて 行ける", "水曜に して 席を 取っておく"], answer: [pietro, francine, goldie] }
-      - { type: changed, answer: francine }
-      - { type: plan, ask: "送別会は？", choices: ["Thursday, with one of them joining after work.", "Wednesday at the Thai place, with one of them arriving late.", "Friday lunch, as a surprise."], answer: 1, ja: "水曜にタイ料理の店で。1人は遅れて来る。" }
+      - { type: opinions, claims: ["木曜は 締め切り前で 避けたい", "水曜なら 遅れて 行ける", "水曜に して 席を 取っておく"], answer: [pietro, francine, goldie], ctx: "職場で、同僚3人が送別会の日を決めています", why: "ピエトロは I'd rather not で木曜を避けたい。フランシーヌは I could come late で水曜なら遅れて行ける。ゴールディは席を取っておく。" }
+      - { type: changed, answer: francine, ctx: "木曜か水曜か、それぞれの都合が出てきます", why: "フランシーヌは最初 it's his last week と木曜を推したが、Okay, fine. Wednesday で水曜に変えた。" }
+      - { type: plan, ask: "送別会は？", choices: ["Thursday, with one of them joining after work.", "Wednesday at the Thai place, with one of them arriving late.", "Friday lunch, as a surprise."], answer: 1, ja: "水曜にタイ料理の店で。1人は遅れて来る。", ctx: "最後に、日にちと店が決まります", why: "Same place, the Thai one＝あのタイ料理の店で水曜。1人は8時半ごろ遅れて来る。金曜はケンジがもう休み。", cja: ["木曜に、1人は仕事のあとで合流", "水曜にタイ料理の店で、1人は遅れて来る", "金曜のランチにサプライズで"] }
     note: "I'd rather not＝できれば避けたい。遠回しな反対"
     tags: { seed: 38, register: colleague, pragmatic: hedge, features: [overlap, contraction, clock] }
 
@@ -105,8 +105,8 @@ items:
       - { who: henry, at: 0.3, en: "Standing for three hours? Pass. But I'll meet you guys after for wings.", tts: "Standin' for three hours? Pass. But I'll meet you guys after for wings.", ja: "3時間立ちっぱなし？パス。でも、あとでチキンウイングには合流するよ。" }
       - { who: molly, at: 0.2, en: "Deal. Gates open at five, so let's meet at the Addison stop at four-thirty.", ja: "決まり。開門は5時だから、4時半にアディソン駅で集合ね。" }
     rounds:
-      - { type: opinions, claims: ["球場で 見るのが いちばん", "3時間 立つのは いや", "安いなら 行く"], answer: [molly, henry, kicks] }
-      - { type: changed, answer: kicks }
-      - { type: plan, ask: "土曜は どうなる？", choices: ["All three watch the game at the bar.", "Two of them go on cheap tickets, and all three get wings after.", "They buy good seats for ninety dollars each."], answer: 1, ja: "2人は安い立ち見券で球場へ。あとで3人でチキンウイング。" }
+      - { type: opinions, claims: ["球場で 見るのが いちばん", "3時間 立つのは いや", "安いなら 行く"], answer: [molly, henry, kicks], ctx: "シカゴで、友だち3人が土曜の野球の話をしています", why: "モリーは You can't get that on TV で球場派。ヘンリーは3時間立つのは Pass。キックスは25ドルなら I'm in。" }
+      - { type: changed, answer: kicks, ctx: "チケットの値段で、ある人の気持ちが変わります", why: "キックスは90ドルなら I'd rather stay in だったが、25ドルの立ち見券と聞いて that changes things. I'm in。" }
+      - { type: plan, ask: "土曜は どうなる？", choices: ["All three watch the game at the bar.", "Two of them go on cheap tickets, and all three get wings after.", "They buy good seats for ninety dollars each."], answer: 1, ja: "2人は安い立ち見券で球場へ。あとで3人でチキンウイング。", ctx: "最後に、集合の時間と場所が決まります", why: "2人は25ドルの立ち見券で球場へ。ヘンリーは I'll meet you guys after for wings で、あとから合流。90ドルの席は買わない。", cja: ["3人ともバーで試合を見る", "2人は安い券で球場へ、あとで3人でチキンウイング", "1人90ドルのいい席を買う"] }
     note: "that changes things＝それなら話は別。Pass＝やめとく"
     tags: { seed: 27, register: friend, pragmatic: attitude, conditions: [street], features: [numbers, overlap, contraction] }
