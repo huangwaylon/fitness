@@ -289,7 +289,7 @@ The learning scientist (`/tmp/modes/science.md`), the EFL teacher with the curri
 
 | Mode | What it is | Why |
 |---|---|---|
-| **しずえの しゅうまつ たいかい** | A Sunday quiz show built from the week's misses: interleaved (まぜまぜ), levelled per player so the B1+ partner can win, with a confidence wager round (かけて ききみみ: bet かいがら on how sure you are) | Retrieval + spacing + interleaving + hypercorrection; a weekly ritual; the panel's top pick with the bedtime story |
+| **しずえの しゅうまつ たいかい** | A Sunday quiz show built from the week's misses: interleaved (まぜまぜ), levelled per player so the B1+ partner can win, with a confidence wager round (かけて ききみみ: bet the round's own chips on how sure you are; no かいがら). Logic built 2026-11-07 (kikimimi-framework.md "G-たいかい logic as built") | Retrieval + spacing + interleaving + hypercorrection; a weekly ritual; the panel's top pick with the bedtime story |
 | **おやすみ ものがたり** | A bedtime story in the tent: no score, a sleep timer, chapters (the serial's form) | Extensive listening at 95%+ comprehension; the panel: 「これは毎日やる」 |
 | **すうじ ラッシュ** | A café rush of orders full of numbers and dates with mid-stream corrections | Numbers under pressure; fully template-generated |
 | **よみきき サンド** | Listen blind → read the transcript → listen blind again, over any item | Vandergrift's metacognitive cycle; no new content |

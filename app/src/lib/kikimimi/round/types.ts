@@ -95,9 +95,11 @@ export interface RoundDeck {
   maxScore: number;
 }
 
-/** What a game deals from: its unit (a lesson's), the windows, its options as on the wire (a deck cache's key). */
+/** What a game deals from: its unit (a lesson's), its items' ids (the `open`'s `ids`: a deck the host picked, the
+ *  tournament's), the windows, its options as on the wire (a deck cache's key). */
 interface DeckCtx {
   u?: string;
+  ids?: readonly number[];
   w: RoundWindows;
   enc: readonly number[];
 }
@@ -125,13 +127,25 @@ export interface GameDef<O = unknown> {
   roles?: number;
 }
 
-/** A lobby's set-up: which game, its seed, options (as on the wire), flags (F_SAME, F_VS) and unit. */
+/** A lobby's set-up: which game, its seed, options (as on the wire), flags (F_SAME, F_VS), unit and items' ids. */
 export interface Setup {
   gm: GameId;
   seed: number;
   o: readonly number[];
   f: number;
   u?: string;
+  /** The host's pick of items (numeric ids, ≤ 8: the `open`'s `ids`), for a game that deals from them (GameDef.deck's
+   *  ctx). */
+  ids?: readonly number[];
+}
+
+/** A game event (the `play` wire's `ev`: a slot `i`, a kind `e`, a value `x`), kept per player and slot, the latest:
+ *  what a game's lobby trades beyond the open (the tournament's offered misses). */
+export interface RoundEvent {
+  who: Who;
+  i: number;
+  e: number;
+  x?: number;
 }
 
 /** The `f` flags (the `play` wire's): おなじへや, たいせん. */
@@ -179,6 +193,8 @@ export interface Game extends Setup {
   beaconed?: { i: number; at: number; t: number };
   /** Each player's よみおわった: the round whose reveal they're done reading (the latest). */
   ready: Map<Who, number>;
+  /** The game events heard and mine (`ev`), by player and slot: the latest. */
+  evs: Map<Who, Map<number, RoundEvent>>;
   /** The host gone: the furthest a player's つぎへ moved the game (mine or heard), so a phone that sees the host gone a
    *  moment later follows it, and a host back from a lock behind it adopts it. */
   advance?: { i: number; at: number };

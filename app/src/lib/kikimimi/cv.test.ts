@@ -10,9 +10,10 @@ import { gameCv } from './compile.ts';
 import { deck } from './deck.ts';
 import { ladderDeck } from './ladder.ts';
 import { lessonDeck, type Tier } from './lesson.ts';
-import { INDEX, gameCvOf, ladders, loadAll, unitPart } from './pool.ts';
+import { ENTRIES, INDEX, gameCvOf, ladders, loadAll, unitPart } from './pool.ts';
 import { LESSONS } from './stages.ts';
 import { BUILD_V } from './games/versions.ts';
+import { taikaiDeck } from './games/taikai/source.ts';
 
 const SEEDS = Array.from({ length: 20 }, (_, s) => s);
 const TIERS: readonly (Tier | undefined)[] = [undefined, 'easy', 'hard'];
@@ -25,6 +26,8 @@ function decksOf(key: string): unknown {
   const [gm, unit] = key.split(':');
   if (gm === 'quiz') return SEEDS.map((s) => shape(deck(s, Number(unit) as Level)));
   if (gm === 'ladder') return SEEDS.map((s) => shape(ladderDeck(s, ladders())));
+  // the tournament's: 8 ids a seed, spread over every level's items
+  if (gm === 'taikai') return SEEDS.map((s) => shape(taikaiDeck(s, Array.from({ length: 8 }, (_, k) => (s * 37 + k * 101) % ENTRIES.length))));
   const part = unitPart(unit)!;
   return LESSONS.filter((l) => part.unit.lessons[l]).map((l) => TIERS.map((t) => SEEDS.map((s) => shape(lessonDeck(part, l, s, t)))));
 }
@@ -48,15 +51,15 @@ describe('ききみみ content versions', () => {
     expect(() => gameCv('nope', 'abcdef')).toThrow();
   });
 
-  it('every game the phone deals has one: each level’s quiz, スピード はしご, each unit’s lessons (pool.ts gameCvOf)', () => {
+  it('every game the phone deals has one: each level’s quiz, スピード はしご, each unit’s lessons, the tournament over every level (pool.ts gameCvOf)', () => {
     const levels = Object.keys(INDEX.units).filter((u) => /^\d+$/.test(u));
     const units = INDEX.paths.map((p) => p[0]);
-    expect(Object.keys(INDEX.games).sort()).toEqual([...levels.map((l) => `quiz:${l}`), 'ladder:ladder', ...units.map((u) => `lesson:${u}`)].sort());
+    expect(Object.keys(INDEX.games).sort()).toEqual([...levels.map((l) => `quiz:${l}`), 'ladder:ladder', ...units.map((u) => `lesson:${u}`), 'taikai:all'].sort());
     for (const [key, cv] of Object.entries(INDEX.games)) {
       const [gm, unit] = key.split(':');
       expect(cv).toMatch(/^[0-9a-f]{6}$/);
       expect(gameCvOf(gm, (/^\d+$/.test(unit) ? Number(unit) : unit) as Level)).toBe(cv);
-      expect(cv).toBe(gameCv(gm, INDEX.units[unit].cv));
+      expect(cv).toBe(gameCv(gm, unit === 'all' ? levels.map((l) => INDEX.units[l].cv).join(',') : INDEX.units[unit].cv));
     }
     expect(gameCvOf('lesson', 'zz-none')).toBeUndefined();
   });
