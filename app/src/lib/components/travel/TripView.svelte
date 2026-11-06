@@ -1,12 +1,13 @@
 <script module lang="ts">
-  export type Tab = 'days' | 'map' | 'pack' | 'camps';
+  export type Tab = 'days' | 'map' | 'pack';
 </script>
 
 <script lang="ts">
   // A trip in the quiet skin (docs/design.md §Trips, level 2; any trip not drawn like its original guide): its pages
-  // under one bottom tab bar, 日程 · 地図 (with a route) · キャンプ場 (with campsites) · 持ち物. 日程 opens on the
-  // trip's photo (150 px, ‹ ✕ on it; the title, dates, area and days at its foot); scrolled past it, the title bar
-  // (‹ the place and its dates ✕) takes its place. Then the day cards (outside the trip all open; during it today's
+  // under one bottom tab bar, 日程 · 地図 (with a route) · 持ち物 (campsites and candidate layers are the classic
+  // guides' only: trips.test keeps them off any other trip). 日程 opens on the trip's photo (150 px, ‹ ✕ on it; the
+  // title, dates, area and days at its foot); scrolled past it, the title bar (‹ the place and its dates ✕) takes its
+  // place. Then the day cards (outside the trip all open; during it today's
   // open and in view, the row that is now marked), じゅんび (the logistics cards) and the guide's foot. The other
   // pages have the title bar from the top, the page's name beside the place. `tab` is the sheet's (kept while the
   // app runs). Its private values not in yet (offline), a line says so.
@@ -20,7 +21,6 @@
   import Photo from './Photo.svelte';
   import DayCard from './DayCard.svelte';
   import PrepCard from './PrepCard.svelte';
-  import CampList from './CampList.svelte';
   import MapPane from './MapPane.svelte';
   import PackList from './PackList.svelte';
   import Txt from './Txt.svelte';
@@ -48,7 +48,6 @@
   const items = $derived<{ id: Tab; label: string; icon: IconName }[]>([
     { id: 'days', label: t('travel.tab.days'), icon: 'calendar' },
     ...(trip.places.length ? [{ id: 'map' as const, label: t('travel.tab.map'), icon: 'map' as const }] : []),
-    ...(trip.camps?.length ? [{ id: 'camps' as const, label: t('travel.tab.camps'), icon: 'tent' as const }] : []),
     { id: 'pack', label: t('travel.tab.pack'), icon: 'backpack' }
   ]);
   const tabName = $derived(items.find((x) => x.id === tab)?.label ?? '');
@@ -61,11 +60,8 @@
     if (!scroller || !hero) return void (past = false);
     past = scroller.scrollTop > hero.offsetHeight - 52;
   }
-  /** The camp 地図で見る brings to the map (cleared when the map is left). */
-  let focusCamp = $state<string | null>(null);
   /** Another page starts at its top. */
   function pickTab(id: Tab) {
-    if (id !== 'map') focusCamp = null;
     tab = id;
     past = false;
     void tick().then(() => scroller?.scrollTo({ top: 0 }));
@@ -123,11 +119,9 @@
         {/if}
         {#if trip.foot}<p class="foot guide"><Txt l={trip.foot} {note} /></p>{/if}
       {:else if tab === 'map'}
-        <MapPane {trip} {note} start={mark?.day ?? today ?? 1} focus={focusCamp} />
-      {:else if tab === 'pack'}
-        <PackList {trip} />
+        <MapPane {trip} {note} start={mark?.day ?? today ?? 1} />
       {:else}
-        <CampList {trip} {note} onmap={(id) => ((focusCamp = id), pickTab('map'))} />
+        <PackList {trip} />
       {/if}
     </div>
   </div>
@@ -156,8 +150,7 @@
   .hs { font-size: var(--q-fs-s); opacity: .92; }
   .hint { margin: 10px 20px 0; display: flex; align-items: center; gap: 6px; font-size: var(--q-fs-s); color: var(--q-muted); }
   .pane { display: grid; grid-template-columns: minmax(0, 1fr); }
-  .pane[data-pane='days'], .pane[data-pane='pack'], .pane[data-pane='camps'] { padding: 12px 16px 0; }
-  .pane[data-pane='days'] { padding-top: 12px; }
+  .pane[data-pane='days'], .pane[data-pane='pack'] { padding: 12px 16px 0; }
   .days { display: grid; gap: 12px; }
   .foot { margin: 16px 4px 0; font-size: var(--q-fs-s); color: var(--q-muted); }
   /* on 日程 the title bar lies over the content: a card scrolled to stays clear of it */

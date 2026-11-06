@@ -1,7 +1,7 @@
 <script lang="ts">
   // A guide photo (static/travel/<trip>/, docs/travel.md "Photos"): its box held from its size before it loads (no
   // layout shift), loaded lazily, its caption under it in the reader's locale.
-  //   <Photo photo={day.photo} />            <Photo photo={trip.hero} eager band />
+  //   <Photo photo={day.photo} />            <Photo photo={trip.hero} fill eager />
   import { asset } from '$app/paths';
   import type { Photo } from '#lib/travel/types.ts';
   import { i18n } from '#lib/i18n/index.ts';

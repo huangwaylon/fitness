@@ -10,6 +10,8 @@ import { seattle } from './trips/seattle.ts';
 import { nz } from './trips/nz.ts';
 import { TRIP_IDS, loadTrip } from './trips/index.ts';
 import { TRIP_META } from './trips/meta.ts';
+import { isIcon } from '../components/quiet/Icon.svelte';
+import { catIcon } from '../components/travel/packView.ts';
 
 const TRIPS: Record<TripId, Trip> = { okinawa, seattle, nz };
 const STATIC = join(import.meta.dirname, '..', '..', '..', 'static');
@@ -81,6 +83,19 @@ describe('the trips', () => {
     }
     expect(okinawa.places.filter((p) => p.kind === 'camp').length).toBe(okinawa.camps?.length);
     expect((okinawa.camps ?? []).flatMap((c) => c.chips.filter((ch) => ch.pick).map((ch) => ch.text.en))).toEqual(expect.arrayContaining(['Night 1', 'Night 2']));
+  });
+  it('a quiet guide\'s icons are the kit\'s (a logistics card\'s, a packing category\'s: never the fallback)', () => {
+    for (const t of Object.values(TRIPS).filter((x) => !x.classic)) {
+      expect(t.logistics.map((c) => c.icon).filter((n) => !isIcon(n)), t.id).toEqual([]);
+      const fallback = (n: string) => n !== 'shopping-bag' && JSON.stringify(catIcon(n)) === '{"icon":"shopping-bag"}';
+      expect(t.packing.cats.map((c) => c.icon).filter(fallback), t.id).toEqual([]);
+    }
+  });
+  it('campsites and candidate layers only on a classic guide (the quiet TripView draws neither)', () => {
+    for (const t of Object.values(TRIPS).filter((x) => !x.classic)) {
+      expect(t.camps ?? [], t.id).toEqual([]);
+      expect(t.places.filter((p) => p.kind !== 'stop'), t.id).toEqual([]);
+    }
   });
   it.each(TRIP_IDS)('%s: a row’s own zone is a real one, never the trip’s', (id) => {
     for (const r of TRIPS[id].days.flatMap((d) => d.rows)) {
