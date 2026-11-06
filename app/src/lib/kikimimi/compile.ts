@@ -185,12 +185,13 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
 }
 
 /** levels/'s files (paths under it → contents) for these clips and word timings, these units (app/content/units/:
- *  a unit that fails its checks stops it) and these packs (packs.json: a clip in none stops it). */
-export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks()): Map<string, string> {
+ *  a unit that fails its checks stops it; its warnings go to `warn`) and these packs (packs.json: a clip in none stops it). */
+export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void): Map<string, string> {
   const out = new Map<string, string>();
   const places = clipPlaces(packs);
   const BANK = joined(clips), check = checkUnitSources(sources, clips, BANK);
   if (check.errors.length) throw new Error(`kikimimi: the units don't check:\n${check.errors.join('\n')}`);
+  if (warn) for (const w of check.warnings) warn(w);
   const dialogues = dialoguesVoiced(clips, BANK), mix = mixFor(dialogues);
   const units: Index['units'] = {};
   const levels = [...new Set(BANK.map((it) => it.lv))].sort((a, b) => a - b);
