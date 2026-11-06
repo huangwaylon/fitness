@@ -185,12 +185,12 @@ not drawn yet keep their category's tile. `food-data/images/fi.py` (its docstrin
   then goes back to the tile. Every verdict is appended to `verdicts.jsonl`.
 - **Pack** (`pack`, PIL): it evens the background to the paper colour (#F5E4BC, a per-channel gain from the border's median), then
   writes webp q72 sprite sheets into `app/static/food-img/`. Thumbnail sheets hold 10 × 10 cells of 128 px (rows, 40–64 px
-  at 3×). Detail sheets hold 5 × 5 cells of 384 px (the amount's 160 px picture). Thumbnail sheets are per search
+  at 3×). Detail sheets hold 2 × 2 cells of 384 px (the amount's 160 px picture: one open fetches ~48 KB and decodes 2.4 MB). Thumbnail sheets are per search
   neighbourhood (`FAMILY`: a row whose name holds a common search word, e.g. カレー or 卵, sits with that word's family,
   else with its category), so a common search's top 20 touch about 1–2 sheets; detail sheets go by category. Popular
   items come first. `slots.json` is append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
   `index.json` maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
-- **Budget** (`lib/food/images.test.ts`): ≤ 400 files and 60 MB in food-img/, ≤ 400 KB a sheet, ≤ 19,000 files under
+- **Budget** (`lib/food/images.test.ts`): ≤ 1,600 files and 90 MB in food-img/, ≤ 400 KB a sheet, ≤ 19,000 files under
   static/ (Cloudflare Pages takes 20,000 a deploy). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),
   never at install.
 

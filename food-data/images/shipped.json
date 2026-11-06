@@ -12080,6 +12080,58 @@
 "checked": false
 },
 {
+"key": "maff_kyodo-47_1_okinawa",
+"ja": "中身汁",
+"desc": "nakami jiru, a clear soy broth full of thin pale cream strips of cleaned pork intestine and dark shiitake strips, in a red lacquer bowl with its lid beside",
+"items": [
+"maff_kyodo:47_1_okinawa"
+],
+"roll": 0,
+"seed": 42160,
+"prompt": "93be0aca38",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-47_20_okinawa",
+"ja": "沖縄そば",
+"desc": "Okinawa soba, thick flat wheat noodles in clear pork and bonito broth, topped with glazed brown pork belly slabs, white fish cake slices, red pickled ginger and green onion, in a patterned bowl",
+"items": [
+"maff_kyodo:47_20_okinawa"
+],
+"roll": 0,
+"seed": 63715,
+"prompt": "ccac7321bd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-47_22_okinawa",
+"ja": "クーリジシ",
+"desc": "kuurijishi, a clear soup with thin strips of pork belly, winter melon and burdock under a fluffy yellow layer of egg poured over the top, in a black bowl",
+"items": [
+"maff_kyodo:47_22_okinawa"
+],
+"roll": 0,
+"seed": 23397,
+"prompt": "c3380fcfda",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-47_23_okinawa",
+"ja": "ヒラヤーチー",
+"desc": "hirayachi, a thin flat round pale golden pancake of wheat batter dotted with chopped green chives, cut into wedges, on a dark round plate",
+"items": [
+"maff_kyodo:47_23_okinawa"
+],
+"roll": 0,
+"seed": 50406,
+"prompt": "0922672654",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01004",
 "ja": "オートミール",
 "desc": "a small bowl heaped with dry rolled oats: many thin flat irregular pale beige oat flakes, matte and papery, a few loose flakes beside the bowl, with a wooden spoon",

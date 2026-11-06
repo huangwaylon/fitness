@@ -12,8 +12,8 @@ import type { Dataset, FoodIndex } from './types.ts';
 const STATIC = join(import.meta.dirname, '../../../static');
 const DIR = join(STATIC, 'food-img');
 /** The budget: files in food-img/, its bytes, one sheet's bytes, and every file under static/ (Pages' cap is 20,000). */
-const MAX_FILES = 400;
-const MAX_BYTES = 60_000_000;
+const MAX_FILES = 1_600; // ~5,000 pictures: 2 × 2 detail sheets (~1,250) and ~110 thumbnail sheets
+const MAX_BYTES = 90_000_000;
 const MAX_SHEET = 400_000;
 const MAX_STATIC_FILES = 19_000;
 

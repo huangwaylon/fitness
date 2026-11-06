@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -321,5 +321,62 @@ describe('ききみみ’s packs (LISTEN_CACHE, listenEvict)', () => {
     idx[`${L}lv4-2.aaaaaaaa.pak`][1] = now - min;
     idx[`${L}lv4-2.bbbbbbbb.pak`][1] = now - 2 * min;
     expect(listenEvict(idx, now)).toEqual([]);
+  });
+});
+
+describe("ごはん's picture fetches (foodImgFetch)", () => {
+  const BASE = 'https://x.example/fitness/food-img/';
+  class MemCache {
+    m = new Map<string, string>();
+    failPut = false;
+    key = (r: Request | string) => (typeof r === 'string' ? r : r.url);
+    async match(r: Request | string) { const b = this.m.get(this.key(r)); return b === undefined ? undefined : new Response(b); }
+    async put(r: Request | string, res: Response) { if (this.failPut) throw new Error('quota'); this.m.set(this.key(r), await res.text()); }
+    async delete(r: Request | string) { return this.m.delete(this.key(r)); }
+    async keys() { return [...this.m.keys()].map((k) => new Request(k)); }
+  }
+  let cache: MemCache, bg: Promise<unknown>[], served: Record<string, string>, slow: number, offline: boolean;
+  const net = async (r: Request) => {
+    if (offline) throw new TypeError('offline');
+    await new Promise((ok) => setTimeout(ok, slow));
+    const b = served[r.url];
+    return b === undefined ? new Response('', { status: 404 }) : new Response(b);
+  };
+  const get = async (f: string) => {
+    const res = await foodImgFetch(new Request(BASE + f), cache as unknown as Cache, net, (p) => bg.push(p), 40);
+    return res.type === 'error' ? null : await res.text();
+  };
+  const settled = async () => { while (bg.length) await bg.shift(); };
+  beforeEach(() => {
+    cache = new MemCache();
+    bg = [];
+    slow = 0;
+    offline = false;
+    served = { [`${BASE}index.json`]: JSON.stringify({ sheets: ['t-a-0-11111111.webp'] }), [`${BASE}t-a-0-11111111.webp`]: 'sheet' };
+  });
+
+  it('answers a sheet before it is stored, from the cache after; a failed store still shows it', async () => {
+    cache.failPut = true;
+    expect(await get('t-a-0-11111111.webp')).toBe('sheet');
+    await settled();
+    expect(cache.m.size).toBe(0);
+    cache.failPut = false;
+    await get('t-a-0-11111111.webp');
+    await settled();
+    offline = true;
+    expect(await get('t-a-0-11111111.webp')).toBe('sheet');
+  });
+
+  it('takes index.json from the network, its cached copy when the network is slow or gone, and drops sheets it no longer names', async () => {
+    cache.m.set(`${BASE}t-a-0-00000000.webp`, 'old');
+    expect(await get('index.json')).toContain('11111111');
+    await settled();
+    expect([...cache.m.keys()]).toEqual([`${BASE}index.json`]);
+    slow = 200;
+    served[`${BASE}index.json`] = JSON.stringify({ sheets: ['t-a-0-22222222.webp'] });
+    expect(await get('index.json')).toContain('11111111');
+    await settled();
+    offline = true;
+    expect(await get('index.json')).toContain('22222222');
   });
 });

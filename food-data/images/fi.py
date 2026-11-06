@@ -542,7 +542,8 @@ def cmd_status(*keys):
 
 PAPER = (0xF5, 0xE4, 0xBC)  # --c-paper
 T_PX, T_COLS, T_PER = 128, 10, 100  # thumbnails (48 / 40 px at 3x): 10 x 10 a sheet
-D_PX, D_COLS, D_PER = 384, 5, 25    # the amount picture (160 px): one at a time, so bigger sheets (fewer files)
+D_PX, D_COLS, D_PER = 384, 2, 2 * 2  # the amount picture (160 px): 2 x 2 (768 px, ~2.4 MB decoded), opened one at a time
+D_V = 2  # the detail layout's version: a change lays the detail sheets out again (5 x 5 until 2026-11-07)
 QUALITY = 72
 # Thumbnail sheets are per search neighbourhood, so a search's rows touch few: a row whose name holds a common search
 # word sits with that word's family, the rest with its first item's category (BUCKET). Dish-type words rank before
@@ -599,7 +600,10 @@ def cmd_pack():
     rows = [r for r in table() if state(r, vs)[0] == 'ship']
     slots = json.loads(SLOTS.read_text()) if SLOTS.exists() else {}
     if slots.get('v') != FAMILY_V:  # another family ranking (or the first layout): the thumbnails laid out again
-        slots = {'v': FAMILY_V, 'd': slots.get('d', {}) if set(slots) <= {'t', 'd', 'v'} else {}}
+        old = slots if set(slots) <= {'t', 'd', 'v', 'dv'} else {}
+        slots = {'v': FAMILY_V, 'd': old.get('d', {}), 'dv': old.get('dv')}
+    if slots.get('dv') != D_V:
+        slots['d'], slots['dv'] = {}, D_V
     slots.setdefault('t', {})
     slots.setdefault('d', {})
     # new keys join their bucket's end, popular first, then by name: a full sheet never changes
