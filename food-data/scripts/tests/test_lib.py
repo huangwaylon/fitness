@@ -373,6 +373,24 @@ class Readings(unittest.TestCase):
         self.assertEqual(lib.drop_reading('焼豚(スライス)'), ('焼豚(スライス)', []))
 
 
+class SameName(unittest.TestCase):
+    def test_qualified_by_what_differs(self):
+        b = build.Builder()
+        b.docs = {'dishes': {'items': [{'id': 'dishes:a', 'name': 'エビマヨ', 'kcal': 200},
+                                       {'id': 'dishes:b', 'name': '冷奴', 'kcal': 57}]}}
+        eat = {'items': [{'id': 'eatout:a', 'name': 'エビマヨ', 'kcal': 258}, {'id': 'eatout:b', 'name': '冷奴', 'kcal': 57},
+                         {'id': 'eatout:c', 'name': '焼き餃子（6個）', 'kcal': 204}]}
+        b.docs['eatout'] = eat
+        b.docs['dishes']['items'].append({'id': 'dishes:c', 'name': '焼き餃子（6個）', 'kcal': 168})
+        b.qualify('eatout', eat)
+        self.assertEqual([it['name'] for it in eat['items']], ['エビマヨ（お店）', '冷奴', '焼き餃子（6個・お店）'])
+        maff = {'items': [{'id': 'maff_kyodo:a', 'name': '雑煮', 'kcal': 96, 'full': '雑煮（愛知県）'},
+                          {'id': 'maff_kyodo:b', 'name': '雑煮', 'kcal': 44, 'full': '雑煮（三重県）'},
+                          {'id': 'maff_kyodo:c', 'name': '冷奴', 'kcal': 57, 'full': '冷奴／ひややっこ（京都府）'}]}
+        b.qualify('maff_kyodo', maff)
+        self.assertEqual([it['name'] for it in maff['items']], ['雑煮（愛知県）', '雑煮（三重県）', '冷奴（京都府）'])
+
+
 class Barcodes(unittest.TestCase):
     def test_norm_and_shard(self):
         self.assertEqual(lib.norm_jan('4901234567894'), '4901234567894')

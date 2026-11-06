@@ -55,7 +55,7 @@
 {"key": "cup_nonfry", "name": "カップラーメン（ノンフライ）", "en": "Non-fried instant cup noodles", "aliases": ["ノンフライカップ麺"], "cat": "コンビニ", "ing": [["01061", 90]], "unit": "1個（90g）"},
 {"key": "cup_yakisoba", "name": "カップ焼きそば", "en": "Instant cup yakisoba", "aliases": ["カップやきそば", "焼きそばカップ"], "cat": "コンビニ", "ing": [["01060", 125]], "unit": "1個（125g）", "portions": [["大盛（170g）", 1.36]]},
 {"key": "cup_udon", "name": "カップうどん・そば（きつね・天ぷら）", "en": "Instant cup udon/soba", "aliases": ["カップうどん", "カップそば", "どん兵衛", "緑のたぬき", "赤いきつね"], "cat": "コンビニ", "ing": [["01062", 95]], "unit": "1個（95g）"},
-{"key": "fukuro_ramen", "name": "インスタントラーメン（袋麺）", "en": "Instant ramen (packet)", "aliases": ["袋麺", "即席ラーメン", "インスタント"], "cat": "コンビニ", "ing": [["01057", 100]], "unit": "1袋（100g）"},
+{"key": "fukuro_ramen", "name": "インスタントラーメン（袋麺・調理前）", "en": "Instant ramen (packet)", "aliases": ["袋麺", "即席ラーメン", "インスタント"], "cat": "コンビニ", "ing": [["01057", 100]], "unit": "1袋（100g）"},
 {"key": "instant_miso", "name": "インスタント味噌汁", "en": "Instant miso soup", "aliases": ["即席味噌汁", "みそ汁 カップ"], "cat": "コンビニ", "ing": [["17049", 10], ["09044", 0.5], ["water", 160]], "unit": "1杯"},
 {"key": "harusame_soup", "name": "春雨スープ（カップ）", "en": "Glass noodle soup cup", "aliases": ["はるさめスープ"], "cat": "コンビニ", "ing": [["02040", 12], ["17093", 3], ["09044", 0.5], ["06227", 1], ["water", 160]], "unit": "1個"},
 {"key": "konbini_salad", "name": "グリーンサラダ（ドレッシング付き）", "en": "Green salad with dressing", "aliases": ["サラダ", "野菜サラダ", "コンビニサラダ"], "cat": "コンビニ", "ing": [["06312", 40], ["06061", 40], ["06214", 10], ["06182", 20], ["06180", 10], ["17116", 15]], "unit": "1パック"},
