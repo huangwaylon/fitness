@@ -164,16 +164,6 @@
       oninput={onInput} oncompositionend={() => (q = text)} />
     {#if text}<button type="button" class="x" data-sfx="tick" aria-label={t('food.clear')} onclick={clear}>✕</button>{/if}
   </form>
-  {#if (onnewrecipe || oncreate) && !text}
-    <!-- hidden while typing: room for the results over the keyboard (nothing found: its card's じぶんで つくる) -->
-    <div class="new">
-      {#if onnewrecipe}<button type="button" class="btn paper small make" data-sfx="page" data-recipe-new onclick={onnewrecipe}>{@render plus()}{t('food.rcp.make')}</button>{/if}
-      {#if oncreate}<button type="button" class="btn paper small make" data-sfx="page" data-custom-new onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.my.new')}</button>{/if}
-    </div>
-    {#if onquicknew}
-      <button type="button" class="btn paper small make" data-sfx="page" data-quick-new onclick={() => onquicknew()}>{@render bolt()}{t('food.quick.make')}</button>
-    {/if}
-  {/if}
 
   {#if onfinish && added.length}
     <section class="card added" data-food-added aria-labelledby="fs-added">
@@ -215,7 +205,18 @@
 </div>
 
 {#snippet recentRows()}
-  <h3 class="lh">{t('food.recent')}</h3>
+  <!-- 最近's heading, the つくる chips at its right end (one short row: さいきん, the 1-tap path, stays high over the
+       keyboard); hidden while typing (nothing found: its card's 自分で作る) -->
+  <div class="rh">
+    <h3 class="lh">{t('food.recent')}</h3>
+    {#if (onnewrecipe || oncreate || onquicknew) && !text}
+      <div class="new">
+        {#if onnewrecipe}<button type="button" class="chip make" data-sfx="page" data-recipe-new aria-label={t('food.rcp.make')} onclick={onnewrecipe}>{@render plus()}{t('food.new.recipe')}</button>{/if}
+        {#if oncreate}<button type="button" class="chip make" data-sfx="page" data-custom-new aria-label={t('food.my.new')} onclick={() => oncreate(q.trim())}>{@render plus()}{t('food.new.custom')}</button>{/if}
+        {#if onquicknew}<button type="button" class="chip make" data-sfx="page" data-quick-new aria-label={t('food.quick.make')} onclick={() => onquicknew()}>{@render bolt()}{t('food.new.quick')}</button>{/if}
+      </div>
+    {/if}
+  </div>
   {#if recent.length}
     <ul class="list" data-food-recent>
       {#each recent as e (e.id)}
@@ -343,11 +344,14 @@
   .fail .btn { margin: 0; }
   .kc { grid-area: kc; display: grid; justify-items: end; gap: 3px; font-size: var(--fs-body); white-space: nowrap; }
   .kc small { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); max-width: 12em; overflow: hidden; text-overflow: ellipsis; }
-  /* the two ＋ buttons side by side under the field (one: the whole row) */
-  .new { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
-  .make { margin: 0; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-  .new .make { min-width: 0; padding: 0 8px; gap: 4px; white-space: nowrap; }
+  /* 最近's heading and the つくる chips on one line (theme.css .chip: 36 px drawn, 44 px to tap) */
+  .rh { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 36px; margin-bottom: -2px; }
+  .rh .lh { margin: 0 2px; }
+  .new { display: flex; gap: 6px; }
+  .make { margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .new .make { gap: 3px; padding: 0 10px; white-space: nowrap; }
   .make svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .new .make svg { width: 14px; height: 14px; }
   /* a row with its own ＋ beside it (FoodMeal's ＋ object) */
   .rw { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
   .qa {

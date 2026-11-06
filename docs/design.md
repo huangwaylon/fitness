@@ -426,8 +426,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   with what it holds (「2品 322 kcal」; `model/food.ts` copySources). One tap copies it in: each item (a いつもの's too) a
   new entry of mine, its snapshot as logged (`store/actions.ts` copyMeal: ordinary `food` ops, nothing new on the
   record); its banner (「昼ごはんに 2品 コピーしました」) has とりけす.
-  **クイック** (quick add, the user approved 2026-11-05: eating out, kcal is all you know): in a meal's search, ⚡ クイック
-  ついか（カロリーだけ） under the つくる row (hidden while typing, as they are) opens the form, its kcal field focused in
+  **クイック** (quick add, the user approved 2026-11-05: eating out, kcal is all you know): in a meal's search, the ⚡ クイック
+  chip (beside the つくる ones, hidden while typing as they are) opens the form, its kcal field focused in
   the tap: なまえ (blank: 「クイック」), カロリー (needed) and the nutrients (each optional), then ついか: one entry by the
   serving (「1食」), back to the search's trip. A kcal typed in the search (「650」, 「６５０kcal」: foodUi.ts typedKcal)
   offers itself above the catalog's rows as 「クイック 650 kcal」: the row opens the form with it, its ＋ logs it at
@@ -436,9 +436,10 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   **Tap counts** from the open sheet (e2e food.spec, Playwright WebKit as an iPhone 15; before → now): the same meal as
   yesterday 3 a food from さいきん → 1; a new 3-item breakfast (ご飯 · みそ汁 · 卵) 9 + 7 characters → 5 + 7; a konbini
   lunch (おにぎり ×2 · サラダチキン) 8 + 10 → 6 + 10; a 650 kcal meal out 4 + 8 (a new マイ食品) → 3 + 3.
-- **Search:** a 16px field (no search mid-IME composition), its ✕ the app's 44px lipped round button; under it, side
-  by side (half the row each, on 393 px too), ＋ レシピを つくる (a meal's search only) and ＋ 食品を つくる, hidden once
-  something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,
+- **Search:** a 16px field (no search mid-IME composition), its ✕ the app's 44px lipped round button; under it, at the
+  right end of 最近's heading, one short row of chips: ＋ レシピ (a meal's search only), ＋ マイ食品 and ⚡ クイック (named in
+  full for a screen reader: レシピを作る, 食品を作る, クイック追加), hidden once something is typed (room for the results over
+  the keyboard; nothing found, its card has じぶんで つくる): four さいきん rows show over the iPhone's keyboard; empty,
   さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓n 一致」 when n independent
   sources agree on its kcal (in words on the row: an iPhone never shows a title; on the second line when nothing else is there, so a row is two lines), a product's brand, the food's
   everyday name in Japanese (`foodUi.ts` glossOf: an older snapshot's catalogue name now, 若どり もも → 鶏もも肉; else the
