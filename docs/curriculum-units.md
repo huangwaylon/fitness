@@ -121,3 +121,15 @@ v1 was reviewed by four people: a curriculum designer, an EFL teacher with a Jap
 | 6 | しごとの ざつだん (small talk with coworkers) | もり | しごと |
 
 Both partners play wave 1 for a week. We tune from the listen rows and the user's feedback, then write the rest in waves of about 6.
+
+## 10. v2.1 amendments (the reviewers' sign-off notes)
+
+- **Co-op stamp from rows (eng, P0):** the listen row gains `tm?` (0–6): the team's first-listen right count from the session's team tally, the same number on both phones. It ships in the same relay-first contract change as `l` and `stamped`. A player's stamp is earned when their own score is ≥ 5/6 **or** `tm` ≥ 5. Results show each player's own 6-question tally next to the shared stamp. The 30-day recheck is solo.
+- **Per-player choice tiers (eng, P1):** an optional schema field in U1 for an easier and a harder choice set per item.
+- **Recycling (curriculum):** ≥ 20% of a unit's items reuse phrases from lower stages or the stage's anchor units.
+- **Phrase check (curriculum):** the compiler checks each phrase appears in ≥ 3 items spoken by ≥ 2 voices. Items may carry more than one phrase.
+- **Wave-1 can-dos:** all written to the template before any content.
+- **Glue everywhere (teacher):** an authoring rule that every dialogue opens and closes naturally.
+- **Wave 1 gets a 7th unit:** 「でんわを おえる」 (ending a call), glue, かわ.
+- **Each wave** is reviewed by the EFL teacher and the Japanese panel (English and Japanese copy) before voicing.
+- **The 30-day recheck** shows on hub card 1 (おさらい) (UX).
