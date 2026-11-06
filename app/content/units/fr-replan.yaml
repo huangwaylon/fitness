@@ -78,7 +78,7 @@ items:
     type: reply
     speaker: kicks
     voice: us
-    cast: us-m1
+    cast: us-m4
     en: "Hey, I'm running about ten minutes late. My train stopped."
     ja: "ごめん、10分くらい遅れてる。電車が止まっちゃって。 →「大丈夫、先に席とっとくね。」"
     note: "running late＝遅れそう。走って いない"
@@ -125,7 +125,7 @@ items:
     type: reply
     speaker: kabuki
     voice: us
-    cast: us-m1
+    cast: us-m5
     en: "Dude, I'm so sorry, I can't make it tonight. My boss wants this report done. Another time?"
     ja: "ほんとにごめん、今夜行けない。上司にこのレポートやれって言われて。また今度？ →「気にしないで。来週は？」"
     note: "can't make it＝行けない。作れない ではない"
@@ -140,7 +140,7 @@ items:
     type: mean
     speaker: francine
     voice: us
-    cast: us-f3
+    cast: us-f4
     en: "Would you mind if we pushed it back an hour? I'm still at the hair salon."
     ja: "1時間遅く会いたい。"
     note: "push back＝あとに ずらす"
@@ -170,15 +170,15 @@ items:
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [idiom] }
     lines:
       - { who: gulliver, cast: us-m2, en: "Hey Tammy, about the beach tomorrow. Have you seen the forecast?", ja: "やあタミー、明日のビーチのことだけど。天気予報見た？" }
-      - { who: tammy, cast: us-f3, en: "I know, it's supposed to pour. Should we take a rain check?", ja: "見た、どしゃぶりらしいね。また今度にする？" }
+      - { who: tammy, cast: us-f6, en: "I know, it's supposed to pour. Should we take a rain check?", ja: "見た、どしゃぶりらしいね。また今度にする？" }
       - { who: gulliver, cast: us-m2, en: "Yeah. How about next Saturday instead? Same time?", ja: "うん。代わりに来週の土曜は？ 同じ時間で。" }
-      - { who: tammy, cast: us-f3, en: "Next Saturday works. I'll put it in my calendar. Talk soon!", ja: "来週の土曜、いいよ。カレンダーに入れとく。またね！" }
+      - { who: tammy, cast: us-f6, en: "Next Saturday works. I'll put it in my calendar. Talk soon!", ja: "来週の土曜、いいよ。カレンダーに入れとく。またね！" }
   - id: kr-does-work
     lv: 3
     type: reply
     speaker: wolfgang
     voice: us
-    cast: us-m3
+    cast: us-m5
     en: "Would Sunday afternoon work for you instead?"
     ja: "代わりに日曜の午後は都合どう？ →「日曜ばっちり。何時？」"
     note: "work for you＝都合が いい。働く ではない"
@@ -224,7 +224,7 @@ items:
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [clock] }
     lines:
       - { who: bob, cast: us-m3, en: "Hey! Quick change: let's meet at the west exit, not the south one, at quarter to six.", ja: "やあ！ ちょっと変更。南口じゃなくて西口で、6時15分前に会おう。" }
-      - { who: katt, cast: us-f2, en: "Sorry, you cut out. What was the last part?", ja: "ごめん、途切れた。最後のところ何だった？" }
+      - { who: katt, cast: us-f6, en: "Sorry, you cut out. What was the last part?", ja: "ごめん、途切れた。最後のところ何だった？" }
       - { who: bob, cast: us-m3, en: "Quarter to six! Five forty-five. At the west exit.", ja: "6時15分前！ 5時45分。西口で。" }
   - id: dk-movie-switch
     lv: 3
@@ -245,9 +245,9 @@ items:
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [numbers] }
     lines:
       - { who: kid-cat, cast: us-m1, en: "Hey! So, small change of plan for the movie.", ja: "やあ！ で、映画の予定、ちょっと変更。" }
-      - { who: tia, cast: us-f2, en: "Uh-oh. You're not canceling, are you?", ja: "あれ。キャンセルじゃないよね？" }
+      - { who: tia, cast: us-f4, en: "Uh-oh. You're not canceling, are you?", ja: "あれ。キャンセルじゃないよね？" }
       - { who: kid-cat, cast: us-m1, en: "No, no! I'm just running late. Can we do the 8:40 show instead of 7:15?", tts: "No, no! I'm just running late. Can we do the eight forty show instead of seven fifteen?", ja: "ちがうちがう！ ちょっと遅れてるだけ。7時15分のじゃなくて8時40分の回にできる？" }
-      - { who: tia, cast: us-f2, en: "Sure. So that's 8:40. I'll grab dinner first, then. See you there!", tts: "Sure. So that's eight forty. I'll grab dinner first, then. See you there!", ja: "いいよ。じゃあ8時40分ね。先に夕飯食べとく。じゃあ映画館で！" }
+      - { who: tia, cast: us-f4, en: "Sure. So that's 8:40. I'll grab dinner first, then. See you there!", tts: "Sure. So that's eight forty. I'll grab dinner first, then. See you there!", ja: "いいよ。じゃあ8時40分ね。先に夕飯食べとく。じゃあ映画館で！" }
   - id: km-start-without
     lv: 3
     type: mean
@@ -269,7 +269,7 @@ items:
     type: reply
     speaker: tangy
     voice: us
-    cast: us-f1
+    cast: us-f6
     en: "Ugh, something's come up tomorrow. Any chance we could do Friday?"
     ja: "うわ、明日急用ができちゃった。金曜にできたりする？ →「いいよ、金曜で。時間は同じ？」"
     note: "something's come up＝急用。Any chance〜？＝できる？"
@@ -284,7 +284,7 @@ items:
     type: mean
     speaker: shep
     voice: us
-    cast: us-m2
+    cast: us-m6
     en: "Change of plan, we're meeting at the west exit. Sorry, I meant the east exit, not the west. East!"
     ja: "東口で会う。"
     note: "I meant〜, not〜 で 訂正。最後の East! が 答え"
@@ -300,7 +300,7 @@ items:
     type: reply
     speaker: octavian
     voice: us
-    cast: us-m3
+    cast: us-m4
     en: "Mind if I take a rain check on Saturday? I've got this awful cold."
     ja: "土曜、また今度にしてもいい？ ひどい風邪ひいちゃって。 →「もちろん。お大事に！」"
     note: "rain check＝また今度。雨 ではない"
@@ -315,7 +315,7 @@ items:
     type: num
     speaker: lopez
     voice: us
-    cast: us-m2
+    cast: us-m6
     en: "Can we push it back to quarter to nine? Text me when you're leaving."
     ja: "9時15分前にずらせる？ 出るときメッセージして。"
     note: "quarter to nine＝8:45"
@@ -385,7 +385,7 @@ items:
     type: word
     speaker: agnes
     voice: us
-    cast: us-f1
+    cast: us-f5
     en: "Can we push it back a little?"
     ja: "ちょっとずらせる？"
     note: "push it back が ひと続き"
@@ -412,7 +412,7 @@ items:
     type: gist
     speaker: gayle
     voice: us
-    cast: us-f1
+    cast: us-f5
     en: "Hey! Can you hear me? I'm on the street. Barely! What's up? So, I can't make it at six, my shift's running long. Can we say seven, at the bar instead of the café? Sorry, did you say the bar? Yeah, seven at the bar. Works for me. See you then!"
     ja: "7時にバー。"
     note: "instead of the café＝カフェ ではなく。6時は なし"
@@ -425,18 +425,18 @@ items:
     cond: { kind: phone, level: heavy, bed: street }
     tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [contraction] }
     lines:
-      - { who: gayle, cast: us-f1, en: "Hey! Can you hear me? I'm on the street.", ja: "もしもし！ 聞こえる？ いま外なの。" }
-      - { who: teddy, cast: us-m1, en: "Barely! What's up?", ja: "ぎりぎり！ どうした？" }
-      - { who: gayle, cast: us-f1, en: "So, I can't make it at six, my shift's running long. Can we say seven, at the bar instead of the café?", ja: "あのね、6時は無理、シフトが延びてて。7時に、カフェじゃなくてバーにしない？" }
-      - { who: teddy, cast: us-m1, en: "Sorry, did you say the bar?", ja: "ごめん、バーって言った？" }
-      - { who: gayle, cast: us-f1, en: "Yeah, seven at the bar.", ja: "うん、7時にバー。" }
-      - { who: teddy, cast: us-m1, en: "Works for me. See you then!", ja: "了解。じゃあそのときに！" }
+      - { who: gayle, cast: us-f5, en: "Hey! Can you hear me? I'm on the street.", ja: "もしもし！ 聞こえる？ いま外なの。" }
+      - { who: teddy, cast: us-m6, en: "Barely! What's up?", ja: "ぎりぎり！ どうした？" }
+      - { who: gayle, cast: us-f5, en: "So, I can't make it at six, my shift's running long. Can we say seven, at the bar instead of the café?", ja: "あのね、6時は無理、シフトが延びてて。7時に、カフェじゃなくてバーにしない？" }
+      - { who: teddy, cast: us-m6, en: "Sorry, did you say the bar?", ja: "ごめん、バーって言った？" }
+      - { who: gayle, cast: us-f5, en: "Yeah, seven at the bar.", ja: "うん、7時にバー。" }
+      - { who: teddy, cast: us-m6, en: "Works for me. See you then!", ja: "了解。じゃあそのときに！" }
   - id: km-fast-hedge
     lv: 3
     type: mean
     speaker: kicks
     voice: us
-    cast: us-m1
+    cast: us-m4
     en: "Honestly, I'm wiped. Can we just… do it another time? I'll message you."
     ja: "キャンセルで、新しい日にちはまだない。"
     note: "another time＋I'll message you＝ほぼ キャンセル"
@@ -452,7 +452,7 @@ items:
     type: num
     speaker: tia
     voice: us
-    cast: us-f2
+    cast: us-f4
     en: "Let's move it to the 30th. Actually, no, the 13th. The 30th's my sister's thing."
     tts: "Let's move it to the thirtieth. Actually, no, the thirteenth. The thirtieth's my sister's thing."
     ja: "30日にしよう。やっぱりちがう、13日。30日は姉の用事があるの。"
@@ -469,7 +469,7 @@ items:
     type: reply
     speaker: henry
     voice: us
-    cast: us-m2
+    cast: us-m5
     en: "Does Tuesday at noon work? If not, I'm free Wednesday morning."
     ja: "火曜の正午はどう？ だめなら水曜の朝が空いてる。 →「火曜の正午、ばっちり。」"
     note: "work＝都合が いい。If not＝だめ なら"

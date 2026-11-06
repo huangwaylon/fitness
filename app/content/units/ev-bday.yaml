@@ -35,7 +35,7 @@ items:
     type: gist
     speaker: poppy
     voice: us
-    cast: us-f1
+    cast: us-f6
     en: "Hey Sterling! Are you free on Saturday night? I think so. Why, what's going on? It's Tia's birthday, and we're throwing her a surprise party at my place. Don't tell her! My lips are sealed. Should I bring anything? Maybe some snacks? And get there before seven. She's showing up at seven-thirty. So that's Saturday, before seven, at your place. Got it!"
     ja: "ポピーの家でティアのサプライズパーティー。"
     note: "at my place＝わたしの いえで。主役は Tia"
@@ -48,18 +48,18 @@ items:
     cond: { kind: phone, level: light }
     tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [linking] }
     lines:
-      - { who: poppy, cast: us-f1, en: "Hey Sterling! Are you free on Saturday night?", ja: "もしもしスターリング！ 土曜の夜あいてる？" }
-      - { who: sterling, cast: us-m1, en: "I think so. Why, what's going on?", ja: "たぶんね。なんで、何かあるの？" }
-      - { who: poppy, cast: us-f1, en: "It's Tia's birthday, and we're throwing her a surprise party at my place. Don't tell her!", ja: "ティアの誕生日なの。うちでサプライズパーティーするんだ。本人には言わないでね！" }
-      - { who: sterling, cast: us-m1, en: "My lips are sealed. Should I bring anything?", ja: "口はかたいよ。何か持っていこうか？" }
-      - { who: poppy, cast: us-f1, en: "Maybe some snacks? And get there before seven. She's showing up at seven-thirty.", ja: "お菓子とか？ あと7時前に来て。ティアは7時半に来るから。" }
-      - { who: sterling, cast: us-m1, en: "So that's Saturday, before seven, at your place. Got it!", ja: "じゃあ土曜、7時前に、きみの家ね。了解！" }
+      - { who: poppy, cast: us-f6, en: "Hey Sterling! Are you free on Saturday night?", ja: "もしもしスターリング！ 土曜の夜あいてる？" }
+      - { who: sterling, cast: us-m5, en: "I think so. Why, what's going on?", ja: "たぶんね。なんで、何かあるの？" }
+      - { who: poppy, cast: us-f6, en: "It's Tia's birthday, and we're throwing her a surprise party at my place. Don't tell her!", ja: "ティアの誕生日なの。うちでサプライズパーティーするんだ。本人には言わないでね！" }
+      - { who: sterling, cast: us-m5, en: "My lips are sealed. Should I bring anything?", ja: "口はかたいよ。何か持っていこうか？" }
+      - { who: poppy, cast: us-f6, en: "Maybe some snacks? And get there before seven. She's showing up at seven-thirty.", ja: "お菓子とか？ あと7時前に来て。ティアは7時半に来るから。" }
+      - { who: sterling, cast: us-m5, en: "So that's Saturday, before seven, at your place. Got it!", ja: "じゃあ土曜、7時前に、きみの家ね。了解！" }
   - id: dk-party-gift
     lv: 3
     type: next
     speaker: sterling
     voice: us
-    cast: us-m1
+    cast: us-m5
     en: "Oh, what about a present? Are we all getting her something? We're chipping in for one big thing, those wireless headphones she wants. Like two thousand yen each?"
     ja: "のった。今日送るね。"
     note: "chip in＝お金を 出しあう。ひとり 2千円"
@@ -72,8 +72,8 @@ items:
     cond: { kind: phone, level: light }
     tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [linking] }
     lines:
-      - { who: sterling, cast: us-m1, en: "Oh, what about a present? Are we all getting her something?", ja: "あ、プレゼントは？ みんなで何かあげるの？" }
-      - { who: poppy, cast: us-f1, en: "We're chipping in for one big thing, those wireless headphones she wants. Like two thousand yen each?", ja: "みんなでお金を出して大きいのをひとつ。ほしがってたワイヤレスのヘッドホン。ひとり2千円くらい？" }
+      - { who: sterling, cast: us-m5, en: "Oh, what about a present? Are we all getting her something?", ja: "あ、プレゼントは？ みんなで何かあげるの？" }
+      - { who: poppy, cast: us-f6, en: "We're chipping in for one big thing, those wireless headphones she wants. Like two thousand yen each?", ja: "みんなでお金を出して大きいのをひとつ。ほしがってたワイヤレスのヘッドホン。ひとり2千円くらい？" }
   - id: km-wouldnt-miss
     lv: 3
     type: mean
@@ -139,15 +139,15 @@ items:
     tags: { seed: 54, register: friend, pragmatic: humour, conditions: [cafe], features: [linking] }
     lines:
       - { who: kid-cat, cast: us-m1, en: "Okay, everyone, grab a glass! Quick toast.", ja: "よし、みんなグラス持って！ ちょっと乾杯。" }
-      - { who: poppy, cast: us-f1, en: "Ooh, speech! Speech!", ja: "おっ、スピーチ！ スピーチ！" }
+      - { who: poppy, cast: us-f6, en: "Ooh, speech! Speech!", ja: "おっ、スピーチ！ スピーチ！" }
       - { who: kid-cat, cast: us-m1, en: "Here's to Tia: the best neighbor, the worst singer, and now officially thirty! Cheers!", ja: "ティアに乾杯。最高のお隣さん、最悪の歌い手、そして今日から正式に30歳！ 乾杯！" }
-      - { who: poppy, cast: us-f1, en: "Cheers! Happy birthday, Tia!", ja: "乾杯！ ティア、誕生日おめでとう！" }
+      - { who: poppy, cast: us-f6, en: "Cheers! Happy birthday, Tia!", ja: "乾杯！ ティア、誕生日おめでとう！" }
   - id: km-cheers-thanks
     lv: 3
     type: mean
     speaker: kabuki
     voice: us
-    cast: us-m1
+    cast: us-m5
     en: "Hey, thanks for coming, you guys. It really means a lot."
     ja: "来てくれたお礼を言っている。"
     note: "means a lot＝とても うれしい。お礼の ことば"
@@ -194,7 +194,7 @@ items:
     type: reply
     speaker: lopez
     voice: us
-    cast: us-m2
+    cast: us-m6
     en: "We're all chipping in for Kicks's present. You in?"
     ja: "キックスのプレゼント、みんなでお金出してるんだ。きみも乗る？ →「もちろん、ひとりいくら？」"
     note: "You in?＝参加する？。chip in＝お金を 出す"
@@ -240,7 +240,7 @@ items:
     type: gist
     speaker: wolfgang
     voice: us
-    cast: us-m3
+    cast: us-m5
     en: "Hey Molly, quick question. Is Kicks's party still on Friday? It moved to Saturday. Same time, but at the karaoke place in Shibuya now. Saturday at the karaoke place. Got it. Should I bring anything? Just your singing voice! Okay, I'll let you go. See you Saturday!"
     ja: "土曜、渋谷のカラオケ。"
     note: "moved to Saturday＝金曜 ではない。場所も 変更"
@@ -253,9 +253,9 @@ items:
     cond: { kind: phone, level: light }
     tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [linking] }
     lines:
-      - { who: wolfgang, cast: us-m3, en: "Hey Molly, quick question. Is Kicks's party still on Friday?", ja: "やあモリー、ちょっと聞きたいんだけど。キックスのパーティー、まだ金曜？" }
+      - { who: wolfgang, cast: us-m5, en: "Hey Molly, quick question. Is Kicks's party still on Friday?", ja: "やあモリー、ちょっと聞きたいんだけど。キックスのパーティー、まだ金曜？" }
       - { who: molly, cast: us-f3, en: "It moved to Saturday. Same time, but at the karaoke place in Shibuya now.", ja: "土曜になったよ。時間は同じ、でも場所は渋谷のカラオケになった。" }
-      - { who: wolfgang, cast: us-m3, en: "Saturday at the karaoke place. Got it. Should I bring anything?", ja: "土曜にカラオケね。了解。何か持っていく？" }
+      - { who: wolfgang, cast: us-m5, en: "Saturday at the karaoke place. Got it. Should I bring anything?", ja: "土曜にカラオケね。了解。何か持っていく？" }
       - { who: molly, cast: us-f3, en: "Just your singing voice! Okay, I'll let you go. See you Saturday!", ja: "歌声だけ！ じゃあ、そろそろ切るね。土曜にね！" }
   - id: km-heres-to
     lv: 3
@@ -277,7 +277,7 @@ items:
     type: reply
     speaker: katt
     voice: us
-    cast: us-f2
+    cast: us-f6
     en: "Wouldn't miss it for the world. What time should I come?"
     ja: "絶対行くよ。何時に行けばいい？ →「7時ごろ！ うちでやるよ。」"
     note: "Wouldn't miss it＝必ず 行く"
@@ -309,7 +309,7 @@ items:
     type: next
     speaker: ken
     voice: us
-    cast: us-m2
+    cast: us-m6
     en: "Morning! So, any plans for Tia's birthday? Shh! She's right behind you."
     ja: "あ！ えーと…いい天気だね！"
     note: "本人の 前では 話題を 変える"
@@ -321,14 +321,14 @@ items:
     cond: { kind: street, level: light }
     tags: { seed: 54, register: friend, pragmatic: humour, conditions: [street] }
     lines:
-      - { who: ken, cast: us-m2, en: "Morning! So, any plans for Tia's birthday?", ja: "おはよう！ で、ティアの誕生日の計画は？" }
-      - { who: marina, cast: us-f1, en: "Shh! She's right behind you.", ja: "しーっ！ 本人がすぐうしろにいる。" }
+      - { who: ken, cast: us-m6, en: "Morning! So, any plans for Tia's birthday?", ja: "おはよう！ で、ティアの誕生日の計画は？" }
+      - { who: marina, cast: us-f5, en: "Shh! She's right behind you.", ja: "しーっ！ 本人がすぐうしろにいる。" }
   - id: kr-surprise-oops
     lv: 3
     type: reply
     speaker: gayle
     voice: us
-    cast: us-f1
+    cast: us-f5
     en: "Wait, the party's a surprise? I just messaged her about it!"
     ja: "待って、パーティーってサプライズなの？ さっき本人にメッセージしちゃった！ →「えっ！ すぐ電話して、冗談って言って！」"
     note: "surprise＝本人に ないしょ。フォローを えらぶ"
@@ -370,7 +370,7 @@ items:
     type: word
     speaker: lopez
     voice: us
-    cast: us-m2
+    cast: us-m6
     en: "Let's all chip in."
     ja: "みんなでお金出そう。"
     note: "chip in は「チッピン」"
@@ -422,7 +422,7 @@ items:
     type: gist
     speaker: zucker
     voice: us
-    cast: us-m2
+    cast: us-m6
     en: "Everyone! Can I get your attention for two seconds? Sorry? I can't hear a thing in here! A toast! For Pekoe's mom, sixty today! Glasses up! Here's to Linda! Aw! To Mom! Cheers!"
     ja: "60歳になったペコのお母さん。"
     note: "Pekoe's mom＝ペコの 母。sixty と sixteen"
@@ -434,16 +434,16 @@ items:
     cond: { kind: cafe, level: heavy }
     tags: { seed: 55, register: friend, pragmatic: ritual, conditions: [cafe], features: [numbers, linking] }
     lines:
-      - { who: zucker, cast: us-m2, en: "Everyone! Can I get your attention for two seconds?", ja: "みんな！ 2秒だけ注目してくれる？" }
+      - { who: zucker, cast: us-m6, en: "Everyone! Can I get your attention for two seconds?", ja: "みんな！ 2秒だけ注目してくれる？" }
       - { who: pekoe, cast: us-f3, en: "Sorry? I can't hear a thing in here!", ja: "え？ ここ全然聞こえない！" }
-      - { who: zucker, cast: us-m2, en: "A toast! For Pekoe's mom, sixty today! Glasses up! Here's to Linda!", ja: "乾杯！ ペコのお母さん、今日で60歳！ グラスを上げて！ リンダに乾杯！" }
+      - { who: zucker, cast: us-m6, en: "A toast! For Pekoe's mom, sixty today! Glasses up! Here's to Linda!", ja: "乾杯！ ペコのお母さん、今日で60歳！ グラスを上げて！ リンダに乾杯！" }
       - { who: pekoe, cast: us-f3, en: "Aw! To Mom! Cheers!", ja: "わあ！ ママに！ 乾杯！" }
   - id: km-fast-invite
     lv: 3
     type: mean
     speaker: fang
     voice: us
-    cast: us-m3
+    cast: us-m4
     en: "BBQ at my place Sunday afternoon for Kitt's birthday. No need to bring anything, but if you want to grab some ice, you're a lifesaver."
     tts: "B B Q at my place Sunday afternoon for Kitt's birthday. No need to bring anything, but if you wanna grab some ice, you're a lifesaver."
     ja: "日曜の午後、彼の家でバーベキュー。"
@@ -460,7 +460,7 @@ items:
     type: num
     speaker: kicks
     voice: us
-    cast: us-m1
+    cast: us-m4
     en: "We're in room 4 on the fifth floor. No, wait, I mean room 5 on the fourth floor. Hurry, they're singing already!"
     tts: "We're in room four on the fifth floor. No, wait, I mean room five on the fourth floor. Hurry, they're singing already!"
     ja: "5階の4号室。いや、待って、4階の5号室だった。急いで、もう歌ってるよ！"
@@ -491,7 +491,7 @@ items:
     type: mean
     speaker: octavian
     voice: us
-    cast: us-m3
+    cast: us-m4
     en: "Okay, I'm going to head out. Thanks for tonight, it was an awesome party. Let's grab brunch next week!"
     tts: "Okay, I'm gonna head out. Thanks for tonight, it was an awesome party. Let's grab brunch next week!"
     ja: "お礼を言って帰ろうとしている。"
