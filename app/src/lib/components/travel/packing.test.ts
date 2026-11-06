@@ -10,11 +10,12 @@ const T = Date.parse('2026-11-06T03:00:00.000Z');
 const fake = vi.hoisted(() => ({
   me: 'A' as 'A' | 'B' | 'G' | null,
   now: 0,
+  server: 0,
   rows: [] as EventRow[],
   queued: [] as EventRow[],
   sent: [] as { type: string; data: Record<string, unknown> }[]
 }));
-vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => fake.now } }));
+vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => fake.now, serverNow: () => fake.server } }));
 vi.mock('#lib/store/week.svelte.ts', async () => {
   const { reduce: red, foldEvents: fold } = await import('#lib/model/state.ts');
   return {
@@ -51,6 +52,7 @@ const ids = () => packing.list('okinawa', SEED).map((c) => [c.id, c.items.map((i
 beforeEach(() => {
   fake.me = 'A';
   fake.now = T;
+  fake.server = T;
   fake.rows = [];
   fake.queued = [];
   fake.sent = [];
@@ -95,6 +97,13 @@ describe('packing', () => {
     const ats = fake.sent.map((s) => s.data.at as number);
     expect(ats).toEqual([...ats].sort((a, b) => a - b));
     expect(new Set(ats).size).toBe(ats.length);
+  });
+
+  it('stamps on the relay\'s clock, never a ?date= preview\'s', () => {
+    fake.server = T + 1e6;
+    fake.now = T + 30 * 86400e3;
+    packing.addItem('okinawa', SEED, 'ok-0', 'かさ', 'ja');
+    expect(fake.sent.at(-1)!.data.at).toBe(T + 1e6);
   });
 
   it('sends names cleaned as the record keeps them, so they stay on the list (a double space, a tab, NFD)', () => {

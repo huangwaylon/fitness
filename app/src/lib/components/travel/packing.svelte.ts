@@ -53,9 +53,9 @@ class Packing {
     return !!me && packMayEdit(me, x);
   }
 
-  /** A change's time: the relay's clock, never twice the same, after the op it replaces. */
+  /** A change's time: the relay's clock (never a `?date=` preview's), never twice the same, after the op it replaces. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.now()), this.#last + 1, after + 1);
+    this.#last = Math.max(Math.round(world.serverNow()), this.#last + 1, after + 1);
     return this.#last;
   }
   #heldAt(trip: string, id: string): number {
