@@ -823,6 +823,7 @@ test('pictures: ごはん’s row and amount show its イメージ (badge, alt),
   await expect(big.locator('h3')).toHaveText('ごはん（精白米）');
   await expect(big.locator('.badge')).toHaveText('イメージ');
   await expect(big.locator('[data-photo-credit]')).toHaveText('AI生成の イメージ（実物と ちがう ことが あります）');
+  await expect(big).not.toContainText('水稲めし'); // never MEXT's official name (こめ［水稲めし］精白米 うるち米)
   await page.keyboard.press('Escape');
   await expect(big).toHaveCount(0);
   await expect(pic).toBeFocused();

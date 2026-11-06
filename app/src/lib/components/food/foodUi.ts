@@ -88,27 +88,21 @@ export const catOf = (db: FoodDb | null, id: string): string | undefined => cata
 
 /** A name's head: up to its first space or bracket (「鶏もも肉 皮つき 生」 → 鶏もも肉). */
 const headOf = (s: string): string => s.trim().split(/[\s　（(［[]/)[0];
-/** Dakuten and small っ folded, so a reading matches with its sounds voiced or not (もめんどうふ holds とうふ). */
-const fold = (k: string): string => k.normalize('NFD').replace(/[\u3099\u309a]/g, '').replace(/っ/g, 'つ');
-const READING = /^[ぁ-ゖー\s　（）()・]+$/;
-/** Whether a name says something the shown one doesn't: not it or a part of it, nor holding its head (生うどん), nor a
- *  kana spelling of it (ウドン, トウフ: within one of its readings), nor mostly the head's own characters (焼鮭, お握り). */
-function says(a: string, name: string, readings: readonly string[]): boolean {
+/** Whether a name says something the shown one doesn't: not it or a part of it, nor holding its head (生うどん), nor
+ *  mostly the head's own characters (焼鮭 beside 焼き鮭). */
+function says(a: string, name: string): boolean {
   const k = searchKey(a), nk = searchKey(name), hk = searchKey(headOf(name));
-  if (!k || nk.includes(k) || (hk && k.includes(hk)) || readings.some((r) => r.includes(fold(k)))) return false;
+  if (!k || nk.includes(k) || (hk && k.includes(hk))) return false;
   return [...k].filter((c) => hk.includes(c)).length * 2 < k.length;
 }
 
 /** A row's everyday name under its own, in Japanese (docs/design.md "Gohan"), never repeating it: the catalog's current
  *  name when the row shows an older one (a snapshot's 「若どり もも 皮つき 生」 → 鶏もも肉), else the food data's vetted
- *  `gloss` once it ships one (an alias at least two sources back), else nothing: the aliases themselves are search terms,
- *  readings and spellings mostly, so none is shown. `it` is the catalog's item (or the row's own), `name` what the row
- *  shows. */
-export function glossOf(it: Item & { gloss?: string }, name = it.name): string | null {
-  const readings = [name, ...(it.aliases ?? []).filter((a) => READING.test(a))].map((r) => fold(searchKey(r)));
+ *  `gloss`, else nothing. `it` is the catalog's item (or the row's own), `name` what the row shows. */
+export function glossOf(it: Item, name = it.name): string | null {
   const now = headOf(it.name);
-  if (name !== it.name && says(now, name, readings)) return now;
-  return it.gloss && says(it.gloss, name, readings) ? it.gloss : null;
+  if (name !== it.name && says(now, name)) return now;
+  return it.gloss && says(it.gloss, name) ? it.gloss : null;
 }
 
 /** A state's word as a MEXT name writes it (its chip says レンジ, いため). */

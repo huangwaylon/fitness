@@ -90,12 +90,7 @@
   /** The picture enlarged (FoodPhoto), and what opened it (the focus goes back there). */
   let big = $state(false);
   let picBtn: HTMLButtonElement | undefined = $state();
-  const gloss = $derived.by(() => {
-    const db = foodDbNow();
-    return glossOf(catalogOf(db, item.id) ?? item, item.name);
-  });
-  /** The food's one line 「これは…」 (food data's `desc`, on some foods). */
-  const desc = $derived((item as Item & { desc?: string }).desc);
+  const gloss = $derived(glossOf(catalogOf(db, item.id) ?? item, item.name));
   const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 
   function portion(i: number) {
@@ -157,7 +152,7 @@
       {#if big}<FoodPhoto {item} img={imgOf(imgs, item.id, 384) ?? pic} onclose={() => { big = false; picBtn?.focus(); }} />{/if}
     {/if}
     <h3>{item.name}</h3>
-    {#if gloss || desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && desc}{' — '}{/if}{#if desc}<span data-desc>{desc}</span>{/if}</p>{/if}
+    {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
     <p class="per money">{serving ? t('food.my.per', { u: ps[0].label, k: formatNum(item.kcal) }) : t('food.per100', { k: formatNum(item.kcal) })} · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>
   </section>
 

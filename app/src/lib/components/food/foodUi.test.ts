@@ -49,20 +49,18 @@ describe('itemOf: a snapshot as an item', () => {
 });
 
 describe('glossOf: a row’s everyday name, never its own again', () => {
-  const item = (name: string, aliases: string[], gloss?: string): Item => ({ id: 'mext:1', name, aliases, kcal: 1, en: 'An English name', ...(gloss ? { gloss } : {}) });
+  const item = (name: string, gloss?: string): Item => ({ id: 'mext:1', name, aliases: ['とりももにく'], kcal: 1, en: 'An English name', ...(gloss ? { gloss } : {}) });
   it('the catalog’s name for an older one, else the data’s vetted gloss; never an alias or the English', () => {
-    const thigh = item('鶏もも肉 皮つき 生', ['鶏腿肉', 'チキン', 'とりももにく かわつき なま']);
+    const thigh = item('鶏もも肉 皮つき 生');
     expect(glossOf(thigh, '若どり もも 皮つき 生')).toBe('鶏もも肉');
     expect(glossOf(thigh)).toBeNull();
-    expect(glossOf(item('キャッサバでん粉', ['タピオカ', 'きゃっさばでんこ']))).toBeNull(); // no gloss shipped yet
-    expect(glossOf(item('キャッサバでん粉', ['タピオカ'], 'タピオカ'))).toBe('タピオカ');
-    expect(glossOf(item('コーヒー牛乳', ['珈琲', 'こーひーぎゅうにゅう']))).toBeNull();
-    expect(glossOf(item('卵（全卵・生）', ['玉子', 'たまご']))).toBeNull();
+    expect(glossOf(item('キャッサバでん粉', 'タピオカ'))).toBe('タピオカ');
+    expect(glossOf(item('コーヒー牛乳'))).toBeNull();
   });
-  it('nothing that is only the name again: a part of it, more of it, a kana spelling', () => {
-    expect(glossOf(item('ごはん（精白米）', []), 'ごはん')).toBeNull(); // the older name holds the head
-    expect(glossOf(item('木綿豆腐', ['もめんどうふ'], 'トウフ'))).toBeNull(); // a kana spelling, voiced in the reading
-    expect(glossOf(item('焼き鮭', ['やきさけ'], '焼鮭'))).toBeNull(); // mostly its own characters
+  it('nothing that is only the name again: a part of it, more of it, mostly its characters', () => {
+    expect(glossOf(item('ごはん（精白米）'), 'ごはん')).toBeNull(); // the older name holds the head
+    expect(glossOf(item('木綿豆腐', '豆腐'))).toBeNull(); // a part of it
+    expect(glossOf(item('焼き鮭', '焼鮭'))).toBeNull(); // mostly its own characters
   });
 });
 
