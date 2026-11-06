@@ -21,7 +21,7 @@ the app as one area. Branch `wedding` (worktree `.claude/worktrees/wedding`); th
 - **Progress:** each task's percent (its subtasks' share, or done / not); the board's percent = the mean over top-level
   tasks; the countdown in days to the date, in the board's time zone (default Asia/Tokyo).
 - **Notes:** one shared markdown document (headings, lists, bold, italic, http/https links).
-- **Settings (members):** the two names, the date, the venue, the time zone, the categories. Deleted tasks listed with
+- **Settings (members):** the two names, the date and its time, the venue, the time zone, the categories. Deleted tasks listed with
   Restore; Purge removes them for good.
 - Dropped: the accent colours, the edit link and read-only toggle (the app's keys replace them), the starter templates.
 
@@ -29,32 +29,67 @@ Pure rules (progress, "this month", tz-based today) port from the old `src/lib/p
 
 ## The record (relay)
 
-| type | data | slot | who writes |
-|---|---|---|---|
-| `wtask` | `{id, at, title, cat, due?, start?, parent?, del?}` (`del`: deleted-at ms, restorable) or `{id, at, rm: true}` (purge, final) | `wtask\|<id>` | members |
-| `wdone` | `{id, at, v: 0 \| 1}` | `wdone\|<id>` | members (shared, as today) |
-| `wconf` | `{k, at, v}` (`k` one of names, date, venue, tz, cats) | `wconf\|<k>` | members |
-| `wnote` | `{at, md, base?}` (`base`: the `at` it was edited from) | `wnote` | members |
+`contract/wedding.ts` (the record, the model and the board's store share it; [backend.md](backend.md#events) has the
+exact shapes):
 
-Latest `at` (relay clock) wins, then who; a removal is final. The guest reads all four and writes none. `wnote` may be
-up to 64,000 characters (its own cap; others keep 20,000). Saving a note whose `base` isn't the held note's `at` is
-kept, and the phone shows both versions to choose from.
+| type | data | slot |
+|---|---|---|
+| `wtask` | `{id, at, c, title, cat, due?, start?, parent?, del?}` or `{id, at, rm: true}` | `wtask\|<id>` |
+| `wdone` | `{id, at, v: 0 \| 1}` | `wdone\|<id>` |
+| `wconf` | `{k, at, v}`, `k` one of `p1`, `p2`, `date`, `time`, `venue`, `tz`, `cats` | `wconf\|<k>` |
+| `wnote` | `{at, md, base?}`, kept with `was?` | `wnote` |
+
+- Members write all four; the guest reads them and writes none (`forbidden`; its phone's methods refuse).
+- The latest `at` (the sender's relay clock in ms) wins, then who; a purge (`rm`) is final and takes the task's tick
+  with it. Soft delete is `del` (when, in ms) on the task's set; restore is a set without it.
+- `c`: when the task was created (a checklist reads in the order it was typed). A subtask names its `parent`, one
+  level (the record holds the parent as a task that has none), and has no dates. A task's dates are real
+  `YYYY-MM-DD`s; the phone requires `due` on a new task, the record doesn't (the Sheet's undated rows).
+- Titles ≤ 500 code points (the Sheet's longest is a 269-character subtask with a link), categories ≤ 40 (free text;
+  `cats` is only the picker's list), names ≤ 40, venue ≤ 200, all one clean line; `time` `HH:MM` (the old board's
+  `wedding_time`, from before its 2026-08 cut); `tz` an IANA name (an unknown one reads as Asia/Tokyo); `cats` ≤ 30.
+- `wnote` ≤ 64,000 characters, kept exactly as sent, its own data cap (140,000 as JSON; every other type keeps 20,000).
+  A save names the note it was edited from (`base`); one whose `base` isn't the held note's `at` is kept with the
+  replaced note beside it (`was: {at, md, who}`, written by the record), and the phones show both until someone saves
+  again from the new one (one level: a third crossing save keeps only the last one it replaced).
+- `imported: true` marks a row the admin's load brought from the Sheet (shown as 「むかしの きろく」 later); a phone's is
+  refused, and the next edit drops it.
+- The phone folds the record's rows as they are and judges only its queued ones by the record's rules (`wedFold`), as
+  the packing list and the board do. The admin's `load` takes these rows as the record had them too (only a row its slot
+  holds that beats it stops one), so a dump restores faithfully; that fix covers the board and the packing list, which
+  until 2026-11-06 lost edited posts and items on a restore into an empty record.
+
+On the phone, `components/wedding/board.svelte.ts`: `tasks` (live top-level, each with its subtasks and progress),
+`overall`, `countdown`, `today` (the board's zone), `config` (over the defaults: `lib/wedding/config.ts`), `note`,
+`conflict`, `deleted`; `addTask`, `editTask`, `addSub`, `tick`, `remove` (a task and its live subtasks), `restore`
+(and the subtasks deleted with it), `purge` (one deleted task, or all), `setConfig`, `saveNote(md, from)`. The rules
+are `lib/wedding/progress.ts` and `time.ts`, ported from the old board with their tests.
 
 ## Migration
 
-The Sheet (`tasks`: `id, title, category, due, done_at, created_at, updated_at, deleted_at, parent_id, start`;
-`config`: key / value, incl. `notes`) is final. Steps:
+The source is the old Apps Script's `doGet` reply (`{ok, tasks, config, sheetTimeZone}`, every cell a string),
+`~/Documents/island-backups/wedding-doget-2026-11-06.json` (mode 600): it matches the user's CSV export of both tabs
+byte for byte (52 rows, 10 columns, 8 config keys), so no `.xlsx` is needed. Steps:
 
-1. The user's `.xlsx` export (File › Download) in `~/Documents/island-backups/` (mode 600), plus a Sheet copy.
-2. `relay/scripts/wedding-import.ts <xlsx>` converts it to a `load` file and a report: counts, duplicate or missing
-   ids, orphans, cells Sheets turned into dates or numbers, formulas, timestamp formats, the notes' length. Nothing
-   loads until the report is clean (or each finding has a rule).
-   - `at` = `updated_at` (else `created_at`); `wdone` from `done_at`; `del` from `deleted_at`; person `A` with
-     `imported: true` (the Sheet never recorded who).
-3. Test relay: bookmark, load, parity (per id: title, category, due, start, done, deleted, parent; every setting; the
-   notes byte for byte), load again (nothing changes).
-4. Production: bookmark, load, parity, both phones check.
-5. Rotate the old Apps Script `APP_KEY` so the Sheet can't be written; the user takes the old site down.
+1. Convert: `cd relay && node scripts/wedding-import.ts ~/Documents/island-backups/wedding-doget-2026-11-06.json`
+   writes `…/wedding-doget-2026-11-06.load.json` (mode 600) and prints the report (counts; findings by rule, row,
+   column and id, never a value). It exits 1 until every finding is a note (`(info)`). The rules
+   (`scripts/wedding-sheet.ts`):
+   - a task's `at` = `updated_at`, else `created_at`; `c` = `created_at`; person `A`, `imported: true`; `wdone` (v 1)
+     at `done_at`; `del` = `deleted_at`; the old reader's trimmed cells; dates as its `normalizeDay`;
+   - a row without an id, a repeated id (the first wins), a row without a title: not loaded;
+   - a subtask with a date: under a live task its dates go; else (the old board showed it as a task) its parent goes;
+   - the config's keys to `p1`, `p2`, `date`, `time`, `venue`, `tz`, `cats` (comma-separated, trimmed, deduplicated),
+     a blank one left to the default; `notes` → the `wnote` byte for byte; their `at` the Sheet's newest timestamp;
+   - event ids `wed-<id>-wtask`, `wed-<id>-wdone`, `wed-conf-<key>`, `wed-note`: a load again adds nothing.
+   The real Sheet (2026-11-06): 63 events (52 `wtask`, 3 `wdone`, 7 `wconf`, 1 `wnote`), the report clean.
+2. Test relay: `node scripts/record.ts bookmark --test`, `node scripts/record.ts load <load.json> --test`,
+   `node scripts/record.ts dump --test > <dump.json>` (mode 600, off the repo), then
+   `node scripts/wedding-parity.ts <doget.json> <dump.json>`: per id title, category, due, start, done, deleted,
+   parent; every setting; the notes byte for byte; mismatches by id and field (a conversion rule's named), exit 1 on
+   one without a rule. Load again: `loaded {… "events":0 …}`.
+3. Production: the same without `--test`, then both phones check.
+4. Rotate the old Apps Script `APP_KEY` so the Sheet can't be written; the user takes the old site down.
 
 ## Open questions
 
