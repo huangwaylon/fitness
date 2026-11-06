@@ -147,7 +147,7 @@ export interface Stats {
   measuring: boolean;
 }
 
-/** An item's difficulty on the ability scale: its level (L1 −1 … L4 2; the アナウンス pack as L4) and its type. */
+/** An item's difficulty on the ability scale: its level (L1 −1 … L4 2, やま 3, ほし 4; the アナウンス pack as L4) and its type. */
 const TYPE_OFFSET: Readonly<Record<ItemType, number>> = { pic: -0.3, word: 0, num: 0, reply: 0.2, mean: 0.4, gist: 0.3, next: 0.3 };
 const difficulty = (it: Pick<Item, 'lv' | 'type'>): number => levelRank(it.lv) - 2 + TYPE_OFFSET[it.type];
 const ESTIMATE_MIN = 16;
@@ -228,7 +228,8 @@ const STAGES = [
   { id: 's0', stars: 1, cefr: 'A2–B1', from: 1, to: 2.5 },
   { id: 's1', stars: 2, cefr: 'B1+', from: 2.5, to: 3.5 },
   { id: 's2', stars: 3, cefr: 'B2', from: 3.5, to: 4.5 },
-  { id: 's3', stars: 4, cefr: 'B2+', from: 4.5, to: 5.5 }
+  { id: 's3', stars: 4, cefr: 'B2+', from: 4.5, to: 5.5 },
+  { id: 's4', stars: 5, cefr: 'C1', from: 5.5, to: 6.5 }
 ] as const;
 export type Stage = (typeof STAGES)[number];
 

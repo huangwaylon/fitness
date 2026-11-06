@@ -13,7 +13,7 @@
   import type { Rec } from '#lib/kikimimi/advice.ts';
   import { SPEED_MIN, stageOf } from '#lib/kikimimi/progress.ts';
   import { SKILLS } from '#lib/kikimimi/tags.ts';
-  import { levelMark, type Accent, type ItemType } from '#lib/kikimimi/bank.ts';
+  import { levelAt, levelMark, type Accent, type ItemType } from '#lib/kikimimi/bank.ts';
   import { SPEEDS, sx } from '#lib/kikimimi/ladder.ts';
   import Host from '../characters/Host.svelte';
   import { recWords } from './progress.svelte.ts';
@@ -22,8 +22,9 @@
   let { report, guest, canStart, onstart, onplay }: { report: Report; guest: boolean; canStart: boolean; onstart: (r: Rec) => void; onplay: () => void } = $props();
   const s = $derived(report.stats);
   const stage = $derived(s.level === null ? null : stageOf(s.level));
-  /** The level to play next (the comfortable one, a level that exists): the next step within the stage, not a second stage. */
-  const comfy = $derived(Math.min(4, Math.max(1, Math.round(s.level ?? 1))));
+  /** The level to play next (the comfortable one, a level that exists: やま and ほし above level 4): the next step within
+   *  the stage, not a second stage. */
+  const comfy = $derived(levelAt(Math.min(6, Math.max(1, Math.round(s.level ?? 1)))));
   const pct = (x: number) => Math.round(x * 100);
   // the sparkline: first-listen accuracy per game, 0-100 % on a fixed scale (one axis), the last point marked
   const W = 120, H = 36, PAD = 5;
@@ -38,7 +39,7 @@
   const details = $derived([
     ['byType', TYPES.filter((x) => s.byType[x]).map((x) => [t(`kiki.type.${x}`), s.byType[x]!] as const)],
     ['byAccent', ACCENTS.filter((x) => s.byAccent[x]).map((x) => [t(`kiki.accent.${x}`), s.byAccent[x]!] as const)],
-    ['byLevel', levels.map((x) => [x === 5 ? `${levelMark(x)} ${t('kiki.lv.5')}` : `★${x}`, s.byLevel[x]!] as const)]
+    ['byLevel', levels.map((x) => [x <= 4 ? `★${x}` : `${levelMark(x)} ${t(`kiki.lv.${x}`)}`, s.byLevel[x]!] as const)]
   ] as const);
 </script>
 
@@ -57,7 +58,7 @@
       {#if stage}
         <p class="stage"><span class="stars" aria-hidden="true">{'★'.repeat(stage.stage.stars)}</span>{t(`kiki.stage.${stage.stage.id}`)}<small>{stage.stage.cefr}</small></p>
         <div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow={pct(stage.into)} aria-label={t(`kiki.stage.${stage.stage.id}`)}><i style:width="{Math.max(4, pct(stage.into))}%"></i></div>
-        <p class="note">{s.measuring ? t('kiki.prog.measuring', { n: 16 - s.answers }) : t('kiki.prog.comfort', { stars: '★'.repeat(comfy), name: t(`kiki.lv.${comfy}`) })}</p>
+        <p class="note">{s.measuring ? t('kiki.prog.measuring', { n: 16 - s.answers }) : t('kiki.prog.comfort', { stars: levelMark(comfy), name: t(`kiki.lv.${comfy}`) })}</p>
       {/if}
     </section>
 
