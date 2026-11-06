@@ -49,7 +49,6 @@
   import PartnerNews from './PartnerNews.svelte';
   import KikimimiHost from '../kikimimi/KikimimiHost.svelte';
   import { quiz } from '../kikimimi/invite.svelte.ts';
-  import { weddingSheet } from '../wedding/open.svelte.ts';
   import { HATS, birthdaysShown, isBirthday } from './birthday.ts';
   import { FIREWORKS_FROM, archOn, weddingDay } from './wedding.ts';
   import { eventAt } from './events.ts';
@@ -170,7 +169,7 @@
   /** Whether an actor's villager is on this island now: mine and the members' always; the guest's while it's here. */
   const onIsland = (id: VillagerActor): boolean => id === 'mine' || whoOf(id) !== 'G' || hereNow.includes('G');
 
-  const covered = $derived(paused || ui.overlay || quiz.open || weddingSheet.open);
+  const covered = $derived(paused || ui.overlay || quiz.open);
   // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js); the DOM island runs over its canvas as the
   // taps and the overlays. No WebGL (failed3): the island's message instead (never on the users' iPhones).
   let failed3 = $state(false);

@@ -20,8 +20,8 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import Host from '../characters/Host.svelte';
   import { invitedNow, openQuiz, wakeQuizVoice } from '../kikimimi/invite.svelte.ts';
-  import { openTrips } from '../travel/open.svelte.ts';
-  import { openWedding } from '../wedding/open.svelte.ts';
+  import { trips } from '../travel/open.svelte.ts';
+  import { weddingSheet } from '../wedding/open.svelte.ts';
   import { coinsInFlight } from './HudCoins.svelte';
   import { react } from '../motion/director.svelte.ts';
   import { popFrom } from './popFrom.ts';
@@ -195,12 +195,12 @@
       <span class="ic"><Host head size={30} animate={false} eager /></span>
     </button>
     <!-- りょこう: the trips' boarding passes (Orville at the Dodo Airlines counter) -->
-    <button type="button" class="item" style="--i: 3" data-hud-travel aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, openTrips)}>
+    <button type="button" class="item" style="--i: 3" data-hud-travel aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => trips.show())}>
       <span class="lbl">{t('panel.travel')}</span>
       <span class="ic"><OfficialArt key="villagers/orville-icon" size={30} eager /></span>
     </button>
     <!-- けっこんしき: the wedding board (パニエル under the arch) -->
-    <button type="button" class="item" style="--i: 4" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, openWedding)}>
+    <button type="button" class="item" style="--i: 4" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => weddingSheet.show())}>
       <span class="lbl">{t('panel.wedding')}</span>
       <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
     </button>
