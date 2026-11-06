@@ -17,8 +17,9 @@ export const C = { track: '#D4442E', start: '#1F9D63', gps: '#2F6FE0', wpt: '#D6
 
 export const SRC = { base: 'topo', track: 'track', marks: 'marks', scrub: 'scrub', loc: 'loc' } as const;
 
-const dot = (id: string, source: string, r: number, color: unknown, filter?: unknown): LayerSpecification =>
-  ({ id, type: 'circle', source, ...(filter ? { filter } : {}), paint: { 'circle-radius': r, 'circle-color': color, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2.5 } }) as LayerSpecification;
+/** A dot `size` px across in all (the hiking app's divIcons: a 2.5 px white rim inside it). */
+const dot = (id: string, source: string, size: number, color: unknown, filter?: unknown): LayerSpecification =>
+  ({ id, type: 'circle', source, ...(filter ? { filter } : {}), paint: { 'circle-radius': size / 2 - 2.5, 'circle-color': color, 'circle-stroke-color': '#FFFFFF', 'circle-stroke-width': 2.5 } }) as LayerSpecification;
 
 const empty = { type: 'geojson', data: { type: 'FeatureCollection', features: [] } } as const;
 
@@ -33,11 +34,11 @@ export function buildStyle(region: Region): StyleSpecification {
       { id: 'topo', type: 'raster', source: SRC.base },
       { id: 'track-halo', type: 'line', source: SRC.track, layout: line, paint: { 'line-color': '#FFFFFF', 'line-width': 7.5, 'line-opacity': 0.85 } },
       { id: 'track', type: 'line', source: SRC.track, layout: line, paint: { 'line-color': C.track, 'line-width': 4, 'line-opacity': 0.98 } },
-      dot('wpts', SRC.marks, 5.5, C.wpt, ['==', ['get', 'kind'], 'wpt']),
-      dot('ends', SRC.marks, 7.5, ['match', ['get', 'kind'], 'start', C.start, C.track], ['!=', ['get', 'kind'], 'wpt']),
+      dot('wpts', SRC.marks, 11, C.wpt, ['==', ['get', 'kind'], 'wpt']),
+      dot('ends', SRC.marks, 15, ['match', ['get', 'kind'], 'start', C.start, C.track], ['!=', ['get', 'kind'], 'wpt']),
       { id: 'loc-halo', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 16, 'circle-color': C.gps, 'circle-opacity': 0.16 } },
-      dot('loc', SRC.loc, 8, C.gps),
-      dot('scrub', SRC.scrub, 8, C.scrub)
+      dot('loc', SRC.loc, 16, C.gps),
+      dot('scrub', SRC.scrub, 16, C.scrub)
     ]
   };
 }

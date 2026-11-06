@@ -36,15 +36,15 @@
     <span class="eyebrow">{pick(S.tagline, L)}</span>
     <h1>{pick(S.title, L)}</h1>
   </header>
-  <div class="chips" role="toolbar" aria-label={pick(S.filterBar, L)}>
+  <div class="fbar" role="toolbar" aria-label={pick(S.filterBar, L)}>
     {#each FILTERS as f (f)}
-      <button type="button" class="chip" class:active={filter === f} aria-pressed={filter === f} data-filter={f} data-sfx="tick" onclick={() => (filter = f)}>
+      <button type="button" class="fchip" class:active={filter === f} aria-pressed={filter === f} data-filter={f} data-sfx="tick" onclick={() => (filter = f)}>
         {pick(f === 'all' ? S.all : DIFF[f], L)}
       </button>
     {/each}
     <span class="div" aria-hidden="true"></span>
     {#each ['dist', 'gain'] as const as k (k)}
-      <button type="button" class="chip" class:active={sort === k} aria-pressed={sort === k} data-sort={k} data-sfx="tick" onclick={() => (sort = sort === k ? null : k)}>
+      <button type="button" class="fchip" class:active={sort === k} aria-pressed={sort === k} data-sort={k} data-sfx="tick" onclick={() => (sort = sort === k ? null : k)}>
         <Ic name="sort" /><span>{pick(k === 'dist' ? S.sortDist : S.sortGain, L)}</span>
       </button>
     {/each}
@@ -87,25 +87,25 @@
     font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--pine-d); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   h1 { position: relative; margin: 0; font-family: var(--font-display); font-size: 32px; font-weight: 600; letter-spacing: -.3px; line-height: 1.05; color: var(--ink); }
-  :lang(ja) .eyebrow { letter-spacing: .03em; text-transform: none; font-size: 12px; font-weight: 600; }
+  :lang(ja) .eyebrow { letter-spacing: .03em !important; text-transform: none; font-size: 12px; font-weight: 600; }
   :lang(ja) h1 { font-weight: 700; letter-spacing: 0; }
 
-  .chips {
+  .fbar {
     flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 2px 20px 14px; overflow-x: auto; scrollbar-width: none;
     -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent);
   }
-  .chips::-webkit-scrollbar { display: none; }
-  .chip {
+  .fbar::-webkit-scrollbar { display: none; }
+  .fchip {
     position: relative; flex-shrink: 0; height: 36px; padding: 0 15px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface);
     color: var(--ink-2); font-size: 13.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;
     transition: background .15s, border-color .15s, color .15s, transform .1s;
   }
   /* a 44px tap target on the 36px pill */
-  .chip::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
-  .chip :global(.ic) { width: 15px; height: 15px; color: var(--muted); }
-  .chip:active { transform: scale(.96); }
-  .chip.active { background: var(--pine); border-color: var(--pine); color: #fff; }
-  .chip.active :global(.ic) { color: #fff; }
+  .fchip::before { content: ''; position: absolute; left: 0; right: 0; top: 50%; height: 44px; transform: translateY(-50%); }
+  .fchip :global(.ic) { width: 15px; height: 15px; color: var(--muted); }
+  .fchip:active { transform: scale(.96); }
+  .fchip.active { background: var(--pine); border-color: var(--pine); color: #fff; }
+  .fchip.active :global(.ic) { color: #fff; }
   .div { flex-shrink: 0; width: 1px; height: 20px; background: var(--line); margin: 0 2px; }
 
   .list {
@@ -143,11 +143,11 @@
   .d-veryhard { color: #8e3bb0; }
 
   @media (min-width: 640px) {
-    .head, .chips, .list { max-width: 760px; margin-inline: auto; }
+    .head, .fbar, .list { max-width: 760px; margin-inline: auto; }
     .list { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: min-content; align-items: start; }
   }
   @media (orientation: landscape) and (max-height: 560px) {
-    .head, .chips, .list { max-width: none; margin-inline: 0; }
+    .head, .fbar, .list { max-width: none; margin-inline: 0; }
     .list { display: grid; grid-template-columns: 1fr 1fr; grid-auto-rows: min-content; align-items: start; gap: 14px; }
     .head { padding-top: calc(var(--safe-t) + 12px); padding-bottom: 10px; }
     h1 { font-size: 26px; }
