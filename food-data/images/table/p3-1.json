@@ -1,0 +1,2234 @@
+[
+ {
+  "key": "mext-06403",
+  "ja": "キャベツ カット 常法洗浄",
+  "desc": "shredded cabbage: a heap of fine raw pale green and white cabbage shreds in a small bowl, crisp, fresh and slightly curly",
+  "items": [
+   "mext:06403",
+   "mext:06404"
+  ]
+ },
+ {
+  "key": "mext-06063",
+  "ja": "グリーンボール 生",
+  "desc": "green ball cabbage: a small round cabbage head with deep green tight leaves, one half cut to show densely packed layers that stay green to the core, raw",
+  "items": [
+   "mext:06063"
+  ]
+ },
+ {
+  "key": "mext-06064",
+  "ja": "レッドキャベツ 生",
+  "desc": "red cabbage: a round purple-red cabbage head, one half cut to show tight wavy purple and white layered veins inside, raw",
+  "items": [
+   "mext:06064"
+  ]
+ },
+ {
+  "key": "mext-06069",
+  "ja": "きゅうり ピクルス スイート型",
+  "desc": "sweet pickles: small whole and sliced gherkins, glossy olive green with bumpy skin, in clear sweet brine with mustard seeds in a small glass dish",
+  "items": [
+   "mext:06069"
+  ]
+ },
+ {
+  "key": "mext-06070",
+  "ja": "きゅうり ピクルス サワー型",
+  "desc": "sour dill pickles: whole cucumbers and spears, dull olive green with translucent flesh, in cloudy brine with dill sprigs and garlic cloves in a small glass dish",
+  "items": [
+   "mext:06070"
+  ]
+ },
+ {
+  "key": "mext-06075",
+  "ja": "キンサイ 生",
+  "desc": "kinsai Chinese celery: a bunch of thin hollow pale green stalks with flat parsley-like leaves, slender and leafy, not thick celery ribs, raw",
+  "items": [
+   "mext:06075"
+  ]
+ },
+ {
+  "key": "mext-06076",
+  "ja": "キンサイ ゆで",
+  "desc": "boiled Chinese celery: thin soft deep green stalks and leaves cut into short lengths, piled in a small dish",
+  "items": [
+   "mext:06076"
+  ]
+ },
+ {
+  "key": "mext-06085",
+  "ja": "ごぼう ゆで",
+  "desc": "boiled burdock root: thin brown-skinned root cut into diagonal slices and sticks, greyish tan fibrous flesh, soft, in a small dish",
+  "items": [
+   "mext:06085"
+  ]
+ },
+ {
+  "key": "mext-06089",
+  "ja": "さんとうさい 生",
+  "desc": "santousai: a loose non-heading Chinese cabbage, bright green crinkled leaves on flat white stems, a bunch, raw",
+  "items": [
+   "mext:06089"
+  ]
+ },
+ {
+  "key": "mext-06090",
+  "ja": "さんとうさい ゆで",
+  "desc": "boiled santousai: soft light green leaves with white stems, squeezed and cut into short lengths in a small dish",
+  "items": [
+   "mext:06090"
+  ]
+ },
+ {
+  "key": "mext-06091",
+  "ja": "さんとうさい 塩漬",
+  "desc": "salt-pickled leafy greens: limp dull olive green leaves and pale stems, chopped and heaped in a small dish",
+  "items": [
+   "mext:06091"
+  ]
+ },
+ {
+  "key": "mext-06094",
+  "ja": "ししとう 油いため",
+  "desc": "stir-fried shishito: small slender wrinkled green shishito peppers, glossy with oil and blistered brown spots, on a small plate",
+  "items": [
+   "mext:06094"
+  ]
+ },
+ {
+  "key": "mext-06096",
+  "ja": "しそ 実 生",
+  "desc": "shiso seeds: tiny round green shiso seed pods clustered on short stems, fresh green sprigs in a small dish",
+  "items": [
+   "mext:06096"
+  ]
+ },
+ {
+  "key": "mext-06097",
+  "ja": "じゅうろくささげ 生",
+  "desc": "yardlong beans: very long thin green bean pods coiled in loops in a bundle, smooth and slender, raw",
+  "items": [
+   "mext:06097"
+  ]
+ },
+ {
+  "key": "mext-06098",
+  "ja": "じゅうろくささげ ゆで",
+  "desc": "boiled yardlong beans: thin bright deep green bean pods cut into short even lengths, soft, in a small dish",
+  "items": [
+   "mext:06098"
+  ]
+ },
+ {
+  "key": "mext-06100",
+  "ja": "しゅんぎく ゆで",
+  "desc": "boiled shungiku: chrysanthemum greens, dark green deeply serrated leaves squeezed into a neat log and cut into lengths, in a small dish",
+  "items": [
+   "mext:06100"
+  ]
+ },
+ {
+  "key": "mext-06366",
+  "ja": "しょうが 皮なし 生 おろし汁",
+  "desc": "ginger juice: pale yellow cloudy juice in a small glass dish, beside a little mound of grated ginger and a peeled tan knob of ginger",
+  "items": [
+   "mext:06366"
+  ]
+ },
+ {
+  "key": "mext-06107",
+  "ja": "しろうり 塩漬",
+  "desc": "salted shirouri melon: pale green pickling melon halved lengthwise with seeds scooped out, translucent pale flesh, sliced into crescents on a small dish",
+  "items": [
+   "mext:06107"
+  ]
+ },
+ {
+  "key": "mext-06111",
+  "ja": "干しずいき 乾",
+  "desc": "dried zuiki: dried taro stems, long twisted flat brown-grey strips tied in a bundle, papery and dry",
+  "items": [
+   "mext:06111"
+  ]
+ },
+ {
+  "key": "mext-06112",
+  "ja": "干しずいき ゆで",
+  "desc": "rehydrated zuiki: soft pale brown translucent taro stem strips cut into short lengths, moist, in a small bowl",
+  "items": [
+   "mext:06112"
+  ]
+ },
+ {
+  "key": "mext-06113",
+  "ja": "すぐきな 葉 生",
+  "desc": "sugukina leaves: long deeply lobed bright green turnip leaves on pale stems, a bunch, raw",
+  "items": [
+   "mext:06113"
+  ]
+ },
+ {
+  "key": "mext-06114",
+  "ja": "すぐきな 根 生",
+  "desc": "sugukina root: an elongated conical white turnip root, one piece cut to show crisp white flesh, raw",
+  "items": [
+   "mext:06114"
+  ]
+ },
+ {
+  "key": "mext-06122",
+  "ja": "干しぜんまい 干し若芽 乾",
+  "desc": "dried zenmai: dried royal fern shoots, a tangled bundle of thin wrinkled dark brown curled stems",
+  "items": [
+   "mext:06122"
+  ]
+ },
+ {
+  "key": "mext-06123",
+  "ja": "干しぜんまい 干し若芽 ゆで",
+  "desc": "rehydrated zenmai: soft plump olive-brown fern shoot stems cut into short lengths in a small bowl",
+  "items": [
+   "mext:06123"
+  ]
+ },
+ {
+  "key": "mext-06129",
+  "ja": "葉だいこん 生",
+  "desc": "ha-daikon: young radish greens, a bunch of bright green rough leaves with tiny thin white roots, raw",
+  "items": [
+   "mext:06129"
+  ]
+ },
+ {
+  "key": "mext-06131",
+  "ja": "だいこん 葉 ゆで",
+  "desc": "boiled daikon leaves: chopped dark green radish leaves and stems, soft, in a small dish",
+  "items": [
+   "mext:06131"
+  ]
+ },
+ {
+  "key": "mext-06132",
+  "ja": "だいこん 皮つき 生",
+  "desc": "daikon radish: a long thick white radish with a pale green top, a cut piece showing crisp white flesh, skin on, raw",
+  "items": [
+   "mext:06132"
+  ]
+ },
+ {
+  "key": "mext-06133",
+  "ja": "だいこん 皮つき ゆで",
+  "desc": "boiled daikon: thick round slices of radish, soft and translucent pale ivory, in a small bowl",
+  "items": [
+   "mext:06133"
+  ]
+ },
+ {
+  "key": "mext-06368",
+  "ja": "だいこん 皮なし 生 おろし汁",
+  "desc": "grated daikon juice: watery thin cloudy whitish liquid in a small glass dish",
+  "items": [
+   "mext:06368"
+  ]
+ },
+ {
+  "key": "mext-06369",
+  "ja": "だいこん 皮なし 生 おろし水洗い",
+  "desc": "grated daikon: a small fluffy mound of finely grated white radish, moist and squeezed, in a small dish",
+  "items": [
+   "mext:06369"
+  ]
+ },
+ {
+  "key": "mext-06334",
+  "ja": "切干しだいこん ゆで",
+  "desc": "rehydrated kiriboshi daikon: soft tangled pale beige dried radish shreds in a small bowl",
+  "items": [
+   "mext:06334"
+  ]
+ },
+ {
+  "key": "mext-06335",
+  "ja": "切干しだいこん 油いため",
+  "desc": "stir-fried kiriboshi daikon: tangled tan radish shreds glossy with oil and lightly browned, on a small plate",
+  "items": [
+   "mext:06335"
+  ]
+ },
+ {
+  "key": "mext-06137",
+  "ja": "だいこん ぬかみそ漬",
+  "desc": "daikon nukazuke: rice-bran pickled radish cut into half-moon slices, pale off-white and slightly translucent, in a small dish",
+  "items": [
+   "mext:06137"
+  ]
+ },
+ {
+  "key": "mext-06140",
+  "ja": "だいこん 守口漬",
+  "desc": "moriguchi-zuke: a very long thin radish pickled in sake lees, wrinkled glossy dark amber brown, coiled, with a few slices",
+  "items": [
+   "mext:06140"
+  ]
+ },
+ {
+  "key": "mext-06141",
+  "ja": "だいこん べったら漬",
+  "desc": "bettara-zuke: thick pieces of daikon pickled in rice koji, glistening translucent white with sticky white koji grains clinging, sliced in a small dish",
+  "items": [
+   "mext:06141"
+  ]
+ },
+ {
+  "key": "mext-06142",
+  "ja": "だいこん みそ漬",
+  "desc": "miso-pickled daikon: slices of radish pickle, firm and amber brown from miso, in a small dish",
+  "items": [
+   "mext:06142"
+  ]
+ },
+ {
+  "key": "mext-06144",
+  "ja": "つまみな 生",
+  "desc": "tsumamina: tiny greens seedlings, small round bright green leaves on thin white stems, a delicate bunch, raw",
+  "items": [
+   "mext:06144"
+  ]
+ },
+ {
+  "key": "mext-06145",
+  "ja": "たいさい 生",
+  "desc": "taisai: a loose bunch of Chinese greens with spoon-shaped glossy dark green leaves on thick white stems, raw",
+  "items": [
+   "mext:06145"
+  ]
+ },
+ {
+  "key": "mext-06146",
+  "ja": "たいさい 塩漬",
+  "desc": "salt-pickled taisai: limp olive green leaves and pale stems, chopped and heaped in a small dish",
+  "items": [
+   "mext:06146",
+   "mext:06255",
+   "mext:06273"
+  ]
+ },
+ {
+  "key": "mext-06147",
+  "ja": "たかな 生",
+  "desc": "takana: a large mustard leaf, broad wrinkled green with a reddish purple tinge and a thick pale stem, raw",
+  "items": [
+   "mext:06147"
+  ]
+ },
+ {
+  "key": "mext-06149",
+  "ja": "たけのこ 生",
+  "desc": "bamboo shoot: a whole conical shoot wrapped in brown hairy husks, one halved to show cream-white layered flesh with comb-like inner chambers, raw",
+  "items": [
+   "mext:06149"
+  ]
+ },
+ {
+  "key": "mext-06154",
+  "ja": "たまねぎ 水さらし",
+  "desc": "onion soaked in water: thin crisp translucent white onion slices in a small dish",
+  "items": [
+   "mext:06154"
+  ]
+ },
+ {
+  "key": "mext-06155",
+  "ja": "たまねぎ ゆで",
+  "desc": "boiled onion: soft translucent pale onion wedges in a small dish",
+  "items": [
+   "mext:06155"
+  ]
+ },
+ {
+  "key": "mext-06389",
+  "ja": "たまねぎ 油いため（あめ色）",
+  "desc": "caramelized onion: thin onion slices cooked down to a soft sticky deep amber brown jam-like heap in a small dish",
+  "items": [
+   "mext:06389"
+  ]
+ },
+ {
+  "key": "mext-06337",
+  "ja": "葉たまねぎ 生",
+  "desc": "young onion: a small white bulb with long hollow green leaves, a couple together, raw",
+  "items": [
+   "mext:06337"
+  ]
+ },
+ {
+  "key": "mext-06376",
+  "ja": "ちぢみゆきな 生",
+  "desc": "chijimi yukina: a flat rosette of thick dark green crinkled blistered leaves like savoy cabbage, raw",
+  "items": [
+   "mext:06376"
+  ]
+ },
+ {
+  "key": "mext-06377",
+  "ja": "ちぢみゆきな ゆで",
+  "desc": "boiled chijimi yukina: soft dark green crinkled leaves chopped into pieces in a small dish",
+  "items": [
+   "mext:06377"
+  ]
+ },
+ {
+  "key": "mext-06161",
+  "ja": "チンゲンサイ ゆで",
+  "desc": "boiled bok choy: small heads halved lengthwise, pale green spoon-shaped stems and bright green leaves, on a plate",
+  "items": [
+   "mext:06161"
+  ]
+ },
+ {
+  "key": "mext-06338",
+  "ja": "チンゲンサイ 油いため",
+  "desc": "stir-fried bok choy: cut pale green stems and dark green leaves glossy with oil, on a small plate",
+  "items": [
+   "mext:06338"
+  ]
+ },
+ {
+  "key": "mext-06164",
+  "ja": "つるな 生",
+  "desc": "tsuruna: New Zealand spinach, thick fleshy triangular green leaves on trailing stems, raw",
+  "items": [
+   "mext:06164"
+  ]
+ },
+ {
+  "key": "mext-06390",
+  "ja": "つるにんじん 生",
+  "desc": "tsurunin: a pale tan wrinkled ringed tapering root like ginseng, a cut piece showing whitish flesh, raw",
+  "items": [
+   "mext:06390"
+  ]
+ },
+ {
+  "key": "mext-06169",
+  "ja": "とうがらし 葉･果実 生",
+  "desc": "chili pepper leaves: soft green leaves with small slender green chilies still attached on sprigs, raw",
+  "items": [
+   "mext:06169"
+  ]
+ },
+ {
+  "key": "mext-06170",
+  "ja": "とうがらし 葉･果実 油いため",
+  "desc": "stir-fried chili leaves: wilted glossy dark green leaves with small green chilies mixed in, in a small dish",
+  "items": [
+   "mext:06170"
+  ]
+ },
+ {
+  "key": "mext-06171",
+  "ja": "とうがらし 果実 生",
+  "desc": "fresh red chili: long slender glossy red chili peppers, one cut to show pale seeds inside",
+  "items": [
+   "mext:06171"
+  ]
+ },
+ {
+  "key": "mext-06172",
+  "ja": "とうがらし 果実 乾",
+  "desc": "dried red chili: small wrinkled shiny deep red dried chili peppers with stems, brittle, in a small dish",
+  "items": [
+   "mext:06172"
+  ]
+ },
+ {
+  "key": "mext-06339",
+  "ja": "スイートコーン 電子レンジ調理",
+  "desc": "microwaved sweet corn: an ear of corn with plump glossy bright yellow kernels, on a plate",
+  "items": [
+   "mext:06339"
+  ]
+ },
+ {
+  "key": "mext-06177",
+  "ja": "スイートコーン 穂軸つき 冷凍",
+  "desc": "frozen corn on the cob: short cob pieces with frosty pale yellow kernels and a dusting of ice",
+  "items": [
+   "mext:06177"
+  ]
+ },
+ {
+  "key": "mext-06178",
+  "ja": "スイートコーン カーネル 冷凍",
+  "desc": "frozen corn kernels: loose frosty pale yellow kernels in a small bowl",
+  "items": [
+   "mext:06178"
+  ]
+ },
+ {
+  "key": "mext-06378",
+  "ja": "スイートコーン カーネル 冷凍 ゆで",
+  "desc": "boiled corn kernels: plump moist bright yellow kernels in a small bowl",
+  "items": [
+   "mext:06378"
+  ]
+ },
+ {
+  "key": "mext-06379",
+  "ja": "スイートコーン カーネル 冷凍 油いため",
+  "desc": "stir-fried corn kernels: glossy yellow kernels, some lightly browned, in a small dish",
+  "items": [
+   "mext:06379"
+  ]
+ },
+ {
+  "key": "mext-06186",
+  "ja": "トマト ミックスジュース 食塩添加",
+  "desc": "tomato vegetable juice: a glass of thick opaque red-orange juice",
+  "items": [
+   "mext:06186",
+   "mext:06341"
+  ]
+ },
+ {
+  "key": "mext-06189",
+  "ja": "ながさきはくさい 生",
+  "desc": "nagasaki hakusai: a non-heading Chinese cabbage, a flat spreading rosette of dark green crinkled leaves with pale stems, raw",
+  "items": [
+   "mext:06189"
+  ]
+ },
+ {
+  "key": "mext-06190",
+  "ja": "ながさきはくさい ゆで",
+  "desc": "boiled nagasaki hakusai: soft green leaves with pale stems, squeezed and chopped in a small dish",
+  "items": [
+   "mext:06190"
+  ]
+ },
+ {
+  "key": "mext-06192",
+  "ja": "なす ゆで",
+  "desc": "boiled eggplant: pieces with dull purple skin and soft pale grey-green flesh, in a small dish",
+  "items": [
+   "mext:06192"
+  ]
+ },
+ {
+  "key": "mext-06343",
+  "ja": "なす 天ぷら",
+  "desc": "eggplant tempura: fan-cut eggplant halves in light crisp pale golden batter, purple skin peeking through, on a plate",
+  "items": [
+   "mext:06343"
+  ]
+ },
+ {
+  "key": "mext-06193",
+  "ja": "べいなす 生",
+  "desc": "American eggplant: a large plump oval glossy dark purple eggplant with a green cap, one cut to show white flesh, raw",
+  "items": [
+   "mext:06193"
+  ]
+ },
+ {
+  "key": "mext-06194",
+  "ja": "べいなす 素揚げ",
+  "desc": "deep-fried eggplant: thick halves fried without batter, glossy deep purple skin and soft golden flesh, on a plate",
+  "items": [
+   "mext:06194"
+  ]
+ },
+ {
+  "key": "mext-06195",
+  "ja": "なす 塩漬",
+  "desc": "salt-pickled eggplant: small eggplants with vivid glossy deep purple-blue skin, sliced to show pale greenish flesh, in a small dish",
+  "items": [
+   "mext:06195"
+  ]
+ },
+ {
+  "key": "mext-06196",
+  "ja": "なす ぬかみそ漬",
+  "desc": "eggplant nukazuke: rice-bran pickled eggplant slices, deep indigo skin and pale tan-green flesh, in a small dish",
+  "items": [
+   "mext:06196"
+  ]
+ },
+ {
+  "key": "mext-06197",
+  "ja": "なす こうじ漬",
+  "desc": "koji-pickled eggplant: small purple eggplants coated in sticky white rice koji grains, in a small dish",
+  "items": [
+   "mext:06197"
+  ]
+ },
+ {
+  "key": "mext-06198",
+  "ja": "なす からし漬",
+  "desc": "mustard-pickled eggplant: tiny whole eggplants coated in yellowish mustard paste, dark purple showing through, in a small dish",
+  "items": [
+   "mext:06198"
+  ]
+ },
+ {
+  "key": "mext-06200",
+  "ja": "なずな 生",
+  "desc": "nazuna: shepherd's purse, a flat rosette of deeply lobed toothed green leaves, raw",
+  "items": [
+   "mext:06200"
+  ]
+ },
+ {
+  "key": "mext-06203",
+  "ja": "洋種なばな 生",
+  "desc": "western nabana: rapeseed greens, smooth blue-green leaves on thick stems with small yellow-green flower buds, raw",
+  "items": [
+   "mext:06203"
+  ]
+ },
+ {
+  "key": "mext-06204",
+  "ja": "洋種なばな ゆで",
+  "desc": "boiled nabana: soft bright green stems, leaves and buds cut into lengths in a small dish",
+  "items": [
+   "mext:06204"
+  ]
+ },
+ {
+  "key": "mext-06206",
+  "ja": "にがうり 油いため",
+  "desc": "stir-fried bitter gourd: crescent slices of bumpy warty green goya, glossy with oil, on a small plate",
+  "items": [
+   "mext:06206"
+  ]
+ },
+ {
+  "key": "mext-06208",
+  "ja": "にら ゆで",
+  "desc": "boiled garlic chives: soft dark green flat blades cut into lengths in a small dish",
+  "items": [
+   "mext:06208"
+  ]
+ },
+ {
+  "key": "mext-06344",
+  "ja": "にら 油いため",
+  "desc": "stir-fried garlic chives: glossy wilted dark green flat chive lengths on a small plate",
+  "items": [
+   "mext:06344"
+  ]
+ },
+ {
+  "key": "mext-06211",
+  "ja": "葉にんじん 生",
+  "desc": "carrot greens: a bunch of feathery finely divided green leaves on thin stems, raw",
+  "items": [
+   "mext:06211"
+  ]
+ },
+ {
+  "key": "mext-06213",
+  "ja": "にんじん 皮つき ゆで",
+  "desc": "boiled carrot: thick round orange carrot slices with skin, soft, in a small dish",
+  "items": [
+   "mext:06213"
+  ]
+ },
+ {
+  "key": "mext-06345",
+  "ja": "にんじん 皮なし 油いため",
+  "desc": "stir-fried carrot: thin julienne strips of peeled orange carrot, glossy with oil, on a small plate",
+  "items": [
+   "mext:06345"
+  ]
+ },
+ {
+  "key": "mext-06346",
+  "ja": "にんじん 皮なし 素揚げ",
+  "desc": "deep-fried carrot: peeled carrot sticks fried glossy with slightly darkened edges, on a small plate",
+  "items": [
+   "mext:06346"
+  ]
+ },
+ {
+  "key": "mext-06407",
+  "ja": "にんじん 皮なし カット 常法洗浄",
+  "desc": "cut carrot: raw bright orange peeled carrot sticks and julienne in a small bowl, crisp",
+  "items": [
+   "mext:06407",
+   "mext:06408"
+  ]
+ },
+ {
+  "key": "mext-06347",
+  "ja": "にんじん 皮 生",
+  "desc": "carrot peel: thin curled orange carrot peelings in a small dish, raw",
+  "items": [
+   "mext:06347"
+  ]
+ },
+ {
+  "key": "mext-06216",
+  "ja": "にんじん 冷凍",
+  "desc": "frozen carrot: frosty orange carrot dice with ice crystals in a small bowl",
+  "items": [
+   "mext:06216"
+  ]
+ },
+ {
+  "key": "mext-06380",
+  "ja": "にんじん 冷凍 ゆで",
+  "desc": "boiled frozen carrot: soft moist bright orange carrot dice in a small bowl",
+  "items": [
+   "mext:06380"
+  ]
+ },
+ {
+  "key": "mext-06381",
+  "ja": "にんじん 冷凍 油いため",
+  "desc": "stir-fried frozen carrot: glossy orange carrot dice with oil sheen on a small plate",
+  "items": [
+   "mext:06381"
+  ]
+ },
+ {
+  "key": "mext-06348",
+  "ja": "にんじん グラッセ",
+  "desc": "carrot glace: rounded orange carrot pieces in a shiny butter and sugar glaze, on a plate",
+  "items": [
+   "mext:06348"
+  ]
+ },
+ {
+  "key": "mext-06218",
+  "ja": "きんとき 皮つき 生",
+  "desc": "kintoki carrot: a long slender deep crimson red carrot, a cut piece showing red all the way through, raw",
+  "items": [
+   "mext:06218"
+  ]
+ },
+ {
+  "key": "mext-06219",
+  "ja": "きんとき 皮つき ゆで",
+  "desc": "boiled kintoki carrot: soft deep crimson red carrot rounds in a small dish",
+  "items": [
+   "mext:06219",
+   "mext:06221"
+  ]
+ },
+ {
+  "key": "mext-06220",
+  "ja": "きんとき 皮なし 生",
+  "desc": "peeled kintoki carrot: smooth peeled deep red carrot pieces, crisp, raw, on a small plate",
+  "items": [
+   "mext:06220"
+  ]
+ },
+ {
+  "key": "mext-06222",
+  "ja": "ミニキャロット 生",
+  "desc": "baby carrots: small slender bright orange carrots with short green tops, raw",
+  "items": [
+   "mext:06222"
+  ]
+ },
+ {
+  "key": "mext-06349",
+  "ja": "にんにく 油いため",
+  "desc": "fried garlic: thin garlic slices fried golden in a little oil, in a small dish",
+  "items": [
+   "mext:06349"
+  ]
+ },
+ {
+  "key": "mext-06350",
+  "ja": "根深ねぎ ゆで",
+  "desc": "boiled long white negi: thick white leek chunks, soft and translucent, in a small dish",
+  "items": [
+   "mext:06350"
+  ]
+ },
+ {
+  "key": "mext-06351",
+  "ja": "根深ねぎ 油いため",
+  "desc": "stir-fried negi: diagonal slices of thick white leek, glossy and lightly browned, on a small plate",
+  "items": [
+   "mext:06351"
+  ]
+ },
+ {
+  "key": "mext-06352",
+  "ja": "葉ねぎ 油いため",
+  "desc": "stir-fried green onion: wilted glossy green scallion lengths on a small plate",
+  "items": [
+   "mext:06352"
+  ]
+ },
+ {
+  "key": "mext-06411",
+  "ja": "めねぎ 生",
+  "desc": "menegi: very fine thread-like dark green onion sprouts in a small neat bundle, raw",
+  "items": [
+   "mext:06411"
+  ]
+ },
+ {
+  "key": "mext-06234",
+  "ja": "はくさい ゆで",
+  "desc": "boiled napa cabbage: soft translucent white stems and pale green leaf tops cut into squares, in a small bowl",
+  "items": [
+   "mext:06234"
+  ]
+ },
+ {
+  "key": "mext-06237",
+  "ja": "パクチョイ 生",
+  "desc": "pak choi: thick bright white stems with round dark green leaves, a small head, raw",
+  "items": [
+   "mext:06237"
+  ]
+ },
+ {
+  "key": "mext-06392",
+  "ja": "はなっこりー 生",
+  "desc": "hanakkori: slender green stalks with small green flower buds, a few yellow flowers and small leaves, raw",
+  "items": [
+   "mext:06392"
+  ]
+ },
+ {
+  "key": "mext-06242",
+  "ja": "はやとうり 白色種 塩漬",
+  "desc": "salted chayote: pale green pear-shaped ridged squash, sliced, pale translucent pickled slices in a small dish",
+  "items": [
+   "mext:06242"
+  ]
+ },
+ {
+  "key": "mext-06248",
+  "ja": "赤ピーマン 油いため",
+  "desc": "stir-fried red bell pepper: glossy bright red pepper strips on a small plate",
+  "items": [
+   "mext:06248"
+  ]
+ },
+ {
+  "key": "mext-06393",
+  "ja": "オレンジピーマン 生",
+  "desc": "orange bell pepper: a glossy orange bell pepper, one halved to show white ribs and seeds, raw",
+  "items": [
+   "mext:06393"
+  ]
+ },
+ {
+  "key": "mext-06394",
+  "ja": "オレンジピーマン 油いため",
+  "desc": "stir-fried orange bell pepper: glossy orange pepper strips on a small plate",
+  "items": [
+   "mext:06394"
+  ]
+ },
+ {
+  "key": "mext-06250",
+  "ja": "黄ピーマン 油いため",
+  "desc": "stir-fried yellow bell pepper: glossy yellow pepper strips on a small plate",
+  "items": [
+   "mext:06250"
+  ]
+ },
+ {
+  "key": "mext-06251",
+  "ja": "トマピー 生",
+  "desc": "tomapi: a small flattened ribbed glossy red pepper shaped like a tomato, one cut to show thick flesh, raw",
+  "items": [
+   "mext:06251"
+  ]
+ },
+ {
+  "key": "mext-06252",
+  "ja": "ひのな 生",
+  "desc": "hinona: slender turnips with long thin roots, purple-red at the top shading to white, with green leaves, raw",
+  "items": [
+   "mext:06252"
+  ]
+ },
+ {
+  "key": "mext-06253",
+  "ja": "ひのな 甘酢漬",
+  "desc": "hinona sweet vinegar pickle: sliced roots and leaves pickled bright pink-red, in a small dish",
+  "items": [
+   "mext:06253"
+  ]
+ },
+ {
+  "key": "mext-06254",
+  "ja": "ひろしまな 生",
+  "desc": "hiroshimana: a large loose head of broad wavy green leaves with thick white ribs, raw",
+  "items": [
+   "mext:06254"
+  ]
+ },
+ {
+  "key": "mext-06260",
+  "ja": "ふじまめ 生",
+  "desc": "hyacinth beans: flat broad crescent-shaped pods, green with purple edges, raw",
+  "items": [
+   "mext:06260"
+  ]
+ },
+ {
+  "key": "mext-06261",
+  "ja": "ふだんそう 生",
+  "desc": "Swiss chard: large glossy crinkled green leaves on thick colourful stems in red, yellow and white, raw",
+  "items": [
+   "mext:06261"
+  ]
+ },
+ {
+  "key": "mext-06262",
+  "ja": "ふだんそう ゆで",
+  "desc": "boiled Swiss chard: soft green leaves and colourful stems chopped in a small dish",
+  "items": [
+   "mext:06262"
+  ]
+ },
+ {
+  "key": "mext-06395",
+  "ja": "ブロッコリー 電子レンジ調理",
+  "desc": "microwaved broccoli: bright green florets, moist, in a small dish",
+  "items": [
+   "mext:06395"
+  ]
+ },
+ {
+  "key": "mext-06396",
+  "ja": "ブロッコリー 焼き",
+  "desc": "grilled broccoli: green florets with charred browned edges on a small plate",
+  "items": [
+   "mext:06396"
+  ]
+ },
+ {
+  "key": "mext-06397",
+  "ja": "ブロッコリー 油いため",
+  "desc": "stir-fried broccoli: glossy bright green florets on a small plate",
+  "items": [
+   "mext:06397"
+  ]
+ },
+ {
+  "key": "mext-06359",
+  "ja": "ほうれんそう 油いため",
+  "desc": "stir-fried spinach: wilted glossy dark green spinach leaves and stems on a small plate",
+  "items": [
+   "mext:06359",
+   "mext:06373"
+  ]
+ },
+ {
+  "key": "mext-06355",
+  "ja": "ほうれんそう 夏採り 生",
+  "desc": "spinach: a bunch of dark green spade-shaped leaves with pinkish red roots, raw",
+  "items": [
+   "mext:06355",
+   "mext:06356"
+  ]
+ },
+ {
+  "key": "mext-06357",
+  "ja": "ほうれんそう 夏採り ゆで",
+  "desc": "boiled spinach: dark green spinach squeezed into a neat log and cut into lengths, in a small dish",
+  "items": [
+   "mext:06357",
+   "mext:06358",
+   "mext:06372"
+  ]
+ },
+ {
+  "key": "mext-06269",
+  "ja": "ほうれんそう 冷凍",
+  "desc": "frozen spinach: a clump of frosty dark green chopped spinach with ice crystals in a small bowl",
+  "items": [
+   "mext:06269"
+  ]
+ },
+ {
+  "key": "mext-06271",
+  "ja": "まこも 生",
+  "desc": "makomo water bamboo: a pale green husked stalk peeled to show a smooth ivory white cylindrical stem, a cut piece showing white flesh, raw",
+  "items": [
+   "mext:06271"
+  ]
+ },
+ {
+  "key": "mext-06272",
+  "ja": "みずかけな 生",
+  "desc": "mizukakena: a bunch of smooth soft light green elongated leaves, raw",
+  "items": [
+   "mext:06272"
+  ]
+ },
+ {
+  "key": "mext-06073",
+  "ja": "みずな ゆで",
+  "desc": "boiled mizuna: soft slender green stems and feathery leaves cut into lengths in a small dish",
+  "items": [
+   "mext:06073"
+  ]
+ },
+ {
+  "key": "mext-06074",
+  "ja": "みずな 塩漬",
+  "desc": "salted mizuna: limp thin pale green stems and jagged feathery leaves, chopped, in a small dish",
+  "items": [
+   "mext:06074"
+  ]
+ },
+ {
+  "key": "mext-06276",
+  "ja": "根みつば 生",
+  "desc": "ne-mitsuba: Japanese wild parsley with three-part leaves on long pale stems and white roots attached, raw",
+  "items": [
+   "mext:06276"
+  ]
+ },
+ {
+  "key": "mext-06277",
+  "ja": "根みつば ゆで",
+  "desc": "boiled mitsuba: soft green three-part leaves and thin stems cut into lengths in a small dish",
+  "items": [
+   "mext:06277",
+   "mext:06279"
+  ]
+ },
+ {
+  "key": "mext-06278",
+  "ja": "糸みつば 生",
+  "desc": "ito-mitsuba: a bundle of thin long green stems with small three-part leaves, raw",
+  "items": [
+   "mext:06278"
+  ]
+ },
+ {
+  "key": "mext-06360",
+  "ja": "みぶな 生",
+  "desc": "mibuna: a bunch of long narrow smooth strap-like green leaves with rounded untoothed edges, raw",
+  "items": [
+   "mext:06360"
+  ]
+ },
+ {
+  "key": "mext-06281",
+  "ja": "みょうがたけ 生",
+  "desc": "myogatake: slender pale pink-white to green shoots of myoga with sheathed bamboo-like stems, raw",
+  "items": [
+   "mext:06281"
+  ]
+ },
+ {
+  "key": "mext-06285",
+  "ja": "めたで 生",
+  "desc": "metade: tiny reddish purple water pepper sprouts with small seed leaves, a delicate garnish in a small dish",
+  "items": [
+   "mext:06285"
+  ]
+ },
+ {
+  "key": "mext-06288",
+  "ja": "だいずもやし ゆで",
+  "desc": "boiled soybean sprouts: pale white stems with large yellow bean heads, soft, in a small dish",
+  "items": [
+   "mext:06288"
+  ]
+ },
+ {
+  "key": "mext-06412",
+  "ja": "だいずもやし 油いため",
+  "desc": "stir-fried soybean sprouts: glossy pale stems with large yellow bean heads, on a small plate",
+  "items": [
+   "mext:06412"
+  ]
+ },
+ {
+  "key": "mext-06289",
+  "ja": "ブラックマッペもやし 生",
+  "desc": "black matpe bean sprouts: long thin white sprouts with small yellowish heads, crisp, raw, in a small bowl",
+  "items": [
+   "mext:06289"
+  ]
+ },
+ {
+  "key": "mext-06290",
+  "ja": "ブラックマッペもやし ゆで",
+  "desc": "boiled bean sprouts: limp translucent white thin sprouts with small heads in a small dish",
+  "items": [
+   "mext:06290"
+  ]
+ },
+ {
+  "key": "mext-06398",
+  "ja": "ブラックマッペもやし 油いため",
+  "desc": "stir-fried bean sprouts: glossy thin white sprouts, lightly wilted, on a small plate",
+  "items": [
+   "mext:06398",
+   "mext:06413"
+  ]
+ },
+ {
+  "key": "mext-06294",
+  "ja": "モロヘイヤ ゆで",
+  "desc": "boiled molokhia: chopped dark green leaves, slimy and sticky, in a small dish",
+  "items": [
+   "mext:06294"
+  ]
+ },
+ {
+  "key": "mext-06401",
+  "ja": "やぶまめ 生",
+  "desc": "yabumame: small flat mottled beige and brown wild beans, a few pods beside, raw",
+  "items": [
+   "mext:06401"
+  ]
+ },
+ {
+  "key": "mext-06295",
+  "ja": "やまごぼう みそ漬",
+  "desc": "miso-pickled yamagobo: long thin orange-brown root sticks, firm and glossy, in a small dish",
+  "items": [
+   "mext:06295"
+  ]
+ },
+ {
+  "key": "mext-06298",
+  "ja": "ようさい 生",
+  "desc": "water spinach: hollow green stems with arrowhead-shaped leaves, a bunch, raw",
+  "items": [
+   "mext:06298"
+  ]
+ },
+ {
+  "key": "mext-06299",
+  "ja": "ようさい ゆで",
+  "desc": "boiled water spinach: soft green hollow stems and leaves cut into lengths in a small dish",
+  "items": [
+   "mext:06299"
+  ]
+ },
+ {
+  "key": "mext-06300",
+  "ja": "よめな 生",
+  "desc": "yomena: young aster greens, small oval toothed green leaves on short stems, raw",
+  "items": [
+   "mext:06300"
+  ]
+ },
+ {
+  "key": "mext-06303",
+  "ja": "らっかせい 生",
+  "desc": "fresh peanuts: green-harvested peanuts in moist netted pale tan shells, one opened showing pink-skinned kernels, raw",
+  "items": [
+   "mext:06303"
+  ]
+ },
+ {
+  "key": "mext-06304",
+  "ja": "らっかせい ゆで",
+  "desc": "boiled peanuts: soft damp beige shells, some split to show plump pinkish kernels, in a small bowl",
+  "items": [
+   "mext:06304"
+  ]
+ },
+ {
+  "key": "mext-06305",
+  "ja": "らっきょう 生",
+  "desc": "rakkyo: small pointed white Japanese shallot bulbs with roots trimmed, raw",
+  "items": [
+   "mext:06305"
+  ]
+ },
+ {
+  "key": "mext-06361",
+  "ja": "レタス 水耕栽培 生",
+  "desc": "hydroponic head lettuce: a round loose head of pale green leaves with its white root ball attached, raw",
+  "items": [
+   "mext:06361"
+  ]
+ },
+ {
+  "key": "mext-06316",
+  "ja": "コスレタス 生",
+  "desc": "romaine lettuce: a tall elongated head of crisp green leaves with pale thick midribs, raw",
+  "items": [
+   "mext:06316"
+  ]
+ },
+ {
+  "key": "mext-06318",
+  "ja": "れんこん ゆで",
+  "desc": "boiled lotus root: cream slices showing the ring of round holes, soft, in a small dish",
+  "items": [
+   "mext:06318"
+  ]
+ },
+ {
+  "key": "mext-06326",
+  "ja": "干しわらび 乾",
+  "desc": "dried warabi: dried bracken shoots, thin shrivelled dark brown curled stems in a bundle",
+  "items": [
+   "mext:06326"
+  ]
+ },
+ {
+  "key": "mext-06383",
+  "ja": "ミックスベジタブル 冷凍 ゆで",
+  "desc": "boiled mixed vegetables: diced orange carrot, green peas and yellow corn kernels, moist, in a small bowl",
+  "items": [
+   "mext:06383"
+  ]
+ },
+ {
+  "key": "mext-06384",
+  "ja": "ミックスベジタブル 冷凍 油いため",
+  "desc": "stir-fried mixed vegetables: diced carrot, green peas and corn kernels glossy with oil, on a small plate",
+  "items": [
+   "mext:06384"
+  ]
+ },
+ {
+  "key": "mext-06400",
+  "ja": "野菜ミックスジュース 濃縮タイプ",
+  "desc": "vegetable juice: a glass of thick opaque orange-red mixed vegetable juice",
+  "items": [
+   "mext:06400"
+  ]
+ },
+ {
+  "key": "mext-07002",
+  "ja": "あけび 果皮 生",
+  "desc": "akebi rind: thick split oval purple-lavender akebi peel, empty, smooth and shiny outside, pale inside",
+  "items": [
+   "mext:07002"
+  ]
+ },
+ {
+  "key": "mext-07004",
+  "ja": "アセロラ 10%果汁入り飲料",
+  "desc": "acerola drink: a glass of clear pale pink juice drink",
+  "items": [
+   "mext:07004"
+  ]
+ },
+ {
+  "key": "mext-07005",
+  "ja": "アテモヤ 生",
+  "desc": "atemoya: a green fruit with knobbly bumpy scaled skin, cut to show creamy white flesh with black seeds",
+  "items": [
+   "mext:07005"
+  ]
+ },
+ {
+  "key": "mext-07009",
+  "ja": "あんず 缶詰",
+  "desc": "canned apricots: glossy orange apricot halves in syrup in a small glass bowl",
+  "items": [
+   "mext:07009"
+  ]
+ },
+ {
+  "key": "mext-07010",
+  "ja": "あんず ジャム 高糖度",
+  "desc": "apricot jam: glossy amber-orange jam with soft fruit pieces in a small dish",
+  "items": [
+   "mext:07010",
+   "mext:07011"
+  ]
+ },
+ {
+  "key": "mext-07160",
+  "ja": "いちご 乾",
+  "desc": "dried strawberries: shrivelled deep red dried strawberry halves in a small dish",
+  "items": [
+   "mext:07160"
+  ]
+ },
+ {
+  "key": "mext-07016",
+  "ja": "いちじく 乾",
+  "desc": "dried figs: flattened wrinkled brown figs, one torn open showing tiny seeds",
+  "items": [
+   "mext:07016"
+  ]
+ },
+ {
+  "key": "mext-07017",
+  "ja": "いちじく 缶詰",
+  "desc": "canned figs: whole small purple-brown figs in dark amber syrup in a small glass bowl",
+  "items": [
+   "mext:07017"
+  ]
+ },
+ {
+  "key": "mext-07019",
+  "ja": "うめ 生",
+  "desc": "ume: round green unripe Japanese apricots with a faint crease and fuzzy skin, raw",
+  "items": [
+   "mext:07019"
+  ]
+ },
+ {
+  "key": "mext-07020",
+  "ja": "うめ 梅漬 塩漬",
+  "desc": "salt-pickled ume: plump soft wrinkled yellowish tan pickled plums, not red, in a small dish",
+  "items": [
+   "mext:07020"
+  ]
+ },
+ {
+  "key": "mext-07021",
+  "ja": "うめ 梅漬 調味漬",
+  "desc": "seasoned pickled ume: plump soft wrinkled red plums with a moist sheen and shiso leaves, in a small dish",
+  "items": [
+   "mext:07021"
+  ]
+ },
+ {
+  "key": "mext-07024",
+  "ja": "うめ 梅びしお",
+  "desc": "ume bishio: a smooth thick red-purple pickled plum paste in a small dish",
+  "items": [
+   "mext:07024"
+  ]
+ },
+ {
+  "key": "mext-07025",
+  "ja": "うめ 20%果汁入り飲料",
+  "desc": "ume juice drink: a glass of translucent pale golden drink",
+  "items": [
+   "mext:07025"
+  ]
+ },
+ {
+  "key": "mext-07050",
+  "ja": "かき 渋抜きがき 生",
+  "desc": "persimmon: flattish glossy orange fruit with a green four-leaf calyx, cut to show orange flesh with small dark specks",
+  "items": [
+   "mext:07050"
+  ]
+ },
+ {
+  "key": "mext-07026",
+  "ja": "うんしゅうみかん じょうのう 早生 生",
+  "desc": "mandarin segments: peeled unshu mikan segments with thin membranes, bright orange, in a small dish",
+  "items": [
+   "mext:07026"
+  ]
+ },
+ {
+  "key": "mext-07028",
+  "ja": "うんしゅうみかん 砂じょう 早生 生",
+  "desc": "mandarin pulp: membrane-free juicy orange segments of pulp vesicles, glistening, in a small dish",
+  "items": [
+   "mext:07028",
+   "mext:07029"
+  ]
+ },
+ {
+  "key": "mext-07030",
+  "ja": "うんしゅうみかん ストレートジュース",
+  "desc": "mandarin juice: a glass of opaque bright orange juice",
+  "items": [
+   "mext:07030"
+  ]
+ },
+ {
+  "key": "mext-07032",
+  "ja": "うんしゅうみかん 果粒入りジュース",
+  "desc": "mandarin juice with pulp: a glass of orange juice with visible floating pulp sacs",
+  "items": [
+   "mext:07032"
+  ]
+ },
+ {
+  "key": "mext-07033",
+  "ja": "うんしゅうみかん 50%果汁入り飲料",
+  "desc": "mandarin juice drink: a glass of light, slightly translucent orange drink",
+  "items": [
+   "mext:07033",
+   "mext:07034"
+  ]
+ },
+ {
+  "key": "mext-07036",
+  "ja": "うんしゅうみかん 缶詰 液汁",
+  "desc": "canned mandarin syrup: clear pale orange syrup in a small glass dish, no fruit",
+  "items": [
+   "mext:07036"
+  ]
+ },
+ {
+  "key": "mext-07041",
+  "ja": "オレンジ バレンシア 米国産 生",
+  "desc": "Valencia orange: a whole orange with a halved one showing vivid orange juicy flesh",
+  "items": [
+   "mext:07041"
+  ]
+ },
+ {
+  "key": "mext-07044",
+  "ja": "オレンジ バレンシア 50%果汁入り飲料",
+  "desc": "orange juice drink: a glass of light orange drink",
+  "items": [
+   "mext:07044",
+   "mext:07045"
+  ]
+ },
+ {
+  "key": "mext-07047",
+  "ja": "オレンジ バレンシア マーマレード 低糖度",
+  "desc": "orange marmalade: glossy translucent orange jelly with thin shreds of peel in a small dish",
+  "items": [
+   "mext:07047"
+  ]
+ },
+ {
+  "key": "mext-07161",
+  "ja": "福原オレンジ 生",
+  "desc": "Fukuhara orange: a small round Japanese orange with thin smooth skin, cut to show juicy orange flesh",
+  "items": [
+   "mext:07161"
+  ]
+ },
+ {
+  "key": "mext-07048",
+  "ja": "オロブランコ 生",
+  "desc": "oroblanco: a large pale green-yellow thick-skinned citrus, cut to show pale yellow flesh and thick white pith",
+  "items": [
+   "mext:07048"
+  ]
+ },
+ {
+  "key": "mext-07162",
+  "ja": "かわちばんかん 生",
+  "desc": "kawachi bankan: a large bumpy yellow pomelo-like citrus, cut to show pale yellow flesh and thick pith",
+  "items": [
+   "mext:07162"
+  ]
+ },
+ {
+  "key": "mext-07163",
+  "ja": "きよみ 生",
+  "desc": "kiyomi: a round smooth orange tangor, cut to show very juicy orange segments",
+  "items": [
+   "mext:07163"
+  ]
+ },
+ {
+  "key": "mext-07164",
+  "ja": "グレープフルーツ 紅肉種 生",
+  "desc": "ruby grapefruit: a yellow grapefruit halved to show pink-red juicy flesh",
+  "items": [
+   "mext:07164"
+  ]
+ },
+ {
+  "key": "mext-07063",
+  "ja": "グレープフルーツ ストレートジュース",
+  "desc": "grapefruit juice: a glass of cloudy pale yellow juice",
+  "items": [
+   "mext:07063",
+   "mext:07065",
+   "mext:07066"
+  ]
+ },
+ {
+  "key": "mext-07067",
+  "ja": "グレープフルーツ 缶詰",
+  "desc": "canned grapefruit: pale yellow peeled segments in syrup in a small glass bowl",
+  "items": [
+   "mext:07067"
+  ]
+ },
+ {
+  "key": "mext-07074",
+  "ja": "さんぼうかん 生",
+  "desc": "sanbokan: a yellow citrus with a distinctive raised knob neck at the stem end, cut to show pale yellow flesh",
+  "items": [
+   "mext:07074"
+  ]
+ },
+ {
+  "key": "mext-07076",
+  "ja": "シークヮーサー 10%果汁入り飲料",
+  "desc": "shikuwasa drink: a glass of pale yellow-green citrus drink",
+  "items": [
+   "mext:07076"
+  ]
+ },
+ {
+  "key": "mext-07166",
+  "ja": "せとか 生",
+  "desc": "setoka: a slightly flattened deep orange citrus with thin glossy skin, cut to show juicy flesh",
+  "items": [
+   "mext:07166"
+  ]
+ },
+ {
+  "key": "mext-07085",
+  "ja": "セミノール 生",
+  "desc": "seminole: a round reddish orange tangelo, cut to show juicy deep orange flesh",
+  "items": [
+   "mext:07085"
+  ]
+ },
+ {
+  "key": "mext-07083",
+  "ja": "だいだい 果汁 生",
+  "desc": "daidai juice: pale yellow sour juice in a small dish beside a halved bitter orange",
+  "items": [
+   "mext:07083"
+  ]
+ },
+ {
+  "key": "mext-07094",
+  "ja": "なつみかん 缶詰",
+  "desc": "canned natsumikan: peeled pale yellow citrus segments in syrup in a small glass bowl",
+  "items": [
+   "mext:07094"
+  ]
+ },
+ {
+  "key": "mext-07167",
+  "ja": "はるみ 生",
+  "desc": "harumi: an orange citrus with a small bump at the top, peeled to show orange segments",
+  "items": [
+   "mext:07167"
+  ]
+ },
+ {
+  "key": "mext-07112",
+  "ja": "ひゅうがなつ じょうのう及びアルベド 生",
+  "desc": "hyuganatsu: yellow citrus thinly peeled so the white spongy pith stays on, cut into wedges showing the white layer around pale flesh",
+  "items": [
+   "mext:07112"
+  ]
+ },
+ {
+  "key": "mext-07113",
+  "ja": "ひゅうがなつ 砂じょう 生",
+  "desc": "hyuganatsu pulp: pale yellow juicy pulp segments without pith in a small dish",
+  "items": [
+   "mext:07113"
+  ]
+ },
+ {
+  "key": "mext-07127",
+  "ja": "ぶんたん ざぼん漬",
+  "desc": "zabon-zuke: candied pomelo peel, thick pale yellow translucent pieces coated in sugar",
+  "items": [
+   "mext:07127"
+  ]
+ },
+ {
+  "key": "mext-07183",
+  "ja": "きはだ 乾",
+  "desc": "dried kihada berries: small round black dried cork tree berries in a small dish",
+  "items": [
+   "mext:07183"
+  ]
+ },
+ {
+  "key": "mext-07055",
+  "ja": "キワノ 生",
+  "desc": "kiwano: a bright orange oval horned melon covered in spikes, cut to show green jelly flesh with pale seeds",
+  "items": [
+   "mext:07055"
+  ]
+ },
+ {
+  "key": "mext-07058",
+  "ja": "グァバ 20%果汁入り飲料",
+  "desc": "guava nectar: a glass of thick opaque pale pink drink",
+  "items": [
+   "mext:07058"
+  ]
+ },
+ {
+  "key": "mext-07059",
+  "ja": "グァバ 10%果汁入り飲料",
+  "desc": "guava drink: a glass of thin translucent pale pink drink",
+  "items": [
+   "mext:07059"
+  ]
+ },
+ {
+  "key": "mext-07061",
+  "ja": "ぐみ 生",
+  "desc": "gumi: small oval red silverberries with tiny silver speckles on short stems",
+  "items": [
+   "mext:07061"
+  ]
+ },
+ {
+  "key": "mext-07157",
+  "ja": "ココナッツウォーター",
+  "desc": "coconut water: a glass of clear slightly cloudy water beside an opened green coconut",
+  "items": [
+   "mext:07157"
+  ]
+ },
+ {
+  "key": "mext-07071",
+  "ja": "さくらんぼ 米国産 生",
+  "desc": "American cherries: large dark burgundy red cherries with stems",
+  "items": [
+   "mext:07071"
+  ]
+ },
+ {
+  "key": "mext-07072",
+  "ja": "さくらんぼ 米国産 缶詰",
+  "desc": "canned cherries: bright red cherries in syrup in a small glass bowl",
+  "items": [
+   "mext:07072"
+  ]
+ },
+ {
+  "key": "mext-07171",
+  "ja": "すいか 黄肉種 生",
+  "desc": "yellow watermelon: a wedge with green striped rind, bright yellow flesh and black seeds",
+  "items": [
+   "mext:07171"
+  ]
+ },
+ {
+  "key": "mext-07186",
+  "ja": "赤すぐり 冷凍",
+  "desc": "frozen red currants: small translucent red berries in clusters with a frosty coating",
+  "items": [
+   "mext:07186"
+  ]
+ },
+ {
+  "key": "mext-07182",
+  "ja": "カシス 冷凍",
+  "desc": "frozen blackcurrants: small round black berries with a frosty coating in a small bowl",
+  "items": [
+   "mext:07182"
+  ]
+ },
+ {
+  "key": "mext-07060",
+  "ja": "グーズベリー 生",
+  "desc": "gooseberries: round pale green translucent berries with fine stripes",
+  "items": [
+   "mext:07060"
+  ]
+ },
+ {
+  "key": "mext-07069",
+  "ja": "スターフルーツ 生",
+  "desc": "star fruit: a yellow-green ridged fruit with slices showing star-shaped cross sections",
+  "items": [
+   "mext:07069"
+  ]
+ },
+ {
+  "key": "mext-07080",
+  "ja": "にほんすもも 生",
+  "desc": "Japanese plums: round red-purple plums, one cut to show yellow juicy flesh",
+  "items": [
+   "mext:07080"
+  ]
+ },
+ {
+  "key": "mext-07081",
+  "ja": "プルーン 生",
+  "desc": "fresh prunes: oval dark purple plums with a dusty bloom, one cut to show amber flesh",
+  "items": [
+   "mext:07081"
+  ]
+ },
+ {
+  "key": "mext-07086",
+  "ja": "チェリモヤ 生",
+  "desc": "cherimoya: a heart-shaped green fruit with an overlapping scale pattern on smooth skin, cut to show white flesh with black seeds",
+  "items": [
+   "mext:07086"
+  ]
+ },
+ {
+  "key": "mext-07089",
+  "ja": "日本なし 缶詰",
+  "desc": "canned Japanese pear: white pear slices in clear syrup in a small glass bowl",
+  "items": [
+   "mext:07089"
+  ]
+ },
+ {
+  "key": "mext-07090",
+  "ja": "中国なし 生",
+  "desc": "Chinese pear: a yellow-green speckled pear with a classic pear shape, cut to show white flesh",
+  "items": [
+   "mext:07090"
+  ]
+ },
+ {
+  "key": "mext-07092",
+  "ja": "西洋なし 缶詰",
+  "desc": "canned western pear: pale cream pear halves with cored hollows in syrup in a small glass bowl",
+  "items": [
+   "mext:07092"
+  ]
+ },
+ {
+  "key": "mext-07096",
+  "ja": "なつめやし 乾",
+  "desc": "dried dates: glossy wrinkled deep brown oval dates in a small dish",
+  "items": [
+   "mext:07096"
+  ]
+ },
+ {
+  "key": "mext-07177",
+  "ja": "パインアップル 焼き",
+  "desc": "grilled pineapple: golden yellow pineapple rings with charred grill marks on a plate",
+  "items": [
+   "mext:07177"
+  ]
+ },
+ {
+  "key": "mext-07098",
+  "ja": "パインアップル ストレートジュース",
+  "desc": "pineapple juice: a glass of cloudy pale yellow juice",
+  "items": [
+   "mext:07098",
+   "mext:07099"
+  ]
+ },
+ {
+  "key": "mext-07100",
+  "ja": "パインアップル 50%果汁入り飲料",
+  "desc": "pineapple drink: a glass of thin, lightly cloudy pale yellow drink",
+  "items": [
+   "mext:07100",
+   "mext:07101"
+  ]
+ },
+ {
+  "key": "mext-07103",
+  "ja": "パインアップル 砂糖漬",
+  "desc": "candied pineapple: sugar-glazed translucent yellow pineapple chunks in a small dish",
+  "items": [
+   "mext:07103"
+  ]
+ },
+ {
+  "key": "mext-07104",
+  "ja": "ハスカップ 生",
+  "desc": "haskap: elongated dark blue berries with a dusty bloom",
+  "items": [
+   "mext:07104"
+  ]
+ },
+ {
+  "key": "mext-07108",
+  "ja": "バナナ 乾",
+  "desc": "dried banana: sticky chewy brown dried banana pieces in a small dish",
+  "items": [
+   "mext:07108"
+  ]
+ },
+ {
+  "key": "mext-07115",
+  "ja": "びわ 缶詰",
+  "desc": "canned loquats: peeled glossy orange loquat halves in syrup in a small glass bowl",
+  "items": [
+   "mext:07115"
+  ]
+ },
+ {
+  "key": "mext-07178",
+  "ja": "ぶどう 皮つき 生",
+  "desc": "grapes: a bunch of round purple grapes with skin and dusty bloom",
+  "items": [
+   "mext:07178"
+  ]
+ },
+ {
+  "key": "mext-07118",
+  "ja": "ぶどう ストレートジュース",
+  "desc": "grape juice: a glass of deep purple juice",
+  "items": [
+   "mext:07118",
+   "mext:07120"
+  ]
+ },
+ {
+  "key": "mext-07121",
+  "ja": "ぶどう 10%果汁入り飲料",
+  "desc": "grape drink: a glass of thin translucent light purple drink",
+  "items": [
+   "mext:07121"
+  ]
+ },
+ {
+  "key": "mext-07122",
+  "ja": "ぶどう 缶詰",
+  "desc": "canned grapes: small peeled pale green grapes in syrup in a small glass bowl",
+  "items": [
+   "mext:07122"
+  ]
+ },
+ {
+  "key": "mext-07123",
+  "ja": "ぶどう ジャム",
+  "desc": "grape jam: glossy dark purple jam in a small dish",
+  "items": [
+   "mext:07123"
+  ]
+ },
+ {
+  "key": "mext-07172",
+  "ja": "ブルーベリー 乾",
+  "desc": "dried blueberries: small shrivelled dark blue-purple berries in a small dish",
+  "items": [
+   "mext:07172"
+  ]
+ },
+ {
+  "key": "mext-07128",
+  "ja": "ホワイトサポテ 生",
+  "desc": "white sapote: a round green thin-skinned fruit, cut to show creamy pale yellow custard flesh and large seeds",
+  "items": [
+   "mext:07128"
+  ]
+ },
+ {
+  "key": "mext-07130",
+  "ja": "まくわうり 黄肉種 生",
+  "desc": "makuwauri: a small oval yellow melon with faint pale stripes, cut to show pale orange flesh",
+  "items": [
+   "mext:07130"
+  ]
+ },
+ {
+  "key": "mext-07173",
+  "ja": "まくわうり 白肉種 生",
+  "desc": "white makuwauri: a small oval pale green-white melon, cut to show white flesh with seeds",
+  "items": [
+   "mext:07173"
+  ]
+ },
+ {
+  "key": "mext-07131",
+  "ja": "マルメロ 生",
+  "desc": "quince: a large lumpy golden yellow pear-shaped fruit with light fuzz, cut to show hard cream flesh",
+  "items": [
+   "mext:07131"
+  ]
+ },
+ {
+  "key": "mext-07174",
+  "ja": "露地メロン 赤肉種 生",
+  "desc": "red-fleshed melon: a netted melon with a wedge cut to show orange flesh and seeds",
+  "items": [
+   "mext:07174"
+  ]
+ },
+ {
+  "key": "mext-07184",
+  "ja": "もも 黄肉種 生",
+  "desc": "yellow peach: a peach with yellow-orange skin and red blush, cut to show yellow flesh around a red-tinged stone",
+  "items": [
+   "mext:07184"
+  ]
+ },
+ {
+  "key": "mext-07137",
+  "ja": "もも 30%果汁入り飲料",
+  "desc": "peach nectar: a glass of thick opaque pale peach-coloured drink",
+  "items": [
+   "mext:07137"
+  ]
+ },
+ {
+  "key": "mext-07175",
+  "ja": "もも 缶詰 黄肉種",
+  "desc": "canned yellow peaches: glossy golden yellow peach halves in syrup in a small glass bowl",
+  "items": [
+   "mext:07175"
+  ]
+ },
+ {
+  "key": "mext-07139",
+  "ja": "もも 缶詰 液汁",
+  "desc": "canned peach syrup: clear pale golden syrup in a small glass dish, no fruit",
+  "items": [
+   "mext:07139"
+  ]
+ },
+ {
+  "key": "mext-07141",
+  "ja": "やまもも 生",
+  "desc": "yamamomo: round dark red-purple bumpy-surfaced berries",
+  "items": [
+   "mext:07141"
+  ]
+ },
+ {
+  "key": "mext-07147",
+  "ja": "りゅうがん 乾",
+  "desc": "dried longan: round brown shelled longans, a few peeled showing sticky dark brown flesh",
+  "items": [
+   "mext:07147"
+  ]
+ },
+ {
+  "key": "mext-07180",
+  "ja": "りんご 皮つき 焼き",
+  "desc": "baked apple: a whole red apple baked soft and wrinkled, juices around it, on a plate",
+  "items": [
+   "mext:07180"
+  ]
+ },
+ {
+  "key": "mext-07151",
+  "ja": "りんご 50%果汁入り飲料",
+  "desc": "apple juice drink: a glass of pale yellow apple drink",
+  "items": [
+   "mext:07151",
+   "mext:07152"
+  ]
+ },
+ {
+  "key": "mext-07153",
+  "ja": "りんご 缶詰",
+  "desc": "canned apple: pale cream apple slices in syrup in a small glass bowl",
+  "items": [
+   "mext:07153"
+  ]
+ },
+ {
+  "key": "mext-08002",
+  "ja": "えのきたけ ゆで",
+  "desc": "boiled enoki: soft limp white thin enoki strands with tiny caps in a small dish",
+  "items": [
+   "mext:08002"
+  ]
+ },
+ {
+  "key": "mext-08037",
+  "ja": "えのきたけ 油いため",
+  "desc": "stir-fried enoki: glossy wilted white enoki strands on a small plate",
+  "items": [
+   "mext:08037"
+  ]
+ },
+ {
+  "key": "mext-08054",
+  "ja": "あらげきくらげ 生",
+  "desc": "aragekikurage: thick rubbery dark brown ear-shaped wood ear fungus with a fuzzy pale underside, fresh",
+  "items": [
+   "mext:08054"
+  ]
+ },
+ {
+  "key": "mext-08004",
+  "ja": "あらげきくらげ 乾",
+  "desc": "dried wood ear: hard shrivelled dark brown-black curled pieces in a small dish",
+  "items": [
+   "mext:08004"
+  ]
+ },
+ {
+  "key": "mext-08005",
+  "ja": "あらげきくらげ ゆで",
+  "desc": "rehydrated wood ear: glossy dark brown rubbery ear-shaped pieces, some sliced, in a small dish",
+  "items": [
+   "mext:08005"
+  ]
+ },
+ {
+  "key": "mext-08038",
+  "ja": "あらげきくらげ 油いため",
+  "desc": "stir-fried wood ear: glossy dark brown rubbery strips on a small plate",
+  "items": [
+   "mext:08038"
+  ]
+ },
+ {
+  "key": "mext-08008",
+  "ja": "しろきくらげ 乾",
+  "desc": "dried white fungus: a pale cream-yellow frilly coral-like brittle ball",
+  "items": [
+   "mext:08008"
+  ]
+ },
+ {
+  "key": "mext-08009",
+  "ja": "しろきくらげ ゆで",
+  "desc": "rehydrated white fungus: soft translucent white frilly jelly-like pieces in a small bowl",
+  "items": [
+   "mext:08009"
+  ]
+ },
+ {
+  "key": "mext-08010",
+  "ja": "くろあわびたけ 生",
+  "desc": "kuroawabitake: abalone mushrooms with thick fleshy grey-brown caps, dark gills and short stout stems, raw",
+  "items": [
+   "mext:08010"
+  ]
+ },
+ {
+  "key": "mext-08040",
+  "ja": "生しいたけ 菌床栽培 ゆで",
+  "desc": "boiled shiitake: soft brown-capped mushrooms with pale gills, moist, in a small dish",
+  "items": [
+   "mext:08040",
+   "mext:08043"
+  ]
+ },
+ {
+  "key": "mext-08041",
+  "ja": "生しいたけ 菌床栽培 油いため",
+  "desc": "stir-fried shiitake: sliced brown shiitake caps glossy with oil on a small plate",
+  "items": [
+   "mext:08041",
+   "mext:08044"
+  ]
+ },
+ {
+  "key": "mext-08057",
+  "ja": "生しいたけ 菌床栽培 天ぷら",
+  "desc": "shiitake tempura: whole shiitake caps in light crisp pale golden batter on a plate",
+  "items": [
+   "mext:08057"
+  ]
+ },
+ {
+  "key": "mext-08042",
+  "ja": "生しいたけ 原木栽培 生",
+  "desc": "log-grown shiitake: thick dark brown caps with whitish cracked patterns and white gills, raw",
+  "items": [
+   "mext:08042"
+  ]
+ },
+ {
+  "key": "mext-08014",
+  "ja": "乾しいたけ ゆで",
+  "desc": "simmered dried shiitake: plump rehydrated dark brown caps with cracked tops, soft and glossy, in a small dish",
+  "items": [
+   "mext:08014"
+  ]
+ },
+ {
+  "key": "mext-08015",
+  "ja": "はたけしめじ 生",
+  "desc": "hatakeshimeji: a cluster of grey-brown capped mushrooms on stout white stems, raw",
+  "items": [
+   "mext:08015"
+  ]
+ },
+ {
+  "key": "mext-08045",
+  "ja": "はたけしめじ ゆで",
+  "desc": "boiled hatakeshimeji: soft grey-brown capped mushrooms with white stems in a small dish",
+  "items": [
+   "mext:08045"
+  ]
+ },
+ {
+  "key": "mext-08046",
+  "ja": "ぶなしめじ 油いため",
+  "desc": "stir-fried bunashimeji: separated small brown-capped mushrooms on thin white stems, glossy, on a small plate",
+  "items": [
+   "mext:08046"
+  ]
+ },
+ {
+  "key": "mext-08055",
+  "ja": "ぶなしめじ 素揚げ",
+  "desc": "deep-fried bunashimeji: small brown-capped mushrooms fried crisp and golden without batter on a small plate",
+  "items": [
+   "mext:08055"
+  ]
+ },
+ {
+  "key": "mext-08056",
+  "ja": "ぶなしめじ 天ぷら",
+  "desc": "bunashimeji tempura: clusters of small mushrooms in light crisp pale golden batter on a plate",
+  "items": [
+   "mext:08056"
+  ]
+ },
+ {
+  "key": "mext-08018",
+  "ja": "ほんしめじ 生",
+  "desc": "honshimeji: plump thick white stems with small round grey-brown caps, a few together, raw",
+  "items": [
+   "mext:08018"
+  ]
+ },
+ {
+  "key": "mext-08047",
+  "ja": "ほんしめじ ゆで",
+  "desc": "boiled honshimeji: soft plump white stems and grey-brown caps in a small dish",
+  "items": [
+   "mext:08047"
+  ]
+ },
+ {
+  "key": "mext-08019",
+  "ja": "たもぎたけ 生",
+  "desc": "tamogitake: clusters of bright golden yellow oyster-like mushrooms, raw",
+  "items": [
+   "mext:08019"
+  ]
+ },
+ {
+  "key": "mext-08021",
+  "ja": "なめこ 株採り ゆで",
+  "desc": "boiled nameko: small glossy slimy orange-brown caps in a small dish",
+  "items": [
+   "mext:08021"
+  ]
+ },
+ {
+  "key": "mext-08058",
+  "ja": "カットなめこ 生",
+  "desc": "cut nameko: small slippery orange-brown caps with short trimmed stems in a jelly-like coat, raw",
+  "items": [
+   "mext:08058"
+  ]
+ },
+ {
+  "key": "mext-08022",
+  "ja": "なめこ 水煮缶詰",
+  "desc": "canned nameko: small glossy slimy orange-brown caps in cloudy liquid in a small glass dish",
+  "items": [
+   "mext:08022"
+  ]
+ },
+ {
+  "key": "mext-08023",
+  "ja": "ぬめりすぎたけ 生",
+  "desc": "numerisugitake: slimy yellow-brown caps with small scales on slender stems, raw",
+  "items": [
+   "mext:08023"
+  ]
+ },
+ {
+  "key": "mext-08024",
+  "ja": "うすひらたけ 生",
+  "desc": "usuhiratake: thin delicate pale grey-beige fan-shaped oyster mushrooms, raw",
+  "items": [
+   "mext:08024"
+  ]
+ },
+ {
+  "key": "mext-08048",
+  "ja": "エリンギ ゆで",
+  "desc": "boiled eringi: soft pale cream king oyster mushroom slices in a small dish",
+  "items": [
+   "mext:08048"
+  ]
+ },
+ {
+  "key": "mext-08049",
+  "ja": "エリンギ 焼き",
+  "desc": "grilled eringi: thick lengthwise king oyster mushroom slices with golden grill marks on a plate",
+  "items": [
+   "mext:08049"
+  ]
+ },
+ {
+  "key": "mext-08050",
+  "ja": "エリンギ 油いため",
+  "desc": "stir-fried eringi: glossy lightly browned king oyster mushroom slices on a small plate",
+  "items": [
+   "mext:08050"
+  ]
+ },
+ {
+  "key": "mext-08026",
+  "ja": "ひらたけ 生",
+  "desc": "hiratake: clusters of grey-brown fan-shaped oyster mushrooms with pale gills, raw",
+  "items": [
+   "mext:08026"
+  ]
+ },
+ {
+  "key": "mext-08027",
+  "ja": "ひらたけ ゆで",
+  "desc": "boiled hiratake: soft grey-brown oyster mushroom pieces in a small dish",
+  "items": [
+   "mext:08027"
+  ]
+ },
+ {
+  "key": "mext-08029",
+  "ja": "まいたけ ゆで",
+  "desc": "boiled maitake: soft frilly dark grey-brown fronds of hen of the woods in a small dish",
+  "items": [
+   "mext:08029"
+  ]
+ },
+ {
+  "key": "mext-08051",
+  "ja": "まいたけ 油いため",
+  "desc": "stir-fried maitake: glossy browned frilly maitake fronds on a small plate",
+  "items": [
+   "mext:08051"
+  ]
+ },
+ {
+  "key": "mext-08030",
+  "ja": "まいたけ 乾",
+  "desc": "dried maitake: shrivelled brittle grey-brown frilly mushroom pieces in a small dish",
+  "items": [
+   "mext:08030"
+  ]
+ },
+ {
+  "key": "mext-08032",
+  "ja": "マッシュルーム ゆで",
+  "desc": "boiled button mushrooms: halved white mushrooms turned soft and greyish in a small dish",
+  "items": [
+   "mext:08032"
+  ]
+ },
+ {
+  "key": "mext-08052",
+  "ja": "マッシュルーム 油いため",
+  "desc": "stir-fried button mushrooms: golden browned white mushroom slices on a small plate",
+  "items": [
+   "mext:08052"
+  ]
+ },
+ {
+  "key": "mext-08059",
+  "ja": "マッシュルーム ブラウン種 生",
+  "desc": "brown mushrooms: brown cremini button mushrooms, one cut to show white flesh, raw",
+  "items": [
+   "mext:08059"
+  ]
+ },
+ {
+  "key": "mext-08036",
+  "ja": "やなぎまつたけ 生",
+  "desc": "yanagimatsutake: clusters of light brown caps on long slender pale stems with a ring, raw",
+  "items": [
+   "mext:08036"
+  ]
+ },
+ {
+  "key": "mext-09003",
+  "ja": "あまのり ほしのり",
+  "desc": "hoshinori: dried laver, thin crisp glossy dark green-black square sheets stacked",
+  "items": [
+   "mext:09003"
+  ]
+ }
+]
