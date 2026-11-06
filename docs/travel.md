@@ -126,7 +126,9 @@ Business addresses and phone numbers (the Evertrail office, Dive Nuts) are publi
     card in a sheet.
   - キャンプ: the campsite cards with the filter chips (all / free / paid / beach / toilet / shower).
   - もちもの: below.
-- **Units:** km / mi in せってい (device pref, `DEVICE.*`), every `{km:}` token follows it.
+- **Units:** km / mi in せってい's 「りょこう」 section (`panel/TravelSection.svelte`, a Segmented; `DEVICE.travelUnits`,
+  `island.travel.units`, km by default), `components/travel/units.ts` `fmtKm(km)` (one decimal under 100) and `units.current`
+  (reactive), every `{km:}` token follows it.
 - **Copy:** the app's rules (kana-first chrome, ✕ only closes, 🗑 + とりけす); guide text keeps its source wording.
 
 ## Maps
@@ -224,6 +226,17 @@ the record's branch `relay/src/store.ts` (`packTarget`: the trip's rows as a `Pa
 - The UI: a card per category, a row per item with a check bubble and three small chips (ウェイ yuzu, うめ mint,
   おきゃくさん lilac) showing who has packed it; 「N / M」 for me; ✎ for add / rename / reorder / delete; 「リセット」 clears
   only mine (with a confirm). All done (me): Orville's 「じゅんび OK！」 stamp.
+- **Built** (`components/travel/PackList.svelte`, props `{ trip }`; its view `packView.ts`, pure; its strings
+  `i18n/travelPack.{ja,en}.json`, `travel.pack.*`, loaded with it): the header (the suitcase, my bar, 「N / M あと Kこ」,
+  ✎), a card per category (its NH icon from the guide's lucide name, my 「N / M」), a row per item (the whole row is my
+  tick: the 40 px bubble pops leaf green; the text and note in my language, else the other side; the members' chips
+  always, lit when packed, the guest's once it has). ✎: an add field per category (enter adds), a new category, a tap on
+  a name renames it inline, ↑ ↓, 🗑 (an item at once, sent after the banner's 5 s とりけす: `packing.removeHeld`; a
+  category after 「「…」を けしますか？」, then とりけす too). The guest sees ✎ (it may add) and the controls on its own
+  things only. 「チェックを リセット」 under the list (while I have ticks) asks first. All mine packed: the stamp beside my
+  count; the first time on a phone for that trip and person (`DEVICE.travelPacked`) it slams in with Orville's line
+  and the miles chime. Mounted on `/dev/pack?demo[&as=B|G][&trip=…]` until the sheet's もちもの tab has it
+  (e2e/travel-pack.spec.ts); review notes in docs/reviews/travel-pack.md.
 - **Deploy order:** the relay first (an older relay refuses the four types `bad_request`; an older app ignores their
   rows), then the app.
 

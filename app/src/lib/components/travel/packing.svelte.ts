@@ -5,16 +5,19 @@
 // `trip_note`) too.
 //   packing.list(trip, seed)          categories (by ord), each with its items (by ord)
 //   packing.counts(trip, seed)        { total, mine, done: per person }
-//   packing.addItem / addCat / rename / move / remove     the ✎ edits (the guest: only what it added)
+//   packing.addItem / addCat / rename / move / remove     the ✎ edits (the guest: only what it added); removeHeld:
+//                                     a removal held for its とりけす
 //   packing.tick(trip, id, on) / reset(trip)              my own ticks
 //   packing.note(trip)                the trip note's values by key (null: not on the record, or not loaded yet)
 import {
-  newPackId, ordBetween, packCounts, packFold, packList, packMayEdit, tripNoteOf, type L, type PackBook, type PackCat,
-  type PackEntry, type PackItem, type PackSeed
+  newPackId, ordBetween, packCounts, packFold, packList, tripNoteOf, type L, type PackBook, type PackCat, type PackEntry,
+  type PackItem, type PackSeed
 } from '#lib/contract/pack.ts';
+import type { SendResult } from '#lib/store/backend.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { world } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';
+import { mayEditAs } from './packView.ts';
 
 type Locale = 'ja' | 'en';
 
@@ -56,8 +59,7 @@ class Packing {
   /** Whether I may rename, move or remove it: the members anything, the guest only what it added (a category only
    *  when every item in it is its own too). */
   mayEdit(x: PackItem | PackCat): boolean {
-    if (!packMayEdit(this.me, x)) return false;
-    return !('items' in x) || this.me !== 'G' || x.items.every((i) => i.by === 'G');
+    return mayEditAs(this.me, x);
   }
 
   /** A change's time: the relay's clock, never twice the same, after the op it replaces. */
@@ -139,9 +141,15 @@ class Packing {
 
   /** Remove a category (its items with it) or an item: final. */
   remove(trip: string, seed: PackSeed | null | undefined, id: string): boolean {
+    return this.removeHeld(trip, seed, id, 0).ok;
+  }
+
+  /** Remove it as `remove`, gone from the list at once but sent only after `holdMs` (the 🗑's とりけす: the result's
+   *  `undo` takes it back meanwhile, as store/look.ts deleteLook). */
+  removeHeld(trip: string, seed: PackSeed | null | undefined, id: string, holdMs: number): SendResult {
     const f = this.#find(trip, seed, id);
-    if (!f || !this.mayEdit(f.item ?? f.cat)) return false;
-    return week.send('pack', { trip, id, at: this.#now(this.#heldAt(trip, id)), rm: true }).ok;
+    if (!f || !this.mayEdit(f.item ?? f.cat)) return { ok: false };
+    return week.send('pack', { trip, id, at: this.#now(this.#heldAt(trip, id)), rm: true }, holdMs > 0 ? { holdMs } : {});
   }
 
   /** Tick (or untick) an item: mine only. */

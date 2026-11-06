@@ -15,7 +15,10 @@ import { execFileSync } from 'node:child_process';
 import { chmodSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import type { Camp, Card, Chip, Day, DayRow, Hike, L, Leg, Link, PackCat, Photo, Place, Row, Section, Stat, Trip, TripId } from '../src/lib/travel/types.ts';
+import type { Camp, Card, Chip, Day, DayRow, Hike, L, Leg, Link, Photo, Place, Row, Section, Stat, Trip, TripId } from '../src/lib/travel/types.ts';
+
+/** A packing category as the trip data holds it (the relay contract's PackSeed). */
+type PackCat = Trip['packing']['cats'][number];
 
 const APP = join(import.meta.dirname, '..');
 const argAt = process.argv.indexOf('--src');
