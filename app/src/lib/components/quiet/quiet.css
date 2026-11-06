@@ -12,7 +12,6 @@
   --q-surface: #FFFFFF;       /* a card */
   --q-sunken: #F3EDE0;        /* a tag, a track, a pressed row */
   --q-hairline: rgba(74, 58, 44, .12);
-  --q-hairline-2: rgba(74, 58, 44, .08);
   --q-ink: #3F3326;           /* text */
   --q-ink-2: #6B5A48;         /* secondary text */
   --q-muted: #8A7A68;         /* captions, section heads, inactive tabs */
@@ -34,11 +33,10 @@
   --q-font-title: "Zen Maru Gothic", -apple-system, "Hiragino Sans", system-ui, sans-serif;
   --q-fs-xs: 11px;            /* the tab bar's labels and tags only */
   --q-fs-s: 13px; --q-fs-body: 15px; --q-fs-head: 17px; --q-fs-title: 22px; --q-fs-big: 28px;
-  --q-fs-input: 16px;         /* every field (iOS zooms under 16px) */
   --q-w: 400; --q-w-b: 600;
 
   /* ---------- space, radii ---------- */
-  --q-1: 4px; --q-2: 8px; --q-3: 12px; --q-4: 16px; --q-6: 24px;
+  --q-3: 12px; --q-4: 16px;
   --q-r-card: 18px; --q-r-ctl: 12px; --q-r-chip: 16px; --q-r-tag: 6px; --q-r-sheet: 18px;
   --q-hit: 44px;
 
@@ -53,7 +51,7 @@
 }
 :root[data-tod="night"] .quiet {
   --q-bg: #2B3157; --q-surface: #383F6B; --q-sunken: #2F355D;
-  --q-hairline: rgba(255, 255, 255, .10); --q-hairline-2: rgba(255, 255, 255, .07);
+  --q-hairline: rgba(255, 255, 255, .10);
   --q-ink: #F3ECDD; --q-ink-2: #CFC8DE; --q-muted: #A09CBD; --q-faint: #6F6C93;
   --q-accent-ink: #86D394; --q-accent-soft: rgba(62, 154, 82, .22);
   --q-coral: #E8775F; --q-coral-soft: rgba(217, 88, 63, .20);
@@ -96,9 +94,7 @@
   padding: 2px 7px; border-radius: var(--q-r-tag); letter-spacing: .03em;
 }
 .quiet .q-title { font-family: var(--q-font-title); font-weight: 700; }
-.quiet .q-s { font-size: var(--q-fs-s); }
 .quiet .q-muted { color: var(--q-muted); }
-.quiet .q-ink2 { color: var(--q-ink-2); }
 .quiet .q-ell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* buttons: primary (accent fill), plain (a card), text (accent ink, no box) */
 .quiet .q-btn {

@@ -1,6 +1,6 @@
 <script lang="ts">
   // けっこんしき (docs/wedding.md): the wedding board's sheet, its own chunk with its strings, full height (Sheet's
-  // `pop`, grown out of the menu's pill), over the board's store (board.svelte.ts), in the quiet kit's look (following
+  // `quiet`, grown out of the menu's pill), over the board's store (board.svelte.ts), in the quiet kit's look (following
   // the time of day). One title bar (けっこんしき, ✕; on メモ a member's 編集), one scroller, the bottom tab bar
   // (プラン / メモ). プラン: our photo band (the names, the day and venue, the countdown, a member's ⚙), the progress
   // strip, the filters and the months (Plan); a row opens in place, its 編集 and the ＋ over the tab bar open the form
@@ -127,8 +127,8 @@
   {/if}
 {/snippet}
 
-<Sheet bind:open label={t('wed.title')} variant="pop" onclose={closed}>
-  <div class="quiet wd">
+<Sheet bind:open label={t('wed.title')} variant="quiet" onclose={closed}>
+  <div class="wd">
     <SheetHeader {title} onback={level === 'settings' ? back : null} onclose={() => (open = false)} sfx="self" {trailing} />
     <div class="wd-body" class:writing class:plan={tab === 'plan' && level === 'home'} bind:this={body} data-wedding data-level={level} data-tab={tab} data-guest={!canEdit || undefined}>
       {#if level === 'settings' && canEdit}
@@ -156,12 +156,8 @@
 </Sheet>
 
 <style>
-  /* the quiet ground over the whole sheet: past the panel's own padding, the title bar under the safe area */
-  .wd {
-    position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column;
-    margin: calc(-1 * (var(--ui-top) + 8px)) calc(-1 * (var(--side) + var(--safe-right))) 0 calc(-1 * (var(--side) + var(--safe-left)));
-    padding: var(--ui-top) var(--safe-right) 0 var(--safe-left);
-  }
+  /* the sheet's column (Sheet's quiet skin: edge to edge), the title bar under the safe area */
+  .wd { position: relative; flex: 1; min-height: 0; display: flex; flex-direction: column; padding: var(--ui-top) var(--safe-right) 0 var(--safe-left); }
   /* the one scroller */
   .wd-body { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; display: flex; flex-direction: column; padding-bottom: 24px; }
   /* the plan's last row clear of ＋ */

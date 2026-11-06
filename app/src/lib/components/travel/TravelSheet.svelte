@@ -119,7 +119,7 @@
   .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
-  .top { flex: none; padding-top: var(--ui-top); background: var(--q-bg); border-bottom: 1px solid transparent; }
+  .top { flex: none; padding-top: var(--ui-top); background: var(--q-bg); }
   .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; border-top: 1px solid var(--q-hairline); }
   .center { flex: 1; min-height: 60%; display: grid; place-content: center; justify-items: center; gap: 12px; margin: 0; color: var(--q-muted); }
   .center p { margin: 0; }

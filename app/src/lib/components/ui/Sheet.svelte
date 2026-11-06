@@ -13,8 +13,9 @@
   // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (the health popup), grown out of
   // the HUD's dumbbell (--pop-x / --pop-y on the root, set by the button) instead of sliding down. variant="quiet": the
   // pop's column in the quiet kit's skin (docs/design.md "Quiet sheets": its paper, edge to edge; its own SheetHeader
-  // and scroller inside: りょこう).
+  // and scroller inside: りょこう, けっこんしき).
   import { untrack, type Snippet } from 'svelte';
+  import { onScrim } from './scrim.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import ToastHost from './ToastHost.svelte';
@@ -88,13 +89,9 @@
     return true;
   }
 
-  /** A tap on the scrim: the click's target is the dialog and its point outside the dialog's box (a tap whose control
-   *  moved from under it mid-press, a field's blur re-laying the sheet out, lands on the dialog itself: not a dismiss). */
+  /** A tap on the scrim (ui/scrim.ts). */
   function backdrop(e: MouseEvent) {
-    if (e.target !== dlg || !dlg) return;
-    const r = dlg.getBoundingClientRect();
-    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
-    if (dismissed()) dlg.close();
+    if (onScrim(e, dlg) && dismissed()) dlg?.close();
   }
 </script>
 

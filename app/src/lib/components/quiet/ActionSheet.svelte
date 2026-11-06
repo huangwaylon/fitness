@@ -17,6 +17,7 @@
   //   <ActionSheet bind:open title="現金" groups={[[rename, up, down], [remove]]} onpick={(id) => …} />
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
+  import { onScrim } from '../ui/scrim.ts';
   import Icon from './Icon.svelte';
 
   interface Props {
@@ -43,11 +44,9 @@
     open = false;
     onpick(a.id);
   }
-  /** The scrim (a tap outside the box) and Esc: back, as キャンセル. */
+  /** The scrim (ui/scrim.ts) and Esc: back, as キャンセル. */
   function backdrop(e: MouseEvent) {
-    if (e.target !== dlg || !dlg) return;
-    const r = dlg.getBoundingClientRect();
-    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) return;
+    if (!onScrim(e, dlg)) return;
     cue('back');
     open = false;
   }
@@ -78,8 +77,8 @@
   }
   .q-as:focus { outline: none; }
   .q-as[open] { animation: up 240ms cubic-bezier(.2, .8, .2, 1); }
-  .q-as::backdrop { background: rgb(30 22 14 / .32); }
-  :global(:root[data-tod='night']) .q-as::backdrop { background: rgb(8 10 25 / .5); }
+  /* (::backdrop inherits the dialog's .quiet tokens) */
+  .q-as::backdrop { background: var(--q-scrim); }
   .grp { background: var(--q-surface); border-radius: 16px; overflow: hidden; margin-top: 8px; box-shadow: var(--q-shadow-float); }
   .cap { margin: 0; padding: 12px 18px 10px; text-align: center; font-size: var(--q-fs-s); color: var(--q-muted); border-bottom: 1px solid var(--q-hairline); }
   .a {

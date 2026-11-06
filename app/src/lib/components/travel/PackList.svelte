@@ -8,7 +8,6 @@
   // banner; a category's and the reset ask first, then とりけす too. The guest adds, and changes only what it added. A
   // trip that's over: a quiet count, no bar (ticking still works).
   //   <PackList trip={nz} />
-  import '#lib/i18n/travel.ts';
   import Icon from '../quiet/Icon.svelte';
   import ProgressBar from '../quiet/ProgressBar.svelte';
   import ActionSheet, { type Action } from '../quiet/ActionSheet.svelte';
