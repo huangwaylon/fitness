@@ -2438,8 +2438,9 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
 ### Trips
 
 りょこう, the trip guides (data, relay and map: [travel.md](travel.md)). The HUD menu's 「りょこう」 pill (Orville's
-head, between えいご ききとり and せってい) opens a full-height `pop` sheet (`components/travel/TravelSheet.svelte`, its
-own chunk with the guides and `i18n/travel.*.json`; always loaded only `open.svelte.ts`, mounted by
+head, between えいご ききとり and けっこんしき) opens a full-height `pop` sheet (`components/travel/TravelSheet.svelte`, its
+own chunk with the guides and `i18n/travel.*.json`; always loaded only `open.svelte.ts`, a `lazySheet`
+(`ui-state/lazySheet.svelte.ts`, けっこんしき's too: the chunk, its offline banner, open), mounted by
 `island/Hud.svelte` outside the island's `[data-exact-taps]`). The island is paused under it.
 - **Opening:** the Tokyo day's first opening on this phone (`DEVICE.travelHello`) is the list with Orville's one line in
   the Bubble (during a trip the next row, on the eve how the packing stands, before the days to go); a later one goes
