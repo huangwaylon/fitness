@@ -23,6 +23,23 @@ def save(p, x):
         json.dump(x, f, indent=1)
 
 
+FFMPEG = os.environ.get('FFMPEG', 'ffmpeg')  # kikimimi-audio.ts passes tools.ts's FFMPEG and WHISPER_MODEL
+
+
+def written(out, write):
+    """write(tmp) to a temp file beside `out` (x.tmp.wav: the extension kept for the writer), then renamed to `out`: the
+    raw takes are cached by their file's existence, so a crash mid-write must never leave half a take under its name."""
+    root, ext = os.path.splitext(out)
+    tmp = f'{root}.tmp{ext}'
+    try:
+        r = write(tmp)
+        os.replace(tmp, out)
+        return r
+    finally:
+        if os.path.exists(tmp):
+            os.remove(tmp)
+
+
 # ---- synthesis ------------------------------------------------------------------------------------------------------
 
 def synth(a, jobs):
@@ -33,7 +50,7 @@ def synth(a, jobs):
         tts.synth('Warm up.', voice=jobs[0]['voice'], seed=1)
         for j in jobs:
             t = time.perf_counter()
-            dur = tts.save(j['out'], j['text'], voice=j['voice'], seed=int(j['seed']))
+            dur = written(j['out'], lambda tmp: tts.save(tmp, j['text'], voice=j['voice'], seed=int(j['seed'])))
             res[j['out']] = dict(gen=round(time.perf_counter() - t, 3), dur=round(dur, 3))
             print(f"  {os.path.basename(j['out'])} {dur:.2f}s", flush=True)
         return res
@@ -67,7 +84,7 @@ def synth(a, jobs):
         t = time.perf_counter()
         audio = run(j['text'], j)
         res[j['out']] = dict(gen=round(time.perf_counter() - t, 3), dur=round(len(audio) / model.sample_rate, 3))
-        sf.write(j['out'], audio, model.sample_rate, subtype='FLOAT')
+        written(j['out'], lambda tmp: sf.write(tmp, audio, model.sample_rate, subtype='FLOAT'))
         r = res[j['out']]
         print(f"  {os.path.basename(j['out'])} {r['dur']:.2f}s in {r['gen']:.2f}s", flush=True)
     return res
@@ -109,7 +126,7 @@ def transcribe(wavs):
     out = {}
     with tempfile.TemporaryDirectory() as td:
         for i, w in enumerate(wavs):  # whisper-cli writes <input>.txt: 16 kHz copies in a scratch dir
-            subprocess.run(['ffmpeg', '-loglevel', 'error', '-y', '-i', w, '-ar', '16000', '-ac', '1', f'{td}/{i}.wav'], check=True)
+            subprocess.run([FFMPEG, '-loglevel', 'error', '-y', '-i', w, '-ar', '16000', '-ac', '1', f'{td}/{i}.wav'], check=True)
         for k in range(0, len(wavs), 64):
             args = ['whisper-cli', '-m', WHISPER_MODEL, '-l', 'en', '-np', '-nt', '-otxt']
             for i in range(k, min(k + 64, len(wavs))):
@@ -151,7 +168,7 @@ def wer(a, jobs):
 def load16k(path):
     """Any audio file (m4a too) as 16 kHz mono float32, decoded by ffmpeg."""
     import numpy as np
-    pcm = subprocess.run(['ffmpeg', '-loglevel', 'error', '-i', path, '-f', 'f32le', '-ac', '1', '-ar', '16000', '-'],
+    pcm = subprocess.run([FFMPEG, '-loglevel', 'error', '-i', path, '-f', 'f32le', '-ac', '1', '-ar', '16000', '-'],
                          check=True, capture_output=True).stdout
     return np.frombuffer(pcm, dtype=np.float32).copy()
 
