@@ -9,6 +9,7 @@ import { isTally } from '#lib/contract/tally.ts';
 import { isIslandDay, type IslandDayData } from '#lib/contract/island.ts';
 import { decorOpOf, type DecorEntry } from '#lib/contract/decor.ts';
 import { boardOpOf, type BoardEntry } from '#lib/contract/board.ts';
+import { packRowOf, type PackEntry } from '#lib/contract/pack.ts';
 import { goalFallback, goalKeysOf, goalOfKey, GOALS, isGoalValue, type DailyGoalId, type LatestGoalKey } from '#lib/contract/goals.ts';
 import { tentOpOf, type TentEntry } from '#lib/contract/tent.ts';
 import { isRoomScope, layoutOpOf, type LayoutEntry } from '#lib/contract/layout.ts';
@@ -111,6 +112,10 @@ export interface State {
   /** The bulletin board (`board`: each post's ops, contract/board.ts), in server order; the posts are their merge
    *  (components/board/posts.svelte.ts). Never read by the economy. */
   board: BoardEntry[];
+  /** The trips' packing lists and notes (`pack`, `pack_chk`, `pack_reset`, `trip_note`: contract/pack.ts), in server
+   *  order, a queued one marked `queued`; a trip's list is their fold over its seed (components/travel/packing.svelte.ts).
+   *  Never read by the economy. */
+  pack: PackEntry[];
   /** The meal log (`food`: each entry's ops, contract/food.ts) as raw rows (RAW_EVENTS: unparsed, in the order given);
    *  the entries are their fold (model/food.ts). Never read by the economy. */
   food: EventRow[];
@@ -273,6 +278,7 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     tent: [],
     layout: [],
     board: [],
+    pack: [],
     food: [],
     foodRepeat: [],
     foodRecipe: [],
@@ -334,9 +340,9 @@ function reduceAll(r: SnapshotRows, rev: string | null, queued?: ReadonlySet<str
     // A type the server doesn't accept (a hand edit of the sheet) is ignored, and so is a bad `person`.
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, person);
-    const shopN = s.shop.length;
+    const shopN = s.shop.length, packN = s.pack.length;
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    if (queued?.has(id)) markQueued(s, shopN);
+    if (queued?.has(id)) markQueued(s, shopN, packN);
   }
   return s;
 }
@@ -451,6 +457,7 @@ function copyLists(base: State, rev: string | null): State {
     tent: [...base.tent],
     layout: [...base.layout],
     board: [...base.board],
+    pack: [...base.pack],
     food: [...base.food],
     foodRepeat: [...base.foodRepeat],
     foodRecipe: [...base.foodRecipe],
@@ -488,16 +495,17 @@ export function foldEvents(base: State, events: readonly EventRow[], rev: string
     const d = parseData(row[4]);
     if (!d || !(EVENT_TYPES as readonly string[]).includes(type)) continue;
     const subject = eventSubject(type, d, row[1]);
-    const shopN = s.shop.length;
+    const shopN = s.shop.length, packN = s.pack.length;
     if (subject) ON_EVENT[type as Exclude<EventType, RawEvent>](s, subject, at, d);
-    markQueued(s, shopN);
+    markQueued(s, shopN, packN);
   }
   return s;
 }
 
-/** The shop rows from `from` on are queued ones (not the record's yet). */
-function markQueued(s: State, from: number): void {
+/** The shop rows from `from` on (the packing rows from `packFrom` on) are queued ones (not the record's yet). */
+function markQueued(s: State, from: number, packFrom: number): void {
   for (let i = from; i < s.shop.length; i++) s.shop[i] = { ...s.shop[i], queued: true };
+  for (let i = packFrom; i < s.pack.length; i++) s.pack[i] = { ...s.pack[i], queued: true };
 }
 
 // ---------- events ----------
@@ -518,6 +526,14 @@ type DayGoals = Record<DailyGoalId, (Timed<number> & { day: LocalDate })[]>;
 const noGoals = (): DayGoals => ({ steps: [], move: [], exercise: [], stand: [] });
 const copyGoals = (g: DayGoals): DayGoals =>
   ({ steps: [...g.steps], move: [...g.move], exercise: [...g.exercise], stand: [...g.stand] });
+
+/** A packing row (contract/pack.ts), anyone's: the record has judged it (the guest's trip note it never keeps). */
+function packEvent(type: 'pack' | 'pack_chk' | 'pack_reset' | 'trip_note'): OnEvent {
+  return (s, person, _at, d) => {
+    const r = packRowOf(type, d, person);
+    if (r) s.pack.push(r);
+  };
+}
 
 /** One handler per event type: each accepts (indexes) the event or ignores it. */
 const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
@@ -579,6 +595,10 @@ const ON_EVENT: Record<Exclude<EventType, RawEvent>, OnEvent> = {
     const op = boardOpOf(d);
     if (op) s.board.push({ ...op, who: person } as BoardEntry);
   },
+  pack: packEvent('pack'),
+  pack_chk: packEvent('pack_chk'),
+  pack_reset: packEvent('pack_reset'),
+  trip_note: packEvent('trip_note'),
   pref(s, person, at, d) {
     if (!isPersonId(person)) {
       if (!GUEST_PREFS.includes(d.key)) return;
