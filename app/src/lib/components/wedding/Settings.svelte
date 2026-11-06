@@ -134,7 +134,7 @@
   .cats .chips { list-style: none; margin: 0; padding: 0; }
   .cchip {
     display: inline-flex; align-items: center; gap: 0; min-height: 36px; padding: 0 0 0 12px; border-radius: var(--r-pill);
-    background: color-mix(in srgb, var(--c-lip) 40%, var(--card)); font: 700 var(--fs-s)/1 var(--font-ui);
+    background: var(--ctl-off); font: 700 var(--fs-s)/1 var(--font-ui);
   }
   .x { appearance: none; border: 0; background: none; cursor: pointer; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: var(--text-soft); position: relative; }
   .x::after { content: ''; position: absolute; inset: -4px; }

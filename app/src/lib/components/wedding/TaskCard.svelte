@@ -14,20 +14,22 @@
     today: string;
     canEdit: boolean;
     names: Record<Who3, string>;
+    /** The wedding day: its own card wears the blush and a heart. */
+    wedding?: string;
     onopen: (id: string) => void;
     ontick?: (id: string, done: boolean) => void;
   }
-  let { task, today, canEdit, names, onopen, ontick }: Props = $props();
+  let { task, today, canEdit, names, wedding = '', onopen, ontick }: Props = $props();
   const due = $derived(dueLine(today, task));
   const tally = $derived(task.progress.tally);
   const dated = $derived(!!task.due && /^\d{4}-\d{2}-\d{2}$/.test(task.due));
   const dateLabel = $derived(dated ? `${Number(task.due!.slice(0, 4))}/${shortDay(task.due!)}` : t('wed.sec.nodate'));
 </script>
 
-<article class="card" class:done={task.done} class:over={due?.tone === 'over'} data-wed-task={task.id} data-done={task.done || undefined}>
+<article class="card" class:done={task.done} class:theday={!!wedding && task.due === wedding} class:over={due?.tone === 'over'} data-wed-task={task.id} data-done={task.done || undefined}>
   <button type="button" class="head" data-sfx="open" aria-label="{task.title}、{dateLabel}{due ? `、${due.text}` : ''}{tally ? `、${t('wed.tallyLabel', tally)}` : ''}" onclick={() => onopen(task.id)}>
     <span class="date" aria-hidden="true">
-      {#if dated}<small>{monthShort(task.due!)}</small><b>{Number(task.due!.slice(8, 10))}</b>{:else}<b class="dash">–</b>{/if}
+      {#if dated}<small>{monthShort(task.due!)}</small><b>{Number(task.due!.slice(8, 10))}</b>{#if wedding && task.due === wedding}<i class="heart"></i>{/if}{:else}<b class="dash">–</b>{/if}
     </span>
     <span class="body">
       <span class="ttl">{task.title}</span>
@@ -69,13 +71,21 @@
   .date b { font: 700 var(--fs-talk)/1 var(--font-num); font-variant-numeric: tabular-nums; }
   .date .dash { color: var(--text-soft); }
   .over .date { background: color-mix(in srgb, var(--c-coral) 26%, var(--card)); }
+  /* the day itself: a blush date with a small heart, the card's edge pink */
+  .theday { box-shadow: 0 var(--lip-h) 0 #E7A1BA, inset 0 0 0 2px #F7B3CB; }
+  .theday .date { position: relative; background: #FFE3EC; color: var(--c-ink); }
+  .theday .date small { color: #B44E77; }
+  .heart { position: absolute; top: -6px; right: -6px; width: 14px; height: 14px; background: #F07AA2; transform: rotate(45deg); border-radius: 3px 0 3px 3px; }
+  .heart::before, .heart::after { content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%; background: inherit; }
+  .heart::before { left: -7px; top: 0; }
+  .heart::after { left: 0; top: -7px; }
   .body { flex: 1; min-width: 0; display: grid; gap: 5px; }
   .ttl { font: 700 var(--fs-body)/1.35 var(--font-ui); overflow-wrap: anywhere; }
   .done .ttl { color: var(--text-soft); }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
   .meta:empty { display: none; }
   .meta > span { white-space: nowrap; }
-  .cat { padding: 3px 8px 2px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-lip) 40%, var(--card)); color: var(--text); }
+  .cat { padding: 3px 8px 2px; border-radius: var(--r-pill); background: var(--ctl-off); color: var(--text); }
   .due.over { color: var(--coral-text); }
   .due.soon { color: var(--leaf-text); }
   .tally { display: inline-flex; align-items: center; gap: 2px; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
