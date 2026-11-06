@@ -15,7 +15,7 @@ import {
 
 const EMPTY: readonly WedEntry[] = [];
 import { overallProgress, withProgress, type Overall, type WithProgress } from '#lib/wedding/progress.ts';
-import { todayIn, untilMidnight } from '#lib/wedding/time.ts';
+import { todayIn, untilMidnight } from '#lib/time/zone.ts';
 import { daysBetween } from '#lib/time/dates.ts';
 import { boardConfig, type BoardConfig } from '#lib/wedding/config.ts';
 import { week } from '#lib/store/week.svelte.ts';

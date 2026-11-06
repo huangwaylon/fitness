@@ -7,7 +7,9 @@
 //   - Subtasks: one level, enforced on the read; a row that can't be placed under a live top-level task is promoted,
 //     never hidden.
 import { daysBetween } from '#lib/time/dates.ts';
-import { monthOf } from './time.ts';
+
+/** 'YYYY-MM' of a day ('' for none: it groups with the undated rows). */
+export const monthOf = (day: string): string => day.slice(0, 7);
 
 /** A task as the board reads it (contract/wedding.ts WedTask: the old Sheet's rows, every field a string). */
 export interface TaskRow {

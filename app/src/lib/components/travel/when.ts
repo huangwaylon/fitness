@@ -3,28 +3,9 @@
 // boarding pass's 「あと 97にち」 / 「いま 2日目」 / おもいで, the list's order, the day card open today and the timeline
 // row that is now (NZ's flights cross midnight: a row's `dd` puts it on the eve or the morning after its day). Pure:
 // `now` is an instant (ms) handed in.
+import { daysBetween } from '#lib/time/dates.ts';
+import { instantIn, wallIn } from '#lib/time/zone.ts';
 import type { Day, DayRow, Trip } from '#lib/travel/types.ts';
-
-/** The wall clock of an instant in a zone: `YYYY-MM-DD` and the minutes after midnight. */
-export function wallIn(tz: string, ms: number): { date: string; min: number } {
-  const p = parts(tz, ms);
-  return { date: `${p.y}-${pad(p.mo)}-${pad(p.d)}`, min: p.h * 60 + p.mi };
-}
-
-/** The instant a local wall time in `tz` is (`date` YYYY-MM-DD, `min` minutes after its midnight, may run past 24 h
- *  or below 0). Across a DST change: a wall time the jump skips (02:30 as Auckland's clocks spring 02:00 → 03:00)
- *  is read on the old offset, so it lands where the clock reads an hour on (03:30); one the fall-back repeats
- *  (02:30 as they go 03:00 → 02:00) is its first, still on summer time. (No zone changes twice within a day.) */
-export function instantIn(tz: string, date: string, min: number): number {
-  const [y, mo, d] = date.split('-').map(Number);
-  const wall = Date.UTC(y, mo - 1, d) + min * 60_000;
-  const before = offsetOf(tz, wall - 86_400_000), after = offsetOf(tz, wall + 86_400_000);
-  const fits = [before, after].map((o) => wall - o).filter((at) => wall - offsetOf(tz, at) === at);
-  return fits.length ? Math.min(...fits) : wall - before;
-}
-
-/** Whole days from `a` to `b` (YYYY-MM-DD). */
-export const daysFrom = (a: string, b: string): number => Math.round((Date.UTC(...ymd(b)) - Date.UTC(...ymd(a))) / 86_400_000);
 
 /** A row's time as written ('06:10', '~12:00', '<21:00', '9:36') in minutes after midnight, or null (none: '' or
  *  a bullet). */
@@ -46,8 +27,8 @@ type Clock = Pick<Trip, 'start' | 'end' | 'tz' | 'days'>;
  *  home past midnight: the trip is on while they are). */
 export function phaseOf(trip: Clock, now: number): Phase {
   const today = wallIn(trip.tz, now).date;
-  const to = daysFrom(today, trip.start);
-  if (to <= 0 && daysFrom(today, trip.end) >= 0) return { k: 'now', day: 1 - to };
+  const to = daysBetween(today, trip.start);
+  if (to <= 0 && daysBetween(today, trip.end) >= 0) return { k: 'now', day: 1 - to };
   const row = rowNow(trip, now);
   if (row && !row.next) return { k: 'now', day: row.day };
   return to > 0 ? { k: 'soon', days: to } : { k: 'past' };
@@ -113,27 +94,4 @@ const timed = (trip: Clock) =>
 export function todayDay(trip: Clock, now: number): number | null {
   const today = wallIn(trip.tz, now).date;
   return trip.days.find((d) => d.date === today)?.n ?? rowNow(trip, now)?.day ?? null;
-}
-
-const pad = (n: number) => String(n).padStart(2, '0');
-const ymd = (s: string): [number, number, number] => {
-  const [y, m, d] = s.split('-').map(Number);
-  return [y, m - 1, d];
-};
-
-const fmts = new Map<string, Intl.DateTimeFormat>();
-function parts(tz: string, ms: number): { y: number; mo: number; d: number; h: number; mi: number; s: number } {
-  let f = fmts.get(tz);
-  if (!f) {
-    f = new Intl.DateTimeFormat('en-US', { timeZone: tz, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' });
-    fmts.set(tz, f);
-  }
-  const o: Record<string, number> = {};
-  for (const p of f.formatToParts(ms)) if (p.type !== 'literal') o[p.type] = Number(p.value);
-  return { y: o.year, mo: o.month, d: o.day, h: o.hour % 24, mi: o.minute, s: o.second };
-}
-/** The zone's offset from UTC at an instant (ms; Tokyo +9 h). */
-function offsetOf(tz: string, ms: number): number {
-  const p = parts(tz, ms);
-  return Date.UTC(p.y, p.mo - 1, p.d, p.h, p.mi, p.s) - Math.floor(ms / 1000) * 1000;
 }

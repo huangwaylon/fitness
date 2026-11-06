@@ -1,9 +1,8 @@
 // けっこんしき's view (docs/wedding.md): the plan's own rules (the filters, their counts, the lifted sections and the
 // month groups) over the store's tasks (board.svelte.ts). Every rule of a percentage, a state, a day or this month is
-// lib/wedding/progress.ts and time.ts (the old board's, ported once); nothing here re-decides one.
+// lib/wedding/progress.ts and time/zone.ts (the old board's, ported once); nothing here re-decides one.
 import type { WedTask } from '#lib/contract/wedding.ts';
-import type { Overall, WithProgress } from '#lib/wedding/progress.ts';
-import { monthOf } from '#lib/wedding/time.ts';
+import { monthOf, type Overall, type WithProgress } from '#lib/wedding/progress.ts';
 
 /** A live top-level task with its subtasks (in the order typed) and its progress. */
 export type Task = WithProgress<WedTask>;
