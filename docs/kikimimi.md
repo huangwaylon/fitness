@@ -348,6 +348,20 @@ The user asked for "a mechanic for progress and improvement and learning trackin
 - vitest: the stats (mastery, the estimate, trend, week dots, couple summary), the SRS fold and the practice deck (determinism, due first, no repeats, a focus), the advice rules, the row's validation (`contract/listen.ts`), the tag table's coverage; relay: the row accepted and refused, owner-only rows, the summary to the partner, nothing between the guest and the members.
 - e2e (logic tier): a solo game in `?demo`, then きろく shows the game, the bars and a recommendation whose start opens にがて れんしゅう.
 
+## マイク (docs/kikimimi-mic.md; the privacy rule, 2026-11-07)
+
+- Off by default. Turned on per phone in ききみみ's せってい and off again there.
+- Solo by default. The partner is involved only in ロールプレイ and あてっこ, and only when both players opted in: joining is consenting.
+- **Recordings are never stored or synced.** A take lives in memory for its round and is dropped at the next round, on leaving, or when the app hides. It's never written to localStorage, IndexedDB, the Cache API, the record, R2 or the log, and never sent to the partner. The partner hears only your live voice in the room.
+- **Speech to text runs on the phone first** (whisper in the page; the model is downloaded once after you agree, and can be deleted).
+  - If Safari's recogniser is used, the audio may go to Apple.
+  - If the relay is used (`POST /stt`, relay/src/sttRoute.ts), the audio goes to our relay and Cloudflare's Workers AI for the request only, and nothing is kept; the relay logs only sizes and times (`stt`), with a daily cap a person (300) and an off switch (`STT_OFF`).
+  - The opt-in names the backend in use.
+- **No transcript and no speaking score leaves the phone.** Mic games' rows carry minutes only. ロールプレイ shares only its ✓ per phrase, as the team's.
+- **No ranking or leaderboard for speaking.** Mic modes are not in たいかい or きまぐれ.
+- Heard text is never put into a log event or an `Error`. The probe's `mic.*` events are numbers and closed sets (contract/log.ts).
+- The Permissions-Policy allows the microphone to our origin only.
+
 ## Performance
 
 - Nothing heavy loads before the sheet opens. The banner listener is a few hundred bytes.

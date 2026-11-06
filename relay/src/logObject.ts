@@ -40,6 +40,11 @@ export class IslandLog extends DurableObject<Env> {
     return this.core.query(q);
   }
 
+  /** A day's use of a capped bucket (sttRoute.ts). */
+  spend(bucket: string, limit: number): boolean {
+    return this.core.spend(bucket, limit);
+  }
+
   stats(): ReturnType<LogCore['stats']> {
     return this.core.stats();
   }

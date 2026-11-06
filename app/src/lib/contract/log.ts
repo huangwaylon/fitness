@@ -53,6 +53,11 @@ export const LOG_EVENTS = {
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
   "log.drop": { src: 'c', f: { n: 'n', why: ['cap', 'full', 'day', 'pending'] } },
+  // ききみみ's mic probe (docs/kikimimi-mic.md §1.1): numbers and closed sets only, never heard text
+  "mic.env": { src: 'c', f: { pwa: 'b', coi: 'b', gpu: 'b', gpuW: 'b', f16: 'b', arch: 't', wks: 'b', ses: 'b', mr: ['mp4', 'webm', 'none'], wl: 'b' } },
+  "mic.perm": { src: 'c', f: { st: ['granted', 'denied', 'prompt', 'unsupported'], ms: 'n', again: 'b', asked: 'b', ec: 'b', sr: 'n', inp: ['builtin', 'bluetooth', 'wired', 'other'] } },
+  "mic.duplex": { src: 'c', f: { ear: ['none', 'wired', 'bluetooth'], aec: 'b', bleed: 'n', rtl: 'n', loud: ['none', 'quiet', 'ok'], pick: 'b', restored: 'b', err: 't' } },
+  "mic.stt": { src: 'c', f: { be: ['whisper-gpu', 'whisper-wasm', 'webkit', 'relay'], model: ['tiny.en', 'base.en', 'tiny.en-f16', 'turbo', 'none'], step: ['dl', 'load', 'clip', 'spoken'], ms: 'n', mb: 'n', audS: 'n', wer: 'n', ok: 'b', err: ['not-allowed', 'service-not-allowed', 'network', 'no-speech', 'aborted', 'audio-capture', 'oom', 'timeout', 'other'] } },
   // ---- the relay
   req: { src: 'r', f: { action: LOG_ACTIONS, st: LOG_STATUS, ms: 'n', inB: 'n', outB: 'n', n: 'n', rej: 'n', why: 't', m: 'n', sk: 'n', w: 'n', dup: 'n', exc: 't', pg: 'n' } },
   "room.close": { src: 'r', f: { code: 'n', secs: 'n', socks: 'n' } },
@@ -63,7 +68,9 @@ export const LOG_EVENTS = {
   "do.error": { src: 'r', f: { where: 't', name: 't', msg: 'msg' } },
   "store.corrupt": { src: 'r', f: { where: ['spend', 'board', 'food', 'tally', 'shop', 'decor', 'pack'] } },
   admin: { src: 'r', f: { op: 't', st: 't' } },
-  "log.cap": { src: 'r', f: { bucket: 't' } }
+  "log.cap": { src: 'r', f: { bucket: 't' } },
+  // `POST /stt` (relay/src/sttRoute.ts): sizes and times, never the audio or its text
+  stt: { src: 'r', f: { ms: 'n', inB: 'n', model: ['turbo'], ok: 'b', err: ['off', 'too_large', 'bad_request', 'capped', 'ai'] } }
 } as const satisfies Record<string, { src: 'c' | 'r'; f: Fields }>;
 
 export type LogEventName = keyof typeof LOG_EVENTS;
