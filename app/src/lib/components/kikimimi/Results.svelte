@@ -13,6 +13,9 @@
   import type { QuizGame } from './game.svelte.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
+  import LessonDots from './path/LessonDots.svelte';
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import { villagerArt } from '#lib/art.ts';
   import SoundLine from './scene/SoundLine.svelte';
   import MarkLegend from './scene/MarkLegend.svelte';
   import { firstListen } from '#lib/kikimimi/score.ts';
@@ -28,7 +31,7 @@
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
   import { SPEEDS, climbs, laddersIn, speedAt, sx } from '#lib/kikimimi/ladder.ts';
 
-  let { game, onagain, onmissed, ondone }: { game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void } = $props();
+  let { game, onagain, onmissed, ondone, onnext }: { game: QuizGame; onagain: () => void; onmissed: () => void; ondone: () => void; onnext?: (l: Lesson) => void } = $props();
   const v = $derived(game.view);
   const items = $derived(game.items);
   /** Highest first; ties share a rank. */
@@ -87,7 +90,9 @@
   const stamped = $derived(!!recorded && stampsUnit(recorded));
   const own = $derived(recorded ? recorded.r.filter(([, ok, , rp]) => ok === 1 && rp === 0).length : 0);
   const CORE: readonly Lesson[] = ['deai', 'bamen', 'check'];
-  const nextLesson = $derived(CORE.find((l) => l !== ls?.lesson && !unitState?.done.includes(l)) ?? null);
+  /** The next core lesson not played to the end; after a チェック, none (もういっかい is the retry). */
+  const nextLesson = $derived(ls?.lesson === 'check' ? null : (CORE.find((l) => l !== ls?.lesson && !unitState?.done.includes(l)) ?? null));
+  const unitLessons = $derived(ls ? LESSONS.filter((l) => ls.unit.lessons[l]) : []);
   /** A choice as written (a picture's Japanese name: the English isn't given away). */
   const choiceText = (it: Item, k: number) => (it.type === 'pic' ? (PIC_JA[it.choices[k]] ?? '') : it.choices[k]);
 </script>
@@ -106,15 +111,24 @@
   </div>
 
   {#if ls && recorded}
-    <section class="lesson card" data-kiki-lesson-result={ls.lesson} data-kiki-stamped={stamped ? '1' : '0'}>
-      <p class="lhead"><b>{ls.unit.name}</b>
-        <span class="dots" aria-hidden="true">{#each LESSONS.filter((l) => ls.unit.lessons[l]) as l (l)}<i class:done={unitState?.done.includes(l)}>{CORE.includes(l) ? (unitState?.done.includes(l) ? '●' : '○') : unitState?.done.includes(l) ? '★' : '☆'}</i>{/each}</span></p>
+    <section class="lesson card" class:won={stamped} data-kiki-lesson-result={ls.lesson} data-kiki-stamped={stamped ? '1' : '0'}>
+      <div class="lhead">
+        <span class="lface" aria-hidden="true"><OfficialArt key={villagerArt(ls.unit.host, true)} alt="" size={40} /></span>
+        <span class="lname"><b>{ls.unit.name}</b><LessonDots lessons={unitLessons} done={unitState?.done ?? []} next={nextLesson} /></span>
+      </div>
       {#if ls.lesson === 'check'}
         {#if stamped}
-          <p class="got" data-kiki-stamp-got data-double={unitState?.double ? '1' : undefined}>🏅{#if unitState?.double}🏅 {t('kiki.stamp.double')}{:else} {t('kiki.stamp.got')}{/if}</p>
+          <p class="got" data-kiki-stamp-got data-double={unitState?.double ? '1' : undefined}>
+            <span class="seal" aria-hidden="true">🏅</span>{#if unitState?.double}<span class="seal two" aria-hidden="true">🏅</span>{/if}
+            <b>{unitState?.double ? t('kiki.stamp.double') : t('kiki.stamp.got')}</b>
+          </p>
         {:else}<p class="soon">{t('kiki.stamp.notYet')}</p>{/if}
         <p class="mine" data-kiki-tally-mine={own}>{t('kiki.stamp.mine', { k: own, n: recorded.r.length })}{#if recorded.tm !== undefined} · {t('kiki.stamp.team', { k: recorded.tm })}{/if}</p>
-      {:else if nextLesson}<p class="soon" data-kiki-next-lesson={nextLesson}>{t('kiki.stamp.next', { lesson: t(`kiki.lesson.${nextLesson}`) })}</p>{/if}
+      {:else if nextLesson}
+        <button type="button" class="btn small nextl" data-kiki-next-lesson={nextLesson} data-sfx="confirm" onclick={() => onnext?.(nextLesson!)}>
+          {t('kiki.stamp.next', { lesson: t(`kiki.lesson.${nextLesson}`) })} ›
+        </button>
+      {/if}
     </section>
   {/if}
 
@@ -255,12 +269,20 @@
   .results { display: grid; gap: 14px; }
   .results :global(.bubble) { margin-bottom: 0; }
   .host { display: grid; gap: 6px; }
-  .lesson.card { display: grid; justify-items: center; gap: 4px; padding: 12px 14px; text-align: center; }
+  /* a lesson's strip (the UX review's sketch C): the unit, its dots, then つぎは… or the stamp */
+  .lesson.card { display: grid; justify-items: center; gap: 8px; padding: 12px 14px; text-align: center; }
+  .lesson.won { background: color-mix(in srgb, var(--c-yuzu) 28%, var(--card)); }
   .lesson p { margin: 0; }
-  .lhead { display: flex; gap: 8px; align-items: center; font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .lhead .dots { display: flex; gap: 2px; font-size: var(--fs-s); color: var(--text-soft); }
-  .lhead .dots i { font-style: normal; }
-  .got { font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--coral-text); }
+  .lhead { display: flex; gap: 10px; align-items: center; justify-self: stretch; }
+  .lface { flex: none; width: 40px; height: 40px; border-radius: 50%; overflow: hidden; line-height: 0; background: color-mix(in srgb, var(--c-mint) 35%, var(--card)); }
+  .lname { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 10px; text-align: left; }
+  .lname b { font: 700 var(--fs-body)/1.3 var(--font-ui); }
+  .nextl { justify-self: stretch; }
+  .got { display: flex; align-items: center; justify-content: center; gap: 6px; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--coral-text); }
+  .seal { font-size: 40px; line-height: 1; display: inline-block; animation: seal 520ms var(--ease-bounce) both; }
+  .seal.two { margin-left: -18px; animation-delay: 180ms; }
+  @keyframes seal { from { transform: scale(2.2) rotate(-25deg); opacity: 0; } 60% { opacity: 1; } to { transform: rotate(-8deg); } }
+  @media (prefers-reduced-motion: reduce) { .seal { animation: none; transform: rotate(-8deg); } }
   .soon, .mine { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   /* co-op's team tally: one big number, the together count under it (never who missed) */
   .team.card { display: grid; justify-items: center; gap: 4px; padding: 12px 14px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }

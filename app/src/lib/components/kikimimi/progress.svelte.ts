@@ -16,6 +16,11 @@ import type { Rec } from '#lib/kikimimi/advice.ts';
 import { sx } from '#lib/kikimimi/ladder.ts';
 import { remember, type Recent } from '#lib/kikimimi/recent.ts';
 import { unitsOf, type UnitState } from '#lib/kikimimi/stamps.ts';
+import { INDEX, unitIds, unitPart } from '#lib/kikimimi/pool.ts';
+import { lessonsOfMask, pathOf, type Filter, type Path, type PathUnit } from '#lib/kikimimi/path.ts';
+import { LESSONS } from '#lib/kikimimi/stages.ts';
+import type { UnitPlay } from '#lib/kikimimi/lesson.ts';
+import { hooksOn } from '../island/devHooks.ts';
 import { t } from '#lib/i18n/index.ts';
 
 type Kept = { at: number; row: ListenRow };
@@ -73,6 +78,36 @@ export function currentReport(levels: readonly Level[] = LEVELS): Report | null 
 export function currentUnits(): Map<string, UnitState> {
   const r = currentReport();
   return r ? unitsOf(r.games, r.others) : new Map();
+}
+
+/** Bumped as a unit's chunk is put in at run time (the e2e's fixture: pool.ts addUnit), so the path lists it. */
+let added = $state(0);
+export const unitAdded = (): void => void added++;
+
+/** The units on しまの みち: the build's (the index's path lines) and any put in at run time. A unit still a draft (not
+ *  voiced: no clips) shows only with the dev hooks on (a dev build or `?demo`). Reactive. */
+export function pathUnits(): PathUnit[] {
+  void added;
+  const drafts = hooksOn();
+  const out: PathUnit[] = [];
+  for (const id of unitIds()) {
+    const line = INDEX.paths.find((p) => p[0] === id);
+    const part = line ? null : (unitPart(id)?.unit as UnitPlay | undefined);
+    const u: PathUnit | null = line
+      ? { id, name: line[1], stage: line[2], domain: line[3], host: line[4], status: line[5], lessons: lessonsOfMask(line[6]) }
+      : part ? { id, name: part.name, stage: part.stage, domain: part.domain, also: part.also, host: part.host, status: part.status, lessons: LESSONS.filter((l) => !!part.lessons[l]) } : null;
+    if (u && (u.status !== 'draft' || drafts)) out.push(u);
+  }
+  return out;
+}
+
+/** しまの みち now (path.ts, from my report: the stamps, my comfortable level, the units of my lessons in order).
+ *  Reactive: call it in a $derived. */
+export function currentPath(filter: Filter = 'all'): Path {
+  const r = currentReport();
+  const states = r ? unitsOf(r.games, r.others) : new Map<string, UnitState>();
+  const played = r ? r.games.flatMap((g) => (g.u !== undefined && g.l !== undefined ? [g.u] : [])) : [];
+  return pathOf({ units: pathUnits(), states, level: r?.stats.level ?? null, played, filter });
 }
 
 /** A recommendation's words: its title and why (きろく's rows, the results' 「つぎは…」). */
