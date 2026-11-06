@@ -3,7 +3,7 @@
 // its チェック opens on the "phone errand" mission card, is played solo (6 questions, all right on the first listen),
 // and its row carries the unit and the lesson; the results give the stamp with my own tally, and the list shows the
 // stamp and the dot afterwards. The logic tier (no clip has to sound).
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });

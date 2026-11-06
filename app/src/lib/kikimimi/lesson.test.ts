@@ -12,11 +12,11 @@ import type { Clip, Words } from './clips.ts';
 import { compile } from './compile.ts';
 import { isDialogue } from './bank.ts';
 import { lessonDeck, lessonL, lessonOf, playIds, stageLevel, tierFor, type UnitChunk } from './lesson.ts';
-import { addUnit, load, loadAll, unitIds, unitPart } from './pool.ts';
+import { INDEX, addUnit, load, loadAll, unitIds, unitPart, type Unit } from './pool.ts';
 import { gamesOf, type Answer } from './progress.ts';
 import { RECHECK_DAYS, rechecksDue, unitsOf } from './stamps.ts';
 import { CAUGHT_CLIPS, CAUGHT_DAYS, REVIEW_CAP, phraseReview, phrasesOf } from './srs.ts';
-import { LESSON_QS } from './stages.ts';
+import { LESSONS, LESSON_QS } from './stages.ts';
 
 const CLIPS = clipsJson as Readonly<Record<string, Clip>>;
 const WORDS = wordsJson as unknown as Readonly<Record<string, Words>>;
@@ -117,6 +117,24 @@ describe('lessons: the deck', () => {
     expect(stageLevel('yama')).toBe(6);
     expect(lessonL('check')).toBe(3);
     expect(lessonOf(1)).toBe('deai');
+  });
+
+  it('the committed units (wave 1 and on): every lesson deals its 6 (fewer only from ladders), the same for a seed, the チェック held out', async () => {
+    const ids = INDEX.paths.map((p) => p[0]);
+    await load(...(ids as Unit[]));
+    for (const id of ids) {
+      const c = unitPart(id) as UnitChunk;
+      for (const l of LESSONS) {
+        if (!c.unit.lessons[l]) continue;
+        const d = lessonDeck(c, l, 99);
+        expect(d, `${id} ${l}`).toEqual(lessonDeck(c, l, 99));
+        expect(d.length, `${id} ${l}`).toBe(Math.min(LESSON_QS, playIds(c, l).filter((x) => c.items.some((it) => it.id === x)).length));
+        if (l !== 'jissen') expect(d.length, `${id} ${l}`).toBe(LESSON_QS);
+        for (const it of d) expect(it.choices[it.answer], `${id} ${it.id}`).toBeDefined();
+      }
+      const heard = new Set([...(c.unit.lessons.deai ?? []), ...(c.unit.lessons.bamen ?? [])]);
+      for (const it of lessonDeck(c, 'check', 5)) expect(heard.has(it.id)).toBe(false);
+    }
   });
 });
 
