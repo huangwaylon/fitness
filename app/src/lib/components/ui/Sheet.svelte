@@ -78,8 +78,10 @@
     } else if (!open && dlg.open) dlg.close();
   });
 
-  /** The native close event (Esc, backdrop, ✕, or `open = false`). */
+  /** The native close event (Esc, backdrop, ✕, or `open = false`); a late one, after the sheet was opened again at once
+   *  (the event is queued: トレイル's openTrail straight after ✕), isn't a close. */
   function closed() {
+    if (dlg?.open) return;
     open = false;
     onclose?.();
   }
