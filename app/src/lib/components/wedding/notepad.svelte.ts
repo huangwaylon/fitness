@@ -50,10 +50,13 @@ export async function save(): Promise<void> {
 }
 
 let timer: ReturnType<typeof setTimeout> | null = null;
+/** The held version's `at` when the pick was made: the save is from it, so the other phone settling the crossing
+ *  meanwhile crosses it again (both shown) rather than the pick being lost. */
+let pickedFrom: number | null = null;
 function settle() {
-  const md = pad.picked, at = board.conflict?.current.at;
+  const md = pad.picked, at = pickedFrom;
   undo();
-  if (md !== null && at !== undefined) board.saveNote(md, at);
+  if (md !== null && at !== null) board.saveNote(md, at);
 }
 function undo() {
   if (timer) clearTimeout(timer);
@@ -68,7 +71,10 @@ const arm = (ms: number) => {
 /** これに する: shown at once, saved when its banner goes (とりけす: both versions again). */
 export function pick(md: string): void {
   if (pad.picked !== null) settle();
+  const at = board.conflict?.current.at;
+  if (at === undefined) return;
   pad.picked = md;
+  pickedFrom = at;
   arm(PICK_MS);
   toasts.show(t('wed.note.picked'), PICK_MS, {
     action: { label: t('common.undo'), run: undo },
