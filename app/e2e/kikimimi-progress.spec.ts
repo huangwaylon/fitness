@@ -36,7 +36,7 @@ async function playGame(page: Page, wrong: readonly number[]) {
   await expect(sheet(page)).toHaveAttribute('data-phase', 'results');
 }
 
-test('after a solo game: my feedback, then きろく with it, and a recommendation starts にがて れんしゅう', async ({ page }) => {
+test('after a solo game: my feedback, the hub’s menu, きろく, and the menu’s おさらい starts my weak spots', async ({ page }) => {
   test.slow();
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
@@ -58,6 +58,9 @@ test('after a solo game: my feedback, then きろく with it, and a recommendati
   await expect(sheet(page).locator('[data-kiki-mode-page="quiz"]')).toBeVisible();
   await page.locator('dialog[open] .navbar .back').click();
   await page.locator('dialog[open] .navbar .back').click();
+  // the hub's menu (which card a game ticks: today.test; here the row's day is the relay clock's, not the pinned one)
+  await expect(sheet(page).locator('[data-kiki-menu]')).toBeVisible();
+  await shot(page, '1b-hub-menu');
   await toTile(page, 'record');
   const prog = sheet(page).locator('[data-kiki-progress]');
   await expect(prog).toBeVisible();
@@ -69,14 +72,14 @@ test('after a solo game: my feedback, then きろく with it, and a recommendati
   await expect(prog.locator('[data-kiki-trend] svg')).toBeVisible();
   // the couple summary: games with B this week, never a level
   await expect(prog.locator('[data-kiki-together]')).toBeVisible();
-  await expect(prog.locator('[data-rec]').first()).toBeVisible();
   await shot(page, '2-kiroku');
   await prog.locator('details.more summary').click();
   await shot(page, '3-kiroku-details');
 
-  // a recommendation's start: a solo game of my weak spots (8 questions, not the shared deck)
+  // the menu's おさらい (the demo's misses are due): a solo game of my weak spots (8 questions, not the lobby's deck)
   const shared = await kiki(page, (k) => k.items());
-  await prog.locator('[data-kiki-rec-start]').first().click();
+  await page.locator('dialog[open] .navbar .back').click();
+  await sheet(page).locator('[data-kiki-card-go="review"]').click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
   const items = await kiki(page, (k) => k.items());
   expect(items).toHaveLength(8);

@@ -26,6 +26,8 @@ const MODES: readonly ModeMeta[] = [
   { id: 'review', group: 'quick', mins: 3, qs: 8, coop: false },
   { id: 'announce', group: 'scene', mins: 4, qs: 8, coop: true }
 ];
+/** Every mode's id, in the shelves' order. */
+export const MODE_IDS: readonly ModeId[] = MODES.map((m) => m.id);
 export const modeOf = (id: ModeId): ModeMeta => MODES.find((m) => m.id === id)!;
 
 /** What this build and this player have: the levels offered (deck.ts LEVELS), スピード はしご's clips, any game to

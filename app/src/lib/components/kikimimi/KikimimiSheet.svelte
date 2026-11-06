@@ -33,7 +33,6 @@
   import type { Tile, HubInvite } from './hub/Hub.svelte';
   import { INDEX, addUnit, itemOf, load, loadIds, unitPart } from '#lib/kikimimi/pool.ts';
   import { tierFor, type UnitPlay } from '#lib/kikimimi/lesson.ts';
-  import type { Level } from '#lib/kikimimi/bank.ts';
   import type { WireMode } from '#lib/kikimimi/round/wire.ts';
   import { reloadForUpdate } from '#lib/ui-state/reload.ts';
   import type { QuizPhase } from '#lib/kikimimi/games/quiz/view.ts';
@@ -273,7 +272,7 @@
         </div>
       {:else if atHub}
         {#await import('./hub/Hub.svelte') then { default: Hub }}
-          <Hub here={game.here} me={game.me} invite={hubInvite} onjoin={joinIt} onupdate={() => void reloadForUpdate()} ontile={tile} onquiz={(lv) => act.quiz(lv as Level)} />
+          <Hub here={game.here} me={game.me} invite={hubInvite} onjoin={joinIt} onupdate={() => void reloadForUpdate()} ontile={tile} onact={act.menu} />
         {/await}
       {:else if hosting && page}
         {#if page.k === 'asobu'}
@@ -289,7 +288,7 @@
           <Lobby {game} onlevel={keepLv} ontimer={keepTimer} />
         {:else if page.k === 'record'}
           {#await import('./Progress.svelte') then { default: Progress }}
-            {#if report}<Progress {report} canStart={v.local} onstart={act.startRec} onplay={() => (pages = [])} />{/if}
+            {#if report}<Progress {report} onplay={() => (pages = [])} />{/if}
           {/await}
         {:else if page.k === 'settings'}
           {#await import('./settings/KikiSettings.svelte') then { default: KikiSettings }}

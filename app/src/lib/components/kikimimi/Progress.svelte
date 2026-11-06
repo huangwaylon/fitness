@@ -3,14 +3,13 @@
   // stage (a stat tile: the curriculum's stage, its CEFR and a meter of how far into it), the sub-skills as horizontal
   // bars (mastery, one hue, the value at the bar's end; unmeasured an outlined, empty track with 「まだ」), the first-listen trend
   // (the last 5 games' mean, its change, a 12-point sparkline), this week's days (7 dots, never a streak), the
-  // recommendations each with its start, the together summary (games together and everyone's minutes, never a level;
+  // the together summary (games together and everyone's minutes, never a level;
   // the guest's phone too) and the details (per type, accent and level: one table, one header row) folded; with no game
   // yet, しずえ's hello and 「あそぶ」 (back to the lobby's first tab). スピード はしご's measure once a ladder's been
   // climbed: the fastest comfortable speed (a stat tile) over one bar a rung (the share of the recent ladders that
   // climbed it, labelled directly; one hue). Mine alone: the record sends the
   // others only a summary (contract/guest.ts rowsFor).
   import type { Report } from '#lib/kikimimi/report.ts';
-  import type { Rec } from '#lib/kikimimi/advice.ts';
   import { SPEED_MIN } from '#lib/kikimimi/progress.ts';
   import { stageAt } from '#lib/kikimimi/stages.ts';
   import { SKILLS } from '#lib/kikimimi/tags.ts';
@@ -18,10 +17,9 @@
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
   import { levelMark, sx } from './look.ts';
   import Host from '../characters/Host.svelte';
-  import { recWords } from './progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { report, canStart, onstart, onplay }: { report: Report; canStart: boolean; onstart: (r: Rec) => void; onplay: () => void } = $props();
+  let { report, onplay }: { report: Report; onplay: () => void } = $props();
   const s = $derived(report.stats);
   const stage = $derived(s.level === null ? null : stageAt(s.level));
   /** The level to play next (the comfortable one, a level that exists: やま and ほし above level 4): the next step within
@@ -83,21 +81,6 @@
       </section>
     {/if}
 
-    <!-- what to practise next -->
-    <section class="sec" aria-labelledby="kp-rec" data-kiki-recs>
-      <h3 id="kp-rec" class="sec-label">{t('kiki.rec.title')}</h3>
-      {#if report.recs.length}
-        <ul class="recs">
-          {#each report.recs as r, i (i)}
-            {@const x = recWords(r)}
-            <li class="rec card" data-rec={r.kind}>
-              <div class="rt"><b>{x.title}</b><small>{x.why}</small></div>
-              {#if canStart}<button type="button" class="btn small" data-kiki-rec-start={r.kind} data-sfx="confirm" onclick={() => onstart(r)}>{t('kiki.rec.start')}</button>{/if}
-            </li>
-          {/each}
-        </ul>
-      {:else}<p class="hint">{t('kiki.rec.none')}</p>{/if}
-    </section>
 
     <!-- the sub-skills: one series of horizontal bars, labelled directly -->
     <section class="sec" aria-labelledby="kp-skills">
@@ -180,12 +163,6 @@
   .meter { height: 10px; border-radius: var(--r-pill); background: var(--bar-track); overflow: hidden; }
   .meter i { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--bar); }
   .note { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .recs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .rec { display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 14px; }
-  .rt { flex: 1; min-width: 0; display: grid; gap: 2px; }
-  .rt b { font: 700 var(--fs-body)/1.3 var(--font-ui); }
-  .rt small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .rec .btn { flex: none; width: auto; min-height: var(--hit); margin-bottom: var(--lip-h); }
   .bars { list-style: none; margin: 0; padding: 12px 14px; display: grid; gap: 10px; }
   .bars li { display: grid; grid-template-columns: 7.5em 1fr 3em; align-items: center; gap: 10px; }
   .bl { font: 700 var(--fs-s)/1.2 var(--font-ui); }
