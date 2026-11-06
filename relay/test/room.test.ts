@@ -1073,3 +1073,81 @@ describe('the real weather (wx)', () => {
     expect(join(KEY_B).kinds()).toEqual(['welcome']);
   });
 });
+
+describe('the music stages (docs/sound-sync.md)', () => {
+  const tunes = (s: FakeSock) => s.sent.filter((m) => m.kind === 'music');
+  let kept: Record<string, Record<string, unknown>>;
+  const mk = () => new RoomCore({ ...io(), saveMusic: (m) => void (kept = structuredClone(m) as never) }, [], null, {}, {}, null, null, null, [], kept as never);
+  beforeEach(() => {
+    now = Date.UTC(2026, 10, 6, 3);
+    kept = {};
+    room = mk();
+  });
+  const start = (s: FakeSock, at: number, c: number, song = 'kk-chorale', ms = 180_000) => say(s, { kind: 'music', src: 'isl', at, song, ms, c });
+
+  it('the newer record wins and goes to the others, acked; an older one is refused, its sender told what won', () => {
+    const a = join(KEY_A, 0), b = join(KEY_B, 0);
+    start(a, now - 100, 1);
+    const won = { v: 3, kind: 'music', src: 'isl', at: now - 100, song: 'kk-chorale', ms: 180_000, who: 'A', t: now };
+    expect(tunes(b)).toEqual([won]);
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'ack', c: 1, ok: true });
+    expect(saved).toEqual([]); // never in the ring
+    expect(kept).toEqual({ isl: won });
+    b.sent = [];
+    now += 10;
+    say(b, { kind: 'music', src: 'isl', at: now - 1000, song: 'kk-bossa', ms: 180_000, c: 1 }); // older: lost the race
+    expect(b.sent).toEqual([won, { v: 3, kind: 'ack', c: 1, t: now, ok: false }]);
+    expect(tunes(a)).toEqual([]);
+    // a tie on `at`: the later who
+    say(b, { kind: 'music', src: 'isl', at: won.at, song: 'kk-bossa', ms: 180_000, c: 2 });
+    expect(tunes(a)).toHaveLength(1);
+    expect(kept.isl.who).toBe('B');
+  });
+
+  it('a stop beats an older start arriving as a resend; one already over is refused', () => {
+    const a = join(KEY_A, 0), b = join(KEY_B, 0);
+    say(b, { kind: 'music', src: 'isl', at: now, c: 1 }); // stop
+    start(a, now - 500, 4); // the start before it, resent after a reconnect
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'ack', c: 4, ok: false });
+    expect(tunes(b)).toEqual([]);
+    expect(kept.isl.song).toBeUndefined();
+    now += 1000;
+    say(a, { kind: 'music', src: 'u', at: now - 2000, song: 'kk-bossa', ms: 1000, c: 5 }); // over before it arrived
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'ack', c: 5, ok: false });
+    expect(kept.u).toBeUndefined();
+  });
+
+  it('clamps an `at` more than 5 s off the relay clock to the relay clock', () => {
+    const a = join(KEY_A, 0), b = join(KEY_B, 0);
+    start(a, now + 60_000, 1);
+    expect(tunes(b)[0]).toMatchObject({ at: now, t: now });
+    now += 10;
+    start(a, now - 4000, 2); // within 5 s: kept as sent (older than the clamped one, so refused)
+    expect(a.sent.at(-1)).toMatchObject({ kind: 'ack', c: 2, ok: false });
+    start(a, now + 4000, 3);
+    expect(tunes(b).at(-1)).toMatchObject({ at: now + 4000 });
+  });
+
+  it('the guest may send one', () => {
+    const g = join(KEY_C, 0), a = join(KEY_A, 0);
+    say(g, { kind: 'music', src: 't', at: now, song: 'kk-aircheck', ms: 90_000, pc: 'd123abc', c: 1 });
+    expect(tunes(a)).toEqual([{ v: 3, kind: 'music', src: 't', at: now, song: 'kk-aircheck', ms: 90_000, pc: 'd123abc', who: 'G', t: now }]);
+    expect(g.sent.at(-1)).toMatchObject({ kind: 'ack', ok: true });
+  });
+
+  it('hello replays the live records (mine too) and lets the expired go; they survive a restart', () => {
+    const a = join(KEY_A, 0);
+    start(a, now, 1, 'kk-chorale', 60_000);
+    say(a, { kind: 'music', src: 'u', at: now, song: 'kk-bossa', ms: 600_000, pc: 'd123abc', c: 2 });
+    now += 30_000;
+    room = mk(); // the Durable Object woke again
+    socks = [];
+    const b = join(KEY_B, 0);
+    expect(b.kinds()).toEqual(['welcome', 'music', 'music']);
+    expect(tunes(b).map((m) => (m as { src: string }).src)).toEqual(['isl', 'u']);
+    now += 31_000; // the island's song is over
+    const a2 = join(KEY_A, 0);
+    expect(tunes(a2).map((m) => (m as { src: string }).src)).toEqual(['u']);
+    expect(Object.keys(kept)).toEqual(['u']);
+  });
+});

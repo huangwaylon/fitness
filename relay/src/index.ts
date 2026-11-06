@@ -5,7 +5,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { HB_PING, HB_PONG, LIVE_V, LIVE_VS, MAX_BYTES, parseNotice, type Notice, type RecordMark, type Gone } from '../../app/src/lib/contract/live-protocol.ts';
 import { admission, originAllowed, subprotocolOf, TICKET_HEADER } from './auth.ts';
 import { SIG_HEADER, TIME_HEADER, verifyNotify } from './notify.ts';
-import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta } from './room.ts';
+import { HELLO_MS, RoomCore, SILENT_MS, type Acked, type DayIndex, type Held, type Kept, type Meta, type Music } from './room.ts';
 import { IslandStore } from './storeObject.ts';
 import { isCompactTick } from './store.ts';
 import { IslandLog } from './logObject.ts';
@@ -59,6 +59,8 @@ const ACKED = 'acked';
 const HELD = 'held';
 /** When each person's phone last left (room.ts gone: the welcome's). */
 const GONE = 'gone';
+/** The music stages (room.ts Music). */
+const MUSIC = 'music';
 /** The real weather (weather.ts WxState): the timeline and the failures since the last good fetch. */
 const WX = 'wx';
 /** A restore of the record under way (storeObject.ts restore): when to tell the restored record to start a new epoch,
@@ -86,6 +88,7 @@ export class IslandRoom extends DurableObject<Env> {
       const day = (await ctx.storage.get<DayIndex>(DAY)) ?? null;
       const recG = (await ctx.storage.get<RecordMark>(REC_G)) ?? null;
       const acked = (await ctx.storage.get<Acked>(ACKED)) ?? [];
+      const music = (await ctx.storage.get<Music>(MUSIC)) ?? {};
       this.wx = (await ctx.storage.get<WxState>(WX)) ?? WX_EMPTY;
       this.core = new RoomCore<WebSocket>({
         sockets: () => ctx.getWebSockets(),
@@ -100,6 +103,7 @@ export class IslandRoom extends DurableObject<Env> {
         saveAcked: (a) => void ctx.storage.put(ACKED, a),
         hold: (h) => void ctx.storage.put(HELD, h),
         saveGone: (g) => void ctx.storage.put(GONE, g),
+        saveMusic: (m) => void ctx.storage.put(MUSIC, m),
         // the heartbeat's last answer (the runtime's: HB_PING never wakes the room), for the ghosts' watch
         heardAt: (s) => ctx.getWebSocketAutoResponseTimestamp(s)?.getTime() ?? null,
         // the test copy has no cron: a hello fetches the weather when it's due (production's safety net too)
@@ -110,7 +114,7 @@ export class IslandRoom extends DurableObject<Env> {
           void this.alarmBy(Date.now() + SILENT_MS).catch((e) => console.warn('alarm', errName(e)));
           void this.weatherTick().catch((e) => console.warn('wx-fail', e));
         }
-      }, ring, rec, held, gone, this.wx.wx, day, recG, acked);
+      }, ring, rec, held, gone, this.wx.wx, day, recG, acked, music);
     });
   }
 

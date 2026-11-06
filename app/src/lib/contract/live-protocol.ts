@@ -127,7 +127,29 @@ export type Intent =
   /** ききみみ's games, every one (docs/kikimimi-framework.md §4, 2026-11-06): the quiz's successor, the same presence
    *  only (never kept, acked or replayed, to everyone here); `gm` names the game, which the relay never checks against
    *  a list. PlayWire's ops. */
-  | ({ kind: 'play' } & PlayWire);
+  | ({ kind: 'play' } & PlayWire)
+  /** A music stage (docs/sound-sync.md): what plays at `src` (`isl` the island, K.K. and the cut-ins; `t`/`u`/`v` a room's
+   *  stereo, `pc` the piece) from `at` (the relay's clock: position 0 of the song) for `ms`; no `song`: stopped. Acked,
+   *  never in the ring: the room keeps the last record per source (newerMusic), replayed at hello while musicLive. */
+  | { kind: 'music'; src: MusicSrc; at: number; song?: string; ms?: number; pc?: string };
+
+/** The music stages (docs/sound-sync.md): the island's, and one per room's stereo. @public (relay/) */
+export const MUSIC_SRCS = ['isl', 't', 'u', 'v'] as const;
+/** @public (relay/) */
+export type MusicSrc = (typeof MUSIC_SRCS)[number];
+/** A song's longest length (ms); a stage's `at` more than MUSIC_SKEW_MS from the relay's clock is taken as the relay's
+ *  (a wrong clock can't pin the stage); a stop is kept this long (a phone that comes hears it). @public (relay/) */
+export const MUSIC_MS_MAX = 600_000;
+/** @public (relay/) */
+export const MUSIC_SKEW_MS = 5_000;
+export const MUSIC_STOP_KEEP_MS = 600_000;
+/** A music record as relayed. @public (relay/) */
+export type MusicRec = Extract<Relayed, { kind: 'music' }>;
+/** Whether stage record `a` replaces `b`: the later `at`, a tie by who (the relay, the demo relay and every phone alike). */
+export const newerMusic = (a: { at: number; who: Who }, b: { at: number; who: Who }): boolean => (a.at !== b.at ? a.at > b.at : a.who > b.who);
+/** Whether a stage record still says something at `now`: a song until its end, a stop for MUSIC_STOP_KEEP_MS. */
+export const musicLive = (m: { song?: string; at: number; ms?: number }, now: number): boolean => now < m.at + (m.song ? (m.ms ?? 0) : MUSIC_STOP_KEEP_MS);
+const SONG = /^[a-z0-9-]{1,32}$/;
 
 /** A quiz op (docs/kikimimi.md "Sync"): `open` a lobby (the host: `seed` and `lv` make the deck on every phone, the
  *  seed's bit 0 たいせん and bits 1-2 こたえる じかん; `same` おなじへや: only the host's phone speaks), `join` / `leave`
@@ -509,6 +531,16 @@ function intentOf(o: Obj): Intent | null {
       return quizOf(o);
     case 'play':
       return playOf(o);
+    case 'music': {
+      if (!oneOf(MUSIC_SRCS)(o.src) || !isTime(o.at)) return null;
+      if (o.song !== undefined && (typeof o.song !== 'string' || !SONG.test(o.song) || !within(o.ms, [1, MUSIC_MS_MAX]))) return null;
+      if (o.song === undefined && o.ms !== undefined) return null;
+      if (o.pc !== undefined && (o.src === 'isl' || typeof o.pc !== 'string' || !DECOR_ID.test(o.pc))) return null;
+      return {
+        kind: 'music', src: o.src, at: o.at, ...(o.song !== undefined ? { song: o.song as string, ms: o.ms as number } : {}),
+        ...(o.pc !== undefined ? { pc: o.pc as string } : {})
+      };
+    }
     case 'say': {
       const text = cleanSay(o.text);
       if (o.sc !== undefined && !SAY_SCOPES.includes(o.sc as SayScope)) return null;
@@ -703,14 +735,14 @@ export const HIGHFIVE_HOLD_MS = 24 * 3600_000;
 
 /**
  * What the guest's phone may send (docs/backend.md#the-guest): a walk, an act, the shared world's claims (a catch, a
- * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, its line's steps, a quiz's or a game's ops, the tent and its own home
+ * pick-up, a put: a bug out of a bush, a present landing; a shake), a phrase, a high-five, its line's steps, a quiz's or a game's ops, a music stage, the tent and its own home
  * (inside, a drag, their rooms' decor, its home's look). Not the island's decor or its layout, a world op (watering, a
  * wish), an emote or a `saved` nudge: the room drops
  * those from the guest. @public (relay/, sync/live.ts)
  */
 export function guestMaySend(i: Intent): boolean {
   switch (i.kind) {
-    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag': case 'fish': case 'quiz': case 'play':
+    case 'walk': case 'act': case 'catch': case 'pick': case 'put': case 'shake': case 'say': case 'highfive': case 'tent': case 'drag': case 'fish': case 'quiz': case 'play': case 'music':
       return true;
     case 'decor':
       return scopeMaySend('G', i.sc, i.id);
@@ -720,8 +752,8 @@ export function guestMaySend(i: Intent): boolean {
 }
 
 /** Whether a phone numbers an intent (keeps it until the room's ack, sends it again after a reconnect) and sends it
- *  with the partner away: what the room keeps, and a high-five (held for the partner). */
-export const isAcked = (i: Intent): boolean => isStored(i) || i.kind === 'highfive';
+ *  with the partner away: what the room keeps, a high-five (held for the partner), a music stage (the room's). */
+export const isAcked = (i: Intent): boolean => isStored(i) || i.kind === 'highfive' || i.kind === 'music';
 
 /** A layout op (`sc` o, c, r, h): relayed live but never kept in the day's ring (an afternoon in the editor would push
  *  the shared world out of it); the record keeps it, and a phone opening later reads it there. Numbered while someone

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ACTS, DROPS, FISH_PHASES, HOWS, guestMaySend, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
+import { ACTS, MUSIC_MS_MAX, MUSIC_STOP_KEEP_MS, musicLive, newerMusic, DROPS, FISH_PHASES, HOWS, guestMaySend, MAX_BYTES, SAY_MAX, isAcked, VIA_MAX, cleanSay, WORLD_OPS, WORLD_X, WORLD_Z, claimOf, dayStart, isStored, isWorldPt, otherVersion, parseClient, parseServer, tokyoDay, type Act, type Target, type WorldOp } from './live-protocol.ts';
 import { PLAN } from '#lib/components/island/world.ts';
 
 const KEY = 'ab'.repeat(32);
@@ -405,5 +405,40 @@ describe('live protocol: ききみみ クイズ (`quiz`, presence only)', () => 
       expect(claimOf(o as never), o.op).toBeNull();
       expect(guestMaySend(o as never), o.op).toBe(true);
     }
+  });
+});
+
+describe('live protocol: a music stage (`music`, docs/sound-sync.md)', () => {
+  const at = 1_793_000_000_000;
+  it('a start (song, length, a room stereo its piece) or a stop, acked, never kept in the ring, the guest may send it', () => {
+    expect(parseClient(j({ kind: 'music', src: 'isl', at, song: 'kk-chorale', ms: 180_000, c: 3, x: 1 }))).toEqual({ v: 3, c: 3, kind: 'music', src: 'isl', at, song: 'kk-chorale', ms: 180_000 });
+    expect(parseClient(j({ kind: 'music', src: 't', at, song: 'kk-aircheck-1', ms: 1, pc: 'd123abc' }))).toEqual({ v: 3, kind: 'music', src: 't', at, song: 'kk-aircheck-1', ms: 1, pc: 'd123abc' });
+    expect(parseClient(j({ kind: 'music', src: 'u', at }))).toEqual({ v: 3, kind: 'music', src: 'u', at });
+    expect(parseServer(j({ kind: 'music', src: 'isl', at, who: 'G', t: at + 5 }))).toEqual({ v: 3, kind: 'music', src: 'isl', at, who: 'G', t: at + 5 });
+    for (const bad of [
+      { src: 'x', at }, { src: 'isl' }, { src: 'isl', at: -1 },
+      { src: 'isl', at, song: 'kk-chorale' }, { src: 'isl', at, song: 'kk-chorale', ms: 0 }, { src: 'isl', at, song: 'kk-chorale', ms: MUSIC_MS_MAX + 1 },
+      { src: 'isl', at, song: 'KK', ms: 5 }, { src: 'isl', at, song: 'a'.repeat(33), ms: 5 }, { src: 'isl', at, ms: 5 },
+      { src: 'isl', at, song: 'kk-x', ms: 5, pc: 'd123abc' }, { src: 't', at, song: 'kk-x', ms: 5, pc: 'nope' }
+    ]) expect(parseClient(j({ kind: 'music', ...bad })), JSON.stringify(bad)).toBeNull();
+    const m = { kind: 'music', src: 'isl', at } as const;
+    expect(isAcked(m)).toBe(true);
+    expect(isStored(m)).toBe(false);
+    expect(guestMaySend(m)).toBe(true);
+  });
+
+  it('newerMusic: the later at, a tie by who, the same on every side', () => {
+    expect(newerMusic({ at: 2, who: 'A' }, { at: 1, who: 'G' })).toBe(true);
+    expect(newerMusic({ at: 1, who: 'G' }, { at: 2, who: 'A' })).toBe(false);
+    expect(newerMusic({ at: 1, who: 'B' }, { at: 1, who: 'A' })).toBe(true);
+    expect(newerMusic({ at: 1, who: 'A' }, { at: 1, who: 'B' })).toBe(false);
+    expect(newerMusic({ at: 1, who: 'A' }, { at: 1, who: 'A' })).toBe(false);
+  });
+
+  it('musicLive: a song until its end, a stop for a while', () => {
+    expect(musicLive({ at: 0, song: 's', ms: 100 }, 99)).toBe(true);
+    expect(musicLive({ at: 0, song: 's', ms: 100 }, 100)).toBe(false);
+    expect(musicLive({ at: 0 }, MUSIC_STOP_KEEP_MS - 1)).toBe(true);
+    expect(musicLive({ at: 0 }, MUSIC_STOP_KEEP_MS)).toBe(false);
   });
 });
