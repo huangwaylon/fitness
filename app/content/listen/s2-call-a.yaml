@@ -15,6 +15,7 @@ items:
   - kind: call
     id: call-gp-callback
     ask: "クリニックに でんわ。メモしよう"
+    ctx: "熱が出て、クリニックに電話しています"
     scene: living
     channel: phone
     lines:
@@ -27,16 +28,18 @@ items:
       - { who: ken, en: "Got it, 2816. And if your breathing gets worse before then, don't wait for the call. Come right in.", tts: "Got it, two-eight-one-six. An' if yer breathing gets worse before then, don't wait for the call. Come right in.", ja: "2816ですね、承知しました。それまでに息苦しさがひどくなったら、電話を待たずにすぐ来てください。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "医者からの 連絡は？", options: ["2時〜4時に でんわ", "4時に 来院", "あした でんわ"], answer: 0 }
-          - { ask: "番号の まん中は？", options: ["2816", "2861", "5390"], answer: 0 }
-          - { ask: "悪く なったら？", options: ["すぐ 行く", "でんわを 待つ", "救急車を よぶ"], answer: 0 }
+      - why: "相手が 2861 と読み違え、自分が直した。正しいのは 2816。2時〜4時に医師から電話。悪くなったら come right in＝すぐ来院。"
+        slots:
+          - { ask: "医者からの 連絡は？", options: ["2時〜4時に でんわ", "4時に 来院", "あした でんわ"], answer: 0, cja: ["2時から4時に電話がある", "4時に来院する", "明日電話がある"] }
+          - { ask: "番号の まん中は？", options: ["2816", "2861", "5390"], answer: 0, cja: ["2816", "2861", "5390"] }
+          - { ask: "悪く なったら？", options: ["すぐ 行く", "でんわを 待つ", "救急車を よぶ"], answer: 0, cja: ["すぐ行く", "電話を待つ", "救急車を呼ぶ"] }
     note: "相手の読み上げに注意。直した番号が正しい"
     tags: { seed: 14, register: service, pragmatic: formula, conditions: [phone], features: [numbers, self-repair, weak-form] }
 
   - kind: call
     id: call-installer-signal
     ask: "じてんしゃ屋から でんわ。電波が 悪い"
+    ctx: "修理に出した自転車の店から電話です"
     scene: office
     channel: phone
     lines:
@@ -44,22 +47,24 @@ items:
       - { who: me, en: "Sorry, you broke up there. What's wrong with the back wheel?", ja: "すみません、今途切れました。後ろの車輪がどうしたんですか？" }
       - { who: stitches, en: "It's bent. A new wheel's ¥9,000, plus ¥2,000 for labor.", tts: "It's bent. A new wheel's nine thousand yen, plus two thousand for labor.", ja: "曲がってます。新しい車輪が9,000円、工賃が2,000円です。" }
       - { who: me, en: "Okay. When would it be ready?", ja: "わかりました。いつできますか？" }
-      - { who: stitches, en: "Friday. Oh, wait, the brake pads are almost gone, too. That's another ¥3,000, so ¥14,000 all in.", tts: "Friday. Oh, wait, the brake pads are almost gone, too. That's another three thousand, so fourteen thousand all in.", ja: "金曜です。あ、待ってください、ブレーキパッドもほぼすり減ってますね。それがプラス3,000円で、全部で14,000円です。", repair: true }
+      - { who: stitches, en: "Friday. Oh, wait, the brake pads are almost gone, too. That's another ¥3,000, so ¥14,000 total.", tts: "Friday. Oh, wait, the brake pads are almost gone, too. That's another three thousand, so fourteen thousand total.", ja: "金曜です。あ、待ってください、ブレーキパッドもほぼすり減ってますね。それがプラス3,000円で、全部で14,000円です。", repair: true }
       - { who: me, en: "Fine, do the brakes too.", ja: "いいです、ブレーキもお願いします。" }
       - { who: stitches, en: "Will do. And bring your lock key on Friday. Last week we had to cut someone's lock, and nobody enjoyed that.", tts: "Will do. An' bring yer lock key on Friday. Last week we hadta cut someone's lock, an' nobody enjoyed that.", ja: "承知しました。それと金曜はカギを持ってきてください。先週お客さんのカギを切ることになって、誰も楽しくなかったので。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "どこが 悪い？", options: ["後ろの 車輪が 曲がっている", "チェーンが 切れた", "タイヤの パンク"], answer: 0 }
-          - { ask: "合計は？", options: ["9,000円", "11,000円", "14,000円"], answer: 2 }
-          - { ask: "いつ できる？", options: ["木曜", "金曜", "土曜"], answer: 1 }
-          - { ask: "とりに 行く ときは？", options: ["カギを 持っていく", "お金を 先に 払う", "電話してから 行く"], answer: 0 }
-    note: "all in＝全部こみ。ブレーキの 3,000円も 入る"
+      - why: "車輪9,000円と工賃2,000円に、Oh, wait でブレーキの3,000円が追加。total＝合計14,000円。11,000円はブレーキ前の合計。bent＝曲がっている。"
+        slots:
+          - { ask: "どこが 悪い？", options: ["後ろの 車輪が 曲がっている", "チェーンが 切れた", "タイヤの パンク"], answer: 0, cja: ["後ろの車輪が曲がっている", "チェーンが切れた", "タイヤがパンクした"] }
+          - { ask: "合計は？", options: ["9,000円", "11,000円", "14,000円"], answer: 2, cja: ["9,000円", "11,000円", "14,000円"] }
+          - { ask: "いつ できる？", options: ["木曜", "金曜", "土曜"], answer: 1, cja: ["木曜", "金曜", "土曜"] }
+          - { ask: "とりに 行く ときは？", options: ["カギを 持っていく", "お金を 先に 払う", "電話してから 行く"], answer: 0, cja: ["カギを持っていく", "お金を先に払う", "電話してから行く"] }
+    note: "total＝合計。ブレーキの 3,000円も 入る"
     tags: { seed: 25, register: service, pragmatic: literal, conditions: [phone, signal], features: [numbers, self-repair, weak-form] }
 
   - kind: call
     id: call-leak-again
     ask: "ともだちに でんわ。いえへの 行きかた"
+    ctx: "友だちの家に向かう途中、駅から電話しています"
     scene: street
     channel: phone
     lines:
@@ -72,18 +77,20 @@ items:
       - { who: tom-nook, en: "You're a lifesaver. The buzzer's broken, so just text me when you're downstairs.", ja: "助かる。インターホンが壊れてるから、下に着いたらメッセージして。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "出口は？", options: ["北口", "東口", "南口"], answer: 1 }
-          - { ask: "曲がる ところは？", options: ["1つめを 左", "2つめを 左", "2つめを 右"], answer: 1 }
-          - { ask: "部屋は？", options: ["3B", "3C", "4C"], answer: 1 }
-          - { ask: "買って いく ものは？", options: ["氷", "飲みもの", "紙の お皿"], answer: 0 }
-          - { ask: "着いたら？", options: ["メッセージする", "インターホンを おす", "ドアを ノック"], answer: 0 }
+      - why: "Wait, no＝北口は工事中で東口に訂正。second left＝2つめを左。部屋は3C。氷を頼まれた。インターホンが壊れていて、着いたら text する。"
+        slots:
+          - { ask: "出口は？", options: ["北口", "東口", "南口"], answer: 1, cja: ["北口", "東口", "南口"] }
+          - { ask: "曲がる ところは？", options: ["1つめを 左", "2つめを 左", "2つめを 右"], answer: 1, cja: ["1つめを左", "2つめを左", "2つめを右"] }
+          - { ask: "部屋は？", options: ["3B", "3C", "4C"], answer: 1, cja: ["3ビー号室", "3シー号室", "4シー号室"] }
+          - { ask: "買って いく ものは？", options: ["氷", "飲みもの", "紙の お皿"], answer: 0, cja: ["氷", "飲み物", "紙のお皿"] }
+          - { ask: "着いたら？", options: ["メッセージする", "インターホンを おす", "ドアを ノック"], answer: 0, cja: ["メッセージを送る", "インターホンを押す", "ドアをノックする"] }
     note: "Wait, no の あと：北口は 工事中で 東口"
     tags: { seed: 30, register: friend, pragmatic: indirect, conditions: [phone, street], features: [self-repair, kinda, numbers] }
 
   - kind: call
     id: call-host-parking
     ask: "宿の ホストから でんわ"
+    ctx: "旅行先の宿のホストから電話です"
     scene: street
     channel: phone
     lines:
@@ -96,16 +103,18 @@ items:
       - { who: daisy-mae, en: "Sorry, I'm on the train! Just unplug it and plug it back in. Works every time.", tts: "Sorry, I'm on the train! Just unplug it an' plug it back in. Works every time.", ja: "ごめん、電車の中なの！コンセントを抜いて、また差して。それで毎回直るから。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "ロックボックスは どこ？", options: ["玄関の ポーチ", "裏の 駐車場", "ポストの 中"], answer: 0 }
-          - { ask: "駐車スペースは？", options: ["14番", "40番", "41番"], answer: 1 }
-          - { ask: "エアコンが 鳴ったら？", options: ["コンセントを ぬいて さしなおす", "ホストに でんわ", "窓を あける"], answer: 0 }
+      - why: "14 is my neighbor's＝14番は隣の人の。four-oh で40番。fourteen と forty は強く言う位置がちがう。エアコンは抜いて差し直す。"
+        slots:
+          - { ask: "ロックボックスは どこ？", options: ["玄関の ポーチ", "裏の 駐車場", "ポストの 中"], answer: 0, cja: ["玄関のポーチ", "裏の駐車場", "郵便受けの中"] }
+          - { ask: "駐車スペースは？", options: ["14番", "40番", "41番"], answer: 1, cja: ["14番", "40番", "41番"] }
+          - { ask: "エアコンが 鳴ったら？", options: ["コンセントを ぬいて さしなおす", "ホストに でんわ", "窓を あける"], answer: 0, cja: ["コンセントを抜いて差し直す", "ホストに電話する", "窓を開ける"] }
     note: "14 is my neighbor's＝14は隣の人の。40が正解"
     tags: { seed: 10, register: service, pragmatic: literal, conditions: [phone, signal, train], features: [numbers, teen-ty, self-repair] }
 
   - kind: call
     id: call-hotel-extra-night
     ask: "ホテルに でんわ。予約を 変える"
+    ctx: "ホテルに電話して、予約の延長を頼んでいます"
     scene: living
     channel: phone
     lines:
@@ -118,9 +127,10 @@ items:
       - { who: poppy, en: "No problem at all. The front desk is open 24 hours, so just give your name when you arrive.", tts: "No problem at all. The front desk is open twenty-four hours, so just give yer name when you arrive.", ja: "まったく問題ございません。フロントは24時間開いておりますので、ご到着の際にお名前をおっしゃってください。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "チェックアウトは？", options: ["13日", "14日", "15日"], answer: 1 }
-          - { ask: "2泊目の 料金は？", options: ["18,000円", "20,000円", "22,000円"], answer: 2 }
-          - { ask: "到着は？", options: ["11時ごろ", "7時ごろ", "チェックインの 時間"], answer: 0 }
+      - why: "相手は2泊追加と取り違えて15日と言ったが、just one more night と直して14日に。2泊目は金曜なので22,000円（18,000円ではない）。到着は11時ごろ。"
+        slots:
+          - { ask: "チェックアウトは？", options: ["13日", "14日", "15日"], answer: 1, cja: ["13日", "14日", "15日"] }
+          - { ask: "2泊目の 料金は？", options: ["18,000円", "20,000円", "22,000円"], answer: 2, cja: ["1万8千円", "2万円", "2万2千円"] }
+          - { ask: "到着は？", options: ["11時ごろ", "7時ごろ", "チェックインの 時間"], answer: 0, cja: ["11時ごろ", "7時ごろ", "チェックインの時間"] }
     note: "自分の訂正も聞く。15日ではなく14日まで"
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [phone], features: [numbers, teen-ty, self-repair] }

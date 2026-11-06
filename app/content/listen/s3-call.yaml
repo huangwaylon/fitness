@@ -14,6 +14,7 @@ items:
   - kind: call
     id: call-card-blocked
     ask: "カード会社と でんわ"
+    ctx: "カードが使えず、カード会社に電話しています"
     scene: living
     channel: phone
     lines:
@@ -26,16 +27,18 @@ items:
       - { who: maple, en: "Hmm, it's not showing. Unfortunately, I can't change the address over the phone, so you'd need to do that in the app first, then call us back and we'll send the card.", tts: "Hmm, it's not showin'. Unfortunately, I can't change the address over the phone, so you'd need ta do that in the app first, then call us back an' we'll send the card.", ja: "うーん、反映されていませんね。申し訳ありませんが電話では住所変更ができないので、先にアプリで変更していただいて、それから改めてお電話ください。カードをお送りします。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "止められた 理由は？", options: ["リスボンでの 189ユーロの 請求", "支払いの 遅れ", "暗証番号の まちがい"], answer: 0 }
-          - { ask: "新しい カードは？", options: ["すぐ 世田谷に 届く", "住所を 変えてから 送られる", "支店で 受けとる"], answer: 1 }
-          - { ask: "次に すること？", options: ["アプリで 住所を 変えて でんわ", "支店に 行く", "なにも しなくて いい"], answer: 0 }
+      - why: "止めた理由はリスボンでの189ユーロの請求。カードは旧住所の世田谷宛てで、電話では住所を変えられない。アプリで変えてから電話し直す。"
+        slots:
+          - { ask: "止められた 理由は？", options: ["リスボンでの 189ユーロの 請求", "支払いの 遅れ", "暗証番号の まちがい"], answer: 0, cja: ["リスボンでの189ユーロの請求", "支払いの遅れ", "暗証番号のまちがい"] }
+          - { ask: "新しい カードは？", options: ["すぐ 世田谷に 届く", "住所を 変えてから 送られる", "支店で 受けとる"], answer: 1, cja: ["すぐ世田谷に届く", "住所を変えてから送られる", "支店で受け取る"] }
+          - { ask: "次に すること？", options: ["アプリで 住所を 変えて でんわ", "支店に 行く", "なにも しなくて いい"], answer: 0, cja: ["アプリで住所を変えて電話する", "支店に行く", "何もしなくていい"] }
     note: "can't の後の so you'd need to が本題"
     tags: { seed: 21, register: service, pragmatic: refusal, conditions: [phone], features: [numbers, can-cant, self-repair] }
 
   - kind: call
     id: call-roaming-refund
     ask: "携帯会社と でんわ。ローミング料金"
+    ctx: "旅行のあと、携帯会社のサポートに電話しています"
     scene: living
     channel: phone
     lines:
@@ -48,16 +51,18 @@ items:
       - { who: me, en: "Oh! That's really nice of you. Thank you.", ja: "えっ！ありがとうございます。助かります。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "請求の 理由は？", options: ["パスが 3日から だった", "パスを 買っていない", "通話料"], answer: 0 }
-          - { ask: "返金は？", options: ["なし", "半額 （11,500円）", "全額"], answer: 2 }
-          - { ask: "請求額は？", options: ["11,500円", "23,000円", "32,000円"], answer: 1 }
+      - why: "請求は23,000円。パスは3日からで、着いた2日の分がかかった。半額と言ったあと、Actually … credit the whole thing＝全額返金に。"
+        slots:
+          - { ask: "請求の 理由は？", options: ["パスが 3日から だった", "パスを 買っていない", "通話料"], answer: 0, cja: ["パスが3日からだった", "パスを買っていなかった", "通話料"] }
+          - { ask: "返金は？", options: ["なし", "半額 （11,500円）", "全額"], answer: 2, cja: ["なし", "半額（11,500円）", "全額"] }
+          - { ask: "請求額は？", options: ["11,500円", "23,000円", "32,000円"], answer: 1, cja: ["11,500円", "23,000円", "32,000円"] }
     note: "Actually の後が最終回答。半額でなく全額"
     tags: { seed: 22, register: service, pragmatic: formula, conditions: [phone], features: [numbers, lemme, self-repair] }
 
   - kind: call
     id: call-gym-cancel
     ask: "ジムを 解約する でんわ"
+    ctx: "引っ越しが決まり、ジムに電話しています"
     scene: living
     channel: phone
     lines:
@@ -70,16 +75,18 @@ items:
       - { who: me, en: "Seriously? Fine. Can you email me a confirmation?", ja: "本当に？わかりました。確認のメールを送ってもらえますか？" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "最終日は？", options: ["今月 30日", "来月末", "今日"], answer: 1 }
-          - { ask: "1つめの 提案は？", options: ["3か月 半額", "アプリ 月980円", "1か月 無料"], answer: 0 }
-          - { ask: "2つめの 提案は？", options: ["3か月 半額", "アプリ 月980円", "近くの 店舗"], answer: 1 }
+      - why: "30日と言ったあと、one-month notice period（1か月前の予告）で来月末に訂正。引き止めは、まず3か月半額、次に月980円のアプリ。"
+        slots:
+          - { ask: "最終日は？", options: ["今月 30日", "来月末", "今日"], answer: 1, cja: ["今月30日", "来月末", "今日"] }
+          - { ask: "1つめの 提案は？", options: ["3か月 半額", "アプリ 月980円", "1か月 無料"], answer: 0, cja: ["3か月半額", "アプリが月980円", "1か月無料"] }
+          - { ask: "2つめの 提案は？", options: ["3か月 半額", "アプリ 月980円", "近くの 店舗"], answer: 1, cja: ["3か月半額", "アプリが月980円", "近くの店舗"] }
     note: "notice period＝解約予告期間。来月末まで有料"
     tags: { seed: 29, register: service, pragmatic: formula, conditions: [phone], features: [numbers, self-repair, chain] }
 
   - kind: call
     id: call-moving-quote
     ask: "引っ越し業者から でんわ。見積もり"
+    ctx: "引っ越し業者から、見積もりの電話です"
     scene: living
     channel: phone
     lines:
@@ -92,16 +99,18 @@ items:
       - { who: me, en: "Right, the 21st. So what's the total?", tts: "Right, the twenty-first. So what's the total?", ja: "そう、21日です。それで合計は？" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "引っ越し日は？", options: ["21日 （金）", "22日 （土）", "23日 （日）"], answer: 0 }
-          - { ask: "階段の 追加料金は？", options: ["なし", "8,000円", "16,000円"], answer: 2 }
-          - { ask: "合計は？", options: ["65,000円", "81,000円", "89,100円"], answer: 1 }
+      - why: "基本65,000円に、3階までの階段が8,000円×2で16,000円。22日（土）なら10%増しだが、21日（金）に訂正で週末料金なし。合計81,000円。"
+        slots:
+          - { ask: "引っ越し日は？", options: ["21日 （金）", "22日 （土）", "23日 （日）"], answer: 0, cja: ["21日（金）", "22日（土）", "23日（日）"] }
+          - { ask: "階段の 追加料金は？", options: ["なし", "8,000円", "16,000円"], answer: 2, cja: ["なし", "8,000円", "16,000円"] }
+          - { ask: "合計は？", options: ["65,000円", "81,000円", "89,100円"], answer: 1, cja: ["65,000円", "81,000円", "89,100円"] }
     note: "hang on で訂正。週末料金はなくなる"
     tags: { seed: 33, register: service, pragmatic: hedge, conditions: [phone], features: [numbers, self-repair, ellipsis] }
 
   - kind: call
     id: call-missed-connection
     ask: "航空会社と でんわ。乗り継ぎに 遅れた"
+    ctx: "乗り継ぎに遅れ、航空会社と話しています"
     scene: gate
     channel: phone
     lines:
@@ -114,11 +123,13 @@ items:
       - { who: me, en: "Okay, the 7:10, then. With the hotel.", tts: "Okay, the seven ten, then. With the hotel.", ja: "わかりました、じゃあ7時10分の便で。ホテル付きで。" }
     half: [0, 0, 1, 1, 0, 1, 1]
     memo:
-      - slots:
-          - { ask: "えらんだ 便は？", options: ["今夜 9時50分", "あした 7時10分", "あした 正午"], answer: 1 }
-          - { ask: "その 便の 条件は？", options: ["ソウル経由で ホテル付き", "真ん中の 席だけ", "ホテル代は 自分"], answer: 0 }
-      - slots:
-          - { ask: "正午の 便の 欠点は？", options: ["ホテル代が 自分もち", "経由便", "エコノミーのみ"], answer: 0 }
-          - { ask: "今夜の 便は どう なった？", options: ["欠航", "2時間 遅れ", "満席"], answer: 0 }
+      - why: "今夜の便を勧めたあと scratch that（今のは取り消し）。欠航と出たので、明朝7時10分のソウル経由便に。この便ならホテルが付く。"
+        slots:
+          - { ask: "えらんだ 便は？", options: ["今夜 9時50分", "あした 7時10分", "あした 正午"], answer: 1, cja: ["今夜9時50分", "明日7時10分", "明日正午"] }
+          - { ask: "その 便の 条件は？", options: ["ソウル経由で ホテル付き", "真ん中の 席だけ", "ホテル代は 自分"], answer: 0, cja: ["ソウル経由でホテル付き", "真ん中の席だけ", "ホテル代は自分持ち"] }
+      - why: "正午の直行便はビジネスになるが、you'd be paying for your own hotel＝ホテル代は自分持ち。今夜の便は came up as canceled＝欠航。"
+        slots:
+          - { ask: "正午の 便の 欠点は？", options: ["ホテル代が 自分もち", "経由便", "エコノミーのみ"], answer: 0, cja: ["ホテル代が自分持ち", "経由便", "エコノミーのみ"] }
+          - { ask: "今夜の 便は どう なった？", options: ["欠航", "2時間 遅れ", "満席"], answer: 0, cja: ["欠航", "2時間遅れ", "満席"] }
     note: "scratch that＝今のは取り消し。7時10分に変更"
     tags: { seed: 8, register: service, pragmatic: literal, conditions: [phone, desk], features: [clock, self-repair, numbers] }

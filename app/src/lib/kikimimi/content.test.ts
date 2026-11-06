@@ -51,7 +51,10 @@ describe('listen content', () => {
     expect(past).toContain('ctx is needed past draft');
     expect(past).toContain('why is needed past draft');
     expect(bad([{ ...tile, ctx: '友だちと 話している', why: 'him の h が落ちる' }], { status: 'voiced' })).toBe('');
-    const call = (FILES.find((f) => f.file.includes('-call'))!.raw as { items: object[] }).items[0];
+    // a drafted call without its help (ctx, the rounds' why, the slots' cja)
+    type Memo = { why?: string; slots: { cja?: string[] }[] };
+    const { ctx: _, memo: rounds, ...rest } = (FILES.find((f) => f.file.includes('-call'))!.raw as { items: { ctx?: string; memo: Memo[] }[] }).items[0];
+    const call = { ...rest, memo: rounds.map(({ why: __, slots }) => ({ slots: slots.map(({ cja: ___, ...s }) => s) })) };
     const memo = bad([call], { game: 'call', seeds: [14], cast: { me: 'us-m3' }, status: 'voiced' });
     for (const want of ['ctx is needed', 'memo 0: why is needed', 'slot 0: cja is needed']) expect(memo).toContain(want);
   });

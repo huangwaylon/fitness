@@ -14,6 +14,7 @@ items:
   - kind: call
     id: call-taco-night
     ask: "かいものを たのまれた。メモしよう"
+    ctx: "帰り道、パートナーから買い物の電話です"
     scene: street
     channel: phone
     lines:
@@ -25,17 +26,19 @@ items:
       - { who: goldie, en: "And if they're out of medium, mild is fine. Just not the hot one.", tts: "An' if they're outta medium, mild is fine. Just not the hot one.", ja: "中辛がなかったら甘口でいいよ。辛口だけはやめてね。" }
     half: [0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "トルティーヤは？", options: ["コーン", "小麦", "どちらでも"], answer: 0 }
-          - { ask: "サルサは いくつ？", options: ["1びん", "2びん", "12びん"], answer: 1 }
-          - { ask: "たまごは？", options: ["6こ", "10こ", "12こ"], answer: 2 }
-          - { ask: "中辛が ないときは？", options: ["甘口で いい", "辛口でも いい", "買わなくて いい"], answer: 0 }
+      - why: "make that two jars＝やっぱり2びんに。言い直しが答え。a dozen は12個。コーンのほう。中辛がなければ mild（甘口）でいい。辛口はだめ。"
+        slots:
+          - { ask: "トルティーヤは？", options: ["コーン", "小麦", "どちらでも"], answer: 0, cja: ["コーンのトルティーヤ", "小麦のトルティーヤ", "どちらでもいい"] }
+          - { ask: "サルサは いくつ？", options: ["1びん", "2びん", "12びん"], answer: 1, cja: ["1びん", "2びん", "12びん"] }
+          - { ask: "たまごは？", options: ["6こ", "10こ", "12こ"], answer: 2, cja: ["6個", "10個", "12個"] }
+          - { ask: "中辛が ないときは？", options: ["甘口で いい", "辛口でも いい", "買わなくて いい"], answer: 0, cja: ["甘口でいい", "辛口でもいい", "買わなくていい"] }
     note: "make that two＝やっぱり2つに。言い直したあとが答え"
     tags: { seed: 35, register: partner, pragmatic: literal, conditions: [phone, street], features: [self-repair, weak-form] }
 
   - kind: call
     id: call-prescription-ready
     ask: "レストランから でんわ。メモしよう"
+    ctx: "週末の食事会の前に、レストランから電話です"
     scene: living
     channel: phone
     lines:
@@ -47,16 +50,18 @@ items:
       - { who: tia, en: "Great. And just so you know, for eight or more, a twenty percent tip is added to the check.", tts: "Great. An' just so ya know, for eight or more, a twenty percent tip is added to the check.", ja: "承知しました。念のため、8名様以上は20%のチップがお会計に加算されます。" }
     half: [0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "何人？", options: ["6人", "8人", "20人"], answer: 1 }
-          - { ask: "さける りょうりは？", options: ["サテと ブラウニー", "サラダと パン", "ぜんぶ だいじょうぶ"], answer: 0 }
-          - { ask: "8人 いじょうだと？", options: ["チップ 20%が つく", "こしつに なる", "まえばらい"], answer: 0 }
+      - why: "made it eight＝6名から8名に変更。20はチップの%。避けるのはサテとブラウニー。8名以上だと20%のチップが加算される。"
+        slots:
+          - { ask: "何人？", options: ["6人", "8人", "20人"], answer: 1, cja: ["6人", "8人", "20人"] }
+          - { ask: "さける りょうりは？", options: ["サテと ブラウニー", "サラダと パン", "ぜんぶ だいじょうぶ"], answer: 0, cja: ["サテとブラウニー", "サラダとパン", "全部大丈夫"] }
+          - { ask: "8人 いじょうだと？", options: ["チップ 20%が つく", "こしつに なる", "まえばらい"], answer: 0, cja: ["20%のチップがつく", "個室になる", "前払いになる"] }
     note: "made it eight＝8人に変更。So that's の後が答え"
     tags: { seed: 27, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, numbers, weak-form] }
 
   - kind: call
     id: call-redelivery
     ask: "配達の 人から でんわ"
+    ctx: "仕事中に、配達員から電話がかかってきました"
     scene: office
     channel: phone
     lines:
@@ -69,16 +74,18 @@ items:
       - { who: me, en: "Eight to nine is perfect. Thanks.", ja: "8時から9時でお願いします。ありがとう。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "何時に 来る？", options: ["6時〜8時", "7時ごろ", "8時〜9時"], answer: 2 }
-          - { ask: "置いて いけない 理由は？", options: ["サインが いる", "雨が ふっている", "住所が ちがう"], answer: 0 }
-          - { ask: "ほかの 方法は？", options: ["5Bの 人に あずける", "コンビニで うけとる", "あした もう一度"], answer: 0 }
+      - why: "6時〜8時は間に合わず、instead（代わりに）最終の8時〜9時に。7時ごろは自分の帰宅時間。needs a signature＝サインが必要。5Bの人に預ける手もある。"
+        slots:
+          - { ask: "何時に 来る？", options: ["6時〜8時", "7時ごろ", "8時〜9時"], answer: 2, cja: ["6時から8時", "7時ごろ", "8時から9時"] }
+          - { ask: "置いて いけない 理由は？", options: ["サインが いる", "雨が ふっている", "住所が ちがう"], answer: 0, cja: ["サインが必要", "雨が降っている", "住所がちがう"] }
+          - { ask: "ほかの 方法は？", options: ["5Bの 人に あずける", "コンビニで うけとる", "あした もう一度"], answer: 0, cja: ["隣の部屋の人に預ける", "コンビニで受け取る", "明日もう一度"] }
     note: "instead＝代わりに。最初の6時〜8時ではない"
     tags: { seed: 37, register: stranger, pragmatic: literal, conditions: [phone, street], features: [self-repair, lemme, weak-form] }
 
   - kind: call
     id: call-dentist-move
     ask: "どうぶつ病院から でんわ"
+    ctx: "動物病院から、ペットの検査結果の電話です"
     scene: living
     channel: phone
     lines:
@@ -90,17 +97,19 @@ items:
       - { who: francine, en: "And no more than two treats a day. Maybe tell your mom that part. We'd like to weigh him again in three months.", tts: "An' no more than two treats a day. Maybe tell yer mom that part. We'd like ta weigh him again in three months.", ja: "それとおやつは1日2個まで。そこはお母さまに伝えたほうがいいかも。3か月後にまた体重を測りましょう。" }
     half: [0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "ごはんの 量は？", options: ["3分の1カップ", "半カップ", "1カップ"], answer: 0 }
-          - { ask: "おやつは？", options: ["1日 2こまで", "なし", "1日 3こまで"], answer: 0 }
-          - { ask: "つぎは いつ？", options: ["1か月後", "3か月後", "半年後"], answer: 1 }
-          - { ask: "けんさの けっかは？", options: ["じんぞうは もんだい ない", "じんぞうが わるい", "まだ わからない"], answer: 0 }
+      - why: "half a cup は今の量で、Make it a third＝3分の1カップに訂正。おやつは2個まで。in three months＝3か月後。腎臓は問題なし。"
+        slots:
+          - { ask: "ごはんの 量は？", options: ["3分の1カップ", "半カップ", "1カップ"], answer: 0, cja: ["3分の1カップ", "半カップ", "1カップ"] }
+          - { ask: "おやつは？", options: ["1日 2こまで", "なし", "1日 3こまで"], answer: 0, cja: ["1日2個まで", "なし", "1日3個まで"] }
+          - { ask: "つぎは いつ？", options: ["1か月後", "3か月後", "半年後"], answer: 1, cja: ["1か月後", "3か月後", "半年後"] }
+          - { ask: "けんさの けっかは？", options: ["じんぞうは もんだい ない", "じんぞうが わるい", "まだ わからない"], answer: 0, cja: ["腎臓は問題ない", "腎臓が悪い", "まだわからない"] }
     note: "Oh, no, wait の あと：半カップは 今の 量"
     tags: { seed: 16, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, numbers, weak-form] }
 
   - kind: call
     id: call-film-rebook
     ask: "友だちから でんわ。チケットを 取りなおす"
+    ctx: "映画の前に、友だちから電話がかかってきました"
     scene: living
     channel: phone
     lines:
@@ -113,9 +122,10 @@ items:
       - { who: me, en: "Ha, okay. Regular seats it is.", ja: "はは、了解。普通の席にするね。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "いつに 変える？", options: ["今日 7時", "今日 9時15分", "あした 7時"], answer: 2 }
-          - { ask: "席は？", options: ["リクライナー席", "ふつうの 席", "いちばん 前"], answer: 1 }
-          - { ask: "遅れる 理由は？", options: ["電車が 止まっている", "仕事が 長引いた", "寝坊した"], answer: 0 }
+      - why: "9時15分は Actually, no で取り消し、明日の7時に。pricey, weren't they? Just saying＝高い席はやめよう、の遠回しな頼み。"
+        slots:
+          - { ask: "いつに 変える？", options: ["今日 7時", "今日 9時15分", "あした 7時"], answer: 2, cja: ["今日の7時", "今日の9時15分", "明日の7時"] }
+          - { ask: "席は？", options: ["リクライナー席", "ふつうの 席", "いちばん 前"], answer: 1, cja: ["リクライナー席", "普通の席", "いちばん前の席"] }
+          - { ask: "遅れる 理由は？", options: ["電車が 止まっている", "仕事が 長引いた", "寝坊した"], answer: 0, cja: ["電車が止まっている", "仕事が長引いた", "寝坊した"] }
     note: "Just saying＝遠回しなお願い。安い席にしてほしい"
     tags: { seed: 49, register: friend, pragmatic: indirect, conditions: [phone, train], features: [self-repair, kinda, gonna] }
