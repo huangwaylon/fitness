@@ -465,7 +465,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
 - **Amount:** the food's picture when it has one (160 px, centred, alt 「…の イメージ」, the イメージ badge at its top
-  left: every picture is generated; none: no picture area), its name, then (only with one) its everyday name and its
+  left: every picture is generated; none: no picture area; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
+  min(100vw − 64, 360) px, with the badge, the name, `full` when it differs, the 「これは…」 line and 「AI生成の イメージ
+  …」; ✕, Esc or a tap outside close it, the focus back on the picture), its name, then (only with one) its everyday name and its
   one line 「これは…」 (the data's `desc`); the food's values per 100 g; a food in its states, **じょうたい** above 量: a
   chip per state (乾 生 ゆで … in process order) with its kcal at the amount it would take, picking one swaps the food
   (its name and values follow: a portion label it also has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き;
