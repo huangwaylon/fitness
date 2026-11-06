@@ -7,13 +7,15 @@ import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitF
 import { BANK } from './source.ts';
 import { CAST } from './bank4.ts';
 import { LEVELS, MIX } from './deck.ts';
-import { mixes } from './compile.ts';
+import { mixes, unitItems } from './compile.ts';
 import type { Clip } from './clips.ts';
 import clipsJson from './clips.json';
 import { DIALOGUES } from './dialogues.ts';
 import { RUNG_ITEMS } from './ladders.ts';
 
 const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
+/** The units' own items (app/content/units/*.yaml), voiced beside the bank's (their units' status: units.test). */
+const UNIT_ITEMS = unitItems();
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const words = (s: string) => s.toLowerCase().match(/[a-z0-9',]+/g) ?? [];
@@ -260,20 +262,34 @@ describe('kikimimi bank', () => {
         expect(existsSync(join(STATIC, 'audio/kikimimi', `${id}-slow.m4a`)), id).toBe(slow);
       }
     }
+    // the units' own items: every clip once any is made (a unit past draft needs them all: units.ts checkUnits); a
+    // line 10 s at most whatever its level (かわ's level-3 items are calls and cafés with a bed's lead-in and tail, and
+    // run to 9.1 s), a PA's 13
+    for (const it of UNIT_ITEMS) {
+      if (!clipIds(it).some((id) => CLIPS[id])) continue;
+      for (const id of clipIds(it)) {
+        const c = CLIPS[id];
+        expect(c, id).toBeDefined();
+        expect(c.dur, id).toBeGreaterThan(0.5);
+        expect(c.dur, id).toBeLessThan(clipCap({ ...it, lv: Math.max(it.lv, 4) as Level }));
+        expect(existsSync(join(STATIC, 'audio/kikimimi', `${id}.m4a`)), id).toBe(true);
+        expect(c.slow, id).toBeUndefined();
+      }
+    }
     // (and スピード はしご's rungs: ladder.test)
-    const ids = new Set([...BANK.flatMap((it) => clipIds(it)), ...RUNG_ITEMS.map((it) => it.id)]);
+    const ids = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it)), ...RUNG_ITEMS.map((it) => it.id)]);
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
   it('ships no other files, and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB; all under 40 MB)', () => {
     const dir = join(STATIC, 'audio/kikimimi');
     const rungs = new Set(RUNG_ITEMS.map((it) => `${it.id}.m4a`));
-    const want = new Set([...BANK.flatMap((it) => clipIds(it).flatMap((id) => [`${id}.m4a`, ...(it.lv <= 2 ? [`${id}-slow.m4a`] : [])])), ...rungs]);
+    const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [`${id}.m4a`, ...(it.lv <= 2 ? [`${id}-slow.m4a`] : [])])), ...rungs]);
     const files = readdirSync(dir);
     expect(files.filter((f) => !want.has(f))).toEqual([]);
     const sizes = files.map((f) => statSync(join(dir, f)).size);
     // (a ladder rung is a whole 5-9 s line, slowed at its foot: 2 a game, 8 clips, ~280 KB fetched in the lobby)
-    const lvOf = new Map(BANK.flatMap((it) => clipIds(it).map((id) => [`${id}.m4a`, it.lv])));
+    const lvOf = new Map([...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).map((id) => [`${id}.m4a`, it.lv])));
     const kb = (f: string) => (rungs.has(f) ? 80 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
     for (const [k, f] of files.entries()) expect(sizes[k], f).toBeLessThan(kb(f) * 1024);
     // (raised from 14 MB for the content sprint's ~700 clips; increment 9 moves the audio into packs)

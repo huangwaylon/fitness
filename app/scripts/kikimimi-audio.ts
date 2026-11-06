@@ -65,6 +65,7 @@ import { fnv1a, mulberry32 } from '../src/lib/random.ts';
 import { NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
 import { LADDERS as ALL_LADDERS } from '../src/lib/kikimimi/ladders.ts';
 import { writeLevels } from './kikimimi-levels.ts';
+import { unitItems } from '../src/lib/kikimimi/compile.ts';
 
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const FFPROBE = process.env.FFPROBE ?? 'ffprobe';
@@ -116,7 +117,13 @@ const opt = (f: string): string | undefined => (args.includes(f) ? args[args.ind
 const SEED = Number(opt('--seed') ?? 1234);
 /** A person's re-roll kept across runs: the first take's seed of a clip whose default takes were weak (a `--seed` given
  *  on the command line wins). */
-const PINNED: Readonly<Record<string, number>> = { 'd4-landlord-3': 2000, 'd4-taxi-street-4': 2000 };
+const PINNED: Readonly<Record<string, number>> = {
+  'd4-landlord-3': 2000, 'd4-taxi-street-4': 2000,
+  // wave 1's units (docs/reviews/2026-11-06-wave1-review.md): the corrected detail heard over the heavy street
+  // (dk-fast-replan's "seven", "did you say the pub"), Ikebukuro heard as said, and short exclamations off-voice
+  'dk-fast-replan-4': 2000, 'dk-fast-replan-5': 3005, 'dmu-wrong-train-1': 3006, 'dk-wrong-time-4': 2003,
+  'dk-loud-toast-4': 2003, 'dk-toast-2': 3009, 'dmu-bins-5': 3003
+};
 const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
 const RETRIES = Number(opt('--retries') ?? 5);
@@ -154,8 +161,10 @@ const OUT = SCRATCH ?? join(APP, 'static/audio/kikimimi');
 const CLIPS = SCRATCH ? join(SCRATCH, 'clips.json') : join(APP, 'src/lib/kikimimi/clips.json');
 const SRCS = SCRATCH ? join(SCRATCH, 'clips.src.json') : join(import.meta.dirname, 'kikimimi-clips.src.json');
 const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(TTS, 'report.json');
-/** One entry per clip: an item, or each line of a dialogue as its own (bank.ts clipItems: `<item>-<n>`). */
-const ALL: readonly Item[] = ITEMS.flatMap(clipItems);
+/** One entry per clip: an item, or each line of a dialogue as its own (bank.ts clipItems: `<item>-<n>`); the bank's
+ *  items, then the units' own (app/content/units/*.yaml, inline: same cast, `tts`, conditions and beds; their ids are
+ *  never the bank's: units.ts checkUnits). */
+const ALL: readonly Item[] = [...ITEMS, ...unitItems()].flatMap(clipItems);
 const BANK = ALL.filter((it) => LEVELS.includes(it.lv));
 /** スピード はしご (ladder.ts): each ladder's line spoken once (the gate as any clip's), its rungs that take stretched. */
 const LADDERS = ALL_LADDERS.filter((l) => LEVELS.includes(l.line.lv));

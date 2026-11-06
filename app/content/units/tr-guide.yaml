@@ -19,7 +19,7 @@ cando:
   cond: えきや まちの ざつおんの なかで
   catch: なにが したいかと なにが しんぱいか
   en: I can follow a friend visiting Tokyo talking about where they want to go and what's confusing them, over station and street noise at natural speed, and catch what they want to do and what's worrying them.
-status: draft
+status: voiced
 ph:
   - { id: ph-dunno-if, en: I don't know if, match: \b(don't know|dunno) (if|whether|which|how|where|what)\b, ja: 〜か どうか わからない, register: friend, scene: showing a friend around, trap: dunno［ダノウ］＝don't know。迷いと心配のサイン }
   - { id: ph-kinda-worried, en: kind of worried, match: \b(kind of|kinda|a bit|a little) (worried|nervous)\b, ja: ちょっと しんぱい, register: friend, scene: showing a friend around, trap: kind of でぼかしても本気の心配 }
