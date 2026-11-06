@@ -40,7 +40,7 @@ export interface Item {
   /** One food in its states (MEXT): its group's default item's id, and its state as the chip says it (生, 焼き, ゆで …). */
   vg?: string;
   st?: string;
-  /** A curated search boost, 1–3. */
+  /** A curated search boost, 1–3; -1 ranks a rare or novelty item lower. */
   pop?: number;
   portions?: Portion[];
   /** The search keys, precomputed by scripts/food-data.ts (search.ts keysOf, joined by a space). */

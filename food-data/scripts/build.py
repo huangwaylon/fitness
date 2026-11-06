@@ -17,7 +17,7 @@ Order matters only through dependencies, which build.py resolves itself (school-
 dishes/eatout/kurume/mext; verify uses every dataset + jbfd + the MEXT-USDA table; index hashes everything).
 Tests: python3 -I -m unittest discover -s food-data/scripts/tests   (fast, no network, no raw inputs)
 """
-import functools, glob, hashlib, os, re, shutil, statistics, sys, tempfile
+import collections, functools, glob, hashlib, os, re, shutil, statistics, sys, tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import lib  # noqa: E402
@@ -819,6 +819,27 @@ TARGETS = {
     'jbfd': (build_jbfd, 'jbfd.json', [JBFD_CSV]),
     'off': (build_off, 'products.json', ['off/off_jp.jsonl']),
 }
+# Our recipe sets, in the order a shared name stays plain; the word that tells a later one apart (MAFF: its prefecture)
+SAME_NAME = ['dishes', 'eatout', 'maff_kyodo', 'takatsuki']
+SAME_NAME_WORD = {'eatout': 'お店', 'takatsuki': '給食'}
+
+
+def pref_of(it):
+    """A MAFF dish's prefecture, the last bracket of its `full` (「いとこ煮／にざい（富山県）」 → 富山県)."""
+    m = re.search(r'（([^（）]+)）$', it.get('full') or '')
+    if not m:
+        fail('%s: no prefecture in its full name' % it['id'])
+    return m.group(1)
+
+
+def qualified(name, word):
+    """焼き餃子（6個） + お店 → 焼き餃子（6個・お店）; 雑煮 + 三重県 → 雑煮（三重県）."""
+    return name[:-1] + '・' + word + '）' if name.endswith('）') else '%s（%s）' % (name, word)
+
+
+# A school lunch named after a story (読書 menus: 「かさこじぞう」の恩返し味噌汁, ごんぎつねのみそ汁): pop -1, a tier under
+# the plain dishes (search.ts POP_WEIGHT)
+STORY = re.compile(r'「[^」]+」|ごんぎつね')
 NO_ALIAS_ENRICH = {'mext', 'off'}   # foods.json aliases are curated; OFF names are brand product names
 VERIFY_INPUTS = [JBFD_CSV, CORR_CSV, MEXT_XLSX]
 
@@ -867,8 +888,29 @@ class Builder:
                         unused = attach_desc(doc['items'], self.descriptions[f][name], mk, f)
                         if unused:
                             fail('%s %s: keys matching no item: %s' % (fname_, name, ', '.join(unused[:10])))
+                if name in SAME_NAME:
+                    self.qualify(name, doc)
+                if name not in NO_ALIAS_ENRICH:
+                    for it in doc['items']:
+                        if STORY.search(it['name']) and 'pop' not in it:
+                            it['pop'] = -1
                 self.docs[name] = doc
         return self.docs[name]
+
+    def qualify(self, name, doc):
+        """Our recipe sets (one family, docs/food-data.md) never show two rows alike with different kcal: a name a set
+        before it holds at another kcal is qualified by what differs (お店, 給食; at the same kcal the search shows one).
+        A MAFF dish sharing its name with any of them, or another MAFF dish, takes its prefecture."""
+        taken = collections.defaultdict(list)
+        for n in SAME_NAME[:SAME_NAME.index(name)]:
+            for it in self.get(n)['items']:
+                taken[it['name']].append(it['kcal'])
+        mine = collections.Counter(it['name'] for it in doc['items'])
+        for it in doc['items']:
+            if name == 'maff_kyodo' and (it['name'] in taken or mine[it['name']] > 1):
+                it['name'] = qualified(it['name'], pref_of(it))
+            elif any(k != it['kcal'] for k in taken[it['name']]):
+                it['name'] = qualified(it['name'], SAME_NAME_WORD[name])
 
 
 def previous(rel, name):

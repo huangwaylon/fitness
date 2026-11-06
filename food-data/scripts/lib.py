@@ -415,7 +415,7 @@ def _item_errors(it, source):
         e.append('%s: desc repeats the gloss or the name' % iid)   # shown side by side: 「西洋ねぎ — 西洋ねぎとも…」
     if 'gloss' in it and (not isinstance(g, str) or not g or len(g) > GLOSS_MAX or g == it.get('name')):
         e.append('%s: bad gloss' % iid)
-    if 'pop' in it and it['pop'] not in (1, 2, 3):
+    if 'pop' in it and it['pop'] not in (-1, 1, 2, 3):
         e.append('%s: bad pop' % iid)
     if 'jan' in it and not re.fullmatch(r'\d{8}|\d{13}', str(it['jan'])):
         e.append('%s: bad jan' % iid)
