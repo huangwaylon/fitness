@@ -196,10 +196,7 @@
             fog.far = 2e5;
             return;
           }
-          const b = bounds();
-          camZ = C.clamp(camZ, C.Z_MIN, C.Z_MAX);
-          camX = C.clamp(camX, b.x0, b.x1);
-          zoom = C.clamp(zoom, C.ZOOM_MIN, C.ZOOM_MAX);
+          ({ x: camX, z: camZ, zoom } = C.clampView({ x: camX, z: camZ, zoom }, extentOf(cur)));
           fog.near = 1400 * 1.25;
           fog.far = 1400 * 3.2;
           controls.enabled = false;

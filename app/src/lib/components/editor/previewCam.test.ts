@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { MID_X, defaultLayout, extentOf } from '#lib/layout/model.ts';
 import { resizeEdge, withTiles } from '#lib/layout/resize.ts';
-import { midX, panBounds, panBy } from './previewCam.ts';
+import { clampView, midX, panBounds, panBy } from './previewCam.ts';
 
 describe("the preview's pan", () => {
   test('keeps the pivot over the land (a tile round it), the middle inside', () => {
@@ -16,6 +16,18 @@ describe("the preview's pan", () => {
     expect(midX(extentOf(withTiles(l, resizeEdge(l, 'back', 5).codes!)))).toBe(MID_X);
     // (no land: nowhere to go but the middle)
     expect(panBounds({ land: { x0: 0, x1: 0, z0: 0, z1: 0 } })).toMatchObject({ x0: MID_X, x1: MID_X });
+  });
+
+  test('the phone view reaches the back of the land, a grown island’s too (it stopped at z 1260 before)', () => {
+    const l = defaultLayout(), e = extentOf(l);
+    expect(e.land.z1).toBeGreaterThan(1260);
+    expect(clampView({ x: MID_X, z: 1e5, zoom: 1 }, e).z).toBe(e.land.z1 + 30);
+    const grown = extentOf(withTiles(l, resizeEdge(l, 'back', 5).codes!));
+    expect(grown.land.z1).toBeGreaterThan(e.land.z1);
+    expect(clampView({ x: MID_X, z: 1e5, zoom: 1 }, grown).z).toBe(grown.land.z1 + 30);
+    // the front, across, the zoom's range; no land: the old reach
+    expect(clampView({ x: -1e5, z: -1e5, zoom: 99 }, e)).toEqual({ x: e.land.x0 - 30, z: e.land.z0 - 30, zoom: 3 });
+    expect(clampView({ x: 0, z: 1e5, zoom: 0 }, { land: { x0: 0, x1: 0, z0: 0, z1: 0 } })).toEqual({ x: MID_X, z: 1260, zoom: 0.6 });
   });
 
   test("a drag moves the ground with the finger: the view's width of island a screen's drag, less zoomed in, more along it", () => {
