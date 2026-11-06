@@ -4,7 +4,7 @@
 // sting (a fright, a sweat drop and NH's swollen eye on the villager's own eye). `?shake=nest|branch|bagworm|spider`
 // forces the next shake's drop (`wood`: a piece of wood, into my pocket for the shop). Nothing changes ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d, islandUp, quiet } from './island.ts';
+import { canopyAt, is3d, islandUp, quiet, shakeTree as shake } from './island.ts';
 import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
@@ -17,41 +17,6 @@ async function open(page: Page, q = '') {
   await quiet(page); // the opening beats are over
 }
 const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] }).__cues ?? []);
-/** A point of the left tree's canopy the finger reaches (its middle, else the nearest part the popup leaves open). */
-const canopyAt = (page: Page) =>
-  page.locator('button.canopy').first().evaluate((el) => {
-    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
-    for (let d = 0; d < b.height / 2; d += 4)
-      for (const [dx, dy] of [[0, d], [0, -d], [d, 0], [-d, 0], [d, d], [-d, d]])
-        if (document.elementFromPoint(cx + dx, cy + dy)?.closest('button.canopy') === el) return { x: cx + dx, y: cy + dy };
-    return { x: cx, y: cy };
-  });
-/** The popup where it stays (or none): it's placed, then placed again as its rows come in and it grows (FruitTree
- *  fitPopup), so a canopy point it left open a frame ago may be under it now (the next tap the popup's). Three frames
- *  unmoved, at most 400 ms. */
-const popupStill = (page: Page) =>
-  page.evaluate(() => new Promise<void>((ok) => {
-    const t0 = performance.now();
-    let last = '', same = 0;
-    const frame = () => {
-      const b = document.querySelector('.detail')?.getBoundingClientRect();
-      const now = b ? `${b.left},${b.top},${b.width},${b.height}` : '';
-      same = now === last ? same + 1 : 0;
-      last = now;
-      if (!now || same >= 3 || performance.now() - t0 > 400) ok();
-      else requestAnimationFrame(frame);
-    };
-    frame();
-  }));
-async function shake(page: Page) {
-  for (let i = 0; i < 3; i++) {
-    await popupStill(page);
-    const c = await canopyAt(page);
-    await page.mouse.click(c.x, c.y);
-    await page.waitForTimeout(120);
-  }
-}
-
 test('one tap opens the popup and drops nothing; two close it; the third quick tap shakes the tree', { tag: '@logic', annotation: { type: 'logic', description: 'drawn: three quick taps within 1.2 s are NH\'s shake, and a drawn software-GL frame takes 0.5-1 s' } }, async ({ page }) => {
   await open(page, '&shake=nest');
   let c = await canopyAt(page);
