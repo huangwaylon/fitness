@@ -33,13 +33,16 @@ export interface Game extends Omit<ListenRow, 'r' | 'p'> {
   at: number;
 }
 
-/** A game of another member's, as its summary (contract/listen.ts): never its level or answers. */
+/** A game of another member's, as its summary (contract/listen.ts): never its level or answers; a unit's passed チェック
+ *  its unit and `stamped` (docs/curriculum-units.md §4). */
 export interface OtherGame {
   who: Who;
   d: LocalDate;
   g: string;
   n: number;
   ms: number;
+  u?: string;
+  stamped?: 1;
 }
 
 /** An item of this build by id, as the index knows it (no level loaded: pool.ts). */
@@ -77,7 +80,7 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
       const s = listenSummaryOf(data);
       if (!s) continue;
       const key = `${row[1]}:${s.g}`, was = others.get(key);
-      others.set(key, was ? { ...was, n: Math.max(was.n, s.n), ms: was.ms + s.ms } : { who: row[1], ...s });
+      others.set(key, was ? { ...was, ...(s.stamped && { u: s.u, stamped: s.stamped }), n: Math.max(was.n, s.n), ms: was.ms + s.ms } : { who: row[1], ...s });
     }
   }
   const games = [...mine.values()].sort((a, b) => a.at - b.at || (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
