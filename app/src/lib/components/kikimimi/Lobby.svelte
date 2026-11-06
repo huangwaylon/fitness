@@ -1,6 +1,7 @@
 <script lang="ts">
   // みんなで, the lobby (docs/kikimimi-ux.md §6.5; docs/kikimimi.md "UI"): the game to play together (ひとこと クイズ,
-  // スピード はしご, アナウンス; the host picks, the others see it) with its ばしょ or the ladder's speeds and こたえる じかん,
+  // スピード はしご, アナウンス, a lane's game: catalog.ts sharable; the host picks, the others see it) with its ばしょ (the
+  // quiz's levels, a lane's game's content places) or the ladder's speeds and こたえる じかん,
   // who's in (joined, or on the island and not yet), 「きょうりょく ／ しょうぶ」 (co-op by default: one team score, never
   // who missed; しょうぶ ranks by points) and 「おとを 1だいに まとめる」 (only the host's phone speaks). The foot: さそう
   // while my lobby is still on this phone alone, then the host's 「はじめる（Nにん）」; the others wait for it.
@@ -10,7 +11,8 @@
   import { ORDER } from '#lib/kikimimi/round/session.ts';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
-  import { lvForMode, sharable, type ModeId } from '#lib/kikimimi/catalog.ts';
+  import { lvForMode, modeOf, modeOfGame, sharable, type ModeId } from '#lib/kikimimi/catalog.ts';
+  import { LANES, laneLevels, levelFor } from '#lib/kikimimi/round/registry.ts';
   import type { QuizGame } from './game.svelte.ts';
   import PlayerChip from './frame/PlayerChip.svelte';
   import LadderSteps from './LadderSteps.svelte';
@@ -30,13 +32,17 @@
   const joined = (w: Who) => v.players.some((p) => p.who === w);
   const hostName = $derived(week.view && v.host ? villagerNameOf(week.view, v.host) : '');
   const zero = $derived(sound.settings.volume <= 0);
-  /** The games that can be shared (the quiz family's). */
-  const games = sharable({ levels: LEVELS, ladder: LADDER_OK, review: false });
-  const now = $derived<ModeId>(v.ladder ? 'ladder' : v.lv === 5 ? 'announce' : 'quiz');
+  /** The games that can be shared (the quiz family's, the lanes' this build can play). */
+  const games = sharable({ levels: LEVELS, ladder: LADDER_OK, review: false, games: (gm) => LANES.ready(gm) });
+  const now = $derived<ModeId>(modeOfGame(v.gm ?? '')?.id ?? (v.ladder ? 'ladder' : v.lv === 5 ? 'announce' : 'quiz'));
+  /** A lane's game's places (its content's), when its mode offers them. */
+  const places = $derived(modeOf(now).game && modeOf(now).places ? laneLevels(v.gm ?? '') : null);
 
   function pickGame(id: ModeId) {
     if (!v.amHost || id === now) return;
-    if (id === 'ladder') game.configure({ ladder: true });
+    const gm = modeOf(id).game;
+    if (gm) game.setGame(gm, { lv: levelFor(gm, v.lv === 5 ? 1 : v.lv), timer: v.timer });
+    else if (id === 'ladder') game.configure({ ladder: true });
     else game.configure({ ladder: false, lv: lvForMode(id, v.lv === 5 ? 1 : v.lv) as Level });
   }
   function level(lv: number) {
@@ -77,6 +83,8 @@
     </section>
   {:else if now === 'quiz'}
     <StageRow lv={v.lv} levels={LEVELS.filter((x) => x !== 5)} readonly={!v.amHost} onpick={level} />
+  {:else if places?.length}
+    <StageRow lv={v.lv} levels={places} readonly={!v.amHost} onpick={level} />
   {/if}
   <TimerRow timer={v.timer} readonly={!v.amHost} onpick={timer} />
 

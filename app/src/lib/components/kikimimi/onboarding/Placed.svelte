@@ -1,13 +1,14 @@
 <script lang="ts">
   // みみ チェック's result (docs/kikimimi-ux.md §6.12; curriculum §10), no score: しずえ's 「〇〇から はじめましょう」 over
   // the five places with the placed one lit, the strongest skill (とくい) and the one to grow (これから), that it's mine
-  // alone, and ききみみへ (the hub). Its own chunk.
-  import type { Placement } from '#lib/kikimimi/games/check/def.ts';
+  // alone, and ききみみへ (the hub). Its own chunk: the check's results view (games/check/lane.ts).
+  import type { QuizGame } from '../game.svelte.ts';
   import { PLACES } from '#lib/kikimimi/catalog.ts';
   import Host from '../../characters/Host.svelte';
   import { t } from '#lib/i18n/index.ts';
 
-  let { placement, ondone }: { placement: Placement | null; ondone: () => void } = $props();
+  let { game, onhub }: { game: QuizGame; onhub: () => void } = $props();
+  const placement = $derived(game.placement);
   const stage = $derived(placement ? t(`kiki.stage.${placement.place}`) : '');
 </script>
 
@@ -35,7 +36,7 @@
 </div>
 
 <div class="level-acts">
-  <button type="button" class="btn" data-kiki-placed-done data-sfx="confirm" onclick={ondone}>{t('kiki.placed.done')}</button>
+  <button type="button" class="btn" data-kiki-placed-done data-sfx="confirm" onclick={onhub}>{t('kiki.placed.done')}</button>
 </div>
 
 <style>

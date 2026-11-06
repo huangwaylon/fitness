@@ -1,12 +1,15 @@
 // ききみみ's game on this phone (docs/kikimimi.md "Sync", "Audio"): the round session (kikimimi/round/session.ts, pure)
-// over the quiz's GameDefs (the quiz, スピード はしご, a unit's lesson: kikimimi/games/, through games/quiz/session.ts's
-// lobby) wired to the island's Live (or to nothing: solo without a relay), its view refreshed at each phase's end and at
-// each message; the clips it calls for (clipPlayer.svelte.ts), my record of it (recorder.ts). A deck is built only from
-// loaded chunks (pool.ts): what's heard and my own taps wait, in order, for the chunk the deck they touch needs
-// (chunkQueue.ts). Loaded with the sheet only.
+// over the games' GameDefs (each game's lane: round/registry.ts, through games/quiz/session.ts's lobby) wired to the
+// island's Live (or to nothing: solo without a relay), its view refreshed at each phase's end and at each message; the
+// clips it calls for (clipPlayer.svelte.ts), my record of it (recorder.ts). A deck is built only from loaded chunks
+// (pool.ts): what's heard and my own taps wait, in order, for the chunk the deck they touch needs, and for a later
+// game's lane before it (chunkQueue.ts). The host's seed, a solo game's own deck and what loads ahead are the lane's.
+// Loaded with the sheet only.
 import { isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
-import { SPEEDS, ladderDeck } from '#lib/kikimimi/ladder.ts';
+import { SPEEDS } from '#lib/kikimimi/ladder.ts';
 import { FAST_WINDOWS, type SeedAsk } from '#lib/kikimimi/round/session.ts';
+import { LANES, laneOpts } from '#lib/kikimimi/round/registry.ts';
+import type { AnswerValue, GameId } from '#lib/kikimimi/round/types.ts';
 import { gameIn, type GameIn, type RoundIn, type RoundOut, type WireMode } from '#lib/kikimimi/round/wire.ts';
 import { roundLink, soloLink, wire, type RoundLink } from '#lib/kikimimi/round/link.ts';
 import { QuizRounds } from '#lib/kikimimi/games/quiz/session.ts';
@@ -19,14 +22,13 @@ import type { Who } from '#lib/types.ts';
 import { cue } from '#lib/sound/cues.ts';
 import type { ListenRow } from '#lib/contract/listen.ts';
 import { GAMES, chunksOf, itemsOf, pinDeck, usePractice } from './decks.ts';
-import { deck } from '#lib/kikimimi/deck.ts';
-import { agesOf, freshSeed, seedWith } from '#lib/kikimimi/recent.ts';
+import { seedWith } from '#lib/kikimimi/recent.ts';
 import { currentAnswers, recentGames } from './progress.svelte.ts';
 import { tierOf, wagerAnswer } from '#lib/kikimimi/games/taikai/def.ts';
 import { offerEvents } from '#lib/kikimimi/games/taikai/pick.ts';
 import { taikaiLevels, taikaiOffer, taikaiOutcome, taikaiPickFor } from '#lib/kikimimi/games/taikai/source.ts';
-import { ladders, load, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
-import { START_BAND, walkOf, type Placement } from '#lib/kikimimi/games/check/def.ts';
+import { load, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
+import { START_BAND, type Placement } from '#lib/kikimimi/games/check/def.ts';
 import { checkLevels } from '#lib/kikimimi/games/check/source.ts';
 import { lessonDeck, type Lesson, type Tier, type UnitPlay } from '#lib/kikimimi/lesson.ts';
 import { ChunkQueue } from './chunkQueue.ts';
@@ -43,20 +45,20 @@ export const hidesLine = (it: Item | undefined): boolean => !!it?.rung && it.run
  *  at their own speed: `#playNow`). Play's and the review's alike. */
 export const canSlow = (it: Item): boolean => it.lv <= 2 && !isDialogue(it);
 
-/** The host's seed (recent.ts): of SEED_TRIES, the deck that overlaps this phone's last games least, its flags kept (a
- *  quiz's level deck, スピード はしご's ladders; another game's: a random one). */
-function seedFor({ gm, o, flags, random }: SeedAsk): number {
-  const lv = quizOpts.decode(o)?.lv;
-  if (gm === 'ladder') return freshSeed({ random, flags, recent: recentGames(), ids: (s) => ladderDeck(s, ladders()).map((it) => it.id) });
-  if (gm === 'quiz' && lv) return freshSeed({ random, flags, recent: recentGames(), ids: (s) => deck(s, lv).map((it) => it.id) });
-  return seedWith(random, flags);
-}
+/** The host's seed, its flags kept: its game's lane's (recent.ts: of SEED_TRIES, the deck that overlaps this phone's
+ *  last games least), else a random one. */
+const seedFor = (ask: SeedAsk): number => LANES.of(ask.gm)?.seed?.(ask, recentGames()) ?? seedWith(ask.random, ask.flags);
 
-/** What a heard op needs before the session takes it: an `open`, its deck's chunk. */
+/** What a heard op needs before the session takes it: an `open`, its deck's chunks. */
 export const needs = (m: RoundIn | null): Unit[] => (m?.op === 'open' ? chunksOf(m.gm, m.o, m.u, m.ids) : []);
+/** …and a later game's lane before them (round/registry.ts). */
+const wants = (m: RoundIn | null): Unit[] | Promise<unknown> => (m?.op === 'open' && LANES.loading(m.gm)) || needs(m);
 
 /** The tournament's wager round now (its last: a bet, then the choice). */
 export const isWager = (v: Pick<QuizView, 'gm' | 'i' | 'n'>): boolean => v.gm === 'taikai' && v.n > 1 && v.i === v.n - 1;
+
+/** The games whose lobby the quiz's settings drive (QuizRounds.configure); a later game's goes back to the quiz first. */
+const QUIZ_LOBBY: ReadonlySet<GameId> = new Set(['quiz', 'ladder', 'lesson', 'taikai', 'check']);
 
 /** The longest between wake-ups (the host's beacon is every 3 s: round/session.ts WINDOWS.beacon). */
 const WAKE = 3000;
@@ -137,12 +139,12 @@ export class QuizGame {
     const now = this.#link.now();
     for (const h of o.heard ?? []) {
       const m = gameIn(h);
-      if (m) this.#queue.then(() => needs(m), () => void this.#session.receive(m, now));
+      if (m) this.#queue.then(() => wants(m), () => void this.#session.receive(m, now));
     }
     this.#offHere = this.#link.onHere((h) => h && (this.here = h));
     // what's heard from now on: in order, each once the chunk it needs is in
     const link = this.#link;
-    this.#wire = wire(this.#session, { ...link, on: (fn) => link.on((m) => this.#queue.then(() => needs(m), () => fn(m))) }, () => this.#refresh());
+    this.#wire = wire(this.#session, { ...link, on: (fn) => link.on((m) => this.#queue.then(() => wants(m), () => fn(m))) }, () => this.#refresh());
     this.#refresh();
   }
 
@@ -232,36 +234,68 @@ export class QuizGame {
   invite(): void {
     this.#queue.then(() => [], () => this.#act((s, now) => s.invite(now)));
   }
-  /** The lobby's settings (a level or the mode changed: once its chunk is in). */
+  /** The lobby's settings (a level or the mode changed: once its chunk is in). A lane's game's lobby (setGame) keeps its
+   *  game for a level, こたえる じかん, おなじへや or たいせん, and goes back to the quiz for a quiz-family pick (`ladder`). */
   configure(o: { lv?: Level; same?: boolean; vs?: boolean; ladder?: boolean; timer?: QuizTimer }): void {
-    this.#queue.then(() => [(o.ladder ?? this.view?.ladder) ? 'ladder' : ((o.lv ?? this.view?.lv ?? 1) as Level)], () => this.#act((s, now) => s.configure(o, now)));
+    const own = () => {
+      const v = this.view, lane = v?.gm && !QUIZ_LOBBY.has(v.gm) && o.ladder === undefined ? LANES.of(v.gm) : undefined;
+      return lane && { gm: lane.id, o: laneOpts(lane, { lv: o.lv ?? v.lv, timer: o.timer ?? v.timer }) };
+    };
+    this.#queue.then(() => {
+      const g = own();
+      return g ? chunksOf(g.gm, g.o) : [(o.ladder ?? this.view?.ladder) ? 'ladder' : ((o.lv ?? this.view?.lv ?? 1) as Level)];
+    }, () =>
+      this.#act((s, now) => {
+        const g = own(), v = s.view(now);
+        if (g) return s.round.configure({ o: g.o, same: o.same, vs: o.vs }, now);
+        const back = v.gm && !QUIZ_LOBBY.has(v.gm) ? s.round.configure({ gm: 'quiz', o: quizOpts.encode({ lv: o.lv ?? 1, timer: o.timer ?? v.timer }) }, now) : [];
+        return [...back, ...s.configure(o, now)];
+      })
+    );
+  }
+  /** My lobby becomes a game of `gm` (a lane's mode page or the みんなで picker: its lane in first, then its deck's
+   *  chunks), its options the lane's from the picks (a place's level, こたえる じかん), the lobby's seed kept. */
+  setGame(gm: GameId, p: { lv: number; timer: QuizTimer }): void {
+    const opts = () => {
+      const lane = LANES.of(gm);
+      return lane ? laneOpts(lane, p) : [];
+    };
+    this.#queue.then(() => LANES.loading(gm) ?? chunksOf(gm, opts()), () => {
+      const v = this.view;
+      if (!v?.g || v.phase !== 'lobby' || !v.amHost || !LANES.of(gm)) return;
+      this.practicing = false;
+      this.lesson = null;
+      this.#act((s, now) => s.round.configure({ gm, o: opts() }, now));
+      this.#clips.refetch();
+    });
   }
   /** さんか: a co-op lesson at my tier for its unit (its chunk is in: the open waited for it). */
   join(g?: string): void {
     this.#queue.then(() => [], () =>
       this.#act((s, now) => {
         const inv = s.view(now).invite, it = inv && (g === undefined || inv.g === g) ? inv : null;
-        const part = it?.gm === 'lesson' && it.u ? unitPart(it.u) : undefined;
-        return s.join(now, g, part ? tierIndex(this.#tierOf(part.unit.stage)) : it?.gm === 'taikai' ? this.taikaiTier : undefined);
+        return s.join(now, g, it ? LANES.of(it.gm)?.myTier?.(it.u, { level: this.#level(), tierOf: this.#tierOf }) : undefined);
       })
     );
   }
   go(): void {
     this.#queue.then(() => [], () => {
-      // a solo game (my lobby kept alone, a quiz): its own deck, the items not heard lately first (nothing on the wire)
-      const v = this.view;
-      if (v?.g && v.phase === 'lobby' && v.local && v.amHost && !this.practicing && !this.lesson && v.gm === 'quiz') {
-        usePractice(v, deck(v.seed, v.lv as Level, undefined, agesOf(recentGames())));
+      // a solo game (my lobby kept alone): its lane's own deck (the quiz's: the items not heard lately first; nothing on
+      // the wire)
+      const v = this.view, solo = LANES.of(v?.gm)?.solo;
+      if (v?.g && v.phase === 'lobby' && v.local && v.amHost && !this.practicing && !this.lesson && solo) {
+        usePractice(v, solo(v, recentGames()));
         this.#clips.refetch();
       }
       this.#act((s, now) => s.go(now));
     });
   }
-  /** My one, final answer to the current question (the tournament's wager: with my bet, none yet: not taken). */
-  answer(k: number): void {
+  /** My one, final answer to the current question: a choice (the tournament's wager: with my bet, none yet: not taken),
+   *  or a later game's own (≤ 12 ints: tiles, memo slots). */
+  answer(k: AnswerValue): void {
     const i = this.view.i, bet = this.bet;
     if (isWager(this.view) && bet === null) return;
-    const a = isWager(this.view) ? wagerAnswer(k, bet!) : k;
+    const a = isWager(this.view) && typeof k === 'number' ? wagerAnswer(k, bet!) : k;
     this.#queue.then(() => [], () => this.#act((s, now) => s.answer(a, !!this.replayed[i], now)));
   }
   /** つぎへ (the host's; anyone's once the host has gone). */
@@ -343,12 +377,9 @@ export class QuizGame {
     pinDeck(v.g ? v : null);
     this.#lessonOf(v);
     this.#taikaiOf(v);
-    // みみ チェック: the levels around its band, ready for its next round
-    if (v.gm === 'check' && v.phase !== 'results') {
-      const items = itemsOf(v), over = (i: number) => i < v.i || (i === v.i && v.phase === 'reveal');
-      const oks = v.answers.flatMap((a, i) => (over(i) ? [!!a && a.k === items[i]?.answer] : []));
-      void load(...checkLevels(walkOf(oks).band)).catch(() => {});
-    }
+    // what its game wants in ahead (みみ チェック: the levels round its band, ready for its next round)
+    const ahead = LANES.of(v.gm)?.ahead;
+    if (ahead && v.phase !== 'results') void load(...ahead(v, itemsOf(v))).catch(() => {});
     this.#recorder.seen(v, now);
     if (v.phase === 'results' && v.g) this.#keep(v, now, true);
     this.view = v;

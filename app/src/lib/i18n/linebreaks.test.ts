@@ -13,7 +13,9 @@ import jaTravel from './travel.ja.json';
 import jaWed from './wedding.ja.json';
 import jaNames from './catch.ja.json';
 
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaKiki, ...jaTravel, ...jaWed };
+/** Each ききみみ game's own strings (kiki-<game>.ja.json, merged in with its lane). */
+const jaKikiGames: Record<string, string> = Object.assign({}, ...Object.values(import.meta.glob<Record<string, string>>('./kiki-*.ja.json', { eager: true, import: 'default' })));
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaKiki, ...jaKikiGames, ...jaTravel, ...jaWed };
 
 /** The world's keys: shown on the island or in a room (a line, a bubble, a sign, a notice, the HUD, a menu pill), or
  *  an official name (NH's names, as the game writes them). Every other key is a sheet's. */

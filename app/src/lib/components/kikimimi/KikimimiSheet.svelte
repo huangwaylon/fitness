@@ -6,7 +6,8 @@
   // たいかい (its lobby, show and results: taikai/, their own chunks). ‹ pops one (a
   // shared lobby popped is cancelled), ✕ closes the sheet from any page (asking first when others are in my lobby), a
   // backdrop tap or Esc pops (closes at the hub). A game sits over the stack: its notice, よーい 3-2-1, a question (Play),
-  // the results (おわる back to the hub; a lesson's back to its page). Another's lobby I joined is みんなで (‹ leaves it
+  // the results (おわる back to the hub; a lesson's back to its page); a game whose lane has its own views (round/
+  // registry.ts; views.ts: the tournament's, みみ チェック's, a later game's) shows them in their place, each its own chunk. Another's lobby I joined is みんなで (‹ leaves it
   // for the hub). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks 「ここで やめる？」. Opened from the HUD's
   // ききみみ (my own lobby, kept alone: the hub) or the banner's さんか (that game joined: [hub, みんなで]). The voice
   // session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip. A player's first
@@ -27,7 +28,9 @@
   import { currentPath, currentReport, currentUnits, recordGame, unitAdded } from './progress.svelte.ts';
   import { KikiActions } from './actions.ts';
   import { jaMode, keepJa, keepLv, keepOnboarded, keepTimer, lastLv, lastTimer, onboarded, sameDefault, type JaMode } from './prefs.ts';
-  import { CHECK_MAX } from '#lib/kikimimi/games/check/def.ts';
+  import { LANES } from '#lib/kikimimi/round/registry.ts';
+  import { viewOf } from './views.ts';
+  import { modeOfGame } from '#lib/kikimimi/catalog.ts';
   import { packs } from './packs.ts';
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
   import type { Filter } from '#lib/kikimimi/path.ts';
@@ -78,8 +81,10 @@
   /** The first run's welcome in the hub's place (docs/kikimimi-ux.md §6.12): once per player on this phone, never for one
    *  who has played (their stage is their rows'). */
   let welcome = $state(false);
-  /** みみ チェック under way or at its result. */
-  const checking = $derived(v?.gm === 'check' && (mid || v.phase === 'results'));
+  /** The game's lane (round/registry.ts), and its own view for this phase (null: the quiz's). */
+  const lane = $derived(LANES.of(v?.gm));
+  const slot = $derived(!v || !v.g ? null : v.phase === 'lobby' ? 'lobby' : v.phase === 'results' ? 'results' : mid && v.phase !== 'countdown' ? 'play' : null);
+  const own = $derived(slot ? viewOf(v?.gm, slot) : null);
   let pathFilter = $state<Filter>('all');
   const path = $derived(inLobby ? currentPath(pathFilter) : null);
   const pageTitle = (p: Page): string => {
@@ -97,9 +102,9 @@
     }
   };
   const title = $derived(
-    story ? t('kiki.mode.story') : checking ? t('kiki.check.title') : v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
+    story ? t('kiki.mode.story') : lane?.title?.game && (mid || v?.phase === 'results') ? t(lane.title.game) : v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
       : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`))
-      : hosting && page ? pageTitle(page) : guest ? t(v?.gm === 'taikai' ? 'kiki.mode.taikai' : 'kiki.tile.together') : t('kiki.title')
+      : hosting && page ? pageTitle(page) : guest ? t(lane?.title?.lobby ?? 'kiki.tile.together') : t('kiki.title')
   );
   /** A page pushed (from the idle hub, an invite waiting: a lobby of my own first). */
   function enter(p: Page) {
@@ -272,7 +277,8 @@
     if (!v) return null;
     const iv = v.invite;
     if (v.phase === 'idle' && iv) {
-      const what = iv.blocked ? t('kiki.update.why') : iv.gm === 'taikai' ? t('kiki.mode.taikai') : iv.lesson && iv.u ? `${unitName(iv.u)} · ${t(`kiki.lesson.${iv.lesson}`)}`
+      const named = iv.gm === 'taikai' ? 'taikai' : modeOfGame(iv.gm)?.id;
+      const what = iv.blocked ? t('kiki.update.why') : named ? t(`kiki.mode.${named}`) : iv.lesson && iv.u ? `${unitName(iv.u)} · ${t(`kiki.lesson.${iv.lesson}`)}`
         : iv.ladder ? t('kiki.mode.ladder') : iv.lv === 5 ? t('kiki.mode.announce') : `${t('kiki.mode.quiz')} · ${levelMark(iv.lv)} ${t(`kiki.lv.${iv.lv}`)}`;
       return { g: iv.g, name: hostName(iv.host), what: iv.started ? `${what} · ${t('kiki.started')}` : what, blocked: !!iv.blocked };
     }
@@ -317,9 +323,11 @@
   </button>
 {/snippet}
 
-{#snippet checkBar()}
-  <!-- みみ チェック's way through (about 12: it may stop sooner), no score -->
-  <div class="checkbar" data-kiki-check-bar={v?.i}><span style:width="{Math.min(100, Math.round((100 * ((v?.i ?? 0) + 1)) / CHECK_MAX))}%"></span></div>
+{#snippet ownView(view: NonNullable<typeof own>)}
+  <!-- a lane's own view in this phase's place (its lobby, its round, its results) -->
+  {#await view then { default: View }}
+    <View {game} onagain={act.again} onmissed={act.replayMissed} ondone={act.done} onhub={act.toHub} />
+  {/await}
 {/snippet}
 
 <Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss}>
@@ -360,7 +368,7 @@
           {/await}
         {:else if page.k === 'lobby'}
           {#if path && path.stages.some((s) => s.stops.length)}<PathCard {path} onopen={() => enter({ k: 'path' })} />{/if}
-          <Lobby {game} onlevel={keepLv} ontimer={keepTimer} />
+          {#if own}{@render ownView(own)}{:else}<Lobby {game} onlevel={keepLv} ontimer={keepTimer} />{/if}
         {:else if page.k === 'record'}
           {#await import('./Progress.svelte') then { default: Progress }}
             {#if report}<Progress {report} onplay={() => (pages = [])} />{/if}
@@ -383,9 +391,7 @@
             <StoryList me={game.me} onplay={playStory} />
           {/await}
         {:else if page.k === 'taikai'}
-          {#await import('./taikai/TaikaiLobby.svelte') then { default: TaikaiLobby }}
-            <TaikaiLobby {game} />
-          {/await}
+          {@render ownView(viewOf('taikai', 'lobby')!)}
         {:else if page.k === 'zukan'}
           {#await import('./zukan/KikiZukan.svelte') then { default: KikiZukan }}
             <KikiZukan me={game.me} unit={page.unit} onreview={act.reviewPhrases} />
@@ -393,10 +399,8 @@
         {/if}
       {:else if v.phase === 'lobby' && lesson}
         <LessonIntro unit={lesson.unit} lesson={lesson.lesson} recheck={lesson.recheck} {shared} onstart={() => game?.go()} onback={back} />
-      {:else if v.phase === 'lobby' && v.gm === 'taikai'}
-        {#await import('./taikai/TaikaiLobby.svelte') then { default: TaikaiLobby }}
-          <TaikaiLobby {game} />
-        {/await}
+      {:else if v.phase === 'lobby' && own}
+        {@render ownView(own)}
       {:else if v.phase === 'lobby'}
         <Lobby {game} onlevel={keepLv} ontimer={keepTimer} />
       {:else if v.phase === 'countdown'}
@@ -405,22 +409,12 @@
           <p class="say kana">{t('kiki.ready')}</p>
           {#key count}<span class="num" class:set={count > 3} aria-live="assertive">{count > 3 ? t('kiki.set') : count}</span>{/key}
         </div>
-      {:else if v.phase === 'results' && v.gm === 'check'}
-        {#await import('./onboarding/Placed.svelte') then { default: Placed }}
-          <Placed placement={game.placement} ondone={act.toHub} />
-        {/await}
-      {:else if v.phase === 'results' && v.gm === 'taikai'}
-        {#await import('./taikai/TaikaiResults.svelte') then { default: TaikaiResults }}
-          <TaikaiResults {game} onagain={act.again} onmissed={act.replayMissed} ondone={act.done} />
-        {/await}
+      {:else if v.phase === 'results' && own}
+        {@render ownView(own)}
       {:else if v.phase === 'results'}
         <Results {game} onagain={act.again} onmissed={act.replayMissed} ondone={act.done} onnext={(l) => game?.lesson && act.relesson(game.lesson.unit.id, l)} />
-      {:else if v.gm === 'taikai'}
-        {#await import('./taikai/TaikaiPlay.svelte') then { default: TaikaiPlay }}
-          <TaikaiPlay {game} />
-        {/await}
-      {:else if v.gm === 'check'}
-        <Play {game} show={checkBar} />
+      {:else if own}
+        {@render ownView(own)}
       {:else}
         <Play {game} />
       {/if}
@@ -506,8 +500,6 @@
   .ask .row { display: flex; gap: 10px; width: 100%; }
   .ask .row .btn { flex: 1; }
   .resume { cursor: pointer; }
-  .checkbar { height: 8px; margin: 0 6px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; }
-  .checkbar span { display: block; height: 100%; border-radius: inherit; background: var(--c-leaf); transition: width var(--dur-base) var(--ease-out, ease-out); }
   .resume b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .resume small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   @media (prefers-reduced-motion: reduce) { .num { animation: none; } .gear:active { transform: none; } }

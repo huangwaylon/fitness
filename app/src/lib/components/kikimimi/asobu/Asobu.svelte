@@ -1,10 +1,12 @@
 <script lang="ts">
   // あそぶ (docs/kikimimi-ux.md §6.2): しまの みち's card on top, then the playable modes grouped by situation (さくっと,
   // まちで・でんわで, じっくり, ねる まえに), a 2-column grid per group: each mode's name, its one-line subtitle, its
-  // minutes and 👥 when it can be shared. Only what this build can play shows; an empty group is hidden. Its own chunk.
+  // minutes and 👥 when it can be shared (catalog.ts: each mode's shelf and icon; a lane's game once this build has its
+  // lane and content). Only what this build can play shows; an empty group is hidden. Its own chunk.
   import type { Path } from '#lib/kikimimi/path.ts';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
   import { shelves, type ModeId } from '#lib/kikimimi/catalog.ts';
+  import { LANES } from '#lib/kikimimi/round/registry.ts';
   import { currentReport } from '../progress.svelte.ts';
   import PathCard from '../path/PathCard.svelte';
   import { STORY_OK } from '../story/serials.svelte.ts';
@@ -12,8 +14,7 @@
 
   let { path, onpath, onmode }: { path: Path | null; onpath: () => void; onmode: (m: ModeId) => void } = $props();
   const report = $derived(currentReport());
-  const groups = $derived(shelves({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length, story: STORY_OK }));
-  const ICON: Record<ModeId, string> = { quiz: '💬', ladder: '🪜', review: '🔁', announce: '📢', story: '🌙', taikai: '🏆' };
+  const groups = $derived(shelves({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length, story: STORY_OK, games: (gm) => LANES.ready(gm) }));
 </script>
 
 <div class="asobu" data-kiki-page="asobu">
@@ -24,7 +25,7 @@
       <div class="grid">
         {#each g.modes as m (m.id)}
           <button type="button" class="mode tile-btn" class:night={m.id === 'story'} data-kiki-mode-tile={m.id} data-sfx="open" onclick={() => onmode(m.id)}>
-            <span class="ic" aria-hidden="true">{ICON[m.id]}</span>
+            <span class="ic" aria-hidden="true">{m.icon}</span>
             <b>{t(`kiki.mode.${m.id}`)}</b>
             <small>{t(`kiki.modeSub.${m.id}`)}</small>
             <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span aria-label={t('kiki.chip.coop')}> · 👥</span>{/if}</span>

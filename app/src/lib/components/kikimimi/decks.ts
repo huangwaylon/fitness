@@ -1,53 +1,23 @@
 // ききみみ's decks on this phone (game.svelte.ts): the items of each game heard of, by its game, seed, options and unit
-// (round/decks.ts gameKey: the session's deck and the UI's are the same items), dealt from the loaded content: a
-// quiz's level (deck.ts), スピード はしご's ladders, a unit's lesson (lesson.ts, over its chunk); and a deck settled on
-// this phone (にがて れんしゅう's, the misses again, a solo game's freshest) standing in for its lobby's own. A deck is
-// built only once its chunk is in (game.svelte.ts). Here too the games the session knows (`GAMES`), over these decks.
-import { deck } from '#lib/kikimimi/deck.ts';
-import { ladderDeck } from '#lib/kikimimi/ladder.ts';
-import { lessonDeck } from '#lib/kikimimi/lesson.ts';
-import { itemDur } from '#lib/kikimimi/clips.ts';
-import { gameCvOf, ladders, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
-import type { Item, Level } from '#lib/kikimimi/bank.ts';
+// (round/decks.ts gameKey: the session's deck and the UI's are the same items), each dealt by its game's lane from the
+// loaded content (round/registry.ts: the chunks it needs, how it deals); and a deck settled on this phone (にがて
+// れんしゅう's, the misses again, a solo game's freshest) standing in for its lobby's own. A deck is built only once its
+// chunks are in (game.svelte.ts). Here too the games the session knows (`GAMES`): each lane's GameDef over these decks.
+import type { Item } from '#lib/kikimimi/bank.ts';
+import { gameCvOf, type Unit } from '#lib/kikimimi/pool.ts';
 import { Decks, gameKey } from '#lib/kikimimi/round/decks.ts';
-import { registry } from '#lib/kikimimi/round/registry.ts';
-import type { GameId } from '#lib/kikimimi/round/types.ts';
-import { quizGame, quizOpts, type QuizSource } from '#lib/kikimimi/games/quiz/def.ts';
-import { ladderGame } from '#lib/kikimimi/games/ladder/def.ts';
-import { lessonGame, lessonOpts } from '#lib/kikimimi/games/lesson/def.ts';
-import { roundOf, type QuizRound } from '#lib/kikimimi/games/quiz/kinds.ts';
-import { taikaiGame } from '#lib/kikimimi/games/taikai/def.ts';
-import { taikaiDeck, taikaiLevels, taikaiSource } from '#lib/kikimimi/games/taikai/source.ts';
-import { checkGame } from '#lib/kikimimi/games/check/def.ts';
-import { checkSource } from '#lib/kikimimi/games/check/source.ts';
-
-/** A game's deck as the view names it: its game, seed, options (as on the wire), unit and items' ids (the tournament's
- *  pick). */
-export interface DeckOf {
-  gm: GameId | null;
-  seed: number;
-  o: readonly number[];
-  u?: string;
-  ids?: readonly number[];
-}
+import { LANES, type DeckOf, type Phone } from '#lib/kikimimi/round/registry.ts';
+import type { Defs } from '#lib/kikimimi/round/session.ts';
+import type { GameDef, GameId } from '#lib/kikimimi/round/types.ts';
 
 /** The last decks built (others' lobbies build theirs here as their `open`s come), the game I'm in held, a deck of
  *  mine standing in for its lobby's. */
 const decks = new Decks<Item[]>(2);
 
-/** A game's items, dealt from the loaded content. */
-function deal(d: DeckOf): Item[] {
-  if (d.gm === 'taikai' || d.gm === 'check') return taikaiDeck(d.seed, d.ids ?? []);
-  if (d.gm === 'ladder') return ladderDeck(d.seed, ladders());
-  if (d.gm === 'lesson') {
-    const o = lessonOpts.decode(d.o), part = d.u ? unitPart(d.u) : undefined;
-    return o && part ? lessonDeck(part, o.lesson, d.seed, o.tier) : [];
-  }
-  const o = quizOpts.decode(d.o);
-  return d.gm === 'quiz' && o ? deck(d.seed, o.lv) : [];
-}
+/** A game's items, dealt by its lane from the loaded content (a game whose lane isn't in: none). */
+const deal = (d: DeckOf): Item[] => LANES.of(d.gm)?.deal(d) ?? [];
 
-const keyOf = (d: DeckOf): string => gameKey(d.gm ?? '', d.seed, d.o, d.u) + (d.gm === 'taikai' || d.gm === 'check' ? `#${(d.ids ?? []).join('.')}` : '');
+const keyOf = (d: DeckOf): string => gameKey(d.gm ?? '', d.seed, d.o, d.u) + (LANES.of(d.gm)?.byIds ? `#${(d.ids ?? []).join('.')}` : '');
 
 /** A game's items (outside a game: none). */
 export const itemsOf = (d: DeckOf): Item[] => (d.gm ? decks.of(keyOf(d), () => deal(d)) : []);
@@ -59,38 +29,19 @@ export const usePractice = (d: DeckOf, items: Item[]): void => decks.practice(ke
 /** The game I'm in (null: none): its deck held till another is. */
 export const pinDeck = (d: DeckOf | null): void => decks.pin(d?.gm ? keyOf(d) : null, () => deal(d!));
 
-/** The chunks a game's deck needs: its level's, the ladders', its unit's, or the levels of the tournament's ids. */
-export function chunksOf(gm: GameId, o: readonly number[], u?: string, ids?: readonly number[]): Unit[] {
-  if (gm === 'taikai' || gm === 'check') return taikaiLevels(ids ?? []);
-  if (gm === 'ladder') return ['ladder'];
-  if (gm === 'lesson') return u ? [u as Unit] : [];
-  const q = quizOpts.decode(o);
-  return q ? [q.lv as Level] : [];
-}
+/** The chunks a game's deck needs (its lane's: its level's, the ladders', its unit's, its ids' levels). */
+export const chunksOf = (gm: GameId, o: readonly number[], u?: string, ids?: readonly number[]): Unit[] => LANES.of(gm)?.chunks({ o, u, ids }) ?? [];
 
-/** A deck's items as its rounds, each with its clip's length as played (clips.json: a dialogue's lines and the gaps;
- *  2 s while unknown). Kept per deck: the session reads them at every call. */
-const ROUNDS = new WeakMap<readonly Item[], readonly QuizRound[]>();
-function roundsOf(items: readonly Item[]): readonly QuizRound[] {
-  let rs = ROUNDS.get(items);
-  if (!rs) {
-    rs = items.map((it) => {
-      const s = itemDur(it);
-      return roundOf(it, s === undefined ? undefined : Math.round(s * 1000));
-    });
-    ROUNDS.set(items, rs);
-  }
-  return rs;
-}
+const phone: Phone = { items: itemsOf, cv: gameCvOf };
+const DEFS = new Map<GameId, GameDef<unknown>>();
 
-const source: QuizSource = {
-  rounds: (gm, seed, o, u) => roundsOf(itemsOf({ gm, seed, o, u })),
-  cv: (gm, o, u) => {
-    const c = chunksOf(gm, o, u)[0];
-    return c === undefined ? undefined : gameCvOf(gm, c);
+/** The games this phone plays: each loaded lane's GameDef over these decks (a lazy game's once its lane is in). */
+export const GAMES: Defs = (gm) => {
+  let d = DEFS.get(gm);
+  if (!d) {
+    const lane = LANES.of(gm);
+    if (!lane) return undefined;
+    DEFS.set(gm, (d = lane.def(phone)));
   }
+  return d;
 };
-
-/** The games this phone plays: the quiz, スピード はしご, a unit's lesson, the tournament and みみ チェック, over these
- *  decks. */
-export const GAMES = registry([quizGame(source), ladderGame(source), lessonGame(source), taikaiGame(taikaiSource), checkGame(checkSource)]);

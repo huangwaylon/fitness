@@ -70,8 +70,13 @@ const usedBy = (key: string, prefixOk = true) => literals.has(key) || (prefixOk 
 
 /** The main catalogs, けんこう's (loaded with its tab), ごはん's (with the meal log), the catchables' names (loaded with the first catch or the
  *  ずかん), the balloon catalogue's and the rooms' (tent.*), as `t()` sees them once all are in. */
-const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki, ...jaTravel, ...jaWed };
-const en: Record<string, string> = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki, ...enTravel, ...enWed };
+/** Each ききみみ game's own strings (i18n/kiki-<game>.*.json: `kiki.<game>.*`, merged in with its lane by addCatalog). */
+const KIKI_GAMES = {
+  ja: import.meta.glob<Record<string, string>>('./i18n/kiki-*.ja.json', { eager: true, import: 'default' }),
+  en: import.meta.glob<Record<string, string>>('./i18n/kiki-*.en.json', { eager: true, import: 'default' })
+};
+const ja: Record<string, string> = { ...jaMain, ...jaTab, ...jaFood, ...jaNames, ...jaCatalog, ...jaTent, ...jaKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.ja)) as Record<string, string>), ...jaTravel, ...jaWed };
+const en: Record<string, string> = { ...enMain, ...enTab, ...enFood, ...enNames, ...enCatalog, ...enTent, ...enKiki, ...(Object.assign({}, ...Object.values(KIKI_GAMES.en)) as Record<string, string>), ...enTravel, ...enWed };
 /** A lazily loaded catalog's own key prefixes. */
 const NAME_KEY = /^(critter|sea|beach)\.name\.|^fossil\.set\./;
 /** The balloon catalogue's names (i18n/catalog.ts, per language). */
@@ -94,6 +99,15 @@ describe('i18n catalogs', () => {
   it('keep ききみみ クイズ’s strings (kiki.*) in its own catalog, but the invite banner’s, out of the first load', () => {
     for (const c of [jaKiki, enKiki]) expect(Object.keys(c).filter((k) => !k.startsWith('kiki.'))).toEqual([]);
     for (const c of [jaMain, enMain]) expect(Object.keys(c).filter((k) => k.startsWith('kiki.'))).toEqual(['kiki.invite', 'kiki.join']);
+  });
+  it('keep each ききみみ game’s strings (kiki.<game>.*) in its own catalog (i18n/kiki-<game>.*.json, with its lane)', () => {
+    for (const [f, c] of Object.entries(KIKI_GAMES.ja)) {
+      const g = /kiki-([a-z0-9]+)\.ja\.json$/.exec(f)![1];
+      expect(Object.keys(c).filter((k) => !k.startsWith(`kiki.${g}.`)), f).toEqual([]);
+      expect(Object.keys(c).sort(), f).toEqual(Object.keys(KIKI_GAMES.en[f.replace('.ja.', '.en.')] ?? {}).sort());
+      expect(Object.keys(c).filter((k) => k in jaKiki), f).toEqual([]);
+    }
+    expect(Object.keys(KIKI_GAMES.en).length).toBe(Object.keys(KIKI_GAMES.ja).length);
   });
   it('keep けっこんしき’s strings (wed.*) in its own catalog, but the menu pill’s, out of the first load', () => {
     for (const c of [jaWed, enWed]) expect(Object.keys(c).filter((k) => !k.startsWith('wed.'))).toEqual([]);
