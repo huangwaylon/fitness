@@ -195,15 +195,6 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .edit-tray :is(.it, .act:not([aria-disabled='true']), .done):active { transform: translateY(2px); }
 .edit-tray :is(.it, .act, .done, .tab):focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
-/* ---------- ✎ (きろく): a 44px cream object with the brown edge, the pencil in ink ---------- */
-.pen-btn {
-  appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
-  display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
-  /* the lip hangs 4px under the box: lift it by half, so the button and its lip sit centred in the row */
-  margin-bottom: var(--lip-h);
-}
-.pen-btn:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-
 
 /* ---------- 島 ⇄ テント (ui-state/doorTransition.ts) ----------
    NH's door: a black iris closes on the door we go through (260ms, easing in), stays black while the route changes

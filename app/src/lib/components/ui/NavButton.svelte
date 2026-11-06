@@ -44,6 +44,7 @@
   .nav svg { width: 22px; height: 22px; }
   .close svg { width: 20px; height: 20px; }
   /* ‹ + where it goes (a page's way back): the same button, grown into a pill */
+  .pill { width: auto; display: inline-flex; gap: 4px; padding: 0 16px 0 10px; border-radius: var(--r-btn); font: 700 var(--fs-body)/1 var(--font-ui); }
   /* the quiet kit's: a bare glyph in a 44px hit; on a photo a 32px smoked disc */
   .nav.quiet, .nav.photo { background: none; box-shadow: none; border-radius: 12px; transition: opacity var(--dur-quick); }
   .nav.quiet { color: var(--q-ink-2, var(--text)); }
@@ -56,5 +57,4 @@
   .nav.photo :global(svg) { position: relative; }
   .nav.quiet:active, .nav.photo:active { transform: none; box-shadow: none; opacity: .55; }
   .nav.quiet:focus-visible, .nav.photo:focus-visible { outline: 2px solid var(--q-accent, var(--focus)); outline-offset: -4px; }
-  .pill { width: auto; display: inline-flex; gap: 4px; padding: 0 16px 0 10px; border-radius: var(--r-btn); font: 700 var(--fs-body)/1 var(--font-ui); }
 </style>

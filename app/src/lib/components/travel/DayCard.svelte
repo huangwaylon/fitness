@@ -108,5 +108,4 @@
   .lv { padding: 2px 8px; border-radius: var(--q-r-tag); font: var(--q-w-b) var(--q-fs-xs)/1.4 var(--q-font); color: var(--q-ink); background: var(--q-sunken); }
   .lv.hard { background: #FBEBC8; color: #7A5410; }
   .lv.epic { background: var(--q-coral-soft); color: var(--q-coral); }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 </style>
