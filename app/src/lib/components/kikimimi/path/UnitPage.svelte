@@ -58,7 +58,7 @@
       <small>{t('kiki.lesson.goal')}</small>
       {#if u.cando.short}
         <p class="short" data-kiki-short>{u.cando.short}</p>
-        <details class="more"><summary>{t('kiki.more')}</summary><p data-kiki-cando lang="ja">「{u.cando.ja}」</p></details>
+        <details class="more"><summary data-sfx="tick">{t('kiki.more')}</summary><p data-kiki-cando lang="ja">「{u.cando.ja}」</p></details>
       {:else}
         <p data-kiki-cando>「{u.cando.ja}」</p>
       {/if}
@@ -153,7 +153,8 @@
   .goal small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .goal p { margin: 0; font: 700 var(--fs-body)/1.55 var(--font-ui); }
   .goal .short { font: 700 var(--fs-title)/1.3 var(--font-ui); }
-  .more summary { cursor: pointer; width: fit-content; font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
+  /* 「くわしく」: the full 44px to tap (padded round its one line), as the reveal's */
+  .more summary { cursor: pointer; width: fit-content; padding-block: calc((var(--hit) - 1.6em) / 2); font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
   .more p { font-weight: 600; font-size: var(--fs-s); color: var(--text-soft); }
   .stamps { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
   .slot { display: grid; justify-items: center; gap: 2px; min-width: 48px; }
