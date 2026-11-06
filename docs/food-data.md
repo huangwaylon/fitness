@@ -51,6 +51,7 @@ header fields as they are written in the file.
 | `fib` `alc` | optional, per 100 g, 1 decimal (0–100), **absent when unknown**: `fib` = 食物繊維総量, `alc` = アルコール (pure alcohol, g). MEXT's own (FIB-, ALC); the recipe sets sum their MEXT ingredients' (as P/F/C: unknown only when every ingredient lacks it); the school lunches sum their 食物繊維 rows. `alc` only on a 酒 (`lib.tidy`: a dish's or a seasoning's みりん, 料理酒 or 奈良漬 mostly cooks off, and would read as drinking). Kurume, Tokyo, JBFD and the products have neither (their sources don't give them; the OFF Japan subset keeps no fibre) |
 | `portions` | optional `[{label, g}]`; the first one is the default. The app always adds a 100 g option |
 | `pop` | optional 1–3, a curated search-ranking boost (from `data_src/popular.json` and `scripts/mext_overrides.txt`) |
+| `vg`, `st` | MEXT only, optional: one food in its states (豚ロース 脂身つき 生 · 焼き · ゆで; `mext_names.py` variant_groups): `vg` the group's default item's id, `st` the item's state as the app's chip says it (乾 生 ゆで 水煮 蒸し 焼き レンジ いため ソテー). The items whose official name differs only in its last word, a state; 2+ in distinct states, none named as the stem alone; fried ones and a state with a note stay apart. The default: the most popular, then 生, then ゆで. 281 groups, 647 items |
 | `jan`, `brand` | packaged products only |
 | `note` | how the value was derived, shown in the picker |
 

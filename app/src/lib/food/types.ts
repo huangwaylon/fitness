@@ -33,6 +33,9 @@ export interface Item {
    *  drinks). */
   fib?: number | null;
   alc?: number | null;
+  /** One food in its states (MEXT): its group's default item's id, and its state as the chip says it (生, 焼き, ゆで …). */
+  vg?: string;
+  st?: string;
   /** A curated search boost, 1–3. */
   pop?: number;
   portions?: Portion[];

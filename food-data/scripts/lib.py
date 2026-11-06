@@ -19,7 +19,7 @@ CATS = ('主食', '麺', '丼・定食', '主菜', '副菜', '汁物', '寿司',
         '外食', 'その他')
 META_KEYS = ('source', 'label', 'attribution', 'license', 'url')
 ITEM_KEYS = {'id', 'name', 'full', 'en', 'aliases', 'cat', 'kcal', 'p', 'f', 'c', 'salt', 'fib', 'alc', 'portions', 'jan',
-             'brand', 'note', 'pop'}
+             'brand', 'note', 'pop', 'vg', 'st'}
 
 
 # ---------------------------------------------------------------- numbers
