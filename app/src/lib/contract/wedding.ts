@@ -25,8 +25,9 @@ type WedType = (typeof WED_TYPES)[number];
 /** @public (relay/src/store.ts) */
 export const isWedType = (t: unknown): t is WedType => (WED_TYPES as readonly unknown[]).includes(t);
 
-/** A task's title at most (characters: code points), a category's. @public (the board's fields) */
-export const WTASK_TITLE = 200;
+/** A task's title at most (characters: code points; the old Sheet's longest, a subtask with a link, is 269), a
+ *  category's. @public (the board's fields) */
+export const WTASK_TITLE = 500;
 /** @public (the board's fields) */
 export const WTASK_CAT = 40;
 /** At most this many `wtask` rows (tasks, subtasks, the deleted and the purged): a new one past them is refused. */
