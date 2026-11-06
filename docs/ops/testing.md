@@ -113,6 +113,12 @@ that morning.
 - **No new fixed wait.** `page.waitForTimeout` or a `setTimeout` promise needs `// hold: <why>` on its line (a wait
   proving nothing happens for a while); the older ones are counted per file in `e2e/waits.json` and may only go down:
   fix one, lower its count.
+- **Wait for what an action loads.** A tap that deals a deck, opens a sheet or enters a room may load a chunk first
+  (ききみみ loads a level at a time): wait for the state it ends in (the game's countdown, the sheet open) before
+  reading what it made (kikimimi-progress read the lobby's deck before にがて れんしゅう's came).
+- **Vitest's module cache** (node_modules/.vitest-cache) never keeps a module with an `import.meta.glob`
+  (vite.config.ts `globsUncached`), so a file added under a glob is seen at once; anything else odd after a big
+  rebase: `npx vitest run --clearCache`.
 
 ## A changed spec, five times
 CI's `e2e-changed` job (pages.yml, the deploy waits for it) runs the specs a push adds or edits, each test 5× over in
