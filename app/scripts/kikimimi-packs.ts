@@ -16,7 +16,7 @@ import type { Clip } from '../src/lib/kikimimi/clips.ts';
 import { readUnits } from '../src/lib/kikimimi/compile.ts';
 import { LADDERS } from '../src/lib/kikimimi/ladders.ts';
 import { PACK_MAX, SLOW_PACK_MAX, packFile, planHome, type PackEntry, type Packs } from '../src/lib/kikimimi/packing.ts';
-import { BANK } from '../src/lib/kikimimi/source.ts';
+import { joined } from '../src/lib/kikimimi/source.ts';
 import { writeLevels } from './kikimimi-levels.ts';
 
 const APP = join(import.meta.dirname, '..');
@@ -40,7 +40,10 @@ function homes(clips: Readonly<Record<string, Clip>>): Map<string, string[]> {
     if (!out.has(home)) out.set(home, []);
     out.get(home)!.push(id);
   };
-  for (const lv of [...new Set(BANK.map((it) => it.lv))].sort((a, b) => a - b)) for (const it of BANK.filter((x) => x.lv === lv)) for (const id of clipIds(it)) add(`lv${lv}`, id);
+  // the bank for these clips, not the module's BANK (clips.json at import): the audio script packs a waiting set's
+  // items in the run that voices them
+  const bank = joined(clips);
+  for (const lv of [...new Set(bank.map((it) => it.lv))].sort((a, b) => a - b)) for (const it of bank.filter((x) => x.lv === lv)) for (const id of clipIds(it)) add(`lv${lv}`, id);
   for (const l of LADDERS) for (const r of l.rungs) add('ladder', r.id);
   for (const { raw } of readUnits()) {
     const u = raw as { unit: string; items?: { id: string; lines?: unknown[] }[] };
