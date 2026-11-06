@@ -39,7 +39,7 @@ const banner = (p: Page) => p.getByRole('button', { name: 'とりけす' });
 
 test('my ticks: the bubble, my counts, and who has packed it', async ({ context }) => {
   const a = await open(context);
-  // the demo: A packed the ID; うめ the ID, the licence and her sunscreen
+  // the demo: A packed the passports; うめ the passports, the NZeTA and her sunscreen
   await expect(mine(a)).toHaveAttribute('data-pack-mine', '1');
   await expect(mine(a)).toHaveAttribute('data-pack-total', '30');
   await expect(tick(a, 'nz-0-0')).toHaveAttribute('aria-checked', 'true');
@@ -47,11 +47,12 @@ test('my ticks: the bubble, my counts, and who has packed it', async ({ context 
   await expect(chip(a, 'nz-0-1', 'A')).toHaveCount(0);
   await expect(chip(a, 'nz-0-1', 'G')).toHaveCount(0);
   // nobody yet: no line at all
-  await expect(item(a, 'nz-0-2').locator('.by')).toHaveCount(0);
+  await expect(item(a, 'nz-0-2').locator('[data-chip]')).toHaveCount(0);
   // the line's names: one line, the checkbox's name says who
   await expect(tick(a, 'nz-0-0')).toHaveAccessibleName(/ウェイ、うめが じゅんびずみ/);
-  const line = await item(a, 'nz-0-0').locator('.by').boundingBox();
-  expect(line!.height).toBeLessThan(26);
+  // (by the names' own hooks, not the list's layout: NZ's design is its own) both on one line
+  const [ca, cb] = await Promise.all((['A', 'B'] as const).map((w) => chip(a, 'nz-0-0', w).boundingBox()));
+  expect(Math.abs(ca!.y - cb!.y)).toBeLessThan(2);
   await shot(a, 'pack-A-day');
 
   await tick(a, 'nz-0-1').click();

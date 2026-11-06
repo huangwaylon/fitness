@@ -194,7 +194,7 @@ island's centroid).
 
 - Restored in the old repo from its last state before it was rebuilt around Okinawa: kept so the trip is not lost, not
   because it is being planned (it is in the past).
-- Hike data from WTA and AllTrails; the trail maps link out to `huangwaylon.github.io/gpx`.
+- Hike data from WTA and AllTrails; the trail maps link out to `huangwaylon.github.io/hiking-trails/#/trail/<slug>` (the old `/gpx` site moved; a later hiking port makes them in-app).
 - Only the itinerary and the packing list: no map, no campsites. English-only by design; only the chrome follows the
   language.
 

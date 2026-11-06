@@ -103,6 +103,8 @@ test('Seattle: two tabs, its days closed, a hike’s card in the guide’s Engli
   await expect(hike.locator('.stat .k')).toHaveText(['Distance', 'Elevation gain', 'Route', 'Drive time', 'Hike time', 'Pass required']);
   await expect(hike.locator('.stat .v').first()).toHaveText('9.8 km');
   await expect(hike.locator('a.outlink')).toHaveAttribute('target', '_blank');
+  // the trail map: the hiking site where it lives now (its old /gpx address is gone)
+  await expect(hike.locator('a.outlink')).toHaveAttribute('href', 'https://huangwaylon.github.io/hiking-trails/#/trail/lake-22');
   // 持ち物: frozen
   await tab(page, 'packing').click();
   await expect(view(page, 'packing').locator('h2')).toHaveText('Packing');
