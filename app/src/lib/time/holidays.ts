@@ -44,8 +44,17 @@ export const HOLIDAYS: Record<Holiday, Day> = {
 /** The holiday on a Tokyo date, or null (no two fall on one date). */
 export const holidayOn = (date: string): Holiday | null => (Object.keys(HOLIDAYS) as Holiday[]).find((k) => HOLIDAYS[k].on(date)) ?? null;
 
-/** Our wedding day (Tokyo). */
+/** Our wedding day (Tokyo) until the board names one (no `date` setting yet: before the first sync, a fresh record). */
 export const WEDDING = '2027-10-08';
+
+let weddingSource: () => string = () => '';
+/** Where the wedding day comes from: the store's (store/week.svelte.ts: the board's `date` setting, '' for none). */
+export const setWeddingSource = (source: () => string): void => {
+  weddingSource = source;
+};
+/** Our wedding day (Tokyo, 'YYYY-MM-DD'): the board's `date` setting (docs/wedding.md), else WEDDING. One date for the
+ *  board, the island's countdown and events, and the music; reactive where the source reads reactive state. */
+export const weddingDate = (): string => weddingSource() || WEDDING;
 
 export type Show = 'show' | 'countdown';
 /** NH's Fireworks Show: Sundays in August, 19:00–24:00. */

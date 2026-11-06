@@ -136,7 +136,12 @@ export const DEVICE = {
   travelPacked: 'island.travel.packed',
   /** localStorage: the Tokyo date Orville last said his line at the りょこう counter on this phone (once a day:
    *  components/travel/TravelSheet.svelte). */
-  travelHello: 'island.travelHello'
+  travelHello: 'island.travelHello',
+  /** localStorage: the board's day this phone last showed けっこんしき's greeting (パニエル's line: the day's first opening
+   *  only; components/wedding/WeddingSheet.svelte). */
+  weddingGreet: 'island.weddingGreet',
+  /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
+  weddingDone: 'island.weddingDone'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

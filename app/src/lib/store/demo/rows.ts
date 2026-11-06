@@ -9,6 +9,7 @@ import type { PersonId, ShopItemId, Who } from '#lib/types.ts';
 import { rowsFor } from '#lib/contract/guest.ts';
 import type { EventRow, MetricRow, SnapshotRows } from '#lib/contract/api.ts';
 import { addDays, jstMs, localDateAt, weekKeyOf } from '#lib/time/dates.ts';
+import { WEDDING } from '#lib/time/holidays.ts';
 import { provisionalMs } from '#lib/model/state.ts';
 import type { SnapshotCache } from '#lib/sync/cache.ts';
 import { maxAt } from '#lib/model/snapshot.ts';
@@ -96,19 +97,24 @@ const DEMO_NOTE: Record<string, string> = {
 const DEMO_NOTE_DAYS = 20;
 
 /** けっこんしき's made-up board (docs/wedding.md; the real one is on the relay alone): invented names, venue and tasks,
- *  the wedding this many days ahead, the tasks written this many days back. */
-const WED_AHEAD = 160;
+ *  the tasks written this many days back. Its day is the island's fallback (time/holidays.ts WEDDING), so the demo's
+ *  island counts down to it and keeps its wedding day. */
 const WED_DAYS = 40;
-/** A task: its id, title, category, due (days from today), start (days), subtasks [id, title, done], done, deleted. */
-const WED_TASKS: [string, string, string, number, number | null, [string, string, boolean][], boolean, boolean][] = [
+/** A task: its id, title, category, due (days from today; null: the day before the wedding), start (days), subtasks
+ *  [id, title, done], done, deleted.
+ *  The first came from the old Sheet (the admin's load: imported, its tick too, who unknown). */
+const WED_TASKS: [string, string, string, number | null, number | null, [string, string, boolean][], boolean, boolean][] = [
   ['wdemo01', '式場を決める', 'Venue', -20, null, [], true, false],
-  ['wdemo02', '招待客リストをつくる', 'Guests', -3, -30, [['wdemo02a', '親族', true], ['wdemo02b', '友人', false]], false, false],
+  ['wdemo02', '招待客リストをつくる', 'Guests', -3, -30, [['wdemo02a', '親族', true], ['wdemo02b', '友人', false], ['wdemo02c', '返信フォーム https://example.com/form', false]], false, false],
   ['wdemo03', 'カメラマンを予約', 'Photo', 9, null, [], false, false],
   ['wdemo04', 'ドレスの試着', 'Attire', 45, 5, [['wdemo04a', '一軒目', true], ['wdemo04b', '二軒目', false], ['wdemo04c', '決める', false]], false, false],
   ['wdemo05', '招待状を送る', 'Stationery', 70, null, [], false, false],
   ['wdemo06', '新婚旅行の下調べ', 'Honeymoon', 120, null, [], false, false],
-  ['wdemo07', '引き出物の候補', 'Gifts', 100, null, [], false, true]
+  ['wdemo07', '引き出物の候補', 'Gifts', 100, null, [], false, true],
+  ['wdemo08', '当日の段取り', 'Other', null, null, [], false, false],
+  ['wdemo09', '予算を決める', 'Budget', -30, null, [], true, false]
 ];
+const WED_IMPORTED = 'wdemo01';
 const WED_NOTE = '# メモ\n\n- 式場: 架空チャペル（見学 済み）\n- **予算** は月末に もう一度\n- 参考: [れい](https://example.com)\n';
 
 /** The demo's rows as of `now` (only rows the server would have stamped by then). */
@@ -264,17 +270,17 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
   // けっこんしき (docs/wedding.md): a made-up board, the settings, the tasks (a subtask list, ticks, one deleted) and
   // the notes, written over the last weeks by both
   const tw = at(addDays(today, -WED_DAYS), 21, 0);
-  const conf: [string, string | string[]][] = [['p1', 'たろう'], ['p2', 'はなこ'], ['date', addDays(today, WED_AHEAD)], ['time', '11:00'], ['venue', '架空チャペル'], ['tz', 'Asia/Tokyo']];
+  const conf: [string, string | string[]][] = [['p1', 'たろう'], ['p2', 'はなこ'], ['date', WEDDING], ['time', '11:00'], ['venue', '架空チャペル'], ['tz', 'Asia/Tokyo']];
   conf.forEach(([k, v], i) => ev(tw + i * 1000, i % 2 ? 'B' : 'A', 'wconf', { k, at: tw + i * 1000, v }));
   WED_TASKS.forEach(([id, title, cat, due, start, subs, done, del], i) => {
-    const t = tw + 60_000 * (i + 1), p: PersonId = i % 2 ? 'B' : 'A';
-    ev(t, p, 'wtask', { id, at: t, c: t, title, cat, due: addDays(today, due), ...(start !== null ? { start: addDays(today, start) } : {}), ...(del ? { del: t } : {}) });
+    const t = tw + 60_000 * (i + 1), p: PersonId = i % 2 ? 'B' : 'A', imp = id === WED_IMPORTED ? { imported: true } : {};
+    ev(t, p, 'wtask', { id, at: t, c: t, title, cat, due: due === null ? addDays(WEDDING, -1) : addDays(today, due), ...(start !== null ? { start: addDays(today, start) } : {}), ...(del ? { del: t } : {}), ...imp });
     subs.forEach(([sid, st, sd], j) => {
       const u = t + 1000 * (j + 1);
       ev(u, p, 'wtask', { id: sid, at: u, c: u, title: st, cat: '', parent: id });
       if (sd) ev(u + 30 * 3600_000, p === 'A' ? 'B' : 'A', 'wdone', { id: sid, at: u + 30 * 3600_000, v: 1 });
     });
-    if (done) ev(t + 3 * 86400_000, p, 'wdone', { id, at: t + 3 * 86400_000, v: 1 });
+    if (done) ev(t + 3 * 86400_000, p, 'wdone', { id, at: t + 3 * 86400_000, v: 1, ...imp });
   });
   ev(tw + 7 * 86400_000, 'B', 'wnote', { at: tw + 7 * 86400_000, md: WED_NOTE });
 

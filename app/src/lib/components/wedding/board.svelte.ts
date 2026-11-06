@@ -1,36 +1,47 @@
 // The wedding board on this phone (docs/wedding.md): the model's wedding rows (the record's, then this phone's queued
 // ones, marked) folded by the record's rules (contract/wedding.ts wedFold), read as the old board read its Sheet
-// (lib/wedding/progress.ts, its today in the board's time zone), and my changes (each one event, sent at once; the
-// record's notice brings them to every open phone). The guest reads it all and changes nothing: its methods refuse.
+// (lib/wedding/progress.ts, its today in the board's time zone, turning at its midnight), and my changes (each one
+// event stamped on the relay's clock, sent at once; the record's notice brings them to every open phone). The guest
+// reads it all and changes nothing: its methods refuse.
 //   board.tasks / overall / countdown / today      the plan: live top-level tasks with their subtasks and progress
 //   board.config / note / conflict / deleted       the settings, the notes (both versions when two saves crossed), the
 //                                                  deleted tasks (restorable)
 //   board.addTask / editTask / addSub / tick / remove / restore / purge / setConfig / saveNote
+import { createSubscriber } from 'svelte/reactivity';
 import {
-  newTaskId, wedClean, wedConfig, wedFold, wedNote, wedOpOf, wedTasks, WNOTE_CHARS, type WConfKey, type WedBook, type WedEntry,
-  type WedTask, type WTaskSet
+  newTaskId, wedBookOf, wedClean, wedConfig, wedNote, wedOpOf, wedTasks, WNOTE_DATA_CHARS, type WConfKey, type WedBook,
+  type WedEntry, type WedTask, type WTaskSet
 } from '#lib/contract/wedding.ts';
+
+const EMPTY: readonly WedEntry[] = [];
 import { overallProgress, withProgress, type Overall, type WithProgress } from '#lib/wedding/progress.ts';
-import { daysBetween, isValidDay, todayIn } from '#lib/wedding/time.ts';
+import { todayIn, untilMidnight } from '#lib/wedding/time.ts';
+import { daysBetween } from '#lib/time/dates.ts';
 import { boardConfig, type BoardConfig } from '#lib/wedding/config.ts';
 import { week } from '#lib/store/week.svelte.ts';
 import { world } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';
 
-/** A version of the notes: its text, when it was saved and by whom, and whether it came from the old Sheet.
- *  @public (the board's notes) */
-export interface NoteVersion { md: string; at: number; who: Who; imported: boolean }
+/** A version of the notes: its text, when it was saved and by whom (`imported`: the old Sheet's, never saved since). */
+interface NoteVersion { md: string; at: number; who: Who; imported?: true }
 
-/** The fold of a State's rows (a State is never mutated: its list's identity is the cache key). */
-const books = new WeakMap<readonly WedEntry[], WedBook>();
-const bookOf = (rows: readonly WedEntry[]): WedBook => {
-  let b = books.get(rows);
-  if (!b) books.set(rows, (b = wedFold(rows)));
-  return b;
-};
 
 class WeddingBoard {
   #last = 0;
+  /** `today` read again at the board's midnight while something reads it (one timer, cleared when nothing does). */
+  #midnight = createSubscriber((update) => {
+    let timer: ReturnType<typeof setTimeout>;
+    const day = (): string => todayIn(this.config.tz, world.now());
+    const arm = (): void => {
+      const was = day();
+      timer = setTimeout(() => {
+        if (day() !== was) update();
+        arm();
+      }, untilMidnight(this.config.tz, world.now()) + 50);
+    };
+    arm();
+    return () => clearTimeout(timer);
+  });
 
   /** Who I am (the guest's phone: G). */
   get me(): Who {
@@ -42,8 +53,13 @@ class WeddingBoard {
     return this.me === 'G';
   }
 
+  /** A member's phone with its week loaded: it edits (the guest's, and a phone with nothing loaded yet, read only). */
+  get canEdit(): boolean {
+    return !!week.view && week.view.viewer !== 'G';
+  }
+
   get #book(): WedBook {
-    return bookOf(week.model?.state.wedding ?? []);
+    return wedBookOf(week.model?.state.wedding ?? EMPTY);
   }
 
   /** Every task held but the purged (the deleted too), as the old board's rows. */
@@ -55,8 +71,9 @@ class WeddingBoard {
     return boardConfig(wedConfig(this.#book));
   }
 
-  /** The board's day (its time zone's), 'YYYY-MM-DD'. */
+  /** The board's day (its time zone's), 'YYYY-MM-DD': a reader is told when it turns. */
   get today(): string {
+    this.#midnight();
     return todayIn(this.config.tz, world.now());
   }
 
@@ -72,13 +89,14 @@ class WeddingBoard {
 
   /** Days to the wedding in the board's time zone (null: no date). */
   get countdown(): number | null {
-    return daysBetween(this.today, this.config.date);
+    const date = this.config.date;
+    return date ? daysBetween(this.today, date) : null;
   }
 
   /** The notes (null: none yet). */
   get note(): NoteVersion | null {
     const n = wedNote(this.#book);
-    return n ? { md: n.md, at: n.at, who: n.who, imported: n.imported === true } : null;
+    return n ? { md: n.md, at: n.at, who: n.who, ...(n.imported ? { imported: true as const } : {}) } : null;
   }
 
   /** Two saves crossed (the held one was saved over a version its writer hadn't seen): both, to choose from. Gone once
@@ -86,7 +104,7 @@ class WeddingBoard {
   get conflict(): { current: NoteVersion; other: NoteVersion } | null {
     const n = wedNote(this.#book);
     if (!n?.was) return null;
-    return { current: { md: n.md, at: n.at, who: n.who, imported: n.imported === true }, other: { md: n.was.md, at: n.was.at, who: n.was.who, imported: false } };
+    return { current: this.note!, other: { md: n.was.md, at: n.was.at, who: n.was.who } };
   }
 
   /** The deleted tasks and subtasks, the latest deleted first (Restore, Purge). */
@@ -94,29 +112,27 @@ class WeddingBoard {
     return this.#all.filter((t) => t.deletedAt).sort((a, b) => (a.deletedAt < b.deletedAt ? 1 : a.deletedAt > b.deletedAt ? -1 : 0));
   }
 
-  /** A task or subtask held (deleted too), or null. */
-  task(id: string): WedTask | null {
-    return this.#all.find((t) => t.id === id) ?? null;
-  }
-
-  /** A change's time: the relay's clock, never twice the same, after the op it replaces. */
+  /** A change's time: the relay's own clock (never a `?date=` preview's), never twice the same, after the op it
+   *  replaces. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.now()), this.#last + 1, after + 1);
+    this.#last = Math.max(Math.round(world.serverNow()), this.#last + 1, after + 1);
     return this.#last;
   }
   #set(id: string): WTaskSet | null {
     const op = this.#book.task(id);
     return op && !op.rm ? op : null;
   }
-  /** An op cleaned and checked as the record will (refused here: never queued to fail there), then sent. */
+  /** An op cleaned and checked as the record will, the note's size as JSON too (refused here: never queued to fail
+   *  there), then sent. */
   #send(type: 'wtask' | 'wdone' | 'wconf' | 'wnote', data: Record<string, unknown>): boolean {
     if (this.readOnly) return false;
     const d = wedClean(type, data);
-    if (!wedOpOf(type, d, { now: world.now() })) return false;
+    if (!wedOpOf(type, d, { now: world.serverNow() })) return false;
+    if (type === 'wnote' && JSON.stringify(d).length > WNOTE_DATA_CHARS) return false;
     return week.send(type, d).ok;
   }
   /** A task's whole state again with `ch` (no longer marked `imported`: a phone changed it). */
-  #put(op: WTaskSet, ch: Partial<Omit<WTaskSet, 'id' | 'c' | 'at' | 'imported'>> & { del?: number | undefined }): boolean {
+  #put(op: WTaskSet, ch: Partial<Pick<WTaskSet, 'title' | 'cat' | 'due' | 'start' | 'parent' | 'del'>>): boolean {
     const { imported: _i, rm: _rm, ...rest } = op;
     const next: Record<string, unknown> = { ...rest, ...ch, at: this.#now(op.at) };
     for (const k of Object.keys(next)) if (next[k] === undefined) delete next[k];
@@ -125,7 +141,6 @@ class WeddingBoard {
 
   /** A new task (a title and a due day; a start day optional): its id, or null. */
   addTask(t: { title: string; cat?: string; due: string; start?: string }): string | null {
-    if (!isValidDay(t.due) || (t.start && !isValidDay(t.start))) return null;
     const at = this.#now(), id = newTaskId(at);
     const ok = this.#send('wtask', { id, at, c: at, title: t.title, cat: t.cat ?? '', due: t.due, ...(t.start ? { start: t.start } : {}) });
     return ok ? id : null;
@@ -143,8 +158,6 @@ class WeddingBoard {
   editTask(id: string, ch: { title?: string; cat?: string; due?: string; start?: string }): boolean {
     const op = this.#set(id);
     if (!op) return false;
-    if (op.parent !== undefined && (ch.due !== undefined || ch.start !== undefined)) return false;
-    if ((ch.due !== undefined && !isValidDay(ch.due)) || (ch.start && !isValidDay(ch.start))) return false;
     return this.#put(op, {
       ...(ch.title !== undefined ? { title: ch.title } : {}),
       ...(ch.cat !== undefined ? { cat: ch.cat } : {}),
@@ -188,12 +201,17 @@ class WeddingBoard {
     return ok;
   }
 
-  /** Remove deleted tasks for good: one (and its deleted subtasks), or all of them (no id). Final. */
-  purge(id?: string): boolean {
-    const gone = this.deleted.filter((t) => id === undefined || t.id === id || t.parentId === id);
-    if (id !== undefined && !gone.some((t) => t.id === id)) return false;
+  /** Remove every deleted task for good (final). A live subtask of one (added while it was deleted, or restored alone)
+   *  loses its parent: a task of its own, as it shows. */
+  purge(): boolean {
+    const gone = this.deleted;
+    const ids = new Set(gone.map((t) => t.id));
     let ok = gone.length > 0;
     for (const t of gone) ok = this.#send('wtask', { id: t.id, at: this.#now(this.#book.task(t.id)?.at ?? 0), rm: true }) && ok;
+    for (const t of this.#all) {
+      const sub = ids.has(t.parentId) ? this.#set(t.id) : null;
+      if (sub) ok = this.#put(sub, { parent: undefined }) && ok;
+    }
     return ok;
   }
 
@@ -207,7 +225,6 @@ class WeddingBoard {
    *  was none; omitted: the held one). A save that crossed another's is kept with that one beside it (conflict), both
    *  shown until the next save, which settles it. */
   saveNote(md: string, from?: number | null): boolean {
-    if (md.length > WNOTE_CHARS) return false;
     const n = wedNote(this.#book);
     const base = from === undefined ? n?.at : from ?? undefined;
     if (n && n.md === md && !n.was && base === n.at) return true;
