@@ -63,7 +63,7 @@
   position: fixed; inset: 0; z-index: 10; overflow: hidden;
   background: var(--bg); color: var(--ink);
   font-family: var(--font-sans); font-size: 16px; font-weight: 400; line-height: 1.45;
-  font-feature-settings: normal; word-break: normal; line-break: auto; overflow-wrap: normal; text-align: left;
+  font-feature-settings: normal; word-break: normal; line-break: auto; overflow-wrap: normal; text-wrap: wrap; text-align: left;
   -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; -webkit-text-size-adjust: 100%;
 }
 .classic.classic * { letter-spacing: inherit !important; }
@@ -79,13 +79,14 @@
 .classic :focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; border-radius: 6px; }
 .classic :focus:not(:focus-visible) { outline: none; }
 .classic p, .classic ul, .classic figure, .classic h1, .classic h2 { margin: 0; }
-.classic button { font: inherit; color: inherit; }
+/* buttons as the browser draws them (the site never set their line height) */
+.classic button { font: inherit; color: inherit; line-height: normal; }
 @media (prefers-reduced-motion: reduce) {
   .classic * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
 }
 @keyframes cl-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
-.classic .guide { background: var(--bg); min-height: 100%; position: relative; }
+.classic .cguide { background: var(--bg); min-height: 100%; position: relative; }
 
 /* The back button belongs to the hero: it sits in the cover photo and scrolls away with it (the itinerary only). */
 .classic .backbtn {
@@ -144,7 +145,7 @@
   display: inline-flex; align-items: center; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2);
   font-family: inherit; font-size: 12.5px; font-weight: 700; letter-spacing: .02em !important; border-radius: var(--r-chip);
   cursor: pointer; transition: background .15s, border-color .15s, color .15s, transform .1s;
-  flex: 0 0 auto; gap: 7px; padding: 10px 15px; line-height: 1.45;
+  flex: 0 0 auto; gap: 7px; padding: 10px 15px;
 }
 .classic .filters button:active { transform: scale(.95); }
 .classic .filters button.active { background: var(--acc); border-color: var(--acc); color: #fff; }
@@ -324,7 +325,7 @@
 }
 .classic .tabbar-inner { max-width: var(--maxw); margin: 0 auto; display: flex; justify-content: space-around; }
 .classic .tabbtn {
-  flex: 1; color: var(--faint); padding: 11px 0 9px; cursor: pointer; border: 0; background: none; font-family: inherit;
+  flex: 1; color: var(--faint); padding: 11px 0 9px; cursor: pointer; border: 0; background: none; font-family: inherit; line-height: 1.45;
   display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; transition: color .15s;
 }
 .classic .tabbtn .lb { font-size: 10.5px; font-weight: 700; letter-spacing: .08em !important; text-transform: uppercase; line-height: 1.45; }
