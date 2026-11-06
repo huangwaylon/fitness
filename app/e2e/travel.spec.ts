@@ -6,8 +6,8 @@
 // original guide (`classic`) is the classic guide's (its own specs). The logic tier: the photos may come late, nothing
 // waits on them. Pictures (SHOTS=<dir>) of each screen, by day and at night.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
-import { islandQuery } from './island.ts';
+import { fromMenu, unfoldMenu } from './hud.ts';
+import { islandQuery, islandUp } from './island.ts';
 import { shot } from './shots.ts';
 import { gotoTrips, pickTrip, tripsSheet as sheet } from './trips.ts';
 import { nz } from '../src/lib/travel/trips/nz.ts';
@@ -43,7 +43,7 @@ test('km | mi under the list: kept on this phone', async ({ page }) => {
   await expect(sheet(page).locator('[data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
   expect(await page.evaluate(() => localStorage.getItem('island.travel.units'))).toBe('mi');
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'travel');
   await expect(sheet(page).locator('[data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
 });
@@ -146,7 +146,7 @@ test('reopening: the trip and its page as they were left', async ({ page }) => {
 
 test('offline before the first opening: the pill says so, もういちど opens it once back', async ({ page, context }) => {
   await page.goto(islandQuery('demo&date=2026-11-04T12:00'));
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await context.setOffline(true);
   await unfoldMenu(page);
   await page.locator('[data-hud-travel]').click();

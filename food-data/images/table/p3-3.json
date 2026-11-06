@@ -1,0 +1,2050 @@
+[
+ {
+  "key": "mext-10291",
+  "ja": "エスカルゴ 水煮缶詰",
+  "desc": "Canned escargot: shell-less boiled snail meats, small dark grey-brown curled coils, soft and glistening, piled in a small dish with a little clear brine",
+  "items": [
+   "mext:10291"
+  ]
+ },
+ {
+  "key": "mext-10293",
+  "ja": "かき 養殖 水煮",
+  "desc": "Boiled farmed oysters: plump shucked oysters, shrunken and opaque cream-grey with ruffled dark frilly edges, a few in a small bowl, no shells",
+  "items": [
+   "mext:10293"
+  ]
+ },
+ {
+  "key": "mext-10294",
+  "ja": "かき くん製油漬缶詰",
+  "desc": "Smoked oysters in oil: small shucked oysters smoked to a deep amber-brown, wrinkled and glossy, packed in golden oil in a small shallow dish",
+  "items": [
+   "mext:10294"
+  ]
+ },
+ {
+  "key": "mext-10296",
+  "ja": "さざえ 焼き",
+  "desc": "Grilled sazae turban shell: a heavy knobbly spiked grey-green spiral shell sitting upright, its opening bubbling with broth, a curled dark green-grey meat peeking out",
+  "items": [
+   "mext:10296"
+  ]
+ },
+ {
+  "key": "mext-10318",
+  "ja": "さるぼう 味付け缶詰",
+  "desc": "Canned seasoned ark clam (saruboo): small shell-less clam meats simmered in sweet soy, glossy reddish-brown morsels in a small dish with thick sauce",
+  "items": [
+   "mext:10318"
+  ]
+ },
+ {
+  "key": "mext-10413",
+  "ja": "しじみ 水煮",
+  "desc": "Boiled shijimi clams: tiny glossy black-brown clams with shells open showing small cream meats, a heap of them in a small bowl",
+  "items": [
+   "mext:10413"
+  ]
+ },
+ {
+  "key": "mext-10298",
+  "ja": "たいらがい 貝柱 生",
+  "desc": "Raw pen shell adductor (tairagai): large round thick ivory-white muscle discs like big scallops, semi-translucent and smooth, a few sliced in a small dish",
+  "items": [
+   "mext:10298"
+  ]
+ },
+ {
+  "key": "mext-10299",
+  "ja": "たにし 生",
+  "desc": "Raw tanishi: small freshwater mud snails with dark olive-brown conical spiral shells, smooth and wet, a handful in a small dish",
+  "items": [
+   "mext:10299"
+  ]
+ },
+ {
+  "key": "mext-10300",
+  "ja": "つぶ 生",
+  "desc": "Raw tsubu whelk: firm cream-white sliced whelk meat with a yellowish rim, crunchy-looking, laid beside a brown spiral whelk shell",
+  "items": [
+   "mext:10300"
+  ]
+ },
+ {
+  "key": "mext-10301",
+  "ja": "とこぶし 生",
+  "desc": "Raw tokobushi: small abalone with a flat oval brown-green shell showing a row of small holes, tan muscular meat underneath",
+  "items": [
+   "mext:10301"
+  ]
+ },
+ {
+  "key": "mext-10303",
+  "ja": "とりがい 斧足 生",
+  "desc": "Raw torigai cockle foot: opened flat curved triangles, glossy purple-black on the outer face and creamy white beneath, laid in a small dish",
+  "items": [
+   "mext:10303"
+  ]
+ },
+ {
+  "key": "mext-10304",
+  "ja": "ばい 生",
+  "desc": "Raw bai whelk: small smooth spiral shells, creamy white with neat brown spots, pointed tips, a few on a plate",
+  "items": [
+   "mext:10304"
+  ]
+ },
+ {
+  "key": "mext-10305",
+  "ja": "ばかがい 生",
+  "desc": "Raw bakagai (aoyagi): bright orange-red tongue-shaped clam feet, glossy and pointed, curled on a small dish, with a pale smooth clam shell",
+  "items": [
+   "mext:10305"
+  ]
+ },
+ {
+  "key": "mext-10307",
+  "ja": "はまぐり 水煮",
+  "desc": "Boiled hamaguri clams: plump cream and pale orange cooked clam meats sitting in their opened smooth glossy patterned shells in a small bowl",
+  "items": [
+   "mext:10307"
+  ]
+ },
+ {
+  "key": "mext-10308",
+  "ja": "はまぐり 焼き",
+  "desc": "Grilled hamaguri clams: large smooth glossy clams with brown-grey patterned shells, popped open on a grill, juicy plump meats bubbling inside",
+  "items": [
+   "mext:10308"
+  ]
+ },
+ {
+  "key": "mext-10309",
+  "ja": "はまぐり つくだ煮",
+  "desc": "Hamaguri tsukudani: small clam meats simmered down in sweet soy, dark brown, glossy and sticky, piled in a small dish",
+  "items": [
+   "mext:10309"
+  ]
+ },
+ {
+  "key": "mext-10310",
+  "ja": "ちょうせんはまぐり 生",
+  "desc": "Raw chosen hamaguri: large heavy clams with thick smooth pale grey-brown shells and faint growth lines, one opened to show raw cream meat",
+  "items": [
+   "mext:10310"
+  ]
+ },
+ {
+  "key": "mext-10312",
+  "ja": "ほたてがい 水煮",
+  "desc": "Boiled scallop: a whole shell-less cooked scallop, white round adductor with the orange crescent roe and grey frilly mantle attached, in a small dish",
+  "items": [
+   "mext:10312"
+  ]
+ },
+ {
+  "key": "mext-10414",
+  "ja": "ほたてがい 貝柱 焼き",
+  "desc": "Grilled scallop adductors: thick round white cylinders seared golden-brown on top and bottom, glistening, on a small plate",
+  "items": [
+   "mext:10414"
+  ]
+ },
+ {
+  "key": "mext-10314",
+  "ja": "ほたてがい 貝柱 煮干し",
+  "desc": "Dried scallop adductors (hoshi kaibashira): small hard round discs, translucent amber-gold and fibrous, a few in a small dish",
+  "items": [
+   "mext:10314"
+  ]
+ },
+ {
+  "key": "mext-10316",
+  "ja": "ほっきがい 生",
+  "desc": "Raw hokkigai surf clam: sliced clam meat opened flat, dark purple tips fading to pink-red and white at the base, on a small dish",
+  "items": [
+   "mext:10316"
+  ]
+ },
+ {
+  "key": "mext-10317",
+  "ja": "みるがい 水管 生",
+  "desc": "Raw mirugai geoduck siphon: peeled siphon sliced thin, pale cream with light brown tips, crunchy and glossy, fanned on a small plate",
+  "items": [
+   "mext:10317"
+  ]
+ },
+ {
+  "key": "mext-10467",
+  "ja": "アルゼンチンあかえび 生",
+  "desc": "Raw Argentine red shrimp: whole long shrimp already deep red-crimson when raw, glossy shell, long antennae, on a plate",
+  "items": [
+   "mext:10467"
+  ]
+ },
+ {
+  "key": "mext-10468",
+  "ja": "アルゼンチンあかえび ゆで",
+  "desc": "Boiled Argentine red shrimp: whole shrimp curled into a C, bright orange-red shell, firm opaque white flesh showing at the tail",
+  "items": [
+   "mext:10468"
+  ]
+ },
+ {
+  "key": "mext-10469",
+  "ja": "アルゼンチンあかえび 焼き",
+  "desc": "Grilled Argentine red shrimp: whole red shrimp with charred dark spots on the shell, straight and glossy, on a plate",
+  "items": [
+   "mext:10469"
+  ]
+ },
+ {
+  "key": "mext-10320",
+  "ja": "いせえび 生",
+  "desc": "Raw ise-ebi spiny lobster: large lobster with a dark reddish-brown spiny shell, thick long antennae, no claws, on a plate",
+  "items": [
+   "mext:10320"
+  ]
+ },
+ {
+  "key": "mext-10322",
+  "ja": "くるまえび 養殖 ゆで",
+  "desc": "Boiled kuruma prawns: whole prawns curled into C shapes with bold red and white stripes across the body, on a small plate",
+  "items": [
+   "mext:10322"
+  ]
+ },
+ {
+  "key": "mext-10323",
+  "ja": "くるまえび 養殖 焼き",
+  "desc": "Grilled kuruma prawns: whole straight prawns with red and white banded shells, lightly charred, on a plate",
+  "items": [
+   "mext:10323"
+  ]
+ },
+ {
+  "key": "mext-10431",
+  "ja": "さくらえび 生",
+  "desc": "Raw sakura shrimp: a heap of tiny translucent pink shrimp with black eyes, glistening wet, in a small dish",
+  "items": [
+   "mext:10431"
+  ]
+ },
+ {
+  "key": "mext-10324",
+  "ja": "さくらえび ゆで",
+  "desc": "Boiled sakura shrimp: a heap of tiny opaque bright pink-orange shrimp, curled, in a small dish",
+  "items": [
+   "mext:10324"
+  ]
+ },
+ {
+  "key": "mext-10326",
+  "ja": "さくらえび 煮干し",
+  "desc": "Dried sakura shrimp: tiny crisp papery pink-orange dried shrimp with long whiskers, light and loose, in a small dish",
+  "items": [
+   "mext:10326"
+  ]
+ },
+ {
+  "key": "mext-10327",
+  "ja": "大正えび 生",
+  "desc": "Raw taisho fleshy prawns: large whole prawns with smooth translucent grey-blue shells and long antennae, on a plate",
+  "items": [
+   "mext:10327"
+  ]
+ },
+ {
+  "key": "mext-10328",
+  "ja": "しばえび 生",
+  "desc": "Raw shiba shrimp: small whole greyish translucent shrimp with faint speckles, a handful on a small plate",
+  "items": [
+   "mext:10328"
+  ]
+ },
+ {
+  "key": "mext-10331",
+  "ja": "えび つくだ煮",
+  "desc": "Shrimp tsukudani: small whole shrimp simmered in sweet soy, glossy dark reddish-brown and sticky, piled in a small dish",
+  "items": [
+   "mext:10331"
+  ]
+ },
+ {
+  "key": "mext-10332",
+  "ja": "がざみ 生",
+  "desc": "Raw gazami swimming crab: a crab with a wide diamond-shaped olive-brown shell spiked at the sides, blue-tinged claws, flat paddle back legs",
+  "items": [
+   "mext:10332"
+  ]
+ },
+ {
+  "key": "mext-10333",
+  "ja": "毛がに 生",
+  "desc": "Raw kegani hairy crab: small round crab with a dull brownish-purple shell covered in fine short bristles, short legs",
+  "items": [
+   "mext:10333"
+  ]
+ },
+ {
+  "key": "mext-10334",
+  "ja": "毛がに ゆで",
+  "desc": "Boiled kegani hairy crab: small round crab turned bright red-orange, shell covered in fine short bristles, short legs",
+  "items": [
+   "mext:10334"
+  ]
+ },
+ {
+  "key": "mext-10335",
+  "ja": "ずわいがに 生",
+  "desc": "Raw zuwaigani snow crab: a crab with a small round brownish-orange shell and long slender legs, raw and dull",
+  "items": [
+   "mext:10335"
+  ]
+ },
+ {
+  "key": "mext-10338",
+  "ja": "たらばがに 生",
+  "desc": "Raw taraba king crab: thick spiny legs with a dark red-purple shell, one leg cut showing white raw meat",
+  "items": [
+   "mext:10338"
+  ]
+ },
+ {
+  "key": "mext-10340",
+  "ja": "たらばがに 水煮缶詰",
+  "desc": "Canned king crab meat: chunks and shreds of white crab leg meat tinged red on the edges, in a small dish",
+  "items": [
+   "mext:10340"
+  ]
+ },
+ {
+  "key": "mext-10341",
+  "ja": "かに がん漬",
+  "desc": "Gan-zuke: salted fermented crushed crab paste from Saga, a chunky reddish-brown paste with shell bits and red chilli flecks, in a small dish",
+  "items": [
+   "mext:10341"
+  ]
+ },
+ {
+  "key": "mext-10342",
+  "ja": "あかいか 生",
+  "desc": "Raw akaika (neon flying squid): a long squid with reddish-purple speckled skin and a pointed tail fin, on a plate",
+  "items": [
+   "mext:10342"
+  ]
+ },
+ {
+  "key": "mext-10343",
+  "ja": "けんさきいか 生",
+  "desc": "Raw kensaki squid: a slender squid with translucent reddish-brown skin and long diamond fins, on a plate",
+  "items": [
+   "mext:10343"
+  ]
+ },
+ {
+  "key": "mext-10344",
+  "ja": "こういか 生",
+  "desc": "Raw kouika cuttlefish: a broad oval cuttlefish with brown striped skin, the cut body showing thick pure white flesh",
+  "items": [
+   "mext:10344"
+  ]
+ },
+ {
+  "key": "mext-10346",
+  "ja": "するめいか 水煮",
+  "desc": "Boiled surume squid: opaque white squid rings and curled tentacles, a small pile in a small bowl",
+  "items": [
+   "mext:10346"
+  ]
+ },
+ {
+  "key": "mext-10347",
+  "ja": "するめいか 焼き",
+  "desc": "Grilled surume squid: a whole squid body grilled glossy golden-brown with scored lines, tentacles alongside, on a plate",
+  "items": [
+   "mext:10347"
+  ]
+ },
+ {
+  "key": "mext-10417",
+  "ja": "するめいか 胴 皮つき 生",
+  "desc": "Raw surume squid body, skin on: a squid tube with reddish-brown speckled translucent skin, a cut ring showing white flesh",
+  "items": [
+   "mext:10417"
+  ]
+ },
+ {
+  "key": "mext-10418",
+  "ja": "するめいか 胴 皮なし 生",
+  "desc": "Raw surume squid body, skinned: smooth glossy translucent white squid flesh opened flat, on a small plate",
+  "items": [
+   "mext:10418"
+  ]
+ },
+ {
+  "key": "mext-10419",
+  "ja": "するめいか 胴 皮なし 天ぷら",
+  "desc": "Squid tempura: strips of squid in a light crisp pale golden lacy batter, on a plate",
+  "items": [
+   "mext:10419"
+  ]
+ },
+ {
+  "key": "mext-10470",
+  "ja": "するめいか 胴 皮なし フライ",
+  "desc": "Squid fry: squid rings coated in coarse golden-brown breadcrumbs, deep-fried, on a plate",
+  "items": [
+   "mext:10470"
+  ]
+ },
+ {
+  "key": "mext-10420",
+  "ja": "するめいか 耳・足 生",
+  "desc": "Raw squid fins and tentacles: triangle fins and long tentacles with small suckers, reddish-speckled skin, on a small plate",
+  "items": [
+   "mext:10420"
+  ]
+ },
+ {
+  "key": "mext-10350",
+  "ja": "ほたるいか くん製",
+  "desc": "Smoked firefly squid: tiny whole squids smoked dark reddish-brown and semi-dry, a few in a small dish",
+  "items": [
+   "mext:10350"
+  ]
+ },
+ {
+  "key": "mext-10351",
+  "ja": "ほたるいか つくだ煮",
+  "desc": "Firefly squid tsukudani: tiny whole squids simmered in sweet soy, glossy dark brown and sticky, in a small dish",
+  "items": [
+   "mext:10351"
+  ]
+ },
+ {
+  "key": "mext-10355",
+  "ja": "いか くん製",
+  "desc": "Smoked squid snack (ika kunsei): chewy shredded strips, white inside with a reddish-brown edge, a loose pile in a small dish",
+  "items": [
+   "mext:10355"
+  ]
+ },
+ {
+  "key": "mext-10356",
+  "ja": "切りいかあめ煮",
+  "desc": "Candied shredded squid (kiri ika ame-ni): thin dried squid shreds bound in amber sugar syrup into glossy sticky clusters with sesame seeds",
+  "items": [
+   "mext:10356"
+  ]
+ },
+ {
+  "key": "mext-10357",
+  "ja": "いかあられ",
+  "desc": "Ika arare: bite-size cubes of seasoned dried squid, light golden-brown and slightly puffed, a pile in a small dish",
+  "items": [
+   "mext:10357"
+  ]
+ },
+ {
+  "key": "mext-10359",
+  "ja": "いか 味付け缶詰",
+  "desc": "Canned seasoned squid: squid rings and pieces simmered in soy, brown and glossy, in a small dish with dark sauce",
+  "items": [
+   "mext:10359"
+  ]
+ },
+ {
+  "key": "mext-10360",
+  "ja": "いいだこ 生",
+  "desc": "Raw iidako baby octopus: small whole octopus, grey-brown, with a round head full of rice-like eggs and short curled arms",
+  "items": [
+   "mext:10360"
+  ]
+ },
+ {
+  "key": "mext-10471",
+  "ja": "まだこ 皮なし 生",
+  "desc": "Raw skinned madako octopus: pale cream translucent octopus flesh with the skin and suckers removed, sliced, on a small plate",
+  "items": [
+   "mext:10471"
+  ]
+ },
+ {
+  "key": "mext-10472",
+  "ja": "まだこ 蒸しだこ",
+  "desc": "Steamed octopus (mushi dako): a curled tentacle with deep red-maroon skin and pale suckers, cut slices showing white flesh",
+  "items": [
+   "mext:10472"
+  ]
+ },
+ {
+  "key": "mext-10473",
+  "ja": "まだこ 蒸しだこ 油いため",
+  "desc": "Stir-fried steamed octopus: chunky slices of red-skinned octopus glossy with oil and lightly browned, on a plate",
+  "items": [
+   "mext:10473"
+  ]
+ },
+ {
+  "key": "mext-10474",
+  "ja": "まだこ 蒸しだこ 素揚げ",
+  "desc": "Plain deep-fried octopus (su-age): chunks of red octopus fried without batter, shiny, darkened and blistered, on a plate",
+  "items": [
+   "mext:10474"
+  ]
+ },
+ {
+  "key": "mext-10432",
+  "ja": "みずだこ 生",
+  "desc": "Raw mizudako giant octopus: a thick tentacle slice with pale flesh, mottled reddish-brown skin and large round suckers",
+  "items": [
+   "mext:10432"
+  ]
+ },
+ {
+  "key": "mext-10363",
+  "ja": "あみ つくだ煮",
+  "desc": "Ami tsukudani: tiny mysid shrimp simmered in sweet soy, a sticky dark brown cluster in a small dish",
+  "items": [
+   "mext:10363"
+  ]
+ },
+ {
+  "key": "mext-10364",
+  "ja": "あみ 塩辛",
+  "desc": "Ami shiokara: salted fermented tiny shrimp, a wet pinkish-grey paste with whole tiny shrimp visible, in a small dish",
+  "items": [
+   "mext:10364"
+  ]
+ },
+ {
+  "key": "mext-10366",
+  "ja": "粒うに",
+  "desc": "Tsubu uni: salted sea urchin roe, granular orange-yellow paste with visible grains, in a small glass jar",
+  "items": [
+   "mext:10366"
+  ]
+ },
+ {
+  "key": "mext-10367",
+  "ja": "練りうに",
+  "desc": "Neri uni: smooth sea urchin paste, thick glossy ochre-orange, in a small dish",
+  "items": [
+   "mext:10367"
+  ]
+ },
+ {
+  "key": "mext-10368",
+  "ja": "おきあみ 生",
+  "desc": "Raw krill (okiami): a heap of tiny translucent pinkish krill with black eyes, in a small dish",
+  "items": [
+   "mext:10368"
+  ]
+ },
+ {
+  "key": "mext-10369",
+  "ja": "おきあみ ゆで",
+  "desc": "Boiled krill: a heap of tiny bright pink-orange cooked krill, in a small dish",
+  "items": [
+   "mext:10369"
+  ]
+ },
+ {
+  "key": "mext-10370",
+  "ja": "くらげ 塩蔵 塩抜き",
+  "desc": "Salted jellyfish, desalted: thin crunchy translucent amber-cream shreds like glassy noodles, piled in a small dish",
+  "items": [
+   "mext:10370"
+  ]
+ },
+ {
+  "key": "mext-10371",
+  "ja": "しゃこ ゆで",
+  "desc": "Boiled mantis shrimp (shako): peeled flat segmented meats, purple-grey on top and pinkish beneath, on a small plate",
+  "items": [
+   "mext:10371"
+  ]
+ },
+ {
+  "key": "mext-10372",
+  "ja": "なまこ 生",
+  "desc": "Raw sea cucumber (namako): a cucumber-shaped creature with dark green-brown bumpy skin, sliced showing firm cream-coloured flesh",
+  "items": [
+   "mext:10372"
+  ]
+ },
+ {
+  "key": "mext-10373",
+  "ja": "なまこ このわた",
+  "desc": "Konowata: salted sea cucumber entrails, long slimy amber-orange strands in a small dish",
+  "items": [
+   "mext:10373"
+  ]
+ },
+ {
+  "key": "mext-10374",
+  "ja": "ほや 生",
+  "desc": "Raw hoya sea squirt: a knobbly bright orange-red bumpy shell like a small pineapple, cut open showing bright orange flesh",
+  "items": [
+   "mext:10374"
+  ]
+ },
+ {
+  "key": "mext-10375",
+  "ja": "ほや 塩辛",
+  "desc": "Hoya shiokara: chunks of salted fermented sea squirt, glistening orange, in a small dish",
+  "items": [
+   "mext:10375"
+  ]
+ },
+ {
+  "key": "mext-10423",
+  "ja": "黒はんぺん",
+  "desc": "Kuro hanpen: Shizuoka dark fish cake made from whole sardines, flat half-moon patties, grey with darker speckles, not white",
+  "items": [
+   "mext:10423"
+  ]
+ },
+ {
+  "key": "mext-10377",
+  "ja": "昆布巻きかまぼこ",
+  "desc": "Kombu-maki kamaboko: fish cake rolled around kelp, round slices showing a spiral of dark green kombu in white fish paste",
+  "items": [
+   "mext:10377"
+  ]
+ },
+ {
+  "key": "mext-10378",
+  "ja": "す巻きかまぼこ",
+  "desc": "Su-maki kamaboko: a cylindrical fish cake with ridged grooves from a straw mat on the outside, cut slices white inside",
+  "items": [
+   "mext:10378"
+  ]
+ },
+ {
+  "key": "mext-10380",
+  "ja": "焼き抜きかまぼこ",
+  "desc": "Yakinuki kamaboko: a loaf of baked fish cake with a browned top crust and firm white inside, cut slices, no wooden board",
+  "items": [
+   "mext:10380"
+  ]
+ },
+ {
+  "key": "mext-10387",
+  "ja": "魚肉ハム",
+  "desc": "Fish ham: round smooth pink slices like ham made from fish, with tiny white fat dots, fanned on a plate",
+  "items": [
+   "mext:10387"
+  ]
+ },
+ {
+  "key": "mext-11002",
+  "ja": "いのぶた肉 脂身つき 生",
+  "desc": "Raw inobuta (boar-pig) meat: a slab of rosy-red pork-like meat with a thick white fat rim",
+  "items": [
+   "mext:11002"
+  ]
+ },
+ {
+  "key": "mext-11003",
+  "ja": "うさぎ肉 赤肉 生",
+  "desc": "Raw rabbit meat: pale pink lean meat pieces, fine-grained with no fat, on a plate",
+  "items": [
+   "mext:11003"
+  ]
+ },
+ {
+  "key": "mext-11006",
+  "ja": "和牛肩 赤肉 生",
+  "desc": "Raw wagyu shoulder, lean: a block of deep red lean beef with almost no marbling, on a plate",
+  "items": [
+   "mext:11006",
+   "mext:11032",
+   "mext:11062"
+  ]
+ },
+ {
+  "key": "mext-11007",
+  "ja": "和牛肩 脂身 生",
+  "desc": "Raw beef fat: chunks of pure creamy white fat, soft and waxy, no red meat, on a plate",
+  "items": [
+   "mext:11007",
+   "mext:11033",
+   "mext:11063",
+   "mext:11014",
+   "mext:11042",
+   "mext:11070",
+   "mext:11022",
+   "mext:11052",
+   "mext:11078",
+   "mext:11259",
+   "mext:11266"
+  ]
+ },
+ {
+  "key": "mext-11010",
+  "ja": "和牛肩ロース 赤肉 生",
+  "desc": "Raw wagyu chuck eye, lean: deep red beef slices with fine white marbling flecks, on a plate",
+  "items": [
+   "mext:11010",
+   "mext:11036",
+   "mext:11066"
+  ]
+ },
+ {
+  "key": "mext-11249",
+  "ja": "和牛リブロース 脂身つき ゆで",
+  "desc": "Boiled ribeye with fat: thin shabu-shabu beef slices cooked grey-brown, with white fat edges, folded in a small bowl",
+  "items": [
+   "mext:11249",
+   "mext:11039",
+   "mext:11269",
+   "mext:11309",
+   "mext:11256"
+  ]
+ },
+ {
+  "key": "mext-11248",
+  "ja": "和牛リブロース 脂身つき 焼き",
+  "desc": "Grilled ribeye with fat: a beef steak with a browned seared crust and visible marbling, sliced showing a pink centre",
+  "items": [
+   "mext:11248",
+   "mext:11038",
+   "mext:11268",
+   "mext:11255"
+  ]
+ },
+ {
+  "key": "mext-11013",
+  "ja": "和牛リブロース 赤肉 生",
+  "desc": "Raw ribeye, lean: a slab of deep red beef with light marbling, the fat cap trimmed off, on a plate",
+  "items": [
+   "mext:11013",
+   "mext:11041",
+   "mext:11069",
+   "mext:11258"
+  ]
+ },
+ {
+  "key": "mext-11017",
+  "ja": "和牛サーロイン 赤肉 生",
+  "desc": "Raw sirloin, lean: a thick slab of red sirloin beef with the fat cap removed, fine grain, on a plate",
+  "items": [
+   "mext:11017",
+   "mext:11045",
+   "mext:11073"
+  ]
+ },
+ {
+  "key": "mext-11020",
+  "ja": "和牛もも肉 脂身なし 生",
+  "desc": "Raw beef round, lean: a block of deep red lean beef with no fat, firm and fine-grained, on a plate",
+  "items": [
+   "mext:11020",
+   "mext:11076",
+   "mext:11021",
+   "mext:11051",
+   "mext:11077",
+   "mext:11025",
+   "mext:11055",
+   "mext:11081",
+   "mext:11028",
+   "mext:11058",
+   "mext:11084",
+   "mext:11265"
+  ]
+ },
+ {
+  "key": "mext-11251",
+  "ja": "和牛もも肉 脂身なし ゆで",
+  "desc": "Boiled lean beef: slices of lean beef cooked through to grey-brown, no fat, in a small bowl",
+  "items": [
+   "mext:11251",
+   "mext:11050",
+   "mext:11271",
+   "mext:11301",
+   "mext:11264"
+  ]
+ },
+ {
+  "key": "mext-11250",
+  "ja": "和牛もも肉 脂身なし 焼き",
+  "desc": "Grilled lean beef: a lean steak with a browned seared surface and pink inside, sliced, on a plate",
+  "items": [
+   "mext:11250",
+   "mext:11049",
+   "mext:11270",
+   "mext:11302",
+   "mext:11263"
+  ]
+ },
+ {
+  "key": "mext-11023",
+  "ja": "和牛そともも 脂身つき 生",
+  "desc": "Raw outside round with fat: a block of dark red lean beef with a thin white fat layer along one side",
+  "items": [
+   "mext:11023",
+   "mext:11024",
+   "mext:11053",
+   "mext:11054",
+   "mext:11079",
+   "mext:11080",
+   "mext:11261",
+   "mext:11262"
+  ]
+ },
+ {
+  "key": "mext-11026",
+  "ja": "和牛ランプ 脂身つき 生",
+  "desc": "Raw beef rump with fat: a red rump steak with a white fat cap along one edge, on a plate",
+  "items": [
+   "mext:11026",
+   "mext:11027",
+   "mext:11056",
+   "mext:11057",
+   "mext:11082",
+   "mext:11083"
+  ]
+ },
+ {
+  "key": "mext-11029",
+  "ja": "和牛ヒレ 赤肉 生",
+  "desc": "Raw beef fillet: a thick round tenderloin medallion, deep red, very fine and tender, no fat, on a plate",
+  "items": [
+   "mext:11029",
+   "mext:11267"
+  ]
+ },
+ {
+  "key": "mext-11310",
+  "ja": "国産牛肩 脂身つき 焼き",
+  "desc": "Grilled beef shoulder with fat: browned beef slices with fat edges and grill marks, on a plate",
+  "items": [
+   "mext:11310"
+  ]
+ },
+ {
+  "key": "mext-11252",
+  "ja": "国産牛バラ 脂身つき 焼き",
+  "desc": "Grilled beef belly (karubi): thin short rib slices streaked with fat, browned and glossy with grill marks, on a plate",
+  "items": [
+   "mext:11252"
+  ]
+ },
+ {
+  "key": "mext-11253",
+  "ja": "国産牛ヒレ 赤肉 焼き",
+  "desc": "Grilled beef fillet: a thick round fillet steak with a browned crust, cut to show a pink centre, on a plate",
+  "items": [
+   "mext:11253"
+  ]
+ },
+ {
+  "key": "mext-11254",
+  "ja": "交雑牛リブロース 脂身つき 生",
+  "desc": "Raw crossbred ribeye with fat: red beef slices heavily marbled with white fat, on a plate",
+  "items": [
+   "mext:11254",
+   "mext:11257"
+  ]
+ },
+ {
+  "key": "mext-11260",
+  "ja": "交雑牛バラ 脂身つき 生",
+  "desc": "Raw beef belly: slices of short rib in alternating layers of red meat and white fat, on a plate",
+  "items": [
+   "mext:11260"
+  ]
+ },
+ {
+  "key": "mext-11086",
+  "ja": "子牛リブロース 脂身なし 生",
+  "desc": "Raw veal rib loin: pale pink lean veal slab, much lighter than beef, fine grain, on a plate",
+  "items": [
+   "mext:11086"
+  ]
+ },
+ {
+  "key": "mext-11087",
+  "ja": "子牛バラ 脂身なし 生",
+  "desc": "Raw veal belly: pale pink layered veal belly meat with thin pale fat seams, on a plate",
+  "items": [
+   "mext:11087"
+  ]
+ },
+ {
+  "key": "mext-11088",
+  "ja": "子牛もも肉 脂身なし 生",
+  "desc": "Raw veal round: a pale pink lean veal block, smooth and fine, no fat, on a plate",
+  "items": [
+   "mext:11088"
+  ]
+ },
+ {
+  "key": "mext-11091",
+  "ja": "牛ハツ 生",
+  "desc": "Raw beef heart (hatsu): dense dark red muscle slices with a white fat edge, on a plate",
+  "items": [
+   "mext:11091"
+  ]
+ },
+ {
+  "key": "mext-11093",
+  "ja": "牛マメ（じん臓） 生",
+  "desc": "Raw beef kidney: a dark red-brown kidney made of many small lobes like a cluster, on a plate",
+  "items": [
+   "mext:11093"
+  ]
+ },
+ {
+  "key": "mext-11095",
+  "ja": "牛ハチノス ゆで",
+  "desc": "Boiled honeycomb tripe (hachinosu): pale grey-white tripe with a raised hexagonal honeycomb pattern, cut pieces in a small dish",
+  "items": [
+   "mext:11095"
+  ]
+ },
+ {
+  "key": "mext-11096",
+  "ja": "牛センマイ 生",
+  "desc": "Raw beef omasum (senmai): thin dark grey-black leaf-like pleats covered in tiny bumps, sliced, on a small plate",
+  "items": [
+   "mext:11096"
+  ]
+ },
+ {
+  "key": "mext-11097",
+  "ja": "牛ギアラ ゆで",
+  "desc": "Boiled beef abomasum (giara): thick folded chewy strips, brownish-grey with pinkish fatty patches, on a small plate",
+  "items": [
+   "mext:11097"
+  ]
+ },
+ {
+  "key": "mext-11100",
+  "ja": "牛直腸 生",
+  "desc": "Raw beef rectum: thick-walled pinkish-white tube of intestine, cut into rings, on a plate",
+  "items": [
+   "mext:11100"
+  ]
+ },
+ {
+  "key": "mext-11102",
+  "ja": "牛子宮 ゆで",
+  "desc": "Boiled beef uterus: pale pinkish-white chewy curved tube slices, on a small plate",
+  "items": [
+   "mext:11102"
+  ]
+ },
+ {
+  "key": "mext-11296",
+  "ja": "牛ハラミ ゆで",
+  "desc": "Boiled beef skirt (harami): fibrous strips of diaphragm meat cooked to grey-brown, coarse grain visible, in a small dish",
+  "items": [
+   "mext:11296"
+  ]
+ },
+ {
+  "key": "mext-11106",
+  "ja": "味付け缶詰",
+  "desc": "Canned seasoned beef (yamato-ni): shreds and chunks of beef simmered dark brown in sweet soy, glossy, in a small dish",
+  "items": [
+   "mext:11106"
+  ]
+ },
+ {
+  "key": "mext-11108",
+  "ja": "スモークタン",
+  "desc": "Smoked beef tongue: oval slices, dark pink inside with a darker brown smoked rim, fine grain, fanned on a plate",
+  "items": [
+   "mext:11108"
+  ]
+ },
+ {
+  "key": "mext-11110",
+  "ja": "くじら肉 赤肉 生",
+  "desc": "Raw whale meat: very dark crimson, almost black-red lean meat cut into sashimi slices, on a plate",
+  "items": [
+   "mext:11110"
+  ]
+ },
+ {
+  "key": "mext-11111",
+  "ja": "くじら うねす 生",
+  "desc": "Raw whale unesu: ventral groove blubber, thick white fat with striped pinkish ridged layers, sliced, on a plate",
+  "items": [
+   "mext:11111"
+  ]
+ },
+ {
+  "key": "mext-11112",
+  "ja": "くじら 本皮 生",
+  "desc": "Raw whale skin (honkawa): black skin over a thick layer of white blubber, cut blocks, on a plate",
+  "items": [
+   "mext:11112"
+  ]
+ },
+ {
+  "key": "mext-11113",
+  "ja": "さらしくじら",
+  "desc": "Sarashi kujira: thin wavy frilly curls of white blanched whale blubber, translucent edges, in a small dish",
+  "items": [
+   "mext:11113"
+  ]
+ },
+ {
+  "key": "mext-11114",
+  "ja": "鹿 あかしか 赤肉 生",
+  "desc": "Raw venison, lean: a block of very dark red lean deer meat with no fat, on a plate",
+  "items": [
+   "mext:11114",
+   "mext:11294",
+   "mext:11295",
+   "mext:11311"
+  ]
+ },
+ {
+  "key": "mext-11117",
+  "ja": "豚肩 赤肉 生",
+  "desc": "Raw pork shoulder, lean: a block of pink lean pork, slightly coarse, no fat, on a plate",
+  "items": [
+   "mext:11117",
+   "mext:11143"
+  ]
+ },
+ {
+  "key": "mext-11118",
+  "ja": "豚肩 脂身 生",
+  "desc": "Raw pork fat: chunks of soft pure white pork fat, no meat, on a plate",
+  "items": [
+   "mext:11118",
+   "mext:11122",
+   "mext:11128",
+   "mext:11135",
+   "mext:11139",
+   "mext:11144",
+   "mext:11148",
+   "mext:11152",
+   "mext:11157",
+   "mext:11161"
+  ]
+ },
+ {
+  "key": "mext-11121",
+  "ja": "豚肩ロース 赤肉 生",
+  "desc": "Raw pork shoulder loin, lean: pink lean pork slices with fine fat streaks, on a plate",
+  "items": [
+   "mext:11121",
+   "mext:11147"
+  ]
+ },
+ {
+  "key": "mext-11125",
+  "ja": "豚ロース 脂身つき ゆで",
+  "desc": "Boiled pork loin with fat: thin shabu-shabu pork slices cooked pale greyish-white with a white fat edge, in a small bowl",
+  "items": [
+   "mext:11125"
+  ]
+ },
+ {
+  "key": "mext-11127",
+  "ja": "豚ロース 赤肉 生",
+  "desc": "Raw pork loin, lean: a pale pink lean pork slab with no fat, smooth grain, on a plate",
+  "items": [
+   "mext:11127",
+   "mext:11134",
+   "mext:11138",
+   "mext:11151",
+   "mext:11156",
+   "mext:11160"
+  ]
+ },
+ {
+  "key": "mext-11133",
+  "ja": "豚もも肉 脂身なし ゆで",
+  "desc": "Boiled lean pork: pale greyish-white cooked lean pork slices, no fat, in a small bowl",
+  "items": [
+   "mext:11133"
+  ]
+ },
+ {
+  "key": "mext-11132",
+  "ja": "豚もも肉 脂身なし 焼き",
+  "desc": "Grilled lean pork: lean pork slices browned on the surface and white inside, on a plate",
+  "items": [
+   "mext:11132"
+  ]
+ },
+ {
+  "key": "mext-11136",
+  "ja": "豚そともも 脂身つき 生",
+  "desc": "Raw pork with fat: a block of pink lean pork with a white fat layer along one side, on a plate",
+  "items": [
+   "mext:11136",
+   "mext:11137",
+   "mext:11141",
+   "mext:11142",
+   "mext:11154",
+   "mext:11155",
+   "mext:11158",
+   "mext:11159"
+  ]
+ },
+ {
+  "key": "mext-11278",
+  "ja": "豚ヒレ 赤肉 焼き",
+  "desc": "Grilled pork fillet: round tenderloin medallions browned outside, pale white inside, on a plate",
+  "items": [
+   "mext:11278"
+  ]
+ },
+ {
+  "key": "mext-11145",
+  "ja": "豚肩ロース 脂身つき 生（中型種）",
+  "desc": "Raw pork shoulder loin with fat: pink pork slices marbled with streaks and seams of white fat, on a plate",
+  "items": [
+   "mext:11145",
+   "mext:11146"
+  ]
+ },
+ {
+  "key": "mext-11149",
+  "ja": "豚ロース 脂身つき 生（中型種）",
+  "desc": "Raw pork loin with fat: a pink pork loin chop with a thick white fat rim, on a plate",
+  "items": [
+   "mext:11149",
+   "mext:11150"
+  ]
+ },
+ {
+  "key": "mext-11153",
+  "ja": "豚バラ 脂身つき 生（中型種）",
+  "desc": "Raw pork belly: a slab showing alternating stripes of pink meat and white fat, on a plate",
+  "items": [
+   "mext:11153"
+  ]
+ },
+ {
+  "key": "mext-11162",
+  "ja": "豚ヒレ 赤肉 生（中型種）",
+  "desc": "Raw pork tenderloin: a long slender cylinder of pale pink lean pork, cut end showing fine grain, on a plate",
+  "items": [
+   "mext:11162"
+  ]
+ },
+ {
+  "key": "mext-11312",
+  "ja": "豚頭部 ジョウルミート 生",
+  "desc": "Raw pork jowl (tontoro): flat pinkish-white slices densely marbled with fat, on a plate",
+  "items": [
+   "mext:11312"
+  ]
+ },
+ {
+  "key": "mext-11313",
+  "ja": "豚頭部 ジョウルミート 焼き",
+  "desc": "Grilled pork jowl (tontoro): fatty marbled slices grilled golden-brown with crisp edges, on a plate",
+  "items": [
+   "mext:11313"
+  ]
+ },
+ {
+  "key": "mext-11164",
+  "ja": "豚タン 生",
+  "desc": "Raw pork tongue: a whole pink tongue with a rough textured surface, some slices cut, on a plate",
+  "items": [
+   "mext:11164"
+  ]
+ },
+ {
+  "key": "mext-11165",
+  "ja": "豚ハツ 生",
+  "desc": "Raw pork heart: small dark red dense heart sliced open, on a plate",
+  "items": [
+   "mext:11165"
+  ]
+ },
+ {
+  "key": "mext-11167",
+  "ja": "豚マメ（じん臓） 生",
+  "desc": "Raw pork kidney: smooth bean-shaped reddish-brown kidney, halved showing the pale core, on a plate",
+  "items": [
+   "mext:11167"
+  ]
+ },
+ {
+  "key": "mext-11169",
+  "ja": "豚小腸 ゆで",
+  "desc": "Boiled pork small intestine (motsu): pale greyish-white chewy curled tube pieces, in a small bowl",
+  "items": [
+   "mext:11169"
+  ]
+ },
+ {
+  "key": "mext-11171",
+  "ja": "豚子宮 生",
+  "desc": "Raw pork uterus (kobukuro): long thin pale pink rippled tube pieces, on a plate",
+  "items": [
+   "mext:11171"
+  ]
+ },
+ {
+  "key": "mext-11173",
+  "ja": "豚軟骨 ゆで",
+  "desc": "Boiled pork cartilage (nankotsu): white translucent cartilage chunks with bits of meat attached, in a small dish",
+  "items": [
+   "mext:11173"
+  ]
+ },
+ {
+  "key": "mext-11174",
+  "ja": "骨付きハム",
+  "desc": "Bone-in ham: a large leg ham with the bone, a browned smoked rind, and a pink cut face, a slice beside it",
+  "items": [
+   "mext:11174"
+  ]
+ },
+ {
+  "key": "mext-11303",
+  "ja": "ロースハム ゆで",
+  "desc": "Boiled loin ham: round pink ham slices with a thin fat rim, pale and moist from boiling, on a plate",
+  "items": [
+   "mext:11303"
+  ]
+ },
+ {
+  "key": "mext-11304",
+  "ja": "ロースハム 焼き",
+  "desc": "Grilled loin ham: round pink ham slices browned and slightly curled at the edges, on a plate",
+  "items": [
+   "mext:11304"
+  ]
+ },
+ {
+  "key": "mext-11305",
+  "ja": "ロースハム フライ",
+  "desc": "Ham fry (ham katsu): a thin breaded cutlet with a golden crumb coat, cut to show a pink ham layer inside",
+  "items": [
+   "mext:11305"
+  ]
+ },
+ {
+  "key": "mext-11180",
+  "ja": "チョップドハム",
+  "desc": "Chopped pressed ham: round pink slices showing chunky meat pieces bound together, mosaic-like, on a plate",
+  "items": [
+   "mext:11180",
+   "mext:11179"
+  ]
+ },
+ {
+  "key": "mext-11314",
+  "ja": "ばらベーコン ゆで",
+  "desc": "Boiled bacon: slices of pork belly bacon, pale pink with white fat stripes, soft and limp, on a plate",
+  "items": [
+   "mext:11314"
+  ]
+ },
+ {
+  "key": "mext-11316",
+  "ja": "ばらベーコン 油いため",
+  "desc": "Stir-fried bacon: crisp browned curled strips of bacon glistening with fat, on a plate",
+  "items": [
+   "mext:11316"
+  ]
+ },
+ {
+  "key": "mext-11308",
+  "ja": "ウインナーソーセージ フライ",
+  "desc": "Wiener sausage fry: small sausages coated in golden breadcrumbs and deep-fried, one cut showing pink inside",
+  "items": [
+   "mext:11308"
+  ]
+ },
+ {
+  "key": "mext-11187",
+  "ja": "セミドライソーセージ",
+  "desc": "Semi-dry sausage: a firm dark red salami-like sausage, sliced into rounds with white fat specks",
+  "items": [
+   "mext:11187"
+  ]
+ },
+ {
+  "key": "mext-11190",
+  "ja": "ボロニアソーセージ",
+  "desc": "Bologna sausage: large round slices, smooth pale pink, even texture, fanned on a plate",
+  "items": [
+   "mext:11190"
+  ]
+ },
+ {
+  "key": "mext-11191",
+  "ja": "リオナソーセージ",
+  "desc": "Lyoner sausage: round pale pink slices studded with small red and green diced pepper pieces, on a plate",
+  "items": [
+   "mext:11191"
+  ]
+ },
+ {
+  "key": "mext-11192",
+  "ja": "レバーソーセージ",
+  "desc": "Liver sausage: soft greyish-brown spreadable slices, fine and smooth, on a plate",
+  "items": [
+   "mext:11192"
+  ]
+ },
+ {
+  "key": "mext-11193",
+  "ja": "混合ソーセージ",
+  "desc": "Mixed meat and fish sausage: a smooth pink sausage, cut into rounds, uniform fine texture, on a plate",
+  "items": [
+   "mext:11193"
+  ]
+ },
+ {
+  "key": "mext-11197",
+  "ja": "スモークレバー",
+  "desc": "Smoked pork liver: dense dark brown smoked liver slices, smooth and firm, on a plate",
+  "items": [
+   "mext:11197"
+  ]
+ },
+ {
+  "key": "mext-11281",
+  "ja": "マトンロース 脂身つき 焼き",
+  "desc": "Grilled mutton loin with fat: lamb loin slices grilled brown with fat edges and grill marks, on a plate",
+  "items": [
+   "mext:11281"
+  ]
+ },
+ {
+  "key": "mext-11200",
+  "ja": "マトンもも肉 脂身つき 生",
+  "desc": "Raw mutton leg with fat: dark red meat with a white fat layer, on a plate",
+  "items": [
+   "mext:11200"
+  ]
+ },
+ {
+  "key": "mext-11201",
+  "ja": "ラム肩 脂身つき 生",
+  "desc": "Raw lamb shoulder with fat: pinkish-red lamb slices with seams of white fat, on a plate",
+  "items": [
+   "mext:11201"
+  ]
+ },
+ {
+  "key": "mext-11283",
+  "ja": "ラムもも肉 脂身つき 焼き",
+  "desc": "Grilled lamb leg with fat: lamb slices browned outside and pink inside with fat edges, on a plate",
+  "items": [
+   "mext:11283"
+  ]
+ },
+ {
+  "key": "mext-11204",
+  "ja": "やぎ肉 赤肉 生",
+  "desc": "Raw goat meat, lean: a block of dark red lean goat meat with no fat, on a plate",
+  "items": [
+   "mext:11204"
+  ]
+ },
+ {
+  "key": "mext-11207",
+  "ja": "うずら肉 皮つき 生",
+  "desc": "Raw quail meat with skin: small pinkish-red quail pieces with thin pale skin, a tiny dressed bird shape, on a plate",
+  "items": [
+   "mext:11207"
+  ]
+ },
+ {
+  "key": "mext-11239",
+  "ja": "がちょう フォアグラ ゆで",
+  "desc": "Boiled goose foie gras: a smooth plump lobe of liver, pale beige-yellow, creamy and glossy, sliced, on a plate",
+  "items": [
+   "mext:11239"
+  ]
+ },
+ {
+  "key": "mext-11208",
+  "ja": "かも まがも肉 皮なし 生",
+  "desc": "Raw wild duck, skinless: a deep dark red duck breast with no skin or fat, on a plate",
+  "items": [
+   "mext:11208",
+   "mext:11247"
+  ]
+ },
+ {
+  "key": "mext-11206",
+  "ja": "かも あひる肉 皮つき 生",
+  "desc": "Raw duck with skin: a red duck breast with a thick white fatty skin layer on top, on a plate",
+  "items": [
+   "mext:11206"
+  ]
+ },
+ {
+  "key": "mext-11284",
+  "ja": "かも あひる 皮 生",
+  "desc": "Raw duck skin: thick creamy white fatty skin pieces with a pimpled surface, on a plate",
+  "items": [
+   "mext:11284"
+  ]
+ },
+ {
+  "key": "mext-11209",
+  "ja": "きじ肉 皮なし 生",
+  "desc": "Raw pheasant, skinless: pinkish-red lean bird meat, fine grain, on a plate",
+  "items": [
+   "mext:11209"
+  ]
+ },
+ {
+  "key": "mext-11210",
+  "ja": "七面鳥肉 皮なし 生",
+  "desc": "Raw turkey, skinless: a pale pink lean breast fillet, on a plate",
+  "items": [
+   "mext:11210"
+  ]
+ },
+ {
+  "key": "mext-11211",
+  "ja": "すずめ肉 骨・皮つき 生",
+  "desc": "Raw sparrow with bone and skin: tiny whole plucked birds flattened open, pink with pale skin and small bones, on a plate",
+  "items": [
+   "mext:11211"
+  ]
+ },
+ {
+  "key": "mext-11212",
+  "ja": "親鶏手羽 皮つき 生",
+  "desc": "Raw hen wings with skin: chicken wings with pale yellowish bumpy skin, on a plate",
+  "items": [
+   "mext:11212"
+  ]
+ },
+ {
+  "key": "mext-11214",
+  "ja": "親鶏むね肉 皮なし 生",
+  "desc": "Raw hen breast, skinless: a pale pink chicken breast fillet with no skin, on a plate",
+  "items": [
+   "mext:11214"
+  ]
+ },
+ {
+  "key": "mext-11215",
+  "ja": "親鶏もも肉 皮つき 生",
+  "desc": "Raw hen thigh with skin: darker pink chicken thigh meat covered in yellowish skin, on a plate",
+  "items": [
+   "mext:11215"
+  ]
+ },
+ {
+  "key": "mext-11216",
+  "ja": "親鶏もも肉 皮なし 生",
+  "desc": "Raw hen thigh, skinless: darker pink chicken thigh meat with no skin, on a plate",
+  "items": [
+   "mext:11216"
+  ]
+ },
+ {
+  "key": "mext-11217",
+  "ja": "親鶏ささみ 生",
+  "desc": "Raw chicken sasami: long slender pale pink tenderloin strips with a thin white tendon, on a plate",
+  "items": [
+   "mext:11217"
+  ]
+ },
+ {
+  "key": "mext-11226",
+  "ja": "鶏もも肉 皮なし ゆで",
+  "desc": "Boiled chicken thigh, skinless: chunks of cooked chicken thigh, opaque white-grey, moist, in a small bowl",
+  "items": [
+   "mext:11226"
+  ]
+ },
+ {
+  "key": "mext-11298",
+  "ja": "鶏ささみ ソテー",
+  "desc": "Sauteed chicken sasami: tender chicken strips pan-fried light golden brown, on a plate",
+  "items": [
+   "mext:11298"
+  ]
+ },
+ {
+  "key": "mext-11299",
+  "ja": "鶏ささみ 天ぷら",
+  "desc": "Chicken sasami tempura: strips of chicken in a crisp pale golden lacy batter, on a plate",
+  "items": [
+   "mext:11299"
+  ]
+ },
+ {
+  "key": "mext-11238",
+  "ja": "はと肉 皮なし 生",
+  "desc": "Raw pigeon, skinless: small dark red breast meat, on a plate",
+  "items": [
+   "mext:11238"
+  ]
+ },
+ {
+  "key": "mext-11240",
+  "ja": "ほろほろ鳥肉 皮なし 生",
+  "desc": "Raw guinea fowl, skinless: pinkish lean bird meat, slightly darker than chicken, on a plate",
+  "items": [
+   "mext:11240"
+  ]
+ },
+ {
+  "key": "mext-11241",
+  "ja": "いなご つくだ煮",
+  "desc": "Inago tsukudani: whole rice locusts simmered in sweet soy, glossy brown grasshoppers with legs, piled in a small dish",
+  "items": [
+   "mext:11241"
+  ]
+ },
+ {
+  "key": "mext-11242",
+  "ja": "かえる肉 生",
+  "desc": "Raw frog meat: a pair of pale pink skinned frog legs joined at the hips, on a plate",
+  "items": [
+   "mext:11242"
+  ]
+ },
+ {
+  "key": "mext-11243",
+  "ja": "すっぽん肉 生",
+  "desc": "Raw soft-shelled turtle (suppon): pinkish meat pieces with dark grey skin and translucent gelatinous edges, on a plate",
+  "items": [
+   "mext:11243"
+  ]
+ },
+ {
+  "key": "mext-11244",
+  "ja": "はちの子缶詰",
+  "desc": "Canned wasp larvae (hachinoko): small plump cream-brown grubs simmered in sweet soy, glossy, in a small dish",
+  "items": [
+   "mext:11244"
+  ]
+ },
+ {
+  "key": "mext-12001",
+  "ja": "うこっけい卵 全卵 生",
+  "desc": "Raw ukokkei silkie egg: a small pale cream-tan egg, beside one cracked into a small dish showing a round orange yolk",
+  "items": [
+   "mext:12001"
+  ]
+ },
+ {
+  "key": "mext-12007",
+  "ja": "鶏卵 全卵 水煮缶詰",
+  "desc": "Canned boiled eggs: whole peeled hard-boiled eggs, smooth white, in a small dish with a little water",
+  "items": [
+   "mext:12007"
+  ]
+ },
+ {
+  "key": "mext-12008",
+  "ja": "鶏卵 加糖全卵",
+  "desc": "Sugared liquid whole egg: a glass of smooth beaten egg, syrupy bright yellow liquid",
+  "items": [
+   "mext:12008"
+  ]
+ },
+ {
+  "key": "mext-12009",
+  "ja": "鶏卵 乾燥全卵",
+  "desc": "Dried whole egg powder: fine pale yellow powder in a small dish",
+  "items": [
+   "mext:12009"
+  ]
+ },
+ {
+  "key": "mext-12011",
+  "ja": "鶏卵 卵黄 ゆで",
+  "desc": "Boiled egg yolk: crumbly bright yellow hard-cooked yolks, round and halved, in a small dish",
+  "items": [
+   "mext:12011"
+  ]
+ },
+ {
+  "key": "mext-12012",
+  "ja": "鶏卵 加糖卵黄",
+  "desc": "Sugared egg yolk: thick glossy orange-yellow syrupy liquid in a small glass",
+  "items": [
+   "mext:12012"
+  ]
+ },
+ {
+  "key": "mext-12013",
+  "ja": "鶏卵 乾燥卵黄",
+  "desc": "Dried egg yolk powder: fine deep yellow powder in a small dish",
+  "items": [
+   "mext:12013"
+  ]
+ },
+ {
+  "key": "mext-12015",
+  "ja": "鶏卵 卵白 ゆで",
+  "desc": "Boiled egg white: firm white cooked egg whites, hollow halves with no yolk, in a small dish",
+  "items": [
+   "mext:12015"
+  ]
+ },
+ {
+  "key": "mext-12016",
+  "ja": "鶏卵 乾燥卵白",
+  "desc": "Dried egg white powder: fine pure white powder in a small dish",
+  "items": [
+   "mext:12016"
+  ]
+ },
+ {
+  "key": "mext-13001",
+  "ja": "生乳 ジャージー種",
+  "desc": "Raw Jersey milk: a glass of rich creamy ivory-yellow milk",
+  "items": [
+   "mext:13001"
+  ]
+ },
+ {
+  "key": "mext-13002",
+  "ja": "生乳 ホルスタイン種",
+  "desc": "Raw Holstein milk: a glass of plain white milk",
+  "items": [
+   "mext:13002",
+   "mext:13052"
+  ]
+ },
+ {
+  "key": "mext-13059",
+  "ja": "乳児用液体ミルク",
+  "desc": "Infant liquid milk: a small baby bottle filled with off-white milk",
+  "items": [
+   "mext:13059"
+  ]
+ },
+ {
+  "key": "mext-13009",
+  "ja": "全粉乳",
+  "desc": "Whole milk powder: fine cream-coloured powder in a small dish",
+  "items": [
+   "mext:13009"
+  ]
+ },
+ {
+  "key": "mext-13011",
+  "ja": "乳児用調製粉乳",
+  "desc": "Infant formula powder: fine pale cream powder in a small dish with a measuring scoop",
+  "items": [
+   "mext:13011"
+  ]
+ },
+ {
+  "key": "mext-13012",
+  "ja": "無糖練乳",
+  "desc": "Evaporated milk: thick pale tan-cream liquid in a small jug",
+  "items": [
+   "mext:13012"
+  ]
+ },
+ {
+  "key": "mext-13015",
+  "ja": "クリーム 乳脂肪・植物性脂肪",
+  "desc": "Fresh cream: thick white liquid cream in a small jug",
+  "items": [
+   "mext:13015"
+  ]
+ },
+ {
+  "key": "mext-13018",
+  "ja": "ホイップクリーム 乳脂肪・植物性脂肪",
+  "desc": "Whipped cream: soft white piped peaks of whipped cream in a small dish",
+  "items": [
+   "mext:13018",
+   "mext:13019"
+  ]
+ },
+ {
+  "key": "mext-13021",
+  "ja": "コーヒーホワイトナー 液状 乳脂肪・植物性脂肪",
+  "desc": "Liquid coffee creamer: a tiny portion cup of white creamer, peeled open",
+  "items": [
+   "mext:13021"
+  ]
+ },
+ {
+  "key": "mext-13023",
+  "ja": "コーヒーホワイトナー 粉末状 乳脂肪",
+  "desc": "Powdered coffee creamer: fine white powder in a small dish",
+  "items": [
+   "mext:13023",
+   "mext:13024"
+  ]
+ },
+ {
+  "key": "mext-13030",
+  "ja": "乳酸菌飲料 非乳製品",
+  "desc": "Non-dairy lactic acid drink: a glass of thin cloudy translucent white drink",
+  "items": [
+   "mext:13030"
+  ]
+ },
+ {
+  "key": "mext-13031",
+  "ja": "エダムチーズ",
+  "desc": "Edam cheese: a round ball of cheese with red wax rind, a wedge cut showing pale yellow paste",
+  "items": [
+   "mext:13031"
+  ]
+ },
+ {
+  "key": "mext-13032",
+  "ja": "エメンタールチーズ",
+  "desc": "Emmental cheese: a pale yellow wedge with large round holes",
+  "items": [
+   "mext:13032"
+  ]
+ },
+ {
+  "key": "mext-13039",
+  "ja": "ブルーチーズ",
+  "desc": "Blue cheese: a crumbly white wedge streaked with blue-green veins",
+  "items": [
+   "mext:13039"
+  ]
+ },
+ {
+  "key": "mext-13057",
+  "ja": "やぎチーズ",
+  "desc": "Goat cheese: a small white log with a soft bloomy rind, a round slice cut",
+  "items": [
+   "mext:13057"
+  ]
+ },
+ {
+  "key": "mext-13058",
+  "ja": "リコッタチーズ",
+  "desc": "Ricotta: soft moist white grainy curds in a small bowl",
+  "items": [
+   "mext:13058"
+  ]
+ },
+ {
+  "key": "mext-13041",
+  "ja": "チーズスプレッド",
+  "desc": "Cheese spread: smooth creamy pale yellow spread in a small dish",
+  "items": [
+   "mext:13041"
+  ]
+ },
+ {
+  "key": "mext-13046",
+  "ja": "ラクトアイス 低脂肪",
+  "desc": "Low-fat lacto ice: a scoop of white vanilla ice in a small cup",
+  "items": [
+   "mext:13046"
+  ]
+ },
+ {
+  "key": "mext-13048",
+  "ja": "カゼイン",
+  "desc": "Casein: fine white powder in a small dish",
+  "items": [
+   "mext:13048"
+  ]
+ },
+ {
+  "key": "mext-13050",
+  "ja": "チーズホエーパウダー",
+  "desc": "Cheese whey powder: fine pale cream-yellow powder in a small dish",
+  "items": [
+   "mext:13050"
+  ]
+ },
+ {
+  "key": "mext-13051",
+  "ja": "人乳",
+  "desc": "Human breast milk: thin bluish-white milk in a small baby bottle",
+  "items": [
+   "mext:13051"
+  ]
+ },
+ {
+  "key": "mext-14003",
+  "ja": "米ぬか油",
+  "desc": "Rice bran oil: clear pale golden oil in a small glass dish",
+  "items": [
+   "mext:14003",
+   "mext:14014"
+  ]
+ },
+ {
+  "key": "mext-14004",
+  "ja": "サフラワー油 ハイオレイック",
+  "desc": "Vegetable oil: clear pale yellow oil in a small glass dish",
+  "items": [
+   "mext:14004",
+   "mext:14025",
+   "mext:14005",
+   "mext:14011",
+   "mext:14026",
+   "mext:14027",
+   "mext:14012"
+  ]
+ },
+ {
+  "key": "mext-14007",
+  "ja": "とうもろこし油",
+  "desc": "Corn oil: clear golden yellow oil in a small glass dish",
+  "items": [
+   "mext:14007"
+  ]
+ },
+ {
+  "key": "mext-14009",
+  "ja": "パーム油",
+  "desc": "Palm oil: a semi-solid creamy pale orange-yellow fat in a small dish",
+  "items": [
+   "mext:14009"
+  ]
+ },
+ {
+  "key": "mext-14010",
+  "ja": "パーム核油",
+  "desc": "Palm kernel oil: a solid white fat in a small dish",
+  "items": [
+   "mext:14010"
+  ]
+ },
+ {
+  "key": "mext-14028",
+  "ja": "ぶどう油",
+  "desc": "Grapeseed oil: clear pale greenish-yellow oil in a small glass dish",
+  "items": [
+   "mext:14028"
+  ]
+ },
+ {
+  "key": "mext-14015",
+  "ja": "牛脂",
+  "desc": "Beef tallow: a solid creamy white block of fat in a small dish",
+  "items": [
+   "mext:14015"
+  ]
+ },
+ {
+  "key": "mext-14032",
+  "ja": "たらのあぶら",
+  "desc": "Cod liver oil: clear amber-golden oil in a small glass dish",
+  "items": [
+   "mext:14032"
+  ]
+ },
+ {
+  "key": "mext-14033",
+  "ja": "マーガリン 家庭用 無塩",
+  "desc": "Margarine: a pale yellow block of soft spread with a knife-smoothed surface in a small dish",
+  "items": [
+   "mext:14033",
+   "mext:14029",
+   "mext:14034"
+  ]
+ },
+ {
+  "key": "mext-14022",
+  "ja": "ショートニング 家庭用",
+  "desc": "Shortening: a soft smooth pure white solid fat in a small dish",
+  "items": [
+   "mext:14022",
+   "mext:14030",
+   "mext:14031"
+  ]
+ },
+ {
+  "key": "mext-15001",
+  "ja": "甘納豆 あずき",
+  "desc": "Amanatto azuki: small whole red beans candied and coated in sugar, glistening, in a small dish",
+  "items": [
+   "mext:15001"
+  ]
+ },
+ {
+  "key": "mext-15002",
+  "ja": "甘納豆 いんげんまめ",
+  "desc": "Amanatto kidney beans: large whole kidney beans, pale and purple-mottled, candied and sugar-coated, in a small dish",
+  "items": [
+   "mext:15002"
+  ]
+ },
+ {
+  "key": "mext-15003",
+  "ja": "甘納豆 えんどう",
+  "desc": "Amanatto peas: whole green peas candied and sugar-glazed, in a small dish",
+  "items": [
+   "mext:15003"
+  ]
+ },
+ {
+  "key": "mext-15146",
+  "ja": "今川焼 カスタードクリーム入り",
+  "desc": "Imagawayaki with custard: a thick round griddle cake, golden brown with pale sides, cut open showing yellow custard",
+  "items": [
+   "mext:15146"
+  ]
+ },
+ {
+  "key": "mext-15006",
+  "ja": "ういろう 白",
+  "desc": "White uiro: smooth dense steamed rice-flour cake, semi-translucent white, cut into rectangular slices",
+  "items": [
+   "mext:15006"
+  ]
+ },
+ {
+  "key": "mext-15147",
+  "ja": "ういろう 黒",
+  "desc": "Black uiro: smooth dense steamed cake, dark brown from brown sugar, semi-translucent, cut into rectangular slices",
+  "items": [
+   "mext:15147"
+  ]
+ },
+ {
+  "key": "mext-15007",
+  "ja": "うぐいすもち こしあん入り",
+  "desc": "Uguisu mochi: oval soft mochi with pointed ends like a bird, dusted with green soybean flour, red bean paste inside",
+  "items": [
+   "mext:15007",
+   "mext:15148"
+  ]
+ },
+ {
+  "key": "mext-15149",
+  "ja": "かしわもち つぶしあん入り",
+  "desc": "Kashiwa mochi: white mochi folded into a half-moon, wrapped in a large green oak leaf, red bean paste inside",
+  "items": [
+   "mext:15149"
+  ]
+ },
+ {
+  "key": "mext-15010",
+  "ja": "かのこ",
+  "desc": "Kanoko: a ball of bean paste covered with glossy whole candied red beans, in a small dish",
+  "items": [
+   "mext:15010"
+  ]
+ },
+ {
+  "key": "mext-15011",
+  "ja": "かるかん",
+  "desc": "Karukan: white spongy steamed yam cake with fine pores, cut into rectangles",
+  "items": [
+   "mext:15011"
+  ]
+ },
+ {
+  "key": "mext-15012",
+  "ja": "きび団子",
+  "desc": "Kibi dango: small soft chewy pale yellow flattened round dumplings dusted with starch, in a small dish",
+  "items": [
+   "mext:15012"
+  ]
+ },
+ {
+  "key": "mext-15013",
+  "ja": "ぎゅうひ",
+  "desc": "Gyuhi: soft chewy translucent white rice-flour sweet, dusted with starch, cut into blocks",
+  "items": [
+   "mext:15013"
+  ]
+ },
+ {
+  "key": "mext-15014",
+  "ja": "きりざんしょ",
+  "desc": "Kirizansho: chewy mochi sticks in white, pale pink and light brown, flat and rectangular, in a small dish",
+  "items": [
+   "mext:15014"
+  ]
+ },
+ {
+  "key": "mext-15015",
+  "ja": "きんぎょく糖",
+  "desc": "Kingyokuto: translucent agar jelly cubes with a crisp sugar crust, clear and pale, in a small dish",
+  "items": [
+   "mext:15015"
+  ]
+ },
+ {
+  "key": "mext-15016",
+  "ja": "きんつば",
+  "desc": "Kintsuba: a square block of chunky red bean paste with a thin pale griddled batter coat, beans visible on the sides",
+  "items": [
+   "mext:15016"
+  ]
+ },
+ {
+  "key": "mext-15150",
+  "ja": "草もち つぶしあん入り",
+  "desc": "Kusa mochi: green mugwort rice cake, round and soft, with chunky red bean paste inside, in a small dish",
+  "items": [
+   "mext:15150"
+  ]
+ },
+ {
+  "key": "mext-15151",
+  "ja": "くし団子 つぶしあん入り",
+  "desc": "Kushi dango with bean paste: three round white dumplings on a bamboo skewer, topped with chunky red bean paste",
+  "items": [
+   "mext:15151"
+  ]
+ },
+ {
+  "key": "mext-15121",
+  "ja": "くずもち 関西風 くずでん粉製品",
+  "desc": "Kansai kuzumochi: glassy clear translucent jelly cubes dusted with kinako and drizzled with black sugar syrup",
+  "items": [
+   "mext:15121"
+  ]
+ },
+ {
+  "key": "mext-15122",
+  "ja": "くずもち 関東風 小麦でん粉製品",
+  "desc": "Kanto kuzumochi: opaque milky white triangle wedges topped with kinako and dark black syrup",
+  "items": [
+   "mext:15122"
+  ]
+ },
+ {
+  "key": "mext-15020",
+  "ja": "げっぺい",
+  "desc": "Geppei mooncake: a round baked cake with a golden brown crust and stamped pattern, cut showing bean paste filling",
+  "items": [
+   "mext:15020"
+  ]
+ },
+ {
+  "key": "mext-15123",
+  "ja": "五平もち",
+  "desc": "Gohei mochi: a flattened oval rice cake on a wooden skewer, grilled and glazed with sweet brown miso sauce",
+  "items": [
+   "mext:15123"
+  ]
+ },
+ {
+  "key": "mext-15153",
+  "ja": "桜もち 関西風 つぶしあん入り",
+  "desc": "Kansai sakura mochi (domyoji): a pink ball of coarse grainy steamed rice wrapped in a salted cherry leaf, red bean inside",
+  "items": [
+   "mext:15153"
+  ]
+ },
+ {
+  "key": "mext-15152",
+  "ja": "桜もち 関東風 つぶしあん入り",
+  "desc": "Kanto sakura mochi (chomeiji): a thin pink crepe rolled around red bean paste and wrapped in a salted cherry leaf",
+  "items": [
+   "mext:15152"
+  ]
+ }
+]

@@ -4,7 +4,7 @@
 // so the spec finds things through window.__editor (where a tile or a world point is on screen). The 3D preview is off
 // (`preview=0`): CI's headless Chromium draws WebGL in software, a frame every few seconds, and it starves the page.
 import { expect, test, type Page } from './fixtures.ts';
-import { hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
 
 test.use({ viewport: { width: 1440, height: 900 } });
 
@@ -38,7 +38,7 @@ const objAt = (page: Page, id: string) =>
 test('a move in the editor reaches a phone live (the layout op over the relay), and stays', async ({ context }) => {
   const editor = await context.newPage(), phone = await context.newPage();
   await phone.goto(`?demo&as=B&date=${DATE}&critter=none`);
-  await expect(hudMenu(phone)).toBeVisible();
+  await islandUp(phone);
   await phone.waitForFunction(() => (window as unknown as { __layout?: unknown }).__layout);
   await openEditor(editor);
   await editor.bringToFront();
@@ -146,7 +146,7 @@ const readout = (page: Page) => page.locator('[data-size-readout]');
 test('しまの おおきさ: the back two rows out reaches a phone live (its camera’s far end further back); ⌘Z takes it back', async ({ context }) => {
   const editor = await context.newPage(), phone = await context.newPage();
   await phone.goto(`?demo&as=B&date=${DATE}&critter=none`);
-  await expect(hudMenu(phone)).toBeVisible();
+  await islandUp(phone);
   await phone.waitForFunction(() => (window as unknown as { __layout?: unknown; __world3d?: { loaded(): boolean } }).__layout && (window as unknown as { __world3d?: { loaded(): boolean } }).__world3d?.loaded());
   const far0 = await farEnd(phone);
   await openEditor(editor);

@@ -9,10 +9,11 @@
 // Ten lines are level 4's own (`from`: the same take, its Japanese, note, staging and marks), twenty are new, with
 // natural reductions spelled in `tts` (§9) and their sound marks. Each new line follows bank4.ts's rules: `en` standard
 // spelling (digits allowed), `tts` as said (every number in words), the trap in `note` (≤ 40 字), a cast voice per
-// villager (bank4.ts CAST), a scenario seed and its tags.
+// villager (cast.ts CAST), a scenario seed and its tags.
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, Item, SceneId, SoundMark, Tags } from './bank.ts';
-import { BANK4, CAST } from './bank4.ts';
+import type { Item, SceneId, SoundMark, Tags } from './bank.ts';
+import { BANK4 } from './bank4.ts';
+import { g, single, tg } from './content/build.ts';
 import { SPEEDS, type Ladder } from './ladder.ts';
 
 /** A rung's question: what to listen for (Japanese), its choices (the right one first), `num` for a number's. */
@@ -30,7 +31,7 @@ interface LineSrc {
   marks?: readonly SoundMark[];
 }
 
-export interface LadderSrc {
+interface LadderSrc {
   /** `sp-<name>`: the rung clips are `<id>-1` … `<id>-4`. */
   id: string;
   /** Level 4's item whose line (and take) it climbs, or the line itself. */
@@ -41,27 +42,23 @@ export interface LadderSrc {
   chunk: readonly [string, string, string];
 }
 
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-const g = (at: string): SoundMark => ['drop', at, 'g'];
-
 export const LADDER_SRC: readonly LadderSrc[] = [
   // ---- level 4's lines --------------------------------------------------------------------------------------------
   { id: 'sp-platform', line: 'n4-platform',
-    asks: [['なんの アナウンス？', ['のりばの へんこう', 'でんしゃの おくれ', 'うんてん みあわせ']],
-      ['どこゆきの でんしゃ？', ['ボストン', 'ボルチモア', 'ワシントン']],
-      ['なんばんせんに いく？', ['14ばんせん', '12ばんせん', '40ばんせん'], 'num']],
-    chunk: ['will now depart', 'will depart', 'would now depart'] },
+    asks: [['なんの はなし？', ['ヘルメットの ねだん', 'じてんしゃの しゅうりだい', 'ヘルメットの サイズ']],
+      ['ぜいぬきは いくら？', ['$40', '$14', '$43'], 'num'],
+      ['ぜいこみで いくら？', ['$43.20', '$40.32', '$34.20'], 'num']],
+    chunk: ["you're looking at", "you were looking at", "you'll be looking at"] },
   { id: 'sp-gate', line: 'n4-gate',
     asks: [['なにが はじまった？', ['とうじょう', 'チェックイン', 'てにもつの うけとり']],
       ['どこゆきの びん？', ['デンバー', 'ダラス', 'デトロイト']],
       ['とうじょうぐちは？', ['15ばん', '50ばん', '815ばん'], 'num']],
     chunk: ['is now boarding', 'is boarding', 'was now boarding'] },
   { id: 'sp-water', line: 'n4-water',
-    asks: [['なんの おしらせ？', ['だんすい', 'ていでん', 'エレベーターの てんけん']],
-      ['なんようび？', ['木曜', '火曜', '土曜']],
-      ['なんじまで？', ['3時', '2時', '10時'], 'num']],
-    chunk: ['till 3', 'until 3', 'to 3'] },
+    asks: [['なんの はなし？', ['タイルを なんはこ かうか', 'ペンキの いろ', 'タイルの へんぴん']],
+      ['1はこで なんへいほうフィート？', ['10', '5', '6'], 'num'],
+      ['ぜんぶで なんはこ かう？', ['6はこ', '5はこ', '10はこ'], 'num']],
+    chunk: ["that's 5 boxes", "that'd be 5 boxes", 'that was 5 boxes'] },
   { id: 'sp-yen', line: 'n4-yen',
     asks: [['なんの でんわ？', ['ひっこしの みつもり', 'ホテルの よやく', 'くるまの しゅうり']],
       ['きほんの りょうきんは？', ['6万8千円', '8万6千円', '7万8千円'], 'num'],
@@ -150,15 +147,15 @@ export const LADDER_SRC: readonly LadderSrc[] = [
       ['なにが しあがらない？', ['はっぴょう しりょう', 'けいやくしょ', 'せいきゅうしょ']]],
     chunk: ["they've sent them", 'they sent them', "they'd sent them"] },
   { id: 'sp-key-code',
-    line: { who: 'stitches', en: "Hi, it's your host. The key's in the lockbox by the side door. The code's 4719. Wait, no, sorry, 4791.",
-      tts: "Hi, it's your host. The key's in the lockbox by the side door. The code's four-seven-one-nine. Wait, no, sorry — four-seven-nine-one.",
-      ja: 'どうも、ホストです。鍵は横のドアのそばのキーボックスです。番号は4719…いや、ごめん、4791。',
-      note: 'Wait, no の後が訂正。番号は最後まで聞く', tags: tg(10, 'service', 'literal', ['voicemail'], ['numbers', 'self-repair']), scene: 'door',
-      marks: [['say', '4719', 'four-seven-one-nine'], ['say', '4791', 'four-seven-nine-one'], ['link', "key's in"]] },
-    asks: [['なんの メッセージ？', ['かぎの ばしょと ばんごう', 'チェックインの じかん', 'Wi-Fiの パスワード']],
-      ['かぎは どこ？', ['よこの ドアの そば', 'ゆうびんうけの なか', 'マットの した']],
-      ['ただしい ばんごうは？', ['4791', '4719', '4971'], 'num']],
-    chunk: ["The key's in", 'The keys are in', 'The key is in'] },
+    line: { who: 'stitches', en: "Dude, you missed it! We were down 5 to 2 in the eighth, and we came back and won 6 to 5!",
+      tts: "Dude, you missed it! We were down five to two in the eighth, and we came back an' won six to five!",
+      ja: 'おい、見逃したな！8回で5対2で負けてたのに、逆転して6対5で勝ったんだぞ！',
+      note: 'down＝負けている。came back＝逆転した', tags: tg(50, 'friend', 'humour', ['voicemail'], ['numbers', 'weak-form']), scene: 'living',
+      marks: [['say', 'and won', "an' won"], ['link', 'came back']] },
+    asks: [['なんの メッセージ？', ['やきゅうの しあいの けっか', 'チケットの よやく', 'しあいの ちゅうし']],
+      ['8かいの とき なんたい なん？', ['5たい2で まけていた', '6たい5で かっていた', '2たい5で かっていた']],
+      ['さいごの スコアは？', ['6たい5', '5たい6', '6たい2'], 'num']],
+    chunk: ['we came back', 'we come back', "we've come back"] },
   { id: 'sp-push-meeting',
     line: { who: 'pietro', en: "Can we push this to Thursday? I've got a client thing that's run over. Actually, make it Friday morning, if that works for everyone.",
       tts: "Can we push this to Thursday? I've got a client thing that's run over. Actually, make it Friday mornin', if that works for everyone.",
@@ -308,11 +305,9 @@ function lineOf(src: LadderSrc): Item {
     const { choices: _, answer: __, focus: ___, ask: ____, cond: _____, ...rest } = it; // (rungs are clean: speed is the lever)
     return { ...rest, id: src.id, type: 'gist', ja: it.ja.split('→')[0].trim(), choices: [], answer: 0 };
   }
-  const l = src.line, cast = CAST[l.who];
-  if (!cast) throw new Error(`kikimimi: ${l.who} has no cast voice`);
+  const l = src.line;
   return {
-    id: src.id, lv: 4, type: 'gist', en: l.en, ja: l.ja, speaker: l.who, voice: cast.slice(0, 2) as Accent, cast, choices: [], answer: 0,
-    note: l.note, tags: l.tags, ...(l.tts && { tts: l.tts }), ...(l.scene && { scene: l.scene }), ...(l.marks && { marks: l.marks })
+    ...single(4, 'gist', src.id, l.who, l.en, l.ja, l.note, [], l.tags), ...(l.tts && { tts: l.tts }), ...(l.scene && { scene: l.scene }), ...(l.marks && { marks: l.marks })
   };
 }
 

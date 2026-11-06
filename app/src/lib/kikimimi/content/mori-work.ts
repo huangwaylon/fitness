@@ -11,32 +11,17 @@
 // sound marks, a scene where one of the 8 fits. Speakers are CAST villagers with a US voice only (one voice each, for
 // good). content/index.ts folds ITEMS and DIALOGUES into the bank, their staging as written here.
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, Channel, Item, ItemType, Line, SceneId, SoundMark, Tags } from '../bank.ts';
-import { CAST } from '../bank4.ts';
-
-const MEAN_ASK = 'つまり、どういうこと？';
-const NEXT_ASK = 'つぎの ひとことは？';
+import type { Channel, Item, ItemType, SceneId, SoundMark, Tags } from '../bank.ts';
+import { MEAN_ASK, dialogueOf, g, line, single, tg, type DialogueRow, type L } from './build.ts';
 
 type Extra = { tts?: string; focus?: string; ask?: string; marks?: readonly SoundMark[]; channel?: Channel };
 type Row = readonly [id: string, speaker: RosterId, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, scene: SceneId | null, extra?: Extra];
 
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-
-const g = (at: string): SoundMark => ['drop', at, 'g'];
-
-const castOf = (who: RosterId) => {
-  const cast = CAST[who];
-  if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
-  return cast;
-};
-
 const item = (type: ItemType) => ([id, speaker, en, ja, note, choices, tags, scene, x = {}]: Row): Item => {
-  const cast = castOf(speaker);
   const focus = type === 'word' ? choices[0] : x.focus;
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : undefined);
   return {
-    id, lv: 4, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags,
+    ...single(4, type, id, speaker, en, ja, note, choices, tags),
     ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }), ...(scene && { scene }),
     ...(x.channel && { channel: x.channel }), ...(x.marks && { marks: x.marks })
   };
@@ -474,27 +459,14 @@ export const ITEMS: readonly Item[] = [
 
 // ---- dialogues: gist and next (dialogues.ts's shape) ----------------------------------------------------------------
 
-type L = readonly [who: RosterId, en: string, ja: string, tts?: string, marks?: readonly SoundMark[]];
-interface DRow {
-  id: string;
-  type: Extract<ItemType, 'gist' | 'next'>;
+interface DRow extends DialogueRow {
   lines: readonly L[];
-  ask?: string;
-  choices: readonly string[];
-  ja: string;
-  note: string;
-  focus: string;
-  tags: Tags;
   scene: SceneId | null;
 }
 
-const line = ([who, en, ja, tts, marks]: L): Line => ({ who, cast: castOf(who), en, ja, ...(tts && { tts }), ...(marks && { marks }) });
-
 const dialogue = (r: DRow): Item => {
-  const lines = r.lines.map(line);
   return {
-    id: r.id, lv: 4, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: r.tags, lines,
+    ...dialogueOf(4, r, r.lines.map(line)),
     ...(r.scene && { scene: r.scene })
   };
 };

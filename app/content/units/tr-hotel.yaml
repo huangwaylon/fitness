@@ -144,21 +144,21 @@ items:
   - id: mu-m-best-i-can-do
     lv: 4
     type: mean
-    en: Late checkout till one is the best I can do, I'm afraid. We've got a big group arriving.
-    ja: レイトチェックアウトは1時までが精一杯です。団体のお客様が到着しますので。 → つまり、1時より遅くは無理。
-    note: the best I can do＝それが限界。延長交渉は無理
+    en: Valet's forty-five a night, I'm afraid. The best I can do is the garage across the street. Just a small fee, but you park it yourself.
+    ja: バレーパーキングは1泊45ドルです。精一杯のご提案は向かいの駐車場ですね。少額で済みますが、ご自分で停めていただきます。 → つまり、安くしたいなら向かいの駐車場に自分で停める。
+    note: The best I can do＝限界の代案。small fee, but
     speaker: wolfgang
     voice: us
     cast: us-m5
-    choices: [ One o'clock is the latest he can offer., He could do later if you ask nicely., Checkout is earlier because of the group. ]
+    choices: [ "To pay less, park yourself in the garage across the street.", Valet parking is free for hotel guests., The hotel will park your car across the street for you. ]
     answer: 0
     ask: つまり、どういうこと？
     tags: { seed: 3, register: service, pragmatic: refusal, conditions: [ desk ], features: [ contrast ] }
   - id: mu-r-waive
     lv: 4
     type: reply
-    en: Since your shower wasn't working, we'll waive the resort fee for tonight.
-    ja: シャワーが使えなかったので、今夜のリゾート料金は免除いたします。 →「ありがとう、それなら納得です。」
+    en: Since your shower wasn't working, the best I can do is waive the resort fee for tonight.
+    ja: シャワーが使えなかったので、今夜のリゾート料金を免除するのが精一杯です。 →「ありがとう、それなら納得です。」
     note: waive＝免除。wave（手を振る）と同じ音
     speaker: curt
     voice: us
@@ -182,7 +182,7 @@ items:
   - id: dmu-no-hot-water
     lv: 4
     type: gist
-    en: Hi, sorry to bother you. There's no hot water in 1112. Ah, I'm so sorry. They're working on the water heater this morning. It should be back by ten. Sorry, did you say ten? I've got a meeting at nine. In the meantime, what I can do is open the spa for you. The showers there are fine, and it's complimentary. Perfect. I'll head down now. Thanks.
+    en: Hi, sorry to bother you. There's no hot water in 1112. Ah, I'm so sorry. They're working on the water heater this morning. It should be back by ten. Sorry? Ten? I've got a meeting at nine. In the meantime, what I can do is open the spa for you. The showers there are fine, and it's complimentary. Perfect. I'll head down now. Thanks.
     ja: スパのシャワーを無料で使う。
     note: 10時に直るが会議は9時。代案はスパ
     speaker: kabuki
@@ -205,8 +205,8 @@ items:
         ja: あっ、申し訳ございません。今朝給湯器の工事をしておりまして。10時には戻るはずです。
       - who: kabuki
         cast: us-m5
-        en: Sorry, did you say ten? I've got a meeting at nine.
-        ja: すみません、10時って言いました？ 9時から会議なんですけど。
+        en: Sorry? Ten? I've got a meeting at nine.
+        ja: え？ 10時？ 9時から会議なんですけど。
       - who: olivia
         cast: us-f4
         en: In the meantime, what I can do is open the spa for you. The showers there are fine, and it's complimentary.
@@ -218,13 +218,14 @@ items:
   - id: mu-r-sea-view
     lv: 4
     type: reply
-    en: The ocean-view rooms are all taken, I'm afraid, but I can put you on the list for tomorrow.
-    ja: あいにく海側のお部屋は埋まっておりますが、明日の分のキャンセル待ちにお入れできます。 →「お願いします。明日で入れてください。」
-    note: all taken＝埋まっている。今日は無理、明日なら
+    en: I'm afraid all our cribs are out right now, but one's being cleaned and I can send it up in twenty minutes.
+    tts: I'm afraid all our cribs are out right now, but one's bein' cleaned and I can send it up in twenty minutes.
+    ja: あいにくベビーベッドは今すべて貸し出し中ですが、1台を清掃中ですので、20分後にお部屋にお届けできます。 →「大丈夫です。どうせ今は寝てるので。」
+    note: 今はないが20分後に届く。but の後が本題
     speaker: bud
     voice: us
     cast: us-m4
-    choices: [ "Yes, please. Put me down for tomorrow.", "Thanks, I'm not afraid of the ocean.", "I'll take the list, then." ]
+    choices: [ "That's fine. She's asleep on the bed anyway.", "Thanks, I'll clean it myself, then.", "No crib? Then we'll take two." ]
     answer: 0
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ], features: [ contrast ] }
   - id: mu-n-extra-bed
@@ -244,8 +245,8 @@ items:
   - id: mu-w-cant-tonight
     lv: 4
     type: word
-    en: I'm afraid we can't do a room change tonight.
-    ja: あいにく、今夜はお部屋の変更ができません。
+    en: I'm afraid your key can't open the pool after ten.
+    ja: あいにく、10時以降はお部屋のキーでプールに入れません。
     note: can't は強く［キャン(ト)］、can は弱く［クン］
     speaker: jacques
     voice: us
@@ -324,13 +325,13 @@ items:
   - id: mu-m-phone-late
     lv: 4
     type: mean
-    en: Front desk. A late checkout? Twelve's fine, free of charge. Anything after that, the best I can do is half the room rate.
-    ja: フロントです。レイトチェックアウトですか？ 12時までは無料で大丈夫です。それ以降は、宿泊料金の半額が精一杯です。 → つまり、12時までは無料、それ以降は半額。
-    note: free of charge＝無料。それ以降は有料
+    en: Front desk. The resort fee? It covers the pool, the gym and the Wi-Fi. I'm afraid it's per night, even if you never use them.
+    ja: フロントです。リゾート料金ですか？ プール、ジム、Wi-Fi の分です。あいにく、ご利用がなくても1泊ごとにかかります。 → つまり、使わなくても毎晩払う。
+    note: even if you never use them＝使わなくても有料
     speaker: sterling
     voice: us
     cast: us-m5
-    choices: [ Noon is free; later costs half a night., Noon costs half the room rate., Late checkout isn't possible today. ]
+    choices: [ "You pay it every night, whether you use them or not.", It's free if you skip the pool and the gym., You pay it once for the whole stay. ]
     answer: 0
     ask: つまり、どういうこと？
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [ phone ], features: [ contrast ] }
@@ -339,7 +340,7 @@ items:
   - id: dmu-luggage
     lv: 4
     type: next
-    en: Hi, we've checked out, but our flight's not till nine tonight. Could we leave our bags? Of course. I'm afraid the luggage room's full, so they'll go behind the desk. There's a small charge after six. Sorry, did you say after six? Our train to the airport's at six-thirty. Ah, then just pick them up by six and there's nothing to pay.
+    en: Hi, we've checked out, but our flight's not till nine tonight. Could we leave our bags? Of course. I'm afraid the luggage room's full, so they'll go behind the desk. There's a small charge after six. Hold on, so that's after six? Our train to the airport's at six-thirty. Ah, then just pick them up by six and there's nothing to pay.
     ja: よかった、6時前に戻ります。
     note: by six なら無料。after six から有料
     speaker: melba
@@ -362,8 +363,8 @@ items:
         ja: もちろんです。あいにく荷物室がいっぱいなので、フロントの裏でお預かりします。6時以降は少し料金がかかります。
       - who: melba
         cast: us-f6
-        en: Sorry, did you say after six? Our train to the airport's at six-thirty.
-        ja: すみません、6時以降って言いました？ 空港行きの電車は6時半なんです。
+        en: Hold on, so that's after six? Our train to the airport's at six-thirty.
+        ja: 待って、じゃあ6時以降ってこと？ 空港行きの電車は6時半なんです。
       - who: keaton
         cast: us-m5
         en: Ah, then just pick them up by six and there's nothing to pay.
@@ -371,8 +372,8 @@ items:
   - id: mu-r-breaking-up
     lv: 4
     type: reply
-    en: Sorry, you're breaking up. Did you say the TV or the AC?
-    ja: すみません、電話が途切れてしまって。テレビとエアコン、どちらとおっしゃいました？ →「エアコンです。全然冷えないんです。」
+    en: Sorry, you're breaking up. Do you mean the TV or the AC?
+    ja: すみません、電話が途切れてしまって。テレビとエアコン、どちらのことでしょうか？ →「エアコンです。全然冷えないんです。」
     note: breaking up＝電話が途切れる。A か B かを答える
     speaker: audie
     voice: us
@@ -385,7 +386,7 @@ items:
   - id: dmu-wrong-dates
     lv: 4
     type: gist
-    en: Good evening. I have your booking here, but it's for next Friday, not tonight. Sorry, did you say next Friday? I definitely booked tonight. I've got the email right here. Let me have a look. Ah, the booking site messed up the dates. We're full, but what I can do is a room at our sister hotel, and we'll cover the taxi. Fine. As long as I'm not paying for both. No, no. I'll cancel this one now, and we'll waive the fee. Great. I appreciate it.
+    en: Good evening. I have your booking here, but it's for next Friday, not tonight. Hold on, next Friday? I definitely booked tonight. I mean, I've got the email right here. Let me have a look. Ah, the booking site messed up the dates. We're full, but what I can do is a room at our sister hotel, and we'll cover the taxi. Fine. As long as I'm not paying for both. No, no. I'll cancel this one now, and we'll waive the fee. Great. I appreciate it.
     ja: 系列ホテルに泊まり、タクシー代も出る。
     note: cover the taxi＝タクシー代を持つ。今夜は系列へ
     speaker: cyd
@@ -404,8 +405,8 @@ items:
         ja: こんばんは。ご予約はありますが、今夜ではなく来週の金曜日になってますね。
       - who: zucker
         cast: us-m6
-        en: Sorry, did you say next Friday? I definitely booked tonight. I've got the email right here.
-        ja: すみません、来週の金曜って言いました？ 絶対今夜で予約しました。メールもここに。
+        en: Hold on, next Friday? I definitely booked tonight. I mean, I've got the email right here.
+        ja: 待って、来週の金曜？ 絶対今夜で予約しました。だって、メールもここにありますよ。
       - who: cyd
         cast: us-m4
         en: Let me have a look. Ah, the booking site messed up the dates. We're full, but what I can do is a room at our sister hotel, and we'll cover the taxi.
@@ -425,17 +426,17 @@ items:
   - id: mu-n-new-room
     lv: 4
     type: num
-    en: Your new room's 917. No, wait, sorry, I meant 971. The other one's still being cleaned.
-    tts: Your new room's nine seventeen. No, wait, sorry, I meant nine seventy-one. The other one's still being cleaned.
-    ja: 新しいお部屋は917号室です。いえ、失礼、971号室でした。もう一方はまだ清掃中で。
-    note: No, wait の後が訂正値
+    en: Sorry it keeps failing. Here are two new keys for 971. I mean, just keep them away from your phone this time.
+    tts: Sorry it keeps failing. Here are two new keys for nine seventy-one. I mean, just keep them away from your phone this time.
+    ja: 何度も使えなくて申し訳ありません。971号室の新しいキーを2枚どうぞ。今度はスマホから離しておいてくださいね。
+    note: nine seventy-one［ナイン セヴンティ ワン］。順番に注意
     speaker: reneigh
     voice: us
     cast: us-f4
     choices: [ "971", "917", "791" ]
     answer: 0
-    ask: あたらしい へやは？
-    tags: { seed: 3, register: service, pragmatic: literal, conditions: [ desk ], features: [ numbers, self-repair ] }
+    ask: へやは なんごうしつ？
+    tags: { seed: 3, register: service, pragmatic: literal, conditions: [ desk ], features: [ numbers ] }
     cond: &a2 { kind: cafe, level: heavy }
   - id: mu-m-between-you
     lv: 4

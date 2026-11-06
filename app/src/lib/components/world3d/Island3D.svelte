@@ -1067,9 +1067,9 @@
       placedGroups: () => e.placedGroups(),
       /** The balloon present drawn now (world space: its balloon's middle, the present's top, its shadow), or null. */
       balloon: () => b3?.state() ?? null,
-      /** The rain or the snow now (precip.ts PrecipState), and the e2e's: hidden (its draw calls with and without). */
+      /** The rain or the snow now (precip.ts PrecipState), and its draw calls in the last frame drawn. */
       precip: () => p3?.state() ?? null,
-      precipHide: (on: boolean) => p3?.hide(on)
+      precipCalls: () => p3?.calls() ?? 0
     };
     setDrawnFps(() => e.stats().fps);
     return () => {

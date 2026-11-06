@@ -2,15 +2,14 @@
 // while snow lies on the ground (Dec 11 – Feb 24), petals floating on the pond in cherry-blossom week (Apr 1–10)
 // and maple leaves in maple week (Nov 16–25); none of it on an ordinary day.
 import { expect, test, type Page } from './fixtures.ts';
-import { camTo, geo, is3d, oku, w3 } from './island.ts';
-import { hudMenu } from './hud.ts';
+import { camTo, geo, is3d, islandUp, oku, w3 } from './island.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 /** The camera stop where each lives: the campsite and the pond at おく. */
 async function open(page: Page, date: string) {
   await page.goto(`?demo&date=${date}&weather=clear`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await camTo(page, await oku(page), false);
 }
 

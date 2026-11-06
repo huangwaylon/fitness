@@ -3,6 +3,7 @@
 // slow); a deploy (a new worker, _app/version.json naming a new version) reloads the page only once the new worker
 // controls it, so the reload is served the new build's own shell.
 import { expect, test, type Page } from './fixtures.ts';
+import { islandUp } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ serviceWorkers: 'allow' });
@@ -14,7 +15,7 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
   test.setTimeout(120_000);
   const first = await page.goto('?demo&critter=none&visitor=none');
   expect(first?.fromServiceWorker()).toBe(false);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await controlled(page);
 
   // the network for pages hangs 20 s: the reload doesn't wait for it
@@ -27,6 +28,7 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
   const t = Date.now();
   const again = await page.reload();
   expect(again?.fromServiceWorker()).toBe(true);
+  // (the shell up: its HUD, the measure here; the island under it loads after)
   await expect(hudMenu(page)).toBeVisible();
   expect(Date.now() - t).toBeLessThan(10_000);
   await context.unroute('**/*', slow);
@@ -71,7 +73,7 @@ async function deploy(page: Page, context: import('@playwright/test').BrowserCon
 test('a deploy whose install fails reloads nothing, and the next time the app comes back it installs and reloads', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   await page.goto('?demo&critter=none&visitor=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await controlled(page);
   const chunk = await notCached(page);
   const fail = (route: import('@playwright/test').Route) => route.fulfill({ status: 503, body: '' });
@@ -102,7 +104,7 @@ test('a deploy whose install fails reloads nothing, and the next time the app co
 test('a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   await page.goto('?demo&critter=none&visitor=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await controlled(page);
   const chunk = await notCached(page);
   // the chunk takes 20 s (past the old 15 s wait, which then reloaded into the old shell); the manifest 404s
@@ -128,11 +130,11 @@ test('a slow install is waited for (no reload before its worker is in); a static
 test('the room cache: a file\'s older version goes, and a cache from before the index is counted whole', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(90_000);
   await page.goto('?demo&critter=none&visitor=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await controlled(page);
   // the island's models through the worker into the room cache
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   const room = () => page.evaluate(async () => {
     const c = await caches.open('island-room-v1');
     return (await c.keys()).map((k) => new URL(k.url).pathname + new URL(k.url).search);
@@ -155,7 +157,7 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
   await cdp.send('ServiceWorker.enable');
   await cdp.send('ServiceWorker.stopAllWorkers');
   await page.reload();
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect.poll(async () => (await room()).includes(real.old), { timeout: 20_000 }).toBe(false);
   expect(await room()).toContain(real.url);
   const index = () => page.evaluate(async () => {
@@ -172,7 +174,7 @@ test('the room cache: a file\'s older version goes, and a cache from before the 
 test('ききみみ’s packs: the lobby’s pack goes into the listen cache whole, with its bytes in the index', { tag: '@chromium' }, async ({ page }) => {
   test.setTimeout(60_000);
   await page.goto('?demo&critter=none&visitor=none&kikimimi=fast');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await controlled(page);
   await fromMenu(page, 'kikimimi');
   await expect(page.locator('dialog[open] [data-kikimimi]')).toHaveAttribute('data-phase', 'lobby');

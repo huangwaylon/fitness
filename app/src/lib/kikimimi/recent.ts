@@ -1,17 +1,16 @@
 // ききみみ クイズ: less repetition (docs/kikimimi.md "Variety"; the user, 2026-11-06: "there's too much repetition right
 // now"). Each phone keeps the item ids of its last few games (DEVICE.kikimimiRecent, newest first). Pure.
 //   A shared game: the host's phone picks the game's seed by trying SEED_TRIES seeds and keeping the deck that overlaps
-// its recent games least (the more recent, the more it counts); the seed's low bits are the lobby's flags (bit 0 たいせん,
+// its recent games least (the more recent, the more it counts); the seed's low bits are the lobby's flags (seed.ts: bit 0 たいせん,
 // bit 1 スピード はしご, bits 2-3 こたえる じかん) and stay as set. The other phones only use the seed, so nothing new goes
 // on the wire. A solo game and にがて れんしゅう build their own deck on this phone (deck.ts with `seen`, srs.ts
 // practiceDeck): items not heard lately first, then the least recently heard.
+import { FLAG_BITS } from './seed.ts';
 
 /** How many games' items a phone keeps. */
 export const RECENT_GAMES = 6;
 /** How many seeds the host tries. */
 export const SEED_TRIES = 24;
-/** The seed's flag bits (session.ts: たいせん, スピード はしご, こたえる じかん). */
-export const FLAG_BITS = 0xf;
 
 /** The last games' item ids, newest first. */
 export type Recent = readonly (readonly string[])[];

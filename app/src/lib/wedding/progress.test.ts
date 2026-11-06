@@ -9,17 +9,10 @@
  */
 
 import { describe, expect, it } from 'vitest'
-import {
-  SOON_DAYS,
-  STATE,
-  overallProgress,
-  partitionSubtasks,
-  taskProgress,
-  toPercent,
-  withProgress,
-  monthOf,
-  type TaskRow,
-} from './progress.ts'
+import type { WedTask } from '#lib/contract/wedding.ts'
+import { SOON_DAYS, monthOf, overallProgress, toPercent, withProgress } from './progress.ts'
+
+type TaskRow = Omit<WedTask, 'doneBy'>
 
 /** The day every case below is evaluated against. */
 const TODAY = '2027-01-06'
@@ -49,6 +42,11 @@ function sub(parent: string, overrides: Partial<TaskRow> = {}): TaskRow {
 }
 
 const DONE_AT = '2027-01-02T00:00:00.000Z'
+
+/** A task's progress on `today` with its subtasks (as the board reads it: withProgress). */
+const taskProgress = (t: TaskRow, today: string, subtasks: TaskRow[] = []) => withProgress([t, ...subtasks], today).find((x) => x.id === t.id)!.progress
+/** The top-level rows of a flat list (withProgress's), each with its subtasks' ids. */
+const nested = (rows: TaskRow[]) => withProgress(rows, TODAY).map((t) => ({ id: t.id, subs: t.subtasks.map((x) => x.id) }))
 
 describe('taskProgress: what a task is worth', () => {
   it('is 0% until somebody finishes it, whatever the date says', () => {
@@ -86,7 +84,7 @@ describe('taskProgress: what a task is worth', () => {
     const subs = [sub('a', { id: '1', doneAt: DONE_AT }), sub('a', { id: '2', doneAt: DONE_AT })]
     const progress = taskProgress(task(), TODAY, subs)
     expect(progress.percent).toBe(1)
-    expect(progress.state).not.toBe(STATE.DONE)
+    expect(progress.state).not.toBe('done')
   })
 })
 
@@ -96,23 +94,23 @@ describe('taskProgress: states', () => {
   it('is overdue the DAY AFTER the due date, never on it', () => {
     // Overdue compares DAY STRINGS. A task due today is due today, all day, and must not read
     // as late at 00:01 that morning.
-    expect(stateOf('2027-01-05')).toBe(STATE.OVERDUE)
-    expect(stateOf(TODAY)).toBe(STATE.SOON)
+    expect(stateOf('2027-01-05')).toBe('overdue')
+    expect(stateOf(TODAY)).toBe('soon')
   })
 
   it('is soon out to the fortnight and later past it', () => {
-    expect(stateOf('2027-01-20')).toBe(STATE.SOON)
-    expect(stateOf('2027-01-21')).toBe(STATE.LATER)
+    expect(stateOf('2027-01-20')).toBe('soon')
+    expect(stateOf('2027-01-21')).toBe('later')
     expect(SOON_DAYS).toBe(14)
   })
 
   it('is done regardless of the date', () => {
-    expect(stateOf('2026-01-01', { doneAt: DONE_AT })).toBe(STATE.DONE)
-    expect(stateOf('', { doneAt: DONE_AT })).toBe(STATE.DONE)
+    expect(stateOf('2026-01-01', { doneAt: DONE_AT })).toBe('done')
+    expect(stateOf('', { doneAt: DONE_AT })).toBe('done')
   })
 
   it('is nodate without a day (a subtask, or a task given none: the contract keeps only real days)', () => {
-    expect(stateOf('')).toBe(STATE.NODATE)
+    expect(stateOf('')).toBe('nodate')
   })
 
   it('reports the signed distance, which is what a row prints', () => {
@@ -128,12 +126,12 @@ describe('taskProgress: what the calendar has asked for', () => {
     // second series over the same denominator. A date that has passed is `overdue` — a state, a
     // chip and a count — and a row that is finished is done whatever its date did.
     const late = taskProgress(task({ due: '2027-01-05' }), TODAY)
-    expect(late.state).toBe(STATE.OVERDUE)
+    expect(late.state).toBe('overdue')
     expect(late.days).toBe(-1)
     expect(late).not.toHaveProperty('duePassed')
     // Today is not past, and finished beats late.
-    expect(taskProgress(task({ due: TODAY }), TODAY).state).toBe(STATE.SOON)
-    expect(taskProgress(task({ due: '2027-01-05', doneAt: DONE_AT }), TODAY).state).toBe(STATE.DONE)
+    expect(taskProgress(task({ due: TODAY }), TODAY).state).toBe('soon')
+    expect(taskProgress(task({ due: '2027-01-05', doneAt: DONE_AT }), TODAY).state).toBe('done')
   })
 })
 
@@ -192,16 +190,13 @@ describe('taskProgress: thisMonth', () => {
     // A sixth state would have made a task overdue OR current and moved a row out of the overdue
     // count; this is orthogonal to all five and is only ever asked which section to draw in.
     const running = taskProgress(task({ due: '2027-03-20', start: '2027-01-01' }), TODAY)
-    expect(running.state).toBe(STATE.LATER)
-    expect(Object.values(STATE)).not.toContain('thisMonth')
+    expect(running.state).toBe('later')
   })
 })
 
-describe('partitionSubtasks', () => {
+describe('subtasks', () => {
   it('nests exactly one level', () => {
-    const { parents, children } = partitionSubtasks([task({ id: 'p' }), sub('p')])
-    expect(parents.map((row) => row.id)).toEqual(['p'])
-    expect(children.get('p')!.map((row) => row.id)).toEqual(['p-s'])
+    expect(nested([task({ id: 'p' }), sub('p')])).toEqual([{ id: 'p', subs: ['p-s'] }])
   })
 
   it('PROMOTES rather than hides anything it cannot place', () => {
@@ -211,26 +206,22 @@ describe('partitionSubtasks', () => {
     const orphan = task({ id: 'o', parentId: 'gone' })
     const selfParent = task({ id: 'x', parentId: 'x' })
     const rows = [task({ id: 'p' }), sub('p'), grandchild, orphan, selfParent]
-    const { parents } = partitionSubtasks(rows)
-    expect(parents.map((row) => row.id).sort()).toEqual(['g', 'o', 'p', 'x'])
+    expect(nested(rows).map((row) => row.id).sort()).toEqual(['g', 'o', 'p', 'x'])
   })
 
   it('promotes a child whose parent is tombstoned', () => {
     const rows = [task({ id: 'p', deletedAt: DONE_AT }), sub('p')]
-    const { parents } = partitionSubtasks(rows)
-    expect(parents.map((row) => row.id)).toEqual(['p-s'])
+    expect(nested(rows)).toEqual([{ id: 'p-s', subs: [] }])
   })
 
   it('walks a two-cycle without recursing', () => {
     const rows = [task({ id: 'a', parentId: 'b' }), task({ id: 'b', parentId: 'a' })]
-    expect(partitionSubtasks(rows).parents.map((row) => row.id).sort()).toEqual(['a', 'b'])
+    expect(nested(rows).map((row) => row.id).sort()).toEqual(['a', 'b'])
   })
 
   it('drops tombstoned rows entirely', () => {
     const rows = [task({ id: 'p' }), sub('p', { id: 'gone', deletedAt: DONE_AT })]
-    const { parents, children } = partitionSubtasks(rows)
-    expect(parents.map((row) => row.id)).toEqual(['p'])
-    expect(children.has('p')).toBe(false)
+    expect(nested(rows)).toEqual([{ id: 'p', subs: [] }])
   })
 })
 

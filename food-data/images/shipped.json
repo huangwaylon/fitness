@@ -1,5 +1,93 @@
 [
 {
+"key": "dishes-bukkake-udon",
+"ja": "ぶっかけうどん",
+"desc": "bukkake udon, cold thick udon in a bowl with a little dark sauce, grated daikon, tempura bits, green onion and lemon",
+"items": [
+"dishes:bukkake-udon",
+"eatout:bukkake_udon"
+],
+"roll": 0,
+"seed": 71957,
+"prompt": "789911ed3f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-carbonara",
+"ja": "スパゲッティ カルボナーラ",
+"desc": "spaghetti carbonara, spaghetti in creamy pale yellow egg and cheese sauce with bacon and black pepper",
+"items": [
+"dishes:carbonara",
+"eatout:carbonara"
+],
+"roll": 0,
+"seed": 72776,
+"prompt": "1e797c595a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-chawanmushi",
+"ja": "茶碗蒸し",
+"desc": "chawanmushi, a savoury egg custard in a lidded cup, smooth pale yellow custard with a shrimp, mitsuba and a ginkgo nut",
+"items": [
+"dishes:chawanmushi",
+"eatout:chawanmushi",
+"kurume:110"
+],
+"roll": 0,
+"seed": 1375,
+"prompt": "8aa312c3d6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-chirashizushi",
+"ja": "ちらし寿司",
+"desc": "chirashi sushi, a bowl of sushi rice scattered with shredded golden egg, pink shrimp, red tuna, ikura and green snow peas",
+"items": [
+"dishes:chirashizushi",
+"eatout:chirashi",
+"kurume:008"
+],
+"roll": 0,
+"seed": 27925,
+"prompt": "357559423a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-curry-beef",
+"ja": "カレーライス（ビーフ）",
+"desc": "beef curry rice on a white plate, white rice beside thick glossy dark brown curry sauce with beef chunks",
+"items": [
+"dishes:curry-beef",
+"eatout:curry_beef",
+"kurume:014"
+],
+"roll": 0,
+"seed": 37280,
+"prompt": "e3d9642d46",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-curry-chicken",
+"ja": "カレーライス（チキン）",
+"desc": "chicken curry rice on a white plate, white rice beside glossy brown curry sauce with chicken pieces",
+"items": [
+"dishes:curry-chicken",
+"eatout:curry_chicken",
+"takatsuki:r50"
+],
+"roll": 0,
+"seed": 84861,
+"prompt": "b59c91709a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-curry-pork",
 "ja": "カレーライス（ポーク）",
 "desc": "Japanese pork curry rice on a white oval plate, a mound of white steamed rice beside thick glossy brown curry sauce with chunks of pork, potato and carrot",
@@ -61,6 +149,22 @@
 "checked": false
 },
 {
+"key": "dishes-hiyashi-chuka",
+"ja": "冷やし中華",
+"desc": "hiyashi chuka, cold yellow ramen noodles topped with neat rows of julienned cucumber, ham, egg strips and tomato, with yellow mustard",
+"items": [
+"dishes:hiyashi-chuka",
+"eatout:hiyashi_chuka",
+"kurume:047",
+"toyonaka:269368"
+],
+"roll": 0,
+"seed": 45807,
+"prompt": "611f474279",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-hiyayakko",
 "ja": "冷奴",
 "desc": "hiyayakko, a chilled block of silken tofu topped with grated ginger, chopped green onion and bonito flakes, in a small dish",
@@ -73,6 +177,35 @@
 "seed": 35401,
 "prompt": "3b0dffd024",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-kaisendon",
+"ja": "海鮮丼",
+"desc": "kaisendon, a bowl of sushi rice topped with slices of red tuna, orange salmon, white fish, ikura, shrimp and tamagoyaki, a shiso leaf",
+"items": [
+"dishes:kaisendon",
+"eatout:kaisendon"
+],
+"roll": 0,
+"seed": 62173,
+"prompt": "d8fa500fa2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-kake-soba",
+"ja": "かけそば",
+"desc": "kake soba, grey-brown buckwheat noodles in hot dark dashi broth topped with sliced green onion",
+"items": [
+"dishes:kake-soba",
+"eatout:kake_soba",
+"kurume:041"
+],
+"roll": 0,
+"seed": 97733,
+"prompt": "26067b23d9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -105,6 +238,67 @@
 "checked": false
 },
 {
+"key": "dishes-katsu-curry",
+"ja": "カツカレー",
+"desc": "katsu curry, a breaded pork cutlet sliced on white rice with brown curry sauce, on an oval plate",
+"items": [
+"dishes:katsu-curry",
+"eatout:katsu_curry"
+],
+"roll": 0,
+"seed": 20098,
+"prompt": "5e80c94046",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-katsudon",
+"ja": "かつ丼",
+"desc": "katsudon, a donburi of rice topped with a sliced breaded pork cutlet simmered with onion and soft golden egg, mitsuba leaves",
+"items": [
+"dishes:katsudon",
+"eatout:katsudon",
+"maff_kyodo:katsudon_yama_nashi",
+"kurume:010"
+],
+"roll": 0,
+"seed": 76886,
+"prompt": "6839dbd8dd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-kitsune-udon",
+"ja": "きつねうどん",
+"desc": "kitsune udon, thick white udon in clear light-brown dashi broth topped with a large glossy sweet fried tofu sheet and green onion",
+"items": [
+"dishes:kitsune-udon",
+"eatout:kitsune_udon",
+"maff_kyodo:39_17_osaka",
+"takatsuki:r35",
+"kurume:035"
+],
+"roll": 0,
+"seed": 20050,
+"prompt": "e1d3782477",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-macaroni-gratin",
+"ja": "マカロニグラタン",
+"desc": "macaroni gratin, a baking dish of macaroni in creamy white sauce with chicken and mushrooms, browned cheese top",
+"items": [
+"dishes:macaroni-gratin",
+"kurume:050"
+],
+"roll": 0,
+"seed": 46286,
+"prompt": "a5b5c7ee91",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-meat-sauce",
 "ja": "スパゲッティ ミートソース",
 "desc": "spaghetti with meat sauce, a mound of red-brown minced meat tomato sauce on spaghetti, grated cheese",
@@ -132,6 +326,35 @@
 "checked": false
 },
 {
+"key": "dishes-mix-sandwich",
+"ja": "ミックスサンドイッチ",
+"desc": "mixed sandwiches, crustless white bread triangles with egg salad, ham and cheese, and lettuce and tomato fillings",
+"items": [
+"dishes:mix-sandwich",
+"eatout:sand_mix"
+],
+"roll": 0,
+"seed": 63692,
+"prompt": "11ba239591",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-napolitan",
+"ja": "スパゲッティ ナポリタン",
+"desc": "spaghetti Napolitan, spaghetti in glossy red ketchup sauce with sliced sausage, green pepper, onion and mushroom",
+"items": [
+"dishes:napolitan",
+"eatout:napolitan",
+"kumagaya:3514"
+],
+"roll": 0,
+"seed": 6105,
+"prompt": "5f1585bd27",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-natto-gohan",
 "ja": "納豆ごはん",
 "desc": "natto gohan, a bowl of white rice topped with sticky brown natto, chopped green onion and yellow mustard",
@@ -142,6 +365,20 @@
 "seed": 30353,
 "prompt": "5d84b0c026",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-oden-tamago",
+"ja": "おでん 卵",
+"desc": "an oden egg, a whole peeled boiled egg stained light brown by the broth, in clear oden dashi",
+"items": [
+"dishes:oden-tamago",
+"eatout:oden_tamago"
+],
+"roll": 0,
+"seed": 44639,
+"prompt": "f53dc97f6b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -187,6 +424,20 @@
 "checked": false
 },
 {
+"key": "dishes-onigiri-ume",
+"ja": "おにぎり（梅）",
+"desc": "an onigiri rice ball, a white triangle of rice with dark nori, a red umeboshi plum visible on top",
+"items": [
+"dishes:onigiri-ume",
+"eatout:onigiri_ume"
+],
+"roll": 0,
+"seed": 56058,
+"prompt": "77470a35f3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-oyakodon",
 "ja": "親子丼",
 "desc": "oyakodon in a ceramic donburi bowl, white rice topped with simmered chicken pieces and onion bound in soft, half-set golden egg, a few green mitsuba leaves on top",
@@ -219,6 +470,20 @@
 "checked": false
 },
 {
+"key": "dishes-ramen-miso",
+"ja": "味噌ラーメン",
+"desc": "miso ramen, thick wavy noodles in cloudy orange-brown miso broth topped with bean sprouts, minced pork, corn and green onion",
+"items": [
+"dishes:ramen-miso",
+"eatout:ramen_miso"
+],
+"roll": 0,
+"seed": 21870,
+"prompt": "63e55b3026",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-ramen-shoyu",
 "ja": "しょうゆラーメン（自家製）",
 "desc": "shoyu ramen, wavy yellow noodles in clear brown soy broth with chashu slices, menma, half a boiled egg, nori and green onion",
@@ -233,6 +498,36 @@
 "checked": false
 },
 {
+"key": "dishes-saba-misoni",
+"ja": "さばの味噌煮",
+"desc": "saba misoni, mackerel fillet pieces simmered in a thick glossy brown miso sauce with slivered ginger, in a shallow bowl",
+"items": [
+"dishes:saba-misoni",
+"dishes:teishoku-saba-misoni",
+"eatout:saba_miso_teishoku",
+"kurume:096"
+],
+"roll": 0,
+"seed": 56538,
+"prompt": "05fd130fd1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-sashimi-moriawase",
+"ja": "刺身盛り合わせ",
+"desc": "a sashimi platter, slices of red tuna, orange salmon and pale yellowtail with shredded daikon, a shiso leaf and wasabi",
+"items": [
+"dishes:sashimi-moriawase",
+"eatout:sashimi_mori"
+],
+"roll": 0,
+"seed": 49417,
+"prompt": "e86c6c111e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-shogayaki",
 "ja": "豚の生姜焼き",
 "desc": "shogayaki ginger pork on a white plate, thin pan-fried pork loin slices glazed in a glossy brown soy-ginger sauce with soft onion, a heap of finely shredded raw cabbage beside it",
@@ -243,6 +538,51 @@
 "seed": 9922,
 "prompt": "4d707f6557",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-somen",
+"ja": "そうめん",
+"desc": "somen, thin white noodles in a glass bowl of cold water with ice, a cup of dipping sauce, green onion and ginger",
+"items": [
+"dishes:somen",
+"eatout:somen"
+],
+"roll": 0,
+"seed": 36295,
+"prompt": "7a038bf9b6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-sukiyaki",
+"ja": "すき焼き（1人前）",
+"desc": "sukiyaki, an iron pan of thin marbled beef slices, grilled tofu, napa cabbage, leek and shirataki in sweet soy broth, with a raw egg",
+"items": [
+"dishes:sukiyaki",
+"maff_kyodo:32_19_gunma",
+"maff_kyodo:34_17_tokyo"
+],
+"roll": 0,
+"seed": 39212,
+"prompt": "9a6ca08409",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-takoyaki",
+"ja": "たこ焼き（6個）",
+"desc": "takoyaki, round golden-brown octopus balls in a boat-shaped tray topped with brown sauce, mayonnaise, aonori and bonito flakes",
+"items": [
+"dishes:takoyaki",
+"eatout:takoyaki",
+"maff_kyodo:39_15_osaka",
+"kurume:228"
+],
+"roll": 0,
+"seed": 75304,
+"prompt": "e51035ea92",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -273,6 +613,78 @@
 "checked": false
 },
 {
+"key": "dishes-teishoku-shogayaki",
+"ja": "生姜焼き定食",
+"desc": "a ginger pork set meal on a tray, glossy ginger pork slices with shredded cabbage, rice, miso soup and pickles",
+"items": [
+"dishes:teishoku-shogayaki",
+"eatout:shogayaki_teishoku"
+],
+"roll": 0,
+"seed": 80336,
+"prompt": "49c61f74be",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-teishoku-yakizake",
+"ja": "焼き鮭定食",
+"desc": "a Japanese set meal (teishoku) on a tray, a grilled salted salmon fillet, a bowl of rice, a bowl of miso soup and small side dishes",
+"items": [
+"dishes:teishoku-yakizake",
+"eatout:shake_teishoku",
+"eatout:tamago_kake_teishoku"
+],
+"roll": 0,
+"seed": 61996,
+"prompt": "1c6f764cbf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tempura-moriawase",
+"ja": "天ぷら盛り合わせ",
+"desc": "an assorted tempura platter, shrimp, squid, kisu, eggplant and sweet potato in light crisp golden batter, with a small dish of dipping sauce and grated daikon",
+"items": [
+"dishes:tempura-moriawase",
+"eatout:tenpura_mori"
+],
+"roll": 0,
+"seed": 80876,
+"prompt": "1def0d9d68",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tempura-udon",
+"ja": "天ぷらうどん",
+"desc": "tempura udon, thick udon in dashi broth topped with two shrimp tempura and green onion",
+"items": [
+"dishes:tempura-udon",
+"eatout:tenpura_udon"
+],
+"roll": 0,
+"seed": 59891,
+"prompt": "ec3b3f2eb5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tendon",
+"ja": "天丼",
+"desc": "tendon, a bowl of rice topped with shrimp, squid, eggplant, kabocha and sweet potato tempura drizzled with dark sweet tare sauce",
+"items": [
+"dishes:tendon",
+"eatout:tendon",
+"kurume:012"
+],
+"roll": 0,
+"seed": 81872,
+"prompt": "4f5c69fdc1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-tkg",
 "ja": "卵かけごはん",
 "desc": "tamago kake gohan, a bowl of white rice with a raw egg yolk and egg on top, a dash of soy sauce",
@@ -283,6 +695,64 @@
 "seed": 58364,
 "prompt": "ab88d1a606",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-toast-butter",
+"ja": "バタートースト",
+"desc": "a thick slice of buttered toast, golden-brown with melting butter",
+"items": [
+"dishes:toast-butter",
+"eatout:butter_toast",
+"kurume:024"
+],
+"roll": 0,
+"seed": 61896,
+"prompt": "9bbb7a9105",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-tsukimi-soba",
+"ja": "月見そば",
+"desc": "tsukimi soba, soba in hot dashi broth with a raw egg yolk and green onion",
+"items": [
+"dishes:tsukimi-soba",
+"eatout:tsukimi_soba"
+],
+"roll": 0,
+"seed": 82660,
+"prompt": "27fa2615c6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-yakisoba",
+"ja": "ソース焼きそば",
+"desc": "sauce yakisoba, stir-fried wavy noodles glossy brown with sauce, cabbage, pork and bean sprouts, topped with aonori and red pickled ginger",
+"items": [
+"dishes:yakisoba",
+"eatout:yakisoba_yatai",
+"kurume:046"
+],
+"roll": 0,
+"seed": 50316,
+"prompt": "aaa5d02ff9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-yakitori-tare",
+"ja": "焼き鳥（たれ・5本）",
+"desc": "yakitori skewers with tare, grilled chicken pieces on bamboo skewers glazed with glossy dark sweet soy sauce, on a long plate",
+"items": [
+"dishes:yakitori-tare",
+"eatout:yakitori_momo_tare"
+],
+"roll": 0,
+"seed": 62796,
+"prompt": "bc123886fc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -316,6 +786,19 @@
 "checked": false
 },
 {
+"key": "dishes-yosenabe",
+"ja": "寄せ鍋（1人前）",
+"desc": "yosenabe, a clay pot of clear soy dashi with napa cabbage, chicken, tofu, cod, shiitake and green onion",
+"items": [
+"dishes:yosenabe"
+],
+"roll": 0,
+"seed": 4375,
+"prompt": "3b20fdc8ed",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-zaru-soba",
 "ja": "ざるそば",
 "desc": "zaru soba, cold grey-brown buckwheat noodles piled on a square bamboo zaru tray, strips of dark nori seaweed on top, a small cup of dark dipping sauce with green onion and wasabi beside it",
@@ -345,6 +828,20 @@
 "checked": false
 },
 {
+"key": "eatout-bento_nori",
+"ja": "のり弁当",
+"desc": "a nori bento, white rice covered in a sheet of nori with a white fish fry, chikuwa tempura and kinpira",
+"items": [
+"eatout:bento_nori",
+"eatout:bento_mentai_nori"
+],
+"roll": 0,
+"seed": 22130,
+"prompt": "4d8f2f935b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "eatout-cafe_latte",
 "ja": "カフェラテ（Mサイズ）",
 "desc": "a cup of cafe latte with milk foam and latte art",
@@ -359,6 +856,33 @@
 "checked": false
 },
 {
+"key": "eatout-cheeseburger",
+"ja": "チーズバーガー",
+"desc": "a cheeseburger, a beef patty with melted yellow cheese, pickles and onion in a soft bun",
+"items": [
+"eatout:cheeseburger"
+],
+"roll": 0,
+"seed": 50830,
+"prompt": "ae33f2c22f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-chicken_hot",
+"ja": "骨なしフライドチキン（ホットスナック）",
+"desc": "a piece of fried chicken with a thick craggy crisp golden-brown seasoned coating",
+"items": [
+"eatout:chicken_hot",
+"eatout:fried_chicken"
+],
+"roll": 0,
+"seed": 96378,
+"prompt": "815b80dc2b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "eatout-curry_pork_chain",
 "ja": "カレーライス（カレー専門店・ポーク）",
 "desc": "a curry shop pork curry rice, white rice and thick brown curry with pork on an oval plate, red fukujinzuke pickles",
@@ -369,6 +893,19 @@
 "seed": 93599,
 "prompt": "f33ab5b574",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-greek_yogurt",
+"ja": "ギリシャヨーグルト（プレーン・無糖）",
+"desc": "a small bowl of thick Greek yogurt, dense creamy white with a spoon standing in it",
+"items": [
+"eatout:greek_yogurt"
+],
+"roll": 0,
+"seed": 93591,
+"prompt": "7eacf87845",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -399,6 +936,33 @@
 "checked": false
 },
 {
+"key": "eatout-kamatama",
+"ja": "釜玉うどん",
+"desc": "kamatama udon, hot thick udon in a bowl tossed with a raw egg, green onion and soy sauce",
+"items": [
+"eatout:kamatama"
+],
+"roll": 0,
+"seed": 61953,
+"prompt": "5bb7d54521",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-nigiri_moriawase",
+"ja": "にぎり寿司 盛り合わせ（10貫）",
+"desc": "an assorted nigiri sushi platter, ten pieces of tuna, salmon, shrimp, squid, egg and white fish nigiri on a wooden board with gari",
+"items": [
+"eatout:nigiri_moriawase",
+"eatout:kaitenzushi_10"
+],
+"roll": 0,
+"seed": 56914,
+"prompt": "75fa2fa5c7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "eatout-onigiri_sake",
 "ja": "おにぎり（鮭）",
 "desc": "a Japanese onigiri rice ball, a white triangle of rice wrapped at the bottom with a band of dark green nori, a little flaked orange-pink salmon visible at the top",
@@ -409,6 +973,19 @@
 "seed": 79071,
 "prompt": "b931da228b",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-protein_bar",
+"ja": "プロテインバー（一般的）",
+"desc": "a protein bar, a dense rectangular bar coated in chocolate, cut to show a nutty inside",
+"items": [
+"eatout:protein_bar"
+],
+"roll": 0,
+"seed": 75714,
+"prompt": "61695d8ab3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -423,6 +1000,32 @@
 "seed": 94807,
 "prompt": "7be5fcbbe6",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-pudding",
+"ja": "プリン（カスタード）",
+"desc": "a custard pudding (purin), a pale yellow custard with dark caramel sauce on top, on a small plate",
+"items": [
+"eatout:pudding"
+],
+"roll": 0,
+"seed": 96850,
+"prompt": "9e3f73af28",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-ramen_tonkotsu",
+"ja": "豚骨ラーメン",
+"desc": "tonkotsu ramen, thin straight noodles in rich milky white pork bone broth with chashu, wood ear mushroom, red pickled ginger and green onion",
+"items": [
+"eatout:ramen_tonkotsu"
+],
+"roll": 0,
+"seed": 55431,
+"prompt": "147aa0fe74",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -463,6 +1066,46 @@
 "seed": 38394,
 "prompt": "4dc045d9f4",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-tsukemen",
+"ja": "つけ麺",
+"desc": "tsukemen, thick cold noodles on a plate beside a bowl of rich brown dipping broth with chashu, menma and a boiled egg",
+"items": [
+"eatout:tsukemen",
+"eatout:tsukemen_oo"
+],
+"roll": 0,
+"seed": 85521,
+"prompt": "7ce42bfbbe",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-yakitori_negima",
+"ja": "焼き鳥 ねぎま",
+"desc": "negima yakitori, skewers of grilled chicken thigh alternating with pieces of leek, glazed in sweet sauce",
+"items": [
+"eatout:yakitori_negima"
+],
+"roll": 0,
+"seed": 4312,
+"prompt": "767f2f9a53",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "eatout-yudetamago",
+"ja": "ゆで卵",
+"desc": "two hard-boiled eggs, one whole peeled smooth white egg and one cut in half lengthwise showing a firm bright yellow yolk inside the white",
+"items": [
+"eatout:yudetamago"
+],
+"roll": 0,
+"seed": 46932,
+"prompt": "ba84bf885c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -800,14 +1443,14 @@
 {
 "key": "mext-01066",
 "ja": "焼きふ（釜焼きふ）",
-"desc": "several dried Japanese baked wheat gluten pieces (yaki-fu), small light puffy round crouton-like pieces with golden-brown tops",
+"desc": "Japanese yaki-fu, a few dry baked wheat gluten rounds and small rings, very light and airy like puffed bread crust, pale golden-cream with a lightly toasted top, matte and dry, not fried, not nuggets",
 "items": [
 "mext:01066"
 ],
 "roll": 0,
 "seed": 3958,
-"prompt": "023fc45123",
-"model": "Z-Image-Turbo q8 9 steps 512px",
+"prompt": "54901594c8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -903,6 +1546,21 @@
 "checked": false
 },
 {
+"key": "mext-01086",
+"ja": "半つき米ごはん",
+"desc": "a rice bowl of cooked partly milled rice, mostly white grains with a light cream-beige tint",
+"items": [
+"mext:01086",
+"mext:01087",
+"mext:01089"
+],
+"roll": 0,
+"seed": 22936,
+"prompt": "3109375977",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01088",
 "ja": "ごはん（精白米）",
 "desc": "a mound of freshly cooked plain white Japanese short-grain rice in a ceramic rice bowl (chawan), glossy plump grains sticking together slightly",
@@ -928,6 +1586,19 @@
 "seed": 63286,
 "prompt": "fd1d43f8b7",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01110",
+"ja": "アルファ化米",
+"desc": "a pile of dry instant rice (alpha rice), hard dry white grains slightly matte and cracked",
+"items": [
+"mext:01110"
+],
+"roll": 0,
+"seed": 31795,
+"prompt": "cdac996da7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -961,6 +1632,19 @@
 "checked": false
 },
 {
+"key": "mext-01113",
+"ja": "きりたんぽ",
+"desc": "kiritanpo, mashed rice packed around cedar sticks as long cylinders and toasted golden-brown, two sticks, one cut into diagonal pieces",
+"items": [
+"mext:01113"
+],
+"roll": 0,
+"seed": 12585,
+"prompt": "dffa20e6f1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01117",
 "ja": "もち",
 "desc": "three rectangular blocks of Japanese kirimochi rice cake, smooth matte white, one grilled and puffed golden",
@@ -991,6 +1675,32 @@
 "checked": false
 },
 {
+"key": "mext-01120",
+"ja": "白玉粉",
+"desc": "a small mound of white shiratamako flour in coarse irregular lumps, beside three small white shiratama dumplings",
+"items": [
+"mext:01120"
+],
+"roll": 0,
+"seed": 12432,
+"prompt": "f3137fb709",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01127",
+"ja": "そば（生）",
+"desc": "a folded bundle of fresh raw soba noodles, thin square-cut grey-brown strands dusted with flour",
+"items": [
+"mext:01127"
+],
+"roll": 0,
+"seed": 8883,
+"prompt": "a93e11ab93",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01128",
 "ja": "そば（ゆで）",
 "desc": "a heap of boiled grey-brown buckwheat soba noodles on a plate, thin speckled strands, plain",
@@ -1015,6 +1725,19 @@
 "seed": 33748,
 "prompt": "1b1b3f9ad7",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01136",
+"ja": "ポップコーン",
+"desc": "a bowl of fluffy white and pale yellow popcorn",
+"items": [
+"mext:01136"
+],
+"roll": 0,
+"seed": 98916,
+"prompt": "ffbc2cef86",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1068,6 +1791,72 @@
 "seed": 78071,
 "prompt": "fdfcf6a559",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01154",
+"ja": "もち米ごはん",
+"desc": "a bowl of cooked sticky glutinous rice, glossy translucent white grains clumped together",
+"items": [
+"mext:01154"
+],
+"roll": 0,
+"seed": 45710,
+"prompt": "5bbbd2a1cd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01158",
+"ja": "米粉",
+"desc": "a small mound of very fine white rice flour on a dish with a wooden scoop",
+"items": [
+"mext:01158"
+],
+"roll": 0,
+"seed": 31429,
+"prompt": "df178fcd3c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01160",
+"ja": "米粉めん",
+"desc": "a bundle of thin dried white rice vermicelli noodles (bifun), tangled wiry strands",
+"items": [
+"mext:01160",
+"mext:01115"
+],
+"roll": 0,
+"seed": 11348,
+"prompt": "ad6c8690c8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01168",
+"ja": "インディカ米ごはん",
+"desc": "a plate of cooked long-grain indica rice, long slender separate white grains",
+"items": [
+"mext:01168"
+],
+"roll": 0,
+"seed": 40742,
+"prompt": "637b1a6964",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01169",
+"ja": "ライスペーパー",
+"desc": "a stack of round translucent dry rice paper sheets with a fine woven crosshatch pattern",
+"items": [
+"mext:01169"
+],
+"roll": 0,
+"seed": 88464,
+"prompt": "a69b9e1c0f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1239,6 +2028,19 @@
 "checked": false
 },
 {
+"key": "mext-02007",
+"ja": "さつまいも 蒸し",
+"desc": "steamed sweet potato chunks with soft bright golden-yellow flesh",
+"items": [
+"mext:02007"
+],
+"roll": 0,
+"seed": 27560,
+"prompt": "827df26d05",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-02008",
 "ja": "焼きいも",
 "desc": "a Japanese roasted sweet potato (yaki-imo) broken in half, purple skin slightly charred, steaming soft golden flesh",
@@ -1278,6 +2080,19 @@
 "checked": false
 },
 {
+"key": "mext-02011",
+"ja": "さといも 水煮",
+"desc": "peeled boiled taro pieces, smooth hexagonal-cut white-grey chunks, glossy",
+"items": [
+"mext:02011"
+],
+"roll": 0,
+"seed": 19964,
+"prompt": "d8e823156c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-02017",
 "ja": "じゃがいも 皮なし 生",
 "desc": "peeled raw potatoes, smooth pale yellow-white, one cut in half, beside one unpeeled brown potato",
@@ -1288,6 +2103,20 @@
 "seed": 92329,
 "prompt": "fac2589eb1",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02019",
+"ja": "じゃがいも 水煮",
+"desc": "boiled peeled potato chunks, soft pale yellow with slightly crumbly edges, on a plate",
+"items": [
+"mext:02019",
+"mext:02018"
+],
+"roll": 0,
+"seed": 21902,
+"prompt": "7fe88802a6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1304,6 +2133,19 @@
 "checked": false
 },
 {
+"key": "mext-02025",
+"ja": "やまといも 生",
+"desc": "a raw yamatoimo yam, a lumpy fist-shaped root with brown skin, a cut showing dense white flesh, beside a little grated white sticky tororo",
+"items": [
+"mext:02025"
+],
+"roll": 0,
+"seed": 32358,
+"prompt": "29f6f95be8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-02034",
 "ja": "片栗粉",
 "desc": "a small mound of potato starch, pure bright white fine powder that looks squeaky, in a little dish",
@@ -1314,6 +2156,100 @@
 "seed": 27409,
 "prompt": "5f2cf11328",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02035",
+"ja": "コーンスターチ",
+"desc": "a small mound of cornstarch, pure white fine powder in a little dish",
+"items": [
+"mext:02035"
+],
+"roll": 0,
+"seed": 81671,
+"prompt": "9cbb496779",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02037",
+"ja": "くずきり（ゆで）",
+"desc": "kuzukiri, flat translucent clear noodles in ice water in a glass bowl, with a little cup of dark kuromitsu syrup",
+"items": [
+"mext:02037"
+],
+"roll": 0,
+"seed": 89035,
+"prompt": "0071215b15",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02039",
+"ja": "緑豆はるさめ（乾）",
+"desc": "a bundle of dried glass noodles (harusame), thin wiry translucent white strands",
+"items": [
+"mext:02039",
+"mext:02040"
+],
+"roll": 0,
+"seed": 43724,
+"prompt": "ec511edd5e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02045",
+"ja": "さつまいも 皮つき 生",
+"desc": "two whole raw sweet potatoes with deep reddish-purple skin, one cut to show pale yellow flesh",
+"items": [
+"mext:02045"
+],
+"roll": 0,
+"seed": 7968,
+"prompt": "6f1ce6c163",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02056",
+"ja": "ごま豆腐",
+"desc": "a square block of goma-dofu sesame tofu, smooth pale beige-grey, topped with a dab of green wasabi, in a small dish",
+"items": [
+"mext:02056",
+"maff_kyodo:goma_toufu_wakayama"
+],
+"roll": 0,
+"seed": 36667,
+"prompt": "a0afa4c462",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02057",
+"ja": "タピオカパール（ゆで）",
+"desc": "cooked black tapioca pearls, glossy dark brown-black chewy balls, in a small glass",
+"items": [
+"mext:02057"
+],
+"roll": 0,
+"seed": 53645,
+"prompt": "945b6ae73e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02061",
+"ja": "緑豆はるさめ（ゆで）",
+"desc": "cooked glass noodles (harusame), slippery clear transparent thin noodles on a plate",
+"items": [
+"mext:02061",
+"mext:02062"
+],
+"roll": 0,
+"seed": 62651,
+"prompt": "c38cc27934",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1332,6 +2268,19 @@
 "checked": false
 },
 {
+"key": "mext-03001",
+"ja": "黒砂糖",
+"desc": "lumps of Okinawan kokuto brown sugar, irregular dark brown chunks",
+"items": [
+"mext:03001"
+],
+"roll": 0,
+"seed": 45272,
+"prompt": "73541db82b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-03003",
 "ja": "砂糖（上白糖）",
 "desc": "a small dish of soft white Japanese sugar (johakuto), fine moist white crystals, with a spoon",
@@ -1345,6 +2294,45 @@
 "checked": false
 },
 {
+"key": "mext-03004",
+"ja": "三温糖",
+"desc": "a small dish of sanontou sugar, fine moist light-brown sugar",
+"items": [
+"mext:03004"
+],
+"roll": 0,
+"seed": 7287,
+"prompt": "a686ac1256",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03005",
+"ja": "グラニュー糖",
+"desc": "a small dish of granulated sugar, sparkling dry white crystals, with a spoon",
+"items": [
+"mext:03005"
+],
+"roll": 0,
+"seed": 47169,
+"prompt": "36b7f6069b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03008",
+"ja": "角砂糖",
+"desc": "a small pile of white sugar cubes",
+"items": [
+"mext:03008"
+],
+"roll": 0,
+"seed": 77692,
+"prompt": "add18b3fb1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-03022",
 "ja": "はちみつ",
 "desc": "a glass jar of golden honey with a wooden honey dipper dripping honey",
@@ -1355,6 +2343,45 @@
 "seed": 13952,
 "prompt": "8f1fa72e42",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03023",
+"ja": "メープルシロップ",
+"desc": "a glass bottle of amber maple syrup and a small pool of syrup",
+"items": [
+"mext:03023"
+],
+"roll": 0,
+"seed": 84886,
+"prompt": "971735fa71",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03029",
+"ja": "黒蜜",
+"desc": "a small glass pitcher of kuromitsu, thick glossy very dark brown sugar syrup",
+"items": [
+"mext:03029"
+],
+"roll": 0,
+"seed": 3656,
+"prompt": "10afdd1e25",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04001",
+"ja": "あずき（乾）",
+"desc": "a small heap of dry azuki beans, small glossy dark red beans with a white line",
+"items": [
+"mext:04001"
+],
+"roll": 0,
+"seed": 92801,
+"prompt": "05632a014e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1372,6 +2399,47 @@
 "checked": false
 },
 {
+"key": "mext-04016",
+"ja": "うぐいす豆",
+"desc": "a small dish of uguisu-mame, sweet simmered green peas, glossy olive-green beans",
+"items": [
+"mext:04016"
+],
+"roll": 0,
+"seed": 66883,
+"prompt": "c5a50c4ca3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04023",
+"ja": "大豆（乾）",
+"desc": "a small heap of dry soybeans, round pale yellow-beige beans",
+"items": [
+"mext:04023"
+],
+"roll": 0,
+"seed": 13743,
+"prompt": "1bd66c6d41",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04024",
+"ja": "大豆（ゆで）",
+"desc": "cooked soybeans in a small bowl, plump round soft pale beige beans",
+"items": [
+"mext:04024",
+"mext:04028",
+"mext:04081"
+],
+"roll": 0,
+"seed": 11436,
+"prompt": "eb772a513f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04029",
 "ja": "きな粉",
 "desc": "a small dish of kinako roasted soybean flour, fine light tan-yellow powder",
@@ -1382,6 +2450,20 @@
 "seed": 70065,
 "prompt": "4b05aa4ab0",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04031",
+"ja": "ぶどう豆（黒豆煮）",
+"desc": "sweet simmered black soybeans (kuromame) in a small dish, glossy wrinkle-free jet-black plump beans in dark syrup",
+"items": [
+"mext:04031",
+"dishes:kuromame"
+],
+"roll": 0,
+"seed": 44514,
+"prompt": "7c55bf61dc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1413,6 +2495,19 @@
 "checked": false
 },
 {
+"key": "mext-04038",
+"ja": "焼き豆腐",
+"desc": "a block of yaki-dofu grilled tofu, firm white tofu with dark brown grill-seared top",
+"items": [
+"mext:04038"
+],
+"roll": 0,
+"seed": 230,
+"prompt": "ed04bf12d3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04039",
 "ja": "厚揚げ（生揚げ）",
 "desc": "atsuage thick deep-fried tofu, rectangular blocks with golden-brown fried skin, one cut showing white tofu inside",
@@ -1436,6 +2531,19 @@
 "seed": 37011,
 "prompt": "45e7190ed2",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04041",
+"ja": "がんもどき",
+"desc": "round ganmodoki fried tofu fritters, golden-brown patties with flecks of carrot, hijiki and vegetables",
+"items": [
+"mext:04041"
+],
+"roll": 0,
+"seed": 20453,
+"prompt": "a4bcea97c2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1479,6 +2587,19 @@
 "checked": false
 },
 {
+"key": "mext-04051",
+"ja": "おから",
+"desc": "a small mound of okara soybean pulp, moist crumbly pale cream-white",
+"items": [
+"mext:04051"
+],
+"roll": 0,
+"seed": 74980,
+"prompt": "1c12b02edc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04052",
 "ja": "豆乳（無調整）",
 "desc": "a glass of soy milk, opaque creamy off-white liquid",
@@ -1491,6 +2612,151 @@
 "seed": 11166,
 "prompt": "7c753ed64a",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04054",
+"ja": "豆乳飲料（麦芽コーヒー）",
+"desc": "a glass of coffee-flavoured soy milk drink, light milky caramel-brown",
+"items": [
+"mext:04054"
+],
+"roll": 0,
+"seed": 37195,
+"prompt": "e2390b9a5b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04055",
+"ja": "大豆ミート（粒状大豆たんぱく）",
+"desc": "dry granular soy meat (textured soy protein), small irregular light brown crumbly chunks in a bowl",
+"items": [
+"mext:04055"
+],
+"roll": 0,
+"seed": 51901,
+"prompt": "a3ee9055e8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04057",
+"ja": "分離大豆たんぱく（ソイプロテイン）",
+"desc": "a scoop of soy protein powder, fine pale beige powder, on a little heap",
+"items": [
+"mext:04057"
+],
+"roll": 0,
+"seed": 26705,
+"prompt": "63c165fee0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04059",
+"ja": "湯葉（生）",
+"desc": "fresh yuba tofu skin, soft thin wrinkled pale yellow sheets folded and layered, glistening, in a small dish",
+"items": [
+"mext:04059"
+],
+"roll": 0,
+"seed": 14102,
+"prompt": "b55081e202",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04060",
+"ja": "湯葉（干し）",
+"desc": "dried yuba, brittle thin pale yellow-tan rolled and flat sheets",
+"items": [
+"mext:04060"
+],
+"roll": 0,
+"seed": 15985,
+"prompt": "f6f50b9e23",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04063",
+"ja": "テンペ",
+"desc": "a block of tempeh, compact pale beige fermented soybeans bound by white mould, sliced to show whole beans",
+"items": [
+"mext:04063"
+],
+"roll": 0,
+"seed": 62091,
+"prompt": "7e0bcd68b3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04066",
+"ja": "ひよこ豆（ゆで）",
+"desc": "a small bowl of boiled chickpeas, round knobbly beige beans",
+"items": [
+"mext:04066"
+],
+"roll": 0,
+"seed": 21924,
+"prompt": "8f34902c5b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04078",
+"ja": "いり大豆",
+"desc": "roasted soybeans, round beans with cracked toasty brown skins, in a small wooden masu box",
+"items": [
+"mext:04078"
+],
+"roll": 0,
+"seed": 73570,
+"prompt": "5967fb00f1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04087",
+"ja": "高野豆腐（水煮）",
+"desc": "simmered koya-dofu, soft spongy pale tan tofu squares soaked in light dashi broth, in a small bowl with a few green snow peas",
+"items": [
+"mext:04087",
+"dishes:koya-dofu",
+"kurume:121"
+],
+"roll": 0,
+"seed": 93052,
+"prompt": "ef7934b8c2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04094",
+"ja": "レンズ豆（ゆで）",
+"desc": "a small bowl of cooked lentils, small flat round brown-green lentils",
+"items": [
+"mext:04094"
+],
+"roll": 0,
+"seed": 69511,
+"prompt": "b4faeff230",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04095",
+"ja": "油揚げ 甘煮（いなり用）",
+"desc": "sweet simmered aburaage pouches for inari, soft glossy brown rectangular tofu sheets soaked in sweet soy syrup",
+"items": [
+"mext:04095"
+],
+"roll": 0,
+"seed": 50545,
+"prompt": "c936ff1888",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1521,6 +2787,71 @@
 "checked": false
 },
 {
+"key": "mext-05002",
+"ja": "アーモンド（フライ・味付け）",
+"desc": "a small pile of roasted salted almonds, glossy golden-brown with salt grains",
+"items": [
+"mext:05002"
+],
+"roll": 0,
+"seed": 95966,
+"prompt": "dc213db2ed",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05005",
+"ja": "カシューナッツ",
+"desc": "a small pile of roasted cashew nuts, curved kidney-shaped pale golden nuts",
+"items": [
+"mext:05005"
+],
+"roll": 0,
+"seed": 90013,
+"prompt": "34755bfb4f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05011",
+"ja": "栗（ゆで）",
+"desc": "boiled Japanese chestnuts, glossy dark brown shells, one cut in half showing pale yellow flesh",
+"items": [
+"mext:05011"
+],
+"roll": 0,
+"seed": 34757,
+"prompt": "87b741492d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05012",
+"ja": "栗の甘露煮",
+"desc": "kanroni candied chestnuts, whole bright golden-yellow peeled chestnuts glossy in syrup, in a small dish",
+"items": [
+"mext:05012"
+],
+"roll": 0,
+"seed": 97215,
+"prompt": "f5c06bfc3f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05013",
+"ja": "甘栗（天津甘栗）",
+"desc": "roasted Tianjin sweet chestnuts, small round glossy dark brown chestnuts, one peeled showing golden nut",
+"items": [
+"mext:05013"
+],
+"roll": 0,
+"seed": 56841,
+"prompt": "09294fd30c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-05014",
 "ja": "くるみ",
 "desc": "walnut halves, wrinkled brain-like light brown kernels, beside one whole walnut in its shell",
@@ -1547,6 +2878,32 @@
 "checked": false
 },
 {
+"key": "mext-05026",
+"ja": "ピスタチオ",
+"desc": "a small pile of roasted pistachios in split beige shells showing green nuts",
+"items": [
+"mext:05026"
+],
+"roll": 0,
+"seed": 39237,
+"prompt": "d935d723d8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05031",
+"ja": "マカダミアナッツ",
+"desc": "a small pile of round creamy-white macadamia nuts",
+"items": [
+"mext:05031"
+],
+"roll": 0,
+"seed": 34951,
+"prompt": "acd8261864",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-05035",
 "ja": "ピーナッツ（いり）",
 "desc": "roasted peanuts in their shells, beige wrinkled pods, a few shelled red-skinned peanuts",
@@ -1560,6 +2917,71 @@
 "checked": false
 },
 {
+"key": "mext-05036",
+"ja": "バターピーナッツ",
+"desc": "a small pile of butter peanuts, skinless glossy golden peanuts",
+"items": [
+"mext:05036"
+],
+"roll": 0,
+"seed": 93700,
+"prompt": "6147e59582",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05037",
+"ja": "ピーナッツバター",
+"desc": "a small open jar of smooth peanut butter, thick tan spread with a knife",
+"items": [
+"mext:05037"
+],
+"roll": 0,
+"seed": 91762,
+"prompt": "6b4f61c037",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05041",
+"ja": "あまに（いり）",
+"desc": "a small dish of roasted flaxseeds, tiny glossy flat brown seeds",
+"items": [
+"mext:05041"
+],
+"roll": 0,
+"seed": 76576,
+"prompt": "92345e92fc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05042",
+"ja": "練りごま",
+"desc": "a small jar of nerigoma sesame paste, smooth thick glossy tan paste with a spoon",
+"items": [
+"mext:05042"
+],
+"roll": 0,
+"seed": 97466,
+"prompt": "c85ce13f9b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-05046",
+"ja": "チアシード",
+"desc": "a small dish of chia seeds, tiny oval seeds speckled grey, black and white",
+"items": [
+"mext:05046"
+],
+"roll": 0,
+"seed": 90883,
+"prompt": "ddd2f1a605",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06007",
 "ja": "アスパラガス 生",
 "desc": "a bundle of fresh green asparagus spears with tight pointed tips",
@@ -1570,6 +2992,32 @@
 "seed": 26239,
 "prompt": "fcae3a107f",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06008",
+"ja": "アスパラガス ゆで",
+"desc": "boiled green asparagus spears, bright green and tender, on a plate",
+"items": [
+"mext:06008"
+],
+"roll": 0,
+"seed": 21454,
+"prompt": "2ec71718bf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06010",
+"ja": "さやいんげん 生",
+"desc": "a small heap of fresh green beans, long slender pods",
+"items": [
+"mext:06010"
+],
+"roll": 0,
+"seed": 12477,
+"prompt": "e73ed734cf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1591,6 +3039,45 @@
 "checked": false
 },
 {
+"key": "mext-06020",
+"ja": "さやえんどう 生",
+"desc": "a small heap of snow peas, flat bright green pods with tiny peas inside",
+"items": [
+"mext:06020"
+],
+"roll": 0,
+"seed": 90558,
+"prompt": "1e16b83b9d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06022",
+"ja": "スナップえんどう",
+"desc": "a small heap of sugar snap peas, plump round crisp green pods",
+"items": [
+"mext:06022"
+],
+"roll": 0,
+"seed": 58866,
+"prompt": "6deeecc781",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06025",
+"ja": "グリンピース 冷凍",
+"desc": "a small bowl of green peas, round bright green peas",
+"items": [
+"mext:06025"
+],
+"roll": 0,
+"seed": 85777,
+"prompt": "ea5686ae9c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06032",
 "ja": "オクラ 生",
 "desc": "fresh okra pods, ridged bright green pointed pods, one sliced into star-shaped rounds",
@@ -1601,6 +3088,32 @@
 "seed": 29683,
 "prompt": "24c00cfcf7",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06033",
+"ja": "オクラ ゆで",
+"desc": "boiled okra, bright green pods and star-shaped slices, glossy",
+"items": [
+"mext:06033"
+],
+"roll": 0,
+"seed": 78565,
+"prompt": "1fda812522",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06038",
+"ja": "かぶ 皮なし 生",
+"desc": "a Japanese white turnip (kabu), round smooth white root with green leafy stalks, one cut showing white flesh",
+"items": [
+"mext:06038"
+],
+"roll": 0,
+"seed": 36525,
+"prompt": "064c1de457",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1632,6 +3145,19 @@
 "checked": false
 },
 {
+"key": "mext-06054",
+"ja": "カリフラワー 生",
+"desc": "a head of white cauliflower with pale green leaves, a few florets cut off",
+"items": [
+"mext:06054"
+],
+"roll": 0,
+"seed": 95296,
+"prompt": "5b88815a3a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06061",
 "ja": "キャベツ 生",
 "desc": "a whole round green cabbage with a quarter cut away showing tightly packed pale green and white layered leaves inside",
@@ -1645,6 +3171,19 @@
 "checked": false
 },
 {
+"key": "mext-06062",
+"ja": "キャベツ ゆで",
+"desc": "boiled cabbage leaves, soft wilted pale green pieces on a plate",
+"items": [
+"mext:06062"
+],
+"roll": 0,
+"seed": 84246,
+"prompt": "83e246c09c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06065",
 "ja": "きゅうり",
 "desc": "two fresh green cucumbers, long slim bumpy dark green, one cut in slices",
@@ -1655,6 +3194,46 @@
 "seed": 19125,
 "prompt": "84e65bb7b8",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06066",
+"ja": "きゅうり 塩漬",
+"desc": "salt-pickled cucumber slices and chopped Chinese cabbage, crisp bright translucent green and white pieces in a small dish",
+"items": [
+"mext:06066",
+"dishes:asazuke"
+],
+"roll": 0,
+"seed": 43567,
+"prompt": "35f40168c5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06067",
+"ja": "きゅうり しょうゆ漬",
+"desc": "soy-pickled cucumber, dark olive-brown crunchy cucumber slices in a small dish",
+"items": [
+"mext:06067"
+],
+"roll": 0,
+"seed": 51449,
+"prompt": "852a50a0a8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06068",
+"ja": "きゅうり ぬかみそ漬",
+"desc": "nukazuke rice-bran pickled cucumber, olive-green cucumber cut in pieces, in a small dish",
+"items": [
+"mext:06068"
+],
+"roll": 0,
+"seed": 25480,
+"prompt": "154f7d87e8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -1694,6 +3273,72 @@
 "seed": 13153,
 "prompt": "75ecc9b90d",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06087",
+"ja": "こまつな ゆで",
+"desc": "boiled komatsuna greens cut into short lengths, deep green, neatly piled in a small bowl with bonito flakes",
+"items": [
+"mext:06087",
+"dishes:ohitashi-komatsuna"
+],
+"roll": 0,
+"seed": 92439,
+"prompt": "02a7f2cedd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06088",
+"ja": "ザーサイ",
+"desc": "a small dish of zha cai, crunchy pickled mustard stem in thin pale olive slices with a red chili tint",
+"items": [
+"mext:06088"
+],
+"roll": 0,
+"seed": 56550,
+"prompt": "931b310996",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06093",
+"ja": "ししとう",
+"desc": "a small heap of shishito peppers, small thin wrinkled bright green peppers",
+"items": [
+"mext:06093"
+],
+"roll": 0,
+"seed": 73903,
+"prompt": "7d3fba6551",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06095",
+"ja": "大葉（しそ）",
+"desc": "a few fresh green shiso (ooba) leaves, broad leaves with serrated edges and visible veins",
+"items": [
+"mext:06095"
+],
+"roll": 0,
+"seed": 33658,
+"prompt": "4aa8e02ec2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06099",
+"ja": "しゅんぎく 生",
+"desc": "a bunch of shungiku chrysanthemum greens, deeply lobed bright green leaves",
+"items": [
+"mext:06099"
+],
+"roll": 0,
+"seed": 53521,
+"prompt": "63cbf15094",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2139,6 +3784,32 @@
 "checked": false
 },
 {
+"key": "mext-06333",
+"ja": "キャベツ 油いため",
+"desc": "stir-fried cabbage, glossy soft green cabbage pieces with lightly browned edges on a plate",
+"items": [
+"mext:06333"
+],
+"roll": 0,
+"seed": 93052,
+"prompt": "a4d30c75bf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06365",
+"ja": "おろししょうが",
+"desc": "a small mound of grated ginger, moist pale yellow fibrous paste on a small dish",
+"items": [
+"mext:06365"
+],
+"roll": 0,
+"seed": 66188,
+"prompt": "3498b11dee",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06367",
 "ja": "大根おろし",
 "desc": "a small mound of grated daikon radish, moist white grated pulp in a small dish",
@@ -2206,6 +3877,21 @@
 "checked": false
 },
 {
+"key": "mext-07022",
+"ja": "梅干し",
+"desc": "a few umeboshi pickled plums in a small dish, wrinkled soft deep red round plums",
+"items": [
+"mext:07022",
+"dishes:umeboshi",
+"mext:07023"
+],
+"roll": 0,
+"seed": 4279,
+"prompt": "c2083abfe8",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-07027",
 "ja": "みかん",
 "desc": "two Japanese mikan mandarin oranges, small round bright orange fruits with dimpled peel, one half peeled showing juicy segments",
@@ -2216,6 +3902,74 @@
 "roll": 0,
 "seed": 20984,
 "prompt": "4813ad7329",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07031",
+"ja": "みかんジュース（濃縮還元）",
+"desc": "a glass of orange juice, opaque bright orange",
+"items": [
+"mext:07031",
+"mext:07042",
+"mext:07043",
+"eatout:orange_juice"
+],
+"roll": 0,
+"seed": 32876,
+"prompt": "8076ac5e4f",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07049",
+"ja": "かき",
+"desc": "two Japanese persimmons (kaki), glossy orange squat round fruits with four green leaves on top, one cut showing orange flesh",
+"items": [
+"mext:07049"
+],
+"roll": 0,
+"seed": 81977,
+"prompt": "63f93efe25",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07054",
+"ja": "キウイフルーツ",
+"desc": "a kiwi fruit, fuzzy brown oval skin, one cut in half showing bright green flesh with black seeds",
+"items": [
+"mext:07054"
+],
+"roll": 0,
+"seed": 24325,
+"prompt": "09d76c51a3",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07077",
+"ja": "すいか",
+"desc": "a wedge of watermelon, green striped rind, bright red juicy flesh with black seeds",
+"items": [
+"mext:07077"
+],
+"roll": 0,
+"seed": 87261,
+"prompt": "f22a837bb1",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07088",
+"ja": "なし",
+"desc": "a Japanese nashi pear, a round brown-yellow speckled fruit, one cut showing crisp juicy white flesh",
+"items": [
+"mext:07088"
+],
+"roll": 0,
+"seed": 53539,
+"prompt": "915fd6ffe2",
 "model": "Z-Image-Turbo q8 9 steps 512px",
 "checked": false
 },
@@ -2233,6 +3987,33 @@
 "checked": false
 },
 {
+"key": "mext-07116",
+"ja": "ぶどう",
+"desc": "a bunch of purple-black Kyoho grapes, large round grapes with a dusty bloom",
+"items": [
+"mext:07116",
+"toyonaka:268115"
+],
+"roll": 0,
+"seed": 17178,
+"prompt": "8b69dba9ca",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07136",
+"ja": "もも",
+"desc": "two Japanese white peaches, soft fuzzy pale pink and cream fruits, one cut showing white juicy flesh",
+"items": [
+"mext:07136"
+],
+"roll": 0,
+"seed": 61208,
+"prompt": "7586049803",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-07148",
 "ja": "りんご 皮なし",
 "desc": "peeled apple wedges, crisp pale cream flesh without skin, on a small plate",
@@ -2242,6 +4023,20 @@
 "roll": 0,
 "seed": 10264,
 "prompt": "541e5d90c1",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-07149",
+"ja": "りんごジュース（ストレート）",
+"desc": "a glass of apple juice, clear golden yellow",
+"items": [
+"mext:07149",
+"mext:07150"
+],
+"roll": 0,
+"seed": 74670,
+"prompt": "efd44d9bba",
 "model": "Z-Image-Turbo q8 9 steps 512px",
 "checked": false
 },
@@ -2286,6 +4081,58 @@
 "checked": false
 },
 {
+"key": "mext-08020",
+"ja": "なめこ 生",
+"desc": "a small bowl of nameko mushrooms, small glossy slippery orange-brown caps",
+"items": [
+"mext:08020"
+],
+"roll": 0,
+"seed": 8237,
+"prompt": "eadbbac745",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08025",
+"ja": "エリンギ 生",
+"desc": "king oyster mushrooms (eringi), thick white stems with small brown caps",
+"items": [
+"mext:08025"
+],
+"roll": 0,
+"seed": 82498,
+"prompt": "fc8e6b549d",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08028",
+"ja": "まいたけ 生",
+"desc": "a cluster of maitake mushrooms, ruffled overlapping grey-brown frond-like caps",
+"items": [
+"mext:08028"
+],
+"roll": 0,
+"seed": 68159,
+"prompt": "3ce9fbbafa",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-08039",
+"ja": "しいたけ 生",
+"desc": "fresh shiitake mushrooms, brown domed caps with pale cream gills underneath and short stems",
+"items": [
+"mext:08039"
+],
+"roll": 0,
+"seed": 36424,
+"prompt": "1fefbcc6fe",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-09004",
 "ja": "焼きのり",
 "desc": "a stack of square sheets of toasted nori, dark glossy green-black",
@@ -2295,6 +4142,192 @@
 "roll": 0,
 "seed": 36083,
 "prompt": "3f1eaa91a5",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09005",
+"ja": "味付けのり",
+"desc": "small rectangular strips of seasoned nori, glossy dark green with a sheen",
+"items": [
+"mext:09005"
+],
+"roll": 0,
+"seed": 95333,
+"prompt": "fe3fa7ee0b",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09037",
+"ja": "沖縄もずく（塩抜き）",
+"desc": "mozuku seaweed, thin slippery brown-green tangled strands in a small glass bowl",
+"items": [
+"mext:09037",
+"mext:09038"
+],
+"roll": 0,
+"seed": 26090,
+"prompt": "1e5b591ae9",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09041",
+"ja": "わかめ（乾燥・水戻し）",
+"desc": "soft rehydrated wakame seaweed, glossy dark green leafy pieces in a small bowl",
+"items": [
+"mext:09041",
+"mext:09045"
+],
+"roll": 0,
+"seed": 73944,
+"prompt": "f95c38e7e9",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09044",
+"ja": "カットわかめ（乾）",
+"desc": "dried cut wakame, small crinkled dark green-black dry pieces in a small dish",
+"items": [
+"mext:09044"
+],
+"roll": 0,
+"seed": 65783,
+"prompt": "cf47d4add8",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09047",
+"ja": "めかぶ",
+"desc": "a small dish of mekabu, chopped slimy wakame root in thin dark green-brown strips",
+"items": [
+"mext:09047"
+],
+"roll": 0,
+"seed": 62189,
+"prompt": "bf4b46e542",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09050",
+"ja": "ひじき（乾）",
+"desc": "dried hijiki seaweed, small twig-like black pieces in a small dish",
+"items": [
+"mext:09050"
+],
+"roll": 0,
+"seed": 69775,
+"prompt": "2291e068b2",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10003",
+"ja": "あじ 生",
+"desc": "a whole fresh horse mackerel (aji), silver-blue fish with a line of hard scales along its side",
+"items": [
+"mext:10003"
+],
+"roll": 0,
+"seed": 36810,
+"prompt": "306c89b019",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10006",
+"ja": "あじの開き 生",
+"desc": "a butterflied salted horse mackerel (aji no hiraki), split flat fish showing pale pink flesh, raw",
+"items": [
+"mext:10006"
+],
+"roll": 0,
+"seed": 90245,
+"prompt": "4b7fa59380",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10007",
+"ja": "あじの開き 焼き",
+"desc": "a grilled butterflied horse mackerel (aji no hiraki), split flat fish with golden-brown grilled flesh, on a rectangular plate with grated daikon",
+"items": [
+"mext:10007",
+"dishes:aji-hiraki"
+],
+"roll": 0,
+"seed": 44627,
+"prompt": "f1380d4ca5",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10055",
+"ja": "しらす干し",
+"desc": "a small dish of shirasu boshi, tiny dried white baby sardines with black eyes",
+"items": [
+"mext:10055"
+],
+"roll": 0,
+"seed": 73146,
+"prompt": "7e2441c849",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10070",
+"ja": "うなぎ かば焼",
+"desc": "kabayaki eel, a grilled eel fillet glazed with glossy dark brown sweet sauce, on a plate",
+"items": [
+"mext:10070"
+],
+"roll": 0,
+"seed": 58679,
+"prompt": "66b457e5d7",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10085",
+"ja": "めかじき 生",
+"desc": "a thick steak of raw swordfish, pale pinkish-white firm flesh with concentric rings",
+"items": [
+"mext:10085"
+],
+"roll": 0,
+"seed": 93303,
+"prompt": "58e33fa684",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10086",
+"ja": "かつお（春獲り）",
+"desc": "a block of raw skipjack tuna (katsuo) fillet, deep red flesh with silver-grey skin, a few sashimi slices",
+"items": [
+"mext:10086",
+"mext:10087"
+],
+"roll": 0,
+"seed": 60717,
+"prompt": "ddc547cfcf",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10092",
+"ja": "かつお節（削り節）",
+"desc": "a small heap of katsuobushi bonito flakes, thin curly pale pinkish-brown shavings",
+"items": [
+"mext:10092"
+],
+"roll": 0,
+"seed": 87221,
+"prompt": "dbd340dcfd",
 "model": "Z-Image-Turbo q8 9 steps 512px",
 "checked": false
 },
@@ -2316,6 +4349,20 @@
 "checked": false
 },
 {
+"key": "mext-10136",
+"ja": "鮭（しろさけ） 焼き",
+"desc": "a grilled salmon fillet, pale orange-pink flaky flesh with a crisp browned skin edge",
+"items": [
+"mext:10136",
+"mext:10145"
+],
+"roll": 0,
+"seed": 89457,
+"prompt": "ec11b07528",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10139",
 "ja": "塩鮭",
 "desc": "a raw salted salmon fillet (shiozake), deep orange-red flesh with white fat lines and silver skin",
@@ -2325,6 +4372,32 @@
 "roll": 0,
 "seed": 17984,
 "prompt": "89a0cfd8c2",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10140",
+"ja": "いくら",
+"desc": "a small dish of ikura, glossy bright orange translucent salmon roe pearls",
+"items": [
+"mext:10140"
+],
+"roll": 0,
+"seed": 71619,
+"prompt": "3b445413a8",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10151",
+"ja": "スモークサーモン",
+"desc": "slices of smoked salmon, thin glossy translucent orange-pink slices on a plate with a lemon wedge",
+"items": [
+"mext:10151"
+],
+"roll": 0,
+"seed": 59924,
+"prompt": "54f35f806e",
 "model": "Z-Image-Turbo q8 9 steps 512px",
 "checked": false
 },
@@ -2343,6 +4416,24 @@
 "checked": false
 },
 {
+"key": "mext-10161",
+"ja": "塩さば",
+"desc": "a salt-grilled mackerel fillet (saba shioyaki), crisp blistered golden-brown skin with wavy stripes, on a rectangular plate with grated daikon",
+"items": [
+"mext:10161",
+"dishes:saba-shioyaki",
+"eatout:saba_shio_teishoku",
+"toyonaka:117813",
+"kumagaya:2195",
+"kumagaya:02195"
+],
+"roll": 0,
+"seed": 37399,
+"prompt": "f5adefabb1",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10164",
 "ja": "さば缶（水煮）",
 "desc": "a small dish of canned mackerel in water, pale chunks with silver skin",
@@ -2352,6 +4443,172 @@
 "roll": 0,
 "seed": 46456,
 "prompt": "c0a9052eff",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10165",
+"ja": "さば缶（みそ煮）",
+"desc": "canned mackerel in miso, chunks in thick brown miso sauce in a small dish",
+"items": [
+"mext:10165"
+],
+"roll": 0,
+"seed": 38830,
+"prompt": "7b42622750",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10173",
+"ja": "さんま 生",
+"desc": "a whole fresh saury (sanma), a long slim silver fish with a pointed jaw",
+"items": [
+"mext:10173"
+],
+"roll": 0,
+"seed": 18042,
+"prompt": "a02fba2222",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10174",
+"ja": "さんま 焼き",
+"desc": "a whole salt-grilled saury (sanma), long slim fish with crisp charred silver skin, on a long plate with grated daikon and a sudachi half",
+"items": [
+"mext:10174",
+"dishes:sanma-shioyaki",
+"dishes:teishoku-sanma",
+"kurume:077"
+],
+"roll": 0,
+"seed": 74777,
+"prompt": "9c975a489d",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10182",
+"ja": "ししゃも（からふとししゃも） 生干し 生",
+"desc": "a few raw capelin (shishamo), small slim silver fish with plump bellies",
+"items": [
+"mext:10182"
+],
+"roll": 0,
+"seed": 65827,
+"prompt": "bcf4566f20",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10192",
+"ja": "鯛（まだい天然） 生",
+"desc": "a whole red sea bream (madai), pink-red fish with blue speckles, and a few white sashimi slices",
+"items": [
+"mext:10192",
+"mext:10193"
+],
+"roll": 0,
+"seed": 68802,
+"prompt": "201f58a54b",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10202",
+"ja": "たらこ 生",
+"desc": "a pair of tarako, pollock roe sacs, plump pale pink-orange",
+"items": [
+"mext:10202"
+],
+"roll": 0,
+"seed": 12466,
+"prompt": "1f35a06a65",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10204",
+"ja": "明太子",
+"desc": "a pair of mentaiko spicy pollock roe sacs, bright red-orange, one cut showing grainy roe",
+"items": [
+"mext:10204"
+],
+"roll": 0,
+"seed": 95719,
+"prompt": "64c4085366",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10205",
+"ja": "たら 生",
+"desc": "a raw cod fillet, thick flaky white flesh with grey skin",
+"items": [
+"mext:10205",
+"mext:10208"
+],
+"roll": 0,
+"seed": 34417,
+"prompt": "de9856a402",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10241",
+"ja": "ぶり 生",
+"desc": "a raw yellowtail (buri) fillet, pale pinkish flesh with a dark red stripe, a few sashimi slices",
+"items": [
+"mext:10241"
+],
+"roll": 0,
+"seed": 66060,
+"prompt": "8ea6233590",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10243",
+"ja": "はまち（養殖） 生",
+"desc": "slices of hamachi yellowtail sashimi, glossy pale pink flesh with a dark band",
+"items": [
+"mext:10243"
+],
+"roll": 0,
+"seed": 87936,
+"prompt": "c9afa2664d",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10252",
+"ja": "まぐろ（きはだ）",
+"desc": "a few slices of red tuna sashimi (maguro akami), deep ruby red, with shredded daikon and a shiso leaf",
+"items": [
+"mext:10252",
+"mext:10253",
+"mext:10450",
+"mext:10425",
+"dishes:maguro-sashimi"
+],
+"roll": 0,
+"seed": 78423,
+"prompt": "d66a6a63d9",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10254",
+"ja": "まぐろトロ（くろまぐろ天然）",
+"desc": "slices of toro fatty tuna sashimi, pale pink with white marbled fat",
+"items": [
+"mext:10254",
+"mext:10459"
+],
+"roll": 0,
+"seed": 62882,
+"prompt": "cb7e530175",
 "model": "Z-Image-Turbo q8 9 steps 512px",
 "checked": false
 },
@@ -2369,6 +4626,366 @@
 "seed": 84280,
 "prompt": "9d42e71d9c",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10281",
+"ja": "あさり 生",
+"desc": "a small heap of fresh asari clams, ridged shells patterned in brown, cream and grey",
+"items": [
+"mext:10281"
+],
+"roll": 0,
+"seed": 41408,
+"prompt": "39c7183fbe",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10292",
+"ja": "かき（養殖） 生",
+"desc": "fresh oysters on the half shell, rough grey shells holding plump glossy cream-grey oysters, a lemon wedge",
+"items": [
+"mext:10292"
+],
+"roll": 0,
+"seed": 51003,
+"prompt": "335887a3f6",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10297",
+"ja": "しじみ 生",
+"desc": "a small heap of shijimi clams, small glossy black-brown shells",
+"items": [
+"mext:10297"
+],
+"roll": 0,
+"seed": 7988,
+"prompt": "64b4c8a6ce",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10313",
+"ja": "ほたて貝柱 生",
+"desc": "raw scallop adductor muscles, plump round glossy white-cream scallops, one sliced",
+"items": [
+"mext:10313"
+],
+"roll": 0,
+"seed": 47378,
+"prompt": "6749714715",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10345",
+"ja": "するめいか 生",
+"desc": "a whole fresh squid, a long translucent pale body with a pointed fin and tentacles",
+"items": [
+"mext:10345",
+"mext:10352"
+],
+"roll": 0,
+"seed": 85122,
+"prompt": "02d9a3a3c5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10362",
+"ja": "ゆでだこ",
+"desc": "a boiled octopus tentacle, bright red-purple skin with white suckers, a few slices showing white flesh",
+"items": [
+"mext:10362"
+],
+"roll": 0,
+"seed": 25859,
+"prompt": "16266b746a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10376",
+"ja": "かにかま",
+"desc": "a few kanikama crab sticks, white fish cake sticks with red-orange outside, one pulled apart into shreds",
+"items": [
+"mext:10376"
+],
+"roll": 0,
+"seed": 70427,
+"prompt": "e6c4ce223e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10379",
+"ja": "かまぼこ",
+"desc": "a semicircular block of kamaboko fish cake on a small wooden board, pink-red top and white inside, a few slices cut",
+"items": [
+"mext:10379"
+],
+"roll": 0,
+"seed": 41994,
+"prompt": "c3e178401d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10381",
+"ja": "ちくわ（焼き竹輪）",
+"desc": "a few chikuwa, tube-shaped grilled fish cakes with browned outsides and a hole through the middle, one cut in rounds",
+"items": [
+"mext:10381",
+"dishes:oden-chikuwa",
+"eatout:oden_chikuwa"
+],
+"roll": 0,
+"seed": 76151,
+"prompt": "4627475e35",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10385",
+"ja": "はんぺん",
+"desc": "a square of hanpen, a puffy soft pure white fish cake, one triangle cut",
+"items": [
+"mext:10385",
+"dishes:oden-hanpen",
+"eatout:oden_hanpen"
+],
+"roll": 0,
+"seed": 35790,
+"prompt": "27da9e5ee6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10386",
+"ja": "さつま揚げ",
+"desc": "a few satsuma-age fried fish cakes, flat golden-brown round and oblong patties",
+"items": [
+"mext:10386",
+"dishes:oden-satsumaage",
+"eatout:oden_satsuma",
+"kurume:088"
+],
+"roll": 0,
+"seed": 11412,
+"prompt": "1acee02aa1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10388",
+"ja": "魚肉ソーセージ",
+"desc": "a fish sausage, a pink cylinder in a red-orange film wrapper, partly peeled and sliced",
+"items": [
+"mext:10388"
+],
+"roll": 0,
+"seed": 98611,
+"prompt": "2830b4220b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10390",
+"ja": "あじフライ",
+"desc": "two Japanese aji fry, butterflied horse mackerel fillets in crisp golden panko, fan-shaped, with shredded cabbage",
+"items": [
+"mext:10390",
+"dishes:aji-fry",
+"toyonaka:125962",
+"kumagaya:277"
+],
+"roll": 0,
+"seed": 4832,
+"prompt": "7c1ff0c637",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10412",
+"ja": "ほっけ開き干し 焼き",
+"desc": "a grilled butterflied atka mackerel (hokke), a large split fish with golden-brown flesh, on a long plate with grated daikon",
+"items": [
+"mext:10412",
+"dishes:hokke",
+"eatout:hokke_izk",
+"dishes:teishoku-hokke",
+"eatout:hokke_teishoku"
+],
+"roll": 0,
+"seed": 5057,
+"prompt": "317dd24118",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10415",
+"ja": "バナメイえび 生",
+"desc": "raw prawns, grey translucent shrimp with shells and tails, a few peeled",
+"items": [
+"mext:10415",
+"mext:10329"
+],
+"roll": 0,
+"seed": 22306,
+"prompt": "886084fa5b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10416",
+"ja": "えび天ぷら（バナメイえび）",
+"desc": "shrimp tempura, two long straight prawns in light crisp golden tempura batter with red tails showing",
+"items": [
+"mext:10416",
+"eatout:ebiten"
+],
+"roll": 0,
+"seed": 77496,
+"prompt": "8094351167",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10445",
+"ja": "釜揚げしらす",
+"desc": "a small bowl of kamaage shirasu, soft moist tiny white boiled baby sardines with black eyes",
+"items": [
+"mext:10445"
+],
+"roll": 0,
+"seed": 71591,
+"prompt": "243887fea5",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11008",
+"ja": "和牛 肩ロース 脂身つき 生",
+"desc": "raw marbled beef, a thick slab and thin slices of red beef with fine white marbling, on a plate",
+"items": [
+"mext:11008",
+"mext:11034",
+"mext:11064",
+"mext:11011",
+"mext:11037",
+"mext:11067",
+"mext:11015",
+"mext:11043",
+"mext:11071",
+"mext:11009",
+"mext:11012",
+"mext:11016",
+"mext:11035",
+"mext:11040",
+"mext:11044",
+"mext:11065",
+"mext:11068",
+"mext:11072"
+],
+"roll": 0,
+"seed": 47335,
+"prompt": "9a46ce96fa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11018",
+"ja": "和牛 バラ 生",
+"desc": "thin slices of raw beef short rib (bara), red meat in layers with plenty of white fat",
+"items": [
+"mext:11018",
+"mext:11046",
+"mext:11074"
+],
+"roll": 0,
+"seed": 102,
+"prompt": "754549bdc6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11019",
+"ja": "和牛 もも 脂身つき 生",
+"desc": "raw lean beef, a block and slices of deep red beef with little fat",
+"items": [
+"mext:11019",
+"mext:11047",
+"mext:11048",
+"mext:11075",
+"mext:11030",
+"mext:11004",
+"mext:11005",
+"mext:11031",
+"mext:11060",
+"mext:11061"
+],
+"roll": 0,
+"seed": 61968,
+"prompt": "7984164c7a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11089",
+"ja": "牛ひき肉 生",
+"desc": "a mound of raw ground beef, red minced meat with white fat specks",
+"items": [
+"mext:11089"
+],
+"roll": 0,
+"seed": 94105,
+"prompt": "809f396899",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11090",
+"ja": "牛タン 生",
+"desc": "thin slices of raw beef tongue, pale pinkish slices with a grainy edge",
+"items": [
+"mext:11090"
+],
+"roll": 0,
+"seed": 10556,
+"prompt": "84e5193ac6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11104",
+"ja": "ローストビーフ",
+"desc": "slices of roast beef, pink centres with a browned edge, fanned on a plate with sauce",
+"items": [
+"mext:11104"
+],
+"roll": 0,
+"seed": 6331,
+"prompt": "9a295849ff",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11115",
+"ja": "豚肩 脂身つき 生",
+"desc": "raw pork shoulder slices, pink meat with white fat marbling, on a plate",
+"items": [
+"mext:11115",
+"mext:11119",
+"mext:11116",
+"mext:11120"
+],
+"roll": 0,
+"seed": 77836,
+"prompt": "e2e1ad3efd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2399,6 +5016,33 @@
 "checked": false
 },
 {
+"key": "mext-11130",
+"ja": "豚もも 脂身つき 生",
+"desc": "raw pork leg, pale pink lean meat with little fat, block and slices",
+"items": [
+"mext:11130",
+"mext:11131"
+],
+"roll": 0,
+"seed": 48097,
+"prompt": "434e3ffb11",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11140",
+"ja": "豚ヒレ 生",
+"desc": "a raw pork tenderloin, a long smooth pale pink lean cylinder",
+"items": [
+"mext:11140"
+],
+"roll": 0,
+"seed": 7622,
+"prompt": "dc3dd26563",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11163",
 "ja": "豚ひき肉 生",
 "desc": "a mound of raw ground pork, pale pink minced meat",
@@ -2422,6 +5066,20 @@
 "seed": 79248,
 "prompt": "20659753b9",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11181",
+"ja": "生ハム（促成）",
+"desc": "thin slices of prosciutto, translucent deep pink-red cured ham with white fat edges, draped on a plate",
+"items": [
+"mext:11181",
+"mext:11182"
+],
+"roll": 0,
+"seed": 10908,
+"prompt": "865071b3a9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2454,6 +5112,62 @@
 "checked": false
 },
 {
+"key": "mext-11189",
+"ja": "フランクフルト",
+"desc": "a frankfurter sausage on a stick, a long grilled reddish-brown sausage with mustard and ketchup lines",
+"items": [
+"mext:11189",
+"eatout:frank",
+"kumagaya:00803"
+],
+"roll": 0,
+"seed": 92142,
+"prompt": "4105a7a204",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11195",
+"ja": "焼き豚（チャーシュー）",
+"desc": "slices of chashu roast pork, glossy red-brown edges and pale pink centres",
+"items": [
+"mext:11195"
+],
+"roll": 0,
+"seed": 68708,
+"prompt": "e11d94d638",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11213",
+"ja": "親鶏むね肉 皮つき 生",
+"desc": "a raw chicken breast with skin, plump pale pink meat with pale yellow skin",
+"items": [
+"mext:11213",
+"mext:11219"
+],
+"roll": 0,
+"seed": 65408,
+"prompt": "1b0d878451",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11218",
+"ja": "手羽 皮つき 生",
+"desc": "raw chicken wing tips (tebasaki), pale pinkish-yellow skin with small joints",
+"items": [
+"mext:11218",
+"mext:11285"
+],
+"roll": 0,
+"seed": 38856,
+"prompt": "971918d7c0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11220",
 "ja": "鶏むね肉 皮なし 生",
 "desc": "a raw skinless chicken breast, smooth pale pink lean meat",
@@ -2469,26 +5183,40 @@
 {
 "key": "mext-11221",
 "ja": "鶏もも肉 皮つき 生",
-"desc": "a raw chicken thigh with skin, pink meat with pale yellow skin, flattened",
+"desc": "a raw boneless chicken thigh fillet as sold in Japan, one flat irregular piece of pink meat laid out on a tray, with pale yellowish-white bumpy skin covering one side, no bone, not a drumstick",
 "items": [
 "mext:11221"
 ],
 "roll": 0,
 "seed": 47567,
-"prompt": "e3520210c8",
+"prompt": "fabc45afef",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11222",
+"ja": "鶏もも肉 皮つき 焼き",
+"desc": "a pan-fried chicken thigh, crisp golden-brown skin, sliced showing juicy white meat",
+"items": [
+"mext:11222",
+"dishes:chicken-saute"
+],
+"roll": 0,
+"seed": 72021,
+"prompt": "24813ab10b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
 "key": "mext-11224",
 "ja": "鶏もも肉 皮なし 生",
-"desc": "raw skinless chicken thigh, dark pink meat",
+"desc": "a raw boneless skinless chicken thigh fillet as sold in Japan, one flat irregular piece of deep pink meat with no skin and no bone, laid out on a tray, not a drumstick",
 "items": [
 "mext:11224"
 ],
 "roll": 0,
 "seed": 16256,
-"prompt": "2cda52ae49",
+"prompt": "8243ec8339",
 "model": "Z-Image-Turbo q8 9 steps 512px",
 "checked": false
 },
@@ -2506,6 +5234,19 @@
 "checked": false
 },
 {
+"key": "mext-11229",
+"ja": "ささみ ゆで",
+"desc": "boiled chicken tenderloins, white shredded strips",
+"items": [
+"mext:11229"
+],
+"roll": 0,
+"seed": 21149,
+"prompt": "5c19b757f5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11230",
 "ja": "鶏ひき肉 生",
 "desc": "a mound of raw ground chicken, pale pink minced meat",
@@ -2516,6 +5257,45 @@
 "seed": 86744,
 "prompt": "ea192790a3",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11232",
+"ja": "鶏レバー 生",
+"desc": "raw chicken livers, glossy smooth dark red-brown lobes",
+"items": [
+"mext:11232"
+],
+"roll": 0,
+"seed": 21684,
+"prompt": "f398944cce",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11233",
+"ja": "砂肝 生",
+"desc": "raw chicken gizzards (sunagimo), firm dark red rounded lobes with silver-white skin",
+"items": [
+"mext:11233"
+],
+"roll": 0,
+"seed": 26882,
+"prompt": "8c90b17d5d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11274",
+"ja": "牛ハラミ 生",
+"desc": "raw beef skirt (harami), thick dark red strips with coarse grain",
+"items": [
+"mext:11274"
+],
+"roll": 0,
+"seed": 54565,
+"prompt": "bedded0d04",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2531,6 +5311,33 @@
 "seed": 39337,
 "prompt": "909f3df75d",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11279",
+"ja": "ヒレかつ",
+"desc": "hire katsu, small round breaded pork fillet cutlets in a crisp golden panko crust, one cut showing white lean pork, with shredded cabbage",
+"items": [
+"mext:11279",
+"dishes:hirekatsu"
+],
+"roll": 0,
+"seed": 22360,
+"prompt": "8dda9cc66d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11286",
+"ja": "手羽元 生",
+"desc": "raw chicken drumettes (tebamoto), plump pale pink pieces with skin and a bone end",
+"items": [
+"mext:11286"
+],
+"roll": 0,
+"seed": 10598,
+"prompt": "710a575749",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2563,6 +5370,35 @@
 "checked": false
 },
 {
+"key": "mext-11292",
+"ja": "チキンナゲット",
+"desc": "five chicken nuggets, flat rounded shapes with a crisp golden coating, with a small dish of barbecue sauce",
+"items": [
+"mext:11292",
+"eatout:nuggets",
+"toyonaka:120427",
+"kumagaya:3033"
+],
+"roll": 0,
+"seed": 4990,
+"prompt": "5f6ac35304",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-12002",
+"ja": "うずら卵 生",
+"desc": "a few raw quail eggs, small eggs speckled with brown spots, one cracked into a dish",
+"items": [
+"mext:12002"
+],
+"roll": 0,
+"seed": 36663,
+"prompt": "116902370d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-12004",
 "ja": "卵（全卵・生）",
 "desc": "two raw chicken eggs, light brown shells, one cracked into a small bowl showing an orange yolk in clear white",
@@ -2590,6 +5426,47 @@
 "checked": false
 },
 {
+"key": "mext-12010",
+"ja": "卵黄 生",
+"desc": "a raw egg yolk, a round glossy bright orange yolk in a small dish",
+"items": [
+"mext:12010"
+],
+"roll": 0,
+"seed": 87834,
+"prompt": "d0a3ee8166",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-12018",
+"ja": "卵焼き（厚焼きたまご）",
+"desc": "Japanese tamagoyaki rolled omelette cut into four thick rectangular slices, pale golden-yellow, the cut faces show thin rolled layers, on a small plate",
+"items": [
+"mext:12018"
+],
+"roll": 0,
+"seed": 59464,
+"prompt": "e4f63b98ca",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-12019",
+"ja": "だし巻き卵",
+"desc": "dashimaki tamago, a rolled Japanese omelette cut in thick slices, soft pale yellow with visible layers, juicy, with grated daikon",
+"items": [
+"mext:12019",
+"dishes:dashimaki",
+"eatout:dashimaki"
+],
+"roll": 0,
+"seed": 40350,
+"prompt": "2d61235f94",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-12021",
 "ja": "目玉焼き",
 "desc": "a sunny-side-up fried egg seen from above, a round bright yellow yolk in the middle of set white egg white with lightly browned crispy edges, on a small white plate",
@@ -2604,6 +5481,20 @@
 "checked": false
 },
 {
+"key": "mext-12022",
+"ja": "いり卵（スクランブルエッグ）",
+"desc": "scrambled eggs, soft fluffy yellow curds on a white plate",
+"items": [
+"mext:12022",
+"dishes:scrambled-egg"
+],
+"roll": 0,
+"seed": 16149,
+"prompt": "3570c28c65",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-13003",
 "ja": "牛乳",
 "desc": "a clear glass full of white cow's milk",
@@ -2614,6 +5505,62 @@
 "seed": 70916,
 "prompt": "cabb8aae3a",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-13006",
+"ja": "脱脂乳（無脂肪乳）",
+"desc": "a glass of skim milk, thin bluish-white milk",
+"items": [
+"mext:13006",
+"mext:13005"
+],
+"roll": 0,
+"seed": 5995,
+"prompt": "6386d3a84e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-13007",
+"ja": "コーヒー牛乳",
+"desc": "a glass of coffee milk, light milky tan-brown",
+"items": [
+"mext:13007"
+],
+"roll": 0,
+"seed": 83709,
+"prompt": "7955b800f2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-13014",
+"ja": "生クリーム（乳脂肪）",
+"desc": "a small pitcher of fresh cream, thick white liquid cream",
+"items": [
+"mext:13014",
+"mext:13016"
+],
+"roll": 0,
+"seed": 22310,
+"prompt": "81bf54e538",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-13020",
+"ja": "コーヒーフレッシュ（乳脂肪）",
+"desc": "small single-portion coffee creamer cups with peeled foil lids, white creamy liquid",
+"items": [
+"mext:13020",
+"mext:13022",
+"eatout:creamer"
+],
+"roll": 0,
+"seed": 35772,
+"prompt": "33da501740",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2633,6 +5580,49 @@
 "checked": false
 },
 {
+"key": "mext-13027",
+"ja": "飲むヨーグルト",
+"desc": "a glass of drinking yogurt, thick smooth white liquid",
+"items": [
+"mext:13027",
+"eatout:drink_yogurt",
+"toyonaka:121810",
+"kumagaya:02874"
+],
+"roll": 0,
+"seed": 45503,
+"prompt": "8d15c3eca1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-13028",
+"ja": "乳酸菌飲料",
+"desc": "a small plastic bottle of probiotic lactic acid drink with a foil top, beside a small glass of pale cream-white drink",
+"items": [
+"mext:13028",
+"eatout:yakult"
+],
+"roll": 0,
+"seed": 73038,
+"prompt": "4c4c12a7fd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-13035",
+"ja": "クリームチーズ",
+"desc": "a block of cream cheese, smooth soft white, a slice spread",
+"items": [
+"mext:13035"
+],
+"roll": 0,
+"seed": 76114,
+"prompt": "fa657ef95f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-13040",
 "ja": "プロセスチーズ",
 "desc": "processed cheese, a few slices of smooth pale yellow cheese and a wedge",
@@ -2643,6 +5633,63 @@
 "seed": 30042,
 "prompt": "a48e730aa3",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-13042",
+"ja": "アイスクリーム（高脂肪）",
+"desc": "a scoop of vanilla ice cream in a small glass cup, creamy pale ivory",
+"items": [
+"mext:13042",
+"mext:13043",
+"mext:13044",
+"mext:13045",
+"eatout:icecream_cup"
+],
+"roll": 0,
+"seed": 37654,
+"prompt": "b2ec9fd906",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-13047",
+"ja": "ソフトクリーム",
+"desc": "a soft-serve vanilla ice cream cone, a tall white swirl on a waffle cone",
+"items": [
+"mext:13047",
+"eatout:softcream"
+],
+"roll": 0,
+"seed": 44409,
+"prompt": "811e034c83",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-14001",
+"ja": "オリーブオイル",
+"desc": "a glass bottle of greenish-gold olive oil and a small dish of oil, with an olive branch",
+"items": [
+"mext:14001"
+],
+"roll": 0,
+"seed": 9009,
+"prompt": "8cfb51760d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-14002",
+"ja": "ごま油",
+"desc": "a small glass bottle of dark amber sesame oil",
+"items": [
+"mext:14002"
+],
+"roll": 0,
+"seed": 52363,
+"prompt": "b375d90ac6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2658,6 +5705,193 @@
 "seed": 17349,
 "prompt": "dc8a489113",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-14020",
+"ja": "マーガリン",
+"desc": "a tub of margarine, smooth soft pale yellow spread with a knife",
+"items": [
+"mext:14020",
+"mext:14021"
+],
+"roll": 0,
+"seed": 42533,
+"prompt": "3dee1ec98e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15009",
+"ja": "カステラ",
+"desc": "slices of castella sponge cake, golden yellow crumb with a dark brown top and bottom",
+"items": [
+"mext:15009"
+],
+"roll": 0,
+"seed": 85222,
+"prompt": "33bfa3377a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15019",
+"ja": "みたらし団子",
+"desc": "mitarashi dango, skewers of three grilled rice dumplings coated with glossy thick brown sweet soy glaze",
+"items": [
+"mext:15019",
+"eatout:mitarashi"
+],
+"roll": 0,
+"seed": 87207,
+"prompt": "80894c59ab",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15023",
+"ja": "大福（こしあん）",
+"desc": "daifuku, round soft white rice cakes dusted with starch, one cut showing dark red bean paste",
+"items": [
+"mext:15023",
+"mext:15155",
+"eatout:daifuku"
+],
+"roll": 0,
+"seed": 30298,
+"prompt": "ecdf00f9b7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15035",
+"ja": "肉まん",
+"desc": "a nikuman steamed pork bun, a large soft round white bun with twisted pleats on top, one torn open showing a juicy pork filling",
+"items": [
+"mext:15035",
+"eatout:nikuman",
+"kumagaya:967"
+],
+"roll": 0,
+"seed": 82382,
+"prompt": "6d81e74048",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15058",
+"ja": "甘辛せんべい",
+"desc": "round Japanese soy sauce rice crackers (senbei), flat golden-brown discs with a glossy soy glaze, one wrapped in nori",
+"items": [
+"mext:15058",
+"mext:15060"
+],
+"roll": 0,
+"seed": 87509,
+"prompt": "dbad8352d9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15069",
+"ja": "あんパン（こしあん）",
+"desc": "an anpan, a round glossy brown sweet bun with a few sesame seeds on top, one cut showing dark red bean paste",
+"items": [
+"mext:15069",
+"mext:15168",
+"eatout:anpan",
+"kurume:030"
+],
+"roll": 0,
+"seed": 40960,
+"prompt": "e953409fdd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15070",
+"ja": "クリームパン",
+"desc": "a cream bread (kurimu pan), a glossy golden bun shaped like a glove with notches, cut showing yellow custard",
+"items": [
+"mext:15070",
+"eatout:creampan",
+"kurume:029"
+],
+"roll": 0,
+"seed": 53221,
+"prompt": "40b64be0b7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15073",
+"ja": "シュークリーム",
+"desc": "a cream puff (choux), a golden-brown crisp puff split showing thick yellow custard cream, dusted with powdered sugar",
+"items": [
+"mext:15073",
+"eatout:cream_puff",
+"kurume:238"
+],
+"roll": 0,
+"seed": 10207,
+"prompt": "eda41396b5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15078",
+"ja": "ドーナツ（ケーキドーナッツ）",
+"desc": "an old-fashioned cake doughnut, a ring with cracked craggy golden-brown edges",
+"items": [
+"mext:15078",
+"eatout:old_fashioned"
+],
+"roll": 0,
+"seed": 10263,
+"prompt": "dcc8578a49",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15083",
+"ja": "ホットケーキ",
+"desc": "a stack of two thick fluffy Japanese hotcakes, golden-brown tops, a pat of butter and maple syrup",
+"items": [
+"mext:15083",
+"dishes:hotcake"
+],
+"roll": 0,
+"seed": 94736,
+"prompt": "cc14ba92cd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15086",
+"ja": "プリン",
+"desc": "a custard pudding (purin), a pale yellow custard with dark caramel sauce on top, on a small plate",
+"items": [
+"mext:15086",
+"kurume:241"
+],
+"roll": 0,
+"seed": 32351,
+"prompt": "9e3f73af28",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15097",
+"ja": "ビスケット（ハード）",
+"desc": "a few round butter cookies, golden-brown with a pattern pressed on top",
+"items": [
+"mext:15097",
+"mext:15098"
+],
+"roll": 0,
+"seed": 5000,
+"prompt": "472340cf2d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2691,6 +5925,95 @@
 "checked": false
 },
 {
+"key": "mext-15127",
+"ja": "カレーパン",
+"desc": "a curry bread (kare pan), an oval deep-fried bun with a crunchy golden panko coating, cut open showing brown curry filling",
+"items": [
+"mext:15127",
+"eatout:currypan"
+],
+"roll": 0,
+"seed": 85780,
+"prompt": "4f8907d745",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15132",
+"ja": "メロンパン",
+"desc": "a melon pan, a round sweet bun with a crisp pale golden cookie crust scored in a crosshatch grid and sprinkled with sugar",
+"items": [
+"mext:15132",
+"eatout:melonpan"
+],
+"roll": 0,
+"seed": 11642,
+"prompt": "6d1ca14b48",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15134",
+"ja": "ベイクドチーズケーキ",
+"desc": "a slice of baked cheesecake, dense creamy pale yellow with a browned top",
+"items": [
+"mext:15134",
+"eatout:baked_cheesecake"
+],
+"roll": 0,
+"seed": 97807,
+"prompt": "55afd0c4e4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15156",
+"ja": "どら焼き（こしあん）",
+"desc": "dorayaki, two round golden-brown pancakes sandwiching dark red bean paste",
+"items": [
+"mext:15156",
+"mext:15027",
+"eatout:dorayaki",
+"kurume:244"
+],
+"roll": 0,
+"seed": 27589,
+"prompt": "c5f8f3511d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-15170",
+"ja": "ショートケーキ（いちご）",
+"desc": "a slice of Japanese strawberry shortcake, white whipped cream and soft sponge layers with strawberry slices, a whole strawberry on top",
+"items": [
+"mext:15170",
+"eatout:shortcake"
+],
+"roll": 0,
+"seed": 26226,
+"prompt": "9b324f351e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16001",
+"ja": "日本酒（普通酒）",
+"desc": "Japanese sake, a small ceramic tokkuri flask beside a small ochoko cup of clear sake",
+"items": [
+"mext:16001",
+"mext:16002",
+"eatout:junmai",
+"mext:16004",
+"eatout:sake_ichigo"
+],
+"roll": 0,
+"seed": 95546,
+"prompt": "b7f4e561c2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-16006",
 "ja": "ビール",
 "desc": "a glass mug of golden lager beer with a thick white foam head",
@@ -2709,6 +6032,119 @@
 "checked": false
 },
 {
+"key": "mext-16010",
+"ja": "白ワイン",
+"desc": "a wine glass of pale golden white wine",
+"items": [
+"mext:16010",
+"eatout:wine_white"
+],
+"roll": 0,
+"seed": 15533,
+"prompt": "b828a7bf3b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16011",
+"ja": "赤ワイン",
+"desc": "a wine glass of deep ruby red wine",
+"items": [
+"mext:16011",
+"eatout:wine_red"
+],
+"roll": 0,
+"seed": 27963,
+"prompt": "b4a80b1ce3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16014",
+"ja": "焼酎（甲類）",
+"desc": "a short glass of clear shochu on the rocks with large ice cubes",
+"items": [
+"mext:16014",
+"mext:16015",
+"eatout:shochu_rock"
+],
+"roll": 0,
+"seed": 8116,
+"prompt": "68d0a8b60e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16016",
+"ja": "ウイスキー",
+"desc": "a short glass of amber whisky with a large ice cube",
+"items": [
+"mext:16016",
+"eatout:whisky"
+],
+"roll": 0,
+"seed": 59992,
+"prompt": "2fe08c69b7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16025",
+"ja": "みりん（本みりん）",
+"desc": "a small glass bottle of mirin, clear pale golden syrupy liquid",
+"items": [
+"mext:16025",
+"mext:17054"
+],
+"roll": 0,
+"seed": 21345,
+"prompt": "738f383f97",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16034",
+"ja": "玉露（浸出液）",
+"desc": "a Japanese teacup (yunomi) of green tea, clear bright yellow-green tea",
+"items": [
+"mext:16034",
+"mext:16037",
+"eatout:green_tea_pet"
+],
+"roll": 0,
+"seed": 49750,
+"prompt": "e91be91af3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16042",
+"ja": "ウーロン茶",
+"desc": "a glass of oolong tea with ice, clear amber-brown",
+"items": [
+"mext:16042"
+],
+"roll": 0,
+"seed": 24836,
+"prompt": "a437ceff97",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16044",
+"ja": "紅茶",
+"desc": "a cup of black tea on a saucer, clear reddish-amber tea",
+"items": [
+"mext:16044",
+"eatout:tea"
+],
+"roll": 0,
+"seed": 87089,
+"prompt": "7bb196afaa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-16045",
 "ja": "コーヒー（ブラック）",
 "desc": "a cup of black coffee on a saucer",
@@ -2721,6 +6157,107 @@
 "seed": 40295,
 "prompt": "8b7bd9d913",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16047",
+"ja": "缶コーヒー（加糖・ミルク入り）",
+"desc": "a cup of milky sweet coffee, light caramel-brown",
+"items": [
+"mext:16047",
+"eatout:can_coffee"
+],
+"roll": 0,
+"seed": 98347,
+"prompt": "252ef39e69",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16053",
+"ja": "コーラ",
+"desc": "a glass of cola with ice cubes, dark brown fizzy drink with bubbles",
+"items": [
+"mext:16053",
+"eatout:cola_m",
+"eatout:cola_pet"
+],
+"roll": 0,
+"seed": 48051,
+"prompt": "4acf0629c6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16055",
+"ja": "麦茶",
+"desc": "a glass of cold barley tea (mugicha), clear amber-brown with ice cubes",
+"items": [
+"mext:16055"
+],
+"roll": 0,
+"seed": 48838,
+"prompt": "bd43c586f9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16057",
+"ja": "スポーツドリンク",
+"desc": "a glass of sports drink, pale cloudy whitish-blue translucent liquid with ice",
+"items": [
+"mext:16057",
+"eatout:sports_drink"
+],
+"roll": 0,
+"seed": 48522,
+"prompt": "1237ad1136",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-16059",
+"ja": "缶チューハイ（レモン）",
+"desc": "a glass of lemon sour, cloudy pale fizzy drink with ice cubes and a lemon slice",
+"items": [
+"mext:16059",
+"eatout:chuhai_can",
+"eatout:lemon_sour",
+"eatout:lemon_sour_koime",
+"eatout:strong_chuhai"
+],
+"roll": 0,
+"seed": 3885,
+"prompt": "8327cbc21a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-17001",
+"ja": "ウスターソース",
+"desc": "a small glass bottle of thin dark brown Worcester sauce and a small dish of sauce",
+"items": [
+"mext:17001"
+],
+"roll": 0,
+"seed": 70687,
+"prompt": "0bf23bb3df",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-17002",
+"ja": "中濃ソース",
+"desc": "a small dish of thick glossy dark brown Japanese sauce, with a squeeze bottle",
+"items": [
+"mext:17002",
+"mext:17003",
+"mext:17085"
+],
+"roll": 0,
+"seed": 11333,
+"prompt": "7af74562a5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2752,6 +6289,48 @@
 "checked": false
 },
 {
+"key": "mext-17015",
+"ja": "酢（穀物酢）",
+"desc": "a small glass bottle of rice vinegar, clear pale golden liquid",
+"items": [
+"mext:17015",
+"mext:17016"
+],
+"roll": 0,
+"seed": 86727,
+"prompt": "31d90359c2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-17027",
+"ja": "コンソメ（固形ブイヨン）",
+"desc": "bouillon cubes, small golden-brown square cubes, one in a cup of clear broth",
+"items": [
+"mext:17027"
+],
+"roll": 0,
+"seed": 9064,
+"prompt": "d29f66e51d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-17029",
+"ja": "めんつゆ（ストレート）",
+"desc": "a small cup of mentsuyu noodle dipping sauce, clear dark brown, with a bottle",
+"items": [
+"mext:17029",
+"mext:17141",
+"mext:17030"
+],
+"roll": 0,
+"seed": 47567,
+"prompt": "1b721008d8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-17036",
 "ja": "ケチャップ",
 "desc": "a small dish of tomato ketchup, glossy bright red, with a squeeze bottle",
@@ -2762,6 +6341,21 @@
 "seed": 14975,
 "prompt": "b84ecd5cd3",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-17040",
+"ja": "フレンチドレッシング（分離液状）",
+"desc": "a small glass cruet of clear separated salad dressing, oil layer on brown soy vinegar",
+"items": [
+"mext:17040",
+"mext:17116",
+"mext:17039"
+],
+"roll": 0,
+"seed": 54477,
+"prompt": "9df9ad9e8b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2796,6 +6390,74 @@
 "checked": false
 },
 {
+"key": "mext-17051",
+"ja": "カレールウ",
+"desc": "a block of Japanese curry roux, a dark brown bar divided into squares",
+"items": [
+"mext:17051"
+],
+"roll": 0,
+"seed": 82202,
+"prompt": "9835bb3305",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-17093",
+"ja": "顆粒中華だし",
+"desc": "a small dish of granulated soup stock, fine light golden-brown granules",
+"items": [
+"mext:17093",
+"mext:17028"
+],
+"roll": 0,
+"seed": 34714,
+"prompt": "51c79094f5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-17110",
+"ja": "ぽん酢しょうゆ",
+"desc": "a small dish of ponzu, clear brown citrus soy sauce, with half a yuzu citrus",
+"items": [
+"mext:17110",
+"mext:17137"
+],
+"roll": 0,
+"seed": 44479,
+"prompt": "57d86b7b72",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-17112",
+"ja": "焼き鳥のたれ",
+"desc": "a small dish of thick glossy dark brown sweet soy grilling sauce",
+"items": [
+"mext:17112",
+"mext:17113"
+],
+"roll": 0,
+"seed": 84083,
+"prompt": "5e721ba2b8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-17117",
+"ja": "ごまドレッシング",
+"desc": "a small dish of creamy sesame dressing, smooth light tan with sesame seeds",
+"items": [
+"mext:17117"
+],
+"roll": 0,
+"seed": 51644,
+"prompt": "c6fb030661",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-18002",
 "ja": "ぎょうざ",
 "desc": "gyoza dumplings, crescent pleated dumplings with crisp golden-brown bottoms, on a plate",
@@ -2808,6 +6470,134 @@
 "seed": 71155,
 "prompt": "653ecb00c7",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18003",
+"ja": "えびグラタン",
+"desc": "shrimp gratin in an oval baking dish, bubbling white sauce with macaroni and shrimp, golden-browned cheese top",
+"items": [
+"mext:18003",
+"eatout:ebi_gratin"
+],
+"roll": 0,
+"seed": 85861,
+"prompt": "8b9e7d38a0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18005",
+"ja": "コーンスープ",
+"desc": "a cup of Japanese corn potage, smooth creamy pale yellow soup with a few corn kernels and parsley",
+"items": [
+"mext:18005",
+"dishes:corn-soup",
+"eatout:corn_soup",
+"mext:18004",
+"kurume:200"
+],
+"roll": 0,
+"seed": 49872,
+"prompt": "bd85fba2c8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18011",
+"ja": "ビーフシチュー",
+"desc": "beef stew in a deep plate, thick glossy dark brown sauce with large chunks of beef, carrot and potato, a swirl of cream",
+"items": [
+"mext:18011",
+"dishes:beef-stew",
+"eatout:beef_stew",
+"kurume:073"
+],
+"roll": 0,
+"seed": 29736,
+"prompt": "798f695db8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18012",
+"ja": "しゅうまい",
+"desc": "shumai, steamed open-topped pork dumplings in yellow wrappers, each topped with a green pea, in a bamboo steamer",
+"items": [
+"mext:18012",
+"dishes:shumai",
+"eatout:shumai",
+"toyonaka:266153"
+],
+"roll": 0,
+"seed": 65074,
+"prompt": "e11c2a7607",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18014",
+"ja": "えびピラフ",
+"desc": "shrimp pilaf, buttery golden rice with small shrimp, diced carrot, corn and green peas, on a plate",
+"items": [
+"mext:18014",
+"dishes:ebi-pilaf",
+"eatout:pilaf"
+],
+"roll": 0,
+"seed": 18567,
+"prompt": "819ad2f0cb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18018",
+"ja": "コロッケ（ポテト）",
+"desc": "two Japanese potato croquettes (korokke), flat oval patties in crisp golden-brown panko, one cut showing mashed potato and minced meat, with shredded cabbage",
+"items": [
+"mext:18018",
+"dishes:croquette",
+"eatout:korokke_hot",
+"toyonaka:268162",
+"kumagaya:3211"
+],
+"roll": 0,
+"seed": 63468,
+"prompt": "0301e35fde",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18020",
+"ja": "えびフライ",
+"desc": "Japanese ebi fry, three long straight breaded fried prawns with crisp golden panko and red tails, with shredded cabbage and tartar sauce",
+"items": [
+"mext:18020",
+"dishes:ebi-fry",
+"eatout:ebi_fry_yoshoku",
+"kurume:092",
+"kumagaya:03370"
+],
+"roll": 0,
+"seed": 79325,
+"prompt": "d3a8a28db3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18022",
+"ja": "メンチカツ",
+"desc": "menchi katsu, a thick round minced meat cutlet in a crisp golden-brown panko crust, one cut showing juicy meat, with shredded cabbage",
+"items": [
+"mext:18022",
+"dishes:menchikatsu",
+"eatout:menchi_hot",
+"kumagaya:02495"
+],
+"roll": 0,
+"seed": 59889,
+"prompt": "5aa2bc0320",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2829,6 +6619,80 @@
 "checked": false
 },
 {
+"key": "mext-18030",
+"ja": "親子丼の具",
+"desc": "oyakodon topping in a small pan, simmered chicken pieces and onion bound with soft golden egg, without rice",
+"items": [
+"mext:18030"
+],
+"roll": 0,
+"seed": 62460,
+"prompt": "8dfc814cdd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18031",
+"ja": "牛丼の具（牛飯の具）",
+"desc": "gyudon topping in a bowl, thin simmered beef slices and soft onion in glossy sweet soy sauce, without rice",
+"items": [
+"mext:18031",
+"eatout:gyudon_atama"
+],
+"roll": 0,
+"seed": 34058,
+"prompt": "1a6554e58e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18032",
+"ja": "切り干し大根の煮物",
+"desc": "kiriboshi daikon no nimono, simmered dried shredded radish strips, light brown, with carrot strips and thin aburaage, in a small bowl",
+"items": [
+"mext:18032",
+"dishes:kiriboshi-ni"
+],
+"roll": 0,
+"seed": 73328,
+"prompt": "3b801f759f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18033",
+"ja": "きんぴらごぼう",
+"desc": "kinpira gobo, thin matchstick strips of burdock and carrot stir-fried glossy brown in sweet soy, sprinkled with sesame, in a small bowl",
+"items": [
+"mext:18033",
+"dishes:kinpira-gobo",
+"toyonaka:127411"
+],
+"roll": 0,
+"seed": 7846,
+"prompt": "0f79bee627",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18035",
+"ja": "筑前煮",
+"desc": "chikuzenni, simmered chicken pieces with lotus root slices, burdock, carrot, taro, konjac and shiitake in a glossy light-brown glaze, green snow peas, in a shallow bowl",
+"items": [
+"mext:18035",
+"dishes:chikuzenni",
+"dishes:gameni",
+"kurume:069",
+"toyonaka:119089",
+"kumagaya:02330"
+],
+"roll": 0,
+"seed": 86515,
+"prompt": "76586e25a1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-18036",
 "ja": "肉じゃが",
 "desc": "nikujaga in a shallow ceramic bowl, soft simmered potato chunks with carrot, translucent onion, thin beef slices and clear shirataki noodles in a little light-brown soy broth, a few green snow peas",
@@ -2846,6 +6710,21 @@
 "checked": false
 },
 {
+"key": "mext-18037",
+"ja": "ひじきの煮物",
+"desc": "hijiki no nimono, simmered black hijiki seaweed with soybeans, carrot strips and thin aburaage, in a small bowl",
+"items": [
+"mext:18037",
+"dishes:hijiki-ni",
+"toyonaka:118562"
+],
+"roll": 0,
+"seed": 12127,
+"prompt": "284e5a41f3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-18040",
 "ja": "チキンカレー（ルウのみ）",
 "desc": "a bowl of Japanese curry sauce without rice, thick glossy brown curry with chunks of meat, potato and carrot",
@@ -2858,6 +6737,22 @@
 "seed": 4699,
 "prompt": "208a441cad",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18045",
+"ja": "クリームシチュー（チキン）",
+"desc": "Japanese cream stew in a deep plate, thick white creamy sauce with chicken, potato, carrot, onion and broccoli",
+"items": [
+"mext:18045",
+"dishes:cream-stew",
+"eatout:cream_stew",
+"kurume:074"
+],
+"roll": 0,
+"seed": 72948,
+"prompt": "d1dd1229b1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -2891,6 +6786,56 @@
 "seed": 8922,
 "prompt": "ad052f8847",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18053",
+"ja": "お好み焼き",
+"desc": "okonomiyaki, a thick round savory pancake with cabbage, topped with glossy brown sauce, white mayonnaise zigzags, green aonori and pink bonito flakes",
+"items": [
+"mext:18053",
+"dishes:okonomiyaki",
+"eatout:okonomiyaki",
+"maff_kyodo:39_20_osaka",
+"maff_kyodo:42_7_hiroshima",
+"kurume:229",
+"toyonaka:265163"
+],
+"roll": 0,
+"seed": 76384,
+"prompt": "d3ffb24739",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18054",
+"ja": "鶏のから揚げ",
+"desc": "Karaage: Japanese fried chicken, chunky irregular nuggets with a craggy deep golden-brown crisp coating, with a lemon wedge, on a plate",
+"items": [
+"mext:18054",
+"kurume:067"
+],
+"roll": 0,
+"seed": 74659,
+"prompt": "400eddfcfa",
+"model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-18056",
+"ja": "春巻き",
+"desc": "harumaki spring rolls, crisp golden-brown fried cylinders, one cut showing glass noodles, pork and vegetables",
+"items": [
+"mext:18056",
+"dishes:harumaki",
+"eatout:harumaki",
+"toyonaka:120285",
+"kumagaya:3041"
+],
+"roll": 0,
+"seed": 65871,
+"prompt": "94e1396b00",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {

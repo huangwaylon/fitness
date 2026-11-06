@@ -58,7 +58,9 @@ test('a tarantula rears up in 3D under a 「！」 at the first tap; settled, a 
   await expect.poll(() => page.evaluate(() => { const w = (window as unknown as { __world3d: W3 }).__world3d; for (let n = 0; n < 60; n++) { const p = w.where(`bug-${n}`); if (p) return p.y; } return NaN; })).toBeGreaterThan(y0 + 1);
   expect(await cues(page)).not.toContain('scene-catch');
   // settled (the 「！」 gone): a tap nets it
-  await expect.poll(() => page.evaluate(() => (window as unknown as { __fx3: Fx3 }).__fx3.live('bang').length), { timeout: 4000 }).toBe(0);
+  // (the expect's own time, 10 s on CI, not 4: the 「！」 goes in the island's next frame after REAR_MS, and drawn in
+  // software GL that's ~1 a second, so it was still up at 4 s: gone at 4.8 s here, 1 left at 4 s on a loaded CI)
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __fx3: Fx3 }).__fx3.live('bang').length)).toBe(0);
   at = (await drawn(page))!;
   await page.mouse.click(at[0], at[1]);
   await expect.poll(() => cues(page)).toContain('scene-catch');

@@ -5,7 +5,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -20,7 +21,7 @@ test('the lobby fetches its deck’s pack whole; a sliced clip decodes to its le
     if (r.url().includes('/audio/')) asked.push({ url: r.url(), range: !!r.headers().range });
   });
   await page.goto('?demo&date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'kikimimi');
   const sheet = page.locator('dialog[open] [data-kikimimi]');
   await expect(sheet).toHaveAttribute('data-phase', 'lobby');

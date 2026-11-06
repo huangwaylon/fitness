@@ -8,7 +8,8 @@
   import { itemOf, load, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
   import type { UnitChunk } from '#lib/kikimimi/lesson.ts';
   import type { Item } from '#lib/kikimimi/bank.ts';
-  import { DOMAINS, isDomain } from '#lib/kikimimi/path.ts';
+  import { DOMAINS, isUnitDomain } from '#lib/kikimimi/stages.ts';
+  import { domainIcon } from '../look.ts';
   import { phrasesOf, phraseReview } from '#lib/kikimimi/srs.ts';
     import { currentAnswers, currentReport, pathUnits } from '../progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -20,7 +21,7 @@
   $effect(() => {
     void load(...(ids as Unit[])).then(() => ready++, () => {});
   });
-  const chunks = $derived((void ready, ids.map((id) => unitPart(id) as UnitChunk | undefined).filter((c): c is UnitChunk => !!c)));
+  const chunks = $derived((void ready, ids.map((id) => unitPart(id)).filter((c) => !!c)));
   const report = $derived(currentReport());
   const answers = $derived(currentAnswers());
   const shown = $derived(unit ? chunks.filter((c) => c.unit.id === unit) : chunks);
@@ -32,7 +33,7 @@
       const sec = out.get(d) ?? out.set(d, { domain: d, phrases: [] }).get(d)!;
       for (const p of c.unit.ph) if (!sec.phrases.some((q) => q.id === p.id)) sec.phrases.push({ ...p, caught: !!st.get(p.id)?.caught, heard: !!st.get(p.id)?.heard });
     }
-    const order = Object.keys(DOMAINS);
+    const order: string[] = ['glue', ...DOMAINS];
     return [...out.values()].sort((a, b) => order.indexOf(a.domain) - order.indexOf(b.domain));
   });
   const all = $derived(sections.flatMap((s) => s.phrases));
@@ -64,7 +65,7 @@
     {@const k = s.phrases.filter((p) => p.caught).length}
     <section class="sec" aria-labelledby="kk-z-{s.domain}">
       <div class="shead">
-        <h3 id="kk-z-{s.domain}">{isDomain(s.domain) ? DOMAINS[s.domain].icon : ''} {t(`kiki.domain.${s.domain}`)}</h3>
+        <h3 id="kk-z-{s.domain}">{domainIcon(s.domain)} {t(`kiki.domain.${s.domain}`)}</h3>
         <span class="meter" aria-hidden="true"><i style:width="{(k / Math.max(1, s.phrases.length)) * 100}%"></i></span>
         <small>{k} / {s.phrases.length}</small>
       </div>
@@ -73,7 +74,7 @@
           <button type="button" class="zc" class:caught={p.caught} class:seen={!p.caught && p.heard} class:unseen={!p.heard} aria-expanded={open === p.id}
             data-kiki-phrase={p.id} data-caught={p.caught || undefined} data-sfx="tick" onclick={() => (open = open === p.id ? null : p.id)}>
             {#if p.caught}<span class="en" lang="en">{p.en}</span>{#if p.ja}<span class="ja">{p.ja}</span>{/if}<span class="stars" aria-hidden="true">★</span>
-            {:else if p.heard}<span class="q" aria-hidden="true">{isDomain(s.domain) ? DOMAINS[s.domain].icon : '？'}</span><span class="ja">{t('kiki.zukan.heard')}</span>
+            {:else if p.heard}<span class="q" aria-hidden="true">{isUnitDomain(s.domain) ? domainIcon(s.domain) : '？'}</span><span class="ja">{t('kiki.zukan.heard')}</span>
             {:else}<span class="q" aria-hidden="true">？</span><span class="sr-only">{t('kiki.zukan.notYet')}</span>{/if}
           </button>
         {/each}

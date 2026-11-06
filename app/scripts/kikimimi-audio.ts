@@ -59,7 +59,7 @@ import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { clipItems, type Accent, type CastId, type Item } from '../src/lib/kikimimi/bank.ts';
-import { BANK as ITEMS } from '../src/lib/kikimimi/source.ts';
+import { AUTHORED as ITEMS } from '../src/lib/kikimimi/source.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
 import { CAST_IDS, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
