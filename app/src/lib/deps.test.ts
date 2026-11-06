@@ -66,7 +66,7 @@ for (const f of files(LIB)) {
     if (spec.startsWith('#lib/')) target = join(LIB, spec.slice(5));
     else if (spec.startsWith('$lib/')) target = join(LIB, spec.slice(5));
     else if (spec.startsWith('.')) target = resolve(dirname(f), spec);
-    else if (/^\$app\/|^\$service-worker$/.test(spec) || /^(@[\w.-]+\/)?[\w.-]+(\/[\w./-]+)?(\?url)?$|^node:/.test(spec)) continue; // packages (a file of one as a URL: `?url`), Kit's modules
+    else if (/^\$app\/|^\$service-worker$/.test(spec) || /^(@[\w.-]+\/)?[\w.-]+(\/[\w./-]+)?(\?(worker&)?url)?$|^node:/.test(spec)) continue; // packages (a file of one as a URL: `?url`, `?worker&url`), Kit's modules
     else { unknown.push(`${relative(LIB, f)}: ${spec}`); continue; }
     out.push(fileOf(target));
     const from = folderOf(f);
