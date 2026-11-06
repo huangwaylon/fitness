@@ -1,20 +1,25 @@
-// ききみみ クイズ's game on this phone (docs/kikimimi.md "Sync", "Audio"): the session (kikimimi/session.ts, pure) wired to
-// the island's Live (or to nothing: solo without a relay), its view refreshed at each phase's end and at each message;
-// the clips it calls for (clipPlayer.svelte.ts), my record of it (recorder.ts). A deck is built only from loaded levels
-// (pool.ts): what's heard and my own taps wait, in order, for the chunk the deck they touch needs (chunkQueue.ts).
-// Loaded with the sheet only.
+// ききみみ's game on this phone (docs/kikimimi.md "Sync", "Audio"): the round session (kikimimi/round/session.ts, pure)
+// over the quiz's GameDefs (the quiz, スピード はしご, a unit's lesson: kikimimi/games/, through games/quiz/session.ts's
+// lobby) wired to the island's Live (or to nothing: solo without a relay), its view refreshed at each phase's end and at
+// each message; the clips it calls for (clipPlayer.svelte.ts), my record of it (recorder.ts). A deck is built only from
+// loaded chunks (pool.ts): what's heard and my own taps wait, in order, for the chunk the deck they touch needs
+// (chunkQueue.ts). Loaded with the sheet only.
 import { isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
-import { itemDur } from '#lib/kikimimi/clips.ts';
-import { SPEEDS, ladderDeck, ladderPoints } from '#lib/kikimimi/ladder.ts';
-import { FAST_WINDOWS, QuizSession, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizView } from '#lib/kikimimi/session.ts';
-import { isLadder, type QuizTimer } from '#lib/kikimimi/seed.ts';
+import { SPEEDS, ladderDeck } from '#lib/kikimimi/ladder.ts';
+import { FAST_WINDOWS, type SeedAsk } from '#lib/kikimimi/round/session.ts';
+import { gameIn, type GameIn, type RoundIn, type RoundOut } from '#lib/kikimimi/round/wire.ts';
+import { roundLink, soloLink, wire, type RoundLink } from '#lib/kikimimi/round/link.ts';
+import { QuizRounds } from '#lib/kikimimi/games/quiz/session.ts';
+import { quizOpts } from '#lib/kikimimi/games/quiz/def.ts';
+import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
+import type { QuizTimer } from '#lib/kikimimi/seed.ts';
 import type { Live } from '#lib/sync/live.ts';
 import type { Who } from '#lib/types.ts';
 import { cue } from '#lib/sound/cues.ts';
 import type { ListenRow } from '#lib/contract/listen.ts';
-import { itemsOf, pinDeck, usePractice } from './decks.ts';
+import { GAMES, chunksOf, itemsOf, pinDeck, usePractice } from './decks.ts';
 import { deck } from '#lib/kikimimi/deck.ts';
-import { agesOf, freshSeed } from '#lib/kikimimi/recent.ts';
+import { agesOf, freshSeed, seedWith } from '#lib/kikimimi/recent.ts';
 import { recentGames } from './progress.svelte.ts';
 import { ladders, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
 import { lessonDeck, type Lesson, type Tier, type UnitPlay } from '#lib/kikimimi/lesson.ts';
@@ -23,26 +28,6 @@ import { ClipPlayer } from './clipPlayer.svelte.ts';
 import { GameRecorder } from './recorder.ts';
 import type { Stage } from '#lib/kikimimi/stages.ts';
 
-/** The deck as the session sees it: how many, each item's length as played (ms, clips.json: a dialogue's lines and
- *  the gaps) and its right choice. Read through at each call: にがて れんしゅう puts its own items in before the start
- *  (usePractice), and the session counts them again at `go`. */
-const deckOf: DeckOf = (seed, lv) => {
-  const at = (i: number) => itemsOf(seed, lv)[i];
-  return {
-    get count() {
-      return itemsOf(seed, lv).length;
-    },
-    dur: (i) => Math.round((at(i) ? (itemDur(at(i)) ?? 2) : 2) * 1000),
-    answer: (i) => at(i)?.answer ?? -1,
-    // スピード はしご: the rungs climbed (ladder.ts), not each answer's points
-    ...(isLadder(seed) && {
-      score: (a: ReadonlyMap<number, { k: number; rp: boolean }>) => ladderPoints(itemsOf(seed, lv), a),
-      // a rung below the top: its reveal hides the line, so it moves on by itself (session.ts WINDOWS.auto)
-      auto: (i: number) => hidesLine(at(i))
-    })
-  };
-};
-
 /** A スピード はしご rung below its ladder's top: its reveal keeps the line hidden and silent (no replay, no transcript),
  *  so the next, faster rung is a listen of its own. */
 export const hidesLine = (it: Item | undefined): boolean => !!it?.rung && it.rung.n < SPEEDS.length;
@@ -50,19 +35,19 @@ export const hidesLine = (it: Item | undefined): boolean => !!it?.rung && it.run
  *  at their own speed: `#playNow`). Play's and the review's alike. */
 export const canSlow = (it: Item): boolean => it.lv <= 2 && !isDialogue(it);
 
-/** No relay (a dev build without one): a game alone, on the device's clock. */
-const soloLink = (): QuizLink => ({ now: () => Date.now(), send: () => false, on: () => () => {}, onHere: (fn) => (fn([]), () => {}) });
+/** The host's seed (recent.ts): of SEED_TRIES, the deck that overlaps this phone's last games least, its flags kept (a
+ *  quiz's level deck, スピード はしご's ladders; another game's: a random one). */
+function seedFor({ gm, o, flags, random }: SeedAsk): number {
+  const lv = quizOpts.decode(o)?.lv;
+  if (gm === 'ladder') return freshSeed({ random, flags, recent: recentGames(), ids: (s) => ladderDeck(s, ladders()).map((it) => it.id) });
+  if (gm === 'quiz' && lv) return freshSeed({ random, flags, recent: recentGames(), ids: (s) => deck(s, lv).map((it) => it.id) });
+  return seedWith(random, flags);
+}
 
-/** The host's seed (recent.ts): of SEED_TRIES, the deck that overlaps this phone's last games least, its flags kept. */
-const seedFor = ({ lv, flags, random }: { lv: Level; flags: number; random: () => number }): number =>
-  freshSeed({ random, flags, recent: recentGames(), ids: (s) => (isLadder(s) ? ladderDeck(s, ladders()) : deck(s, lv)).map((it) => it.id) });
+/** What a heard op needs before the session takes it: an `open`, its deck's chunk. */
+export const needs = (m: RoundIn | null): Unit[] => (m?.op === 'open' ? chunksOf(m.gm, m.o, m.u) : []);
 
-/** The chunk a game's deck needs: its level's, or the ladders'. */
-export const unitFor = (seed: number, lv: Level): Unit => (isLadder(seed) ? 'ladder' : lv);
-/** What a heard intent needs before the session takes it: an `open`, its deck's chunk. */
-const needs = (m: QuizIn): Unit[] => (m.op === 'open' ? [unitFor(m.seed, m.lv as Level)] : []);
-
-/** The longest between wake-ups (the host's beacon is every 3 s: session.ts WINDOWS.beacon). */
+/** The longest between wake-ups (the host's beacon is every 3 s: round/session.ts WINDOWS.beacon). */
 const WAKE = 3000;
 
 export class QuizGame {
@@ -70,7 +55,7 @@ export class QuizGame {
   view = $state.raw<QuizView>(null as unknown as QuizView);
   now = $state(0);
   /** The game's items (its deck), [] outside one. */
-  items = $derived(this.view?.g ? itemsOf(this.view.seed, this.view.lv) : []);
+  items = $derived(this.view?.g ? itemsOf(this.view) : []);
   /** Question i was replayed or slowed before my answer (an answer's `rp`). */
   replayed = $state.raw<boolean[]>([]);
   /** A replay sounding, and a dialogue's line being spoken (clipPlayer.svelte.ts). */
@@ -91,13 +76,14 @@ export class QuizGame {
   /** My answers of the last game, as recorded (the results' feedback), or null. */
   recorded = $state.raw<ListenRow | null>(null);
   /** A unit's lesson (docs/curriculum-units.md §3): its unit, which lesson, my tier, whether it's the 30-day recheck;
-   *  its deck dealt into my lobby kept alone (`lesson`), which shows its intro card till はじめる. Null: a quiz. */
+   *  its deck dealt into my lobby kept alone (the game `lesson`, games/lesson/def.ts), which shows its intro card till
+   *  はじめる. Null: a quiz. */
   lesson = $state.raw<{ unit: UnitPlay; lesson: Lesson; tier?: Tier; recheck: boolean } | null>(null);
 
   readonly me: Who;
-  readonly #link: QuizLink;
-  readonly #session: QuizSession;
-  readonly #wire: ReturnType<typeof wireQuiz>;
+  readonly #link: RoundLink;
+  readonly #session: QuizRounds;
+  readonly #wire: ReturnType<typeof wire<QuizRounds>>;
   #timer: ReturnType<typeof setTimeout> | undefined;
   /** The phase last cued. */
   #cued = '';
@@ -108,20 +94,23 @@ export class QuizGame {
   readonly #queue: ChunkQueue;
   #offHere: () => void;
 
-  constructor(o: { live: Live | null; me: Who; fast?: boolean; heard?: readonly QuizIn[]; record?: (row: ListenRow) => void }) {
+  constructor(o: { live: Live | null; me: Who; fast?: boolean; heard?: readonly GameIn[]; record?: (row: ListenRow) => void }) {
     this.me = o.me;
     this.#record = o.record;
-    this.#link = o.live ? quizLink(o.live) : soloLink();
+    this.#link = o.live ? roundLink(o.live) : soloLink();
     this.#clips = new ClipPlayer(() => this.#link.now(), () => this.view.i);
     this.#queue = new ChunkQueue(() => this.#gone, () => this.#refresh());
-    this.#session = new QuizSession({ me: o.me, deckOf, seedFor, windows: o.fast ? FAST_WINDOWS : undefined });
+    this.#session = new QuizRounds({ me: o.me, defs: GAMES, seedFor, windows: o.fast ? FAST_WINDOWS : undefined });
     // what the island heard before this sheet opened: as if heard now (a host re-sends only when someone comes back)
     const now = this.#link.now();
-    for (const m of o.heard ?? []) this.#queue.then(() => needs(m), () => void this.#session.receive(m, now));
+    for (const h of o.heard ?? []) {
+      const m = gameIn(h);
+      if (m) this.#queue.then(() => needs(m), () => void this.#session.receive(m, now));
+    }
     this.#offHere = this.#link.onHere((h) => h && (this.here = h));
     // what's heard from now on: in order, each once the chunk it needs is in
     const link = this.#link;
-    this.#wire = wireQuiz(this.#session, { ...link, on: (fn) => link.on((m) => this.#queue.then(() => needs(m), () => fn(m))) }, () => this.#refresh());
+    this.#wire = wire(this.#session, { ...link, on: (fn) => link.on((m) => this.#queue.then(() => needs(m), () => fn(m))) }, () => this.#refresh());
     this.#refresh();
   }
 
@@ -143,32 +132,34 @@ export class QuizGame {
     this.#queue.then(() => [], () => {
       const v = this.view;
       if (!v?.g || v.phase !== 'lobby' || !v.local || !v.amHost || !items.length) return;
-      usePractice(v.seed, v.lv as Level, items);
+      usePractice(v, items);
       this.#clips.refetch();
       this.practicing = kind;
       this.lesson = null;
       this.go();
     });
   }
-  /** A unit's lesson (lesson.ts): once the unit's chunk is in, my lobby kept alone (a quiz's, not a ladder's) takes the
-   *  lesson's 6 questions by its seed, at my tier (`tier`), and waits on the lesson's intro card for はじめる (`go`).
-   *  `recheck`: the 30-day おさらい チェック (a チェック like any). Nothing on the wire. */
+  /** A unit's lesson (lesson.ts): once the unit's chunk is in, my lobby kept alone (a quiz's, not a ladder's) becomes
+   *  the lesson's game (its 6 questions by the lobby's seed, at my tier: `tier`), and waits on the lesson's intro card
+   *  for はじめる (`go`). `recheck`: the 30-day おさらい チェック (a チェック like any). Nothing on the wire. */
   playLesson(unit: string, lesson: Lesson, o: { tier?: Tier | ((stage: Stage) => Tier | undefined); recheck?: boolean } = {}): void {
     this.#queue.then(() => [unit as Unit], () => {
       const v = this.view, part = unitPart(unit);
       if (!part || !v?.g || v.phase !== 'lobby' || !v.local || !v.amHost || v.ladder) return;
       const tier = typeof o.tier === 'function' ? o.tier(part.unit.stage) : o.tier;
-      const items = lessonDeck(part, lesson, v.seed, tier);
-      if (!items.length) return;
-      usePractice(v.seed, v.lv as Level, items);
-      this.#clips.refetch();
+      if (!lessonDeck(part, lesson, v.seed, tier).length) return;
       this.practicing = false;
       this.lesson = { unit: part.unit, lesson, ...(tier && { tier }), recheck: !!o.recheck };
+      this.#act((s, now) => s.lesson({ u: unit, lesson, ...(tier && { tier }) }, now));
+      this.#clips.refetch();
     });
   }
-  /** Back from a lesson's intro card to the lobby (its quiz deck again at はじめる). */
+  /** Back from a lesson's intro card to the lobby (its quiz, the lobby's seed kept). */
   dropLesson(): void {
-    this.#queue.then(() => [], () => (this.lesson = null));
+    this.#queue.then(() => [], () => {
+      this.lesson = null;
+      this.#act((s, now) => s.unlesson(now));
+    });
   }
   /** みんなを さそう: my lobby announced to everyone here. */
   invite(): void {
@@ -185,8 +176,8 @@ export class QuizGame {
     this.#queue.then(() => [], () => {
       // a solo game (my lobby kept alone, a quiz): its own deck, the items not heard lately first (nothing on the wire)
       const v = this.view;
-      if (v?.g && v.phase === 'lobby' && v.local && v.amHost && !this.practicing && !this.lesson && !v.ladder) {
-        usePractice(v.seed, v.lv as Level, deck(v.seed, v.lv as Level, undefined, agesOf(recentGames())));
+      if (v?.g && v.phase === 'lobby' && v.local && v.amHost && !this.practicing && !this.lesson && v.gm === 'quiz') {
+        usePractice(v, deck(v.seed, v.lv as Level, undefined, agesOf(recentGames())));
         this.#clips.refetch();
       }
       this.#act((s, now) => s.go(now));
@@ -256,7 +247,7 @@ export class QuizGame {
 
   // ---------- inside ----------
 
-  #act(f: (s: QuizSession, now: number) => QuizOut[] | void): void {
+  #act(f: (s: QuizRounds, now: number) => RoundOut[] | void): void {
     if (!this.#gone) this.#wire.act(f);
   }
 
@@ -264,7 +255,7 @@ export class QuizGame {
    *  least every few seconds: the host's beacon, a lobby's grace and TTL). */
   #refresh(): void {
     if (this.#gone) return;
-    this.#wire?.tick(); // (undefined while wireQuiz itself calls in, at the start)
+    this.#wire?.tick(); // (undefined while wire itself calls in, at the start)
     const now = this.#link.now();
     const v = this.#session.view(now);
     if (this.view && v.g !== this.view.g) {
@@ -272,7 +263,7 @@ export class QuizGame {
       this.#recorder.reset();
     }
     // the game I'm in keeps its deck whatever other phones' lobbies build (decks.ts)
-    pinDeck(v.g ? v.seed : null, v.lv as Level);
+    pinDeck(v.g ? v : null);
     this.#recorder.seen(v, now);
     if (v.phase === 'results' && v.g) this.#keep(v, now, true);
     this.view = v;

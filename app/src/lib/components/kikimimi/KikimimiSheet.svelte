@@ -15,7 +15,8 @@
   import Results from './Results.svelte';
   import LessonIntro from './LessonIntro.svelte';
   import PathCard from './path/PathCard.svelte';
-  import { QuizGame, unitFor } from './game.svelte.ts';
+  import { QuizGame, needs } from './game.svelte.ts';
+  import { gameIn } from '#lib/kikimimi/round/wire.ts';
   import { currentPath, currentReport, currentUnits, recordGame, unitAdded } from './progress.svelte.ts';
   import { KikiActions } from './actions.ts';
   import { keepLv, keepTimer, lastLv, lastTimer } from './prefs.ts';
@@ -23,11 +24,10 @@
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
   import type { Filter } from '#lib/kikimimi/path.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
-  import type { Level } from '#lib/kikimimi/bank.ts';
   import { levelMark } from './look.ts';
   import { addUnit, itemOf, load, loadIds } from '#lib/kikimimi/pool.ts';
   import type { UnitPlay } from '#lib/kikimimi/lesson.ts';
-  import type { QuizPhase } from '#lib/kikimimi/session.ts';
+  import type { QuizPhase } from '#lib/kikimimi/games/quiz/view.ts';
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
@@ -80,7 +80,7 @@
     if (!open || !me) return;
     const who = me, joining = untrack(() => join);
     let g: QuizGame | null = null, gone = false;
-    void load(...heardQuiz().flatMap((m) => (m.op === 'open' ? [unitFor(m.seed, m.lv as Level)] : [])), lastLv())
+    void load(...heardQuiz().flatMap((m) => needs(gameIn(m))), lastLv())
       .catch(() => {}) // (offline with a chunk never fetched: the game waits for it as it would for a heard one)
       .then(() => {
         if (gone) return;
