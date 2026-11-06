@@ -5,13 +5,16 @@
 // on the cached home models held the picker's renderer), one more an /editor visit (and a document keydown listener).
 import { expect, test, type Page } from './fixtures.ts';
 import { BASE } from './island.ts';
-import { drawn, fixtureTiles, mapReady, openTrip } from './trips.ts';
+import { drawn, fixtureTiles, mapReady, openTrip, tripsSheet } from './trips.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&as=B';
+/** A blank topo tile (トレイル's map: hiking.spec's). */
+const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
 
 /** WebGL contexts alive (all; `map`: the trip map's, a `maplibregl-canvas`'s) and window/document listeners. */
-type Probe = { gl: number; map: number; ls: number };
+type Probe = { gl: number; map: number; ls: number; fonts: number; nodes: number };
 async function watch(page: Page) {
   await page.addInitScript(() => {
     const gls: WeakRef<object>[] = [], maps: WeakRef<object>[] = [];
@@ -42,16 +45,20 @@ async function watch(page: Page) {
       if (s?.delete(k)) n--;
       return rem.call(this, type, f as EventListener, o as EventListenerOptions);
     };
-    (window as unknown as { __leaks: () => Probe }).__leaks = () => ({ gl: gls.filter((r) => r.deref()).length, map: maps.filter((r) => r.deref()).length, ls: n });
+    (window as unknown as { __leaks: () => Omit<Probe, 'nodes'> }).__leaks = () => ({ gl: gls.filter((r) => r.deref()).length, map: maps.filter((r) => r.deref()).length, ls: n, fonts: document.fonts.size });
   });
 }
 async function measure(page: Page): Promise<Probe> {
   const cdp = await page.context().newCDPSession(page);
+  await cdp.send('Performance.enable');
   for (let i = 0; i < 3; i++) await cdp.send('HeapProfiler.collectGarbage');
+  // (the DOM nodes alive, in the document or detached and still held)
+  const { metrics } = await cdp.send('Performance.getMetrics');
   await cdp.detach();
   // (a WeakRef's target is collected only after the task that last read it: read in a fresh one)
   await page.evaluate(() => new Promise((ok) => setTimeout(ok, 50)));
-  return page.evaluate(() => (window as unknown as { __leaks: () => Probe }).__leaks());
+  const p = await page.evaluate(() => (window as unknown as { __leaks: () => Omit<Probe, 'nodes'> }).__leaks());
+  return { ...p, nodes: metrics.find((m) => m.name === 'Nodes')?.value ?? 0 };
 }
 
 /** The app's own navigation (a link's click: SvelteKit's router), as a door does. */
@@ -185,4 +192,65 @@ test('the trip map in and out: no WebGL context or window listener left behind',
   expect([first.map, after.map], 'map contexts alive after the map closed').toEqual([0, 0]);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
+});
+
+// The info sheets (りょこう, けっこんしき, トレイル: docs/design.md "Unified kit"), drawn, in and out three times on the
+// island: NZ's pages (its map on the fixture tiles), Okinawa's classic guide's 地図 (Motobu's labels drawn in Zen Maru),
+// a wedding task opened and メモ, three trails' maps (a blank topo tile). After each round no map's context, no listener,
+// no font face and no DOM node more than after the first (before remove.ts: each guide's map left its ~19 Zen Maru
+// faces in document.fonts, each holding its woff2, 171 → 235 over three).
+test('the info sheets in and out (the trips, a classic guide, the wedding board, three trails): nothing left behind', { tag: '@chromium' }, async ({ page }) => {
+  test.setTimeout(180_000);
+  await watch(page);
+  await drawn(page);
+  await fixtureTiles(page);
+  await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } }));
+  await page.goto(Q);
+  await islandUp(page);
+  const sheet = page.locator('dialog[open]');
+  const closed = async () => (await page.keyboard.press('Escape'), await expect(sheet).toHaveCount(0));
+  const trailUp = () => expect.poll(() => page.evaluate(() => (window as unknown as { __trailMap?: { state(): { mode: string } } }).__trailMap?.state().mode), { timeout: 30_000 }).toBe('ready');
+  const round = async () => {
+    // NZ: each page, the map's drawn; ‹ to the passes; Okinawa's 地図 drawn, 日程, 本棚
+    await openTrip(page, 'nz', 'days');
+    for (const tab of ['map', 'pack', 'days']) {
+      await tripsSheet(page).locator(`[data-trip-tab="${tab}"]`).click();
+      await expect(tripsSheet(page).locator(`[data-pane="${tab}"]`)).toBeVisible();
+      if (tab === 'map') await mapReady(page);
+    }
+    await sheet.locator('.navbar .back').click();
+    await tripsSheet(page).locator('[data-trip="okinawa"]').click();
+    await sheet.locator('[data-classic-tab="map"]').click();
+    await mapReady(page);
+    await sheet.locator('[data-classic-tab="itinerary"]').click();
+    await sheet.locator('[data-classic-back]').click();
+    await expect(tripsSheet(page).locator('[data-trip]').first()).toBeVisible();
+    await closed();
+    // the wedding board: a task opened, メモ, back to the plan
+    await fromMenu(page, 'wedding');
+    await sheet.locator('[data-wed-task] .head').first().click();
+    await sheet.locator('[data-wed-tab="notes"]').click();
+    await expect(sheet.locator('[data-wed-tab="notes"]')).toHaveAttribute('aria-current', 'page');
+    await sheet.locator('[data-wed-tab="plan"]').click();
+    await closed();
+    // three trails, each its map drawn, ‹ between
+    await fromMenu(page, 'hiking');
+    for (const k of [0, 1, 2]) {
+      await sheet.locator('[data-trail]').nth(k).click();
+      await trailUp();
+      await sheet.locator('[data-trail-view] .nav.back').click();
+      await expect(sheet.locator('[data-trail-list]')).toBeVisible();
+    }
+    await closed();
+  };
+  await round();
+  const first = await measure(page);
+  for (let i = 0; i < 2; i++) await round();
+  const after = await measure(page);
+  expect([first.map, after.map], 'map contexts alive after the sheets closed').toEqual([0, 0]);
+  expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
+  expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
+  expect(after.fonts, "the maps' font faces in document.fonts").toBeLessThanOrEqual(first.fonts);
+  // (a few: the island's own life between rounds)
+  expect(after.nodes - first.nodes, 'DOM nodes alive, attached or not').toBeLessThan(100);
 });

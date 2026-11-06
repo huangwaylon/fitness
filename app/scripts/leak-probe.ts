@@ -1,10 +1,11 @@
 // The memory-leak probe (docs/ops/testing.md "Memory"): N cycles of a flow in Chromium as an iPhone 13 (or WebKit as
 // an iPhone 15: --webkit, no CDP: no GC, no heap), after each a forced GC and the JS heap, DOM nodes, JS listeners, the
-// WebGL contexts still alive (WeakRefs), intervals, rAF callbacks a second, the window's/document's listeners and the
+// WebGL contexts still alive (WeakRefs), intervals, document.fonts' faces, rAF callbacks a second, the window's/document's listeners and the
 // island's renderer.info.
 //   npm run leak -- <flow> [cycles] [--snap] [--path=<name>]     (the build served at E2E_PORT, default 4693)
 // flows: shop tent home museum fpv (the museum in first person) editor (the island ⇄ there), all (the four rooms), food
-// health zukan settings bells sheets (open, close), look (すがた: a villager's look, then いつもの), clothes (すがた: four
+// health zukan settings bells sheets (open, close), trips classic wedding trails info (the info sheets, their maps drawn on
+// fixture tiles: NZ's pages, Okinawa's 地図, a task and メモ, three trails; info: all four), look (すがた: a villager's look, then いつもの), clothes (すがた: four
 // tops and their colours worn, then いつもの; the island's and the room's textures must not grow), picker (いえを かえる; Q='&as=B'), vis (hidden ⇄ visible), sim (the
 // page's clock 10 sim minutes a cycle from SIM_AT, default 23:00: the island's day running and rolling over; LOGIC=1:
 // not drawn), days (DAY_H sim hours a cycle, fast-forwarded: the visitors coming and going), idle (IDLE_MS of real
@@ -82,7 +83,7 @@ await ctx.addInitScript(() => {
   URL.createObjectURL = (o: Blob | MediaSource) => { const u = cu0(o); blobs.add(u); return u; };
   URL.revokeObjectURL = (u: string) => { blobs.delete(u); ru0(u); };
   W.__blobs = () => blobs.size;
-  W.__probe = () => ({ gl: gls.filter((r) => r.deref()).length, ivs: ivs.size, ls: Object.fromEntries([...net].filter(([, n]) => n > 0)) });
+  W.__probe = () => ({ gl: gls.filter((r) => r.deref()).length, ivs: ivs.size, fonts: document.fonts.size, ls: Object.fromEntries([...net].filter(([, n]) => n > 0)) });
 });
 const page = await ctx.newPage();
 page.on('pageerror', (e) => console.log('pageerror', e.message));
@@ -97,7 +98,7 @@ const gc = async () => {
 };
 async function measure(label: string) {
   await gc();
-  const p = await page.evaluate(() => (window as unknown as { __probe(): { gl: number; ivs: number; ls: Record<string, number> } }).__probe());
+  const p = await page.evaluate(() => (window as unknown as { __probe(): { gl: number; ivs: number; fonts: number; ls: Record<string, number> } }).__probe());
   let m: Record<string, number> = {};
   if (cdp) m = Object.fromEntries(((await cdp.send('Performance.getMetrics')).metrics as { name: string; value: number }[]).map((x) => [x.name, x.value]));
   const r3 = await page.evaluate(() => {
@@ -110,7 +111,7 @@ async function measure(label: string) {
   }).catch(() => null);
   // (rAF a second, over a real second: none under the sim's clock)
   const rafs = SIM ? 0 : await page.evaluate(() => new Promise<number>((ok) => { const W = window as unknown as { __rafs(): number }, r0 = W.__rafs(); setTimeout(() => ok(W.__rafs() - r0), 1000); }));
-  const row = { label, rafs, heapMB: +((m.JSHeapUsedSize ?? 0) / 1e6).toFixed(2), nodes: m.Nodes, listeners: m.JSEventListeners, docs: m.Documents, gl: p.gl, ivs: p.ivs, ls: Object.values(p.ls).reduce((a, b) => a + b, 0), r3 };
+  const row = { label, rafs, heapMB: +((m.JSHeapUsedSize ?? 0) / 1e6).toFixed(2), nodes: m.Nodes, listeners: m.JSEventListeners, docs: m.Documents, gl: p.gl, ivs: p.ivs, fonts: p.fonts, ls: Object.values(p.ls).reduce((a, b) => a + b, 0), r3 };
   console.log(JSON.stringify(row));
   return { row, ls: p.ls };
 }
@@ -227,6 +228,58 @@ async function vis(state: 'hidden' | 'visible') {
   }, state);
 }
 
+// the info sheets (りょこう, けっこんしき, トレイル: docs/design.md "Unified kit"), drawn: the maps on OpenFreeMap's fixture
+// tiles (e2e/fixtures/travel) and a blank topo tile, never the network
+const pill = async (k: string) => { await menu(); await page.locator(`[data-hud-${k}]`).click(); await sel(`dialog[open] [data-${k}]`); await page.waitForTimeout(600); };
+const closeAll = async () => {
+  for (let k = 0; k < 4 && (await page.locator('dialog[open]').count()); k++) { await page.keyboard.press('Escape'); await page.waitForTimeout(250); }
+  await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 10_000 }); await page.waitForTimeout(600);
+};
+const tapIn = async (q: string) => { await sel(q); await page.locator(q).first().click(); await page.waitForTimeout(500); };
+const mapUp = (h: '__travelMap' | '__trailMap') => until(`(window.${h}?.state().mode ?? '') === 'ready'`, 30_000).catch(() => console.log(`${h} not ready`));
+const INFO: Record<string, () => Promise<void>> = {
+  // りょこう: the list, NZ, each tab (the map drawn), back, ✕
+  trips: async () => {
+    await pill('travel'); await tapIn('dialog[open] [data-trip="nz"]');
+    for (const t of ['days', 'map', 'pack', 'days']) { await tapIn(`dialog[open] [data-trip-tab="${t}"]`); if (t === 'map') await mapUp('__travelMap'); }
+    await tapIn('dialog[open] .navbar .back'); await closeAll();
+  },
+  // Okinawa's classic guide: 地図 (the map drawn), back to 日程, ✕
+  classic: async () => {
+    await pill('travel'); await tapIn('dialog[open] [data-trip="okinawa"]');
+    await tapIn('dialog[open] [data-classic-tab="map"]'); await mapUp('__travelMap');
+    await tapIn('dialog[open] [data-classic-tab="itinerary"]'); await tapIn('dialog[open] [data-classic-back]'); await closeAll();
+  },
+  // けっこんしき: a task opened, メモ, ✕
+  wedding: async () => {
+    await pill('wedding'); await tapIn('dialog[open] [data-wed-task] .head');
+    await tapIn('dialog[open] [data-wed-tab="notes"]'); await page.waitForTimeout(500);
+    await tapIn('dialog[open] [data-wed-tab="plan"]'); await tapIn('dialog[open] [data-wed-task] .head'); await closeAll();
+  },
+  // トレイル: three trails (each its map drawn), back between, ✕
+  trails: async () => {
+    await pill('hiking');
+    for (const k of [0, 1, 2]) {
+      await sel('dialog[open] [data-trail-list]'); await page.locator('dialog[open] [data-trail]').nth(k).click();
+      await sel('dialog[open] [data-trail-view]'); await mapUp('__trailMap'); await page.waitForTimeout(500);
+      await page.locator('dialog[open] [data-trail-view] .nav.back').click(); await page.waitForTimeout(500);
+    }
+    await closeAll();
+  }
+};
+if (flow in INFO || flow === 'info') {
+  const FIX = new URL('../e2e/fixtures/travel/', import.meta.url).pathname;
+  const { readFileSync: rf, existsSync: ex } = await import('node:fs');
+  const cors = { 'access-control-allow-origin': '*' };
+  await page.route('https://tiles.openfreemap.org/**', (r) => {
+    const u = new URL(r.request().url());
+    if (u.pathname === '/planet') return r.fulfill({ contentType: 'application/json', body: rf(`${FIX}tilejson.json`), headers: cors });
+    const m = /^\/planet\/fixture\/(\d+)\/(\d+)\/(\d+)\.pbf$/.exec(u.pathname), f = m && `${FIX}tiles/${m[1]}/${m[2]}/${m[3]}.pbf`;
+    return f && ex(f) ? r.fulfill({ contentType: 'application/x-protobuf', body: rf(f), headers: cors }) : r.fulfill({ status: 204, headers: cors });
+  });
+  const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
+  await page.route(/^https:\/\/(basemap\.nationalmap\.gov|cyberjapandata\.gsi\.go\.jp)\//, (r) => r.fulfill({ contentType: 'image/png', body: TILE, headers: cors }));
+}
 const SIM = flow === 'sim' || flow === 'days';
 if (SIM) await page.clock.install({ time: Date.now() });
 // the demo's events (as a catch writes them): sell's pocket; hours' and curator's museum full (every fish and bug found)
@@ -476,6 +529,10 @@ const cycle = async () => {
     for (let k = 0; k < 10; k++) await page.clock.runFor(60_000);
   } else if (flow === 'idle') {
     await page.waitForTimeout(Number(process.env.IDLE_MS ?? 20_000));
+  } else if (flow in INFO) {
+    await INFO[flow]();
+  } else if (flow === 'info') {
+    for (const f of Object.values(INFO)) await f();
   } else if (flow === 'all') {
     for (const k of ['shop', 'tent', 'home', 'museum']) {
       const [p, up] = ROOMS[k];

@@ -196,7 +196,8 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
 ## Memory
 The PWA stays open for days, so a scene's round trip must leave nothing behind. `e2e/leaks.spec.ts` (`@chromium`, in
 the gate) goes in and out of the shop, the museum and うめ's house, opening いえを かえる, and the museum in first person
-and out (the eye button, a bench), three rounds, and checks after a forced GC that no WebGL context (watched by
+and out (the eye button, a bench), the info sheets (りょこう's pages and maps, a classic guide's 地図, けっこんしき, three
+trails), three rounds, and checks after a forced GC that no WebGL context (watched by
 WeakRefs) or window/document listener is left over, and that inside the museum only its own context lives. To hunt
 one: `npm run leak -- <flow> [cycles] --snap` (scripts/leak-probe.ts, its header lists the flows: the rooms, each
 sheet, the picker, visibility, the museum's eye, benches, hours, curator and a wing rebuilt, fishing, selling, the
@@ -219,6 +220,8 @@ prints what retains the ones new since the first snapshot.
   alive (a heap path through "DevTools console"); wait on booleans.
 - A steady +0.3 MB a trip that's all `[code]` in the diff is V8 compiling; it levels off (the museum in and out:
   from the 12th trip). `blink::NetworkResourcesData` is DevTools' own (the probe's), not the app's.
+- **MapLibre:** a map goes by travel/map/remove.ts, not `map.remove()` alone: that leaves the style's font faces in
+  `document.fonts` (each holding its woff2; ~19 a guide's map) and the last map's abort Error holding the map.
 - **Models kept:** the page-wide caches keep each model without its loader's parser (release.ts `lean`: the parser
   holds the GLB's whole file again). Over days they still grow, one entry a new model (a visitor's, a day's thing), and
   the island's GPU keeps each texture it drew until it goes: bounded by the models there are.

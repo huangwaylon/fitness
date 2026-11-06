@@ -1,12 +1,13 @@
 // トレイル's map, the MapLibre side (docs/hiking.md "Map"): the lazy chunk TrailMap.svelte imports only when it draws
 // (never under drawOff()), on the trip map's CSP-safe path (its worker our own file:
-// travel/map/engine.ts). One map per trail view; destroy() drops its WebGL context the way the trip map's does (leaks).
-import { AttributionControl, Map as GLMap, getGlobalDispatcher, setWorkerUrl, type GeoJSONSource, type LngLatBoundsLike } from 'maplibre-gl';
+// travel/map/engine.ts). One map per trail view; destroy() lets go of it the way the trip map's does (travel/map/remove.ts).
+import { AttributionControl, Map as GLMap, setWorkerUrl, type GeoJSONSource, type LngLatBoundsLike } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { Region } from '#lib/hiking/types.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
 import { buildStyle, SRC, TOPO } from './style.ts';
+import { removeMap } from '../../travel/map/remove.ts';
 
 export interface Fix { lon: number; lat: number }
 export type EngineMode = 'ready' | 'offline' | 'lost';
@@ -129,9 +130,7 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
     },
     state: () => ({ track: map.queryRenderedFeatures({ layers: ['track'] }).length, scrub: map.queryRenderedFeatures({ layers: ['scrub'] }).length }),
     destroy() {
-      map.remove();
-      // (the trip map's leak fix: reading the dispatcher's abort reason's stack lets remove()'s frames go: travel/map/engine.ts)
-      void ((getGlobalDispatcher() as unknown as { workersAbortController?: AbortController }).workersAbortController?.signal.reason as Error | undefined)?.stack;
+      removeMap(map);
     }
   };
 }
