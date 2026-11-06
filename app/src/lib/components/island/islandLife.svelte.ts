@@ -12,8 +12,8 @@ import { startIdleLife } from '../motion/idleLife.svelte.ts';
 import { ambientPois, ambientVillager, goalWalk, meetUp, outing, presence, steered, wander } from './avatar.ts';
 import { goalMoves } from './wander.ts';
 import { personHere, relayOffset } from './ambientClock.ts';
-import { actorOf, guestPhone, whoOf } from '#lib/ui-state/cast.ts';
-import type { VillagerState } from './ambient.ts';
+import { actorOf, guestPhone, islandActors, whoOf } from '#lib/ui-state/cast.ts';
+import type { AmbientWorld } from './ambient.ts';
 import { on } from '../motion/bus.svelte.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 import type { ReactionId } from '../motion/reactions.ts';
@@ -137,9 +137,10 @@ export class IslandLife {
   }
 
   #diff(p: WeekView, v: WeekView): void {
-    // the guest's phone: the members' fruit ripens on their trees, and that's all (their villagers' walks to a tree,
-    // ふたりでぜんぶ and the reactions are their own phones' moments)
+    // the guest's phone: the members' fruit ripens on their trees, and ふたりでぜんぶ brings everyone to the middle, the
+    // guest's villager too (their villagers' walks to a tree and the reactions are their own phones' moments)
     if (guestPhone()) {
+      if (goalMoves(p, v).meet) meetUp();
       for (const pid of ['A', 'B'] as const) {
         const a = p.people[pid].rings, b = v.people[pid].rings;
         const newlyRipe = RING_FRUITS.filter((f) => todayPct(b[f]) >= 100 && todayPct(a[f]) < 100);
@@ -223,17 +224,23 @@ export class IslandLife {
       night: ctx.night,
       offset: relayOffset,
       me: () => ctx.view().me,
-      // the members' villagers (ui-state/cast.ts): the guest's takes no part in ambient life, on any phone
+      // whose villager each actor draws (ui-state/cast.ts): the guest's takes part too while it's on the island
       actorOf: (p) => actorOf(p),
-      // ambient life's world (island/ambient.ts): each member's villager, where it may wander, the day scores
+      // ambient life's world (island/ambient.ts): each member's villager and the guest's while it's here (its app
+      // open: present, as a member with the island open), where they may wander, the day scores
       world: () => {
         const v = ctx.view(), a = actorOf('A'), b = actorOf('B'), va = ambientVillager(a), vb = ambientVillager(b);
         if (!va || !vb) return null;
         const at = (t: number | undefined) => (t === undefined ? undefined : t + relayOffset());
-        // present: mine always, another member by the relay's presence (the guest never counts)
+        // present: mine always, another by the relay's presence
         const here = (id: typeof a, p: PersonId) => id === 'mine' || personHere(p);
+        const g = actorOf('G'), vg = islandActors().includes(g) ? ambientVillager(g) : null;
         return {
-          villagers: { A: { ...va, present: here(a, 'A'), lastIntent: at(steered[a]) }, B: { ...vb, present: here(b, 'B'), lastIntent: at(steered[b]) } } as Record<PersonId, VillagerState>,
+          villagers: {
+            A: { ...va, present: here(a, 'A'), lastIntent: at(steered[a]) },
+            B: { ...vb, present: here(b, 'B'), lastIntent: at(steered[b]) },
+            ...(vg ? { G: { ...vg, present: true, lastIntent: at(steered[g]) } } : {})
+          } as AmbientWorld['villagers'],
           pois: ambientPois(),
           scores: { A: dayScore(v.people.A), B: dayScore(v.people.B) },
           // the exercise goal (🍑) met today: a pull-up at the bar now and then

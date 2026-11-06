@@ -1,10 +1,11 @@
-// Group stretching's choreography (island/stretching.ts): both villagers (home first: a walk is cut short and they
-// walk back) and the visitor do the same stretches on the same beat. The villagers run through the director (one motion
+// Group stretching's choreography (island/stretching.ts): everyone's villager on the island (the members' and the
+// guest's while it's here; home first: a walk is cut short and they walk back) and the visitor do the same stretches
+// on the same beat. The villagers run through the director (one motion
 // per pose, busy for the whole routine so idle life keeps out); the visitor isn't a director actor, so it reads
 // `stretch.pose` (Visitor.svelte plays the same keyframes).
 import { actors, addFx, awayFromHome, cancel, holdEvents, later, routeHome, setAsleep, setEmote, setMotion, walkTo } from './director.svelte.ts';
 import type { Motion } from './reactions.ts';
-import { memberActors } from '#lib/ui-state/cast.ts';
+import { islandActors } from '#lib/ui-state/cast.ts';
 
 /** The pose everyone is doing now (null between routines), bumped `n` on each. */
 export const stretch = $state<{ pose: Motion | null; n: number }>({ pose: null, n: 0 });
@@ -15,8 +16,8 @@ const HOME_MS = 1600;
 /** Run the routine: `poses` of `ms` each; `done` at its end, `aborted` if it's cut short (the actors reset). Returns the
  *  ms until it starts (0, or the walk home). */
 export function groupStretch(poses: readonly Motion[], ms: number, done?: () => void, aborted?: () => void): number {
-  // the two members' villagers (the guest's moves only by its own taps: on the guest's phone, A and B stretch)
-  const ids = memberActors();
+  // everyone's on the island (a villager whose person is here stretches where it stands: its walk is its phone's)
+  const ids = islandActors();
   const out = ids.filter((id) => actors[id].walking || awayFromHome(id));
   const away = out.length > 0;
   const slept = ids.filter((id) => actors[id].asleep);

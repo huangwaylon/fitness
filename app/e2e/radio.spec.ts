@@ -132,3 +132,64 @@ test.describe('the layout’s deck', () => {
     await expect(page.locator('[data-stretch="on"]')).toHaveCount(0);
   });
 });
+
+// The guest's villager joins the island's group stretching as a member's does (2026-11-06): on its own phone with both
+// members', and on a member's phone while its app is open.
+/** Every change of what each villager is doing (`[data-actor]` order: mine, partner, third), recorded in the page. */
+const watchActs = (page: Page) =>
+  page.evaluate(() => {
+    const w = window as { __vacts?: string[] };
+    w.__vacts = [];
+    const snap = () => {
+      const s = [...document.querySelectorAll('[data-actor] .vil .body')].map((e) => e.getAttribute('data-act')).join(',');
+      if (w.__vacts![w.__vacts!.length - 1] !== s) w.__vacts!.push(s);
+    };
+    new MutationObserver(snap).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['data-act'], childList: true });
+  });
+/** Nobody walking (the guest's villager comes ashore as its app opens). */
+const settled = (page: Page) =>
+  expect.poll(() => page.locator('[data-actor].walking').count(), { timeout: 20_000 }).toBe(0);
+/** Each pose seen by all `n` villagers at once, in order. */
+async function allStretched(page: Page, n: number) {
+  const seen = await page.evaluate(() => (window as { __vacts?: string[] }).__vacts ?? []);
+  const at = ['warmup', 'sidebend', 'leap'].map((p) => seen.indexOf(Array(n).fill(p).join(',')));
+  expect(at.every((i) => i >= 0), seen.join(' | ')).toBe(true);
+  expect([...at].sort((a, b) => a - b)).toEqual(at);
+}
+
+test('the guest’s phone: a tap on the deck and its villager stretches with both members’', async ({ page }) => {
+  await page.goto('?demo&date=2026-11-01T07:00&critter=none&visitor=none&as=G');
+  await expect(hudMenu(page)).toBeVisible();
+  await expect(deck(page)).toBeVisible();
+  await expect(page.locator('[data-actor] .vil')).toHaveCount(3);
+  await settled(page); // its villager ashore at its spot
+  await watchActs(page);
+  const pt = await deckPoint(page);
+  await page.mouse.click(pt.x, pt.y);
+  await expect(page.locator('[data-stretch="on"]')).toBeAttached();
+  await expect(page.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
+  await allStretched(page, 3);
+});
+
+test('a member’s tap with the guest here: the guest’s villager stretches on the member’s phone too', async ({ browser }) => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
+  const open = async (more: string) => {
+    const p = await ctx.newPage();
+    await p.goto(`?demo&date=2026-11-01T07:00&critter=none&visitor=none${more}`);
+    await expect(hudMenu(p)).toBeVisible();
+    return p;
+  };
+  const a = await open('');
+  await open('&as=G');
+  // the guest's villager on A's island (its app open)
+  await expect(a.locator('[data-actor] .vil')).toHaveCount(3, { timeout: 10_000 });
+  await expect(deck(a)).toBeVisible();
+  await settled(a);
+  await watchActs(a);
+  const pt = await deckPoint(a);
+  await a.mouse.click(pt.x, pt.y);
+  await expect(a.locator('[data-stretch="on"]')).toBeAttached();
+  await expect(a.locator(LIVE)).toHaveCount(0, { timeout: 15_000 });
+  await allStretched(a, 3);
+  await ctx.close();
+});

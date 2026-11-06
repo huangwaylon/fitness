@@ -8,7 +8,7 @@
 // integer world points, squared distances (never Math.hypot), plain string order, mulberry32.
 import { ZONE_OFFSET_MS } from '#lib/time/dates.ts';
 import type { LocalDate } from '#lib/types.ts';
-import type { PersonId as Who } from '#lib/types.ts';
+import type { PersonId as Who, Who as Islander } from '#lib/types.ts';
 import { mulberry32, pickOne } from '#lib/random.ts';
 import { IDLE_POOL, type IdleAction } from '../motion/reactions.ts';
 import { BUBBLE_SHARE } from './critters.ts';
@@ -99,7 +99,10 @@ export interface VillagerState {
 }
 
 export interface AmbientWorld {
-  villagers: Record<Who, VillagerState>;
+  /** The members' villagers, and the guest's while it's on the island (`G`: its app open, so always `present`). The
+   *  guest's villager takes part as a present member's does (docs/design.md "The guest", 2026-11-06): small moves, a
+   *  chat or a dance with anyone, the doze, and the dusk meet-up beside the bench; never an outing on its own. */
+  villagers: Record<Who, VillagerState> & { G?: VillagerState };
   /** Where a villager may wander (the world's points of interest, any order: sorted here). */
   pois: readonly Poi[];
   /** 'evening' (19–22: no day-only moves) and 'asleep' (22–05: the villagers only doze). */
@@ -121,8 +124,8 @@ export type VillagerBeat =
   /** A walk to 1–MAX_HOPS points of interest, lingering at each, then home; it starts on the slot's boundary.
    *  `together`: both set off at once (the dusk meet-up at the bench). */
   | { kind: 'outing'; stops: readonly { node: string; linger: number }[]; together?: boolean }
-  /** Both villagers: a chat or a dance, the same for both; the lead's starts it. */
-  | { kind: 'pair'; action: 'chat' | 'dance'; with: Who; lead: boolean; at: number }
+  /** Two villagers: a chat or a dance, the same for both; the lead's starts it. */
+  | { kind: 'pair'; action: 'chat' | 'dance'; with: Islander; lead: boolean; at: number }
   | { kind: 'doze' };
 
 type CritterKind = 'fish' | 'bubbles' | 'fresh' | 'bug';
@@ -160,7 +163,7 @@ const DANCE_BOOST = 0.25;
 /** A small move lands this far into its slot at most (ms), so it is done before the next. */
 const IDLE_AT_MAX = 6_000;
 const PEOPLE: readonly Who[] = ['A', 'B'];
-const other = (w: Who): Who => (w === 'A' ? 'B' : 'A');
+const WITH_GUEST: readonly Islander[] = ['A', 'B', 'G'];
 
 const d2 = (a: Pt, b: Pt) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2;
 const atHome = (v: VillagerState) => d2(v.at, v.home) <= NEAR_U ** 2;
@@ -184,12 +187,14 @@ function pickEntry(pool: readonly PoolEntry[], r: () => number): PoolEntry | nul
   return pool[pool.length - 1];
 }
 
-/** A slot's first roll for the villagers, from the date and slot alone: whose turn and what from the hour's pool. The
- *  final beat checks it against the snapshot and the recent rolls (no repeat, each move's `every` gap). */
-function roll(date: LocalDate, slot: number, phase: AmbientWorld['phase']) {
+/** A slot's first roll for the villagers, from the date, the slot and whether the guest is on the island alone: whose
+ *  turn (a third each with the guest) and what from the hour's pool. The final beat checks it against the snapshot and
+ *  the recent rolls (no repeat, each move's `every` gap). */
+function roll(date: LocalDate, slot: number, phase: AmbientWorld['phase'], guest: boolean) {
   const r = slotRand(date, slot, 'villager');
   const outing = r();
-  const who: Who = r() < 0.5 ? 'A' : 'B';
+  const x = r();
+  const who: Islander = guest ? (x < 1 / 3 ? 'A' : x < 2 / 3 ? 'B' : 'G') : x < 0.5 ? 'A' : 'B';
   const hour = Math.floor(slot / 360);
   const pool = IDLE_POOL.filter((e) => !(e.day && phase !== 'day') && !(e.hours && !(hour >= e.hours[0] && hour < e.hours[1])));
   return { r, outing, who, pool, first: pickEntry(pool, r) };
@@ -197,10 +202,10 @@ function roll(date: LocalDate, slot: number, phase: AmbientWorld['phase']) {
 
 /** The moves `who` rolled in the slots before `slot` that rule a move out now: the last two (no repeats) and any within
  *  its `every` gap. Rolls only (whether they happened doesn't matter), so the phones agree without history. */
-function recent(date: LocalDate, slot: number, who: Who, phase: AmbientWorld['phase']): Set<IdleAction> {
+function recent(date: LocalDate, slot: number, who: Islander, phase: AmbientWorld['phase'], guest: boolean): Set<IdleAction> {
   const out = new Set<IdleAction>();
   for (let k = 1; k <= LOOKBACK && slot - k >= 0; k++) {
-    const p = roll(date, slot - k, phase);
+    const p = roll(date, slot - k, phase, guest);
     if (p.who !== who || !p.first) continue;
     if (k <= 2 || k * SLOT_MS < (p.first.every ?? 0)) out.add(p.first.action);
   }
@@ -240,27 +245,33 @@ function outing(v: VillagerState, pois: readonly Poi[], r: () => number): Villag
 }
 
 /** The villagers' beats in one slot of the day, from the slot and the shared world at its start: at most one villager's,
- *  both for a pair, or the night's doze. */
-export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): Partial<Record<Who, VillagerBeat>> {
+ *  two for a pair, or the night's doze. */
+export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): Partial<Record<Islander, VillagerBeat>> {
   const start = slotStart(date, slot);
-  const free = (p: Who) => w.villagers[p].free && !held(w.villagers[p], start);
+  const guest = !!w.villagers.G;
+  const everyone = guest ? WITH_GUEST : PEOPLE;
+  const v = (p: Islander) => (p === 'G' ? w.villagers.G! : w.villagers[p]);
+  const free = (p: Islander) => v(p).free && !held(v(p), start);
   if (w.phase === 'asleep') {
-    const out: Partial<Record<Who, VillagerBeat>> = {};
-    for (const p of PEOPLE) if (w.villagers[p].free) out[p] = { kind: 'doze' };
+    const out: Partial<Record<Islander, VillagerBeat>> = {};
+    for (const p of everyone) if (v(p).free) out[p] = { kind: 'doze' };
     return out;
   }
-  const { r, outing: o, who, pool, first } = roll(date, slot, w.phase);
-  // one villager out at a time, from home
+  const { r, outing: o, who, pool, first } = roll(date, slot, w.phase, guest);
+  // one villager out at a time, from home (the members': the guest's stands wherever its taps put it)
   const nobodyOut = PEOPLE.every((p) => atHome(w.villagers[p]));
   const hour = Math.floor(slot / 360);
   // both met every goal today: at dusk they meet on the front bench, side by side (each phone sends its own villager)
   if (w.phase === 'day' && hour >= MEET_HOURS[0] && hour < MEET_HOURS[1] && slot % MEET_EVERY === 0 && nobodyOut && free('A') && free('B') && w.scores.A >= 100 && w.scores.B >= 100) {
     const go = (node: string): VillagerBeat => ({ kind: 'outing', stops: [{ node, linger: MEET_LINGER }], together: true });
-    return { A: go('seatMaeL'), B: go('seatMaeR') };
+    // the guest joins them, standing at the nearest spot to the bench that isn't a seat
+    const by = guest && free('G') ? nearBench(w.pois) : null;
+    return { A: go('seatMaeL'), B: go('seatMaeR'), ...(by ? { G: go(by) } : {}) };
   }
   const goers = PEOPLE.filter((p) => free(p) && !w.villagers[p].present && nobodyOut);
   if (goers.length && o < OUTING_ODDS) {
-    const p = goers.length === 2 ? who : goers[0];
+    // (the guest's turn: a member's outing all the same, theirs never: its villager is always present)
+    const p = goers.find((g) => g === who) ?? goers[slot % goers.length];
     const special = r();
     // the evening: to the campfire's stool; an exercise day: a pull-up at the bar
     if (w.phase === 'evening' && special < FIRE_ODDS) return { [p]: { kind: 'outing', stops: [{ node: p === 'A' ? 'stoolW' : 'stoolE', linger: between(r, FIRE_LINGER) }] } };
@@ -272,27 +283,44 @@ export function villagerBeats(w: AmbientWorld, date: LocalDate, slot: number): P
     if (beat) return { [p]: beat };
   }
   if (!free(who) || !first) return {};
-  const mate = other(who);
+  // a pair's other: the other member, or with the guest here one of the other two
+  const mates = everyone.filter((p) => p !== who);
+  const mate = mates.length === 1 ? mates[0] : mates[Math.floor(r() * mates.length)];
   const pairOk = free(mate);
   const low = Math.min(w.scores.A, w.scores.B);
   const at = Math.floor(r() * IDLE_AT_MAX);
-  if (pairOk && low >= 80 && r() < DANCE_BOOST) return both('dance', who, at);
-  const no = recent(date, slot, who, w.phase);
-  const allowed = (e: PoolEntry) => !no.has(e.action) && (!e.pair || pairOk) && (e.action !== 'dance' || low >= 70);
+  if (pairOk && low >= 80 && r() < DANCE_BOOST) return both('dance', who, mate, at);
+  const no = recent(date, slot, who, w.phase, guest);
+  // (the guest has no tree of its own to shake)
+  const allowed = (e: PoolEntry) => !no.has(e.action) && (!e.pair || pairOk) && (e.action !== 'dance' || low >= 70) && !(who === 'G' && e.action === 'treeshake');
   const e = allowed(first) ? first : pickEntry(pool.filter(allowed), r);
   if (!e) return {};
-  if (e.action === 'dance') return both('dance', who, at);
-  if (e.action === 'chat') return both('chat', who, at);
+  if (e.action === 'dance') return both('dance', who, mate, at);
+  if (e.action === 'chat') return both('chat', who, mate, at);
   return { [who]: { kind: 'idle', action: e.action as IdleMove, at } };
 }
 
 /** The nodes only their own beats go to (the far stools, the bar, the pond bench). */
 const SPECIAL = new Set(['stoolW', 'stoolE', 'pullup', 'seatPondL', 'seatPondR']);
 
-const both = (action: 'chat' | 'dance', who: Who, at: number): Partial<Record<Who, VillagerBeat>> => ({
-  [who]: { kind: 'pair', action, with: other(who), lead: true, at },
-  [other(who)]: { kind: 'pair', action, with: who, lead: false, at }
+const both = (action: 'chat' | 'dance', who: Islander, mate: Islander, at: number): Partial<Record<Islander, VillagerBeat>> => ({
+  [who]: { kind: 'pair', action, with: mate, lead: true, at },
+  [mate]: { kind: 'pair', action, with: who, lead: false, at }
 });
+
+/** The guest's spot at the dusk meet-up: the point of interest nearest the front bench's two seats that isn't a seat
+ *  or one of the special nodes (null: no bench). */
+function nearBench(pois: readonly Poi[]): string | null {
+  const l = pois.find((p) => p.node === 'seatMaeL'), r = pois.find((p) => p.node === 'seatMaeR');
+  if (!l || !r) return null;
+  const mid: Pt = [(l.at[0] + r.at[0]) >> 1, (l.at[1] + r.at[1]) >> 1];
+  let best: Poi | null = null;
+  for (const p of pois) {
+    if (isSeat(p.node) || SPECIAL.has(p.node)) continue;
+    if (!best || d2(p.at, mid) < d2(best.at, mid) || (d2(p.at, mid) === d2(best.at, mid) && p.node < best.node)) best = p;
+  }
+  return best?.node ?? null;
+}
 
 // ---------- the critters ----------
 

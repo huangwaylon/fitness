@@ -132,7 +132,7 @@ refuses its other intents. Why: the user ("more of a guest… they don't contrib
 data… can modify the tent room"); a third member would have meant N people through the whole economy (the trees, the
 week's ベル, ふたりでぜんぶ, the goals), and a privacy rule only the UI kept would leak through the cache. The protocol
 went to v3 beside v2 (relay first), so a phone not yet updated plays on without hearing of the guest. Not done: more
-than one guest; the guest's villager in the members' ambient life (it moves only by its own phone).
+than one guest. (Its villager joined the island's life on 2026-11-06.)
 
 ### The guest plays the island as a member does (2026-11-06)
 (Amends *A guest, not a third member*.) Nothing on the island is the members' alone: the guest arranges the outdoors
@@ -150,6 +150,17 @@ should be treated equally; the only thing the guest can't see is the からだ i
 rules changed first (`guestMayWrite`, `scopeMayWrite` / `scopeMaySend`, `boardMayWrite`, `listenSeen`;
 `guestMaySend` is gone: the room takes from the guest what it takes from anyone), the relay deployed before the
 phones offered it.
+
+### The guest's villager in the island's life; the rest stays the members' (2026-11-06)
+(Amends *A guest, not a third member* and *The guest plays the island as a member does*.) The user went through what
+was left members-only. Kept the members' by the user's choice (2026-11-06): ごほうび's buy and erase, the weekly
+harvest, the members' activity and food goals and their profiles, the Health ingest and the uploads audit, a trip's
+notes, editing others' packing items, and the wedding board. Included: the guest's villager joins the island's life
+while its app is open, as a member's villager with the island open: ambient life's small moves, chats and dances
+(`ambient.ts`: a slot's turn a third each, a pair with any two, the same on every phone from the relay's presence),
+ふたりでぜんぶ's walk to the middle and high-five, the dusk meet-up beside the bench, group stretching, and on its own
+phone a member's villager following it. Still none of its own outings (its person may tap it any moment), and it
+shows only while its app is open. No relay or contract change: each phone decides from the presence it already has.
 
 ### No notifications (2026-11-02)
 (Replaces *One notification: the partner met every goal*.) The app sends no notification of any kind: せってい's つうち
