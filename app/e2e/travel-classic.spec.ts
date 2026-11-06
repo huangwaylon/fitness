@@ -104,9 +104,9 @@ test('Seattle: two tabs, its days closed, a hike’s card in the guide’s Engli
   await expect(hike.locator('.stat .v').first()).toHaveText('9.8 km');
   // the trail map: トレイル's own Lake 22 in the app (over the guide), ✕ back to the guide
   await hike.locator('[data-trail-open="lake-22"]').click();
-  await expect(page.locator('dialog[open][data-hiking] [data-trail-view="lake-22"]')).toBeVisible();
-  await page.locator('dialog[open][data-hiking] .x .nav').click();
-  await expect(page.locator('dialog[open][data-hiking]')).toHaveCount(0);
+  await expect(page.locator('dialog[open] [data-hiking] [data-trail-view="lake-22"]')).toBeVisible();
+  await page.locator('dialog[open] [data-hiking] .nav.close:visible').click();
+  await expect(page.locator('dialog[open] [data-hiking]')).toHaveCount(0);
   await expect(hike).toBeVisible();
   // 持ち物: frozen
   await tab(page, 'packing').click();

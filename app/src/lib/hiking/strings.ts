@@ -1,16 +1,18 @@
-// トレイル's chrome strings and formats (docs/hiking.md): the hiking app's own words (its i18n.js), kept as pairs beside
-// the data like the guides' text (not the island's catalogs: this screen keeps the Alpine Field Guide's look and
-// voice, docs/hiking.md "Design"), shown in the reader's locale. Distances and heights follow the phone's km / mi
+// トレイル's chrome strings and formats (docs/hiking.md): pairs beside the data like the guides' text (its own chunk, not
+// the island's catalogs), in normal Japanese with kanji like every sheet, shown in the reader's locale. Distances and heights follow the phone's km / mi
 // switch (travel/units.ts); times, seasons and dates the locale.
 import type { Locale } from '#lib/i18n/index.ts';
 import type { Diff, Dogs, L, Route } from './types.ts';
 
 export const S = {
   title: { ja: '梅ちゃんのトレイル', en: "Ume-chan's Trails" },
-  tagline: { ja: '山と渓谷の道しるべ', en: 'Field guide' },
   all: { ja: 'すべて', en: 'All' },
-  sortDist: { ja: '距離', en: 'Distance' },
-  sortGain: { ja: '標高', en: 'Elevation' },
+  sortDist: { ja: '距離順', en: 'By distance' },
+  sortGain: { ja: '標高差順', en: 'By gain' },
+  statDist: { ja: '距離', en: 'Distance' },
+  statGain: { ja: '標高差', en: 'Gain' },
+  statTime: { ja: '時間', en: 'Time' },
+  statDiff: { ja: '難易度', en: 'Level' },
   filterBar: { ja: 'コースの絞り込みと並べ替え', en: 'Filter and sort trails' },
   elevation: { ja: '標高グラフ', en: 'Elevation' },
   scrub: { ja: 'ドラッグでコース上の標高を確認', en: 'Drag to inspect elevation along the trail' },
@@ -41,17 +43,17 @@ export const S = {
   zoomOut: { ja: '縮小', en: 'Zoom out' },
   locate: { ja: '現在地', en: 'My location' },
   locDenied: { ja: '位置情報がオフです。設定 → プライバシーとセキュリティ → 位置情報サービス → Safari で許可してください。', en: 'Location is off. Allow it in Settings → Privacy & Security → Location Services → Safari.' },
-  trackFailed: { ja: 'このコースの地図データを読み込めませんでした。通信を確認して開き直してください。', en: "Couldn't load this trail's map data — reconnect and reopen to try again." },
+  trackFailed: { ja: 'このコースの地図データを読み込めませんでした。', en: "Couldn't load this trail's map data." },
   mapFailed: { ja: '地図を読み込めませんでした', en: "The map didn't load" },
-  mapOffline: { ja: '地図はオフライン — コースだけ表示', en: 'Map offline — the trail only' },
-  retry: { ja: 'もういちど', en: 'Try again' },
-  locked: { ja: 'オンラインで ひらくと みえます', en: 'Shows when opened online' }
+  mapOffline: { ja: '地図はオフラインです（コースのみ表示）', en: 'Map offline: the trail only' },
+  retry: { ja: 'もう一度', en: 'Try again' },
+  locked: { ja: 'オンラインで開くと表示されます', en: 'Shows when opened online' }
 } satisfies Record<string, Required<L>>;
 
 export const DIFF: Record<Diff, Required<L>> = {
   moderate: { ja: '中級', en: 'Moderate' },
   hard: { ja: '上級', en: 'Hard' },
-  veryhard: { ja: '超上級', en: 'Very Hard' }
+  veryhard: { ja: '最上級', en: 'Very hard' }
 };
 export const ROUTE: Record<Route, Required<L>> = { out: { ja: '往復', en: 'Out & back' }, loop: { ja: '周回', en: 'Loop' }, p2p: { ja: '縦走', en: 'Point to point' } };
 export const DOGS: Record<Dogs, Required<L>> = { leashed: { ja: 'リード必須', en: 'Leashed' }, no: { ja: '不可', en: 'Not allowed' } };

@@ -25,8 +25,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 - No tab bar: 島 (the island), the health popup (tap the dumbbell: けんこう), the meal log (tap the bowl: ごはん), and
   behind the HUD menu's leaf the one panel for the ベル (its 「ベル 121」 row: ごほうび, no tabs), the ずかん, えいご
-  ききとり (ききみみ クイズ), りょこう ([Trips](#trips)), けっこんしき (the wedding board: [wedding.md](wedding.md)), トレイル (the hiking trails, in their own
-  look: [hiking.md](hiking.md)) and せってい, each its own sheet.
+  ききとり (ききみみ クイズ), りょこう ([Trips](#trips)), けっこんしき (the wedding board: [wedding.md](wedding.md)), トレイル (the hiking trails:
+  [hiking.md](hiking.md)) and せってい, each its own sheet.
 - One focal point per screen (島: the island itself, the sky clean, the leaf the door to the rest; ごほうび: the
   balance, today's ベル under it).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.

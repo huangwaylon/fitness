@@ -12,7 +12,7 @@ export const hudBells = (page: Page) => page.locator('[data-hud-bells]');
 
 const PILL = { bells: '[data-hud-bells]', zukan: '[data-hud-zukan]', kikimimi: '[data-hud-kikimimi]', travel: '[data-hud-travel]', wedding: '[data-hud-wedding]', hiking: '[data-hud-hiking]', settings: '[data-hud-settings]' };
 const SHEET = {
-  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', kikimimi: 'dialog[open] [data-kikimimi]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open][data-hiking]', settings: 'dialog[open] [data-settings]'
+  bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', kikimimi: 'dialog[open] [data-kikimimi]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open] [data-hiking]', settings: 'dialog[open] [data-settings]'
 };
 
 /** Unfold the menu (if folded) and wait for its pills to be shown (HudMenu shows them at once; the poll guards a

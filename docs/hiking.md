@@ -1,8 +1,9 @@
 # トレイル (hiking trails)
 
 The hiking-trails app (`~/Documents/other/hiking-trails`, "Ume-chan's Trails") ported into the island: ten trails (eight
-in Washington State, two in Japan) on topo maps, with a scrubbable elevation chart and Kinpu's YAMAP plan. It keeps that
-app's own look (the Alpine Field Guide), not the island's NH skin.
+in Washington State, two in Japan) on topo maps, with a scrubbable elevation chart and Kinpu's YAMAP plan. Drawn on the
+unified kit like りょこう and けっこんしき (design.md "Unified kit", 2026-11-07): the app's paper, cards and tokens; one
+list, no tab bar.
 
 ## Decisions (the user, 2026-11-06)
 
@@ -38,22 +39,25 @@ pairs and formats), `track.ts` (pure), `load.ts`.
 ## Map
 
 `components/hiking/TrailMap.svelte` (light) and `map/engine.ts` (MapLibre, which shares the trip map's chunk: never
-precached; its worker is our own file). `map/style.ts` `TOPO` holds the region's raster under the overlays, drawn in the
-old app's colours: the track red on a white halo, the trailhead green, the end red, the waypoints amber, the scrub's dot
-violet, the location dot blue. The CSP's `connect-src` names `basemap.nationalmap.gov` and `cyberjapandata.gsi.go.jp`:
+precached; its worker is our own file). `map/style.ts` `TOPO` holds the region's raster under the overlays, in literal
+copies of app tokens (`C`): the track `--c-coral-text` on a cream halo, the trailhead `--c-leaf-edge`, the end coral,
+the waypoints `--c-yuzu-lip`, the scrub's dot a darker lilac (#8A6FD6), the location dot `--c-sky`. The CSP's `connect-src` names `basemap.nationalmap.gov` and `cyberjapandata.gsi.go.jp`:
 MapLibre fetches the tiles and decodes them from `blob:`, which `img-src` already allows. Zoom runs from 9 to each
 source's own ceiling (USGS 16, GSI 18). Tiles that don't come show the track alone with a note; offline before the
 chunk is cached, a retry. Under drawOff() (the e2e's logic tier) a stub draws the track and the dot as SVG.
 
 ## Screens
 
-- **The list:** the header with the contour drawing; the chips (すべて 中級 上級 超上級 | 距離 標高, a sort toggles off
-  on a second tap); a photo card per trail. ✕ at the top right on both levels.
-- **A trail:** the map full screen, with ‹, zoom and locate. The location dot appears only after the locate button,
-  through the trip map's `LocWatch` (the position never leaves the phone). The bottom sheet's peek is tall enough for
-  the whole elevation chart; drag or tap it up to 90 %, and Esc folds it back. The body: the chart (press shows the
-  readout and the map's dot, drag moves them, let go and they stay, tap again to clear), Kinpu's plan card, 概要,
-  コース紹介, tips, 詳細情報, credits.
+- **The list:** NavBar s (✕); one ChipRow: すべて 中級 上級 最上級 with their counts, then 距離順 標高差順 (a sort is off
+  again on a second tap); a dense card per trail: a 120px PhotoBand (the level's sticker: leaf, yuzu, coral; the name
+  and area) over a StatStrip (距離 · 標高差 · 時間, `stats.ts`).
+- **A trail:** the map full screen under NavBar s `over` (‹ ✕ on smoked discs), zoom and locate in the same disc (locate
+  sky while on). The location dot appears only after the locate button, through the trip map's `LocWatch` (the position
+  never leaves the phone). The drag-up sheet on the paper: the grip, the peek (the name, a StatStrip with 難易度) tall
+  enough for the whole elevation chart; drag or tap it up to 90 %, and Esc folds it back. The body, dense cards: the
+  chart (press shows the readout and the map's dot, drag moves them, let go and they stay, tap again to clear; the line
+  coral over a leaf area, waypoints dashed yuzu), Kinpu's plan card, 概要, コース紹介, the tips (a check per row), 詳細情報
+  (`.row.kv`), credits.
 - Units follow the phone's km / mi switch (`travel/units.ts`, set under りょこう's list); the language the reader's locale.
 
 ## Later / left out

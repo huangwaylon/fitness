@@ -1,7 +1,7 @@
 <script lang="ts">
-  // A trail's elevation chart (the hiking app's #elev-card): the smoothed profile as a pine area, the waypoints as
-  // dashed amber lines, the range in the corner. Scrubbable: a press shows the readout (elevation and distance along)
-  // with a violet dot that the map's dot follows; a drag moves it; let go and it stays; a tap while one is held clears
+  // A trail's elevation chart on a dense card: the smoothed profile (the track's coral line over a leaf area), the
+  // waypoints as dashed yuzu lines, the range in the corner. Scrubbable: a press shows the readout (elevation and
+  // distance along) with the scrub's violet dot that the map's dot follows; a drag moves it; let go and it stays; a tap while one is held clears
   // it. `held` is the inspected distance (m) or null.
   import { PROF, pointAt, profilePaths, profileY, scrubDistance, type Prepared } from '#lib/hiking/track.ts';
   import { S } from '#lib/hiking/strings.ts';
@@ -64,18 +64,17 @@
   });
 </script>
 
-<div class="elev" bind:this={card} data-elev data-held={held === null ? '' : Math.round(held)}>
+<div class="card dense elev" bind:this={card} data-elev data-held={held === null ? '' : Math.round(held)}>
   <div class="hd"><span class="t">{pick(S.elevation, i18n.locale)}</span><span class="r" data-elev-range>{range}</span></div>
   <div class="plot" bind:clientWidth={w}>
     <svg bind:this={svg} viewBox="0 0 {w} {PROF.h}" preserveAspectRatio="none" role="img" aria-label={pick(S.scrub, i18n.locale)}
       onpointerdown={down} onpointermove={move} onpointerup={up} onpointercancel={up}>
-      <defs><linearGradient id="hk-eg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1f6f5c" stop-opacity=".28" /><stop offset="100%" stop-color="#1f6f5c" stop-opacity=".03" /></linearGradient></defs>
-      {#each prep.wpts as wp, i (i)}<line x1={x(wp.d)} y1="4" x2={x(wp.d)} y2={PROF.h} stroke={C.wpt} stroke-width="1" stroke-dasharray="3,3" opacity=".6" />{/each}
-      <path d={paths.area} fill="url(#hk-eg)" />
-      <path d={paths.line} fill="none" stroke="#1f6f5c" stroke-width="1.75" />
+      {#each prep.wpts as wp, i (i)}<line class="wpt" x1={x(wp.d)} y1="4" x2={x(wp.d)} y2={PROF.h} />{/each}
+      <path class="area" d={paths.area} />
+      <path class="line" d={paths.line} />
       {#if at}
-        <line x1={x(at.d)} y1="0" x2={x(at.d)} y2={PROF.h} stroke="#16231d" stroke-opacity=".5" stroke-width="1.5" stroke-dasharray="4,3" />
-        <circle cx={x(at.d)} cy={profileY(prep, at.ele)} r="4.5" fill={C.scrub} stroke="#fff" stroke-width="2" />
+        <line class="at" x1={x(at.d)} y1="0" x2={x(at.d)} y2={PROF.h} />
+        <circle cx={x(at.d)} cy={profileY(prep, at.ele)} r="4.5" fill={C.scrub} class="dot" />
       {/if}
     </svg>
   </div>
@@ -85,18 +84,24 @@
 </div>
 
 <style>
-  .elev {
-    position: relative; background: var(--surface-2); border: 1px solid var(--line-2); border-radius: 16px; padding: 13px 12px 8px; margin-bottom: 20px;
+  .card.elev {
+    flex: none; padding: 10px 12px 8px; overflow: visible;
     /* a press-drag surface: never a text selection or the callout */
     -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
   }
-  .hd { display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px 8px; }
-  .t { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-  .r { font-size: 12px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+  .hd { display: flex; justify-content: space-between; align-items: baseline; padding: 0 2px 6px; }
+  .t { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .r { font: 600 var(--fs-s)/1.2 var(--font-num); color: var(--text); }
   svg { display: block; width: 100%; height: 96px; touch-action: none; cursor: crosshair; }
+  .wpt { stroke: var(--c-yuzu-lip); stroke-width: 1; stroke-dasharray: 3 3; }
+  .area { fill: color-mix(in srgb, var(--c-leaf) 20%, transparent); }
+  .line { fill: none; stroke: var(--c-coral-text); stroke-width: 2; stroke-linejoin: round; }
+  .at { stroke: var(--text); stroke-opacity: .5; stroke-width: 1.5; stroke-dasharray: 4 3; }
+  .dot { stroke: var(--c-card); stroke-width: 2; }
   .tip {
-    position: absolute; top: 10px; left: 0; transform: translateX(-50%); z-index: 5; pointer-events: none; white-space: nowrap;
-    background: var(--ink); border-radius: 9px; padding: 5px 10px; font-size: 12px; font-weight: 800; color: #fff; box-shadow: var(--sh-pop); font-variant-numeric: tabular-nums;
+    position: absolute; top: 8px; left: 0; transform: translateX(-50%); z-index: 5; pointer-events: none; white-space: nowrap;
+    background: var(--c-ink); color: var(--c-cream); border-radius: var(--r-chip); padding: 5px 10px; box-shadow: var(--sh-float);
+    font: 600 var(--fs-s)/1.2 var(--font-num);
   }
-  .d { color: rgba(255, 255, 255, .62); font-weight: 600; margin-left: 6px; }
+  .d { opacity: .7; margin-left: 6px; }
 </style>
