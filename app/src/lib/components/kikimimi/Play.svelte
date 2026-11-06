@@ -14,6 +14,9 @@
   // A staged item (level 4: a scene, or a phone, PA or video call) shows the scene card instead of the plain stage from
   // the lead-in to the reveal (scene/SceneCard.svelte); at the reveal the English carries its sound marks and the karaoke
   // as it replays (scene/SoundLine.svelte), the marks' key under it.
+  // The Japanese help (docs/kikimimi.md "Japanese help"), each where the item has it: the situation (`ctx`) under the
+  // speaker until the reveal; at the reveal each choice's Japanese (`cja`) under it and 解説 (`why`, frame/Why.svelte)
+  // under the verdict.
   // A スピード はしご rung: the ladder over the stage (its four speeds as rising steps: climbed, this one, ahead, or
   // stopped), the question in Japanese (rung 4: the line with its chunk blanked); at a rung's reveal whether it climbed
   // (right on the first listen, every rung under it climbed: +100), and below the top no line and no replay (the next
@@ -28,6 +31,7 @@
   import Verdict from './Verdict.svelte';
   import RoundFrame from './frame/RoundFrame.svelte';
   import ChoiceGrid from './frame/ChoiceGrid.svelte';
+  import Why from './frame/Why.svelte';
   import ClipBar from './scene/ClipBar.svelte';
   import SceneCard from './scene/SceneCard.svelte';
   import SoundLine from './scene/SoundLine.svelte';
@@ -100,6 +104,7 @@
   {:else}{@render body()}{/if}
 {/snippet}
 {#snippet note()}<p class="note" data-kiki-note>{it?.note}</p>{/snippet}
+{#snippet situation()}{#if it?.ctx && !reveal}<p class="ctx" data-kiki-ctx>{it.ctx}</p>{/if}{/snippet}
 {#snippet listening()}<p class="notes"><span aria-hidden="true">♪…</span><span class="sr-only">{t('kiki.listen')}</span></p>{/snippet}
 
 {#snippet hearRow()}
@@ -126,6 +131,7 @@
   {#if card}
     <div class="staged" data-kiki-card>
       <SceneCard {it} {talker} {bar} now={game.now} pop={v.phase === 'lead'} {name} />
+      {@render situation()}
       {@render hearRow()}
     </div>
   {:else}
@@ -168,6 +174,7 @@
           <ClipBar {bar} now={game.now} height={8} />
         {/if}
       </div>
+      {@render situation()}
       {@render hearRow()}
     </div>
   {/if}
@@ -182,10 +189,11 @@
     {/if}
   {:else}
     <Verdict {it} out={v.out} {right} picked={!!mine} replayed={!!mine?.rp} same={v.same} {rs} {climbed} {coop} rightNow={v.rightNow} plain={v.gm === 'check'} />
+    {#if it.why}<Why text={it.why} />{/if}
   {/if}
 
   <ChoiceGrid choices={it.choices} right={it.answer} pics={it.type === 'pic'} label={it.type === 'pic' ? (c) => PIC_JA[c] ?? '' : undefined}
-    english={!(it.type === 'num' || (it.rung && it.type !== 'word'))} {open} {reveal} dim={!open && !reveal && !mine} picked={mine?.k ?? null}
+    english={!(it.type === 'num' || (it.rung && it.type !== 'word'))} ja={it.type === 'pic' ? undefined : it.cja} {open} {reveal} dim={!open && !reveal && !mine} picked={mine?.k ?? null}
     onlyMarked={reveal && !!dlg} onpick={(k) => game.answer(k)} />
 {/snippet}
 
@@ -244,6 +252,8 @@
   /* 🔁 🐢 in one row under the speaker and the bubble, centred, small; おなじへや's others: off, with why */
   .hear { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
   .hear .btn.small { flex: 0 1 auto; white-space: nowrap; }
+  /* the situation, under the speaker: quiet, one line */
+  .ctx { grid-column: 1 / -1; margin: 0; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .hint { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
 
   /* スピード はしご: which ladder, and its four speeds as steps (LadderSteps) */

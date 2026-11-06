@@ -180,40 +180,40 @@
   </button>
   {#if !open}{@render plus()}{/if}
   <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open}>
-    <button type="button" class="item bells" style="--i: 0" data-hud-bells data-bells={bells} data-today={today} aria-haspopup="dialog" aria-expanded={expanded}
+    <button type="button" class="item bells" data-hud-bells data-bells={bells} data-today={today} aria-haspopup="dialog" aria-expanded={expanded}
       aria-label={t('island.bells', { bells: formatBells(bells), today: formatBells(today) })} data-sfx="self" onclick={(e) => pick(e, onbells)}>
       <span class="lbl" aria-hidden="true">{t('island.bellsRow')}</span>
       <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
       {#if open}{@render plus()}{/if}
     </button>
-    <button type="button" class="item" style="--i: 1" data-hud-zukan aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onzukan)}>
+    <button type="button" class="item" data-hud-zukan aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onzukan)}>
       <span class="lbl">{t('zukan.title')}</span>
       <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={30} eager /></span>
     </button>
     <!-- the voice session begins in the tap itself (iOS: the clips play with the silent switch on), the sheet after the beat -->
-    <button type="button" class="item" style="--i: 2" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self"
+    <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self"
       onclick={(e) => (wakeQuizVoice(), pick(e, () => openQuiz()))}>
       <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{:else}<small class="sub">{t('panel.kikimimiSub')}</small>{/if}</span>
       <span class="ic"><Host head size={30} animate={false} eager /></span>
     </button>
     <!-- りょこう: the trips (Orville's head on the pill only) -->
-    <button type="button" class="item" style="--i: 3" data-hud-travel aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => trips.show())}>
+    <button type="button" class="item" data-hud-travel aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => trips.show())}>
       <span class="lbl">{t('panel.travel')}</span>
       <span class="ic"><OfficialArt key="villagers/orville-icon" size={30} eager /></span>
     </button>
     <!-- けっこんしき: the wedding board (Harvey's head on the pill only) -->
-    <button type="button" class="item" style="--i: 4" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => weddingSheet.show())}>
+    <button type="button" class="item" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => weddingSheet.show())}>
       <span class="lbl">{t('panel.wedding')}</span>
       <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
     </button>
     <!-- トレイル: the hiking trails (no mountain in NH's art: drawn in the gear's soft brown, its snow cream) -->
-    <button type="button" class="item" style="--i: 5" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, openTrails)}>
+    <button type="button" class="item" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, openTrails)}>
       <span class="lbl">{t('panel.hiking')}</span>
       <span class="ic">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M1.8 20.2 8.6 8.4c.4-.7 1.4-.7 1.8 0l2.3 4 2.2-3.2c.4-.6 1.3-.6 1.7 0l5.6 8.4c.5.7 0 1.6-.8 1.6H2.7c-.8 0-1.3-.9-.9-1.6Z" /><path class="snow" d="M7.1 11 8.6 8.4c.4-.7 1.4-.7 1.8 0L12 11.2l-1.6 1-1-1.1-1 1.2Z" /></svg>
       </span>
     </button>
-    <button type="button" class="item" style="--i: 6" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
+    <button type="button" class="item" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
       <span class="ic">
         <!-- a gear in the say button's soft brown (no settings icon in NH's art) -->
@@ -253,28 +253,22 @@
 
   /* The pills: a column hanging under the toggle, right-aligned to its right edge (the screen's side: the sky under
      the cluster; the row's box, which the 3D island measures, stays the row: the column is out of flow), each a 44px
-     cream pill with the lip, its name and its icon (the ベル row: its name and its number). They drop out of the leaf
-     one after the other on a small spring (NH's bounce), and fold back up into it quicker, the last first; all as wide
-     as the longest (the name left, the icon or number right); folded they are hidden (visibility, after the fold). */
+     cream pill with the lip, its name and its icon (the ベル row: its name and its number). They show at once on a tap
+     (the user: the drop was too slow) and fold away in a quick fade; all as wide as the longest (the name left, the
+     icon or number right); folded they are hidden (visibility, after the fade). */
   .items {
     position: absolute; right: 0; top: calc(100% + 8px); display: grid; gap: 10px; width: max-content;
     pointer-events: none;
   }
   .item {
-    --n: 7;
     position: relative; display: flex; align-items: center; justify-content: space-between; gap: 10px; height: var(--hit); margin: 0; padding: 0 4px 0 14px;
     appearance: none; border: 0; border-radius: var(--r-pill); cursor: pointer; white-space: nowrap;
     background: var(--c-cream); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip), 0 6px 14px rgb(60 40 20 / .14);
     font: 700 var(--fs-body)/1 var(--font-ui); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
-    transform-origin: calc(100% - 22px) -30px;
-    opacity: 0; visibility: hidden; transform: translateY(calc(-14px - var(--i) * 40px)) scale(.4);
-    transition: transform 160ms var(--ease-squash) calc((var(--n) - 1 - var(--i)) * 30ms), opacity 120ms linear calc((var(--n) - 1 - var(--i)) * 30ms),
-      visibility 0s linear calc((var(--n) - 1) * 30ms + 160ms);
+    opacity: 0; visibility: hidden;
+    transition: opacity 100ms linear, visibility 0s linear 100ms;
   }
-  .open .item {
-    opacity: 1; visibility: visible; transform: none; pointer-events: auto;
-    transition: transform 380ms var(--ease-bounce) calc(var(--i) * 55ms), opacity 140ms linear calc(var(--i) * 55ms), visibility 0s;
-  }
+  .open .item { opacity: 1; visibility: visible; pointer-events: auto; transition: none; }
   .open .item:active { transform: translateY(2px) scale(.97); box-shadow: 0 2px 0 var(--c-lip); transition: transform 80ms var(--ease-squash), box-shadow 80ms; }
   .item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .lbl { letter-spacing: .02em; }
@@ -314,8 +308,6 @@
   /* reduced motion: no drop, no tip: the pills fade in and out where they stand, the flash only fades */
   @media (prefers-reduced-motion: reduce) {
     .leaf, .open .leaf { transform: none; transition: none; }
-    .item { transform: none; transition: opacity 120ms linear, visibility 0s linear 120ms; }
-    .open .item { transform: none; transition: opacity 120ms linear, visibility 0s; }
     .flash { animation-name: flash-still; }
     @keyframes flash-still { 0% { opacity: 0; } 10%, 70% { opacity: 1; } 100% { opacity: 0; } }
   }
