@@ -2,7 +2,7 @@
 // the same deck from the `open` intent's seed and level, so no text goes on the wire. It draws from the level's items as
 // loaded (pool.ts levelItems: the level's chunk must be in first, game.svelte.ts waits for it).
 import { mulberry32, shuffle } from '#lib/random.ts';
-import type { Item, ItemType, Level } from './bank.ts';
+import { shuffleChoices, type Item, type ItemType, type Level } from './bank.ts';
 import { drawn, mixFor, type Mixes } from './mix.ts';
 import { INDEX, levelItems } from './pool.ts';
 import { staleness } from './recent.ts';
@@ -61,9 +61,5 @@ export function deck(seed: number, lv: Level, all: Mixes = MIX, seen?: ReadonlyM
   const types = [...byType].flatMap(([t, items]) => items.map(() => t));
   for (let tries = 0; !runOk(shuffle(types, r)); tries++) if (tries > 1000) throw new Error(`kikimimi: no order for level ${lv}`);
   const next = new Map([...byType].map(([t, items]) => [t, items.values()]));
-  return types.map((t) => {
-    const it = next.get(t)!.next().value!;
-    const order = shuffle(it.choices.map((_, i) => i), r);
-    return { ...it, choices: order.map((i) => it.choices[i]), answer: order.indexOf(it.answer) };
-  });
+  return types.map((t) => shuffleChoices(next.get(t)!.next().value!, r));
 }

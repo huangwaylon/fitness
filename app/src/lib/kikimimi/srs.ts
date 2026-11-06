@@ -6,7 +6,7 @@
 import { mulberry32, shuffle } from '#lib/random.ts';
 import type { LocalDate } from '../types.ts';
 import type { Accent, Entry, Feature, Item, Level } from './bank.ts';
-import { levelRank } from './bank.ts';
+import { levelRank, shuffleChoices } from './bank.ts';
 import { ENTRIES, entryOf, itemOf } from './pool.ts';
 import { agesOf, staleness, type Recent } from './recent.ts';
 import { DECK_SIZE, inMix } from './deck.ts';
@@ -127,8 +127,7 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
     deal: (item) => shuffle(out, r).map((e) => {
       const it = item(e.id);
       if (!it) throw new Error(`kikimimi: ${e.id} isn't loaded`);
-      const order = shuffle(it.choices.map((_, i) => i), r);
-      return { ...it, choices: order.map((i) => it.choices[i]), answer: order.indexOf(it.answer) };
+      return shuffleChoices(it, r);
     })
   };
 }
