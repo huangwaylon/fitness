@@ -262,6 +262,12 @@ export function fromJson(j: unknown): Layout | null {
 export const newObjId = (at: number): string => `o${at.toString(36)}${Math.floor(Math.random() * 36 ** 3).toString(36).padStart(3, '0')}`;
 
 
+/** The 3D camera's middle across the island (u: its x at the default zoom, x-centred, the user's rule): its land box's
+ *  middle (the default island's 195), so it follows an edge moved in or out (the editor's しまの おおきさ: a lopsided
+ *  pull stays centred). */
+export const MID_X = 195;
+export const midXOf = (land: { x0: number; x1: number }): number => (land.x1 > land.x0 ? (land.x0 + land.x1) / 2 : MID_X);
+
 /** The island's extent (u), for the 3D camera and the ground (docs/island-layout.md "API for the 3D scene"): the
  *  grid's, the land's box, the front shoreline's z at the island's middle, and ウェイ's home's door (the camera's far
  *  stop, the campsite, as today). Read from the layout, never a constant: the island may grow. */

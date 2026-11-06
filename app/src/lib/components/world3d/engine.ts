@@ -31,6 +31,7 @@ import { releaseAll, resourcesOf } from './release.ts';
 import { frameRate } from '#lib/store/frameRate.svelte.ts';
 import { pacer } from './pace.ts';
 import { log } from '#lib/sync/log.ts';
+import { midXOf } from '#lib/layout/model.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -114,8 +115,6 @@ const SEA_X = 24;
 const X_RAMP = 0.3;
 /** Where the camera may look (the pivot's world z): the sea in front of まえ … the falls and the forest above the cliff. */
 const CAM_Z = { min: 30, max: 1000 } as const;
-/** The island's middle (the camera's x, always). */
-const MID_X = 195;
 /** The width the camera shows at the pivot at zoom 1 (u): the land is 470 (its beaches just off the sides). */
 const VIEW_W = 420;
 /** How far below the screen's middle the pivot sits (a share of the height). */
@@ -325,7 +324,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   };
   /** A focus (the bulletin board's: docs/decisions.md "The island in 3D"): the camera framing one thing, its own x,
    *  pitch, height and pivot drop, eased in (k 0 … 1) over the finger's camera. */
-  let camX = MID_X, fx = MID_X, fy = 0, fpitch = 0, fk = 0, fdrop = 0, drop = PIVOT_DROP;
+  /** The island's middle (the camera's x at the default zoom): its land's (model.ts midXOf), followed as it grows. */
+  const midX = () => midXOf(ground.land);
+  let camX = midX(), fx = camX, fy = 0, fpitch = 0, fk = 0, fdrop = 0, drop = PIVOT_DROP;
   function aim() {
     pitch = pitchAt(zoomK);
     if (fk > 0) pitch += (fpitch - pitch) * fk;
@@ -522,7 +523,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   }
   const clampX = (x: number, k = zoomK) => {
     const r = xRoom(k);
-    return Math.max(MID_X - r, Math.min(MID_X + r, x));
+    const m = midX();
+    return Math.max(m - r, Math.min(m + r, x));
   };
   function pan(dy: number, dx = 0) {
     lastInput = now();
@@ -1006,6 +1008,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       lim.min = min;
       lim.max = Math.max(min, max);
       camZ = rawZ = Math.max(lim.min, Math.min(lim.max, camZ));
+      // (the ends follow a layout change: the island's middle across too, its land's)
+      camX = clampX(camX);
       aim();
       activity();
     },

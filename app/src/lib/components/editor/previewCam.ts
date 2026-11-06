@@ -1,8 +1,11 @@
 // The editor's 3D preview's camera moves (editor/Preview3D.svelte): a pan kept over the island, the phone view's
 // drag and zoom. Pure (no three.js): the tests' too.
 
-/** The phone view's middle across the island (engine.ts MID_X): where it starts and where ⌖ puts it back. */
-export const MID_X = 195;
+import { MID_X, midXOf } from '#lib/layout/model.ts';
+
+/** The phone view's middle across the island (engine.ts's: model.ts midXOf, its land's): where it starts and where ⌖
+ *  puts it back. */
+export const midX = (e: { land: { x0: number; x1: number } }): number => midXOf(e.land);
 /** The phone view's spot along the island (world z of its pivot) and its zoom, kept within these. */
 export const Z_MIN = -60, Z_MAX = 1260;
 export const ZOOM_MIN = 0.6, ZOOM_MAX = 3;

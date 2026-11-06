@@ -763,6 +763,21 @@ as long.
 20 × 60 tiles (the user: first 92, then 60): today's まえ in front, today's おく behind, and a new middle between them for the homes and what comes
 next. Why: the user, for room to build; the width (and so the camera's rules: vertical scroll, x centred) unchanged.
 
+### The island's size is the editor's: edges a tile at a time, the back up to 19 more rows (2026-11-06)
+The grid is 20 × 80 (20 rows of sea behind the island, no visual change: an all-sea band of chunks has no bake or
+mesh), and the editor's しまの おおきさ moves an edge (まえ / おく / ひだり / みぎ) out or in a tile per click: the outermost
+land tile of each line moves and the one it leaves takes the inner tile's ground (a river's mouth runs on, a river
+along the coast isn't doubled), so a push then a pull gives the island back (`layout/resize.ts`). The land keeps two
+tiles of sea round it on the grid: today the back can grow 19 rows (15 × 57 → 15 × 76), the front and the west not at
+all, the east a tile; any edge pulls in down to 6 tiles. A resize is one undoable action of `c` ops (and `o` moves),
+so the record and the relay needed nothing (the contract already allowed chunks to c15x15). What's in the way is
+listed (a click selects it) and 「うごかす」 moves it inside (resolve.ts clearTile); a fixed piece (a home, the museum,
+the shop, K.K.'s stool, the board, a goal tree) is moved, never deleted, and one with nowhere near to go holds the
+resize. The camera's middle across is the land box's middle (model.ts midXOf: still x-centred, now on the land as it
+is). Why: the user chose "Longer + reshape" (room to build at the back, the shape theirs); the width stays the grid's,
+so the camera's rules are unchanged. Rejected: a wider grid (the x-centred camera shows 420u across), separate masks
+(each tile already holds its kind and tier), a relay or contract change (none needed).
+
 ### The tent's surfaces are NH's flag, their tops the model's geometry (2026-11-02)
 Which pieces hold things and which things go on them are the ACNH spreadsheet's (`surface`; the Miscellaneous sheet),
 the same data NH's community took from the game; nothing is added by hand (a flat-looking piece NH doesn't flag holds

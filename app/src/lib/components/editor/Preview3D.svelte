@@ -185,7 +185,7 @@
         let m: 'orbit' | 'phone' = mode;
         const PITCH = (58 * Math.PI) / 180;
         /** The phone view's camera: its spot along the island (camZ), across it, and its zoom. */
-        let camX = C.MID_X, zoom = 1, D = 1700;
+        let camX = C.midX(extentOf(cur)), zoom = 1, D = 1700;
         const bounds = () => C.panBounds(extentOf(cur));
         function aim() {
           if (m === 'orbit') {
@@ -363,7 +363,7 @@
               controls.reset();
             }
             else {
-              camX = C.MID_X;
+              camX = C.midX(extentOf(cur));
               zoom = 1;
               camZ = camZ0;
               aim();

@@ -7,7 +7,7 @@
 // sea from the island's middle). Without a layout (the old fixed island) the one stretch is SEA_SWIM. Engine-proof:
 // integer tiles, the diamond angle (no trig), squared distances.
 import { GRID, TILE, onGrid, tileMid, tileX } from '#lib/layout/grid.ts';
-import { extentOf, type Layout } from '#lib/layout/model.ts';
+import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
 import { SEA_SWIM, type Swim } from './critters.ts';
 import { layoutNav, worldGen } from './world.ts';
 
@@ -18,9 +18,9 @@ export const COAST_U = 450;
 const BAND = 3;
 /** How far round the grid the sea is looked at (tiles: off the grid is sea). */
 const MARGIN = BAND + 1;
-/** The 3D camera's middle and how far past the land it shows sideways (u: world3d/engine.ts MID_X, SEA_X; zoomed in,
- *  panned to the side). */
-const MID_X = 195, SEA_X = 24;
+/** How far past the land the 3D camera shows sideways (u: world3d/engine.ts SEA_X; zoomed in, panned to the side),
+ *  either side of its middle (model.ts midXOf: the land's). */
+const SEA_X = 24;
 const SIDES = [[1, 0], [-1, 0], [0, 1], [0, -1]] as const;
 
 export interface Coast {
@@ -94,8 +94,8 @@ function cut(l: Layout): Coast[] {
     }
   if (!shore.length) return [];
   // the band: the sea within BAND tiles of the shore that the camera can show (at least half a tile of it, sideways)
-  const land = extentOf(l).land, half = (land.x1 - land.x0) / 2 + SEA_X;
-  const shown = (c: number) => Math.min(tileX(c + 1), MID_X + half) - Math.max(tileX(c), MID_X - half) >= TILE / 2;
+  const land = extentOf(l).land, half = (land.x1 - land.x0) / 2 + SEA_X, mid = midXOf(land);
+  const shown = (c: number) => Math.min(tileX(c + 1), mid + half) - Math.max(tileX(c), mid - half) >= TILE / 2;
   const band: [number, number][] = [];
   for (let r = -MARGIN; r < GRID.rows + MARGIN; r++)
     for (let c = -MARGIN; c < GRID.cols + MARGIN; c++) {
