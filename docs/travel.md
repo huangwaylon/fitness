@@ -15,8 +15,9 @@ iPhone 15 / 16 Safari. Branch `travel` (worktree `.claude/worktrees/travel`); th
   readable by **all three keys** (the guest too).
 - Entry: a 「りょこう」 pill in the leaf menu (Dodo Airlines flavour: Orville / Wilbur, the airport art).
 - A km / mi switch, per device.
-- Real maps replace the generated SVG: MapLibre GL JS drawing OpenStreetMap vector tiles from OpenFreeMap, online
-  only, our own NookPhone-style theme. A "you are here" dot (geolocation for our origin only; the position never leaves
+- Real maps replace the generated SVG: MapLibre GL JS drawing OpenStreetMap vector tiles, our own NookPhone-style
+  theme. The tiles from OpenFreeMap's public servers, online only (the user, 2026-11-06: no download, no self-hosting
+  for now). A "you are here" dot (geolocation for our origin only; the position never leaves
   the phone). No terrain shading.
 - Past trips download nothing ahead of time (no offline maps, no photo prefetch).
 - No ベル / economy tie-in.
@@ -130,22 +131,57 @@ Business addresses and phone numbers (the Evertrail office, Dive Nuts) are publi
 
 ## Maps
 
-- **Renderer:** `maplibre-gl` (devDependency, its CSP build: `setWorkerUrl` with the worker file served from
-  `_app/immutable`, no `blob:` worker), loaded in the trip map's lazy chunk only.
-- **Data:** OpenFreeMap's public vector tiles (OpenMapTiles schema, OpenStreetMap data; TileJSON
-  `https://tiles.openfreemap.org/planet`, z0–14, overzoomed past 14), its glyphs and sprite: one host,
-  `tiles.openfreemap.org`, the one third party the phones contact (it sees the IP and the area viewed; no trip data
-  goes there). **Online only** (the user, 2026-11-06): nothing downloaded ahead of time, only the browser's own cache.
-  Attribution shown: OpenFreeMap, © OpenMapTiles, © OpenStreetMap. The source sits in one module so self-hosting
-  (Protomaps on R2, researched 2026-11-06) stays a swap.
-- **Style:** our own NookPhone theme on the OpenMapTiles layers: soft sea blue, land cream / soft green, roads pale,
-  labels in Zen Maru Gothic via `localIdeographFontFamily` for CJK (Latin from OpenFreeMap's glyphs), names in the
-  reader's locale (`name:ja` / `name:en`, fallback `name`).
-- **Overlays:** the trip's legs as GeoJSON lines in the day colours, stops as NH pins (numbered per day), the candidate
-  layers, and the location dot (`geolocation=(self)` in the Permissions-Policy; asked only when the user taps the
-  locate button; watched only while the map shows).
-- **Lifecycle:** the island pauses under the sheet; `map.remove()` and a lost context on close (leaks.spec); the map
-  container `touch-action: none`; a `drawOff()` path for the logic-tier e2e; fixture tiles via `page.route`.
+Built in `app/src/lib/components/travel/map/` (the trip sheet mounts `TripMap.svelte`; try it at `/dev/map` in
+`vite dev`, or `/dev/map?demo` on a build). Online only: nothing is downloaded ahead of time.
+
+- **Interface:** `TripMap` takes `{ places, legs, dayColors, day, selected?, layers?, locale, tiles?, onselect? }`
+  (`types.ts`: a place `{id, kind: 'stop'|'camp'|'nature'|'food', name: {ja?, en?}, lat, lon, day?, i?}`, a leg
+  `{day, mode: 'drive'|'bus'|'walk'|'boat', line: [lon, lat][]}`; `day` a number or `'all'`; `layers` the candidate
+  kinds shown). It shows the day's stops and legs and fits to them on a day change; `selected` raises that pin and
+  eases the map to it; a pin or candidate tapped calls `onselect(id)`.
+- **Renderer:** `maplibre-gl` 6 (devDependency), in its own chunk (`engine.ts`: ~1.18 MB, 324 KB gzipped, its CSS 71 /
+  10 KB) fetched only when a map is drawn; `TripMap.svelte` itself is ~11 KB. Its worker is bundled as our own file
+  (`?worker&url`: `_app/immutable/workers/maplibre-gl-worker-*.js`, 519 / 148 KB; a raw `.mjs` is served as
+  `application/octet-stream`, which a module worker under `nosniff` refuses), set with `setWorkerUrl`: no `blob:`
+  worker, no eval.
+- **Tiles:** `source.ts`: OpenFreeMap's planet TileJSON (`https://tiles.openfreemap.org/planet`; its versioned tile
+  URLs come from it, maxzoom 14, overzoomed past it), the OpenMapTiles schema. The one third party the phones contact
+  (CSP `connect-src`): it sees the phone's IP and the area viewed, never the trip. Attribution, always shown, small in
+  the corner: "OpenFreeMap © OpenMapTiles Data from © OpenStreetMap". Self-hosting later (the same schema) changes
+  `source.ts` only; another schema is a sibling of `basemap.ts`.
+- **Style:** `basemap.ts` (our layers on the OpenMapTiles schema; `liberty` was the reference for filters only),
+  `theme.ts` (the palette: sea `#86CDEB`, land a soft yellow-green, parks and woods greener, sand and beaches cream,
+  roads `--c-card` cream edged in `--c-lip`, main roads yuzu-pale, labels `--c-ink` on a `--c-cream` halo), `style.ts`
+  (the stack). No sprite: no shields, POI icons or one-way arrows; a few POIs as plain text from z14 (beaches, parks,
+  sights). Labels in the reader's locale: `name:ja` → `name`, or `name:en` → `name:latin` → `name`; no italics, no
+  capitals.
+- **Font:** every label in the app's Zen Maru Gothic Bold (`fonts.ts`): the style's `font-faces` names the @fontsource
+  woff2 slices with their unicode-ranges, and MapLibre fetches a slice only when a label needs one of its characters
+  (`_app/immutable/assets`, ~4 MB across 123 slices, never precached). A character no slice covers falls to the
+  Latin glyph PBFs (Noto Sans Medium, 0-255 / 256-511 / 8192-8447, 270 KB, `static/travel/glyphs/`, out of the
+  precache with the rest of `travel/`), then Hiragino Maru Gothic (`localIdeographFontFamily`).
+- **Overlays:** the legs in the day colours (drive and bus solid, walk dashed, boat dotted, a white casing) over the
+  roads and under the labels; the stops as HTML pins (NH round heads, the day's colour, the number in Fredoka, a white
+  rim and tail, a 44 px hit; the selected one yuzu-rimmed and raised); an invisible `keepout` symbol per pin so the
+  basemap's labels give way instead of hiding under it; the candidates as circles (camp orange, nature leaf, food
+  pink; a 44 px hit round each, the selected one ringed).
+- **Location dot:** the locate button (bottom right, 44 px, `data-sfx="tick"`) asks the first time it's tapped
+  (`geolocation=(self)` in the Permissions-Policy); the watch (`geo.ts`) runs only while the map is on screen and the
+  tab shown, and stops on close. A yuzu dot with a white rim and brown edge, its accuracy halo `--c-mint` in metres.
+  The position goes to the map only: never logged, sent or kept. A refusal shows 「いちじょうほうが オフです」 until the
+  next tap.
+- **Lifecycle:** `map.remove()` on destroy (it loses the WebGL context); `webglcontextlost` / `restored` shown as
+  `data-mode`; the container `touch-action: none`, Safari's `gesturestart` prevented, no rotation or pitch. One leak
+  found and fixed: the last map's `remove()` aborts MapLibre's page-wide worker dispatcher with an Error whose
+  unformatted stack held that map and its context until the next map; `engine.ts` reads the stack after `remove()`.
+- **Tests:** `style.test.ts` (a valid style by the spec's validator, the locale expressions, the font faces, the
+  palette, the attribution, the stack order, the halo's metres), `map.test.ts` (the overlays, the location watch).
+  The e2e: under `drawOff()` no map is made; a stub with `data-mode`, `data-day`, `data-selected`, `data-loc`,
+  `data-stops`, `data-candidates` and button pins (`travel-map.spec.ts`); `window.__travelMap` (hooks on:
+  `state()`, `map()`). The drawn smoke (`@render`), `csp.spec` and `leaks.spec` draw it on fixture tiles
+  (`e2e/fixtures/travel/`: a trimmed TileJSON and 16 tiles round Motobu, z6-12, 644 KB, answered at their real URLs by
+  `e2e/travelMap.ts`; no spec reaches the network). To refresh them: fetch the TileJSON and the same z/x/y with curl
+  from the versioned URL it names.
 
 ## Packing list (relay)
 
@@ -201,7 +237,7 @@ never prefetch.
 
 ## Open questions
 
-- (none yet)
+- The map is drawn in the day palette at every time of day (no night tint yet).
 
 ## Trip facts (from TRIPS.md)
 

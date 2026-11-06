@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, isAudio, isFoodData, isMusic, isTravelPhoto, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, isAudio, isFoodData, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -75,6 +75,9 @@ describe('precache', () => {
     // ききみみ's scene backdrops, at every scale
     for (const p of ['art/scene/cafe.webp', '/fitness/art/scene/gate@2x.webp', 'art/scene/living@3x.webp']) expect(precachable(p)).toBe(false);
   });
+  it("leaves the trips' files out (the map's glyph PBFs, the photos): fetched as a trip is read", () => {
+    for (const p of ['travel/glyphs/Zen Maru Gothic Bold/0-255.pbf', '/fitness/travel/okinawa/cover.webp']) expect(precachable(p)).toBe(false);
+  });
   it('leaves the app icons out: the OS fetches them when the app is added', () => {
     // the tent's room: its models, surfaces and icons, cached on first use (megabytes: never at install)
     for (const p of ['room/models/f4041.glb', '/fitness/room/wall/w4840.webp', 'room/floor/g5018.webp', 'room/icons/f4081.webp']) expect(precachable(p)).toBe(false);
@@ -136,7 +139,6 @@ describe('the offline shell from a navigation (keepShell)', () => {
 describe('travel photos', () => {
   it('are never precached (a guide fetches its own when it shows them)', () => {
     for (const p of ['travel/okinawa/hero.webp', '/fitness/travel/okinawa/camps/katsuren-beach.webp', 'travel/seattle/lake-22.webp', '/fitness/travel/nz/cover.webp']) expect(precachable(p)).toBe(false);
-    expect([isTravelPhoto('/fitness/travel/nz/hero.webp'), isTravelPhoto('/fitness/art/scene/travel.webp'), isTravelPhoto('/fitness/art/travel/x/y.webp')]).toEqual([true, false, false]);
   });
 });
 

@@ -1,10 +1,11 @@
 // The site's Content-Security-Policy (scripts/headers.ts: build-pages/_headers, served by serve-build.ts as Cloudflare
 // Pages serves it; the same policy in index.html's <meta>, vite.config.ts `csp`): a click-through of the island, its
-// sheets, the music, the shop, the museum, the tent and the editor with no violation (every `securitypolicyviolation`
+// sheets, the music, the shop, the museum, the tent, the editor and the trip map with no violation (every `securitypolicyviolation`
 // event and every console line of a refused load, the page's and its workers').
 import { expect, test, type Page } from '@playwright/test';
 import { fromMenu } from './hud.ts';
 import { is3d } from './island.ts';
+import { devMap, drawn, fixtureTiles, mapReady } from './travelMap.ts';
 
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none';
 
@@ -62,5 +63,27 @@ test('the island, its sheets, the music and the rooms: no CSP violation', async 
   await nav(page, `editor/${Q}`);
   await page.waitForFunction(() => !!(window as unknown as { __editor?: unknown }).__editor, null, { timeout: 30_000 });
   await page.waitForTimeout(1000);
+  expect(seen).toEqual([]);
+});
+
+// The trip map (docs/travel.md "Maps"): drawn (not the logic tier's stub), its worker (our own file), its fonts (the
+// app's woff2 slices, fetched and handed to the FontFace API), OpenFreeMap's TileJSON and tiles (the fixtures, at their
+// real URLs: the one third-party connect-src) and the locate button: no violation.
+test('the trip map: its worker, fonts, tiles and the location dot, no CSP violation', async ({ page, context }) => {
+  test.setTimeout(60_000);
+  const seen = await watch(page);
+  await drawn(page);
+  const net = await fixtureTiles(page);
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 26.6944, longitude: 127.8779, accuracy: 25 });
+  await devMap(page, 'day=2&layers=camp');
+  await mapReady(page);
+  await page.locator('.locate').click();
+  await expect(page.locator('.locate')).toHaveAttribute('data-locate', 'on');
+  // the labels drawn: their font slices fetched
+  await expect.poll(() => page.evaluate(() => performance.getEntriesByType('resource').some((r) => /zen-maru-gothic-.+-700-normal.*\.woff2/.test(r.name)))).toBe(true);
+  await page.waitForTimeout(1000);
+  expect(net.tiles.length).toBeGreaterThan(0);
+  expect(net.stray).toEqual([]);
   expect(seen).toEqual([]);
 });
