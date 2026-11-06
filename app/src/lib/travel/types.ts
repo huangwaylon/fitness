@@ -41,7 +41,7 @@ interface Hike {
   pass: L;
   /** Where the trailhead is ('Granite Falls, WA'). */
   where: L;
-  /** The trail map (huangwaylon.github.io/gpx). */
+  /** The trail map (huangwaylon.github.io/hiking-trails; the old /gpx site is gone). */
   gpx?: string;
 }
 
