@@ -15,7 +15,7 @@ import { toTrack } from '../src/lib/hiking/track.ts';
 test.use({ viewport: { width: 393, height: 852 } });
 
 const TRACK = toTrack(readFileSync(join(import.meta.dirname, 'fixtures', 'hiking', 'tiny.gpx'), 'utf8'));
-const sheet = (p: Page) => p.locator('dialog[open][data-hiking]');
+const sheet = (p: Page) => p.locator('dialog[open] [data-hiking]');
 const cards = (p: Page) => sheet(p).locator('[data-trail]');
 
 async function openTrails(page: Page, draw = false) {
@@ -29,10 +29,10 @@ async function openTrails(page: Page, draw = false) {
 
 test('the list: ten trails, the difficulty chips, the sorts; a card opens its trail, ‹ back, ✕ closes', async ({ page }) => {
   await openTrails(page);
-  await expect(sheet(page).locator('h1')).toHaveText('梅ちゃんのトレイル');
+  await expect(sheet(page).locator('[data-trail-list] .ttl')).toHaveText('梅ちゃんのトレイル');
   await expect(cards(page).first()).toHaveAttribute('data-trail', 'lake-22');
-  await expect(cards(page).first().locator('.stats')).toContainText('9.8 km');
-  await expect(cards(page).first().locator('.stats')).toContainText('444 m');
+  await expect(cards(page).first().locator('.stats')).toContainText('9.8km');
+  await expect(cards(page).first().locator('.stats')).toContainText('444m');
   await expect(cards(page).first().locator('.stats')).toContainText('3時間17分');
   await sheet(page).locator('[data-filter="hard"]').click();
   await expect(cards(page)).toHaveCount(4);
@@ -52,10 +52,10 @@ test('the list: ten trails, the difficulty chips, the sorts; a card opens its tr
   await expect(view).toBeVisible();
   await expect(sheet(page)).toHaveAttribute('data-level', 'trail');
   await expect(view.locator('.pk-title')).toHaveText('スノーレイク・トレイル');
-  await view.locator('.back .nav').click();
+  await view.locator('.nav.back').click();
   await expect(view).toHaveCount(0);
   await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
-  await sheet(page).locator('.x .nav').click();
+  await sheet(page).locator('.nav.close:visible').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
@@ -110,7 +110,7 @@ test('a trail: the peek shows the whole chart; the scrub moves the map\'s dot an
 
 test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), its private values locked; openTrail lands on the trail, ‹ the list", async ({ page }) => {
   await openTrails(page);
-  await sheet(page).locator('.x .nav').click();
+  await sheet(page).locator('.nav.close:visible').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await page.evaluate(() => (window as unknown as { __hiking: { openTrail(s: string): void } }).__hiking.openTrail('kinpu-odarumi'));
   const view = sheet(page).locator('[data-trail-view="kinpu-odarumi"]');
@@ -125,7 +125,7 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
   await expect(plan.locator('[data-plan-link]')).toHaveCount(0);
   await expect(plan.locator('.lock')).toHaveCount(2);
   await expect(view.locator('.attrib')).toContainText('国土地理院');
-  await view.locator('.back .nav').click();
+  await view.locator('.nav.back').click();
   await expect(sheet(page).locator('[data-trail-list]')).toBeVisible();
 });
 
@@ -133,7 +133,7 @@ test("Kinpu's plan: the date, the timeline (a stay's badge, a leg's minutes), it
 async function reopen(page: Page, drawnTrack: (view: ReturnType<Page['locator']>) => Promise<void>) {
   for (const [i, slug] of [[0, 'lake-22'], [1, 'snow-lake'], [0, 'lake-22'], [-1, ''], [2, 'lake-valhalla'], [0, 'lake-22']] as const) {
     if (i < 0) {
-      await sheet(page).locator('.x .nav').click();
+      await sheet(page).locator('.nav.close:visible').click();
       await expect(page.locator('dialog[open]')).toHaveCount(0);
       await fromMenu(page, 'hiking');
       continue;
@@ -142,7 +142,7 @@ async function reopen(page: Page, drawnTrack: (view: ReturnType<Page['locator']>
     const view = sheet(page).locator(`[data-trail-view="${slug}"]`);
     await expect(view.locator('[data-elev]')).toBeVisible();
     await drawnTrack(view);
-    await view.locator('.back .nav').click();
+    await view.locator('.nav.back').click();
     await expect(view).toHaveCount(0);
   }
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
   // A trail's map (docs/hiking.md "Map"): MapLibre on the region's raster topo (map/engine.ts, its own lazy chunk, never
-  // precached: online only), the track, its ends and waypoints, the scrub's violet dot, the location dot. Under
+  // precached: online only), the track, its ends and waypoints, the scrub's dot, the location dot (map/style.ts C). Under
   // drawOff() (the e2e's logic tier) no map is made: a stub that draws the track and the dots as SVG and says where
   // they are. Offline before the chunk came: a retry; the tiles not coming: the track alone, with a note.
   // `window.__trailMap` (hooks on) is the specs' view of a drawn map.
@@ -102,7 +102,7 @@
   {#if mode === 'failed'}
     <div class="failed" data-map-failed>
       <p>{pick(S.mapFailed, i18n.locale)}</p>
-      <button type="button" class="retry" data-sfx="tick" onclick={draw}>{pick(S.retry, i18n.locale)}</button>
+      <button type="button" class="btn small paper" data-sfx="tick" onclick={draw}>{pick(S.retry, i18n.locale)}</button>
     </div>
   {:else if mode === 'offline'}
     <p class="note" role="status" data-map-note>{pick(S.mapOffline, i18n.locale)}</p>
@@ -110,20 +110,19 @@
 </div>
 
 <style>
-  .map { position: absolute; inset: 0; background: var(--paper-2); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
+  .map { position: absolute; inset: 0; background: var(--ctl-off); overflow: hidden; touch-action: none; -webkit-user-select: none; user-select: none; }
   .gl { position: absolute; inset: 0; }
   .stub { position: absolute; inset: 70px 20px 45% 20px; width: calc(100% - 40px); height: auto; max-height: 50%; }
   .failed {
     position: absolute; inset: 0 0 30% 0; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 16px;
-    color: var(--ink-2); font-size: 15px; font-weight: 600; text-align: center;
+    color: var(--text-soft); font: 700 var(--fs-body)/1.4 var(--font-ui); text-align: center;
   }
   .failed p { margin: 0; }
-  .retry { height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: var(--sh-fab); }
   .note {
-    position: absolute; z-index: 2; top: calc(var(--safe-t) + 62px); left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 32px); margin: 0;
-    padding: 7px 14px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 12.5px; font-weight: 700; box-shadow: var(--sh-pop);
+    position: absolute; z-index: 2; top: calc(var(--ui-top) + 52px); left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 32px); margin: 0;
+    padding: 6px 12px; border-radius: var(--r-pill); background: var(--c-ink); color: var(--c-cream); font: 700 var(--fs-s)/1.3 var(--font-ui); box-shadow: var(--sh-float);
   }
-  /* MapLibre's attribution, small and frosted (the hiking app's Leaflet overrides) */
-  .map :global(.maplibregl-ctrl-attrib) { font-size: 9px; background: rgba(255, 255, 255, .86); color: var(--ink-2); }
-  .map :global(.maplibregl-ctrl-attrib a) { color: var(--pine-d); }
+  /* MapLibre's attribution, small, on the card */
+  .map :global(.maplibregl-ctrl-attrib) { font-size: 9px; background: color-mix(in srgb, var(--c-card) 86%, transparent); color: var(--c-ink-soft); }
+  .map :global(.maplibregl-ctrl-attrib a) { color: var(--c-leaf-text); }
 </style>
