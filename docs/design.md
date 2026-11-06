@@ -107,7 +107,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   instead); the ベル row's number holds while coins are in the air (`coinsInFlight`) and counts up by each one as it
   lands. As each lands, today's ベル so far pop up just under the leaf, right-aligned to the screen's side, in a small
   yuzu bubble (「+3」, counting up with the coins; the menu open: left of the ベル row), hold ~1 s and fade (reduced
-  motion: a plain fade; aria-hidden: the label says it); only coins landing flash it, never a とりけす's refund. All of
+  motion: a plain fade; aria-hidden: the label says it); only coins landing flash it, never a 取り消す's refund. All of
   it waits while something covers the scene. The leaf, not the bowl or the dumbbell: it is where the ベル live now,
   and the corner it sits in is where NH's own bells pickup flies (up to the phone's corner).
 - **Centre stage:** the plaza (`world.ts` `CENTRE_STAGE`, ひろば: `layout/spots.ts` `stageOf`, where the members put
@@ -127,7 +127,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
 ごほうび, the island panel (`wallet/Wallet.svelte`, `wallet/Shop.svelte`), top to bottom:
 
 - **The header row:** the jar at the left (`Jar.svelte`, 58–76px wide, filling as the wallet grows: `walletFill`); to
-  its right the balance, big, and under it, smaller, today's ベル in a soft yuzu pill with the Bells bag (「きょうの ベル
+  its right the balance, big, and under it, smaller, today's ベル in a soft yuzu pill with the Bells bag (「今日のベル
   +6」: both of us, がんばり and ふたりでぜんぶ included, the number the trees' popups add up to), at 0 a faint cream one
   (shown, not hidden: nothing jumps when the first coin lands). The two as one group centred in the row.
 - **The rewards:** two tiles with NH item art (6px under the tile's top: the art has its own air), its name and its price: 🍦 おやつ 40 ベル and 🍜 外食 70 ベル. One the
@@ -137,15 +137,15 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   every ・ at 320px; its tail under the disc, NH's bounce in); ⓘ again, a tap
   anywhere else or Esc (only the bubble: the panel stays) folds it, one at a time. No examples and no 「あと N ベル」 on
   the tiles (2026-11-03, the user: "remove the example items - replace with a small circle info button … to save
-  space. remove the ato x bell text"). 買う！ asks first, applies at once and waits 5 s with とりけす before it is sent.
-- **ためた ベル:** the ベル ledger ([Kiroku](#kiroku)), under the rewards; a day pushes a level.
-- **かいもの きろく** (`wallet/Purchases.svelte`), at the very bottom, folded by default: its heading is a 44px
-  disclosure (「かいもの きろく 3件」, a chevron that turns, `aria-expanded`) and the list grows open under it (a
+  space. remove the ato x bell text"). 買う！ asks first, applies at once and waits 5 s with 取り消す before it is sent.
+- **貯めたベル:** the ベル ledger ([Kiroku](#kiroku)), under the rewards; a day pushes a level.
+- **買い物の記録** (`wallet/Purchases.svelte`), at the very bottom, folded by default: its heading is a 44px
+  disclosure (「買い物の記録 3件」, a chevron that turns, `aria-expanded`) and the list grows open under it (a
   280ms grid-row ease, WebKit animates it; reduced motion: at once), folded again on every opening of the panel.
 
 The buys list newest first (art, name, day, who, price), ten at a time
-(「もっと見る」). 🗑 on any line (either of us, any buy; ✕ is only ever a close) asks NH-style (「このかいものを けしますか？ 40 ベル もどります」);
-はい sends a `spend_void`, the ベル go back, and the banner carries とりけす for 5 s. The old `/jar` page redirects to the
+(「もっと見る」). 🗑 on any line (either of us, any buy; ✕ is only ever a close) asks NH-style (「この買い物を削除しますか？ 40 ベルが戻ります」);
+はい sends a `spend_void`, the ベル go back, and the banner carries 取り消す for 5 s. The old `/jar` page redirects to the
 island with the panel open on ごほうび (`?panel=rewards`, dropped from the URL once read).
 
 ### Panel
@@ -161,7 +161,7 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
 or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
-English), **きせつ** ([Seasonal preview](#seasonal-preview)), **てんき** (ほんもの / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん), and **もようがえ** (one row with its
+English), **季節** ([Seasonal preview](#seasonal-preview)), **天気** (実際の天気 / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **同期** (when each of us last synced; 今すぐ同期), and **模様替え** (one row with its
 はじめる); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
@@ -174,38 +174,38 @@ no foot bar: the stage and the tabs hold still, the panel under them scrolls to 
 - **The stage** (262 px): the final form, always: the 3D player filling it (drag turns, tap hops; 「↔ まわせるよ」 until
   the session's first drag) or the villager's official render. Top-left the **status pill**, in words (`role=status`):
   「★いつもの」, a コーデ's name when what's worn is exactly it, 「ふゆ · アレンジちゅう」 when started from one and changed,
-  「コーデなし」, or 「むらびと · ことの」 (the guest's: 「★いつもの · ことの」). Under it **もどす** once anything changed this
+  「コーデなし」, or 「住民 · ことの」 (the guest's: 「★いつもの · ことの」). Under it **元に戻す** once anything changed this
   visit: the look and the villager as they were on opening. Top-right the nameplate 「ウェイ ✎」 (yuzu): the よびな sheet.
   Along its bottom the **colour dots** of the item last tapped (else the one worn in that grid), or めのいろ (かお → め),
   かみのいろ (かみ): one row of 44 px targets, radios named by their hue (「あか」, numbered when two share one); the figure
-  shrinks to make room, the grid never moves. Hidden on コーデ and むらびと and for a one-colour item. Once the panel
+  shrinks to make room, the grid never moves. Hidden on コーデ and 住民 and for a one-colour item. Once the panel
   scrolls past 8 px the stage eases to 150 px (back at the top, back to 262); while the villager search has the keyboard
   it's a 76 px strip (the head, the name, its kind). The figure scales by a transform (the canvas keeps its size).
 - **Six tabs** (`role=tablist`, icon and name, the picked one yuzu with the edge and lip; ←/→ move): **コーデ · かお ·
-  かみ · ふく · こもの · むらびと**. It opens on コーデ when any is saved, else ふく. A sub-row (segmented, 44 px) where a tab
+  髪 · 服 · 小物 · 住民**. It opens on コーデ when any is saved, else ふく. A sub-row (segmented, 44 px) where a tab
   has one: かお め · くち · はな · ほお · はだ; ふく トップス · ボトムス · ワンピース · くつした · くつ · ぼうし; こもの めがね ·
   かみかざり.
 - **コーデ**: a 4-column grid of 64 px portraits: **★いつもの** first (the signed-off default, never stored; the guest's is
-  its villager), the saved ones newest first, **＋ ほぞん** (a name, 「コーデ 3」 by default, 1–12 characters; at 20 it's sunk
-  and says 「コーデは 20こまで。いっぱいだよ」; a villager worn: 「むらびとの すがたは ほぞん できないよ」). The one picked has the
+  its villager), the saved ones newest first, **＋ 保存** (a name, 「コーデ 3」 by default, 1–12 characters; at 20 it's sunk
+  and says 「コーデは20個まで保存できます」; a villager worn: 「住民の姿は保存できません」). The one picked has the
   leaf ring, and a coral dot once what's worn differs from it. A saved one picked shows its actions inline: 「「ふゆ」と
   ちょっと ちがうよ」 with **いまので うわがき** (only when edited) · **なまえ** · **けす** (「この コーデを けしますか？」, then
-  とりけす on the banner for 5 s: sent after).
+  取り消す on the banner for 5 s: sent after).
 - **The closet** (かお, かみ, ふく, こもの): NH's wardrobe grid, five a row, a tile per item showing its variant worn or last
   chosen; a tap wears it and puts its colours on the stage; the worn tile again does nothing (only なし takes a thing
   off). なし first for くつした, くつ, ぼうし, めがね, かみかざり. ふく has a colour filter (すべて, then nine hue dots, sideways,
   per sub for the visit). A ワンピース clears the bottoms, a bottom the ワンピース; a hat and a hair ornament are one at a
   time. はな, ほお: three chips; はだ: the skin dots in the panel. No names: a tile is 「トップス 3、いろ 4しゅるい」 to
   VoiceOver.
-- **むらびと**: the search (held at the panel's top), then とくべつ (23) and the 417 villagers, the heads lazy (one
+- **住民**: the search (held at the panel's top), then とくべつ (23) and the 417 villagers, the heads lazy (one
   IntersectionObserver on the panel), built a slice per frame on the tab's first opening and kept after. A tap wears
   that villager on the stage. With a villager worn, the human tabs carry a yuzu strip 「いまは ことのの すがた。ふくを
   えらぶと にんげんに もどるよ」; the first human pick wears the player again with this visit's human edits.
 - **Sending:** what's tapped is the draft on the stage. Leaving the level (‹, ✕, Esc, the backdrop, or the app going to
   the background) keeps it, sent once and only if it changed: one `look` pref, and a picked villager's `villager` pref
   first (the guest: `villager`, then `look: null`, its いつもの). A member's いつもの is sent as null. Leaving with a change
-  shows 「すがたを かえたよ」 with **とりけす** for 5 s (it re-sends the look and the villager as they were on opening).
-  No けってい (✕ keeps, as NH's wardrobe). コーデ edits go out as they're made, the whole `savedLooks` list
+  shows 「姿を変えました」 with **取り消す** for 5 s (it re-sends the look and the villager as they were on opening).
+  No 決定 (✕ keeps, as NH's wardrobe). コーデ edits go out as they're made, the whole `savedLooks` list
   ([backend](backend.md#events)).
 - **The closet is the part table's** ([Players](#players): `player3d/parts.json`, through `look/closet.ts`'s `Closet`
   interface): every hairstyle, eye and mouth, and each garment line a tile with its colours as dots, in the table's
@@ -261,7 +261,7 @@ two members (the guest's to the guest), enforced by the record. What it feeds (d
 ### Kiroku
 
 The ベル ledger (`model/history.ts`, `components/kiroku/*`), read-only, in [ごほうび](#wallet) under the rewards
-(「ためた ベル」):
+(「貯めたベル」):
 
 - **ベル:** by week (earnings only; the all-time total isn't repeated here: the wallet is ごほうび's) one line per day under the two avatars: each person's four
   fruits (bright = met), a star on a ふたりでぜんぶ day, the day's ベル (tap → the day); on a がんばり day a smaller second
@@ -294,10 +294,10 @@ Health data over time for the personal trainer, one person at a time, computed o
   readable on the cream and the night cards), 体脂肪率 the protein shaker, BMI the exercise bike, 除脂肪体重 the
   weight bench (muscle): the user's picks.
 - **One card for every chart** (`ChartCard`: the icon, the name, the goal chip at the upper right: [Goals in place](#goals-in-place);
-  with nothing recorded yet, 「まだ きろくが ないよ」 under it). **A card per activity metric** (`BarCard`): 1日の平均 with 前の期間より ↑/↓ %;
+  with nothing recorded yet, 「まだ記録がありません」 under it). **A card per activity metric** (`BarCard`): 1日の平均 with 前の期間より ↑/↓ %;
   目標 n/N日（%）, ベスト and 記録なし n日; the chart; a one-line key.
 - **No Health data yet** (a new couple, `?demo&health=none`): every card is still there with its goal chip (set from it),
-  over one line, 「まだ きろくが ないよ」: no numbers, chart or footnote.
+  over one line, 「まだ記録がありません」: no numbers, chart or footnote.
 - **Chart** (`BarChart` in `ChartFrame`, SVG; the frame is every chart's: the grid, the dates, the goal line and its words, the
   slide and drag, the picked bucket's band and callout): a bar per day (1週, 1か月), per week (3か月: 13) or per calendar month (1年), each
   the bucket's daily average, in the person's colour (ウェイ blue `--person-a`, うめ orange `--person-b`); solid when
@@ -317,12 +317,12 @@ Health data over time for the personal trainer, one person at a time, computed o
   GOALS; the user: "for every single graph that we show in gohan and kenkou, I want to be able to set a goal"): every
   chart's card has its goal at the upper right as a chip, 「- - 目標 8,000歩 以上 ✎」: the value with its direction (以上 /
   以下 / 前後; "at least" / "at most" / "about"), the swatch the chart's goal line (soft on the bar charts, yuzu on the dot charts);
-  「目標 まだ」 when none. A tap opens its editor in place: a tan
+  「目標なし」 when none. A tap opens its editor in place: a tan
   tray across the card under the header, its notch under the chip (the chart moves down; nothing is covered, and Safari
   scrolls the field above the keyboard): the goal's title (with きょうから for the goals a day keeps), −/＋ by the goal's
   step around a 16px field with its keypad (nothing focused on opening, so no keyboard until the field is tapped; −/＋
   start from the goal, else the period's average for the からだ goals), the range in words (「10〜600分、10分ずつで入れてね」,
-  coral after a refused けってい), then 目標をなくす (once set, for the goals that may be cleared), やめる and けってい (dimmed until the field
+  coral after a refused 決定), then 目標を外す (once set, for the goals that may be cleared), キャンセル and 決定 (dimmed until the field
   holds a goal). One open at a time; Esc, やめる or a tap anywhere else close it unchanged, the focus back on the chip;
   saved, a banner says so (「エクササイズの目標を かえました」). The same control sets ごはん's goals ([Gohan](#gohan)). The goals, per person, for whose data is shown (either
   person sets either person's):
@@ -681,7 +681,7 @@ app enters or fixes them.
 
 What the app sends ([backend.md](backend.md#events)): the goals (`pref` `moveGoal`, `stepsGoal`, `goalWeight`, `goalBodyFat`, either person's
 via `data.person`), buys and voids, harvest taps, the sender's `locale`, `villagerName` and `villager`, and
-the ずかん's finds (`find`, the first of each). A buy and its とりけす wait 5 s before they are sent (touching the banner
+the ずかん's finds (`find`, the first of each). A buy and its 取り消す wait 5 s before they are sent (touching the banner
 holds it, ≤ 2 min).
 
 ## Weight
@@ -1521,9 +1521,9 @@ goes with the leaving).
   of: the ずかん's カタログ, newest first), ジム (the gym's pieces of those found or bought, gathered: tent/items.ts GYM; the rooms' pieces stay the balloons' and the shop's, and a bike or a treadmill in a room acts in place, the bench is lain on), かべがみ, ゆか, over NH's own icons in two rows that scroll sideways (60 px), and
   ✓ おわる with the count (「3/60」). A tap on a piece's icon puts it down as a ghost on the free spot nearest my villager,
   lifted, its footprint on the floor green where it may stand and red where not, the bar above saying why
-  (「でいりぐちは あけて おこう」, 「ほかの かぐと かさなります」, 「むらびとが いるよ」…); a finger on it (or on a placed piece,
+  (「出入り口はあけておきましょう」, 「ほかの家具と重なります」, 「住民がいます」…); a finger on it (or on a placed piece,
   which picks it up) drags it a tile at a time; a tap on the floor moves it there (Holding, below); ↻ まわす turns it a quarter (about
-  its middle); ✓ おく places it (greyed while red); 🗑 しまう takes a placed one back to the storage (とりけす on the banner
+  its middle); ✓ 置く places it (greyed while red); 🗑 片付ける takes a placed one back to the storage (取り消す on the banner
   for 5 s); ✕ やめる puts it back. A wallpaper or a floor is on at once. **Where:** on its whole tiles inside the room,
   off the door's two tiles, not over another piece or a villager; a rug lies under the furniture (and may cover the
   door's tiles), never over another rug. At most 60 pieces a room, shared (the wallpaper and the floor don't count): 64 tiles
@@ -1815,13 +1815,13 @@ and its mouth, and the spring and the river above the cliff.
 `kiroku/Zukan.svelte`, `kiroku/ZukanCard.svelte`, `kiroku/zukan.ts`, `model/finds.ts`, `model/tally.ts`,
 `e2e/zukan.spec.ts`. The ずかん is its own sheet (`kiroku/ZukanSheet.svelte`: the HUD menu's ずかん pill, grown out of it,
 Sheet's `pop`): first one row per kind with how many either of us has found (`ZukanCard`), a row → that kind's page
-with ‹ (titled with the kind: a level's title is its own name, the ledger's day its date); the next opening starts on the rows. Shared (the first `find` of either of us): さかな 80 (the sea's 34 and the pond's
-46), むし 74, うみのさち 40, かせき 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
+with ‹ (titled with the kind: a level's title is its own name, the ledger's day its date); the next opening starts on the rows. Shared (the first `find` of either of us): 魚 80 (the sea's 34 and the pond's
+46), 虫 74, 海の幸 40, 化石 73 (laid out like NH's museum: the standalone ones, then each dinosaur with
 「Tレックス 1 / 3」), かいがら 9 (the pearl last), and a balloon's presents: カタログ 1,836 (by NH's categories: かぐ,
 こもの, かべかけ, てんじょう, トップス... かさ) and レシピ 126 (by season). Every catch and pick-up counts: each found tile shows
 「×12」 and the picked entry's head the total and each of us (the day tallies, `tally`, backend.md#tally); a find from
 before the tallies counts 1. カタログ and レシピ load their names with the page (`i18n/catalog.ts`, the language on screen)
-and build their grid a slice per frame, as the むらびと picker. A kind's page: every entry in the game's order, the official icon and name for found ones, a silhouette and
+and build their grid a slice per frame, as the 住民 picker. A kind's page: every entry in the game's order, the official icon and name for found ones, a silhouette and
 ？？？ for the rest, 「コンプリート！」 when all are in. The page's head is pinned: the kind and its count, and the picked
 entry (icon, name, 「7/4 ウェイが 見つけた」 and NH's catch line, two lines, ▼ for more); the grid scrolls under it.
 Names of everything catchable live in their own catalog (`i18n/catch.ts`), loaded with the ずかん or the first catch.
@@ -2113,7 +2113,7 @@ too.
   (just out of the shop's door). While I'm in here the others' islands show my villager nowhere, as in the museum and
   the rooms ([The tent](#the-tent) "One place at a time": `tent {in, sc: 's'}`); coming out, they see it at the door.
 - **うる** (sell): my pocket, everything I caught, found or picked up (my day tallies, model/tally.ts) less what I sold,
-  in sections (むし, さかな, うみのさち, かいがら, しげん, くだもの, かせき, そのた: `shop/pocket.ts`), each dearest first:
+  in sections (虫, 魚, 海の幸, かいがら, 資源, 果物, 化石, その他: `shop/pocket.ts`), each dearest first:
   its icon, name, price and ×n. A tap picks one more (past the pocket: none again), − one less, ぜんぶ all; the bar
   says 「3こで 120 かいがら」 and うる sells them (one `sell` a kind). Selling never takes anything out of the ずかん or
   the museum. A present's furniture or recipe never sells (it's もようがえ's), nor a message bottle.
@@ -2127,7 +2127,7 @@ too.
   name and price; one picked, かう buys it. A piece I own says もってる; too dear or owned, かう boops and the twins say
   why. A bought piece is mine for good in もようがえ (TentEdit's かった tab, and the かべかけ tab for a wall piece) in
   every room I arrange.
-- A sell or a buy shows at once with とりけす for 5 s (the banner up over the counter here, clear of the bar), then
+- A sell or a buy shows at once with 取り消す for 5 s (the banner up over the counter here, clear of the bar), then
   goes to the record, which checks it (the pocket, the wallet, the stock, the price: [backend](backend.md#events)).
 - **Prices:** NH's Bells ÷ 20 both ways, NH's own ratio (a sell at least 3): a sea bass 20, a koi 200, a whale shark
   650, wood 3, a coral 25, a T. rex skull 300; a median piece 110, one or two catches ([decisions](decisions.md#the-shops-かいがら-2026-11-04)).
@@ -2505,7 +2505,7 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
 `full` variant; its own chunk with `i18n/travel.*.json`, loaded through `open.svelte.ts`, a `lazySheet`, mounted by
 `island/Hud.svelte`). The island is paused under it.
 - **Opening:** straight into the trip on now, else back where it was left (the trip and its page, while the app runs).
-- **Offline:** the chunk not cached yet, the pill's banner 「オフラインです」 + もういちど; a guide's chunk failing,
+- **Offline:** the chunk not cached yet, the pill's banner 「オフラインです」 + もう一度; a guide's chunk failing,
   読み込めませんでした + もう一度 under the trip's own header; the trip note not in yet, each private value is 🔒 ・・・ and a
   line under the photo says 「オンラインで表示」.
 - **The list** (`TripList.svelte`, from `trips/meta.ts` only: no guide loads for it): これからの旅 (on now and coming,
@@ -2539,13 +2539,13 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   am): a row or a category opens an ActionSheet (名前を変更 · 上へ · 下へ · 削除), 「＋ 追加」 under each category and
   カテゴリを追加 open the form sheet (ui/Sheet, 保存 in its footer, the return key too), チェックをリセット (mine only).
   The guest adds anything and changes only what it added (the others' rows boop). An item's 削除 is at once with the
-  banner's とりけす (sent after 5 s); a category's and the reset ask first (an ActionSheet with a `note`: what it takes
-  with it), then とりけす too. A past trip: a quiet count with 「終わった旅」, no bar (ticks still work).
+  banner's 取り消す (sent after 5 s); a category's and the reset ask first (an ActionSheet with a `note`: what it takes
+  with it), then 取り消す too. A past trip: a quiet count with 「終わった旅」, no bar (ticks still work).
 - **Rules the guides bend (the user, 2026-11-06):** the guides are reading cards, denser than §Simplicity allows (more
   than 40 characters and 3 cards a screen, more than 5 rows a card). Their text (`.guide`) is keep-all and breaks only
   between words: `Txt.svelte` puts a `<wbr>` between Intl.Segmenter's words (particles, okurigana, closing punctuation
   and a number's counter kept on the word before). The packing list's typed names break as normal Japanese. The chrome
-  keeps every rule (kana-first, keep-all, linebreaks.test).
+  is a sheet's ([Copy](#copy)).
 
 ### Seasonal preview
 
@@ -2706,12 +2706,31 @@ camera's two ends; `mine()`, `partner()`, `geo()`, `site()`, …) for the e2e an
   editors' bar and tray), `.hcard` (けんこう's and グラフ's chart cards), `.sec-label` (a section's small heading),
   `.level-acts` (a level's action row); the ‹ / ✕ are always `NavButton`.
 - **Focus:** no ring after a pointer input (`ui/modality.ts`); focus is restored for keyboard and VoiceOver.
-- **Type:** Zen Maru Gothic (UI, Japanese) and Fredoka (numbers); `word-break: keep-all` for Japanese.
+- **Type:** Zen Maru Gothic (UI, Japanese) and Fredoka (numbers); Japanese line breaking by zone ([Copy](#copy)).
 - **Tokens** (`styles/tokens.css`): ink `#4A3A2C`, cream `#FFF9E3`, paper `#F5E4BC`, card `#FFFCF2`, edge `#937047`,
   leaf `#6ED07A`, yuzu `#FFD84D`, mint `#7BD7C1`, coral `#FF8F7A` (errors only), the chart pair `--person-a`
   `#2F86BD` / `--person-b` `#D2701F` (night `#7EC8F0` / `#FFB066`; CVD-checked); one `--z-*` stacking scale.
 - **Theme:** `data-tod` comes only from the Tokyo clock (`prefers-color-scheme` ignored); night chrome `#3A4886`. The
   HUD, plate, dialogue and choices stay cream/yellow.
+
+## Copy
+
+Two zones (the user, 2026-11-07), by where a string shows (`i18n/linebreaks.test.ts` WORLD lists the world's keys):
+- **The world** (the island and its rooms: villagers' and NPCs' lines, `Bubble`, signs, in-world notices and toasts,
+  the HUD, the tree's plate, the leaf menu's pills ベル · ずかん · えいご ききとり · りょこう · けっこんしき · トレイル ·
+  せってい): kids-style spaced kana (分かち書き), 「つうしん中…」, 「ここに おく」. `word-break: keep-all` (body):
+  a line breaks only at a space or after 、。！, so no run without one is over 12 characters.
+- **Everything opened from it** (every sheet, panel, level, dialog and form, pairing, the error page, the editor, the
+  もようがえ trays, the board, the shop's menu; an NPC's line inside one stays the world's): natural adult Japanese with
+  kanji and no spaces between words (a space only around a number or Latin: 「目標 8,000歩 以上」), 「今すぐ同期」,
+  「ここに置く」. `dialog`, `[role=dialog]` and `.sheet-copy` are `word-break: normal` (kinsoku by `line-break:
+  strict`); a bubble is keep-all wherever it is.
+- **One spelling a term** in every sheet: 設定 · 記録 · 目標 · 歩数 · 体重 · 完了 · 削除 · 取り消す · 保存 · 編集 · 決定 ·
+  キャンセル (not やめる) · 閉じる · 戻る · 元に戻す · もう一度 · 今日 · 変更 · 同期 · オフライン · 住民 · お客さん · 姿 ·
+  模様替え · 片付ける · 季節 · 天気; the game's own words stay as the game says them (ベル, かいがら, がんばり, ふたりで全部,
+  いつもの, ごはん, ごほうび) and official names as NH writes them. A sheet's title may differ from its pill (せってい → 設定,
+  ずかん → 図鑑, けんこう → 健康, りょこう → 旅行, けっこんしき → 結婚式). linebreaks.test checks the sheets' keys for a
+  space between two Japanese characters and for the kana spellings of the list.
 
 ## Small screens
 

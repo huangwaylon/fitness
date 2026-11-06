@@ -697,6 +697,17 @@ files, committed like the hours. Why: the island sounds like the game on the day
 Surf, wind, rain, birds and insects are synthesised in the app; a file in the manifest replaces any bed. Why: no
 copyrighted audio and no megabytes for sounds under the music.
 
+### Copy: spaced kana in the world, kanji in the sheets (2026-11-07)
+The user: "for everything except the content and menu in the main world, allow the use of kanji for easier reading, be
+consistent." The world (the island and its rooms: lines, bubbles, signs, notices, the HUD and the leaf menu's pills)
+keeps kids-style spaced kana under `word-break: keep-all`; every sheet, panel, dialog and form is natural adult
+Japanese with kanji, one spelling a term, under `word-break: normal; line-break: strict` (docs/design.md "Copy").
+Normal breaking is right for unspaced kanji text: keep-all would make a whole sentence one word, and WebKit has no
+`auto-phrase`; the trip guides keep their Intl.Segmenter `<wbr>`s. Keys shared by a pill and its sheet split (a sheet's
+title may differ: せってい → 設定). Fonts: the new kanji added two Zen Maru slices (148 → 150 @font-face rules, each
+loaded only when one of its glyphs shows). Rejected: kanji everywhere (the world's voice is NH's kana), furigana
+(clutter at these sizes), a per-person kana toggle (two copies of every sheet string).
+
 ## The island world
 
 ### The rolling-log world in 2D DOM (superseded: the island in 3D, November 2026)
