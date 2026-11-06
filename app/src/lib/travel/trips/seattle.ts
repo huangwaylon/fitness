@@ -10,7 +10,7 @@ export const seattle: Trip = {
   start: "2026-07-02",
   end: "2026-07-19",
   tz: "America/Los_Angeles",
-  cover: { src: "travel/seattle/cover.webp", w: 560, h: 760 },
+  cover: { src: "travel/seattle/cover.webp", w: 560, h: 240 },
   hero: { src: "travel/seattle/hero.webp", w: 720, h: 540 },
   dayColors: [],
   bbox: [-122.45, 46.75, -120.6, 48.15],

@@ -30,7 +30,7 @@ pairs and formats), `track.ts` (pure), `load.ts`.
   `npm run hiking:tracks -- <old repo>/gpx` (`scripts/hiking-tracks.ts`): elevation smoothed over the raw points (the
   old app's 15-point centred mean), then Douglas–Peucker at 5 m (771–7,153 points → 102–727; 3–20 KB a trail). `len`
   is the raw length: the view stretches the simplified line's distances to it, so the readout's km match the old app.
-- **Photos:** `static/hiking/photos/<slug>.webp` (1200 × 800, AllTrails users' photos).
+- **Photos:** `static/hiking/photos/<slug>.webp` (1080 × 720 at q75: a card's width at 3×; AllTrails users' photos).
 - Neither is precached (`service-worker/caches.ts` `isHiking`): each is fetched as a trail is read.
 - **Private values:** Kinpu's plan link, party and planner are `{p:kinpuPlanUrl}`, `{p:kinpuParty}`, `{p:kinpuPlanner}`,
   read from the trip note of a trip named `hiking` (docs/travel.md "Private values": add a `hiking` entry to
@@ -38,7 +38,7 @@ pairs and formats), `track.ts` (pure), `load.ts`.
 
 ## Map
 
-`components/hiking/TrailMap.svelte` (light) and `map/engine.ts` (MapLibre, which shares the trip map's chunk: never
+`components/hiking/TrailMap.svelte` (light) and `map/engine.ts` (MapLibre, which shares the trip map's chunk; the engine's own chunk a map chunk too: never
 precached; its worker is our own file). `map/style.ts` `TOPO` holds the region's raster under the overlays, in literal
 copies of app tokens (`C`): the track `--c-coral-text` on a cream halo, the trailhead `--c-leaf-edge`, the end coral,
 the waypoints `--c-yuzu-lip`, the scrub's dot a darker lilac (#8A6FD6), the location dot `--c-sky`. The CSP's `connect-src` names `basemap.nationalmap.gov` and `cyberjapandata.gsi.go.jp`:

@@ -10,7 +10,7 @@ export const okinawa: Trip = {
   start: "2026-10-10",
   end: "2026-10-12",
   tz: "Asia/Tokyo",
-  cover: { src: "travel/okinawa/cover.webp", w: 560, h: 760 },
+  cover: { src: "travel/okinawa/cover.webp", w: 560, h: 240 },
   hero: { src: "travel/okinawa/hero.webp", w: 720, h: 900 },
   dayColors: ["#0e7b8b", "#e2593a", "#b87d17"],
   bbox: [127.586, 26.055, 128.374, 26.895],

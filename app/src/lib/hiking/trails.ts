@@ -2,7 +2,7 @@
 // (its trails.js, English, and i18n.js's Japanese: the user's own write-ups). Stats are AllTrails' (length, gain,
 // difficulty, time); km and m are its miles and feet converted once (the gain is the DEM figure on purpose: types.ts).
 // The tracks are files of their own by slug (static/hiking/tracks/, load.ts), the photos static/hiking/photos/<slug>.webp
-// (AllTrails users' photos, 1200 × 800).
+// (AllTrails users' photos, 1080 × 720: a card's width at 3×).
 import type { Trail } from './types.ts';
 
 const NWFP = { en: 'NW Forest Pass', ja: 'ノースウエスト・フォレストパス' };
