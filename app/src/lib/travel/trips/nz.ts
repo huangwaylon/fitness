@@ -10,7 +10,7 @@ export const nz: Trip = {
   start: "2027-02-11",
   end: "2027-02-16",
   tz: "Pacific/Auckland",
-  cover: { src: "travel/nz/cover.webp", w: 560, h: 760 },
+  cover: { src: "travel/nz/cover.webp", w: 560, h: 240 },
   hero: { src: "travel/nz/hero.webp", w: 720, h: 540 },
   dayColors: ["#1f6fe0", "#e0453f", "#00996f", "#e07c00", "#8a3fd6", "#0aa2bd"],
   bbox: [172.4, -40.45, 178.9, -34.3],

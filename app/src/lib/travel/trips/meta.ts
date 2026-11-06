@@ -18,7 +18,7 @@ export const TRIP_META: readonly TripMeta[] = [
     start: '2026-10-10',
     end: '2026-10-12',
     tz: 'Asia/Tokyo',
-    cover: { src: 'travel/okinawa/cover.webp', w: 560, h: 760 },
+    cover: { src: 'travel/okinawa/cover.webp', w: 560, h: 240 },
     days: []
   },
   {
@@ -29,7 +29,7 @@ export const TRIP_META: readonly TripMeta[] = [
     start: '2026-07-02',
     end: '2026-07-19',
     tz: 'America/Los_Angeles',
-    cover: { src: 'travel/seattle/cover.webp', w: 560, h: 760 },
+    cover: { src: 'travel/seattle/cover.webp', w: 560, h: 240 },
     days: []
   },
   {
@@ -40,7 +40,7 @@ export const TRIP_META: readonly TripMeta[] = [
     start: '2027-02-11',
     end: '2027-02-16',
     tz: 'Pacific/Auckland',
-    cover: { src: 'travel/nz/cover.webp', w: 560, h: 760 },
+    cover: { src: 'travel/nz/cover.webp', w: 560, h: 240 },
     days: [
       { n: 1, date: '2027-02-11', icon: '', title: L0, rows: [{ t: '18:30', text: L0, dd: -1, tz: 'Asia/Tokyo' }] },
       { n: 6, date: '2027-02-16', icon: '', title: L0, rows: [{ t: '00:10', text: L0, dd: 1 }] }

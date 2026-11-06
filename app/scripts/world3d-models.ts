@@ -149,10 +149,10 @@ const MUSEUM_JOBS: Job[] = [
 /** The museum's floors and walls (--museum): [name, NH's texture folder, longest side px]. */
 const MUSEUM_TEX: [string, string, number][] = [
   ['hall-floor', 'IdrMuseumArt_0_Tex_mStoneFloor_Alb', 512], ['hall-wall', 'IdrMuseumEnt02_Tex_mBrick_Alb', 512],
-  ['hall-marble', 'IdrMuseumArt_0_Tex_mWallMarble_Alb', 256], ['hall-red', 'IdrMuseumArt_0_Tex_mWallRed_Alb', 256],
+  ['hall-red', 'IdrMuseumArt_0_Tex_mWallRed_Alb', 256],
   ['fish-floor', 'IdrMuseumFish_0_Tex_mFloorCarpet_Alb', 256], ['fish-wall', 'IdrMuseumFish_0_Tex_mWallMortarBlue_Alb', 256],
   ['fish-sand', 'IdrMuseumFish_0_Tex_mFishSand_Alb', 256], ['bug-path', 'IdrMuseumInsect_0_Tex_mRoadTile_Alb', 256],
-  ['bug-outside', 'IdrMuseumInsect_1_Tex_mOutside_Alb', 512], ['bug-frame', 'IdrMuseumInsect_0_Tex_mWallGreenHouse_Alb', 256],
+  ['bug-outside', 'IdrMuseumInsect_1_Tex_mOutside_Alb', 512],
   ['bug-soil', 'IdrMuseumInsect_0_Tex_mFloorGravel_Alb', 256]
 ];
 
