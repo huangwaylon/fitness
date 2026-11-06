@@ -21,7 +21,8 @@ const VILLAGERS = 'island-villagers-v1';
 // Precache built JS/CSS + static files (caches.ts precachable): font subsets (Japanese = many files) are cached on
 // first use instead; the art and audio manifests are bundled into the JS (lib/art.ts, lib/sound/manifest.ts), so
 // their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
-// never precached: AUDIO_CACHE.
+// never precached: AUDIO_CACHE. Nor the trip map's MapLibre (its chunk, worker and CSS: online only, like its tiles):
+// fetched from the network each time a map is drawn (the browser's HTTP cache aside).
 const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(precachable);
 /** Checked with the server past the browser's HTTP cache (a host's own max-age): a static file or the shell
  *  fetched within 10 minutes before a deploy would otherwise be stored stale for the whole version. Revalidated, not

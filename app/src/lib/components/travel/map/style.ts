@@ -1,24 +1,34 @@
-// The trip map's style (docs/travel.md "Maps"): the basemap (source.ts: OpenFreeMap's tiles; basemap.ts: their
-// OpenMapTiles layers on our NookPhone palette, theme.ts) under the trip's overlays (overlay.ts: the legs in the day colours, the candidate pins, the
-// location dot). The stops are HTML pins over it (engine.ts). Pure: the tests build it without a map.
-import type { ExpressionSpecification, LayerSpecification, StyleSpecification } from 'maplibre-gl';
-import { basemapLayers, labelField } from './basemap.ts';
-import { basemapSource } from './source.ts';
+// The trip map's style (docs/travel.md "Maps"): the basemap (BASEMAP: OpenFreeMap's tiles; basemap.ts: their
+// OpenMapTiles layers on our NookPhone palette, theme.ts) under the trip's overlays (overlay.ts: the legs in the day
+// colours, the candidate dots, the location dot). The stops are HTML pins over it (engine.ts). Pure: the tests build it
+// without a map.
+import type { ExpressionSpecification, FontFacesSpecification, LayerSpecification, StyleSpecification } from 'maplibre-gl';
+import type { Locale } from '#lib/i18n/index.ts';
+import { basemapLayers } from './basemap.ts';
 import { FONT } from './fonts.ts';
-import { NOOK, type Theme } from './theme.ts';
-import type { Locale } from './types.ts';
+import { NOOK } from './theme.ts';
+import { KIND_COLOR } from './types.ts';
 
-/** The self-hosted glyph PBFs (static/travel/glyphs/: Noto Sans Medium's Latin ranges, under our font's name): the
- *  fallback for a character no font-faces slice covers. */
-const GLYPHS = 'travel/glyphs/{fontstack}/{range}.pbf';
+/** The tiles' origin: the CSP's connect-src names it (vite.config.ts). The one third party the phones contact: it sees
+ *  the phone's IP and which tiles it views, never the trip. Self-hosting later (the same schema) changes this. */
+const TILE_ORIGIN = 'https://tiles.openfreemap.org';
+/** OpenFreeMap's public planet (OpenStreetMap data, ODbL), online only: its TileJSON (versioned tile URLs, maxzoom 14,
+ *  overzoomed past it), with the attribution the licences ask for (OpenFreeMap's terms, OpenMapTiles' CC-BY,
+ *  OpenStreetMap's ODbL). */
+export const BASEMAP = {
+  type: 'vector',
+  url: `${TILE_ORIGIN}/planet`,
+  attribution: [
+    '<a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a>',
+    '<a href="https://www.openmaptiles.org/" target="_blank" rel="noopener">© OpenMapTiles</a>',
+    'Data from <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>'
+  ].join(' ')
+} as const;
 
 export const SRC = { base: 'basemap', legs: 'legs', cands: 'cands', loc: 'loc', keep: 'keep' } as const;
 
 /** The keepout's blank images (engine.ts adds them): a stop pin's size (its anchor at the tip), a candidate's circle. */
 export const KEEP_IMAGES = { 'keep-pin': [34, 46], 'keep-dot': [20, 20] } as const;
-
-/** The candidate kinds' colours (pins and chips): the tent orange, the leaf, a soft coral-pink. */
-const KIND_COLOR = { camp: '#F29A4A', nature: '#4FB35C', food: '#E8708E' } as const;
 
 /** The location dot: --c-yuzu with a white rim and a brown edge (an NH marker), its accuracy halo --c-mint. */
 const LOC = { dot: '#FFD84D', rim: '#FFFFFF', edge: '#937047', halo: '#7BD7C1' } as const;
@@ -32,7 +42,7 @@ export function haloRadius(lat: number): ExpressionSpecification {
   return ['interpolate', ['exponential', 2], ['zoom'], 0, z0, 22, ['*', z0, 2 ** 22]];
 }
 
-export function overlayLayers(lat = 26): LayerSpecification[] {
+export function overlayLayers(): LayerSpecification[] {
   const legLine = { 'line-join': 'round', 'line-cap': 'round' } as const;
   const w = (add: number): ExpressionSpecification => ['interpolate', ['linear'], ['zoom'], 8, 2.5 + add, 13, 4.5 + add, 17, 7 + add];
   const width = w(0);
@@ -57,7 +67,8 @@ export function overlayLayers(lat = 26): LayerSpecification[] {
       layout: { 'icon-image': ['match', ['get', 'pin'], 'stop', 'keep-pin', 'keep-dot'], 'icon-anchor': ['match', ['get', 'pin'], 'stop', 'bottom', 'center'], 'icon-allow-overlap': true, 'icon-ignore-placement': false },
       paint: { 'icon-opacity': 0 }
     },
-    { id: 'loc-halo', type: 'circle', source: SRC.loc, paint: { 'circle-radius': haloRadius(lat), 'circle-color': LOC.halo, 'circle-opacity': 0.22, 'circle-stroke-color': LOC.halo, 'circle-stroke-width': 1.5, 'circle-stroke-opacity': 0.7, 'circle-pitch-alignment': 'map' } },
+    // (the halo's metres at the fix's latitude: engine.ts re-sets it with each fix)
+    { id: 'loc-halo', type: 'circle', source: SRC.loc, paint: { 'circle-radius': haloRadius(0), 'circle-color': LOC.halo, 'circle-opacity': 0.22, 'circle-stroke-color': LOC.halo, 'circle-stroke-width': 1.5, 'circle-stroke-opacity': 0.7, 'circle-pitch-alignment': 'map' } },
     { id: 'loc-edge', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 11, 'circle-color': LOC.edge } },
     { id: 'loc-dot', type: 'circle', source: SRC.loc, paint: { 'circle-radius': 7.5, 'circle-color': LOC.dot, 'circle-stroke-color': LOC.rim, 'circle-stroke-width': 2.5 } }
   ];
@@ -70,28 +81,17 @@ function stack(base: LayerSpecification[], over: LayerSpecification[]): LayerSpe
   return [...base.filter((l) => l.type !== 'symbol'), ...over.filter(isLeg), ...base.filter((l) => l.type === 'symbol'), ...over.filter((l) => !isLeg(l))];
 }
 
-export interface StyleOpts {
-  /** The basemap's TileJSON (default: OpenFreeMap's planet). */
-  tiles?: string;
-  locale: Locale;
-  /** The site's base URL (location.href in the app): the glyphs and tiles resolve against it. */
-  base?: string;
-  fontFaces?: StyleSpecification['font-faces'];
-  theme?: Theme;
-}
-
 const empty = { type: 'geojson', data: { type: 'FeatureCollection', features: [] } } as const;
 
-export function buildStyle(o: StyleOpts): StyleSpecification {
-  const base = o.base ?? (typeof location === 'undefined' ? 'http://localhost/' : location.href);
-  const t = o.theme ?? NOOK;
+/** No glyphs URL: every label is drawn on the phone from the font faces (fonts.ts), a character no slice covers in a
+ *  local font. */
+export function buildStyle(locale: Locale, fontFaces: FontFacesSpecification): StyleSpecification {
   return {
     version: 8,
     name: 'nookphone',
-    glyphs: decodeURI(new URL(GLYPHS, base).href),
-    ...(o.fontFaces ? { 'font-faces': o.fontFaces } : {}),
-    sources: { [SRC.base]: basemapSource(o.tiles), [SRC.legs]: { ...empty }, [SRC.cands]: { ...empty, promoteId: 'id' }, [SRC.loc]: { ...empty }, [SRC.keep]: { ...empty } },
-    layers: stack(basemapLayers(SRC.base, t, { field: labelField(o.locale), font: [FONT] }), overlayLayers())
+    'font-faces': fontFaces,
+    sources: { [SRC.base]: { ...BASEMAP }, [SRC.legs]: { ...empty }, [SRC.cands]: { ...empty, promoteId: 'id' }, [SRC.loc]: { ...empty }, [SRC.keep]: { ...empty } },
+    layers: stack(basemapLayers(SRC.base, NOOK, locale, [FONT]), overlayLayers())
   };
 }
 

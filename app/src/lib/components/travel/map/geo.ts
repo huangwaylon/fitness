@@ -42,10 +42,6 @@ export class LocWatch {
     this.clear();
   }
 
-  get watching(): boolean {
-    return this.id !== null;
-  }
-
   private watch(): void {
     if (!this.wanted || !this.shown || this.id !== null || !this.geo) return;
     this.id = this.geo.watchPosition(
