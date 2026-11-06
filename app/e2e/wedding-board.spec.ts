@@ -8,7 +8,7 @@
 // ふたつ あわせる), せってい (names, ‹ right after typing, categories with とりけす, the deleted list, ぜんぶ けす after its
 // ask) and the guest's read-only board (`?demo&as=G`). Logic tier: nothing here is drawn 3D. WED_SHOTS=1 saves
 // screenshots to /tmp/wedding-ui-shots/.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
