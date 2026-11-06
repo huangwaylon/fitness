@@ -1,6 +1,6 @@
 <script lang="ts">
   // A recipe (マイレシピ; a level over a meal's search or a recipe's amount, docs/design.md "Gohan"). Mine or a new one: its name, how many
-  // servings (−/＋, 1–20), its ingredients (each: the food, its amount, its kcal; a tap → its amount to change or
+  // servings (−/＋, 1–20), its ingredients (each: its category's tile, the food, its amount and everyday name, its kcal; a tap → its amount to change or
   // take out), ＋ ざいりょうを ついか (→ the search → the amount), what it adds up to (a serving's kcal and P/F/C/salt, and
   // the whole's), then けす (a saved one; tapped twice: the board's ほんとうに？) and ほぞん. Anyone else's: the same,
   // read-only, with who set it, 「コピーして へんしゅう」 (a copy of my own, opened here) and 「ごはんに ついか」.
@@ -9,7 +9,8 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import Avatar from '../characters/Avatar.svelte';
-  import { amountText, servingOnly, type RecipeDraft } from './foodUi.ts';
+  import FoodThumb from './FoodThumb.svelte';
+  import { amountText, catalogOf, catOf, commonAliases, foodDbNow, glossOf, itemOf, servingOnly, type RecipeDraft } from './foodUi.ts';
 
   interface Props {
     draft: RecipeDraft;
@@ -45,7 +46,12 @@
 </script>
 
 {#snippet cells(it: RepeatItem)}
-  <span class="nm">{it.f.n}</span><small class="amt">{amountText(it)}</small><b class="kc money">{formatNum(kcalOf(it))}</b>
+  {@const db = foodDbNow()}
+  {@const gl = glossOf(catalogOf(db, it.f.id) ?? itemOf(it.f, null), it.f.n, commonAliases(db))}
+  <FoodThumb cat={catOf(db, it.f.id)} size={40} />
+  <span class="nm">{it.f.n}</span>
+  <small class="amt"><span>{amountText(it)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
+  <b class="kc money">{formatNum(kcalOf(it))}</b>
 {/snippet}
 
 <form class="rcp" data-recipe-level={ro ? 'view' : 'edit'} onsubmit={(e) => { e.preventDefault(); if (ok) onsave?.(); }}>
@@ -148,14 +154,17 @@
   /* FoodMeal's rows */
   .row {
     appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; width: 100%;
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'nm kc' 'amt kc'; align-items: center;
+    display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: 'th nm kc' 'th amt kc'; align-items: center;
     column-gap: 10px; min-height: var(--row-obj); padding: 6px 2px;
   }
+  .row > :global([data-thumb]) { grid-area: th; margin: -2px 0; }
   button.row { cursor: pointer; border-radius: var(--r-chip); }
   button.row:active { background: color-mix(in srgb, var(--lip) 30%, transparent); }
   button.row:focus-visible { outline: 3px solid var(--focus); outline-offset: 0; }
   .nm { grid-area: nm; font-weight: 700; font-size: var(--fs-body); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .amt { grid-area: amt; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .amt { grid-area: amt; display: flex; min-width: 0; white-space: pre; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
+  .amt > :not(.gl) { flex: none; }
+  .gl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .kc { grid-area: kc; font-size: var(--fs-body); }
   .wide { width: 100%; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
   .wide svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
