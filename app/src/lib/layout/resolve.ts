@@ -32,7 +32,7 @@ const errors = (l: Layout): Set<string> => new Set(validate(l).filter((i) => i.l
  * front, a way blocked). Rings outwards, the same order on every phone; null when none is near (or it's a bridge or
  * stairs: those fit one place only).
  */
-function clearTile(l: Layout, id: string): [number, number] | null {
+export function clearTile(l: Layout, id: string): [number, number] | null {
   const o = l.objects.get(id), def = o && kindDef(o.k);
   if (!o || !def || o.k === 'bridge' || o.k === 'stairs') return null;
   let base: Set<string> | null = null;
