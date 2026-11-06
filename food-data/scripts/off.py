@@ -6,7 +6,7 @@ Inputs: raw/off/off_jp.jsonl (stream-filtered CSV dump, see fetch.py) and pages_
 import glob, json, os, re, unicodedata
 from collections import Counter
 
-from lib import NUTS, fnum as to_num, norm_jan, nutrients, shard_key
+from lib import NUTS, drop_reading, fnum as to_num, norm_jan, nutrients, shard_key
 
 META = {
     'source': 'off',
@@ -362,7 +362,10 @@ def build(indir):
         if vals is None:
             continue
         brand = clean((p.get('brands') or '').split(',')[0])
+        name, readings = drop_reading(name)
         it = {'id': 'off:' + jan, 'name': name}
+        if readings:
+            it['aliases'] = readings
         if brand:
             it['brand'] = brand[:30]
         it['jan'] = jan

@@ -122,7 +122,8 @@ and fat don't explain leave it blank (いかフライ); fibre, when plant rows (
 - Creatine (クレアチン, not a protein powder with it): Japanese labels count its nitrogen as protein (5 g: P 4.4 g, 18 kcal);
   it is neither a protein nor an energy source → P 0 and kcal = 4C + 9F (a flavoured one's sugar), with a note saying so.
 
-Search aliases come from Wikidata (CC0) and ja.wikipedia (CC BY-SA, short names and readings only, no text), frozen
+A name never carries its reading: MAFF's title reading (「味噌汁（麦味噌）（みそしる（むぎみそ)）」, `recipes_text.split_title`) and a
+label's (豆板醤（トウバンジャン）, `lib.READINGS`) move to the aliases. Search aliases come from Wikidata (CC0) and ja.wikipedia (CC BY-SA, short names and readings only, no text), frozen
 in `data_src/aliases_*.json`. MEXT's rule-based aliases (`mext_names.py` TOKEN_ALIASES) give an animal's own names
 (豚肉, 牛肉, 鶏肉) to its cuts, not to its processed meats or offal (`PROCESSED_MEAT`: 豚肉 found ベーコン first), and ライス only
 to cooked rice (01088's override), not to every 米 food (米粉, おもゆ).

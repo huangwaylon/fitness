@@ -329,6 +329,25 @@ def tidy(item):
     return item
 
 
+# A label's katakana reading after the kanji (a product's name): only these, as a word's own reading can't be told from
+# a variety or a size (焼豚(スライス), 枝豆(イオン)) by its form.
+READINGS = {'豆板醤': 'トウバンジャン', '焼豚': 'チャーシュー', '青椒肉絲': 'チンジャオロース'}
+_READING_RE = re.compile(r'(%s)\s?[（(](%s)[）)]' % ('|'.join(READINGS), '|'.join(READINGS.values())))
+
+
+def drop_reading(name):
+    """A name without a reading in brackets (豆板醤（トウバンジャン） → 豆板醤), and the readings it had, for the
+    aliases."""
+    readings = []
+
+    def cut(m):
+        if READINGS[m.group(1)] != m.group(2):
+            return m.group(0)
+        readings.append(m.group(2))
+        return m.group(1)
+    return _READING_RE.sub(cut, name).strip(), readings
+
+
 # ---------------------------------------------------------------- schema validation
 def validate(doc, kind='dataset'):
     """Errors (list of str) for a dataset doc ({source,label,attribution,license,url,items}) or a jan shard."""

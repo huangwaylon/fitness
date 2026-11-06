@@ -9,6 +9,7 @@ import lib  # noqa: E402
 import maff_ingredients as MI  # noqa: E402
 import mext_names  # noqa: E402
 import off  # noqa: E402
+import recipes_text  # noqa: E402
 
 NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
 
@@ -357,6 +358,19 @@ class Validation(unittest.TestCase):
     def test_tidy(self):
         self.assertEqual(lib.tidy({'name': 'a', 'aliases': ['a', 'b', 'b', '']}), {'name': 'a', 'aliases': ['b']})
         self.assertEqual(lib.tidy({'name': 'a', 'aliases': ['a']}), {'name': 'a'})
+
+
+class Readings(unittest.TestCase):
+    def test_recipe_title_reading(self):
+        f = recipes_text.split_title
+        self.assertEqual(f('えびみそ汁（えびみそしる）'), ('えびみそ汁', 'えびみそしる'))
+        self.assertEqual(f('味噌汁（麦味噌）（みそしる（むぎみそ)）'), ('味噌汁（麦味噌）', 'みそしる・むぎみそ'))
+        self.assertEqual(f('かて飯'), ('かて飯', ''))
+        self.assertEqual(f('煮物（大根（生））'), ('煮物（大根（生））', ''))   # a nested bracket that isn't kana stays
+
+    def test_product_reading(self):
+        self.assertEqual(lib.drop_reading('豆板醤（トウバンジャン）'), ('豆板醤', ['トウバンジャン']))
+        self.assertEqual(lib.drop_reading('焼豚(スライス)'), ('焼豚(スライス)', []))
 
 
 class Barcodes(unittest.TestCase):
