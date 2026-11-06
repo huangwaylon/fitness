@@ -2698,6 +2698,13 @@ and volume stay local: turning sound off sends nothing. A stage outranks the roo
 opening and a cut-in of my own (`choose.ts pickMusic`); its key is `st/<src>/<song>/<at>`. The first tap after the app
 opens (iOS: audio needs one) picks the song up mid-song inside that tap.
 
+**Another player's sounds** (a shake, a bush, watering, a weed, the rock, a dig, a present, a reel's splash, their
+footsteps, the wasps of their nest) already reach every phone through the intents that show them; each plays where it
+happens (`cue(c, { at })`, `sceneSfx(kind, at)`): the island's camera gives the gain (`camera.svelte.ts earGain`,
+`cues.ts hearFrom`): none off screen (60 px round it), else 1 at the view's middle down to 0.35 at its edge. My own
+taps play as ever (they never pass `at`). Personal sounds stay mine: the controls' taps, the shop, the ききみみ cues,
+my wasps' music, a setting's preview.
+
 ### K.K. Slider
 
 `kk.ts loadKK()`: K.K.'s songs from `static/audio/kk.json` (its `kk` list, `{ id, ja, en, file, gain, v, d }`, NH's

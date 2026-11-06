@@ -39,9 +39,10 @@ const PETAL: Record<FlowerColour, string> = {
 export const petalOf = (id: FlowerId): string => PETAL[id.slice(0, id.indexOf('-')) as FlowerColour] ?? PETAL.pink;
 
 /** The one hook between scenery taps and the sound engine: the `scene-<kind>` cue (sound/cues.ts, all world cues,
- *  so they're quiet under a sheet). Callers fire it at the moment of the tap, so a delay (if any) belongs in the cue. */
-export function sceneSfx(kind: SceneSfx): void {
-  cue(`scene-${kind}`);
+ *  so they're quiet under a sheet). Callers fire it at the moment of the tap, so a delay (if any) belongs in the cue.
+ *  `at`: where another player's doing happens (its gain by the camera); mine never pass it. */
+export function sceneSfx(kind: SceneSfx, at?: readonly [number, number]): void {
+  cue(`scene-${kind}`, at ? { at } : undefined);
 }
 
 /** Whether an element is drawn now: a world node outside the camera's window is `visibility: hidden` with its last box

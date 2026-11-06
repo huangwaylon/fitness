@@ -114,10 +114,10 @@
       return [{ id: p.id, tree, what: p.what as Wood, x, z }];
     });
   });
-  /** A piece of wood falls out of the tree (mine as I shake it, the partner's as theirs comes in). */
-  function woodFalls(id: string) {
+  /** A piece of wood falls out of the tree (mine as I shake it, the partner's as theirs comes in: `at`, its tree). */
+  function woodFalls(id: string, at?: readonly [number, number]) {
     dropping.add(id);
-    later(() => sceneSfx('twig'), 520);
+    later(() => sceneSfx('twig', at), 520);
     later(() => dropping.delete(id), 900);
   }
 
@@ -160,6 +160,8 @@
     const i = d.shakes.findLastIndex((s) => s.tree === tree.id && s.drop === drop);
     const ids = i >= 0 ? dropIds(d.shakes, i) : [];
     const from = fromOf(tree);
+    // (another's shake: its sounds by where it is)
+    const far = side === 'mine' ? undefined : ([tree.x, tree.z] as const);
     if (drop === 'bagworm' || drop === 'spider') {
       const id = ids[0] ?? `dg:${tree.id}:x`;
       void loadLines().catch(() => {});
@@ -172,14 +174,14 @@
       later(() => dangler?.n === g.n && (dangler = null), DANGLE_MS + 900);
     } else if (drop === 'branch' || drop === 'coconut') {
       for (const id of ids) dropping.add(id);
-      later(() => sceneSfx('twig'), 520);
+      later(() => sceneSfx('twig', far), 520);
       later(() => ids.forEach((id) => dropping.delete(id)), 900);
     } else if (drop === 'nest') {
       void loadLines().catch(() => {});
       const at = dropAt(tree, 'nest');
       const nest = { n: ++seq, tree: tree.id, x: at.x, y: at.z, from, fading: false };
       nests = [...nests, nest];
-      later(() => (sceneSfx('nest'), side === 'mine' && waspMusic('nest')), 560);
+      later(() => (sceneSfx('nest', far), side === 'mine' && waspMusic('nest')), 560);
       later(() => charge(nest.n, ids[0] ?? `ws:${tree.id}:x`, nest.x, nest.y, side), 560 + SWARM_DELAY_MS);
     }
   }
@@ -231,12 +233,13 @@
     if (caught(world.day, id)) return fadeNest(nestN);
     swarm = { n, id, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < 195 ? -1 : 1 };
     stopFrames = w.moveStart();
-    sceneSfx('buzz');
+    const at = side === 'mine' ? undefined : ([x, z] as const);
+    sceneSfx('buzz', at);
     if (side === 'mine') waspMusic('chase'); // NH's Chased by Bees cuts in over the island's music
     later(() => {
       if (swarm?.n !== n) return;
       swarm = { ...swarm, stung: true };
-      sceneSfx('sting');
+      sceneSfx('sting', at);
       if (side === 'mine') waspMusic('stung');
       onsting?.(side);
       later(() => {
@@ -339,7 +342,8 @@
         }
       } else if (e.kind === 'put' && woodTree(e.id) && live && e.who !== world.me) {
         // the partner knocked a piece of wood out: it falls here too
-        woodFalls(e.id);
+        const tr = treeOf(woodTree(e.id) ?? '');
+        woodFalls(e.id, tr ? [tr.x, tr.z] : undefined);
       } else if (e.kind === 'pick' && /^wd:/.test(e.id) && live) {
         const p = world.day.puts[e.id];
         if (p) partnerTurnTo(p.at[0], e.who);

@@ -87,7 +87,7 @@
   import { garden } from './sceneDay.ts';
   import { addDays } from '#lib/time/dates.ts';
   import { actors, addFx, applyStep, busy, eventsQuiet, inMotion, react, livePos, onMove, onStep, place, setEmote, setHome, setMotion, wake } from '../motion/director.svelte.ts';
-  import { cue } from '#lib/sound/cues.ts';
+  import { cue, hearFrom } from '#lib/sound/cues.ts';
   import { prefetchPlace } from '#lib/sound/sound.svelte.ts';
   import { enterStage } from '#lib/sound/stage.svelte.ts';
   import { walkGeo, walkable } from './walkGraph.ts';
@@ -636,8 +636,11 @@
     const hooks = expose();
     // the island's music stage (K.K., the island's cut-ins: sound/stage.svelte.ts) is heard here
     const leaveStage = enterStage('isl');
+    // another player's sounds by where they are on this camera (sound/cues.ts)
+    const offEar = hearFrom((x, z) => world.earGain(x, z));
     return () => {
       leaveStage();
+      offEar();
       // (the hooks hold this island: its DOM and its renderer, through a room's visit)
       if (window.__world === hooks) delete window.__world;
       offMove();
@@ -748,7 +751,8 @@
       if (covered || life.hidden) return;
       const [x, z] = livePos(id);
       const c = stepCue(surfaceAt(x, z), season === 'winter', raining());
-      if (c) cue(c);
+      // (another's steps by where they are)
+      if (c) cue(c, id === 'mine' ? undefined : { at: [x, z] });
     });
     return () => {
       offStep();
@@ -786,11 +790,12 @@
     if (run.shake) shakeAt(tr);
     return true;
   }
-  /** A tree rustles (a tap, a shake: the partner's too): a goal tree its own way (FruitTree), any other here. */
-  function rustle(tr: ShakeTree, sound = false) {
+  /** A tree rustles (a tap, a shake: the partner's too, `far`: its sound by where it is): a goal tree its own way
+   *  (FruitTree), any other here. */
+  function rustle(tr: ShakeTree, sound = false, far = false) {
     const g = /^goal-([AB])$/.exec(tr.id);
     if (g) return void life.shakeN[g[1] as PersonId]++;
-    if (sound) cue('tree-shake');
+    if (sound) cue('tree-shake', far ? { at: [tr.x, tr.z] } : undefined);
     echo3d(tr.id, 1.4);
     for (const el of sceneEl?.querySelectorAll<HTMLElement>(`[data-scenery-id="${tr.id}"] .art`) ?? []) {
       for (const a of el.getAnimations()) if (a.id === 'rustle') a.cancel();
@@ -1240,7 +1245,7 @@
           {#await import('./HitOverlay.svelte') then m}<m.default scene={sceneEl} />{/await}
         {/if}
         <!-- what a shaken tree drops: a branch, now and then a wasp nest -->
-        <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true)} />
+        <TreeShakes bind:this={shakes} scene={sceneEl} onsting={sting} {treeOf} rustle={(tr) => rustle(tr, true, true)} />
         <!-- the partner's catches and finds: their plates in the bottom stack -->
         <PartnerNews scene={sceneEl} />
         <KikimimiHost live={relay ?? demoRelay} />

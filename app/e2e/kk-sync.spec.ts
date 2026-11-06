@@ -111,6 +111,29 @@ test('the island’s moments on its stage: A’s stretch plays on B’s deck wit
   await ctx.close();
 });
 
+test('another player’s sounds by where they are: B’s shake out of A’s view is a cue at gain 0 there, in view a cue that sounds', { tag: '@logic' }, async ({ browser }) => {
+  type Wd = { __world: { share(i: object): boolean; go(z: number): void; stops(): [number, number]; geo(): { SCENERY: { id: string; x: number; z: number }[] } } };
+  const ctx = await browser.newContext();
+  const a = await ctx.newPage(), b = await ctx.newPage();
+  await a.addInitScript(() => (window.__cueGains = []));
+  await open(a, '');
+  await open(b, 'B');
+  const oak = (await a.evaluate(() => (window as unknown as Wd).__world.geo().SCENERY.find((s) => s.id === 'oak-m1')))!;
+  const tree = (pg: Page) => pg.evaluate(() => (window.__cueGains ?? []).filter(([c]) => c === 'tree-shake').map(([, g]) => g));
+  // A looks at the far end of the island, the oak behind it
+  const far = await a.evaluate((z) => { const w = (window as unknown as Wd).__world, [lo, hi] = w.stops(); const end = Math.abs(lo - z) > Math.abs(hi - z) ? lo : hi; w.go(end); return end; }, oak.z);
+  await a.waitForTimeout(500);
+  await b.evaluate(() => (window as unknown as Wd).__world.share({ kind: 'shake', tree: 'oak-m1', drop: 'none' }));
+  await expect.poll(() => tree(a)).toEqual([0]);
+  // A at the oak: B's next shake sounds there
+  await a.evaluate((z) => (window as unknown as Wd).__world.go(z), oak.z - 150);
+  await a.waitForTimeout(500);
+  await b.evaluate(() => (window as unknown as Wd).__world.share({ kind: 'shake', tree: 'oak-m1', drop: 'none' }));
+  await expect.poll(() => tree(a).then((g) => g.length)).toBe(2);
+  expect((await tree(a))[1], `the camera at ${far} then near the oak (${oak.x}, ${oak.z})`).toBeGreaterThan(0.3);
+  await ctx.close();
+});
+
 test('with ミュージック off B sees K.K. play (his caption with 🔇) and hears nothing', { tag: '@logic' }, async ({ browser }) => {
   const ctx = await browser.newContext();
   const a = await ctx.newPage(), b = await ctx.newPage();

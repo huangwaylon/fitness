@@ -171,17 +171,32 @@ export const CUES: Record<Cue, CueDef> = {
 const COIN_RUN = [0, 2, 4, 7, 9, 12, 14, 16, 19] as const;
 export const coinStep = (n: number): number => COIN_RUN[Math.min(Math.max(0, n), COIN_RUN.length - 1)];
 
-/** Play a moment's sound. `step`: semitones up; `gain`: × the cue's level. Test hook (e2e/sound.spec.ts): an array
- *  on `window.__cues` collects every cue that passes the world/UI rule. */
-export function cue(c: Cue, o: { step?: number; gain?: number } = {}): void {
+/** How loud a sound at a world point is here (docs/sound-sync.md: the island's camera, island/camera.svelte.ts
+ *  earGain), while one listens. */
+let ear: ((x: number, z: number) => number) | null = null;
+/** The island's camera listens (returns the leaving). */
+export function hearFrom(fn: (x: number, z: number) => number): () => void {
+  ear = fn;
+  return () => void (ear === fn && (ear = null));
+}
+
+/** Play a moment's sound. `step`: semitones up; `gain`: × the cue's level; `at`: where it happens, another player's
+ *  doing heard here (its gain by the camera: none off screen, softer away from the middle; mine never pass it). Test
+ *  hooks (e2e/sound.spec.ts, kk-sync.spec.ts): an array on `window.__cues` collects every cue that passes the world/UI
+ *  rule, one on `window.__cueGains` each placed cue's [cue, gain]. */
+export function cue(c: Cue, o: { step?: number; gain?: number; at?: readonly [number, number] } = {}): void {
   // untracked: a cue fired from an {@attach} or an $effect must not make it depend on the sheets or the sound
   // settings (FruitTree's drop-in re-ran, re-dropping and re-thudding its newest fruit, every time a sheet closed)
   untrack(() => {
     const d = CUES[c];
     if (d.world && covered()) return;
     globalThis.__cues?.push(c);
-    if (c === 'announce') return announce({ gain: (d.gain ?? 1) * (o.gain ?? 1) });
+    const placed = o.at && ear ? ear(o.at[0], o.at[1]) : 1;
+    if (o.at) globalThis.__cueGains?.push([c, placed]);
+    if (placed <= 0) return;
+    const gain = (d.gain ?? 1) * (o.gain ?? 1) * placed;
+    if (c === 'announce') return announce({ gain });
     const step = (d.step ?? 0) + (o.step ?? 0);
-    play(d.sound, { gain: (d.gain ?? 1) * (o.gain ?? 1), delay: d.delay ?? 0, rate: step ? semitones(step) : undefined });
+    play(d.sound, { gain, delay: d.delay ?? 0, rate: step ? semitones(step) : undefined });
   });
 }

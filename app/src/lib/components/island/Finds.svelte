@@ -391,7 +391,7 @@
   onMount(() =>
     shared.on(({ e, live }) => {
       if (e.kind === 'put' && e.what === 'present') void catalog().catch(() => {});
-      if (e.kind === 'put' && giftTree(e.id) && live) later(() => sceneSfx('twig'), 520);
+      if (e.kind === 'put' && giftTree(e.id) && live) later(() => sceneSfx('twig', e.at), 520);
       if (e.kind !== 'pick' || !live || !e.at || !enabled()) return;
       const [kind, id, id2] = e.what.split(':');
       const [x, z] = e.at;
@@ -401,7 +401,7 @@
         const n = ++seq;
         dig = { n, x, y: z, in3d: fx3d('swing', x, z, 0, { v: 'shovel' }) && fx3d('dust', x, z, 0, { v: '#b48a5a' }) };
         later(() => dig?.n === n && (dig = null), 6400);
-        sceneSfx('dig');
+        sceneSfx('dig', [x, z]);
         news({ art: findArt(id), verb: 'dug', name: `beach.name.${id}` });
         return;
       }
@@ -410,7 +410,7 @@
         const n = ++seq;
         opening = { n, x, y: z, art: 'deco/present', size: PRESENT_U };
         later(() => opening?.n === n && (opening = null), 1100);
-        sceneSfx('present');
+        sceneSfx('present', [x, z]);
         void catalog().then((C) => {
           const inside = { kind: id as 'item' | 'recipe', id: id2 };
           news({ art: inside.kind === 'recipe' ? 'presents/diy-recipe' : C.catalogArt(inside), verb: 'got', name: t(C.catalogName(inside)) });
