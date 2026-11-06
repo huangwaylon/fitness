@@ -96,7 +96,25 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await page.locator('dialog[open] [data-kiki-gear]').click();
   await expect(title(page)).toHaveText('せってい');
   await expect(sheet(page).locator('[data-kiki-test]')).toBeVisible();
+  // こんしゅうの めあて 3 by default, 5 kept; にほんごやく みない; おとを 1だいに まとめる on for my lobby
+  await expect(sheet(page).locator('[data-goal="3"]')).toHaveAttribute('aria-checked', 'true');
+  await sheet(page).locator('[data-goal="5"]').click();
+  expect(await page.evaluate(() => localStorage.getItem('island.kikiWeekGoal'))).toBe('5');
+  await sheet(page).locator('[data-ja="never"]').click();
+  await expect(sheet(page)).toHaveAttribute('data-kiki-ja', 'never');
+  await sheet(page).locator('[data-kiki-set-same]').click();
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __kiki: { view(): { same: boolean } } }).__kiki.view().same)).toBe(true);
   await snap(page, 'settings');
+  // the hub's week card: the days against 5, the couple quest's minutes together (one bar, no names)
+  await page.locator('dialog[open] .navbar .back').click();
+  const card = sheet(page).locator('[data-kiki-week-card]');
+  await expect(card).toHaveAttribute('data-kiki-week-goal', '5');
+  await expect(card.locator('[data-kiki-day]')).toHaveCount(7);
+  await expect(card.locator('[data-kiki-quest]')).toContainText('ふたりで');
+  await expect(card).not.toContainText('うめ');
+  await card.scrollIntoViewIfNeeded();
+  await snap(page, 'hub-week');
+  await page.locator('dialog[open] [data-kiki-gear]').click();
 
   // ✕ from a page closes the sheet; the next opening is the hub again
   await page.locator('dialog[open] .navbar .close').click();

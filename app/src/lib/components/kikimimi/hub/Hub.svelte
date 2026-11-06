@@ -13,7 +13,7 @@
   // ききみみ's hub, the sheet's root (docs/kikimimi-ux.md §6.1): an invite on top while one waits (さんか joins it; an
   // invite of content this build hasn't offers こうしんする instead), しずえ's line, today's menu (today.ts: おさらい ·
   // きょうの いっぽ · きまぐれ; a done card folds to a stamp, the first undone one has the only green button; any one
-  // means 「きょうは OK」), then the four entry tiles (あそぶ · みんなで · ずかん · きろく, each with one live line).
+  // means 「きょうは OK」), then the four entry tiles (あそぶ · みんなで · ずかん · きろく, each with one live line) and the week card.
   // Every place is one tap from here; ⚙ is the title bar's. Its own chunk.
   import type { Who } from '#lib/types.ts';
   import Host from '../../characters/Host.svelte';
@@ -25,6 +25,9 @@
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
   import { finished, pickMenu, type Act, type Card } from '#lib/kikimimi/today.ts';
   import { currentPath, currentReport, currentUnits } from '../progress.svelte.ts';
+  import { weekCard } from '#lib/kikimimi/week.ts';
+  import { weekGoal } from '../prefs.ts';
+  import WeekCard from './WeekCard.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { jst } from '#lib/time/clock.ts';
@@ -71,6 +74,11 @@
           whims: MODE_IDS.filter((m) => m !== 'review' && playable(m, ctx)),
           sessions: report.games.filter((g) => g.d === report.today && finished(g.r.length)).map((g) => ({ p: g.p, u: g.u, ladder: isLadderGame(g), lv: g.lv }))
         })
+      : null
+  );
+  const weekly = $derived(
+    report
+      ? weekCard({ today: report.today, me, goal: weekGoal(), mine: report.games.map((g) => ({ d: g.d, n: g.r.length, ms: g.ms })), others: report.others })
       : null
   );
   const hello = $derived(menu?.all ? t('kiki.hub.enough') : greet);
@@ -146,6 +154,7 @@
       </button>
     {/each}
   </nav>
+  {#if weekly}<WeekCard card={weekly} />{/if}
 </div>
 
 <style>

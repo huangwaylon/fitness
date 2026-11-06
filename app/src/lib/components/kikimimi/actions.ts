@@ -11,7 +11,7 @@ import { practiceFor } from '#lib/kikimimi/report.ts';
 import type { Focus } from '#lib/kikimimi/srs.ts';
 import type { Act } from '#lib/kikimimi/today.ts';
 import { currentReport, recentGames } from './progress.svelte.ts';
-import { keepLv, lastLv, lastTimer } from './prefs.ts';
+import { keepLv, lastLv, lastTimer, sameDefault } from './prefs.ts';
 import { modeStack, type Page } from './nav.ts';
 
 /** The sheet's side: close it, and its stack of pages over the hub (nav.ts). */
@@ -98,7 +98,7 @@ export class KikiActions {
     const g = this.#game();
     if (!g) return;
     g.close();
-    g.open(lastLv(), { timer: lastTimer() });
+    g.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
     this.#ui.setPages([]);
   };
   /** はまべ's stop on the path: ひとこと クイズ's page at はまべ. */
@@ -170,6 +170,6 @@ export class KikiActions {
   };
   /** 「じぶんで ひらく」 from an invite: a lobby of my own, as last set on this phone. */
   startOwn = (): void => {
-    this.#game()?.open(lastLv(), { timer: lastTimer() });
+    this.#game()?.open(lastLv(), { timer: lastTimer(), same: sameDefault() });
   };
 }
