@@ -121,7 +121,7 @@ items:
       - { id: ph-ill-take-it, en: "I'll take it", ja: "それ ください", match: "I'll take it", register: service, scene: "deciding to buy", trap: "もっていく ではなく かいます" }
       - { id: ph-pleasure-doing-business, en: "pleasure doing business", ja: "まいど あり", match: "pleasure do(in'|ing) business", register: service, scene: "closing a deal", trap: "とりひきの おわりの きまり もんく" }
       - { id: ph-how-hard-can-it-be, en: "how hard can it be?", ja: "かんたんでしょ", register: friend, scene: "before it goes wrong", trap: "どれだけ むずかしい？ ではなく あまく みる いいかた" }
-      - { id: ph-ended-up, en: "end up", ja: "けっきょく 〜に なる", match: "ended up", register: friend, scene: "an object's long journey", trap: "end＝おわり。たどりつく ところ" }
+      - { id: ph-ended-up, en: "end up", ja: "けっきょく 〜に なる", match: "ended up", register: friend, scene: "an object's long journey", trap: "end up＝いろいろ あって さいごに たどりつく" }
       - { id: ph-on-the-house, en: "on the house", ja: "おみせの おごり", register: service, scene: "a free coffee", trap: "やねの うえ ではなく むりょう" }
     predict:
       ask: "つぎに こまる ことは？"
@@ -232,7 +232,7 @@ items:
       - { id: ph-its-fine, en: "it's fine", ja: "だいじょうぶ（の つもり）", match: "it's (totally )?fine", register: friend, scene: "telling yourself not to worry", trap: "くりかえす ほど だいじょうぶ じゃない" }
       - { id: ph-stay-a-while, en: "stay a while", ja: "しばらく いる", match: "stay a while", register: service, scene: "a long visit", trap: "a while＝しばらく。ちょっとだけ ではない" }
       - { id: ph-running-out, en: "run out of", ja: "〜が きれる", match: "run(nin'|ning)? out(ta| of)", register: friend, scene: "low on milk", trap: "はしりでる では なく なくなる" }
-      - { id: ph-say-no-more, en: "say no more", ja: "それ いじょう いわなくて いい", register: friend, scene: "jumping in to help", trap: "だまれ ではなく わかった、まかせて" }
+      - { id: ph-say-no-more, en: "say no more", ja: "もう わかった、まかせて", register: friend, scene: "jumping in to help", trap: "だまれ ではなく わかった、まかせて" }
       - { id: ph-im-on-it, en: "I'm on it", ja: "すぐ やる", match: "I'm on it", register: friend, scene: "taking a job at once", trap: "うえに のる ではなく とりかかる" }
       - { id: ph-by-the-way, en: "by the way", ja: "ところで", match: "\\bby the way\\b", register: friend, scene: "claiming a seat", trap: "みちばた ではなく ついでに" }
     predict:
@@ -290,7 +290,7 @@ items:
       - { id: ph-the-usual, en: "the usual", ja: "いつもの", match: "\\bthe usual\\b", register: service, scene: "a regular's order", trap: "ふつう ではなく いつもの ちゅうもん" }
       - { id: ph-left-alone, en: "be left alone", ja: "そっと して おいて もらう", match: "left alone", register: friend, scene: "a quiet customer", trap: "ひとりぼっち ではなく じゃまされない" }
       - { id: ph-just-in-case, en: "just in case", ja: "ねんのため", match: "just in case", register: friend, scene: "a crossword clue", trap: "ケース では なく もしもの ため" }
-      - { id: ph-day-off, en: "day off", ja: "やすみの ひ", match: "\\bday off\\b", register: colleague, scene: "a café owner visits", trap: "off＝はずれて いる ひ" }
+      - { id: ph-day-off, en: "day off", ja: "やすみの ひ", match: "\\bday off\\b", register: colleague, scene: "a café owner visits", trap: "off＝しごとから はなれて いる ひ" }
       - { id: ph-no-rush, en: "no rush", ja: "いそがなくて いいよ", match: "\\bno rush\\b", register: service, scene: "ordering patiently", trap: "rush＝いそぐ。no で ゆっくりで いい" }
       - { id: ph-couldnt-have-done, en: "I couldn't have done it without you", ja: "あなたの おかげ", match: "couldn't have done", register: friend, scene: "thanking a mentor", trap: "できなかった ではなく かんしゃの ことば" }
       - { id: ph-close-up, en: "close up", ja: "みせを しめる", match: "close up", register: colleague, scene: "the end of the day", trap: "ちかく では なく へいてんさぎょう" }
