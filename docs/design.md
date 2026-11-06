@@ -450,8 +450,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   Left of the name, the food's **category tile** (`FoodThumb`, 48 px; the recipe's ingredients 40 px): an NH
   rounded square with a brown lip, the category's tint, a plain line glyph and its word in small type (`art.ts`
   FOOD_CAT: a leaf and 野菜, never a particular food's picture; night tints darker; マイ食品 その他, マイレシピ レシピ), a fixed box over 4 px
-  of the row's padding so the row is no taller; a name wraps to 2 lines at most. Its `img` (a packed sheet's cell, to
-  come: generated pictures for generic foods; products keep their tile) fades in over the tint, the tile again on error;
+  of the row's padding so the row is no taller; a name wraps to 2 lines at most. A food with a picture (`lib/food/images.ts`
+  imgOf: generated イメージ of generic foods in static/food-img sprite sheets, by the id as logged; products keep their
+  tile) shows its cell there, faded in over the tint, the tile again on error;
   the same name, brand and kcal shown once. ー counts (カレー is not かれい). Offline: 「データを よみこめませんでした
   （オフライン？）」, もういちど, and さいきん still under it (a recent pick keeps its portion). **Ranking** (`food/search.ts`
   tierOf, each curated pop level worth 0.6 of a tier): the name exact, or its head (up to a bracket or space: 水 finds
@@ -461,8 +462,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   Facts, JBFD) 2. `food/load.test.ts`'s golden queries (55 common ones: ご飯 · みそ汁 · 卵 · 納豆 · 鶏むね · サラダチキン ·
   プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
-- **Amount:** the food's name, then (only with one) its everyday name and its one line 「これは…」 (the data's `desc`; no
-  picture area until there are pictures); the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
+- **Amount:** the food's picture when it has one (160 px, centred, alt 「…の イメージ」, the イメージ badge at its top
+  left: every picture is generated; none: no picture area), its name, then (only with one) its everyday name and its
+  one line 「これは…」 (the data's `desc`); the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
   counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece: おにぎり,
   むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which
@@ -514,7 +516,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   its amount). With no weight the amount steps whole servings, no grams field and no weight shown anywhere (the
   entry's snapshot says `sv`: 「1食」, 「1食×2」, a nominal 100 g a serving underneath; a recipe with such an ingredient
   logs by 1人前 alike).
-- **データの出典** at the foot: each dataset's label, attribution and license (the data's licenses ask for it).
+- **データの出典** at the foot: 「イメージ: AI生成のイメージ（実物と異なる場合があります）」, then each dataset's label, attribution and license (the data's licenses ask for it).
 - Food names come from the data, so their kanji are not all in the trimmed Zen Maru subset: those fall back to the
   system font (the copy's own strings are covered: `npm run fonts:subset`).
 
