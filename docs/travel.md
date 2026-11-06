@@ -22,7 +22,7 @@ The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Document
 Okinawa and Seattle are over: `classic: true` on their data opens them as the old travel-plans site showed them
 (`components/travel/classic/ClassicGuide.svelte`), not in the app's style: the site's stylesheet ported under one root
 class (`classic.css`, `.classic …` only; `.card`/`.chip` renamed against the app's globals), its icons (`icons.ts`),
-the hero with 本棚 back to the passes, the spine day cards (`Day.look`: an itinerary day open, a flight day ringed, a
+the hero with 本棚 back to the list, the spine day cards (`Day.look`: an itinerary day open, a flight day ringed, a
 hike filled), the logistics cards, the campsites (one criterion at a time, as the site's), the bottom tab bar. The
 map tab is the site's map card with the app's live TripMap in it (online only: Okinawa's offline maps are gone; day 0
 = 全3日間). The packing list is **frozen**: the seed as it is, no boxes, no edits, nothing read from or sent to the
@@ -45,8 +45,8 @@ relay. The guide's own words are in its language (Seattle's English), the tab ba
 sheet; the modules are the source now (edit them by hand). The schema is [`types.ts`](../app/src/lib/travel/types.ts).
 Guide text is a pair `{ja?, en?}` in the data (not catalog keys), shown in the reader's locale, else the other side;
 the chrome's strings are `i18n/travel.{ja,en}.json`. Inline tokens (`tokens.ts`): `{km:}`, `{m:}`, `{c:}` follow the
-device's units; `{p:key}` is a private value. Icons are the old site's lucide names, mapped to NH art in
-`components/travel/icons.ts`. Each trip's dates and `tz` drive "today" (`DayRow.dd`: a row on the eve or the morning
+device's units; `{p:key}` is a private value. Icons are the old site's lucide names: the quiet kit's `Icon` draws a
+quiet guide's (trips.test checks they're all in it), `classic/icons.ts` a classic guide's. Each trip's dates and `tz` drive "today" (`DayRow.dd`: a row on the eve or the morning
 after).
 
 ### Private values
@@ -79,11 +79,11 @@ types and their wire limits: [backend.md#events](backend.md#events) (`pack`, `pa
 | Caps | 300 `pack` rows a trip (past them the oldest removal of an op-made id is dropped, else `pack full`), 300 ticks a trip and person. |
 | The phone | `packFold` takes the record's rows as they are and judges this phone's queued ones by the record's rules, so the list shows what the record will. |
 
-The demo has a made-up note for each trip and うめ's ticks on Okinawa's list.
+The demo has a made-up note for each trip and うめ's ticks on NZ's list (the classic guides' lists are frozen).
 
 ## Maps
 
-`components/travel/map/`: `TripMap.svelte` (light; mounted by `MapPane.svelte`), `engine.ts` (MapLibre, its own lazy
+`components/travel/map/`: `TripMap.svelte` (light; mounted by `MapPane.svelte` and the classic `CMap.svelte`), `engine.ts` (MapLibre, its own lazy
 chunk), `style.ts` (the source and the stack), `basemap.ts` + `theme.ts` (our layers on the OpenMapTiles schema, the
 NookPhone palette), `overlay.ts` (pins, legs, candidates, the location dot), `fonts.ts`, `geo.ts`.
 
@@ -97,15 +97,15 @@ NookPhone palette), `overlay.ts` (pins, legs, candidates, the location dot), `fo
 - **Overlays:** the day's legs in its colour (drive and bus solid, walk dashed, boat dotted) over the roads and under
   the labels; the stops as numbered HTML pins, stops within 30 m **merged into one pin** (「2·6」: New Lynn), the
   selected one raised and tagged with its name; a `keepout` symbol per pin so basemap labels give way; Okinawa's
-  candidates as circles behind their layer chips (off at first).
+  candidates as circles behind the classic map's layer chips (off at first).
 - **States** (`data-mode`): `loading`, `ready`; `offline` (drawn, no basemap tile came: the route alone, with
-  「ちずは オフライン — ルートだけ」); `failed` (the chunk or WebGL didn't come: 「ちずが よみこめません」 + もういちど; offline
+  「地図はオフライン — ルートのみ」); `failed` (the chunk or WebGL didn't come: 「地図を読み込めません」 + もう一度; offline
   the chunk isn't even asked for, and it draws by itself when the phone is back online); `lost` (iOS took the WebGL
   context, till restored). `map.remove()` on unmount.
 - **Locate:** the button asks permission the first time it's tapped (`geolocation=(self)`); the first fix flies the
   map there (zoom ≥ 14), unless the phone is more than 50 km from every stop: then the dot shows where it is, the map
-  stays on the route and 「たびさきから とおいよ」 shows for 8 s. Tapped again while on: back to the dot (or the route if
-  far). Refused: 「いちじょうほうが オフです」 with the Settings path. The watch runs only while the map is on screen and
+  stays on the route and 「旅先から離れています」 shows for 8 s. Tapped again while on: back to the dot (or the route if
+  far). Refused: 「位置情報がオフです」 with the Settings path. The watch runs only while the map is on screen and
   the tab shown.
 
 ## Photos
@@ -120,8 +120,8 @@ the network and the browser's HTTP cache. There is no prefetch, for any trip.
 - The map has no night tint (the day palette at every hour).
 - Offline, then back: in Playwright's WebKit the pill's import can still fail after もういちど's reload (no request
   made; `travel.spec` "offline before the first opening" fails about half its WebKit runs). Check on the phone.
-- Packing: no icon picker (a new category is always the shopping bag), no note editing, no UI to move an item to
-  another category (`packing.move(…, cat)` exists).
+- Packing: no icon picker (a new category is always the shopping bag), no note editing, no moving an item to another
+  category.
 
 ## Trip facts (from TRIPS.md)
 

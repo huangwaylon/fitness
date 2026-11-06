@@ -548,26 +548,26 @@ modal without them. Sheets rise and levels slide in over 240 ms.
 
 The info sheets (りょこう, けっこんしき; the user, 2026-11-06: "more compact and elegant, focus on the info, not too much on
 the theme") wear a quieter skin than the game chrome: no characters, no pills and lips, the original guides' look.
-`components/quiet/` is its kit; a sheet opts in with `class="quiet"` on its root and `import
-'#lib/components/quiet/quiet.css'`.
+`components/quiet/` is its kit; a sheet opts in with Sheet's `quiet` variant (the dialog is `.quiet`, edge to edge)
+and `import '#lib/components/quiet/quiet.css'`.
 
 - **Tokens** (`quiet.css`, on `.quiet`; dusk and night from `:root[data-tod]`): `--q-bg` (paper #FAF6EC) ·
-  `--q-surface` (a white card) · `--q-sunken` · `--q-hairline` / `-2` · `--q-ink` / `--q-ink-2` / `--q-muted` /
+  `--q-surface` (a white card) · `--q-sunken` · `--q-hairline` · `--q-ink` / `--q-ink-2` / `--q-muted` /
   `--q-faint` · `--q-accent` (leaf #3E9A52), `--q-accent-ink`, `--q-accent-soft` · `--q-coral` / `-soft` ·
-  `--q-shadow`, `--q-shadow-float`; type `--q-fs-s` 13 · `--q-fs-body` 15 · `--q-fs-head` 17 · `--q-fs-title` 22 ·
-  `--q-fs-big` 28 (`--q-fs-xs` 11 for the tab labels and tags only), weights `--q-w` 400 / `--q-w-b` 600; space
-  `--q-1…6` 4 / 8 / 12 / 16 / 24; radii card 18 · control 12 · chip 16 · tag 6. Body text is the system font
+  `--q-shadow`, `--q-shadow-float`, `--q-scrim`; type `--q-fs-s` 13 · `--q-fs-body` 15 · `--q-fs-head` 17 ·
+  `--q-fs-title` 22 · `--q-fs-big` 28 (`--q-fs-xs` 11 for the tab labels and tags only), weights `--q-w` 400 /
+  `--q-w-b` 600; space `--q-3` 12 / `--q-4` 16; radii card 18 · control 12 · chip 16 · tag 6. Body text is the system font
   (`--q-font`: -apple-system, Hiragino Sans); Zen Maru Gothic (`--q-font-title`, 700) only for titles and big numbers.
 - **Classes:** `.q-card` (white, hairline, soft shadow, 18), `.q-row` (44 px+, 12 / 16 padding; rows in a card split by
   a hairline; a `button.q-row` is a tappable row), `.q-sec` (a section head: 13/600 muted), `.q-kv` (key · value rows),
   `.q-badge`, `.q-tag`, `.q-btn` (`.primary`, `.text`), `.q-title`, `.q-ell`.
-- **Components:** `Icon` (one lucide-style set, 1.75 stroke, `name size fill stroke`; the guides' lucide names too) ·
-  `SheetHeader` (44 px: title left, 17 Zen Maru, optional `sub`; ‹ / ✕ are `NavButton look="quiet"`, `over` puts them
+- **Components:** `Icon` (one lucide-style set, 1.75 stroke, `name size stroke`; the lucide names a quiet guide uses,
+  a pin for any other) · `SheetHeader` (44 px: title left, 17 Zen Maru, optional `sub`; ‹ / ✕ are `NavButton look="quiet"`, `over` puts them
   on smoked discs over a photo; `trailing` snippet) · `TabBar` (a sheet's bottom tabs: `items {id,label,icon}`, `value`,
   `attr`, `onpick`; frosted, the safe area under it) · `Chip` + `ChipRow` (32 px chips with a 44 px hit, the selected
   one accent-filled; one sideways-scrolling line fading at the right while there is more) · `Segmented` (small: km | mi)
   · `ProgressBar` · `ActionSheet` (iOS-like grouped actions, a caption, キャンセル) · `BottomSheet` (a form sheet:
-  キャンセル / title / 保存; `.q-field` inputs at 16 px).
+  キャンセル / title / 保存; `.q-field` inputs at 16 px). The modal ones share `ui/scrim.ts` (a scrim tap) with Sheet.
 - **Rules kept:** every tappable has its `data-sfx` (the shown tab / chip / option `none`), ‹ ✕ are the shared
   NavButton (nav.test.ts also accepts a kit dialog's labelled キャンセル, `data-q-cancel`), fields 16 px+, no grabber.
 
@@ -2477,43 +2477,38 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
 
 ### Trips
 
-りょこう, the trip guides (data, relay and map: [travel.md](travel.md)). The HUD menu's 「りょこう」 pill (Orville's
-head, between えいご ききとり and けっこんしき) opens a full-height `pop` sheet (`components/travel/TravelSheet.svelte`, its
-own chunk with the guides and `i18n/travel.*.json`; always loaded only `open.svelte.ts`, a `lazySheet`
-(`ui-state/lazySheet.svelte.ts`, けっこんしき's too: the chunk, its offline banner, open), mounted by
-`island/Hud.svelte` outside the island's `[data-exact-taps]`). The island is paused under it.
-- **Opening:** the Tokyo day's first opening on this phone (`DEVICE.travelHello`) is the list with Orville's one line in
-  the Bubble (during a trip the next row, on the eve how the packing stands, before the days to go); a later one goes
-  straight into the trip on now, else back where it was left (the trip and its page, while the app runs).
-- **Offline:** the sheet's chunk not cached yet, the pill shows the banner 「オフラインです」 with もういちど (a retry that
-  fails online reloads the page); the guides failing inside it, よみこめませんでした + もういちど; the trip note not in yet,
-  each private value is 🔒 ・・・ under 「オンラインで ひらくと みえます」.
-- **The list:** a Dodo Airlines boarding pass per trip (the NH-blue strip over the cover, TYO ✈ the airport, the
-  destination, the dates in the reader's locale; the torn stub 「あと 99にち」, 「あした！」, 「いま 2日目」 in yuzu); on now
-  and coming first (soonest first), then 「おもいで」, past trips newest first, each stamped 「いってきた」 with its year.
-- **A trip:** ‹ back to the list; the hero photo band; a Segmented stuck to the scroller's top (a new page starts under
-  it): にってい (day cards: the day on a tilted yuzu plate, the icon and weekday, title and route; open, the hike's
-  figures, the timeline, lists, note, photo and links out in a new tab; then じゅんび, the logistics cards), ちず (only
-  with a route), もちもの, キャンプ (only with campsites: one kind, any amenities, each chip's count, an empty state
-  with すべて みる). The trip's clock is its own `tz` (`when.ts`): during the trip today's card opens and scrolls into
-  view, the row that is now marked yuzu 「いま」.
-- **ちず:** the day chips (the day's route colour; the chosen one again re-fits the route), the map, the day's stops
-  in order (pin, name, time). A row tapped selects its stop and the map flies there; a pin tapped marks its rows
-  (a merged pin all of them) and brings them into view without pushing the map off screen. Okinawa's layer chips
-  (キャンプ / しぜん / たべもの, off at first); a camp's dot opens its card in a sheet. The locate button at the bottom right.
-- **もちもの** (`PackList.svelte`, view `packView.ts`): the header (the suitcase, my bar, 「N / M あと Kこ」, ✎); a card
-  per category (its NH icon, my 「N / M」); a row per item, the whole row my tick (the bubble pops leaf green), the text
-  and note in my language, and under them 「✓ ウェイ うめ」, who has packed it in their tags' colours (nothing while
-  nobody has). ✎ (once the phone knows who I am): an add field per category, a new category, a tap on a name renames
-  it, ↑ ↓, 🗑. The guest gets ✎ with 「かえられるのは じぶんで ついかした ものだけ」 and controls only on its own things.
-- **Undo:** an item's 🗑 is at once with the banner's とりけす (sent after 5 s); a category's asks first (NH's confirm:
-  its icon, how many items go with it), then とりけす too; 「チェックを リセット」 (mine only, the others' stay) asks,
-  then とりけす.
-- **Done:** all mine packed, Orville's 「じゅんび OK！」 stamp beside my count; the first time on a phone for that trip and
-  person (`DEVICE.travelPacked`) it slams in with his line 「ばっちり！ いい たびを！」 and the miles chime. A past trip
-  shows only a quiet count with 「おわった たび」 (no bar, no stamp; ticks still work).
-- **Units:** km / mi in せってい's 「りょこう」 (`panel/TravelSection.svelte`, `DEVICE.travelUnits`, km by default, never
-  synced); every `{km:}`, `{m:}`, `{c:}` follows at once (`units.ts`).
+りょこう, the trip guides (data, relay and map: [travel.md](travel.md)), in the [quiet kit](#quiet-sheets). The HUD
+menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`components/travel/TravelSheet.svelte`, Sheet's
+`quiet` variant; its own chunk with `i18n/travel.*.json`, loaded through `open.svelte.ts`, a `lazySheet`, mounted by
+`island/Hud.svelte`). The island is paused under it.
+- **Opening:** straight into the trip on now, else back where it was left (the trip and its page, while the app runs).
+- **Offline:** the chunk not cached yet, the pill's banner 「オフラインです」 + もういちど; a guide's chunk failing,
+  読み込めませんでした + もう一度 under the trip's own header; the trip note not in yet, each private value is 🔒 ・・・ and a
+  line under the photo says 「オンラインで表示」.
+- **The list** (`TripList.svelte`, from `trips/meta.ts` only: no guide loads for it): これからの旅 (on now and coming,
+  soonest first) and これまで (newest first), a card of rows each: the cover, the place, its dates and area · days, a
+  badge 「あと97日」 / 「あした」 / 「2日目」. Under them the one km | mi switch (this phone's, `DEVICE.travelUnits`, never
+  synced; every `{km:}`, `{m:}`, `{c:}` follows at once: `units.ts`).
+- **A classic guide** (`classic: true`: Okinawa, Seattle; `classic/ClassicGuide.svelte`, [travel.md](travel.md)):
+  identical to the original travel-plans site, its own look under `.classic`, 本棚 on the hero back to the list; its
+  map the app's live TripMap in the site's card; its packing list frozen (nothing read from or sent to the relay).
+- **A quiet trip** (`TripView.svelte`, any other: NZ): ‹ ✕ over the photo (150 px; the title, dates, area at its foot),
+  the title bar once it scrolls away; a bottom tab bar 日程 · 地図 (with a route) · 持ち物. 日程: day cards (the day of
+  the month big in the day's colour, month and weekday, title and route; open, a hike's figures as key · value rows,
+  the timeline, lists, note, photo, links out in a new tab), then じゅんび (the logistics cards: figures, then a row that
+  opens the rest) and the foot. The trip's clock is its own `tz` (`when.ts`): outside the trip every day open; during it
+  today's alone, scrolled into view, its row that is now lit (or 「次」), a row on another date 「前日」 / 「翌日」.
+  Campsites and candidate layers are the classic guides' only (trips.test keeps them off a quiet trip).
+- **地図** (`MapPane.svelte`): the map held at the top, the day chips under it (the day's colour; the shown one again
+  re-fits), the day's stops (number, name, how it's reached, arrival). A row selects its stop and the map flies there; a
+  pin marks its rows (a merged pin all of them) and scrolls them into view. The locate button at the bottom right.
+- **持ち物** (`PackList.svelte`, view `packView.ts`): my 「12 / 35」 and the bar, 編集; a card per category (its icon, my
+  「N / M」), a row per item, the whole row my tick (each person ticks their own), the text and note in my language,
+  who has packed it 「うめ ✓」 at the right. 編集 (once the phone knows who I am): a row or a category opens an
+  ActionSheet (名前を変更 · 上へ · 下へ · 削除), 「＋ 追加」 under each category and カテゴリを追加 open a BottomSheet,
+  チェックをリセット (mine only). The guest adds anything and changes only what it added (the others' rows boop).
+  An item's 削除 is at once with the banner's とりけす (sent after 5 s); a category's and the reset ask first (an
+  ActionSheet), then とりけす too. A past trip: a quiet count with 「終わった旅」, no bar (ticks still work).
 - **Rules the guides bend (the user, 2026-11-06):** the guides are reading cards, denser than §Simplicity allows (more
   than 40 characters and 3 cards a screen, more than 5 rows a card). Their text (`.guide`) is keep-all and breaks only
   between words: `Txt.svelte` puts a `<wbr>` between Intl.Segmenter's words (particles, okurigana, closing punctuation
