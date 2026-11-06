@@ -402,7 +402,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   day ＋ → the search (its field focused in the same tap, so the iPhone's keyboard comes up), an entry → its amount
   at once (from its snapshot: its own portion; the catalog's portions swapped in when they come); anyone else's day is
   read-only. Levels slide in (240 ms, as けんこう's); ‹ comes back where the day was scrolled, the focus on what
-  opened it. Confirmations are short (「夜ごはんに ついかしました」) and docked low, never over the level they land on.
+  opened it. Confirmations are short (「夜ごはんに ついかしました」) and docked low, just above a level's actions wherever
+  they sit (`ui/Toast` measures them), never on them; a level opened or left by hand takes the banner away (its とりけす was
+  for what is no longer on screen).
   **最新の値にする** (the user approved, 2026-11-05; `fresh.ts`): an entry keeps its food as logged, so a data fix (or
   an edit of its recipe or custom food) never changes it. On my day, an entry of mine (not a いつもの's) whose food is
   now otherwise beyond rounding (the catalogue item with its id, its recipe or custom food now: kcal past ½, a nutrient

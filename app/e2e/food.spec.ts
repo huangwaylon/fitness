@@ -528,7 +528,14 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   await expect(lv.locator('[data-recipe-sv]')).toHaveText('4人前');
   await expect(lv.locator('[data-recipe-item]')).toHaveCount(6);
   await expect(lv.locator('[data-recipe-remove]')).toHaveCount(1);
+  // its banner above the level's 削除 / 保存, never on them; ‹ takes it away with the level
+  const banner = sheet(page).locator('.banner');
+  await expect(banner).toBeVisible();
+  await banner.evaluate((b) => Promise.all(b.getAnimations().map((a) => a.finished))); // slid in
+  const [bb, acts] = [(await banner.boundingBox())!, (await lv.locator('.level-acts').boundingBox())!];
+  expect(bb.y + bb.height).toBeLessThanOrEqual(acts.y);
   await sheet(page).getByRole('button', { name: '戻る' }).click(); // ‹: the amount
+  await expect(banner).toHaveCount(0);
   await expect(h2).toHaveText('ごはんに追加');
   await sheet(page).getByRole('button', { name: '戻る' }).click(); // ‹: the search
   await expect(curry).toHaveCount(2);
@@ -613,6 +620,12 @@ test('a いつもの’s entry: opened and ‹ leaves the day the repeat’s; �
   await expect(b.locator('[data-entry]')).toHaveCount(n);
   await expect.poll(() => kcalOf(page)).toBe(before);
   await expect(b.locator('[data-entry] .nm')).toContainText([first!]);
+  // the next level opened leaves the banner behind (its 取り消す was for the day)
+  await b.locator('[data-entry]').first().click();
+  await sheet(page).locator('[data-remove]').click();
+  await expect(banner).toBeVisible();
+  await b.locator('[data-entry]').first().click();
+  await expect(banner).toHaveCount(0);
 });
 
 test('＋ focuses the search; counted portions step whole, rice by half; drinks in ml; the confirmation low', async ({ page }) => {
