@@ -55,7 +55,7 @@
   import { pondOval, pondPlaces } from '#lib/layout/ponds.ts';
   import { washAt } from '#lib/layout/swash.ts';
   import { inOval } from '../island/world.ts';
-  import { extentOf, type Layout } from '#lib/layout/model.ts';
+  import { extentOf, midXOf, type Layout } from '#lib/layout/model.ts';
   import { GRASS_Y, SEA_Y as LAYOUT_SEA_Y, WATER_DROP as LAYOUT_DROP, fieldOf } from '#lib/layout/height.ts';
   import { TIER_H } from '#lib/layout/grid.ts';
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
@@ -686,7 +686,7 @@
     if (!kind || t < fallNext || e.fxCount('fall') >= count) return;
     fallNext = t + 900;
     const z = e.view().camZ + rnd(40, 420), drop = rnd(90, 140);
-    e.fx('fall', 195 + rnd(-190, 190), z, drop, { v: kind, tag: 'fall', ms: (drop / 18) * 1000, size: kind === 'snowflake' ? 1.1 : 1.3 });
+    e.fx('fall', site.midX + rnd(-190, 190), z, drop, { v: kind, tag: 'fall', ms: (drop / 18) * 1000, size: kind === 'snowflake' ? 1.1 : 1.3 });
   }
   const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
@@ -829,12 +829,12 @@
   /** The layout ground's bake (px a unit): nothing drawn (the e2e's logic mode), a token one; a software renderer
    *  half the phone's (its bake held every tab of CI's browser up for seconds). */
   const groundPx = (soft: boolean) => (drawOff() ? 0.05 : soft ? 0.8 : undefined);
-  /** The ends' landmarks: the layout's (its front shore, ウェイ's home's door; まえ's canopy that must clear the HUD,
-   *  おく's landmark, its feet half way down the screen, its top clear). */
-  function endsNow(): { shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number]; edge: number } {
+  /** The ends' landmarks: the layout's (its middle across, its front shore, ウェイ's home's door; まえ's canopy that
+   *  must clear the HUD, おく's landmark, its feet half way down the screen, its top clear). */
+  function endsNow(): { midX: number; shore: number; canopy: readonly [number, number, number]; back: readonly [number, number, number]; edge: number } {
     const x = extentOf(layoutNow());
     // (and the land's far edge: the user, "scroll further back, to see the back of the island too")
-    return { shore: x.shore, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [x.home[0], x.home[1], CAMPSITE.h], edge: x.land.z1 };
+    return { midX: midXOf(x.land), shore: x.shore, canopy: [GOAL_TREES.A[0], GOAL_TREES.A[1], TREE_H], back: [x.home[0], x.home[1], CAMPSITE.h], edge: x.land.z1 };
   }
   /** The far end shows the island's back: its far edge this share down the screen (the cliff top, its trees, the far
    *  shore and the sea past it all in view). */
@@ -854,11 +854,11 @@
       }
       return Math.round((lo + hi) / 2);
     };
-    const { shore, canopy: [cx, cz, ch], back: [bx, bz, bh], edge } = endsNow();
+    const { midX, shore, canopy: [cx, cz, ch], back: [bx, bz, bh], edge } = endsNow();
     const lo = shore - 400, hi = Math.max(bz, edge) + 700;
-    const min = Math.max(solve(syAt(195, shore, 0), H * SHORE_AT, lo, shore + 530), solve(syAt(cx, cz, ch), hud + CLEAR, lo, cz + 400));
+    const min = Math.max(solve(syAt(midX, shore, 0), H * SHORE_AT, lo, shore + 530), solve(syAt(cx, cz, ch), hud + CLEAR, lo, cz + 400));
     let max = Math.max(solve(syAt(bx, bz, 0), H * CAMP_AT, min, hi), solve(syAt(bx, bz, bh), hud + CLEAR, min, hi));
-    max = Math.max(max, solve(syAt(195, edge, 0), Math.max(hud + CLEAR, H * EDGE_AT), min, hi));
+    max = Math.max(max, solve(syAt(midX, edge, 0), Math.max(hud + CLEAR, H * EDGE_AT), min, hi));
     e.setLimits(min, max);
     e.go(v.camZ, v.zoom);
   }

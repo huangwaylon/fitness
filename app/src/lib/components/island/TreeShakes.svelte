@@ -231,7 +231,7 @@
     stopSwarm();
     // the partner already netted these (their catch came in while the nest fell)
     if (caught(world.day, id)) return fadeNest(nestN);
-    swarm = { n, id, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < 195 ? -1 : 1 };
+    swarm = { n, id, side, x0: x, z0: z, at: performance.now(), stung: false, away: x < site.midX ? -1 : 1 };
     stopFrames = w.moveStart();
     const at = side === 'mine' ? undefined : ([x, z] as const);
     sceneSfx('buzz', at);
