@@ -1,7 +1,7 @@
 <script lang="ts">
   // A food's picture (docs/design.md "Gohan"): a fixed NH rounded square with a brown lip (`size` px; `wide`: the card's
-  // width × `size`), its category's tile (art.ts FOOD_CAT: the tint, and a catalogue icon's visible part or a drawn one
-  // about ¾ of the box; night tints darker). `img`, a cell of a packed sprite sheet (its url, the cell's x / y and size in the sheet's pixels), is drawn
+  // width × `size`), its category's tile (art.ts FOOD_CAT: the tint, and a catalogue icon's visible part or a drawn one;
+  // night tints darker). `img`, a cell of a packed sprite sheet (its url, the cell's x / y and size in the sheet's pixels), is drawn
   // over the tint once it decodes, the tile again if it fails: the box never changes size, so nothing shifts.
   // Decorative: the row or card beside it says the name.
   import { art, artUrl, FOOD_CAT, type FoodDraw } from '#lib/art.ts';
@@ -25,7 +25,8 @@
   const shown = $derived(!!cell && failed !== cell.url && loaded === cell.url);
   /** The cell's scale into the box. */
   const k = $derived(cell ? size / cell.size : 1);
-  const ic = $derived(Math.round(size * 0.74));
+  /** The icon: ¾ of a thumbnail; under half a wide one's height (a category's mark, never read as the food itself). */
+  const ic = $derived(Math.round(size * (wide ? 0.45 : 0.74)));
   /** The icon's visible part (its `box`, else the whole file) fitted to `ic`. */
   const fit = $derived.by(() => {
     if (!file) return null;
