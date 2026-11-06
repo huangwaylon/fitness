@@ -59,6 +59,6 @@ describe('trimmed Zen Maru Gothic', () => {
     expect(String.fromCodePoint(...missing)).toBe('');
   });
   it('stays far below the full font CSS (250 rules)', () => {
-    expect((css.match(/@font-face/g) ?? []).length).toBeLessThan(150); // (132 with the C1 notes' kanji, 2026-11-06; each rule's file loads only when a glyph in it shows)
+    expect((css.match(/@font-face/g) ?? []).length).toBeLessThan(150); // (146 with the trip guides' kanji, lib/travel, 2026-11-06: 132 before; each rule's file loads only when a glyph in it shows)
   });
 });
