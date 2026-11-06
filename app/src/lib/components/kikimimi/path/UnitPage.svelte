@@ -11,12 +11,11 @@
   import { CORE, DOMAINS, isDomain, nextLesson } from '#lib/kikimimi/path.ts';
   import { LESSONS, type Lesson } from '#lib/kikimimi/stages.ts';
   import { phrasesOf } from '#lib/kikimimi/srs.ts';
-  import { answersOf } from '#lib/kikimimi/progress.ts';
-  import type { RosterId } from '#lib/villagers/roster.ts';
+    import type { RosterId } from '#lib/villagers/roster.ts';
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import { artUrl, villagerArt } from '#lib/art.ts';
   import { rosterName, sceneArt, sceneSrcset, SCENE_SIZES } from '../scene/stage.ts';
-  import { currentReport, currentUnits } from '../progress.svelte.ts';
+  import { currentAnswers, currentUnits } from '../progress.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -30,13 +29,12 @@
   const part = $derived((void ready, unitPart(id) as UnitChunk | undefined));
   const u = $derived(part?.unit);
   const us = $derived(currentUnits().get(id));
-  const report = $derived(currentReport());
   const lessons = $derived(u ? LESSONS.filter((l) => part && playIds(part, l).length) : []);
   const next = $derived(nextLesson(lessons, us));
   const done = $derived(us?.done ?? []);
   const phrases = $derived.by(() => {
     if (!u) return [];
-    const st = phrasesOf(u.ph, report ? answersOf(report.games) : []);
+    const st = phrasesOf(u.ph, currentAnswers());
     return u.ph.map((p) => ({ ...p, caught: !!st.get(p.id)?.caught, heard: !!st.get(p.id)?.heard }));
   });
   const caught = $derived(phrases.filter((p) => p.caught).length);

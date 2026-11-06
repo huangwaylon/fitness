@@ -10,8 +10,7 @@
   import type { Item } from '#lib/kikimimi/bank.ts';
   import { DOMAINS, isDomain } from '#lib/kikimimi/path.ts';
   import { phrasesOf, phraseReview } from '#lib/kikimimi/srs.ts';
-  import { answersOf } from '#lib/kikimimi/progress.ts';
-  import { currentReport, pathUnits } from '../progress.svelte.ts';
+    import { currentAnswers, currentReport, pathUnits } from '../progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { unit = $bindable(null), onreview }: { unit?: string | null; onreview: (items: Item[]) => void } = $props();
@@ -23,7 +22,7 @@
   });
   const chunks = $derived((void ready, ids.map((id) => unitPart(id) as UnitChunk | undefined).filter((c): c is UnitChunk => !!c)));
   const report = $derived(currentReport());
-  const answers = $derived(report ? answersOf(report.games) : []);
+  const answers = $derived(currentAnswers());
   const shown = $derived(unit ? chunks.filter((c) => c.unit.id === unit) : chunks);
   const sections = $derived.by(() => {
     const out = new Map<string, { domain: string; phrases: (UnitChunk['unit']['ph'][number] & { caught: boolean; heard: boolean })[] }>();
