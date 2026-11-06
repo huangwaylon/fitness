@@ -14,8 +14,9 @@
   import { SPEED_MIN } from '#lib/kikimimi/progress.ts';
   import { stageAt } from '#lib/kikimimi/stages.ts';
   import { SKILLS } from '#lib/kikimimi/tags.ts';
-  import { levelAt, levelMark, type Accent, type ItemType } from '#lib/kikimimi/bank.ts';
-  import { SPEEDS, sx } from '#lib/kikimimi/ladder.ts';
+  import { levelAt, type Accent, type ItemType } from '#lib/kikimimi/bank.ts';
+  import { SPEEDS } from '#lib/kikimimi/ladder.ts';
+  import { levelMark, sx } from './look.ts';
   import Host from '../characters/Host.svelte';
   import { recWords } from './progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';

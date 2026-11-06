@@ -6,7 +6,6 @@
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf, type ListenRow } from '#lib/contract/listen.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
-import { levelMark } from '#lib/kikimimi/bank.ts';
 import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
 import { reportOf, type Report } from '#lib/kikimimi/report.ts';
 import { answersOf, type Answer } from '#lib/kikimimi/progress.ts';
@@ -14,7 +13,7 @@ import { week } from '#lib/store/week.svelte.ts';
 import { DEVICE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
 import type { LocalDate, Who } from '#lib/types.ts';
 import type { Rec } from '#lib/kikimimi/advice.ts';
-import { sx } from '#lib/kikimimi/ladder.ts';
+import { levelMark, sx } from './look.ts';
 import { remember, type Recent } from '#lib/kikimimi/recent.ts';
 import { unitsOf, type UnitState } from '#lib/kikimimi/stamps.ts';
 import { INDEX, unitIds, unitPart } from '#lib/kikimimi/pool.ts';

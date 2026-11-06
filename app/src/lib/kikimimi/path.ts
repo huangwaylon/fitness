@@ -4,30 +4,11 @@
 // and the one current unit with 「つづける」. Every stage stays playable: one far above my comfortable level is only shown
 // softly (the stage gate is placement's, みみ チェック, not built yet). Pure: the path index's lines, my unit states
 // (stamps.ts) and my report's level and games in, the path out.
-import { LESSONS, STAGES, STAGE_IDS, type Lesson, type Stage } from './stages.ts';
+import { CORE, DOMAINS, LESSONS, STAGES, STAGE_IDS, type Domain, type Lesson, type Stage } from './stages.ts';
 import type { UnitState } from './stamps.ts';
 
-/** The nine domains (plan §1) and the anchors' `glue`, each with its icon and tint (a theme token: day and night). */
-export const DOMAINS = {
-  glue: { icon: '💬', tint: 'var(--c-yuzu)' },
-  tomodachi: { icon: '👥', tint: 'var(--c-coral)' },
-  ie: { icon: '🏠', tint: 'var(--person-b)' },
-  tabemono: { icon: '🍙', tint: 'var(--c-leaf)' },
-  kaimono: { icon: '🛍️', tint: 'var(--c-lilac)' },
-  tabi: { icon: '✈️', tint: 'var(--c-mint)' },
-  shigoto: { icon: '💼', tint: 'var(--person-a)' },
-  ibento: { icon: '🎉', tint: 'var(--c-yuzu)' },
-  machi: { icon: '🏙️', tint: 'var(--c-mint)' },
-  karada: { icon: '🩹', tint: 'var(--c-coral)' }
-} as const;
-export type Domain = keyof typeof DOMAINS;
-export const isDomain = (d: string): d is Domain => d in DOMAINS;
-
 /** The path's filter: every unit, or one domain's (the anchors stay: they're reused across domains). */
-export type Filter = 'all' | Exclude<Domain, 'glue'>;
-
-/** The lessons that make a unit's stamp (plan §3): であい, ばめん, チェック; おと and じっせん are extras. */
-export const CORE: readonly Lesson[] = ['deai', 'bamen', 'check'];
+export type Filter = 'all' | Domain;
 
 /** A unit as the path knows it: the index's path line (pool.ts PathEntry) or a loaded chunk's unit. */
 export interface PathUnit {
@@ -74,7 +55,7 @@ export interface Path {
   /** The current unit's id (null: nothing to do, or no units). */
   current: string | null;
   /** The domains the units carry, in DOMAINS' order (the chips after ぜんぶ). */
-  chips: Exclude<Domain, 'glue'>[];
+  chips: Domain[];
 }
 
 /** The lesson to play next in a unit: the first core lesson not done; with the core done but no stamp, the チェック
@@ -122,9 +103,7 @@ export function pathOf(o: {
   const comfy = [...STAGE_IDS].reverse().find((s) => STAGES[s].rank <= level + 0.5) ?? STAGE_IDS[0];
   const from = STAGE_IDS.indexOf(comfy);
   const current = last ?? ordered.find((u) => STAGE_IDS.indexOf(u.stage as Stage) >= from && open(u))?.id ?? ordered.find(open)?.id ?? null;
-  const chips = (Object.keys(DOMAINS) as Domain[]).filter(
-    (d): d is Exclude<Domain, 'glue'> => d !== 'glue' && o.units.some((u) => u.domain === d || u.also?.includes(d))
-  );
+  const chips = DOMAINS.filter((d) => o.units.some((u) => u.domain === d || u.also?.includes(d)));
   const stages = STAGE_IDS.map((stage): StageRow => {
     const us = ordered.filter((u) => u.stage === stage);
     const stops = us.map((u): Stop => {

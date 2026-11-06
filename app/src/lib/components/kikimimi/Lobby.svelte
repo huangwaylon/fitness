@@ -9,7 +9,8 @@
   import type { Who } from '#lib/types.ts';
   import { ORDER } from '#lib/kikimimi/session.ts';
   import type { QuizTimer } from '#lib/kikimimi/seed.ts';
-  import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
+  import type { Level } from '#lib/kikimimi/bank.ts';
+  import { levelMark } from './look.ts';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
   import type { QuizGame } from './game.svelte.ts';
