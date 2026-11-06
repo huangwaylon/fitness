@@ -88,10 +88,10 @@
 <style>
   .camps { display: grid; gap: 12px; }
   p, h3 { margin: 0; }
-  .intro { display: grid; gap: 4px; padding: 12px 16px 6px; }
+  .intro { display: grid; gap: 0; padding: 12px 16px 0; }
   .intro p { font: 500 var(--fs-s)/1.6 var(--font-ui); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; }
   .intro.more p { display: block; }
-  .more-b { justify-self: end; appearance: none; border: 0; background: none; min-height: var(--hit); padding: 0 6px; cursor: pointer; color: var(--leaf-text); font: 700 var(--fs-s)/1 var(--font-ui); }
+  .more-b { justify-self: end; appearance: none; border: 0; background: none; min-height: var(--hit); margin-right: -6px; padding: 0 6px; cursor: pointer; color: var(--leaf-text); font: 700 var(--fs-s)/1 var(--font-ui); }
   .filter { display: grid; gap: 8px; }
   .chip .n { margin-left: 2px; font-size: var(--fs-xs); opacity: .75; }
   .sep { width: 2px; align-self: stretch; margin: 4px 2px; border-radius: 1px; background: var(--lip); }

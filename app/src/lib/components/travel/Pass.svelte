@@ -98,6 +98,6 @@
     color: var(--c-coral-text); transform: rotate(-14deg); opacity: .9; text-align: center;
     font: 700 var(--fs-xs)/1.2 var(--font-ui);
   }
-  .stamp .money { font-size: var(--fs-s); }
+  .stamp .money { font-size: var(--fs-talk); line-height: 1; }
   @media (prefers-reduced-motion: reduce) { .pass { transition: none; } }
 </style>
