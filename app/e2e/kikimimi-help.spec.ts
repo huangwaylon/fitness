@@ -41,7 +41,7 @@ test('the Japanese help: the situation before the clip, the choices’ Japanese 
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
-  await page.evaluate(([ids, help]) => (window as unknown as { __kiki: Kiki }).__kiki.deck(ids as string[], help as Record<string, Help>), [IDS, HELP] as const);
+  await page.evaluate(([ids, help]) => (window as unknown as { __kiki: Kiki }).__kiki.deck(ids as string[], help as unknown as Record<string, Help>), [IDS, HELP] as const);
   await expect.poll(() => kiki(page, (k) => k.items())).toEqual(IDS);
 
   for (const [i, id] of IDS.entries()) {
