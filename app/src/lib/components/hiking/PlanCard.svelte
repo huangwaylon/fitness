@@ -85,7 +85,7 @@
 
   /* the timeline: a dashed spine, a dot per stop (the start leaf, the goal the track's coral, a peak yuzu) */
   .tl { position: relative; list-style: none; margin: 0; padding: 0; }
-  .tl::before { content: ''; position: absolute; left: 6px; top: 11px; bottom: 11px; border-left: 1.5px dashed var(--stitch); }
+  .tl::before { content: ''; position: absolute; left: 5.25px; top: 11px; bottom: 11px; width: 1.5px; background: linear-gradient(var(--stitch) 60%, transparent 0) 0 0 / 1.5px 6px repeat-y; }
   .stop { position: relative; display: grid; grid-template-columns: 14px 44px 1fr; align-items: center; gap: 0 10px; min-height: 28px; }
   .dot { width: 12px; height: 12px; border-radius: 50%; position: relative; z-index: 1; background: var(--c-yuzu-lip); box-shadow: 0 0 0 3px var(--card); }
   .pass .dot { background: var(--card); border: 2.5px solid var(--c-yuzu-lip); }

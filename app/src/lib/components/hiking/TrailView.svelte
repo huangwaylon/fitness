@@ -50,10 +50,10 @@
   let peekH = $state(0);
   function measure() {
     const card = body?.querySelector<HTMLElement>('[data-elev]') ?? body?.querySelector<HTMLElement>('.track-msg');
-    const sheet = body?.parentElement;
     const fallback = Math.round(vh * 0.16);
-    if (!card || !sheet) return void (peekH = fallback);
-    const h = card.getBoundingClientRect().bottom - sheet.getBoundingClientRect().top + body!.scrollTop + 14;
+    if (!card) return void (peekH = fallback);
+    // layout offsets from the sheet (the card's offsetParent), not the screen's rects: the sheet's opening zoom scales those
+    const h = card.offsetTop + card.offsetHeight + 8;
     peekH = Math.round(Math.min(Math.max(h, fallback), vh * 0.62));
   }
   $effect(() => {
@@ -222,6 +222,8 @@
     display: flex; flex-direction: column; gap: 8px; padding: 0 calc(12px + var(--safe-right)) calc(var(--safe-bottom) + 24px) calc(12px + var(--safe-left));
   }
   .body::-webkit-scrollbar { display: none; }
+  /* (the cards clip: never shrunk to the scroller) */
+  .body > * { flex: none; }
   .body > .sec-label.head { margin: 8px 4px -2px; }
   .card.track-msg { min-height: 132px; }
   .card.track-msg.err { min-height: 0; display: flex; align-items: center; gap: 10px; padding: 10px 12px; color: var(--coral-text); }

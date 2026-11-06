@@ -75,6 +75,14 @@ test('a trail: the peek shows the whole chart; the scrub moves the map\'s dot an
   await expect(view).toHaveAttribute('data-sheet', 'peek');
 
   // press at the middle: the readout and the map's dot; drag to three quarters; let go: it stays
+  // (the sheet's height eases: wait for the chart to stand still)
+  let last = '';
+  await expect.poll(async () => {
+    const b = JSON.stringify(await elev.locator('svg').boundingBox());
+    const still = b === last;
+    last = b;
+    return still;
+  }).toBe(true);
   const svg = (await elev.locator('svg').boundingBox())!;
   const y = svg.y + svg.height / 2;
   await page.mouse.move(svg.x + svg.width * 0.5, y);

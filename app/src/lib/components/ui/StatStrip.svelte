@@ -18,8 +18,9 @@
 
 <style>
   .stats { display: flex; margin: 0; padding: 8px 0; }
-  .cell { flex: 1 1 0; min-width: 0; display: grid; gap: 2px; justify-items: center; padding: 0 6px; position: relative; }
-  .cell + .cell::before { content: ''; position: absolute; left: 0; top: 4px; bottom: 4px; border-left: 1.5px dashed var(--stitch); }
+  .cell { flex: 1 1 0; min-width: 0; display: grid; gap: 2px; justify-items: center; padding: 0 6px; }
+  /* the stitch drawn as a repeating dash (WebKit draws a thin dashed vertical border as one dot) */
+  .cell + .cell { background: linear-gradient(var(--stitch) 60%, transparent 0) 0 0 / 1.5px 6px repeat-y; }
   dt { display: inline-flex; align-items: center; gap: 3px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   dd { margin: 0; white-space: nowrap; color: var(--text); }
   b { font: 600 var(--fs-talk)/1.1 var(--font-num); font-variant-numeric: tabular-nums; }
