@@ -1,5 +1,5 @@
-// りょこう's packing list (docs/travel.md "Packing list (relay)", components/travel/PackList.svelte) in the quiet kit:
-// a quiet trip's 持ち物 (NZ) in the trips' sheet, over the demo's record: my ticks and counts, who has packed it, 編集
+// りょこう's packing list (docs/travel.md "Packing list (relay)", components/travel/PackList.svelte) on the unified kit:
+// a kit trip's 持ち物 (NZ) in the trips' sheet, over the demo's record: my ticks and counts, who has packed it, 編集
 // (a row's or a category's actions: 名前を変更 · 上へ · 下へ · 削除; 「＋ 追加」 under each category; a new
 // category; 削除 with とりけす, a category's asked first), リセット inside 編集 (mine only, asked first, とりけす), the
 // guest's own only, two tabs in step (the demo's tabs share the record's rows through localStorage, as phones share
@@ -94,7 +94,7 @@ test('編集: no buttons on the rows; ＋ 追加, 名前を変更, 削除 with �
 
   // its actions: the caption names it; 名前を変更 opens the form with its name
   await added.locator('[data-pack-acts]').click();
-  await expect(a.locator('dialog[open] .cap')).toHaveText('ビーチサンダル');
+  await expect(a.locator('dialog[open] dialog[open] .navbar h2')).toHaveText('ビーチサンダル');
   await shot(a, 'pack-A-actions');
   await a.locator('dialog[open] [data-action="rename"]').click();
   await expect(a.locator('dialog[open] [data-pack-field]')).toHaveValue('ビーチサンダル');
@@ -110,8 +110,8 @@ test('編集: no buttons on the rows; ＋ 追加, 名前を変更, 削除 with �
 
   // a category: asked first; キャンセル keeps it, 削除 takes it with its items (とりけす too)
   await act(a, 'nz-1', 'del');
-  await expect(a.locator('dialog[open] .cap')).toContainText('「服装」を削除しますか？');
-  await a.locator('dialog[open] [data-q-cancel]').click();
+  await expect(a.locator('dialog[open] dialog[open] .navbar h2')).toContainText('「服装」を削除しますか？');
+  await a.locator('dialog[open] dialog[open] .close').click();
   await expect(cat(a, 'nz-1')).toHaveCount(1);
   await act(a, 'nz-1', 'del');
   await a.locator('dialog[open] [data-action="yes"]').click();
@@ -147,7 +147,7 @@ test('リセット (inside 編集): only my ticks, asked first; とりけす bri
   await edit(a);
   const reset = async () => {
     await a.locator('[data-pack-reset]').click();
-    await expect(a.locator('dialog[open] .cap')).toContainText('自分のチェックを');
+    await expect(a.locator('dialog[open] dialog[open] .navbar h2')).toContainText('自分のチェックを');
     await a.locator('dialog[open] [data-action="yes"]').click();
     await expect(mine(a)).toHaveAttribute('data-pack-mine', '0');
   };

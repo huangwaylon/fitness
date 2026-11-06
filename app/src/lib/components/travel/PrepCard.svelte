@@ -1,10 +1,10 @@
 <script lang="ts">
-  // じゅんび: one logistics card (a flight, the car, a dive, what to know; docs/design.md §Trips): its head (the
-  // icon on a soft tile, or the card's photo; the title, the line under it), its figures as key · value rows, then
-  // a row that opens the rest (the description, the lists, the links out), named by its lists' heads.
+  // 準備: one logistics card (a flight, the car, a dive, what to know; docs/design.md §Trips): a dense card, its head
+  // (the icon on a cream disc, or the card's photo; the title, the line under it), its figures as key · value rows,
+  // then a row that opens the rest (the description, the lists, the links out), named by its lists' heads.
   import type { Card } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
-  import Icon from '../quiet/Icon.svelte';
+  import Icon from '../ui/Icon.svelte';
   import Txt from './Txt.svelte';
   import Stats from './Stats.svelte';
   import Rows from './Rows.svelte';
@@ -22,23 +22,24 @@
   );
 </script>
 
-<article class="q-card prep" data-card={card.id} data-open={open || undefined}>
-  <div class="q-row hd">
+<article class="card dense prep" data-card={card.id} data-open={open || undefined}>
+  <div class="row hd">
     {#if card.photo}
-      <img class="pi photo" src={asset(card.photo.src as Parameters<typeof asset>[0])} alt="" width="40" height="40" loading="lazy" decoding="async" />
+      <img class="pi photo" src={asset(card.photo.src as Parameters<typeof asset>[0])} alt="" width="36" height="36" loading="lazy" decoding="async" />
     {:else}
-      <span class="pi"><Icon name={card.icon} size={20} /></span>
+      <span class="pi"><Icon name={card.icon} size={18} /></span>
     {/if}
-    <span class="meta">
+    <h3 class="meta">
       <span class="ttl guide"><Txt l={card.title} {note} /></span>
       {#if card.sub}<span class="sub guide"><Txt l={card.sub} {note} /></span>{/if}
-    </span>
+    </h3>
   </div>
-  {#if card.stats?.length}<div class="q-hl"><Stats stats={card.stats} {note} /></div>{/if}
+  {#if card.stats?.length}<hr class="stitch" /><Stats stats={card.stats} {note} />{/if}
   {#if more}
-    <button type="button" class="q-row q-hl tog" aria-expanded={open} aria-controls="trip-card-{card.id}" data-sfx="page" onclick={() => (open = !open)}>
+    <hr class="stitch" />
+    <button type="button" class="row tog" aria-expanded={open} aria-controls="trip-card-{card.id}" data-sfx="page" onclick={() => (open = !open)}>
       <span class="ml guide">{moreLabel}</span>
-      <span class="chev"><Icon name={open ? 'chevron-up' : 'chevron-down'} size={18} /></span>
+      <Icon name={open ? 'chevron-up' : 'chevron-down'} size={18} />
     </button>
     {#if open}
       <div class="body guide" id="trip-card-{card.id}">
@@ -56,19 +57,21 @@
 </article>
 
 <style>
-  .hd { padding: 14px 16px; gap: 12px; }
-  .pi { width: 40px; height: 40px; border-radius: 12px; flex: none; display: grid; place-items: center; background: var(--q-accent-soft); color: var(--q-accent-ink); }
-  .photo { object-fit: cover; background: var(--q-sunken); }
-  .meta { flex: 1; min-width: 0; display: grid; }
-  .ttl { font: var(--q-w-b) var(--q-fs-head)/1.35 var(--q-font); }
-  .sub { font-size: var(--q-fs-s); color: var(--q-muted); }
-  .tog { justify-content: space-between; }
-  .ml { flex: 1; min-width: 0; color: var(--q-ink-2); }
-  .chev { color: var(--q-muted); display: flex; flex: none; }
-  .body { border-top: 1px solid var(--q-hairline); padding: 12px 16px 14px; display: grid; gap: 12px; }
-  .desc { margin: 0; line-height: 1.6; }
-  /* a timeline's line and dots: the accent (a day card's are the day's colour) */
-  .sec { display: grid; gap: 6px; --c: var(--q-accent); }
+  .stitch { margin: 0 12px; }
+  .pi {
+    width: 36px; height: 36px; border-radius: 50%; flex: none; display: grid; place-items: center;
+    background: var(--c-cream); color: var(--c-ink); box-shadow: inset 0 0 0 1.5px var(--stitch);
+  }
+  .photo { object-fit: cover; background: var(--ctl-off); }
+  .meta { flex: 1; min-width: 0; display: grid; margin: 0; font: inherit; }
+  .ttl { font: 700 var(--fs-body)/1.35 var(--font-ui); }
+  .sub { font-size: var(--fs-s); color: var(--text-soft); }
+  .tog { color: var(--text-soft); }
+  .ml { flex: 1; min-width: 0; font-size: var(--fs-s); font-weight: 600; }
+  .body { padding: 4px 12px 12px; display: grid; gap: 10px; }
+  .desc { margin: 0; font-size: .875rem; line-height: 1.55; }
+  /* a timeline's spine and dots: the leaf (a day card's are the day's colour) */
+  .sec { display: grid; gap: 4px; --c: var(--c-leaf-edge); }
   .sec :global(.tl) { padding-left: 0; padding-right: 0; }
-  h4 { margin: 0; font: var(--q-w-b) var(--q-fs-s)/1.3 var(--q-font); color: var(--q-muted); letter-spacing: .03em; }
+  h4 { margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); letter-spacing: .03em; }
 </style>

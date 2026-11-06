@@ -1,9 +1,10 @@
-// りょこう (docs/design.md §Trips) in the quiet kit: the menu's pill opens the trips' sheet (the island paused under
-// it): the list's boarding passes (on now and coming first, then これまで; the stub 「あと 99 日」 / 「いま 2 日目」, a past
-// trip's 「行ってきた」 stamp; km | mi under it), a
-// quiet trip (NZ): its photo with ‹ ✕ on it, the title bar once scrolled, the bottom tab bar (日程 · 地図 · 持ち物; no
-// キャンプ場 without campsites), the days open outside the trip, today's alone inside it with the row that is now (the
-// trip's clock), じゅんび's cards, reopening into the trip on now, ‹ back and ✕, the pill offline. A trip drawn like its
+// りょこう (docs/design.md §Trips) on the unified kit: the menu's pill opens the trips' sheet (the island paused under
+// it): the list's boarding passes (しまの そら便; on now and coming first, then これまで; the stub 「あと 99 日」 /
+// 「いま 2 日目」, a past trip's 「行ってきた」 stamp; km | mi under it), a
+// kit trip (NZ): its photo with ‹ ✕ on it, the title bar once scrolled, the bottom tab bar (日程 · 地図 · 持ち物; no
+// キャンプ場 without campsites), a day chip each and 準備 (the day shown: the first outside the trip, the one on now
+// inside it, with the row that is now: the trip's clock), 準備's cards, reopening into the trip on now, ‹ back and ✕,
+// the pill offline. A trip drawn like its
 // original guide (`classic`) is the classic guide's (its own specs). The logic tier: the photos may come late, nothing
 // waits on them. Pictures (SHOTS=<dir>) of each screen, by day and at night.
 import { expect, test, type Page } from './fixtures.ts';
@@ -16,7 +17,8 @@ import { nz } from '../src/lib/travel/trips/nz.ts';
 test.use({ viewport: { width: 393, height: 852 } });
 const rows = (p: Page) => sheet(p).locator('[data-trip]');
 const tab = (p: Page, id: string) => sheet(p).locator(`[data-trip-tab="${id}"]`);
-const hdr = (p: Page) => p.locator('dialog[open] .q-hdr');
+const hdr = (p: Page) => p.locator('dialog[open] .navbar');
+const dayChip = (p: Page, d: number | 'prep') => sheet(p).locator(`[data-day-pick="${d}"]`);
 
 test('the pill opens the list: coming first, then これまで; ✕ closes', async ({ page }) => {
   await gotoTrips(page, '2026-11-04T12:00');
@@ -28,6 +30,7 @@ test('the pill opens the list: coming first, then これまで; ✕ closes', asy
   await expect(sheet(page).locator('[data-trip="nz"] [data-days]')).toHaveText('99');
   await expect(sheet(page).locator('[data-trip="nz"]')).toHaveAttribute('aria-label', /あと99日$/);
   await expect(sheet(page).locator('[data-trip="nz"]')).toContainText('TYO ✈ AKL');
+  await expect(sheet(page).locator('[data-trip="nz"]')).toContainText('しまの そら便');
   await expect(sheet(page).locator('[data-trip="okinawa"] [data-stamp]')).toHaveText('行ってきた2026');
   await expect(sheet(page).locator('[data-trip="nz"] [data-stamp]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-memories]')).toHaveText('これまで');
@@ -51,7 +54,7 @@ test('km | mi under the list: kept on this phone', async ({ page }) => {
   await expect(sheet(page).locator('[data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('a quiet trip: the photo, its pages on the tab bar, the days open, じゅんび; the title bar once scrolled; ‹ back', async ({ page }) => {
+test('a kit trip: the photo, its pages on the tab bar, a chip a day, 準備; the title bar once scrolled; ‹ back', async ({ page }) => {
   await gotoTrips(page, '2026-11-04T12:00');
   await pickTrip(page, 'nz');
   // ‹ ✕ over the photo; the place in the photo's foot
@@ -61,19 +64,24 @@ test('a quiet trip: the photo, its pages on the tab bar, the days open, じゅ�
   await expect(sheet(page).locator('[data-trip-tab]')).toHaveCount(3);
   await expect(tab(page, 'camps')).toHaveCount(0);
   await expect(tab(page, 'days')).toHaveAttribute('aria-current', 'page');
-  // before the trip: every day open, its timeline
-  await expect(sheet(page).locator('[data-day]')).toHaveCount(nz.days.length);
-  await expect(sheet(page).locator('[data-day][data-open]')).toHaveCount(nz.days.length);
+  // before the trip: a chip a day and 準備, the first day shown with its timeline
+  await expect(sheet(page).locator('[data-day-pick]')).toHaveCount(nz.days.length + 1);
+  await expect(dayChip(page, 1)).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-day]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-day="1"] [data-row]')).toHaveCount(nz.days[0].rows.length);
+  // a chip shows its day
+  await dayChip(page, 2).click();
+  await expect(dayChip(page, 2)).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-day]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-day="2"] [data-row]')).toHaveCount(nz.days[1].rows.length);
-  // a tap folds one
-  await sheet(page).locator('[data-day="2"] .tog').click();
-  await expect(sheet(page).locator('[data-day="2"] [data-row]')).toHaveCount(0);
-  // scrolled past the photo: the title bar, the place and its dates
+  // scrolled past the photo: the title bar with the place, the chips held under it
   await sheet(page).locator('.scroll').evaluate((el) => (el.scrollTop = 600));
   await expect(sheet(page).locator('.hd.solid')).toBeVisible();
   await expect(hdr(page).locator('h2')).toContainText('ニュージーランド');
-  await expect(hdr(page).locator('h2')).toContainText('2月11日 – 16日');
-  // じゅんび after the days: a card opens to its lists; the demo's trip note fills the private values
+  await expect(dayChip(page, 2)).toBeInViewport();
+  // 準備: a card opens to its lists; the demo's trip note fills the private values
+  await dayChip(page, 'prep').click();
+  await expect(sheet(page).locator('[data-day]')).toHaveCount(0);
   const card = sheet(page).locator('[data-card="flights"]');
   await card.locator('.tog').click();
   await expect(card).toHaveAttribute('data-open', 'true');
@@ -94,7 +102,7 @@ test('a quiet trip: the photo, its pages on the tab bar, the days open, じゅ�
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
-test('inside a trip: on now first, today’s card open alone, the row that is now marked and in view (the trip’s clock)', async ({ page }) => {
+test('inside a trip: on now first, today’s day shown, the row that is now marked and in view (the trip’s clock)', async ({ page }) => {
   // Feb 12, 09:00 in Tokyo = 13:00 in Auckland: NZ's day 2
   await gotoTrips(page, '2027-02-12T09:00');
   // during a trip, the pill opens straight into it
@@ -107,7 +115,8 @@ test('inside a trip: on now first, today’s card open alone, the row that is no
   await shot(page, 'list-now');
   await pickTrip(page, 'nz');
   await expect(sheet(page).locator('[data-trip-status="now"]')).toHaveCount(1);
-  await expect(sheet(page).locator('[data-day][data-open]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-day]')).toHaveCount(1);
+  await expect(dayChip(page, 2)).toHaveAttribute('aria-pressed', 'true');
   await expect(sheet(page).locator('[data-day="2"]')).toHaveAttribute('data-today', 'true');
   await expect(sheet(page).locator('[data-day="2"] [data-now]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-day="2"] [data-now]')).toBeInViewport();
@@ -118,18 +127,18 @@ test('NZ: the eve’s flight out (Tokyo’s 18:30) opens day 1, the trip on', as
   // Feb 10, 19:00 in Tokyo (23:00 in Auckland): NZ 98 left Narita at 18:30 (its row dd −1, on Tokyo's clock)
   await gotoTrips(page, '2027-02-10T19:00');
   await expect(sheet(page).locator('[data-trip-view="nz"]')).toBeVisible();
-  await expect(sheet(page).locator('[data-day="1"]')).toHaveAttribute('data-open', 'true');
+  await expect(sheet(page).locator('[data-day="1"]')).toBeVisible();
   const row = sheet(page).locator('[data-day="1"] [data-row="0"]');
   await expect(row).toHaveAttribute('data-now', 'true');
   await expect(row.locator('.dd')).toHaveText('前日');
   await shot(page, 'nz-eve');
 });
 
-test('NZ day 4, 00:30: day 4 open, 「次」 on its 03:10', async ({ page }) => {
+test('NZ day 4, 00:30: day 4 shown, 「次」 on its 03:10', async ({ page }) => {
   // Feb 14, 00:30 in Auckland = Feb 13, 20:30 in Tokyo
   await gotoTrips(page, '2027-02-13T20:30');
   await expect(sheet(page).locator('[data-trip-view="nz"]')).toBeVisible();
-  await expect(sheet(page).locator('[data-day][data-open]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-day]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-day="4"] [data-row="0"]')).toHaveAttribute('data-next', 'true');
   await expect(sheet(page).locator('[data-now]')).toHaveCount(0);
 });
@@ -186,14 +195,10 @@ test.describe('pictures', () => {
       await shot(page, `01-list-${tod}`);
       await pickTrip(page, 'nz');
       await shot(page, `02-nz-${tod}`);
-      // the trip's own scroller only (scrollIntoView moves every ancestor: at the list's end, the sheet itself)
-      const to = (sel: string) => sheet(page).locator(sel).evaluate((el) => {
-        const s = el.closest('.scroll')!;
-        s.scrollTop += el.getBoundingClientRect().top - s.getBoundingClientRect().top - 56;
-      });
-      await to('[data-day="2"]');
+      await dayChip(page, 2).click();
+      await sheet(page).locator('.scroll').evaluate((el) => (el.scrollTop = 160));
       await shot(page, `02b-nz-scrolled-${tod}`);
-      await to('[data-prep]');
+      await dayChip(page, 'prep').click();
       await shot(page, `03-nz-prep-${tod}`);
       await tab(page, 'map').click();
       await shot(page, `04-nz-map-${tod}`);

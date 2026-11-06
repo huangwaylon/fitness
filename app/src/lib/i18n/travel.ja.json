@@ -1,5 +1,5 @@
 {
-  "travel.airline": "ドードー エアラインズ",
+  "travel.air": "しまの そら便 · SHIMA AIR",
   "travel.classic.back": "本棚",
   "travel.classic.camp.drive": "{min}分 · {km}",
   "travel.classic.camp.fee": "料金",
@@ -59,7 +59,6 @@
   "travel.loading": "読み込み中…",
   "travel.locked": "オンラインで表示",
   "travel.lockedLink": "オンラインで使えます",
-  "travel.map.dayOf": "{d}日",
   "travel.map.days": "ルートの日",
   "travel.map.failed": "地図を読み込めません",
   "travel.map.locate.asking": "探しています…",
@@ -109,7 +108,7 @@
   "travel.pack.resetDone": "リセットしました",
   "travel.pack.resetNote": "ほかの人のチェックは、そのまま",
   "travel.pack.upAct": "上へ",
-  "travel.prep": "じゅんび",
+  "travel.prep": "準備",
   "travel.retry": "もう一度",
   "travel.soon": "あと{n}日",
   "travel.soonPost": "日",
@@ -120,7 +119,7 @@
   "travel.tab.pack": "持ち物",
   "travel.tabs": "旅のページ",
   "travel.title": "りょこう",
-  "travel.today": "きょう",
+  "travel.today": "今日",
   "travel.tomorrow": "明日",
   "travel.units": "距離"
 }

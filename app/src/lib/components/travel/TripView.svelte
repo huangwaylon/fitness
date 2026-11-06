@@ -3,28 +3,32 @@
 </script>
 
 <script lang="ts">
-  // A trip in the quiet skin (docs/design.md §Trips, level 2; any trip not drawn like its original guide): its pages
-  // under one bottom tab bar, 日程 · 地図 (with a route) · 持ち物 (campsites and candidate layers are the classic
-  // guides' only: trips.test keeps them off any other trip). 日程 opens on the trip's photo (150 px, ‹ ✕ on it; the
-  // title, dates, area and days at its foot); scrolled past it, the title bar (‹ the place and its dates ✕) takes its
-  // place. Then the day cards (outside the trip all open; during it today's
-  // open and in view, the row that is now marked), じゅんび (the logistics cards) and the guide's foot. The other
-  // pages have the title bar from the top, the page's name beside the place. `tab` is the sheet's (kept while the
-  // app runs). Its private values not in yet (offline), a line says so.
+  // A trip on the unified kit (docs/design.md §Trips, level 2; any trip not drawn like its original guide): its pages
+  // under one TabBar, 日程 · 地図 (with a route) · 持ち物 (campsites and candidate layers are the classic guides' only:
+  // trips.test keeps them off any other trip). 日程 opens on the trip's photo (PhotoBand, 150 px, ‹ ✕ on it; the
+  // title, dates, area at its foot), then its one control row, held under the title bar as the page scrolls: a chip a
+  // day (its route colour, the date; the shown one yuzu) and 準備, then the day shown (DayCard: its timeline, the row
+  // that is now marked) or the logistics cards (PrepCard) and the guide's foot. Scrolled past the photo, the title bar
+  // (‹ the place ✕) takes its place. The day shown at first: the one that is now (today's, or the day of the row on
+  // now), else the first. The other pages have the title bar from the top, the page's name after the place. `tab` is
+  // the sheet's (kept while the app runs). Its private values not in yet (offline), a line says so.
   import { onMount, tick } from 'svelte';
+  import { asset } from '$app/paths';
   import type { Trip } from '#lib/travel/types.ts';
   import { privateKeys } from '#lib/travel/tokens.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
-  import SheetHeader from '../quiet/SheetHeader.svelte';
-  import TabBar from '../quiet/TabBar.svelte';
-  import Icon, { type IconName } from '../quiet/Icon.svelte';
-  import Photo from './Photo.svelte';
+  import NavBar from '../ui/NavBar.svelte';
+  import TabBar from '../ui/TabBar.svelte';
+  import PhotoBand from '../ui/PhotoBand.svelte';
+  import Chip from '../ui/Chip.svelte';
+  import ChipRow from '../ui/ChipRow.svelte';
+  import Icon, { type IconName } from '../ui/Icon.svelte';
   import DayCard from './DayCard.svelte';
   import PrepCard from './PrepCard.svelte';
   import MapPane from './MapPane.svelte';
   import PackList from './PackList.svelte';
   import Txt from './Txt.svelte';
-  import { listSpan, shortSpan } from './dates.ts';
+  import { listSpan, monthDay } from './dates.ts';
   import { pick } from './text.ts';
   import { phaseOf, rowNow, todayDay } from './when.ts';
   import { packing } from './packing.svelte.ts';
@@ -51,14 +55,22 @@
     { id: 'pack', label: t('travel.tab.pack'), icon: 'backpack' }
   ]);
   const tabName = $derived(items.find((x) => x.id === tab)?.label ?? '');
+  const hasPrep = $derived(trip.logistics.length > 0 || !!trip.foot);
+
+  /** The day on 日程 (its `n`), or 準備. */
+  // svelte-ignore state_referenced_locally
+  let shown = $state<number | 'prep'>(mark?.day ?? today ?? trip.days[0]?.n ?? 1);
+  const day = $derived(shown === 'prep' ? null : (trip.days.find((d) => d.n === shown) ?? null));
 
   let scroller: HTMLElement | undefined = $state();
   let hero: HTMLElement | undefined = $state();
+  let bar: HTMLElement | undefined = $state();
+  /** How far 日程 scrolls before its photo is gone under the title bar. */
+  const heroEnd = () => (hero && bar ? hero.offsetHeight - bar.offsetHeight : 0);
   /** 日程 scrolled past its photo: the title bar shows. */
   let past = $state(false);
   function scrolled() {
-    if (!scroller || !hero) return void (past = false);
-    past = scroller.scrollTop > hero.offsetHeight - 52;
+    past = !!scroller && !!hero && scroller.scrollTop > heroEnd();
   }
   /** Another page starts at its top. */
   function pickTab(id: Tab) {
@@ -66,58 +78,59 @@
     past = false;
     void tick().then(() => scroller?.scrollTo({ top: 0 }));
   }
+  /** Another day (or 準備) from its top, the control row where it was. */
+  function pickDay(d: number | 'prep') {
+    shown = d;
+    if (scroller && scroller.scrollTop > heroEnd()) scroller.scrollTop = heroEnd();
+  }
 
-  // outside the trip every day is open; during it, today's (the others closed); the reader's own after that
-  // svelte-ignore state_referenced_locally
-  let openDays = $state<number[]>(today ? [today] : trip.days.map((d) => d.n));
-  const flip = <T,>(xs: T[], x: T): T[] => (xs.includes(x) ? xs.filter((y) => y !== x) : [...xs, x]);
-
-  // during the trip, today's card comes into view as the trip opens (only then: never at midnight)
+  // during the trip, the row that is now comes into view as the trip opens (only then: never at midnight)
   onMount(() => {
-    const day = today;
-    if (day && tab === 'days')
-      void tick().then(() => {
-        const el = scroller?.querySelector<HTMLElement>(`[data-day="${day}"]`);
-        if (el && scroller) {
-          scroller.scrollTop = el.offsetTop - 44 - 12;
-          scrolled();
-        }
-      });
+    if (!mark || tab !== 'days') return;
+    void tick().then(() => {
+      const el = scroller?.querySelector<HTMLElement>('[data-now], [data-next]');
+      if (!el || !scroller) return;
+      const box = scroller.getBoundingClientRect(), r = el.getBoundingClientRect();
+      if (r.bottom > box.bottom - 16) scroller.scrollTop += r.bottom - box.bottom + box.height / 3;
+      scrolled();
+    });
   });
 </script>
 
 <div class="trip" data-trip-view={trip.id} data-pane-tab={tab}>
-  <div class="hd" class:over={tab === 'days'} class:solid={tab !== 'days' || past}>
-    <SheetHeader {title} sub={tab === 'days' ? shortSpan(trip.start, trip.end, i18n.locale) : tabName} {onback} {onclose} over={tab === 'days' && !past} />
+  <div class="hd" class:over={tab === 'days'} class:solid={tab !== 'days' || past} bind:this={bar}>
+    <NavBar size="s" title={tab === 'days' ? title : `${title} · ${tabName}`} {onback} {onclose} over={tab === 'days' && !past} />
   </div>
 
   <div class="scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>
     {#if tab === 'days'}
-      <header class="hero" bind:this={hero}>
-        <Photo photo={trip.hero} fill eager />
-        <span class="shade" aria-hidden="true"></span>
-        <span class="on">
-          <span class="ht q-title">{title}{#if phase.k === 'now'}<span class="now" data-trip-status="now">{t('travel.day', { n: phase.day })}</span>{/if}</span>
+      <div class="hero" bind:this={hero}>
+        <PhotoBand src={asset(trip.hero.src as Parameters<typeof asset>[0])} alt={pick(trip.hero.alt, i18n.locale)} height={150} edge>
+          <span class="ht">{title}{#if phase.k === 'now'}<span class="sticker" data-trip-status="now">{t('travel.day', { n: phase.day })}</span>{/if}</span>
           <span class="hs">{listSpan(trip.start, trip.end, i18n.locale)} · <Txt l={trip.eyebrow} {note} /></span>
-        </span>
-      </header>
+        </PhotoBand>
+      </div>
+      <div class="ctl">
+        <ChipRow label={t('travel.tab.days')}>
+          {#each trip.days as d (d.n)}
+            <Chip label={t('travel.day', { n: d.n })} count={monthDay(d.date)} dot={dayColor(trip.dayColors, d.n)} selected={shown === d.n} data-day-pick={d.n} onclick={() => pickDay(d.n)} />
+          {/each}
+          {#if hasPrep}<Chip label={t('travel.prep')} selected={shown === 'prep'} data-day-pick="prep" onclick={() => pickDay('prep')} />{/if}
+        </ChipRow>
+      </div>
     {/if}
     {#if locked}<p class="hint" data-locked-hint><Icon name="lock" size={14} /> {t('travel.locked')}</p>{/if}
 
     <div class="pane" data-pane={tab}>
       {#if tab === 'days'}
-        <div class="days">
-          {#each trip.days as d (d.n)}
-            <DayCard day={d} {note} color={dayColor(trip.dayColors, d.n)} open={openDays.includes(d.n)} today={today === d.n} mark={mark?.day === d.n ? mark : null} ontoggle={() => (openDays = flip(openDays, d.n))} />
-          {/each}
-        </div>
-        {#if trip.logistics.length}
-          <h3 class="q-sec" data-prep>{t('travel.prep')}</h3>
-          <div class="days">
+        {#if day}
+          <DayCard {day} {note} color={dayColor(trip.dayColors, day.n)} today={today === day.n} mark={mark?.day === day.n ? mark : null} />
+        {:else}
+          <div class="cards" data-prep>
             {#each trip.logistics as c (c.id)}<PrepCard card={c} {note} />{/each}
           </div>
+          {#if trip.foot}<p class="foot guide"><Txt l={trip.foot} {note} /></p>{/if}
         {/if}
-        {#if trip.foot}<p class="foot guide"><Txt l={trip.foot} {note} /></p>{/if}
       {:else if tab === 'map'}
         <MapPane {trip} {note} start={mark?.day ?? today ?? 1} />
       {:else}
@@ -131,28 +144,22 @@
 
 <style>
   .trip { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
-  /* the title bar: over the photo on 日程 (its buttons on smoked discs) till the photo scrolls away; in the flow on
-     the other pages */
-  .hd { flex: none; padding-top: var(--ui-top); position: relative; z-index: 6; background: var(--q-bg); }
-  .hd.over { position: absolute; top: 0; left: 0; right: 0; background: none; transition: background-color 160ms; }
-  .hd.over :global(.q-hdr) { background: none; }
-  .hd.solid { background: var(--q-bg); box-shadow: 0 1px 0 var(--q-hairline); }
-  .hd.solid :global(.q-hdr) { background: var(--q-bg); }
+  /* the title bar: over the photo on 日程 (‹ ✕ on smoked discs) till the photo scrolls away; in the flow on the other
+     pages */
+  .hd { flex: none; padding: var(--ui-top) calc(4px + var(--safe-right)) 0 calc(4px + var(--safe-left)); position: relative; z-index: 6; background: var(--surface); }
+  .hd.over { position: absolute; top: 0; left: 0; right: 0; background: none; transition: background-color var(--dur-quick); }
+  .hd.solid { background: var(--surface); box-shadow: 0 var(--lip-s) 0 var(--lip); }
   .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; padding-bottom: 24px; }
   .scroll.map { padding-bottom: 0; }
-  /* the photo: 150 px under the status bar, darkened at its foot under the words (white at every time of day) */
-  .hero { position: relative; height: calc(150px + var(--ui-top)); overflow: hidden; background: var(--q-sunken); }
-  .shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgb(20 15 10 / .28) 0%, rgb(20 15 10 / 0) 35%, rgb(20 15 10 / .12) 50%, rgb(20 15 10 / .66) 100%); }
-  :global(:root[data-tod='night']) .hero { filter: brightness(.88); }
-  .on { position: absolute; left: 16px; right: 16px; bottom: 12px; display: grid; gap: 1px; color: #fff; }
-  .ht { display: flex; align-items: center; gap: 8px; font-size: var(--q-fs-title); line-height: 1.2; letter-spacing: .02em; }
-  .now { font: var(--q-w-b) var(--q-fs-xs)/1.4 var(--q-font); background: #D2701F; border-radius: 6px; padding: 1px 6px; letter-spacing: .04em; }
-  .hs { font-size: var(--q-fs-s); opacity: .92; }
-  .hint { margin: 10px 20px 0; display: flex; align-items: center; gap: 6px; font-size: var(--q-fs-s); color: var(--q-muted); }
+  /* the photo's foot: the place (white at every time of day), its dates and area */
+  .ht { display: flex; align-items: center; gap: 8px; font: 700 var(--fs-title)/1.2 var(--font-ui); letter-spacing: .02em; }
+  .ht .sticker { text-shadow: none; }
+  .hs { display: block; font-size: var(--fs-s); opacity: .95; }
+  /* the one control row: held under the title bar (which lies over the page here) */
+  .ctl { position: sticky; top: calc(var(--ui-top) + 48px); z-index: 4; background: var(--surface); padding: 4px 0 2px; }
+  .hint { margin: 8px 16px 0; display: flex; align-items: center; gap: 6px; font-size: var(--fs-s); color: var(--text-soft); }
   .pane { display: grid; grid-template-columns: minmax(0, 1fr); }
-  .pane[data-pane='days'], .pane[data-pane='pack'] { padding: 12px 16px 0; }
-  .days { display: grid; gap: 12px; }
-  .foot { margin: 16px 4px 0; font-size: var(--q-fs-s); color: var(--q-muted); }
-  /* on 日程 the title bar lies over the content: a card scrolled to stays clear of it */
-  .pane :global([data-day]), .pane :global([data-card]) { scroll-margin-top: calc(var(--ui-top) + 56px); }
+  .pane[data-pane='days'], .pane[data-pane='pack'] { padding: 6px 12px 0; }
+  .cards { display: grid; gap: 8px; }
+  .foot { margin: 14px 4px 0; font-size: var(--fs-s); color: var(--text-soft); }
 </style>

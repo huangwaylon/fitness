@@ -1,5 +1,5 @@
 {
-  "travel.airline": "Dodo Airlines",
+  "travel.air": "SHIMA AIR",
   "travel.classic.back": "Shelf",
   "travel.classic.camp.drive": "{min} min · {km}",
   "travel.classic.camp.fee": "Fee",
@@ -59,7 +59,6 @@
   "travel.loading": "Loading…",
   "travel.locked": "Shows when online",
   "travel.lockedLink": "works when online",
-  "travel.map.dayOf": "{d}",
   "travel.map.days": "Route days",
   "travel.map.failed": "The map didn't load",
   "travel.map.locate.asking": "Finding you…",

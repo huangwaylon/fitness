@@ -45,8 +45,8 @@ relay. The guide's own words are in its language (Seattle's English), the tab ba
 sheet; the modules are the source now (edit them by hand). The schema is [`types.ts`](../app/src/lib/travel/types.ts).
 Guide text is a pair `{ja?, en?}` in the data (not catalog keys), shown in the reader's locale, else the other side;
 the chrome's strings are `i18n/travel.{ja,en}.json`. Inline tokens (`tokens.ts`): `{km:}`, `{m:}`, `{c:}` follow the
-device's units; `{p:key}` is a private value. Icons are the old site's lucide names: the quiet kit's `Icon` draws a
-quiet guide's (trips.test checks they're all in it), `classic/icons.ts` a classic guide's. Each trip's dates and `tz` drive "today" (`DayRow.dd`: a row on the eve or the morning
+device's units; `{p:key}` is a private value. Icons are the old site's lucide names: ui/Icon draws a
+kit guide's (trips.test checks they're all in it; a packing category's is its NH item where packView.ts has one), `classic/icons.ts` a classic guide's. Each trip's dates and `tz` drive "today" (`DayRow.dd`: a row on the eve or the morning
 after).
 
 ### Private values
