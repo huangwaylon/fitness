@@ -4,7 +4,7 @@
 // instance of the island's things, loaded on first use (the first high five after opening had none: it came after the
 // flight was over) and drawn black (no normals, its colours ignored). Two tabs of the demo, its relay between them.
 import { expect, test, type Page } from './fixtures.ts';
-import { quiet } from './island.ts';
+import { is3d, quiet } from './island.ts';
 
 const q = (who: 'A' | 'B') => `?demo&date=2026-11-04T12:00&critter=none${who === 'B' ? '&as=B' : ''}`;
 type Live = { x: number; y: number; z: number; s: number };
@@ -34,7 +34,12 @@ test('20 high fives in a row: each flies the star from mine to the partner on bo
     return p;
   };
   const a = await open('A'), b = await open('B');
-  await quiet(a);
+  // both islands in and their opening beats over (B opened last: its models still loading and parsing held its frames
+  // through high five 1's flight, the star missing in 11–17 of its mid-flight frames on B, 15 flaky runs in a day)
+  for (const p of [a, b]) {
+    expect(await is3d(p)).toBe(true);
+    await quiet(p);
+  }
   const mx = () => a.evaluate(() => (window as unknown as { __world: { mine(): [number, number] } }).__world.mine()[0]);
   const px = () => a.evaluate(() => (window as unknown as { __world: { partner(): [number, number] } }).__world.partner()[0]);
   for (let i = 0; i < 20; i++) {
