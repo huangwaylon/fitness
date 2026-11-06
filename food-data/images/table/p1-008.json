@@ -1,0 +1,1116 @@
+[
+ {
+  "key": "mext-02001",
+  "ja": "きくいも 生",
+  "desc": "Jerusalem artichokes (kikuimo), knobbly pale brown ginger-like tubers, one cut showing crisp white flesh",
+  "items": [
+   "mext:02001",
+   "mext:02041"
+  ]
+ },
+ {
+  "key": "mext-02048",
+  "ja": "むらさきいも 皮なし 生",
+  "desc": "purple sweet potato, a dark purple-skinned tuber cut to show vivid deep purple flesh",
+  "items": [
+   "mext:02048",
+   "mext:02049"
+  ]
+ },
+ {
+  "key": "mext-02050",
+  "ja": "セレベス 生",
+  "desc": "large taro corms with hairy ringed brown skin, one cut showing pale lilac-white flesh",
+  "items": [
+   "mext:02050",
+   "mext:02051",
+   "mext:02052",
+   "mext:02053",
+   "mext:02015",
+   "mext:02016"
+  ]
+ },
+ {
+  "key": "mext-02054",
+  "ja": "ヤーコン 生",
+  "desc": "yacon roots, long tapered brown tubers like sweet potatoes, one cut showing crisp pale yellow juicy flesh",
+  "items": [
+   "mext:02054",
+   "mext:02055"
+  ]
+ },
+ {
+  "key": "mext-02026",
+  "ja": "じねんじょ 生",
+  "desc": "a wild jinenjo yam, a long thin crooked hairy brown root, a cut end showing white sticky flesh",
+  "items": [
+   "mext:02026"
+  ]
+ },
+ {
+  "key": "mext-02042",
+  "ja": "赤こんにゃく",
+  "desc": "aka konnyaku, a rectangular slab of bright brick-red konjac with a firm glossy surface, a few pieces cut",
+  "items": [
+   "mext:02042"
+  ]
+ },
+ {
+  "key": "mext-06124",
+  "ja": "そらまめ 生",
+  "desc": "fava beans (soramame), long fat green pods, one open showing large flat pale green beans in white fluff",
+  "items": [
+   "mext:06124",
+   "mext:06125"
+  ]
+ },
+ {
+  "key": "mext-04036",
+  "ja": "沖縄豆腐",
+  "desc": "Okinawan shima-dofu, a large firm rough-textured block of white tofu",
+  "items": [
+   "mext:04036"
+  ]
+ },
+ {
+  "key": "mext-04037",
+  "ja": "ゆし豆腐",
+  "desc": "yushi-dofu, soft fluffy curdled white tofu in its cloudy whey in a bowl",
+  "items": [
+   "mext:04037"
+  ]
+ },
+ {
+  "key": "mext-04043",
+  "ja": "豆腐よう",
+  "desc": "tofuyo, small cubes of fermented tofu in vivid red-orange creamy paste on a little dish",
+  "items": [
+   "mext:04043"
+  ]
+ },
+ {
+  "key": "mext-04088",
+  "ja": "ろくじょう豆腐",
+  "desc": "rokujo dofu, thin dried salted tofu slices, pale tan and hard, shaved into thin curls",
+  "items": [
+   "mext:04088"
+  ]
+ },
+ {
+  "key": "mext-04114",
+  "ja": "塩納豆",
+  "desc": "temple natto (tera natto), dry dark brown-black salty fermented soybeans, crumbly and not sticky, on a small dish",
+  "items": [
+   "mext:04114",
+   "mext:04049",
+   "mext:04048",
+   "mext:04115"
+  ]
+ },
+ {
+  "key": "mext-04071",
+  "ja": "りょくとう 乾",
+  "desc": "dry mung beans, small glossy olive-green round beans",
+  "items": [
+   "mext:04071"
+  ]
+ },
+ {
+  "key": "mext-04068",
+  "ja": "べにばないんげん 乾",
+  "desc": "dry scarlet runner beans (hanamame), large purple beans speckled with black",
+  "items": [
+   "mext:04068"
+  ]
+ },
+ {
+  "key": "mext-05008",
+  "ja": "ぎんなん 生",
+  "desc": "ginkgo nuts (ginnan), cream oval shells, a few cracked open showing glossy jade-green nuts, a few on a pine needle skewer",
+  "items": [
+   "mext:05008",
+   "mext:05009"
+  ]
+ },
+ {
+  "key": "mext-05004",
+  "ja": "えごま 乾",
+  "desc": "egoma perilla seeds, tiny round grey-brown seeds in a small dish",
+  "items": [
+   "mext:05004"
+  ]
+ },
+ {
+  "key": "mext-05022",
+  "ja": "とち 蒸し",
+  "desc": "horse chestnuts (tochi no mi), large round glossy dark brown nuts with a pale patch",
+  "items": [
+   "mext:05022"
+  ]
+ },
+ {
+  "key": "mext-05025",
+  "ja": "ひし 生",
+  "desc": "water caltrops (hishi), dark brown-black horned nuts shaped like a bull's head",
+  "items": [
+   "mext:05025"
+  ]
+ },
+ {
+  "key": "mext-05023",
+  "ja": "はす 未熟 生",
+  "desc": "a lotus seed pod with green seeds in its honeycomb holes, and a few shelled pale seeds",
+  "items": [
+   "mext:05023"
+  ]
+ },
+ {
+  "key": "mext-05027",
+  "ja": "ひまわり フライ 味付け",
+  "desc": "roasted salted sunflower seeds, small pale grey-green kernels in a small dish",
+  "items": [
+   "mext:05027"
+  ]
+ },
+ {
+  "key": "mext-05028",
+  "ja": "ブラジルナッツ フライ 味付け",
+  "desc": "Brazil nuts, long curved three-sided nuts with thin brown skins",
+  "items": [
+   "mext:05028"
+  ]
+ },
+ {
+  "key": "mext-05029",
+  "ja": "ヘーゼルナッツ フライ 味付け",
+  "desc": "roasted hazelnuts, round brown nuts, some with skins rubbed off",
+  "items": [
+   "mext:05029"
+  ]
+ },
+ {
+  "key": "mext-05030",
+  "ja": "ペカン フライ 味付け",
+  "desc": "pecan halves, glossy ridged reddish-brown kernels",
+  "items": [
+   "mext:05030"
+  ]
+ },
+ {
+  "key": "mext-05032",
+  "ja": "まつ 生",
+  "desc": "pine nuts, small elongated ivory-cream kernels in a small dish",
+  "items": [
+   "mext:05032",
+   "mext:05033"
+  ]
+ },
+ {
+  "key": "mext-06001",
+  "ja": "アーティチョーク 生",
+  "desc": "a globe artichoke, a round green flower bud of thick overlapping scaly bracts",
+  "items": [
+   "mext:06001",
+   "mext:06002"
+  ]
+ },
+ {
+  "key": "mext-06402",
+  "ja": "アイスプラント 生",
+  "desc": "ice plant leaves, thick succulent green leaves covered in tiny glistening water-like bubbles",
+  "items": [
+   "mext:06402"
+  ]
+ },
+ {
+  "key": "mext-06003",
+  "ja": "あさつき 生",
+  "desc": "a bundle of asatsuki chives, very thin hollow bright green leaves with tiny white bulbs",
+  "items": [
+   "mext:06003",
+   "mext:06004"
+  ]
+ },
+ {
+  "key": "mext-06005",
+  "ja": "あしたば 生",
+  "desc": "a bunch of ashitaba, bright green deeply divided leaves on long pale green stalks",
+  "items": [
+   "mext:06005",
+   "mext:06006"
+  ]
+ },
+ {
+  "key": "mext-06012",
+  "ja": "うど 生",
+  "desc": "udo, thick pale white-green fuzzy stalks of the spring mountain vegetable, cut into sticks soaking in water",
+  "items": [
+   "mext:06012",
+   "mext:06013",
+   "mext:06014"
+  ]
+ },
+ {
+  "key": "mext-06363",
+  "ja": "うるい 生",
+  "desc": "urui (hosta shoots), smooth pale green leaves furled around white stalks",
+  "items": [
+   "mext:06363"
+  ]
+ },
+ {
+  "key": "mext-06018",
+  "ja": "エンダイブ 生",
+  "desc": "a head of curly endive, frilly finely cut green leaves with pale yellow centre",
+  "items": [
+   "mext:06018"
+  ]
+ },
+ {
+  "key": "mext-06019",
+  "ja": "トウミョウ 茎葉 生",
+  "desc": "a bunch of tomyo pea shoots, tender green stems with small round leaves and curly tendrils",
+  "items": [
+   "mext:06019",
+   "mext:06329",
+   "mext:06330",
+   "mext:06331"
+  ]
+ },
+ {
+  "key": "mext-06030",
+  "ja": "おかひじき 生",
+  "desc": "okahijiki, a bunch of thin bright green succulent needle-like stems",
+  "items": [
+   "mext:06030",
+   "mext:06031"
+  ]
+ },
+ {
+  "key": "mext-06051",
+  "ja": "そうめんかぼちゃ 生",
+  "desc": "a spaghetti squash, an oval yellow squash cut open with stringy pale yellow flesh pulled into noodles",
+  "items": [
+   "mext:06051"
+  ]
+ },
+ {
+  "key": "mext-06052",
+  "ja": "からしな 生",
+  "desc": "a bunch of karashina mustard greens, large frilly bright green leaves",
+  "items": [
+   "mext:06052"
+  ]
+ },
+ {
+  "key": "mext-06058",
+  "ja": "きく 生",
+  "desc": "edible chrysanthemum petals, bright yellow and lilac petals loose and in a few whole flowers",
+  "items": [
+   "mext:06058",
+   "mext:06059"
+  ]
+ },
+ {
+  "key": "mext-06060",
+  "ja": "きく 菊のり",
+  "desc": "kiku nori, dried pressed chrysanthemum petal sheets, flat translucent yellow-lilac sheets",
+  "items": [
+   "mext:06060"
+  ]
+ },
+ {
+  "key": "mext-06071",
+  "ja": "ぎょうじゃにんにく 生",
+  "desc": "gyoja ninniku (wild garlic), broad smooth bright green leaves on reddish-purple stems",
+  "items": [
+   "mext:06071"
+  ]
+ },
+ {
+  "key": "mext-06077",
+  "ja": "クレソン 生",
+  "desc": "a bunch of watercress, small round dark green leaves on thin stems",
+  "items": [
+   "mext:06077"
+  ]
+ },
+ {
+  "key": "mext-06078",
+  "ja": "くわい 生",
+  "desc": "kuwai arrowhead bulbs, round blue-grey bulbs each with a long curved sprout",
+  "items": [
+   "mext:06078",
+   "mext:06079"
+  ]
+ },
+ {
+  "key": "mext-06080",
+  "ja": "ケール 生",
+  "desc": "a bunch of kale, large frilly crinkled dark green leaves",
+  "items": [
+   "mext:06080"
+  ]
+ },
+ {
+  "key": "mext-06081",
+  "ja": "コールラビ 生",
+  "desc": "a kohlrabi, a round pale green bulb with leaf stems sprouting from it, one cut showing white flesh",
+  "items": [
+   "mext:06081",
+   "mext:06082"
+  ]
+ },
+ {
+  "key": "mext-06083",
+  "ja": "こごみ 生",
+  "desc": "kogomi fiddleheads, tightly coiled bright green fern tips on short stems",
+  "items": [
+   "mext:06083"
+  ]
+ },
+ {
+  "key": "mext-06405",
+  "ja": "堀川ごぼう 生",
+  "desc": "horikawa gobo, a very thick short burdock root with a hollow centre",
+  "items": [
+   "mext:06405"
+  ]
+ },
+ {
+  "key": "mext-06385",
+  "ja": "コリアンダー 生",
+  "desc": "a bunch of fresh coriander (pakuchi), delicate lobed bright green leaves",
+  "items": [
+   "mext:06385"
+  ]
+ },
+ {
+  "key": "mext-06092",
+  "ja": "しかくまめ 生",
+  "desc": "winged beans, bright green pods with four frilly wings along their length",
+  "items": [
+   "mext:06092"
+  ]
+ },
+ {
+  "key": "mext-06406",
+  "ja": "万願寺とうがらし 生",
+  "desc": "manganji peppers, long large curved glossy green mild peppers",
+  "items": [
+   "mext:06406"
+  ]
+ },
+ {
+  "key": "mext-06101",
+  "ja": "じゅんさい 水煮びん詰",
+  "desc": "junsai, tiny curled green water shield leaves coated in clear jelly, in a small glass dish",
+  "items": [
+   "mext:06101"
+  ]
+ },
+ {
+  "key": "mext-06102",
+  "ja": "葉しょうが 生",
+  "desc": "leaf ginger (hajikami), slender pale ivory rhizomes with pink-red bases and long green leafy stalks",
+  "items": [
+   "mext:06102"
+  ]
+ },
+ {
+  "key": "mext-06386",
+  "ja": "新しょうが 生",
+  "desc": "young ginger, plump pale ivory-yellow rhizomes with bright pink tips",
+  "items": [
+   "mext:06386"
+  ]
+ },
+ {
+  "key": "mext-06106",
+  "ja": "しろうり 生",
+  "desc": "a shirouri melon, a long pale green smooth cucumber-like gourd, one cut",
+  "items": [
+   "mext:06106"
+  ]
+ },
+ {
+  "key": "mext-06108",
+  "ja": "しろうり 奈良漬",
+  "desc": "narazuke, slices of gourd pickled in sake lees, glossy deep amber-brown translucent",
+  "items": [
+   "mext:06108"
+  ]
+ },
+ {
+  "key": "mext-06109",
+  "ja": "生ずいき 生",
+  "desc": "zuiki, fresh taro stalks, long thick spongy stalks with reddish-purple skin, cut pieces showing a pale sponge-like cross-section full of small holes",
+  "items": [
+   "mext:06109",
+   "mext:06110"
+  ]
+ },
+ {
+  "key": "mext-06387",
+  "ja": "すいぜんじな 生",
+  "desc": "suizenjina, leaves green on top and vivid purple underneath, on stems",
+  "items": [
+   "mext:06387"
+  ]
+ },
+ {
+  "key": "mext-06115",
+  "ja": "すぐきな すぐき漬",
+  "desc": "suguki pickles, pale yellow-green fermented turnip and leaves in a small dish",
+  "items": [
+   "mext:06115"
+  ]
+ },
+ {
+  "key": "mext-06117",
+  "ja": "せり 生",
+  "desc": "a bunch of seri (Japanese parsley), small serrated bright green leaves on long slender stems with white roots",
+  "items": [
+   "mext:06117",
+   "mext:06118"
+  ]
+ },
+ {
+  "key": "mext-06120",
+  "ja": "生ぜんまい 若芽 生",
+  "desc": "zenmai fern shoots, curled brown-green fiddleheads covered in reddish fluff, a few boiled long brown stems",
+  "items": [
+   "mext:06120",
+   "mext:06121"
+  ]
+ },
+ {
+  "key": "mext-06126",
+  "ja": "タアサイ 生",
+  "desc": "tatsoi, a flat rosette of small round glossy dark green spoon-shaped leaves",
+  "items": [
+   "mext:06126",
+   "mext:06127"
+  ]
+ },
+ {
+  "key": "mext-06148",
+  "ja": "たかな漬",
+  "desc": "takana zuke, pickled mustard greens, dark olive-green chopped leaves in a small dish",
+  "items": [
+   "mext:06148"
+  ]
+ },
+ {
+  "key": "mext-06156",
+  "ja": "赤たまねぎ 生",
+  "desc": "a red onion, purple-red skin, cut in half showing purple and white rings",
+  "items": [
+   "mext:06156"
+  ]
+ },
+ {
+  "key": "mext-06157",
+  "ja": "たらのめ 生",
+  "desc": "taranome, the plump green spring buds of the angelica tree with reddish-brown bud scales",
+  "items": [
+   "mext:06157",
+   "mext:06158"
+  ]
+ },
+ {
+  "key": "mext-06159",
+  "ja": "チコリ 生",
+  "desc": "a head of chicory (endive), a tight torpedo of pale white-yellow leaves with yellow tips",
+  "items": [
+   "mext:06159"
+  ]
+ },
+ {
+  "key": "mext-06162",
+  "ja": "つくし 生",
+  "desc": "tsukushi horsetail shoots, slender pale brown segmented stems with cone-like caps",
+  "items": [
+   "mext:06162",
+   "mext:06163"
+  ]
+ },
+ {
+  "key": "mext-06165",
+  "ja": "つるむらさき 生",
+  "desc": "tsurumurasaki (Malabar spinach), thick glossy dark green round leaves on red-purple stems",
+  "items": [
+   "mext:06165",
+   "mext:06166"
+  ]
+ },
+ {
+  "key": "mext-06167",
+  "ja": "つわぶき 生",
+  "desc": "tsuwabuki stalks, long pale green-brown leaf stalks, peeled and cut",
+  "items": [
+   "mext:06167",
+   "mext:06168"
+  ]
+ },
+ {
+  "key": "mext-06173",
+  "ja": "とうがん 生",
+  "desc": "a winter melon (togan), a large dusty pale green gourd, a wedge cut showing white flesh and seeds",
+  "items": [
+   "mext:06173",
+   "mext:06174"
+  ]
+ },
+ {
+  "key": "mext-06181",
+  "ja": "ヤングコーン 生",
+  "desc": "baby corn, small pale yellow corn ears with tiny kernels, one with its green husk",
+  "items": [
+   "mext:06181"
+  ]
+ },
+ {
+  "key": "mext-06391",
+  "ja": "黄色トマト 生",
+  "desc": "yellow tomatoes, round glossy bright yellow tomatoes, one cut",
+  "items": [
+   "mext:06391"
+  ]
+ },
+ {
+  "key": "mext-06370",
+  "ja": "ドライトマト",
+  "desc": "sun-dried tomatoes, flat wrinkled dark red dried tomato halves",
+  "items": [
+   "mext:06370"
+  ]
+ },
+ {
+  "key": "mext-06187",
+  "ja": "トレビス 生",
+  "desc": "a head of radicchio (treviso), round tight leaves of deep red-purple with white veins",
+  "items": [
+   "mext:06187"
+  ]
+ },
+ {
+  "key": "mext-06188",
+  "ja": "とんぶり ゆで",
+  "desc": "tonburi (land caviar), tiny glossy dark green-brown seeds in a small dish",
+  "items": [
+   "mext:06188"
+  ]
+ },
+ {
+  "key": "mext-06201",
+  "ja": "和種なばな 生",
+  "desc": "nanohana, bunches of rapeseed shoots, green stems with tight green buds and a few bright yellow flowers",
+  "items": [
+   "mext:06201",
+   "mext:06202"
+  ]
+ },
+ {
+  "key": "mext-06209",
+  "ja": "花にら 生",
+  "desc": "flowering garlic chives, long green stems each topped with a small pointed bud",
+  "items": [
+   "mext:06209"
+  ]
+ },
+ {
+  "key": "mext-06210",
+  "ja": "黄にら 生",
+  "desc": "yellow chives, long flat pale yellow tender leaves",
+  "items": [
+   "mext:06210"
+  ]
+ },
+ {
+  "key": "mext-06409",
+  "ja": "島にんじん 皮なし 生",
+  "desc": "Okinawan shima ninjin, long thin pale yellow carrots",
+  "items": [
+   "mext:06409"
+  ]
+ },
+ {
+  "key": "mext-06224",
+  "ja": "茎にんにく 生",
+  "desc": "garlic stems (ninniku no me), long smooth bright green stalks, a few cut short",
+  "items": [
+   "mext:06224",
+   "mext:06225"
+  ]
+ },
+ {
+  "key": "mext-06410",
+  "ja": "九条ねぎ 生",
+  "desc": "kujo negi, a bunch of long slender green onions, mostly green leaves with short white ends",
+  "items": [
+   "mext:06410"
+  ]
+ },
+ {
+  "key": "mext-06229",
+  "ja": "のざわな 生",
+  "desc": "a bunch of nozawana greens, long leafy green stalks",
+  "items": [
+   "mext:06229"
+  ]
+ },
+ {
+  "key": "mext-06230",
+  "ja": "のざわな 塩漬",
+  "desc": "nozawana pickles, chopped bright green pickled mustard leaves and stems in a small dish",
+  "items": [
+   "mext:06230",
+   "mext:06231"
+  ]
+ },
+ {
+  "key": "mext-06232",
+  "ja": "のびる 生",
+  "desc": "nobiru wild onions, small round white bulbs with long thin green leaves",
+  "items": [
+   "mext:06232"
+  ]
+ },
+ {
+  "key": "mext-06238",
+  "ja": "バジル 生",
+  "desc": "a bunch of fresh basil, glossy bright green oval leaves",
+  "items": [
+   "mext:06238"
+  ]
+ },
+ {
+  "key": "mext-06240",
+  "ja": "はつかだいこん 生",
+  "desc": "radishes (radish), small round bright red radishes with white tips and green tops",
+  "items": [
+   "mext:06240"
+  ]
+ },
+ {
+  "key": "mext-06241",
+  "ja": "はやとうり 白色種 生",
+  "desc": "chayote, pear-shaped pale green squash with deep folds",
+  "items": [
+   "mext:06241",
+   "mext:06353"
+  ]
+ },
+ {
+  "key": "mext-06243",
+  "ja": "ビーツ 生",
+  "desc": "beets, round deep red-purple roots, one cut showing magenta rings",
+  "items": [
+   "mext:06243",
+   "mext:06244"
+  ]
+ },
+ {
+  "key": "mext-06256",
+  "ja": "ふき 生",
+  "desc": "fuki butterbur stalks, long pale green hollow stalks, some peeled and cut into short lengths",
+  "items": [
+   "mext:06256",
+   "mext:06257"
+  ]
+ },
+ {
+  "key": "mext-06258",
+  "ja": "ふきのとう 生",
+  "desc": "fukinoto, round pale green butterbur flower buds wrapped in leafy bracts",
+  "items": [
+   "mext:06258",
+   "mext:06259"
+  ]
+ },
+ {
+  "key": "mext-06265",
+  "ja": "へちま 生",
+  "desc": "a young sponge gourd (hechima), a long dark green ridged gourd, a few slices",
+  "items": [
+   "mext:06265",
+   "mext:06266"
+  ]
+ },
+ {
+  "key": "mext-06270",
+  "ja": "ホースラディシュ 生",
+  "desc": "a horseradish root, a long thick tan root, a little grated white horseradish",
+  "items": [
+   "mext:06270"
+  ]
+ },
+ {
+  "key": "mext-06274",
+  "ja": "切りみつば 生",
+  "desc": "a bunch of mitsuba, long thin pale green stems with three-lobed bright green leaves",
+  "items": [
+   "mext:06274",
+   "mext:06275"
+  ]
+ },
+ {
+  "key": "mext-06282",
+  "ja": "むかご 生",
+  "desc": "mukago, small round dark brown yam bulbils like tiny potatoes",
+  "items": [
+   "mext:06282"
+  ]
+ },
+ {
+  "key": "mext-06283",
+  "ja": "めキャベツ 生",
+  "desc": "Brussels sprouts, small round green mini cabbages, one cut in half",
+  "items": [
+   "mext:06283",
+   "mext:06284"
+  ]
+ },
+ {
+  "key": "mext-06286",
+  "ja": "アルファルファもやし 生",
+  "desc": "alfalfa sprouts, a fine nest of thin white stems with tiny green leaves",
+  "items": [
+   "mext:06286"
+  ]
+ },
+ {
+  "key": "mext-06296",
+  "ja": "ゆりね 生",
+  "desc": "a lily bulb (yurine), a round cream-white bulb of layered scales, a few scales loose",
+  "items": [
+   "mext:06296",
+   "mext:06297"
+  ]
+ },
+ {
+  "key": "mext-06301",
+  "ja": "よもぎ 生",
+  "desc": "a bunch of yomogi (mugwort), deeply lobed soft green leaves with silvery undersides",
+  "items": [
+   "mext:06301",
+   "mext:06302"
+  ]
+ },
+ {
+  "key": "mext-06307",
+  "ja": "エシャレット 生",
+  "desc": "eschalots, slender white bulbs with long green leaves, with a dab of miso",
+  "items": [
+   "mext:06307"
+  ]
+ },
+ {
+  "key": "mext-06308",
+  "ja": "リーキ 生",
+  "desc": "a leek (poireau), a thick white stalk with flat blue-green leaves",
+  "items": [
+   "mext:06308",
+   "mext:06309"
+  ]
+ },
+ {
+  "key": "mext-06310",
+  "ja": "ルバーブ 生",
+  "desc": "rhubarb, long red and green celery-like stalks",
+  "items": [
+   "mext:06310",
+   "mext:06311"
+  ]
+ },
+ {
+  "key": "mext-06320",
+  "ja": "わけぎ 生",
+  "desc": "a bunch of wakegi, thin dark green onion leaves with small white bulbs",
+  "items": [
+   "mext:06320",
+   "mext:06321"
+  ]
+ },
+ {
+  "key": "mext-06323",
+  "ja": "わさび漬",
+  "desc": "wasabi zuke, chopped wasabi pickled in creamy white sake lees, in a small dish",
+  "items": [
+   "mext:06323"
+  ]
+ },
+ {
+  "key": "mext-06324",
+  "ja": "生わらび 生",
+  "desc": "warabi bracken shoots, slender green-brown stems with curled tips",
+  "items": [
+   "mext:06324",
+   "mext:06325"
+  ]
+ },
+ {
+  "key": "mext-07001",
+  "ja": "あけび 生",
+  "desc": "akebi fruits, oblong purple pods split open showing white translucent seedy flesh",
+  "items": [
+   "mext:07001"
+  ]
+ },
+ {
+  "key": "mext-07003",
+  "ja": "アセロラ 酸味種 生",
+  "desc": "acerola cherries, small glossy bright red lobed fruits",
+  "items": [
+   "mext:07003",
+   "mext:07159"
+  ]
+ },
+ {
+  "key": "mext-07007",
+  "ja": "あんず 生",
+  "desc": "fresh apricots, round orange-yellow fruits with a red blush, one cut showing the pit",
+  "items": [
+   "mext:07007"
+  ]
+ },
+ {
+  "key": "mext-07008",
+  "ja": "あんず 乾",
+  "desc": "dried apricots, flat chewy glossy deep orange halves",
+  "items": [
+   "mext:07008"
+  ]
+ },
+ {
+  "key": "mext-07037",
+  "ja": "オリーブ 塩漬 グリーンオリーブ",
+  "desc": "a small dish of green and black olives, glossy oval olives",
+  "items": [
+   "mext:07037",
+   "mext:07038",
+   "mext:07039"
+  ]
+ },
+ {
+  "key": "mext-07053",
+  "ja": "かりん 生",
+  "desc": "a Chinese quince (karin), a large oblong bright yellow fruit",
+  "items": [
+   "mext:07053"
+  ]
+ },
+ {
+  "key": "mext-07052",
+  "ja": "かぼす 果汁 生",
+  "desc": "kabosu citrus, round green citrus fruits, one cut in half showing pale yellow juicy flesh",
+  "items": [
+   "mext:07052"
+  ]
+ },
+ {
+  "key": "mext-07056",
+  "ja": "きんかん 生",
+  "desc": "kumquats, small oval glossy bright orange citrus with green leaves",
+  "items": [
+   "mext:07056"
+  ]
+ },
+ {
+  "key": "mext-07075",
+  "ja": "シークヮーサー 果汁 生",
+  "desc": "shikuwasa, small round green citrus, one cut in half",
+  "items": [
+   "mext:07075"
+  ]
+ },
+ {
+  "key": "mext-07078",
+  "ja": "すだち 果皮 生",
+  "desc": "sudachi, small round deep green citrus, one cut in half showing pale yellow flesh",
+  "items": [
+   "mext:07078",
+   "mext:07079"
+  ]
+ },
+ {
+  "key": "mext-07093",
+  "ja": "なつみかん 生",
+  "desc": "a natsumikan, a large bumpy orange-yellow citrus, one peeled showing segments",
+  "items": [
+   "mext:07093"
+  ]
+ },
+ {
+  "key": "mext-07126",
+  "ja": "ぶんたん 生",
+  "desc": "a buntan pomelo, a very large pale yellow citrus with thick peel, segments showing",
+  "items": [
+   "mext:07126"
+  ]
+ },
+ {
+  "key": "mext-07129",
+  "ja": "ぽんかん 生",
+  "desc": "ponkan, round bright orange mandarins with loose bumpy peel",
+  "items": [
+   "mext:07129"
+  ]
+ },
+ {
+  "key": "mext-07142",
+  "ja": "ゆず 果皮 生",
+  "desc": "yuzu, round bumpy bright yellow citrus with a leaf, one cut in half",
+  "items": [
+   "mext:07142",
+   "mext:07143"
+  ]
+ },
+ {
+  "key": "mext-07145",
+  "ja": "ライム 果汁 生",
+  "desc": "limes, glossy green citrus, one cut in half",
+  "items": [
+   "mext:07145"
+  ]
+ },
+ {
+  "key": "mext-07057",
+  "ja": "グァバ 赤肉種 生",
+  "desc": "guavas, round green-yellow fruits, one cut showing pink flesh and seeds",
+  "items": [
+   "mext:07057",
+   "mext:07169"
+  ]
+ },
+ {
+  "key": "mext-07185",
+  "ja": "くこ 乾",
+  "desc": "dried goji berries, small oval wrinkled bright red-orange berries",
+  "items": [
+   "mext:07185"
+  ]
+ },
+ {
+  "key": "mext-07073",
+  "ja": "ざくろ 生",
+  "desc": "a pomegranate, a round red fruit with a crown, broken open showing glossy ruby-red seeds",
+  "items": [
+   "mext:07073"
+  ]
+ },
+ {
+  "key": "mext-07111",
+  "ja": "ドラゴンフルーツ 生",
+  "desc": "a dragon fruit, a bright pink fruit with green-tipped scales, cut showing white flesh with tiny black seeds",
+  "items": [
+   "mext:07111"
+  ]
+ },
+ {
+  "key": "mext-07087",
+  "ja": "ドリアン 生",
+  "desc": "a durian, a large spiky green-brown fruit, opened showing creamy pale yellow pods",
+  "items": [
+   "mext:07087"
+  ]
+ },
+ {
+  "key": "mext-07095",
+  "ja": "なつめ 乾",
+  "desc": "dried jujubes (natsume), wrinkled glossy reddish-brown dates",
+  "items": [
+   "mext:07095"
+  ]
+ },
+ {
+  "key": "mext-07106",
+  "ja": "パッションフルーツ 果汁 生",
+  "desc": "passion fruit, round wrinkled purple fruits, one cut showing yellow pulp with black seeds",
+  "items": [
+   "mext:07106"
+  ]
+ },
+ {
+  "key": "mext-07109",
+  "ja": "パパイア 完熟 生",
+  "desc": "a ripe papaya cut in half lengthwise, orange flesh with a cavity of glossy black seeds",
+  "items": [
+   "mext:07109"
+  ]
+ },
+ {
+  "key": "mext-07110",
+  "ja": "パパイア 未熟 生",
+  "desc": "a green unripe papaya, cut showing pale white-green flesh, shredded beside it",
+  "items": [
+   "mext:07110"
+  ]
+ },
+ {
+  "key": "mext-07133",
+  "ja": "マンゴスチン 生",
+  "desc": "mangosteens, round dark purple fruits with green caps, one opened showing white segments",
+  "items": [
+   "mext:07133"
+  ]
+ },
+ {
+  "key": "mext-07144",
+  "ja": "ライチー 生",
+  "desc": "lychees, small round fruits with bumpy red shells, one peeled showing translucent white flesh",
+  "items": [
+   "mext:07144"
+  ]
+ },
+ {
+  "key": "mext-07146",
+  "ja": "ラズベリー 生",
+  "desc": "a small heap of fresh red raspberries",
+  "items": [
+   "mext:07146"
+  ]
+ },
+ {
+  "key": "mext-07140",
+  "ja": "ネクタリン 生",
+  "desc": "nectarines, smooth glossy red and yellow peaches, one cut showing yellow flesh",
+  "items": [
+   "mext:07140"
+  ]
+ },
+ {
+  "key": "mext-09001",
+  "ja": "あおさ 素干し",
+  "desc": "dried aosa seaweed, fluffy crumpled bright green flakes in a small dish",
+  "items": [
+   "mext:09001"
+  ]
+ },
+ {
+  "key": "mext-09006",
+  "ja": "あらめ 蒸し干し",
+  "desc": "dried arame seaweed, thin shredded black-brown strands in a small dish",
+  "items": [
+   "mext:09006"
+  ]
+ },
+ {
+  "key": "mext-09034",
+  "ja": "ふのり 素干し",
+  "desc": "dried funori seaweed, thin branching red-brown fronds",
+  "items": [
+   "mext:09034"
+  ]
+ },
+ {
+  "key": "mext-09029",
+  "ja": "とさかのり 赤とさか 塩蔵 塩抜き",
+  "desc": "tosaka nori, frilly coral-like seaweed in bright red and green, for sashimi garnish",
+  "items": [
+   "mext:09029",
+   "mext:09030"
+  ]
+ }
+]

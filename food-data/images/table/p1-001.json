@@ -13,7 +13,11 @@
   "desc": "tonjiru pork and vegetable miso soup in a dark wooden bowl, cloudy brown miso broth full of thin pork slices, half-moon slices of daikon and carrot, burdock pieces, taro chunks and konjac, topped with green onion",
   "items": [
    "mext:18028",
-   "dishes:tonjiru"
+   "dishes:tonjiru",
+   "maff_kyodo:butajiru_kagoshima",
+   "kurume:190",
+   "toyonaka:265162",
+   "kumagaya:00251"
   ]
  },
  {
@@ -30,7 +34,9 @@
   "desc": "oyakodon in a ceramic donburi bowl, white rice topped with simmered chicken pieces and onion bound in soft, half-set golden egg, a few green mitsuba leaves on top",
   "items": [
    "dishes:oyakodon",
-   "eatout:oyakodon"
+   "eatout:oyakodon",
+   "maff_kyodo:34_12_tokyo",
+   "kurume:009"
   ]
  },
  {
@@ -42,7 +48,8 @@
    "eatout:gyudon_ko",
    "eatout:gyudon_nami",
    "eatout:gyudon_oo",
-   "eatout:gyudon_toku"
+   "eatout:gyudon_toku",
+   "kurume:011"
   ]
  },
  {
@@ -67,7 +74,9 @@
   "desc": "a Japanese hamburg steak on a white plate, a thick oval patty of minced meat with a browned seared surface, covered in glossy dark-brown demi-glace sauce, a few boiled carrot pieces and green beans beside it",
   "items": [
    "mext:18050",
-   "dishes:hamburg"
+   "dishes:hamburg",
+   "kurume:058",
+   "toyonaka:268114"
   ]
  },
  {
@@ -76,7 +85,10 @@
   "desc": "nikujaga in a shallow ceramic bowl, soft simmered potato chunks with carrot, translucent onion, thin beef slices and clear shirataki noodles in a little light-brown soy broth, a few green snow peas",
   "items": [
    "mext:18036",
-   "dishes:nikujaga"
+   "dishes:nikujaga",
+   "kurume:070",
+   "toyonaka:267579",
+   "kumagaya:00098"
   ]
  },
  {
@@ -86,7 +98,8 @@
   "items": [
    "mext:18057",
    "dishes:chahan",
-   "eatout:chahan"
+   "eatout:chahan",
+   "toyonaka:267049"
   ]
  },
  {
@@ -95,7 +108,8 @@
   "desc": "six Japanese pan-fried gyoza dumplings in a row, pleated thin wrappers, the bottoms crisp and deep golden-brown, the tops soft and pale, on a white plate",
   "items": [
    "dishes:gyoza",
-   "eatout:gyoza6"
+   "eatout:gyoza6",
+   "kurume:061"
   ]
  },
  {
@@ -105,7 +119,9 @@
   "items": [
    "mext:18049",
    "dishes:mabo-tofu",
-   "eatout:mabotofu"
+   "eatout:mabotofu",
+   "takatsuki:r34",
+   "kurume:120"
   ]
  },
  {
@@ -147,7 +163,8 @@
   "ja": "納豆",
   "desc": "natto fermented soybeans in a small bowl, glossy small brown beans stringy and sticky with fine white threads, a dab of yellow mustard",
   "items": [
-   "mext:04046"
+   "mext:04046",
+   "toyonaka:266221"
   ]
  },
  {
@@ -163,7 +180,10 @@
   "ja": "食パン",
   "desc": "a Japanese shokupan white bread loaf with two thick square slices cut off, soft fine white crumb and a thin golden-brown crust",
   "items": [
-   "mext:01026"
+   "mext:01026",
+   "mext:01206",
+   "mext:01207",
+   "mext:01211"
   ]
  },
  {
@@ -187,7 +207,8 @@
   "ja": "みかん",
   "desc": "two Japanese mikan mandarin oranges, small round bright orange fruits with dimpled peel, one half peeled showing juicy segments",
   "items": [
-   "mext:07027"
+   "mext:07027",
+   "kumagaya:00826"
   ]
  },
  {
@@ -245,7 +266,8 @@
   "items": [
    "dishes:zaru-soba",
    "eatout:zaru_soba",
-   "eatout:zaru_soba_oo"
+   "eatout:zaru_soba_oo",
+   "kurume:042"
   ]
  },
  {
@@ -255,7 +277,8 @@
   "items": [
    "dishes:kake-udon",
    "eatout:kake_udon",
-   "eatout:kake_udon_dai"
+   "eatout:kake_udon_dai",
+   "kurume:033"
   ]
  },
  {
@@ -269,10 +292,12 @@
  {
   "key": "dishes-potato-salad",
   "ja": "ポテトサラダ",
-  "desc": "Japanese potato salad in a small bowl, creamy mashed potato with mayonnaise mixed with thin cucumber slices, carrot and bits of ham",
+  "desc": "Japanese potato salad as a creamy mound on a small white plate: chunky mashed pale yellow potato bound with mayonnaise, with thin half-moon cucumber slices, small orange carrot pieces and pink ham bits mixed through",
   "items": [
    "dishes:potato-salad",
-   "eatout:potesala"
+   "eatout:potesala",
+   "kurume:145",
+   "toyonaka:117803"
   ]
  }
 ]

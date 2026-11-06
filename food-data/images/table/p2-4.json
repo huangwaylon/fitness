@@ -1,0 +1,1618 @@
+[
+ {
+  "key": "maff_kyodo-nishinsoba_hokkaido",
+  "ja": "ニシン蕎麦",
+  "desc": "nishin soba, buckwheat noodle soup: thin grey-brown soba in dark soy broth in a deep ceramic bowl, topped with a whole glossy brown simmered dried herring fillet laid across the noodles and sliced green onion rings",
+  "items": [
+   "maff_kyodo:nishinsoba_hokkaido"
+  ]
+ },
+ {
+  "key": "maff_kyodo-niwatorijiru_oita",
+  "ja": "鶏汁",
+  "desc": "niwatori jiru, chicken soup: a clear brown soy broth in a black lacquered bowl filled with bite-size chicken pieces, shaved burdock strips and sliced shiitake mushrooms, topped with a pile of thin white and green leek rings",
+  "items": [
+   "maff_kyodo:niwatorijiru_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-noppe_niigata",
+  "ja": "のっぺ",
+  "desc": "noppe, a lightly thickened simmered medley: small cubes of taro, orange carrot, white kamaboko, grey konnyaku, shiitake, scallop and green ginkgo nuts with snow peas, glossy and pale, heaped in a black lacquered bowl",
+  "items": [
+   "maff_kyodo:noppe_niigata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-nota_mochi_nagano",
+  "ja": "のたもち",
+  "desc": "notamochi, half-pounded sticky rice topped with a thick bright pale-green paste of mashed edamame soybeans covering the rice completely, in a white rice bowl",
+  "items": [
+   "maff_kyodo:nota_mochi_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-nutaimo_miyazaki",
+  "ja": "ぬた芋",
+  "desc": "nuta imo, peeled boiled taro chunks coated in a thick creamy beige sesame and miso dressing, heaped in a brown ceramic bowl",
+  "items": [
+   "maff_kyodo:nutaimo_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oaedango_shiga",
+  "ja": "おあえ団子",
+  "desc": "oae dango, flat round white rice-flour dumplings covered in a lumpy white tofu dressing flecked with chopped green komatsuna, orange carrot and shiitake, overlapping on a white plate",
+  "items": [
+   "maff_kyodo:oaedango_shiga"
+  ]
+ },
+ {
+  "key": "maff_kyodo-obaku_yama_nashi",
+  "ja": "おばく",
+  "desc": "obaku, a thick mushy porridge of pearl barley and rice with cubes of yellow sweet potato, taro, potato, daikon strips and red-brown kidney beans, in a white bowl, with a small dish of red chili miso beside it",
+  "items": [
+   "maff_kyodo:obaku_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-obiten_miyazaki",
+  "ja": "おび天",
+  "desc": "obiten, a platter of flat golden-brown deep-fried fish and tofu cakes, some oval patties and some round balls, stacked on green cedar sprigs",
+  "items": [
+   "maff_kyodo:obiten_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-ogurarenkon_ibaraki",
+  "ja": "小倉れんこん",
+  "desc": "ogura renkon, thick rounds of lotus root whose holes are packed with red adzuki beans, simmered dark purple-brown with soft crushed beans around them, in a blue-rimmed bowl",
+  "items": [
+   "maff_kyodo:ogurarenkon_ibaraki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-ohagi_kyoto",
+  "ja": "おはぎ",
+  "desc": "ohagi, oval balls of sticky rice, some coated in dark red-brown sweet adzuki paste, some in pale green matcha bean paste and some in tan kinako soybean flour, arranged on a red lacquered plate with a bamboo leaf",
+  "items": [
+   "maff_kyodo:ohagi_kyoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-ohantoohankayaku_oita",
+  "ja": "黄飯と黄飯かやく",
+  "desc": "ohan and ohan kayaku, bright yellow gardenia-dyed steamed rice in a dark bowl, topped with a simmered mix of diced white fish, tofu, daikon and burdock in light soy broth",
+  "items": [
+   "maff_kyodo:ohantoohankayaku_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oiri_tottori",
+  "ja": "おいり",
+  "desc": "oiri, small rectangular bars of puffed toasted rice grains bound with syrup, in white, pale pink, light brown and green, on a white plate",
+  "items": [
+   "maff_kyodo:oiri_tottori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-okahijikinokarashiae_yamagata",
+  "ja": "おかひじきのからし和え",
+  "desc": "okahijiki no karashi ae, a mound of bright green needle-thin Japanese saltwort stems dressed in a dark soy and mustard sauce pooled below, in a small white porcelain dish",
+  "items": [
+   "maff_kyodo:okahijikinokarashiae_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-okaisan_wakayama",
+  "ja": "おかいさん",
+  "desc": "okaisan, tea rice porridge: soft rice grains in thin amber-brown roasted tea broth in a white bowl, with a salted umeboshi plum and a little brown miso on a green leaf dish beside it",
+  "items": [
+   "maff_kyodo:okaisan_wakayama"
+  ]
+ },
+ {
+  "key": "maff_kyodo-okatazushi_oita",
+  "ja": "お方ずし",
+  "desc": "okata zushi, round balls of white vinegared rice mixed with flaked grilled horse mackerel and dotted with glossy dark red-brown sweet simmered beans, two balls on a dark plate with a green leaf",
+  "items": [
+   "maff_kyodo:okatazushi_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-okiaramenoitameni_shimane",
+  "ja": "隠岐アラメの炒め煮",
+  "desc": "braised oki arame, glossy black-brown strips of arame seaweed stir-fried and simmered with thin orange carrot sticks and pale strips of fried tofu, heaped in a white bowl",
+  "items": [
+   "maff_kyodo:okiaramenoitameni_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-okuzu_kake_miyagi",
+  "ja": "おくずかけ",
+  "desc": "okuzukake, a lightly thickened clear soup in a red-lined black lacquered bowl, full of short thin white umen noodles, round taro pieces, carrot, shiitake, fried tofu and green beans",
+  "items": [
+   "maff_kyodo:okuzu_kake_miyagi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-onimanju_aichi",
+  "ja": "鬼まんじゅう",
+  "desc": "oni manju, lumpy pale yellow steamed wheat-flour buns studded with visible cubes of yellow sweet potato with purple-red skin, on a grey ceramic plate",
+  "items": [
+   "maff_kyodo:onimanju_aichi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-onomino_sashimi_wakayama",
+  "ja": "尾の身の刺身",
+  "desc": "onomi no sashimi, slices of deep red whale tail meat finely marbled with white fat, overlapping on a plate with shredded white daikon, a lime half and garnish leaves",
+  "items": [
+   "maff_kyodo:onomino_sashimi_wakayama"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oquto_fukuoka",
+  "ja": "おきゅうと",
+  "desc": "okyuto, thin translucent olive-brown strips of set egonori seaweed jelly, coiled loosely in a white bowl, with small dishes of grated ginger, bonito flakes and green onion beside it",
+  "items": [
+   "maff_kyodo:oquto_fukuoka"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oroshi_soba_fukui",
+  "ja": "おろしそば",
+  "desc": "oroshi soba, cold grey-brown buckwheat noodles in a blue-patterned bowl topped with a heap of white grated daikon, pinkish shaved bonito flakes and chopped green onion, with cold dark dipping broth",
+  "items": [
+   "maff_kyodo:oroshi_soba_fukui"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oshaka_kogori_yama_nashi",
+  "ja": "おしゃかこごり",
+  "desc": "oshaka kogori, small steamed cakes of pale dough studded with roasted soybeans, each in a fluted paper cup, arranged on a red lacquered plate",
+  "items": [
+   "maff_kyodo:oshaka_kogori_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oshibori_udon_nagano",
+  "ja": "おしぼりうどん",
+  "desc": "oshibori udon, thick white udon noodles in hot water in a small black iron pot, with a separate bowl of pale miso-tinted grated daikon juice dipping sauce and small dishes of green onion and bonito flakes, on a black tray",
+  "items": [
+   "maff_kyodo:oshibori_udon_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oshimon_aichi",
+  "ja": "おしもん",
+  "desc": "oshimon, flat pressed rice-flour cakes moulded into a sea bream and flower shapes, white with soft pastel pink, yellow and green tints, on a grey plate beside carved wooden moulds",
+  "items": [
+   "maff_kyodo:oshimon_aichi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oshinuki_zushi_kagawa",
+  "ja": "押し抜きずし",
+  "desc": "oshinuki zushi, rectangular blocks of pressed white sushi rice topped with pale cured Spanish mackerel slices, green broad beans, yellow egg and a sansho leaf, in a row on a bamboo leaf on a blue-patterned platter with pink pickled ginger",
+  "items": [
+   "maff_kyodo:oshinuki_zushi_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oshizushi_ishikawa",
+  "ja": "押しずし",
+  "desc": "oshizushi, overnight-pressed sushi cut into neat white squares layered with fish, topped with thin colourful flecks of pink and blue, on a green leaf in a red lacquered box",
+  "items": [
+   "maff_kyodo:oshizushi_ishikawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-otsubo_fukui",
+  "ja": "おつぼ",
+  "desc": "otsubo, glossy whole dark red-purple simmered adzuki beans with soft pieces of taro, in a small red lacquered lidded bowl",
+  "items": [
+   "maff_kyodo:otsubo_fukui"
+  ]
+ },
+ {
+  "key": "maff_kyodo-oyagani_no_miso_shiru_tottori",
+  "ja": "親ガニのみそ汁",
+  "desc": "oyagani no misoshiru, miso soup with a whole bright red-orange female snow crab cut in half, legs sticking out over a large bowl, with orange crab roe and chunks of daikon in cloudy miso broth",
+  "items": [
+   "maff_kyodo:oyagani_no_miso_shiru_tottori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-ozara_yama_nashi",
+  "ja": "おざら",
+  "desc": "ozara, flat medium-width white handmade wheat noodles chilled in a round bamboo sieve basket topped with shredded nori, with a small red bowl of dark dipping broth with diced vegetables beside it",
+  "items": [
+   "maff_kyodo:ozara_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-paitayaki_ibaraki",
+  "ja": "パイタ焼き",
+  "desc": "paita yaki, flat oval patties of minced sardine mixed with green onion and miso, pan-fried dark golden-brown with a rough speckled surface, one cut to show the grey-pink inside, on a bamboo leaf on a white plate",
+  "items": [
+   "maff_kyodo:paitayaki_ibaraki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-rakkasei_no_nimame_mie",
+  "ja": "落花生の煮豆",
+  "desc": "rakkasei no nimame, a pile of shelled peanuts simmered soft and tan-brown, glossy with sweet soy, in a blue bowl",
+  "items": [
+   "maff_kyodo:rakkasei_no_nimame_mie"
+  ]
+ },
+ {
+  "key": "maff_kyodo-ramen_hokkaido",
+  "ja": "ラーメン",
+  "desc": "ramen, wavy yellow wheat noodles in a clear golden-brown soy broth in a white bowl, topped with slices of chashu pork, brown bamboo shoots, a halved boiled egg and green onion rings",
+  "items": [
+   "maff_kyodo:ramen_hokkaido"
+  ]
+ },
+ {
+  "key": "maff_kyodo-renkonno_suri_nagashi_jiru_miyazaki",
+  "ja": "れんこんのすり流し汁",
+  "desc": "renkon no surinagashi jiru, a thick cloudy grey-white miso soup of coarsely grated lotus root with strips of fried tofu, topped with green onion rings and a curl of yellow yuzu peel, in a brown wooden bowl",
+  "items": [
+   "maff_kyodo:renkonno_suri_nagashi_jiru_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-renkonnonimono_aichi",
+  "ja": "れんこんの煮物",
+  "desc": "renkon no nimono, thick rounds of lotus root showing their holes, simmered a glossy light brown in soy and dashi, in a shallow ceramic bowl with a little broth",
+  "items": [
+   "maff_kyodo:renkonnonimono_aichi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-ruibe_hokkaido",
+  "ja": "ルイベ",
+  "desc": "ruibe, thick slices of frozen raw salmon, bright coral-orange with white fat lines and a frosty surface, fanned on a green shiso leaf in a white bowl",
+  "items": [
+   "maff_kyodo:ruibe_hokkaido"
+  ]
+ },
+ {
+  "key": "maff_kyodo-ryukyunosunomono_kochi",
+  "ja": "りゅうきゅうの酢の物",
+  "desc": "ryukyu no sunomono, pale green crescent slices of taro stem (hasuimo) dressed in yuzu vinegar with white flakes of fish and sesame, topped with a little red garnish, on a shiso leaf in a small white dish",
+  "items": [
+   "maff_kyodo:ryukyunosunomono_kochi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-saba_soumen_shiga",
+  "ja": "鯖そうめん",
+  "desc": "saba somen, a whole grilled mackerel simmered dark brown laid across a large plate of thin pale brown somen noodles soaked in its broth, garnished with green sansho leaves",
+  "items": [
+   "maff_kyodo:saba_soumen_shiga"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sabano_bouzushi_shiga",
+  "ja": "鯖の棒ずし",
+  "desc": "saba no bozushi, a long log of white sushi rice topped with a silvery blue-striped cured mackerel fillet, cut into thick slices showing the white rice under the fish",
+  "items": [
+   "maff_kyodo:sabano_bouzushi_shiga"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sabanuta_fukui",
+  "ja": "さばぬた",
+  "desc": "saba nuta, strips of vinegar-cured mackerel and chopped green leek and greens tossed in a thick yellow mustard miso dressing, in a white bowl with blue lines",
+  "items": [
+   "maff_kyodo:sabanuta_fukui"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sadono_nishime_niigata",
+  "ja": "佐渡の煮しめ",
+  "desc": "sado no nishime, simmered brown pieces of grilled pollock, knotted kombu, grey konnyaku, grilled tofu, orange carrot and bamboo shoot in a little soy broth, in a white bowl",
+  "items": [
+   "maff_kyodo:sadono_nishime_niigata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sakana_no_jifu_mie",
+  "ja": "魚のじふ",
+  "desc": "sakana no jifu, fishermen's sukiyaki hotpot: a shallow earthenware pot of slices of blue-backed fish, white tofu cubes, green mizuna, a cross-cut shiitake and enoki mushrooms in brown broth",
+  "items": [
+   "maff_kyodo:sakana_no_jifu_mie"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sakana_no_tataki_mie",
+  "ja": "魚のたたき",
+  "desc": "sakana no tataki, a mound of finely chopped raw horse mackerel minced into a pink-grey paste, topped with thin shreds of ginger, on large green shiso leaves on a plate",
+  "items": [
+   "maff_kyodo:sakana_no_tataki_mie"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sakana_zushi_miyazaki",
+  "ja": "魚ずし",
+  "desc": "sakana zushi, small oval balls of white vinegared rice each topped with a vinegar-cured silver-skinned small fish, with pink fish flakes and yellow ginger shreds, lined up on green bamboo leaves on a white plate",
+  "items": [
+   "maff_kyodo:sakana_zushi_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sakeno_kasuni_nagano",
+  "ja": "鮭の粕煮",
+  "desc": "sake no kasuni, a pink salmon fillet coated in thick lumpy white sake-lees sauce, on a white rectangular plate with a green bamboo leaf",
+  "items": [
+   "maff_kyodo:sakeno_kasuni_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sakezushi_kagoshima",
+  "ja": "酒ずし",
+  "desc": "sake zushi, layered scattered sushi of white rice mixed with diced bamboo shoot, pink shrimp, sea bream, fish cake, green peas and egg, glistening with sake, in a dark lacquered bowl",
+  "items": [
+   "maff_kyodo:sakezushi_kagoshima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sambeijiru_hokkaido",
+  "ja": "三平汁",
+  "desc": "sanpei jiru, clear salty broth in a glass-like bowl with chunks of salted salmon with skin, potato, orange carrot, daikon and white leek pieces",
+  "items": [
+   "maff_kyodo:sambeijiru_hokkaido"
+  ]
+ },
+ {
+  "key": "maff_kyodo-same_namasu_mie",
+  "ja": "さめなます",
+  "desc": "same namasu, thin pale pinkish-white blanched slices of shark meat piled in a white bowl, with a small dish of brown fermented miso dipping sauce beside it",
+  "items": [
+   "maff_kyodo:same_namasu_mie"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sameno_sukume_aomori",
+  "ja": "鮫のすくめ",
+  "desc": "same no sukume, shredded white shark head meat and translucent cartilage dressed in a pale vinegar miso with chopped green onion, in a dark bowl",
+  "items": [
+   "maff_kyodo:sameno_sukume_aomori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sanga_yaki_chiba",
+  "ja": "さんが焼き",
+  "desc": "sangayaki, minced horse mackerel paste packed into abalone or scallop shells, each covered with a large green shiso leaf, grilled on a wire net",
+  "items": [
+   "maff_kyodo:sanga_yaki_chiba"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sangon_kagoshima",
+  "ja": "三献",
+  "desc": "sangon, a New Year set of three bowls: a red lacquered bowl of clear soup with a rice cake, kamaboko and shrimp, a dish of white fish sashimi, and a black bowl of clear soup with chicken, daikon and carrot",
+  "items": [
+   "maff_kyodo:sangon_kagoshima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sankaku_chimaki_niigata",
+  "ja": "三角ちまき",
+  "desc": "sankaku chimaki, small triangular sticky rice dumplings tightly wrapped in dark green bamboo leaves tied with rush string, piled in a bamboo basket, with one unwrapped white triangle dusted in kinako on a small plate",
+  "items": [
+   "maff_kyodo:sankaku_chimaki_niigata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sanma_meshi_yama_nashi",
+  "ja": "さんまめし",
+  "desc": "sanmameshi, rice cooked with saury in soy, light tan grains mixed with flaked grey-brown saury flesh, topped with a heap of julienned green shiso, in a blue ceramic bowl",
+  "items": [
+   "maff_kyodo:sanma_meshi_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sanma_no_kigaki_miyagi",
+  "ja": "サンマのきがき",
+  "desc": "sanma no kigaki, flaked saury stewed with coarsely grated daikon in soy until brown and moist, with soft onion and green onion, in a cream bowl",
+  "items": [
+   "maff_kyodo:sanma_no_kigaki_miyagi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sanma_sushi_nara",
+  "ja": "さんま寿司",
+  "desc": "sanma zushi, a row of oblong pieces of white sushi rice each topped with a vinegar-cured saury fillet with shiny silver-grey skin, on a plate",
+  "items": [
+   "maff_kyodo:sanma_sushi_nara"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sanma_zushi_wakayama",
+  "ja": "さんまずし",
+  "desc": "sanma zushi, a whole cured saury with head and tail on a long log of sushi rice, cut into slices with silver-blue skin showing, on a long white plate with a bamboo leaf, pink ginger and wasabi",
+  "items": [
+   "maff_kyodo:sanma_zushi_wakayama"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sasa_dango_niigata",
+  "ja": "笹団子",
+  "desc": "sasa dango, green mugwort rice dumplings each wrapped in several bamboo leaves and tied at both ends with rush string, a pile of them in a wooden dish",
+  "items": [
+   "maff_kyodo:sasa_dango_niigata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sasa_kamaboko_no_isobeage_miyagi",
+  "ja": "笹かまぼこの磯部揚げ",
+  "desc": "sasa kamaboko no isobeage, leaf-shaped fish cakes fried in a golden yellow batter flecked with green aonori seaweed, on white paper",
+  "items": [
+   "maff_kyodo:sasa_kamaboko_no_isobeage_miyagi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sasa_zushi_nagano",
+  "ja": "笹ずし",
+  "desc": "sasazushi, flat mounds of white vinegared rice each laid on a long green bamboo leaf, topped with brown seasoned mountain vegetables, pink fish flakes and yellow egg strips, in a row on a plate",
+  "items": [
+   "maff_kyodo:sasa_zushi_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sasa_zushi_niigata",
+  "ja": "笹寿司",
+  "desc": "sasazushi, rectangles of white sushi rice set on green bamboo leaves, each topped with colourful toppings: yellow egg, pink fish flakes, red pickled ginger, brown fern shoots and walnuts, arranged on a round plate",
+  "items": [
+   "maff_kyodo:sasa_zushi_niigata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-satoimo_no_koroni_fukui",
+  "ja": "里芋のころ煮",
+  "desc": "satoimo no koroni, whole small peeled taro, round and glossy amber-brown from simmering in sweet soy, piled in a white dish with a little thick dark glaze",
+  "items": [
+   "maff_kyodo:satoimo_no_koroni_fukui"
+  ]
+ },
+ {
+  "key": "maff_kyodo-satsuma_kagawa",
+  "ja": "さつま",
+  "desc": "satsuma, flaked grilled sea bream ground with toasted miso into an orange-tan paste, poured over white rice in a bowl and topped with green onion and black shredded nori",
+  "items": [
+   "maff_kyodo:satsuma_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-satsumaebizoni_kagoshima",
+  "ja": "さつまえび雑煮",
+  "desc": "satsuma ebi zoni, a black lacquered bowl of clear golden broth with a whole grilled red-orange prawn, flower-cut orange carrot, a toasted rice cake, shiitake, bean sprouts and kamaboko",
+  "items": [
+   "maff_kyodo:satsumaebizoni_kagoshima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-satsumajiru_kagoshima",
+  "ja": "さつま汁",
+  "desc": "satsuma jiru, cloudy miso soup with chicken pieces, daikon, carrot, burdock, konnyaku and taro, topped with green onion rings, in a red lacquered bowl",
+  "items": [
+   "maff_kyodo:satsumajiru_kagoshima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-satsumasumoji_kagoshima",
+  "ja": "さつますもじ",
+  "desc": "satsuma sumoji, vinegared rice mixed with chopped vegetables and fish cake, its top covered in fine yellow egg threads, green snow peas, pink ginger and a mound of black kikurage strips, on a round platter",
+  "items": [
+   "maff_kyodo:satsumasumoji_kagoshima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sawaranokobujime_ishikawa",
+  "ja": "さわらの昆布じめ",
+  "desc": "sawara no kobujime, neat thick slices of raw Spanish mackerel cured between dark kombu sheets, stacked with the kombu on a small rectangular plate with a shiso leaf",
+  "items": [
+   "maff_kyodo:sawaranokobujime_ishikawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sawasawa_kagawa",
+  "ja": "さわさわ",
+  "desc": "sawasawa, a thick glossy stew of thin konnyaku strips, julienned orange carrot, burdock and shiitake thickened with grated sweet potato, topped with green onion, in a blue-rimmed bowl",
+  "items": [
+   "maff_kyodo:sawasawa_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sazaemeshi_ishikawa",
+  "ja": "さざえめし",
+  "desc": "sazaemeshi, light brown soy-seasoned rice cooked with chopped chewy turban shell meat, dark brown flecks and carrot strips through it, in a white rice bowl",
+  "items": [
+   "maff_kyodo:sazaemeshi_ishikawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sazaemeshi_shimane",
+  "ja": "さざえ飯",
+  "desc": "sazae meshi, pale seasoned rice cooked with chopped grey-green turban shell meat, in a white rice bowl",
+  "items": [
+   "maff_kyodo:sazaemeshi_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-seidano_tamaji_yama_nashi",
+  "ja": "せいだのたまじ",
+  "desc": "seida no tamaji, small whole skin-on potatoes fried until wrinkled then simmered in sweet miso until glossy brown, sprinkled with sesame, in a blue patterned bowl with handles",
+  "items": [
+   "maff_kyodo:seidano_tamaji_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-seigaku_mochi_chiba",
+  "ja": "性学もち",
+  "desc": "seigaku mochi, soft white rice cake pieces and a dark green mugwort rice cake, both dusted with tan kinako, on a blue and white patterned plate",
+  "items": [
+   "maff_kyodo:seigaku_mochi_chiba"
+  ]
+ },
+ {
+  "key": "maff_kyodo-seige_fukui",
+  "ja": "せいげ",
+  "desc": "seige, a hotpot of a whole red-orange female snow crab broken up in a creamy beige miso broth full of grated daikon and dark rock seaweed, in a beige earthenware pot",
+  "items": [
+   "maff_kyodo:seige_fukui"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sekka_jiru_ehime",
+  "ja": "石花汁",
+  "desc": "sekka jiru, a miso soup in a black iron pot thick with fried tofu, tofu cubes, orange carrot, daikon, burdock and shellfish, with a few green mitsuba leaves",
+  "items": [
+   "maff_kyodo:sekka_jiru_ehime"
+  ]
+ },
+ {
+  "key": "maff_kyodo-senbei_jiru_aomori",
+  "ja": "せんべい汁",
+  "desc": "senbei jiru, a hotpot soup of large broken pale wheat crackers softened in soy chicken broth, with leek, carrot and mushrooms, in a black and red lacquered bowl",
+  "items": [
+   "maff_kyodo:senbei_jiru_aomori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-senbuki_mage_fukuoka",
+  "ja": "せんぶきまげ",
+  "desc": "senbuki mage, short bundles of boiled bright green wakegi scallions folded and coiled tightly, lined up on a square white dish with a small cup of pale orange mustard vinegar miso",
+  "items": [
+   "maff_kyodo:senbuki_mage_fukuoka"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sendai_zouni_miyagi",
+  "ja": "仙台雑煮",
+  "desc": "sendai zoni, a lacquered bowl of clear soup heaped so high the rice cake is hidden: a whole grilled brown goby fish on top, a mound of orange salmon roe, pink kamaboko, green seri, daikon and carrot strips",
+  "items": [
+   "maff_kyodo:sendai_zouni_miyagi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-senzanki_ehime",
+  "ja": "せんざんき",
+  "desc": "senzanki, chunky pieces of bone-in chicken deep-fried with a craggy golden-brown crust, piled in a bamboo basket lined with paper",
+  "items": [
+   "maff_kyodo:senzanki_ehime"
+  ]
+ },
+ {
+  "key": "maff_kyodo-serino_yogoshi_miyazaki",
+  "ja": "せりのよごし",
+  "desc": "seri no yogoshi, chopped green Japanese parsley mixed with crumbled white tofu and sesame dressing, in a square white dish with blue lines, topped with a sprig of seri leaves",
+  "items": [
+   "maff_kyodo:serino_yogoshi_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shakuno_tenpura_kumamoto",
+  "ja": "シャクの天ぷら",
+  "desc": "shaku no tenpura, whole mud shrimps fried in thin crisp batter, orange-pink shells and claws showing through, on green leaves",
+  "items": [
+   "maff_kyodo:shakuno_tenpura_kumamoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shijimi_jiru_shiga",
+  "ja": "しじみ汁",
+  "desc": "shijimi jiru, a red lacquered bowl of clear pale broth filled with many small open dark shijimi clams with olive and purple shells",
+  "items": [
+   "maff_kyodo:shijimi_jiru_shiga",
+   "maff_kyodo:shijimijiru_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shiki_shiki_nara",
+  "ja": "しきしき",
+  "desc": "shikishiki, thin pale crepes of wheat flour with light brown spots, rolled around a dark green pea paste filling visible at the ends, several on a black plate",
+  "items": [
+   "maff_kyodo:shiki_shiki_nara"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shimi_daikon_no_otaue_no_nimono_nagano",
+  "ja": "凍み大根のお田植えの煮物",
+  "desc": "shimi daikon no otaue no nimono, simmered chunks of spongy pale yellow freeze-dried daikon with green bracken shoots, dried herring, kombu, carrot, konnyaku and fish cake, in a bowl with handles",
+  "items": [
+   "maff_kyodo:shimi_daikon_no_otaue_no_nimono_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shimikonnyaku_ibaraki",
+  "ja": "凍みこんにゃく",
+  "desc": "shimi konnyaku, sheets of pale beige freeze-dried konnyaku with a sponge-like texture, simmered brown in soy and also fried in a breadcrumb crust, served on a plate",
+  "items": [
+   "maff_kyodo:shimikonnyaku_ibaraki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shiokujirajiru_yamagata",
+  "ja": "塩くじら汁",
+  "desc": "shio kujira jiru, a clear soup with large chunks of new potato, strips of white and black salted whale fat with skin, green bell pepper and cucumber pieces, in a dark bowl",
+  "items": [
+   "maff_kyodo:shiokujirajiru_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shirasu_don_wakayama",
+  "ja": "しらす丼",
+  "desc": "shirasu don, a bowl of rice completely covered in a heap of tiny white boiled whitebait, topped with shredded green shiso, yellow egg threads, red pickled ginger and a dab of green wasabi",
+  "items": [
+   "maff_kyodo:shirasu_don_wakayama"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shirauonokakiage_shimane",
+  "ja": "白魚のかき揚げ",
+  "desc": "shirauo no kakiage, a loose round fritter of many tiny white icefish with chopped vegetables in pale crisp batter, on paper in a black bowl",
+  "items": [
+   "maff_kyodo:shirauonokakiage_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shiromisonozoni_kyoto",
+  "ja": "白味噌の雑煮",
+  "desc": "shiro miso zoni, a thick creamy white miso soup in a lacquered bowl with a round white rice cake, a hexagonal cut white taro piece and a round slice of red carrot",
+  "items": [
+   "maff_kyodo:shiromisonozoni_kyoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shishamonokanroni_hokkaido",
+  "ja": "ししゃもの甘露煮",
+  "desc": "shishamo kanroni, whole small smelt fish simmered in sweet soy until shiny dark brown, side by side on a bamboo leaf on a long white plate",
+  "items": [
+   "maff_kyodo:shishamonokanroni_hokkaido"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shiso_maki_miyagi",
+  "ja": "しそ巻き",
+  "desc": "shiso maki, small rolls of green perilla leaves wrapped around sweet miso, fried until dark green and crinkly, lined up on a blue and white oval plate",
+  "items": [
+   "maff_kyodo:shiso_maki_miyagi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shoi_meshi_shiga",
+  "ja": "しょいめし",
+  "desc": "shoi meshi, soy-seasoned light brown mixed rice with shaved burdock, thin orange carrot strips, shiitake and fried tofu, in a bowl",
+  "items": [
+   "maff_kyodo:shoi_meshi_shiga"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shokuyogikunoohitashi_yamagata",
+  "ja": "食用ぎくのおひたし",
+  "desc": "shokuyogiku no ohitashi, a heap of boiled purple-pink edible chrysanthemum petals over bright green spinach, topped with walnuts, in a blue-striped bowl",
+  "items": [
+   "maff_kyodo:shokuyogikunoohitashi_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shouga_meshi_wakayama",
+  "ja": "しょうが飯",
+  "desc": "shoga meshi, light tan rice cooked with fine slivers of ginger and flecks of orange carrot, in a large round black and red lacquered bowl",
+  "items": [
+   "maff_kyodo:shouga_meshi_wakayama"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shouga_misooden_aomori",
+  "ja": "しょうが味噌おでん",
+  "desc": "shoga miso oden, oden of daikon, a boiled egg, konnyaku, chikuwa and fried fish cake in clear broth, topped with a thick orange-brown ginger miso sauce, in a ceramic bowl",
+  "items": [
+   "maff_kyodo:shouga_misooden_aomori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shouyu_mame_kagawa",
+  "ja": "しょうゆ豆",
+  "desc": "shoyu mame, roasted dried broad beans soaked in sweet soy, whole beans with their skins on, glossy very dark brown, in a small white bowl",
+  "items": [
+   "maff_kyodo:shouyu_mame_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shouyu_meshi_ehime",
+  "ja": "しょうゆめし",
+  "desc": "shoyu meshi, light brown soy-cooked rice with chicken, burdock and carrot, topped with yellow egg threads and black shredded nori, in a blue-striped bowl",
+  "items": [
+   "maff_kyodo:shouyu_meshi_ehime"
+  ]
+ },
+ {
+  "key": "maff_kyodo-shouyu_okowa_niigata",
+  "ja": "しょうゆおこわ",
+  "desc": "shoyu okowa, golden-brown soy-seasoned steamed sticky rice dotted with pinkish-red kidney beans, spread on cloth in a steamer",
+  "items": [
+   "maff_kyodo:shouyu_okowa_niigata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sioika_no_sunomono_nagano",
+  "ja": "塩いかの酢の物",
+  "desc": "shioika no sunomono, rings and strips of white salted squid with sliced green cucumber and wakame seaweed in vinegar, in a square white dish",
+  "items": [
+   "maff_kyodo:sioika_no_sunomono_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sippoku_udon_kagawa",
+  "ja": "しっぽくうどん",
+  "desc": "shippoku udon, thick white udon noodles in clear broth heaped with simmered daikon, orange carrot, fried tofu strips and greens, in a patterned bowl",
+  "items": [
+   "maff_kyodo:sippoku_udon_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-soboronatto_ibaraki",
+  "ja": "そぼろ納豆",
+  "desc": "soboro natto, brown fermented soybeans mixed with pale chewy strips of dried daikon in a sticky soy dressing, in a small blue bowl",
+  "items": [
+   "maff_kyodo:soboronatto_ibaraki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-somage_miyazaki",
+  "ja": "そまげ",
+  "desc": "somage, round pale grey-beige buckwheat-flour dumplings flecked with orange carrot and green onion, piled in a white bowl",
+  "items": [
+   "maff_kyodo:somage_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sorakitamochi_oita",
+  "ja": "そらきたもち",
+  "desc": "sorakitamochi, two flat round sweet potato and flour cakes filled with sweet potato paste, dusted all over in tan kinako, on a small black dish",
+  "items": [
+   "maff_kyodo:sorakitamochi_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-soramame_no_kofuki_tottori",
+  "ja": "そら豆の粉吹き",
+  "desc": "soramame no kofuki, peeled dried broad beans boiled soft and dusted pale yellow, a mound in a white bowl",
+  "items": [
+   "maff_kyodo:soramame_no_kofuki_tottori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sudarebunogomazuae_ibaraki",
+  "ja": "すだれ麩のごま酢和え",
+  "desc": "sudarebu no gomazuae, flat wavy strips of pale yellow chewy wheat gluten tossed with thin green cucumber slices in sesame vinegar dressing, in a reddish-brown bowl",
+  "items": [
+   "maff_kyodo:sudarebunogomazuae_ibaraki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-suko_fukui",
+  "ja": "すこ",
+  "desc": "suko, short sticks of red taro stem pickled in vinegar, bright pink-red and translucent in pink liquid, sprinkled with white sesame, in a small white dish",
+  "items": [
+   "maff_kyodo:suko_fukui"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sumashizoni_shimane",
+  "ja": "すまし雑煮",
+  "desc": "sumashi zoni, a black lacquered bowl of clear soy broth with one round white rice cake topped with a pile of dark green rock seaweed and bonito flakes",
+  "items": [
+   "maff_kyodo:sumashizoni_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sumisosomen_aichi",
+  "ja": "酢味噌そうめん",
+  "desc": "sumiso somen, a nest of thin white somen noodles in a glass bowl topped with a thick dark brown vinegared bean-miso sauce, sesame seeds, bonito flakes and a green leaf",
+  "items": [
+   "maff_kyodo:sumisosomen_aichi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-sumochi_fukuoka",
+  "ja": "酢もち",
+  "desc": "sumochi, small torn pieces of soft white rice cake tossed in a heap of grated white daikon dressed with bitter orange juice and soy, in a blue patterned bowl",
+  "items": [
+   "maff_kyodo:sumochi_fukuoka"
+  ]
+ },
+ {
+  "key": "maff_kyodo-suno_shui_miyazaki",
+  "ja": "酢のしゅい",
+  "desc": "su no shui, a thick orange-brown soup of grated daikon and vinegar with chunks of sardine with silver skin, topped with chopped green onion, in a red lacquered bowl",
+  "items": [
+   "maff_kyodo:suno_shui_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-suzukinohoshoyaki_shimane",
+  "ja": "スズキの奉書焼き",
+  "desc": "suzuki no hoshoyaki, a whole sea bass wrapped in thick white hosho paper tied with straw cord, the paper toasted brown, the fish head peeking out, on a plate with sudachi halves",
+  "items": [
+   "maff_kyodo:suzukinohoshoyaki_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tachiuo_maki_ehime",
+  "ja": "太刀魚巻",
+  "desc": "tachiuo maki, a long strip of silver beltfish wound in a spiral around a bamboo stick and charcoal-grilled with a glossy dark red-brown sweet soy glaze",
+  "items": [
+   "maff_kyodo:tachiuo_maki_ehime"
+  ]
+ },
+ {
+  "key": "maff_kyodo-taganemochi_ibaraki",
+  "ja": "たがね餅",
+  "desc": "tagane mochi, thick oval slices of pale rice cake with visible rice grains, flecked with green aonori and sesame, toasted with brown spots, on a white plate",
+  "items": [
+   "maff_kyodo:taganemochi_ibaraki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tai_soumen_ehime",
+  "ja": "鯛そうめん",
+  "desc": "tai somen, a whole simmered pink sea bream laid on bundles of somen noodles in white, pink, green, yellow and brown, with yellow egg threads and dark shiitake strips, on a large patterned platter",
+  "items": [
+   "maff_kyodo:tai_soumen_ehime",
+   "maff_kyodo:tai_soumen_kagawa",
+   "maff_kyodo:tai_soumen_kumamoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-taimen_oita",
+  "ja": "鯛麺",
+  "desc": "taimen, a whole salt-grilled pink sea bream laid on a wavy heap of thin white noodles on a large blue and white round platter",
+  "items": [
+   "maff_kyodo:taimen_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-taimonokorobashi_kochi",
+  "ja": "田芋のころばし",
+  "desc": "taimo no korobashi, small round peeled taro simmered in sweet soy until pale beige, rolled in white roasted sesame seeds, in a dark bowl",
+  "items": [
+   "maff_kyodo:taimonokorobashi_kochi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tainokaramushi_ishikawa",
+  "ja": "鯛の唐蒸し",
+  "desc": "tai no karamushi, two whole red sea bream steamed with their bellies split open and stuffed full of pale okara mixed with carrot, burdock and ginkgo nuts, on a patterned platter",
+  "items": [
+   "maff_kyodo:tainokaramushi_ishikawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-taipiien_kumamoto",
+  "ja": "太平燕",
+  "desc": "taipien, a white bowl of thin translucent glass noodles in pale chicken soup, topped with cabbage, pork, shrimp, squid, black wood-ear mushrooms and a fried halved egg with a golden yolk",
+  "items": [
+   "maff_kyodo:taipiien_kumamoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-takatsu_no_torimeshi_chiba",
+  "ja": "高津のとり飯",
+  "desc": "takatsu no torimeshi, white rice mixed with small dark soy-simmered chicken pieces, topped with green leaves, in a blue-rimmed bowl",
+  "items": [
+   "maff_kyodo:takatsu_no_torimeshi_chiba"
+  ]
+ },
+ {
+  "key": "maff_kyodo-takenoko_gohan_miyagi",
+  "ja": "たけのこご飯",
+  "desc": "takenoko gohan, pale golden rice cooked with thin comb-shaped slices of bamboo shoot, topped with a green leaf, in a white rice bowl",
+  "items": [
+   "maff_kyodo:takenoko_gohan_miyagi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-takenoko_jiru_nagano",
+  "ja": "たけのこ汁",
+  "desc": "takenoko jiru, cloudy miso soup with slender bamboo shoots, flaked canned mackerel, onion and egg, in a red lacquered bowl",
+  "items": [
+   "maff_kyodo:takenoko_jiru_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-takenoko_jiru_niigata",
+  "ja": "竹の子汁",
+  "desc": "takenoko jiru, miso soup with long thin bamboo shoots, potato, carrot, onion and flaked mackerel with egg, in a brown wooden bowl",
+  "items": [
+   "maff_kyodo:takenoko_jiru_niigata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-takenokokombu_ishikawa",
+  "ja": "たけのこ昆布",
+  "desc": "takenoko kombu, large comb-textured wedges of pale yellow bamboo shoot simmered with glossy dark green kombu pieces, in a white bowl",
+  "items": [
+   "maff_kyodo:takenokokombu_ishikawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-takenokonokinomeae_kyoto",
+  "ja": "たけのこの木の芽和え",
+  "desc": "takenoko no kinome ae, small cubes of pale bamboo shoot tossed in a pale green kinome sansho-leaf miso dressing, in a small yellow footed cup with a sansho sprig",
+  "items": [
+   "maff_kyodo:takenokonokinomeae_kyoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-takenokonosanshouni_shimane",
+  "ja": "たけのこ山椒煮",
+  "desc": "takenoko sanshoni, large pale yellow wedges of bamboo shoot showing their comb texture, simmered in light soy, with green sansho berries and a sansho leaf, in a black dish",
+  "items": [
+   "maff_kyodo:takenokonosanshouni_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-takenokotofuki_kyoto",
+  "ja": "たけのことふき・生節の炊いたん",
+  "desc": "takenoko to fuki namabushi no taitan, simmered pale bamboo shoot wedges, short green butterbur stalks and a dark brown chunk of boiled bonito, in a patterned dish",
+  "items": [
+   "maff_kyodo:takenokotofuki_kyoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tako_meshi_ehime",
+  "ja": "たこ飯",
+  "desc": "takomeshi, brown soy-cooked rice with purple-red octopus pieces with suckers, orange carrot strips and burdock, topped with crumbled nori, in a blue-striped bowl",
+  "items": [
+   "maff_kyodo:tako_meshi_ehime",
+   "maff_kyodo:tako_meshi_kumamoto",
+   "maff_kyodo:tako_meshi_mie",
+   "maff_kyodo:takomeshi_aichi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tako_momiuri_nara",
+  "ja": "蛸もみうり",
+  "desc": "tako momiuri, thin slices of green cucumber and red-purple boiled octopus with white suckers in vinegar, sprinkled with sesame, in a blue and white bowl",
+  "items": [
+   "maff_kyodo:tako_momiuri_nara"
+  ]
+ },
+ {
+  "key": "maff_kyodo-takuan_no_kinpira_kagawa",
+  "ja": "たくあんのきんぴら",
+  "desc": "takuan no kinpira, round slices of old yellow pickled daikon stir-fried and simmered in soy until amber-brown and soft, with red chili rings, in a blue and white bowl",
+  "items": [
+   "maff_kyodo:takuan_no_kinpira_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tamakonnyaku_yamagata",
+  "ja": "玉こんにゃく",
+  "desc": "tama konnyaku, round brown balls of konnyaku simmered in soy, glossy and dark tan, threaded three or four to a bamboo skewer and also in a small iron pot",
+  "items": [
+   "maff_kyodo:tamakonnyaku_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tarano_jyappa_jiru_aomori",
+  "ja": "鱈のじゃっぱ汁",
+  "desc": "tara no jappa jiru, a cloudy beige miso soup with chunks of cod head, bones and skin, daikon and leek, in a red-lined bowl",
+  "items": [
+   "maff_kyodo:tarano_jyappa_jiru_aomori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-taranoko_ae_aomori",
+  "ja": "たらの子和え",
+  "desc": "tara no ko ae, julienned orange carrot stir-fried and coated with pale pink cod roe, in a square pale green dish",
+  "items": [
+   "maff_kyodo:taranoko_ae_aomori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tekone_zushi_mie",
+  "ja": "てこねずし",
+  "desc": "tekone zushi, vinegared rice topped with dark red slices of soy-marinated bonito, scattered with shredded nori, green shiso and ginger, in a shallow round celadon dish",
+  "items": [
+   "maff_kyodo:tekone_zushi_mie"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tenmon_dou_chiba",
+  "ja": "てんもんどう",
+  "desc": "tenmondo, candied vegetables in a sugar crust: white lotus root rounds, green and yellow burdock sticks, orange carrot slices and pale ginger slices, arranged on a black tray",
+  "items": [
+   "maff_kyodo:tenmon_dou_chiba"
+  ]
+ },
+ {
+  "key": "maff_kyodo-teppai_kagawa",
+  "ja": "てっぱい",
+  "desc": "teppai, thin strips of vinegar-cured silver-skinned fish and white daikon tossed in a white miso vinegar dressing with green onion and red chili, in a patterned bowl",
+  "items": [
+   "maff_kyodo:teppai_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-teppojiru_hokkaido",
+  "ja": "てっぽう汁",
+  "desc": "teppo jiru, a miso soup with red crab shell and leg pieces, white crab meat, tofu, carrot slices and leek, in a black lacquered bowl",
+  "items": [
+   "maff_kyodo:teppojiru_hokkaido"
+  ]
+ },
+ {
+  "key": "maff_kyodo-teppou_maki_chiba",
+  "ja": "鉄砲巻き",
+  "desc": "teppo maki, round sushi rolls of white rice in black nori, the centre filled with brown soy-seasoned bonito flakes, cut pieces standing to show the filling, on a white plate",
+  "items": [
+   "maff_kyodo:teppou_maki_chiba"
+  ]
+ },
+ {
+  "key": "maff_kyodo-teuchi_soba_nagano",
+  "ja": "手打ちそば",
+  "desc": "teuchi soba, handmade thin grey-brown buckwheat noodles piled on a round slatted bamboo tray, with a cup of dark dipping broth and a small dish of wasabi",
+  "items": [
+   "maff_kyodo:teuchi_soba_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tobi_tsuki_dango_fukui",
+  "ja": "とびつき団子",
+  "desc": "tobitsuki dango, oblong white rice-flour dumplings completely coated with glossy dark red sweetened cowpeas, on green leaves on a plate, with a small dish of kinako",
+  "items": [
+   "maff_kyodo:tobi_tsuki_dango_fukui"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tobiuonosashimi_shimane",
+  "ja": "トビウオの刺身",
+  "desc": "tobiuo no sashimi, slices of translucent pinkish-white flying fish with a silver-blue skin edge, on green shiso leaves on a white plate",
+  "items": [
+   "maff_kyodo:tobiuonosashimi_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tofunoumezuzuke_kochi",
+  "ja": "豆腐の梅酢づけ",
+  "desc": "tofu no umezu zuke, slices of firm tofu pickled in plum vinegar, bright magenta-pink outside and pale yellow-beige inside, fanned in rows on a platter",
+  "items": [
+   "maff_kyodo:tofunoumezuzuke_kochi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toganjiru_aichi",
+  "ja": "とうがん汁",
+  "desc": "togan jiru, a clear lightly thickened soup with translucent pale green chunks of winter melon, chicken and shiitake, in a wooden bowl",
+  "items": [
+   "maff_kyodo:toganjiru_aichi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tojiko_mame_kumamoto",
+  "ja": "とじこ豆",
+  "desc": "tojiko mame, a log-shaped steamed sweet of brown sugar dough packed with soybeans, wrapped in bamboo sheath, partly sliced into rounds, on a long plate with a green leaf",
+  "items": [
+   "maff_kyodo:tojiko_mame_kumamoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tori_meshi_miyazaki",
+  "ja": "とりめし",
+  "desc": "torimeshi, light brown soy-cooked rice mixed with small chicken pieces, shaved burdock, carrot and shiitake, topped with a green leaf, in a white rice bowl",
+  "items": [
+   "maff_kyodo:tori_meshi_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toridose_chiba",
+  "ja": "鶏雑炊",
+  "desc": "tori dose, a pale beige thin miso rice porridge with small chicken pieces and shaved burdock, in a black bowl",
+  "items": [
+   "maff_kyodo:toridose_chiba"
+  ]
+ },
+ {
+  "key": "maff_kyodo-torimeshi_oita",
+  "ja": "鶏めし",
+  "desc": "torimeshi, deep brown soy-seasoned rice mixed with chopped chicken and plenty of shaved burdock, in a yellow-rimmed bowl",
+  "items": [
+   "maff_kyodo:torimeshi_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toriniku_no_sukiyaki_fukuoka",
+  "ja": "鶏肉のすき焼き",
+  "desc": "toriniku no sukiyaki, an iron sukiyaki pot of chicken pieces and giblets simmered in sweet soy with Chinese cabbage, shungiku greens, burdock, carrot and mushrooms",
+  "items": [
+   "maff_kyodo:toriniku_no_sukiyaki_fukuoka"
+  ]
+ },
+ {
+  "key": "maff_kyodo-torino_motsuni_yama_nashi",
+  "ja": "鳥もつ煮",
+  "desc": "tori motsuni, glossy dark red-brown chicken liver, gizzards and hearts with whole orange unlaid egg yolks, coated in sweet soy glaze, on a plate with green lettuce and shishito peppers",
+  "items": [
+   "maff_kyodo:torino_motsuni_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-torisashi_kagoshima",
+  "ja": "鶏刺し",
+  "desc": "torisashi, thin slices of raw chicken seared white on the outside and pink inside, arranged on a long ceramic plate with grated ginger and a small dish of soy sauce",
+  "items": [
+   "maff_kyodo:torisashi_kagoshima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toriten_oita",
+  "ja": "とり天",
+  "desc": "toriten, chunks of chicken deep-fried in a pale golden crisp tempura batter, piled on shredded cabbage on a white plate",
+  "items": [
+   "maff_kyodo:toriten_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toshi_torizen_miyazaki",
+  "ja": "歳とり膳",
+  "desc": "toshitori zen, a New Year's Eve feast on a red lacquered tray: a grilled fish, simmered vegetables, white tofu salad, sweet beans, red and white namasu and rice in small lacquered bowls",
+  "items": [
+   "maff_kyodo:toshi_torizen_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toshiake_udon_kagawa",
+  "ja": "年明けうどん",
+  "desc": "toshiake udon, thick white udon noodles in clear pale broth in a bowl, topped with a pink rice cake filled with red bean paste, pink and white kamaboko slices and green onion",
+  "items": [
+   "maff_kyodo:toshiake_udon_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toufu_dengaku_mie",
+  "ja": "豆腐でんがく",
+  "desc": "tofu dengaku, rectangles of firm tofu on twin bamboo skewers, grilled and coated with glossy dark brown sweet miso, on a white plate",
+  "items": [
+   "maff_kyodo:toufu_dengaku_mie"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toufu_dengaku_shiga",
+  "ja": "豆腐田楽",
+  "desc": "tofu dengaku, white tofu slabs on long bamboo skewers topped with bright green leek miso, standing in a row in a wooden box",
+  "items": [
+   "maff_kyodo:toufu_dengaku_shiga"
+  ]
+ },
+ {
+  "key": "maff_kyodo-touhei_nabe_fukuoka",
+  "ja": "とうへい鍋",
+  "desc": "tohei nabe, an earthenware hotpot of beige miso broth with pale pieces of conger eel, cabbage and green onion",
+  "items": [
+   "maff_kyodo:touhei_nabe_fukuoka"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toukibi_meshi_miyazaki",
+  "ja": "とうきびめし",
+  "desc": "tokibi meshi, white rice cooked with a sprinkling of bright yellow sweet corn kernels, in a blue and white rice bowl",
+  "items": [
+   "maff_kyodo:toukibi_meshi_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-toyamakabukasujiru_yamagata",
+  "ja": "遠山かぶの粕汁",
+  "desc": "toyama kabu no kasujiru, a creamy pale beige sake-lees miso soup with rough broken chunks of white turnip, flattened soybeans, fried tofu and leek, in a dark bowl",
+  "items": [
+   "maff_kyodo:toyamakabukasujiru_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tsubon_jiru_kumamoto",
+  "ja": "つぼん汁",
+  "desc": "tsubon jiru, clear soy soup packed with small cubes of chicken, taro, carrot, kamaboko, konnyaku, grilled tofu and shiitake, in a deep red and black lacquered bowl",
+  "items": [
+   "maff_kyodo:tsubon_jiru_kumamoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tsuganijiru_kochi",
+  "ja": "つがに汁",
+  "desc": "tsugani jiru, a red lacquered bowl of cloudy broth with fluffy curds of ground mitten crab, purple-skinned eggplant slices and green taro stem",
+  "items": [
+   "maff_kyodo:tsuganijiru_kochi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tsukeage_kagoshima",
+  "ja": "つけあげ",
+  "desc": "tsukeage, rectangular and oval golden-brown deep-fried fish cakes with a smooth surface, in a pale blue footed dish",
+  "items": [
+   "maff_kyodo:tsukeage_kagoshima"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tsumireni_shimane",
+  "ja": "つみれ煮",
+  "desc": "tsumire ni, a large grey-pink fish ball of minced fish simmered in clear pale broth, topped with thin shreds of ginger and green onion, in a cream bowl",
+  "items": [
+   "maff_kyodo:tsumireni_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tsuwa_buki_no_abura_itame_miyazaki",
+  "ja": "つわぶきの油炒め",
+  "desc": "tsuwabuki no aburaitame, short pale green sticks of peeled tsuwabuki stalk stir-fried with strips of fried tofu in soy, in an orange-red bowl",
+  "items": [
+   "maff_kyodo:tsuwa_buki_no_abura_itame_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tukekenchin_ibaraki",
+  "ja": "つけけんちん",
+  "desc": "tsuke kenchin, chilled thick grey-brown soba noodles on a plate, served with a separate bowl of hot brown kenchin soup with taro, daikon, carrot and konnyaku for dipping, on a wooden tray",
+  "items": [
+   "maff_kyodo:tukekenchin_ibaraki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-tukino_shizuku_yama_nashi",
+  "ja": "月の雫",
+  "desc": "tsuki no shizuku, whole green Koshu grapes coated in an opaque white sugar shell, one cut open to show the translucent pinkish grape inside, on a dark plate",
+  "items": [
+   "maff_kyodo:tukino_shizuku_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-uchikomi_jiru_kagawa",
+  "ja": "打ち込み汁",
+  "desc": "uchikomi jiru, thick flat hand-cut white wheat noodles simmered in a pale miso soup with carrot, daikon, taro and green chives, in a green ceramic bowl",
+  "items": [
+   "maff_kyodo:uchikomi_jiru_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-uchimame_jiru_shiga",
+  "ja": "打ち豆汁",
+  "desc": "uchimame jiru, miso soup with flattened pale yellow soybean discs, white turnip chunks, taro, fried tofu and green onion, in a black bowl",
+  "items": [
+   "maff_kyodo:uchimame_jiru_shiga"
+  ]
+ },
+ {
+  "key": "maff_kyodo-udotoshimidaikonnodonkoroni_yamagata",
+  "ja": "うどと凍み大根のどんころ煮",
+  "desc": "udo to shimi daikon no donkoroni, chunks of green udo stalk, spongy freeze-dried daikon, dried herring and fish cake simmered brown in soy, in an octagonal blue and white bowl",
+  "items": [
+   "maff_kyodo:udotoshimidaikonnodonkoroni_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-ujikintoki_kyoto",
+  "ja": "宇治金時",
+  "desc": "uji kintoki, a tall mound of shaved ice soaked in bright green matcha syrup, with dark red sweet adzuki beans and round white rice dumplings, in a glass dish",
+  "items": [
+   "maff_kyodo:ujikintoki_kyoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-ukoginokiriae_yamagata",
+  "ja": "うこぎの切り和え",
+  "desc": "ukogi no kiriae, finely chopped green ukogi leaves mixed with grilled miso and bonito flakes into a coarse dark green relish, in a small blue bowl",
+  "items": [
+   "maff_kyodo:ukoginokiriae_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-unaginohobikini_ibaraki",
+  "ja": "うなぎの帆引き煮",
+  "desc": "unagi no hobiki ni, long fillets of eel simmered in sweet soy until glossy dark brown, stacked on a round plate with two large bamboo leaves standing up like sails",
+  "items": [
+   "maff_kyodo:unaginohobikini_ibaraki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-usuyaki_yama_nashi",
+  "ja": "うすやき",
+  "desc": "usuyaki, thin round flour pancakes speckled with tiny white dried baby sardines and green shiso shreds, lightly browned, overlapping on a plate",
+  "items": [
+   "maff_kyodo:usuyaki_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-uzumaki_mochi_kagawa",
+  "ja": "うずまきもち",
+  "desc": "uzumaki mochi, slices of a rolled log showing a spiral of dark purple-brown smooth bean paste and white rice dough, arranged in a round dish",
+  "items": [
+   "maff_kyodo:uzumaki_mochi_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-uzumemeshi_shimane",
+  "ja": "うずめ飯",
+  "desc": "uzume meshi, a bowl of white rice with a dab of green grated wasabi on top, hiding simmered vegetables, tofu and sea bream in soy broth underneath",
+  "items": [
+   "maff_kyodo:uzumemeshi_shimane"
+  ]
+ },
+ {
+  "key": "maff_kyodo-wakadori_no_mizutaki_fukuoka",
+  "ja": "若鶏の水炊き",
+  "desc": "wakadori no mizutaki, an earthenware pot of cloudy white chicken broth with bone-in chicken, beside a platter of cabbage, greens, mushrooms, tofu and carrot and small dishes of ponzu and condiments",
+  "items": [
+   "maff_kyodo:wakadori_no_mizutaki_fukuoka"
+  ]
+ },
+ {
+  "key": "maff_kyodo-wakame_zushi_wakayama",
+  "ja": "わかめずし",
+  "desc": "wakame zushi, thick cylinders of white sushi rice wrapped in dark green wakame seaweed instead of nori, cut to show the rice and pink fillings, with a red chrysanthemum garnish",
+  "items": [
+   "maff_kyodo:wakame_zushi_wakayama"
+  ]
+ },
+ {
+  "key": "maff_kyodo-wakasa_no_oyaki_tottori",
+  "ja": "若桜のおやき",
+  "desc": "wakasa no oyaki, flat hexagonal dark green mugwort rice cakes stamped with a pattern on top, filled with sweet bean paste, laid out on white cloth",
+  "items": [
+   "maff_kyodo:wakasa_no_oyaki_tottori"
+  ]
+ },
+ {
+  "key": "maff_kyodo-wakegiae_kagawa",
+  "ja": "わけぎあえ",
+  "desc": "wakegi ae, short boiled green and white wakegi scallion pieces and red-edged octopus chunks tossed in a pale yellow mustard white miso dressing, in a brown bowl",
+  "items": [
+   "maff_kyodo:wakegiae_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-warabi_mochi_nara",
+  "ja": "蕨餅",
+  "desc": "warabimochi, a soft translucent pale amber bracken-starch jelly, stretchy and glossy, in a glass dish dusted with tan kinako",
+  "items": [
+   "maff_kyodo:warabi_mochi_nara"
+  ]
+ },
+ {
+  "key": "maff_kyodo-warabitataki_yamagata",
+  "ja": "わらびたたき",
+  "desc": "warabi tataki, finely chopped green-brown bracken fern beaten with grilled miso into a sticky coarse paste, mounded in a small celadon bowl",
+  "items": [
+   "maff_kyodo:warabitataki_yamagata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-warigo_bentou_kagawa",
+  "ja": "わりご弁当",
+  "desc": "warigo bento, rectangular wooden boxes each filled with a block of white rice cut with a wooden mould and simmered konnyaku, shiitake, carrot, burdock and chikuwa, with red and green garnishes",
+  "items": [
+   "maff_kyodo:warigo_bentou_kagawa"
+  ]
+ },
+ {
+  "key": "maff_kyodo-wasabi_zushi_wakayama",
+  "ja": "わさびずし",
+  "desc": "wasabi zushi, oblong packets of vinegared rice and cured mackerel tightly wrapped in large dark green wasabi leaves, lined up on a plate",
+  "items": [
+   "maff_kyodo:wasabi_zushi_wakayama"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yaki_morokono_dorozu_shiga",
+  "ja": "焼きもろこのどろ酢",
+  "desc": "yaki moroko no dorozu, small whole grilled silver-brown honmoroko fish laid on a green leaf-shaped plate with a thick yellow-brown mustard miso vinegar sauce",
+  "items": [
+   "maff_kyodo:yaki_morokono_dorozu_shiga"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yakiayu_no_kanroni_kumamoto",
+  "ja": "焼鮎の甘露煮",
+  "desc": "yakiayu no kanroni, whole grilled sweetfish simmered in sweet soy until glossy golden-brown, four side by side on a white plate with green fern leaves",
+  "items": [
+   "maff_kyodo:yakiayu_no_kanroni_kumamoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yakome_yama_nashi",
+  "ja": "やこめ",
+  "desc": "yakome, steamed white glutinous rice mixed with roasted tan soybeans and black sesame seeds, in a black bowl",
+  "items": [
+   "maff_kyodo:yakome_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yama_surume_no_kinpira_kumamoto",
+  "ja": "山するめのきんぴら",
+  "desc": "yama surume no kinpira, thin long strips of dried bamboo shoot and black kikurage mushroom stir-fried in soy until glossy brown, in a blue patterned bowl",
+  "items": [
+   "maff_kyodo:yama_surume_no_kinpira_kumamoto"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yamato_no_zouni_nara",
+  "ja": "大和の雑煮",
+  "desc": "yamato no zoni, a creamy white miso soup in a lacquered bowl with round rice cakes, a thick round of white daikon, red carrot and taro, with a rice cake dipped in sweet kinako on a side dish",
+  "items": [
+   "maff_kyodo:yamato_no_zouni_nara"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yamatona_to_usuage_no_nimono_nara",
+  "ja": "大和まなと薄揚げの煮もの",
+  "desc": "yamato mana to usuage no nimono, soft simmered green leafy yamato-mana greens and strips of thin fried tofu in a little light broth, in a pale green bowl",
+  "items": [
+   "maff_kyodo:yamatona_to_usuage_no_nimono_nara"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yanagawa_nabe_fukuoka",
+  "ja": "柳川なべ",
+  "desc": "yanagawa nabe, a shallow earthenware pot of split loaches and shaved burdock simmered in sweet soy, covered with fluffy yellow soft-set egg and green mitsuba leaves",
+  "items": [
+   "maff_kyodo:yanagawa_nabe_fukuoka"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yangome_chiba",
+  "ja": "ヤンゴメ",
+  "desc": "yangome, roasted light brown rice grains steamed with sweet red adzuki beans, packed in a square red lacquered box with green leaves on top",
+  "items": [
+   "maff_kyodo:yangome_chiba"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yaseuma_oita",
+  "ja": "やせうま",
+  "desc": "yaseuma, long flat wide ribbons of boiled wheat dough coated all over in tan sweet kinako, piled in a blue and white bowl",
+  "items": [
+   "maff_kyodo:yaseuma_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yashouma_nagano",
+  "ja": "やしょうま",
+  "desc": "yashoma, sliced logs of steamed rice-flour dough with flower and heart-shaped patterns inside, in pastel white, yellow, green and purple, on a pale green plate",
+  "items": [
+   "maff_kyodo:yashouma_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yatara_nagano",
+  "ja": "やたら",
+  "desc": "yatara, finely chopped cucumber, eggplant, myoga, green chili and miso-pickled daikon mixed into a coarse green and yellow relish, in a light blue dish",
+  "items": [
+   "maff_kyodo:yatara_nagano"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yoshida_no_udon_yama_nashi",
+  "ja": "吉田のうどん",
+  "desc": "yoshida no udon, very thick firm white wheat noodles in a brown miso and soy broth, topped with boiled cabbage and fried tofu, in a white bowl",
+  "items": [
+   "maff_kyodo:yoshida_no_udon_yama_nashi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yude_rakkasei_chiba",
+  "ja": "ゆで落花生",
+  "desc": "yude rakkasei, whole salt-boiled peanuts in their wrinkled tan shells, one cracked open to show pinkish nuts, piled in a dark-rimmed white bowl",
+  "items": [
+   "maff_kyodo:yude_rakkasei_chiba"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yudemochi_oita",
+  "ja": "ゆでもち",
+  "desc": "yudemochi, flat round thin white boiled wheat dough cakes with dark red bean paste showing faintly through, overlapping on a black plate",
+  "items": [
+   "maff_kyodo:yudemochi_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-yuzunokawani_oita",
+  "ja": "ゆずの皮煮",
+  "desc": "yuzu no kawani, large pieces of yuzu peel simmered in sugar until glossy translucent yellow, in a turquoise dish",
+  "items": [
+   "maff_kyodo:yuzunokawani_oita"
+  ]
+ },
+ {
+  "key": "maff_kyodo-zabujiru_miyazaki",
+  "ja": "ざぶ汁",
+  "desc": "zabu jiru, a clear soy soup full of sliced carrot, burdock, potato, daikon, pumpkin and fish cake, topped with white leek rings, in a red lacquered bowl",
+  "items": [
+   "maff_kyodo:zabujiru_miyazaki"
+  ]
+ },
+ {
+  "key": "maff_kyodo-zangi_hokkaido",
+  "ja": "ザンギ",
+  "desc": "zangi, dark brown deep-fried chicken chunks with a craggy soy-marinated crust, on a rectangular plate with a lemon wedge and salt and pepper",
+  "items": [
+   "maff_kyodo:zangi_hokkaido"
+  ]
+ },
+ {
+  "key": "maff_kyodo-zeitaku_ni_shiga",
+  "ja": "ぜいたく煮",
+  "desc": "zeitaku ni, thick round and half-moon slices of old pickled daikon simmered soft and amber-brown in soy and dashi, piled on a white plate",
+  "items": [
+   "maff_kyodo:zeitaku_ni_shiga"
+  ]
+ },
+ {
+  "key": "maff_kyodo-zemmainoitameni_kochi",
+  "ja": "ぜんまいの炒め煮",
+  "desc": "zenmai no itameni, thin dark reddish-brown strands of rehydrated royal fern stir-fried and simmered with strips of fried tofu, in a white bowl",
+  "items": [
+   "maff_kyodo:zemmainoitameni_kochi"
+  ]
+ },
+ {
+  "key": "maff_kyodo-zenmaino_nimono_niigata",
+  "ja": "ぜんまいの煮物",
+  "desc": "zenmai no nimono, soft brown strands of rehydrated royal fern simmered in soy with orange carrot strips and fried tofu, in a pink-patterned bowl",
+  "items": [
+   "maff_kyodo:zenmaino_nimono_niigata"
+  ]
+ },
+ {
+  "key": "maff_kyodo-zoni_aichi",
+  "ja": "雑煮",
+  "desc": "zoni, clear soy broth in a red lacquered bowl with square white rice cakes, a bundle of green mochina greens and bonito flakes on top",
+  "items": [
+   "maff_kyodo:zoni_aichi",
+   "maff_kyodo:zouni_fukui",
+   "maff_kyodo:zouni_mie"
+  ]
+ },
+ {
+  "key": "maff_kyodo-zuiki_no_nimono_nara",
+  "ja": "ずいきの煮もの",
+  "desc": "zuiki no nimono, short strips of taro stem simmered pale brown with thin fried tofu, in a blue and white bowl",
+  "items": [
+   "maff_kyodo:zuiki_no_nimono_nara"
+  ]
+ },
+ {
+  "key": "maff_kyodo-zuikinotaitan_kyoto",
+  "ja": "ずいきの炊いたん",
+  "desc": "zuiki no taitan, short pinkish-brown pieces of taro stem simmered in light dashi and slightly thickened, topped with a dab of grated ginger, in a pale green bowl",
+  "items": [
+   "maff_kyodo:zuikinotaitan_kyoto"
+  ]
+ }
+]

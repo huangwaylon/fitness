@@ -1,0 +1,1322 @@
+[
+ {
+  "key": "eatout-kakiage_soba",
+  "ja": "かき揚げそば",
+  "desc": "kakiage soba, soba in hot dashi broth topped with a round crisp vegetable tempura fritter and green onion",
+  "items": [
+   "eatout:kakiage_soba"
+  ]
+ },
+ {
+  "key": "eatout-korokke_soba",
+  "ja": "コロッケそば",
+  "desc": "korokke soba, soba in hot dashi broth topped with a breaded potato croquette and green onion",
+  "items": [
+   "eatout:korokke_soba"
+  ]
+ },
+ {
+  "key": "eatout-niku_soba",
+  "ja": "肉そば",
+  "desc": "niku soba, soba in hot dashi broth topped with simmered pork slices and green onion",
+  "items": [
+   "eatout:niku_soba",
+   "kurume:044"
+  ]
+ },
+ {
+  "key": "eatout-sushi_maguro",
+  "ja": "にぎり寿司 まぐろ（赤身）",
+  "desc": "two pieces of maguro nigiri sushi, deep red lean tuna slices on oval mounds of white sushi rice, on a wooden geta board",
+  "items": [
+   "eatout:sushi_maguro"
+  ]
+ },
+ {
+  "key": "eatout-sushi_chutoro",
+  "ja": "にぎり寿司 中トロ",
+  "desc": "two pieces of chutoro nigiri sushi, pink marbled medium-fatty tuna on sushi rice",
+  "items": [
+   "eatout:sushi_chutoro"
+  ]
+ },
+ {
+  "key": "eatout-sushi_otoro",
+  "ja": "にぎり寿司 大トロ",
+  "desc": "two pieces of otoro nigiri sushi, pale pink heavily marbled fatty tuna on sushi rice",
+  "items": [
+   "eatout:sushi_otoro"
+  ]
+ },
+ {
+  "key": "eatout-sushi_salmon",
+  "ja": "にぎり寿司 サーモン",
+  "desc": "two pieces of salmon nigiri sushi, bright orange salmon with white fat lines on sushi rice",
+  "items": [
+   "eatout:sushi_salmon"
+  ]
+ },
+ {
+  "key": "eatout-sushi_aburi_salmon",
+  "ja": "にぎり寿司 炙りサーモン（マヨ）",
+  "desc": "two pieces of seared salmon nigiri topped with lightly browned mayonnaise",
+  "items": [
+   "eatout:sushi_aburi_salmon"
+  ]
+ },
+ {
+  "key": "eatout-sushi_hamachi",
+  "ja": "にぎり寿司 はまち",
+  "desc": "two pieces of yellowtail nigiri sushi, glossy pale pink-cream fish with a darker band on sushi rice",
+  "items": [
+   "eatout:sushi_hamachi",
+   "eatout:sushi_buri_toro"
+  ]
+ },
+ {
+  "key": "eatout-sushi_tai",
+  "ja": "にぎり寿司 真鯛",
+  "desc": "two pieces of white fish nigiri sushi, translucent white slices with a pink skin edge on sushi rice",
+  "items": [
+   "eatout:sushi_tai",
+   "eatout:sushi_hirame"
+  ]
+ },
+ {
+  "key": "eatout-sushi_engawa",
+  "ja": "にぎり寿司 えんがわ",
+  "desc": "two pieces of engawa nigiri sushi, ribbed translucent white flounder fin on sushi rice",
+  "items": [
+   "eatout:sushi_engawa"
+  ]
+ },
+ {
+  "key": "eatout-sushi_aji",
+  "ja": "にぎり寿司 あじ",
+  "desc": "two pieces of aji nigiri sushi, silver-skinned horse mackerel topped with grated ginger and green onion",
+  "items": [
+   "eatout:sushi_aji"
+  ]
+ },
+ {
+  "key": "eatout-sushi_shimesaba",
+  "ja": "にぎり寿司 しめさば",
+  "desc": "two pieces of shime saba nigiri sushi, silver-blue patterned skin of vinegared mackerel on sushi rice",
+  "items": [
+   "eatout:sushi_shimesaba"
+  ]
+ },
+ {
+  "key": "eatout-sushi_ika",
+  "ja": "にぎり寿司 いか",
+  "desc": "two pieces of squid nigiri sushi, opaque white scored squid on sushi rice",
+  "items": [
+   "eatout:sushi_ika"
+  ]
+ },
+ {
+  "key": "eatout-sushi_tako",
+  "ja": "にぎり寿司 たこ",
+  "desc": "two pieces of octopus nigiri sushi, red-purple skinned octopus slices on sushi rice",
+  "items": [
+   "eatout:sushi_tako"
+  ]
+ },
+ {
+  "key": "eatout-sushi_ebi",
+  "ja": "にぎり寿司 えび",
+  "desc": "two pieces of ebi nigiri sushi, butterflied boiled shrimp with red and white stripes and a tail on sushi rice",
+  "items": [
+   "eatout:sushi_ebi"
+  ]
+ },
+ {
+  "key": "eatout-sushi_amaebi",
+  "ja": "にぎり寿司 甘えび",
+  "desc": "two pieces of amaebi nigiri sushi, translucent pinkish sweet shrimp on sushi rice",
+  "items": [
+   "eatout:sushi_amaebi"
+  ]
+ },
+ {
+  "key": "eatout-sushi_hotate",
+  "ja": "にぎり寿司 ほたて",
+  "desc": "two pieces of scallop nigiri sushi, a plump white scallop on sushi rice",
+  "items": [
+   "eatout:sushi_hotate"
+  ]
+ },
+ {
+  "key": "eatout-sushi_tsubu",
+  "ja": "にぎり寿司 つぶ貝",
+  "desc": "two pieces of whelk nigiri sushi, crunchy cream and dark-edged sliced whelk on sushi rice",
+  "items": [
+   "eatout:sushi_tsubu"
+  ]
+ },
+ {
+  "key": "eatout-sushi_tamago",
+  "ja": "にぎり寿司 玉子",
+  "desc": "two pieces of tamago nigiri sushi, a thick block of sweet yellow omelette tied to rice with a nori band",
+  "items": [
+   "eatout:sushi_tamago"
+  ]
+ },
+ {
+  "key": "eatout-sushi_anago",
+  "ja": "にぎり寿司 あなご",
+  "desc": "two pieces of anago nigiri sushi, soft brown conger eel brushed with glossy dark sweet sauce on sushi rice",
+  "items": [
+   "eatout:sushi_anago"
+  ]
+ },
+ {
+  "key": "eatout-sushi_unagi",
+  "ja": "にぎり寿司 うなぎ",
+  "desc": "two pieces of unagi nigiri sushi, glossy dark glazed grilled eel on sushi rice",
+  "items": [
+   "eatout:sushi_unagi"
+  ]
+ },
+ {
+  "key": "eatout-sushi_katsuo",
+  "ja": "にぎり寿司 かつお",
+  "desc": "two pieces of katsuo nigiri sushi, deep red skipjack topped with ginger and green onion",
+  "items": [
+   "eatout:sushi_katsuo"
+  ]
+ },
+ {
+  "key": "eatout-sushi_kanikama",
+  "ja": "にぎり寿司 かにかま",
+  "desc": "two pieces of kanikama nigiri, red and white crab sticks on sushi rice with mayonnaise",
+  "items": [
+   "eatout:sushi_kanikama"
+  ]
+ },
+ {
+  "key": "eatout-sushi_hamburg",
+  "ja": "にぎり寿司 ハンバーグ寿司",
+  "desc": "two pieces of hamburg steak nigiri, small slices of brown hamburg patty with mayonnaise on sushi rice",
+  "items": [
+   "eatout:sushi_hamburg"
+  ]
+ },
+ {
+  "key": "eatout-gunkan_ikura",
+  "ja": "軍艦 いくら",
+  "desc": "two pieces of ikura gunkan sushi, nori-wrapped rice ovals topped with glossy orange salmon roe",
+  "items": [
+   "eatout:gunkan_ikura"
+  ]
+ },
+ {
+  "key": "eatout-gunkan_uni",
+  "ja": "軍艦 うに",
+  "desc": "two pieces of uni gunkan sushi, nori-wrapped rice ovals topped with orange-yellow sea urchin",
+  "items": [
+   "eatout:gunkan_uni"
+  ]
+ },
+ {
+  "key": "eatout-gunkan_negitoro",
+  "ja": "軍艦 ネギトロ",
+  "desc": "two pieces of negitoro gunkan sushi, nori-wrapped rice topped with minced pink tuna and green onion",
+  "items": [
+   "eatout:gunkan_negitoro"
+  ]
+ },
+ {
+  "key": "eatout-gunkan_tunamayo",
+  "ja": "軍艦 ツナマヨ",
+  "desc": "two pieces of tuna mayo gunkan sushi, nori-wrapped rice topped with creamy tuna mayonnaise",
+  "items": [
+   "eatout:gunkan_tunamayo"
+  ]
+ },
+ {
+  "key": "eatout-gunkan_corn",
+  "ja": "軍艦 コーン",
+  "desc": "two pieces of corn mayo gunkan sushi, nori-wrapped rice topped with yellow corn kernels in mayonnaise",
+  "items": [
+   "eatout:gunkan_corn"
+  ]
+ },
+ {
+  "key": "eatout-gunkan_shirasu",
+  "ja": "軍艦 しらす",
+  "desc": "two pieces of shirasu gunkan sushi, nori-wrapped rice topped with tiny white boiled baby sardines and ginger",
+  "items": [
+   "eatout:gunkan_shirasu"
+  ]
+ },
+ {
+  "key": "eatout-gunkan_kanisarada",
+  "ja": "軍艦 かにサラダ",
+  "desc": "two pieces of crab salad gunkan sushi, nori-wrapped rice topped with shredded crab stick salad",
+  "items": [
+   "eatout:gunkan_kanisarada"
+  ]
+ },
+ {
+  "key": "eatout-gunkan_mentai",
+  "ja": "軍艦 明太子",
+  "desc": "two pieces of mentaiko gunkan sushi, nori-wrapped rice topped with pink-red spicy cod roe",
+  "items": [
+   "eatout:gunkan_mentai"
+  ]
+ },
+ {
+  "key": "eatout-maki_natto",
+  "ja": "納豆巻き",
+  "desc": "natto maki, thin nori sushi rolls cut in six pieces with sticky brown natto in the middle",
+  "items": [
+   "eatout:maki_natto"
+  ]
+ },
+ {
+  "key": "eatout-maki_negitoro",
+  "ja": "ネギトロ巻き",
+  "desc": "negitoro maki, thin nori sushi rolls cut in six with pink minced tuna and green onion in the middle",
+  "items": [
+   "eatout:maki_negitoro"
+  ]
+ },
+ {
+  "key": "eatout-maki_salad",
+  "ja": "サラダ巻き",
+  "desc": "salad maki, a sushi roll with lettuce, crab stick, cucumber and mayonnaise, cut in rounds",
+  "items": [
+   "eatout:maki_salad"
+  ]
+ },
+ {
+  "key": "eatout-kaisen_ehomaki",
+  "ja": "海鮮恵方巻",
+  "desc": "a seafood ehomaki, a whole long thick sushi roll in nori, one end showing tuna, salmon, egg, cucumber and shrimp",
+  "items": [
+   "eatout:kaisen_ehomaki"
+  ]
+ },
+ {
+  "key": "eatout-nigiri_moriawase",
+  "ja": "にぎり寿司 盛り合わせ（10貫）",
+  "desc": "an assorted nigiri sushi platter, ten pieces of tuna, salmon, shrimp, squid, egg and white fish nigiri on a wooden board with gari",
+  "items": [
+   "eatout:nigiri_moriawase",
+   "eatout:kaitenzushi_10"
+  ]
+ },
+ {
+  "key": "eatout-onigiri_ebimayo",
+  "ja": "えびマヨおにぎり",
+  "desc": "an ebi mayo onigiri, a rice ball in nori with pink shrimp in mayonnaise visible on top",
+  "items": [
+   "eatout:onigiri_ebimayo"
+  ]
+ },
+ {
+  "key": "eatout-onigiri_karubi",
+  "ja": "牛カルビおにぎり",
+  "desc": "a beef kalbi onigiri, a rice ball topped with glossy grilled beef in sweet sauce",
+  "items": [
+   "eatout:onigiri_karubi"
+  ]
+ },
+ {
+  "key": "eatout-onigiri_sekihan",
+  "ja": "赤飯おにぎり",
+  "desc": "a sekihan onigiri, a triangle of pinkish-red rice with dark azuki beans and black sesame",
+  "items": [
+   "eatout:onigiri_sekihan"
+  ]
+ },
+ {
+  "key": "eatout-onigiri_torigomoku",
+  "ja": "鶏五目おにぎり",
+  "desc": "a gomoku onigiri, a triangle of light brown seasoned rice with bits of chicken, carrot and burdock",
+  "items": [
+   "eatout:onigiri_torigomoku"
+  ]
+ },
+ {
+  "key": "eatout-onigiri_wakame",
+  "ja": "わかめご飯おにぎり",
+  "desc": "a wakame onigiri, a triangle of white rice mixed with small green wakame flakes",
+  "items": [
+   "eatout:onigiri_wakame"
+  ]
+ },
+ {
+  "key": "eatout-onigiri_bakudan",
+  "ja": "爆弾おにぎり（具だくさん大型）",
+  "desc": "a bakudan onigiri, a big round rice ball fully wrapped in nori, cut in half showing several fillings",
+  "items": [
+   "eatout:onigiri_bakudan"
+  ]
+ },
+ {
+  "key": "eatout-sand_ham",
+  "ja": "サンドイッチ（ハム）",
+  "desc": "ham sandwiches, crustless white bread triangles with pink ham and lettuce",
+  "items": [
+   "eatout:sand_ham"
+  ]
+ },
+ {
+  "key": "eatout-sand_tuna",
+  "ja": "サンドイッチ（ツナ）",
+  "desc": "tuna sandwiches, crustless white bread triangles with creamy tuna and cucumber",
+  "items": [
+   "eatout:sand_tuna"
+  ]
+ },
+ {
+  "key": "eatout-sand_katsu",
+  "ja": "カツサンド",
+  "desc": "katsu sando, thick sandwiches of white bread with a breaded pork cutlet in dark sauce and cabbage, cut in rectangles",
+  "items": [
+   "eatout:sand_katsu"
+  ]
+ },
+ {
+  "key": "eatout-sand_blt",
+  "ja": "BLTサンド",
+  "desc": "a BLT sandwich, toasted bread with bacon, lettuce and tomato, cut diagonally",
+  "items": [
+   "eatout:sand_blt"
+  ]
+ },
+ {
+  "key": "eatout-sand_fruit",
+  "ja": "フルーツサンド",
+  "desc": "fruit sando, crustless white bread with whipped cream and colourful strawberry, kiwi and mandarin slices showing in the cut face",
+  "items": [
+   "eatout:sand_fruit"
+  ]
+ },
+ {
+  "key": "eatout-bento_makunouchi",
+  "ja": "幕の内弁当",
+  "desc": "a makunouchi bento, a box with white rice and a black sesame, grilled salmon, tamagoyaki, karaage, simmered vegetables and pickles in compartments",
+  "items": [
+   "eatout:bento_makunouchi"
+  ]
+ },
+ {
+  "key": "eatout-bento_nori",
+  "ja": "のり弁当",
+  "desc": "a nori bento, white rice covered in a sheet of nori with a white fish fry, chikuwa tempura and kinpira",
+  "items": [
+   "eatout:bento_nori",
+   "eatout:bento_mentai_nori"
+  ]
+ },
+ {
+  "key": "eatout-bento_shogayaki",
+  "ja": "生姜焼き弁当",
+  "desc": "a ginger pork bento, rice with glossy ginger pork slices and shredded cabbage in a box",
+  "items": [
+   "eatout:bento_shogayaki"
+  ]
+ },
+ {
+  "key": "eatout-bento_hamburg",
+  "ja": "ハンバーグ弁当",
+  "desc": "a hamburg bento, rice with a hamburg patty in demi-glace sauce, spaghetti and a small sausage in a box",
+  "items": [
+   "eatout:bento_hamburg"
+  ]
+ },
+ {
+  "key": "eatout-bento_nanban",
+  "ja": "チキン南蛮弁当",
+  "desc": "a chicken nanban bento, rice with fried chicken under tartar sauce and cabbage in a box",
+  "items": [
+   "eatout:bento_nanban"
+  ]
+ },
+ {
+  "key": "eatout-bento_yakiniku",
+  "ja": "焼肉弁当",
+  "desc": "a yakiniku bento, rice covered with grilled beef slices in sweet sauce in a box",
+  "items": [
+   "eatout:bento_yakiniku"
+  ]
+ },
+ {
+  "key": "eatout-bento_katsu",
+  "ja": "ロースカツ弁当",
+  "desc": "a pork cutlet bento, rice with sliced tonkatsu and shredded cabbage in a box",
+  "items": [
+   "eatout:bento_katsu"
+  ]
+ },
+ {
+  "key": "eatout-bento_chuka",
+  "ja": "中華弁当（酢豚・エビチリ）",
+  "desc": "a Chinese bento, rice with sweet and sour pork, chili shrimp, a gyoza and a spring roll in a box",
+  "items": [
+   "eatout:bento_chuka"
+  ]
+ },
+ {
+  "key": "eatout-chicken_hot",
+  "ja": "骨なしフライドチキン（ホットスナック）",
+  "desc": "a piece of fried chicken with a thick craggy crisp golden-brown seasoned coating",
+  "items": [
+   "eatout:chicken_hot",
+   "eatout:fried_chicken"
+  ]
+ },
+ {
+  "key": "eatout-americandog",
+  "ja": "アメリカンドッグ",
+  "desc": "an American dog (corn dog), a sausage on a stick in a thick golden fried batter with ketchup and mustard",
+  "items": [
+   "eatout:americandog",
+   "kumagaya:2775"
+  ]
+ },
+ {
+  "key": "eatout-pizzaman",
+  "ja": "ピザまん",
+  "desc": "a pizza bun, a soft orange-tinted steamed bun torn open showing tomato sauce and cheese",
+  "items": [
+   "eatout:pizzaman"
+  ]
+ },
+ {
+  "key": "eatout-curryman",
+  "ja": "カレーまん",
+  "desc": "a curry bun, a soft yellow steamed bun torn open showing brown curry filling",
+  "items": [
+   "eatout:curryman"
+  ]
+ },
+ {
+  "key": "eatout-hashpotato",
+  "ja": "ハッシュポテト",
+  "desc": "a hash brown, a flat oval crisp golden-brown fried potato patty",
+  "items": [
+   "eatout:hashpotato"
+  ]
+ },
+ {
+  "key": "eatout-saladchicken",
+  "ja": "サラダチキン",
+  "desc": "salad chicken, a tender moist white chicken breast sliced on a plate",
+  "items": [
+   "eatout:saladchicken",
+   "eatout:saladchicken_bar"
+  ]
+ },
+ {
+  "key": "eatout-harusame_soup",
+  "ja": "春雨スープ（カップ）",
+  "desc": "a cup of glass noodle soup, clear broth with translucent noodles, wakame and green onion",
+  "items": [
+   "eatout:harusame_soup"
+  ]
+ },
+ {
+  "key": "eatout-oden_sausage",
+  "ja": "おでん ウインナー巻",
+  "desc": "oden wiener-maki, a sausage wrapped in fish cake, in clear oden broth",
+  "items": [
+   "eatout:oden_sausage"
+  ]
+ },
+ {
+  "key": "eatout-hamburger",
+  "ja": "ハンバーガー",
+  "desc": "a hamburger, a grilled beef patty with ketchup, pickles and onion in a soft round bun",
+  "items": [
+   "eatout:hamburger"
+  ]
+ },
+ {
+  "key": "eatout-cheeseburger",
+  "ja": "チーズバーガー",
+  "desc": "a cheeseburger, a beef patty with melted yellow cheese, pickles and onion in a soft bun",
+  "items": [
+   "eatout:cheeseburger"
+  ]
+ },
+ {
+  "key": "eatout-double_cheeseburger",
+  "ja": "ダブルチーズバーガー",
+  "desc": "a double cheeseburger, two beef patties with two slices of melted cheese in a bun",
+  "items": [
+   "eatout:double_cheeseburger"
+  ]
+ },
+ {
+  "key": "eatout-big_burger",
+  "ja": "ビッグサイズバーガー（3段バンズ）",
+  "desc": "a big three-tier burger, two beef patties, lettuce, cheese and sauce between three sesame bun layers",
+  "items": [
+   "eatout:big_burger"
+  ]
+ },
+ {
+  "key": "eatout-teriyaki_burger",
+  "ja": "てりやきバーガー",
+  "desc": "a teriyaki burger, a pork patty in glossy dark teriyaki sauce with lettuce and mayonnaise in a bun",
+  "items": [
+   "eatout:teriyaki_burger"
+  ]
+ },
+ {
+  "key": "eatout-fish_burger",
+  "ja": "フィッシュバーガー",
+  "desc": "a fish burger, a breaded white fish patty with tartar sauce and cheese in a soft bun",
+  "items": [
+   "eatout:fish_burger"
+  ]
+ },
+ {
+  "key": "eatout-chicken_burger",
+  "ja": "チキンバーガー（フライ）",
+  "desc": "a fried chicken burger, a crisp golden chicken fillet with lettuce and mayonnaise in a bun",
+  "items": [
+   "eatout:chicken_burger"
+  ]
+ },
+ {
+  "key": "eatout-ebi_burger",
+  "ja": "えびカツバーガー",
+  "desc": "a shrimp cutlet burger, a breaded shrimp patty with cabbage and pink sauce in a bun",
+  "items": [
+   "eatout:ebi_burger"
+  ]
+ },
+ {
+  "key": "eatout-rice_burger",
+  "ja": "ライスバーガー（焼肉）",
+  "desc": "a rice burger, two pressed grilled rice patties sandwiching beef yakiniku and lettuce",
+  "items": [
+   "eatout:rice_burger"
+  ]
+ },
+ {
+  "key": "eatout-nugget_sauce",
+  "ja": "ナゲットソース（バーベキュー）",
+  "desc": "a small tub of dark red-brown barbecue sauce",
+  "items": [
+   "eatout:nugget_sauce"
+  ]
+ },
+ {
+  "key": "eatout-ff_applepie",
+  "ja": "アップルパイ（揚げ・ファストフード）",
+  "desc": "a fried fast-food apple pie, a rectangular crisp blistered golden turnover with apple filling",
+  "items": [
+   "eatout:ff_applepie"
+  ]
+ },
+ {
+  "key": "eatout-shake",
+  "ja": "シェイク（Mサイズ）",
+  "desc": "a milkshake in a tall cup with a straw, thick creamy white",
+  "items": [
+   "eatout:shake"
+  ]
+ },
+ {
+  "key": "eatout-pizza_slice",
+  "ja": "ピザ（ミックス・宅配Mサイズ 1切れ）",
+  "desc": "a slice of mixed pizza, melted cheese with sausage, green pepper, mushroom and onion on tomato sauce",
+  "items": [
+   "eatout:pizza_slice"
+  ]
+ },
+ {
+  "key": "eatout-margherita",
+  "ja": "マルゲリータ（ナポリピザ 1枚）",
+  "desc": "a Neapolitan margherita pizza, a puffy charred crust, red tomato sauce, white mozzarella and green basil leaves",
+  "items": [
+   "eatout:margherita"
+  ]
+ },
+ {
+  "key": "eatout-gyudon_set",
+  "ja": "牛丼（並盛）セット（みそ汁・サラダ）",
+  "desc": "a gyudon set, a beef bowl with a bowl of miso soup and a small salad on a tray",
+  "items": [
+   "eatout:gyudon_set"
+  ]
+ },
+ {
+  "key": "eatout-curry_pork_chain",
+  "ja": "カレーライス（カレー専門店・ポーク）",
+  "desc": "a curry shop pork curry rice, white rice and thick brown curry with pork on an oval plate, red fukujinzuke pickles",
+  "items": [
+   "eatout:curry_pork_chain"
+  ]
+ },
+ {
+  "key": "eatout-cheese_curry",
+  "ja": "チーズカレー",
+  "desc": "cheese curry, brown curry sauce over rice topped with melted white cheese",
+  "items": [
+   "eatout:cheese_curry"
+  ]
+ },
+ {
+  "key": "eatout-hamburg_curry",
+  "ja": "ハンバーグカレー",
+  "desc": "hamburg curry, rice and brown curry topped with a hamburg patty",
+  "items": [
+   "eatout:hamburg_curry"
+  ]
+ },
+ {
+  "key": "eatout-karaage_curry",
+  "ja": "唐揚げカレー",
+  "desc": "karaage curry, rice and brown curry topped with fried chicken pieces",
+  "items": [
+   "eatout:karaage_curry"
+  ]
+ },
+ {
+  "key": "eatout-keema_curry",
+  "ja": "キーマカレー",
+  "desc": "keema curry, dry minced meat curry over rice with a soft egg yolk in the middle",
+  "items": [
+   "eatout:keema_curry"
+  ]
+ },
+ {
+  "key": "eatout-soup_curry",
+  "ja": "スープカレー",
+  "desc": "Sapporo soup curry, a thin spicy red-brown curry broth with a chicken leg and large chunks of grilled vegetables, rice on the side",
+  "items": [
+   "eatout:soup_curry"
+  ]
+ },
+ {
+  "key": "eatout-butter_chicken",
+  "ja": "バターチキンカレー＆ナン",
+  "desc": "butter chicken curry, a bowl of creamy orange-red curry with chicken pieces beside a large naan",
+  "items": [
+   "eatout:butter_chicken"
+  ]
+ },
+ {
+  "key": "eatout-naan",
+  "ja": "ナン（インドカレー店 1枚）",
+  "desc": "a large teardrop-shaped Indian naan flatbread, soft and puffy with dark brown charred blisters, glossy with butter",
+  "items": [
+   "eatout:naan"
+  ]
+ },
+ {
+  "key": "eatout-pescatore",
+  "ja": "ペスカトーレ（魚介のトマトパスタ）",
+  "desc": "spaghetti pescatore, spaghetti in red tomato sauce with clams, shrimp and squid rings",
+  "items": [
+   "eatout:pescatore"
+  ]
+ },
+ {
+  "key": "eatout-doria_meat",
+  "ja": "ドリア（ミートソース・小皿）",
+  "desc": "meat sauce doria, a small baking dish of rice under meat sauce, white sauce and browned cheese",
+  "items": [
+   "eatout:doria_meat"
+  ]
+ },
+ {
+  "key": "eatout-hamburg_yoshoku",
+  "ja": "ハンバーグ（デミグラス・付け合わせ付き）",
+  "desc": "a hamburg steak with demi-glace on a sizzling plate, with French fries, corn and broccoli",
+  "items": [
+   "eatout:hamburg_yoshoku"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_negima",
+  "ja": "焼き鳥 ねぎま",
+  "desc": "negima yakitori, skewers of grilled chicken thigh alternating with pieces of leek, glazed in sweet sauce",
+  "items": [
+   "eatout:yakitori_negima"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_mune",
+  "ja": "焼き鳥 むね（塩）",
+  "desc": "salt yakitori of chicken breast, skewered white meat with grill marks",
+  "items": [
+   "eatout:yakitori_mune"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_sasami",
+  "ja": "焼き鳥 ささみ（梅しそ）",
+  "desc": "sasami yakitori, skewered tender chicken topped with red ume paste and green shiso",
+  "items": [
+   "eatout:yakitori_sasami"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_kawa",
+  "ja": "焼き鳥 かわ（塩）",
+  "desc": "kawa yakitori, chicken skin wound on skewers, grilled crisp golden-brown",
+  "items": [
+   "eatout:yakitori_kawa"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_reba",
+  "ja": "焼き鳥 レバー（たれ）",
+  "desc": "reba yakitori, skewered chicken liver glazed glossy dark brown",
+  "items": [
+   "eatout:yakitori_reba"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_sunagimo",
+  "ja": "焼き鳥 砂肝（塩）",
+  "desc": "sunagimo yakitori, skewered chicken gizzard pieces grilled with salt",
+  "items": [
+   "eatout:yakitori_sunagimo"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_hatsu",
+  "ja": "焼き鳥 ハツ（塩）",
+  "desc": "hatsu yakitori, skewered small chicken hearts grilled with salt",
+  "items": [
+   "eatout:yakitori_hatsu"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_tebasaki",
+  "ja": "焼き鳥 手羽先（塩）",
+  "desc": "grilled salted chicken wing tips, crisp golden skin",
+  "items": [
+   "eatout:yakitori_tebasaki"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_bonjiri",
+  "ja": "焼き鳥 ぼんじり（塩）",
+  "desc": "bonjiri yakitori, skewered fatty chicken tail pieces grilled golden",
+  "items": [
+   "eatout:yakitori_bonjiri"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_nankotsu",
+  "ja": "焼き鳥 なんこつ（塩）",
+  "desc": "nankotsu yakitori, skewered white chicken cartilage grilled with salt",
+  "items": [
+   "eatout:yakitori_nankotsu"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_butabara",
+  "ja": "焼き鳥 豚バラ串（塩）",
+  "desc": "pork belly yakitori, skewered pork belly slices grilled crisp",
+  "items": [
+   "eatout:yakitori_butabara"
+  ]
+ },
+ {
+  "key": "eatout-yakitori_moriawase",
+  "ja": "焼き鳥 盛り合わせ（5本）",
+  "desc": "an assorted yakitori plate, five skewers of thigh, tsukune, liver, skin and negima, some glazed, some salted",
+  "items": [
+   "eatout:yakitori_moriawase"
+  ]
+ },
+ {
+  "key": "eatout-takowasa",
+  "ja": "たこわさ",
+  "desc": "takowasa, chopped raw octopus in a pale green wasabi marinade, in a small dish",
+  "items": [
+   "eatout:takowasa"
+  ]
+ },
+ {
+  "key": "eatout-motsuni",
+  "ja": "もつ煮込み",
+  "desc": "motsu nikomi, pork offal stewed in miso with daikon, konjac and carrot, topped with green onion",
+  "items": [
+   "eatout:motsuni"
+  ]
+ },
+ {
+  "key": "eatout-nankotsu_age",
+  "ja": "軟骨唐揚げ",
+  "desc": "nankotsu karaage, small crunchy fried chicken cartilage pieces with a lemon wedge",
+  "items": [
+   "eatout:nankotsu_age"
+  ]
+ },
+ {
+  "key": "eatout-kushikatsu",
+  "ja": "串カツ（1本）",
+  "desc": "kushikatsu, a skewer of breaded deep-fried pork and onion in a crisp golden panko coating",
+  "items": [
+   "eatout:kushikatsu",
+   "maff_kyodo:39_28_osaka"
+  ]
+ },
+ {
+  "key": "eatout-karubi",
+  "ja": "焼肉 カルビ（1人前）",
+  "desc": "yakiniku kalbi, marbled beef short rib slices sizzling on a grill with grill marks",
+  "items": [
+   "eatout:karubi"
+  ]
+ },
+ {
+  "key": "eatout-rosu_yakiniku",
+  "ja": "焼肉 ロース（1人前）",
+  "desc": "yakiniku rosu, thin slices of beef loin grilled on a mesh grill",
+  "items": [
+   "eatout:rosu_yakiniku"
+  ]
+ },
+ {
+  "key": "eatout-namuru",
+  "ja": "ナムル盛り合わせ",
+  "desc": "a namul platter, three small mounds of seasoned spinach, bean sprouts and carrot",
+  "items": [
+   "eatout:namuru"
+  ]
+ },
+ {
+  "key": "eatout-isobeage",
+  "ja": "ちくわの磯辺揚げ",
+  "desc": "chikuwa isobe-age, chikuwa tubes fried in green aonori tempura batter",
+  "items": [
+   "eatout:isobeage"
+  ]
+ },
+ {
+  "key": "eatout-ikaten",
+  "ja": "天ぷら いか（1個）",
+  "desc": "squid tempura, a ring of squid in light golden batter",
+  "items": [
+   "eatout:ikaten"
+  ]
+ },
+ {
+  "key": "eatout-nasuten",
+  "ja": "天ぷら なす（1個）",
+  "desc": "eggplant tempura, a fan-cut eggplant with purple skin in light golden batter",
+  "items": [
+   "eatout:nasuten"
+  ]
+ },
+ {
+  "key": "eatout-imoten",
+  "ja": "天ぷら さつまいも（1枚）",
+  "desc": "sweet potato tempura, a round slice with purple skin in light golden batter",
+  "items": [
+   "eatout:imoten"
+  ]
+ },
+ {
+  "key": "eatout-toriten",
+  "ja": "天ぷら とり天（1個）",
+  "desc": "toriten, chicken tempura pieces in light golden batter",
+  "items": [
+   "eatout:toriten"
+  ]
+ },
+ {
+  "key": "eatout-highball",
+  "ja": "ハイボール",
+  "desc": "a highball, a tall glass of fizzy pale amber whisky soda with ice and a lemon peel",
+  "items": [
+   "eatout:highball",
+   "eatout:highball_koime"
+  ]
+ },
+ {
+  "key": "eatout-oolong_hai",
+  "ja": "ウーロンハイ",
+  "desc": "oolong-hai, a tall glass of amber oolong tea with shochu and ice",
+  "items": [
+   "eatout:oolong_hai"
+  ]
+ },
+ {
+  "key": "eatout-ryokucha_hai",
+  "ja": "緑茶ハイ",
+  "desc": "ryokucha-hai, a tall glass of green tea with shochu and ice",
+  "items": [
+   "eatout:ryokucha_hai"
+  ]
+ },
+ {
+  "key": "eatout-shochu_mizuwari",
+  "ja": "焼酎の水割り（本格焼酎）",
+  "desc": "shochu mizuwari, a glass of clear shochu with water and ice",
+  "items": [
+   "eatout:shochu_mizuwari"
+  ]
+ },
+ {
+  "key": "eatout-umeshu_soda",
+  "ja": "梅酒ソーダ",
+  "desc": "umeshu soda, a tall glass of fizzy pale amber plum wine soda with ice",
+  "items": [
+   "eatout:umeshu_soda"
+  ]
+ },
+ {
+  "key": "eatout-cassis_orange",
+  "ja": "カシスオレンジ",
+  "desc": "cassis orange, a tall glass of orange juice with dark red cassis at the bottom and ice",
+  "items": [
+   "eatout:cassis_orange"
+  ]
+ },
+ {
+  "key": "eatout-gin_tonic",
+  "ja": "ジントニック",
+  "desc": "a gin and tonic in a tall glass with ice and a lime wedge",
+  "items": [
+   "eatout:gin_tonic"
+  ]
+ },
+ {
+  "key": "eatout-hoppy",
+  "ja": "ホッピー割り（焼酎＋ビアテイスト）",
+  "desc": "hoppy, a beer mug of pale golden beer-taste drink with foam beside a small brown bottle",
+  "items": [
+   "eatout:hoppy"
+  ]
+ },
+ {
+  "key": "eatout-iced_coffee",
+  "ja": "アイスコーヒー（ブラック）",
+  "desc": "a glass of iced black coffee with ice cubes",
+  "items": [
+   "eatout:iced_coffee"
+  ]
+ },
+ {
+  "key": "eatout-cafe_latte",
+  "ja": "カフェラテ（Mサイズ）",
+  "desc": "a cup of cafe latte with milk foam and latte art",
+  "items": [
+   "eatout:cafe_latte",
+   "eatout:cappuccino"
+  ]
+ },
+ {
+  "key": "eatout-iced_latte",
+  "ja": "アイスカフェラテ（Mサイズ）",
+  "desc": "a glass of iced cafe latte, coffee and milk layered over ice",
+  "items": [
+   "eatout:iced_latte"
+  ]
+ },
+ {
+  "key": "eatout-cafe_mocha",
+  "ja": "カフェモカ（ホイップ）",
+  "desc": "a cafe mocha topped with whipped cream and chocolate sauce, in a glass mug",
+  "items": [
+   "eatout:cafe_mocha"
+  ]
+ },
+ {
+  "key": "eatout-caramel_latte",
+  "ja": "キャラメルラテ（シロップ入り）",
+  "desc": "a caramel latte topped with milk foam and a drizzle of caramel",
+  "items": [
+   "eatout:caramel_latte"
+  ]
+ },
+ {
+  "key": "eatout-matcha_latte",
+  "ja": "抹茶ラテ",
+  "desc": "a matcha latte, a cup of pale green milk tea with foam",
+  "items": [
+   "eatout:matcha_latte"
+  ]
+ },
+ {
+  "key": "eatout-royal_milktea",
+  "ja": "ロイヤルミルクティー",
+  "desc": "royal milk tea, a cup of creamy light caramel-brown milk tea",
+  "items": [
+   "eatout:royal_milktea"
+  ]
+ },
+ {
+  "key": "eatout-frozen_coffee",
+  "ja": "フローズンドリンク（コーヒー・ホイップ）",
+  "desc": "a frozen coffee drink in a clear cup with a domed lid, icy blended beige drink topped with whipped cream and caramel",
+  "items": [
+   "eatout:frozen_coffee"
+  ]
+ },
+ {
+  "key": "eatout-frozen_matcha",
+  "ja": "フローズンドリンク（抹茶・ホイップ）",
+  "desc": "a frozen matcha drink in a clear cup, icy blended green drink topped with whipped cream",
+  "items": [
+   "eatout:frozen_matcha"
+  ]
+ },
+ {
+  "key": "eatout-gumsyrup",
+  "ja": "ガムシロップ（1個）",
+  "desc": "a small single-portion cup of clear gum syrup with a peeled foil lid",
+  "items": [
+   "eatout:gumsyrup"
+  ]
+ },
+ {
+  "key": "eatout-tapioca",
+  "ja": "タピオカミルクティー",
+  "desc": "tapioca milk tea, a clear cup of milky tea with black tapioca pearls at the bottom and a wide straw",
+  "items": [
+   "eatout:tapioca"
+  ]
+ },
+ {
+  "key": "eatout-water",
+  "ja": "水（ミネラルウォーター）",
+  "desc": "a clear glass of water with a few ice cubes",
+  "items": [
+   "eatout:water"
+  ]
+ },
+ {
+  "key": "eatout-tansansui",
+  "ja": "炭酸水（無糖）",
+  "desc": "a clear glass of sparkling water full of bubbles",
+  "items": [
+   "eatout:tansansui"
+  ]
+ },
+ {
+  "key": "eatout-danish",
+  "ja": "デニッシュペストリー",
+  "desc": "a Danish pastry, a flaky golden swirl pastry with a glossy glaze",
+  "items": [
+   "eatout:danish",
+   "kumagaya:02256"
+  ]
+ },
+ {
+  "key": "eatout-sausagepan",
+  "ja": "ソーセージパン",
+  "desc": "a sausage bread roll, a soft golden bun wrapped around a sausage, with ketchup and mayonnaise",
+  "items": [
+   "eatout:sausagepan"
+  ]
+ },
+ {
+  "key": "eatout-yakisobapan",
+  "ja": "焼きそばパン",
+  "desc": "a yakisoba pan, a soft koppepan roll split and stuffed with sauce yakisoba noodles, topped with red pickled ginger",
+  "items": [
+   "eatout:yakisobapan"
+  ]
+ },
+ {
+  "key": "eatout-korokkepan",
+  "ja": "コロッケパン",
+  "desc": "a korokke pan, a soft roll filled with a sauced potato croquette and shredded cabbage",
+  "items": [
+   "eatout:korokkepan"
+  ]
+ },
+ {
+  "key": "eatout-bagel",
+  "ja": "ベーグル（プレーン）",
+  "desc": "two round bagels with a hole in the middle, shiny dense golden-brown crust, one cut in half",
+  "items": [
+   "eatout:bagel"
+  ]
+ },
+ {
+  "key": "eatout-choco_donut",
+  "ja": "チョコドーナツ",
+  "desc": "a chocolate-coated cake doughnut, a ring with shiny dark chocolate glaze",
+  "items": [
+   "eatout:choco_donut"
+  ]
+ },
+ {
+  "key": "eatout-pudding",
+  "ja": "プリン（カスタード）",
+  "desc": "a custard pudding (purin), a pale yellow custard with dark caramel sauce on top, on a small plate",
+  "items": [
+   "eatout:pudding"
+  ]
+ },
+ {
+  "key": "eatout-eclair",
+  "ja": "エクレア",
+  "desc": "an éclair, a long golden choux pastry with a glossy chocolate top, filled with custard",
+  "items": [
+   "eatout:eclair"
+  ]
+ },
+ {
+  "key": "eatout-tiramisu",
+  "ja": "ティラミス",
+  "desc": "tiramisu, layers of coffee-soaked sponge and pale mascarpone cream dusted with brown cocoa",
+  "items": [
+   "eatout:tiramisu"
+  ]
+ },
+ {
+  "key": "eatout-rollcake",
+  "ja": "ロールケーキ",
+  "desc": "a Swiss roll cake, a golden sponge rolled around white whipped cream, sliced showing the spiral",
+  "items": [
+   "eatout:rollcake"
+  ]
+ },
+ {
+  "key": "eatout-pancake_cafe",
+  "ja": "パンケーキ（カフェ・3枚）",
+  "desc": "a stack of three fluffy pancakes with whipped cream, butter and maple syrup",
+  "items": [
+   "eatout:pancake_cafe"
+  ]
+ },
+ {
+  "key": "eatout-taiyaki",
+  "ja": "たい焼き（つぶあん）",
+  "desc": "taiyaki, a fish-shaped golden-brown cake, one broken open showing red bean paste",
+  "items": [
+   "eatout:taiyaki"
+  ]
+ },
+ {
+  "key": "eatout-lacto_ice",
+  "ja": "アイスバー（ラクトアイス）",
+  "desc": "an ice cream bar on a wooden stick, coated in chocolate, a bite taken showing vanilla",
+  "items": [
+   "eatout:lacto_ice"
+  ]
+ },
+ {
+  "key": "eatout-kakigori",
+  "ja": "かき氷（シロップ）",
+  "desc": "kakigori, a mound of fluffy shaved ice soaked with bright red strawberry syrup in a glass bowl",
+  "items": [
+   "eatout:kakigori"
+  ]
+ },
+ {
+  "key": "eatout-parfait",
+  "ja": "チョコレートパフェ",
+  "desc": "a chocolate parfait in a tall glass, layers of ice cream, whipped cream, cornflakes, banana and chocolate sauce",
+  "items": [
+   "eatout:parfait"
+  ]
+ },
+ {
+  "key": "eatout-xiaolongbao",
+  "ja": "小籠包（4個）",
+  "desc": "xiaolongbao, four soup dumplings with fine twisted pleats in a bamboo steamer, one on a spoon",
+  "items": [
+   "eatout:xiaolongbao"
+  ]
+ },
+ {
+  "key": "eatout-annin",
+  "ja": "杏仁豆腐",
+  "desc": "almond jelly (annin dofu), smooth white jelly cubes with mandarin segments and a goji berry in syrup",
+  "items": [
+   "eatout:annin",
+   "toyonaka:284490"
+  ]
+ },
+ {
+  "key": "eatout-jajamen",
+  "ja": "ジャージャー麺",
+  "desc": "jajamen, thick noodles topped with dark brown sweet bean minced pork sauce and julienned cucumber",
+  "items": [
+   "eatout:jajamen"
+  ]
+ },
+ {
+  "key": "eatout-ankake_yakisoba",
+  "ja": "五目あんかけ焼きそば",
+  "desc": "gomoku ankake yakisoba, crisp pan-fried noodles under glossy thick sauce with vegetables, shrimp and pork",
+  "items": [
+   "eatout:ankake_yakisoba"
+  ]
+ },
+ {
+  "key": "eatout-ramen_chahan_set",
+  "ja": "ラーメン＋半チャーハンセット",
+  "desc": "a ramen and half fried rice set, a bowl of soy ramen beside a small dome of fried rice",
+  "items": [
+   "eatout:ramen_chahan_set"
+  ]
+ },
+ {
+  "key": "eatout-chijimi",
+  "ja": "チヂミ（海鮮）",
+  "desc": "haemul jeon, a Korean seafood pancake with garlic chives and squid, cut in squares, golden crisp edges, with dipping sauce",
+  "items": [
+   "eatout:chijimi"
+  ]
+ },
+ {
+  "key": "eatout-sundubu",
+  "ja": "スンドゥブチゲ",
+  "desc": "sundubu jjigae, a bubbling red spicy soft tofu stew in a stone pot with clams, pork, kimchi and an egg",
+  "items": [
+   "eatout:sundubu",
+   "toyonaka:269278",
+   "kumagaya:3040"
+  ]
+ },
+ {
+  "key": "eatout-samgyeopsal",
+  "ja": "サムギョプサル（1人前）",
+  "desc": "samgyeopsal, thick slices of grilled pork belly with lettuce leaves, garlic and ssamjang",
+  "items": [
+   "eatout:samgyeopsal"
+  ]
+ },
+ {
+  "key": "eatout-protein_whey",
+  "ja": "プロテイン（ホエイ・水で溶く）",
+  "desc": "a protein shaker bottle beside a glass of pale beige protein shake and a scoop of powder",
+  "items": [
+   "eatout:protein_whey",
+   "eatout:protein_soy"
+  ]
+ },
+ {
+  "key": "eatout-protein_whey_milk",
+  "ja": "プロテイン（ホエイ・牛乳で溶く）",
+  "desc": "a glass of creamy milky protein shake beside a scoop of powder",
+  "items": [
+   "eatout:protein_whey_milk"
+  ]
+ },
+ {
+  "key": "eatout-greek_yogurt",
+  "ja": "ギリシャヨーグルト（プレーン・無糖）",
+  "desc": "a small bowl of thick Greek yogurt, dense creamy white with a spoon standing in it",
+  "items": [
+   "eatout:greek_yogurt"
+  ]
+ },
+ {
+  "key": "eatout-protein_bar",
+  "ja": "プロテインバー（一般的）",
+  "desc": "a protein bar, a dense rectangular bar coated in chocolate, cut to show a nutty inside",
+  "items": [
+   "eatout:protein_bar"
+  ]
+ }
+]
