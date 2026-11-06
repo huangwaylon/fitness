@@ -221,8 +221,8 @@ class IslandLayout {
    * The partner's pieces that landed on one of mine, or block a door with one of mine (two edits of different objects
    * at once, each fine alone: one tile, or a piece by a door the other turned to face it): when my op is the later of
    * the two (their `at`, then who, as the merge orders them: the same on both phones), my piece moves to the nearest
-   * clear tile (layout/resolve.ts resolveMoves), as an op of mine like any; else it's theirs to move. Never the
-   * guest's (the outdoors is the members').
+   * clear tile (layout/resolve.ts resolveMoves), as an op of mine like any; else it's theirs to move. The guest's
+   * phone too (the outdoors is everyone's).
    */
   #resolve(): void {
     const ids = [...this.#landedIds];

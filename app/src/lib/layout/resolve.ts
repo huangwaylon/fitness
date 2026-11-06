@@ -105,11 +105,11 @@ const later = (a: LayoutEntry, b: LayoutEntry): boolean => a.at > b.at || (a.at 
 /**
  * What `me` moves now the partner's pieces `landed` (their ids) are on the island `l` as merged (`entries`: each id's
  * winning op): each piece of mine that overlaps one of them, or blocks a door with one of them, my op the later of the
- * pair, to its nearest clear tile (clearTile). Never the guest's (the outdoors is the members'). Both phones run it on
+ * pair, to its nearest clear tile (clearTile). The guest's as a member's (the outdoors is everyone's). Every phone runs it on
  * the same island and only the later op's owner moves anything.
  */
 export function resolveMoves(l: Layout, entries: ReadonlyMap<string, LayoutEntry>, landed: readonly string[], me: Who | null): { id: string; to: [number, number] }[] {
-  if (!me || me === 'G' || !landed.length) return [];
+  if (!me || !landed.length) return [];
   const entry = (id: string) => {
     const e = entries.get(`o|${id}`);
     return e && e.sc === 'o' && !e.rm ? e : null;

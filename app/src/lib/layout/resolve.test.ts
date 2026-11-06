@@ -35,7 +35,7 @@ describe('a door blocked between two phones’ edits', () => {
       expect(doors(layoutOf(new Map([...map].filter(([k]) => k === `o|${kk}`))))).toEqual([]);
       expect(doors(layoutOf(map))).toEqual([kk]);
       const m = moves(map, palm, kk);
-      // only the later op's owner, never the guest
+      // only the later op's owner (the guest, owning neither piece, moves nothing)
       expect(m.G).toEqual([]);
       const other = mover === 'A' ? 'B' : 'A';
       expect(m[other]).toEqual([]);

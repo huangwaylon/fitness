@@ -159,14 +159,16 @@ describe('trend, week, together', () => {
     expect(daysPlayed([game(['w1-hat'], { d: '2026-11-02' }), game(['w1-hat'], { d: '2026-10-30' }), game(['w1-hat'])], TODAY)).toEqual([true, false, false, true, false, false, false]);
     expect(dayNum('1970-01-02')).toBe(1);
   });
-  it('counts games played together and both people’s minutes this week, the guest never', () => {
+  it('counts games played together and everyone’s minutes this week, the guest’s too', () => {
     const mine = [game(['w1-hat'], { g: 'tog1', ms: 240_000 }), game(['w1-hat'], { g: 'solo1', ms: 120_000 }), game(['w1-hat'], { g: 'old1', d: '2026-10-20' })];
     const others = [
       { who: 'B' as const, d: TODAY, g: 'tog1', n: 2, ms: 240_000 },
       { who: 'B' as const, d: '2026-10-20', g: 'old1', n: 2, ms: 60_000 },
-      { who: 'G' as const, d: TODAY, g: 'solo1', n: 1, ms: 600_000 }
+      { who: 'G' as const, d: TODAY, g: 'gsolo', n: 1, ms: 600_000 }
     ];
-    expect(together(mine, others, TODAY)).toEqual({ games: 1, minutes: 10, partner: true });
+    expect(together(mine, others, TODAY)).toEqual({ games: 1, minutes: 20, partner: true });
+    // the guest's phone: the members' games, with it or not, alike
+    expect(together(mine, [{ who: 'A' as const, d: TODAY, g: 'solo1', n: 2, ms: 120_000 }], TODAY)).toEqual({ games: 1, minutes: 8, partner: true });
     expect(together(mine, [], TODAY)).toEqual({ games: 0, minutes: 6, partner: false });
   });
 });

@@ -6,7 +6,7 @@
   // on it, or on a placed thing (it's picked up), drags it a tile at a time; a tap on the ground moves it there; ↻ turns
   // it; ✓ puts it down; 🗑 しまう takes a placed one away (the island's one-offs, the goal trees, the homes never); ✕
   // puts it back. While a finger holds it the other phones see it move (`drag`, `sc: 'o'`); a drop is one action,
-  // its ops at once (every phone's island, the editor). The members' only: the guest never arranges the outdoors.
+  // its ops at once (every phone's island, the editor). Everyone's, the guest's too (2026-11-06).
   // The terrain (paths, water, cliffs) is the desktop editor's for now. The visitors' spots (おきゃくさん: the plaza's, where
   // the visitors stand, and Gulliver's on the beach; docs/design.md "Visitors") are marks only here: one each, a tap on
   // one in the tray picks up the one there; the visitors' usual spot (spots.ts stageOf) shows as a dashed ring while
@@ -24,7 +24,7 @@
   import { i18n, t } from '#lib/i18n/index.ts';
   import type { Live } from '#lib/sync/live.ts';
   import { objectAt } from '../editor/edits.ts';
-  import { WHO_OF_HOME } from '#lib/layout/homes.ts';
+  import { WHO_OF_HOME, type Who } from '#lib/layout/homes.ts';
 
   export interface EditStage {
     /** The element over the island the mode's taps come through (its own taps pass on to the island). */
@@ -45,7 +45,7 @@
     stage: EditStage;
     relay: Live | null;
     /** Who's arranging (a home turns only for its owner: its facing is its look's). */
-    me: 'A' | 'B';
+    me: Who;
     ondone: () => void;
   }
   let { stage, relay, me, ondone }: Props = $props();

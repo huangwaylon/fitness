@@ -247,9 +247,8 @@ test('しまの おおきさ: what’s in the way goes with the layout it was tr
   expect(await objAt(page, 'sandcastle')).toEqual(castle);
 });
 
-test('the guest is shown the door: the editor is the members’ only', async ({ page }) => {
+test('the guest has the editor as a member does (2026-11-06)', async ({ page }) => {
   await page.goto(`editor/?demo&as=G&date=${DATE}`);
-  await expect(page.locator('[data-members-only]')).toBeVisible();
-  await expect(page.locator('[data-members-only]')).toContainText('おきゃくさんは そとの へんこうが できません');
-  await expect(page.locator('[data-editor]')).toHaveCount(0);
+  await expect(page.locator('[data-editor]')).toBeVisible();
+  await expect(page.locator('[data-editor] h1')).toContainText('おきゃくさん');
 });

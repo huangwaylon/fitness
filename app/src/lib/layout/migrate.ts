@@ -28,7 +28,6 @@ export const migratedId = (id: string): string => `m-${id}`;
 
 /** The ops that move `me`'s old decorations into the layout (none already there). */
 export function migrationOps(merged: ReadonlyMap<string, LayoutEntry>, placed: readonly Placed[], me: 'A' | 'B' | 'G'): LayoutOp[] {
-  if (me === 'G') return [];
   const reset = resetAt(merged);
   const out: LayoutOp[] = [];
   for (const p of placed) {

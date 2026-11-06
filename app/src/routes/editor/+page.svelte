@@ -1,10 +1,9 @@
 <script lang="ts">
-  // しまの エディター (docs/island-layout.md "The editor"): the island's layout on a big screen, the members' only
-  // (the A or B key: the guest never edits the outdoors, and the record refuses it anyway). Unlinked, noindex.
+  // しまの エディター (docs/island-layout.md "The editor"): the island's layout on a big screen, for anyone paired (A, B
+  // or the guest: 2026-11-06, the island is everyone's alike). Unlinked, noindex.
   // `?view=phone&cam=<z>` shows the 3D preview alone, as a phone's camera sees it; `&edit` with the island's もようがえ
-  // over it (layoutEdit/IslandEdit: the phone's, the members'); `&preview=0` the plan in its place (no WebGL: the e2e).
+  // over it (layoutEdit/IslandEdit: the phone's); `&preview=0` the plan in its place (no WebGL: the e2e).
   import { onMount } from 'svelte';
-  import { resolve } from '$app/paths';
   import Editor from '#lib/components/editor/Editor.svelte';
   import Preview3D from '#lib/components/editor/Preview3D.svelte';
   import IslandEdit, { type EditStage } from '#lib/components/layoutEdit/IslandEdit.svelte';
@@ -24,7 +23,7 @@
   let stage = $state<EditStage>();
   let camZ = $state(Number(q.get('cam') ?? 300));
   const view = $derived(week.view);
-  const me = $derived(view?.viewer === 'A' || view?.viewer === 'B' ? view.viewer : null);
+  const me = $derived(view?.viewer ?? null);
 
   let relay = $state<Live | null>(null);
   onMount(() => {
@@ -67,13 +66,7 @@
   </div>
 {:else if !view}
   <p class="msg">…</p>
-{:else if !me}
-  <div class="msg" data-members-only>
-    <h1>しまの エディター</h1>
-    <p>ウェイと うめだけが つかえます。{view.viewer === 'G' ? 'おきゃくさんは そとの へんこうが できません。' : ''}</p>
-    <a href={resolve('/pair')}>この ブラウザを ペアリングする</a>
-  </div>
-{:else}
+{:else if me}
   <Editor {me} {relay} />
 {/if}
 
@@ -83,6 +76,4 @@
     position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 24px;
     background: var(--c-paper); text-align: center; font-family: 'Zen Maru Gothic', system-ui, sans-serif; color: var(--c-ink);
   }
-  .msg p { max-width: 420px; }
-  .msg a { color: var(--c-leaf-text); font-weight: 700; }
 </style>

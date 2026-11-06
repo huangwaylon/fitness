@@ -157,8 +157,8 @@ scrolled where it was); ✕, the backdrop and Esc close the panel.
 **せってい** (`panel/SettingsSheet.svelte`): the HUD menu's せってい pill → its own sheet, full height, grown out of the
 pill (Sheet's `pop`), title せってい: **すがた** (the look's portrait, the よびな and what's worn: いつもの, a コーデ's name
 or the villager's; かえる → [the すがた level](#sugata): the closet and the villagers in one dresser), **プロフィール** ([Profile](#profile)), **サウンド** ([Sound settings](#sound-settings)), **ことば** (日本語 /
-English), **きせつ** ([Seasonal preview](#seasonal-preview)), **てんき** (ほんもの / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん; not the guest's), and **もようがえ** (one row with its
-はじめる; not the guest's). すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
+English), **きせつ** ([Seasonal preview](#seasonal-preview)), **てんき** (ほんもの / ゲーム: [Weather](#weather)), **フレームレート** (30 / 60: [Frame rate](#frame-rate)), **つうしん** (when each of us last synced; いま つうしん), and **もようがえ** (one row with its
+はじめる); the guest's the same (2026-11-06), with a line saying it's visiting. すがた pushes a level with ‹; ✕, the backdrop and Esc close it,
 and the next opening starts at its top. Its own chunk, loaded on the first tap.
 
 <a id="sugata"></a>**すがた** (`look/LookPage.svelte`, `look/LookStage.svelte`, `look/tabs.ts`, `look/ClosetGrid.svelte`,
@@ -988,10 +988,10 @@ an hour's extra.
   In December–February a wet day snows instead (about one in four). Fog and the aurora come on fine days only.
   Fireworks days and meteor shower nights are always fine.
 - **The switch:** せってい → **てんき**: **ほんもの** (「とうきょうの いまの てんき」) or **ゲーム**. It's one setting for the
-  whole island (`pref weatherMode`, the last a member set, kept in the record), so the two phones never disagree on
+  whole island (`pref weatherMode`, the last anyone set, the guest too, kept in the record), so the two phones never disagree on
   the rain-only critters. Under it is what the island has now (「いま: とうきょう あめ」, the fetch's time when it's
   over 2 h old, or 「ほんものの てんきが とれません（ゲームの てんき）」), and the credit 「天気: Open-Meteo（気象庁モデル）」.
-  On the guest's phone it's read-only. The きせつ preview's weather still overrides the look on one phone, and
+  The guest sets it as we do (2026-11-06). The きせつ preview's weather still overrides the look on one phone, and
   `?weather=` both the look and the critters.
 - **Look:** a grey sky and a darker tint on a wet day; a cloudy day's at about half, with nothing falling. Fog a haze
   with two drifting banks, the rainbow soft arcs low on the right, the aurora three swaying curtains: over the tint,
@@ -1247,14 +1247,18 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
 - **What it sees:** our island, the trees and their popups, the HUD menu's ベル row, ごほうび (to look at: the balance, today's ベル (the members') and the
   buys, 「ちょきんばこは ふたりの もの。」 in place of the shop, no ×; the ledger), the ずかん and
   けんこう's かつどう (whose data: either member; no からだ switch) with its goals read-only (no chip to tap). Never a からだ figure: no からだ switch, no weight or body card, no weight or body fat goal (its snapshot holds
-  none: the record leaves them out). せってい: its すがた and name (the same closet and picker, its own prefs and コーデ), the sound, the
-  language and きせつ; no もようがえ or つうしん, and a line saying it's visiting.
+  none: the record leaves them out). せってい: as ours (its すがた and name: the same closet and picker, its own prefs
+  and コーデ; the sound, the language, きせつ, てんき, つうしん and もようがえ), with a line saying it's visiting. ききみみ:
+  the members' games as their summaries (the together line counts its games and minutes with theirs), as they see its.
 - **What it does:** walks, catches, digs, picks up and shakes like us (the shared world's claims, first wins), its
   finds and counts its own in the shared ずかん (each entry credited to its first finder, the guest's
   name with 「（おきゃくさん）」 once it has one of its own; per-person counts, and a row of who found how many of the page
-  once three share it); phrases over its villager, high-fives with either of us, and the tent: walking, sitting and
-  arranging it. It earns and spends nothing, sets no goal, waters no flower and wishes on no star (the room would
-  refuse those, so its phone doesn't try).
+  once three share it); phrases over its villager, high-fives with either of us, the tent and its own house (walking,
+  sitting, arranging), and everything else on the island as we do (2026-11-06, decisions: *The guest plays the island
+  as a member does*): もようがえ and the editor (the outdoors, the decorations), watering the flowers, wishing on stars,
+  waking a sleeping visitor, the weather, the shop and the museum, K.K., the board (any note taken down, its own
+  edited), ききみみ. It earns and spends no ベル (no buy or erase in ごほうび, no harvest), sets none of our goals and
+  writes neither the wedding board nor a trip's notes (the record refuses those, so its phone doesn't try).
 - **Its villager on the island:** there only while its app is open (the relay's presence), like an NH visitor. Each
   time the app opens it comes ashore at the front beach's right end and strolls up to its spot by the campsite, on
   every phone (its walk goes over the relay). It has no home and no tree. It moves only when the guest moves it
@@ -1290,16 +1294,16 @@ guest's houses with paths to their doors. Corners are round (NH's), cliffs are s
 stepping down a tier falls, stairs are stone steps; the 3D ground is built and baked from the layout on the phone
 (world3d/terrain.ts). Each home is its owner's: its look
 (いえを かえる: NH's player house or a villager's, wall, roof and door in their colours, the move-in tents, the campsite's
-tent) and its room (the tent's room system: うめ's house, the guest's), anyone welcome in. On the phone the members
-arrange the island's things the tent's way (layoutEdit/IslandEdit: a tray of every kind, a ghost green or red, drag a
-tile at a time, turn, put away); the terrain is the desktop editor's. The members change the outdoors (the
-desktop editor, then the phone); each person changes only their own home's look and room (the guest: its own house
-and the tent).
+tent) and its room (the tent's room system: うめ's house, the guest's), anyone welcome in. On the phone anyone
+(the guest too, 2026-11-06) arranges the island's things the tent's way (layoutEdit/IslandEdit: a tray of every kind,
+a ghost green or red, drag a tile at a time, turn, put away); the terrain is the desktop editor's. Anyone changes the
+outdoors (the desktop editor, then the phone); each person changes only their own home's look and room (and the
+tent's room, all three).
 
 ### Decorating
 
 `layoutEdit/IslandEdit.svelte`, `island/Decor.svelte`, `island/decor.ts`, `e2e/decor.spec.ts`, docs/island-layout.md
-"Phone editing". Either of us puts NH's outdoor furniture on the island, moves it, turns it and takes it away; both
+"Phone editing". Any of us (the guest too) puts NH's outdoor furniture on the island, moves it, turns it and takes it away; both
 phones show the same island, kept for good: the decorations are the layout's objects of their kinds (the old
 decorations' map, `contract/decor.ts`, moved into the layout once as `m-<id>`: layout/migrate.ts).
 

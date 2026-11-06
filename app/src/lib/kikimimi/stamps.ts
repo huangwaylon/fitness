@@ -33,8 +33,8 @@ const blank = (): UnitState => ({ done: [], stamped: null, tally: null, partner:
 
 /**
  * Every unit I or my partner touched: from my games (in the order played; each lesson's row, `u` and `l`), the dots
- * and my stamp (its first stamping row's day and tally), and from the others' summaries the partner's stamp (the
- * guest's rows reach no one; skipped anyway). The recheck is due RECHECK_DAYS after my stamp, done by a solo チェック
+ * and my stamp (its first stamping row's day and tally), and from the others' summaries the partner's stamp (a
+ * member's: the guest is no one's partner, its stamp no double). The recheck is due RECHECK_DAYS after my stamp, done by a solo チェック
  * on or after it (it never takes the stamp away).
  */
 export function unitsOf(mine: readonly Game[], others: readonly OtherGame[]): Map<string, UnitState> {

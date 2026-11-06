@@ -176,7 +176,7 @@ describe('the old decorations into the layout, once (migrate.ts)', () => {
     { id: 'dabc1234', item: 'tanuki', x: 120, z: 400, f: 1 as const, at: 1_800_000_000_000, who: 'A' as const },
     { id: 'dbbb1234', item: 'brick-well', x: 200, z: 900, f: 0 as const, at: 1_800_000_000_100, who: 'B' as const }
   ];
-  test('mine only, on its tile, おく moved back; never twice; never the guest', () => {
+  test('mine only, on its tile, おく moved back; never twice; none for the guest (it placed none)', () => {
     const ops = migrationOps(new Map(), placed, 'A');
     expect(ops).toHaveLength(1);
     expect(ops[0]).toMatchObject({ sc: 'o', id: migratedId('dabc1234'), k: 'tanuki', f: 1 });

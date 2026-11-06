@@ -62,8 +62,25 @@ test('pick up a placed thing, drag it two tiles, ✓; red over the river; 🗑 n
   await expect(page.locator('[data-act="place"]')).toHaveAttribute('aria-disabled', 'true');
 });
 
-test('the guest never arranges the outdoors: no もようがえ for it', async ({ page }) => {
-  await page.goto(`editor/${Q}&as=G&view=phone&edit`);
-  await expect(page.locator('[data-plan-stage]')).toBeVisible();
-  await expect(page.locator('[data-island-edit]')).toHaveCount(0);
+test('the guest arranges the outdoors as a member does: its piece on both members’ islands', async ({ context }) => {
+  const a = await context.newPage();
+  await a.goto(`${Q}&critter=none`);
+  await a.waitForFunction(() => (window as unknown as { __layout?: unknown }).__layout);
+  const b = await context.newPage();
+  await b.goto(`${Q}&as=B&critter=none`);
+  await b.waitForFunction(() => (window as unknown as { __layout?: unknown }).__layout);
+  const page = await context.newPage();
+  await page.goto(`editor/${Q}&as=G&view=phone&edit&cam=300`);
+  await expect(page.locator('[data-island-edit]')).toBeVisible();
+  await page.waitForFunction(() => (window as unknown as { __islandEdit?: unknown }).__islandEdit);
+  await page.locator('[data-tab="furniture"]').click();
+  await page.locator('[data-island-item="park-bench"]').click();
+  await expect.poll(() => ie(page, (e) => e.sel()?.k ?? null)).toBe('park-bench');
+  await page.locator('[data-act="place"]').click();
+  await expect.poll(() => ie(page, (e) => e.sel())).toBeNull();
+  for (const p of [a, b]) await expect.poll(() => p.evaluate(() => (window as unknown as { __layout: { count(k: string): number } }).__layout.count('park-bench'))).toBe(2);
+  // and it's the record's: a member's phone opening later has it
+  await a.reload();
+  await a.waitForFunction(() => (window as unknown as { __layout?: unknown }).__layout);
+  await expect.poll(() => a.evaluate(() => (window as unknown as { __layout: { count(k: string): number } }).__layout.count('park-bench'))).toBe(2);
 });

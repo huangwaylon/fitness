@@ -331,13 +331,13 @@ export function daysPlayed(games: readonly Game[], today: LocalDate): boolean[] 
 }
 
 /**
- * This week together (the couple summary, never a level): the games both members played (the same game id), and
- * both people's minutes (mine and the other member's, every game). The guest's phone has no summary (its rows reach no one).
+ * This week together (never a level): the games I played with someone (the same game id), and everyone's minutes
+ * (mine and the others', every game: the partner's and the guest's, or the members' on the guest's phone).
  */
 export function together(mine: readonly Game[], others: readonly OtherGame[], today: LocalDate): { games: number; minutes: number; partner: boolean } {
   const week = new Set(weekDays(today));
   const myWeek = mine.filter((g) => week.has(g.d));
-  const theirs = others.filter((o) => o.who !== 'G' && week.has(o.d));
+  const theirs = others.filter((o) => week.has(o.d));
   const ids = new Set(theirs.map((o) => o.g));
   const ms = myWeek.reduce((s, g) => s + g.ms, 0) + theirs.reduce((s, o) => s + o.ms, 0);
   return { games: myWeek.filter((g) => ids.has(g.g)).length, minutes: Math.round(ms / 60_000), partner: theirs.length > 0 };
