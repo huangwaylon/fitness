@@ -16,6 +16,7 @@
 import { cleanLine } from './text.ts';
 import { isLocalDate, isWho, type Who } from './api.ts';
 import { AHEAD_MS, isMs, newOpId, only } from './ops.ts';
+import { beats, Book, foldOnce, type Queued, type Verdict } from './book.ts';
 
 // (who wrote it: the merge's tie-break is a fixed order, A < B < G)
 type Rec = Record<string, unknown>;
@@ -201,46 +202,23 @@ export function wedSlot(type: string, d: Rec): string | null {
       return null;
   }
 }
-const slotOf = (r: WedRow): string => wedSlot(r.type, r.op as unknown as Rec)!;
 
-/** Whether row `a` beats `b` (the same slot): a purge beats a set; else the later `at`, then G over B over A. */
-function wedBeats(a: WedRow, b: WedRow): boolean {
-  if (a.type === 'wtask' && b.type === 'wtask' && !!a.op.rm !== !!b.op.rm) return !!a.op.rm;
-  if (a.op.at !== b.op.at) return a.op.at > b.op.at;
-  return a.who > b.who;
-}
-
-/** What the record does with a row: `append` (its slot's row replaced by `row`, the slots in `drop` deleted with it: a
- *  purged task's tick), `stale` (acknowledged, nothing kept), `forbidden` (the guest), `full` (WTASK_MAX) or `parent`
- *  (a subtask whose parent isn't a task the record holds, or is itself a subtask; a set keeping its held `parent`
- *  passes, so a subtask whose parent was purged stays editable). */
-export type WedVerdict = { v: 'append'; row: WedRow; drop: string[] } | { v: 'stale' | 'forbidden' | 'full' | 'parent' };
+/** What the record does with a row (contract/book.ts Verdict): `append` (its slot's row replaced by `row`, the slots in
+ *  `drop` deleted with it: a purged task's tick), `stale`, `forbidden` (the guest), `full` (WTASK_MAX) or `parent` (a
+ *  subtask whose parent isn't a task the record holds, or is itself a subtask; a set keeping its held `parent` passes,
+ *  so a subtask whose parent was purged stays editable). */
+export type WedVerdict = Verdict<WedRow, 'forbidden' | 'full' | 'parent'>;
 
 /**
- * The wedding rows as the record holds them (each slot's latest): the record builds one from the slots an op touches
- * (wedNeeds) for each op it's sent, the phone folds every row into one (wedFold).
+ * The wedding rows as the record holds them (each slot's latest; its `wtask` rows counted): the record builds one from
+ * the slots an op touches (wedNeeds) for each op it's sent, the phone folds every row into one (wedFold).
  */
-export class WedBook {
-  readonly rows = new Map<string, WedRow>();
-  #tasks = 0;
-
-  /** A row taken as it is (the record's own, read back), replacing its slot's. */
-  put(r: WedRow): void {
-    const s = slotOf(r);
-    if (this.rows.get(s)?.type === 'wtask') this.#tasks--;
-    this.rows.set(s, r);
-    if (r.type === 'wtask') this.#tasks++;
+export class WedBook extends Book<WedRow, 'forbidden' | 'full' | 'parent'> {
+  protected slotOf(r: WedRow): string {
+    return wedSlot(r.type, r.op as unknown as Rec)!;
   }
-  /** A row the record kept: in its slot unless the one there beats it (true: taken). */
-  merge(r: WedRow): boolean {
-    const held = this.rows.get(slotOf(r));
-    if (held && !wedBeats(r, held)) return false;
-    this.put(r);
-    return true;
-  }
-  delete(slot: string): void {
-    if (this.rows.get(slot)?.type === 'wtask') this.#tasks--;
-    this.rows.delete(slot);
+  protected countOf(r: WedRow): string | null {
+    return r.type === 'wtask' ? 'wtask' : null;
   }
 
   /** A task's op the book holds (null: none). */
@@ -251,15 +229,14 @@ export class WedBook {
 
   /** The record's rules for a new row (see WedVerdict). `tasks`: the record's `wtask` rows (it reads only the slots an
    *  op needs, and counts them only for a task it doesn't hold; the phone's book holds them all). */
-  accept(r: WedRow, tasks = this.#tasks): WedVerdict {
+  accept(r: WedRow, tasks = this.count('wtask')): WedVerdict {
     if (r.who === 'G') return { v: 'forbidden' };
-    const slot = slotOf(r);
-    const held = this.rows.get(slot) ?? null;
-    if (held && !wedBeats(r, held)) return r.type === 'wnote' && held.type === 'wnote' ? this.#crossed(r, held) : { v: 'stale' };
+    const held = this.rows.get(this.slotOf(r)) ?? null;
+    if (held && !beats(r, held)) return r.type === 'wnote' && held.type === 'wnote' ? this.#crossed(r, held) : { v: 'stale' };
     switch (r.type) {
       case 'wtask': {
         const h = held?.type === 'wtask' ? held.op : null;
-        // a purge is final (wedBeats: nothing beats it); a purge of a task the record doesn't hold changes nothing
+        // a purge is final (beats: nothing beats it); a purge of a task the record doesn't hold changes nothing
         if (r.op.rm) return h ? { v: 'append', row: r, drop: this.rows.has(`wdone|${r.op.id}`) ? [`wdone|${r.op.id}`] : [] } : { v: 'stale' };
         if (r.op.parent !== undefined && !(h && !h.rm && h.parent === r.op.parent)) {
           const p = this.task(r.op.parent);
@@ -287,16 +264,6 @@ export class WedBook {
     if (r.op.base === held.op.at || r.op.md === held.op.md) return { v: 'stale' };
     return { v: 'append', row: noteOver({ ...r, op: { ...r.op, at: held.op.at + 1 } }, held), drop: [] };
   }
-
-  /** A row through the rules, kept if they take it: its verdict. */
-  apply(r: WedRow): WedVerdict {
-    const v = this.accept(r);
-    if (v.v === 'append') {
-      for (const s of v.drop) this.delete(s);
-      this.put(v.row);
-    }
-    return v;
-  }
 }
 
 /** A note save as the record keeps it: over a note it wasn't edited from, that one beside it (`was`). */
@@ -316,29 +283,12 @@ export function wedNeeds(type: string, d: Rec): string[] {
 }
 
 /** A row as the model holds it: the record's, or this phone's not yet sent (`queued`). */
-export type WedEntry = WedRow & { queued?: true };
+export type WedEntry = Queued<WedRow>;
 
-/**
- * The rows as the record keeps them, from the model's in the order they came: the record's own taken as they are (each
- * slot's latest), this phone's queued ones through the record's rules (accept), so a phone shows what the record will.
- */
-export function wedFold(rows: Iterable<WedEntry>): WedBook {
-  const b = new WedBook();
-  for (const r of rows) {
-    if (r.queued) b.apply(r);
-    else b.merge(r);
-  }
-  return b;
-}
-
-/** A model's list folded (wedFold), once per list: a model's lists are replaced, never mutated (the board's store and
- *  the wedding day share it). */
-const folds = new WeakMap<readonly WedEntry[], WedBook>();
-export function wedBookOf(rows: readonly WedEntry[]): WedBook {
-  let b = folds.get(rows);
-  if (!b) folds.set(rows, (b = wedFold(rows)));
-  return b;
-}
+/** The rows as the record keeps them (contract/book.ts Book.fold). */
+export const wedFold = (rows: Iterable<WedEntry>): WedBook => new WedBook().fold(rows);
+/** A model's list folded, once per list (the board's store and the wedding day share it). */
+export const wedBookOf = foldOnce(wedFold);
 
 /** The wedding day the board's settings name ('YYYY-MM-DD'; '' : none, or cleared). */
 export function wedDate(book: WedBook): string {
