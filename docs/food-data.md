@@ -144,6 +144,34 @@ to cooked rice (01088's override), not to every 米 food (米粉, おもゆ).
   **n ≥ 2 = confirmed**: the app's search shows ✓n beside the name.
 - Current build: 867 groups covering 1,263 items. 753 groups have n ≥ 2 (980 items), 104 have n ≥ 3 and 12 have n ≥ 4.
 
+## Pictures
+ごはん's food pictures are AI-generated イメージ (ours: Z-Image-Turbo, Apache-2.0, run locally) of generic foods and
+dishes, in one style (coloured pencil and watercolour on the paper colour). Packaged products, custom foods and anything
+not drawn yet keep their category's tile. `food-data/images/fi.py` (its docstring has the commands) does the following:
+- **Table** (`food-data/images/table/*.json`, hand-written): one row per visual concept, `{key, ja, desc, items}`. Variants
+  that look alike share a row (脂身つき / なし, 和牛 / 輸入牛, a dish's sizes, the same dish in dishes and eatout); states
+  that look different get their own (生 / 焼き, 乾 / ゆで). `desc` is a short English description of what the food looks
+  like. A name alone draws the wrong food (白和え as a potato, ほうとう as bread). `propose <phase>` drafts the groups,
+  and `rows` turns `name|name = description` lines into rows.
+- **Generation** (`gen`, the mflux tool's Python, about 15–50 s per image on a shared GPU): the prompt (`PROMPT`,
+  `PROMPT_V`) with the row's `desc`, seed `crc32(key) % 100000 + roll`, 9 steps, 512 px. Images are cached in
+  `$FOOD_IMG_RAW/gen/` (default ~/food-images-raw, outside the repo), so a re-run skips what exists and is resumable.
+- **Checks** (optional for now; the user, 2026-11-06): the images ship unchecked, listed in `food-data/images/shipped.json`
+  (each key's description, seed, prompt hash and `checked: false`). The checks, when run (`FI_CHECKS=1`), are
+  (a) `verify`: a second vision model (qwen via ollama) compares each image with at least 2 vetted reference photos
+  (`refs`: Commons, Wikidata P18, Wikipedia, the MAFF photos; look-only, kept outside the repo, never shipped);
+  (b) a by-eye review of `checksheet` contact sheets, logged with `eye`. A wrong image is re-rolled (at most 2 times) and
+  then goes back to the tile. Every verdict is appended to `verdicts.jsonl`.
+- **Pack** (`pack`, PIL): it evens the background to the paper colour (#F5E4BC, a per-channel gain from the border's median), then
+  writes webp q72 sprite sheets into `app/static/food-img/`. Thumbnail sheets hold 10 × 10 cells of 128 px (rows, 40–64 px
+  at 3×). Detail sheets hold 4 × 4 cells of 384 px (the amount's 160 px picture). Sheets are per neighbourhood
+  (`BUCKET`: a row's first item's category), with the popular items first, so a search touches few. `slots.json` is
+  append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
+  `index.json` maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
+- **Budget** (`lib/food/images.test.ts`): ≤ 400 files and 60 MB in food-img/, ≤ 400 KB a sheet, ≤ 19,000 files under
+  static/ (Cloudflare Pages takes 20,000 a deploy). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),
+  never at install.
+
 ## Sources evaluated and not used
 - Konbini and chain menus (7-Eleven, Lawson, FamilyMart, McDonald's, Yoshinoya, Sukiya ...): every ToS forbids copying. Link out or let the user enter values; never bundle them.
 - Commercial recipe sites (Cookpad, Kikkoman, Ajinomoto) and 女子栄養大学 calorie guides: no reuse license.

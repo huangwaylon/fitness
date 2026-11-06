@@ -1,0 +1,70 @@
+{
+"bread": [
+"mext-01026",
+"mext-01174",
+"mext-01031",
+"mext-01028",
+"mext-01213",
+"mext-01205",
+"mext-01206"
+],
+"dairy": [
+"mext-13003"
+],
+"don": [
+"dishes-gyudon",
+"dishes-oyakodon"
+],
+"egg": [
+"mext-12005",
+"mext-12021"
+],
+"fruit": [
+"mext-07027",
+"mext-07107",
+"mext-07176"
+],
+"main": [
+"mext-18050",
+"dishes-tamagoyaki",
+"dishes-gyoza",
+"dishes-yakizake",
+"mext-18036",
+"dishes-shogayaki",
+"dishes-karaage",
+"mext-18049"
+],
+"noodle": [
+"dishes-kake-udon",
+"dishes-zaru-soba"
+],
+"other": [
+"mext-01015",
+"mext-01024"
+],
+"rice": [
+"dishes-onigiri-shake",
+"mext-01088",
+"dishes-curry-pork",
+"mext-18057",
+"mext-01004",
+"mext-01170"
+],
+"side": [
+"dishes-potato-salad"
+],
+"soup": [
+"dishes-miso-tofu-wakame",
+"mext-18028"
+],
+"soy": [
+"mext-04032",
+"mext-04046"
+],
+"veg": [
+"mext-06153",
+"mext-06061",
+"mext-06182",
+"mext-06212"
+]
+}

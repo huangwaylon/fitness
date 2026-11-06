@@ -5,7 +5,8 @@
 // - The Permissions-Policy turns every powerful feature off but geolocation, which only our origin may ask for (the
 //   trip map's locate button).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
-//   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts); everything else keeps Pages' default
+//   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts), and so are ごはん's picture sheets (`food-img/*.webp`:
+//   their names carry their content hash); everything else keeps Pages' default
 //   (revalidated).
 // - index.html (the SPA shell every route opens with) preloads the island's page too: Kit's fallback page preloads
 //   only the root layout's chunks, so the island page's chunk and its own imports were asked for only once the
@@ -70,6 +71,9 @@ ${base}/_app/immutable/*
   Cache-Control: public, max-age=31536000, immutable
 
 ${base}/audio/*
+  Cache-Control: public, max-age=31536000, immutable
+
+${base}/food-img/*.webp
   Cache-Control: public, max-age=31536000, immutable
 `;
 writeFileSync(join(root, '_headers'), headers);

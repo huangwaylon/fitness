@@ -103,6 +103,26 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
  *  doesn't. */
 export const FOOD_CACHE = 'island-food-v1';
 export const isFoodData = (path: string): boolean => /\/food\/[\w-]+\.json$/.test(path);
+/** ごはん's pictures (static/food-img/, lib/food/images.ts): content-hashed sprite sheets, cached on first use in a cache
+ *  of their own that outlives builds; index.json, which names them, from the network first (its last copy offline).
+ *  Once a new index is in, the sheets it no longer names go (foodImgStale). */
+export const FOOD_IMG_CACHE = 'island-food-img-v1';
+export const isFoodImg = (path: string): boolean => path.includes('/food-img/');
+/** The cached sheets (`keys`: their URLs) that `index` (the index.json's text) no longer names. */
+export function foodImgStale(keys: readonly string[], index: string): string[] {
+  let sheets: unknown;
+  try {
+    sheets = (JSON.parse(index) as { sheets?: unknown }).sheets;
+  } catch {
+    return [];
+  }
+  if (!Array.isArray(sheets)) return [];
+  const named = new Set(sheets);
+  return keys.filter((k) => {
+    const p = new URL(k, 'https://x/').pathname;
+    return p.endsWith('.webp') && !named.has(p.slice(p.lastIndexOf('/') + 1));
+  });
+}
 /** The cached food files of another data version than `v` (`keys`: their URLs). */
 export const staleFood = (keys: readonly string[], v: string): string[] =>
   keys.filter((k) => {
@@ -202,11 +222,11 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: font subsets (cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the trips' photos (travel/), the trip map's MapLibre, the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the trips' photos (travel/), the trip map's MapLibre, the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isTravel(p) || isMapLibre(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isTravel(p) || isMapLibre(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 
