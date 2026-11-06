@@ -34,11 +34,8 @@ export const STATE = {
   /** No usable date: counted in the total, 0 unless done. */
   NODATE: 'nodate'
 } as const;
-/** @public (the board's filters) */
-export type TaskState = (typeof STATE)[keyof typeof STATE];
-
-/** Display order, and the order the filter chips appear in. Problems first. @public (the board's filters) */
-export const STATE_ORDER: readonly TaskState[] = [STATE.OVERDUE, STATE.SOON, STATE.LATER, STATE.DONE];
+/** A task's state (the filter chips' slices). */
+type TaskState = (typeof STATE)[keyof typeof STATE];
 
 const isLive = (t: TaskRow): boolean => !t.deletedAt;
 const isDone = (t: TaskRow): boolean => Boolean(t.doneAt);

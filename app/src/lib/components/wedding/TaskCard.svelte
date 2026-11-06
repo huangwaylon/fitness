@@ -2,53 +2,55 @@
   // One task on けっこんしき's plan: a card (its month over its day in one column, the title, its category chip, the
   // start, the checklist's tally, a due line when it's near or past), the whole card one tap (→ its page), and beside
   // it the ✓ bubble a member ticks (its own 44px target: a button holds no button). Done: the bubble full, the title
-  // soft, who did it on a chip in their colour (the old board's rows: 「むかしの きろく」). The guest's card has no ✓
+  // soft, who ticked it on a chip in their colour (a tick from the old Sheet, which never recorded who: 「むかしの きろく」). The guest's card has no ✓
   // to tap: a finished one shows the mark, an open one nothing.
   import { tagOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
   import { dueLine, monthShort, shortDay } from './format.ts';
-  import type { Task, Who3 } from './view.ts';
+  import type { Who } from '#lib/types.ts';
+  import type { Task } from './view.ts';
 
   interface Props {
     task: Task;
     today: string;
     canEdit: boolean;
-    names: Record<Who3, string>;
+    names: Record<Who, string>;
     /** The wedding day: its own card wears the blush and a heart. */
     wedding?: string;
     onopen: (id: string) => void;
     ontick?: (id: string, done: boolean) => void;
   }
   let { task, today, canEdit, names, wedding = '', onopen, ontick }: Props = $props();
-  const due = $derived(dueLine(today, task));
+  const due = $derived(dueLine(task));
   const tally = $derived(task.progress.tally);
-  const dated = $derived(!!task.due && /^\d{4}-\d{2}-\d{2}$/.test(task.due));
-  const dateLabel = $derived(dated ? `${Number(task.due!.slice(0, 4))}/${shortDay(task.due!)}` : t('wed.sec.nodate'));
+  const done = $derived(!!task.doneAt);
+  const dated = $derived(task.progress.dated);
+  const dateLabel = $derived(dated ? `${Number(task.due.slice(0, 4))}/${shortDay(task.due)}` : t('wed.sec.nodate'));
 </script>
 
-<article class="card" class:done={task.done} class:theday={!!wedding && task.due === wedding} class:over={due?.tone === 'over'} data-wed-task={task.id} data-done={task.done || undefined}>
+<article class="card" class:done class:theday={!!wedding && task.due === wedding} class:over={due?.tone === 'over'} data-wed-task={task.id} data-done={done || undefined}>
   <button type="button" class="head" data-sfx="open" aria-label="{task.title}、{dateLabel}{due ? `、${due.text}` : ''}{tally ? `、${t('wed.tallyLabel', tally)}` : ''}" onclick={() => onopen(task.id)}>
     <span class="date" aria-hidden="true">
-      {#if dated}<small>{monthShort(task.due!)}</small><b>{Number(task.due!.slice(8, 10))}</b>{#if wedding && task.due === wedding}<i class="heart"></i>{/if}{:else}<b class="dash">–</b>{/if}
+      {#if dated}<small>{monthShort(task.due)}</small><b>{Number(task.due.slice(8, 10))}</b>{#if wedding && task.due === wedding}<i class="heart"></i>{/if}{:else}<b class="dash">–</b>{/if}
     </span>
     <span class="body">
       <span class="ttl">{task.title}</span>
       <span class="meta" aria-hidden="true">
-        {#if task.cat}<span class="cat">{task.cat}</span>{/if}
+        {#if task.category}<span class="cat">{task.category}</span>{/if}
         {#if due}<span class="due {due.tone}">{due.text}</span>{/if}
-        {#if task.start && !task.done && task.start > today}<span class="starts">{t('wed.starts', { d: shortDay(task.start) })}</span>{/if}
+        {#if task.start && !done && task.start > today}<span class="starts">{t('wed.starts', { d: shortDay(task.start) })}</span>{/if}
         {#if tally}<span class="tally" data-wed-tally={`${tally.done}/${tally.total}`}><svg viewBox="0 0 16 16"><path d="M3 8.5 6.5 12 13 4.5" /></svg>{tally.done}/{tally.total}</span>{/if}
-        {#if task.done && task.imported}<span class="who old" data-wed-imported>{t('wed.imported')}</span>
-        {:else if task.done && task.by}<span class="who" style:--tag={tagOf(task.by)} data-wed-by={task.by}>{names[task.by]}</span>{/if}
+        {#if done && !task.doneBy}<span class="who old" data-wed-imported>{t('wed.imported')}</span>
+        {:else if done && task.doneBy}<span class="who" style:--tag={tagOf(task.doneBy)} data-wed-by={task.doneBy}>{names[task.doneBy]}</span>{/if}
       </span>
     </span>
   </button>
   {#if canEdit}
-    <button type="button" class="tick" aria-pressed={task.done} aria-label={task.done ? t('wed.untick', { title: task.title }) : t('wed.tick', { title: task.title })}
-      data-wed-tick={task.id} data-sfx={task.done ? 'toggle-off' : 'confirm'} onclick={() => ontick?.(task.id, !task.done)}>
+    <button type="button" class="tick" aria-pressed={done} aria-label={done ? t('wed.untick', { title: task.title }) : t('wed.tick', { title: task.title })}
+      data-wed-tick={task.id} data-sfx={done ? 'toggle-off' : 'confirm'} onclick={() => ontick?.(task.id, !done)}>
       <span class="bub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" /></svg></span>
     </button>
-  {:else if task.done}
+  {:else if done}
     <span class="mark" role="img" aria-label={t('wed.doneMark')} data-wed-mark><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" /></svg></span>
   {/if}
 </article>

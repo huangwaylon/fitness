@@ -4,6 +4,7 @@
   // blank) and the day it's due (required on a task; a subtask has neither date). Every input 16px or more (iOS
   // zooms under that). `error` names the field that stopped ほぞん.
   import { t } from '#lib/i18n/index.ts';
+  import { WTASK_TITLE } from '#lib/contract/wedding.ts';
   import type { Fields } from './view.ts';
 
   interface Props {
@@ -19,7 +20,7 @@
 <div class="fields" data-wed-fields>
   <label class="f">
     <span class="lbl">{t('wed.field.title')}</span>
-    <input type="text" enterkeyhint="done" maxlength="200" bind:value={value.title} data-wed-field="title" data-sfx="none"
+    <input type="text" enterkeyhint="done" maxlength={WTASK_TITLE} bind:value={value.title} data-wed-field="title" data-sfx="none"
       aria-invalid={error === 'title' || undefined} aria-describedby={error === 'title' ? `${uid}-e` : undefined} />
   </label>
   <label class="f">

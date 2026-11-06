@@ -2,38 +2,43 @@
   // けっこんしき's メモ (docs/wedding.md "Notes"): the one shared note as an NH letter (cream stationery, ruled lines,
   // a pink heart stamp), rendered from its small markdown (Markdown.svelte). A member's ✎ かく opens the field with four
   // format buttons (みだし, リスト, ふとじ, ななめ: lib/wedding/markdown.ts' toggles, the selection kept) and ほぞん /
-  // やめる; one save per edit, sent with the note's `at` it started from. When the store flags a conflict (two saves
-  // crossed) both versions show instead, each with これに する. The guest reads only.
+  // やめる; one save per edit, sent with the note's `at` it started from (the store's saveNote). When the store flags a
+  // conflict (two saves crossed: the held one and the one it was saved over, `was`) both versions show instead, each
+  // under its writer's name with これに する (saved from the held one: that settles it). The old Sheet's note wears
+  // 「むかしの きろく」 until it's saved again. The guest reads only.
   import { tick } from 'svelte';
   import Markdown from './Markdown.svelte';
   import { toggleBold, toggleBullets, toggleHeading, toggleItalic, type Edit } from '#lib/wedding/markdown.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import type { Note } from './view.ts';
+  import { WNOTE_CHARS } from '#lib/contract/wedding.ts';
+  import type { Who } from '#lib/types.ts';
+  import type { Board, WeddingActions } from './view.ts';
 
   interface Props {
-    note: Note;
+    /** The held note (null: none yet). */
+    note: Board['note'];
+    conflict: Board['conflict'];
     canEdit: boolean;
-    onnote?: (md: string, base: number) => void;
+    names: Record<Who, string>;
+    actions?: WeddingActions;
     /** Editing (the board's levels: ‹ and ✕ ask nothing, ほぞん and やめる end it). */
     editing?: boolean;
   }
-  let { note, canEdit, onnote, editing = $bindable(false) }: Props = $props();
+  let { note, conflict, canEdit, names, actions, editing = $bindable(false) }: Props = $props();
   let draft = $state('');
-  let base = 0;
+  /** The held note's `at` the edit began from (null: there was none). */
+  let base: number | null = null;
   let area: HTMLTextAreaElement | undefined = $state();
-  const MAX = 64_000;
+  const md = $derived(note?.md ?? '');
 
   function write() {
-    draft = note.md;
-    base = note.at;
+    draft = md;
+    base = note?.at ?? null;
     editing = true;
   }
   function save() {
-    if (draft !== note.md) {
-      onnote?.(draft, base);
-      toasts.show(t('wed.note.saved'), 2000);
-    }
+    if (draft !== md && actions?.saveNote(draft, base)) toasts.show(t('wed.note.saved'), 2000);
     editing = false;
   }
   async function fmt(fn: (text: string, a: number, b: number) => Edit) {
@@ -50,20 +55,20 @@
     { k: 'b', fn: toggleBold, glyph: 'B' },
     { k: 'i', fn: toggleItalic, glyph: 'I' }
   ] as const;
-  function pick(md: string) {
-    onnote?.(md, note.at);
+  function pick(text: string) {
+    actions?.saveNote(text, conflict?.current.at);
     editing = false;
   }
 </script>
 
 <div class="notes" data-wed-notes>
-  {#if note.conflict && canEdit}
+  {#if conflict && canEdit}
     <p class="ask" data-wed-conflict>{t('wed.note.conflict')}</p>
-    {#each [['mine', note.conflict.mine], ['theirs', note.conflict.theirs]] as const as [k, md] (k)}
-      <article class="letter small" data-wed-version={k}>
-        <h4 class="whose">{t(`wed.note.${k}`)}</h4>
-        <Markdown text={md} />
-        <button type="button" class="btn small" data-wed-pick={k} data-sfx="confirm" onclick={() => pick(md)}>{t('wed.note.pick')}</button>
+    {#each [['current', conflict.current], ['other', conflict.other]] as const as [k, v] (k)}
+      <article class="letter small" data-wed-version={k} data-wed-who={v.who}>
+        <h4 class="whose">{t('wed.note.whose', { name: names[v.who] })}</h4>
+        <Markdown text={v.md} />
+        <button type="button" class="btn small" data-wed-pick={k} data-sfx="confirm" onclick={() => pick(v.md)}>{t('wed.note.pick')}</button>
       </article>
     {/each}
   {:else if editing}
@@ -73,7 +78,7 @@
           onpointerdown={(e) => e.preventDefault()} onclick={() => fmt(tl.fn)}><span aria-hidden="true">{tl.glyph}</span><small>{t(`wed.note.${tl.k}`)}</small></button>
       {/each}
     </div>
-    <textarea bind:this={area} bind:value={draft} maxlength={MAX} aria-label={t('wed.note.field')} data-wed-note-field data-sfx="none"></textarea>
+    <textarea bind:this={area} bind:value={draft} maxlength={WNOTE_CHARS} aria-label={t('wed.note.field')} data-wed-note-field data-sfx="none"></textarea>
     <div class="acts">
       <button type="button" class="btn small paper" data-wed-note-cancel data-sfx="back" onclick={() => (editing = false)}>{t('wed.cancel')}</button>
       <button type="button" class="btn small" data-wed-note-save data-sfx="confirm" onclick={save}>{t('wed.save')}</button>
@@ -81,9 +86,9 @@
   {:else}
     <article class="letter" data-wed-letter>
       <span class="stamp" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-7.5-10.1C4.5 7.6 6.6 5.5 9.2 5.5c1.3 0 2.2.6 2.8 1.5.6-.9 1.5-1.5 2.8-1.5 2.6 0 4.7 2.1 4.7 4.9 0 5.5-7.5 10.1-7.5 10.1z" /></svg></span>
-      <h4 class="whose">{t('wed.note.title')}</h4>
-      {#if note.md.trim()}
-        <Markdown text={note.md} />
+      <h4 class="whose">{t('wed.note.title')}{#if note?.imported}<span class="old" data-wed-imported>{t('wed.imported')}</span>{/if}</h4>
+      {#if md.trim()}
+        <Markdown text={md} />
       {:else}
         <p class="none" data-wed-note-empty>{t('wed.note.empty')}</p>
       {/if}
@@ -110,6 +115,7 @@
   /* the rules under the text itself: every line of it is 32px (Markdown.svelte), so each sits on its rule */
   .letter :global(.doc) { background: repeating-linear-gradient(transparent 0 30px, color-mix(in srgb, #E9B9C9 60%, transparent) 30px 32px); }
   .whose { margin: 6px 0 14px; font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .04em; }
+  .old { margin-left: 8px; padding: 3px 8px 2px; border-radius: var(--r-pill); background: rgba(0, 0, 0, .06); font: 700 var(--fs-xs)/1 var(--font-ui); letter-spacing: 0; vertical-align: 2px; }
   .stamp {
     position: absolute; top: 18px; right: 16px; width: 38px; height: 44px; display: grid; place-items: center; transform: rotate(8deg);
     background: #FFEFF4; border-radius: 4px; box-shadow: 0 0 0 2px #F3B5CA, 0 0 0 4px #FFEFF4, 0 0 0 5px #F3B5CA;

@@ -14,13 +14,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   FALLBACK_TIME_ZONE,
-  addDays,
   daysBetween,
-  dayOfMonth,
-  firstOfMonth,
-  formatDay,
-  formatDayMonth,
-  formatMonth,
   monthOf,
   isValidDay,
   isValidTimeZone,
@@ -28,7 +22,6 @@ import {
   parseDay,
   resolveTimeZone,
   todayIn,
-  yearOf,
 } from './time.ts'
 
 const TOKYO = 'Asia/Tokyo'
@@ -171,87 +164,15 @@ describe('the countdown', () => {
   })
 })
 
-describe('addDays', () => {
-  it('is calendar arithmetic, not 86,400,000ms', () => {
-    expect(addDays('2027-04-18', 1)).toBe('2027-04-19')
-    expect(addDays('2027-04-18', -365)).toBe('2026-04-18')
-    expect(addDays('2027-04-18', 0)).toBe('2027-04-18')
-  })
-
-  it('crosses months and leap days', () => {
-    expect(addDays('2028-02-28', 1)).toBe('2028-02-29')
-    expect(addDays('2027-12-31', 1)).toBe('2028-01-01')
-  })
-
-  it('is unaffected by a DST boundary', () => {
-    // The point of doing this in calendar space: the day after 2027-03-13 in Los Angeles is
-    // the 14th, whatever happens to the clocks that morning.
-    expect(addDays('2027-03-13', 1)).toBe('2027-03-14')
-  })
-
-  it('is empty for an unusable day', () => {
-    expect(addDays('nonsense', 1)).toBe('')
-  })
-})
-
-describe('formatting', () => {
-  it('formats a day without shifting it', () => {
-    // The trap this guards: formatting via `new Date('2027-01-01')` renders 31 December for
-    // anybody west of Greenwich, because that string parses as UTC midnight.
-    expect(formatDay('2027-01-01', { locale: 'en' })).toBe('Jan 1')
-    expect(formatDay('2027-01-01', { locale: 'en', year: true })).toContain('2027')
-    expect(formatDayMonth('2027-04-01', { locale: 'en' })).toBe('April 2027')
-  })
-
-  it('shortens a month for the column a row prints it in, in both alphabets', () => {
-    // Every row states its own month above its day number, in a 2rem box, so the long form is not
-    // available and neither is the year: 'Sep 2026' measures 60px there and '2026年9月' 67px, against
-    // 'Sep' at 24px and '12月' at 31px. Japanese has one short form and it is the one that fits.
-    expect(formatMonth('2026-09-20', { locale: 'en' })).toBe('Sep')
-    expect(formatMonth('2026-10-02', { locale: 'en' })).toBe('Oct')
-    expect(formatMonth('2026-09-20', { locale: 'ja' })).toBe('9月')
-    expect(formatMonth('2026-12-02', { locale: 'ja' })).toBe('12月')
-    // No year, ever: it is the meta line's, and only where it is not the board's own.
-    expect(formatMonth('2027-04-18', { locale: 'en' })).not.toContain('2027')
-    // And a clock time on the cell does not stop it.
-    expect(formatMonth('2026-09-20T23:59', { locale: 'en' })).toBe('Sep')
-  })
-
-  it('reads a year off a day without anybody slicing the string', () => {
-    // One comparison depends on this: whether a row states its year, which it does only where that
-    // year is not the board's. null rather than 0 for an unusable day, so an undated row compares
-    // equal to nothing rather than to year zero.
-    expect(yearOf('2026-09-20')).toBe(2026)
-    expect(yearOf('2027-01-01T09:30')).toBe(2027)
-    expect(yearOf('')).toBeNull()
-    expect(yearOf('2027-02-31')).toBeNull()
-  })
-
-  it('accepts a clock time, so a row carrying one still renders', () => {
-    expect(formatDay('2027-01-01T00:00', { locale: 'en' })).toBe('Jan 1')
-  })
-
-  it('is empty rather than a plausible-looking wrong date', () => {
-    expect(formatDay('', { locale: 'en' })).toBe('')
-    expect(formatDay('2027-02-31', { locale: 'en' })).toBe('')
-    expect(formatDayMonth('', { locale: 'en' })).toBe('')
-    expect(formatMonth('', { locale: 'en' })).toBe('')
-    expect(formatMonth('2027-02-31', { locale: 'en' })).toBe('')
-  })
-})
-
 describe('taking a day apart', () => {
-  it('reads the month key, the day number and the first of a month', () => {
+  it('reads the month key', () => {
     expect(monthOf('2027-04-18')).toBe('2027-04')
-    expect(dayOfMonth('2027-04-18')).toBe(18)
-    expect(firstOfMonth('2027-04')).toBe('2027-04-01')
   })
 
   it('normalises a clock time off first, like every other helper here', () => {
     // A cell somebody hand-edited comes back as "2027-04-18T00:00", and rows on live boards carry
     // a clock time of their own.
     expect(monthOf('2027-04-18T23:59')).toBe('2027-04')
-    expect(dayOfMonth('2027-04-18T23:59')).toBe(18)
   })
 
   it('returns an EMPTY month for junk rather than a group of its own', () => {
@@ -259,19 +180,6 @@ describe('taking a day apart', () => {
     // key would make a heading nobody can read out of a cell somebody mistyped.
     for (const bad of ['', '   ', 'nonsense', '2027-13-01', '2027-02-31', null, undefined]) {
       expect(monthOf(bad), JSON.stringify(bad)).toBe('')
-    }
-  })
-
-  it('returns 0 for a day number it cannot read, never NaN', () => {
-    // NaN reaches the row's date column and renders as "NaN".
-    for (const bad of ['', 'nonsense', '2027-02-31', null]) {
-      expect(dayOfMonth(bad), JSON.stringify(bad)).toBe(0)
-    }
-  })
-
-  it('refuses a month key that is not one', () => {
-    for (const bad of ['', '2027', '2027-13', 'nope', null]) {
-      expect(firstOfMonth(bad), JSON.stringify(bad)).toBe('')
     }
   })
 })

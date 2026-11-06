@@ -101,15 +101,16 @@ describe.each(['2026-10-29T08:00:00.000Z', '2026-11-02T01:00:00.000Z', '2026-11-
     }
   });
 
-  it('けっこんしき: a made-up board, every row taken (settings, tasks with a checklist, ticks, one deleted, the notes); the guest’s the same', () => {
+  it('けっこんしき: a made-up board, every row taken (settings, tasks with a checklist, ticks, one deleted, one from the old Sheet, the notes); the guest’s the same', () => {
     for (const rows of [s.wedding, reduce(demoCache(now, 'G').rows).wedding]) {
       const b = wedFold(rows);
       expect(rows).toHaveLength(cache.rows.events.filter((e) => ['wtask', 'wdone', 'wconf', 'wnote'].includes(e[3])).length);
       expect(wedConfig(b)).toMatchObject({ p1: 'たろう', p2: 'はなこ', venue: '架空チャペル', time: '11:00' });
       const plan = withProgress(wedTasks(b), localDateAt(now));
-      expect(plan).toHaveLength(6);
-      expect(plan.flatMap((t) => t.subtasks)).toHaveLength(5);
-      expect(overallProgress(plan)).toMatchObject({ total: 6, done: 1, overdue: 1 });
+      expect(plan).toHaveLength(8);
+      expect(plan.flatMap((t) => t.subtasks)).toHaveLength(6);
+      expect(overallProgress(plan)).toMatchObject({ total: 8, done: 2, overdue: 1, soon: 1 });
+      expect(plan.filter((t) => t.doneAt).map((t) => [t.id, t.imported, t.doneBy]).sort()).toEqual([['wdemo01', true, ''], ['wdemo09', false, 'A']]);
       expect(wedTasks(b).filter((t) => t.deletedAt)).toHaveLength(1);
       expect(wedNote(b)?.md).toContain('# メモ');
     }

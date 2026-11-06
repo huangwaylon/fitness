@@ -1,11 +1,11 @@
 // Calendar days for the wedding board, and the only place a zone is resolved: ported from the old board's
-// `src/lib/time.js` (~/Documents/other/wedding), its rules unchanged.
+// `src/lib/time.js` (~/Documents/other/wedding), its rules unchanged (its display formatters not: the sheet words its
+// days through i18n, components/wedding/format.ts and i18n/format.ts formatDate, over these validated day strings).
 //
 // A task's `due` is a wall-clock day ('2027-04-18', no time, no offset). It means that date at the wedding, so whether
 // it has passed is decided against the board's configured IANA zone, never the device's.
 //   - Never `new Date('2027-04-18')`: it parses as UTC midnight and renders as the 17th west of Greenwich. Every Date
 //     here is built from explicit parts.
-//   - To format a day, build the instant from its parts as if they were UTC and format with `timeZone: 'UTC'`.
 //   - The zone decides one thing: what today's date is (`todayIn`). Everything downstream compares two day strings.
 
 /** The stored shape. */
@@ -17,7 +17,6 @@ export const FALLBACK_TIME_ZONE = 'Asia/Tokyo';
 const MS_PER_DAY = 86_400_000;
 
 const dayFormatters = new Map<string, Intl.DateTimeFormat>();
-const displayFormatters = new Map<string, Intl.DateTimeFormat>();
 /** Zone-name validity, memoised (`new Intl.DateTimeFormat` costs tens of microseconds). */
 const zoneValidity = new Map<string, boolean>();
 
@@ -78,10 +77,6 @@ export function normalizeDay(text: unknown): string {
   return isValidDay(raw) ? raw : '';
 }
 
-function pad(n: number): string {
-  return String(n).padStart(2, '0');
-}
-
 /** A day's parts, tolerating a clock time. */
 function partsOf(day: unknown): DayParts | null {
   return parseDay(normalizeDay(day));
@@ -91,25 +86,6 @@ function partsOf(day: unknown): DayParts | null {
 export function monthOf(day: unknown): string {
   const normalized = normalizeDay(day);
   return normalized ? normalized.slice(0, 7) : '';
-}
-
-/** The day of the month (0 if unusable). @public (the board's rows) */
-export function dayOfMonth(day: unknown): number {
-  return partsOf(day)?.day ?? 0;
-}
-
-/** A 'YYYY-MM' key back to a real day ('' if unusable). @public (the board's month headings) */
-export function firstOfMonth(monthKey: unknown): string {
-  const candidate = `${String(monthKey ?? '').trim()}-01`;
-  return isValidDay(candidate) ? candidate : '';
-}
-
-/** Calendar-day arithmetic, zone-free ('' for an unusable day). @public (the board's settings) */
-export function addDays(day: unknown, days: number): string {
-  const parts = partsOf(day);
-  if (!parts) return '';
-  const shifted = new Date(Date.UTC(parts.year, parts.month - 1, parts.day + days));
-  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`;
 }
 
 /** Whole calendar days from `from` to `to`, signed (null when either is unusable). */
@@ -123,51 +99,4 @@ export function daysBetween(from: unknown, to: unknown): number | null {
 /** Today's date in the board's zone (`en-CA` yields YYYY-MM-DD). `nowMs` is passed in (the relay's clock). */
 export function todayIn(timeZone: unknown, nowMs: number): string {
   return dayFormatter(resolveTimeZone(timeZone)).format(new Date(nowMs));
-}
-
-// ------------------------------------------------------------------ display
-
-function asUtcDate(day: unknown): Date | null {
-  const parts = partsOf(day);
-  return parts ? new Date(Date.UTC(parts.year, parts.month - 1, parts.day)) : null;
-}
-
-function displayFormatter(locale: string | undefined, options: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
-  const cacheKey = `${locale}|${JSON.stringify(options)}`;
-  let format = displayFormatters.get(cacheKey);
-  if (!format) {
-    format = new Intl.DateTimeFormat(locale, { timeZone: 'UTC', ...options });
-    displayFormatters.set(cacheKey, format);
-  }
-  return format;
-}
-
-function formatted(day: unknown, locale: string | undefined, options: Intl.DateTimeFormatOptions): string {
-  const date = asUtcDate(day);
-  return date ? displayFormatter(locale, options).format(date) : '';
-}
-
-/** 'Apr 18' / '4月18日'. @public (the board's rows) */
-export function formatDay(day: unknown, { locale, year = false }: { locale?: string; year?: boolean } = {}): string {
-  return formatted(day, locale, { month: 'short', day: 'numeric', ...(year ? { year: 'numeric' } : {}) });
-}
-
-/** 'Sat, 18 April 2027' / '2027年4月18日(土)': an open row. @public (the board's rows) */
-export function formatDayLong(day: unknown, { locale }: { locale?: string } = {}): string {
-  return formatted(day, locale, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' });
-}
-
-/** 'Oct' / '10月': a row's date column. @public (the board's rows) */
-export function formatMonth(day: unknown, { locale }: { locale?: string } = {}): string {
-  return formatted(day, locale, { month: 'short' });
-}
-
-/** The calendar year (null for anything unusable). @public (the board's rows) */
-export function yearOf(day: unknown): number | null {
-  return partsOf(day)?.year ?? null;
-}
-
-/** 'April 2027' / '2027年4月': the list's group headings. @public (the board's month headings) */
-export function formatDayMonth(day: unknown, { locale }: { locale?: string } = {}): string {
-  return formatted(day, locale, { year: 'numeric', month: 'long' });
 }

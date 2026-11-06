@@ -12,7 +12,9 @@
   import { formatDate } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
   import { dueLine } from './format.ts';
-  import type { Fields, Task, WeddingActions, Who3 } from './view.ts';
+  import { WTASK_TITLE, type WedTask } from '#lib/contract/wedding.ts';
+  import type { Who } from '#lib/types.ts';
+  import type { Fields, Task, WeddingActions } from './view.ts';
 
   interface Props {
     /** null: a new task. */
@@ -20,7 +22,7 @@
     today: string;
     cats: readonly string[];
     canEdit: boolean;
-    names: Record<Who3, string>;
+    names: Record<Who, string>;
     actions?: WeddingActions;
     /** Leave the page (saved new, deleted, or a new one given up). */
     ondone: () => void;
@@ -28,7 +30,7 @@
   let { task, today, cats, canEdit, names, actions, ondone }: Props = $props();
 
   const blank = (): Fields => ({ title: '', cat: '', start: '', due: '' });
-  const fieldsOf = (x: Task): Fields => ({ title: x.title, cat: x.cat, start: x.start ?? '', due: x.due ?? '' });
+  const fieldsOf = (x: Task): Fields => ({ title: x.title, cat: x.category, start: x.start, due: x.due });
   // svelte-ignore state_referenced_locally
   let editing = $state(task === null);
   // svelte-ignore state_referenced_locally
@@ -36,7 +38,8 @@
   let error = $state<'title' | 'due' | null>(null);
   let sub = $state('');
   let subEl: HTMLInputElement | undefined = $state();
-  const due = $derived(task ? dueLine(today, task) : null);
+  const due = $derived(task ? dueLine(task) : null);
+  const done = $derived(!!task?.doneAt);
 
   function edit() {
     if (!task) return;
@@ -53,30 +56,31 @@
     const title = draft.title.trim();
     error = !title ? 'title' : !draft.due ? 'due' : null;
     if (error) return;
-    const start = draft.start || undefined;
     if (!task) {
-      actions?.onadd({ title, cat: draft.cat, due: draft.due, ...(start ? { start } : {}) });
+      actions?.addTask({ title, cat: draft.cat, due: draft.due, ...(draft.start ? { start: draft.start } : {}) });
       ondone();
       return;
     }
-    const patch: Record<string, string | undefined> = {};
+    // ('' start: cleared)
+    const patch: { title?: string; cat?: string; due?: string; start?: string } = {};
     if (title !== task.title) patch.title = title;
-    if (draft.cat !== task.cat) patch.cat = draft.cat;
-    if (draft.due !== (task.due ?? '')) patch.due = draft.due;
-    if ((draft.start || '') !== (task.start ?? '')) patch.start = draft.start || undefined;
-    if (Object.keys(patch).length) actions?.onedit(task.id, patch);
+    if (draft.cat !== task.category) patch.cat = draft.cat;
+    if (draft.due !== task.due) patch.due = draft.due;
+    if (draft.start !== task.start) patch.start = draft.start;
+    if (Object.keys(patch).length) actions?.editTask(task.id, patch);
     editing = false;
   }
-  function remove(x: Task, leave: boolean) {
-    actions?.onremove(x.id);
-    toasts.show(t('wed.removed', { title: x.title }), 5000, { action: { label: t('common.undo'), run: () => actions?.onrestore(x.id) } });
+  /** A task (its checklist with it, the store's remove) or one checklist item. */
+  function remove(x: WedTask, leave: boolean) {
+    actions?.remove(x.id);
+    toasts.show(t('wed.removed', { title: x.title }), 5000, { action: { label: t('common.undo'), run: () => void actions?.restore(x.id) } });
     if (leave) ondone();
   }
   async function addSub(e: SubmitEvent) {
     e.preventDefault();
     const title = sub.trim();
     if (!title || !task) return;
-    actions?.onadd({ title, cat: '', parent: task.id });
+    actions?.addSub(task.id, title);
     sub = '';
     await tick();
     subEl?.focus({ preventScroll: true });
@@ -96,9 +100,9 @@
       <button type="button" class="btn small" data-wed-save data-sfx="confirm" onclick={save}>{t('wed.save')}</button>
     </div>
   {:else if task}
-    <div class="card head" class:done={task.done}>
+    <div class="card head" class:done>
       <div class="top">
-        {#if task.cat}<span class="cat">{task.cat}</span>{/if}
+        {#if task.category}<span class="cat">{task.category}</span>{/if}
         {#if canEdit}<button type="button" class="pen-btn" aria-label={t('wed.edit')} data-wed-edit data-sfx="open" onclick={edit}>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4zM14 6l4 4" /></svg></button>{/if}
       </div>
@@ -107,16 +111,16 @@
         <div><dt>{t('wed.field.due')}</dt><dd>{task.due ? formatDate(task.due) : t('wed.sec.nodate')}{#if due}<span class="due {due.tone}">{due.text}</span>{/if}</dd></div>
         {#if task.start}<div><dt>{t('wed.field.startShort')}</dt><dd>{formatDate(task.start)}</dd></div>{/if}
       </dl>
-      {#if task.done && (task.by || task.imported)}
-        <p class="by">{#if task.imported}<span class="who old">{t('wed.imported')}</span>{:else if task.by}<span class="who" style:--tag={tagOf(task.by)}>{t('wed.byWho', { name: names[task.by] })}</span>{/if}</p>
+      {#if done}
+        <p class="by">{#if task.doneBy}<span class="who" style:--tag={tagOf(task.doneBy)}>{t('wed.byWho', { name: names[task.doneBy] })}</span>{:else}<span class="who old" data-wed-imported>{t('wed.imported')}</span>{/if}</p>
       {/if}
     </div>
     {#if canEdit}
-      <button type="button" class="btn big-tick" class:paper={task.done} aria-pressed={task.done} data-wed-page-tick data-sfx={task.done ? 'toggle-off' : 'confirm'}
-        onclick={() => actions?.ontick(task.id, !task.done)}>
-        {#if !task.done}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" /></svg>{/if}{task.done ? t('wed.markUndone') : t('wed.markDone')}
+      <button type="button" class="btn big-tick" class:paper={done} aria-pressed={done} data-wed-page-tick data-sfx={done ? 'toggle-off' : 'confirm'}
+        onclick={() => actions?.tick(task.id, !done)}>
+        {#if !done}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" /></svg>{/if}{done ? t('wed.markUndone') : t('wed.markDone')}
       </button>
-    {:else if task.done}
+    {:else if done}
       <p class="done-line" data-wed-mark>✓ {t('wed.doneMark')}</p>
     {/if}
   {/if}
@@ -126,17 +130,17 @@
       <h4 class="sec-label" id="wed-cl">{t('wed.checklist')}{#if task.progress.tally}<span class="tl">{task.progress.tally.done} / {task.progress.tally.total}</span>{/if}</h4>
       <ul class="card subs">
         {#each task.subtasks as s (s.id)}
-          <li class:done={s.done} data-wed-sub={s.id} data-done={s.done || undefined}>
+          <li class:done={!!s.doneAt} data-wed-sub={s.id} data-done={!!s.doneAt || undefined}>
             {#if canEdit}
-              <button type="button" class="stick" aria-pressed={s.done} aria-label={s.done ? t('wed.untick', { title: s.title }) : t('wed.tick', { title: s.title })}
-                data-wed-sub-tick={s.id} data-sfx={s.done ? 'toggle-off' : 'confirm'} onclick={() => actions?.ontick(s.id, !s.done)}>
+              <button type="button" class="stick" aria-pressed={!!s.doneAt} aria-label={s.doneAt ? t('wed.untick', { title: s.title }) : t('wed.tick', { title: s.title })}
+                data-wed-sub-tick={s.id} data-sfx={s.doneAt ? 'toggle-off' : 'confirm'} onclick={() => actions?.tick(s.id, !s.doneAt)}>
                 <span class="bub"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" /></svg></span>
               </button>
             {:else}
-              <span class="smark" aria-label={s.done ? t('wed.doneMark') : undefined} role={s.done ? 'img' : undefined}>{#if s.done}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" /></svg>{/if}</span>
+              <span class="smark" aria-label={s.doneAt ? t('wed.doneMark') : undefined} role={s.doneAt ? 'img' : undefined}>{#if s.doneAt}<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5 10 17.5 19 7" /></svg>{/if}</span>
             {/if}
             <span class="stxt"><Linked text={s.title} /></span>
-            {#if s.done && s.by && !s.imported}<span class="who mini" style:--tag={tagOf(s.by)} aria-label={t('wed.byWho', { name: names[s.by] })}>{names[s.by]}</span>{/if}
+            {#if s.doneAt && s.doneBy}<span class="who mini" style:--tag={tagOf(s.doneBy)} aria-label={t('wed.byWho', { name: names[s.doneBy] })}>{names[s.doneBy]}</span>{/if}
             {#if editing && canEdit}
               <button type="button" class="srm" aria-label={t('wed.remove')} data-wed-sub-remove={s.id} data-sfx="tick" onclick={() => remove(s, false)}>
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M10 4h4M7 7l1 13h8l1-13" /></svg>
@@ -147,7 +151,7 @@
         {#if canEdit}
           <li class="addrow">
             <form onsubmit={addSub}>
-              <input type="text" bind:this={subEl} bind:value={sub} placeholder={t('wed.subPlaceholder')} enterkeyhint="done" maxlength="200" aria-label={t('wed.addSub')}
+              <input type="text" bind:this={subEl} bind:value={sub} placeholder={t('wed.subPlaceholder')} enterkeyhint="done" maxlength={WTASK_TITLE} aria-label={t('wed.addSub')}
                 data-wed-sub-field data-sfx="none" />
               <button type="submit" class="sadd" aria-label={t('wed.addSub')} aria-disabled={!sub.trim() ? 'true' : undefined} data-wed-sub-add data-sfx="confirm">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
