@@ -9,7 +9,7 @@ import { LEVELS } from '#lib/kikimimi/deck.ts';
 import { tierFor, type Lesson } from '#lib/kikimimi/lesson.ts';
 import { practiceFor } from '#lib/kikimimi/report.ts';
 import type { Focus } from '#lib/kikimimi/srs.ts';
-import type { Rec } from '#lib/kikimimi/advice.ts';
+import type { Act } from '#lib/kikimimi/today.ts';
 import { currentReport, recentGames } from './progress.svelte.ts';
 import { keepLv, lastLv, lastTimer } from './prefs.ts';
 import { modeStack, type Page } from './nav.ts';
@@ -145,19 +145,20 @@ export class KikiActions {
     if (g.view.ladder) g.configure({ ladder: false }); // (a quiz's: from a recommendation in スピード はしご's lobby)
     void practiceFor(r, LEVELS, g.view.seed, focus, recentGames()).then((items) => g.practice(items, 'weak'), () => {});
   };
-  /** A recommendation's start: a level's game, or にがて れんしゅう narrowed to its skill or accent. */
-  startRec = (r: Rec): void => {
-    const g = this.#solo();
+  /** A menu card's (hub, today.ts): おさらい, the 30-day recheck or a unit's lesson (its intro card), ひとこと クイズ at
+   *  my place, スピード はしご or アナウンス at once. */
+  menu = (a: Act): void => {
+    const g = this.#game();
     if (!g) return;
-    this.#ui.setPages([]);
-    if (r.kind === 'level') {
-      g.configure({ lv: r.lv, ladder: false });
-      keepLv(r.lv);
+    if (a.k === 'review') this.practice();
+    else if (a.k === 'recheck') this.startLesson(a.unit, 'check', true);
+    else if (a.k === 'lesson') this.startLesson(a.unit, a.lesson);
+    else if (a.k === 'quiz') this.quiz(a.lv as Level);
+    else {
+      if (a.m === 'ladder') g.configure({ ladder: true });
+      else g.configure({ ladder: false, lv: 5 });
       g.go();
-    } else if (r.kind === 'speed') {
-      g.configure({ ladder: true });
-      g.go();
-    } else this.practice(r.kind === 'skill' || r.kind === 'try' ? { skill: r.skill } : r.kind === 'accent' ? { accent: r.accent } : null);
+    }
   };
   /** A unit's lesson from the path or its page: my lobby (a quiz's) takes its deck at my tier and shows its intro card;
    *  shared, everyone's (a co-op lesson). The 30-day recheck is solo. */

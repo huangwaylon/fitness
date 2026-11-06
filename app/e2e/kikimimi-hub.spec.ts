@@ -20,6 +20,11 @@ async function open(page: Page, as: 'A' | 'B' = 'A') {
 async function snap(p: Page, name: string) {
   if (!process.env.KIKI_SHOTS) return;
   await expect(p.locator('dialog[open] [data-typing="true"]')).toHaveCount(0);
+  // (the sheet's grow-in done: no finite animation left running inside the dialog)
+  await expect.poll(() => p.evaluate(() => document.getAnimations().filter((x) => {
+    const e = x.effect as KeyframeEffect | null;
+    return x.playState === 'running' && e?.getTiming().iterations !== Infinity && !!(e?.target as Element | null)?.closest('dialog');
+  }).length)).toBe(0);
   await p.screenshot({ path: `${SHOTS}/${name}.png` });
 }
 const title = (p: Page) => p.locator('dialog[open] .navbar h2');
@@ -33,7 +38,11 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await expect(sheet(page).locator('[data-kiki-tile]')).toHaveCount(4);
   await expect(sheet(page).locator('[data-kiki-tile="together"] small')).toHaveText('ひとりでも OK');
   await expect(page.locator('dialog[open] [data-kiki-gear]')).toBeVisible();
-  await expect(sheet(page).locator('[data-kiki-today]')).toContainText('ひとこと クイズ');
+  // today's menu: おさらい (the demo's misses due), きょうの いっぽ (the path's current unit), きまぐれ; one green button
+  await expect(sheet(page).locator('[data-kiki-card]')).toHaveCount(3);
+  await expect(sheet(page).locator('[data-kiki-card="review"]')).toContainText('えらびました');
+  await expect(sheet(page).locator('[data-kiki-card-go]:not(.paper)')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-kiki-ok-line]')).toHaveText('1つで きょうは OK。のこりは おまけです');
   await snap(page, 'hub');
 
   // あそぶ: the modes by situation, only the playable ones (おさらい: the demo's A has played)
@@ -96,12 +105,12 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   await atHub(page);
 });
 
-test('today’s card plays ひとこと クイズ at once; ✕ asks first, やめる closes', async ({ page }) => {
+test('a menu card plays at once (きまぐれ: its mode); ✕ asks first, やめる closes', async ({ page }) => {
   test.slow();
   await open(page);
   await fromMenu(page, 'kikimimi');
   await atHub(page);
-  await sheet(page).locator('[data-kiki-today-go]').click();
+  await sheet(page).locator('[data-kiki-card-go="whim"]').click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
   // ✕ asks, つづける goes on; then the game left (やめる) and opened again: the hub
   await page.locator('dialog[open] .navbar .close').click();
