@@ -18,6 +18,7 @@
   import { footOf, newObjId, objMid, opsBetween, originOf, withChanges, type Layout, type Obj } from '#lib/layout/model.ts';
   import { validate } from '#lib/layout/validate.ts';
   import { layout as store } from '#lib/store/layout.svelte.ts';
+  import { site } from '../island/site.svelte.ts';
   import { artUrl } from '#lib/art.ts';
   import { cue } from '#lib/sound/cues.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
@@ -88,7 +89,7 @@
   /** Where the middle of the view's ground is (a new thing lands near it). */
   function viewCentre(): [number, number] {
     const [w, h] = stage.size();
-    const g = stage.toGround(w / 2, h * 0.45) ?? [195, 300];
+    const g = stage.toGround(w / 2, h * 0.45) ?? [site.midX, 300];
     return [g[0], g[1]];
   }
   const tileOf = (x: number, z: number): [number, number] => [Math.floor((x - GRID.x0) / TILE), Math.floor((z - GRID.z0) / TILE)];
@@ -308,8 +309,8 @@
     }).filter((m) => !!m);
   });
 
-  /** The world z's where the camera's moves are looked for (one at least is on screen wherever it looks). */
-  const CAM_PROBE = [0, 150, 300, 450, 600, 750, 900, 1050, 1200];
+  /** How far apart along the island the camera's moves are looked for (u): one at least on screen wherever it looks. */
+  const CAM_PROBE = 150;
   let raf = 0;
   $effect(() => {
     // the camera may move under a held thing (a pinch), and under the marks: they follow
@@ -319,8 +320,10 @@
     // second for nothing)
     let was = '';
     const tick = () => {
+      // (down the island's middle, its land's whole length: the back of a grown island too)
+      const land = site.extent.land, mid = site.midX;
       let key = stage.size().join();
-      for (const z of CAM_PROBE) key += `|${stage.toScreen(195, z, 0)?.join() ?? '-'}`;
+      for (let z = Math.min(0, land.z0); z <= land.z1 + CAM_PROBE; z += CAM_PROBE) key += `|${stage.toScreen(mid, z, 0)?.join() ?? '-'}`;
       if (key !== was) {
         was = key;
         rev++;

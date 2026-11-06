@@ -34,7 +34,7 @@
   import { todayPct } from './progress.ts';
   import { RULES, STRETCH } from '#lib/config/rules.ts';
   import { week } from '#lib/store/week.svelte.ts';
-  import { FRUIT_LEAN, FRUIT_SPOTS, FRUIT_U, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u } from './scene.ts';
+  import { FRUIT_SPOTS, fruitLean, FRUIT_U, OAK_AR, TREE, TREE_FRUIT, TREE_FRUIT_U, u } from './scene.ts';
   import { useWorld } from './camera.svelte.ts';
   import { fruitDay, fruitFilter, fruitId, markDropped, markPicked, stageOf } from './fruitDay.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -117,8 +117,8 @@
   /** When this person's data last arrived (the popup's last line). Read only while the popup is open, so the minute
    *  clock ticks only then. */
   const sync = $derived(open ? lastSyncLine(person.lastSyncAt, minuteNow()) : null);
-  /** The fruit row leans out from the middle (left tree left, right tree right). */
-  const lean = $derived(x < 195 ? -FRUIT_LEAN : FRUIT_LEAN);
+  /** The fruit row leans out from the island's middle (left tree left, right tree right). */
+  const lean = $derived(fruitLean(x, site.midX));
   /** The fruit row's offset off a building's ground, moved as one (world.ts offBuildingsAt round its middle, its whole
    *  width: a goal tree just behind a building or beside its door), [0, 0] almost always; the same on every phone. */
   const off = $derived.by(() => {

@@ -16,7 +16,8 @@
   import CoinFlow, { type Flight } from './CoinFlow.svelte';
   import { localKV, readJson, SCENE, writeJson } from '#lib/sync/storage.ts';
   import { cue } from '#lib/sound/cues.ts';
-  import { FRUIT_LEAN, FRUIT_SPOTS } from './scene.ts';
+  import { FRUIT_SPOTS, fruitLean } from './scene.ts';
+  import { site } from './site.svelte.ts';
   import { GOAL_TREES } from './world.ts';
   import { live } from './camera.svelte.ts';
 
@@ -45,7 +46,7 @@
    *  foot under it. */
   const fruitAt = (p: PersonId, i: number): [number, number] => {
     const [tx, tz] = GOAL_TREES[p];
-    const x = tx + (tx < 195 ? -FRUIT_LEAN : FRUIT_LEAN) + FRUIT_SPOTS[i][0], z = tz + FRUIT_SPOTS[i][1];
+    const x = tx + fruitLean(tx, site.midX) + FRUIT_SPOTS[i][0], z = tz + FRUIT_SPOTS[i][1];
     const w = live(), k = stage ? 390 / stage.width : 1;
     if (!w) return [x, 600];
     const [sx, sy] = w.screenU(x, z);

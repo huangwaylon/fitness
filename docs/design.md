@@ -645,7 +645,7 @@ Nothing on the island pays ベル.
 the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/world3d.spec.ts`, `e2e/world-perf.spec.ts`
 (on demand: `WORLD_PERF=1`).
 
-- **Units:** world units (an 80u villager); x across (centre 195), z into the island (bigger = further back; the front
+- **Units:** world units (an 80u villager); x across (centre 195 on the default island: the land box's middle, `model.ts midXOf`, as it's resized), z into the island (bigger = further back; the front
   shoreline is SHORE_Z). The live island reads the editable layout (`site.svelte.ts`: world.ts's values are the
   layout's, docs/island-layout.md); world.ts's own values are the old fixed island's, read before the layout is
   applied and by the unit tests and the layout scripts.
