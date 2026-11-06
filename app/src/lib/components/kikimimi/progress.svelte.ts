@@ -15,6 +15,7 @@ import type { Who } from '#lib/types.ts';
 import type { Rec } from '#lib/kikimimi/advice.ts';
 import { sx } from '#lib/kikimimi/ladder.ts';
 import { remember, type Recent } from '#lib/kikimimi/recent.ts';
+import { unitsOf, type UnitState } from '#lib/kikimimi/stamps.ts';
 import { t } from '#lib/i18n/index.ts';
 
 type Kept = { at: number; row: ListenRow };
@@ -65,6 +66,13 @@ export function currentReport(levels: readonly Level[] = LEVELS): Report | null 
   const m = week.model;
   if (!m) return null;
   return reportOf(progressRows(m.me, m.state.listen), m.me, localDateAt(m.now), levels, LADDER_OK);
+}
+
+/** Each unit's dots, stamps and recheck now (stamps.ts, from my report's games and the partner's summaries); empty
+ *  before the week's first load. Reactive: call it in a $derived. */
+export function currentUnits(): Map<string, UnitState> {
+  const r = currentReport();
+  return r ? unitsOf(r.games, r.others) : new Map();
 }
 
 /** A recommendation's words: its title and why (きろく's rows, the results' 「つぎは…」). */

@@ -21,7 +21,9 @@
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
-  import { currentReport, recWords } from './progress.svelte.ts';
+  import { currentReport, currentUnits, recWords } from './progress.svelte.ts';
+  import { stampsUnit } from '#lib/contract/listen.ts';
+  import { LESSONS, type Lesson } from '#lib/kikimimi/stages.ts';
   import { feedbackFor } from '#lib/kikimimi/report.ts';
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
   import { SPEEDS, climbs, laddersIn, speedAt, sx } from '#lib/kikimimi/ladder.ts';
@@ -77,6 +79,15 @@
   });
   const trips = $derived(recorded ? tripsOf({ r: recorded.r.map(([id, ok]) => ({ id, ok: ok === 1 })) }) : []);
   const tripLabel = (key: string) => (key.startsWith('f:') ? t(`kiki.f.${key.slice(2)}`) : t(`kiki.skill.${key.slice(2)}`));
+  /** A unit's lesson (docs/curriculum-units.md §3, §4, §10): the strip with its unit's dots and the next core lesson; a
+   *  チェック's stamp from my row (contract/listen.ts stampsUnit), the double stamp when the partner's summary has it too,
+   *  and my own first-listen tally next to it (the team's too, in co-op). */
+  const ls = $derived(game.lesson);
+  const unitState = $derived(ls && recorded ? currentUnits().get(ls.unit.id) : undefined);
+  const stamped = $derived(!!recorded && stampsUnit(recorded));
+  const own = $derived(recorded ? recorded.r.filter(([, ok, , rp]) => ok === 1 && rp === 0).length : 0);
+  const CORE: readonly Lesson[] = ['deai', 'bamen', 'check'];
+  const nextLesson = $derived(CORE.find((l) => l !== ls?.lesson && !unitState?.done.includes(l)) ?? null);
   /** A choice as written (a picture's Japanese name: the English isn't given away). */
   const choiceText = (it: Item, k: number) => (it.type === 'pic' ? (PIC_JA[it.choices[k]] ?? '') : it.choices[k]);
 </script>
@@ -93,6 +104,19 @@
     <p class="tally" data-kiki-tally={tally}>{t(coop ? 'kiki.tallyMine' : 'kiki.tally', { n: items.length, k: tally })}</p>
     {#if firsts}<p class="firsts"><span class="stamp" data-kiki-firsts={firsts}>{t('kiki.firstCount', { k: firsts })}</span></p>{/if}
   </div>
+
+  {#if ls && recorded}
+    <section class="lesson card" data-kiki-lesson-result={ls.lesson} data-kiki-stamped={stamped ? '1' : '0'}>
+      <p class="lhead"><b>{ls.unit.name}</b>
+        <span class="dots" aria-hidden="true">{#each LESSONS.filter((l) => ls.unit.lessons[l]) as l (l)}<i class:done={unitState?.done.includes(l)}>{CORE.includes(l) ? (unitState?.done.includes(l) ? '●' : '○') : unitState?.done.includes(l) ? '★' : '☆'}</i>{/each}</span></p>
+      {#if ls.lesson === 'check'}
+        {#if stamped}
+          <p class="got" data-kiki-stamp-got data-double={unitState?.double ? '1' : undefined}>🏅{#if unitState?.double}🏅 {t('kiki.stamp.double')}{:else} {t('kiki.stamp.got')}{/if}</p>
+        {:else}<p class="soon">{t('kiki.stamp.notYet')}</p>{/if}
+        <p class="mine" data-kiki-tally-mine={own}>{t('kiki.stamp.mine', { k: own, n: recorded.r.length })}{#if recorded.tm !== undefined} · {t('kiki.stamp.team', { k: recorded.tm })}{/if}</p>
+      {:else if nextLesson}<p class="soon" data-kiki-next-lesson={nextLesson}>{t('kiki.stamp.next', { lesson: t(`kiki.lesson.${nextLesson}`) })}</p>{/if}
+    </section>
+  {/if}
 
   <!-- たいせん: the ranking first (the game's outcome), then my feedback -->
   {#if ranking.length > 1 && !coop}
@@ -231,6 +255,13 @@
   .results { display: grid; gap: 14px; }
   .results :global(.bubble) { margin-bottom: 0; }
   .host { display: grid; gap: 6px; }
+  .lesson.card { display: grid; justify-items: center; gap: 4px; padding: 12px 14px; text-align: center; }
+  .lesson p { margin: 0; }
+  .lhead { display: flex; gap: 8px; align-items: center; font: 700 var(--fs-body)/1.3 var(--font-ui); }
+  .lhead .dots { display: flex; gap: 2px; font-size: var(--fs-s); color: var(--text-soft); }
+  .lhead .dots i { font-style: normal; }
+  .got { font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--coral-text); }
+  .soon, .mine { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   /* co-op's team tally: one big number, the together count under it (never who missed) */
   .team.card { display: grid; justify-items: center; gap: 4px; padding: 12px 14px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
   .team b { font: 700 var(--fs-title)/1.2 var(--font-num, var(--font-ui)); }
