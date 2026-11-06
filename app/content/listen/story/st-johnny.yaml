@@ -65,8 +65,8 @@ items:
       - { id: ph-wash-up, en: "wash up", ja: "（浜に）流れつく", match: "wash(ed|es)? up", register: friend, scene: "the beach at dawn", trap: "wash up＝あらう ではなく 流れつく" }
       - { id: ph-word-got-around, en: "word got around", ja: "うわさが ひろまった", match: "word (had |has )?got(ten)? around", register: friend, scene: "the whole island knows", trap: "word＝ことば ではなく うわさ" }
       - { id: ph-to-be-exact, en: "to be exact", ja: "せいかくに いうと", register: friend, scene: "telling where you were", trap: "あとから くわしく いいなおす あいず" }
-      - { id: ph-get-in-line, en: "get in line", ja: "れつに ならぶ", register: stranger, scene: "a busy food stall", trap: "line＝れつ。アメリカでは queue と いわない" }
-      - { id: ph-totally-worth-it, en: "worth it", ja: "その かちが ある", match: "\\bworth it\\b", register: friend, scene: "a burned tongue", trap: "Totally worth it＝やって よかった" }
+      - { id: ph-get-in-line, en: "get in line", ja: "れつに ならぶ", register: stranger, scene: "a busy food stall", trap: "line＝れつ。アメリカでは ふつう queue と いわない" }
+      - { id: ph-totally-worth-it, en: "worth it", ja: "やった かいが ある", match: "\\bworth it\\b", register: friend, scene: "a burned tongue", trap: "Totally worth it＝やって よかった" }
       - { id: ph-no-way, en: "no way", ja: "まさか、うそでしょ", match: "\\bno way\\b", register: friend, scene: "hearing something wild", trap: "みちが ない ではなく おどろき" }
       - { id: ph-in-no-hurry, en: "in no hurry", ja: "いそいで いない", register: friend, scene: "a slow evening", trap: "no hurry＝のんびり。いそげ ではない" }
       - { id: ph-one-thing-led, en: "one thing led to another", ja: "なんだかんだ あって", register: friend, scene: "telling a long story short", trap: "くわしく いわずに けっかへ とぶ いいかた" }
@@ -127,8 +127,8 @@ items:
       - { id: ph-making-it-up, en: "make it up", ja: "つくりばなしを する", match: "making (that|it) up", register: friend, scene: "an unlikely story", trap: "make up＝けしょう だけでなく つくりばなし" }
       - { id: ph-i-swear, en: "I swear", ja: "ほんとうだって", match: "\\bI swear\\b", register: friend, scene: "being doubted", trap: "swear＝ちかう。ののしる では ない" }
       - { id: ph-a-vermont-thing, en: "it's a … thing", ja: "〜では ふつうの こと", match: "it's an? [A-Z][a-z]+ thing", register: friend, scene: "a local custom", trap: "a Vermont thing＝その とちの ならわし" }
-      - { id: ph-got-used-to, en: "get used to", ja: "〜に なれる", match: "got(ten)? used to", register: friend, scene: "the quiet in the snow", trap: "used to＋ing は なれる。used to＋どうし は むかしは" }
-      - { id: ph-meant-to, en: "meant to", ja: "〜する つもりだった", match: "\\bmeant to\\b", register: friend, scene: "an old wish", trap: "meant to＝しようと おもって いたのに しなかった" }
+      - { id: ph-got-used-to, en: "get used to", ja: "〜に なれる", match: "got(ten)? used to", register: friend, scene: "the quiet in the snow", trap: "get used to＋ing＝なれる。used to＋どうし＝むかしは 〜した" }
+      - { id: ph-meant-to, en: "meant to", ja: "〜する つもりだった", match: "\\bmeant to\\b", register: friend, scene: "an old wish", trap: "meant to＝する つもりだった（けど まだ できて いない）" }
     predict:
       ask: "ジョニーは 日本の フェリーで どうなる？"
       choices:
@@ -237,7 +237,7 @@ items:
       - { id: ph-passing-through, en: "passing through", ja: "とおりかかっただけ", match: "pass(in'|ing) through", register: friend, scene: "showing up uninvited", trap: "とまる つもりは ない、と いう いいわけ" }
       - { id: ph-worth-waiting, en: "worth waiting for", ja: "まつ かちが ある", register: friend, scene: "a quiet man talks", trap: "worth＋ing＝〜する かちが ある" }
       - { id: ph-bottomless, en: "bottomless", ja: "おかわり じゆう", match: "\\bbottomless\\b", register: service, scene: "coffee at a diner", trap: "そこなし＝なんばいでも むりょう" }
-      - { id: ph-trust-me, en: "trust me", ja: "まかせて、ほんとうだよ", match: "\\btrust me\\b", register: service, scene: "a waitress's tip", trap: "しんじて＝ぜったい おすすめ" }
+      - { id: ph-trust-me, en: "trust me", ja: "ほんとだって、しんじて", match: "\\btrust me\\b", register: service, scene: "a waitress's tip", trap: "しんじて＝ぜったい おすすめ" }
       - { id: ph-right-up-there, en: "right up there with", ja: "〜に ならぶ ほど いい", register: friend, scene: "comparing great food", trap: "うえ ではなく おなじ トップクラス" }
       - { id: ph-the-check, en: "the check", ja: "おかいけい（でんぴょう）", match: "\\bthe check\\b", register: service, scene: "paying at a diner", trap: "アメリカでは bill より check" }
       - { id: ph-to-go, en: "to go", ja: "もちかえり", match: "\\bto go\\b", register: service, scene: "coffee for the road", trap: "for here or to go？ の to go" }
