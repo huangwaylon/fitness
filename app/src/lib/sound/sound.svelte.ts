@@ -136,9 +136,17 @@ function eng(): Engine {
 
 const musicOn = (s: SoundSettings): boolean => s.music && hasMusic();
 const anyOn = (s: SoundSettings): boolean => s.music || s.sfx;
-/** Music can be heard now: ミュージック on with files, not muted, unlocked, in front. Cut-ins start and files are
- *  fetched ahead only then. */
-const audible = (): boolean => musicOn(sound.settings) && sound.settings.volume > 0 && !!engine?.ctx && !document.hidden;
+/** ミュージック wants to sound: on with files, not muted. */
+const musicUp = (s: SoundSettings): boolean => musicOn(s) && s.volume > 0;
+/** Music can be heard now: musicUp, unlocked, in front. Cut-ins start and files are fetched ahead only then. */
+const audible = (): boolean => musicUp(sound.settings) && !!engine?.ctx && !document.hidden;
+/** A shared stage's song can be heard on this phone (musicUp, a tap made the context): reactive (sound.settings,
+ *  sound.unlocked), for a caption's 🔇. */
+export const musicHeard = (): boolean => musicUp(sound.settings) && sound.unlocked;
+/** A tap that picked a song wants to hear it: ミュージック on here if it's off (K.K.'s pick, a stereo's). */
+export function wantMusic(): void {
+  if (!sound.settings.music) setSound({ music: true });
+}
 
 /** Inside a user gesture: start audio (or wake it after iOS suspended it, or restart a track something outside
  *  paused or the browser refused to start) if any setting wants it (session.ts gestureAction). Any tap does it, on

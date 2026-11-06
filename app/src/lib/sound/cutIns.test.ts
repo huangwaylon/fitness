@@ -68,6 +68,23 @@ async function musicOn() {
   return { m, e: FakeEngine.last, AUDIO };
 }
 
+describe('a song picked, a song heard', () => {
+  it('wantMusic turns ミュージック on (a pick wants to hear it); musicHeard: on, not muted, unlocked (KKSlider’s 🔇)', async () => {
+    const m = await import('./sound.svelte.ts');
+    expect(m.sound.settings.music).toBe(false);
+    m.wantMusic();
+    expect(m.sound.settings.music).toBe(true);
+    m.sound.unlocked = false;
+    expect(m.musicHeard()).toBe(false);
+    m.sound.unlocked = true;
+    expect(m.musicHeard()).toBe(true);
+    m.setSound({ volume: 0 });
+    expect(m.musicHeard()).toBe(false);
+    m.setSound({ volume: 0.5, music: false });
+    expect(m.musicHeard()).toBe(false);
+  });
+});
+
 describe('cut-ins', () => {
   it('a cut-in asked for during the opening ends the opening (it would hide it), and plays', async () => {
     const { m, e } = await musicOn();

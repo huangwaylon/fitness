@@ -19,7 +19,7 @@
   import HhaLetter from './HhaLetter.svelte';
   import StereoPicker from './StereoPicker.svelte';
   import { isStereo } from './stereo.ts';
-  import { setSound, sound } from '#lib/sound/sound.svelte.ts';
+  import { wantMusic } from '#lib/sound/sound.svelte.ts';
   import { enterStage, hush, live, request, restage } from '#lib/sound/stage.svelte.ts';
   import type { KKTrack } from '#lib/sound/kk.ts';
   import Says from '../island/Says.svelte';
@@ -491,7 +491,7 @@
     const id = stereoPick;
     stereoPick = null;
     if (!id) return void cue('boop');
-    if (!sound.settings.music) setSound({ music: true });
+    wantMusic();
     request(stageSrc, song.id, { pc: id });
     stereoLast = song.id;
   }
