@@ -252,7 +252,7 @@ describe('units: compiled', () => {
   const withUnits = compile(CLIPS, WORDS, sources);
   const without = compile(CLIPS, WORDS, []);
 
-  it('app/content/units checks (the committed manifests: none until wave 1)', () => {
+  it('app/content/units checks (the committed manifests: wave 1’s, as written)', () => {
     expect(checkUnitSources(readUnits(), CLIPS).errors).toEqual([]);
   });
 

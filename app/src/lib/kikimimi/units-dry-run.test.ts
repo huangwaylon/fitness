@@ -1,7 +1,7 @@
 // The units' wave 1 and the もり re-tag dry run (docs/curriculum-units.md §11, §12; scripts/kikimimi-units-dry-run.ts):
 // wave 1's can-dos, read from the plan's §12, follow the template; the dry run (on the items' own tags, without the
-// audit: the same run anywhere) gives each level-4 item one place, a unit's or level-only, and writes no manifest.
-import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+// audit: the same run anywhere) gives each level-4 item one place, a unit's or level-only, and leaves app/content/units as it was.
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -34,6 +34,11 @@ describe('wave 1 (plan §9, §10, §12)', () => {
 });
 
 describe('the もり re-tag dry run', () => {
+  const UNITS = new URL('../../../content/units/', import.meta.url);
+  /** app/content/units as it stands (the committed manifests, wave 1's): the run must leave it as it was. */
+  const committed = (): string =>
+    existsSync(UNITS) ? readdirSync(UNITS).sort().map((f) => `${f}\n${readFileSync(new URL(f, UNITS), 'utf8')}`).join('\n') : '';
+  const before = committed();
   const out = mkdtempSync(join(tmpdir(), 'units-draft-'));
   const report = run(out, join(out, 'no-audit'));
   it('14 units, each level-4 item in one place: a unit’s, or level-only', () => {
@@ -43,7 +48,7 @@ describe('the もり re-tag dry run', () => {
   });
   it('drafts the manifests only where asked (never app/content/units), wave 1’s with their can-dos', () => {
     expect(readdirSync(out).filter((f) => f.endsWith('.yaml'))).toHaveLength(14);
-    expect(existsSync(new URL('../../../content/units/tr-hotel.yaml', import.meta.url))).toBe(false);
+    expect(committed()).toBe(before);
     rmSync(out, { recursive: true });
   });
 });

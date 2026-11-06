@@ -1,0 +1,598 @@
+# ともだちを あんない (tr-guide): wave 1, もり. A friend visiting Tokyo: the learner is the host, the friend's questions
+# and worries are the listening, the replies are the learner's lines (plan §12's writers' note). The main sound is dunno
+# ("I dunno if", "kinda worried": the worry said softly). Reused: r4-ginza (the dry run's one item); new: mu-/dmu- items.
+# きょうの ひとこと: "The thing is, I don't know if I can wait till dinner." (「じつは…」: ほんねの まえおき)
+
+schema: 1
+unit: tr-guide
+name: ともだちを あんない
+stage: mori
+domain: tabi
+also:
+  - machi
+host: gulliver
+scene: street
+sound: dunno
+cando:
+  who: とうきょうに きた ともだち
+  does: いきたい ところや こまっている ことを はなす
+  cond: えきや まちの ざつおんの なかで
+  catch: なにが したいかと なにが しんぱいか
+  en: I can follow a friend visiting Tokyo talking about where they want to go and what's confusing them, over station and street noise at natural speed, and catch what they want to do and what's worrying them.
+status: draft
+ph:
+  - { id: ph-dunno-if, en: I don't know if, match: \b(don't know|dunno) (if|whether|which|how|where|what)\b, ja: 〜か どうか わからない, register: friend, scene: showing a friend around, trap: dunno［ダノウ］＝don't know。迷いと心配のサイン }
+  - { id: ph-kinda-worried, en: kind of worried, match: \b(kind of|kinda|a bit|a little) (worried|nervous)\b, ja: ちょっと しんぱい, register: friend, scene: showing a friend around, trap: kind of でぼかしても本気の心配 }
+  - { id: ph-is-it-ok-to, en: is it OK to, match: \bis it (OK|okay|rude|weird) (to|if)\b, ja: 〜して いいの？, register: friend, scene: manners in Tokyo, trap: マナーの確認。体調の OK? ではない }
+  - { id: ph-worth-it, en: worth it, ja: いく かちが ある, register: friend, scene: planning the day, trap: わざわざ行く価値。値段の話とは限らない }
+  - { id: ph-ive-heard, en: I've heard, match: \bI('ve)? heard\b, ja: 〜って きいたけど, register: friend, scene: planning the day, trap: ネットやうわさの情報。本当か確かめたい }
+  - { id: ph-the-thing-is, en: the thing is, ja: じつは, register: friend, scene: showing a friend around, trap: The thing is の後が本当の困りごと }
+  - { id: ph-last-train, en: the last train, ja: しゅうでん, register: friend, scene: a night out, trap: last train＝終電。late train（遅い電車）と別 }
+  - { id: ph-up-for, en: up for, match: \bup for\b, ja: 〜したい・のりき, register: friend, scene: planning the day, trap: up for＝乗り気。up to（〜次第）と混同しない }
+items:
+  - id: dmu-which-exit
+    lv: 4
+    type: gist
+    en: Mate, this station is mental. Which exit are we meant to take? South exit. Then it's a ten-minute walk to the shrine. So, what else do you want to do while you're here? I've heard the fish market's worth it. The thing is, I don't know if I can get up that early. Most of it's open till lunch. We could go mid-morning. Sweet. Mid-morning I can do.
+    ja: 市場のために早起きできるか。
+    note: The thing is…の後が本音の心配
+    speaker: punchy
+    voice: au
+    cast: au-m1
+    choices: [ Getting up early for the market., Finding the south exit., Paying for the fish market. ]
+    answer: 0
+    focus: The thing is
+    ask: ともだちが しんぱいして いる ことは？
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ station ], features: [ dunno ] }
+    scene: platform
+    cond: &a2 { kind: station, level: light }
+    lines:
+      - who: punchy
+        cast: au-m1
+        en: Mate, this station is mental. Which exit are we meant to take?
+        ja: いやあ、この駅すごいな。どの出口から出ればいいの？
+      - who: gulliver
+        cast: us-m2
+        en: South exit. Then it's a ten-minute walk to the shrine. So, what else do you want to do while you're here?
+        ja: 南口。そこから神社まで歩いて10分。で、滞在中ほかに何したい？
+        tts: South exit. Then it's a ten-minute walk to the shrine. So, what else d'you wanna do while you're here?
+      - who: punchy
+        cast: au-m1
+        en: I've heard the fish market's worth it. The thing is, I don't know if I can get up that early.
+        ja: 魚市場は行く価値あるって聞いた。ただ、そんなに早く起きられるかなあ。
+        tts: I've heard the fish market's worth it. The thing is, I dunno if I can get up that early.
+      - who: gulliver
+        cast: us-m2
+        en: Most of it's open till lunch. We could go mid-morning.
+        ja: ほとんどの店はお昼までやってるよ。午前の中ごろに行けばいい。
+      - who: punchy
+        cast: au-m1
+        en: Sweet. Mid-morning I can do.
+        ja: いいね。午前の中ごろなら行ける。
+  - id: mu-r-is-it-ok-tip
+    lv: 4
+    type: reply
+    en: Is it OK to tip here, or is that weird?
+    ja: ここってチップ払っていいの？ それとも変？ →「いらないよ。ここでは誰もチップは払わないから。」
+    note: is it OK to＝マナーの確認。答えは「不要」
+    speaker: cherry
+    voice: au
+    cast: au-f1
+    choices: [ You don't need to. Nobody tips here., "Sure, take the tip on the left.", "No, I'm OK, thanks." ]
+    answer: 0
+    tags: { seed: 58, register: friend, pragmatic: literal }
+    scene: cafe
+  - id: mu-m-kinda-worried
+    lv: 4
+    type: mean
+    en: Everyone says the trains are easy, but I'm kind of worried about rush hour with my suitcase.
+    tts: Everyone says the trains are easy, but I'm kinda worried about rush hour with my suitcase.
+    ja: みんな電車は簡単って言うけど、スーツケース持ってラッシュはちょっと心配なんだよね。 → つまり、混んだ電車に大荷物で乗るのが不安。
+    note: kind of worried＝控えめでも本気の心配
+    speaker: bob
+    voice: us
+    cast: us-m3
+    choices: [ He's nervous about a packed train with his suitcase., He thinks the trains are easy., He wants to buy a new suitcase. ]
+    answer: 0
+    ask: つまり、どういうこと？
+    tags: { seed: 58, register: friend, pragmatic: hedge, features: [ kinda ] }
+    scene: platform
+  - id: mu-r-up-for
+    lv: 4
+    type: reply
+    en: I'm up for anything tonight. Just nothing too fancy, yeah?
+    ja: 今夜は何でもいいよ。あんまり高級じゃなければね。 →「じゃあ、駅の近くの居酒屋はどう？」
+    note: up for anything＝何でもOK。でも fancy は嫌
+    speaker: freya
+    voice: uk
+    cast: uk-f1
+    choices: [ How about an izakaya near the station?, "Sure, I'll pick you up at eight.", It's up the stairs on the right. ]
+    answer: 0
+    tags: { seed: 58, register: friend, pragmatic: literal }
+    scene: street
+  - id: mu-r-last-train
+    lv: 4
+    type: reply
+    en: Wait, what time's the last train back to the hotel?
+    ja: ちょっと待って、ホテルに戻る終電って何時？ →「12時ごろ。だからまだ2時間くらいあるよ。」
+    note: last train＝終電。late train と聞き違えない
+    speaker: kicks
+    voice: us
+    cast: us-m1
+    choices: [ "Around midnight, so we've got a couple of hours.", The late train's always busy., It's the last one on the left. ]
+    answer: 0
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ street ] }
+    scene: street
+  - id: dmu-ticket-machine
+    lv: 4
+    type: next
+    en: Right, this ramen place. Do I pay the chef, or what? Nope. You buy a ticket from the machine by the door, then hand it over. So that's a ticket first, then food? The thing is, it's all in Japanese, and I don't know which button's which.
+    ja: 大丈夫、教えるよ。何にする？
+    note: The thing is…の後が困りごと。助け舟を出す
+    speaker: apollo
+    voice: uk
+    cast: uk-m2
+    choices: [ "No worries, I'll show you. What do you fancy?", "Just pay the chef, then.", The button's by the door. ]
+    answer: 0
+    focus: The thing is
+    ask: つぎの ひとことは？
+    tags: { seed: 58, register: friend, pragmatic: literal, features: [ dunno ] }
+    scene: cafe
+    lines:
+      - who: apollo
+        cast: uk-m2
+        en: Right, this ramen place. Do I pay the chef, or what?
+        ja: さて、このラーメン屋。シェフに払うの？
+      - who: gulliver
+        cast: us-m2
+        en: Nope. You buy a ticket from the machine by the door, then hand it over.
+        ja: いや。入口の券売機で食券を買って、それを渡すんだ。
+      - who: apollo
+        cast: uk-m2
+        en: So that's a ticket first, then food? The thing is, it's all in Japanese, and I don't know which button's which.
+        ja: じゃあ先に食券、それからご飯ね？ ただ、全部日本語で、どのボタンが何かわからないんだよ。
+        tts: So that's a ticket first, then food? The thing is, it's all in Japanese, and I dunno which button's which.
+  - id: mu-m-worth-it
+    lv: 4
+    type: mean
+    en: Mount Fuji's like two hours away, right? Is it actually worth it if it's cloudy?
+    ja: 富士山って2時間くらいかかるんだよね？ 曇ってても本当に行く価値ある？ → つまり、山が見えないなら行く意味があるか迷っている。
+    note: worth it＝わざわざ行く価値。曇りが心配
+    speaker: faith
+    voice: au
+    cast: au-f1
+    choices: [ She's not sure it's worth going if she can't see it., She thinks Fuji is too expensive., She wants to go even if it's cloudy. ]
+    answer: 0
+    ask: つまり、どういうこと？
+    tags: { seed: 58, register: friend, pragmatic: hedge }
+    scene: street
+  - id: mu-r-ive-heard-cash
+    lv: 4
+    type: reply
+    en: I've heard loads of places are still cash only. Should I get some out?
+    ja: まだ現金しか使えない店がたくさんあるって聞いたけど。おろしておいた方がいい？ →「うん、少しね。コンビニのATMが一番楽だよ。」
+    note: I've heard＝聞いた話。確かめたい気持ち
+    speaker: al
+    voice: au
+    cast: au-m1
+    choices: [ "Yeah, a bit. Convenience store ATMs are easiest.", "I've heard of it, yeah.", "Only cash? Sorry, I've got cards." ]
+    answer: 0
+    tags: { seed: 58, register: friend, pragmatic: literal }
+    scene: street
+  - id: mu-m-shoes
+    lv: 4
+    type: mean
+    en: So at your friend's place, do I take my shoes off, or is that, like, just a temple thing?
+    ja: で、友だちの家では靴を脱ぐの？ それってお寺だけの話？ → つまり、どこで靴を脱ぐのかわからない。
+    note: just a … thing?＝そこだけの習慣？という確認
+    speaker: poppy
+    voice: us
+    cast: us-f1
+    choices: [ She isn't sure where she should take her shoes off., She thinks temples sell shoes., She wants to visit a temple first. ]
+    answer: 0
+    ask: つまり、どういうこと？
+    tags: { seed: 58, register: friend, pragmatic: literal }
+    scene: living
+  - id: mu-r-onsen
+    lv: 4
+    type: reply
+    en: Is it OK to go in the hot spring with a tattoo, or will they kick me out?
+    ja: タトゥーがあっても温泉に入っていいの？ 追い出されたりする？ →「OKなところもあるよ。どこか調べてみるね。」
+    note: kick me out＝追い出される。断られる心配
+    speaker: walker
+    voice: au
+    cast: au-m2
+    choices: [ Some places are fine. Let me check which ones., "Sure, they'll kick it out.", "It's hot, but you'll be OK." ]
+    answer: 0
+    tags: { seed: 58, register: friend, pragmatic: literal }
+  - id: dmu-bins
+    lv: 4
+    type: gist
+    en: OK, random question. Where are all the bins? I've been carrying this cup for an hour. Ha, yeah. There aren't many. Most people just take their trash home. Seriously? I'm kind of worried I'll get told off if I leave it somewhere. You won't. But there's a convenience store on the way. They've got bins. Oh, thank god. Lead the way.
+    ja: カップを捨てる場所が見つからない。
+    note: kind of worried＝けっこう心配。on the way＝途中に
+    speaker: cherry
+    voice: au
+    cast: au-f1
+    choices: [ She can't find anywhere to throw her cup away., She's lost her cup., She was told off for leaving rubbish. ]
+    answer: 0
+    focus: on the way
+    ask: ともだちが こまって いる ことは？
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ street ], features: [ kinda ] }
+    scene: street
+    cond: &a1 { kind: street, level: light }
+    lines:
+      - who: cherry
+        cast: au-f1
+        en: OK, random question. Where are all the bins? I've been carrying this cup for an hour.
+        ja: ねえ、急な質問。ゴミ箱ってどこにあるの？ このカップ、1時間持ち歩いてるんだけど。
+      - who: gulliver
+        cast: us-m2
+        en: Ha, yeah. There aren't many. Most people just take their trash home.
+        ja: はは、そうなんだよ。あんまりないんだ。みんな家に持って帰るの。
+      - who: cherry
+        cast: au-f1
+        en: Seriously? I'm kind of worried I'll get told off if I leave it somewhere.
+        ja: うそ？ どこかに置いたら怒られそうで、ちょっと心配。
+        tts: Seriously? I'm kinda worried I'll get told off if I leave it somewhere.
+      - who: gulliver
+        cast: us-m2
+        en: You won't. But there's a convenience store on the way. They've got bins.
+        ja: 怒られはしないけど、途中にコンビニがあるよ。ゴミ箱あるから。
+      - who: cherry
+        cast: au-f1
+        en: Oh, thank god. Lead the way.
+        ja: ああ、よかった。案内して。
+  - id: dmu-last-train
+    lv: 4
+    type: gist
+    en: This bar's brilliant. We don't have to go yet, do we? Well, the last train's at twelve twenty. After that it's a taxi, and they're not cheap. Sorry, did you say twelve twenty? How not cheap are we talking? Probably five thousand yen to your hotel. Right. I'm up for one more, then we run for the train.
+    ja: もう一杯飲んでから終電に乗る。
+    note: one more, then＝もう一杯だけ。タクシーは高い
+    speaker: raymond
+    voice: uk
+    cast: uk-m1
+    choices: [ "Have one more drink, then catch the last train.", Stay late and take a taxi., Leave now and walk to the hotel. ]
+    answer: 0
+    focus: one more, then we run for the train
+    ask: ふたりは これから どうする？
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ cafe ] }
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    lines:
+      - who: raymond
+        cast: uk-m1
+        en: This bar's brilliant. We don't have to go yet, do we?
+        ja: このバー最高だね。まだ帰らなくていいよね？
+      - who: gulliver
+        cast: us-m2
+        en: Well, the last train's at twelve twenty. After that it's a taxi, and they're not cheap.
+        ja: うーん、終電が12時20分。その後はタクシーで、安くないよ。
+      - who: raymond
+        cast: uk-m1
+        en: Sorry, did you say twelve twenty? How not cheap are we talking?
+        ja: ごめん、12時20分って言った？ 安くないって、どのくらい？
+      - who: gulliver
+        cast: us-m2
+        en: Probably five thousand yen to your hotel.
+        ja: ホテルまでたぶん5千円。
+      - who: raymond
+        cast: uk-m1
+        en: Right. I'm up for one more, then we run for the train.
+        ja: なるほど。じゃあもう一杯だけ飲んで、電車に走ろう。
+  - id: mu-r-pass
+    lv: 4
+    type: reply
+    en: I don't know if the seven-day rail pass is worth it. We're only leaving Tokyo once.
+    tts: I dunno if the seven-day rail pass is worth it. We're only leaving Tokyo once.
+    ja: 7日間のレールパス、元が取れるかわからなくて。東京を出るの1回だけだし。 →「たぶん取れないね。ICカードで十分だよ。」
+    note: I dunno if＝迷っている。1回だけなら元は取れない
+    speaker: sylvia
+    voice: au
+    cast: au-f1
+    choices: [ Probably not. Just get an IC card instead., "Yes, it's seven days.", "Once? I'll pass, thanks." ]
+    answer: 0
+    tags: { seed: 58, register: friend, pragmatic: hedge, features: [ dunno ] }
+    scene: platform
+  - id: mu-m-ive-heard-queue
+    lv: 4
+    type: mean
+    en: I've heard you have to queue for, like, two hours for that pancake place. I mean, they're pancakes.
+    ja: あのパンケーキの店、2時間くらい並ぶって聞いたよ。いや、たかがパンケーキでしょ。 → つまり、並ぶ価値はないと思っている。
+    note: I mean, they're pancakes＝たかがパンケーキ
+    speaker: lucky
+    voice: us
+    cast: us-m1
+    choices: [ He doesn't think the pancakes are worth the wait., He really wants to try the pancakes., He's already queued for two hours. ]
+    answer: 0
+    ask: つまり、どういうこと？
+    tags: { seed: 58, register: friend, pragmatic: attitude }
+    scene: street
+  - id: mu-n-meet
+    lv: 4
+    type: num
+    en: Let's meet at the Hachiko exit at 2:15. Actually, no, my train gets in at 2:30. Make it 2:45.
+    tts: Let's meet at the Hachiko exit at two fifteen. Actually, no, my train gets in at two thirty. Make it two forty-five.
+    ja: ハチ公口で2時15分に会おう。やっぱりダメ、電車が2時半に着くんだ。2時45分にしよう。
+    note: Actually, no の後が訂正。Make it が決定
+    speaker: poppy
+    voice: us
+    cast: us-f1
+    choices: [ 2:45, 2:15, 2:30 ]
+    answer: 0
+    ask: まちあわせは 何時？
+    tags: { seed: 58, register: friend, pragmatic: literal, features: [ numbers, self-repair ] }
+    scene: platform
+  - id: mu-r-is-it-rude
+    lv: 4
+    type: reply
+    en: Is it rude to talk on the phone on the train? Everyone's dead quiet.
+    ja: 電車で電話するのって失礼？ みんなシーンとしてるけど。 →「ちょっとね。メッセージにしたら？」
+    note: Is it rude to…?＝失礼かの確認。dead quiet＝静まり返る
+    speaker: tasha
+    voice: uk
+    cast: uk-f1
+    choices: [ Kind of. Maybe text them instead?, "Yes, the train is very quiet.", "No, I didn't call you." ]
+    answer: 0
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ station ] }
+    scene: platform
+  - id: mu-m-the-thing-is
+    lv: 4
+    type: mean
+    en: Sushi sounds great. The thing is, I'm not really a raw fish person.
+    ja: 寿司、いいね。ただ、生魚はあんまり得意じゃないんだ。 → つまり、生の魚は避けたい。
+    note: The thing is…の後が本音。生魚は苦手
+    speaker: genji
+    voice: au
+    cast: au-m1
+    choices: [ He'd rather not eat raw fish., He's excited to try raw fish., He wants to cook the fish himself. ]
+    answer: 0
+    ask: つまり、どういうこと？
+    tags: { seed: 58, register: friend, pragmatic: hedge }
+    scene: street
+  - id: mu-w-dunno-which
+    lv: 4
+    type: word
+    en: I don't know which line we need.
+    tts: I dunno which line we need.
+    ja: どの線に乗ればいいのかわからない。
+    note: dunno［ダノウ］＝don't know。didn't と区別
+    speaker: punchy
+    voice: au
+    cast: au-m1
+    choices: [ I don't know, I didn't know, I do know ]
+    answer: 0
+    focus: I don't know
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ station ], features: [ dunno ] }
+    scene: platform
+  - id: mu-w-wanna-go
+    lv: 4
+    type: word
+    en: Do you want to go to Asakusa tomorrow?
+    tts: D'you wanna go to Asakusa tomorrow?
+    ja: 明日、浅草に行きたい？
+    note: d'you wanna＝Do you want to。have to と区別
+    speaker: cherry
+    voice: au
+    cast: au-f1
+    choices: [ Do you want to, Do you have to, Did you want to ]
+    answer: 0
+    focus: Do you want to
+    tags: { seed: 58, register: friend, pragmatic: literal, features: [ wanna ] }
+  - id: mu-w-kinda-nervous
+    lv: 4
+    type: word
+    en: I'm kind of nervous about getting lost.
+    tts: I'm kinda nervous about getting lost.
+    ja: 迷子になるのがちょっと不安。
+    note: kinda［カインダ］＝kind of。ぼかしても心配
+    speaker: bob
+    voice: us
+    cast: us-m3
+    choices: [ kind of, not that, way too ]
+    answer: 0
+    focus: kind of
+    tags: { seed: 58, register: friend, pragmatic: hedge, features: [ kinda ] }
+  - id: mu-w-worth-it
+    lv: 4
+    type: word
+    en: Is it worth it, or is it just for tourists?
+    ja: 行く価値ある？ それとも観光客向けなだけ？
+    note: worth it［ワーシット］。worse（もっと悪い）と区別
+    speaker: faith
+    voice: au
+    cast: au-f1
+    choices: [ worth it, worth going, worse ]
+    answer: 0
+    focus: worth it
+    tags: { seed: 58, register: friend, pragmatic: hedge }
+  - id: mu-w-last-train
+    lv: 4
+    type: word
+    en: Is this the last train, or is there one after?
+    ja: これが終電？ それとも後にまだある？
+    note: last と fast。終電かどうかが大事
+    speaker: kicks
+    voice: us
+    cast: us-m1
+    choices: [ last train, fast train, next train ]
+    answer: 0
+    focus: last train
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ station ] }
+    scene: platform
+  - id: mu-w-heard-cant
+    lv: 4
+    type: word
+    en: I've heard you can't eat while you're walking.
+    tts: I've heard ya can't eat while you're walkin'.
+    ja: 歩きながら食べちゃダメって聞いたけど。
+    note: AU の can't は［カーント］。can と逆の意味
+    speaker: al
+    voice: au
+    cast: au-m1
+    choices: [ can't, can, should ]
+    answer: 0
+    focus: can't
+    tags: { seed: 58, register: friend, pragmatic: literal, features: [ can-cant ] }
+  - id: dmu-wrong-train
+    lv: 4
+    type: gist
+    en: Hey, it's me. I think I'm on the wrong train. It says Ikebukuro? Oh no. Which way are you going? Did you get on at platform two? I don't know. I just got on the first one that came. Sorry, it's really loud. Could you say that again? I said, get off at the next stop and cross to the other side. Got it. Next stop, other side. I'll call you when I'm on.
+    ja: 次の駅で降りて、反対方向に乗る。
+    note: cross to the other side＝反対ホームへ
+    speaker: walker
+    voice: au
+    cast: au-m2
+    choices: [ Get off at the next stop and go back the other way., Stay on until Ikebukuro., Call back from platform two. ]
+    answer: 0
+    focus: cross to the other side
+    ask: ともだちは これから どうする？
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ phone, station ], features: [ dunno ] }
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: station }
+    lines:
+      - who: walker
+        cast: au-m2
+        en: Hey, it's me. I think I'm on the wrong train. It says Ikebukuro?
+        ja: もしもし、俺。たぶん違う電車に乗ってる。池袋って出てるんだけど？
+      - who: gulliver
+        cast: us-m2
+        en: Oh no. Which way are you going? Did you get on at platform two?
+        ja: あらら。どっち方面？ 2番線で乗った？
+      - who: walker
+        cast: au-m2
+        en: I don't know. I just got on the first one that came. Sorry, it's really loud. Could you say that again?
+        ja: わかんない。最初に来たのに乗っちゃった。ごめん、すごくうるさくて。もう一回言って？
+        tts: I dunno. I just got on the first one that came. Sorry, it's really loud. Could you say that again?
+      - who: gulliver
+        cast: us-m2
+        en: I said, get off at the next stop and cross to the other side.
+        ja: 次の駅で降りて、反対側のホームに渡ってって言ったの。
+      - who: walker
+        cast: au-m2
+        en: Got it. Next stop, other side. I'll call you when I'm on.
+        ja: 了解。次の駅、反対側ね。乗ったら電話する。
+  - id: mu-r-station-loud
+    lv: 4
+    type: reply
+    en: Sorry, it's so loud in here! Did you say Exit A2 or B2?
+    tts: Sorry, it's so loud in here! Did you say Exit A two or B two?
+    ja: ごめん、ここすごくうるさい！ 出口A2って言った？ B2？ →「B2。黄色い案内に沿って。」
+    note: Did you say A or B?＝ききかえし。片方を答える
+    speaker: pekoe
+    voice: us
+    cast: us-f3
+    choices: [ B2. Follow the yellow signs., "Yes, it's too loud.", "Two of us, yeah." ]
+    answer: 0
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ station ] }
+    scene: platform
+    cond: { kind: station, level: heavy }
+  - id: mu-m-crowds
+    lv: 4
+    type: mean
+    en: Shibuya Crossing's cool and all, but honestly, crowds aren't really my thing.
+    ja: 渋谷のスクランブル交差点はいいんだけど、正直、人混みはちょっと苦手で。 → つまり、混んだ所は避けたい。
+    note: cool and all, but＝悪くないけど…本音は後半
+    speaker: sterling
+    voice: us
+    cast: us-m1
+    choices: [ He'd rather avoid the crowded crossing., He thinks the crossing isn't busy., He wants to stay at the crossing all day. ]
+    answer: 0
+    ask: つまり、どういうこと？
+    tags: { seed: 58, register: friend, pragmatic: hedge, conditions: [ street ] }
+    scene: street
+    cond: { kind: street, level: heavy }
+  - id: mu-r-fast-plans
+    lv: 4
+    type: reply
+    en: So what's the plan? I'm up for a temple, a bit of shopping, then food. Mostly food.
+    ja: で、予定は？ お寺と、ちょっと買い物と、それからご飯。主にご飯。 →「じゃあ浅草だね。お寺の後で食べ歩き。」
+    note: up for＝したい。最後の Mostly food が本音
+    speaker: apollo
+    voice: uk
+    cast: uk-m2
+    choices: [ "Asakusa, then. Temple first, street food after.", "I'm up, yeah. I slept well.", "Mostly, yes. I've got a plan." ]
+    answer: 0
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ street ] }
+    scene: street
+    cond: *a1
+  - id: mu-n-ic-card
+    lv: 4
+    type: num
+    en: I topped up ¥1,000, but it says I've only got ¥320 left?
+    tts: I topped up a thousand yen, but it says I've only got three hundred and twenty left?
+    ja: 千円チャージしたのに、残り320円って出てる？
+    note: 残高は three hundred and twenty。千円は入金額
+    speaker: faith
+    voice: au
+    cast: au-f1
+    choices: [ ¥320, "¥1,000", ¥680 ]
+    answer: 0
+    ask: カードの のこりは？
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ station ], features: [ numbers ] }
+    scene: platform
+    cond: *a2
+  - id: dmu-jetlag
+    lv: 4
+    type: gist
+    en: Morning! Sorry, I'm a bit of a zombie. The jet lag's killing me. No worries. I mean, we can take it easy today. Coffee first? Yes, please. The thing is, I really want to see the temple, but I don't know if I'll last a whole day. Then let's do the temple this morning and have a nap after lunch. Legend. That's the plan, then.
+    ja: 午前にお寺、午後は休む。
+    note: I dunno if I'll last＝体力が心配
+    speaker: punchy
+    voice: au
+    cast: au-m1
+    choices: [ "The temple in the morning, then a rest.", A full day of sightseeing., "Sleep all morning, then the temple." ]
+    answer: 0
+    focus: have a nap after lunch
+    ask: きょうの よていは？
+    tags: { seed: 58, register: friend, pragmatic: literal, conditions: [ cafe ], features: [ dunno, wanna ] }
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    lines:
+      - who: punchy
+        cast: au-m1
+        en: Morning! Sorry, I'm a bit of a zombie. The jet lag's killing me.
+        ja: おはよう！ ごめん、ゾンビ状態。時差ボケがきつくて。
+      - who: gulliver
+        cast: us-m2
+        en: No worries. I mean, we can take it easy today. Coffee first?
+        ja: 気にしないで。っていうか、今日はのんびりいこう。まずコーヒー？
+      - who: punchy
+        cast: au-m1
+        en: Yes, please. The thing is, I really want to see the temple, but I don't know if I'll last a whole day.
+        ja: お願い。ただ、お寺はどうしても見たいんだけど、丸一日もつかわからない。
+        tts: Yes, please. The thing is, I really wanna see the temple, but I dunno if I'll last a whole day.
+      - who: gulliver
+        cast: us-m2
+        en: Then let's do the temple this morning and have a nap after lunch.
+        ja: じゃあ午前中にお寺に行って、お昼の後に昼寝しよう。
+      - who: punchy
+        cast: au-m1
+        en: Legend. That's the plan, then.
+        ja: 最高。それでいこう。
+lessons:
+  v: 1
+  deai: [ dmu-which-exit, r4-ginza, mu-r-is-it-ok-tip, mu-m-kinda-worried, mu-r-up-for, mu-r-last-train ]
+  bamen: [ dmu-ticket-machine, mu-m-worth-it, mu-r-ive-heard-cash, mu-m-shoes, mu-r-onsen, dmu-bins ]
+  check: [ dmu-last-train, mu-r-pass, mu-m-ive-heard-queue, mu-n-meet, mu-r-is-it-rude, mu-m-the-thing-is ]
+  oto: [ mu-w-dunno-which, mu-w-wanna-go, mu-w-kinda-nervous, mu-w-worth-it, mu-w-last-train, mu-w-heard-cant ]
+  jissen: [ dmu-wrong-train, mu-r-station-loud, mu-m-crowds, mu-r-fast-plans, mu-n-ic-card, dmu-jetlag ]
+tiers:
+  dmu-which-exit:
+    easy:
+      choices: [ Getting up early., Finding the exit. ]
+      answer: 0
+    hard:
+      choices: [ Getting up early for the market., Finding the south exit., Paying for the fish market., Walking ten minutes to the shrine. ]
+      answer: 0
+  mu-r-is-it-ok-tip:
+    easy:
+      choices: [ No need. Nobody tips here., Take the tip on the left. ]
+      answer: 0
+  mu-m-worth-it:
+    easy:
+      choices: [ She may not go if it's cloudy., She will go for sure. ]
+      answer: 0
+    hard:
+      choices: [ She's not sure it's worth going if she can't see it., She thinks Fuji is too expensive., She wants to go even if it's cloudy., She thinks two hours is too far in any weather. ]
+      answer: 0
