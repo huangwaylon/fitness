@@ -27,11 +27,12 @@ const REACH_MIN = 11, REACH_VAR = 11, DRAIN = 3, APPROACH = 16;
 /** The wet sand's drying (s, the time constant). */
 const DRY = 1.6;
 
-/** The coast's phase at its point (x, z) on the shoreline (0 … 1). */
-export const phaseAt = (x: number, z: number): number => {
-  const p = 0.0016 * (x * 0.6 + z) + 0.14 * Math.sin(x * 0.019 + 1.3) + 0.12 * Math.sin(z * 0.015 + x * 0.007);
-  return p - Math.floor(p);
-};
+/** The coast's phase at its point (x, z) on the shoreline (cycles), unwrapped: smooth all along the coast. Its whole
+ *  part counts waves (a cycle's index is the clock's plus it), so it is never wrapped to 0 … 1: a wrap there stepped the
+ *  index, and with it the wave's reach, across a fixed line on the beach (the wave's sheet and foam cut square, a hard
+ *  line from the sand out into the water, the user's 2026-11-06 report). */
+export const phaseAt = (x: number, z: number): number =>
+  0.0016 * (x * 0.6 + z) + 0.14 * Math.sin(x * 0.019 + 1.3) + 0.12 * Math.sin(z * 0.015 + x * 0.007);
 /** Wave `i`'s reach (u) at the coast point (x, z). */
 const reachOf = (i: number, x: number, z: number): number =>
   REACH_MIN + REACH_VAR * (0.5 + 0.5 * Math.sin((i - Math.floor(i / WAVES) * WAVES) * 2.4 + x * 0.013 + z * 0.011));
@@ -131,7 +132,7 @@ const float SW_PERIOD = ${PERIOD.toFixed(1)}, SW_WATERLINE = ${WATERLINE};
 const float SW_UP = ${UP}, SW_DOWN = ${DOWN};
 const float SW_DRAIN = ${DRAIN.toFixed(1)}, SW_APPROACH = ${APPROACH.toFixed(1)}, SW_DRY = ${DRY}, SW_WAVES = ${WAVES.toFixed(1)};
 float swPhase(vec2 c) {
-  return fract(0.0016 * (c.x * 0.6 + c.y) + 0.14 * sin(c.x * 0.019 + 1.3) + 0.12 * sin(c.y * 0.015 + c.x * 0.007));
+  return 0.0016 * (c.x * 0.6 + c.y) + 0.14 * sin(c.x * 0.019 + 1.3) + 0.12 * sin(c.y * 0.015 + c.x * 0.007);
 }
 float swReach(float i, vec2 c) { return ${REACH_MIN.toFixed(1)} + ${REACH_VAR.toFixed(1)} * (0.5 + 0.5 * sin(mod(i, SW_WAVES) * 2.4 + c.x * 0.013 + c.y * 0.011)); }
 float swFrontAt(float u, float reach) {
