@@ -3,6 +3,7 @@
 // 🗑 with とりけす, a category's NH confirm), リセット (mine only), the guest's own only, two tabs in step (the demo's tabs
 // share the record's rows through localStorage, as phones share the record), and 「じゅんび OK！」 once.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
+import { fromMenu, hudMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';
@@ -163,4 +164,20 @@ test('all packed: Orville’s 「じゅんび OK！」, celebrated once', async 
   // one unticked: no stamp
   await tick(a, 'se-0-0').click();
   await expect(a.locator('[data-pack-stamp]')).toHaveCount(0);
+});
+
+test('せってい → りょこう: km / mi, kept on this phone', async ({ page }) => {
+  await page.goto(`?demo&date=${DATE}`);
+  await expect(hudMenu(page)).toBeVisible();
+  await fromMenu(page, 'settings');
+  const sec = page.locator('dialog[open] [data-travel-section]');
+  await expect(sec.locator('[data-units="km"]')).toHaveAttribute('aria-pressed', 'true');
+  await sec.locator('[data-units="mi"]').click();
+  await expect(sec.locator('[data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(await page.evaluate(() => localStorage.getItem('island.travel.units'))).toBe('mi');
+  if (process.env.SHOTS) await sec.screenshot({ path: `${process.env.SHOTS}/settings-units.png` });
+  await page.reload();
+  await expect(hudMenu(page)).toBeVisible();
+  await fromMenu(page, 'settings');
+  await expect(page.locator('dialog[open] [data-travel-section] [data-units="mi"]')).toHaveAttribute('aria-pressed', 'true');
 });
