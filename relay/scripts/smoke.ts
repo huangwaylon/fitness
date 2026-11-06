@@ -296,7 +296,7 @@ if (KEY_C) {
   g.send({ kind: 'walk', to: [100, 900] });
   check((await ga.next((m) => m.kind === 'walk' && m.who === 'G')).who === 'G' && (await gb.next((m) => m.kind === 'walk' && m.who === 'G')).who === 'G', "the guest's walk reaches both members");
   g.send({ kind: 'world', op: 'watered', id: 'fl:1:2', c: Date.now() });
-  check((await g.next((m) => m.kind === 'ack')).ok === false, "a world op from the guest is refused");
+  check((await g.next((m) => m.kind === 'ack')).ok === true, "a world op from the guest is taken (it plays the island as a member: 527ee9c6)");
   const api = (key: string, action: string, extra: object = {}) =>
     fetch(new URL('/api', http), { method: 'POST', headers: { Origin: ORIGIN }, body: JSON.stringify({ key, action, ...extra }) }).then((r) => r.json() as Promise<Record<string, unknown>>);
   const snap = await api(KEY_C, 'snapshot');
