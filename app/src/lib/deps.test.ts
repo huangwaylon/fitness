@@ -34,9 +34,10 @@ const ALLOW: Record<string, string[]> = {
   // ききみみ クイズ (docs/kikimimi.md): the session's pure state machine over the quiz intent (sync: the Live's type), the
   // bank naming roster ids (a type), the deck seeded by random
   kikimimi: ['types', 'contract', 'sync', 'random', 'villagers'],
-  // りょこう (docs/travel.md): the guides' data and its tokens, pure
-  travel: [],
-  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random']
+  // りょこう (docs/travel.md): the guides' data and its tokens, pure; the packing seed is the relay contract's type
+  // (contract/pack.ts PackSeed)
+  travel: ['contract'],
+  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel']
 };
 
 function files(dir: string): string[] {
