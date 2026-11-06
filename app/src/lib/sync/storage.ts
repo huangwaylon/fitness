@@ -131,9 +131,6 @@ export const DEVICE = {
   kikimimiRecent: 'island.kikimimiRecent',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
-  /** localStorage: the board's day this phone last showed けっこんしき's greeting (パニエル's line: the day's first opening
-   *  only, firstOn; components/wedding/WeddingSheet.svelte). */
-  weddingGreet: 'island.weddingGreet',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
   weddingDone: 'island.weddingDone'
 } as const;

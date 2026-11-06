@@ -6,7 +6,7 @@ app: the HUD menu's けっこんしき pill.
 ## Decisions (the user, 2026-11-06)
 
 - The two members edit; the guest reads only (server-enforced). No key-less share link for now.
-- Host: Harvey (パニエル), with NH's wedding arch (`static/art/deco/wedding-arch.webp`).
+- No host villager on the board (the redesign, 2026-11-06: Harvey and the arch removed; normal Japanese labels).
 - The leaf menu has six pills: ベル, ずかん, えいご, りょこう, けっこんしき, せってい.
 - No ベル tie-in.
 - One wedding date: the board's `date` setting drives the island's countdown, its wedding-day events and music
@@ -16,7 +16,7 @@ app: the HUD menu's けっこんしき pill.
 ## What it does
 
 - **Plan:** tasks with a due date (required on a new one) and an optional start, a category, a one-level checklist
-  (no dates). Filters すべて / すぎた / もうすぐ (≤ 14 days) / あとで / おわった with counts; overdue and こんげつ first,
+  (no dates). Filters すべて / 期限切れ / もうすぐ (≤ 14 days) / あとで / 完了 with counts; overdue and 今月 first,
   then a group per month (`done / total`, the wedding's month marked), undated last.
 - **Progress:** a task's percent (its checklist's share, or done / not), the board's the mean over tasks; the
   countdown in days in the board's time zone (default Asia/Tokyo).
@@ -27,12 +27,20 @@ app: the HUD menu's けっこんしき pill.
   starter templates.
 
 UI (`components/wedding/`): the sheet is its own chunk, a `lazySheet` (`wedding/open.svelte.ts`, like りょこう's:
-offline before it's cached, a banner with もういちど); the island is paused under it. ⚙ せってい and ＋ (a new task) in the title bar, a member's only; a task opens as a level
-with ‹ (back where the plan was scrolled). Delete is 🗑 けす in the task's ✎ (a checklist item's 🗑 there too), with the
-banner's とりけす. The note's draft is held in memory on the phone (`notepad.svelte.ts`): it outlives a level, a tab
-and ✕. Two crossed saves show both versions, each under its writer (mine marked あなた), with これに する (とりけす on its
-banner) and ふたつ あわせる (both in the editor). パニエル says one line on the day's first opening on that phone. The guest's sheet has
-no ✓, ✎, ＋ or ⚙. Rules: `lib/wedding/progress.ts`, `time.ts` (ported from the old board); the store:
+offline before it's cached, a banner with もういちど); the island is paused under it. Redesigned 2026-11-06 in the quiet
+kit (`components/quiet/`, following the time of day): the title bar (けっこんしき, ✕), a bottom tab bar プラン / メモ, ＋
+over it (a member's). プラン: our photo as a band (`static/wedding/hero.webp`: the names, the day · venue, 「あと336日」,
+a member's ⚙ 設定), the strip (the rose ring, the percent, 「8件中2件完了」), one row of filter chips (すべて · 期限切れ ·
+もうすぐ · あとで · 完了), pinned month headings (期限切れ coral, 今月 green, the year only where it changes) over one card
+per month, each row the old board's tcard (tick, month over day, title, category tag, checklist count, the relative
+due). A row opens in place: its checklist ticks, who finished it (muted, 「うめ が完了」; the old Sheet's ticks 「まえの
+ボードで おわった」), 編集 / 完了. ＋ and 編集 open a bottom sheet (キャンセル / 保存: title, start, due, category, the
+checklist renamed / removed / added, 削除 with the banner's とりけす). メモ is a document (16/1.65); 編集 in the title bar
+turns it into the field with 見出し / 太字 / リスト / リンク and 完了 at its foot, over the keyboard. The note's draft is
+held in memory on the phone (`notepad.svelte.ts`): it outlives a level, a tab and ✕. Two crossed saves show both
+versions, each under its writer (mine marked あなた), with これに する (とりけす on its banner) and ふたつ あわせる (both
+in the editor). 設定 is a grouped list (a level with ‹). The guest's sheet has no tick, 編集, ＋ or ⚙. Rules:
+`lib/wedding/progress.ts`, `time/zone.ts` (ported from the old board); the store:
 `board.svelte.ts`; the plan's view rules: `view.ts`. The demo (`?demo`, `?demo&as=G`) draws an invented board
 (`store/demo/rows.ts`, its day the fallback 2027-10-08), driven by `e2e/wedding-board.spec.ts`.
 
