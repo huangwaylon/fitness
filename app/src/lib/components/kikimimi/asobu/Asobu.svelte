@@ -13,7 +13,7 @@
   let { path, onpath, onmode }: { path: Path | null; onpath: () => void; onmode: (m: ModeId) => void } = $props();
   const report = $derived(currentReport());
   const groups = $derived(shelves({ levels: LEVELS, ladder: LADDER_OK, review: !!report?.games.length, story: STORY_OK }));
-  const ICON: Record<ModeId, string> = { quiz: '💬', ladder: '🪜', review: '🔁', announce: '📢', story: '🌙' };
+  const ICON: Record<ModeId, string> = { quiz: '💬', ladder: '🪜', review: '🔁', announce: '📢', story: '🌙', taikai: '🏆' };
 </script>
 
 <div class="asobu" data-kiki-page="asobu">

@@ -11,6 +11,9 @@ import type { RoundIn, RoundOut } from '../../round/wire.ts';
 import { lessonOpts } from '../lesson/def.ts';
 import type { Lesson, Tier } from '../../lesson.ts';
 import { quizOpts } from './def.ts';
+import { taikaiOpts } from '../taikai/def.ts';
+import { OFFER_MAX } from '../taikai/pick.ts';
+import type { AnswerValue } from '../../round/types.ts';
 import { quizView, type QuizView } from './view.ts';
 
 /** A quiz lobby's settings (each optional in `configure`). */
@@ -49,10 +52,29 @@ export class QuizRounds implements Wired {
     return this.round.open({ gm: o.ladder ? 'ladder' : 'quiz', o: quizOpts.encode({ lv: o.lv, timer: o.timer ?? 30 }), same: o.same, vs: o.vs }, now);
   }
 
+  /** Open しずえの しゅうまつ たいかい (games/taikai/), mine, on this phone only until `invite`: at my tier, its deck the
+   *  pick's `ids` (none yet: `pick` sends them once the seed is known). `offered`: how many misses of mine are in it,
+   *  for the lobby's list (the options' third: the others' come as their `ev` offers). */
+  taikai(o: { tier: number; timer: QuizTimer; vs?: boolean; ids?: readonly number[]; offered?: number }, now: number): RoundOut[] {
+    return this.round.open({ gm: 'taikai', o: [...taikaiOpts.encode(o), Math.min(OFFER_MAX, o.offered ?? 0)], vs: o.vs, ids: o.ids ?? [] }, now);
+  }
+  /** The tournament's host picks its deck again (the offers heard): the open's ids. */
+  pick(ids: readonly number[], now: number): RoundOut[] {
+    return this.round.configure({ ids }, now);
+  }
+  /** A game event of mine (the tournament's offered misses). */
+  event(i: number, e: number, x: number | undefined, now: number): RoundOut[] {
+    return this.round.event(i, e, x, now);
+  }
+
   /** The host changes its lobby's level, おなじへや, たいせん, the mode (スピード はしご) or こたえる じかん (a lesson's
-   *  stays a lesson, its level and timer the lobby's). */
+   *  stays a lesson, its level and timer the lobby's; the tournament's keeps its tier). */
   configure(p: Partial<QuizSettings>, now: number): RoundOut[] {
     const v = this.round.view(now);
+    if (v.gm === 'taikai') {
+      const t = taikaiOpts.decode(v.o);
+      return t ? this.round.configure({ o: [...taikaiOpts.encode({ ...t, timer: p.timer ?? t.timer }), ...v.o.slice(2)], same: p.same, vs: p.vs }, now) : [];
+    }
     const cur = quizOpts.decode(v.o);
     if (!v.gm || !cur) return [];
     const gm = p.ladder === true ? 'ladder' : p.ladder === false && v.gm === 'ladder' ? 'quiz' : v.gm;
@@ -96,8 +118,9 @@ export class QuizRounds implements Wired {
   go(now: number): RoundOut[] {
     return this.round.go(now);
   }
-  /** My choice `k` (one tap, final). `rp`: I replayed or slowed it first (or how many times). */
-  answer(k: number, rp: boolean | number, now: number): RoundOut[] {
+  /** My choice `k` (one tap, final; the tournament's wager `[choice, bet / 10]`). `rp`: I replayed or slowed it first
+   *  (or how many times). */
+  answer(k: AnswerValue, rp: boolean | number, now: number): RoundOut[] {
     return this.round.answer(k, Number(rp), now);
   }
   next(now: number): RoundOut[] {

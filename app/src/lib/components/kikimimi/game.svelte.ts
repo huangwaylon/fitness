@@ -21,13 +21,18 @@ import type { ListenRow } from '#lib/contract/listen.ts';
 import { GAMES, chunksOf, itemsOf, pinDeck, usePractice } from './decks.ts';
 import { deck } from '#lib/kikimimi/deck.ts';
 import { agesOf, freshSeed, seedWith } from '#lib/kikimimi/recent.ts';
-import { recentGames } from './progress.svelte.ts';
+import { currentAnswers, recentGames } from './progress.svelte.ts';
+import { tierOf, wagerAnswer } from '#lib/kikimimi/games/taikai/def.ts';
+import { offerEvents } from '#lib/kikimimi/games/taikai/pick.ts';
+import { taikaiLevels, taikaiOffer, taikaiOutcome, taikaiPickFor } from '#lib/kikimimi/games/taikai/source.ts';
 import { ladders, unitPart, type Unit } from '#lib/kikimimi/pool.ts';
 import { lessonDeck, type Lesson, type Tier, type UnitPlay } from '#lib/kikimimi/lesson.ts';
 import { ChunkQueue } from './chunkQueue.ts';
 import { ClipPlayer } from './clipPlayer.svelte.ts';
 import { GameRecorder } from './recorder.ts';
 import type { Stage } from '#lib/kikimimi/stages.ts';
+import { now as sceneNow } from '#lib/time/clock.ts';
+import { localDateAt } from '#lib/contract/tokyo.ts';
 
 /** A スピード はしご rung below its ladder's top: its reveal keeps the line hidden and silent (no replay, no transcript),
  *  so the next, faster rung is a listen of its own. */
@@ -46,7 +51,10 @@ function seedFor({ gm, o, flags, random }: SeedAsk): number {
 }
 
 /** What a heard op needs before the session takes it: an `open`, its deck's chunk. */
-export const needs = (m: RoundIn | null): Unit[] => (m?.op === 'open' ? chunksOf(m.gm, m.o, m.u) : []);
+export const needs = (m: RoundIn | null): Unit[] => (m?.op === 'open' ? chunksOf(m.gm, m.o, m.u, m.ids) : []);
+
+/** The tournament's wager round now (its last: a bet, then the choice). */
+export const isWager = (v: Pick<QuizView, 'gm' | 'i' | 'n'>): boolean => v.gm === 'taikai' && v.n > 1 && v.i === v.n - 1;
 
 /** The longest between wake-ups (the host's beacon is every 3 s: round/session.ts WINDOWS.beacon). */
 const WAKE = 3000;
@@ -81,6 +89,8 @@ export class QuizGame {
    *  which shows its intro card till はじめる; a co-op lesson's host's pick, as heard, on the other phones. Null: a
    *  quiz. */
   lesson = $state.raw<{ unit: UnitPlay; lesson: Lesson; tier?: Tier; recheck: boolean } | null>(null);
+  /** The tournament's wager: my bet (10-100 of the round's chips), picked before the choice; null: none yet. */
+  bet = $state<number | null>(null);
 
   readonly me: Who;
   readonly #link: RoundLink;
@@ -99,10 +109,20 @@ export class QuizGame {
   readonly #tierOf: (stage: Stage) => Tier | undefined;
   /** The co-op lesson my tier was last sent for (`g:u:tr`). */
   #tiered = '';
+  /** My comfortable level (progress.ts Stats.level; null: unmeasured), the tournament's tier. */
+  readonly #level: () => number | null;
+  /** The tournament: the lobby state its deck was last picked for (the host's), the game my offer was sent in (a
+   *  player's). */
+  #picked = '';
+  #offered = '';
 
   /** `wire`: how this phone sends (round/wire.ts WIRE; the e2e's `?wire=quiz` is an 8b phone's). */
-  constructor(o: { live: Live | null; me: Who; fast?: boolean; wire?: WireMode; heard?: readonly GameIn[]; record?: (row: ListenRow) => void; tierOf?: (stage: Stage) => Tier | undefined }) {
+  constructor(o: {
+    live: Live | null; me: Who; fast?: boolean; wire?: WireMode; heard?: readonly GameIn[]; record?: (row: ListenRow) => void; tierOf?: (stage: Stage) => Tier | undefined;
+    level?: () => number | null;
+  }) {
     this.me = o.me;
+    this.#level = o.level ?? (() => null);
     this.#record = o.record;
     this.#tierOf = o.tierOf ?? (() => undefined);
     this.#link = o.live ? roundLink(o.live, o.wire) : soloLink();
@@ -170,6 +190,29 @@ export class QuizGame {
       this.#act((s, now) => s.unlesson(now));
     });
   }
+  /** しずえの しゅうまつ たいかい (games/taikai/): a lobby of mine, kept alone till さそう, at my tier; its deck my week's
+   *  misses and fillers, picked again as the others' offers come (#taikaiOf). */
+  openTaikai(o: { vs?: boolean; timer?: QuizTimer } = {}): void {
+    this.#queue.then(() => [], () => {
+      this.practicing = false;
+      this.lesson = null;
+      this.#picked = '';
+      this.#act((s, now) => s.taikai({ tier: this.taikaiTier, timer: o.timer ?? 30, vs: o.vs, offered: this.taikaiOffer().length }, now));
+    });
+  }
+  /** My tier for the tournament (my comfortable level's place). */
+  get taikaiTier(): number {
+    return tierOf(this.#level());
+  }
+  /** My offer to the tournament: my misses of its week, numbered (≤ 4). Its weekend is the scene clock's, as the hub's
+   *  banner (a `?date=` preview moves it). */
+  taikaiOffer(): number[] {
+    return taikaiOffer(currentAnswers(), sceneNow().getTime());
+  }
+  /** The wager's bet (before the choice). */
+  setBet(b: number): void {
+    if (isWager(this.view) && !this.view.answers[this.view.i]) this.bet = b;
+  }
   /** みんなを さそう: my lobby announced to everyone here. */
   invite(): void {
     this.#queue.then(() => [], () => this.#act((s, now) => s.invite(now)));
@@ -182,8 +225,9 @@ export class QuizGame {
   join(g?: string): void {
     this.#queue.then(() => [], () =>
       this.#act((s, now) => {
-        const inv = s.view(now).invite, part = inv?.gm === 'lesson' && inv.u && (g === undefined || inv.g === g) ? unitPart(inv.u) : undefined;
-        return s.join(now, g, part ? tierIndex(this.#tierOf(part.unit.stage)) : undefined);
+        const inv = s.view(now).invite, it = inv && (g === undefined || inv.g === g) ? inv : null;
+        const part = it?.gm === 'lesson' && it.u ? unitPart(it.u) : undefined;
+        return s.join(now, g, part ? tierIndex(this.#tierOf(part.unit.stage)) : it?.gm === 'taikai' ? this.taikaiTier : undefined);
       })
     );
   }
@@ -198,10 +242,12 @@ export class QuizGame {
       this.#act((s, now) => s.go(now));
     });
   }
-  /** My one, final answer to the current question. */
+  /** My one, final answer to the current question (the tournament's wager: with my bet, none yet: not taken). */
   answer(k: number): void {
-    const i = this.view.i;
-    this.#queue.then(() => [], () => this.#act((s, now) => s.answer(k, !!this.replayed[i], now)));
+    const i = this.view.i, bet = this.bet;
+    if (isWager(this.view) && bet === null) return;
+    const a = isWager(this.view) ? wagerAnswer(k, bet!) : k;
+    this.#queue.then(() => [], () => this.#act((s, now) => s.answer(a, !!this.replayed[i], now)));
   }
   /** つぎへ (the host's; anyone's once the host has gone). */
   next(): void {
@@ -275,11 +321,13 @@ export class QuizGame {
     const v = this.#session.view(now);
     if (this.view && v.g !== this.view.g) {
       this.replayed = [];
+      this.bet = null;
       this.#recorder.reset();
     }
     // the game I'm in keeps its deck whatever other phones' lobbies build (decks.ts)
     pinDeck(v.g ? v : null);
     this.#lessonOf(v);
+    this.#taikaiOf(v);
     this.#recorder.seen(v, now);
     if (v.phase === 'results' && v.g) this.#keep(v, now, true);
     this.view = v;
@@ -311,9 +359,32 @@ export class QuizGame {
     queueMicrotask(() => this.#act((s, now) => s.tier(tr, now)));
   }
 
-  /** My answers of this game recorded, once (recorder.ts): at the results, or when I leave mid-way. */
+  /** The tournament's lobby: the host picks its deck again whenever the offers heard or the players' tiers change (once
+   *  the ids' levels are in: their chunks); a player sends its offer once it's in (again with its join after a lock: the
+   *  session). */
+  #taikaiOf(v: QuizView): void {
+    if (v.gm !== 'taikai' || v.phase !== 'lobby' || !v.g) return;
+    if (!v.amHost) {
+      if (this.#offered === v.g || !v.players.some((p) => p.who === this.me)) return;
+      this.#offered = v.g;
+      const evs = offerEvents(this.taikaiOffer());
+      queueMicrotask(() => this.#act((s, now) => evs.flatMap((e) => s.event(e.i, e.e, e.x, now))));
+      return;
+    }
+    const key = `${v.g}:${v.seed}:${JSON.stringify(v.evs)}:${JSON.stringify(v.tiers)}`;
+    if (key === this.#picked) return;
+    this.#picked = key;
+    const ids = taikaiPickFor({ seed: v.seed, me: this.me, mine: this.taikaiOffer(), evs: v.evs, tiers: v.tiers, recent: recentGames() });
+    if (ids.join() === v.ids.join()) return;
+    queueMicrotask(() => this.#queue.then(() => taikaiLevels(ids), () => this.#act((s, now) => s.pick(ids, now))));
+  }
+
+  /** My answers of this game recorded, once (recorder.ts): at the results, or when I leave mid-way (the tournament's: the
+   *  team's trophy at the results). */
   #keep(v: QuizView, now: number, done: boolean): void {
-    const row = this.#recorder.keep(v, now, done, { lesson: this.lesson, practicing: this.practicing !== false });
+    const taikai = v.gm === 'taikai' ? { trophy: done ? taikaiOutcome(v.seed, v.ids, v.tiers, v.team.right).trophy : null, tier: v.tiers[this.me] ?? this.taikaiTier } : null;
+    const row = this.#recorder.keep(v, now, done, { lesson: this.lesson, practicing: this.practicing !== false, taikai });
+    if (row && taikai) row.d = localDateAt(sceneNow().getTime()); // (its weekend: the banner's clock, its trophy filed under it)
     if (!row) return;
     this.recorded = row;
     this.#record?.(row);
