@@ -1,5 +1,5 @@
 <script lang="ts">
-  // キャンプ (Okinawa): the Evertrail directory's campsites (docs/travel.md "The sheet"), the intro, the filter chips
+  // キャンプ (Okinawa): the Evertrail directory's campsites (docs/design.md §Trips), the intro, the filter chips
   // in two labelled rows (しゅるい, one of すべて / むりょう / ゆうりょう: a radio group; せつび, any of ビーチ / トイレ /
   // シャワー: toggles, ✓ when on; each 44px, with the count it would show), the cards (the photo, the name and where, our nights' chips first in yuzu, the road time and fee, the
   // description, Maps), an empty state when nothing passes, the source's foot.

@@ -1,4 +1,4 @@
-// キャンプ's filter (docs/travel.md "The sheet"): one kind (all / free / paid) and any of the amenities (beach, toilet,
+// キャンプ's filter (docs/design.md §Trips): one kind (all / free / paid) and any of the amenities (beach, toilet,
 // shower), all of them at once; each chip's count is what the list would hold with that chip pressed.
 import type { Camp } from '#lib/travel/types.ts';
 

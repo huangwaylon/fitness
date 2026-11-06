@@ -1043,15 +1043,14 @@ the same line, and the engine's pace isn't steerable), a level value for the mod
 
 ### The trip map: MapLibre on OpenFreeMap's tiles, our own style, online only (2026-11-06)
 The trips' maps (docs/travel.md "Maps") are MapLibre GL JS 6 drawing OpenFreeMap's public vector tiles (OpenMapTiles
-schema, OpenStreetMap data) in a NookPhone style of our own, labels in the app's Zen Maru Gothic through the style's
-`font-faces` (the @fontsource slices we already ship). Online only: no tile download, no storage. The page's CSP gains
-one origin, `https://tiles.openfreemap.org`, in `connect-src` only (MapLibre fetches the TileJSON and the tiles; no
-sprite is used, the glyph PBFs and fonts are ours, so no `img-src` or `font-src` change); its worker is a file of our
-own origin (no `blob:` worker, no eval), like three.js's lazy chunk (the tent's precedent). The Permissions-Policy goes
-from `geolocation=()` to `geolocation=(self)` for the locate button: asked only when tapped, watched only while the map
-shows, the position never leaving the phone. OpenFreeMap is the one third party the phones contact: it sees their IP
-and the area they view; the trip's places, legs and notes never go there. Why: the user asked for real open maps,
-NookPhone-styled and online; OpenFreeMap needs no ops (no bucket, no extracts, no relay route) and covers every trip
-worldwide. Rejected: self-hosted Protomaps extracts on R2 (measured 19 MB for Okinawa and a region-by-region cut for
-each trip, a relay route and a bucket to run; kept possible: `source.ts` is the one module that names the source),
-raster tiles (blurry on a 3× screen, no restyling), Google / Apple maps (keys, terms, not themeable).
+schema, OpenStreetMap data) in a NookPhone style of our own, every label in the app's Zen Maru Gothic through the
+style's `font-faces` (the @fontsource slices we already ship; no glyphs URL). Online only: no tile download, and
+MapLibre's chunk, worker and CSS are kept out of the precache. The CSP gains one origin, `https://tiles.openfreemap.org`,
+in `connect-src` only (no sprite, fonts ours: no `img-src` or `font-src` change); the worker is a file of our own
+origin (no `blob:` worker, no eval). The Permissions-Policy gains `geolocation=(self)` for the locate button: asked
+only when tapped, watched only while the map shows, the position never leaving the phone. OpenFreeMap sees the phones'
+IP and the area viewed, never the trip's places, legs or notes. Why: the user asked for real open maps,
+NookPhone-styled and online; OpenFreeMap needs no ops and covers every trip worldwide. Rejected: self-hosted Protomaps
+extracts on R2 (19 MB for Okinawa alone, a bucket and a relay route to run; still possible: `style.ts` `BASEMAP` is
+the one place that names the source), raster tiles (blurry on a 3× screen, no restyling), Google / Apple maps (keys,
+terms, not themeable).

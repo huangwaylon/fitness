@@ -1,4 +1,4 @@
-// りょこう (docs/travel.md "The sheet"): the menu's pill opens the trips' sheet (the island paused under it): the
+// りょこう (docs/design.md §Trips): the menu's pill opens the trips' sheet (the island paused under it): the
 // boarding passes (on now and coming first, then おもいで, stamped), Orville's line on the day's first opening; a trip:
 // its pages (にってい, ちず, もちもの, キャンプ for Okinawa; no ちず for Seattle), today's card open and the row that is
 // now (or next) marked with ?date inside a trip, reopening into the trip on now, the campsites' filter and its empty

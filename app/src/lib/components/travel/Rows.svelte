@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A guide's list (docs/travel.md "The sheet"): `tl` an hour-by-hour timeline (the time in the numbers' font down the
+  // A guide's list (docs/design.md §Trips): `tl` an hour-by-hour timeline (the time in the numbers' font down the
   // left, a dot on the line, the line and its small print), `bul` bullets. `mark`: the row that is now (the trip's own
   // clock, when.ts rowNow), lit yuzu with 「いま」, or the next to come with 「つぎ」. A row on another date than its
   // day's (`dd`) says so over its time: 「前日」 / 「翌日」, the date in English ('Feb 10').

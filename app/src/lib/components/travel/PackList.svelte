@@ -194,7 +194,7 @@
       {#if editing}<svg class="ok" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>{:else}<Glyph kind="pen" size={20} />{/if}
     </button>{/if}
   </header>
-  {#if cheering}<p class="cheer-line" aria-hidden="true"><span class="nameplate">{t('travel.pack.orvilleName')}</span>{t('travel.pack.orville')}</p>{/if}
+  {#if cheering}<p class="cheer-line" aria-hidden="true"><span class="nameplate">{t('travel.orville')}</span>{t('travel.pack.orville')}</p>{/if}
 
   {#if editing}
     <p class="edit-note" data-pack-editbar>

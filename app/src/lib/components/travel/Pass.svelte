@@ -1,5 +1,5 @@
 <script lang="ts">
-  // A trip's boarding pass (Dodo Airlines, docs/travel.md "The sheet"): the airline's blue strip over the cover photo
+  // A trip's boarding pass (Dodo Airlines, docs/design.md §Trips): the airline's blue strip over the cover photo
   // and the route (TYO ✈ the trip's airport), the destination, the trip's line and its dates in the reader's locale;
   // torn off down the right, the stub: 「あと 97にち」, 「いま 2日目」 (yuzu), or, a trip gone by, a stamp (おもいで).
   // The whole pass is the button into the trip.

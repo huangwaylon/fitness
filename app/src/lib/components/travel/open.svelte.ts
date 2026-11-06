@@ -1,4 +1,4 @@
-// りょこう's always-loaded part (docs/travel.md "The sheet"): its sheet (the chunk with the guides, their strings and
+// りょこう's always-loaded part (docs/design.md §Trips): its sheet (the chunk with the guides, their strings and
 // the sheet), loaded on the first opening and kept after it so a second is at once (the HUD mounts it, outside the
 // island's [data-exact-taps] stage), and whether it is open (the island paused under it). Offline before the chunk is
 // cached, the pill says so on a banner with もういちど; one that fails again back online reloads the page (Safari keeps

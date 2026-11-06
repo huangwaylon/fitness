@@ -2377,27 +2377,47 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
 
 ### Trips
 
-りょこう, the trip guides (the full spec: [travel.md](travel.md) "The sheet"). The HUD menu's pill 「りょこう」 (Orville's
-head, between えいご ききとり and せってい) opens its full-height sheet (`components/travel/TravelSheet.svelte`, its own
-chunk with the three guides and `i18n/travel.*.json`; the always-loaded part is `TravelHost.svelte` in the HUD, outside
-the island's `[data-exact-taps]`, and `open.svelte.ts`). The island is paused under it (the page's `paused`).
-- **The list:** Orville's one line in the Bubble on this phone's first opening of the Tokyo day (`DEVICE.travelHello`);
-  a Dodo Airlines boarding pass per trip (the airline's NH-blue strip over the cover, TYO ✈ the airport, the
-  destination, its dates in the reader's locale; the stub torn off right: 「あと 99にち」, 「あした！」, 「いま 2日目」 in
-  yuzu); on now and coming first, then 「おもいで」 (newest first), each stamped 「いってきた」 with its year.
-- **A trip:** ‹ back to the list; the hero photo band (where it stands, the trip's line); a Segmented that sticks to the
-  scroller's top: にってい (the day cards: the day on a tilted yuzu plate, the icon and the weekday, the title and route;
-  open, the hike's figures, the timeline, the lists, the note, the photo, the links out in a new tab; then じゅんび,
-  the logistics cards, folded), ちず (only with a route), もちもの, キャンプ (only with campsites: one kind, any
-  amenities, each chip's count what it would show, an empty state with すべて みる).
-- **The trip's own clock** (`when.ts`): the countdown, today and the row that is now are read in `trip.tz` (rows with
-  `dd` are on the eve or the morning after); during the trip today's card opens and scrolls into view, its row marked
-  yuzu with 「いま」.
-- **Rules the guides bend (the user, 2026-11-06):** the guides are reading cards, denser than §Simplicity rules (more
-  than 40 characters and 3 cards a screen, more than 5 rows a card: a day is a full timeline); and their own text (the
-  `.guide` class: the guides' words, never the chrome) breaks as normal Japanese (`word-break: normal; line-break:
-  strict; text-wrap: pretty`) instead of keep-all at spaces, since the source has no spaces to break at. The chrome
-  (the catalog's strings) keeps every rule: kana-first, keep-all, linebreaks.test's 12-character runs.
+りょこう, the trip guides (data, relay and map: [travel.md](travel.md)). The HUD menu's 「りょこう」 pill (Orville's
+head, between えいご ききとり and せってい) opens a full-height `pop` sheet (`components/travel/TravelSheet.svelte`, its
+own chunk with the guides and `i18n/travel.*.json`; always loaded only `open.svelte.ts`, mounted by
+`island/Hud.svelte` outside the island's `[data-exact-taps]`). The island is paused under it.
+- **Opening:** the Tokyo day's first opening on this phone (`DEVICE.travelHello`) is the list with Orville's one line in
+  the Bubble (during a trip the next row, on the eve how the packing stands, before the days to go); a later one goes
+  straight into the trip on now, else back where it was left (the trip and its page, while the app runs).
+- **Offline:** the sheet's chunk not cached yet, the pill shows the banner 「オフラインです」 with もういちど (a retry that
+  fails online reloads the page); the guides failing inside it, よみこめませんでした + もういちど; the trip note not in yet,
+  each private value is 🔒 ・・・ under 「オンラインで ひらくと みえます」.
+- **The list:** a Dodo Airlines boarding pass per trip (the NH-blue strip over the cover, TYO ✈ the airport, the
+  destination, the dates in the reader's locale; the torn stub 「あと 99にち」, 「あした！」, 「いま 2日目」 in yuzu); on now
+  and coming first (soonest first), then 「おもいで」, past trips newest first, each stamped 「いってきた」 with its year.
+- **A trip:** ‹ back to the list; the hero photo band; a Segmented stuck to the scroller's top (a new page starts under
+  it): にってい (day cards: the day on a tilted yuzu plate, the icon and weekday, title and route; open, the hike's
+  figures, the timeline, lists, note, photo and links out in a new tab; then じゅんび, the logistics cards), ちず (only
+  with a route), もちもの, キャンプ (only with campsites: one kind, any amenities, each chip's count, an empty state
+  with すべて みる). The trip's clock is its own `tz` (`when.ts`): during the trip today's card opens and scrolls into
+  view, the row that is now marked yuzu 「いま」.
+- **ちず:** the day chips (the day's route colour; the chosen one again re-fits the route), the map, the day's stops
+  in order (pin, name, time). A row tapped selects its stop and the map flies there; a pin tapped marks its rows
+  (a merged pin all of them) and brings them into view without pushing the map off screen. Okinawa's layer chips
+  (キャンプ / しぜん / たべもの, off at first); a camp's dot opens its card in a sheet. The locate button at the bottom right.
+- **もちもの** (`PackList.svelte`, view `packView.ts`): the header (the suitcase, my bar, 「N / M あと Kこ」, ✎); a card
+  per category (its NH icon, my 「N / M」); a row per item, the whole row my tick (the bubble pops leaf green), the text
+  and note in my language, and under them 「✓ ウェイ うめ」, who has packed it in their tags' colours (nothing while
+  nobody has). ✎ (once the phone knows who I am): an add field per category, a new category, a tap on a name renames
+  it, ↑ ↓, 🗑. The guest gets ✎ with 「かえられるのは じぶんで ついかした ものだけ」 and controls only on its own things.
+- **Undo:** an item's 🗑 is at once with the banner's とりけす (sent after 5 s); a category's asks first (NH's confirm:
+  its icon, how many items go with it), then とりけす too; 「チェックを リセット」 (mine only, the others' stay) asks,
+  then とりけす.
+- **Done:** all mine packed, Orville's 「じゅんび OK！」 stamp beside my count; the first time on a phone for that trip and
+  person (`DEVICE.travelPacked`) it slams in with his line 「ばっちり！ いい たびを！」 and the miles chime. A past trip
+  shows only a quiet count with 「おわった たび」 (no bar, no stamp; ticks still work).
+- **Units:** km / mi in せってい's 「りょこう」 (`panel/TravelSection.svelte`, `DEVICE.travelUnits`, km by default, never
+  synced); every `{km:}`, `{m:}`, `{c:}` follows at once (`units.ts`).
+- **Rules the guides bend (the user, 2026-11-06):** the guides are reading cards, denser than §Simplicity allows (more
+  than 40 characters and 3 cards a screen, more than 5 rows a card). Their text (`.guide`) is keep-all and breaks only
+  between words: `Txt.svelte` puts a `<wbr>` between Intl.Segmenter's words (particles, okurigana, closing punctuation
+  and a number's counter kept on the word before). The packing list's typed names break as normal Japanese. The chrome
+  keeps every rule (kana-first, keep-all, linebreaks.test).
 
 ### Seasonal preview
 

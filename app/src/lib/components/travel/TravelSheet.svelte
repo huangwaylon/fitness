@@ -1,5 +1,5 @@
 <script lang="ts">
-  // りょこう's sheet (docs/travel.md "The sheet"), its own chunk with the guides and their strings: full height (Sheet's
+  // りょこう's sheet (docs/design.md §Trips), its own chunk with the guides and their strings: full height (Sheet's
   // `pop`, grown out of the menu's pill), one title bar (りょこう, or the trip's name with ‹ back to the list; ✕) over
   // one scroller: the boarding passes (TripList), or a trip (TripView). The three guides load with it (each its own
   // chunk; offline before they are cached, よみこめませんでした and もういちど). The day's first opening is Orville's (the

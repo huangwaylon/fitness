@@ -1,5 +1,5 @@
 <script lang="ts">
-  // せってい → りょこう (docs/travel.md "Units"): the guides' distances in km or miles, kept on this phone only
+  // せってい → りょこう (docs/design.md §Trips): the guides' distances in km or miles, kept on this phone only
   // (components/travel/units.ts).
   import Segmented from '../ui/Segmented.svelte';
   import { UNITS, setUnits, units } from '../travel/units.ts';

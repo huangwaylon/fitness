@@ -1,5 +1,5 @@
 <script lang="ts">
-  // りょこう's first level (docs/travel.md "The sheet"): Orville at the Dodo Airlines counter with his one line (the first
+  // りょこう's first level (docs/design.md §Trips): Orville at the Dodo Airlines counter with his one line (the first
   // opening of the day only), then a boarding pass per trip: those on now and coming first (soonest first), then
   // 「おもいで」, the trips gone by (newest first), each stamped.
   import type { Trip, TripId } from '#lib/travel/types.ts';
