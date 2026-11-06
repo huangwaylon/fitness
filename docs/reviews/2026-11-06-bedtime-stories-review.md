@@ -29,4 +29,8 @@ The panel: a native American editor, an EFL teacher and a native Japanese review
 
 - **Poetic license, left as is:** one ferry passes both Kusama's pumpkin (Naoshima) and lemon slopes (closer to Onomichi). Most Maine lobster shacks close in winter (the "froze outside" joke depends on it). Real lighthouses have been automated since the 1990s.
 - **An open thread:** Johnny never says whether he wrote to Ruth (ch2's "Not yet"). One line in ch5 could close it. Optional.
-- **When it's voiced:** check how the US voice says "mikan", "Litle" and "à la mode".
+  Closed (the lead, 2026-11-06): "That night, he finally wrote to Ruth and told her all about the ferry.", after the
+  captain's compass (ch5 698 words; its summary says so too).
+- **When it's voiced:** check how the US voice says "mikan", "Litle" and "à la mode". Voiced 2026-11-06: "à la mode"
+  heard as written; "mikan" came out "MY-kan" and is respelt mee-kahn; "Litle" is said "Little" (a `tts`), the
+  narrator's "with only one T" carrying the joke.

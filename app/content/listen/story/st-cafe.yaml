@@ -13,7 +13,7 @@ track: life
 seeds: [66, 38]
 features: { primary: contraction, review: linking }
 cando: "ねる まえに 島の 日常の はなしを 聞いて、だいたい わかる"
-status: draft
+status: voiced
 host: pekoe
 cast: { narrator: us-m5 }
 items:
@@ -25,7 +25,7 @@ items:
     ja: "ジャスミンは、桟橋のそばの空き家（昔のつりえさ屋）でカフェを開こうと決める。たぬきちに借りる話をして、ちゃちゃまるが掃除を手伝う。マスターに相談すると、ことばは少し。「小さく始めること。常連の名前をおぼえること。あせらないこと」。でも、いちばん大事なエスプレッソマシンを買うお金が足りない。"
     scene: door
     segments:
-      - { who: narrator, en: "At the end of the pier, past the place where the fishermen like to sit, there was a little wooden building that nobody had used in years." }
+      - { who: narrator, en: "At the end of the pier, past the place where the fishermen liked to sit, there was a little wooden building that nobody had used in years." }
       - { who: narrator, en: "It used to be a bait shop. The paint was peeling, one window was cracked, and if you stood close enough, it still smelled faintly of fish." }
       - { who: narrator, en: "Pekoe walked past it every morning on her way to the beach. And every morning, she slowed down a little more." }
       - { who: narrator, en: "She had been making coffee and tea for her friends for years." }
@@ -162,7 +162,7 @@ items:
       - { who: mabel, en: "Oh, honey, leave it to me. I'll stitch the sign myself. It'll be ready by Friday, I promise." }
       - { who: narrator, en: "On Friday, Mabel arrived with a big package wrapped in brown paper. The curtains were yellow with tiny white flowers. The aprons matched. Everything was perfect." }
       - { who: narrator, en: "Then they unrolled the sign. It was beautiful, stitched in blue thread on soft cream fabric." }
-      - { who: narrator, en: "And it said, in big, proud letters, The Litle Kettle. Little, with only one T." }
+      - { who: narrator, en: "And it said, in big, proud letters, The Litle Kettle. Little, with only one T.", tts: "And it said, in big, proud letters, The Little Kettle. Little, with only one T." }
       - { who: mabel, en: "Oh no. Oh, no, no, no. I was up so late finishing it. I'm so sorry, sweetie. I can take it all out and start over." }
       - { who: narrator, en: "Pekoe looked at the sign for a long moment. And then she started to laugh. And then Mabel started to laugh, and they couldn't stop." }
       - { who: pekoe, en: "Don't you dare change it. I love it. It's a little kettle. It doesn't need two T's. It's little.", tts: "Don'tcha dare change it. I love it. It's a little kettle. It doesn't need two T's. It's little." }
@@ -282,7 +282,7 @@ items:
       - { who: narrator, en: "That night, after the last customer had gone home, Pekoe stayed late to close up, the way she did every night now." }
       - { who: narrator, en: "She washed the cups, one by one, and set them upside down to dry. She wiped the long wooden counter until it shone in the lamplight." }
       - { who: narrator, en: "She read the napkin on the wall, and the note next to it." }
-      - { who: narrator, en: "She straightened the sign that said The Litle Kettle, and smiled at the missing T, like always." }
+      - { who: narrator, en: "She straightened the sign that said The Litle Kettle, and smiled at the missing T, like always.", tts: "She straightened the sign that said The Little Kettle, and smiled at the missing T, like always." }
       - { who: narrator, en: "Then she turned off the lamps, one by one, until only the little light over the door was left. She stepped out and locked up." }
       - { who: narrator, en: "Outside, the island was asleep. The water was calm. A few windows were still glowing up the hill, and somewhere, somebody's kettle was starting to whistle." }
       - { who: narrator, en: "Pekoe walked home slowly, with her hands in her pockets and the smell of coffee still in her fur. Tomorrow, the usual. Goodnight." }

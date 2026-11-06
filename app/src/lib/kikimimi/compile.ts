@@ -8,6 +8,8 @@
 // app/content/units/ is checked against the bank and becomes a chunk of its own (`parts/u-<id>.json`: the unit, its
 // lessons' items as authored, their clips and timings) and an entry in the index (`units[<id>]` beside the levels',
 // and a line in `paths`, the island path's). The levels' chunks and decks don't change for any unit (units.test).
+//   The bedtime serials (app/content/listen/story/*.yaml, story.ts) compile too: each chapter a chunk of its own
+// (`parts/<unit>-<chapter>.json`: the chapter, its segments' clips and word timings) and a line in the index's `stories`.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
@@ -26,6 +28,7 @@ import { joined } from './source.ts';
 import { tagsOf } from './tags.ts';
 import { LESSONS, candoText, checkUnits, lessonIds, manifestOf, type UnitManifest, type UnitsCheck } from './units.ts';
 import { BUILD_V } from './games/versions.ts';
+import { chapterPart, chapters, type ChapterEntry, type StoryEntry, type StorySource } from './story.ts';
 
 /** A unit's chunk's budget (gzipped; plan §8). */
 export const UNIT_MAX = 20 * 1024;
@@ -42,6 +45,14 @@ const UNITS_DIR = new URL('../../../content/units/', import.meta.url);
 export function readUnits(dir: URL = UNITS_DIR): UnitSource[] {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) }));
+}
+
+const STORIES_DIR = new URL('../../../content/listen/story/', import.meta.url);
+
+/** app/content/listen/story/*.yaml (the bedtime serials), parsed, in file order. */
+export function readStories(dir: URL = STORIES_DIR): StorySource[] {
+  if (!existsSync(dir)) return [];
+  return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((f) => parse(readFileSync(new URL(f, dir), 'utf8')) as StorySource);
 }
 
 /** The units' own items (inline in their manifests, as authored), in file order: the audio scripts voice them beside
@@ -157,6 +168,24 @@ function unitChunk(u: UnitManifest, check: UnitsCheck, bank: ReadonlyMap<string,
   return { file, path, entry: { parts: [`u-${u.unit}`], n: items.length, cv: cv([...items, ...ladders.flatMap((l) => l.rungs)], [u.lessons, u.tiers ?? null], clips) } };
 }
 
+/** A serial's chapters as chunks (story.ts Chapter, with their segments' clips and word timings) and its index entry:
+ *  each chapter's chunk name, id, title, caption, segments, length (its clips', 0 while one is missing) and cv. */
+function storyChunks(s: StorySource, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, places: Places) {
+  const files = new Map<string, string>(), entry: StoryEntry = { name: s.name, host: s.host, status: s.status, chapters: [] };
+  for (const ch of chapters(s)) {
+    const ids = ch.segments.map((seg) => seg.clip), part = chapterPart(s.unit, ch.chapter);
+    const c = chunkClips(ids, clips, places);
+    const file = `{"story":${JSON.stringify(ch)},\n"packs":${JSON.stringify(c.packs)},\n"clips":${dict(c.clips)},\n"words":${dict(Object.fromEntries(ids.filter((id) => id in words).map((id) => [id, words[id]])))}}\n`;
+    if (gz(file) > PART_AIM) throw new Error(`kikimimi: story chapter ${part}'s chunk is ${gz(file)} B gzipped, over ${PART_AIM}`);
+    files.set(`parts/${part}.json`, file);
+    const durs = ids.map((id) => clips[id]?.dur);
+    const cs = durs.every((d) => d !== undefined) ? Math.round((durs as number[]).reduce((a, b) => a + b, 0) * 100) : 0;
+    const shape = createHash('sha256').update(JSON.stringify(ch.segments.map((seg) => [seg.clip, Math.round((clips[seg.clip]?.dur ?? 0) * 100)]))).digest('hex').slice(0, 6);
+    entry.chapters.push([part, ch.id, ch.title, ch.line, ids.length, cs, shape] satisfies ChapterEntry);
+  }
+  return { files, entry };
+}
+
 /** A unit's content version (docs/kikimimi-framework.md §4.2): what shapes its decks and schedule (ids, order, choice
  *  counts, answers, the clips' lengths to 10 ms, the mix), 6 hex. */
 function cv(items: readonly Item[], mix: unknown, clips: Readonly<Record<string, Clip>>): string {
@@ -194,8 +223,9 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
 }
 
 /** levels/'s files (paths under it → contents) for these clips and word timings, these units (app/content/units/:
- *  a unit that fails its checks stops it; its warnings go to `warn`) and these packs (packs.json: a clip in none stops it). */
-export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void): Map<string, string> {
+ *  a unit that fails its checks stops it; its warnings go to `warn`), these packs (packs.json: a clip in none stops it)
+ *  and these bedtime serials (content/listen/story/). */
+export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void, stories: readonly StorySource[] = readStories()): Map<string, string> {
   const out = new Map<string, string>();
   const places = clipPlaces(packs);
   const BANK = joined(clips), check = checkUnitSources(sources, clips, BANK);
@@ -224,6 +254,12 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     units[u.unit] = c.entry;
     paths.push(c.path);
   }
+  const storyIndex: Index['stories'] = {};
+  for (const s of stories) {
+    const c = storyChunks(s, clips, words, places);
+    for (const [path, file] of c.files) out.set(path, file);
+    storyIndex[s.unit] = c.entry;
+  }
   // each game's cv by its deck's content (pool.ts gameCvOf): the quiz at a level, スピード はしご, a unit's lesson
   const games: Index['games'] = {};
   for (const lv of levels) games[`quiz:${lv}`] = gameCv('quiz', units[lv].cv);
@@ -232,7 +268,7 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   const first = BANK.find((it) => it.lv === 1)!;
   const test = chunkClips([first.id], clips, places);
   const index: Index = {
-    units, games, offered: playable(clips, BANK), dialogues, ladder: ladderReady(clips), test: [first.id, test.clips[first.id], test.packs], paths,
+    units, games, offered: playable(clips, BANK), dialogues, ladder: ladderReady(clips), test: [first.id, test.clips[first.id], test.packs], stories: storyIndex, paths,
     items: BANK.map((it) => {
       const t = tagsOf(it);
       return [it.id, it.lv, it.type, it.voice, t.pragmatic, [...t.features]];

@@ -164,6 +164,15 @@ items:
   are unique across stories and units.
 - `predict` is for the morning after, never during the story; `answer` is what the next chapter tells. The last
   chapter has none.
+- **Voiced** (2026-11-06, `status: voiced`): `npm run audio:kikimimi` speaks every segment as a clip of its own,
+  `<chapter>-<n>` (n from 1), in the narrator's voice or the villager's (story.ts), as the engine speaks it (Qwen has
+  no pace setting: ~200 wpm), with no noise bed, at −18 LUFS (the quiz's −16). The gate is the quiz's (whisper, re-rolls).
+  Each chapter's clips go into its own packs (`st-johnny-3`, a second part past 1.2 MB) and its chunk,
+  `levels/parts/st-johnny-3.json` (the chapter, its clips and word timings), with a line in the index's `stories`
+  (pool.ts `loadChapter`). After changing a segment: `npm run audio:kikimimi -- --only '^serial-'`, then
+  `npm run audio:kikimimi-words`.
+- A word the engine says wrong gets a `tts` respelling, and whisper's spelling of a name a fold in tts.py: `mee-kahn`
+  (mikan), `hun` (hon), the misspelt sign said "Little", Pekoe heard as "Pico".
 
 ## Vocabulary
 

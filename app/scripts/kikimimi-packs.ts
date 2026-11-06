@@ -1,6 +1,6 @@
 // ききみみ's audio packs (docs/kikimimi.md "Audio", docs/kikimimi-framework.md §6; src/lib/kikimimi/packing.ts): every
 // clip in clips.json (and its slow take) into static/audio/listen/<pack>.<hash>.pak, a pack per home (a level, the
-// ladders, a unit; the slow takes their home's `-slow` pack), split past 1.2 MB (slow 0.8 MB) as stably as can be (a
+// ladders, a unit, a bedtime story's chapter; the slow takes their home's `-slow` pack), split past 1.2 MB (slow 0.8 MB) as stably as can be (a
 // pack whose clips didn't change keeps its bytes, name and hash: packing.ts planHome), packs.json written (each pack's
 // hash, its clips' offsets and lengths: compile.ts puts them into the chunks), and the pack files no longer named
 // removed. A clip's bytes come from the work folder (.cache/tts/clips/, where the audio script makes them), else
@@ -13,10 +13,11 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from 'node:f
 import { join, resolve } from 'node:path';
 import { clipIds } from '../src/lib/kikimimi/bank.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
-import { readUnits } from '../src/lib/kikimimi/compile.ts';
+import { readStories, readUnits } from '../src/lib/kikimimi/compile.ts';
 import { LADDERS } from '../src/lib/kikimimi/ladders.ts';
 import { PACK_MAX, SLOW_PACK_MAX, packFile, planHome, type PackEntry, type Packs } from '../src/lib/kikimimi/packing.ts';
 import { joined } from '../src/lib/kikimimi/source.ts';
+import { chapterPart, chapters } from '../src/lib/kikimimi/story.ts';
 import { writeLevels } from './kikimimi-levels.ts';
 import { writeAtomic } from './tts/tools.ts';
 
@@ -33,7 +34,8 @@ const readJson = <T,>(f: string, def: T): T => (existsSync(f) ? (JSON.parse(read
 const fileName = (id: string, slow: boolean) => `${id}${slow ? '-slow' : ''}.m4a`;
 
 /** Each clip's home, in order (the bank's items by level in the bank's order, the ladders' rungs, each unit's own
- *  items in file order): home → ids. */
+ *  items in file order, each story chapter's segments: a chapter's own pack, `st-johnny-3`, fetched when it's played):
+ *  home → ids. */
 function homes(clips: Readonly<Record<string, Clip>>): Map<string, string[]> {
   const out = new Map<string, string[]>();
   const add = (home: string, id: string) => {
@@ -50,6 +52,7 @@ function homes(clips: Readonly<Record<string, Clip>>): Map<string, string[]> {
     const u = raw as { unit: string; items?: { id: string; lines?: unknown[] }[] };
     for (const it of u.items ?? []) for (const id of clipIds(it as never)) add(`u-${u.unit}`, id);
   }
+  for (const s of readStories()) for (const ch of chapters(s)) for (const seg of ch.segments) add(chapterPart(s.unit, ch.chapter), seg.clip);
   const homed = new Set([...out.values()].flat());
   const lost = Object.keys(clips).filter((id) => !homed.has(id));
   if (lost.length) throw new Error(`kikimimi-packs: clips with no home (no item, rung or unit): ${lost.join(' ')}`);
