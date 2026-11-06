@@ -30,6 +30,13 @@ DROP_L0 = {'通年平均', '漬物', '加工品', '全粒', '半固体状ドレ�
 DISPLAY_REPL = {'中華スタイル即席カップめん': 'カップめん', '和風スタイル即席カップめん': '和風カップめん',
                 '即席中華めん': 'インスタントラーメン', '調理後全体': '調理後（スープ含む）', '調理後のめん': '調理後（めんのみ）',
                 '皮下脂肪なし': '脂身なし'}
+# MEXT's kana where the everyday spelling has kanji (as the dishes write it); the kana stays an alias
+EVERYDAY = {'ほうれんそう': 'ほうれん草', 'めキャベツ': '芽キャベツ'}
+DISPLAY_REPL.update(EVERYDAY)
+# MEXT's lab and rare forms (a cut vegetable's washes, grated daikon's juice, a deep-fried egg, a meat's fat alone): pop -1,
+# so the everyday form leads a search (キャベツ: 生; 卵: 生, ゆで). Matched on the display name.
+RARE = re.compile(r'常法洗浄|次亜塩素酸洗浄|おろし水洗い|おろし汁|(^|\s)素揚げ(\s|$)')
+RARE_MEAT = re.compile(r'(^|\s)脂身(\s|$)')
 PART_WORDS = {'かた', 'かたロース', 'ロース', 'リブロース', 'サーロイン', 'ばら', 'もも', 'そともも', 'ランプ', 'ヒレ',
               'むね', 'ささみ', '手羽', '手羽さき', '手羽もと'}
 NOTE_MAP = {
@@ -401,7 +408,7 @@ READINGS_SRC = '''
 赤ワイン:あかわいん 白ワイン:しろわいん 緑茶:りょくちゃ 煎茶:せんちゃ 番茶:ばんちゃ 玄米茶:げんまいちゃ 抹茶:まっちゃ 紅茶:こうちゃ 麦茶:むぎちゃ 茶:ちゃ 甘酒:あまざけ 青汁:あおじる
 野菜:やさい 果汁:かじゅう 濃縮還元:のうしゅくかんげん 缶:かん 冷凍:れいとう 乾燥:かんそう 大根:だいこん 人参:にんじん 玉ねぎ:たまねぎ 長ねぎ:ながねぎ
 青ねぎ:あおねぎ 小ねぎ:こねぎ 白菜:はくさい 大葉:おおば 切り干し:きりぼし 切干し:きりぼし 漬物:つけもの 梅干し:うめぼし 梅:うめ
-大根おろし:だいこんおろし 焼きいも:やきいも 片栗粉:かたくりこ 春雨:はるさめ 緑豆:りょくとう 豆:まめ 栗:くり 甘栗:あまぐり 天津:てんしん
+大根おろし:だいこんおろし ほうれん草:ほうれんそう 芽キャベツ:めキャベツ 焼きいも:やきいも 片栗粉:かたくりこ 春雨:はるさめ 緑豆:りょくとう 豆:まめ 栗:くり 甘栗:あまぐり 天津:てんしん
 干し柿:ほしがき 洋なし:ようなし 黄肉種:おうにくしゅ 温室:おんしつ 露地:ろじ 緑肉種:りょくにくしゅ 干ししいたけ:ほししいたけ
 焼きのり:やきのり 昆布:こんぶ 塩昆布:しおこんぶ 寒天:かんてん 青のり:あおのり 海ぶどう:うみぶどう 沖縄:おきなわ
 鶏むね肉:とりむねにく 鶏もも肉:とりももにく 鶏ひき肉:とりひきにく 豚ひき肉:ぶたひきにく 牛ひき肉:ぎゅうひきにく
@@ -582,6 +589,7 @@ def build(recs):
             for key in (t2, r['group'] + ':' + t2):
                 al.extend(TOKEN_ALIASES.get(key, []))
         al.extend(parse_betsumei(r['note']))
+        al.extend(k for k, v in EVERYDAY.items() if v in name)
         # MEXT main token (kana) if display name dropped it
         rd = reading(name)
         if rd != name:
@@ -611,6 +619,8 @@ def build(recs):
         item['portions'] = por
         if o.get('pop'):
             item['pop'] = o['pop']
+        elif RARE.search(name) or (cat == '肉' and RARE_MEAT.search(name)):
+            item['pop'] = -1
         refuse = num(r['REFUSE'])
         if refuse and refuse > 0:
             m = re.search(r'廃棄部位[：:]\s*([^\s]+)', r['note'])

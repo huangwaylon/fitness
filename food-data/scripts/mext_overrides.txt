@@ -1,6 +1,6 @@
 # Hand-curated overrides for common foods (MEXT 八訂増補2023).
 # Format (pipe-separated, one item per line; blank fields allowed; '#' = comment):
-#   食品番号|name|pop(1-3)|en|aliases (comma-separated)|portions (label:grams, comma-separated; first = default)|cat (optional)
+#   食品番号|name|pop(1-3; -1 ranks a rare form lower)|en|aliases (comma-separated)|portions (label:grams, comma-separated; first = default)|cat (optional)
 # Portions are grams of EDIBLE portion (可食部), matching MEXT per-100 g values.
 # "100g" is appended automatically to every item.
 #
@@ -196,8 +196,8 @@
 06130|だいこんの葉 生|1|Daikon leaves (raw)|大根の葉,大根葉|1人前:30
 06136|切干しだいこん（乾）|2|Dried daikon strips|切り干し大根,きりぼしだいこん,切干大根|1人前（乾）:10
 06233|はくさい|3|Napa cabbage|白菜,ハクサイ|葉1枚:100,1/8株:250
-06267|ほうれんそう 生|3|Spinach (raw)|ほうれん草,ホウレンソウ|1束:180,1株:30
-06268|ほうれんそう ゆで|2|Spinach (boiled)|ほうれん草,おひたし,ホウレンソウ|おひたし1人前:70
+06267|ほうれん草 生|3|Spinach (raw)|ほうれんそう,ホウレンソウ|1束:180,1株:30
+06268|ほうれん草 ゆで|2|Spinach (boiled)|ほうれんそう,おひたし,ホウレンソウ|おひたし1人前:70
 06086|こまつな 生|2|Komatsuna (raw)|小松菜,コマツナ|1束:250,1株:40
 06087|こまつな ゆで|1|Komatsuna (boiled)|小松菜|1人前:70
 06263|ブロッコリー 生|3|Broccoli (raw)|ぶろっこりー|1房:15,1/2株:100
@@ -615,7 +615,7 @@
 12021|目玉焼き|2|Fried egg|めだまやき,フライドエッグ,卵,たまご|1個分:45
 12022|いり卵（スクランブルエッグ）|2|Scrambled egg|スクランブルエッグ,炒り卵,いりたまご,卵,たまご|1個分:45
 12006|ポーチドエッグ|1|Poached egg|温泉卵,温玉,ぽーちどえっぐ|1個:50
-12023|卵 素揚げ|1|Deep-fried egg|揚げ卵|1個:45
+12023|卵 素揚げ|-1|Deep-fried egg|揚げ卵|1個:45
 12010|卵黄 生|2|Egg yolk (raw)|黄身,きみ,卵黄|1個分:17
 12014|卵白 生|1|Egg white (raw)|白身,しろみ,卵白|1個分:33
 12002|うずら卵 生|2|Quail egg (raw)|うずらの卵,うずらたまご,ウズラ|1個:10
