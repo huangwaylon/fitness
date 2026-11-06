@@ -30,7 +30,7 @@
 {"id":"a5-did-you-say","lv":5,"type":"reply","en":"Sorry, I didn't catch that. Did you say 'cancel my order'?","ja":"すみません、聞き取れませんでした。「注文のキャンセル」とおっしゃいましたか？ →「いいえ、注文の変更です。」","speaker":"bunnie","voice":"us","cast":"us-f1","choices":["No, change my order.","Yes, I didn't catch it.","Sorry, I'll order later."],"answer":0,"note":"自動音声の確認。違うときは No と正しい用件","tags":{"seed":21,"register":"service","pragmatic":"literal","conditions":["phone"]},"cond":{"kind":"phone","level":"heavy"},"scene":"living","cja":["いいえ、注文の変更です。","はい、聞き取れませんでした。","すみません、あとで注文します。"],"why":"Did you say 'cancel my order'?＝「注文のキャンセル」と言いましたか？ 違うなら No と正しい用件を言う。didn't catch の繰り返しは罠。","ctx":"通販の自動音声に電話しています"},
 {"id":"a5-out-of-service","lv":5,"type":"reply","en":"Sorry, buddy, this train's not in service. You'll want the next one, on track 2.","ja":"すみません、この電車は回送です。次の電車に乗ってください、2番線です。 →「あ、すみません。2番線ですね？」","speaker":"sherb","voice":"us","cast":"us-m4","choices":["Oh, sorry. Track 2, you said?","Yes, it's in service.","I'll want the last one, then."],"answer":0,"note":"not in service＝回送。buddy は気さくな呼びかけ","tags":{"seed":5,"register":"service","pragmatic":"literal","conditions":["station"]},"cond":{"kind":"station","level":"light"},"tts":"Sorry, buddy, this train's not in service. You'll want the next one, on track two.","scene":"platform","marks":[["link","not in"],["say","2","two"]],"cja":["あ、すみません。2番線でしたっけ？","はい、運行中です。","じゃあ、最終に乗ります。"],"why":"not in service＝回送（客を乗せない）。You'll want the next one＝次のに乗るといいよ。番線を確かめるのが自然。in service の罠に注意。","ctx":"駅で、電車に乗ろうとしたら"}
 ],
-"packs":["lv5.e091eaca","lv5-2.a59ddad4"],
+"packs":["lv5.e091eaca","lv5-2.feec54d8"],
 "clips":{
 "a5-track":[1076,"2c6de010",0,0,66392],
 "a5-behind":[1039,"083f1a46",0,66392,63819],
@@ -54,14 +54,14 @@
 "a5-passing":[1012,"f1755142",0,1100566,62620],
 "a5-alight":[777,"7d56b340",1,0,47782],
 "a5-last-train":[787,"60b3058c",1,47782,48881],
-"a5-plumber":[753,"e70e2f6b",1,96663,46125],
-"a5-rows":[1041,"87ab6ec0",1,142788,64494],
-"a5-reason":[716,"32073802",1,207282,45086],
-"a5-intercom":[484,"9805d5af",1,252368,30276],
-"a5-make-known":[1210,"8715490b",1,282644,74281],
-"a5-leave-message":[889,"717e2b2c",1,356925,54566],
-"a5-did-you-say":[338,"6834fc48",1,411491,21472],
-"a5-out-of-service":[522,"4c8a28a7",1,432963,32743]
+"a5-plumber":[821,"2ccb9e1b",1,96663,51024],
+"a5-rows":[1041,"87ab6ec0",1,147687,64494],
+"a5-reason":[716,"32073802",1,212181,45086],
+"a5-intercom":[484,"9805d5af",1,257267,30276],
+"a5-make-known":[1210,"8715490b",1,287543,74281],
+"a5-leave-message":[889,"717e2b2c",1,361824,54566],
+"a5-did-you-say":[338,"6834fc48",1,416390,21472],
+"a5-out-of-service":[522,"4c8a28a7",1,437862,32743]
 },
 "words":{
 "a5-track":["2c6de010",190,219,236,312,316,327,365,419,451,495,497,521,558,582,612,683,694,847,847,852,867,1076],
@@ -86,7 +86,7 @@
 "a5-passing":["f1755142",244,269,281,292,328,353,406,410,436,444,569,569,578,590,617,648,671,694,738,740,1012],
 "a5-alight":["7d56b340",190,228,276,319,356,409,433,455,463,489,526,537,592,600,603,777],
 "a5-last-train":["60b3058c",240,269,279,298,324,355,368,404,431,501,520,527,535,561,590,787],
-"a5-plumber":["e70e2f6b",7,18,36,58,69,87,131,228,228,235,308,323,368,398,457,538,538,545,556,596,612,646,753],
+"a5-plumber":["2ccb9e1b",9,20,52,56,77,93,148,244,244,252,321,327,368,400,417,488,488,495,510,539,565,565,580,610,678,683,692,708,730,821],
 "a5-rows":["87ab6ec0",240,245,265,295,315,344,345,384,427,461,472,495,529,546,580,591,689,689,694,754,798,822,1041],
 "a5-reason":["32073802",5,12,30,36,78,138,140,150,168,204,222,246,356,361,395,421,434,496,521,534,604,616,642,646,716],
 "a5-intercom":["9805d5af",66,89,130,195,195,250,274,302,320,350,357,368,391,484],

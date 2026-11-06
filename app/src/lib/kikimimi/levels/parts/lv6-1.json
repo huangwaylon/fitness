@@ -124,7 +124,7 @@
 {"id":"yb-not-go-ahead","lv":6,"type":"reply","en":"Unfortunately, the board decided not to go ahead with the project, at least for this year.","ja":"残念ながら、役員会は少なくとも今年はこのプロジェクトを進めないと決めました。 →「残念です。来年また動く可能性は？」","speaker":"poppy","voice":"us","cast":"us-f6","choices":["That's disappointing. Any chance it comes back next year?","Great, so when do we start?","Go ahead, I'll wait."],"answer":0,"note":"not go ahead＝中止。at least で来年に余地","tags":{"seed":40,"register":"boss","pragmatic":"formula","features":["contraction"]},"scene":"office","cja":["残念です。来年また動く可能性はありますか？","よかった、じゃあいつ始めますか？","どうぞ、待ってますから。"],"why":"not go ahead は「進めない＝中止」。at least for this year とあるので、来年の可能性を聞くのが自然。Go ahead（どうぞ）は罠。","ctx":"上司が、役員会の結果を伝えに来ました"},
 {"id":"yb-back-order","lv":6,"type":"num","en":"The parts are on back order, so we're looking at six to eight weeks, not the two we said.","ja":"部品が入荷待ちなので、お伝えした2週間ではなく、6〜8週間かかりそうです。","speaker":"lucky","voice":"us","cast":"us-m4","choices":["8週間","2週間","6週間"],"answer":0,"note":"not the two we said は前の約束。最長は8","tags":{"seed":31,"register":"service","pragmatic":"literal","conditions":["phone"],"features":["numbers","contrast"]},"tts":"The parts are on back order, so we're lookin' at six to eight weeks, not the two we said.","focus":"six to eight weeks","ask":"新しい見込みは 最長 何週間？","scene":"living","marks":[["drop","looking","g"],["stress","two"]],"cja":["8週間","2週間","6週間"],"why":"six to eight weeks の最長は8週間。not the two we said は前に伝えた見込みで、もう古い情報。back order は「入荷待ち」。","ctx":"修理店から、部品について電話がありました"}
 ],
-"packs":["lv6.9d830737","lv6-2.f1acbd81","lv6-6.fb1e377a","lv6-3.40b84f86","lv6-4.296e543d"],
+"packs":["lv6.ac2c4f58","lv6-2.f1acbd81","lv6-6.fb1e377a","lv6-3.40b84f86","lv6-4.296e543d"],
 "clips":{
 "ya-r-rain-check":[352,"2f79a932",0,0,22309],
 "ya-r-whaddaya":[236,"52384405",0,22309,15344],
@@ -170,8 +170,8 @@
 "ya-m-pigs-fly":[440,"77fb57f7",0,1008941,27738],
 "ya-m-fence":[651,"5600ef00",0,1036679,40775],
 "ya-m-van":[664,"153721fe",0,1077454,41374],
-"ya-m-holding":[762,"45bc8912",0,1118828,46987],
-"ya-m-accountant":[448,"6a23b349",0,1165815,28356],
+"ya-m-holding":[718,"f0904e1e",0,1118828,44540],
+"ya-m-accountant":[448,"6a23b349",0,1163368,28356],
 "ya-w-whaddaya":[229,"2eb0d9d0",1,0,14949],
 "ya-w-gimme":[220,"c5ae03b9",1,14949,14481],
 "ya-w-hafta":[380,"da5a4a25",1,29430,23643],
@@ -335,6 +335,7 @@
 "ya-m-pigs-fly":["77fb57f7",55,76,242,258,311,352,440],
 "ya-m-fence":["5600ef00",55,66,84,94,105,122,150,178,195,230,262,298,328,371,376,425,488,651],
 "ya-m-van":["153721fe",7,26,49,79,135,169,207,221,300,300,307,314,351,363,374,407,469,474,499,541,556,574,608,664],
+"ya-m-holding":["f0904e1e",194,214,230,249,258,266,275,278,291,299,305,328,366,397,411,462,512,532,539,559,718],
 "ya-m-accountant":["6a23b349",55,57,104,190,242,304,329,343,448],
 "ya-w-whaddaya":["2eb0d9d0",5,21,31,46,72,82,97,113,137,229],
 "ya-w-gimme":["c5ae03b9",5,22,37,38,64,91,116,138,163,182,220],
