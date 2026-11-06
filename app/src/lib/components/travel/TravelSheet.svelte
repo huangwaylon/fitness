@@ -90,12 +90,12 @@
     {#key sel}
       <div class="lvl">
         {#if !sel}
-          <div class="top"><NavBar size="s" title={t('travel.title')} onclose={close} {lead} /></div>
+          <div class="top"><NavBar title={t('travel.title')} onclose={close} {lead} /></div>
           <TripList trips={TRIP_META} {now} onopen={show} />
         {:else if trip}
           <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}
-          <div class="top"><NavBar size="s" title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
+          <div class="top"><NavBar title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
           <div class="scroll" data-trip-view={sel}>
             {#if failed === sel}
               <div class="center" data-travel-failed>
@@ -117,7 +117,7 @@
   .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
-  .top { flex: none; padding: var(--ui-top) calc(4px + var(--safe-right)) 0 calc(4px + var(--safe-left)); background-color: var(--surface); }
+  .top { flex: none; padding: var(--ui-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); background-color: var(--surface); }
   .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; }
   .center { flex: 1; min-height: 60%; display: grid; place-content: center; justify-items: center; gap: 12px; margin: 0; color: var(--text-soft); }
   .center p { margin: 0; }
