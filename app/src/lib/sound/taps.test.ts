@@ -57,6 +57,8 @@ const NONE: Record<string, string> = {
   'lib/components/travel/PackList.svelte': 'the add and rename fields: the system keyboard clicks',
   'lib/components/panel/WeatherSection.svelte': "the weather already chosen does nothing, nor either on the guest's phone (it only shows the island's)",
   'lib/components/ui/Segmented.svelte': 'the group or tab already shown does nothing (けんこう, ごはん)',
+  'lib/components/ui/Chip.svelte': 'the chip already picked does nothing',
+  'lib/components/ui/TabBar.svelte': 'the tab already shown does nothing',
   'lib/components/health/Pick.svelte': 'a dropdown (けんこう, ごはん): its value already shown does nothing; it ticks on change (setWho, setPeriod)',
   'lib/components/food/FoodSearch.svelte': 'the search field: the system keyboard clicks',
   'lib/components/food/FoodAmount.svelte': 'the grams field: the system keyboard clicks; the meal already chosen does nothing',

@@ -545,32 +545,69 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
 ‹ 島へ. Backdrop tap and Esc also close. `ui/NavBar.svelte` + `ui/NavButton.svelte`; `ui/nav.test.ts` fails on a
 modal without them. Sheets rise and levels slide in over 240 ms.
 
-### Quiet sheets
+### Unified kit
 
-The info sheets (りょこう, けっこんしき; the user, 2026-11-06: "more compact and elegant, focus on the info, not too much on
-the theme") wear a quieter skin than the game chrome: no characters, no pills and lips, the original guides' look.
-`components/quiet/` is its kit; a sheet opts in with Sheet's `quiet` variant (the dialog is `.quiet`, edge to edge)
-and `import '#lib/components/quiet/quiet.css'`.
+The info sheets (りょこう, けっこんしき, トレイル; the user, 2026-11-07: one look, Animal Crossing and game-like but compact
+for dense info, the whole app's colours) are part of the app: the same paper, cards, leaf and yuzu as ごほうび / 設定,
+denser. Game feel from edges, small lips, stickers, stitches and the yuzu "selected"; dense text smaller, in the system font.
 
-- **Tokens** (`quiet.css`, on `.quiet`; dusk and night from `:root[data-tod]`): `--q-bg` (paper #FAF6EC) ·
-  `--q-surface` (a white card) · `--q-sunken` · `--q-hairline` · `--q-ink` / `--q-ink-2` / `--q-muted` /
-  `--q-faint` · `--q-accent` (leaf #3E9A52), `--q-accent-ink`, `--q-accent-soft` · `--q-coral` / `-soft` ·
-  `--q-shadow`, `--q-shadow-float`, `--q-scrim`; type `--q-fs-s` 13 · `--q-fs-body` 15 · `--q-fs-head` 17 ·
-  `--q-fs-title` 22 · `--q-fs-big` 28 (`--q-fs-xs` 11 for the tab labels and tags only), weights `--q-w` 400 /
-  `--q-w-b` 600; space `--q-3` 12 / `--q-4` 16; radii card 18 · control 12 · chip 16 · tag 6. Body text is the system font
-  (`--q-font`: -apple-system, Hiragino Sans); Zen Maru Gothic (`--q-font-title`, 700) only for titles and big numbers.
-- **Classes:** `.q-card` (white, hairline, soft shadow, 18), `.q-row` (44 px+, 12 / 16 padding; rows in a card split by
-  a hairline; a `button.q-row` is a tappable row), `.q-sec` (a section head: 13/600 muted), `.q-kv` (key · value rows),
-  `.q-badge`, `.q-tag`, `.q-btn` (`.primary`, `.text`), `.q-title`, `.q-ell`.
-- **Components:** `Icon` (one lucide-style set, 1.75 stroke, `name size stroke`; the lucide names a quiet guide uses,
-  a pin for any other) · `SheetHeader` (44 px: title left, 17 Zen Maru, optional `sub`; ‹ / ✕ are `NavButton look="quiet"`, `over` puts them
-  on smoked discs over a photo; `trailing` snippet) · `TabBar` (a sheet's bottom tabs: `items {id,label,icon}`, `value`,
-  `attr`, `onpick`; frosted, the safe area under it) · `Chip` + `ChipRow` (32 px chips with a 44 px hit, the selected
-  one accent-filled; one sideways-scrolling line fading at the right while there is more) · `Segmented` (small: km | mi)
-  · `ProgressBar` · `ActionSheet` (iOS-like grouped actions, a caption, キャンセル) · `BottomSheet` (a form sheet:
-  キャンセル / title / 保存; `.q-field` inputs at 16 px). The modal ones share `ui/scrim.ts` (a scrim tap) with Sheet.
-- **Rules kept:** every tappable has its `data-sfx` (the shown tab / chip / option `none`), ‹ ✕ are the shared
-  NavButton (nav.test.ts also accepts a kit dialog's labelled キャンセル, `data-q-cancel`), fields 16 px+, no grabber.
+**Migration (until the last sheet moves; then `components/quiet/` and `quiet.css` go):**
+
+| old (quiet kit) | new |
+|---|---|
+| Sheet `variant="quiet"`, `.q-sheet`, `quiet.css`, every `--q-*` | Sheet `variant="full"` on app tokens (below) |
+| quiet/SheetHeader (`sub`, `over`, `trailing`) | ui/NavBar `size="s"` (`over`, `trailing`); NavButton `look="quiet"` goes with it |
+| quiet/TabBar · Chip · ChipRow · Segmented · ProgressBar | ui/TabBar · ui/Chip · ui/ChipRow · ui/Segmented · ui/ProgressBar |
+| quiet/ActionSheet (`Action`) | ui/ActionSheet (same props; `title` required, ✕ instead of キャンセル) |
+| quiet/BottomSheet (`onsave`, `can`, `.q-field`) | ui/Sheet default + `focusField` + a leaf `.btn` 保存 in `footer` (aria-disabled while it can't) |
+| quiet/Icon (`isIcon`, `IconName`), hiking/Ic | ui/Icon (hiking names: dist→`distance`, gain→`mountain`, ext→`arrow-up-right`, chevDown→`chevron-down`) |
+| `.q-card` · `.q-row` · `button.q-row` · `.q-kv` · `.q-sec` · `.q-tag` · `.q-badge` | `.card.dense` · `.row` · `button.row` · `.row.kv` · `.sec-label.head` · `.tag` · `.sticker` |
+| `.q-btn.primary` / `.q-btn` / `.q-btn.text` | `.btn` / `.btn.small.paper` / NavButton or a `.chip.s` |
+| `--q-bg` `--q-surface` `--q-sunken` `--q-hairline` | `--surface` `--card` `--ctl-off` `--stitch` |
+| `--q-ink` `--q-ink-2` `--q-muted` `--q-faint` | `--text` `--text-soft` `--text-soft` `--edge` |
+| `--q-accent*` `--q-coral*` `--q-scrim` `--q-shadow` `--q-shadow-float` | `--c-leaf` / `--leaf-text` · `--c-coral` / `--coral-text` · `--scrim` · `--sh-lip-s` · `--sh-float` |
+| `--q-font` `--q-font-title` `--q-fs-*` `--q-r-*` `--q-photo-btn` | `--font-body` `--font-ui` `--fs-*` `--r-*` · NavButton `look="photo"` |
+| HikingSheet's `.trails` palette (`--paper*` `--ink*` `--line*` `--pine*` …), `--wed-pink`, Pass's blue | app tokens, `--c-rose`, `--c-sky` |
+
+- **Tokens** (tokens.css, re-tinted by time of day like the rest): `--font-body` (system: -apple-system, Hiragino Sans)
+  · `--lip-s` 2px / `--sh-lip-s` (dense cards, rows) · `--sh-ctl-s` (+ `-press`: 32px controls, a 1.5px edge, a 2px lip)
+  · `--c-sky` #4F9BE0 fills, `--sky-text` (#24609A; night #9CCBF5) · `--c-rose` #E88FAE, `--rose-soft` (22% on the card)
+  · `--stitch` (35% of the edge: 1.5px dashed dividers, a ticket's perforation) · `--r-row` 14. Nothing feature-local;
+  trip `dayColors` stay trip data.
+- **Type:** titles, labels, numbers in `--font-ui` 700 / `--font-num` 600 (tabular); body and notes `--font-body` 400 /
+  600 (a full sheet sets it as its text). Sheet title `--fs-talk` 18 · card / day title `--fs-body` 15 ui · row text 15
+  (lists) / 14 (timeline) · note, meta, time `--fs-s` 13 · tag, tab label, axis `--fs-xs` 11 ui 700. Sheets are normal
+  Japanese with kanji (設定 記録 完了 削除 保存 編集); the menu pills stay kana.
+- **Shape:** cards `--card`, `--r-row`, `--sh-lip-s`, no hairline; rows split by a 12px-inset stitch; controls 32px drawn /
+  44px hit, `--ctl` + `--sh-ctl-s`; selected = yuzu (never green); the action = the leaf `.btn` (its 4px lip). One control
+  row per view, under the header. Grain only on the header band and the letter. Side padding 12, stack gap 8.
+- **Components** (ui/):
+  - `Sheet variant="full"`: the column edge to edge on `--surface`, `.kit` scope; inside: NavBar s (its band pads
+    `--ui-top` itself, or a PhotoBand `edge`), one scroller, TabBar (pads the home indicator).
+    Default (paper) is the form sheet: `title`, fields, `footer` (保存), `focusField`.
+  - `NavBar size="s"` (48px, title 18): `title`, `onback`, `onclose`, `lead`, `trailing` (＋ ⚙ before ✕), `over` (on a photo).
+    `NavButton size="s"`: a 32px disc, `--sh-ctl-s`, 44px hit; `look="photo"` a smoked disc.
+  - `TabBar`: `items {id,label,icon}`, `value`, `label`, `attr` (`data-<attr>`), `onpick`; a cream dock plate, the shown
+    tab on a yuzu pill; 56px + the safe area.
+  - `Chip` (`label`, `count`, `dot`, `selected`, `onclick`, `data-*`) in `ChipRow` (`label`; one scrolling row, end fade).
+    `Segmented` (`items`, `value`, `label`, `attr`, `onpick`) fits at a ChipRow's end.
+  - `Tick`: `checked`, `label`, `onchange` (none: display only), `who {name, tone 'a'|'b'}[]`, `off`.
+  - `StatStrip`: `items {icon?, value, unit?, label}[]`, up to 4 cells. `PhotoBand`: `src`, `height` (150 hero, 120 card),
+    `alt`, `focus`, `edge` (at the sheet's top), `nav` and `children` (over its foot gradient).
+  - `ProgressBar`: `value`, `max`, `label` (8px leaf on a sunk track). `ActionSheet`: `title`, `groups` of `Action
+    {id,label,icon?,danger?,off?}`, `onpick`.
+  - theme.css: `.chip.s` (+ `.n` count, `.dot` with `--dot`), `.card.dense` with `.row` / `button.row` / `.row.kv`,
+    `.stitch` (an `<hr>`), `.sec-label.head` (+ `.n` 「3件」, `.coral` / `.leaf`, `.sticky` at `--sticky-top`), `.tag` (in
+    `.kit`), `.sticker` (+ `.coral` stamp, `.leaf`), `.grain`. A sample of all of it: `/dev/kit` (`vite dev`).
+- **Icons:** `ui/Icon` only (`name`, `size` 18 rows · 20 buttons · 22 tabs, `stroke` 2, `soft`: an 18% fill in closed
+  shapes): our own drawing on a 24 grid, a 2px round stroke in `currentColor`, round joins; a name not in it draws a pin.
+  No emoji in chrome.
+- **NH art, only:** the pink-roses art in the wedding ring; the villager heads on the leaf-menu pills (the world);
+  packing categories as NH items (32px on a cream disc): 書類 `scrapbook`, 服装 `pocket-tee`, 登山 `lace-up-boots`,
+  電子機器 `slr-camera`, 手土産 `deco/present`, 基本 `toothbrush-and-cup-set` (otherwise our icon). No characters, arch or
+  Dodo name in the sheets. The classic Okinawa and Seattle guides keep their own styles.
+- **Rules kept:** every tappable has its `data-sfx` (the shown tab / chip `none`), ‹ ✕ are NavBar / NavButton, fields
+  16px+, no grabber.
 
 ## Economy
 
@@ -2478,7 +2515,7 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
 
 ### Trips
 
-りょこう, the trip guides (data, relay and map: [travel.md](travel.md)), in the [quiet kit](#quiet-sheets). The HUD
+りょこう, the trip guides (data, relay and map: [travel.md](travel.md)), in the [unified kit](#unified-kit). The HUD
 menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`components/travel/TravelSheet.svelte`, Sheet's
 `quiet` variant; its own chunk with `i18n/travel.*.json`, loaded through `open.svelte.ts`, a `lazySheet`, mounted by
 `island/Hud.svelte`). The island is paused under it.
