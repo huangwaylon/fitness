@@ -8,7 +8,7 @@
   // still playable. A stamped unit's 30-day おさらい チェック, when due, is a small banner on top (hub card 1's, until
   // the hub). Its own chunk (`{#await import()}` in the sheet).
   import type { Filter, Path, Stop } from '#lib/kikimimi/path.ts';
-  import { DOMAINS, isDomain } from '#lib/kikimimi/path.ts';
+  import { CORE, DOMAINS, isDomain } from '#lib/kikimimi/path.ts';
   import type { Lesson } from '#lib/kikimimi/stages.ts';
   import type { RosterId } from '#lib/villagers/roster.ts';
   import Host from '../../characters/Host.svelte';
@@ -36,7 +36,7 @@
   const icon = (d: string) => (isDomain(d) ? DOMAINS[d].icon : '');
   const host = (s: Stop) => rosterName(s.host as RosterId);
   const label = (s: Stop) =>
-    [s.name, s.short, t(`kiki.domain.${s.domain}`), t('kiki.path.dots', { k: (s.state?.done ?? []).filter((l) => ['deai', 'bamen', 'check'].includes(l)).length }),
+    [s.name, s.short, t(`kiki.domain.${s.domain}`), t('kiki.path.dots', { k: (s.state?.done ?? []).filter((l) => CORE.includes(l)).length }),
       s.state?.double ? t('kiki.stamp.double') : s.state?.stamped ? t('kiki.path.stamped') : s.state?.partner ? t('kiki.stamp.partnerHas') : ''].filter(Boolean).join('、');
 </script>
 
@@ -67,11 +67,11 @@
     <section class="stage" class:soft={st.soft && st.stops.length > 0} data-kiki-stage={st.stage} data-soft={st.soft || undefined} aria-labelledby="kk-st-{st.stage}">
       <h3 class="sthead" id="kk-st-{st.stage}">
         <span class="sname">{t(`kiki.stage.${st.stage}`)}</span>
-        <span class="stars" aria-label={t('kiki.path.stars', { n: st.stars })}>{'★'.repeat(st.stars)}</span>
+        <span class="stars" role="img" aria-label={t('kiki.path.stars', { n: st.stars })}>{'★'.repeat(st.stars)}</span>
         {#if st.stops.length}<span class="count" data-kiki-stage-count={st.stamped}>✓ {st.stamped} / {st.stops.length}</span>{/if}
       </h3>
       {#if st.stage === 'hama'}
-        <button type="button" class="node quick r" data-kiki-path-quiz data-sfx="open" onclick={onquiz}>
+        <button type="button" class="node quick r tile-btn" data-kiki-path-quiz data-sfx="open" onclick={onquiz}>
           <span class="face" style:--tint="var(--c-yuzu)" aria-hidden="true"><Host head size={40} animate={false} /></span>
           <span class="ntxt"><b>{t('kiki.path.hama')}</b><small>{t('kiki.path.hamaSub')}</small></span>
           <span class="chev" aria-hidden="true">›</span>
@@ -113,7 +113,7 @@
     </section>
   {/each}
 
-  <button type="button" class="zk" data-kiki-zukan-open data-sfx="open" onclick={onzukan}>
+  <button type="button" class="zk tile-btn" data-kiki-zukan-open data-sfx="open" onclick={onzukan}>
     <span aria-hidden="true">📖</span><b>{t('kiki.zukan.title')}</b><span class="chev" aria-hidden="true">›</span>
   </button>
 </div>
@@ -137,7 +137,7 @@
   .stage { display: grid; gap: 8px; }
   .sthead { display: flex; align-items: baseline; gap: 8px; margin: 10px 4px 0; font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .stars { color: var(--c-coral); font-size: var(--fs-s); letter-spacing: 1px; }
-  .count { margin-left: auto; font: 700 var(--fs-s)/1 var(--font-num, var(--font-ui)); color: var(--leaf-text); }
+  .count { margin-left: auto; font: 700 var(--fs-s)/1 var(--font-num); color: var(--leaf-text); }
   .anchor { margin: 0 4px -2px; }
   .softnote { margin: -2px 4px 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   /* a stop: the zig-zag of the prototype (46px of the other side left free) */
@@ -147,12 +147,8 @@
   .node.l { margin-right: 40px; }
   .node.r { margin-left: 40px; }
   .node:has(.hit:active) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .hit, .node.quick {
-    appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
-    flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 10px 12px; min-height: 72px; border-radius: 20px;
-  }
-  .node.quick { background: var(--ctl); box-shadow: var(--sh-ctl); }
-  .node.quick:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .hit, .node.quick { text-align: left; flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 10px 12px; min-height: 72px; border-radius: 20px; }
+  .hit { appearance: none; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
   .node.cur { background: var(--card); box-shadow: inset 0 0 0 3px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge); }
   .node.cur .go { margin-right: 12px; flex: none; }
   .face {
@@ -167,7 +163,7 @@
   /* the stamp: a leaf ✓ tilted on the face; both of us: two, fanned; only the partner: a soft outline */
   .stamp {
     position: absolute; right: -6px; bottom: -6px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
-    background: var(--c-leaf-edge); color: #fff; font: 700 13px/1 var(--font-ui); box-shadow: 0 0 0 2px var(--card); rotate: -12deg;
+    background: var(--c-leaf-edge); color: var(--c-card); font: 700 13px/1 var(--font-ui); box-shadow: 0 0 0 2px var(--card); rotate: -12deg;
   }
   .stamp.two { right: 8px; bottom: -8px; background: var(--c-yuzu-lip); color: var(--c-ink); rotate: 10deg; }
   .stamp.theirs { background: var(--card); color: var(--leaf-text); box-shadow: inset 0 0 0 2px var(--leaf-text), 0 0 0 2px var(--card); }
@@ -184,11 +180,8 @@
   /* a stage far above my level: softly, behind a light mist, still tappable */
   .soft .node { opacity: .82; }
   .soft { padding: 0 6px 8px; margin: 0 -6px; border-radius: var(--r-card); background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--lip) 22%, transparent) 0 10px, transparent 10px 20px); }
-  .zk {
-    appearance: none; border: 0; cursor: pointer; margin-top: 6px; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 16px;
-    border-radius: var(--r-card); background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-body)/1.2 var(--font-ui);
-  }
+  .zk { margin-top: 6px; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 16px; border-radius: var(--r-card); font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .zk b { flex: 1; text-align: left; }
-  .zk:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  @media (prefers-reduced-motion: reduce) { .node:has(.hit:active), .node.quick:active, .zk:active { transform: none; } }
+  /* a stop's press: the whole stop sinks (its button is the stop's face and words), as a .tile-btn does */
+  @media (prefers-reduced-motion: reduce) { .node:has(.hit:active) { transform: none; } }
 </style>

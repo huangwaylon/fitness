@@ -10,9 +10,10 @@
   // スピード はしご: しずえ's line is how high I climbed; a card of my climbs (each ladder's steps, how high); the review
   // one row a ladder: its line (the chunk marked), its Japanese and note, each rung's question with my ○ / ×, and ▶︎ at
   // each speed.
-  import type { QuizGame } from './game.svelte.ts';
+  import { canSlow, type QuizGame } from './game.svelte.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
+  import LadderSteps from './LadderSteps.svelte';
   import LessonDots from './path/LessonDots.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { villagerArt } from '#lib/art.ts';
@@ -27,6 +28,7 @@
   import { currentReport, currentUnits, recWords } from './progress.svelte.ts';
   import { stampsUnit } from '#lib/contract/listen.ts';
   import { LESSONS, type Lesson } from '#lib/kikimimi/stages.ts';
+  import { CORE } from '#lib/kikimimi/path.ts';
   import { feedbackFor } from '#lib/kikimimi/report.ts';
   import { tripKeys, tripsOf } from '#lib/kikimimi/advice.ts';
   import { SPEEDS, climbs, laddersIn, speedAt, sx } from '#lib/kikimimi/ladder.ts';
@@ -63,7 +65,7 @@
   // svelte-ignore state_referenced_locally
   let missedOnly = $state(items.some((_, i) => !ok(i)));
   // svelte-ignore state_referenced_locally
-  let opened = $state<number[]>([items.findIndex((_, i) => !ok(i))]);
+  let opened = $state<number[]>(items.flatMap((_, i) => (ok(i) ? [] : [i])).slice(0, 1));
   const toggle = (i: number) => (opened = opened.includes(i) ? opened.filter((x) => x !== i) : [...opened, i]);
   const rows = $derived(items.map((it, i) => ({ it, i, ok: ok(i), k: v.answers[i]?.k ?? null })).filter((r) => !missedOnly || !r.ok));
   /** A review row's ▶︎ playing this item: when it started (its karaoke). */
@@ -89,7 +91,6 @@
   const unitState = $derived(ls && recorded ? currentUnits().get(ls.unit.id) : undefined);
   const stamped = $derived(!!recorded && stampsUnit(recorded));
   const own = $derived(recorded ? recorded.r.filter(([, ok, , rp]) => ok === 1 && rp === 0).length : 0);
-  const CORE: readonly Lesson[] = ['deai', 'bamen', 'check'];
   /** The next core lesson not played to the end; after a チェック, none (もういっかい is the retry). */
   const nextLesson = $derived(ls?.lesson === 'check' ? null : (CORE.find((l) => l !== ls?.lesson && !unitState?.done.includes(l)) ?? null));
   const unitLessons = $derived(ls ? LESSONS.filter((l) => ls.unit.lessons[l]) : []);
@@ -152,7 +153,7 @@
       <ul>
         {#each ladders as l, j (l.ladder)}
           <li data-kiki-climb-row={j} data-height={mine[j]}>
-            <ol class="steps" aria-hidden="true">{#each SPEEDS as x, k (k)}<li class:up={k < mine[j]} style:--h="{40 + k * 20}%"><span>{sx(x)}×</span></li>{/each}</ol>
+            <LadderSteps size="small" step={(k) => (k < mine[j] ? 'up' : 'ahead')} />
             <b>{mine[j] ? t('kiki.ladder.reach', { x: sx(speedAt(mine[j])!) }) : t('kiki.ladder.reachNone')}</b>
           </li>
         {/each}
@@ -199,7 +200,7 @@
                   {@const i = l.from + k}
                   <li data-review={i} data-ok={ok(i)}>
                     <span class="x">{sx(SPEEDS[k])}×</span>
-                    <span class="sym small" class:ok={ok(i)} aria-label={ok(i) ? t('kiki.right') : t('kiki.wrong')}>{ok(i) ? '○' : '×'}</span>
+                    <span class="sym small" class:ok={ok(i)}><span aria-hidden="true">{ok(i) ? '○' : '×'}</span><span class="sr-only">{ok(i) ? t('kiki.right') : t('kiki.wrong')}</span></span>
                     <span class="q">{it.ask ?? t('kiki.ask.word')} → <b lang={it.type === 'word' ? 'en' : undefined}>{it.choices[it.answer]}</b>
                       {#if !ok(i) && v.answers[i]}<span class="picked" data-kiki-picked>{t('kiki.picked', { a: it.choices[v.answers[i]!.k] })}</span>{/if}</span>
                   </li>
@@ -224,14 +225,14 @@
         {@const dlg = isDialogue(r.it) ? r.it : null}
         <li class="item card" data-review={r.i} data-ok={r.ok} data-open={open}>
           <button type="button" class="head" aria-expanded={open} data-kiki-row={r.i} data-sfx="tick" onclick={() => toggle(r.i)}>
-            <span class="sym" class:ok={r.ok} aria-label={r.ok ? t('kiki.right') : t('kiki.wrong')}>{r.ok ? '○' : '×'}</span>
+            <span class="sym" class:ok={r.ok}><span aria-hidden="true">{r.ok ? '○' : '×'}</span><span class="sr-only">{r.ok ? t('kiki.right') : t('kiki.wrong')}</span></span>
             <span class="sum">
               {#if dlg}<span class="en" lang="en">→ {dlg.choices[dlg.answer]}</span>
               {:else if open}<span class="en big" data-kiki-review-en><SoundLine en={r.it.en} focus={r.it.focus} marks={r.it.marks} clip={r.it.id} from={playing(r.it)} clock={() => game.clock()} /></span>
               {:else}<span class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</span>{/if}
               {#if !open && !r.ok && r.k !== null}<span class="picked">{t('kiki.picked', { a: choiceText(r.it, r.k) })} ×</span>{/if}
             </span>
-            {#if first(r.i)}<span class="stamp sm" aria-label={t('kiki.firstTry')}>{t('kiki.firstTry')}</span>{/if}
+            {#if first(r.i)}<span class="stamp sm">{t('kiki.firstTry')}</span>{/if}
             <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
           </button>
           {#if open}
@@ -248,8 +249,8 @@
               {#if !r.ok}<p class="tags">{tripKeys(r.it.id).map((x) => tripLabel(x.key)).join(' · ')}</p>{/if}
               {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
               <div class="hear">
-                <button type="button" class="ib" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(r.it)}>▶︎</button>
-                {#if r.it.lv <= 2 && !dlg}<button type="button" class="ib" aria-label={t('kiki.playSlow')} data-sfx="tick" onclick={() => game.hear(r.it, true)}>🐢</button>{/if}
+                <button type="button" class="ib tile-btn" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(r.it)}>▶︎</button>
+                {#if canSlow(r.it)}<button type="button" class="ib tile-btn" aria-label={t('kiki.playSlow')} data-kiki-slow={r.i} data-sfx="tick" onclick={() => game.hear(r.it, true)}>🐢</button>{/if}
               </div>
             </div>
           {/if}
@@ -286,10 +287,9 @@
   .soon, .mine { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   /* co-op's team tally: one big number, the together count under it (never who missed) */
   .team.card { display: grid; justify-items: center; gap: 4px; padding: 12px 14px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
-  .team b { font: 700 var(--fs-title)/1.2 var(--font-num, var(--font-ui)); }
+  .team b { font: 700 var(--fs-title)/1.2 var(--font-num); }
   .team span { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .tally { margin: 0; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text-soft); }
-  .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .fb { display: grid; gap: 10px; padding: 12px 14px; }
   .fb-line { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .trips { display: grid; gap: 6px; }
@@ -306,10 +306,10 @@
   /* the winner's row: a ribbon of yuzu behind it, the cup by the rank */
   .rank li.first { margin: 0 -8px; padding: 2px 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 40%, transparent); }
   .cup { margin-right: 2px; font-size: .85em; }
-  .no { font: 700 var(--fs-body)/1 var(--font-num, var(--font-ui)); color: var(--text-soft); white-space: nowrap; }
+  .no { font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); white-space: nowrap; }
   .no.top { color: var(--coral-text); font-size: var(--fs-title); }
   .rank :global(.pc) { grid-auto-flow: column; justify-items: start; align-items: center; max-width: none; gap: 10px; }
-  .pts { justify-self: end; font: 700 var(--fs-talk)/1 var(--font-num, var(--font-ui)); }
+  .pts { justify-self: end; font: 700 var(--fs-talk)/1 var(--font-num); }
   .sec { display: grid; gap: 8px; }
   .rev-head { display: flex; align-items: center; justify-content: space-between; }
   .rev-head .chip { min-height: var(--hit); }
@@ -329,10 +329,10 @@
   .note { margin: 0; font: 700 var(--fs-xs)/1.45 var(--font-ui); color: var(--c-ink); padding: 4px 8px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
   .retry { width: 100%; }
   .firsts { margin: 0; text-align: center; }
-  /* いっぱつ: a rubber stamp (no points) */
+  /* いっぱつ: a rubber stamp (no points), a cream sticker at any time of day (so its coral is the fixed one) */
   .stamp {
     display: inline-block; padding: 3px 10px; border-radius: 8px; rotate: -4deg; color: var(--c-coral-text);
-    background: color-mix(in srgb, var(--c-yuzu) 45%, var(--card)); box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui);
+    background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-card)); box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui);
   }
   .stamp.sm { padding: 2px 6px; font-size: var(--fs-xs); white-space: nowrap; }
   .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
@@ -344,27 +344,17 @@
   .ja span, .ans span { display: block; }
   .picked { color: var(--coral-text); }
   .hear { display: flex; gap: 6px; }
-  .ib {
-    appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center;
-    background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 18px/1 var(--font-ui);
-  }
+  .ib { width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center; font: 700 18px/1 var(--font-ui); }
   /* スピード はしご: each ladder's steps, climbed leaf */
   .climbs { display: grid; gap: 8px; padding: 12px 14px; }
   .climbs ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .climbs > ul > li { display: flex; align-items: center; gap: 12px; }
   .climbs b { font: 700 var(--fs-body)/1.2 var(--font-ui); }
-  .steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 40px); align-items: end; gap: 3px; height: 36px; }
-  .steps li {
-    height: var(--h); border-radius: 6px 6px 3px 3px; display: grid; align-items: end; justify-items: center; padding-bottom: 2px;
-    background: var(--ctl-off); color: var(--text-soft); font: 700 10px/1 var(--font-num, var(--font-ui));
-  }
-  .steps li.up { background: var(--c-leaf); color: var(--c-ink); }
   .qs { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; }
   .qs li { display: grid; grid-template-columns: 2.6em 1.2em 1fr; gap: 4px; align-items: baseline; font: 700 var(--fs-s)/1.4 var(--font-ui); }
-  .qs .x { font-family: var(--font-num, var(--font-ui)); color: var(--text-soft); }
+  .qs .x { font-family: var(--font-num); color: var(--text-soft); }
   .sym.small { font-size: var(--fs-body); }
   .qs .picked { display: block; }
   .speeds { display: flex; flex-wrap: wrap; gap: 6px; }
   .speeds .chip { min-height: var(--hit); }
-  .ib:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
 </style>

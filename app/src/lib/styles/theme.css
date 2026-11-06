@@ -134,6 +134,15 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .chip.big { min-height: var(--hit); padding: 0 14px; font-size: var(--fs-body); }
 .chip.big::after { content: none; }
 
+/* ---------- a pressable tile: a cream control with the edge (--ctl, --sh-ctl) that sinks 2px as it's pressed (ききみみ's
+   choices, levels, timers, switches and path stops). The component sets its shape and type; aria-disabled or :disabled
+   doesn't press. Under reduced motion it doesn't move: the lip alone answers the tap ---------- */
+.tile-btn {
+  appearance: none; border: 0; cursor: pointer; font: inherit; color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
+}
+.tile-btn:active:not(:disabled, [aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+@media (prefers-reduced-motion: reduce) { .tile-btn:active:not(:disabled, [aria-disabled='true']) { transform: none; } }
+
 /* ---------- もようがえ's tray (tent/TentEdit, layoutEdit/IslandEdit): one look for both editors ----------
    The bar (what's held: its name or why not, ↻ 🗑 ✕ ✓) over the tray (tabs, the icons' grid, ✓ おわる), fixed-cream
    game plates (--plate) at --side from the screen's sides, its foot --pad-foot over the home indicator. The tabs scroll

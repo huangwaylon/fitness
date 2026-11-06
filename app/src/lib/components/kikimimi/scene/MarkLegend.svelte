@@ -24,7 +24,7 @@
   .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--c-ink-soft); }
   .k { display: inline-flex; align-items: center; gap: 4px; }
   i { font-style: normal; }
-  .say { font: italic 700 11px/1 var(--font-ui); padding: 1px 4px; border-radius: 6px; background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--leaf-text, var(--c-ink)); }
+  .say { font: italic 700 11px/1 var(--font-ui); padding: 1px 4px; border-radius: 6px; background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); color: var(--c-leaf-text); }
   .arc { display: inline-block; width: 9px; height: 5px; border: 2px solid var(--c-leaf-edge); border-top: 0; border-radius: 0 0 6px 6px; }
   .drop { color: color-mix(in srgb, var(--c-ink) 30%, transparent); text-decoration: line-through 2px color-mix(in srgb, var(--c-coral) 70%, transparent); }
   .dot { font-size: 9px; color: var(--c-ink); }

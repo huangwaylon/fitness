@@ -85,7 +85,7 @@
       {#each CORE.filter((l) => lessons.includes(l)) as l, i (l)}
         {@const isNext = l === next}
         <li>
-          <button type="button" class="lesson" class:next={isNext} class:done={done.includes(l)} data-kiki-unit-lesson={l} data-done={done.includes(l) || undefined}
+          <button type="button" class="lesson tile-btn" class:next={isNext} class:done={done.includes(l)} data-kiki-unit-lesson={l} data-done={done.includes(l) || undefined}
             data-sfx="confirm" onclick={() => onlesson(id, l)}>
             <span class="no" aria-hidden="true">{done.includes(l) ? '✓' : i + 1}</span>
             <span class="ltxt">
@@ -104,7 +104,7 @@
         <h3 id="kk-extra" class="sec-label">{t('kiki.unit.extras')}</h3>
         <div class="egrid">
           {#each extras as l (l)}
-            <button type="button" class="extra" class:done={done.includes(l)} data-kiki-unit-lesson={l} data-sfx="confirm" onclick={() => onlesson(id, l)}>
+            <button type="button" class="extra tile-btn" class:done={done.includes(l)} data-kiki-unit-lesson={l} data-sfx="confirm" onclick={() => onlesson(id, l)}>
               <span class="star" aria-hidden="true">{done.includes(l) ? '★' : '☆'}</span>
               <span class="ltxt"><b>{t(`kiki.lesson.${l}`)}</b><small>{t(`kiki.unit.sub.${l}`)}</small></span>
             </button>
@@ -134,7 +134,6 @@
 
 <style>
   .unit { display: grid; gap: 12px; }
-  .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   /* the scene: the backdrop (or the domain's tint) with the host standing in it */
   .hero {
     position: relative; height: 150px; border-radius: var(--r-card); overflow: hidden; box-shadow: var(--sh-lip);
@@ -164,19 +163,15 @@
   .sline { flex: 1; margin: 0; display: grid; gap: 2px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .sline b { font-size: var(--fs-body); color: var(--coral-text); }
   .core { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-  .lesson, .extra {
-    appearance: none; border: 0; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; font: inherit;
-    border-radius: var(--r-card); background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl);
-  }
+  .lesson, .extra { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; border-radius: var(--r-card); }
   .lesson { min-height: 72px; padding: 10px 14px; }
-  .lesson:active, .extra:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .lesson.next { background: var(--card); box-shadow: inset 0 0 0 3px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge); }
   .no {
-    flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font: 700 var(--fs-talk)/1 var(--font-num, var(--font-ui));
+    flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font: 700 var(--fs-talk)/1 var(--font-num);
     background: var(--ctl-off); color: var(--text-soft);
   }
   .lesson.next .no { background: var(--c-yuzu); color: var(--c-ink); }
-  .lesson.done .no { background: var(--c-leaf-edge); color: #fff; }
+  .lesson.done .no { background: var(--c-leaf-edge); color: var(--c-card); }
   .ltxt { flex: 1; min-width: 0; display: grid; gap: 2px; }
   .ltxt b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .ltxt small { font: 700 var(--fs-s)/1.35 var(--font-ui); color: var(--text-soft); }
@@ -198,11 +193,10 @@
   .chev { font: 700 20px/1 var(--font-ui); color: var(--text-soft); }
   .pchips { display: flex; flex-wrap: wrap; gap: 6px; }
   .pc {
-    padding: 4px 10px; border-radius: var(--r-pill); font: 600 var(--fs-s)/1.3 'Fredoka', var(--font-ui);
+    padding: 4px 10px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.3 var(--font-ui);
     box-shadow: inset 0 0 0 1.5px var(--ctl-off); color: var(--text-soft);
   }
   .pc.caught { background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); box-shadow: inset 0 0 0 1.5px var(--leaf-text); color: var(--text); }
   .level-acts > .btn { flex: 1 1 100%; }
   .wait { margin: 0; padding: 24px 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }
-  @media (prefers-reduced-motion: reduce) { .lesson:active, .extra:active { transform: none; } }
 </style>

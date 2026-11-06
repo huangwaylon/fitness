@@ -17,7 +17,7 @@
   const stamped = $derived(stops.filter((s) => s.state?.stamped).length);
 </script>
 
-<button type="button" class="pathcard" data-kiki-path-open aria-disabled={!solo} data-sfx="open" onclick={() => solo && onopen()}>
+<button type="button" class="pathcard tile-btn" data-kiki-path-open aria-disabled={!solo} data-sfx="open" onclick={() => solo && onopen()}>
   <span class="face" aria-hidden="true">
     {#if cur}<OfficialArt key={villagerArt(cur.host, true)} alt="" size={52} eager />{:else}<span class="ico">🏝️</span>{/if}
   </span>
@@ -33,11 +33,7 @@
 </button>
 
 <style>
-  .pathcard {
-    appearance: none; border: 0; cursor: pointer; width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 76px;
-    border-radius: var(--r-card); background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: inherit; text-align: left;
-  }
-  .pathcard:active:not([aria-disabled="true"]) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .pathcard { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; min-height: 76px; border-radius: var(--r-card); text-align: left; }
   .pathcard[aria-disabled="true"] { cursor: default; background: var(--card); box-shadow: var(--sh-lip); }
   .face { flex: none; width: 52px; height: 52px; border-radius: 50%; background: color-mix(in srgb, var(--c-mint) 35%, var(--card)); display: grid; place-items: center; overflow: hidden; line-height: 0; }
   .ico { font-size: 28px; line-height: 1; }

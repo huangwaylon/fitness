@@ -10,10 +10,11 @@
   import { ORDER, type QuizTimer } from '#lib/kikimimi/session.ts';
   import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
   import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
-  import { SPEEDS, sx } from '#lib/kikimimi/ladder.ts';
+  import { SPEEDS } from '#lib/kikimimi/ladder.ts';
   import type { QuizGame } from './game.svelte.ts';
   import Host from '../characters/Host.svelte';
   import PlayerChip from './PlayerChip.svelte';
+  import LadderSteps from './LadderSteps.svelte';
   import { sound } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
@@ -28,7 +29,7 @@
   const people = $derived(ORDER.filter((w) => w === game.me || v.players.some((p) => p.who === w) || game.here.includes(w)));
   const joined = (w: Who) => v.players.some((p) => p.who === w);
   const hostName = $derived(week.view && v.host ? villagerNameOf(week.view, v.host) : '');
-  /** The sound check: not tried, tried (the hint shows), or failed to play. */
+  /** The sound check tried (its hint shows). */
   let tested = $state(false);
   const zero = $derived(sound.settings.volume <= 0);
 
@@ -80,7 +81,7 @@
   {#if v.ladder}
     <section class="sec ladder card" data-kiki-ladder-about>
       <p class="about">{t('kiki.ladderAbout')}</p>
-      <ol class="speeds" aria-hidden="true">{#each SPEEDS as x, k (k)}<li style:--h="{40 + k * 20}%"><span>{sx(x)}×</span></li>{/each}</ol>
+      <LadderSteps size="big" step={(k) => (k === SPEEDS.length - 1 ? 'up' : 'soft')} />
       <p class="hint">{t('kiki.ladderRule')}</p>
     </section>
   {:else}
@@ -88,7 +89,7 @@
     <h3 id="kk-lv" class="sec-label">{t('kiki.level')}</h3>
     <div class="levels" role="radiogroup" aria-labelledby="kk-lv">
       {#each LEVELS as lv (lv)}
-        <button type="button" class="lv" role="radio" aria-checked={v.lv === lv} aria-disabled={!v.amHost && v.lv !== lv} data-level={lv}
+        <button type="button" class="lv tile-btn" role="radio" aria-checked={v.lv === lv} aria-disabled={!v.amHost && v.lv !== lv} data-level={lv}
           data-sfx={v.lv === lv ? 'none' : 'tick'} onclick={() => v.amHost && level(lv)}>
           <span class="stars" aria-hidden="true">{levelMark(lv)}</span>
           <span>{t(`kiki.lv.${lv}`)}</span>
@@ -102,7 +103,7 @@
     <h3 id="kk-timer" class="sec-label">{t('kiki.timer')}</h3>
     <div class="timers" role="radiogroup" aria-labelledby="kk-timer" data-kiki-timer={v.timer}>
       {#each TIMER_ROW as x (x)}
-        <button type="button" class="tm" role="radio" aria-checked={v.timer === x} aria-disabled={!v.amHost && v.timer !== x} data-timer={x}
+        <button type="button" class="tm tile-btn" role="radio" aria-checked={v.timer === x} aria-disabled={!v.amHost && v.timer !== x} data-timer={x}
           data-sfx={v.timer === x ? 'none' : 'tick'} onclick={() => v.amHost && timer(x)}>{t(`kiki.timer.${x}`)}</button>
       {/each}
     </div>
@@ -121,11 +122,11 @@
     </section>
 
     {#if v.amHost}
-      <button type="button" class="row" role="switch" aria-checked={v.same} data-kiki-same data-sfx="self" onclick={same}>
+      <button type="button" class="row tile-btn" role="switch" aria-checked={v.same} data-kiki-same data-sfx="self" onclick={same}>
         <span class="rl">{t('kiki.same')}{#if v.same}<small>{t('kiki.sameOn')}</small>{/if}</span>
         <span class="sw" aria-hidden="true"><i></i></span>
       </button>
-      <button type="button" class="row" role="switch" aria-checked={v.vs} data-kiki-vs data-sfx="self" onclick={versus}>
+      <button type="button" class="row tile-btn" role="switch" aria-checked={v.vs} data-kiki-vs data-sfx="self" onclick={versus}>
         <span class="rl">{t('kiki.vs')}<small>{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</small></span>
         <span class="sw" aria-hidden="true"><i></i></span>
       </button>
@@ -164,26 +165,17 @@
   .sec { display: grid; gap: 8px; }
   /* the four levels a 2×2 grid (three and one left a hole) */
   .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  /* the アナウンス pack: a row of its own under the four stages (beside the ladder, not a fifth step) */
   /* the アナウンス pack: a full-width row under the stages (やま and ほし too) */
   .lv[data-level='5'] { grid-column: 1 / -1; order: 1; }
-  .lv {
-    appearance: none; border: 0; cursor: pointer; min-height: 64px; border-radius: var(--r-card); display: grid; place-content: center; gap: 2px;
-    background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-body)/1.2 var(--font-ui);
-  }
+  .lv { min-height: 64px; border-radius: var(--r-card); display: grid; place-content: center; gap: 2px; font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .lv[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
   .lv[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
-  .lv:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   .stars { color: var(--c-coral); letter-spacing: 1px; font-size: var(--fs-s); }
   /* こたえる じかん: one row of four (the chosen one yuzu, as a level's) */
   .timers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .tm {
-    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill);
-    background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1.1 var(--font-ui); padding: 0 4px;
-  }
+  .tm { min-height: var(--hit); border-radius: var(--r-pill); font: 700 var(--fs-s)/1.1 var(--font-ui); padding: 0 4px; }
   .tm[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
   .tm[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
-  .tm:active:not([aria-disabled='true']) { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   /* the chosen one's stars stay coral (the darker text coral on yuzu) */
   .lv[aria-checked='true'] .stars { color: var(--c-coral-text); }
   /* the mode: a segmented pair (the chosen one yuzu, as a level's) */
@@ -196,19 +188,9 @@
   .mode[aria-disabled='true'] { cursor: default; }
   .ladder.card { padding: 12px 14px; gap: 10px; }
   .about { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
-  .speeds { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); align-items: end; gap: 6px; height: 52px; }
-  .speeds li {
-    height: var(--h); border-radius: 10px 10px 4px 4px; display: grid; align-items: end; justify-items: center; padding-bottom: 3px;
-    background: color-mix(in srgb, var(--c-leaf) 45%, var(--card)); font: 700 var(--fs-s)/1 var(--font-num, var(--font-ui)); color: var(--c-ink);
-  }
-  .speeds li:last-child { background: var(--c-leaf); }
   .ladder .hint { margin: 0; }
-  .row {
-    appearance: none; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0;
-    border-radius: var(--r-card); border: 0; background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); text-align: left; width: 100%; font: inherit;
-  }
-  .row.static { background: var(--card); box-shadow: var(--sh-lip); cursor: default; }
-  .row:not(.static):active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .row { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px; margin: 0; border-radius: var(--r-card); text-align: left; width: 100%; }
+  .row.static { background: var(--card); box-shadow: var(--sh-lip); }
   .rl { flex: 1; min-width: 0; font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .rl small { display: block; margin-top: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .flag { font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text-soft); }
@@ -222,7 +204,6 @@
   }
   .row[aria-checked='true'] .sw { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); }
   .row[aria-checked='true'] .sw i { translate: 24px 0; }
-  .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .who { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 18px; padding: 14px 10px 12px; }
   .test { display: grid; gap: 6px; }
   .test .btn { width: 100%; }

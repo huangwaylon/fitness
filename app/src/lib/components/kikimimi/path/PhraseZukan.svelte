@@ -13,7 +13,7 @@
     import { currentAnswers, currentReport, pathUnits } from '../progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { unit = $bindable(null), onreview }: { unit?: string | null; onreview: (items: Item[]) => void } = $props();
+  let { unit = null, onreview }: { unit?: string | null; onreview: (items: Item[]) => void } = $props();
 
   const ids = $derived(pathUnits().map((u) => u.id));
   let ready = $state(0);
@@ -74,7 +74,7 @@
             data-kiki-phrase={p.id} data-caught={p.caught || undefined} data-sfx="tick" onclick={() => (open = open === p.id ? null : p.id)}>
             {#if p.caught}<span class="en" lang="en">{p.en}</span>{#if p.ja}<span class="ja">{p.ja}</span>{/if}<span class="stars" aria-hidden="true">★</span>
             {:else if p.heard}<span class="q" aria-hidden="true">{isDomain(s.domain) ? DOMAINS[s.domain].icon : '？'}</span><span class="ja">{t('kiki.zukan.heard')}</span>
-            {:else}<span class="q" aria-hidden="true">？</span>{/if}
+            {:else}<span class="q" aria-hidden="true">？</span><span class="sr-only">{t('kiki.zukan.notYet')}</span>{/if}
           </button>
         {/each}
       </div>
@@ -94,7 +94,6 @@
 
 <style>
   .zukan { display: grid; gap: 12px; }
-  .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .top { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
   .big { font-size: 30px; line-height: 1; }
   .ttxt { flex: 1; display: grid; gap: 2px; }
@@ -105,7 +104,7 @@
   .sec { display: grid; gap: 8px; }
   .shead { display: flex; align-items: center; gap: 10px; margin: 4px 4px 0; }
   .shead h3 { margin: 0; font: 700 var(--fs-body)/1.2 var(--font-ui); white-space: nowrap; }
-  .shead small { font: 700 var(--fs-s)/1 var(--font-num, var(--font-ui)); color: var(--text-soft); }
+  .shead small { font: 700 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
   .meter { flex: 1; height: 8px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; }
   .meter i { display: block; height: 100%; border-radius: inherit; background: var(--c-leaf-edge); }
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -114,7 +113,7 @@
     border-radius: 16px; background: var(--card); box-shadow: var(--sh-lip); display: flex; flex-direction: column; gap: 3px;
   }
   .zc[aria-expanded='true'] { box-shadow: inset 0 0 0 2.5px var(--c-yuzu-lip), var(--sh-lip); }
-  .zc .en { font: 600 15px/1.2 'Fredoka', var(--font-ui); overflow-wrap: anywhere; }
+  .zc .en { font: 700 15px/1.2 var(--font-ui); overflow-wrap: anywhere; }
   .zc .ja { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
   .zc .stars { margin-top: auto; color: var(--c-yuzu-lip); font-size: 12px; }
   .zc.seen, .zc.unseen { align-items: center; justify-content: center; text-align: center; box-shadow: none; background: color-mix(in srgb, var(--lip) 35%, transparent); }
@@ -122,7 +121,7 @@
   .zc.seen .q { filter: grayscale(1); opacity: .45; }
   .entry { display: grid; gap: 6px; padding: 12px 14px; }
   .entry p { margin: 0; }
-  .een { font: 600 var(--fs-talk)/1.3 'Fredoka', var(--font-ui); }
+  .een { font: 700 var(--fs-talk)/1.3 var(--font-ui); }
   .eja, .meta { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .trap { font: 700 var(--fs-s)/1.45 var(--font-ui); padding: 6px 10px; border-radius: 12px; background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); color: var(--c-ink); }
   .trap small { display: block; font-size: var(--fs-xs); }

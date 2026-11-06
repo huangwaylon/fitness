@@ -49,6 +49,9 @@ const deckOf: DeckOf = (seed, lv) => {
 /** A スピード はしご rung below its ladder's top: its reveal keeps the line hidden and silent (no replay, no transcript),
  *  so the next, faster rung is a listen of its own. */
 export const hidesLine = (it: Item | undefined): boolean => !!it?.rung && it.rung.n < SPEEDS.length;
+/** 🐢 offered for an item: levels 1-2 (its own level: にがて れんしゅう mixes them), never a dialogue (its lines play
+ *  at their own speed: `#playNow`). Play's and the review's alike. */
+export const canSlow = (it: Item): boolean => it.lv <= 2 && !isDialogue(it);
 
 /** A dialogue's lines' lengths (s, clips.json; 2 s while one has no clip). */
 const lineDurs = (it: Item): number[] => clipIds(it).map((id) => clipDur(id) ?? 2);

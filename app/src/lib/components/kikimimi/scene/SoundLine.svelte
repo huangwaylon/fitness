@@ -31,7 +31,7 @@
 
 {#snippet segs(list: typeof groups[number]['segs'])}
   {#each list as s, k (k)}
-    {#if s.link}<i class="arc" aria-hidden="true" data-kiki-link></i><span class="sr"> </span>
+    {#if s.link}<i class="arc" aria-hidden="true" data-kiki-link></i><span class="sr-only"> </span>
     {:else if s.w < 0}{s.t}
     {:else}<span class="w {wordState(s.w)}" class:focus={s.focus} class:drop={s.drop} class:st={s.stress} data-w={s.w}>{s.t}</span>{/if}
   {/each}
@@ -56,11 +56,10 @@
   .rd { position: relative; display: inline-block; border-bottom: 2.5px dotted var(--c-leaf-edge); line-height: 1.25; margin-top: .9em; }
   .rd::before {
     content: attr(data-say); position: absolute; left: 50%; translate: -50% 0; bottom: calc(100% + 1px); white-space: nowrap;
-    font: italic 700 13px/1 var(--font-ui); color: var(--leaf-text, var(--c-ink)); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); padding: 2px 6px; border-radius: 8px;
+    font: italic 700 13px/1 var(--font-ui); color: var(--c-leaf-text); background: color-mix(in srgb, var(--c-leaf) 18%, var(--c-card)); padding: 2px 6px; border-radius: 8px;
   }
   /* ‿ where two words join (the space kept for copy and VoiceOver, unseen) */
   .arc { display: inline-block; width: .5em; height: .3em; margin: 0 .04em; vertical-align: -.16em; border: 2.5px solid var(--c-leaf-edge); border-top: 0; border-radius: 0 0 .5em .5em; }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   @keyframes hop { from { transform: translateY(3px); } to { transform: none; } }
   @media (prefers-reduced-motion: reduce) { .playing .w.now { animation: none; } .w { transition: none; } }
 </style>

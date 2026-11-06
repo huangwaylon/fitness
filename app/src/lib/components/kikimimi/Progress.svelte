@@ -166,7 +166,6 @@
   .prog { display: grid; gap: 14px; --bar: #3E9E4C; --bar-track: color-mix(in srgb, var(--c-leaf) 22%, var(--card)); }
   /* night's navy card: the lighter leaf (≥ 3:1 there; the day's #3E9E4C passes the dataviz checks on cream) */
   :global(:root[data-tod='night']) .prog { --bar: var(--c-leaf); }
-  .card { border-radius: var(--r-card); background: var(--card); box-shadow: var(--sh-lip); }
   .hello { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
   .hello p { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .host { flex: none; line-height: 0; }
@@ -192,12 +191,12 @@
   .track i { display: block; height: 100%; border-radius: 0 4px 4px 0; background: var(--bar); }
   /* unmeasured: an outline, so an empty bar never reads as 0 % */
   li[data-m=""] .track { background: none; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--bar) 45%, var(--card)); }
-  .bv { font: 700 var(--fs-s)/1 var(--font-num, var(--font-ui)); text-align: right; color: var(--text); }
+  .bv { font: 700 var(--fs-s)/1 var(--font-num); text-align: right; color: var(--text); }
   li[data-m=''] .bv { color: var(--text-soft); }
   .bars.rungs { padding: 4px 0; gap: 8px; }
   .rungs li { grid-template-columns: 3em 1fr 3em; }
   .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
-  .big { margin: 0; font: 700 28px/1.1 var(--font-num, var(--font-ui)); }
+  .big { margin: 0; font: 700 28px/1.1 var(--font-num); }
   .spark { width: 100%; height: 36px; overflow: visible; }
   .spark path { fill: none; stroke: var(--bar); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
   .spark circle { fill: var(--bar); stroke: var(--card); stroke-width: 2; }
@@ -213,7 +212,7 @@
   .more thead th { text-align: right; font-size: var(--fs-xs); color: var(--text-soft); white-space: nowrap; padding-left: 8px; }
   .more .sub th { color: var(--text-soft); padding: 10px 0 2px; }
   .more tbody:first-of-type .sub th { padding-top: 2px; }
-  .more td { text-align: right; font-family: var(--font-num, var(--font-ui)); width: 4.5em; }
+  .more td { text-align: right; font-family: var(--font-num); width: 4.5em; }
   .more td.soft { color: var(--text-soft); }
   .hint { margin: 0 4px; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .center { text-align: center; }
