@@ -25,8 +25,10 @@
   import type { Filter } from '#lib/kikimimi/path.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
   import { levelMark } from './look.ts';
-  import { addUnit, itemOf, load, loadIds } from '#lib/kikimimi/pool.ts';
-  import type { UnitPlay } from '#lib/kikimimi/lesson.ts';
+  import { INDEX, addUnit, itemOf, load, loadIds, unitPart } from '#lib/kikimimi/pool.ts';
+  import { tierFor, type UnitPlay } from '#lib/kikimimi/lesson.ts';
+  import type { WireMode } from '#lib/kikimimi/round/wire.ts';
+  import { reloadForUpdate } from '#lib/ui-state/reload.ts';
   import type { QuizPhase } from '#lib/kikimimi/games/quiz/view.ts';
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -55,8 +57,8 @@
   type Page = { k: 'path' } | { k: 'unit'; id: string } | { k: 'zukan'; unit: string | null };
   let pages = $state<Page[]>([]);
   const page = $derived(pages.at(-1) ?? null);
-  /** A page shows over my own lobby only (solo: co-op lessons wait for framework 8c). */
-  const paged = $derived(!!page && inLobby && !lesson && !!v?.local && !!v.amHost);
+  /** A page shows over a lobby I host (kept alone, or shared: a co-op lesson picked for everyone). */
+  const paged = $derived(!!page && inLobby && !lesson && !!v?.amHost);
   let pathFilter = $state<Filter>('all');
   const path = $derived(inLobby ? currentPath(pathFilter) : null);
   const pageTitle = (p: Page) =>
@@ -70,7 +72,8 @@
     if (lesson) game?.dropLesson();
     else pages = pages.slice(0, -1);
   }
-  const due = $derived(paged ? rechecksDue(currentUnits(), currentReport()?.today ?? '') : []);
+  /** The 30-day rechecks (solo: in my lobby kept alone). */
+  const due = $derived(paged && v?.local ? rechecksDue(currentUnits(), currentReport()?.today ?? '') : []);
 
   // Each opening: a game of its own (what the island heard handed to it), joined or opened (mine: on this phone till
   // みんなを さそう); closing leaves it. Who I am may come a moment after the sheet (the week's first load). The game
@@ -84,7 +87,10 @@
       .catch(() => {}) // (offline with a chunk never fetched: the game waits for it as it would for a heard one)
       .then(() => {
         if (gone) return;
-        const it = new QuizGame({ live: quizLive(), me: who, fast: hook('kikimimi') === 'fast', heard: heardQuiz(), record: (row) => recordGame(who, row) });
+        const it = new QuizGame({
+          live: quizLive(), me: who, fast: hook('kikimimi') === 'fast', wire: wireHook(), heard: heardQuiz(), record: (row) => recordGame(who, row),
+          tierOf: (stage) => tierFor(currentReport()?.stats.level ?? null, stage)
+        });
         g = it;
         untrack(() => {
           if (joining) it.join(joining);
@@ -98,8 +104,8 @@
             deck: (ids: string[]) => loadIds(ids).then(() => it.practice(ids.map(itemOf).filter((x) => !!x))),
             talk: () => it.talk,
             // (a fixture unit put in from the bank's items, as if its chunk were the build's: the units' e2e)
-            unit: (unit: UnitPlay, ids: string[]) => loadIds(ids).then(() => {
-              addUnit(unit.id, { unit, items: ids.map(itemOf).filter((x) => !!x) });
+            unit: (unit: UnitPlay, ids: string[], cv?: string) => loadIds(ids).then(() => {
+              addUnit(unit.id, { unit, items: ids.map(itemOf).filter((x) => !!x) }, cv);
               unitAdded();
             }),
             lesson: () => it.lesson && { u: it.lesson.unit.id, lesson: it.lesson.lesson, tier: it.lesson.tier ?? null },
@@ -166,6 +172,15 @@
     toPlay: () => (tab = 'play')
   });
   const hostName = (w: 'A' | 'B' | 'G') => (week.view ? villagerNameOf(week.view, w) : '');
+  /** The e2e's `?wire=quiz`: this phone sends as an 8b one (the dual stack). */
+  const wireHook = (): WireMode | undefined => {
+    const w = hook('wire');
+    return w === 'quiz' || w === 'guarded' || w === 'play' ? w : undefined;
+  };
+  /** A unit's name (its chunk's, else the index's path line). */
+  const unitName = (u: string) => unitPart(u)?.unit.name ?? INDEX.paths.find((p) => p[0] === u)?.[1] ?? '';
+  /** A co-op lesson in my shared lobby: who's in it, whether I start it, the others' wait line. */
+  const shared = $derived(v && !v.local && lesson ? { players: v.players.map((p) => p.who), host: v.amHost, wait: t('kiki.waitHost', { name: v.host ? hostName(v.host) : '' }) } : null);
   /** The countdown (WINDOWS.countdown, 4 s): 「よーい」 for its first second (4), then 3-2-1. */
   const count = $derived(v && v.phase === 'countdown' ? Math.max(1, Math.ceil((v.until - game!.now) / 1000)) : 0);
 </script>
@@ -184,9 +199,15 @@
         <div class="center idle">
           <Host size={96} />
           {#if v.invite}
-            <div class="invite card" data-kiki-invite={v.invite.g}>
-              <p class="say">{t('kiki.invited', { name: hostName(v.invite.host) })}<small>{#if v.invite.ladder}{t('kiki.mode.ladder')}{:else}{levelMark(v.invite.lv)} {t(`kiki.lv.${v.invite.lv}`)}{/if}{#if v.invite.started} · {t('kiki.started')}{/if}</small></p>
-              <button type="button" class="btn" data-kiki-join data-sfx="confirm" onclick={() => game?.join(v.invite!.g)}>{t('kiki.joinIt')}</button>
+            <div class="invite card" data-kiki-invite={v.invite.g} data-kiki-blocked={v.invite.blocked}>
+              <p class="say">{t('kiki.invited', { name: hostName(v.invite.host) })}<small>{#if v.invite.blocked}{t('kiki.update.why')}{:else if v.invite.lesson && v.invite.u}{unitName(v.invite.u)} · {t(`kiki.lesson.${v.invite.lesson}`)}{:else if v.invite.ladder}{t('kiki.mode.ladder')}{:else}{levelMark(v.invite.lv)} {t(`kiki.lv.${v.invite.lv}`)}{/if}{#if v.invite.started} · {t('kiki.started')}{/if}</small></p>
+              {#if v.invite.blocked}
+                <!-- newer content than this build's (its cv): the update, through the app's reload path -->
+                <p class="update" data-kiki-update-note>{t('kiki.update')}</p>
+                <button type="button" class="btn" data-kiki-update data-sfx="confirm" onclick={() => void reloadForUpdate()}>{t('kiki.update.now')}</button>
+              {:else}
+                <button type="button" class="btn" data-kiki-join data-sfx="confirm" onclick={() => game?.join(v.invite!.g)}>{t('kiki.joinIt')}</button>
+              {/if}
             </div>
           {/if}
           <button type="button" class="btn paper" data-kiki-own data-sfx="open" onclick={act.startOwn}>{t('kiki.openOwn')}</button>
@@ -207,7 +228,7 @@
           {/await}
         {/if}
       {:else if v.phase === 'lobby' && lesson}
-        <LessonIntro unit={lesson.unit} lesson={lesson.lesson} recheck={lesson.recheck} onstart={() => game?.go()} onback={() => game?.dropLesson()} />
+        <LessonIntro unit={lesson.unit} lesson={lesson.lesson} recheck={lesson.recheck} {shared} onstart={() => game?.go()} onback={() => game?.dropLesson()} />
       {:else if v.phase === 'lobby'}
         <div class="tabs" role="tablist" aria-label={t('kiki.title')}>
           {#each ['play', 'record'] as const as k (k)}
@@ -219,7 +240,7 @@
             {#if report}<Progress {report} canStart={v.amHost && v.local} onstart={act.startRec} onplay={() => (tab = 'play')} />{/if}
           {/await}
         {:else}
-          {#if path && path.stages.some((s) => s.stops.length) && v.amHost}<PathCard {path} solo={v.local} onopen={() => push({ k: 'path' })} />{/if}
+          {#if path && path.stages.some((s) => s.stops.length) && v.amHost}<PathCard {path} onopen={() => push({ k: 'path' })} />{/if}
           <Lobby {game} onlevel={keepLv} ontimer={keepTimer} onpractice={() => act.practice()} />
         {/if}
       {:else if v.phase === 'countdown'}
@@ -279,6 +300,7 @@
   .say small { display: block; margin-top: 4px; font-size: var(--fs-s); color: var(--text-soft); }
   .idle .btn { width: 100%; }
   .invite { width: 100%; display: grid; gap: 12px; padding: 16px; box-sizing: border-box; }
+  .update { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--coral-text); }
   .num {
     font: 700 96px/1 var(--font-num); color: var(--coral-text); text-shadow: 0 4px 0 var(--lip);
     animation: count 900ms var(--ease-bounce) both;

@@ -1,7 +1,8 @@
 // What the ききみみ sheet's buttons start (docs/kikimimi.md "UI"), over the sheet's game: もういっかい, a lesson again or
 // the next one, おわる, はまべ's quick quiz, the ずかん's phrase review, the misses again, にがて れんしゅう, a
 // recommendation's start, a unit's lesson, a lobby of my own. The sheet keeps its own state (open, its pages, the
-// lobby's tab) and hands it in as `ui`; what's solo (a lesson, a practice deck) only in my own lobby kept alone.
+// lobby's tab) and hands it in as `ui`; what's solo (a practice deck, the recheck) only in my own lobby kept alone, a
+// unit's lesson in any lobby I host (shared: a co-op lesson, docs/curriculum-units.md §4).
 import type { QuizGame } from './game.svelte.ts';
 import type { Item, Level } from '#lib/kikimimi/bank.ts';
 import { LEVELS } from '#lib/kikimimi/deck.ts';
@@ -29,10 +30,15 @@ export class KikiActions {
     this.#ui = ui;
   }
 
-  /** The game, in my own lobby kept alone (a lesson's or a practice deck's place), else null. */
+  /** The game, in my own lobby kept alone (a practice deck's place), else null. */
   #solo(): QuizGame | null {
     const g = this.#game();
     return g?.view?.amHost && g.view.local ? g : null;
+  }
+  /** The game, in a lobby I host (kept alone or shared: a lesson's place), else null. */
+  #hosting(): QuizGame | null {
+    const g = this.#game();
+    return g?.view?.amHost && g.view.phase === 'lobby' ? g : null;
   }
   /** A unit's lesson into my lobby, at my tier (my comfortable level against the unit's stage). */
   #lesson(g: QuizGame, unit: string, l: Lesson, recheck: boolean): void {
@@ -42,13 +48,21 @@ export class KikiActions {
 
   /** Play again: the host opens a new lobby at the same level (the others invited again if they were); another goes
    *  back to the invite (the host's next). A lesson: again at once (a チェック retried as often as wanted; never
-   *  locks), a new deal. */
+   *  locks), a new deal; a co-op one's host: a new lobby with that lesson, the others invited again. */
   again = (): void => {
     const g = this.#game(), v = g?.view;
     if (!g || !v) return;
     const ls = g.lesson;
     if (ls && v.local) {
       this.relesson(ls.unit.id, ls.lesson, ls.recheck, true);
+      return;
+    }
+    if (ls && v.amHost) {
+      const timer = v.timer;
+      g.close();
+      g.open(lastLv(), { timer });
+      g.invite();
+      this.#lesson(g, ls.unit.id, ls.lesson, false);
       return;
     }
     const host = v.amHost, lv = v.lv as Level, shared = !v.local, practicing = g.practicing;
@@ -128,9 +142,10 @@ export class KikiActions {
       g.go();
     } else this.practice(r.kind === 'skill' || r.kind === 'try' ? { skill: r.skill } : r.kind === 'accent' ? { accent: r.accent } : null);
   };
-  /** A unit's lesson from the path or its page: my lobby (a quiz's) takes its deck at my tier and shows its intro card. */
+  /** A unit's lesson from the path or its page: my lobby (a quiz's) takes its deck at my tier and shows its intro card;
+   *  shared, everyone's (a co-op lesson). The 30-day recheck is solo. */
   startLesson = (unit: string, l: Lesson, recheck = false): void => {
-    const g = this.#solo();
+    const g = recheck ? this.#solo() : this.#hosting();
     if (!g) return;
     if (g.view.ladder) g.configure({ ladder: false });
     this.#lesson(g, unit, l, recheck);
