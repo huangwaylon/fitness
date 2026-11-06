@@ -34,7 +34,9 @@ const ALLOW: Record<string, string[]> = {
   // ききみみ クイズ (docs/kikimimi.md): the session's pure state machine over the quiz intent (sync: the Live's type), the
   // bank naming roster ids (a type), the deck seeded by random
   kikimimi: ['types', 'contract', 'sync', 'random', 'villagers'],
-  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random']
+  // けっこんしき (docs/wedding.md): the board's pure rules (the note's markdown, its links; progress and time)
+  wedding: ['types', 'time'],
+  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'wedding', 'random']
 };
 
 function files(dir: string): string[] {

@@ -14,6 +14,7 @@
   import HudFood from './HudFood.svelte';
   import HudHealth from './HudHealth.svelte';
   import HudMenu from './HudMenu.svelte';
+  import WeddingHost from '../wedding/WeddingHost.svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
 
   interface Props {
@@ -78,6 +79,7 @@
 {#if settingsMounted}
   {#await loadSettings() then { default: SettingsSheet }}<SettingsSheet bind:open={settingsOpen} />{/await}
 {/if}
+<WeddingHost />
 {#if healthMounted}
   {#await loadHealth() then { default: HealthSheet }}<HealthSheet bind:open={healthOpen} />{/await}
 {/if}

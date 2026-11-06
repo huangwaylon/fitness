@@ -1,0 +1,102 @@
+<script lang="ts">
+  // けっこんしき's head (docs/wedding.md): NH's wedding arch beside the countdown (「あと 225にち」, 「きょう！」 on the
+  // day, 「12にち まえ」 after it), the two names on a yuzu plate, the day and the venue; under them the bouquet: a ring
+  // of petals filling with the board's percent around a posy, 「じゅんび 31%」 and the done / total of the top-level
+  // tasks. Static (nothing here is tappable).
+  import OfficialArt from '../characters/OfficialArt.svelte';
+  import { formatDate } from '#lib/i18n/format.ts';
+  import { formatNum, t } from '#lib/i18n/index.ts';
+  import type { Config } from './view.ts';
+
+  interface Props {
+    config: Config;
+    /** Days to the wedding (negative after it), null with no date. */
+    days: number | null;
+    /** The board's percent (0–1) and its done / total. */
+    sum: { percent: number; done: number; total: number };
+  }
+  let { config, days, sum }: Props = $props();
+  const pct = $derived(Math.round(sum.percent * 100));
+  /** The ring's arc (r 25: 157 around). */
+  const C = 2 * Math.PI * 25;
+  const label = $derived(days === null ? t('wed.noDate') : days > 0 ? t('wed.daysLabel', { n: formatNum(days) }) : days === 0 ? t('wed.dayOfLabel') : t('wed.pastLabel', { n: formatNum(-days) }));
+  const names = $derived(config.p1 || config.p2 ? t('wed.names', { a: config.p1 || '…', b: config.p2 || '…' }) : '');
+</script>
+
+<section class="top" data-wed-top aria-label={t('wed.title')}>
+  <div class="hero">
+    <span class="arch" aria-hidden="true"><OfficialArt key="deco/wedding-arch" size={104} eager /></span>
+    <div class="count">
+      <p class="days" data-wed-days={days ?? ''} aria-label={label}>
+        {#if days === null}
+          <span class="none">{t('wed.noDate')}</span>
+        {:else if days > 0}
+          {@const [pre, post] = t('wed.days', { n: '#' }).split('#')}
+          <span class="w" aria-hidden="true">{pre}</span><b class="n" aria-hidden="true">{formatNum(days)}</b><span class="w" aria-hidden="true">{post}</span>
+        {:else if days === 0}
+          <b class="n day" aria-hidden="true">{t('wed.dayOf')}</b>
+        {:else}
+          {@const [pre, post] = t('wed.past', { n: '#' }).split('#')}
+          <span class="w" aria-hidden="true">{pre}</span><b class="n past" aria-hidden="true">{formatNum(-days)}</b><span class="w" aria-hidden="true">{post}</span>
+        {/if}
+      </p>
+      {#if names}<p class="plate names" data-wed-names>{names}</p>{/if}
+      {#if config.date || config.venue}
+        <p class="where">{#if config.date}<span>{formatDate(config.date)}</span>{/if}{#if config.venue}<span>{config.venue}</span>{/if}</p>
+      {/if}
+    </div>
+  </div>
+  {#if sum.total}<div class="prep" role="img" aria-label={t('wed.prepLabel', { pct, done: sum.done, total: sum.total })} data-wed-progress={pct}>
+    <span class="ring" aria-hidden="true">
+      <svg viewBox="0 0 60 60">
+        <circle class="track" cx="30" cy="30" r="25" />
+        {#if pct > 0}<circle class="fill" cx="30" cy="30" r="25" stroke-dasharray="{(C * pct) / 100} {C}" transform="rotate(-90 30 30)" />{/if}
+      </svg>
+      <span class="posy"><OfficialArt key="flowers/pink-roses" size={30} eager /></span>
+    </span>
+    <span class="lbl" aria-hidden="true">{t('wed.prep')}</span>
+    <b class="pct" aria-hidden="true">{pct}<small>%</small></b>
+    <span class="bar" aria-hidden="true"><i style:width="{pct}%"></i></span>
+    <span class="tally" aria-hidden="true" data-wed-tally>{sum.done} / {sum.total}</span>
+  </div>{/if}
+</section>
+
+<style>
+  /* one card: a blush sky behind the arch (the board's own colour, cream at every time of day: a game object) */
+  .top {
+    --wed-pink: #F28DB0; --wed-blush: #FFE3EC;
+    position: relative; display: grid; gap: 10px; padding: 14px 16px 12px; border-radius: var(--r-card);
+    background: linear-gradient(170deg, var(--wed-blush), var(--c-cream) 62%); color: var(--c-ink);
+    box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+  }
+  .hero { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .arch { flex: none; width: 99px; height: 104px; display: grid; place-items: end center; line-height: 0; filter: drop-shadow(0 3px 0 rgb(140 90 60 / .16)); }
+  .count { flex: 1; min-width: 0; display: grid; justify-items: start; gap: 6px; }
+  .count p { margin: 0; }
+  .days { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 4px; line-height: 1; }
+  .w { font: 700 var(--fs-body)/1 var(--font-ui); color: var(--c-ink-soft); }
+  .n { font: 700 var(--fs-hero)/1 var(--font-num); font-variant-numeric: tabular-nums; color: var(--c-ink); letter-spacing: .01em; }
+  .n.day { font-family: var(--font-ui); font-size: var(--fs-title); color: #C2386A; }
+  .n.past { font-size: var(--fs-title); }
+  .none { font: 700 var(--fs-talk)/1.2 var(--font-ui); color: var(--c-ink-soft); }
+  .count .names { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-left: 2px; }
+  .where { display: flex; flex-wrap: wrap; gap: 0 10px; font: 700 var(--fs-s)/1.35 var(--font-ui); color: var(--c-ink-soft); }
+  .where span { white-space: nowrap; }
+
+  /* the bouquet: a 60px ring (cream track, pink fill) round the posy; the label, the percent, a bar and the tally */
+  .prep {
+    display: grid; grid-template-columns: 60px auto 1fr auto; grid-template-rows: auto auto; align-items: center; column-gap: 10px;
+    padding: 8px 10px 8px 6px; border-radius: var(--r-btn); background: color-mix(in srgb, var(--c-card) 75%, transparent);
+  }
+  .ring { grid-row: 1 / 3; position: relative; width: 60px; height: 60px; display: grid; place-items: center; }
+  .ring svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .track { fill: none; stroke: var(--wed-blush); stroke-width: 7; }
+  .fill { fill: none; stroke: var(--wed-pink); stroke-width: 7; stroke-linecap: round; transition: stroke-dasharray 600ms var(--ease-soft); }
+  .posy { position: relative; line-height: 0; }
+  .lbl { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--c-ink-soft); }
+  .pct { grid-column: 2; grid-row: 2; font: 700 var(--fs-title)/1 var(--font-num); font-variant-numeric: tabular-nums; }
+  .pct small { font-size: .6em; margin-left: 1px; }
+  .bar { grid-column: 3; grid-row: 1 / 3; height: 12px; border-radius: var(--r-pill); background: var(--wed-blush); overflow: hidden; box-shadow: inset 0 2px 0 rgb(0 0 0 / .05); }
+  .bar i { display: block; height: 100%; border-radius: inherit; background: var(--wed-pink); transition: width 600ms var(--ease-soft); }
+  .tally { grid-column: 4; grid-row: 1 / 3; font: 700 var(--fs-talk)/1 var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+</style>
