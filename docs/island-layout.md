@@ -9,7 +9,7 @@ editor; the homes, their looks and their rooms; the phone's もようがえ. Pho
 - **One tile = 30 world units** = one NH tile (10 model units of NH's furniture at the island's scale, world.ts
   `DECOR_U` = 3u a model unit: a 2-tile bench is 60u, an 80u villager is NH's chibi). The tent's room uses the same
   tile (10 model units), so an outdoor footprint and a room footprint mean the same thing.
-- **20 × 80 tiles**, x −90…510, z −90…2310 (`layout/grid.ts` `GRID`): the long island (land x −30…480, z −30…1680:
+- **20 × 80 tiles**, x −90…510, z −90…2310 (`layout/grid.ts` `GRID`): the long island (land x −30…420, z −30…1680:
   the user's call, 2026-11-02, first twice today's length, then 60 tiles: room for the homes and what comes) with a ring of
   sea, and 20 more rows of sea behind it (2026-11-06) for the island to grow back into (the editor's しまの おおきさ);
   everything off the grid is sea. A band of chunks that is all sea (and a field's reach round it) has no bake or mesh
@@ -18,6 +18,35 @@ editor; the homes, their looks and their rooms; the phone's もようがえ. Pho
   a constant.
 - **Chunks of 8 × 8 tiles** (3 × 10 of them; the last column sticks out past the grid and is sea): the unit of a
   terrain op. The ops allow up to 16 × 16 chunks (128 × 128 tiles), so the grid can grow again without a relay deploy.
+
+## The island's size
+
+`layout/resize.ts`, the editor's しまの おおきさ (user's choice, 2026-11-06: "Longer + reshape").
+
+- **An edge a tile at a time:** `resizeEdge(layout, edge, ±n)` → `{ codes, blocked }` (`edge` まえ `front`, おく `back`,
+  ひだり `left`, みぎ `right`). Along each line across the edge (a column for まえ / おく, a row for the sides) the outermost
+  land tile (the beach, a cliff's edge, a river's mouth) moves a tile out and the tile it leaves takes the inner tile's
+  kind and tier: a mouth runs on with the coast; a river running along the coast isn't doubled (the beach widens
+  there instead). Pulled in, the outermost tile moves in over the inner one and the sea takes its place, so a push then
+  a pull gives the island back.
+- **Bounds:** the land keeps `MARGIN` (2) tiles of sea round it on the grid and at least `MIN` (6) tiles across and
+  along; `codes` null past them. The default (15 × 57) can grow its back 19 rows (15 × 76) and its east a tile; its
+  front and west sit on the margin already. The width stays the grid's (the camera's x-centred rule); the camera's
+  middle across is the land box's middle (`model.ts midXOf`: engine.ts, the preview's ⌖, coast.ts's view), so a
+  lopsided pull stays centred.
+- **In the way:** what stands on a tile the sea takes, or is newly wrong on its new ground (validate's new issues), its
+  `fixed` marked (catalog: a home, the museum, the shop, K.K.'s stool, the board, a goal tree, the summer pieces).
+  `moveInside` moves each to its nearest clear tile (resolve.ts `clearTile`), the fixed and the biggest first; one with
+  nowhere near is put away unless it's fixed: a fixed one stuck holds the resize (the museum on a clifftop pulled in
+  two rows: it and its door no longer fit).
+- **The editor:** the side panel's しまの おおきさ, the land's size (`15 × 57`) and four edges' − / ＋ (greyed past the
+  bounds). A stepper hovered draws the ghost: the land gained green, lost red, the new coast dashed (plan.ts
+  `drawCoast`). A click is one action (edits.ts `resize`; ⌘Z): its chunk ops and any moves one burst (the store's
+  sink: `sendMany`), so the phones get it live and their camera's far end follows (Island3D fitEnds: the land's far
+  edge). Blocked, the list instead (★ fixed; a click selects the piece and centres it) and 「うごかす」 (moves them in,
+  the resize with them, one action) or やめる. The phone's もようがえ has no terraforming, so no resize.
+- **Costs:** the 20 sea rows add ~5 ms to a field rebuild (fieldsOf 70 → 75 ms in Node), 1.6 MB to the fields and no
+  GPU texture (an all-sea band has no bake); a resize step ~3 ms with its checks.
 
 ## The layout is data
 
@@ -334,7 +363,9 @@ anyway). `?demo` runs it on the demo's island (`?demo&as=B` beside it as the pho
   back), はじめの しまに もどす behind a confirm (the reset op: every object and chunk op before it void, the homes' looks
   kept).
 - **The e2e** (`e2e/editor.spec.ts`): a move reaches the other tab's layout live and stays across a reload; a stroke
-  and its undo / redo; R; Delete refusing a goal tree; placing (refused on the river); reset; the guest's door.
+  and its undo / redo; R; Delete refusing a goal tree; placing (refused on the river); reset; the guest's door; しまの
+  おおきさ (the back two rows out on the other tab live, its camera's far end further, ⌘Z; a pull blocked by a home, the
+  list's click, うごかす and its one ⌘Z).
   `e2e/editor-preview.spec.ts`: a pond placed on the plan is the island's pond in the preview, K.K. sits on his stool
   and follows it when it's dragged and turned; the phone view pans (kept over the island), ⌖ puts it back, a still
   preview draws no frame; a press on a piece picks it up without panning.
