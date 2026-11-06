@@ -18,7 +18,7 @@
   }));
 </script>
 
-<section class="card zk" aria-label={t('zukan.title')}>
+<section class="card zk" aria-label={t('title.zukan')}>
   {#each rows as r (r.kind)}
     <button type="button" class="zrow" data-sfx="page" data-zukan={r.kind} onclick={() => onopen(r.kind)}>
       <span class="ic"><OfficialArt key={KIND_ART[r.kind]} size={30} /></span>

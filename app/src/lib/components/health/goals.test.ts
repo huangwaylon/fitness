@@ -23,7 +23,7 @@ describe('the goals as shown', () => {
       goalLabel('s', 7), goalLabel('fa', null)].map(sp)).toEqual([
       '目標 8,000歩 以上', '目標 600 kcal 以上', '目標 45分 以上', '目標 120分 以上', '目標 66.0 kg 前後',
       '目標 19.5% 以下', '目標 22.0 前後', '目標 52.0 kg 以上', '目標 2,200 kcal 前後', '目標 110 g 以上',
-      '目標 7.0 g 以下', '目標 まだ'
+      '目標 7.0 g 以下', '目標なし'
     ].map(sp));
     expect([valueText('steps', 9214.8), valueText('p', 84.46, 1), deltaText('weight', -0.34), deltaText('body_fat_pct', 0.2), deltaText('bmi', 0.04), deltaText('lean_kg', null)].map(sp))
       .toEqual(['9,214歩', '84.5 g', '−0.3 kg', '+0.2%', '±0.0', '–']);
