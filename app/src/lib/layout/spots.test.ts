@@ -49,6 +49,21 @@ function userLayout(): Layout {
   return layoutOf(m);
 }
 
+describe('the bulletin board’s art keeps the day’s spots off the ground behind it (clear.ts tapCovered)', () => {
+  // (its 60u art, a button, covers the ground to ~88u past its back on screen at every zoom: a dig spot there hid once
+  // the camera settled and showed while it moved, flickering behind the board: 2026-11-06 on the user's island)
+  for (const [name, g] of [['the default', l], ['the user’s record', userLayout()]] as const)
+    test(`${name}: no weed or dig spot within three rows behind it, nor a tile each side`, () => {
+      const b = [...g.objects.values()].find((o) => o.k === 'board')!;
+      const tiles = objTiles(g, b), behind = (c: number, r: number) => tiles.some(([bc, br]) => Math.abs(c - bc) <= 1 && r - br >= 1 && r - br <= 3);
+      for (const [c, r] of openGrass(g)) expect(behind(c, r), `${c},${r}`).toBe(false);
+      for (let d = 1; d <= 61; d++) {
+        const date = new Date(Date.UTC(2026, 10, d)).toISOString().slice(0, 10), { dig, lawn } = daySpots(g, date, 'island-fund');
+        for (const [x, z] of [...dig, ...lawn]) expect(behind(...tileAt(x, z)), `${date} ${x},${z}`).toBe(false);
+      }
+    });
+});
+
 describe('the visitors’ stage and Gulliver’s beach, from the layout (spots.ts)', () => {
   const villagers = (g: Layout) => [...g.objects.values()].filter((o) => o.k === 'spot' && o.s !== 'stage').map((o) => objMid(g, o));
   for (const [name, g] of [['the default', l], ['the user’s record', userLayout()]] as const)
