@@ -102,10 +102,12 @@ test.describe('the day itself', () => {
 
   test('in the rain the ambience has its rain bed and footsteps splash', async ({ page }) => {
     test.setTimeout(60_000);
-    await open(page, 'date=2026-06-10T11:00&weather=rain&wander', true);
+    await open(page, 'date=2026-06-10T11:00&weather=rain', true);
     const s = (await page.locator('.if-scene').boundingBox())!;
     await page.mouse.click(s.x + s.width / 2, s.y + 60); // a tap on open sky unlocks audio
     await expect.poll(() => page.evaluate(() => (window as { __ambient?: string[] }).__ambient), { timeout: 8000 }).toEqual(['waves', 'rain']);
+    // the partner's outing: its footsteps
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __world: { wander(): boolean } }).__world.wander()), { timeout: 30_000 }).toBe(true);
     await expect
       .poll(() => page.evaluate(() => ((window as { __cues?: string[] }).__cues ?? []).filter((c) => c.startsWith('footstep-'))), { timeout: 30_000 })
       .toContain('footstep-splash');
