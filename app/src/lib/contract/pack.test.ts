@@ -2,7 +2,7 @@
 // do what, the caps, the phone's fold (the record's rows taken, its own queued ones judged) and the list over the seed.
 import { describe, expect, it } from 'vitest';
 import {
-  newPackId, ordBetween, PACK_MAX, PackBook, packClean, packCounts, packFold, packList, packMayEdit, packOpOf, packRowOf,
+  newPackId, ordBetween, PACK_MAX, PackBook, packClean, packFold, packList, packMayEdit, packOpOf, packRowOf,
   packSlot, tripNoteOf, type PackEntry, type PackSeed
 } from './pack.ts';
 import { eventSlot, validEventData } from './record.ts';
@@ -109,6 +109,28 @@ describe('the rules (PackBook)', () => {
     expect(b.accept(row('trip_note', 'G', { trip: 'okinawa', at: T, v: {} })).v).toBe('forbidden');
   });
 
+  it('the guest’s own category: its to change only while every item in it is its own too (as the phone’s ✎)', () => {
+    const b = new PackBook();
+    const cat = (who: W, at: number, extra: Record<string, unknown> = {}) =>
+      row('pack', who, { trip: 'okinawa', id: '_gcat0001', at, kind: 'cat', ord: 5, name: { ja: 'おやつ' }, icon: '🍙', by: 'G', ...extra });
+    b.apply(cat('G', T));
+    b.apply(set('G', '_gst00001', T + 1, { cat: '_gcat0001' }));
+    expect(b.accept(cat('G', T + 2, { name: { ja: 'おかし' } })).v).toBe('append');
+    expect(b.accept(rm('G', '_gcat0001', T + 2)).v).toBe('append');
+    // a member's item in it (or a seed item a member moved there): no more
+    b.apply(set('A', '_mine0001', T + 3, { cat: '_gcat0001' }));
+    expect(b.accept(rm('G', '_gcat0001', T + 4)).v).toBe('forbidden');
+    expect(b.accept(cat('G', T + 4, { ord: 0 })).v).toBe('forbidden');
+    expect(packMayEdit('G', packList('okinawa', SEED, b).find((c) => c.id === '_gcat0001')!)).toBe(false);
+    // the member's item moved out again: the guest's once more
+    b.apply(set('A', '_mine0001', T + 5, { cat: 'ok-0' }));
+    expect(b.accept(rm('G', '_gcat0001', T + 6)).v).toBe('append');
+    b.apply(set('B', 'ok-0-0', T + 7, { cat: '_gcat0001' }));
+    expect(b.accept(rm('G', '_gcat0001', T + 8)).v).toBe('forbidden');
+    // the members: anything
+    expect(b.accept(rm('B', '_gcat0001', T + 8)).v).toBe('append');
+  });
+
   it('ticks: a removed item’s go with it, a late one is stale; one slot a person', () => {
     const b = new PackBook();
     b.apply(set('A', '_tick0001', T));
@@ -172,7 +194,6 @@ describe('the phone’s fold and the list', () => {
     ]);
     expect(l[1].items[2]).toMatchObject({ name: { ja: 'パスポート' }, seed: true, by: null });
     expect(l[1].items[1]).toMatchObject({ name: { en: 'Licence' }, note: { en: 'JP' } });
-    expect(packCounts(l)).toEqual({ total: 4, done: { A: 1, B: 1, G: 1 } });
     expect(packList('nz', null, b)).toEqual([]);
     expect(tripNoteOf('okinawa', b)).toEqual({ flightRef: 'X1' });
     expect(tripNoteOf('seattle', b)).toBeNull();
@@ -181,5 +202,7 @@ describe('the phone’s fold and the list', () => {
 
   it('ord between neighbours', () => {
     expect([ordBetween(undefined, undefined), ordBetween(3, undefined), ordBetween(undefined, 3), ordBetween(1, 2)]).toEqual([0, 4, 2, 1.5]);
+    // no room left between them (or the same ord): null, the siblings are renumbered
+    expect([ordBetween(1, 1 + 2 ** -52), ordBetween(2, 2)]).toEqual([null, null]);
   });
 });

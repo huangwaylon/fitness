@@ -5,24 +5,28 @@
 // - `pack` sets a category or an item (its whole state) or removes one. The trip's seed (its data's `packing`, never
 //   on the relay) is the list until an op touches an id: a set op overrides a seed id, a removal hides it. A seed id is
 //   nobody's (the guest may not change it); an id an op made (`_` + base36, newPackId) is its creator's (`by`), and
-//   the guest changes only its own. The members change anything.
+//   the guest changes only its own (a category of its own only while every item in it is its own too: packMayEdit,
+//   the phone's rule and the record's). The members change anything.
 // - `pack_chk` is one person's tick of one item, `pack_reset` one person's "untick all" (their ticks older than it are
 //   off): each person writes only their own (the slot is theirs).
 // - `trip_note` is a trip's private values (booking refs, names: `{p:key}` tokens in the guide), written by the
 //   members (and the admin's load), read by all three keys.
 // Shared by the record (relay/src/store.ts), the model (model/state.ts) and the packing UI
 // (components/travel/packing.svelte.ts); pure and dependency-free (the plain text rules: contract/text.ts).
+import type { Who } from '../types.ts';
+import { isWho } from './api.ts';
 import { cleanLine } from './text.ts';
 
-/** Who wrote it: the merge's tie-break is a fixed order, A < B < G. */
-type Who = 'A' | 'B' | 'G';
+// (who wrote it: the merge's tie-break is a fixed order, A < B < G)
 type Rec = Record<string, unknown>;
 
 /** A text in both languages, at least one: shown in the reader's locale, else the other. */
 export type L = { ja?: string; en?: string };
 
 /** A trip's packing list as its data has it (lib/travel/trips/*.ts `packing`): the list until someone changes it. A
- *  category's and an item's `id` match SEED_ID; an item's place is its index (`ord` 0, 1, 2 …), its category's too. */
+ *  category's and an item's `id` match SEED_ID; an item's place is its index (`ord` 0, 1, 2 …), its category's too.
+ *  So once a trip's list is in use, a seed only grows at the ends (a new item last in its category, a new category
+ *  last) and never reorders: a moved item keeps its `ord`, which would then sit between other seed items. */
 export interface PackSeed {
   cats: { id: string; name: L; icon: string; items: { id: string; text: L; note?: L }[] }[];
 }
@@ -65,7 +69,6 @@ const isPackId = (v: unknown): v is string => isSeedId(v) || isNewId(v);
 const isInt = (n: unknown, lo: number, hi: number): n is number => Number.isInteger(n) && (n as number) >= lo && (n as number) <= hi;
 /** A time in ms since the epoch (2001 … 5138). */
 const isMs = (n: unknown): n is number => isInt(n, 1e12, 1e14);
-const isWho = (v: unknown): v is Who => v === 'A' || v === 'B' || v === 'G';
 const only = (d: Rec, keys: readonly string[]): boolean => Object.keys(d).every((k) => keys.includes(k));
 
 /** A new category's or item's id (the guest's and the members' alike). */
@@ -271,6 +274,14 @@ export class PackBook {
     return (this.rows.get(`pack|${trip}|${id}`) as (PackRow & { type: 'pack' }) | undefined) ?? null;
   }
 
+  /** The items the record holds in a category (a seed item only once an op has moved it there: a category an op made
+   *  holds no seed item else). */
+  #itemsIn(trip: string, cat: string): { by: Who | null }[] {
+    const out: { by: Who | null }[] = [];
+    for (const r of this.rows.values()) if (r.type === 'pack' && r.op.trip === trip && !r.op.rm && r.op.kind === 'item' && r.op.cat === cat) out.push({ by: r.op.by ?? null });
+    return out;
+  }
+
   /** The oldest removal of an id an op made in a trip (its slot), or null. */
   #oldestGone(trip: string): string | null {
     let best: (PackRow & { type: 'pack' }) | null = null;
@@ -291,9 +302,9 @@ export class PackBook {
         const set = h ? (h.op as PackSet) : null;
         const creator = set ? set.by ?? null : null;
         if (r.who === 'G') {
-          // the guest: only ids it made (a seed id is nobody's)
+          // the guest: only ids it made (a seed id is nobody's), a category only while all its items are its own
           if (isSeedId(op.id)) return { v: 'forbidden' };
-          if (set && creator !== 'G') return { v: 'forbidden' };
+          if (set && !packMayEdit('G', set.kind === 'cat' ? { by: creator, items: this.#itemsIn(op.trip, op.id) } : { by: creator })) return { v: 'forbidden' };
           if (!set && !op.rm && op.by !== 'G') return { v: 'forbidden' };
         }
         if (!h) {
@@ -408,28 +419,20 @@ export function packList(trip: string, seed: PackSeed | null | undefined, book: 
   return out;
 }
 
-/** How many of a list's items each person has packed, of how many. */
-export function packCounts(list: readonly PackCat[]): { total: number; done: Record<Who, number> } {
-  const done: Record<Who, number> = { A: 0, B: 0, G: 0 };
-  let total = 0;
-  for (const c of list)
-    for (const it of c.items) {
-      total++;
-      for (const w of it.ticks) done[w]++;
-    }
-  return { total, done };
-}
+/** Whether `who` may rename, move or remove a category or an item (`by`: its creator, null for the seed's; a category's
+ *  `items`): the members anything, the guest only what it made, a category only while every item in it is its own too
+ *  (the phone's ✎ and the record's accept alike). */
+export const packMayEdit = (who: Who, x: { by: Who | null; items?: readonly { by: Who | null }[] }): boolean =>
+  who !== 'G' || (x.by === 'G' && (x.items ?? []).every((i) => i.by === 'G'));
 
-/** Whether `who` may rename, move or remove a listed category or item: the members anything, the guest only what it
- *  made. */
-export const packMayEdit = (who: Who, x: { by: Who | null }): boolean => who !== 'G' || x.by === 'G';
-
-/** An `ord` between two neighbours' (either missing: the list's end). */
-export function ordBetween(before: number | undefined, after: number | undefined): number {
+/** An `ord` between two neighbours' (either missing: the list's end); null when there is none left between them (a
+ *  float's halves run out after ~50 moves into one gap: the siblings are renumbered then). */
+export function ordBetween(before: number | undefined, after: number | undefined): number | null {
   if (before === undefined && after === undefined) return 0;
   if (before === undefined) return after! - 1;
   if (after === undefined) return before + 1;
-  return (before + after) / 2;
+  const mid = (before + after) / 2;
+  return mid > before && mid < after ? mid : null;
 }
 
 /** A trip's note (its private values by key), or null: none on the record (yet). */

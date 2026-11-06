@@ -123,6 +123,20 @@ describe('the packing list in the record', () => {
     expect(names()).toEqual(['テント', 'Lamp', 'ウェイの', 'パスポート']);
   });
 
+  it('the guest’s own category: never removed (or changed) while a member’s item is in it, as the phone’s ✎', () => {
+    const cat = (who: W, extra: object = {}) => send(who, 'pack', { trip: 'okinawa', id: '_pkgcat01', at: at(), kind: 'cat', ord: 9, name: { ja: 'おやつ' }, icon: '🍙', by: 'G', ...extra });
+    expect(cat('G')).toMatchObject({ ok: true });
+    expect(item('G', '_pkg00001', 'ちんすこう', { cat: '_pkgcat01' })).toMatchObject({ ok: true });
+    expect(item('A', '_pka00001', 'ウェイの', { cat: '_pkgcat01' })).toMatchObject({ ok: true });
+    expect(rm('G', '_pkgcat01')).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(cat('G', { name: { ja: 'おかし' } })).toMatchObject({ ok: false, error: 'forbidden' });
+    expect(list().at(-1)!.items.map((i) => i.id)).toEqual(['_pka00001', '_pkg00001']);
+    // the member's item moved out: the guest's to remove again
+    expect(item('A', '_pka00001', 'ウェイの', { cat: 'gear' })).toMatchObject({ ok: true });
+    expect(rm('G', '_pkgcat01')).toMatchObject({ ok: true });
+    expect(list().map((c) => c.id)).toEqual(['gear', 'docs']);
+  });
+
   it('an op on an id an op made that the record doesn’t hold is dropped, unless it is the id’s creation', () => {
     expect(rm('A', '_pk0gone1')).toMatchObject({ ok: true, duplicate: true });
     expect(item('A', '_pk0gone2', 'だれの？', { by: 'B' })).toMatchObject({ ok: true, duplicate: true });

@@ -1,8 +1,11 @@
-// PackList's view of a trip's list (packView.ts): my counts, the chips, the text's language, what A, B and the guest
-// may change, the icons, and the 「じゅんび OK！」 celebration once per trip and person.
+// PackList's view of a trip's list (packView.ts): my counts, the text's language, what A, B and the guest may change
+// (nothing before I'm known), the banner's clipped name, the icons, and the 「じゅんび OK！」 celebration once per trip
+// and person.
 import { describe, expect, it } from 'vitest';
 import { packFold, packList, type PackEntry, type PackSeed } from '#lib/contract/pack.ts';
-import { celebrate, chipsOf, mayEditAs, myProgress, packView, pick } from './packView.ts';
+import { packMayEdit } from '#lib/contract/pack.ts';
+import { celebrate, clip, myProgress, packView } from './packView.ts';
+import { pick } from './text.ts';
 import { glyphOf, iconOf } from './icons.ts';
 
 const T = Date.parse('2026-11-06T03:00:00.000Z');
@@ -34,13 +37,15 @@ describe('packView', () => {
     expect(myProgress(packView(packList('okinawa', { cats: [] }, packFold([])), 'A', 'ja'))).toEqual({ mine: 0, total: 0, done: false });
   });
 
-  it('chips: the members always (lit when packed), the guest only once it has packed it', () => {
-    expect(chipsOf([])).toEqual([{ who: 'A', on: false }, { who: 'B', on: false }]);
-    expect(chipsOf(['B'])).toEqual([{ who: 'A', on: false }, { who: 'B', on: true }]);
-    expect(chipsOf(['A', 'G'])).toEqual([{ who: 'A', on: true }, { who: 'B', on: false }, { who: 'G', on: true }]);
-    const v = packView(listOf([chk('G', 'ok-0-0'), chk('B', 'ok-0-0')]), 'A', 'ja');
-    expect(v[0].rows[0].chips).toEqual([{ who: 'A', on: false }, { who: 'B', on: true }, { who: 'G', on: true }]);
-    expect(v[0].rows[1].chips.map((c) => c.who)).toEqual(['A', 'B']);
+  it('before I am known: nothing mine, nothing editable', () => {
+    const v = packView(listOf([chk('A', 'ok-0-0'), G_CAT, G_ITEM]), null, 'ja');
+    expect(v.flatMap((c) => [c.editable, c.mine, ...c.rows.map((r) => r.editable || r.mine)]).some(Boolean)).toBe(false);
+  });
+
+  it('clips a name for the one-line banner', () => {
+    expect(clip('ぼうし', 12)).toBe('ぼうし');
+    expect(clip('ながい ながい なまえの もちもの', 8)).toBe('ながい ながい…');
+    expect(Array.from(clip('🧳'.repeat(20), 12))).toHaveLength(12);
   });
 
   it('shows the reader’s language, else the other side', () => {
@@ -68,7 +73,7 @@ describe('packView', () => {
     const mixed = listOf([G_CAT, G_ITEM, row('A', 'pack', { trip: 'okinawa', id: '_a0000002', at: T + 3, kind: 'item', cat: '_g0000001', ord: 1, name: { ja: 'A の' }, by: 'A' })]);
     const gc = packView(mixed, 'G', 'ja').at(-1)!;
     expect([gc.editable, gc.rows.map((r) => r.editable)]).toEqual([false, [true, false]]);
-    expect(mayEditAs('A', gc.cat)).toBe(true);
+    expect([packMayEdit('A', gc.cat), packMayEdit('G', gc.cat)]).toEqual([true, false]);
   });
 
   it('icons: the guides’ names as NH art, an emoji as itself, anything else a bag', () => {
