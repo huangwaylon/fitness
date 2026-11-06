@@ -9,7 +9,10 @@ import { drawn } from './mix.ts';
 import { skillsOf } from './tags.ts';
 import { RECENT_GAMES, SEED_TRIES, agesOf, freshSeed, overlap, remember, seedWith, staleness, type Recent } from './recent.ts';
 import { FLAG_BITS, isLadder, timerOf, versus } from './seed.ts';
-import { QuizSession, type DeckOf } from './session.ts';
+import { QuizRounds } from './games/quiz/session.ts';
+import { quizGame, type QuizSource } from './games/quiz/def.ts';
+import { ladderGame } from './games/ladder/def.ts';
+import { registry } from './round/registry.ts';
 import { practiceDeck } from './srs.ts';
 import { statsOf } from './progress.ts';
 import { loadAll } from './pool.ts';
@@ -128,19 +131,22 @@ describe('kikimimi recent history', () => {
     expect(practiceDeck({ answers: [], stats, today, seed: 5, levels: lv, focus }).map((it) => it.id)).toEqual(first);
   });
 
-  it('the session asks the host’s seedFor at open and when configure changes the level or a flag, the flags as set', () => {
-    const asked: { lv: number; flags: number }[] = [];
-    const deckOf: DeckOf = () => ({ count: 8, dur: () => 1000, answer: () => 0 });
-    const s = new QuizSession({ me: 'A', deckOf, random: mulberry32(1), seedFor: ({ lv, flags }) => (asked.push({ lv, flags }), (0xabc0 | flags) >>> 0) });
+  it('the session asks the host’s seedFor at open and when configure changes the game, its level or a flag, the flags as set', () => {
+    const asked: { gm: string; lv: number; flags: number }[] = [];
+    const src: QuizSource = { rounds: () => Array.from({ length: 8 }, (_, i) => ({ kind: 'quiz.word', id: `q${i}`, answer: 0, play: 1000 })) };
+    const s = new QuizRounds({
+      me: 'A', defs: registry([quizGame(src), ladderGame(src)]), random: mulberry32(1),
+      seedFor: ({ gm, o, flags }) => (asked.push({ gm, lv: o[0], flags }), (0xabc0 | flags) >>> 0)
+    });
     s.open({ lv: 6, vs: true, timer: 60 }, 0);
-    expect(asked).toEqual([{ lv: 6, flags: 1 | (2 << 2) }]);
+    expect(asked).toEqual([{ gm: 'quiz', lv: 6, flags: 1 | (2 << 2) }]);
     let v = s.view(0);
     expect([v.seed, versus(v.seed), timerOf(v.seed), v.lv]).toEqual([0xabc0 | 9, true, 60, 6]);
     s.configure({ same: true }, 1); // no new deck: the seed stays
     expect(asked).toHaveLength(1);
     s.configure({ lv: 7 }, 2);
     s.configure({ ladder: true }, 3);
-    expect(asked.slice(1)).toEqual([{ lv: 7, flags: 9 }, { lv: 7, flags: 11 }]);
+    expect(asked.slice(1)).toEqual([{ gm: 'quiz', lv: 7, flags: 9 }, { gm: 'ladder', lv: 7, flags: 11 }]);
     v = s.view(3);
     expect([isLadder(v.seed), versus(v.seed), timerOf(v.seed)]).toEqual([true, true, 60]);
   });

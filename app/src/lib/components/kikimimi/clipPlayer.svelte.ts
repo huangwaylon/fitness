@@ -5,7 +5,7 @@
 // `talk` follows its turns on every phone.
 import { clipIds, isDialogue, type Item } from '#lib/kikimimi/bank.ts';
 import { clipDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
-import type { QuizView } from '#lib/kikimimi/session.ts';
+import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import { TEST_CLIP } from '#lib/kikimimi/pool.ts';
 import { playVoice } from '#lib/sound/sound.svelte.ts';
 import { prefetchClips, voiceClip } from './packs.ts';
@@ -52,8 +52,9 @@ export class ClipPlayer {
   follow(v: QuizView, items: readonly Item[], now: number, hidesLine: (it: Item) => boolean): void {
     // the lobby: the deck's packs fetched (packs.ts: the first question's alone, then the rest; a level-1 deck's one
     // pack, ~0.7 MB, a level-4 deck's up to eight), the first clip decoded
-    if (v.g && (v.phase === 'lobby' || v.phase === 'countdown') && this.#fetched !== `${v.seed}:${v.lv}` && items.length) {
-      this.#fetched = `${v.seed}:${v.lv}`;
+    const dealt = `${v.gm}:${v.seed}:${v.o}:${v.u ?? ''}`;
+    if (v.g && (v.phase === 'lobby' || v.phase === 'countdown') && this.#fetched !== dealt && items.length) {
+      this.#fetched = dealt;
       prefetchClips(items.flatMap((it) => clipIds(it)));
       if (v.speaks) void voiceClip(clipIds(items[0])[0]);
       preloadStage(items[0]);

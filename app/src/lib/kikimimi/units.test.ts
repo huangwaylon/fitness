@@ -286,7 +286,9 @@ describe('units: compiled', () => {
     const a = JSON.parse(withUnits.get('index.json')!), b = JSON.parse(without.get('index.json')!);
     expect(a.paths).toEqual([['tr-hotel', 'ホテルで こまった', 'mori', 'tabi', 'diana', 'draft', 7, 'ホテルの もんだいを ききとれる']]);
     expect(a.units['tr-hotel']).toEqual({ parts: ['u-tr-hotel'], n: 14, cv: expect.stringMatching(/^[0-9a-f]{6}$/) });
+    expect(a.games['lesson:tr-hotel']).toMatch(/^[0-9a-f]{6}$/);
     delete a.units['tr-hotel'];
+    delete a.games['lesson:tr-hotel'];
     expect({ ...a, paths: [] }).toEqual(b);
   });
 

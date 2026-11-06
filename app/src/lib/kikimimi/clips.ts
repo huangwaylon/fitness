@@ -60,7 +60,7 @@ export const LINE_GAP = 0.3;
 export const voiced = (it: Pick<Item, 'id' | 'lines'>, clips: Readonly<Record<string, unknown>>): boolean => clipIds(it).every((id) => id in clips);
 
 /** An item's length as played (s): its clip, or a dialogue's lines in turn with LINE_GAP between them (the session's
- *  schedule: kikimimi/session.ts QuizDeck.dur); undefined while a clip is missing. */
+ *  schedule: components/kikimimi/decks.ts, a round's `play`); undefined while a clip is missing. */
 export function itemDur(it: Pick<Item, 'id' | 'lines'>, clips: Readonly<Record<string, Pick<Clip, 'dur'>>> = CLIPS): number | undefined {
   const durs = clipIds(it).map((id) => clips[id]?.dur);
   return durs.some((d) => d === undefined) ? undefined : (durs as number[]).reduce((a, b) => a + b, 0) + LINE_GAP * (durs.length - 1);

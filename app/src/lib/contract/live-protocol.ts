@@ -167,7 +167,7 @@ const SONG = /^[a-z0-9-]{1,32}$/;
  *  replayed or slowed, `s` my running total), `skip` the host's position: question `i` starts at `at` (0-8; 8: the
  *  results), sent as it changes (つぎへ) and every few seconds as a beacon; a player's `skip` is its よみおわった (`i` the
  *  question it's in) or, the host gone, its つぎへ (`i` the next); `end` the host cancelled it.
- *  @public (kikimimi/session.ts) */
+ *  @public (kikimimi/round/wire.ts) */
 export type QuizWire =
   | { g: string; op: 'open'; seed: number; lv: QuizLv; same: boolean }
   | { g: string; op: 'join' | 'leave' | 'end' }

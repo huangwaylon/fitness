@@ -9,15 +9,16 @@
 //   node scripts/kikimimi-packs.ts          (npm run kikimimi:packs; the audio script runs it at its end)
 //   node scripts/kikimimi-packs.ts --unpack (every clip into the work folder: --listen, the words, the beds)
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { clipIds } from '../src/lib/kikimimi/bank.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
 import { readUnits } from '../src/lib/kikimimi/compile.ts';
 import { LADDERS } from '../src/lib/kikimimi/ladders.ts';
 import { PACK_MAX, SLOW_PACK_MAX, packFile, planHome, type PackEntry, type Packs } from '../src/lib/kikimimi/packing.ts';
-import { BANK } from '../src/lib/kikimimi/source.ts';
+import { joined } from '../src/lib/kikimimi/source.ts';
 import { writeLevels } from './kikimimi-levels.ts';
+import { writeAtomic } from './tts/tools.ts';
 
 const APP = join(import.meta.dirname, '..');
 const KIKI = join(APP, 'src/lib/kikimimi');
@@ -40,7 +41,10 @@ function homes(clips: Readonly<Record<string, Clip>>): Map<string, string[]> {
     if (!out.has(home)) out.set(home, []);
     out.get(home)!.push(id);
   };
-  for (const lv of [...new Set(BANK.map((it) => it.lv))].sort((a, b) => a - b)) for (const it of BANK.filter((x) => x.lv === lv)) for (const id of clipIds(it)) add(`lv${lv}`, id);
+  // the bank for these clips, not the module's BANK (clips.json at import): the audio script packs a waiting set's
+  // items in the run that voices them
+  const bank = joined(clips);
+  for (const lv of [...new Set(bank.map((it) => it.lv))].sort((a, b) => a - b)) for (const it of bank.filter((x) => x.lv === lv)) for (const id of clipIds(it)) add(`lv${lv}`, id);
   for (const l of LADDERS) for (const r of l.rungs) add('ladder', r.id);
   for (const { raw } of readUnits()) {
     const u = raw as { unit: string; items?: { id: string; lines?: unknown[] }[] };
@@ -113,12 +117,12 @@ export function writePacks(quiet = false): { packs: Packs; written: string[]; re
   for (const [name, e] of Object.entries(packs)) {
     const f = packFile(name, e);
     if (existsSync(join(LISTEN, f)) && prev[name]?.hash === e.hash) continue;
-    writeFileSync(join(LISTEN, f), bufs.get(name)!);
+    writeAtomic(join(LISTEN, f), bufs.get(name)!);
     written.push(f);
   }
   const removed = readdirSync(LISTEN).filter((f) => !want.has(f));
   for (const f of removed) rmSync(join(LISTEN, f));
-  writeFileSync(PACKS_JSON, `{\n${Object.entries(packs).map(([name, e]) => `${JSON.stringify(name)}:${JSON.stringify(e)}`).join(',\n')}\n}\n`);
+  writeAtomic(PACKS_JSON, `{\n${Object.entries(packs).map(([name, e]) => `${JSON.stringify(name)}:${JSON.stringify(e)}`).join(',\n')}\n}\n`);
   if (!quiet) {
     const total = [...bufs.values()].reduce((s, b) => s + b.length, 0);
     console.log(`${Object.keys(packs).length} packs, ${(total / 1e6).toFixed(1)} MB in ${LISTEN}; written ${written.length}${written.length ? `: ${written.join(' ')}` : ''}; removed ${removed.length}`);
@@ -140,7 +144,7 @@ export function unpackClips(dir = WORK): number {
       if (existsSync(f) && sha8(readFileSync(f)) === hash) continue;
       const b = bytesOf(id, slow, hash);
       if (!b) throw new Error(`kikimimi-packs: ${fileName(id, slow)} is in no pack at its hash`);
-      writeFileSync(f, b);
+      writeAtomic(f, b);
       n++;
     }
   }

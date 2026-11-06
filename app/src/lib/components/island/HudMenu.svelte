@@ -2,7 +2,7 @@
   // The HUD menu, the cluster's right end (docs/design.md "Island"): a small round cream button with NH's leaf (the
   // toggle; aria-expanded) that drops seven pills down under it, right-aligned, one after the other on a small spring:
   // 「ベル 121」 (the shared wallet's balance, no icon: the number is the picture) → the panel (ごほうび), ずかん (NH's
-  // agrias butterfly), えいご ききとり (しずえ's head: ききみみ クイズ, its sheet opened here, the voice session begun in the
+  // agrias butterfly), ききみみ with its small えいご (しずえ's head: ききみみ's sheet opened here, the voice session begun in the
   // tap itself; 「さそわれています！」 on it, and a dot on the leaf, while someone's invite is live), りょこう (Orville's
   // head: the trips' sheet, travel/open.svelte.ts), けっこんしき (パニエル's
   // head: the wedding board, its sheet opened here: components/wedding), トレイル (a mountain: the hiking trails,
@@ -193,7 +193,7 @@
     <!-- the voice session begins in the tap itself (iOS: the clips play with the silent switch on), the sheet after the beat -->
     <button type="button" class="item" style="--i: 2" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self"
       onclick={(e) => (wakeQuizVoice(), pick(e, () => openQuiz()))}>
-      <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{/if}</span>
+      <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{:else}<small class="sub">{t('panel.kikimimiSub')}</small>{/if}</span>
       <span class="ic"><Host head size={30} animate={false} eager /></span>
     </button>
     <!-- りょこう: the trips (Orville's head on the pill only) -->
@@ -278,7 +278,8 @@
   .open .item:active { transform: translateY(2px) scale(.97); box-shadow: 0 2px 0 var(--c-lip); transition: transform 80ms var(--ease-squash), box-shadow 80ms; }
   .item:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .lbl { letter-spacing: .02em; }
-  .invited { display: block; margin-top: 3px; font-size: var(--fs-xs); color: var(--c-coral-text); }
+  .invited, .sub { display: block; margin-top: 3px; font-size: var(--fs-xs); color: var(--c-coral-text); }
+  .sub { color: var(--text-soft); }
   /* an invite waiting (the leaf folded): a small coral dot on its rim */
   .dot {
     position: absolute; top: 3px; right: 3px; width: 10px; height: 10px; border-radius: 50%; pointer-events: none;

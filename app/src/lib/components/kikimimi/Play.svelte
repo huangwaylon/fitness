@@ -1,17 +1,14 @@
 <script lang="ts">
-  // One question of ききみみ クイズ (docs/kikimimi.md "The game"): the speaker pops in (the lead-in), their bubble stays
-  // empty 「♪…」 with a bar the clip's length while it plays, 🔁 and 🐢 (levels 1-2) under it as often as wanted (off
+  // One question of ききみみ クイズ (docs/kikimimi.md "The game"), in the round's frame (frame/RoundFrame.svelte: the
+  // players' chips, the timer, the status line, つぎへ / よみおわった): the speaker pops in (the lead-in), their bubble
+  // stays empty 「♪…」 with a bar the clip's length while it plays, 🔁 and 🐢 (levels 1-2) under it as often as wanted (off
   // on おなじへや's other phones: the host's plays them); what to listen for (the item's `ask`, or its type's) and a word
-  // item's line with its blank; the choices dimmed until the first play ends, then one final tap; each player's ✓ as
-  // they answer. The reveal: ○ on the right choice, × on a wrong pick, the English (its key words marked), the Japanese
-  // (a reply's on two lines) and the accent, +100 and the 「いっぱつ！」 stamp (a badge, no points), a missed picture's
-  // name, the speaker's ✨ / 💦 and each player's, the host's word. The reveal is untimed: the host's つぎへ (with how many
-  // tapped よみおわった), the others' よみおわった (📖 on their chip); solo, my つぎへ; the host gone, anyone's つぎへ. The
-  // answer window's bar only when it's timed (こたえる じかん なし: none). The question sits mid-screen on a tall phone.
+  // item's line with its blank; the choices (frame/ChoiceGrid.svelte) dimmed until the first play ends, then one final
+  // tap. The reveal: ○ on the right choice, × on a wrong pick, the English (its key words marked), the Japanese (a reply's
+  // on two lines) and the accent, the verdict (Verdict.svelte over frame/RevealFrame.svelte), the speaker's ✨ / 💦.
   // A dialogue (gist, next): both speakers' heads, the one talking bobbing; at the reveal the verdict and only the right
   // choice and my pick (never under the sticky つぎへ), then its two-sided transcript
-  // (Transcript.svelte) with the focus marked; level 4's `note` (the trap) under the accent. Co-op (several, not
-  // たいせん): the others' chips only ✓, no points, and how many got it at the reveal (「2にん せいかい！」), never who.
+  // (Transcript.svelte) with the focus marked; level 4's `note` (the trap) under the accent.
   // A staged item (level 4: a scene, or a phone, PA or video call) shows the scene card instead of the plain stage from
   // the lead-in to the reveal (scene/SceneCard.svelte); at the reveal the English carries its sound marks and the karaoke
   // as it replays (scene/SoundLine.svelte), the marks' key under it.
@@ -23,20 +20,19 @@
   import { canSlow, hidesLine, type QuizGame } from './game.svelte.ts';
   import { SPEEDS, laddersIn, rungState } from '#lib/kikimimi/ladder.ts';
   import { sx } from './look.ts';
-  import { isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
+  import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
   import LadderSteps from './LadderSteps.svelte';
   import Verdict from './Verdict.svelte';
-  import ChoiceGrid from './ChoiceGrid.svelte';
+  import RoundFrame from './frame/RoundFrame.svelte';
+  import ChoiceGrid from './frame/ChoiceGrid.svelte';
   import ClipBar from './scene/ClipBar.svelte';
   import SceneCard from './scene/SceneCard.svelte';
   import SoundLine from './scene/SoundLine.svelte';
   import MarkLegend from './scene/MarkLegend.svelte';
   import { isStaged, rosterName as name, speakersOf } from './scene/stage.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
-  import Host from '../characters/Host.svelte';
   import Mark from '../ui/Mark.svelte';
-  import PlayerChip from './PlayerChip.svelte';
   import { villagerArt } from '#lib/art.ts';
   import { t } from '#lib/i18n/index.ts';
 
@@ -76,9 +72,8 @@
     if (k === rs.n - 1) return reveal ? (climbed ? 'up' : 'off') : 'now';
     return 'ahead';
   }
-  const solo = $derived(v.players.length <= 1);
-  /** Co-op (a game of several, not たいせん): no one's score or right / wrong on the others' chips, only how many got it. */
-  const coop = $derived(!solo && !v.vs);
+  /** Co-op (a game of several, not たいせん): how many got it at the reveal, never who. */
+  const coop = $derived(v.players.length > 1 && !v.vs);
 
   /** The bubble's bar: a replay sounding, else the first play (on every phone: おなじへや's others hear the host's). */
   const bar = $derived.by(() => {
@@ -93,12 +88,6 @@
   const ask = $derived(it ? (it.ask ?? (it.type === 'word' || it.type === 'reply' ? t(`kiki.ask.${it.type}`) : '')) : '');
   /** The reveal's verdict (しずえ's word on it): sat out, right, wrong (a pick) or none (time up). */
   const verdict = $derived(v.out ? 'out' : right ? 'right' : mine ? 'wrong' : 'none');
-
-  function chip(p: (typeof v.players)[number]): 'answered' | 'right' | 'wrong' | 'away' | null {
-    if (reveal) return coop ? (p.pick ? 'answered' : null) : p.pick ? (p.pick.ok ? 'right' : 'wrong') : null;
-    if (p.answered) return 'answered';
-    return p.here ? null : 'away';
-  }
   /** A dialogue's line being spoken at this question: when it started (its karaoke in the transcript). */
   const talkFrom = $derived(game.talk && game.talk.i === v.i ? game.talk.from : null);
 </script>
@@ -123,121 +112,93 @@
 {/snippet}
 
 {#if it}
-  <div class="q" data-kiki-q={v.i} data-type={it.type} data-phase={v.phase}>
-    {#if !solo}
-      <div class="players">
-        {#each v.players as p (p.who)}<PlayerChip who={p.who} state={chip(p)} ready={p.ready} note={coop ? null : t('kiki.points', { n: p.score })} size={36} />{/each}
-      </div>
-    {/if}
-
-    {#if rs}
-      <!-- the ladder: its four speeds as rising steps -->
-      <div class="ladder" data-kiki-rung={rs.n} data-kiki-ladder={it.rung!.ladder}>
-        <span class="lname">{t('kiki.rung.which', { k: ladderNo, n: ladders.length })}</span>
-        <LadderSteps {step} label={t('kiki.rung.label', { x: sx(SPEEDS[rs.n - 1]), n: rs.n, of: rs.of })} />
-      </div>
-    {/if}
-
-    {#if card}
-      <div class="staged" data-kiki-card>
-        <SceneCard {it} {talker} {bar} now={game.now} pop={v.phase === 'lead'} {name} />
-        {@render hearRow()}
-      </div>
-    {:else}
-      <div class="stage" class:dlg={reveal && dlg}>
-        {#if dlg}
-          <span class="speaker duo" class:pop={v.phase === 'lead'} data-kiki-duo>
-            {#each duo as who (who)}
-              <span class="one" class:talk={!!bar && talker === who}>
-                <OfficialArt key={villagerArt(who, true)} alt={name(who)} size={reveal ? 44 : 56} eager />
-              </span>
-            {/each}
-            {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
-          </span>
-        {:else}
-          <span class="speaker" class:pop={v.phase === 'lead'} class:talk={!!bar}>
-            <OfficialArt key={villagerArt(it.speaker, true)} alt={name(it.speaker)} size={76} eager />
-            {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
-          </span>
-        {/if}
-        <div class="bubble" class:open={reveal} aria-live="polite">
-          {#if reveal && dlg}
-            <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
-            {#if it.note}{@render fold(note)}{/if}
-          {:else if reveal && hidesLine(it)}
-            <!-- a rung below the top: the line stays a secret till the top's reveal -->
-            {@render listening()}
-            <p class="later" data-kiki-later>{t('kiki.rung.later', { x: sx(SPEEDS[it.rung!.n]) })}</p>
-          {:else if reveal && parts}
-            {#if rs}<p class="height" data-kiki-height={height}>{height ? t('kiki.rung.height', { x: sx(SPEEDS[height - 1]) }) : t('kiki.rung.none')}</p>{/if}
-            <p class="en" data-kiki-en><SoundLine en={it.en} focus={it.focus} marks={it.marks} clip={it.id} from={playFrom} {clock} /></p>
-            <p class="ja">{#each jaLines(it) as l, n (n)}<span>{l}</span>{/each}</p>
-            <!-- the accent and the marks' key on one row (the key wraps under it when long) -->
-            <div class="meta">
-              <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
-              {#if it.marks}<MarkLegend marks={it.marks} />{/if}
-            </div>
-            {#if it.note}{@render fold(note)}{/if}
-          {:else}
-            {@render listening()}
-            <ClipBar {bar} now={game.now} height={8} />
-          {/if}
-        </div>
-        {@render hearRow()}
-      </div>
-    {/if}
-
-    {#if !reveal}
-      {#if ask}<p class="ask">{ask}</p>{/if}
-      {#if it.type === 'word' && parts}
-        <p class="line" lang="en">{parts[0]}<span class="blank"><span aria-hidden="true">　　　</span><span class="sr-only">{t('kiki.blank')}</span></span>{parts[2]}</p>
-      {/if}
-    {:else}
-      <Verdict {it} out={v.out} {right} picked={!!mine} replayed={!!mine?.rp} same={v.same} {rs} {climbed} {coop} rightNow={v.rightNow} />
-    {/if}
-
-    <ChoiceGrid {it} {open} {reveal} dim={!open && !reveal && !mine} picked={mine?.k ?? null} onlyMarked={reveal && !!dlg} onpick={(k) => game.answer(k)} />
-
-    {#if v.phase === 'answer' && Number.isFinite(v.limit)}
-      <span class="timer" aria-hidden="true">{#key `${v.i}:${v.playEnd}`}<i style:animation-duration="{Math.max(1, v.limit - v.playEnd)}ms" style:animation-delay="{-Math.max(0, game.now - v.playEnd)}ms"></i>{/key}</span>
-    {/if}
-
-    <p class="status" role="status">
-      {#if reveal && !v.out}<span class="cheer"><Host head size={30} animate={false} eager />{t(`kiki.cheer.${verdict}`)}</span>
-      {:else if v.out && !reveal}{t('kiki.out')}
-      {:else if mine && !reveal && !solo}{t('kiki.answered')} {t('kiki.waitOthers')}
-      {:else if v.phase === 'lead' || v.phase === 'play'}{t('kiki.listen')}{/if}
-    </p>
-
-    <!-- a dialogue's transcript under its verdict and choices, so the answer is never under the sticky つぎへ -->
-    {#if reveal && dlg}
-      {#snippet transcript()}<Transcript it={dlg} talk={talking} from={talkFrom} {clock} />{/snippet}
-      {@render fold(transcript)}
-    {/if}
-  </div>
-
-  {#if v.canNext}
-    <div class="level-acts">
-      <button type="button" class="btn" data-kiki-next data-kiki-ready-n={v.ready.n} data-sfx="confirm" onclick={() => game.next()}>
-        {v.amHost && v.ready.of ? t('kiki.nextReady', { n: v.ready.n, m: v.ready.of }) : t('kiki.next')}
-      </button>
-    </div>
-  {:else if v.canReady}
-    {@const done = !!v.players.find((p) => p.who === game.me)?.ready}
-    <div class="level-acts">
-      <button type="button" class="btn" class:paper={done} data-kiki-ready aria-pressed={done} data-sfx={done ? 'none' : 'confirm'} onclick={() => !done && game.ready()}>
-        {done ? t('kiki.readyWait') : `📖 ${t('kiki.readyTap')}`}
-      </button>
+{#snippet stage()}
+  {#if rs}
+    <!-- the ladder: its four speeds as rising steps -->
+    <div class="ladder" data-kiki-rung={rs.n} data-kiki-ladder={it.rung!.ladder}>
+      <span class="lname">{t('kiki.rung.which', { k: ladderNo, n: ladders.length })}</span>
+      <LadderSteps {step} label={t('kiki.rung.label', { x: sx(SPEEDS[rs.n - 1]), n: rs.n, of: rs.of })} />
     </div>
   {/if}
+
+  {#if card}
+    <div class="staged" data-kiki-card>
+      <SceneCard {it} {talker} {bar} now={game.now} pop={v.phase === 'lead'} {name} />
+      {@render hearRow()}
+    </div>
+  {:else}
+    <div class="stage" class:dlg={reveal && dlg}>
+      {#if dlg}
+        <span class="speaker duo" class:pop={v.phase === 'lead'} data-kiki-duo>
+          {#each duo as who (who)}
+            <span class="one" class:talk={!!bar && talker === who}>
+              <OfficialArt key={villagerArt(who, true)} alt={name(who)} size={reveal ? 44 : 56} eager />
+            </span>
+          {/each}
+          {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
+        </span>
+      {:else}
+        <span class="speaker" class:pop={v.phase === 'lead'} class:talk={!!bar}>
+          <OfficialArt key={villagerArt(it.speaker, true)} alt={name(it.speaker)} size={76} eager />
+          {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
+        </span>
+      {/if}
+      <div class="bubble" class:open={reveal} aria-live="polite">
+        {#if reveal && dlg}
+          <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
+          {#if it.note}{@render fold(note)}{/if}
+        {:else if reveal && hidesLine(it)}
+          <!-- a rung below the top: the line stays a secret till the top's reveal -->
+          {@render listening()}
+          <p class="later" data-kiki-later>{t('kiki.rung.later', { x: sx(SPEEDS[it.rung!.n]) })}</p>
+        {:else if reveal && parts}
+          {#if rs}<p class="height" data-kiki-height={height}>{height ? t('kiki.rung.height', { x: sx(SPEEDS[height - 1]) }) : t('kiki.rung.none')}</p>{/if}
+          <p class="en" data-kiki-en><SoundLine en={it.en} focus={it.focus} marks={it.marks} clip={it.id} from={playFrom} {clock} /></p>
+          <p class="ja">{#each jaLines(it) as l, n (n)}<span>{l}</span>{/each}</p>
+          <!-- the accent and the marks' key on one row (the key wraps under it when long) -->
+          <div class="meta">
+            <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
+            {#if it.marks}<MarkLegend marks={it.marks} />{/if}
+          </div>
+          {#if it.note}{@render fold(note)}{/if}
+        {:else}
+          {@render listening()}
+          <ClipBar {bar} now={game.now} height={8} />
+        {/if}
+      </div>
+      {@render hearRow()}
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet input()}
+  {#if !reveal}
+    {#if ask}<p class="ask">{ask}</p>{/if}
+    {#if it.type === 'word' && parts}
+      <p class="line" lang="en">{parts[0]}<span class="blank"><span aria-hidden="true">　　　</span><span class="sr-only">{t('kiki.blank')}</span></span>{parts[2]}</p>
+    {/if}
+  {:else}
+    <Verdict {it} out={v.out} {right} picked={!!mine} replayed={!!mine?.rp} same={v.same} {rs} {climbed} {coop} rightNow={v.rightNow} />
+  {/if}
+
+  <ChoiceGrid choices={it.choices} right={it.answer} pics={it.type === 'pic'} label={it.type === 'pic' ? (c) => PIC_JA[c] ?? '' : undefined}
+    english={!(it.type === 'num' || (it.rung && it.type !== 'word'))} {open} {reveal} dim={!open && !reveal && !mine} picked={mine?.k ?? null}
+    onlyMarked={reveal && !!dlg} onpick={(k) => game.answer(k)} />
+{/snippet}
+
+{#snippet after()}
+  <!-- a dialogue's transcript under its verdict and choices, so the answer is never under the sticky つぎへ -->
+  {#if reveal && dlg}
+    {#snippet transcript()}<Transcript it={dlg} talk={talking} from={talkFrom} {clock} />{/snippet}
+    {@render fold(transcript)}
+  {/if}
+{/snippet}
+
+  <RoundFrame {v} now={game.now} me={game.me} type={it.type} answered={!!mine} {verdict} {stage} {input} {after}
+    onnext={() => game.next()} onready={() => game.ready()} />
 {/if}
 
 <style>
-  /* the question takes the scroller's room, its content centred: mid-screen on a tall phone, not a gap under it */
-  .q { display: grid; gap: 12px; align-content: center; }
-  :global(.kk-body) > .q { flex: 1 0 auto; }
-  .players { display: flex; justify-content: center; gap: 14px; }
-
   /* the speaker and their NH bubble: the speaker's head left, the bubble's tail pointing at it */
   .stage { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; padding: 4px 2px; }
   .speaker { position: relative; line-height: 0; transform-origin: 50% 100%; }
@@ -274,20 +235,12 @@
   .line { font-size: max(17px, var(--fs-body)); }
   .blank { display: inline-block; min-width: 3.5em; border-bottom: 3px solid var(--text); margin: 0 4px; }
 
-  .timer { display: block; height: 6px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; }
-  .timer i { display: block; height: 100%; background: var(--c-yuzu); transform-origin: 0 50%; animation: shrink linear both; }
-  .status { min-height: 1.4em; margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  /* the host's word on the verdict (しずえ's head) */
-  .cheer { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-body); color: var(--text); }
   /* the scene card, 🔁 🐢 under it */
   .staged { display: grid; gap: 10px; }
   /* 🔁 🐢 in one row under the speaker and the bubble, centred, small; おなじへや's others: off, with why */
   .hear { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
   .hear .btn.small { flex: 0 1 auto; white-space: nowrap; }
   .hint { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
-  /* つぎへ: the host's one action at the foot */
-  .level-acts [data-kiki-next], .level-acts [data-kiki-ready] { min-height: var(--cta-h); font-size: var(--fs-talk); }
-  .level-acts [data-kiki-ready][aria-pressed='true'] { font-size: var(--fs-body); }
 
   /* スピード はしご: which ladder, and its four speeds as steps (LadderSteps) */
   .ladder { display: flex; align-items: flex-end; justify-content: center; gap: 12px; }
@@ -295,7 +248,6 @@
   .later, .height { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); position: relative; }
   .height { color: var(--c-ink); }
 
-  @keyframes shrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
   @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }
   @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) {

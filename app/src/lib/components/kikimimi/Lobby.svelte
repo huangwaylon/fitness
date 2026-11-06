@@ -7,7 +7,7 @@
   // its rule in place of the level; no にがて れんしゅう, a quiz's).
   // 「こたえる じかん」 (20 / 30 / 60 びょう / なし: the host's, the others see it; remembered on this phone) under the level.
   import type { Who } from '#lib/types.ts';
-  import { ORDER } from '#lib/kikimimi/session.ts';
+  import { ORDER } from '#lib/kikimimi/round/session.ts';
   import type { QuizTimer } from '#lib/kikimimi/seed.ts';
   import type { Level } from '#lib/kikimimi/bank.ts';
   import { levelMark } from './look.ts';
@@ -15,8 +15,9 @@
   import { SPEEDS } from '#lib/kikimimi/ladder.ts';
   import type { QuizGame } from './game.svelte.ts';
   import Host from '../characters/Host.svelte';
-  import PlayerChip from './PlayerChip.svelte';
+  import PlayerChip from './frame/PlayerChip.svelte';
   import LadderSteps from './LadderSteps.svelte';
+  import Segmented from '../ui/Segmented.svelte';
   import { sound } from '#lib/sound/sound.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
@@ -54,10 +55,10 @@
     if (ladder === v.ladder) return;
     game.configure({ ladder });
   }
-  /** たいせん (ranking) or co-op (the default: the team's tally). */
-  function versus() {
-    cue(v.vs ? 'toggle-off' : 'toggle-on');
-    game.configure({ vs: !v.vs });
+  /** しょうぶ (ranking) or きょうりょく (the default: the team's tally). */
+  const VS = [{ id: 'coop', label: t('kiki.vs.coop') }, { id: 'vs', label: t('kiki.vs.vs') }] as const;
+  function versus(vs: boolean) {
+    if (vs !== v.vs) game.configure({ vs });
   }
   async function test() {
     tested = true;
@@ -124,19 +125,19 @@
     </section>
 
     {#if v.amHost}
+      <!-- きょうりょく ／ しょうぶ: co-op by default; しょうぶ ranks by points -->
+      <section class="sec" data-kiki-vs={v.vs ? 'vs' : 'coop'}>
+        <Segmented label={t('kiki.vs')} attr="kiki-vs-pick" value={v.vs ? 'vs' : 'coop'} items={VS} onpick={(id) => versus(id === 'vs')} />
+        <p class="hint">{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</p>
+      </section>
       <button type="button" class="row tile-btn" role="switch" aria-checked={v.same} data-kiki-same data-sfx="self" onclick={same}>
-        <span class="rl">{t('kiki.same')}{#if v.same}<small>{t('kiki.sameOn')}</small>{/if}</span>
-        <span class="sw" aria-hidden="true"><i></i></span>
-      </button>
-      <button type="button" class="row tile-btn" role="switch" aria-checked={v.vs} data-kiki-vs data-sfx="self" onclick={versus}>
-        <span class="rl">{t('kiki.vs')}<small>{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</small></span>
+        <span class="rl">{t('kiki.same')}<small>{t('kiki.sameOn')}</small></span>
         <span class="sw" aria-hidden="true"><i></i></span>
       </button>
     {:else}
-      <p class="row static"><span class="rl">{t('kiki.same')}{#if v.same}<small>{t('kiki.sameOn')}</small>{/if}</span>
+      <p class="row static" data-kiki-vs-flag={v.vs}><span class="rl">{t(v.vs ? 'kiki.vs.vs' : 'kiki.vs.coop')}<small>{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</small></span></p>
+      <p class="row static"><span class="rl">{t('kiki.same')}<small>{t('kiki.sameOn')}</small></span>
         <span class="flag">{v.same ? '✓' : '—'}</span></p>
-      <p class="row static" data-kiki-vs-flag={v.vs}><span class="rl">{t('kiki.vs')}<small>{t(v.vs ? 'kiki.vsOn' : 'kiki.vsOff')}</small></span>
-        <span class="flag">{v.vs ? '✓' : '—'}</span></p>
     {/if}
   {/if}
 

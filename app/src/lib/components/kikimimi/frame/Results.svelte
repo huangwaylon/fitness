@@ -1,0 +1,107 @@
+<script lang="ts">
+  // A game's results (docs/kikimimi.md "Results"; framework §5 Results): しずえ reads them out like the morning broadcast
+  // (solo my score; co-op, the default with several players, the team's 「ふたりで 7/8」 and 「そろって せいかい」, no
+  // ranking, no one's points; たいせん the winner, or a tie), how many I got right and my first listens under her line, a
+  // game's own strip (`top`: a lesson's), たいせん's ranking (the winner's row with 🏆), then the game's sections
+  // (`children`: feedback, the review list) and おわる / もういっかい. Any game's.
+  import type { Snippet } from 'svelte';
+  import type { Who } from '#lib/types.ts';
+  import type { Team } from '#lib/kikimimi/round/tally.ts';
+  import Bubble from '../../ui/Bubble.svelte';
+  import PlayerChip from './PlayerChip.svelte';
+  import { week } from '#lib/store/week.svelte.ts';
+  import { villagerNameOf } from '#lib/ui-state/viewer.ts';
+  import { t } from '#lib/i18n/index.ts';
+
+  let { v, tally, of, firsts, line, top, children, ondone, onagain }: {
+    v: { players: { who: Who; score: number }[]; vs: boolean; n: number; team: Team };
+    /** My rounds right, of how many. */
+    tally: number;
+    of: number;
+    /** My first listens (いっぱつ). */
+    firsts: number;
+    /** しずえ's line, when the game has its own (スピード はしご's climb). */
+    line?: string;
+    top?: Snippet;
+    children: Snippet;
+    ondone: () => void;
+    onagain: () => void;
+  } = $props();
+  /** Highest first; ties share a rank. */
+  const ranking = $derived.by(() => {
+    const rows = [...v.players].sort((a, b) => b.score - a.score);
+    return rows.map((p) => ({ ...p, rank: rows.findIndex((q) => q.score === p.score) + 1 }));
+  });
+  /** Co-op (several players, not たいせん): the team's tally, no ranking and no one's points. */
+  const coop = $derived(v.players.length > 1 && !v.vs);
+  const teamKey = $derived(v.players.length >= 3 ? 'kiki.team.3' : 'kiki.team.2');
+  const said = $derived.by(() => {
+    if (line) return line;
+    if (ranking.length <= 1) return t('kiki.hostSolo');
+    if (coop) return t(v.team.right >= v.n ? 'kiki.hostTeam.all' : v.team.right * 4 >= v.n * 3 ? 'kiki.hostTeam.good' : 'kiki.hostTeam.try');
+    const first = ranking.filter((r) => r.rank === 1);
+    return first.length > 1 || !week.view ? t('kiki.hostTie') : t('kiki.hostTop', { name: villagerNameOf(week.view, first[0].who) });
+  });
+</script>
+
+<div class="results" data-kiki-results>
+  <div class="host">
+    <Bubble text={said} host="wave" size={64} />
+    {#if coop}
+      <div class="team card" data-kiki-team={v.team.right}>
+        <b>{t(teamKey, { k: v.team.right, n: v.n })}</b>
+        {#if v.team.all}<span data-kiki-team-all={v.team.all}>{t('kiki.teamAll', { k: v.team.all })}</span>{/if}
+      </div>
+    {/if}
+    <p class="tally" data-kiki-tally={tally}>{t(coop ? 'kiki.tallyMine' : 'kiki.tally', { n: of, k: tally })}</p>
+    {#if firsts}<p class="firsts"><span class="stamp" data-kiki-firsts={firsts}>{t('kiki.firstCount', { k: firsts })}</span></p>{/if}
+  </div>
+
+  {@render top?.()}
+
+  <!-- たいせん: the ranking first (the game's outcome), then my feedback -->
+  {#if ranking.length > 1 && !coop}
+    <ol class="rank card">
+      {#each ranking as r (r.who)}
+        <li data-rank={r.rank} class:first={r.rank === 1}>
+          <span class="no" class:top={r.rank === 1}>{#if r.rank === 1}<span class="cup" aria-hidden="true">🏆</span>{/if}{t('kiki.rank', { n: r.rank })}</span>
+          <PlayerChip who={r.who} state={r.rank === 1 ? 'right' : null} size={44} />
+          <b class="pts">{t('kiki.points', { n: r.score })}</b>
+        </li>
+      {/each}
+    </ol>
+  {/if}
+
+  {@render children()}
+</div>
+
+<div class="level-acts">
+  <button type="button" class="btn paper" data-kiki-done data-sfx="back" onclick={ondone}>{t('kiki.done')}</button>
+  <button type="button" class="btn" data-kiki-again data-sfx="confirm" onclick={onagain}>{t('kiki.again')}</button>
+</div>
+
+<style>
+  .results { display: grid; gap: 14px; }
+  .results :global(.bubble) { margin-bottom: 0; }
+  .host { display: grid; gap: 6px; }
+  /* co-op's team tally: one big number, the together count under it (never who missed) */
+  .team.card { display: grid; justify-items: center; gap: 4px; padding: 12px 14px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--card)); }
+  .team b { font: 700 var(--fs-title)/1.2 var(--font-num); }
+  .team span { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
+  .tally { margin: 0; text-align: center; font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--text-soft); }
+  .firsts { margin: 0; text-align: center; }
+  /* いっぱつ: a rubber stamp (no points), a cream sticker at any time of day (so its coral is the fixed one) */
+  .stamp {
+    display: inline-block; padding: 3px 10px; border-radius: 8px; rotate: -4deg; color: var(--c-coral-text);
+    background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-card)); box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui);
+  }
+  .rank { list-style: none; margin: 0; padding: 8px 14px; display: grid; gap: 4px; }
+  .rank li { display: grid; grid-template-columns: 4.2em auto 1fr; align-items: center; gap: 10px; }
+  /* the winner's row: a ribbon of yuzu behind it, the cup by the rank */
+  .rank li.first { margin: 0 -8px; padding: 2px 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 40%, transparent); }
+  .cup { margin-right: 2px; font-size: .85em; }
+  .no { font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); white-space: nowrap; }
+  .no.top { color: var(--coral-text); font-size: var(--fs-title); }
+  .rank :global(.pc) { grid-auto-flow: column; justify-items: start; align-items: center; max-width: none; gap: 10px; }
+  .pts { justify-self: end; font: 700 var(--fs-talk)/1 var(--font-num); }
+</style>

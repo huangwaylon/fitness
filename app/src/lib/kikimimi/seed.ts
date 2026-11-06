@@ -3,7 +3,7 @@
 // `open`, and changing one deals a new deck, never seen yet. The other bits are the deck's (recent.ts seedWith).
 //   bit 0     たいせん (ranking); clear: co-op, a new lobby's default.
 //   bit 1     スピード はしご (ladder.ts): the deck is the ladders', the level unused; the session is the quiz's (8
-//             questions), its points the deck's (QuizDeck.score). A quiz lobby's seed has it clear.
+//             questions), its points the deck's (games/ladder/def.ts: the climb). A quiz lobby's seed has it clear.
 //   bits 2-3  こたえる じかん, the answer window: its index in TIMERS (0 30 s, the default; 1 20 s; 2 60 s; 3 none: the
 //             reveal once everyone in it has answered).
 

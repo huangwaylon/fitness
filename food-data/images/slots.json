@@ -58,7 +58,17 @@
 "dishes-teishoku-yakizake",
 "dishes-teishoku-shogayaki",
 "dishes-teishoku-karaage",
-"dishes-bento-karaage"
+"dishes-bento-karaage",
+"dishes-unadon",
+"dishes-negitorodon",
+"dishes-bibimbap",
+"dishes-soboro-don",
+"dishes-chukadon",
+"dishes-tenshindon",
+"dishes-fukagawa-meshi",
+"dishes-butadon",
+"dishes-tekkadon",
+"dishes-mabodon"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -371,7 +381,13 @@
 "dishes-chanchanyaki",
 "dishes-sake-meuniere",
 "dishes-teriyaki-chicken",
-"dishes-mabo-nasu"
+"dishes-mabo-nasu",
+"dishes-chanko-nabe",
+"dishes-motsunabe",
+"dishes-kimchi-nabe",
+"dishes-mizutaki",
+"dishes-ishikari-nabe",
+"dishes-shabushabu-pork"
 ],
 "meat": [
 "mext-11227",
@@ -498,7 +514,29 @@
 "mext-01127",
 "mext-01160",
 "mext-02061",
-"mext-02039"
+"mext-02039",
+"dishes-kitsune-soba",
+"dishes-zaru-udon",
+"dishes-tanuki-udon",
+"dishes-tanuki-soba",
+"dishes-tarako-spa",
+"dishes-champon",
+"dishes-tororo-soba",
+"dishes-nyumen",
+"dishes-wakame-udon",
+"dishes-curry-udon",
+"dishes-peperoncino",
+"dishes-vongole",
+"dishes-wafu-kinoko-spa",
+"dishes-shio-yakisoba",
+"dishes-tenzaru-soba",
+"dishes-tempura-soba",
+"dishes-sansai-soba",
+"dishes-tsukimi-udon",
+"dishes-yaki-udon",
+"dishes-niku-udon",
+"dishes-nabeyaki-udon",
+"dishes-kamonanban"
 ],
 "other": [
 "mext-02034",
@@ -551,7 +589,26 @@
 "mext-01136",
 "mext-01169",
 "mext-01086",
-"mext-18046"
+"mext-18046",
+"dishes-onigiri-ikura",
+"dishes-onigiri-okaka",
+"dishes-onigiri-shirasu",
+"dishes-onigiri-tarako",
+"dishes-onigiri-konbu",
+"dishes-onigiri-mentaiko",
+"dishes-onigiri-takana",
+"dishes-chazuke-moto",
+"dishes-taco-rice",
+"dishes-doria",
+"dishes-hayashi-rice",
+"dishes-nanakusagayu",
+"dishes-zosui",
+"dishes-tenmusu",
+"dishes-chazuke-ume",
+"dishes-takikomi-gohan",
+"dishes-okayu",
+"dishes-isobeyaki",
+"dishes-chazuke-shake"
 ],
 "season": [
 "mext-17007",
@@ -673,7 +730,10 @@
 "dishes-kurikinton",
 "dishes-kaiso-salad",
 "dishes-yakinasu",
-"dishes-satoimo-nikkorogashi"
+"dishes-satoimo-nikkorogashi",
+"dishes-okura-katsuobushi",
+"dishes-broccoli-mayo",
+"dishes-tazukuri"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -758,7 +818,13 @@
 "eatout-sushi_maguro",
 "eatout-sushi_salmon",
 "dishes-chirashizushi",
-"eatout-nigiri_moriawase"
+"eatout-nigiri_moriawase",
+"dishes-inarizushi",
+"dishes-kappamaki",
+"dishes-kanpyomaki",
+"dishes-futomaki",
+"dishes-temakizushi",
+"dishes-tekkamaki"
 ],
 "sweet": [
 "mext-15103",
@@ -818,7 +884,8 @@
 "mext-15022",
 "mext-15039",
 "mext-15017",
-"mext-15033"
+"mext-15033",
+"dishes-kinako-mochi"
 ],
 "veg": [
 "mext-08001",
@@ -1106,7 +1173,8 @@
 "dishes-curry-chicken",
 "dishes-curry-beef",
 "mext-17051",
-"mext-17061"
+"mext-17061",
+"dishes-curry-udon"
 ],
 "dairy": [
 "mext-13020",
@@ -1125,7 +1193,17 @@
 "dishes-kaisendon",
 "mext-18031",
 "mext-18030",
-"dishes-teishoku-shogayaki"
+"dishes-teishoku-shogayaki",
+"dishes-unadon",
+"dishes-negitorodon",
+"dishes-bibimbap",
+"dishes-soboro-don",
+"dishes-chukadon",
+"dishes-tenshindon",
+"dishes-fukagawa-meshi",
+"dishes-butadon",
+"dishes-tekkadon",
+"dishes-mabodon"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -1198,7 +1276,8 @@
 "dishes-bacon-egg",
 "dishes-chuka-wakame-tamago",
 "dishes-onsen-tamago",
-"dishes-miso-tamago"
+"dishes-miso-tamago",
+"dishes-zosui"
 ],
 "fish": [
 "mext-10281",
@@ -1358,7 +1437,12 @@
 "dishes-kinmedai-nitsuke",
 "dishes-gindara-saikyo",
 "dishes-chinjao",
-"dishes-mabo-nasu"
+"dishes-mabo-nasu",
+"dishes-chanko-nabe",
+"dishes-motsunabe",
+"dishes-kimchi-nabe",
+"dishes-mizutaki",
+"dishes-ishikari-nabe"
 ],
 "meat": [
 "mext-11279",
@@ -1408,7 +1492,8 @@
 "mext-02037",
 "mext-01160",
 "mext-02061",
-"mext-02039"
+"mext-02039",
+"dishes-nyumen"
 ],
 "onigiri": [
 "dishes-onigiri-tunamayo",
@@ -1416,7 +1501,14 @@
 "dishes-onigiri-shake",
 "eatout-onigiri_sake",
 "dishes-onigiri-ume",
-"mext-01112"
+"mext-01112",
+"dishes-onigiri-ikura",
+"dishes-onigiri-okaka",
+"dishes-onigiri-shirasu",
+"dishes-onigiri-tarako",
+"dishes-onigiri-konbu",
+"dishes-onigiri-mentaiko",
+"dishes-onigiri-takana"
 ],
 "onion": [
 "mext-06153",
@@ -1443,7 +1535,11 @@
 "mext-01063",
 "mext-01149",
 "dishes-macaroni-gratin",
-"dishes-macaroni-salad"
+"dishes-macaroni-salad",
+"dishes-tarako-spa",
+"dishes-peperoncino",
+"dishes-vongole",
+"dishes-wafu-kinoko-spa"
 ],
 "pork": [
 "mext-11276",
@@ -1477,7 +1573,8 @@
 "dishes-consomme-soup",
 "dishes-nikujaga-pork",
 "dishes-kakuni",
-"dishes-butakimuchi"
+"dishes-butakimuchi",
+"dishes-shabushabu-pork"
 ],
 "ramen": [
 "dishes-ramen-shoyu",
@@ -1489,7 +1586,8 @@
 "mext-01198",
 "mext-01047",
 "eatout-tsukemen",
-"eatout-ramen_tonkotsu"
+"eatout-ramen_tonkotsu",
+"dishes-champon"
 ],
 "rice": [
 "mext-01088",
@@ -1517,7 +1615,17 @@
 "mext-01136",
 "mext-01169",
 "mext-01086",
-"mext-18046"
+"mext-18046",
+"dishes-chazuke-moto",
+"dishes-taco-rice",
+"dishes-doria",
+"dishes-hayashi-rice",
+"dishes-nanakusagayu",
+"dishes-tenmusu",
+"dishes-chazuke-ume",
+"dishes-takikomi-gohan",
+"dishes-okayu",
+"dishes-isobeyaki"
 ],
 "saba": [
 "mext-10154",
@@ -1551,7 +1659,8 @@
 "dishes-teishoku-yakizake",
 "mext-10149",
 "dishes-chanchanyaki",
-"dishes-sake-meuniere"
+"dishes-sake-meuniere",
+"dishes-chazuke-shake"
 ],
 "season": [
 "mext-17007",
@@ -1664,7 +1773,10 @@
 "dishes-daigaku-imo",
 "dishes-kurikinton",
 "dishes-yakinasu",
-"dishes-satoimo-nikkorogashi"
+"dishes-satoimo-nikkorogashi",
+"dishes-okura-katsuobushi",
+"dishes-broccoli-mayo",
+"dishes-tazukuri"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -1675,7 +1787,15 @@
 "mext-01129",
 "dishes-tsukimi-soba",
 "mext-01053",
-"mext-01127"
+"mext-01127",
+"dishes-kitsune-soba",
+"dishes-tanuki-soba",
+"dishes-tororo-soba",
+"dishes-shio-yakisoba",
+"dishes-tenzaru-soba",
+"dishes-tempura-soba",
+"dishes-sansai-soba",
+"dishes-kamonanban"
 ],
 "soup": [
 "mext-18005",
@@ -1732,7 +1852,13 @@
 "eatout-sushi_maguro",
 "eatout-sushi_salmon",
 "dishes-chirashizushi",
-"eatout-nigiri_moriawase"
+"eatout-nigiri_moriawase",
+"dishes-inarizushi",
+"dishes-kappamaki",
+"dishes-kanpyomaki",
+"dishes-futomaki",
+"dishes-temakizushi",
+"dishes-tekkamaki"
 ],
 "sweet": [
 "mext-15103",
@@ -1790,7 +1916,8 @@
 "mext-15022",
 "mext-15039",
 "mext-15017",
-"mext-15033"
+"mext-15033",
+"dishes-kinako-mochi"
 ],
 "tofu": [
 "dishes-miso-tofu-wakame",
@@ -1842,7 +1969,14 @@
 "mext-01038",
 "mext-01062",
 "mext-01041",
-"eatout-kamatama"
+"eatout-kamatama",
+"dishes-zaru-udon",
+"dishes-tanuki-udon",
+"dishes-wakame-udon",
+"dishes-tsukimi-udon",
+"dishes-yaki-udon",
+"dishes-niku-udon",
+"dishes-nabeyaki-udon"
 ],
 "veg": [
 "mext-08001",
