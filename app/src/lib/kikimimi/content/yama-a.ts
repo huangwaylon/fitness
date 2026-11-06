@@ -10,7 +10,7 @@
 // with the staging written in place (`scene`, `channel`, `marks`) since staging.ts is shared: the integrator may move
 // them to PLACES / MARKS. Voices: bank4.ts CAST (one cast voice per villager for good); mostly US, some UK and AU.
 // `en` is shown (UK spelling for UK and AU voices), `tts` spoken when it differs (§9: every number written out).
-//   ids: `ya-` (items), `dya-` (dialogues). content/yama-a.test.ts checks them with bank.test's and staging.test's rules.
+//   ids: `ya-` (items), `dya-` (dialogues). bank.test, staging.test and content/sets.test check them.
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Accent, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
 import { CAST } from '../bank4.ts';
@@ -60,7 +60,7 @@ const REPLY: readonly Row[] = [
     'Whaddaya say…?＝〜しない？ 意見を聞いてはいない',
     ["You twisted my arm. I'll grab the menus.", "I'd say it's about nine.", "Sure, I'll call them tonight."],
     tg(35, 'partner', 'indirect', [], ['contraction', 'idiom']),
-    { tts: "Whaddaya say we just order in 'n' call it a night?", scene: 'living', marks: [['say', 'What do you', 'whaddaya'], ['say', 'and', "'n'"]] }],
+    { tts: "Whaddaya say we just order in an' call it a night?", scene: 'living', marks: [['say', 'What do you', 'whaddaya'], ['say', 'and', "an'"]] }],
   ['ya-r-under-bus', 'audie', 'Did you seriously just throw me under the bus in front of the whole team?',
     'ねえ、チーム全員の前で私に責任をなすりつけたよね？ →「うん、わかってる。あれはひどかった。ごめん。」',
     'throw under the bus＝人に責任を押しつける',
@@ -190,9 +190,9 @@ const MEAN: readonly Row[] = [
     ["You're rushing into a decision.", 'She wants to wait for the horses.', "She's ready to sign today."],
     tg(36, 'partner', 'indirect', [], ['idiom', 'contraction']), { scene: 'street' }],
   ['ya-m-opera', 'fauna', "Opera? I mean, I'm sure it's lovely. It's just... three hours is a lot of hours.",
-    'オペラ？いや、きっと素敵なんだろうけど。ただ…3時間って、けっこうな時間だよね。 → つまり、あまり行きたくない。',
+    'オペラ？いや、きっと素敵なんだろうけど。ただ…3時間って、けっこうな時間だよね。 → つまり、長すぎて気が進まない。',
     "I'm sure it's lovely の後の just… が本音",
-    ["She doesn't really want to go.", "She thinks it's lovely, so she's in.", "She's asking how long it lasts."],
+    ["Three hours sounds too long to her.", "She thinks it's lovely, so she's in.", "She's asking how long it lasts."],
     tg(48, 'friend', 'refusal', [], ['ellipsis']), { scene: 'street' }],
   ['ya-m-yeah-nah', 'cherry', "Yeah, nah, I'm not doing karaoke again. Not after last time.",
     'うーん、ないない。カラオケはもうやらない。前回のあとじゃね。 → つまり、絶対に行かない。',

@@ -3,8 +3,8 @@
 //   node scripts/kikimimi-audio.ts [options]       make what's new or changed (by each clip's source hash), print a report
 //     --engine qwen3            the engine (default qwen3); per accent: `qwen3,au=voxcpm2` or `us=kokoro,uk=kokoro,au=qwen3`
 //                               qwen3 / voxcpm2 clone each cast voice's reference clip; kokoro uses cast.json `kokoro`
-//                               voices (US and UK only); say is the legacy macOS voice (levels 1-3 only, never 4)
-//     --levels 1,2,3,4,5        the levels to speak (default all; say: 1-3)
+//                               voices (US and UK only); say is the legacy macOS voice (levels 1-3 only, never 4-7)
+//     --levels 1,2,3,4,5,6,7    the levels to speak (default all; say: 1-3)
 //     --only <regex>            item ids to speak (the rest keep their clips)
 //     --out <dir>               a scratch dir instead of static/: clips.json, clips.src.json and report.json land there too
 //     --force                   re-speak every selected item

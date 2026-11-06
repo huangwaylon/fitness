@@ -79,7 +79,7 @@ export const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'r4-reschedule': [['link', 'move it'], ['say', '24', 'twenty-four']],
   'r4-service-charge': [['say', '12.5%', 'twelve and a half per cent'], ['say', 'Did you', 'didja']],
   'm4-swing-by': [['say', 'try and', "try 'n'"], ['link', 'wiped out']],
-  'm4-be-good': [['say', 'kind of', 'kinda'], g('trying')],
+  'm4-be-good': [g('watching')],
   'm4-cat': [['say', 'you', 'ya']],
   'm4-put-through': [['say', 'Let me', 'lemme'], ['link', 'put you']],
   'w4-shouldve': [['say', "should've", 'shoulda'], g('going')],
