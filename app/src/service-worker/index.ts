@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgStale, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -242,34 +242,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ごはん's pictures (caches.ts FOOD_IMG_CACHE): a sheet from the cache, else the network (and kept); index.json from the
-  // network (its copy kept, the sheets it no longer names dropped), else its last copy
+  // ごはん's pictures (caches.ts FOOD_IMG_CACHE, foodImgFetch): a sheet from the cache, else the network (stored after);
+  // index.json from the network within 2.5 s, else its last copy
   if (isFoodImg(url.pathname)) {
-    event.respondWith(
-      (async () => {
-        const cache = await caches.open(FOOD_IMG_CACHE);
-        if (url.pathname.endsWith('.webp')) {
-          const hit = await cache.match(req);
-          if (hit) return hit;
-          const res = await fetch(req);
-          if (res.ok) await cache.put(req, res.clone());
-          return res;
-        }
-        try {
-          const res = await fetch(req, { cache: 'no-cache' });
-          if (res.ok) {
-            const text = await res.clone().text();
-            await cache.put(req, res.clone());
-            event.waitUntil(cache.keys().then((ks) => Promise.all(foodImgStale(ks.map((k) => k.url), text).map((u) => cache.delete(u)))));
-          }
-          return res;
-        } catch (e) {
-          const hit = await cache.match(req);
-          if (hit) return hit;
-          throw e;
-        }
-      })()
-    );
+    event.respondWith(caches.open(FOOD_IMG_CACHE).then((cache) => foodImgFetch(req, cache, (r) => fetch(r, r.url.endsWith('.webp') ? undefined : { cache: 'no-cache' }), (p) => event.waitUntil(p))));
     return;
   }
 

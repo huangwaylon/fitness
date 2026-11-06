@@ -243,6 +243,42 @@ export async function foodFetch(req: Request, cache: FoodCacheLike, net: (r: Req
   }
   return res;
 }
+/**
+ * ごはん's pictures' answer (pure for tests): a sheet from the cache, else the network, answered at once and stored
+ * after (`after`: waitUntil; a failed store never costs the picture). index.json from the network unless it takes longer
+ * than `timeoutMs`, then (or offline) its cached copy; a fresh one is stored whenever it comes, and the sheets it no
+ * longer names are dropped.
+ */
+export async function foodImgFetch(req: Request, cache: FoodCacheLike, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, timeoutMs = FOOD_INDEX_TIMEOUT_MS): Promise<Response> {
+  if (new URL(req.url).pathname.endsWith('.webp')) {
+    const hit = await cache.match(req).catch(() => undefined);
+    if (hit) return hit;
+    const res = await net(req);
+    if (res.ok) {
+      const copy = res.clone();
+      after(cache.put(req, copy).catch(() => {}));
+    }
+    return res;
+  }
+  let copy: Response | null = null;
+  const live = net(req).then((res) => {
+    if (res.ok) copy = res.clone();
+    return res;
+  });
+  after(live.then(async () => {
+    if (!copy) return;
+    const text = await copy.clone().text();
+    await cache.put(req, copy);
+    const keys = await cache.keys();
+    await Promise.all(foodImgStale(keys.map((k) => k.url), text).map((u) => cache.delete(u)));
+  }).catch(() => {}));
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<null>((ok) => (timer = setTimeout(ok, timeoutMs, null)));
+  const first = await Promise.race([live.catch(() => null), late]);
+  clearTimeout(timer);
+  if (first?.ok) return first;
+  return (await cache.match(req).catch(() => undefined)) ?? first ?? live.catch(() => Response.error());
+}
 /** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
  *  only needs the network). */
 const isAppIcon = (path: string): boolean => path.includes('/icons/');
