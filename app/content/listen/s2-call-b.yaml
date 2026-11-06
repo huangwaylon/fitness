@@ -1,5 +1,5 @@
 # ようじ でんわ S2 もり (b): a found bag and a reference read fast, three price tiers and a change of mind, a colleague's
-# favour buried at the end, a "next Friday" mix-up, an exchange with a condition remembered late.
+# favor buried at the end, a "next Friday" mix-up, an exchange with a deadline remembered late.
 schema: 1
 unit: s2-call-b
 game: call
@@ -16,20 +16,20 @@ items:
     ask: "航空会社から でんわ"
     channel: phone
     lines:
-      - { who: wilbur, en: "Hi, this is Dodo Airlines baggage services, calling about your missing bag. Good news, we've found it. It went to Osaka by mistake.", tts: "Hi, this is Dodo Airlines baggage services, callin' about yer missing bag. Good news, we've found it. It went to Osaka by mistake.", ja: "ドードー航空の手荷物サービスです。お探しのバッグの件でお電話しました。朗報です、見つかりました。間違って大阪に行っていました。" }
-      - { who: wilbur, en: "It'll be on the first flight tomorrow, and the courier will drop it at your hotel by noon.", tts: "It'll be on the first flight tomorrow, an' the courier'll drop it at yer hotel by noon.", ja: "明日の始発便で運んで、宅配業者が正午までにホテルへお届けします。" }
+      - { who: orville, en: "Hi, this is Dodo Airlines baggage services, calling about your missing bag. Good news, we found it. It went to Sapporo by mistake.", tts: "Hi, this is Dodo Airlines baggage services, callin' about yer missing bag. Good news, we found it. It went to Sapporo by mistake.", ja: "ドードー航空の手荷物サービスです。お探しのバッグの件でお電話しました。朗報です、見つかりました。間違って札幌に行っていました。" }
+      - { who: orville, en: "It'll be on the first flight tomorrow, and a driver will drop it off at your hotel by noon.", tts: "It'll be on the first flight tomorrow, an' a driver'll drop it off at yer hotel by noon.", ja: "明日の始発便で運んで、配送ドライバーが正午までにホテルへお届けします。" }
       - { who: me, en: "Great. Do I need a reference number?", ja: "よかった。照会番号は必要ですか？" }
-      - { who: wilbur, en: "Yep, it's HND 42075.", tts: "Yep, it's H, N, D, four-two-oh-seven-five.", ja: "はい、HND42075です。" }
-      - { who: wilbur, en: "Oh, sorry, I've just been told the morning flight's full, so it'll be the afternoon one. Make that by six in the evening rather than noon.", tts: "Oh, sorry, I've just been told the mornin' flight's full, so it'll be the afternoon one. Make that by six in the evening rather than noon.", ja: "あ、すみません、朝の便が満席だと今聞きました。午後の便になります。正午ではなく夕方6時までのお届けです。", repair: true }
+      - { who: orville, en: "Yep, it's HND 42075.", tts: "Yep, it's H, N, D, four-two-oh-seven-five.", ja: "はい、HND42075です。" }
+      - { who: orville, en: "Oh, sorry, I'm just hearing the morning flight's full, so it'll be the afternoon one. Make that by six p.m. instead of noon.", tts: "Oh, sorry, I'm just hearin' the mornin' flight's full, so it'll be the afternoon one. Make that by six p m instead of noon.", ja: "あ、すみません、朝の便が満席だと今聞きました。午後の便になります。正午ではなく夕方6時までのお届けです。", repair: true }
       - { who: me, en: "That's fine. I'll be out, though. Can they leave it at the front desk?", ja: "大丈夫です。ただ出かけているので、フロントに預けてもらえますか？" }
-      - { who: wilbur, en: "No worries. Just let the hotel know it's coming, and you'll need ID to collect it.", tts: "No worries. Just let the hotel know it's comin', an' you'll need I D ta collect it.", ja: "大丈夫ですよ。ホテルに届くことを伝えておいてください。受け取りには身分証が必要です。" }
+      - { who: orville, en: "Sure thing. Just let the hotel know it's coming, and you'll need ID to pick it up.", tts: "Sure thing. Just let the hotel know it's comin', an' you'll need I D ta pick it up.", ja: "大丈夫ですよ。ホテルに届くことを伝えておいてください。受け取りには身分証が必要です。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
       - slots:
           - { ask: "照会番号は？", options: ["HND 42075", "HND 40275", "HND 42057"], answer: 0 }
           - { ask: "いつまでに 届く？", options: ["正午", "夕方 6時", "あしたの 朝"], answer: 1 }
           - { ask: "受けとりに いるのは？", options: ["身分証", "搭乗券", "照会番号の メール"], answer: 0 }
-          - { ask: "バッグは どこに あった？", options: ["大阪", "成田", "ソウル"], answer: 0 }
+          - { ask: "バッグは どこに あった？", options: ["札幌", "成田", "ソウル"], answer: 0 }
     note: "Make that～＝言い直し。正午ではなく夕方6時"
     tags: { seed: 6, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair, weak-form] }
 
@@ -39,13 +39,13 @@ items:
     scene: living
     channel: phone
     lines:
-      - { who: me, en: "Hi, I'd like to send a parcel to London. It's about three kilos.", ja: "ロンドンに荷物を送りたいんですが。3キロくらいです。" }
-      - { who: mabel, en: "Right. There are three options. Economy's about three weeks, and that comes to ¥4,200.", tts: "Right. There are three options. Economy's about three weeks, an' that comes to four thousand two hundred yen.", ja: "はい。プランは3つございます。エコノミーは約3週間で、4,200円です。" }
-      - { who: mabel, en: "Standard's a week to ten days, for ¥6,800. Express is three days, but that's ¥11,000.", tts: "Standard's a week to ten days, for six thousand eight hundred. Express is three days, but that's eleven thousand.", ja: "スタンダードは1週間から10日で6,800円。エクスプレスは3日ですが、11,000円になります。" }
-      - { who: me, en: "Standard, please. It's a birthday present, so it needs to be there by the 20th.", tts: "Standard, please. It's a birthday present, so it needs to be there by the twentieth.", ja: "スタンダードでお願いします。誕生日プレゼントなので、20日までに着かないといけないんです。" }
-      - { who: mabel, en: "Ah. Today's the 14th, so standard might be cutting it fine. I'd go express, to be honest.", tts: "Ah. Today's the fourteenth, so standard might be cuttin' it fine. I'd go express, ta be honest.", ja: "今日が14日ですから、スタンダードだとぎりぎりかもしれません。正直、私ならエクスプレスにしますね。" }
+      - { who: me, en: "Hi, I'd like to send a package to Chicago. It's about three kilos.", ja: "シカゴに荷物を送りたいんですが。3キロくらいです。" }
+      - { who: pekoe, en: "Sure. There are three options. Economy's about three weeks, and that comes to ¥4,200.", tts: "Sure. There are three options. Economy's about three weeks, an' that comes to four thousand two hundred yen.", ja: "はい。プランは3つございます。エコノミーは約3週間で、4,200円です。" }
+      - { who: pekoe, en: "Standard's a week to ten days, for ¥6,800. Express is three days, but that's ¥11,000.", tts: "Standard's a week to ten days, for six thousand eight hundred. Express is three days, but that's eleven thousand.", ja: "スタンダードは1週間から10日で6,800円。エクスプレスは3日ですが、11,000円になります。" }
+      - { who: me, en: "Standard, please. It's a birthday present, so it needs to get there by the 20th.", tts: "Standard, please. It's a birthday present, so it needs to get there by the twentieth.", ja: "スタンダードでお願いします。誕生日プレゼントなので、20日までに着かないといけないんです。" }
+      - { who: pekoe, en: "Oh. Today's the 14th, so standard might be cutting it close. Honestly, I'd go express.", tts: "Oh. Today's the fourteenth, so standard might be cuttin' it close. Honestly, I'd go express.", ja: "今日が14日ですから、スタンダードだとぎりぎりかもしれません。正直、私ならエクスプレスにしますね。" }
       - { who: me, en: "Hmm. Okay, express, then.", ja: "うーん。じゃあ、エクスプレスで。", repair: true }
-      - { who: mabel, en: "Lovely. And it'll need a customs form, as it's going outside Japan. Just list what's inside and roughly what it's worth.", tts: "Lovely. An' it'll need a customs form, as it's goin' outside Japan. Just list what's inside an' roughly what it's worth.", ja: "かしこまりました。海外宛てなので税関申告書が必要です。中身とだいたいの金額を書いてください。" }
+      - { who: pekoe, en: "Great. And it'll need a customs form, since it's going overseas. Just list what's inside and roughly what it's worth.", tts: "Great. An' it'll need a customs form, since it's goin' overseas. Just list what's inside an' roughly what it's worth.", ja: "かしこまりました。海外宛てなので税関申告書が必要です。中身とだいたいの金額を書いてください。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
       - slots:
@@ -61,22 +61,22 @@ items:
     scene: office
     channel: phone
     lines:
-      - { who: ankha, en: "Hiya, it's me. Sorry, I know it's early. So, long story, but my son's got a temperature, so I'm working from home today.", tts: "Hiya, it's me. Sorry, I know it's early. So, long story, bu' my son's got a temperature, so I'm workin' from home today.", ja: "おはよう、私。早くにごめんね。話せば長いんだけど、息子が熱を出しちゃって、今日は在宅勤務なの。" }
+      - { who: audie, en: "Hey, it's me. Sorry, I know it's early. So, long story, but my son has a fever, so I'm working from home today.", tts: "Hey, it's me. Sorry, I know it's early. So, long story, but my son has a fever, so I'm workin' from home today.", ja: "おはよう、私。早くにごめんね。話せば長いんだけど、息子が熱を出しちゃって、今日は在宅勤務なの。" }
       - { who: me, en: "Oh no, I hope he's okay.", ja: "大変だね、大丈夫だといいけど。" }
-      - { who: ankha, en: "He'll live. Anyway, the thing is, I was meant to be presenting at the ten o'clock with the Osaka team.", tts: "He'll live. Anyway, the thing is, I was meant ta be presentin' at the ten o'clock with the Osaka team.", ja: "大丈夫、たいしたことないの。それでね、10時の大阪チームとの会議で私が発表することになってて。" }
-      - { who: ankha, en: "Would you mind printing the handouts? It's the file called Q3 final. Twelve copies should do.", tts: "Would you mind printin' the handouts? It's the file called Q three final. Twelve copies should do.", ja: "資料を印刷してもらえないかな？「Q3最終版」っていうファイル。12部あれば足りると思う。" }
-      - { who: ankha, en: "Actually, make it fifteen. Their manager's joining, and she always brings people.", tts: "Actually, make it fifteen. Their manager's joinin', an' she always brings people.", ja: "やっぱり15部にして。向こうの部長も来るし、いつも何人か連れてくるから。", repair: true }
-      - { who: ankha, en: "Oh, and it's not in Room B any more. They've moved us to the big one on the fourth floor. I'll dial in.", tts: "Oh, an' it's not in Room B any more. They've moved us ta the big one on the fourth floor. I'll dial in.", ja: "あ、それとB会議室じゃなくなって、4階の大きい部屋に変わったの。私はオンラインで入るね。" }
-      - { who: me, en: "No problem, I'll sort it.", ja: "了解、やっておくね。" }
+      - { who: audie, en: "He'll live. Anyway, the thing is, I was supposed to present at the ten o'clock with the Nagoya team.", tts: "He'll live. Anyway, the thing is, I was supposta present at the ten o'clock with the Nagoya team.", ja: "大丈夫、たいしたことないの。それでね、10時の名古屋チームとの会議で私が発表することになってて。" }
+      - { who: audie, en: "Would you mind printing the handouts? It's the file called Q3 final. Twelve copies should do it.", tts: "Would you mind printin' the handouts? It's the file called Q three final. Twelve copies should do it.", ja: "資料を印刷してもらえないかな？「Q3最終版」っていうファイル。12部あれば足りると思う。" }
+      - { who: audie, en: "Actually, make it fifteen. Their manager's joining, and she always brings people.", tts: "Actually, make it fifteen. Their manager's joinin', an' she always brings people.", ja: "やっぱり15部にして。向こうの部長も来るし、いつも何人か連れてくるから。", repair: true }
+      - { who: audie, en: "Oh, and it's not in Room B anymore. They moved us to the big one on the fourth floor. I'll call in.", tts: "Oh, an' it's not in Room B anymore. They moved us ta the big one on the fourth floor. I'll call in.", ja: "あ、それとB会議室じゃなくなって、4階の大きい部屋に変わったの。私はオンラインで入るね。" }
+      - { who: me, en: "No problem, I'll take care of it.", ja: "了解、やっておくね。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
       - slots:
           - { ask: "何部？", options: ["10部", "12部", "15部"], answer: 2 }
-          - { ask: "ファイルは？", options: ["Q3 最終版", "Q4 最終版", "大阪チーム"], answer: 0 }
+          - { ask: "ファイルは？", options: ["Q3 最終版", "Q4 最終版", "名古屋チーム"], answer: 0 }
           - { ask: "場所は？", options: ["B会議室", "4階の 大きい 部屋", "オンラインだけ"], answer: 1 }
           - { ask: "会議は 何時？", options: ["10時", "12時", "3時"], answer: 0 }
     note: "頼みごとは後半。make it fifteen＝15部に変更"
-    tags: { seed: 45, register: colleague, pragmatic: indirect, conditions: [phone], features: [self-repair, t-glottal, filler] }
+    tags: { seed: 45, register: colleague, pragmatic: indirect, conditions: [phone], features: [self-repair, weak-form, filler] }
 
   - kind: call
     id: call-next-friday
@@ -88,8 +88,8 @@ items:
       - { who: me, en: "Yeah, for this Friday, the 12th.", tts: "Yeah, for this Friday, the twelfth.", ja: "うん、今週の金曜、12日で取ったよ。" }
       - { who: molly, en: "Oh. No, I meant next Friday, as in the 19th. This Friday's my work thing.", tts: "Oh. No, I meant next Friday, as in the nineteenth. This Friday's my work thing.", ja: "あ。違うの、来週って19日のつもりだった。今週の金曜は会社の飲み会なの。", repair: true }
       - { who: me, en: "Ah. Okay, I'll move it.", ja: "そっか。じゃあ変えておくよ。" }
-      - { who: molly, en: "Thanks. And could you make it seven thirty instead of seven? I won't get out of the office till six thirty.", tts: "Thanks. An' couldja make it seven thirty instead of seven? I won't get outta the office till six thirty.", ja: "ありがとう。それと7時じゃなくて7時半にできる？6時半まで会社を出られないから。" }
-      - { who: molly, en: "Oh, and it's quite a fancy place, isn't it? Just so you know.", tts: "Oh, an' it's quite a fancy place, isn't it? Just so ya know.", ja: "あ、それとあそこ、結構いいお店だよね？いちおう言っとくけど。" }
+      - { who: molly, en: "Thanks. And could you make it seven-thirty instead of seven? I won't get out of the office till six-thirty.", tts: "Thanks. An' couldja make it seven-thirty instead of seven? I won't get outta the office till six-thirty.", ja: "ありがとう。それと7時じゃなくて7時半にできる？6時半まで会社を出られないから。" }
+      - { who: molly, en: "Oh, and it's a pretty fancy place, right? Just so you know.", tts: "Oh, an' it's a pretty fancy place, right? Just so ya know.", ja: "あ、それとあそこ、結構いいお店だよね？いちおう言っとくけど。" }
       - { who: me, en: "Got it. No hoodie.", ja: "了解。パーカーはやめとく。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
@@ -111,14 +111,14 @@ items:
       - { who: me, en: "That's right.", ja: "そうです。" }
       - { who: label, en: "So we're out of navy in a large, unfortunately. We do have it in olive or charcoal.", tts: "So we're outta navy in a large, unfortunately. We do have it in olive or charcoal.", ja: "あいにくネイビーのLは在庫切れなんです。オリーブかチャコールならございます。" }
       - { who: me, en: "Charcoal's fine.", ja: "チャコールでいいです。" }
-      - { who: label, en: "Great. Returns are free, so just send the medium back with the label in the box. Oh, wait. That jacket was on sale, wasn't it? Sale items are exchange only. No refunds.", ja: "では。返送は無料なので、箱に入っているラベルでMを送り返してください。あ、待ってください。そのジャケット、セール品でしたよね？セール品は交換のみで、返金はできません。", repair: true }
-      - { who: me, en: "That's okay, I just want the bigger one.", ja: "大丈夫です。大きいのが欲しいだけなので。" }
+      - { who: label, en: "Great. Return shipping is free, so just send the medium back with the label in the box. Oh, wait. That jacket was on sale, wasn't it? Sale exchanges have to be mailed within seven days, so get it in the mail by Friday.", tts: "Great. Return shipping is free, so just send the medium back with the label in the box. Oh, wait. That jacket was on sale, wasn't it? Sale exchanges hafta be mailed within seven days, so get it in the mail by Friday.", ja: "では。返送は無料なので、箱に入っているラベルでMを送り返してください。あ、待ってください。そのジャケット、セール品でしたよね？セール品の交換は7日以内の発送が必要なので、金曜までに出してください。", repair: true }
+      - { who: me, en: "Okay, I'll drop it off tomorrow.", ja: "わかりました。明日出します。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
       - slots:
           - { ask: "新しい 色は？", options: ["ネイビー", "オリーブ", "チャコール"], answer: 2 }
           - { ask: "サイズは？", options: ["M", "L", "XL"], answer: 1 }
           - { ask: "返送料は？", options: ["無料", "500円", "自分で 払う"], answer: 0 }
-          - { ask: "セール品は？", options: ["交換のみ", "返金も できる", "交換も できない"], answer: 0 }
-    note: "Oh, wait の後が条件。セール品は返金なし"
-    tags: { seed: 26, register: service, pragmatic: refusal, conditions: [phone], features: [self-repair, lemme, weak-form] }
+          - { ask: "いつまでに 送る？", options: ["金曜まで", "7日後", "いつでも いい"], answer: 0 }
+    note: "Oh, wait の後が条件。金曜までに発送"
+    tags: { seed: 26, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, lemme, weak-form] }

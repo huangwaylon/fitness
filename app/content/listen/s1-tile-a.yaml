@@ -25,7 +25,7 @@ items:
 
   - kind: tile
     id: tile-hafta-get-off
-    speaker: kappn
+    speaker: lopez
     en: "You'll have to get off and wait for the next one."
     tts: "You'll hafta get off an' wait for the next one."
     ja: "ここで降りて、次の電車を待ってもらうことになります。"
@@ -38,7 +38,7 @@ items:
 
   - kind: tile
     id: tile-with-food
-    speaker: merengue
+    speaker: tia
     en: "Take two of these with food, and don't drive tonight."
     tts: "Take two of these with food, an' don't drive tonight."
     ja: "食後に 2錠飲んでください。それと今夜は運転しないでくださいね。"
@@ -77,11 +77,11 @@ items:
 
   - kind: tile
     id: tile-leave-with-neighbour
-    speaker: punchy
-    en: "I'll leave it with your neighbour, if that's all right."
-    tts: "I'll leave it with yer neighbour, if that's all right."
+    speaker: kicks
+    en: "I'll leave it with your neighbor, if that's all right."
+    tts: "I'll leave it with yer neighbor, if that's all right."
     ja: "お隣さんに預けておきますね、よければ。"
-    tiles: ["I'll", "leave", "it", "with", "your", "neighbour", "if", "that's", "all", "right"]
+    tiles: ["I'll", "leave", "it", "with", "your", "neighbor", "if", "that's", "all", "right"]
     decoys: ["I'd", "you"]
     marks: [[say, "your", "yer"], [link, "leave it"]]
     note: "your は「ヤ」と弱い。I'll は「アル」、I'd は「アイド」"
@@ -90,7 +90,7 @@ items:
 
   - kind: tile
     id: tile-the-thing-friday
-    speaker: ankha
+    speaker: audie
     en: "Are you going to the thing on Friday?"
     tts: "Are ya goin' to the thing on Friday?"
     ja: "金曜のあれ、行く？"
@@ -128,20 +128,20 @@ items:
 
   - kind: tile
     id: tile-left-at-the-lights
-    speaker: julian
-    en: "Go straight on and turn left at the lights."
-    tts: "Go straight on an' turn left at the lights."
-    ja: "まっすぐ行って、信号を左です。"
-    tiles: ["Go", "straight", "on", "and", "turn", "left", "at", "the", "lights"]
-    decoys: ["in", "rights"]
-    marks: [[say, "and", "an'"], [link, "straight on and"]]
-    note: "on and は「オナン」と一続き。lights は L の音"
+    speaker: ken
+    en: "Go straight for two blocks and turn left at the light."
+    tts: "Go straight for two blocks an' turn left at the light."
+    ja: "2ブロックまっすぐ行って、信号を左です。"
+    tiles: ["Go", "straight", "for", "two", "blocks", "and", "turn", "left", "at", "the", "light"]
+    decoys: ["four", "right"]
+    marks: [[say, "and", "an'"], [link, "left at the"]]
+    note: "for two は「フトゥー」で four と別。light は L"
     scene: street
     tags: { seed: 58, register: stranger, pragmatic: literal, features: [weak-form, linking, l-r] }
 
   - kind: tile
     id: tile-get-a-coffee
-    speaker: whitney
+    speaker: maple
     en: "We should get a coffee at some point."
     tts: "We should ged a coffee at some point."
     ja: "そのうちコーヒーでも行こうよ。"
@@ -166,7 +166,7 @@ items:
 
   - kind: tile
     id: tile-ive-eaten
-    speaker: sherb
+    speaker: teddy
     en: "I've already eaten, but I'll sit with you."
     tts: "I've already eaten, but I'll sit with ya."
     ja: "もう食べちゃったけど、いっしょに座ってるよ。"
@@ -179,15 +179,15 @@ items:
 
   - kind: tile
     id: tile-by-air
-    speaker: mabel
+    speaker: francine
     en: "You can send it by air, but it's a lot more expensive."
-    tts: "You c'n send it by air, but it's a lo' more expensive."
+    tts: "You c'n send it by air, but it's a lot more expensive."
     ja: "航空便でも送れますが、だいぶ高くなりますよ。"
     tiles: ["You", "can", "send", "it", "by", "air", "but", "it's", "a", "lot", "more", "expensive"]
     decoys: ["can't", "little"]
-    marks: [[say, "can", "c'n"], [drop, "lot", "t"]]
-    note: "弱い can は「クン」。英国の can't は「カーント」と長い"
-    tags: { seed: 24, register: service, pragmatic: literal, features: [can-cant, t-glottal] }
+    marks: [[say, "can", "c'n"], [link, "send it"]]
+    note: "弱い can は「クン」。can't なら「キャン」と強く長い"
+    tags: { seed: 24, register: service, pragmatic: literal, features: [can-cant, weak-form] }
 
   - kind: tile
     id: tile-eight-and-one

@@ -1,5 +1,5 @@
 # ようじ でんわ S2 もり (a): service calls at native speed: a callback slot, a bad line, an evasive landlord, a host
-# who corrects her own key code on a train, a booking whose dates the caller has to correct.
+# who corrects her own parking spot on a train, a booking whose dates the caller has to correct.
 schema: 1
 unit: s2-call-a
 game: call
@@ -18,20 +18,20 @@ items:
     channel: phone
     lines:
       - { who: me, en: "Hi, I'd like to see a doctor today if possible. I've had a fever since last night.", ja: "もしもし、できれば今日診ていただきたいんですが。昨夜から熱があって。" }
-      - { who: julian, en: "Right. We've no appointments left today, I'm afraid, but I can put you down for a phone call with the doctor.", tts: "Right. We've no appointments left today, I'm afraid, bu' I c'n put you down for a phone call with the doctor.", ja: "なるほど。あいにく今日は予約枠が残っていないのですが、医師からの電話診察でしたらお入れできます。" }
-      - { who: julian, en: "She'll ring you sometime between two and four. What's the best number to reach you on?", tts: "She'll ring ya sometime between two an' four. What's the best number ta reach you on?", ja: "2時から4時の間に医師からお電話します。おかけする番号は？" }
+      - { who: ken, en: "Okay. We don't have any appointments left today, unfortunately, but I can put you down for a phone call with the doctor.", tts: "Okay. We don't have any appointments left today, unfortunately, but I c'n put you down for a phone call with the doctor.", ja: "わかりました。あいにく今日は予約枠が残っていないのですが、医師からの電話診察でしたらお入れできます。" }
+      - { who: ken, en: "She'll call you sometime between two and four. What's the best number to reach you at?", tts: "She'll call ya sometime between two an' four. What's the best number ta reach you at?", ja: "2時から4時の間に医師からお電話します。おかけする番号は？" }
       - { who: me, en: "It's 090-2816-4473.", tts: "It's oh-nine-oh, two-eight-one-six, four-four-seven-three.", ja: "090-2816-4473です。" }
-      - { who: julian, en: "So that's 090-2861...", tts: "So that's oh-nine-oh, two-eight-six-one...", ja: "090-2861…ですね。" }
+      - { who: ken, en: "So that's 090-2861...", tts: "So that's oh-nine-oh, two-eight-six-one...", ja: "090-2861…ですね。" }
       - { who: me, en: "Sorry, it's 2816, not 2861.", tts: "Sorry, it's two-eight-one-six, not two-eight-six-one.", ja: "すみません、2816です。2861ではなくて。", repair: true }
-      - { who: julian, en: "Got it, 2816. And if your breathing gets worse before then, don't wait for the call. Come straight in.", tts: "Got it, two-eight-one-six. An' if yer breathing gets worse before then, don't wait for the call. Come straight in.", ja: "2816ですね、承知しました。それまでに息苦しさがひどくなったら、電話を待たずにすぐ来てください。" }
+      - { who: ken, en: "Got it, 2816. And if your breathing gets worse before then, don't wait for the call. Come right in.", tts: "Got it, two-eight-one-six. An' if yer breathing gets worse before then, don't wait for the call. Come right in.", ja: "2816ですね、承知しました。それまでに息苦しさがひどくなったら、電話を待たずにすぐ来てください。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
       - slots:
           - { ask: "医者からの 連絡は？", options: ["2時〜4時に でんわ", "4時に 来院", "あした でんわ"], answer: 0 }
           - { ask: "番号の まん中は？", options: ["2816", "2861", "4473"], answer: 0 }
           - { ask: "悪く なったら？", options: ["すぐ 行く", "でんわを 待つ", "救急車を よぶ"], answer: 0 }
-    note: "ring＝電話する（英）。直した番号が正しい"
-    tags: { seed: 14, register: service, pragmatic: formula, conditions: [phone], features: [numbers, self-repair, t-glottal] }
+    note: "相手の読み上げに注意。直した番号が正しい"
+    tags: { seed: 14, register: service, pragmatic: formula, conditions: [phone], features: [numbers, self-repair, weak-form] }
 
   - kind: call
     id: call-installer-signal
@@ -39,10 +39,10 @@ items:
     scene: office
     channel: phone
     lines:
-      - { who: stitches, en: "Hi, this is Fibernet calling about your installation. We can send an engineer on Thursday, between... and one.", tts: "Hi, this is Fibernet callin' about yer installation. We c'n send an engineer on Thursday, between... an' one.", ja: "ファイバーネットです。工事の件でお電話しました。木曜日の…から1時の間に作業員が伺います。" }
+      - { who: stitches, en: "Hi, this is Fibernet calling about your installation. We can send a technician on Thursday, between... and one.", tts: "Hi, this is Fibernet callin' about yer installation. We c'n send a technician on Thursday, between... an' one.", ja: "ファイバーネットです。工事の件でお電話しました。木曜日の…から1時の間に作業員が伺います。" }
       - { who: me, en: "Sorry, you broke up there. Between what time?", ja: "すみません、今途切れました。何時から何時の間ですか？" }
       - { who: stitches, en: "Eight. Between eight and one. Someone over eighteen needs to be home the whole time.", tts: "Eight. Between eight an' one. Someone over eighteen needs ta be home the whole time.", ja: "8時です。8時から1時の間。18歳以上の方がずっとご在宅である必要があります。" }
-      - { who: me, en: "Thursday's no good, I'm afraid. I'm in the office all day.", ja: "木曜は無理なんです。一日中会社で。" }
+      - { who: me, en: "Thursday doesn't work for me. I'm at the office all day.", ja: "木曜は無理なんです。一日中会社で。" }
       - { who: stitches, en: "Okay, I've got Saturday morning. Same window. Oh, wait, Saturdays are an extra ¥3,000. Is that okay?", tts: "Okay, I've got Saturday mornin'. Same window. Oh, wait, Saturdays are an extra three thousand yen. Is that okay?", ja: "では土曜の午前がありますよ。時間帯は同じです。あ、待ってください、土曜は3,000円の追加料金がかかります。よろしいですか？", repair: true }
       - { who: me, en: "Fine, Saturday.", ja: "いいです、土曜で。" }
       - { who: stitches, en: "Great. And clear a path to the wall by the window. That's where the box goes.", tts: "Great. An' clear a path to the wall by the window. That's where the box goes.", ja: "では。それと窓際の壁まで通れるようにしておいてください。そこに機器を付けますので。" }
@@ -63,10 +63,10 @@ items:
     channel: phone
     lines:
       - { who: me, en: "Hi, it's Wei in 302. The leak under the kitchen sink is back, and it's worse this time.", tts: "Hi, it's Wei in three-oh-two. The leak under the kitchen sink is back, and it's worse this time.", ja: "302号室のウェイです。キッチンのシンク下の水漏れがまた始まって、前よりひどいんです。" }
-      - { who: tom-nook, en: "Ah. Hm. Is it, uh, actually dripping, or is it more of a damp patch?", ja: "ああ。うーん。実際に垂れてます？それとも少し湿ってる程度？" }
+      - { who: tom-nook, en: "Ah. Hm. Is it, uh, actually dripping, or is it more of a damp spot?", ja: "ああ。うーん。実際に垂れてます？それとも少し湿ってる程度？" }
       - { who: me, en: "It's dripping. I've got a bowl under it.", ja: "垂れてます。ボウルを置いてます。" }
       - { who: tom-nook, en: "Right, right. Well, in the meantime, there's a little valve under the sink. If you turn that off, it'll stop.", tts: "Right, right. Well, in the meantime, there's a little valve under the sink. If ya turn that off, it'll stop.", ja: "なるほど。じゃあとりあえず、シンクの下に小さな元栓があるので、それを閉めれば止まりますよ。" }
-      - { who: tom-nook, en: "I'll get my guy round on Tuesday. Oh, no, he doesn't do Tuesdays. Wednesday, then. Sometime in the morning.", ja: "火曜日に業者を行かせます。あ、いや、彼は火曜は休みだ。じゃあ水曜。午前中のどこかで。", repair: true }
+      - { who: tom-nook, en: "I'll send my guy over on Tuesday. Oh, no, he doesn't do Tuesdays. Wednesday, then. Sometime in the morning.", ja: "火曜日に業者を行かせます。あ、いや、彼は火曜は休みだ。じゃあ水曜。午前中のどこかで。", repair: true }
       - { who: me, en: "Could you give me a time? I'll need to take the morning off.", ja: "時間を決めてもらえますか？午前休を取らないといけないので。" }
       - { who: tom-nook, en: "I'll, uh, text you once he's confirmed.", tts: "I'll, uh, text ya once he's confirmed.", ja: "えー、彼に確認が取れたらメッセージします。" }
     half: [0, 0, 0, 0, 1, 1, 1]
@@ -79,26 +79,26 @@ items:
     tags: { seed: 30, register: neighbour, pragmatic: hedge, conditions: [phone], features: [self-repair, filler, contraction] }
 
   - kind: call
-    id: call-key-box-code
+    id: call-host-parking
     ask: "宿の ホストから でんわ"
     scene: street
     channel: phone
     lines:
-      - { who: whitney, en: "Hi! It's Whitney, your host. Just ringing to talk you through the key box, since I won't be there.", tts: "Hi! It's Whitney, yer host. Just ringin' ta talk ya through the key box, since I won't be there.", ja: "こんにちは！ホストのホイットニーです。私は行けないので、キーボックスの説明をしようと思って。" }
-      - { who: whitney, en: "So it's on the left of the gate, behind the plant pot. The code's 4719.", tts: "So it's on the left of the gate, behind the plant pot. The code's four-seven-one-nine.", ja: "門の左側、植木鉢の裏にあります。暗証番号は4719です。" }
-      - { who: me, en: "4719. Okay.", tts: "Four-seven-one-nine. Okay.", ja: "4719ですね。" }
-      - { who: whitney, en: "Oh, hang on, no, that's the old one. I changed it last week. It's 4791 now.", tts: "Oh, hang on, no, that's the old one. I changed it last week. It's four-seven-nine-one now.", ja: "あ、待って、それは古い番号だ。先週変えたんだった。今は4791です。", repair: true }
-      - { who: whitney, en: "And the heater's a bit temperamental. If it beeps, just... off and on again... you'll...", tts: "An' the heater's a bit temperamental. If it beeps, just... off an' on again... you'll...", ja: "あと、暖房がちょっと気まぐれで。ピーッて鳴ったら…一度切ってまた…" }
+      - { who: daisy-mae, en: "Hi! It's Daisy, your host. Just calling to walk you through check-in, since I won't be there.", tts: "Hi! It's Daisy, yer host. Just callin' ta walk ya through check-in, since I won't be there.", ja: "こんにちは！ホストのデイジーです。私は行けないので、チェックインの説明をしようと思って。" }
+      - { who: daisy-mae, en: "So the lockbox is on the front porch, and you've got one parking spot out back. It's number 14.", tts: "So the lockbox is on the front porch, an' you've got one parking spot out back. It's number fourteen.", ja: "ロックボックスは玄関ポーチにあって、裏に駐車スペースが1台分あります。14番です。" }
+      - { who: me, en: "Spot 14. Okay.", tts: "Spot fourteen. Okay.", ja: "14番ですね。" }
+      - { who: daisy-mae, en: "Oh, wait, no, 14 is my neighbor's. Sorry! Yours is 40. Four-oh.", tts: "Oh, wait, no, fourteen is my neighbor's. Sorry! Yours is forty. Four-oh.", ja: "あ、待って、14はお隣さんのだ。ごめんね！あなたのは40番。よん、ゼロ。", repair: true }
+      - { who: daisy-mae, en: "And the AC's kind of temperamental. If it beeps, just... unplug... and you'll...", tts: "An' the A C's kinda temperamental. If it beeps, just... unplug... an' you'll...", ja: "あと、エアコンがちょっと気まぐれで。ピーッて鳴ったら…コンセントを…" }
       - { who: me, en: "Sorry, you're breaking up. What do I do if it beeps?", ja: "すみません、途切れてます。鳴ったらどうするんですか？" }
-      - { who: whitney, en: "Sorry, I'm on the train! Just switch it off at the wall and back on again. Works every time.", tts: "Sorry, I'm on the train! Just switch it off at the wall an' back on again. Works every time.", ja: "ごめん、電車の中なの！壁のスイッチで一度切って、また入れて。それで毎回直るから。" }
+      - { who: daisy-mae, en: "Sorry, I'm on the train! Just unplug it and plug it back in. Works every time.", tts: "Sorry, I'm on the train! Just unplug it an' plug it back in. Works every time.", ja: "ごめん、電車の中なの！コンセントを抜いて、また差して。それで毎回直るから。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
       - slots:
-          - { ask: "キーボックスは どこ？", options: ["門の 左、植木ばちの うしろ", "門の 右", "ポストの 中"], answer: 0 }
-          - { ask: "番号は？", options: ["4719", "4791", "4179"], answer: 1 }
-          - { ask: "暖房が 鳴ったら？", options: ["かべの スイッチで 切って 入れなおす", "ホストに でんわ", "窓を あける"], answer: 0 }
-    note: "that's the old one＝古い番号。後の4791が正解"
-    tags: { seed: 10, register: service, pragmatic: literal, conditions: [phone, signal, train], features: [numbers, self-repair, filler] }
+          - { ask: "ロックボックスは どこ？", options: ["玄関の ポーチ", "裏の 駐車場", "ポストの 中"], answer: 0 }
+          - { ask: "駐車スペースは？", options: ["14番", "40番", "41番"], answer: 1 }
+          - { ask: "エアコンが 鳴ったら？", options: ["コンセントを ぬいて さしなおす", "ホストに でんわ", "窓を あける"], answer: 0 }
+    note: "14 is my neighbor's＝14は隣の人の。40が正解"
+    tags: { seed: 10, register: service, pragmatic: literal, conditions: [phone, signal, train], features: [numbers, teen-ty, self-repair] }
 
   - kind: call
     id: call-hotel-extra-night
@@ -106,13 +106,13 @@ items:
     scene: living
     channel: phone
     lines:
-      - { who: me, en: "Hi, I have a booking for tomorrow night, under Wei. I was wondering if I could add a second night.", ja: "明日一泊、ウェイの名前で予約しているんですが、もう一泊追加できないかと思って。" }
-      - { who: diana, en: "Let me have a look. So that's arriving on the 12th... yes, I can add two nights, so you'd check out on the 15th.", tts: "Lemme 'ave a look. So that's arrivin' on the twelfth... yes, I can add two nights, so you'd check out on the fifteenth.", ja: "お調べします。12日ご到着で…はい、2泊追加できますので、15日のチェックアウトになります。" }
+      - { who: me, en: "Hi, I have a reservation for tomorrow night, under Wei. I was wondering if I could add a second night.", ja: "明日一泊、ウェイの名前で予約しているんですが、もう一泊追加できないかと思って。" }
+      - { who: poppy, en: "Let me take a look. So that's arriving on the 12th... yes, I can add two nights, so you'd check out on the 15th.", tts: "Lemme take a look. So that's arrivin' on the twelfth... yes, I can add two nights, so you'd check out on the fifteenth.", ja: "お調べします。12日ご到着で…はい、2泊追加できますので、15日のチェックアウトになります。" }
       - { who: me, en: "Sorry, just one more night. So checking out on the 14th.", tts: "Sorry, just one more night. So checking out on the fourteenth.", ja: "すみません、追加は1泊だけです。なので14日チェックアウトで。", repair: true }
-      - { who: diana, en: "Of course, my mistake. Two nights in total, out on the 14th.", tts: "Of course, my mistake. Two nights in total, out on the fourteenth.", ja: "失礼いたしました。合計2泊、14日チェックアウトですね。" }
-      - { who: diana, en: "The second night's at a slightly higher rate, I'm afraid, as it's a Friday. It'd be ¥22,000 rather than ¥18,000.", tts: "The second night's at a slightly higher rate, I'm afraid, as it's a Friday. It'd be twenty-two thousand yen rather than eighteen.", ja: "申し訳ございませんが、2泊目は金曜のため少し料金が上がりまして、1万8千円ではなく2万2千円になります。" }
-      - { who: me, en: "That's fine. Oh, and I'm getting in quite late, maybe around eleven.", ja: "大丈夫です。あと、到着がかなり遅くて、11時ごろになりそうです。" }
-      - { who: diana, en: "No problem at all. The front desk's open all night, so just give your name when you arrive.", tts: "No problem at all. The front desk's open all night, so just give yer name when you arrive.", ja: "まったく問題ございません。フロントは夜通し開いておりますので、ご到着の際にお名前をおっしゃってください。" }
+      - { who: poppy, en: "Of course, my mistake. Two nights total, checking out on the 14th.", tts: "Of course, my mistake. Two nights total, checkin' out on the fourteenth.", ja: "失礼いたしました。合計2泊、14日チェックアウトですね。" }
+      - { who: poppy, en: "The second night's a little more, since it's a Friday. It'd be ¥22,000 instead of ¥18,000.", tts: "The second night's a little more, since it's a Friday. It'd be twenty-two thousand yen instead of eighteen.", ja: "2泊目は金曜のため少し料金が上がりまして、1万8千円ではなく2万2千円になります。" }
+      - { who: me, en: "That's fine. Oh, and I'm getting in pretty late, maybe around eleven.", ja: "大丈夫です。あと、到着がかなり遅くて、11時ごろになりそうです。" }
+      - { who: poppy, en: "No problem at all. The front desk is open 24 hours, so just give your name when you arrive.", tts: "No problem at all. The front desk is open twenty-four hours, so just give yer name when you arrive.", ja: "まったく問題ございません。フロントは24時間開いておりますので、ご到着の際にお名前をおっしゃってください。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
       - slots:

@@ -76,7 +76,7 @@ items:
 
   - kind: tile
     id: tile-try-em-on
-    speaker: mabel
+    speaker: tammy
     en: "You can try them on over there."
     tts: "You c'n try 'em on over there."
     ja: "あちらでご試着いただけますよ。"
@@ -88,7 +88,7 @@ items:
 
   - kind: tile
     id: tile-sign-for-this
-    speaker: punchy
+    speaker: shep
     en: "Could you sign for this one? Just your initials is fine."
     tts: "Couldja sign for this one? Just yer initials is fine."
     ja: "こちらにサインをお願いします。イニシャルだけで大丈夫です。"
@@ -114,7 +114,7 @@ items:
 
   - kind: tile
     id: tile-bit-earlier
-    speaker: coco
+    speaker: nana
     en: "Would you be able to come in a bit earlier?"
     tts: "Wouldja be able to come in a bid earlier?"
     ja: "少し早めにお越しいただくことはできますか？"
@@ -127,7 +127,7 @@ items:
 
   - kind: tile
     id: tile-sent-you
-    speaker: julian
+    speaker: beau
     en: "Did you get the email I sent you this morning?"
     tts: "Didja get the email I sentcha this morning?"
     ja: "けさ送ったメール、届いた？"
@@ -140,7 +140,7 @@ items:
 
   - kind: tile
     id: tile-out-of-work
-    speaker: cherry
+    speaker: gayle
     en: "I'll call you when I get out of work."
     tts: "I'll call ya when I ged outta work."
     ja: "仕事が終わったら電話するね。"
@@ -165,7 +165,7 @@ items:
 
   - kind: tile
     id: tile-what-you-think
-    speaker: raymond
+    speaker: octavian
     en: "Let me know what you think of the draft."
     tts: "Lemme know whatcha think of the draft."
     ja: "下書き、どう思うか聞かせて。"
@@ -191,7 +191,7 @@ items:
 
   - kind: tile
     id: tile-aisle-or-window
-    speaker: wilbur
+    speaker: gulliver
     en: "Do you want an aisle or a window?"
     tts: "D'ya want an aisle or a window?"
     ja: "通路側と窓側、どちらがいいですか？"
