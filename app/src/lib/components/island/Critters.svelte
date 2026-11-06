@@ -1019,7 +1019,7 @@
     const ms = how === 'rod' ? 900 : how === 'dive' ? 450 : how === 'dig' ? 260 : 300;
     later(() => {
       gone();
-      if (how === 'rod' || how === 'dive') sceneSfx('splash');
+      if (how === 'rod' || how === 'dive') sceneSfx('splash', [x, z]);
       tellPartner({ who: e.who, art: artOf(e.what), verb: beat ? 'beat' : verbOf(how), name: nameOf(e.what, how), x, z });
     }, ms);
   }

@@ -522,7 +522,7 @@
         partnerTurnTo(b.x, e.who);
         jiggle(el, RUSTLE, 520, BUSH_ORIGIN);
         spawn({ kind: 'bush', x: b.x, y: b.z, lift: b.h * 0.62, v: shed(season) });
-        sceneSfx('bush');
+        sceneSfx('bush', [b.x, b.z]);
       } else if (e.kind === 'world' && e.op === 'watered') {
         const f = flowerById(e.id);
         if (!f) return;
@@ -530,7 +530,7 @@
         partnerTurnTo(f.x, e.who);
         jiggle(el, WIGGLE, 620, FLOWER_ORIGIN);
         spawn({ kind: 'flower', x: f.x, y: f.z, lift: FLOWER_U * 0.72, color: petalOf(wildFlower(f, season)), flip: f.x > 195 });
-        sceneSfx('water');
+        sceneSfx('water', [f.x, f.z]);
       }
     })
   );

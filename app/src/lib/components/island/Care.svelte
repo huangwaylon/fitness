@@ -131,14 +131,15 @@
     spawn({ kind: 'strike', x: ROCK.x, y: ROCK.y, lift: ROCK.h * 0.5 }, 400);
     after(300, then);
   }
-  function clonk(what: ReturnType<typeof rockTap>) {
-    sceneSfx('clonk');
+  /** `at`: the partner's tap (its sound by where the rock is). */
+  function clonk(what: ReturnType<typeof rockTap>, at?: readonly [number, number]) {
+    sceneSfx('clonk', at);
     // NH's tool strike on a rock: it squashes under the blow and bounces back
     echo3d('rock', 0.8);
     rockEl?.animate([{ transform: 'none' }, { transform: 'scale(1.06, .94)', offset: 0.3 }, { transform: 'scale(.97, 1.04)', offset: 0.65 }, { transform: 'none' }], { duration: 280, easing: 'ease-out' });
     if (what === 'sparkle') {
       spawn({ kind: 'spark', x: ROCK.x + 6, y: ROCK.y, lift: ROCK.h }, 800);
-      sceneSfx('glint');
+      sceneSfx('glint', at);
     } else if (what === 'bug') rockBug?.(ROCK.x, ROCK.y);
   }
 
@@ -150,11 +151,11 @@
       if (e.kind === 'pick' && e.what === 'weed' && e.at) {
         const [x, z] = e.at;
         partnerTurnTo(x, e.who);
-        sceneSfx('weed');
+        sceneSfx('weed', [x, z]);
         spawn({ kind: 'pull', x, y: z }, 700);
       } else if (e.kind === 'act' && e.act === 'rock') {
         partnerTurnTo(ROCK.x, e.who);
-        strike(() => clonk('clonk'));
+        strike(() => clonk('clonk', [ROCK.x, ROCK.y]));
       }
     })
   );

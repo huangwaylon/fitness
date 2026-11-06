@@ -1,6 +1,9 @@
 // The cue table (docs/design.md#cues): scenery taps are wired, quiet world sounds.
-import { describe, expect, it } from 'vitest';
-import { CUES } from './cues.ts';
+import { describe, expect, it, vi } from 'vitest';
+import { CUES, cue, hearFrom } from './cues.ts';
+import { play } from './sound.svelte.ts';
+
+vi.mock('./sound.svelte.ts', () => ({ play: vi.fn(), covered: () => false, announce: vi.fn() }));
 import { SOUNDS, placeholderOf, type SceneSfx } from './ids.ts';
 import { durationOf } from './synth.ts';
 
@@ -54,5 +57,24 @@ describe("NH's fanfares and the announcement (docs/design.md#cues)", () => {
   });
   it("the day's first open: the chime, which plays the moment's radio jingle (sound.svelte.ts play, radio.ts)", () => {
     expect(CUES.announce).toEqual({ sound: 'chime', world: true });
+  });
+});
+
+describe('another player’s sounds by where they are (docs/sound-sync.md)', () => {
+  it('a placed cue takes the camera’s gain: none off screen, softer away; mine (no `at`) as ever', () => {
+    const gains: [string, number][] = (globalThis.__cueGains = []);
+    const off = hearFrom((x) => (x > 500 ? 0 : x > 100 ? 0.5 : 1));
+    vi.mocked(play).mockClear();
+    cue('scene-twig', { at: [900, 0] });
+    expect(play).not.toHaveBeenCalled();
+    cue('scene-twig', { at: [200, 0] });
+    expect(vi.mocked(play).mock.calls[0][1]?.gain).toBeCloseTo((CUES['scene-twig'].gain ?? 1) * 0.5);
+    cue('scene-twig');
+    expect(vi.mocked(play).mock.calls[1][1]?.gain).toBeCloseTo(CUES['scene-twig'].gain ?? 1);
+    expect(gains).toEqual([['scene-twig', 0], ['scene-twig', 0.5]]);
+    off();
+    cue('scene-twig', { at: [900, 0] }); // nobody listening (no island): as it is
+    expect(play).toHaveBeenCalledTimes(3);
+    globalThis.__cueGains = undefined;
   });
 });

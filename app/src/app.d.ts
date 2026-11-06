@@ -23,6 +23,8 @@ declare global {
   /** Sound's test logs (e2e/sound.spec.ts, weather.spec.ts): an array the page put there collects the cues and the
    *  ambient layers sounding. */
   var __cues: Cue[] | undefined;
+  /** Each cue placed in the world (another player's doing): [cue, its gain here] (e2e/kk-sync.spec.ts). */
+  var __cueGains: [Cue, number][] | undefined;
   var __ambient: string[] | undefined;
 }
 

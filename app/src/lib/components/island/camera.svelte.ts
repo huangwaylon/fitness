@@ -191,6 +191,10 @@ export const OVER = 50_000_000;
 /** The depth order of feet at (x, z): nearer in front, ties by x (left first). */
 const depthAt = (x: number, z: number): number => zIndexAt(z, x, PLAN.z1);
 
+/** Another player's sound: heard this far off screen (px), and this loud at the view's edge (docs/sound-sync.md). */
+const EAR_PAD = 60;
+const EAR_FAR = 0.35;
+
 export class World {
   /** The hot state (read every frame). `s` = CSS px per unit (vw / 390); camZ: the 3D camera's z (Island3D writes it in
    *  each frame); left / top: the scene's client offset. */
@@ -297,6 +301,15 @@ export class World {
   /** The perspective scale at a world point. */
   scaleAt(x: number, z: number): number {
     return this.three ? this.three.at(x, z, 0).k / this.view.s : 1;
+  }
+
+  /** How loud another player's sound at (x, z) is here (docs/sound-sync.md, sound/cues.ts hearFrom): 0 off screen
+   *  (EAR_PAD px round it), else 1 at the view's middle falling to EAR_FAR at its edge. */
+  earGain(x: number, z: number): number {
+    if (!this.inView(x, z, EAR_PAD)) return 0;
+    const p = this.screenAt(x, z), v = this.view, top = Math.max(0, v.horizon);
+    const dx = (p.sx - v.vw / 2) / (v.vw / 2 + EAR_PAD), dy = (p.sy - (top + v.vh) / 2) / ((v.vh - top) / 2 + EAR_PAD);
+    return 1 - (1 - EAR_FAR) * Math.min(1, Math.hypot(dx, dy));
   }
 
   /** Whether a world point is on screen (within `pad` px of it) and in front of the horizon. */
