@@ -40,7 +40,8 @@
 // normalised) re-rolls it with the next seed, up to --retries times, then it's flagged. UTMOS (SpeechMOS utmos22) and
 // ECAPA cosine to the voice's reference (drift < 0.3 flagged) are measured. scripts/tts/report.json gets every clip's
 // numbers, and a summary prints.
-// src/lib/kikimimi/clips.json gets {id: {dur, hash, slow?}} (bundled with the game) and scripts/kikimimi-clips.src.json
+// src/lib/kikimimi/clips.json gets {id: {dur, hash, slow?}} (compiled into the levels' chunks: kikimimi-levels.ts, run at
+// the end) and scripts/kikimimi-clips.src.json
 // {id: src}: `src` hashes the engine, its model, the cast voice and its reference, the text and this pipeline's version.
 //
 // Python: scripts/tts/tts.py runs in venvs made with uv under .cache/tts/ from scripts/tts/requirements-*.txt, or the
@@ -52,7 +53,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { BANK as ITEMS, clipItems, type Accent, type CastId, type Item } from '../src/lib/kikimimi/bank.ts';
+import { clipItems, type Accent, type CastId, type Item } from '../src/lib/kikimimi/bank.ts';
+import { BANK as ITEMS } from '../src/lib/kikimimi/source.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
 import { CAST_IDS, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
@@ -60,7 +62,9 @@ import { codecArgs, condOf, condPlan, condSource, stepFilter, type CondPlan, typ
 import type { Bed } from '../src/lib/kikimimi/bank.ts';
 import { SR, chime, convolve, filter, gain, impulse, lufs, noise, readPcm, writeWav } from './tts/dsp.ts';
 import { fnv1a, mulberry32 } from '../src/lib/random.ts';
-import { LADDERS as ALL_LADDERS, NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
+import { NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
+import { LADDERS as ALL_LADDERS } from '../src/lib/kikimimi/ladders.ts';
+import { writeLevels } from './kikimimi-levels.ts';
 
 const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
 const FFPROBE = process.env.FFPROBE ?? 'ffprobe';
@@ -714,6 +718,7 @@ function run(): void {
   const sorted = <T>(o: Record<string, T>) => Object.fromEntries(Object.keys(o).sort().map((k) => [k, o[k]]));
   writeFileSync(CLIPS, JSON.stringify(sorted(clips), null, 1).replace(/\n  +/g, ' ').replace(/\n \}/g, ' }') + '\n');
   writeFileSync(SRCS, JSON.stringify(sorted(srcs), null, 1) + '\n');
+  if (!SCRATCH) writeLevels(true); // the levels' chunks with the new clips (docs/kikimimi.md "Loading")
   const files = readdirSync(OUT).filter((f) => f.endsWith('.m4a'));
   const bytes = files.reduce((s, f) => s + statSync(join(OUT, f)).size, 0);
   if (SAY) return console.log(`\n${todo.length} items spoken by say; ${files.length} files, ${(bytes / 1024).toFixed(0)} KB`);

@@ -2,13 +2,18 @@
 // game's and にがて れんしゅう's freshest items.
 import { describe, expect, it } from 'vitest';
 import { mulberry32 } from '#lib/random.ts';
-import { BANK, type Level } from './bank.ts';
+import { type Level } from './bank.ts';
+import { BANK } from './source.ts';
 import { deck, inMix } from './deck.ts';
 import { skillsOf } from './tags.ts';
 import { FLAG_BITS, RECENT_GAMES, SEED_TRIES, agesOf, freshSeed, overlap, remember, seedWith, staleness, type Recent } from './recent.ts';
 import { QuizSession, isLadder, timerOf, versus, type DeckOf } from './session.ts';
 import { practiceDeck } from './srs.ts';
 import { statsOf } from './progress.ts';
+import { loadAll } from './pool.ts';
+
+// (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
+await loadAll();
 
 const ids = (lv: Level) => (seed: number) => deck(seed, lv).map((it) => it.id);
 

@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
-import { BANK as ITEMS, clipItems, type CastId } from './bank.ts';
+import { clipItems, type CastId } from './bank.ts';
+import { BANK as ITEMS } from './source.ts';
 import { CAST } from './bank4.ts';
 import { CAST_IDS, SLOTS, castOf, numberWords, ordinalWords, sayNumbers, spokenText } from './speech.ts';
 

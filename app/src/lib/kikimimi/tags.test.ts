@@ -1,6 +1,6 @@
 // kikimimi/tags.ts: every item is tagged, every tag maps to a skill (docs/kikimimi.md "What's measured").
 import { describe, expect, it } from 'vitest';
-import { BANK } from './bank.ts';
+import { BANK } from './source.ts';
 import { FEATURES, SKILLS, featureSkill, skillsOf, tagged, tagsOf } from './tags.ts';
 
 describe('the tags', () => {

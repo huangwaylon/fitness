@@ -11,7 +11,9 @@
 // spelling (digits allowed), `tts` as said (every number in words), the trap in `note` (≤ 40 字), a cast voice per
 // villager (bank4.ts CAST), a scenario seed and its tags.
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { SceneId, SoundMark, Tags } from './bank.ts';
+import type { Accent, Item, SceneId, SoundMark, Tags } from './bank.ts';
+import { BANK4, CAST } from './bank4.ts';
+import { SPEEDS, type Ladder } from './ladder.ts';
 
 /** A rung's question: what to listen for (Japanese), its choices (the right one first), `num` for a number's. */
 type Ask = readonly [ask: string, choices: readonly string[], type?: 'num'];
@@ -295,3 +297,42 @@ export const LADDER_SRC: readonly LadderSrc[] = [
       ['へんきんに ひつような ものは？', ['レシート', 'クレジットカード', 'みぶんしょう']]],
     chunk: ['exchange it for', 'exchange them for', 'exchange it with'] }
 ];
+
+// ---- the ladders as items ------------------------------------------------------------------------------------------
+
+/** A ladder's line: level 4's item's (its Japanese without a reply's or a meaning's → part), or a new one. */
+function lineOf(src: LadderSrc): Item {
+  if (typeof src.line === 'string') {
+    const it = BANK4.find((x) => x.id === src.line);
+    if (!it) throw new Error(`kikimimi: ladder ${src.id} climbs ${src.line}, not in level 4`);
+    const { choices: _, answer: __, focus: ___, ask: ____, cond: _____, ...rest } = it; // (rungs are clean: speed is the lever)
+    return { ...rest, id: src.id, type: 'gist', ja: it.ja.split('→')[0].trim(), choices: [], answer: 0 };
+  }
+  const l = src.line, cast = CAST[l.who];
+  if (!cast) throw new Error(`kikimimi: ${l.who} has no cast voice`);
+  return {
+    id: src.id, lv: 4, type: 'gist', en: l.en, ja: l.ja, speaker: l.who, voice: cast.slice(0, 2) as Accent, cast, choices: [], answer: 0,
+    note: l.note, tags: l.tags, ...(l.tts && { tts: l.tts }), ...(l.scene && { scene: l.scene }), ...(l.marks && { marks: l.marks })
+  };
+}
+
+function ladderOf(src: LadderSrc): Ladder {
+  const line = lineOf(src);
+  const { id: _, ...base } = line;
+  const rungs = SPEEDS.map((speed, k): Item => {
+    const rung = { ladder: src.id, n: k + 1, speed };
+    if (k < src.asks.length) {
+      const [ask, choices, type] = src.asks[k];
+      return { ...base, id: `${src.id}-${k + 1}`, type: type ?? 'gist', choices, answer: 0, ask, rung };
+    }
+    return { ...base, id: `${src.id}-${k + 1}`, type: 'word', choices: src.chunk, answer: 0, focus: src.chunk[0], rung };
+  });
+  return { id: src.id, line, rungs };
+}
+
+export const LADDERS: readonly Ladder[] = LADDER_SRC.map(ladderOf);
+/** Every rung (its clip id is its id). */
+export const RUNG_ITEMS: readonly Item[] = LADDERS.flatMap((l) => l.rungs);
+
+/** Every ladder's rung clips exist (the mode's gate: the lobby offers it only then; compile.ts, in the index). */
+export const ladderReady = (clips: Readonly<Record<string, unknown>>): boolean => RUNG_ITEMS.every((it) => it.id in clips);

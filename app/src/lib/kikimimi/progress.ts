@@ -5,9 +5,10 @@
 import { listenOf, listenSummaryOf, type ListenRow } from '../contract/listen.ts';
 import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
-import { BANK, levelRank, type Accent, type Feature, type Item, type ItemType } from './bank.ts';
+import { levelRank, type Accent, type Entry, type Feature, type Item, type ItemType } from './bank.ts';
 import { SKILLS, skillsOf, tagsOf, type Skill } from './tags.ts';
-import { SPEEDS, climb, isRungId, rungOf } from './ladder.ts';
+import { SPEEDS, climb } from './ladder.ts';
+import { entryOf, isRungId, itemOf as loadedItem, rungAt } from './pool.ts';
 
 /** One of my answers, with its game's context. */
 export interface Answer {
@@ -41,8 +42,8 @@ export interface OtherGame {
   ms: number;
 }
 
-const BY_ID: ReadonlyMap<string, Item> = new Map(BANK.map((it) => [it.id, it]));
-export const itemOf = (id: string): Item | undefined => BY_ID.get(id);
+/** An item of this build by id, as the index knows it (no level loaded: pool.ts). */
+export const itemOf = (id: string): Entry | undefined => entryOf(id);
 
 /** My games (in the order played) and the others' summaries, from the `listen` rows this phone holds; of mine, only
  *  the answers whose items this build knows (none: not a game here). A game id
@@ -63,7 +64,7 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
       if (!x) continue;
       const p = x.p === 1;
       // only the items this build knows: a newer game's row (docs/kikimimi-framework.md §4.4) leaves the stats as they were (a スピード はしご rung is known: speedOf)
-      const r = x.r.filter(([id]) => BY_ID.has(id) || isRungId(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
+      const r = x.r.filter(([id]) => !!entryOf(id) || isRungId(id)).map(([id, ok, pick, rp]): Answer => ({ id, ok: ok === 1, pick, rp, d: x.d, g: x.g, lv: x.lv, p }));
       if (!r.length) continue;
       const was = mine.get(x.g);
       if (!was) mine.set(x.g, { d: x.d, g: x.g, lv: x.lv, n: x.n, ms: x.ms, p, at, r });
@@ -94,7 +95,7 @@ export function listenAnswers(
   items.forEach((it, i) => {
     const a = answers[i];
     if (!had[i] || r.length >= 12 || (!a && !done)) return;
-    const pick = a ? ((BY_ID.get(it.id) ?? rungOf(it.id))?.choices.indexOf(it.choices[a.k]) ?? -1) : -1;
+    const pick = a ? (loadedItem(it.id)?.choices.indexOf(it.choices[a.k]) ?? -1) : -1;
     r.push([it.id, a && a.k === it.answer ? 1 : 0, pick, Math.min(99, rp[i] ?? 0)]);
   });
   return r;
@@ -149,7 +150,7 @@ export interface Stats {
 
 /** An item's difficulty on the ability scale: its level (L1 −1 … L4 2, やま 3, ほし 4; the アナウンス pack as L4) and its type. */
 const TYPE_OFFSET: Readonly<Record<ItemType, number>> = { pic: -0.3, word: 0, num: 0, reply: 0.2, mean: 0.4, gist: 0.3, next: 0.3 };
-const difficulty = (it: Pick<Item, 'lv' | 'type'>): number => levelRank(it.lv) - 2 + TYPE_OFFSET[it.type];
+const difficulty = (it: Pick<Entry, 'lv' | 'type'>): number => levelRank(it.lv) - 2 + TYPE_OFFSET[it.type];
 const ESTIMATE_MIN = 16;
 /** θ − ln 4: where the predicted score is 80 %. */
 const COMFORT = Math.log(4);
@@ -170,7 +171,7 @@ export function statsOf(answers: readonly Answer[], today: LocalDate): Stats {
   let theta = 0, k = 0, maxLv = 0;
   const games = new Set<string>();
   for (const a of answers) {
-    const it = BY_ID.get(a.id);
+    const it = entryOf(a.id);
     if (!it) continue; // an item no longer in the bank
     games.add(a.g);
     const sc = scoreOf(a);
@@ -273,7 +274,7 @@ export function speedOf(games: readonly Game[]): Speed {
   for (const g of games) {
     const by = new Map<string, (Answer | undefined)[]>();
     for (const a of g.r) {
-      const rung = rungOf(a.id)?.rung;
+      const rung = rungAt(a.id);
       if (!rung) continue;
       const tries = by.get(rung.ladder) ?? [];
       tries[rung.n - 1] = a;

@@ -4,8 +4,9 @@
 // right answer (reply, mean, gist, next) against the others', the same normalisation. A pair over the threshold is
 // the same sentence twice in the game: rewrite one of them (en and ja, before it's voiced).
 import { describe, expect, it } from 'vitest';
-import { BANK, isDialogue } from './bank.ts';
-import { LADDERS } from './ladder.ts';
+import { isDialogue } from './bank.ts';
+import { BANK } from './source.ts';
+import { LADDERS } from './ladders.ts';
 
 const STOP = new Set(('a an the to of and or but in on at for is are was were be been it its i you we he she they this that so just do did ' +
   'have has had my your our his her their me us them him').split(' '));

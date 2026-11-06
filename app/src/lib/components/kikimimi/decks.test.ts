@@ -1,9 +1,13 @@
 // The decks cache (decks.ts): the game I'm in keeps its deck, にがて れんしゅう's above all, whatever other phones' lobbies
 // are heard meanwhile (each `open` builds its deck here).
 import { describe, expect, it } from 'vitest';
-import { BANK } from '#lib/kikimimi/bank.ts';
+import { BANK } from '#lib/kikimimi/source.ts';
 import { deck } from '#lib/kikimimi/deck.ts';
 import { itemsOf, pinDeck, usePractice } from './decks.ts';
+import { loadAll } from '#lib/kikimimi/pool.ts';
+
+// (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
+await loadAll();
 
 describe('the decks cache', () => {
   it('にがて れんしゅう’s deck stays while others’ lobbies come and go', () => {

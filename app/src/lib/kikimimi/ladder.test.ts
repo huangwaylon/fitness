@@ -2,14 +2,18 @@
 // mode's seed bit, and every rung's clip.
 import { describe, expect, it } from 'vitest';
 import { ROSTER } from '#lib/villagers/roster.ts';
-import { BANK } from './bank.ts';
-import { CLIPS } from './clips.ts';
+import { BANK } from './source.ts';
+import type { Clip } from './clips.ts';
+import clipsJson from './clips.json';
 import { placeMark, findWords } from './marks.ts';
 import { spokenText } from './speech.ts';
-import { LADDER_SRC } from './ladders.ts';
-import { LADDERS, PER_GAME, RUNG_ITEMS, RUNG_POINTS, SPEEDS, climb, climbs, isRungId, ladderDeck, ladderPoints, ladderReady, laddersIn, rungState, speedAt } from './ladder.ts';
+import { LADDER_SRC, LADDERS, RUNG_ITEMS, ladderReady } from './ladders.ts';
+import { PER_GAME, RUNG_POINTS, SPEEDS, climb, climbs, ladderDeck, ladderPoints, laddersIn, rungState, speedAt } from './ladder.ts';
+import { isRungId } from './pool.ts';
 import { isLadder, versus, withLadder } from './session.ts';
 import { QUIZ_MAX_S, QUIZ_QS } from '../contract/live-protocol.ts';
+
+const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
 
 describe('スピード はしご: the ladders', () => {
   it('30 ladders, unique ids that fit a listen row, never a bank id; 4 rungs each at rising speeds', () => {
@@ -102,7 +106,7 @@ describe('スピード はしご: the deck and the mode', () => {
 
   it('a game: 2 ladders × 4 rungs in order (8, the quiz’s questions), two speakers, the same deck on every phone', () => {
     for (let seed = 2; seed < 400; seed += 4) {
-      const d = ladderDeck(seed);
+      const d = ladderDeck(seed, LADDERS);
       expect(d).toHaveLength(QUIZ_QS);
       expect(PER_GAME * SPEEDS.length).toBe(QUIZ_QS);
       const ls = laddersIn(d);
@@ -112,13 +116,13 @@ describe('スピード はしご: the deck and the mode', () => {
         expect(it.rung!.n).toBe((i % 4) + 1);
         expect(it.choices[it.answer]).toBe(RUNG_ITEMS.find((r) => r.id === it.id)!.choices[0]);
       }
-      expect(ladderDeck(seed)).toEqual(d);
+      expect(ladderDeck(seed, LADDERS)).toEqual(d);
     }
     // most pairs are two accents, and every ladder comes up
     const seen = new Set<string>();
     let mixed = 0;
     for (let seed = 0; seed < 600; seed++) {
-      const d = ladderDeck(seed);
+      const d = ladderDeck(seed, LADDERS);
       for (const it of d) seen.add(it.rung!.ladder);
       if (d[0].voice !== d[4].voice) mixed++;
     }
@@ -144,7 +148,7 @@ describe('スピード はしご: climbing and scoring', () => {
   });
 
   it('points: a flat 100 a rung climbed (a lucky top rung pays nothing), at most the protocol’s total', () => {
-    const d = ladderDeck(6);
+    const d = ladderDeck(6, LADDERS);
     const a = (pairs: [number, number, boolean][]) => new Map(pairs.map(([i, k, rp]) => [i, { k, rp }]));
     const right = (i: number) => d[i].answer, wrong = (i: number) => (d[i].answer + 1) % 3;
     const all = a(d.map((_, i) => [i, right(i), false]));
@@ -158,7 +162,7 @@ describe('スピード はしご: climbing and scoring', () => {
   });
 
   it('rungState: the rung, how high the ladder was climbed before it, and whether it can still be climbed', () => {
-    const d = ladderDeck(10);
+    const d = ladderDeck(10, LADDERS);
     const ans = d.map((it, i) => (i === 1 ? { k: (it.answer + 1) % 3, rp: false } : { k: it.answer, rp: false }));
     expect(rungState(d, ans, 0)).toEqual({ n: 1, of: 4, below: 0, open: true });
     expect(rungState(d, ans, 1)).toEqual({ n: 2, of: 4, below: 1, open: true });

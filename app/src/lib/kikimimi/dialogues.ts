@@ -10,7 +10,7 @@
 // (§9: reductions spelled as said, numbers written out). The item's `en` is its lines joined (the focus is in one of
 // them); its `ja` the right choice's Japanese; `note` the trap (≤ 40 字).
 //   No clips yet: the neural pipeline (scripts/kikimimi-audio.ts) voices them, and until every line has a clip the
-// deck leaves these types out (deck.ts mixes) and にがて れんしゅう too.
+// deck leaves these types out (compile.ts mixes) and にがて れんしゅう too.
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Accent, Item, ItemType, Line, Tags } from './bank.ts';
 import { CAST } from './bank4.ts';

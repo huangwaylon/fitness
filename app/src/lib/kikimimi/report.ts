@@ -3,9 +3,10 @@
 // にがて れんしゅう's deck and a game's feedback from it. Pure.
 import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
-import { BANK, type Item, type Level } from './bank.ts';
+import type { Item, Level } from './bank.ts';
+import { ENTRIES, itemOf, loadIds } from './pool.ts';
 import { answersOf, daysPlayed, gamesOf, recentOf, speedOf, statsOf, together, trendOf, weekDays, type Game, type OtherGame, type Speed, type Stats } from './progress.ts';
-import { cardsOf, dueOf, practiceDeck, type Focus } from './srs.ts';
+import { cardsOf, dueOf, practicePicks, type Focus } from './srs.ts';
 import { feedback, recommend, type Feedback, type Rec } from './advice.ts';
 import type { Recent } from './recent.ts';
 
@@ -38,16 +39,19 @@ export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, l
   const speed = speedOf(mine);
   return {
     today, games: mine, others, stats, due, speed,
-    recs: recommend({ stats, games: mine, dueItems: due, levels, bank: BANK, speed, ladder }),
+    recs: recommend({ stats, games: mine, dueItems: due, levels, bank: ENTRIES, speed, ladder }),
     trend: trendOf(mine), recent: recentOf(mine), days: daysPlayed(mine, today),
     together: together(mine, me === 'G' ? [] : others, today),
     minutes: Math.round(mine.filter((g) => week.has(g.d)).reduce((s, g) => s + g.ms, 0) / 60_000)
   };
 }
 
-/** にがて れんしゅう's deck for this report (a recommendation's focus, or every weak spot). */
-export function practiceFor(r: Report, levels: readonly Level[], seed: number, focus: Focus = null, recent: Recent = []): Item[] {
-  return practiceDeck({ answers: answersOf(r.games), stats: r.stats, today: r.today, seed, levels, focus, recent });
+/** にがて れんしゅう's deck for this report (a recommendation's focus, or every weak spot): picked from the index, dealt
+ *  once the picks' levels are loaded. */
+export async function practiceFor(r: Report, levels: readonly Level[], seed: number, focus: Focus = null, recent: Recent = []): Promise<Item[]> {
+  const picks = practicePicks({ answers: answersOf(r.games), stats: r.stats, today: r.today, seed, levels, focus, recent });
+  await loadIds(picks.ids);
+  return picks.deal(itemOf);
 }
 
 /** Game `g`'s feedback: the stats without it and with it, and the advice after it (null: not in the report). */

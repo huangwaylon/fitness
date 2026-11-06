@@ -2,13 +2,19 @@
 // (docs/kikimimi.md "Progress & feedback"). Pure, over made-up games.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '../contract/api.ts';
-import { BANK, levelAt, levelMark, levelRank, type Level } from './bank.ts';
+import { levelAt, levelMark, levelRank, type Level } from './bank.ts';
+import { BANK } from './source.ts';
 import { DECK_SIZE } from './deck.ts';
 import { answersOf, dayNum, daysPlayed, gamesOf, isLadderGame, listenAnswers, recentOf, scoreOf, speedOf, stageOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
 import { ladderDeck } from './ladder.ts';
+import { LADDERS } from './ladders.ts';
+import { loadAll } from './pool.ts';
 import { cardsOf, dueOf, gradeOf, practiceDeck, step } from './srs.ts';
 import { feedback, recommend, tripsOf } from './advice.ts';
 import { skillsOf } from './tags.ts';
+
+// (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
+await loadAll();
 
 const TODAY = '2026-11-05'; // a Thursday
 let seq = 0;
@@ -319,7 +325,7 @@ describe('スピード はしご: the fastest comfortable speed', () => {
     expect(speedOf(mine)).toMatchObject({ ladders: 1, best: 0.8 });
   });
   it('a ladder game’s row keeps each pick as authored', () => {
-    const items = ladderDeck(8).slice(0, 4);
+    const items = ladderDeck(8, LADDERS).slice(0, 4);
     const r = listenAnswers(items, items.map((it) => ({ k: it.answer })), items.map(() => true), [0, 0, 0, 0], true);
     expect(r.map(([, ok, pick]) => [ok, pick])).toEqual([[1, 0], [1, 0], [1, 0], [1, 0]]);
   });

@@ -3,8 +3,9 @@
 // and the clips: each question's played at its start on the relay's clock (playVoice's relayAt), the next one fetched
 // meanwhile, the reveal's replay, and the player's 🔁 / 🐢. A dialogue's lines are a sequence of clips (playSequence:
 // each line scheduled on the relay's clock after the one before, LINE_GAP apart; the session's schedule has their summed
-// length, clips.ts itemDur). Loaded with the sheet only.
-import { BANK, clipIds, isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
+// length, clips.ts itemDur). A deck is built only from loaded levels (pool.ts): what's heard and my own taps wait, in
+// order, for the chunk the deck they touch needs (`#then`). Loaded with the sheet only.
+import { clipIds, isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
 import { clipDur, clipUrl, itemDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
 import { SPEEDS, ladderDeck, ladderPoints } from '#lib/kikimimi/ladder.ts';
 import { FAST_WINDOWS, QuizSession, isLadder, quizLink, wireQuiz, type DeckOf, type QuizIn, type QuizLink, type QuizOut, type QuizTimer, type QuizView } from '#lib/kikimimi/session.ts';
@@ -21,6 +22,7 @@ import { itemsOf, pinDeck, usePractice } from './decks.ts';
 import { deck } from '#lib/kikimimi/deck.ts';
 import { agesOf, freshSeed } from '#lib/kikimimi/recent.ts';
 import { recentGames, rememberGame } from './progress.svelte.ts';
+import { TEST_CLIP, ladders, load, loaded, type Unit } from '#lib/kikimimi/pool.ts';
 
 /** The deck as the session sees it: how many, each item's length as played (ms, clips.json: a dialogue's lines and
  *  the gaps) and its right choice. Read through at each call: にがて れんしゅう puts its own items in before the start
@@ -54,10 +56,12 @@ const soloLink = (): QuizLink => ({ now: () => Date.now(), send: () => false, on
 
 /** The host's seed (recent.ts): of SEED_TRIES, the deck that overlaps this phone's last games least, its flags kept. */
 const seedFor = ({ lv, flags, random }: { lv: Level; flags: number; random: () => number }): number =>
-  freshSeed({ random, flags, recent: recentGames(), ids: (s) => (isLadder(s) ? ladderDeck(s) : deck(s, lv)).map((it) => it.id) });
+  freshSeed({ random, flags, recent: recentGames(), ids: (s) => (isLadder(s) ? ladderDeck(s, ladders()) : deck(s, lv)).map((it) => it.id) });
 
-/** The lobby's sound check: a clip from no game (the bank's first L1 item; nothing of the deck given away). */
-const TEST_CLIP = BANK.find((it) => it.lv === 1)!.id;
+/** The chunk a game's deck needs: its level's, or the ladders'. */
+export const unitFor = (seed: number, lv: Level): Unit => (isLadder(seed) ? 'ladder' : lv);
+/** What a heard intent needs before the session takes it: an `open`, its deck's chunk. */
+const needs = (m: QuizIn): Unit[] => (m.op === 'open' ? [unitFor(m.seed, m.lv as Level)] : []);
 
 type Handle = { stop(): void };
 /** The longest between wake-ups (the host's beacon is every 3 s: session.ts WINDOWS.beacon). */
@@ -113,6 +117,8 @@ export class QuizGame {
   /** The first play whose lines' turns were planned (its question and start). */
   #talked = '';
   #offHere: () => void;
+  /** What's waiting for a chunk (`#then`), in order; null when nothing is. */
+  #queue: Promise<void> | null = null;
 
   constructor(o: { live: Live | null; me: Who; fast?: boolean; heard?: readonly QuizIn[]; record?: (row: ListenRow) => void }) {
     this.me = o.me;
@@ -121,9 +127,11 @@ export class QuizGame {
     this.#session = new QuizSession({ me: o.me, deckOf, seedFor, windows: o.fast ? FAST_WINDOWS : undefined });
     // what the island heard before this sheet opened: as if heard now (a host re-sends only when someone comes back)
     const now = this.#link.now();
-    for (const m of o.heard ?? []) this.#session.receive(m, now);
+    for (const m of o.heard ?? []) this.#then(() => needs(m), () => void this.#session.receive(m, now));
     this.#offHere = this.#link.onHere((h) => h && (this.here = h));
-    this.#wire = wireQuiz(this.#session, this.#link, () => this.#refresh());
+    // what's heard from now on: in order, each once the chunk it needs is in
+    const link = this.#link;
+    this.#wire = wireQuiz(this.#session, { ...link, on: (fn) => link.on((m) => this.#then(() => needs(m), () => fn(m))) }, () => this.#refresh());
     this.#refresh();
   }
 
@@ -131,58 +139,65 @@ export class QuizGame {
 
   /** Open a lobby (I host it), on this phone only until `invite`. */
   open(lv: Level, same = false, vs = false, ladder = false, timer?: QuizTimer): void {
-    this.practicing = false;
-    this.#act((s, now) => s.open({ lv, same, vs, ladder, timer }, now));
+    this.#then(() => [ladder ? 'ladder' : lv], () => {
+      this.practicing = false;
+      this.#act((s, now) => s.open({ lv, same, vs, ladder, timer }, now));
+    });
   }
   /** にがて れんしゅう (`kind` weak: srs.ts practiceDeck) or the misses again (missed: the last game's items I got
    *  wrong): my lobby kept alone starts at once with `items` as its deck. Nothing on the wire. */
   practice(items: Item[], kind: 'weak' | 'missed' = 'weak'): void {
-    const v = this.view;
-    if (!v?.g || v.phase !== 'lobby' || !v.local || !v.amHost || !items.length) return;
-    usePractice(v.seed, v.lv as Level, items);
-    this.#fetched = '';
-    this.practicing = kind;
-    this.go();
+    this.#then(() => [], () => {
+      const v = this.view;
+      if (!v?.g || v.phase !== 'lobby' || !v.local || !v.amHost || !items.length) return;
+      usePractice(v.seed, v.lv as Level, items);
+      this.#fetched = '';
+      this.practicing = kind;
+      this.go();
+    });
   }
   /** みんなを さそう: my lobby announced to everyone here. */
   invite(): void {
-    this.#act((s, now) => s.invite(now));
+    this.#then(() => [], () => this.#act((s, now) => s.invite(now)));
   }
+  /** The lobby's settings (a level or the mode changed: once its chunk is in). */
   configure(o: { lv?: Level; same?: boolean; vs?: boolean; ladder?: boolean; timer?: QuizTimer }): void {
-    this.#act((s, now) => s.configure(o, now));
+    this.#then(() => [(o.ladder ?? this.view?.ladder) ? 'ladder' : ((o.lv ?? this.view?.lv ?? 1) as Level)], () => this.#act((s, now) => s.configure(o, now)));
   }
   join(g?: string): void {
-    this.#act((s, now) => s.join(now, g));
+    this.#then(() => [], () => this.#act((s, now) => s.join(now, g)));
   }
   go(): void {
-    // a solo game (my lobby kept alone, a quiz): its own deck, the items not heard lately first (nothing on the wire)
-    const v = this.view;
-    if (v?.g && v.phase === 'lobby' && v.local && v.amHost && !this.practicing && !v.ladder) {
-      usePractice(v.seed, v.lv as Level, deck(v.seed, v.lv as Level, undefined, agesOf(recentGames())));
-      this.#fetched = '';
-    }
-    this.#act((s, now) => s.go(now));
+    this.#then(() => [], () => {
+      // a solo game (my lobby kept alone, a quiz): its own deck, the items not heard lately first (nothing on the wire)
+      const v = this.view;
+      if (v?.g && v.phase === 'lobby' && v.local && v.amHost && !this.practicing && !v.ladder) {
+        usePractice(v.seed, v.lv as Level, deck(v.seed, v.lv as Level, undefined, agesOf(recentGames())));
+        this.#fetched = '';
+      }
+      this.#act((s, now) => s.go(now));
+    });
   }
   /** My one, final answer to the current question. */
   answer(k: number): void {
     const i = this.view.i;
-    this.#act((s, now) => s.answer(k, !!this.replayed[i], now));
+    this.#then(() => [], () => this.#act((s, now) => s.answer(k, !!this.replayed[i], now)));
   }
   /** つぎへ (the host's; anyone's once the host has gone). */
   next(): void {
-    this.#act((s, now) => s.next(now));
+    this.#then(() => [], () => this.#act((s, now) => s.next(now)));
   }
   /** よみおわった (a player's, in a reveal). */
   ready(): void {
-    this.#act((s, now) => s.ready(now));
+    this.#then(() => [], () => this.#act((s, now) => s.ready(now)));
   }
   /** Leave the game (✕, やめる). */
   leave(): void {
-    this.#act((s, now) => s.leave(now));
+    this.#then(() => [], () => this.#act((s, now) => s.leave(now)));
   }
   /** Done with the results or a notice. */
   close(): void {
-    this.#act((s, now) => void s.close(now));
+    this.#then(() => [], () => this.#act((s, now) => void s.close(now)));
   }
 
   /** 🔁 / 🐢: the current question's clip again (normal or slow), now; counts as a replay for my answer. */
@@ -220,7 +235,7 @@ export class QuizGame {
     if (this.#gone) return;
     // a game left mid-way: the questions I answered still count
     if (this.view?.g && this.view.phase !== 'lobby' && this.view.phase !== 'idle') this.#keep(this.view, this.#link.now(), false);
-    this.leave();
+    this.#act((s, now) => s.leave(now)); // (now: not after what waits for a chunk, which is dropped)
     this.#gone = true;
     clearTimeout(this.#timer);
     clearTimeout(this.#soundingTimer);
@@ -234,6 +249,33 @@ export class QuizGame {
 
   #act(f: (s: QuizSession, now: number) => QuizOut[] | void): void {
     if (!this.#gone) this.#wire.act(f);
+  }
+
+  /**
+   * `f` once the chunks `need()` names are loaded (pool.ts), after whatever waits already: at once when nothing does
+   * (the usual case: the lobby's level is in before the sheet opens), else in order once loaded, the view refreshed.
+   * `need` is asked at its turn (a configure after another's level). A chunk that won't load drops `f` (offline with
+   * the chunk never fetched: the host's re-sent `open` tries again).
+   */
+  #then(need: () => readonly Unit[], f: () => void): void {
+    const step = (later: boolean): Promise<void> | void => {
+      if (this.#gone) return;
+      const missing = need().filter((u) => !loaded(u));
+      if (missing.length) return load(...missing).then(() => step(true));
+      f();
+      if (later) this.#refresh();
+    };
+    if (!this.#queue) {
+      const p = step(false);
+      if (p) this.#settle(p);
+    } else this.#settle(this.#queue.then(() => step(true)));
+  }
+
+  #settle(p: Promise<void>): void {
+    const q: Promise<void> = p.catch((e) => console.warn('kikimimi: a chunk didn’t load', e)).then(() => {
+      if (this.#queue === q) this.#queue = null;
+    });
+    this.#queue = q;
   }
 
   /** The view now, the clips and cues it calls for, and a wake-up at the phase's end (each second of the 3-2-1; at

@@ -1,8 +1,7 @@
 // ききみみ クイズ: the spoken clips (docs/kikimimi.md "Audio"). clips.json is written by scripts/kikimimi-audio.ts:
 // each item's clip length (`dur`, s: the schedule is computed from it) and its files' content hashes (`?v=`: audio is
-// cached first and never revalidated, so a re-spoken clip must be a new URL). Bundled with the game's chunk only.
-import raw from './clips.json';
-import aligned from './words.json';
+// cached first and never revalidated, so a re-spoken clip must be a new URL). The app never imports it whole: each
+// level's chunk (compile.ts) carries its clips and word timings, added here as it loads (pool.ts).
 import { clipIds, type Item } from './bank.ts';
 import { wordSpans } from './marks.ts';
 
@@ -15,7 +14,18 @@ export interface Clip {
   slow?: string;
 }
 
-export const CLIPS: Readonly<Record<string, Clip>> = raw;
+/** A clip's word timings (words.json): `[hash, start…, end]`, centiseconds. */
+export type Words = readonly [string, ...number[]];
+
+/** The clips of the levels loaded so far, and their word timings. */
+const CLIPS: Record<string, Clip> = {};
+const WORDS: Record<string, Words> = {};
+
+/** A level's chunk loaded (pool.ts): its clips and word timings. */
+export function addClips(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>): void {
+  Object.assign(CLIPS, clips);
+  Object.assign(WORDS, words);
+}
 
 /** The clip's length (s), or undefined if it has none. */
 export const clipDur = (id: string): number | undefined => CLIPS[id]?.dur;
@@ -34,8 +44,8 @@ export function clipUrl(id: string, slow = false): string {
 /** The gap between a dialogue's lines (s): a breath, the next speaker taking the turn. */
 export const LINE_GAP = 0.3;
 
-/** Whether every clip of an item exists. */
-export const voiced = (it: Pick<Item, 'id' | 'lines'>, clips: Readonly<Record<string, unknown>> = CLIPS): boolean => clipIds(it).every((id) => id in clips);
+/** Whether every clip of an item exists (in `clips`: clips.json, the compiler's). */
+export const voiced = (it: Pick<Item, 'id' | 'lines'>, clips: Readonly<Record<string, unknown>>): boolean => clipIds(it).every((id) => id in clips);
 
 /** An item's length as played (s): its clip, or a dialogue's lines in turn with LINE_GAP between them (the session's
  *  schedule: kikimimi/session.ts QuizDeck.dur); undefined while a clip is missing. */
@@ -67,10 +77,8 @@ export function sequenceStarts(durs: readonly number[], at: number, now: number)
 // ---- the karaoke's word timings -------------------------------------------------------------------------------------
 
 /** words.json (scripts/kikimimi-words.ts): a clip's words aligned by whisper, `[hash, start…, end]` in centiseconds,
- *  one start per word of its `en` (marks.ts wordSpans); stale (another hash: the clip re-spoken) is ignored. */
-const WORDS = aligned as unknown as Readonly<Record<string, readonly [string, ...number[]]>>;
-
-/** Each word's start (s from the clip's start) and the clip's end, one per word of `en` and one more: the aligned
+ *  one start per word of its `en` (marks.ts wordSpans); stale (another hash: the clip re-spoken) is ignored.
+ *  Each word's start (s from the clip's start) and the clip's end, one per word of `en` and one more: the aligned
  *  timings where they're for this clip, else the clip's length spread over the words by their letters (a pause after
  *  a comma or a full stop). */
 export function wordTimes(id: string, en: string): number[] {

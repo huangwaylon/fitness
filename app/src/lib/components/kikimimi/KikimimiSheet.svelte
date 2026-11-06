@@ -13,13 +13,14 @@
   import Lobby from './Lobby.svelte';
   import Play from './Play.svelte';
   import Results from './Results.svelte';
-  import { QuizGame } from './game.svelte.ts';
+  import { QuizGame, unitFor } from './game.svelte.ts';
   import { currentReport, recentGames, recordGame } from './progress.svelte.ts';
   import { practiceFor } from '#lib/kikimimi/report.ts';
   import type { Focus } from '#lib/kikimimi/srs.ts';
   import type { Rec } from '#lib/kikimimi/advice.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
-  import { BANK, levelMark, type Level } from '#lib/kikimimi/bank.ts';
+  import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
+  import { itemOf, load, loadIds } from '#lib/kikimimi/pool.ts';
   import { LEVELS } from '#lib/kikimimi/deck.ts';
   import { TIMERS, type QuizPhase, type QuizTimer } from '#lib/kikimimi/session.ts';
   import { voice, voiceSession } from '#lib/sound/sound.svelte.ts';
@@ -67,26 +68,35 @@
   }
 
   // Each opening: a game of its own (what the island heard handed to it), joined or opened (mine: on this phone till
-  // みんなを さそう); closing leaves it. Who I am may come a moment after the sheet (the week's first load).
+  // みんなを さそう); closing leaves it. Who I am may come a moment after the sheet (the week's first load). The game
+  // begins once the chunks it starts on are in (pool.ts): the remembered level's and those of the lobbies heard.
   const me = $derived(week.view?.viewer);
   $effect(() => {
     if (!open || !me) return;
-    const who = me;
-    const g = new QuizGame({ live: quizLive(), me, fast: hook('kikimimi') === 'fast', heard: heardQuiz(), record: (row) => recordGame(who, row) });
-    untrack(() => {
-      if (join) g.join(join);
-      else if (!g.view.invite) g.open(lastLv(), false, false, false, lastTimer());
-    });
-    game = g;
-    // (tests: `deck(ids)` starts my lobby kept alone on these items, as にがて れんしゅう does: a dialogue before its clips)
-    if (hooksOn())
-      (window as unknown as { __kiki?: unknown }).__kiki = {
-        view: () => g.view, right: () => g.items[g.view.i]?.answer ?? -1, items: () => g.items.map((it) => it.id),
-        deck: (ids: string[]) => g.practice(ids.map((id) => BANK.find((it) => it.id === id)!).filter(Boolean)),
-        talk: () => g.talk
-      };
+    const who = me, joining = untrack(() => join);
+    let g: QuizGame | null = null, gone = false;
+    void load(...heardQuiz().flatMap((m) => (m.op === 'open' ? [unitFor(m.seed, m.lv as Level)] : [])), lastLv())
+      .catch(() => {}) // (offline with a chunk never fetched: the game waits for it as it would for a heard one)
+      .then(() => {
+        if (gone) return;
+        const it = new QuizGame({ live: quizLive(), me: who, fast: hook('kikimimi') === 'fast', heard: heardQuiz(), record: (row) => recordGame(who, row) });
+        g = it;
+        untrack(() => {
+          if (joining) it.join(joining);
+          else if (!it.view.invite) it.open(lastLv(), false, false, false, lastTimer());
+        });
+        game = it;
+        // (tests: `deck(ids)` starts my lobby kept alone on these items, as にがて れんしゅう does: a dialogue before its clips)
+        if (hooksOn())
+          (window as unknown as { __kiki?: unknown }).__kiki = {
+            view: () => it.view, right: () => it.items[it.view.i]?.answer ?? -1, items: () => it.items.map((x) => x.id),
+            deck: (ids: string[]) => loadIds(ids).then(() => it.practice(ids.map(itemOf).filter((x) => !!x))),
+            talk: () => it.talk
+          };
+      });
     return () => {
-      g.dispose();
+      gone = true;
+      g?.dispose();
       game = null;
       asking = false;
     };
@@ -155,7 +165,8 @@
     const r = currentReport();
     if (!game || !r) return;
     if (game.view.ladder) game.configure({ ladder: false }); // (a quiz's: from a recommendation in スピード はしご's lobby)
-    game.practice(practiceFor(r, LEVELS, game.view.seed, focus, recentGames()), 'weak');
+    const g = game;
+    void practiceFor(r, LEVELS, g.view.seed, focus, recentGames()).then((items) => g.practice(items, 'weak'), () => {});
   }
   /** The lobby's tab: あそぶ or きろく (back to あそぶ whenever the lobby is left). */
   let tab = $state<'play' | 'record'>('play');
