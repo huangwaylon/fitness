@@ -40,3 +40,15 @@ export function weekCard(o: {
   const minutes = Math.floor(ms / 60_000), of = solo ? SOLO_QUEST_MIN : QUEST_MIN;
   return { days, at: week.indexOf(o.today), count, goal: o.goal, met: count >= o.goal, quest: { minutes, of, met: minutes >= of, solo } };
 }
+
+/** The week stamps (§7.3, ずかん › スタンプ): the Mondays of the weeks whose finished days met `goal` (the target as
+ *  set now), oldest first. A missed week is simply not there. */
+export function weekStamps(mine: readonly { d: LocalDate; n: number; ms: number; story?: boolean }[], goal: number): LocalDate[] {
+  const days = new Map<LocalDate, Set<LocalDate>>();
+  for (const g of mine) {
+    if (!(g.story ? finishedStory(g.ms) : finished(g.n))) continue;
+    const monday = weekDays(g.d)[0];
+    (days.get(monday) ?? days.set(monday, new Set()).get(monday)!).add(g.d);
+  }
+  return [...days].filter(([, s]) => s.size >= goal).map(([m]) => m).sort();
+}
