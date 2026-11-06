@@ -41,7 +41,7 @@
   {#each choices as c, k (k)}
     {@const m = mark(k)}
     {#if !onlyMarked || m}
-    <button type="button" class="ch tile-btn" data-choice={k} data-mark={m ?? undefined} aria-pressed={picked === k}
+    <button type="button" class="ch tile-btn" class:obj-cream={m === 'right' || m === 'wrong'} data-choice={k} data-mark={m ?? undefined} aria-pressed={picked === k}
       aria-disabled={!open} aria-label={label?.(c)} data-sfx={open ? 'choice-pick' : 'none'}
       onclick={() => open && onpick(k)}>
       {#if pics}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={english ? 'en' : undefined}>{c}</span>{#if reveal && ja?.[k]}<span class="cja" lang="ja" data-kiki-cja={k}>{ja[k]}</span>{/if}{/if}
@@ -62,15 +62,16 @@
   .pics .ch { aspect-ratio: 1.15; padding: 8px; }
   .ch[aria-disabled='true'] { cursor: default; }
   .ch[data-mark='mine'] { background: var(--ctl-sel); color: var(--c-ink); }
-  /* the marked ones on fixed cream (any time of day): the fixed leaf and coral text */
+  /* the marked ones on fixed cream (any time of day, .obj-cream): the day leaf and coral text */
   .ch[data-mark='right'] { background: color-mix(in srgb, var(--c-leaf) 55%, var(--c-card)); color: var(--c-ink); box-shadow: inset 0 0 0 3px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge); }
   .ch[data-mark='wrong'] { background: color-mix(in srgb, var(--c-coral) 30%, var(--c-card)); color: var(--c-ink); }
-  .choices:has([data-mark='right']) .ch:not([data-mark]) { opacity: .55; }
+  .choices:has([data-mark='right']) .ch:not([data-mark]) { opacity: var(--dim); }
   .ch .sym { position: absolute; top: 4px; right: 10px; font: 700 26px/1 var(--font-ui); }
-  .ch .sym.ok { color: var(--c-leaf-text); }
-  .ch .sym.ng { color: var(--c-coral-text); }
+  .ch .sym.ok { color: var(--leaf-text); }
+  .ch .sym.ng { color: var(--coral-text); }
   .tx { overflow-wrap: anywhere; }
-  /* the Japanese under it: the choice's own colour (any tile, any time of day), quieter */
-  .cja { display: block; margin-top: 2px; font: 700 var(--fs-s)/1.4 var(--font-ui); opacity: .78; }
+  /* the Japanese under it: smaller, in the choice's own full colour (any tile, any time of day: >= 4.5:1 even on a
+     set-aside choice at --dim) */
+  .cja { display: block; margin-top: 2px; font: 700 var(--fs-s)/1.4 var(--font-ui); }
   @media (prefers-reduced-motion: reduce) { .choices { transition: none; } }
 </style>

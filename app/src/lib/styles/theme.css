@@ -33,6 +33,9 @@ html[lang="ja"] * { letter-spacing: 0 !important; }
 html[lang="ja"] body { word-break: keep-all; }
 html[lang="ja"] :is(dialog, [role="dialog"], .sheet-copy) { word-break: normal; }
 html[lang="ja"] .bubble { word-break: keep-all; }
+/* a character's spaced-kana line inside a sheet (しずえ's hello, cheer, feedback in ききみみ: linebreaks.test's WORLD keys)
+   keeps the world's breaking, at its spaces only, balanced so no line is left with one word */
+html[lang="ja"] .kana { word-break: keep-all; text-wrap: pretty; }
 h1, h2, h3 { font-family: var(--font-ui); font-weight: 700; margin: 0; line-height: 1.2; font-size: var(--fs-title); }
 button { font: inherit; color: inherit; }
 button, [role="button"], [role="switch"], a {
@@ -106,6 +109,15 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 .btn.small { min-height: 44px; width: auto; font-size: var(--fs-body); padding: 0 18px; }
 .btn.small svg { width: 20px; height: 20px; }
 .btn.paper { --fill: var(--c-card); --lip-c: var(--c-edge); }
+
+/* ---------- an always-cream object (a bubble, a cream button, a transcript line, a legend, a scene's pill, 解説): cream at
+   every time of day, so the theme's text colours inside it are put back to the day ones. Day-only --c-* text colours go on
+   these alone; themed surfaces (the panel, a .card) take the theme ones (night: light on navy). A disabled cream button
+   keeps its cream fill, so its soft text is the day ink-soft (6:1), not night's light one. ---------- */
+.obj-cream, .btn.paper {
+  --text: var(--c-ink); --text-soft: var(--c-ink-soft); --leaf-text: var(--c-leaf-text); --coral-text: var(--c-coral-text);
+  --sky-text: var(--c-sky-text);
+}
 
 /* ---------- a section's label: the small soft heading over a sheet's group of rows or cards (せってい's, ごほうび's
    ためた ベル, いえを かえる's), 4px in from the cards' edge ---------- */

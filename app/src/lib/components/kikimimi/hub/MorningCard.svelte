@@ -48,7 +48,7 @@
 
 <style>
   .mc { display: grid; gap: 8px; padding: 12px 14px; }
-  .slot { font: 700 var(--fs-xs)/1.3 var(--font-ui); letter-spacing: .04em; color: var(--text-soft); }
+  .slot { font: 700 var(--fs-s)/1.3 var(--font-ui); letter-spacing: .04em; color: var(--text-soft); }
   h3 { margin: 0; font: 700 var(--fs-talk)/1.3 var(--font-ui); }
   .ask { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .choices { display: grid; gap: 6px; }

@@ -38,7 +38,8 @@
 
 <style>
   .pc { display: grid; justify-items: center; gap: 2px; min-width: 64px; max-width: 96px; text-align: center; }
-  .pc.away { opacity: .45; }
+  .pc.away { opacity: var(--dim); }
+  .pc.away .face { filter: grayscale(.7); }
   .face { position: relative; line-height: 0; }
   .badge { position: absolute; right: -6px; top: -4px; display: grid; place-items: center; }
   .ok {
@@ -52,7 +53,7 @@
   .mk { width: 26px; height: 26px; animation: pop 320ms var(--ease-bounce) both; }
   .mk :global(svg) { width: 100%; height: 100%; }
   .nm { font: 700 var(--fs-s)/1.2 var(--font-ui); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .note { font: 700 var(--fs-xs)/1.2 var(--font-num); color: var(--text-soft); }
+  .note { font: 700 var(--fs-s)/1.2 var(--font-num); color: var(--text-soft); }
   @keyframes pop { from { transform: scale(.2); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .ok, .mk, .read { animation: none; } }
 </style>

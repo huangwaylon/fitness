@@ -151,7 +151,7 @@
           {#if reveal && !v.out}<span class="react" aria-hidden="true"><Mark id={right ? 'sparkle' : 'sweat'} /></span>{/if}
         </span>
       {/if}
-      <div class="bubble" class:open={reveal} aria-live="polite">
+      <div class="bubble obj-cream" class:open={reveal} aria-live="polite">
         {#if reveal && dlg}
           <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
           {#if it.note}{@render fold(note)}{/if}
@@ -222,7 +222,8 @@
   .duo:has(.talk) .one:not(.talk) { opacity: .6; }
   /* 「くわしく」: the full 44px to tap (padded round its one line; the marker kept) */
   .more summary { cursor: pointer; padding-block: calc((var(--hit) - 1.6em) / 2); font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
-  .note { margin: 0; font: 700 var(--fs-xs)/1.45 var(--font-ui); color: var(--c-ink); position: relative; padding: 4px 8px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
+  /* the trap's note (the explanation under the answer): in the cream bubble, a yuzu tint on cream */
+  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); position: relative; padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
   .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: pop-in 320ms var(--ease-bounce) both; }
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {
@@ -240,7 +241,7 @@
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; position: relative; }
   .accent {
     justify-self: start; position: relative; padding: 3px 10px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink);
-    font: 700 var(--fs-xs)/1.2 var(--font-ui);
+    font: 700 var(--fs-s)/1.2 var(--font-ui);
   }
 
   .ask, .line { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
@@ -254,7 +255,7 @@
   .hear .btn.small { flex: 0 1 auto; white-space: nowrap; }
   /* the situation, under the speaker: quiet, one line */
   .ctx { grid-column: 1 / -1; margin: 0; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
-  .hint { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
+  .hint { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
 
   /* スピード はしご: which ladder, and its four speeds as steps (LadderSteps) */
   .ladder { display: flex; align-items: flex-end; justify-content: center; gap: 12px; }

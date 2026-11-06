@@ -337,7 +337,7 @@
       {:else if v.notice}
         <div class="center" data-kiki-notice={v.notice}>
           <Host pose="bow" size={96} />
-          <p class="say">{t(`kiki.notice.${v.notice}`)}</p>
+          <p class="say kana">{t(`kiki.notice.${v.notice}`)}</p>
           <button type="button" class="btn small" data-sfx="back" onclick={act.toHub}>{t('kiki.back')}</button>
         </div>
       {:else if atHub && welcome}
@@ -402,7 +402,7 @@
       {:else if v.phase === 'countdown'}
         <div class="center count" data-kiki-count={count}>
           <Host pose="stand" size={110} />
-          <p class="say">{t('kiki.ready')}</p>
+          <p class="say kana">{t('kiki.ready')}</p>
           {#key count}<span class="num" class:set={count > 3} aria-live="assertive">{count > 3 ? t('kiki.set') : count}</span>{/key}
         </div>
       {:else if v.phase === 'results' && v.gm === 'check'}

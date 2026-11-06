@@ -102,7 +102,7 @@
 <div class="path" data-kiki-page="path" bind:this={root}>
   <div class="hello">
     <span class="host" aria-hidden="true"><Host head size={48} animate={false} eager /></span>
-    <p>{t('kiki.path.hello')}</p>
+    <p class="kana">{t('kiki.path.hello')}</p>
   </div>
 
   {#each due as id (id)}
@@ -166,7 +166,7 @@
               <span class="chev" aria-hidden="true">›</span>
             </button>
           {/if}
-          {#if st.soft && units}<p class="softnote">{t('kiki.path.soft')}</p>{/if}
+          {#if st.soft && units}<p class="softnote"><span aria-hidden="true">🌫️ </span>{t('kiki.path.soft')}</p>{/if}
           {#each st.stops as s, i (s.id)}
             {#if s.anchor && (i === 0 || !st.stops[i - 1].anchor) && !s.hidden}<p class="sec-label anchor">{t('kiki.path.anchor')}</p>{/if}
             {#if s.hidden}
@@ -233,9 +233,9 @@
   }
   button.sttog { cursor: pointer; }
   button.sttog:active { background: color-mix(in srgb, var(--lip) 25%, transparent); }
-  .stars { color: var(--c-coral); font-size: var(--fs-s); letter-spacing: 1px; }
+  .stars { color: var(--coral-text); font-size: var(--fs-s); letter-spacing: 1px; }
   .here {
-    padding: 3px 9px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-xs)/1.2 var(--font-ui);
+    padding: 3px 9px; border-radius: var(--r-pill); background: var(--c-yuzu); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui);
     box-shadow: 0 2px 0 var(--c-yuzu-lip); rotate: -3deg; white-space: nowrap;
   }
   .lm {
@@ -296,15 +296,14 @@
   .ntxt { flex: 1; min-width: 0; display: grid; gap: 4px; }
   .ntxt b { font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .ntxt small { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .ntxt small.both { color: var(--coral-text); font-size: var(--fs-xs); }
+  .ntxt small.both { color: var(--coral-text); }
   .chev { flex: none; font: 700 20px/1 var(--font-ui); color: var(--text-soft); padding-right: 2px; }
   .gone { justify-self: center; width: 10px; height: 10px; margin: 2px 0; border-radius: 50%; background: var(--ctl-off); }
   .mist {
     margin: 0; text-align: center; padding: 16px 12px; border-radius: var(--r-card); color: var(--text-soft); font: 700 var(--fs-s)/1.45 var(--font-ui);
     background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--lip) 40%, transparent) 0 10px, transparent 10px 20px);
   }
-  /* a stage far above my level: softly, behind a light mist, still tappable */
-  .soft .node { opacity: .82; }
+  /* a stage far above my level: behind a light mist (the stripes) and the note's 🌫️, at full contrast, still tappable */
   .soft { padding: 0 6px 8px; margin: 0 -6px; border-radius: var(--r-card); background: repeating-linear-gradient(-45deg, color-mix(in srgb, var(--lip) 22%, transparent) 0 10px, transparent 10px 20px); }
   .soft:not([data-open]) { padding-bottom: 0; }
   .zk { margin-top: 6px; display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 16px; border-radius: var(--r-card); font: 700 var(--fs-body)/1.2 var(--font-ui); }

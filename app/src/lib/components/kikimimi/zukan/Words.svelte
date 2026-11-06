@@ -180,7 +180,7 @@
   .ttxt small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .top .chip { min-height: var(--hit); }
   .review { width: 100%; }
-  .how { margin: -4px 4px 0; font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--text-soft); }
+  .how { margin: -4px 4px 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .sec { display: grid; gap: 8px; }
   .shead { display: flex; align-items: center; gap: 10px; margin: 4px 4px 0; }
   .shead h3 { margin: 0; font: 700 var(--fs-body)/1.2 var(--font-ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%; }
@@ -194,7 +194,7 @@
   }
   .zc[aria-expanded='true'] { box-shadow: inset 0 0 0 2.5px var(--c-yuzu-lip), var(--sh-lip); }
   .zc .en { font: 700 15px/1.2 var(--font-ui); overflow-wrap: anywhere; }
-  .zc .ja { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
+  .zc .ja { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .zc .stars { margin-top: auto; color: var(--c-yuzu-lip); font-size: 12px; letter-spacing: 1px; }
   .zc .stars .off { color: var(--ctl-off); }
   .zc .new {
@@ -208,10 +208,10 @@
   .entry p { margin: 0; }
   .een { font: 700 var(--fs-talk)/1.3 var(--font-ui); }
   .eja, .meta { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .trap { font: 700 var(--fs-s)/1.45 var(--font-ui); padding: 6px 10px; border-radius: 12px; background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); color: var(--c-ink); }
-  .trap small { display: block; font-size: var(--fs-xs); }
+  .trap { font: 700 var(--fs-s)/1.45 var(--font-ui); padding: 6px 10px; border-radius: 12px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); color: var(--c-ink); }
+  .trap small { display: block; font-size: var(--fs-s); color: var(--c-ink-soft); }
   .who { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
-  .who small { font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); margin-right: 4px; }
+  .who small { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); margin-right: 4px; }
   .head { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: var(--lip); overflow: hidden; }
   .hear { justify-self: start; }
   .hear[data-sounding] { box-shadow: inset 0 0 0 2.5px var(--c-leaf-edge), var(--sh-ctl); }

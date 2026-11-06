@@ -36,7 +36,7 @@
   .tile.talk .head { animation: bob 520ms ease-in-out infinite alternate; }
   .lbl {
     position: absolute; left: 4px; bottom: 4px; display: inline-flex; gap: 3px; align-items: center; padding: 1px 6px; border-radius: var(--r-pill);
-    background: rgba(74, 58, 44, .66); color: var(--c-cream); font: 700 var(--fs-xs)/1.25 var(--font-ui);
+    background: rgba(74, 58, 44, .8); color: var(--c-cream); font: 700 var(--fs-s)/1.25 var(--font-ui);
   }
   .lbl svg { width: 11px; height: 11px; }
   @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-3px); } }

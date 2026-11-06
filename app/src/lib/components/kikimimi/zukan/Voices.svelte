@@ -88,9 +88,9 @@
   .vc[aria-expanded='true'] { box-shadow: inset 0 0 0 2.5px var(--c-yuzu-lip), var(--sh-lip); }
   .face { grid-row: 1 / 5; display: inline-grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--lip); overflow: hidden; }
   .unheard .face { filter: brightness(0); opacity: .22; }
-  .acc { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .acc { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .vc b { font: 700 var(--fs-s)/1.25 var(--font-ui); }
-  .n { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .n { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .meter { height: 6px; border-radius: var(--r-pill); background: var(--ctl-off); overflow: hidden; margin-right: 22px; }
   .meter i { display: block; height: 100%; border-radius: inherit; background: var(--c-leaf-edge); }
   .got .meter i { background: var(--c-yuzu-lip); }
@@ -101,7 +101,7 @@
   .play { position: absolute; right: 8px; bottom: 8px; font-size: 13px; color: var(--text-soft); }
   [data-sounding] .play { color: var(--leaf-text); }
   .users { grid-column: 1 / -1; display: grid; gap: 6px; padding: 10px 12px; }
-  .users small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .users small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .heads { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
   .head { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--lip); overflow: hidden; }
   .more { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--text-soft); padding-left: 4px; }

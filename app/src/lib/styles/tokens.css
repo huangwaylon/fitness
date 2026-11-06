@@ -35,10 +35,11 @@
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
   --leaf-text: var(--c-leaf-text); /* green text on the themed panel / card (night: a light green, 5.8:1 on navy) */
   --coral-text: var(--c-coral-text); /* coral text on the themed panel / card (night: a light coral, 4.7:1 on the navy card) */
+  --dim: .78;                  /* a set-aside thing that is still read (an unpicked choice after the reveal, an away player): >= .75 */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
   --hl: color-mix(in srgb, var(--c-yuzu) 30%, transparent); /* a highlighted strip / pressed row (night: cream, yuzu over navy turns grey) */
-  --sky-text:#24609A;          /* sky TEXT on the panel / card (5.2:1 on paper, 5:1 at dusk; night: a light sky, 5:1 on navy) */
+  --c-sky-text:#24609A; --sky-text: var(--c-sky-text); /* sky TEXT on the panel / card (5.2:1 on paper, 5:1 at dusk; night: a light sky, 5:1 on navy) */
   --rose-soft: color-mix(in srgb, var(--c-rose) 22%, var(--card)); /* the letter's rules, a rose tint */
   --stitch: color-mix(in srgb, var(--edge) 35%, transparent);     /* the 1.5px dashed stitch between dense rows, a ticket's perforation */
   /* --sea-flat (the NH-blue sea under 島's chrome = the scene's open sea through its tint) lives in the
@@ -155,7 +156,7 @@
 :root[data-tod="night"] {
   --bg:#3A4886; --surface:#3A4886; --lip:#2E3A72; --card:#4858A0;
   --ctl:#4858A0; --ctl-off:#34417C; --edge:#B9C3F0;   /* edge 3.8:1 on a control, 5:1 on the panel */
-  --text:#FFF6E0; --text-soft:#D2D9F5; --focus:#FFF6E0; --leaf-text:#9EE6A6; --coral-text:#FFD0C6;
+  --text:#FFF6E0; --text-soft:#DDE3FA; --focus:#FFF6E0; --leaf-text:#9EE6A6; --coral-text:#FFD0C6;
   --person-a:#7EC8F0; --person-b:#FFB066;             /* the same pair lightened for the navy card (>= 3:1) */
   --scrim: rgba(30, 36, 80, .45); --hl: rgba(255, 246, 224, .14);
   --sky-text:#9CCBF5;

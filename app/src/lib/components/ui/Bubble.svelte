@@ -65,7 +65,7 @@
       <Host pose={host} size={h} talking={typing} eager />
     </button>
   {/if}
-  <div class="bubble" class:tail={!!host}>
+  <div class="bubble obj-cream" class:tail={!!host}>
     <span class="who">{name ?? hostName}</span>
     <button type="button" class="tap" data-sfx="self" onclick={tap}>
       <span class="sr-only" aria-live="polite">{text}</span>

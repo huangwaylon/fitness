@@ -35,7 +35,7 @@
     {#key it.scene}
       <img class="bd" src={artUrl(sceneArt(it.scene))} srcset={sceneSrcset(it.scene)} sizes={SCENE_SIZES} width="393" height="224" alt="" decoding="async" draggable="false" />
     {/key}
-    <span class="place">{t(`kiki.scene.${it.scene}`)}</span>
+    <span class="place obj-cream">{t(`kiki.scene.${it.scene}`)}</span>
   {/if}
   {#if channel !== 'live'}
     <span class="chan">{t(`kiki.chan.${channel === 'phone' && voicemail ? 'voicemail' : channel}`)}</span>
@@ -53,7 +53,7 @@
         <OfficialArt key={villagerArt(w)} alt={name(w)} size="min(150px, 66%)" eager />
       </span>
     {/each}
-    <div class="say {side(speaking)}">
+    <div class="say obj-cream {side(speaking)}">
       <span class="notes" aria-hidden="true">♪…</span><span class="sr-only">{t('kiki.listen')}</span>
       <ClipBar {bar} {now} />
     </div>
@@ -77,7 +77,7 @@
   /* no backdrop of its own: paper */
   .paper { background: radial-gradient(130% 100% at 50% 30%, var(--c-cream), color-mix(in srgb, var(--c-paper) 80%, #e6cf9e)); }
   .place, .chan {
-    position: absolute; top: 10px; z-index: 3; padding: 4px 11px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.3 var(--font-ui);
+    position: absolute; top: 10px; z-index: 3; padding: 4px 11px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.3 var(--font-ui);
   }
   .place { left: 10px; background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: 0 2px 0 var(--c-lip); color: var(--c-ink); }
   .chan { right: 10px; background: color-mix(in srgb, var(--c-ink) 78%, transparent); color: var(--c-cream); }

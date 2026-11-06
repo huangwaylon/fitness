@@ -32,8 +32,8 @@
       <p>
         {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')}{#if pts} <b>+{pts}</b>{/if}
         {:else}<span class="sym" aria-hidden="true">×</span>{picked ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
+        {#if badge}<span class="bonus obj-cream" data-kiki-bonus>{t('kiki.firstTry')}</span>{/if}
       </p>
-      {#if badge}<span class="bonus" data-kiki-bonus>{t('kiki.firstTry')}</span>{/if}
     {/if}
     {#if coop}<span class="team-now" data-kiki-team-now={rightNow}>{rightNow ? t('kiki.teamNow', { n: rightNow }) : t('kiki.teamNone')}</span>{/if}
     {@render extra?.()}
@@ -47,10 +47,10 @@
   .verdict.ok p { color: var(--leaf-text); }
   .verdict b { font-family: var(--font-num); }
   .verdict .sym { font-size: 1.2em; }
-  /* 「いっぱつ！」: a stamp beside the +100 (a badge, no points), tilted like a rubber stamp; a cream sticker at any time
-     of day, so its coral is the fixed one */
+  /* 「いっぱつ！」: a stamp beside the +100, on its line (a row of its own left a gap over 解説); a badge, no points, tilted
+     like a rubber stamp; a cream sticker at any time of day (.obj-cream: the day coral) */
   .bonus {
-    padding: 4px 12px; border-radius: 8px; rotate: -6deg; background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); color: var(--c-coral-text);
+    align-self: center; padding: 4px 12px; border-radius: 8px; rotate: -6deg; background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); color: var(--coral-text);
     box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui); animation: pop-in 320ms var(--ease-bounce) 200ms both;
   }
   /* co-op: how many of us got it (never who) */

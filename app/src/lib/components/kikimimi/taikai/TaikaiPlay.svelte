@@ -77,7 +77,7 @@
   {:else if wager && reveal && !v.out}
     {#if shown}
       <div class="outcome card {shown}" data-kiki-wager-reveal={shown} aria-live="assertive">
-        <p class="say"><span class="who" aria-hidden="true"><Host head size={30} animate={false} eager /></span>{t(`kiki.taikai.reveal.${shown}`)}</p>
+        <p class="say kana"><span class="who" aria-hidden="true"><Host head size={30} animate={false} eager /></span>{t(`kiki.taikai.reveal.${shown}`)}</p>
         {#if shown === 'confident-miss' && it && mine}
           <p class="big"><small>{t('kiki.taikai.answer')}</small><b lang="en">{choice(it.answer)}</b></p>
           <p class="mine"><small>{t('kiki.taikai.yours')}</small><s lang="en">{choice(mine.k)}</s></p>
@@ -100,7 +100,7 @@
   }
   .head { flex: none; line-height: 0; }
   .ttl { flex: 1; min-width: 0; display: grid; }
-  .ttl small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink-soft); }
+  .ttl small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink-soft); }
   .ttl b { font: 700 var(--fs-body)/1.25 var(--font-ui); }
   .score, .chips { flex: none; font: 700 var(--fs-body)/1 var(--font-num); }
   /* the team against しずえ's target: a pip a round, her line and gold's flagged */
@@ -111,7 +111,7 @@
   .pips i.line::after, .pips i.gold::after { position: absolute; left: 50%; top: -15px; translate: -50% 0; font-size: 11px; line-height: 1; }
   .pips i.line::after { content: '🥈'; }
   .pips i.gold::after { content: '🥇'; }
-  .meter small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .meter small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   /* the wager: the bet first */
   .wager { display: grid; gap: 8px; padding: 12px; justify-items: center; text-align: center; }
   .wager .q { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
@@ -131,7 +131,7 @@
   .big b { font: 700 max(22px, var(--fs-title))/1.25 var(--font-ui); color: var(--leaf-text); }
   .mine { display: grid; gap: 2px; }
   .mine s { font: 700 var(--fs-body)/1.3 var(--font-ui); color: var(--coral-text); text-decoration-thickness: 2px; }
-  .big small, .mine small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .big small, .mine small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .delta { font: 700 var(--fs-body)/1.3 var(--font-num); }
   @keyframes drop { from { transform: translateY(-14px) scale(.92); opacity: 0; } to { transform: none; opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .outcome { animation: none; } }
