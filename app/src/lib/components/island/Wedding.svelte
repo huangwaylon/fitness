@@ -1,6 +1,6 @@
 <script lang="ts">
   // The wedding (docs/design.md "Wedding countdown"; wedding.ts): every June Sunday NH's wedding arch stands behind
-  // centre stage (world.ts ARCH: a world node, framing Reese and Cyrus in the campsite's clearing seen from おく), and on our wedding day (2027-10-08) the villagers
+  // centre stage (world.ts ARCH: a world node, framing Reese and Cyrus in the campsite's clearing seen from おく), and on our wedding day (the board's date: time/holidays.ts weddingDate) the villagers
   // greet the island in a wedding pose: they turn to each other, bow and glow with hearts, under a burst of confetti
   // (the confetti the first time the island opens that day on this phone). Fireworks at night: IslandScene's sky.
   // Reese and Cyrus are visitors (Visitor.svelte). Decoration only: no taps, no ベル.
