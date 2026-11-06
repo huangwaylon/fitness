@@ -4,7 +4,7 @@
 // radio news, local TV and traffic, podcasts, TED-style talks, US panels; 2026-11-06): news-reader density, fast
 // co-hosts, signposting in lectures, hedged academic claims, the speaker's stance (certainty, irony, concession),
 // cultural references and wordplay, dense numbers. Level 7 (content/index.ts folds it into the bank; its villagers'
-// voices are in bank4.ts CAST).
+// voices are in cast.ts CAST).
 //   Families (FAMILY): news bulletins and headlines (evergreen, no real politicians), radio and podcast talk, mini-
 // lectures, documentary narration, debates and panels, interviews, TED-style talks, cultural references and
 // wordplay, dense statistics, and stance.
@@ -20,32 +20,19 @@
 //   `en` is shown (UK spelling for UK and AU voices), `tts` is spoken when it differs (§9: every number written out,
 //   reductions spelled as said). `note` is the trap (≤ 40 字).
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, CastId, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
-import { CAST } from '../bank4.ts';
+import type { Channel, Item, ItemType, Level, SceneId, SoundMark, Tags } from '../bank.ts';
+import { MEAN_ASK, NEXT_ASK, dialogueOf, g, line, single, tg, type DialogueRow } from './build.ts';
 
 /** ほし's level (docs/kikimimi.md "Levels 6 and 7"): 7, above やま (6). */
 const HOSHI_LV: Level = 7;
 
 export type Family = 'news' | 'radio' | 'lecture' | 'documentary' | 'debate' | 'interview' | 'talk' | 'culture' | 'stats' | 'stance';
 
-const MEAN_ASK = 'つまり、どういうこと？';
-const NEXT_ASK = 'つぎの ひとことは？';
-
-const castOf = (who: RosterId): CastId => {
-  const cast = CAST[who];
-  if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
-  return cast;
-};
-
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-
 type Extra = { tts?: string; focus?: string; ask?: string; scene?: SceneId; channel?: Channel };
 type Row = readonly [type: Exclude<ItemType, 'pic'>, id: string, speaker: RosterId, en: string, ja: string, note: string, choices: readonly string[], tags: Tags, extra?: Extra];
 
 // ---- sound marks: every clip with a `tts` (staging.ts's rules: the number as said, the reductions, a swallowed g) ----
 
-const g = (at: string): SoundMark => ['drop', at, 'g'];
 /** clip id (an item's, or a dialogue line's `<item>-<n>`) → its sound marks. */
 const MARKS: Readonly<Record<string, readonly SoundMark[]>> = {
   'ho-rate-hold': [['say', '4.25%', 'four and a quarter percent']],
@@ -94,12 +81,11 @@ const exposed = (id: string, tags: Tags): Tags =>
 const family: Record<string, Family> = {};
 
 const item = (fam: Family) => ([type, id, speaker, en, ja, note, choices, tags, x = {}]: Row): Item => {
-  const cast = castOf(speaker);
   family[id] = fam;
   const focus = type === 'word' ? choices[0] : x.focus;
   const ask = x.ask ?? (type === 'mean' ? MEAN_ASK : type === 'next' ? NEXT_ASK : undefined);
   return {
-    id, lv: HOSHI_LV, type, en, ja, speaker, voice: cast.slice(0, 2) as Accent, cast, choices, answer: 0, note, tags: exposed(id, tags),
+    ...single(HOSHI_LV, type, id, speaker, en, ja, note, choices, exposed(id, tags)),
     ...(x.tts && { tts: x.tts }), ...(focus && { focus }), ...(ask && { ask }), ...(x.scene && { scene: x.scene }), ...(x.channel && { channel: x.channel }),
     ...(MARKS[id] && { marks: MARKS[id] })
   };
@@ -691,33 +677,18 @@ export const ITEMS: readonly Item[] = [
 // ---- dialogues: interviews, debates, co-hosts (3-4 lines, two voices) -----------------------------------------------
 
 type L = readonly [who: RosterId, en: string, ja: string, tts?: string];
-interface DRow {
-  id: string;
-  type: Extract<ItemType, 'gist' | 'next'>;
+interface DRow extends DialogueRow {
   fam: Family;
   lines: readonly L[];
-  ask?: string;
-  /** The right one first. */
-  choices: readonly string[];
-  ja: string;
-  note: string;
-  focus: string;
-  tags: Tags;
   scene?: SceneId;
   channel?: Channel;
 }
 
-const line = (id: string) => ([who, en, ja, tts]: L, n: number): Line => {
-  const marks = MARKS[`${id}-${n + 1}`];
-  return { who, cast: castOf(who), en, ja, ...(tts && { tts }), ...(marks && { marks }) };
-};
-
 const dialogue = (r: DRow): Item => {
-  const lines = r.lines.map(line(r.id));
+  const lines = r.lines.map(([who, en, ja, tts], n) => line([who, en, ja, tts, MARKS[`${r.id}-${n + 1}`]]));
   family[r.id] = r.fam;
   return {
-    id: r.id, lv: HOSHI_LV, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: exposed(r.id, r.tags), lines,
+    ...dialogueOf(HOSHI_LV, r, lines, exposed(r.id, r.tags)),
     ...(r.scene && { scene: r.scene }), ...(r.channel && { channel: r.channel })
   };
 };

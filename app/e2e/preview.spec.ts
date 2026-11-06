@@ -2,7 +2,8 @@
 // look on this phone for today: an event, a season, the weather, the time of day. The HUD's chip says it's on and a
 // tap on it goes back; it lapses with the day. Read by state (data-* and <html>'s data-tod/-season), not pixels.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 const chip = (page: Page) => page.locator('[data-preview-chip]');
 const html = (page: Page) => page.locator('html');
@@ -30,7 +31,7 @@ async function pick(page: Page, ...which: string[]) {
 
 test('ハロウィン in せってい brings Halloween night now; the chip shows it, a reload keeps it, its tap goes back', async ({ page }) => {
   await page.goto('?demo&date=2026-11-19T12:00&critter=none'); // (a quiet day: no visitor to walk home before Jack comes)
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(html(page)).toHaveAttribute('data-tod', 'day');
   await expect(chip(page)).toHaveCount(0);
 
@@ -58,7 +59,7 @@ test('ハロウィン in せってい brings Halloween night now; the chip shows
 
 test('a season, the weather and the time of day; もどす is the real day again', async ({ page }) => {
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(html(page)).toHaveAttribute('data-season', 'autumn');
   await pick(page, 'season:winter', 'weather:snow', 'tod:dusk');
   await expect(html(page)).toHaveAttribute('data-season', 'winter');
@@ -83,7 +84,7 @@ test('a season, the weather and the time of day; もどす is the real day again
 test('it lapses when the day it was set on is over', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('island.preview', JSON.stringify({ day: '2026-11-03', event: 'halloween', season: null, weather: null, tod: null })));
   await page.goto('?demo&date=2026-11-04T12:00&critter=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await expect(chip(page)).toHaveCount(0);
   await expect(page.locator('[data-halloween]')).toHaveCount(0);
   await expect(html(page)).toHaveAttribute('data-tod', 'day');

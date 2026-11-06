@@ -21,11 +21,12 @@ type H = {
 const h = <R,>(page: Page, fn: (h: H) => R) => page.evaluate(`(${fn.toString()})(window)`) as Promise<R>;
 const Q = 'visitor=none&critter=fish&date=2026-11-04T12:00';
 
-async function open(page: Page, as = '') {
+/** A phone on the island, its 3D island up; `fish`: and a shadow in the sea to cast at. */
+async function open(page: Page, as = '', fish = true) {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo${as}&${Q}`);
   expect(await is3d(page)).toBe(true);
-  await expect.poll(() => h(page, (w) => w.__fish?.fish().some((f) => f.water === 'sea') ?? false), { timeout: 15_000 }).toBe(true);
+  if (fish) await expect.poll(() => h(page, (w) => w.__fish?.fish().some((f) => f.water === 'sea') ?? false), { timeout: 15_000 }).toBe(true);
 }
 /** A casts at its shadow from the beach by it (NH casts from where it stands): where its float went (world). A's tab
  *  in front first (the tab opened last is; a hidden tab's island takes no taps: the cast never came, fish-sync:121 red
@@ -88,7 +89,9 @@ test('a tab coming while a line is out sees it; the angler’s tab gone, its lin
   await open(a);
   const at = await cast(a);
   const b = await ctx.newPage();
-  await open(b, '&as=B');
+  // (B casts nothing: no shadow of its own to wait for. The sea's one is at A's float by now, and may have bitten and
+  // fled unreeled before B was up, the sea empty a while: B's wait for one ran out, fish-sync:84's red)
+  await open(b, '&as=B', false);
   await expect.poll(() => h(b, (w) => w.__fish.lines().map((l) => [l.who, Math.round(l.x), Math.round(l.z)])), { timeout: 10_000 }).toEqual([['A', Math.round(at.x), Math.round(at.z)]]);
   await a.close({ runBeforeUnload: true });
   await expect(b.locator('[data-angler]')).toHaveCount(0, { timeout: 15_000 });

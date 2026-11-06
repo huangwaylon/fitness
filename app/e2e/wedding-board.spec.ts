@@ -10,7 +10,7 @@
 // nothing here is drawn 3D. Pictures under SHOTS=<dir>.
 import { expect, test, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
-import { islandQuery } from './island.ts';
+import { islandQuery, islandUp } from './island.ts';
 import { shot } from './shots.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
@@ -404,7 +404,7 @@ test('the guest reads everything and has nothing to tick or edit', async ({ page
 
 test('the island paused under the board; offline before the first opening: the banner, もういちど opens it once back', async ({ page, context }) => {
   await page.goto(islandQuery(`demo&${DAY}`));
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await context.setOffline(true);
   await unfoldMenu(page);
   await page.locator('[data-hud-wedding]').click();

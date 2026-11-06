@@ -3,8 +3,7 @@
 // "the tap boxes of items seem very small and typically skewed towards the top"). Each kind is tapped at both points
 // and answers there; nothing walks.
 import { expect, test, type Page } from './fixtures.ts';
-import { quiet } from './island.ts';
-import { hudMenu } from './hud.ts';
+import { islandUp, quiet } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -15,7 +14,7 @@ const cues = (page: Page) => page.evaluate(() => (window as { __cues?: string[] 
 async function open(page: Page, q = '') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T12:00&critter=none${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await page.waitForFunction(() => (window as unknown as { __world?: unknown }).__world);
   await quiet(page); // the opening beats are over
 }

@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { DIALOGUE_TYPES, clipIds, clipItems, isDialogue, type Level } from './bank.ts';
 import { BANK } from './source.ts';
-import { DECK_SIZE, LEVELS as OFFERED, MIX, deck, inMix } from './deck.ts';
+import { DECK_SIZE, LEVELS as OFFERED, MIX, deck } from './deck.ts';
 import { mixes, playable } from './compile.ts';
 import { RIGHT, firstListen, points } from './score.ts';
 import { QUIZ_MAX_S, QUIZ_QS } from '../contract/live-protocol.ts';
 import { LINE_GAP, clipAt, clipDur, itemDur, sequenceStarts, voiced, type Clip } from './clips.ts';
 import clipsJson from './clips.json';
 import { DIALOGUES } from './dialogues.ts';
+import { drawn } from './mix.ts';
 import { loadAll } from './pool.ts';
 
 // (the compiled levels' chunks: decks and clips read the loaded ones, pool.ts)
@@ -76,10 +77,10 @@ describe('kikimimi deck', () => {
       // a dialogue keeps its lines; its choices shuffled like any
       for (const it of d.filter(isDialogue)) expect(it.lines.length).toBeGreaterThanOrEqual(2);
     }
-    // today (every dialogue line voiced): level 4's deck has them, and にがて れんしゅう's pool takes them (inMix)
+    // today (every dialogue line voiced): level 4's deck has them, and にがて れんしゅう's pool takes them (mix.ts drawn)
     for (const s of seeds.slice(0, 50)) expect(deck(s, 4).some((it) => DIALOGUE_TYPES.includes(it.type))).toBe(true);
-    expect(DIALOGUES.every((it) => inMix(it))).toBe(true);
-    expect(DIALOGUES.every((it) => inMix(it, all))).toBe(true);
+    expect(DIALOGUES.every((it) => drawn(it, MIX))).toBe(true);
+    expect(DIALOGUES.every((it) => drawn(it, all))).toBe(true);
   });
 
   it('leaves the bank untouched', () => {

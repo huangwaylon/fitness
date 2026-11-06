@@ -5,32 +5,24 @@
 // homes, references, phrases, recycling, coverage) and is what compile.ts turns into the units' index entries and
 // chunks. Pure: no files (compile.ts reads them), no audio.
 import { ROSTER } from '#lib/villagers/roster.ts';
-import { CHANNELS, DIALOGUE_TYPES, SCENE_IDS, clipIds, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
+import { ITEM_ID_RE } from '../contract/listen.ts';
+import { QUIZ_LVS } from '../contract/live-protocol.ts';
+import { CHANNELS, DIALOGUE_TYPES, ITEM_TYPES, REGISTERS, SCENE_IDS, clipIds, isDialogue, levelRank, type Feature, type Item, type ItemType, type Tags } from './bank.ts';
 import type { Ladder } from './ladder.ts';
 import { CAST_IDS } from './speech.ts';
-import { LESSONS, LESSON_QS, STAGES, type Stage } from './stages.ts';
+import { CORE, DOMAINS, LESSONS, LESSON_QS, STAGES, type Domain, type Lesson, type Stage } from './stages.ts';
 
-export { LESSONS, LESSON_QS, STAGES, type Stage } from './stages.ts';
+export { DOMAINS, LESSONS, LESSON_QS, STAGES, type Stage } from './stages.ts';
 
-/** The nine domains (plan §1: ともだち, いえ, たべもの, かいもの, たび, しごと, イベント, まち, からだ), a tag on each unit; `glue` the anchor units (introducing, inviting, asking for
- *  clarification, ending a conversation) that open each stage and count toward no domain. */
-export const DOMAINS = ['tomodachi', 'ie', 'tabemono', 'kaimono', 'tabi', 'shigoto', 'ibento', 'machi', 'karada'] as const;
-type Domain = (typeof DOMAINS)[number];
-
-type Lesson = (typeof LESSONS)[number];
-const CORE: readonly Lesson[] = ['deai', 'bamen', 'check'];
 /** The lesson recipes this build knows (plan §3: the version on the recipe; v1 the interim チェック, a mixed check on
  *  held-out items behind a "phone errand" card, until ようじ でんわ and たちぎき are built). */
 const RECIPES = [1] as const;
 
-const REGISTERS: readonly Tags['register'][] = ['service', 'colleague', 'boss', 'friend', 'partner', 'neighbour', 'stranger', 'official', 'broadcast'];
-const ITEM_TYPES: readonly ItemType[] = ['pic', 'word', 'num', 'reply', 'mean', 'gist', 'next'];
 const STATUSES = ['draft', 'voiced', 'listened'] as const;
 type Status = (typeof STATUSES)[number];
 
 /** A unit's id: `<domain2>-<slug>`, ≤ 12 (the `listen` row's `u`), never a stage (so a unit can move). */
 const UNIT_ID_RE = /^[a-z]{2}-[a-z0-9-]{1,9}$/;
-const ITEM_ID_RE = /^[a-z0-9][a-z0-9-]{0,31}$/;
 const PHRASE_ID_RE = /^ph-[a-z0-9-]{1,29}$/;
 const SCENE_RE = /^[a-z][a-z0-9-]{0,15}$/;
 /** The can-do's English (curriculum review P0-3): "I can follow [who] [function] [condition] and catch [information]". */
@@ -136,7 +128,7 @@ function itemProblems(it: unknown): string[] {
   const id = isStr(it.id) ? it.id : '?';
   const at = (msg: string) => bad.push(`item ${id}: ${msg}`);
   if (!isStr(it.id) || !ITEM_ID_RE.test(it.id)) at('id: [a-z0-9][a-z0-9-]{0,31}');
-  if (!isInt(it.lv, 1, 8)) at('lv: 1-8');
+  if (!isInt(it.lv, 1, QUIZ_LVS.length)) at(`lv: 1-${QUIZ_LVS.length}`);
   if (!ITEM_TYPES.includes(it.type as ItemType)) at(`type ${String(it.type)}`);
   if (!isStr(it.en) || !isStr(it.ja)) at('en and ja');
   if (!isStr(it.speaker) || !(it.speaker in ROSTER)) at(`speaker ${String(it.speaker)} isn't in the roster`);

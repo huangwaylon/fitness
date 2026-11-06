@@ -4,7 +4,8 @@
   // stopped); co-op, how many of us got it (never who); a missed picture's name.
   import type { Item } from '#lib/kikimimi/bank.ts';
   import { PIC_JA } from '#lib/kikimimi/bank.ts';
-  import { RUNG_POINTS, SPEEDS, sx, type rungState } from '#lib/kikimimi/ladder.ts';
+  import { RUNG_POINTS, SPEEDS, type rungState } from '#lib/kikimimi/ladder.ts';
+  import { sx } from './look.ts';
   import { RIGHT, firstListen } from '#lib/kikimimi/score.ts';
   import { t } from '#lib/i18n/index.ts';
 

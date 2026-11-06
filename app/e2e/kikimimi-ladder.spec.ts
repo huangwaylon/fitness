@@ -5,7 +5,8 @@
 // same points on each phone. The logic tier: no clip has to sound (`?kikimimi=fast`: a short time limit; the top rung's reveal waits for つぎへ, the lower ones move on after 3 s). Screenshots to
 // /tmp/kikimimi-shots/inc7/ with KIKI_SHOTS=1.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -23,7 +24,7 @@ async function shot(p: Page, name: string, full = false) {
 async function open(ctx: BrowserContext | Page, as: 'A' | 'B' = 'A'): Promise<Page> {
   const page = 'newPage' in ctx ? await ctx.newPage() : ctx;
   await page.goto(`?demo&${Q}${as === 'A' ? '' : `&as=${as}`}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   return page;
 }
 

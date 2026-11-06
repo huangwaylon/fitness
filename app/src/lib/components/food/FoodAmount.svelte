@@ -1,6 +1,6 @@
 <script lang="ts">
   // ごはん's amount (a level over the search or the day): its picture when it has one (160 px, the イメージ badge: every
-  // picture is generated; none: no picture area), the food's name, its everyday name (glossOf) and 「これは…」
+  // picture is generated; none: no picture area; a tap: FoodPhoto, it enlarged), the food's name, its everyday name (glossOf) and 「これは…」
   // line (`desc`, when it has one), its values per 100 g; a food in its states (the data's vg/st), じょうたい: a chip per
   // state with that state's kcal at the amount it would take (`onitem` swaps the food: a portion label the state also
   // has stays picked at its own grams, typed grams stay typed, else its default), and one line why (the 生 chip:
@@ -21,6 +21,7 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
+  import FoodPhoto from './FoodPhoto.svelte';
   import { catalogOf, foodDb, foodDbNow, glossOf, gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf, withImages } from './foodUi.ts';
 
   interface Props {
@@ -86,6 +87,9 @@
   let imgs = $state.raw<FoodImageIndex | null>(null);
   $effect(() => withImages((ix) => (imgs = ix)));
   const pic = $derived(imgOf(imgs, item.id, 160));
+  /** The picture enlarged (FoodPhoto), and what opened it (the focus goes back there). */
+  let big = $state(false);
+  let picBtn: HTMLButtonElement | undefined = $state();
   const gloss = $derived.by(() => {
     const db = foodDbNow();
     return glossOf(catalogOf(db, item.id) ?? item, item.name);
@@ -146,7 +150,12 @@
 
 <form class="amt" onsubmit={(e) => { e.preventDefault(); done(); }}>
   <section class="card head">
-    {#if pic}<div class="pic" data-food-pic><FoodThumb cat={item.cat} size={160} img={pic} alt={t('food.img.alt', { name: item.name })} /><span class="badge">{t('food.img.badge')}</span></div>{/if}
+    {#if pic}
+      <button type="button" class="pic" data-food-pic data-sfx="page" bind:this={picBtn} aria-label={t('food.img.big', { name: item.name })} onclick={() => (big = true)}>
+        <FoodThumb cat={item.cat} size={160} img={pic} /><span class="badge">{t('food.img.badge')}</span>
+      </button>
+      {#if big}<FoodPhoto {item} img={imgOf(imgs, item.id, 384) ?? pic} onclose={() => { big = false; picBtn?.focus(); }} />{/if}
+    {/if}
     <h3>{item.name}</h3>
     {#if gloss || desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && desc}{' — '}{/if}{#if desc}<span data-desc>{desc}</span>{/if}</p>{/if}
     <p class="per money">{serving ? t('food.my.per', { u: ps[0].label, k: formatNum(item.kcal) }) : t('food.per100', { k: formatNum(item.kcal) })} · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>
@@ -214,7 +223,8 @@
   .amt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
   .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
   .head { gap: 4px; }
-  .pic { position: relative; justify-self: center; margin-bottom: 8px; }
+  .pic { position: relative; justify-self: center; margin-bottom: 8px; appearance: none; border: 0; padding: 0; background: none; cursor: zoom-in; border-radius: 40px; }
+  .pic:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .badge {
     position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.1 var(--font-ui);
     color: var(--c-ink); background: color-mix(in srgb, var(--c-card) 92%, transparent);

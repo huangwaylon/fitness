@@ -6,9 +6,7 @@ import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Item, Level } from './bank.ts';
-import clipsJson from './clips.json';
-import wordsJson from './words.json';
-import type { Clip, Words } from './clips.ts';
+import { CLIPS, WORDS } from './testdata.ts';
 import { UNIT_MAX, checkUnitSources, compile, readUnits, type UnitSource } from './compile.ts';
 import { DECK_SIZE, MIX, deck } from './deck.ts';
 import { LADDERS } from './ladders.ts';
@@ -17,9 +15,6 @@ import { BANK } from './source.ts';
 import {
   DOMAINS, LESSON_QS, PLANNED, SHORT_MAX, STAGES, WAVE1, candoProblems, candoText, checkUnits, lessonIds, manifestOf, type Stage
 } from './units.ts';
-
-const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
-const WORDS = wordsJson as unknown as Readonly<Record<string, Words>>;
 
 type Raw = Record<string, unknown>;
 

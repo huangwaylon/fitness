@@ -3,7 +3,8 @@
   // mode is: soft leaf, the top full; `big`), a rung's over the stage (climbed leaf, this one yuzu, stopped coral, ahead
   // off; `mid`) and each ladder's on the results (climbed leaf; `small`). `label` says it in words; without one it's
   // decorative (the caller says it).
-  import { SPEEDS, sx } from '#lib/kikimimi/ladder.ts';
+  import { SPEEDS } from '#lib/kikimimi/ladder.ts';
+  import { sx } from './look.ts';
 
   let { step, size = 'mid', label = '' }: {
     /** A step's look: climbed, this one, stopped, ahead, or the lobby's soft leaf. */

@@ -9,8 +9,8 @@
 //   burst 40 layout ops at once (the editor's save): what each phone's main thread spends on them
 //   tabs two tabs of one phone (the second's socket replaces the first's): neither's layout ops written over
 import { expect, test, type Browser, type Page } from './fixtures.ts';
+import { islandUp } from './island.ts';
 import { DEMO_CTX, newIsland, setVisible } from './liveRoom.ts';
-import { hudMenu } from './hud.ts';
 import { ROOM_PROTOCOL, ticketOwner } from '../src/lib/contract/ticket.ts';
 
 type Island = ReturnType<typeof newIsland>;
@@ -23,7 +23,7 @@ async function phone(browser: Browser, island: Island, who: Who) {
   await island.pair(context, who);
   const page = await context.newPage();
   await page.goto('');
-  await expect(hudMenu(page)).toBeVisible({ timeout: 20_000 });
+  await islandUp(page, { timeout: 20_000 });
   await expect.poll(() => island.sockets(who), { timeout: 10_000 }).toBe(1);
   return page;
 }

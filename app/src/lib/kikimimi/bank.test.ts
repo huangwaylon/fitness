@@ -5,7 +5,7 @@ import { ROSTER } from '#lib/villagers/roster.ts';
 import { villagerArt } from '#lib/art.ts';
 import { DIALOGUE_TYPES, PIC_JA, channelOf, clipIds, isDialogue, jaLines, splitFocus, type Item, type ItemType, type Level } from './bank.ts';
 import { AUTHORED as BANK, BANK as PLAYED } from './source.ts';
-import { CAST, EXPOSURE } from './bank4.ts';
+import { CAST, EXPOSURE } from './cast.ts';
 import { LEVELS, MIX } from './deck.ts';
 import { mixes, readPacks, unitItems } from './compile.ts';
 import { clipPlaces, packFile } from './packing.ts';

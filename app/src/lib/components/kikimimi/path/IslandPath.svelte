@@ -8,7 +8,8 @@
   // still playable. A stamped unit's 30-day おさらい チェック, when due, is a small banner on top (hub card 1's, until
   // the hub). Its own chunk (`{#await import()}` in the sheet).
   import type { Filter, Path, Stop } from '#lib/kikimimi/path.ts';
-  import { CORE, DOMAINS, isDomain } from '#lib/kikimimi/path.ts';
+  import { CORE } from '#lib/kikimimi/stages.ts';
+  import { domainIcon, domainTint } from '../look.ts';
   import type { Lesson } from '#lib/kikimimi/stages.ts';
   import type { RosterId } from '#lib/villagers/roster.ts';
   import Host from '../../characters/Host.svelte';
@@ -32,8 +33,8 @@
 
   const stops = $derived(path.stages.flatMap((s) => s.stops));
   const nameOf = (id: string) => stops.find((s) => s.id === id)?.name ?? id;
-  const tint = (s: Stop) => (isDomain(s.domain) ? DOMAINS[s.domain].tint : 'var(--c-mint)');
-  const icon = (d: string) => (isDomain(d) ? DOMAINS[d].icon : '');
+  const tint = (s: Stop) => domainTint(s.domain);
+  const icon = domainIcon;
   const host = (s: Stop) => rosterName(s.host as RosterId);
   const label = (s: Stop) =>
     [s.name, s.short, t(`kiki.domain.${s.domain}`), t('kiki.path.dots', { k: (s.state?.done ?? []).filter((l) => CORE.includes(l)).length }),
