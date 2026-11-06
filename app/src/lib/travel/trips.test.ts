@@ -54,7 +54,7 @@ describe('the trips', () => {
     for (const d of Object.values(TRIPS).flatMap((t) => t.days.filter((d) => d.hike))) {
       expect(d.hike?.km).toBeGreaterThan(0);
       expect(d.hike?.gainM).toBeGreaterThan(0);
-      expect(d.hike?.gpx).toMatch(/^https:\/\/huangwaylon\.github\.io\/gpx\/#\/trail\/[\w-]+$/);
+      expect(d.hike?.gpx).toMatch(/^https:\/\/huangwaylon\.github\.io\/hiking-trails\/#\/trail\/[\w-]+$/);
       expect(d.photo?.src).toBeTruthy();
     }
   });
