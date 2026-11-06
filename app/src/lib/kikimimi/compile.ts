@@ -251,6 +251,10 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
   throw new Error('kikimimi: a level that no split fits');
 }
 
+/** The bank items a derived tile may name (listen.ts `clip`): voiced, one clip each. */
+export const oneClipBank = (clips: Readonly<Record<string, unknown>>, bank: readonly Item[] = joined(clips)): Map<string, Item> =>
+  new Map(bank.filter((it) => !isDialogue(it) && voiced(it, clips)).map((it) => [it.id, it]));
+
 /** levels/'s files (paths under it → contents) for these clips and word timings, these units (app/content/units/:
  *  a unit that fails its checks stops it; its warnings go to `warn`), these packs (packs.json: a clip in none stops it)
  *  these bedtime serials (content/listen/story/) and these listening files (content/listen/: a problem stops it). The
@@ -293,7 +297,7 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     storyIndex[s.unit] = c.entry;
   }
   // the listening files: derived tiles may name a voiced one-clip bank item; ids never a bank, unit or rung clip's
-  const oneClip = new Map(BANK.filter((it) => !isDialogue(it) && voiced(it, clips)).map((it) => [it.id, it]));
+  const oneClip = oneClipBank(clips, BANK);
   const taken = new Set([...BANK, ...check.units.flatMap((u) => u.items ?? [])].flatMap((it) => clipIds(it)).concat(rungs.map((r) => r.id)));
   const bad = checkListenAll(listen, oneClip, taken);
   if (bad.length) throw new Error(`kikimimi: the listening files don't check:\n${bad.join('\n')}`);
