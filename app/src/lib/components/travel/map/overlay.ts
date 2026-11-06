@@ -40,6 +40,13 @@ export function candidatesData(places: readonly MapPlace[], layers: Partial<Reco
   };
 }
 
+/** Where the pins stand, for the basemap's labels to keep clear of (style.ts `keepout`): the day's stops (the HTML
+ *  pins) and the candidates shown. */
+export function keepoutData(places: readonly MapPlace[], day: Day, layers: Partial<Record<Layer, boolean>> | undefined): FeatureCollection<Point, { pin: 'stop' | 'cand' }> {
+  const pt = (p: MapPlace, pin: 'stop' | 'cand'): Feature<Point, { pin: 'stop' | 'cand' }> => ({ type: 'Feature', properties: { pin }, geometry: { type: 'Point', coordinates: [p.lon, p.lat] } });
+  return { type: 'FeatureCollection', features: [...stopsOf(places, day).map((p) => pt(p, 'stop')), ...candidatesOf(places, layers).map((p) => pt(p, 'cand'))] };
+}
+
 export interface Fix { lon: number; lat: number; acc: number }
 export function locData(fix: Fix | null): FeatureCollection<Point, { acc: number }> {
   return { type: 'FeatureCollection', features: fix ? [{ type: 'Feature', properties: { acc: fix.acc }, geometry: { type: 'Point', coordinates: [fix.lon, fix.lat] } }] : [] };

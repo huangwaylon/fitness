@@ -40,7 +40,7 @@ describe('the map style', () => {
     expect(style().glyphs).toBe('https://example.test/fitness/travel/glyphs/{fontstack}/{range}.pbf');
   });
 
-  it('is the NookPhone palette: the sea, the land, sand and the roads from the theme; no sprite', () => {
+  it('is the NookPhone palette: the sea, the land, sand and the roads from the theme; no sprite, no basemap icons', () => {
     const s = style();
     const paint = (id: string) => (s.layers.find((l) => l.id === id) as { paint: Record<string, unknown> }).paint;
     expect(paint('water')['fill-color']).toBe(NOOK.sea);
@@ -49,7 +49,7 @@ describe('the map style', () => {
     expect(paint('road-minor')['line-color']).toBe(NOOK.road);
     expect(paint('road-minor-casing')['line-color']).toBe(NOOK.roadCasing);
     expect(s.sprite).toBeUndefined();
-    expect(s.layers.some((l) => 'layout' in l && l.layout && Object.keys(l.layout).some((k) => k.startsWith('icon-')))).toBe(false);
+    expect(s.layers.some((l) => 'source' in l && l.source === SRC.base && 'layout' in l && l.layout && Object.keys(l.layout).some((k) => k.startsWith('icon-')))).toBe(false);
   });
 
   it('reads OpenFreeMap\'s TileJSON with the attribution OpenStreetMap\'s licence asks for', () => {
@@ -61,7 +61,7 @@ describe('the map style', () => {
     expect(buildStyle({ locale: 'ja', tiles: '/fixture/tiles.json', base: BASE }).sources[SRC.base]).toMatchObject({ url: '/fixture/tiles.json' });
   });
 
-  it('draws the legs over the basemap in the day colours: drive and bus solid, walk dashed, boat dotted', () => {
+  it('draws the legs over the roads and under the labels in the day colours: drive and bus solid, walk dashed, boat dotted', () => {
     const o = overlayLayers();
     const by = (id: string) => o.find((l) => l.id === id) as { paint: Record<string, unknown>; filter?: unknown };
     expect(by('legs-road').paint['line-color']).toEqual(['get', 'color']);
@@ -69,8 +69,13 @@ describe('the map style', () => {
     expect(by('legs-walk').paint['line-dasharray']).toEqual([1.4, 1.1]);
     expect(by('legs-boat').paint['line-dasharray']).toEqual([0, 1.8]);
     const ids = style().layers.map((l) => l.id);
-    expect(ids.indexOf('legs-casing')).toBeGreaterThan(ids.indexOf('label-city'));
+    expect(ids.indexOf('legs-casing')).toBeGreaterThan(ids.indexOf('road-motorway'));
+    expect(ids.indexOf('legs-boat')).toBeLessThan(ids.indexOf('label-water-point'));
+    expect(ids.indexOf('cands')).toBeGreaterThan(ids.indexOf('label-city'));
     expect(ids.at(-1)).toBe('loc-dot');
+    // the pins' room: invisible, over the labels, so they keep clear of the HTML pins
+    const keep = o.find((l) => l.id === 'keepout') as { paint: Record<string, unknown>; layout: Record<string, unknown> };
+    expect([keep.paint['icon-opacity'], keep.layout['icon-allow-overlap'], keep.layout['icon-ignore-placement']]).toEqual([0, true, false]);
   });
 
   it('sizes the accuracy halo in metres: 100 m at zoom 16 on the equator is ~84 px (512 px tiles)', () => {

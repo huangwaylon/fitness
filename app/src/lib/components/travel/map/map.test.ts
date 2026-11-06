@@ -1,7 +1,7 @@
 // The trip map's overlays and its location watch (docs/travel.md "Maps").
 import { describe, expect, it, vi } from 'vitest';
 import { LocWatch } from './geo.ts';
-import { boundsOf, candidatesData, legsData, locData, stopsOf } from './overlay.ts';
+import { boundsOf, candidatesData, keepoutData, legsData, locData, stopsOf } from './overlay.ts';
 import { SAMPLE_COLORS, SAMPLE_LEGS, SAMPLE_PLACES } from './sample.ts';
 import { dayColor, nameOf } from './types.ts';
 
@@ -23,6 +23,10 @@ describe('the overlays', () => {
     expect(candidatesData(SAMPLE_PLACES, undefined, undefined).features).toEqual([]);
     const f = candidatesData(SAMPLE_PLACES, { camp: true }, 'c-nago').features;
     expect(f.map((x) => [x.properties.id, x.properties.sel])).toEqual([['c-bise', false], ['c-nago', true]]);
+  });
+
+  it("the keepout: the day's stops and the candidates shown", () => {
+    expect(keepoutData(SAMPLE_PLACES, 1, { food: true }).features.map((f) => f.properties.pin)).toEqual(['stop', 'stop', 'stop', 'cand', 'cand']);
   });
 
   it('fits the day: its stops and legs', () => {
