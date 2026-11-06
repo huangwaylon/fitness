@@ -1,15 +1,13 @@
 <script lang="ts">
-  // けっこんしき's プラン (docs/wedding.md "Plan"): the progress strip (the rose ring, the percent, 「8件中2件完了」), one
-  // row of filter chips with their counts (over the whole board), then 期限切れ (tinted coral), the months before this
-  // one, 今月 (tinted green), one plain heading per later month (the year only where it changes), 日付なし last; each
-  // heading pinned under the chips while its rows scroll, with its tally, its rows in one card. Finished tasks are hidden
+  // けっこんしき's プラン (docs/wedding.md "Plan"): one row of filter chips with their counts (over the whole board),
+  // then 期限切れ (tinted coral), the months before this one, 今月 (tinted green), one plain heading per later month (the
+  // year only where it changes), 日付なし last; each heading pinned under the chips while its rows scroll, with its tally, its rows in one card. Finished tasks are hidden
   // under すべて (a device pref); one ticked since stays where it was. A row opens in place (TaskRow).
   import Chip from '../quiet/Chip.svelte';
   import ChipRow from '../quiet/ChipRow.svelte';
-  import OfficialArt from '../characters/OfficialArt.svelte';
   import TaskRow from './TaskRow.svelte';
   import { counts, FILTERS, groupPlan, visibleTasks, type Filter, type Group, type Task } from './view.ts';
-  import { toPercent, type Overall } from '#lib/wedding/progress.ts';
+  import type { Overall } from '#lib/wedding/progress.ts';
   import type { Who } from '#lib/types.ts';
   import { monthTitle } from './format.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -37,13 +35,10 @@
   let { tasks, overall, today, wedding, canEdit, names, filter, showDone, held, expanded, onfilter, onshowdone, onexpand, ontick, onedit }: Props = $props();
 
   const c = $derived(counts(overall));
-  const pct = $derived(toPercent(overall.percent));
   const shown = $derived(visibleTasks(tasks, filter, showDone, held));
   const groups = $derived(groupPlan(shown, tasks, today, wedding, filter !== 'all'));
   /** Finished rows hidden from すべて. */
   const hiddenDone = $derived(filter === 'all' && !showDone ? c.done - tasks.filter((x) => x.doneAt && held.has(x.id)).length : 0);
-  /** The ring's arc (r 15: 94 around). */
-  const C = 2 * Math.PI * 15;
 
   /** Each month heading's year shown only where it changes (from today's). */
   const titles = $derived.by(() => {
@@ -66,17 +61,6 @@
 
 <div class="plan">
   {#if overall.total}
-    <div class="strip" role="img" aria-label={t('wed.prepLabel', { pct, done: overall.done, total: overall.total })} data-wed-progress={pct}>
-      <span class="ring" aria-hidden="true">
-        <svg viewBox="0 0 36 36">
-          <circle class="track" cx="18" cy="18" r="15" />
-          {#if pct > 0}<circle class="fill" cx="18" cy="18" r="15" stroke-dasharray="{(C * pct) / 100} {C}" transform="rotate(-90 18 18)" />{/if}
-        </svg>
-        <span class="posy"><OfficialArt key="flowers/pink-roses" size={18} eager /></span>
-      </span>
-      <b class="pct" aria-hidden="true">{pct}<small>%</small></b>
-      <span class="sum" aria-hidden="true" data-wed-tally="{overall.done}/{overall.total}">{t('wed.progress', { done: overall.done, total: overall.total })}</span>
-    </div>
     <div class="chips">
       <ChipRow label={t('wed.filters')}>
         {#each FILTERS as f (f)}
@@ -115,16 +99,6 @@
 
 <style>
   .plan { display: flex; flex-direction: column; }
-  /* the strip: the rose ring (the board's percent round a small posy), the percent, the count */
-  .strip { display: flex; align-items: center; gap: 10px; padding: 10px 16px 2px; }
-  .ring { position: relative; flex: none; width: 36px; height: 36px; display: grid; place-items: center; }
-  .ring svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .track { fill: none; stroke: color-mix(in srgb, #E88FAE 22%, var(--q-surface)); stroke-width: 3.5; }
-  .fill { fill: none; stroke: #E88FAE; stroke-width: 3.5; stroke-linecap: round; transition: stroke-dasharray 600ms cubic-bezier(.25, .8, .25, 1); }
-  .posy { position: relative; line-height: 0; }
-  .pct { font: 700 var(--q-fs-title)/1 var(--q-font-title); }
-  .pct small { font-size: .6em; margin-left: 1px; }
-  .sum { margin-left: auto; font-size: var(--q-fs-s); color: var(--q-muted); }
   /* the chips pinned at the scroller's top, the month headings under them */
   .chips { position: sticky; top: 0; z-index: 3; background: var(--q-bg); padding-bottom: 2px; }
   .empty { margin: 32px 16px; text-align: center; color: var(--q-muted); }
