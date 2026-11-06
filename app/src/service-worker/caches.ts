@@ -53,13 +53,12 @@ export const isVillagerArt = (path: string): boolean => path.includes('/art/vill
  *  at 3 scales: the phone's one): cached on first use, not at install. */
 export const isCritterArt = (path: string): boolean =>
   path.includes('/art/critters/') || path.includes('/art/finds/') || path.includes('/art/presents/') || path.includes('/terrain/') || path.includes('/art/scene/');
-/** The world's dressing for a season or the night and its decor (island/scene.ts, world.ts): the buildings' and the
- *  cedar's winter looks, the lit windows, the fences, lanterns, rocks, bamboo and the wild flowers (a season's kinds
- *  and their hybrids): cached on first use, not at install. */
+/** The layout's pieces' 2D art (trees, bushes, flowers, the deco and decor, the bridges) and the world's winter and
+ *  night looks: the 3D island draws their models (none of it drawn there: scripts/unused-probe.ts), so it is
+ *  もようがえ's trays' and ききみみ's pictures, cached on first use, not at install (~400 KB). The birthday hats stay
+ *  precached: the DOM draws them over the 3D villagers. */
 export const isDecorArt = (path: string): boolean =>
-  /\/art\/.+-(winter|lit)\.webp$/.test(path) ||
-  /\/art\/(deco\/(fence-(wooden|corral|bamboo)|garden-(lantern|lantern-white|rock)|flat-rock)|trees\/bamboo)\.webp$/.test(path) ||
-  /\/art\/flowers\/[a-z-]+\.webp$/.test(path);
+  /\/art\/.+-(winter|lit)\.webp$/.test(path) || (/\/art\/(trees|bushes|flowers|deco|decor|bridges)\//.test(path) && !/\/art\/deco\/birthday-hat-/.test(path));
 /** The tent's room (docs/design.md "The tent"): its models, wallpapers, floors and icons, fetched as the tent shows
  *  them and cached on first use in a cache of their own that outlives builds (a re-converted model has a new `?v=`). */
 export const ROOM_CACHE = 'island-room-v1';

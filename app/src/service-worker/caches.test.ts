@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgStale, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -93,10 +93,14 @@ describe('precache', () => {
     expect(foodImgStale(keys, JSON.stringify({ sheets: ['t-meat-0-1a2b3c4d.webp'] }))).toEqual([keys[1]]);
     expect([foodImgStale(keys, 'not json'), foodImgStale(keys, '{}')]).toEqual([[], []]);
   });
-  it('leaves the world’s winter and night looks and its decor out: cached on first use', () => {
+  it('leaves the layout’s 2D art and the world’s winter and night looks out (the 3D island draws models): cached on first use', () => {
     for (const p of ['art/deco/resident-services-winter.webp', 'art/trees/cedar-winter.webp', 'art/deco/airport-lit.webp',
-      'art/deco/fence-bamboo.webp', 'art/deco/garden-lantern-white.webp', 'art/trees/bamboo.webp', 'art/flowers/purple-windflowers.webp', 'art/flowers/red-tulips.webp', 'art/flowers/pink-cosmos.webp']) expect(precachable(p)).toBe(false);
-    for (const p of ['art/deco/resident-services.webp', 'art/trees/cedar.webp', 'art/bridges/stone-front.webp']) expect(precachable(p)).toBe(true);
+      'art/deco/fence-bamboo.webp', 'art/deco/garden-lantern-white.webp', 'art/trees/bamboo.webp', 'art/flowers/purple-windflowers.webp', 'art/flowers/red-tulips.webp', 'art/flowers/pink-cosmos.webp',
+      'art/trees/cedar.webp', '/fitness/art/trees/oak-spring-canopy.webp', 'art/bushes/holly.webp', 'art/deco/airport.webp', 'art/deco/birthday-cake.webp', 'art/decor/treadmill-0.webp', 'art/bridges/stone-front.webp']) {
+      expect([isDecorArt(p.replace(/^\/?/, '/')), precachable(p)]).toEqual([true, false]);
+    }
+    // the birthday hats: drawn by the DOM over the 3D villagers
+    for (const p of ['art/deco/birthday-hat-blue.webp', '/fitness/art/deco/birthday-hat-pink.webp']) expect([isDecorArt(p.replace(/^\/?/, '/')), precachable(p)]).toEqual([false, true]);
   });
   it('keeps the shell, the default villagers and the scene art', () => {
     for (const p of ['_app/immutable/entry/app.js', 'art/fruit3d/peach.webp', 'art/villagers/goldie.webp', 'art/villagers/anchovy-icon.webp', 'manifest.webmanifest']) {
