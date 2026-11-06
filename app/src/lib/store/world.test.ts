@@ -161,7 +161,7 @@ describe('a claim the room refused (its winner never heard here)', () => {
   it('is a race lost: the catch is taken back, the claim the partner’s, kept across a reload; one settled already is left', async () => {
     const r = fakeRelay();
     let refuse: ((i: Intent) => void) | null = null;
-    const live: Live = { ...r.live, onRefused: (fn) => ((refuse = fn), () => (refuse = null)) };
+    const live: Live = { ...r.live, onAck: (fn) => ((refuse = (i) => fn(i, false, 0)), () => (refuse = null)) };
     world.attach(live, 'A');
     const lost: unknown[] = [];
     world.lost = (claim, who, isLive, kind) => void lost.push([claim, who, isLive, kind]);

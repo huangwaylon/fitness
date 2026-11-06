@@ -128,3 +128,33 @@ describe('the client and the room’s ghost watch', () => {
     expect(b.status().peer).toBe(false);
   });
 });
+
+describe('the music stages through the room (docs/sound-sync.md)', () => {
+  it('A requests and B hears it; G opening 30 s later gets the record, so it starts 30 s in; A hears its own back', async () => {
+    const a = phone(KEYS.KEY_A), b = phone(KEYS.KEY_B);
+    await vi.advanceTimersByTimeAsync(100);
+    const heard = (p: Live) => {
+      const got: { at: number; song?: string; who: string }[] = [];
+      p.on((m) => void (m.kind === 'music' && got.push(m)));
+      return got;
+    };
+    const atB = heard(b);
+    const at = Math.round(a.serverNow());
+    expect(a.send({ kind: 'music', src: 'isl', at, song: 'kk-march', ms: 120_000 })).toBe(true);
+    await vi.advanceTimersByTimeAsync(50);
+    expect(atB).toEqual([expect.objectContaining({ at, song: 'kk-march', who: 'A' })]);
+    expect(a.metrics!().pending).toBe(0); // acked
+    await vi.advanceTimersByTimeAsync(30_000);
+    const g = phone(KEYS.KEY_C);
+    const atG = heard(g);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(atG).toHaveLength(1);
+    expect(Math.round((g.serverNow() - atG[0].at) / 1000)).toBe(30);
+    // A reloads: its own record comes back with its hello
+    a.stop();
+    const a2 = phone(KEYS.KEY_A);
+    const atA = heard(a2);
+    await vi.advanceTimersByTimeAsync(100);
+    expect(atA).toEqual([expect.objectContaining({ at, who: 'A' })]);
+  });
+});

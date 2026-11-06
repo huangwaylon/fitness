@@ -13,6 +13,7 @@ declare global {
     __islandEdit?: unknown;
     __layout?: unknown;
     __museum?: unknown;
+    __music?: unknown;
     __preview3d?: unknown;
     __tent?: unknown;
     __villagers3?: unknown;

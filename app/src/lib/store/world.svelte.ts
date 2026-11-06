@@ -6,7 +6,9 @@
 //   world.attach(relay, me)      the relay in use (the phone's one socket, or the demo's tabs), and who I am
 //   world.share(intent)          a change of mine: folded, kept, sent; returns what folding it did
 //   world.on(fn)                 the partner's changes (`live`: it just happened: play it)
-//   world.tell(i) / world.hear(fn)   presence only (a line's step, `fish`): sent now, kept nowhere; the others', live
+//   world.tell(i) / world.hear(fn)   presence only (a line's step, `fish`): sent now, kept nowhere; the others', live;
+//                                and the music stages (`music`: the room's records, mine too; sound/stage.svelte.ts)
+//   world.onAck(fn)              each numbered intent of mine the room answered (a music stage's clamp)
 //   world.onHere(fn)             who else is here now, and each change
 //   world.day                    today's WorldDay (reactive through `world.rev`)
 import { emptyDay, apply, applyRow, rowOf, type Applied, type Claim, type DayEvent, type DayRow, type WorldDay } from '#lib/sync/world-day.ts';
@@ -117,7 +119,7 @@ class SharedWorld {
     this.#me = me;
     this.#demo = demo;
     if (relay) {
-      const off = [relay.on((m) => this.#heard(m)), relay.onStatus((st) => this.#here(st.connected ? (st.here ?? []) : [])), relay.onRefused?.((i) => this.#refused(i)) ?? (() => {})];
+      const off = [relay.on((m) => this.#heard(m)), relay.onStatus((st) => this.#here(st.connected ? (st.here ?? []) : [])), relay.onAck?.((i, ok, t) => this.#acked(i, ok, t)) ?? (() => {})];
       this.#off = () => off.forEach((f) => f());
     } else this.#here([]);
     this.rev++;
@@ -131,12 +133,13 @@ class SharedWorld {
     this.#hereNow = here;
     for (const f of this.#hereSubs) f(here);
   }
-  /** A presence-only intent of mine (a line's step): to whoever is here now, kept nowhere. */
-  tell(i: Extract<Intent, { kind: 'fish' }>): boolean {
+  /** A presence-only intent of mine (a line's step): to whoever is here now, kept nowhere; a music stage's record (the
+   *  room keeps it). */
+  tell(i: Extract<Intent, { kind: 'fish' | 'music' }>): boolean {
     if (this.#me === 'G' && !guestMaySend(i)) return false;
     return this.#relay?.send(i) ?? false;
   }
-  /** The others' presence-only intents (a line's step), live. */
+  /** The others' presence-only intents (a line's step), live; the music stages' records (mine too). */
   hear(fn: (m: Relayed) => void): () => void {
     this.#hearSubs.add(fn);
     return () => void this.#hearSubs.delete(fn);
@@ -261,8 +264,8 @@ class SharedWorld {
   /** My own wishes heard back from the relay this session, by morning (see #heard). */
   #ownWishes: Record<string, number> = {};
   #heard(m: Relayed): void {
-    if (m.kind === 'fish') {
-      if (m.who !== this.#me) for (const f of this.#hearSubs) f(m);
+    if (m.kind === 'fish' || m.kind === 'music') {
+      if (m.who !== this.#me || m.kind === 'music') for (const f of this.#hearSubs) f(m);
       return;
     }
     if (!isDayEvent(m)) return;
@@ -305,6 +308,17 @@ class SharedWorld {
         console.error('world:', err);
       }
     }
+  }
+
+  #ackSubs = new Set<(i: Intent, ok: boolean, t: number) => void>();
+  /** Each numbered intent of mine the room answered: whether it took it, its stamp. */
+  onAck(fn: (i: Intent, ok: boolean, t: number) => void): () => void {
+    this.#ackSubs.add(fn);
+    return () => void this.#ackSubs.delete(fn);
+  }
+  #acked(i: Intent, ok: boolean, t: number): void {
+    if (!ok) this.#refused(i);
+    for (const f of this.#ackSubs) f(i, ok, t);
   }
 
   /**
@@ -386,6 +400,7 @@ class SharedWorld {
     this.#events = [];
     this.#subs.clear();
     this.#hearSubs.clear();
+    this.#ackSubs.clear();
     this.#hereSubs.clear();
     this.#hereNow = [];
     this.rev++;
