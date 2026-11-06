@@ -545,16 +545,19 @@ T_PX, T_COLS, T_PER = 128, 10, 100  # thumbnails (48 / 40 px at 3x): 10 x 10 a s
 D_PX, D_COLS, D_PER = 384, 5, 25    # the amount picture (160 px): one at a time, so bigger sheets (fewer files)
 QUALITY = 72
 # Thumbnail sheets are per search neighbourhood, so a search's rows touch few: a row whose name holds a common search
-# word sits with that word's family (カレー: the curry rice, udon, bread and roux together), the rest with its first item's
-# category (BUCKET). Detail sheets go by category only. First match wins (牛乳 before 牛, 巻き寿司 before 納豆).
+# word sits with that word's family, the rest with its first item's category (BUCKET). Dish-type words rank before
+# ingredient words (チキンサラダ is a salad, 卵スープ a soup, 鮭おにぎり an onigiri), then the more specific ingredient
+# (牛乳 before 牛); first match wins. Detail sheets go by category only. FAMILY_V: a change lays the sheets out again.
+FAMILY_V = 2
 FAMILY = [('curry', 'カレー'), ('sushi', '寿司 軍艦 手巻 鉄火巻 かっぱ巻 かんぴょう巻 納豆巻 太巻 恵方巻 ネギトロ巻 サラダ巻'),
-          ('ramen', 'ラーメン 中華めん 中華そば つけ麺 担々麺 ちゃんぽん'), ('udon', 'うどん'), ('soba', 'そば'),
+          ('salad', 'サラダ'), ('ramen', 'ラーメン 中華めん 中華そば つけ麺 担々麺 ちゃんぽん'), ('udon', 'うどん'), ('soba', 'そば'),
           ('pasta', 'スパゲッティ パスタ マカロニ ナポリタン カルボナーラ ペペロンチーノ ボンゴレ'), ('onigiri', 'おにぎり むすび'),
-          ('don', '丼'), ('rice', 'ごはん ご飯 かゆ 粥 めし'), ('bread', 'パン トースト サンド'), ('milk', '牛乳'),
+          ('don', '丼'), ('miso', '味噌汁 みそ汁'), ('soup', '汁 スープ'), ('bread', 'パン トースト サンド'),
+          ('rice', 'ごはん ご飯 かゆ 粥 めし'), ('milk', '牛乳'),
           ('egg', '卵 たまご 玉子 エッグ オムレツ'), ('tofu', '豆腐 厚揚げ 油揚げ がんもどき'), ('natto', '納豆'),
           ('pork', '豚 ポーク とんかつ ハム ベーコン ウインナー ソーセージ'), ('chicken', '鶏 チキン 唐揚げ から揚げ 焼き鳥 ささみ 手羽'),
           ('beef', '牛 ビーフ ステーキ 焼肉'), ('salmon', '鮭 さけ サーモン'), ('tuna', 'まぐろ ツナ'), ('saba', 'さば'),
-          ('shrimp', 'えび エビ'), ('miso', '味噌汁 みそ汁'), ('soup', '汁 スープ'), ('salad', 'サラダ'), ('cheese', 'チーズ'),
+          ('shrimp', 'えび エビ'), ('cheese', 'チーズ'),
           ('yogurt', 'ヨーグルト'), ('cabbage', 'キャベツ'), ('tomato', 'トマト'), ('onion', 'たまねぎ 玉ねぎ'), ('carrot', 'にんじん'),
           ('apple', 'りんご'), ('banana', 'バナナ'), ('beer', 'ビール')]
 BUCKET = {'主食': 'rice', '麺': 'noodle', '丼・定食': 'don', '主菜': 'main', '副菜': 'side', '汁物': 'soup', '寿司': 'sushi',
@@ -595,15 +598,17 @@ def cmd_pack():
     byid = items_by_id()
     rows = [r for r in table() if state(r, vs)[0] == 'ship']
     slots = json.loads(SLOTS.read_text()) if SLOTS.exists() else {}
-    slots = slots if set(slots) <= {'t', 'd'} else {}  # (the first layout, one map for both: laid out again)
+    if slots.get('v') != FAMILY_V:  # another family ranking (or the first layout): the thumbnails laid out again
+        slots = {'v': FAMILY_V, 'd': slots.get('d', {}) if set(slots) <= {'t', 'd', 'v'} else {}}
     slots.setdefault('t', {})
     slots.setdefault('d', {})
     # new keys join their bucket's end, popular first, then by name: a full sheet never changes
-    new = [r for r in rows if not any(r['key'] in ks for ks in slots['t'].values())]
-    new.sort(key=lambda r: (-max(byid.get(i, {}).get('pop', 0) for i in r['items']), r['ja']))
-    for r in new:
-        slots['t'].setdefault(family_of(r, byid), []).append(r['key'])
-        slots['d'].setdefault(BUCKET.get(byid[r['items'][0]]['cat'], 'other'), []).append(r['key'])
+    rows_by_pop = sorted(rows, key=lambda r: (-max(byid.get(i, {}).get('pop', 0) for i in r['items']), r['ja']))
+    for tag, place in (('t', lambda r: family_of(r, byid)), ('d', lambda r: BUCKET.get(byid[r['items'][0]]['cat'], 'other'))):
+        placed = {k for ks in slots[tag].values() for k in ks}
+        for r in rows_by_pop:
+            if r['key'] not in placed:
+                slots[tag].setdefault(place(r), []).append(r['key'])
     SLOTS.write_text(json.dumps(slots, ensure_ascii=False, indent=0, sort_keys=True) + '\n')
     ship = {r['key']: r for r in rows}
     OUT.mkdir(parents=True, exist_ok=True)
