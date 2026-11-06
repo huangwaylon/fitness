@@ -12,6 +12,8 @@ import { tileMid } from '#lib/layout/grid.ts';
 import { move, remove, removable, rotate } from '../editor/edits.ts';
 import { KK_MODES, KK_SEAT, KK_STOOL_H, kkAct, kkBye, kkEmote, kkGreeting, kkMode, kkSpot } from './kkSlider.ts';
 import { visitorAt } from './visitors.ts';
+import { placeObjects } from '../world3d/objects.ts';
+import { modelBounds } from '../world3d/models3d.ts';
 import ja from '#lib/i18n/ja.json';
 import en from '#lib/i18n/en.json';
 
@@ -59,6 +61,29 @@ describe('his stool on the layout', () => {
     expect(kkSpot(turned)).toMatchObject({ f: 1, yaw: Math.PI / 2 });
     expect(removable(l.objects.get('kk-slider')!)).toBe(false);
     expect(remove(l, ['kk-slider']).objects.has('kk-slider')).toBe(true);
+  });
+  test("one source for the stool and him: placeObjects stands the stool where kkSpot seats him, at its yaw, moved, turned each way and on the user's island (the editor's op, 6 × 55 behind the shop)", () => {
+    const day = { season: 'autumn', foliage: 'fall', month: 11 } as const;
+    const stoolOf = (l: ReturnType<typeof defaultLayout>) => placeObjects(l, day).insts.find((i) => i.id === 'kk-slider')!;
+    const l0 = defaultLayout();
+    const user = record();
+    mergeLayout(user, { sc: 'o', id: 'kk-slider', at: 1793882509458, k: 'kk-stool', x: 6, z: 55, f: 0, who: 'A' } as LayoutEntry);
+    const lays = [l0, move(l0, ['kk-slider'], 3, 2), rotate(l0, ['kk-slider']), rotate(rotate(l0, ['kk-slider']), ['kk-slider']), rotate(rotate(rotate(l0, ['kk-slider']), ['kk-slider']), ['kk-slider']), layoutOf(user)];
+    for (const l of lays) {
+      const s = kkSpot(l)!, st = stoolOf(l);
+      expect(st.model).toBe('log-stool');
+      expect([st.x, st.z, st.yaw ?? 0]).toEqual([s.x, s.z, s.yaw]);
+    }
+    expect(kkSpot(layoutOf(user))).toMatchObject({ x: tileMid(6, 55)[0], z: tileMid(6, 55)[1] });
+  });
+  test('his stool shows under him: a size up on the log stool (its 19 was hidden whole by him seated), his seat its top', () => {
+    expect(KK_STOOL_H).toBeGreaterThan(kindDef('log-stool')!.h * 1.4);
+    const st = placeObjects(defaultLayout(), { season: 'autumn', foliage: 'fall', month: 11 }).insts.find((i) => i.id === 'kk-slider')!;
+    const b = modelBounds(st.model)!, top = (b.max[1] - Math.min(0, b.min[1])) * st.scale, wide = (b.max[0] - b.min[0]) * st.scale;
+    // (the model's top is where he sits; ~20u up, ~27u across: wider than his legs, so it shows either side of them)
+    expect(KK_SEAT).toBeCloseTo(top, 0);
+    expect(top).toBeGreaterThan(18);
+    expect(wide).toBeGreaterThan(24);
   });
   test('the checks: on a tree he overlaps it; in the sea he’s off the land; his front walled in, nobody can stand there', () => {
     const l = defaultLayout();
