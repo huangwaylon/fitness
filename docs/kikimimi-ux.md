@@ -219,7 +219,8 @@ The prototype's screens, in order. Sizes are the app's tokens: cards `--r-card` 
 │ (‹)          ホテルで こまった          (✕) │
 │ [ scene backdrop (or the domain's tint), the host standing, ナタリー tag ] ✈️ たび │
 │ できるように なること                        │
-│ 「ホテルの スタッフが … わかる」              │  the can-do, as the chunk's sentence
+│ ホテルの もんだいを ききとれる               │  the can-do's one line (cando.short), large
+│ ▸ くわしく                                   │  folds 「ホテルの スタッフが … わかる」, the template's sentence
 │ ( ○ じぶん ) ( ○ うめ )  チェックで いっぱつ 5もん せいかい → スタンプ │  🏅 when stamped; ふたりで スタンプ！
 │ ┌ (1) であい  かいわを まるごと · 6もん・2ぷん  [あそぶ] ┐ │  the next: green edge, the only green
 │ ┌ (2) ばめん  いろんな こえ・へんじ · 6もん・2ぷん       ┐ │
@@ -229,6 +230,7 @@ The prototype's screens, in order. Sizes are the app's tokens: cards `--r-card` 
 │ [              とばして チェック              ]  │  until the チェック is next or it's stamped
 ```
 
+- The can-do: its one line (`cando.short`, ≤ 25 characters) is the page's headline; the template's full sentence is folded under 「くわしく」 (a draft with no one line shows the sentence as before). The lesson intro card's 「できるように なること」 shows the one line too, and a path stop's subtitle is the one line instead of host · domain (the face and the domain badge already say those).
 - `path/UnitPage.svelte` loads the unit's chunk (pool.ts `load` / `unitPart`); the lessons shown are those with playable items (`playIds`). My tally under the stamp line (stamps.ts). No さそう yet: co-op lessons wait for framework 8c (the lobby card says so in a shared lobby).
 
 ### 6.4 Mode detail

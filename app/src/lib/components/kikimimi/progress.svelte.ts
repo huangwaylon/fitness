@@ -94,8 +94,8 @@ export function pathUnits(): PathUnit[] {
     const line = INDEX.paths.find((p) => p[0] === id);
     const part = line ? null : (unitPart(id)?.unit as UnitPlay | undefined);
     const u: PathUnit | null = line
-      ? { id, name: line[1], stage: line[2], domain: line[3], host: line[4], status: line[5], lessons: lessonsOfMask(line[6]) }
-      : part ? { id, name: part.name, stage: part.stage, domain: part.domain, also: part.also, host: part.host, status: part.status, lessons: LESSONS.filter((l) => !!part.lessons[l]) } : null;
+      ? { id, name: line[1], stage: line[2], domain: line[3], host: line[4], status: line[5], lessons: lessonsOfMask(line[6]), ...(line[7] && { short: line[7] }) }
+      : part ? { id, name: part.name, stage: part.stage, domain: part.domain, also: part.also, host: part.host, status: part.status, lessons: LESSONS.filter((l) => !!part.lessons[l]), ...(part.cando.short && { short: part.cando.short }) } : null;
     if (u && (u.status !== 'draft' || drafts)) out.push(u);
   }
   return out;

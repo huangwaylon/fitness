@@ -110,13 +110,14 @@ function unitChunk(u: UnitManifest, check: UnitsCheck, bank: ReadonlyMap<string,
   const ladders = LADDERS.filter((l) => ids.includes(l.id));
   const unit = {
     id: u.unit, name: u.name, stage: u.stage, domain: u.domain, ...(u.also && { also: u.also }), host: u.host, scene: u.scene, sound: u.sound, status: u.status,
-    cando: { ja: candoText(u.cando), en: u.cando.en }, lessons: u.lessons, home: ids.filter((id) => check.home.get(id) === u.unit), ...(u.tiers && { tiers: u.tiers }),
+    cando: { ja: candoText(u.cando), ...(u.cando.short && { short: u.cando.short.trim() }), en: u.cando.en }, lessons: u.lessons, home: ids.filter((id) => check.home.get(id) === u.unit), ...(u.tiers && { tiers: u.tiers }),
     ph: u.ph.map((p) => ({ ...p, in: check.phraseIn.get(p.id)?.items ?? [] }))
   };
   const file = partFile({ unit, items, ladders }, clips, words);
   if (gz(file) > UNIT_MAX) throw new Error(`kikimimi: unit ${u.unit}'s chunk is ${gz(file)} B gzipped, over ${UNIT_MAX}`);
   const lessons = LESSONS.reduce((m, l, i) => (u.lessons[l] ? m | (1 << i) : m), 0);
   const path: PathEntry = [u.unit, u.name, u.stage, u.domain, u.host, u.status, lessons];
+  if (u.cando.short) path.push(u.cando.short.trim());
   return { file, path, entry: { parts: [`u-${u.unit}`], n: items.length, cv: cv([...items, ...ladders.flatMap((l) => l.rungs)], [u.lessons, u.tiers ?? null], clips) } };
 }
 

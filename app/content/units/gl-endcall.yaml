@@ -15,6 +15,7 @@ cando:
   does: はっきり いわずに でんわを おえようと する
   cond: でんわの こもった おとで
   catch: もう きりたい きもちと さいごの やくそく
+  short: でんわを おえたい サインが わかる
   en: "I can follow a friend or a colleague winding up a phone call without saying so directly, over a phone line, and catch that they want to hang up and what we agreed at the end."
 status: voiced
 ph:

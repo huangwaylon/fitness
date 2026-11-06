@@ -20,8 +20,8 @@ interface Part {
 }
 
 /** A unit on the island path (docs/curriculum-units.md, units.ts): id, name, stage, domain, host, status, and its
- *  lessons as a bitmask in units.ts LESSONS' order (the 3 core always; 8 おと, 16 じっせん). */
-export type PathEntry = [id: string, name: string, stage: string, domain: string, host: string, status: string, lessons: number];
+ *  lessons as a bitmask in units.ts LESSONS' order (the 3 core always; 8 おと, 16 じっせん), and the can-do's one line when it has one. */
+export type PathEntry = [id: string, name: string, stage: string, domain: string, host: string, status: string, lessons: number, short?: string];
 
 /** levels/index.json (compile.ts). */
 export interface Index {

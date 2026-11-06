@@ -15,7 +15,7 @@ import { LADDERS } from './ladders.ts';
 import { loadAll } from './pool.ts';
 import { BANK } from './source.ts';
 import {
-  DOMAINS, LESSON_QS, PLANNED, STAGES, WAVE1, candoProblems, candoText, checkUnits, lessonIds, manifestOf, type Stage
+  DOMAINS, LESSON_QS, PLANNED, SHORT_MAX, STAGES, WAVE1, candoProblems, candoText, checkUnits, lessonIds, manifestOf, type Stage
 } from './units.ts';
 
 const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
@@ -32,6 +32,7 @@ function hotel(): Raw {
     schema: 1, unit: 'tr-hotel', name: 'ホテルで こまった', stage: 'mori', domain: 'tabi', also: ['machi'], host: 'diana', scene: 'lobby', sound: 'self-repair',
     cando: {
       who: 'ホテルの スタッフ', does: 'へやの もんだいへの たいおうを せつめいする', cond: 'ロビーの ざつおんの なかで', catch: 'できる ことと ついかの りょうきん',
+      short: 'ホテルの もんだいを ききとれる',
       en: 'I can follow hotel staff explaining what they can do about a room problem, over lobby noise, and catch the options and any extra charge.'
     },
     status: 'draft',
@@ -134,6 +135,26 @@ describe('units: the manifest', () => {
     expect(candoProblems({ ...c, mood: 'x' })).toEqual(['cando: unknown key mood']);
     expect(candoProblems('a sentence')).toHaveLength(1);
   });
+
+  it('the can-do’s one line (short): ≤ 25 characters, one line, no 。 or 、; optional in a draft, required past it', () => {
+    const c = (hotel().cando as Raw);
+    const msg = `cando.short: one line, ≤ ${SHORT_MAX} characters, no 。 or 、`;
+    expect(candoProblems({ ...c, short: 'あ'.repeat(SHORT_MAX) })).toEqual([]);
+    expect(candoProblems({ ...c, short: 'あ'.repeat(SHORT_MAX + 1) })).toEqual([msg]);
+    expect(candoProblems({ ...c, short: 'ホテルの もんだいを ききとれる。' })).toEqual([msg]);
+    expect(candoProblems({ ...c, short: 'ホテルの もんだい、\nききとれる' })).toEqual([msg]);
+    expect(candoProblems({ ...c, short: '' })).toEqual([msg]);
+    const without = () => {
+      const r = hotel();
+      delete (r.cando as Raw).short;
+      return r;
+    };
+    expect(errorsOf(without())).toEqual([]);
+    for (const status of ['voiced', 'listened']) {
+      expect(errorsOf({ ...without(), status })).toEqual([`tr-hotel.yaml: cando.short: the one line, required once ${status}`]);
+      expect(errorsOf({ ...hotel(), status })).toEqual([]);
+    }
+  });
 });
 
 describe('units: against the bank', () => {
@@ -211,7 +232,7 @@ function synthetic(stage: Stage, n: number, from = 0, status = 'draft'): Raw[] {
     while (check.length < LESSON_QS) check.push(singles.find((it) => !deai.includes(it.id) && !check.includes(it.id))!.id);
     return {
       schema: 1, unit: `fr-${stage.slice(0, 2)}${String(i).padStart(3, '0')}`, name: `よていを かえる${i % 10}`, stage, domain: DOMAINS[i % DOMAINS.length], host: 'diana',
-      scene: 'cafe', sound: STAGES[stage].sounds[0], status, cando: hotel().cando,
+      scene: 'cafe', sound: STAGES[stage].sounds[0], status, cando: { ...(hotel().cando as Raw), short: `${['よていの へんこうが', 'ホテルの もんだいを', 'ざつだんの わだいが'][i % 3]} わかる${i}` },
       ph: [{ id: `ph-${stage}-${i}`, en: 'the', register: 'friend', scene: 'cafe', trap: 'テスト' }],
       review: [...new Set([...deai, ...check])], lessons: { v: 1, deai, bamen: deai, check }
     };
@@ -260,6 +281,7 @@ describe('units: compiled', () => {
     const chunk = JSON.parse(withUnits.get('parts/u-tr-hotel.json')!);
     expect(chunk.unit).toMatchObject({ id: 'tr-hotel', stage: 'mori', domain: 'tabi', status: 'draft', home: expect.arrayContaining(['r4-room-ready', 'tst-late-d']) });
     expect(chunk.unit.cando.ja).toMatch(/きいて、.*が わかる$/);
+    expect(chunk.unit.cando.short).toBe('ホテルの もんだいを ききとれる');
     expect(chunk.unit.ph[0].in).toEqual(expect.arrayContaining(['r4-room-ready']));
     expect(chunk.items.map((it: Item) => it.id)).toEqual(lessonIds(unitOf(hotel())));
     expect(chunk.items.find((it: Item) => it.id === 'r4-room-ready')).toEqual(BANK.find((it) => it.id === 'r4-room-ready'));
@@ -267,10 +289,18 @@ describe('units: compiled', () => {
     expect(gzipSync(withUnits.get('parts/u-tr-hotel.json')!).length).toBeLessThanOrEqual(UNIT_MAX);
     for (const [path, text] of without) if (path !== 'index.json') expect(withUnits.get(path) === text, path).toBe(true);
     const a = JSON.parse(withUnits.get('index.json')!), b = JSON.parse(without.get('index.json')!);
-    expect(a.paths).toEqual([['tr-hotel', 'ホテルで こまった', 'mori', 'tabi', 'diana', 'draft', 7]]);
+    expect(a.paths).toEqual([['tr-hotel', 'ホテルで こまった', 'mori', 'tabi', 'diana', 'draft', 7, 'ホテルの もんだいを ききとれる']]);
     expect(a.units['tr-hotel']).toEqual({ parts: ['u-tr-hotel'], n: 14, cv: expect.stringMatching(/^[0-9a-f]{6}$/) });
     delete a.units['tr-hotel'];
     expect({ ...a, paths: [] }).toEqual(b);
+  });
+
+  it('a draft with no one line: no short in its chunk or its path line', () => {
+    const r = hotel();
+    delete (r.cando as Raw).short;
+    const files = compile(CLIPS, WORDS, [src(r)]);
+    expect(JSON.parse(files.get('parts/u-tr-hotel.json')!).unit.cando).not.toHaveProperty('short');
+    expect(JSON.parse(files.get('index.json')!).paths[0]).toHaveLength(7);
   });
 
   it('deterministic, and a failing unit stops the compiler', () => {

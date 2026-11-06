@@ -21,7 +21,8 @@ export interface UnitPlay {
   scene: string;
   sound: string;
   status: string;
-  cando: { ja: string; en: string };
+  /** The can-do: the template's sentence, its one line (`short`, past draft) and its English. */
+  cando: { ja: string; short?: string; en: string };
   lessons: { v: number } & Partial<Record<Lesson, string[]>>;
   /** The lesson items whose home is this unit. */
   home: string[];
