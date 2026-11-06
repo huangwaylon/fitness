@@ -628,7 +628,7 @@ island, never deleted, moved and turned in the editor; design.md "K.K. on his st
 is his show (no visitor in the plaza then), by day he strums quietly and still plays a song on request, 00:00–06:00 he
 dozes. His default spot is free on the record's island too, so no op was needed to place him; were it taken, he'd
 stand there flagged in the editor, as the museum and the shop would (no automatic move: the user places pieces
-themselves). The tent's music players play his airchecks through the same cut-in (`playKK(id, 'aircheck')`). Why: the
+themselves). The tent's music players play his airchecks through the same cut-in (`playKK(id, 'aircheck')`; since 2026-11-06 the room's shared music stage, sound-sync.md). Why: the
 user ("I would like to make kkrider a permanent addition to the island - also make him movable/placeable via the
 editor"); a resident who played only once a week would be scenery, so he plays on request any time he's awake.
 

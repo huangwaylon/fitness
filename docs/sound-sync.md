@@ -1,5 +1,8 @@
 # Shared music and sound: design (2026-11-06)
 
+**Status: shipped (2026-11-06).** All six steps are in: K.K., the stereos, the stretch and the cake on the shared
+stages, and the remote cues' spatial gain. §3 below is the design with the API as it shipped; §1(c) is what it replaced.
+
 The user: "the music should be synced across players: anyone can request and stop KK music. In general, all music/sounds/effects should be synced across players. Make it minimal, simple, robust and performant." Step 5 is decided: the aerobics tape and the birthday cake play on the shared `isl` stage too.
 
 ## 1. Inventory
@@ -22,10 +25,12 @@ The user: "the music should be synced across players: anyone can request and sto
 
 The gap: remote cues play at full volume wherever the event is, with no attenuation for distance or for being out of view.
 
-**(c) Shared continuous audio. None of this is synced today.**
-- K.K. live: `KKSlider.perform` calls `playKK(id,'live')`. Since commit ebd9d2c0 the song is each phone's own.
-- Stereos in rooms t/u/v: `TentRoom.playStereo` calls `playKK(id,'aircheck')`. Each phone keeps its own `stereo` state.
-- Island cut-ins: aerobics (`TapeDeck`), happy-birthday (`Cake`), Franklin's cooking (`Visitor:507`). All per-phone.
+**(c) Shared continuous audio. Per-phone before this design; on the shared stages now (§2).**
+- K.K. live: `KKSlider.perform` called `playKK(id,'live')`, each phone's own song. Now `request('isl', id)`.
+- Stereos in rooms t/u/v: `TentRoom.playStereo` called `playKK(id,'aircheck')`, each phone with its own `stereo` state.
+  Now `request(sc, id, { pc })`.
+- Island cut-ins: aerobics (`TapeDeck`), happy-birthday (`Cake`): now on `isl`. Franklin's cooking (`Visitor`) stays
+  per-phone.
 
 **(d) Already the same on every phone (derived from shared state and the clock).**
 - Hour music (`hourly.ts`, using the relay's `wx` for weather), event music (`events.ts`), ambience (`ambient.ts`).
@@ -51,7 +56,8 @@ I chose to keep the record on the room rather than use a presence-only intent th
 
 **Playback.** Each phone plays from position `(serverNow() − at)/1000` into the track.
 
-**Concurrency.** Anyone may start, replace or stop. Last writer wins by `(at, who)`, compared with one shared function used by the relay, the demo relay and the client.
+**Concurrency.** Anyone may start, replace or stop. Last writer wins by `(at, who)`: one shared rule, `musicBeats`
+(below), used by the relay, the demo relay and the client.
 
 **World-event SFX.** No new messages. The existing remote handlers pass the event's point to the cue, which turns it into a gain (see step 6).
 
@@ -69,9 +75,14 @@ export type MusicSrc = (typeof MUSIC_SRCS)[number];
 // Intent: song absent = stop; ms = length after `start`; pc = the playing piece (room sources only)
 | { kind: 'music'; src: MusicSrc; at: number; song?: string; ms?: number; pc?: string }
 export const MUSIC_MS_MAX = 600_000, MUSIC_SKEW_MS = 5_000, MUSIC_STOP_KEEP_MS = 600_000;
-export const newerMusic = (a: {at:number; who:Who}, b: {at:number; who:Who}) => a.at !== b.at ? a.at > b.at : a.who > b.who;
-export const musicLive = (m: {song?:string; at:number; ms?:number}, now: number) =>
-  now < m.at + (m.song ? (m.ms ?? 0) : MUSIC_STOP_KEEP_MS);
+export const newerMusic = (a: {at; who}, b: {at; who}) => a.at !== b.at ? a.at > b.at : a.who > b.who;
+// when a record stops saying anything: a song at its end, a stop MUSIC_STOP_KEEP_MS on (song null on a phone's stage)
+export const musicEnd = (m: {song?: string | null; at; ms?}) => m.at + (m.song ? (m.ms ?? 0) : MUSIC_STOP_KEEP_MS);
+export const musicLive = (m, now) => now < musicEnd(m);
+// the one accept rule: `m` takes its stage from `cur` at `now`
+export const musicBeats = (m, cur, now) => (!cur || newerMusic(m, cur)) && musicLive(m, now);
+// the skew clamp: the relay's clock `t` when the sender's `at` is more than MUSIC_SKEW_MS off
+export const musicAt = (at, t) => (Math.abs(at - t) > MUSIC_SKEW_MS ? t : at);
 ```
 
 - **Parsing:** `song` must match `/^[a-z0-9-]{1,32}$/`, for example `kk-chorale` or `ev-aerobics`. `ms` must be 1 to `MUSIC_MS_MAX`. `pc` must be a `DECOR_ID` and is only allowed on room sources.
@@ -85,9 +96,9 @@ export const musicLive = (m: {song?:string; at:number; ms?:number}, now: number)
 
 ```ts
 if (out.kind === 'music') {
-  if (Math.abs(out.at - out.t) > MUSIC_SKEW_MS) out.at = out.t;     // a wrong clock can't pin the stage
+  out.at = musicAt(out.at, out.t);                                  // a wrong clock can't pin the stage
   const cur = this.music[out.src];
-  if ((cur && !newerMusic(out, cur)) || !musicLive(out, out.t)) {   // stale or already over
+  if (!musicBeats(out, cur, out.t)) {                               // stale or already over
     if (cur) this.send(s, cur);                                     // tell the sender what won
     return c !== undefined ? this.ack(s, c, out.t, false) : undefined;
   }
@@ -100,27 +111,40 @@ if (out.kind === 'music') {
 
 ### Demo relay (`app/src/lib/sync/live-local.ts`)
 
-- Add `music` to `Log`, using the same `newerMusic` rule in the tab that sends.
+- Keep the last record per source (`DEMO.music`), with the same `musicAt` clamp (on the device's clock) and
+  `musicBeats` rule in the tab that sends; a beaten record gets the winner back.
 - Deliver over the BroadcastChannel as now.
 - Re-send the live records when another tab says `hi`.
 
 ### Client
 
-**New: `app/src/lib/sound/stage.svelte.ts`** (about 100 lines):
+**New: `app/src/lib/sound/stage.svelte.ts`** (as shipped):
 
 ```ts
 export interface Stage { src: MusicSrc; song: string | null; at: number; ms: number; who: Who; pc?: string }
-export const stage = $state<{ on: Partial<Record<MusicSrc, Stage>> }>({ on: {} });
-export function request(src: MusicSrc, song: string, pc?: string): void; // from a tap: at = live.serverNow(), ms from the
-                                                                       // catalog; applied here, then world.tell(...)
-export function hush(src: MusicSrc): void;                              // stop (same path)
-export function hear(m: Relayed & { kind: 'music' }): void;             // LWW apply (mine too, from hello)
+export const stage = $state<{ on: Partial<Record<MusicSrc, Stage>>; here: MusicSrc | null }>({ on: {}, here: null });
+export function bindStage(n: { send(i: Intent): boolean; serverNow(): number; me(): Who | null }): void; // the layout, once
+export function request(src: MusicSrc, song: string, o?: { ms?: number; pc?: string }): void;
+       // from a tap: at = serverNow() (after the stage's record), ms from `o.ms` or the file's `d`; applied here, then sent
+export function hush(src: MusicSrc): void;                                  // stop (same path)
+export function hear(m: MusicRec): void;                                    // musicBeats apply (mine too, from hello)
+export function acked(i: Intent, ok: boolean, t: number): void;             // the relay clamped my `at`: so does this phone
 export function live(src: MusicSrc, now?: number): (Stage & { song: string; elapsedMs: number }) | null;
-export function setHere(src: MusicSrc | null): void;                    // island page 'isl', TentRoom its sc, shop/museum null
+export function enterStage(src: MusicSrc, plays?: (s: Stage) => boolean): () => void;
+       // where I am: the island page 'isl', TentRoom its sc (`plays`: its stereo still stands); returns the leaving
+export function heardHere(): ReturnType<typeof live>;                       // what plays where I am and sounds here
+export function onStage(fn: () => void): () => void;                        // sound.svelte.ts: syncMusic at each change
+export const restage: () => void;                                           // what `plays` reads changed
+export const cutInSong: (id: EventMusicId) => string;                       // an island cut-in's song, `ev-<id>`
+export const cutInOf: (song: string) => EventMusicId | null;                // and back (null: K.K.'s)
 ```
 
-- One timer, set for the earliest end, clears ended records and calls `syncMusic`.
-- On ack, if the relay clamped `at`, the client copies the clamp (`at = t`).
+- One timer, set for the earliest end (`musicEnd`), clears ended records and calls `syncMusic`.
+- On ack, if the relay clamped `at` (`musicAt`), the client copies the clamp (`at = t`).
+
+**New: `app/src/lib/sound/stageStart.svelte.ts`:** `onStageStart(song, unheardCue, (fresh) => …, on?)`, a start of a
+song on `isl` seen once on each phone (TapeDeck's stretch, Cake's candles): `fresh` within `FRESH_MS` (1 s) of its
+`at`; a fresh start this phone can't hear plays the cue instead.
 
 **`app/src/lib/store/world.svelte.ts`:** in `#heard`, send `music` messages to `stage.hear`. Widen `tell()` to accept `music`.
 
@@ -146,19 +170,22 @@ export function setHere(src: MusicSrc | null): void;                    // islan
 **`app/src/lib/sound/choose.ts`:** `playingLabel` reads the title from the stage instead of `cutIn.kk`.
 
 **`app/src/lib/components/island/KKSlider.svelte`:**
-- `playing` comes from `stage.live('isl')` when the song starts with `kk-`.
-- `perform` calls `request('isl', id)`. Keep the existing rule that a pick turns ミュージック on for this phone.
+- `playing` comes from `live('isl')` when the song isn't a cut-in (`cutInOf`).
+- `perform` calls `request('isl', id)`. A pick turns ミュージック on for this phone (`wantMusic()`, the stereo's too); its
+  🔇 is `!musicHeard()` (on, not muted, unlocked).
 - ストップ calls `hush('isl')`.
 - **Delete:** the `stopKK` effects on unmount and at midnight (a shared song plays to its end), the `ours` bookkeeping, and the `noSound` refusal.
 - K.K.'s sign-off shows on every phone outdoors when the record ends.
 
 **`app/src/lib/components/tent/TentRoom.svelte`:**
-- The playing stereo is `stage.live(sc)?.pc`, counted only while that piece is still in the room.
-- Tapping a stereo that's playing calls `hush(sc)`. Picking a song calls `request(sc, id, p.id)`.
+- The playing stereo is `live(sc)?.pc`, counted only while that piece is still in the room.
+- Tapping a stereo that's playing calls `hush(sc)`. Picking a song calls `request(sc, id, { pc })`.
 - **Delete:** the local `stereo` state and its three effects.
-- On mount call `setHere(sc)`; on leave call `setHere('isl')`.
+- On mount `enterStage(sc, plays)` (its stereo still stands); its returned leaving on leave.
 
-**`TapeDeck` and `Cake`:** use `request('isl', 'ev-aerobics' | 'ev-happy-birthday')`. This is the game designer's call: should the stretch poses start at `record.at` on every phone, and should the candles go out when the song is heard? Franklin stays personal, because his fed state is per phone.
+**`TapeDeck` and `Cake`:** `request('isl', cutInSong('aerobics' | 'happy-birthday'))`; a tap while it plays starts
+nothing over. `onStageStart` gives the stretch poses and the candles' puff to a phone that sees the start, and the
+done-for-today and the candles out to every phone. Franklin stays personal, because his fed state is per phone.
 
 **Remote SFX:** add `cue(c, { at?: Pt })` and `sceneSfx(kind, at?)`.
 - A listener that `camera.svelte.ts` registers returns the gain: 0 out of view (with a margin), otherwise 1 falling to 0.35 with distance from the view's centre.
