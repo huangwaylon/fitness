@@ -307,14 +307,6 @@ export class Engine {
     return p;
   }
 
-  /** A voice clip by its path under audio/ (`kikimimi/<id>.m4a?v=<hash>`): loadBytes over the whole file. */
-  loadClip(path: string): Promise<AudioBuffer | null> {
-    return this.loadBytes(path, async () => {
-      const res = await fetch(audioUrl(path));
-      return res.ok ? res.arrayBuffer() : null;
-    });
-  }
-
   async #decodeBytes(fetchBytes: () => Promise<ArrayBuffer | null>): Promise<AudioBuffer | null> {
     try {
       if (!this.ctx) return null;

@@ -19,6 +19,7 @@
   import { currentPath, currentReport, currentUnits, recordGame, unitAdded } from './progress.svelte.ts';
   import { KikiActions } from './actions.ts';
   import { keepLv, keepTimer, lastLv, lastTimer } from './prefs.ts';
+  import { packs } from './packs.ts';
   import { rechecksDue } from '#lib/kikimimi/stamps.ts';
   import type { Filter } from '#lib/kikimimi/path.ts';
   import { heardQuiz, quizLive } from './invite.svelte.ts';
@@ -113,9 +114,13 @@
       pages = [];
     };
   });
-  // The voice session the opening tap began ends as the sheet closes (a game or not).
+  // The voice session the opening tap began ends as the sheet closes (a game or not), and the packs held go.
   $effect(() => {
-    if (open) return () => voiceSession(false);
+    if (open)
+      return () => {
+        voiceSession(false);
+        packs.clear();
+      };
   });
 
   // Its open and close tunes (it mounts on the first tap, already open: that is an open too).

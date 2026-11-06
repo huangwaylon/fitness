@@ -13,11 +13,12 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
 import { parse } from 'yaml';
 import { clipIds, isDialogue, type Item, type Level } from './bank.ts';
-import type { Clip, Words } from './clips.ts';
+import type { ChunkClip, Clip, Words } from './clips.ts';
 import { voiced } from './clips.ts';
 import type { Ladder } from './ladder.ts';
 import { LADDERS, ladderReady } from './ladders.ts';
 import { drawn, mixFor, type Mixes } from './mix.ts';
+import { clipPlaces, type PackRef, type Packs } from './packing.ts';
 import type { Index, PathEntry } from './pool.ts';
 import { BANK } from './source.ts';
 import { tagsOf } from './tags.ts';
@@ -59,6 +60,36 @@ export function checkUnitSources(sources: readonly UnitSource[], clips: Readonly
   return { ...all, errors: [...errors, ...all.errors], units };
 }
 
+const PACKS_JSON = new URL('./packs.json', import.meta.url);
+
+/** packs.json (scripts/kikimimi-packs.ts): each audio pack's hash and its clips' offsets and lengths. */
+export function readPacks(file: URL = PACKS_JSON): Packs {
+  return existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as Packs) : {};
+}
+
+/** Where each clip is: its pack and its slow pack (packing.ts clipPlaces). */
+type Places = ReturnType<typeof clipPlaces>;
+
+/** These clips as a chunk carries them (clips.ts ChunkClip): the packs they're in (stems, in first use) and each
+ *  clip's length (cs), hash, and pack, offset and bytes (then its slow take's). A clip with no pack stops it. */
+function chunkClips(ids: readonly string[], clips: Readonly<Record<string, Clip>>, places: Places): { packs: string[]; clips: Record<string, ChunkClip> } {
+  const packs: string[] = [];
+  const ix = (r: PackRef) => {
+    let k = packs.indexOf(r[0]);
+    if (k < 0) k = packs.push(r[0]) - 1;
+    return [k, r[1], r[2]] as const;
+  };
+  const out: Record<string, ChunkClip> = {};
+  for (const id of ids) {
+    const c = clips[id];
+    if (!c) continue;
+    const at = places.normal.get(id), slow = c.slow ? places.slow.get(id) : undefined;
+    if (!at || (c.slow && !slow)) throw new Error(`kikimimi: clip ${id}${at ? "'s slow take" : ''} is in no pack (npm run kikimimi:packs)`);
+    out[id] = [Math.round(c.dur * 100), c.hash, ...ix(at), ...(slow ? ix(slow) : [])] as ChunkClip;
+  }
+  return { packs, clips: out };
+}
+
 /** A chunk's budget (gzipped, as built: scripts/kikimimi-budget.ts checks the build's). */
 export const PART_MAX = 60 * 1024;
 /** A level is split into parts of at most this (gzipped JSON: the chunk Vite makes of it is a little bigger). */
@@ -90,20 +121,22 @@ const dict = (o: Readonly<Record<string, unknown>>): string => {
   return ks.length ? `{\n${ks.map((k) => `${JSON.stringify(k)}:${JSON.stringify(o[k])}`).join(',\n')}\n}` : '{}';
 };
 
-/** A part's file: its items (or ladders; a unit's: the unit, then both), their clips and their word timings. */
-function partFile(of: { unit?: unknown; items?: readonly Item[]; ladders?: readonly Ladder[] }, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>): string {
+/** A part's file: its items (or ladders; a unit's: the unit, then both), their clips (the packs they're in, and where)
+ *  and their word timings. */
+function partFile(of: { unit?: unknown; items?: readonly Item[]; ladders?: readonly Ladder[] }, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, places: Places): string {
   const ids = [...(of.items ?? []).flatMap((it) => clipIds(it)), ...(of.ladders ?? []).flatMap((l) => l.rungs.map((r) => r.id))];
   const pick = <T,>(src: Readonly<Record<string, T>>) => Object.fromEntries(ids.filter((id) => id in src).map((id) => [id, src[id]]));
   const body = of.unit
     ? `"unit":${JSON.stringify(of.unit)},\n"items":${list(of.items ?? [])},\n"ladders":${list(of.ladders ?? [])}`
     : of.items ? `"items":${list(of.items)}` : `"ladders":${list(of.ladders ?? [])}`;
-  return `{${body},\n"clips":${dict(pick(clips))},\n"words":${dict(pick(words))}}\n`;
+  const c = chunkClips(ids, clips, places);
+  return `{${body},\n"packs":${JSON.stringify(c.packs)},\n"clips":${dict(c.clips)},\n"words":${dict(pick(words))}}\n`;
 }
 
 /** A unit's chunk: what its lessons need (the unit as played: its can-do, phrases with the items they're heard in, the
  *  lessons, the tiers, its homes), its lessons' items as authored (its own and the bank's, each once, in lesson order)
  *  and the ladders its じっせん names; and its index entries. */
-function unitChunk(u: UnitManifest, check: UnitsCheck, bank: ReadonlyMap<string, Item>, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>) {
+function unitChunk(u: UnitManifest, check: UnitsCheck, bank: ReadonlyMap<string, Item>, clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, places: Places) {
   const own = new Map((u.items ?? []).map((it) => [it.id, it]));
   const ids = lessonIds(u);
   const items = ids.map((id) => own.get(id) ?? bank.get(id)).filter((it): it is Item => !!it);
@@ -113,7 +146,7 @@ function unitChunk(u: UnitManifest, check: UnitsCheck, bank: ReadonlyMap<string,
     cando: { ja: candoText(u.cando), ...(u.cando.short && { short: u.cando.short.trim() }), en: u.cando.en }, lessons: u.lessons, home: ids.filter((id) => check.home.get(id) === u.unit), ...(u.tiers && { tiers: u.tiers }),
     ph: u.ph.map((p) => ({ ...p, in: check.phraseIn.get(p.id)?.items ?? [] }))
   };
-  const file = partFile({ unit, items, ladders }, clips, words);
+  const file = partFile({ unit, items, ladders }, clips, words, places);
   if (gz(file) > UNIT_MAX) throw new Error(`kikimimi: unit ${u.unit}'s chunk is ${gz(file)} B gzipped, over ${UNIT_MAX}`);
   const lessons = LESSONS.reduce((m, l, i) => (u.lessons[l] ? m | (1 << i) : m), 0);
   const path: PathEntry = [u.unit, u.name, u.stage, u.domain, u.host, u.status, lessons];
@@ -143,10 +176,11 @@ function split(items: readonly Item[], file: (items: readonly Item[]) => string)
   throw new Error('kikimimi: a level that no split fits');
 }
 
-/** levels/'s files (paths under it → contents) for these clips and word timings, and these units (app/content/units/:
- *  a unit that fails its checks stops it). */
-export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits()): Map<string, string> {
+/** levels/'s files (paths under it → contents) for these clips and word timings, these units (app/content/units/:
+ *  a unit that fails its checks stops it) and these packs (packs.json: a clip in none stops it). */
+export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks()): Map<string, string> {
   const out = new Map<string, string>();
+  const places = clipPlaces(packs);
   const check = checkUnitSources(sources, clips);
   if (check.errors.length) throw new Error(`kikimimi: the units don't check:\n${check.errors.join('\n')}`);
   const dialogues = dialoguesVoiced(clips, BANK), mix = mixFor(dialogues);
@@ -154,12 +188,12 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   const levels = [...new Set(BANK.map((it) => it.lv))].sort((a, b) => a - b);
   for (const lv of levels) {
     const items = BANK.filter((it) => it.lv === lv);
-    const parts = split(items, (p) => partFile({ items: p }, clips, words));
+    const parts = split(items, (p) => partFile({ items: p }, clips, words, places));
     const names = parts.length === 1 ? [`lv${lv}`] : parts.map((_, i) => `lv${lv}-${i + 1}`);
-    parts.forEach((p, i) => out.set(`parts/${names[i]}.json`, partFile({ items: p }, clips, words)));
+    parts.forEach((p, i) => out.set(`parts/${names[i]}.json`, partFile({ items: p }, clips, words, places)));
     units[lv] = { parts: names, n: items.length, cv: cv(items, mix[lv] ?? null, clips) };
   }
-  const ladders = partFile({ ladders: LADDERS }, clips, words);
+  const ladders = partFile({ ladders: LADDERS }, clips, words, places);
   if (gz(ladders) > PART_AIM) throw new Error('kikimimi: the ladders are past a chunk’s budget: split them as the levels are');
   out.set('parts/ladder.json', ladders);
   const rungs = LADDERS.flatMap((l) => l.rungs);
@@ -167,14 +201,15 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   const byId = new Map(BANK.map((it) => [it.id, it]));
   const paths: PathEntry[] = [];
   for (const u of check.units) {
-    const c = unitChunk(u, check, byId, clips, words);
+    const c = unitChunk(u, check, byId, clips, words, places);
     out.set(`parts/u-${u.unit}.json`, c.file);
     units[u.unit] = c.entry;
     paths.push(c.path);
   }
   const first = BANK.find((it) => it.lv === 1)!;
+  const test = chunkClips([first.id], clips, places);
   const index: Index = {
-    units, offered: playable(clips), dialogues, ladder: ladderReady(clips), test: [first.id, clips[first.id]], paths,
+    units, offered: playable(clips), dialogues, ladder: ladderReady(clips), test: [first.id, test.clips[first.id], test.packs], paths,
     items: BANK.map((it) => {
       const t = tagsOf(it);
       return [it.id, it.lv, it.type, it.voice, t.pragmatic, [...t.features]];

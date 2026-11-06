@@ -31,6 +31,7 @@ const TYPES: Record<string, string> = {
   '.wav': 'audio/wav',
   '.glb': 'model/gltf-binary',
   '.bin': 'application/octet-stream',
+  '.pak': 'application/octet-stream',
   '.wasm': 'application/wasm',
   '.txt': 'text/plain; charset=utf-8'
 };

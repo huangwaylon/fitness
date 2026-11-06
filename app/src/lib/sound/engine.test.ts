@@ -730,7 +730,7 @@ describe('voiceSession (sound.svelte.ts)', () => {
     expect([session.type, m.voice.on]).toEqual(['ambient', false]); // the engine's own (set as it made the context)
     await vi.advanceTimersByTimeAsync(1000);
     expect(ctx.suspends).toBe(1); // every setting off: it sleeps
-    expect(await m.loadVoice('kikimimi/q1.m4a?v=1')).not.toBeNull(); // the context lives on (suspended)
+    expect(await m.loadVoice('lv1.abcd:0', async () => new ArrayBuffer(8))).not.toBeNull(); // the context lives on (suspended)
   });
 
   it('the state follows the context: suspended by a lock, running again after the card’s tap', async () => {

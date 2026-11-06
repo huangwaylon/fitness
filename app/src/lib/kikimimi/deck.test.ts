@@ -5,7 +5,7 @@ import { DECK_SIZE, LEVELS as OFFERED, MIX, deck, inMix } from './deck.ts';
 import { mixes, playable } from './compile.ts';
 import { RIGHT, firstListen, points } from './score.ts';
 import { QUIZ_MAX_S, QUIZ_QS } from '../contract/live-protocol.ts';
-import { LINE_GAP, clipDur, clipUrl, itemDur, sequenceStarts, voiced, type Clip } from './clips.ts';
+import { LINE_GAP, clipAt, clipDur, itemDur, sequenceStarts, voiced, type Clip } from './clips.ts';
 import clipsJson from './clips.json';
 import { DIALOGUES } from './dialogues.ts';
 import { loadAll } from './pool.ts';
@@ -193,11 +193,14 @@ describe('kikimimi score', () => {
 });
 
 describe('kikimimi clips', () => {
-  it('paths under audio/ (as loadVoice takes them) carry the file hash, slow ones their own', () => {
+  it('a loaded clip is a slice of its pack (the stem carries the pack’s hash), its slow take one of the slow pack', () => {
     const id = 'p1-squid';
-    expect(clipUrl(id)).toMatch(/^kikimimi\/p1-squid\.m4a\?v=[0-9a-f]{8}$/);
-    expect(clipUrl(id, true)).toMatch(/^kikimimi\/p1-squid-slow\.m4a\?v=[0-9a-f]{8}$/);
-    expect(clipUrl(id)).not.toBe(clipUrl(id, true).replace('-slow', ''));
+    const [stem, offset, bytes] = clipAt(id)!;
+    expect(stem).toMatch(/^lv1\.[0-9a-f]{8}$/);
+    expect(offset).toBeGreaterThanOrEqual(0);
+    expect(bytes).toBeGreaterThan(1000);
+    expect(clipAt(id, true)![0]).toMatch(/^lv1-slow(-\d+)?\.[0-9a-f]{8}$/);
+    expect(clipAt('nope')).toBeUndefined();
     expect(clipDur(id)).toBeGreaterThan(0);
     expect(clipDur('nope')).toBeUndefined();
   });

@@ -4,11 +4,11 @@
 // clock after the one before, LINE_GAP apart; the session's schedule has their summed length, clips.ts itemDur), and
 // `talk` follows its turns on every phone.
 import { clipIds, isDialogue, type Item } from '#lib/kikimimi/bank.ts';
-import { clipDur, clipUrl, sequenceStarts } from '#lib/kikimimi/clips.ts';
+import { clipDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
 import type { QuizView } from '#lib/kikimimi/session.ts';
 import { TEST_CLIP } from '#lib/kikimimi/pool.ts';
-import { loadVoice, playVoice } from '#lib/sound/sound.svelte.ts';
-import { audioUrl } from '#lib/sound/manifest.ts';
+import { playVoice } from '#lib/sound/sound.svelte.ts';
+import { prefetchClips, voiceClip } from './packs.ts';
 import { preloadStage } from './scene/stage.ts';
 
 type Handle = { stop(): void };
@@ -50,11 +50,12 @@ export class ClipPlayer {
    * `hidesLine`: a スピード はしご rung below the top (no replay at its reveal).
    */
   follow(v: QuizView, items: readonly Item[], now: number, hidesLine: (it: Item) => boolean): void {
-    // the lobby: the deck's clips fetched into the cache (8 × ~15 KB), the first one decoded
+    // the lobby: the deck's packs fetched (packs.ts: the first question's alone, then the rest; a level-1 deck's one
+    // pack, ~0.7 MB, a level-4 deck's up to eight), the first clip decoded
     if (v.g && (v.phase === 'lobby' || v.phase === 'countdown') && this.#fetched !== `${v.seed}:${v.lv}` && items.length) {
       this.#fetched = `${v.seed}:${v.lv}`;
-      for (const id of items.flatMap((it) => clipIds(it))) void fetch(audioUrl(clipUrl(id))).then((r) => (this.#gone ? null : r.arrayBuffer())).catch(() => {});
-      if (v.speaks) void loadVoice(clipUrl(clipIds(items[0])[0]));
+      prefetchClips(items.flatMap((it) => clipIds(it)));
+      if (v.speaks) void voiceClip(clipIds(items[0])[0]);
       preloadStage(items[0]);
     }
     if (v.phase === 'idle' || v.phase === 'lobby' || v.phase === 'results') {
@@ -80,7 +81,7 @@ export class ClipPlayer {
       void this.#playSequence(it, late ? null : plan.at, () => this.#planned === plan).then((h) => (plan.h = h));
       // the next question's (first) clip decoded meanwhile (the engine keeps the last 4)
       const after = items[v.i + 1];
-      if (after) void loadVoice(clipUrl(clipIds(after)[0]));
+      if (after) void voiceClip(clipIds(after)[0]);
       // and its scene card's art (one question ahead: one backdrop on screen, the next in the image cache)
       preloadStage(after);
     }
@@ -116,7 +117,7 @@ export class ClipPlayer {
 
   /** The lobby's 🔊 「きこえる？」: whether a clip could play (false: no voice session, interrupted). */
   async test(): Promise<boolean> {
-    const buf = await loadVoice(clipUrl(TEST_CLIP));
+    const buf = await voiceClip(TEST_CLIP);
     if (!buf || this.#gone) return false;
     this.#stopAll();
     return !!this.#track(playVoice(buf));
@@ -138,7 +139,7 @@ export class ClipPlayer {
    * as it starts (a replay stops what sounds). One handle stops them all, with its start and length (ms).
    */
   async #playSequence(it: Item, at: number | null, still: () => boolean, o: { slow?: boolean; before?: () => void } = {}): Promise<(Handle & { from: number; ms: number }) | null> {
-    const bufs = await Promise.all(clipIds(it).map((id) => loadVoice(clipUrl(id, o.slow))));
+    const bufs = await Promise.all(clipIds(it).map((id) => voiceClip(id, o.slow)));
     if (bufs.some((b) => !b) || this.#gone || !still()) return null;
     o.before?.();
     const now = this.#now;
