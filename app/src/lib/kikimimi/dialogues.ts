@@ -160,7 +160,7 @@ const ROWS: readonly Row[] = [
       ['roald', "Forty? I've got a connection at six-thirty.", '40分？ 6時半に乗り継ぎがあるんですが。'],
       ['whitney', "You should be fine. They're holding it for everyone on this flight.", '大丈夫だと思いますよ。この便の乗客を待ってくれますから。']
     ],
-    choices: ["He'll probably still make it.", "He'll miss it and need a new ticket.", "It's been moved to gate 52."],
+    choices: ["He'll probably still make it.", "He'll miss it and need a new ticket.", "He'll be put on a later connection."],
     ja: 'たぶん間に合う。', note: 'should be fine＝たぶん大丈夫。holding＝出発を待つ',
     tags: tg(8, 'service', 'literal', ['desk'], ['teen-ty', 'clock'])
   },
@@ -179,11 +179,11 @@ const ROWS: readonly Row[] = [
   {
     id: 'd4-parcel', type: 'gist', ask: '荷物は どうなる？', focus: 'I can take it',
     lines: [
-      ['redd', "Package for number 12? No one's answering.", '12番地宛ての荷物なんですが、誰も出なくて。', "Package for number twelve? No one's answering."],
+      ['redd', "Package for 12B? No one's answering.", '12B号室宛ての荷物なんですが、誰も出なくて。', "Package for twelve B? No one's answering."],
       ['diana', "Oh, they're away till Friday. I can take it if you want.", 'ああ、金曜まで留守ですよ。よかったら預かりますけど。'],
       ['redd', "Thanks. Just sign here, and I'll leave a note on their door.", 'どうも。ここにサインを。お隣のドアにメモを残しておきます。', "Thanks. Just sign here, an' I'll leave a note on their door."]
     ],
-    choices: ['The neighbor keeps it until Friday.', 'The driver takes it back to the warehouse.', "It's left outside number 12."],
+    choices: ['The neighbor keeps it until Friday.', 'The driver takes it back to the warehouse.', "It's left outside 12B."],
     ja: '隣の人が金曜まで預かる。', note: 'I can take it＝預かれる。leave a note＝メモを残す',
     tags: tg(37, 'service', 'literal', [], ['weak-form'])
   },

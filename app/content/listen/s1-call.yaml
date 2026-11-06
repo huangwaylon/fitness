@@ -72,7 +72,7 @@ items:
       - slots:
           - { ask: "何時に 来る？", options: ["6時〜8時", "7時ごろ", "8時〜9時"], answer: 2 }
           - { ask: "置いて いけない 理由は？", options: ["サインが いる", "雨が ふっている", "住所が ちがう"], answer: 0 }
-          - { ask: "ほかの 方法は？", options: ["5Bの となりの人に あずける", "コンビニで うけとる", "あした もう一度"], answer: 0 }
+          - { ask: "ほかの 方法は？", options: ["5Bの 人に あずける", "コンビニで うけとる", "あした もう一度"], answer: 0 }
     note: "instead＝代わりに。最初の6時〜8時ではない"
     tags: { seed: 37, register: stranger, pragmatic: literal, conditions: [phone, street], features: [self-repair, lemme, weak-form] }
 

@@ -105,7 +105,7 @@ const WORD: readonly (readonly [Level, ...Row])[] = [
   [1, 'w1-fan', 'molly', 'I want a new fan.', 'あたらしい せんぷうきが ほしいな。', ['fan', 'van', 'pan']],
   [1, 'w1-fly', 'apollo', 'Can you fly? I can.', 'きみは とべるか？ おれは とべるぞ。', ['fly', 'fry', 'cry']],
   [1, 'w1-collect', 'blathers', 'Did you collect them all? Wonderful!', 'ぜんぶ あつめたのですか？ すばらしい！', ['collect', 'correct', 'connect']],
-  // level 2 (US, UK): plurals, final consonants, sh/ch, th/f, vowels in a longer line
+  // level 2: plurals, final consonants, sh/ch, th/f, vowels in a longer line
   [2, 'w2-cats', 'raymond', 'I really like your cats.', 'きみの ところの ネコ、ほんとうに かわいいね。', ['cats', 'cat', 'caps']],
   [2, 'w2-live', 'goldie', "I'd love to live by the sea someday.", 'いつか うみの そばに すみたいな。', ['live', 'leave', 'lie']],
   [2, 'w2-seat', 'brewster', 'Please, take a seat.', 'どうぞ、おかけください。', ['seat', 'sheet', 'seed']],
@@ -118,7 +118,7 @@ const WORD: readonly (readonly [Level, ...Row])[] = [
   [2, 'w2-cloud', 'celeste', 'Look at that cloud!', 'あの くもを みて！', ['cloud', 'crowd', 'clown']],
   [2, 'w2-free', 'label', "This one? Oh, that's free!", 'これ？ ああ、それは ただよ！', ['free', 'three', 'tea']],
   [2, 'w2-flight', 'orville', 'That was a long flight!', 'ながい フライトでしたね！', ['flight', 'fight', 'night']],
-  // level 3 (US, UK, AU): reductions, modals, th/f/t, l/v/n
+  // level 3: reductions, modals, th/f/t, l/v/n
   [3, 'w3-gotta', 'kid-cat', 'I gotta go to the gym before it closes.', 'しまる まえに ジムに いかなきゃ。', ['gotta', 'wanna', 'oughta']],
   [3, 'w3-id', 'marshal', "I'd go with the blue one, to be honest.", 'しょうじき、ぼくなら あおいのに するね。', ["I'd", "I'll", 'I']],
   [3, 'w3-shouldve', 'rosie', "You should've told me!", 'いって くれれば よかったのに！', ["should've", "shouldn't have", "could've"]],

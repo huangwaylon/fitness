@@ -71,7 +71,7 @@ items:
       - who: tangy
         cast: us-f1
         en: Sorry? Oh, twelve-fifteen. Perfect. See you then.
-        ja: え？ あ、12時15分ね。完璧。じゃあそのときに。
+        ja: え？ あ、12時15分ね。いいね。じゃあそのときに。
   - id: mu-r-keeping-busy
     lv: 4
     type: reply
@@ -118,7 +118,7 @@ items:
       - who: judy
         cast: us-f1
         en: Oh, hey! How was your weekend? Do anything fun?
-        ja: あ、おはよう！ 週末どうだった？ 何か楽しいことした？
+        ja: あ、どうも！ 週末どうだった？ 何か楽しいことした？
       - who: octavian
         cast: us-m3
         en: Kind of. My sister's kids stayed over, so, uh... not much sleep.

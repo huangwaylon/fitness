@@ -188,7 +188,7 @@ const BAD_NEWS: readonly Row[] = [
   ['mean', 'yb-role-affected', 'tom-nook', "As you know, we've been reviewing the team structure, and unfortunately, your role is one of the ones affected.",
     'ご存じのとおりチーム体制を見直してきたが、残念ながら君の職もその対象になった。 → つまり、ポジションがなくなる。',
     'role is affected は「職がなくなる」の婉曲表現',
-    ['Her job is being cut.', "She's being promoted to a new role.", 'The review will happen next year.'],
+    ['Your job is being cut.', "You're being promoted to a new role.", 'The review will happen next year.'],
     tg(42, 'boss', 'indirect', [], ['contraction']), { scene: 'office' }],
   ['reply', 'yb-not-go-ahead', 'poppy', "Unfortunately, the board decided not to go ahead with the project, at least for this year.",
     '残念ながら、役員会は少なくとも今年はこのプロジェクトを進めないと決めました。 →「残念です。来年また動く可能性は？」',
@@ -209,7 +209,7 @@ const BAD_NEWS: readonly Row[] = [
     tg(46, 'official', 'formula', ['phone'], ['idiom']), { scene: 'living' }],
   ['reply', 'yb-bearer', 'teddy', "I hate to be the bearer of bad news, but your car's not going to be ready till Monday.",
     '悪い知らせで申し訳ないけど、車は月曜まで仕上がらないんです。 →「うわ。それまで代車はありますか？」',
-    'bearer＝運ぶ人。bear in mind の bear とは別',
+    'bearer of bad news＝悪い知らせを伝える役',
     ['Ugh. Is there a loaner I could use till then?', "Thanks, I'll bear that in mind.", "Great, I'll pick it up today."],
     tg(31, 'service', 'formula', [], ['gonna', 'idiom']),
     { tts: "I hate to be the bearer of bad news, but your car's not gonna be ready till Monday.", scene: 'street',
@@ -231,7 +231,7 @@ const BAD_NEWS: readonly Row[] = [
 // ---- meetings with competing opinions ---------------------------------------------------------------------------------
 
 const MEETING: readonly Row[] = [
-  ['mean', 'yb-hit-pause', 'lily', "Let's hit pause on pricing till legal's had a look. No point locking anything in before then.",
+  ['mean', 'yb-hit-pause', 'lily', "Let's hit pause on pricing till legal's taken a look. No point locking anything in before then.",
     '価格は法務が見るまでいったん止めよう。それまでに何かを確定しても意味がないから。 → つまり、価格は法務の確認待ち。',
     'hit pause＝一時停止。lock in＝確定する',
     ['Pricing waits until legal has checked it.', 'Pricing has already been decided.', 'Legal will set the price.'],
@@ -293,7 +293,7 @@ const PROCESS: readonly Row[] = [
     tg(43, 'colleague', 'humour', [], ['contraction', 'accent-exposure']), { scene: 'office' }],
   ['word', 'yb-fill-out', 'rosie', 'Just fill out the top half and leave the rest to us.',
     '上半分だけ記入して、残りはこちらに任せてください。',
-    '米は fill out、英は fill in。out の t は弾く',
+    '書類は米で fill out。fill‿out とつながる',
     ['fill out', 'fill in', 'feel out'],
     tg(24, 'service', 'literal', [], ['flap', 'weak-form']),
     { tts: "Just fill out the top half 'n' leave the rest to us.", scene: 'pharmacy', marks: [['link', 'fill out'], ['say', 'and', "'n'"]] }],
@@ -784,7 +784,7 @@ const DROWS: readonly DRow[] = [
   {
     id: 'dyb-blocked', family: 'meeting', type: 'gist', ask: '二人の 問題は？', focus: 'blocking both of us',
     lines: [
-      ['lily', "Quick round. I'm done with the login page, just waiting on design for the icons.", '手短に。ログイン画面は完了、アイコンはデザイン待ちです。'],
+      ['lily', "Quick update. I'm done with the login page, just waiting on design for the icons.", '手短に。ログイン画面は完了、アイコンはデザイン待ちです。'],
       ['beau', "Same boat, sort of. I can't test payments till the API keys come through.", '似たようなもんかな。APIキーが届くまで決済のテストができない。'],
       ['lily', "Who's following up on the keys? Because that's blocking both of us now.", 'キーは誰が催促してる？ もう二人とも止まってるよ。']
     ],

@@ -110,7 +110,7 @@ items:
       - { who: orville, en: "Or tomorrow morning at 7:10, via Seoul. That gets in about three hours later, but we'd put you up in a hotel tonight.", tts: "Or tomorrow morning at seven ten, via Seoul. That gets in about three hours later, but we'd put ya up in a hotel tonight.", ja: "または明朝7時10分のソウル経由便。到着は3時間ほど遅くなりますが、今夜のホテルはこちらでご用意します。" }
       - { who: orville, en: "Or tomorrow at noon, direct, in business. That one's an upgrade, but you'd be paying for your own hotel.", tts: "Or tomorrow at noon, direct, in business. That one's an upgrade, but you'd be payin' for yer own hotel.", ja: "あるいは明日正午の直行便、ビジネスクラス。アップグレードになりますが、ホテル代はご自身の負担です。" }
       - { who: me, en: "I need to be in Tokyo by Thursday evening. Which one's the safest?", ja: "木曜の夜までに東京に着かないといけないんです。いちばん確実なのは？" }
-      - { who: orville, en: "Honestly? Tonight's. Oh, wait, scratch that. It just came up as delayed two hours. Then I'd say the 7:10.", tts: "Honestly? Tonight's. Oh, wait, scratch that. It just came up as delayed two hours. Then I'd say the seven ten.", ja: "正直に言えば今夜の便です。あ、待ってください、今のは取り消します。たった今2時間遅れと出ました。でしたら7時10分の便ですね。", repair: true }
+      - { who: orville, en: "Honestly? Tonight's. Oh, wait, scratch that. It just came up as canceled. Then I'd say the 7:10.", tts: "Honestly? Tonight's. Oh, wait, scratch that. It just came up as canceled. Then I'd say the seven ten.", ja: "正直に言えば今夜の便です。あ、待ってください、今のは取り消します。たった今欠航と出ました。でしたら7時10分の便ですね。", repair: true }
       - { who: me, en: "Okay, the 7:10, then. With the hotel.", tts: "Okay, the seven ten, then. With the hotel.", ja: "わかりました、じゃあ7時10分の便で。ホテル付きで。" }
     half: [0, 0, 1, 1, 0, 1, 1]
     memo:
@@ -119,6 +119,6 @@ items:
           - { ask: "その 便の 条件は？", options: ["ソウル経由で ホテル付き", "真ん中の 席だけ", "ホテル代は 自分"], answer: 0 }
       - slots:
           - { ask: "正午の 便の 欠点は？", options: ["ホテル代が 自分もち", "経由便", "エコノミーのみ"], answer: 0 }
-          - { ask: "今夜の 便は どう なった？", options: ["2時間 遅れ", "欠航", "満席"], answer: 0 }
+          - { ask: "今夜の 便は どう なった？", options: ["欠航", "2時間 遅れ", "満席"], answer: 0 }
     note: "scratch that＝今のは取り消し。7時10分に変更"
     tags: { seed: 8, register: service, pragmatic: literal, conditions: [phone, desk], features: [clock, self-repair, numbers] }

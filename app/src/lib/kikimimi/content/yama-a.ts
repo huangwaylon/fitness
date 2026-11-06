@@ -207,12 +207,12 @@ const MEAN: readonly Row[] = [
     'no-brainer＝考えるまでもない。バカの意ではない',
     ["He'll definitely join.", 'He thinks it\'s a stupid idea.', "He's too tired to think about it."],
     tg(17, 'friend', 'literal', [], ['idiom'])],
-  ['ya-m-rocket', 'kid-cat', "Come on, it's a printer, not rocket science. Just turn it off and on again.",
-    'ちょっと、ただのプリンターだよ、ロケット工学じゃあるまいし。電源を入れ直せばいい。 → つまり、簡単に直せる。',
+  ['ya-m-rocket', 'kid-cat', "Come on, it's a printer, not rocket science. Just pull out the jammed paper.",
+    'ちょっと、ただのプリンターだよ、ロケット工学じゃあるまいし。詰まった紙を引き抜けばいい。 → つまり、簡単に直せる。',
     'not rocket science＝難しくない',
     ["It's easy to fix.", 'The printer is broken for good.', 'He works in rocket science.'],
     tg(43, 'colleague', 'attitude', [], ['idiom']),
-    { tts: "C'mon, it's a printer, not rocket science. Just turn it off 'n' on again.", scene: 'office', marks: [['say', 'Come on', "c'mon"], ['say', 'and', "'n'"]] }],
+    { tts: "C'mon, it's a printer, not rocket science. Just pull out the jammed paper.", scene: 'office', marks: [['say', 'Come on', "c'mon"]] }],
   ['ya-m-thanks-heaps', 'lucky', 'Oh, thanks a lot for finishing the milk. Really appreciate it.',
     'あー、牛乳飲み干してくれて、どうもありがとう。助かるわ。 → つまり、牛乳を全部飲まれて怒っている。',
     'thanks a lot は皮肉。平板な口調が本音',
@@ -681,7 +681,7 @@ const DROWS: readonly DRow[] = [
     ],
     choices: ['Left at the light, three blocks, on the right.', 'Right at the light, then three blocks.', 'Three blocks, then left at the light.'],
     ja: '信号を左、3ブロック先の右側。', note: 'hang a left＝左折。right は「右側」の意',
-    tags: tg(58, 'stranger', 'literal', [], ['idiom', 'gonna', 'accent-exposure'])
+    tags: tg(58, 'stranger', 'literal', [], ['idiom', 'gonna'])
   },
   {
     id: 'dya-celebration', type: 'next', focus: 'celebration cake', scene: 'living',

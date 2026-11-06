@@ -86,7 +86,7 @@ items:
     lines:
       - { who: molly, en: "Hey, quick question. Did you book the restaurant for next Friday?", ja: "ねえ、ちょっと聞きたいんだけど。来週の金曜のレストラン、予約した？" }
       - { who: me, en: "Yeah, for this Friday, the 12th.", tts: "Yeah, for this Friday, the twelfth.", ja: "うん、今週の金曜、12日で取ったよ。" }
-      - { who: molly, en: "Oh. No, I meant next Friday, as in the 19th. This Friday's my work thing.", tts: "Oh. No, I meant next Friday, as in the nineteenth. This Friday's my work thing.", ja: "あ。違うの、来週って19日のつもりだった。今週の金曜は会社の飲み会なの。", repair: true }
+      - { who: molly, en: "Oh. No, I meant next Friday, as in the 19th. This Friday's my work thing.", tts: "Oh. No, I meant next Friday, as in the nineteenth. This Friday's my work thing.", ja: "あ。違うの、来週って19日のつもりだった。今週の金曜は仕事の用事があるの。", repair: true }
       - { who: me, en: "Ah. Okay, I'll move it.", ja: "そっか。じゃあ変えておくよ。" }
       - { who: molly, en: "Thanks. And could you make it seven-thirty instead of seven? I won't get out of the office till six-thirty.", tts: "Thanks. An' couldja make it seven-thirty instead of seven? I won't get outta the office till six-thirty.", ja: "ありがとう。それと7時じゃなくて7時半にできる？6時半まで会社を出られないから。" }
       - { who: molly, en: "Oh, and it's a pretty fancy place, right? Just so you know.", tts: "Oh, an' it's a pretty fancy place, right? Just so ya know.", ja: "あ、それとあそこ、結構いいお店だよね？いちおう言っとくけど。" }

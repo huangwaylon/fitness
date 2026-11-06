@@ -1,4 +1,4 @@
-{"units":{"1":{"parts":["lv1"],"n":46,"cv":"6a0695"},"2":{"parts":["lv2"],"n":49,"cv":"353bf6"},"3":{"parts":["lv3"],"n":49,"cv":"d4f6ce"},"4":{"parts":["lv4-1","lv4-2"],"n":261,"cv":"b45c76"},"5":{"parts":["lv5"],"n":30,"cv":"e97c1e"},"6":{"parts":["lv6-1","lv6-2"],"n":200,"cv":"a57c91"},"7":{"parts":["lv7"],"n":115,"cv":"8e3808"},"ladder":{"parts":["ladder"],"n":30,"cv":"25f34e"},"ev-bday":{"parts":["u-ev-bday"],"n":31,"cv":"837b37"},"fr-replan":{"parts":["u-fr-replan"],"n":31,"cv":"c03ddb"},"gl-clarify":{"parts":["u-gl-clarify"],"n":31,"cv":"064696"},"gl-endcall":{"parts":["u-gl-endcall"],"n":31,"cv":"3051f0"},"tr-guide":{"parts":["u-tr-guide"],"n":30,"cv":"33fc9e"},"tr-hotel":{"parts":["u-tr-hotel"],"n":32,"cv":"c0d090"},"wk-chat":{"parts":["u-wk-chat"],"n":31,"cv":"80700f"}},"offered":[1,2,3,4,5,6,7],"dialogues":true,"ladder":true,"test":["p1-squid",{"dur":2.31,"hash":"43aebdd8","slow":"c486cfbe"}],
+{"units":{"1":{"parts":["lv1"],"n":46,"cv":"6a0695"},"2":{"parts":["lv2"],"n":49,"cv":"353bf6"},"3":{"parts":["lv3"],"n":49,"cv":"d4f6ce"},"4":{"parts":["lv4-1","lv4-2"],"n":261,"cv":"b45c76"},"5":{"parts":["lv5"],"n":30,"cv":"e97c1e"},"6":{"parts":["lv6-1","lv6-2"],"n":200,"cv":"a57c91"},"7":{"parts":["lv7"],"n":115,"cv":"8e3808"},"ladder":{"parts":["ladder"],"n":30,"cv":"25f34e"},"ev-bday":{"parts":["u-ev-bday"],"n":31,"cv":"837b37"},"fr-replan":{"parts":["u-fr-replan"],"n":31,"cv":"de7982"},"gl-clarify":{"parts":["u-gl-clarify"],"n":31,"cv":"064696"},"gl-endcall":{"parts":["u-gl-endcall"],"n":31,"cv":"3051f0"},"tr-guide":{"parts":["u-tr-guide"],"n":30,"cv":"33fc9e"},"tr-hotel":{"parts":["u-tr-hotel"],"n":32,"cv":"c0d090"},"wk-chat":{"parts":["u-wk-chat"],"n":31,"cv":"80700f"}},"offered":[1,2,3,4,5,6,7],"dialogues":true,"ladder":true,"test":["p1-squid",{"dur":2.31,"hash":"43aebdd8","slow":"c486cfbe"}],
 "paths":[
 ["ev-bday","おいわいする","kawa","ibento","poppy","voiced",31,"パーティーの さそいが わかる"],
 ["fr-replan","よていを かえる","kawa","tomodachi","maple","voiced",31,"よていの へんこうが わかる"],
@@ -532,7 +532,7 @@
 ["dya-dough",6,"next","us","humour",[]],
 ["dya-rent-bump",6,"gist","us","hedge",["idiom"]],
 ["dya-shift-swap",6,"next","us","humour",[]],
-["dya-hang-left",6,"gist","uk","literal",["idiom","gonna","accent-exposure"]],
+["dya-hang-left",6,"gist","uk","literal",["idiom","gonna"]],
 ["dya-celebration",6,"next","us","humour",[]],
 ["dya-escalate",6,"gist","us","humour",["lemme"]],
 ["dya-brave-hair",6,"next","us","attitude",["ellipsis"]],

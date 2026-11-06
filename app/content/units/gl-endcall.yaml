@@ -141,7 +141,7 @@ items:
     speaker: label
     voice: us
     cast: us-f2
-    en: "Hi Gulliver, sorry, quick one. Did you send the slides to the client? Yep, this morning. They loved them. Perfect. Okay, I won't keep you. Let's pick it up on Monday. Sounds good. Have a good weekend!"
+    en: "Hi Gulliver, sorry, quick question. Did you send the slides to the client? Yep, this morning. They loved them. Perfect. Okay, I won't keep you. Let's pick it up on Monday. Sounds good. Have a good weekend!"
     ja: "電話を終えて、月曜にまた話す。"
     note: "pick it up on Monday＝続きは 月曜に"
     choices: ["End the call and talk again on Monday.", "Send the slides to the client herself.", "Meet him on the weekend."]
@@ -153,7 +153,7 @@ items:
     cond: { kind: phone, level: light }
     tags: { seed: 45, register: colleague, pragmatic: formula, conditions: [phone], features: [contraction] }
     lines:
-      - { who: label, cast: us-f2, en: "Hi Gulliver, sorry, quick one. Did you send the slides to the client?", ja: "もしもしガリバー、ごめん、ひとつだけ。クライアントにスライド送った？" }
+      - { who: label, cast: us-f2, en: "Hi Gulliver, sorry, quick question. Did you send the slides to the client?", ja: "もしもしガリバー、ごめん、ひとつだけ聞かせて。クライアントにスライド送った？" }
       - { who: gulliver, cast: us-m2, en: "Yep, this morning. They loved them.", ja: "うん、今朝。すごく気に入ってたよ。" }
       - { who: label, cast: us-f2, en: "Perfect. Okay, I won't keep you. Let's pick it up on Monday.", ja: "よかった。じゃあ、引き止めないわ。続きは月曜にしましょう。" }
       - { who: gulliver, cast: us-m2, en: "Sounds good. Have a good weekend!", ja: "いいね。いい週末を！" }
@@ -403,7 +403,7 @@ items:
     cast: us-m3
     en: "Okay, talk soon."
     ja: "じゃあ、またね。"
-    note: "talk の l は 読まない。walk と 同じ 音"
+    note: "talk の l は 読まない（walk も 同じ）。t と w で 区別"
     choices: ["talk soon", "walk soon", "talk to"]
     answer: 0
     focus: "talk soon"
