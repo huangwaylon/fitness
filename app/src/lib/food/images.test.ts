@@ -100,9 +100,9 @@ describe('static/food-img', () => {
 describe('sheet locality', () => {
   /** Common searches: the thumbnail sheets their top 20 touch, and those sheets' bytes. */
   const QUERIES = ['豚', '鶏', '牛', 'ごはん', 'うどん', 'そば', 'ラーメン', 'さけ', 'まぐろ', 'さば', '卵', '豆腐', '納豆', 'キャベツ', 'トマト', 'たまねぎ', 'にんじん',
-    'カレー', '丼', '味噌汁', 'サラダ', 'パン', 'りんご', 'バナナ', '牛乳', 'ヨーグルト', 'チーズ', 'おにぎり', '寿司', 'ビール'];
+    'カレー', '丼', '味噌汁', 'サラダ', 'パン', 'りんご', 'バナナ', '牛乳', 'ヨーグルト', 'チーズ', 'おにぎり', '寿司', 'ビール', 'スープ', 'サンド', 'えび'];
   /** At most this many thumbnail sheets for one search's top 20. */
-  const MAX_SHEETS = 5; // 4 until batch 7 (9603aa10) put サラダ's top 20 on 5 sheets (172 KB); raised to unblock main, re-tighten after re-sheeting (ごはん pipeline)
+  const MAX_SHEETS = 4;
 
   it('keeps a common search on a few thumbnail sheets', async () => {
     const food = join(STATIC, 'food');
