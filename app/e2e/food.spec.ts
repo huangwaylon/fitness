@@ -1161,9 +1161,9 @@ test('several foods a trip: a row’s ＋ logs it at once, 追加 comes back to 
 });
 
 // The balance views (docs/design.md "Gohan", the food review's approved features): each meal's protein chip (the leaf's at
-// a third of the day's goal), the day's PFC balance against the 食事摂取基準's ranges, the week's average, and the fibre
+// a third of the day's goal), the day's PFC balance against the 食事摂取基準's ranges, グラフ's average day over its range, and the fibre
 // and alcohol cards with their goals (fibre from the profile: ウェイ, a man of 35, 22 g; alcohol 20 g until set).
-test('the balance views: a meal’s protein chip, the PFC bar, the week’s average, fibre and alcohol with their goals', async ({ page }) => {
+test('the balance views: a meal’s protein chip, the PFC bar, the period’s average, fibre and alcohol with their goals', async ({ page }) => {
   await openFood(page);
   const s = sheet(page);
   // each meal with entries has its protein, green once at the per-meal target (its words say the target)
@@ -1189,21 +1189,22 @@ test('the balance views: a meal’s protein chip, the PFC bar, the week’s aver
   await expect(pfc.locator('.bar')).toHaveAttribute('aria-label', /^たんぱく質 \d+%、脂質 \d+%、炭水化物 \d+%$/);
   // fibre: the day's tile with its default goal (the 食事摂取基準's by the profile)
   await expect(s.locator('[data-food-summary] [data-nutrient=fi] small')).toHaveText(/^目標 22\sg\s以上$/);
-  // the week: the 7 finished days to yesterday, 記録 n日, with its own PFC bar
-  const wk = s.locator('[data-food-week]');
-  await expect(wk.locator('h3')).toHaveText('最近7日の平均');
-  await expect(wk.locator('[data-week-range]')).toHaveText(/^10\/28〜11\/3 · 記録 [1-7]日$/);
-  await expect(wk.locator('[data-week-kcal]')).toHaveText(/^[\d,]+ kcal$/);
-  await expect(wk.locator('[data-pfc=week] [data-pfc-of]')).toHaveCount(3);
-  // a past day's week ends that day
-  await s.locator('[data-nav=back]').click();
-  await expect(wk.locator('[data-week-range]')).toHaveText(/^10\/28〜11\/3 /);
-  await s.locator('[data-nav=back]').click();
-  await expect(wk.locator('[data-week-range]')).toHaveText(/^10\/27〜11\/2 /);
   expect(await overflowOf(page)).toEqual([]);
 
-  // グラフ: fibre at least its default, alcohol at most 20 g
+  // グラフ: on top the range's average day (its finished days, to yesterday: 記録 n日), with its own PFC bar; a longer
+  // period's from further back, still to yesterday (きろく has none)
+  await expect(s.locator('[data-food-avg]')).toHaveCount(0);
   await s.locator('[data-tab=chart]').click();
+  const avg = s.locator('[data-food-avg]');
+  await expect(avg.locator('h3')).toHaveText('この期間の平均');
+  await expect(avg.locator('[data-avg-range]')).toHaveText(/^10\/29〜11\/3 · 記録 [1-6]日$/);
+  await expect(avg.locator('[data-avg-kcal]')).toHaveText(/^[\d,]+ kcal$/);
+  await expect(avg.locator('[data-pfc=avg] [data-pfc-of]')).toHaveCount(3);
+  await s.locator('select[data-pick=period]').selectOption('month');
+  await expect(avg.locator('[data-avg-range]')).toHaveText(/^10\/\d+〜11\/3 · 記録 \d+日$/);
+  await expect(avg.locator('[data-avg-range]')).not.toHaveText(/^10\/29〜/);
+  await s.locator('select[data-pick=period]').selectOption('week');
+  // fibre at least its default, alcohol at most 20 g
   const fi = s.locator('[data-food-chart=fi]');
   await expect(fi.locator('button[data-goal]')).toHaveText('目標 22 g 以上');
   await expect(fi.locator('path.bar')).toHaveCount(4);
