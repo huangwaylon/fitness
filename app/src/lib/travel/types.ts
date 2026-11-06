@@ -63,7 +63,7 @@ export interface Day {
   hike?: Hike;
 }
 
-interface Place {
+export interface Place {
   /** Stops `s<day>-<i>`; candidates: a camp's slug (= Camp.id), `n-<slug>` nature, `f-<slug>` food. `link` (the
    *  place on Maps) and a leg's `min` / `km` are the source's, kept for ちず though it doesn't show them yet. */
   id: string;
@@ -78,7 +78,7 @@ interface Place {
   link?: string;
 }
 
-interface Leg {
+export interface Leg {
   day: number;
   /** The index (Place.i) of the stop the leg arrives at: what greys out once that stop is passed. */
   i: number;
