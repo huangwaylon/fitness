@@ -239,7 +239,7 @@ export function recipeItem(r: Recipe): Item {
   const one = recipePortion(r);
   const portions: Portion[] = [{ label: one.label, g: one.g }];
   const all = f.sv ? one.g * r.sv : r.total.g;
-  if (r.sv > 1 && all <= FOOD_GRAMS.max) portions.push({ label: 'ぜんぶ', g: all });
+  if (r.sv > 1 && all <= FOOD_GRAMS.max) portions.push({ label: '全部', g: all });
   return { id: f.id, name: f.n, ...snapValues(f), portions };
 }
 
