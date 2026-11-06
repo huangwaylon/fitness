@@ -134,7 +134,7 @@
       {#if level === 'settings' && canEdit}
         <Settings />
       {:else if tab === 'plan'}
-        <Head config={board.config} days={board.countdown} onsettings={canEdit ? settings : null} />
+        <Head config={board.config} days={board.countdown} sum={board.overall} onsettings={canEdit ? settings : null} />
         <Plan {tasks} overall={board.overall} today={board.today} wedding={board.config.date} {canEdit} {names} {filter} {showDone} {held} {expanded}
           onfilter={setFilter} onshowdone={setShowDone} onexpand={(id) => (expanded = id)} ontick={tickTask} onedit={edit} />
       {:else}

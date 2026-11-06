@@ -387,3 +387,39 @@ export async function plateOnly(page: Page, art: string | RegExp): Promise<{ x: 
   expect(r.src).toMatch(typeof art === 'string' ? `/${art}.webp` : art);
   return { x: r.x, y: r.y };
 }
+
+/** A point of the left tree's canopy the finger reaches (its middle, else the nearest part the popup leaves open). */
+export const canopyAt = (page: Page) =>
+  page.locator('button.canopy').first().evaluate((el) => {
+    const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+    for (let d = 0; d < b.height / 2; d += 4)
+      for (const [dx, dy] of [[0, d], [0, -d], [d, 0], [-d, 0], [d, d], [-d, d]])
+        if (document.elementFromPoint(cx + dx, cy + dy)?.closest('button.canopy') === el) return { x: cx + dx, y: cy + dy };
+    return { x: cx, y: cy };
+  });
+/** The popup where it stays (or none): it's placed, then placed again as its rows come in and it grows (FruitTree
+ *  fitPopup), so a canopy point it left open a frame ago may be under it now (the next tap the popup's). Three frames
+ *  unmoved, at most 400 ms. */
+const popupStill = (page: Page) =>
+  page.evaluate(() => new Promise<void>((ok) => {
+    const t0 = performance.now();
+    let last = '', same = 0;
+    const frame = () => {
+      const b = document.querySelector('.detail')?.getBoundingClientRect();
+      const now = b ? `${b.left},${b.top},${b.width},${b.height}` : '';
+      same = now === last ? same + 1 : 0;
+      last = now;
+      if (!now || same >= 3 || performance.now() - t0 > 400) ok();
+      else requestAnimationFrame(frame);
+    };
+    frame();
+  }));
+/** NH's shake of the left goal tree: three quick taps on its canopy, each where the popup leaves it open. */
+export async function shakeTree(page: Page) {
+  for (let i = 0; i < 3; i++) {
+    await popupStill(page);
+    const c = await canopyAt(page);
+    await page.mouse.click(c.x, c.y);
+    await page.waitForTimeout(120);
+  }
+}
