@@ -1,14 +1,13 @@
 <script lang="ts">
   // A guide's outside links (Maps, a trail map, an operator): small hairline buttons that open in a new tab (Safari's
   // own, the app stays as it was). A private one (`{p:key}`) is locked, 🔒 by its label, until the trip note is in
-  // (aria-disabled: a tap only boops). `attr`: a data attribute on each (a camp's `camp-maps`).
+  // (aria-disabled: a tap only boops).
   import type { Link } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import Icon from '../quiet/Icon.svelte';
   import { hrefOf, pick } from './text.ts';
 
-  let { links, note, attr }: { links: readonly Link[]; note: Record<string, string> | null; attr?: string } = $props();
-  const data = $derived(attr ? { [`data-${attr}`]: '' } : {});
+  let { links, note }: { links: readonly Link[]; note: Record<string, string> | null } = $props();
 </script>
 
 <div class="links">
@@ -16,11 +15,11 @@
     {@const href = hrefOf(l.href, note)}
     {@const label = pick(l.label, i18n.locale)}
     {#if href}
-      <a class="lk" {href} target="_blank" rel="noopener noreferrer" data-sfx="open" data-link {...data} aria-label="{label} ({t('travel.opens')})">
+      <a class="lk" {href} target="_blank" rel="noopener noreferrer" data-sfx="open" data-link aria-label="{label} ({t('travel.opens')})">
         <span>{label}</span><Icon name="external-link" size={14} />
       </a>
     {:else}
-      <span class="lk off" role="link" aria-disabled="true" data-sfx="open" data-link-locked {...data} aria-label="{label} ({t('travel.lockedLink')})"><Icon name="lock" size={14} /><span>{label}</span></span>
+      <span class="lk off" role="link" aria-disabled="true" data-sfx="open" data-link-locked aria-label="{label} ({t('travel.lockedLink')})"><Icon name="lock" size={14} /><span>{label}</span></span>
     {/if}
   {/each}
 </div>
