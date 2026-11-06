@@ -3,19 +3,25 @@
   // villager and what I'll be able to do (the can-do's one line, else its sentence), 6 もん · 2ぷんはん, and one green はじめる. The チェック is framed as
   // a mission until ようじ でんわ and たちぎき are built: 「{host}から でんわ！ ようじを ききとろう」 over a phone, with its
   // rule (5 of 6 right on the first listen stamps the unit; try again any time). The 30-day recheck is 「おさらい チェック」.
+  // A co-op lesson (`shared`, docs/curriculum-units.md §4): who's in it, the team's way to the stamp on a チェック, and
+  // はじめる（Nにん） for the host; the others wait for it (their choices at their own tier, never shown).
   import type { Lesson, UnitPlay } from '#lib/kikimimi/lesson.ts';
+  import type { Who } from '#lib/types.ts';
+  import PlayerChip from './frame/PlayerChip.svelte';
   import type { RosterId } from '#lib/villagers/roster.ts';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { villagerArt } from '#lib/art.ts';
   import { rosterName } from './scene/stage.ts';
   import { t } from '#lib/i18n/index.ts';
 
-  let { unit, lesson, recheck = false, onstart, onback }: { unit: UnitPlay; lesson: Lesson; recheck?: boolean; onstart: () => void; onback: () => void } = $props();
+  let { unit, lesson, recheck = false, shared = null, onstart, onback }: {
+    unit: UnitPlay; lesson: Lesson; recheck?: boolean; shared?: { players: Who[]; host: boolean; wait: string } | null; onstart: () => void; onback: () => void;
+  } = $props();
   const mission = $derived(lesson === 'check');
   const host = $derived(rosterName(unit.host as RosterId));
 </script>
 
-<div class="intro card" class:mission data-kiki-intro={lesson} data-kiki-recheck={recheck || undefined}>
+<div class="intro card" class:mission data-kiki-intro={lesson} data-kiki-recheck={recheck || undefined} data-kiki-coop={shared ? '1' : undefined}>
   <p class="unit">{unit.name}</p>
   <h3 class="name">{recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson}`)}</h3>
   <div class="art">
@@ -24,16 +30,23 @@
   </div>
   {#if mission}
     <p class="say" data-kiki-mission>{t('kiki.mission.call', { name: host })}<b>{t('kiki.mission.task')}</b></p>
-    <p class="rule">🏅 {t('kiki.mission.rule')}<small>{t('kiki.mission.retry')}</small></p>
+    <p class="rule">🏅 {t('kiki.mission.rule')}{#if shared}<small data-kiki-mission-team>{t('kiki.mission.team')}</small>{/if}<small>{t('kiki.mission.retry')}</small></p>
   {:else}
     <p class="goal" data-kiki-intro-goal><small>{t('kiki.lesson.goal')}</small>{unit.cando.short ?? unit.cando.ja}</p>
   {/if}
   <p class="about">{t('kiki.lesson.about')}</p>
+  {#if shared}
+    <div class="who" data-kiki-players>{#each shared.players as w (w)}<PlayerChip who={w} state="here" size={40} />{/each}</div>
+  {/if}
 </div>
 
 <div class="level-acts">
-  <button type="button" class="btn" data-kiki-lesson-start data-sfx="confirm" onclick={onstart}>{t('kiki.lesson.start')}</button>
-  <button type="button" class="btn paper wide" data-kiki-lesson-back data-sfx="back" onclick={onback}>{t('kiki.lesson.back')}</button>
+  {#if shared && !shared.host}
+    <p class="wait" role="status">{shared.wait}</p>
+  {:else}
+    <button type="button" class="btn" data-kiki-lesson-start data-sfx="confirm" onclick={onstart}>{shared ? t('kiki.startN', { n: shared.players.length }) : t('kiki.lesson.start')}</button>
+    <button type="button" class="btn paper wide" data-kiki-lesson-back data-sfx="back" onclick={onback}>{t('kiki.lesson.back')}</button>
+  {/if}
 </div>
 
 <style>
@@ -49,6 +62,8 @@
   .about { font-size: var(--fs-s); color: var(--text-soft); }
   .mission { background: color-mix(in srgb, var(--c-yuzu) 22%, var(--card)); }
   .level-acts > .wide { flex: 1 1 100%; }
+  .who { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; }
+  .wait { flex: 1; margin: 0; padding: 14px 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }
   @keyframes ring { from { rotate: -12deg; } to { rotate: 12deg; } }
   @media (prefers-reduced-motion: reduce) { .phone { animation: none; } }
 </style>

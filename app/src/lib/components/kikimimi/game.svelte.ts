@@ -7,10 +7,11 @@
 import { isDialogue, type Item, type Level } from '#lib/kikimimi/bank.ts';
 import { SPEEDS, ladderDeck } from '#lib/kikimimi/ladder.ts';
 import { FAST_WINDOWS, type SeedAsk } from '#lib/kikimimi/round/session.ts';
-import { gameIn, type GameIn, type RoundIn, type RoundOut } from '#lib/kikimimi/round/wire.ts';
+import { gameIn, type GameIn, type RoundIn, type RoundOut, type WireMode } from '#lib/kikimimi/round/wire.ts';
 import { roundLink, soloLink, wire, type RoundLink } from '#lib/kikimimi/round/link.ts';
 import { QuizRounds } from '#lib/kikimimi/games/quiz/session.ts';
 import { quizOpts } from '#lib/kikimimi/games/quiz/def.ts';
+import { lessonOpts, tierIndex } from '#lib/kikimimi/games/lesson/def.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import type { QuizTimer } from '#lib/kikimimi/seed.ts';
 import type { Live } from '#lib/sync/live.ts';
@@ -76,8 +77,9 @@ export class QuizGame {
   /** My answers of the last game, as recorded (the results' feedback), or null. */
   recorded = $state.raw<ListenRow | null>(null);
   /** A unit's lesson (docs/curriculum-units.md §3): its unit, which lesson, my tier, whether it's the 30-day recheck;
-   *  its deck dealt into my lobby kept alone (the game `lesson`, games/lesson/def.ts), which shows its intro card till
-   *  はじめる. Null: a quiz. */
+   *  its deck dealt into my lobby (the game `lesson`, games/lesson/def.ts: kept alone, or shared, a co-op lesson, §4),
+   *  which shows its intro card till はじめる; a co-op lesson's host's pick, as heard, on the other phones. Null: a
+   *  quiz. */
   lesson = $state.raw<{ unit: UnitPlay; lesson: Lesson; tier?: Tier; recheck: boolean } | null>(null);
 
   readonly me: Who;
@@ -93,11 +95,17 @@ export class QuizGame {
   readonly #clips: ClipPlayer;
   readonly #queue: ChunkQueue;
   #offHere: () => void;
+  /** My tier for a unit's stage (my comfortable level against it: lesson.ts tierFor), for a co-op lesson's choices. */
+  readonly #tierOf: (stage: Stage) => Tier | undefined;
+  /** The co-op lesson my tier was last sent for (`g:u:tr`). */
+  #tiered = '';
 
-  constructor(o: { live: Live | null; me: Who; fast?: boolean; heard?: readonly GameIn[]; record?: (row: ListenRow) => void }) {
+  /** `wire`: how this phone sends (round/wire.ts WIRE; the e2e's `?wire=quiz` is an 8b phone's). */
+  constructor(o: { live: Live | null; me: Who; fast?: boolean; wire?: WireMode; heard?: readonly GameIn[]; record?: (row: ListenRow) => void; tierOf?: (stage: Stage) => Tier | undefined }) {
     this.me = o.me;
     this.#record = o.record;
-    this.#link = o.live ? roundLink(o.live) : soloLink();
+    this.#tierOf = o.tierOf ?? (() => undefined);
+    this.#link = o.live ? roundLink(o.live, o.wire) : soloLink();
     this.#clips = new ClipPlayer(() => this.#link.now(), () => this.view.i);
     this.#queue = new ChunkQueue(() => this.#gone, () => this.#refresh());
     this.#session = new QuizRounds({ me: o.me, defs: GAMES, seedFor, windows: o.fast ? FAST_WINDOWS : undefined });
@@ -139,13 +147,14 @@ export class QuizGame {
       this.go();
     });
   }
-  /** A unit's lesson (lesson.ts): once the unit's chunk is in, my lobby kept alone (a quiz's, not a ladder's) becomes
-   *  the lesson's game (its 6 questions by the lobby's seed, at my tier: `tier`), and waits on the lesson's intro card
-   *  for はじめる (`go`). `recheck`: the 30-day おさらい チェック (a チェック like any). Nothing on the wire. */
+  /** A unit's lesson (lesson.ts): once the unit's chunk is in, my lobby (a quiz's, not a ladder's) becomes the lesson's
+   *  game (its 6 questions by the lobby's seed, at my tier: `tier`), and waits on the lesson's intro card for はじめる
+   *  (`go`). `recheck`: the 30-day おさらい チェック (a チェック like any). Kept alone: nothing on the wire; shared: a
+   *  co-op lesson (docs/curriculum-units.md §4), everyone's at their own tier. */
   playLesson(unit: string, lesson: Lesson, o: { tier?: Tier | ((stage: Stage) => Tier | undefined); recheck?: boolean } = {}): void {
     this.#queue.then(() => [unit as Unit], () => {
       const v = this.view, part = unitPart(unit);
-      if (!part || !v?.g || v.phase !== 'lobby' || !v.local || !v.amHost || v.ladder) return;
+      if (!part || !v?.g || v.phase !== 'lobby' || !v.amHost || v.ladder) return;
       const tier = typeof o.tier === 'function' ? o.tier(part.unit.stage) : o.tier;
       if (!lessonDeck(part, lesson, v.seed, tier).length) return;
       this.practicing = false;
@@ -169,8 +178,14 @@ export class QuizGame {
   configure(o: { lv?: Level; same?: boolean; vs?: boolean; ladder?: boolean; timer?: QuizTimer }): void {
     this.#queue.then(() => [(o.ladder ?? this.view?.ladder) ? 'ladder' : ((o.lv ?? this.view?.lv ?? 1) as Level)], () => this.#act((s, now) => s.configure(o, now)));
   }
+  /** さんか: a co-op lesson at my tier for its unit (its chunk is in: the open waited for it). */
   join(g?: string): void {
-    this.#queue.then(() => [], () => this.#act((s, now) => s.join(now, g)));
+    this.#queue.then(() => [], () =>
+      this.#act((s, now) => {
+        const inv = s.view(now).invite, part = inv?.gm === 'lesson' && inv.u && (g === undefined || inv.g === g) ? unitPart(inv.u) : undefined;
+        return s.join(now, g, part ? tierIndex(this.#tierOf(part.unit.stage)) : undefined);
+      })
+    );
   }
   go(): void {
     this.#queue.then(() => [], () => {
@@ -264,6 +279,7 @@ export class QuizGame {
     }
     // the game I'm in keeps its deck whatever other phones' lobbies build (decks.ts)
     pinDeck(v.g ? v : null);
+    this.#lessonOf(v);
     this.#recorder.seen(v, now);
     if (v.phase === 'results' && v.g) this.#keep(v, now, true);
     this.view = v;
@@ -274,6 +290,25 @@ export class QuizGame {
     let wait = Number.isFinite(v.until) ? v.until - now : WAKE;
     if (v.phase === 'countdown') wait = Math.min(wait, (v.until - now) % 1000 || 1000);
     this.#timer = setTimeout(() => this.#refresh(), Math.max(20, Math.min(WAKE, wait)) + 10);
+  }
+
+  /** The lesson my game is (a co-op one's host's pick, heard, or changed back to a quiz): its unit and lesson (the intro
+   *  card, my row, the results' strip); a player's tier for it sent (the host's rides its options). */
+  #lessonOf(v: QuizView): void {
+    if (!v.g) return;
+    const ls = v.gm === 'lesson' && v.u ? lessonOpts.decode(v.o) : null;
+    if (!ls) {
+      if (this.lesson && v.gm !== 'lesson') this.lesson = null;
+      return;
+    }
+    const part = unitPart(v.u!);
+    if (!part) return;
+    if (this.lesson?.unit.id !== part.unit.id || this.lesson.lesson !== ls.lesson) this.lesson = { unit: part.unit, lesson: ls.lesson, ...(ls.tier && { tier: ls.tier }), recheck: false };
+    if (v.amHost || v.phase !== 'lobby') return;
+    const tr = tierIndex(this.#tierOf(part.unit.stage)), key = `${v.g}:${v.u}:${tr}`;
+    if (key === this.#tiered) return;
+    this.#tiered = key;
+    queueMicrotask(() => this.#act((s, now) => s.tier(tr, now)));
   }
 
   /** My answers of this game recorded, once (recorder.ts): at the results, or when I leave mid-way. */
