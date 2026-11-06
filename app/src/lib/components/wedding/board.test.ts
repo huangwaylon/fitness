@@ -1,6 +1,7 @@
 // The wedding board on a phone (components/wedding/board.svelte.ts, docs/wedding.md): the model's rows (the record's,
 // then this phone's queued ones, marked) folded by the record's rules and read as the old board read its Sheet; my
-// changes as the ops the record takes, each stamped after what it replaces; the guest's phone reads, never writes.
+// changes as the ops the record takes, each stamped on the relay's clock after what it replaces; the guest's phone
+// reads, never writes.
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { EventRow } from '#lib/contract/api.ts';
 import { foldEvents, reduce } from '#lib/model/state.ts';
@@ -9,11 +10,20 @@ const T = Date.parse('2026-11-06T03:00:00.000Z');
 const fake = vi.hoisted(() => ({
   me: 'A' as 'A' | 'B' | 'G',
   now: 0,
+  server: 0,
   rows: [] as EventRow[],
   queued: [] as EventRow[],
-  sent: [] as { type: string; data: Record<string, unknown> }[]
+  sent: [] as { type: string; data: Record<string, unknown> }[],
+  /** The board's midnight subscriber's start (svelte/reactivity createSubscriber: run when a reader appears). */
+  midnight: null as ((update: () => void) => () => void) | null
 }));
-vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => fake.now } }));
+vi.mock('svelte/reactivity', () => ({
+  createSubscriber: (start: (update: () => void) => () => void) => {
+    fake.midnight = start;
+    return () => {};
+  }
+}));
+vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => fake.now, serverNow: () => fake.server } }));
 vi.mock('#lib/store/week.svelte.ts', async () => {
   const { reduce: red, foldEvents: fold } = await import('#lib/model/state.ts');
   return {
@@ -41,6 +51,7 @@ const task = (t: number, id: string, extra: object = {}) => rec(t, 'B', 'wtask',
 beforeEach(() => {
   fake.me = 'A';
   fake.now = T;
+  fake.server = T;
   fake.rows = [];
   fake.queued = [];
   fake.sent = [];
@@ -68,7 +79,6 @@ describe('the board', () => {
     expect(plan.map((t) => [t.id, t.progress.state])).toEqual([['late', 'overdue'], ['soon', 'soon'], ['later', 'later'], ['orphan', 'nodate']]);
     expect(plan[2].subtasks.map((s) => s.id)).toEqual(['sub1', 'sub2']);
     expect(plan[2].progress.percent).toBe(0.5);
-    expect(plan[3].promoted).toBe(true);
     expect(board.overall).toMatchObject({ total: 4, overdue: 1, soon: 1, later: 1, nodate: 1, percent: 0.125 });
     expect(board.deleted.map((t) => t.id)).toEqual(['gone']);
   });
@@ -85,6 +95,29 @@ describe('the board', () => {
     expect(board.config).toMatchObject({ tz: 'America/Los_Angeles', p1: '', cats: expect.arrayContaining(['Venue']) });
   });
 
+  it('turns today at the board’s midnight for a reader (one timer, cleared when nothing reads)', () => {
+    vi.useFakeTimers();
+    try {
+      // 23:59:00 in Tokyo
+      fake.now = Date.parse('2026-11-06T14:59:00.000Z');
+      vi.setSystemTime(fake.now);
+      const seen: string[] = [];
+      const stop = fake.midnight!(() => seen.push(board.today));
+      expect(vi.getTimerCount()).toBe(1);
+      fake.now += 59_000;
+      vi.advanceTimersByTime(59_000);
+      expect(seen).toEqual([]);
+      fake.now += 2_000;
+      vi.advanceTimersByTime(2_000);
+      expect(seen).toEqual(['2026-11-07']);
+      expect(vi.getTimerCount()).toBe(1);
+      stop();
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('adds, edits, ticks, deletes, restores and purges as the record’s ops, each after what it replaces', () => {
     const id = board.addTask({ title: ' Book the hall ', cat: 'Venue', due: '2027-01-10', start: '2026-12-01' })!;
     expect(fake.sent.at(-1)).toMatchObject({ type: 'wtask', data: { id, title: 'Book the hall', cat: 'Venue', due: '2027-01-10', start: '2026-12-01' } });
@@ -93,7 +126,8 @@ describe('the board', () => {
     expect(board.addSub(s, 'grandchild')).toBeNull();
     expect(board.tasks[0].subtasks.map((x) => x.title)).toEqual(['Call them']);
     expect(board.editTask(id, { title: 'Hall', start: '' })).toBe(true);
-    expect(board.task(id)).toMatchObject({ title: 'Hall', start: '', due: '2027-01-10' });
+    expect(board.tasks[0]).toMatchObject({ title: 'Hall', start: '', due: '2027-01-10' });
+    expect(board.editTask(id, { due: '2027-02-30' })).toBe(false);
     expect(board.editTask(s, { due: '2027-01-01' })).toBe(false);
     expect(board.tick(s)).toBe(true);
     expect(board.tasks[0].progress.percent).toBe(1);
@@ -106,14 +140,29 @@ describe('the board', () => {
     expect(board.restore(id)).toBe(true);
     expect(board.tasks[0].subtasks).toHaveLength(1);
     // purge: only what's deleted, final
-    expect(board.purge(id)).toBe(false);
+    expect(board.purge()).toBe(false);
     board.remove(id);
     expect(board.purge()).toBe(true);
     expect(board.deleted).toEqual([]);
-    expect(board.task(id)).toBeNull();
+    expect(board.tasks).toEqual([]);
     expect(board.tick(id)).toBe(false);
     const ats = fake.sent.map((x) => x.data.at as number);
     expect(new Set(ats).size).toBe(ats.length);
+  });
+
+  it('stamps on the relay’s own clock, never a `?date=` preview’s', () => {
+    fake.now = T + 30 * 86_400_000;
+    fake.server = T + 1e6;
+    board.addTask({ title: 'x', due: '2027-01-10' });
+    expect(fake.sent.at(-1)!.data.at).toBe(T + 1e6);
+  });
+
+  it('a purge frees a live subtask of a purged task (added while it was deleted): a task of its own, still editable', () => {
+    fake.rows = [task(T - 9, 'p', { del: T - 9 }), task(T - 8, 's', { due: undefined, parent: 'p' })];
+    expect(board.purge()).toBe(true);
+    expect(fake.sent.map((x) => [x.type, x.data.id, x.data.rm ?? x.data.parent ?? null])).toEqual([['wtask', 'p', true], ['wtask', 's', null]]);
+    expect(board.tasks.map((t) => [t.id, t.parentId])).toEqual([['s', '']]);
+    expect(board.editTask('s', { title: 'still mine', due: '2027-01-10' })).toBe(true);
   });
 
   it('the notes: a save names the version it was edited from; two crossed saves show both until the next', () => {
@@ -129,6 +178,21 @@ describe('the board', () => {
     expect(board.conflict).toBeNull();
     expect(board.note).toMatchObject({ md: 'v2 (A)' });
     expect(board.saveNote('x'.repeat(64_001))).toBe(false);
+    // within the characters but past the record's JSON cap (control characters escape to six): refused here, never
+    // queued for the record to drop
+    expect(board.saveNote('\u0001'.repeat(64_000))).toBe(false);
+    expect(fake.sent.at(-1)!.data.md).toBe('v2 (A)');
+  });
+
+  it('a note saved offline over one saved meanwhile: both kept, the conflict shown', () => {
+    fake.rows = [rec(T - 5, 'B', 'wnote', { at: T - 5, md: 'v1' })];
+    const from = board.note!.at;
+    // my save, stamped before B's reached this phone
+    fake.server = T - 3;
+    expect(board.saveNote('mine', from)).toBe(true);
+    fake.rows.push(rec(T - 2, 'B', 'wnote', { at: T - 2, md: 'B’s', base: T - 5 }));
+    fake.queued = [...fake.queued];
+    expect(board.conflict).toMatchObject({ current: { md: 'mine', who: 'A' }, other: { md: 'B’s', who: 'B' } });
   });
 
   it('settings: one op a key', () => {

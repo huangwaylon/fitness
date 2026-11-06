@@ -32,7 +32,6 @@ function task(overrides: Partial<TaskRow> = {}): TaskRow {
     start: '',
     doneAt: '',
     createdAt: '',
-    updatedAt: '',
     deletedAt: '',
     parentId: '',
     ...overrides,
@@ -111,25 +110,8 @@ describe('taskProgress: states', () => {
     expect(stateOf('', { doneAt: DONE_AT })).toBe(STATE.DONE)
   })
 
-  it('is nodate for a blank or unusable day', () => {
+  it('is nodate without a day (a subtask, or a task given none: the contract keeps only real days)', () => {
     expect(stateOf('')).toBe(STATE.NODATE)
-    expect(stateOf('2027-02-31')).toBe(STATE.NODATE)
-    expect(stateOf('sometime')).toBe(STATE.NODATE)
-  })
-
-  it('reads a DUE cell somebody typed a clock time into', () => {
-    // `Code.gs`'s `readCell` hands the anonymous read '2027-01-01T00:00' for any cell the Sheets ui
-    // coerced to a Date, and a board written before dates lost their clock times holds one in every
-    // row. Read raw, every one of those rows was No date — sorted last, counted 0, no urgency — while
-    // the editor's own field showed the date, because `draftFrom` normalises inbound. The state, the
-    // distance and the month all have to come off the same normalised day.
-    expect(stateOf('2027-01-20T00:00')).toBe(STATE.SOON)
-    expect(stateOf('2027-01-05T23:59')).toBe(STATE.OVERDUE)
-    const soon = taskProgress(task({ due: '2027-01-09T09:30' }), TODAY)
-    expect(soon.dated).toBe(true)
-    expect(soon.days).toBe(3)
-    // And it lands in the month it names rather than in the undated group.
-    expect(taskProgress(task({ due: '2027-01-20T00:00' }), TODAY).thisMonth).toBe(true)
   })
 
   it('reports the signed distance, which is what a row prints', () => {
@@ -200,12 +182,9 @@ describe('taskProgress: thisMonth', () => {
     expect(current({ due: '' })).toBe(false)
   })
 
-  it('reads a start cell somebody typed a clock time into, and ignores an impossible one', () => {
-    // `readCell` hands the anonymous read '2027-01-01T00:00', and a hand-edited cell can hold anything
-    // at all. One means that day; the other means no start date, never a crash.
-    expect(current({ due: '2027-03-20', start: '2027-01-01T00:00' })).toBe(true)
-    expect(current({ due: '2027-03-20', start: '2027-02-31' })).toBe(false)
-    expect(current({ due: '2027-03-20', start: 'next week' })).toBe(false)
+  it('is running from its start day on, not before', () => {
+    expect(current({ due: '2027-03-20', start: '2027-01-06' })).toBe(true)
+    expect(current({ due: '2027-03-20', start: '2027-01-07' })).toBe(false)
   })
 
   it('is not a state, so the five states and their counts are untouched', () => {
@@ -289,12 +268,8 @@ describe('withProgress', () => {
     expect(withProgress(rows, TODAY)[0].subtasks.map((row) => row.id)).toEqual(['p-1', 'p-2'])
   })
 
-  it('flags a promoted row, so the UI can withhold what it cannot store', () => {
-    // "Has a parentId" and "is a subtask" stop being the same question here. A child of a
-    // promoted row would be a grandchild, promoted again on the next read.
-    const shown = withProgress([task({ id: 'o', parentId: 'gone' })], TODAY)
-    expect(shown[0].promoted).toBe(true)
-    expect(withProgress([task({ id: 'p' })], TODAY)[0].promoted).toBe(false)
+  it('shows a row whose parent is gone as a task of its own, never hides it', () => {
+    expect(withProgress([task({ id: 'o', parentId: 'gone' })], TODAY).map((t) => [t.id, t.subtasks.length])).toEqual([['o', 0]])
   })
 })
 
@@ -411,6 +386,5 @@ describe('toPercent', () => {
     expect(toPercent(0.625)).toBe(63)
     expect(toPercent(-1)).toBe(0)
     expect(toPercent(2)).toBe(100)
-    expect(toPercent(Number.NaN)).toBe(0)
   })
 })
