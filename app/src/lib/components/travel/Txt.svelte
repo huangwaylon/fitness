@@ -17,7 +17,7 @@
 <style>
   /* a private value not in yet: a soft pill in the text's own line, never wider than its few dots */
   .lock {
-    display: inline-block; padding: 0 6px; margin: 0 1px; border-radius: var(--q-r-tag, 6px); white-space: nowrap;
-    background: var(--q-sunken, var(--hl)); color: var(--q-muted, var(--text-soft)); font-size: .9em; line-height: 1.4; letter-spacing: .08em;
+    display: inline-block; padding: 0 6px; margin: 0 1px; border-radius: var(--q-r-tag); white-space: nowrap;
+    background: var(--q-sunken); color: var(--q-muted); font-size: .9em; line-height: 1.4; letter-spacing: .08em;
   }
 </style>

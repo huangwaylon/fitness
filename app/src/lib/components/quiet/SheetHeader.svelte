@@ -39,5 +39,4 @@
   .sub { margin-left: 8px; font: var(--q-w) var(--q-fs-s)/1.2 var(--q-font); color: var(--q-muted); letter-spacing: 0; }
   .end { margin-left: auto; display: flex; }
   .q-hdr.over { background: none; padding: 0 4px; justify-content: space-between; }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 </style>

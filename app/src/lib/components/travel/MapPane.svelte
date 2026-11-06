@@ -96,5 +96,4 @@
   .nm { font-size: var(--q-fs-body); }
   .how { font-size: var(--q-fs-s); color: var(--q-muted); }
   .tm { flex: none; font-size: var(--q-fs-s); color: var(--q-ink-2); }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 </style>

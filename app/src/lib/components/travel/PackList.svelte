@@ -252,5 +252,4 @@
   .q-card > .add:first-child { border-top: 0; }
   .reset { color: var(--q-ink-2); gap: 8px; border-top: 1px solid var(--q-hairline); }
   .none { margin: 0; padding: 10px 16px 12px; border-top: 1px solid var(--q-hairline); font-size: var(--q-fs-s); color: var(--q-muted); }
-  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 </style>
