@@ -1,5 +1,5 @@
 {
-  "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. Every entry is built by `npm run audio:music -- <dir> [--only <key regex>]` (scripts/music.ts, its CATALOGUE: source track number -> key) from the user's own files; `npm run audio:music -- --gains` re-measures only the gains, `-- --hashes` rewrites only the hashes. Every entry carries `v`, its file's content hash (the app fetches file?v=, so a re-cut file is a new URL: /audio/* is cached as immutable); a file replaced by hand needs `--hashes`. A music entry is { file, start, end?, gain, v }: a loop is one seamless period (start = the second where the loop begins musically; playback starts there) plus a 3 s copy of the period's start, `end` = where the period ends (the engine's two decks hand over inside the copy); a one-shot has start 0 and no `end`. gain = dB to the common loudness (-16 LUFS). Music: AAC-LC stereo 44.1 kHz, 64 kbps (K.K.'s from the GameCube / e+ rip mono at 40: the rip is all but mono). music.<sunny|rain|snow>.<00-23> = the Tokyo hour's loop (music/hour-HH, rain-HH, snow-HH). opening = the opening theme (one-shot). events.<id> = the event music and cut-ins (src/lib/sound/events.ts EVENT_MUSIC_IDS), music/<id>. places.<id> = a room's loop (src/lib/sound/places.ts), places/<id>. K.K.'s songs and airchecks are in kk.json (loaded when first needed). sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts or its `like`'s): AAC .m4a, mono 44.1 kHz 64 kbps, { file, v } (no gain: the jingles from the OST, sfx/<id>, are trimmed, faded and normalised in the file to -16 LUFS as heard, from both speakers). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
+  "_readme": "Audio files for the app (docs/design.md#audio-files). Paths are relative to static/audio/. Add a file and its entry here; no code change. Every entry is built by `npm run audio:music -- <dir> [--only <key regex>]` (scripts/music.ts, its CATALOGUE: source track number -> key) from the user's own files; `npm run audio:music -- --gains` re-measures only the gains, `-- --hashes` rewrites only the hashes. Every entry carries `v`, its file's content hash (the app fetches file?v=, so a re-cut file is a new URL: /audio/* is cached as immutable); a file replaced by hand needs `--hashes`. A music entry is { file, start, end?, gain, v }: a loop is one seamless period (start = the second where the loop begins musically; playback starts there) plus a 3 s copy of the period's start, `end` = where the period ends (the engine's two decks hand over inside the copy); a one-shot has start 0 and no `end` (K.K.'s and the events' also `d`, the file's length in s: a shared stage's end, docs/sound-sync.md; `-- --durations` re-measures them). gain = dB to the common loudness (-16 LUFS). Music: AAC-LC stereo 44.1 kHz, 64 kbps (K.K.'s from the GameCube / e+ rip mono at 40: the rip is all but mono). music.<sunny|rain|snow>.<00-23> = the Tokyo hour's loop (music/hour-HH, rain-HH, snow-HH). opening = the opening theme (one-shot). events.<id> = the event music and cut-ins (src/lib/sound/events.ts EVENT_MUSIC_IDS), music/<id>. places.<id> = a room's loop (src/lib/sound/places.ts), places/<id>. K.K.'s songs and airchecks are in kk.json (loaded when first needed). sfx.<id> = a file for a sound id in src/lib/sound/ids.ts (without one, the id plays its procedural placeholder from src/lib/sound/synth.ts or its `like`'s): AAC .m4a, mono 44.1 kHz 64 kbps, { file, v } (no gain: the jingles from the OST, sfx/<id>, are trimmed, faded and normalised in the file to -16 LUFS as heard, from both speakers). ambient.<waves|birds|cicadas|higurashi|crickets|wind|rain> = mono loops of 10-30 s. The music files are user-provided and committed by the user's decision (docs/design.md#audio-files). Do not commit downloaded effects.",
   "sfx": {
     "get-fanfare": {
       "file": "sfx/get-fanfare.m4a",
@@ -644,7 +644,8 @@
       "file": "music/happy-new-year.m4a",
       "start": 0,
       "gain": -2.4,
-      "v": "fee200fc"
+      "v": "fee200fc",
+      "d": 18.4
     },
     "new-year-0am": {
       "file": "music/new-year-0am.m4a",
@@ -678,7 +679,8 @@
       "file": "music/bee-stung.m4a",
       "start": 0,
       "gain": 2.2,
-      "v": "42910643"
+      "v": "42910643",
+      "d": 11.5
     },
     "wedding-party": {
       "file": "music/wedding-party.m4a",
@@ -698,13 +700,15 @@
       "file": "music/turkey-cooking-start.m4a",
       "start": 0,
       "gain": -1.4,
-      "v": "3db86028"
+      "v": "3db86028",
+      "d": 4.5
     },
     "turkey-cooking-done": {
       "file": "music/turkey-cooking-done.m4a",
       "start": 0,
       "gain": 0.1,
-      "v": "19717bd2"
+      "v": "19717bd2",
+      "d": 5.1
     },
     "toy-day-snow": {
       "file": "music/toy-day-snow.m4a",
@@ -752,7 +756,8 @@
       "file": "music/happy-birthday.m4a",
       "start": 0,
       "gain": 3.6,
-      "v": "a272ffd6"
+      "v": "a272ffd6",
+      "d": 62.3
     },
     "aerobics": {
       "file": "music/aerobics.m4a",

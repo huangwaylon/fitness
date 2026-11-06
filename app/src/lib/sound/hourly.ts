@@ -18,6 +18,11 @@ export interface MusicTrack {
   start: number;
   end?: number;
   gain?: number;
+  /** A one-shot's length (s: the manifest's `d`), for a shared stage's end (docs/sound-sync.md). */
+  dur?: number;
+  /** A shared stage's track (docs/sound-sync.md): when its position 0 played, on this device's clock (ms). The engine
+   *  seeks to where it is now, and back there when it drifts. */
+  from?: number;
 }
 
 /** A track's `gain` (dB) as a linear deck level, clamped to −24…+12 dB (a typo in the manifest can't blast). */

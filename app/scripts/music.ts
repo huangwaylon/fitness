@@ -3,6 +3,7 @@
 //   node scripts/music.ts <source dir> [--only <regex over manifest keys>] [--dry]
 //   node scripts/music.ts --gains    only re-measure the committed files and rewrite their `gain`
 //   node scripts/music.ts --hashes   only rewrite every entry's content hash `v` (after replacing a file by hand)
+//   node scripts/music.ts --durations   only re-measure the one-shots' lengths `d` (K.K.'s, the events')
 // Source: the NH OST rip ("1-02. 1200 AM (Sunny).mp3": disc 1 sunny hours, 2 rain and snow, 3 places, 4 events and
 // jingles) and the GameCube / e+ rip ("150 - K.K. Chorale (LIVE).mp3"), each file named by its track number in
 // CATALOGUE. Loops: each OST rip plays its loop about twice and fades out. Find the loop period (the lag at which the
@@ -27,6 +28,7 @@ import { RADIO_HOLIDAYS, RADIO_SLOTS, RADIO_VARIANTS } from '../src/lib/sound/id
 import type { MusicTrack } from '../src/lib/sound/hourly.ts';
 
 const FFMPEG = process.env.FFMPEG ?? '/opt/homebrew/bin/ffmpeg';
+const FFPROBE = process.env.FFPROBE ?? '/opt/homebrew/bin/ffprobe';
 const OUT = join(import.meta.dirname, '../static/audio');
 const MANIFEST = join(import.meta.dirname, '../static/audio/manifest.json');
 /** K.K.'s songs and airchecks: their own file (the app loads it when first needed: src/lib/sound/kk.ts). */
@@ -468,8 +470,8 @@ const CATALOGUE = new Map<string, Row>([
   ])
 ]);
 
-/** A manifest entry as written: the app's MusicTrack plus its file's content hash. */
-type Entry = MusicTrack & { v?: string };
+/** A manifest entry as written: the app's MusicTrack plus its file's content hash and a one-shot's length (s). */
+type Entry = MusicTrack & { v?: string; d?: number };
 type Manifest = Record<string, unknown> & { kk?: (Entry & { id: string; ja?: string; en?: string })[] };
 
 /** Put an entry at a dotted key (`kk.<id>`: that song in the list, with its titles, in KK's order); the entry kept. */
@@ -521,6 +523,7 @@ function build(src: string, only: RegExp, dry: boolean): void {
   }
   if (dry) return;
   for (const e of built) e.gain = gainOf(e.file).gain;
+  writeDurations(man);
   writeHashes(man);
   writeManifest(man);
 }
@@ -571,6 +574,24 @@ function gainOf(file: string): { gain: number; i: number; tp: number } {
   return { ...l, gain: trackGain(l) };
 }
 
+/** A file's length (s, 0.1 steps), from ffprobe. */
+function durationOf(file: string): number {
+  const out = execFileSync(FFPROBE, ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', join(OUT, file)], { encoding: 'utf8' });
+  return Math.round(Number(out.trim()) * 10) / 10;
+}
+
+/** Write `d`, its length in seconds, on every one-shot (no `end`) a shared stage may play (docs/sound-sync.md: K.K.'s
+ *  songs and airchecks, the events' cut-ins): every phone knows when it ends without hearing it. */
+function writeDurations(man: Manifest): void {
+  for (const k of ['kk', 'kkAircheck', 'events']) {
+    for (const [name, e] of entries(man[k], false, k)) {
+      if (e.end !== undefined) continue;
+      e.d = durationOf(e.file);
+      console.log(`${name.padEnd(28)} ${e.d} s`);
+    }
+  }
+}
+
 /** Measure every music file in the manifest and write its `gain`. */
 function writeGains(man: Manifest): void {
   for (const [name, e] of entries(man, true)) {
@@ -583,15 +604,16 @@ function writeGains(man: Manifest): void {
 
 function main(): void {
   const args = process.argv.slice(2);
-  if (args[0] === '--gains' || args[0] === '--hashes') {
+  if (args[0] === '--gains' || args[0] === '--hashes' || args[0] === '--durations') {
     const man = readManifest();
     if (args[0] === '--gains') writeGains(man);
+    if (args[0] === '--durations') writeDurations(man);
     writeHashes(man);
     writeManifest(man);
     return;
   }
   const [src] = args;
-  if (!src || src.startsWith('--')) throw new Error('usage: node scripts/music.ts <source dir> [--only <regex>] [--dry] | --gains | --hashes');
+  if (!src || src.startsWith('--')) throw new Error('usage: node scripts/music.ts <source dir> [--only <regex>] [--dry] | --gains | --hashes | --durations');
   const only = args.indexOf('--only');
   build(src, new RegExp(only > 0 ? args[only + 1] : '.'), args.includes('--dry'));
 }
