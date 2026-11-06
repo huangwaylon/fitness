@@ -95,13 +95,15 @@ and stay in the content.
 ## Maps
 
 - **Renderer:** `maplibre-gl` (devDependency, its CSP build: `setWorkerUrl` with the worker file served from
-  `_app/immutable`, no `blob:` worker), `pmtiles` for the protocol, loaded in the trip map's lazy chunk only.
-- **Data:** Protomaps basemap extracts (OpenStreetMap, ODbL; "© OpenStreetMap" shown) cut with `pmtiles extract` per
-  region, z15. Measured 2026-11-06: Okinawa 19 MB; NZ an overview z12 23 MB + Auckland 8.5 / Waitomo 1.9 / New
-  Plymouth 3.2 / Taranaki 5.9 MB; Seattle overview z12 9 MB + Cascades 15 MB. Hosted on R2, served by the relay (route
-  and online/offline policy: open question below).
-- **Style:** our own NookPhone theme on the Protomaps v4 layers: sea `--c-sea`, land cream / soft green, roads pale,
-  labels in Zen Maru Gothic via `localIdeographFontFamily` (Latin glyph PBFs self-hosted, ≈ 270 KB), names in the
+  `_app/immutable`, no `blob:` worker), loaded in the trip map's lazy chunk only.
+- **Data:** OpenFreeMap's public vector tiles (OpenMapTiles schema, OpenStreetMap data; TileJSON
+  `https://tiles.openfreemap.org/planet`, z0–14, overzoomed past 14), its glyphs and sprite: one host,
+  `tiles.openfreemap.org`, the one third party the phones contact (it sees the IP and the area viewed; no trip data
+  goes there). **Online only** (the user, 2026-11-06): nothing downloaded ahead of time, only the browser's own cache.
+  Attribution shown: OpenFreeMap, © OpenMapTiles, © OpenStreetMap. The source sits in one module so self-hosting
+  (Protomaps on R2, researched 2026-11-06) stays a swap.
+- **Style:** our own NookPhone theme on the OpenMapTiles layers: soft sea blue, land cream / soft green, roads pale,
+  labels in Zen Maru Gothic via `localIdeographFontFamily` for CJK (Latin from OpenFreeMap's glyphs), names in the
   reader's locale (`name:ja` / `name:en`, fallback `name`).
 - **Overlays:** the trip's legs as GeoJSON lines in the day colours, stops as NH pins (numbered per day), the candidate
   layers, and the location dot (`geolocation=(self)` in the Permissions-Policy; asked only when the user taps the
@@ -135,5 +137,4 @@ never prefetch.
 
 ## Open questions
 
-- Maps online vs offline (the user, 2026-11-06: "does it have to be downloaded or can it just be loaded when we're
-  online?") — pending.
+- (none yet)
