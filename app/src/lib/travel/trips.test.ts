@@ -1,5 +1,5 @@
-// The port of the old travel-plans guides (docs/travel.md "Content"): the counts pinned against the source page, and
-// the data's own rules (links, coordinates, tokens, private keys, photos).
+// The trip guides' data (docs/travel.md "Content"): its own rules (days, links, coordinates, legs, tokens, private keys,
+// photos, the packing seed's ids).
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -20,13 +20,6 @@ const NOTE_KEYS: Record<TripId, string[]> = {
   nz: ['flightRef', 'expediaRef', 'traveller1', 'traveller2']
 };
 
-/** Counted from the source page (index.html: each day card's timeline rows, its outlinks) and its map tables. */
-const SOURCE = {
-  okinawa: { rows: [12, 11, 16], links: 29, stops: [8, 6, 9], camps: 26, nature: 9, food: 11, packing: [4, 6, 7, 8, 4, 6] },
-  seattle: { rows: [3, 6, 0, 4, 5, 4, 5, 0, 0, 3, 0, 5, 5, 0, 5, 0, 5, 3], links: 8, stops: [], camps: 0, nature: 0, food: 0, packing: [9, 2, 6, 2] },
-  nz: { rows: [8, 7, 8, 10, 11, 10], links: 6, stops: [6, 7, 4, 6, 9, 7], camps: 0, nature: 0, food: 0, packing: [5, 6, 6, 5, 3, 4] }
-} satisfies Record<TripId, unknown>;
-
 /** Every L in a value, with where it is. */
 function texts(v: unknown, path = '', out: [string, L][] = []): [string, L][] {
   if (Array.isArray(v)) v.forEach((x, i) => texts(x, `${path}[${i}]`, out));
@@ -46,9 +39,8 @@ const hrefs = (t: Trip) => [
 ];
 const photos = (t: Trip) => [t.cover, t.hero, ...t.days.flatMap((d) => (d.photo ? [d.photo] : [])), ...t.logistics.flatMap((c) => (c.photo ? [c.photo] : [])), ...(t.camps ?? []).map((c) => c.photo)];
 
-describe('the trips, against the source', () => {
-  it('27 days: okinawa 3, seattle 18, nz 6, numbered and dated from the start to the end', () => {
-    expect(TRIP_IDS.map((id) => TRIPS[id].days.length)).toEqual([3, 18, 6]);
+describe('the trips', () => {
+  it('numbered and dated from the start to the end', () => {
     for (const t of Object.values(TRIPS)) {
       t.days.forEach((d, i) => {
         expect(d.n).toBe(i + 1);
@@ -57,52 +49,44 @@ describe('the trips, against the source', () => {
       expect(t.days.at(-1)?.date).toBe(t.end);
     }
   });
-  it.each(TRIP_IDS)('%s: each day has its timeline rows, and every link', (id) => {
-    const t = TRIPS[id];
-    expect(t.days.map((d) => d.rows.length)).toEqual(SOURCE[id].rows);
-    expect(hrefs(t).length - t.places.filter((p) => p.link).length).toBe(SOURCE[id].links);
-  });
-  it('seattle: 8 hikes, each with its stats and trail map', () => {
-    const hikes = seattle.days.filter((d) => d.kind === 'hike');
-    expect(hikes.length).toBe(8);
-    for (const d of hikes) {
+  it('a hike: its stats, its photo and its trail map', () => {
+    for (const d of Object.values(TRIPS).flatMap((t) => t.days.filter((d) => d.hike))) {
       expect(d.hike?.km).toBeGreaterThan(0);
       expect(d.hike?.gainM).toBeGreaterThan(0);
       expect(d.hike?.gpx).toMatch(/^https:\/\/huangwaylon\.github\.io\/gpx\/#\/trail\/[\w-]+$/);
-      expect(d.photo?.src).toMatch(/^travel\/seattle\//);
+      expect(d.photo?.src).toBeTruthy();
     }
   });
-  it.each(TRIP_IDS)('%s: the map stops per day, and the candidates', (id) => {
+  it.each(TRIP_IDS)('%s: the map stops numbered per day from 0, on the trip’s days', (id) => {
     const t = TRIPS[id];
-    const s = SOURCE[id];
-    expect(s.stops.map((_, i) => t.places.filter((p) => p.kind === 'stop' && p.day === i + 1).length)).toEqual(s.stops);
-    expect(t.places.filter((p) => p.kind === 'stop').length).toBe(s.stops.reduce((a, b) => a + b, 0));
-    expect(['camp', 'nature', 'food'].map((k) => t.places.filter((p) => p.kind === k).length)).toEqual([s.camps, s.nature, s.food]);
-    expect(t.camps?.length ?? 0).toBe(s.camps);
+    for (const d of t.days) {
+      const stops = t.places.filter((p) => p.kind === 'stop' && p.day === d.n);
+      expect(stops.map((p) => p.id)).toEqual(stops.map((_, i) => `s${d.n}-${i}`));
+    }
+    expect(t.places.filter((p) => p.kind === 'stop').every((p) => t.days.some((d) => d.n === p.day))).toBe(true);
   });
-  it('okinawa 23 stops + 46 candidates, nz 39 stops (6 + 7 + 4 + 6 + 9 + 7: the generator says 38, its table has 39)', () => {
-    expect([okinawa.places.length, nz.places.length]).toEqual([23 + 26 + 9 + 11, 39]);
-  });
-  it.each(TRIP_IDS)('%s: the packing seed, its categories and items, with stable ids', (id) => {
-    const t = TRIPS[id];
-    expect(t.packing.cats.map((c) => c.items.length)).toEqual(SOURCE[id].packing);
+  it.each(TRIP_IDS)('%s: the packing seed’s categories and items, with stable ids', (id) => {
     const prefix = { okinawa: 'ok', seattle: 'se', nz: 'nz' }[id];
-    t.packing.cats.forEach((c, ci) => {
+    TRIPS[id].packing.cats.forEach((c, ci) => {
       expect(c.id).toBe(`${prefix}-${ci}`);
       c.items.forEach((it, ii) => expect(it.id).toBe(`${prefix}-${ci}-${ii}`));
     });
   });
-  it('83 packing items in all: 35 / 19 / 29', () => {
-    expect(TRIP_IDS.map((id) => TRIPS[id].packing.cats.reduce((n, c) => n + c.items.length, 0))).toEqual([35, 19, 29]);
-  });
-  it('the campsites: one place each, the filter flags as the source chips them', () => {
+  it('the campsites: a camp pin each, the filter flags as the source chips them', () => {
     for (const c of okinawa.camps ?? []) {
-      expect(okinawa.places.find((p) => p.id === c.place)?.kind).toBe('camp');
+      expect(okinawa.places.find((p) => p.id === c.id)?.kind).toBe('camp');
       expect(c.photo.src).toBe(`travel/okinawa/camps/${c.id}.webp`);
       for (const f of ['beach', 'toilet', 'shower'] as const) if (c[f]) expect(c.chips.some((ch) => ch.text.en?.toLowerCase() === f)).toBe(true);
     }
-    expect((okinawa.camps ?? []).filter((c) => c.type === 'wild').length).toBe(15);
+    expect(okinawa.places.filter((p) => p.kind === 'camp').length).toBe(okinawa.camps?.length);
     expect((okinawa.camps ?? []).flatMap((c) => c.chips.filter((ch) => ch.pick).map((ch) => ch.text.en))).toEqual(expect.arrayContaining(['Night 1', 'Night 2']));
+  });
+  it.each(TRIP_IDS)('%s: a row’s own zone is a real one, never the trip’s', (id) => {
+    for (const r of TRIPS[id].days.flatMap((d) => d.rows)) {
+      if (!r.tz) continue;
+      expect(r.tz).not.toBe(TRIPS[id].tz);
+      expect(() => new Intl.DateTimeFormat('en', { timeZone: r.tz })).not.toThrow();
+    }
   });
 });
 

@@ -1,12 +1,10 @@
-// The seattle guide (docs/travel.md "Content"), generated once by scripts/travel-extract.ts from the old travel-plans
-// site (index.html, the .map tables and OSRM legs), then the source: edit here. Private values are {p:key} tokens
-// (the trip note on the relay).
+// The seattle guide (docs/travel.md "Content"), ported from the old travel-plans site (its page, map tables and OSRM
+// legs) and edited here since. Private values are {p:key} tokens (the trip note on the relay).
 import type { Trip } from '../types.ts';
 
 export const seattle: Trip = {
   id: "seattle",
-  lang: "en",
-  title: { en: "Seattle 2026" },
+  title: { en: "Seattle" },
   eyebrow: { en: "Cascades · 18 days" },
   sub: { en: "Jul 2 – Jul 19 · WA, USA" },
   start: "2026-07-02",
@@ -20,7 +18,6 @@ export const seattle: Trip = {
     {
       n: 1,
       date: "2026-07-02",
-      kind: "travel",
       icon: "plane-landing",
       title: { en: "Arrival & Errands" },
       rows: [
@@ -46,7 +43,6 @@ export const seattle: Trip = {
     {
       n: 2,
       date: "2026-07-03",
-      kind: "hike",
       icon: "waves",
       title: { en: "Lake 22" },
       rows: [
@@ -79,7 +75,6 @@ export const seattle: Trip = {
     {
       n: 3,
       date: "2026-07-04",
-      kind: "day",
       icon: "sparkles",
       title: { en: "4th of July" },
       rows: [],
@@ -101,7 +96,6 @@ export const seattle: Trip = {
     {
       n: 4,
       date: "2026-07-05",
-      kind: "day",
       icon: "building",
       title: { en: "Seattle City Day" },
       rows: [
@@ -135,7 +129,6 @@ export const seattle: Trip = {
     {
       n: 5,
       date: "2026-07-06",
-      kind: "hike",
       icon: "waves",
       title: { en: "Snow Lake" },
       rows: [
@@ -167,7 +160,6 @@ export const seattle: Trip = {
     {
       n: 6,
       date: "2026-07-07",
-      kind: "day",
       icon: "sprout",
       title: { en: "Farms & Alpacas" },
       rows: [
@@ -180,7 +172,6 @@ export const seattle: Trip = {
     {
       n: 7,
       date: "2026-07-08",
-      kind: "hike",
       icon: "mountain-snow",
       title: { en: "Skyline Trail Loop" },
       rows: [
@@ -212,7 +203,6 @@ export const seattle: Trip = {
     {
       n: 8,
       date: "2026-07-09",
-      kind: "day",
       icon: "droplets",
       title: { en: "Snoqualmie Falls" },
       rows: [],
@@ -229,7 +219,6 @@ export const seattle: Trip = {
     {
       n: 9,
       date: "2026-07-10",
-      kind: "day",
       icon: "tent",
       title: { en: "Leavenworth" },
       rows: [],
@@ -246,7 +235,6 @@ export const seattle: Trip = {
     {
       n: 10,
       date: "2026-07-11",
-      kind: "hike",
       icon: "mountain-snow",
       title: { en: "The Enchantments" },
       rows: [
@@ -276,7 +264,6 @@ export const seattle: Trip = {
     {
       n: 11,
       date: "2026-07-12",
-      kind: "day",
       icon: "teacup",
       title: { en: "Bro Day" },
       rows: [],
@@ -297,7 +284,6 @@ export const seattle: Trip = {
     {
       n: 12,
       date: "2026-07-13",
-      kind: "hike",
       icon: "waves",
       title: { en: "Lake Serene" },
       rows: [
@@ -329,7 +315,6 @@ export const seattle: Trip = {
     {
       n: 13,
       date: "2026-07-14",
-      kind: "hike",
       icon: "mountain",
       title: { en: "Mt Pilchuck" },
       rows: [
@@ -361,7 +346,6 @@ export const seattle: Trip = {
     {
       n: 14,
       date: "2026-07-15",
-      kind: "day",
       icon: "sailboat",
       title: { en: "SUP Day" },
       rows: [],
@@ -379,7 +363,6 @@ export const seattle: Trip = {
     {
       n: 15,
       date: "2026-07-16",
-      kind: "hike",
       icon: "waves",
       title: { en: "Lake Valhalla" },
       rows: [
@@ -411,7 +394,6 @@ export const seattle: Trip = {
     {
       n: 16,
       date: "2026-07-17",
-      kind: "day",
       icon: "shopping-bag",
       title: { en: "Souvenirs & Ballard" },
       rows: [],
@@ -432,7 +414,6 @@ export const seattle: Trip = {
     {
       n: 17,
       date: "2026-07-18",
-      kind: "hike",
       icon: "waves",
       title: { en: "Lake Talapus" },
       rows: [
@@ -464,7 +445,6 @@ export const seattle: Trip = {
     {
       n: 18,
       date: "2026-07-19",
-      kind: "travel",
       icon: "plane-takeoff",
       title: { en: "Fly Home to Japan" },
       rows: [

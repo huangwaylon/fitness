@@ -1,12 +1,13 @@
 // The guides' text on screen (docs/travel.md "Data shape"): a pair shown in the reader's locale, else the other side
 // (Seattle's guide is English only; a text-only side like 'SNA 021' is the guide's own), and its inline tokens as
 // parts: `{km:}` in the phone's units (units.ts), `{m:}` / `{c:}` metric or imperial with it, `{p:key}` the trip
-// note's value, or locked while the note isn't in.
+// note's value, or locked while the note isn't in; its Japanese cut where a line may break (between words, never
+// inside one: ニュープリマス, 予約番号); and where a trip stands, in words.
 import { parseTokens } from '#lib/travel/tokens.ts';
 import type { L } from '#lib/travel/types.ts';
+import { t, type Locale } from '#lib/i18n/index.ts';
 import { fmtKm, units } from './units.ts';
-
-type Locale = 'ja' | 'en';
+import type { Phase } from './when.ts';
 
 /** The reader's side of a pair, else the other ('' for none). */
 export const pick = (l: L | undefined | null, locale: Locale): string => (l ? (l[locale] ?? l[locale === 'ja' ? 'en' : 'ja'] ?? '') : '');
@@ -49,4 +50,46 @@ export function hrefOf(href: string, note: Record<string, string> | null): strin
   const parts = render(href, note);
   if (parts.length !== 1 || parts[0].k !== 'text') return null;
   return /^https:\/\//.test(parts[0].s) ? parts[0].s : null;
+}
+
+/** A string with its private values as plain text (a locked one as ・・・): Orville's line. */
+export const plain = (s: string, note: Record<string, string> | null): string => render(s, note).map((p) => (p.k === 'text' ? p.s : '・・・')).join('');
+
+/** Where a trip stands, in words: 「あと 97にち」, 「あした しゅっぱつ」, 「いま 2日目」, 「いってきた」. */
+export const phaseLabel = (p: Phase): string =>
+  p.k === 'now' ? t('travel.nowAria', { n: p.day }) : p.k === 'past' ? t('travel.stamp') : p.days === 1 ? t('travel.tomorrowAria') : t('travel.soonAria', { n: p.days });
+
+const JA = /[\u3040-\u30ff\u3400-\u9fff]/;
+const KANA = /^[\u30a0-\u30ffー]+$/;
+const HIRA = /^[\u3041-\u309f]+$/;
+/** Closing punctuation and the like: kept with the word before it. */
+const TAIL = /^[、。，．・）」』】〕！？：；…ー〜]+$/;
+/** A counter after a number (2月, 10日, 3日間, 10時間): kept with it. */
+const COUNTER = /^[\u3400-\u9fff]{1,2}$/;
+let seg: Intl.Segmenter | null | undefined;
+const cuts = new Map<string, string[]>();
+
+/**
+ * A text's pieces between which a line may break (the guides' text is `word-break: keep-all`, so these are its only
+ * breaks in Japanese): ICU's words (Intl.Segmenter), with a particle or okurigana, closing punctuation, a katakana
+ * word's next part (ニュー + プリマス) and a number's counter kept on the word before. A string with no Japanese, or
+ * a browser without the segmenter, is one piece (it breaks at its spaces). Memoised per string.
+ */
+export function pieces(s: string): string[] {
+  let out = cuts.get(s);
+  if (out) return out;
+  seg ??= typeof Intl.Segmenter === 'function' ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
+  out = [];
+  if (!seg || !JA.test(s)) out.push(s);
+  else {
+    let prev = '';
+    for (const { segment: w } of seg.segment(s)) {
+      const glue = out.length > 0 && !/\s$/.test(prev) && (HIRA.test(w) || TAIL.test(w) || (KANA.test(w) && KANA.test(prev)) || (/\d$/.test(prev) && COUNTER.test(w)));
+      if (glue) out[out.length - 1] += w;
+      else out.push(w);
+      prev = w;
+    }
+  }
+  cuts.set(s, out);
+  return out;
 }
