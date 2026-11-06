@@ -22,8 +22,10 @@ import MODELS from './models.json' with { type: 'json' };
 /** His piece's kind and its id on the default layout (one to an island). */
 const KK_KIND = 'kk-stool';
 const KK_ID = 'kk-slider';
-/** The stool's height (u): the log stool's (catalog.ts log-stool), its seat where he sits. */
-export const KK_STOOL_H = 19;
+/** The stool's height (u, the 2D art's measure: catalog.ts log-stool's is 19): NH's log stool a size up, so it shows
+ *  under him with his feet hanging off it (at the log stool's own 19 a seated K.K. facing us hid it whole, and he
+ *  looked to be standing on the spot with no stool: the user, "the stool should follow where K.K. Slider is placed"). */
+export const KK_STOOL_H = 30;
 /** Its seat's top (u over the ground): the log stool's own seat (villager3d/seats3d.json) at that height. */
 export const KK_SEAT = ((mu) => anchorsOf(shapeOf('island', 'log-stool'), { x: 0, z: 0, y: 0, yaw: 0, s: KK_STOOL_H / mu })[0]?.y ?? KK_STOOL_H * 0.66)(
   (MODELS as unknown as Record<string, { mu: [number, number] }>)['deco/log-stool']?.mu[1] ?? 6.3
@@ -39,7 +41,9 @@ export function kkMode(weekday: number, hour: number): KKMode {
 }
 
 /** Where he sits: his stool's middle on the layout (world u), its facing and the yaw he faces with it (three's, as the
- *  stool's model: nav.ts yawOf), or null (an island with no stool: never, it's never deleted, but a layout may lack it). */
+ *  stool's model: nav.ts yawOf), the one source for both (world3d/objects.ts stands the stool at objMid / yawOf of
+ *  the same piece; his figure stands on the ground under the stool, its heightAt, not where feet walk: a stool moved
+ *  onto a bridge stands under the deck, and he sits on it there), or null (an island with no stool: never, it's never deleted, but a layout may lack it). */
 export function kkSpot(layout: Layout): { x: number; z: number; f: number; yaw: number; id: string } | null {
   const o = layout.objects.get(KK_ID) ?? [...layout.objects.values()].find((p) => p.k === KK_KIND);
   if (!o) return null;

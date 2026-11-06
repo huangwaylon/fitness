@@ -281,7 +281,8 @@
     s.id = id;
     s.x = x;
     s.z = z;
-    s.y = feetOf(x, z);
+    // (seated, K.K.: on the ground his stool stands on, the things' heightAt, not the walk's feet: a bridge's deck)
+    s.y = v.seat !== undefined ? heightOf(x, z) : feetOf(x, z);
     s.walking = a.walking;
     s.face = a.face === 'in' ? 'home' : a.face;
     s.prone = v.prone();

@@ -2192,7 +2192,11 @@ front free there); where an island's own pieces take that tile, the editor flags
 museum and the shop are. He's no visitor any more (`visitors.ts`: not in the schedule, so never
 twice), and he's there every day, NH's own model (the visitors' GLB, 58 KB, loaded the first time he's in view, then
 kept, hidden out of view) sitting on NH's log stool and facing its way (`world3d/villagers.ts` slot `kk`, the
-director's actor `kk`; posed only while something moves, as the villagers are). What he's up to goes by the Tokyo
+director's actor `kk`; posed only while something moves, as the villagers are). The stool is the log stool a size up
+(`KK_STOOL_H` 30, ~20u high and ~27u across), his feet hanging off it: at the log stool's own size he hid it whole
+and seemed to stand on the spot with no stool. One source for both: the piece's middle and yaw (`kkSpot`, the same
+`objMid` / `yawOf` `world3d/objects.ts` stands the stool with), his figure on the ground the stool stands on (its
+`heightAt`, not the walk's feet: on a bridge the stool stands under the deck, and so does he). What he's up to goes by the Tokyo
 clock (`kkMode`; `?kk=show|day|asleep` in dev or `?demo`):
 - **His show, Saturday 18:00–24:00** (NH's concert; the plaza has no visitor then): a tap is his
   greeting with NH's choice box, **リクエスト** (two songs, or ほかの 曲) or **おまかせ**. The island's music stops for

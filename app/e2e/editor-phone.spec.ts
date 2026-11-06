@@ -97,3 +97,57 @@ test("the editor's move, placement, paste and undo show the same on a phone, eve
   expect(at[0]!.x).toBeCloseTo(pos![0], 0);
   expect(pos![0]).toBe(oakAt[0] - 30);
 });
+
+// K.K. and his stool one piece (the user: "move his stool to where we've placed him on the map … the stool should follow
+// where K.K. Slider is placed"): the stool moved in the editor, on both phones (A's tab and B's) K.K. sits where its
+// model stands, his head over it and up off its ground (seated on it), live and after a reload.
+type KK3 = { stool: { x: number; y: number; z: number; model: string } | null; kk: { x: number; z: number; shown: boolean } | null; head: number[] | null; model: string | null; pos: [number, number] | null };
+const kk3 = (page: Page) => page.evaluate((): KK3 => {
+  const w = window as unknown as {
+    __world3d: { where(id: string): { x: number; y: number; z: number; model: string } | null; head(slot: string): number[] | null };
+    __villagers3?: { last(slot: string): { x: number; z: number; shown: boolean } | null; model(slot: string): string | null };
+    __layout: { pos(id: string): [number, number] | null };
+  };
+  const l = w.__villagers3?.last('kk');
+  return { stool: w.__world3d.where('kk-slider'), kk: l ? { x: l.x, z: l.z, shown: l.shown } : null, head: w.__world3d.head('kk'), model: w.__villagers3?.model('kk') ?? null, pos: w.__layout.pos('kk-slider') };
+});
+/** K.K. seated on his stool at (x, z) on this phone: the layout, his spec, the stool's model and his head over it. */
+async function seatedAt(phone: Page, x: number, z: number) {
+  await phone.evaluate(([x, z]) => (window as unknown as { __world3d: { focus(x: number, z: number, lift?: number): void } }).__world3d.focus(x, z, 20), [x, z]);
+  await expect.poll(async () => (await kk3(phone)).model, { timeout: 20_000 }).toBe('kk-slider');
+  await expect.poll(async () => {
+    const s = await kk3(phone);
+    if (!s.stool || !s.kk || !s.head || !s.pos) return null;
+    // (three's z is the world's −z; his head over the stool's middle within a few u: seated, he's nudged 2u back)
+    return { pos: s.pos, kk: [s.kk.x, s.kk.z, s.kk.shown], stool: [s.stool.x, -s.stool.z, s.stool.model], over: Math.hypot(s.head[0] - s.stool.x, s.head[2] - s.stool.z) < 4, up: s.head[1] - s.stool.y > 20 };
+  }, { timeout: 15_000 }).toEqual({ pos: [x, z], kk: [x, z, true], stool: [x, z, 'log-stool'], over: true, up: true });
+}
+
+test("K.K.'s stool moved in the editor: on both phones he sits on it where it went, and after a reload", async ({ context }) => {
+  test.setTimeout(120_000);
+  const editor = await context.newPage(), a = await context.newPage(), b = await context.newPage();
+  for (const p of [a, b]) await p.setViewportSize({ width: 393, height: 659 });
+  await a.goto(`?demo&date=${DATE}&critter=none&visitor=none`);
+  await b.goto(`?demo&as=B&date=${DATE}&critter=none&visitor=none`);
+  for (const p of [a, b]) expect(await is3d(p)).toBe(true);
+  const at0 = (await kk3(a)).pos!;
+  for (const p of [a, b]) {
+    await p.bringToFront();
+    await seatedAt(p, ...at0);
+  }
+
+  await editor.goto(`editor/?demo&preview=0&date=${DATE}`);
+  await editor.waitForFunction(() => (window as unknown as { __editor?: unknown }).__editor);
+  await editor.bringToFront();
+  const st = (await objs(editor)).find((o) => o.id === 'kk-slider')!;
+  await dragTile(editor, [st.x, st.z], [st.x + 2, st.z + 1]);
+  await expect.poll(async () => (await objs(editor)).find((o) => o.id === 'kk-slider')).toMatchObject({ x: st.x + 2, z: st.z + 1 });
+  const at1: [number, number] = [at0[0] + 60, at0[1] + 30];
+  for (const p of [a, b]) {
+    await p.bringToFront();
+    await seatedAt(p, ...at1);
+  }
+  await b.reload();
+  expect(await is3d(b)).toBe(true);
+  await seatedAt(b, ...at1);
+});

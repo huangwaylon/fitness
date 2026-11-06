@@ -158,7 +158,7 @@
           kkOn = !!s;
           if (!s) return kick();
           const j = jst(now());
-          Object.assign(kkSpec, { x: s.x, z: s.z, y: ground.feet(s.x, s.z), yaw: s.yaw, asleep: (hookOneOf('kk', KK.KK_MODES) ?? KK.kkMode(j.weekday, j.hour)) === 'asleep', shown: s.id !== heldId });
+          Object.assign(kkSpec, { x: s.x, z: s.z, y: ground.heightAt(s.x, s.z), yaw: s.yaw, asleep: (hookOneOf('kk', KK.KK_MODES) ?? KK.kkMode(j.weekday, j.hour)) === 'asleep', shown: s.id !== heldId });
           if (!vil && !vilLoading) {
             vilLoading = true;
             void import('../world3d/villagers.ts').then(({ createVillagers }) => {
