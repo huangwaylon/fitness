@@ -1,6 +1,6 @@
 // ごはん's small helpers (docs/design.md "Gohan"): the catalog loaded once a session, an entry's amount in words, the
-// food an entry was logged from (its catalog item when the catalog has it, for its portions; else its own portion), the
-// さいきん list, a portion's start and step, whose day kept for the session, a repeat's weekdays in words, and a recipe
+// food an entry was logged from (its catalog item when the catalog has it, for its portions; else its own portion), a
+// row's everyday name, the さいきん list, a portion's start and step, whose day kept for the session, a repeat's weekdays in words, and a recipe
 // as a food (マイレシピ: its portions), and a custom food as a food and its editor's fields (マイ食品).
 import type { Who } from '#lib/types.ts';
 import {
@@ -9,6 +9,7 @@ import {
 } from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
 import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
+import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
 import { nextChance } from '#lib/ui-state/retry.ts';
 
@@ -68,10 +69,43 @@ export const halfWidth = (text: string): string => text.replace(/[０-９．，]
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
  *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
 export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {
-  const it = db?.entries.find((e) => e.it.id === f.id)?.it;
+  const it = catalogOf(db, f.id);
   const own = it ? null : snapPortion(f.u, g);
   return { ...(it ?? {}), ...(own ? { portions: [own] } : {}), id: f.id, name: f.n, ...snapValues(f) };
 }
+/** The catalog's item of an id, if the catalog is in and has it. */
+export const catalogOf = (db: FoodDb | null, id: string): Item | undefined => db?.entries.find((e) => e.it.id === id)?.it;
+
+/** A name's head: up to its first space or bracket (「鶏もも肉 皮つき 生」 → 鶏もも肉). */
+const headOf = (s: string): string => s.trim().split(/[\s　（(［[]/)[0];
+/** Dakuten and small っ folded, so a reading matches with its sounds voiced or not (もめんどうふ holds とうふ). */
+const fold = (k: string): string => k.normalize('NFD').replace(/[\u3099\u309a]/g, '').replace(/っ/g, 'つ');
+const READING = /^[ぁ-ゖー\s　（）()・]+$/;
+const KANJI = /[\u4e00-\u9fff々]/;
+/** Whether an alias says something the name doesn't: not the name or a part of it, nor holding its head (生うどん),
+ *  nor a kana spelling of it (ウドン, トウフ: within one of its readings), nor a half-read one (合成せいしゅ), nor
+ *  mostly the head's own characters (焼鮭, お握り). */
+function says(a: string, name: string, readings: readonly string[]): boolean {
+  const k = searchKey(a), nk = searchKey(name), hk = searchKey(headOf(name));
+  if (!k || nk.includes(k) || (hk && k.includes(hk)) || readings.some((r) => r.includes(fold(k)))) return false;
+  if (/[ぁ-ゖ]/.test(a) && [...headOf(name)].some((c) => KANJI.test(c) && a.includes(c))) return false;
+  return [...k].filter((c) => hk.includes(c)).length * 2 < k.length;
+}
+
+/** A row's everyday name under its own (docs/design.md "Gohan"), never repeating it: the catalog's current name when
+ *  the row shows an older one (a snapshot's 「若どり もも 皮つき 生」 → 鶏もも肉), else the English name, else a short
+ *  alias that says more than the name (キャッサバでん粉 → タピオカ, うど → 独活), else nothing. The aliases are search
+ *  terms, readings and spellings mostly: an alias comes after `en` so a stray one (コーヒー牛乳's 珈琲) is seldom shown.
+ *  `it` is the catalog's item (or the row's own), `name` what the row shows. */
+export function glossOf(it: Item, name = it.name): string | null {
+  const readings = [name, ...(it.aliases ?? []).filter((a) => READING.test(a))].map((r) => fold(searchKey(r)));
+  const ok = (g: string | undefined): g is string => !!g && says(g, name, readings);
+  const now = headOf(it.name);
+  if (name !== it.name && ok(now)) return now;
+  if (ok(it.en)) return it.en;
+  return (it.aliases ?? []).map(headOf).find((a) => a.length <= 10 && !READING.test(a) && /[^\x00-\x7f]/.test(a) && ok(a)) ?? null;
+}
+
 /** A snapshot's values as an item's (fibre and alcohol only when known). */
 function snapValues(f: FoodSnap): Pick<Item, 'kcal' | 'p' | 'f' | 'c' | 'salt' | 'fib' | 'alc'> {
   return { kcal: f.k, p: f.p, f: f.fa, c: f.c, salt: f.s, ...(typeof f.fi === 'number' ? { fib: f.fi } : {}), ...(typeof f.al === 'number' ? { alc: f.al } : {}) };

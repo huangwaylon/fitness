@@ -1,8 +1,8 @@
 <script lang="ts">
   // ごはん's search (a level over the day, for one meal): a 16px search field (focused by the ＋ that opened it, in the
   // tap: Food's openSearch), then さいきん (my latest entry of each food, as I last had it, its portion with it) until
-  // something is typed, or the catalog's best matches (each: the name, a product's brand with its per 100 g, its
-  // default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
+  // something is typed, or the catalog's best matches (each: the name, a product's brand, its everyday name (glossOf)
+  // or else its kcal per 100 g, its default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
   // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
   // too (everyone's recipes: all of them after さいきん, the matching ones before the catalog's); a recipe opens its own.
@@ -21,7 +21,7 @@
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
-  import { amountText, defaultPortion, foodDb, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
+  import { amountText, catalogOf, defaultPortion, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -211,9 +211,10 @@
   {#if recent.length}
     <ul class="list" data-food-recent>
       {#each recent as e (e.id)}
+        {@const gl = glossOf(catalogOf(db, e.f.id) ?? itemOf(e.f, null), e.f.n)}
         <li class:rw={!!onquick}><button type="button" class="card it" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
           <span class="nm">{e.f.n}</span>
-          <small class="meta">{amountText(e)}</small>
+          <small class="meta"><span>{amountText(e)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(Math.round((e.f.k * e.g) / 100))}</b>
         </button>{#if onquick}{@render qa(e.f.n, () => onquick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}{/if}</li>
       {/each}
@@ -247,9 +248,10 @@
       {#each results as it (it.id)}
         {@const p = defaultPortion(it)}
         {@const v = verifyOf(db, it.id)}
-        <li class:rw={!!onquick}><button type="button" class="card it" data-sfx="page" data-item={it.id} onclick={() => onpick(it)}>
+        {@const gl = glossOf(it)}
+        <li class:rw={!!onquick}><button type="button" class="card it" data-sfx="page" data-item={it.id} data-per100={it.kcal} onclick={() => onpick(it)}>
           <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" role="img" data-verified={v.n} aria-label={t('food.verified', { n: v.n })}>{t('food.verifiedBadge', { n: v.n })}</i>{/if}</span>
-          <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{' · '}{/if}{t('food.per100', { k: formatNum(it.kcal) })}</small>
+          <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{' · '}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{:else}{t('food.per100', { k: formatNum(it.kcal) })}{/if}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
         </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}</li>
       {/each}
@@ -300,6 +302,10 @@
   }
   .meta { grid-area: meta; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow-wrap: anywhere; }
   .br { color: var(--text); }
+  /* the everyday name: one line, cut short (the row keeps its two lines) */
+  .meta:has(.gl) { display: flex; min-width: 0; white-space: pre; }
+  .gl, .meta:has(.gl) .br { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .meta:has(.gl) > :not(.gl, .br) { flex: none; }
   .fail { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
   .fail .btn { margin: 0; }
   .kc { grid-area: kc; display: grid; justify-items: end; gap: 3px; font-size: var(--fs-body); white-space: nowrap; }

@@ -1,11 +1,11 @@
 // ごはん's helpers (foodUi.ts): a portion in words, the snapshot's own portion, the amount's start and step, the 最近
-// list, the kcal goal field and its chip, the repeat's days and the same-items check, the search's duplicates.
+// list, a row's everyday name, the kcal goal field and its chip, the repeat's days and the same-items check, the search's duplicates.
 import { describe, expect, it } from 'vitest';
 import '#lib/i18n/food.ts';
 import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
 import type { Item, Portion } from '#lib/food/index.ts';
 import {
-  amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, goalChip, itemOf, matchPortion,
+  amountText, customDraft, customErrors, customItem, customOf, DAYS, daysText, defaultPortion, glossOf, goalChip, itemOf, matchPortion,
   parseAmount, portionLabel, portionText, quickDraft, quickErrors, quickSnap, recentOf, sameItems, servingText, startOf, stepOf, typedKcal,
   uniqueItems, unitOf
 } from './foodUi.ts';
@@ -45,6 +45,27 @@ describe('itemOf: a snapshot as an item', () => {
     const cat: Item = { id: 'mext:1', name: 'ごはん', kcal: 160, portions: [{ label: '茶碗1杯', g: 150 }, { label: '小盛り', g: 100 }] };
     const db = { entries: [{ it: cat }] } as unknown as Parameters<typeof itemOf>[1];
     expect(itemOf(snap('mext:1', '茶碗1杯'), db, 150)).toMatchObject({ kcal: 156, portions: cat.portions });
+  });
+});
+
+describe('glossOf: a row’s everyday name, never its own again', () => {
+  const item = (name: string, aliases: string[], en?: string): Item => ({ id: 'mext:1', name, aliases, kcal: 1, ...(en ? { en } : {}) });
+  it('the catalog’s name for an older one, else the English, else an alias that says more', () => {
+    const thigh = item('鶏もも肉 皮つき 生', ['鶏腿肉', 'チキン', 'とりももにく かわつき なま'], 'Chicken thigh, with skin (raw)');
+    expect(glossOf(thigh, '若どり もも 皮つき 生')).toBe('鶏もも肉');
+    expect(glossOf(thigh)).toBe('Chicken thigh, with skin (raw)');
+    expect(glossOf(item('キャッサバでん粉', ['タピオカ', 'きゃっさばでんこ']))).toBe('タピオカ');
+    expect(glossOf(item('うど 生', ['独活', 'うど なま']))).toBe('独活');
+    expect(glossOf(item('コーヒー牛乳', ['コーヒー乳飲料', '珈琲', 'カフェオレ'], 'Coffee milk'))).toBe('Coffee milk');
+  });
+  it('nothing that repeats the name: its readings, kana spellings, a part of it or more of it', () => {
+    expect(glossOf(item('塩納豆', ['しおなっとう']))).toBeNull();
+    expect(glossOf(item('木綿豆腐', ['トウフ', 'もめんどうふ']))).toBeNull(); // a kana spelling, voiced in the reading
+    expect(glossOf(item('うどん（生）', ['生うどん', 'ウドン', 'うどん 生', 'udon']))).toBeNull();
+    expect(glossOf(item('焼き鮭', ['焼鮭', 'やきさけ']))).toBeNull(); // mostly its own characters
+    expect(glossOf(item('合成清酒', ['合成せいしゅ', 'ごうせいせいしゅ']))).toBeNull(); // half read
+    expect(glossOf(item('ゴーダチーズ', ['ごーだちーず'], 'ゴーダチーズ'))).toBeNull();
+    expect(glossOf(item('キャッサバでん粉', ['タピオカでんぷん粉末']))).toBeNull(); // over 10 characters
   });
 });
 
