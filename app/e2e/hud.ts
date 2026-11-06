@@ -15,16 +15,13 @@ const SHEET = {
   bells: 'dialog[open] [data-wallet]', zukan: 'dialog[open] [data-zukan-sheet]', kikimimi: 'dialog[open] [data-kikimimi]', travel: 'dialog[open] [data-travel]', wedding: 'dialog[open] [data-wedding]', hiking: 'dialog[open][data-hiking]', settings: 'dialog[open] [data-settings]'
 };
 
-/** Unfold the menu (if folded) and wait for its pills to be in place. They drop out of the leaf one after the other
- *  (HudMenu's spring): せってい waits 110 ms at its start, small over the ベル row, then moves 110 px down. Playwright
- *  finds a pill still there "stable" and aims at it, and on a busy runner its spring starts before the tap lands: the
- *  tap hit the ベル row or the leaf (CI run 41798557650: せってい never opened). */
+/** Unfold the menu (if folded) and wait for its pills to be shown (HudMenu shows them at once; the poll guards a
+ *  fold still fading out). */
 export async function unfoldMenu(page: Page, how: 'click' | 'tap' = 'click') {
   const menu = hudMenu(page);
   await expect(menu).toBeVisible();
   if ((await menu.getAttribute('aria-expanded')) !== 'true') await menu[how]();
   await expect(menu).toHaveAttribute('aria-expanded', 'true');
-  // (each pill where it rests: its spring's transform and fade over)
   const inPlace = () => page.locator('#hud-menu-items').evaluate((el) =>
     [...el.querySelectorAll(':scope > button')].every((b) => ((s) => s.transform === 'none' && s.opacity === '1')(getComputedStyle(b))));
   await expect.poll(inPlace).toBe(true);
