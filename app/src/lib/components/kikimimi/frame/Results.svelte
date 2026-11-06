@@ -54,7 +54,7 @@
       </div>
     {/if}
     <p class="tally" data-kiki-tally={tally}>{t(coop ? 'kiki.tallyMine' : 'kiki.tally', { n: of, k: tally })}</p>
-    {#if firsts}<p class="firsts"><span class="stamp" data-kiki-firsts={firsts}>{t('kiki.firstCount', { k: firsts })}</span></p>{/if}
+    {#if firsts}<p class="firsts"><span class="stamp obj-cream" data-kiki-firsts={firsts}>{t('kiki.firstCount', { k: firsts })}</span></p>{/if}
   </div>
 
   {@render top?.()}
@@ -92,7 +92,7 @@
   .firsts { margin: 0; text-align: center; }
   /* いっぱつ: a rubber stamp (no points), a cream sticker at any time of day (so its coral is the fixed one) */
   .stamp {
-    display: inline-block; padding: 3px 10px; border-radius: 8px; rotate: -4deg; color: var(--c-coral-text);
+    display: inline-block; padding: 3px 10px; border-radius: 8px; rotate: -4deg; color: var(--coral-text);
     background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-card)); box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui);
   }
   .rank { list-style: none; margin: 0; padding: 8px 14px; display: grid; gap: 4px; }

@@ -14,10 +14,10 @@
 <div class="placed card" data-kiki-page="placed" data-kiki-placed={placement?.place} data-kiki-placed-lv={placement?.lv}>
   <Host pose="wave" size={104} />
   {#if placement}
-    <p class="say" data-kiki-placed-say>{t('kiki.placed.say', { stage })}</p>
+    <p class="say kana" data-kiki-placed-say>{t('kiki.placed.say', { stage })}</p>
     <ol class="places" aria-label={t('kiki.level')}>
       {#each PLACES as p (p.id)}
-        <li class:on={p.id === placement.place} data-stage={p.id}>
+        <li class:on={p.id === placement.place} class:obj-cream={p.id === placement.place} data-stage={p.id}>
           <span class="stars" aria-hidden="true">{'★'.repeat(p.stars)}</span>
           <span>{t(`kiki.stage.${p.id}`)}</span>
         </li>
@@ -47,10 +47,10 @@
     font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft);
   }
   .places li.on { background: var(--ctl-sel); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
-  .stars { color: var(--c-coral); font-size: 9px; line-height: 1; }
+  .stars { color: var(--coral-text); font-size: var(--fs-xs); line-height: 1; }
   .skills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .skills .chip { display: grid; gap: 2px; padding: 8px 14px; cursor: default; }
-  .skills small { font-size: var(--fs-xs); color: var(--text-soft); }
+  .skills small { font-size: var(--fs-s); color: var(--text-soft); }
   .good { box-shadow: inset 0 0 0 2px var(--c-leaf); }
   .grow { box-shadow: inset 0 0 0 2px var(--c-coral); }
   .hint, .mine { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }

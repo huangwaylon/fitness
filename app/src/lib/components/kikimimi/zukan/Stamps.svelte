@@ -104,7 +104,7 @@
   .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .st { position: relative; display: grid; justify-items: center; text-align: center; gap: 3px; padding: 12px 8px 10px; }
   .st b { font: 700 var(--fs-s)/1.25 var(--font-ui); }
-  .st small { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--text-soft); }
+  .st small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .seal {
     display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; font: 700 24px/1 var(--font-ui);
     border: 2.5px dashed var(--ctl-off); color: var(--text-soft);
@@ -113,7 +113,7 @@
   .double .seal { box-shadow: 0 0 0 4px var(--card), 0 0 0 6.5px var(--c-mint); }
   .theirs .seal { border-style: solid; border-color: var(--c-mint); opacity: .7; }
   .day { font: 700 var(--fs-xs)/1 var(--font-num); color: var(--coral-text); }
-  .two { font: 700 10px/1.2 var(--font-ui); padding: 2px 8px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink); }
+  .two { font: 700 var(--fs-s)/1.2 var(--font-ui); padding: 2px 8px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink); }
   .two.soft { background: transparent; color: var(--text-soft); }
   .dots { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
   .dots li { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--c-coral); color: #fff; font: 700 13px/1 var(--font-ui); }
@@ -126,7 +126,7 @@
   .shelf { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px; }
   .shelf li { display: grid; justify-items: center; gap: 2px; }
   .cup { font-size: 30px; line-height: 1; }
-  .shelf small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .shelf small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .chs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
   .chs li { display: flex; gap: 8px; align-items: baseline; font: 700 var(--fs-s)/1.4 var(--font-ui); }
   .chs li span:nth-child(2) { flex: 1; }

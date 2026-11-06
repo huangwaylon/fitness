@@ -6,7 +6,7 @@
   let { text }: { text: string } = $props();
 </script>
 
-<aside class="why" data-kiki-why lang="ja"><b>{t('kiki.why')}</b><p>{text}</p></aside>
+<aside class="why obj-cream" data-kiki-why lang="ja"><b>{t('kiki.why')}</b><p>{text}</p></aside>
 
 <style>
   /* a soft mint card, its label on top: the fixed cream and ink, readable at any time of day */
@@ -14,6 +14,6 @@
     display: grid; gap: 2px; padding: 8px 12px; border-radius: 14px; text-align: left; color: var(--c-ink);
     background: color-mix(in srgb, var(--c-mint) 30%, var(--c-card)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c-mint) 85%, var(--c-ink));
   }
-  .why b { font: 700 var(--fs-xs)/1.3 var(--font-ui); color: var(--c-ink-soft); }
-  .why p { margin: 0; font: 700 var(--fs-s)/1.55 var(--font-ui); }
+  .why b { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
+  .why p { margin: 0; font: 700 var(--fs-body)/1.55 var(--font-ui); }
 </style>

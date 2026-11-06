@@ -51,7 +51,7 @@
   {#if !report.games.length}
     <div class="hello card">
       <span class="host" aria-hidden="true"><Host head size={52} animate={false} eager /></span>
-      <p>{t('kiki.prog.empty')}</p>
+      <p class="kana">{t('kiki.prog.empty')}</p>
     </div>
     <!-- nothing yet (a guest's first visit, a new phone): the way to a first game -->
     <button type="button" class="btn" data-kiki-prog-play data-sfx="tick" onclick={onplay}>{t('kiki.tile.asobu')}</button>
@@ -179,7 +179,7 @@
   }
   .shelf li { flex: none; display: grid; justify-items: center; gap: 2px; }
   .shelf .cup { font-size: 34px; line-height: 1.1; }
-  .shelf small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
+  .shelf small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); white-space: nowrap; }
   .stage { margin: 0; display: flex; align-items: baseline; gap: 8px; font: 700 var(--fs-title)/1.2 var(--font-ui); }
   .stage small { font-size: var(--fs-s); color: var(--text-soft); }
   .stars { color: var(--c-coral); font-size: var(--fs-s); letter-spacing: 1px; }
@@ -204,8 +204,8 @@
   .spark circle { fill: var(--bar); stroke: var(--card); stroke-width: 2; }
   .spark .base { stroke: var(--bar-track); stroke-width: 1; }
   .days { list-style: none; margin: 4px 0 0; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
-  .days li { aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 2px var(--bar-track); font: 700 11px/1 var(--font-ui); color: var(--text-soft); }
-  .days li.on { background: var(--bar); box-shadow: none; color: var(--c-card); }
+  .days li { aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 2px var(--bar-track); font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
+  .days li.on { background: var(--c-leaf); box-shadow: inset 0 0 0 2px var(--c-leaf-edge); color: var(--c-ink); }
   .together p { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .more { padding: 0 14px; }
   .more summary { cursor: pointer; min-height: var(--hit); display: flex; align-items: center; font: 700 var(--fs-body)/1.2 var(--font-ui); }

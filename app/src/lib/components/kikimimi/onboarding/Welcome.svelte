@@ -24,14 +24,14 @@
   </ol>
   <Host pose={step === 1 ? 'wave' : 'stand'} size={step === 1 ? 120 : 96} />
   {#if step === 1}
-    <p class="say">{t('kiki.welcome.hello')}</p>
+    <p class="say kana">{t('kiki.welcome.hello')}</p>
     <ul class="points">
       <li><span aria-hidden="true">⏱️</span>{t('kiki.welcome.p1')}</li>
       <li><span aria-hidden="true">👥</span>{t('kiki.welcome.p2')}</li>
       <li><span aria-hidden="true">👂</span>{t('kiki.welcome.p3')}</li>
     </ul>
   {:else}
-    <p class="say">{t('kiki.welcome.sound')}</p>
+    <p class="say kana">{t('kiki.welcome.sound')}</p>
     <button type="button" class="btn paper" data-kiki-test data-sfx="tick" onclick={test}>🔊 {t('kiki.test')}</button>
     {#if zero}<p class="hint warn" data-kiki-zero>{t('kiki.testZero')}</p>
     {:else}<p class="hint">{tested ? t('kiki.testHint') : t('kiki.set.earphones')}</p>{/if}

@@ -38,7 +38,7 @@
 <style>
   .asobu { display: grid; gap: 14px; }
   .shelf { display: grid; gap: 8px; }
-  .sec-label small { margin-left: 8px; font-size: var(--fs-xs); letter-spacing: 0; }
+  .sec-label small { margin-left: 8px; letter-spacing: 0; }
   .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .mode { min-height: 112px; padding: 12px; border-radius: var(--r-card); display: grid; align-content: start; justify-items: start; gap: 4px; text-align: left; }
   .ic { font-size: 22px; line-height: 1.1; }
@@ -46,6 +46,6 @@
   .mode small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   /* ねる まえに: the night's navy, its moon */
   .mode.night { background: #3A4886; color: #FFF6E0; box-shadow: inset 0 0 0 2px #B9C3F0, 0 var(--lip-h) 0 #2E3A72; }
-  .mode.night small, .mode.night .meta { color: #D2D9F5; }
-  .meta { margin-top: auto; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .mode.night small, .mode.night .meta { color: #DDE3FA; }
+  .meta { margin-top: auto; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
 </style>

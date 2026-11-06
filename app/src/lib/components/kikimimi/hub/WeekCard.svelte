@@ -42,12 +42,12 @@
   .days li { display: grid; justify-items: center; gap: 3px; }
   .dot {
     width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 2px var(--edge);
-    font: 700 16px/1 var(--font-ui); color: var(--c-coral-text); background: var(--ctl-off);
+    font: 700 16px/1 var(--font-ui); color: var(--coral-text); background: var(--ctl-off);
   }
   .on .dot { background: var(--card); box-shadow: inset 0 0 0 2px var(--c-coral); transform: rotate(-8deg); }
   .today .dot { outline: 2px solid var(--c-yuzu); outline-offset: 2px; }
-  .dl { font: 700 var(--fs-xs)/1 var(--font-ui); color: var(--text-soft); }
-  .met { margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-coral-text); }
+  .dl { font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft); }
+  .met { margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--coral-text); }
   .quest { display: grid; gap: 6px; padding-top: 8px; border-top: 2px dashed var(--edge); }
   .ql { display: flex; justify-content: space-between; gap: 8px; font: 700 var(--fs-s)/1.3 var(--font-ui); }
   .ql span { color: var(--text-soft); }

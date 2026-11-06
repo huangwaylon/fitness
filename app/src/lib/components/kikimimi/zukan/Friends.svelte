@@ -131,16 +131,16 @@
   .txt b { font: 700 var(--fs-body)/1.2 var(--font-ui); display: flex; gap: 6px; align-items: center; }
   .badge { font-size: 14px; }
   .hearts { color: var(--c-coral); font-size: 15px; letter-spacing: 2px; line-height: 1; }
-  .greet { font: italic 600 var(--fs-xs)/1.35 var(--font-ui); color: var(--text); overflow-wrap: anywhere; }
-  .next { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .greet { font: italic 600 var(--fs-s)/1.35 var(--font-ui); color: var(--text); overflow-wrap: anywhere; }
+  .next { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .gifts { display: grid; gap: 10px; padding: 12px 14px; margin-top: 6px; }
   .say { margin: 0; font: 700 var(--fs-body)/1.45 var(--font-ui); }
   .letter { padding: 10px 12px; border-radius: 12px; background: color-mix(in srgb, var(--c-yuzu) 22%, var(--card)); }
-  .letter small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .letter small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .letter p { margin: 6px 0 0; white-space: pre-line; font: 600 var(--fs-s)/1.55 var(--font-ui); }
   .pill { justify-self: start; padding: 6px 12px; border-radius: var(--r-pill); background: var(--ctl); box-shadow: var(--sh-ctl); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .photo { margin: 0; justify-self: center; display: grid; justify-items: center; gap: 6px; padding: 12px 18px 8px; border-radius: 6px; background: #FFFDF6; box-shadow: 0 0 0 5px #F2CF63, 0 0 0 8px #C99B2E, var(--sh-lip); }
-  .photo figcaption { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--c-ink); }
+  .photo figcaption { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--c-ink); }
   .gifts .chip { justify-self: end; min-height: var(--hit); }
   .gifts .chip[aria-pressed='true'] { background: var(--ctl-sel); }
   .none { margin: 0; padding: 12px 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }

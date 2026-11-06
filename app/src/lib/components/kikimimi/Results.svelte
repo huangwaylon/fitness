@@ -151,7 +151,7 @@
     <section class="fb card" data-kiki-feedback={fb?.kind ?? ''}>
       {#if fbLine}
         <!-- しずえ's already speaking in the bubble above: her line here without a second head -->
-        <p class="fb-line">{fbLine}</p>
+        <p class="fb-line kana">{fbLine}</p>
       {/if}
       <div class="trips" data-kiki-trips={trips.length}>
         <h3 class="sec-label in">{t('kiki.trips')}</h3>
@@ -210,7 +210,7 @@
                 {:else}<span class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</span>{/if}
                 {#if !open && !r.ok && r.k !== null}<span class="picked">{t('kiki.picked', { a: choiceText(r.it, r.k) })} ×</span>{/if}
               </span>
-              {#if first(r.i)}<span class="stamp sm">{t('kiki.firstTry')}</span>{/if}
+              {#if first(r.i)}<span class="stamp sm obj-cream">{t('kiki.firstTry')}</span>{/if}
               <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
             </button>
             {#if open}
@@ -280,7 +280,7 @@
   }
   .none { margin: 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--leaf-text); }
   .trips .none { text-align: left; }
-  .tags { margin: 0; font: 700 11px/1.4 var(--font-ui); color: var(--text-soft); }
+  .tags { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   /* ▶︎ / 🐢 under the text (the text's column), so the Japanese has the card's width */
   .item { display: grid; gap: 8px; padding: 0; }
@@ -293,19 +293,19 @@
   .chev { font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
   .item .txt { padding: 0 14px 12px 46px; }
   .en.big { font-size: max(17px, var(--fs-talk)); }
-  .note { margin: 0; font: 700 var(--fs-xs)/1.45 var(--font-ui); color: var(--c-ink); padding: 4px 8px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, transparent); }
+  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
   .retry { width: 100%; }
   .opts { list-style: none; margin: 2px 0; padding: 0; display: grid; gap: 4px; }
   .opts li { display: grid; grid-template-columns: 1.2em 1fr; gap: 4px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .opts li[data-mark='right'] { color: var(--leaf-text); }
   .opts li[data-mark='wrong'] { color: var(--coral-text); }
-  .opts small { display: block; font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--text-soft); }
+  .opts small { display: block; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   /* いっぱつ: a rubber stamp (no points), a cream sticker at any time of day (so its coral is the fixed one) */
   .stamp {
-    display: inline-block; padding: 3px 10px; border-radius: 8px; rotate: -4deg; color: var(--c-coral-text);
+    display: inline-block; padding: 3px 10px; border-radius: 8px; rotate: -4deg; color: var(--coral-text);
     background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-card)); box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui);
   }
-  .stamp.sm { padding: 2px 6px; font-size: var(--fs-xs); white-space: nowrap; }
+  .stamp.sm { padding: 2px 6px; white-space: nowrap; }
   .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
   .sym.ok { color: var(--leaf-text); }
   .txt { min-width: 0; display: grid; gap: 4px; }

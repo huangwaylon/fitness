@@ -28,7 +28,7 @@
   {#each it.lines as l, k (k)}
     <li class="ln" class:right={l.who !== first} class:talk={talk === k} data-line={k}>
       <span class="head"><OfficialArt key={villagerArt(l.who, true)} alt={name(l.who)} size={compact ? 28 : 36} /></span>
-      <div class="b">
+      <div class="b obj-cream">
         <p class="en"><SoundLine en={l.en} focus={it.focus} marks={l.marks} clip="{it.id}-{k + 1}" from={talk === k ? from : null} {clock} /></p>
         <p class="ja">{l.ja}</p>
       </div>
@@ -37,7 +37,7 @@
   {#if next}
     <li class="ln next" class:right={next.who !== first} data-kiki-next-line>
       <span class="head"><OfficialArt key={villagerArt(next.who, true)} alt={name(next.who)} size={compact ? 28 : 36} /></span>
-      <div class="b">
+      <div class="b obj-cream">
         <small>{t('kiki.nextLine')}</small>
         <p class="en" lang="en">{next.en}</p>
         <p class="ja">{it.ja}</p>
@@ -61,12 +61,12 @@
   .ln:not(.right) .b { border-bottom-left-radius: 6px; }
   .ln.right .b { border-bottom-right-radius: 6px; background: color-mix(in srgb, var(--c-mint) 45%, var(--c-card)); }
   .ln.talk .b { transform: translateY(-3px); }
-  .next .b { background: transparent; box-shadow: none; outline: 2px dashed var(--c-leaf-edge); outline-offset: -2px; }
-  .b small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--leaf-text); }
+  .next .b { box-shadow: none; outline: 2px dashed var(--c-leaf-edge); outline-offset: -2px; }
+  .b small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--leaf-text); }
   .en { margin: 0; font: 700 max(16px, var(--fs-body))/1.4 var(--font-ui); }
   .key { margin-top: -2px; display: flex; justify-content: center; }
   /* adult Japanese with no spaces between words: keep-all (theme.css) would never break it; ordinary CJK breaks, kinsoku kept */
-  .ja { margin: 0; font: 700 var(--fs-xs)/1.4 var(--font-ui); color: var(--c-ink-soft); word-break: normal; line-break: strict; }
+  .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); word-break: normal; line-break: strict; }
   .compact .en { font-size: 15px; }
   .compact .b { padding: 6px 10px; }
   /* on a review card (the bubbles' own cream): the first speaker's a step darker, so it still reads as a bubble */

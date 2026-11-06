@@ -25,12 +25,12 @@
   .big { grid-template-columns: repeat(4, 1fr); gap: 6px; height: 52px; }
   li {
     height: var(--h); border-radius: 8px 8px 4px 4px; display: grid; align-items: end; justify-items: center; padding-bottom: 2px;
-    background: var(--ctl-off); color: var(--text-soft); font: 700 11px/1 var(--font-num);
+    background: var(--ctl-off); color: var(--text-soft); font: 700 var(--fs-s)/1 var(--font-num);
   }
-  .small li { border-radius: 6px 6px 3px 3px; font-size: 10px; }
+  .small li { border-radius: 6px 6px 3px 3px; }
   .big li { border-radius: 10px 10px 4px 4px; padding-bottom: 3px; font-size: var(--fs-s); }
   li[data-step='up'] { background: var(--c-leaf); color: var(--c-ink); }
   li[data-step='now'] { background: var(--c-yuzu); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge); }
-  li[data-step='off'] { background: color-mix(in srgb, var(--c-coral) 35%, var(--card)); color: var(--c-ink); }
-  li[data-step='soft'] { background: color-mix(in srgb, var(--c-leaf) 45%, var(--card)); color: var(--c-ink); }
+  li[data-step='off'] { background: color-mix(in srgb, var(--c-coral) 35%, var(--c-card)); color: var(--c-ink); }
+  li[data-step='soft'] { background: color-mix(in srgb, var(--c-leaf) 45%, var(--c-card)); color: var(--c-ink); }
 </style>

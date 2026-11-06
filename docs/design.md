@@ -535,6 +535,10 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
 
 - One sheet skin (`ui/Sheet.svelte`, a native `<dialog>`): tan paper, cream cards (navy at night), sticky title bar,
   one CTA in a sticky footer above the keyboard.
+- **Text colours by surface:** themed surfaces (the panel, a `.card`) take the theme's `--text`, `--text-soft`,
+  `--leaf-text`, `--coral-text` (light on navy at night); an always-cream object (a bubble, a cream button, a transcript
+  line, 解説, a stamp) carries `.obj-cream` (theme.css), which puts those back to the day ones inside it. Day-only
+  `--c-*-text` only there; content text ≥ 13px (`--fs-s`). ききみみ's `readability.test.ts` holds both.
 - **Harvest** (`sheets/HarvestOverlay.svelte`): from Sunday 19:30 until both have tapped, the week's recap: each
   person's ベル, the ふたりでぜんぶ days and the total; 受け取る → the coins fall into the jar (ceremony only). ✕ = あとで.
 - **Pair** (`routes/pair`): paste the key, or open a `#key=` link in the installed app.

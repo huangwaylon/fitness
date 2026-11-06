@@ -26,7 +26,7 @@
   <div class="places" role="radiogroup" aria-labelledby="kk-place" data-kiki-places>
     {#each PLACES as p (p.id)}
       {@const x = lvOfPlace(p.id, levels, lv)}
-      <button type="button" class="place tile-btn" role="radio" aria-checked={at === p.id} aria-disabled={x === null || (readonly && at !== p.id)}
+      <button type="button" class="place tile-btn" class:obj-cream={at === p.id} role="radio" aria-checked={at === p.id} aria-disabled={x === null || (readonly && at !== p.id)}
         data-stage={p.id} data-level={p.id === 'hama' ? undefined : (x ?? undefined)} data-sfx={at === p.id || x === null ? 'none' : 'tick'} onclick={() => pick(x)}>
         <span class="stars" aria-hidden="true">{'★'.repeat(p.stars)}</span>
         <span>{t(`kiki.stage.${p.id}`)}</span>
@@ -56,8 +56,8 @@
   }
   .place[aria-checked='true'] { background: var(--ctl-sel); color: var(--c-ink); }
   .place[aria-disabled='true']:not([aria-checked='true']) { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }
-  .stars { color: var(--c-coral); font-size: 9px; letter-spacing: 0; line-height: 1; }
-  .place[aria-checked='true'] .stars { color: var(--c-coral-text); }
+  /* the stars: the coral text colour (the day one on the chosen yuzu place, .obj-cream; night's light one on navy) */
+  .stars { color: var(--coral-text); font-size: var(--fs-xs); letter-spacing: 0; line-height: 1; }
   .subs { display: flex; gap: 8px; }
   .subs .chip { flex: 1; }
   .subs .chip[aria-disabled='true'] { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; cursor: default; }

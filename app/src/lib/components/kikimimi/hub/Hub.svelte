@@ -152,7 +152,7 @@
   {/if}
   <div class="hello">
     <span class="host" aria-hidden="true"><Host head size={48} animate={false} eager /></span>
-    <p data-kiki-hello>{hello}</p>
+    <p class="kana" data-kiki-hello>{hello}</p>
   </div>
   {#if menu}
     <ol class="menu" data-kiki-menu data-kiki-ok={menu.ok ? 'true' : undefined}>
@@ -222,11 +222,11 @@
   .mc b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .mc.done b { font-size: var(--fs-body); color: var(--text-soft); }
   .mc small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
-  .mc .slot { font-size: var(--fs-xs); letter-spacing: .04em; }
+  .mc .slot { letter-spacing: .04em; }
   .mc .btn { flex: none; margin-bottom: var(--lip-h); }
   .stamp {
     flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; transform: rotate(-8deg);
-    font: 700 20px/1 var(--font-ui); color: var(--c-coral-text); box-shadow: inset 0 0 0 2px var(--c-coral);
+    font: 700 20px/1 var(--font-ui); color: var(--coral-text); box-shadow: inset 0 0 0 2px var(--c-coral);
   }
   .ok { margin: -4px 6px 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   /* みみ チェック not taken yet: a small card, never the green button (the menu's) */
@@ -247,7 +247,7 @@
     background: color-mix(in srgb, var(--c-mint) 35%, var(--card));
   }
   .tile b { font: 700 var(--fs-body)/1.15 var(--font-ui); }
-  .tile small { font: 700 var(--fs-xs)/1.25 var(--font-ui); color: var(--text-soft); overflow-wrap: anywhere; }
+  .tile small { font: 700 var(--fs-s)/1.25 var(--font-ui); color: var(--text-soft); overflow-wrap: anywhere; }
   /* しずえの しゅうまつ たいかい: the weekend's yuzu banner (a ribbon of the show), its trophy once won */
   .taikai {
     display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r-card); text-align: left; width: 100%;
@@ -261,6 +261,5 @@
   .ttxt { flex: 1; min-width: 0; display: grid; gap: 2px; }
   .ttxt b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .ttxt small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--c-ink-soft); }
-  .ttxt .until { font-size: var(--fs-xs); }
   .chev { flex: none; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--c-ink-soft); }
 </style>

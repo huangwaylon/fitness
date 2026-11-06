@@ -170,7 +170,7 @@
   .slot { display: grid; justify-items: center; gap: 2px; min-width: 48px; }
   .slot i { font-style: normal; font-size: 26px; line-height: 1.1; color: var(--ctl-off); }
   .slot.on i { color: inherit; }
-  .slot small { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .slot small { font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .sline { flex: 1; margin: 0; display: grid; gap: 2px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .sline b { font-size: var(--fs-body); color: var(--coral-text); }
   .core { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }

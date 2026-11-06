@@ -71,7 +71,7 @@
   {/if}
 
   <p class="status" role="status">
-    {#if reveal && !v.out}<span class="cheer"><Host head size={30} animate={false} eager />{t(`kiki.cheer.${verdict}`)}</span>
+    {#if reveal && !v.out}<span class="cheer kana"><Host head size={30} animate={false} eager />{t(`kiki.cheer.${verdict}`)}</span>
     {:else if v.out && !reveal}{t('kiki.out')}
     {:else if answered && !reveal && !solo}{t('kiki.answered')} {t('kiki.waitOthers')}
     {:else if v.phase === 'lead' || v.phase === 'play'}{t('kiki.listen')}{/if}
