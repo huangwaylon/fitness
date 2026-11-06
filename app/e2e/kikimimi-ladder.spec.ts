@@ -2,7 +2,7 @@
 // ladders (each rung's own question, the ladder over the stage, a rung's reveal keeping the line hidden and silent till the
 // top, the climb stopping at a miss or a replay, the results' climbs and the review's speeds), きろく's speed; and two
 // players over the demo's relay (`?demo` and `?demo&as=B`): the host's mode reaches B's invite and lobby, both climb, the
-// same points on each phone. The logic tier: no clip has to sound (`?kikimimi=fast`: a short time limit; the reveals wait for つぎへ). Screenshots to
+// same points on each phone. The logic tier: no clip has to sound (`?kikimimi=fast`: a short time limit; the top rung's reveal waits for つぎへ, the lower ones move on after 3 s). Screenshots to
 // /tmp/kikimimi-shots/inc7/ with KIKI_SHOTS=1.
 import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { fromMenu, hudMenu } from './hud.ts';
@@ -80,7 +80,8 @@ test('solo: the mode in the lobby, two ladders climbed (a miss and a replay stop
       await expect(sheet(page).locator('[data-kiki-note]')).toBeVisible();
       if (i === 3) await shot(page, 'top-reveal');
     }
-    await sheet(page).locator('[data-kiki-next]').click();
+    // a rung below the top moves on by itself after 3 s (its line hidden: nothing to read); the top waits for つぎへ
+    if (rung === 4) await sheet(page).locator('[data-kiki-next]').click();
   }
   await expect(sheet(page)).toHaveAttribute('data-phase', 'results');
   // 3 rungs climbed: 300, a flat 100 a rung
@@ -134,8 +135,8 @@ test('two players: the host’s mode reaches B’s invite and lobby; both climb,
     }
     await expect(sheet(a)).toHaveAttribute('data-phase', 'reveal');
     if (i === 5 && SHOTS) await shot(a, 'two-reveal');
-    // the untimed reveal: the host's つぎへ
-    await sheet(a).locator('[data-kiki-next]').click();
+    // the top rung's untimed reveal: the host's つぎへ (the lower rungs move on by themselves after 3 s)
+    if (i % 4 === 3) await sheet(a).locator('[data-kiki-next]').click();
   }
   for (const p of [a, b]) {
     await p.bringToFront();

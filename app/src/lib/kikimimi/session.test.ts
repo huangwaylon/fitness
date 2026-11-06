@@ -420,7 +420,7 @@ describe('ききみみ session: スピード はしご', () => {
   const ladderDeckOf = (seed: number): QuizDeck => {
     const items = isLadder(seed) ? ladderDeck(seed) : [];
     return isLadder(seed)
-      ? { count: items.length, dur: () => DUR, answer: (i) => items[i].answer, score: (a) => ladderPoints(items, a) }
+      ? { count: items.length, dur: () => DUR, answer: (i) => items[i].answer, score: (a) => ladderPoints(items, a), auto: (i) => !!items[i].rung && items[i].rung.n < 4 }
       : deck;
   };
   const ladderRoom = () => room(['A', 'B'], ladderDeckOf);
@@ -472,6 +472,76 @@ describe('ききみみ session: スピード はしご', () => {
     }
     // A: ladder 1 all 4, ladder 2 rungs 1-2 (the replay on 3 stops it); B: ladder 1 rung 1, ladder 2 all 4
     for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ phase: 'results', scores: { A: 600, B: 500 } });
+  });
+
+  it('a rung below the top moves on by itself 3 s after its reveal (nothing to read: the line is hidden), on both phones; the top rung’s reveal waits for つぎへ', () => {
+    const r = ladderRoom();
+    r.act('A', (x, n) => x.open({ lv: 4, ladder: true }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('B', (x, n) => x.join(n));
+    r.act('A', (x, n) => x.go(n));
+    const items = ladderDeck(r.view('A').seed);
+    let t = r.now + WINDOWS.countdown;
+    for (let i = 0; i < 4; i++) {
+      r.now = t + WINDOWS.lead + DUR + 500;
+      for (const w of ['A', 'B'] as const) r.act(w, (x, n) => x.answer(items[i].answer, false, n));
+      const revealAt = r.now;
+      for (const w of ['A', 'B'] as const) expect(r.view(w), `rung ${i + 1}`).toMatchObject({ phase: 'reveal', i });
+      if (i < 3) {
+        // no よみおわった to tap; the host may still go sooner
+        expect(r.view('B').canReady).toBe(false);
+        expect(r.view('A').canNext).toBe(true);
+        for (const w of ['A', 'B'] as const) expect(r.view(w).until).toBe(revealAt + WINDOWS.auto);
+        r.now = revealAt + WINDOWS.auto - 1;
+        for (const w of ['A', 'B'] as const) expect(r.view(w).phase).toBe('reveal');
+        r.now = revealAt + WINDOWS.auto;
+        r.tick();
+        for (const w of ['A', 'B'] as const) expect(r.view(w), `rung ${i + 2}`).toMatchObject({ phase: 'lead', i: i + 1 });
+        t = r.now;
+      } else {
+        // the top: the line, the marks, time to read; untimed till the host's つぎへ
+        expect(r.view('B').canReady).toBe(true);
+        r.now = revealAt + 60_000;
+        r.tick();
+        for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ phase: 'reveal', i: 3, until: Infinity });
+        r.act('A', (x, n) => x.next(n));
+        for (const w of ['A', 'B'] as const) expect(r.view(w)).toMatchObject({ phase: 'lead', i: 4 });
+      }
+    }
+  });
+
+  it('a rung timed out moves on 3 s after its limit; with the host gone the lower rungs still move on by themselves', () => {
+    const r = ladderRoom();
+    r.act('A', (x, n) => x.open({ lv: 4, ladder: true }, n));
+    r.act('A', (x, n) => x.invite(n));
+    r.act('B', (x, n) => x.join(n));
+    r.act('A', (x, n) => x.go(n));
+    const q0 = r.now + WINDOWS.countdown;
+    const limit = q0 + WINDOWS.lead + DUR + ANSWER;
+    // nobody answers rung 1: its reveal at the limit, rung 2 three seconds on
+    r.now = limit + 1;
+    expect(r.view('B')).toMatchObject({ phase: 'reveal', i: 0, until: limit + WINDOWS.auto });
+    // the host goes away for good
+    r.here.delete('A');
+    r.presence();
+    r.now = limit + WINDOWS.auto + 1;
+    expect(r.view('B')).toMatchObject({ phase: 'lead', i: 1 });
+    r.now += WINDOWS.lead + DUR + 100;
+    r.act('B', (x, n) => x.answer(0, false, n));
+    const revealAt = r.now;
+    expect(r.view('B').phase).toBe('reveal');
+    r.now = revealAt + WINDOWS.auto + 1;
+    expect(r.view('B')).toMatchObject({ phase: 'lead', i: 2 });
+  });
+
+  it('the quiz’s reveals never move on by themselves (no deck.auto)', () => {
+    const r = room(['A', 'B']);
+    const q0 = started(r, ['B']);
+    r.now = q0 + OPEN + 100;
+    for (const w of ['A', 'B'] as const) r.act(w, (x, n) => x.answer(0, false, n));
+    r.now += 60_000;
+    r.tick();
+    expect(r.view('B')).toMatchObject({ phase: 'reveal', i: 0, until: Infinity });
   });
 });
 

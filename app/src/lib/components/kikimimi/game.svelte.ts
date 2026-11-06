@@ -34,7 +34,11 @@ const deckOf: DeckOf = (seed, lv) => {
     dur: (i) => Math.round((at(i) ? (itemDur(at(i)) ?? 2) : 2) * 1000),
     answer: (i) => at(i)?.answer ?? -1,
     // スピード はしご: the rungs climbed (ladder.ts), not each answer's points
-    ...(isLadder(seed) && { score: (a: ReadonlyMap<number, { k: number; rp: boolean }>) => ladderPoints(itemsOf(seed, lv), a) })
+    ...(isLadder(seed) && {
+      score: (a: ReadonlyMap<number, { k: number; rp: boolean }>) => ladderPoints(itemsOf(seed, lv), a),
+      // a rung below the top: its reveal hides the line, so it moves on by itself (session.ts WINDOWS.auto)
+      auto: (i: number) => hidesLine(at(i))
+    })
   };
 };
 
