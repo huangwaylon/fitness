@@ -114,7 +114,7 @@ test('two players: the host’s mode reaches B’s invite and lobby; both climb,
   await fromMenu(a, 'kikimimi');
   await sheet(a).locator('[data-kiki-mode="ladder"]').click();
   await sheet(a).locator('[data-kiki-invite-all]').click();
-  const banner = b.locator('.banner', { hasText: 'ききとりクイズに さそっています' });
+  const banner = b.locator('.banner', { hasText: 'ききみみに さそっています' });
   await expect(banner).toBeVisible({ timeout: 15_000 });
   await b.bringToFront();
   await banner.getByRole('button', { name: 'さんか' }).click();
@@ -144,7 +144,7 @@ test('two players: the host’s mode reaches B’s invite and lobby; both climb,
     await expect(sheet(p)).toHaveAttribute('data-phase', 'results', { timeout: 20_000 });
     // A 8 rungs, B 4 + 1; co-op: the team got every question
     await expect.poll(() => kiki(p, (k) => k.view().players.map((x) => [x.who, x.score]))).toEqual([['A', 800], ['B', 500]]);
-    await expect(sheet(p).locator('[data-kiki-team] b')).toHaveText('ふたりで 8/8');
+    await expect(sheet(p).locator('[data-kiki-team] b')).toHaveText('ふたりで 8 / 8');
     await expect(sheet(p).locator('[data-kiki-climbs]')).toHaveAttribute('data-kiki-climbs', p === a ? '4,4' : '4,1');
     if (p === b) await shot(p, 'two-results-B', true);
   }

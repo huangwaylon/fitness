@@ -51,7 +51,7 @@ async function together(ctx: BrowserContext, o: { wireB?: string; cvB?: string }
   await expect(sheet(a)).toHaveAttribute('data-phase', 'lobby');
   await addUnit(a, 'c0ffee');
   await sheet(a).locator('[data-kiki-invite-all]').click();
-  const banner = b.locator('.banner', { hasText: 'ききとりクイズに さそっています' });
+  const banner = b.locator('.banner', { hasText: 'ききみみに さそっています' });
   await expect(banner).toBeVisible({ timeout: 15_000 });
   await b.bringToFront();
   await banner.getByRole('button', { name: 'さんか' }).click();
