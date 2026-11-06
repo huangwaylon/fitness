@@ -231,7 +231,7 @@ The prototype's screens, in order. Sizes are the app's tokens: cards `--r-card` 
 ```
 
 - The can-do: its one line (`cando.short`, ≤ 25 characters) is the page's headline; the template's full sentence is folded under 「くわしく」 (a draft with no one line shows the sentence as before). The lesson intro card's 「できるように なること」 shows the one line too, and a path stop's subtitle is the one line instead of host · domain (the face and the domain badge already say those).
-- `path/UnitPage.svelte` loads the unit's chunk (pool.ts `load` / `unitPart`); the lessons shown are those with playable items (`playIds`). My tally under the stamp line (stamps.ts). No さそう yet: co-op lessons wait for framework 8c (the lobby card says so in a shared lobby).
+- `path/UnitPage.svelte` loads the unit's chunk (pool.ts `load` / `unitPart`); the lessons shown are those with playable items (`playIds`). My tally under the stamp line (stamps.ts). Co-op: the host opens it from a shared lobby's card (framework 8c).
 
 ### 6.4 Mode detail
 
@@ -271,7 +271,7 @@ The prototype's screens, in order. Sizes are the app's tokens: cards `--r-card` 
 ```
 
 - **Getting here:** the hub tile, a mode's さそう (the game preselected) or an invite (joined; controls read-only, foot 「ウェイが はじめるのを まっています」).
-- **しまの みち** (U4, the UX review's sketch D): until the hub, the lobby's first card is the path's (the current unit and its dots). The host picks a unit and a lesson there; lessons are solo for now (co-op lessons wait for framework 8c), so in a shared lobby the card stays quiet with 「いまは ひとりで あそべます（ふたりでは あとで）」.
+- **しまの みち** (U4, the UX review's sketch D): until the hub, the lobby's first card is the path's (the current unit and its dots). The host picks a unit and a lesson there, in a shared lobby for everyone (co-op lessons, framework 8c: the others see its intro card with the players and 「…が はじめるのを まっています」; a チェック's card adds the team's way to the stamp). An invite of content this build hasn't (its `cv`) shows 「アプリを こうしんしてね」 with こうしんする instead of さんか.
 - **きょうりょく／しょうぶ** shows only when the picked game has `modes.vs`. Each phone's tier is its own (`join.tr`) and never shown next to anyone else's.
 - **Alone:** 「ひとりでも はじめられます」 under the people card; さそう still works.
 - **Leaving:** ✕ with others joined asks first. When the host leaves, the notice shows and ‹ goes to the hub.
