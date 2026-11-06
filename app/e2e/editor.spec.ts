@@ -219,6 +219,34 @@ test('しまの おおきさ: a pull blocked by a home lists what’s in the way
   await expect.poll(() => objAt(page, 'sandcastle')).toEqual(castle);
 });
 
+test('しまの おおきさ: what’s in the way goes with the layout it was tried on (an undo, a partner’s edit)', async ({ context }) => {
+  const page = await context.newPage(), other = await context.newPage();
+  await openEditor(page);
+  await openEditor(other);
+  await page.bringToFront();
+  await page.keyboard.press('0');
+  const list = page.locator('[data-resize-blocked]');
+  // the front pulled in: the sandcastle in the way; ⌘Z of an earlier move takes the list away (it stayed, stale)
+  const castle = (await objAt(page, 'sandcastle'))!;
+  const home = (await objAt(page, 'home-B'))! as [number, number];
+  await dragTile(page, [home[0], home[1] + 1], [home[0] - 1, home[1] + 1]);
+  await expect.poll(() => objAt(page, 'home-B')).toEqual([home[0] - 1, home[1]]);
+  await page.locator('[data-resize="front"][data-by="-1"]').click();
+  await expect(list.locator('[data-blocker="sandcastle"]')).toBeVisible();
+  await page.keyboard.press('Meta+z');
+  await expect.poll(() => objAt(page, 'home-B')).toEqual(home);
+  await expect(list).toHaveCount(0);
+  // again, and the other editor moves うめ's home: the list goes here too
+  await page.locator('[data-resize="front"][data-by="-1"]').click();
+  await expect(list.locator('[data-blocker="sandcastle"]')).toBeVisible();
+  await other.bringToFront();
+  await other.keyboard.press('0');
+  await dragTile(other, [home[0], home[1] + 1], [home[0] - 1, home[1] + 1]);
+  await expect.poll(() => objAt(page, 'home-B')).toEqual([home[0] - 1, home[1]]);
+  await expect(list).toHaveCount(0);
+  expect(await objAt(page, 'sandcastle')).toEqual(castle);
+});
+
 test('the guest is shown the door: the editor is the members’ only', async ({ page }) => {
   await page.goto(`editor/?demo&as=G&date=${DATE}`);
   await expect(page.locator('[data-members-only]')).toBeVisible();
