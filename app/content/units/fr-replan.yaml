@@ -1,0 +1,495 @@
+# よていを かえる (fr-replan): wave 1, かわ, ともだち (docs/curriculum-units.md §9, §12). A friend calling from the street
+# to move our plans: the new day, time and place, and whether it's a real new plan or a soft cancel ("another time").
+# Calls end with でんわを おえる's closings and check back with ききかえす's (both recycled).
+# きょうの ひとこと: "Something's come up: I just really want to see you tonight." (きゅうようが できた。こんや どうしても あいたい。)
+schema: 1
+unit: fr-replan
+name: よていを かえる
+stage: kawa
+domain: tomodachi
+host: maple
+scene: street
+sound: gonna
+cando:
+  who: ともだち
+  does: でんわで やくそくの よていを かえる
+  cond: まちの ざつおんの なかで
+  catch: あたらしい ひ・じかん・ばしょと キャンセルか どうか
+  en: "I can follow a friend changing our plans on the phone, over street noise at natural speed, and catch the new day, time and place, and whether they're really cancelling."
+status: draft
+ph:
+  - { id: ph-come-up, en: "something's come up", ja: "きゅうようが できた", match: "something('s| has)? come up|something came up|\\bcome up\\b", register: friend, scene: "a last-minute change", trap: "come up＝きゅうに おきる。あがる ではない" }
+  - { id: ph-make-it, en: "can't make it", ja: "いけない／まにあわない", match: "(can't|won't|couldn't|might not) make it", register: friend, scene: "turning down a time", trap: "make it＝いける。つくる ではない" }
+  - { id: ph-push-back, en: "push it back", ja: "おそくする", match: "push(ed)? (it|that|dinner|lunch|things|us|the movie) back", register: friend, scene: "moving a time later", trap: "push back＝あとに ずらす。前では ない" }
+  - { id: ph-still-on, en: "still on", ja: "よていは そのまま？", match: "\\bstill on\\b", register: friend, scene: "checking a plan", trap: "Are we still on?＝よていは かわらず？" }
+  - { id: ph-rain-check, en: "rain check", ja: "また こんど", register: friend, scene: "putting a plan off", trap: "雨とは 関係なく「また こんど」" }
+  - { id: ph-running-late, en: "running late", ja: "おくれている", match: "running (a bit |a little |really |super |so |about \\w+ minutes )?late", register: friend, scene: "on the way", trap: "running＝はしる ではなく「〜に なりそう」" }
+  - { id: ph-work-for, en: "work for you", ja: "つごうは いい？", match: "(does|would|will|could) [a-z0-9: ]{1,24} work\\b", register: friend, scene: "offering a new time", trap: "work＝はたらく ではなく「つごうが いい」" }
+  - { id: ph-another-time, en: "another time", ja: "また いつか", register: friend, scene: "a vague new plan", trap: "日にちが ないなら ほぼ キャンセル" }
+review: [r4-come-up, d4-friend-cancels, mw-rain-check, n3-meet-1]
+items:
+  - id: dk-dinner-move
+    lv: 3
+    type: gist
+    speaker: maple
+    voice: us
+    cast: us-f3
+    en: "Hey, it's me! Are we still on for dinner tonight? About that… something's come up at work. Could we push it back to Thursday? Sorry, say that again? A truck's going past. Thursday! Same place, seven o'clock. Does that work for you? Thursday at seven. Perfect, see you then!"
+    ja: "木曜の7時にずれた。"
+    note: "push it back＝あとに ずらす。中止 ではない"
+    choices: ["It's moved to Thursday at seven.", "It's cancelled for good.", "It's still on for tonight."]
+    answer: 0
+    focus: "Could we push it back to Thursday?"
+    ask: "ゆうごはんは どうなる？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: formula, conditions: [phone, street], features: [contraction] }
+    lines:
+      - { who: maple, cast: us-f3, en: "Hey, it's me! Are we still on for dinner tonight?", ja: "もしもし、わたし！ 今夜の夕飯、予定どおりでいい？" }
+      - { who: dom, cast: us-m1, en: "About that… something's come up at work. Could we push it back to Thursday?", ja: "それなんだけど…仕事で急用ができちゃって。木曜にずらせないかな？" }
+      - { who: maple, cast: us-f3, en: "Sorry, say that again? A truck's going past.", ja: "ごめん、もう一回いって？ トラックが通ってて。" }
+      - { who: dom, cast: us-m1, en: "Thursday! Same place, seven o'clock. Does that work for you?", ja: "木曜！ 同じ店で7時。それで都合いい？" }
+      - { who: maple, cast: us-f3, en: "Thursday at seven. Perfect, see you then!", ja: "木曜の7時ね。ばっちり、じゃあそのときに！" }
+  - id: dk-dinner-place
+    lv: 3
+    type: next
+    speaker: dom
+    voice: us
+    cast: us-m1
+    en: "Oh, and actually, can we do the ramen place instead? The pizza place is closed on Thursdays. The one by the station? No, the other one, near the park. I'll text you the map."
+    ja: "ありがとう。じゃあ木曜にね！"
+    note: "the other one＝駅の そばでは ない 方"
+    choices: ["Great, thanks. See you Thursday!", "The pizza's great on Thursdays.", "By the station, then."]
+    answer: 0
+    focus: "the other one, near the park"
+    ask: "つぎの ひとことは？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [contrast] }
+    lines:
+      - { who: dom, cast: us-m1, en: "Oh, and actually, can we do the ramen place instead? The pizza place is closed on Thursdays.", ja: "あ、それと、ラーメン屋にしてもいい？ ピザ屋は木曜休みなんだ。" }
+      - { who: maple, cast: us-f3, en: "The one by the station?", ja: "駅のそばの？" }
+      - { who: dom, cast: us-m1, en: "No, the other one, near the park. I'll text you the map.", ja: "ううん、もうひとつのほう、公園の近く。地図送るね。" }
+  - id: kr-running-late
+    lv: 3
+    type: reply
+    speaker: kicks
+    voice: us
+    cast: us-m1
+    en: "Hey, I'm running about ten minutes late. My train stopped."
+    ja: "ごめん、10分くらい遅れてる。電車が止まっちゃって。 →「大丈夫、先に席とっとくね。」"
+    note: "running late＝遅れそう。走って いない"
+    choices: ["No worries, I'll grab us a table.", "Running? Be careful!", "Ten? I'll get two."]
+    answer: 0
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street] }
+  - id: km-another-time
+    lv: 3
+    type: mean
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "Ah, this week's crazy. Let's do it another time!"
+    ja: "たぶん、新しい日にちは決めていない。"
+    note: "another time だけ＝日にちは 決まって いない"
+    choices: ["She probably isn't planning a new date soon.", "She wants to meet next week for sure.", "She wants to meet right now."]
+    answer: 0
+    ask: "つまり、どういうこと？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 48, register: friend, pragmatic: refusal, conditions: [phone] }
+  - id: kn-new-time
+    lv: 3
+    type: num
+    speaker: diana
+    voice: uk
+    cast: uk-f1
+    en: "Can we make it half seven instead of seven? My train's running late."
+    ja: "7時じゃなくて7時半にしてもいい？ 電車が遅れてて。"
+    note: "half seven＝7時半（英）"
+    choices: ["7:30", "7:00", "6:30"]
+    answer: 0
+    ask: "あたらしい じかんは？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [clock] }
+  - id: kr-cant-make-it
+    lv: 3
+    type: reply
+    speaker: punchy
+    voice: au
+    cast: au-m1
+    en: "Mate, I'm so sorry, I can't make it tonight. My boss wants this report done. Another time?"
+    ja: "ほんとにごめん、今夜行けない。上司にこのレポートやれって言われて。また今度？ →「気にしないで。来週は？」"
+    note: "can't make it＝行けない。作れない ではない"
+    choices: ["Ah, no worries. Next week?", "Make what? Dinner?", "Sure, I'll make it for you."]
+    answer: 0
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: formula, conditions: [phone], features: [can-cant] }
+  - id: km-push-back
+    lv: 3
+    type: mean
+    speaker: olivia
+    voice: uk
+    cast: uk-f1
+    en: "Would you mind if we pushed it back an hour? I'm still at the hairdresser's."
+    ja: "1時間遅く会いたい。"
+    note: "push back＝あとに ずらす"
+    choices: ["She wants to meet an hour later.", "She wants to meet an hour earlier.", "She wants to cancel."]
+    answer: 0
+    ask: "つまり、どういうこと？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [weak-form] }
+  - id: dk-really-cancel
+    lv: 3
+    type: gist
+    speaker: gulliver
+    voice: us
+    cast: us-m2
+    en: "Hey Coco, about the beach tomorrow. Have you seen the forecast? I know, it's meant to bucket down. Shall we take a rain check? Yeah. How about next Saturday instead? Same time? Next Saturday works. I'll put it in my calendar. Talk soon!"
+    ja: "代わりに来週の土曜に行く。"
+    note: "rain check でも 日にちが 決まれば キャンセル ではない"
+    choices: ["They'll go next Saturday instead.", "They're going tomorrow in the rain.", "They've cancelled with no new date."]
+    answer: 0
+    focus: "How about next Saturday instead?"
+    ask: "ビーチは どうなる？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [idiom] }
+    lines:
+      - { who: gulliver, cast: us-m2, en: "Hey Coco, about the beach tomorrow. Have you seen the forecast?", ja: "やあココ、明日のビーチのことだけど。天気予報見た？" }
+      - { who: coco, cast: au-f1, en: "I know, it's meant to bucket down. Shall we take a rain check?", ja: "見た、どしゃぶりらしいね。また今度にする？" }
+      - { who: gulliver, cast: us-m2, en: "Yeah. How about next Saturday instead? Same time?", ja: "うん。代わりに来週の土曜は？ 同じ時間で。" }
+      - { who: coco, cast: au-f1, en: "Next Saturday works. I'll put it in my calendar. Talk soon!", ja: "来週の土曜、いいよ。カレンダーに入れとく。またね！" }
+  - id: kr-does-work
+    lv: 3
+    type: reply
+    speaker: wolfgang
+    voice: us
+    cast: us-m3
+    en: "Would Sunday afternoon work for you instead?"
+    ja: "代わりに日曜の午後は都合どう？ →「日曜ばっちり。何時？」"
+    note: "work for you＝都合が いい。働く ではない"
+    choices: ["Sunday's perfect. What time?", "Yes, I work on Sundays.", "I'm working on it."]
+    answer: 0
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: formula, conditions: [phone], features: [weak-form] }
+  - id: kn-date-move
+    lv: 3
+    type: num
+    speaker: cherry
+    voice: au
+    cast: au-f1
+    en: "So that's the 21st now, not the 12th. Sorry, it's a bit loud out here. Twenty-first!"
+    tts: "So that's the twenty-first now, not the twelfth. Sorry, it's a bit loud out here. Twenty-first!"
+    ja: "じゃあ12日じゃなくて21日ね。ごめん、外ちょっとうるさくて。21日！"
+    note: "12th／21st。最後の くりかえしが 答え"
+    choices: ["21st", "12th", "20th"]
+    answer: 0
+    ask: "あたらしい ひにちは？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 56, register: friend, pragmatic: literal, conditions: [phone, street], features: [numbers] }
+  - id: dk-cut-out
+    lv: 3
+    type: next
+    speaker: bob
+    voice: us
+    cast: us-m3
+    en: "Hey! Quick change: let's meet at the west exit, not the south one, at quarter to six. Sorry, you cut out. What was the last bit? Quarter to six! Five forty-five. At the west exit."
+    ja: "了解。5時45分に西口ね。"
+    note: "quarter to six＝5:45。場所は 西口"
+    choices: ["Got it. 5:45, west exit.", "Quarter past? Okay, 6:15.", "The south exit, then."]
+    answer: 0
+    focus: "Quarter to six"
+    ask: "つぎの ひとことは？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [clock] }
+    lines:
+      - { who: bob, cast: us-m3, en: "Hey! Quick change: let's meet at the west exit, not the south one, at quarter to six.", ja: "やあ！ ちょっと変更。南口じゃなくて西口で、6時15分前に会おう。" }
+      - { who: katt, cast: us-f2, en: "Sorry, you cut out. What was the last bit?", ja: "ごめん、途切れた。最後のところ何だった？" }
+      - { who: bob, cast: us-m3, en: "Quarter to six! Five forty-five. At the west exit.", ja: "6時15分前！ 5時45分。西口で。" }
+  - id: dk-movie-switch
+    lv: 3
+    type: gist
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Hey! So, small change of plan for the movie. Uh-oh. You're not cancelling, are you? No, no! I'm just running late. Can we do the 8:40 show instead of 7:15? Sure. So that's 8:40. I'll grab dinner first, then. See you there!"
+    ja: "8時40分の回を見る。"
+    note: "instead of のあとは 前の 予定。キャンセル ではない"
+    choices: ["They'll see the 8:40 show.", "He's cancelling the movie.", "They'll see the 7:15 show."]
+    answer: 0
+    focus: "Can we do the 8:40 show instead"
+    ask: "えいがは どうなる？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [numbers] }
+    lines:
+      - { who: kid-cat, cast: us-m1, en: "Hey! So, small change of plan for the movie.", ja: "やあ！ で、映画の予定、ちょっと変更。" }
+      - { who: tia, cast: us-f2, en: "Uh-oh. You're not cancelling, are you?", ja: "あれ。キャンセルじゃないよね？" }
+      - { who: kid-cat, cast: us-m1, en: "No, no! I'm just running late. Can we do the 8:40 show instead of 7:15?", tts: "No, no! I'm just running late. Can we do the eight forty show instead of seven fifteen?", ja: "ちがうちがう！ ちょっと遅れてるだけ。7時15分のじゃなくて8時40分の回にできる？" }
+      - { who: tia, cast: us-f2, en: "Sure. So that's 8:40. I'll grab dinner first, then. See you there!", tts: "Sure. So that's eight forty. I'll grab dinner first, then. See you there!", ja: "いいよ。じゃあ8時40分ね。先に夕飯食べとく。じゃあ映画館で！" }
+  - id: km-start-without
+    lv: 3
+    type: mean
+    speaker: bob
+    voice: us
+    cast: us-m3
+    en: "I might not make it by six. Can you guys start without me?"
+    ja: "遅れるので、先に始めてほしい。"
+    note: "might not make it by six＝6時に 間に合わない かも"
+    choices: ["He'll be late, so they should start.", "He isn't coming at all.", "He wants them to wait for him."]
+    answer: 0
+    ask: "つまり、どういうこと？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: hedge, conditions: [phone], features: [weak-form] }
+  - id: kr-came-up
+    lv: 3
+    type: reply
+    speaker: tangy
+    voice: us
+    cast: us-f1
+    en: "Ugh, something's come up tomorrow. Any chance we could do Friday?"
+    ja: "うわ、明日急用ができちゃった。金曜にできたりする？ →「いいよ、金曜で。時間は同じ？」"
+    note: "something's come up＝急用。Any chance〜？＝できる？"
+    choices: ["Sure, Friday's fine. Same time?", "What came up? The sun?", "Yes, tomorrow is fine."]
+    answer: 0
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: formula, conditions: [phone], features: [contraction] }
+  - id: km-east-exit
+    lv: 3
+    type: mean
+    speaker: sherb
+    voice: au
+    cast: au-m2
+    en: "Change of plan, we're meeting at the east exit. Sorry, I meant the east exit, not the west. East!"
+    ja: "東口で会う。"
+    note: "I meant〜, not〜 で 訂正。最後の East! が 答え"
+    choices: ["They'll meet at the east exit.", "They'll meet at the west exit.", "They'll meet at both exits."]
+    answer: 0
+    ask: "つまり、どういうこと？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [self-repair] }
+  - id: kr-rain-check-cold
+    lv: 3
+    type: reply
+    speaker: julian
+    voice: uk
+    cast: uk-m1
+    en: "Mind if I take a rain check on Saturday? I've got this awful cold."
+    ja: "土曜、また今度にしてもいい？ ひどい風邪ひいちゃって。 →「もちろん。お大事に！」"
+    note: "rain check＝また今度。雨 ではない"
+    choices: ["Of course. Feel better soon!", "It isn't raining, though.", "Sure, take my umbrella."]
+    answer: 0
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 49, register: friend, pragmatic: refusal, conditions: [phone], features: [idiom] }
+  - id: kn-push-time
+    lv: 3
+    type: num
+    speaker: lopez
+    voice: us
+    cast: us-m2
+    en: "Can we push it back to quarter to nine? Text me when you're leaving."
+    ja: "8時15分前にずらせる？ 出るときメッセージして。"
+    note: "quarter to nine＝8:45"
+    choices: ["8:45", "9:15", "8:15"]
+    answer: 0
+    ask: "なんじに なった？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: light, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone], features: [clock] }
+  - id: kw-gonna
+    lv: 3
+    type: word
+    speaker: maple
+    voice: us
+    cast: us-f3
+    en: "I'm going to be a bit late."
+    tts: "I'm gonna be a bit late."
+    ja: "ちょっと遅れそう。"
+    note: "going to は「ガナ」"
+    choices: ["going to", "want to", "got to"]
+    answer: 0
+    focus: "going to"
+    marks: [[say, "going to", gonna]]
+  - id: kw-make-it
+    lv: 3
+    type: word
+    speaker: dom
+    voice: us
+    cast: us-m1
+    en: "I can't make it tonight."
+    tts: "I can' make it tonight."
+    ja: "今夜は行けない。"
+    note: "can't の t は ほぼ 聞こえない。母音で 区別"
+    choices: ["can't", can, could]
+    answer: 0
+    focus: "can't"
+    marks: [[drop, "can't", t]]
+  - id: kw-come-up
+    lv: 3
+    type: word
+    speaker: molly
+    voice: us
+    cast: us-f3
+    en: "Something's come up."
+    tts: "Somethin's come up."
+    ja: "急用ができたの。"
+    note: "come up は「カマップ」と つながる"
+    choices: ["come up", "come out", "come on"]
+    answer: 0
+    focus: "come up"
+    marks: [[link, "come up"]]
+  - id: kw-still-on
+    lv: 3
+    type: word
+    speaker: raymond
+    voice: uk
+    cast: uk-m1
+    en: "Are we still on for tonight?"
+    tts: "Are we still on f'tonight?"
+    ja: "今夜、予定どおり？"
+    note: "still on は「スティロン」"
+    choices: ["still on", "still one", "steal on"]
+    answer: 0
+    focus: "still on"
+    marks: [[link, "still on"]]
+  - id: kw-push
+    lv: 3
+    type: word
+    speaker: coco
+    voice: au
+    cast: au-f1
+    en: "Can we push it back a bit?"
+    ja: "ちょっとずらせる？"
+    note: "push it back が ひと続き"
+    choices: ["push it back", "put it back", "pick it back"]
+    answer: 0
+    focus: "push it back"
+    marks: [[link, "push it back"]]
+  - id: kw-running
+    lv: 3
+    type: word
+    speaker: gulliver
+    voice: us
+    cast: us-m2
+    en: "I'm running a bit late."
+    tts: "I'm runnin' a bit late."
+    ja: "ちょっと遅れてる。"
+    note: "running a bit が つながる"
+    choices: [running, raining, ringing]
+    answer: 0
+    focus: running
+    marks: [[drop, running, g]]
+  - id: dk-fast-replan
+    lv: 3
+    type: gist
+    speaker: cherry
+    voice: au
+    cast: au-f1
+    en: "Hey! Can you hear me? I'm on the street. Barely! What's up? So, I can't make it at six, my shift's running over. Can we say seven, at the pub instead of the café? Sorry, did you say the pub? Yeah, seven at the pub. Easy. See you then!"
+    ja: "7時にパブ。"
+    note: "instead of the café＝カフェ ではなく。6時は なし"
+    choices: ["At seven, at the pub.", "At six, at the café.", "At seven, at the café."]
+    answer: 0
+    focus: "Can we say seven, at the pub"
+    ask: "どこで なんじ？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street], features: [contraction] }
+    lines:
+      - { who: cherry, cast: au-f1, en: "Hey! Can you hear me? I'm on the street.", ja: "もしもし！ 聞こえる？ いま外なの。" }
+      - { who: punchy, cast: au-m1, en: "Barely! What's up?", ja: "ぎりぎり！ どうした？" }
+      - { who: cherry, cast: au-f1, en: "So, I can't make it at six, my shift's running over. Can we say seven, at the pub instead of the café?", ja: "あのね、6時は無理、シフトが延びてて。7時に、カフェじゃなくてパブにしない？" }
+      - { who: punchy, cast: au-m1, en: "Sorry, did you say the pub? Yeah, seven at the pub. Easy. See you then!", ja: "ごめん、パブって言った？ うん、7時にパブ。了解。じゃあそのときに！" }
+  - id: km-fast-hedge
+    lv: 3
+    type: mean
+    speaker: kicks
+    voice: us
+    cast: us-m1
+    en: "Honestly, I'm wiped. Can we just… do it another time? I'll message you."
+    ja: "キャンセルで、新しい日にちはまだない。"
+    note: "another time＋I'll message you＝ほぼ キャンセル"
+    choices: ["He's cancelling and hasn't set a new date.", "He wants to meet tomorrow.", "He's on his way."]
+    answer: 0
+    ask: "つまり、どういうこと？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: street }
+    tags: { seed: 48, register: friend, pragmatic: refusal, conditions: [phone, street], features: [ellipsis] }
+  - id: kn-fast-day
+    lv: 3
+    type: num
+    speaker: tia
+    voice: us
+    cast: us-f2
+    en: "Let's move it to the 30th. Actually, no, the 13th. The 30th's my sister's thing."
+    tts: "Let's move it to the thirtieth. Actually, no, the thirteenth. The thirtieth's my sister's thing."
+    ja: "30日にしよう。やっぱりちがう、13日。30日は姉の用事があるの。"
+    note: "Actually, no のあとが 答え。thirTEEN"
+    choices: ["13th", "30th", "3rd"]
+    answer: 0
+    ask: "なんにち？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: street }
+    tags: { seed: 56, register: friend, pragmatic: literal, conditions: [phone, street], features: [numbers, teen-ty, self-repair] }
+  - id: kr-fast-work
+    lv: 3
+    type: reply
+    speaker: wilbur
+    voice: au
+    cast: au-m2
+    en: "Does Tuesday at noon work? If not, I'm free Wednesday morning."
+    ja: "火曜の正午はどう？ だめなら水曜の朝が空いてる。 →「火曜の正午、ばっちり。」"
+    note: "work＝都合が いい。If not＝だめ なら"
+    choices: ["Tuesday at noon's perfect.", "Yes, I work at noon.", "No, I'm not free on Wednesday."]
+    answer: 0
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: street }
+    tags: { seed: 49, register: friend, pragmatic: literal, conditions: [phone, street] }
+lessons:
+  v: 1
+  deai: [dk-dinner-move, dk-dinner-place, kr-running-late, km-another-time, kn-new-time, mw-rain-check]
+  bamen: [kr-cant-make-it, km-push-back, dk-really-cancel, kr-does-work, kn-date-move, dk-cut-out, r4-come-up, d4-friend-cancels]
+  check: [dk-movie-switch, km-start-without, kr-came-up, km-east-exit, kr-rain-check-cold, kn-push-time]
+  oto: [kw-gonna, kw-make-it, kw-come-up, kw-still-on, kw-push, kw-running]
+  jissen: [dk-fast-replan, km-fast-hedge, kn-fast-day, kr-fast-work, n3-meet-1, sp-running-late]
+tiers:
+  dk-dinner-move:
+    easy: { choices: ["Thursday at seven.", "Tonight at seven."], answer: 0 }
+    hard: { choices: ["It's moved to Thursday, same place, at seven.", "It's moved to Thursday, a new place, at seven.", "It's moved to Tuesday, same place, at seven.", "It's still tonight, but at seven."], answer: 0 }
+  km-another-time:
+    easy: { choices: ["There's no new date.", "They'll meet next week."], answer: 0 }
+  km-fast-hedge:
+    hard: { choices: ["He's cancelling and hasn't set a new date.", "He's moving it to a date he'll message.", "He wants to meet but somewhere quieter.", "He's on his way, just tired."], answer: 0 }
