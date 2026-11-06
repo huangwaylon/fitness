@@ -861,7 +861,7 @@
  {
   "key": "mext-11221",
   "ja": "鶏もも肉 皮つき 生",
-  "desc": "a raw chicken thigh with skin, pink meat with pale yellow skin, flattened",
+  "desc": "a raw boneless chicken thigh fillet as sold in Japan, one flat irregular piece of pink meat laid out on a tray, with pale yellowish-white bumpy skin covering one side, no bone, not a drumstick",
   "items": [
    "mext:11221"
   ]
@@ -897,7 +897,7 @@
  {
   "key": "mext-11224",
   "ja": "鶏もも肉 皮なし 生",
-  "desc": "raw skinless chicken thigh, dark pink meat",
+  "desc": "a raw boneless skinless chicken thigh fillet as sold in Japan, one flat irregular piece of deep pink meat with no skin and no bone, laid out on a tray, not a drumstick",
   "items": [
    "mext:11224"
   ]
