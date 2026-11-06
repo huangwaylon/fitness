@@ -46,7 +46,8 @@ describe('ききみみ progress rows', () => {
     ok(game('ab15', { d: '2026-11-07' }), false);
     ok(game('ab16', { d: '2026-02-30' }), false);
     ok(game('AB17'), false);
-    ok(game('ab18', { lv: 6 }), false);
+    ok(game('ab18', { lv: 9 }), false);
+    ok(game('ab18b', { lv: 7 }), true); // ほし (levels 6-7 since 2026-11-06)
     ok(game('ab19', { n: 4 }), false);
     ok(game('ab20', { ms: 3_600_001 }), false);
     ok(game('ab21', { p: 2 }), false);

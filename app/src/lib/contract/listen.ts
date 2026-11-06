@@ -20,7 +20,7 @@ export interface ListenRow {
   gm?: string;
   /** Its unit, if the game has units. */
   u?: string;
-  /** Its level (the protocol's 1-5: the stage). */
+  /** Its level (the protocol's 1-8: the stage, 5 the アナウンス pack). */
   lv: number;
   /** The players in it (1-3). */
   n: number;
@@ -58,7 +58,7 @@ export function listenOf(d: unknown): ListenRow | null {
   if (!d || typeof d !== 'object' || Array.isArray(d)) return null;
   const o = d as Record<string, unknown>;
   if (Object.keys(o).some((k) => !KEYS.has(k))) return null;
-  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !int(o.lv, 1, 5) || !int(o.n, 1, 3) || !int(o.ms, 0, LISTEN_MAX_MS)) return null;
+  if (!isLocalDate(o.d) || typeof o.g !== 'string' || !GAME_RE.test(o.g) || !int(o.lv, 1, 8) || !int(o.n, 1, 3) || !int(o.ms, 0, LISTEN_MAX_MS)) return null;
   if (o.p !== undefined && o.p !== 1) return null;
   if (o.gm !== undefined && (typeof o.gm !== 'string' || !GM_RE.test(o.gm))) return null;
   if (o.u !== undefined && (typeof o.u !== 'string' || !UNIT_RE.test(o.u))) return null;

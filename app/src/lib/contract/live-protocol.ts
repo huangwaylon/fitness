@@ -142,9 +142,10 @@ export type QuizWire =
   | { g: string; op: 'go'; at: number }
   | { g: string; op: 'a'; i: number; k: number; rp: boolean; s: number }
   | { g: string; op: 'skip'; i: number; at: number };
-/** A quiz's level: 1-3 the first bank, 4 かわ・もり (docs/curriculum.md §14), 5 room for the next without a relay deploy
- *  (a phone offers only the levels it has every clip of: kikimimi/deck.ts LEVELS). @public (kikimimi/) */
-export type QuizLv = 1 | 2 | 3 | 4 | 5;
+/** A quiz's level: 1-3 the first bank, 4 もり (docs/curriculum.md §14), 5 the アナウンス pack, 6 やま, 7 ほし, 8 room for
+ *  the next without a relay deploy (a phone offers only the levels it has every clip of: kikimimi/deck.ts LEVELS).
+ *  @public (kikimimi/) */
+export type QuizLv = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 /** A quiz's questions (`a`'s `i` 0-7, `skip`'s 0-8), choices (`k` 0-3) and the most a game's `s` may say: 8 × (100 +
  *  30), the first-listen bonus's days (now 100 a right answer, いっぱつ a badge: a phone from before still sends its
  *  totals); kikimimi/deck.test.ts checks them against deck.ts and score.ts. @public (kikimimi/) */
@@ -526,7 +527,7 @@ function quizOf(o: Obj): Intent | null {
   const g = o.g;
   switch (o.op) {
     case 'open':
-      if (!Number.isInteger(o.seed) || (o.seed as number) < 0 || (o.seed as number) > 0xffff_ffff || !within(o.lv, [1, 5]) || typeof o.same !== 'boolean') return null;
+      if (!Number.isInteger(o.seed) || (o.seed as number) < 0 || (o.seed as number) > 0xffff_ffff || !within(o.lv, [1, 8]) || typeof o.same !== 'boolean') return null;
       return { kind: 'quiz', g, op: 'open', seed: o.seed as number, lv: o.lv as QuizLv, same: o.same };
     case 'go':
       return isTime(o.at) ? { kind: 'quiz', g, op: 'go', at: o.at } : null;
