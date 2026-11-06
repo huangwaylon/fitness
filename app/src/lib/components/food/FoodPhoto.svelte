@@ -6,6 +6,7 @@
   import { t } from '#lib/i18n/index.ts';
   import type { Item } from '#lib/food/index.ts';
   import type { FoodImg } from '#lib/food/images.ts';
+  import NavButton from '../ui/NavButton.svelte';
   import FoodThumb from './FoodThumb.svelte';
 
   interface Props {
@@ -28,9 +29,9 @@
   }
 </script>
 
-<dialog bind:this={dlg} class="photo" data-food-photo aria-label={t('food.img.alt', { name: item.name })} onclose={onclose} onclick={outside}>
+<dialog bind:this={dlg} class="photo" data-food-photo data-sfx="back" aria-label={t('food.img.alt', { name: item.name })} onclose={onclose} onclick={outside}>
   <div class="card in">
-    <button type="button" class="x" data-sfx="back" aria-label={t('common.close')} onclick={() => dlg?.close()}>✕</button>
+    <span class="x"><NavButton kind="close" onclick={() => dlg?.close()} /></span>
     <div class="pic">
       <FoodThumb cat={item.cat} {size} {img} alt={t('food.img.alt', { name: item.name })} />
       <span class="badge">{t('food.img.badge')}</span>
@@ -58,11 +59,5 @@
   p { margin: 0; font-size: var(--fs-s); font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
   .full, .credit { color: var(--text-soft); }
   .credit { font-size: var(--fs-xs); }
-  .x {
-    position: absolute; top: -10px; right: -10px; z-index: 2; appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit);
-    border-radius: 50%; display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj);
-    font: 700 var(--fs-body)/1 var(--font-ui);
-  }
-  .x:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .x:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .x { position: absolute; top: -10px; right: -10px; z-index: 2; display: flex; }
 </style>
