@@ -23,7 +23,7 @@ vi.mock('svelte/reactivity', () => ({
     return () => {};
   }
 }));
-vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => fake.now, serverNow: () => fake.server } }));
+vi.mock('#lib/store/world.svelte.ts', () => ({ world: { now: () => fake.now, serverNow: () => fake.server }, opClock: (last: number, after = 0) => Math.max(Math.round(fake.server), last + 1, after + 1) }));
 vi.mock('#lib/store/week.svelte.ts', async () => {
   const { reduce: red, foldEvents: fold } = await import('#lib/model/state.ts');
   return {

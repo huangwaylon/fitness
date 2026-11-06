@@ -18,7 +18,7 @@ import type { HomeStyle } from '#lib/layout/homes.ts';
 import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, writeRaw } from '#lib/sync/storage.ts';
-import { world } from './world.svelte.ts';
+import { opClock, world } from './world.svelte.ts';
 
 const LAYOUT_SCOPES: readonly unknown[] = ['o', 'c', 'r', 'h'];
 
@@ -266,7 +266,7 @@ class IslandLayout {
 
   /** The time of a change of mine: the relay's clock, never twice the same, after every op it replaces. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.now()), this.#last + 1, after + 1);
+    this.#last = opClock(this.#last, after);
     return this.#last;
   }
   /** A time for a burst of ops (the editor's save): each op one ms after the last. */

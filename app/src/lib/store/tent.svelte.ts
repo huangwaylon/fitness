@@ -13,7 +13,7 @@ import { TENT_FLOOR, TENT_MAX, TENT_ROOM, TENT_WALL, mergeTent, tentLayout, tent
 import type { Relayed, Who } from '#lib/contract/live-protocol.ts';
 import type { Live } from '#lib/sync/live.ts';
 import { DEMO, LIVE, localKV, readJson, writeJson } from '#lib/sync/storage.ts';
-import { world } from './world.svelte.ts';
+import { opClock, world } from './world.svelte.ts';
 
 /** A partner's change this recent is played as it happens. */
 const LIVE_MS = 12_000;
@@ -180,7 +180,7 @@ class TentRoom {
 
   /** The time of a change of mine: the relay's clock, never twice the same, and after the op it changes. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.now()), this.#last + 1, after + 1);
+    this.#last = opClock(this.#last, after);
     return this.#last;
   }
 

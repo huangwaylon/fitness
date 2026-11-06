@@ -19,7 +19,7 @@ import { todayIn, untilMidnight } from '#lib/time/zone.ts';
 import { daysBetween } from '#lib/time/dates.ts';
 import { boardConfig, type BoardConfig } from '#lib/wedding/config.ts';
 import { week } from '#lib/store/week.svelte.ts';
-import { world } from '#lib/store/world.svelte.ts';
+import { opClock, world } from '#lib/store/world.svelte.ts';
 import type { Who } from '#lib/types.ts';
 
 /** A version of the notes: its text, when it was saved and by whom (`imported`: the old Sheet's, never saved since). */
@@ -115,7 +115,7 @@ class WeddingBoard {
   /** A change's time: the relay's own clock (never a `?date=` preview's), never twice the same, after the op it
    *  replaces. */
   #now(after = 0): number {
-    this.#last = Math.max(Math.round(world.serverNow()), this.#last + 1, after + 1);
+    this.#last = opClock(this.#last, after);
     return this.#last;
   }
   #set(id: string): WTaskSet | null {
