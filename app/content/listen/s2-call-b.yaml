@@ -14,6 +14,7 @@ items:
   - kind: call
     id: call-bag-found
     ask: "航空会社から でんわ"
+    ctx: "旅行中、なくした荷物の件で電話がありました"
     channel: phone
     lines:
       - { who: orville, en: "Hi, this is Dodo Airlines baggage services, calling about your missing bag. Good news, we found it. It went to Sapporo by mistake.", tts: "Hi, this is Dodo Airlines baggage services, callin' about yer missing bag. Good news, we found it. It went to Sapporo by mistake.", ja: "ドードー航空の手荷物サービスです。お探しのバッグの件でお電話しました。朗報です、見つかりました。間違って札幌に行っていました。" }
@@ -25,17 +26,19 @@ items:
       - { who: orville, en: "Sure thing. Just let the hotel know it's coming, and you'll need ID to pick it up.", tts: "Sure thing. Just let the hotel know it's comin', an' you'll need I D ta pick it up.", ja: "大丈夫ですよ。ホテルに届くことを伝えておいてください。受け取りには身分証が必要です。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "照会番号は？", options: ["HND 42075", "HND 40275", "HND 42057"], answer: 0 }
-          - { ask: "いつまでに 届く？", options: ["正午", "夕方 6時", "あしたの 朝"], answer: 1 }
-          - { ask: "受けとりに いるのは？", options: ["身分証", "搭乗券", "照会番号の メール"], answer: 0 }
-          - { ask: "バッグは どこに あった？", options: ["札幌", "成田", "ソウル"], answer: 0 }
+      - why: "番号は four-two-oh-seven-five で42075。朝の便が満席で、Make that by six p.m.＝夕方6時までに変更。受け取りには身分証が必要。"
+        slots:
+          - { ask: "照会番号は？", options: ["HND 42075", "HND 40275", "HND 42057"], answer: 0, cja: ["エイチエヌディー 42075", "エイチエヌディー 40275", "エイチエヌディー 42057"] }
+          - { ask: "いつまでに 届く？", options: ["正午", "夕方 6時", "あしたの 朝"], answer: 1, cja: ["正午", "夕方6時", "明日の朝"] }
+          - { ask: "受けとりに いるのは？", options: ["身分証", "搭乗券", "照会番号の メール"], answer: 0, cja: ["身分証", "搭乗券", "照会番号のメール"] }
+          - { ask: "バッグは どこに あった？", options: ["札幌", "成田", "ソウル"], answer: 0, cja: ["札幌", "成田", "ソウル"] }
     note: "Make that～＝言い直し。正午ではなく夕方6時"
     tags: { seed: 6, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair, weak-form] }
 
   - kind: call
     id: call-parcel-express
     ask: "配送会社に でんわ。海外へ 荷物を 送る"
+    ctx: "海外に荷物を送りたくて、配送会社に電話しています"
     scene: living
     channel: phone
     lines:
@@ -48,16 +51,18 @@ items:
       - { who: pekoe, en: "Great. And it'll need a customs form, since it's going overseas. Just list what's inside and roughly what it's worth.", tts: "Great. An' it'll need a customs form, since it's goin' overseas. Just list what's inside an' roughly what it's worth.", ja: "かしこまりました。海外宛てなので税関申告書が必要です。中身とだいたいの金額を書いてください。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "えらんだ プランは？", options: ["エコノミー", "スタンダード", "エクスプレス"], answer: 2 }
-          - { ask: "料金は？", options: ["4,200円", "6,800円", "11,000円"], answer: 2 }
-          - { ask: "書くものは？", options: ["中身と だいたいの 金額", "相手の でんわ番号", "自分の パスポート番号"], answer: 0 }
+      - why: "最初はスタンダードだったが、ぎりぎりだと I'd go express と勧められ、エクスプレスに変更して11,000円。税関の書類には中身と金額を書く。"
+        slots:
+          - { ask: "えらんだ プランは？", options: ["エコノミー", "スタンダード", "エクスプレス"], answer: 2, cja: ["エコノミー", "スタンダード", "エクスプレス"] }
+          - { ask: "料金は？", options: ["4,200円", "6,800円", "11,000円"], answer: 2, cja: ["4,200円", "6,800円", "11,000円"] }
+          - { ask: "書くものは？", options: ["中身と だいたいの 金額", "相手の でんわ番号", "自分の パスポート番号"], answer: 0, cja: ["中身とだいたいの金額", "相手の電話番号", "自分のパスポート番号"] }
     note: "I'd go express＝私ならエクスプレス。最後に変更"
     tags: { seed: 24, register: service, pragmatic: indirect, conditions: [phone], features: [numbers, teen-ty, self-repair] }
 
   - kind: call
     id: call-handouts-favour
     ask: "同僚から 朝の でんわ"
+    ctx: "朝早く、同僚から電話がかかってきました"
     scene: office
     channel: phone
     lines:
@@ -70,17 +75,19 @@ items:
       - { who: me, en: "No problem, I'll take care of it.", ja: "了解、やっておくね。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "何部？", options: ["10部", "12部", "15部"], answer: 2 }
-          - { ask: "ファイルは？", options: ["Q3 最終版", "Q4 最終版", "名古屋チーム"], answer: 0 }
-          - { ask: "場所は？", options: ["B会議室", "4階の 大きい 部屋", "オンラインだけ"], answer: 1 }
-          - { ask: "会議は 何時？", options: ["10時", "12時", "3時"], answer: 0 }
+      - why: "make it fifteen で12部から15部に。ファイルは Q3 final。部屋は4階の大きい部屋に変更。the ten o'clock＝10時の会議。"
+        slots:
+          - { ask: "何部？", options: ["10部", "12部", "15部"], answer: 2, cja: ["10部", "12部", "15部"] }
+          - { ask: "ファイルは？", options: ["Q3 最終版", "Q4 最終版", "名古屋チーム"], answer: 0, cja: ["第3四半期の最終版", "第4四半期の最終版", "名古屋チームのファイル"] }
+          - { ask: "場所は？", options: ["B会議室", "4階の 大きい 部屋", "オンラインだけ"], answer: 1, cja: ["ビー会議室", "4階の大きい部屋", "オンラインのみ"] }
+          - { ask: "会議は 何時？", options: ["10時", "12時", "3時"], answer: 0, cja: ["10時", "12時", "3時"] }
     note: "頼みごとは後半。make it fifteen＝15部に変更"
     tags: { seed: 45, register: colleague, pragmatic: indirect, conditions: [phone], features: [self-repair, weak-form, filler] }
 
   - kind: call
     id: call-next-friday
     ask: "パートナーから でんわ"
+    ctx: "仕事中に、パートナーから電話です"
     scene: office
     channel: phone
     lines:
@@ -93,16 +100,18 @@ items:
       - { who: me, en: "Got it. No hoodie.", ja: "了解。パーカーはやめとく。" }
     half: [0, 0, 0, 1, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "何日に する？", options: ["12日", "19日", "20日"], answer: 1 }
-          - { ask: "何時？", options: ["6時半", "7時", "7時半"], answer: 2 }
-          - { ask: "彼女が 言いたいことは？", options: ["きちんとした 服で 来て", "高いから 別の 店に", "予約を やめたい"], answer: 0 }
+      - why: "next Friday は12日でなく19日。時間は7時半。fancy place, just so you know＝きちんとした服で、の遠回しなヒント。"
+        slots:
+          - { ask: "何日に する？", options: ["12日", "19日", "20日"], answer: 1, cja: ["12日", "19日", "20日"] }
+          - { ask: "何時？", options: ["6時半", "7時", "7時半"], answer: 2, cja: ["6時半", "7時", "7時半"] }
+          - { ask: "彼女が 言いたいことは？", options: ["きちんとした 服で 来て", "高いから 別の 店に", "予約を やめたい"], answer: 0, cja: ["きちんとした服で来てほしい", "高いから別の店にしたい", "予約をやめたい"] }
     note: "Just so you know＝遠回しに服装のヒント"
     tags: { seed: 56, register: partner, pragmatic: indirect, conditions: [phone], features: [self-repair, teen-ty, clock] }
 
   - kind: call
     id: call-jacket-exchange
     ask: "服の 店に でんわ。サイズ交換"
+    ctx: "ネットで買った服の店に電話しています"
     scene: living
     channel: phone
     lines:
@@ -115,10 +124,11 @@ items:
       - { who: me, en: "Okay, I'll drop it off tomorrow.", ja: "わかりました。明日出します。" }
     half: [0, 0, 0, 0, 1, 1, 1]
     memo:
-      - slots:
-          - { ask: "新しい 色は？", options: ["ネイビー", "オリーブ", "チャコール"], answer: 2 }
-          - { ask: "サイズは？", options: ["M", "L", "XL"], answer: 1 }
-          - { ask: "返送料は？", options: ["無料", "500円", "自分で 払う"], answer: 0 }
-          - { ask: "いつまでに 送る？", options: ["金曜まで", "7日後", "いつでも いい"], answer: 0 }
+      - why: "ネイビーのLは在庫切れで、チャコールに。返送は free（無料）。セール品なので7日以内の発送で、by Friday＝金曜までに出す。「7日後」ではない。"
+        slots:
+          - { ask: "新しい 色は？", options: ["ネイビー", "オリーブ", "チャコール"], answer: 2, cja: ["ネイビー", "オリーブ", "チャコール"] }
+          - { ask: "サイズは？", options: ["M", "L", "XL"], answer: 1, cja: ["エム", "エル", "エックスエル"] }
+          - { ask: "返送料は？", options: ["無料", "500円", "自分で 払う"], answer: 0, cja: ["無料", "500円", "自己負担"] }
+          - { ask: "いつまでに 送る？", options: ["金曜まで", "7日後", "いつでも いい"], answer: 0, cja: ["金曜まで", "7日後", "いつでもいい"] }
     note: "Oh, wait の後が条件。金曜までに発送"
     tags: { seed: 26, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, lemme, weak-form] }
