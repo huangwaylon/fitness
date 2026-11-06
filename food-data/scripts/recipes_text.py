@@ -236,7 +236,7 @@ PROFILES = {   # source -> (note, dataset meta)
     'maff_kyodo': (
         lambda rec: '%sの郷土料理%s。材料から成分表で推計' % (rec['pref'], '（%s）' % rec['region'] if rec.get('region') else ''),
         {'source': 'maff_kyodo', 'label': '農林水産省「うちの郷土料理」（栄養価は成分表から推計）',
-         'attribution': '出典：農林水産省「うちの郷土料理」(https://www.maff.go.jp/j/keikaku/syokubunka/k_ryouri/) のレシピを加工して作成。栄養価は日本食品標準成分表（八訂）増補2023年から算出した推計値',
+         'attribution': '出典：農林水産省「うちの郷土料理」(https://www.maff.go.jp/j/keikaku/syokubunka/k_ryouri/) のレシピと解説を加工して作成（説明文は本アプリ独自）。栄養価は日本食品標準成分表（八訂）増補2023年から算出した推計値',
          'license': '公共データ利用規約（第1.0版）PDL1.0 / CC BY 4.0 compatible（MEXT成分表: 同上）',
          'url': 'https://www.maff.go.jp/j/keikaku/syokubunka/k_ryouri/'}),
     'takatsuki': (

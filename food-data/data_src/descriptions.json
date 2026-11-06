@@ -4912,5 +4912,2206 @@
    ]
   }
  },
- "maff_kyodo": {}
+ "maff_kyodo": {
+  "28_10_iwate": {
+   "d": "にんじんやこんにゃくなどを煮しめた煮物",
+   "src": [
+    "maff:28_10_iwate",
+    "wp:煮しめ"
+   ]
+  },
+  "28_12_iwate": {
+   "d": "鮭の頭の軟骨を酢でしめたなます",
+   "src": [
+    "maff:28_12_iwate",
+    "wp:氷頭なます"
+   ]
+  },
+  "28_16_iwate": {
+   "d": "三角に切ったそば粉の生地を煮てにんにく味噌で食べる",
+   "src": [
+    "maff:28_16_iwate",
+    "wp:かっけ (料理)"
+   ]
+  },
+  "28_1_iwate": {
+   "d": "小麦粉の生地を手でちぎって汁で煮たもの",
+   "src": [
+    "maff:28_1_iwate",
+    "wp:ひっつみ"
+   ]
+  },
+  "28_23_iwate": {
+   "d": "どんこという魚と野菜を煮込んだ汁物",
+   "src": [
+    "maff:28_23_iwate",
+    "wp:どんこ汁"
+   ]
+  },
+  "28_24_iwate": {
+   "d": "肉や魚を入れない野菜の汁物",
+   "src": [
+    "maff:28_24_iwate",
+    "wd:Q11266028"
+   ]
+  },
+  "28_29_iwate": {
+   "d": "雑煮のもちを別皿のくるみだれにつけて食べる",
+   "src": [
+    "maff:28_29_iwate",
+    "wp:くるみ雑煮"
+   ]
+  },
+  "28_4_iwate": {
+   "d": "小麦粉と卵、砂糖を混ぜて蒸し、ゴマをのせた菓子",
+   "src": [
+    "maff:28_4_iwate",
+    "wp:がんづき"
+   ]
+  },
+  "28_8_iwate": {
+   "d": "つぶした豆に米粉や砂糖を混ぜた菓子",
+   "src": [
+    "maff:28_8_iwate",
+    "wp:豆しとぎ"
+   ]
+  },
+  "29_12_akita": {
+   "d": "豆腐をカステラ状にした菓子",
+   "src": [
+    "maff:29_12_akita",
+    "wp:豆腐カステラ"
+   ]
+  },
+  "29_13_akita": {
+   "d": "米と野菜や果物で作る酢の物",
+   "src": [
+    "maff:29_13_akita",
+    "wp:あさづけ"
+   ]
+  },
+  "29_17_akita": {
+   "d": "鱈を味噌で煮込んだ汁",
+   "src": [
+    "maff:29_17_akita",
+    "wp:たら汁"
+   ]
+  },
+  "29_25_akita": {
+   "d": "細かく刻んだ野菜や山菜を煮た味噌味の汁",
+   "src": [
+    "maff:29_25_akita",
+    "wp:けの汁"
+   ]
+  },
+  "29_26_akita": {
+   "d": "餅を水に浸して寒さで凍らせ、干した保存食",
+   "src": [
+    "maff:29_26_akita",
+    "wp:干し餅",
+    "wp:氷餅"
+   ]
+  },
+  "29_5_akita": {
+   "d": "納豆を加えた味噌汁",
+   "src": [
+    "maff:29_5_akita",
+    "wp:納豆汁"
+   ]
+  },
+  "29_6_akita": {
+   "d": "つぶしたご飯を串で焼いて切り、鶏だしで煮る鍋",
+   "src": [
+    "maff:29_6_akita",
+    "wp:きりたんぽ"
+   ]
+  },
+  "30_12_fukushima": {
+   "d": "ご飯の上にいくら（はらこ）をのせた料理",
+   "src": [
+    "maff:30_12_fukushima",
+    "wp:はらこ飯"
+   ]
+  },
+  "30_1_fukushima": {
+   "d": "細切りのするめとにんじんを醤油などで味付けしたもの",
+   "src": [
+    "maff:30_1_fukushima",
+    "wp:いかにんじん"
+   ]
+  },
+  "30_21_fukushima": {
+   "d": "つぶしたご飯を串に刺し、えごま味噌を塗って焼いたもの",
+   "src": [
+    "maff:30_21_fukushima",
+    "wp:しんごろう"
+   ]
+  },
+  "30_22_fukushima": {
+   "d": "切った鯉を味噌汁で煮込んだ料理",
+   "src": [
+    "maff:30_22_fukushima",
+    "wp:鯉こく"
+   ]
+  },
+  "30_23_fukushima": {
+   "d": "生の馬肉を刺身にしたもの",
+   "src": [
+    "maff:30_23_fukushima",
+    "wp:馬刺し"
+   ]
+  },
+  "30_30_fukushima": {
+   "d": "どんこという魚を野菜と煮込んだ汁物",
+   "src": [
+    "maff:30_30_fukushima",
+    "wp:どんこ汁"
+   ]
+  },
+  "31_14_tochigi": {
+   "d": "油揚げに酢飯を詰めた寿司",
+   "src": [
+    "maff:31_14_tochigi",
+    "wp:稲荷寿司"
+   ]
+  },
+  "31_19_tochigi": {
+   "d": "里芋や根菜、こんにゃくなどを煮しめた煮物",
+   "src": [
+    "maff:31_19_tochigi",
+    "wp:煮しめ"
+   ]
+  },
+  "31_1_tochigi": {
+   "d": "鮭の頭と大豆、根菜、酒粕を煮込んだ料理",
+   "src": [
+    "maff:31_1_tochigi",
+    "wp:しもつかれ"
+   ]
+  },
+  "31_21_tochigi": {
+   "d": "もち米とうるち米を炊いて、あんをつけたもの",
+   "src": [
+    "maff:31_21_tochigi",
+    "wp:ぼたもち"
+   ]
+  },
+  "31_24_tochigi": {
+   "d": "よもぎを練りこんだ米粉の餅",
+   "src": [
+    "maff:31_24_tochigi",
+    "wp:草餅"
+   ]
+  },
+  "31_2_tochigi": {
+   "d": "耳の形にした小麦粉の麺の料理",
+   "src": [
+    "maff:31_2_tochigi",
+    "wp:耳うどん"
+   ]
+  },
+  "31_6_tochigi": {
+   "d": "うるち米をついた餅、粘りが少なく固くなりにくい",
+   "src": [
+    "maff:31_6_tochigi",
+    "wp:ばんだい餅"
+   ]
+  },
+  "31_9_tochigi": {
+   "d": "ちちたけとなすを炒めた汁にうどんを入れた料理",
+   "src": [
+    "maff:31_9_tochigi",
+    "wp:ちたけそば"
+   ]
+  },
+  "32_13_gunma": {
+   "d": "鮭の頭と大豆、根菜、酒粕を煮込んだ料理",
+   "src": [
+    "maff:32_13_gunma",
+    "wp:しもつかれ"
+   ]
+  },
+  "32_19_gunma": {
+   "d": "牛肉や野菜を割り下で焼いたり煮たりする料理",
+   "src": [
+    "maff:32_19_gunma",
+    "wp:すき焼き"
+   ]
+  },
+  "32_1_gunma": {
+   "d": "麺を汁ごと煮込んだ麺料理",
+   "src": [
+    "maff:32_1_gunma",
+    "wp:おっきりこみ"
+   ]
+  },
+  "32_21_gunma": {
+   "d": "すりつぶした大豆を入れた味噌汁",
+   "src": [
+    "maff:32_21_gunma",
+    "wp:呉汁"
+   ]
+  },
+  "32_2_gunma": {
+   "d": "小麦粉をこねて丸め、汁で煮たもの",
+   "src": [
+    "maff:32_2_gunma",
+    "wp:すいとん"
+   ]
+  },
+  "32_7_gunma": {
+   "d": "米に麦や豆、野菜などを混ぜて炊いた飯",
+   "src": [
+    "maff:32_7_gunma",
+    "wp:かて飯"
+   ]
+  },
+  "32_8_gunma": {
+   "d": "ねぎを酢味噌で和えた料理",
+   "src": [
+    "maff:32_8_gunma",
+    "wp:ぬた"
+   ]
+  },
+  "33_11_saitama": {
+   "d": "揚げたジャガイモに味噌だれをからめたもの",
+   "src": [
+    "maff:33_11_saitama",
+    "wp:みそポテト"
+   ]
+  },
+  "33_12_saitama": {
+   "d": "青梅をシソの葉で包んで砂糖漬けにしたもの",
+   "src": [
+    "maff:33_12_saitama",
+    "wp:甘露梅"
+   ]
+  },
+  "33_14_saitama": {
+   "d": "小麦粉の生地をちぎって汁で煮たもの",
+   "src": [
+    "maff:33_14_saitama",
+    "wp:すいとん"
+   ]
+  },
+  "33_19_saitama": {
+   "d": "大豆と大根などの根菜を煮込んだ料理",
+   "src": [
+    "maff:33_19_saitama",
+    "wp:しもつかれ"
+   ]
+  },
+  "33_20_saitama": {
+   "d": "揚げ物ではなく、鉄板で焼く料理",
+   "src": [
+    "maff:33_20_saitama",
+    "wp:フライ (鉄板焼)"
+   ]
+  },
+  "33_2_saitama": {
+   "d": "すりつぶした大豆を入れた味噌汁",
+   "src": [
+    "maff:33_2_saitama",
+    "wp:呉汁"
+   ]
+  },
+  "33_3_saitama": {
+   "d": "味噌で味をつけた冷たい汁",
+   "src": [
+    "maff:33_3_saitama",
+    "wp:冷や汁"
+   ]
+  },
+  "33_4_saitama": {
+   "d": "まんじゅうの周りに赤飯をまぶした菓子",
+   "src": [
+    "maff:33_4_saitama",
+    "wp:いがまんじゅう"
+   ]
+  },
+  "33_5_saitama": {
+   "d": "砂糖を使わず塩味のあんを包んだ大福",
+   "src": [
+    "maff:33_5_saitama",
+    "wp:塩あんびん"
+   ]
+  },
+  "33_6_saitama": {
+   "d": "ご飯に野菜などの具を混ぜた飯",
+   "src": [
+    "maff:33_6_saitama",
+    "wp:かて飯"
+   ]
+  },
+  "33_7_saitama": {
+   "d": "幅広の麺と野菜を煮込み、醤油で味付けした料理",
+   "src": [
+    "maff:33_7_saitama",
+    "wp:煮ぼうとう"
+   ]
+  },
+  "33_8_saitama": {
+   "d": "おからとジャガイモを小判形にして揚げたもの",
+   "src": [
+    "maff:33_8_saitama",
+    "wp:ゼリーフライ"
+   ]
+  },
+  "33_9_saitama": {
+   "d": "ねぎを酢味噌で和えた料理",
+   "src": [
+    "maff:33_9_saitama",
+    "wp:ぬた"
+   ]
+  },
+  "34_12_tokyo": {
+   "d": "鶏肉を卵でとじてご飯にのせた丼",
+   "src": [
+    "maff:34_12_tokyo",
+    "wp:親子丼"
+   ]
+  },
+  "34_13_tokyo": {
+   "d": "甘辛く煮たかんぴょうを芯にした海苔巻き",
+   "src": [
+    "maff:34_13_tokyo",
+    "wp:干瓢巻き"
+   ]
+  },
+  "34_16_tokyo": {
+   "d": "うどんと油揚げ、ねぎなどを煮込んだ料理",
+   "src": [
+    "maff:34_16_tokyo",
+    "wp:のしこみうどん"
+   ]
+  },
+  "34_17_tokyo": {
+   "d": "牛肉や野菜を割り下で煮る鍋料理",
+   "src": [
+    "maff:34_17_tokyo",
+    "wp:すき焼き"
+   ]
+  },
+  "34_1_tokyo": {
+   "d": "アサリとねぎを煮た汁をご飯にかけたもの、炊き込みも",
+   "src": [
+    "maff:34_1_tokyo",
+    "wp:深川めし"
+   ]
+  },
+  "34_22_tokyo": {
+   "d": "あん入りの餅菓子を桜の葉で包んだもの",
+   "src": [
+    "maff:34_22_tokyo",
+    "wp:桜餅"
+   ]
+  },
+  "34_23_tokyo": {
+   "d": "サツマイモを練って固めた和菓子",
+   "src": [
+    "maff:34_23_tokyo",
+    "wp:芋羊羹"
+   ]
+  },
+  "34_26_tokyo": {
+   "d": "まぐろとねぎを醤油などで煮る鍋",
+   "src": [
+    "maff:34_26_tokyo",
+    "wp:葱鮪鍋"
+   ]
+  },
+  "34_27_tokyo": {
+   "d": "細切りのごぼうを砂糖と醤油で甘辛く炒めたもの",
+   "src": [
+    "maff:34_27_tokyo",
+    "wp:金平"
+   ]
+  },
+  "34_2_tokyo": {
+   "d": "酢飯に具をのせて握った寿司",
+   "src": [
+    "maff:34_2_tokyo",
+    "wp:握り寿司"
+   ]
+  },
+  "34_3_tokyo": {
+   "d": "水でゆるく溶いた小麦粉を鉄板で焼く料理",
+   "src": [
+    "maff:34_3_tokyo",
+    "wp:もんじゃ焼き"
+   ]
+  },
+  "34_4_tokyo": {
+   "d": "ドジョウを割り下で煮た鍋料理",
+   "src": [
+    "maff:34_4_tokyo",
+    "wp:柳川鍋"
+   ]
+  },
+  "34_7_tokyo": {
+   "d": "餅と具を入れた汁、正月に食べる",
+   "src": [
+    "maff:34_7_tokyo",
+    "wp:雑煮"
+   ]
+  },
+  "35_10_kanagawa": {
+   "d": "梅干しとちりめんじゃこを混ぜ、だしで炊いたご飯",
+   "src": [
+    "maff:35_10_kanagawa",
+    "wp:梅ごはん"
+   ]
+  },
+  "35_12_kanagawa": {
+   "d": "小麦粉の皮で山菜などの具を包み、焼いて蒸したもの",
+   "src": [
+    "maff:35_12_kanagawa",
+    "wp:かんこ焼き"
+   ]
+  },
+  "35_16_kanagawa": {
+   "d": "もやしや豚肉などを炒めたとろみあんをのせたラーメン",
+   "src": [
+    "maff:35_16_kanagawa",
+    "wp:サンマーメン"
+   ]
+  },
+  "35_1_kanagawa": {
+   "d": "肉や魚を使わない野菜の汁物",
+   "src": [
+    "maff:35_1_kanagawa",
+    "wd:Q11266028"
+   ]
+  },
+  "35_4_kanagawa": {
+   "d": "団子にあんをからめた和菓子",
+   "src": [
+    "maff:35_4_kanagawa",
+    "wp:へらへら団子"
+   ]
+  },
+  "35_5_kanagawa": {
+   "d": "旧日本海軍の食事に由来するカレーライス",
+   "src": [
+    "maff:35_5_kanagawa",
+    "wp:海軍カレー"
+   ]
+  },
+  "35_8_kanagawa": {
+   "d": "ご飯に野菜などの具を混ぜたもの",
+   "src": [
+    "maff:35_8_kanagawa",
+    "wp:かて飯"
+   ]
+  },
+  "36_11_shizuoka": {
+   "d": "キンメダイを使った大きな押し寿司",
+   "src": [
+    "maff:36_11_shizuoka",
+    "wp:げんなり寿司"
+   ]
+  },
+  "36_12_shizuoka": {
+   "d": "天草を煮溶かして固め、細く突き出したもの",
+   "src": [
+    "maff:36_12_shizuoka",
+    "wp:ところてん"
+   ]
+  },
+  "36_18_shizuoka": {
+   "d": "餅にきな粉と砂糖をまぶしたもの",
+   "src": [
+    "maff:36_18_shizuoka",
+    "wp:安倍川もち"
+   ]
+  },
+  "36_4_shizuoka": {
+   "d": "すりおろした山芋の汁、麦飯にかけて食べる",
+   "src": [
+    "maff:36_4_shizuoka",
+    "wp:とろろ"
+   ]
+  },
+  "36_9_shizuoka": {
+   "d": "山芋でつないだそばに鶏だしのつゆをかけたもの",
+   "src": [
+    "maff:36_9_shizuoka",
+    "wp:御厨そば"
+   ]
+  },
+  "37_10_toyama": {
+   "d": "身欠きニシンなどを昆布で巻いて煮たもの",
+   "src": [
+    "maff:37_10_toyama",
+    "wp:昆布巻き"
+   ]
+  },
+  "37_12_toyama": {
+   "d": "刺身などを昆布で挟んで一晩おいたもの",
+   "src": [
+    "maff:37_12_toyama",
+    "wp:昆布締め"
+   ]
+  },
+  "37_14_toyama": {
+   "d": "ゆでた野菜を細かく刻み、味噌で炒めたもの",
+   "src": [
+    "maff:37_14_toyama",
+    "wp:よごし"
+   ]
+  },
+  "37_15_toyama": {
+   "d": "大根などの根菜を酢で和えた、なますに似た料理",
+   "src": [
+    "maff:37_15_toyama",
+    "wp:おすわい"
+   ]
+  },
+  "37_20_toyama": {
+   "d": "鱒を酢飯にのせた押し寿司",
+   "src": [
+    "maff:37_20_toyama",
+    "wp:鱒寿司"
+   ]
+  },
+  "37_2_toyama": {
+   "d": "タラを味噌で煮込んだ汁",
+   "src": [
+    "maff:37_2_toyama",
+    "wp:たら汁"
+   ]
+  },
+  "37_3_toyama": {
+   "d": "ずいき（里芋の葉柄）を酢漬けにしたもの",
+   "src": [
+    "maff:37_3_toyama",
+    "wp:酢ずき"
+   ]
+  },
+  "37_4_toyama": {
+   "d": "ブリのアラと大根を醤油で煮たもの",
+   "src": [
+    "maff:37_4_toyama",
+    "wp:ぶり大根"
+   ]
+  },
+  "37_5_toyama": {
+   "d": "かぶに切り込みを入れてブリを挟み、発酵させたもの",
+   "src": [
+    "maff:37_5_toyama",
+    "wp:かぶら寿司"
+   ]
+  },
+  "37_6_toyama": {
+   "d": "小豆などを一緒に煮た煮物",
+   "src": [
+    "maff:37_6_toyama",
+    "wp:いとこ煮"
+   ]
+  },
+  "38_13_gifu": {
+   "d": "川魚のモロコを使った箱寿司",
+   "src": [
+    "maff:38_13_gifu",
+    "wp:もろこずし"
+   ]
+  },
+  "38_16_gifu": {
+   "d": "ゆでた大豆をすりつぶし、味噌や醤油で味付けした汁",
+   "src": [
+    "maff:38_16_gifu",
+    "wp:すったて汁"
+   ]
+  },
+  "38_18_gifu": {
+   "d": "葛粉の生地で作るまんじゅう",
+   "src": [
+    "maff:38_18_gifu",
+    "wp:水まんじゅう"
+   ]
+  },
+  "38_19_gifu": {
+   "d": "塩抜きした菜っ葉の漬物を煮たもの",
+   "src": [
+    "maff:38_19_gifu",
+    "wp:煮たくもじ"
+   ]
+  },
+  "38_29_gifu": {
+   "d": "豆腐をわらで包んでゆでたもの",
+   "src": [
+    "maff:38_29_gifu",
+    "wp:つと豆腐"
+   ]
+  },
+  "38_6_gifu": {
+   "d": "そら豆のあんを小麦粉の皮で包み、みょうがの葉で包んだ菓子",
+   "src": [
+    "maff:38_6_gifu",
+    "wp:みょうがぼち"
+   ]
+  },
+  "38_8_gifu": {
+   "d": "つぶしたご飯を串につけ、たれを塗って焼いたもの",
+   "src": [
+    "maff:38_8_gifu",
+    "wp:五平餅"
+   ]
+  },
+  "39_13_osaka": {
+   "d": "節分に恵方を向いて丸かぶりする太い巻き寿司",
+   "src": [
+    "maff:39_13_osaka",
+    "wp:恵方巻"
+   ]
+  },
+  "39_15_osaka": {
+   "d": "小麦粉の生地にたこを入れ、丸く焼いたもの",
+   "src": [
+    "maff:39_15_osaka",
+    "wp:たこ焼き"
+   ]
+  },
+  "39_16_osaka": {
+   "d": "塩サバのアラと大根を煮た汁",
+   "src": [
+    "maff:39_16_osaka",
+    "wp:船場汁"
+   ]
+  },
+  "39_17_osaka": {
+   "d": "甘辛く煮た油揚げをのせたうどん",
+   "src": [
+    "maff:39_17_osaka",
+    "wp:きつね (麺類)"
+   ]
+  },
+  "39_20_osaka": {
+   "d": "小麦粉の生地にキャベツや肉を入れ、鉄板で焼いたもの",
+   "src": [
+    "maff:39_20_osaka",
+    "wp:お好み焼き"
+   ]
+  },
+  "39_22_osaka": {
+   "d": "うどんを入れた大きめの茶碗蒸し",
+   "src": [
+    "maff:39_22_osaka",
+    "wp:小田巻き蒸し"
+   ]
+  },
+  "39_23_osaka": {
+   "d": "牛すじを味噌やみりんで煮込んだもの",
+   "src": [
+    "maff:39_23_osaka",
+    "wp:どて焼き"
+   ]
+  },
+  "39_26_osaka": {
+   "d": "ピンク色の餅菓子を桜の葉で包んだもの",
+   "src": [
+    "maff:39_26_osaka",
+    "wp:桜餅"
+   ]
+  },
+  "39_28_osaka": {
+   "d": "肉や野菜を串に刺し、衣をつけて揚げたもの",
+   "src": [
+    "maff:39_28_osaka",
+    "wp:串カツ"
+   ]
+  },
+  "40_11_hyogo": {
+   "d": "サバを使った棒寿司など",
+   "src": [
+    "maff:40_11_hyogo",
+    "wp:鯖寿司"
+   ]
+  },
+  "40_13_hyogo": {
+   "d": "大根やにんじんなどを酒粕で煮込んだ汁",
+   "src": [
+    "maff:40_13_hyogo",
+    "wp:粕汁"
+   ]
+  },
+  "40_24_hyogo": {
+   "d": "すりおろした山芋をだしでのばし、ご飯にかけたもの",
+   "src": [
+    "maff:40_24_hyogo",
+    "wp:麦とろ"
+   ]
+  },
+  "40_3_hyogo": {
+   "d": "猪肉を煮る鍋料理",
+   "src": [
+    "maff:40_3_hyogo",
+    "wp:ぼたん鍋"
+   ]
+  },
+  "40_4_hyogo": {
+   "d": "ご飯にビーフカツをのせ、デミグラス風のたれをかけたもの",
+   "src": [
+    "maff:40_4_hyogo",
+    "wp:かつめし",
+    "wp:カツライス"
+   ]
+  },
+  "41_10_okayama": {
+   "d": "タコをご飯と炊き込んだもの",
+   "src": [
+    "maff:41_10_okayama",
+    "wp:たこめし"
+   ]
+  },
+  "41_27_okayama": {
+   "d": "ままかり（サッパ）の酢漬けを丸めた酢飯にのせたもの",
+   "src": [
+    "maff:41_27_okayama",
+    "wp:ままかりずし"
+   ]
+  },
+  "42_16_hiroshima": {
+   "d": "酢飯と具を型に詰めて押し抜いた寿司",
+   "src": [
+    "maff:42_16_hiroshima",
+    "wp:角寿司"
+   ]
+  },
+  "42_18_hiroshima": {
+   "d": "タコをご飯と炊き込んだもの",
+   "src": [
+    "maff:42_18_hiroshima",
+    "wp:たこめし"
+   ]
+  },
+  "42_27_hiroshima": {
+   "d": "牡蠣とブリ、野菜を入れたすまし汁の雑煮",
+   "src": [
+    "maff:42_27_hiroshima",
+    "wp:かき雑煮"
+   ]
+  },
+  "42_28_hiroshima": {
+   "d": "牡蠣を使った炊き込みご飯",
+   "src": [
+    "maff:42_28_hiroshima",
+    "wp:かきめし"
+   ]
+  },
+  "42_29_hiroshima": {
+   "d": "米の生地であんを包み、もち米の粒をのせて蒸した菓子",
+   "src": [
+    "maff:42_29_hiroshima",
+    "wp:いがもち"
+   ]
+  },
+  "42_2_hiroshima": {
+   "d": "具をご飯の下に埋めて食べる料理",
+   "src": [
+    "maff:42_2_hiroshima",
+    "wp:うずみ"
+   ]
+  },
+  "42_7_hiroshima": {
+   "d": "小麦粉の生地にキャベツや豚肉、麺などを重ねて焼いたもの",
+   "src": [
+    "maff:42_7_hiroshima",
+    "wp:お好み焼き"
+   ]
+  },
+  "42_8_hiroshima": {
+   "d": "鶏肉や豚肉、野菜を塩、こしょう、酒で味付けた鍋",
+   "src": [
+    "maff:42_8_hiroshima",
+    "wp:美酒鍋"
+   ]
+  },
+  "43_13_yamaguchi": {
+   "d": "ねぎなどを酢味噌で和えた料理",
+   "src": [
+    "maff:43_13_yamaguchi",
+    "wp:ぬた"
+   ]
+  },
+  "43_15_yamaguchi": {
+   "d": "米粉の餅であんを包み、サルトリイバラの葉で挟んだもの",
+   "src": [
+    "maff:43_15_yamaguchi",
+    "wp:柏餅"
+   ]
+  },
+  "43_17_yamaguchi": {
+   "d": "揚げた鶏肉とごぼうに甘辛いタレを絡めたもの",
+   "src": [
+    "maff:43_17_yamaguchi",
+    "wp:チキンチキンごぼう"
+   ]
+  },
+  "43_26_yamaguchi": {
+   "d": "丸餅とかぶを入れたすまし汁の雑煮",
+   "src": [
+    "maff:43_26_yamaguchi",
+    "wp:かぶ雑煮"
+   ]
+  },
+  "43_2_yamaguchi": {
+   "d": "大根、にんじん、豆腐を煮た料理",
+   "src": [
+    "maff:43_2_yamaguchi",
+    "wp:けんちょう"
+   ]
+  },
+  "43_3_yamaguchi": {
+   "d": "小豆などを煮た料理",
+   "src": [
+    "maff:43_3_yamaguchi",
+    "wp:いとこ煮"
+   ]
+  },
+  "43_4_yamaguchi": {
+   "d": "刻んだ干しわかめをまぶしたおにぎり",
+   "src": [
+    "maff:43_4_yamaguchi",
+    "wp:わかめむすび"
+   ]
+  },
+  "43_9_yamaguchi": {
+   "d": "根菜を中心に煮た煮物",
+   "src": [
+    "maff:43_9_yamaguchi",
+    "wp:のっぺい汁"
+   ]
+  },
+  "44_12_tokushima": {
+   "d": "餅を使わない雑煮",
+   "src": [
+    "maff:44_12_tokushima",
+    "wp:うちがえ雑煮"
+   ]
+  },
+  "44_21_tokushima": {
+   "d": "レンコダイの煮付けの煮汁をつゆにしたそうめん",
+   "src": [
+    "maff:44_21_tokushima",
+    "wp:島そうめん"
+   ]
+  },
+  "44_4_tokushima": {
+   "d": "少し太めでこしの強いそうめん",
+   "src": [
+    "maff:44_4_tokushima",
+    "wp:半田素麺"
+   ]
+  },
+  "44_8_tokushima": {
+   "d": "米粒が残る程度につぶした米で作るおはぎ",
+   "src": [
+    "maff:44_8_tokushima",
+    "wp:はんごろし"
+   ]
+  },
+  "45_15_saga": {
+   "d": "粗くおろした大根の味噌汁に焼いた餅を合わせたもの",
+   "src": [
+    "maff:45_15_saga",
+    "wp:ゆきのつゆ"
+   ]
+  },
+  "45_1_saga": {
+   "d": "鮒を昆布で巻き、大根やレンコンと長時間煮込んだもの",
+   "src": [
+    "maff:45_1_saga",
+    "wp:ふなんこぐい"
+   ]
+  },
+  "45_3_saga": {
+   "d": "ミズイモの芋茎を煮た酢の物",
+   "src": [
+    "maff:45_3_saga",
+    "wp:にいもじ"
+   ]
+  },
+  "45_4_saga": {
+   "d": "野菜などを汁を多くして煮た料理",
+   "src": [
+    "maff:45_4_saga",
+    "wp:だぶ"
+   ]
+  },
+  "45_8_saga": {
+   "d": "小豆と野菜などを煮た煮物",
+   "src": [
+    "maff:45_8_saga",
+    "wp:煮ごみ"
+   ]
+  },
+  "45_9_saga": {
+   "d": "筑前煮とも呼ばれる煮物",
+   "src": [
+    "maff:45_9_saga",
+    "wp:がめ煮"
+   ]
+  },
+  "46_10_nagasaki": {
+   "d": "海藻のイギスで作る料理",
+   "src": [
+    "maff:46_10_nagasaki",
+    "wp:いぎりす"
+   ]
+  },
+  "46_11_nagasaki": {
+   "d": "鶏肉や魚などを煮込んだ料理",
+   "src": [
+    "maff:46_11_nagasaki",
+    "wp:ヒカド"
+   ]
+  },
+  "46_17_nagasaki": {
+   "d": "さつまいもを混ぜてついた餅",
+   "src": [
+    "maff:46_17_nagasaki",
+    "wp:かんころもち"
+   ]
+  },
+  "46_18_nagasaki": {
+   "d": "甘い味付きの衣で揚げた天ぷら",
+   "src": [
+    "maff:46_18_nagasaki",
+    "wp:長崎天ぷら"
+   ]
+  },
+  "46_26_nagasaki": {
+   "d": "対馬に伝わるそばの品種で作るそば",
+   "src": [
+    "maff:46_26_nagasaki",
+    "wp:対州そば"
+   ]
+  },
+  "46_29_nagasaki": {
+   "d": "エビのすり身を食パンで挟んで揚げたもの",
+   "src": [
+    "maff:46_29_nagasaki",
+    "wp:ハトシ"
+   ]
+  },
+  "46_2_nagasaki": {
+   "d": "鶏の鍋料理",
+   "src": [
+    "maff:46_2_nagasaki",
+    "wp:ひきとおし"
+   ]
+  },
+  "46_4_nagasaki": {
+   "d": "ゆで落花生を入れた煮込み料理",
+   "src": [
+    "maff:46_4_nagasaki",
+    "wp:にごみ"
+   ]
+  },
+  "46_7_nagasaki": {
+   "d": "太麺や細麺を焼いたり炒めたりした麺料理",
+   "src": [
+    "maff:46_7_nagasaki",
+    "wp:皿うどん"
+   ]
+  },
+  "47_11_okinawa": {
+   "d": "ゴーヤーと豆腐などを炒めた料理",
+   "src": [
+    "maff:47_11_okinawa",
+    "wp:チャンプルー"
+   ]
+  },
+  "47_13_okinawa": {
+   "d": "細くおろした人参を卵と炒めたもの",
+   "src": [
+    "maff:47_13_okinawa",
+    "wp:にんじんしりしり"
+   ]
+  },
+  "47_18_okinawa": {
+   "d": "落花生で作る豆腐（ピーナッツ豆腐）",
+   "src": [
+    "maff:47_18_okinawa",
+    "wp:ジーマーミ豆腐"
+   ]
+  },
+  "47_20_okinawa": {
+   "d": "豚の三枚肉やかまぼこ、ねぎをのせた麺",
+   "src": [
+    "maff:47_20_okinawa",
+    "wp:沖縄そば"
+   ]
+  },
+  "47_23_okinawa": {
+   "d": "小麦粉を溶き、ニラなどを混ぜて平たく焼いたもの",
+   "src": [
+    "maff:47_23_okinawa",
+    "wp:ヒラヤーチー"
+   ]
+  },
+  "47_25_okinawa": {
+   "d": "だしでご飯と具を煮た雑炊",
+   "src": [
+    "maff:47_25_okinawa",
+    "wp:雑炊"
+   ]
+  },
+  "47_2_okinawa": {
+   "d": "刻んだ昆布を豚のだしで炒め煮にしたもの",
+   "src": [
+    "maff:47_2_okinawa",
+    "wp:イリチー"
+   ]
+  },
+  "47_3_okinawa": {
+   "d": "豚肉やこんにゃくなどを甘い味噌で仕立てた汁",
+   "src": [
+    "maff:47_3_okinawa",
+    "wp:イナムドゥチ"
+   ]
+  },
+  "47_6_okinawa": {
+   "d": "皮付きの豚三枚肉を泡盛や醤油で煮た角煮",
+   "src": [
+    "maff:47_6_okinawa",
+    "wp:ラフテー"
+   ]
+  },
+  "47_8_okinawa": {
+   "d": "砂糖入りの生地を揚げたドーナツ",
+   "src": [
+    "maff:47_8_okinawa",
+    "wp:サーターアンダーギー"
+   ]
+  },
+  "aburagezushi_aichi": {
+   "d": "甘辛く煮た油揚げに酢飯を詰めたもの",
+   "src": [
+    "maff:aburagezushi_aichi",
+    "wp:稲荷寿司"
+   ]
+  },
+  "abute_kamo_fukuoka": {
+   "d": "スズメダイに塩をつけて焼いたもの",
+   "src": [
+    "maff:abute_kamo_fukuoka",
+    "wp:あぶってかも"
+   ]
+  },
+  "ahodaki_mie": {
+   "d": "たくあんを使った煮物",
+   "src": [
+    "maff:ahodaki_mie",
+    "wp:たくあんの煮物"
+   ]
+  },
+  "akumaki_kagoshima": {
+   "d": "もち米を灰汁で炊いた、端午の節句の菓子",
+   "src": [
+    "maff:akumaki_kagoshima",
+    "wp:あくまき"
+   ]
+  },
+  "amenoio_gohan_shiga": {
+   "d": "ビワマスを使った炊き込みご飯",
+   "src": [
+    "maff:amenoio_gohan_shiga",
+    "wp:あめのいおご飯"
+   ]
+  },
+  "anbin_yama_nashi": {
+   "d": "さつまいもなどの粉の生地にあんを包み、平たく蒸したもの",
+   "src": [
+    "maff:anbin_yama_nashi",
+    "wp:あんびん"
+   ]
+  },
+  "awabino_nigai_yama_nashi": {
+   "d": "アワビを醤油ベースで煮た加工品",
+   "src": [
+    "maff:awabino_nigai_yama_nashi",
+    "wp:鮑の煮貝"
+   ]
+  },
+  "azara_miyagi": {
+   "d": "メヌケのアラと白菜の古漬けを酒粕で煮込んだもの",
+   "src": [
+    "maff:azara_miyagi",
+    "wp:あざら"
+   ]
+  },
+  "azuki_zouni_tottori": {
+   "d": "小豆の煮汁に餅を入れた雑煮",
+   "src": [
+    "maff:azuki_zouni_tottori",
+    "wp:小豆雑煮"
+   ]
+  },
+  "azukizouni_shimane": {
+   "d": "煮た小豆に餅を入れた雑煮",
+   "src": [
+    "maff:azukizouni_shimane",
+    "wp:小豆雑煮"
+   ]
+  },
+  "barappa_manjyuu_chiba": {
+   "d": "まんじゅうをばらっぱ（葉）にのせて蒸したもの",
+   "src": [
+    "maff:barappa_manjyuu_chiba",
+    "wp:ばらっぱまんじゅう"
+   ]
+  },
+  "basashi_kumamoto": {
+   "d": "生の馬肉を薄く刺身にしたもの",
+   "src": [
+    "maff:basashi_kumamoto",
+    "wp:馬刺し"
+   ]
+  },
+  "basashi_yama_nashi": {
+   "d": "生の馬肉を刺身にしたもの",
+   "src": [
+    "maff:basashi_yama_nashi",
+    "wp:馬刺し"
+   ]
+  },
+  "bekanabe_ishikawa": {
+   "d": "コンカイワシを使った鍋料理",
+   "src": [
+    "maff:bekanabe_ishikawa",
+    "wp:べか鍋"
+   ]
+  },
+  "beko_mochi_aomori": {
+   "d": "端午の節句に食べる和菓子",
+   "src": [
+    "maff:beko_mochi_aomori",
+    "wp:べこもち"
+   ]
+  },
+  "bekomochi_hokkaido": {
+   "d": "端午の節句に食べる和菓子",
+   "src": [
+    "maff:bekomochi_hokkaido",
+    "wp:べこもち"
+   ]
+  },
+  "bouri_wakayama": {
+   "d": "里芋の親芋を丸ごと煮たもの",
+   "src": [
+    "maff:bouri_wakayama",
+    "wp:ぼうり"
+   ]
+  },
+  "buridaikon_kagoshima": {
+   "d": "ブリと大根を一緒に煮た料理",
+   "src": [
+    "maff:buridaikon_kagoshima",
+    "wp:ぶり大根"
+   ]
+  },
+  "butaae_kumamoto": {
+   "d": "豚肉を使わず、ゆでタコとなすで作る料理",
+   "src": [
+    "maff:butaae_kumamoto",
+    "wp:ぶたあえ"
+   ]
+  },
+  "butajiru_kagoshima": {
+   "d": "豚肉と野菜を煮込み、味噌で味付けした汁",
+   "src": [
+    "maff:butajiru_kagoshima",
+    "wp:豚汁"
+   ]
+  },
+  "chikin_nanban_miyazaki": {
+   "d": "衣をつけて揚げた鶏肉を甘酢に浸し、タルタルソースをかけたもの",
+   "src": [
+    "maff:chikin_nanban_miyazaki",
+    "wp:チキン南蛮"
+   ]
+  },
+  "chikko_toufu_chiba": {
+   "d": "牛乳に酢を加えて固めたもの",
+   "src": [
+    "maff:chikko_toufu_chiba",
+    "wp:牛乳豆腐"
+   ]
+  },
+  "dondoro_ke_meshi_tottori": {
+   "d": "豆腐や野菜を入れた炊き込みご飯",
+   "src": [
+    "maff:dondoro_ke_meshi_tottori",
+    "wp:どんどろけ飯"
+   ]
+  },
+  "dongame_jiru_shiga": {
+   "d": "なすとすりごまの味噌汁",
+   "src": [
+    "maff:dongame_jiru_shiga",
+    "wp:泥亀汁"
+   ]
+  },
+  "dongarajiru_yamagata": {
+   "d": "タラのアラを使った汁",
+   "src": [
+    "maff:dongarajiru_yamagata",
+    "wp:どんがら汁"
+   ]
+  },
+  "donko_jiru_miyagi": {
+   "d": "どんこという魚と野菜を煮た汁物",
+   "src": [
+    "maff:donko_jiru_miyagi",
+    "wp:どんこ汁"
+   ]
+  },
+  "ebimame_shiga": {
+   "d": "スジエビと大豆を甘辛く煮たもの",
+   "src": [
+    "maff:ebimame_shiga",
+    "wp:えび豆"
+   ]
+  },
+  "fukumen_ehime": {
+   "d": "糸こんにゃくに魚のそぼろをまぶしたもの",
+   "src": [
+    "maff:fukumen_ehime",
+    "wp:ふくめん"
+   ]
+  },
+  "fukuregashi_kagoshima": {
+   "d": "黒砂糖風味の蒸しパンのような菓子",
+   "src": [
+    "maff:fukuregashi_kagoshima",
+    "wp:ふくれ菓子"
+   ]
+  },
+  "furofukidaikon_aichi": {
+   "d": "煮た大根に赤味噌の練り味噌をのせたもの",
+   "src": [
+    "maff:furofukidaikon_aichi",
+    "wp:風呂吹き"
+   ]
+  },
+  "furofukidaikon_kyoto": {
+   "d": "煮た大根に白味噌や柚子味噌をつけたもの",
+   "src": [
+    "maff:furofukidaikon_kyoto",
+    "wp:風呂吹き"
+   ]
+  },
+  "fuukashi_chiba": {
+   "d": "アサリの味噌汁",
+   "src": [
+    "maff:fuukashi_chiba",
+    "wp:ふうかし"
+   ]
+  },
+  "gameni_gukuoka": {
+   "d": "筑前煮とも呼ばれる煮物",
+   "src": [
+    "maff:gameni_gukuoka",
+    "wp:がめ煮"
+   ]
+  },
+  "gane_kagoshima": {
+   "d": "サツマイモや野菜の揚げ物",
+   "src": [
+    "maff:gane_kagoshima",
+    "wp:がね"
+   ]
+  },
+  "gane_miyazaki": {
+   "d": "サツマイモや野菜の揚げ物",
+   "src": [
+    "maff:gane_miyazaki",
+    "wp:がね"
+   ]
+  },
+  "ganeage_kumamoto": {
+   "d": "サツマイモの揚げ物",
+   "src": [
+    "maff:ganeage_kumamoto",
+    "wp:がね揚げ"
+   ]
+  },
+  "ganzuki_miyagi": {
+   "d": "小麦粉と砂糖を混ぜて蒸した菓子",
+   "src": [
+    "maff:ganzuki_miyagi",
+    "wp:がんづき"
+   ]
+  },
+  "gohei_mochi_nagano": {
+   "d": "半搗きのうるち米を串に刺し、たれをつけて焼いたもの",
+   "src": [
+    "maff:gohei_mochi_nagano",
+    "wp:五平餅"
+   ]
+  },
+  "goheimochi_aichi": {
+   "d": "潰したうるち米を串に刺し、タレをつけて焼いたもの",
+   "src": [
+    "maff:goheimochi_aichi",
+    "wp:五平餅"
+   ]
+  },
+  "gojiru_fukui": {
+   "d": "すりつぶした大豆（呉）を入れた味噌汁",
+   "src": [
+    "maff:gojiru_fukui",
+    "wp:呉汁"
+   ]
+  },
+  "gojiru_miyagi": {
+   "d": "すりつぶした大豆（呉）を入れた味噌汁",
+   "src": [
+    "maff:gojiru_miyagi",
+    "wp:呉汁"
+   ]
+  },
+  "goma_toufu_wakayama": {
+   "d": "ごまでつくる精進料理",
+   "src": [
+    "maff:goma_toufu_wakayama",
+    "wp:胡麻豆腐"
+   ]
+  },
+  "gonjuu_chiba": {
+   "d": "甘辛く煮た豚バラ肉と油揚げを混ぜたご飯のおにぎり",
+   "src": [
+    "maff:gonjuu_chiba",
+    "wp:ごんじゅう"
+   ]
+  },
+  "haba_zouni_chiba": {
+   "d": "餅の雑煮に、はばのりと青のり、かつお節をかけたもの",
+   "src": [
+    "maff:haba_zouni_chiba",
+    "wp:はば雑煮"
+   ]
+  },
+  "hakata_zouni_fukuoka": {
+   "d": "ブリを入れた雑煮",
+   "src": [
+    "maff:hakata_zouni_fukuoka",
+    "wp:ブリ雑煮"
+   ]
+  },
+  "han_goroshi_nagano": {
+   "d": "米粒が残る程度につぶした米のおはぎ・ぼたもち",
+   "src": [
+    "maff:han_goroshi_nagano",
+    "wp:はんごろし"
+   ]
+  },
+  "harako_meshi_miyagi": {
+   "d": "鮭の煮汁で炊いたご飯に、鮭の身といくらをのせたもの",
+   "src": [
+    "maff:harako_meshi_miyagi",
+    "wp:はらこ飯"
+   ]
+  },
+  "hatahata_zushi_tottori": {
+   "d": "ハタハタとおからでつくるすし",
+   "src": [
+    "maff:hatahata_zushi_tottori",
+    "wp:しろはたずし"
+   ]
+  },
+  "hegisoba_niigata_niigata": {
+   "d": "布海苔をつなぎにしたそばを、へぎという器に盛ったもの",
+   "src": [
+    "maff:hegisoba_niigata_niigata",
+    "wp:へぎそば"
+   ]
+  },
+  "hittsumi_aomori": {
+   "d": "練った小麦粉をちぎって汁に入れて煮たもの",
+   "src": [
+    "maff:hittsumi_aomori",
+    "wp:ひっつみ"
+   ]
+  },
+  "hiyajiru_miyazaki": {
+   "d": "だしと味噌でつくる冷たい汁、夏に食べる",
+   "src": [
+    "maff:hiyajiru_miyazaki",
+    "wp:冷や汁"
+   ]
+  },
+  "hocho_oita": {
+   "d": "うどんに似た麺料理",
+   "src": [
+    "maff:hocho_oita",
+    "wp:鮑腸"
+   ]
+  },
+  "houraku_yaki_ehime": {
+   "d": "焙烙に魚介を並べ、蓋をして蒸し焼きにしたもの",
+   "src": [
+    "maff:houraku_yaki_ehime",
+    "wp:焙烙焼き"
+   ]
+  },
+  "hyugadon_oita": {
+   "d": "魚の切り身をご飯にのせた丼",
+   "src": [
+    "maff:hyugadon_oita",
+    "wp:あつめし"
+   ]
+  },
+  "ichigoni_aomori": {
+   "d": "ウニとアワビの吸い物、青じそをのせる",
+   "src": [
+    "maff:ichigoni_aomori",
+    "wp:いちご煮"
+   ]
+  },
+  "igisu_dofu_ehime": {
+   "d": "海藻のいぎすと生大豆の粉をだしで煮溶かし、固めたもの",
+   "src": [
+    "maff:igisu_dofu_ehime",
+    "wp:いぎす豆腐"
+   ]
+  },
+  "ikameshi_hokkaido": {
+   "d": "イカの胴に米を詰めて炊いたもの",
+   "src": [
+    "maff:ikameshi_hokkaido",
+    "wp:烏賊飯"
+   ]
+  },
+  "imoni_yamagata": {
+   "d": "里芋を使った鍋料理",
+   "src": [
+    "maff:imoni_yamagata",
+    "wp:芋煮会"
+   ]
+  },
+  "imotaki_ehime": {
+   "d": "里芋と鶏肉などを炊いた鍋料理",
+   "src": [
+    "maff:imotaki_ehime",
+    "wp:いもたき"
+   ]
+  },
+  "inakazushi_kochi": {
+   "d": "魚ではなく野菜をネタにした握りずし",
+   "src": [
+    "maff:inakazushi_kochi",
+    "wp:田舎ずし"
+   ]
+  },
+  "inari_zushi_aomori": {
+   "d": "甘辛く煮た油揚げに酢飯を詰めたすし",
+   "src": [
+    "maff:inari_zushi_aomori",
+    "wp:稲荷寿司"
+   ]
+  },
+  "iriko_meshi_kagawa": {
+   "d": "いりこ（煮干し）の炊き込みご飯",
+   "src": [
+    "maff:iriko_meshi_kagawa",
+    "wp:いりこ飯"
+   ]
+  },
+  "ishikarinabe_hokkaido": {
+   "d": "鮭を味噌仕立てで煮た鍋料理",
+   "src": [
+    "maff:ishikarinabe_hokkaido",
+    "wp:石狩鍋"
+   ]
+  },
+  "itadaki_tottori": {
+   "d": "大きな油揚げに生米と野菜を詰め、だしで炊いたもの",
+   "src": [
+    "maff:itadaki_tottori",
+    "wp:いただき"
+   ]
+  },
+  "itokoni_shiga": {
+   "d": "小豆などを煮た料理、報恩講によく出る",
+   "src": [
+    "maff:itokoni_shiga",
+    "wp:いとこ煮"
+   ]
+  },
+  "iwashino_dango_jiru_chiba": {
+   "d": "イワシのすり身を入れた具だくさんの汁",
+   "src": [
+    "maff:iwashino_dango_jiru_chiba",
+    "wp:いわしのだんご汁"
+   ]
+  },
+  "jakoten_ehime": {
+   "d": "魚のすり身を油で揚げた練り物",
+   "src": [
+    "maff:jakoten_ehime",
+    "wp:じゃこ天"
+   ]
+  },
+  "jibuni_ishikawa": {
+   "d": "鴨肉などを煮た石川県の料理",
+   "src": [
+    "maff:jibuni_ishikawa",
+    "wp:じぶ煮"
+   ]
+  },
+  "jingisukan_hokkaido": {
+   "d": "羊肉と野菜を中央が盛り上がった鍋で焼く料理",
+   "src": [
+    "maff:jingisukan_hokkaido",
+    "wp:ジンギスカン (料理)"
+   ]
+  },
+  "junjun_shiga": {
+   "d": "湖魚や牛肉・鶏肉をすき焼き風に煮た鍋",
+   "src": [
+    "maff:junjun_shiga",
+    "wp:じゅんじゅん"
+   ]
+  },
+  "jyuubako_iri_bota_mochi_chiba": {
+   "d": "丸めずに重箱へ詰めたぼたもち",
+   "src": [
+    "maff:jyuubako_iri_bota_mochi_chiba",
+    "wp:重箱入りぼたもち"
+   ]
+  },
+  "kakinoha_zushi_nara": {
+   "d": "サバと酢飯を柿の葉で包んだすし",
+   "src": [
+    "maff:kakinoha_zushi_nara",
+    "wp:柿の葉寿司"
+   ]
+  },
+  "kakinoha_zushi_tottori": {
+   "d": "マスをのせたすしを柿の葉にのせたもの",
+   "src": [
+    "maff:kakinoha_zushi_tottori",
+    "wp:柿の葉寿司"
+   ]
+  },
+  "kakinoha_zushi_wakayama": {
+   "d": "サバやしいたけなどの具のすしを柿の葉で包んだもの",
+   "src": [
+    "maff:kakinoha_zushi_wakayama",
+    "wp:柿の葉寿司"
+   ]
+  },
+  "kankan_zushi_kagawa": {
+   "d": "酢でしめたサワラを箱に詰めて押したすし",
+   "src": [
+    "maff:kankan_zushi_kagawa",
+    "wp:カンカンずし"
+   ]
+  },
+  "karashi_renkon_kumamoto": {
+   "d": "れんこんの穴に辛子味噌を詰め、衣をつけて揚げたもの",
+   "src": [
+    "maff:karashi_renkon_kumamoto",
+    "wp:辛子蓮根"
+   ]
+  },
+  "kashamochi_kagoshima": {
+   "d": "よもぎと黒糖、さつまいもの餅をクマタケランの葉で包み蒸したもの",
+   "src": [
+    "maff:kashamochi_kagoshima",
+    "wp:かしゃもち"
+   ]
+  },
+  "kashiwa_meshi_fukuoka": {
+   "d": "鶏肉（かしわ）と野菜を入れたご飯",
+   "src": [
+    "maff:kashiwa_meshi_fukuoka",
+    "wp:かしわめし"
+   ]
+  },
+  "kashiwa_mochi_fukui": {
+   "d": "あんを包んで二つに折った餅を柏の葉で包んだもの",
+   "src": [
+    "maff:kashiwa_mochi_fukui",
+    "wp:柏餅"
+   ]
+  },
+  "kashiwamochi_shimane": {
+   "d": "あん入りの餅をサルトリイバラの葉で包んだもの",
+   "src": [
+    "maff:kashiwamochi_shimane",
+    "wp:柏餅"
+   ]
+  },
+  "keihan_kagoshima": {
+   "d": "ご飯に具をのせ、だし汁をかけて食べる料理",
+   "src": [
+    "maff:keihan_kagoshima",
+    "wp:鶏飯"
+   ]
+  },
+  "keiran_aomori": {
+   "d": "あんを包んだ卵形の餅を入れた汁物",
+   "src": [
+    "maff:keiran_aomori",
+    "wp:けいらん"
+   ]
+  },
+  "kenojiru_aomori": {
+   "d": "細かく刻んだ根菜や山菜を煮込んだ汁",
+   "src": [
+    "maff:kenojiru_aomori",
+    "wp:けの汁"
+   ]
+  },
+  "kensan_yaki_niigata": {
+   "d": "おにぎりに味噌を塗って焼いたもの",
+   "src": [
+    "maff:kensan_yaki_niigata",
+    "wp:けんさ焼き"
+   ]
+  },
+  "kishimen_aichi": {
+   "d": "薄く平たいうどん",
+   "src": [
+    "maff:kishimen_aichi",
+    "wp:きしめん"
+   ]
+  },
+  "kobumaki_fukui": {
+   "d": "身欠きニシンを昆布で巻いて煮たもの",
+   "src": [
+    "maff:kobumaki_fukui",
+    "wp:昆布巻き"
+   ]
+  },
+  "kobumaki_hokkaido": {
+   "d": "ニシンなどの魚を昆布で巻いて煮たもの",
+   "src": [
+    "maff:kobumaki_hokkaido",
+    "wp:昆布巻き"
+   ]
+  },
+  "koikoku_nagano": {
+   "d": "輪切りにした鯉を味噌で煮込んだ汁",
+   "src": [
+    "maff:koikoku_nagano",
+    "wp:鯉こく"
+   ]
+  },
+  "komodofu_ibaraki": {
+   "d": "豆腐をわらで包んで塩ゆでしたもの",
+   "src": [
+    "maff:komodofu_ibaraki",
+    "wp:つと豆腐"
+   ]
+  },
+  "koneri_oita": {
+   "d": "なすとにがうりを炒め、水溶き小麦粉でとろみをつけたもの",
+   "src": [
+    "maff:koneri_oita",
+    "wp:こねり"
+   ]
+  },
+  "koppa_mochi_kumamoto": {
+   "d": "さつまいもともち米を合わせた餅",
+   "src": [
+    "maff:koppa_mochi_kumamoto",
+    "wp:こっぱもち"
+   ]
+  },
+  "kujaku_oita": {
+   "d": "赤く染めたゆで卵を緑の魚のすり身で包んで揚げたもの",
+   "src": [
+    "maff:kujaku_oita",
+    "wp:くじゃく"
+   ]
+  },
+  "kujiramochi_yamagata": {
+   "d": "米粉に砂糖とくるみを加えた餅菓子、鯨肉は入らない",
+   "src": [
+    "maff:kujiramochi_yamagata",
+    "wp:くぢらもち"
+   ]
+  },
+  "kurigohan_kyoto": {
+   "d": "むいた栗を米と炊いたご飯",
+   "src": [
+    "maff:kurigohan_kyoto",
+    "wp:栗飯"
+   ]
+  },
+  "kuzu_mochi_nara": {
+   "d": "葛粉でつくる和菓子、きな粉や黒蜜をかける",
+   "src": [
+    "maff:kuzu_mochi_nara",
+    "wp:葛餅"
+   ]
+  },
+  "mame_shitogi_aomori": {
+   "d": "潰した豆に米粉と砂糖を混ぜてつくる菓子",
+   "src": [
+    "maff:mame_shitogi_aomori",
+    "wp:豆しとぎ"
+   ]
+  },
+  "matsu_yama_zushi_ehime": {
+   "d": "甘めの酢飯に地魚を散らしたばらずし",
+   "src": [
+    "maff:matsu_yama_zushi_ehime",
+    "wp:松山鮓"
+   ]
+  },
+  "mehari_zushi_wakayama": {
+   "d": "高菜の漬物の葉でくるんだおにぎり",
+   "src": [
+    "maff:mehari_zushi_wakayama",
+    "wp:めはりずし"
+   ]
+  },
+  "memaki_yama_nashi": {
+   "d": "魚をアラメで巻き、醤油や砂糖で煮込んだもの",
+   "src": [
+    "maff:memaki_yama_nashi",
+    "wp:めまき"
+   ]
+  },
+  "mettajiru_ishikawa": {
+   "d": "豚肉と野菜を煮て味噌で味をつけた具だくさんの汁",
+   "src": [
+    "maff:mettajiru_ishikawa",
+    "wp:豚汁"
+   ]
+  },
+  "misodengaku_aichi": {
+   "d": "豆腐などを串に刺して焼き、味噌を塗ったもの",
+   "src": [
+    "maff:misodengaku_aichi",
+    "wp:味噌田楽"
+   ]
+  },
+  "misonikomiudon_aichi": {
+   "d": "うどんを味噌仕立ての汁で土鍋で煮込んだもの",
+   "src": [
+    "maff:misonikomiudon_aichi",
+    "wp:味噌煮込みうどん"
+   ]
+  },
+  "mitori_manjyu_fukuoka": {
+   "d": "みとり豆のあんを重曹入りの皮で包んだ饅頭",
+   "src": [
+    "maff:mitori_manjyu_fukuoka",
+    "wp:みとり饅頭"
+   ]
+  },
+  "mitsumenobotamochi_ibaraki": {
+   "d": "丸めずに重箱へ詰めたぼたもち",
+   "src": [
+    "maff:mitsumenobotamochi_ibaraki",
+    "wp:重箱入りぼたもち"
+   ]
+  },
+  "morokozushi_aichi": {
+   "d": "甘辛く煮た川魚のモロコをのせた箱ずし",
+   "src": [
+    "maff:morokozushi_aichi",
+    "wp:もろこずし"
+   ]
+  },
+  "mosojiru_yamagata": {
+   "d": "孟宗竹のたけのこを味噌と酒粕で煮た汁",
+   "src": [
+    "maff:mosojiru_yamagata",
+    "wp:孟宗汁"
+   ]
+  },
+  "muroranyakitori_hokkaido": {
+   "d": "豚肉とたまねぎを串に刺して焼いたもの",
+   "src": [
+    "maff:muroranyakitori_hokkaido",
+    "wp:室蘭やきとり"
+   ]
+  },
+  "namerou_chiba": {
+   "d": "魚に味噌や薬味を合わせて細かくたたいたもの",
+   "src": [
+    "maff:namerou_chiba",
+    "wp:なめろう"
+   ]
+  },
+  "nankan_ageno_maki_zushi_kumamoto": {
+   "d": "南関あげという油揚げで巻いた巻きずし",
+   "src": [
+    "maff:nankan_ageno_maki_zushi_kumamoto",
+    "wp:南関あげ"
+   ]
+  },
+  "nattojiru_yamagata": {
+   "d": "納豆を加えた味噌汁、豆腐や油揚げなども入る",
+   "src": [
+    "maff:nattojiru_yamagata",
+    "wp:納豆汁"
+   ]
+  },
+  "nikudofu_kyoto": {
+   "d": "牛肉と豆腐、ねぎをすき焼き風に煮たもの",
+   "src": [
+    "maff:nikudofu_kyoto",
+    "wp:肉豆腐"
+   ]
+  },
+  "nira_senbei_nagano": {
+   "d": "水で溶いた小麦粉ににらを入れて焼いたもの",
+   "src": [
+    "maff:nira_senbei_nagano",
+    "wp:ニラせんべい"
+   ]
+  },
+  "nishime_miyazaki": {
+   "d": "根菜や芋、こんにゃくなどを甘辛く煮たもの",
+   "src": [
+    "maff:nishime_miyazaki",
+    "wp:煮しめ"
+   ]
+  },
+  "nishinsoba_hokkaido": {
+   "d": "かけそばに身欠きニシンの甘露煮をのせたもの",
+   "src": [
+    "maff:nishinsoba_hokkaido",
+    "wp:にしんそば"
+   ]
+  },
+  "noppei_mie": {
+   "d": "根菜類を中心にした煮物",
+   "src": [
+    "maff:noppei_mie",
+    "wp:のっぺい汁"
+   ]
+  },
+  "obiten_miyazaki": {
+   "d": "魚のすり身を揚げた揚げかまぼこ",
+   "src": [
+    "maff:obiten_miyazaki",
+    "wp:飫肥天"
+   ]
+  },
+  "ohagi_kyoto": {
+   "d": "粒を残して丸めたもち米をあんで包んだもの、彼岸に供える",
+   "src": [
+    "maff:ohagi_kyoto",
+    "wp:ぼたもち"
+   ]
+  },
+  "okaisan_wakayama": {
+   "d": "米を茶で炊いた粥",
+   "src": [
+    "maff:okaisan_wakayama",
+    "wp:茶粥"
+   ]
+  },
+  "okuzu_kake_miyagi": {
+   "d": "温麺や野菜、豆麩などを煮てとろみをつけた汁",
+   "src": [
+    "maff:okuzu_kake_miyagi",
+    "wp:おくずかけ"
+   ]
+  },
+  "onimanju_aichi": {
+   "d": "小麦粉とさつまいもでつくる和菓子",
+   "src": [
+    "maff:onimanju_aichi",
+    "wp:鬼まんじゅう"
+   ]
+  },
+  "oshaka_kogori_yama_nashi": {
+   "d": "大豆を混ぜてつくる、灌仏会の行事食",
+   "src": [
+    "maff:oshaka_kogori_yama_nashi",
+    "wp:おしゃかこごり"
+   ]
+  },
+  "oyaki_nagano": {
+   "d": "野菜やあんを小麦粉・そば粉の皮で包んで焼いたもの",
+   "src": [
+    "maff:oyaki_nagano",
+    "wp:おやき"
+   ]
+  },
+  "paitayaki_ibaraki": {
+   "d": "サンマやイワシをたたき、味噌とねぎなどを混ぜて焼いたもの",
+   "src": [
+    "maff:paitayaki_ibaraki",
+    "wp:パイタ焼き"
+   ]
+  },
+  "ramen_hokkaido": {
+   "d": "麺を味噌・塩・醤油などのスープで食べる料理",
+   "src": [
+    "maff:ramen_hokkaido",
+    "wp:ラーメン"
+   ]
+  },
+  "ruibe_hokkaido": {
+   "d": "サケなどを凍らせたまま薄く切った刺身",
+   "src": [
+    "maff:ruibe_hokkaido",
+    "wp:ルイベ"
+   ]
+  },
+  "sakana_no_tataki_mie": {
+   "d": "魚を薬味と合わせて細かくたたいたもの",
+   "src": [
+    "maff:sakana_no_tataki_mie",
+    "wp:なめろう"
+   ]
+  },
+  "sambeijiru_hokkaido": {
+   "d": "塩漬けの魚を根菜やじゃがいもと煮た、魚の塩味の汁",
+   "src": [
+    "maff:sambeijiru_hokkaido",
+    "wp:三平汁"
+   ]
+  },
+  "sanma_sushi_nara": {
+   "d": "塩をしたサンマを酢飯にのせたすし",
+   "src": [
+    "maff:sanma_sushi_nara",
+    "wp:秋刀魚寿司"
+   ]
+  },
+  "sasa_zushi_niigata": {
+   "d": "笹の葉に酢飯を盛り、具や薬味をのせたもの",
+   "src": [
+    "maff:sasa_zushi_niigata",
+    "wp:笹寿司"
+   ]
+  },
+  "seidano_tamaji_yama_nashi": {
+   "d": "小粒のじゃがいもを味噌味で煮転がしたもの",
+   "src": [
+    "maff:seidano_tamaji_yama_nashi",
+    "wp:せいだのたまじ"
+   ]
+  },
+  "senbei_jiru_aomori": {
+   "d": "南部せんべいを醤油味の汁で煮込んだもの",
+   "src": [
+    "maff:senbei_jiru_aomori",
+    "wp:せんべい汁"
+   ]
+  },
+  "sendai_zouni_miyagi": {
+   "d": "焼きハゼを使った雑煮",
+   "src": [
+    "maff:sendai_zouni_miyagi",
+    "wp:仙台雑煮"
+   ]
+  },
+  "senzanki_ehime": {
+   "d": "鶏の骨付き肉を揚げたもの",
+   "src": [
+    "maff:senzanki_ehime",
+    "wp:せんざんき"
+   ]
+  },
+  "shimikonnyaku_ibaraki": {
+   "d": "こんにゃくを凍らせて乾かしたもの",
+   "src": [
+    "maff:shimikonnyaku_ibaraki",
+    "wp:凍みこんにゃく"
+   ]
+  },
+  "shimotukare_ibaraki": {
+   "d": "鮭の頭と大豆、根菜を酒粕で煮込んだもの",
+   "src": [
+    "maff:shimotukare_ibaraki",
+    "wp:しもつかれ"
+   ]
+  },
+  "shouga_meshi_wakayama": {
+   "d": "新しょうがを米と炊き込んだご飯",
+   "src": [
+    "maff:shouga_meshi_wakayama",
+    "wp:しょうが飯"
+   ]
+  },
+  "suko_fukui": {
+   "d": "八つ頭の茎、赤ずいきの酢漬け",
+   "src": [
+    "maff:suko_fukui",
+    "wp:すこ"
+   ]
+  },
+  "sumi_tsukare_chiba": {
+   "d": "大豆と根菜を酒粕で煮込んだもの",
+   "src": [
+    "maff:sumi_tsukare_chiba",
+    "wp:しもつかれ"
+   ]
+  },
+  "sumochi_fukuoka": {
+   "d": "つきたての餅を大根おろしとだいだいの汁、醤油、砂糖で和えたもの",
+   "src": [
+    "maff:sumochi_fukuoka",
+    "wp:酢もち"
+   ]
+  },
+  "taimen_oita": {
+   "d": "タイとうどんを合わせた料理",
+   "src": [
+    "maff:taimen_oita",
+    "wp:鯛麺"
+   ]
+  },
+  "taipiien_kumamoto": {
+   "d": "春雨スープに五目炒めと揚げ卵をのせたもの",
+   "src": [
+    "maff:taipiien_kumamoto",
+    "wp:太平燕"
+   ]
+  },
+  "tako_meshi_ehime": {
+   "d": "タコを米と一緒に炊き込んだご飯",
+   "src": [
+    "maff:tako_meshi_ehime",
+    "wp:たこめし"
+   ]
+  },
+  "tako_meshi_kumamoto": {
+   "d": "タコを炊き込むか、ご飯に混ぜたもの",
+   "src": [
+    "maff:tako_meshi_kumamoto",
+    "wp:たこめし"
+   ]
+  },
+  "takomeshi_aichi": {
+   "d": "タコを米と一緒に炊き込んだご飯",
+   "src": [
+    "maff:takomeshi_aichi",
+    "wp:たこめし"
+   ]
+  },
+  "tenmon_dou_chiba": {
+   "d": "野菜を砂糖で煮た菓子",
+   "src": [
+    "maff:tenmon_dou_chiba",
+    "wp:てんもんどう"
+   ]
+  },
+  "teppojiru_hokkaido": {
+   "d": "カニを入れた味噌汁",
+   "src": [
+    "maff:teppojiru_hokkaido",
+    "wp:カニ汁"
+   ]
+  },
+  "tobi_tsuki_dango_fukui": {
+   "d": "団子に煮たササゲをまぶしたもの",
+   "src": [
+    "maff:tobi_tsuki_dango_fukui",
+    "wp:とびつき団子"
+   ]
+  },
+  "tojiko_mame_kumamoto": {
+   "d": "甘い小麦粉の生地に炒った大豆や落花生を混ぜて固めた菓子",
+   "src": [
+    "maff:tojiko_mame_kumamoto",
+    "wp:とじこ豆"
+   ]
+  },
+  "toridose_chiba": {
+   "d": "鶏肉の団子を入れた雑炊",
+   "src": [
+    "maff:toridose_chiba",
+    "wp:鶏雑炊"
+   ]
+  },
+  "toriten_oita": {
+   "d": "鶏肉に衣をつけて揚げたもの",
+   "src": [
+    "maff:toriten_oita",
+    "wp:とり天"
+   ]
+  },
+  "toufu_dengaku_shiga": {
+   "d": "豆腐を串に刺して焼き、味噌を塗ったもの",
+   "src": [
+    "maff:toufu_dengaku_shiga",
+    "wp:味噌田楽"
+   ]
+  },
+  "touhei_nabe_fukuoka": {
+   "d": "トウヘイという魚を使った味噌仕立ての鍋",
+   "src": [
+    "maff:touhei_nabe_fukuoka",
+    "wp:とうへい鍋"
+   ]
+  },
+  "tsubon_jiru_kumamoto": {
+   "d": "鶏肉と野菜を醤油味で仕上げた具だくさんの汁",
+   "src": [
+    "maff:tsubon_jiru_kumamoto",
+    "wp:つぼん汁"
+   ]
+  },
+  "warabi_mochi_nara": {
+   "d": "わらび粉でつくる柔らかい和菓子、きな粉や黒蜜をかける",
+   "src": [
+    "maff:warabi_mochi_nara",
+    "wp:わらびもち"
+   ]
+  },
+  "yangome_chiba": {
+   "d": "炒った米とゆでた小豆に砂糖を合わせて炊いたもの",
+   "src": [
+    "maff:yangome_chiba",
+    "wp:ヤンゴメ"
+   ]
+  },
+  "yatara_nagano": {
+   "d": "野菜や漬物を細かく刻んで混ぜたもの",
+   "src": [
+    "maff:yatara_nagano",
+    "wp:やたら"
+   ]
+  },
+  "yoshida_no_udon_yama_nashi": {
+   "d": "硬くてコシの強いうどん",
+   "src": [
+    "maff:yoshida_no_udon_yama_nashi",
+    "wp:吉田のうどん"
+   ]
+  },
+  "zeitaku_ni_shiga": {
+   "d": "たくあんを煮た料理",
+   "src": [
+    "maff:zeitaku_ni_shiga",
+    "wp:たくあんの煮物"
+   ]
+  },
+  "zoni_aichi": {
+   "d": "餅を醤油味のつゆに入れた正月の料理",
+   "src": [
+    "maff:zoni_aichi",
+    "wp:雑煮"
+   ]
+  },
+  "zouni_fukui": {
+   "d": "餅を味噌味のつゆに入れた正月の料理",
+   "src": [
+    "maff:zouni_fukui",
+    "wp:雑煮"
+   ]
+  },
+  "zouni_mie": {
+   "d": "餅を醤油や味噌のつゆに入れた正月の料理",
+   "src": [
+    "maff:zouni_mie",
+    "wp:雑煮"
+   ]
+  }
+ }
 }
