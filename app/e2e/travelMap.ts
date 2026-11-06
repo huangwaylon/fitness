@@ -22,6 +22,13 @@ export const mapState = (page: Page) => page.evaluate(() => (window as unknown a
 export type TripTab = 'days' | 'map' | 'pack' | 'camps';
 /** From the island already up: the menu's りょこう pill, `trip`'s pass, its page `tab`. */
 export async function openTrip(page: Page, trip = 'okinawa', tab: TripTab = 'map') {
+  // the island's first models in first: drawn (drawn(), software GL on CI) their load starved the menu's spring, and
+  // its unfold timed out. (A boolean, not island.ts is3d's wait: the JSHandle a waitForFunction returns to the island's
+  // hooks object kept every island alive, which leaks.spec counts.)
+  await page.waitForFunction(() => {
+    const w = window as unknown as { __world?: unknown; __world3d?: { loaded(): boolean } };
+    return !!w.__world && (!document.querySelector('.if-scene[data-r3]') || !!w.__world3d?.loaded());
+  }, null, { timeout: 30_000 });
   await expect(hudMenu(page)).toBeVisible();
   await fromMenu(page, 'travel');
   const sheet = page.locator('dialog[open] [data-travel]');

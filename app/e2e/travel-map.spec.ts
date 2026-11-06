@@ -82,8 +82,11 @@ test("NZ day 1: New Lynn's two stops one pin 「2·6」, both rows marked; the d
   const [c, s] = [(await chips.boundingBox())!, (await slot.boundingBox())!];
   expect(s.y).toBeGreaterThanOrEqual(c.y + c.height - 1);
   // scrolled to the list's end: the day chips stuck under the page's tabs
-  await pane(page).locator('[data-stop="s1-5"]').scrollIntoViewIfNeeded();
-  await page.mouse.wheel(0, 600);
+  await pane(page).evaluate((el) => {
+    let sc = el.parentElement;
+    while (sc && !/(auto|scroll)/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement;
+    sc!.scrollTop = sc!.scrollHeight;
+  });
   const tabs = (await page.locator('dialog[open] .tabs').boundingBox())!;
   await expect.poll(async () => Math.abs((await chips.boundingBox())!.y - (tabs.y + tabs.height))).toBeLessThan(2);
   await expect(pane(page).locator('[data-map-day="3"]')).toBeInViewport();
@@ -123,7 +126,7 @@ test('the locate button refused: denied, a note says where to turn it on, and th
   await locate.click();
   await expect(locate).toHaveAttribute('data-locate', 'denied');
   await expect(locate).toHaveAttribute('aria-label', 'いちじょうほうが オフです');
-  await expect(page.locator('dialog[open] [data-map-note="denied"]')).toHaveText('いちじょうほうが オフです — せってい › Safari › いちじょうほう');
+  await expect(page.locator('dialog[open] [data-map-note="denied"]')).toHaveText('いちじょうほうが オフです\nせってい › Safari › いちじょうほう');
 });
 
 test('drawn: MapLibre on the fixture tiles, the NH pins, a day chip refits, a pin selects', { tag: '@render' }, async ({ page }) => {
@@ -163,22 +166,22 @@ test('drawn: MapLibre on the fixture tiles, the NH pins, a day chip refits, a pi
   expect(errors).toEqual([]);
 });
 
-test('drawn, offline: no tiles, the route and a note, never "ready"; the map chunk not fetched, a retry', { tag: '@render' }, async ({ page }) => {
+test('drawn, offline: the map chunk never asked for, a retry; back online, drawn with no tiles: the route and a note, never "ready"', { tag: '@render' }, async ({ page, context }) => {
   test.setTimeout(90_000);
   await drawn(page);
   await page.route('https://tiles.openfreemap.org/**', (r) => r.abort('internetdisconnected'));
-  // the map's chunk refused the first time (offline: it is never precached)
-  let refuse = true;
-  await page.route(/\/_app\/immutable\/chunks\/maplibre\.[\w-]+\.js$/, (r) => (refuse ? r.abort('internetdisconnected') : r.continue()));
-  await gotoTrip(page);
+  await gotoTrip(page, 'okinawa', 'days');
+  // offline (the chunk is never precached): a word and a retry, no locate button
+  await context.setOffline(true);
+  await page.locator('dialog[open] [data-trip-tab="map"]').click();
   const map = pane(page).locator('[data-travel-map]');
   await expect(map).toHaveAttribute('data-mode', 'failed');
-  const retry = map.locator('[data-map-retry]');
-  await expect(retry).toHaveText('もういちど');
+  await expect(map.locator('[data-map-retry]')).toHaveText('もういちど');
   await expect(map.locator('.locate')).toHaveCount(0);
-  refuse = false;
-  await retry.click();
-  // drawn now, but its tiles don't come: the route alone, said so
+  await map.locator('[data-map-retry]').click();
+  await expect(map).toHaveAttribute('data-mode', 'failed');
+  // online again: drawn by itself, but its tiles don't come: the route alone, said so
+  await context.setOffline(false);
   await expect(map).toHaveAttribute('data-mode', 'offline', { timeout: 30_000 });
   await expect(map.locator('[data-map-note="offline"]')).toHaveText('ちずは オフライン — ルートだけ');
   await expect(page.locator('dialog[open] .maplibregl-marker.tm-pin')).toHaveCount(8);

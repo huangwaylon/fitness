@@ -65,7 +65,10 @@
   /** Back to the day's route (its chip tapped again). */
   export const fit = () => engine?.fit();
 
+  /** Offline the chunk isn't asked for at all (Safari keeps a failed import for the page's life, so a retry would
+   *  fail too): 'failed' till the phone is back online (then drawn by itself) or the retry is tapped. */
   function draw() {
+    if (!navigator.onLine) return void (mode = 'failed');
     mode = 'loading';
     loadEngine().then(
       ({ createEngine }) => {
@@ -104,7 +107,8 @@
     const io = new IntersectionObserver(([e]) => ((inView = e.isIntersecting), shown()));
     io.observe(host);
     document.addEventListener('visibilitychange', shown);
-    if (mode !== 'stub') draw();
+    const online = () => mode === 'failed' && draw();
+    if (mode !== 'stub') (draw(), addEventListener('online', online));
     const hook = { state: snapshot };
     if (hooksOn(new URLSearchParams(location.search))) (window as unknown as { __travelMap?: unknown }).__travelMap = hook;
     return () => {
@@ -113,6 +117,7 @@
       watch.stop();
       io.disconnect();
       document.removeEventListener('visibilitychange', shown);
+      removeEventListener('online', online);
       host.removeEventListener('gesturestart', noPageZoom);
       engine?.destroy();
       engine = null;
@@ -157,7 +162,8 @@
 </div>
 
 <style>
-  /* its own stacking context: the pins' z-indexes stay under the sheet's sticky tabs and day chips */
+  /* its own stacking context: the pins' z-indexes (up to 1000, the selected one) stay under the sheet's sticky tabs and
+     day chips; the map's chrome (the note, the locate button, the attribution) at 1001 over them */
   .tm { position: relative; isolation: isolate; width: 100%; height: 100%; min-height: 240px; overflow: hidden; background: #86CDEB; touch-action: none; -webkit-user-select: none; user-select: none; }
   .gl { position: absolute; inset: 0; touch-action: none; }
   .stub { position: absolute; inset: 0; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; padding: 12px; }
@@ -192,15 +198,16 @@
   :global(.tm-pin:focus-visible .tm-head) { outline: 3px solid var(--focus, #4A3A2C); outline-offset: 2px; }
   .cand { width: var(--hit); height: var(--hit); border: 0; border-radius: 50%; background: #FFFFFF; }
 
-  /* a note over the map (offline, the location off or far): a cream tag at the top */
+  /* a note over the map (offline, the location off or far): a cream tag at the top, the pins under it still tappable */
   .note {
-    position: absolute; z-index: 2; top: 10px; left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 24px); margin: 0; padding: 6px 12px;
+    position: absolute; z-index: 1001; top: 10px; left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 24px); margin: 0; padding: 6px 12px;
     border-radius: 14px; background: var(--c-cream, #FFF9E3); color: var(--c-ink, #4A3A2C); font: 700 var(--fs-s, 13px)/1.35 var(--font-ui); text-align: center;
+    white-space: pre-line; pointer-events: none;
     box-shadow: inset 0 0 0 2px var(--c-edge, #937047), 0 3px 0 var(--c-edge, #937047);
   }
   /* the map's chunk or its WebGL didn't come (offline, the chunk never precached): the paper, a word, a retry */
   .failed {
-    position: absolute; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 16px;
+    position: absolute; inset: 0; z-index: 1001; display: grid; place-content: center; justify-items: center; gap: 12px; padding: 16px;
     background: var(--c-paper, #F5E4BC); color: var(--c-ink-soft, #6B5544); font: 700 var(--fs-body, 15px)/1.4 var(--font-ui); text-align: center;
   }
   .failed p { margin: 0; }
@@ -211,11 +218,11 @@
     font: 500 9.5px/1.5 var(--font-ui); color: var(--c-ink-soft, #6B5544);
   }
   .tm :global(.maplibregl-ctrl-attrib a) { color: inherit; }
-  .tm :global(.maplibregl-ctrl-bottom-left) { z-index: 1; }
+  .tm :global(.maplibregl-ctrl-bottom-left) { z-index: 1001; }
 
   /* the locate button: the app's cream disc (EyeToggle's measures), yuzu while on */
   .locate {
-    position: absolute; right: 8px; bottom: 10px; z-index: 2; appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer;
+    position: absolute; right: 8px; bottom: 10px; z-index: 1001; appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer;
     width: var(--hit, 44px); height: var(--hit, 44px); display: grid; place-items: center; color: var(--c-ink-soft, #6B5544);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
