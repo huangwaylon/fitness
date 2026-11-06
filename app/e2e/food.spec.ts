@@ -711,10 +711,15 @@ test('search rows: a product’s brand on its second line, the same name, brand 
   const keys = await rows.evaluateAll((bs) => bs.map((b) => `${b.querySelector('.nm')?.textContent}|${b.querySelector('[data-brand]')?.textContent ?? ''}|${b.getAttribute('data-per100')}`));
   expect(new Set(keys).size).toBe(keys.length);
   expect(await overflowOf(page)).toEqual([]);
+  // with nothing else on its second line, ✓n goes there: the row two lines, as tall as the rest
+  await sheet(page).locator('[data-food-q]').fill('豚ロース 赤肉');
+  const lean = rows.filter({ has: page.locator('.nm', { hasText: /^豚ロース 赤肉 生$/ }) });
+  await expect(lean.locator('.meta [data-verified]')).toHaveCount(1);
+  expect((await lean.boundingBox())!.height).toBeLessThanOrEqual(72);
 });
 
-// The everyday name (foodUi.ts glossOf): an older snapshot's catalogue name now, else the data's vetted gloss (none
-// shipped yet: never a raw alias or the English); and each row's category tile (FoodThumb, 48 px; the recipe's
+// The everyday name (foodUi.ts glossOf): an older snapshot's catalogue name now, else the data's vetted gloss (never a
+// raw alias or the English); and each row's category tile (FoodThumb, 48 px; the recipe's
 // ingredients 40 px), the rows no taller.
 test('search rows: a category tile, no raw alias or English under the name, the rows as tall; the recipe’s ingredients’ tiles and 鶏もも肉', async ({ page }) => {
   await openFood(page, '&as=B');
@@ -722,7 +727,7 @@ test('search rows: a category tile, no raw alias or English under the name, the 
   await sheet(page).locator('[data-food-q]').fill('キャッサバでん粉');
   const row = sheet(page).locator('[data-food-results] button.it', { hasText: 'キャッサバでん粉' }).first();
   await expect(row).toBeVisible({ timeout: 15_000 });
-  await expect(row.locator('[data-gloss]')).toHaveCount(0); // its alias タピオカ: until the data vets it
+  await expect(row.locator('[data-gloss]')).toHaveCount(0); // its alias タピオカ: not a vetted gloss
   await expect(row.locator('.meta')).not.toContainText('100gあたり');
   await sheet(page).locator('[data-food-q]').fill('コーヒー牛乳');
   const milk = sheet(page).locator('[data-food-results] button.it', { hasText: 'コーヒー牛乳' }).first();
