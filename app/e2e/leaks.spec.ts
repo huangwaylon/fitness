@@ -5,7 +5,7 @@
 // on the cached home models held the picker's renderer), one more an /editor visit (and a document keydown listener).
 import { expect, test, type Page } from './fixtures.ts';
 import { BASE } from './island.ts';
-import { drawn, fixtureTiles, mapReady, openTrip } from './travelMap.ts';
+import { drawn, fixtureTiles, mapReady, openTrip } from './trips.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&as=B';

@@ -5,8 +5,9 @@
 // and a trip that's over (a quiet count). SHOTS=<dir>: WebKit screenshots of the list.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu } from './hud.ts';
-import { BASE } from './island.ts';
-import { openTrip } from './travelMap.ts';
+import { BASE, islandQuery } from './island.ts';
+import { shot } from './shots.ts';
+import { openTrip } from './trips.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const DATE = '2026-11-04T12:00';
@@ -15,14 +16,11 @@ const BEFORE: Record<string, string> = { okinawa: '2026-10-01T12:00', seattle: '
 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G' = 'A', trip = 'okinawa', date = BEFORE[trip]) {
   const page = await ctx.newPage();
-  await page.goto(`${BASE}/?demo&date=${date}&critter=none&visitor=none${as === 'A' ? '' : `&as=${as}`}`);
+  await page.goto(`${BASE}/${islandQuery(`demo&date=${date}${as === 'A' ? '' : `&as=${as}`}`)}`);
   await openTrip(page, trip, 'pack');
   await expect(page.locator('[data-pack-item]').first()).toBeVisible();
   return page;
 }
-const shot = async (p: Page, name: string) => {
-  if (process.env.SHOTS) await p.screenshot({ path: `${process.env.SHOTS}/${name}.png` });
-};
 /** A reload: the island again, the same trip's もちもの. */
 async function reopen(page: Page, trip = 'okinawa') {
   await page.reload();

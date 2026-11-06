@@ -4,6 +4,9 @@ import { expect, type Locator, type Page } from './fixtures.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
 export const BASE = process.env.BASE_PATH ?? '';
+/** The island's query with `q` (`demo&date=…`), its wanderers pinned off (no critter, no visitor) so nothing walks into
+ *  a tap or a picture. */
+export const islandQuery = (q: string): string => `?${q}&critter=none&visitor=none`;
 /** The island's own URL (the base path's root) with a query, `rest` (a regex source) after its `?`. */
 export const islandURL = (rest = ''): RegExp => new RegExp(`^https?://[^/]+${BASE}/?\\?${rest}`);
 
