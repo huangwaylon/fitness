@@ -6,7 +6,7 @@
 import type { EventRow } from '#lib/contract/api.ts';
 import { listenOf, type ListenRow } from '#lib/contract/listen.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
-import type { Level } from '#lib/kikimimi/bank.ts';
+import { levelMark, type Level } from '#lib/kikimimi/bank.ts';
 import { LADDER_OK, LEVELS } from '#lib/kikimimi/deck.ts';
 import { reportOf, type Report } from '#lib/kikimimi/report.ts';
 import { week } from '#lib/store/week.svelte.ts';
@@ -63,8 +63,8 @@ export function recWords(r: Rec): { title: string; why: string } {
     case 'review': return { title: t('kiki.rec.review', { n: r.due }), why: t('kiki.rec.reviewWhy') };
     case 'skill': return { title: t('kiki.rec.skill', { skill: t(`kiki.skill.${r.skill}`) }), why: t('kiki.rec.skillWhy', { pct: pct(r.m) }) };
     case 'try': return { title: t('kiki.rec.try', { skill: t(`kiki.skill.${r.skill}`) }), why: t('kiki.rec.tryWhy') };
-    case 'level': return { title: t('kiki.rec.level', { lv: r.lv }), why: t('kiki.rec.levelWhy') };
-    case 'steady': return { title: t('kiki.rec.steady'), why: t('kiki.rec.steadyWhy', { lv: r.lv }) };
+    case 'level': return { title: t('kiki.rec.level', { name: `${levelMark(r.lv)} ${t(`kiki.lv.${r.lv}`)}` }), why: t('kiki.rec.levelWhy') };
+    case 'steady': return { title: t('kiki.rec.steady'), why: t('kiki.rec.steadyWhy', { name: `${levelMark(r.lv)} ${t(`kiki.lv.${r.lv}`)}` }) };
     case 'accent': return { title: t('kiki.rec.accent', { accent: t(`kiki.accent.${r.accent}`) }), why: t('kiki.rec.accentWhy') };
     case 'speed': return r.tried
       ? { title: t('kiki.rec.speed'), why: r.at === null ? t('kiki.prog.speedLow') : t('kiki.rec.speedWhy', { x: sx(r.at) }) }

@@ -23,15 +23,18 @@ import { CONTENT } from './content/index.ts';
 export type ItemType = 'pic' | 'word' | 'num' | 'reply' | 'mean' | 'gist' | 'next';
 /** The dialogue types (an item with `lines`). */
 export const DIALOGUE_TYPES: readonly ItemType[] = ['gist', 'next'];
-/** The protocol's levels (1-5): 1-4 the stages' quiz, 5 the アナウンス pack (bank5.ts: announcements, voicemails and
- *  phone menus through their channels, about level 4's band). */
+/** The protocol's levels (1-8): 1-4 the stages' quiz, 5 the アナウンス pack (bank5.ts: announcements, voicemails and
+ *  phone menus through their channels, about level 4's band), 6 やま and 7 ほし (content/: the stages above level 4), 8
+ *  room for the next. */
 export type Level = QuizLv;
 export type Accent = 'us' | 'uk' | 'au';
 /** A level's place on the stages' ladder (progress.ts difficulty, advice.ts nudges): 1-4 themselves; 5, the アナウンス
- *  pack, sits beside level 4 (its band, B1+ → B2), never above it. */
-export const levelRank = (lv: number): number => (lv === 5 ? 4 : lv);
-/** A level's mark beside its name: its ★s (the stage's count), the pack 📢. */
-export const levelMark = (lv: number): string => (lv === 5 ? '📢' : '★'.repeat(lv));
+ *  pack, sits beside level 4 (its band, B1+ → B2), never above it; 6 (やま) and 7 (ほし) the next steps, 5 and 6. */
+export const levelRank = (lv: number): number => (lv === 5 ? 4 : lv > 5 ? lv - 1 : lv);
+/** The stage's level at a place on the ladder (levelRank's inverse, never the pack). */
+export const levelAt = (rank: number): Level => (rank > 4 ? rank + 1 : rank) as Level;
+/** A level's mark beside its name: its ★s (its place on the ladder), the pack 📢. */
+export const levelMark = (lv: number): string => (lv === 5 ? '📢' : '★'.repeat(levelRank(lv)));
 /** A cast voice of the neural TTS (docs/curriculum.md §9; 12 voices, US weighted: speech.ts SLOTS lists the ones that
  *  exist, scripts/tts/cast.json describes them): accent, gender, slot. Each villager speaks with one for good (bank4.ts
  *  CAST). */

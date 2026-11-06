@@ -2,7 +2,7 @@
 // (docs/kikimimi.md "Progress & feedback"). Pure, over made-up games.
 import { describe, expect, it } from 'vitest';
 import type { EventRow } from '../contract/api.ts';
-import { BANK, type Level } from './bank.ts';
+import { BANK, levelAt, levelMark, levelRank, type Level } from './bank.ts';
 import { DECK_SIZE } from './deck.ts';
 import { answersOf, dayNum, daysPlayed, gamesOf, isLadderGame, listenAnswers, recentOf, scoreOf, speedOf, stageOf, statsOf, together, trendOf, weekDays, type Answer, type Game } from './progress.ts';
 import { ladderDeck } from './ladder.ts';
@@ -122,7 +122,9 @@ describe('statsOf', () => {
     expect(statsOf([], TODAY).level).toBeNull();
     expect(stageOf(3.2).stage.id).toBe('s1');
     expect(stageOf(3.0).into).toBeCloseTo(0.5);
-    expect(stageOf(9).stage.id).toBe('s3');
+    expect(stageOf(5).stage.id).toBe('s3');
+    expect(stageOf(6).stage.id).toBe('s4');
+    expect(stageOf(9).stage.id).toBe('s4');
   });
 });
 
@@ -228,6 +230,22 @@ describe('the advice', () => {
     expect(recommend({ stats: statsOf(answersOf(easy), TODAY), games: easy, dueItems: 0, levels: LV, bank })).toContainEqual({ kind: 'level', lv: 2 });
     const hard = [game(l1, { lv: 1, miss: l1.slice(0, 5) }), game(l1, { lv: 1, miss: l1.slice(0, 5) }), game(l1, { lv: 1, miss: l1.slice(0, 5) })];
     expect(recommend({ stats: statsOf(answersOf(hard), TODAY), games: hard, dueItems: 0, levels: LV, bank }).map((r) => r.kind)).toContain('steady');
+  });
+  it('the next stage up from level 4 is やま (6), past the アナウンス pack beside it; from やま ほし (7); none past ほし', () => {
+    const all: Level[] = [1, 2, 3, 4, 5, 6, 7];
+    const easy = (lv: Level) => {
+      const l = BANK.filter((it) => it.lv === lv).map((it) => it.id).slice(0, 8);
+      return [game(l, { lv }), game(l, { lv }), game(l, { lv })];
+    };
+    const up = (lv: Level) => recommend({ stats: statsOf(answersOf(easy(lv)), TODAY), games: easy(lv), dueItems: 0, levels: all, bank }).find((r) => r.kind === 'level');
+    expect(up(4)).toEqual({ kind: 'level', lv: 6 });
+    expect(up(5)).toEqual({ kind: 'level', lv: 6 });
+    expect(up(6)).toEqual({ kind: 'level', lv: 7 });
+    expect(up(7)).toBeUndefined();
+    // the ladder's places: the pack beside 4, やま and ほし the next two; their marks
+    expect([1, 2, 3, 4, 5, 6, 7].map(levelRank)).toEqual([1, 2, 3, 4, 4, 5, 6]);
+    expect([1, 2, 3, 4, 5, 6].map(levelAt)).toEqual([1, 2, 3, 4, 6, 7]);
+    expect([4, 5, 6, 7].map(levelMark)).toEqual(['★★★★', '📢', '★★★★★', '★★★★★★']);
   });
   it('names an accent well below the others', () => {
     const uk = BANK.filter((it) => it.voice === 'uk' && it.lv === 2).map((it) => it.id).slice(0, 6);

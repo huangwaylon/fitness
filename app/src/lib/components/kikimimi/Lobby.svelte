@@ -165,7 +165,8 @@
   /* the four levels a 2×2 grid (three and one left a hole) */
   .levels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   /* the アナウンス pack: a row of its own under the four stages (beside the ladder, not a fifth step) */
-  .lv[data-level='5'] { grid-column: 1 / -1; }
+  /* the アナウンス pack: a full-width row under the stages (やま and ほし too) */
+  .lv[data-level='5'] { grid-column: 1 / -1; order: 1; }
   .lv {
     appearance: none; border: 0; cursor: pointer; min-height: 64px; border-radius: var(--r-card); display: grid; place-content: center; gap: 2px;
     background: var(--ctl); color: var(--text); box-shadow: var(--sh-ctl); font: 700 var(--fs-body)/1.2 var(--font-ui);

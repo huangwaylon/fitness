@@ -116,7 +116,7 @@ export const DEVICE = {
   /** localStorage: the Tokyo date whose midnight Happy New Year! this phone played (lib/sound/sound.svelte.ts: once,
    *  not again after a reload). */
   newYearIntro: 'island.newYearIntro',
-  /** localStorage: `1` | `2` | `3`: the ききみみ クイズ level last played on this phone (the next lobby's;
+  /** localStorage: `1` … `7`: the ききみみ クイズ level last played on this phone (the next lobby's;
    *  components/kikimimi/KikimimiSheet.svelte). */
   kikimimiLv: 'island.kikimimiLv',
   /** localStorage: `20` | `30` | `60` | `0` (none): the ききみみ こたえる じかん last set on this phone (the next lobby's;
