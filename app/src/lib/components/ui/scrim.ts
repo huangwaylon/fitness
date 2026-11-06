@@ -1,4 +1,4 @@
-// A modal <dialog>'s scrim tap (Sheet, the quiet kit's ActionSheet and BottomSheet): the click's target is the dialog
+// A modal <dialog>'s scrim tap (Sheet, ui/ActionSheet): the click's target is the dialog
 // and its point outside the dialog's box. A tap whose control moved from under it mid-press (a field's blur re-laying
 // the sheet out) lands on the dialog itself, inside its box: not a dismiss.
 export function onScrim(e: MouseEvent, dlg: HTMLDialogElement | undefined): boolean {

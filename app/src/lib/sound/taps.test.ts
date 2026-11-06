@@ -36,8 +36,6 @@ const SELF: Record<string, string> = {
   'lib/components/layoutEdit/IslandEdit.svelte': 'tick to pick, turn or move a thing and for a tab, confirm to put it down, boop when it can\'t, undo to put away (TentEdit\'s)',
   'lib/components/kikimimi/Lobby.svelte': 'おなじへや → toggle-on / toggle-off',
   'lib/components/kikimimi/settings/KikiSettings.svelte': 'おとを 1だいに まとめる → toggle-on / toggle-off',
-  'lib/components/quiet/ActionSheet.svelte': 'the scrim / Esc: back (as キャンセル)',
-  'lib/components/quiet/BottomSheet.svelte': 'the scrim / Esc: back (as キャンセル)',
   'lib/components/homes/HomePicker.svelte': 'これにする → confirm once the new look goes out (silent while it would not fit, or nothing changed)'
 };
 
@@ -74,8 +72,6 @@ const NONE: Record<string, string> = {
   'lib/components/kikimimi/story/StoryFrame.svelte': 'おやすみ ものがたり: ⏮ ⏯ ⏭, the sleep timer and the words are silent at bedtime (no cue over the story\'s voice)',
   'lib/components/kikimimi/frame/RoundFrame.svelte': 'よみおわった once tapped does nothing',
   'lib/components/kikimimi/frame/ChoiceGrid.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)',
-  'lib/components/quiet/Chip.svelte': 'the chip already picked does nothing',
-  'lib/components/quiet/TabBar.svelte': 'the tab already shown does nothing',
   'lib/components/wedding/Notes.svelte': 'the note field: the system keyboard clicks',
   'lib/components/wedding/Settings.svelte': 'the names, day, venue, time zone and category fields: the system keyboard clicks (the zone a native dropdown)',
   'lib/components/wedding/TaskForm.svelte': 'a task\'s fields (its title, dates, checklist items): the system keyboard and pickers'

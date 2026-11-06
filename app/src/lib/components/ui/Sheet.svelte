@@ -15,8 +15,7 @@
   // pop's column for the info sheets (docs/design.md "Unified kit": りょこう, けっこんしき, トレイル): the paper edge to
   // edge, body text in --font-body, the kit's scope (`.kit`); the sheet puts its own NavBar size="s", one scroller and
   // a TabBar inside. The default (paper) is also the kit's form sheet: the fields, then 保存 (a leaf .btn) in `footer`;
-  // `focusField` puts the keyboard up on its first field. variant="quiet": the old quiet kit's column (quiet.css),
-  // until its sheets have moved to `full`.
+  // `focusField` puts the keyboard up on its first field.
   import { untrack, type Snippet } from 'svelte';
   import { onScrim } from './scrim.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -34,7 +33,7 @@
     label: string;
     /** The title bar's title (centred). */
     title?: string;
-    variant?: 'paper' | 'top' | 'pop' | 'full' | 'quiet';
+    variant?: 'paper' | 'top' | 'pop' | 'full';
     onclose?: () => void;
     /** A backdrop tap or Esc: false keeps the sheet open (a game going asks first: ききみみ's 「やめる？」). */
     ondismiss?: () => boolean;
@@ -44,7 +43,7 @@
     focusField?: boolean;
   }
   let { open = $bindable(), label, title, variant = 'paper', onclose, ondismiss, children, footer, focusField = false }: Props = $props();
-  const cls = $derived(variant === 'quiet' ? 'pop quiet q-sheet' : variant === 'full' ? 'pop full kit' : variant);
+  const cls = $derived(variant === 'full' ? 'pop full kit' : variant);
   let dlg: HTMLDialogElement | undefined = $state();
   const id = ++seq;
   /** The topmost open sheet hosts the banner. */
@@ -176,9 +175,6 @@
      body text in the system font (titles, labels, numbers set their own --font-ui / --font-num) */
   dialog.full { border-radius: 0; font: 400 var(--fs-body)/1.45 var(--font-body); font-variant-numeric: tabular-nums; }
   dialog.full > .inner { padding: 0; }
-  /* the old quiet skin (until its sheets move to full) */
-  dialog.q-sheet { background: var(--q-bg); color: var(--q-ink); border-radius: 0; }
-  dialog.q-sheet > .inner { padding: 0; }
   @keyframes pop { from { opacity: 0; transform: scale(.08); } 40% { opacity: 1; } to { transform: none; } }
   @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
 </style>

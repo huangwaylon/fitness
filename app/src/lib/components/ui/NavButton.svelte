@@ -4,7 +4,6 @@
   // back pill (‹ 島へ on a full page).
   // `size="s"` (the info sheets' NavBar s, docs/design.md "Unified kit"): a 32px cream disc with the small edge in the
   // same 44px hit. `look="photo"`: the glyph on a round smoked disc over a photo (a trip's hero, a trail's map).
-  // `look="quiet"`: the old quiet kit's bare glyph (quiet/SheetHeader), deleted with it.
   //   <NavButton kind="close" onclick={…} />   <NavButton kind="back" text="島へ" onclick={…} />   <NavButton kind="close" size="s" onclick={…} />
   import { t } from '#lib/i18n/index.ts';
   import Icon from './Icon.svelte';
@@ -18,7 +17,7 @@
     label?: string;
     /** `self`: the handler plays its own cue (the phone's close tune). */
     sfx?: 'back' | 'self';
-    look?: 'game' | 'quiet' | 'photo';
+    look?: 'game' | 'photo';
     size?: 'm' | 's';
   }
   let { kind, onclick, text, label, sfx = 'back', look = 'game', size = 'm' }: Props = $props();
@@ -28,8 +27,6 @@
 {#snippet glyph()}
   {#if look === 'game' && size === 'm'}
     <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#{kind === 'back' ? 'i-back' : 'i-close'}" /></svg>
-  {:else if look === 'quiet'}
-    <Icon name={kind} size={kind === 'back' ? 24 : 22} stroke={1.75} />
   {:else}
     <Icon name={kind} size={kind === 'back' ? 20 : 18} stroke={look === 'photo' ? 1.75 : 2.4} />
   {/if}
@@ -56,18 +53,14 @@
   .nav.s.game:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
   .nav.s :global(svg) { position: relative; width: 18px; height: 18px; }
   .nav.s.back :global(svg) { width: 20px; height: 20px; }
-  /* bare glyph (quiet) / on a photo: a 32px smoked disc */
-  .nav.quiet, .nav.photo { background: none; box-shadow: none; border-radius: 12px; transition: opacity var(--dur-quick); }
-  .nav.quiet { color: var(--q-ink-2, var(--text)); }
-  .nav.quiet.back { color: var(--q-ink, var(--text)); }
-  .nav.photo { position: relative; color: #fff; }
+  /* on a photo: a 32px smoked disc */
+  .nav.photo { position: relative; color: #fff; background: none; box-shadow: none; border-radius: 12px; transition: opacity var(--dur-quick); }
   .nav.photo::before {
     content: ''; position: absolute; inset: 6px; border-radius: 50%; background: rgb(30 24 18 / .35);
     -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
   }
   .nav.photo :global(svg) { position: relative; }
-  .nav.quiet:active, .nav.photo:active { transform: none; box-shadow: none; opacity: .55; }
-  .nav.quiet:focus-visible { outline: 2px solid var(--q-accent, var(--focus)); outline-offset: -4px; }
+  .nav.photo:active { transform: none; box-shadow: none; opacity: .55; }
   .nav.photo:focus-visible, .nav.s:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
   @media (prefers-reduced-motion: reduce) { .nav.s.game:active::before { transform: none; } }
 </style>

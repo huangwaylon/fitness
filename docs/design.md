@@ -551,23 +551,8 @@ The info sheets (りょこう, けっこんしき, トレイル; the user, 2026-
 for dense info, the whole app's colours) are part of the app: the same paper, cards, leaf and yuzu as ごほうび / 設定,
 denser. Game feel from edges, small lips, stickers, stitches and the yuzu "selected"; dense text smaller, in the system font.
 
-**Migration (until the last sheet moves; then `components/quiet/` and `quiet.css` go):**
-
-| old (quiet kit) | new |
-|---|---|
-| Sheet `variant="quiet"`, `.q-sheet`, `quiet.css`, every `--q-*` | Sheet `variant="full"` on app tokens (below) |
-| quiet/SheetHeader (`sub`, `over`, `trailing`) | ui/NavBar `size="s"` (`over`, `trailing`); NavButton `look="quiet"` goes with it |
-| quiet/TabBar · Chip · ChipRow · Segmented · ProgressBar | ui/TabBar · ui/Chip · ui/ChipRow · ui/Segmented · ui/ProgressBar |
-| quiet/ActionSheet (`Action`) | ui/ActionSheet (same props; `title` required, ✕ instead of キャンセル) |
-| quiet/BottomSheet (`onsave`, `can`, `.q-field`) | ui/Sheet default + `focusField` + a leaf `.btn` 保存 in `footer` (aria-disabled while it can't) |
-| quiet/Icon (`isIcon`, `IconName`), hiking/Ic | ui/Icon (hiking names: dist→`distance`, gain→`mountain`, ext→`arrow-up-right`, chevDown→`chevron-down`) |
-| `.q-card` · `.q-row` · `button.q-row` · `.q-kv` · `.q-sec` · `.q-tag` · `.q-badge` | `.card.dense` · `.row` · `button.row` · `.row.kv` · `.sec-label.head` · `.tag` · `.sticker` |
-| `.q-btn.primary` / `.q-btn` / `.q-btn.text` | `.btn` / `.btn.small.paper` / NavButton or a `.chip.s` |
-| `--q-bg` `--q-surface` `--q-sunken` `--q-hairline` | `--surface` `--card` `--ctl-off` `--stitch` |
-| `--q-ink` `--q-ink-2` `--q-muted` `--q-faint` | `--text` `--text-soft` `--text-soft` `--edge` |
-| `--q-accent*` `--q-coral*` `--q-scrim` `--q-shadow` `--q-shadow-float` | `--c-leaf` / `--leaf-text` · `--c-coral` / `--coral-text` · `--scrim` · `--sh-lip-s` · `--sh-float` |
-| `--q-font` `--q-font-title` `--q-fs-*` `--q-r-*` `--q-photo-btn` | `--font-body` `--font-ui` `--fs-*` `--r-*` · NavButton `look="photo"` |
-| HikingSheet's `.trails` palette (`--paper*` `--ink*` `--line*` `--pine*` …), `--wed-pink`, Pass's blue | app tokens, `--c-rose`, `--c-sky` |
+Every sheet is on it: the old quiet kit (`components/quiet/`, `quiet.css`, `--q-*`) and the feature palettes are gone;
+nothing feature-local (`--wed-pink` → `--c-rose`, Pass's blue → `--c-sky`, hiking's `.trails` palette → app tokens).
 
 - **Tokens** (tokens.css, re-tinted by time of day like the rest): `--font-body` (system: -apple-system, Hiragino Sans)
   · `--lip-s` 2px / `--sh-lip-s` (dense cards, rows) · `--sh-ctl-s` (+ `-press`: 32px controls, a 1.5px edge, a 2px lip)
