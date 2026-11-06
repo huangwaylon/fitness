@@ -25,12 +25,12 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 
 - No tab bar: 島 (the island), the health popup (tap the dumbbell: けんこう), the meal log (tap the bowl: ごはん), and
   behind the HUD menu's leaf the one panel for the ベル (its 「ベル 121」 row: ごほうび, no tabs), the ずかん, えいご
-  ききとり (ききみみ クイズ) and せってい, each its own sheet.
+  ききとり (ききみみ クイズ), りょこう ([Trips](#trips)) and せってい, each its own sheet.
 - One focal point per screen (島: the island itself, the sky clean, the leaf the door to the rest; ごほうび: the
   balance, today's ベル under it).
 - A number is shown in full in one place; elsewhere it is only a doorway to it.
 - Per screen at most 40 Japanese characters of non-numeric text, 3 cards, 5 rows a card; one しずえ line (≤ 16
-  characters), only with news.
+  characters), only with news. (The trip guides are the one exception: [Trips](#trips).)
 
 ## Screens
 
@@ -2374,6 +2374,30 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
   each phase's end and each message; each question's clip at its start on the relay's clock (`playVoice` relayAt), the
   next one decoded meanwhile, the deck's clips fetched into the cache in the lobby. `?kikimimi=fast` (hooks on) shortens
   the timed answer windows on every phone; `window.__kiki` (hooks on) is the e2e's view and right answer.
+
+### Trips
+
+りょこう, the trip guides (the full spec: [travel.md](travel.md) "The sheet"). The HUD menu's pill 「りょこう」 (Orville's
+head, between えいご ききとり and せってい) opens its full-height sheet (`components/travel/TravelSheet.svelte`, its own
+chunk with the three guides and `i18n/travel.*.json`; the always-loaded part is `TravelHost.svelte` in the HUD, outside
+the island's `[data-exact-taps]`, and `open.svelte.ts`). The island is paused under it (the page's `paused`).
+- **The list:** Orville's one line in the Bubble on this phone's first opening of the Tokyo day (`DEVICE.travelHello`);
+  a Dodo Airlines boarding pass per trip (the airline's NH-blue strip over the cover, TYO ✈ the airport, the
+  destination, its dates in the reader's locale; the stub torn off right: 「あと 99にち」, 「あした！」, 「いま 2日目」 in
+  yuzu); on now and coming first, then 「おもいで」 (newest first), each stamped 「いってきた」 with its year.
+- **A trip:** ‹ back to the list; the hero photo band (where it stands, the trip's line); a Segmented that sticks to the
+  scroller's top: にってい (the day cards: the day on a tilted yuzu plate, the icon and the weekday, the title and route;
+  open, the hike's figures, the timeline, the lists, the note, the photo, the links out in a new tab; then じゅんび,
+  the logistics cards, folded), ちず (only with a route), もちもの, キャンプ (only with campsites: one kind, any
+  amenities, each chip's count what it would show, an empty state with すべて みる).
+- **The trip's own clock** (`when.ts`): the countdown, today and the row that is now are read in `trip.tz` (rows with
+  `dd` are on the eve or the morning after); during the trip today's card opens and scrolls into view, its row marked
+  yuzu with 「いま」.
+- **Rules the guides bend (the user, 2026-11-06):** the guides are reading cards, denser than §Simplicity rules (more
+  than 40 characters and 3 cards a screen, more than 5 rows a card: a day is a full timeline); and their own text (the
+  `.guide` class: the guides' words, never the chrome) breaks as normal Japanese (`word-break: normal; line-break:
+  strict; text-wrap: pretty`) instead of keep-all at spaces, since the source has no spaces to break at. The chrome
+  (the catalog's strings) keeps every rule: kana-first, keep-all, linebreaks.test's 12-character runs.
 
 ### Seasonal preview
 
