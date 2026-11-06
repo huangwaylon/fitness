@@ -80,8 +80,9 @@
   .intro.more p { display: block; }
   .more-b { justify-self: end; appearance: none; border: 0; background: none; min-height: var(--hit); margin-right: -6px; padding: 0 6px; cursor: pointer; color: var(--leaf-text); font: 700 var(--fs-s)/1 var(--font-ui); }
   .filter { display: grid; gap: 8px; }
-  .row { display: grid; grid-template-columns: 4.2em minmax(0, 1fr); align-items: center; gap: 8px; }
-  .rl { font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  /* each row its small label over its chips */
+  .row { display: grid; gap: 4px; }
+  .rl { margin: 0 4px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
   .chip { padding: 0 12px; font-size: var(--fs-s); }
   .chip .n { margin-left: 2px; font-size: var(--fs-xs); opacity: .75; }
   .ck { width: 1em; text-align: center; font-weight: 700; opacity: .6; }
