@@ -11,21 +11,26 @@ type Mix = Readonly<Partial<Record<ItemType, number>>>;
 type Mixes = Readonly<Partial<Record<Level, Mix>>>;
 
 /** How many of each type a level's game has (8 in all). Level 5 is the アナウンス pack (bank5.ts): numbers that matter,
- *  what's going on, what it means, what to say back. */
+ *  what's going on, what it means, what to say back. Levels 6 (やま) and 7 (ほし), the content sprint's (content/), lean
+ *  on what's meant and what's going on (mean, gist, next, reply: 6 of 8), a word and a number kept for the sounds; their
+ *  gist and next are dialogues and (ほし) single bulletins and talks alike. */
 const BASE: Mixes = {
   1: { pic: 3, word: 3, num: 2 },
   2: { pic: 2, word: 2, num: 2, reply: 2 },
   3: { pic: 1, word: 2, num: 2, reply: 3 },
   4: { word: 2, num: 2, reply: 2, mean: 2 },
-  5: { num: 3, gist: 2, mean: 2, reply: 1 }
+  5: { num: 3, gist: 2, mean: 2, reply: 1 },
+  6: { reply: 2, mean: 2, gist: 1, next: 1, word: 1, num: 1 },
+  7: { mean: 2, gist: 2, next: 1, reply: 1, word: 1, num: 1 }
 };
-/** Level 4 once its dialogues have their clips (every line: dialogues.ts): one `gist` and one `next` a game. */
+/** Level 4 once its dialogues have their clips (every line: dialogues.ts, content/'s もり): one `gist` and one `next` a
+ *  game. */
 const WITH_DIALOGUES: Mix = { word: 2, num: 1, reply: 1, mean: 2, gist: 1, next: 1 };
 
-/** The mixes for a set of clips: level 4 takes dialogues only once every dialogue item is voiced (they wait for the
- *  neural pipeline apart from level 4's single lines, so either can land first). */
+/** The mixes for a set of clips: level 4 takes dialogues only once every level-4 dialogue is voiced (they wait for the
+ *  neural pipeline apart from level 4's single lines, so either can land first; levels 6 and 7 are gated whole). */
 export function mixes(clips: Readonly<Record<string, unknown>>): Mixes {
-  const ready = BANK.filter(isDialogue).every((it) => voiced(it, clips));
+  const ready = BANK.filter((it) => it.lv === 4 && isDialogue(it)).every((it) => voiced(it, clips));
   return ready ? { ...BASE, 4: WITH_DIALOGUES } : BASE;
 }
 export const MIX: Mixes = mixes(CLIPS);
@@ -38,7 +43,7 @@ export const inMix = (it: Pick<Item, 'lv' | 'type'>, mix: Mixes = MIX): boolean 
  *  audio isn't made yet (level 4 till the neural cast, docs/curriculum.md §14) stays hidden and main stays shippable. */
 export const playable = (clips: Readonly<Record<string, unknown>>): Level[] => {
   const mix = mixes(clips);
-  return ([1, 2, 3, 4, 5] as const).filter((lv) => {
+  return ([1, 2, 3, 4, 5, 6, 7, 8] as const).filter((lv) => {
     const items = BANK.filter((it) => it.lv === lv && inMix(it, mix));
     return mix[lv] && items.length && items.every((it) => voiced(it, clips));
   });

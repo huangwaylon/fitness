@@ -142,8 +142,8 @@ function engines(spec: string): Record<Accent, Engine> {
 const ENGINE = engines(opt('--engine') ?? 'qwen3');
 const SAY = ENGINE.us === 'say';
 if (SAY && (ENGINE.uk !== 'say' || ENGINE.au !== 'say')) throw new Error('--engine say is all or nothing');
-const LEVELS = (opt('--levels') ?? (SAY ? '1,2,3' : '1,2,3,4,5')).split(',').map(Number);
-if (SAY && LEVELS.some((lv) => lv > 3)) throw new Error('levels 4-5 are never spoken by say (docs/curriculum.md §9)');
+const LEVELS = (opt('--levels') ?? (SAY ? '1,2,3' : '1,2,3,4,5,6,7')).split(',').map(Number);
+if (SAY && LEVELS.some((lv) => lv > 3)) throw new Error('levels 4-7 are never spoken by say (docs/curriculum.md §9)');
 
 const SCRATCH = opt('--out') ? resolve(opt('--out')!) : null;
 const OUT = SCRATCH ?? join(APP, 'static/audio/kikimimi');
@@ -729,7 +729,7 @@ function run(): void {
     return [c, { n: rs.length, mos: mean(f('mos')), mosMin: min(f('mos')), sim: mean(f('sim')), simMin: min(f('sim')), misheard: rs.filter((r) => r.content).length }];
   }));
   const lvOf = new Map(ALL.map((it) => [it.id, it.lv]));
-  const wpm = Object.fromEntries([1, 2, 3, 4, 5].map((lv) => [lv, mean(Object.entries(rows).filter(([id]) => lvOf.get(id) === lv).map(([, r]) => r.wpm))]));
+  const wpm = Object.fromEntries([1, 2, 3, 4, 5, 6, 7].map((lv) => [lv, mean(Object.entries(rows).filter(([id]) => lvOf.get(id) === lv).map(([, r]) => r.wpm))]));
   const summary = {
     engine: ENGINE, models: Object.fromEntries([...new Set(Object.values(ENGINE))].map((e) => [e, MODEL[e]])), pipeline: PIPELINE,
     slow: { tempo: SLOW, by: STRETCH }, l1Tempo: L1_TEMPO, at: new Date().toISOString(), wallSeconds: Math.round((Date.now() - t0) / 1000),

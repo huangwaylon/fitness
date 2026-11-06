@@ -32,7 +32,20 @@ export const CAST: Readonly<Partial<Record<RosterId, CastId>>> = {
   redd: 'uk-m2', blathers: 'uk-m2', apollo: 'uk-m2', brewster: 'uk-m2',
   coco: 'au-f1', saharah: 'au-f1', cherry: 'au-f1', whitney: 'au-f1',
   roald: 'au-m1', punchy: 'au-m1',
-  kappn: 'au-m2', wilbur: 'au-m2', sherb: 'au-m2'
+  kappn: 'au-m2', wilbur: 'au-m2', sherb: 'au-m2',
+  // the content sprint's villagers (content/: もり, やま, ほし; 2026-11-06), the same rules
+  tangy: 'us-f1', gayle: 'us-f1', bea: 'us-f1', marina: 'us-f1', poppy: 'us-f1', agnes: 'us-f1',
+  tia: 'us-f2', nana: 'us-f2', katt: 'us-f2',
+  francine: 'us-f3', tammy: 'us-f3', reneigh: 'us-f3', pekoe: 'us-f3',
+  kabuki: 'us-m1', teddy: 'us-m1', lucky: 'us-m1', beau: 'us-m1', sterling: 'us-m1',
+  lopez: 'us-m2', ken: 'us-m2', zucker: 'us-m2', henry: 'us-m2', shep: 'us-m2',
+  wolfgang: 'us-m3', octavian: 'us-m3', frett: 'us-m3', fang: 'us-m3',
+  olivia: 'uk-f1', portia: 'uk-f1', pashmina: 'uk-f1', tasha: 'uk-f1', freya: 'uk-f1', vivian: 'uk-f1',
+  keaton: 'uk-m1', cyrano: 'uk-m1', chief: 'uk-m1', kidd: 'uk-m1', curlos: 'uk-m1',
+  jacques: 'uk-m2', admiral: 'uk-m2', tex: 'uk-m2', static: 'uk-m2',
+  melba: 'au-f1', sylvia: 'au-f1', kitt: 'au-f1', faith: 'au-f1', phoebe: 'au-f1', charlise: 'au-f1',
+  curt: 'au-m1', al: 'au-m1', genji: 'au-m1', gruff: 'au-m1',
+  bud: 'au-m2', cyd: 'au-m2', walker: 'au-m2'
 };
 
 /** A `mean` item's question while it plays. */

@@ -5,8 +5,7 @@
 // (whaddaya, gimme, I'da, sorta, whatcha, dontcha, sposta, c'mon), fillers and false starts, film- and TV-style
 // exchanges. The traps reuse words actually heard (the literal reading of an idiom, a number said first then
 // corrected, the sound-alike: lock up / look up).
-//   LEVEL: every item is `lv: 5` for now. The stage's level number is assigned by the integrator, who changes `LV`
-// below (one place) when wiring this file into the bank, deck and staging.
+//   LEVEL: やま is level 6 (`LV`, one place).
 //   Shape: bank4.ts's and dialogues.ts's (the existing types only: reply, mean, word, num; dialogues gist and next),
 // with the staging written in place (`scene`, `channel`, `marks`) since staging.ts is shared: the integrator may move
 // them to PLACES / MARKS. Voices: bank4.ts CAST (one cast voice per villager for good); mostly US, some UK and AU.
@@ -16,8 +15,8 @@ import type { RosterId } from '#lib/villagers/roster.ts';
 import type { Accent, Channel, Item, ItemType, Level, Line, SceneId, SoundMark, Tags } from '../bank.ts';
 import { CAST } from '../bank4.ts';
 
-/** The stage's level: 5 until the integrator assigns やま its number. */
-const LV: Level = 5;
+/** やま's level. */
+const LV: Level = 6;
 
 const MEAN_ASK = 'つまり、どういうこと？';
 const NEXT_ASK = 'つぎの ひとことは？';
