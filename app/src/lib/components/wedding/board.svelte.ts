@@ -9,9 +9,11 @@
 //   board.addTask / editTask / addSub / tick / remove / restore / purge / setConfig / saveNote
 import { createSubscriber } from 'svelte/reactivity';
 import {
-  newTaskId, wedClean, wedConfig, wedFold, wedNote, wedOpOf, wedTasks, WNOTE_DATA_CHARS, type WConfKey, type WedBook,
+  newTaskId, wedBookOf, wedClean, wedConfig, wedNote, wedOpOf, wedTasks, WNOTE_DATA_CHARS, type WConfKey, type WedBook,
   type WedEntry, type WedTask, type WTaskSet
 } from '#lib/contract/wedding.ts';
+
+const EMPTY: readonly WedEntry[] = [];
 import { overallProgress, withProgress, type Overall, type WithProgress } from '#lib/wedding/progress.ts';
 import { todayIn, untilMidnight } from '#lib/wedding/time.ts';
 import { daysBetween } from '#lib/time/dates.ts';
@@ -23,13 +25,6 @@ import type { Who } from '#lib/types.ts';
 /** A version of the notes: its text, when it was saved and by whom (`imported`: the old Sheet's, never saved since). */
 interface NoteVersion { md: string; at: number; who: Who; imported?: true }
 
-/** The fold of a State's rows (a State is never mutated: its list's identity is the cache key). */
-const books = new WeakMap<readonly WedEntry[], WedBook>();
-const bookOf = (rows: readonly WedEntry[]): WedBook => {
-  let b = books.get(rows);
-  if (!b) books.set(rows, (b = wedFold(rows)));
-  return b;
-};
 
 class WeddingBoard {
   #last = 0;
@@ -64,7 +59,7 @@ class WeddingBoard {
   }
 
   get #book(): WedBook {
-    return bookOf(week.model?.state.wedding ?? []);
+    return wedBookOf(week.model?.state.wedding ?? EMPTY);
   }
 
   /** Every task held but the purged (the deleted too), as the old board's rows. */

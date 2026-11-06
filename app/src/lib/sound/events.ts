@@ -3,7 +3,7 @@
 // chase and sting (sound.svelte.ts waspMusic) and Franklin's cooking (eventJingle) cut in over whatever plays and hand
 // back to it; K.K.'s songs, the stretch and the birthday song play on the island's shared stage (stage.svelte.ts).
 import { dayKey, jst } from '#lib/time/clock.ts';
-import { FIREWORKS_SHOW, HOLIDAYS, WEDDING } from '#lib/time/holidays.ts';
+import { FIREWORKS_SHOW, HOLIDAYS, weddingDate } from '#lib/time/holidays.ts';
 import type { Weather } from './hourly.ts';
 
 /** The tracks under static/audio/manifest.json `events.<id>`. */
@@ -49,7 +49,7 @@ interface Row {
 
 const holiday = (k: keyof typeof HOLIDAYS) => HOLIDAYS[k].on;
 const md = (m: string) => (date: string): boolean => date.slice(5) === m;
-const wedding = (date: string): boolean => date === WEDDING;
+const wedding = (date: string): boolean => date === weddingDate();
 
 /** NH's event music (Nookipedia), the first row on the moment wins:
  *  - Halloween Oct 31 17:00–24:00; Turkey Day 09:00–24:00; Toy Day, Bunny Day, Festivale all day (NH's day, 05:00–24:00);

@@ -9,6 +9,8 @@ import { guestMayWrite } from '#lib/contract/guest.ts';
 import { buildWeekView } from '#lib/model/week.ts';
 import { setLocale } from '#lib/i18n/index.ts';
 import { minuteNow } from '#lib/time/clock.ts';
+import { setWeddingSource } from '#lib/time/holidays.ts';
+import { wedBookOf, wedDate } from '#lib/contract/wedding.ts';
 import { DEMO, DEVICE, getStoredMe, localKV, readJson, sessionKV, writeJson, writeRaw } from '#lib/sync/storage.ts';
 import { RECORD_CONFIGURED } from '#lib/sync/transport.ts';
 import { composeModel, type ComposedModel } from './view.ts';
@@ -141,3 +143,10 @@ class WeekStore implements Host {
 }
 
 export const week = new WeekStore();
+
+// the wedding day: the board's `date` setting in the model's rows (the guest's too), read wherever the island, its
+// music and the board ask (time/holidays.ts weddingDate; 2027-10-08 until the record has one)
+setWeddingSource(() => {
+  const rows = week.model?.state.wedding;
+  return rows ? wedDate(wedBookOf(rows)) : '';
+});

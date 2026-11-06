@@ -41,7 +41,7 @@ test('the menu\'s けっこんしき opens the board over the island, with its �
 
 test('the plan: the countdown, the bouquet, the chips\' counts, すぎた and こんげつ lifted, the months, the wedding\'s month', async ({ page }) => {
   await board(page);
-  await expect(sheet(page).locator('[data-wed-days]')).toHaveAttribute('data-wed-days', '160');
+  await expect(sheet(page).locator('[data-wed-days]')).toHaveAttribute('data-wed-days', '336');
   await expect(sheet(page).locator('[data-wed-names]')).toHaveText('たろう ＆ はなこ');
   // (2 done + 1/3 + 1/3 of 8)
   await expect(sheet(page).locator('[data-wed-progress]')).toHaveAttribute('data-wed-progress', '33');
@@ -53,10 +53,10 @@ test('the plan: the countdown, the bouquet, the chips\' counts, すぎた and �
   const ys = await sheet(page).locator('[data-wed-filter]').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
   expect(new Set(ys).size).toBe(1);
   const groups = await sheet(page).locator('[data-wed-group]').evaluateAll((els) => els.map((e) => e.getAttribute('data-wed-group')));
-  expect(groups).toEqual(['overdue', 'thisMonth', '2026-12', '2027-01', '2027-03', '2027-04']);
+  expect(groups).toEqual(['overdue', 'thisMonth', '2026-12', '2027-01', '2027-03', '2027-10']);
   await expect(sheet(page).locator('[data-wed-group="overdue"] [data-wed-task]')).toHaveCount(1);
-  await expect(sheet(page).locator('[data-wed-group="2027-04"]')).toHaveClass(/wedding/);
-  await expect(sheet(page).locator('[data-wed-group="2027-04"] [data-wed-group-tally]')).toHaveAttribute('data-wed-group-tally', '0/1');
+  await expect(sheet(page).locator('[data-wed-group="2027-10"]')).toHaveClass(/wedding/);
+  await expect(sheet(page).locator('[data-wed-group="2027-10"] [data-wed-group-tally]')).toHaveAttribute('data-wed-group-tally', '0/1');
   // finished rows hidden under すべて; shown on asking (kept on this phone): the old Sheet's tick and a member's
   await expect(card(page, 'wdemo01')).toHaveCount(0);
   await sheet(page).locator('[data-wed-showdone]').click();
@@ -149,7 +149,9 @@ test('a task\'s page: the checklist ticks and grows, ✎ saves its fields, 🗑 
   await expect(card(page, 'wdemo02').locator('[data-wed-tally]')).toHaveAttribute('data-wed-tally', '2/4');
   // ‹ back from a page: the plan where it was scrolled
   await sheet(page).evaluate((el) => el.scrollTo({ top: 300 }));
-  await card(page, 'wdemo05').locator('.head').click();
+  await expect.poll(() => sheet(page).evaluate((el) => el.scrollTop)).toBe(300);
+  // (a dispatched tap: Playwright's click would scroll a card the pinned headings overlap first, moving the plan)
+  await card(page, 'wdemo05').locator('.head').dispatchEvent('click');
   await expect(sheet(page)).toHaveAttribute('data-level', 'task');
   await bar(page).locator('.back').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'home');

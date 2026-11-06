@@ -338,6 +338,21 @@ export function wedFold(rows: Iterable<WedEntry>): WedBook {
   return b;
 }
 
+/** A model's list folded (wedFold), once per list: a model's lists are replaced, never mutated (the board's store and
+ *  the wedding day share it). */
+const folds = new WeakMap<readonly WedEntry[], WedBook>();
+export function wedBookOf(rows: readonly WedEntry[]): WedBook {
+  let b = folds.get(rows);
+  if (!b) folds.set(rows, (b = wedFold(rows)));
+  return b;
+}
+
+/** The wedding day the board's settings name ('YYYY-MM-DD'; '' : none, or cleared). */
+export function wedDate(book: WedBook): string {
+  const r = book.rows.get('wconf|date');
+  return r?.type === 'wconf' && typeof r.op.v === 'string' ? r.op.v : '';
+}
+
 /** A task as the old board's rows read (its `schema.js` rowToTask: the strings lib/wedding/progress.ts works on), with
  *  who ticked it. */
 export interface WedTask {

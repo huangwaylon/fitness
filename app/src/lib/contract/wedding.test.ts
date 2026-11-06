@@ -4,7 +4,7 @@
 // taken, its own queued ones judged).
 import { describe, expect, it } from 'vitest';
 import {
-  WedBook, wedClean, wedConfig, wedFold, wedNote, wedOpOf, wedRowOf, wedSlot, wedTasks, newTaskId, WTASK_MAX, type WedEntry
+  WedBook, wedBookOf, wedClean, wedConfig, wedDate, wedFold, wedNote, wedOpOf, wedRowOf, wedSlot, wedTasks, newTaskId, WTASK_MAX, type WedEntry
 } from './wedding.ts';
 import { eventSlot, validEventData } from './record.ts';
 import { guestMayWrite } from './guest.ts';
@@ -166,6 +166,14 @@ describe('the phone’s fold', () => {
     ]);
     expect(wedTasks(b).map((t) => [t.id, t.title, t.parentId, !!t.doneAt]).sort()).toEqual([['p', 'Hall', '', true], ['s', 's', 'p', false]]);
     expect(wedConfig(b)).toEqual({ p1: 'はなこ' });
+  });
+
+  it('the wedding day: the `date` setting (the latest), \'\' for none or cleared; one fold a list', () => {
+    const rows = [row('wconf', 'A', { k: 'date', at: T, v: '2027-10-08' }), row('wconf', 'B', { k: 'date', at: T + 1, v: '2028-01-02' })];
+    expect(wedDate(wedBookOf(rows))).toBe('2028-01-02');
+    expect(wedBookOf(rows)).toBe(wedBookOf(rows));
+    expect(wedDate(wedFold([...rows, row('wconf', 'A', { k: 'date', at: T + 2, v: '' })]))).toBe('');
+    expect(wedDate(wedFold([]))).toBe('');
   });
 
   it('reads a task as the old board’s rows (ISO stamps, empty strings)', () => {

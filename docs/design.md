@@ -2320,8 +2320,9 @@ dates, a small module of their own) puts the hat on that villager.
 
 ### Wedding countdown
 
-`island/wedding.ts`, `island/Wedding.svelte`, `e2e/wedding.spec.ts`. Our wedding is 2027-10-08 (Tokyo). On the
-milestone days (365, 200, 100, 50, 30, 7 and 1 days to go, and the day) Reese and Cyrus are the visitor from 06:00 to
+`island/wedding.ts`, `island/Wedding.svelte`, `e2e/wedding.spec.ts`. Our wedding is the けっこんしき board's `date`
+setting ([wedding.md](wedding.md); `time/holidays.ts` `weddingDate`, 2027-10-08 until the record has one), Tokyo; the
+island, its weather and its music read that one date. On the milestone days (365, 200, 100, 50, 30, 7 and 1 days to go, and the day) Reese and Cyrus are the visitor from 06:00 to
 midnight, side by side under a heart float; Reese's introduction ends on the count (「けっこんしき まで あと 100日！」, on
 the day 「ごけっこん おめでとう！」), then they take turns. On the day the villagers bow and glow with hearts, confetti
 bursts the first time that day (`scene-wedding`) and fireworks from 19:00. Every June Sunday NH's wedding arch stands
@@ -2635,7 +2636,7 @@ track without its file is the hour's music (or its `alt`):
 | Festivale: the Monday before Ash Wednesday (Easter − 48) 05:00–24:00 | カーニバル (Festivale) |
 | Bunny Day: Easter Sunday 05:00–24:00 (not the celebrations before it) | イースター (Bunny Day) |
 | Aug Sundays 19:00–24:00 | 花火大会 (Fireworks Show) |
-| Our wedding day (2027-10-08) 06:00–19:00, 19:00–24:00 | ウエディング, then ウエディングパーティー (each the other's `alt`) |
+| Our wedding day (the board's date) 06:00–19:00, 19:00–24:00 | ウエディング, then ウエディングパーティー (each the other's `alt`) |
 | Oct 31 17:00–24:00 | ハロウィン (Halloween) |
 | 4th Thursday of Nov 09:00–24:00 | サンクスギビングデー (Turkey Day) |
 | Dec 24 05:00–24:00 | クリスマス (Toy Day); in snow クリスマス（雪） (NH's snowy northern arrangement) |
