@@ -21,7 +21,7 @@ async function openFood(page: Page, as = '', date = `&date=${DATE}`) {
 /** What sticks out past the open sheet's right edge (its first three, by class): nothing, on every level (once a
  *  level's slide-in has played). */
 const overflowOf = (page: Page) => sheet(page).evaluate(async (d) => {
-  await Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished));
+  await Promise.all(d.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))); // (one cancelled: done too)
   const right = d.getBoundingClientRect().right;
   return [...d.querySelectorAll('*')].filter((e) => e.getBoundingClientRect().right > right + 0.5).map((e) => e.className).slice(0, 3);
 });
