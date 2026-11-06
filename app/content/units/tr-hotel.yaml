@@ -20,7 +20,7 @@ cando:
   en: I can follow hotel front-desk staff explaining what they can do about a room problem, in polite but fast speech at the desk or on the phone, and catch what's possible, what isn't, and any extra charge.
 status: voiced
 letter:
-  en: "I'm afraid I have a confession: I was the guest with the leaky sink. You followed every word at that front desk, even over all the lobby noise. Thank you, darling. They gave me a complimentary breakfast for my trouble. Next time you travel, take me along. I'll do the complaining, and you do the listening."
+  en: "I'm afraid I have a confession to make: I was the guest with the leaky sink. You followed every word at that front desk, even over all the lobby noise. Thank you, darling. They gave me a complimentary breakfast for my trouble. Next time you travel, take me along. I'll do the complaining, and you do the listening."
   ja: "あいにく、うちあけたい ことが あるの。あの みずもれの へやの きゃくは、わたしだったのよ。ロビーが ざわざわ して いたのに、フロントの はなしを ぜんぶ ききとって くれたわね。ありがとう。おわびに、むりょうの ちょうしょくを もらったの。こんど りょこう する ときは、わたしも つれていって。もんくを いうのは わたし、きくのは あなたよ。"
 ph:
   - { id: ph-im-afraid, en: I'm afraid, ja: あいにく, register: service, scene: hotel desk, trap: 「こわい」ではなく「あいにく」。悪い知らせの合図 }
@@ -44,6 +44,9 @@ items:
     cast: us-m6
     choices: [ "A king tomorrow, plus free breakfast.", "A king tonight, for a small charge.", A free upgrade to a suite tonight. ]
     answer: 0
+    cja: [ "明日キングの部屋に移れて、朝食は無料。", "今夜、少しの追加料金でキングの部屋。", "今夜スイートに無料でアップグレード。" ]
+    why: "今夜は満室で部屋は替えられません。What I can do is の後が代案：明日キングの部屋へ移れて、朝食は2日とも complimentary（無料）です。"
+    ctx: "ホテルのフロントで、男性がチェックインします"
     focus: What I can do is
     ask: ホテルが できる ことは？
     tags: { seed: 3, register: service, pragmatic: hedge, conditions: [ desk ], features: [ contrast ] }
@@ -84,6 +87,9 @@ items:
     cast: us-f2
     choices: [ Could you call and check they have a room?, "Great, so I can stay here tonight?", "Five minutes? Sure, I can wait." ]
     answer: 0
+    cja: [ "空きがあるか、電話で確認してもらえますか？", "よかった、じゃあ今夜ここに泊まれるんですね？", "5分？ いいですよ、待てます。" ]
+    why: "fully booked は満室なので、ここには泊まれません。5分は系列ホテルまでの距離で、待ち時間ではありません。系列ホテルの空きを確かめてもらうのが自然です。"
+    ctx: "予約なしで、ホテルのフロントに来ました"
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ], features: [ contrast ] }
   - id: mu-m-complimentary
     lv: 4
@@ -96,6 +102,9 @@ items:
     cast: us-m5
     choices: [ You can have free drinks while you wait., They'd like you to say something nice about the bar., You'll pay for the drinks at checkout. ]
     answer: 0
+    cja: [ "待つ間、無料で飲み物が飲める。", "バーをほめてほしい。", "飲み物代はチェックアウトで払う。" ]
+    why: "complimentary は「無料の」。compliment（ほめ言葉）と似ていますが別の意味です。部屋の準備ができるまで、バーで無料で飲めます。"
+    ctx: "ホテルのロビーで、部屋の準備を待っています"
     ask: つまり、どういうこと？
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ] }
   - id: dmu-aircon
@@ -109,6 +118,9 @@ items:
     cast: us-f4
     choices: [ "Yes, please. A fan would be great.", "No thanks, I'll send someone up.", "OK, I'll take a look in the meantime." ]
     answer: 0
+    cja: [ "はい、お願いします。扇風機があると助かります。", "いいえ、こちらで人を行かせます。", "じゃあ、その間に私が見てみます。" ]
+    why: "In the meantime は修理までの「つなぎ」。扇風機をお持ちしましょうか？と聞かれたので「お願いします」。人を向かわせるのはホテル側のセリフです。"
+    ctx: "夜、ホテルの部屋からフロントに電話します"
     focus: In the meantime
     ask: つぎの ひとことは？
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ phone ] }
@@ -140,8 +152,11 @@ items:
     speaker: saharah
     voice: us
     cast: us-f5
-    choices: [ "Great, thanks so much.", Ten minutes? I can come down for them., "No, they're not fresh, they're wet." ]
+    choices: [ "Great, thanks so much.", Ten minutes? I can come down for them., "No thanks, I already have fresh towels." ]
     answer: 0
+    cja: [ "助かります、ありがとう。", "10分？ 下まで取りに行きますよ。", "いえ、新しいタオルならもうあります。" ]
+    why: "send up は「部屋に届ける」。10分で持ってきてくれるので、お礼を言えば十分。自分で取りに行く必要はありません。"
+    ctx: "ホテルの部屋から電話で、タオルを頼みました"
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ phone ] }
     channel: phone
   - id: mu-m-best-i-can-do
@@ -155,6 +170,9 @@ items:
     cast: us-m5
     choices: [ "To pay less, park yourself in the garage across the street.", Valet parking is free for hotel guests., The hotel will park your car across the street for you. ]
     answer: 0
+    cja: [ "安くしたいなら、向かいの駐車場に自分で停める。", "宿泊客はバレーパーキングが無料。", "ホテルが向かいの駐車場に車を停めてくれる。" ]
+    why: "The best I can do は「これが精一杯」。バレーは1泊45ドルで、代案は向かいの駐車場。安いけれど、自分で停めます。"
+    ctx: "ホテルのフロントで、駐車場について聞きました"
     ask: つまり、どういうこと？
     tags: { seed: 3, register: service, pragmatic: refusal, conditions: [ desk ], features: [ contrast ] }
   - id: mu-r-waive
@@ -168,6 +186,9 @@ items:
     cast: us-m6
     choices: [ "Thanks, that's really fair.", "Can I pay it by card, then?", "Oh, is it working now?" ]
     answer: 0
+    cja: [ "ありがとう、それなら納得です。", "じゃあ、カードで払えますか？", "あ、もう直ったんですか？" ]
+    why: "waive は「免除する」で、wave（手を振る）と同じ音。今夜のリゾート料金を払わなくていいので、お礼を言うのが自然。払う話ではありません。"
+    ctx: "シャワーが壊れていた件で、フロントと話します"
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ] }
   - id: mu-m-small-charge
     lv: 4
@@ -180,6 +201,9 @@ items:
     cast: us-f4
     choices: [ "You can check in early, but before noon costs a bit extra.", Early check-in is free all morning., You can't check in before noon. ]
     answer: 0
+    cja: [ "早く入れるが、正午前は少し追加料金がかかる。", "午前中ならいつでも無料で早く入れる。", "正午前はチェックインできない。" ]
+    why: "no problem で「できる」とわかっても、small fee if it's before noon で正午前は有料。small でもお金はかかります。"
+    ctx: "ホテルのフロントで、早めのチェックインを聞きます"
     ask: つまり、どういうこと？
     tags: { seed: 3, register: service, pragmatic: indirect, conditions: [ desk ], features: [ contrast ] }
   - id: dmu-no-hot-water
@@ -193,6 +217,9 @@ items:
     cast: us-m5
     choices: [ "He'll shower at the spa, for free.", He'll wait for the hot water at ten., He'll move his meeting to ten. ]
     answer: 0
+    cja: [ "スパのシャワーを無料で使う。", "10時にお湯が出るのを待つ。", "会議を10時にずらす。" ]
+    why: "お湯は10時に戻るが会議は9時。what I can do is の後の代案はスパのシャワーで、complimentary（無料）。待つのでも会議をずらすのでもありません。"
+    ctx: "朝、ホテルのフロントで男性が困っています"
     focus: what I can do is open the spa
     ask: シャワーは どう する ことに なった？
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [ desk ], features: [ contrast ] }
@@ -230,6 +257,9 @@ items:
     cast: us-m4
     choices: [ "That's fine. She's asleep on the bed anyway.", "Thanks, I'll clean it myself, then.", "No crib? Then we'll take two." ]
     answer: 0
+    cja: [ "大丈夫です。どうせ今はベッドで寝ているので。", "ありがとう、じゃあ自分で掃除します。", "ベビーベッドがない？ じゃあ2台ください。" ]
+    why: "I'm afraid の後は「今は全部貸し出し中」、でも but の後で「20分で届けられる」。少し待てばいいので「大丈夫」。掃除するのはホテル側です。"
+    ctx: "ホテルのフロントで、ベビーベッドを頼みました"
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ], features: [ contrast ] }
   - id: mu-n-extra-bed
     lv: 4
@@ -243,19 +273,24 @@ items:
     cast: us-f5
     choices: [ "¥2,500", "¥1,500", "¥4,000" ]
     answer: 0
+    cja: [ "2,500円", "1,500円", "4,000円" ]
+    why: "Sorry, I meant の後が訂正された金額。fifteen hundred（1,500円）は言い間違いで、正しくは twenty-five hundred です。"
+    ctx: "ホテルのフロントで、追加のベッドを頼みます"
     ask: ベッドは いっぱく いくら？
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [ desk ], features: [ numbers, self-repair ] }
   - id: mu-w-cant-tonight
     lv: 4
     type: word
-    en: I'm afraid your key can't open the pool after ten.
-    ja: あいにく、10時以降はお部屋のキーでプールに入れません。
+    en: I'm afraid you can't use the pool after ten.
+    ja: あいにく、10時以降はプールをご利用いただけません。
     note: can't は強く［キャン(ト)］、can は弱く［クン］
     speaker: jacques
     voice: us
     cast: us-m5
     choices: [ can't, can, couldn't ]
     answer: 0
+    cja: [ "〜できない", "〜できる", "〜できなかった" ]
+    why: "can't は強くはっきり「キャン(ト)」、can は弱く「クン」。I'm afraid は悪い知らせの合図なので、ここは can't。couldn't は過去の言い方です。"
     focus: can't
     tags: { seed: 3, register: service, pragmatic: refusal, conditions: [ desk ], features: [ can-cant ] }
   - id: mu-w-send-someone
@@ -269,6 +304,8 @@ items:
     cast: us-f4
     choices: [ send someone up, sent someone up, send someone out ]
     answer: 0
+    cja: [ "人を部屋に向かわせる", "人を部屋に向かわせた", "人を外に出す" ]
+    why: "I'll の後なので現在形の send。sent なら過去です。up は「客室へ」、out は「外へ」で、意味が変わります。"
     focus: send someone up
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ phone ] }
     channel: phone
@@ -283,6 +320,8 @@ items:
     cast: us-m6
     choices: [ In the meantime, In the morning, In a minute ]
     answer: 0
+    cja: [ "それまでの間", "午前中に", "すぐに" ]
+    why: "in the meantime は「それまでの間」。部屋や修理を待つ間の提案でよく使います。in the morning、in a minute は始まりが同じでも後ろが違います。"
     focus: In the meantime
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ] }
   - id: mu-w-wouldve
@@ -297,6 +336,8 @@ items:
     cast: us-f4
     choices: [ would've, would, wouldn't ]
     answer: 0
+    cja: [ "〜したはずだった", "〜するだろう", "〜しないだろう" ]
+    why: "would've は弱く「ウダヴ」と聞こえ、「電話するつもりだったが、しなかった」。but の後で、番号がつながらなかった理由を話しています。"
     focus: would've
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [ desk ], features: [ contraction ] }
   - id: mu-w-till-sunday
@@ -310,6 +351,8 @@ items:
     cast: us-m4
     choices: [ till Sunday, this Sunday, on Sunday ]
     answer: 0
+    cja: [ "日曜まで", "今度の日曜", "日曜に" ]
+    why: "till Sunday は「日曜までずっと」。今夜から日曜まで満室ということです。on Sunday なら日曜の一日だけになります。"
     focus: till Sunday
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ], features: [ contrast ] }
   - id: mu-w-waive
@@ -323,6 +366,8 @@ items:
     cast: us-m5
     choices: [ waive, raise, charge ]
     answer: 0
+    cja: [ "免除する", "値上げする", "請求する" ]
+    why: "waive は「免除する」で、this time（今回は）とよく一緒に使います。raise（値上げ）や charge（請求）だと逆の意味になります。"
     focus: waive
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ desk ] }
   - id: mu-m-phone-late
@@ -336,6 +381,9 @@ items:
     cast: us-m5
     choices: [ "You pay it every night, whether you use them or not.", It's free if you skip the pool and the gym., You pay it once for the whole stay. ]
     answer: 0
+    cja: [ "使っても使わなくても、毎晩払う。", "プールとジムを使わなければ無料。", "滞在中に1回だけ払う。" ]
+    why: "per night は「1泊ごと」、even if you never use them は「一度も使わなくても」。I'm afraid の後なので、うれしくない知らせです。"
+    ctx: "ホテルのフロントに電話で、料金を聞きます"
     ask: つまり、どういうこと？
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [ phone ], features: [ contrast ] }
     channel: phone
@@ -351,6 +399,9 @@ items:
     cast: us-f6
     choices: [ "Great, we'll be back before six.", "OK, we'll pay the small charge now.", "Could we leave them till nine, then?" ]
     answer: 0
+    cja: [ "よかった、6時前に戻ります。", "わかりました、今その料金を払います。", "じゃあ、9時まで預けられますか？" ]
+    why: "6時以降は有料ですが、電車が6時半なので6時までに取りに来れば無料（nothing to pay）。今払う必要も、9時まで預ける必要もありません。"
+    ctx: "チェックアウト後、ホテルのフロントで"
     focus: nothing to pay
     ask: つぎの ひとことは？
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [ desk ], features: [ contrast ] }
@@ -383,6 +434,9 @@ items:
     cast: us-f2
     choices: [ The AC. It's not cooling at all., "Yes, it's broken up.", "Both, sorry. I said the AC." ]
     answer: 0
+    cja: [ "エアコンです。全然冷えないんです。", "はい、壊れてます。", "両方です、すみません。エアコンって言いました。" ]
+    why: "you're breaking up は「電話が途切れている」。テレビかエアコンかを聞かれたので、片方をはっきり答えます。broken up（壊れた）は音につられたひっかけです。"
+    ctx: "ホテルの部屋から、フロントに電話しています"
     tags: { seed: 3, register: service, pragmatic: formula, conditions: [ phone ] }
     channel: phone
     cond: { kind: phone, level: heavy }
@@ -397,6 +451,9 @@ items:
     cast: us-m4
     choices: [ He'll stay at the sister hotel; the taxi's paid., He'll pay for two bookings., He'll come back next Friday. ]
     answer: 0
+    cja: [ "系列ホテルに泊まり、タクシー代も出してもらえる。", "予約を2つ分払う。", "来週の金曜にまた来る。" ]
+    why: "予約サイトの日付ミス。満室なので what I can do is の後の代案が答え：系列ホテルの部屋と、タクシー代（cover the taxi）。料金も免除です。"
+    ctx: "夜、ホテルのフロントでチェックインします"
     focus: cover the taxi
     ask: おとこの ひとは こんや どうなる？
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [ desk ] }
@@ -429,29 +486,35 @@ items:
   - id: mu-n-new-room
     lv: 4
     type: num
-    en: Sorry it keeps failing. Here are two new keys for 971. I mean, just keep them away from your phone this time.
-    tts: Sorry it keeps failing. Here are two new keys for nine seventy-one. I mean, just keep them away from your phone this time.
-    ja: 何度も使えなくて申し訳ありません。971号室の新しいキーを2枚どうぞ。今度はスマホから離しておいてくださいね。
+    en: Sorry about that! Here are two new keys for 971. Just try to keep them away from your phone this time.
+    tts: Sorry about that! Here are two new keys for nine seventy-one. Just try to keep them away from your phone this time.
+    ja: 申し訳ありません！ 971号室の新しいキーを2枚どうぞ。今度はスマホから離しておいてくださいね。
     note: nine seventy-one［ナイン セヴンティ ワン］。順番に注意
     speaker: reneigh
     voice: us
     cast: us-f4
     choices: [ "971", "917", "791" ]
     answer: 0
+    cja: [ "971号室", "917号室", "791号室" ]
+    why: "nine seventy-one は 9と71に分けて言う部屋番号の言い方。917なら nine seventeen、791なら seven ninety-one です。"
+    ctx: "カードキーが使えず、フロントに来ました"
     ask: へやは なんごうしつ？
     tags: { seed: 3, register: service, pragmatic: literal, conditions: [ desk ], features: [ numbers ] }
     cond: &a2 { kind: cafe, level: heavy }
   - id: mu-m-between-you
     lv: 4
     type: mean
-    en: I'll mention it to the manager. A discount on dinner's the best I can do. I mean, between you and me, a free night's unlikely.
-    ja: マネージャーに伝えます。夕食の割引が精一杯でして。無料宿泊は、ここだけの話、難しいですね。 → つまり、無料宿泊は期待できない。
+    en: I'll mention it to the manager. But between you and me, a free night's pretty unlikely. I mean, a discount on dinner's probably the best I can do.
+    ja: マネージャーには伝えます。でもここだけの話、無料宿泊はまず難しいです。夕食の割引がたぶん精一杯ですね。 → つまり、無料宿泊は期待できない。
     note: between you and me＝ここだけの話。望み薄
     speaker: gruff
     voice: us
     cast: us-m6
     choices: [ Don't expect a free night., The manager will give you a free night., He'll tell you a secret at dinner. ]
     answer: 0
+    cja: [ "無料宿泊は期待できない。", "マネージャーが無料宿泊をくれる。", "夕食のときに秘密を教えてくれる。" ]
+    why: "between you and me は「ここだけの話」。秘密を教えるのではなく、無料宿泊は unlikely（まず無理）という本音。夕食の割引が精一杯です。"
+    ctx: "部屋のトラブルの後、フロントで補償を頼みました"
     ask: つまり、どういうこと？
     tags: { seed: 3, register: service, pragmatic: hedge, conditions: [ desk ] }
     cond: *a2
@@ -467,17 +530,22 @@ tiers:
     easy:
       choices: [ Can you call the other hotel?, "Great, I can stay here." ]
       answer: 0
+      cja: [ "もう一つのホテルに電話してもらえますか？", "よかった、ここに泊まれる。" ]
     hard:
       choices: [ Could you call and check they have a room?, "Great, so I can stay here tonight?", "Five minutes? Sure, I can wait.", "Is the sister hotel fully booked too, then?" ]
       answer: 0
+      cja: [ "空きがあるか、電話で確認してもらえますか？", "よかった、じゃあ今夜ここに泊まれるんですね？", "5分？ いいですよ、待てます。", "じゃあ、系列ホテルも満室なんですか？" ]
   mu-m-small-charge:
     easy:
       choices: [ "Early is OK, but it costs a little.", Early is free. ]
       answer: 0
+      cja: [ "早めは大丈夫だが、少しお金がかかる。", "早めは無料。" ]
   dmu-twin-beds:
     easy:
       choices: [ A king room tomorrow., A king room tonight. ]
       answer: 0
+      cja: [ "明日キングの部屋に移る。", "今夜キングの部屋に移る。" ]
     hard:
       choices: [ "A king tomorrow, plus free breakfast.", "A king tonight, for a small charge.", A free upgrade to a suite tonight., "Free breakfast, but two queens both nights." ]
       answer: 0
+      cja: [ "明日キングの部屋に移れて、朝食は無料。", "今夜、少しの追加料金でキングの部屋。", "今夜スイートに無料でアップグレード。", "朝食は無料だが、2泊ともクイーン2台の部屋。" ]
