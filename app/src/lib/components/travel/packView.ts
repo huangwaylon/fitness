@@ -1,10 +1,10 @@
 // The packing list as PackList draws it (docs/travel.md "Packing list (relay)"), pure: each category with my count of
 // it, each item's text in the reader's language (else the other side), my tick, who has packed it, and what I may
-// change (contract/pack.ts packMayEdit; nothing before I'm known), and a category's icon.
+// change (contract/pack.ts packMayEdit; nothing before I'm known), and a category's icon (its NH item, else ours).
 import { packMayEdit, type PackCat, type PackItem } from '#lib/contract/pack.ts';
 import type { Locale } from '#lib/i18n/index.ts';
 import type { Who } from '#lib/types.ts';
-import { isIcon } from '../quiet/Icon.svelte';
+import { isIcon } from '../ui/Icon.svelte';
 import { pick } from './text.ts';
 
 interface PackRowView { id: string; text: string; note: string; mine: boolean; editable: boolean; item: PackItem }
@@ -34,9 +34,22 @@ export function clip(s: string, max: number): string {
   return cs.length <= max ? s : `${cs.slice(0, max - 1).join('').trimEnd()}…`;
 }
 
-/** A category's icon: an emoji the guest picked as itself; a guide's lucide name drawn by the kit's Icon (the
- *  documents' file a wallet), any name it lacks a bag. */
-export function catIcon(s: string): { emoji: string } | { icon: string } {
+/** The packing categories' NH items (docs/design.md "Unified kit": the only NH art in the sheets), by the guide's icon
+ *  name: 書類 the scrapbook, 服装 the pocket tee, 登山 the lace-up boots, 電子機器 the SLR camera, 手土産 the present,
+ *  基本 the toothbrush and cup. */
+const CAT_ART: Record<string, string> = {
+  file: 'finds/items/scrapbook',
+  shirt: 'finds/items/pocket-tee',
+  mountain: 'finds/items/lace-up-boots',
+  camera: 'finds/items/slr-camera',
+  gift: 'deco/present',
+  pin: 'finds/items/toothbrush-and-cup-set'
+};
+
+/** A category's icon: an emoji the guest picked as itself; a guide's name its NH item (CAT_ART), else drawn by the
+ *  kit's Icon, any name it lacks a bag. */
+export function catIcon(s: string): { emoji: string } | { art: string } | { icon: string } {
   if (s && !/^[a-z][a-z0-9-]*$/.test(s)) return { emoji: s };
-  return { icon: s === 'file' ? 'wallet' : isIcon(s) ? s : 'shopping-bag' };
+  if (CAT_ART[s]) return { art: CAT_ART[s] };
+  return { icon: isIcon(s) ? s : 'shopping-bag' };
 }

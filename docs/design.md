@@ -595,7 +595,7 @@ denser. Game feel from edges, small lips, stickers, stitches and the yuzu "selec
   - `StatStrip`: `items {icon?, value, unit?, label}[]`, up to 4 cells. `PhotoBand`: `src`, `height` (150 hero, 120 card),
     `alt`, `focus`, `edge` (at the sheet's top), `nav` and `children` (over its foot gradient).
   - `ProgressBar`: `value`, `max`, `label` (8px leaf on a sunk track). `ActionSheet`: `title`, `groups` of `Action
-    {id,label,icon?,danger?,off?}`, `onpick`.
+    {id,label,icon?,danger?,off?}`, `onpick`, `note` (a line under the title: what a 削除 takes with it).
   - theme.css: `.chip.s` (+ `.n` count, `.dot` with `--dot`), `.card.dense` with `.row` / `button.row` / `.row.kv`,
     `.stitch` (an `<hr>`), `.sec-label.head` (+ `.n` 「3件」, `.coral` / `.leaf`, `.sticky` at `--sticky-top`), `.tag` (in
     `.kit`), `.sticker` (+ `.coral` stamp, `.leaf`), `.grain`. A sample of all of it: `/dev/kit` (`vite dev`).
@@ -2517,38 +2517,45 @@ through the one toast host, 「ウェイが ききとりクイズに さそっ�
 
 りょこう, the trip guides (data, relay and map: [travel.md](travel.md)), in the [unified kit](#unified-kit). The HUD
 menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`components/travel/TravelSheet.svelte`, Sheet's
-`quiet` variant; its own chunk with `i18n/travel.*.json`, loaded through `open.svelte.ts`, a `lazySheet`, mounted by
+`full` variant; its own chunk with `i18n/travel.*.json`, loaded through `open.svelte.ts`, a `lazySheet`, mounted by
 `island/Hud.svelte`). The island is paused under it.
 - **Opening:** straight into the trip on now, else back where it was left (the trip and its page, while the app runs).
 - **Offline:** the chunk not cached yet, the pill's banner 「オフラインです」 + もういちど; a guide's chunk failing,
   読み込めませんでした + もう一度 under the trip's own header; the trip note not in yet, each private value is 🔒 ・・・ and a
   line under the photo says 「オンラインで表示」.
 - **The list** (`TripList.svelte`, from `trips/meta.ts` only: no guide loads for it): これからの旅 (on now and coming,
-  soonest first) and これまで (newest first), a Dodo Airlines boarding pass each (`Pass.svelte`, back 2026-11-07, the
-  user: "i liked the airplane ticket design"): a quiet card (hairline, soft shadow) with the blue airline strip and
-  TYO ✈ the meta's `code` over the cover, area, place and year, dates; the perforated stub 「あと 97 日」 / 「明日」 /
-  「いま 2 日目」 (yuzu) or a past trip's tilted coral 「行ってきた」 stamp with its year; a barcode. Under them the one km | mi switch (this phone's, `DEVICE.travelUnits`, never
-  synced; every `{km:}`, `{m:}`, `{c:}` follows at once: `units.ts`).
+  soonest first) and これまで (newest first), a boarding pass each (`Pass.svelte`; the user, 2026-11-07: "i liked the
+  airplane ticket design"): a dense card with the `--c-sky` strip 「✈ しまの そら便 · SHIMA AIR」 and TYO ✈ the meta's
+  `code` (Fredoka) over the cover, area, place and year, dates; the stub torn off along a stitch, notched in the paper:
+  「あと 97 日」 (Fredoka 28) / 「明日」 / 「いま 2 日目」 (yuzu) or a past trip's tilted coral sticker 「行ってきた」 with
+  its year; a barcode. Under them the one km | mi Segmented (this phone's, `DEVICE.travelUnits`, never synced; every
+  `{km:}`, `{m:}`, `{c:}` follows at once: `units.ts`).
 - **A classic guide** (`classic: true`: Okinawa, Seattle; `classic/ClassicGuide.svelte`, [travel.md](travel.md)):
   identical to the original travel-plans site, its own look under `.classic`, 本棚 on the hero back to the list; its
   map the app's live TripMap in the site's card; its packing list frozen (nothing read from or sent to the relay).
-- **A quiet trip** (`TripView.svelte`, any other: NZ): ‹ ✕ over the photo (150 px; the title, dates, area at its foot),
-  the title bar once it scrolls away; a bottom tab bar 日程 · 地図 (with a route) · 持ち物. 日程: day cards (the day of
-  the month big in the day's colour, month and weekday, title and route; open, a hike's figures as key · value rows,
-  the timeline, lists, note, photo, links out in a new tab), then じゅんび (the logistics cards: figures, then a row that
-  opens the rest) and the foot. The trip's clock is its own `tz` (`when.ts`): outside the trip every day open; during it
-  today's alone, scrolled into view, its row that is now lit (or 「次」), a row on another date 「前日」 / 「翌日」.
-  Campsites and candidate layers are the classic guides' only (trips.test keeps them off a quiet trip).
-- **地図** (`MapPane.svelte`): the map held at the top, the day chips under it (the day's colour; the shown one again
-  re-fits), the day's stops (number, name, how it's reached, arrival). A row selects its stop and the map flies there; a
-  pin marks its rows (a merged pin all of them) and scrolls them into view. The locate button at the bottom right.
-- **持ち物** (`PackList.svelte`, view `packView.ts`): my 「12 / 35」 and the bar, 編集; a card per category (its icon, my
-  「N / M」), a row per item, the whole row my tick (each person ticks their own), the text and note in my language,
-  who has packed it 「うめ ✓」 at the right. 編集 (once the phone knows who I am): a row or a category opens an
-  ActionSheet (名前を変更 · 上へ · 下へ · 削除), 「＋ 追加」 under each category and カテゴリを追加 open a BottomSheet,
-  チェックをリセット (mine only). The guest adds anything and changes only what it added (the others' rows boop).
-  An item's 削除 is at once with the banner's とりけす (sent after 5 s); a category's and the reset ask first (an
-  ActionSheet), then とりけす too. A past trip: a quiet count with 「終わった旅」, no bar (ticks still work).
+- **A kit trip** (`TripView.svelte`, any other: NZ): ‹ ✕ (NavBar s `over`) on the PhotoBand (150 px; the title, dates,
+  area at its foot), the title bar once it scrolls away; a TabBar 日程 · 地図 (with a route) · 持ち物. 日程: one control
+  row held under the title bar, a chip a day (「1日目 2/11」, the day's colour; the shown one yuzu) and 準備; under it the
+  day shown (`DayCard`: the day of the month big in the day's colour, month and weekday, title and route, 「今日」
+  sticker; a hike's level sticker and figures as key · value rows, the timeline, lists, note, photo, links out as
+  chips) or 準備 (the logistics cards: figures, then a row that opens the rest) and the foot. The timeline (`Rows`):
+  the time in Fredoka 13, a dot on a dashed spine in the day's colour, the text 14, the note 13. The trip's clock is its
+  own `tz` (`when.ts`): the day shown first is the one on now (today's, or the day of the row on now: the eve's flight
+  out), else the first; its row that is now lit and scrolled into view (or 「次」), a row on another date 「前日」 /
+  「翌日」. Campsites and candidate layers are the classic guides' only (trips.test keeps them off a kit trip).
+- **地図** (`MapPane.svelte`): the day chips (the day's colour and date; the shown one again re-fits) and the map under
+  them held at the top, the day's stops in a dense card (a number dot in the day's colour, name, how it's reached,
+  arrival). A row selects its stop and the map flies there; a pin marks its rows (a merged pin all of them) and
+  scrolls them into view. The locate button at the bottom right.
+- **持ち物** (`PackList.svelte`, view `packView.ts`): my 「12 / 35」 (Fredoka) and the bar, 編集 (a small chip; yuzu
+  while editing: 完了); a dense card per category (its NH item on a cream disc, `packView.ts` CAT_ART, else our icon;
+  my 「N / M」), a row per item: my `Tick` (its hit the whole row; each person ticks their own), the text and note in
+  my language, who has packed it at the right (each name by their `--person-*` dot). 編集 (once the phone knows who I
+  am): a row or a category opens an ActionSheet (名前を変更 · 上へ · 下へ · 削除), 「＋ 追加」 under each category and
+  カテゴリを追加 open the form sheet (ui/Sheet, 保存 in its footer, the return key too), チェックをリセット (mine only).
+  The guest adds anything and changes only what it added (the others' rows boop). An item's 削除 is at once with the
+  banner's とりけす (sent after 5 s); a category's and the reset ask first (an ActionSheet with a `note`: what it takes
+  with it), then とりけす too. A past trip: a quiet count with 「終わった旅」, no bar (ticks still work).
 - **Rules the guides bend (the user, 2026-11-06):** the guides are reading cards, denser than §Simplicity allows (more
   than 40 characters and 3 cards a screen, more than 5 rows a card). Their text (`.guide`) is keep-all and breaks only
   between words: `Txt.svelte` puts a `<wbr>` between Intl.Segmenter's words (particles, okurigana, closing punctuation

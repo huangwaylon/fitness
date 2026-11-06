@@ -12,7 +12,8 @@
 
 <script lang="ts">
   // An action sheet (docs/design.md "Unified kit"): the app's sheet (ui/Sheet: its title bar with ✕, the scrim and Esc
-  // close it) with the actions in dense cards, one a group; 削除 coral. A pick closes it, then calls `onpick`.
+  // close it) with the actions in dense cards, one a group; 削除 coral. A pick closes it, then calls `onpick`. `note`: a
+  // line under the title (what a confirmation's 削除 takes with it).
   //   <ActionSheet bind:open title="現金" groups={[[rename, up, down], [remove]]} onpick={(id) => …} />
   import Sheet from './Sheet.svelte';
   import Icon from './Icon.svelte';
@@ -25,8 +26,10 @@
     onpick: (id: string) => void;
     /** The sheet's accessible name (defaults to the title). */
     label?: string;
+    /** A line under the title. */
+    note?: string;
   }
-  let { open = $bindable(), title, groups, onpick, label }: Props = $props();
+  let { open = $bindable(), title, groups, onpick, label, note }: Props = $props();
 
   function pick(a: Action) {
     if (a.off) return;
@@ -37,6 +40,7 @@
 
 <Sheet bind:open label={label ?? title} {title}>
   <div class="acts">
+    {#if note}<p class="note">{note}</p>{/if}
     {#each groups as g, gi (gi)}
       <div class="card dense">
         {#each g as a (a.id)}
@@ -51,6 +55,7 @@
 
 <style>
   .acts { display: grid; gap: 8px; padding-bottom: 4px; }
+  .note { margin: -4px 4px 4px; text-align: center; font-size: var(--fs-s); color: var(--text-soft); }
   .row { min-height: 52px; font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .row :global(svg) { color: var(--text-soft); }
   .danger, .danger :global(svg) { color: var(--coral-text); }

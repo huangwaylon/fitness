@@ -1,11 +1,14 @@
 // PackList's view of a trip's list (packView.ts): my counts, the text's language, what A, B and the guest may change
 // (nothing before I'm known), the banner's clipped name, a category's icon.
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { packFold, packList, type PackEntry, type PackSeed } from '#lib/contract/pack.ts';
 import { packMayEdit } from '#lib/contract/pack.ts';
 import { catIcon, clip, myProgress, packView } from './packView.ts';
 import { pick } from './text.ts';
 
+const STATIC = join(import.meta.dirname, '../../../../static');
 const T = Date.parse('2026-11-06T03:00:00.000Z');
 const SEED: PackSeed = {
   cats: [
@@ -74,9 +77,14 @@ describe('packView', () => {
     expect([packMayEdit('A', gc.cat), packMayEdit('G', gc.cat)]).toEqual([true, false]);
   });
 
-  it('icons: the guides’ names drawn by the kit, an emoji as itself, anything else a bag', () => {
-    expect(catIcon('shirt')).toEqual({ icon: 'shirt' });
-    expect(catIcon('file')).toEqual({ icon: 'wallet' });
+  it('icons: the six categories their NH item (on disk), other guide names drawn by the kit, an emoji as itself, anything else a bag', () => {
+    const arts = ['file', 'shirt', 'mountain', 'camera', 'gift', 'pin'].map((n) => catIcon(n));
+    expect(arts.map((a) => ('art' in a ? a.art : null))).toEqual([
+      'finds/items/scrapbook', 'finds/items/pocket-tee', 'finds/items/lace-up-boots', 'finds/items/slr-camera', 'deco/present', 'finds/items/toothbrush-and-cup-set'
+    ]);
+    for (const a of arts) if ('art' in a) expect(existsSync(join(STATIC, `art/${a.art}.webp`)), a.art).toBe(true);
+    expect(catIcon('waves')).toEqual({ icon: 'shopping-bag' });
+    expect(catIcon('car')).toEqual({ icon: 'car' });
     expect(catIcon('no-such-icon')).toEqual({ icon: 'shopping-bag' });
     expect(catIcon('🍙')).toEqual({ emoji: '🍙' });
     expect(catIcon('')).toEqual({ icon: 'shopping-bag' });

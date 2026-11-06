@@ -1,20 +1,20 @@
 <script lang="ts">
-  // 地図 (docs/design.md §Trips, docs/travel.md "Maps"): the map held at the top of the page, the day chips under it
-  // (each the day's route colour; the shown day's again re-fits its route), and the chosen day's stops in order (its
+  // 地図 (docs/design.md §Trips, docs/travel.md "Maps"): the day chips (the page's one control row: each the day's
+  // route colour and date, the shown day's again re-fits its route) and the map under them, held at the top of the page, and the chosen day's stops in order (its
   // number in the day's colour, the name, how it is reached, the arrival). The pane holds the state the map shares:
   // the day and the stop selected (a row tapped selects it, the map flies there; a pin tapped selects it, its row and
   // the rows it merges marked and scrolled into view). No candidate layers (the classic guides' CMap has them).
   import type { Trip } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
-  import Chip from '../quiet/Chip.svelte';
-  import ChipRow from '../quiet/ChipRow.svelte';
+  import Chip from '../ui/Chip.svelte';
+  import ChipRow from '../ui/ChipRow.svelte';
   import TripMap from './map/TripMap.svelte';
   import { pinsOf } from './map/overlay.ts';
   import { dayColor } from './map/types.ts';
   import Txt from './Txt.svelte';
   import { pick } from './text.ts';
   import { fmtKm } from './units.ts';
-  import { dayParts } from './dates.ts';
+  import { monthDay } from './dates.ts';
 
   interface Props {
     trip: Trip;
@@ -53,26 +53,25 @@
 
 <div class="map-pane" data-map-pane data-day={day} data-selected={selected ?? undefined}>
   <div class="held">
-    <div class="slot">
-      <TripMap bind:this={map} places={trip.places} legs={trip.legs} dayColors={trip.dayColors} {day} selected={selected ?? undefined} locale={i18n.locale} onselect={onPin} />
-    </div>
     <div class="under">
       <ChipRow label={t('travel.map.days')}>
         {#each days as d (d)}
           {@const dt = dateOf(d)}
-          <Chip label={dt ? `${t('travel.day', { n: d })} · ${t('travel.map.dayOf', { d: dayParts(dt, i18n.locale).d })}` : t('travel.day', { n: d })}
-            dot={dayColor(trip.dayColors, d)} selected={day === d} data-map-day={d} onclick={() => pickDay(d)} />
+          <Chip label={t('travel.day', { n: d })} count={dt ? monthDay(dt) : undefined} dot={dayColor(trip.dayColors, d)} selected={day === d} data-map-day={d} onclick={() => pickDay(d)} />
         {/each}
       </ChipRow>
     </div>
+    <div class="slot">
+      <TripMap bind:this={map} places={trip.places} legs={trip.legs} dayColors={trip.dayColors} {day} selected={selected ?? undefined} locale={i18n.locale} onselect={onPin} />
+    </div>
   </div>
 
-  <ol class="q-card stops" bind:this={list} style:--dc={dayColor(trip.dayColors, day)} aria-label="{t('travel.day', { n: day })} · {t('travel.map.stops', { n: stops.length })}">
+  <ol class="card dense stops" bind:this={list} style:--dc={dayColor(trip.dayColors, day)} aria-label="{t('travel.day', { n: day })} · {t('travel.map.stops', { n: stops.length })}">
     {#each stops as s (s.id)}
       <li>
-        <button type="button" class="q-row stop" aria-pressed={marked.includes(s.id)} data-stop={s.id} data-sfx="tick" onclick={() => (selected = selected === s.id ? null : s.id)}>
+        <button type="button" class="row stop" aria-pressed={marked.includes(s.id)} data-stop={s.id} data-sfx="tick" onclick={() => (selected = selected === s.id ? null : s.id)}>
           <span class="pin" aria-hidden="true">{(s.i ?? 0) + 1}</span>
-          <span class="tx"><span class="nm guide q-ell"><Txt l={s.name} {note} /></span><span class="how">{how(s.id)}</span></span>
+          <span class="tx"><span class="nm guide"><Txt l={s.name} {note} /></span><span class="how">{how(s.id)}</span></span>
           <span class="tm">{hhmm(s.min)}</span>
         </button>
       </li>
@@ -83,17 +82,18 @@
 
 <style>
   .map-pane { display: grid; grid-template-columns: minmax(0, 1fr); padding-bottom: 24px; }
-  /* the map and the day chips held at the top of the page as the stops scroll under */
+  /* the day chips and the map held at the top of the page as the stops scroll under */
   .held { position: sticky; top: 0; z-index: 2; }
-  .slot { position: relative; height: clamp(240px, 38vh, 330px); overflow: hidden; touch-action: none; background: #86D0D3; }
-  .under { background: var(--q-bg); border-bottom: 1px solid var(--q-hairline); }
-  .stops { list-style: none; margin: 12px 16px 0; padding: 0; }
-  .stops li + li { border-top: 1px solid var(--q-hairline); }
-  .stop { padding: 10px 16px 10px 14px; scroll-margin: 8px; }
-  .stop[aria-pressed='true'] { background: var(--q-accent-soft); }
-  .pin { width: 22px; height: 22px; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--dc); color: #fff; font: 700 12px/1 var(--q-font); }
+  .under { background: var(--surface); padding: 4px 0 2px; }
+  .slot { position: relative; height: clamp(240px, 38vh, 330px); overflow: hidden; touch-action: none; background: color-mix(in srgb, var(--c-sky) 35%, var(--card)); box-shadow: 0 var(--lip-s) 0 var(--lip); }
+  .stops { list-style: none; margin: 10px 12px 0; padding: 0; }
+  .stops li { position: relative; }
+  .stops li + li::before { content: ''; position: absolute; top: 0; left: 12px; right: 12px; border-top: 1.5px dashed var(--stitch); z-index: 1; pointer-events: none; }
+  .stop { scroll-margin: 8px; }
+  .stop[aria-pressed='true'] { background: var(--hl); }
+  .pin { width: 22px; height: 22px; border-radius: 50%; flex: none; display: grid; place-items: center; background: var(--dc); color: #fff; font: 600 var(--fs-s)/1 var(--font-num); }
   .tx { flex: 1; min-width: 0; display: grid; }
-  .nm { font-size: var(--q-fs-body); }
-  .how { font-size: var(--q-fs-s); color: var(--q-muted); }
-  .tm { flex: none; font-size: var(--q-fs-s); color: var(--q-ink-2); }
+  .nm { font-size: var(--fs-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .how { font-size: var(--fs-s); color: var(--text-soft); }
+  .tm { flex: none; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
 </style>

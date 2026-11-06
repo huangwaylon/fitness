@@ -1,6 +1,6 @@
 <script lang="ts">
-  // りょこう's sheet (docs/design.md §Trips), its own chunk with its strings: full height, the quiet kit's skin
-  // (docs/design.md "Quiet sheets"). Two levels: the trips (TripList, from the small trips/meta.ts: no guide loads
+  // りょこう's sheet (docs/design.md §Trips), its own chunk with its strings: a full sheet on the unified kit
+  // (docs/design.md "Unified kit"). Two levels: the trips (TripList, from the small trips/meta.ts: no guide loads
   // for it), and a trip, its guide loaded when it is opened (each its own chunk; offline before it is cached,
   // 読み込めませんでした and もう一度). A trip drawn like the original guides (`classic`: Okinawa, Seattle) is
   // classic/ClassicGuide's, its own screen over the app (its back button to the list); any other is TripView's (its
@@ -8,9 +8,8 @@
   // An opening goes straight into the trip on now, else back where it was left (the trip and its page, while the app
   // runs). The island is paused under it (open.svelte.ts → the page's `paused`).
   import '#lib/i18n/travel.ts';
-  import '../quiet/quiet.css';
   import Sheet from '../ui/Sheet.svelte';
-  import SheetHeader from '../quiet/SheetHeader.svelte';
+  import NavBar from '../ui/NavBar.svelte';
   import TripList from './TripList.svelte';
   import TripView, { type Tab } from './TripView.svelte';
   import ClassicGuide from './classic/ClassicGuide.svelte';
@@ -23,7 +22,6 @@
   import { cue } from '#lib/sound/cues.ts';
   import { pick } from './text.ts';
   import { phaseOf } from './when.ts';
-  import { shortSpan } from './dates.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
 
@@ -83,26 +81,24 @@
   });
 </script>
 
-<Sheet bind:open label={t('travel.title')} variant="quiet" onclose={closed}>
+<Sheet bind:open label={t('travel.title')} variant="full" onclose={closed}>
   <div class="tv" data-travel data-level={sel ? 'trip' : 'list'}>
     {#key sel}
       <div class="lvl">
         {#if !sel}
-          <div class="top"><SheetHeader title={t('travel.title')} onclose={close} /></div>
+          <div class="top grain"><NavBar size="s" title={t('travel.title')} onclose={close} /></div>
           <TripList trips={TRIP_META} {now} onopen={show} />
         {:else if trip?.classic}
           <ClassicGuide {trip} onback={back} />
         {:else if trip}
           <TripView {trip} {now} onback={back} onclose={close} bind:tab={() => tabs[trip.id] ?? 'days', (v) => (tabs[trip.id] = v)} />
         {:else}
-          <div class="top">
-            <SheetHeader title={pick(meta?.title, i18n.locale)} sub={meta ? shortSpan(meta.start, meta.end, i18n.locale) : undefined} onback={back} onclose={close} />
-          </div>
+          <div class="top grain"><NavBar size="s" title={pick(meta?.title, i18n.locale)} onback={back} onclose={close} /></div>
           <div class="scroll" data-trip-view={sel}>
             {#if failed === sel}
               <div class="center" data-travel-failed>
                 <p>{t('travel.loadFailed')}</p>
-                <button type="button" class="q-btn" data-sfx="tick" onclick={() => load(sel!)}>{t('travel.retry')}</button>
+                <button type="button" class="btn small paper" data-sfx="tick" onclick={() => load(sel!)}>{t('travel.retry')}</button>
               </div>
             {:else}
               <p class="center" aria-busy="true">{t('travel.loading')}</p>
@@ -119,9 +115,9 @@
   .lvl { flex: 1; min-height: 0; display: flex; flex-direction: column; animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   /* each level slides in from the right (design.md "Navigation": one push motion, 240ms) */
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
-  .top { flex: none; padding-top: var(--ui-top); background: var(--q-bg); }
-  .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; border-top: 1px solid var(--q-hairline); }
-  .center { flex: 1; min-height: 60%; display: grid; place-content: center; justify-items: center; gap: 12px; margin: 0; color: var(--q-muted); }
+  .top { flex: none; padding: var(--ui-top) calc(4px + var(--safe-right)) 0 calc(4px + var(--safe-left)); background-color: var(--surface); }
+  .scroll { flex: 1; min-height: 0; overflow: hidden auto; overscroll-behavior: contain; }
+  .center { flex: 1; min-height: 60%; display: grid; place-content: center; justify-items: center; gap: 12px; margin: 0; color: var(--text-soft); }
   .center p { margin: 0; }
   /* guide text: Japanese breaks only between its words (Txt's <wbr>s), a word too long for the line anywhere */
   .tv :global(.guide) { word-break: keep-all; line-break: strict; overflow-wrap: anywhere; text-wrap: pretty; }
