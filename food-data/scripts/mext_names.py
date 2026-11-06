@@ -617,4 +617,35 @@ def build(recs):
             item['note'] = '可食部100gあたり（廃棄率%d%%%s）' % (round(refuse), '：' + m.group(1).rstrip('、') if m else '')
         items.append(item)
 
+    variant_groups(items)
     return dict(META, items=items)
+
+
+# --------------------------------------------------------------------------- variant groups (the app's じょうたい chips)
+
+# A state as the last word of MEXT's name → its chip label, in process order (the chips' order)
+STATES = {'乾': '乾', '生': '生', 'ゆで': 'ゆで', '水煮': '水煮', '蒸し': '蒸し', '焼き': '焼き', '電子レンジ調理': 'レンジ',
+          '油いため': 'いため', 'ソテー': 'ソテー'}
+STATE_ORDER = {w: i for i, w in enumerate(STATES)}
+
+
+def variant_groups(items):
+    """One food in its states (豚ロース 脂身つき: 生 · 焼き · ゆで): the items whose official name (`full`) is the same but
+    its last word, a state (STATES). Each gets `vg`, its group's default item's id, and `st`, its chip label. A group
+    needs 2+ items in distinct states and no item named as the stem itself (グリンピース 冷凍 / …冷凍 ゆで: the frozen one
+    has no state word); fried ones (天ぷら, フライ, から揚げ …) and a state with a note (乾（添付調味料等…）) are no state,
+    so they stay rows of their own. The default: the most popular (`pop`), then 生, then ゆで, then the chip order."""
+    fulls = {it['full'] for it in items}
+    groups = defaultdict(list)
+    for it in items:
+        stem, _, last = it['full'].rpartition(' ')
+        if stem and last in STATES:
+            groups[stem].append((last, it))
+    for stem, g in groups.items():
+        states = [w for w, _ in g]
+        if len(g) < 2 or len(set(states)) < len(states) or stem in fulls:
+            continue
+        g.sort(key=lambda x: (-(x[1].get('pop') or 0), x[0] != '生', x[0] != 'ゆで', STATE_ORDER[x[0]]))
+        for w, it in g:
+            it['vg'] = g[0][1]['id']
+            it['st'] = STATES[w]

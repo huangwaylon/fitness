@@ -7,6 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import build  # noqa: E402
 import lib  # noqa: E402
 import maff_ingredients as MI  # noqa: E402
+import mext_names  # noqa: E402
 import off  # noqa: E402
 
 NS = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main'
@@ -476,6 +477,29 @@ class Grouping(unittest.TestCase):
         self.assertTrue(lib.agree('kcal', 18, 10))       # 10 kcal floor
         self.assertTrue(lib.agree('salt', 0.3, 0.0))
         self.assertIsNone(lib.agree('p', None, 1))
+
+
+class VariantGroups(unittest.TestCase):
+    def test_groups(self):
+        def it(i, full, pop=None):
+            return {'id': 'mext:%d' % i, 'full': full, **({'pop': pop} if pop else {})}
+        items = [it(1, 'ぶた ロース 脂身つき 生', 3), it(2, 'ぶた ロース 脂身つき 焼き', 1), it(3, 'ぶた ロース 脂身つき ゆで'),
+                 it(4, 'スパゲッティ 乾', 2), it(5, 'スパゲッティ ゆで', 3),
+                 it(6, 'グリンピース 冷凍'), it(7, 'グリンピース 冷凍 ゆで'),            # the frozen one has no state word
+                 it(8, 'あじ 生'), it(9, 'あじ フライ'),                                 # fried: no state, a row of its own
+                 it(10, 'めん 乾（添付調味料等を含むもの）'), it(11, 'めん ゆで'),        # a state with a note: none
+                 it(12, 'えび 生'), it(13, 'えび ゆで'), it(14, 'さけ 焼き'), it(15, 'さけ 焼き')]  # two of one state: none
+        mext_names.variant_groups(items)
+        got = {i['id']: (i.get('vg'), i.get('st')) for i in items}
+        self.assertEqual(got['mext:1'], ('mext:1', '生'))
+        self.assertEqual(got['mext:2'], ('mext:1', '焼き'))
+        self.assertEqual(got['mext:3'], ('mext:1', 'ゆで'))
+        self.assertEqual([got['mext:4'], got['mext:5']], [('mext:5', '乾'), ('mext:5', 'ゆで')])  # pop picks ゆで
+        self.assertEqual([got['mext:12'], got['mext:13']], [('mext:12', '生'), ('mext:12', 'ゆで')])  # ties: 生
+        for i in (6, 7, 8, 9, 10, 11, 14, 15):
+            self.assertEqual(got['mext:%d' % i], (None, None), i)
+        self.assertEqual(lib.validate({**{k: 'x' for k in lib.META_KEYS}, 'source': 'mext', 'items': [
+            {'id': 'mext:1', 'name': '豚ロース', 'cat': '肉', 'kcal': 1, 'p': 1, 'f': 1, 'c': 1, 'salt': 0, 'vg': 'mext:1', 'st': '生'}]}), [])
 
 
 if __name__ == '__main__':
