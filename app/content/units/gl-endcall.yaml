@@ -46,7 +46,7 @@ items:
     cond: { kind: phone, level: light }
     tags: { seed: 49, register: friend, pragmatic: ritual, conditions: [phone], features: [contraction] }
     lines:
-      - { who: goldie, cast: us-f2, en: "Ha! Oh, I've missed you. Anyway, I should let you get back to your packing.", ja: "あはは！ ああ、会いたかったよ。まあ、そろそろ荷造りに戻らせてあげなきゃね。" }
+      - { who: goldie, cast: us-f2, en: "Ha! Oh, I've missed you. Anyway, I should let you get back to your packing.", ja: "あはは！ ああ、会いたかったよ。まあ、そろそろ荷造りに戻ってもらわなきゃね。" }
       - { who: raymond, cast: uk-m1, en: "Yes, I've still got the whole kitchen to do. So that's Sunday at the station, then?", ja: "うん、まだキッチンがまるごと残ってる。じゃあ日曜に駅でいいね？" }
       - { who: goldie, cast: us-f2, en: "Sunday, ten o'clock, by the ticket gates. I'll text you when I'm on the train.", ja: "日曜の10時、改札のところ。電車に乗ったらメッセージするね。" }
       - { who: raymond, cast: uk-m1, en: "Perfect. Good to catch up, Goldie. Talk soon!", ja: "完璧。話せてよかったよ、ゴールディ。またね！" }
@@ -59,7 +59,7 @@ items:
     en: "Hey! So did you end up watching that show I told you about? I'm three episodes in. It's so good! Listen, I've got to run, my bus is here."
     ja: "いいよ！ あとで感想きかせて。"
     note: "I've got to run＝いそいで 切る 合図"
-    choices: ["No worries! Tell me what you think later.", "Run? Is everything okay?", "Which bus is the show on?"]
+    choices: ["No worries! Tell me what you think later.", "Run? Is everything okay?", "Wait, which episode are you on?"]
     answer: 0
     focus: "I've got to run"
     ask: "つぎの ひとことは？"
@@ -110,7 +110,7 @@ items:
     voice: au
     cast: au-m2
     en: "Anyway, I should probably get dinner on."
-    ja: "まあ、そろそろ夕飯作らないと。 →「うん、じゃあまたね。またすぐ話そう！」"
+    ja: "まあ、そろそろ夕飯作らないと。 →「うん、じゃあ切るね。またね！」"
     note: "Anyway＋自分の 用事＝もう 切りたい サイン"
     choices: ["Sure, I'll let you go. Talk soon!", "What are you cooking? Tell me everything!", "Anyway, what?"]
     answer: 0
@@ -322,7 +322,7 @@ items:
     speaker: teddy
     voice: us
     cast: us-m1
-    en: "So that was my weekend. The game was mad. You'd have loved it! Sounds amazing. Anyway, it's getting pretty late here."
+    en: "So that was my weekend. The game was crazy. You'd have loved it! Sounds amazing. Anyway, it's getting pretty late here."
     ja: "あ、ごめん！ じゃあ切るね。おやすみ！"
     note: "Anyway＋遅い 時間＝もう 切りたい"
     choices: ["Oh, sorry! I'll let you go. Night!", "It's only nine! Anyway, the second half…", "Late? For the game?"]
@@ -334,7 +334,7 @@ items:
     cond: { kind: phone, level: light }
     tags: { seed: 49, register: friend, pragmatic: indirect, conditions: [phone], features: [contraction] }
     lines:
-      - { who: teddy, cast: us-m1, en: "So that was my weekend. The game was mad. You'd have loved it!", ja: "ってのがぼくの週末。試合がすごくてさ。きみも絶対気に入ったよ！" }
+      - { who: teddy, cast: us-m1, en: "So that was my weekend. The game was crazy. You'd have loved it!", ja: "ってのがぼくの週末。試合がすごくてさ。きみも絶対気に入ったよ！" }
       - { who: reneigh, cast: us-f3, en: "Sounds amazing. Anyway, it's getting pretty late here.", ja: "すごそう。まあ、こっちはもうけっこう遅い時間なんだよね。" }
   - id: km-door
     lv: 3
@@ -388,7 +388,6 @@ items:
     voice: au
     cast: au-f1
     en: "Text me when you're home."
-    tts: "Tex' me when you're home."
     ja: "家に着いたらメッセージして。"
     note: "text の t は 消えて「テクス」"
     choices: ["Text me", "Tell me", "Take me"]
@@ -414,7 +413,6 @@ items:
     voice: uk
     cast: uk-f1
     en: "I won't keep you."
-    tts: "I won' keep you."
     ja: "引き止めないわ。"
     note: "won't と want は 母音が ちがう"
     choices: ["won't", want, will]
@@ -527,7 +525,7 @@ items:
     speaker: roald
     voice: au
     cast: au-m1
-    en: "So that's the barbecue at mine, Saturday, from two. Bring a chair if you've got one. Sorry, did you say a chair? Ha, okay. Anything else? Nah, that's it. Right, I'll let you go. See you Saturday!"
+    en: "So that's the barbecue at mine, Saturday, from two. Bring a chair if you've got one. Sorry, did you say a chair? Ha, okay, I've got a camping one. Anything else? Nah, that's it. Right, I'll let you go. See you Saturday!"
     ja: "ありがとう、じゃあそのときに！"
     note: "最後の see you Saturday に あいさつで かえす"
     choices: ["Cheers, see you then!", "Saturday? I thought Sunday.", "A chair? How many?"]
@@ -540,7 +538,7 @@ items:
     tags: { seed: 49, register: friend, pragmatic: ritual, conditions: [phone], features: [yod] }
     lines:
       - { who: roald, cast: au-m1, en: "So that's the barbecue at mine, Saturday, from two. Bring a chair if you've got one.", ja: "じゃあ土曜の2時から、うちでバーベキューね。椅子があったら持ってきて。" }
-      - { who: melba, cast: au-f1, en: "Sorry, did you say a chair? Ha, okay. Anything else?", ja: "え、椅子って言った？ はは、了解。ほかには？" }
+      - { who: melba, cast: au-f1, en: "Sorry, did you say a chair? Ha, okay, I've got a camping one. Anything else?", ja: "え、椅子って言った？ はは、了解、キャンプ用のがある。ほかには？" }
       - { who: roald, cast: au-m1, en: "Nah, that's it. Right, I'll let you go. See you Saturday!", tts: "Nah, that's it. Right, I'll letcha go. See you Saturday!", ja: "いや、それだけ。じゃあ、そろそろ切るね。土曜にね！" }
 lessons:
   v: 1

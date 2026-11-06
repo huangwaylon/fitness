@@ -2,7 +2,7 @@
 # listening task is telling a real plan (a day, a time: "Are you free Thursday?") from a friendly "one of these days".
 # The main sound is filler (um, like, y'know, -ish). Reused: the dry run's five items, and ya-w-whatcha (level 6) under
 # review; new: mu-/dmu- items, inline.
-# きょうの ひとこと: "We should grab lunch one of these days. Are you free Saturday?" (しゃこうじれいを ほんきに)
+# きょうの ひとこと: "We should grab lunch one of these days. Are you free Saturday?" (そのうち ランチ いこうよ。…で、どようび あいてる？)
 
 schema: 1
 unit: wk-chat
@@ -193,7 +193,7 @@ items:
     choices: [ She worked all Saturday on a report that wasn't urgent., She had a relaxing weekend., She finished the report for Tuesday. ]
     answer: 0
     focus: pushed back
-    ask: 女性の 週末は どうだった？
+    ask: おんなの ひとの しゅうまつは？
     tags: { seed: 38, register: colleague, pragmatic: sarcasm, features: [ intonation ] }
     scene: office
     lines:
@@ -293,7 +293,7 @@ items:
     cast: us-m2
     choices: [ 1:45, 2:00, 2:30 ]
     answer: 0
-    ask: 会議は 何時に なった？
+    ask: かいぎは なんじに なった？
     tags: { seed: 38, register: colleague, pragmatic: literal, features: [ numbers, self-repair, gotta ] }
     scene: office
   - id: mu-r-get-up-to
@@ -452,7 +452,7 @@ items:
     cast: us-f1
     choices: [ 7:00, 6:30, 7:30 ]
     answer: 0
-    ask: 飲み会は 何時？
+    ask: のみかいは なんじ？
     tags: { seed: 38, register: colleague, pragmatic: literal, features: [ numbers, self-repair ] }
     scene: office
     cond: *a2

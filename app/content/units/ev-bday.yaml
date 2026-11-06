@@ -80,7 +80,6 @@ items:
     voice: us
     cast: us-m3
     en: "Your birthday bash? I wouldn't miss it for the world."
-    tts: "Your birthday bash? I wouldn' miss it for the world."
     ja: "絶対に行く。"
     note: "wouldn't miss it＝のがさない＝ぜったい 行く"
     choices: ["He'll definitely come.", "He might miss it.", "He's travelling the world."]
@@ -176,10 +175,10 @@ items:
     speaker: bunnie
     voice: us
     cast: us-f1
-    en: "She's here! I can hear her on the stairs! It's a surprise, everyone! Who's got the lights? Got it. Everyone hide behind the sofa, and wait for my signal."
-    ja: "オッケー、しーっ！ 3で飛び出そう。"
+    en: "She's here! I can hear her on the stairs! Quiet, everyone! Who's got the lights? Got it. Everyone hide behind the sofa, and wait for my signal."
+    ja: "オッケー、しーっ！ 合図を待つね。"
     note: "まだ 隠れる 段階。先に 言ったら 台無し"
-    choices: ["Okay, shh! On three, we jump out.", "Hi Tia, it's a surprise party!", "The lights are on the stairs."]
+    choices: ["Okay, shh! We'll wait for your signal.", "Hi Tia, it's a surprise party!", "The lights are on the stairs."]
     answer: 0
     focus: "wait for my signal"
     ask: "つぎの ひとことは？"
@@ -187,7 +186,7 @@ items:
     tags: { seed: 54, register: friend, pragmatic: literal, features: [linking] }
     lines:
       - { who: bunnie, cast: us-f1, en: "She's here! I can hear her on the stairs!", ja: "来た！ 階段に足音がする！" }
-      - { who: cj, cast: us-m1, en: "It's a surprise, everyone! Who's got the lights?", ja: "サプライズだよ、みんな！ 電気は誰？" }
+      - { who: cj, cast: us-m1, en: "Quiet, everyone! Who's got the lights?", ja: "みんな、静かに！ 電気は誰？" }
       - { who: bunnie, cast: us-f1, en: "Got it. Everyone hide behind the sofa, and wait for my signal.", ja: "まかせて。みんなソファの後ろに隠れて、合図を待って。" }
   - id: kr-chip-in
     lv: 3
@@ -411,7 +410,6 @@ items:
     voice: us
     cast: us-m3
     en: "I wouldn't miss it."
-    tts: "I wouldn' miss it."
     ja: "絶対行くよ。"
     note: "wouldn't の t は 消える。would と 区別"
     choices: ["wouldn't", would, "won't"]
