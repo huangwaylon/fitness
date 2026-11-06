@@ -3,8 +3,8 @@
 // _app/immutable/workers), so no blob: worker and no eval; the basemap's TileJSON and tiles fetched from OpenFreeMap
 // (style.ts BASEMAP: the CSP's one third-party connect-src); labels in the app's font (fonts.ts). Neither this chunk
 // nor its worker nor its CSS is precached (service-worker/caches.ts): the map is online only. One map per TripMap;
-// remove() drops its WebGL context.
-import { AttributionControl, Map as GLMap, Marker, getGlobalDispatcher, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature } from 'maplibre-gl';
+// destroy() lets go of it all (remove.ts).
+import { AttributionControl, Map as GLMap, Marker, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // (bundled as our own worker chunk, a .js: a raw .mjs is served as application/octet-stream by some hosts, which a
 // module worker under nosniff refuses)
@@ -15,6 +15,7 @@ import { fontFaces } from './fonts.ts';
 import { boundsOf, candidatesData, candidatesOf, keepoutData, legsData, locData, pinLabel, pinsOf, type Fix, type Pin } from './overlay.ts';
 import { buildStyle, haloRadius, KEEP_IMAGES, labelLayers, SRC } from './style.ts';
 import { dayColor, type TripMapProps } from './types.ts';
+import { removeMap } from './remove.ts';
 
 export type EngineInput = Omit<TripMapProps, 'onselect'>;
 
@@ -210,11 +211,7 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
     destroy() {
       for (const { m } of markers.values()) m.remove();
       markers.clear();
-      map.remove(); // loses its WebGL context (WEBGL_lose_context) and empties the container
-      // The last map's remove() ends MapLibre's workers by aborting its page-wide dispatcher's controller with an Error
-      // made inside remove(): until the next map, that Error's unformatted stack held remove()'s receivers, this whole
-      // map and its context (leaks.spec). Reading its stack formats it, which lets the frames go.
-      void ((getGlobalDispatcher() as unknown as { workersAbortController?: AbortController }).workersAbortController?.signal.reason as Error | undefined)?.stack;
+      removeMap(map); // its context, its font faces (remove.ts)
     }
   };
 }

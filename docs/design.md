@@ -710,8 +710,8 @@ three.js, with the DOM island over the canvas as its tap areas, marks, balloons 
 is loaded the first time it's due (`ui-state/lazyComponent.svelte.ts`), so the first load carries none of it. Light from the upper left;
 each surface one fill, one gradient, one soft shade; no strokes on scenery. Only `transform` and `opacity` animate;
 everything pauses while hidden (`data-paused`), and a sheet pauses particles, critters and idle life
-(`data-covered`); under a full-height sheet (the panel, けんこう, ごはん) every animation in the scene holds too
-(`data-sheet`) and the 3D island draws nothing, so nothing behind the sheet asks for a frame (`e2e/sheet-idle.spec.ts`).
+(`data-covered`); under a full-height sheet (the panel, けんこう, ごはん, りょこう, けっこんしき, トレイル) every animation in the scene holds too
+(`data-sheet`) and the 3D island draws nothing nor asks for a frame, so nothing behind the sheet does (`e2e/sheet-idle.spec.ts`).
 Nothing on the island pays ベル.
 
 ### World

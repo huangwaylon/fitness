@@ -812,9 +812,11 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** A frame as soon as the display has one (a change from outside: a model in, a tap, the camera). A kick from inside
    *  a frame is that frame's own (what it changed is drawn in it): its parts' wants say whether another follows. At
    *  rest (no finger for REST_MS) with a frame already coming, it waits for that one (a critter's node, a falling
-   *  leaf's model in: ~35 kicks a second on the demo, each a frame at once, held the ambience at 30, not REST_FPS). */
+   *  leaf's model in: ~35 kicks a second on the demo, each a frame at once, held the ambience at 30, not REST_FPS).
+   *  Paused or hidden, none: the frame would draw nothing (an animation frame asked for under a sheet, ~1 a second
+   *  from a model in or a critter's tick); pause(false) and the page shown again kick. */
   function kick() {
-    if (inFrame || disposed) return;
+    if (inFrame || disposed || paused || document.hidden) return;
     if (pace.queued() && now() - lastInput > REST_MS) return;
     pace.kick();
   }
