@@ -1408,13 +1408,15 @@ goes with the leaving).
   step. A tap on the floor walks mine there (A* on half tiles round the furniture, rugs walkable, the corners pulled
   straight; 45 units a second); a tap on a villager hops it (only where it's drawn, its alpha); a tap on a piece acts
   in place (my villager turns to it, it jiggles, a lamp switches); the doormat or ‹ 島へ goes back out.
-- **Stereos** (`tent/stereo.ts`, `tent/StereoPicker.svelte`, e2e `tent.spec.ts`): NH's music players in any room (the
+- **Stereos** (`tent/stereo.ts`, `tent/StereoPicker.svelte`, e2e `tent.spec.ts`, `kk-sync.spec.ts`): NH's music players in any room (the
   hi-fi, high-end and retro stereos, the jukebox, the phonograph, the record and cassette players, the pro tape recorder,
   the tape deck, the skull radio) play K.K.'s songs as NH's do. A tap opens the song list (おまかせ: any but the last
   one; or one by name); the song is his **aircheck** (manifest `kkAircheck.<id>`; a song with none yet plays its live
-  file), through `playKK(id, 'aircheck')`, the same cut-in as K.K.'s own, so the room's music stops for it and comes back
-  after; Now Playing says 「♪ いまは「…」（ステレオ）」. A tap on the one playing stops it; leaving the room, or putting
-  the player away, stops it too. This phone's music only (the partner's phone hears its own).
+  file) on the room's music stage ([Shared music](#shared-music): `request(sc, id, { pc })`, the tent's `t`, うめ's `u`,
+  the guest's `v`), so everyone in the room hears it from the same point and sees the player bump; the room's music
+  stops for it and comes back after; Now Playing says 「♪ いまは「…」（ステレオ）」. Picking a song turns ミュージック on
+  on that phone. Anyone's tap on the one playing stops it for all; it plays to its end whoever leaves, heard only inside
+  the room, and a player put away mid-song goes silent (nothing sent).
 - **The partner's villager** is theirs to move while they're in the tent (each walk of mine goes over the relay as the
   `tent` intent, the very walk: from, the way, when, how long; a join hears where I am); while they're away (not on the
   relay) their villager rests in the room where it last stood; while they're on the island it isn't here.
@@ -2611,7 +2613,8 @@ track without its file is the hour's music (or its `alt`):
 | Jan 1 02:00–05:00 | ニューイヤー（午前2時） |
 | Jan 1 05:00 – Jan 2 05:00 | 元日 (New Year's Day) |
 
-**Cut-ins** (`sound.svelte.ts`) swap at once over the island's music and hand back to it: the wasps (`waspMusic`):
+**Cut-ins** (`sound.svelte.ts`) swap at once over the island's music and hand back to it (each phone's own; K.K. and the
+stereos are [shared stages](#shared-music)): the wasps (`waspMusic`):
 the nest's fall only fetches Chased by Bees ahead; it cuts in and loops as the wasps come out (`chase`; 6 s at most if
 the scene never ends it); a net brings the island's music back; a sting plays Stung by Bees once (kept fetched during
 the chase). The island's own cut-ins (`eventJingle(id | ids, loopMs?)`, `events.ts
@@ -2669,9 +2672,8 @@ opens (iOS: audio needs one) picks the song up mid-song inside that tap.
 `kk.ts loadKK()`: K.K.'s songs from `static/audio/kk.json` (its `kk` list, `{ id, ja, en, file, gain, v, d }`, NH's
 official titles; one-shots under `audio/kk/`; their airchecks, NH's stereo versions, at `kkAircheck.<id>`), a chunk of
 its own loaded the first time K.K. or a stereo's list shows, or a song is asked for (13 KB the first load doesn't
-carry). K.K. on his stool plays his live file on the island's stage ([Shared music](#shared-music)); `playKK(id,
-'aircheck')` plays a room's stereo ([the tent's stereos](#the-tent): its aircheck, else the live file, `kkTrack`) over
-the room's music; `stopKK('aircheck')` ends it; `sound.kk` is `{ id, from }` while one plays; `kkPick` never repeats the last one;
+carry). K.K. on his stool plays his live file on the island's stage, a room's stereo ([the tent's stereos](#the-tent))
+its aircheck (else the live file, `kkTrack`) on the room's ([Shared music](#shared-music): `stageTrack`); `kkPick` never repeats the last one;
 `kkTitle` is the title in the app's language. The two songs K.K.'s リクエスト offers are fetched as he offers them
 (`prefetchKK`), a stereo's on the press of its row.
 

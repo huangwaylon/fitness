@@ -18,8 +18,9 @@
   import HomePicker from '../homes/HomePicker.svelte';
   import HhaLetter from './HhaLetter.svelte';
   import StereoPicker from './StereoPicker.svelte';
-  import { isStereo, stereoTap } from './stereo.ts';
-  import { playKK, sound, stopKK } from '#lib/sound/sound.svelte.ts';
+  import { isStereo } from './stereo.ts';
+  import { setSound, sound } from '#lib/sound/sound.svelte.ts';
+  import { enterStage, hush, live, request, restage } from '#lib/sound/stage.svelte.ts';
   import type { KKTrack } from '#lib/sound/kk.ts';
   import Says from '../island/Says.svelte';
   import SayPicker from '../island/SayPicker.svelte';
@@ -452,11 +453,10 @@
       const at = spots().find((q) => q.id === h.id);
       if (at) eng.face(me, centreOf(at));
       eng.bump(h.id);
-      // a music player (stereo.ts): playing, a tap stops it; else its song list (this phone's music only)
+      // a music player (stereo.ts): playing, a tap stops it (for everyone in here); else its song list
       if (p && isStereo(p.item)) {
-        if (stereoTap(p.id, stereo, sound.kk?.from === 'aircheck') === 'stop') {
-          stopKK('aircheck');
-          stereo = null;
+        if (stereo === p.id) {
+          hush(stageSrc);
           cue('toggle-off');
         } else {
           stereoPick = p.id;
@@ -474,27 +474,34 @@
     walkTo([h.x, h.z]);
   }
 
-  /** The music player playing (its piece's id) and the one whose song list is open; the last song it played. */
-  let stereo = $state<string | null>(null);
+  /** This room's music stage (sound/stage.svelte.ts: the tent's `t`, うめ's `u`, the guest's `v`), shared by everyone
+   *  in here: the music player playing (its piece, while it stands: one put away mid-song is silent, nothing sent), the
+   *  one whose song list is open, the last song it played. */
+  // svelte-ignore state_referenced_locally
+  const stageSrc = homeSc ?? 't';
+  const standing = (id: string | undefined) => !!id && room.pieces.some((p) => p.id === id);
+  const stereo = $derived.by(() => {
+    const pc = live(stageSrc)?.pc;
+    return standing(pc) ? pc! : null;
+  });
   let stereoPick = $state<string | null>(null);
   let stereoLast = $state<string | null>(null);
+  /** A song for the picked player, for everyone in here (from the pick's tap: ミュージック on here, as K.K.'s). */
   function playStereo(song: KKTrack) {
     const id = stereoPick;
     stereoPick = null;
-    if (!id || !playKK(song.id, 'aircheck')) return void cue('boop');
-    stereo = id;
+    if (!id) return void cue('boop');
+    if (!sound.settings.music) setSound({ music: true });
+    request(stageSrc, song.id, { pc: id });
     stereoLast = song.id;
-    eng?.bump(id);
   }
-  // its song over (or cut off: K.K. on the island, the music turned off): nothing plays there now
-  $effect(() => {
-    if (sound.kk?.from !== 'aircheck') untrack(() => (stereo = null));
-  });
-  // the room left (or its player put away): its song stops, the island's music comes back
-  $effect(() => () => untrack(() => stopKK('aircheck')));
+  // a song starts on a player (anyone's): it bumps; one put away or back: the sound follows
   $effect(() => {
     const id = stereo;
-    if (id && !room.pieces.some((p) => p.id === id)) untrack(() => (stopKK('aircheck'), (stereo = null)));
+    untrack(() => {
+      if (id) eng?.bump(id);
+      restage();
+    });
   });
 
   function leave() {
@@ -585,6 +592,8 @@
     // one socket it already does; the demo's tabs have a relay per screen
     shared.attach(relay, me, demo);
     room.sink = (op) => sendDecor(op);
+    // this room's music stage is heard in here, its player standing
+    const leaveStage = enterStage(stageSrc, (s) => standing(s.pc));
     own?.start();
     const offs: (() => void)[] = [];
     if (relay) {
@@ -660,6 +669,7 @@
       for (const f of offs) f();
       ro.disconnect();
       offDoor();
+      leaveStage();
       room.sink = null;
       islandLayout.sink = null;
       own?.stop();

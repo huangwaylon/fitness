@@ -23,6 +23,7 @@ class FakeEngine {
   setLevels() {}
   resume() {}
   hush() {}
+  pause() {}
   sleep() {}
   muffle() {}
   needsUnlock() {
@@ -38,8 +39,11 @@ class FakeEngine {
   pin(paths: string[]) {
     this.pinned = paths;
   }
-  async setTrack(key: string | null) {
+  /** The track as asked for (a stage's `from`). */
+  tr: { file: string; from?: number } | null = null;
+  async setTrack(key: string | null, tr: { file: string; from?: number } | null) {
     this.track = key;
+    this.tr = tr;
   }
   async setAmbient() {}
 }
@@ -124,14 +128,55 @@ describe('cut-ins', () => {
     expect(e.track).not.toMatch(/^event\/bee/);
   });
 
-  it('the volume at 0 ends a K.K. song (its caption with it)', async () => {
-    const { m } = await musicOn();
-    const { loadKK } = await import('./kk.ts');
-    const song = (await loadKK()).tracks[0];
-    expect(m.playKK(song.id)).toBe(true);
-    expect(m.sound.kk).toEqual({ id: song.id, from: 'live' });
-    expect(m.playingLabel('kk', 20)).toContain(song.ja);
+});
+
+describe('the shared stages (stage.svelte.ts) in what plays', () => {
+  beforeEach(() => vi.stubGlobal('window', { addEventListener() {}, removeEventListener() {} }));
+  it('the stage where I am plays over the island’s from where its song is; 音量 0 keeps it; ended here: the island’s', async () => {
+    const { m, e } = await musicOn();
+    const stop = m.startSound({ muffled: () => false });
+    m.setSound({ music: true, volume: 0.8 }); // (startSound read the settings: off)
+    e.onended?.('opening');
+    const st = await import('./stage.svelte.ts');
+    const song = (await (await import('./kk.ts')).loadKK()).tracks[0];
+    st.bindStage({ send: () => true, serverNow: () => Date.now() + 2000, me: () => 'A' }); // the relay 2 s ahead
+    const leave = st.enterStage('isl');
+    const at = Date.now() + 2000 - 30_000; // 30 s in
+    st.hear({ v: 3, kind: 'music', src: 'isl', at, song: song.id, ms: 120_000, who: 'B', t: at });
+    expect(e.track).toBe(`st/isl/${song.id}/${at}`);
+    expect(e.tr?.from).toBe(at - 2000); // position 0 on this device's clock
+    expect(e.tr?.file).toBe(song.file);
+    expect([m.sound.playing, m.playingLabel('kk', 20)]).toEqual(['kk', expect.stringContaining(song.ja)]);
+    // 音量 0: nothing heard, the record plays on (back up: from where it is then)
     m.setSound({ volume: 0 });
-    expect(m.sound.kk).toBeNull();
+    m.setSound({ volume: 0.8 });
+    expect(e.track).toBe(`st/isl/${song.id}/${at}`);
+    e.onended?.(`st/isl/${song.id}/${at}`); // its file shorter than its record: the island's till it ends
+    expect(e.track).not.toMatch(/^st\//);
+    leave();
+    stop();
+  });
+
+  it('a room’s stereo is heard only in its room, its piece standing', async () => {
+    const { m, e } = await musicOn();
+    const stop = m.startSound({ muffled: () => false });
+    m.setSound({ music: true, volume: 0.8 }); // (startSound read the settings: off)
+    e.onended?.('opening');
+    const st = await import('./stage.svelte.ts');
+    const song = (await (await import('./kk.ts')).loadKK()).tracks[0];
+    st.bindStage({ send: () => true, serverNow: () => Date.now(), me: () => 'A' });
+    let stands = true;
+    const outside = st.enterStage('isl');
+    st.request('t', song.id, { pc: 'dabc123' });
+    expect(e.track).not.toMatch(/^st\//); // on the island: not heard
+    outside();
+    const inside = st.enterStage('t', (s) => stands && s.pc === 'dabc123');
+    expect(e.track).toMatch(new RegExp(`^st/t/${song.id}/`));
+    expect(e.tr?.file).toMatch(/^kk\/(aircheck\/)?/);
+    stands = false; // put away mid-song: silent, nothing sent
+    st.restage();
+    expect(e.track).not.toMatch(/^st\//);
+    inside();
+    stop();
   });
 });

@@ -1,7 +1,7 @@
 // The rooms' music players (tent/stereo.ts) and the aircheck they play (sound/kk.ts kkFile).
 import { describe, expect, test } from 'vitest';
 import { ITEMS } from './items.ts';
-import { MUSIC_PLAYERS, isStereo, stereoTap } from './stereo.ts';
+import { MUSIC_PLAYERS, isStereo } from './stereo.ts';
 import { kkFile, type KKTrack } from '#lib/sound/kk.ts';
 
 describe('the music players', () => {
@@ -15,12 +15,6 @@ describe('the music players', () => {
   test('every one of them is a piece the rooms have', () => {
     const cats = new Set(Object.values(ITEMS).map((m) => m.cat));
     for (const c of MUSIC_PLAYERS) expect(cats.has(c), c).toBe(true);
-  });
-  test('a tap on the one playing stops it; on another, or once its song is over, the song list', () => {
-    expect(stereoTap('o1', 'o1', true)).toBe('stop');
-    expect(stereoTap('o2', 'o1', true)).toBe('pick');
-    expect(stereoTap('o1', 'o1', false)).toBe('pick');
-    expect(stereoTap('o1', null, false)).toBe('pick');
   });
 });
 

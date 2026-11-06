@@ -4,7 +4,7 @@
 import { trackAt, type Fade, type MusicTrack, type Weather } from './hourly.ts';
 import { eventMusicAt, type CutInId, type EventMusicId } from './events.ts';
 import { placeTrack, type PlaceId } from './places.ts';
-import { kkTitle, type KKSource, type KKTrack } from './kk.ts';
+import { kkTitle, type KKTrack } from './kk.ts';
 import type { AudioManifest } from './manifest.ts';
 import { dayKey } from '#lib/time/clock.ts';
 import { t } from '#lib/i18n/index.ts';
@@ -22,13 +22,11 @@ export interface Want {
   fade?: Fade;
 }
 
-/** A cut-in over the island's music, as in NH: an island moment's (events.ts CutInId: the wasps' chase and sting, the
- *  stretch, the cake, Franklin's cooking, `next` played after it) or a K.K. song (`kk`, from K.K. or a stereo). */
+/** A cut-in of my own over the island's music, as in NH (events.ts CutInId: the wasps' chase and sting, Franklin's
+ *  cooking, `next` played after it). */
 export interface CutIn extends Want {
   id?: CutInId;
   next?: CutInId[];
-  kk?: KKTrack;
-  from?: KKSource;
 }
 
 type Files = Pick<AudioManifest, 'events' | 'music' | 'places' | 'opening'>;

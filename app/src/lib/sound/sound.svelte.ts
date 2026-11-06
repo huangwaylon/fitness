@@ -5,7 +5,7 @@
 //   startSound({ muffled: () => ui.sheets.length > 0 })   // once, in the root layout
 //   setSound({ music: true })                             // from a tap (the settings app)
 //   sound.weather = 'rain'; sound.heavy = true            // set by the island's weather (island/weatherNow.svelte.ts)
-//   waspMusic('chase') · playKK('kk-march') · stopKK()    // cut-ins over the island's music (events.ts, kk.ts)
+//   waspMusic('chase')                                    // a cut-in of my own over the island's music (events.ts)
 //   (the shared stages: K.K., the stereos, stage.svelte.ts request / hush; syncMusic plays the one where I am)
 //   eventJingle('happy-birthday') · stopJingle('aerobics') // the island's own cut-ins (events.ts CutInId)
 //   setPlace('shop') · setPlace(null)                     // a building's room plays its own track (places.ts)
@@ -20,7 +20,7 @@ import { msToNextHour, type Fade, type Weather } from './hourly.ts';
 import { msToNextEdge, type CutInId, type EventMusicId } from './events.ts';
 import { radioJingleAt } from './radio.ts';
 import { kkLoaded, kkTrack, loadKK, type KKSource } from './kk.ts';
-import { live, onStage, skew, stage, stageTrack } from './stage.svelte.ts';
+import { heardHere, onStage, skew, stageTrack } from './stage.svelte.ts';
 import { placeTrack, type PlaceId } from './places.ts';
 import { musicAt, openingMusic, pickMusic, pinsFor, placeMusic, playingLabel as labelOf, type CutIn, type Playing, type Want } from './choose.ts';
 import { initMediaSession, nowPlaying, tilePaused } from './mediaSession.ts';
@@ -28,15 +28,13 @@ import { ambientFor } from './ambient.ts';
 import { DEVICE, localKV } from '#lib/sync/storage.ts';
 import { dayKey, jst, now } from '#lib/time/clock.ts';
 
-export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; kk: { id: string; from: KKSource } | null; unlocked: boolean }>({
+export const sound = $state<{ settings: SoundSettings; weather: Weather; heavy: boolean; playing: Playing; unlocked: boolean }>({
   settings: { ...DEFAULT_SOUND },
   weather: 'sunny',
   /** A downpour: the rain bed louder (ambient.ts). */
   heavy: false,
   /** What the music is (for the settings' note and the Now Playing tile). */
   playing: null,
-  /** The K.K. song playing (kk.ts id) and where from (K.K. on the island, or a room's stereo: its aircheck). */
-  kk: null,
   /** Audio is unlocked (a tap made the context): a shared stage's song can be heard (else its caption says 🔇). */
   unlocked: false
 });
@@ -87,7 +85,7 @@ const baseAt = (d: Date) => pickMusic({ place: room(), island: island(d) });
 /** The stage's song where I am (stage.svelte.ts), from where it is now (`from`: its position 0 on this device's
  *  clock); null: none, it ended here (its file shorter than its record), or its file isn't known yet. */
 function staged(): Want | null {
-  const s = stage.here && live(stage.here);
+  const s = heardHere();
   if (!s) return null;
   const key = `st/${s.src}/${s.song}/${s.at}`;
   if (key === stageDone) return null;
@@ -175,7 +173,7 @@ function apply(): void {
   sound.unlocked = true;
   if (!anyOn(s)) e.sleep();
   else if (s.volume <= 0) {
-    // muted, not off: the track keeps its place; a cut-in (a K.K. song, its caption) ends, as nobody hears it
+    // muted, not off: the track keeps its place; a cut-in of mine ends, as nobody hears it (a stage's song plays on)
     if (cutIn) endCutIn();
     e.hush();
     tilePaused();
@@ -235,9 +233,9 @@ export function playVoice(buf: AudioBuffer, o: { relayAt?: number; now?: () => n
 
 /** What the settings' note and the Now Playing tile say about the music (null: none). */
 export function playingLabel(playing: Playing, hour: number): string | null {
-  const s = stage.here && live(stage.here);
+  const s = heardHere();
   const k = s ? kkTrack(s.song, 'live')?.song : null;
-  return labelOf(playing, hour, cutIn?.kk ? { song: cutIn.kk, aircheck: cutIn.from === 'aircheck' } : k ? { song: k, aircheck: s!.src !== 'isl' } : null);
+  return labelOf(playing, hour, k ? { song: k, aircheck: s!.src !== 'isl' } : null);
 }
 
 /** What the music deck plays now and how far in (s): the e2e's look (window.__music), never the app's. */
@@ -246,7 +244,6 @@ export const musicNow = (): { key: string | null; pos: number | null } => ({ key
 function endCutIn(): void {
   clearTimeout(cutInTimer);
   cutIn = null;
-  sound.kk = null;
 }
 
 /** Start a cut-in (when ミュージック can sound) and play it at once; a loop ends after `loopMs`. False: it can't
@@ -257,7 +254,6 @@ function startCutIn(want: CutIn, loopMs?: number): boolean {
   // the opening outranks a cut-in (pickMusic): a cut-in asked for now ends it, as a tap past NH's title screen
   opening = false;
   cutIn = want;
-  sound.kk = want.kk && want.from ? { id: want.kk.id, from: want.from } : null;
   if (loopMs) cutInTimer = setTimeout(() => cutIn === want && (endCutIn(), syncMusic()), loopMs);
   syncMusic();
   return true;
@@ -365,16 +361,6 @@ export function waspMusic(phase: 'nest' | 'chase' | 'caught' | 'stung'): void {
   }
 }
 
-/** K.K. plays song `id` (kk.ts loadKK's list) over the island's music, which stops for it and comes back after (NH's
- *  show): `source` `live` K.K. on his stool, `aircheck` a room's stereo (the song's aircheck, else its live file).
- *  Only with ミュージック on and audio unlocked (call it from a tap). False: it can't sound now (no such song, the
- *  list not loaded yet, music off, locked or muted). */
-export function playKK(id: string, source: KKSource = 'live'): boolean {
-  void loadKK();
-  const k = kkTrack(id, source);
-  return !!k && startCutIn({ key: `kk/${source}/${id}`, track: k.track, playing: 'kk', loop: false, fade: 'cut', kk: k.song, from: source });
-}
-
 /** Fetch a song ahead (offered by K.K.'s リクエスト, pressed in a stereo's list), when ミュージック can sound. */
 export function prefetchKK(id: string, source: KKSource = 'live'): void {
   const k = audible() && kkTrack(id, source);
@@ -399,14 +385,6 @@ export function eventJingle(ids: CutInId | CutInId[], loopMs?: number): boolean 
 /** Stop an island cut-in early (the stretch left or cut short: TapeDeck): the island's music fades back in. */
 export function stopJingle(id: CutInId): void {
   if (cutIn?.id !== id) return;
-  endCutIn();
-  syncMusic();
-}
-
-/** Stop a K.K. song early (the show ends, a stereo's tapped off, the room is left): the island's music fades back
- *  in. `source`: only a song from there (leaving the tent never stops K.K.'s own, nor he a stereo's). */
-export function stopKK(source?: KKSource): void {
-  if (!cutIn?.kk || (source && cutIn.from !== source)) return;
   endCutIn();
   syncMusic();
 }
