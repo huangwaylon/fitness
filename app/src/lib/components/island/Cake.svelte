@@ -29,7 +29,7 @@
   let puff = $state(0);
 
   /** The birthday song on the island's stage (events.ts `happy-birthday`), and the one whose start was seen here. */
-  const SONG = 'ev-happy-birthday';
+  const SONG = cutInSong('happy-birthday');
   const onStage = $derived(live('isl'));
   let heard = 0;
   // the song starts (my tap or another's): the candles go out (the puff only as it starts); unheard, the music box

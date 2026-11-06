@@ -51,7 +51,7 @@
   /** Bumped when today's stretch is done (the deck re-derives). */
   let bump = $state(0);
   /** The stretch's song on the island's stage (events.ts `aerobics`, looped for the routine), playing (anyone's tap). */
-  const SONG = 'ev-aerobics';
+  const SONG = cutInSong('aerobics');
   const onStage = $derived(live('isl'));
   const playing = $derived(onStage?.song === SONG);
   $effect(() => sawIsland(date, jst(clock).hour));

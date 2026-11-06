@@ -2,7 +2,7 @@
 // replaces what plays, and how far in a song is goes by the relay's clock.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Intent, MusicRec } from '#lib/contract/live-protocol.ts';
-import { acked, bindStage, enterStage, hear, hush, live, onStage, request, resetStage, stage } from './stage.svelte.ts';
+import { acked, bindStage, cutInOf, cutInSong, enterStage, hear, hush, live, onStage, request, resetStage, stage } from './stage.svelte.ts';
 
 const T0 = Date.UTC(2026, 10, 6, 11);
 let sent: Intent[];
@@ -27,6 +27,13 @@ afterEach(() => {
 });
 
 describe('the stage', () => {
+  it('an island cut-in is its ev- song, the rest K.K.’s', () => {
+    expect(cutInSong('aerobics')).toBe('ev-aerobics');
+    expect(cutInOf('ev-happy-birthday')).toBe('happy-birthday');
+    expect(cutInOf(cutInSong('aerobics'))).toBe('aerobics');
+    expect(cutInOf('kk-march')).toBeNull();
+  });
+
   it('a request plays at once here and goes to the room with its length; hush stops it for everyone', () => {
     request('isl', 'kk-march', { ms: 90_000 });
     expect(live('isl')).toMatchObject({ song: 'kk-march', at: T0, ms: 90_000, who: 'A', elapsedMs: 0 });

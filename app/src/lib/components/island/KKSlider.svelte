@@ -27,7 +27,7 @@
   import { cue } from '#lib/sound/cues.ts';
   import { kkPick, kkTitle, loadKK, type KKTrack } from '#lib/sound/kk.ts';
   import { prefetchKK, setSound, sound } from '#lib/sound/sound.svelte.ts';
-  import { hush, live, request as requestSong } from '#lib/sound/stage.svelte.ts';
+  import { cutInOf, hush, live, request as requestSong } from '#lib/sound/stage.svelte.ts';
   import { count } from '#lib/sync/log.ts';
   import { tall3d } from '../villager3d/manifest.ts';
   import { sceneSfx } from './sceneTaps.ts';
@@ -87,7 +87,7 @@
   /** His song playing now (the island stage's, for everyone: an island cut-in isn't his), and whether this phone can't
    *  hear it (ミュージック off or muted, or no tap yet). */
   const onStage = $derived(live('isl'));
-  const playing = $derived<KKTrack | null>(onStage && !onStage.song.startsWith('ev-') ? (kkTracks.find((k) => k.id === onStage.song) ?? null) : null);
+  const playing = $derived<KKTrack | null>(onStage && !cutInOf(onStage.song) ? (kkTracks.find((k) => k.id === onStage.song) ?? null) : null);
   const unheard = $derived(!sound.settings.music || sound.settings.volume <= 0 || !sound.unlocked);
   /** Dozing: asleep by the clock and not playing (woken for a song, he's up till it's over). */
   const dozing = $derived(mode === 'asleep' && !playing);
