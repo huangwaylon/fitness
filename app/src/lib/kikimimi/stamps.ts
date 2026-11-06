@@ -16,6 +16,8 @@ export interface UnitState {
   done: Lesson[];
   /** The day it was first stamped (mine), else null. */
   stamped: LocalDate | null;
+  /** The game that first stamped it (its `g`: the results that bring the villager's letter), else null. */
+  stampedIn: string | null;
   /** My own tally next to the stamp (§10): the stamping row's first-listen rights of its questions, and the team's
    *  (tm) when it was a co-op pass; unstamped, my best チェック's. Null before any チェック. */
   tally: { first: number; of: number; tm?: number } | null;
@@ -27,7 +29,7 @@ export interface UnitState {
   recheck: { due: LocalDate; done: boolean } | null;
 }
 
-const blank = (): UnitState => ({ done: [], stamped: null, tally: null, partner: false, double: false, recheck: null });
+const blank = (): UnitState => ({ done: [], stamped: null, stampedIn: null, tally: null, partner: false, double: false, recheck: null });
 
 /**
  * Every unit I or my partner touched: from my games (in the order played; each lesson's row, `u` and `l`), the dots
@@ -47,7 +49,7 @@ export function unitsOf(mine: readonly Game[], others: readonly OtherGame[]): Ma
     if (g.l !== CHECK_LESSON) continue;
     (checks.get(g.u) ?? checks.set(g.u, []).get(g.u)!).push(g);
     const tally = { first: g.unit.first, of: g.unit.of, ...(g.tm !== undefined && { tm: g.tm }) };
-    if (g.unit.stamped && !s.stamped) (s.stamped = g.d), (s.tally = tally);
+    if (g.unit.stamped && !s.stamped) (s.stamped = g.d), (s.stampedIn = g.g), (s.tally = tally);
     else if (!s.stamped && (!s.tally || tally.first > s.tally.first)) s.tally = tally;
   }
   for (const o of others) if (o.who !== 'G' && o.stamped && o.u) of(o.u).partner = true;

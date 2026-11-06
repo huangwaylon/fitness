@@ -2,11 +2,12 @@
   // A round's choices (docs/kikimimi.md "The game"; framework §5 ChoiceGrid): dimmed until the first play ends, then one
   // final tap; mine marked as picked; at the reveal ○ on the right one and × on my wrong pick (`onlyMarked`: only those
   // two, a dialogue's, so the transcript under them is never under the sticky つぎへ). Text, or pictures (art keys) in a
-  // 2×2 grid, each named for VoiceOver (`label`: the English never given away).
+  // 2×2 grid, each named for VoiceOver (`label`: the English never given away). At the reveal each text choice's
+  // Japanese (`ja`, the item's cja) under it, smaller.
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import { t } from '#lib/i18n/index.ts';
 
-  let { choices, right, pics = false, label, english = true, open, reveal, dim, picked, onlyMarked = false, onpick }: {
+  let { choices, right, pics = false, label, english = true, ja, open, reveal, dim, picked, onlyMarked = false, onpick }: {
     choices: readonly string[];
     /** The right one (marked at the reveal). */
     right: number;
@@ -16,6 +17,8 @@
     label?: (c: string) => string;
     /** The text is English (else Japanese: a rung's questions, numbers). */
     english?: boolean;
+    /** Each choice's Japanese, aligned to `choices` (shown at the reveal only). */
+    ja?: readonly string[];
     /** The choices take a tap. */
     open: boolean;
     reveal: boolean;
@@ -41,7 +44,7 @@
     <button type="button" class="ch tile-btn" data-choice={k} data-mark={m ?? undefined} aria-pressed={picked === k}
       aria-disabled={!open} aria-label={label?.(c)} data-sfx={open ? 'choice-pick' : 'none'}
       onclick={() => open && onpick(k)}>
-      {#if pics}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={english ? 'en' : undefined}>{c}</span>{/if}
+      {#if pics}<OfficialArt key={c} size="min(22vw, 92px)" eager />{:else}<span class="tx" lang={english ? 'en' : undefined}>{c}</span>{#if reveal && ja?.[k]}<span class="cja" lang="ja" data-kiki-cja={k}>{ja[k]}</span>{/if}{/if}
       {#if m === 'right'}<span class="sym ok" aria-hidden="true">○</span>{:else if m === 'wrong'}<span class="sym ng" aria-hidden="true">×</span>{/if}
     </button>
     {/if}
@@ -67,5 +70,7 @@
   .ch .sym.ok { color: var(--c-leaf-text); }
   .ch .sym.ng { color: var(--c-coral-text); }
   .tx { overflow-wrap: anywhere; }
+  /* the Japanese under it: the choice's own colour (any tile, any time of day), quieter */
+  .cja { display: block; margin-top: 2px; font: 700 var(--fs-s)/1.4 var(--font-ui); opacity: .78; }
   @media (prefers-reduced-motion: reduce) { .choices { transition: none; } }
 </style>

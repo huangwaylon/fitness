@@ -149,6 +149,9 @@ export const DEVICE = {
   /** localStorage: `{[mode]: level}`: a ばしょ picked over おまかせ on a mode's page on this phone (none: おまかせ, the
    *  placed stage). */
   kikiStage: 'island.kikiStage',
+  /** localStorage: `{[who]: stage[]}`: the しまの みち landmarks whose celebration that player has seen on this phone
+   *  (docs/kikimimi-ux.md U7; the badge stays, from the stamps). */
+  kikiLandmarks: 'island.kikiLandmarks',
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */

@@ -10,10 +10,11 @@ import { CLIPS, WORDS } from './testdata.ts';
 import { UNIT_MAX, checkUnitSources, compile, readUnits, type UnitSource } from './compile.ts';
 import { DECK_SIZE, MIX, deck } from './deck.ts';
 import { LADDERS } from './ladders.ts';
+import { letterWords } from './letters.ts';
 import { loadAll } from './pool.ts';
 import { BANK } from './source.ts';
 import {
-  DOMAINS, LESSON_QS, PLANNED, SHORT_MAX, STAGES, WAVE1, candoProblems, candoText, checkUnits, lessonIds, manifestOf, type Stage
+  DOMAINS, LESSON_QS, LETTER_WORDS, PLANNED, SHORT_MAX, STAGES, WAVE1, candoProblems, candoText, checkUnits, lessonIds, manifestOf, type Stage
 } from './units.ts';
 
 type Raw = Record<string, unknown>;
@@ -273,6 +274,30 @@ describe('units: recycling and coverage', () => {
     const s = check(spread);
     expect(s.errors.filter((e) => /^mori:/.test(e))).toEqual([]);
     expect(Object.keys(s.coverage.get('mori')!.domains)).toHaveLength(9);
+  });
+});
+
+describe('units: the villager’s letter (U7)', () => {
+  const EN = "I'm afraid I have a confession: I was the guest with the leaky sink. You followed every word at that front desk, even over all the lobby noise. Thank you, darling. Next time you travel, take me along. I'll do the complaining, and you do the listening.";
+  it('optional; 40-60 words of English with one of its phrases, and a gloss', () => {
+    expect(letterWords(EN)).toBe(47);
+    expect(errorsOf({ ...hotel(), letter: { en: EN, ja: 'あいにく…' } })).toEqual([]);
+    expect(errorsOf({ ...hotel(), letter: { en: EN } })).toEqual(['tr-hotel.yaml: letter: {en, ja}']);
+    expect(errorsOf({ ...hotel(), letter: { en: EN, ja: 'x', gift: 'lamp' } })).toEqual(['tr-hotel.yaml: letter: {en, ja}']);
+    expect(errorsOf({ ...hotel(), letter: { en: 'Thanks, darling. I’m afraid it’s short.', ja: 'x' } })).toEqual([`tr-hotel.yaml: letter: 6 words of English, ${LETTER_WORDS[0]}-${LETTER_WORDS[1]}`]);
+    const none = EN.replace("I'm afraid I have", 'I have');
+    expect(errorsOf({ ...hotel(), letter: { en: none, ja: 'x' } })).toEqual(['tr-hotel.yaml: letter: none of its phrases']);
+  });
+
+  it('compiles into one letters chunk (none written: an empty one); the unit’s chunk doesn’t carry it', () => {
+    const files = compile(CLIPS, WORDS, [src({ ...hotel(), letter: { en: ` ${EN} `, ja: 'あいにく…' } })]);
+    expect(JSON.parse(files.get('parts/letters.json')!).letters).toEqual({ 'tr-hotel': { en: EN, ja: 'あいにく…' } });
+    expect(files.get('parts/u-tr-hotel.json')).toBe(compile(CLIPS, WORDS, [src(hotel())]).get('parts/u-tr-hotel.json'));
+    expect(JSON.parse(compile(CLIPS, WORDS, []).get('parts/letters.json')!).letters).toEqual({});
+  });
+
+  it('every unit past draft in app/content/units has its letter', () => {
+    for (const u of checkUnitSources(readUnits(), CLIPS).units) if (u.status !== 'draft') expect(u.letter, u.unit).toBeDefined();
   });
 });
 

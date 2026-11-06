@@ -18,6 +18,9 @@ cando:
   short: でんわを おえたい サインが わかる
   en: "I can follow a friend or a colleague winding up a phone call without saying so directly, over a phone line, and catch that they want to hang up and what we agreed at the end."
 status: voiced
+letter:
+  en: "I called you last night and talked for an hour without getting to the point. Anyway, I'm so glad you can tell when someone's ready to hang up. I never can! Thanks for listening to all my stories. It was so much fun. Talk soon, okay? Hugs from your favorite pup."
+  ja: "ゆうべ でんわして、1じかんも はなしたのに ほんだいに たどりつかなかったね。まあ とにかく、あいてが そろそろ きりたい ときが わかるなんて すごい！ わたしは ぜんぜん わからないの。たくさんの はなしを きいてくれて ありがとう。ほんとうに たのしかった。また はなそうね。だいすきな こいぬより、ハグを こめて。"
 ph:
   - { id: ph-let-you-go, en: "I'll let you go", ja: "そろそろ 切るね", match: "let you (go|get back)", register: friend, scene: "the end of a call", trap: "いかせて あげる ではなく「もう 切るね」" }
   - { id: ph-gotta-run, en: "I've got to run", ja: "もう いかなきゃ", match: "(got to|gotta|have to|need to) (run|go|dash|jump|head off|head out)", register: friend, scene: "a call cut short", trap: "run＝はしる ではなく「いそいで 切る」" }

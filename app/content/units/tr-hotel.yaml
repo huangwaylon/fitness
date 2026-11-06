@@ -19,6 +19,9 @@ cando:
   short: ホテルの もんだいを ききとれる
   en: I can follow hotel front-desk staff explaining what they can do about a room problem, in polite but fast speech at the desk or on the phone, and catch what's possible, what isn't, and any extra charge.
 status: voiced
+letter:
+  en: "I'm afraid I have a confession: I was the guest with the leaky sink. You followed every word at that front desk, even over all the lobby noise. Thank you, darling. They gave me a complimentary breakfast for my trouble. Next time you travel, take me along. I'll do the complaining, and you do the listening."
+  ja: "あいにく、うちあけたい ことが あるの。あの みずもれの へやの きゃくは、わたしだったのよ。ロビーが ざわざわ して いたのに、フロントの はなしを ぜんぶ ききとって くれたわね。ありがとう。おわびに、むりょうの ちょうしょくを もらったの。こんど りょこう する ときは、わたしも つれていって。もんくを いうのは わたし、きくのは あなたよ。"
 ph:
   - { id: ph-im-afraid, en: I'm afraid, ja: あいにく, register: service, scene: hotel desk, trap: 「こわい」ではなく「あいにく」。悪い知らせの合図 }
   - { id: ph-fully-booked, en: fully booked, ja: 満室です, register: service, scene: hotel desk, trap: booked は「予約済み」。本の book ではない }

@@ -131,14 +131,14 @@ export function currentOmakase(): number {
   return omakaseLv(currentPlacement()?.lv ?? null, currentReport()?.stats.level ?? null, LEVELS);
 }
 
-/** しまの みち now (path.ts, from my report: the stamps, my level (みみ チェック's placed one, else きろく's comfortable
- *  one: what's shown softly), the units of my lessons in order). Reactive: call it in a $derived. */
+/** しまの みち now (path.ts, from my report: the stamps, my level (きろく's comfortable one) and みみ チェック's placed one
+ *  (what's shown softly, 「ここから」), the units of my lessons in order). Reactive: call it in a $derived. */
 export function currentPath(filter: Filter = 'all'): Path {
   const r = currentReport();
   const states = currentUnits();
   const played = r ? r.games.flatMap((g) => (g.u !== undefined && g.l !== undefined ? [g.u] : [])) : [];
   const placed = currentPlacement();
-  return pathOf({ units: pathUnits(), states, level: placed ? levelRank(placed.lv) : (r?.stats.level ?? null), played, filter });
+  return pathOf({ units: pathUnits(), states, level: r?.stats.level ?? null, placed: placed ? levelRank(placed.lv) : null, played, filter });
 }
 
 /** A recommendation's words: its title and why (きろく's rows, the results' 「つぎは…」). */
