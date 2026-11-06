@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { hrefOf, otherLang, pick, render } from './text.ts';
+import { hrefOf, otherLang, pick, pieces, render } from './text.ts';
 import { fmtKm, setUnits } from './units.ts';
 import { configureStorage } from '#lib/sync/storage.ts';
 
@@ -43,5 +43,12 @@ describe('the guides’ text', () => {
     expect(hrefOf('{p:onboardingUrl}', null)).toBeNull();
     expect(hrefOf('{p:onboardingUrl}', { onboardingUrl: 'https://evertrail.example/on' })).toBe('https://evertrail.example/on');
     expect(hrefOf('{p:onboardingUrl}', { onboardingUrl: 'javascript:alert(1)' })).toBeNull();
+  });
+  it('cuts Japanese between words, never inside one', () => {
+    expect(pieces('ニュープリマスを出発')).toEqual(['ニュープリマスを', '出発']);
+    expect(pieces('入国審査、荷物受け取り、レンタカー')).toEqual(['入国', '審査、', '荷物', '受け取り、', 'レンタカー']);
+    expect(pieces('2月10日発 · 予約番号 ')).toEqual(['2月', '10日', '発', ' ', '·', ' ', '予約', '番号', ' ']);
+    expect(pieces('Land at Auckland (AKL)')).toEqual(['Land at Auckland (AKL)']);
+    expect(pieces('ニュープリマスを出発')).toBe(pieces('ニュープリマスを出発'));
   });
 });

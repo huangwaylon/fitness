@@ -1,31 +1,37 @@
 <script lang="ts">
   // A guide's list (docs/travel.md "The sheet"): `tl` an hour-by-hour timeline (the time in the numbers' font down the
-  // left, a dot on the line, the line and its small print), `bul` bullets. `now`: the row that is now (the trip's own
-  // clock, when.ts currentRow), marked yuzu with 「いま」. A row on another date than its day's (`dd`) says so by its
-  // time (−1 / +1, as a ticket does).
+  // left, a dot on the line, the line and its small print), `bul` bullets. `mark`: the row that is now (the trip's own
+  // clock, when.ts rowNow), lit yuzu with 「いま」, or the next to come with 「つぎ」. A row on another date than its
+  // day's (`dd`) says so over its time: 「前日」 / 「翌日」, the date in English ('Feb 10').
   import type { DayRow, Row } from '#lib/travel/types.ts';
-  import { t } from '#lib/i18n/index.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
   import Txt from './Txt.svelte';
+  import { dateOn } from './dates.ts';
 
   interface Props {
     rows: readonly (Row | DayRow)[];
     kind: 'tl' | 'bul';
     note: Record<string, string> | null;
-    /** The index of the row that is now. */
-    now?: number | null;
+    /** The row to mark: now, or the next to come. */
+    mark?: { i: number; next: boolean } | null;
+    /** The day's date (a timeline with `dd` rows). */
+    date?: string;
   }
-  let { rows, kind, note, now = null }: Props = $props();
+  let { rows, kind, note, mark = null, date }: Props = $props();
   const dd = (r: Row | DayRow) => ('dd' in r ? r.dd : undefined);
+  const ddLabel = (n: -1 | 1) => t(n < 0 ? 'travel.ddEve' : 'travel.ddNext', { d: date ? dateOn(date, n, i18n.locale) : '' });
 </script>
 
 {#if kind === 'tl'}
   <ol class="tl">
     {#each rows as r, i (i)}
-      <li class:now={now === i} class:untimed={!r.t} data-row={i} data-now={now === i || undefined} aria-current={now === i ? 'time' : undefined}>
-        <span class="t">{#if r.t}<span class="money">{r.t}</span>{#if dd(r)}<sup>{dd(r)! > 0 ? '+1' : '−1'}</sup>{/if}{/if}</span>
+      {@const m = mark?.i === i ? (mark.next ? 'next' : 'now') : null}
+      {@const off = dd(r)}
+      <li class:now={m === 'now'} class:next={m === 'next'} class:untimed={!r.t} data-row={i} data-now={m === 'now' || undefined} data-next={m === 'next' || undefined} aria-current={m === 'now' ? 'time' : undefined}>
+        <span class="t">{#if r.t}{#if off}<small class="dd">{ddLabel(off)}</small>{/if}<span class="money">{r.t}</span>{/if}</span>
         <span class="dot" aria-hidden="true"></span>
         <div class="body">
-          <p class="tx">{#if now === i}<b class="pill">{t('travel.now')}</b>{/if}<Txt l={r.text} {note} /></p>
+          <p class="tx">{#if m}<b class="pill">{t(m === 'now' ? 'travel.now' : 'travel.next')}</b>{/if}<Txt l={r.text} {note} /></p>
           {#if r.note}<p class="nt"><Txt l={r.note} {note} /></p>{/if}
         </div>
       </li>
@@ -60,14 +66,15 @@
   .tl li:only-child::before { content: none; }
   .t { text-align: right; padding-top: 2px; font-size: var(--fs-body); color: var(--text); white-space: nowrap; }
   .t .money { font-size: var(--fs-body); line-height: 1.3; }
-  sup { margin-left: 1px; font: 700 var(--fs-xs)/1 var(--font-num); color: var(--coral-text); vertical-align: 4px; }
+  .dd { display: block; margin-bottom: 1px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--coral-text); }
   .dot {
     position: relative; z-index: 1; justify-self: center; margin-top: 6px; width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box;
     background: var(--card); box-shadow: inset 0 0 0 3px var(--c-leaf);
   }
   .untimed .dot { margin-top: 8px; width: 8px; height: 8px; box-shadow: inset 0 0 0 2px var(--lip); }
-  /* now: the row yuzu-lit, its dot filled, 「いま」 before its line */
+  /* now: the row yuzu-lit, its dot filled, 「いま」 before its line; next: only 「つぎ」 (the dot as ever) */
   .tl li.now { background: var(--hl); }
+  .next .pill { background: var(--ctl); box-shadow: 0 2px 0 var(--lip); color: var(--text); }
   .now .dot { background: var(--c-yuzu); box-shadow: 0 0 0 3px var(--c-yuzu-lip); animation: beat 1.6s var(--ease-idle) infinite; }
   @keyframes beat { 50% { transform: scale(1.25); } }
   .pill {

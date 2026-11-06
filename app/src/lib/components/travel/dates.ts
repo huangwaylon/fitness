@@ -1,13 +1,23 @@
-// A trip's dates in the reader's locale (the boarding pass, the day cards): '10/10(土)', 'Sat, Oct 10'.
-type Locale = 'ja' | 'en';
+// A trip's dates in the reader's locale (the boarding pass, the day cards, a row on another date): '10/10(土)',
+// 'Sat, Oct 10'; 'Feb 10'.
+import type { Locale } from '#lib/i18n/index.ts';
 
 const fmts = new Map<string, Intl.DateTimeFormat>();
-/** A YYYY-MM-DD as the reader writes it, with its weekday. */
-export function dayLabel(date: string, locale: Locale): string {
-  let f = fmts.get(locale);
-  if (!f) fmts.set(locale, (f = new Intl.DateTimeFormat(locale === 'ja' ? 'ja-JP' : 'en-US', { month: locale === 'ja' ? 'numeric' : 'short', day: 'numeric', weekday: 'short', timeZone: 'UTC' })));
+function fmt(date: string, locale: Locale, weekday: boolean): string {
+  const k = `${locale}${weekday ? 'w' : ''}`;
+  let f = fmts.get(k);
+  if (!f) fmts.set(k, (f = new Intl.DateTimeFormat(locale === 'ja' ? 'ja-JP' : 'en-US', { month: locale === 'ja' ? 'numeric' : 'short', day: 'numeric', weekday: weekday ? 'short' : undefined, timeZone: 'UTC' })));
   const [y, m, d] = date.split('-').map(Number);
   return f.format(Date.UTC(y, m - 1, d, 12));
+}
+
+/** A YYYY-MM-DD as the reader writes it, with its weekday. */
+export const dayLabel = (date: string, locale: Locale): string => fmt(date, locale, true);
+
+/** A YYYY-MM-DD `dd` days on (−1, 1), without its weekday: 'Feb 10', '2/10'. */
+export function dateOn(date: string, dd: number, locale: Locale): string {
+  const [y, m, d] = date.split('-').map(Number);
+  return fmt(new Date(Date.UTC(y, m - 1, d + dd)).toISOString().slice(0, 10), locale, false);
 }
 
 /** A trip's span: '10/10(土) – 10/12(月)'. */

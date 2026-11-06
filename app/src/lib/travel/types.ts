@@ -1,12 +1,13 @@
-// りょこう: the trip guides' data shape (docs/travel.md "Data shape"). Pure types: the trip modules (trips/*.ts,
-// generated once by scripts/travel-extract.ts from the old travel-plans site) hold all the content. The packing list's
-// seed is the relay contract's own shape (contract/pack.ts PackSeed: the record, the phones and the data agree on it).
-import type { PackSeed } from '#lib/contract/pack.ts';
+// りょこう: the trip guides' data shape (docs/travel.md "Data shape"). Pure types: the trip modules (trips/*.ts) hold
+// all the content. A text pair and the packing list's seed are the relay contract's own shapes (contract/pack.ts L,
+// PackSeed: the record, the phones and the data agree on them).
+import type { L, PackSeed } from '#lib/contract/pack.ts';
 
-/** A text pair: at least one side; shown in the reader's locale, else the other. Seattle's guide is English only.
- *  Inline tokens (tokens.ts): `{km:9.8}` / `{m:444}` / `{c:29}` (distance, height, temperature: rendered metric or
- *  imperial by the device switch), `{p:key}` (a private value from the trip note, docs/travel.md "Private values"). */
-export type L = { ja?: string; en?: string };
+/** A text pair (contract/pack.ts L): at least one side; shown in the reader's locale, else the other. Seattle's guide
+ *  is English only. Inline tokens (tokens.ts): `{km:9.8}` / `{m:444}` / `{c:29}` (distance, height, temperature:
+ *  rendered metric or imperial by the device switch), `{p:key}` (a private value from the trip note, docs/travel.md
+ *  "Private values"). */
+export type { L };
 
 export type TripId = 'okinawa' | 'seattle' | 'nz';
 
@@ -23,13 +24,14 @@ export interface Row { t?: string; text: L; note?: L }
 /** A headed list inside a card: `tl` an hour-by-hour timeline (rows carry `t`), `bul` bullets. */
 export interface Section { head?: L; kind: 'tl' | 'bul'; rows: Row[] }
 
-export interface Stat { k: L; v: L }
+interface Stat { k: L; v: L }
 
 /** A day's timeline row; `place` names the map stop (Place.id) it arrives at, when there is one; `dd` a row on
- *  another date than the day's (-1 the NZ flight out on the eve, 1 the flight home after midnight). */
-export interface DayRow { t: string; text: L; note?: L; place?: string; dd?: -1 | 1 }
+ *  another date than the day's (-1 the NZ flight out on the eve, 1 the flight home after midnight); `tz` the zone
+ *  its time is in when that isn't the trip's (the flight out of Narita, on Tokyo's clock). */
+export interface DayRow { t: string; text: L; note?: L; place?: string; dd?: -1 | 1; tz?: string }
 
-export interface Hike {
+interface Hike {
   level: 'mod' | 'hard' | 'epic';
   km: number;
   gainM: number;
@@ -48,7 +50,6 @@ export interface Day {
   n: number;
   /** YYYY-MM-DD, local to the trip's tz. */
   date: string;
-  kind: 'day' | 'hike' | 'travel';
   /** The source's icon name (lucide: 'plane-landing', 'waves', 'mountain-snow', …). */
   icon: string;
   title: L;
@@ -62,8 +63,9 @@ export interface Day {
   hike?: Hike;
 }
 
-export interface Place {
-  /** Stops `s<day>-<i>`; candidates: a camp's slug (= Camp.id), `n-<slug>` nature, `f-<slug>` food. */
+interface Place {
+  /** Stops `s<day>-<i>`; candidates: a camp's slug (= Camp.id), `n-<slug>` nature, `f-<slug>` food. `link` (the
+   *  place on Maps) and a leg's `min` / `km` are the source's, kept for ちず though it doesn't show them yet. */
   id: string;
   kind: 'stop' | 'camp' | 'nature' | 'food';
   name: L;
@@ -76,7 +78,7 @@ export interface Place {
   link?: string;
 }
 
-export interface Leg {
+interface Leg {
   day: number;
   /** The index (Place.i) of the stop the leg arrives at: what greys out once that stop is passed. */
   i: number;
@@ -103,12 +105,11 @@ export interface Card {
   links?: Link[];
 }
 
-export interface Chip { text: L; pick?: true }
+interface Chip { text: L; pick?: true }
 
 export interface Camp {
   /** The Evertrail directory name's slug: its photo's file name, its map pin (Place.id). */
   id: string;
-  place: string;
   name: L;
   sub: L;
   type: 'wild' | 'paid';
@@ -128,8 +129,7 @@ export interface Camp {
 
 export interface Trip {
   id: TripId;
-  /** The guide's own language (the other side of each L is its translation). */
-  lang: 'ja' | 'en';
+  /** The place ('沖縄'); its year is the start's. */
   title: L;
   eyebrow: L;
   sub: L;

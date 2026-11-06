@@ -1,12 +1,13 @@
 <script lang="ts">
   // キャンプ (Okinawa): the Evertrail directory's campsites (docs/travel.md "The sheet"), the intro, the filter chips
-  // (one kind: すべて / むりょう / ゆうりょう; any amenities: ビーチ / トイレ / シャワー; each with the count it would
-  // show), the cards (the photo, the name and where, our nights' chips first in yuzu, the road time and fee, the
+  // in two labelled rows (しゅるい, one of すべて / むりょう / ゆうりょう: a radio group; せつび, any of ビーチ / トイレ /
+  // シャワー: toggles, ✓ when on; each 44px, with the count it would show), the cards (the photo, the name and where, our nights' chips first in yuzu, the road time and fee, the
   // description, Maps), an empty state when nothing passes, the source's foot.
   import type { Trip } from '#lib/travel/types.ts';
   import { t } from '#lib/i18n/index.ts';
   import Txt from './Txt.svelte';
   import CampCard from './CampCard.svelte';
+  import { roving } from '../ui/roving.ts';
   import { AMENITIES, KINDS, campsFor, countWith, type Amenity, type CampKind } from './camps.ts';
 
   let { trip, note }: { trip: Trip; note: Record<string, string> | null } = $props();
@@ -25,18 +26,26 @@
 
 <div class="camps" data-camps>
   <div class="filter" role="group" aria-label={t('travel.camps.filter')}>
-    <div class="chips">
-      {#each KINDS as k (k)}
-        <button type="button" class="chip" aria-pressed={kind === k} data-camp-kind={k} data-sfx={kind === k ? 'none' : 'tick'} onclick={() => (kind = k)}>
-          {t(`travel.camps.${k}`)}<span class="n money">{countWith(camps, { kind, has }, k)}</span>
-        </button>
-      {/each}
-      <span class="sep" aria-hidden="true"></span>
-      {#each AMENITIES as a (a)}
-        <button type="button" class="chip" aria-pressed={has.includes(a)} data-camp-has={a} data-sfx={has.includes(a) ? 'toggle-off' : 'toggle-on'} onclick={() => toggle(a)}>
-          {t(`travel.camps.${a}`)}<span class="n money">{countWith(camps, { kind, has }, a)}</span>
-        </button>
-      {/each}
+    <div class="row">
+      <span class="rl" id="camps-kind">{t('travel.camps.kind')}</span>
+      <div class="chips" role="radiogroup" aria-labelledby="camps-kind" {@attach roving}>
+        {#each KINDS as k (k)}
+          <button type="button" class="chip big" role="radio" aria-checked={kind === k} tabindex={kind === k ? 0 : -1} data-camp-kind={k} data-sfx={kind === k ? 'none' : 'tick'} onclick={() => (kind = k)}>
+            {t(`travel.camps.${k}`)}<span class="n money">{countWith(camps, { kind, has }, k)}</span>
+          </button>
+        {/each}
+      </div>
+    </div>
+    <div class="row">
+      <span class="rl" id="camps-has">{t('travel.camps.has')}</span>
+      <div class="chips" role="group" aria-labelledby="camps-has">
+        {#each AMENITIES as a (a)}
+          {@const on = has.includes(a)}
+          <button type="button" class="chip big" class:on aria-pressed={on} data-camp-has={a} data-sfx={on ? 'toggle-off' : 'toggle-on'} onclick={() => toggle(a)}>
+            <span class="ck" aria-hidden="true">{on ? '✓' : '+'}</span>{t(`travel.camps.${a}`)}<span class="n money">{countWith(camps, { kind, has }, a)}</span>
+          </button>
+        {/each}
+      </div>
     </div>
     <p class="count" aria-live="polite" data-camp-count={shown.length}>{t('travel.camps.count', { n: shown.length })}</p>
   </div>
@@ -71,8 +80,13 @@
   .intro.more p { display: block; }
   .more-b { justify-self: end; appearance: none; border: 0; background: none; min-height: var(--hit); margin-right: -6px; padding: 0 6px; cursor: pointer; color: var(--leaf-text); font: 700 var(--fs-s)/1 var(--font-ui); }
   .filter { display: grid; gap: 8px; }
+  /* each row its small label over its chips */
+  .row { display: grid; gap: 4px; }
+  .rl { margin: 0 4px; font: 700 var(--fs-xs)/1.2 var(--font-ui); color: var(--text-soft); }
+  .chip { padding: 0 12px; font-size: var(--fs-s); }
   .chip .n { margin-left: 2px; font-size: var(--fs-xs); opacity: .75; }
-  .sep { width: 2px; align-self: stretch; margin: 4px 2px; border-radius: 1px; background: var(--lip); }
+  .ck { width: 1em; text-align: center; font-weight: 700; opacity: .6; }
+  .on .ck { opacity: 1; }
   .count { margin: 0 4px; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
   .empty { display: grid; justify-items: center; gap: 10px; padding: 24px 16px; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .empty .ic { font-size: 2rem; line-height: 1; filter: grayscale(.4); }
