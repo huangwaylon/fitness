@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { FLY_UPS } from '../island/critterPath.ts';
 import { FLAPS } from '../world3d/wings.ts';
-import { BUG_S, CASE, CASES, POND_Y, SOLIDS, bugLife, bugSeed, pose, type Pose, type Size, type Solid } from './bugLife.ts';
+import { BUG_S, CASE, CASES, POND_Y, SOLIDS, bugLife, bugSeed, pose, slotsOf, type Pose, type Size, type Solid } from './bugLife.ts';
 import { BUG_WING } from './plan.ts';
 import { BUG_IDS, habitatOf, type Habitat } from './species.ts';
 
@@ -22,16 +22,11 @@ function sizeOf(id: string): Size {
   return { w: (hi[0] - lo[0]) * BUG_S, h: (hi[1] - lo[1]) * BUG_S, l: (hi[2] - lo[2]) * BUG_S };
 }
 
-/** Every bug in the garden as the garden places them (its habitat's slots in the ずかん's order). */
-const BUGS = (() => {
-  const n = new Map<Habitat, number>();
-  return BUG_IDS.map((id) => {
-    const hab = habitatOf(id), slot = n.get(hab) ?? 0;
-    n.set(hab, slot + 1);
-    const size = sizeOf(id);
-    return { id, hab, size, life: bugLife(id, hab, slot, bugSeed(id), size) };
-  });
-})();
+/** Every bug in each of the garden's places it may keep to (slotsOf: the hour's pick puts it in one of them). */
+const BUGS = BUG_IDS.flatMap((id) => {
+  const hab = habitatOf(id), size = sizeOf(id);
+  return slotsOf(id, hab).map(({ i, takes }) => ({ id, hab, size, slot: i, takes, life: bugLife(id, hab, i, bugSeed(id), size) }));
+});
 
 /** Its body's bounds at a pose: its box (across, along, up to its back, its wings' reach up), turned. */
 function bounds(p: Pose, s: Size, flaps: boolean) {
@@ -50,11 +45,13 @@ const FPS = 30, MINUTES = 2;
 /** Each bug over two minutes at the exhibits' 30 a second, from a clock well on (the museum's). */
 const runs = BUGS.map((b) => {
   const flaps = FLAPS.test(`critters/bugs/${b.id}`), p = pose(), dt = 1000 / FPS, t0 = 3_600_000 + bugSeed(b.id);
-  const out = { ...b, flaps, top: 0, moved: 0, turned: 0, frames: 0, sat: 0, slow: 0, flapped: new Set<number>(), bad: [] as string[] };
+  const out = { ...b, flaps, top: 0, moved: 0, turned: 0, frames: 0, sat: 0, slow: 0, flapped: new Set<number>(), bad: [] as string[], room: { x0: Infinity, x1: -Infinity, y0: Infinity, y1: -Infinity, z0: Infinity, z1: -Infinity } };
   let px = NaN, py = 0, pz = 0, ph = 0;
   for (let i = 0; i <= MINUTES * 60 * FPS; i++) {
     b.life.at(t0 + i * dt, dt, p);
-    const o = bounds(p, b.size, flaps);
+    const o = bounds(p, b.size, flaps), m = out.room;
+    // (all the room it took)
+    m.x0 = Math.min(m.x0, o.x0); m.x1 = Math.max(m.x1, o.x1); m.y0 = Math.min(m.y0, o.y0); m.y1 = Math.max(m.y1, o.y1); m.z0 = Math.min(m.z0, o.z0); m.z1 = Math.max(m.z1, o.z1);
     const why: string[] = [];
     if (o.x0 < BUG_WING.x0 || o.x1 > BUG_WING.x1 || o.z0 < BUG_WING.z0 || o.z1 > BUG_WING.z1) why.push('out of the wing');
     if (o.y0 < (b.hab === 'water' ? POND_Y - b.size.h - 0.01 : -0.01)) why.push('under the ground');
@@ -95,7 +92,7 @@ const TOP: Record<Habitat, number> = {
 
 describe('the bug wing’s bugs (bugLife.ts: the island’s motion, NH’s museum)', () => {
   it('every bug stays in its enclosure or case over two minutes: never in a prop, a trunk, a flower, the glass or the ground', () => {
-    const bad = runs.filter((r) => r.bad.length).map((r) => `${r.id} (${r.hab}): ${r.bad.join('; ')}`);
+    const bad = runs.filter((r) => r.bad.length).map((r) => `${r.id} (${r.hab} ${r.slot}): ${r.bad.join('; ')}`);
     expect(bad).toEqual([]);
   });
   it('each kind keeps its pace: none faster than NH’s', () => {
@@ -104,17 +101,28 @@ describe('the bug wing’s bugs (bugLife.ts: the island’s motion, NH’s museu
   });
   it('the fliers fly about, a dragonfly hovers between darts, every crawler and hopper goes and rests', () => {
     const still = (r: (typeof runs)[number]) => r.hab === 'flower' && r.id !== 'stinkbug' && r.id !== 'man-faced-stink-bug' || r.hab === 'dangle' || r.id === 'cicada-shell';
-    const lazy = runs.filter((r) => !still(r) && r.moved < (r.hab === 'leaf' ? 3 : r.hab === 'trunk' || r.hab === 'palm' ? 8 : r.hab === 'fly' || r.hab === 'dart' ? 600 : 15) && r.turned < 6).map((r) => `${r.id} moved ${r.moved.toFixed(0)}u`);
+    const lazy = runs.filter((r) => !still(r) && r.moved < (r.hab === 'leaf' ? 3 : r.hab === 'trunk' || r.hab === 'palm' ? 8 : r.hab === 'fly' || r.hab === 'dart' ? 600 : 15) && r.turned < 6).map((r) => `${r.id} (${r.hab} ${r.slot}) moved ${r.moved.toFixed(0)}u`);
     const restless = runs.filter((r) => !still(r) && r.hab !== 'fly' && r.hab !== 'drift' && r.slow / r.frames < 0.2).map((r) => `${r.id} rests ${((100 * r.slow) / r.frames).toFixed(0)}%`);
     expect([...lazy, ...restless]).toEqual([]);
   });
   it('the butterflies and moths land on the flowers, the bee buzzes from flower to flower; their wings open and close', () => {
     const landers = runs.filter((r) => r.hab === 'fly' && /butterfly|birdwing|bluebottle|emperor|moth|honeybee/.test(r.id));
-    expect(landers.length).toBeGreaterThan(12);
-    const never = landers.filter((r) => r.sat === 0 && r.id !== 'honeybee').map((r) => r.id);
+    expect(new Set(landers.map((r) => r.id)).size).toBeGreaterThan(12);
+    // (in one of its places at least: over the oak's row no flower is clear of a birdwing's wings)
+    const never = [...new Set(landers.map((r) => r.id))].filter((id) => id !== 'honeybee' && landers.every((r) => r.id !== id || r.sat === 0));
     const bee = runs.find((r) => r.id === 'honeybee')!;
     const beeHovers = bee.slow;
     const stiff = runs.filter((r) => r.flaps && r.flapped.size < 5).map((r) => r.id);
     expect({ never, beeHovers: beeHovers > 0, stiff }).toEqual({ never: [], beeHovers: true, stiff: [] });
+  });
+  it('no two on show ever meet: two bugs in places that take no spot in common keep to rooms apart (none stacks on another)', () => {
+    // (every pair of species in every pair of places the pick may give them together: all the room each took in two
+    // minutes, its body's bounds, kept apart)
+    const out: string[] = [];
+    for (const a of runs) for (const b of runs) {
+      if (a.id >= b.id || a.takes.some((t) => b.takes.includes(t))) continue;
+      if (meets(a.room, { ...b.room, what: '' }, 0)) out.push(`${a.id} (${a.hab} ${a.slot}) and ${b.id} (${b.hab} ${b.slot})`);
+    }
+    expect([...new Set(out.map((s) => s.replace(/[a-z-]+ \(/g, '(')))]).toEqual([]);
   });
 });

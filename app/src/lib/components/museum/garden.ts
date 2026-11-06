@@ -15,7 +15,8 @@ import {
   ShaderMaterial, Sphere, Vector2, Vector3, Vector4, AdditiveBlending, BoxGeometry, type Material, type Texture
 } from 'three';
 import type { Exhibit, Kit } from './engine.ts';
-import type { Habitat, Specimen } from './species.ts';
+import { hourOf, type Habitat, type Specimen } from './species.ts';
+import { bugsOnDisplay, type Shown } from './bugShow.ts';
 import type { Pt, Rect } from './plan.ts';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { batcher, frameOf, openBox, plainGeometry } from './geometry.ts';
@@ -24,6 +25,8 @@ import { BUG_S, CASE, CASES, CASE_AGAVE, FLOWERS, OAKS, OAK_S, PALM, PALM_S, PAT
 import { FLAPS, flapGlsl, wingHinge } from '../world3d/wings.ts';
 
 export { CASES };
+/** How long a bug takes to fade out or in as the hour's pick changes (s): the fish's. */
+const FADE = 1.6;
 /** A display case's pieces (its middle at x, z): a wooden stand, its soil, its glass (open below: its floor the soil's
  *  top) and its frame (geometry.ts frameOf), the posts' feet a little under the soil (their bottoms were the soil's
  *  underside's plane). */
@@ -70,9 +73,16 @@ void main() {
 
 interface Bug {
   sp: Specimen;
+  /** Its place (bugShow.ts: its habitat's slot-th), and its key (id@slot: a bug moved to another place is another). */
+  slot: number;
+  key: string;
   mesh: InstancedMesh | null;
+  /** Its geometry and its parts' materials (its own: released as it goes), its firefly's glow. */
+  geo: BufferGeometry | null;
+  mats: Material[];
+  glow: Sprite | null;
   /** How it lives (bugLife.ts), where it is this frame. */
-  life: Life;
+  life: Life | null;
   pose: Pose;
   /** Its wings' angle (its flapping parts' uniform). */
   flap: { value: number };
@@ -82,6 +92,9 @@ interface Bug {
   seed: number;
   /** The room it takes (the camera's cull: off screen it rests). */
   sphere: Sphere;
+  /** How far in (0 gone … 1 there) and which way it's fading (1 in, −1 out, 0 settled): the hour's pick changing. */
+  fade: number;
+  dir: number;
 }
 
 function glowTex(): CanvasTexture {
@@ -97,7 +110,8 @@ function glowTex(): CanvasTexture {
   return new CanvasTexture(c);
 }
 
-export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
+/** The bug wing, its bugs the hour's from `list` (bugShow.ts: by `clock`'s Tokyo hour). */
+export function buildGarden(kit: Kit, list: readonly Specimen[], clock: () => number = () => Date.now()): Exhibit {
   const group = new Group();
   const mats: Material[] = [];
   const geos: BufferGeometry[] = [];
@@ -207,57 +221,88 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
       };
       m.customProgramCacheKey = () => 'museum-bug-flap';
     }
-    mats.push(m);
     return m;
   };
-  const bugs: Bug[] = [];
-  const byHabitat = new Map<Habitat, number>();
-  for (const sp of list) {
-    if (sp.kind !== 'bug') continue;
-    const hab = sp.tank as Habitat;
-    const slot = byHabitat.get(hab) ?? 0;
-    byHabitat.set(hab, slot + 1);
+  /** The bugs drawn (this hour's, and the last hour's fading out), by key. */
+  const bugs = new Map<string, Bug>();
+  /** A bug's fading: dithered (alphaHash: still opaque and unsorted) only while it fades, solid again after. */
+  const fadeTo = (b: Bug, k: number) => {
+    b.fade = k;
+    for (const m of b.mats) {
+      if (m instanceof SpriteMaterial) continue;
+      const mid = k < 1;
+      if (m.alphaHash !== mid) (m.alphaHash = mid), (m.needsUpdate = true);
+      m.opacity = k;
+    }
+  };
+  function add(sh: Shown, fadeIn: boolean) {
+    const { sp, slot } = sh, hab = sp.tank as Habitat, key = `${sp.id}@${slot}`;
+    const b: Bug = {
+      sp, slot, key, mesh: null, geo: null, mats: [], glow: null, life: null, pose: pose(), flap: { value: 0 }, size: 0,
+      seed: bugSeed(sp.id), sphere: new Sphere(), fade: fadeIn ? 0 : 1, dir: fadeIn ? 1 : 0
+    };
+    bugs.set(key, b);
     void kit.critter('bugs', sp.id).then((g) => {
-      if (!g || disposed) return;
+      if (!g || disposed || bugs.get(key) !== b) return;
       // its parts (a beetle's wing cases, a bee's or a dragonfly's wings) as one geometry, one group a part
       const parts: Mesh[] = [];
       g.scene.traverse((o) => void ((o as Mesh).isMesh && parts.push(o as Mesh)));
       if (!parts.length) return;
       const plain = parts.map((m) => plainGeometry(g.scene, m));
+      // (a part with no uv, the giant stag's, among parts with: zeros, so they merge; its material has no map)
+      for (const p of plain) for (const q of plain) for (const [name, a] of Object.entries(q.attributes)) {
+        if (!p.getAttribute(name)) p.setAttribute(name, new Float32BufferAttribute(new Float32Array(p.getAttribute('position').count * a.itemSize), a.itemSize));
+      }
       const all = plain.length > 1 ? mergeGeometries(plain, true) : plain[0];
       if (!all) return;
       if (plain.length > 1) for (const p of plain) p.dispose();
       all.computeBoundingBox();
       const bb = all.boundingBox!;
       all.translate(-(bb.min.x + bb.max.x) / 2, -bb.min.y, -(bb.min.z + bb.max.z) / 2);
-      geos.push(all);
       const size = { w: (bb.max.x - bb.min.x) * BUG_S, h: (bb.max.y - bb.min.y) * BUG_S, l: (bb.max.z - bb.min.z) * BUG_S };
-      const life = bugLife(sp.id, hab, slot, bugSeed(sp.id), size);
+      const life = bugLife(sp.id, hab, slot, b.seed, size);
       // its wings' hinge, from the parts as drawn (wings.ts wingHinge)
       const hinge = FLAPS.test(`critters/bugs/${sp.id}`) ? hingeOf(all, parts) : null;
-      const flap = { value: 0 };
-      const mat = parts.map((m, k) => bugMat((m.material as { map?: Texture | null }).map ?? null, hab === 'drift', hinge && hinge.flaps[k] ? hinge.at : null, flap));
+      const mat = parts.map((m, k) => bugMat((m.material as { map?: Texture | null }).map ?? null, hab === 'drift', hinge && hinge.flaps[k] ? hinge.at : null, b.flap));
       const [cx, cy, cz, cr] = life.sphere;
-      const b: Bug = { sp, mesh: null, life, pose: pose(), flap, size: Math.max(size.w, size.l), seed: bugSeed(sp.id), sphere: new Sphere(new Vector3(cx, cy, cz), cr) };
+      b.sphere.set(new Vector3(cx, cy, cz), cr);
       const mesh = new InstancedMesh(all, mat.length > 1 ? mat : mat[0], 1);
       mesh.boundingSphere = b.sphere;
-      b.mesh = mesh;
-      bugs.push(b);
+      Object.assign(b, { mesh, geo: all, mats: mat, life, size: Math.max(size.w, size.l) });
       group.add(mesh);
       if (hab === 'drift') {
         const sm = new SpriteMaterial({ map: glow, transparent: true, depthWrite: false, blending: AdditiveBlending, color: 0xfff4a0 });
-        mats.push(sm);
-        const sprite = new Sprite(sm);
-        sprite.scale.setScalar(9);
-        sprite.userData.glowOf = sp.id;
-        mesh.userData.glow = sprite;
-        group.add(sprite);
+        b.mats.push(sm);
+        b.glow = new Sprite(sm);
+        b.glow.scale.setScalar(9);
+        b.glow.userData.glowOf = sp.id;
+        group.add(b.glow);
       }
-      if (hab === 'dangle') danglers.push(b);
+      fadeTo(b, b.fade);
       life.at(performance.now(), 0, b.pose);
       write(b);
       kit.invalidate();
     });
+  }
+  function drop(b: Bug) {
+    bugs.delete(b.key);
+    b.mesh?.removeFromParent();
+    b.glow?.removeFromParent();
+    b.geo?.dispose();
+    for (const m of b.mats) m.dispose();
+  }
+  /** The hour's bugs in (bugShow.ts): those it drops fade out and the new ones in where they're on screen, at once
+   *  where not. */
+  let hour = hourOf(clock()), checked = -Infinity;
+  function pick(seen: ((s: Sphere) => boolean) | null) {
+    const want = bugsOnDisplay(list, hour), keys = new Set(want.map((w) => `${w.sp.id}@${w.slot}`));
+    for (const b of [...bugs.values()]) {
+      if (keys.has(b.key)) {
+        if (b.dir < 0) b.dir = 1;
+      } else if (b.mesh && seen?.(b.sphere)) b.dir = -1;
+      else drop(b);
+    }
+    for (const w of want) if (!bugs.has(`${w.sp.id}@${w.slot}`)) add(w, !!seen);
   }
   /** A model's wings' hinge (the shader's uFlap) from its merged parts: each part's own points (its group's). */
   function hingeOf(all: BufferGeometry, parts: Mesh[]): { at: Vector4; flaps: boolean[] } {
@@ -276,11 +321,9 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     const h = wingHinge(wp);
     return { at: new Vector4(h.x, h.y, h.root, h.ramp), flaps: h.flaps };
   }
-  // threads of the danglers (a line from the branch above each)
-  const danglers: Bug[] = [];
-  const nDangle = list.filter((s) => s.kind === 'bug' && s.tank === 'dangle').length;
+  // the danglers' threads (a line from the branch above each: its two places, bugLife.ts slotsOf)
   const threadGeo = new BufferGeometry();
-  threadGeo.setAttribute('position', new Float32BufferAttribute(new Float32Array(Math.max(1, nDangle) * 6), 3));
+  threadGeo.setAttribute('position', new Float32BufferAttribute(new Float32Array(2 * 6), 3));
   geos.push(threadGeo);
   const threads = new LineSegments(threadGeo, new LineBasicMaterial({ color: 0xf2efe6, transparent: true, opacity: 0.7 }));
   mats.push(threads.material as Material);
@@ -302,13 +345,13 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     b.mesh.setMatrixAt(0, M4);
     b.mesh.instanceMatrix.needsUpdate = true;
     b.flap.value = p.flap;
-    const g = b.mesh.userData.glow as Sprite | undefined;
-    if (g) {
-      g.position.set(p.x, p.y + 1, p.z);
-      (g.material as SpriteMaterial).opacity = (0.35 + 0.65 * uNight.value) * (0.55 + 0.45 * Math.sin(uTime.value * 2.6 + b.seed));
+    if (b.glow) {
+      b.glow.position.set(p.x, p.y + 1, p.z);
+      (b.glow.material as SpriteMaterial).opacity = b.fade * (0.35 + 0.65 * uNight.value) * (0.55 + 0.45 * Math.sin(uTime.value * 2.6 + b.seed));
     }
   }
   const threadPos = threadGeo.getAttribute('position') as Float32BufferAttribute;
+  pick(null);
 
   const blocks: Rect[] = [
     ...CASES.map(([x, z]) => ({ x0: x - CASE.w / 2, x1: x + CASE.w / 2, z0: z - CASE.d / 2, z1: z + CASE.d / 2 })),
@@ -324,29 +367,51 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
     wing: 'bug',
     blocks,
     frame(t, dt, seen) {
-      let any = false;
-      for (const b of bugs) {
-        // (off screen it rests: its room unseen, nothing of it is worked out)
-        if (!b.mesh || !seen(b.sphere)) continue;
-        b.life.at(t, dt, b.pose);
-        write(b);
-        any = true;
+      // (a new hour: a new pick; the clock read once a second)
+      if (!(t - checked < 1000)) {
+        checked = t;
+        const h = hourOf(clock());
+        if (h !== hour) {
+          hour = h;
+          pick(seen);
+        }
       }
+      let any = false, k = 0;
+      // (deleting the one at hand while going through a Map is safe: nothing allocated)
+      for (const b of bugs.values()) {
+        // (off screen it rests: its room unseen, nothing of it is worked out; a fade there is over at once)
+        const on = !!b.mesh && seen(b.sphere);
+        if (b.dir) {
+          fadeTo(b, Math.max(0, Math.min(1, on ? b.fade + (b.dir * dt) / 1000 / FADE : b.dir > 0 ? 1 : 0)));
+          if (b.fade >= 1 && b.dir > 0) b.dir = 0;
+          else if (b.fade <= 0 && b.dir < 0) {
+            drop(b);
+            continue;
+          }
+        }
+        if (on && b.life) {
+          b.life.at(t, dt, b.pose);
+          write(b);
+          any = true;
+        }
+        if (b.life && b.sp.tank === 'dangle' && k < 2) {
+          const p = b.pose, i = k++;
+          threadPos.setXYZ(i * 2, p.x, p.y + b.size * 0.4, p.z);
+          threadPos.setXYZ(i * 2 + 1, p.x, 40, p.z);
+        }
+      }
+      // (a thread with no dangler: none, under the floor)
+      for (let i = k * 2; i < 4; i++) threadPos.setXYZ(i, 0, -10, 0);
       // (the pond's ripples with it on screen, as a bug's wings)
       if (!any && !seen(pondSphere)) return false;
       uTime.value = t / 1000;
-      danglers.forEach((b, k) => {
-        const p = b.pose;
-        threadPos.setXYZ(k * 2, p.x, p.y + b.size * 0.4, p.z);
-        threadPos.setXYZ(k * 2 + 1, p.x, 40, p.z);
-      });
       threadPos.needsUpdate = true;
       return true;
     },
     pick(project, cx, cy) {
       let best: { id: string; d: number } | null = null;
-      for (const b of bugs) {
-        if (!b.mesh) continue;
+      for (const b of bugs.values()) {
+        if (!b.mesh || b.dir < 0) continue;
         const p = project(b.pose.x, b.pose.y + 1, b.pose.z);
         if (!p) continue;
         const d = Math.hypot(p[0] - cx, p[1] - cy);
@@ -355,15 +420,25 @@ export function buildGarden(kit: Kit, list: readonly Specimen[]): Exhibit {
       return best;
     },
     where(id) {
-      const b = bugs.find((x) => x.sp.id === id);
+      // (one coming in before one going out: the same bug moved to another place)
+      let b: Bug | undefined;
+      for (const x of bugs.values()) if (x.sp.id === id && x.mesh && (!b || x.dir >= 0)) b = x;
       return b ? [b.pose.x, b.pose.y + 1, b.pose.z] : null;
     },
-    shown: () => bugs.filter((b) => b.mesh).map((b) => b.sp.id),
+    shown: () => [...bugs.values()].filter((b) => b.mesh && b.dir >= 0).map((b) => b.sp.id),
+    dither(on) {
+      // (the bugs' fading programs compiled with the rest, for the hour's fades: only those settled)
+      for (const b of bugs.values()) {
+        if (b.dir) continue;
+        for (const m of b.mats) if (!(m instanceof SpriteMaterial) && m.alphaHash !== on) (m.alphaHash = on), (m.needsUpdate = true);
+      }
+    },
     night(n) {
       uNight.value = n;
     },
     dispose() {
       disposed = true;
+      for (const b of [...bugs.values()]) drop(b);
       group.removeFromParent();
       for (const g of geos) g.dispose();
       for (const m of mats) m.dispose();
