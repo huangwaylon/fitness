@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { AUDIO_CACHE, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgStale, isFoodImg, isAudio, isFoodData, isMusic, isShellOf, keepShell, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgStale, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -281,5 +281,36 @@ describe('the room cache\'s bound (roomEvict)', () => {
     const idx: RoomIndex = { [`${R}world3d/tree.glb?v=1`]: [50, now - 1000], [`${R}player/mesh/x.glb?v=1`]: [50, now - ROOM_KEEP_MS - 1] };
     expect(roomEvict(idx, now, 10)).toEqual([`${R}player/mesh/x.glb?v=1`]);
     expect(roomEvict({ [`${R}world3d/tree.glb?v=1`]: [ROOM_CAP_BYTES * 2, now] }, now)).toEqual([]);
+  });
+});
+
+describe('ききみみ’s packs (LISTEN_CACHE, listenEvict)', () => {
+  const L = 'https://x.example/fitness/audio/listen/';
+  const min = 60_000, now = 1000 * min;
+  it('a pack is its own class: not the audio LRU’s, never precached, outliving builds', () => {
+    expect([isListenPack('/fitness/audio/listen/lv4-2.1a2b3c4d.pak'), isListenPack('/audio/kikimimi/q1.m4a'), isListenPack('/audio/listen/x.json')]).toEqual([true, false, false]);
+    expect(precachable('audio/listen/lv1.6fd21130.pak')).toBe(false);
+    expect(staleCaches([LISTEN_CACHE, 'island-shell-a', 'island-shell-b'], 'island-shell-b', [LISTEN_CACHE])).toEqual([]);
+  });
+  it('over 30 MB, the least recently used pack first, till it fits', () => {
+    const idx: RoomIndex = { [`${L}lv4.aaaaaaaa.pak`]: [12e6, now - 30 * min], [`${L}lv6.bbbbbbbb.pak`]: [12e6, now - 50 * min], [`${L}lv7.cccccccc.pak`]: [12e6, now - 40 * min] };
+    expect(LISTEN_CAP_BYTES).toBe(30_000_000);
+    expect(listenEvict(idx, now)).toEqual([`${L}lv6.bbbbbbbb.pak`]);
+    expect(listenEvict(idx, now, 13e6).sort()).toEqual([`${L}lv6.bbbbbbbb.pak`, `${L}lv7.cccccccc.pak`]);
+    expect(listenEvict(idx, now, 40e6)).toEqual([]);
+  });
+  it('never a pack used in the last 10 minutes (a game in progress), even over the bound', () => {
+    const idx: RoomIndex = { [`${L}lv4-2.aaaaaaaa.pak`]: [20e6, now - 9 * min], [`${L}lv4-3.bbbbbbbb.pak`]: [20e6, now - min], [`${L}ladder.cccccccc.pak`]: [1e6, now - LISTEN_KEEP_MS - 1] };
+    expect(LISTEN_KEEP_MS).toBe(10 * min);
+    expect(listenEvict(idx, now)).toEqual([`${L}ladder.cccccccc.pak`]);
+    expect(listenEvict({ [`${L}lv4.aaaaaaaa.pak`]: [LISTEN_CAP_BYTES * 2, now] }, now)).toEqual([]);
+  });
+  it('a pack’s older version (another hash) goes once unused for 10 minutes, under the bound too; the newest stays', () => {
+    const idx: RoomIndex = { [`${L}lv4-2.aaaaaaaa.pak`]: [1e6, now - 20 * min], [`${L}lv4-2.bbbbbbbb.pak`]: [1e6, now - 15 * min], [`${L}lv4.cccccccc.pak`]: [1e6, now - 60 * min] };
+    expect(listenEvict(idx, now)).toEqual([`${L}lv4-2.aaaaaaaa.pak`]);
+    // a page still on the last build plays from the old version: kept while it's used (the other one, idle, goes)
+    idx[`${L}lv4-2.aaaaaaaa.pak`][1] = now - min;
+    idx[`${L}lv4-2.bbbbbbbb.pak`][1] = now - 2 * min;
+    expect(listenEvict(idx, now)).toEqual([]);
   });
 });

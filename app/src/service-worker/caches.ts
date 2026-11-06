@@ -98,6 +98,44 @@ export function roomEvict(index: RoomIndex, now: number, cap = ROOM_CAP_BYTES, k
   }
   return [...out];
 }
+/** ききみみ's audio packs (static/audio/listen/<pack>.<hash>.pak: lib/kikimimi/packing.ts, docs/kikimimi.md "Audio"),
+ *  fetched whole as a game needs them and cached on first use in a cache of their own that outlives builds: cache first,
+ *  never revalidated (the hash is in the name: a re-spoken clip makes a new pack name), bounded by bytes like the room
+ *  (an index of each pack's bytes and last use kept in the cache), so a few levels' and units' packs stay offline. */
+export const LISTEN_CACHE = 'island-listen-v1';
+export const isListenPack = (path: string): boolean => path.includes('/audio/listen/') && path.endsWith('.pak');
+/** The listen cache's bound: past it, the least recently used packs go (all the packs are ~40 MB; a level-4 game's
+ *  eight ~9 MB). */
+export const LISTEN_CAP_BYTES = 30_000_000;
+/** A pack used within this is never evicted (a game in progress keeps its packs; a page still on the last build its
+ *  packs' older versions). */
+export const LISTEN_KEEP_MS = 10 * 60_000;
+/** The listen cache's own index (beside its packs, under this path in the scope): each URL's bytes and last use. */
+export const LISTEN_INDEX = '__listen-index';
+
+/** Which of the listen cache's packs go (`index` in any order, RoomIndex's shape): a pack's older versions (the same
+ *  name under another hash, used less recently) once unused for `keepMs`, then, while the rest is over `cap`, the least
+ *  recently used, never one used within `keepMs`. */
+export function listenEvict(index: RoomIndex, now: number, cap = LISTEN_CAP_BYTES, keepMs = LISTEN_KEEP_MS): string[] {
+  const urls = Object.keys(index);
+  const nameOf = (u: string) => new URL(u, 'https://x/').pathname.replace(/\.[0-9a-f]+\.pak$/, '');
+  const newest = new Map<string, string>();
+  for (const u of urls) {
+    const n = nameOf(u), m = newest.get(n);
+    if (!m || index[u][1] >= index[m][1]) newest.set(n, u);
+  }
+  const idle = (u: string) => now - index[u][1] > keepMs;
+  const out = new Set(urls.filter((u) => newest.get(nameOf(u)) !== u && idle(u)));
+  let total = 0;
+  for (const u of urls) if (!out.has(u)) total += index[u][0];
+  for (const u of urls.filter((u) => !out.has(u) && idle(u)).sort((a, b) => index[a][1] - index[b][1])) {
+    if (total <= cap) break;
+    out.add(u);
+    total -= index[u][0];
+  }
+  return [...out];
+}
+
 /** The meal log's food data (static/food/, lib/food/load.ts): ~5 MB, fetched when the food sheet first opens and kept in
  *  a cache of its own that outlives builds. Its files carry the data's version (`?v=`); index.json, which names it,
  *  doesn't. */
@@ -222,7 +260,7 @@ const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: font subsets (cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the trips' photos (travel/), the trip map's MapLibre, the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the trips' photos (travel/), the trip map's MapLibre, the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
