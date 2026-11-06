@@ -88,7 +88,7 @@
 
 <div class="trip" data-trip-view={trip.id} data-pane-tab={tab}>
   <div class="hd" class:over={tab === 'days'} class:solid={tab !== 'days' || past}>
-    <SheetHeader {title} sub={tab === 'days' ? shortSpan(trip.start, trip.end, i18n.locale) : tabName} {onback} {onclose} sfx="self" over={tab === 'days' && !past} />
+    <SheetHeader {title} sub={tab === 'days' ? shortSpan(trip.start, trip.end, i18n.locale) : tabName} {onback} {onclose} over={tab === 'days' && !past} />
   </div>
 
   <div class="scroll" class:map={tab === 'map'} bind:this={scroller} onscroll={scrolled}>

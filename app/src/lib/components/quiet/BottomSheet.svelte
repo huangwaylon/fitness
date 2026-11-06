@@ -14,10 +14,9 @@
     onsave: () => void | boolean;
     /** Whether 保存 can act now (false: it boops). */
     can?: boolean;
-    saveLabel?: string;
     children: Snippet;
   }
-  let { open = $bindable(), title, onsave, can = true, saveLabel, children }: Props = $props();
+  let { open = $bindable(), title, onsave, can = true, children }: Props = $props();
   let dlg: HTMLDialogElement | undefined = $state();
 
   $effect(() => {
@@ -47,7 +46,7 @@
       <header class="bar">
         <button type="button" class="tb" data-q-cancel data-sfx="back" onclick={() => (open = false)}>{t('common.cancel')}</button>
         <h2 class="t">{title}</h2>
-        <button type="submit" class="tb save" aria-disabled={can ? undefined : 'true'} data-q-save data-sfx="confirm">{saveLabel ?? t('common.save')}</button>
+        <button type="submit" class="tb save" aria-disabled={can ? undefined : 'true'} data-q-save data-sfx="confirm">{t('common.save')}</button>
       </header>
       <div class="body">{@render children()}</div>
     </form>

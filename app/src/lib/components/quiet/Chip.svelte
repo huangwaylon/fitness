@@ -1,10 +1,8 @@
 <script lang="ts">
   // A quiet chip (docs/design.md "Quiet sheets"): 32px to the eye, a 44px hit; hairline on a card, the selected one
-  // filled with the accent. An optional colour dot (a day's), icon and count. Data attributes pass through (`data-day`,
+  // filled with the accent. An optional colour dot (a day's) and count. Data attributes pass through (`data-day`,
   // what the specs read). A tap on the selected one is silent (it is already shown).
   //   <Chip label="1日目" dot={color} selected={day === 1} onclick={…} data-day="1" />
-  import Icon, { type IconName } from './Icon.svelte';
-
   interface Props {
     label: string;
     selected?: boolean;
@@ -12,16 +10,14 @@
     count?: number | string;
     /** A colour dot before the label (a day's map colour); white on the selected chip. */
     dot?: string;
-    icon?: IconName;
     onclick: () => void;
     [attr: `data-${string}`]: string | number | boolean | undefined;
   }
-  let { label, selected = false, count, dot, icon, onclick, ...rest }: Props = $props();
+  let { label, selected = false, count, dot, onclick, ...rest }: Props = $props();
 </script>
 
 <button type="button" class="q-chip" class:on={selected} aria-pressed={selected} {...rest} data-sfx={selected ? 'none' : 'tick'} {onclick}>
   {#if dot}<span class="dot" style:background={selected ? 'var(--q-on-accent)' : dot}></span>{/if}
-  {#if icon}<Icon name={icon} size={16} />{/if}
   <span>{label}</span>
   {#if count !== undefined}<span class="n">{count}</span>{/if}
 </button>
