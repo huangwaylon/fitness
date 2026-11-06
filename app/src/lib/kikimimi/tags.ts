@@ -68,7 +68,8 @@ const FEATURE_SKILL: Readonly<Record<Feature, Skill>> = {
   lemme: 'reduce', dunno: 'reduce', kinda: 'reduce', 'can-cant': 'reduce', 't-glottal': 'reduce', ellipsis: 'reduce',
   numbers: 'num', 'teen-ty': 'num', clock: 'num', 'self-repair': 'num',
   contrast: 'detail', katakana: 'detail',
-  idiom: 'reply', intonation: 'indirect'
+  idiom: 'reply', intonation: 'indirect',
+  'accent-exposure': 'detail'
 };
 export const FEATURES = Object.keys(FEATURE_SKILL) as Feature[];
 const isFeature = (v: string): v is Feature => v in FEATURE_SKILL;
