@@ -1020,6 +1020,18 @@ bit of state), auto-advancing once everyone is ready (the user wants time; the h
 points beside the badge. The results open on the misses, with a solo replay of just those (a local deck, recorded as
 practice like にがて れんしゅう, feeding the SRS as before).
 
+### ききみみ: less repetition by the host's seed, levels 6-7 on a widened lv (2026-11-06)
+The user wanted more content and variety ("there's too much repetition right now"). Five content sets (もり ×2 into level
+4, やま as level 6, ほし as level 7) and a pass against repetition landed together. A shared deck must stay the same on
+every phone, so the host's phone chooses among 24 seeds the one whose deck overlaps its last 6 games least (kept in
+DEVICE storage), the seed's flag bits untouched: the other phones only read the seed, so no protocol change and no
+mixed-version risk. A solo game and にがて れんしゅう are this phone's alone, so they draw the items not heard lately
+first. A cross-bank near-duplicate test (token overlap on the English, identical right answers) guards the bank as it
+grows. Levels 6 and 7 needed the quiz's and the listen row's `lv` widened to 1-8: one relay deploy before any phone could
+send them (5 stays the アナウンス pack, 8 the next room). Rejected: sending the deck's ids (over the 210-byte budget and a
+relay change), a shared history between the partners (each phone hears its own games), a new level value for やま
+inside 1-5 (5 is the pack's, and the ladder of places needs two more).
+
 ### ききみみ クイズ level 4: content before its voices, hidden till its clips exist (2026-11-05)
 Level 4 「かわ・もり」 (docs/curriculum.md §14, increment 1) landed as content only: 67 real-life items (`bank4.ts`) with
 `tts`, `note`, an abstract `cast` voice id per villager and the scenario `tags`, and no audio. The lobby offers a level

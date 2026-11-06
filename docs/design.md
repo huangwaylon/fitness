@@ -2376,8 +2376,9 @@ the clips play with the silent switch on. The always-loaded part is `KikimimiHos
 on the scene's one Live (`relay ?? demoRelay`, never a second) that keeps the quiz intents heard lately (handed to the
 sheet's session as it opens: a host re-sends only when someone comes back) and shows another's new lobby as a banner
 through the one toast host, 「ウェイが ききとりクイズに さそっています」 [さんか] (that game joined).
-- **Lobby** (`Lobby.svelte`): しずえ's welcome, the level (★ やさしい / ★★ ふつう / ★★★ むずかしい; the host's pick, the last
-  kept on the phone), 「こたえる じかん」 (20 / 30 / 60 びょう / なし: the host's, 30 by default, the last kept on the phone),
+- **Lobby** (`Lobby.svelte`): しずえ's welcome, the level (places with ★s, never やさしい / むずかしい: はまべ … かわ・もり, やま,
+  ほし, and the 📢 アナウンス pack; the host's pick, the last kept on the phone; a shared game's seed the host's freshest
+  of 24, a solo game's deck the items not heard lately: kikimimi.md "Variety"), 「こたえる じかん」 (20 / 30 / 60 びょう / なし: the host's, 30 by default, the last kept on the phone),
   「おなじへや」 (only the host's phone speaks), who's here and who joined, 🔊 「きこえる？」 (a clip from no
   game; 音量 0 says so), the host's はじめる (the others wait for it). Opening it with someone's lobby waiting shows that
   invite and 「じぶんで はじめる」 instead.
