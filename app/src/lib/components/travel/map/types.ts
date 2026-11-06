@@ -41,6 +41,8 @@ export interface MapState {
   layers: Layer[];
   loc: LocState;
   center: [number, number] | null;
+  /** The camera is moving (a fit's or a pin's flight): read `center` once it isn't. */
+  moving: boolean;
 }
 
 /** The location dot: off (never asked), asking, on (a fix shown), denied, unavailable (no fix / no API). */

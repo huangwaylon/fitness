@@ -25,6 +25,8 @@ export interface Engine {
   /** Back to the day's route. */
   fit(): void;
   center(): [number, number];
+  /** A camera move (a fit's or a pin's flight, a pan) is under way. */
+  moving(): boolean;
   destroy(): void;
 }
 
@@ -204,6 +206,7 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
       const c = map.getCenter();
       return [c.lng, c.lat];
     },
+    moving: () => map.isMoving(),
     destroy() {
       for (const { m } of markers.values()) m.remove();
       markers.clear();
