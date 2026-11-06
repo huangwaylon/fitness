@@ -4,7 +4,7 @@
 // navigates. `?critter=` (with ?demo) brings one on at once and keeps it until caught.
 import { expect, test, type Page } from './fixtures.ts';
 import { CATCH_LINES } from '../src/lib/components/island/catchLines.ts';
-import { plateOnly, reelOnBite, toTheWater } from './island.ts';
+import { castIn, plateOnly, reelOnBite, toTheWater } from './island.ts';
 import { hudBells, hudMenu } from './hud.ts';
 
 /** NH's own catch line (ja), as the plate shows it (whitespace collapsed). */
@@ -188,8 +188,7 @@ async function seaTap(page: Page) {
 /** My villager on the beach by the shadow and a cast beside it (NH casts from where it stands): the float out. */
 async function castBy(page: Page) {
   await expect(page.locator('[data-critter="fish"]')).toBeAttached();
-  const [x, y] = await toTheWater(page, 'sea');
-  await page.mouse.click(x, y);
+  await castIn(page, 'sea');
   await expect(page.locator('[data-bobber]')).toBeAttached();
 }
 /** The fish has noticed the float (it swims up to it: island/fishing.ts). */

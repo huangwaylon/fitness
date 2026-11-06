@@ -5,7 +5,7 @@
 // to the float and each nibble is its nose touching it; scared, it darts off fast and fades as it goes. The game's state
 // says where each model is (__world3d.where: its spot, its fade, its scale), sampled every frame in the page.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d, toTheWater, w3 } from './island.ts';
+import { castIn, is3d, w3 } from './island.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 
@@ -97,8 +97,7 @@ async function castAtFish(page: Page): Promise<string> {
   expect(await is3d(page)).toBe(true);
   const id = await modelId(page, 'fish-sea-');
   // my villager on the beach by the shadow (NH casts from where it stands), and a tap by it
-  const [x, y] = await toTheWater(page, 'sea');
-  await page.mouse.click(x, y);
+  await castIn(page, 'sea');
   await expect(page.locator('[data-bobber="wait"]')).toBeAttached({ timeout: 5000 });
   return id;
 }
