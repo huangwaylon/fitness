@@ -440,9 +440,9 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   something is typed (room for the results over the keyboard; nothing found, its card has じぶんで つくる); empty,
   さいきん (my latest entry of each food, as I had it); typed, the best matches: the name, 「✓n 一致」 when n independent
   sources agree on its kcal (in words on the row: an iPhone never shows a title), a product's brand, the food's
-  everyday name in Japanese (`foodUi.ts` glossOf: an older snapshot's catalogue name now, 若どり もも → 鶏もも肉; else a
-  MEXT food's alias that says more than its name, キャッサバでん粉 タピオカ: never English, a reading, a spelling, the
-  name's own kanji or a family's word; mostly none, an empty line beats noise; one line, cut short), and its default
+  everyday name in Japanese (`foodUi.ts` glossOf: an older snapshot's catalogue name now, 若どり もも → 鶏もも肉; else the
+  food data's vetted `gloss`, an alias two sources back, to come; never a raw alias, a spelling or English: mostly none,
+  an empty line beats noise; one line, cut short), and its default
   portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name; the 100 g values on the
   amount). Left of the name, the food's **category tile** (`FoodThumb`, 48 px; the recipe's ingredients 40 px): an NH
   rounded square with a brown lip, the category's tint and icon (`art.ts` FOOD_CAT: a catalogue icon's visible part or a
@@ -458,7 +458,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   Facts, JBFD) 2. `food/load.test.ts`'s golden queries (55 common ones: ご飯 · みそ汁 · 卵 · 納豆 · 鶏むね · サラダチキン ·
   プロテイン · おにぎり · ラーメン · うどん · 水 …) pin the first result, and no product above a generic food in the top
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
-- **Amount:** the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
+- **Amount:** the food's picture across its card (`FoodThumb`, 160 px: its category's tile until there are pictures),
+  its name, then (only with one) its everyday name and its one line 「これは…」 (the data's `desc`); the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
   counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece: おにぎり,
   むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which

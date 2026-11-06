@@ -22,7 +22,7 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import FoodThumb from './FoodThumb.svelte';
-  import { amountText, catalogOf, catOf, commonAliases, defaultPortion, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
+  import { amountText, catalogOf, catOf, defaultPortion, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -82,11 +82,6 @@
     if (matchMedia('(hover: hover)').matches) input?.focus();
   });
 
-  /** The catalog's family words (glossOf). */
-  const common = $derived.by(() => {
-    void more;
-    return commonAliases(db);
-  });
   /** A kcal typed, offered as a quick entry. */
   const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);
   const results = $derived.by(() => {
@@ -219,7 +214,7 @@
   {#if recent.length}
     <ul class="list" data-food-recent>
       {#each recent as e (e.id)}
-        {@const gl = glossOf(catalogOf(db, e.f.id) ?? itemOf(e.f, null), e.f.n, common)}
+        {@const gl = glossOf(catalogOf(db, e.f.id) ?? itemOf(e.f, null), e.f.n)}
         <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
           <FoodThumb cat={catOf(db, e.f.id)} />
           <span class="nm">{e.f.n}</span>
@@ -257,7 +252,7 @@
       {#each results as it (it.id)}
         {@const p = defaultPortion(it)}
         {@const v = verifyOf(db, it.id)}
-        {@const gl = glossOf(it, it.name, common)}
+        {@const gl = glossOf(it, it.name)}
         <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={it.id} data-per100={it.kcal} onclick={() => onpick(it)}>
           <FoodThumb cat={it.cat} />
           <span class="nm">{it.name}{#if v && v.n >= 2}<i class="ok" role="img" data-verified={v.n} aria-label={t('food.verified', { n: v.n })}>{t('food.verifiedBadge', { n: v.n })}</i>{/if}</span>
