@@ -1,12 +1,12 @@
 // けっこんしき (docs/wedding.md): the wedding board's sheet from the menu's pill, over the demo's made-up board
-// (store/demo/rows.ts: the record's rows through the store, components/wedding/board.svelte.ts), in the quiet kit: the
+// (store/demo/rows.ts: the record's rows through the store, components/wedding/board.svelte.ts), on the unified kit: the
 // banner (the photo under the countdown, the names' plate, the day, the rose ring with its percent and count, ⚙), the chips and their counts (pinned),
 // the lifted sections and the months, ticking (a ticked row stays put), a row opened in place (its checklist ticked,
-// who finished it, the old Sheet's tick in a soft line, 完了), 編集 and ＋ in a bottom sheet (every missing field said
-// at once, the checklist renamed and grown, 削除 with とりけす), the note (rendered safely, written with the format
+// who finished it, the old Sheet's tick in a soft line, 完了), 編集 and ＋ in a form sheet (every missing field said
+// at once, the checklist renamed and grown, 削除 with とりけす), the letter (rendered safely, written with the format
 // tools, 完了 over a keyboard; the draft kept through ✕; an unchanged save sends nothing; two phones' crossed saves:
-// both versions, mine marked, これに する with とりけす, ふたつ あわせる), 設定 (names, ‹ right after typing, categories
-// with とりけす, the deleted list, ぜんぶ けす after its ask) and the guest's read-only board (`?demo&as=G`). Logic tier:
+// both versions, mine marked, これにする with とりけす, ふたつを合わせる), 設定 (names, ‹ right after typing, categories
+// with とりけす, the deleted list, 完全に削除 after its ask) and the guest's read-only board (`?demo&as=G`). Logic tier:
 // nothing here is drawn 3D. Pictures under SHOTS=<dir>.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
@@ -20,9 +20,9 @@ const root = (p: Page) => p.locator('dialog[open] .wd');
 /** Its one scroller. */
 const sheet = (p: Page) => p.locator('dialog[open] [data-wedding]');
 const card = (p: Page, id: string) => sheet(p).locator(`[data-wed-task="${id}"]`);
-const bar = (p: Page) => root(p).locator('.q-hdr');
-/** The task form (a bottom sheet over the board). */
-const form = (p: Page) => p.locator('dialog[open].q-bs');
+const bar = (p: Page) => root(p).locator('.navbar');
+/** The task form (a form sheet over the board). */
+const form = (p: Page) => p.locator('dialog[open]:has(> .inner > [data-wed-form])');
 const banner = (p: Page) => p.locator('dialog[open] .banner');
 /** The animations on `el` played out. */
 const played = (el: Locator) => el.evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished)));
@@ -32,7 +32,7 @@ async function board(p: Page, as = 'A') {
   await p.goto(islandQuery(`demo&as=${as}&${DAY}`));
   await fromMenu(p, 'wedding');
   await expect(sheet(p).locator('[data-wed-top]')).toBeVisible();
-  await played(p.locator('dialog[open].q-sheet'));
+  await played(p.locator('dialog[open].full'));
 }
 /** A row opened, its slide over: a tap inside it mid-slide (the row clipped, scrolled into view and unscrolled as it
  *  grows) landed beside 編集. */
@@ -94,7 +94,7 @@ test('finished rows: hidden under すべて, shown on asking; who finished one i
   await open(page, 'wdemo09');
   await expect(card(page, 'wdemo09').locator('[data-wed-by="A"]')).toBeVisible();
   await open(page, 'wdemo01');
-  await expect(card(page, 'wdemo01').locator('[data-wed-imported]')).toHaveText('まえの ボードで おわった');
+  await expect(card(page, 'wdemo01').locator('[data-wed-imported]')).toHaveText('前のボードで完了');
   await expect(card(page, 'wdemo09').locator('[data-wed-by]')).toHaveCount(0); // (one row open at a time)
   // the finished months come before 今月
   const all = await sheet(page).locator('[data-wed-group]').evaluateAll((els) => els.map((e) => e.getAttribute('data-wed-group')));
@@ -164,7 +164,7 @@ test('a row opens in place: its checklist ticks (links safe), 完了 and back', 
   await shot(page, 'e2e-task');
 });
 
-test('編集 in a bottom sheet: the title, category and checklist saved; キャンセル changes nothing', async ({ page }) => {
+test('編集 in a form sheet: the title, category and checklist saved; ✕ changes nothing', async ({ page }) => {
   await board(page);
   await open(page, 'wdemo02');
   // the title and category changed, an item renamed, one added (Enter adds it, it doesn't save)
@@ -178,16 +178,16 @@ test('編集 in a bottom sheet: the title, category and checklist saved; キャ�
   await expect(form(page)).toBeVisible();
   await expect(form(page).locator('[data-wed-sub-field]')).toHaveValue('');
   await shot(page, 'e2e-edit');
-  await form(page).locator('[data-q-save]').click();
+  await form(page).locator('[data-wed-save]').click();
   await expect(form(page)).toHaveCount(0);
   await expect(card(page, 'wdemo02').locator('[data-wed-title]')).toHaveText('ゲストの リスト');
   await expect(sheet(page).locator('[data-wed-sub="wdemo02a"]')).toContainText('しんぞく');
   await expect(card(page, 'wdemo02').locator('[data-wed-sub]')).toHaveCount(4);
   await expect(card(page, 'wdemo02').locator('[data-wed-tally]')).toHaveAttribute('data-wed-tally', '1/4');
-  // キャンセル changes nothing
+  // ✕ changes nothing
   await card(page, 'wdemo02').locator('[data-wed-edit]').click();
   await form(page).locator('[data-wed-field="title"]').fill('べつの なまえ');
-  await form(page).locator('[data-q-cancel]').click();
+  await form(page).locator('.navbar .close').click();
   await expect(card(page, 'wdemo02').locator('[data-wed-title]')).toHaveText('ゲストの リスト');
 });
 
@@ -207,16 +207,16 @@ test('＋: a new task needs a title and a due day (both said at once); saved, it
   await board(page);
   await root(page).locator('[data-wed-add]').click();
   await expect(form(page)).toBeVisible();
-  await form(page).locator('[data-q-save]').click();
+  await form(page).locator('[data-wed-save]').click();
   await expect(form(page).locator('[data-wed-error]')).toHaveCount(2);
   await form(page).locator('[data-wed-field="title"]').fill('ペーパーアイテムを たのむ');
-  await form(page).locator('[data-q-save]').click();
+  await form(page).locator('[data-wed-save]').click();
   await expect(form(page).locator('[data-wed-error]')).toHaveAttribute('data-wed-error', 'due');
   await form(page).locator('[data-wed-field="due"]').fill('2026-11-20');
   await form(page).locator('[data-wed-cat-pick="Stationery"]').click();
   await form(page).locator('[data-wed-sub-field]').fill('いろを えらぶ');
   await shot(page, 'e2e-new');
-  await form(page).locator('[data-q-save]').click();
+  await form(page).locator('[data-wed-save]').click();
   await expect(form(page)).toHaveCount(0);
   const row = sheet(page).locator('[data-wed-group="thisMonth"] [data-wed-task]', { hasText: 'ペーパーアイテムを たのむ' });
   await expect(row.locator('.head')).toHaveAttribute('aria-expanded', 'true');
@@ -229,7 +229,7 @@ test('the ＋ sits over the tab bar, clear of every row\'s tick (659 px tall)', 
   await page.setViewportSize({ width: 393, height: 659 });
   await board(page);
   const add = (await root(page).locator('[data-wed-add]').boundingBox())!;
-  const tabs = (await root(page).locator('.q-tabbar').boundingBox())!;
+  const tabs = (await root(page).locator('.tabbar').boundingBox())!;
   expect(add.y + add.height).toBeLessThanOrEqual(tabs.y);
   for (const tick of await sheet(page).locator('[data-wed-tick]').all()) {
     const b = await tick.boundingBox();
@@ -254,7 +254,7 @@ test('the ＋ sits over the tab bar, clear of every row\'s tick (659 px tall)', 
   await shot(page, 'e2e-659');
 });
 
-test('メモ: the note as a document, links safe; 編集 with the format tools, 完了', async ({ page }) => {
+test('メモ: the note as a letter, links safe; 編集 with the format tools, 完了', async ({ page }) => {
   await board(page);
   await root(page).locator('[data-wed-tab="notes"]').click();
   const doc = sheet(page).locator('[data-wed-letter] [data-wed-doc]');
@@ -266,9 +266,9 @@ test('メモ: the note as a document, links safe; 編集 with the format tools, 
     await expect(a).toHaveAttribute('rel', 'noopener noreferrer');
   }
   await shot(page, 'e2e-note');
-  await bar(page).locator('[data-wed-note-edit]').click();
+  await sheet(page).locator('[data-wed-note-edit]').click();
   await expect(bar(page)).toContainText('メモを編集');
-  await expect(root(page).locator('.q-tabbar')).toHaveCount(0); // (the tools take its place)
+  await expect(root(page).locator('.tabbar')).toHaveCount(0); // (the tools take its place)
   const field = sheet(page).locator('[data-wed-note-field]');
   await field.fill('ケーキ');
   await field.evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(0, 3));
@@ -282,7 +282,7 @@ test('メモ: the note as a document, links safe; 編集 with the format tools, 
   await field.fill('- **ケーキ**');
   await sheet(page).locator('[data-wed-note-save]').click();
   await expect(doc.locator('li strong')).toHaveText('ケーキ');
-  await expect(root(page).locator('.q-tabbar')).toBeVisible();
+  await expect(root(page).locator('.tabbar')).toBeVisible();
   await expect(sheet(page)).toContainText(/\d+月\d+日\(.\)に .+ が更新/);
   await expect(banner(page)).toContainText('保存しました');
 });
@@ -290,7 +290,7 @@ test('メモ: the note as a document, links safe; 編集 with the format tools, 
 test('メモ being written: キャンセル in the title bar, ✕ keeps the draft, 完了 in reach over a keyboard', async ({ page }) => {
   await board(page);
   await root(page).locator('[data-wed-tab="notes"]').click();
-  await bar(page).locator('[data-wed-note-edit]').click();
+  await sheet(page).locator('[data-wed-note-edit]').click();
   await expect(bar(page).locator('[data-wed-note-cancel]')).toBeVisible();
   await sheet(page).locator('[data-wed-note-field]').fill('まだ とちゅう');
   await bar(page).locator('.close').click();
@@ -304,22 +304,22 @@ test('メモ being written: キャンセル in the title bar, ✕ keeps the draf
   await sheet(page).locator('[data-wed-note-save]').click();
   await expect(sheet(page).locator('[data-wed-letter]')).toContainText('まだ とちゅう');
   // キャンセル: the note as it was
-  await bar(page).locator('[data-wed-note-edit]').click();
+  await sheet(page).locator('[data-wed-note-edit]').click();
   await sheet(page).locator('[data-wed-note-field]').fill('やめる ぶん');
   await bar(page).locator('[data-wed-note-cancel]').click();
   await expect(sheet(page).locator('[data-wed-letter]')).toContainText('まだ とちゅう');
 });
 
-test('two phones\' saves crossed: both versions under their writers, これに する keeps one and settles it', async ({ page, context }) => {
+test('two phones\' saves crossed: both versions under their writers, これにする keeps one and settles it', async ({ page, context }) => {
   await board(page, 'A');
   await root(page).locator('[data-wed-tab="notes"]').click();
-  await bar(page).locator('[data-wed-note-edit]').click();
+  await sheet(page).locator('[data-wed-note-edit]').click();
   await sheet(page).locator('[data-wed-note-field]').fill('# かいじょう\n- **もりの チャペル** に へんこう？');
   // meanwhile B's phone saves its own (the demo's taps are both players', shared by their tabs)
   const b = await context.newPage();
   await board(b, 'B');
   await root(b).locator('[data-wed-tab="notes"]').click();
-  await bar(b).locator('[data-wed-note-edit]').click();
+  await sheet(b).locator('[data-wed-note-edit]').click();
   await sheet(b).locator('[data-wed-note-field]').fill('- はなぞの テラス');
   await sheet(b).locator('[data-wed-note-save]').click();
   await expect(sheet(b).locator('[data-wed-letter]')).toContainText('はなぞの テラス');
@@ -332,15 +332,15 @@ test('two phones\' saves crossed: both versions under their writers, これに �
   await expect(sheet(page).locator('[data-wed-version="other"]')).toHaveAttribute('data-wed-who', 'B');
   await expect(sheet(page).locator('[data-wed-version="current"] [data-wed-mine]')).toBeVisible();
   await expect(sheet(page).locator('[data-wed-version="other"] [data-wed-mine]')).toHaveCount(0);
-  await expect(bar(page).locator('[data-wed-note-edit]')).toHaveCount(0); // (choose first)
+  await expect(sheet(page).locator('[data-wed-note-edit]')).toHaveCount(0); // (choose first)
   await expect(banner(page)).toHaveCount(0); // (no 保存しました: it crossed)
   await shot(page, 'e2e-conflict');
-  // これに する, then とりけす: both again
+  // これにする, then とりけす: both again
   await sheet(page).locator('[data-wed-pick="other"]').click();
   await expect(sheet(page).locator('[data-wed-letter]')).toContainText('はなぞの テラス');
   await banner(page).locator('.act').click();
   await expect(sheet(page).locator('[data-wed-version]')).toHaveCount(2);
-  // ふたつ あわせる: the editor with both
+  // ふたつを合わせる: the editor with both
   await sheet(page).locator('[data-wed-merge]').click();
   const field = sheet(page).locator('[data-wed-note-field]');
   await expect(field).toHaveValue(/はなぞの テラス[\s\S]*もりの チャペル/);
@@ -353,11 +353,11 @@ test('two phones\' saves crossed: both versions under their writers, これに �
 test('a note saved unchanged after the other phone\'s save sends nothing (no conflict)', async ({ page, context }) => {
   await board(page, 'A');
   await root(page).locator('[data-wed-tab="notes"]').click();
-  await bar(page).locator('[data-wed-note-edit]').click();
+  await sheet(page).locator('[data-wed-note-edit]').click();
   const b = await context.newPage();
   await board(b, 'B');
   await root(b).locator('[data-wed-tab="notes"]').click();
-  await bar(b).locator('[data-wed-note-edit]').click();
+  await sheet(b).locator('[data-wed-note-edit]').click();
   await sheet(b).locator('[data-wed-note-field]').fill('- はなぞの テラス');
   await sheet(b).locator('[data-wed-note-save]').click();
   await b.close();
@@ -366,12 +366,12 @@ test('a note saved unchanged after the other phone\'s save sends nothing (no con
   await expect(sheet(page).locator('[data-wed-conflict]')).toHaveCount(0);
 });
 
-test('設定: the names, a category added and removed, a deleted task restored, ぜんぶ けす after its ask', async ({ page }) => {
+test('設定: the names, a category added and removed, a deleted task restored, 完全に削除 after its ask', async ({ page }) => {
   await board(page);
   await sheet(page).locator('[data-wed-gear]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'settings');
   await expect(bar(page)).toContainText('設定');
-  await expect(root(page).locator('.q-tabbar, [data-wed-add]')).toHaveCount(0);
+  await expect(root(page).locator('.tabbar, [data-wed-add]')).toHaveCount(0);
   await sheet(page).locator('[data-wed-set="venue"]').fill('も'.repeat(150));
   await sheet(page).locator('[data-wed-set="venue"]').blur();
   await expect(sheet(page).locator('[data-wed-set="venue"]')).toHaveValue('も'.repeat(150));
@@ -404,7 +404,7 @@ test('設定: the names, a category added and removed, a deleted task restored, 
   await form(page).locator('[data-wed-remove]').click();
   await sheet(page).locator('[data-wed-gear]').click();
   await sheet(page).locator('[data-wed-purge]').click();
-  const ask = page.locator('dialog[open].q-as');
+  const ask = page.locator('dialog[open]:has(> .inner > .acts)');
   await expect(ask).toContainText('1件');
   await shot(page, 'e2e-purge');
   await ask.locator('[data-action="purge"]').click();
@@ -428,7 +428,7 @@ test('the guest reads everything and has nothing to tick or edit', async ({ page
   await shot(page, 'e2e-guest-task');
   await root(page).locator('[data-wed-tab="notes"]').click();
   await expect(sheet(page).locator('[data-wed-letter]')).toBeVisible();
-  await expect(bar(page).locator('[data-wed-note-edit]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-wed-note-edit]')).toHaveCount(0);
 });
 
 test('the island paused under the board; offline before the first opening: the banner, もういちど opens it once back', async ({ page, context }) => {

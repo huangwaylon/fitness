@@ -1,10 +1,11 @@
 <script lang="ts">
   // けっこんしき's プラン (docs/wedding.md "Plan"): one row of filter chips with their counts (over the whole board),
-  // then 期限切れ (tinted coral), the months before this one, 今月 (tinted green), one plain heading per later month (the
-  // year only where it changes), 日付なし last; each heading pinned under the chips while its rows scroll, with its tally, its rows in one card. Finished tasks are hidden
-  // under すべて (a device pref); one ticked since stays where it was. A row opens in place (TaskRow).
-  import Chip from '../quiet/Chip.svelte';
-  import ChipRow from '../quiet/ChipRow.svelte';
+  // then 期限切れ (coral), the months before this one, 今月 (leaf), one heading per later month (the year only where it
+  // changes), 日付なし last; each heading (.sec-label.head) pinned under the chips while its rows scroll, with its
+  // tally, its rows in one dense card. Finished tasks are hidden under すべて (a device pref); one ticked since stays
+  // where it was. A row opens in place (TaskRow).
+  import Chip from '../ui/Chip.svelte';
+  import ChipRow from '../ui/ChipRow.svelte';
   import TaskRow from './TaskRow.svelte';
   import { counts, FILTERS, groupPlan, visibleTasks, type Filter, type Group, type Task } from './view.ts';
   import type { Overall } from '#lib/wedding/progress.ts';
@@ -61,10 +62,10 @@
 
 <div class="plan">
   {#if overall.total}
-    <div class="chips">
+    <div class="filters">
       <ChipRow label={t('wed.filters')}>
         {#each FILTERS as f (f)}
-          <Chip label={t(`wed.filter.${f}`)} count={c[f]} selected={filter === f} dot={f === 'overdue' && c[f] > 0 ? 'var(--q-coral)' : undefined}
+          <Chip label={t(`wed.filter.${f}`)} count={c[f]} selected={filter === f} dot={f === 'overdue' && c[f] > 0 ? 'var(--c-coral)' : undefined}
             data-wed-filter={f} data-count={c[f]} onclick={() => onfilter(f)} />
         {/each}
       </ChipRow>
@@ -79,11 +80,11 @@
 
   {#each groups as g (g.key)}
     <section class="group {g.kind}" data-wed-group={g.key} aria-labelledby="wg-{g.key}">
-      <h3 class="mh" id="wg-{g.key}">
+      <h3 class="sec-label head sticky" class:coral={g.kind === 'overdue'} class:leaf={g.kind === 'thisMonth'} id="wg-{g.key}">
         <span>{titles.get(g.key)}</span>
-        <span class="r" aria-label={t('wed.tallyLabel', g.tally)} data-wed-group-tally="{g.tally.done}/{g.tally.total}">{tally(g)}</span>
+        <span class="n" aria-label={t('wed.tallyLabel', g.tally)} data-wed-group-tally="{g.tally.done}/{g.tally.total}">{tally(g)}</span>
       </h3>
-      <div class="q-card rows">
+      <div class="card dense">
         {#each g.tasks as task (task.id)}
           <TaskRow {task} {canEdit} {names} {wedding} open={expanded === task.id} ontoggle={() => onexpand(expanded === task.id ? null : task.id)} {ontick} {onedit} />
         {/each}
@@ -92,25 +93,17 @@
   {/each}
 
   {#if filter === 'all' && (hiddenDone > 0 || showDone) && c.done > 0}
-    <button type="button" class="q-btn text more" data-wed-showdone={showDone ? 'on' : 'off'} data-sfx={showDone ? 'toggle-off' : 'toggle-on'}
+    <button type="button" class="chip s more" data-wed-showdone={showDone ? 'on' : 'off'} data-sfx={showDone ? 'toggle-off' : 'toggle-on'}
       onclick={() => onshowdone(!showDone)}>{showDone ? t('wed.hideDone') : t('wed.showDone', { n: hiddenDone })}</button>
   {/if}
 </div>
 
 <style>
-  .plan { display: flex; flex-direction: column; }
-  /* the chips pinned at the scroller's top, the month headings under them */
-  .chips { position: sticky; top: 0; z-index: 3; background: var(--q-bg); padding-bottom: 2px; }
-  .empty { margin: 32px 16px; text-align: center; color: var(--q-muted); }
+  /* the filters pinned at the scroller's top, the month headings under them */
+  .plan { --sticky-top: 44px; display: flex; flex-direction: column; padding: 0 12px; }
+  .filters { position: sticky; top: 0; z-index: 3; margin: 0 -12px; padding-top: 6px; background: var(--surface); }
+  .filters :global(.chip-row) { min-height: 38px; }
+  .empty { margin: 32px 4px; text-align: center; color: var(--text-soft); }
   .group { display: flex; flex-direction: column; }
-  .mh {
-    position: sticky; top: 46px; z-index: 2; margin: 2px 0 0; height: 30px; display: flex; align-items: center; justify-content: space-between;
-    padding: 0 20px; font: var(--q-w-b) var(--q-fs-s)/1 var(--q-font); letter-spacing: .03em; color: var(--q-ink-2); background: var(--q-bg);
-  }
-  .mh .r { font-weight: var(--q-w); opacity: .9; }
-  /* (the soft tints are translucent at night: laid over the ground, so a pinned heading stays opaque) */
-  .overdue .mh { color: var(--q-coral); background: linear-gradient(var(--q-coral-soft), var(--q-coral-soft)), var(--q-bg); }
-  .thisMonth .mh { color: var(--q-accent-ink); background: linear-gradient(var(--q-accent-soft), var(--q-accent-soft)), var(--q-bg); }
-  .rows { margin: 6px 16px; }
-  .more { align-self: center; margin: 8px 0 0; }
+  .more { align-self: center; margin: 14px 0 0; }
 </style>

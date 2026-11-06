@@ -31,7 +31,7 @@ export function visibleTasks(tasks: readonly Task[], filter: Filter, showDone: b
   return sliced.filter((t) => t.progress.state !== 'done' || held.has(t.id));
 }
 
-/** The deleted rows ぜんぶ けす and もどす list: a task, or a subtask removed on its own (one deleted with its task comes
+/** The deleted rows 完全に削除 and 戻す list: a task, or a subtask removed on its own (one deleted with its task comes
  *  back with it). */
 export const restorable = (deleted: readonly WedTask[]): WedTask[] => deleted.filter((d) => !deleted.some((p) => p.id === d.parentId));
 
