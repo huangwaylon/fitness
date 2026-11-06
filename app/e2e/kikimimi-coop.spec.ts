@@ -82,12 +82,12 @@ for (const wireB of ['', 'quiz'] as const) {
     const intro = sheet(a).locator('[data-kiki-intro="check"]');
     await expect(intro).toHaveAttribute('data-kiki-coop', '1');
     await expect(intro.locator('[data-kiki-mission-team]')).toBeVisible();
-    await expect(sheet(a).locator('[data-kiki-lesson-start]')).toHaveText('はじめる（2にん）');
+    await expect(sheet(a).locator('[data-kiki-lesson-start]')).toHaveText('始める（2人）');
     // B: the same lesson's intro card, waiting for A (no start, no back)
     await b.bringToFront();
     await expect(sheet(b).locator('[data-kiki-intro="check"]')).toBeVisible({ timeout: 10_000 });
     await expect(sheet(b).locator('[data-kiki-lesson-start]')).toHaveCount(0);
-    await expect(sheet(b).locator('.wait')).toContainText('はじめるのを まっています');
+    await expect(sheet(b).locator('.wait')).toContainText('始めるのを待っています');
     await a.bringToFront();
     await sheet(a).locator('[data-kiki-lesson-start]').click();
     await expect(sheet(b)).not.toHaveAttribute('data-phase', 'lobby', { timeout: 10_000 });
@@ -134,7 +134,7 @@ test('a content version that isn’t this phone’s: the lesson is an update on 
   const card = sheet(b).locator('[data-kiki-blocked="update"]');
   await expect(card).toBeVisible({ timeout: 10_000 });
   await expect(sheet(b)).toHaveAttribute('data-phase', 'idle');
-  await expect(card.locator('[data-kiki-update-note]')).toHaveText('アプリを こうしんしてね');
+  await expect(card.locator('[data-kiki-update-note]')).toHaveText('アプリを更新してね');
   await expect(card.locator('[data-kiki-join]')).toHaveCount(0);
   if (process.env.KIKI_SHOTS) await b.screenshot({ path: '/tmp/kikimimi-shots/8c/update.png' });
   // the update: the app's reload path (no worker in the e2e: at once)

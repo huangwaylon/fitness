@@ -111,7 +111,7 @@ test('from the hub: ことば, こえ, なかま and スタンプ over the seede
   await expect(z.locator('[data-kiki-cando]')).toHaveAttribute('data-kiki-cando', '1');
   expect(Number(await z.locator('[data-kiki-ippatsu]').getAttribute('data-kiki-ippatsu'))).toBeGreaterThanOrEqual(32);
   await expect(z.locator('[data-kiki-badge="10"]')).toHaveAttribute('data-got', 'true');
-  await expect(z.locator('[data-kiki-shelf="gold"]')).toContainText('11/6の しゅうまつ');
+  await expect(z.locator('[data-kiki-shelf="gold"]')).toContainText('11/6の週末');
   await expect(z.locator('[data-kiki-chapter-stamp="st-johnny-1"]')).toBeVisible();
   await snap(page, 'stamps');
   await z.locator('[data-kiki-chapters]').scrollIntoViewIfNeeded();

@@ -72,7 +72,7 @@ test('scenes: the scene card and each channel frame while it plays, the sound ma
     await expect(text.locator('[data-w]').first()).toBeVisible();
     if (x.say) {
       await expect(text.locator(`[data-kiki-say][data-say="${x.say}"]`).first()).toBeVisible();
-      await expect(sheet(page).locator('[data-kiki-legend]')).toContainText('こう きこえる');
+      await expect(sheet(page).locator('[data-kiki-legend]')).toContainText('こう聞こえる');
     }
     if (x.link) await expect(text.locator('[data-kiki-link]')).toHaveCount(1);
     if (SHOTS) await page.screenshot({ path: `${SHOTS}/${String(i + 1)}-${x.id}-reveal.png` });

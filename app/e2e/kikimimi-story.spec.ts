@@ -39,7 +39,7 @@ test('21:30: the night card plays the story; ⏸ / ▶, the timer, the words; it
   await open(page, '2026-11-04T21:30');
   const whim = sheet(page).locator('[data-kiki-card="whim"]');
   await expect(whim).toContainText('おやすみ ものがたり');
-  await expect(whim).toContainText('ジャスミンの きっさてん・だい 1わ');
+  await expect(whim).toContainText('ジャスミンの きっさてん・第1話');
   await snap(page, 'hub-night');
 
   await whim.locator('[data-kiki-card-go]').click();
@@ -51,14 +51,14 @@ test('21:30: the night card plays the story; ⏸ / ▶, the timer, the words; it
   await expect(frame(page).locator('[data-kiki-story-title]')).toHaveText('The Empty Shop by the Pier');
   await expect(frame(page)).toHaveAttribute('data-kiki-story-playing', 'true');
   // no score, no questions
-  await expect(frame(page)).toContainText('てんすうは ありません');
+  await expect(frame(page)).toContainText('点数はありません');
   await snap(page, 'frame');
 
   // ⏸ and ▶
   const play = frame(page).locator('[data-kiki-story-play]');
   await play.click();
   await expect(frame(page)).not.toHaveAttribute('data-kiki-story-playing', 'true');
-  await expect(play).toHaveAttribute('aria-label', 'きく');
+  await expect(play).toHaveAttribute('aria-label', '聞く');
   await play.click();
   await expect(frame(page)).toHaveAttribute('data-kiki-story-playing', 'true');
 
@@ -66,7 +66,7 @@ test('21:30: the night card plays the story; ⏸ / ▶, the timer, the words; it
   await expect(frame(page).locator('[data-kiki-story-timer="0"]')).toHaveAttribute('aria-checked', 'true');
   await frame(page).locator('[data-kiki-story-timer="10"]').click();
   await expect(frame(page).locator('[data-kiki-story-timer="10"]')).toHaveAttribute('aria-checked', 'true');
-  await expect(frame(page).locator('[data-kiki-story-left]')).toContainText(/のこり (10:00|9:5\d)/);
+  await expect(frame(page).locator('[data-kiki-story-left]')).toContainText(/残り (10:00|9:5\d)/);
   await snap(page, 'frame-timer');
   await frame(page).locator('[data-kiki-story-timer="0"]').click();
   await expect(frame(page).locator('[data-kiki-story-left]')).toHaveCount(0);
@@ -81,7 +81,7 @@ test('21:30: the night card plays the story; ⏸ / ▶, the timer, the words; it
 
   // ⏭ to the last segment; played out, the end card: the next chapter open
   await toEnd(page);
-  await expect(frame(page).locator('[data-kiki-story-end]')).toContainText('つぎの おはなしが ひらきました');
+  await expect(frame(page).locator('[data-kiki-story-end]')).toContainText('次のお話が開きました');
   await snap(page, 'end');
 
   // もくじ: chapter 1 heard, 2 open (the next), 3 locked
@@ -107,7 +107,7 @@ test('the morning after: the hub asks what happens next; the guess is revealed a
   });
   await open(page, '2026-11-04T12:00');
   const card = sheet(page).locator('[data-kiki-predict]');
-  await expect(card).toContainText('きのうの つづき、どうなると おもう？');
+  await expect(card).toContainText('昨日の続き、どうなると思う？');
   await expect(card.locator('[data-kiki-predict-pick]')).toHaveCount(3);
   await snap(page, 'hub-morning');
   await card.locator('[data-kiki-predict-pick="0"]').click();
@@ -119,6 +119,6 @@ test('the morning after: the hub asks what happens next; the guess is revealed a
   await sheet(page).locator('[data-kiki-chapter="st-johnny-2"]').click();
   await expect(frame(page).locator('[data-kiki-story-title]')).toHaveText('Snowed In in Vermont');
   await toEnd(page);
-  await expect(frame(page).locator('[data-kiki-story-reveal="right"]')).toContainText('きのうの よそう、あたり！');
+  await expect(frame(page).locator('[data-kiki-story-reveal="right"]')).toContainText('昨日の予想、当たり！');
   await snap(page, 'end-reveal');
 });
