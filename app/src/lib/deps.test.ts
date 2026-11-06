@@ -36,7 +36,7 @@ const ALLOW: Record<string, string[]> = {
   kikimimi: ['types', 'contract', 'sync', 'random', 'villagers'],
   // りょこう (docs/travel.md): the guides' data and its tokens, pure
   travel: [],
-  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random']
+  components: [...DOMAIN, 'layout', 'food', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'travel', 'random']
 };
 
 function files(dir: string): string[] {

@@ -13,6 +13,7 @@
   import Hud from '#lib/components/island/Hud.svelte';
   import HudCoins from '#lib/components/island/HudCoins.svelte';
   import { week } from '#lib/store/week.svelte.ts';
+  import { trips } from '#lib/components/travel/open.svelte.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t, hostLine } from '#lib/i18n/index.ts';
@@ -97,9 +98,9 @@
          villagers), then しずえ's box at the bottom. All are absolutely placed, so the order costs no layout; the stacking
          comes from the --z-* scale (tokens.css). -->
     <Hud today={view.wallet.today} balance={view.wallet.balance} bind:panelOpen bind:healthOpen bind:foodOpen {later} />
-    <HudCoins {view} covered={panelOpen || healthOpen || foodOpen || ui.overlay} {later} />
+    <HudCoins {view} covered={panelOpen || healthOpen || foodOpen || trips.open || ui.overlay} {later} />
     <div class="top">
-      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen || healthOpen || foodOpen} />
+      <IslandScene {view} onhighfive={sendHighFive} onhighfivegot={(who) => (gotFive = who)} onguest={guestArrived} paused={panelOpen || healthOpen || foodOpen || trips.open} />
     </div>
     <!-- しずえ's box, when she has news, floats over the sea at the bottom, so nothing in the scene moves when she speaks. -->
     {#if news}<div class="news" bind:clientHeight={newsH}><Bubble text={news} host={false} /></div>{/if}
