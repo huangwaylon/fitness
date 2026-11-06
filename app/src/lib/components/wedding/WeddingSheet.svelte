@@ -3,8 +3,9 @@
   // `pop`, grown out of the menu's pill). One title bar (けっこんしき; ⚙ at its left for a member: せってい, a level; ✕)
   // over one scroller: the head (NH's wedding arch, the countdown, the names, the bouquet: Top), パニエル's one line
   // (the day's first opening on this phone), やること · メモ (Segmented), then the plan (Plan) or the note (Notes). A
-  // task's page, a new task's fields and せってい are levels with ‹. Props-driven: `board` (null: nothing yet, the empty
-  // board) and the `actions` (the store's); `canEdit` false (the guest): read-only, no ✓, ✎, ＋ or ⚙.
+  // task's page, a new task's fields and せってい are levels with ‹. Props-driven: `board` (the store, board.svelte.ts;
+  // null: nothing loaded yet, the empty board) and the `actions` (the store too); `canEdit` false (the guest):
+  // read-only, no ✓, ✎, ＋ or ⚙ (and no actions given).
   import '#lib/i18n/wedding.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -16,7 +17,10 @@
   import Notes from './Notes.svelte';
   import TaskPage from './TaskPage.svelte';
   import Settings from './Settings.svelte';
-  import { counts, daysLeft, summary, type Board, type Filter, type WeddingActions, type Who3 } from './view.ts';
+  import type { Board, Filter, WeddingActions } from './view.ts';
+  import { boardConfig } from '#lib/wedding/config.ts';
+  import { overallProgress } from '#lib/wedding/progress.ts';
+  import type { Who } from '#lib/types.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { cue } from '#lib/sound/cues.ts';
@@ -29,7 +33,7 @@
     /** A member's phone (the guest's: false, read-only). */
     canEdit: boolean;
     /** The players' names for the who-did-it chips. */
-    names: Record<Who3, string>;
+    names: Record<Who, string>;
     actions?: WeddingActions;
   }
   let { open = $bindable(), board, canEdit, names, actions }: Props = $props();
@@ -43,24 +47,26 @@
   const kv = localKV();
   let showDone = $state(kv?.getItem(DEVICE.weddingDone) === '1');
 
-  const empty: Board = { tasks: [], deleted: [], config: { p1: '', p2: '', date: '', venue: '', tz: 'Asia/Tokyo', cats: [] }, note: { md: '', at: 0 }, today: '' };
-  const b = $derived(board ?? empty);
-  const days = $derived(b.today ? daysLeft(b.today, b.config.date) : null);
-  const sum = $derived(summary(b.tasks));
-  const task = $derived(level.k === 'task' ? (b.tasks.find((x) => x.id === (level as { id: string }).id) ?? null) : null);
+  // the store's getters read once per change (each recomputes its fold's view)
+  const tasks = $derived(board?.tasks ?? []);
+  const overall = $derived(board?.overall ?? overallProgress([]));
+  const config = $derived(board?.config ?? boardConfig({}));
+  const today = $derived(board?.today ?? '');
+  const days = $derived(board?.countdown ?? null);
+  const task = $derived(level.k === 'task' ? (tasks.find((x) => x.id === (level as { id: string }).id) ?? null) : null);
   const title = $derived(level.k === 'task' ? t('wed.task') : level.k === 'new' ? t('wed.newTask') : level.k === 'settings' ? t('wed.settings') : t('wed.title'));
 
   /** パニエル's line: the day's first opening on this phone. */
   let greeting = $state<string | null>(null);
   function greet() {
-    const day = b.today;
+    const day = today;
     if (!day || kv?.getItem(DEVICE.weddingGreet) === day) return;
-    const late = counts(b.tasks).overdue;
+    const late = overall.overdue;
     greeting =
       days === null ? t('wed.hello.none')
       : days === 0 ? t('wed.hello.day')
       : days < 0 ? t('wed.hello.past')
-      : !b.tasks.length ? t('wed.hello.empty')
+      : !tasks.length ? t('wed.hello.empty')
       : late > 0 && canEdit ? t('wed.hello.late', { n: late })
       : days <= 30 ? t('wed.hello.near')
       : t('wed.hello.days', { n: formatNum(days) });
@@ -77,7 +83,7 @@
       greetedOpen = false;
       return;
     }
-    if (!greetedOpen && b.today) {
+    if (!greetedOpen && today) {
       greetedOpen = true;
       greet();
     }
@@ -118,7 +124,7 @@
   }
   function tickTask(id: string, done: boolean) {
     held = new Set([...held, id]);
-    actions?.ontick(id, done);
+    actions?.tick(id, done);
   }
   // a task gone from under its page (deleted on the other phone): back home
   $effect(() => {
@@ -140,7 +146,7 @@
         {#if level.k === 'home'}
           <!-- (writing the note: the field has the room; the tabs come back with ほぞん / やめる) -->
           {#if !noteEditing}
-          <Top config={b.config} {days} {sum} />
+          <Top {config} {days} sum={overall} />
           {#if greeting}
             <div class="greet" data-wed-greet>
               <span class="harvey" aria-hidden="true"><OfficialArt key="villagers/harvey" size={78} eager /></span>
@@ -150,17 +156,17 @@
           <Segmented items={[{ id: 'plan', label: t('wed.tab.plan') }, { id: 'notes', label: t('wed.tab.notes') }]} value={tab} label={t('wed.tab')} attr="wed-tab" onpick={(id) => (tab = id)} />
           {/if}
           {#if tab === 'plan'}
-            <Plan board={b} canEdit={canEdit && !!board} {names} {filter} {showDone} {held} onfilter={setFilter} onshowdone={setShowDone}
+            <Plan {tasks} {overall} {today} wedding={config.date} canEdit={canEdit && !!board} {names} {filter} {showDone} {held} onfilter={setFilter} onshowdone={setShowDone}
               onopen={(id) => (level = { k: 'task', id })} ontick={tickTask} onadd={() => (level = { k: 'new' })} />
           {:else}
-            <Notes note={b.note} {canEdit} onnote={actions?.onnote} bind:editing={noteEditing} />
+            <Notes note={board?.note ?? null} conflict={board?.conflict ?? null} canEdit={canEdit && !!board} {names} {actions} bind:editing={noteEditing} />
           {/if}
         {:else if level.k === 'task' && task}
-          <TaskPage {task} today={b.today} cats={b.config.cats} {canEdit} {names} {actions} ondone={() => (level = { k: 'home' })} />
+          <TaskPage {task} {today} cats={config.cats} {canEdit} {names} {actions} ondone={() => (level = { k: 'home' })} />
         {:else if level.k === 'new' && canEdit}
-          <TaskPage task={null} today={b.today} cats={b.config.cats} {canEdit} {names} {actions} ondone={() => (level = { k: 'home' })} />
+          <TaskPage task={null} {today} cats={config.cats} {canEdit} {names} {actions} ondone={() => (level = { k: 'home' })} />
         {:else if level.k === 'settings' && canEdit}
-          <Settings config={b.config} deleted={b.deleted} {actions} />
+          <Settings {config} deleted={board?.deleted ?? []} {actions} />
         {/if}
       </div>
     {/key}

@@ -52,8 +52,9 @@ exact shapes):
   A save names the note it was edited from (`base`); one whose `base` isn't the held note's `at` is kept with the
   replaced note beside it (`was: {at, md, who}`, written by the record), and the phones show both until someone saves
   again from the new one (one level: a third crossing save keeps only the last one it replaced).
-- `imported: true` marks a row the admin's load brought from the Sheet (shown as 「むかしの きろく」 later); a phone's is
-  refused, and the next edit drops it.
+- `imported: true` marks a row the admin's load brought from the Sheet; a phone's is refused, and the next edit drops
+  it. The sheet shows 「むかしの きろく」 for a tick from the Sheet (which never recorded who: `WedTask.doneBy` is '')
+  and on the Sheet's note until it's saved again.
 - The phone folds the record's rows as they are and judges only its queued ones by the record's rules (`wedFold`), as
   the packing list and the board do. The admin's `load` takes these rows as the record had them too (only a row its slot
   holds that beats it stops one), so a dump restores faithfully; that fix covers the board and the packing list, which
@@ -64,6 +65,17 @@ On the phone, `components/wedding/board.svelte.ts`: `tasks` (live top-level, eac
 `conflict`, `deleted`; `addTask`, `editTask`, `addSub`, `tick`, `remove` (a task and its live subtasks), `restore`
 (and the subtasks deleted with it), `purge` (one deleted task, or all), `setConfig`, `saveNote(md, from)`. The rules
 are `lib/wedding/progress.ts` and `time.ts`, ported from the old board with their tests.
+
+The sheet (`components/wedding/WeddingSheet.svelte`, the menu's けっこんしき pill): `WeddingHost` loads it and the store
+as one chunk on the first opening and hands it the store as its `board` and, on a member's phone, its `actions`
+(`view.ts`: `Board` and `WeddingActions` are picks of the store's own getters and methods; `Task` is the store's
+`WithProgress<WedTask>`). The components read the store's shapes as they are (`category`, `doneAt`, `doneBy`,
+`progress.state / days / thisMonth / tally`, the overall's counts and percent); `view.ts` keeps only the plan's own
+rules (the filters, the held rows, the lifted sections and month groups, the deleted list: a subtask deleted with its
+task isn't listed apart). The note's conflict shows the held version (`current`) and the one it was saved over
+(`other`, the record's `was`), each under its writer's name; これに する saves from the held one, which settles it. The
+guest's sheet has no ✓, ✎, ＋, ⚙ or かく and no actions; its store refuses anyway. The demo (`?demo`, `?demo&as=G`)
+draws its own invented board (`store/demo/rows.ts`), which the e2e (`e2e/wedding-board.spec.ts`) drives from the menu.
 
 ## Migration
 

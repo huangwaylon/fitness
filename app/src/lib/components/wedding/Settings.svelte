@@ -1,58 +1,57 @@
 <script lang="ts">
   // けっこんしき's せってい (members; a level behind the title bar's ⚙): the two names, the day, the venue, the time zone
-  // the board's today is read in, the categories (chips with ×, a field to add one), and the deleted tasks with もどす;
+  // the board's today is read in, the categories (chips with ×, a field to add one), and the deleted tasks with もどす
+  // (a task, or a checklist item removed on its own: one deleted with its task comes back with it);
   // ぜんぶ けす removes them for good after an NH ask (its own small sheet: はい / いいえ). A field saves as it's left
   // (its change), each its own wconf row.
   import Sheet from '../ui/Sheet.svelte';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { formatDate } from '#lib/i18n/format.ts';
   import { t } from '#lib/i18n/index.ts';
-  import type { Config, Deleted, WeddingActions } from './view.ts';
+  import { WCATS_MAX, WTASK_CAT, type WedTask } from '#lib/contract/wedding.ts';
+  import type { BoardConfig } from '#lib/wedding/config.ts';
+  import { restorable, type WeddingActions } from './view.ts';
 
   interface Props {
-    config: Config;
-    deleted: Deleted[];
+    config: BoardConfig;
+    /** The store's deleted rows (tasks and subtasks). */
+    deleted: WedTask[];
     actions?: WeddingActions;
   }
-  let { config, deleted, actions }: Props = $props();
+  let { config, deleted: all, actions }: Props = $props();
+  const deleted = $derived(restorable(all));
 
   // svelte-ignore state_referenced_locally
-  let f = $state({ p1: config.p1, p2: config.p2, date: config.date, venue: config.venue, tz: config.tz });
+  let f = $state({ p1: config.p1, p2: config.p2, date: config.date, time: config.time, venue: config.venue, tz: config.tz });
   let cat = $state('');
   let asking = $state(false);
   const ZONES = ['Asia/Tokyo', 'Asia/Seoul', 'Asia/Taipei', 'Asia/Shanghai', 'Asia/Singapore', 'Australia/Sydney', 'Pacific/Honolulu', 'America/Los_Angeles', 'America/New_York', 'Europe/London', 'Europe/Paris', 'UTC'];
   const zones = $derived(ZONES.includes(config.tz) || !config.tz ? ZONES : [config.tz, ...ZONES]);
 
   const saved = () => toasts.show(t('wed.set.saved'), 1600);
-  function names() {
-    const p1 = f.p1.trim(), p2 = f.p2.trim();
-    if (p1 === config.p1 && p2 === config.p2) return;
-    actions?.onconfig('names', { p1, p2 });
-    saved();
-  }
-  function one(k: 'date' | 'venue' | 'tz') {
+  /** One setting, saved as its field is left ('' clears it: the default again). */
+  function one(k: 'p1' | 'p2' | 'date' | 'time' | 'venue' | 'tz') {
     const v = f[k].trim();
     if (v === config[k]) return;
-    actions?.onconfig(k, v);
-    saved();
+    if (actions?.setConfig(k, v)) saved();
   }
   function addCat(e: SubmitEvent) {
     e.preventDefault();
     const c = cat.trim();
-    if (!c || config.cats.includes(c)) return void (cat = '');
-    actions?.onconfig('cats', [...config.cats, c]);
+    if (!c || config.cats.includes(c) || config.cats.length >= WCATS_MAX) return void (cat = '');
+    actions?.setConfig('cats', [...config.cats, c]);
     cat = '';
   }
   function dropCat(c: string) {
-    actions?.onconfig('cats', config.cats.filter((x) => x !== c));
+    actions?.setConfig('cats', config.cats.filter((x) => x !== c));
   }
-  function restore(d: Deleted) {
-    actions?.onrestore(d.id);
+  function restore(d: WedTask) {
+    actions?.restore(d.id);
     toasts.show(t('wed.set.restored', { title: d.title }), 2000);
   }
   function purge() {
     asking = false;
-    actions?.onpurge();
+    actions?.purge();
     toasts.show(t('wed.set.purged'), 2000);
   }
 </script>
@@ -60,12 +59,13 @@
 <div class="set" data-wed-settings>
   <h4 class="sec-label">{t('wed.set.names')}</h4>
   <div class="card grid two">
-    <label class="f"><span class="lbl">{t('wed.set.p1')}</span><input type="text" maxlength="40" bind:value={f.p1} onchange={names} data-wed-set="p1" data-sfx="none" /></label>
-    <label class="f"><span class="lbl">{t('wed.set.p2')}</span><input type="text" maxlength="40" bind:value={f.p2} onchange={names} data-wed-set="p2" data-sfx="none" /></label>
+    <label class="f"><span class="lbl">{t('wed.set.p1')}</span><input type="text" maxlength="40" bind:value={f.p1} onchange={() => one('p1')} data-wed-set="p1" data-sfx="none" /></label>
+    <label class="f"><span class="lbl">{t('wed.set.p2')}</span><input type="text" maxlength="40" bind:value={f.p2} onchange={() => one('p2')} data-wed-set="p2" data-sfx="none" /></label>
   </div>
 
   <div class="card grid">
     <label class="f"><span class="lbl">{t('wed.set.date')}</span><input type="date" bind:value={f.date} onchange={() => one('date')} data-wed-set="date" data-sfx="none" /></label>
+    <label class="f"><span class="lbl">{t('wed.set.time')}</span><input type="time" bind:value={f.time} onchange={() => one('time')} data-wed-set="time" data-sfx="none" /></label>
     <label class="f"><span class="lbl">{t('wed.set.venue')}</span><input type="text" maxlength="80" bind:value={f.venue} onchange={() => one('venue')} data-wed-set="venue" data-sfx="none" /></label>
     <label class="f"><span class="lbl">{t('wed.set.tz')}</span>
       <select bind:value={f.tz} onchange={() => one('tz')} data-wed-set="tz" data-sfx="none">{#each zones as z (z)}<option value={z}>{z.replace('_', ' ')}</option>{/each}</select>
@@ -81,7 +81,7 @@
       {/each}
     </ul>
     <form class="add" onsubmit={addCat}>
-      <input type="text" maxlength="30" bind:value={cat} placeholder={t('wed.set.catPlaceholder')} aria-label={t('wed.set.catPlaceholder')} data-wed-cat-field data-sfx="none" />
+      <input type="text" maxlength={WTASK_CAT} bind:value={cat} placeholder={t('wed.set.catPlaceholder')} aria-label={t('wed.set.catPlaceholder')} data-wed-cat-field data-sfx="none" />
       <button type="submit" class="btn small" aria-disabled={!cat.trim() ? 'true' : undefined} data-wed-cat-add data-sfx="confirm">{t('wed.set.addCat')}</button>
     </form>
   </div>

@@ -138,8 +138,12 @@ describe('the phone’s fold', () => {
   it('reads a task as the old board’s rows (ISO stamps, empty strings), imported marked', () => {
     const b = wedFold([task('A', 'p', T, { del: T + 1, start: '2027-01-01', imported: true }), row('wdone', 'A', { id: 'p', at: T + 2, v: 1 })]);
     expect(wedTasks(b)).toEqual([{
-      id: 'p', title: 'p', category: '', due: '2027-04-18', start: '2027-01-01', doneAt: new Date(T + 2).toISOString(), createdAt: new Date(T).toISOString(),
+      id: 'p', title: 'p', category: '', due: '2027-04-18', start: '2027-01-01', doneAt: new Date(T + 2).toISOString(), doneBy: 'A', createdAt: new Date(T).toISOString(),
       updatedAt: new Date(T).toISOString(), deletedAt: new Date(T + 1).toISOString(), parentId: '', who: 'A', imported: true
     }]);
+  });
+  it('names who ticked a task, never for the old Sheet’s tick (it never recorded who)', () => {
+    const b = wedFold([task('A', 'p', T), task('A', 'q', T), row('wdone', 'B', { id: 'p', at: T + 2, v: 1 }), row('wdone', 'A', { id: 'q', at: T + 2, v: 1, imported: true })]);
+    expect(wedTasks(b).map((t) => [t.id, t.doneBy]).sort()).toEqual([['p', 'B'], ['q', '']]);
   });
 });

@@ -6,14 +6,20 @@
   // ticked since stays where it was. A member's ＋ (bottom right) adds a task.
   import OfficialArt from '../characters/OfficialArt.svelte';
   import TaskCard from './TaskCard.svelte';
-  import { counts, FILTERS, groupPlan, visibleTasks, type Board, type Filter, type Group, type Who3 } from './view.ts';
+  import { counts, FILTERS, groupPlan, visibleTasks, type Filter, type Group, type Task } from './view.ts';
+  import type { Overall } from '#lib/wedding/progress.ts';
+  import type { Who } from '#lib/types.ts';
   import { monthTitle } from './format.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
-    board: Board;
+    tasks: Task[];
+    overall: Overall;
+    today: string;
+    /** The wedding day ('' unset). */
+    wedding: string;
     canEdit: boolean;
-    names: Record<Who3, string>;
+    names: Record<Who, string>;
     filter: Filter;
     showDone: boolean;
     /** Rows ticked since the filter was chosen (they stay put). */
@@ -24,20 +30,20 @@
     ontick: (id: string, done: boolean) => void;
     onadd: () => void;
   }
-  let { board, canEdit, names, filter, showDone, held, onfilter, onshowdone, onopen, ontick, onadd }: Props = $props();
+  let { tasks, overall, today, wedding, canEdit, names, filter, showDone, held, onfilter, onshowdone, onopen, ontick, onadd }: Props = $props();
 
-  const c = $derived(counts(board.tasks));
-  const shown = $derived(visibleTasks(board.tasks, filter, showDone, held));
-  const groups = $derived(groupPlan(shown, board.tasks, board.today, board.config.date, filter !== 'all'));
+  const c = $derived(counts(overall));
+  const shown = $derived(visibleTasks(tasks, filter, showDone, held));
+  const groups = $derived(groupPlan(shown, tasks, today, wedding, filter !== 'all'));
   /** Finished rows hidden from すべて. */
-  const hiddenDone = $derived(filter === 'all' && !showDone ? c.done - board.tasks.filter((x) => x.done && held.has(x.id)).length : 0);
+  const hiddenDone = $derived(filter === 'all' && !showDone ? c.done - tasks.filter((x) => x.doneAt && held.has(x.id)).length : 0);
 
   const heading = (g: Group): string =>
     g.kind === 'overdue' ? t('wed.sec.overdue') : g.kind === 'thisMonth' ? t('wed.sec.thisMonth') : g.kind === 'nodate' ? t('wed.sec.nodate') : monthTitle(g.month);
 </script>
 
 <div class="plan" data-wed-plan>
-  {#if board.tasks.length}<div class="chips filters" role="group" aria-label={t('wed.filters')}>
+  {#if tasks.length}<div class="chips filters" role="group" aria-label={t('wed.filters')}>
     {#each FILTERS as f (f)}
       <button type="button" class="chip" aria-pressed={filter === f} data-wed-filter={f} data-count={c[f]} data-sfx={filter === f ? 'none' : 'tick'}
         aria-disabled={c[f] === 0 && filter !== f ? 'true' : undefined} onclick={() => onfilter(f)}>
@@ -46,7 +52,7 @@
     {/each}
   </div>{/if}
 
-  {#if !board.tasks.length}
+  {#if !tasks.length}
     <p class="empty" data-wed-empty><OfficialArt key="villagers/harvey-icon" size={64} />{t('wed.empty')}</p>
   {:else if !groups.length}
     <p class="empty" data-wed-empty-filter>{t('wed.emptyFilter')}</p>
@@ -68,7 +74,7 @@
       </h3>
       <div class="rows">
         {#each g.tasks as task (task.id)}
-          <TaskCard {task} today={board.today} {canEdit} {names} wedding={board.config.date} {onopen} {ontick} />
+          <TaskCard {task} {today} {canEdit} {names} {wedding} {onopen} {ontick} />
         {/each}
       </div>
     </section>

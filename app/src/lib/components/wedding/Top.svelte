@@ -6,17 +6,18 @@
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { formatDate } from '#lib/i18n/format.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
-  import type { Config } from './view.ts';
+  import { toPercent, type Overall } from '#lib/wedding/progress.ts';
+  import type { BoardConfig } from '#lib/wedding/config.ts';
 
   interface Props {
-    config: Config;
+    config: BoardConfig;
     /** Days to the wedding (negative after it), null with no date. */
     days: number | null;
-    /** The board's percent (0–1) and its done / total. */
-    sum: { percent: number; done: number; total: number };
+    /** The board's percent (0–1) and its done / total (the store's overall). */
+    sum: Overall;
   }
   let { config, days, sum }: Props = $props();
-  const pct = $derived(Math.round(sum.percent * 100));
+  const pct = $derived(toPercent(sum.percent));
   /** The ring's arc (r 25: 157 around). */
   const C = 2 * Math.PI * 25;
   const label = $derived(days === null ? t('wed.noDate') : days > 0 ? t('wed.daysLabel', { n: formatNum(days) }) : days === 0 ? t('wed.dayOfLabel') : t('wed.pastLabel', { n: formatNum(-days) }));
@@ -42,7 +43,7 @@
       </p>
       {#if names}<p class="plate names" data-wed-names>{names}</p>{/if}
       {#if config.date || config.venue}
-        <p class="where">{#if config.date}<span>{formatDate(config.date)}</span>{/if}{#if config.venue}<span>{config.venue}</span>{/if}</p>
+        <p class="where">{#if config.date}<span>{formatDate(config.date)}{#if config.time}&nbsp;{config.time}{/if}</span>{/if}{#if config.venue}<span>{config.venue}</span>{/if}</p>
       {/if}
     </div>
   </div>

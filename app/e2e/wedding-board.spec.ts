@@ -1,10 +1,10 @@
-// けっこんしき (docs/wedding.md): the wedding board's sheet. The menu's pill opens it on the island (`?demo`: the store
-// isn't wired yet, so the empty board); the dev page (routes/dev/wedding, `?demo`) shows it over the invented board
-// (components/wedding/fixtures/board.ts), editable as the store would be: the chips and their counts, the lifted
-// sections and the months, ticking (a ticked row stays put), a task's page (its checklist, ✎, 🗑 with とりけす), ＋,
-// the note (rendered safely, written with the format buttons, a conflict's two versions), せってい (names, categories,
-// the deleted list, ぜんぶ けす after its ask) and the guest's read-only board. Logic tier: nothing here is drawn 3D.
-// WED_SHOTS=1 saves screenshots to /tmp/wedding-ui-shots/.
+// けっこんしき (docs/wedding.md): the wedding board's sheet from the menu's pill, over the demo's made-up board
+// (store/demo/rows.ts: the record's rows through the store, components/wedding/board.svelte.ts): the countdown and the
+// bouquet, the chips and their counts, the lifted sections and the months, ticking (a ticked row stays put), the old
+// Sheet's tick (「むかしの きろく」), a task's page (its checklist, ✎, 🗑 with とりけす), ＋, the note (rendered safely,
+// written with the format buttons; two phones' crossed saves: both versions, これに する), せってい (names, categories, the
+// deleted list, ぜんぶ けす after its ask) and the guest's read-only board (`?demo&as=G`). Logic tier: nothing here is
+// drawn 3D. WED_SHOTS=1 saves screenshots to /tmp/wedding-ui-shots/.
 import { expect, test, type Page } from '@playwright/test';
 import { fromMenu, hudMenu } from './hud.ts';
 
@@ -12,9 +12,11 @@ test.use({ viewport: { width: 393, height: 852 } });
 const DAY = 'date=2026-11-06T12:00';
 const sheet = (p: Page) => p.locator('dialog[open] [data-wedding]');
 const card = (p: Page, id: string) => sheet(p).locator(`[data-wed-task="${id}"]`);
-async function dev(p: Page, q = '') {
-  await p.goto(`dev/wedding?demo&${DAY}${q}`);
-  await expect(sheet(p)).toBeVisible();
+/** The island as `as` (A, B or G), the board's sheet open from the menu. */
+async function board(p: Page, as = 'A') {
+  await p.goto(`?demo&as=${as}&${DAY}&critter=none&visitor=none`);
+  await fromMenu(p, 'wedding');
+  await expect(sheet(p).locator('[data-wed-top]')).toBeVisible();
 }
 const shot = async (p: Page, name: string) => {
   if (!process.env.WED_SHOTS) return;
@@ -22,124 +24,107 @@ const shot = async (p: Page, name: string) => {
   await p.screenshot({ path: `/tmp/wedding-ui-shots/${name}.png` });
 };
 
-test('the menu\'s けっこんしき opens the board\'s sheet over the island (the empty board until the store is wired); ✕ closes it', async ({ page }) => {
-  await page.goto(`?demo&${DAY}&critter=none&visitor=none`);
-  await expect(hudMenu(page)).toBeVisible();
-  await fromMenu(page, 'wedding');
+test('the menu\'s けっこんしき opens the board over the island, with its ⚙ and ＋; ✕ closes it', async ({ page }) => {
+  await board(page);
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
-  await expect(sheet(page).locator('[data-wed-empty]')).toBeVisible();
-  await expect(sheet(page).locator('[data-wed-top]')).toBeVisible();
-  // nothing to act on yet: no ⚙, no ＋
-  await expect(page.locator('dialog[open] [data-wed-gear], dialog[open] [data-wed-add]')).toHaveCount(0);
+  await expect(page.locator('dialog[open] [data-wed-gear]')).toBeVisible();
+  await expect(sheet(page).locator('[data-wed-add]')).toBeVisible();
+  await expect(sheet(page).locator('[data-wed-tick]').first()).toBeVisible();
   await page.locator('dialog[open] .titlebar .close').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   await expect(hudMenu(page)).toBeFocused();
 });
 
-test('the guest\'s menu has it too', async ({ page }) => {
-  await page.goto(`?demo&as=G&${DAY}&critter=none&visitor=none`);
-  await fromMenu(page, 'wedding');
-  await expect(sheet(page)).toHaveAttribute('data-guest', 'true');
-});
-
-test('a member\'s board has its ⚙ and ＋', async ({ page }) => {
-  await dev(page);
-  await expect(page.locator('dialog[open] [data-wed-gear]')).toBeVisible();
-  await expect(sheet(page).locator('[data-wed-add]')).toBeVisible();
-  await expect(sheet(page).locator('[data-wed-tick]').first()).toBeVisible();
-});
-
 test('the plan: the countdown, the bouquet, the chips\' counts, 期限切れ and こんげつ lifted, the months, the wedding\'s month', async ({ page }) => {
-  await dev(page);
-  await expect(sheet(page).locator('[data-wed-days]')).toHaveAttribute('data-wed-days', '225');
-  await expect(sheet(page).locator('[data-wed-names]')).toHaveText('ハル ＆ ミオ');
-  await expect(sheet(page).locator('[data-wed-progress]')).toHaveAttribute('data-wed-progress', '31');
-  await expect(sheet(page).locator('[data-wed-top] [data-wed-tally]')).toHaveText('6 / 24');
+  await board(page);
+  await expect(sheet(page).locator('[data-wed-days]')).toHaveAttribute('data-wed-days', '160');
+  await expect(sheet(page).locator('[data-wed-names]')).toHaveText('たろう ＆ はなこ');
+  // (2 done + 1/3 + 1/3 of 8)
+  await expect(sheet(page).locator('[data-wed-progress]')).toHaveAttribute('data-wed-progress', '33');
+  await expect(sheet(page).locator('[data-wed-top] [data-wed-tally]')).toHaveText('2 / 8');
   await expect(sheet(page).locator('[data-wed-greet]')).toBeVisible(); // (the day's first opening)
   const counts = Object.fromEntries(await sheet(page).locator('[data-wed-filter]').evaluateAll((els) => els.map((e) => [e.getAttribute('data-wed-filter'), Number(e.getAttribute('data-count'))])));
-  expect(counts).toEqual({ all: 24, overdue: 2, soon: 2, later: 12, done: 6 });
+  expect(counts).toEqual({ all: 8, overdue: 1, soon: 1, later: 4, done: 2 });
   // the five chips in one row at 393
   const ys = await sheet(page).locator('[data-wed-filter]').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
   expect(new Set(ys).size).toBe(1);
   const groups = await sheet(page).locator('[data-wed-group]').evaluateAll((els) => els.map((e) => e.getAttribute('data-wed-group')));
-  expect(groups.slice(0, 2)).toEqual(['overdue', 'thisMonth']);
-  expect(groups.at(-1)).toBe('nodate');
-  await expect(sheet(page).locator('[data-wed-group="overdue"] [data-wed-task]')).toHaveCount(2);
-  await expect(sheet(page).locator('[data-wed-group="2027-06"]')).toHaveClass(/wedding/);
-  await expect(sheet(page).locator('[data-wed-group="2027-06"] [data-wed-group-tally]')).toHaveAttribute('data-wed-group-tally', '0/3');
-  // finished rows hidden under すべて; shown on asking (kept on this phone)
-  await expect(card(page, 'venue')).toHaveCount(0);
+  expect(groups).toEqual(['overdue', 'thisMonth', '2026-12', '2027-01', '2027-03', '2027-04']);
+  await expect(sheet(page).locator('[data-wed-group="overdue"] [data-wed-task]')).toHaveCount(1);
+  await expect(sheet(page).locator('[data-wed-group="2027-04"]')).toHaveClass(/wedding/);
+  await expect(sheet(page).locator('[data-wed-group="2027-04"] [data-wed-group-tally]')).toHaveAttribute('data-wed-group-tally', '0/1');
+  // finished rows hidden under すべて; shown on asking (kept on this phone): the old Sheet's tick and a member's
+  await expect(card(page, 'wdemo01')).toHaveCount(0);
   await sheet(page).locator('[data-wed-showdone]').click();
-  await expect(card(page, 'venue')).toBeVisible();
-  await expect(card(page, 'venue').locator('[data-wed-imported]')).toBeVisible();
-  await expect(card(page, 'rings').locator('[data-wed-by="B"]')).toHaveText('ミオ');
+  await expect(card(page, 'wdemo01').locator('[data-wed-imported]')).toBeVisible();
+  await expect(card(page, 'wdemo09').locator('[data-wed-by="A"]')).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('island.weddingDone'))).toBe('1');
   await shot(page, 'e2e-plan');
   // a slice: 期限切れ only, no month tallies under it
   await sheet(page).locator('[data-wed-filter="overdue"]').click();
-  await expect(sheet(page).locator('[data-wed-task]')).toHaveCount(2);
+  await expect(sheet(page).locator('[data-wed-task]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-wed-group-tally]')).toHaveCount(0);
 });
 
 test('ticking: the ✓ marks it done with my chip, it stays where it was, the counts follow; again, it is open again', async ({ page }) => {
-  await dev(page);
-  await sheet(page).locator('[data-wed-filter="overdue"]').click();
-  await sheet(page).locator('[data-wed-tick="estimate"]').click();
-  await expect(card(page, 'estimate')).toHaveAttribute('data-done', 'true');
-  await expect(card(page, 'estimate').locator('[data-wed-by="A"]')).toHaveText('ハル');
-  await expect(sheet(page).locator('[data-wed-filter="done"]')).toHaveAttribute('data-count', '7');
-  await expect(sheet(page).locator('[data-wed-filter="overdue"]')).toHaveAttribute('data-count', '1');
-  await expect(sheet(page).locator('[data-wed-task]')).toHaveCount(2); // (held where it was)
-  await expect(sheet(page).locator('[data-wed-top] [data-wed-tally]')).toHaveText('7 / 24');
-  await sheet(page).locator('[data-wed-tick="estimate"]').click();
-  await expect(card(page, 'estimate')).not.toHaveAttribute('data-done', 'true');
+  await board(page);
+  await sheet(page).locator('[data-wed-filter="soon"]').click();
+  await sheet(page).locator('[data-wed-tick="wdemo03"]').click();
+  await expect(card(page, 'wdemo03')).toHaveAttribute('data-done', 'true');
+  await expect(card(page, 'wdemo03').locator('[data-wed-by="A"]')).toBeVisible();
+  await expect(sheet(page).locator('[data-wed-filter="done"]')).toHaveAttribute('data-count', '3');
+  await expect(sheet(page).locator('[data-wed-filter="soon"]')).toHaveAttribute('data-count', '0');
+  await expect(sheet(page).locator('[data-wed-task]')).toHaveCount(1); // (held where it was)
+  await expect(sheet(page).locator('[data-wed-top] [data-wed-tally]')).toHaveText('3 / 8');
+  await sheet(page).locator('[data-wed-tick="wdemo03"]').click();
+  await expect(card(page, 'wdemo03')).not.toHaveAttribute('data-done', 'true');
   // choosing the filter again lets the held rows go
-  await sheet(page).locator('[data-wed-tick="estimate"]').click();
+  await sheet(page).locator('[data-wed-tick="wdemo03"]').click();
   await sheet(page).locator('[data-wed-filter="all"]').click();
-  await sheet(page).locator('[data-wed-filter="overdue"]').click();
-  await expect(sheet(page).locator('[data-wed-task]')).toHaveCount(1);
+  await expect(card(page, 'wdemo03')).toHaveCount(0);
 });
 
-test('a task\'s page: the checklist ticks and grows, ✎ saves its fields, 🗑 deletes it and とりけす brings it back', async ({ page }) => {
-  await dev(page);
-  await card(page, 'guests').locator('.head').click();
+test('a task\'s page: the checklist ticks and grows, ✎ saves its fields, 🗑 deletes it with its checklist and とりけす brings it back', async ({ page }) => {
+  await board(page);
+  await card(page, 'wdemo02').locator('.head').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'task');
-  await expect(sheet(page).locator('[data-wed-title]')).toHaveText('招待する ゲストの リスト');
+  await expect(sheet(page).locator('[data-wed-title]')).toHaveText('招待客リストをつくる');
   // a URL in an item is a link, safely
-  const link = sheet(page).locator('[data-wed-sub="guests-4"] a');
+  const link = sheet(page).locator('[data-wed-sub="wdemo02c"] a');
   await expect(link).toHaveAttribute('href', 'https://example.com/form');
   await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(link).toHaveAttribute('target', '_blank');
-  await sheet(page).locator('[data-wed-sub-tick="guests-4"]').click();
-  await expect(sheet(page).locator('[data-wed-sub="guests-4"]')).toHaveAttribute('data-done', 'true');
+  await sheet(page).locator('[data-wed-sub-tick="wdemo02b"]').click();
+  await expect(sheet(page).locator('[data-wed-sub="wdemo02b"]')).toHaveAttribute('data-done', 'true');
   await sheet(page).locator('[data-wed-sub-field]').fill('せきの はいち');
   await sheet(page).locator('[data-wed-sub-add]').click();
-  await expect(sheet(page).locator('[data-wed-sub]')).toHaveCount(6);
+  await expect(sheet(page).locator('[data-wed-sub]')).toHaveCount(4);
   await expect(sheet(page).locator('[data-wed-sub-field]')).toHaveValue('');
-  await expect(sheet(page).locator('#wed-cl')).toContainText('4 / 6');
+  await expect(sheet(page).locator('#wed-cl')).toContainText('2 / 4');
   await shot(page, 'e2e-task');
-  // ✎: the fields; ほぞん with the name changed
+  // ✎: the fields; ほぞん with the name and category changed
   await sheet(page).locator('[data-wed-edit]').click();
   await sheet(page).locator('[data-wed-field="title"]').fill('ゲストの リスト');
-  await sheet(page).locator('[data-wed-field="cat"]').selectOption('いしょう');
+  await sheet(page).locator('[data-wed-field="cat"]').selectOption('Attire');
   await sheet(page).locator('[data-wed-save]').click();
   await expect(sheet(page).locator('[data-wed-title]')).toHaveText('ゲストの リスト');
-  // 🗑 (in ✎): gone, home, the banner's とりけす restores it
+  // 🗑 (in ✎): gone with its checklist, home; the banner's とりけす restores both
   await sheet(page).locator('[data-wed-edit]').click();
   await sheet(page).locator('[data-wed-remove]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'home');
-  await expect(card(page, 'guests')).toHaveCount(0);
+  await expect(card(page, 'wdemo02')).toHaveCount(0);
   await page.locator('dialog[open] .banner .act').click();
-  await expect(card(page, 'guests')).toBeVisible();
-  await expect(card(page, 'guests')).toContainText('いしょう');
+  await expect(card(page, 'wdemo02')).toBeVisible();
+  await expect(card(page, 'wdemo02')).toContainText('Attire');
+  await expect(card(page, 'wdemo02').locator('[data-wed-tally]')).toHaveAttribute('data-wed-tally', '2/4');
   // ‹ back from a page
-  await card(page, 'dress').locator('.head').click();
+  await card(page, 'wdemo04').locator('.head').click();
   await page.locator('dialog[open] .titlebar .back').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'home');
 });
 
 test('＋: a new task needs a name and a due day', async ({ page }) => {
-  await dev(page);
+  await board(page);
   await sheet(page).locator('[data-wed-add]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'new');
   await sheet(page).locator('[data-wed-save]').click();
@@ -148,21 +133,20 @@ test('＋: a new task needs a name and a due day', async ({ page }) => {
   await sheet(page).locator('[data-wed-save]').click();
   await expect(sheet(page).locator('[data-wed-error]')).toHaveAttribute('data-wed-error', 'due');
   await sheet(page).locator('[data-wed-field="due"]').fill('2026-11-20');
-  await sheet(page).locator('[data-wed-field="cat"]').selectOption('ゲスト');
+  await sheet(page).locator('[data-wed-field="cat"]').selectOption('Stationery');
   await sheet(page).locator('[data-wed-save]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'home');
   await expect(sheet(page).locator('[data-wed-group="thisMonth"]')).toContainText('ペーパーアイテムを たのむ');
-  await expect(sheet(page).locator('[data-wed-filter="all"]')).toHaveAttribute('data-count', '25');
+  await expect(sheet(page).locator('[data-wed-filter="all"]')).toHaveAttribute('data-count', '9');
 });
 
-test('メモ: the note as a letter, markup shown as typed, links safe; かく with the format buttons, ほぞん', async ({ page }) => {
-  await dev(page);
+test('メモ: the note as a letter, links safe; かく with the format buttons, ほぞん', async ({ page }) => {
+  await board(page);
   await sheet(page).locator('[data-wed-tab="notes"]').click();
   const doc = sheet(page).locator('[data-wed-letter] [data-wed-doc]');
-  await expect(doc.locator('h4')).toHaveText('かいじょう');
-  await expect(doc.locator('strong').first()).toHaveText('はなぞの テラス');
-  await expect(doc).toContainText('<b>タグ</b>');
-  await expect(doc.locator('b, script, img')).toHaveCount(0);
+  await expect(doc.locator('h4')).toHaveText('メモ');
+  await expect(doc.locator('strong').first()).toHaveText('予算');
+  await expect(doc.locator('script, img')).toHaveCount(0);
   for (const a of await doc.locator('a').all()) {
     await expect(a).toHaveAttribute('href', /^https:\/\//);
     await expect(a).toHaveAttribute('rel', 'noopener noreferrer');
@@ -182,30 +166,54 @@ test('メモ: the note as a letter, markup shown as typed, links safe; かく wi
   await expect(sheet(page).locator('[data-wed-top]')).toBeVisible();
 });
 
-test('a conflict: both versions, これに する keeps one', async ({ page }) => {
-  await dev(page, '&conflict');
+test('two phones\' saves crossed: both versions under their writers, これに する keeps one and settles it', async ({ page, context }) => {
+  await board(page, 'A');
   await sheet(page).locator('[data-wed-tab="notes"]').click();
+  await sheet(page).locator('[data-wed-note-edit]').click();
+  await sheet(page).locator('[data-wed-note-field]').fill('# かいじょう\n- **もりの チャペル** に へんこう？');
+  // meanwhile B's phone saves its own (the demo's taps are both players', shared by their tabs)
+  const b = await context.newPage();
+  await board(b, 'B');
+  await sheet(b).locator('[data-wed-tab="notes"]').click();
+  await sheet(b).locator('[data-wed-note-edit]').click();
+  await sheet(b).locator('[data-wed-note-field]').fill('- はなぞの テラス');
+  await sheet(b).locator('[data-wed-note-save]').click();
+  await expect(sheet(b).locator('[data-wed-letter]')).toContainText('はなぞの テラス');
+  await b.close();
+  // A saves over the version it began from: kept, the held one beside it
+  await sheet(page).locator('[data-wed-note-save]').click();
   await expect(sheet(page).locator('[data-wed-conflict]')).toBeVisible();
   await expect(sheet(page).locator('[data-wed-version]')).toHaveCount(2);
+  await expect(sheet(page).locator('[data-wed-version="current"]')).toHaveAttribute('data-wed-who', 'A');
+  await expect(sheet(page).locator('[data-wed-version="other"]')).toHaveAttribute('data-wed-who', 'B');
   await shot(page, 'e2e-conflict');
-  await sheet(page).locator('[data-wed-pick="theirs"]').click();
-  await expect(sheet(page).locator('[data-wed-letter]')).toContainText('もりの チャペル');
+  await sheet(page).locator('[data-wed-pick="other"]').click();
+  await expect(sheet(page).locator('[data-wed-conflict]')).toHaveCount(0);
+  await expect(sheet(page).locator('[data-wed-letter]')).toContainText('はなぞの テラス');
 });
 
 test('せってい: the names, a category added and removed, a deleted task restored, ぜんぶ けす after its ask', async ({ page }) => {
-  await dev(page);
+  await board(page);
   await page.locator('dialog[open] [data-wed-gear]').click();
   await expect(sheet(page)).toHaveAttribute('data-level', 'settings');
-  await sheet(page).locator('[data-wed-set="p1"]').fill('ハルト');
+  await sheet(page).locator('[data-wed-set="p1"]').fill('たろうさん');
   await sheet(page).locator('[data-wed-set="p1"]').blur();
   await sheet(page).locator('[data-wed-cat-field]').fill('ドリンク');
   await sheet(page).locator('[data-wed-cat-add]').click();
   await expect(sheet(page).locator('[data-wed-cat="ドリンク"]')).toBeVisible();
-  await sheet(page).locator('[data-wed-cat-remove="くらし"]').click();
-  await expect(sheet(page).locator('[data-wed-cat="くらし"]')).toHaveCount(0);
-  await expect(sheet(page).locator('[data-wed-deleted]')).toHaveCount(2);
-  await sheet(page).locator('[data-wed-restore="cake"]').click();
+  await sheet(page).locator('[data-wed-cat-remove="Beauty"]').click();
+  await expect(sheet(page).locator('[data-wed-cat="Beauty"]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-wed-deleted]')).toHaveCount(1);
+  await sheet(page).locator('[data-wed-restore="wdemo07"]').click();
+  await expect(sheet(page).locator('[data-wed-deleted]')).toHaveCount(0);
+  await page.locator('dialog[open] .titlebar .back').click();
+  await expect(sheet(page).locator('[data-wed-names]')).toHaveText('たろうさん ＆ はなこ');
+  await expect(card(page, 'wdemo07')).toBeVisible();
+  // delete it again, then for good
+  await card(page, 'wdemo07').locator('.head').click();
+  await sheet(page).locator('[data-wed-edit]').click();
+  await sheet(page).locator('[data-wed-remove]').click();
+  await page.locator('dialog[open] [data-wed-gear]').click();
   await sheet(page).locator('[data-wed-purge]').click();
   const ask = page.locator('dialog[open] [data-wed-purge-ask]');
   await expect(ask).toContainText('1こ');
@@ -213,19 +221,17 @@ test('せってい: the names, a category added and removed, a deleted task rest
   await page.locator('dialog[open] [data-wed-purge-yes]').click();
   await expect(ask).toHaveCount(0);
   await expect(sheet(page).locator('[data-wed-deleted]')).toHaveCount(0);
-  await page.locator('dialog[open] .titlebar .back').click();
-  await expect(sheet(page).locator('[data-wed-names]')).toHaveText('ハルト ＆ ミオ');
-  await expect(card(page, 'cake')).toBeVisible();
 });
 
 test('the guest reads everything and has nothing to tick or edit', async ({ page }) => {
-  await dev(page, '&as=G');
-  await expect(card(page, 'guests')).toBeVisible();
+  await board(page, 'G');
+  await expect(sheet(page)).toHaveAttribute('data-guest', 'true');
+  await expect(card(page, 'wdemo02')).toBeVisible();
   await expect(page.locator('dialog[open] :is([data-wed-tick], [data-wed-add], [data-wed-gear])')).toHaveCount(0);
   await sheet(page).locator('[data-wed-showdone]').click();
-  await expect(card(page, 'rings').locator('[data-wed-mark]')).toBeVisible();
-  await card(page, 'guests').locator('.head').click();
-  await expect(sheet(page).locator('[data-wed-sub]')).toHaveCount(5);
+  await expect(card(page, 'wdemo09').locator('[data-wed-mark]')).toBeVisible();
+  await card(page, 'wdemo02').locator('.head').click();
+  await expect(sheet(page).locator('[data-wed-sub]')).toHaveCount(3);
   await expect(sheet(page).locator('[data-wed-edit], [data-wed-page-tick], [data-wed-sub-tick], [data-wed-sub-field]')).toHaveCount(0);
   await shot(page, 'e2e-guest-task');
   await page.locator('dialog[open] .titlebar .back').click();
@@ -235,10 +241,10 @@ test('the guest reads everything and has nothing to tick or edit', async ({ page
 });
 
 test('パニエル\'s line: the day\'s first opening only', async ({ page }) => {
-  await dev(page);
+  await board(page);
   await expect(sheet(page).locator('[data-wed-greet]')).toBeVisible();
   await page.reload();
-  await expect(sheet(page)).toBeVisible();
+  await fromMenu(page, 'wedding');
   await expect(sheet(page).locator('[data-wed-top]')).toBeVisible();
   await expect(sheet(page).locator('[data-wed-greet]')).toHaveCount(0);
 });

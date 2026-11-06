@@ -342,6 +342,8 @@ export interface WedTask {
   start: string;
   /** ISO of its tick's `at` ('' : not done). */
   doneAt: string;
+  /** Who ticked it ('' : not done, or the tick came from the old Sheet, which never recorded who). */
+  doneBy: Who | '';
   createdAt: string;
   updatedAt: string;
   /** ISO of `del` ('' : live). */
@@ -358,10 +360,11 @@ export function wedTasks(book: WedBook): WedTask[] {
   const out: WedTask[] = [];
   for (const r of book.rows.values()) {
     if (r.type !== 'wtask' || r.op.rm) continue;
-    const op = r.op, done = book.rows.get(`wdone|${op.id}`);
+    const op = r.op, d = book.rows.get(`wdone|${op.id}`);
+    const done = d?.type === 'wdone' && d.op.v === 1 ? d : null;
     out.push({
       id: op.id, title: op.title, category: op.cat, due: op.due ?? '', start: op.start ?? '',
-      doneAt: done?.type === 'wdone' && done.op.v === 1 ? iso(done.op.at) : '',
+      doneAt: done ? iso(done.op.at) : '', doneBy: done && !done.op.imported ? done.who : '',
       createdAt: iso(op.c), updatedAt: iso(op.at), deletedAt: op.del !== undefined ? iso(op.del) : '', parentId: op.parent ?? '',
       who: r.who, imported: op.imported === true
     });

@@ -41,7 +41,18 @@ island's menu. Shots: `/tmp/wedding-ui-shots/` (`r0-*` first pass, `r1-*`, `r2-*
 
 ## Open
 
-- Fixture kanji (招待, 前撮り…) aren't in the font subset (fixtures/ is skipped); the users' own kanji fall back to the
-  system rounded font, as elsewhere.
+- The demo board's kanji (招待客, 式場…) aren't in the font subset; the users' own kanji fall back to the system rounded
+  font, as elsewhere.
 - Long months of one task each make a tall list; collapsing far-off months could come later if the real board feels long.
 - iPhone check of the date inputs and the textarea with the keyboard up (`--kb`) is for the phone, not SwiftShader.
+
+## Integration (2026-11-06, branch `wedding`)
+
+- The sheet runs on the store (board.svelte.ts) over the record's rows; the dev page and its fixture are gone: the demo's
+  invented board (`?demo`: たろう & はなこ, 架空チャペル, the day 160 days out) drives the e2e from the menu, the
+  guest's as `?demo&as=G`, and a conflict comes from two tabs' crossed saves (the demo's taps are both players').
+- One rule each: the percent, the states, こんげつ and the due days are progress.ts' (view.ts' copies deleted); the
+  board's day words are i18n's (time.ts' unused Intl formatters deleted).
+- A conflict's two versions are labelled by their writers' names (じぶんの / もう ひとりの could both be one person's
+  two phones). せってい gained the wedding's time (`time`, the old board's), shown after the day in the head.
+- Shots: `/tmp/wedding-int-shots/`.
