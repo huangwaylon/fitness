@@ -81,7 +81,7 @@ items:
     en: "Hey, I'm running about ten minutes late. My train stopped."
     ja: "ごめん、10分くらい遅れてる。電車が止まっちゃって。 →「大丈夫、先に席とっとくね。」"
     note: "running late＝遅れそう。走って いない"
-    choices: ["No worries, I'll grab us a table.", "Running? Be careful!", "Ten? I'll get two."]
+    choices: ["No worries, I'll grab us a table.", "Running? Be careful!", "Sure, see you at ten, then!"]
     answer: 0
     scene: street
     channel: phone
@@ -94,7 +94,7 @@ items:
     voice: us
     cast: us-f2
     en: "Ah, this week's crazy. Let's do it another time!"
-    ja: "たぶん、新しい日にちは決めていない。"
+    ja: "たぶん、すぐに新しい日を決める気はない。"
     note: "another time だけ＝日にちは 決まって いない"
     choices: ["She probably isn't planning a new date soon.", "She wants to meet next week for sure.", "She wants to meet right now."]
     answer: 0
@@ -284,7 +284,7 @@ items:
     speaker: sherb
     voice: au
     cast: au-m2
-    en: "Change of plan, we're meeting at the east exit. Sorry, I meant the east exit, not the west. East!"
+    en: "Change of plan, we're meeting at the west exit. Sorry, I meant the east exit, not the west. East!"
     ja: "東口で会う。"
     note: "I meant〜, not〜 で 訂正。最後の East! が 答え"
     choices: ["They'll meet at the east exit.", "They'll meet at the west exit.", "They'll meet at both exits."]
@@ -316,7 +316,7 @@ items:
     voice: us
     cast: us-m2
     en: "Can we push it back to quarter to nine? Text me when you're leaving."
-    ja: "8時15分前にずらせる？ 出るときメッセージして。"
+    ja: "9時15分前にずらせる？ 出るときメッセージして。"
     note: "quarter to nine＝8:45"
     choices: ["8:45", "9:15", "8:15"]
     answer: 0
@@ -346,7 +346,6 @@ items:
     voice: us
     cast: us-m1
     en: "I can't make it tonight."
-    tts: "I can' make it tonight."
     ja: "今夜は行けない。"
     note: "can't の t は ほぼ 聞こえない。母音で 区別"
     choices: ["can't", can, could]
@@ -374,7 +373,6 @@ items:
     voice: uk
     cast: uk-m1
     en: "Are we still on for tonight?"
-    tts: "Are we still on f'tonight?"
     ja: "今夜、予定どおり？"
     note: "still on は「スティロン」"
     choices: ["still on", "still one", "steal on"]
@@ -429,7 +427,9 @@ items:
       - { who: cherry, cast: au-f1, en: "Hey! Can you hear me? I'm on the street.", ja: "もしもし！ 聞こえる？ いま外なの。" }
       - { who: punchy, cast: au-m1, en: "Barely! What's up?", ja: "ぎりぎり！ どうした？" }
       - { who: cherry, cast: au-f1, en: "So, I can't make it at six, my shift's running over. Can we say seven, at the pub instead of the café?", ja: "あのね、6時は無理、シフトが延びてて。7時に、カフェじゃなくてパブにしない？" }
-      - { who: punchy, cast: au-m1, en: "Sorry, did you say the pub? Yeah, seven at the pub. Easy. See you then!", ja: "ごめん、パブって言った？ うん、7時にパブ。了解。じゃあそのときに！" }
+      - { who: punchy, cast: au-m1, en: "Sorry, did you say the pub?", ja: "ごめん、パブって言った？" }
+      - { who: cherry, cast: au-f1, en: "Yeah, seven at the pub.", ja: "うん、7時にパブ。" }
+      - { who: punchy, cast: au-m1, en: "Easy. See you then!", ja: "了解。じゃあそのときに！" }
   - id: km-fast-hedge
     lv: 3
     type: mean

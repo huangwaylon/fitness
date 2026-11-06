@@ -37,7 +37,7 @@ items:
     cast: us-f1
     en: "Guess what? I got us tickets for the Tokyo Dome show! It's on the 13th. Sorry? Did you say the 30th? No, the 13th. One, three. It's a Friday, so we can go straight from work. Ha, Friday the 13th. Okay, so that's a date!"
     ja: "13日の金曜日。"
-    note: "thirTEEN／THIRty は 強く いう 場所で 区別"
+    note: "thirTEEN と THIRty は 強く 言う 位置で 区別"
     choices: ["On Friday the 13th.", "On the 30th.", "On a Saturday."]
     answer: 0
     focus: "One, three"
@@ -59,7 +59,7 @@ items:
     en: "Wait, where are our seats? Like, how far back? Row 15. Oh, actually, no, I meant row 50. Fifty. We're kind of up in the sky."
     ja: "はは、大丈夫。双眼鏡 持っていこう！"
     note: "I meant〜で 訂正。15列ではなく 50列"
-    choices: ["Ha, that's fine. We'll bring binoculars!", "Row 15? We'll be so close!", "Sorry, I meant Friday."]
+    choices: ["Ha, that's fine. We'll bring binoculars!", "Row 15? We'll be so close!", "Fifty? Right by the stage, then!"]
     answer: 0
     focus: "I meant row 50"
     ask: "つぎの ひとことは？"
@@ -89,7 +89,7 @@ items:
     speaker: tia
     voice: us
     cast: us-f2
-    en: "Let's meet at the station on Thursday. Wait, no, I meant Tuesday. Thursday's my yoga night."
+    en: "Let's meet at the station on Thursday. Wait, no, I meant Tuesday. Thursday's my yoga night. See you then!"
     ja: "火曜日に会う。"
     note: "Wait, no, I meant〜の あとが 正しい 情報"
     choices: ["They're meeting on Tuesday.", "They're meeting on Thursday.", "She's going to yoga with him on Tuesday."]
@@ -104,8 +104,8 @@ items:
     speaker: julian
     voice: uk
     cast: uk-m1
-    en: "So you go out the back, turn left at the flower shop, and it's the door right after the, um… the ramen place. Anyway, text me if you get lost."
-    ja: "裏から出て、花屋で左、それから、えっと…ラーメン屋のすぐ次のドア。まあ、迷ったらメッセージして。 →「すみません、最後のところをもう一度？」"
+    en: "So you go out the back, turn left at the flower shop, and it's the door right after the, um… the ramen place."
+    ja: "裏から出て、花屋で左、それから、えっと…ラーメン屋のすぐ次のドア。 →「ごめん、最後のところをもう一回？」"
     note: "聞き取れない 部分だけ 聞きかえすと はやい"
     choices: ["Sorry, could you say the last bit again?", "Sure, I'll have the ramen.", "Yes, the flowers are lovely."]
     answer: 0
@@ -134,19 +134,19 @@ items:
     speaker: julian
     voice: uk
     cast: uk-m1
-    en: "Hi, it's me. I got your voice message, but it was all crackly. Do you mean Thursday or Tuesday? Tuesday! Tues-day. The day after Monday. Ha, got it. Okay, I won't keep you. Talk soon!"
+    en: "Hi, it's me. I got your voice message about dinner, but it was all crackly. Do you mean Thursday or Tuesday? Tuesday! Tues-day. The day after Monday. Ha, got it. Okay, I won't keep you. Talk soon!"
     ja: "火曜日。"
     note: "火曜と木曜。the day after Monday が ヒント"
     choices: ["Tuesday.", "Thursday.", "Monday."]
     answer: 0
     focus: "The day after Monday"
-    ask: "ふたりが あうのは？"
+    ask: "ゆうはんは なんようび？"
     scene: living
     channel: phone
     cond: { kind: phone, level: light }
     tags: { seed: 56, register: friend, pragmatic: literal, conditions: [phone], features: [th] }
     lines:
-      - { who: julian, cast: uk-m1, en: "Hi, it's me. I got your voice message, but it was all crackly. Do you mean Thursday or Tuesday?", ja: "もしもし、ぼく。留守電聞いたけど、音がガサガサで。木曜ってこと、それとも火曜？" }
+      - { who: julian, cast: uk-m1, en: "Hi, it's me. I got your voice message about dinner, but it was all crackly. Do you mean Thursday or Tuesday?", ja: "もしもし、ぼく。夕飯の留守電聞いたけど、音がガサガサで。木曜ってこと？ それとも火曜？" }
       - { who: tia, cast: us-f2, en: "Tuesday! Tues-day. The day after Monday.", ja: "火曜！ か・よ・う。月曜の次の日。" }
       - { who: julian, cast: uk-m1, en: "Ha, got it. Okay, I won't keep you. Talk soon!", ja: "はは、了解。じゃあ、引き止めないよ。またね！" }
   - id: kr-so-thats
@@ -157,7 +157,7 @@ items:
     cast: au-f1
     en: "So that's seven at Hachiko, yeah? The statue, not the exit. Text me if you're running late."
     ja: "じゃあ7時にハチ公ね？ 出口じゃなくて像のほう。遅れそうならメッセージして。 →「了解。じゃあ7時に！」"
-    note: "So that's 〜? は 確認。Yep で うけて おわる"
+    note: "So that's 〜? は 確認。Will do で うけて おわる"
     choices: ["Will do. See you at seven!", "Yes, I've seen the statue.", "No, I'm not late."]
     answer: 0
     scene: street
@@ -224,7 +224,7 @@ items:
     speaker: wolfgang
     voice: us
     cast: us-m3
-    en: "So we're meeting at 6:30 at Shibuya, right? Sorry? It's so loud in here. Did you say Shibuya? No, Ebisu. East exit. And it's 7:30, not 6:30. I said it wrong. Ebisu, 7:30, east exit. Got it. Text me when you're there."
+    en: "So we're meeting at Shibuya at 6:30, yeah? Sorry? It's so loud in here. Did you say Shibuya? Wait, no, Ebisu. East exit. And it's 7:30, not 6:30. Sorry, long day. Ebisu, 7:30, east exit. Got it. Text me when you're there."
     ja: "恵比寿、7時半、東口。"
     note: "場所も 時間も 言いなおし。最後の くりかえしで 確認"
     choices: ["Ebisu, 7:30, east exit.", "Shibuya, 6:30, east exit.", "Ebisu, 6:30, west exit."]
@@ -235,9 +235,9 @@ items:
     cond: { kind: cafe, level: heavy }
     tags: { seed: 51, register: friend, pragmatic: literal, conditions: [cafe], features: [numbers, self-repair] }
     lines:
-      - { who: wolfgang, cast: us-m3, en: "So we're meeting at 6:30 at Shibuya, right?", tts: "So we're meeting at six thirty at Shibuya, right?", ja: "じゃあ6時半に渋谷だよね？" }
+      - { who: wolfgang, cast: us-m3, en: "So we're meeting at Shibuya at 6:30, yeah?", tts: "So we're meeting at Shibuya at six thirty, yeah?", ja: "じゃあ渋谷に6時半だよね？" }
       - { who: cherry, cast: au-f1, en: "Sorry? It's so loud in here. Did you say Shibuya?", ja: "え？ ここすごくうるさくて。渋谷って言った？" }
-      - { who: wolfgang, cast: us-m3, en: "No, Ebisu. East exit. And it's 7:30, not 6:30. I said it wrong.", tts: "No, Ebisu. East exit. And it's seven thirty, not six thirty. I said it wrong.", ja: "ちがう、恵比寿。東口。それに6時半じゃなくて7時半。言いまちがえた。" }
+      - { who: wolfgang, cast: us-m3, en: "Wait, no, Ebisu. East exit. And it's 7:30, not 6:30. Sorry, long day.", tts: "Wait, no, Ebisu. East exit. And it's seven thirty, not six thirty. Sorry, long day.", ja: "待って、ちがう、恵比寿。東口。それに6時半じゃなくて7時半。ごめん、今日は疲れてて。" }
       - { who: cherry, cast: au-f1, en: "Ebisu, 7:30, east exit. Got it. Text me when you're there.", tts: "Ebisu, seven thirty, east exit. Got it. Text me when you're there.", ja: "恵比寿、7時半、東口。了解。着いたらメッセージして。" }
   - id: kn-order-no
     lv: 3
@@ -276,10 +276,10 @@ items:
     speaker: wolfgang
     voice: us
     cast: us-m3
-    en: "Sorry? Did you want that warmed up?"
-    ja: "すみません、温めますか？ →「はい、お願いします。」"
-    note: "Sorry? で 店員も 聞きかえす。warmed up＝温める"
-    choices: ["Yes, please. Warm is good.", "No, I'm not sorry.", "It's warm today, yeah."]
+    en: "Sorry, I didn't catch that. Did you want it warmed up?"
+    ja: "すみません、聞き取れなくて。温めますか？ →「はい、温めてください。」"
+    note: "店員も 聞きかえす。warmed up＝温める"
+    choices: ["Yes, warmed up, please.", "Yes, it's warm today.", "For here, please."]
     answer: 0
     scene: cafe
     cond: { kind: cafe, level: light }
@@ -310,9 +310,8 @@ items:
     speaker: molly
     voice: us
     cast: us-f3
-    en: "Oh, sorry, I meant the big one."
-    tts: "Oh, sorry, I mean' the big one."
-    ja: "あ、ごめん、大きいほうのつもりだった。"
+    en: "Sorry, when I said the bag, I meant the big one."
+    ja: "ごめん、かばんって言ったのは、大きいほうのことだった。"
     note: "meant の t は ほぼ 消える"
     choices: [meant, mean, met]
     answer: 0
@@ -440,9 +439,9 @@ items:
     speaker: kicks
     voice: us
     cast: us-m1
-    en: "Movie's at 6:40. Wait, no, 6:14. Actually, no, it's 6:40. I was looking at yesterday."
-    tts: "Movie's at six forty. Wait, no, six fourteen. Actually, no, it's six forty. I was looking at yesterday."
-    ja: "映画は6時40分。いや、6時14分。やっぱりちがう、6時40分。昨日のを見てた。"
+    en: "Movie's at 6:40. Wait, no, 6:14. Actually, no, it's 6:40. I was looking at yesterday's times."
+    tts: "Movie's at six forty. Wait, no, six fourteen. Actually, no, it's six forty. I was looking at yesterday's times."
+    ja: "映画は6時40分。いや、6時14分。やっぱりちがう、6時40分。昨日の時間を見てた。"
     note: "2回 言いなおす。最後の 数字が 答え"
     choices: ["6:40", "6:14", "4:40"]
     answer: 0
@@ -456,8 +455,8 @@ items:
     speaker: julian
     voice: uk
     cast: uk-m1
-    en: "Can you grab the blue bag? Not the blue, sorry, I meant the grey one, by the door. Anyway, I've got to run. See you at home!"
-    tts: "Can you grab the blue bag? Not the blue, sorry, I meant the grey one, by the door. Anyway, I've gotta run. See you at home!"
+    en: "Can you grab the blue bag? Not the blue one, sorry, I meant the grey one, by the door. Anyway, I've got to run. See you at home!"
+    tts: "Can you grab the blue bag? Not the blue one, sorry, I meant the grey one, by the door. Anyway, I've gotta run. See you at home!"
     ja: "ドアのそばのグレーのかばんを持ってきてほしい。"
     note: "I meant〜で 訂正。got to run＝もう 切る 合図"
     choices: ["He wants the grey bag by the door.", "He wants the blue bag.", "He wants both bags."]

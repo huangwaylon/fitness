@@ -1,7 +1,7 @@
 # ともだちを あんない (tr-guide): wave 1, もり. A friend visiting Tokyo: the learner is the host, the friend's questions
 # and worries are the listening, the replies are the learner's lines (plan §12's writers' note). The main sound is dunno
 # ("I dunno if", "kinda worried": the worry said softly). Reused: r4-ginza (the dry run's one item); new: mu-/dmu- items.
-# きょうの ひとこと: "The thing is, I don't know if I can wait till dinner." (「じつは…」: ほんねの まえおき)
+# きょうの ひとこと: "The thing is, I don't want this trip to end." (じつは、この たびが おわって ほしくない。)
 
 schema: 1
 unit: tr-guide
@@ -78,7 +78,7 @@ items:
     speaker: cherry
     voice: au
     cast: au-f1
-    choices: [ You don't need to. Nobody tips here., "Sure, take the tip on the left.", "No, I'm OK, thanks." ]
+    choices: [ You don't need to. Nobody tips here., "Sure, ten percent is normal.", "No, I'm OK, thanks." ]
     answer: 0
     tags: { seed: 58, register: friend, pragmatic: literal }
     scene: cafe
@@ -132,7 +132,7 @@ items:
     speaker: apollo
     voice: uk
     cast: uk-m2
-    choices: [ "No worries, I'll show you. What do you fancy?", "Just pay the chef, then.", The button's by the door. ]
+    choices: [ "No worries, I'll show you. What are you in the mood for?", "Just pay the chef, then.", The button's by the door. ]
     answer: 0
     focus: The thing is
     ask: つぎの ひとことは？
@@ -188,7 +188,7 @@ items:
     speaker: poppy
     voice: us
     cast: us-f1
-    choices: [ She isn't sure where she should take her shoes off., She thinks temples sell shoes., She wants to visit a temple first. ]
+    choices: [ She isn't sure where she should take her shoes off., She's sure you never take them off in a home., She wants to visit a temple first. ]
     answer: 0
     ask: つまり、どういうこと？
     tags: { seed: 58, register: friend, pragmatic: literal }
@@ -320,7 +320,7 @@ items:
     cast: us-f1
     choices: [ 2:45, 2:15, 2:30 ]
     answer: 0
-    ask: まちあわせは 何時？
+    ask: まちあわせは なんじ？
     tags: { seed: 58, register: friend, pragmatic: literal, features: [ numbers, self-repair ] }
     scene: platform
   - id: mu-r-is-it-rude
@@ -587,7 +587,7 @@ tiers:
       answer: 0
   mu-r-is-it-ok-tip:
     easy:
-      choices: [ No need. Nobody tips here., Take the tip on the left. ]
+      choices: [ No need. Nobody tips here., "Sure, ten percent is normal." ]
       answer: 0
   mu-m-worth-it:
     easy:
