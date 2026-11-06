@@ -20,7 +20,7 @@ import { CHUNK, CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf, idx, kindOf } from '#li
 import { chunkMesh, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
 import { FAR, STEP, fieldsOf } from '#lib/layout/fields.ts';
 import { SWASH_GLSL } from '#lib/layout/swash.ts';
-import { SEA_Y, fieldOf } from '#lib/layout/height.ts';
+import { DEEP_Y, EDGE_FADE, SEA_Y, fieldOf } from '#lib/layout/height.ts';
 import { extentOf, type Layout } from '#lib/layout/model.ts';
 
 import type { Look } from './groundLook.ts';
@@ -229,7 +229,7 @@ void main(){
   // (the deep plane's colour by the grid's edge too, where the land comes nearer it than the field's reach: its seabed
   // goes down to the plane there, layout/height.ts EDGE_FADE)
   vec2 ge = min(p - uGrid.xy, uGrid.xy + uGrid.zw - p);
-  bed = mix(bed, vec3(0.18,0.45,0.72), max(smoothstep(20.0, 46.0, dL), smoothstep(30.0, 4.0, min(ge.x, ge.y))));
+  bed = mix(bed, vec3(0.18,0.45,0.72), max(smoothstep(20.0, 46.0, dL), smoothstep(${EDGE_FADE.toFixed(1)}, 4.0, min(ge.x, ge.y))));
   sc = mix(sc, bed, smoothstep(-2.0, 4.0, dn) * float(tier == 0));
   c = mix(c, sc, aa(ds, 1.4));
   // paths: dirt worn soft, stone, brick and planks NH's
@@ -771,14 +771,9 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   });
 
   // the sea: far out every way, rows dense enough along z for the bend; under it, the deep seabed
+  // (the land's box, extentOf's, as the sea's uLand: x0, z0, x1, z1)
   const landBox = (l: Layout) => {
-    let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
-    for (let r = 0; r < GRID.rows; r++)
-      for (let c = 0; c < GRID.cols; c++)
-        if (kindOf(l.codes[idx(c, r)]) !== 'sea') {
-          x0 = Math.min(x0, GRID.x0 + c * TILE); x1 = Math.max(x1, GRID.x0 + (c + 1) * TILE);
-          z0 = Math.min(z0, GRID.z0 + r * TILE); z1 = Math.max(z1, GRID.z0 + (r + 1) * TILE);
-        }
+    const { x0, x1, z0, z1 } = extentOf(l).land;
     return x0 < x1 ? [x0, z0, x1, z1] : [0, 0, 1, 1];
   };
   const seaGeo = new PlaneGeometry(4200, 6000, 24, 150);
@@ -790,7 +785,8 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   sea.frustumCulled = false;
   const deepGeo = new PlaneGeometry(4200, 6000, 24, 150);
   deepGeo.rotateX(-Math.PI / 2);
-  deepGeo.translate(GRID.x0 + GW / 2, -7.6, -(GRID.z0 + GD / 2));
+  // (just under the bed's deepest, layout/height.ts DEEP_Y)
+  deepGeo.translate(GRID.x0 + GW / 2, DEEP_Y - 0.1, -(GRID.z0 + GD / 2));
   // (lit as the ground's top is, the bed's deep blue under its tint: seen through the shallows' see-through water, the
   // grid's edge never shows, day or night)
   const deep = new Mesh(deepGeo, bend(new MeshLambertMaterial({ color: new Color(0x2f74b8).multiply(new Color(0xf4f4f4)) })));

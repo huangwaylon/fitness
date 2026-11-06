@@ -267,6 +267,9 @@ export const newObjId = (at: number): string => `o${at.toString(36)}${Math.floor
  *  pull stays centred). */
 export const MID_X = 195;
 export const midXOf = (land: { x0: number; x1: number }): number => (land.x1 > land.x0 ? (land.x0 + land.x1) / 2 : MID_X);
+/** Zoomed in past the default, the 3D camera may pan sideways over the land and this much sea (u) either side of it
+ *  (world3d/engine.ts; island/coast.ts's view of the shore). */
+export const SEA_X = 24;
 
 /** The island's extent (u), for the 3D camera and the ground (docs/island-layout.md "API for the 3D scene"): the
  *  grid's, the land's box, the front shoreline's z at the island's middle, and ウェイ's home's door (the camera's far

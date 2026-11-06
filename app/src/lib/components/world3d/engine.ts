@@ -31,7 +31,7 @@ import { releaseAll, resourcesOf } from './release.ts';
 import { frameRate } from '#lib/store/frameRate.svelte.ts';
 import { pacer } from './pace.ts';
 import { log } from '#lib/sync/log.ts';
-import { midXOf } from '#lib/layout/model.ts';
+import { SEA_X, midXOf } from '#lib/layout/model.ts';
 
 type Tod = 'day' | 'dusk' | 'night';
 
@@ -109,9 +109,8 @@ const ZOOM = { min: 1, max: 3.2 };
 const ZOOM_OVER = 1.12, ZOOM_UNDER = 1.2;
 /** A pinch released zoomed out past the default goes back to it over this, eased out (the user's approved move). */
 const ZOOM_BACK_MS = 350;
-/** Zoomed in past the default, the view may pan sideways over the land and this much sea (u) either side… */
-const SEA_X = 24;
-/** …the sideways room growing in over this much zoom past the default (so it's exactly centred at the default). */
+/** Zoomed in past the default, the view may pan sideways over the land and SEA_X (model.ts) of sea either side, the
+ *  sideways room growing in over this much zoom past the default (so it's exactly centred at the default). */
 const X_RAMP = 0.3;
 /** Where the camera may look (the pivot's world z): the sea in front of まえ … the falls and the forest above the cliff. */
 const CAM_Z = { min: 30, max: 1000 } as const;
