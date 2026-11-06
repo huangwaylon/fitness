@@ -29,7 +29,7 @@
     <Ic name="calendar" />
     <span class="lbl">{pick(S.secPlan, L)}</span>
     {#if href}
-      <a class="yamap" {href} target="_blank" rel="noopener" aria-label={pick(S.planYamapAria, L)} data-sfx="tick" data-plan-link>{pick(S.planYamap, L)}<Ic name="ext" /></a>
+      <a class="yamap" {href} target="_blank" rel="noopener noreferrer" aria-label={pick(S.planYamapAria, L)} data-sfx="open" data-plan-link>{pick(S.planYamap, L)}<Ic name="ext" /></a>
     {/if}
   </div>
   <div class="date">{fmtPlanDate(plan.dateISO, L)}</div>
@@ -41,9 +41,9 @@
   <details class="tl-wrap" open>
     <summary class="tl-title" data-sfx="tick">{pick(S.secSchedule, L)}<span class="caret"><Ic name="chevDown" /></span></summary>
     <div class="meta">
-      <span><Ic name="sunrise" /> {plan.sunrise}<span class="sr">{pick(S.schedRise, L)}</span></span>
-      <span><Ic name="sunset" /> {plan.sunset}<span class="sr">{pick(S.schedSet, L)}</span></span>
-      <span><Ic name="clock" /> {plan.totalTime}<span class="sr">{pick(S.schedTotal, L)}</span></span>
+      <span><Ic name="sunrise" /> {plan.sunrise}<span class="sr-only">{pick(S.schedRise, L)}</span></span>
+      <span><Ic name="sunset" /> {plan.sunset}<span class="sr-only">{pick(S.schedSet, L)}</span></span>
+      <span><Ic name="clock" /> {plan.totalTime}<span class="sr-only">{pick(S.schedTotal, L)}</span></span>
     </div>
     <ol class="tl">
       {#each rows as r, i (i)}
@@ -90,7 +90,6 @@
   .meta { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 11px 0 13px; font-size: 12px; font-weight: 700; color: var(--ink-2); font-variant-numeric: tabular-nums; }
   .meta > span { display: inline-flex; align-items: center; gap: 5px; }
   .meta :global(.ic) { width: 14px; height: 14px; color: var(--muted); }
-  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
   .tl { position: relative; list-style: none; margin: 0; padding: 0; }
   .tl::before { content: ''; position: absolute; left: 6px; top: 11px; bottom: 11px; width: 2px; background: var(--line); border-radius: 1px; }

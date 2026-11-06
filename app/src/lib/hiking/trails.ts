@@ -300,8 +300,8 @@ export const WPT_JA: Record<string, string> = {
   'End of Snow Trail': 'スノートレイル終点'
 };
 
-/** A trail's slug from the hiking app's link (`https://huangwaylon.github.io/gpx/#/trail/lake-22`, the Seattle guide's
- *  `hike.gpx`), if it is one of ours; else null. @public (rd-classic's hike cards: openTrail(hikeSlugOf(day.hike.gpx))) */
+/** A trail's slug from the hiking app's link (`https://huangwaylon.github.io/hiking-trails/#/trail/lake-22`, the
+ *  Seattle guide's `hike.gpx`), if it is one of ours; else null (classic/CDay.svelte: openTrail). */
 export function hikeSlugOf(url: string | undefined | null): string | null {
   const slug = /#\/trail\/([a-z0-9-]+)/.exec(url ?? '')?.[1];
   return slug && trailOf(slug) ? slug : null;

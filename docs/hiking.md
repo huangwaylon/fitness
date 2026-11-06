@@ -54,7 +54,7 @@ chunk is cached, a retry. Under drawOff() (the e2e's logic tier) a stub draws th
   the whole elevation chart; drag or tap it up to 90 %, and Esc folds it back. The body: the chart (press shows the
   readout and the map's dot, drag moves them, let go and they stay, tap again to clear), Kinpu's plan card, 概要,
   コース紹介, tips, 詳細情報, credits.
-- Units follow the phone's km / mi switch (`travel/units.ts`); the language follows the reader's locale.
+- Units follow the phone's km / mi switch (`travel/units.ts`, set under りょこう's list); the language the reader's locale.
 
 ## Later / left out
 

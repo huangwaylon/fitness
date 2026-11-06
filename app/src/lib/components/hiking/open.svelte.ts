@@ -18,7 +18,7 @@ export function openTrails(): void {
   hiking.show();
 }
 
-/** @public (rd-classic's Seattle hike cards: `openTrail(hikeSlugOf(day.hike.gpx))`) */
+/** The classic Seattle guide's hike cards: `openTrail(hikeSlugOf(day.hike.gpx))` (classic/CDay.svelte). */
 export function openTrail(slug: string): void {
   hikingAsk.slug = slug;
   hikingAsk.n++;

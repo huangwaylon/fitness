@@ -17,7 +17,6 @@ export interface Engine {
   /** The whole track in the band between the header and the sheet (`bottom` px kept clear). */
   fit(bottom: number): void;
   zoom(by: 1 | -1): void;
-  center(): [number, number];
   destroy(): void;
 }
 
@@ -26,7 +25,7 @@ const fc = (features: unknown[]) => ({ type: 'FeatureCollection', features }) as
 const pt = (lon: number, lat: number, props: Record<string, unknown> = {}) => ({ type: 'Feature', properties: props, geometry: { type: 'Point', coordinates: [lon, lat] } });
 
 /** The track's box (sw, ne). */
-export function boundsOf(p: Prepared): LngLatBoundsLike {
+function boundsOf(p: Prepared): LngLatBoundsLike {
   let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
   for (const [lon, lat] of p.pts) ((w = Math.min(w, lon)), (e = Math.max(e, lon)), (s = Math.min(s, lat)), (n = Math.max(n, lat)));
   return [[w, s], [e, n]];
@@ -125,10 +124,6 @@ export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; 
     zoom(by) {
       if (by > 0) map.zoomIn({ duration: reduced() ? 0 : 250 });
       else map.zoomOut({ duration: reduced() ? 0 : 250 });
-    },
-    center() {
-      const c = map.getCenter();
-      return [c.lng, c.lat];
     },
     destroy() {
       map.remove();
