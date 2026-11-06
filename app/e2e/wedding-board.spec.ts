@@ -8,7 +8,7 @@
 // both versions, mine marked, これに する with とりけす, ふたつ あわせる), 設定 (names, ‹ right after typing, categories
 // with とりけす, the deleted list, ぜんぶ けす after its ask) and the guest's read-only board (`?demo&as=G`). Logic tier:
 // nothing here is drawn 3D. Pictures under SHOTS=<dir>.
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type Locator, type Page } from './fixtures.ts';
 import { fromMenu, hudMenu, unfoldMenu } from './hud.ts';
 import { islandQuery, islandUp } from './island.ts';
 import { shot } from './shots.ts';
@@ -24,13 +24,28 @@ const bar = (p: Page) => root(p).locator('.q-hdr');
 /** The task form (a bottom sheet over the board). */
 const form = (p: Page) => p.locator('dialog[open].q-bs');
 const banner = (p: Page) => p.locator('dialog[open] .banner');
-/** The island as `as` (A, B or G), the board's sheet open from the menu. */
+/** The animations on `el` played out. */
+const played = (el: Locator) => el.evaluate((e) => Promise.all(e.getAnimations().map((a) => a.finished)));
+/** The island as `as` (A, B or G), the board's sheet open from the menu and grown to its place (Sheet's pop: a box
+ *  measured during it is scaled, CI run 42235342027's ＋ above the last row). */
 async function board(p: Page, as = 'A') {
   await p.goto(islandQuery(`demo&as=${as}&${DAY}`));
   await fromMenu(p, 'wedding');
   await expect(sheet(p).locator('[data-wed-top]')).toBeVisible();
+  await played(p.locator('dialog[open].q-sheet'));
 }
-const open = (p: Page, id: string) => card(p, id).locator('.head').click();
+/** A row opened, its slide over: a tap inside it mid-slide (the row clipped, scrolled into view and unscrolled as it
+ *  grows) landed beside 編集. */
+async function open(p: Page, id: string) {
+  await card(p, id).locator('.head').click();
+  await played(card(p, id).locator('.more'));
+}
+/** A banner just raised (`text`), slid in: a tap under it then waits for it to go instead of landing on it as it
+ *  rises over the bottom rows (the dismissing tap of a 保存しました, not 編集: CI run 42235342027). */
+async function bannerIn(p: Page, text: string) {
+  await expect(banner(p)).toContainText(text);
+  await played(banner(p));
+}
 
 test('the menu\'s けっこんしき opens the board over the island, with its ⚙ and ＋; ✕ closes it', async ({ page }) => {
   await board(page);
@@ -361,6 +376,7 @@ test('設定: the names, a category added and removed, a deleted task restored, 
   await banner(page).locator('.act').click();
   await expect(sheet(page).locator('[data-wed-cat="Photo"]')).toBeVisible();
   await sheet(page).locator('[data-wed-cat-remove="Beauty"]').click();
+  await bannerIn(page, 'Beauty');
   await expect(sheet(page).locator('[data-wed-cat="Beauty"]')).toHaveCount(0);
   await expect(sheet(page).locator('[data-wed-deleted]')).toHaveCount(1);
   await shot(page, 'e2e-settings');
@@ -369,6 +385,7 @@ test('設定: the names, a category added and removed, a deleted task restored, 
   // ‹ right after typing (no blur first): the name saved, the board still open, home
   await sheet(page).locator('[data-wed-set="p1"]').fill('たろうさん');
   await bar(page).locator('.back').click();
+  await bannerIn(page, '保存しました');
   await expect(sheet(page)).toHaveAttribute('data-level', 'home');
   await expect(sheet(page).locator('[data-wed-names]')).toHaveText('たろうさん & はなこ');
   await expect(card(page, 'wdemo07')).toBeVisible();

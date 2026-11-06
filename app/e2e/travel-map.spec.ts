@@ -143,20 +143,24 @@ test('drawn: MapLibre on the fixture tiles, the NH pins, a day chip refits, a pi
   await expect(page.locator('dialog[open] .maplibregl-canvas')).toHaveCount(1);
   await expect(markers).toHaveCount(5);
   await expect(page.locator('dialog[open] .maplibregl-ctrl-attrib')).toContainText('© OpenStreetMap');
-  const c1 = (await mapState(page)).center!;
-  // day 2 (Auckland to Taranaki, south) fits somewhere else than day 1 (round Auckland)
-  await page.locator('dialog[open] [data-map-day="2"]').click();
+  /** The centre once the camera is at rest (a fit's or a pin's flight over). */
+  const still = async () => {
+    await expect.poll(async () => (await mapState(page)).moving, { timeout: 10_000 }).toBe(false);
+    return (await mapState(page)).center!;
+  };
+  const c1 = await still();
+  // day 3 (Auckland to Taranaki, south) fits somewhere else than day 1 (round Auckland)
+  await page.locator('dialog[open] [data-map-day="3"]').click();
   await expect.poll(async () => (await mapState(page)).center![1], { timeout: 10_000 }).toBeLessThan(c1[1] - 0.05);
-  await page.waitForTimeout(1000); // hold: the fit's flight (700 ms) settles before the centre is read (no moving state exposed)
-  const c2 = (await mapState(page)).center!;
-  // a pin: selected, tagged with its name, the map brought to it; day 2's chip again: back to the route
-  const id = stopsOf(2).at(-1)!.id;
+  const c2 = await still();
+  // a pin: selected, tagged with its name, the map brought to it; day 3's chip again: back to the route
+  const id = stopsOf(3).at(-1)!.id;
   const pin = page.locator(`dialog[open] .maplibregl-marker[data-pin="${id}"]`);
   await pin.click();
   await expect(page.locator('dialog[open] [data-travel-map]')).toHaveAttribute('data-selected', id);
   await expect(pin.locator('.tm-tag')).toBeVisible();
   await expect.poll(async () => Math.abs((await mapState(page)).center![1] - c2[1]) + Math.abs((await mapState(page)).center![0] - c2[0]), { timeout: 10_000 }).toBeGreaterThan(0.01);
-  await page.locator('dialog[open] [data-map-day="2"]').click();
+  await page.locator('dialog[open] [data-map-day="3"]').click();
   await expect.poll(async () => Math.abs((await mapState(page)).center![1] - c2[1]), { timeout: 10_000 }).toBeLessThan(0.002);
   expect(net.stray).toEqual([]);
   expect(errors).toEqual([]);

@@ -88,7 +88,8 @@
   }
 
   const snapshot = (): MapState => ({
-    mode, loc, candidates: cands.map((p) => p.id), legs: legsData(legs, dayColors, day).features.length, layers: layersOn(layers), center: engine?.center() ?? null
+    mode, loc, candidates: cands.map((p) => p.id), legs: legsData(legs, dayColors, day).features.length, layers: layersOn(layers), center: engine?.center() ?? null,
+    moving: engine?.moving() ?? false
   });
 
   // the props into the map
