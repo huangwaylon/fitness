@@ -391,10 +391,12 @@ const myFood = (id: string) => {
   return m ? foodEntries(m.state, m.me).find((e) => e.id === id) : undefined;
 };
 
-/** Change one of my entries: its day, meal, grams or portion label (`u`: null drops it). The op is its whole state. */
-export function editFood(id: string, ch: { d?: LocalDate; m?: Meal; g?: number; u?: string | null }): SendResult {
-  const e = myFood(id);
-  if (!e) return { ok: false };
+/** Change one of my entries: its day, meal, grams, portion label (`u`: null drops it) or food (`f`: another state of it,
+ *  ごはん's じょうたい). The op is its whole state. */
+export function editFood(id: string, ch: { d?: LocalDate; m?: Meal; g?: number; u?: string | null; f?: FoodSnap }): SendResult {
+  const e0 = myFood(id);
+  if (!e0) return { ok: false };
+  const e = ch.f ? { ...e0, f: ch.f } : e0;
   const { u: _u, ...rest } = e.f;
   const f: FoodSnap = ch.u === undefined ? e.f : ch.u === null ? rest : { ...rest, u: ch.u };
   const g = ch.g === undefined ? e.g : Math.round(ch.g * 10) / 10;
