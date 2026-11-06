@@ -1,28 +1,22 @@
 // The trip map in the specs (components/travel/map, docs/travel.md "Maps"): its hook (window.__travelMap), a trip's page
-// in the trips' sheet (the menu's りょこう pill, on the demo),
-// and OpenFreeMap answered from fixtures (e2e/fixtures/travel/: a trimmed TileJSON and the tiles round Motobu, z6-12),
-// so no spec ever reaches the network. Any other tile is an empty 204; any other request to that origin fails the spec.
+// in the trips' sheet (the menu's りょこう pill, on the demo), and OpenFreeMap answered from fixtures
+// (e2e/fixtures/travel/: a trimmed TileJSON and the tiles round Motobu, z6-12), so no spec ever reaches the network. Any
+// other tile is an empty 204; any other request to that origin fails the spec.
+//
+// To refresh the fixtures (a schema change at OpenFreeMap), from e2e/fixtures/travel/:
+//   curl -s https://tiles.openfreemap.org/planet > /tmp/planet.json      # the live TileJSON; its tiles[0] is versioned
+//   T=$(node -p "require('/tmp/planet.json').tiles[0]")
+//   for f in tiles/*/*/*.pbf; do IFS=/ read -r _ z x y <<< "${f%.pbf}"; curl -s "$(echo $T | sed "s/{z}/$z/;s/{x}/$x/;s/{y}/$y/")" -o $f; done
+//   then copy /tmp/planet.json's fields into tilejson.json, keeping its tiles as …/planet/fixture/{z}/{x}/{y}.pbf.
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, type Page } from '@playwright/test';
+import type { MapState } from '../src/lib/components/travel/map/types.ts';
 import { BASE } from './island.ts';
 import { fromMenu, hudMenu } from './hud.ts';
 
 const FIX = join(import.meta.dirname, 'fixtures', 'travel');
 
-export type MapState = {
-  mode: 'stub' | 'loading' | 'ready' | 'lost';
-  day: number | 'all';
-  selected: string | null;
-  locale: 'ja' | 'en';
-  stops: string[];
-  candidates: string[];
-  legs: number;
-  layers: string[];
-  loc: string;
-  zoom: number | null;
-  center: [number, number] | null;
-};
 export const mapState = (page: Page) => page.evaluate(() => (window as unknown as { __travelMap: { state(): unknown } }).__travelMap.state()) as Promise<MapState>;
 
 export type TripTab = 'days' | 'map' | 'pack' | 'camps';

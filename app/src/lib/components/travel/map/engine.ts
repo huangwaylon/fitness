@@ -1,56 +1,51 @@
 // The trip map's MapLibre side (docs/travel.md "Maps"): the lazy part TripMap.svelte imports only when it draws (never
 // under drawOff()). MapLibre's CSP-safe path: its worker is a file of our own origin (`?worker&url`, under
 // _app/immutable/workers), so no blob: worker and no eval; the basemap's TileJSON and tiles fetched from OpenFreeMap
-// (source.ts: the CSP's one third-party connect-src); labels in the app's font (fonts.ts). One map per TripMap;
+// (style.ts BASEMAP: the CSP's one third-party connect-src); labels in the app's font (fonts.ts). Neither this chunk
+// nor its worker nor its CSS is precached (service-worker/caches.ts): the map is online only. One map per TripMap;
 // remove() drops its WebGL context.
 import { AttributionControl, Map as GLMap, Marker, getGlobalDispatcher, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // (bundled as our own worker chunk, a .js: a raw .mjs is served as application/octet-stream by some hosts, which a
 // module worker under nosniff refuses)
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
-import { labelField } from './basemap.ts';
-import { fontFaces, LOCAL_CJK } from './fonts.ts';
-import { boundsOf, candidatesData, keepoutData, legsData, locData, stopsOf, type Fix } from './overlay.ts';
+import { pick } from '../text.ts';
+import { labelLayout } from './basemap.ts';
+import { fontFaces } from './fonts.ts';
+import { boundsOf, candidatesData, candidatesOf, keepoutData, legsData, locData, pinLabel, pinsOf, type Fix, type Pin } from './overlay.ts';
 import { buildStyle, haloRadius, KEEP_IMAGES, labelLayers, SRC } from './style.ts';
-import { dayColor, nameOf, type Day, type Layer, type MapLeg, type MapPlace, type Locale } from './types.ts';
+import { dayColor, type TripMapProps } from './types.ts';
 
-export interface EngineInput {
-  places: MapPlace[];
-  legs: MapLeg[];
-  dayColors: string[];
-  day: Day;
-  selected: string | undefined;
-  layers: Partial<Record<Layer, boolean>> | undefined;
-  locale: Locale;
-}
+export type EngineInput = Omit<TripMapProps, 'onselect'>;
 
 export interface Engine {
   update(i: EngineInput): void;
-  /** The location dot (null: none); `fly` brings the map to it. */
+  /** The location dot (null: none); `fly` brings the map to it. Kept till the map has loaded. */
   setFix(fix: Fix | null, fly: boolean): void;
-  view(): { zoom: number; center: [number, number] };
-  readonly map: GLMap;
+  /** Back to the day's route. */
+  fit(): void;
+  center(): [number, number];
   destroy(): void;
 }
 
-/** A 44 px hit round a pin's head (a candidate's circle): what a fingertip covers. */
+/** What the map shows: 'ready' (the basemap's tiles coming), 'offline' (none came: the route alone), 'lost' (no WebGL
+ *  context). Only once the map has loaded. */
+export type EngineMode = 'ready' | 'offline' | 'lost';
+
+/** A 44 px hit round a candidate's dot: what a fingertip covers. */
 const HIT = 22;
+/** Pins whose heads come closer than this (px) are set side by side (one spot's stops are one pin already). */
+const GAP = 4;
 const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function createEngine(
-  el: HTMLElement,
-  input: EngineInput,
-  tiles: string | undefined,
-  on: { select(id: string): void; ready(): void; lost(on: boolean): void }
-): Engine {
+export function createEngine(el: HTMLElement, input: EngineInput, on: { select(id: string): void; mode(m: EngineMode): void }): Engine {
   setWorkerUrl(workerUrl);
-  const style = buildStyle({ tiles, locale: input.locale, fontFaces: fontFaces() });
+  const style = buildStyle(input.locale, fontFaces());
   const labels = labelLayers(style);
   const map = new GLMap({
     container: el,
     style,
     attributionControl: false,
-    localIdeographFontFamily: LOCAL_CJK,
     dragRotate: false,
     pitchWithRotate: false,
     touchPitch: false,
@@ -60,7 +55,7 @@ export function createEngine(
     renderWorldCopies: false,
     fadeDuration: 120,
     validateStyle: import.meta.env.DEV,
-    // the first view: the trip's (refit to the day once the style is in)
+    // the first view: the day's (refit once the style is in)
     bounds: boundsOf(input.places, input.legs, input.day) ?? undefined,
     fitBoundsOptions: { padding: 56, maxZoom: 15 }
   });
@@ -69,14 +64,18 @@ export function createEngine(
   map.addControl(new AttributionControl({ compact: false }), 'bottom-left');
 
   let cur = input;
-  const markers = new Map<string, { m: Marker; el: HTMLButtonElement }>();
-  let ready = false;
+  let fix: Fix | null = null;
+  const markers = new Map<string, { m: Marker; el: HTMLButtonElement; pin: Pin }>();
+  let loaded = false, lost = false;
+  /** The basemap: no tile yet, a tile in since the last failure, or failing (offline, the TileJSON or tiles refused). */
+  let base: 'wait' | 'ok' | 'down' = 'wait';
+  const report = () => loaded && on.mode(lost ? 'lost' : base === 'down' ? 'offline' : 'ready');
 
-  const pinLabel = (p: MapPlace, locale: Locale) => `${p.i ?? ''} ${nameOf(p.name, locale)}`.trim();
   function pins(i: EngineInput): void {
-    const want = new Set(stopsOf(i.places, i.day).map((p) => p.id));
-    for (const [id, { m }] of markers) if (!want.has(id)) (m.remove(), markers.delete(id));
-    for (const p of stopsOf(i.places, i.day)) {
+    const want = pinsOf(i.places, i.day);
+    const ids = new Set(want.map((p) => p.id));
+    for (const [id, { m }] of markers) if (!ids.has(id)) (m.remove(), markers.delete(id));
+    for (const p of want) {
       let k = markers.get(p.id);
       if (!k) {
         const b = document.createElement('button');
@@ -84,25 +83,50 @@ export function createEngine(
         b.className = 'tm-pin';
         b.dataset.pin = p.id;
         b.dataset.sfx = 'tick';
-        b.innerHTML = '<span class="tm-head"></span><span class="tm-tail"></span>';
+        b.innerHTML = '<span class="tm-tag" aria-hidden="true"></span><span class="tm-head"></span><span class="tm-tail"></span>';
         b.addEventListener('click', (e) => (e.stopPropagation(), on.select(p.id)));
-        k = { m: new Marker({ element: b, anchor: 'bottom' }).setLngLat([p.lon, p.lat]).addTo(map), el: b };
+        k = { m: new Marker({ element: b, anchor: 'bottom' }).setLngLat([p.lon, p.lat]).addTo(map), el: b, pin: p };
         markers.set(p.id, k);
       }
-      k.m.setLngLat([p.lon, p.lat]);
-      k.el.style.setProperty('--pin', dayColor(i.dayColors, p.day ?? 1));
-      k.el.querySelector('.tm-head')!.textContent = String(p.i ?? '');
+      k.pin = p;
+      const sel = !!i.selected && p.ids.includes(i.selected);
+      k.el.style.setProperty('--pin', dayColor(i.dayColors, p.day));
+      k.el.querySelector('.tm-head')!.textContent = p.n;
+      k.el.querySelector('.tm-tag')!.textContent = pick(p.name, i.locale);
       k.el.setAttribute('aria-label', pinLabel(p, i.locale));
-      k.el.setAttribute('aria-pressed', String(p.id === i.selected));
+      k.el.setAttribute('aria-pressed', String(sel));
       // the chosen pin over its neighbours; later stops over earlier ones
-      k.el.style.zIndex = String(p.id === i.selected ? 1000 : (p.day ?? 0) * 50 + (p.i ?? 0));
+      k.el.style.zIndex = String(sel ? 1000 : Number(p.n.split('·')[0]));
+    }
+    spread();
+  }
+  /** Pins that would overlap on screen (a few hundred metres apart, zoomed out) side by side round their middle, so
+   *  each stays tappable; apart again as the map zooms in. */
+  function spread(): void {
+    const ks = [...markers.values()].map((k) => ({ k, ...map.project([k.pin.lon, k.pin.lat]), w: (k.el.querySelector<HTMLElement>('.tm-head')?.offsetWidth || 30) + GAP }));
+    const groups: (typeof ks)[] = [];
+    for (const a of ks) {
+      const near = groups.filter((g) => g.some((b) => Math.abs(a.x - b.x) < (a.w + b.w) / 2 && Math.abs(a.y - b.y) < 30));
+      const g = near.flat().concat(a);
+      for (const n of near) groups.splice(groups.indexOf(n), 1);
+      groups.push(g);
+    }
+    for (const g of groups) {
+      g.sort((a, b) => a.x - b.x);
+      const total = g.reduce((s, a) => s + a.w, 0);
+      let left = g.reduce((s, a) => s + a.x, 0) / g.length - total / 2;
+      for (const a of g) {
+        a.k.m.setOffset(g.length > 1 ? [left + a.w / 2 - a.x, 0] : [0, 0]);
+        left += a.w;
+      }
     }
   }
   const src = (id: string) => map.getSource<GeoJSONSource>(id);
   function data(i: EngineInput): void {
     src(SRC.legs)?.setData(legsData(i.legs, i.dayColors, i.day) as never);
+    const cands = candidatesOf(i.places, i.layers);
     src(SRC.cands)?.setData(candidatesData(i.places, i.layers, i.selected) as never);
-    src(SRC.keep)?.setData(keepoutData(i.places, i.day, i.layers) as never);
+    src(SRC.keep)?.setData(keepoutData(pinsOf(i.places, i.day), cands) as never);
   }
   function fit(i: EngineInput, animate: boolean): void {
     const b = boundsOf(i.places, i.legs, i.day);
@@ -110,51 +134,75 @@ export function createEngine(
   }
   function bringTo(id: string): void {
     const p = cur.places.find((x) => x.id === id);
-    if (!p) return;
-    map.easeTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 13.5), duration: reduced() ? 0 : 600 });
+    if (p) map.easeTo({ center: [p.lon, p.lat], zoom: Math.max(map.getZoom(), 13.5), duration: reduced() ? 0 : 600 });
+  }
+  function showFix(fly: boolean): void {
+    if (fix) map.setPaintProperty('loc-halo', 'circle-radius', haloRadius(fix.lat));
+    src(SRC.loc)?.setData(locData(fix) as never);
+    if (fix && fly) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: reduced() ? 0 : 600 });
   }
 
   pins(input);
+  let flyOnLoad = false;
   map.on('load', () => {
     for (const [id, [w, h]] of Object.entries(KEEP_IMAGES)) if (!map.hasImage(id)) map.addImage(id, { width: w, height: h, data: new Uint8Array(w * h * 4) });
-    ready = true;
+    loaded = true;
     data(cur);
     fit(cur, false);
     if (cur.selected) bringTo(cur.selected);
-    on.ready();
+    // a fix that came before the style was in
+    if (fix) showFix(flyOnLoad);
+    report();
   });
-  map.on('webglcontextlost', () => on.lost(true));
-  map.on('webglcontextrestored', () => on.lost(false));
-  // a candidate's circle: the nearest within a fingertip
+  map.on('zoom', spread);
+  map.on('data', (e) => {
+    const d = e as { dataType?: string; sourceId?: string; tile?: unknown };
+    if (d.dataType === 'source' && d.sourceId === SRC.base && d.tile && base !== 'ok') ((base = 'ok'), report());
+  });
+  // the basemap failing is shown (TripMap's notice), not logged; anything else is MapLibre's console error as before
+  map.on('error', (e) => {
+    if ((e as { sourceId?: string }).sourceId === SRC.base) {
+      if (base !== 'down') ((base = 'down'), report());
+    } else console.error(e.error);
+  });
+  map.on('webglcontextlost', () => ((lost = true), report()));
+  map.on('webglcontextrestored', () => ((lost = false), report()));
+  // a candidate's dot: the nearest within a fingertip
   map.on('click', (e) => {
     if (!map.getLayer('cands')) return;
     const { x, y } = e.point;
     const hits: MapGeoJSONFeature[] = map.queryRenderedFeatures([[x - HIT, y - HIT], [x + HIT, y + HIT]], { layers: ['cands'] });
-    const near = hits.map((f) => ({ f, d: (() => { const c = map.project((f.geometry as unknown as { coordinates: [number, number] }).coordinates); return Math.hypot(c.x - x, c.y - y); })() })).sort((a, b) => a.d - b.d)[0];
-    const id = near?.f.properties?.id;
+    const d = (f: MapGeoJSONFeature) => {
+      const c = map.project((f.geometry as unknown as { coordinates: [number, number] }).coordinates);
+      return Math.hypot(c.x - x, c.y - y);
+    };
+    const id = hits.sort((a, b) => d(a) - d(b))[0]?.properties?.id;
     if (typeof id === 'string') on.select(id);
   });
 
   return {
-    map,
     update(i) {
       const prev = cur;
       cur = i;
       pins(i);
-      if (i.locale !== prev.locale) for (const id of labels) map.getLayer(id) && map.setLayoutProperty(id, 'text-field', labelField(i.locale));
-      if (!ready) return;
+      if (i.locale !== prev.locale) {
+        const l = labelLayout(i.locale);
+        for (const id of labels) (map.setLayoutProperty(id, 'text-field', l['text-field']), map.setLayoutProperty(id, 'text-max-width', l['text-max-width']));
+      }
+      if (!loaded) return;
       data(i);
       if (i.day !== prev.day) fit(i, true);
       else if (i.selected && i.selected !== prev.selected) bringTo(i.selected);
     },
-    setFix(fix, fly) {
-      if (fix && map.getLayer('loc-halo')) map.setPaintProperty('loc-halo', 'circle-radius', haloRadius(fix.lat));
-      src(SRC.loc)?.setData(locData(fix) as never);
-      if (fix && fly) map.easeTo({ center: [fix.lon, fix.lat], zoom: Math.max(map.getZoom(), 14), duration: reduced() ? 0 : 600 });
+    setFix(f, fly) {
+      fix = f;
+      if (loaded) showFix(fly);
+      else flyOnLoad ||= fly;
     },
-    view() {
+    fit: () => loaded && fit(cur, true),
+    center() {
       const c = map.getCenter();
-      return { zoom: map.getZoom(), center: [c.lng, c.lat] };
+      return [c.lng, c.lat];
     },
     destroy() {
       for (const { m } of markers.values()) m.remove();

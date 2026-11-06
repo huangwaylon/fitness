@@ -10,14 +10,19 @@ import { drawn, fixtureTiles, mapReady, openTrip } from './travelMap.ts';
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&as=B';
 
-type Probe = { gl: number; ls: number };
+/** WebGL contexts alive (all; `map`: the trip map's, a `maplibregl-canvas`'s) and window/document listeners. */
+type Probe = { gl: number; map: number; ls: number };
 async function watch(page: Page) {
   await page.addInitScript(() => {
-    const gls: WeakRef<object>[] = [];
+    const gls: WeakRef<object>[] = [], maps: WeakRef<object>[] = [];
     const get = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (this: HTMLCanvasElement, ...a: unknown[]) {
       const c = (get as (...x: unknown[]) => RenderingContext | null).apply(this, a);
-      if (c && String(a[0]).startsWith('webgl') && !gls.some((r) => r.deref() === c)) gls.push(new WeakRef(c));
+      if (c && String(a[0]).startsWith('webgl') && !gls.some((r) => r.deref() === c)) {
+        gls.push(new WeakRef(c));
+        // MapLibre names its canvas before it asks for the context
+        if (this.classList.contains('maplibregl-canvas')) maps.push(new WeakRef(c));
+      }
       return c;
     } as typeof get;
     // the window's and document's listeners, net (one per listener, type and phase)
@@ -37,7 +42,7 @@ async function watch(page: Page) {
       if (s?.delete(k)) n--;
       return rem.call(this, type, f as EventListener, o as EventListenerOptions);
     };
-    (window as unknown as { __leaks: () => Probe }).__leaks = () => ({ gl: gls.filter((r) => r.deref()).length, ls: n });
+    (window as unknown as { __leaks: () => Probe }).__leaks = () => ({ gl: gls.filter((r) => r.deref()).length, map: maps.filter((r) => r.deref()).length, ls: n });
   });
 }
 async function measure(page: Page): Promise<Probe> {
@@ -158,10 +163,12 @@ test('the trip map in and out: no WebGL context or window listener left behind',
   await fixtureTiles(page);
   await page.goto(`${BASE}/shop${Q}`);
   await expect(page.locator('[data-shop]')).toBeVisible();
+  const made: number[] = [];
   const round = async () => {
     await nav(page, `${BASE}/${Q}`);
     await openTrip(page);
     await mapReady(page);
+    made.push((await page.evaluate(() => (window as unknown as { __leaks: () => Probe }).__leaks())).map);
     await page.locator('dialog[open] [data-map-day="2"]').click();
     await page.keyboard.press('Escape');
     await expect(page.locator('dialog[open]')).toHaveCount(0);
@@ -172,8 +179,10 @@ test('the trip map in and out: no WebGL context or window listener left behind',
   const first = await measure(page);
   for (let i = 0; i < 2; i++) await round();
   const after = await measure(page);
-  // (at most an island's, held a while by the page, as in the island's own rounds above: never a map's)
-  expect(first.gl, 'WebGL contexts alive after the map closed').toBeLessThanOrEqual(1);
+  // each round's map had its context (the probe sees them), and none outlives its sheet; the rest (at most an
+  // island's, held a while by the page, as in the island's own rounds above) doesn't grow
+  expect(made.map((n) => n >= 1), "the map's context seen while it is open").toEqual([true, true, true]);
+  expect([first.map, after.map], 'map contexts alive after the map closed').toEqual([0, 0]);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
 });

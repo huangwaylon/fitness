@@ -1,16 +1,21 @@
 // The basemap's layers on the OpenMapTiles schema (docs/travel.md "Maps"): our own NookPhone style (theme.ts), no
 // sprite (no icons: shields, POI icons, one-way arrows left out), flat (no 3D buildings, no hillshade), labels in the
 // reader's locale in the app's font. Everything that knows the schema's layer and field names is here (the source is
-// source.ts): another schema is another module with the same exports. OpenFreeMap's `liberty` style was the reference
-// for the filters only.
+// style.ts's BASEMAP): another schema is another module with the same exports. OpenFreeMap's `liberty` style was the
+// reference for the filters only.
 import type { ExpressionSpecification, FilterSpecification, LayerSpecification } from 'maplibre-gl';
 import type { Theme } from './theme.ts';
-import type { Locale } from './types.ts';
+import type { Locale } from '#lib/i18n/index.ts';
 
 /** A label in the reader's locale: its own name, then (English) the Latin transliteration, then the local name. */
 export function labelField(locale: Locale): ExpressionSpecification {
   return locale === 'en' ? ['coalesce', ['get', 'name:en'], ['get', 'name:latin'], ['get', 'name']] : ['coalesce', ['get', 'name:ja'], ['get', 'name']];
 }
+
+/** The labels' locale-dependent layout (engine.ts re-sets it when the locale changes): the field, and the width a line
+ *  wraps at (ems): Japanese breaks between any two kana, so 12 keeps a name like エメラルドビーチ whole; Latin
+ *  breaks only at spaces, ~2 letters an em. */
+export const labelLayout = (locale: Locale) => ({ 'text-field': labelField(locale), 'text-max-width': locale === 'ja' ? 12 : 9 });
 
 type Stops = [zoom: number, px: number][];
 const interp = (stops: Stops, base = 1.4): ExpressionSpecification => ['interpolate', ['exponential', base], ['zoom'], ...stops.flat()];
@@ -42,13 +47,13 @@ const ROADS: { id: string; filter: ExpressionSpecification; min: number; w: Stop
   { id: 'motorway', filter: isClass('motorway'), min: 5, w: [[5, 0.5], [10, 1.8], [14, 6], [18, 17]], color: 'highway', edge: 'highwayCasing' }
 ];
 
-export function basemapLayers(source: string, t: Theme, label: { field: ExpressionSpecification; font: string[] }): LayerSpecification[] {
+export function basemapLayers(source: string, t: Theme, locale: Locale, font: string[]): LayerSpecification[] {
   const s = { source } as const;
   const fill = (id: string, layer: string, filter: FilterSpecification | undefined, color: string, extra: Record<string, unknown> = {}, minzoom?: number): LayerSpecification =>
     ({ id, type: 'fill', ...s, 'source-layer': layer, ...(filter ? { filter } : {}), ...(minzoom ? { minzoom } : {}), paint: { 'fill-color': color, 'fill-antialias': true, ...extra } }) as LayerSpecification;
   const halo = { 'text-halo-color': t.halo, 'text-halo-width': 1.6, 'text-halo-blur': 0.4 };
   const text = (size: ExpressionSpecification | number, more: Record<string, unknown> = {}) =>
-    ({ 'text-field': label.field, 'text-font': label.font, 'text-size': size, 'text-max-width': 8, 'text-letter-spacing': 0.02, ...more });
+    ({ ...labelLayout(locale), 'text-font': font, 'text-size': size, 'text-letter-spacing': 0.02, ...more });
 
   return [
     // the land is the background; the sea is the water layer's
@@ -93,7 +98,7 @@ export function basemapLayers(source: string, t: Theme, label: { field: Expressi
     {
       id: 'label-poi', type: 'symbol', ...s, 'source-layer': 'poi', minzoom: 14,
       filter: ['all', ['match', ['geometry-type'], ['Point', 'MultiPoint'], true, false], isClass('park', 'beach', 'attraction', 'museum', 'zoo', 'aquarium', 'castle', 'campsite', 'viewpoint', 'monument', 'ferry_terminal')],
-      layout: text(interp([[14, 10.5], [17, 12.5]], 1), { 'symbol-sort-key': ['get', 'rank'], 'text-padding': 6, 'text-max-width': 7 }),
+      layout: text(interp([[14, 10.5], [17, 12.5]], 1), { 'symbol-sort-key': ['get', 'rank'], 'text-padding': 6 }),
       paint: { 'text-color': ['match', ['get', 'class'], ['park', 'beach', 'campsite', 'viewpoint'], t.parkLabel, t.labelSoft], ...halo }
     },
     { id: 'label-peak', type: 'symbol', ...s, 'source-layer': 'mountain_peak', minzoom: 12, layout: text(11, { 'symbol-sort-key': ['get', 'rank'] }), paint: { 'text-color': t.parkLabel, ...halo } },

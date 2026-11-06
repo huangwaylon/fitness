@@ -1,14 +1,12 @@
 // The map's one font: Zen Maru Gothic Bold, the app's own (docs/design.md "Type"), drawn by MapLibre from the style's
 // `font-faces` (each @fontsource slice a woff2 with its unicode-range, fetched only once a label needs one of its
-// characters, then rasterised on the phone like the CJK fallback). So Japanese and Latin labels are the same round
-// face as the chrome. Characters no slice covers fall to the self-hosted Latin glyph PBFs (style.ts GLYPHS), then
-// the phone's rounded system font (LOCAL_CJK).
+// characters, then rasterised on the phone). So Japanese and Latin labels are the same round face as the chrome. The
+// style has no glyphs URL: a character no slice covers (Cyrillic, Greek: their slices left out) is drawn in a local
+// font.
 import type { FontFacesSpecification } from 'maplibre-gl';
 import ranges from '@fontsource/zen-maru-gothic/unicode.json';
 
 export const FONT = 'Zen Maru Gothic Bold';
-/** MapLibre's `localIdeographFontFamily`: CJK the slices miss (rare kanji in a place name). */
-export const LOCAL_CJK = "'Hiragino Maru Gothic ProN', 'Zen Maru Gothic', sans-serif";
 
 const files = import.meta.glob('../../../../../node_modules/@fontsource/zen-maru-gothic/files/zen-maru-gothic-*-700-normal.woff2', {
   query: '?url', import: 'default', eager: true

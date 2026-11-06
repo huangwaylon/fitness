@@ -1,77 +1,47 @@
-// The trip map's narrow interface (docs/travel.md "Maps"): what the trip sheet hands TripMap.svelte. Pure types, so
-// the sheet and the tests never pull in the map's chunk.
+// The trip map's narrow interface (docs/travel.md "Maps"): what the trip sheet hands TripMap.svelte, on the trip's own
+// Place and Leg. Pure, so the sheet and the tests never pull in the map's chunk.
+import type { Leg, Place } from '#lib/travel/types.ts';
+import type { Locale } from '#lib/i18n/index.ts';
 
-type PlaceKind = 'stop' | 'camp' | 'nature' | 'food';
 /** The candidate layers (Okinawa's chips): every kind but the day's stops. */
-export type Layer = Exclude<PlaceKind, 'stop'>;
+export type Layer = Exclude<Place['kind'], 'stop'>;
 export const LAYERS: readonly Layer[] = ['camp', 'nature', 'food'];
+export type Layers = Partial<Record<Layer, boolean>>;
 
-export type Locale = 'ja' | 'en';
-/** A name in the reader's locale, else the other. */
-export type Name = { ja?: string; en?: string };
+/** The candidates' dot colours (the map's circles and the chips' legend): the tent orange, a deep teal, a berry pink. */
+export const KIND_COLOR: Record<Layer, string> = { camp: '#F28A2E', nature: '#1E9C8A', food: '#D9487A' };
 
-export interface MapPlace {
-  id: string;
-  kind: PlaceKind;
-  name: Name;
-  lat: number;
-  lon: number;
-  /** A stop's day (1-based). */
-  day?: number;
-  /** A stop's number within its day (1-based): the pin's number. */
-  i?: number;
-}
-
-export interface MapLeg {
-  day: number;
-  mode: 'drive' | 'bus' | 'walk' | 'boat';
-  /** [lon, lat] */
-  line: [number, number][];
-}
-
-/** 'all', or a day (1-based). */
-export type Day = number | 'all';
+/** Day d's colour (the trip's d1…; a day past them the first's blue). */
+export const dayColor = (colors: readonly string[], d: number): string => colors[d - 1] ?? '#2F86BD';
 
 export interface TripMapProps {
-  places: MapPlace[];
-  legs: MapLeg[];
-  /** Day n's colour is dayColors[n - 1] (CSS colours; cycled past the end). */
-  dayColors: string[];
-  day: Day;
-  /** A place's id: its pin raised and the map brought to it. */
+  places: readonly Place[];
+  legs: readonly Leg[];
+  dayColors: readonly string[];
+  /** The day shown (1-based): its stops and legs. */
+  day: number;
+  /** A place's id: its pin raised and labelled, the map brought to it. */
   selected?: string;
   /** Which candidate layers show (default: none). */
-  layers?: Partial<Record<Layer, boolean>>;
+  layers?: Layers;
   locale: Locale;
-  /** The basemap's TileJSON URL (default: OpenFreeMap's planet, source.ts). */
-  tiles?: string;
-  /** A pin (a stop or a candidate) tapped. */
+  /** A pin (a stop or a candidate) tapped: a merged pin's first stop. */
   onselect?: (id: string) => void;
 }
 
-/** The map's state as the dev hook (`window.__travelMap`) and the stub's data-* tell it. */
+/** The map's state as the dev hook (`window.__travelMap`, the specs) tells it. */
 export interface MapState {
-  /** 'stub': drawOff(), no map made; 'loading' until the style and its first tiles are in; 'lost': the WebGL context
-   *  is gone (iOS took it back) until it's restored. */
-  mode: 'stub' | 'loading' | 'ready' | 'lost';
-  day: Day;
-  selected: string | null;
-  locale: Locale;
-  /** The stops shown (the day's, or all), by id. */
-  stops: string[];
+  /** 'stub': drawOff(), no map made; 'loading' until the style and its first tiles are in; 'offline': drawn, but no
+   *  basemap tile came (the route alone); 'failed': the map's chunk or its WebGL didn't come (a retry button); 'lost':
+   *  the WebGL context is gone (iOS took it back) until it's restored. */
+  mode: 'stub' | 'loading' | 'ready' | 'offline' | 'failed' | 'lost';
   /** The candidates shown (their layers on), by id. */
   candidates: string[];
   legs: number;
   layers: Layer[];
-  /** The location dot: off (never asked), asking, on (a fix shown), denied, unavailable (no fix / no API). */
   loc: LocState;
-  zoom: number | null;
   center: [number, number] | null;
 }
 
+/** The location dot: off (never asked), asking, on (a fix shown), denied, unavailable (no fix / no API). */
 export type LocState = 'off' | 'asking' | 'on' | 'denied' | 'unavailable';
-
-export const nameOf = (n: Name, locale: Locale): string => (locale === 'en' ? n.en ?? n.ja : n.ja ?? n.en) ?? '';
-
-/** Day n's colour. */
-export const dayColor = (colors: readonly string[], day: number): string => colors.length ? colors[(((day - 1) % colors.length) + colors.length) % colors.length] : '#2F86BD';
