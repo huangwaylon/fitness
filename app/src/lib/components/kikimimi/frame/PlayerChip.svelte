@@ -3,8 +3,8 @@
   // what), ✨ / 💦 at the reveal, 📖 once they've tapped よみおわった, their score; in the lobby joined (here: as is, no
   // badge) or まだ (dimmed).
   import type { Who } from '#lib/types.ts';
-  import Avatar from '../characters/Avatar.svelte';
-  import Mark from '../ui/Mark.svelte';
+  import Avatar from '../../characters/Avatar.svelte';
+  import Mark from '../../ui/Mark.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
