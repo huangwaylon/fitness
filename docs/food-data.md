@@ -50,7 +50,7 @@ header fields as they are written in the file.
 | `kcal` `p` `f` `c` `salt` | **per 100 g** (100 ml of a drink counts as 100 g). `kcal` is an int; the others have 1 decimal or are `null` when unknown. `c` = total carbohydrate as on Japanese labels; `salt` = 食塩相当量 |
 | `fib` `alc` | optional, per 100 g, 1 decimal (0–100), **absent when unknown**: `fib` = 食物繊維総量, `alc` = アルコール (pure alcohol, g). MEXT's own (FIB-, ALC); the recipe sets sum their MEXT ingredients' (as P/F/C: unknown only when every ingredient lacks it); the school lunches sum their 食物繊維 rows. `alc` only on a 酒 (`lib.tidy`: a dish's or a seasoning's みりん, 料理酒 or 奈良漬 mostly cooks off, and would read as drinking). Kurume, Tokyo, JBFD and the products have neither (their sources don't give them; the OFF Japan subset keeps no fibre) |
 | `portions` | optional `[{label, g}]`; the first one is the default. The app always adds a 100 g option |
-| `pop` | optional 1–3, a curated search-ranking boost (from `data_src/popular.json` and `scripts/mext_overrides.txt`); -1 ranks an item a step lower: a school lunch named after a story (`build.py` STORY: 「かさこじぞう」の恩返し味噌汁) |
+| `pop` | optional 1–3, a curated search-ranking boost (from `data_src/popular.json` and `scripts/mext_overrides.txt`); -1 ranks a rare form lower: MEXT's lab and rare forms (`mext_names.py` RARE: キャベツ カット 常法洗浄, 卵 素揚げ, a meat's 脂身 alone) and a school lunch named after a story (`build.py` STORY: 「かさこじぞう」の恩返し味噌汁) |
 | `vg`, `st` | MEXT only, optional: one food in its states (豚ロース 脂身つき 生 · 焼き · ゆで; `mext_names.py` variant_groups): `vg` the group's default item's id, `st` the item's state as the app's chip says it (乾 生 ゆで 水煮 蒸し 焼き レンジ いため ソテー). The items whose official name differs only in its last word, a state; 2+ in distinct states, none named as the stem alone; fried ones and a state with a note stay apart. The default: the most popular, then 生, then ゆで. 281 groups, 647 items |
 | `jan`, `brand` | packaged products only |
 | `note` | how the value was derived, shown in the picker |
@@ -126,7 +126,8 @@ Our recipe sets name a dish once (`build.py` `qualify`): a name an earlier set (
 at another kcal says what differs, エビマヨ（お店）, 麻婆豆腐（給食）, and a MAFF dish sharing a name takes its prefecture
 (雑煮（三重県）). A name never carries its reading: MAFF's title reading (「味噌汁（麦味噌）（みそしる（むぎみそ)）」, `recipes_text.split_title`) and a
 label's (豆板醤（トウバンジャン）, `lib.READINGS`) move to the aliases. Search aliases come from Wikidata (CC0) and ja.wikipedia (CC BY-SA, short names and readings only, no text), frozen
-in `data_src/aliases_*.json`. MEXT's rule-based aliases (`mext_names.py` TOKEN_ALIASES) give an animal's own names
+in `data_src/aliases_*.json`. MEXT's kana gives way to the everyday spelling where the dishes use it (`mext_names.py` EVERYDAY: ほうれん草,
+芽キャベツ; the kana stays an alias). MEXT's rule-based aliases (`mext_names.py` TOKEN_ALIASES) give an animal's own names
 (豚肉, 牛肉, 鶏肉) to its cuts, not to its processed meats or offal (`PROCESSED_MEAT`: 豚肉 found ベーコン first), and ライス only
 to cooked rice (01088's override), not to every 米 food (米粉, おもゆ).
 

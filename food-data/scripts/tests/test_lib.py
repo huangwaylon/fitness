@@ -390,6 +390,12 @@ class SameName(unittest.TestCase):
         b.qualify('maff_kyodo', maff)
         self.assertEqual([it['name'] for it in maff['items']], ['雑煮（愛知県）', '雑煮（三重県）', '冷奴（京都府）'])
 
+    def test_rare_forms(self):
+        self.assertTrue(mext_names.RARE.search('キャベツ カット 常法洗浄'))
+        self.assertTrue(mext_names.RARE.search('卵 素揚げ'))
+        self.assertFalse(mext_names.RARE.search('キャベツ 生'))
+        self.assertTrue(build.STORY.search('「かさこじぞう」の恩返し味噌汁'))
+
 
 class Barcodes(unittest.TestCase):
     def test_norm_and_shard(self):
