@@ -158,9 +158,10 @@ export async function tapFigure(page: Page, sel: string, fy = 0.5) {
  *  requestAnimationFrame): the sim step. Quick in the logic tier (nothing drawn); drawn under software GL a minute of
  *  frames takes minutes (use `page.clock.fastForward` there). */
 export const step = (page: Page, ms: number) => page.clock.runFor(ms);
-/** The island's opening beats are over (the greeting and the day's beats played, no event queued): __world.quiet(). */
+/** The island's opening beats are over (the greeting and the day's beats played, no event queued): __world.quiet().
+ *  (Twice as long drawn in the full tier, as its expects: in software GL they end 10-odd s after the island is up.) */
 export const quiet = (page: Page) =>
-  expect.poll(() => page.evaluate(() => (window as unknown as { __world?: { quiet?(): boolean } }).__world?.quiet?.() ?? false), { timeout: 15_000, message: 'the opening beats over' }).toBe(true);
+  expect.poll(() => page.evaluate(() => (window as unknown as { __world?: { quiet?(): boolean } }).__world?.quiet?.() ?? false), { timeout: process.env.E2E_SLOW ? 30_000 : 15_000, message: 'the opening beats over' }).toBe(true);
 
 /** world.ts's places as the page's island has them (the layout's): a spec reads these, not world.ts's constants
  *  imported here (those are the old fixed island's, before the layout is applied). */

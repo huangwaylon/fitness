@@ -144,19 +144,29 @@ test('a sheet stops the walk where it is', async ({ page }) => {
   await expect(page.locator('[data-actor="mine"].walking')).toHaveCount(0);
 });
 
+/** The partner sets off on a one-stop outing (__world.wander; false: it can't yet). */
+const setOff = (page: Page) => page.evaluate(() => (window as unknown as { __world: { wander(): boolean } }).__world.wander());
 const footsteps = (page: Page) =>
   page.evaluate(() => ((window as { __cues?: string[] }).__cues ?? []).filter((c) => c.startsWith('footstep-')).length);
 
 test('the partner wanders off to a point of interest and back, footsteps under it, never over a control', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-    await page.goto('?demo&date=2026-11-04T12:00&wander');
-    // (the island up first: under CI's load the page takes more than 5 s; ?wander's outing starts 3.2 s after it)
+    await page.goto('?demo&date=2026-11-04T12:00');
+    // the island up and its opening beats over (10-odd s in software GL), where the partner stands read, then its outing
+    // (`?wander`'s timer set it off 3.2 s in, now and then before the spec had read where it stood: WebKit 3 in 8)
     await islandUp(page, { timeout: 15_000 });
-    const home = await feet(page, 'partner');
-    expect(await footsteps(page)).toBe(0);
-    await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 6000 });
-    await expect.poll(() => footsteps(page)).toBeGreaterThan(0);
+    await quiet(page);
+    // (where it stood as it set off: wander only sends it from home)
+    let home = { x: 0, y: 0 }, steps = 0;
+    await expect.poll(async () => {
+      const [at, n] = [await feet(page, 'partner'), await footsteps(page)];
+      if (!(await setOff(page))) return false;
+      [home, steps] = [at, n];
+      return true;
+    }).toBe(true);
+    await expect(page.locator('[data-actor="partner"].walking')).toBeAttached();
+    await expect.poll(() => footsteps(page)).toBeGreaterThan(steps);
     await expect(page.locator('[data-actor="partner"].walking')).toHaveCount(0, { timeout: 8000 });
     const there = await feet(page, 'partner');
     expect(Math.hypot(there.x - home.x, there.y - home.y)).toBeGreaterThan(20);
@@ -171,10 +181,12 @@ test('the partner wanders off to a point of interest and back, footsteps under i
 
 test('under a sheet the walkers stop and no footstep sounds', async ({ page }) => {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
-  await page.goto('?demo&date=2026-11-04T12:00&wander');
-  // (the island up first, as above: the 6 s for ?wander's outing count from there, not from the page's load)
+  await page.goto('?demo&date=2026-11-04T12:00');
+  // (the island up and its opening beats over first, as above, then the partner's outing)
   await islandUp(page, { timeout: 15_000 });
-  await expect(page.locator('[data-actor="partner"].walking')).toBeAttached({ timeout: 6000 });
+  await quiet(page);
+  await expect.poll(() => setOff(page)).toBe(true);
+  await expect(page.locator('[data-actor="partner"].walking')).toBeAttached();
   await openRewards(page);
   await expect(page.locator('dialog[open]')).toBeVisible();
   const n = await footsteps(page);
