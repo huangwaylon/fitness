@@ -11,19 +11,17 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { mulberry32, shuffle } from '../src/lib/random.ts';
 import { BEDS, type Bed } from '../src/lib/kikimimi/bank.ts';
 import { SR, convolve, filter, gain, impulse, lufs, noise, readPcm, scratch, writeWav } from './tts/dsp.ts';
 import { WORK, unpackClips } from './kikimimi-packs.ts';
+import { FFMPEG, WHISPER_MODEL as MODEL } from './tts/tools.ts';
 
 const APP = join(import.meta.dirname, '..');
 /** The clips as loose files (the packs unpacked into the work folder: kikimimi-packs.ts). */
 const CLIPS = WORK;
 const OUT = join(import.meta.dirname, 'tts/beds');
-const FFMPEG = process.env.FFMPEG ?? 'ffmpeg';
-const MODEL = process.env.WHISPER_MODEL ?? join(homedir(), '.cache/whisper/ggml-large-v3-turbo.bin');
 /** A bed's length (s) and the crossfade that closes its loop. */
 const LEN = 24, XF = 1;
 /** Every bed's loudness: the conditions set its level against the speech, this only keeps the files alike. */
