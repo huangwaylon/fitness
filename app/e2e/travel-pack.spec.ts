@@ -13,7 +13,7 @@ import { nz } from '../src/lib/travel/trips/nz.ts';
 test.use({ viewport: { width: 393, height: 852 } });
 /** Before the trip (Feb 11), and after it. */
 const BEFORE = '2027-01-20T12:00', AFTER = '2027-03-01T12:00';
-/** The guide's items and the demo's one of うめ's (_demob002, in 書類). */
+/** The guide's items and the demo's one of うめ's (_demob001, in 書類). */
 const TOTAL = nz.packing.cats.reduce((n, c) => n + c.items.length, 0) + 1;
 
 async function open(ctx: BrowserContext, as: 'A' | 'B' | 'G' = 'A', date = BEFORE) {
@@ -176,7 +176,7 @@ test('the guest ticks and adds, and changes only what it added', async ({ contex
   await edit(g);
   await expect(g.locator('[data-pack-editbar]')).toContainText('自分で追加したものだけ');
   // a seed item and category, and うめ's item: shown, but no actions (a tap boops)
-  for (const id of ['nz-0-0', '_demob002', 'nz-0']) await expect(g.locator(`[data-pack-acts="${id}"]`)).toHaveAttribute('aria-disabled', 'true');
+  for (const id of ['nz-0-0', '_demob001', 'nz-0']) await expect(g.locator(`[data-pack-acts="${id}"]`)).toHaveAttribute('aria-disabled', 'true');
   await g.locator('[data-pack-acts="nz-0-0"]').click({ force: true });
   await expect(g.locator('dialog[open] [data-action]')).toHaveCount(0);
   // its own: added, renamed, removed

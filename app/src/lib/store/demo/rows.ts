@@ -258,16 +258,13 @@ function demoRows(now: number, weeksBack: number, zeros = false): SnapshotRows {
     if (both) ev(at(d, h, 6), 'B', 'listen', { d, g, lv, n: 2, ms: 250_000, r: r.map(([id]) => [id, 1, 0, 0]) });
   }
 
-  // りょこう (docs/travel.md "Packing list (relay)"): Okinawa's list as two phones left it yesterday: うめ's ticks, an
-  // item she added and one of A's, and each trip's note with made-up values (the real ones live on the relay alone)
+  // りょこう (docs/travel.md "Packing list (relay)"): NZ's list as two phones left it yesterday (Okinawa's and Seattle's
+  // are frozen: their classic guides): うめ's ticks, an item she added and one of A's, and each trip's note with
+  // made-up values (the real ones live on the relay alone)
   const tp = at(addDays(today, -1), 21, 10);
-  ev(tp, 'B', 'pack', { trip: 'okinawa', id: '_demob001', at: tp, kind: 'item', cat: 'ok-0', ord: 4, name: { ja: '日焼け止め', en: 'Sunscreen' }, by: 'B' });
-  for (const [i, id] of ['ok-0-0', 'ok-0-1', '_demob001'].entries()) ev(tp + 60_000 * (i + 1), 'B', 'pack_chk', { trip: 'okinawa', id, at: tp + 60_000 * (i + 1), v: 1 });
-  ev(tp + 300_000, 'A', 'pack_chk', { trip: 'okinawa', id: 'ok-0-0', at: tp + 300_000, v: 1 });
-  // and NZ's the same way (the quiet list's: docs/design.md §Trips)
-  ev(tp + 400_000, 'B', 'pack', { trip: 'nz', id: '_demob002', at: tp + 400_000, kind: 'item', cat: 'nz-0', ord: 5, name: { ja: '日焼け止め', en: 'Sunscreen' }, by: 'B' });
-  for (const [i, id] of ['nz-0-0', 'nz-0-1', '_demob002'].entries()) ev(tp + 460_000 + 60_000 * i, 'B', 'pack_chk', { trip: 'nz', id, at: tp + 460_000 + 60_000 * i, v: 1 });
-  ev(tp + 700_000, 'A', 'pack_chk', { trip: 'nz', id: 'nz-0-0', at: tp + 700_000, v: 1 });
+  ev(tp, 'B', 'pack', { trip: 'nz', id: '_demob001', at: tp, kind: 'item', cat: 'nz-0', ord: 5, name: { ja: '日焼け止め', en: 'Sunscreen' }, by: 'B' });
+  for (const [i, id] of ['nz-0-0', 'nz-0-1', '_demob001'].entries()) ev(tp + 60_000 * (i + 1), 'B', 'pack_chk', { trip: 'nz', id, at: tp + 60_000 * (i + 1), v: 1 });
+  ev(tp + 300_000, 'A', 'pack_chk', { trip: 'nz', id: 'nz-0-0', at: tp + 300_000, v: 1 });
   for (const [i, trip] of ['okinawa', 'seattle', 'nz'].entries())
     ev(at(addDays(today, -DEMO_NOTE_DAYS), 20, i), 'A', 'trip_note', { trip, at: at(addDays(today, -DEMO_NOTE_DAYS), 20, i), v: DEMO_NOTE });
 

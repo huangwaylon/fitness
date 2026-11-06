@@ -18,6 +18,7 @@ export const okinawa: Trip = {
     {
       n: 1,
       date: "2026-10-10",
+      look: "day",
       icon: "plane-landing",
       title: { ja: "到着", en: "Arrival" },
       sub: { ja: "那覇 → 金武 → 名護", en: "Naha → Kin → Nago" },
@@ -85,6 +86,7 @@ export const okinawa: Trip = {
     {
       n: 2,
       date: "2026-10-11",
+      look: "day",
       icon: "waves",
       title: { ja: "ダイビングと南下", en: "Dive, then South" },
       sub: { ja: "水納島、大家、安座真", en: "Minna Island, Ufuya, Azama" },
@@ -148,6 +150,7 @@ export const okinawa: Trip = {
     {
       n: 3,
       date: "2026-10-12",
+      look: "day",
       icon: "plane-takeoff",
       title: { ja: "南部の海岸、出発", en: "South Coast, Departure" },
       sub: { ja: "知念、新原、喜屋武岬、秘境プール", en: "Chinen, Mibaru, Cape Kyan, the tide pool" },
@@ -1092,11 +1095,11 @@ export const okinawa: Trip = {
     }
   ],
   campsIntro: {
-    ja: "Evertrail のディレクトリに載る、車で行けるキャンプ場のすべて — 全26か所を、車を受け取る沖縄市のEvertrail営業所からの所要時間順に並べています。料金が明記されているのは2か所だけなので、「記載なし」は無料ではなく不明と考えてください。有料キャンプ場は必ず予約を — 10月10–12日はスポーツの日の三連休です。「やんばる」のチップが付く場所はやんばる国立公園内 — 現地掲示の火気ルールを確認してください。",
+    ja: "Evertrail のディレクトリに載る、車で行けるキャンプ場のすべて — 全26か所を、車を受け取る沖縄市の Evertrail営業所からの所要時間順に並べています。料金が明記されているのは2か所だけなので、 「記載なし」は無料ではなく不明と考えてください。有料キャンプ場は必ず予約を — 10月10–12日はスポーツの日の三連休です。「やんばる」のチップが付く場所はやんばる国立公園内 — 現地掲示の火気ルールを確認してください。",
     en: "All 26 drivable sites in the Evertrail directory, ordered by road time from the Evertrail office in Okinawa City — where we collect the car. The directory prices only two of them, so “none posted” means unknown, not free. Book the paid ones: Oct 10–12 is the Sports Day weekend. A site chipped ‘Yanbaru’ is inside the national park — check the fire rules posted there."
   },
   campsFoot: {
-    ja: "所要時間はEvertrail営業所からのOSRMによる渋滞なしの値 — 連休の渋滞時は20–40分を加えてください。データ出典 directory.evertrailokinawa.com",
+    ja: "所要時間はEvertrail営業所からのOSRMによる渋滞なしの値 — 連休の渋滞時は20–40分を 加えてください。データ出典 directory.evertrailokinawa.com",
     en: "Free-flow drive times from the Evertrail office via OSRM — add 20–40 min in holiday traffic. Data from directory.evertrailokinawa.com"
   },
   places: [
@@ -1274,5 +1277,6 @@ export const okinawa: Trip = {
       }
     ]
   },
-  foot: { ja: "時刻はすべて日本時間", en: "All times JST" }
+  foot: { ja: "時刻はすべて日本時間", en: "All times JST" },
+  classic: true
 };
