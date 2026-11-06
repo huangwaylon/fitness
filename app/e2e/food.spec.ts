@@ -803,7 +803,9 @@ test('search: one row per food in its states, the state filled; 豚ロース 焼
   const loin = rows.filter({ has: page.locator('.nm', { hasText: /^豚ロース 脂身つき$/ }) });
   await expect(loin).toHaveCount(1, { timeout: 15_000 });
   await expect(loin.locator('[data-state]')).toHaveText('生');
-  await expect(loin.locator('.sts')).toHaveText('生・ゆで・焼き'); // in process order, plain text
+  await expect(loin.locator('.sts > *')).toHaveText(['生', 'ゆで', '焼き']); // in process order
+  const [on, off] = await loin.locator('.sts > *').evaluateAll((els) => els.slice(0, 2).map((e) => getComputedStyle(e).backgroundColor));
+  expect(on).not.toBe(off); // the shown one on its chip
   await expect(rows.filter({ hasText: /豚ロース 脂身つき (焼き|ゆで)$/ })).toHaveCount(0);
   await sheet(page).locator('[data-food-q]').fill('豚ロース 焼き');
   await expect(rows.first().locator('[data-state]')).toHaveText('焼き');

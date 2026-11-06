@@ -446,7 +446,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   portion (with its weight) and kcal (さいきん: the amount as I had it, then the everyday name; the 100 g values on the
   amount). A food in its states (the data's `vg`/`st`: 豚ロース 脂身つき 生 · ゆで · 焼き) is one row (`search.ts`: its
   best hit, the default at a tie, so 豚ロース 焼き shows 焼き), named without its state (`foodUi.ts` stemName; 焼きいも
-  stays), its states under it as plain text in process order, 生・ゆで・焼き, the shown one in ink (past four: ほか N).
+  stays), its states under it in process order, 生 ゆで 焼き, the shown one on a small yuzu chip within the line (the row no
+  taller), the others faded (past four: ほか N).
   MEXT's lookalikes are out unless the query names them (豚 中型種, 親鶏, 交雑牛: `search.ts` LOOKALIKE; 和牛 · 国産牛 ·
   輸入牛 stay, they change what you buy), and a meat's 脂身 alone or a 皮 ranks a tier under the usual cuts.
   Left of the name, the food's **category tile** (`FoodThumb`, 48 px; the recipe's ingredients 40 px): an NH

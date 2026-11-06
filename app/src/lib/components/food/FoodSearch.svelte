@@ -233,11 +233,11 @@
   {/if}
 {/snippet}
 
-<!-- a food's states on its row, as plain text in process order (生・ゆで・焼き), the one its kcal is for in ink; past four:
-     that one and ほか N (the chips themselves are the amount's) -->
+<!-- a food's states on its row in process order (生 ゆで 焼き), the one its kcal is for on a small yuzu chip, the others
+     soft; past four: that one and ほか N (the chips themselves are the amount's) -->
 {#snippet states(it: Item, vs: Item[])}
-  <span class="sts" data-states={vs.length}>{#if vs.length > 4}<b data-state={it.st}>{it.st}</b>・{t('food.st.more', { n: vs.length - 1 })}
-    {:else}{#each vs as x, i (x.id)}{#if i}・{/if}{#if x === it}<b data-state={it.st}>{x.st}</b>{:else}<span class="st">{x.st}</span>{/if}{/each}{/if}</span>
+  <span class="sts" data-states={vs.length}>{#if vs.length > 4}<b data-state={it.st}>{it.st}</b><span class="st">{t('food.st.more', { n: vs.length - 1 })}</span>
+    {:else}{#each vs as x (x.id)}{#if x === it}<b data-state={it.st}>{x.st}</b>{:else}<span class="st">{x.st}</span>{/if}{/each}{/if}</span>
 {/snippet}
 
 {#snippet verified(n: number)}<i class="ok" role="img" data-verified={n} aria-label={t('food.verified', { n })}>{t('food.verifiedBadge', { n })}</i>{/snippet}
@@ -330,9 +330,11 @@
   .meta .ok { margin-left: 0; }
   .meta { grid-area: meta; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow-wrap: anywhere; }
   .br { color: var(--text); }
+  /* the shown state a chip within the line (inline padding: the row no taller), the others faded */
   .sts { white-space: nowrap; }
-  .sts b { color: var(--text); }
-  .sts .st { font-weight: 500; }
+  .sts > * + * { margin-left: 6px; }
+  .sts b { padding: 1px 7px; border-radius: var(--r-pill); color: var(--c-ink); background: color-mix(in srgb, var(--c-yuzu) 75%, var(--c-cream)); }
+  .sts .st { font-weight: 500; opacity: .8; }
   /* the everyday name: one line, cut short (the row keeps its two lines) */
   .meta:has(.gl) { display: flex; min-width: 0; white-space: pre; }
   .gl, .meta:has(.gl) .br { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
