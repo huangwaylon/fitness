@@ -175,6 +175,8 @@ export class Engine {
   #held = false;
   /** Held awake (holdAwake: a ききみみ game): neither the idle timer nor everything off (sleep, hush) suspends it. */
   #awake = false;
+  /** The music held down under a run of voice clips (holdDuck: a bedtime story's segments, no swell in their gaps). */
+  #duckHeld = false;
   /** Decoded voice clips by key, least recently asked for first (CLIP_CAP), and the playing ones' keys (in #live). */
   #clips = new Map<string, Promise<AudioBuffer | null>>();
   #clipKey = 0;
@@ -347,10 +349,37 @@ export class Engine {
     return { stop, endsAt };
   }
 
-  /** The game's over: its clips stop and the decoded ones go. */
+  /** The game's over: its clips stop and the decoded ones go; the voice back at its level, the music let up. */
   clearVoice(): void {
     this.#stopClips();
     this.#clips.clear();
+    this.fadeVoice([]);
+    this.holdDuck(false);
+  }
+
+  /** The music held down (on) under a run of clips with gaps between them (a bedtime story), so it doesn't swell back
+   *  in each gap and dip again; off: it comes back (the release). Each clip's own dip is skipped while held. */
+  holdDuck(on: boolean): void {
+    const ctx = this.ctx;
+    if (!ctx || on === this.#duckHeld) return;
+    this.#duckHeld = on;
+    const p = this.#duck.gain, t = ctx.currentTime, plan = duckPlan(t, t);
+    p.cancelScheduledValues(t);
+    p.setValueAtTime(p.value, t);
+    if (on) p.linearRampToValueAtTime(plan[1].gain, plan[1].t);
+    else p.linearRampToValueAtTime(1, plan[3].t);
+  }
+
+  /** The voice's own level over time, as points `{t: s from now, gain: 0-1}` (a sleep timer's fade: bedtime.ts
+   *  fadeCurve); none: back to full at once (a pause, the next story, the session's end). */
+  fadeVoice(points: readonly { t: number; gain: number }[]): void {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    const g = this.#bus.voice.gain, t = ctx.currentTime;
+    g.cancelScheduledValues(t);
+    if (!points.length) return void g.setValueAtTime(LEVELS.voice, t);
+    g.setValueAtTime(LEVELS.voice * points[0].gain, t + points[0].t);
+    for (const pt of points.slice(1)) g.linearRampToValueAtTime(LEVELS.voice * pt.gain, t + pt.t);
   }
 
   #stopClips(): void {
@@ -598,6 +627,7 @@ export class Engine {
 
   /** The music dips under a jingle and comes back after it. */
   #duckUnder(at: number, until: number): void {
+    if (this.#duckHeld) return;
     const p = this.#duck.gain;
     p.cancelScheduledValues(at);
     const plan = duckPlan(at, until);
@@ -608,7 +638,7 @@ export class Engine {
   /** A voice clip stopped early: the music comes back from where its dip is. */
   #unduck(): void {
     const ctx = this.ctx;
-    if (!ctx) return;
+    if (!ctx || this.#duckHeld) return;
     const p = this.#duck.gain;
     const t = ctx.currentTime;
     p.cancelScheduledValues(t);
