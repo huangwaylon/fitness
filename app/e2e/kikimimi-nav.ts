@@ -25,3 +25,10 @@ export async function toTile(p: Page, k: 'together' | 'record' | 'zukan') {
   await expect(kikiSheet(p)).toHaveAttribute('data-kiki-at', k === 'together' ? 'lobby' : k);
 }
 
+/** しまの みち: a stage open (its head tapped when it's folded: the current unit's and the placed one are open at first). */
+export async function openStage(p: Page, stage: string) {
+  const head = kikiSheet(p).locator(`[data-kiki-stage-toggle="${stage}"]`);
+  if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click();
+  await expect(head).toHaveAttribute('aria-expanded', 'true');
+}
+

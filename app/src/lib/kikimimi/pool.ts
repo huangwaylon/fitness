@@ -9,6 +9,7 @@ import type { Accent, Entry, Feature, Item, ItemType, Level, Tags } from './bank
 import { addClips, type ChunkClip, type Words } from './clips.ts';
 import type { Ladder } from './ladder.ts';
 import type { UnitChunk, UnitPlay } from './lesson.ts';
+import type { LetterText } from './letters.ts';
 import type { Chapter, StoryEntry } from './story.ts';
 
 /** What a chunk holds: a level's items (or the ladders; a unit's: the unit, its lessons' items and ladders) and their
@@ -19,6 +20,8 @@ interface Part {
   ladders?: Ladder[];
   /** A bedtime serial's chapter (story.ts). */
   story?: Chapter;
+  /** The villagers' letters by unit (parts/letters.json, letters.ts). */
+  letters?: Record<string, LetterText>;
   /** The audio packs its clips are in (stems: `lv4-2.1a2b3c4d`). */
   packs: string[];
   clips: Record<string, ChunkClip>;
@@ -187,6 +190,12 @@ export async function loadChapter(part: string): Promise<Chapter> {
   const ch = got.get(part)!.story;
   if (!ch) throw new Error(`kikimimi: ${part} isn't a story chapter`);
   return ch;
+}
+
+/** The villagers' letters by unit (letters.ts), loaded once (a small chunk of their own). */
+export async function loadLetters(): Promise<Readonly<Record<string, LetterText>>> {
+  await fetchPart('letters');
+  return got.get('letters')!.letters ?? {};
 }
 
 /** A loaded item by id (a rung too), as authored. */

@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
+import { openStage } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -56,6 +57,7 @@ async function toPath(page: Page) {
   await sheet(page).locator('[data-kiki-tile="asobu"]').click();
   await sheet(page).locator('[data-kiki-path-open]').click();
   await expect(sheet(page).locator('[data-kiki-page="path"]')).toBeVisible();
+  await openStage(page, 'mori');
 }
 /** A lesson's 6 questions, all right on the first listen (a dialogue plays out at its length first). */
 async function playAllRight(page: Page) {
@@ -184,6 +186,7 @@ test('a built unit’s page counts all its key phrases: tr-hotel’s 「つか�
   await fromMenu(page, 'kikimimi');
   await sheet(page).locator('[data-kiki-tile="asobu"]').click();
   await sheet(page).locator('[data-kiki-path-open]').click();
+  await openStage(page, 'mori');
   await sheet(page).locator('[data-kiki-stop="tr-hotel"] [data-kiki-stop-open]').click();
   const phrases = sheet(page).locator('[data-kiki-unit-page="tr-hotel"] [data-kiki-unit-phrases]');
   await expect(phrases).toHaveAttribute('data-kiki-unit-phrases', '0');

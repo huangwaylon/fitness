@@ -7,6 +7,7 @@
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
+import { openStage } from './kikimimi-nav.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -67,6 +68,7 @@ async function together(ctx: BrowserContext, o: { wireB?: string; cvB?: string }
 async function pickCheck(a: Page) {
   await a.bringToFront();
   await sheet(a).locator('[data-kiki-path-open]').click();
+  await openStage(a, 'mori');
   await sheet(a).locator(`[data-kiki-stop="${UNIT.id}"] [data-kiki-stop-open]`).click();
   await sheet(a).locator('[data-kiki-skip-check]').click();
 }

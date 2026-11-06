@@ -13,6 +13,8 @@ import { lessonDeck, lessonL, lessonOf, playIds, stageLevel, tierFor, type UnitC
 import { INDEX, addUnit, load, loadAll, unitIds, unitPart, type Unit } from './pool.ts';
 import { gamesOf, type Answer } from './progress.ts';
 import { RECHECK_DAYS, rechecksDue, unitsOf } from './stamps.ts';
+import { lettersOf } from './letters.ts';
+import { loadLetters } from './pool.ts';
 import { CAUGHT_CLIPS, CAUGHT_DAYS, REVIEW_CAP, phraseReview, phrasesOf } from './srs.ts';
 import { LESSONS, LESSON_QS } from './stages.ts';
 
@@ -189,6 +191,29 @@ describe('stamps', () => {
     expect(both).toMatchObject({ partner: true, stamped: '2026-11-03', double: true });
     expect(fold([partner('2026-11-02', true, 'G'), lessonRow({ d: '2026-11-03', l: 3, first: 6 })]).get('tr-testinn')!.double).toBe(false);
     expect(fold([partner('2026-11-02', false)]).get('tr-testinn')).toBeUndefined();
+  });
+
+  it('the villager’s letter comes with my stamp (the stamping game’s), once; never with a pass short of it or the partner’s alone', async () => {
+    const units = [{ id: 'tr-testinn', name: 'ホテルで こまった', host: 'diana' }];
+    const texts = { 'tr-testinn': { en: 'Dear you…', ja: 'あなたへ…' } };
+    const four = lessonRow({ d: '2026-11-01', l: 3, first: 4 });
+    expect(lettersOf(units, fold([four]), texts)).toEqual([]);
+    expect(lettersOf(units, fold([partner('2026-11-01', true)]), texts)).toEqual([]);
+    const pass = lessonRow({ d: '2026-11-02', l: 3, first: 6 }), again = lessonRow({ d: '2026-11-04', l: 3, first: 6 });
+    const states = fold([four, pass, again]);
+    expect(states.get('tr-testinn')!.stampedIn).toBe(JSON.parse(pass[4]).g);
+    expect(lettersOf(units, states, texts)).toEqual([{ unit: 'tr-testinn', name: 'ホテルで こまった', host: 'diana', day: '2026-11-02', en: 'Dear you…', ja: 'あなたへ…' }]);
+    // a co-op pass stamps it too, so the letter comes
+    expect(lettersOf(units, fold([lessonRow({ d: '2026-11-03', l: 3, first: 2, wrong: 4, tm: 5, n: 2 })]), texts)).toHaveLength(1);
+    // no letter written, or the chunk not loaded: none
+    expect(lettersOf(units, states, {})).toEqual([]);
+    expect(lettersOf(units, states, undefined)).toEqual([]);
+    // newest first; the build's letters chunk has every built unit's
+    const two = [...units, { id: 'gl-clarify', name: 'ききかえす', host: 'brewster' }];
+    const both = new Map([...states, ['gl-clarify', { ...states.get('tr-testinn')!, stamped: '2026-11-05' }]]);
+    const built = await loadLetters();
+    expect(Object.keys(built).sort()).toEqual(INDEX.paths.map((p) => p[0]).sort());
+    expect(lettersOf(two, both, { ...built, ...texts }).map((l) => l.unit)).toEqual(['gl-clarify', 'tr-testinn']);
   });
 
   it('the recheck: due 30 days after the stamp, once; done by a solo チェック on or after that day', () => {

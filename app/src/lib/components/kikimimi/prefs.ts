@@ -1,6 +1,6 @@
 // ききみみ クイズ's lobby settings remembered on this phone (docs/kikimimi.md "Storage"): the level last played and こたえる
 // じかん last set, the next lobby's. Full or private storage: level 1 and 30 s. And せってい's, the first run's welcome
-// seen, a mode's ばしょ picked over おまかせ.
+// seen, a mode's ばしょ picked over おまかせ, the path's landmarks celebrated.
 import type { Level } from '#lib/kikimimi/bank.ts';
 import { LEVELS } from '#lib/kikimimi/deck.ts';
 import { TIMERS, type QuizTimer } from '#lib/kikimimi/seed.ts';
@@ -60,6 +60,16 @@ export const onboarded = (who: Who): boolean => readJson<Record<string, unknown>
 export function keepOnboarded(who: Who): void {
   const v = readJson<Record<string, unknown>>(localKV(), DEVICE.kikiOnboarded);
   writeJson(localKV(), DEVICE.kikiOnboarded, { ...(v && typeof v === 'object' ? v : {}), [who]: 1 });
+}
+
+/** The stages whose landmark celebration `who` has seen on this phone (しまの みち; the badge needs no flag). */
+export function landmarksSeen(who: Who): string[] {
+  const v = readJson<Record<string, unknown>>(localKV(), DEVICE.kikiLandmarks)?.[who];
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+}
+export function keepLandmarkSeen(who: Who, stage: string): void {
+  const v = readJson<Record<string, unknown>>(localKV(), DEVICE.kikiLandmarks);
+  writeJson(localKV(), DEVICE.kikiLandmarks, { ...(v && typeof v === 'object' ? v : {}), [who]: [...new Set([...landmarksSeen(who), stage])] });
 }
 
 /** A ばしょ picked over おまかせ on a mode's page (null: おまかせ). */

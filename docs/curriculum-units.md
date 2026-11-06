@@ -176,6 +176,9 @@ lessons:
   jissen: [...]             # optional, items or ladder ids
 tiers:                      # optional, per item: an easier and a harder choice set (same audio, each player's tier)
   r4-room-ready: { easy: { choices: [...], answer: 0 }, hard: { choices: [...], answer: 0 } }
+letter:                     # optional (U7): the host's letter at my stamp, 40-60 words, one of its phrases in it
+  en: "I'm afraid I have a confession: …"
+  ja: "あいにく、うちあけたい ことが あるの。…"
 ```
 
 Every lesson id that isn't under `review` is homed in the unit. The unit's own items always are.
@@ -327,3 +330,10 @@ docs/kikimimi-ux.md §6.3 (the path), §6.3b (a unit's page), §6.5 (the lobby's
 - **The UI** is `components/kikimimi/path/`: PathCard (in the lobby, until the hub), IslandPath, UnitPage (lazy chunks; the phrase ずかん is ずかん › ことば since U5: components/kikimimi/zukan/, docs/kikimimi-ux.md §6.10, ≤ 15 KB gzipped each by kikimimi-budget.ts), LessonDots (shared with the results' strip). The sheet keeps one stack over my lobby (path › unit, ずかん); a lesson's おわる comes back to it; the results' strip offers the next core lesson. In a shared lobby the host's lesson is everyone's (co-op lessons, §13, since 8c).
 - **Hub card 1's recheck** is a banner on the path until the hub exists.
 - **Tests:** path.test (ordering, the current unit, filters, the soft stage, the next lesson); e2e kikimimi-units (the path from the lobby, a unit's page, であい played solo moving its dot on the page and the path, a filter; とばして チェック's mission card and stamp on the results, the unit page and the path; the ずかん on the unit's phrases). `KIKI_SHOTS=1` writes /tmp/kikimimi-shots/u4/.
+
+## 15. U7 as built (2026-11-07): letters and landmarks
+
+docs/kikimimi-ux.md's U7 line has the whole of it. In short:
+- **Letters:** the unit's optional `letter: {en, ja}` (units.ts: `{en, ja}` only, 40-60 words of English, one of the unit's phrases heard in it). The compiler writes them all into `parts/letters.json` (the unit chunks don't change); pool.ts `loadLetters`. `letters.ts lettersOf` is mine: a letter per unit I stamped (my row's stamp, solo or co-op), newest first. The 7 wave-1 units have theirs; units.test requires one past draft.
+- **Landmarks:** path.ts `landmarksOf`: a stage is cleared when each of its units has my stamp. The placement is no input and the partner's stamps don't count, so a stage the check skipped is open, never cleared. Cosmetic only.
+

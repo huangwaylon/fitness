@@ -88,7 +88,7 @@ describe('ずかん › スタンプ', () => {
     expect(ippatsuOf([]).next).toBe(IPPATSU_BADGES[0]);
   });
   it('unit stamps in the path’s order: mine, the partner’s, the double, a blank', () => {
-    const st = (o: Partial<UnitState>): UnitState => ({ done: [], stamped: null, tally: null, partner: false, double: false, recheck: null, ...o });
+    const st = (o: Partial<UnitState>): UnitState => ({ done: [], stamped: null, stampedIn: null, tally: null, partner: false, double: false, recheck: null, ...o });
     const states = new Map([['a', st({ stamped: '2026-11-01', partner: true, double: true })], ['b', st({ partner: true })]]);
     expect(unitStamps(['a', 'b', 'c'], states)).toEqual([
       { id: 'a', d: '2026-11-01', partner: true, double: true }, { id: 'b', d: null, partner: true, double: false }, { id: 'c', d: null, partner: false, double: false }
