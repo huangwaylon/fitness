@@ -74,6 +74,17 @@ describe('gamesOf: the partner’s stamps', () => {
   });
 });
 
+describe('gamesOf: bedtime stories', () => {
+  it('a story row (no answers) is a story of mine, not a game: its minutes summed by game id; the partner’s a summary as any', () => {
+    const ev = (id: string, who: 'A' | 'B', data: object, s = 1): EventRow => [`2026-11-05T13:00:0${s}.000Z`, who, id, 'listen', JSON.stringify(data)];
+    const story = { d: TODAY, g: 'st01ab', gm: 'story', u: 'st-johnny', lv: 4, n: 1, ms: 240_000, r: [] };
+    const { mine, others, stories } = gamesOf([ev('e1', 'A', story), ev('e2', 'A', { ...story, ms: 60_000 }, 2), ev('e3', 'B', { d: TODAY, g: 'st02cd', n: 1, ms: 300_000 }, 3)], 'A');
+    expect(mine).toEqual([]);
+    expect(stories).toEqual([{ d: TODAY, g: 'st01ab', u: 'st-johnny', ms: 300_000, at: Date.parse('2026-11-05T13:00:01.000Z') }]);
+    expect(others).toEqual([{ who: 'B', d: TODAY, g: 'st02cd', n: 1, ms: 300_000 }]);
+  });
+});
+
 describe('gamesOf: a newer build’s rows', () => {
   it('skips answers whose ids this build doesn’t know: a row from a newer game leaves the games and the stats unchanged', () => {
     const quiz = { d: TODAY, g: 'ab12', lv: 2, n: 1, ms: 120_000, r: [['w2-read', 1, 0, 0], ['n2-price-1', 0, 2, 1]] };

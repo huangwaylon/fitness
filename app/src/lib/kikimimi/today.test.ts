@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { finished, pickMenu, whimOf, type MenuIn, type Session } from './today.ts';
+import { finished, finishedStory, isNight, pickMenu, whimOf, type MenuIn, type Session } from './today.ts';
 import { dayNum } from './progress.ts';
 
 const BASE: MenuIn = { day: '2026-11-04', due: 14, recheck: null, next: null, lv: 3, whims: ['quiz', 'ladder', 'announce'], sessions: [] };
@@ -47,6 +47,21 @@ describe('the daily menu', () => {
   it('no other mode to pick: two cards', () => {
     expect(pickMenu({ ...BASE, whims: ['quiz'] }).cards.map((c) => c.slot)).toEqual(['review', 'step', 'whim']);
     expect(pickMenu({ ...BASE, whims: [] }).cards).toHaveLength(2);
+  });
+  it('at night きまぐれ is おやすみ ものがたり; a story heard ≥ 3 min ticks it, and nothing else does', () => {
+    const night = { ...BASE, night: true };
+    expect(pickMenu(night).cards[2].act).toEqual({ k: 'story' });
+    expect(pickMenu(BASE).cards[2].act?.k).not.toBe('story');
+    const story: Session = { p: false, ladder: false, lv: 4, story: true };
+    expect(pickMenu({ ...night, sessions: [story] }).cards.map((c) => c.done)).toEqual([false, false, true]);
+    // by day, a story ticks the first undone card (free play is never off the menu); a quiz never ticks the story card
+    expect(pickMenu({ ...BASE, sessions: [story] }).cards.map((c) => c.done)).toEqual([true, false, false]);
+    expect(pickMenu({ ...night, due: 0, sessions: [quiz, quiz] }).cards.map((c) => c.done)).toEqual([true, true, true]);
+    expect(pickMenu({ ...night, due: 0, sessions: [quiz] }).cards[2].done).toBe(false);
+  });
+  it('the night is 21:00-04:00; a story counts from 3 minutes', () => {
+    expect([20, 21, 23, 0, 3, 4, 12].map(isNight)).toEqual([false, true, true, true, true, false, false]);
+    expect([finishedStory(179_999), finishedStory(180_000)]).toEqual([false, true]);
   });
   it('a finished session has 4 answers', () => {
     expect(finished(3)).toBe(false);

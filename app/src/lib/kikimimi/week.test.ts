@@ -17,6 +17,14 @@ describe('the week card', () => {
     expect(w.days).toEqual([true, false, true, false, false, false, false]);
     expect(w).toMatchObject({ at: 2, count: 2, goal: 3, met: false });
   });
+  it('a bedtime story stamps its day from 3 minutes (no answers) and adds its minutes to the quest', () => {
+    const w = weekCard({ ...base, others: [], mine: [
+      { d: '2026-11-02', n: 0, ms: 2 * MIN, story: true },
+      { d: '2026-11-03', n: 0, ms: 3 * MIN, story: true }
+    ] });
+    expect(w.days.slice(0, 2)).toEqual([false, true]);
+    expect(w.quest.minutes).toBe(5);
+  });
   it('meets the target; a new week starts empty, nothing said of the last', () => {
     const mine = ['2026-11-02', '2026-11-03', '2026-11-04'].map((d) => ({ d, n: 8, ms: MIN }));
     expect(weekCard({ ...base, others: [], mine }).met).toBe(true);

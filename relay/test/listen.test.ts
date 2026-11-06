@@ -70,6 +70,9 @@ describe('ききみみ progress rows', () => {
     ok(game('ab36', { u: 'tr-hotel', l: 6 }), false);
     ok(game('ab37', { u: 'tr-hotel', l: 3, tm: 7 }), false);
     ok(game('ab38', { u: 'tr-hotel', tm: 5 }), false);
+    // a bedtime story (おやすみ ものがたり): no answers, only its minutes; any other game needs one
+    ok(game('ab39', { gm: 'story', u: 'st-johnny', lv: 4, r: [] }), true);
+    ok(game('ab40', { gm: 'tile', r: [] }), false);
     expect(bad).toEqual([]);
   });
 

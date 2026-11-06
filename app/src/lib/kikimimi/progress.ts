@@ -2,7 +2,7 @@
 // mastery per sub-skill and feature, accuracy per type, accent and level, the comfortable level (an Elo-style
 // ability), the first-listen trend, the days played this week and the couple summary. Folded from the record's
 // `listen` rows (contract/listen.ts: mine whole, the partner's as summaries) on the phone, never stored. Pure.
-import { LISTEN_MAX_Q, LISTEN_MAX_RP, firstListenRight, listenOf, listenSummaryOf, stampsUnit, type ListenRow } from '../contract/listen.ts';
+import { LISTEN_MAX_Q, LISTEN_MAX_RP, STORY_GM, firstListenRight, listenOf, listenSummaryOf, stampsUnit, type ListenRow } from '../contract/listen.ts';
 import type { EventRow } from '../contract/api.ts';
 import type { LocalDate, Who } from '../types.ts';
 import { levelRank, type Accent, type Entry, type Feature, type Item, type ItemType } from './bank.ts';
@@ -48,13 +48,22 @@ export interface OtherGame {
   stamped?: 1;
 }
 
+/** A bedtime story of mine (a `listen` row of STORY_GM): no answers, its serial and minutes heard (rows with the same
+ *  game id summed, as a game's). */
+export interface StoryGame {
+  d: LocalDate;
+  g: string;
+  u?: string;
+  ms: number;
+  at: number;
+}
 
 /** My games (in the order played) and the others' summaries, from the `listen` rows this phone holds; of mine, only
  *  the answers whose items this build knows (none: not a game here). A game id
  *  written twice (left mid-way and joined again: the record keeps both rows, append-only) is one game: its answers once
  *  each (the first kept), its minutes summed, the most players, when it was first kept. */
-export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; others: OtherGame[] } {
-  const mine = new Map<string, Game>(), others = new Map<string, OtherGame>();
+export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; others: OtherGame[]; stories: StoryGame[] } {
+  const mine = new Map<string, Game>(), others = new Map<string, OtherGame>(), stories = new Map<string, StoryGame>();
   for (const row of rows) {
     let data: unknown;
     try {
@@ -66,6 +75,11 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
     if (row[1] === me) {
       const x = listenOf(data);
       if (!x) continue;
+      if (x.gm === STORY_GM) {
+        const was = stories.get(x.g);
+        stories.set(x.g, was ? { ...was, ms: was.ms + x.ms, ...(at < was.at && { d: x.d, at }) } : { d: x.d, g: x.g, ...(x.u !== undefined && { u: x.u }), ms: x.ms, at });
+        continue;
+      }
       const p = x.p === 1;
       // only the items this build knows: a newer game's row (docs/kikimimi-framework.md §4.4) leaves the stats as they were (a スピード はしご rung is known: speedOf);
       // a ききみみ unit's lesson keeps every answer (its own items are in its chunk, not the index: the stats pass them by, the phrase ずかん reads them)
@@ -94,7 +108,7 @@ export function gamesOf(rows: readonly EventRow[], me: Who): { mine: Game[]; oth
     }
   }
   const games = [...mine.values()].sort((a, b) => a.at - b.at || (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
-  return { mine: games, others: [...others.values()] };
+  return { mine: games, others: [...others.values()], stories: [...stories.values()].sort((a, b) => a.at - b.at) };
 }
 
 /** My answers of a game as its `listen` row's `r` (contract/listen.ts): the questions I had (the session's view

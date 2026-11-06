@@ -20,6 +20,8 @@ export interface SheetUi {
   /** How many pages are pushed over the hub (a lesson's おわる goes back to them). */
   pages(): number;
   setPages(p: Page[]): void;
+  /** おやすみ ものがたり's next chapter, at once (the night's きまぐれ card). */
+  story?(): void;
 }
 
 export class KikiActions {
@@ -154,6 +156,7 @@ export class KikiActions {
     else if (a.k === 'recheck') this.startLesson(a.unit, 'check', true);
     else if (a.k === 'lesson') this.startLesson(a.unit, a.lesson);
     else if (a.k === 'quiz') this.quiz(a.lv as Level);
+    else if (a.k === 'story') this.#ui.story?.();
     else {
       if (a.m === 'ladder') g.configure({ ladder: true });
       else g.configure({ ladder: false, lv: 5 });
