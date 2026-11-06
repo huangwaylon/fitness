@@ -2,7 +2,7 @@
 // in the 3D island's world (world3d/precip.ts: `__world3d.precip()`, one draw call an effect), under every control, the ambience gets its rain, footsteps splash, no shooting stars or fireflies;
 // the rainbow, the fog and the aurora show at their moments. Screenshots at 390 and 320.
 import { expect, test, type Page } from './fixtures.ts';
-import { hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
 
 
 async function open(page: Page, q: string, sound = false) {
@@ -12,7 +12,7 @@ async function open(page: Page, q: string, sound = false) {
     (window as { __cues?: string[] }).__cues = [];
   }, sound);
   await page.goto(`?demo&${q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
 }
 
 type Precip = { kind: string | null; sky: string; level: number; meshes: string[]; rings: { flat: number } | null };
@@ -82,32 +82,21 @@ test.describe('the day itself', () => {
     const other = await browser.newPage({ viewport: { width: 390, height: 844 }, locale: 'ja-JP', timezoneId: 'Asia/Tokyo' });
     await other.goto(page.url().replace('&weather=clear', ''));
     await page.goto(page.url().replace('&weather=clear', ''));
-    await expect(hudMenu(page)).toBeVisible();
-    await expect(hudMenu(other)).toBeVisible();
+    await islandUp(page);
+    await islandUp(other);
     expect(await page.locator('.if-scene').getAttribute('data-sky')).toBe(await other.locator('.if-scene').getAttribute('data-sky'));
     await other.close();
   });
 
   test('rain and snow are one draw call an effect (the streaks, the rings; the flakes)', { tag: '@render' }, async ({ page }) => {
     test.setTimeout(120_000);
-    type W = { __world3d: { stats(): { calls: number; frames: number }; precipHide(on: boolean): void } };
-    /** The draw calls of a frame drawn after `hide` (its kick draws one). */
-    const calls = async (hide: boolean) => {
-      const f0 = await page.evaluate((h) => ((window as unknown as W).__world3d.precipHide(h), (window as unknown as W).__world3d.stats().frames), hide);
-      await expect.poll(() => page.evaluate(() => (window as unknown as W).__world3d.stats().frames)).toBeGreaterThan(f0);
-      return page.evaluate(() => (window as unknown as W).__world3d.stats().calls);
-    };
-    // (the scene pinned: a critter or a visitor coming into view between the three frames changed their draw calls, on
-    // and again never equal: NaN, the drawn smoke's most flaky test, 32 runs in a day)
+    // (the precip meshes' own draws in the last frame drawn (__world3d.precipCalls): the frame's total moved with a
+    // critter, a visitor or a model loading between the frames compared, the drawn smoke's most flaky test)
+    const calls = () => page.evaluate(() => (window as unknown as { __world3d: { precipCalls(): number } }).__world3d.precipCalls());
     for (const [q, n] of [['date=2026-06-10T11:00&weather=rain&critter=none&visitor=none', 2], ['date=2027-01-12T10:00&weather=snow&critter=none&visitor=none', 1]] as const) {
       await open(page, q);
       await expect.poll(() => precip(page).then((p) => p?.meshes.length), { timeout: 30_000 }).toBe(n);
-      await expect.poll(() => page.evaluate(() => (window as unknown as { __world3d: { loaded(): boolean } }).__world3d.loaded()), { timeout: 30_000 }).toBe(true);
-      // (on, off, on: the scene itself held still meanwhile)
-      await expect.poll(async () => {
-        const on = await calls(false), off = await calls(true), again = await calls(false);
-        return on === again ? on - off : NaN;
-      }, { timeout: 30_000 }).toBe(n);
+      await expect.poll(calls, { timeout: 30_000 }).toBe(n);
     }
   });
 

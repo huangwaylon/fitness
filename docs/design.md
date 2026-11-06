@@ -1037,7 +1037,8 @@ an hour's extra.
   needs it (~15 ms on the Simulator). The fade is its own level (0 … 1 over a minute, Weather.svelte's rules: from
   rain to snow at once, the opening sky at once). The island draws at its ambient rate meanwhile, as it already does
   for the water. `__world3d.precip()` (dev and ?demo) says what falls, its level, the meshes drawn and the rings'
-  surface; `precipHide(on)` for a draw-call count with and without (`e2e/weather.spec.ts`).
+  surface; `precipCalls()` the draw calls its meshes made in the last frame drawn, the scene's others not counted
+  (`e2e/weather.spec.ts`).
   Measured on the iOS Simulator (own iPhone 16, iOS 26.5, a local build, the island at rest, 8 s a sample, two
   rounds; load average 15-40): the engine at 30.0 fps and a frame's CPU 2 ms (p95) in every case; the draw calls
   176 → 178 in rain (the streaks, the rings), the winter island's 188 → 189 in snow; WebContent / GPU % of a core:
