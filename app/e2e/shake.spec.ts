@@ -4,15 +4,15 @@
 // sting (a fright, a sweat drop and NH's swollen eye on the villager's own eye). `?shake=nest|branch|bagworm|spider`
 // forces the next shake's drop (`wood`: a piece of wood, into my pocket for the shop). Nothing changes ベル.
 import { expect, test, type Page } from './fixtures.ts';
-import { is3d, quiet } from './island.ts';
-import { hudBells, hudMenu } from './hud.ts';
+import { is3d, islandUp, quiet } from './island.ts';
+import { hudBells } from './hud.ts';
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 async function open(page: Page, q = '') {
   await page.addInitScript(() => ((window as { __cues?: string[] }).__cues = []));
   await page.goto(`?demo&date=2026-11-04T12:00${q}`);
-  await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
+  await islandUp(page, { timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await is3d(page); // (the 3D island up and its canopies where they'll stay: a while in software GL)
   await quiet(page); // the opening beats are over
 }
@@ -189,7 +189,7 @@ test('at night a spider can dangle instead; left alone it climbs back up into th
   await page.clock.install({ time: new Date('2026-11-04T22:00:00+09:00') });
   await page.clock.resume();
   await page.goto('?demo&date=2026-11-04T22:00&shake=spider');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await is3d(page);
   await page.waitForTimeout(2600);
   await shake(page);

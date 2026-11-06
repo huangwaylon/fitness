@@ -6,7 +6,7 @@
 // もようがえ. Own text is capped at 20 characters and cleaned; it's shown as text. No ベル.
 //   SHOTS=<dir> npm run e2e -- say      also writes iPhone-sized screenshots to <dir>/say-*.png
 import { expect, test, type Page } from './fixtures.ts';
-import { lawnTap, quiet } from './island.ts';
+import { islandUp, lawnTap, quiet } from './island.ts';
 import { KEYBOARD_PX, aboveKeyboard, fakeKeyboard, keyboard } from './keyboard.ts';
 import { fromMenu, hudBells, hudMenu } from './hud.ts';
 import { sayOwn } from './say.ts';
@@ -31,7 +31,7 @@ async function open(page: Page, at = '2026-11-04T12:00', said?: string[]) {
   // my own words kept from before (island.says, newest first)
   if (said) await page.addInitScript((s) => localStorage.setItem('island.says', s), JSON.stringify(said));
   await page.goto(`?demo&date=${at}&critter=none`);
-  await expect(hudMenu(page)).toBeVisible({ timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
+  await islandUp(page, { timeout: 15_000 }); // (its first paint: now and then over 5 s under CI's load)
   await expect(mine(page)).toBeEnabled();
   await quiet(page); // the opening beats are over
 }

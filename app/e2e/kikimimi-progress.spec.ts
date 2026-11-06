@@ -4,7 +4,8 @@
 // 「にがて れんしゅう」 begins a solo game of my weak spots. The logic tier (no clip has to sound). Screenshots to
 // /tmp/kikimimi-shots/progress/ with KIKI_SHOTS=1.
 import { expect, test, type Page } from './fixtures.ts';
-import { fromMenu, hudMenu } from './hud.ts';
+import { islandUp } from './island.ts';
+import { fromMenu } from './hud.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = 'date=2026-11-04T12:00&critter=none&visitor=none&kikimimi=fast';
@@ -37,7 +38,7 @@ async function playGame(page: Page, wrong: readonly number[]) {
 test('after a solo game: my feedback, then きろく with it, and a recommendation starts にがて れんしゅう', async ({ page }) => {
   test.slow();
   await page.goto(`?demo&${Q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   await sheet(page).locator('[data-kiki-start]').click();
@@ -80,7 +81,7 @@ test('after a solo game: my feedback, then きろく with it, and a recommendati
 test('the lobby’s にがて れんしゅう plays a deck of my weak spots and records it', async ({ page }) => {
   test.slow();
   await page.goto(`?demo&${Q}`);
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
   await shot(page, '0-lobby');

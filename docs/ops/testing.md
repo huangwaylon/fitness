@@ -114,6 +114,10 @@ that morning.
   step and tries again. A plain click or touch only where the tap itself is the test (fishing-taps, exact-taps).
 - **Read the hooks once they're there**: `__world` comes before `__world3d`; `camTo` and `settled` wait for both
   (`ready3d`); a spec reading `__world3d` straight after `goto` waits on `is3d` first.
+- **The island after the HUD**: after a `goto` or `reload` wait with `islandUp` (e2e/island.ts), not the HUD alone. The
+  3D island mounts up to 300 ms after the HUD shows (it waits for the ground's fields from their worker), and until
+  then every island target sits hidden at the scene's corner: a box read or a tap there missed (the full tier's ~20
+  red tests from 1a786b48 on).
 - **Silent**: Chromium runs with `--mute-audio` (the music, K.K. and the effects never sound on a dev's Mac); WebKit
   headless makes no sound.
 - **No new fixed wait.** `page.waitForTimeout` or a `setTimeout` promise needs `// hold: <why>` on its line (a wait

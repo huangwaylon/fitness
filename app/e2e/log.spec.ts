@@ -4,12 +4,12 @@
 // app's open and the `/api` requests' ids. With E2E_TEST_RELAY=1 (and relay/.smoke-keys) the batch goes to the test
 // relay instead, and the spec reads it back with the CLI (`npm run logs -- --test --sid …`), as an investigation would.
 import { expect, test } from './fixtures.ts';
+import { islandUp } from './island.ts';
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { StoreCore } from '../../relay/src/store.ts';
 import { LogCore } from '../../relay/src/log.ts';
 import { memSql } from '../../relay/test/sqlite.ts';
-import { hudMenu } from './hud.ts';
 import { KEYS, RELAY } from './relay.ts';
 
 const TEST_RELAY = 'https://island-fund-relay-test.island-fund-relay.workers.dev';
@@ -46,7 +46,7 @@ test('a forced error reaches the log, scrubbed, with the session, the role and t
   });
   const page = await context.newPage();
   await page.goto('?log=on&critter=none&visitor=none');
-  await expect(hudMenu(page)).toBeVisible();
+  await islandUp(page);
   // a bug, as the phone would meet it: thrown from a timer, its message carrying what must never be kept; then the
   // page goes (the log writes itself and sends what it has with keepalive)
   await page.evaluate((key) => new Promise<void>((done) => {

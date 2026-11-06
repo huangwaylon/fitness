@@ -1,6 +1,7 @@
 // The 3D island in the specs: its being up (`is3d`: the island's hooks and its models loaded), its hooks (`w3`, window.__world3d: Island3D.svelte), and a tap on a DOM target only where it is that target's
 // (`tapOn`: in 3D the whole island is in view, so a villager or a visitor in front covers much of a small door).
 import { expect, type Locator, type Page } from './fixtures.ts';
+import { hudMenu } from './hud.ts';
 
 /** The site's base path, as the build's (playwright.config.ts BASE_PATH: '' at the root, the default; e.g. '/x' under one). */
 export const BASE = process.env.BASE_PATH ?? '';
@@ -17,7 +18,7 @@ export type W3 = {
   /** Nothing moving: no gesture, fling, settle or activity (the engine's idle). */
   idle(): boolean;
   /** `drawn`: false in the logic tier (E2E_RENDER=none: the frames run, nothing is drawn, `calls` 0). */
-  stats(): { frames: number; calls: number; loading: number; lamps: number; points: number; drawn: boolean };
+  stats(): { frames: number; calls: number; loading: number; lamps: number; points: number; drawn: boolean; paused: boolean };
   view(): { camZ: number; zoom: number; pitch: number; camX: number };
   limits(): { min: number; max: number };
   client(x: number, z: number, lift?: number): [number, number];
@@ -31,6 +32,24 @@ export const w3 = <R,>(page: Page, fn: (w: W3) => R) => page.evaluate(`(${fn.toS
 /** The island's hooks there to read: __world and the 3D island's __world3d (it comes a moment after __world). */
 async function ready3d(page: Page) {
   await page.waitForFunction(() => { const w = window as unknown as { __world?: unknown; __world3d?: unknown }; return !!w.__world && !!w.__world3d; }, null, { timeout: 30_000 });
+}
+
+/** The island open: the HUD up and the 3D island mounted, its camera placing the island's DOM targets (trees,
+ *  villagers, finds, critters: hidden at the scene's corner until then; a step of the game's clock after the mount, not
+ *  the first frame drawn). The HUD shows first: the island mounts up to 300 ms later while the ground's fields come from
+ *  their worker (Island3D FIELDS_WAIT_MS), and a box read or a tap before that missed (the full tier's ~20 red tests
+ *  from 1a786b48). Not the models loaded: `is3d`. */
+export async function islandUp(page: Page, { timeout }: { timeout?: number } = {}) {
+  await expect(hudMenu(page)).toBeVisible({ timeout });
+  await page.waitForFunction(() => {
+    type W = Window & { __world?: { perf: { frames: number }; idle(): boolean }; __world3d?: W3; __upAt?: number };
+    const w = window as unknown as W;
+    if (!document.querySelector('.if-scene[data-r3]')) return true; // (no WebGL: the island's message)
+    if (!w.__world || !w.__world3d) return false;
+    // a step since (the mount's own asks one), or none pending: placed; a sheet over it: nothing steps till it closes
+    w.__upAt ??= w.__world.perf.frames;
+    return w.__world.perf.frames > w.__upAt || w.__world.idle() || w.__world3d.stats().paused;
+  }, null, { timeout: 30_000 });
 }
 
 /** The island up on this page and drawn in 3D, its first models loaded (false: no WebGL, the island's message). */
