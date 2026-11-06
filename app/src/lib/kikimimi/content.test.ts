@@ -1,13 +1,13 @@
 // The draft listening content (app/content/listen/*.yaml, docs/kikimimi-framework.md §8, content/listen/README.md):
 // every unit parses and holds together before the compiler (increment 9) exists. Required fields per kind, speakers
-// in the roster with a cast voice (the unit's `cast`, else bank4.ts CAST) of their gender, `tts` free of digits, notes
+// in the roster with a cast voice (the unit's `cast`, else cast.ts CAST) of their gender, `tts` free of digits, notes
 // ≤ 40 字, ids unique across units, every answer in range. scripts/listen/schema.ts takes these rules over in 9b.
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { CHANNELS, SCENE_IDS } from './bank.ts';
-import { CAST } from './bank4.ts';
+import { CAST } from './cast.ts';
 import { CAST_IDS } from './speech.ts';
 
 const DIR = new URL('../../../content/listen/', import.meta.url);
@@ -67,7 +67,7 @@ function lint({ file, u }: { file: string; u: Unit }): string[] {
     if (who === ME) return me ? (voice(ME) ? undefined : at(where, 'a `me` line needs cast.me in the header')) : at(where, '`me` only speaks in calls');
     if (!(who in ROSTER)) return at(where, `${who} isn't in the roster`);
     const v = voice(who);
-    if (!v) return at(where, `${who} has no cast voice (bank4.ts CAST or the unit's cast)`);
+    if (!v) return at(where, `${who} has no cast voice (cast.ts CAST or the unit's cast)`);
     if (v.split('-')[1][0] !== ROSTER[who as keyof typeof ROSTER].gender) at(where, `${who}'s voice ${v} is the wrong gender`);
   };
   const spoken = (where: string, o: Obj) => {

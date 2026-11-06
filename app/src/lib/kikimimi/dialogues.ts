@@ -7,52 +7,26 @@
 //   literal reading, the opposite.
 //   `next`: the best next line; the traps repeat a word or a sound, answer what wasn't asked, or take the wrong role.
 // Each line is its own clip (`<id>-<n>`, bank.ts clipIds / clipItems), voiced by its villager's cast voice
-// (bank4.ts CAST) and played as a sequence (game.svelte.ts playSequence); `en` is shown, `tts` spoken when it differs
+// (cast.ts CAST) and played as a sequence (game.svelte.ts playSequence); `en` is shown, `tts` spoken when it differs
 // (§9: reductions spelled as said, numbers written out). The item's `en` is its lines joined (the focus is in one of
 // them); its `ja` the right choice's Japanese; `note` the trap (≤ 40 字).
 //   No clips yet: the neural pipeline (scripts/kikimimi-audio.ts) voices them, and until every line has a clip the
 // deck leaves these types out (compile.ts mixes) and にがて れんしゅう too.
 import type { RosterId } from '#lib/villagers/roster.ts';
-import type { Accent, Item, ItemType, Line, Tags } from './bank.ts';
-import { CAST } from './bank4.ts';
+import type { Item } from './bank.ts';
+import { dialogueOf, line, tg, type DialogueRow } from './content/build.ts';
 import { MARKS, staged } from './staging.ts';
 
-/** A `next` item's question while it plays (a `gist` has its own). */
-const NEXT_ASK = 'つぎの ひとことは？';
-
 type L = readonly [who: RosterId, en: string, ja: string, tts?: string];
-interface Row {
-  id: string;
-  type: Extract<ItemType, 'gist' | 'next'>;
+/** A dialogue (a gist's `ask` its question in Japanese; a `next` asks NEXT_ASK). */
+interface Row extends DialogueRow {
   lines: readonly L[];
-  /** A gist's question (Japanese). */
-  ask?: string;
-  /** The right one first. */
-  choices: readonly string[];
-  ja: string;
-  note: string;
-  focus: string;
-  tags: Tags;
 }
 
-const tg = (seed: number, register: Tags['register'], pragmatic: Tags['pragmatic'], conditions?: Tags['conditions'], features?: Tags['features']): Tags =>
-  ({ seed, register, pragmatic, ...(conditions?.length && { conditions }), ...(features?.length && { features }) });
-
-/** A line, `<item>-<n>` its clip id (its sound marks'). */
-const line = (id: string) => ([who, en, ja, tts]: L, n: number): Line => {
-  const cast = CAST[who];
-  if (!cast) throw new Error(`kikimimi: ${who} has no cast voice`);
-  const marks = MARKS[`${id}-${n + 1}`];
-  return { who, cast, en, ja, ...(tts && { tts }), ...(marks && { marks }) };
-};
-
+/** A dialogue, each line's sound marks by its clip id (`<item>-<n>`). */
 const item = (r: Row): Item => {
-  const lines = r.lines.map(line(r.id));
-  return {
-    id: r.id, lv: 4, type: r.type, en: lines.map((l) => l.en).join(' '), ja: r.ja, speaker: lines[0].who, voice: lines[0].cast.slice(0, 2) as Accent,
-    cast: lines[0].cast, choices: r.choices, answer: 0, focus: r.focus, ask: r.ask ?? NEXT_ASK, note: r.note, tags: r.tags, lines,
-    ...staged(r.id)
-  };
+  const lines = r.lines.map(([who, en, ja, tts], n) => line([who, en, ja, tts, MARKS[`${r.id}-${n + 1}`]]));
+  return { ...dialogueOf(4, r, lines), ...staged(r.id) };
 };
 
 const ROWS: readonly Row[] = [

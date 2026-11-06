@@ -5,9 +5,10 @@
 //   A set that waits for its voices (content/index.ts WAITING: written after its levels were offered) joins the bank an
 // item at a time, as each item's clips are made: a level that took an item without its clip would hide whole
 // (compile.ts playable). The audio scripts and the content tests read AUTHORED, everything as written.
-import type { Accent, Item } from './bank.ts';
+import { accentOf, type Item } from './bank.ts';
 import { BANK1 } from './bank1.ts';
-import { BANK4, EXPOSURE } from './bank4.ts';
+import { BANK4 } from './bank4.ts';
+import { EXPOSURE } from './cast.ts';
 import { BANK5 } from './bank5.ts';
 import { DIALOGUES } from './dialogues.ts';
 import { CONTENT, WAITING } from './content/index.ts';
@@ -15,12 +16,12 @@ import { voiced } from './clips.ts';
 import clipsJson from './clips.json' with { type: 'json' };
 
 /** An item tagged `accent-exposure` (やま, ほし: docs/curriculum.md "American English first") spoken in its speakers' UK
- *  or AU voices (bank4.ts EXPOSURE), a dialogue's other speaker keeping their US one; any other item as authored. */
+ *  or AU voices (cast.ts EXPOSURE), a dialogue's other speaker keeping their US one; any other item as authored. */
 function exposed(it: Item): Item {
   if (!it.tags?.features?.includes('accent-exposure')) return it;
   const lines = it.lines?.map((l) => ({ ...l, cast: EXPOSURE[l.who] ?? l.cast }));
   const cast = lines ? lines[0].cast : EXPOSURE[it.speaker] ?? it.cast;
-  return cast ? { ...it, cast, voice: cast.slice(0, 2) as Accent, ...(lines && { lines }) } : it;
+  return cast ? { ...it, cast, voice: accentOf(cast), ...(lines && { lines }) } : it;
 }
 
 /** Every item as written, by level and type. */
