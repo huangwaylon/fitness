@@ -116,7 +116,8 @@
 "dishes-teishoku-mabo",
 "maff_kyodo-34_1_tokyo",
 "eatout-gyudon_set",
-"maff_kyodo-35_3_kanagawa"
+"maff_kyodo-35_3_kanagawa",
+"maff_kyodo-41_20_okayama"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -634,7 +635,27 @@
 "maff_kyodo-37_17_toyama",
 "maff_kyodo-38_4_gifu",
 "maff_kyodo-38_30_gifu",
-"maff_kyodo-38_2_gifu"
+"maff_kyodo-38_2_gifu",
+"maff_kyodo-41_18_okayama",
+"maff_kyodo-39_21_osaka",
+"maff_kyodo-41_5_okayama",
+"maff_kyodo-39_6_osaka",
+"maff_kyodo-40_23_hyogo",
+"maff_kyodo-39_2_osaka",
+"maff_kyodo-40_26_hyogo",
+"maff_kyodo-39_23_osaka",
+"maff_kyodo-40_28_hyogo",
+"maff_kyodo-40_9_hyogo",
+"maff_kyodo-40_1_hyogo",
+"maff_kyodo-40_16_hyogo",
+"maff_kyodo-39_5_osaka",
+"maff_kyodo-40_18_hyogo",
+"maff_kyodo-39_22_osaka",
+"maff_kyodo-40_2_hyogo",
+"maff_kyodo-40_21_hyogo",
+"maff_kyodo-40_14_hyogo",
+"maff_kyodo-40_22_hyogo",
+"maff_kyodo-40_25_hyogo"
 ],
 "meat": [
 "mext-11227",
@@ -804,7 +825,13 @@
 "maff_kyodo-32_11_gunma",
 "maff_kyodo-31_2_tochigi",
 "maff_kyodo-36_9_shizuoka",
-"maff_kyodo-37_25_toyama"
+"maff_kyodo-37_25_toyama",
+"maff_kyodo-41_15_okayama",
+"maff_kyodo-41_25_okayama",
+"maff_kyodo-41_19_okayama",
+"maff_kyodo-41_11_okayama",
+"maff_kyodo-40_8_hyogo",
+"maff_kyodo-42_10_hiroshima"
 ],
 "other": [
 "mext-02034",
@@ -891,7 +918,16 @@
 "maff_kyodo-35_20_kanagawa",
 "maff_kyodo-37_7_toyama",
 "maff_kyodo-36_7_shizuoka",
-"maff_kyodo-37_11_toyama"
+"maff_kyodo-37_11_toyama",
+"maff_kyodo-40_4_hyogo",
+"maff_kyodo-41_8_okayama",
+"maff_kyodo-41_10_okayama",
+"maff_kyodo-40_12_hyogo",
+"maff_kyodo-40_24_hyogo",
+"maff_kyodo-40_7_hyogo",
+"maff_kyodo-41_4_okayama",
+"maff_kyodo-41_26_okayama",
+"maff_kyodo-41_23_okayama"
 ],
 "season": [
 "mext-17007",
@@ -1082,7 +1118,12 @@
 "maff_kyodo-36_21_shizuoka",
 "maff_kyodo-38_22_gifu",
 "maff_kyodo-37_3_toyama",
-"maff_kyodo-39_11_osaka"
+"maff_kyodo-39_11_osaka",
+"maff_kyodo-41_6_okayama",
+"maff_kyodo-39_27_osaka",
+"maff_kyodo-39_30_osaka",
+"maff_kyodo-39_25_osaka",
+"maff_kyodo-41_21_okayama"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -1148,7 +1189,18 @@
 "maff_kyodo-38_16_gifu",
 "maff_kyodo-37_2_toyama",
 "maff_kyodo-36_4_shizuoka",
-"maff_kyodo-37_28_toyama"
+"maff_kyodo-37_28_toyama",
+"maff_kyodo-41_17_okayama",
+"maff_kyodo-41_14_okayama",
+"maff_kyodo-40_5_hyogo",
+"maff_kyodo-40_3_hyogo",
+"maff_kyodo-39_24_osaka",
+"maff_kyodo-41_13_okayama",
+"maff_kyodo-40_6_hyogo",
+"maff_kyodo-39_7_osaka",
+"maff_kyodo-39_16_osaka",
+"maff_kyodo-40_17_hyogo",
+"maff_kyodo-39_4_osaka"
 ],
 "soy": [
 "mext-04032",
@@ -1272,7 +1324,17 @@
 "maff_kyodo-37_24_toyama",
 "maff_kyodo-38_13_gifu",
 "maff_kyodo-38_1_gifu",
-"maff_kyodo-36_8_shizuoka"
+"maff_kyodo-36_8_shizuoka",
+"maff_kyodo-40_20_hyogo",
+"maff_kyodo-41_2_okayama",
+"maff_kyodo-41_7_okayama",
+"maff_kyodo-39_3_osaka",
+"maff_kyodo-41_1_okayama",
+"maff_kyodo-41_27_okayama",
+"maff_kyodo-39_14_osaka",
+"maff_kyodo-39_13_osaka",
+"maff_kyodo-40_11_hyogo",
+"maff_kyodo-41_24_okayama"
 ],
 "sweet": [
 "mext-15103",
@@ -1386,7 +1448,14 @@
 "maff_kyodo-36_27_shizuoka",
 "maff_kyodo-38_8_gifu",
 "maff_kyodo-38_25_gifu",
-"maff_kyodo-38_18_gifu"
+"maff_kyodo-38_18_gifu",
+"maff_kyodo-39_8_osaka",
+"maff_kyodo-40_29_hyogo",
+"maff_kyodo-39_12_osaka",
+"maff_kyodo-39_18_osaka",
+"maff_kyodo-41_9_okayama",
+"maff_kyodo-39_26_osaka",
+"maff_kyodo-39_19_osaka"
 ],
 "veg": [
 "mext-08001",
@@ -1655,7 +1724,8 @@
 "eatout-yakiniku_teishoku",
 "eatout-bento_yakiniku",
 "dishes-shigureni",
-"maff_kyodo-35_17_kanagawa"
+"maff_kyodo-35_17_kanagawa",
+"maff_kyodo-40_14_hyogo"
 ],
 "beer": [
 "mext-16006",
@@ -1793,7 +1863,8 @@
 "dishes-mushidori",
 "eatout-nankotsu_age",
 "dishes-teriyaki-chicken",
-"maff_kyodo-38_2_gifu"
+"maff_kyodo-38_2_gifu",
+"maff_kyodo-39_21_osaka"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -1870,7 +1941,8 @@
 "dishes-tekkadon",
 "dishes-teishoku-gyoza",
 "dishes-mabodon",
-"maff_kyodo-35_3_kanagawa"
+"maff_kyodo-35_3_kanagawa",
+"maff_kyodo-41_20_okayama"
 ],
 "drink": [
 "eatout-cafe_latte",
@@ -2246,7 +2318,23 @@
 "maff_kyodo-37_10_toyama",
 "maff_kyodo-37_17_toyama",
 "maff_kyodo-38_4_gifu",
-"maff_kyodo-38_30_gifu"
+"maff_kyodo-38_30_gifu",
+"maff_kyodo-41_18_okayama",
+"maff_kyodo-41_5_okayama",
+"maff_kyodo-39_6_osaka",
+"maff_kyodo-39_2_osaka",
+"maff_kyodo-40_26_hyogo",
+"maff_kyodo-39_23_osaka",
+"maff_kyodo-40_28_hyogo",
+"maff_kyodo-40_9_hyogo",
+"maff_kyodo-40_1_hyogo",
+"maff_kyodo-40_16_hyogo",
+"maff_kyodo-39_5_osaka",
+"maff_kyodo-40_18_hyogo",
+"maff_kyodo-39_22_osaka",
+"maff_kyodo-40_2_hyogo",
+"maff_kyodo-40_21_hyogo",
+"maff_kyodo-40_25_hyogo"
 ],
 "meat": [
 "mext-11279",
@@ -2308,7 +2396,9 @@
 "mext-02039",
 "dishes-nyumen",
 "eatout-ramen_chashu",
-"eatout-kaedama"
+"eatout-kaedama",
+"maff_kyodo-40_8_hyogo",
+"maff_kyodo-42_10_hiroshima"
 ],
 "onigiri": [
 "dishes-onigiri-tunamayo",
@@ -2470,7 +2560,15 @@
 "maff_kyodo-36_10_shizuoka",
 "maff_kyodo-35_20_kanagawa",
 "maff_kyodo-36_7_shizuoka",
-"maff_kyodo-37_11_toyama"
+"maff_kyodo-37_11_toyama",
+"maff_kyodo-40_4_hyogo",
+"maff_kyodo-41_8_okayama",
+"maff_kyodo-41_10_okayama",
+"maff_kyodo-40_12_hyogo",
+"maff_kyodo-40_24_hyogo",
+"maff_kyodo-40_7_hyogo",
+"maff_kyodo-41_4_okayama",
+"maff_kyodo-41_23_okayama"
 ],
 "saba": [
 "mext-10154",
@@ -2480,7 +2578,9 @@
 "mext-10161",
 "mext-10156",
 "mext-10166",
-"mext-10163"
+"mext-10163",
+"maff_kyodo-41_2_okayama",
+"maff_kyodo-40_23_hyogo"
 ],
 "salad": [
 "dishes-green-salad",
@@ -2694,7 +2794,11 @@
 "maff_kyodo-36_21_shizuoka",
 "maff_kyodo-38_22_gifu",
 "maff_kyodo-37_3_toyama",
-"maff_kyodo-39_11_osaka"
+"maff_kyodo-39_11_osaka",
+"maff_kyodo-41_6_okayama",
+"maff_kyodo-39_27_osaka",
+"maff_kyodo-39_30_osaka",
+"maff_kyodo-41_21_okayama"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -2723,7 +2827,9 @@
 "eatout-yakisobapan",
 "eatout-niku_soba",
 "dishes-kamonanban",
-"maff_kyodo-36_9_shizuoka"
+"maff_kyodo-36_9_shizuoka",
+"maff_kyodo-41_15_okayama",
+"maff_kyodo-41_25_okayama"
 ],
 "soup": [
 "mext-18028",
@@ -2779,7 +2885,19 @@
 "maff_kyodo-38_16_gifu",
 "maff_kyodo-37_2_toyama",
 "maff_kyodo-36_4_shizuoka",
-"maff_kyodo-37_28_toyama"
+"maff_kyodo-37_28_toyama",
+"maff_kyodo-41_17_okayama",
+"maff_kyodo-41_14_okayama",
+"maff_kyodo-40_5_hyogo",
+"maff_kyodo-40_3_hyogo",
+"maff_kyodo-39_24_osaka",
+"maff_kyodo-41_13_okayama",
+"maff_kyodo-40_6_hyogo",
+"maff_kyodo-41_11_okayama",
+"maff_kyodo-39_7_osaka",
+"maff_kyodo-39_16_osaka",
+"maff_kyodo-40_17_hyogo",
+"maff_kyodo-39_4_osaka"
 ],
 "soy": [
 "mext-05018",
@@ -2886,7 +3004,16 @@
 "maff_kyodo-37_24_toyama",
 "maff_kyodo-38_13_gifu",
 "maff_kyodo-38_1_gifu",
-"maff_kyodo-36_8_shizuoka"
+"maff_kyodo-36_8_shizuoka",
+"maff_kyodo-40_20_hyogo",
+"maff_kyodo-41_7_okayama",
+"maff_kyodo-39_3_osaka",
+"maff_kyodo-41_1_okayama",
+"maff_kyodo-41_27_okayama",
+"maff_kyodo-39_14_osaka",
+"maff_kyodo-39_13_osaka",
+"maff_kyodo-40_11_hyogo",
+"maff_kyodo-41_24_okayama"
 ],
 "sweet": [
 "mext-15103",
@@ -2994,7 +3121,14 @@
 "maff_kyodo-36_27_shizuoka",
 "maff_kyodo-38_8_gifu",
 "maff_kyodo-38_25_gifu",
-"maff_kyodo-38_18_gifu"
+"maff_kyodo-38_18_gifu",
+"maff_kyodo-39_8_osaka",
+"maff_kyodo-40_29_hyogo",
+"maff_kyodo-39_12_osaka",
+"maff_kyodo-39_18_osaka",
+"maff_kyodo-41_9_okayama",
+"maff_kyodo-39_26_osaka",
+"maff_kyodo-39_19_osaka"
 ],
 "tofu": [
 "mext-04032",
@@ -3029,7 +3163,10 @@
 "dishes-akadashi",
 "dishes-teishoku-mabo",
 "maff_kyodo-35_2_kanagawa",
-"maff_kyodo-38_29_gifu"
+"maff_kyodo-38_29_gifu",
+"maff_kyodo-39_25_osaka",
+"maff_kyodo-41_26_okayama",
+"maff_kyodo-40_22_hyogo"
 ],
 "tomato": [
 "mext-06182",
@@ -3070,7 +3207,8 @@
 "maff_kyodo-32_11_gunma",
 "maff_kyodo-31_2_tochigi",
 "dishes-niku-udon",
-"dishes-nabeyaki-udon"
+"dishes-nabeyaki-udon",
+"maff_kyodo-41_19_okayama"
 ],
 "veg": [
 "mext-08001",
