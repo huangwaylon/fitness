@@ -1,11 +1,13 @@
 // The trip map's MapLibre side (docs/travel.md "Maps"): the lazy part TripMap.svelte imports only when it draws (never
-// under drawOff()). MapLibre's CSP-safe path: its module worker is a file of our own origin (`?url`, under
-// _app/immutable), so no blob: worker and no eval; the basemap's TileJSON and tiles fetched from OpenFreeMap
+// under drawOff()). MapLibre's CSP-safe path: its worker is a file of our own origin (`?worker&url`, under
+// _app/immutable/workers), so no blob: worker and no eval; the basemap's TileJSON and tiles fetched from OpenFreeMap
 // (source.ts: the CSP's one third-party connect-src); labels in the app's font (fonts.ts). One map per TripMap;
 // remove() drops its WebGL context.
-import { AttributionControl, Map as GLMap, Marker, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature } from 'maplibre-gl';
+import { AttributionControl, Map as GLMap, Marker, getGlobalDispatcher, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url';
+// (bundled as our own worker chunk, a .js: a raw .mjs is served as application/octet-stream by some hosts, which a
+// module worker under nosniff refuses)
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { labelField } from './basemap.ts';
 import { fontFaces, LOCAL_CJK } from './fonts.ts';
 import { boundsOf, candidatesData, legsData, locData, stopsOf, type Fix } from './overlay.ts';
@@ -156,6 +158,10 @@ export function createEngine(
       for (const { m } of markers.values()) m.remove();
       markers.clear();
       map.remove(); // loses its WebGL context (WEBGL_lose_context) and empties the container
+      // The last map's remove() ends MapLibre's workers by aborting its page-wide dispatcher's controller with an Error
+      // made inside remove(): until the next map, that Error's unformatted stack held remove()'s receivers, this whole
+      // map and its context (leaks.spec). Reading its stack formats it, which lets the frames go.
+      void ((getGlobalDispatcher() as unknown as { workersAbortController?: AbortController }).workersAbortController?.signal.reason as Error | undefined)?.stack;
     }
   };
 }

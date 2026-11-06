@@ -5,6 +5,7 @@
 // on the cached home models held the picker's renderer), one more an /editor visit (and a document keydown listener).
 import { expect, test, type Page } from '@playwright/test';
 import { BASE } from './island.ts';
+import { drawn, fixtureTiles, mapReady } from './travelMap.ts';
 
 test.use({ viewport: { width: 393, height: 852 } });
 const Q = '?demo&date=2026-11-04T12:00&critter=none&visitor=none&as=B';
@@ -143,5 +144,32 @@ test('the museum in first person and out, the eye button, a bench: no context or
   const after = await measure(page);
   expect(inside, 'WebGL contexts alive in the museum (its own only)').toEqual([1, 1, 1]);
   expect(after.gl, 'WebGL contexts alive after three').toBeLessThanOrEqual(first.gl);
+  expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
+});
+
+// The trip map (docs/travel.md "Maps"), drawn: in and out three times (the shop between, a page without WebGL). Its
+// context goes with it (map.remove() loses it; before engine.ts read the workers' abort Error's stack, that Error held
+// the last map and its context till the next), and so do its listeners (MapLibre's one page-wide visibilitychange
+// listener, added with the first map, stays: none more after it).
+test('the trip map in and out: no WebGL context or window listener left behind', { tag: '@chromium' }, async ({ page }) => {
+  test.setTimeout(120_000);
+  await watch(page);
+  await drawn(page);
+  await fixtureTiles(page);
+  await page.goto(`${BASE}/shop${Q}`);
+  await expect(page.locator('[data-shop]')).toBeVisible();
+  const round = async () => {
+    await nav(page, `${BASE}/dev/map${Q}&day=2`);
+    await mapReady(page);
+    await page.locator('[data-day-chip="1"]').click();
+    await nav(page, `${BASE}/shop${Q}`);
+    await expect(page.locator('[data-shop]')).toBeVisible();
+  };
+  await round();
+  const first = await measure(page);
+  for (let i = 0; i < 2; i++) await round();
+  const after = await measure(page);
+  expect(first.gl, 'WebGL contexts alive after the map closed').toBe(0);
+  expect(after.gl, 'WebGL contexts alive after three').toBe(0);
   expect(after.ls, 'window and document listeners').toBeLessThanOrEqual(first.ls);
 });
