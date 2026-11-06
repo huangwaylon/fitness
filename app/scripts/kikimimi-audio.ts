@@ -38,6 +38,9 @@
 // master's hash, so re-mixing never re-speaks. The strict gate runs on the clean take; the conditioned clip is only
 // checked loosely (whisper's WER ≤ the condition's bound, else flagged `cond-wer`), and UTMOS is the clean take's. The
 // clean take is kept under .cache/tts/clean/ (with the speech's offset in the mixed clip) for the karaoke's alignment.
+// The bedtime serials (おやすみ ものがたり, content/listen/story/, story.ts): each segment a clip (`<chapter>-<n>`), the
+// narrator's voice or the villager's CAST voice, as spoken (no tempo change: the engine has no pace setting), no
+// condition, a little softer than the quiz (−18 LUFS: heard in bed, one after another); --levels doesn't select them.
 // QA: whisper-cli large-v3-turbo hears each clip; a content word wrong (articles and fillers aside; numbers and reductions
 // normalised) re-rolls it with the next seed, up to --retries times, then it's flagged. UTMOS (SpeechMOS utmos22) and
 // ECAPA cosine to the voice's reference (drift < 0.3 flagged) are measured. scripts/tts/report.json gets every clip's
@@ -72,7 +75,8 @@ import { NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
 import { LADDERS as ALL_LADDERS } from '../src/lib/kikimimi/ladders.ts';
 import { writeLevels } from './kikimimi-levels.ts';
 import { WORK, unpackClips, writePacks } from './kikimimi-packs.ts';
-import { unitItems } from '../src/lib/kikimimi/compile.ts';
+import { readStories, unitItems } from '../src/lib/kikimimi/compile.ts';
+import { storyItems } from '../src/lib/kikimimi/story.ts';
 
 const APP = join(import.meta.dirname, '..');
 const TTS = join(import.meta.dirname, 'tts');
@@ -131,7 +135,10 @@ const PINNED: Readonly<Record<string, number>> = {
   // the re-voicing (2026-11-06): Ikebukuro heard as said again, "Thursday? We'll be…" no longer "Thursday will be…",
   // and short lines nearer their voice than all six default takes
   'dvm-ac-out-3': 4000, 'dho-lab-notes-3': 4000, 'dmu-wrong-dates-6': 4000, 'dya-best-man-3': 4000,
-  'd4-video-call-3': 4000
+  'd4-video-call-3': 4000,
+  // the bedtime stories: "Bean There" heard as said, Walt's "you don't eat" no longer "need", and Mabel's line nearer
+  // its voice
+  'serial-cafe-3-16': 2000, 'serial-johnny-5-12': 2000, 'serial-cafe-3-20': 2000
 };
 const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
@@ -170,11 +177,17 @@ const OUT = SCRATCH ?? WORK;
 const CLIPS = SCRATCH ? join(SCRATCH, 'clips.json') : join(APP, 'src/lib/kikimimi/clips.json');
 const SRCS = SCRATCH ? join(SCRATCH, 'clips.src.json') : join(import.meta.dirname, 'kikimimi-clips.src.json');
 const REPORT = SCRATCH ? join(SCRATCH, 'report.json') : join(TTS, 'report.json');
+/** The bedtime serials' segments, a clip each (story.ts storyItems): spoken whatever --levels says (never by say). */
+const STORY_ITEMS = storyItems(readStories());
+const STORY: ReadonlySet<string> = new Set(STORY_ITEMS.map((it) => it.id));
+/** The stories' loudness: a little softer than the quiz's −16. */
+const STORY_LUFS = -18;
+const lufsOf = (it: Item): number => (STORY.has(it.id) ? STORY_LUFS : -16);
 /** One entry per clip: an item, or each line of a dialogue as its own (bank.ts clipItems: `<item>-<n>`); the bank's
  *  items, then the units' own (app/content/units/*.yaml, inline: same cast, `tts`, conditions and beds; their ids are
- *  never the bank's: units.ts checkUnits). */
-const ALL: readonly Item[] = [...ITEMS, ...unitItems()].flatMap(clipItems);
-const BANK = ALL.filter((it) => LEVELS.includes(it.lv));
+ *  never the bank's: units.ts checkUnits), then the stories' segments. */
+const ALL: readonly Item[] = [...[...ITEMS, ...unitItems()].flatMap(clipItems), ...STORY_ITEMS];
+const BANK = ALL.filter((it) => (STORY.has(it.id) ? !SAY : LEVELS.includes(it.lv)));
 /** スピード はしご (ladder.ts): each ladder's line spoken once (the gate as any clip's), its rungs that take stretched. */
 const LADDERS = ALL_LADDERS.filter((l) => LEVELS.includes(l.line.lv));
 /** Every rung clip id (`<ladder>-<n>`), made or not. */
@@ -244,10 +257,11 @@ const TRIM = 'silenceremove=start_periods=1:start_threshold=-45dB:start_silence=
 function trim(raw: string, out: string): void {
   ff('-i', raw, '-af', `highpass=f=50,${TRIM},areverse,${TRIM},areverse`, '-ac', '1', '-ar', String(SR), '-c:a', 'pcm_f32le', out);
 }
-/** A trimmed WAV → the shipped m4a: a gain to −16 LUFS (a limiter holds the true peak under −1.5 dBTP), a 60 ms tail. */
-function finish(wav: string, out: string): void {
+/** A trimmed WAV → the shipped m4a: a gain to −16 LUFS (a story's −18: lufsOf; a limiter holds the true peak under
+ *  −1.5 dBTP), a 60 ms tail. */
+function finish(wav: string, out: string, target = -16): void {
   const { i, tp } = measureLoudness(wav);
-  const gain = Number.isFinite(i) ? -16 - i : 0;
+  const gain = Number.isFinite(i) ? target - i : 0;
   const limit = tp + gain > -1.5 ? `,alimiter=limit=${(10 ** (-1.6 / 20)).toFixed(3)}:attack=2:release=40:level=0` : '';
   ff('-i', wav, '-af', `volume=${gain.toFixed(2)}dB${limit},apad=pad_dur=0.06`,
     '-ac', '1', '-ar', String(SR), '-c:a', 'aac', '-b:a', '48k', '-map_metadata', '-1', '-fflags', '+bitexact', '-movflags', '+faststart', out);
@@ -470,7 +484,8 @@ function planOf(it: Item): Plan {
   const text = spokenText(it);
   const voice = CLONES(engine) ? [cast, refHash(cast), entry.ref.text] : [entry.kokoro];
   const tempo = it.lv === 1 ? L1_TEMPO : 1;
-  const master = sha(JSON.stringify([engine, MODEL[engine], voice, text, seedOf(it.id), hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE]), 10);
+  const master = sha(JSON.stringify([engine, MODEL[engine], voice, text, seedOf(it.id), hasSlow(it) && [SLOW, STRETCH], tempo !== 1 && [tempo, STRETCH], PIPELINE,
+    ...(STORY.has(it.id) ? [['story', STORY_LUFS]] : [])]), 10);
   const c = condOf(it), cond = c && condPlan(c);
   if (cond && hasSlow(it)) throw new Error(`${it.id}: no conditions at levels 1-2 (their slow clip is the clean take)`);
   return { it, cast, engine, text, master, cond, src: condSource(master, cond, cond ? condAssets(cond) : {}) };
@@ -566,7 +581,7 @@ function speak(plans: Plan[]): Map<string, Take> {
         const s = t.wav.replace(/\.wav$/, '-t.wav');
         stretch(t.wav, L1_TEMPO, s);
         finish(s, t.m4a);
-      } else finish(t.wav, t.m4a);
+      } else finish(t.wav, t.m4a, lufsOf(p.it));
     }
     const heard = py<{ hyp: string; wer: number; content: number }>('qa', 'wer', todo.map((p) => ({ wav: takes.get(p.it.id)!.m4a, refs: [p.it.en, p.text] })));
     const cloned = todo.filter((p) => CLONES(p.engine));
@@ -762,7 +777,12 @@ function run(): void {
     const f = (k: 'mos' | 'sim') => rs.map((r) => r[k]).filter((x): x is number => typeof x === 'number');
     return [c, { n: rs.length, mos: mean(f('mos')), mosMin: min(f('mos')), sim: mean(f('sim')), simMin: min(f('sim')), misheard: rs.filter((r) => r.content).length }];
   }));
-  const lvOf = new Map(ALL.map((it) => [it.id, it.lv]));
+  const lvOf = new Map(ALL.filter((it) => !STORY.has(it.id)).map((it) => [it.id, it.lv]));
+  const storyRows = Object.entries(rows).filter(([id]) => STORY.has(id)).map(([, r]) => r);
+  const stories = {
+    clips: storyRows.length, minutes: Math.round(storyRows.reduce((s, r) => s + r.dur, 0) / 6) / 10, wpm: mean(storyRows.map((r) => r.wpm)),
+    mos: mean(storyRows.map((r) => r.mos).filter((x): x is number => typeof x === 'number')), contentClean: storyRows.filter((r) => !r.content).length
+  };
   const wpm = Object.fromEntries([1, 2, 3, 4, 5, 6, 7].map((lv) => [lv, mean(Object.entries(rows).filter(([id]) => lvOf.get(id) === lv).map(([, r]) => r.wpm))]));
   const summary = {
     engine: ENGINE, models: Object.fromEntries([...new Set(Object.values(ENGINE))].map((e) => [e, MODEL[e]])), pipeline: PIPELINE,
@@ -771,7 +791,7 @@ function run(): void {
     rerolled: R.filter((r) => r.tries > 1).length, conditioned: R.filter((r) => r.cond).length,
     condWer: mean(R.map((r) => r.condWer).filter((x): x is number => typeof x === 'number')), flagged: Object.keys(rows).filter((k) => rows[k].flags.length).sort(),
     mos: mean(num('mos')), mosMin: min(num('mos')), sim: mean(num('sim')), simMin: min(num('sim')), rtf: mean(num('rtf')), wer: mean(num('wer')),
-    wpm, files: files.length, kb: Math.round(bytes / 1024), perVoice,
+    wpm, stories, files: files.length, kb: Math.round(bytes / 1024), perVoice,
     ladders: Object.fromEntries(SPEEDS.map((speed) => {
       const rs = R.filter((r) => r.speed === speed);
       const f = (k: 'mos' | 'rate' | 'tempo') => rs.map((r) => r[k]).filter((x): x is number => typeof x === 'number');
@@ -782,6 +802,7 @@ function run(): void {
   writeAtomic(REPORT, JSON.stringify({ summary, items: sorted(rows) }, null, 1) + '\n');
   console.log(`\n${todo.length} spoken in ${summary.wallSeconds}s. All ${R.length} clips: whisper word for word ${summary.perfect}, content clean ${summary.contentClean}, re-rolled ${summary.rerolled}`);
   console.log(`UTMOS mean ${summary.mos} (min ${summary.mosMin}); similarity to the ref mean ${summary.sim} (min ${summary.simMin}); RTF ${summary.rtf}; wpm by level ${JSON.stringify(wpm)}`);
+  if (stories.clips) console.log(`stories: ${stories.clips} clips, ${stories.minutes} min, ${stories.wpm} wpm, UTMOS ${stories.mos}, content clean ${stories.contentClean}`);
   for (const [x, v] of Object.entries(summary.ladders)) if (v.n) console.log(`  rungs ${x}: ${v.n} clips, UTMOS ${v.mos} (min ${v.mosMin}), ${v.rate} syl/s, tempo ${v.tempoMin}-${v.tempoMax}, clamped ${v.clamped}, misheard ${v.misheard}`);
   for (const [c, v] of Object.entries(perVoice)) console.log(`  ${c}: ${v.n} clips, UTMOS ${v.mos} (min ${v.mosMin}), sim ${v.sim} (min ${v.simMin})${v.misheard ? `, ${v.misheard} misheard` : ''}`);
   if (summary.conditioned) console.log(`conditions: ${summary.conditioned} clips mixed, whisper's WER over them mean ${summary.condWer}`);

@@ -3,14 +3,23 @@
 // are the narrator (the file's cast.narrator) or roster villagers, all with US voices of their gender and distinct
 // within a chapter; `tts` free of digits; every segment 3-12 s at a bedtime pace (by word count) and every chapter
 // 3-5 minutes; 5-8 glossed phrases each, heard in the chapter, ids unique across stories and units; ids unique across
-// all listening content; the morning-after prediction well formed.
-import { readdirSync, readFileSync } from 'node:fs';
+// all listening content; the morning-after prediction well formed. Then as voiced and compiled (story.ts): a clip per
+// segment in its speaker's voice, a chunk per chapter with its index line, the clips in their chapter's own packs.
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { parse } from 'yaml';
 import { ROSTER } from '#lib/villagers/roster.ts';
 import { REGISTERS, SCENE_IDS } from './bank.ts';
 import { CAST } from './cast.ts';
-import { CAST_IDS } from './speech.ts';
+import { CAST_IDS, castOf, spokenText } from './speech.ts';
+import { clipAt } from './clips.ts';
+import { wordSpans } from './marks.ts';
+import { PART_MAX, compile, readPacks, readStories } from './compile.ts';
+import { PACK_MAX, clipPlaces, packFile } from './packing.ts';
+import { INDEX, loadChapter } from './pool.ts';
+import { chapterPart, chapters, segmentClip, storyItems, type Chapter } from './story.ts';
+import { CLIPS, WORDS } from './testdata.ts';
 
 const LISTEN = new URL('../../../content/listen/', import.meta.url);
 const DIR = new URL('story/', LISTEN);
@@ -157,5 +166,80 @@ describe('おやすみ ものがたり (story drafts)', () => {
     const bad = lint({ file: 'x-bad.yaml', u }).join('\n');
     for (const want of ['isn\'t American', 'chapter 2', 'roster', 'no digits', '1 words', 'share a voice', 'ph: 5-8', 'isn\'t heard', 'predict', 'words (450-700'])
       expect(bad).toContain(want);
+  });
+});
+
+describe('おやすみ ものがたり (voiced and compiled)', () => {
+  const sources = readStories();
+  const items = storyItems(sources);
+  const files = compile(CLIPS, WORDS);
+  const packs = readPacks(), places = clipPlaces(packs);
+
+  it('every segment is a clip of its own (`<chapter>-<n>`), in the narrator’s voice or the villager’s, spoken as `tts` or `en`', () => {
+    expect(sources.map((s) => s.unit)).toEqual(stories.map(({ u }) => u.unit));
+    const want = sources.flatMap((s) => s.items.flatMap((ch) => ch.segments.map((seg, n) => ({ id: segmentClip(ch.id, n), seg, s }))));
+    expect(items.map((it) => it.id)).toEqual(want.map((w) => w.id));
+    expect(new Set(items.map((it) => it.id)).size).toBe(items.length);
+    expect(want[0].id).toBe('serial-cafe-1-1');
+    for (const [k, it] of items.entries()) {
+      const { seg, s } = want[k];
+      expect(castOf(it), it.id).toBe(seg.who === NARRATOR ? s.cast[NARRATOR] : s.cast[seg.who] ?? CAST[seg.who as keyof typeof CAST]);
+      expect(spokenText(it)).toBe(seg.tts ?? seg.en);
+      expect(it.lv, 'no slow take, no level-1 tempo').toBeGreaterThan(2);
+      expect(it.cond).toBeUndefined();
+    }
+  });
+
+  it('each chapter compiles into a chunk of its own (`<unit>-<chapter>`, under budget) and a line in the index', () => {
+    for (const s of sources) {
+      const entry = INDEX.stories[s.unit];
+      expect([entry.name, entry.host, entry.status]).toEqual([s.name, s.host, s.status]);
+      for (const [i, ch] of chapters(s).entries()) {
+        const part = chapterPart(s.unit, ch.chapter), file = files.get(`parts/${part}.json`)!;
+        expect(file, part).toBeDefined();
+        expect(gzipSync(file).length, part).toBeLessThanOrEqual(PART_MAX);
+        const chunk = JSON.parse(file) as { story: Chapter; clips: Record<string, unknown>; words: Record<string, unknown> };
+        expect(chunk.story).toEqual(ch);
+        expect(ch.ja && ch.line && ch.title).toBeTruthy();
+        expect(!!ch.predict, part).toBe(i < s.items.length - 1);
+        for (const p of ch.ph) expect(p.in.length, `${part} ${p.id}`).toBeGreaterThan(0);
+        const ids = ch.segments.map((seg) => seg.clip);
+        const cs = ids.every((id) => CLIPS[id]) ? Math.round(ids.reduce((n, id) => n + CLIPS[id].dur, 0) * 100) : 0;
+        expect(entry.chapters[i].slice(0, 6)).toEqual([part, ch.id, ch.title, ch.line, ids.length, cs]);
+        expect(Object.keys(chunk.clips)).toEqual(ids.filter((id) => CLIPS[id]));
+      }
+    }
+  });
+
+  it('a voiced chapter has every clip, its word timings, and its own packs (each ≤ 1.2 MB, no slow takes)', () => {
+    for (const s of sources)
+      for (const ch of chapters(s)) {
+        const ids = ch.segments.map((seg) => seg.clip), part = chapterPart(s.unit, ch.chapter);
+        if (!ids.some((id) => CLIPS[id])) continue;
+        for (const [n, id] of ids.entries()) {
+          const c = CLIPS[id];
+          expect(c, id).toBeDefined();
+          expect(c.dur, id).toBeGreaterThan(1);
+          expect(c.dur, `${id}: 3-12 s a segment, at most 14`).toBeLessThan(14);
+          expect(c.slow, id).toBeUndefined();
+          expect(WORDS[id]?.[0], `${id}: npm run audio:kikimimi-words`).toBe(c.hash);
+          expect(WORDS[id].length, id).toBe(wordSpans(ch.segments[n].en).length + 2);
+          const at = places.normal.get(id)!;
+          expect(at[0], id).toMatch(new RegExp(`^${part}(-\\d+)?\\.[0-9a-f]{8}$`));
+          expect(places.slow.has(id)).toBe(false);
+        }
+        for (const [name, e] of Object.entries(packs).filter(([name]) => name === part || name.startsWith(`${part}-`))) {
+          expect(e.clips.every(([id]) => ids.includes(id)), name).toBe(true);
+          expect(statSync(new URL(`../../../static/audio/listen/${packFile(name, e)}`, import.meta.url)).size, name).toBeLessThanOrEqual(PACK_MAX);
+        }
+      }
+  });
+
+  it('a chapter loads alone, with its clips placed in their packs', async () => {
+    const [part] = INDEX.stories['st-johnny'].chapters[0];
+    const ch = await loadChapter(part);
+    expect(ch.id).toBe('serial-johnny-1');
+    for (const seg of ch.segments) expect(!!clipAt(seg.clip), seg.clip).toBe(seg.clip in CLIPS);
+    await expect(loadChapter('lv1')).rejects.toThrow(/isn't a story chapter/);
   });
 });

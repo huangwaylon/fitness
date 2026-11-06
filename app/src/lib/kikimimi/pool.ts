@@ -9,6 +9,7 @@ import type { Accent, Entry, Feature, Item, ItemType, Level, Tags } from './bank
 import { addClips, type ChunkClip, type Words } from './clips.ts';
 import type { Ladder } from './ladder.ts';
 import type { UnitChunk, UnitPlay } from './lesson.ts';
+import type { Chapter, StoryEntry } from './story.ts';
 
 /** What a chunk holds: a level's items (or the ladders; a unit's: the unit, its lessons' items and ladders) and their
  *  clips and word timings. */
@@ -16,6 +17,8 @@ interface Part {
   unit?: UnitPlay;
   items?: Item[];
   ladders?: Ladder[];
+  /** A bedtime serial's chapter (story.ts). */
+  story?: Chapter;
   /** The audio packs its clips are in (stems: `lv4-2.1a2b3c4d`). */
   packs: string[];
   clips: Record<string, ChunkClip>;
@@ -41,6 +44,8 @@ export interface Index {
   ladder: boolean;
   /** The lobby's sound check: a clip from no game (the bank's first level-1 item), and its pack. */
   test: [string, ChunkClip, string[]];
+  /** The bedtime serials (おやすみ ものがたり, story.ts): each one's name, host, status and chapters (their chunks). */
+  stories: Record<string, StoryEntry>;
   /** The units, in file order (units.ts's `status` gates them on the phone, a later step). */
   paths: PathEntry[];
   /** Every item, in the bank's order: id, level, type, accent, pragmatic layer, features. */
@@ -174,6 +179,15 @@ export function addUnit(id: string, part: { unit: UnitPlay; items: Item[]; ladde
 
 /** The units this phone can play: the build's (the index's path lines) and any put in at run time (addUnit). */
 export const unitIds = (): string[] => [...INDEX.paths.map((p) => p[0]), ...[...EXTRA.keys()].filter((id) => !INDEX.units[id])];
+
+/** A bedtime serial's chapter by its chunk's name (`st-johnny-3`: the index's `stories`), loaded with its clips and
+ *  word timings (clips.ts clipAt, wordTimes), so its segments can be sliced from their packs. */
+export async function loadChapter(part: string): Promise<Chapter> {
+  await fetchPart(part);
+  const ch = got.get(part)!.story;
+  if (!ch) throw new Error(`kikimimi: ${part} isn't a story chapter`);
+  return ch;
+}
 
 /** A loaded item by id (a rung too), as authored. */
 export const itemOf = (id: string): Item | undefined => ITEMS.get(id);
