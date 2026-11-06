@@ -1268,22 +1268,28 @@ NH's way, with its own key (pairing: [runbook §4b](ops/runbook.md#4b-the-guest)
   writes neither the wedding board nor a trip's notes (the record refuses those, so its phone doesn't try).
 - **Its villager on the island:** there only while its app is open (the relay's presence), like an NH visitor. Each
   time the app opens it comes ashore at the front beach's right end and strolls up to its spot by the campsite, on
-  every phone (its walk goes over the relay). It has no home and no tree. It moves only when the guest moves it
-  (taps, the tent, a seat): no phone's idle life walks it, on its own phone or ours, no outing, no follow; in place it bobs and
-  blinks like anyone. It dozes 22:00–05:00 on the relay's clock with
-  everyone. Closing the app takes it off our islands.
+  every phone (its walk goes over the relay). It has no home and no tree. While it's here it is in the island's life
+  as a member's villager with the island open (2026-11-06, decisions: *The guest's villager in the island's life*):
+  ambient life's small moves, chats and dances with either of us, ふたりでぜんぶ's walk to the middle and its
+  high-five, the dusk meet-up beside the bench, group stretching; never an outing of its own (its person may tap it
+  any moment), and its walks are its own phone's. It dozes 22:00–05:00 on the relay's clock with everyone. Closing
+  the app takes it off our islands (and out of their life).
 - **On our phones:** drawn like the partner's villager (the same billboard, its walks played the same way, lilac name
   tag); a tap on it is a high-five (to the guest), its phrases show over it, its catches play there (its villager turns
   to it, the plate says its name). A banner says it came: 「おきゃくさんが あそびに きたよ！」.
-- **Who counts as "the partner"** (each "both of us" rule, said once): the guest never does.
+- **Who counts as "the partner"** (each "both of us" rule, said once): the guest only where the island's life is
+  everyone's (`ui-state/cast.ts` islandActors: the villagers on the island now).
   - The edge face (「うめの ほうへ」), `peer`: the other member only; on the guest's phone either
     member for `peer`, A for the edge face.
-  - ふたりでぜんぶ, the goal walks, the evening meet-up and the bench gathering, the follow, the partner meeting a
-    visitor: the members' own, on their own phones; the guest's phone plays none of them (A's and B's fruit still
-    ripens on their trees there).
-  - Ambient life (`ambient.ts`): the two members' villagers only, on every phone; the guest's villager is never in it
-    (on the guest's phone A's and B's take their beats as on ours).
-  - Group stretching: the members' two villagers; the guest's stands where it is.
+  - ふたりでぜんぶ (both members' goals all met): everyone on the island walks to the middle, the guest's villager
+    between them a step in front (`wander.ts` MEET.G), and high-fives, on every phone, the guest's too.
+  - The follow: a member's villager comes over to mine; on the guest's phone A's or B's (one whose person isn't
+    here), to the guest's.
+  - Ambient life (`ambient.ts`): the members' villagers and the guest's while it's here, on every phone; a slot's turn
+    a third each then, a pair with any two; its beats are a present member's (no outing of its own); it shakes no tree.
+  - Group stretching: everyone's villager on the island, the guest's too.
+  - The goal walks and the partner meeting a visitor: the members' own, on their own phones (the guest has no goals;
+    A's and B's fruit still ripens on their trees on its phone).
   - Sleep: everyone, by the relay's clock; a wake is said with whose villager woke (`act wake`, `id` A, B or G).
   - High-fives: one at a time per pair, each with its `to`; the room holds the last one per (sender, recipient) pair.
 
@@ -2379,7 +2385,8 @@ morning, the zodiac fragment twice as likely.
 
 `island/stretching.ts`, `island/TapeDeck.svelte`, `motion/stretch.svelte.ts`, `e2e/radio.spec.ts`. NH's tape deck comes
 out on a day either of us met 🍑 Exercise, or when the island is opened 06:00–08:00 (`scene-stretch`), on the lawn clear
-of every control. A tap plays its tape (an original ~6 s march) and both villagers, and an awake visitor, do three of
+of every control. A tap plays its tape (an original ~6 s march) and everyone's villager on the island (the guest's
+too while it's here), and an awake visitor, do three of
 NH's stretches together (`if-warmup`, `if-sidebend`, `if-leap`); event reactions wait (`holdEvents`). The tape is the
 island's: the tap plays NH's ラジオ体操 (aerobics) on the island's [shared stage](#shared-music) (`ev-aerobics`, the
 routine's 6 s), and every phone starts the routine as the song starts (a phone opening a second or more into it only

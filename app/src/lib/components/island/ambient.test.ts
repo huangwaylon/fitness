@@ -267,3 +267,43 @@ describe('ambient life: the decor (benches, the campfire, the pull-up bar)', () 
     for (const b of Object.values(at({ A: 100, B: 100 }, 15))) expect(b.kind === 'outing' && b.together).toBeFalsy();
   });
 });
+
+describe('ambient life: the guest’s villager while it’s on the island (2026-11-06)', () => {
+  const G = { at: [200, 120] as [number, number], home: [200, 120] as [number, number], free: true, present: true };
+  const withG = (o: Partial<AmbientWorld> = {}) => {
+    const w = world(o);
+    return { ...w, villagers: { ...w.villagers, G } };
+  };
+  type Any = [string, VillagerBeat];
+  const all = (w: AmbientWorld, from = 9 * 360, to = 16 * 360) => day(w, from, to).flatMap((s) => Object.entries(s) as Any[]);
+
+  it('takes its turns as a present member does: small moves, chats and dances with either member, never an outing of its own', () => {
+    const got = all(withG({ scores: { A: 90, B: 90 } }));
+    const g = got.filter(([who]) => who === 'G');
+    expect(g.some(([, b]) => b.kind === 'idle')).toBe(true);
+    const pairs = g.filter(([, b]) => b.kind === 'pair').map(([, b]) => (b.kind === 'pair' ? b.with : null));
+    expect(new Set(pairs)).toEqual(new Set(['A', 'B']));
+    expect(g.some(([, b]) => b.kind === 'outing')).toBe(false);
+    // its partner's entry is the same pair, back to it
+    for (const s of day(withG(), 9 * 360, 12 * 360)) {
+      const b = s.G;
+      if (b?.kind === 'pair') expect(s[b.with]).toEqual({ ...b, with: 'G', lead: !b.lead });
+    }
+    // the members still go out (one at a time) with it here; it never shakes a tree (it has none)
+    expect(got.some(([who, b]) => who !== 'G' && b.kind === 'outing')).toBe(true);
+    expect(g.some(([, b]) => b.kind === 'idle' && b.action === 'treeshake')).toBe(false);
+  });
+
+  it('the same beats on every phone, and the members’ day as before when it isn’t here', () => {
+    expect(JSON.stringify(day(withG(), 4000, 4200))).toBe(JSON.stringify(day(withG(), 4000, 4200)));
+    expect(day(world(), 4000, 4200).every((s) => !('G' in s))).toBe(true);
+  });
+
+  it('dozes at night with the others, and joins the dusk meet-up beside the bench (not on a seat)', () => {
+    expect(villagerBeats(withG({ phase: 'asleep' }), DATE, 100)).toEqual({ A: { kind: 'doze' }, B: { kind: 'doze' }, G: { kind: 'doze' } });
+    const seats: Poi[] = [...POIS, { node: 'seatMaeL', at: [27, 146] }, { node: 'seatMaeR', at: [53, 146] }];
+    const dusk = villagerBeats(withG({ pois: seats, scores: { A: 100, B: 100 } }), DATE, 17 * 360);
+    expect(dusk.A).toEqual({ kind: 'outing', stops: [{ node: 'seatMaeL', linger: 90_000 }], together: true });
+    expect(dusk.G).toEqual({ kind: 'outing', stops: [{ node: 'shoreL', linger: 90_000 }], together: true });
+  });
+});

@@ -213,4 +213,28 @@ describe('idle life on ambient life’s slots', () => {
     expect(played.length).toBe(at10);
     stop();
   });
+  it('the guest’s villager pairs up as a member’s: its chat with mine turns them to each other, a nod and a laugh', async () => {
+    const { startIdleLife } = await import('./idleLife.svelte.ts');
+    const { actors, lastEvent, resetAll } = await import('./director.svelte.ts');
+    resetAll();
+    lastEvent.at = 0;
+    vi.setSystemTime(new Date('2026-10-29T12:00:00Z'));
+    actors.mine.x = 100;
+    actors.third.x = 200;
+    const n = { mine: actors.mine.motionN, third: actors.third.motionN };
+    const stop = startIdleLife({
+      ...base,
+      // (a member's phone: the guest's villager is the third)
+      beats: () => ({ G: { kind: 'pair', action: 'chat', with: 'A', lead: true, at: 0 }, A: { kind: 'pair', action: 'chat', with: 'G', lead: false, at: 0 } }) as never
+    });
+    await vi.advanceTimersByTimeAsync(600);
+    expect(actors.third.motion).toBe('nod');
+    expect(actors.third.face).toBe('l'); // (mine stands to its left)
+    await vi.advanceTimersByTimeAsync(1_000);
+    expect(actors.mine.motion).toBe('laugh');
+    expect(actors.mine.face).toBe('r');
+    expect([actors.mine.motionN - n.mine, actors.third.motionN - n.third]).toEqual([1, 1]);
+    stop();
+    resetAll();
+  });
 });

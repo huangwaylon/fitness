@@ -657,12 +657,14 @@ show the same island without a message (decisions: *Ambient life from the clock*
 - **Villagers** (`villagerBeats(world, date, slot)`): the world is each person's villager (`at`, `home`, `free`:
   awake, standing, not busy; `lastIntent`: when its person last steered it, `avatar.ts steered`: my taps here, the
   partner's walks over the relay), the points of interest (`wander.ts pois`), the phase and both day scores. Beats are
-  keyed by person (idle life maps them to mine and partner): one a slot, an idle move from `IDLE_POOL` (its hours,
+  keyed by person (idle life maps them to its actors: `cast.ts actorOf`): one a slot, an idle move from `IDLE_POOL` (its hours,
   day-only moves, `every` gaps against the recent slots' rolls), an outing of 1–3 stops within 600u with lingers (30 %
   of slots, one villager out at a time, from home; `avatar.ts outing`), a chat or a dance for two free villagers
   (dancing only with both scores ≥ 70), or the night's doze. A villager whose person has the island open (`present`:
   mine always, the partner's by the relay's presence) makes small moves but no outings, and one is left alone 12 slots
-  (2 min) after its person's last walk (`held`).
+  (2 min) after its person's last walk (`held`). The guest's villager is in the world (`G`) while it's on the island
+  (its app open: always `present`): the slot's turn is then a third each and a pair any two; it has no outing of its
+  own, joins the dusk meet-up at the point of interest nearest the front bench, and shakes no tree.
 - **Visitor:** `Visitor.svelte beat(r)` runs `visitorLife.ts pickAct`, `pickEmote` and `strollSpots` on the slot's
   `visitor` PRNG; a phone whose visitor is speaking skips it.
 - **Critters** (`spawnsIn(date, slot, coasts)`, `crittersAt(date, slot, coasts)`): per channel (the sea off the front

@@ -20,7 +20,7 @@
   import { showAt } from './fireworks.ts';
   import { hook, hookFlag, hooksOn } from './devHooks.ts';
   import type { PersonId, WeekView, Who } from '#lib/types.ts';
-  import { actorOf, castMe, guestPhone, setCast, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
+  import { actorOf, castMe, guestPhone, setCast, setGuestHere, whoOf, type VillagerActor } from '#lib/ui-state/cast.ts';
   import Villager from '../characters/Villager.svelte';
   import Avatar from '../characters/Avatar.svelte';
   import { artGate, setArtGate } from '../characters/artGate.ts';
@@ -898,6 +898,7 @@
       if (here.some((w) => !was.includes(w))) r.send({ kind: 'tent', in: false });
       was = here;
       hereNow = here;
+      setGuestHere(here.includes('G'));
       // (re)connected: once the day's replay is in, my villager as it is here (the room may hold an older walk of it,
       // from a session that ended elsewhere)
       if (st.connected && !up) soon = setTimeout(() => link.joined(), JOIN_SAY_MS);

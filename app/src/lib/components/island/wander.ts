@@ -63,15 +63,17 @@ export function besideSpots(g: WalkGeo, at: Pt, from: Pt): Pt[] {
 
 export const adjacent = (a: Pt, b: Pt): boolean => Math.hypot(a[0] - b[0], a[1] - b[1]) < ADJACENT_U;
 
-/** Follow my villager: it has been away FOLLOW_MS and the partner is free (home, awake, not busy). */
-export const shouldFollow = (awaySince: number, now: number, partnerFree: boolean): boolean =>
-  awaySince > 0 && now - awaySince >= FOLLOW_MS && partnerFree;
+/** Follow my villager: it has been away FOLLOW_MS and a member's villager is free to (home, awake, not busy). */
+export const shouldFollow = (awaySince: number, now: number, followerFree: boolean): boolean =>
+  awaySince > 0 && now - awaySince >= FOLLOW_MS && followerFree;
 
-/** The two meet in the middle of the lawn for ふたりでぜんぶ's high-five: a step apart either side of the island's
- *  middle, between their homes and the trees (A on the left, B on the right, as their homes). */
-export const MEET: { readonly A: Pt; readonly B: Pt } = {
+/** Where they meet in the middle of the lawn for ふたりでぜんぶ's high-five: the members a step apart either side of the
+ *  island's middle, between their homes and the trees (A on the left, B on the right, as their homes); the guest, while
+ *  it's on the island, between them a step in front. */
+export const MEET: { readonly A: Pt; readonly B: Pt; readonly G: Pt } = {
   get A(): Pt { return [175, HOMES.A[1] + 48]; },
-  get B(): Pt { return [215, HOMES.B[1] + 48]; }
+  get B(): Pt { return [215, HOMES.B[1] + 48]; },
+  get G(): Pt { return [195, HOMES.A[1] + 18]; }
 };
 
 const allMet = (v: WeekView, pid: PersonId) => RING_FRUITS.every((f) => todayPct(v.people[pid].rings[f]) >= 100);
