@@ -1,7 +1,10 @@
 <script lang="ts">
   // ごはん's amount (a level over the search or the day): its picture when it has one (160 px, the イメージ badge: every
   // picture is generated; none: no picture area), the food's name, its everyday name (glossOf) and 「これは…」
-  // line (`desc`, when it has one), its values per 100 g; its portions as chips
+  // line (`desc`, when it has one), its values per 100 g; a food in its states (the data's vg/st), じょうたい: a chip per
+  // state with that state's kcal at the amount it would take (`onitem` swaps the food: a portion label the state also
+  // has stays picked at its own grams, typed grams stay typed, else its default), and one line why (the 生 chip:
+  // パックの重さなら 生; 乾 beside ゆで: ゆでる前の重さなら 乾); its portions as chips
   // (the first the default; 100 g last), −/＋ by a whole portion for the things you count (本, 個, 杯 …) and by half
   // one for the rest (茶碗, 人前; ±10 g once grams are typed: stepOf), the grams field (ml for a drink; typed grams leave
   // the portions); what that amount holds, live; which meal; then ついか (a new entry) or ほぞん / けす (my entry). For a
@@ -14,11 +17,11 @@
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
-  import { nutrientsFor, portionsOf, type Item } from '#lib/food/index.ts';
+  import { nutrientsFor, portionsOf, variantsOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
-  import { catalogOf, foodDbNow, glossOf, gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf, withImages } from './foodUi.ts';
+  import { catalogOf, foodDb, foodDbNow, glossOf, gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf, withImages } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -36,8 +39,10 @@
     onremove?: () => void;
     /** What the food came from, to open (a recipe, a custom food). */
     open?: { label: string; run: () => void } | null;
+    /** Another state of the food picked (じょうたい): log that one instead. */
+    onitem?: (it: Item) => void;
   }
-  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null }: Props = $props();
+  let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null, onitem }: Props = $props();
 
   const ps = $derived(serving ? (item.portions?.length ? item.portions : [{ label: t('food.my.one'), g: 100 }]) : portionsOf(item));
   /** g or ml: a drink's portions are in ml (100 ml counts as 100 g). */
@@ -70,6 +75,14 @@
   const g = $derived(custom ? (Number.isFinite(typedG) ? Math.round(typedG * 10) / 10 : 0) : Math.round(ps[pi].g * mult * 10) / 10);
   const ok = $derived(g >= FOOD_GRAMS.min && g <= FOOD_GRAMS.max);
   const n = $derived(nutrientsFor(item, ok ? g : 0));
+  /** The catalog (the food's states); in already, mostly. */
+  let db = $state.raw<FoodDb | null>(foodDbNow());
+  $effect(() => {
+    let live = true;
+    if (!db) foodDb().then((d) => live && (db = d), () => {});
+    return () => void (live = false);
+  });
+  const states = $derived(serving || !onitem ? [] : variantsOf(db, item));
   let imgs = $state.raw<FoodImageIndex | null>(null);
   $effect(() => withImages((ix) => (imgs = ix)));
   const pic = $derived(imgOf(imgs, item.id, 160));
@@ -100,6 +113,32 @@
     touched = true;
     custom = true;
   }
+  /** What picking state `v` keeps: the portion of the same label at its own grams, typed grams as typed, else its
+   *  default; and its grams. */
+  function keepIn(v: Item): { label: string; mult: number; custom: boolean; g: number } {
+    const vp = portionsOf(v);
+    const same = !custom ? vp.find((p) => p.label === pl) : undefined;
+    if (same) return { label: same.label, mult, custom: false, g: Math.round(same.g * mult * 10) / 10 };
+    if (custom) return { label: vp[0].label, mult: 1, custom: true, g };
+    return { label: vp[0].label, mult: 1, custom: false, g: vp[0].g };
+  }
+  function pickState(v: Item) {
+    if (v.id === item.id) return;
+    const k = keepIn(v);
+    touched = true;
+    pl = k.label;
+    mult = k.mult;
+    if (!k.custom) custom = false;
+    onitem?.(v);
+  }
+  /** The line under the chips, for the state picked: why that one (none for the rest). */
+  const why = $derived.by(() => {
+    if (!states.length) return null;
+    const has = (s: string) => states.some((x) => x.st === s);
+    if (item.st === '生' && states.some((x) => x.st !== '生' && x.st !== '乾')) return t('food.st.rawWhy');
+    if (item.st === '乾' && has('ゆで')) return t('food.st.dryWhy');
+    return null;
+  });
   function done() {
     if (ok) ondone({ m, g, u: custom ? null : portionLabel(ps[pi], mult) });
   }
@@ -114,6 +153,18 @@
   </section>
 
   <section class="card">
+    {#if states.length}
+      <h4>{t('food.st.head')}</h4>
+      <div class="chips" role="group" aria-label={t('food.st.head')} data-states>
+        {#each states as v (v.id)}
+          {@const k = keepIn(v)}
+          <button type="button" class="chip big" aria-pressed={v.id === item.id} data-sfx={v.id === item.id ? 'none' : 'tick'} data-state={v.st} onclick={() => pickState(v)}>
+            {v.st}<small>{formatNum(nutrientsFor(v, k.g).kcal)} kcal</small>
+          </button>
+        {/each}
+      </div>
+      {#if why}<p class="why" data-state-why>{why}</p>{/if}
+    {/if}
     <h4>{t('food.amount')}</h4>
     <div class="chips" role="group" aria-label={t('food.amount')}>
       {#each ps as p, i (p.label)}
@@ -172,6 +223,7 @@
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .per { margin: 0; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
+  .why { margin: -2px 2px 4px; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   /* the portions: theme.css .chip.big */
   .sb, .nb {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill);

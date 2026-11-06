@@ -466,7 +466,11 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone).
 - **Amount:** the food's picture when it has one (160 px, centred, alt 「…の イメージ」, the イメージ badge at its top
   left: every picture is generated; none: no picture area), its name, then (only with one) its everyday name and its
-  one line 「これは…」 (the data's `desc`); the food's values per 100 g; its portions as chips (100 g last), −/＋ by a whole portion for the things
+  one line 「これは…」 (the data's `desc`); the food's values per 100 g; a food in its states, **じょうたい** above 量: a
+  chip per state (乾 生 ゆで … in process order) with its kcal at the amount it would take, picking one swaps the food
+  (its name and values follow: a portion label it also has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き;
+  typed grams stay; else its default), one leaf line for 生 (パックの重さなら 生) and for 乾 beside ゆで (ゆでる前の重さなら
+  乾); on my entry a ほぞん (`editFood` f), a recipe's ingredient alike; its portions as chips (100 g last), −/＋ by a whole portion for the things
   counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece: おにぎり,
   むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
   grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which
