@@ -66,12 +66,52 @@ npm run e2e:ci-like -- e2e/world3d.spec.ts --repeat 5   # as CI runs it (below)
 
 ## Before you push (a new or changed spec, or a change to the 3D engines, the tent or sync)
 1. `npm run check && npx vitest run && npm run knip` (all three gate the deploy; deps.test checks the folders' imports).
-2. `npm run e2e:ci-like -- e2e/the.spec.ts --repeat 5`: the logic tier as CI runs it (a fresh build if `src/` is newer,
+2. `npm run e2e:ci-like -- --changed` (or `-- e2e/the.spec.ts --repeat 5`): the logic tier as CI runs it (a fresh build if `src/` is newer,
    software GL, CI's workers, `CI=1`, a free port), each test 5×. For a drawn (`@render`/`@smoke`) test add
    `--tier render`; `--tier full` draws everything; `--workers 6` loads the machine as a busy runner is.
 3. All green, every time: push (`git pull --rebase origin main && git push origin HEAD:main`). One failure in 5 is a
    flake: fix it now, or quarantine it in the same push with its owner.
 4. After the push, watch the run (`gh run watch`). A red gate is yours to fix first, before anything else.
+
+## Hermetic
+Every e2e runs in a sealed world (e2e/fixtures.ts), so a run today and a run in a month see the same island. The
+demo's red hours of 2026-11-06 were the wall clock: demo.spec read the real day and hour, and the seeded day rained
+that morning.
+
+- **Import Playwright from `./fixtures.ts`**, never `'@playwright/test'` (`import { expect, test, type Page } from
+  './fixtures.ts'`): that's what brings the rest. The lint (`src/lib/e2e-hermetic.test.ts`, in vitest) checks.
+- **The clock is pinned.** Every test's scene clock starts at `PINNED_DATE` (2026-11-04 12:00 Tokyo: a Wednesday, clear
+  all day, no event), on every context, a second phone's too (`localStorage['e2e.date']`, read by
+  src/lib/time/clock.ts as a `?date=` for a load without one; a live phone never sets it). A `?date=` in the URL still
+  wins: say the day and hour when the test is about them. A page that sets its device clock to a time
+  (`page.clock.install({ time })`, `setFixedTime`, `setSystemTime`, before it opens) owns it: the pin is lifted for
+  that page. `test.use({ ownClock: true })` lifts it for a file.
+- **The weather is pinned.** With the clock pinned the island never takes a relay's or a cached timeline: its sky is
+  the pinned day's seeded one, or a fixture: `?wx=rain-pm|typhoon|snow|cloudy|clears` (a timeline on the scene clock),
+  `?weather=` (forced). The demo has no relay timeline at all; never assert on whatever sky the day happens to have.
+- **The tests' own relay agrees with its phones.** liveRoom.ts and record.ts run on the pinned time and shift their
+  phones' device clock (`Date`) there too (a phone and its relay agree on the time: tickets, the day's replay); read
+  the time as they do: `island.now()`, `rec.now()`, never `Date.now()`.
+- **No network.** Chromium resolves no host but 127.0.0.1 (`--host-resolver-rules`), and a request off the local
+  preview that went out (Chromium refused it; WebKit: a server answered) fails the test at its end, naming it. Mock a
+  relay with `page.route` / `context.route` and fulfil it (board.spec, record.ts, liveRoom.ts). The real relay's
+  harness (`RELAY_E2E=1`, sync-harness.spec) is the one opt-out (`test.use({ network: 'any' })`).
+- **No randomness**: no `Math.random` in a spec (a counter for ids); pin the island's with `?seed=`, `?critter=`,
+  `?visitor=`, `&rock=`, `&shake=` (docs/design.md "Dev params").
+- **Storage**: each test has its own context (Playwright's), service workers blocked; two phones in one context share
+  `localStorage` and a BroadcastChannel (the demo's relay). The tab opened last is in front and a hidden tab's island
+  takes no taps: `bringToFront()` the tab that acts (fish-sync's `cast`).
+- **Silent**: Chromium runs with `--mute-audio` (the music, K.K. and the effects never sound on a dev's Mac); WebKit
+  headless makes no sound.
+- **No new fixed wait.** `page.waitForTimeout` or a `setTimeout` promise needs `// hold: <why>` on its line (a wait
+  proving nothing happens for a while); the older ones are counted per file in `e2e/waits.json` and may only go down:
+  fix one, lower its count.
+
+## A changed spec, five times
+CI's `e2e-changed` job (pages.yml, the deploy waits for it) runs the specs a push adds or edits, each test 5× over in
+the logic tier (`scripts/e2e-changed.ts`; more than 8 changed is a sweep: the logic tier runs them all once). A flake
+fails the push that brings it, not the next ten runs. Before pushing: `npm run e2e:ci-like -- --changed` (the specs
+changed since origin/main, committed or not, 5× each).
 
 ## Writing a stable spec
 Most red runs so far were the spec, not the app. Before pushing a new or changed spec, run it with
@@ -86,7 +126,7 @@ Most red runs so far were the spec, not the app. Before pushing a new or changed
    `__world.idle()`, `__tent.stats().frames`, `data-*` attributes (`__world3d.camStill()` once the camera's last move is
    framed: the DOM's tap areas placed for it, not where the previous camera had them); never `waitForTimeout` to "let it settle". (The app's hooks are declared on `Window` in `src/app.d.ts`, as `unknown`: a spec types what it reads.) A fixed
    wait is only for proving that nothing happens for a while (a toast that must stay 3 s), and then say so.
-3. **Fix the clock.** `?date=2026-11-04T12:00` for the day and hour; `page.clock.install({ time })` when the app's
+3. **Fix the clock.** It's pinned already (above, "Hermetic"); `?date=2026-11-04T12:00` when the day and hour matter; `page.clock.install({ time })` when the app's
    timers matter, `page.clock.runFor(ms)` to skip an animation's wait instead of sleeping through it. The clock fakes
    `requestAnimationFrame` too, so `runFor` steps the 3D engines frame by frame: in logic mode that's quick (drawn under
    software GL it took minutes, hence `fastForward` there).
