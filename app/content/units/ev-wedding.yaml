@@ -1,0 +1,650 @@
+# 結婚式に 出る (ev-wedding): wave 2b, もり, イベント (docs/curriculum-wave2.md §3.1). A friend's wedding, the generic US
+# way (the sign-off: no ご祝儀): the save-the-date and the invitation (RSVP by…, a plus-one, the dress code), the gift
+# (a registry, no set amount), then the reception: the best man's toast, raise your glasses, a bride's "fine" that
+# isn't, an uncle's flat "Oh, great". The sound: intonation (a flat "great" is sarcasm, a rise is surprise, "chicken
+# or fish↘" asks you to pick, a pause before the punch line). The facts that recur: Molly and Sterling, Saturday,
+# June 14th, RSVP by May 1st, cocktail attire. ききかえす's "did you say" and "actually, no", 紹介する's "how do you
+# know" and "we go way back", 誘う・断る's "count me in", おいわいする's "wouldn't miss it" are recycled.
+# Its call: call-wedding-rsvp (content/listen/s2-call-c.yaml).
+# きょうの ひとこと: "I couldn't be happier for you. Raise your glass!" (これ以上ないくらい うれしい。乾杯！)
+schema: 1
+unit: ev-wedding
+name: 結婚式に 出る
+stage: mori
+domain: ibento
+host: diana
+scene: party
+sound: intonation
+cando:
+  who: 友人や 新郎新婦
+  does: 招待・スピーチ・乾杯を する
+  cond: 披露宴の にぎやかさで
+  catch: 日時・贈り物の 習慣・冗談の 意図
+  short: 結婚式の 招待と 乾杯が わかる
+  en: "I can follow friends and the couple talking about a wedding invitation, giving speeches and making toasts, in a lively reception hall, and catch the date, the gift custom, and what a joke really means."
+status: draft
+letter:
+  en: "You caught it all! The RSVP date, the dress code, and every joke in Marshal's toast, even over the band. Next wedding, you're my plus-one, okay? Honestly, I couldn't be happier with how well you listened. Now raise your glass, and save me a dance!"
+  ja: "ぜんぶ ききとれたね！ へんじの しめきりも、ドレスコードも、バンドが うるさい なかで マーシャルの スピーチの じょうだんも。つぎの けっこんしきは、わたしの つれとして きてね。ほんとうに、あなたの ききとりには これいじょう ないほど うれしいわ。さあ グラスを あげて、わたしと いっきょく おどってね！"
+ph:
+  - { id: ph-rsvp, en: "RSVP by…", ja: "〜までに 出欠の 返事を", match: "\\bRSVP", register: friend, scene: "a wedding invitation", trap: "RSVP＝出欠の 返事。by の 後が 期限" }
+  - { id: ph-plus-one, en: "a plus-one", ja: "同伴者（一人）", match: "\\bplus[- ]one\\b", register: friend, scene: "who you can bring", trap: "plus-one＝連れて いける 一人。「もう1つ」 ではない" }
+  - { id: ph-registry, en: "the registry", ja: "（新郎新婦の）ほしい物 リスト", match: "\\bregist(ry|ries|ered)\\b", register: friend, scene: "choosing a gift", trap: "ご祝儀の 相場は ない。リストから 選ぶ" }
+  - { id: ph-couldnt-be-happier, en: "I couldn't be happier for you", ja: "最高に うれしい", match: "\\bcouldn't be happier\\b", register: friend, scene: "congratulating the couple", trap: "couldn't でも 否定 ではない。最高に うれしい" }
+  - { id: ph-raise-glasses, en: "raise your glasses", ja: "グラスを お持ちください（乾杯）", match: "\\braise (your|our|a) glass(es)?\\b", register: friend, scene: "a toast", trap: "乾杯の 合図。続けて To〜! と 言う" }
+  - { id: ph-tie-the-knot, en: "tie the knot", ja: "結婚する", match: "\\b(tie|ties|tying|tied) the knot\\b", register: friend, scene: "wedding news", trap: "結び目 ではなく「結婚する」" }
+  - { id: ph-dress-code, en: "the dress code", ja: "服装の 決まり", match: "\\bdress code\\b", register: friend, scene: "what to wear", trap: "DRESS を 強く。code は「コウド」" }
+  - { id: ph-save-the-date, en: "a save-the-date", ja: "日にちの 先行 お知らせ", match: "\\bsave[- ]the[- ]dates?\\b", register: friend, scene: "before the invitation", trap: "席の 予約 ではない。この 日を 空けて おいて" }
+items:
+  # ---- であい: the news, the gift, the invitation ----
+  - id: wg-invite-news
+    lv: 4
+    type: gist
+    speaker: diana
+    voice: us
+    cast: us-f4
+    en: "Hey! Did you get Molly and Sterling's invitation? They're finally tying the knot! I know! I got the save-the-date months ago. When is it again? Saturday, June 14th. And they want everyone to RSVP by May 1st. Did you say the 14th or the 4th? The 14th. Oh, and you get a plus-one, so bring someone fun!"
+    ja: "6月14日の土曜。5月1日までに返事。誰か一人連れていける。"
+    note: "RSVP by の 後が 返事の 期限"
+    choices: ["June 14th. Reply by May 1st, and he can bring a guest.", "June 4th. Reply by May 1st, and he should come alone.", "June 14th. The invitation comes on May 1st."]
+    answer: 0
+    cja: ["6月14日。5月1日までに返事、誰か一人連れていける。", "6月4日。5月1日までに返事、一人で行く。", "6月14日。招待状は5月1日に届く。"]
+    why: "日にちは fourteenth（14日）と聞き返して確かめた。RSVP by May 1st は「5月1日までに出欠の返事」。plus-one は一人連れていけるということ。"
+    ctx: "友だちから、結婚式の話で電話です"
+    focus: "Saturday, June 14th. And they want everyone to RSVP by May 1st."
+    ask: "結婚式の 何が わかった？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 48, register: friend, pragmatic: literal, conditions: [phone], features: [intonation, numbers] }
+    lines:
+      - { who: diana, cast: us-f4, en: "Hey! Did you get Molly and Sterling's invitation? They're finally tying the knot!", tts: "Hey! Didja get Molly an' Sterling's invitation? They're finally tyin' the knot!", ja: "ねえ！ モリーとスターリングの招待状、届いた？ ついに結婚するんだって！" }
+      - { who: marshal, cast: us-m1, en: "I know! I got the save-the-date months ago. When is it again?", ja: "知ってる！ 日にちのお知らせは何か月も前にもらったよ。いつだっけ？" }
+      - { who: diana, cast: us-f4, en: "Saturday, June 14th. And they want everyone to RSVP by May 1st.", tts: "Saturday, June fourteenth. And they want everyone to R S V P by May first.", ja: "6月14日の土曜。それと、5月1日までに全員出欠の返事をしてほしいって。" }
+      - { who: marshal, cast: us-m1, en: "Did you say the 14th or the 4th?", tts: "Did you say the fourteenth, or the fourth?", ja: "14日って言った？ それとも4日？" }
+      - { who: diana, cast: us-f4, en: "The 14th. Oh, and you get a plus-one, so bring someone fun!", tts: "The fourteenth. Oh, and you get a plus-one, so bring someone fun!", ja: "14日。あ、それから一人連れていけるから、楽しい人を連れてきてね！" }
+  - id: wg-gift-registry
+    lv: 4
+    type: next
+    speaker: diana
+    voice: us
+    cast: us-f4
+    en: "So what's the deal with gifts? Do I just put cash in a card? You can, but they have a registry online. Just pick something off the list, and it ships straight to them. Oh, nice. So there's no set amount? Nope. Whatever you're comfortable with."
+    ja: "よかった。今夜リストを見てみる。"
+    note: "registry＝ほしい物リスト。金額の 決まりは ない"
+    choices: ["Perfect. I'll check out the registry tonight.", "Okay, so how much cash is the rule?", "A registry? Do I have to sign up to go?"]
+    answer: 0
+    cja: ["よかった。今夜リストを見てみる。", "じゃあ、現金はいくらが決まり？", "登録？ 出席するのに申し込みがいるの？"]
+    why: "registry は新郎新婦がほしい物のリスト。選べば直接届き、金額の決まりはない（no set amount）。現金の相場を聞くのも、出席の登録と考えるのも違う。"
+    ctx: "結婚祝いについて、友だちに相談しています"
+    focus: "Just pick something off the list, and it ships straight to them."
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 48, register: friend, pragmatic: literal, conditions: [cafe], features: [intonation] }
+    lines:
+      - { who: marshal, cast: us-m1, en: "So what's the deal with gifts? Do I just put cash in a card?", ja: "それで、お祝いってどうするの？ カードに現金を入れればいい？" }
+      - { who: diana, cast: us-f4, en: "You can, but they have a registry online. Just pick something off the list, and it ships straight to them.", tts: "You can, but they have a registry online. Just pick somethin' off the list, an' it ships straight to 'em.", ja: "それでもいいけど、ネットにほしい物リストがあるの。リストから選べば、二人に直接届くよ。" }
+      - { who: marshal, cast: us-m1, en: "Oh, nice. So there's no set amount?", ja: "へえ、いいね。じゃあ金額の決まりはないの？" }
+      - { who: diana, cast: us-f4, en: "Nope. Whatever you're comfortable with.", ja: "ないよ。自分が無理のない範囲で。" }
+  - id: wg-r-plus-one
+    lv: 4
+    type: reply
+    speaker: molly
+    voice: us
+    cast: us-f3
+    en: "So you got the save-the-date! Are you bringing a plus-one, or is it just you?"
+    tts: "So ya got the save-the-date! Are ya bringin' a plus-one, or is it just you?"
+    ja: "お知らせ、届いたんだね！ 誰か連れてくる？ それとも一人？ →「今回は一人だと思う。」"
+    note: "plus-one＝連れて くる 一人。「もう1つ」 ではない"
+    choices: ["Just me this time, I think.", "Sure, one more slice for me!", "Plus one? So the party starts at one?"]
+    answer: 0
+    cja: ["今回は一人だと思う。", "うん、もう一切れちょうだい！", "プラス・ワン？ じゃあパーティーは1時から？"]
+    why: "plus-one は「同伴者」。A, or B? の聞き方で、誰か連れてくるか一人かを選ばせている。おかわりの話でも、時間の話でもない。"
+    ctx: "結婚する友だちと、招待のことを話しています"
+    scene: cafe
+    tags: { seed: 48, register: friend, pragmatic: literal, features: [intonation] }
+  - id: wg-m-dress-code
+    lv: 4
+    type: mean
+    speaker: diana
+    voice: us
+    cast: us-f4
+    en: "The dress code says cocktail attire. So, no jeans, but you don't need a tux either."
+    tts: "The dress code says cocktail attire. So, no jeans, but ya don't need a tux either."
+    ja: "服装はカクテル・アタイアだって。ジーンズはだめだけど、タキシードもいらない。 → つまり、少しきちんとした服で行けばいい。"
+    note: "no〜, but〜either の 両方を 聞く"
+    choices: ["Dress up a little, but nothing too formal.", "Jeans are fine. It's casual.", "Men have to wear a tux."]
+    answer: 0
+    cja: ["少しきちんとした服で。でも正装まではいらない。", "ジーンズで大丈夫。カジュアル。", "男性はタキシード必須。"]
+    why: "cocktail attire は「少しきちんとした服装」。no jeans でジーンズは不可、you don't need a tux でタキシードまでは不要。その間くらい。"
+    ctx: "招待状を見ながら、友だちが説明しています"
+    ask: "つまり、何を 着ていく？"
+    scene: cafe
+    tags: { seed: 48, register: friend, pragmatic: literal, features: [intonation, contrast] }
+  - id: wg-n-rsvp
+    lv: 4
+    type: num
+    speaker: sterling
+    voice: us
+    cast: us-m5
+    en: "The caterer needs a final count by May 8th, so could you RSVP by the 1st? That gives us a week."
+    tts: "The caterer needs a final count by May eighth, so couldja R S V P by the first? That gives us a week."
+    ja: "ケータリングの業者に5月8日までに最終の人数を伝えるから、1日までに返事をもらえる？ そうすれば1週間あるから。"
+    note: "RSVP by の 後が 返事の 期限"
+    choices: ["May 1st", "May 8th", "May 7th"]
+    answer: 0
+    cja: ["5月1日", "5月8日", "5月7日"]
+    why: "May 8th は業者への締め切り。返事の期限は RSVP by the 1st（5月1日）で、1週間の余裕を見ている。7日は引き算の罠。"
+    ctx: "結婚する友だちの婚約者から、お願いです"
+    ask: "返事の 期限は？"
+    scene: living
+    tags: { seed: 48, register: friend, pragmatic: literal, features: [numbers] }
+  - id: wg-m-finally
+    lv: 4
+    type: mean
+    speaker: punchy
+    voice: us
+    cast: us-m4
+    en: "Wait, they're finally tying the knot? After, what, ten years together?"
+    tts: "Wait, they're finally tyin' the knot? After, what, ten years together?"
+    ja: "え、あの二人、ついに結婚するの？ 付き合って、えっと、10年？ → つまり、やっと結婚すると聞いて驚いている。"
+    note: "tie the knot＝結婚する。上がる 声は 驚き"
+    choices: ["He's surprised they're finally getting married.", "He thinks they're breaking up.", "He's asking how to tie a tie."]
+    answer: 0
+    cja: ["やっと結婚すると聞いて驚いている。", "二人が別れると思っている。", "ネクタイの結び方を聞いている。"]
+    why: "tie the knot は「結婚する」。finally と、声が上がる After ten years? は「やっと？」という驚き。ネクタイの話でも別れ話でもない。"
+    ctx: "結婚式の招待のことを、友だちに話しました"
+    ask: "どんな 気持ち？"
+    scene: cafe
+    tags: { seed: 48, register: friend, pragmatic: attitude, features: [intonation, idiom] }
+  # ---- ばめん: the reception ----
+  - id: wg-toast
+    lv: 4
+    type: gist
+    speaker: marshal
+    voice: us
+    cast: us-m1
+    en: "Uh-oh. Marshal's giving the toast. This could be bad. Hi, everyone! Sterling and I go way back, so trust me, I have stories. Don't worry, buddy. I'll keep it clean. Mostly. Ha. Mostly. This guy used to say he'd never settle down. Then he met Molly, and two weeks later, he's asking me how to cook. Molly, I couldn't be happier for you two. So, everyone, raise your glasses. To Molly and Sterling!"
+    ja: "モリーに出会ってスターリングが変わった、と優しくからかっている。"
+    note: "couldn't be happier＝最高に うれしい"
+    choices: ["Meeting Molly changed Sterling, and he's teasing him kindly.", "Sterling can't cook, so the food tonight is bad.", "Marshal doesn't think they should get married."]
+    answer: 0
+    cja: ["モリーに出会ってスターリングが変わった、と優しくからかっている。", "スターリングは料理ができないので、今夜の料理はまずい。", "マーシャルは二人の結婚に反対している。"]
+    why: "結婚しないと言っていた彼が、モリーに会って2週間で料理を習い始めた、という愛のあるからかい。couldn't be happier は「最高にうれしい」で、反対ではない。"
+    ctx: "披露宴で、新郎の親友が乾杯のあいさつをします"
+    focus: "Then he met Molly, and two weeks later, he's asking me how to cook."
+    ask: "スピーチの 冗談の 意味は？"
+    scene: living
+    cond: { kind: party, level: light }
+    tags: { seed: 55, register: friend, pragmatic: humour, conditions: [party], features: [intonation] }
+    lines:
+      - { who: diana, cast: us-f4, en: "Uh-oh. Marshal's giving the toast. This could be bad.", ja: "あ、まずい。乾杯のあいさつ、マーシャルだ。これは危ないかも。" }
+      - { who: marshal, cast: us-m1, en: "Hi, everyone! Sterling and I go way back, so trust me, I have stories. Don't worry, buddy. I'll keep it clean. Mostly.", tts: "Hi, everyone! Sterling an' I go way back, so trust me, I have stories. Don't worry, buddy. I'll keep it clean... Mostly.", ja: "皆さん、こんばんは！ スターリングとは昔からの付き合いなので、ネタはたっぷりあります。心配するな、相棒。きれいな話にしとくよ。だいたいね。" }
+      - { who: diana, cast: us-f4, en: "Ha. Mostly.", ja: "はは。だいたいね。" }
+      - { who: marshal, cast: us-m1, en: "This guy used to say he'd never settle down. Then he met Molly, and two weeks later, he's asking me how to cook.", ja: "こいつ、絶対に身を固めないって言ってたんです。それがモリーに出会って、2週間後には僕に料理の仕方を聞いてきた。" }
+      - { who: marshal, cast: us-m1, en: "Molly, I couldn't be happier for you two. So, everyone, raise your glasses. To Molly and Sterling!", ja: "モリー、二人のこと、本当にうれしいよ。では皆さん、グラスをお持ちください。モリーとスターリングに、乾杯！" }
+  - id: wg-r-happier
+    lv: 4
+    type: reply
+    speaker: celeste
+    voice: us
+    cast: us-f5
+    en: "Oh, I couldn't be happier for them. I cried through the whole ceremony!"
+    ja: "ああ、本当にうれしいわ。式の間ずっと泣いちゃった！ →「私もです。素敵な式でしたね。」"
+    note: "couldn't＋比べる 形＝最高に。否定 ではない"
+    choices: ["Me too. It was beautiful.", "Oh no, what's wrong? Are you okay?", "Why couldn't you go to the ceremony?"]
+    answer: 0
+    cja: ["私もです。素敵な式でしたね。", "えっ、どうしたんですか？ 大丈夫？", "どうして式に行けなかったんですか？"]
+    why: "couldn't be happier は「これ以上ないほどうれしい」。泣いたのはうれし泣き。悲しい話でも、式に行けなかった話でもないので、同じ気持ちを返す。"
+    ctx: "披露宴で、新婦のおばさんと同じテーブルです"
+    scene: living
+    cond: { kind: party, level: light }
+    tags: { seed: 55, register: stranger, pragmatic: attitude, features: [intonation] }
+  - id: wg-m-sarcasm
+    lv: 4
+    type: mean
+    speaker: apollo
+    voice: us
+    cast: us-m6
+    en: "Oh, great. A five-course dinner, and then a forty-minute slideshow. Can't wait."
+    tts: "Oh, great. A five-course dinner, an' then a forty-minute slideshow. Can't wait."
+    ja: "ああ、そりゃいいね。5品のコースのあとに40分のスライドショーか。待ちきれないよ。 → つまり、長すぎてうんざりしている（皮肉）。"
+    note: "平らな Oh, great は 皮肉"
+    choices: ["He's not looking forward to how long it'll be.", "He's excited to see the slideshow.", "He's upset that dinner is too short."]
+    answer: 0
+    cja: ["長くなりそうで、うんざりしている。", "スライドショーを楽しみにしている。", "食事が短すぎて不満。"]
+    why: "低く平らな Oh, great と Can't wait は皮肉。コース料理に40分のスライドショーと聞いて、長さにうんざりしている。本当に楽しみなら声が上がる。"
+    ctx: "披露宴の進行表を見て、新婦のおじさんが"
+    ask: "本当は どう 思ってる？"
+    scene: living
+    cond: { kind: party, level: light }
+    tags: { seed: 55, register: stranger, pragmatic: sarcasm, features: [intonation] }
+  - id: wg-n-shuttle
+    lv: 4
+    type: num
+    speaker: diana
+    voice: us
+    cast: us-f4
+    en: "The shuttle back to the hotel leaves at 10:30 and 11:15. The last one's at midnight, so don't miss it."
+    tts: "The shuttle back to the hotel leaves at ten-thirty and eleven-fifteen. The last one's at midnight, so don't miss it."
+    ja: "ホテルに戻るシャトルは10時半と11時15分。最終は夜中の12時だから、乗り遅れないでね。"
+    note: "The last one's の 後が 最終"
+    choices: ["12:00", "11:15", "10:30"]
+    answer: 0
+    cja: ["夜12時", "11時15分", "10時半"]
+    why: "シャトルは10時半と11時15分、そして The last one's at midnight（最終は夜12時）。最初の二つは途中の便。"
+    ctx: "披露宴の会場で、帰りの足について"
+    ask: "最終の シャトルは？"
+    scene: living
+    cond: { kind: party, level: light }
+    tags: { seed: 55, register: friend, pragmatic: literal, features: [numbers] }
+  - id: wg-speech-length
+    lv: 4
+    type: next
+    speaker: molly
+    voice: us
+    cast: us-f3
+    en: "Okay, be honest. My speech is about six minutes. Is that too long? Six minutes is... fine. Wow. Okay. That 'fine' did not sound fine. Honestly? Maybe cut the story about my ex."
+    ja: "はは、そうだね。あの話はカットする。"
+    note: "間の ある fine は 本音 ではない"
+    choices: ["Ha, fair. That story's gone.", "Great, then I'll add a few more stories.", "Your ex? Should I invite him too?"]
+    answer: 0
+    cja: ["はは、そうだね。あの話はカットする。", "よかった、じゃあ話をもう少し足すね。", "元カレ？ 彼も招待したほうがいい？"]
+    why: "間のある Six minutes is… fine は「本当は長い」の合図。Honestly? のあと、元カレの話を削ってと本音を言った。話を足すのは逆。"
+    ctx: "結婚式の前に、花嫁にスピーチの相談です"
+    focus: "Honestly? Maybe cut the story about my ex."
+    ask: "次の ひとことは？"
+    scene: living
+    tags: { seed: 54, register: friend, pragmatic: hedge, features: [intonation] }
+    lines:
+      - { who: diana, cast: us-f4, en: "Okay, be honest. My speech is about six minutes. Is that too long?", ja: "ねえ、正直に言って。私のスピーチ、6分くらいなんだけど。長すぎる？" }
+      - { who: molly, cast: us-f3, en: "Six minutes is... fine.", ja: "6分は…いいと思う。" }
+      - { who: diana, cast: us-f4, en: "Wow. Okay. That 'fine' did not sound fine.", ja: "うわ。わかった。今の「いい」は、全然いいって感じじゃなかった。" }
+      - { who: molly, cast: us-f3, en: "Honestly? Maybe cut the story about my ex.", ja: "正直に言うと？ 元カレの話はカットしたほうがいいかも。" }
+  - id: wg-m-no-plus-one
+    lv: 4
+    type: mean
+    speaker: whitney
+    voice: us
+    cast: us-f4
+    en: "Sorry, the invitation only has your name on it, so no plus-one this time. We're keeping it small."
+    tts: "Sorry, the invitation only has yer name on it, so no plus-one this time. We're keepin' it small."
+    ja: "ごめんね、招待状はあなたの名前だけなの。だから今回は同伴者なし。小さくやりたくて。 → つまり、一人で来てほしい。"
+    note: "only has your name＝招待は 本人だけ"
+    choices: ["She'd like him to come alone.", "He can bring one friend.", "The wedding is canceled."]
+    answer: 0
+    cja: ["一人で来てほしい。", "友だちを一人連れてきていい。", "結婚式は中止。"]
+    why: "only has your name は「招待はあなただけ」。no plus-one で同伴者なし。小さくやりたい（keeping it small）からで、中止ではない。"
+    ctx: "婚約した同僚に、誰か連れていけるか聞きました"
+    ask: "つまり、どういう こと？"
+    scene: office
+    tags: { seed: 48, register: colleague, pragmatic: indirect, features: [intonation] }
+  # ---- チェック ----
+  - id: wg-rsvp-call
+    lv: 4
+    type: gist
+    speaker: molly
+    voice: us
+    cast: us-f3
+    en: "Hey, it's Molly! Just checking, did you get the invite? We need your RSVP by Friday. I did! Sorry, I've been swamped. Count me in. Yay! Okay, dinner's chicken or fish. Which one? Fish, please. And what's the dress code? Cocktail attire. And no gifts needed, really, but there's a registry if you want."
+    ja: "出席で、魚を選んだ。"
+    note: "A or B↘ は「どっち？」。一つ 選ぶ"
+    choices: ["He's coming, and he wants the fish.", "He's coming, and he wants both.", "He might not make it."]
+    answer: 0
+    cja: ["出席で、魚を選んだ。", "出席で、両方ほしい。", "行けないかもしれない。"]
+    why: "Count me in は「出席する」。chicken or fish? は最後が下がる「どっち？」の聞き方なので一つ選ぶ。ドムは魚にした。プレゼントは任意。"
+    ctx: "結婚する友だちから、返事の確認の電話です"
+    focus: "Okay, dinner's chicken or fish. Which one?"
+    ask: "ドムの 返事は？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 48, register: friend, pragmatic: literal, conditions: [phone], features: [intonation] }
+    lines:
+      - { who: molly, cast: us-f3, en: "Hey, it's Molly! Just checking, did you get the invite? We need your RSVP by Friday.", tts: "Hey, it's Molly! Just checkin', didja get the invite? We need yer R S V P by Friday.", ja: "もしもし、モリーだよ！ 確認なんだけど、招待状届いた？ 金曜までに返事がほしいの。" }
+      - { who: dom, cast: us-m1, en: "I did! Sorry, I've been swamped. Count me in.", ja: "届いたよ！ ごめん、ずっとバタバタで。もちろん行くよ。" }
+      - { who: molly, cast: us-f3, en: "Yay! Okay, dinner's chicken or fish. Which one?", ja: "やった！ じゃあ、料理はチキンか魚。どっちにする？" }
+      - { who: dom, cast: us-m1, en: "Fish, please. And what's the dress code?", ja: "魚でお願い。それと、服装の決まりは？" }
+      - { who: molly, cast: us-f3, en: "Cocktail attire. And no gifts needed, really, but there's a registry if you want.", tts: "Cocktail attire. An' no gifts needed, really, but there's a registry if ya want.", ja: "少しきちんとした服で。プレゼントは本当にいらないけど、もしよければほしい物リストがあるよ。" }
+  - id: wg-r-raise
+    lv: 4
+    type: reply
+    speaker: chief
+    voice: us
+    cast: us-m5
+    en: "Before we eat, I'd like everyone to raise your glasses to the happy couple."
+    tts: "Before we eat, I'd like everyone ta raise yer glasses to the happy couple."
+    ja: "食事の前に、皆さんグラスを持って、幸せな二人に乾杯しましょう。 →「モリーとスターリングに！」"
+    note: "raise your glasses＝乾杯の 合図"
+    choices: ["To Molly and Sterling!", "Sure. How high should I lift it?", "Thanks, but I'm not that hungry."]
+    answer: 0
+    cja: ["モリーとスターリングに！", "はい。どのくらい高く上げればいい？", "ありがとう、でもあまりお腹すいてない。"]
+    why: "raise your glasses は乾杯の合図。グラスを上げて二人の名前を言う（To〜!）のが決まり。高さを聞くのも、食事を断るのも的外れ。"
+    ctx: "披露宴で、新郎のお父さんが立ち上がりました"
+    scene: living
+    cond: { kind: party, level: light }
+    tags: { seed: 55, register: stranger, pragmatic: ritual, features: [intonation] }
+  - id: wg-m-save-date
+    lv: 4
+    type: mean
+    speaker: whitney
+    voice: us
+    cast: us-f4
+    en: "We just sent out the save-the-dates. The real invitations, with all the details, go out in March."
+    ja: "日にちのお知らせを送ったところ。詳しいことが書いてある正式な招待状は3月に送るね。 → つまり、今は日にちだけで、詳細はあとで届く。"
+    note: "save the date＝この 日を 空けて おいて"
+    choices: ["It's just the date for now. Details come later.", "Please save a seat for her.", "The wedding was moved to March."]
+    answer: 0
+    cja: ["今は日にちだけ。詳細はあとで。", "彼女の席を取っておいてほしい。", "結婚式が3月に変わった。"]
+    why: "save-the-date は「この日を空けておいて」という先のお知らせ。正式な招待状（the real invitations）が3月に届く。式が3月になったわけではない。"
+    ctx: "婚約した同僚が、カードを配っています"
+    ask: "つまり、どういう こと？"
+    scene: office
+    tags: { seed: 48, register: colleague, pragmatic: literal, features: [intonation] }
+  - id: wg-n-photos
+    lv: 4
+    type: num
+    speaker: diana
+    voice: us
+    cast: us-f4
+    en: "The ceremony's at 4:00, but we're in the wedding party, so we need to be there by 2:45 for photos."
+    tts: "The ceremony's at four, but we're in the wedding party, so we need ta be there by two forty-five for photos."
+    ja: "式は4時だけど、私たちは付き添い役だから、写真のために2時45分までに行かないと。"
+    note: "by の 後が 着く 時間。4時は 式"
+    choices: ["2:45", "3:45", "4:00"]
+    answer: 0
+    cja: ["2時45分", "3時45分", "4時"]
+    why: "式は4時だが、付き添い役は写真撮影のため by two forty-five（2時45分までに）着く。式の15分前の3時45分ではない。"
+    ctx: "結婚式の前日、付き添い役の仲間から連絡です"
+    ask: "何時までに 行く？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 54, register: friend, pragmatic: literal, conditions: [phone], features: [numbers] }
+  - id: wg-couch-joke
+    lv: 4
+    type: next
+    speaker: sterling
+    voice: us
+    cast: us-m5
+    en: "So, how's married life so far? Day one. Great! Molly says I can keep my old couch. Oh, nice! ...In the garage."
+    ja: "はは！ もう奥さんが仕切ってるね。"
+    note: "間の あとの 一言が オチ"
+    choices: ["Ha! Sounds like she's already in charge.", "Nice, so the couch stays in the living room.", "Oh no, are you guys fighting already?"]
+    answer: 0
+    cja: ["はは！ もう奥さんが仕切ってるね。", "いいね、じゃあソファはリビングに置けるんだ。", "えっ、もうケンカしてるの？"]
+    why: "間を置いた In the garage. がオチ。ソファは残せてもガレージ行き、つまり奥さんが決めているという笑い話。リビングに置けるわけでも、ケンカでもない。"
+    ctx: "披露宴で、新郎と立ち話をしています"
+    focus: "...In the garage."
+    ask: "次の ひとことは？"
+    scene: living
+    cond: { kind: party, level: light }
+    tags: { seed: 55, register: friend, pragmatic: humour, features: [intonation] }
+    lines:
+      - { who: punchy, cast: us-m4, en: "So, how's married life so far?", ja: "で、結婚生活はどう？" }
+      - { who: sterling, cast: us-m5, en: "Day one. Great! Molly says I can keep my old couch.", ja: "まだ1日目だけどね。最高だよ！ 僕の古いソファ、置いといていいってモリーが。" }
+      - { who: punchy, cast: us-m4, en: "Oh, nice!", ja: "へえ、よかったじゃん！" }
+      - { who: sterling, cast: us-m5, en: "...In the garage.", ja: "…ガレージにね。" }
+  - id: wg-r-how-know
+    lv: 4
+    type: reply
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "So, how do you know the bride and groom?"
+    tts: "So, how d'you know the bride an' groom?"
+    ja: "それで、新郎新婦とはどういうお知り合い？ →「モリーと同じ職場なんです。」"
+    note: "how do you know＝どういう 知り合い？"
+    choices: ["I work with Molly.", "I know! They're perfect together.", "By train. It took about an hour."]
+    answer: 0
+    cja: ["モリーと同じ職場なんです。", "でしょ！ お似合いだよね。", "電車で。1時間くらいかかった。"]
+    why: "how do you know〜? は「〜とはどういう知り合い？」と関係を聞く質問。I know! は「でしょ！」で答えになっていない。行き方の話でもない。"
+    ctx: "披露宴で、隣の席の人に話しかけられました"
+    scene: living
+    cond: { kind: party, level: light }
+    tags: { seed: 53, register: stranger, pragmatic: ritual, features: [intonation] }
+  # ---- おと: wedding words in the flow ----
+  - id: wg-w-tie-knot
+    lv: 4
+    type: word
+    speaker: punchy
+    voice: us
+    cast: us-m4
+    en: "I can't believe they're tying the knot!"
+    tts: "I can't believe they're tyin' the knot!"
+    ja: "あの二人が結婚するなんて、信じられない！"
+    note: "tie the knot＝結婚する"
+    choices: ["tying the knot", "trying the knot", "tying a knot"]
+    answer: 0
+    cja: ["結婚する", "結び目を試す", "結び目を作る"]
+    why: "tying the knot は「結婚する」の決まり文句で、the が入る。a knot だとただの結び目。trying（試す）とは r の有無で聞き分ける。"
+    ctx: "友だちが、知り合いの婚約を聞いて"
+    focus: "tying the knot"
+    marks: [[drop, "tying", "g"]]
+    tags: { seed: 48, register: friend, pragmatic: attitude, features: [idiom, intonation] }
+  - id: wg-w-happier
+    lv: 4
+    type: word
+    speaker: sterling
+    voice: us
+    cast: us-m5
+    en: "I couldn't be happier, honestly."
+    tts: "I couldn' be happier, honestly."
+    ja: "正直、これ以上ないくらい幸せだよ。"
+    note: "couldn't の t は ほぼ 消える"
+    choices: ["couldn't be happier", "could be happier", "couldn't be happy"]
+    answer: 0
+    cja: ["最高に幸せ", "もっと幸せになれる", "幸せになれない"]
+    why: "couldn't の t はほぼ消え、「クドゥン」と短く聞こえる。could be happier なら「まだ上がある」で逆の意味。happier の -er も聞き逃さない。"
+    ctx: "披露宴で、新郎が友だちに話しています"
+    focus: "couldn't be happier"
+    marks: [[drop, "couldn't", "t"]]
+    tags: { seed: 55, register: friend, pragmatic: attitude, features: [intonation] }
+  - id: wg-w-raise
+    lv: 4
+    type: word
+    speaker: marshal
+    voice: us
+    cast: us-m1
+    en: "Okay, everybody, raise your glasses!"
+    tts: "Okay, everybody, raise yer glasses!"
+    ja: "では皆さん、グラスをお持ちください！"
+    note: "raise は z で 伸びる。race は 短い s"
+    choices: ["raise your glasses", "raise your classes", "race your glasses"]
+    answer: 0
+    cja: ["グラスを持って", "クラスを上げて", "グラスで競争して"]
+    why: "raise は「レイズ」と z の音で伸びる。race（競争する）は「レイス」と短い s。glasses の g と classes の k も聞き分ける。"
+    ctx: "披露宴で、新郎の親友がマイクを持って"
+    focus: "raise your glasses"
+    marks: [[link, "raise your"]]
+    tags: { seed: 55, register: friend, pragmatic: ritual, features: [intonation] }
+  - id: wg-w-registry
+    lv: 4
+    type: word
+    speaker: diana
+    voice: us
+    cast: us-f4
+    en: "Just check the registry. Everything's on there."
+    ja: "ほしい物リストを見てみて。全部載ってるから。"
+    note: "registry＝ほしい物 リスト。最後の -try"
+    choices: ["the registry", "the register", "the chemistry"]
+    answer: 0
+    cja: ["ほしい物リスト", "レジ", "相性"]
+    why: "registry は最後が -try で「レジストリー」。register（レジ）は -ter で終わる。chemistry（相性）は最初が「ケ」の音。"
+    ctx: "結婚祝いに何を贈るか、友だちに聞きました"
+    focus: "the registry"
+    tags: { seed: 48, register: friend, pragmatic: literal, features: [stress] }
+  - id: wg-w-dress-code
+    lv: 4
+    type: word
+    speaker: molly
+    voice: us
+    cast: us-f3
+    en: "What's the dress code, though?"
+    ja: "でも、服装の決まりはどうなってるの？"
+    note: "DRESS code。前を 強く、code は d で 終わる"
+    choices: ["dress code", "dress coat", "test code"]
+    answer: 0
+    cja: ["服装の決まり", "ドレス用のコート", "テストのコード"]
+    why: "dress code は前の dress を強く言う。code は「コウド」と最後に d、coat なら t で短く切れる。最初の d は test の t とも違う。"
+    ctx: "友だちが、招待状を見ながら"
+    focus: "dress code"
+    marks: [[stress, "dress"]]
+    tags: { seed: 48, register: friend, pragmatic: literal, features: [stress] }
+  - id: wg-w-rsvp-first
+    lv: 4
+    type: word
+    speaker: whitney
+    voice: us
+    cast: us-f4
+    en: "Can you RSVP by the 1st?"
+    tts: "Can ya R S V P by the first?"
+    ja: "1日までに出欠の返事をもらえる？"
+    note: "first は f、third は th で 始まる"
+    choices: ["by the 1st", "by the 3rd", "by the 4th"]
+    answer: 0
+    cja: ["1日までに", "3日までに", "4日までに"]
+    why: "first は「ファースト」と f の音。third（3日）は舌を出す th で「サード」、fourth（4日）は「フォース」。by は「〜までに」で期限を言う。"
+    ctx: "婚約した同僚が、招待状を手渡しながら"
+    focus: "by the 1st"
+    marks: [[say, "1st", "first"]]
+    tags: { seed: 48, register: colleague, pragmatic: literal, features: [numbers] }
+  # ---- じっせん: a loud reception, fast ----
+  - id: wg-fast-order
+    lv: 4
+    type: gist
+    speaker: diana
+    voice: us
+    cast: us-f4
+    en: "Okay, change of plans. Sterling's grandma's still on her way, so the toasts are moving to after dinner. Wait, did you say the cake's first? No, no. Cake's after the toasts. So, dinner, toasts, cake, then dancing. Got it? Dinner, toasts, cake, dancing. Got it."
+    ja: "食事、乾杯、ケーキ、ダンスの順。"
+    note: "moving to after＝〜の 後に 移す"
+    choices: ["Dinner, toasts, cake, then dancing.", "Toasts, dinner, cake, then dancing.", "Cake, toasts, dinner, then dancing."]
+    answer: 0
+    cja: ["食事、乾杯、ケーキ、ダンス。", "乾杯、食事、ケーキ、ダンス。", "ケーキ、乾杯、食事、ダンス。"]
+    why: "おばあさんが遅れているので、乾杯（toasts）を食事のあとに移した。ケーキが先かと聞き返したが、No, no でケーキは乾杯のあと。"
+    ctx: "にぎやかな披露宴で、付き添い役の友だちが"
+    focus: "So, dinner, toasts, cake, then dancing."
+    ask: "この あとの 順番は？"
+    scene: living
+    cond: { kind: party, level: heavy }
+    tags: { seed: 54, register: friend, pragmatic: literal, conditions: [party], features: [intonation] }
+    lines:
+      - { who: diana, cast: us-f4, en: "Okay, change of plans. Sterling's grandma's still on her way, so the toasts are moving to after dinner.", tts: "Okay, change of plans. Sterling's grandma's still on 'er way, so the toasts are movin' to after dinner.", ja: "はい、予定変更。スターリングのおばあちゃんがまだ向かってる途中だから、乾杯は食事のあとに移すね。" }
+      - { who: marshal, cast: us-m1, en: "Wait, did you say the cake's first?", ja: "待って、ケーキが先って言った？" }
+      - { who: diana, cast: us-f4, en: "No, no. Cake's after the toasts. So, dinner, toasts, cake, then dancing. Got it?", ja: "違う違う。ケーキは乾杯のあと。だから、食事、乾杯、ケーキ、それからダンス。わかった？" }
+      - { who: marshal, cast: us-m1, en: "Dinner, toasts, cake, dancing. Got it.", ja: "食事、乾杯、ケーキ、ダンス。了解。" }
+  - id: wg-fast-band
+    lv: 4
+    type: mean
+    speaker: apollo
+    voice: us
+    cast: us-m6
+    en: "Oh, sure, the band's amazing. They've played the same song, like, three times now."
+    tts: "Oh, sure, the band's amaaazing. They've played the same song, like, three times now."
+    ja: "ああ、そうだね、バンドは「最高」だよ。もう同じ曲を3回くらいやってる。 → つまり、バンドにうんざりしている（皮肉）。"
+    note: "Oh, sure＋大げさな ほめ言葉＝皮肉"
+    choices: ["He thinks the band is boring and repetitive.", "He loves the band and wants more songs.", "The band only knows three songs."]
+    answer: 0
+    cja: ["同じ曲ばかりで退屈だと思っている。", "バンドが大好きで、もっと聞きたい。", "バンドは3曲しか知らない。"]
+    why: "Oh, sure と大げさに伸ばした amazing は皮肉。同じ曲を3回もやっているので、本当はうんざりしている。3曲しか知らないとは言っていない。"
+    ctx: "披露宴のダンスの時間に、隣の人がつぶやきます"
+    ask: "本当は どう 思ってる？"
+    scene: living
+    cond: { kind: party, level: heavy }
+    tags: { seed: 55, register: stranger, pragmatic: sarcasm, features: [intonation] }
+  - id: wg-fast-r-roommate
+    lv: 4
+    type: reply
+    speaker: cherry
+    voice: us
+    cast: us-f6
+    en: "Sorry, I'm terrible with names! How do you know Sterling again? Work?"
+    tts: "Sorry, I'm terrible with names! How d'you know Sterling again? Work?"
+    ja: "ごめん、名前を覚えるのが苦手で！ スターリングとはどういう知り合いだっけ？ 仕事？ →「ううん、昔からの付き合い。大学のルームメイト。」"
+    note: "Work?＝仕事の 知り合い？"
+    choices: ["No, we go way back. College roommates.", "Yeah, Sterling. Nice to meet you.", "Work's fine, thanks. Busy as usual."]
+    answer: 0
+    cja: ["ううん、昔からの付き合い。大学のルームメイト。", "うん、スターリング。はじめまして。", "仕事は順調、ありがとう。相変わらず忙しい。"]
+    why: "How do you know Sterling? は関係を聞く質問で、Work? は「仕事関係？」の確認。違うなら No と言い、go way back（昔からの仲）と答える。"
+    ctx: "披露宴の後半、さっき話した人がまた来ました"
+    scene: living
+    cond: { kind: party, level: heavy }
+    tags: { seed: 53, register: stranger, pragmatic: ritual, features: [intonation] }
+  - id: wg-fast-n-afterparty
+    lv: 4
+    type: num
+    speaker: marshal
+    voice: us
+    cast: us-m1
+    en: "After-party's at Sterling's brother's bar, starting at 11:15. Actually, no, 11:45. The band's running late."
+    tts: "After-party's at Sterling's brother's bar, startin' at eleven-fifteen. Actually, no, eleven-forty-five. The band's runnin' late."
+    ja: "二次会はスターリングのお兄さんのバーで、11時15分から。あ、違った、11時45分。バンドが押してるんだ。"
+    note: "Actually, no の 後が 正しい 時間"
+    choices: ["11:45", "11:15", "11:50"]
+    answer: 0
+    cja: ["11時45分", "11時15分", "11時50分"]
+    why: "最初は11時15分と言ったが、Actually, no で11時45分に訂正した。running late はバンドの演奏が押しているということ。"
+    ctx: "披露宴の終わりに、新郎の親友が"
+    ask: "二次会は 何時から？"
+    scene: living
+    cond: { kind: party, level: heavy }
+    tags: { seed: 55, register: friend, pragmatic: literal, features: [numbers, self-repair] }
+  - id: wg-fast-chairs
+    lv: 4
+    type: next
+    speaker: molly
+    voice: us
+    cast: us-f3
+    en: "Diana! Table six is short two chairs. Can you grab some from the patio? The patio by the bar? No, the other one. By the fountain. Thank you, you're the best!"
+    ja: "了解。噴水のそばから椅子を二つね。"
+    note: "No, the other one＝もう 一つの 方"
+    choices: ["On it. Two chairs from by the fountain.", "Got it. Two chairs from the patio by the bar.", "Sure, I'll bring six chairs."]
+    answer: 0
+    cja: ["了解。噴水のそばから椅子を二つね。", "わかった。バーのそばのテラスから二つね。", "いいよ、椅子を六つ持ってくる。"]
+    why: "6番テーブルに椅子が二つ足りない。バーのそばかと聞くと、No, the other one で噴水のそばのテラスだと訂正。six はテーブルの番号で椅子の数ではない。"
+    ctx: "披露宴の最中、花嫁が付き添い役に頼みごと"
+    focus: "No, the other one. By the fountain."
+    ask: "次の ひとことは？"
+    scene: living
+    cond: { kind: party, level: heavy }
+    tags: { seed: 54, register: friend, pragmatic: literal, features: [intonation] }
+    lines:
+      - { who: molly, cast: us-f3, en: "Diana! Table six is short two chairs. Can you grab some from the patio?", tts: "Diana! Table six is short two chairs. Can ya grab some from the patio?", ja: "ダイアナ！ 6番テーブル、椅子が二つ足りないの。テラスから持ってきてくれる？" }
+      - { who: diana, cast: us-f4, en: "The patio by the bar?", ja: "バーのそばのテラス？" }
+      - { who: molly, cast: us-f3, en: "No, the other one. By the fountain. Thank you, you're the best!", ja: "ううん、もう一つのほう。噴水のそば。ありがとう、助かる！" }
+  - id: wg-fast-m-leave
+    lv: 4
+    type: mean
+    speaker: punchy
+    voice: us
+    cast: us-m4
+    en: "Honestly, I wouldn't miss it for the world, but I've gotta head out right after the cake. Early flight."
+    tts: "Honestly, I wouldn' miss it fer the world, but I've gotta head out right after the cake. Early flight."
+    ja: "正直、絶対に行きたいんだけど、ケーキのすぐあとに抜けなきゃ。朝早い飛行機なんだ。 → つまり、出席するが、ケーキのあと早めに帰る。"
+    note: "wouldn't miss it＝絶対 行く。but の 後に 注意"
+    choices: ["He'll be there, but he'll leave after the cake.", "He can't come because of a flight.", "He'll stay until the very end."]
+    answer: 0
+    cja: ["出席するが、ケーキのあとに帰る。", "飛行機があるので来られない。", "最後までいる。"]
+    why: "wouldn't miss it for the world は「絶対に行く」。ただし but のあと、早朝の飛行機のためケーキのすぐあとに帰る。来られないわけではない。"
+    ctx: "にぎやかな会場で、友だちが式の予定を話します"
+    ask: "つまり、どう する？"
+    scene: living
+    cond: { kind: party, level: heavy }
+    tags: { seed: 48, register: friend, pragmatic: literal, features: [intonation] }
+lessons:
+  v: 1
+  deai: [wg-invite-news, wg-gift-registry, wg-r-plus-one, wg-m-dress-code, wg-n-rsvp, wg-m-finally]
+  bamen: [wg-toast, wg-r-happier, wg-m-sarcasm, wg-n-shuttle, wg-speech-length, wg-m-no-plus-one]
+  check: [wg-rsvp-call, wg-r-raise, wg-m-save-date, wg-n-photos, wg-couch-joke, wg-r-how-know]
+  oto: [wg-w-tie-knot, wg-w-happier, wg-w-raise, wg-w-registry, wg-w-dress-code, wg-w-rsvp-first]
+  jissen: [wg-fast-order, wg-fast-band, wg-fast-r-roommate, wg-fast-n-afterparty, wg-fast-chairs, wg-fast-m-leave]
+tiers:
+  wg-invite-news:
+    easy: { choices: ["June 14th, and he can bring a guest.", "June 4th, and he should come alone."], answer: 0, cja: ["6月14日。誰か一人連れていける。", "6月4日。一人で行く。"] }
+    hard: { choices: ["June 14th. Reply by May 1st, and he can bring a guest.", "June 14th. Reply by May 4th, and he can bring a guest.", "June 4th. Reply by May 1st, and he can bring a guest.", "June 14th. Reply by May 1st, and he should come alone."], answer: 0, cja: ["6月14日。5月1日までに返事、誰か一人連れていける。", "6月14日。5月4日までに返事、誰か一人連れていける。", "6月4日。5月1日までに返事、誰か一人連れていける。", "6月14日。5月1日までに返事、一人で行く。"] }
+  wg-n-shuttle:
+    easy: { choices: ["12:00", "10:30"], answer: 0, cja: ["夜12時", "10時半"] }
+  wg-fast-order:
+    hard: { choices: ["Dinner, toasts, cake, then dancing.", "Dinner, cake, toasts, then dancing.", "Toasts, dinner, cake, then dancing.", "Dinner, toasts, dancing, then cake."], answer: 0, cja: ["食事、乾杯、ケーキ、ダンス。", "食事、ケーキ、乾杯、ダンス。", "乾杯、食事、ケーキ、ダンス。", "食事、乾杯、ダンス、ケーキ。"] }

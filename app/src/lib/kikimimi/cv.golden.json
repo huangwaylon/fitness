@@ -15,6 +15,10 @@
   "cv": "e0a23d",
   "decks": "40a579a98762d069"
  },
+ "call:s2-call-c": {
+  "cv": "8c92c6",
+  "decks": "835d69fcf7bb4959"
+ },
  "call:s3-call": {
   "cv": "fef082",
   "decks": "a48de96bfaf5c9b3"
@@ -26,6 +30,10 @@
  "lesson:ev-bday": {
   "cv": "3bd858",
   "decks": "1602c949bf57a09e"
+ },
+ "lesson:ev-wedding": {
+  "cv": "773579",
+  "decks": "79b86b4b4023ee6f"
  },
  "lesson:fd-order": {
   "cv": "4625b7",
