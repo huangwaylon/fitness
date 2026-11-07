@@ -22,7 +22,7 @@ cando:
   catch: 回数・期間・次に 来る 目安
   short: 医者の 指示と 次に 来る 目安が わかる
   en: "I can follow a doctor asking about my symptoms and telling me what to do, in fast speech in the exam room, and catch how often, for how long, and when to come back."
-status: draft
+status: voiced
 letter:
   en: "Doctor's orders: you're doing great. You caught how long, how often, and when to come back, even when I talked fast. It's nothing serious, but take it easy this week, okay? If it gets worse, call me. If it gets better, come back in a month and tell me all about it."
   ja: "いしゃとして いうよ。きみは ちょうしが いい。どのくらい つづいているか、なんかい のむか、いつ また くるか、ぼくが はやくちでも ちゃんと ききとれたね。たいした ことは ないけど、こんしゅうは むりしないでね。わるく なったら でんわして。よく なったら、1かげつごに きて、ぜんぶ きかせてね。"

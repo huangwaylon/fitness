@@ -2,12 +2,13 @@
 // through the dev hook with its kinds' files, never shipped). Its チェック, its call's file `listened` (s2-call-a, as
 // shipped), is the call on the phone with its memo (2 rounds) then 4 of its quiz items: all right, the stamp, my row a
 // lesson's with the call's rounds in it, the call's rows in the review with its transcript. With its call in a file
-// still a draft (s2-call-c, wave 2's, unvoiced) the チェック is recipe 1's, its 6 quiz items. Its おと plays ことば タイル
+// served as a draft (s2-call-c, listened since A4, set back to draft in the served index) the チェック is recipe 1's, its
+// 6 quiz items. Its おと plays ことば タイル
 // on the derived tiles (s2-tile-bank, listened in the build). The logic tier (the voiced call plays its length,
 // silent: Playwright's Chromium is muted).
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type Page } from './fixtures.ts';
+import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { openStage } from './kikimimi-nav.ts';
@@ -40,8 +41,23 @@ const LESSONS = {
   check: ['ml-n-room', 'ml-n-late-checkout', 'r4-leak', 'm4-easy', 'n4-reference', 'w4-youll-need'],
   oto: ['w4-shouldve', 'w4-wouldnt-have', 'w4-wanna', 'w4-gotta', 'w4-didja', 'w4-them']
 };
-/** A call in a file still a draft (wave 2's s2-call-c, unvoiced): its チェック falls back to recipe 1. */
+/** A call in a file served as a draft (wave 2's s2-call-c): its チェック falls back to recipe 1. */
 const DRAFT = { call: 'call-wedding-weekend', file: 's2-call-c' };
+/** The built index with s2-call-c a draft again (the fixture: it ships listened since A4): the chunk that holds the
+ *  index (build-pages/, as served), its line set back as it's served. */
+const LINE = /("s2-call-c":\[[`"']call[`"'],3,[`"'])listened/g;
+const CHUNKS = join(import.meta.dirname, '..', 'build-pages', '_app', 'immutable', 'chunks');
+/** (read when a test runs: `playwright test --list` loads this file before any build exists) */
+const indexChunk = () => readdirSync(CHUNKS).find((f) => f.endsWith('.js') && /"s2-call-c":\[[`"']call/.test(readFileSync(join(CHUNKS, f), 'utf8')));
+async function asDraft(ctx: BrowserContext) {
+  const INDEX_CHUNK = indexChunk();
+  expect(INDEX_CHUNK, 'the built index').toBeTruthy();
+  await ctx.route(`**/_app/immutable/chunks/${INDEX_CHUNK}`, async (route) => {
+    const res = await route.fetch();
+    const headers = Object.fromEntries(Object.entries(res.headers()).filter(([k]) => k !== 'content-encoding' && k !== 'content-length'));
+    await route.fulfill({ status: res.status(), headers, body: (await res.text()).replace(LINE, '$1draft') });
+  });
+}
 const TILE_IDS = ['tile-m4-be-good', 'tile-m4-put-through', 'tile-w4-shouldve', 'tile-w4-wouldnt-have', 'tile-w4-wanna', 'tile-w4-gotta'];
 /** A recipe-2 unit as its chunk holds it (compile.ts unitChunk), over the bank's level-4 items, its チェック on `call`. */
 const unitOf = (call: string) => ({
@@ -131,8 +147,9 @@ test('recipe 2’s チェック, its call listened: the call and its memo, then 
   await expect(sheet(page).locator(`[data-kiki-call-log="${CALL}"]`)).toBeVisible();
 });
 
-test('recipe 2 falls back to recipe 1 while the call is a draft; its おと plays the listened tiles', async ({ page }) => {
+test('recipe 2 falls back to recipe 1 while the call is a draft; its おと plays the listened tiles', async ({ page, context }) => {
   test.slow();
+  await asDraft(context);
   await toUnit(page, DRAFT);
   await startCheck(page);
   expect([...(await kiki(page, (k) => k.items()))].sort()).toEqual([...LESSONS.check].sort());

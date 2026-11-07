@@ -169,6 +169,15 @@ const PINNED: Readonly<Record<string, number>> = {
   // batch A5, st-tokyo (2026-11-07), the best of five seed runs: Sherb's sleepy night-shift line (UTMOS 3.92 → 4.37) and Rosie's
   // cry at the goldfish scoop (3.41 → 4.35)
   'serial-tokyo-2-9': 2003, 'serial-tokyo-4-26': 5000,
+  // batch A4 (2026-11-07), the best of five seed runs: takes heard as written (whaddaya, sharea, Tex's, standin', keepin',
+  // leavin', row B, sign back in), a phone line's mix under its bound, and short lines' UTMOS or voice (Ha. Mostly. 2.53
+  // → 3.92; Oh, nice! sim 0.49 → 0.55); the tiles of the same lines in the same voices, the same takes
+  'call-screen-ready-3': 4005, 'cu-fast-july-4': 2000, 'cu-r-landlord': 2005, 'dr-trip-next-3': 2000, 'fn-fast-no-sushi-1': 4004,
+  'fn-w-feel-like': 4003, 'tile-din-feel-like-tonight': 4003, 'fn-w-share': 2000, 'tile-din-share-a-few': 2000,
+  'rp-fast-truck-1': 5002, 'tile-rep-truck-broke-down': 4005, 'rp-fast-truck-4': 4000, 'sm-fast-ready-3': 2002,
+  'tachi-deposit-letter-1': 4001, 'tachi-flight-canceled-2': 5000, 'tile-ch-didja-get-a-chance': 3000, 'tile-ch-whaddaya-think': 3000,
+  'tile-fl-well-actually': 4000, 'tile-tix-standing-room': 2001, 'tk-w-standing': 2001, 'tk-fast-balcony-4': 3000,
+  'tk-game-row-b-4': 5000, 'wg-couch-joke-3': 5003, 'wg-toast-3': 2000,
   // はつおん's words (M6, 2026-11-07), each the best of ten seed runs by UTMOS among the takes heard as written (a word
   // alone is too short for ECAPA: these are kept with --retries 0, never re-rolled for their similarity)
   'pr-13-2': 2000, 'pr-14-1': 3000, 'pr-14-2': 1238, 'pr-15-1': 2000, 'pr-15-2': 1237, 'pr-16-2': 1237, 'pr-17-1': 1235,

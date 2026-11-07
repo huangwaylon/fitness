@@ -10,7 +10,7 @@ track: life
 seeds: [15, 18, 22, 24, 30, 54, 57]
 features: { primary: chain, review: h-drop }
 cando: "結婚式・食事・病院・修理・お店の 会話の 文を、くずれた 音ごと 組み立てられる"
-status: draft
+status: listened
 items:
   # ---- ev-wedding: 結婚式に 出る ----
   - kind: tile

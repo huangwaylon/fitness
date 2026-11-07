@@ -19,9 +19,12 @@ const DAY = 'date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast';
 const NIGHT = 'date=2026-11-07T21:30&critter=none&visitor=none&kikimimi=fast';
 
 type Yaml = { id: string; lines: { who: string }[]; rounds: ({ type: 'opinions'; answer: string[] } | { type: 'changed'; answer: string } | { type: 'plan'; answer: number })[] };
-/** もり's conversations as compiled, by id. */
-const PARTS = ['s2-tachi-a', 's2-tachi-b'].flatMap((u) =>
-  (JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', `${u}.json`), 'utf8')) as { listen: { items: Yaml[] } }).listen.items);
+const LEVELS = join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels');
+/** もり's (stage 3) listened tachi files, as this build ships them (s2-tachi-a, -b and, since A4, -c). */
+const FILES = Object.entries((JSON.parse(readFileSync(join(LEVELS, 'index.json'), 'utf8')) as { listen: Record<string, [string, number, string]> }).listen)
+  .filter(([, [gm, stage, status]]) => gm === 'tachi' && stage === 3 && status === 'listened').map(([u]) => u);
+/** Their conversations as compiled, by id. */
+const PARTS = FILES.flatMap((u) => (JSON.parse(readFileSync(join(LEVELS, 'parts', `${u}.json`), 'utf8')) as { listen: { items: Yaml[] } }).listen.items);
 const BY_ID = new Map(PARTS.map((it) => [it.id, it]));
 /** A round's right answer: opinions each claim's face (by first line), changed a face, plan a choice. */
 function answerOf(id: string, k: number): number | number[] {

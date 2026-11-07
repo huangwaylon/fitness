@@ -12,7 +12,7 @@ track: life
 seeds: [14, 15, 18, 25, 26, 48, 50, 54, 55, 57]
 features: { primary: self-repair, review: numbers }
 cando: "電話で 予定や 用件の 変更と 条件を 聞き取って メモできる"
-status: draft
+status: listened
 cast: { me: us-m3 }
 items:
   - kind: call
