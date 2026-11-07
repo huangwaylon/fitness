@@ -234,9 +234,12 @@ JS and 70 KB of CSS gzipped, none of it three.js, MapLibre or a feature's sheet,
 
 Timing is an A/B on the desktop, never CI: `npm run perf:start -- <port> [runs] [webkit|chromium]` (scripts/perf-start.ts,
 default 5 runs, WebKit as an iPhone 15; Chromium as an iPhone 13, `THROTTLE=4` for a 4x slower CPU) against a build served
-by `node scripts/serve-build.ts <port>`: each run cold (no service worker), its first contentful paint, the island's
-first frame and loaded(), the main thread's gaps over its first 10 s, then the medians. The phone's numbers come from
-the iOS Simulator check and the phone.
+by `node scripts/serve-build.ts <port>`: each run cold (no service worker), or warm with `WARM=1` (the service worker
+installed by a first load, then reloads), its first contentful paint, the island's first frame and loaded(), the main
+thread's gaps over its first 10 s, the launch's own clock (`boot.*`: world3d/boot.ts, the log's `perf.boot`), then the
+medians. The demo runs without its shader checks there (`checks=0`: docs/perf-plan.md §0). The phone's numbers come from
+the iOS Simulator (`npm run ios:check -- --boots 8 --url 'http://127.0.0.1:<port>/?demo&checks=0'`: warm launches'
+`perf.boot` and their medians) and the phones' own `perf.boot` (`npm run logs -- report`).
 
 ## Unused assets
 `npm run unused` (`scripts/unused-assets.ts`, read-only) sorts every file under `static/` and every module under `src/`

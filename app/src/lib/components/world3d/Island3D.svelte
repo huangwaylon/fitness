@@ -46,7 +46,8 @@
   import { site } from '../island/site.svelte.ts';
   import { layout as layoutStore } from '#lib/store/layout.svelte.ts';
   import { buildGround, type Ground as LayoutGround, type Look } from './terrain.ts';
-  import { fieldsSoon } from '#lib/layout/fieldsPrime.ts';
+  import { fieldsFrom, fieldsSoon } from '#lib/layout/fieldsPrime.ts';
+  import { bootReport, watchBoot, type BootClock } from './boot.ts';
   import { placeObjects, type Inst, type Standin } from './objects.ts';
   import { homeTod } from './home.ts';
   import { createBuilt } from './built.ts';
@@ -735,6 +736,7 @@
       placedIds = new Set(insts.map((i) => i.id));
       void e.place(insts).then(() => {
         if (!loaded) {
+          boot?.loaded(performance.now());
           queueMicrotask(onready);
           // the flourishes' models on the GPU ahead of their first use (a high five's sparkles whole at once)
           setTimeout(() => void e.warmFx().catch(() => {}), 400);
@@ -903,9 +905,13 @@
    *  itself: the worker's ~200 ms (4× CPU) saved off the main thread before the first frame, never a launch held up.
    *  (Not in the e2e's logic mode: nothing's drawn there, and its tests read the island's projection as the HUD shows.) */
   const FIELDS_WAIT_MS = 300;
+  /** The launch's clock (boot.ts: the page's first mount only), and how long the mount waited for the fields. */
+  let boot: BootClock | null = null, fieldsMs = 0;
   onMount(() => {
     let stop: (() => void) | undefined, gone = false;
+    const t0 = performance.now();
     const go = () => {
+      fieldsMs = performance.now() - t0;
       if (!gone) stop = mount();
     };
     const soon = drawOff() ? null : fieldsSoon(layoutNow(), FIELDS_WAIT_MS);
@@ -918,6 +924,7 @@
   });
   function mount(): (() => void) | undefined {
     if (!canvas) return;
+    const mountAt = performance.now(), fields = fieldsFrom(layoutNow());
     let e: Island3;
     // a software renderer draws a frame in a fraction of a second only at its lightest: half the pixels, no
     // antialiasing, no shadow map (?dpr= ?aa= ?shadows=1 keep theirs), the ambience a couple of frames a second (CI's
@@ -935,6 +942,11 @@
       return;
     }
     eng = e;
+    // (the launch timed: the page's first mount)
+    const watch = watchBoot(() => ({ progs: e.stats().programs, fieldsMs: Math.round(fieldsMs), fields }));
+    boot = watch?.clock ?? null;
+    boot?.mount(mountAt);
+    if (boot) e.onDrawn(boot.frame);
     // (?ambient= the frames a second of the ambience, anywhere)
     // (not in the e2e's logic mode: nothing's drawn, a frame costs nothing, and the island's life runs in its frames)
     const amb = num('ambient') ?? (soft && !drawOff() ? 2 : null);
@@ -1073,11 +1085,16 @@
       balloon: () => b3?.state() ?? null,
       /** The rain or the snow now (precip.ts PrecipState), and its draw calls in the last frame drawn. */
       precip: () => p3?.state() ?? null,
-      precipCalls: () => p3?.calls() ?? 0
+      precipCalls: () => p3?.calls() ?? 0,
+      /** The launch timed (boot.ts), once its watch is over; null before (or not the page's first mount). */
+      boot: () => bootReport()
     };
     setDrawnFps(() => e.stats().fps);
     return () => {
       setDrawnFps(null);
+      watch?.stop();
+      e.onDrawn(null);
+      boot = null;
       offLayout();
       listen3d(null);
       useIdlePainter(null);

@@ -12,6 +12,8 @@
 //   --seed    a JSON file of localStorage entries ({key: value}) put in before the island loads (the page is opened,
 //             seeded, and opened again): a demo island with things on it (the gym's ten pieces: docs/design.md)
 //   --then    a JS file run in the page once the island is up, before the measures (put my villager on a piece)
+//   --boots   N warm launches instead of the measures: each launch's own clock (world3d/boot.ts), and their medians
+//             (with a URL whose query has checks=0: npm run ios:check -- --boots 8 --url 'http://127.0.0.1:PORT/?demo&checks=0')
 // Once per Mac: nothing (the script turns on Safari's Remote Automation in the simulator); safaridriver ships with
 // macOS. Nightly: a launchd agent (docs/ops/testing.md has the plist) runs `npm run ios:check` and keeps its reports.
 import { execFileSync, spawn } from 'node:child_process';
@@ -100,6 +102,47 @@ try {
   }
   report.loadMs = loaded ? Date.now() - t0 : null;
   report.island3d = loaded;
+  const boots = Number(opt('--boots', '0'));
+  if (loaded && boots > 0) await bootRuns(boots);
+  else await measures();
+} catch (e) {
+  report.failure = String(e);
+} finally {
+  if (sid) await wd('DELETE', `/session/${sid}`).catch(() => {});
+  driver.kill();
+  if (!args.includes('--keep')) execFileSync('xcrun', ['simctl', 'shutdown', dev.udid]);
+}
+
+/** `--boots N`: warm launches (the service worker controlling, its caches full: the first load registered it), each
+ *  the launch's own clock (world3d/boot.ts, the log's perf.boot) as the island reports it; then their medians. Use a
+ *  URL with `checks=0` (no shader checks: docs/perf-plan.md §0). */
+async function bootRuns(n: number) {
+  for (let i = 0; i < 60 && !(await run<boolean>('return !!navigator.serviceWorker && !!navigator.serviceWorker.controller;')); i++) {
+    if (i % 10 === 9) await wd('POST', `/session/${sid}/url`, { url: URL_ });
+    await sleep(1000);
+  }
+  await sleep(3000);
+  const rows: Record<string, number | string | boolean>[] = [];
+  for (let i = 0; i < n; i++) {
+    await wd('POST', `/session/${sid}/url`, { url: `${URL_}${URL_.includes('?') ? '&' : '?'}boot=${i}` });
+    let r: Record<string, number | string | boolean> | null = null;
+    for (let k = 0; k < 60 && !r; k++) {
+      r = await run<typeof r>('return window.__world3d && window.__world3d.boot ? window.__world3d.boot() : null;').catch(() => null);
+      if (!r) await sleep(500);
+    }
+    if (r) rows.push(r);
+    console.log(JSON.stringify(r));
+    await sleep(1500);
+  }
+  const med = (k: string) => {
+    const v = rows.map((r) => r[k]);
+    return typeof v[0] === 'number' ? (v as number[]).sort((a, b) => a - b)[v.length >> 1] : [...new Set(v)].join('/');
+  };
+  report.boots = rows;
+  report.bootMedian = rows.length ? Object.fromEntries(Object.keys(rows[0]).map((k) => [k, med(k)])) : null;
+}
+
+async function measures() {
   const then = opt('--then', '');
   if (then) report.then = await run(readFileSync(then, 'utf8'));
   await sleep(3000);
@@ -146,12 +189,6 @@ try {
   await run(`document.querySelector('dialog[open]').close();`);
   report.sheets = sheets;
   report.errors = await run('return window.__iosErrs;');
-} catch (e) {
-  report.failure = String(e);
-} finally {
-  if (sid) await wd('DELETE', `/session/${sid}`).catch(() => {});
-  driver.kill();
-  if (!args.includes('--keep')) execFileSync('xcrun', ['simctl', 'shutdown', dev.udid]);
 }
 
 writeFileSync(join(OUT, 'report.json'), JSON.stringify(report, null, 2));
@@ -162,6 +199,7 @@ const md = [
   '',
   `${dev.name}, iOS ${ios}, Safari; ${URL_}`,
   '',
+  report.bootMedian ? `- warm launches (median of ${(report.boots as unknown[]).length}): ${JSON.stringify(report.bootMedian)}` : '',
   `- the 3D island: ${report.island3d ? `up in ${report.loadMs} ms` : 'did not come up'}`,
   idle ? `- idle: ${idle.fps} fps (frame p50 ${idle.p50} ms, p95 ${idle.p95} ms), ${idle.long} long frames in 5 s` : '',
   scroll ? `- scrolling: ${scroll.fps} fps (p95 ${scroll.p95} ms), ${scroll.long} long frames` : '',
