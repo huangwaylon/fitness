@@ -4,8 +4,8 @@
   "decks": "30b5d72dc5b5db3a"
  },
  "call:s1-call-b": {
-  "cv": "0b7fbc",
-  "decks": "0606e8c87975146b"
+  "cv": "5c3e57",
+  "decks": "1180848a6b136329"
  },
  "call:s2-call-a": {
   "cv": "dd15fc",
@@ -42,6 +42,10 @@
  "lesson:gl-endcall": {
   "cv": "d6ff72",
   "decks": "07928598ad1e94cc"
+ },
+ "lesson:hl-clinic": {
+  "cv": "b5f400",
+  "decks": "e9f717c14151780a"
  },
  "lesson:hm-neighbor": {
   "cv": "4d32d1",

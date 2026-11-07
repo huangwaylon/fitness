@@ -1,0 +1,626 @@
+# 受付と 薬局 (hl-clinic): wave 2a, かわ, からだ (docs/curriculum-wave2.md §3.1). A clinic's front desk on the phone and at
+# the counter (the soonest slot, coming in early, the insurance card) and a pharmacist explaining how to take a medicine
+# (twice a day, with food) and whether you're allergic. The numbers: times (ten-fifteen / ten-fifty), the 13th / 30th,
+# doses, a callback number. "Your prescription's ready" replaces the overused drowsy line (wave 2 §3.1 †).
+# ききかえす's "did you say", "so that's", "Sorry?" and "I meant" and でんわを おえる's "see you then" are recycled.
+# Its call: call-clinic-move (content/listen/s1-call-b.yaml).
+# きょうの ひとこと: "Take care of yourself, twice a day. With food." (1日2回、ちゃんと 自分を 大事にしてね。ごはんと 一緒に。)
+schema: 1
+unit: hl-clinic
+name: 受付と 薬局
+stage: kawa
+domain: karada
+host: pashmina
+scene: clinic
+sound: numbers
+cando:
+  who: 受付や 薬剤師
+  does: 予約と 飲み方を 説明する
+  cond: 電話や カウンターで
+  catch: 日時・回数・注意
+  short: 予約と 薬の 飲み方が わかる
+  en: "I can follow a receptionist or a pharmacist explaining an appointment and how to take a medicine, on the phone or at the counter, and catch the day and time, how often, and what to watch out for."
+status: draft
+letter:
+  en: "Your prescription's ready, and so are you! You caught the soonest appointment, a quarter after ten, and twice a day with food, even on a noisy phone line. Next time, come in a few minutes early and bring your insurance card. And take care of yourself, okay? I mean it!"
+  ja: "おくすり できたよ、あなたも ばっちりね！ いちばん はやい よやくも、10じ 15ふんも、1にち 2かい しょくじと いっしょにも、ざつおんの おおい でんわで ちゃんと ききとれた。こんどは すこし はやめに きて、ほけんしょうも もってきてね。それと、からだを だいじに してね。ほんとうよ！"
+ph:
+  - { id: ph-twice-a-day, en: "twice a day", ja: "1日 2回", match: "\\b(once|twice|three times|four times) a day\\b", register: service, scene: "the pharmacy counter", trap: "twice＝2回。2日 ではない" }
+  - { id: ph-with-food, en: "with food", ja: "食事と 一緒に（食後に）", match: "\\bwith (food|a meal|meals)\\b", register: service, scene: "how to take it", trap: "空腹で 飲まない。食べ物に まぜる ではない" }
+  - { id: ph-soonest, en: "the soonest we have", ja: "いちばん 早い 空き", match: "\\b(the )?(soonest|earliest) (we have|I have|I can do|we can do)\\b", register: service, scene: "booking an appointment", trap: "soonest＝最短。それより 前は 無理" }
+  - { id: ph-allergic, en: "are you allergic to…?", ja: "〜に アレルギーは ありますか？", match: "\\ballergic to\\b", register: service, scene: "before a prescription", trap: "発音は「アラージック」。アレルギー と 違う" }
+  - { id: ph-prescription-ready, en: "your prescription's ready", ja: "お薬が できました", match: "\\bprescription('s| is)?( not)?( quite| all)? ready\\b", register: service, scene: "picking up medicine", trap: "prescription＝処方薬。説明書 ではない" }
+  - { id: ph-come-in, en: "can you come in at…?", ja: "〜に 来院 できますか？", match: "\\b(come|coming) in (at|on|today|tomorrow|this|next|early|around|for|about|ten|a few|in)\\b", register: service, scene: "an appointment time", trap: "come in＝(病院に) 来る。中に 入って ではない" }
+  - { id: ph-insurance, en: "your insurance card", ja: "保険証", match: "\\binsurance\\b", register: service, scene: "the front desk", trap: "insurance＝保険。毎回 カードを 見せる" }
+  - { id: ph-minutes-early, en: "a few minutes early", ja: "数分 早めに", match: "\\b(a few|\\w+) minutes early\\b", register: service, scene: "before a visit", trap: "early＝早めに 着く。予約が 早まる ではない" }
+items:
+  # ---- であい: booking, then the pharmacy ----
+  - id: dk-booking
+    lv: 3
+    type: gist
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Sunny Clinic, this is Pashmina. How can I help you? Hi, I'd like to make an appointment. I've had a sore throat for a few days. Okay. The soonest we have is Thursday at 10:15. Does that work? Sorry, did you say 10:15 or 10:50? 10:15. A quarter after ten. And please come in a few minutes early. Got it. Thursday at 10:15. Thanks!"
+    ja: "木曜の10時15分。数分早めに行く。"
+    note: "ten-fifTEEN＝10:15。a quarter after ten とも"
+    choices: ["Thursday at 10:15, a few minutes early.", "Thursday at 10:50.", "Today, as soon as possible."]
+    answer: 0
+    cja: ["木曜の10時15分。数分早めに。", "木曜の10時50分。", "今日、できるだけ早く。"]
+    why: "最短の空きは木曜。15か50かを聞き返し、A quarter after ten（10時15分）と確かめた。a few minutes early は「数分早めに」。"
+    ctx: "のどが痛くて、クリニックに電話しています"
+    focus: "The soonest we have is Thursday at 10:15."
+    ask: "予約は いつ？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [numbers, teen-ty] }
+    lines:
+      - { who: pashmina, cast: us-f5, en: "Sunny Clinic, this is Pashmina. How can I help you?", ja: "サニークリニック、パシュミナです。どうなさいましたか？" }
+      - { who: kid-cat, cast: us-m1, en: "Hi, I'd like to make an appointment. I've had a sore throat for a few days.", ja: "こんにちは、予約を取りたいんです。数日前からのどが痛くて。" }
+      - { who: pashmina, cast: us-f5, en: "Okay. The soonest we have is Thursday at 10:15. Does that work?", tts: "Okay. The soonest we have is Thursday at ten-fifteen. Does that work?", ja: "わかりました。いちばん早い空きは木曜の10時15分です。ご都合はいかがですか？" }
+      - { who: kid-cat, cast: us-m1, en: "Sorry, did you say 10:15 or 10:50?", tts: "Sorry, did you say ten-fifteen or ten-fifty?", ja: "すみません、10時15分ですか、10時50分ですか？" }
+      - { who: pashmina, cast: us-f5, en: "10:15. A quarter after ten. And please come in a few minutes early.", tts: "Ten-fifteen. A quarter after ten. And please come in a few minutes early.", ja: "10時15分、10時を15分過ぎたところです。それと、数分早めにお越しください。" }
+      - { who: kid-cat, cast: us-m1, en: "Got it. Thursday at 10:15. Thanks!", tts: "Got it. Thursday at ten-fifteen. Thanks!", ja: "わかりました。木曜の10時15分ですね。ありがとう！" }
+  - id: dk-pharmacy-pick
+    lv: 3
+    type: next
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Hi there! Your prescription's ready. Can I get your date of birth? Sure. March 3rd. Perfect. Take one tablet twice a day, with food. Any questions?"
+    ja: "確認ですが、朝と夜、食事のあとですね？"
+    note: "twice a day, with food＝1日2回、食事と 一緒に"
+    choices: ["Just to check, morning and night, after meals?", "Food? No thanks, I already ate.", "Twice? So I come back again later?"]
+    answer: 0
+    cja: ["確認ですが、朝と夜、食事のあとですね？", "食べ物？ いえ、もう食べました。", "2回？ じゃあ、あとでまた来るんですか？"]
+    why: "twice a day は「1日2回」、with food は「食事と一緒に」。朝晩・食後かと確かめるのが自然。食事をすすめられたわけでも、2回来るわけでもない。"
+    ctx: "薬局で、処方薬を受け取ります"
+    focus: "Take one tablet twice a day, with food."
+    ask: "次の ひとことは？"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [numbers] }
+    lines:
+      - { who: tia, cast: us-f4, en: "Hi there! Your prescription's ready. Can I get your date of birth?", ja: "こんにちは！ お薬ができていますよ。生年月日をお願いできますか？" }
+      - { who: dom, cast: us-m1, en: "Sure. March 3rd.", tts: "Sure. March third.", ja: "はい。3月3日です。" }
+      - { who: tia, cast: us-f4, en: "Perfect. Take one tablet twice a day, with food. Any questions?", ja: "ありがとうございます。1日2回、1錠ずつ、食事と一緒に飲んでください。何かご質問は？" }
+  - id: kr-allergic
+    lv: 3
+    type: reply
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Are you allergic to any medications?"
+    tts: "Are ya allergic ta any medications?"
+    ja: "お薬のアレルギーはありますか？ →「知っている限り、ないです。」"
+    note: "allergic は「アラージック」。to は 弱く「タ」"
+    choices: ["Not that I know of.", "Just vitamins, every morning.", "No thanks, I'm fine without it."]
+    answer: 0
+    cja: ["知っている限り、ないです。", "ビタミンだけ、毎朝飲んでます。", "いえ、なくても大丈夫です。"]
+    why: "allergic は「アラージック」。聞かれたのはアレルギーの有無で、今の薬の話でも薬の勧めでもない。Not that I know of は「知る限りない」の決まり文句。"
+    ctx: "薬局で、初めて薬をもらいます"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: formula, features: [numbers] }
+  - id: km-with-food
+    lv: 3
+    type: mean
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "Take these with food, or they might upset your stomach."
+    ja: "何か食べてから飲む。"
+    note: "with food＝食事と 一緒に。空腹で 飲まない"
+    choices: ["Take them after eating something.", "Don't eat while taking them.", "Mix them into your food."]
+    answer: 0
+    cja: ["何か食べてから飲む。", "飲んでいる間は食べない。", "食べ物にまぜる。"]
+    why: "with food は「食事と一緒に」。空腹で飲むと胃が荒れる（upset your stomach）ので、食べてから飲む。食べ物にまぜるわけではない。"
+    ctx: "薬局で、飲み方の説明を受けています"
+    ask: "つまり、どういう こと？"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [numbers] }
+  - id: kn-dose
+    lv: 3
+    type: num
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "Take two tablets three times a day, for seven days."
+    ja: "1回2錠を1日3回、7日間飲んでください。"
+    note: "two＝1回の 数、three times＝回数"
+    choices: ["3 times", "2 times", "7 times"]
+    answer: 0
+    cja: ["3回", "2回", "7回"]
+    why: "three times a day が1日の回数（3回）。two tablets は1回に飲む数、seven days は飲む日数。数字が三つ出るので、何の数かを聞き分ける。"
+    ctx: "薬局で、薬の飲み方を聞いています"
+    ask: "1日 何回？"
+    scene: pharmacy
+    tags: { seed: 15, register: service, pragmatic: literal, features: [numbers] }
+  - id: kr-insurance
+    lv: 3
+    type: reply
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Can I see your insurance card and a photo ID, please?"
+    ja: "保険証と、写真付きの身分証を見せていただけますか？ →「はい、どうぞ。」"
+    note: "photo ID＝写真付きの 身分証"
+    choices: ["Sure, here you go.", "No thanks, I'm just looking.", "A photo? Okay, smile!"]
+    answer: 0
+    cja: ["はい、どうぞ。", "いえ、見ているだけです。", "写真？ いいですよ、はい笑って！"]
+    why: "insurance card は保険証、photo ID は運転免許証などの写真付き身分証。見せてと言われたら Here you go と渡す。写真を撮るわけではない。"
+    ctx: "クリニックの受付で、名前を伝えました"
+    scene: pharmacy
+    tags: { seed: 14, register: service, pragmatic: formula, features: [numbers] }
+  # ---- ばめん: moving it, a slot opens, the counter ----
+  - id: dk-move-appt
+    lv: 3
+    type: gist
+    speaker: whitney
+    voice: us
+    cast: us-f4
+    en: "Hi, I have an appointment tomorrow at nine, but I need to move it. No problem. The soonest I have after that is Monday at 2:30. Monday at 2:30? That works. Is there a fee for changing? Not if it's more than a day before. So you're all set. See you then!"
+    ja: "月曜の2時半に変更。手数料はなし。"
+    note: "Not if…＝〜なら かからない"
+    choices: ["It's moved to Monday at 2:30, with no fee.", "It's still tomorrow at nine.", "It's moved to Monday, but with a fee."]
+    answer: 0
+    cja: ["月曜の2時半に変更、手数料なし。", "明日の9時のまま。", "月曜に変更、手数料あり。"]
+    why: "次にいちばん早い空きは月曜の2時半。手数料は Not if it's more than a day before（1日以上前ならかからない）なので、今回はなし。"
+    ctx: "明日の予約を変えたくて、電話しています"
+    focus: "The soonest I have after that is Monday at 2:30."
+    ask: "どう なった？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 16, register: service, pragmatic: literal, conditions: [phone], features: [numbers] }
+    lines:
+      - { who: whitney, cast: us-f4, en: "Hi, I have an appointment tomorrow at nine, but I need to move it.", ja: "こんにちは、明日9時に予約があるんですが、変更したいんです。" }
+      - { who: pashmina, cast: us-f5, en: "No problem. The soonest I have after that is Monday at 2:30.", tts: "No problem. The soonest I have after that is Monday at two-thirty.", ja: "かしこまりました。その次でいちばん早いのは月曜の2時半です。" }
+      - { who: whitney, cast: us-f4, en: "Monday at 2:30? That works. Is there a fee for changing?", tts: "Monday at two-thirty? That works. Is there a fee for changing?", ja: "月曜の2時半？ 大丈夫です。変更の手数料はかかりますか？" }
+      - { who: pashmina, cast: us-f5, en: "Not if it's more than a day before. So you're all set. See you then!", ja: "1日以上前でしたら、かかりません。これで大丈夫です。では、そのときに！" }
+  - id: kr-cancellation
+    lv: 3
+    type: reply
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Can you come in this afternoon at four? Dr. Julian just had a cancellation."
+    ja: "今日の午後4時に来られますか？ ジュリアン先生の予約にキャンセルが出たんです。 →「はい、4時で大丈夫です。助かります！」"
+    note: "come in＝来院する。cancellation は 別の 患者"
+    choices: ["Yes, four is perfect. Thank you!", "Come in where? I'm at home.", "Oh no, is the doctor sick?"]
+    answer: 0
+    cja: ["はい、4時で大丈夫です。ありがとう！", "入るってどこに？ 家にいますよ。", "えっ、先生は病気ですか？"]
+    why: "come in は「（病院に）来る」。had a cancellation は別の人が予約を取り消して空きが出たということ。先生が休むわけではない。空きに飛びつくのが自然。"
+    ctx: "予約が取れずに待っていたら、電話が来ました"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [numbers] }
+  - id: km-forms-early
+    lv: 3
+    type: mean
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "It's your first visit, so try to come in about fifteen minutes early to fill out some forms."
+    ja: "書類を書くために、早めに来てほしい。"
+    note: "fifteen minutes early＝15分 早めに"
+    choices: ["Come early to fill out some paperwork.", "The appointment starts fifteen minutes later.", "Come back in fifteen minutes."]
+    answer: 0
+    cja: ["書類を書くために、早めに来る。", "予約が15分遅くなる。", "15分後にまた来る。"]
+    why: "come in about fifteen minutes early は「15分ほど早めに来て」。初診なので書類（forms）を書くため。予約の時間が変わったわけではない。"
+    ctx: "初めてのクリニックを、電話で予約しました"
+    ask: "つまり、どういう こと？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [numbers] }
+  - id: kn-copay
+    lv: 3
+    type: num
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "It's $30 without insurance, but with your card, it's just $13. So that's $13 today."
+    tts: "It's thirty without insurance, but with yer card, it's just thirteen. So that's thirteen today."
+    ja: "保険なしだと30ドルですが、保険証があれば13ドルだけです。なので今日は13ドルです。"
+    note: "thirTEEN は 後ろが 強い。30 は 保険なし"
+    choices: ["$13", "$30", "$3"]
+    answer: 0
+    cja: ["13ドル", "30ドル", "3ドル"]
+    why: "保険なしなら30ドル（thirty）、保険証があるので13ドル（thirteen）。thirteen は後ろを強く長く言う。So that's〜で今日の金額をくり返している。"
+    ctx: "診察のあと、受付で会計をしています"
+    ask: "今日は いくら？"
+    scene: pharmacy
+    tags: { seed: 14, register: service, pragmatic: literal, features: [numbers, teen-ty] }
+  - id: dk-penicillin
+    lv: 3
+    type: next
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "Before I fill this, are you allergic to anything? Just penicillin. Okay, good to know. This one's fine, then. It's not penicillin."
+    ja: "よかった、確認してくれてありがとう。"
+    note: "This one's fine＝この 薬は 大丈夫"
+    choices: ["Great, thanks for checking.", "Fine? So I'm not allergic anymore?", "Then I'll take the penicillin."]
+    answer: 0
+    cja: ["よかった、確認してくれてありがとう。", "大丈夫？ じゃあ、もうアレルギーはないの？", "じゃあペニシリンをもらいます。"]
+    why: "ペニシリンのアレルギーを伝えると、This one's fine（この薬は大丈夫）、ペニシリンではないと確認してくれた。お礼を言うのが自然。アレルギーが治ったわけではない。"
+    ctx: "薬局で、薬を出してもらう前に聞かれました"
+    focus: "This one's fine, then. It's not penicillin."
+    ask: "次の ひとことは？"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [numbers] }
+    lines:
+      - { who: raymond, cast: us-m5, en: "Before I fill this, are you allergic to anything?", ja: "お出しする前に、何かアレルギーはありますか？" }
+      - { who: bea, cast: us-f1, en: "Just penicillin.", ja: "ペニシリンだけです。" }
+      - { who: raymond, cast: us-m5, en: "Okay, good to know. This one's fine, then. It's not penicillin.", ja: "わかりました。ではこのお薬は大丈夫です。ペニシリンではありません。" }
+  - id: km-not-ready
+    lv: 3
+    type: mean
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Sorry, your prescription's not ready yet. It'll be ready tomorrow after ten."
+    ja: "明日の10時以降に、もう一度来る必要がある。"
+    note: "not ready yet＝まだ。after ten＝10時 以降"
+    choices: ["You have to come back tomorrow.", "It's ready right now.", "You need a new prescription."]
+    answer: 0
+    cja: ["明日また来る必要がある。", "今すぐ受け取れる。", "新しい処方せんが必要。"]
+    why: "not ready yet は「まだできていない」。tomorrow after ten（明日の10時以降）にできるので、また来る。処方せんに問題があるわけではない。"
+    ctx: "仕事帰りに、薬局へ薬を取りに来ました"
+    ask: "つまり、どういう こと？"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [numbers] }
+  # ---- チェック ----
+  - id: dk-dentist-day
+    lv: 3
+    type: gist
+    speaker: olivia
+    voice: us
+    cast: us-f4
+    en: "Hi, this is Olivia from Bright Smile Dental, calling to confirm your cleaning on Tuesday at 11:40. Oh, sorry, did you say Tuesday? I thought it was Wednesday. Let me check. Oh, you're right, I'm sorry. Wednesday at 11:40. Great. See you then!"
+    ja: "水曜の11時40分。"
+    note: "you're right で 患者の 言う 水曜に 決まり"
+    choices: ["Wednesday at 11:40.", "Tuesday at 11:40.", "Wednesday at 11:14."]
+    answer: 0
+    cja: ["水曜の11時40分。", "火曜の11時40分。", "水曜の11時14分。"]
+    why: "受付は火曜と言ったが、聞き返すと you're right で水曜に訂正した。時間は eleven-forty（11時40分）で、fourteen（14）ではない。"
+    ctx: "歯医者から、予約の確認の電話です"
+    focus: "Wednesday at 11:40."
+    ask: "予約は いつ？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 16, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
+    lines:
+      - { who: olivia, cast: us-f4, en: "Hi, this is Olivia from Bright Smile Dental, calling to confirm your cleaning on Tuesday at 11:40.", tts: "Hi, this is Olivia from Bright Smile Dental, calling ta confirm yer cleaning on Tuesday at eleven-forty.", ja: "もしもし、ブライトスマイル歯科のオリビアです。火曜11時40分のクリーニングの確認でお電話しました。" }
+      - { who: curt, cast: us-m6, en: "Oh, sorry, did you say Tuesday? I thought it was Wednesday.", ja: "あ、すみません、火曜って言いました？ 水曜だと思ってました。" }
+      - { who: olivia, cast: us-f4, en: "Let me check. Oh, you're right, I'm sorry. Wednesday at 11:40.", tts: "Let me check. Oh, you're right, I'm sorry. Wednesday at eleven-forty.", ja: "確認しますね。あ、おっしゃる通りです、失礼しました。水曜の11時40分です。" }
+      - { who: curt, cast: us-m6, en: "Great. See you then!", ja: "よかった。ではそのときに！" }
+  - id: kr-one-pill
+    lv: 3
+    type: reply
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "So that's one pill, twice a day. Morning and night. Any questions?"
+    ja: "1回1錠、1日2回です。朝と夜。何かご質問は？ →「いえ、よくわかりました。ありがとう！」"
+    note: "twice a day＝1日2回。一度に 2錠 ではない"
+    choices: ["No, that's clear. Thanks!", "So, two pills at once?", "One pill every two days?"]
+    answer: 0
+    cja: ["いえ、よくわかりました。ありがとう！", "じゃあ、一度に2錠？", "2日に1錠？"]
+    why: "one pill, twice a day は「1回1錠を1日2回」で、朝と夜に飲む。一度に2錠でも、2日に1回でもない。説明がわかったならお礼で返す。"
+    ctx: "薬局で、薬の飲み方の説明を受けました"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [numbers] }
+  - id: km-waitlist
+    lv: 3
+    type: mean
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "I'm sorry, the soonest we have is next Friday. Should I put you on the waitlist in case something opens up?"
+    ja: "来週の金曜まで空きはないが、キャンセル待ちで早まるかもしれない。"
+    note: "waitlist＝キャンセル待ち。opens up＝空きが 出る"
+    choices: ["Nothing's open before next Friday, but it could open up.", "The clinic is closed until Friday.", "She has to come in this Friday."]
+    answer: 0
+    cja: ["来週金曜より前は空きがないが、空く可能性はある。", "金曜までクリニックが休み。", "今週の金曜に来なければならない。"]
+    why: "最短は来週の金曜。waitlist（キャンセル待ち）に入れば、空きが出たとき早まるかもしれない。休みでも、今週の金曜でもない。"
+    ctx: "早く診てほしくて、クリニックに電話しました"
+    ask: "つまり、どういう こと？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [numbers] }
+  - id: kn-room
+    lv: 3
+    type: num
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Okay, you're all checked in. Go up to the third floor, room 315."
+    tts: "Okay, you're all checked in. Go up to the third floor, room three-fifteen."
+    ja: "受付は済みました。3階の315号室へどうぞ。"
+    note: "three-fifteen＝315。fifty なら 350"
+    choices: ["315", "350", "305"]
+    answer: 0
+    cja: ["315号室", "350号室", "305号室"]
+    why: "room three-fifteen は315号室。fifteen は後ろを強く言い、fifty（350）は前が強い。305 なら three-oh-five と言う。"
+    ctx: "クリニックの受付で、保険証を出しました"
+    ask: "何号室？"
+    scene: pharmacy
+    tags: { seed: 14, register: service, pragmatic: literal, features: [numbers, teen-ty] }
+  - id: kr-ten-early
+    lv: 3
+    type: reply
+    speaker: olivia
+    voice: us
+    cast: us-f4
+    en: "Could you come in ten minutes early? We need to update your insurance info."
+    ja: "10分早めにお越しいただけますか？ 保険の情報を更新したいので。 →「はい、大丈夫です。保険証を持っていきます。」"
+    note: "ten minutes early＝10分 早め。10時 ではない"
+    choices: ["Sure, no problem. I'll bring my card.", "Ten? Sorry, I'm only free at nine.", "Sure, I'll come in at ten."]
+    answer: 0
+    cja: ["はい、大丈夫です。保険証を持っていきます。", "10時？ すみません、9時しか空いていません。", "はい、10時に行きます。"]
+    why: "ten minutes early は「10分早めに」で、10時のことではない。保険の情報を更新するので、保険証を持っていくと答えるのが自然。"
+    ctx: "歯医者から、明日の予約の前に電話です"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 16, register: service, pragmatic: literal, conditions: [phone], features: [numbers] }
+  - id: dk-pickup-fifteen
+    lv: 3
+    type: next
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Hi! Picking up? Yes, for Kid Cat. Is my prescription ready? It is! That's $15 with your insurance. Oh, and take it with food."
+    ja: "よかった。カードでお願いします。"
+    note: "fifTEEN＝15ドル。後ろが 強い"
+    choices: ["Great. Here's my card.", "With food? Can I eat here?", "Fifty? That's a lot."]
+    answer: 0
+    cja: ["よかった。カードでお願いします。", "食べ物と？ ここで食べていいの？", "50ドル？ 高いですね。"]
+    why: "fifteen（15ドル）は後ろを強く長く言う。fifty（50ドル）と聞き違えない。with food は飲み方の注意で、ここで食べる話ではない。払うのが自然。"
+    ctx: "薬局のカウンターで、薬を受け取ります"
+    focus: "That's $15 with your insurance."
+    ask: "次の ひとことは？"
+    scene: pharmacy
+    tags: { seed: 13, register: service, pragmatic: literal, features: [numbers, teen-ty] }
+    lines:
+      - { who: tia, cast: us-f4, en: "Hi! Picking up?", ja: "こんにちは！ お受け取りですか？" }
+      - { who: kid-cat, cast: us-m1, en: "Yes, for Kid Cat. Is my prescription ready?", ja: "はい、キッド・キャットです。薬はできていますか？" }
+      - { who: tia, cast: us-f4, en: "It is! That's $15 with your insurance. Oh, and take it with food.", tts: "It is! That's fifteen dollars with yer insurance. Oh, and take it with food.", ja: "できてます！ 保険適用で15ドルです。あ、食事と一緒に飲んでくださいね。" }
+  # ---- おと: numbers and the clinic's words ----
+  - id: kw-twice-a-day
+    lv: 3
+    type: word
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Take one twice a day, okay?"
+    ja: "1日2回、1錠ずつ飲んでね。"
+    note: "twice a day が「トワイサデイ」と つながる"
+    choices: ["twice a day", "two a day", "twice today"]
+    answer: 0
+    cja: ["1日2回", "1日2つ", "今日2回"]
+    why: "twice a day はつながって「トワイサデイ」。two a day は「1日2つ」、twice today は「今日2回」で意味が違う。"
+    focus: "twice a day"
+    marks: [[link, "twice a day"]]
+  - id: kw-allergic-to
+    lv: 3
+    type: word
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "Are you allergic to anything?"
+    tts: "Are ya allergic ta anything?"
+    ja: "何かアレルギーはありますか？"
+    note: "allergic は 真ん中が 強い「アラージック」"
+    choices: ["allergic to", "energetic", "a logic to"]
+    answer: 0
+    cja: ["〜にアレルギーがある", "元気な", "〜の理屈"]
+    why: "allergic は真ん中の ler を強く「アラージック」と言う。日本語のアレルギーとは音が違う。to も弱く「タ」。"
+    focus: "allergic to"
+    marks: [[stress, "allergic"], [say, "to", "ta"]]
+  - id: kw-two-fifteen
+    lv: 3
+    type: word
+    speaker: olivia
+    voice: us
+    cast: us-f4
+    en: "Can you come in at 2:15?"
+    tts: "Can ya come in at two-fifteen?"
+    ja: "2時15分に来られますか？"
+    note: "fifTEEN は 後ろが 強く 長い"
+    choices: ["2:15", "2:50", "2:05"]
+    answer: 0
+    cja: ["2時15分", "2時50分", "2時5分"]
+    why: "fifteen は後ろの teen を強く長く言う。fifty は前の fif が強く、最後が短い「フィフティ」。2時5分なら two-oh-five と言う。"
+    focus: "2:15"
+    marks: [[say, "2:15", "two-fifTEEN"]]
+  - id: kw-thirteenth
+    lv: 3
+    type: word
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "My appointment's on the 13th."
+    tts: "My appointment's on the thirteenth."
+    ja: "予約は13日です。"
+    note: "thirTEENth。30th は 前が 強い"
+    choices: ["13th", "30th", "3rd"]
+    answer: 0
+    cja: ["13日", "30日", "3日"]
+    why: "thirteenth は teen を強く長く言う。thirtieth（30日）は前の thir が強く、「ティエス」と短い。third（3日）は一音節。"
+    focus: "13th"
+    marks: [[say, "13th", "thirTEENth"]]
+  - id: kw-with-food
+    lv: 3
+    type: word
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Take it with food, okay?"
+    tts: "Take it with food, 'kay?"
+    ja: "食事と一緒に飲んでね。"
+    note: "with と without は 最後の out で 決まる"
+    choices: ["with food", "without food", "with fruit"]
+    answer: 0
+    cja: ["食事と一緒に", "空腹で", "果物と一緒に"]
+    why: "with food は「ウィズフード」。without なら「ウィザウト」と out が入り、意味は逆（空腹で）。fruit は「フルート」と r の音がある。"
+    focus: "with food"
+  - id: kw-prescription
+    lv: 3
+    type: word
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Your prescription's ready."
+    tts: "Yer prescription's ready."
+    ja: "お薬ができていますよ。"
+    note: "prescription＝処方薬。最初の pre を 聞く"
+    choices: ["prescription's ready", "description's ready", "subscription's ready"]
+    answer: 0
+    cja: ["処方薬ができた", "説明ができた", "定期購入ができた"]
+    why: "prescription は最初が pre の「プリスクリプション」。description（説明）は de、subscription（定期購入）は sub で始まる。"
+    focus: "prescription's ready"
+  # ---- じっせん: fast phone and a busy counter ----
+  - id: dk-fast-late-doc
+    lv: 3
+    type: gist
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Hi, this is Sunny Clinic calling for Bea. Dr. Julian's running late today, so we need to push your 3:40 to 4:15. Is that okay? Sorry, it's loud here. Did you say 4:50? 4:15. A quarter after four. And bring your insurance card, please."
+    ja: "予約が4時15分になった。"
+    note: "push your 3:40 to 4:15＝3:40 を 4:15 に ずらす"
+    choices: ["Her appointment is now at 4:15.", "Her appointment is now at 4:50.", "Her appointment is still at 3:40."]
+    answer: 0
+    cja: ["予約は4時15分になった。", "予約は4時50分になった。", "予約は3時40分のまま。"]
+    why: "先生が遅れているので、3時40分を4時15分にずらした。fifty と聞き返されて A quarter after four（4時15分）と言い直している。保険証も持っていく。"
+    ctx: "外を歩いていると、クリニックから電話です"
+    focus: "push your 3:40 to 4:15"
+    ask: "予約は 何時？"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: street }
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone, street], features: [numbers, teen-ty] }
+    lines:
+      - { who: pashmina, cast: us-f5, en: "Hi, this is Sunny Clinic calling for Bea. Dr. Julian's running late today, so we need to push your 3:40 to 4:15. Is that okay?", tts: "Hi, this is Sunny Clinic callin' for Bea. Dr. Julian's runnin' late today, so we need ta push yer three-forty to four-fifteen. Is that okay?", ja: "もしもし、サニークリニックです、ビーさんですか。今日はジュリアン先生が遅れていて、3時40分のご予約を4時15分にずらしたいのですが、よろしいですか？" }
+      - { who: bea, cast: us-f1, en: "Sorry, it's loud here. Did you say 4:50?", tts: "Sorry, it's loud here. Did you say four-fifty?", ja: "すみません、こっちうるさくて。4時50分って言いました？" }
+      - { who: pashmina, cast: us-f5, en: "4:15. A quarter after four. And bring your insurance card, please.", tts: "Four-fifteen. A quarter after four. And bring yer insurance card, please.", ja: "4時15分、4時を15分過ぎたところです。それと保険証をお持ちください。" }
+  - id: km-fast-dosage
+    lv: 3
+    type: mean
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "Okay, so, two now, then one every eight hours, but no more than four in a day. And with food if you can."
+    tts: "Okay, so, two now, then one every eight hours, but no more than four in a day. An' with food if ya can."
+    ja: "今2錠、そのあと8時間ごとに1錠。1日4錠まで。"
+    note: "no more than four＝4錠 まで"
+    choices: ["Two now, then one every eight hours, four a day at most.", "Two every eight hours, all day.", "Four now, then wait eight hours."]
+    answer: 0
+    cja: ["今2錠、その後8時間ごとに1錠。1日4錠まで。", "8時間ごとに2錠ずつ、一日中。", "今4錠飲んで、8時間待つ。"]
+    why: "最初だけ two now（今2錠）、その後は8時間ごとに1錠。no more than four in a day は「1日4錠まで」。数字の役割を聞き分ける。"
+    ctx: "混んだ薬局で、早口で説明されました"
+    ask: "つまり、どういう こと？"
+    scene: pharmacy
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 13, register: service, pragmatic: literal, features: [numbers] }
+  - id: kn-fast-callback
+    lv: 3
+    type: num
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Any questions, call us back at 555-0174. Sorry, I meant 0147. I always flip those."
+    tts: "Any questions, call us back at five five five, oh one seven four. Sorry, I meant oh one four seven. I always flip those."
+    ja: "質問があれば555-0174に。すみません、0147でした。いつも逆にしちゃうんです。"
+    note: "I meant の あとが 正しい 番号"
+    choices: ["555-0147", "555-0174", "555-1047"]
+    answer: 0
+    cja: ["555の0147", "555の0174", "555の1047"]
+    why: "最初の oh one seven four は言い間違いで、I meant oh one four seven と訂正した。番号の oh はゼロ。flip は「入れ替える」。"
+    ctx: "クリニックから、折り返し先を聞いています"
+    ask: "電話番号は？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: heavy }
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [numbers, self-repair] }
+  - id: kr-fast-twenty
+    lv: 3
+    type: reply
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "We just had a cancellation. Can you come in in like twenty minutes? Otherwise it's next Tuesday."
+    tts: "We just had a cancellation. Can ya come in in like twenty minutes? Otherwise it's next Tuesday."
+    ja: "今キャンセルが出ました。20分後くらいに来られますか？ 無理なら来週の火曜になります。 →「はい！ すぐ向かいます。」"
+    note: "come in in twenty minutes＝20分後に 来る"
+    choices: ["Yes! I'm on my way.", "In twenty days? Sure.", "Tuesday's too soon, sorry."]
+    answer: 0
+    cja: ["はい！ すぐ向かいます。", "20日後？ いいですよ。", "火曜は早すぎます、すみません。"]
+    why: "come in in like twenty minutes は「20分後くらいに来られる？」。in が二つ続く。来週火曜より早く診てもらえるので、すぐ行くのが自然。"
+    ctx: "外出先に、クリニックから急な電話です"
+    scene: street
+    channel: phone
+    cond: { kind: phone, level: heavy, bed: street }
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone, street], features: [numbers] }
+  - id: km-fast-processing
+    lv: 3
+    type: mean
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "So, your prescription's not quite ready. The insurance is still processing. Give it like an hour?"
+    tts: "So, yer prescription's not quite ready. The insurance is still processin'. Give it like an hour?"
+    ja: "保険の手続き中なので、1時間ほどでできる。"
+    note: "Give it an hour?＝1時間 待って"
+    choices: ["It'll be ready in about an hour.", "Your insurance said no.", "You need to see the doctor again."]
+    answer: 0
+    cja: ["1時間ほどでできる。", "保険が使えないと言われた。", "もう一度、医者に診てもらう必要がある。"]
+    why: "not quite ready は「もう少しかかる」。保険の手続きがまだなだけで、断られたのではない。Give it like an hour は「1時間くらい待って」。"
+    ctx: "混んだ薬局で、薬を受け取りに来ました"
+    ask: "つまり、どういう こと？"
+    scene: pharmacy
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 13, register: service, pragmatic: literal, features: [numbers] }
+  - id: dk-fast-birthday
+    lv: 3
+    type: next
+    speaker: pashmina
+    voice: us
+    cast: us-f5
+    en: "Next! Hi, checking in? Name and date of birth? Dom. July 30th. Sorry? July 13th?"
+    ja: "いいえ、30日です。3と0。"
+    note: "thirTIETH と thirTEENTH。数字で 言い直す"
+    choices: ["No, the 30th. Three-zero.", "Yes, the 13th. Thanks.", "No, I'm thirty."]
+    answer: 0
+    cja: ["いいえ、30日です。3と0。", "はい、13日です。どうも。", "いえ、30歳です。"]
+    why: "受付は13日と聞き違えた。thirtieth と thirteenth はまぎらわしいので、Three-zero と数字で言い直すのが確実。年齢の話ではない。"
+    ctx: "混んだクリニックの受付で、名前を言いました"
+    focus: "Sorry? July 13th?"
+    ask: "次の ひとことは？"
+    scene: pharmacy
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 14, register: service, pragmatic: literal, features: [numbers, teen-ty] }
+    lines:
+      - { who: pashmina, cast: us-f5, en: "Next! Hi, checking in? Name and date of birth?", ja: "次の方！ 受付ですか？ お名前と生年月日を。" }
+      - { who: dom, cast: us-m1, en: "Dom. July 30th.", tts: "Dom. July thirtieth.", ja: "ドムです。7月30日。" }
+      - { who: pashmina, cast: us-f5, en: "Sorry? July 13th?", tts: "Sorry? July thirteenth?", ja: "え？ 7月13日？" }
+lessons:
+  v: 1
+  deai: [dk-booking, dk-pharmacy-pick, kr-allergic, km-with-food, kn-dose, kr-insurance]
+  bamen: [dk-move-appt, kr-cancellation, km-forms-early, kn-copay, dk-penicillin, km-not-ready]
+  check: [dk-dentist-day, kr-one-pill, km-waitlist, kn-room, kr-ten-early, dk-pickup-fifteen]
+  oto: [kw-twice-a-day, kw-allergic-to, kw-two-fifteen, kw-thirteenth, kw-with-food, kw-prescription]
+  jissen: [dk-fast-late-doc, km-fast-dosage, kn-fast-callback, kr-fast-twenty, km-fast-processing, dk-fast-birthday]
+tiers:
+  dk-booking:
+    easy: { choices: ["Thursday at 10:15.", "Thursday at 10:50."], answer: 0, cja: ["木曜の10時15分。", "木曜の10時50分。"] }
+    hard: { choices: ["Thursday at 10:15, a few minutes early.", "Thursday at 10:15, fifteen minutes early.", "Thursday at 10:50, a few minutes early.", "Tuesday at 10:15, a few minutes early."], answer: 0, cja: ["木曜の10時15分。数分早めに。", "木曜の10時15分。15分早めに。", "木曜の10時50分。数分早めに。", "火曜の10時15分。数分早めに。"] }
+  kn-dose:
+    easy: { choices: ["3 times", "7 times"], answer: 0, cja: ["3回", "7回"] }
+  km-fast-dosage:
+    hard: { choices: ["Two now, then one every eight hours, four a day at most.", "One now, then two every eight hours, four a day at most.", "Two every eight hours, all day.", "Two now, then one every four hours, eight a day at most."], answer: 0, cja: ["今2錠、その後8時間ごとに1錠。1日4錠まで。", "今1錠、その後8時間ごとに2錠。1日4錠まで。", "8時間ごとに2錠ずつ、一日中。", "今2錠、その後4時間ごとに1錠。1日8錠まで。"] }
