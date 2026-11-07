@@ -35,8 +35,9 @@ export function withImages(set: (ix: FoodImageIndex) => void): () => void {
 /** The catalog if it is in already (else null: open from the snapshot, swap the catalog's portions in later). */
 export const foodDbNow = (): FoodDb | null => ready;
 
-/** Whose day ごはん shows (null: this phone's person), kept for the session as けんこう's (healthLast). */
-export const foodLast: { who: Who | null } = { who: null };
+/** Whose day ごはん shows (null: this phone's person), kept for the session as けんこう's (healthLast); the summary's
+ *  くわしく open or not, likewise. */
+export const foodLast: { who: Who | null; more: boolean } = { who: null, more: false };
 
 /** Grams as typed: one decimal at most, no trailing `.0`. */
 export const gramsText = (g: number): string => String(Math.round(g * 10) / 10);

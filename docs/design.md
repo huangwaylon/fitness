@@ -367,10 +367,12 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   person first, then the others (the guest once it has logged a meal, or on its own phone); kept for the session.
   Then (きろく) a sticky row: ‹ the day (「11/4(水)」) › and きょう; › goes past today only to tomorrow, and only when a
   いつもの fills it (read-only: a look at what comes).
-- **Summary card:** この日の カロリー, the day's kcal large; the person's kcal goal at the upper right (「- - 目標 2,200
+- **Summary card:** three short rows, so every meal's ＋ shows on opening (393 × 852): the day's kcal large (この日の
+  カロリー its name for a screen reader) with the person's kcal goal at its right (「- - 目標 2,200
   kcal 前後 ✎」, set there on my day: けんこう's [goals in place](#goals-in-place)) and, with one, a bar in the person's
-  colour and, today, あと N kcal / N kcal オーバー, a past day 目標より N kcal 少なめ / 多め; coral only past 20 % over
-  (the lifter's surplus is no fault). Then たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, each with its goal and direction when there is
+  colour with, at its end, today あと N kcal / N kcal オーバー, a past day 目標より N kcal 少なめ / 多め; coral only past 20 %
+  over (the lifter's surplus is no fault); then one line, 「P 11.6 g F 5.1 g C 61.8 g 塩分 0.5 g」 (a value past its
+  ceiling coral), and 「くわしく ⌄」: a `<details>` (open or not kept for the session) holding the rest. In it たんぱく質 · 脂質 · 炭水化物 · 塩分 in grams, each with its goal and direction when there is
   one (「目標 110 g 以上」, 「目標 60 g 以下」, 「目標 250 g 前後」, 「目標 7.0 g 以下」; set on グラフ; it wraps only after 目標) and a small bar, coral once past
   a ceiling (an at-most goal, or a near-a-value one past its band: `goalOver`); then 食物繊維 (「–」 データなし while no entry
   knows its fibre: an older entry, most products) and, on a day with any, アルコール. Under them the **PFC balance**

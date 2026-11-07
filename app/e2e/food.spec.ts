@@ -69,6 +69,23 @@ test('the bowl sits in the top-right cluster, between the dumbbell and the leaf;
   await expect.poll(() => kcalOf(page)).toBe(before);
 });
 
+// On opening, an iPhone 15's whole screen (393 × 852) shows every meal's ＋: the summary is three short rows (the kcal and
+// the goal, the bar and あと N, one line of P · F · C · 塩分), the tiles and the PFC behind くわしく (kept for the session).
+test('the summary folds its details: every meal’s ＋ on screen at 393 × 852; くわしく opens the tiles and the PFC', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 });
+  await openFood(page, '', '&date=2026-11-04T08:00'); // the morning: breakfast in (the review's measure)
+  for (const k of ['b', 'l', 'd', 's']) await expect(sheet(page).locator(`[data-add=${k}]`)).toBeInViewport({ ratio: 1 });
+  const more = sheet(page).locator('[data-food-more]');
+  await expect(more.locator('[data-line]')).toHaveText([/^P.* [\d.]+ g$/, /^F/, /^C/, /^塩分/]); // (each named in full for a screen reader)
+  await expect(more.locator('[data-nutrient=p]')).toBeHidden();
+  await more.locator('summary').click();
+  await expect(more.locator('[data-nutrient=p]')).toBeVisible();
+  await expect(more.locator('[data-pfc=day]')).toBeVisible();
+  await sheet(page).locator('[data-add=b]').click(); // a level and back: still open
+  await sheet(page).getByRole('button', { name: '戻る' }).click();
+  await expect(more.locator('[data-nutrient=p]')).toBeVisible();
+});
+
 // WebKit's text field is ~20 characters wide by itself: in an auto grid track it pushed the search box and the rows past
 // the sheet's right edge on an iPhone 15 (the sheet clips them). Each level is checked: nothing wider than the sheet.
 test('the day, the search and the amount all fit the sheet’s width', async ({ page }) => {
