@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MAP_META_CACHE, PHOTO_CACHE, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -17,6 +17,15 @@ describe('service worker cache generations', () => {
   it('a new install copies its unchanged chunks from the older shells, the newest first', () => {
     expect(olderShells(['island-fonts-v1', 'island-shell-1', 'island-shell-2', 'island-shell-3'], 'island-shell-3')).toEqual(['island-shell-2', 'island-shell-1']);
     expect(olderShells(['island-shell-1'], 'island-shell-1')).toEqual([]);
+  });
+
+  it('never drops a saved map area (offline phase B), nor lets the seen tiles\' bound reach one', () => {
+    const keys = ['island-offline-trip-nz', 'island-shell-1', 'island-offline-trail-lake-22', 'island-shell-2', 'island-shell-3'];
+    expect(staleCaches(keys, 'island-shell-3', keep)).toEqual(['island-shell-1']);
+    expect(isSavedArea('island-offline-trip-nz')).toBe(true);
+    expect(isSavedArea(TILE_CACHE)).toBe(false);
+    // the bound's index holds the seen tiles only: an area's tiles are never in it
+    expect(bytesEvict({ a: [70_000_000, 1] }, 10, 60_000_000)).toEqual(['a']);
   });
 
   it('drops caches from older schemes', () => {
@@ -577,5 +586,30 @@ describe("ごはん's picture fetches (foodImgFetch)", () => {
     await settled();
     offline = true;
     expect(await get('index.json')).toContain('22222222');
+  });
+});
+
+describe('saved areas in the worker (offline phase B)', () => {
+  const key = 'https://tiles.openfreemap.org/planet/_/12/3629/1612.pbf';
+  it('a tile from the first saved area holding it; an area not there is never made', async () => {
+    const asked: { key: string; cacheName?: string }[] = [];
+    const held: Record<string, string> = { 'island-offline-b': 'B' };
+    const store = { match: async (k: string, o?: { cacheName?: string }) => (asked.push({ key: k, cacheName: o?.cacheName }), held[o?.cacheName ?? ''] ? new Response(held[o!.cacheName!]) : undefined) };
+    const hit = await savedTile(store, ['island-offline-a', 'island-offline-b', 'island-offline-c'], key);
+    expect(await hit?.text()).toBe('B');
+    expect(asked.map((a) => a.cacheName)).toEqual(['island-offline-a', 'island-offline-b']);
+    expect(await savedTile(store, [], key)).toBeUndefined();
+  });
+
+  it("the page's save fetch: OpenFreeMap's from the network without the header; a raster tile's seen copy first", async () => {
+    const nets: Request[] = [];
+    const net = async (r: Request) => (nets.push(r), new Response('net'));
+    const seen = { match: async () => new Response('seen') };
+    const ofm = new Request('https://tiles.openfreemap.org/planet/20261101_080013_pt/12/3629/1612.pbf', { headers: { 'x-island-save': '1' } });
+    expect(await (await saveFetch(ofm, seen, key, net)).text()).toBe('net');
+    expect(nets[0].headers.has('x-island-save')).toBe(false);
+    const usgs = 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/14/5000/2600';
+    expect(await (await saveFetch(new Request(usgs), seen, usgs, net)).text()).toBe('seen');
+    expect(await (await saveFetch(new Request(usgs), { match: async () => undefined }, usgs, net)).text()).toBe('net');
   });
 });

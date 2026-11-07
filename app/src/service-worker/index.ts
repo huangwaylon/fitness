@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -93,7 +93,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, STT_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])) await caches.delete(key);
+      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, STT_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])) await caches.delete(key); // (never a saved area: caches.ts isSavedArea)
       await self.clients.claim();
     })()
   );
@@ -152,11 +152,24 @@ const listenUsed = boundedCache(LISTEN_CACHE, LISTEN_INDEX, (idx, now) => listen
 const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
 const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES));
 
-/** A map tile (its key: caches.ts tileKey) from the seen-tiles cache, else the network (kept after). The one place a
- *  tile is looked up: a cache of saved areas (offline phase B) goes before the seen tiles here, out of their LRU. */
-function serveTile(event: FetchEvent, key: string): Promise<Response> {
-  return caches.open(TILE_CACHE).then((cache) =>
-    swrFetch(event.request, cache, (r) => fetch(r), (p) => event.waitUntil(p), { key, freshMs: TILE_FRESH_MS, used: (k, n) => event.waitUntil(tileUsed(k, n).catch(() => {})) }));
+/** The saved areas' caches (offline phase B, lib/offline/save.ts), listed again at most every 2 s (a burst of tiles
+ *  asks once). */
+let areas: { at: number; names: Promise<string[]> } | null = null;
+const savedAreas = (): Promise<string[]> => {
+  if (!areas || Date.now() - areas.at > 2000) areas = { at: Date.now(), names: caches.keys().then((k) => k.filter(isSavedArea), () => []) };
+  return areas.names;
+};
+
+/** A map tile (its key: caches.ts tileKey): the saved areas' first (never revalidated: an area keeps the build it was
+ *  saved at, outside the seen tiles' bound), then the seen tiles, else the network (kept after). The one place a tile
+ *  is looked up. The page's own fetch of a tile to save (SAVE_HEADER) skips both: caches.ts saveFetch. */
+async function serveTile(event: FetchEvent, key: string): Promise<Response> {
+  const seen = await caches.open(TILE_CACHE);
+  if (event.request.headers.has(SAVE_HEADER)) return saveFetch(event.request, seen, key, (r) => fetch(r));
+  const saved = await savedTile(caches, await savedAreas(), key);
+  if (saved) return saved;
+  // offline, a tile neither saved nor seen isn't asked of the network at all (a map past its saved area)
+  return swrFetch(event.request, seen, (r) => (self.navigator.onLine === false ? Promise.reject(new TypeError('offline')) : fetch(r)), (p) => event.waitUntil(p), { key, freshMs: TILE_FRESH_MS, used: (k, n) => event.waitUntil(tileUsed(k, n).catch(() => {})) });
 }
 
 /** Ours first (a static file may change under the same path), then the previous generation's. */
@@ -169,12 +182,14 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) {
-    // the maps' tiles, as a map draws them (never prefetched): kept, bounded (60 MB, least recently used out),
-    // refetched in the background past TILE_FRESH_MS; the TileJSON from the network within its TTL's rule
+    // the maps' tiles: a saved area's, else as a map draws them, kept, bounded (60 MB, least recently used out),
+    // refetched in the background past TILE_FRESH_MS; the TileJSON from the network within its TTL's rule, offline
+    // with none kept a saved area's copy (the build its tiles are)
     const tile = tileKey(url);
     if (tile) event.respondWith(serveTile(event, tile));
     else if (isTileJson(url)) {
-      event.respondWith(caches.open(MAP_META_CACHE).then((cache) => tileJsonFetch(req, cache, (r) => fetch(r), (p) => event.waitUntil(p))));
+      event.respondWith(caches.open(MAP_META_CACHE).then((cache) => tileJsonFetch(req, cache, (r) => fetch(r), (p) => event.waitUntil(p))).catch(() => null)
+        .then(async (res) => (res?.ok ? res : ((await savedTile(caches, await savedAreas(), req.url)) ?? res ?? Response.error()))));
     }
     return; // the relay (the record, the room): always live
   }
