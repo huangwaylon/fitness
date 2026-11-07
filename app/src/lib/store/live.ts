@@ -15,6 +15,7 @@ import { log, persistLog } from '#lib/sync/log.ts';
 import { pendingAcked } from './view.ts';
 import { world } from './world.svelte.ts';
 import { HOLD_MAX_MS, type Backend, type Host, type SendOptions, type SendResult } from './backend.ts';
+import { persistOnce } from '#lib/sync/persist.ts';
 
 /** Background refreshes (app becoming visible) at most this often. */
 const REFRESH_FLOOR_MS = 30_000;
@@ -171,6 +172,7 @@ export class LiveBackend implements Backend {
       this.#cache = r.cache;
       h.offline = false;
       h.lastSync = new Date();
+      persistOnce().catch(() => {});
       h.status = 'ready';
       h.changed();
       return;

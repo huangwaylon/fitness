@@ -51,6 +51,8 @@ export const LOG_EVENTS = {
   "ws.unacked": { src: 'c', f: { kind: 't', tries: 'n' } },
   "gl.lost": { src: 'c', f: { where: ['island', 'tent', 'other'], restored: 'b' } },
   "chunk.fail": { src: 'c', f: { reloaded: 'b' } },
+  // the installed app's storage kept from eviction (sync/persist.ts: asked once): granted, already so, and the quota's MB
+  "storage.persist": { src: 'c', f: { ok: 'b', was: 'b', useMb: 'n', quotaMb: 'n' } },
   "storage.fail": { src: 'c', f: { store: ['ls', 'idb', 'log'], kind: ['full', 'unavailable', 'blocked', 'other'] } },
   use: { src: 'c', f: { '*': 'n' } },
   "log.drop": { src: 'c', f: { n: 'n', why: ['cap', 'full', 'day', 'pending'] } },
