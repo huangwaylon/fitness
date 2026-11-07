@@ -45,20 +45,27 @@ export function onset(x: Float32Array, from: number, floorDb: number): number {
   return -1;
 }
 
+/** Mono PCM averaged down from `sr` to 16 kHz (whisper's input; the relay's WAV). */
+export function to16k(x: Float32Array, sr: number): Float32Array {
+  const step = sr / 16000, n = Math.floor(x.length / step), out = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const a = Math.floor(i * step), b = Math.max(a + 1, Math.floor((i + 1) * step));
+    let s = 0;
+    for (let j = a; j < b; j++) s += x[j] ?? 0;
+    out[i] = s / (b - a);
+  }
+  return out;
+}
+
 /** A take as 16 kHz 16-bit mono WAV bytes (averaged down from `sr`). */
 export function wav16k(x: Float32Array, sr: number): Uint8Array {
-  const step = sr / 16000, n = Math.floor(x.length / step);
+  const y = to16k(x, sr), n = y.length;
   const out = new Uint8Array(44 + n * 2), v = new DataView(out.buffer);
   const tag = (o: number, s: string) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
   tag(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); tag(8, 'WAVE'); tag(12, 'fmt ');
   v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, 16000, true);
   v.setUint32(28, 32000, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); tag(36, 'data'); v.setUint32(40, n * 2, true);
-  for (let i = 0; i < n; i++) {
-    const a = Math.floor(i * step), b = Math.max(a + 1, Math.floor((i + 1) * step));
-    let s = 0;
-    for (let j = a; j < b; j++) s += x[j] ?? 0;
-    v.setInt16(44 + i * 2, Math.round(Math.max(-1, Math.min(1, s / (b - a))) * 32767), true);
-  }
+  for (let i = 0; i < n; i++) v.setInt16(44 + i * 2, Math.round(Math.max(-1, Math.min(1, y[i])) * 32767), true);
   return out;
 }
 

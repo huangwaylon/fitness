@@ -17,12 +17,18 @@ const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
 const FIRST_JS = 400 * 1024;
 const FIRST_CSS = 70 * 1024;
 const PRECACHE = 3 * 1024 * 1024;
+/** ききみみ's recogniser (docs/kikimimi-mic.md §3.6): its worker (`workers/stt.<hash>.js`: transformers.js and the ONNX
+ *  runtime's JS) is one file ≤ STT_JS gzipped, never precached, never in the first load; 2026-11-07: 136 KB. */
+const STT_JS = 450 * 1024;
 /** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). */
 const LAZY_NAMES = ['three.module'];
 const LAZY_SOURCES = [
   'src/lib/components/world3d/Island3D.svelte', 'src/lib/components/travel/TravelSheet.svelte', 'src/lib/components/hiking/HikingSheet.svelte',
-  'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/kikimimi/KikimimiSheet.svelte', 'src/lib/components/food/Food.svelte'
+  'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/kikimimi/KikimimiSheet.svelte', 'src/lib/components/food/Food.svelte',
+  'src/lib/components/kikimimi/mic/MicProbe.svelte'
 ];
+/** Nor any chunk of the mic's own code (lib/mic/). */
+const LAZY_DIRS = ['src/lib/mic/'];
 
 const base = (process.env.BASE_PATH ?? '').replace(/\/$/, '');
 const html = readFileSync(join(BUILD, 'index.html'), 'utf8');
@@ -60,7 +66,16 @@ for (const src of LAZY_SOURCES) {
   if (!c) fail.push(`no ${src} chunk in the build (it must stay lazy)`);
   else if (first.has(c.file)) fail.push(`${src} is in the first load (it must stay lazy)`);
 }
+for (const [src, c] of Object.entries(manifest)) if (LAZY_DIRS.some((d) => src.startsWith(d)) && first.has(c.file)) fail.push(`${src} is in the first load (it must stay lazy)`);
 for (const f of first) if (/\/maplibre\./.test(f)) fail.push(`${f} (MapLibre) is in the first load`);
+
+// the recogniser's worker: one file, its own line, never precached nor loaded first
+const workers = join(BUILD, '_app/immutable/workers');
+const stt = readdirSync(workers).filter((f) => /^stt\./.test(f)).map((f) => `_app/immutable/workers/${f}`);
+const sttGz = stt.length === 1 ? gzipSync(readFileSync(join(BUILD, stt[0]))).length : 0;
+if (stt.length !== 1) fail.push(`${stt.length} recogniser workers (_app/immutable/workers/stt.*.js; vite.config.ts stt-names): one expected`);
+else if (sttGz > STT_JS) fail.push(`the recogniser's worker is ${kb(sttGz)} gzipped (≤ ${kb(STT_JS)})`);
+for (const f of stt) if (first.has(f) || precachable(f)) fail.push(`${f} (the recogniser) is in the first load or the precache`);
 
 // the precache: what the worker fetches at install (its index.html and its own script aside)
 let pre = 0, preFiles = 0;
@@ -80,7 +95,7 @@ const walk = (d: string) => {
 walk(BUILD);
 if (pre > PRECACHE) fail.push(`the precache is ${kb(pre)} on the wire (≤ ${kb(PRECACHE)})`);
 
-console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files; precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire`);
+console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files; precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; the recogniser's worker ${kb(sttGz)}`);
 if (fail.length) {
   console.error(`load-budget: ${fail.join('; ')}`);
   process.exit(1);

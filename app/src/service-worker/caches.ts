@@ -289,17 +289,24 @@ const isHiking = (path: string): boolean => path.includes('/hiking/');
 /** The trip map's MapLibre: its chunk (`maplibre.*.js`, named so by vite.config.ts), its worker and its CSS (~1.8 MB
  *  in all): online only, like the tiles, so fetched when a map is drawn and never at install. */
 const isMapLibre = (path: string): boolean => /\/_app\/immutable\/(chunks\/maplibre\.|workers\/maplibre-gl-worker-|assets\/maplibre\.)/.test(path);
+/** ききみみ's recogniser (docs/kikimimi-mic.md §3.6): the model and the ONNX runtime under `/stt/`, and the worker that
+ *  runs them (`_app/immutable/workers/stt.<hash>.js` and its chunks, named so by vite.config.ts stt-names): never
+ *  precached (~67 MB; only a phone that opted in fetches any of it). The page fills STT_CACHE itself on the probe's
+ *  tap (lib/mic/models.ts ensureStt: the parts assembled and checked); the worker serves `/stt/` and the chunk from it
+ *  first and never stores, so a deploy never fetches it again and a phone that never opted in has 0 bytes of it. */
+export const STT_CACHE = 'island-stt-v1';
+export const isStt = (path: string): boolean => /^(\/[\w-]+)?\/stt\/|\/_app\/immutable\/workers\/(chunks\/)?stt\./.test(path);
 /** The two default villagers' art is precached (lib/villagers/look.ts DEFAULT_VILLAGER); the rest is cached on use. */
 const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
  *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: font subsets (cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the trips' photos (travel/), トレイル's photos and tracks (hiking/), the maps' MapLibre, the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the trips' photos (travel/), トレイル's photos and tracks (hiking/), the maps' MapLibre, the recogniser (stt/, STT_CACHE), the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isTravel(p) || isHiking(p) || isMapLibre(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isTravel(p) || isHiking(p) || isMapLibre(p) || isStt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 

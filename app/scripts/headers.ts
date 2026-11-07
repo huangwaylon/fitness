@@ -6,7 +6,8 @@
 //   trip map's locate button).
 // - Hashed files (`_app/immutable/`) are cached for a year, and so is the audio (`audio/`): every audio URL the app
 //   fetches carries its file's content hash (`?v=`, lib/sound/manifest.ts), and so are ごはん's picture sheets (`food-img/*.webp`:
-//   their names carry their content hash); everything else keeps Pages' default
+//   their names carry their content hash), and ききみみ's recogniser under `stt/<dir>/` (each dir carries its revision or
+//   version; functions/stt/[[path]].ts sets the same, its manifest.json revalidated); everything else keeps Pages' default
 //   (revalidated).
 // - index.html (the SPA shell every route opens with) preloads the island's page too: Kit's fallback page preloads
 //   only the root layout's chunks, so the island page's chunk and its own imports were asked for only once the
@@ -76,6 +77,9 @@ ${base}/audio/*
   Cache-Control: public, max-age=31536000, immutable
 
 ${base}/food-img/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+${base}/stt/:dir/*
   Cache-Control: public, max-age=31536000, immutable
 `;
 writeFileSync(join(root, '_headers'), headers);

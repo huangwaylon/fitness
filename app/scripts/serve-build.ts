@@ -33,6 +33,7 @@ const TYPES: Record<string, string> = {
   '.bin': 'application/octet-stream',
   '.pak': 'application/octet-stream',
   '.wasm': 'application/wasm',
+  '.mjs': 'text/javascript; charset=utf-8',
   '.txt': 'text/plain; charset=utf-8'
 };
 

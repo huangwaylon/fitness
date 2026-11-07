@@ -107,9 +107,11 @@ describe('src/lib folder boundaries', () => {
 
   it('imports only what its folder allows', () => {
     // art.ts and sound/manifest.ts bundle static/art/manifest.json and static/audio/manifest.json (outside src/lib),
-    // sound/kk.ts imports static/audio/kk.json (its own chunk): the only allowed reaches outside.
+    // sound/kk.ts imports static/audio/kk.json (its own chunk), the mic's recogniser the service worker's STT cache's
+    // name (service-worker/caches.ts STT_CACHE, the cache it fills): the only allowed reaches outside.
     const outside = (e: { from: string; to: string }) =>
-      (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && /static\/audio\/(manifest|kk)\.json$/.test(e.to));
+      (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && /static\/audio\/(manifest|kk)\.json$/.test(e.to)) ||
+      (e.from === 'mic' && e.to.endsWith('service-worker/caches.ts'));
     const bad = edges
       .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -81,6 +81,13 @@ describe('precache', () => {
     for (const p of ['_app/immutable/chunks/maplibre.D4lzds31.js', '/fitness/_app/immutable/workers/maplibre-gl-worker-Br3j0JGE.js', '_app/immutable/assets/maplibre.qvkd0SPb.css']) expect(precachable(p)).toBe(false);
     // the map's own light component and the rest of the chunks stay
     for (const p of ['_app/immutable/chunks/LRf9-Dmh.js', '_app/immutable/assets/TravelSheet.oVavZwKD.css']) expect(precachable(p)).toBe(true);
+  });
+  it("leaves ききみみ's recogniser out (the model, the runtime, its worker): only a phone that opted in fetches it", () => {
+    const stt = ['stt/manifest.json', '/stt/whisper-tiny.en@2575352d/onnx/encoder_model_quantized.onnx.e93ec822.p0', '/fitness/stt/ort/1.31.0/ort-wasm-simd-threaded.asyncify.mjs',
+      '_app/immutable/workers/stt.CGicPfKg.js', '/fitness/_app/immutable/workers/chunks/stt.Bx1.js'];
+    for (const p of stt) expect([isStt(p.startsWith('/') ? p : `/${p}`), precachable(p)]).toEqual([true, false]);
+    // the probe's own worker and chunks, and a path that merely holds the letters, stay
+    for (const p of ['_app/immutable/workers/gpu.worker-CRCDFGqX.js', '/sttx/a.json', '/fitness/art/x/stt/y.webp', '_app/immutable/chunks/stt-Ab1.js']) expect([isStt(p.startsWith('/') ? p : `/${p}`), precachable(p)]).toEqual([false, true]);
   });
   it('leaves the app icons out: the OS fetches them when the app is added', () => {
     // the tent's room: its models, surfaces and icons, cached on first use (megabytes: never at install)
