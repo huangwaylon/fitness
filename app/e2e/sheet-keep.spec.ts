@@ -1,5 +1,5 @@
 // The sheets kept mounted between openings (Sheet's `keep`, ui-state/keptSheets.ts; docs/perf-plan.md A5): けんこう,
-// けっこんしき, りょこう and トレイル's list. A reopening is the same content, not built again, and still as an opening
+// ごはん, けっこんしき, りょこう and トレイル's list. A reopening is the same content, not built again, and still as an opening
 // should be (けんこう on 1週 · かつどう at its top, its charts drawn in the first frame); at most three kept, the least
 // recently opened let go; a level holding a map (りょこう's 地図, a trail) let go at the close.
 import { expect, test, type Page } from './fixtures.ts';
@@ -44,6 +44,94 @@ test('けんこう reopened: the same content, its charts in the first frame, at
   await expect(sheet(page).locator('.health[data-kept-tag]')).toHaveCount(1);
   await expect(sheet(page).locator('.health select[data-pick=period]')).toHaveValue('week');
   await expect(sheet(page).locator('[data-group=activity]')).toHaveAttribute('aria-pressed', 'true');
+});
+
+const bowl = (page: Page) => page.getByRole('button', { name: 'ごはん', exact: true });
+const FOOD = '?demo&date=2026-11-04T12:30&critter=none&visitor=none';
+async function openFood(page: Page) {
+  await bowl(page).click();
+  await expect(sheet(page).locator('[data-food-summary]')).toBeVisible();
+}
+
+test('ごはん reopened: the same content in the first frame; an opening’s resets (きろく, today, no level, 出典 closed, the top); whose day and くわしく kept', async ({ page }) => {
+  await page.goto(FOOD);
+  await expect(bowl(page)).toBeVisible({ timeout: 15_000 });
+  await openFood(page);
+  const s = sheet(page);
+  await tag(page, '[data-food-summary]');
+  // whose day and くわしく: the session's; the past day, 出典 and the scroll: this opening's
+  await s.locator('[data-food-more] summary').click();
+  await s.locator('select[data-pick=who]').selectOption('B');
+  await s.locator('[data-nav=back]').click();
+  await expect(s.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-03');
+  await s.locator('[data-food-credits] button').click();
+  await s.locator('[data-food-sheet]').evaluate((el) => el.scrollTo({ top: 400 }));
+  await closed(page);
+  // the tap, and the first frame the sheet shows: the day there already (not built again)
+  const first = await bowl(page).evaluate((b) => new Promise<boolean>((r) => {
+    const f = () => (document.querySelector('dialog[open]') ? r(!!document.querySelector('dialog[open] [data-food-summary]')) : requestAnimationFrame(f));
+    requestAnimationFrame(() => {
+      (b as HTMLElement).click();
+      requestAnimationFrame(f);
+    });
+  }));
+  expect(first).toBe(true);
+  await expect(s.locator('[data-food-summary][data-kept-tag]')).toHaveCount(1);
+  await expect(s.locator('[data-food-date]')).toHaveAttribute('data-food-date', '2026-11-04');
+  await expect(s.locator('select[data-pick=who]')).toHaveValue('B');
+  await expect(s.locator('[data-food-credits] button')).toHaveAttribute('aria-expanded', 'false');
+  await expect.poll(() => s.locator('[data-food-sheet]').evaluate((el) => el.scrollTop)).toBe(0);
+  await s.locator('select[data-pick=who]').selectOption('A');
+  await expect(s.locator('[data-food-more]')).toHaveAttribute('open', '');
+  // グラフ, closed: きろく again
+  await s.locator('[data-tab=chart]').click();
+  await closed(page);
+  await openFood(page);
+  await expect(s.locator('[data-tab=log]')).toHaveAttribute('aria-pressed', 'true');
+  // a meal's search, a query and a row opened in place under it, closed: the day, nothing of it left
+  await s.locator('[data-add=d]').click();
+  await s.locator('[data-food-q]').fill('卵');
+  await s.locator('[data-food-results] [data-item="mext:12004"]').click({ timeout: 15_000 });
+  await expect(s.locator('[data-food-open-add]')).toBeVisible();
+  await s.locator('.navbar button.nav.close').click(); // (✕: Esc closes the row first, the sheet stays)
+  await expect(s).toHaveCount(0);
+  await openFood(page);
+  await expect(s.locator('.navbar h2')).toHaveText('ごはん');
+  await expect(s.locator('[data-food-q], [data-food-open-add]')).toHaveCount(0);
+  // an amount with 100gあたり open, closed: the day; the next amount's 100gあたり closed
+  await s.locator('section[data-meal=b] button[data-entry]').first().click();
+  await s.locator('[data-food-per]').click();
+  await expect(s.locator('[data-food-per]')).toHaveAttribute('aria-expanded', 'true');
+  await closed(page);
+  await openFood(page);
+  await expect(s.locator('[data-food-per]')).toHaveCount(0);
+  await s.locator('section[data-meal=b] button[data-entry]').first().click();
+  await expect(s.locator('[data-food-per]')).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('ごはん kept closed: an entry logged on the other phone meanwhile shows on the reopening', async ({ context, page }) => {
+  await page.goto(FOOD);
+  await expect(bowl(page)).toBeVisible({ timeout: 15_000 });
+  await openFood(page);
+  await tag(page, '[data-food-summary]');
+  const dinner = sheet(page).locator('section[data-meal=d] [data-entry]');
+  const n0 = await dinner.count();
+  await closed(page);
+  // the other phone (the demo's second tab, the same person: its record shared through localStorage) logs ごはん
+  const other = await context.newPage();
+  await other.goto(FOOD);
+  await expect(bowl(other)).toBeVisible({ timeout: 15_000 });
+  await openFood(other);
+  await sheet(other).locator('[data-add=d]').click();
+  await sheet(other).locator('[data-food-q]').fill('ごはん');
+  await sheet(other).locator('[data-food-results] li:has([data-item="mext:01088"]) [data-quick]').click({ timeout: 15_000 });
+  await expect(sheet(other).locator('[data-food-added] [data-added]')).toHaveCount(1);
+  await other.close();
+  await page.bringToFront();
+  await openFood(page);
+  await expect(sheet(page).locator('[data-food-summary][data-kept-tag]')).toHaveCount(1);
+  await expect(dinner).toHaveCount(n0 + 1);
+  await expect(dinner.last()).toContainText('ごはん（精白米）');
 });
 
 test('three kept at most: the least recently opened let go', async ({ page }) => {

@@ -1,12 +1,12 @@
 <script lang="ts">
   // データの出典: the food data's credits (each dataset's label, attribution and license, and the verify sources),
   // required by the data's licenses. A quiet row at the foot of the day; opened, it fetches the catalog (as the search
-  // does) and lists credits(db).
+  // does) and lists credits(db). `open`: Food's, closed again at each opening (the sheet kept mounted).
   import { credits, type Credit } from '#lib/food/index.ts';
   import { t } from '#lib/i18n/index.ts';
   import { foodDb } from './foodUi.ts';
 
-  let open = $state(false);
+  let { open = $bindable(false) }: { open?: boolean } = $props();
   let list = $state.raw<Credit[] | null>(null);
   let failed = $state(false);
 
