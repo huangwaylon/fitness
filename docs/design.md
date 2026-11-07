@@ -24,8 +24,8 @@ Modules: `contract/` (shared with the script) · `config/rules.ts` · `scoring/`
 ## Simplicity rules
 
 - No tab bar: 島 (the island), the health popup (tap the dumbbell: けんこう), the meal log (tap the bowl: ごはん), and
-  behind the HUD menu's leaf the one panel for the ベル (its 「ベル 121」 row: ごほうび, no tabs), the ずかん, えいご
-  ききとり (ききみみ クイズ), りょこう ([Trips](#trips)), けっこんしき (the wedding board: [wedding.md](wedding.md)), トレイル (the hiking trails:
+  behind the HUD menu's leaf the one panel for the ベル (its 「ベル 121」 row: ごほうび, no tabs), the ずかん, ききみみ
+  (English listening: ききみみ クイズ), りょこう ([Trips](#trips)), けっこんしき (the wedding board: [wedding.md](wedding.md)), トレイル (the hiking trails:
   [hiking.md](hiking.md)) and せってい, each its own sheet.
 - One focal point per screen (島: the island itself, the sky clean, the leaf the door to the rest; ごほうび: the
   balance, today's ベル under it).
@@ -70,7 +70,7 @@ scrolls it from まえ (home, the health lawn) back to おく, two pinch the zoo
   user found it slow; they fold away in a 100ms fade), right-aligned under the leaf (along the screen's side), the same width:
   **ベル 121** (the shared wallet's balance in the app's number font, no icon: the number is the picture) →
   [the panel](#panel) (ごほうび; `aria-expanded` while it's open), **ずかん** (NH's agrias butterfly) →
-  [the ずかん](#zukan), **えいご ききとり** (しずえ's head) → [ききみみ クイズ](#ききみみ-クイズ) (「さそわれています！」 under
+  [the ずかん](#zukan), **ききみみ** with its small 「えいご」 (しずえ's head) → [ききみみ クイズ](#ききみみ-クイズ) (「さそわれています！」 under
   its name, and a coral dot on the folded leaf, while someone's invite is live) and **せってい** (a gear in the say
   button's soft brown: NH has no settings icon) →
   [せってい](#panel). Each pill is 44px tall, its name then its icon or number (a word as well as a picture: an icon
@@ -2548,41 +2548,30 @@ scale (about half a villager tall): on its day a tap plays the tape (the 3D vill
 `warmup`, `sidebend`, `jump`); any other time a tap says when it plays, or that today's is done, and no ♪ floats.
 
 ### ききみみ クイズ
-An English listening game for the players (A, B and the guest), for Japanese speakers learning English; the full spec
-is [kikimimi.md](kikimimi.md). The HUD menu's pill 「えいご ききとり」, above せってい (the guest's too), opens its full-height sheet
-(`components/kikimimi/KikimimiSheet.svelte`, its own chunk with the bank, the deck, the session and its strings
-`i18n/kikimimi.*.json`); the tap itself starts the voice session (`invite.svelte.ts` wakeQuizVoice → sound `voiceSession(true)`, before the pill's
-press beat; openQuiz after it), so
-the clips play with the silent switch on. The always-loaded part is `KikimimiHost.svelte` in the island scene: a listener
-on the scene's one Live (`relay ?? demoRelay`, never a second) that keeps the quiz intents heard lately (handed to the
-sheet's session as it opens: a host re-sends only when someone comes back) and shows another's new lobby as a banner
-through the one toast host, 「ウェイが ききとりクイズに さそっています」 [さんか] (that game joined).
-- **Lobby** (`Lobby.svelte`): しずえ's welcome, the level (places with ★s, never やさしい / むずかしい: はまべ … かわ・もり, やま,
-  ほし, and the 📢 アナウンス pack; the host's pick, the last kept on the phone; a shared game's seed the host's freshest
-  of 24, a solo game's deck the items not heard lately: kikimimi.md "Variety"), 「こたえる じかん」 (20 / 30 / 60 びょう / なし: the host's, 30 by default, the last kept on the phone),
-  「おなじへや」 (only the host's phone speaks), who's here and who joined, 🔊 「きこえる？」 (a clip from no
-  game; 音量 0 says so), the host's はじめる (the others wait for it). Opening it with someone's lobby waiting shows that
-  invite and 「じぶんで はじめる」 instead.
-- **A question** (`Play.svelte`): 「よーい」 then 3-2-1 once, then each question's speaker pops in with a little pop, bobbing while
-  their clip plays, their bubble an empty 「♪…」 with a bar the clip's length; under it the item's `ask` (a word item: its
-  line with the blank). The choices (pic: 2 × 2 NH art, VoiceOver labels from PIC_JA; else text ≥ 17 px) stay dimmed
-  until the first play ends; one tap is final. 🔁 もういちど and 🐢 ゆっくり (levels 1-2) after the first play, on a phone
-  that speaks; each player's chip gets ✓ as they answer. The reveal: ○ on the right choice, × on a wrong pick, the
-  English in the bubble (its `focus` marked yuzu), the Japanese and the accent chip, the clip again, the speaker's and
-  each chip's ✨ / 💦, the sparkle or oops cue, the 「いっぱつ！」 stamp (no points). The reveal is untimed: the host's
-  つぎへ (「よみおわった 1/2」), the others' 「よみおわった」 (📖 on their chip); solo, my つぎへ.
-- **Results** (`Results.svelte`): しずえ's line (the winner, a tie, or the solo score), the ranking, then the review list
-  (opening on the misses, each row folding open to its marks, karaoke, note, ▶︎ and 🐢; 「まちがえた だけ」), 「まちがえた
-  もんだいを もういちど」 (those again, solo, as practice), おわる / もういちど.
-- **Closing**: mid-game a backdrop tap or Esc keeps the sheet (Sheet's `ondismiss`) and ✕ asks 「やめる？」; the lobby
-  closes at once (the host's lobby is cancelled for everyone). Closing ends the voice session and drops every clip. While
-  the voice is on but suspended (a lock, an app switch) a 「タップして つづける」 card wakes it.
-- **The island** is covered (`IslandScene` covered: the 3D island paused, its life still) while the sheet is open.
-- `game.svelte.ts` wires the pure `kikimimi/session.ts` to the Live (or to nothing, solo without a relay): the view at
-  each phase's end and each message; `clipPlayer.svelte.ts` plays each question's clip at its start on the relay's clock
-  (`playVoice` relayAt), the next one decoded meanwhile, the deck's clips fetched into the cache in the lobby;
-  `chunkQueue.ts` holds what waits for a chunk, `recorder.ts` my listen row. `?kikimimi=fast` (hooks on) shortens
-  the timed answer windows on every phone; `window.__kiki` (hooks on) is the e2e's view and right answer.
+English listening for the players (A, B and the guest), for Japanese speakers learning English. The detailed reference
+is [kikimimi.md](kikimimi.md) (the quiz, its engine, audio and sync); the hub and progression are
+[kikimimi-ux.md](kikimimi-ux.md), speaking [kikimimi-mic.md](kikimimi-mic.md), the content the curriculum docs.
+- **Opening.** The HUD menu's 「ききみみ」 with its small 「えいご」 (しずえ's head, above せってい; the guest's too) opens a
+  full-height sheet (`components/kikimimi/KikimimiSheet.svelte`, lazy, its strings `i18n/kikimimi.*.json`; the content
+  in per-level chunks and audio packs, kikimimi.md "Loading"). The tap itself starts the voice session (`invite.svelte.ts`
+  wakeQuizVoice → `voiceSession(true)`, before the press beat), so clips play with the silent switch on. The sheet opens
+  on its hub: today's card, あそぶ · みんなで · ずかん · きろく, ⚙ (kikimimi-ux.md §5, §6.1). The island is covered
+  (the 3D island paused) while it's open.
+- **Invites.** `KikimimiHost.svelte`, always loaded in the island scene, listens on the scene's one Live (`relay ??
+  demoRelay`, never a second), keeps the intents heard lately for the sheet, and shows another's lobby as a toast,
+  「ウェイが ききみみに さそっています」 [さんか] (that game joined); the menu item reads 「さそわれています！」 with a coral dot
+  on the folded leaf meanwhile.
+- **Playing** (kikimimi.md "The game"): しずえ hosts, a villager speaks each question with an empty 「♪…」 bubble, the
+  choices unlock after the first play, one tap is final, the reveal is untimed (the host's つぎへ, the others'
+  よみおわった), co-op by default (「ふたりで n/8」, never who missed), たいせん a lobby switch. Results open the review on
+  the misses.
+- **Closing.** Mid-game a backdrop tap or Esc keeps the sheet (Sheet's `ondismiss`) and ✕ asks 「ここでやめますか？」; a
+  lobby closes at once (the host's lobby is cancelled for everyone). Closing ends the voice session and drops every
+  decoded clip. A suspended voice (a lock, an app switch) shows a 「タップして つづける」 card.
+- **Code.** `game.svelte.ts` wires the pure `kikimimi/round/session.ts` (RoundSession) to the Live (or nothing, solo);
+  `clipPlayer.svelte.ts` plays each clip on the relay's clock, slicing it from its pack; `chunkQueue.ts` holds what
+  waits for a chunk; `recorder.ts` writes my `listen` row. `?kikimimi=fast` (hooks on) shortens the timed windows;
+  `window.__kiki` is the e2e's view.
 
 ### Trips
 
@@ -3074,8 +3063,8 @@ live), so they are mono AAC at 40 kbps (measured as close to the source as stere
 the app): Kimedance, the island broadcast's own jingle (the radio jingles open it), the museum's fossil and art rooms,
 the shop's big and closing, the Able Sisters, Resident Services, the tent, Redd, dreaming. `sound.test.ts`: every path in the manifest exists and every file is named; each folder under its budget
 (one file / all): `music/` 1 / 64 MB, `places/` 1 / 6 MB, `sfx/` 0.25 / 4 MB, `kk/` 1.2 / 60 MB, `kk/aircheck/` 1.2 /
-36 MB. Audio is never precached; the worker's audio cache keeps its few per class (music 3, K.K. 2, ききみみ 24, the
-rest 8)
+36 MB. Audio is never precached; the worker's audio cache keeps its few per class (music 3, K.K. 2, the rest 8;
+ききみみ's packs have their own listen cache)
 ([backend.md](backend.md#service-worker)).
 
 ### Sound settings
