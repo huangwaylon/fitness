@@ -51,8 +51,8 @@ chunk is cached, a retry. Under drawOff() (the e2e's logic tier) a stub draws th
 - **The list:** NavBar s (✕); one ChipRow: すべて 中級 上級 最上級 with their counts, then 距離順 標高差順 (a sort is off
   again on a second tap); a dense card per trail: a 120px PhotoBand (the level's sticker: leaf, yuzu, coral; the name
   and area) over a StatStrip (距離 · 標高差 · 時間, `stats.ts`).
-- **A trail:** the map full screen under NavBar s `over` (‹ ✕ on smoked discs), zoom and locate in the same disc (locate
-  sky while on). The location dot appears only after the locate button, through the trip map's `LocWatch` (the position
+- **A trail:** the map full screen under the game's buttons (the user: like the HUD's and the island's): NavBar's ‹ ✕,
+  44px cream discs with the brown edge and lip at every time of day, ＋ − and locate the same object (locate sky while on). The location dot appears only after the locate button, through the trip map's `LocWatch` (the position
   never leaves the phone). The drag-up sheet on the paper: the grip, the peek (the name, a StatStrip with 難易度) tall
   enough for the whole elevation chart; drag or tap it up to 90 %, and Esc folds it back. The body, dense cards: the
   chart (press shows the readout and the map's dot, drag moves them, let go and they stay, tap again to clear; the line
