@@ -82,7 +82,7 @@ describe('listen content', () => {
         expect(c.lv).toBe(u.stage + 1);
         expect(c.cast).toMatch(/^us-/);
       }
-      for (const it of u.items) if (it.kind !== 'tile') expect(listenClipIds(it)).toEqual(it.lines.map((_, n) => `${it.id}-${n + 1}`));
+      for (const it of u.items) if ('lines' in it) expect(listenClipIds(it)).toEqual(it.lines.map((_, n) => `${it.id}-${n + 1}`));
       const me = u.items.flatMap((it) => (it.kind === 'call' ? it.lines.map((l, n) => [l.who, `${it.id}-${n + 1}`]) : [])).find(([w]) => w === 'me');
       if (me) expect(spoken.find((c) => c.id === me[1])!.cast).toBe(u.cast!.me);
     }
@@ -93,7 +93,7 @@ describe('listen content', () => {
       const p = listenPart(raw, new Map(BANK.map((it) => [it.id, it])));
       expect(JSON.stringify(p)).not.toContain('"tts"');
       expect(p.items.length).toBe((raw as { items: unknown[] }).items.length);
-      for (const it of p.items) expect(it.kind === 'tile' ? [it.clip] : it.lines.map((l) => l.clip)).toEqual(listenClipIds(it));
+      for (const it of p.items) expect('lines' in it ? it.lines.map((l) => l.clip) : [it.clip]).toEqual(listenClipIds(it));
     }
   });
 

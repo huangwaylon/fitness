@@ -33,6 +33,7 @@
     "stt:models": "node scripts/stt-models.ts",
     "kikimimi:units-dry-run": "node scripts/kikimimi-units-dry-run.ts",
     "kikimimi:tiles": "node scripts/kikimimi-tiles.ts",
+    "kikimimi:rush": "node scripts/kikimimi-rush.ts",
     "audio:kikimimi-beds": "node scripts/kikimimi-beds.ts",
     "art:scenes": "node scripts/scenes/scenes.ts",
     "heads": "node scripts/heads.ts",

@@ -41,7 +41,7 @@ is an error over `en`, the lines and the plan choices (never `tts`).
 
 | field | |
 |---|---|
-| `kind` | `tile`, `call` or `tachi` (the quiz kinds come over from bank.ts in 9b) |
+| `kind` | `tile`, `call`, `tachi` or `rush` (the quiz kinds come over from bank.ts in 9b) |
 | `id` | see above |
 | `note` | the trap, in Japanese, ≤ 40 字 (counted with `[...s].length`, spaces included). No grammar terms |
 | `tags` | `{seed, register, pragmatic, conditions?, features}`, from the vocabulary below |
@@ -148,6 +148,31 @@ a person writes its help. A draft that says what a bank item already says is fol
   - `changed`: who changed their mind.
   - `plan`: 3–4 English choices; `ja` is the right one in Japanese. Vary `answer`. Avoid villager names in the
     choices: describe roles ("the one taking her to dinner").
+
+## `rush` (すうじ ラッシュ, W2-4)
+
+`s1-rush.yaml` and `s2-rush.yaml` are written by `scripts/kikimimi-rush.ts` (`npm run kikimimi:rush`). Edit the frames
+there, never the files. `--check` fails when a file is stale, and `--clips` lists the clips to voice.
+
+```yaml
+- kind: rush
+  id: rush-latte-1                 # rush-<frame>-<n>
+  at: cafe                         # cafe | konbini | ticket | deli | taxi | pharmacy (the counter's sign)
+  speaker: goldie
+  en: "Morning! Can I get four iced lattes? Oh, actually, make that three."
+  ja: "おはようございます。アイスラテを4杯…あ、やっぱり3杯で。"
+  ask: "アイスラテは 何杯？"          # the ticket's question (UI copy)
+  ctx: "カフェのカウンターで注文を受けています"
+  options: ["2杯", "3杯", "4杯", "13杯"]   # 4 chips, ascending
+  answer: 1
+  was: 2                           # the chip said before a self-correction (only with the self-repair feature)
+  cja: [...]                       # one per chip
+  why: "..."
+  note: "..."
+```
+
+- One customer is one clip (its id). A tier keeps 3 or 4 chips by their numbers (games/rush/def.ts `chipsAt`), so
+  the chips must read as numbers.
 
 ## Stories (`story/`, おやすみ ものがたり, curriculum §7.1)
 
