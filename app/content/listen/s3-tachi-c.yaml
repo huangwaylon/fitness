@@ -1,0 +1,112 @@
+# たちぎき S3 やま (c): C1 group talk in the thin situations (docs/curriculum-wave2.md §3.2, B4, the teacher's "more C1"):
+# a deposit kept by a landlord, a school for a child in Tokyo, a hiring decision, a canceled flight, a parent's surgery.
+# Denser idiom, irony and hedging; the turn that matters is often the second half of a line.
+schema: 1
+unit: s3-tachi-c
+game: tachi
+stage: 4
+track: people
+seeds: [8, 15, 33, 36, 42]
+features: { primary: overlap, review: idiom }
+cando: "3人の 速い 話し合いから 立場・心変わり・結論を 聞き取れる"
+status: draft
+items:
+  - kind: tachi
+    id: tachi-deposit-letter
+    ask: "元ルームメイトが 敷金の ことで もめている"
+    scene: cafe
+    lines:
+      - { who: kitt, at: 0, en: "So the landlord's keeping nine hundred of our deposit. Professional cleaning, plus \"significant wall damage.\"", tts: "So the landlord's keepin' nine hundred of our deposit. Professional cleaning, plus significant wall damage.", ja: "大家が敷金のうち900ドルを返さないって。専門業者の清掃と『壁の大きな損傷』だって。" }
+      - { who: sherb, at: 0.3, en: "Significant? It was three nail holes. I've seen bigger damage from a sticky note.", ja: "大きな損傷？釘の穴3つだよ。付箋のほうがよっぽど傷つけるって。" }
+      - { who: julian, at: -0.3, en: "Look, I hate this as much as you do, but fighting it means small claims court, and that's months of our lives for, what, three hundred each?", tts: "Look, I hate this as much as you do, but fightin' it means small claims court, an' that's months of our lives for, what, three hundred each?", ja: "いいか、僕だって腹は立つ。でも争うなら少額訴訟だし、1人300ドルのために何か月もかかるんだよ。" }
+      - { who: kitt, at: 0.3, en: "It doesn't have to go that far. In this state they have to itemize it within thirty days, with receipts. Did they?", tts: "It doesn't hafta go that far. In this state they hafta itemize it within thirty days, with receipts. Did they?", ja: "そこまでしなくていい。この州では30日以内に、領収書つきで明細を出す決まりなの。出してきた？" }
+      - { who: sherb, at: 0.3, en: "Nope. Just an email that said \"deductions applied.\" That's it.", tts: "Nope. Jus' an email that said deductions applied. That's it.", ja: "出してない。『差し引きました』ってメールだけ。それだけ。" }
+      - { who: julian, at: -0.4, en: "Wait, seriously? No receipts at all? Okay, that changes things. If they skipped that, we've actually got a leg to stand on.", tts: "Wait, seriously? No receipts at all? Okay, that changes things. If they skipped that, we've actually got a leg ta stand on.", ja: "え、本当？領収書が一切ない？それなら話は別だ。その手順を飛ばしてるなら、こっちにも言い分がある。" }
+      - { who: kitt, at: 0.3, en: "Exactly. So we don't sue anybody. We send one polite, very boring letter citing the law, and give them two weeks.", tts: "Exactly. So we don't sue anybody. We send one polite, very boring letter citin' the law, an' give 'em two weeks.", ja: "そういうこと。だから訴えたりしない。法律を引用した、丁寧でものすごく退屈な手紙を1通送って、2週間待つ。" }
+      - { who: sherb, at: 0.2, en: "Boring I can do. I'll dig up the move-out photos, so they can't say the walls were trashed.", ja: "退屈なのは得意。退去のときの写真を探しておく。壁がボロボロだったなんて言わせない。" }
+    rounds:
+      - { type: opinions, claims: ["釘の 穴は 大した 傷では ない", "法律を 引用した 手紙を 送る", "裁判に なるなら 割に 合わない"], answer: [sherb, kitt, julian], ctx: "元ルームメイト3人が、戻らない敷金の話をしています", why: "シャーベットは釘穴3つを「付箋より小さい」と皮肉る。キットは法律を引用した letter を送る。ジュリアンは small claims court は割に合わないと言う。" }
+      - { type: changed, answer: julian, ctx: "あきらめかけた人が、ある決まりの話を聞きます", why: "ジュリアンは訴訟は割に合わないとあきらめ気味だったが、明細も領収書もないと聞いて we've actually got a leg to stand on に変わった。" }
+      - { type: plan, ask: "このあと どうする？", choices: ["Let it go and split the loss.", "Send a formal letter giving them two weeks, backed by move-out photos.", "Take the landlord to small claims court."], answer: 1, ja: "法律を引用した手紙で2週間待ち、退去時の写真も用意する。", ctx: "最後に、大家への対応が決まります", why: "訴えずに、法律を引用した手紙を送って2週間待つ。シャーベットが退去時の写真を探す。明細も領収書もないので、あきらめる理由はない。", cja: ["あきらめて、損を分け合う", "2週間の猶予つきの正式な手紙を送り、退去時の写真で裏づける", "大家を少額訴訟に訴える"] }
+    note: "a leg to stand on＝主張の根拠"
+    tags: { seed: 33, register: friend, pragmatic: sarcasm, conditions: [cafe], features: [overlap, idiom, numbers] }
+
+  - kind: tachi
+    id: tachi-school-choice
+    ask: "東京で 娘の 学校を 選んでいる"
+    scene: living
+    lines:
+      - { who: diana, at: 0, en: "The international school's open house was incredible. Small classes, all in English, and a robotics lab.", tts: "The international school's open house was incredible. Small classes, all in English, an' a robotics lab.", ja: "インターナショナルスクールの説明会、すごくよかった。少人数で全部英語、ロボットの教室もあるの。" }
+      - { who: apollo, at: 0.3, en: "It was. It was also two and a half million yen a year. Per kid. Before the bus.", tts: "It was. It was also two an' a half million yen a year. Per kid. Before the bus.", ja: "そうだね。年間250万円でもあったけど。子ども1人あたり。バス代は別。" }
+      - { who: agnes, at: -0.3, en: "Can I just say, as the one who pays for nothing: she'll be living here. If she can't talk to the kids on her street, that's lonely.", tts: "Can I just say, as the one who pays fer nothing: she'll be livin' here. If she can't talk to the kids on 'er street, that's lonely.", ja: "お金を出さない私が言うのもなんだけど、あの子はここで暮らすのよ。近所の子と話せなかったら、さみしいわよ。" }
+      - { who: diana, at: 0.3, en: "But her Japanese is still shaky. I don't want her sitting in a class understanding nothing.", tts: "But her Japanese is still shaky. I don't want 'er sittin' in a class understandin' nothing.", ja: "でも、あの子の日本語はまだおぼつかないの。何もわからないまま授業に座らせたくない。" }
+      - { who: apollo, at: 0.3, en: "Kids that age pick it up in, like, six months. Adults are the ones who struggle. Present company included.", tts: "Kids that age pick it up in, like, six months. Adults are the ones who struggle. Present company included...", ja: "あの年の子は半年くらいで覚えるよ。苦労するのは大人のほう。ここにいる人も含めてね。" }
+      - { who: agnes, at: -0.4, en: "And the public school near you has that Saturday English club. She'd get both.", tts: "An' the public school near you has that Saturday English club. She'd get both.", ja: "それに、近くの公立には土曜の英語クラブがあるでしょ。両方手に入るわよ。" }
+      - { who: diana, at: 0.3, en: "...Okay. If she's struggling after a term, we revisit. But I'm willing to try the local school.", tts: "...Okay. If she's strugglin' after a term, we revisit. But I'm willin' ta try the local school.", ja: "…わかった。1学期たって苦労してたら、考え直す。でも、地元の学校を試してみる。" }
+      - { who: apollo, at: 0.2, en: "Deal. I'll call the ward office Monday about enrollment.", ja: "決まり。月曜に区役所へ入学のことを電話する。" }
+    rounds:
+      - { type: opinions, claims: ["子どもは すぐ ことばを 覚える", "近所の 子と 話せないと さみしい", "合わなければ 1学期で 考え直す"], answer: [apollo, agnes, diana], ctx: "東京で、夫婦と祖母が娘の学校選びを話しています", why: "アポロは子どもは six months で覚えると言う。アグネスは近所の子と話せないと lonely。ダイアナは1学期後に revisit すると条件をつける。" }
+      - { type: changed, answer: diana, ctx: "インターを推す人に、別の見方が重なります", why: "ダイアナはインターナショナルスクールを推していたが、子どもは早く覚え、土曜の英語クラブもあると聞いて地元の学校を試すことにした。" }
+      - { type: plan, ask: "どうなる？", choices: ["The international school, with the school bus.", "Homeschooling in English for a year.", "The local public school, with a check-in after one term."], answer: 2, ja: "地元の公立校に入れて、1学期後に見直す。", ctx: "最後に、学校と次の手続きが決まります", why: "地元の公立に入れ、1学期で苦労していれば考え直す。アポロが月曜に区役所へ電話する。インターは学費が高く見送り。", cja: ["インターナショナルスクールにスクールバスで通う", "1年間、英語で自宅学習", "地元の公立校に入れ、1学期後に見直す"] }
+    note: "Present company included＝ここにいる人も含めて"
+    tags: { seed: 36, register: partner, pragmatic: hedge, features: [overlap, idiom, h-drop] }
+
+  - kind: tachi
+    id: tachi-hiring-pick
+    ask: "採用担当が 候補者を 比べている"
+    scene: office
+    lines:
+      - { who: olivia, at: 0, en: "Okay, we need a decision on the analyst role by Friday. Priya or Marcus?", ja: "アナリスト職、金曜までに決めないと。プリヤ？マーカス？" }
+      - { who: keaton, at: 0.3, en: "Marcus. He's sharp, he's polished, and honestly, he interviewed like he'd already been here a year.", tts: "Marcus. He's sharp, he's polished, an' honestly, he interviewed like 'e'd already been here a year.", ja: "マーカス。頭が切れるし、洗練されてる。正直、もう1年いるみたいな面接だった。" }
+      - { who: gruff, at: -0.3, en: "Polished is one word for it. When I asked about the project that tanked, it was somehow everybody's fault but his.", tts: "Polished is one word for it. When I asked about the project that tanked, it was somehow everybody's fault but 'is.", ja: "洗練ね、まあそういう言い方もある。失敗したプロジェクトのことを聞いたら、なぜか全部、彼以外の人のせいだったよ。" }
+      - { who: olivia, at: 0.3, en: "Priya was rougher around the edges, but her case study was the only one that actually answered the question we asked.", tts: "Priya was rougher around the edges, but 'er case study was the only one that actually answered the question we asked.", ja: "プリヤは粗削りだったけど、課題の回答で、こちらの質問にちゃんと答えていたのは彼女だけだった。" }
+      - { who: keaton, at: 0.3, en: "I'm not saying she's bad. I'm saying Marcus could hit the ground running.", tts: "I'm not sayin' she's bad. I'm sayin' Marcus could hit the ground runnin'.", ja: "彼女がだめとは言ってない。マーカスならすぐ戦力になる、ってこと。" }
+      - { who: gruff, at: -0.4, en: "Running where, though? The last guy who hit the ground running ran straight to a competitor after six months.", tts: "Runnin' where, though? The las' guy who hit the ground runnin' ran straight to a competitor after six months.", ja: "でもどこへ走るんだ？前にすぐ戦力になったやつは、半年で競合にまっすぐ走っていったぞ。" }
+      - { who: keaton, at: 0.3, en: "...Okay, fair. That one stung. Fine, I can live with Priya, as long as we pair her with a mentor for the first quarter.", tts: "...Okay, fair. That one stung. Fine, I can live with Priya, as long as we pair 'er with a mentor fer the first quarter.", ja: "…まあ、たしかに。あれは痛かった。わかった、プリヤでいい。最初の四半期はメンターをつける、という条件でね。" }
+      - { who: olivia, at: 0.2, en: "Done. I'll make her the offer today, and you two figure out who's mentoring.", tts: "Done. I'll make 'er the offer today, an' you two figure out who's mentorin'.", ja: "決まり。今日彼女に内定を出す。メンターをどっちがやるかは二人で決めて。" }
+    rounds:
+      - { type: opinions, claims: ["質問に 正面から 答えたのは 一人だけ", "失敗を 人のせいに する 人は 不安", "最初は 指導役を つけるべき"], answer: [olivia, gruff, keaton], ctx: "職場で、採用担当3人が候補者2人を比べています", why: "オリヴィアは質問に答えたのはプリヤだけと言う。グラフはマーカスが失敗を人のせいにしたと皮肉る。キートンは mentor をつける条件を出した。" }
+      - { type: changed, answer: keaton, ctx: "一人を推す人に、過去の苦い例が持ち出されます", why: "キートンはマーカス推しだったが、すぐ戦力になった前任が半年で競合へ移った話に fair, That one stung と認め、プリヤに変わった。" }
+      - { type: plan, ask: "このあと どうなる？", choices: ["Priya gets an offer today, with a mentor for the first quarter.", "They bring both candidates back for a second interview.", "Marcus gets the offer by Friday."], answer: 0, ja: "今日プリヤに内定を出し、最初の四半期はメンターをつける。", ctx: "最後に、採用の結論と次の手が決まります", why: "今日プリヤに内定を出し、最初の四半期はメンターをつける。二次面接はしない。マーカスは失敗を人のせいにした点で見送り。", cja: ["今日プリヤに内定。最初の四半期はメンターつき", "二人とも二次面接に呼ぶ", "金曜までにマーカスに内定"] }
+    note: "hit the ground running＝すぐに戦力になる"
+    tags: { seed: 42, register: colleague, pragmatic: understatement, features: [overlap, idiom, h-drop] }
+
+  - kind: tachi
+    id: tachi-flight-canceled
+    ask: "空港で 欠航。どの 便に する？"
+    scene: gate
+    lines:
+      - { who: kidd, at: 0, en: "Okay, they canceled the eight-forty. The next flight with seats is tomorrow at six-ten a.m., and they'll comp a hotel.", tts: "Okay, they canceled the eight-forty. The next flight with seats is tomorrow at six-ten a m, an' they'll comp a hotel.", ja: "8時40分の便が欠航だって。空席のある次の便は明日の朝6時10分で、ホテル代は向こう持ち。" }
+      - { who: pekoe, at: 0.3, en: "Six-ten means leaving the hotel at four-thirty. I have a client at noon, and I'd rather not show up as a zombie.", tts: "Six-ten means leavin' the hotel at four-thirty. I have a client at noon, an' I'd rather not show up as a zombie.", ja: "6時10分ってことは、ホテルを4時半に出るのよ。昼にクライアントだし、ゾンビ状態で行きたくない。" }
+      - { who: shep, at: -0.3, en: "Or we rent a car right now and drive. It's five hours, maybe six. We'd be home by two a.m.", tts: "Or we rent a car right now an' drive. It's five hours, maybe six. We'd be home by two a m.", ja: "それか今すぐ車を借りて走る。5時間、6時間かな。夜中の2時には家に着く。" }
+      - { who: kidd, at: 0.3, en: "In a snowstorm? The pass closed an hour ago. I just saw it on the board.", tts: "In a snowstorm? The pass closed an hour ago. I jus' saw it on the board.", ja: "吹雪の中を？峠は1時間前に閉鎖されたよ。さっき掲示板で見た。" }
+      - { who: shep, at: -0.2, en: "Huh. Didn't know that. Okay, scratch the car. I'm not dying on a mountain to save a hotel night.", tts: "Huh. Didn' know that. Okay, scratch the car. I'm not dyin' on a mountain ta save a hotel night.", ja: "へえ、知らなかった。じゃあ車はなし。ホテル代を浮かすために山で死にたくない。" }
+      - { who: pekoe, at: 0.3, en: "Wait, the agent just said there's a nine-fifteen tomorrow too, with two seats. Sorry, three. She miscounted.", tts: "Wait, the agent jus' said there's a nine-fifteen tomorrow too, with two seats. Sorry, three. She miscounted.", ja: "待って、係の人が、明日は9時15分の便もあって2席あるって。ごめん、3席。数え間違いだって。" }
+      - { who: kidd, at: 0.3, en: "The nine-fifteen gets in at ten-forty. Can you make a noon client from the airport?", tts: "The nine-fifteen gets in at ten-forty. Can ya make a noon client from the airport?", ja: "9時15分の便は10時40分着。空港から昼のクライアントに間に合う？" }
+      - { who: pekoe, at: 0.2, en: "If I go straight there, yes. Sleep beats being early. Book us on the nine-fifteen.", tts: "If I go straight there, yes. Sleep beats bein' early. Book us on the nine-fifteen.", ja: "直行すれば間に合う。早く着くより寝るほうが大事。9時15分の便を取って。" }
+    rounds:
+      - { type: opinions, claims: ["寝不足で 客に 会いたくない", "ホテル代の ために 危険は 冒さない", "峠は もう 閉鎖されたと 伝えた"], answer: [pekoe, shep, kidd], ctx: "空港で、同僚3人が欠航のあとの動きを相談しています", why: "ペコは客の前にゾンビ状態で出たくない。シェップは山で危険を冒すくらいならホテル代を払う。キッドは峠が1時間前に閉鎖されたと伝えた。" }
+      - { type: changed, answer: shep, ctx: "車で帰りたい人に、道路の情報が入ります", why: "シェップは車で5〜6時間走る案だったが、峠が閉鎖されたと聞いて scratch the car（車の案はなし）に変わった。" }
+      - { type: plan, ask: "明日の 便は？", choices: ["The 6:10 flight, leaving the hotel at 4:30.", "The 9:15 flight, landing at 10:40.", "A rental car tonight, home by 2 a.m."], answer: 1, ja: "9時15分の便で、10時40分に着く。", ctx: "最後に、乗る便が決まります", why: "9時15分の便は3席あり、10時40分着で昼に間に合う。2席は言い間違い。6時10分は早すぎ、車は峠の閉鎖で消えた。", cja: ["6時10分の便。ホテルを4時半に出る", "9時15分の便。10時40分に着く", "今夜レンタカーで、夜中の2時に帰宅"] }
+    note: "comp＝無料にする。scratch＝取りやめる"
+    tags: { seed: 8, register: colleague, pragmatic: literal, features: [overlap, numbers, self-repair] }
+
+  - kind: tachi
+    id: tachi-second-opinion
+    ask: "きょうだいで 父の 手術の 話を している"
+    scene: living
+    lines:
+      - { who: melba, at: 0, en: "So Dad's surgeon wants to do the full knee replacement next month. He says the sooner, the better.", tts: "So Dad's surgeon wants ta do the full knee replacement next month. He says the sooner, the better.", ja: "父さんの外科医、来月に人工ひざ関節の手術をしたいって。早いほどいいそうよ。" }
+      - { who: cyrano, at: 0.3, en: "Next month? He only started physical therapy in March. That feels like jumping the gun.", tts: "Next month? He only started physical therapy in March. That feels like jumpin' the gun.", ja: "来月？3月にリハビリを始めたばかりだよ。早まりすぎじゃないかな。" }
+      - { who: tasha, at: -0.3, en: "I'm with Cyrano. Not saying the guy's wrong, but for something this big, Dad should get a second opinion.", tts: "I'm with Cyrano. Not sayin' the guy's wrong, but fer something this big, Dad should get a second opinion.", ja: "シラノに賛成。その先生が間違ってるとは言わないけど、こんな大きな手術ならセカンドオピニオンを取るべき。" }
+      - { who: melba, at: 0.3, en: "Honestly, I just want him out of pain. He can barely do the stairs. A second opinion could take, what, six weeks to book?", tts: "Honestly, I jus' want 'im outta pain. He can barely do the stairs. A second opinion could take, what, six weeks ta book?", ja: "正直、痛みから解放してあげたいの。階段もやっとなんだから。セカンドオピニオンって、予約まで6週間とかかかるでしょ？" }
+      - { who: tasha, at: 0.3, en: "Not necessarily. My friend's clinic does video consults. They'd look at his scans this week.", tts: "Not necessarily. My friend's clinic does video consults. They'd look at 'is scans this week.", ja: "そうとも限らない。友だちのクリニックはビデオ診察をしてる。今週中に画像を見てくれるよ。" }
+      - { who: melba, at: -0.4, en: "This week? Oh. Well, if it doesn't push the surgery back, then sure, I've got no problem with a second look.", ja: "今週？あら。手術が遅れないなら、もちろん、もう一度診てもらうのに異論はないわ。" }
+      - { who: cyrano, at: 0.3, en: "Even if they agree, at least Dad goes in knowing it's the right call. That's worth a week.", tts: "Even if they agree, at least Dad goes in knowin' it's the right call. That's worth a week.", ja: "同じ意見だったとしても、父さんは納得して手術に臨める。1週間の価値はあるよ。" }
+      - { who: tasha, at: 0.2, en: "I'll text her tonight and send the scans. Melba, can you tell Dad? He listens to you.", tts: "I'll text 'er tanight an' send the scans. Melba, can ya tell Dad? He listens ta you.", ja: "今夜友だちにメッセージして画像を送る。メルバ、父さんに話してくれる？あなたの言うことは聞くから。" }
+    rounds:
+      - { type: opinions, claims: ["ビデオ診察を 手配する", "父の 痛みを 早く 取って あげたい", "同じ 結論でも 納得の ために 意味が ある"], answer: [tasha, melba, cyrano], ctx: "きょうだい3人が、父のひざの手術について話しています", why: "ターシャは友だちのクリニックの video consult を手配する。メルバは父を out of pain にしたい。シラノは同じ結論でも納得の意味があると言う。" }
+      - { type: changed, answer: melba, ctx: "早く手術をと願う人に、ある方法が知らされます", why: "メルバは予約に6週間かかると渋っていたが、今週ビデオで診てもらえ手術も遅れないと聞いて no problem with a second look に変わった。" }
+      - { type: plan, ask: "このあと どうなる？", choices: ["The surgery moves to next year.", "Dad keeps doing physical therapy and skips surgery.", "A video second opinion this week; the surgery date stays."], answer: 2, ja: "今週ビデオでセカンドオピニオンを受け、手術の日程はそのまま。", ctx: "最後に、次の一歩と役割が決まります", why: "今週ビデオ診察で画像を見てもらい、手術の予定は変えない。ターシャが画像を送り、メルバが父に話す。延期も中止も決まっていない。", cja: ["手術を来年に延ばす", "リハビリを続け、手術はしない", "今週ビデオでセカンドオピニオン。手術日はそのまま"] }
+    note: "jump the gun＝早まる。a second look＝もう一度診ること"
+    tags: { seed: 15, register: friend, pragmatic: hedge, features: [overlap, idiom, h-drop] }
