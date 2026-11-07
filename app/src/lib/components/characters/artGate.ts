@@ -41,8 +41,10 @@ export function artGate(on: () => boolean, root: () => Element | undefined): Art
     }
     if (!waiting.size) (mo?.disconnect(), (mo = null));
   };
+  // (after the next frame, not in it: the frame has styled the page by then, so the looks cost no forced style pass; in
+  // the frame's own callbacks the island's first look styled every waiting art, ~32 ms at 4x CPU in the mount)
   const soon = () => {
-    if (!frame) frame = requestAnimationFrame(check);
+    if (!frame) frame = requestAnimationFrame(() => setTimeout(check));
   };
   return {
     get on() {
