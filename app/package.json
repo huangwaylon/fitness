@@ -39,6 +39,7 @@
     "heads": "node scripts/heads.ts",
     "hiking:tracks": "node scripts/hiking-tracks.ts",
     "offline:measure": "node scripts/offline-measure.ts",
+    "sw:measure": "node scripts/sw-measure.ts",
     "bench": "node scripts/bench-model.ts",
     "leak": "node scripts/leak-probe.ts",
     "perf:start": "node scripts/perf-start.ts",

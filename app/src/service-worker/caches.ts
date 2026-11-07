@@ -340,6 +340,55 @@ export function carryPlan(files: readonly string[], held: readonly string[]): { 
   }
   return { copy, fetch };
 }
+/** The key, in a shell, of its static files' hashes (installStatics: what the next install compares). */
+export const STATIC_HASHES = '__static-hashes';
+/** A static file the worker precaches and its content hash (the build's: vite.config.ts swPrecacheOnly). */
+export type StaticFile = { path: string; hash: string };
+/** A file's content hash as the build writes it and an install checks it: SHA-256's first 8 bytes, hex. */
+export async function contentHash(buf: BufferSource): Promise<string> {
+  const d = new Uint8Array(await crypto.subtle.digest('SHA-256', buf));
+  return Array.from(d.subarray(0, 8), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * An install's static files (the art, the manifest, the trails' tracks: ~300, unhashed names): one an older shell holds
+ * at the build's hash (that shell's STATIC_HASHES) is copied, the rest fetched (`net`: past the HTTP cache), each on its
+ * own (one that fails costs that file, not the install). It revalidated all ~300 with each deploy, ~220 requests at an
+ * app open, competing with the island's load. The hashes recorded are of the bytes stored (a fetch the server answered
+ * with another build's file is fetched again next time), under `key` (STATIC_HASHES in the scope). The newest shell
+ * first in `olds`; one from before the hashes has none, so its files are fetched once.
+ */
+export async function installStatics(files: readonly StaticFile[], cache: Pick<Cache, 'put'>, olds: readonly Pick<Cache, 'match'>[], net: (path: string) => Promise<Response>, key: string): Promise<{ copied: number; fetched: number }> {
+  const recorded = await Promise.all(olds.map(async (c) => {
+    try {
+      return ((await (await c.match(key))?.json()) ?? null) as Record<string, string> | null;
+    } catch {
+      return null;
+    }
+  }));
+  const stored: Record<string, string> = {};
+  let copied = 0, fetched = 0;
+  await Promise.allSettled(files.map(async ({ path, hash }) => {
+    for (let i = 0; i < olds.length; i++) {
+      if (recorded[i]?.[path] !== hash) continue;
+      const hit = await olds[i].match(path);
+      if (!hit) continue;
+      await cache.put(path, hit);
+      stored[path] = hash;
+      copied++;
+      return;
+    }
+    const res = await net(path);
+    if (!res.ok) return;
+    const got = await contentHash(await res.clone().arrayBuffer());
+    await cache.put(path, res);
+    stored[path] = got;
+    fetched++;
+  }));
+  await cache.put(key, new Response(JSON.stringify(stored), { headers: { 'content-type': 'application/json' } }));
+  return { copied, fetched };
+}
+
 /** The font slices precached (Zen Maru Gothic's 500 and 700, src/lib/styles/fonts.css; Fredoka's Latin): the ones
  *  holding ~99% of the characters the app's own strings show (scripts/font-subsets.ts's count), ~0.7 MB. The other
  *  slices (rare kanji, the map's labels) are cached on first use (FONTS). */

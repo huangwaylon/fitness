@@ -39,7 +39,8 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
   await page.request.get('/__e2e/deploy');
   await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
   await page.evaluate(() => {
-    navigator.serviceWorker.addEventListener('controllerchange', () => sessionStorage.setItem('e2e.swChanged', String(Date.now())));
+    // (the first: Chromium may install the same worker again as the reload starts, a second claim after it)
+    navigator.serviceWorker.addEventListener('controllerchange', () => sessionStorage.getItem('e2e.swChanged') ?? sessionStorage.setItem('e2e.swChanged', String(Date.now())));
   });
   const reloaded = page.waitForEvent('framenavigated', { timeout: 60_000 });
   // (Kit checks version.json as the app comes back to the front)
@@ -50,6 +51,29 @@ test('a navigation is the cached shell at once; a deploy reloads once its worker
   const [changed, reloadAt] = await page.evaluate(() => [sessionStorage.getItem('e2e.swChanged'), sessionStorage.getItem('island.reloadAt')]);
   expect(changed, 'the new worker claimed the page').not.toBeNull();
   expect(Number(reloadAt)).toBeGreaterThanOrEqual(Number(changed));
+});
+
+// (Chromium: offline as offline.spec takes it)
+test('a first visit registers the worker only once the island has its models in; then it opens offline', { tag: '@chromium' }, async ({ page, context }) => {
+  test.setTimeout(120_000);
+  // when the app registers it, and whether the island had loaded() then (ui-state/swLate.ts)
+  await page.addInitScript(() => {
+    const reg = ServiceWorkerContainer.prototype.register;
+    ServiceWorkerContainer.prototype.register = function (...a: Parameters<typeof reg>) {
+      const w = window as unknown as { __world3d?: { loaded(): boolean }; __reg?: boolean[] };
+      (w.__reg ??= []).push(!!w.__world3d?.loaded());
+      return reg.apply(this, a);
+    };
+  });
+  await page.goto('?demo&critter=none&visitor=none');
+  await islandUp(page);
+  await controlled(page);
+  expect(await page.evaluate(() => (window as unknown as { __reg?: boolean[] }).__reg)).toEqual([true]);
+  await context.setOffline(true);
+  const again = await page.reload();
+  expect(again?.fromServiceWorker()).toBe(true);
+  await islandUp(page);
+  await context.setOffline(false);
 });
 
 /** A hashed chunk the new build's install has to fetch (as a deploy's changed chunk: not in the cached shell to copy). */
@@ -65,7 +89,8 @@ async function deploy(page: Page, context: import('@playwright/test').BrowserCon
   await page.request.get('/__e2e/deploy');
   await context.route('**/_app/version.json', (route) => route.fulfill({ contentType: 'application/json', body: '{"version":"next"}' }));
   await page.evaluate(() => {
-    navigator.serviceWorker.addEventListener('controllerchange', () => sessionStorage.setItem('e2e.swChanged', String(Date.now())));
+    // (the first: Chromium may install the same worker again as the reload starts, a second claim after it)
+    navigator.serviceWorker.addEventListener('controllerchange', () => sessionStorage.getItem('e2e.swChanged') ?? sessionStorage.setItem('e2e.swChanged', String(Date.now())));
   });
   await page.evaluate(() => window.dispatchEvent(new Event('focus')));
 }
@@ -101,12 +126,24 @@ test('a deploy whose install fails reloads nothing, and the next time the app co
   expect(Number(reloadAt)).toBeGreaterThanOrEqual(Number(changed));
 });
 
-test('a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself', { tag: '@chromium' }, async ({ page, context }) => {
+test('a slow install is waited for (no reload before its worker is in); a static file that fails costs only itself; the unchanged ones are copied', { tag: '@chromium' }, async ({ page, context }) => {
   test.setTimeout(120_000);
   await page.goto('?demo&critter=none&visitor=none');
   await islandUp(page);
   await controlled(page);
   const chunk = await notCached(page);
+  // the manifest gone from the old shell, so the install fetches it (the unchanged static files are copied: below)
+  await page.evaluate(async () => {
+    const key = (await caches.keys()).filter((k) => k.startsWith('island-shell-')).at(-1)!;
+    await (await caches.open(key)).delete('manifest.webmanifest');
+  });
+  // (the worker's own fetches of static files till the reload: after it, the page's art comes through it too)
+  const statics = new Set<string>();
+  let installing = true;
+  context.on('request', (r) => {
+    const p = new URL(r.url()).pathname;
+    if (installing && r.serviceWorker() && /\/(art|hiking|travel)\/|\.webmanifest$/.test(p)) statics.add(p.split('/').at(-1)!);
+  });
   // the chunk takes 20 s (past the old 15 s wait, which then reloaded into the old shell); the manifest 404s
   const slow = async (route: import('@playwright/test').Route) => {
     await new Promise((r) => setTimeout(r, 20_000));
@@ -118,10 +155,13 @@ test('a slow install is waited for (no reload before its worker is in); a static
   const reloaded = page.waitForEvent('framenavigated', { timeout: 60_000 });
   await deploy(page, context);
   await reloaded;
+  installing = false;
   await context.unroute('**/_app/version.json');
   await context.unroute(`**${chunk}`, slow);
   await context.unroute('**/manifest.webmanifest', gone);
   await expect(hudMenu(page)).toBeVisible();
+  // the static files copied by their hashes (caches.ts installStatics): only the one not held was fetched
+  expect([...statics]).toEqual(['manifest.webmanifest']);
   const [changed, reloadAt] = await page.evaluate(() => [sessionStorage.getItem('e2e.swChanged'), sessionStorage.getItem('island.reloadAt')]);
   expect(changed, 'the new worker claimed the page').not.toBeNull();
   expect(Number(reloadAt)).toBeGreaterThanOrEqual(Number(changed));

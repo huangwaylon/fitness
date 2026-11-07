@@ -2,7 +2,9 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import adapterStatic from '@sveltejs/adapter-static';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { execSync } from 'node:child_process';
-import { carried, precachable } from './src/service-worker/caches.ts';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+import { carried, contentHash, precachable } from './src/service-worker/caches.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
@@ -95,18 +97,24 @@ const preloadListenersOff: Plugin = {
  *  started, 560 KB of script (56 KB gzipped) fetched with each update check that finds a deploy. The lists are Kit's
  *  defines, set on the worker's environment just before its build; its manifest module names them, and here they're
  *  written in already filtered. The chunks kept on first use (caches.ts carried: MapLibre, ききみみ's parts) stay listed:
- *  each install carries them on. */
+ *  each install carries them on. The static files' entries carry their content hash. */
 const swPrecacheOnly: Plugin = {
   name: 'sw-precache-only',
   applyToEnvironment: (env) => env.name === 'serviceWorker',
-  transform(code, id) {
+  async transform(code, id) {
     if (!id.split('?')[0].endsWith('/generated/build/app-manifest.js')) return;
     const define = (this.environment.config.define ?? {}) as Record<string, unknown>;
     let out = code;
     for (const name of ['__SVELTEKIT_MANIFEST_IMMUTABLE__', '__SVELTEKIT_MANIFEST_ASSETS__']) {
       const list = define[name];
       if (typeof list !== 'string' || !out.includes(name)) throw new Error(`vite.config.ts sw-precache-only: Kit's ${name} changed; recheck the service worker's manifest`);
-      const kept = (JSON.parse(list) as { path: string }[]).filter((f) => precachable(f.path) || carried(f.path));
+      let kept = (JSON.parse(list) as { path: string }[]).filter((f) => precachable(f.path) || carried(f.path));
+      // a static file's content hash (caches.ts StaticFile): an install copies an unchanged one from the older shell
+      // (installStatics) instead of revalidating every one with each deploy
+      if (name === '__SVELTEKIT_MANIFEST_ASSETS__') {
+        const dir = join(this.environment.config.root, 'static');
+        kept = await Promise.all(kept.map(async (f) => ({ path: f.path, hash: await contentHash(await readFile(join(dir, f.path))) })));
+      }
       out = out.replace(name, JSON.stringify(kept));
     }
     return { code: out, map: null };
@@ -217,6 +225,8 @@ export default defineConfig({
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },
+      // registered by the app once the island is up (lib/ui-state/swLate.ts), not on the window's load
+      serviceWorker: { register: false },
       paths: { base: (process.env.BASE_PATH ?? '') as '' | `/${string}` },
       // SvelteKit writes this as a <meta http-equiv> tag and adds the hash of its inline bootstrap script to
       // script-src; scripts/headers.ts copies it into build-pages/_headers too. Only the relay (its socket, lib/sync/live.ts LIVE_URL, and the record's /api,
