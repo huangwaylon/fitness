@@ -8,7 +8,7 @@ import {
   type FoodEntry, type FoodSnap, type RepeatItem
 } from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
-import { loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
+import { itemById, loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
@@ -82,8 +82,8 @@ export function itemOf(f: FoodSnap, db: FoodDb | null, g?: number): Item {
   const own = it ? null : snapPortion(f.u, g);
   return { ...(it ?? {}), ...(own ? { portions: [own] } : {}), id: f.id, name: f.n, ...snapValues(f) };
 }
-/** The catalog's item of an id, if the catalog is in and has it. */
-export const catalogOf = (db: FoodDb | null, id: string): Item | undefined => db?.entries.find((e) => e.it.id === id)?.it;
+/** The catalog's item of an id, if the catalog is in and has it (db.ts byId). */
+export const catalogOf = itemById;
 
 /** A food's category tile (FoodThumb) by its id: the catalog item's, a recipe's レシピ (`c…`), else none (その他). */
 export const catOf = (db: FoodDb | null, id: string): string | undefined => catalogOf(db, id)?.cat ?? (/^c[0-9a-z]+$/.test(id) ? 'レシピ' : undefined);

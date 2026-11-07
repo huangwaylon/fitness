@@ -43,7 +43,7 @@ describe('itemOf: a snapshot as an item', () => {
   });
   it('with the catalog: its portions, the snapshot’s values', () => {
     const cat: Item = { id: 'mext:1', name: 'ごはん', kcal: 160, portions: [{ label: '茶碗1杯', g: 150 }, { label: '小盛り', g: 100 }] };
-    const db = { entries: [{ it: cat }] } as unknown as Parameters<typeof itemOf>[1];
+    const db = { entries: [{ it: cat }], byId: new Map([[cat.id, cat]]) } as unknown as Parameters<typeof itemOf>[1];
     expect(itemOf(snap('mext:1', '茶碗1杯'), db, 150)).toMatchObject({ kcal: 156, portions: cat.portions });
   });
 });

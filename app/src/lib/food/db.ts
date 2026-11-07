@@ -11,13 +11,15 @@ export interface FoodDb {
   /** Grows when a lazy dataset (products) is in. */
   entries: Entry[];
   verify: Verify | null;
+  /** Each item by its id (the first dataset's, should two hold one): an entry's food in O(1), never a scan of 20k. */
+  byId: Map<string, Item>;
   /** Each food in its states (`vg` → its items, in the chips' order: variantsOf). */
   variants: Map<string, Item[]>;
   /** Settles once the lazy datasets are in (or failed): search again then. */
   more: Promise<void>;
 }
 
-export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, variants: new Map(), more: Promise.resolve() });
+export const emptyDb = (index: FoodIndex): FoodDb => ({ version: index.version, sets: [], entries: [], verify: null, byId: new Map(), variants: new Map(), more: Promise.resolve() });
 
 /** Items indexed per slice: a dataset is added a slice per task (load.ts), so no frame waits on a whole file. */
 export const SLICE = 2000;
@@ -38,10 +40,14 @@ export async function addDataset(db: FoodDb, meta: FoodIndex['datasets'][number]
     for (let j = i; j < Math.min(items.length, i + SLICE); j++) {
       const it = items[j];
       db.entries.push(entryOf(it, pen));
+      if (!db.byId.has(it.id)) db.byId.set(it.id, it);
       if (it.vg) (db.variants.get(it.vg) ?? db.variants.set(it.vg, []).get(it.vg)!).push(it);
     }
   }
 }
+
+/** The catalog's item of an id, if the catalog is in and has it. */
+export const itemById = (db: FoodDb | null, id: string): Item | undefined => db?.byId.get(id);
 
 /** The states a food's chips offer (food-data's variant_groups), in process order; `st` the chip's label. */
 const STATES = ['乾', '生', 'ゆで', '水煮', '蒸し', '焼き', 'レンジ', 'いため', 'ソテー'] as const;
