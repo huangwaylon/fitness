@@ -3,7 +3,7 @@
 // opening, then two repeats), closed by Esc between. For each opening, ms from the tap: the dialog seen open (`open`), the
 // last change inside it (`settled`), its open animation's end (`anim`); the longest frame (`long`) and the frame time
 // over 16.7 ms (`blocked`) in the 1.6 s after the tap, and what changed last (`what`). Then the medians. WebKit as an iPhone 15 (default) or Chromium
-// as an iPhone 13 (THROTTLE=4: its CPU 4x slower). Audio is stubbed (never a sound). A desktop's numbers, for an A/B
+// as an iPhone 13 on Metal, not SwiftShader (THROTTLE=4: its CPU 4x slower). Audio is stubbed (never a sound). A desktop's numbers, for an A/B
 // of two builds; the phone's are IslandLog's `perf.sheet`. Never in CI.
 //   npm run perf:sheets -- <port> [runs] [webkit|chromium]     (the build served: node scripts/serve-build.ts <port>)
 import { chromium, devices, webkit, type Page } from '@playwright/test';
@@ -65,7 +65,7 @@ async function measure(page: Page, menu: string | null, button: string): Promise
   return r;
 }
 
-const browser = await (eng === 'chromium' ? chromium : webkit).launch(eng === 'chromium' ? { args: ['--mute-audio', '--disable-audio-output'] } : {});
+const browser = await (eng === 'chromium' ? chromium : webkit).launch(eng === 'chromium' ? { args: ['--mute-audio', '--disable-audio-output', '--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist'] } : {});
 const all: Record<string, Sample[][]> = Object.fromEntries(SHEETS.map(([n]) => [n, [[], [], []]]));
 for (let i = 0; i < Number(runs); i++) {
   const ctx = await browser.newContext({ ...devices[eng === 'chromium' ? 'iPhone 13' : 'iPhone 15'], locale: 'ja-JP', timezoneId: 'Asia/Tokyo' });
