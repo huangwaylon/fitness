@@ -119,7 +119,7 @@ const MINOR = new Set(('a an the i me my you your he him his she her it its we u
   + 'oh yeah ok').split(' '));
 
 /** Whether a word is a content word (not in the function-word list). */
-const content = (w: string): boolean => !MINOR.has(w);
+export const content = (w: string): boolean => !MINOR.has(w);
 
 export interface Aligned {
   /** Each said word (normalised) and whether it was heard in its place. */
