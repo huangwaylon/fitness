@@ -1,4 +1,20 @@
 {
+ "call:s1-call": {
+  "cv": "2ad17e",
+  "decks": "30b5d72dc5b5db3a"
+ },
+ "call:s2-call-a": {
+  "cv": "dd15fc",
+  "decks": "f6e1fd6bee6b489c"
+ },
+ "call:s2-call-b": {
+  "cv": "e0a23d",
+  "decks": "40a579a98762d069"
+ },
+ "call:s3-call": {
+  "cv": "fef082",
+  "decks": "a48de96bfaf5c9b3"
+ },
  "ladder:ladder": {
   "cv": "72488b",
   "decks": "fe1e61ac42f69d7c"
