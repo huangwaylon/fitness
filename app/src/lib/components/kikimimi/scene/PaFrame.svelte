@@ -32,7 +32,7 @@
   .live .ring:nth-of-type(3) { animation-delay: .5s; opacity: .4; }
   .echo {
     display: grid; gap: 2px; min-width: 120px; padding: 8px 14px 10px; border-radius: 20px; background: color-mix(in srgb, var(--c-cream) 86%, transparent);
-    box-shadow: 0 var(--lip-h) 0 var(--c-lip); font: 700 var(--fs-talk)/1.1 var(--font-ui); color: var(--c-ink); letter-spacing: .1em;
+    box-shadow: var(--sh-lip-cream); font: 700 var(--fs-talk)/1.1 var(--font-ui); color: var(--c-ink); letter-spacing: .1em;
   }
   .echo span:nth-child(2) { opacity: .6; translate: 12px 0; }
   .echo span:nth-child(3) { opacity: .3; translate: 24px 0; }

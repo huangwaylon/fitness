@@ -200,7 +200,7 @@
 
   .turn { display: grid; gap: 10px; justify-items: center; }
   .whose { margin: 0; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--text); }
-  .line, .said { width: 100%; display: grid; gap: 4px; padding: 12px 14px; border-radius: 16px; background: var(--c-card); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
+  .line, .said { width: 100%; display: grid; gap: 4px; padding: 12px 14px; border-radius: 16px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .lbl { margin: 0; font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   .ja { margin: 0; font: 700 var(--fs-body)/1.5 var(--font-ui); }
   .ja.big { font-size: var(--fs-talk); }

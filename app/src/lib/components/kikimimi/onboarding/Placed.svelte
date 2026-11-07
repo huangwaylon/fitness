@@ -47,7 +47,7 @@
     min-height: 56px; border-radius: var(--r-card); display: grid; place-content: center; gap: 2px; background: var(--ctl-off);
     font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft);
   }
-  .places li.on { background: var(--ctl-sel); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
+  .places li.on { background: var(--ctl-sel); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .stars { color: var(--coral-text); font-size: var(--fs-xs); line-height: 1; }
   .skills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
   .skills .chip { display: grid; gap: 2px; padding: 8px 14px; cursor: default; }

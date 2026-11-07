@@ -65,7 +65,7 @@
 <style>
   .scene {
     position: relative; aspect-ratio: 393 / 224; border-radius: var(--r-card); overflow: hidden; isolation: isolate;
-    background: #eed9ae; box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    background: #eed9ae; box-shadow: var(--sh-lip-cream);
   }
   .scene.pop { animation: card-in 360ms var(--ease-bounce) both; }
   /* the backdrop softer than the villagers (they must pop); a paper vignette ties it to the sheet */
@@ -81,7 +81,7 @@
   .place, .chan {
     position: absolute; top: 10px; z-index: 3; padding: 4px 11px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.3 var(--font-ui);
   }
-  .place { left: 10px; background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: 0 2px 0 var(--c-lip); color: var(--c-ink); }
+  .place { left: 10px; background: color-mix(in srgb, var(--c-cream) 92%, transparent); box-shadow: var(--sh-lip-cream); color: var(--c-ink); }
   .chan { right: 10px; background: color-mix(in srgb, var(--c-ink) 78%, transparent); color: var(--c-cream); }
 
   /* a villager standing in the scene: full body, a ground shadow, the talk bob */
@@ -96,7 +96,7 @@
   /* the NH bubble floating over the scene, its tail toward the one talking */
   .say {
     position: absolute; top: 18%; z-index: 2; min-width: 96px; display: grid; gap: 6px; padding: 9px 14px 10px; border-radius: 22px;
-    background: var(--c-card); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
   }
   .say::before { content: ''; position: absolute; bottom: -6px; width: 16px; height: 16px; background: var(--c-card); border-radius: 3px; rotate: 45deg; }
   .say.right { right: 40%; }

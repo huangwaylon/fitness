@@ -69,6 +69,8 @@
   /* the small lip: dense cards and rows (the 4px lip stays for game chrome and CTAs) */
   --lip-s:2px;
   --sh-lip-s:0 var(--lip-s) 0 var(--lip);
+  /* an always-cream object's lip (ききみみ's game cards and bubbles): the card's, in the cream's own tan by night too */
+  --sh-lip-cream:0 var(--lip-h) 0 var(--c-lip);
   --sh-float:0 12px 32px rgba(74, 58, 44, .18);
 
   /* ---------- motion ---------- */

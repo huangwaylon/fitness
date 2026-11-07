@@ -46,7 +46,10 @@
   .mode b { font: 700 var(--fs-body)/1.2 var(--font-ui); }
   .mode small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
   /* ねる まえに: the night's navy, its moon */
-  .mode.night { background: #3A4886; color: #FFF6E0; box-shadow: inset 0 0 0 2px #B9C3F0, 0 var(--lip-h) 0 #2E3A72; }
+  .mode.night {
+    background: #3A4886; color: #FFF6E0;
+    --sh-ctl: inset 0 0 0 1.5px #B9C3F0, 0 2px 0 #2E3A72; --sh-ctl-press: inset 0 0 0 1.5px #B9C3F0, 0 0 0 #2E3A72;
+  }
   .mode.night small, .mode.night .meta { color: #DDE3FA; }
   .meta { margin-top: auto; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); }
 </style>

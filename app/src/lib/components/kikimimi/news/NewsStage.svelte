@@ -49,7 +49,7 @@
 </div>
 
 <style>
-  .desk { display: grid; gap: 8px; justify-items: center; padding: 10px 12px 12px; border-radius: 22px; background: var(--c-card); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
+  .desk { display: grid; gap: 8px; justify-items: center; padding: 10px 12px 12px; border-radius: 22px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .lamp { justify-self: start; margin: 0; display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: var(--r-pill); background: var(--ctl-off); color: var(--text-soft); font: 700 var(--fs-s)/1.4 var(--font-ui); }
   .lamp { background: color-mix(in srgb, var(--c-coral) 25%, var(--c-card)); color: var(--text); }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c-coral); animation: blink 1.2s ease-in-out infinite alternate; }
