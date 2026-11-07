@@ -392,6 +392,7 @@ items:
     note: "going to は「ガナ」"
     choices: ["going to", "want to", "got to"]
     answer: 0
+    ctx: "待ち合わせの前に、友だちから電話"
     cja: ["〜するつもり", "〜したい", "〜しなきゃ"]
     why: "going to はくだけると「ガナ」（gonna）。want to の「ワナ」、got to の「ガラ」と似ているので、最初の音で聞き分ける。"
     focus: "going to"
@@ -407,6 +408,7 @@ items:
     note: "can't の t は ほぼ 聞こえない。母音で 区別"
     choices: ["can't", can, could]
     answer: 0
+    ctx: "夕方、友だちから電話が"
     cja: ["行けない", "行ける", "行けた（かも）"]
     why: "can't の t はほとんど聞こえない。can't は「キャーン」と強めに長く、can は「クン」と弱く短い。母音の長さで区別する。"
     focus: "can't"
@@ -423,6 +425,7 @@ items:
     note: "come up は「カマップ」と つながる"
     choices: ["come up", "come out", "come on"]
     answer: 0
+    ctx: "約束の日の朝、友だちから電話"
     cja: ["（急用が）できる", "出てくる", "さあ、早く"]
     why: "come up はつながって「カマップ」。Something's come up は「急用ができた」という決まり文句。"
     focus: "come up"
@@ -438,6 +441,7 @@ items:
     note: "still on は「スティロン」"
     choices: ["still on", "still one", "steal on"]
     answer: 0
+    ctx: "約束の日の昼、友だちから電話"
     cja: ["予定どおり", "まだひとつ", "盗む（意味が通らない）"]
     why: "still on はつながって「スティロン」。Are we still on? は「予定は変わらず？」の確認。"
     focus: "still on"
@@ -453,6 +457,7 @@ items:
     note: "push it back が ひと続き"
     choices: ["push it back", "put it back", "pick it back"]
     answer: 0
+    ctx: "待ち合わせの時間について、友だちが"
     cja: ["あとにずらす", "元に戻す", "拾って戻す"]
     why: "push it back はひと続き。予定を「あとにずらす」意味。put it back（元に戻す）とは最初の音で区別する。"
     focus: "push it back"
@@ -469,6 +474,7 @@ items:
     note: "running a bit が つながる"
     choices: [running, raining, ringing]
     answer: 0
+    ctx: "待ち合わせ場所に、友だちから電話"
     cja: ["（遅れて）いる", "雨が降っている", "鳴っている"]
     why: "running の g は落ちて「ラニン」。I'm running late は「遅れている」。raining とは母音が違う。"
     focus: running

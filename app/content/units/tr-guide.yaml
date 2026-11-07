@@ -417,6 +417,7 @@ items:
     cast: us-m4
     choices: [ I don't know, I didn't know, I do know ]
     answer: 0
+    ctx: "東京の駅で、旅行者の友だちが"
     cja: [ "わからない", "知らなかった", "わかってる" ]
     why: "dunno は don't know がくずれた音で「ダノウ」。didn't know は過去、do know は強調。どの線か迷っているので don't know です。"
     focus: I don't know
@@ -434,6 +435,7 @@ items:
     cast: us-f6
     choices: [ Do you want to, Do you have to, Did you want to ]
     answer: 0
+    ctx: "東京旅行中、ホテルで友だちが"
     cja: [ "〜したい？", "〜しなきゃいけない？", "〜したかった？" ]
     why: "D'you wanna は Do you want to が縮まった音。have to なら「ハフタ」と聞こえます。明日の予定に誘っているので want to です。"
     focus: Do you want to
@@ -450,6 +452,7 @@ items:
     cast: us-m3
     choices: [ kind of, not that, way too ]
     answer: 0
+    ctx: "初めての東京旅行を前に、友だちが"
     cja: [ "ちょっと", "それほど〜ない", "あまりにも" ]
     why: "kinda は kind of が縮まった音で「カインダ」。ぼかしていても不安なのは本当です。not that や way too とはリズムが違います。"
     focus: kind of
@@ -465,6 +468,7 @@ items:
     cast: us-f6
     choices: [ worth it, worth going, worse ]
     answer: 0
+    ctx: "観光地について、旅行者に聞かれました"
     cja: [ "その価値がある", "行く価値がある", "もっと悪い" ]
     why: "worth it はつながって「ワーシット」。worth going なら最後に「ゴーイング」が聞こえるはず。worse は「もっと悪い」で、意味が通りません。"
     focus: worth it
@@ -480,6 +484,7 @@ items:
     cast: us-m4
     choices: [ last train, fast train, next train ]
     answer: 0
+    ctx: "駅のホームで、旅行者に聞かれました"
     cja: [ "終電", "急行", "次の電車" ]
     why: "last train は「終電」。or is there one after?（まだ後にある？）と続くので last が自然。fast は f の音、next は「ネクスト」です。"
     focus: last train
@@ -497,6 +502,7 @@ items:
     cast: us-m4
     choices: [ can't, can, should ]
     answer: 0
+    ctx: "浅草の商店街で、旅行者が"
     cja: [ "〜できない", "〜できる", "〜すべき" ]
     why: "can't ははっきり強く「キャン(ト)」、can は弱く「クン」と聞こえます。歩きながら食べるのはマナー違反という話なので can't です。"
     focus: can't

@@ -368,6 +368,7 @@ items:
     note: "meant の t は ほぼ 消える。mean と 母音で 区別"
     choices: [meant, mean, met]
     answer: 0
+    ctx: "荷物を運ぶのを手伝っています"
     cja: ["〜のつもりだった", "〜のつもりだ", "会った"]
     why: "言ったことを訂正しているので過去形の meant。語尾の t はほぼ消えますが、mean より母音が短く、met と違って n が聞こえます。"
     focus: meant
@@ -384,6 +385,7 @@ items:
     note: "Did you は「ディジュ」に つながる"
     choices: ["Did you say", "Do you say", "Did you see"]
     answer: 0
+    ctx: "カフェで、店員が注文を確認します"
     cja: ["〜って言った？", "〜って言う？", "〜を見た？"]
     why: "Did you は「ディジュ」とつながります。いま聞いた言葉を確認しているので過去形の Did you say。see だと「見た？」になり意味が通りません。"
     focus: "Did you say"
@@ -402,6 +404,7 @@ items:
     note: "could you は「クッジュ」"
     choices: ["could you", "can you", "would you"]
     answer: 0
+    ctx: "騒がしい店で、店員が"
     cja: ["〜してもらえる？（クッド）", "〜してくれる？（キャン）", "〜してくれますか？（ウッド）"]
     why: "could you は d と y がつながって「クッジュ」。can you は「キャニュ」、would you は「ウッジュ」で、最初の音で区別します。"
     focus: "could you"
@@ -417,6 +420,7 @@ items:
     note: "make that 〜＝注文を 言いなおす 定番"
     choices: ["make that", "make it", "take that"]
     answer: 0
+    ctx: "カフェで、友だちが注文しています"
     cja: ["やっぱり〜で（注文の言い直し）", "〜にして", "それを取って"]
     why: "Make that two は「やっぱり2つで」と注文を言い直す決まり文句で。make と that がつながります。it ではなく that が聞こえます。"
     focus: "make that"
@@ -434,6 +438,7 @@ items:
     note: "missed の ed は「ト」。the と つながる"
     choices: [missed, miss, mixed]
     answer: 0
+    ctx: "電話で道順を聞いた友だちが"
     cja: ["聞きのがした", "聞きのがす", "まぜた"]
     why: "missed の ed は軽い「ト」で、次の the とつながります。もう聞きのがしたので過去形。mixed なら「クス」の音が入ります。"
     focus: missed
@@ -449,6 +454,7 @@ items:
     note: "So that's は 一気に「ソザッツ」"
     choices: ["So that's", "So that", "So it's"]
     answer: 0
+    ctx: "友だちと、会う日を決めています"
     cja: ["じゃあ〜ってことね", "だから〜", "じゃあ〜だね"]
     why: "So that's〜, right? は聞いた内容をくり返す確認の言い方で、一気に「ソザッツ」。So it's なら th の音がなく「ソイッツ」です。"
     focus: "So that's"
