@@ -16,8 +16,8 @@
   "kiki.tachi.line": "{n}行目（{name}）を聞く",
   "kiki.tachi.script": "会話の全文",
   "kiki.tachi.hearAll": "会話を聞く",
-  "kiki.tachi.answer": "正解: {a}",
-  "kiki.tachi.mine": "あなたの答え: {a}",
+  "kiki.tachi.answer": "正解：{a}",
+  "kiki.tachi.mine": "あなたの答え：{a}",
   "kiki.tachi.host.all": "ぜんぶ ききわけられました！ 3にんの はなしも ばっちりですね！",
   "kiki.tachi.host.some": "3にんの はなしも、だいぶ ききわけられて きましたね！",
   "kiki.tachi.host.few": "3にんは むずかしいですね。ふりかえりで もういちど きいて みましょう"

@@ -5,6 +5,7 @@
   // on an English choice (ChoiceGrid; easy, the answer and its trap only): the gist, a detail, 「傘は いる？」 (only with
   // the weather). After the first play each story replays on its chip. The reveal: ○ / ×, each choice's Japanese, 解説;
   // the last one adds the trap's note and the whole bulletin.
+  import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { rawOf } from '#lib/kikimimi/games/listened.ts';
   import type { NewsCard } from '#lib/kikimimi/games/news/def.ts';
@@ -74,7 +75,7 @@
 
 {#snippet after()}
   {#if last && !v.out}
-    {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+    {#if it.note}<Note text={it.note} />{/if}
     <h3 class="script">{t('kiki.news.script')}</h3>
     <Transcript it={{ ...news, lines: news.lines ?? [] }} clock={() => game.clock()} compact />
   {/if}
@@ -87,6 +88,5 @@
   .stage { display: grid; gap: 8px; }
   .ctx { margin: 0; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .ask { margin: 0; text-align: center; font: 700 var(--fs-body)/1.5 var(--font-ui); }
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
   .script { margin: 4px 0 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
 </style>

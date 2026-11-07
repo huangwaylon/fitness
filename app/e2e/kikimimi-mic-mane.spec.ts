@@ -2,7 +2,7 @@
 // clips once per take (then silence) through a getUserMedia shim, nothing played out loud, no network. The mode is on
 // あそぶ's 声に出す shelf only with the mic on; a solo game of 4 lines: the line once (listen only), then 重ねて言う (the
 // mic's tap plays the line, the take ends on the silence after it) with the two melody lines and at most two feedback
-// lines, もう一回, あとから言う with お手本, 自分の声を聞く, とばす; the end with the lines said; my row minutes only
+// lines, もう一度, あとから言う with お手本, 自分の声を聞く, 飛ばす; the end with the lines said; my row minutes only
 // (`gm` mane, no answers), every track released, nothing sent. Screenshots (KIKI_SHOTS=1) into
 // /tmp/kikimimi-shots/mane/ at 393×852, by day and at night.
 import { expect, test, type Page } from './fixtures.ts';
@@ -118,7 +118,7 @@ for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
     expect(await live(page)).toBe(0);
     await snap(page, `${when}-5-tried`);
 
-    // もう一回, あとから言う: お手本, then the take; 自分の声を聞く
+    // もう一度, あとから言う: お手本, then the take; 自分の声を聞く
     await sheet(page).locator('[data-mane-again]').click();
     await sheet(page).locator('[data-mane-pick="after"]').click();
     await expect(sheet(page).locator('[data-mane-hear]')).toBeVisible();

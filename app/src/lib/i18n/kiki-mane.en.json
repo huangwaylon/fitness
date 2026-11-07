@@ -40,5 +40,6 @@
   "kiki.mane.fb.quiet": "I couldn't hear you. Move closer to the mic and try again",
   "kiki.mane.host": "Nice shadowing! Speaking it helps your ears too",
   "kiki.mane.lines": "Lines you said",
-  "kiki.mane.row": "Only the time you played is recorded"
+  "kiki.mane.row": "Only the time you played is recorded",
+  "kiki.mane.count": "{n} lines shadowed"
 }

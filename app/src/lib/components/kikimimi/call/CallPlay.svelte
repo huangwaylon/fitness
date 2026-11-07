@@ -7,6 +7,7 @@
   // plays the call again for me alone). Co-op 「わけて メモ」: both hear the whole call, my rows every other one, the
   // partner's dashed. The reveal: ○ / × and my rows right, each row's right chip and its Japanese, the errand's basket
   // filling with what we caught (the rows still to come blank), then the trap's note, 解説 and the call's transcript.
+  import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import type { CallCard } from '#lib/kikimimi/games/call/def.ts';
   import { EMPTY } from '#lib/kikimimi/games/listened.ts';
@@ -142,7 +143,7 @@
 
   {#if reveal && !v.out}
     <Basket tags={basket} />
-    {#if part === 1 && it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+    {#if part === 1 && it.note}<Note text={it.note} />{/if}
     {#if why}<Why text={why} />{/if}
     {#if part === 1 && callIt}
       <button type="button" class="btn small paper log-btn" aria-expanded={logOpen} data-kiki-call-log-btn data-sfx="tick" onclick={() => (logOpen = !logOpen)}>
@@ -171,6 +172,5 @@
   .acts .btn { min-width: 10em; }
   .rows { font: 700 var(--fs-body)/1.2 var(--font-ui); color: var(--text); }
   .team-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
   .log-btn { justify-self: center; }
 </style>

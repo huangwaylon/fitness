@@ -22,6 +22,7 @@
   // stopped), the question in Japanese (rung 4: the line with its chunk blanked); at a rung's reveal whether it climbed
   // (right on the first listen, every rung under it climbed: +100), and below the top no line and no replay (the next
   // rung's listen is the next, faster one); the top's reveal the line, its marks and how high the ladder went.
+  import Note from './frame/Note.svelte';
   import type { Snippet } from 'svelte';
   import { canSlow, hidesLine, type QuizGame } from './game.svelte.ts';
   import { SPEEDS, laddersIn, rungState } from '#lib/kikimimi/ladder.ts';
@@ -104,7 +105,7 @@
   {#if game.lesson}<details class="more" data-kiki-more><summary data-sfx="tick">{t('kiki.more')}</summary>{@render body()}</details>
   {:else}{@render body()}{/if}
 {/snippet}
-{#snippet note()}<p class="note" data-kiki-note>{it?.note}</p>{/snippet}
+{#snippet note()}<Note text={it?.note ?? ''} />{/snippet}
 {#snippet situation()}{#if it?.ctx && !reveal}<p class="ctx" data-kiki-ctx>{it.ctx}</p>{/if}{/snippet}
 {#snippet listening()}<p class="notes"><span aria-hidden="true">♪…</span><span class="sr-only">{t('kiki.listen')}</span></p>{/snippet}
 
@@ -223,8 +224,6 @@
   .duo:has(.talk) .one:not(.talk) { opacity: .6; }
   /* 「くわしく」: the full 44px to tap (padded round its one line; the marker kept) */
   .more summary { cursor: pointer; padding-block: calc((var(--hit) - 1.6em) / 2); font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
-  /* the trap's note (the explanation under the answer): in the cream bubble, a yuzu tint on cream */
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); position: relative; padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
   .react { position: absolute; right: -10px; top: -12px; width: 34px; height: 34px; animation: pop-in 320ms var(--ease-bounce) both; }
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {

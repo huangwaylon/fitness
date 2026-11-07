@@ -13,10 +13,10 @@
   "kiki.mane.legend.ref": "お手本",
   "kiki.mane.legend.you": "あなた",
   "kiki.mane.mine": "自分の声を聞く",
-  "kiki.mane.again": "もう一回",
+  "kiki.mane.again": "もう一度",
   "kiki.mane.next": "次の文へ",
-  "kiki.mane.finish": "おわる",
-  "kiki.mane.skip": "この文はとばす",
+  "kiki.mane.finish": "終わる",
+  "kiki.mane.skip": "この文は飛ばす",
   "kiki.mane.private": "録音はこのiPhoneの中だけ。保存も送信もされません",
   "kiki.mane.react.close": "わあ、 そっくり！",
   "kiki.mane.react.good": "いい かんじ！ もう いっかい？",
@@ -37,8 +37,9 @@
   "kiki.mane.fb.finalTry.rise": "最後を上げて言ってみよう",
   "kiki.mane.fb.finalTry.fall": "最後を下げて言ってみよう",
   "kiki.mane.fb.stressTry": "強く言うところを、もっとはっきり",
-  "kiki.mane.fb.quiet": "声が聞こえませんでした。マイクに近づいて、もう一回",
+  "kiki.mane.fb.quiet": "声が聞こえませんでした。マイクに近づいて、もう一度どうぞ",
   "kiki.mane.host": "まねっこ おつかれさま！ こえに だすと、 みみも よく なりますよ",
   "kiki.mane.lines": "まねした文",
-  "kiki.mane.row": "記録されるのは遊んだ時間だけです"
+  "kiki.mane.row": "記録には遊んだ時間だけが残ります",
+  "kiki.mane.count": "{n}文をまねしました"
 }

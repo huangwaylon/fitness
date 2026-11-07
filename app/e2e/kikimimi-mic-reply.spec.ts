@@ -131,7 +131,7 @@ test('こたえて！ solo: a clear reply answers as its tap, an unclear one 「
   right = await atAnswer(2);
   await willHear(page, { miss: 'none' });
   await sayIt(page);
-  await expect(sheet(page).locator('[data-mic-missed]')).toHaveText('声が聞こえませんでした。もう一度どうぞ');
+  await expect(sheet(page).locator('[data-mic-missed]')).toHaveText('声が聞こえませんでした。マイクに近づいて、もう一度どうぞ');
   await willHear(page, 'yes please just a little');
   await sheet(page).locator('[data-mic-say]').click();
   await expect(answer).toHaveAttribute('data-mic-answer', 'listening');

@@ -14,6 +14,9 @@
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import Why from '../frame/Why.svelte';
+  import ReviewRow from '../frame/ReviewRow.svelte';
+  import HearButton from '../frame/HearButton.svelte';
+  import Note from '../frame/Note.svelte';
   import SoundLine from '../scene/SoundLine.svelte';
   import MarkLegend from '../scene/MarkLegend.svelte';
   import { t } from '#lib/i18n/index.ts';
@@ -53,31 +56,20 @@
     <ul class="review">
       {#each shown as r (r.i)}
         {@const open = opened.includes(r.i)}
-        <li class="item card" data-review={r.i} data-ok={r.ok} data-open={open}>
-          <button type="button" class="head" aria-expanded={open} data-kiki-row={r.i} data-sfx="tick" onclick={() => toggle(r.i)}>
-            <span class="sym" class:ok={r.ok}><span aria-hidden="true">{r.ok ? '○' : '×'}</span><span class="sr-only">{r.ok ? t('kiki.right') : t('kiki.wrong')}</span></span>
-            <span class="sum">
-              {#if open}<span class="en big" data-kiki-review-en><SoundLine en={r.c.en} marks={r.c.marks} clip={r.c.id} from={playing(r.c)} clock={() => game.clock()} /></span>
-              {:else}<span class="en" lang="en">{r.c.en}</span>{/if}
-            </span>
-            {#if r.first}<span class="stamp obj-cream">{t('kiki.firstTry')}</span>{/if}
-            <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
-          </button>
-          {#if open}
-            <div class="txt" data-kiki-detail={r.i}>
-              {#if r.c.marks}<MarkLegend marks={r.c.marks} />{/if}
-              <p class="ja">{r.c.ja}</p>
-              {#if r.wrong.length}
-                <p class="picked" data-kiki-tile-heard>{t('kiki.tile.heard', { w: r.wrong.map((x) => `${x.put ?? '—'} → ${x.word}`).join('、') })}</p>
-              {/if}
-              {#if r.c.note}<p class="note" data-kiki-note>{r.c.note}</p>{/if}
-              {#if r.c.why}<Why text={r.c.why} />{/if}
-              <div class="hear">
-                <button type="button" class="ib tile-btn" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(r.c)}>▶︎</button>
-              </div>
-            </div>
+        <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => toggle(r.i)} first={r.first}>
+          {#snippet summary()}
+            {#if open}<span class="en big" data-kiki-review-en><SoundLine en={r.c.en} marks={r.c.marks} clip={r.c.id} from={playing(r.c)} clock={() => game.clock()} /></span>
+            {:else}<span class="en" lang="en">{r.c.en}</span>{/if}
+          {/snippet}
+          {#snippet hear()}<HearButton data-kiki-hear={r.i} onclick={() => game.hear(r.c)} />{/snippet}
+          {#if r.c.marks}<MarkLegend marks={r.c.marks} />{/if}
+          <p class="ja">{r.c.ja}</p>
+          {#if r.wrong.length}
+            <p class="picked" data-kiki-tile-heard>{t('kiki.tile.heard', { w: r.wrong.map((x) => `${x.put ?? '—'} → ${x.word}`).join('、') })}</p>
           {/if}
-        </li>
+          {#if r.c.note}<Note text={r.c.note} />{/if}
+          {#if r.c.why}<Why text={r.c.why} />{/if}
+        </ReviewRow>
       {/each}
     </ul>
   </ReviewList>
@@ -85,25 +77,8 @@
 
 <style>
   .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .item { display: grid; gap: 8px; padding: 0; }
-  .head {
-    appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; width: 100%;
-    display: grid; grid-template-columns: auto 1fr auto auto; align-items: start; gap: 10px; padding: 12px 14px; min-height: var(--hit);
-  }
-  .sum { min-width: 0; display: grid; gap: 2px; }
-  .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
-  .sym.ok { color: var(--leaf-text); }
-  .chev { font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
   .en { margin: 0; font: 700 17px/1.4 var(--font-ui); }
   .en.big { font-size: max(17px, var(--fs-talk)); }
-  .txt { min-width: 0; display: grid; gap: 6px; padding: 0 14px 12px 46px; }
   .ja, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .picked { color: var(--coral-text); }
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
-  .stamp {
-    display: inline-block; padding: 2px 6px; border-radius: 8px; rotate: -4deg; white-space: nowrap; color: var(--coral-text);
-    background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-card)); box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui);
-  }
-  .hear { display: flex; gap: 6px; }
-  .ib { width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center; font: 700 18px/1 var(--font-ui); }
 </style>

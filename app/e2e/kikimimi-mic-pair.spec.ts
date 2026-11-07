@@ -3,7 +3,7 @@
 // "hears" the word given), nothing played out loud, no network. Off: no 声に出す shelf. Solo, 8 cards: both words play
 // first; then the word to say and the mic: a wrong word heard is the joke (「え、 …？！」) with the tip and a second try,
 // the right one answers (通じた！, 解説, the mouth tips and lines); a take that can't be told says 「聞いて選んでね」 and the
-// pictures take my pick; nothing heard says so; とばす; the end with the cards (▶︎ each word) and 「通じた k / 8」; my row
+// pictures take my pick; nothing heard says so; 飛ばす; the end with the cards (▶︎ each word) and 「通じた k / 8」; my row
 // minutes only, every track released, nothing sent. Co-op あてっこ on two phones over the demo's relay: the round's
 // speaker (by turns) sees the word and taps 言えた, the other taps the picture heard; 通じた or what it sounded like; no
 // recogniser and no mic at all (B consents at さんか). Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/pair/ at 393×852, by day and night.
@@ -104,7 +104,7 @@ test('off: no 声に出す shelf, no はつおん while the mic is off', async (
 });
 
 for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
-  test(`solo (${when}): hear both, say one; the joke and a second try, 通じた！; 聞いて選んでね; nothing heard; とばす; the end`, async ({ page, context }) => {
+  test(`solo (${when}): hear both, say one; the joke and a second try, 通じた！; 聞いて選んでね; nothing heard; 飛ばす; the end`, async ({ page, context }) => {
     test.slow();
     await fakeMic(context, true);
     const posts: string[] = [];
@@ -163,7 +163,7 @@ for (const [when, q] of [['day', DAY], ['night', NIGHT]] as const) {
     await expect(sheet(page).locator('[data-pair-verdict]')).toHaveAttribute('data-pair-verdict', 'right');
     await sheet(page).locator('[data-kiki-next]').click();
 
-    // card 3: nothing heard (not a try), then とばす; the rest skipped
+    // card 3: nothing heard (not a try), then 飛ばす; the rest skipped
     await atCard(page, 2);
     await say(page, { miss: 'none' });
     await expect(sheet(page).locator('[data-pair-hint]')).toContainText('声が聞こえませんでした');
