@@ -123,7 +123,9 @@ jobs:
       - run: node scripts/e2e-shards.ts plan 12 shards e2e/timings.json -- --project=chromium --project=chromium-mic --grep-invert "@render|@quarantine"
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=chromium --project=chromium-mic --test-list shards/${{ matrix.shard }}.txt
+        # (the plan leaves them out, but a whole spec file in a shard list (e2e-shards.ts: serial or ›-titled) brings its
+        # quarantined tests back in: 32266e9a ran kikimimi-path:113; so filter here too)
+        run: npx playwright test --project=chromium --project=chromium-mic --test-list shards/${{ matrix.shard }}.txt --grep-invert "@render|@quarantine"
       # (each test's time, for the next run's plan: the first run's report)
       - if: always() && steps.e2e.outcome != 'skipped'
         run: cp playwright-results.json timings-${{ matrix.shard }}.json 2>/dev/null || true
