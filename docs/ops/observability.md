@@ -40,6 +40,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `app.show` | info | `awayS`, `route` | shown again |
 | `app.reload` | info | `why` (update, chunk) | the app reloads itself |
 | `perf.frames` | info | `p50`, `p95` (ms), `fps`, `long` (> 50 ms), `drawFps` (the island's own), `hz`, `mode`, `when` | 10 s after ready (5 s of rAF); again after 10 min away |
+| `perf.sheet` | info | `sheet` (food, health, travel, wedding, hiking, kikimimi, panel, zukan, settings), ms from the tap: `chunk` (its code in, the dialog shown), `content` (the last change inside it), `anim` (the open animation's end); `long` (the longest frame), `slow` (frames over 33 ms), `first` (its first opening this load), `kept` (shown again from a kept mount) | each sheet's first opening a load; a fifth of the rest |
 | `js.error` | error (warn while leaving) | `kind`, `msg`, `stack` (4 frames), `src`, `n` (folded repeats), `leaving`, `route` | `error`, `unhandledrejection` |
 | `api.fail` / `api.ok` | warn / info (10 % sampled) | `action`, `err`, `http`, `ms`, `tries`; `r` | a `/api` call |
 | `auth.lost` | warn | `from` (refresh, flush, ws), `code` | the key was refused (→ pairing) |
