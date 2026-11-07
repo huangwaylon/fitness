@@ -18,6 +18,10 @@ export interface Entry {
 /** Each curated pop level (1–3) outweighs a little over half a match tier, so 食パン (substring, pop 3) beats パン粉
  *  (prefix, pop 1). */
 const POP_WEIGHT = 0.6;
+/** A rare or lab form the data flags pop -1 (a cut vegetable's washes, grated juice, 素揚げ, a meat's 脂身 alone, a story-named
+ *  school lunch): 2.5 tiers down, under the name substrings, so an exact head (キャベツ カット 常法洗浄 for キャベツ) never
+ *  ranks with the food itself. */
+const RARE_FORM = 2.5;
 /** A `secondary` dataset's items (regional, school lunch, products) rank below a core item a curated alias matches. */
 export const SECONDARY_PENALTY = 1.5;
 /** A packaged product (db.ts PRODUCT_SOURCES) ranks a little below the other secondary items too: たまご finds 卵, not
@@ -82,7 +86,7 @@ export function search(entries: readonly Entry[], query: string, limit = 60, gro
   const hits: Hit[] = [];
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
-    if (tokens.every((t) => e.h.includes(t)) && !lookalike(e.it, q)) hits.push({ e, s: tierOf(e, q) + e.pen - e.pop * POP_WEIGHT + rare(e.it), i });
+    if (tokens.every((t) => e.h.includes(t)) && !lookalike(e.it, q)) hits.push({ e, s: tierOf(e, q) + e.pen - (e.pop < 0 ? -RARE_FORM : e.pop * POP_WEIGHT) + rare(e.it), i });
   }
   /** The ranking: score, then curated pop, then the shorter name, then the list's order. */
   const before = (a: Hit, b: Hit): number => a.s - b.s || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length || a.i - b.i;

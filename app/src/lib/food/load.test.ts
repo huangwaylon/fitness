@@ -137,7 +137,7 @@ describe('loadFoodDb', () => {
       const tokens = query.trim().split(/[\s　]+/).map(searchKey).filter(Boolean);
       const q = tokens.join('');
       const hits: { e: Entry; s: number }[] = [];
-      for (const e of db.entries) if (tokens.every((t) => e.h.includes(t)) && !/（中型種）|^親鶏|^交雑牛/.test(e.it.name)) hits.push({ e, s: tierOf(e, q) + e.pen - e.pop * 0.6 + (/(^|\s)皮(\s|$)/.test(e.it.name) || (e.it.cat === '肉' && /(^|[\s（])脂身(\s|$)/.test(e.it.name)) ? 1 : 0) });
+      for (const e of db.entries) if (tokens.every((t) => e.h.includes(t)) && !/（中型種）|^親鶏|^交雑牛/.test(e.it.name)) hits.push({ e, s: tierOf(e, q) + e.pen - (e.pop < 0 ? -2.5 : e.pop * 0.6) + (/(^|\s)皮(\s|$)/.test(e.it.name) || (e.it.cat === '肉' && /(^|[\s（])脂身(\s|$)/.test(e.it.name)) ? 1 : 0) });
       hits.sort((a, b) => a.s - b.s || b.e.pop - a.e.pop || a.e.n.length - b.e.n.length);
       const rep = new Map<number, Entry>();
       for (const { e } of hits) {
@@ -231,6 +231,13 @@ describe('the golden queries', () => {
       if (got !== top) fails.push(`${q}: ${got} (want ${top})`);
     }
     expect(fails).toEqual([]);
+  });
+
+  it('a rare or lab form (pop -1) stays out of the top ten: キャベツ’s washes, 卵 素揚げ', () => {
+    const top = (q: string) => searchFoods(db, q, 10).map((x) => x.name);
+    expect(top('キャベツ')[0]).toMatch(/^キャベツ/);
+    expect(top('キャベツ').filter((n) => /洗浄/.test(n))).toEqual([]);
+    expect(top('卵').filter((n) => /素揚げ/.test(n))).toEqual([]);
   });
 
   it('a packaged product never ranks above a generic food in the top three', () => {
