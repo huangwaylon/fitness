@@ -7,8 +7,8 @@
   // (ActionSheet: 名前を変更 · 上へ · 下へ · 削除), 「＋ 追加」 under each category, a new category, チェックをリセット
   // (mine only). An item's 削除 is at once with とりけす on the banner; a category's and the reset ask first, then
   // とりけす too. The guest adds, and changes only what it added. A trip that's over (when.ts readOnly) is frozen: the
-  // seed list as it was, 「終わった旅」 and its count, no ticks, no 編集 (packing.svelte.ts reads and sends nothing for
-  // it). The name form: the kit's form sheet (ui/Sheet, 保存 in its footer; the return key saves too).
+  // final list as everyone left it, 「終わった旅」 and its count, who packed what, no ticks, no 編集 (packing.svelte.ts
+  // sends nothing for it). The name form: the kit's form sheet (ui/Sheet, 保存 in its footer; the return key saves too).
   //   <PackList trip={nz} />
   import Icon from '../ui/Icon.svelte';
   import ProgressBar from '../ui/ProgressBar.svelte';
@@ -164,13 +164,12 @@
           {#if frozen}
             <span class="dot" aria-hidden="true"></span>
             <span class="tx"><span class="it">{r.text}</span>{#if r.note}<small>{r.note}</small>{/if}</span>
+            {@render by(r.item.ticks, false)}
           {:else if !editing}
             <Tick checked={r.mine} onchange={(v) => packing.tick(trip.id, r.id, v)}
               label={r.item.ticks.length ? `${r.text} ${t('travel.pack.packedBy', { names: r.item.ticks.map(nameOf).join(locale === 'ja' ? '、' : ', ') })}` : r.text} />
             <span class="tx"><span class="it">{r.text}</span>{#if r.note}<small>{r.note}</small>{/if}</span>
-            {#if r.item.ticks.length}
-              <span class="by" aria-hidden="true">{#each r.item.ticks as w (w)}<span class="who" data-chip={w} style:--who={TONE[w]}>{nameOf(w)}</span>{/each}</span>
-            {/if}
+            {@render by(r.item.ticks, true)}
           {:else}
             <button type="button" class="eb" class:sel={acting && target?.kind === 'item' && target.id === r.id} aria-disabled={r.editable ? undefined : 'true'} aria-label={t('travel.pack.actsOf', { name: r.text })} data-pack-acts={r.id} data-sfx="open"
               onclick={() => act({ kind: 'item', id: r.id, name: r.text, i: ri, n: c.rows.length })}>
@@ -201,6 +200,13 @@
     </div>
   {/if}
 </div>
+
+<!-- who has packed it (on the live list the Tick's label says it; a frozen row has none, so read it here) -->
+{#snippet by(ticks: Who[], hidden: boolean)}
+  {#if ticks.length}
+    <span class="by" aria-hidden={hidden || undefined}>{#each ticks as w (w)}<span class="who" data-chip={w} style:--who={TONE[w]}>{nameOf(w)}</span>{/each}</span>
+  {/if}
+{/snippet}
 
 <ActionSheet bind:open={acting} title={targetName} groups={actions} onpick={picked} />
 <ActionSheet bind:open={asking} title={askTitle} note={askNote} label={ask?.kind === 'cat' ? t('travel.pack.catAsk', { name: ask.cat.name }) : t('travel.pack.reset')}

@@ -204,17 +204,25 @@ describe('packing', () => {
 describe('a trip that’s over (when.ts readOnly)', () => {
   /** Okinawa's last day was 2026-10-12; NZ's ends 2027-02-16 (its flight home 00:10 on the 17th). */
   const AFTER_NZ = Date.parse('2027-03-01T00:00:00+13:00');
-  it('its list is the seed: no op of anyone’s read, nobody’s ticks', () => {
+  it('its list is the final one, as everyone left it: every op folded, each person’s ticks after their reset', () => {
     fake.rows = [
       rec(T, 'B', 'pack_chk', { trip: 'okinawa', id: 'ok-0-0', at: T, v: 1 }),
+      rec(T, 'A', 'pack_chk', { trip: 'okinawa', id: 'ok-0-0', at: T, v: 1 }),
       rec(T + 1, 'A', 'pack', { trip: 'okinawa', id: '_aaa00002', at: T + 1, kind: 'item', cat: 'ok-0', ord: 9, name: { ja: 'あとから' }, by: 'A' }),
-      rec(T + 2, 'A', 'pack', { trip: 'okinawa', id: 'ok-0-1', at: T + 2, rm: true })
+      rec(T + 2, 'A', 'pack', { trip: 'okinawa', id: 'ok-0-1', at: T + 2, rm: true }),
+      rec(T + 3, 'B', 'pack', { trip: 'okinawa', id: 'ok-1', at: T + 3, kind: 'cat', ord: 2, name: { ja: 'きもの' }, icon: 'shirt' }),
+      rec(T + 4, 'A', 'pack_chk', { trip: 'okinawa', id: '_aaa00002', at: T + 4, v: 1 }),
+      rec(T + 5, 'B', 'pack_reset', { trip: 'okinawa', at: T + 5 })
     ];
     expect(packing.frozen('okinawa')).toBe(true);
-    expect(packing.list('okinawa', SEED).map((c) => [c.id, c.items.map((i) => [i.id, i.ticks.length])])).toEqual([
-      ['ok-0', [['ok-0-0', 0], ['ok-0-1', 0]]],
-      ['ok-1', [['ok-1-0', 0]]]
+    const list = packing.list('okinawa', SEED);
+    expect(list.map((c) => [c.id, c.name.ja, c.items.map((i) => [i.id, i.ticks])])).toEqual([
+      ['ok-0', '書類', [['ok-0-0', ['A']], ['_aaa00002', ['A']]]],
+      ['ok-1', 'きもの', [['ok-1-0', []]]]
     ]);
+    // and nothing of it is mine to change
+    expect(packing.rename('okinawa', SEED, '_aaa00002', 'x', 'ja')).toBe(false);
+    expect(fake.sent).toEqual([]);
   });
   it('nothing on it changes: no tick, no add, rename, move, removal or reset is sent', () => {
     expect(packing.tick('seattle', 'se-0-0', true)).toBe(false);
@@ -226,14 +234,15 @@ describe('a trip that’s over (when.ts readOnly)', () => {
     expect(packing.resetHeld('okinawa', 0).ok).toBe(false);
     expect(fake.sent).toEqual([]);
   });
-  it('one rule for every trip: NZ is editable till it’s over, then frozen; its trip note still read', () => {
+  it('one rule for every trip: NZ is editable till it’s over, then frozen with its tick kept; its trip note still read', () => {
     expect(packing.frozen('nz')).toBe(false);
     expect(packing.tick('nz', 'ok-0-0', true)).toBe(true);
     fake.now = AFTER_NZ;
     fake.rows = [rec(T - 5, 'A', 'trip_note', { trip: 'nz', at: T - 5, v: { flightRef: 'X1' } })];
     expect(packing.frozen('nz')).toBe(true);
-    expect(packing.tick('nz', 'ok-0-0', true)).toBe(false);
+    expect(packing.tick('nz', 'ok-0-0', false)).toBe(false);
     expect(fake.sent).toHaveLength(1);
+    expect(packing.list('nz', SEED)[0]!.items[0]!.ticks).toEqual(['A']);
     expect(packing.note('nz')).toEqual({ flightRef: 'X1' });
   });
 });

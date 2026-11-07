@@ -3,7 +3,7 @@
 // packBookOf, packList), each item's ticks (each person's own, after their own reset), and my changes (each one event,
 // sent at once, its names cleaned as the record keeps them; the record's notice brings them to every open phone). The
 // trip's private values (its `trip_note`) too. Nothing is mine to change until the week's view says who I am (`me`),
-// and nothing at all on a trip that's over (when.ts readOnly: its list the seed, no ops read or sent).
+// and nothing at all on a trip that's over (when.ts readOnly: its final list, the same fold, read-only: nothing sent).
 //   packing.frozen(trip)              the trip is over: read-only
 //   packing.list(trip, seed)          categories (by ord), each with its items (by ord)
 //   packing.addItem / addCat / rename / move              the ✎ edits (the guest: only what it added: packMayEdit)
@@ -24,7 +24,6 @@ import { TRIP_META } from '#lib/travel/trips/meta.ts';
 import { readOnly } from './when.ts';
 
 const EMPTY: readonly PackEntry[] = [];
-const NO_OPS = packBookOf(EMPTY);
 
 class Packing {
   #last = 0;
@@ -38,14 +37,14 @@ class Packing {
     return packBookOf(week.model?.state.pack ?? EMPTY);
   }
 
-  /** The trip is over (on the relay's clock, or a `?date=` preview's): its list frozen. */
+  /** The trip is over (on the relay's clock, or a `?date=` preview's): its list frozen as everyone left it. */
   frozen(trip: string): boolean {
     const m = TRIP_META.find((x) => x.id === trip);
     return !!m && readOnly(m, world.now());
   }
 
   list(trip: string, seed: PackSeed | null | undefined): PackCat[] {
-    return packList(trip, seed, this.frozen(trip) ? NO_OPS : this.#book);
+    return packList(trip, seed, this.#book);
   }
 
   /** The trip note's values by key (`{p:key}` tokens in the guide), or null: none yet. */
