@@ -13,7 +13,7 @@ import {
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend, glow as addLight } from './bend.ts';
-import { withMaps } from './blank.ts';
+import { WHITE, withMaps } from './blank.ts';
 import { splitSides } from './sides.ts';
 import { MODELS } from './models3d.ts';
 import { pace } from './pace.ts';
@@ -302,8 +302,8 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
     import.meta.env.DEV || new URLSearchParams(location.search).has('demo') ? [] : null;
   const hook = {
     live: (name: string) => parts.filter((p) => p.name === name && p.obj.scale.x > 0).map((p) => ({ x: p.obj.position.x, y: p.obj.position.y, z: -p.obj.position.z, s: p.obj.scale.x })),
-    /** Each drawn part's textures' sizes (px; null: none, drawn as geometry in its colours, sharp at any size). */
-    maps: (name: string) => parts.filter((p) => p.name === name).map((p) => p.mats.map((m) => (m.map ? [(m.map.image as { width: number }).width, (m.map.image as { height: number }).height] : null))),
+    /** Each drawn part's textures' sizes (px; null: none or the white stand-in, blank.ts: drawn as geometry in its colours, sharp at any size). */
+    maps: (name: string) => parts.filter((p) => p.name === name).map((p) => p.mats.map((m) => (m.map && m.map !== WHITE ? [(m.map.image as { width: number }).width, (m.map.image as { height: number }).height] : null))),
     log: () => log
   };
   if (log) window.__fx3 = hook;
