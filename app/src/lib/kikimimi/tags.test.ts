@@ -4,8 +4,9 @@ import { BANK } from './source.ts';
 import { FEATURES, SKILLS, featureSkill, skillsOf, tagged, tagsOf } from './tags.ts';
 
 describe('the tags', () => {
-  it('has an entry for every item of levels 1-3 and none stray', () => {
-    expect(BANK.filter((it) => it.lv < 4 && !tagged(it.id)).map((it) => it.id)).toEqual([]);
+  it('has an entry (or its own tags) for every item of levels 1-3 and none stray', () => {
+    // (a set's level-3 item carries its own tags: content/kawa-b.ts)
+    expect(BANK.filter((it) => it.lv < 4 && !tagged(it.id) && !it.tags).map((it) => it.id)).toEqual([]);
     expect(BANK.filter((it) => it.lv === 4 && !it.tags).map((it) => it.id)).toEqual([]);
   });
   it('maps every feature to a skill and every item to a primary skill', () => {
