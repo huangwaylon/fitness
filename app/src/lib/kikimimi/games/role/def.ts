@@ -11,10 +11,9 @@ import type { Item, Level, Line } from '../../bank.ts';
 import type { UnitPlay } from '../../lesson.ts';
 import { TIMERS, type QuizTimer } from '../../seed.ts';
 import type { AnswerValue, GameDef, Graded, Round, RoundDeck, RoundWindows } from '../../round/types.ts';
+import { ROLES } from '../listened.ts';
 import type { Scene } from './scenes.ts';
 
-/** The roles: A (0) and B (1). */
-export const ROLES = 2;
 /** A turn's most key phrases (the answer's low bits). */
 export const KEYS_MAX = 6;
 /** The answer's bit for "something was heard" (a turn with no key phrase still counts as said). */

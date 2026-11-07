@@ -43,10 +43,10 @@ interface ManeRound extends Round {
 const DONE: Graded = { ok: true, pts: 0 };
 const isDone = (a: AnswerValue): boolean => a === 0;
 
-function maneDeck(items: () => readonly Item[], playMs: (id: string) => number | undefined, w: RoundWindows): RoundDeck {
+function maneDeck(items: () => readonly Item[], playMs: (it: Item) => number | undefined, w: RoundWindows): RoundDeck {
   const round = (i: number): ManeRound | undefined => {
     const it = items()[i];
-    return it && { kind: 'mic.shadow', id: it.id, play: playMs(it.id) ?? PLAY_UNKNOWN };
+    return it && { kind: 'mic.shadow', id: it.id, play: playMs(it) ?? PLAY_UNKNOWN };
   };
   return {
     get count() {
@@ -64,7 +64,7 @@ function maneDeck(items: () => readonly Item[], playMs: (id: string) => number |
 /** Where a game's lines come from (the phone's decks: lane.ts; a test's). */
 export interface ManeSource {
   items(seed: number, o: QuizOpts): readonly Item[];
-  playMs(id: string): number | undefined;
+  playMs(it: Item): number | undefined;
 }
 
 export function maneGame(src: ManeSource): GameDef<QuizOpts> {

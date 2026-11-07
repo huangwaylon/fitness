@@ -56,7 +56,7 @@ describe('まねっこ: the lines', () => {
 
 describe('まねっこ: the rounds', () => {
   let items: Item[] = [];
-  const game = maneGame({ items: () => items, playMs: (id) => Math.round((clipDur(id) ?? 2) * 1000) });
+  const game = maneGame({ items: () => items, playMs: (it) => Math.round((clipDur(it.id) ?? 2) * 1000) });
   const deck = game.deck(3, { lv: 4, timer: 20 }, { w: WINDOWS, enc: [4, 1] });
   beforeAll(() => void (items = maneDeal(3, levelItems(4), voiced)));
 

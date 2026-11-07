@@ -9,6 +9,7 @@ import { fnv1a, mulberry32, shuffle } from '#lib/random.ts';
 import type { AnswerValue, GameDef, Graded, Round, RoundDeck, RoundWindows } from '../../round/types.ts';
 import { quizOpts, type QuizOpts } from '../quiz/def.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
+import { ROLES } from '../listened.ts';
 import type { PairCard, Sound } from './pairs.ts';
 
 /** A game's cards. */
@@ -18,8 +19,7 @@ const PER_SOUND = 2;
 /** The answers: the word heard or tapped (0, 1); the villager couldn't tell, or I skipped; the speaker said it (あてっこ). */
 export const UNSURE = 2;
 export const SAID = 3;
-/** The co-op roles: who says round i's word. */
-const ROLES = 2;
+
 
 /** A deck: 8 pairs by the seed, at most two of a contrast. */
 export function pairDeal(seed: number, cards: readonly PairCard[]): PairCard[] {

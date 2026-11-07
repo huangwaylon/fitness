@@ -20,7 +20,6 @@ type Kiki = {
   right(): number;
   items(): string[];
   unit(unit: unknown, ids: string[]): Promise<void>;
-  lesson(): { u: string; lesson: string } | null;
   recorded(): { u?: string; l?: number; tm?: number; lv: number; r: unknown[] } | null;
 };
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;
