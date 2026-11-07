@@ -54,6 +54,13 @@ never seen is the paper placeholder. The map draws offline once it has drawn on 
 shell, the USGS / GSI tiles it drew in `island-tiles-v1` (both send `Access-Control-Allow-Origin: *`: readable, so
 counted at their size); where none was kept, the track alone with the note.
 
+Phase B (the user, 2026-11-07): all ten trails have 「オフライン用に保存」 on the map, under ‹ (design.md "Offline maps").
+The plan (`lib/offline/plan.ts planTrail`): z12–13 within 3 km of the track, z14–16 within 1 km. As built (measured,
+every tile once): USGS 1.6–3.1 MB (Talapus 1.6, Pilchuck 1.9, Valhalla 2.0, Lake 22 2.2, Snow Lake 2.4, Bridal Veil
+2.6, Skyline 3.1), Enchantments 8.8 MB (519 tiles); GSI Kinpu 3.3, Fuji 4.4. GSI's tiles are kept on the phone only
+(never re-served), saved to z16 (offline the source is capped there and scaled up past it), and its credit
+「出典：国土地理院（地理院タイル）」 shows on the map above the sheet's peek and in the credits.
+
 ## Screens
 
 - **The list:** NavBar (✕); one ChipRow: すべて 中級 上級 最上級 with their counts, then 距離順 標高差順 (a sort is off
@@ -71,6 +78,6 @@ counted at their size); where none was kept, the track alone with the note.
 ## Later / left out
 
 - Live tracking and the free hike: the seam is TrailView's `LocWatch` fix, passed to TrailMap's `fix`.
-- No saving a map area ahead (offline phase B). No landscape side-docked sheet yet. No waypoint popups (the waypoints are dots on
+- No landscape side-docked sheet yet. No waypoint popups (the waypoints are dots on
   the map and dashed lines on the chart).
 - `e2e/hiking.spec.ts` (logic tier) uses an invented fixture track (`e2e/fixtures/hiking/tiny.gpx`).

@@ -9,7 +9,7 @@ import type { Region } from '#lib/hiking/types.ts';
 /** The hiking app's TILE_SOURCES: USGS is {z}/{y}/{x}, GSI {z}/{x}/{y}; each to its own native zoom. */
 export const TOPO: Record<Region, { tiles: string[]; maxzoom: number; attribution: string }> = {
   us: { tiles: ['https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}'], maxzoom: 16, attribution: '© USGS National Map' },
-  jp: { tiles: ['https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png'], maxzoom: 18, attribution: '地理院タイル © 国土地理院' }
+  jp: { tiles: ['https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png'], maxzoom: 18, attribution: '出典：国土地理院（地理院タイル）' }
 };
 
 /** The overlays' colours, literal copies of app tokens (MapLibre paints no CSS variables; styles/tokens.css): the track
@@ -26,12 +26,13 @@ const dot = (id: string, source: string, size: number, color: unknown, filter?: 
 
 const empty = { type: 'geojson', data: { type: 'FeatureCollection', features: [] } } as const;
 
-export function buildStyle(region: Region): StyleSpecification {
+/** `maxzoom`: the topo's own unless capped (a saved area offline: engine.ts). */
+export function buildStyle(region: Region, maxzoom = TOPO[region].maxzoom): StyleSpecification {
   const line = { 'line-join': 'round', 'line-cap': 'round' } as const;
   return {
     version: 8,
     name: 'trails',
-    sources: { [SRC.base]: { type: 'raster', tileSize: 256, ...TOPO[region] }, [SRC.track]: { ...empty }, [SRC.marks]: { ...empty }, [SRC.scrub]: { ...empty }, [SRC.loc]: { ...empty } },
+    sources: { [SRC.base]: { type: 'raster', tileSize: 256, ...TOPO[region], maxzoom }, [SRC.track]: { ...empty }, [SRC.marks]: { ...empty }, [SRC.scrub]: { ...empty }, [SRC.loc]: { ...empty } },
     layers: [
       { id: 'paper', type: 'background', paint: { 'background-color': C.paper } },
       { id: 'topo', type: 'raster', source: SRC.base },

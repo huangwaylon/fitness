@@ -45,7 +45,8 @@ const ALLOW: Record<string, string[]> = {
   // ききみみ's mic (docs/kikimimi-mic.md): the capture's audio session (sound/engine.ts applySession), the relay's
   // `/stt` and the key (sync)
   mic: ['sync', 'sound'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic']
+  offline: ['travel', 'hiking', 'sync'],
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic', 'offline']
 };
 
 function files(dir: string): string[] {
@@ -108,10 +109,11 @@ describe('src/lib folder boundaries', () => {
   it('imports only what its folder allows', () => {
     // art.ts and sound/manifest.ts bundle static/art/manifest.json and static/audio/manifest.json (outside src/lib),
     // sound/kk.ts imports static/audio/kk.json (its own chunk), the mic's recogniser the service worker's STT cache's
-    // name (service-worker/caches.ts STT_CACHE, the cache it fills): the only allowed reaches outside.
+    // name (service-worker/caches.ts STT_CACHE, the cache it fills), the saved map areas the worker's names and tile keys
+    // for them (SAVED_PREFIX, tileKey): the only allowed reaches outside.
     const outside = (e: { from: string; to: string }) =>
       (e.from === 'art' && e.to.endsWith('static/art/manifest.json')) || (e.from === 'sound' && /static\/audio\/(manifest|kk)\.json$/.test(e.to)) ||
-      (e.from === 'mic' && e.to.endsWith('service-worker/caches.ts'));
+      ((e.from === 'mic' || e.from === 'offline') && e.to.endsWith('service-worker/caches.ts'));
     const bad = edges
       .filter((e) => !(ALLOW[e.from] ?? []).includes(e.to) && !outside(e))
       .map((e) => `${e.file} → ${e.to}`);

@@ -19,6 +19,9 @@
   import { pick } from './text.ts';
   import { fmtKm } from './units.ts';
   import { monthDay } from './dates.ts';
+  import SaveButton from '../offline/SaveButton.svelte';
+  import { areas } from '#lib/offline/areas.svelte.ts';
+  import { planTrip } from '#lib/offline/plan.ts';
 
   interface Props {
     trip: Trip;
@@ -40,6 +43,9 @@
     if (!lg) return t('travel.map.start');
     return [t(`travel.map.mode.${lg.mode}`) + (lg.min ? ` ${t('travel.map.min', { min: lg.min })}` : ''), ...(lg.km ? [fmtKm(lg.km)] : [])].join(' · ');
   }
+  /** The trip's area to save ahead (lib/offline/plan.ts), and whether some of it is (the map's note offline). */
+  const plan = $derived(planTrip(trip));
+  const saved = $derived(['saved', 'partial', 'saving'].includes(areas.state(plan.id).k));
   const dateOf = (d: number) => trip.days.find((x) => x.n === d)?.date;
   let list: HTMLElement | undefined = $state();
   let map: ReturnType<typeof TripMap> | undefined = $state();
@@ -65,6 +71,7 @@
 </script>
 
 <div class="map-pane" data-map-pane data-day={day} data-selected={selected ?? undefined}>
+  <div class="offline"><SaveButton {plan} name={trip.title} /></div>
   <div class="held">
     <div class="under">
       <ChipRow label={t('travel.map.days')}>
@@ -75,11 +82,11 @@
       </ChipRow>
     </div>
     <div class="slot">
-      <TripMap bind:this={map} places={trip.places} legs={trip.legs} dayColors={trip.dayColors} {day} selected={selected ?? undefined} {layers} locale={i18n.locale} onselect={onPin} />
+      <TripMap bind:this={map} places={trip.places} legs={trip.legs} dayColors={trip.dayColors} {day} selected={selected ?? undefined} {layers} locale={i18n.locale} {saved} onselect={onPin} />
       {#if kinds.length}
         <div class="lyr">
           <button type="button" class="lb" aria-expanded={layersOpen} aria-controls="map-layers" aria-label={t('travel.map.layers')} data-map-layers data-sfx={layersOpen ? 'toggle-off' : 'toggle-on'}
-            onclick={() => (layersOpen = !layersOpen)}><Icon name="layers" size={20} />{#if kinds.some((k) => layers[k])}<span class="on" aria-hidden="true"></span>{/if}</button>
+            onclick={() => (layersOpen = !layersOpen)}><Icon name="layers" size={18} stroke={2.4} />{#if kinds.some((k) => layers[k])}<span class="on" aria-hidden="true"></span>{/if}</button>
           {#if layersOpen}
             <div class="card dense panel" id="map-layers" role="group" aria-label={t('travel.map.layers')}>
               {#each kinds as k (k)}
@@ -113,6 +120,9 @@
 
 <style>
   .map-pane { display: grid; grid-template-columns: minmax(0, 1fr); padding-bottom: 24px; }
+  /* the save pill, at the page's top (it scrolls away under the held day chips and map) */
+  .offline { display: flex; justify-content: flex-end; padding: 0 6px; min-height: var(--hit); }
+  .offline:empty { display: none; }
   /* the day chips and the map held at the top of the page as the stops scroll under */
   .held { position: sticky; top: 0; z-index: 2; }
   .under { background: var(--surface); padding: 4px 0 2px; }
@@ -127,20 +137,21 @@
   .nm { font-size: var(--fs-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .how { font-size: var(--fs-s); color: var(--text-soft); }
   .tm { flex: none; font: 600 var(--fs-s)/1 var(--font-num); color: var(--text-soft); }
-  /* the layer button: the locate button's cream disc, at the top right; its panel under it */
-  .lyr { position: absolute; top: 8px; right: 8px; z-index: 2; display: grid; justify-items: end; gap: 6px; }
+  /* the layer button: the locate button's disc, at the top right; its panel under it */
+  .lyr { position: absolute; top: 2px; right: 2px; z-index: 2; display: grid; justify-items: end; gap: 6px; }
   .lb {
     position: relative; appearance: none; border: 0; padding: 0; margin: 0; cursor: pointer; width: var(--hit); height: var(--hit); display: grid; place-items: center;
-    background: none; color: var(--c-ink-soft); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+    background: none; color: var(--text); -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .lb::before { content: ''; position: absolute; inset: 2px; border-radius: 50%; background: var(--c-cream); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h, 4px) 0 var(--c-edge); }
-  .lb[aria-expanded='true']::before { background: var(--c-yuzu); }
-  .lb :global(.ic) { position: relative; }
-  .lb:active::before { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--c-edge), 0 1px 0 var(--c-edge); }
+  /* NavButton's disc: 32px in the 44px hit, the kit's control */
+  .lb::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
+  .lb[aria-expanded='true']::before { background: var(--ctl-sel); }
+  .lb :global(svg) { position: relative; }
+  .lb:active::before { translate: 0 2px; box-shadow: var(--sh-ctl-s-press); }
   .lb:focus-visible { outline: none; }
   .lb:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .on { position: absolute; top: 6px; right: 6px; width: 9px; height: 9px; border-radius: 50%; background: var(--c-coral); box-shadow: 0 0 0 2px var(--c-cream); }
-  .panel { min-width: 160px; }
+  .on { position: absolute; top: 5px; right: 5px; width: 9px; height: 9px; border-radius: 50%; background: var(--c-coral); box-shadow: 0 0 0 2px var(--c-cream); }
+  .panel { min-width: 160px; margin-right: 6px; }
   .panel .row { width: 100%; }
   .panel .row[aria-pressed='true'] { background: var(--hl); }
   .sw { width: 12px; height: 12px; flex: none; border-radius: 50%; background: var(--k); box-shadow: 0 0 0 2px #fff; }

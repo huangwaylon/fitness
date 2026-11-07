@@ -163,7 +163,11 @@ export const DEVICE = {
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
   weddingDone: 'island.weddingDone',
   /** localStorage: `1`: the installed app asked the browser to keep its storage (sync/persist.ts: once). */
-  persistAsked: 'island.persistAsked'
+  persistAsked: 'island.persistAsked',
+  /** localStorage: `{[id]: {name, source, bytes, at, done, tileVersion}}`: the map areas saved on this phone
+   *  (lib/offline/areas.svelte.ts), a mirror of their caches' manifests: one listed whose cache is gone was evicted
+   *  (「消えました」). */
+  offlineAreas: 'island.offlineAreas'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */
