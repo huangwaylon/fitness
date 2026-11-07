@@ -27,7 +27,7 @@ items:
     rounds:
       - { type: opinions, claims: ["釘の 穴は 大した 傷では ない", "法律を 引用した 手紙を 送る", "裁判に なるなら 割に 合わない"], answer: [sherb, kitt, julian], ctx: "元ルームメイト3人が、戻らない敷金の話をしています", why: "シャーベットは釘穴3つを「付箋より小さい」と皮肉る。キットは法律を引用した letter を送る。ジュリアンは small claims court は割に合わないと言う。" }
       - { type: changed, answer: julian, ctx: "あきらめかけた人が、ある決まりの話を聞きます", why: "ジュリアンは訴訟は割に合わないとあきらめ気味だったが、明細も領収書もないと聞いて we've actually got a leg to stand on に変わった。" }
-      - { type: plan, ask: "このあと どうする？", choices: ["Let it go and split the loss.", "Send a formal letter giving them two weeks, backed by move-out photos.", "Take the landlord to small claims court."], answer: 1, ja: "法律を引用した手紙で2週間待ち、退去時の写真も用意する。", ctx: "最後に、大家への対応が決まります", why: "訴えずに、法律を引用した手紙を送って2週間待つ。シャーベットが退去時の写真を探す。明細も領収書もないので、あきらめる理由はない。", cja: ["あきらめて、損を分け合う", "2週間の猶予つきの正式な手紙を送り、退去時の写真で裏づける", "大家を少額訴訟に訴える"] }
+      - { type: plan, ask: "このあと どうする？", choices: ["Let it go and split the loss.", "Send a formal letter giving them two weeks, backed by move-out photos.", "Take the landlord to small claims court."], answer: 1, ja: "法律を引用した手紙で2週間待ち、退去時の写真も用意する。", ctx: "最後に、大家への対応が決まります", why: "訴えずに、法律を引用した手紙を送って2週間待つ。シャーベットが退去時の写真を探す。明細も領収書もないので、あきらめる理由はない。", cja: ["あきらめて、損を分け合う", "2週間の期限つきの正式な手紙を送り、退去時の写真で裏づける", "大家を少額訴訟に訴える"] }
     note: "a leg to stand on＝主張の根拠"
     tags: { seed: 33, register: friend, pragmatic: sarcasm, conditions: [cafe], features: [overlap, idiom, numbers] }
 
