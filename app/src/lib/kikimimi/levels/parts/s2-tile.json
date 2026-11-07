@@ -10,6 +10,28 @@
 {"kind":"tile","id":"tile-go-over-it","speaker":"goldie","en":"Do you want me to go over it again?","ja":"もう一度説明しようか？","tiles":["Do","you","want","me","to","go","over","it","again"],"decoys":["Did","won't"],"marks":[["say","Do you","D'you"],["link","over it again"]],"note":"go over＝もう一度説明する。over it again はひと続き","ctx":"職場で、同僚が手順を説明し終えました","why":"Do you は「ジュ」と短い。Did なら「ディ」。want me to は「ワンミタ」で、won't（ウォウント）ではない。go over it again＝もう一度説明する。","scene":"office","tags":{"seed":43,"register":"colleague","pragmatic":"literal","features":["yod","linking"]},"clip":"tile-go-over-it"},
 {"kind":"tile","id":"tile-leave-it-out-front","speaker":"kabuki","en":"They said to leave it out front, so that's what I did.","ja":"玄関の前に置いといてって言われたから、そうしたよ。","tiles":["They","said","to","leave","it","out","front","so","that's","what","I","did"],"decoys":["the","at"],"marks":[["link","leave it out"],["say","what I","whad I"]],"note":"leave it out は「リーヴィダウ」と一続き","ctx":"玄関先で、配達員が説明しています","why":"to は「タ」と弱く、the に聞こえやすい。leave it out は「リーヴィダウ」と一続き。out front＝玄関の前。at ではない。","scene":"door","tags":{"seed":37,"register":"stranger","pragmatic":"literal","features":["linking","flap"]},"clip":"tile-leave-it-out-front"}
 ]},
-"packs":[],
-"clips":{},
-"words":{}}
+"packs":["s2-tile.a893503b"],
+"clips":{
+"tile-shoulda-told-him":[161,"f0420e3a",0,0,10657],
+"tile-coulda-fixed-it":[292,"1faace17",0,10657,19055],
+"tile-dunno-not-that-hungry":[241,"3501e828",0,29712,15485],
+"tile-word-with-him":[162,"0bab0f48",0,45197,11183],
+"tile-wedve-been-fine":[201,"f2361431",0,56380,14831],
+"tile-gotta-run":[255,"954dd9f9",0,71211,16538],
+"tile-room-at-the-back":[280,"cd47a382",0,87749,18083],
+"tile-too-much-on":[304,"2d97f5db",0,105832,19423],
+"tile-go-over-it":[195,"a1a1c640",0,125255,12775],
+"tile-leave-it-out-front":[299,"03b12727",0,138030,19328]
+},
+"words":{
+"tile-shoulda-told-him":["f0420e3a",4,5,63,71,90,104,110,161],
+"tile-coulda-fixed-it":["1faace17",5,8,34,67,88,94,146,175,196,203,229,243,292],
+"tile-dunno-not-that-hungry":["3501e828",4,6,24,50,68,94,109,158,173,182,241],
+"tile-word-with-him":["0bab0f48",4,21,42,46,60,74,88,107,131,162],
+"tile-wedve-been-fine":["f2361431",5,14,29,45,59,66,81,103,130,141,201],
+"tile-gotta-run":["954dd9f9",19,38,72,95,102,111,139,174,186,255],
+"tile-room-at-the-back":["cd47a382",5,16,17,37,66,111,120,134,141,174,187,210,280],
+"tile-too-much-on":["2d97f5db",6,21,56,72,84,126,153,170,193,223,261,304],
+"tile-go-over-it":["a1a1c640",6,14,36,63,76,105,107,134,147,195],
+"tile-leave-it-out-front":["03b12727",5,24,46,57,86,97,114,157,192,211,238,244,299]
+}}

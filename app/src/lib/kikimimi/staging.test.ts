@@ -15,7 +15,8 @@ import clipsJson from './clips.json';
 import { RUNG_ITEMS } from './ladders.ts';
 import aligned from './words.json';
 import { loadAll } from './pool.ts';
-import { readStories, unitItems } from './compile.ts';
+import { readListen, readStories, unitItems } from './compile.ts';
+import { listenClipItems } from './listen.ts';
 import { storyItems } from './story.ts';
 
 const CLIPS: Readonly<Record<string, Clip>> = clipsJson;
@@ -134,7 +135,8 @@ describe('kikimimi karaoke timings', () => {
   const texts = new Map([
     ...[...BANK, ...unitItems()].flatMap((it) => (isDialogue(it) ? it.lines.map((l, n) => [`${it.id}-${n + 1}`, l.en] as const) : [[it.id, it.en] as const])),
     ...RUNG_ITEMS.map((it) => [it.id, it.en] as const), // スピード はしご's rungs: the line at each speed
-    ...storyItems(readStories()).map((it) => [it.id, it.en] as const) // the bedtime stories' segments
+    ...storyItems(readStories()).map((it) => [it.id, it.en] as const), // the bedtime stories' segments
+    ...readListen().flatMap(({ raw }) => listenClipItems(raw)).map((it) => [it.id, it.en] as const) // tiles, calls' and たちぎき's lines
   ]);
 
   it('words.json: each current clip one start per shown word and its end, never backwards, within the clip', () => {

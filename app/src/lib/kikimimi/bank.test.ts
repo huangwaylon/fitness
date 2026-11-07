@@ -8,7 +8,8 @@ import { mulberry32 } from '#lib/random.ts';
 import { AUTHORED as BANK, BANK as PLAYED } from './source.ts';
 import { CAST, EXPOSURE } from './cast.ts';
 import { LEVELS, MIX } from './deck.ts';
-import { mixes, readPacks, readStories, unitItems } from './compile.ts';
+import { mixes, readListen, readPacks, readStories, unitItems } from './compile.ts';
+import { listenClipItems } from './listen.ts';
 import { clipPlaces, packFile } from './packing.ts';
 import type { Clip } from './clips.ts';
 import clipsJson from './clips.json';
@@ -24,6 +25,9 @@ const PLACES = clipPlaces(PACKS);
 const UNIT_ITEMS = unitItems();
 /** The bedtime stories' segments, a clip each (story.ts; stories.test checks them). */
 const STORY_IDS = new Set(storyItems(readStories()).map((it) => it.id));
+/** The listening kinds' clips (content/listen/*.yaml: a tile's own, each line of a call or a たちぎき), drafts included
+ *  once voiced (they're voiced before the listening check: wave 2 §3.4). */
+const LISTEN_IDS = new Set(readListen().flatMap(({ raw }) => listenClipItems(raw)).map((it) => it.id));
 
 const STATIC = join(import.meta.dirname, '../../../static');
 const words = (s: string) => s.toLowerCase().match(/[a-z0-9',]+/g) ?? [];
@@ -336,20 +340,30 @@ describe('kikimimi bank', () => {
         expect(c.slow, id).toBeUndefined();
       }
     }
+    // the listening kinds': every clip once any is made, a call's or a たちぎき's whole turn 14 s at most (a call's
+    // correction comes inside a long turn: 12.9 s)
+    if ([...LISTEN_IDS].some((id) => CLIPS[id])) for (const id of LISTEN_IDS) {
+      const c = CLIPS[id];
+      expect(c, id).toBeDefined();
+      expect(c.dur, id).toBeGreaterThan(0.5);
+      expect(c.dur, id).toBeLessThan(14);
+      expect(PLACES.normal.has(id), id).toBe(true);
+      expect(c.slow, id).toBeUndefined();
+    }
     // (and スピード はしご's rungs: ladder.test)
-    const ids = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it)), ...RUNG_ITEMS.map((it) => it.id), ...STORY_IDS]);
+    const ids = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it)), ...RUNG_ITEMS.map((it) => it.id), ...STORY_IDS, ...LISTEN_IDS]);
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment 100 KB; the games’ packs under 50 MB, the stories’ 20 MB)', () => {
+  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB; the games’ packs under 50 MB, the stories’ 20 MB)', () => {
     expect(existsSync(join(STATIC, 'audio/kikimimi')), 'the loose clips are gone (increment 9: the packs)').toBe(false);
     const rungs = new Set(RUNG_ITEMS.map((it) => it.id));
-    const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [id, ...(it.lv <= 2 ? [`${id}-slow`] : [])])), ...rungs, ...STORY_IDS]);
+    const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [id, ...(it.lv <= 2 ? [`${id}-slow`] : [])])), ...rungs, ...STORY_IDS, ...LISTEN_IDS]);
     const clips = Object.values(PACKS).flatMap((e) => e.clips.map(([id, , bytes]) => [e.slow ? `${id}-slow` : id, bytes] as const));
     expect(clips.map(([f]) => f).filter((f) => !want.has(f))).toEqual([]);
     // (a ladder rung is a whole 5-9 s line, slowed at its foot: 2 a game, 8 clips)
     const lvOf = new Map([...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [[id, it.lv], [`${id}-slow`, it.lv]] as const)));
-    const kb = (f: string) => (rungs.has(f) ? 80 : STORY_IDS.has(f) ? 100 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
+    const kb = (f: string) => (rungs.has(f) ? 80 : STORY_IDS.has(f) || LISTEN_IDS.has(f) ? 100 : ({ 4: 80, 5: 100, 6: 100, 7: 160 } as Partial<Record<Level, number>>)[lvOf.get(f)!] ?? 60);
     for (const [f, bytes] of clips) expect(bytes, f).toBeLessThan(kb(f) * 1024);
     // (raised from 14 MB for the content sprint's ~700 clips, 40 MB for the loose files; in packs, a file a pack, so
     // Pages' 20,000 files no longer bind: past 50 MB the packs move to R2 behind PACK_BASE, docs/kikimimi-framework.md §6;

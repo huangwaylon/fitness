@@ -145,7 +145,12 @@ const PINNED: Readonly<Record<string, number>> = {
   // its voice
   'serial-cafe-3-16': 2000, 'serial-johnny-5-12': 2000, 'serial-cafe-3-20': 2000,
   // the content review's re-voicing (2026-11-07): takes nearer their voice (w1-fly's UTMOS 3.71 → 4.16 too)
-  'w1-fly': 2004, 'dmw-standup-4': 4000, 'dmw-gossip-4': 5000
+  'w1-fly': 2004, 'dmw-standup-4': 4000, 'dmw-gossip-4': 5000,
+  // wave 2's batch A1 (2026-11-07), each the best of five seed runs: a take heard as written (ya, ta, whaddaya), and
+  // takes nearer their voice or cleaner (UTMOS) than the default's
+  'tachi-hanami-spot-2': 4000, 'tachi-im-easy-6': 4000, 'tile-leave-it-out-front': 4000, 'tachi-film-verdict-1': 4000,
+  'tachi-film-verdict-7': 5000, 'call-next-friday-1': 4000, 'call-next-friday-4': 3000, 'tachi-noisy-neighbour-5': 5000,
+  'tachi-standup-blocked-5': 3000, 'call-handouts-favour-5': 2000
 };
 const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;

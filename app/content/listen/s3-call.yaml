@@ -42,7 +42,7 @@ items:
     scene: living
     channel: phone
     lines:
-      - { who: henry, en: "Hi, you've reached roaming support. I understand you've been transferred a couple of times, so I apologize for that.", tts: "Hi, you've reached roamin' support. I understand you've been transferred a couple of times, so I apologize for that.", ja: "ローミングサポートです。何度か転送されたとのことで、申し訳ございません。" }
+      - { who: henry, en: "Hi, you've reached roaming support. I understand you've been transferred a couple of times, so I apologize for that.", ja: "ローミングサポートです。何度か転送されたとのことで、申し訳ございません。" }
       - { who: me, en: "That's okay. I was charged ¥23,000 for data in Seoul, but I had the travel pass.", tts: "That's okay. I was charged twenty-three thousand yen for data in Seoul, but I had the travel pass.", ja: "大丈夫です。ソウルでのデータ通信で23,000円請求されたんですが、トラベルパスに入っていたんです。" }
       - { who: henry, en: "Okay, let me take a look. So the pass was active from the 3rd, but you landed on the 2nd, and it's that first day that got charged.", tts: "Okay, lemme take a look. So the pass was active from the third, but you landed on the second, an' it's that first day that got charged.", ja: "お調べします。パスは3日から有効でしたが、ご到着は2日で、その初日分が請求されていますね。" }
       - { who: me, en: "But I bought it before I flew.", ja: "でも出発前に買いましたよ。" }
