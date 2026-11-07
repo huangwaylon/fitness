@@ -549,11 +549,11 @@ QUALITY = 72
 # word sits with that word's family, the rest with its first item's category (BUCKET). Dish-type words rank before
 # ingredient words (チキンサラダ is a salad, 卵スープ a soup, 鮭おにぎり an onigiri), then the more specific ingredient
 # (牛乳 before 牛); first match wins. Detail sheets go by category only. FAMILY_V: a change lays the sheets out again.
-FAMILY_V = 2
+FAMILY_V = 3  # 3: スープ apart from the 汁 (the MAFF 汁 had put スープ's top 20 on 5 sheets)
 FAMILY = [('curry', 'カレー'), ('sushi', '寿司 軍艦 手巻 鉄火巻 かっぱ巻 かんぴょう巻 納豆巻 太巻 恵方巻 ネギトロ巻 サラダ巻'),
           ('salad', 'サラダ'), ('ramen', 'ラーメン 中華めん 中華そば つけ麺 担々麺 ちゃんぽん'), ('udon', 'うどん'), ('soba', 'そば'),
           ('pasta', 'スパゲッティ パスタ マカロニ ナポリタン カルボナーラ ペペロンチーノ ボンゴレ'), ('onigiri', 'おにぎり むすび'),
-          ('don', '丼'), ('miso', '味噌汁 みそ汁'), ('soup', '汁 スープ'), ('bread', 'パン トースト サンド'),
+          ('don', '丼'), ('miso', '味噌汁 みそ汁'), ('soup', 'スープ ポタージュ'), ('jiru', '汁'), ('bread', 'パン トースト サンド'),
           ('rice', 'ごはん ご飯 かゆ 粥 めし'), ('milk', '牛乳'),
           ('egg', '卵 たまご 玉子 エッグ オムレツ'), ('tofu', '豆腐 厚揚げ 油揚げ がんもどき'), ('natto', '納豆'),
           ('pork', '豚 ポーク とんかつ ハム ベーコン ウインナー ソーセージ'), ('chicken', '鶏 チキン 唐揚げ から揚げ 焼き鳥 ささみ 手羽'),
