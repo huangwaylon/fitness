@@ -1091,7 +1091,11 @@
 "mext-01045",
 "mext-01052",
 "mext-01188",
-"mext-01197"
+"mext-01197",
+"mext-02036",
+"mext-02059",
+"mext-02060",
+"mext-02058"
 ],
 "other": [
 "mext-02034",
@@ -1134,7 +1138,18 @@
 "mext-01116",
 "mext-01161",
 "mext-01084",
-"mext-01121"
+"mext-01121",
+"mext-02070",
+"mext-02029",
+"mext-01164",
+"mext-01133",
+"mext-01165",
+"mext-01134",
+"mext-01163",
+"mext-01132",
+"mext-02038",
+"mext-01143",
+"mext-01142"
 ],
 "rice": [
 "dishes-onigiri-tunamayo",
@@ -1310,7 +1325,13 @@
 "mext-01106",
 "mext-01109",
 "mext-01102",
-"mext-01105"
+"mext-01105",
+"mext-01135",
+"mext-01162",
+"mext-01138",
+"mext-01139",
+"mext-01140",
+"mext-01141"
 ],
 "season": [
 "mext-17007",
@@ -1387,7 +1408,14 @@
 "mext-17032",
 "mext-03001",
 "mext-03029",
-"mext-17090"
+"mext-17090",
+"mext-03007",
+"mext-03006",
+"mext-03030",
+"mext-03010",
+"mext-03009",
+"mext-03011",
+"mext-03002"
 ],
 "side": [
 "dishes-green-salad",
@@ -2466,7 +2494,26 @@
 "mext-02042",
 "mext-06156",
 "mext-06210",
-"mext-06391"
+"mext-06391",
+"mext-02002",
+"mext-02047",
+"mext-02046",
+"mext-02012",
+"mext-02021",
+"mext-02065",
+"mext-02063",
+"mext-02064",
+"mext-02066",
+"mext-02027",
+"mext-02022",
+"mext-02024",
+"mext-02014",
+"mext-02013",
+"mext-02069",
+"mext-02068",
+"mext-02044",
+"mext-02043",
+"mext-02004"
 ]
 },
 "dv": 2,
@@ -3492,7 +3539,11 @@
 "maff_kyodo-saba_soumen_shiga",
 "maff_kyodo-tai_soumen_ehime",
 "maff_kyodo-42_10_hiroshima",
-"maff_kyodo-taimen_oita"
+"maff_kyodo-taimen_oita",
+"mext-02036",
+"mext-02059",
+"mext-02060",
+"mext-02058"
 ],
 "onigiri": [
 "dishes-onigiri-tunamayo",
@@ -3556,7 +3607,18 @@
 "mext-01116",
 "mext-01161",
 "mext-01084",
-"mext-01121"
+"mext-01121",
+"mext-02070",
+"mext-02029",
+"mext-01164",
+"mext-01133",
+"mext-01165",
+"mext-01134",
+"mext-01163",
+"mext-01132",
+"mext-02038",
+"mext-01143",
+"mext-01142"
 ],
 "pasta": [
 "dishes-meat-sauce",
@@ -3787,7 +3849,13 @@
 "mext-01106",
 "mext-01109",
 "mext-01102",
-"mext-01105"
+"mext-01105",
+"mext-01135",
+"mext-01162",
+"mext-01138",
+"mext-01139",
+"mext-01140",
+"mext-01141"
 ],
 "saba": [
 "mext-10154",
@@ -3899,7 +3967,14 @@
 "mext-17047",
 "mext-03001",
 "mext-03029",
-"mext-17090"
+"mext-17090",
+"mext-03007",
+"mext-03006",
+"mext-03030",
+"mext-03010",
+"mext-03009",
+"mext-03011",
+"mext-03002"
 ],
 "shrimp": [
 "mext-18003",
@@ -4988,7 +5063,26 @@
 "mext-06224",
 "mext-06102",
 "mext-02042",
-"mext-06210"
+"mext-06210",
+"mext-02002",
+"mext-02047",
+"mext-02046",
+"mext-02012",
+"mext-02021",
+"mext-02065",
+"mext-02063",
+"mext-02064",
+"mext-02066",
+"mext-02027",
+"mext-02022",
+"mext-02024",
+"mext-02014",
+"mext-02013",
+"mext-02069",
+"mext-02068",
+"mext-02044",
+"mext-02043",
+"mext-02004"
 ],
 "yogurt": [
 "mext-13025",
