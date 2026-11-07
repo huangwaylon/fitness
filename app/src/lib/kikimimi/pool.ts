@@ -163,6 +163,10 @@ export function ladders(): readonly Ladder[] {
   return LADDERS;
 }
 
+/** A loaded chunk's items in order (はつおん's cards: parts/mic-pairs.json, games/pair/pairs.ts); empty while it isn't
+ *  loaded or this build hasn't it. */
+export const partItems = (u: Unit): readonly Item[] => (loaded(u) ? partsOf(u).flatMap((p) => got.get(p)!.items ?? []) : []);
+
 /** A loaded listening file's part (listen.ts ListenPart: a tile's, a call's or a たちぎき's unit, its items as played: a
  *  lane's deal reads it), undefined while it isn't loaded or this build hasn't it. */
 export const listenOf = (unit: string): ListenPart | undefined => partsOf(unit as Unit).map((p) => got.get(p)?.listen).find((l) => !!l);

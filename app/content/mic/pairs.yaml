@@ -1,0 +1,312 @@
+# はつおん ききわけ (docs/kikimimi-mic.md §2.4): production minimal pairs, the contrasts Japanese speakers merge.
+# One card a pair: two pictures with their labels, both words heard first (a US voice), then one to say; the villager
+# shows what they heard. Checked by src/lib/kikimimi/games/pair/pairs.ts (npm run kikimimi:levels; content.test).
+#
+# Each pair: `id` (pr-…, never renamed: clips `<id>-1`, `<id>-2`), `sound` (the contrast), `who` (a US villager: the
+# voice of both words and the one who listens), `ctx` (before: one line ≤ 30 字), `why` (after: ≤ 90 字), and two
+# `words`: `en` (what's said, alone), `ja` (the picture's label, kanji Japanese), `kana` (the villager's spaced-kana
+# reading, for 「え、 ○○？！」), `pic` (an emoji, or the figures of a number), `ex` / `exJa` (the word in a short line
+# of everyday American English), `how` (the mouth: 舌・唇・息, ≤ 60 字).
+schema: 1
+unit: mic-pairs
+status: voiced
+pairs:
+  # ---- r / l: 日本語のラ行は r でも l でもない ----------------------------------------------------------------------
+  - id: pr-rice
+    sound: l-r
+    who: goldie
+    ctx: "定食屋で。頼みたいのはどっち？"
+    why: "r は舌がどこにも触れない音、l は舌先を歯の裏に当てる音。日本語のラ行はその中間なので、どちらにも聞こえてしまう。"
+    words:
+      - { en: rice, ja: ご飯, kana: ごはん, pic: 🍚, ex: "Can I get some more rice?", exJa: "ご飯のおかわりをもらえますか？", how: "舌先はどこにも触れず、少し奥へ引く。唇を軽く丸めて「ゥライス」" }
+      - { en: lice, ja: シラミ, kana: しらみ, pic: 🪲, ex: "The kids came home with lice.", exJa: "子どもたちがシラミをもらってきた。", how: "舌先を上の前歯の裏にぴたっと当ててから離す" }
+  - id: pr-right
+    sound: l-r
+    who: raymond
+    ctx: "道案内。曲がる方向？ それとも電気？"
+    why: "right は唇を丸めて舌を浮かせたまま「ゥライト」。light は舌先を歯の裏に当ててから。ラ行のつもりで言うと light に聞こえやすい。"
+    words:
+      - { en: right, ja: 右, kana: みぎ, pic: ➡️, ex: "Turn right at the bank.", exJa: "銀行のところで右に曲がって。", how: "唇を丸め、舌先は浮かせたまま。どこにも触れない" }
+      - { en: light, ja: 明かり, kana: あかり, pic: 💡, ex: "Can you turn on the light?", exJa: "電気をつけてくれる？", how: "舌先を上の前歯の裏に当てて、そこから離す" }
+  - id: pr-collect
+    sound: l-r
+    who: maple
+    ctx: "職場で。用紙を集める？ 直す？"
+    why: "collect は l（舌先を歯の裏に）、correct は r（舌はどこにも触れない）。真ん中の1音だけで、集めるか直すかが変わる。"
+    words:
+      - { en: collect, ja: 集める, kana: あつめる, pic: 📥, ex: "I'll collect the forms after lunch.", exJa: "お昼のあとに用紙を集めます。", how: "まん中の l で舌先を上の歯ぐきに当てる「カレクト」" }
+      - { en: correct, ja: 直す, kana: なおす, pic: ✅, ex: "Could you correct my email?", exJa: "メールを直してもらえますか？", how: "まん中の r は舌を奥に引いて浮かせる。どこにも触れない" }
+  - id: pr-rock
+    sound: l-r
+    who: punchy
+    ctx: "出かける前に。岩？ 鍵？"
+    why: "rock は唇を丸めて舌を浮かせ、lock は舌先を歯の裏に当てる。どちらも母音は口を縦に開けた「ア」に近い。"
+    words:
+      - { en: rock, ja: 岩, kana: いわ, pic: 🪨, ex: "Watch out for that rock.", exJa: "その岩に気をつけて。", how: "唇を丸め、舌は奥に引いて浮かせたまま「ゥラック」" }
+      - { en: lock, ja: 鍵をかける, kana: かぎ を かける, pic: 🔒, ex: "Don't forget to lock the door.", exJa: "ドアの鍵をかけ忘れないでね。", how: "舌先を上の前歯の裏に当ててから「ラック」" }
+  - id: pr-grass
+    sound: l-r
+    who: goldie
+    ctx: "公園で。芝生？ グラス？"
+    why: "gr は g のあと舌を浮かせて r、gl は g のあと舌先を歯の裏に当てて l。g との間に母音を入れない。"
+    words:
+      - { en: grass, ja: 芝生, kana: しばふ, pic: 🌱, ex: "Please keep off the grass.", exJa: "芝生に入らないでください。", how: "g のすぐあと、舌を浮かせたまま r。「グ」に母音を入れない" }
+      - { en: glass, ja: グラス, kana: ぐらす, pic: 🥛, ex: "Can I get a glass of water?", exJa: "お水を一杯もらえますか？", how: "g のすぐあと、舌先を上の歯の裏に当てて l" }
+  - id: pr-fry
+    sound: l-r
+    who: raymond
+    ctx: "料理の話？ 旅行の話？"
+    why: "fry は f のあと舌を浮かせて r、fly は f のあと舌先を歯の裏に当てて l。f は下唇に上の歯を当てる音。"
+    words:
+      - { en: fry, ja: 炒める, kana: いためる, pic: 🍳, ex: "Fry the onions first.", exJa: "先に玉ねぎを炒めて。", how: "下唇に上の歯を当てて f、そのまま舌を浮かせて r" }
+      - { en: fly, ja: 飛ぶ, kana: とぶ, pic: ✈️, ex: "We fly to Osaka on Friday.", exJa: "金曜日に大阪へ飛びます。", how: "f のあと、舌先を上の前歯の裏に当てて l" }
+  - id: pr-play
+    sound: l-r
+    who: maple
+    ctx: "週末の予定。遊ぶ？ 祈る？"
+    why: "play は舌先を歯の裏に当てる l、pray は舌を浮かせる r。p のあとに母音を入れず、すぐ次の音へ。"
+    words:
+      - { en: play, ja: 遊ぶ, kana: あそぶ, pic: ⚽, ex: "Let's play after lunch.", exJa: "お昼のあとに遊ぼう。", how: "p の直後に舌先を上の歯の裏へ。「プ」に母音を入れない" }
+      - { en: pray, ja: 祈る, kana: いのる, pic: 🙏, ex: "We pray for good weather.", exJa: "いい天気になるように祈ります。", how: "p の直後、唇を丸めて舌を浮かせたまま r" }
+
+  # ---- v / b: 日本語のバ行は b だけ ---------------------------------------------------------------------------------
+  - id: pr-vote
+    sound: b-v
+    who: punchy
+    ctx: "選挙の話？ 船の話？"
+    why: "v は上の歯を下唇に当てて、震わせながら声を出す。b は両唇を閉じてぱっと開く。バ行で言うと boat に聞こえる。"
+    words:
+      - { en: vote, ja: 投票する, kana: とうひょう, pic: 🗳️, ex: "Did you vote yesterday?", exJa: "昨日、投票に行った？", how: "上の前歯を下唇の内側に軽く当て、こすれる音を出しながら声" }
+      - { en: boat, ja: ボート, kana: ぼーと, pic: ⛵, ex: "We took a boat to the island.", exJa: "島までボートで行った。", how: "両唇をしっかり閉じてから、ぱっと開いて声" }
+  - id: pr-van
+    sound: b-v
+    who: goldie
+    ctx: "引っ越しの話。車？ 禁止？"
+    why: "van は歯と唇がこすれる v、ban は両唇の b。母音はどちらも口を横に開けた「エア」に近い音。"
+    words:
+      - { en: van, ja: バン, kana: ばん, pic: 🚐, ex: "We rented a van for the move.", exJa: "引っ越しのためにバンを借りた。", how: "上の歯を下唇に当て、震わせながら「ヴァン」" }
+      - { en: ban, ja: 禁止, kana: きんし, pic: 🚫, ex: "There's a ban on smoking here.", exJa: "ここは禁煙です。", how: "両唇を閉じて息をためてから、ぱっと開く" }
+  - id: pr-very
+    sound: b-v
+    who: raymond
+    ctx: "カフェで。とても？ ベリー？"
+    why: "very は v、berry は b。どちらもカタカナでは「ベリー」になるが、英語では唇の使い方がまったく違う。"
+    words:
+      - { en: very, ja: とても, kana: とても, pic: 💯, ex: "That's very kind of you.", exJa: "ご親切にありがとうございます。", how: "上の歯を下唇に当てたまま声を出し始める「ヴェリ」" }
+      - { en: berry, ja: ベリー, kana: べりー, pic: 🫐, ex: "I'll have the berry smoothie.", exJa: "ベリーのスムージーをください。", how: "両唇を閉じた形から、はじくように「ベリ」" }
+  - id: pr-vest
+    sound: b-v
+    who: maple
+    ctx: "服の話？ ほめ言葉？"
+    why: "どちらもカタカナは「ベスト」。vest は歯と唇、best は両唇。You're the best! を v で言うと「チョッキだ！」になる。"
+    words:
+      - { en: vest, ja: ベスト（服）, kana: べすと の ふく, pic: 🦺, ex: "Wear a vest at the site.", exJa: "現場ではベストを着てね。", how: "上の前歯を下唇に当て、震わせながら「ヴェスト」" }
+      - { en: best, ja: 一番, kana: いちばん, pic: 🏆, ex: "You're the best!", exJa: "あなたが一番！", how: "両唇をしっかり閉じて、ぱっと開く「ベスト」" }
+
+  # ---- th / s / z / sh: 舌を歯に当てるか ----------------------------------------------------------------------------
+  - id: pr-think
+    sound: th
+    who: punchy
+    ctx: "考える？ 台所の流し？"
+    why: "th は舌先を前歯に当て、その隙間から息を出す。s は舌を歯に当てずに細く息を出す。「シンク」と言うと sink に聞こえる。"
+    words:
+      - { en: think, ja: 考える, kana: かんがえる, pic: 🤔, ex: "Let me think about it.", exJa: "ちょっと考えさせて。", how: "舌先を上の前歯の先に軽く当て、すき間から息" }
+      - { en: sink, ja: 流し台, kana: ながしだい, pic: 🚰, ex: "Leave the dishes in the sink.", exJa: "お皿は流しに置いておいて。", how: "舌は歯に触れず、歯ぐきの近くで細く「スー」" }
+  - id: pr-thick
+    sound: th
+    who: goldie
+    ctx: "本の話？ 体調の話？"
+    why: "thick は舌先を歯に当てた th、sick は s。「シック」の「シ」は sh なので、s は「スィ」のつもりで。"
+    words:
+      - { en: thick, ja: 厚い, kana: あつい, pic: 📚, ex: "That's a thick book.", exJa: "分厚い本だね。", how: "舌先を前歯に当てて息を出してから「ィック」" }
+      - { en: sick, ja: 具合が悪い, kana: ぐあい が わるい, pic: 🤒, ex: "I feel a little sick.", exJa: "ちょっと具合が悪い。", how: "舌は歯の裏の近くで浮かせ、「シ」ではなく「スィ」" }
+  - id: pr-mouth
+    sound: th
+    who: raymond
+    ctx: "歯医者で？ 台所で？"
+    why: "語の最後の th も舌を歯に当てて息を出す。s で終わると mouse（ネズミ）。最後に「ス」と母音をつけない。"
+    words:
+      - { en: mouth, ja: 口, kana: くち, pic: 👄, ex: "Open your mouth, please.", exJa: "口を開けてください。", how: "最後に舌先を前歯に当て、息だけ出して終わる" }
+      - { en: mouse, ja: ネズミ, kana: ねずみ, pic: 🐭, ex: "There's a mouse in the kitchen!", exJa: "台所にネズミがいる！", how: "最後は舌を歯につけず「ス」と息だけ。「ウ」をつけない" }
+  - id: pr-breathe
+    sound: th
+    who: maple
+    ctx: "深呼吸？ 外の風？"
+    why: "breathe の最後は声の出る th（舌を歯に当てて震わせる）、breeze は z（舌は歯に触れない）。どちらも最後に母音をつけない。"
+    words:
+      - { en: breathe, ja: 息をする, kana: いき を する, pic: 🌬️, ex: "Just breathe slowly.", exJa: "ゆっくり息をして。", how: "最後に舌先を前歯に当てたまま、声を震わせる" }
+      - { en: breeze, ja: そよ風, kana: そよかぜ, pic: 🍃, ex: "What a nice breeze.", exJa: "気持ちいい風だね。", how: "最後は舌を歯ぐきの近くに浮かせ、ブーンと z" }
+  - id: pr-seat
+    sound: s-sh
+    who: punchy
+    ctx: "電車で。席？ 紙？"
+    why: "日本語の「シート」は sheet の音。seat は舌を前に出して「スィート」。唇を突き出すと sh になる。"
+    words:
+      - { en: seat, ja: 席, kana: せき, pic: 💺, ex: "Is this seat taken?", exJa: "この席、空いていますか？", how: "唇は横に引き、舌先を歯ぐきの近くに。「スィート」" }
+      - { en: sheet, ja: 用紙, kana: ようし, pic: 📄, ex: "Fill out this sheet, please.", exJa: "この用紙に記入してください。", how: "唇を少し突き出して丸め、舌は少し奥で「シート」" }
+
+  # ---- 母音: 日本語の5つより多い --------------------------------------------------------------------------------
+  - id: pr-walk
+    sound: vowel
+    who: goldie
+    ctx: "駅まで歩く？ 駅で働く？"
+    why: "walk の l は発音せず、口を縦に開けた「ウォーク」。work は口をあまり開けず、舌を奥に丸めたこもった「ワーク」。"
+    words:
+      - { en: walk, ja: 歩く, kana: あるく, pic: 🚶, ex: "I walk to the station.", exJa: "駅まで歩いて行きます。", how: "口を縦に大きく開けて「ウォー」。l は言わない" }
+      - { en: work, ja: 働く, kana: はたらく, pic: 💼, ex: "I work at the station.", exJa: "駅で働いています。", how: "口は小さめ、舌を奥に丸めて「ワ～」とこもらせる" }
+  - id: pr-hat
+    sound: vowel
+    who: raymond
+    ctx: "帽子？ 浜辺の小屋？"
+    why: "hat の a は「エ」の口で「ア」と言う平たい音。hut の u は口を小さく、力を抜いた短い「ア」。日本語の「ア」はその間。"
+    words:
+      - { en: hat, ja: 帽子, kana: ぼうし, pic: 👒, ex: "I love your straw hat.", exJa: "その麦わら帽子、すてき。", how: "口を横に大きく開け、「エ」の口のまま「ア」" }
+      - { en: hut, ja: 小屋, kana: こや, pic: 🛖, ex: "We stayed in a little hut.", exJa: "小さな小屋に泊まった。", how: "口は小さく、力を抜いて短く「ア」" }
+  - id: pr-full
+    sound: vowel
+    who: maple
+    ctx: "食べ終わって。満腹？ ばか？"
+    why: "full は唇をゆるめた短い「ウ」、fool は唇を突き出した長い「ウー」。長さと唇の形で区別する。"
+    words:
+      - { en: full, ja: 満腹, kana: おなか いっぱい, pic: 😋, ex: "I'm so full.", exJa: "もうお腹いっぱい。", how: "唇はゆるめたまま、短く軽い「フル」" }
+      - { en: fool, ja: ばか, kana: ばか, pic: 🤡, ex: "Don't be a fool.", exJa: "ばかなことはやめて。", how: "唇を前に突き出して丸め、長く「フー」" }
+  - id: pr-bag
+    sound: vowel
+    who: punchy
+    ctx: "かばん？ 虫？"
+    why: "bag の a は口を横に開けた「エア」、bug の u は口を小さくした短い「ア」。「バッグ」と言えば bag に近い。"
+    words:
+      - { en: bag, ja: かばん, kana: かばん, pic: 👜, ex: "Where's my bag?", exJa: "わたしのかばんどこ？", how: "口を横に大きく開け「エ」の口で「ア」、少し長めに" }
+      - { en: bug, ja: 虫, kana: むし, pic: 🐛, ex: "There's a bug on your shirt.", exJa: "シャツに虫がついてるよ。", how: "口は小さく、のどの力を抜いて短く「ア」" }
+  - id: pr-live
+    sound: vowel
+    who: goldie
+    ctx: "住んでいる？ 出かける？"
+    why: "live の i は短くゆるい「イ」（少し「エ」寄り）、leave の ea は唇を横に引いた長い「イー」。長さが意味を変える。"
+    words:
+      - { en: live, ja: 住む, kana: すむ, pic: 🏠, ex: "I live near here.", exJa: "この近くに住んでいます。", how: "力を抜いた短い「イ」。少し「エ」に近い" }
+      - { en: leave, ja: 出かける, kana: でかける, pic: 🚪, ex: "I leave at eight.", exJa: "8時に出ます。", how: "唇を横に引いて、長く「イー」" }
+  - id: pr-ship
+    sound: vowel
+    who: raymond
+    ctx: "港で。船？ 羊？"
+    why: "ship は短くゆるい「イ」、sheep は唇を横に引いた長い「イー」。どちらも sh で始まる。"
+    words:
+      - { en: ship, ja: 船, kana: ふね, pic: 🚢, ex: "The ship leaves at noon.", exJa: "船は正午に出ます。", how: "力を抜いた短い「イ」、すぐ p で止める" }
+      - { en: sheep, ja: 羊, kana: ひつじ, pic: 🐑, ex: "Look at all the sheep!", exJa: "見て、羊がいっぱい！", how: "唇を横に引いて長く「イー」、それから p" }
+  - id: pr-heart
+    sound: vowel
+    who: maple
+    ctx: "どきどき？ ずきずき？"
+    why: "heart は口を縦に開けた「ア」のあとに r、hurt は口をあまり開けずに舌を丸めたこもった音。「ハート」は heart に近い。"
+    words:
+      - { en: heart, ja: 心臓, kana: しんぞう, pic: ❤️, ex: "My heart is racing.", exJa: "心臓がどきどきしてる。", how: "口を縦に大きく開けて「ア」、最後に舌を丸めて r の音" }
+      - { en: hurt, ja: 痛む, kana: いたい, pic: 🤕, ex: "My back hurts.", exJa: "腰が痛い。", how: "口は小さく、最初から舌を奥に丸めて「ハ～ト」" }
+  - id: pr-coat
+    sound: vowel
+    who: punchy
+    ctx: "出かける前？ 釣りのあと？"
+    why: "coat は「オ」から「ウ」へ唇をすぼめる「コウト」。caught はアメリカ英語では口を縦に開けた「カート」に近い。"
+    words:
+      - { en: coat, ja: コート, kana: こーと, pic: 🧥, ex: "Grab your coat, it's cold.", exJa: "寒いからコート持ってって。", how: "「オ」から唇をすぼめて「ウ」へ動かす「コウト」" }
+      - { en: caught, ja: 捕まえた, kana: つかまえた, pic: 🎣, ex: "I caught a big fish!", exJa: "大きな魚を釣った！", how: "口を縦に開けたまま、動かさずに「カート」" }
+
+  # ---- teen / ty: 強く言う場所と t の音 ----------------------------------------------------------------------------
+  - id: pr-13
+    sound: teen-ty
+    who: goldie
+    ctx: "お会計。13ドル？ 30ドル？"
+    why: "-teen は後ろを強く長く、t もはっきり。-ty は前を強く、後ろは短く軽く、t は弱い「ディ」に近い（サーディ）。"
+    words:
+      - { en: thirteen, ja: "13", kana: じゅうさん, pic: "13", ex: "It's thirteen dollars.", exJa: "13ドルです。", how: "後ろの「ティーン」を強く長く。t をはっきり" }
+      - { en: thirty, ja: "30", kana: さんじゅう, pic: "30", ex: "It's thirty dollars.", exJa: "30ドルです。", how: "前の「サー」を強く。後ろは軽く短く「ディ」" }
+  - id: pr-14
+    sound: teen-ty
+    who: raymond
+    ctx: "空港で。14番ゲート？ 40番？"
+    why: "fourteen は「フォーティーン」と後ろが強く長い。forty は「フォー」が強く、後ろは軽い「ディ」。強く言う場所で区別する。"
+    words:
+      - { en: fourteen, ja: "14", kana: じゅうよん, pic: "14", ex: "We board at gate fourteen.", exJa: "14番ゲートから搭乗します。", how: "後ろの「ティーン」を強く長く" }
+      - { en: forty, ja: "40", kana: よんじゅう, pic: "40", ex: "We board at gate forty.", exJa: "40番ゲートから搭乗します。", how: "前の「フォー」を強く、後ろは軽く「ディ」" }
+  - id: pr-15
+    sound: teen-ty
+    who: maple
+    ctx: "待ち合わせ。15分？ 50分？"
+    why: "fifteen は後ろの「ティーン」が強い。fifty は前の「フィフ」が強く、後ろは短い。迷ったら相手は聞き返すので、強さをはっきり。"
+    words:
+      - { en: fifteen, ja: "15", kana: じゅうご, pic: "15", ex: "I'll be there in fifteen minutes.", exJa: "15分で着きます。", how: "後ろの「ティーン」を強く長く" }
+      - { en: fifty, ja: "50", kana: ごじゅう, pic: "50", ex: "I'll be there in fifty minutes.", exJa: "50分で着きます。", how: "前の「フィフ」を強く、後ろは軽く短く" }
+  - id: pr-16
+    sound: teen-ty
+    who: punchy
+    ctx: "年齢の話。16歳？ 60歳？"
+    why: "sixteen は後ろが強く長い「スィクスティーン」。sixty は前が強い「スィクスティ」。six の s は「シ」ではなく「スィ」。"
+    words:
+      - { en: sixteen, ja: "16", kana: じゅうろく, pic: "16", ex: "My cousin is sixteen.", exJa: "いとこは16歳です。", how: "後ろの「ティーン」を強く長く。最初は「スィ」" }
+      - { en: sixty, ja: "60", kana: ろくじゅう, pic: "60", ex: "My uncle is sixty.", exJa: "おじは60歳です。", how: "前の「スィクス」を強く、後ろは軽く" }
+  - id: pr-17
+    sound: teen-ty
+    who: goldie
+    ctx: "ホテルで。17号室？ 70号室？"
+    why: "seventeen は最後の「ティーン」が強い。seventy は最初の「セ」が強く、後ろは軽い「ディ」（セヴンディ）。v も忘れずに。"
+    words:
+      - { en: seventeen, ja: "17", kana: じゅうなな, pic: "17", ex: "I'm in room seventeen.", exJa: "17号室に泊まっています。", how: "最後の「ティーン」を強く長く。v は歯と唇で" }
+      - { en: seventy, ja: "70", kana: ななじゅう, pic: "70", ex: "I'm in room seventy.", exJa: "70号室に泊まっています。", how: "最初の「セ」を強く、後ろは軽く「ディ」" }
+  - id: pr-18
+    sound: teen-ty
+    who: raymond
+    ctx: "セールで。18%？ 80%？"
+    why: "eighteen は後ろの「ティーン」が強く、t がはっきり。eighty は前の「エイ」が強く、t は弱い「ディ」（エイディ）。"
+    words:
+      - { en: eighteen, ja: "18", kana: じゅうはち, pic: "18", ex: "It's eighteen percent off.", exJa: "18%引きです。", how: "後ろの「ティーン」を強く長く" }
+      - { en: eighty, ja: "80", kana: はちじゅう, pic: "80", ex: "It's eighty percent off.", exJa: "80%引きです。", how: "前の「エイ」を強く、後ろは軽い「ディ」" }
+  - id: pr-19
+    sound: teen-ty
+    who: maple
+    ctx: "バス停で。19番？ 90番？"
+    why: "nineteen は後ろの「ティーン」が強い。ninety は前の「ナイン」が強く、後ろは軽い「ディ」（ナインディ）。"
+    words:
+      - { en: nineteen, ja: "19", kana: じゅうきゅう, pic: "19", ex: "Take bus nineteen.", exJa: "19番のバスに乗って。", how: "後ろの「ティーン」を強く長く" }
+      - { en: ninety, ja: "90", kana: きゅうじゅう, pic: "90", ex: "Take bus ninety.", exJa: "90番のバスに乗って。", how: "前の「ナイン」を強く、後ろは軽く短く" }
+
+  # ---- 語の最後の子音: 母音をつけない、有声と無声 ------------------------------------------------------------------
+  - id: pr-card
+    sound: final
+    who: punchy
+    ctx: "スーパーで。カード？ カート？"
+    why: "最後の d は声の出る音、t は息だけの音。d の前の母音は少し長くなる。最後に「ド」「ト」と母音をつけない。"
+    words:
+      - { en: card, ja: カード, kana: かーど, pic: 💳, ex: "Can I pay by card?", exJa: "カードで払えますか？", how: "母音を少し長めに、最後の d は声を出して止める" }
+      - { en: cart, ja: カート, kana: かーと, pic: 🛒, ex: "Let's grab a cart.", exJa: "カートを取ろう。", how: "母音は短めに、最後の t は息だけで止める" }
+  - id: pr-cab
+    sound: final
+    who: goldie
+    ctx: "駅前で。タクシー？ 帽子？"
+    why: "cab の最後は両唇を閉じて声の出る b、cap は息だけの p。b の前の母音のほうが長い。最後に「ブ」「プ」と言わない。"
+    words:
+      - { en: cab, ja: タクシー, kana: たくしー, pic: 🚕, ex: "Let's take a cab.", exJa: "タクシーに乗ろう。", how: "母音を長めに、唇を閉じて声のまま止める" }
+      - { en: cap, ja: キャップ, kana: きゃっぷ, pic: 🧢, ex: "I like your cap.", exJa: "そのキャップいいね。", how: "母音は短く、唇を閉じて息だけで止める" }
+  - id: pr-prize
+    sound: final
+    who: raymond
+    ctx: "値段？ 景品？"
+    why: "price の最後は息だけの s、prize は声の出る z。z の前の母音は長い。「プライズ」の「ズ」に母音をつけない。"
+    words:
+      - { en: price, ja: 値段, kana: ねだん, pic: 🏷️, ex: "What's the price?", exJa: "値段はいくらですか？", how: "母音は短めに、最後は息だけの「ス」" }
+      - { en: prize, ja: 賞品, kana: しょうひん, pic: 🎁, ex: "I won a prize!", exJa: "賞品が当たった！", how: "母音を長めに、最後は声を震わせる z" }
+  - id: pr-wing
+    sound: final
+    who: maple
+    ctx: "居酒屋で？ 試合で？"
+    why: "win の n は舌先を歯ぐきにつける「ン」、wing の ng は舌の奥を上あごにつける「ング」。g ははじかない。"
+    words:
+      - { en: win, ja: 勝つ, kana: かつ, pic: 🏅, ex: "We're going to win!", exJa: "絶対勝つよ！", how: "最後に舌先を上の歯ぐきにつけて止める「ン」" }
+      - { en: wing, ja: 手羽先, kana: てばさき, pic: 🍗, ex: "Two orders of chicken wings, please.", exJa: "手羽先を2人前ください。", how: "舌の奥を上あごにつけ、鼻から「ン」。g は言わない" }
+  - id: pr-bed
+    sound: final
+    who: punchy
+    ctx: "寝る時間？ 賭けの話？"
+    why: "bed の最後は声の出る d、bet は息だけの t。d の前の「エ」のほうが長い。最後の音で意味が変わる。"
+    words:
+      - { en: bed, ja: ベッド, kana: べっど, pic: 🛏️, ex: "Time for bed.", exJa: "もう寝る時間だよ。", how: "「エ」を長めに、最後の d は声のまま止める" }
+      - { en: bet, ja: 賭ける, kana: かける, pic: 🎲, ex: "I bet you're right.", exJa: "きっとあなたが正しいよ。", how: "「エ」は短く、最後の t は息だけで止める" }

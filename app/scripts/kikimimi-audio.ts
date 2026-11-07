@@ -42,6 +42,7 @@
 // The listening kinds (ことば タイル, ようじ でんわ, たちぎき; content/listen/*.yaml, listen.ts): a tile's clip is its id, a
 // call's or たちぎき's lines `<item>-<n>` (a call's `me` in the file's cast.me), at their stage's level (S1 かわ → 3), a
 // call's lines in its phone band; a draft file only under --only. A derived tile plays its bank item's clip.
+// はつおん's pairs (content/mic/pairs.yaml): each word alone (`<pair>-1`, `<pair>-2`) at level 3, in its pair's own pack.
 // The bedtime serials (おやすみ ものがたり, content/listen/story/, story.ts): each segment a clip (`<chapter>-<n>`), the
 // narrator's voice or the villager's CAST voice, as spoken (no tempo change: the engine has no pace setting), no
 // condition, a little softer than the quiz (−18 LUFS: heard in bed, one after another); --levels doesn't select them.
@@ -79,7 +80,8 @@ import { NATURAL_RATE, SPEEDS } from '../src/lib/kikimimi/ladder.ts';
 import { LADDERS as ALL_LADDERS } from '../src/lib/kikimimi/ladders.ts';
 import { writeLevels } from './kikimimi-levels.ts';
 import { WORK, unpackClips, writePacks } from './kikimimi-packs.ts';
-import { readListen, readStories, unitItems } from '../src/lib/kikimimi/compile.ts';
+import { readListen, readPairs, readStories, unitItems } from '../src/lib/kikimimi/compile.ts';
+import { pairClipItems } from '../src/lib/kikimimi/games/pair/pairs.ts';
 import { listenClipItems } from '../src/lib/kikimimi/listen.ts';
 import { storyItems } from '../src/lib/kikimimi/story.ts';
 
@@ -150,7 +152,20 @@ const PINNED: Readonly<Record<string, number>> = {
   // takes nearer their voice or cleaner (UTMOS) than the default's
   'tachi-hanami-spot-2': 4000, 'tachi-im-easy-6': 4000, 'tile-leave-it-out-front': 4000, 'tachi-film-verdict-1': 4000,
   'tachi-film-verdict-7': 5000, 'call-next-friday-1': 4000, 'call-next-friday-4': 3000, 'tachi-noisy-neighbour-5': 5000,
-  'tachi-standup-blocked-5': 3000, 'call-handouts-favour-5': 2000
+  'tachi-standup-blocked-5': 3000, 'call-handouts-favour-5': 2000,
+  // はつおん's words (M6, 2026-11-07), each the best of ten seed runs by UTMOS among the takes heard as written (a word
+  // alone is too short for ECAPA: these are kept with --retries 0, never re-rolled for their similarity)
+  'pr-13-2': 2000, 'pr-14-1': 3000, 'pr-14-2': 1238, 'pr-15-1': 2000, 'pr-15-2': 1237, 'pr-16-2': 1237, 'pr-17-1': 1235,
+  'pr-17-2': 1237, 'pr-18-1': 4000, 'pr-18-2': 2000, 'pr-19-1': 1238, 'pr-19-2': 2000, 'pr-bag-1': 4000, 'pr-bed-1': 1236,
+  'pr-bed-2': 1238, 'pr-breathe-1': 2000, 'pr-breathe-2': 1239, 'pr-cab-1': 3000, 'pr-cab-2': 5000, 'pr-card-1': 1238,
+  'pr-card-2': 1237, 'pr-coat-1': 1238, 'pr-collect-1': 1238, 'pr-collect-2': 1239, 'pr-fry-1': 3000, 'pr-fry-2': 1239,
+  'pr-full-1': 1239, 'pr-full-2': 1239, 'pr-grass-1': 3000, 'pr-grass-2': 4000, 'pr-hat-1': 1235, 'pr-hat-2': 3000,
+  'pr-heart-1': 3000, 'pr-live-1': 1236, 'pr-live-2': 1238, 'pr-mouth-2': 2000, 'pr-play-1': 3000, 'pr-play-2': 1238,
+  'pr-prize-1': 3000, 'pr-prize-2': 5000, 'pr-rice-2': 5000, 'pr-right-1': 4000, 'pr-right-2': 1236, 'pr-rock-1': 1237,
+  'pr-rock-2': 1235, 'pr-seat-1': 1239, 'pr-seat-2': 1236, 'pr-ship-1': 1236, 'pr-ship-2': 1239, 'pr-thick-1': 1235,
+  'pr-thick-2': 1238, 'pr-think-1': 1238, 'pr-think-2': 1239, 'pr-van-1': 3000, 'pr-very-1': 1239, 'pr-very-2': 4000,
+  'pr-vest-1': 5000, 'pr-vest-2': 3000, 'pr-vote-1': 1238, 'pr-vote-2': 4000, 'pr-walk-1': 1235, 'pr-walk-2': 2000,
+  'pr-wing-2': 1237
 };
 const seedOf = (id: string): number => (opt('--seed') ? SEED : PINNED[id] ?? SEED);
 const only = opt('--only') ? new RegExp(opt('--only')!) : null;
@@ -199,10 +214,14 @@ const lufsOf = (it: Item): number => (STORY.has(it.id) ? STORY_LUFS : -16);
  *  たちぎき, `<item>-<n>`, at its stage's level): a draft file's only when --only names them (it's voiced after its
  *  review, wave 2 §3.4). */
 const LISTEN_ITEMS = readListen().filter(({ raw }) => only || (raw as { status: string }).status !== 'draft').flatMap(({ raw }) => listenClipItems(raw));
+/** はつおん's words (content/mic/pairs.yaml, games/pair/pairs.ts): each alone, `<pair>-1`, `<pair>-2`, in the pair's
+ *  villager's voice; a draft file's only under --only, as the listening kinds'. */
+const PAIRS = readPairs() as { status?: string } | null;
+const PAIR_ITEMS = PAIRS && (only || PAIRS.status !== 'draft') ? pairClipItems(PAIRS) : [];
 /** One entry per clip: an item, or each line of a dialogue as its own (bank.ts clipItems: `<item>-<n>`); the bank's
  *  items, then the units' own (app/content/units/*.yaml, inline: same cast, `tts`, conditions and beds; their ids are
  *  never the bank's: units.ts checkUnits), the listening kinds', then the stories' segments. */
-const ALL: readonly Item[] = [...[...ITEMS, ...unitItems()].flatMap(clipItems), ...LISTEN_ITEMS, ...STORY_ITEMS];
+const ALL: readonly Item[] = [...[...ITEMS, ...unitItems()].flatMap(clipItems), ...LISTEN_ITEMS, ...PAIR_ITEMS, ...STORY_ITEMS];
 const BANK = ALL.filter((it) => (STORY.has(it.id) ? !SAY : LEVELS.includes(it.lv)));
 /** スピード はしご (ladder.ts): each ladder's line spoken once (the gate as any clip's), its rungs that take stretched. */
 const LADDERS = ALL_LADDERS.filter((l) => LEVELS.includes(l.line.lv));

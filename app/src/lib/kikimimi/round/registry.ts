@@ -107,6 +107,7 @@ const LATER: Readonly<Record<GameId, Later>> = {
   mane: { lane: () => import('../games/mane/lane.ts'), content: () => true, mode: { id: 'mane', group: 'koe', icon: '🦜', mins: 2, qs: 4, coop: false, game: 'mane', requires: 'mic', gate: micOn } },
   kuri: { lane: () => import('../games/kuri/lane.ts'), content: () => true, mode: KURI_MODE },
   role: { lane: () => import('../games/role/lane.ts'), content: () => true, mode: ROLE_MODE },
+  pair: { lane: () => import('../games/pair/lane.ts'), content: () => !!INDEX.units['mic-pairs'], mode: { id: 'pair', group: 'koe', icon: '👄', mins: 2, qs: 8, coop: true, game: 'pair', requires: 'mic', gate: micOn } },
 };
 
 /** The levels of the places a game's listened files are at (catalog.ts contentLevels over this build's index). */

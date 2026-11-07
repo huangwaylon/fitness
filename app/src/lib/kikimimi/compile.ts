@@ -14,6 +14,8 @@
 //   The listening kinds (app/content/listen/*.yaml, listen.ts: tiles, calls, たちぎき) are checked (a problem stops it)
 // and each file becomes a chunk of its own (`parts/<unit>.json`: the file as played, its clips and timings), an entry in
 // `units` and `listen`, and its game's line in `games` (`tile:s1-tile-a`) once games/versions.ts has the game.
+//   はつおん's pairs (app/content/mic/pairs.yaml, games/pair/pairs.ts) are checked too and, past draft, become the chunk
+// `parts/mic-pairs.json` (the cards, their words' clips), `units['mic-pairs']` and `games['pair:mic-pairs']`.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
@@ -33,6 +35,7 @@ import { tagsOf } from './tags.ts';
 import { LESSONS, candoText, checkUnits, lessonIds, manifestOf, type UnitManifest, type UnitsCheck } from './units.ts';
 import { BUILD_V } from './games/versions.ts';
 import { chapterPart, chapters, type ChapterEntry, type StoryEntry, type StorySource } from './story.ts';
+import { PAIR_UNIT, pairsFile } from './games/pair/pairs.ts';
 import { checkListenAll, listenClipIds, listenPart, listenShape, usProblems, type ListenSource } from './listen.ts';
 
 /** A unit's chunk's budget (gzipped; plan §8: 20 KB, raised to 32 for the Japanese help, cja, why and ctx, ~0.3 KB an item). */
@@ -67,6 +70,11 @@ export function readListen(dir: URL = LISTEN_DIR): ListenSource[] {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).filter((f) => f.endsWith('.yaml')).sort().map((file) => ({ file, raw: parse(readFileSync(new URL(file, dir), 'utf8')) }));
 }
+
+const PAIRS_FILE = new URL('../../../content/mic/pairs.yaml', import.meta.url);
+
+/** app/content/mic/pairs.yaml (はつおん's pairs), parsed; none: null. */
+export const readPairs = (file: URL = PAIRS_FILE): unknown => (existsSync(file) ? parse(readFileSync(file, 'utf8')) : null);
 
 /** The units' own items (inline in their manifests, as authored), in file order: the audio scripts voice them beside
  *  the bank's (their ids are checked against the bank's and each other's: checkUnits). */
@@ -259,7 +267,7 @@ export const oneClipBank = (clips: Readonly<Record<string, unknown>>, bank: read
  *  a unit that fails its checks stops it; its warnings go to `warn`), these packs (packs.json: a clip in none stops it)
  *  these bedtime serials (content/listen/story/) and these listening files (content/listen/: a problem stops it). The
  *  bank's US-lint hits are warnings (wave 2 §3.4, until B7 clears them). */
-export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void, stories: readonly StorySource[] = readStories(), listen: readonly ListenSource[] = readListen()): Map<string, string> {
+export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<Record<string, Words>>, sources: readonly UnitSource[] = readUnits(), packs: Readonly<Packs> = readPacks(), warn?: (w: string) => void, stories: readonly StorySource[] = readStories(), listen: readonly ListenSource[] = readListen(), pairs: unknown = readPairs()): Map<string, string> {
   const out = new Map<string, string>();
   const places = clipPlaces(packs);
   const BANK = joined(clips), check = checkUnitSources(sources, clips, BANK);
@@ -309,6 +317,14 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
     listenIndex[c.head.unit] = [c.head.game, c.head.stage, c.head.status];
     listenCv.set(c.head.unit, c.cv);
   }
+  // はつおん's pairs, past draft: every word's clip (a draft is checked only)
+  const pf = pairs === null ? null : pairsFile(pairs);
+  if (pf && pf.status !== 'draft') {
+    const missing = pf.cards.flatMap((c) => clipIds(c)).filter((id) => !clips[id]);
+    if (missing.length) throw new Error(`kikimimi: content/mic/pairs.yaml is ${pf.status} but has no clip ${missing.join(' ')}`);
+    out.set(`parts/${PAIR_UNIT}.json`, partFile({ items: pf.cards }, clips, words, places));
+    units[PAIR_UNIT] = { parts: [PAIR_UNIT], n: pf.cards.length, cv: cv(pf.cards, null, clips) };
+  }
   // each game's cv by its deck's content (pool.ts gameCvOf): the quiz at a level, スピード はしご, a unit's lesson, the
   // tournament
   const games: Index['games'] = {};
@@ -319,6 +335,7 @@ export function compile(clips: Readonly<Record<string, Clip>>, words: Readonly<R
   games['taikai:all'] = gameCv('taikai', levels.map((lv) => units[lv].cv).join(','));
   // a listening file's game (`tile:s1-tile-a`), once the registry has the game (games/versions.ts BUILD_V)
   for (const [u, [gm]] of Object.entries(listenIndex)) if (BUILD_V[gm] !== undefined) games[`${gm}:${u}`] = gameCv(gm, listenCv.get(u)!);
+  if (units[PAIR_UNIT] && BUILD_V.pair !== undefined) games[`pair:${PAIR_UNIT}`] = gameCv('pair', units[PAIR_UNIT].cv);
   const first = BANK.find((it) => it.lv === 1)!;
   const test = chunkClips([first.id], clips, places);
   const index: Index = {
