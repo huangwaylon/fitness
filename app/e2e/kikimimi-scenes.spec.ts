@@ -30,7 +30,7 @@ const ITEMS: readonly Staged[] = [
 ];
 
 test('scenes: the scene card and each channel frame while it plays, the sound marks and their key at the reveal', async ({ page }) => {
-  test.slow();
+  test.setTimeout(180_000); // four voiced dialogues play through (1.4 min alone): test.slow()'s 90 s left no room under 2–3 workers
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
