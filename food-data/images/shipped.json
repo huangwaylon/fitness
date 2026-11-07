@@ -20647,6 +20647,58 @@
 "checked": false
 },
 {
+"key": "mext-01132",
+"ja": "とうもろこし コーンミール 黄色種",
+"desc": "yellow cornmeal: a small dish of coarse yellow meal",
+"items": [
+"mext:01132"
+],
+"roll": 0,
+"seed": 44541,
+"prompt": "0751eb70b2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01133",
+"ja": "とうもろこし コーングリッツ 黄色種",
+"desc": "yellow corn grits: a small dish of gritty yellow granules, coarser than cornmeal",
+"items": [
+"mext:01133"
+],
+"roll": 0,
+"seed": 3115,
+"prompt": "8a7614a722",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01134",
+"ja": "とうもろこし コーンフラワー 黄色種",
+"desc": "yellow corn flour: a small dish of very fine soft pale yellow powder",
+"items": [
+"mext:01134"
+],
+"roll": 0,
+"seed": 32456,
+"prompt": "8486c810e4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01135",
+"ja": "とうもろこし ジャイアントコーン フライ 味付け",
+"desc": "fried giant corn: a small dish of large puffy golden-brown roasted corn kernels, crunchy and salted",
+"items": [
+"mext:01135"
+],
+"roll": 0,
+"seed": 61374,
+"prompt": "24f7c53a1b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01136",
 "ja": "ポップコーン",
 "desc": "a bowl of fluffy white and pale yellow popcorn",
@@ -20670,6 +20722,84 @@
 "seed": 14034,
 "prompt": "fb4cf7840e",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01138",
+"ja": "はとむぎ 精白粒",
+"desc": "hatomugi, polished Job's tears: a small dish of plump round whitish grains, each with a brown groove",
+"items": [
+"mext:01138"
+],
+"roll": 0,
+"seed": 55235,
+"prompt": "f5434a53b3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01139",
+"ja": "ひえ 精白粒",
+"desc": "hie, polished barnyard millet: a small dish of tiny round pale cream-beige grains",
+"items": [
+"mext:01139"
+],
+"roll": 0,
+"seed": 16149,
+"prompt": "5c6b5064ae",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01140",
+"ja": "もろこし 玄穀",
+"desc": "whole sorghum: a small dish of small round reddish-brown grains",
+"items": [
+"mext:01140"
+],
+"roll": 0,
+"seed": 30134,
+"prompt": "58d6535d9a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01141",
+"ja": "もろこし 精白粒",
+"desc": "polished sorghum: a small dish of small round off-white grains",
+"items": [
+"mext:01141"
+],
+"roll": 0,
+"seed": 8096,
+"prompt": "ea5a5e05ca",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01142",
+"ja": "ライむぎ 全粒粉",
+"desc": "whole rye flour: a small dish of coarse grey-brown flour speckled with bran",
+"items": [
+"mext:01142"
+],
+"roll": 0,
+"seed": 85978,
+"prompt": "c97dfc581f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01143",
+"ja": "ライむぎ ライ麦粉",
+"desc": "rye flour: a small dish of fine light greyish-beige flour",
+"items": [
+"mext:01143"
+],
+"roll": 0,
+"seed": 68876,
+"prompt": "1f9e42c0f9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -20892,6 +21022,58 @@
 "roll": 0,
 "seed": 63522,
 "prompt": "beedcfced8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01162",
+"ja": "とうもろこし 玄穀 白色種",
+"desc": "dried white corn kernels: a small dish of hard ivory-white dent corn kernels",
+"items": [
+"mext:01162"
+],
+"roll": 0,
+"seed": 37976,
+"prompt": "a5ac4b0cc1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01163",
+"ja": "とうもろこし コーンミール 白色種",
+"desc": "white cornmeal: a small dish of coarse off-white meal",
+"items": [
+"mext:01163"
+],
+"roll": 0,
+"seed": 87982,
+"prompt": "e810ef05f0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01164",
+"ja": "とうもろこし コーングリッツ 白色種",
+"desc": "white corn grits: a small dish of gritty white granules, coarser than cornmeal",
+"items": [
+"mext:01164"
+],
+"roll": 0,
+"seed": 82157,
+"prompt": "f478cb9810",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01165",
+"ja": "とうもろこし コーンフラワー 白色種",
+"desc": "white corn flour: a small dish of very fine soft white powder",
+"items": [
+"mext:01165"
+],
+"roll": 0,
+"seed": 61883,
+"prompt": "f4a3b5b9f2",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -21432,6 +21614,19 @@
 "checked": false
 },
 {
+"key": "mext-02002",
+"ja": "こんにゃく 精粉",
+"desc": "konjac powder: a small dish of fine off-white powder",
+"items": [
+"mext:02002"
+],
+"roll": 0,
+"seed": 91655,
+"prompt": "92f4965aa9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-02003",
 "ja": "こんにゃく",
 "desc": "a rectangular slab of grey konjac (konnyaku) with tiny dark specks, glossy and firm, a few triangle pieces cut beside it",
@@ -21442,6 +21637,19 @@
 "seed": 9041,
 "prompt": "ef55fc356f",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02004",
+"ja": "板こんにゃく 生いもこんにゃく",
+"desc": "ita konnyaku: a rectangular grey jelly block speckled with dark flecks, firm and rubbery, partly sliced",
+"items": [
+"mext:02004"
+],
+"roll": 0,
+"seed": 50930,
+"prompt": "c5169709d3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -21536,6 +21744,45 @@
 "checked": false
 },
 {
+"key": "mext-02012",
+"ja": "さといも 冷凍",
+"desc": "frozen taro: peeled small oval white taro pieces coated in frost",
+"items": [
+"mext:02012"
+],
+"roll": 0,
+"seed": 41190,
+"prompt": "f3c164e18d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02013",
+"ja": "みずいも 生",
+"desc": "raw mizuimo, water taro: a large brown fibrous corm, one cut showing pale lilac-white flesh",
+"items": [
+"mext:02013"
+],
+"roll": 0,
+"seed": 48592,
+"prompt": "cbe329f3b1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02014",
+"ja": "みずいも 水煮",
+"desc": "boiled mizuimo: peeled soft greyish-white chunks of taro in a small dish",
+"items": [
+"mext:02014"
+],
+"roll": 0,
+"seed": 34643,
+"prompt": "83b65c8d79",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-02017",
 "ja": "じゃがいも 皮なし 生",
 "desc": "peeled raw potatoes, smooth pale yellow-white, one cut in half, beside one unpeeled brown potato",
@@ -21563,6 +21810,32 @@
 "checked": false
 },
 {
+"key": "mext-02021",
+"ja": "じゃがいも 乾燥マッシュポテト",
+"desc": "dried mashed potato flakes: a small dish of thin pale cream flakes",
+"items": [
+"mext:02021"
+],
+"roll": 0,
+"seed": 88703,
+"prompt": "9969469d5a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02022",
+"ja": "ながいも いちょういも 生",
+"desc": "raw ichoimo yam: a flat fan-shaped tuber with tan skin and fine root hairs, cut showing sticky white flesh",
+"items": [
+"mext:02022"
+],
+"roll": 0,
+"seed": 5701,
+"prompt": "2a0acf2af1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-02023",
 "ja": "ながいも 生",
 "desc": "a raw nagaimo yam, a long thick root with light tan hairy skin, a section cut showing crisp white flesh",
@@ -21573,6 +21846,19 @@
 "seed": 71795,
 "prompt": "d87fd80b65",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02024",
+"ja": "ながいも 水煮",
+"desc": "canned nagaimo: peeled white cylinder pieces of yam, slightly translucent and soft, in a small dish",
+"items": [
+"mext:02024"
+],
+"roll": 0,
+"seed": 63216,
+"prompt": "520948d6b7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -21598,6 +21884,32 @@
 "roll": 0,
 "seed": 10236,
 "prompt": "23cda3823e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02027",
+"ja": "だいじょ 生",
+"desc": "raw daijo, purple yam: a large irregular tuber with rough dark brown skin, cut showing purple flesh",
+"items": [
+"mext:02027"
+],
+"roll": 0,
+"seed": 1962,
+"prompt": "bf4bab42b1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02029",
+"ja": "くずでん粉",
+"desc": "kuzu starch: a small dish of small irregular chalky white lumps",
+"items": [
+"mext:02029"
+],
+"roll": 0,
+"seed": 63821,
+"prompt": "4983f097df",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -21628,6 +21940,19 @@
 "checked": false
 },
 {
+"key": "mext-02036",
+"ja": "くずきり 乾",
+"desc": "dried kuzukiri: flat straight translucent white strips, brittle and glassy",
+"items": [
+"mext:02036"
+],
+"roll": 0,
+"seed": 3709,
+"prompt": "b2e87caf92",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-02037",
 "ja": "くずきり（ゆで）",
 "desc": "kuzukiri, flat translucent clear noodles in ice water in a glass bowl, with a little cup of dark kuromitsu syrup",
@@ -21637,6 +21962,19 @@
 "roll": 0,
 "seed": 89035,
 "prompt": "0071215b15",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02038",
+"ja": "タピオカパール 乾",
+"desc": "dried tapioca pearls: a small dish of small hard round opaque white pearls",
+"items": [
+"mext:02038"
+],
+"roll": 0,
+"seed": 21466,
+"prompt": "fc85c3a120",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -21668,6 +22006,32 @@
 "checked": false
 },
 {
+"key": "mext-02043",
+"ja": "凍みこんにゃく 乾",
+"desc": "dried shimi-konnyaku: light white-beige rectangular pieces of freeze-dried konjac, porous like sponge",
+"items": [
+"mext:02043"
+],
+"roll": 0,
+"seed": 40981,
+"prompt": "151ec9c619",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02044",
+"ja": "凍みこんにゃく ゆで",
+"desc": "rehydrated shimi-konnyaku: soft spongy pale grey rectangular pieces, porous and chewy, in a small dish",
+"items": [
+"mext:02044"
+],
+"roll": 0,
+"seed": 79478,
+"prompt": "b022b010d3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-02045",
 "ja": "さつまいも 皮つき 生",
 "desc": "two whole raw sweet potatoes with deep reddish-purple skin, one cut to show pale yellow flesh",
@@ -21677,6 +22041,32 @@
 "roll": 0,
 "seed": 7968,
 "prompt": "6f1ce6c163",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02046",
+"ja": "さつまいも 皮つき 蒸し",
+"desc": "steamed sweet potato, skin on: thick round slices with purple-red skin and soft golden-yellow flesh",
+"items": [
+"mext:02046"
+],
+"roll": 0,
+"seed": 63258,
+"prompt": "23a26c6abf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02047",
+"ja": "さつまいも 皮つき 天ぷら",
+"desc": "sweet potato tempura: round slices in crisp pale golden batter, purple skin at the rim and yellow inside",
+"items": [
+"mext:02047"
+],
+"roll": 0,
+"seed": 36940,
+"prompt": "07e87f548c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -21754,6 +22144,45 @@
 "checked": false
 },
 {
+"key": "mext-02058",
+"ja": "でん粉めん 生",
+"desc": "fresh starch noodles: soft clear glassy noodles in a loose heap",
+"items": [
+"mext:02058"
+],
+"roll": 0,
+"seed": 42364,
+"prompt": "e2004cfbc2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02059",
+"ja": "でん粉めん 乾",
+"desc": "dried starch noodles: a bundle of brittle wiry white dried glass noodles",
+"items": [
+"mext:02059"
+],
+"roll": 0,
+"seed": 14922,
+"prompt": "5e31bac38d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02060",
+"ja": "でん粉めん 乾 ゆで",
+"desc": "boiled starch noodles: clear glassy slippery noodles in a bowl",
+"items": [
+"mext:02060"
+],
+"roll": 0,
+"seed": 33453,
+"prompt": "1571cd9bcd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-02061",
 "ja": "緑豆はるさめ（ゆで）",
 "desc": "cooked glass noodles (harusame), slippery clear transparent thin noodles on a plate",
@@ -21764,6 +22193,58 @@
 "roll": 0,
 "seed": 62651,
 "prompt": "c38cc27934",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02063",
+"ja": "じゃがいも 皮つき 生",
+"desc": "raw potato, skin on: a whole brown-skinned potato and a cut half showing pale yellow flesh",
+"items": [
+"mext:02063"
+],
+"roll": 0,
+"seed": 48343,
+"prompt": "53bad61115",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02064",
+"ja": "じゃがいも 皮つき 電子レンジ調理",
+"desc": "microwaved potato, skin on: a whole potato with wrinkled skin split open, fluffy pale yellow flesh",
+"items": [
+"mext:02064"
+],
+"roll": 0,
+"seed": 96340,
+"prompt": "735411e72a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02065",
+"ja": "じゃがいも 皮つき フライドポテト",
+"desc": "skin-on french fries: thick-cut fries with brown skin edges, golden and crisp, on a plate",
+"items": [
+"mext:02065"
+],
+"roll": 0,
+"seed": 33442,
+"prompt": "aa89b2ccf0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02066",
+"ja": "じゃがいも 皮なし 電子レンジ調理",
+"desc": "microwaved peeled potato: peeled soft pale yellow potato chunks, slightly translucent, in a small dish",
+"items": [
+"mext:02066"
+],
+"roll": 0,
+"seed": 26616,
+"prompt": "be0073c25a",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -21783,6 +22264,50 @@
 "checked": false
 },
 {
+"key": "mext-02068",
+"ja": "アメリカほどいも 生",
+"desc": "raw apios, American groundnut: small knobbly brown tubers strung together like beads, one cut showing white flesh",
+"items": [
+"mext:02068"
+],
+"roll": 0,
+"seed": 83679,
+"prompt": "e11fb6e720",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02069",
+"ja": "アメリカほどいも ゆで",
+"desc": "boiled apios: soft cut pieces of small tubers with brown skin and creamy pale yellow flesh, in a small dish",
+"items": [
+"mext:02069"
+],
+"roll": 0,
+"seed": 52777,
+"prompt": "54dc663927",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-02070",
+"ja": "おおうばゆりでん粉",
+"desc": "starch: a small dish holding a mound of fine pure white powder",
+"items": [
+"mext:02070",
+"mext:02028",
+"mext:02030",
+"mext:02031",
+"mext:02032",
+"mext:02033"
+],
+"roll": 0,
+"seed": 73772,
+"prompt": "73be95d299",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-03001",
 "ja": "黒砂糖",
 "desc": "lumps of Okinawan kokuto brown sugar, irregular dark brown chunks",
@@ -21792,6 +22317,19 @@
 "roll": 0,
 "seed": 45272,
 "prompt": "73541db82b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03002",
+"ja": "和三盆糖",
+"desc": "wasanbon sugar: a small dish of very fine soft pale ivory powdered sugar with a few small pressed sugar shapes",
+"items": [
+"mext:03002"
+],
+"roll": 0,
+"seed": 81538,
+"prompt": "57473a0344",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -21835,6 +22373,32 @@
 "checked": false
 },
 {
+"key": "mext-03006",
+"ja": "ざらめ糖 白ざら糖",
+"desc": "shirozara sugar: a small dish of large clear sparkling white sugar crystals",
+"items": [
+"mext:03006"
+],
+"roll": 0,
+"seed": 41467,
+"prompt": "1af63d1983",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03007",
+"ja": "ざらめ糖 中ざら糖",
+"desc": "chuzara sugar: a small dish of large golden-amber sugar crystals",
+"items": [
+"mext:03007"
+],
+"roll": 0,
+"seed": 61933,
+"prompt": "cbdcd3c208",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-03008",
 "ja": "角砂糖",
 "desc": "a small pile of white sugar cubes",
@@ -21844,6 +22408,48 @@
 "roll": 0,
 "seed": 77692,
 "prompt": "add18b3fb1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03009",
+"ja": "加工糖 氷砂糖",
+"desc": "rock sugar: a small dish of chunky clear irregular crystal lumps",
+"items": [
+"mext:03009"
+],
+"roll": 0,
+"seed": 76714,
+"prompt": "76b428e0e9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03010",
+"ja": "加工糖 コーヒーシュガー",
+"desc": "coffee sugar: a small dish of large brown caramel-coloured sugar crystals",
+"items": [
+"mext:03010"
+],
+"roll": 0,
+"seed": 82191,
+"prompt": "3ee88a2b17",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03011",
+"ja": "加工糖 粉糖",
+"desc": "powdered sugar: a small dish of fine snowy white powder",
+"items": [
+"mext:03011",
+"mext:03031",
+"mext:03015",
+"mext:03017"
+],
+"roll": 0,
+"seed": 90873,
+"prompt": "5f8572e8a3",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -21883,6 +22489,19 @@
 "roll": 0,
 "seed": 3656,
 "prompt": "10afdd1e25",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03030",
+"ja": "てんさい含蜜糖",
+"desc": "beet brown sugar: a small dish of moist light brown crystalline sugar",
+"items": [
+"mext:03030"
+],
+"roll": 0,
+"seed": 64269,
+"prompt": "84364d4bca",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
