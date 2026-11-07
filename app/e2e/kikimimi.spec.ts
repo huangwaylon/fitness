@@ -1,7 +1,7 @@
 // ききみみ クイズ (docs/kikimimi.md): the English listening game from the menu's 「えいご ききとり」. Solo from the lobby to
 // the results and its review list; two players over the demo's relay (`?demo` and `?demo&as=B`, two tabs of one
 // browser: sync/live-local.ts plays the room) from B's invite banner to both phones' results, in co-op (the team's tally, never who missed) and in たいせん (the ranking); and the
-// 「やめる？」 path (mid-game a backdrop tap or Esc keeps the sheet; ✕ asks first). The reveal is untimed: solo taps
+// 「やめますか？」 path (mid-game a backdrop tap or Esc keeps the sheet; ✕ asks first). The reveal is untimed: solo taps
 // つぎへ, B taps よみおわった and A's つぎへ counts it. `?kikimimi=fast` shortens the answer window (session.ts
 // FAST_WINDOWS: 8 s, a tab behind is throttled) on every phone. The logic tier: no clip has to sound (a
 // headless browser's audio is a null sink), the schedule is the relay clock's.
@@ -128,21 +128,22 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   await expect(page.locator('.if-scene')).not.toHaveAttribute('data-covered', 'true');
 });
 
-test('mid-game, Esc and the backdrop keep the sheet; ✕ asks 「やめる？」: つづける goes on, やめる closes it', async ({ page }) => {
+test('mid-game, Esc and the backdrop keep the sheet; ✕ asks 「やめますか？」: its ✕ goes on, やめる closes it', async ({ page }) => {
   await open(page);
   await play(page);
   await toMode(page, 'quiz');
   await sheet(page).locator('[data-kiki-start]').click();
   await expect.poll(() => phase(page)).toMatch(/countdown|lead|play/);
+  const ask = page.getByRole('dialog', { name: 'ここでやめますか？' });
   await page.keyboard.press('Escape');
-  await expect(page.locator('[data-kiki-quit]')).toBeVisible();
-  await page.locator('[data-kiki-stay]').click();
-  await expect(page.locator('[data-kiki-quit]')).toHaveCount(0);
+  await expect(ask).toBeVisible();
+  await ask.locator('.navbar .close').click();
+  await expect(ask).toHaveCount(0);
   await expect(sheet(page)).toBeVisible();
   // the backdrop: the sheet is the screen's whole height, so its ::backdrop has no room; ✕ then
   await page.locator('dialog[open] .titlebar button').last().click();
-  await expect(page.locator('[data-kiki-quit]')).toBeVisible();
-  await page.locator('[data-kiki-quit-yes]').click();
+  await expect(ask).toBeVisible();
+  await ask.locator('[data-action="kiki-quit"]').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
   // the hub, unstarted: ✕ closes at once
   await play(page);
