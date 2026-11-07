@@ -5,9 +5,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { clipIds } from '#lib/kikimimi/bank.ts';
-import { EMPTY, SHARED, tachiOpts, type TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
+import { EMPTY, listenOpts } from '#lib/kikimimi/games/listened.ts';
+import { SHARED, type TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
+import { easy, isCoop, roleOf } from '../listenView.ts';
 import { PARTY_BED } from '../clipPlayer.svelte.ts';
-import { easy, fresh, isCoop, lineItem, okFor, partOf, roleOf } from './board.ts';
+import { fresh, lineItem, okFor, partOf } from './board.ts';
 
 const APP = join(import.meta.dirname, '../../../../..');
 const card = {
@@ -24,7 +26,7 @@ describe('たちぎき on this phone', () => {
   });
 
   it('easy below the deck’s place: the shared speaker’s claim placed from the start', () => {
-    expect([1, 2].map((ear) => easy({ o: tachiOpts.encode({ lv: 4, timer: 30, ear }) }))).toEqual([true, false]);
+    expect([1, 2].map((ear) => easy({ o: listenOpts.encode({ lv: 4, timer: 30, ear }) }))).toEqual([true, false]);
     expect(fresh(card, true)).toEqual([EMPTY, SHARED, EMPTY]);
     expect(fresh(card, false)).toEqual([EMPTY, EMPTY, EMPTY]);
     expect([okFor(card, { k: 1, a: [1, 2, 0] }), okFor(card, { k: 1, a: [1, 0, 2] }), okFor(card, null)]).toEqual([true, false, false]);

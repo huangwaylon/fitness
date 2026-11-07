@@ -11,26 +11,19 @@
 // their own slots (the rest EMPTY) and is right when all of theirs are; the team has a sentence when the halves are
 // all right (the session's `team.all`). Solo, every slot. A replay is free (the row's `rp`: "hard" for review).
 import { fnv1a, mulberry32, shuffle } from '#lib/random.ts';
-import type { ListenRow } from '../../../contract/listen.ts';
 import type { Item, Level, SoundMark, Tags } from '../../bank.ts';
 import { PLACES } from '../../catalog.ts';
-import type { ListenEntry, ListenItem, ListenPart } from '../../listen.ts';
-import { RIGHT } from '../../score.ts';
-import { TIMERS, type QuizTimer } from '../../seed.ts';
+import type { ListenItem, ListenPart } from '../../listen.ts';
 import type { Tier } from '../../lesson.ts';
-import type { AnswerValue, GameDef, Graded, Round, RoundDeck, RoundWindows } from '../../round/types.ts';
+import type { ListenRow } from '../../../contract/listen.ts';
+import type { AnswerValue, GameDef, Round } from '../../round/types.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
+import { EMPTY, ROLES, filled, listenGame, listenRecord, shareOf, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
 
 /** A game's sentences. */
 export const TILE_QS = 6;
-/** A slot not filled (the wire's ints are 0-63). */
-export const EMPTY = 63;
 /** The answer window's extra per slot (ms): a 12-word sentence takes longer to build than a 4-word one. */
 const PER_SLOT = 1500;
-/** The roles of a co-op board (odd and even slots). */
-const ROLES = 2;
-/** The places' `ear` (0 はまべ … 3 やま). */
-const EARS = 4;
 
 type TileYaml = Extract<ListenItem, { kind: 'tile' }>;
 
@@ -38,30 +31,6 @@ type TileYaml = Extract<ListenItem, { kind: 'tile' }>;
  *  with its tile's own id, words and decoys. */
 export interface TileCard extends Item {
   tile: { id: string; tiles: readonly string[]; decoys: readonly string[] };
-}
-
-/** A ことば タイル lobby's options: its level (a place's first: 3 かわ, 4 もり, 6 やま), こたえる じかん, the host's ear. */
-export interface TileOpts {
-  lv: Level;
-  timer: QuizTimer;
-  ear: number;
-}
-
-/** A level's place (0 はまべ … 4 ほし; -1 none: アナウンス's 5). */
-const placeOf = (lv: number): number => PLACES.findIndex((p) => p.lvs.includes(lv));
-
-export const tileOpts = {
-  encode: (o: TileOpts): number[] => [o.lv, Math.max(0, TIMERS.indexOf(o.timer)), o.ear],
-  decode: (a: readonly number[]): TileOpts | null => {
-    const [lv, ti = 0, ear = 1] = a, timer = TIMERS[ti];
-    return Number.isInteger(lv) && placeOf(lv) >= 0 && timer !== undefined && Number.isInteger(ear) && ear >= 0 && ear < EARS ? { lv: lv as Level, timer, ear } : null;
-  }
-};
-
-/** The tile files a level's deck deals from: the `listened` ones at its place, by name. */
-export function tileFiles(lv: number, listen: Readonly<Record<string, ListenEntry>>): string[] {
-  const stage = placeOf(lv) + 1;
-  return Object.entries(listen).filter(([, [g, st, s]]) => g === 'tile' && st === stage && s === 'listened').map(([u]) => u).sort();
 }
 
 /** A tile as dealt: its Item (the clip, the speaker, the text and help, the reveal's marks) and its words. */
@@ -81,12 +50,6 @@ export function tileDeal(seed: number, parts: readonly ListenPart[]): TileCard[]
 }
 
 // ---------- tiers and boards ----------
-
-/** A player's tier on a deck: their ear against its place. */
-export const tierAt = (ear: number, lv: number): Tier | undefined => {
-  const at = placeOf(lv);
-  return ear < at ? 'easy' : ear > at ? 'hard' : undefined;
-};
 
 /** What a Japanese ear hears for a word (wave 2 §2.1's decoys: weak forms, contractions, near sounds), lower case. */
 const SWAPS: Readonly<Record<string, readonly string[]>> = {
@@ -141,17 +104,15 @@ export interface TileRound extends Round {
   play: number;
 }
 
-/** A deck's rounds at an ear (`playMs`: a clip's length, unknown: PLAY_UNKNOWN). */
-export const tileRounds = (cards: readonly TileCard[], seed: number, o: Pick<TileOpts, 'lv' | 'ear'>, playMs: (id: string) => number | undefined): TileRound[] => {
+
+/** A deck's rounds at an ear (`playMs`: a card's clip length, unknown: PLAY_UNKNOWN). */
+export const tileRounds = (cards: readonly TileCard[], seed: number, o: Pick<ListenOpts, 'lv' | 'ear'>, playMs: (c: TileCard) => number | undefined): TileRound[] => {
   const tier = tierAt(o.ear, o.lv);
-  return cards.map((c) => ({ kind: 'tile', id: c.tile.id, tiles: c.tile.tiles, board: boardOf(c.tile, seed, tier), play: playMs(c.id) ?? PLAY_UNKNOWN }));
+  return cards.map((c) => ({ kind: 'tile', id: c.tile.id, tiles: c.tile.tiles, board: boardOf(c.tile, seed, tier), play: playMs(c) ?? PLAY_UNKNOWN }));
 };
 
 /** A role's slots of a sentence of n (solo: every one). */
-export const slotsOf = (n: number, role: number | null): number[] => Array.from({ length: n }, (_, j) => j).filter((j) => role === null || j % ROLES === role % ROLES);
-
-/** An answer's filled slots. */
-const filled = (a: readonly number[]): number[] => a.flatMap((x, j) => (x === EMPTY ? [] : [j]));
+export const slotsOf = (n: number, role: number | null): number[] => shareOf(n, role);
 
 /** Whether slot j holds its word (by the word: a sentence's two "the"s are the same tile). */
 export const slotOk = (r: Pick<TileRound, 'tiles' | 'board'>, a: readonly number[], j: number): boolean => a[j] !== EMPTY && r.board[a[j]] === r.tiles[j];
@@ -179,82 +140,21 @@ export const unionOf = (boards: readonly { board: readonly string[]; a: readonly
     return by ? (by.board[by.a[j]] ?? null) : null;
   });
 
-/** A player's deck at their ear. */
-function tileDeck(rounds: () => readonly TileRound[], o: TileOpts, w: RoundWindows): RoundDeck {
-  const base = w.answers[Math.max(0, TIMERS.indexOf(o.timer))];
-  const none: Graded = { ok: false, pts: 0 };
-  return {
-    get count() {
-      return rounds().length;
-    },
-    round: (i) => rounds()[i],
-    timing: (i) => {
-      const r = rounds()[i];
-      return { lead: w.lead, play: r?.play ?? PLAY_UNKNOWN, answer: base + PER_SLOT * (r?.tiles.length ?? 0) };
-    },
-    valid: (i, a) => {
-      const r = rounds()[i];
-      return !!r && tileValid(r, a);
-    },
-    grade: (i, a) => {
-      const r = rounds()[i];
-      if (!r || !tileValid(r, a)) return none;
-      const ok = tileOk(r, a);
-      return { ok, pts: ok ? RIGHT : 0 };
-    },
-    get maxScore() {
-      return RIGHT * rounds().length;
-    }
-  };
-}
+/** ことば タイル's rules (games/listened.ts): the answer window by the sentence's length, the wrong slots as `pick`. */
+export const TILE: ListenRules<TileCard, TileRound> = {
+  id: 'tile',
+  rounds: tileRounds,
+  timing: (r, answer, w) => ({ lead: w.lead, play: r?.play ?? PLAY_UNKNOWN, answer: answer + PER_SLOT * (r?.tiles.length ?? 0) }),
+  valid: tileValid,
+  ok: (r, a) => tileOk(r, a as readonly number[]),
+  pick: (r, a) => wrongMask(r, a as readonly number[])
+};
 
-/** Where a game's rounds come from (the phone's decks: lane.ts; a test's): its sentences for a seed and options, and
- *  its content version (its files'). */
-export interface TileSource {
-  cards(seed: number, o: TileOpts): readonly TileCard[];
-  playMs(id: string): number | undefined;
-  cv?(o: TileOpts): string | undefined;
-}
+export const tileGame = (src: ListenSource<TileCard>): GameDef<ListenOpts> => listenGame(TILE, src);
 
-/** A deck's rounds kept per its cards and ear (the session reads them at every call). */
-const ROUNDS = new WeakMap<readonly TileCard[], Map<string, readonly TileRound[]>>();
-function roundsOf(cards: readonly TileCard[], seed: number, o: TileOpts, playMs: TileSource['playMs']): readonly TileRound[] {
-  let by = ROUNDS.get(cards);
-  if (!by) ROUNDS.set(cards, (by = new Map()));
-  const k = `${seed}:${o.lv}:${o.ear}`;
-  let rs = by.get(k);
-  if (!rs) by.set(k, (rs = tileRounds(cards, seed, o, playMs)));
-  return rs;
-}
+/** My answers of a game as its `listen` row's: the wrong slots' mask as `pick`. */
+export const tileRecord = (rounds: readonly TileRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
+  listenRecord(TILE, rounds, answers, had, rp, done);
 
-export function tileGame(src: TileSource): GameDef<TileOpts> {
-  return {
-    id: 'tile',
-    modes: { solo: true, coop: true, vs: false, same: true },
-    opts: tileOpts,
-    deck: (seed, o, ctx) => tileDeck(() => roundsOf(src.cards(seed, o), seed, o, src.playMs), o, ctx.w),
-    cv: (o) => src.cv?.(o),
-    tier: { of: (o) => o.ear, with: (o, tr) => ({ ...o, ear: Math.max(0, Math.min(EARS - 1, tr)) }) },
-    roles: ROLES
-  };
-}
-
-/** My answers of a game as its `listen` row's (contract/listen.ts): each round I had, right or not, the wrong slots'
- *  mask as `pick` (-1: no answer), my replays. */
-export function tileRecord(rounds: readonly TileRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] {
-  return rounds.flatMap((r, i): ListenRow['r'] => {
-    const a = answers[i];
-    if (!had[i] || (!a && !done)) return [];
-    const ok = !!a && tileValid(r, a) && tileOk(r, a);
-    return [[r.id, ok ? 1 : 0, a && tileValid(r, a) ? wrongMask(r, a) : -1, Math.min(99, rp[i] ?? 0)]];
-  }).slice(0, 12);
-}
-
-/** A row's answer read back (きろく, a test): the words its mask says were wrong. */
+/** A row's answer read back (a test; きろく later): the words its mask says were wrong. */
 export const wrongWords = (tiles: readonly string[], pick: number): string[] => (pick < 0 ? [] : tiles.filter((_, j) => pick & (1 << j)));
-
-/** A content version over several files' (6 hex; one file: its own; none known: undefined). */
-export function cvOver(cvs: readonly (string | undefined)[]): string | undefined {
-  if (!cvs.length || cvs.some((c) => c === undefined)) return undefined;
-  return cvs.length === 1 ? cvs[0] : (fnv1a(cvs.join(',')) >>> 0).toString(16).padStart(8, '0').slice(0, 6);
-}

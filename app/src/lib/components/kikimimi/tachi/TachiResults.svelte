@@ -6,8 +6,10 @@
   // the karaoke as ▶︎ plays it, its bed under it), the note, and each round's question, the right answer, mine when it
   // was wrong, and 解説. もういっかい: the host a new deal of the same place (solo at once, shared re-invited).
   import type { QuizGame } from '../game.svelte.ts';
-  import { EMPTY, rawOf, type TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
-  import { isCoop, okFor } from './board.ts';
+  import { EMPTY, rawOf } from '#lib/kikimimi/games/listened.ts';
+  import type { TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
+  import { okFor } from './board.ts';
+  import { isCoop } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import Why from '../frame/Why.svelte';

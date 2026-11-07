@@ -14,7 +14,8 @@ import { ENTRIES, INDEX, gameCvOf, ladders, listenOf, loadAll, unitPart } from '
 import { LESSONS } from './stages.ts';
 import { BUILD_V } from './games/versions.ts';
 import { taikaiDeck } from './games/taikai/source.ts';
-import { boardOf, tierAt, tileDeal } from './games/tile/def.ts';
+import { tierAt } from './games/listened.ts';
+import { boardOf, tileDeal } from './games/tile/def.ts';
 import { tachiDeal } from './games/tachi/def.ts';
 import { callDeal, callRounds } from './games/call/def.ts';
 

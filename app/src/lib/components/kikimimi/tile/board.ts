@@ -4,30 +4,20 @@
 import '#lib/i18n/kiki-tile.ts';
 import type { Who } from '#lib/types.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
-import { EMPTY, boardOf, slotsOf, tierAt, tileOpts, unionOf, type TileCard } from '#lib/kikimimi/games/tile/def.ts';
-
-/** Co-op: several players, not たいせん (ことば タイル has none). */
-export const isCoop = (v: Pick<QuizView, 'players' | 'vs'>): boolean => v.players.length > 1 && !v.vs;
+import { listenOpts, tierAt } from '#lib/kikimimi/games/listened.ts';
+import { boardOf, slotsOf, unionOf, type TileCard } from '#lib/kikimimi/games/tile/def.ts';
+import { roleOf } from '../listenView.ts';
 
 /** A player's board for a card: at their ear (theirs heard, else the game's: mine as I play it). */
 export function boardFor(v: Pick<QuizView, 'o' | 'seed' | 'tiers'>, c: TileCard, who?: Who): string[] {
-  const o = tileOpts.decode(v.o);
+  const o = listenOpts.decode(v.o);
   if (!o) return [...c.tile.tiles];
   const ear = who ? (v.tiers[who] ?? o.ear) : o.ear;
   return boardOf(c.tile, v.seed, tierAt(ear, o.lv));
 }
 
-/** Whether I'm on an easy board (one decoy, my first slot placed for me). */
-export function easy(v: Pick<QuizView, 'o'>): boolean {
-  const o = tileOpts.decode(v.o);
-  return !!o && tierAt(o.ear, o.lv) === 'easy';
-}
-
 /** My slots of a sentence of n: solo every one, co-op my role's. */
-export const mySlots = (v: Pick<QuizView, 'players' | 'vs' | 'roles'>, me: Who, n: number): number[] => slotsOf(n, isCoop(v) ? (v.roles[me] ?? 0) : null);
-
-/** An empty answer (every slot EMPTY). */
-export const blank = (n: number): number[] => Array.from({ length: n }, () => EMPTY);
+export const mySlots = (v: Pick<QuizView, 'players' | 'vs' | 'roles'>, me: Who, n: number): number[] => slotsOf(n, roleOf(v, me));
 
 /** The team's sentence at a reveal: each slot from whoever filled it (mine first), its word or null. */
 export function teamWords(v: Pick<QuizView, 'o' | 'seed' | 'tiers' | 'players'>, c: TileCard, me: Who, mine: readonly number[] | null): (string | null)[] {

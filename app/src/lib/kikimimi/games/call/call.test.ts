@@ -9,9 +9,9 @@ import type { ListenEntry, ListenPart } from '../../listen.ts';
 import { RoundSession, WINDOWS } from '../../round/session.ts';
 import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
+import { EMPTY, filesOf, listenOpts } from '../listened.ts';
 import {
-  CALL_QS, EMPTY, callDeal, callFiles, callGame, callOk, callOpts, callRecord, callRounds, callValid, chipsOf, infoOf, roundRows, rowsOf, trapOf, unionOf,
-  wrongMask, wrongRows, type CallRound
+  CALL_QS, callDeal, callGame, callOk, callRecord, callRounds, callValid, chipsOf, infoOf, roundRows, rowsOf, trapOf, unionOf, wrongMask, wrongRows, type CallRound
 } from './def.ts';
 
 const FILES = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'call');
@@ -27,10 +27,10 @@ const callsOf = (us: readonly string[]) => parts(us).flatMap((p) => p.items.flat
 describe('ようじ でんわ: the deal', () => {
   it('deals the listened files at the lobby’s place only', () => {
     const listen: Record<string, ListenEntry> = { 's1-call': ['call', 2, 'listened'], 's2-call-a': ['call', 3, 'listened'], 's2-call-b': ['call', 3, 'draft'], 's2-tile': ['tile', 3, 'listened'] };
-    expect(callFiles(4, listen)).toEqual(['s2-call-a']);
-    expect(callFiles(3, listen)).toEqual(['s1-call']);
-    expect(callFiles(6, listen)).toEqual([]);
-    expect(callFiles(4, INDEX.listen)).toEqual([]); // (this build: every call file a draft till A1 and the listening check)
+    expect(filesOf('call', 4, listen)).toEqual(['s2-call-a']);
+    expect(filesOf('call', 3, listen)).toEqual(['s1-call']);
+    expect(filesOf('call', 6, listen)).toEqual([]);
+    expect(filesOf('call', 4, INDEX.listen)).toEqual([]); // (this build: every call file a draft till A1 and the listening check)
   });
 
   it('is the same for a seed: 3 calls, each its call (its lines’ clips) then its memo’s second round (no clip of its own)', () => {
@@ -104,7 +104,7 @@ describe('ようじ でんわ: tiers', () => {
 
   it('options carry the level, こたえる じかん and the ear', () => {
     const o = { lv: 4 as const, timer: 20 as const, ear: 3 };
-    expect(callOpts.decode(callOpts.encode(o))).toEqual(o);
+    expect(listenOpts.decode(listenOpts.encode(o))).toEqual(o);
   });
 });
 
@@ -194,7 +194,7 @@ describe('ようじ でんわ: a co-op game over two phones', () => {
   it('each fills their share of the memo at their own tier; the team has a round when both shares are right, the same on both phones', () => {
     const r = pair();
     // A (ear かわ) opens もり: easy for A; B (ear やま) joins: hard
-    r.act('A', (x) => x.open({ gm: 'call', o: callOpts.encode({ lv: 4, timer: 30, ear: 1 }) }, T0));
+    r.act('A', (x) => x.open({ gm: 'call', o: listenOpts.encode({ lv: 4, timer: 30, ear: 1 }) }, T0));
     r.act('A', (x) => x.invite(T0));
     r.act('B', (x) => x.join(T0, undefined, 3));
     expect(r.s.B.view(T0)).toMatchObject({ phase: 'lobby', gm: 'call', tiers: { A: 1, B: 3 } });

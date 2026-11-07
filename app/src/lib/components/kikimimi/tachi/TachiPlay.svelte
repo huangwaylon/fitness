@@ -12,9 +12,11 @@
   // last reveal). The reveal: ○ / ×, the right faces and mine, 解説 (`why`); the conversation's last adds its note and the
   // whole transcript.
   import type { QuizGame } from '../game.svelte.ts';
-  import { EMPTY, SHARED, facesOf, givenClaim, rawOf, type TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
+  import { EMPTY, rawOf } from '#lib/kikimimi/games/listened.ts';
+  import { SHARED, facesOf, givenClaim, type TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
   import { RIGHT } from '#lib/kikimimi/score.ts';
-  import { easy, fresh, isCoop, lineItem, okFor, partOf, roleOf } from './board.ts';
+  import { fresh, lineItem, okFor, partOf } from './board.ts';
+  import { easy, isCoop, roleOf } from '../listenView.ts';
   import RoundFrame from '../frame/RoundFrame.svelte';
   import RevealFrame from '../frame/RevealFrame.svelte';
   import ChoiceGrid from '../frame/ChoiceGrid.svelte';

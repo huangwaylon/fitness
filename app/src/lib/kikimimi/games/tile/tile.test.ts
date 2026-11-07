@@ -8,9 +8,9 @@ import type { ListenEntry, ListenPart } from '../../listen.ts';
 import { RoundSession, WINDOWS } from '../../round/session.ts';
 import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
+import { EMPTY, cvOver, filesOf, listenOpts, tierAt, type ListenOpts } from '../listened.ts';
 import {
-  EMPTY, TILE_QS, boardOf, cvOver, decoysFor, slotsOf, tierAt, tileDeal, tileFiles, tileGame, tileOk, tileOpts, tileRecord, tileRounds, tileValid, unionOf, wrongMask,
-  wrongWords, type TileCard, type TileOpts
+  TILE_QS, boardOf, decoysFor, slotsOf, tileDeal, tileGame, tileOk, tileRecord, tileRounds, tileValid, unionOf, wrongMask, wrongWords, type TileCard
 } from './def.ts';
 
 const FILES = Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === 'tile');
@@ -34,10 +34,10 @@ function answerFor(r: { tiles: readonly string[]; board: readonly string[] }, on
 describe('ことば タイル: the deal', () => {
   it('deals the listened files at the lobby’s place only', () => {
     const listen: Record<string, ListenEntry> = { 's1-tile-a': ['tile', 2, 'listened'], 's2-tile': ['tile', 3, 'listened'], 's2-tile-bank': ['tile', 3, 'draft'], 's2-call-a': ['call', 3, 'listened'] };
-    expect(tileFiles(4, listen)).toEqual(['s2-tile']);
-    expect(tileFiles(3, listen)).toEqual(['s1-tile-a']);
-    expect(tileFiles(6, listen)).toEqual([]);
-    expect(tileFiles(4, INDEX.listen)).toEqual(['s2-tile-bank']); // (this build: the bank-clip files listened, the authored ones drafts)
+    expect(filesOf('tile', 4, listen)).toEqual(['s2-tile']);
+    expect(filesOf('tile', 3, listen)).toEqual(['s1-tile-a']);
+    expect(filesOf('tile', 6, listen)).toEqual([]);
+    expect(filesOf('tile', 4, INDEX.listen)).toEqual(['s2-tile-bank']); // (this build: the bank-clip files listened, the authored ones drafts)
   });
 
   it('is the same for a seed: 6 sentences from the files, the shortest first, another seed another deal', () => {
@@ -91,10 +91,10 @@ describe('ことば タイル: tiers and boards', () => {
   });
 
   it('options carry the level, こたえる じかん and the ear', () => {
-    const o: TileOpts = { lv: 4, timer: 20, ear: 3 };
-    expect(tileOpts.decode(tileOpts.encode(o))).toEqual(o);
-    expect(tileOpts.decode([4])).toEqual({ lv: 4, timer: 30, ear: 1 });
-    expect([tileOpts.decode([5, 0, 1]), tileOpts.decode([4, 0, 4]), tileOpts.decode([4, 9, 1])]).toEqual([null, null, null]);
+    const o: ListenOpts = { lv: 4, timer: 20, ear: 3 };
+    expect(listenOpts.decode(listenOpts.encode(o))).toEqual(o);
+    expect(listenOpts.decode([4])).toEqual({ lv: 4, timer: 30, ear: 1 });
+    expect([listenOpts.decode([5, 0, 1]), listenOpts.decode([4, 0, 4]), listenOpts.decode([4, 9, 1])]).toEqual([null, null, null]);
   });
 });
 
@@ -191,10 +191,10 @@ describe('ことば タイル: a co-op game over two phones', () => {
   it('each builds their half on their own board; the team has a sentence when both halves are right, the same on both phones', () => {
     const r = pair();
     // A (ear かわ) opens もり: easy for A; B (ear やま) joins: hard
-    r.act('A', (x) => x.open({ gm: 'tile', o: tileOpts.encode({ lv: 4, timer: 30, ear: 1 }) }, T0));
+    r.act('A', (x) => x.open({ gm: 'tile', o: listenOpts.encode({ lv: 4, timer: 30, ear: 1 }) }, T0));
     r.act('A', (x) => x.invite(T0));
     r.act('B', (x) => x.join(T0, undefined, 3));
-    expect(r.s.B.view(T0)).toMatchObject({ phase: 'lobby', gm: 'tile', tiers: { A: 1, B: 3 }, o: tileOpts.encode({ lv: 4, timer: 30, ear: 3 }) });
+    expect(r.s.B.view(T0)).toMatchObject({ phase: 'lobby', gm: 'tile', tiers: { A: 1, B: 3 }, o: listenOpts.encode({ lv: 4, timer: 30, ear: 3 }) });
     r.act('A', (x) => x.go(T0));
     const cards = src.cards(r.s.A.view(T0).seed);
     const ra = tileRounds(cards, r.s.A.view(T0).seed, { lv: 4, ear: 1 }, () => 2000), rb = tileRounds(cards, r.s.A.view(T0).seed, { lv: 4, ear: 3 }, () => 2000);

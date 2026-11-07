@@ -16,28 +16,18 @@ import type { ListenRow } from '../../../contract/listen.ts';
 import type { RosterId } from '#lib/villagers/roster.ts';
 import type { CastId, Item, Level, Tags } from '../../bank.ts';
 import { PLACES } from '../../catalog.ts';
-import type { ListenEntry, ListenItem, ListenPart } from '../../listen.ts';
-import { RIGHT } from '../../score.ts';
-import { TIMERS } from '../../seed.ts';
+import type { ListenItem, ListenPart } from '../../listen.ts';
 import type { Tier } from '../../lesson.ts';
-import type { AnswerValue, GameDef, Graded, Round, RoundDeck, RoundWindows } from '../../round/types.ts';
+import type { AnswerValue, GameDef, Round } from '../../round/types.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
-import { tierAt, tileOpts, type TileOpts } from '../tile/def.ts';
+import { EMPTY, ROLES, filled, listenGame, listenRecord, shareOf, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
 
 /** A game's calls (2 rounds each: 6, within the row's 12). */
 export const CALL_QS = 3;
-/** A row not filled (the wire's ints are 0-63). */
-export const EMPTY = 63;
 /** The answer window's extra per memo row (ms). */
 const PER_ROW = 2500;
-/** The roles of a co-op memo. */
-const ROLES = 2;
 /** How many rows a call's memo has at a tier (both rounds). */
 const ROWS: Record<Tier | 'as', number> = { easy: 2, as: 3, hard: 4 };
-
-/** A call's lobby options: as ことば タイル's (its level, こたえる じかん, the host's ear). */
-export type CallOpts = TileOpts;
-export const callOpts = tileOpts;
 
 type CallYaml = Extract<ListenItem, { kind: 'call' }>;
 
@@ -72,15 +62,6 @@ export interface CallCard extends Item {
   call: { info: CallInfo; part: 0 | 1 };
   /** No replay at its reveals (clipPlayer's hint: a 20-40 s call; 🔁 plays it on a tap). */
   quietReveal: true;
-}
-
-/** A level's place (0 はまべ … 4 ほし; -1 none). */
-const placeOf = (lv: number): number => PLACES.findIndex((p) => p.lvs.includes(lv));
-
-/** The call files a level's deck deals from: the `listened` ones at its place, by name. */
-export function callFiles(lv: number, listen: Readonly<Record<string, ListenEntry>>): string[] {
-  const stage = placeOf(lv) + 1;
-  return Object.entries(listen).filter(([, [g, st, s]]) => g === 'call' && st === stage && s === 'listened').map(([u]) => u).sort();
 }
 
 /** A call as shown, from its YAML. */
@@ -182,7 +163,7 @@ export interface CallRound extends Round {
 }
 
 /** A deck's rounds at an ear (`playMs`: a call's length, unknown: undefined). */
-export function callRounds(cards: readonly CallCard[], o: Pick<CallOpts, 'lv' | 'ear'>, playMs: (it: Item) => number | undefined): CallRound[] {
+export function callRounds(cards: readonly CallCard[], o: Pick<ListenOpts, 'lv' | 'ear'>, playMs: (c: CallCard) => number | undefined): CallRound[] {
   const tier = tierAt(o.ear, o.lv);
   return cards.map((c) => {
     const { info, part } = c.call;
@@ -192,10 +173,7 @@ export function callRounds(cards: readonly CallCard[], o: Pick<CallOpts, 'lv' | 
 }
 
 /** A role's rows of a round of n (solo: every one; a round of one row: both roles'). */
-export const rowsOf = (n: number, role: number | null): number[] => Array.from({ length: n }, (_, j) => j).filter((j) => role === null || n === 1 || j % ROLES === role % ROLES);
-
-/** An answer's filled rows. */
-const filled = (a: readonly number[]): number[] => a.flatMap((x, j) => (x === EMPTY ? [] : [j]));
+export const rowsOf = (n: number, role: number | null): number[] => shareOf(n, role, true);
 
 /** Whether row j holds its right chip. */
 export const rowOk = (r: Pick<CallRound, 'rows'>, a: readonly number[], j: number): boolean => a[j] !== EMPTY && a[j] === r.rows[j]?.answer;
@@ -230,76 +208,22 @@ export function unionOf(answers: readonly { round: Pick<CallRound, 'rows'>; a: r
   return out;
 }
 
-/** A player's deck at their ear. */
-function callDeck(rounds: () => readonly CallRound[], o: CallOpts, w: RoundWindows): RoundDeck {
-  const base = w.answers[Math.max(0, TIMERS.indexOf(o.timer))];
-  const none: Graded = { ok: false, pts: 0 };
-  return {
-    get count() {
-      return rounds().length;
-    },
-    round: (i) => rounds()[i],
-    timing: (i) => {
-      const r = rounds()[i];
-      return { lead: w.lead, play: r?.play ?? 0, answer: base + PER_ROW * (r?.rows.length ?? 0) };
-    },
-    valid: (i, a) => {
-      const r = rounds()[i];
-      return !!r && callValid(r, a);
-    },
-    grade: (i, a) => {
-      const r = rounds()[i];
-      if (!r || !callValid(r, a)) return none;
-      const ok = callOk(r, a);
-      return { ok, pts: ok ? RIGHT : 0 };
-    },
-    get maxScore() {
-      return RIGHT * rounds().length;
-    }
-  };
-}
+/** ようじ でんわ's rules (games/listened.ts): the answer window by the round's rows, the wrong memo rows as `pick`. */
+export const CALL: ListenRules<CallCard, CallRound> = {
+  id: 'call',
+  rounds: (cards, _seed, o, playMs) => callRounds(cards, o, playMs),
+  timing: (r, answer, w) => ({ lead: w.lead, play: r?.play ?? 0, answer: answer + PER_ROW * (r?.rows.length ?? 0) }),
+  valid: callValid,
+  ok: (r, a) => callOk(r, a as readonly number[]),
+  pick: (r, a) => wrongMask(r, a as readonly number[])
+};
 
-/** Where a game's rounds come from (the phone's decks: lane.ts; a test's): its cards for a seed and options, a call's
- *  length, and its content version (its files'). */
-export interface CallSource {
-  cards(seed: number, o: CallOpts): readonly CallCard[];
-  playMs(it: Item): number | undefined;
-  cv?(o: CallOpts): string | undefined;
-}
+export const callGame = (src: ListenSource<CallCard>): GameDef<ListenOpts> => listenGame(CALL, src);
 
-/** A deck's rounds kept per its cards and ear (the session reads them at every call). */
-const ROUNDS = new WeakMap<readonly CallCard[], Map<string, readonly CallRound[]>>();
-function roundsOf(cards: readonly CallCard[], o: CallOpts, playMs: CallSource['playMs']): readonly CallRound[] {
-  let by = ROUNDS.get(cards);
-  if (!by) ROUNDS.set(cards, (by = new Map()));
-  const k = `${o.lv}:${o.ear}`;
-  let rs = by.get(k);
-  if (!rs) by.set(k, (rs = callRounds(cards, o, playMs)));
-  return rs;
-}
+/** My answers of a game as its `listen` row's, by its call: the wrong rows' mask over the call's memo as `pick`. */
+export const callRecord = (rounds: readonly CallRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
+  listenRecord(CALL, rounds, answers, had, rp, done);
 
-export function callGame(src: CallSource): GameDef<CallOpts> {
-  return {
-    id: 'call',
-    modes: { solo: true, coop: true, vs: false, same: true },
-    opts: callOpts,
-    deck: (seed, o, ctx) => callDeck(() => roundsOf(src.cards(seed, o), o, src.playMs), o, ctx.w),
-    cv: (o) => src.cv?.(o),
-    tier: { of: (o) => o.ear, with: (o, tr) => ({ ...o, ear: Math.max(0, Math.min(3, tr)) }) },
-    roles: ROLES
-  };
-}
+/** A row's answer read back (a test; きろく later): the memo rows its mask says were wrong. */
 
-/** My answers of a game as its `listen` row's (contract/listen.ts): each round I had, by its call, right or not, the
- *  wrong rows' mask over the call's memo as `pick` (-1: no answer), my replays. */
-export function callRecord(rounds: readonly CallRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] {
-  return rounds.flatMap((r, i): ListenRow['r'] => {
-    const a = answers[i];
-    if (!had[i] || (!a && !done)) return [];
-    const valid = !!a && callValid(r, a);
-    return [[r.id, valid && callOk(r, a) ? 1 : 0, valid ? wrongMask(r, a) : -1, Math.min(99, rp[i] ?? 0)]];
-  }).slice(0, 12);
-}
-
-/** A row's answer read back (きろく, a test): the memo rows its mask says were wrong. */
 export const wrongRows = (info: CallInfo, pick: number): MemoRow[] => (pick < 0 ? [] : info.memo.flatMap((m) => m.rows).filter((r) => pick & (1 << r.n)));

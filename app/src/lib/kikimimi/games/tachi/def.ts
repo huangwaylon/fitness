@@ -17,35 +17,24 @@ import type { ListenRow } from '../../../contract/listen.ts';
 import type { RosterId } from '../../../villagers/roster.ts';
 import type { Item, Level, Line, Tags } from '../../bank.ts';
 import { PLACES } from '../../catalog.ts';
-import { itemDur } from '../../clips.ts';
-import type { ListenEntry, ListenItem, ListenPart } from '../../listen.ts';
-import { RIGHT } from '../../score.ts';
-import { TIMERS } from '../../seed.ts';
-import type { AnswerValue, GameDef, Graded, Round, RoundDeck, RoundWindows } from '../../round/types.ts';
+import type { ListenItem, ListenPart } from '../../listen.ts';
+import type { AnswerValue, GameDef, Round } from '../../round/types.ts';
 import { PLAY_UNKNOWN } from '../quiz/kinds.ts';
-import { EMPTY, tierAt, tileOpts, type TileOpts } from '../tile/def.ts';
+import { EMPTY, ROLES, listenGame, listenRecord, tierAt, type ListenOpts, type ListenRules, type ListenSource } from '../listened.ts';
 
-export { EMPTY };
 /** A game's conversations, and its rounds (3 each). */
 const TACHI_CONVS = 2;
 export const TACHI_QS = TACHI_CONVS * 3;
 /** The opinions round's extra answer time (ms): three faces to place. */
 const MATCH_MS = 10_000;
-/** The roles of a co-op game (each follows a speaker; the third is shared). */
-const ROLES = 2;
 /** The shared speaker (by first line). */
 export const SHARED = 2;
-/** The places' `ear` (0 はまべ … 3 やま). */
-const EARS = 4;
 
 type TachiYaml = Extract<ListenItem, { kind: 'tachi' }>;
 type TachiType = TachiYaml['rounds'][number]['type'];
 /** Each round's suffix on its row's id (the item's id and this: an SRS card of its own). */
 const SUFFIX: Readonly<Record<TachiType, string>> = { opinions: 'op', changed: 'ch', plan: 'pl' };
 
-/** たちぎき's lobby options: its level (a place's first: 4 もり, 6 やま), こたえる じかん, the host's ear (ことば タイル's). */
-export type TachiOpts = TileOpts;
-export const tachiOpts = tileOpts;
 
 /** A dealt round, as the sheet's game holds it: an Item whose id is the conversation's (its lines' clips, `<id>-<n>`),
  *  its lines with their offsets, the round's help (`ctx`, `why`; the plan's `ja` and `cja`), the bed it plays over,
@@ -71,15 +60,6 @@ export interface TachiCard extends Item {
     /** The plan's question (UI copy). */
     ask?: string;
   };
-}
-
-/** A level's place (0 はまべ … 4 ほし). */
-const placeOf = (lv: number): number => PLACES.findIndex((p) => p.lvs.includes(lv));
-
-/** The tachi files a level's deck deals from: the `listened` ones at its place, by name. */
-export function tachiFiles(lv: number, listen: Readonly<Record<string, ListenEntry>>): string[] {
-  const stage = placeOf(lv) + 1;
-  return Object.entries(listen).filter(([, [g, st, s]]) => g === 'tachi' && st === stage && s === 'listened').map(([u]) => u).sort();
 }
 
 /** The speakers of a conversation, by first line. */
@@ -123,7 +103,7 @@ export interface TachiRound extends Round {
 }
 
 /** A deck's rounds at an ear (`playMs`: a conversation's length, unknown: PLAY_UNKNOWN). */
-export const tachiRounds = (cards: readonly TachiCard[], o: Pick<TachiOpts, 'lv' | 'ear'>, playMs: (c: TachiCard) => number | undefined): TachiRound[] => {
+export const tachiRounds = (cards: readonly TachiCard[], o: Pick<ListenOpts, 'lv' | 'ear'>, playMs: (c: TachiCard) => number | undefined): TachiRound[] => {
   const given = tierAt(o.ear, o.lv) === 'easy';
   return cards.map((c) => ({
     kind: 'tachi', id: c.tachi.row, type: c.tachi.type, answer: c.tachi.answer, given: given && c.tachi.type === 'opinions',
@@ -152,87 +132,26 @@ export function tachiOk(r: Pick<TachiRound, 'type' | 'answer'>, a: AnswerValue):
   return [facesOf(null), facesOf(0), facesOf(1)].some((f) => [...f].sort().join() === placed) && got.every((x, j) => x === EMPTY || x === want[j]);
 }
 
-/** A player's deck at their ear. */
-function tachiDeck(rounds: () => readonly TachiRound[], o: TachiOpts, w: RoundWindows): RoundDeck {
-  const base = w.answers[Math.max(0, TIMERS.indexOf(o.timer))];
-  const none: Graded = { ok: false, pts: 0 };
-  return {
-    get count() {
-      return rounds().length;
-    },
-    round: (i) => rounds()[i],
-    timing: (i) => {
-      const r = rounds()[i];
-      return r?.play ? { lead: w.lead, play: r.play, answer: base + MATCH_MS } : { lead: 0, play: 0, answer: base };
-    },
-    valid: (i, a) => {
-      const r = rounds()[i];
-      return !!r && tachiValid(r, a);
-    },
-    grade: (i, a) => {
-      const r = rounds()[i];
-      if (!r || !tachiValid(r, a)) return none;
-      const ok = tachiOk(r, a);
-      return { ok, pts: ok ? RIGHT : 0 };
-    },
-    get maxScore() {
-      return RIGHT * rounds().length;
-    }
-  };
-}
-
-/** Where a game's rounds come from (the phone's decks: lane.ts; a test's). */
-export interface TachiSource {
-  cards(seed: number, o: TachiOpts): readonly TachiCard[];
-  playMs(c: TachiCard): number | undefined;
-  cv?(o: TachiOpts): string | undefined;
-}
-
-/** A conversation's length as played (ms; its lines and their offsets), undefined while a clip is missing. */
-export const convMs = (c: Pick<TachiCard, 'id' | 'lines'>): number | undefined => {
-  const s = itemDur(c);
-  return s === undefined ? undefined : Math.round(s * 1000);
+/** たちぎき's rules (games/listened.ts): the opinions round (the one that plays) its extra time to place three faces,
+ *  the others no lead and no play; the answer as `pick`. */
+export const TACHI: ListenRules<TachiCard, TachiRound> = {
+  id: 'tachi',
+  rounds: (cards, _seed, o, playMs) => tachiRounds(cards, o, playMs),
+  timing: (r, answer, w) => (r?.play ? { lead: w.lead, play: r.play, answer: answer + MATCH_MS } : { lead: 0, play: 0, answer }),
+  valid: tachiValid,
+  ok: tachiOk,
+  pick: (r, a) => pickOf(r, a)
 };
 
-const ROUNDS = new WeakMap<readonly TachiCard[], Map<string, readonly TachiRound[]>>();
-function roundsOf(cards: readonly TachiCard[], o: TachiOpts, playMs: TachiSource['playMs']): readonly TachiRound[] {
-  let by = ROUNDS.get(cards);
-  if (!by) ROUNDS.set(cards, (by = new Map()));
-  const k = `${o.lv}:${o.ear}`;
-  let rs = by.get(k);
-  if (!rs) by.set(k, (rs = tachiRounds(cards, o, playMs)));
-  return rs;
-}
-
-export function tachiGame(src: TachiSource): GameDef<TachiOpts> {
-  return {
-    id: 'tachi',
-    modes: { solo: true, coop: true, vs: false, same: true },
-    opts: tachiOpts,
-    deck: (seed, o, ctx) => tachiDeck(() => roundsOf(src.cards(seed, o), o, src.playMs), o, ctx.w),
-    cv: (o) => src.cv?.(o),
-    tier: { of: (o) => o.ear, with: (o, tr) => ({ ...o, ear: Math.max(0, Math.min(EARS - 1, tr)) }) },
-    roles: ROLES
-  };
-}
+export const tachiGame = (src: ListenSource<TachiCard>): GameDef<ListenOpts> => listenGame(TACHI, src);
 
 /** An answer as a row's `pick` (0-63): a choice itself; opinions each claim's speaker in base 4 (3: none). */
 export const pickOf = (r: Pick<TachiRound, 'type'>, a: AnswerValue): number =>
   r.type === 'opinions' ? (a as readonly number[]).reduce((s, x, j) => s + (x === EMPTY ? 3 : x) * 4 ** j, 0) : (a as number);
 
-/** A row's opinions pick read back (きろく, a test): each claim's speaker (EMPTY none). */
+/** A row's opinions pick read back (a test; きろく later): each claim's speaker (EMPTY none). */
 export const opinionsOf = (pick: number): number[] => [0, 1, 2].map((j) => Math.floor(pick / 4 ** j) % 4).map((x) => (x === 3 ? EMPTY : x));
 
-/** An answer as the quiz's view keeps it (a choice its `k`, an array its `a`), raw again; null: none. */
-export const rawOf = (x: { k: number; a?: AnswerValue } | null | undefined): AnswerValue | null => (x ? (x.a ?? x.k) : null);
-
-/** My answers of a game as its `listen` row's (contract/listen.ts): each round I had, right or not, my answer as `pick`
- *  (-1: none), my replays. */
-export function tachiRecord(rounds: readonly TachiRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] {
-  return rounds.flatMap((r, i): ListenRow['r'] => {
-    const a = answers[i];
-    if (!had[i] || (a === null && !done)) return [];
-    const valid = a !== null && a !== undefined && tachiValid(r, a);
-    return [[r.id, valid && tachiOk(r, a) ? 1 : 0, valid ? pickOf(r, a) : -1, Math.min(99, rp[i] ?? 0)]];
-  }).slice(0, 12);
-}
+/** My answers of a game as its `listen` row's: my answer as `pick`. */
+export const tachiRecord = (rounds: readonly TachiRound[], answers: readonly (AnswerValue | null)[], had: readonly boolean[], rp: readonly number[], done: boolean): ListenRow['r'] =>
+  listenRecord(TACHI, rounds, answers, had, rp, done);

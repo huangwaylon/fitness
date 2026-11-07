@@ -4,29 +4,24 @@
 import '#lib/i18n/kiki-call.ts';
 import type { Who } from '#lib/types.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
-import { EMPTY, callOpts, callRounds, roundRows, rowsOf, unionOf, type AskedRow, type CallCard, type CallOpts, type CallRound } from '#lib/kikimimi/games/call/def.ts';
-import { tierAt } from '#lib/kikimimi/games/tile/def.ts';
-
-/** Co-op: several players, not たいせん (ようじ でんわ has none). */
-export const isCoop = (v: Pick<QuizView, 'players' | 'vs'>): boolean => v.players.length > 1 && !v.vs;
+import { listenOpts, tierAt, type ListenOpts } from '#lib/kikimimi/games/listened.ts';
+import { callRounds, roundRows, rowsOf, unionOf, type AskedRow, type CallCard, type CallRound } from '#lib/kikimimi/games/call/def.ts';
+import { roleOf } from '../listenView.ts';
 
 /** A player's ear (theirs heard, else the game's: mine as I play it). */
 const earOf = (v: Pick<QuizView, 'o' | 'tiers'>, who?: Who): { lv: number; ear: number } | null => {
-  const o = callOpts.decode(v.o);
+  const o = listenOpts.decode(v.o);
   return o && { lv: o.lv, ear: who ? (v.tiers[who] ?? o.ear) : o.ear };
 };
 
 /** A player's round of a card at their tier (the call's length isn't read here). */
 export function roundFor(v: Pick<QuizView, 'o' | 'tiers'>, c: CallCard, who?: Who): CallRound {
   const e = earOf(v, who);
-  return callRounds([c], { lv: (e?.lv ?? c.lv) as CallOpts['lv'], ear: e?.ear ?? 1 }, () => 0)[0];
+  return callRounds([c], { lv: (e?.lv ?? c.lv) as ListenOpts['lv'], ear: e?.ear ?? 1 }, () => 0)[0];
 }
 
 /** My rows of a round of n: solo every one, co-op my role's. */
-export const myRows = (v: Pick<QuizView, 'players' | 'vs' | 'roles'>, me: Who, n: number): number[] => rowsOf(n, isCoop(v) ? (v.roles[me] ?? 0) : null);
-
-/** An empty memo (every row EMPTY). */
-export const blank = (n: number): number[] => Array.from({ length: n }, () => EMPTY);
+export const myRows = (v: Pick<QuizView, 'players' | 'vs' | 'roles'>, me: Who, n: number): number[] => rowsOf(n, roleOf(v, me));
 
 /** The others' answers heard at each round's reveal (a later reveal no longer has them: the basket's), by game and
  *  round. */
@@ -34,6 +29,7 @@ const HEARD = new Map<string, { who: Who; a: readonly number[] }[]>();
 const othersOf = (v: Pick<QuizView, 'players'>, me: Who) => v.players.flatMap((p) => (p.who !== me && p.pick && Array.isArray(p.pick.a) ? [{ who: p.who, a: p.pick.a as readonly number[] }] : []));
 export function hear(v: Pick<QuizView, 'g' | 'i' | 'phase' | 'players'>, me: Who): void {
   if (v.phase !== 'reveal' || !v.g) return;
+  for (const k of HEARD.keys()) if (!k.startsWith(`${v.g}:`)) HEARD.delete(k); // (an earlier game's: let go)
   const got = othersOf(v, me);
   if (got.length) HEARD.set(`${v.g}:${v.i}`, got);
 }
@@ -70,7 +66,7 @@ export interface BasketTag {
 export function basketOf(v: Pick<QuizView, 'g' | 'o' | 'tiers' | 'answers' | 'phase' | 'i' | 'players'>, cards: readonly CallCard[], i: number, me: Who): BasketTag[] {
   const c = cards[i];
   if (!c) return [];
-  const first = i - c.call.part, info = c.call.info, o = callOpts.decode(v.o);
+  const first = i - c.call.part, info = c.call.info, o = listenOpts.decode(v.o);
   const rows = roundRows(info, o ? tierAt(o.ear, o.lv) : undefined);
   const authored = new Map(info.memo.flatMap((m) => m.rows).map((r) => [r.n, r]));
   return rows.flatMap((rs, part) => {
