@@ -43,6 +43,8 @@ export const LOG_EVENTS = {
   // change inside it (`content`), its open animation's end (`anim`); the longest frame in that time (`long`) and those
   // over 33 ms (`slow`); its first opening this load, or a kept one shown again (`kept`). Every first, a share of the rest
   "perf.sheet": { src: 'c', f: { sheet: LOG_SHEETS, first: 'b', kept: 'b', chunk: 'n', content: 'n', anim: 'n', long: 'n', slow: 'n' } },
+  // the island's launch, once a load (world3d/boot.ts BootReport: ms since the navigation's start, frame lengths in ms)
+  "perf.boot": { src: 'c', f: { mount: 'n', first: 'n', loaded: 'n', shown: 'n', long: 'n', draw: 'n', appear: 'n', steps: 'n', progs: 'n', fieldsMs: 'n', fields: ['cache', 'worker', 'main'], sw: ['ctl', 'none', 'no'], warm: 'b', net: 'n' } },
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES } },
   "api.fail": { src: 'c', f: API },
   "api.ok": { src: 'c', f: API },

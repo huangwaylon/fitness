@@ -13,6 +13,8 @@ import type { Layout } from './model.ts';
 
 /** The prime in flight (one: the launch's). */
 let pending: Promise<void> | null = null;
+/** Where the fields adopted came from (the launch's log: world3d/boot.ts). */
+let from: 'worker' | 'cache' | null = null;
 
 /** Resolves once `layout`'s fields are in (or the worker gave up); never rejects. */
 export function primeFields(layout: Layout, timeoutMs = 4000): Promise<void> {
@@ -34,7 +36,7 @@ export function primeFields(layout: Layout, timeoutMs = 4000): Promise<void> {
       // (the chunks only with their fields: a late answer, its fields dropped, is dropped whole)
       if (!hasFields(layout)) {
         adoptFields(layout, e.data.raw);
-        if (hasFields(layout)) adoptChunks(layout, e.data.chunks);
+        if (hasFields(layout)) (adoptChunks(layout, e.data.chunks), (from = 'worker'));
       }
       end();
     };
@@ -60,3 +62,6 @@ export function fieldsSoon(layout: Layout, capMs: number): Promise<void> | null 
   let timer: ReturnType<typeof setTimeout> | undefined;
   return Promise.race([pending, new Promise<void>((ok) => (timer = setTimeout(ok, capMs)))]).finally(() => clearTimeout(timer));
 }
+
+/** Where `layout`'s fields come from as the island mounts: a prime's (the worker's, the cache's) or the main thread's. */
+export const fieldsFrom = (layout: Layout): 'worker' | 'cache' | 'main' => (from && hasFields(layout) ? from : 'main');

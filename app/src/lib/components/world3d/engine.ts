@@ -267,6 +267,9 @@ export interface Island3 {
   /** Called in every frame before it draws: true wants another at the full rate (something moves), 'ambient' at the
    *  ambient rate. */
   onFrame(fn: ((t: number) => Want) | null): void;
+  /** After each frame drawn: its start and end (ms) and whether it was whole (nothing held back, nothing loading: the
+   *  launch's clock, boot.ts). */
+  onDrawn(fn: ((t0: number, t1: number, whole: boolean) => void) | null): void;
   options(o: Partial<Options>): void;
   stats(): Stats;
   dispose(): void;
@@ -791,6 +794,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
+  let drawnHook: ((t0: number, t1: number, whole: boolean) => void) | null = null;
   const groupsPlaced = new Map<string, { obj: Object3D; off: () => void; ball: Sphere }>();
   /** The placed groups (a home, a bridge, a pond: still, bounds known) culled with the camera, as three can't: their
    *  meshes are bent in the shader, so each group's ball is bent here (its middle; its radius doubled, for the shadow
@@ -1002,7 +1006,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     // (nothing drawn: the counts are none, whatever the layout's ground baked on the GPU as it was built)
     else renderer.info.reset();
-    cpu.push(now() - t);
+    const t1 = now();
+    drawnHook?.(t, t1, !held && !things.pending() && !cards.pending());
+    cpu.push(t1 - t);
     if (lastFrame) gaps.push(t - lastFrame);
     lastFrame = t;
     stamps.push(t);
@@ -1177,6 +1183,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     onFrame(fn) {
       hook = fn;
       kick();
+    },
+    onDrawn(fn) {
+      drawnHook = fn;
     },
     stats: () => {
       const l = lights.stats();

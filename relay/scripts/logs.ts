@@ -113,12 +113,23 @@ function report(rows: Row[], since: number): void {
   table('Live socket closes by code', ['code', 'phones', 'relay', 'median secs'], countBy(ws, (r) => String(r.d.code)).map(([c, xs]) => [c, xs.filter((x) => x.src === 'c').length, xs.filter((x) => x.src === 'r').length, ms(pct(xs.map((x) => Number(x.d.secs)).filter((x) => x >= 0), 0.5))]));
   const ready = rows.filter((r) => r.ev === 'app.ready').map((r) => Number(r.d.ms));
   const frames = rows.filter((r) => r.ev === 'perf.frames');
+  // the island's launches (perf.boot: app/src/lib/components/world3d/boot.ts), warm (every model from a cache) and cold
+  const boots = rows.filter((r) => r.ev === 'perf.boot');
+  const bootRows = ([true, false] as const).flatMap((w) => {
+    const bs = boots.filter((r) => (r.d.warm === true) === w), k = w ? 'warm' : 'cold';
+    const p = (f: string): [number, string, string] => {
+      const v = bs.map((r) => Number(r.d[f])).filter(Number.isFinite);
+      return [v.length, ms(pct(v, 0.5)), ms(pct(v, 0.95))];
+    };
+    return [[`${k} launch: first frame (ms)`, ...p('first')], [`${k} launch: island whole (ms)`, ...p('shown')], [`${k} launch: appearing frame (ms)`, ...p('appear')], [`${k} launch: longest frame (ms)`, ...p('long')]];
+  });
   table('Performance', ['metric', 'n', 'p50', 'p95'], [
     ['cold load to the island (ms)', ready.length, ms(pct(ready, 0.5)), ms(pct(ready, 0.95))],
     ['frame p50 (ms)', frames.length, ms(pct(frames.map((r) => Number(r.d.p50)), 0.5)), ms(pct(frames.map((r) => Number(r.d.p50)), 0.95))],
     ['frame p95 (ms)', frames.length, ms(pct(frames.map((r) => Number(r.d.p95)), 0.5)), ms(pct(frames.map((r) => Number(r.d.p95)), 0.95))],
     ['fps', frames.length, ms(pct(frames.map((r) => Number(r.d.fps)), 0.5)), ms(pct(frames.map((r) => Number(r.d.fps)), 0.05))],
-    ['long frames in 5 s', frames.length, ms(pct(frames.map((r) => Number(r.d.long)), 0.5)), ms(pct(frames.map((r) => Number(r.d.long)), 0.95))]
+    ['long frames in 5 s', frames.length, ms(pct(frames.map((r) => Number(r.d.long)), 0.5)), ms(pct(frames.map((r) => Number(r.d.long)), 0.95))],
+    ...bootRows
   ].filter((r) => Number(r[1]) > 0));
   table('Builds', ['build', 'sessions', 'events', 'errors', 'os'], countBy(rows.filter((r) => r.src === 'c'), (r) => r.build ?? '-').map(([b, xs]) => [b, new Set(xs.map((x) => x.sid)).size, xs.length, xs.filter((x) => x.lvl === 3).length, [...new Set(xs.map((x) => x.os ?? '-'))].join(' ')]));
   // each person's newest live hello: the protocol version and build their phone speaks (docs/backend.md: before dropping an old version)
