@@ -2,7 +2,7 @@
 # チェック from recipe v2), each with one complication: a wedding weekend whose rehearsal dinner moves (ev-wedding),
 # a dinner booking that grows to six and moves later (fd-dinner), a clinic reading the wrong chart (hl-doctor), a
 # repair visit pushed a day by a part on back order (hm-repair), a phone ready on a Sunday that closes early (sh-phone),
-# a brunch that moves day, time and address (fr-catchup).
+# a brunch that moves day, time and address (fr-catchup), a matinee meet-up moved earlier for the line (mc-tickets).
 # Unvoiced: batch A4.
 schema: 1
 unit: s2-call-c
@@ -164,3 +164,29 @@ items:
           - { ask: "新しく 来るのは？", options: ["ゴールディの 彼氏", "メイプルの 兄", "マーシャルの 妹"], answer: 0, cja: ["ゴールディの彼氏", "メイプルのお兄さん", "マーシャルの妹"] }
     note: "Maple just texted の あとで 曜日と 時間が 変わる"
     tags: { seed: 57, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair] }
+
+  - kind: call
+    id: call-matinee-meet
+    ask: "キックスから 電話。メモしよう"
+    ctx: "コンサートのチケットを取ってくれた友だちから電話です"
+    scene: street
+    channel: phone
+    lines:
+      - { who: kicks, en: "Dude, bad news and good news. Saturday night sold out in, like, two minutes.", tts: "Dude, bad news an' good news. Saturday night sold out in, like, two minutes.", ja: "おい、悪い知らせといい知らせ。土曜の夜は2分くらいで売り切れた。" }
+      - { who: me, en: "Oh, no! So what's the good news?", ja: "えー！ じゃあ、いい知らせは？" }
+      - { who: kicks, en: "I got us two for the Sunday matinee, at two. Row G, seats fourteen and fifteen. Let's meet out front at one-thirty.", tts: "I got us two fer the Sunday matinee, at two. Row G, seats fourteen an' fifteen. Let's meet out front at one-thirty.", ja: "日曜の昼の公演、2時のを2枚取った。Ｇ列の14番と15番。1時半に正面で待ち合わせよう。" }
+      - { who: me, en: "Nice! Do we pick them up at will call?", ja: "いいね！ 窓口で受け取るの？" }
+      - { who: kicks, en: "Nope, they're on my phone. I'll text you yours. They were sixty-five each, plus fees, so you owe me seventy-two.", tts: "Nope, they're on my phone. I'll text ya yours. They were sixty-five each, plus fees, so ya owe me seventy-two.", ja: "ううん、スマホに入ってる。きみの分はメッセージで送るよ。1枚65ドルに手数料で、72ドルね。" }
+      - { who: kicks, en: "Actually, no, make it one-fifteen out front. The line's gonna be crazy, and there's a bag check.", tts: "Actually, no, make it one-fifteen out front. The line's gonna be crazy, an' there's a bag check.", ja: "いや、やっぱり1時15分に正面で。列がすごいことになるし、手荷物検査もあるから。", repair: true }
+      - { who: me, en: "One-fifteen out front. See you Sunday!", ja: "1時15分に正面ね。じゃあ日曜に！" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "日曜2時の昼の公演、Ｇ列14・15番。待ち合わせは1時半から、Actually, no で1時15分に変わった。チケットはメッセージで届き、払うのは手数料込みの72ドル。"
+        slots:
+          - { ask: "どの 公演？", options: ["日曜 2時", "土曜の 夜", "日曜の 夜"], answer: 0, cja: ["日曜の2時", "土曜の夜", "日曜の夜"] }
+          - { ask: "席は？", options: ["Ｇ列 14・15", "Ｄ列 14・15", "Ｇ列 40・50"], answer: 0, cja: ["Ｇ列の14番と15番", "Ｄ列の14番と15番", "Ｇ列の40番と50番"] }
+          - { ask: "待ち合わせは？", options: ["1:15", "1:30", "2:00"], answer: 0, cja: ["1時15分", "1時半", "2時"] }
+          - { ask: "キックスに 払うのは？", options: ["65ドル", "72ドル", "130ドル"], answer: 1, cja: ["65ドル", "72ドル", "130ドル"] }
+          - { ask: "チケットは？", options: ["メッセージで 届く", "窓口で 受け取る", "郵送で 届く"], answer: 0, cja: ["メッセージで届く", "窓口で受け取る", "郵送で届く"] }
+    note: "Actually, no の あとが 本当の 待ち合わせ"
+    tags: { seed: 50, register: friend, pragmatic: literal, conditions: [phone, street], features: [self-repair, numbers] }

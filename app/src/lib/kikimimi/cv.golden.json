@@ -16,8 +16,8 @@
   "decks": "40a579a98762d069"
  },
  "call:s2-call-c": {
-  "cv": "d21b13",
-  "decks": "b94b8785d554f2b6"
+  "cv": "5e9f89",
+  "decks": "1a34f36069ddba07"
  },
  "call:s3-call": {
   "cv": "fef082",
@@ -82,6 +82,10 @@
  "lesson:hm-repair": {
   "cv": "8dfee9",
   "decks": "78e8d2291d243aba"
+ },
+ "lesson:mc-tickets": {
+  "cv": "921951",
+  "decks": "64ce6ba93944eee5"
  },
  "lesson:mc-weekend": {
   "cv": "b9dcb6",
