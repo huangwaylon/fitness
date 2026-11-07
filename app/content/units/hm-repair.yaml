@@ -640,12 +640,13 @@ items:
     cond: { kind: street, level: heavy }
     tags: { seed: 30, register: neighbour, pragmatic: hedge, conditions: [street], features: [h-drop, idiom] }
 lessons:
-  v: 1
+  v: 2
   deai: [rp-leak-window, rp-bill-him, rp-r-have-him-call, rp-m-should-hold, rp-n-window, rp-m-open-wall]
   bamen: [rp-ac-fans, rp-r-run-you, rp-m-have-her-call, rp-n-total, rp-valve-next, rp-m-estimate]
   check: [rp-dishwasher, rp-r-lock, rp-m-motor, rp-n-late, rp-hose-next, rp-r-heads-up]
   oto: [rp-w-have-him, rp-w-tell-her, rp-w-his-truck, rp-w-run-you, rp-w-worst-case, rp-w-between]
   jissen: [rp-fast-truck, rp-fast-m-pipe, rp-fast-r-window, rp-fast-n-number, rp-fast-code, rp-fast-m-friday]
+  call: [call-dryer-window]
 tiers:
   rp-leak-window:
     easy: { choices: ["A plumber comes Tuesday morning and calls first.", "Cyd will fix it himself tonight."], answer: 0, cja: ["火曜の午前に配管工が来て、先に電話がある。", "サイドが今夜自分で直す。"] }

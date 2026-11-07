@@ -620,12 +620,13 @@ items:
     cond: { kind: cafe, level: heavy }
     tags: { seed: 15, register: service, pragmatic: literal, features: [stress] }
 lessons:
-  v: 1
+  v: 2
   deai: [dr-throat-virus, dr-hurt-here, dr-r-how-long, dr-m-sprain, dr-n-ten-days, dr-m-fever]
   bamen: [dr-ankle-sprained, dr-r-take-easy, dr-m-headaches, dr-n-hours, dr-tired-next, dr-m-keep-eye]
   check: [dr-negative, dr-r-swallow, dr-m-back-to-work, dr-n-follow-up, dr-trip-next, dr-r-dizzy]
   oto: [dr-w-symptoms, dr-w-nothing-serious, dr-w-not-better, dr-w-gets-worse, dr-w-fifty, dr-w-on-off]
   jissen: [dr-fast-results, dr-fast-m-stomach, dr-fast-r-same, dr-fast-n-14th, dr-fast-soccer, dr-fast-m-urgent]
+  call: [call-doctor-chart]
 tiers:
   dr-throat-virus:
     easy: { choices: ["It's a virus. Rest, and come back in a week if it's not better.", "It's serious. Come back tomorrow."], answer: 0, cja: ["ウイルス。休んで、1週間でよくならなければまた来る。", "深刻。明日また来る。"] }
