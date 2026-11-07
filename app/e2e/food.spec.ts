@@ -893,6 +893,25 @@ test('pictures: ごはん’s row and amount show its イメージ (badge, alt),
   await expect(sheet(page).locator('[data-credit-img]')).toContainText('AI生成のイメージ');
 });
 
+// While the amount's picture (a detail sheet) is on its way, the row's thumbnail (in already) stands in, scaled up: never
+// the category's tile with an イメージ badge, then a swap.
+test('pictures: the amount shows the row’s thumbnail until its own picture is in, the badge only on a picture', async ({ page }) => {
+  let release!: () => void;
+  const held = new Promise<void>((ok) => (release = ok));
+  await page.route('**/food-img/d-*.webp', async (r) => { await held; await r.continue(); });
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('ごはん');
+  const rice = sheet(page).locator('[data-food-results] button.it', { hasText: 'ごはん（精白米）' }).first();
+  await expect(rice.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'img', { timeout: 15_000 });
+  await rice.click();
+  const pic = sheet(page).locator('[data-food-pic]');
+  await expect(pic.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'under');
+  await expect(pic.locator('.badge')).toHaveText('イメージ');
+  release();
+  await expect(pic.locator('[data-thumb]')).toHaveAttribute('data-thumb', 'img');
+});
+
 test('pictures: a sheet that fails to load leaves the category’s tile, no broken image', async ({ page }) => {
   await page.route('**/food-img/t-*.webp', (r) => r.abort());
   await openFood(page);

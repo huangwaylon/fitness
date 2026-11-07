@@ -89,6 +89,8 @@
   const pic = $derived(imgOf(imgs, item.id, 160));
   /** The picture enlarged (FoodPhoto), and what opened it (the focus goes back there). */
   let big = $state(false);
+  /** A picture on screen (its thumbnail while the cell loads): then the イメージ badge, never on a tile. */
+  let pictured = $state(false);
   let picBtn: HTMLButtonElement | undefined = $state();
   const gloss = $derived(glossOf(catalogOf(db, item.id) ?? item, item.name));
   const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
@@ -147,7 +149,7 @@
   <section class="card head">
     {#if pic}
       <button type="button" class="pic" data-food-pic data-sfx="page" bind:this={picBtn} aria-label={t('food.img.big', { name: item.name })} onclick={() => (big = true)}>
-        <FoodThumb cat={item.cat} size={160} img={pic} /><span class="badge">{t('food.img.badge')}</span>
+        <FoodThumb cat={item.cat} size={160} img={pic} under={imgOf(imgs, item.id, 48)} bind:pictured />{#if pictured}<span class="badge">{t('food.img.badge')}</span>{/if}
       </button>
       {#if big}<FoodPhoto {item} img={imgOf(imgs, item.id, 384) ?? pic} onclose={() => { big = false; picBtn?.focus(); }} />{/if}
     {/if}
