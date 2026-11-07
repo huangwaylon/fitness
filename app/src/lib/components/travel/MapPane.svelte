@@ -71,7 +71,6 @@
 </script>
 
 <div class="map-pane" data-map-pane data-day={day} data-selected={selected ?? undefined}>
-  <div class="offline"><SaveButton {plan} name={trip.title} /></div>
   <div class="held">
     <div class="under">
       <ChipRow label={t('travel.map.days')}>
@@ -83,6 +82,7 @@
     </div>
     <div class="slot">
       <TripMap bind:this={map} places={trip.places} legs={trip.legs} dayColors={trip.dayColors} {day} selected={selected ?? undefined} {layers} locale={i18n.locale} {saved} onselect={onPin} />
+      <div class="offline"><SaveButton {plan} name={trip.title} /></div>
       {#if kinds.length}
         <div class="lyr">
           <button type="button" class="lb" aria-expanded={layersOpen} aria-controls="map-layers" aria-label={t('travel.map.layers')} data-map-layers data-sfx={layersOpen ? 'toggle-off' : 'toggle-on'}
@@ -120,9 +120,8 @@
 
 <style>
   .map-pane { display: grid; grid-template-columns: minmax(0, 1fr); padding-bottom: 24px; }
-  /* the save pill, at the page's top (it scrolls away under the held day chips and map) */
-  .offline { display: flex; justify-content: flex-end; padding: 0 6px; min-height: var(--hit); }
-  .offline:empty { display: none; }
+  /* the save pill over the map's top-left (the layer button the top-right), as on a trail's map */
+  .offline { position: absolute; top: 2px; left: 8px; z-index: 2; }
   /* the day chips and the map held at the top of the page as the stops scroll under */
   .held { position: sticky; top: 0; z-index: 2; }
   .under { background: var(--surface); padding: 4px 0 2px; }

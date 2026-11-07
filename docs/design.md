@@ -2589,11 +2589,11 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   arrival). A row selects its stop and the map flies there; a pin marks its rows (a merged pin all of them) and
   scrolls them into view. The locate button at the bottom right; a trip with candidate places (Okinawa) has one layer
   button at the top right (the locate button's disc, yuzu while open), its panel a row per layer (キャンプ場 · 自然 ·
-  食べる, each its colour's dot; all off at first); a campsite's pin opens its card. Over the chips, at the page's top
-  (it scrolls away), the save pill ("Offline maps").
+  食べる, each its colour's dot; all off at first); a campsite's pin opens its card. The save pill over the map's
+  top-left ("Offline maps").
 - <a id="offline-maps"></a>**Offline maps** (`components/offline/SaveButton.svelte`; data: backend.md "Service worker" ›
-  Offline): one pill per area, on the trip's 地図 page (Okinawa, NZ; Seattle has no map: its hikes are trails) and on
-  every trail's map under ‹. 「⬇ オフライン用に保存（20.5 MB）」 (the plan's estimate) → 「× 保存中… 42%」 (the pill fills
+  Offline): one pill per area, over the trip map's top-left (Okinawa, NZ; Seattle has no map: its hikes are trails)
+  and on every trail's map under ‹. 「⬇ オフライン用に保存（20.5 MB）」 (the plan's estimate) → 「× 保存中… 42%」 (the pill fills
   yuzu; tapped: stopped, what's in kept) → 「✓ 保存済み · 20.4 MB」 (a label, the bytes stored). 「一部のみ · もう一度」
   and 「消えました · もう一度保存」 are taps; an OpenFreeMap area past 30 days 「保存済み · 更新」. A save that can't start
   says why for 4 s (オフライン, 合計 150 MB, 空き容量, ほかの地図を保存中). Offline with nothing saved: no pill. Offline with
