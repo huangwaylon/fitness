@@ -350,6 +350,20 @@
 "checked": false
 },
 {
+"key": "dishes-cheese-hamburg",
+"ja": "チーズハンバーグ",
+"desc": "cheese hamburg, a thick browned oval hamburg steak with a slice of melted yellow cheese draped over it and demi-glace sauce around, with corn and French fries, on a plate",
+"items": [
+"dishes:cheese-hamburg",
+"eatout:cheese_hamburg"
+],
+"roll": 0,
+"seed": 11745,
+"prompt": "9628704095",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-cheese-toast",
 "ja": "チーズトースト",
 "desc": "cheese toast, a slice of bread with bubbly melted golden cheese",
@@ -1853,6 +1867,19 @@
 "checked": false
 },
 {
+"key": "dishes-nikomi-hamburg",
+"ja": "煮込みハンバーグ",
+"desc": "nikomi hamburg, a thick oval hamburg steak simmered in a rich glossy dark-brown demi-glace sauce with sliced mushrooms and onion, in a shallow dish",
+"items": [
+"dishes:nikomi-hamburg"
+],
+"roll": 0,
+"seed": 82506,
+"prompt": "b490779eb2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "dishes-niku-udon",
 "ja": "肉うどん",
 "desc": "niku udon, thick udon in dashi broth topped with sweet simmered beef slices and green onion",
@@ -2317,6 +2344,19 @@
 "roll": 0,
 "seed": 44198,
 "prompt": "e86d040181",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "dishes-oroshi-hamburg",
+"ja": "和風おろしハンバーグ",
+"desc": "wafu oroshi hamburg, a browned oval hamburg steak topped with a mound of white grated daikon, a shiso leaf and a little clear brown ponzu, on a plate",
+"items": [
+"dishes:oroshi-hamburg"
+],
+"roll": 0,
+"seed": 17074,
+"prompt": "613a126809",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36214,6 +36254,32 @@
 "checked": false
 },
 {
+"key": "mext-10309",
+"ja": "はまぐり つくだ煮",
+"desc": "Hamaguri tsukudani: small clam meats simmered down in sweet soy, dark brown, glossy and sticky, piled in a small dish",
+"items": [
+"mext:10309"
+],
+"roll": 0,
+"seed": 96461,
+"prompt": "fba9eedb83",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10310",
+"ja": "ちょうせんはまぐり 生",
+"desc": "Raw chosen hamaguri: large heavy clams with thick smooth pale grey-brown shells and faint growth lines, one opened to show raw cream meat",
+"items": [
+"mext:10310"
+],
+"roll": 0,
+"seed": 77416,
+"prompt": "ee59c6b0b2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10311",
 "ja": "ほたてがい 生",
 "desc": "a scallop in its fan-shaped ribbed shell, the white adductor muscle and orange roe inside",
@@ -36223,6 +36289,19 @@
 "roll": 0,
 "seed": 89918,
 "prompt": "95613f3e78",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10312",
+"ja": "ほたてがい 水煮",
+"desc": "Boiled scallop: a whole shell-less cooked scallop, white round adductor with the orange crescent roe and grey frilly mantle attached, in a small dish",
+"items": [
+"mext:10312"
+],
+"roll": 0,
+"seed": 4356,
+"prompt": "c1038257db",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36240,6 +36319,19 @@
 "checked": false
 },
 {
+"key": "mext-10314",
+"ja": "ほたてがい 貝柱 煮干し",
+"desc": "Dried scallop adductors (hoshi kaibashira): small hard round discs, translucent amber-gold and fibrous, a few in a small dish",
+"items": [
+"mext:10314"
+],
+"roll": 0,
+"seed": 71409,
+"prompt": "3cd2235a90",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10315",
 "ja": "ほたて貝柱 水煮缶詰",
 "desc": "flaked boiled scallop meat, shredded pale cream scallop in a small dish",
@@ -36249,6 +36341,32 @@
 "roll": 0,
 "seed": 58119,
 "prompt": "6ec94891cb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10316",
+"ja": "ほっきがい 生",
+"desc": "Raw hokkigai surf clam: sliced clam meat opened flat, dark purple tips fading to pink-red and white at the base, on a small dish",
+"items": [
+"mext:10316"
+],
+"roll": 0,
+"seed": 33437,
+"prompt": "b9a1e80a6a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10317",
+"ja": "みるがい 水管 生",
+"desc": "Raw mirugai geoduck siphon: peeled siphon sliced thin, pale cream with light brown tips, crunchy and glossy, fanned on a small plate",
+"items": [
+"mext:10317"
+],
+"roll": 0,
+"seed": 48907,
+"prompt": "fa9349eee0",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36279,6 +36397,19 @@
 "checked": false
 },
 {
+"key": "mext-10320",
+"ja": "いせえび 生",
+"desc": "Raw ise-ebi spiny lobster: large lobster with a dark reddish-brown spiny shell, thick long antennae, no claws, on a plate",
+"items": [
+"mext:10320"
+],
+"roll": 0,
+"seed": 4683,
+"prompt": "28af40ebf4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10321",
 "ja": "車えび 生",
 "desc": "a raw kuruma prawn, a striped grey-brown prawn with long antennae",
@@ -36288,6 +36419,45 @@
 "roll": 0,
 "seed": 7581,
 "prompt": "f2b6b2bc16",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10322",
+"ja": "くるまえび 養殖 ゆで",
+"desc": "Boiled kuruma prawns: whole prawns curled into C shapes with bold red and white stripes across the body, on a small plate",
+"items": [
+"mext:10322"
+],
+"roll": 0,
+"seed": 54823,
+"prompt": "c61127c910",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10323",
+"ja": "くるまえび 養殖 焼き",
+"desc": "Grilled kuruma prawns: whole straight prawns with red and white banded shells, lightly charred, on a plate",
+"items": [
+"mext:10323"
+],
+"roll": 0,
+"seed": 38289,
+"prompt": "b6b0695edb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10324",
+"ja": "さくらえび ゆで",
+"desc": "Boiled sakura shrimp: a heap of tiny opaque bright pink-orange shrimp, curled, in a small dish",
+"items": [
+"mext:10324"
+],
+"roll": 0,
+"seed": 45074,
+"prompt": "fa1d0698db",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36305,6 +36475,45 @@
 "checked": false
 },
 {
+"key": "mext-10326",
+"ja": "さくらえび 煮干し",
+"desc": "Dried sakura shrimp: tiny crisp papery pink-orange dried shrimp with long whiskers, light and loose, in a small dish",
+"items": [
+"mext:10326"
+],
+"roll": 0,
+"seed": 95614,
+"prompt": "4c25938b1d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10327",
+"ja": "大正えび 生",
+"desc": "Raw taisho fleshy prawns: large whole prawns with smooth translucent grey-blue shells and long antennae, on a plate",
+"items": [
+"mext:10327"
+],
+"roll": 0,
+"seed": 71112,
+"prompt": "c00d9b9123",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10328",
+"ja": "しばえび 生",
+"desc": "Raw shiba shrimp: small whole greyish translucent shrimp with faint speckles, a handful on a small plate",
+"items": [
+"mext:10328"
+],
+"roll": 0,
+"seed": 35961,
+"prompt": "a0c0fb41f6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10330",
 "ja": "干しえび",
 "desc": "a small heap of dried shrimp, small curled orange-pink dried shrimp",
@@ -36314,6 +36523,71 @@
 "roll": 0,
 "seed": 93354,
 "prompt": "8b7e8d7165",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10331",
+"ja": "えび つくだ煮",
+"desc": "Shrimp tsukudani: small whole shrimp simmered in sweet soy, glossy dark reddish-brown and sticky, piled in a small dish",
+"items": [
+"mext:10331"
+],
+"roll": 0,
+"seed": 31644,
+"prompt": "38e172a391",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10332",
+"ja": "がざみ 生",
+"desc": "Raw gazami swimming crab: a crab with a wide diamond-shaped olive-brown shell spiked at the sides, blue-tinged claws, flat paddle back legs",
+"items": [
+"mext:10332"
+],
+"roll": 0,
+"seed": 49510,
+"prompt": "befb8380c5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10333",
+"ja": "毛がに 生",
+"desc": "Raw kegani hairy crab: small round crab with a dull brownish-purple shell covered in fine short bristles, short legs",
+"items": [
+"mext:10333"
+],
+"roll": 0,
+"seed": 25424,
+"prompt": "84f5b6fc7b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10334",
+"ja": "毛がに ゆで",
+"desc": "Boiled kegani hairy crab: small round crab turned bright red-orange, shell covered in fine short bristles, short legs",
+"items": [
+"mext:10334"
+],
+"roll": 0,
+"seed": 58963,
+"prompt": "abad6b29d0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10335",
+"ja": "ずわいがに 生",
+"desc": "Raw zuwaigani snow crab: a crab with a small round brownish-orange shell and long slender legs, raw and dull",
+"items": [
+"mext:10335"
+],
+"roll": 0,
+"seed": 5157,
+"prompt": "a8b5cc8da0",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36344,6 +36618,19 @@
 "checked": false
 },
 {
+"key": "mext-10338",
+"ja": "たらばがに 生",
+"desc": "Raw taraba king crab: thick spiny legs with a dark red-purple shell, one leg cut showing white raw meat",
+"items": [
+"mext:10338"
+],
+"roll": 0,
+"seed": 80440,
+"prompt": "cb15ad6095",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10339",
 "ja": "たらばがに ゆで",
 "desc": "boiled king crab legs, thick spiny bright red-orange legs, one split open showing white meat",
@@ -36353,6 +36640,71 @@
 "roll": 0,
 "seed": 58638,
 "prompt": "95a2ac59cf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10340",
+"ja": "たらばがに 水煮缶詰",
+"desc": "Canned king crab meat: chunks and shreds of white crab leg meat tinged red on the edges, in a small dish",
+"items": [
+"mext:10340"
+],
+"roll": 0,
+"seed": 17517,
+"prompt": "e72c69add7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10341",
+"ja": "かに がん漬",
+"desc": "Gan-zuke: salted fermented crushed crab paste from Saga, a chunky reddish-brown paste with shell bits and red chilli flecks, in a small dish",
+"items": [
+"mext:10341"
+],
+"roll": 0,
+"seed": 95931,
+"prompt": "d804954ad0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10342",
+"ja": "あかいか 生",
+"desc": "Raw akaika (neon flying squid): a long squid with reddish-purple speckled skin and a pointed tail fin, on a plate",
+"items": [
+"mext:10342"
+],
+"roll": 0,
+"seed": 63425,
+"prompt": "3e6e754b95",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10343",
+"ja": "けんさきいか 生",
+"desc": "Raw kensaki squid: a slender squid with translucent reddish-brown skin and long diamond fins, on a plate",
+"items": [
+"mext:10343"
+],
+"roll": 0,
+"seed": 29047,
+"prompt": "a5a61bb887",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10344",
+"ja": "こういか 生",
+"desc": "Raw kouika cuttlefish: a broad oval cuttlefish with brown striped skin, the cut body showing thick pure white flesh",
+"items": [
+"mext:10344"
+],
+"roll": 0,
+"seed": 63252,
+"prompt": "62e4d01e41",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36371,6 +36723,32 @@
 "checked": false
 },
 {
+"key": "mext-10346",
+"ja": "するめいか 水煮",
+"desc": "Boiled surume squid: opaque white squid rings and curled tentacles, a small pile in a small bowl",
+"items": [
+"mext:10346"
+],
+"roll": 0,
+"seed": 94680,
+"prompt": "d0d49e8c37",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10347",
+"ja": "するめいか 焼き",
+"desc": "Grilled surume squid: a whole squid body grilled glossy golden-brown with scored lines, tentacles alongside, on a plate",
+"items": [
+"mext:10347"
+],
+"roll": 0,
+"seed": 70062,
+"prompt": "c89c963b24",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10348",
 "ja": "ほたるいか 生",
 "desc": "boiled firefly squid (hotaru ika), small plump purple-red squid with short tentacles, in a small dish",
@@ -36381,6 +36759,32 @@
 "roll": 0,
 "seed": 92799,
 "prompt": "fb40aac998",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10350",
+"ja": "ほたるいか くん製",
+"desc": "Smoked firefly squid: tiny whole squids smoked dark reddish-brown and semi-dry, a few in a small dish",
+"items": [
+"mext:10350"
+],
+"roll": 0,
+"seed": 8684,
+"prompt": "8aea524504",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10351",
+"ja": "ほたるいか つくだ煮",
+"desc": "Firefly squid tsukudani: tiny whole squids simmered in sweet soy, glossy dark brown and sticky, in a small dish",
+"items": [
+"mext:10351"
+],
+"roll": 0,
+"seed": 21370,
+"prompt": "fa78c2487e",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36411,6 +36815,45 @@
 "checked": false
 },
 {
+"key": "mext-10355",
+"ja": "いか くん製",
+"desc": "Smoked squid snack (ika kunsei): chewy shredded strips, white inside with a reddish-brown edge, a loose pile in a small dish",
+"items": [
+"mext:10355"
+],
+"roll": 0,
+"seed": 85347,
+"prompt": "60e683c2c8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10356",
+"ja": "切りいかあめ煮",
+"desc": "Candied shredded squid (kiri ika ame-ni): thin dried squid shreds bound in amber sugar syrup into glossy sticky clusters with sesame seeds",
+"items": [
+"mext:10356"
+],
+"roll": 0,
+"seed": 75961,
+"prompt": "e6a2ce5c19",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10357",
+"ja": "いかあられ",
+"desc": "Ika arare: bite-size cubes of seasoned dried squid, light golden-brown and slightly puffed, a pile in a small dish",
+"items": [
+"mext:10357"
+],
+"roll": 0,
+"seed": 75279,
+"prompt": "81e9b63e03",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10358",
 "ja": "いかの塩辛",
 "desc": "a small dish of ika no shiokara, salted squid strips in a glossy thick pinkish-brown sauce",
@@ -36420,6 +36863,32 @@
 "roll": 0,
 "seed": 61214,
 "prompt": "6e5e0172ed",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10359",
+"ja": "いか 味付け缶詰",
+"desc": "Canned seasoned squid: squid rings and pieces simmered in soy, brown and glossy, in a small dish with dark sauce",
+"items": [
+"mext:10359"
+],
+"roll": 0,
+"seed": 71784,
+"prompt": "fb6b653b86",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10360",
+"ja": "いいだこ 生",
+"desc": "Raw iidako baby octopus: small whole octopus, grey-brown, with a round head full of rice-like eggs and short curled arms",
+"items": [
+"mext:10360"
+],
+"roll": 0,
+"seed": 91439,
+"prompt": "4c383eb8ce",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36450,6 +36919,32 @@
 "checked": false
 },
 {
+"key": "mext-10363",
+"ja": "あみ つくだ煮",
+"desc": "Ami tsukudani: tiny mysid shrimp simmered in sweet soy, a sticky dark brown cluster in a small dish",
+"items": [
+"mext:10363"
+],
+"roll": 0,
+"seed": 41365,
+"prompt": "e1fe6c2da0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10364",
+"ja": "あみ 塩辛",
+"desc": "Ami shiokara: salted fermented tiny shrimp, a wet pinkish-grey paste with whole tiny shrimp visible, in a small dish",
+"items": [
+"mext:10364"
+],
+"roll": 0,
+"seed": 83286,
+"prompt": "1888ae77cf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10365",
 "ja": "生うに",
 "desc": "fresh sea urchin roe (uni), soft bright orange-yellow tongues in a small wooden tray",
@@ -36459,6 +36954,136 @@
 "roll": 0,
 "seed": 28448,
 "prompt": "48fc451d72",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10366",
+"ja": "粒うに",
+"desc": "Tsubu uni: salted sea urchin roe, granular orange-yellow paste with visible grains, in a small glass jar",
+"items": [
+"mext:10366"
+],
+"roll": 0,
+"seed": 99610,
+"prompt": "4121f976ee",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10367",
+"ja": "練りうに",
+"desc": "Neri uni: smooth sea urchin paste, thick glossy ochre-orange, in a small dish",
+"items": [
+"mext:10367"
+],
+"roll": 0,
+"seed": 94028,
+"prompt": "55f715d454",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10368",
+"ja": "おきあみ 生",
+"desc": "Raw krill (okiami): a heap of tiny translucent pinkish krill with black eyes, in a small dish",
+"items": [
+"mext:10368"
+],
+"roll": 0,
+"seed": 34877,
+"prompt": "4a6c63ef42",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10369",
+"ja": "おきあみ ゆで",
+"desc": "Boiled krill: a heap of tiny bright pink-orange cooked krill, in a small dish",
+"items": [
+"mext:10369"
+],
+"roll": 0,
+"seed": 48043,
+"prompt": "df90e7f9c1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10370",
+"ja": "くらげ 塩蔵 塩抜き",
+"desc": "Salted jellyfish, desalted: thin crunchy translucent amber-cream shreds like glassy noodles, piled in a small dish",
+"items": [
+"mext:10370"
+],
+"roll": 0,
+"seed": 29198,
+"prompt": "3292b37445",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10371",
+"ja": "しゃこ ゆで",
+"desc": "Boiled mantis shrimp (shako): peeled flat segmented meats, purple-grey on top and pinkish beneath, on a small plate",
+"items": [
+"mext:10371"
+],
+"roll": 0,
+"seed": 35448,
+"prompt": "22df092366",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10372",
+"ja": "なまこ 生",
+"desc": "Raw sea cucumber (namako): a cucumber-shaped creature with dark green-brown bumpy skin, sliced showing firm cream-coloured flesh",
+"items": [
+"mext:10372"
+],
+"roll": 0,
+"seed": 71458,
+"prompt": "bb7ef61709",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10373",
+"ja": "なまこ このわた",
+"desc": "Konowata: salted sea cucumber entrails, long slimy amber-orange strands in a small dish",
+"items": [
+"mext:10373"
+],
+"roll": 0,
+"seed": 79412,
+"prompt": "94247de859",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10374",
+"ja": "ほや 生",
+"desc": "Raw hoya sea squirt: a knobbly bright orange-red bumpy shell like a small pineapple, cut open showing bright orange flesh",
+"items": [
+"mext:10374"
+],
+"roll": 0,
+"seed": 49111,
+"prompt": "2d08555d0a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10375",
+"ja": "ほや 塩辛",
+"desc": "Hoya shiokara: chunks of salted fermented sea squirt, glistening orange, in a small dish",
+"items": [
+"mext:10375"
+],
+"roll": 0,
+"seed": 76385,
+"prompt": "5708927910",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36476,6 +37101,32 @@
 "checked": false
 },
 {
+"key": "mext-10377",
+"ja": "昆布巻きかまぼこ",
+"desc": "Kombu-maki kamaboko: fish cake rolled around kelp, round slices showing a spiral of dark green kombu in white fish paste",
+"items": [
+"mext:10377"
+],
+"roll": 0,
+"seed": 4013,
+"prompt": "37d275bfd5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10378",
+"ja": "す巻きかまぼこ",
+"desc": "Su-maki kamaboko: a cylindrical fish cake with ridged grooves from a straw mat on the outside, cut slices white inside",
+"items": [
+"mext:10378"
+],
+"roll": 0,
+"seed": 31292,
+"prompt": "fc4493066a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10379",
 "ja": "かまぼこ",
 "desc": "a semicircular block of kamaboko fish cake on a small wooden board, pink-red top and white inside, a few slices cut",
@@ -36485,6 +37136,19 @@
 "roll": 0,
 "seed": 41994,
 "prompt": "c3e178401d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10380",
+"ja": "焼き抜きかまぼこ",
+"desc": "Yakinuki kamaboko: a loaf of baked fish cake with a browned top crust and firm white inside, cut slices, no wooden board",
+"items": [
+"mext:10380"
+],
+"roll": 0,
+"seed": 50497,
+"prompt": "99d70c55b5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36573,6 +37237,19 @@
 "roll": 0,
 "seed": 11412,
 "prompt": "1acee02aa1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10387",
+"ja": "魚肉ハム",
+"desc": "Fish ham: round smooth pink slices like ham made from fish, with tiny white fat dots, fanned on a plate",
+"items": [
+"mext:10387"
+],
+"roll": 0,
+"seed": 55522,
+"prompt": "bcdb150fad",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -36898,6 +37575,19 @@
 "checked": false
 },
 {
+"key": "mext-10414",
+"ja": "ほたてがい 貝柱 焼き",
+"desc": "Grilled scallop adductors: thick round white cylinders seared golden-brown on top and bottom, glistening, on a small plate",
+"items": [
+"mext:10414"
+],
+"roll": 0,
+"seed": 71060,
+"prompt": "2346f27846",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10415",
 "ja": "バナメイえび 生",
 "desc": "raw prawns, grey translucent shrimp with shells and tails, a few peeled",
@@ -36926,6 +37616,58 @@
 "checked": false
 },
 {
+"key": "mext-10417",
+"ja": "するめいか 胴 皮つき 生",
+"desc": "Raw surume squid body, skin on: a squid tube with reddish-brown speckled translucent skin, a cut ring showing white flesh",
+"items": [
+"mext:10417"
+],
+"roll": 0,
+"seed": 65838,
+"prompt": "f00e895e66",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10418",
+"ja": "するめいか 胴 皮なし 生",
+"desc": "Raw surume squid body, skinned: smooth glossy translucent white squid flesh opened flat, on a small plate",
+"items": [
+"mext:10418"
+],
+"roll": 0,
+"seed": 71679,
+"prompt": "9a95dbd26a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10419",
+"ja": "するめいか 胴 皮なし 天ぷら",
+"desc": "Squid tempura: strips of squid in a light crisp pale golden lacy batter, on a plate",
+"items": [
+"mext:10419"
+],
+"roll": 0,
+"seed": 63785,
+"prompt": "971d301962",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10420",
+"ja": "するめいか 耳・足 生",
+"desc": "Raw squid fins and tentacles: triangle fins and long tentacles with small suckers, reddish-speckled skin, on a small plate",
+"items": [
+"mext:10420"
+],
+"roll": 0,
+"seed": 66254,
+"prompt": "37e860c242",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10421",
 "ja": "とびうお 煮干し",
 "desc": "Dried flying fish (niboshi): whole boiled and dried flying fish, stiff and dull grey, on a plate",
@@ -36948,6 +37690,19 @@
 "roll": 0,
 "seed": 96258,
 "prompt": "b116836829",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10423",
+"ja": "黒はんぺん",
+"desc": "Kuro hanpen: Shizuoka dark fish cake made from whole sardines, flat half-moon patties, grey with darker speckles, not white",
+"items": [
+"mext:10423"
+],
+"roll": 0,
+"seed": 33012,
+"prompt": "49cd84660c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -37004,6 +37759,32 @@
 "roll": 0,
 "seed": 26191,
 "prompt": "421443c992",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10431",
+"ja": "さくらえび 生",
+"desc": "Raw sakura shrimp: a heap of tiny translucent pink shrimp with black eyes, glistening wet, in a small dish",
+"items": [
+"mext:10431"
+],
+"roll": 0,
+"seed": 34969,
+"prompt": "56b341e23e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10432",
+"ja": "みずだこ 生",
+"desc": "Raw mizudako giant octopus: a thick tentacle slice with pale flesh, mottled reddish-brown skin and large round suckers",
+"items": [
+"mext:10432"
+],
+"roll": 0,
+"seed": 89347,
+"prompt": "7c0d33695e",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -37304,6 +38085,97 @@
 "checked": false
 },
 {
+"key": "mext-10467",
+"ja": "アルゼンチンあかえび 生",
+"desc": "Raw Argentine red shrimp: whole long shrimp already deep red-crimson when raw, glossy shell, long antennae, on a plate",
+"items": [
+"mext:10467"
+],
+"roll": 0,
+"seed": 12105,
+"prompt": "ef93f4d9ff",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10468",
+"ja": "アルゼンチンあかえび ゆで",
+"desc": "Boiled Argentine red shrimp: whole shrimp curled into a C, bright orange-red shell, firm opaque white flesh showing at the tail",
+"items": [
+"mext:10468"
+],
+"roll": 0,
+"seed": 43128,
+"prompt": "2fbfadbcd4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10469",
+"ja": "アルゼンチンあかえび 焼き",
+"desc": "Grilled Argentine red shrimp: whole red shrimp with charred dark spots on the shell, straight and glossy, on a plate",
+"items": [
+"mext:10469"
+],
+"roll": 0,
+"seed": 82894,
+"prompt": "a2b5c16706",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10470",
+"ja": "するめいか 胴 皮なし フライ",
+"desc": "Squid fry: squid rings coated in coarse golden-brown breadcrumbs, deep-fried, on a plate",
+"items": [
+"mext:10470"
+],
+"roll": 0,
+"seed": 20331,
+"prompt": "9417cad045",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10471",
+"ja": "まだこ 皮なし 生",
+"desc": "Raw skinned madako octopus: pale cream translucent octopus flesh with the skin and suckers removed, sliced, on a small plate",
+"items": [
+"mext:10471"
+],
+"roll": 0,
+"seed": 10205,
+"prompt": "84a24b4183",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10472",
+"ja": "まだこ 蒸しだこ",
+"desc": "Steamed octopus (mushi dako): a curled tentacle with deep red-maroon skin and pale suckers, cut slices showing white flesh",
+"items": [
+"mext:10472"
+],
+"roll": 0,
+"seed": 79879,
+"prompt": "9d23475450",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10473",
+"ja": "まだこ 蒸しだこ 油いため",
+"desc": "Stir-fried steamed octopus: chunky slices of red-skinned octopus glossy with oil and lightly browned, on a plate",
+"items": [
+"mext:10473"
+],
+"roll": 0,
+"seed": 34033,
+"prompt": "89da17ea0b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11001",
 "ja": "いのしし肉 生",
 "desc": "raw wild boar meat slices, dark red meat with thick white fat edges, arranged on a plate",
@@ -37313,6 +38185,47 @@
 "roll": 0,
 "seed": 29379,
 "prompt": "0555cd9a2f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11002",
+"ja": "いのぶた肉 脂身つき 生",
+"desc": "Raw inobuta (boar-pig) meat: a slab of rosy-red pork-like meat with a thick white fat rim",
+"items": [
+"mext:11002"
+],
+"roll": 0,
+"seed": 20633,
+"prompt": "603ede8ac9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11003",
+"ja": "うさぎ肉 赤肉 生",
+"desc": "Raw rabbit meat: pale pink lean meat pieces, fine-grained with no fat, on a plate",
+"items": [
+"mext:11003"
+],
+"roll": 0,
+"seed": 52687,
+"prompt": "56891c1f7b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11006",
+"ja": "和牛肩 赤肉 生",
+"desc": "Raw wagyu shoulder, lean: a block of deep red lean beef with almost no marbling, on a plate",
+"items": [
+"mext:11006",
+"mext:11032",
+"mext:11062"
+],
+"roll": 0,
+"seed": 82944,
+"prompt": "0f5ed44aa7",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -37343,6 +38256,52 @@
 "roll": 0,
 "seed": 47335,
 "prompt": "9a46ce96fa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11010",
+"ja": "和牛肩ロース 赤肉 生",
+"desc": "Raw wagyu chuck eye, lean: deep red beef slices with fine white marbling flecks, on a plate",
+"items": [
+"mext:11010",
+"mext:11036",
+"mext:11066"
+],
+"roll": 0,
+"seed": 24276,
+"prompt": "a8aabf0c70",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11013",
+"ja": "和牛リブロース 赤肉 生",
+"desc": "Raw ribeye, lean: a slab of deep red beef with light marbling, the fat cap trimmed off, on a plate",
+"items": [
+"mext:11013",
+"mext:11041",
+"mext:11069",
+"mext:11258"
+],
+"roll": 0,
+"seed": 30702,
+"prompt": "397b779731",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11017",
+"ja": "和牛サーロイン 赤肉 生",
+"desc": "Raw sirloin, lean: a thick slab of red sirloin beef with the fat cap removed, fine grain, on a plate",
+"items": [
+"mext:11017",
+"mext:11045",
+"mext:11073"
+],
+"roll": 0,
+"seed": 8471,
+"prompt": "eff821b34c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -37380,6 +38339,30 @@
 "roll": 0,
 "seed": 61968,
 "prompt": "7984164c7a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11020",
+"ja": "和牛もも肉 脂身なし 生",
+"desc": "Raw beef round, lean: a block of deep red lean beef with no fat, firm and fine-grained, on a plate",
+"items": [
+"mext:11020",
+"mext:11076",
+"mext:11021",
+"mext:11051",
+"mext:11077",
+"mext:11025",
+"mext:11055",
+"mext:11081",
+"mext:11028",
+"mext:11058",
+"mext:11084",
+"mext:11265"
+],
+"roll": 0,
+"seed": 47959,
+"prompt": "74263d2a11",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38119,6 +39102,39 @@
 "roll": 0,
 "seed": 12123,
 "prompt": "71d7a37b8c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11248",
+"ja": "和牛リブロース 脂身つき 焼き",
+"desc": "Grilled ribeye with fat: a beef steak with a browned seared crust and visible marbling, sliced showing a pink centre",
+"items": [
+"mext:11248",
+"mext:11038",
+"mext:11268",
+"mext:11255"
+],
+"roll": 0,
+"seed": 57581,
+"prompt": "047dba0317",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11249",
+"ja": "和牛リブロース 脂身つき ゆで",
+"desc": "Boiled ribeye with fat: thin shabu-shabu beef slices cooked grey-brown, with white fat edges, folded in a small bowl",
+"items": [
+"mext:11249",
+"mext:11039",
+"mext:11269",
+"mext:11309",
+"mext:11256"
+],
+"roll": 0,
+"seed": 8571,
+"prompt": "d1281978c2",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
