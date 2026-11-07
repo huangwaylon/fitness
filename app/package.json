@@ -38,6 +38,7 @@
     "art:scenes": "node scripts/scenes/scenes.ts",
     "heads": "node scripts/heads.ts",
     "hiking:tracks": "node scripts/hiking-tracks.ts",
+    "offline:measure": "node scripts/offline-measure.ts",
     "bench": "node scripts/bench-model.ts",
     "leak": "node scripts/leak-probe.ts",
     "knip": "knip",
