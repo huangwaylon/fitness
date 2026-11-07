@@ -16,7 +16,8 @@
   import { weather } from './weatherNow.svelte.ts';
   import { minuteNow } from '#lib/time/clock.ts';
 
-  let { where }: { where: 'sky' | 'stage' } = $props();
+  /** `skyH`: the sky's height (px), on the sky's own boxes (Sky.svelte's `h`). */
+  let { where, skyH = 0 }: { where: 'sky' | 'stage'; skyH?: number } = $props();
   /** The fades' length (ms). */
   const FADE_MS = 60_000;
   /** A first grey sky this long into the page's life came with a change (the lazy chunk loaded for it): it fades in. */
@@ -69,17 +70,17 @@
 
 {#if where === 'sky'}
   {#if weather.aurora}
-    <div class="aurora" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
+    <div class="aurora" aria-hidden="true" style:--sky-h="{skyH}px"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
   {/if}
   {#if weather.rainbow}
-    <svg class="rainbow" viewBox="0 0 200 100" preserveAspectRatio="xMidYMax meet" style:opacity={bow} aria-hidden="true" data-rainbow={weather.rainbow}>
+    <svg class="rainbow" viewBox="0 0 200 100" preserveAspectRatio="xMidYMax meet" style:opacity={bow} style:--sky-h="{skyH}px" aria-hidden="true" data-rainbow={weather.rainbow}>
       {#each BANDS as c, i (i)}<path d="M{14 + i * 4} 100 A{86 - i * 4} {86 - i * 4} 0 0 1 {186 - i * 4} 100" stroke={c} />{/each}
       {#if weather.rainbow === 2}
         <g class="second">{#each BANDS.toReversed() as c, i (i)}<path d="M{-6 + i * 3} 100 A{106 - i * 3} {106 - i * 3} 0 0 1 {206 - i * 3} 100" stroke={c} />{/each}</g>
       {/if}
     </svg>
   {/if}
-  {#if sky !== 'clear'}<div class="overcast" class:fading data-sky={sky} aria-hidden="true" style:opacity={OVERCAST[sky] * level}></div>{/if}
+  {#if sky !== 'clear'}<div class="overcast" class:fading data-sky={sky} aria-hidden="true" style:opacity={OVERCAST[sky] * level} style:--sky-h="{skyH}px"></div>{/if}
 {:else}
   {#if sky !== 'clear'}
     <div class="wet" class:fading data-sky={sky} aria-hidden="true" style:background={WET[sky][0]} style:opacity={WET[sky][1] * level}></div>

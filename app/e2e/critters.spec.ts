@@ -154,7 +154,7 @@ for (const c of POPS)
     const at = await page.evaluate(([x, z]) => {
       const w = window as unknown as W3b;
       const rib = document.querySelector('.ribbon-wrap')!.getBoundingClientRect(), scene = document.querySelector('.if-scene')!.getBoundingClientRect();
-      const hy = parseFloat(getComputedStyle(document.querySelector('.if-scene')!).getPropertyValue('--horizon-y'));
+      const hy = Number((document.querySelector('.if-scene') as HTMLElement).dataset.horizon);
       // every control outside the island's stage (the HUD's, the say button, the catch stack)
       const ui = [...document.querySelectorAll('button, [data-catch-stack]')].filter((el) => !el.closest('.stage') && (el as HTMLElement).checkVisibility()).map((el) => el.getBoundingClientRect()).filter((b) => b.width && b.height)
         .map((b) => [b.left, b.top, b.right, b.bottom]);

@@ -4,13 +4,16 @@
 // from start to end: once two fingers are down it stays a pinch until every finger is up (a finger left behind never
 // scrolls), and a second finger landing just after the first (a pinch starting) takes back the little scroll the first
 // made. A short still touch is a tap: it goes on to whatever is under it (the DOM island's buttons and SceneTaps), and
-// a drag or a pinch never ends in one (its click is swallowed). Pointer events on the scene, never captured (a capture
-// would send the tap's click to the scene instead of its button).
+// a drag or a pinch never ends in one (its click is swallowed), nor does a touch landing on a fast fling (it only stops
+// it, as iOS's scroll: the tap areas lag a rush, engine.ts rushing). Pointer events on the scene, never captured (a
+// capture would send the tap's click to the scene instead of its button).
 export interface Cam {
   pan(dy: number, dx?: number): void;
   zoom(f: number, sy?: number, sx?: number): void;
   fling(vy: number, vx?: number): void;
   touching(on: boolean): void;
+  /** Moving fast (a fling): a touch now only stops it. */
+  rushing?(): boolean;
   view(): { camZ: number; zoom: number; camX?: number };
   go(z: number, k?: number, free?: boolean, x?: number): void;
 }
@@ -29,6 +32,8 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
   let top = 0, left = 0;
   let trail: { x: number; y: number; t: number }[] = [];
   let swallowUntil = 0;
+  /** This touch landed on a fast fling: a tap only stops it. */
+  let stopper = false;
   const skip = (e: PointerEvent) => !o.enabled() || (e.target instanceof Element && !!e.target.closest('[data-nopan], input, textarea, select'));
 
   function down(e: PointerEvent) {
@@ -47,6 +52,7 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
       startK = v.zoom;
       startX = v.camX;
       trail = [{ x: e.clientX, y: e.clientY, t: e.timeStamp }];
+      stopper = !!cam.rushing?.();
       cam.touching(true);
     } else if (pts.size === 2) {
       // a pinch (from its start, if this finger came just after the first: its scroll undone)
@@ -95,7 +101,7 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
       const a = trail[0], b = trail[trail.length - 1];
       if (a && b && b !== a && e.timeStamp - b.t < 80) cam.fling((b.y - a.y) / Math.max(1, b.t - a.t), (b.x - a.x) / Math.max(1, b.t - a.t));
     }
-    if (mode === 'pan' || mode === 'pinch') swallowUntil = performance.now() + 400;
+    if (mode === 'pan' || mode === 'pinch' || (mode === 'tap' && stopper)) swallowUntil = performance.now() + 400;
     mode = 'none';
     cam.touching(false);
   }

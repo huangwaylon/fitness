@@ -109,7 +109,7 @@ test('night sky: the moon twinkles; a tap in the open sky lights a star (shootin
   await expect(page.locator('[data-fx]')).toHaveCount(0, { timeout: 2500 });
   // the open sky, away from the moon and the clouds: a star twinkles where the finger was
   const sky = await page.locator('.if-scene').evaluate((sc) => {
-    const r = sc.getBoundingClientRect(), horizon = r.top + parseFloat(getComputedStyle(sc).getPropertyValue('--horizon-y'));
+    const r = sc.getBoundingClientRect(), horizon = r.top + Number((sc as HTMLElement).dataset.horizon);
     const o = document.querySelector('.if-scene .orb')!.getBoundingClientRect();
     const clouds = [...document.querySelectorAll('.if-scene .cloud')].map((c) => c.getBoundingClientRect());
     for (let y = r.top + 60; y < horizon - 10; y += 8)
