@@ -232,6 +232,12 @@ prints what retains the ones new since the first snapshot.
 JS and 70 KB of CSS gzipped, none of it three.js, MapLibre or a feature's sheet, and the service worker's precache
 ≤ 3 MB on the wire. Bytes only (never timing): over one, the build fails.
 
+Timing is an A/B on the desktop, never CI: `npm run perf:start -- <port> [runs] [webkit|chromium]` (scripts/perf-start.ts,
+default 5 runs, WebKit as an iPhone 15; Chromium as an iPhone 13, `THROTTLE=4` for a 4x slower CPU) against a build served
+by `node scripts/serve-build.ts <port>`: each run cold (no service worker), its first contentful paint, the island's
+first frame and loaded(), the main thread's gaps over its first 10 s, then the medians. The phone's numbers come from
+the iOS Simulator check and the phone.
+
 ## Unused assets
 `npm run unused` (`scripts/unused-assets.ts`, read-only) sorts every file under `static/` and every module under `src/`
 into safe to delete, used (with who uses it) and unsure; `-- --list=safe|used|unsure` for the paths, `-- --json`. Kept
