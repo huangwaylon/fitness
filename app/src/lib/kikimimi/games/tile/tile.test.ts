@@ -37,7 +37,7 @@ describe('ことば タイル: the deal', () => {
     expect(tileFiles(4, listen)).toEqual(['s2-tile']);
     expect(tileFiles(3, listen)).toEqual(['s1-tile-a']);
     expect(tileFiles(6, listen)).toEqual([]);
-    expect(tileFiles(4, INDEX.listen)).toEqual([]); // (this build: every file still a draft)
+    expect(tileFiles(4, INDEX.listen)).toEqual(['s2-tile-bank']); // (this build: the bank-clip files listened, the authored ones drafts)
   });
 
   it('is the same for a seed: 6 sentences from the files, the shortest first, another seed another deal', () => {

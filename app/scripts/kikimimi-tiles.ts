@@ -112,7 +112,7 @@ const list = (xs: readonly string[]) => `[${xs.map(q).join(', ')}]`;
 const bare = (xs: readonly string[]) => `[${xs.join(', ')}]`;
 const mark = (m: SoundMark) => `[${m[0]}, ${m.slice(1).map((x) => q(x)).join(', ')}]`;
 
-function yamlOf(unit: string, tiles: Tile[]): string {
+function yamlOf(unit: string, tiles: Tile[], status = 'draft'): string {
   const h = HEADERS[unit];
   const seeds = [...new Set(tiles.map((t) => t.tags.seed))].sort((a, b) => a - b);
   const count = new Map<string, number>();
@@ -122,7 +122,7 @@ function yamlOf(unit: string, tiles: Tile[]): string {
     `# ことば タイル ${h.title}, from the voiced quiz: written by scripts/kikimimi-tiles.ts, which keeps decoys, marks, note,`,
     '# ctx and why as reviewed and rewrites the rest from the bank. Each tile plays its bank clip (`clip`): no new audio.',
     'schema: 1', `unit: ${unit}`, 'game: tile', `stage: ${h.stage}`, 'track: life', `seeds: ${bare(seeds.map(String))}`,
-    `features: { primary: ${primary}${review ? `, review: ${review}` : ''} }`, `cando: ${q(h.cando)}`, 'status: draft', 'items:'
+    `features: { primary: ${primary}${review ? `, review: ${review}` : ''} }`, `cando: ${q(h.cando)}`, `status: ${status}`, 'items:'
   ];
   for (const t of tiles) {
     const g = t.tags;
@@ -141,11 +141,13 @@ function yamlOf(unit: string, tiles: Tile[]): string {
 /** Each file's text: the bank's tiles, with the reviewed fields kept from the file. */
 function tileFiles(): Map<string, string> {
   const byUnit = new Map<string, Tile[]>();
-  const kept = new Map<string, Partial<Tile>>();
+  const kept = new Map<string, Partial<Tile>>(), status = new Map<string, string>();
   for (const unit of Object.keys(HEADERS)) {
     const path = join(DIR, `${unit}.yaml`);
     if (!existsSync(path)) continue;
-    for (const it of (parse(readFileSync(path, 'utf8')) as { items?: (Partial<Tile> & { id: string })[] }).items ?? []) kept.set(it.id, it);
+    const file = parse(readFileSync(path, 'utf8')) as { status?: string; items?: (Partial<Tile> & { id: string })[] };
+    if (file.status) status.set(unit, file.status); // the lead's flip (draft → listened) is kept
+    for (const it of file.items ?? []) kept.set(it.id, it);
   }
   for (const s of sources()) {
     const id = `tile-${s.it.id}`;
@@ -161,7 +163,7 @@ function tileFiles(): Map<string, string> {
     const unit = unitOf(s.it.lv);
     byUnit.set(unit, [...(byUnit.get(unit) ?? []), tile]);
   }
-  return new Map([...byUnit].map(([unit, tiles]) => [unit, yamlOf(unit, tiles)]));
+  return new Map([...byUnit].map(([unit, tiles]) => [unit, yamlOf(unit, tiles, status.get(unit))]));
 }
 
 if (import.meta.main) {

@@ -38,8 +38,8 @@ describe('the registry', () => {
       's1-tile-a': ['tile', 2, 'listened'], 's1-call': ['call', 2, 'voiced'], 's2-tachi-a': ['tachi', 3, 'listened']
     });
     expect(['tile', 'call', 'tachi', 'mane', 'quiz'].map((gm) => r.ready(gm))).toEqual([true, false, false, true, false]);
-    // this build: every listening file is still a draft, no later game registered
-    expect(['tile', 'call', 'tachi', 'rush', 'news'].some((gm) => LANES.ready(gm))).toBe(false);
+    // this build: ことば タイル's bank-clip files are listened (they play voiced quiz clips); the others still drafts
+    expect(['tile', 'call', 'tachi', 'rush', 'news'].map((gm) => LANES.ready(gm))).toEqual([true, false, false, false, false]);
   });
 
   it('a lane’s game plays at a place its listened files have, its options the quiz’s by default', () => {

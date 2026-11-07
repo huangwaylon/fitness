@@ -8,7 +8,7 @@ track: life
 seeds: [2, 15, 24, 26, 27, 33, 35, 38, 44, 48, 49, 53, 57, 58, 63]
 features: { primary: weak-form, review: contraction }
 cando: "はやい 会話の ちぢんだ 音を、ことばごとに 組み立てられる"
-status: draft
+status: listened
 items:
   - kind: tile
     id: tile-ya-r-lemme-guess
