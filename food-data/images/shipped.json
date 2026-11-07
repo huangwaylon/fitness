@@ -19262,6 +19262,19 @@
 "checked": false
 },
 {
+"key": "mext-01003",
+"ja": "あわもち",
+"desc": "awa-mochi: soft chewy rice cake studded with tiny yellow millet grains, pale yellow and speckled, cut into rounded pieces on a plate",
+"items": [
+"mext:01003"
+],
+"roll": 0,
+"seed": 86591,
+"prompt": "94260255c3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01004",
 "ja": "オートミール",
 "desc": "a small bowl heaped with dry rolled oats: many thin flat irregular pale beige oat flakes, matte and papery, a few loose flakes beside the bowl, with a wooden spoon",
@@ -19272,6 +19285,136 @@
 "seed": 11004,
 "prompt": "2e6da85ea3",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01005",
+"ja": "おおむぎ 七分つき押麦",
+"desc": "oshimugi, lightly milled pressed barley: a small dish of flattened oval barley flakes, pale tan, each with a dark brown line down the centre, dry",
+"items": [
+"mext:01005"
+],
+"roll": 0,
+"seed": 31530,
+"prompt": "cb62668b47",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01006",
+"ja": "おおむぎ 押麦 乾",
+"desc": "oshimugi, pressed barley flakes, dry: a small dish of flattened creamy white oval barley grains, each with a thin brown groove down the middle",
+"items": [
+"mext:01006"
+],
+"roll": 0,
+"seed": 44976,
+"prompt": "3bf1f75e4b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01007",
+"ja": "おおむぎ 米粒麦",
+"desc": "beiryubaku, barley cut and polished to look like rice: a small dish of small white rice-shaped grains each with a faint brown line, dry",
+"items": [
+"mext:01007"
+],
+"roll": 0,
+"seed": 47462,
+"prompt": "2e97fea544",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01008",
+"ja": "おおむぎ 大麦めん 乾",
+"desc": "dried barley noodles: a straight bundle of thin flat greyish-tan dried noodles with fine dark speckles, stiff and brittle",
+"items": [
+"mext:01008"
+],
+"roll": 0,
+"seed": 9079,
+"prompt": "102a090473",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01009",
+"ja": "おおむぎ 大麦めん ゆで",
+"desc": "boiled barley noodles: soft thin greyish-beige noodles with fine speckles, coiled in a bowl, moist and glossy, plain without broth",
+"items": [
+"mext:01009"
+],
+"roll": 0,
+"seed": 88737,
+"prompt": "2a250330f2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01010",
+"ja": "おおむぎ 麦こがし",
+"desc": "mugi-kogashi, roasted barley flour: a small dish of fine light brown toasty powder, soft and dry",
+"items": [
+"mext:01010"
+],
+"roll": 0,
+"seed": 74340,
+"prompt": "3ccaabc5be",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01011",
+"ja": "きび 精白粒",
+"desc": "kibi, polished proso millet: a small dish of tiny round glossy bright yellow grains, smaller than rice, dry and raw",
+"items": [
+"mext:01011"
+],
+"roll": 0,
+"seed": 81394,
+"prompt": "8167f587e8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01012",
+"ja": "小麦（玄穀） 国産 普通",
+"desc": "whole wheat berries, domestic: a small dish of oval golden-brown wheat kernels, each with a crease down one side, dry",
+"items": [
+"mext:01012"
+],
+"roll": 0,
+"seed": 840,
+"prompt": "5bf68c5bea",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01013",
+"ja": "小麦（玄穀） 輸入 軟質",
+"desc": "soft wheat berries: a small dish of plump pale golden oval wheat kernels with a crease, dry and raw",
+"items": [
+"mext:01013"
+],
+"roll": 0,
+"seed": 42302,
+"prompt": "237e553ead",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01014",
+"ja": "小麦（玄穀） 輸入 硬質",
+"desc": "hard wheat berries: a small dish of small hard reddish-brown oval wheat kernels with a crease, glossy and dry",
+"items": [
+"mext:01014"
+],
+"roll": 0,
+"seed": 68029,
+"prompt": "53266d1c93",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -19286,6 +19429,36 @@
 "seed": 87243,
 "prompt": "efa0a29bd2",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01016",
+"ja": "薄力粉 2等",
+"desc": "wheat flour: a small dish holding a soft powdery mound of fine pure white flour",
+"items": [
+"mext:01016",
+"mext:01018",
+"mext:01019",
+"mext:01021",
+"mext:01025"
+],
+"roll": 0,
+"seed": 8017,
+"prompt": "1d8a7cd8b1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01023",
+"ja": "強力粉 全粒粉",
+"desc": "whole wheat flour: a small dish holding a mound of light brown flour speckled with darker bran flecks",
+"items": [
+"mext:01023"
+],
+"roll": 0,
+"seed": 11389,
+"prompt": "34fb9a1ed0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -19328,6 +19501,19 @@
 "seed": 27829,
 "prompt": "747d820b73",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01030",
+"ja": "乾パン",
+"desc": "kanpan, hard tack crackers: small thick square pale golden crackers, each with two pinholes, hard and dry, in a pile",
+"items": [
+"mext:01030"
+],
+"roll": 0,
+"seed": 56486,
+"prompt": "015d365757",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -19475,6 +19661,32 @@
 "checked": false
 },
 {
+"key": "mext-01045",
+"ja": "手延そうめん・手延ひやむぎ 乾",
+"desc": "dried hand-pulled somen: a bundle of very thin straight white dried noodles tied with a paper band, stiff",
+"items": [
+"mext:01045"
+],
+"roll": 0,
+"seed": 8750,
+"prompt": "f9d600d881",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01046",
+"ja": "手延そうめん・手延ひやむぎ ゆで",
+"desc": "boiled somen: very thin glossy white noodles in a glass bowl of cold water with ice cubes",
+"items": [
+"mext:01046"
+],
+"roll": 0,
+"seed": 4052,
+"prompt": "65d28521c4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01047",
 "ja": "中華めん（生）",
 "desc": "a nest of fresh raw Chinese ramen noodles, thin wavy pale yellow strands dusted with flour",
@@ -19514,6 +19726,45 @@
 "checked": false
 },
 {
+"key": "mext-01050",
+"ja": "干し中華めん 乾",
+"desc": "dried Chinese noodles: a bundle of straight thin pale yellow dried ramen noodles, stiff and brittle",
+"items": [
+"mext:01050"
+],
+"roll": 0,
+"seed": 41984,
+"prompt": "ed05982e33",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01051",
+"ja": "干し中華めん ゆで",
+"desc": "boiled dried Chinese noodles: soft thin pale yellow noodles, slightly glossy, in a bowl, plain without broth",
+"items": [
+"mext:01051"
+],
+"roll": 0,
+"seed": 13782,
+"prompt": "f2442a31d6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01052",
+"ja": "沖縄そば 生",
+"desc": "raw Okinawa soba: thick flat yellowish wheat noodles, slightly wavy, lightly oiled, in a heap, not buckwheat",
+"items": [
+"mext:01052"
+],
+"roll": 0,
+"seed": 48524,
+"prompt": "4048dd25d1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01053",
 "ja": "沖縄そば（ゆで）",
 "desc": "a bowl of Okinawa soba, thick flat wheat noodles in clear broth topped with large slices of braised pork belly, fish cake and green onion, red pickled ginger",
@@ -19524,6 +19775,45 @@
 "seed": 25242,
 "prompt": "e4a55282be",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01054",
+"ja": "干し沖縄そば 乾",
+"desc": "dried Okinawa soba: a straight bundle of flat wide yellowish dried wheat noodles, stiff",
+"items": [
+"mext:01054"
+],
+"roll": 0,
+"seed": 42713,
+"prompt": "ccb0b5eeaa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01055",
+"ja": "干し沖縄そば ゆで",
+"desc": "boiled Okinawa soba: thick flat soft yellowish wheat noodles in a bowl, plain without broth or toppings",
+"items": [
+"mext:01055"
+],
+"roll": 0,
+"seed": 13551,
+"prompt": "af0f20750f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01056",
+"ja": "インスタントラーメン 油揚げ味付け",
+"desc": "seasoned instant fried ramen: a dry rectangular block of tightly wavy golden-brown fried noodles, crunchy, eaten as is",
+"items": [
+"mext:01056"
+],
+"roll": 0,
+"seed": 18005,
+"prompt": "58d4a5f2f0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -19540,6 +19830,19 @@
 "checked": false
 },
 {
+"key": "mext-01058",
+"ja": "インスタントラーメン 非油揚げ 乾（スープ含む）",
+"desc": "dry non-fried instant ramen: a matte pale cream block of wavy noodles beside small plain soup sachets",
+"items": [
+"mext:01058"
+],
+"roll": 0,
+"seed": 63250,
+"prompt": "69293eaaa4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01060",
 "ja": "カップ焼きそば（乾）",
 "desc": "instant cup yakisoba in a square white plastic tray with no logo, brown sauce-coated wavy noodles with small cabbage bits and green aonori",
@@ -19551,6 +19854,19 @@
 "seed": 95907,
 "prompt": "5a0079b7e0",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01061",
+"ja": "カップめん 非油揚げ 乾",
+"desc": "dry instant cup noodles: an open plain cup holding a dry pale noodle block topped with dried vegetable bits",
+"items": [
+"mext:01061"
+],
+"roll": 0,
+"seed": 15157,
+"prompt": "4ce81a4cd9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -19594,6 +19910,19 @@
 "checked": false
 },
 {
+"key": "mext-01065",
+"ja": "生ふ",
+"desc": "nama-fu, fresh wheat gluten: smooth dense chewy slices with no crust, not bread, pale white and soft green blocks with a glossy mochi-like surface",
+"items": [
+"mext:01065"
+],
+"roll": 0,
+"seed": 12076,
+"prompt": "eeef72f966",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01066",
 "ja": "焼きふ（釜焼きふ）",
 "desc": "Japanese yaki-fu, a few dry baked wheat gluten rounds and small rings, very light and airy like puffed bread crust, pale golden-cream with a lightly toasted top, matte and dry, not fried, not nuggets",
@@ -19603,6 +19932,19 @@
 "roll": 0,
 "seed": 3958,
 "prompt": "54901594c8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01067",
+"ja": "焼きふ 板ふ",
+"desc": "ita-fu, dried baked wheat gluten: thin flat pale tan rectangular boards, light and porous, dry, not bread or crackers",
+"items": [
+"mext:01067"
+],
+"roll": 0,
+"seed": 12672,
+"prompt": "832c30ab3f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -19907,6 +20249,58 @@
 "checked": false
 },
 {
+"key": "mext-01144",
+"ja": "インスタントラーメン 油揚げ 乾",
+"desc": "dry instant fried ramen block: a rectangular block of tightly wavy pale golden fried noodles, uncooked",
+"items": [
+"mext:01144"
+],
+"roll": 0,
+"seed": 72559,
+"prompt": "d7ce925df4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01145",
+"ja": "インスタントラーメン 非油揚げ 乾（めんのみ）",
+"desc": "dry non-fried instant noodle block: a matte pale cream rectangular block of wavy noodles, not fried, uncooked",
+"items": [
+"mext:01145"
+],
+"roll": 0,
+"seed": 11769,
+"prompt": "eca013638a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01146",
+"ja": "プレミックス粉 お好み焼き用",
+"desc": "okonomiyaki flour mix: a small dish of fine off-white powder with a faint yellow tint and tiny specks",
+"items": [
+"mext:01146"
+],
+"roll": 0,
+"seed": 28771,
+"prompt": "36fc0fea93",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01147",
+"ja": "プレミックス粉 から揚げ用",
+"desc": "karaage flour mix: a small dish of pale beige seasoned flour with orange and brown spice specks",
+"items": [
+"mext:01147"
+],
+"roll": 0,
+"seed": 3765,
+"prompt": "7baccd55ee",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01148",
 "ja": "ベーグル",
 "desc": "two round bagels with a hole in the middle, shiny dense golden-brown crust, one cut in half",
@@ -19987,6 +20381,19 @@
 "checked": false
 },
 {
+"key": "mext-01167",
+"ja": "キヌア 玄穀",
+"desc": "quinoa whole grain: a small dish of small round flat ivory-beige seeds, each with a faint ring around the edge, raw and dry",
+"items": [
+"mext:01167"
+],
+"roll": 0,
+"seed": 16791,
+"prompt": "cea59583d7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01168",
 "ja": "インディカ米ごはん",
 "desc": "a plate of cooked long-grain indica rice, long slender separate white grains",
@@ -20026,6 +20433,45 @@
 "checked": false
 },
 {
+"key": "mext-01171",
+"ja": "プレミックス粉 天ぷら用 バッター",
+"desc": "tempura batter: a bowl of runny pale cream wheat batter with small lumps of flour, thin and liquid",
+"items": [
+"mext:01171"
+],
+"roll": 0,
+"seed": 82755,
+"prompt": "712bcc5d74",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01172",
+"ja": "プレミックス粉 天ぷら用 バッター 揚げ",
+"desc": "fried tempura batter bits: a small dish of small crunchy golden fried batter crumbs, light and lacy, no filling",
+"items": [
+"mext:01172"
+],
+"roll": 0,
+"seed": 43193,
+"prompt": "00df36b18b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01173",
+"ja": "マカロニ・スパゲッティ ソテー",
+"desc": "sauteed pasta: spaghetti and elbow macaroni tossed in oil, glossy pale yellow, plain without sauce, on a plate",
+"items": [
+"mext:01173"
+],
+"roll": 0,
+"seed": 69263,
+"prompt": "bf4d79b4ea",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01174",
 "ja": "トースト（食パン焼き）",
 "desc": "a thick square slice of toasted white bread, golden-brown toasted surface with pale crust edges, on a small plate",
@@ -20039,6 +20485,32 @@
 "checked": false
 },
 {
+"key": "mext-01175",
+"ja": "角形食パン 耳を除いたもの",
+"desc": "crustless white sandwich bread: a square slice of soft white bread with the crusts cut off, fine white crumb, on a plate",
+"items": [
+"mext:01175"
+],
+"roll": 0,
+"seed": 53050,
+"prompt": "7872ccd15e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01176",
+"ja": "角形食パン 耳",
+"desc": "bread crusts: thin golden-brown strips of crust cut from the edges of a square white loaf, piled on a plate",
+"items": [
+"mext:01176"
+],
+"roll": 0,
+"seed": 74272,
+"prompt": "6edc25b1b7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01180",
 "ja": "春巻きの皮（揚げ）",
 "desc": "crisp golden fried spring roll wrapper sheets, thin bubbly square sheets",
@@ -20049,6 +20521,59 @@
 "seed": 14970,
 "prompt": "bcdeab842e",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01186",
+"ja": "半生うどん",
+"desc": "semi-dried udon: thick pale cream udon noodles, uncooked and slightly firm, loosely coiled",
+"items": [
+"mext:01186"
+],
+"roll": 0,
+"seed": 62767,
+"prompt": "c11a2d929c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01187",
+"ja": "半生中華めん",
+"desc": "semi-dried Chinese noodles: wavy pale yellow raw ramen noodles in loose nests, lightly dusted with starch",
+"items": [
+"mext:01187"
+],
+"roll": 0,
+"seed": 41945,
+"prompt": "cc2c2c97bf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01188",
+"ja": "蒸し中華めん ソテー",
+"desc": "sauteed steamed Chinese noodles: wavy yellow noodles stir-fried in oil, glossy and lightly browned, plain without sauce, on a plate",
+"items": [
+"mext:01188"
+],
+"roll": 0,
+"seed": 94024,
+"prompt": "c3ba0dbc38",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01189",
+"ja": "インスタントラーメン 油揚げ ゆで",
+"desc": "boiled instant noodles: soft wavy pale yellow noodles in a bowl, plain, with no soup",
+"items": [
+"mext:01189",
+"mext:01190"
+],
+"roll": 0,
+"seed": 59198,
+"prompt": "842d23b467",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -20072,6 +20597,34 @@
 "checked": false
 },
 {
+"key": "mext-01194",
+"ja": "カップめん 油揚げ 塩味 調理後（めんのみ）",
+"desc": "cooked instant noodles drained: soft wavy pale yellow noodles in a bowl with no soup",
+"items": [
+"mext:01194",
+"mext:01192",
+"mext:01195"
+],
+"roll": 0,
+"seed": 21250,
+"prompt": "fbcd7baa1f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01196",
+"ja": "和風カップめん 油揚げ 調理後（めんのみ）",
+"desc": "cooked instant udon drained: thick soft white udon noodles in a bowl with no broth",
+"items": [
+"mext:01196"
+],
+"roll": 0,
+"seed": 37646,
+"prompt": "4f38c7f49b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01198",
 "ja": "インスタントラーメン（調理後・スープ含む）",
 "desc": "a bowl of cooked instant ramen, wavy yellow noodles in brown soy soup topped with green onion",
@@ -20084,6 +20637,71 @@
 "seed": 52169,
 "prompt": "e07b9cef21",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01199",
+"ja": "インスタントラーメン 非油揚げ 調理後（スープ含む）",
+"desc": "cooked instant ramen with soup: a bowl of wavy yellow noodles in clear brown soy broth, plain with no toppings",
+"items": [
+"mext:01199"
+],
+"roll": 0,
+"seed": 10943,
+"prompt": "864fc0af83",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01201",
+"ja": "カップめん 油揚げ 塩味 調理後（スープ含む）",
+"desc": "cooked instant cup noodles, salt flavour: a round plain cup filled with pale clear broth, wavy yellow noodles and tiny dried vegetable bits",
+"items": [
+"mext:01201"
+],
+"roll": 0,
+"seed": 66461,
+"prompt": "bc726af867",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01202",
+"ja": "カップめん 油揚げ 焼きそば 調理後（スープ含む）",
+"desc": "cup yakisoba: a plain rectangular instant cup holding stir-fried wavy noodles coated in dark brown sauce, cabbage bits and green aonori flakes",
+"items": [
+"mext:01202"
+],
+"roll": 0,
+"seed": 67783,
+"prompt": "ee20e3f253",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01203",
+"ja": "カップめん 非油揚げ 調理後（スープ含む）",
+"desc": "cooked instant cup noodles: a round plain cup of brown soy broth with wavy yellow noodles and tiny vegetable bits",
+"items": [
+"mext:01203"
+],
+"roll": 0,
+"seed": 13297,
+"prompt": "97d880433d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01204",
+"ja": "和風カップめん 油揚げ 調理後（スープ含む）",
+"desc": "Japanese-style instant cup udon: a round plain cup of thick white udon in pale golden dashi broth, a sweet fried tofu sheet on top",
+"items": [
+"mext:01204"
+],
+"roll": 0,
+"seed": 28850,
+"prompt": "ce705cd0b7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -20126,6 +20744,19 @@
 "seed": 15279,
 "prompt": "d68b5f22bc",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01210",
+"ja": "くるみパン",
+"desc": "walnut bread: a round brown bread loaf, one slice cut to show soft crumb studded with walnut pieces",
+"items": [
+"mext:01210"
+],
+"roll": 0,
+"seed": 33642,
+"prompt": "ae585c070a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
