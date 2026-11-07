@@ -48,8 +48,10 @@ class FakeSource extends FakeNode {
   onended: (() => void) | null = null;
   stopped: number | 'now' | null = null;
   at: number | null = null;
-  start(at = 0) {
+  offset = 0;
+  start(at = 0, offset = 0) {
     this.at = at;
+    this.offset = offset;
   }
   stop(at?: number) {
     this.stopped = at ?? 'now';
@@ -666,6 +668,18 @@ describe('the voice bus (ききみみ: engine.ts wakeVoice, holdAwake, loadBytes
     e.fadeVoice([{ t: 0, gain: 0.2 }]);
     e.clearVoice(); // the session's end: full again
     expect(bus.gain.value).toBe(1);
+  });
+
+  it('a looped clip (a bed): from its offset for its length, faded in and out at its gain, the music ducked under it', async () => {
+    const { e, ctx } = await voiced();
+    ctx.currentTime = 3;
+    const c = e.playClip(clip(ctx), { at: 4, loop: { from: 0.5, dur: 30, gain: 0.4, fade: 0.25 } })!;
+    expect(c.endsAt).toBe(34);
+    const src = ctx.sources.at(-1)!, g = src.to[0] as FakeNode;
+    expect([src.loop, src.at, src.offset, src.stopped]).toEqual([true, 4, 0.5, 34]);
+    expect(g.gain.ramps).toEqual([[0.4, 4.25], [0, 34]]);
+    src.onended?.();
+    expect(g.connected).toBe(0);
   });
 
   it('a clip asked for in the past plays whole from now; none while the context is suspended (a lock)', async () => {

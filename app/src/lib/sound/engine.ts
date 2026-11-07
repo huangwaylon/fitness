@@ -124,6 +124,14 @@ function stagePos(t: MusicTrack, nowMs = Date.now()): number {
 }
 const isRainBed = (key: string): boolean => key === 'rain' || key.startsWith('rain:');
 
+/** A clip looped (engine.playClip): from `from` (s) for `dur` (s) at `gain`, faded in and out over `fade` (s). */
+export interface ClipLoop {
+  from: number;
+  dur: number;
+  gain: number;
+  fade: number;
+}
+
 export class Engine {
   ctx: AudioContext | null = null;
   #master!: GainNode;
@@ -322,22 +330,35 @@ export class Engine {
 
   /** Play a voice clip on the voice bus at `at` (the audio clock; now if missing or past: a late one plays whole, from
    *  its start), the music ducked under it. Null when the context can't sound now (locked, interrupted, in the
-   *  background: session.ts canSound). `endsAt`: the audio-clock time it ends. */
-  playClip(buf: AudioBuffer, o: { at?: number } = {}): { stop(): void; endsAt: number } | null {
+   *  background: session.ts canSound). `endsAt`: the audio-clock time it ends. `loop`: the buffer looped (a bed under a
+   *  conversation: no buffer of its length made). */
+  playClip(buf: AudioBuffer, o: { at?: number; loop?: ClipLoop } = {}): { stop(): void; endsAt: number } | null {
     const ctx = this.#ready();
     if (!ctx) return null;
     const at = Math.max(ctx.currentTime, o.at ?? 0);
     const key = -++this.#clipKey; // apart from the limiter's keys (positive)
     const src = ctx.createBufferSource();
     src.buffer = buf;
-    src.connect(this.#bus.voice);
+    const l = o.loop;
+    const g = l ? ctx.createGain() : null;
+    if (g && l) {
+      const end = at + l.dur, p = g.gain;
+      p.setValueAtTime(0, at);
+      p.linearRampToValueAtTime(l.gain, at + l.fade);
+      p.setValueAtTime(l.gain, end - l.fade);
+      p.linearRampToValueAtTime(0, end);
+      src.loop = true;
+      src.connect(g).connect(this.#bus.voice);
+    } else src.connect(this.#bus.voice);
     src.onended = () => {
       this.#live.delete(key);
       src.disconnect();
+      g?.disconnect();
     };
-    src.start(at);
+    if (l) (src.start(at, l.from), src.stop(at + l.dur));
+    else src.start(at);
     this.#live.set(key, src);
-    const endsAt = at + buf.duration;
+    const endsAt = at + (l ? l.dur : buf.duration);
     this.#duckUnder(at, endsAt);
     const stop = () => {
       if (!this.#live.has(key)) return;

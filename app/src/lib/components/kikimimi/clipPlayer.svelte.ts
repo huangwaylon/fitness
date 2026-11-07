@@ -7,7 +7,7 @@
 // static/audio/beds/, from the item's own place in its loop, faded in and out, so it never stops between lines), and
 // for no replay at its reveals (a 40 s conversation); a round with no clip of its own plays nothing.
 import { clipIds, isDialogue, type Item } from '#lib/kikimimi/bank.ts';
-import { BED_LEAD, BED_TAIL, bedSamples, clipDur, lineGaps, sequenceStarts } from '#lib/kikimimi/clips.ts';
+import { BED_LEAD, BED_TAIL, bedLoop, clipDur, lineGaps, sequenceStarts } from '#lib/kikimimi/clips.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import { TEST_CLIP } from '#lib/kikimimi/pool.ts';
 import { fnv1a } from '#lib/random.ts';
@@ -36,17 +36,8 @@ const BED_GAIN = 10 ** ((-16 - 15 + 30) / 20);
 const lineDurs = (it: Item): number[] => clipIds(it).map((id) => clipDur(id) ?? 2);
 
 /** The bed's loop, decoded (the engine's few keep it; null: offline and never cached, or no voice session). */
-const bedLoop = (): Promise<AudioBuffer | null> =>
+const partyBed = (): Promise<AudioBuffer | null> =>
   loadVoice(`bed:${PARTY_BED}`, () => fetch(audioUrl(PARTY_BED)).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null));
-
-/** The bed for `ms` of a sequence: from its item's place in the loop, at its level, faded in and out. */
-function bedFor(loop: AudioBuffer, ms: number, id: string): AudioBuffer | null {
-  const n = Math.round((ms / 1000) * loop.sampleRate);
-  if (n <= 0 || typeof AudioBuffer === 'undefined') return null;
-  const buf = new AudioBuffer({ length: n, numberOfChannels: 1, sampleRate: loop.sampleRate });
-  buf.copyToChannel(bedSamples(loop.getChannelData(0), n, loop.sampleRate, BED_GAIN, fnv1a(id)), 0);
-  return buf;
-}
 
 export class ClipPlayer {
   /** A replay sounding (🔁, 🐢, the reveal's, a review row's: i -1), on the relay's clock: the bubble's bar, the
@@ -91,7 +82,7 @@ export class ClipPlayer {
       this.#fetched = dealt;
       prefetchClips(items.flatMap((it) => clipIds(it)));
       if (v.speaks) void voiceClip(clipIds(items[0])[0]);
-      if (v.speaks && hints(items[0]).bed) void bedLoop();
+      if (v.speaks && hints(items[0]).bed) void partyBed();
       preloadStage(items[0]);
     }
     if (v.phase === 'idle' || v.phase === 'lobby' || v.phase === 'results') {
@@ -179,7 +170,7 @@ export class ClipPlayer {
    * replay stops what sounds). One handle stops them all, with its start and length (ms, to the last line's end).
    */
   async #playSequence(it: Item, at: number | null, still: () => boolean, o: { slow?: boolean; before?: () => void } = {}): Promise<(Handle & { from: number; ms: number }) | null> {
-    const [bufs, loop] = await Promise.all([Promise.all(clipIds(it).map((id) => voiceClip(id, o.slow))), hints(it).bed ? bedLoop() : null]);
+    const [bufs, loop] = await Promise.all([Promise.all(clipIds(it).map((id) => voiceClip(id, o.slow))), hints(it).bed ? partyBed() : null]);
     if (bufs.some((b) => !b) || this.#gone || !still()) return null;
     o.before?.();
     const now = this.#now;
@@ -189,8 +180,9 @@ export class ClipPlayer {
     if (!hs.length) return null;
     const end = Math.max(...starts.map((s, k) => (s < 0 ? from : s + bufs[k]!.duration * 1000)));
     if (loop) {
-      const bedAt = Math.max(now(), from - BED_LEAD * 1000), bed = bedFor(loop, end + BED_TAIL * 1000 - bedAt, it.id);
-      const h = bed && this.#track(playVoice(bed, { relayAt: bedAt, now }));
+      // (looped by the engine from the item's place in it: no buffer of the conversation's length made each play)
+      const bedAt = Math.max(now(), from - BED_LEAD * 1000), dur = (end + BED_TAIL * 1000 - bedAt) / 1000;
+      const h = dur > 0 && this.#track(playVoice(loop, { relayAt: bedAt, now, loop: bedLoop(loop.length, loop.sampleRate, dur, BED_GAIN, fnv1a(it.id)) }));
       if (h) hs.push(h);
     }
     return { stop: () => hs.forEach((h) => h.stop()), from, ms: Math.max(0, end - from) };
