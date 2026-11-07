@@ -77,7 +77,9 @@
     box-shadow: 0 3px 0 color-mix(in srgb, var(--c-edge) 60%, transparent); color: var(--c-ink);
   }
   :global(:root[data-tod='night']) .th { background: color-mix(in srgb, var(--t) 78%, #1F2A5E); }
-  /* a picture on navy: a thin cream line inside (its colours untouched) */
+  /* a picture on navy: dimmed a little (its cream paper glared beside the night's cards; the tiles tint darker too), a
+     thin cream line inside */
+  :global(:root[data-tod='night']) .cell { filter: brightness(.85) saturate(.95); }
   :global(:root[data-tod='night']) .pic::after { content: ''; position: absolute; inset: 0; border-radius: inherit; box-shadow: inset 0 0 0 1px rgba(255, 246, 224, 0.6); }
   svg { display: block; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .w { font: 700 calc(var(--s) * 0.21)/1 var(--font-ui); white-space: nowrap; letter-spacing: -0.02em; }

@@ -967,17 +967,22 @@ test('状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼�
   await expect(sheet(page).locator('[data-grams]')).toHaveValue('90');
 });
 
-test('category tiles: the night’s tint is darker than the day’s', async ({ page }) => {
+test('category tiles: the night’s tint is darker than the day’s; a picture dimmed a little at night', async ({ page }) => {
   const tint = async (time: string) => {
     await openFood(page, '', `&date=2026-11-04T${time}`);
     await sheet(page).locator('[data-add=s]').click();
     await sheet(page).locator('[data-food-q]').fill('うど');
     const th = sheet(page).locator('[data-food-results] [data-thumb]').first();
     await expect(th).toBeVisible({ timeout: 15_000 });
-    return th.evaluate((e) => getComputedStyle(e).backgroundColor);
+    const pic = sheet(page).locator('[data-food-results] [data-thumb=img] img').first();
+    await expect(pic).toBeVisible();
+    return [await th.evaluate((e) => getComputedStyle(e).backgroundColor), await pic.evaluate((e) => getComputedStyle(e).filter)];
   };
-  const day = await tint('12:30');
-  expect(await tint('21:30')).not.toBe(day);
+  const [day, dayPic] = await tint('12:30');
+  const [night, nightPic] = await tint('21:30');
+  expect(night).not.toBe(day);
+  expect(dayPic).toBe('none');
+  expect(nightPic).toContain('brightness(0.85)');
 });
 
 // マイ食品 (the user: "create my own food and record its calories for future use in case there's a food not in the
