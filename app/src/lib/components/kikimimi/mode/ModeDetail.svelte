@@ -73,7 +73,8 @@
     <b>{t(`kiki.modeSub.${m}`)}</b>
     <p>{m === 'ladder' ? t('kiki.ladderAbout') : t(`kiki.modeAbout.${m}`)}</p>
     <div class="chips" aria-label={t('kiki.mode')}>
-      <span class="tag">{t('kiki.chip.qs', { n: m === 'review' && due ? due : meta.qs })}</span>
+      <!-- (no 問 count for a mic mode, nor for よるの おはなし) -->
+      {#if meta.qs && !meta.requires}<span class="tag">{t('kiki.chip.qs', { n: m === 'review' && due ? due : meta.qs })}</span>{/if}
       <span class="tag">{t('kiki.chip.mins', { n: meta.mins })}</span>
       {#if meta.coop}<span class="tag">👥 {t('kiki.chip.coop')}</span>{/if}
     </div>
