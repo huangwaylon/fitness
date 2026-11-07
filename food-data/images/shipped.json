@@ -32325,6 +32325,32 @@
 "checked": false
 },
 {
+"key": "mext-09035",
+"ja": "まつも 素干し",
+"desc": "Dried matsumo seaweed: a thin crisp sheet of pressed fine, needle-like dark brown-black strands, on a small plate",
+"items": [
+"mext:09035"
+],
+"roll": 0,
+"seed": 28454,
+"prompt": "4726b09407",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09036",
+"ja": "むかでのり 塩蔵 塩抜き",
+"desc": "Mukadenori seaweed, desalted: flat, glossy reddish-purple fronds with comb-like rows of short side branches like a centipede, in a small dish",
+"items": [
+"mext:09036"
+],
+"roll": 0,
+"seed": 31260,
+"prompt": "a9feb69189",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-09037",
 "ja": "沖縄もずく（塩抜き）",
 "desc": "mozuku seaweed, thin slippery brown-green tangled strands in a small glass bowl",
@@ -32336,6 +32362,32 @@
 "seed": 26090,
 "prompt": "1e5b591ae9",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09039",
+"ja": "わかめ 原藻 生",
+"desc": "Raw wakame: a whole fresh frond, brownish olive-green and glossy, a broad wavy blade split into lobes along a thick central midrib",
+"items": [
+"mext:09039"
+],
+"roll": 0,
+"seed": 38125,
+"prompt": "accd9446ce",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09040",
+"ja": "乾燥わかめ 素干し",
+"desc": "Dried wakame: a small pile of crinkled, shrivelled, dark blackish-green pieces, dry and brittle, on a small plate",
+"items": [
+"mext:09040"
+],
+"roll": 0,
+"seed": 56974,
+"prompt": "7794e44582",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -32353,6 +32405,32 @@
 "checked": false
 },
 {
+"key": "mext-09042",
+"ja": "乾燥わかめ 板わかめ",
+"desc": "Ita-wakame: a thin, flat, crisp sheet of pressed dried wakame, dark green and papery with a lacy texture, on a plate",
+"items": [
+"mext:09042"
+],
+"roll": 0,
+"seed": 51970,
+"prompt": "919786edf5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09043",
+"ja": "乾燥わかめ 灰干し 水戻し",
+"desc": "Ash-dried wakame, rehydrated: firm, thick, springy dark green wakame fronds with a glossy surface, in a small bowl",
+"items": [
+"mext:09043"
+],
+"roll": 0,
+"seed": 95412,
+"prompt": "65ae9ed9da",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-09044",
 "ja": "カットわかめ（乾）",
 "desc": "dried cut wakame, small crinkled dark green-black dry pieces in a small dish",
@@ -32363,6 +32441,19 @@
 "seed": 65783,
 "prompt": "cf47d4add8",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09046",
+"ja": "くきわかめ 湯通し塩蔵 塩抜き",
+"desc": "Kuki wakame, wakame stems: thick, flat, bright green stems cut into short strips, crunchy and glossy, in a small dish",
+"items": [
+"mext:09046"
+],
+"roll": 0,
+"seed": 39835,
+"prompt": "653cba72a9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -32471,6 +32562,74 @@
 "checked": false
 },
 {
+"key": "mext-09058",
+"ja": "カットわかめ 水煮",
+"desc": "Boiled cut wakame: small cut pieces of soft, bright green, glossy rehydrated seaweed, in a small bowl",
+"items": [
+"mext:09058"
+],
+"roll": 0,
+"seed": 87293,
+"prompt": "94a42bfcd6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09059",
+"ja": "カットわかめ 水煮の汁",
+"desc": "Wakame cooking liquid: a small glass of clear, pale greenish-yellow liquid, slightly cloudy, with no solids",
+"items": [
+"mext:09059"
+],
+"roll": 0,
+"seed": 2315,
+"prompt": "b9e0d15d7a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-09060",
+"ja": "乾燥わかめ 素干し 水戻し 水煮",
+"desc": "Rehydrated boiled wakame: soft, silky, bright green, slightly translucent seaweed leaves, slippery and glossy, in a small bowl",
+"items": [
+"mext:09060",
+"mext:09057"
+],
+"roll": 0,
+"seed": 39148,
+"prompt": "10f53003c0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10001",
+"ja": "あいなめ 生",
+"desc": "Raw fat greenling (ainame): a whole fish with mottled yellow-brown body and a long dorsal fin, beside a cut fillet of white flesh",
+"items": [
+"mext:10001"
+],
+"roll": 0,
+"seed": 97030,
+"prompt": "36d7b1f6e7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10002",
+"ja": "あこうだい 生",
+"desc": "Raw red rockfish (akoudai): a whole bright red-orange fish with large bulging eyes and spiny fins, beside a fillet of white flesh",
+"items": [
+"mext:10002",
+"mext:10030",
+"mext:10076"
+],
+"roll": 0,
+"seed": 74524,
+"prompt": "a03f421cdb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10003",
 "ja": "あじ 生",
 "desc": "a whole fresh horse mackerel (aji), silver-blue fish with a line of hard scales along its side",
@@ -32481,6 +32640,20 @@
 "seed": 36810,
 "prompt": "306c89b019",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10004",
+"ja": "まあじ 皮つき 水煮",
+"desc": "Boiled horse mackerel fillet, skin on: plain opaque white-grey cooked flesh with silvery skin, on a small plate, no sauce",
+"items": [
+"mext:10004",
+"mext:10009"
+],
+"roll": 0,
+"seed": 48777,
+"prompt": "d418c03f06",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -32524,6 +32697,71 @@
 "checked": false
 },
 {
+"key": "mext-10008",
+"ja": "にしまあじ 生",
+"desc": "Raw Atlantic horse mackerel: a whole silver fish with greenish back and bony scutes along the side, beside a pinkish raw fillet",
+"items": [
+"mext:10008"
+],
+"roll": 0,
+"seed": 83010,
+"prompt": "00bdcbe434",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10010",
+"ja": "にしまあじ 焼き",
+"desc": "Salt-grilled horse mackerel: a whole fish with golden-brown blistered skin and char marks, on a long rectangular plate with grated daikon",
+"items": [
+"mext:10010"
+],
+"roll": 0,
+"seed": 27633,
+"prompt": "79f2953c71",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10011",
+"ja": "むろあじ 生",
+"desc": "Raw mackerel scad (muroaji): a whole slender cylindrical fish with bluish back, silver belly and faint yellow side stripe, beside dark red flesh",
+"items": [
+"mext:10011"
+],
+"roll": 0,
+"seed": 86535,
+"prompt": "56934b5501",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10014",
+"ja": "むろあじ くさや",
+"desc": "Kusaya: a butterflied dried fish, dark amber-brown, stiff, leathery and glossy, torn into thin strips on a plate",
+"items": [
+"mext:10014"
+],
+"roll": 0,
+"seed": 2664,
+"prompt": "6162906c1d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10015",
+"ja": "あなご 生",
+"desc": "Raw conger eel (anago): a long slender grey-brown eel with a row of white dots along its side, beside a split-open flat white fillet",
+"items": [
+"mext:10015"
+],
+"roll": 0,
+"seed": 69534,
+"prompt": "13e3751025",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10016",
 "ja": "あなご 蒸し",
 "desc": "steamed conger eel (anago), long soft pale brown fillets",
@@ -32533,6 +32771,58 @@
 "roll": 0,
 "seed": 52996,
 "prompt": "cbc07859f0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10017",
+"ja": "あまご 養殖 生",
+"desc": "Raw amago trout: a slim whole fish with olive back, dark oval parr marks and small red spots along its silver side",
+"items": [
+"mext:10017"
+],
+"roll": 0,
+"seed": 71986,
+"prompt": "5d7e237119",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10018",
+"ja": "あまだい 生",
+"desc": "Raw tilefish (amadai): a whole pinkish-red fish with a blunt square forehead and yellow marks below the eye, beside white fillet",
+"items": [
+"mext:10018"
+],
+"roll": 0,
+"seed": 61795,
+"prompt": "c2054c91a8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10019",
+"ja": "あまだい 水煮",
+"desc": "Boiled tilefish: a plain simmered fillet with soft white flesh and pink skin, on a small plate, no sauce",
+"items": [
+"mext:10019"
+],
+"roll": 0,
+"seed": 60661,
+"prompt": "349a5c4389",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10020",
+"ja": "あまだい 焼き",
+"desc": "Grilled tilefish: a fillet with crisp, upright golden scales on pink skin and moist white flesh, on a plate",
+"items": [
+"mext:10020"
+],
+"roll": 0,
+"seed": 81010,
+"prompt": "89f8a01949",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -32551,6 +32841,245 @@
 "checked": false
 },
 {
+"key": "mext-10022",
+"ja": "あゆ 天然 焼き",
+"desc": "Salt-grilled ayu sweetfish: a whole slim fish curved as if swimming, on a skewer, golden-brown skin with white salt crusted on fins and tail",
+"items": [
+"mext:10022",
+"mext:10026"
+],
+"roll": 0,
+"seed": 19486,
+"prompt": "5028356ebb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10023",
+"ja": "あゆ 天然 内臓 生",
+"desc": "Raw ayu entrails: a small heap of soft dark greenish-brown fish guts in a small dish",
+"items": [
+"mext:10023",
+"mext:10027"
+],
+"roll": 0,
+"seed": 22792,
+"prompt": "e69b9c1e5b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10024",
+"ja": "あゆ 天然 内臓 焼き",
+"desc": "Grilled ayu entrails: small firm pieces of dark brown-black cooked fish guts in a small dish",
+"items": [
+"mext:10024",
+"mext:10028"
+],
+"roll": 0,
+"seed": 36139,
+"prompt": "a2f0f541f6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10029",
+"ja": "あゆ うるか",
+"desc": "Uruka: salted fermented ayu entrails, a glossy, chunky dark brown-grey paste in a tiny dish",
+"items": [
+"mext:10029"
+],
+"roll": 0,
+"seed": 10422,
+"prompt": "3405321a34",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10031",
+"ja": "あんこう 生",
+"desc": "Raw monkfish: chunks of firm white flesh with grey-brown skin and translucent gelatinous pieces, heaped on a plate",
+"items": [
+"mext:10031"
+],
+"roll": 0,
+"seed": 74661,
+"prompt": "a6911364d3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10032",
+"ja": "あんこう きも 生",
+"desc": "Raw monkfish liver (ankimo): a soft, smooth, glossy lobe of pale peach-orange liver, creamy-looking, on a plate",
+"items": [
+"mext:10032"
+],
+"roll": 0,
+"seed": 767,
+"prompt": "f2e18e025d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10033",
+"ja": "いかなご 生",
+"desc": "Raw sand lance (ikanago): small, pencil-thin, silvery and translucent little fish, in a heap on a plate",
+"items": [
+"mext:10033"
+],
+"roll": 0,
+"seed": 23081,
+"prompt": "da392eea2b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10034",
+"ja": "いかなご 煮干し",
+"desc": "Dried sand lance (niboshi): small thin straight dried fish, stiff and silver-grey, in a pile on a plate",
+"items": [
+"mext:10034"
+],
+"roll": 0,
+"seed": 79562,
+"prompt": "a50da81314",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10035",
+"ja": "いかなご つくだ煮",
+"desc": "Ikanago kugini: small slender fish simmered in soy and sugar, dark brown, glossy, curled and clumped together, in a small dish",
+"items": [
+"mext:10035"
+],
+"roll": 0,
+"seed": 29276,
+"prompt": "e3b1c9a446",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10036",
+"ja": "いかなご あめ煮",
+"desc": "Candied sand lance: small slender fish coated in sticky, shiny amber syrup, clumped in a small dish",
+"items": [
+"mext:10036",
+"mext:10278"
+],
+"roll": 0,
+"seed": 50630,
+"prompt": "e4d9c1cd7d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10037",
+"ja": "いさき 生",
+"desc": "Raw grunt (isaki): a whole olive-grey fish with faint horizontal stripes, beside a white-pink raw fillet",
+"items": [
+"mext:10037"
+],
+"roll": 0,
+"seed": 45456,
+"prompt": "1a2d2e6504",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10038",
+"ja": "いしだい 生",
+"desc": "Raw striped beakperch (ishidai): a whole grey-white fish with bold black vertical bands, beside a white fillet",
+"items": [
+"mext:10038"
+],
+"roll": 0,
+"seed": 89505,
+"prompt": "dcf2d3c8d3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10039",
+"ja": "いとよりだい 生",
+"desc": "Raw threadfin bream (itoyoridai): a whole pink fish with yellow lengthwise stripes and a long thread trailing from its tail fin",
+"items": [
+"mext:10039"
+],
+"roll": 0,
+"seed": 98359,
+"prompt": "fe9436c1a4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10040",
+"ja": "いとよりだい すり身",
+"desc": "Fish surimi paste: a smooth, sticky, dense pale white paste in a small bowl",
+"items": [
+"mext:10040",
+"mext:10200"
+],
+"roll": 0,
+"seed": 53332,
+"prompt": "31ff50ec5c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10041",
+"ja": "いぼだい 生",
+"desc": "Raw butterfish (ibodai): a small, flat, round, silvery-grey whole fish with a small head, beside a white fillet",
+"items": [
+"mext:10041"
+],
+"roll": 0,
+"seed": 3010,
+"prompt": "bdaadca801",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10042",
+"ja": "うるめいわし 生",
+"desc": "Raw round herring (urume iwashi): a slim whole sardine with a large eye, blue back and silver belly",
+"items": [
+"mext:10042"
+],
+"roll": 0,
+"seed": 62360,
+"prompt": "4a33dac429",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10043",
+"ja": "うるめいわし 丸干し",
+"desc": "Dried round herrings (maruboshi): whole small fish, silver-blue, stiff and slightly wrinkled, lined up on a plate",
+"items": [
+"mext:10043"
+],
+"roll": 0,
+"seed": 73038,
+"prompt": "ddffac3f34",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10044",
+"ja": "かたくちいわし 生",
+"desc": "Raw Japanese anchovies: small slender silver fish with blue-green backs and large mouths, heaped on a plate",
+"items": [
+"mext:10044"
+],
+"roll": 0,
+"seed": 35725,
+"prompt": "c7028e98f7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10045",
 "ja": "煮干し",
 "desc": "a small pile of niboshi, small dried silver sardines, curved and stiff",
@@ -32560,6 +33089,19 @@
 "roll": 0,
 "seed": 59771,
 "prompt": "414e3590e1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10046",
+"ja": "かたくちいわし 田作り",
+"desc": "Tazukuri: tiny whole dried baby sardines glazed in sweet soy syrup, glossy amber-brown and crisp, in a small dish",
+"items": [
+"mext:10046"
+],
+"roll": 0,
+"seed": 61089,
+"prompt": "4819b71407",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -32577,6 +33119,58 @@
 "checked": false
 },
 {
+"key": "mext-10048",
+"ja": "まいわし 水煮",
+"desc": "Boiled sardine: a whole plain-cooked sardine, soft grey-white body with a row of dark spots on its side, on a small plate",
+"items": [
+"mext:10048"
+],
+"roll": 0,
+"seed": 57830,
+"prompt": "2ddb5234ad",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10049",
+"ja": "まいわし 焼き",
+"desc": "Salt-grilled sardines: whole fish with blistered browned skin and a row of dark spots on silver sides, on a plate",
+"items": [
+"mext:10049"
+],
+"roll": 0,
+"seed": 49872,
+"prompt": "e1996bf9a7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10050",
+"ja": "まいわし 塩いわし",
+"desc": "Salted sardine: a whole firm sardine, dull silver skin dusted with salt crystals, on a plate",
+"items": [
+"mext:10050"
+],
+"roll": 0,
+"seed": 31093,
+"prompt": "d8c969f015",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10051",
+"ja": "まいわし 生干し",
+"desc": "Semi-dried sardines: whole sardines lightly dried, slightly wrinkled glossy silver-blue skin, on a plate",
+"items": [
+"mext:10051"
+],
+"roll": 0,
+"seed": 41603,
+"prompt": "75a5bfd6bc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10052",
 "ja": "いわし 丸干し",
 "desc": "whole dried sardines (maruboshi), stiff grilled-looking silver-brown small fish on a plate",
@@ -32586,6 +33180,32 @@
 "roll": 0,
 "seed": 47961,
 "prompt": "c60af240c6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10053",
+"ja": "めざし 生",
+"desc": "Mezashi: several small dried sardines skewered together through the eyes on a straw or bamboo stick, silvery, raw",
+"items": [
+"mext:10053"
+],
+"roll": 0,
+"seed": 76527,
+"prompt": "d985f48838",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10054",
+"ja": "めざし 焼き",
+"desc": "Grilled mezashi: a skewered row of small dried sardines, browned and slightly charred, on a plate",
+"items": [
+"mext:10054"
+],
+"roll": 0,
+"seed": 41548,
+"prompt": "4f7083a948",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -32603,6 +33223,85 @@
 "checked": false
 },
 {
+"key": "mext-10056",
+"ja": "しらす干し 半乾燥品",
+"desc": "Shirasu-boshi: boiled and dried whitebait, tiny opaque white fluffy little fish with black eyes, soft pile in a small dish",
+"items": [
+"mext:10056"
+],
+"roll": 0,
+"seed": 71904,
+"prompt": "5f9e00c0f3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10057",
+"ja": "たたみいわし",
+"desc": "Tatami iwashi: a thin, crisp rectangular sheet of tiny whitebait dried together in a lacy mesh, pale beige, on a plate",
+"items": [
+"mext:10057"
+],
+"roll": 0,
+"seed": 26166,
+"prompt": "d2a220d052",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10058",
+"ja": "みりん干し かたくちいわし",
+"desc": "Mirin-boshi: small butterflied fish dried with a sweet glaze, flat, glossy amber-brown, sprinkled with sesame seeds, on a plate",
+"items": [
+"mext:10058",
+"mext:10059"
+],
+"roll": 0,
+"seed": 88551,
+"prompt": "7fc2b46f13",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10060",
+"ja": "いわし 缶詰 水煮",
+"desc": "Canned sardines in water: whole pale grey-silver sardine pieces in clear liquid, in an open can",
+"items": [
+"mext:10060"
+],
+"roll": 0,
+"seed": 91382,
+"prompt": "06cad45555",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10061",
+"ja": "いわし 缶詰 味付け",
+"desc": "Canned seasoned sardines: glossy brown sardine pieces in dark sweet soy sauce, in an open can",
+"items": [
+"mext:10061"
+],
+"roll": 0,
+"seed": 7296,
+"prompt": "591ba66191",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10062",
+"ja": "いわし 缶詰 トマト漬",
+"desc": "Canned sardines in tomato: sardines in bright red tomato sauce, in an open oval can",
+"items": [
+"mext:10062"
+],
+"roll": 0,
+"seed": 62714,
+"prompt": "d770ab3700",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10063",
 "ja": "オイルサーディン（いわし油漬缶詰）",
 "desc": "an open flat tin of oil sardines, small silver fish packed side by side in oil",
@@ -32612,6 +33311,71 @@
 "roll": 0,
 "seed": 49484,
 "prompt": "e659d6a562",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10064",
+"ja": "いわし 缶詰 かば焼",
+"desc": "Canned sardine kabayaki: flat fillets glazed with thick, glossy dark brown sweet soy sauce, in a shallow open can",
+"items": [
+"mext:10064"
+],
+"roll": 0,
+"seed": 50735,
+"prompt": "85a569c382",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10065",
+"ja": "いわな 養殖 生",
+"desc": "Raw char (iwana): a slender whole fish, dark olive-brown with pale white and orange spots and white-edged fins",
+"items": [
+"mext:10065"
+],
+"roll": 0,
+"seed": 10169,
+"prompt": "a633faa0a8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10066",
+"ja": "うぐい 生",
+"desc": "Raw dace (ugui): a slender whole silvery fish with greenish back and faint reddish stripes, on a plate",
+"items": [
+"mext:10066"
+],
+"roll": 0,
+"seed": 73091,
+"prompt": "4821a41e92",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10067",
+"ja": "うなぎ 養殖 生",
+"desc": "Raw eel: a long, slick dark grey-black eel beside a split-open flat white fillet with skin",
+"items": [
+"mext:10067"
+],
+"roll": 0,
+"seed": 69685,
+"prompt": "ad60d171e4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10068",
+"ja": "うなぎ きも 生",
+"desc": "Raw eel liver: small soft dark pinkish-brown pieces of eel liver and innards, in a small dish",
+"items": [
+"mext:10068"
+],
+"roll": 0,
+"seed": 22020,
+"prompt": "4a34a91a7a",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -32639,6 +33403,123 @@
 "seed": 58679,
 "prompt": "66b457e5d7",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10071",
+"ja": "うまづらはぎ 生",
+"desc": "Raw black scraper (umazurahagi): a flat grey-blue filefish with long snout and a spine on its head, beside a skinned white fillet",
+"items": [
+"mext:10071"
+],
+"roll": 0,
+"seed": 50657,
+"prompt": "74957bde81",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10072",
+"ja": "うまづらはぎ 味付け開き干し",
+"desc": "Seasoned dried filefish: thin, flat, golden-amber dried fish sheets, glossy with sweet glaze, sprinkled with sesame, like fish jerky",
+"items": [
+"mext:10072"
+],
+"roll": 0,
+"seed": 94907,
+"prompt": "52770bd4c8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10073",
+"ja": "えい 生",
+"desc": "Raw ray: pieces of ray wing, pale pinkish-white flesh with fine parallel cartilage lines, grey skin on one side",
+"items": [
+"mext:10073"
+],
+"roll": 0,
+"seed": 685,
+"prompt": "732c8b7c3a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10074",
+"ja": "えそ 生",
+"desc": "Raw lizardfish (eso): a slender brownish whole fish with a lizard-like head and wide mouth, beside white fillet",
+"items": [
+"mext:10074"
+],
+"roll": 0,
+"seed": 46094,
+"prompt": "7fc509c55a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10075",
+"ja": "おいかわ 生",
+"desc": "Raw pale chub (oikawa): small whole silvery minnows, with faint blue-green and pink stripes, on a plate",
+"items": [
+"mext:10075"
+],
+"roll": 0,
+"seed": 28312,
+"prompt": "cb16ee4a44",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10077",
+"ja": "おこぜ 生",
+"desc": "Raw devil stingfish (okoze): a whole knobby, warty, mottled red-brown fish with spiny fins, beside a white fillet",
+"items": [
+"mext:10077"
+],
+"roll": 0,
+"seed": 92820,
+"prompt": "6cb353be59",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10078",
+"ja": "おひょう 生",
+"desc": "Raw Pacific halibut: a thick slab of firm white raw fillet with a grey skin edge, on a plate",
+"items": [
+"mext:10078"
+],
+"roll": 0,
+"seed": 72261,
+"prompt": "46bdc50732",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10079",
+"ja": "かさご 生",
+"desc": "Raw scorpionfish (kasago): a whole mottled red-brown fish with a spiny head and fins, beside a white fillet",
+"items": [
+"mext:10079"
+],
+"roll": 0,
+"seed": 62195,
+"prompt": "f0c11ee376",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10080",
+"ja": "かじか 生",
+"desc": "Raw sculpin (kajika): small whole freshwater fish, mottled brown, with a big flat head and wide mouth",
+"items": [
+"mext:10080"
+],
+"roll": 0,
+"seed": 65112,
+"prompt": "ef96806855",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -33747,6 +34628,19 @@
 "checked": false
 },
 {
+"key": "mext-10389",
+"ja": "まあじ 皮なし 生",
+"desc": "Raw horse mackerel fillet, skinless: pale pinkish-beige glossy raw flesh with a darker red line, cut into slices on a plate",
+"items": [
+"mext:10389"
+],
+"roll": 0,
+"seed": 81893,
+"prompt": "fc0e245f61",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-10390",
 "ja": "あじフライ",
 "desc": "two Japanese aji fry, butterflied horse mackerel fillets in crisp golden panko, fan-shaped, with shredded cabbage",
@@ -33760,6 +34654,98 @@
 "seed": 4832,
 "prompt": "7c1ff0c637",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10391",
+"ja": "まあじ 小型 骨付き 生",
+"desc": "Raw small horse mackerels: whole small fish, silver with blue-green backs and a line of hard bony scutes along each side, on a plate",
+"items": [
+"mext:10391"
+],
+"roll": 0,
+"seed": 2614,
+"prompt": "87f2b49d97",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10392",
+"ja": "まあじ 小型 骨付き から揚げ",
+"desc": "Deep-fried small horse mackerel: whole small fish fried crisp and golden-brown, fins and tails crunchy, on a plate with a lemon wedge",
+"items": [
+"mext:10392"
+],
+"roll": 0,
+"seed": 31404,
+"prompt": "80eef2aae5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10393",
+"ja": "まるあじ 生",
+"desc": "Raw round scad (maruaji): a whole slender, rounded silver fish with a bluish back, beside a pinkish raw fillet",
+"items": [
+"mext:10393"
+],
+"roll": 0,
+"seed": 27002,
+"prompt": "e472cb1f6d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10394",
+"ja": "まるあじ 焼き",
+"desc": "Salt-grilled round scad: a whole slender fish with browned, blistered skin and char marks, salt on the fins, on a long plate",
+"items": [
+"mext:10394",
+"mext:10012"
+],
+"roll": 0,
+"seed": 65049,
+"prompt": "df6658a47f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10395",
+"ja": "まいわし フライ",
+"desc": "Sardine fry: butterflied sardines in crisp golden panko crust, on a plate with shredded cabbage",
+"items": [
+"mext:10395"
+],
+"roll": 0,
+"seed": 99183,
+"prompt": "aa1566cca5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10396",
+"ja": "しらす 生",
+"desc": "Raw whitebait (nama shirasu): tiny glassy, translucent baby fish with black dot eyes, heaped in a small dish",
+"items": [
+"mext:10396"
+],
+"roll": 0,
+"seed": 23829,
+"prompt": "f2a868751d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10397",
+"ja": "いわし 缶詰 アンチョビ",
+"desc": "Anchovies: thin, flat, brownish-pink salted fillets lying in olive oil in a small flat open tin",
+"items": [
+"mext:10397"
+],
+"roll": 0,
+"seed": 54019,
+"prompt": "5836aebc25",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -33847,6 +34833,33 @@
 "seed": 71591,
 "prompt": "243887fea5",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10457",
+"ja": "にしまあじ 開き干し 生",
+"desc": "Butterflied semi-dried horse mackerel (aji no hiraki), raw: a whole fish split open flat with head attached, glossy pale flesh side up",
+"items": [
+"mext:10457",
+"mext:10013"
+],
+"roll": 0,
+"seed": 88170,
+"prompt": "fdc41815ac",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-10458",
+"ja": "にしまあじ 開き干し 焼き",
+"desc": "Grilled aji no hiraki: a butterflied dried horse mackerel, flat and open, golden-brown with char marks, on a plate with grated daikon",
+"items": [
+"mext:10458"
+],
+"roll": 0,
+"seed": 63739,
+"prompt": "61731831c3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
