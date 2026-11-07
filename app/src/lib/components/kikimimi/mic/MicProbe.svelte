@@ -22,8 +22,9 @@
   import { WHISPER, sttMB } from '#lib/mic/models.ts';
   import {
     askMic, builtinMic, closeProbe, decode, duplex, openRec, permState, playBuf, probeCtx, probeEnv, relayOnce,
-    relayReady, takeSpeech, webkitOnce, type Heard
+    takeSpeech, webkitOnce, type Heard
   } from '#lib/mic/probe/run.ts';
+  import { relayReady } from '#lib/mic/backends/relay.ts';
 
   let { onback }: { onback: () => void } = $props();
 
@@ -64,6 +65,8 @@
   let sayStep = $state<'ready' | 'listening' | 'sending' | 'done'>('ready');
   let last = $state<{ pct?: number; text?: string; err?: string } | null>(null);
   let stopTake: (() => void) | null = null;
+  /** The probe was left (a take that opens after it is let go at once). */
+  let gone = false;
   /** The relay take's length so far (s). */
   let recS = $state(0);
   let stt = $state<Partial<Record<'whisper' | 'webkit' | 'relay', { pct: number; s: number }[]>>>({});
@@ -250,6 +253,8 @@
       if (!take) h = { err: 'audio-capture' };
       else {
         stopTake = take.stop;
+        // left while the mic was opening: let it go at once
+        if (gone) take.stop();
         const { x, sr } = await take.done;
         stopTake = null;
         sayStep = 'sending';
@@ -290,6 +295,7 @@
     : t('kiki.mic.row.duplex', { bleed: r.bleed, loud: r.loud ? t(`kiki.mic.loud.${r.loud}`) : '' });
 
   onDestroy(() => {
+    gone = true;
     stopTake?.();
     whisper?.dispose();
     closeProbe();

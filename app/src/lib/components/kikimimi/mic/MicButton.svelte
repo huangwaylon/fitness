@@ -35,6 +35,8 @@
     try {
       const { takeMic } = await core();
       take = await takeMic({ maxS, frame: (v) => ((level = Math.min(1, Math.max(0, (v.db + 60) / 45))), (speaking = v.speaking)) });
+      // left while the mic was opening: let it go at once
+      if (gone) return take.cancel();
       st = 'listening';
       const got = await take.done;
       take = null;

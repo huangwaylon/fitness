@@ -25,20 +25,21 @@ const AUDIO: MediaTrackConstraints = { echoCancellation: true, noiseSuppression:
 export async function openMic(ctx: AudioContext, o: { maxS: number; frame?: (v: VadState) => void }): Promise<Mic> {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: AUDIO });
   const tracks = () => stream.getTracks().forEach((t) => t.stop());
+  let src: MediaStreamAudioSourceNode, node: AudioWorkletNode, mute: GainNode;
   try {
-    if (!loaded.has(ctx)) loaded.set(ctx, ctx.audioWorklet.addModule(workletUrl));
+    if (!loaded.has(ctx)) loaded.set(ctx, ctx.audioWorklet.addModule(workletUrl).catch((e: unknown) => (loaded.delete(ctx), Promise.reject(e))));
     await loaded.get(ctx);
+    src = ctx.createMediaStreamSource(stream);
+    node = new AudioWorkletNode(ctx, 'mic-capture', { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
+    // pulled by the graph through a silent gain (nothing of the mic is heard)
+    mute = ctx.createGain();
+    mute.gain.value = 0;
+    src.connect(node).connect(mute).connect(ctx.destination);
   } catch (e) {
-    loaded.delete(ctx);
+    // the worklet or the graph failed (a closed or interrupted context): the track still goes
     tracks();
     throw e;
   }
-  const src = ctx.createMediaStreamSource(stream);
-  const node = new AudioWorkletNode(ctx, 'mic-capture', { numberOfInputs: 1, numberOfOutputs: 1, channelCount: 1 });
-  // pulled by the graph through a silent gain (nothing of the mic is heard)
-  const mute = ctx.createGain();
-  mute.gain.value = 0;
-  src.connect(node).connect(mute).connect(ctx.destination);
   const to16 = new To16k(ctx.sampleRate), pcm = new Pcm(Math.ceil(o.maxS * SR)), vad = new Vad();
   let open = true;
   node.port.onmessage = (e: MessageEvent<Float32Array>) => {

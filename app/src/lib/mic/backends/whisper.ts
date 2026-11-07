@@ -102,16 +102,21 @@ export function openWhisper(): Whisper {
  *  transcript instead: match.ts candidate reads either). A failed or timed-out request lets the Worker go (the next
  *  take loads it again); one WebGPU failure and this recogniser stays on WASM. dispose() terminates the Worker. */
 export function whisperRecogniser(cap: Capture): Recogniser {
-  let w: Whisper | null = null, dev: Device | null = null, loading: Promise<boolean> | null = null, gpuBad = false, gone = false;
-  const drop = () => (w?.dispose(), (w = null), (loading = null));
+  // `opening`: the Worker still loading (disposed with the rest: a load can take a while and the model's memory)
+  let w: Whisper | null = null, opening: Whisper | null = null, dev: Device | null = null, loading: Promise<boolean> | null = null, gpuBad = false, gone = false;
+  const drop = () => (w?.dispose(), opening?.dispose(), (w = opening = null), (loading = null));
   const ready = (progress?: (got: number, of: number) => void): Promise<boolean> =>
     (loading ??= (async () => {
-      if (!(await whisperCached())) await downloadWhisper(progress);
+      // what's missing only: nothing once it's all cached, but this build's worker script after a deploy (offline next)
+      await downloadWhisper(progress);
       const gpu = !gpuBad && typeof navigator !== 'undefined' && 'gpu' in navigator;
       for (const d of (gpu ? ['webgpu', 'wasm'] : ['wasm']) as Device[]) {
         if (gone) return false;
-        const x = openWhisper();
-        if ((await x.load(d)).ok && !gone) return (w = x), (dev = d), true;
+        const x = (opening = openWhisper());
+        const ok = (await x.load(d)).ok;
+        opening = null;
+        if (gone) return x.dispose(), false;
+        if (ok) return (w = x), (dev = d), true;
         x.dispose();
         if (d === 'webgpu') gpuBad = true;
       }
