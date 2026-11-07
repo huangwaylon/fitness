@@ -1,5 +1,5 @@
 // A trail's track by its slug (docs/hiking.md "Data"): static/hiking/tracks/<slug>.json (scripts/hiking-tracks.ts),
-// fetched only as its view opens, from the network and the browser's HTTP cache (never precached: caches.ts isHiking).
+// fetched as its view opens; the service worker precaches all ten (~70 KB: caches.ts precachable), so it reads offline.
 import { asset } from '$app/paths';
 import type { TrackFile } from './types.ts';
 
