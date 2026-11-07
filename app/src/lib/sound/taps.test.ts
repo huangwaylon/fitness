@@ -61,6 +61,7 @@ const NONE: Record<string, string> = {
   'lib/components/health/Pick.svelte': 'a dropdown (けんこう, ごはん): its value already shown does nothing; it ticks on change (setWho, setPeriod)',
   'lib/components/food/FoodSearch.svelte': 'the search field: the system keyboard clicks',
   'lib/components/food/FoodAmount.svelte': 'the grams field: the system keyboard clicks; the meal already chosen does nothing',
+  'lib/components/food/FoodPortion.svelte': 'the grams field: the system keyboard clicks; the state or portion already chosen does nothing',
   'lib/components/food/FoodRepeat.svelte': 'the weekday preset already chosen does nothing',
   'lib/components/food/FoodRecipe.svelte': 'the recipe\'s name field: the system keyboard clicks',
   'lib/components/food/FoodCustom.svelte': 'the custom food\'s fields (name, serving, weight, kcal, nutrients): the system keyboard clicks',
