@@ -72,6 +72,7 @@ const NONE: Record<string, string> = {
   'lib/components/kikimimi/story/StoryFrame.svelte': 'おやすみ ものがたり: ⏮ ⏯ ⏭, the sleep timer and the words are silent at bedtime (no cue over the story\'s voice)',
   'lib/components/kikimimi/frame/RoundFrame.svelte': 'よみおわった once tapped does nothing',
   'lib/components/kikimimi/frame/ChoiceGrid.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)',
+  'lib/components/kikimimi/tile/TilePlay.svelte': 'ことば タイル: a tile already placed or a full sentence, an empty or given slot, できた before it\'s full (the reveal plays its cue)',
   'lib/components/wedding/Notes.svelte': 'the note field: the system keyboard clicks',
   'lib/components/wedding/Settings.svelte': 'the names, day, venue, time zone and category fields: the system keyboard clicks (the zone a native dropdown)',
   'lib/components/wedding/TaskForm.svelte': 'a task\'s fields (its title, dates, checklist items): the system keyboard and pickers'

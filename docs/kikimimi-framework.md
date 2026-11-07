@@ -394,6 +394,17 @@ Every game goes through `kikimimi/round/registry.ts` as a **lane**. The quiz, la
 - **Catalog:** each mode has a shelf, an icon, `places` and `game` (catalog.ts). A lane's mode shows once its `LATER` line exists and a file of its game is `listened` (`LANES.ready`), or once its line's `content()` says so. The five wave-2 modes are pre-registered; their names and about lines are in the main ききみみ catalog. A mic mode brings its own `mode` on its line (`addMode`): the shelf `koe` (声に出す, last, hidden while empty), `gate()` (shown only while true on this phone) and `requires: 'mic'`. きまぐれ never picks a mic mode.
 - **Budget** (kikimimi-budget.ts): a later lane.ts chunk and every view in `components/kikimimi/<gm>/` are ≤ 15 KB gz each, and at least one view of a game folder must be lazy. frame/Sandwich is ≤ 15 KB once it exists. A listening part is ≤ 32 KB.
 - **Not here:** a game's `BUILD_V` (games/versions.ts, one line a game) comes with its deal. After adding it, re-run `npm run kikimimi:levels` and teach cv.test's `decksOf` the new deal.
+- **Added with W2-1:** `Lane.record` (my row's answers when they aren't choices; the row then carries its `gm`: recorder.ts), `Lane.opts` gets my comfortable `level` (a host's tier), and the quiz view keeps a later game's raw answer as `a` (mine and, at a reveal, each player's pick). A game's strings are imported by its views, not its lane (deps.test: kikimimi/ may not import i18n/).
+
+### ことば タイル as built (W2-1, 2026-11-07)
+
+`games/tile/` (def.ts pure, lane.ts) and `components/kikimimi/tile/` (TilePlay, TileResults, board.ts); strings in i18n/kiki-tile.*.
+- **Deck:** options `[lv, timer, ear]`; the `listened` tile files at the lobby's place (`tileFiles`), 6 sentences by the seed, the shortest first. A card is an Item whose `id` is the clip it plays (a derived tile's bank clip), its `tile.id` the row's id.
+- **Tiers:** each player's `ear` (0 はまべ … 3 やま: taikai's `tierOf` over the comfortable level; unmeasured かわ) against the deck's place: below easy (the first authored decoy, my first slot placed for me), above hard (the authored decoys topped up to 3–4 from a sound-swap table over the sentence's own words), else as authored. The host's ear rides `o`, a player's `join.tr`.
+- **Answer:** the board's index per slot, `EMPTY` (63) for a slot not filled; valid: one per slot, within the board, each tile once. Right: every filled slot holds its word (by text: a word twice is either tile) and they're the whole sentence or one role's half. 100 a right sentence; a replay costs nothing (the row's `rp`).
+- **Co-op:** `roles: 2`; role 0 fills the 1st, 3rd, 5th… slots, role 1 the others; the partner's slots are dashed. The team builds a sentence when both halves are right (`team.all`); the reveal shows the team's sentence from both answers (each on its owner's board); the results' 「ふたりで k / n」 is that count.
+- **Row:** `gm: 'tile'`, each round I had `[tile id, ok, wrong-slot mask, rp]` (`tileRecord`; `wrongWords` reads a mask back).
+- **e2e** kikimimi-tile (solo, co-op): the built index's s2-tile-bank flipped to `listened` as the test serves it; nothing ships listened.
 
 ## 10. Risks
 

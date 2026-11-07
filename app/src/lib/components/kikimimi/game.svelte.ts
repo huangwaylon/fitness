@@ -239,7 +239,7 @@ export class QuizGame {
   configure(o: { lv?: Level; same?: boolean; vs?: boolean; ladder?: boolean; timer?: QuizTimer }): void {
     const own = () => {
       const v = this.view, lane = v?.gm && !QUIZ_LOBBY.has(v.gm) && o.ladder === undefined ? LANES.of(v.gm) : undefined;
-      return lane && { gm: lane.id, o: laneOpts(lane, { lv: o.lv ?? v.lv, timer: o.timer ?? v.timer }) };
+      return lane && { gm: lane.id, o: laneOpts(lane, { lv: o.lv ?? v.lv, timer: o.timer ?? v.timer, level: this.#level() }) };
     };
     this.#queue.then(() => {
       const g = own();
@@ -258,7 +258,7 @@ export class QuizGame {
   setGame(gm: GameId, p: { lv: number; timer: QuizTimer }): void {
     const opts = () => {
       const lane = LANES.of(gm);
-      return lane ? laneOpts(lane, p) : [];
+      return lane ? laneOpts(lane, { ...p, level: this.#level() }) : [];
     };
     this.#queue.then(() => LANES.loading(gm) ?? chunksOf(gm, opts()), () => {
       const v = this.view;
@@ -449,8 +449,9 @@ export class QuizGame {
     this.#cued = key;
     if (v.phase === 'lead' && !v.out) cue('quiz-pop');
     else if (v.phase === 'reveal' && !v.out) {
-      const a = v.answers[v.i];
-      cue(a && a.k === this.items[v.i]?.answer ? 'quiz-right' : 'quiz-wrong');
+      // (my answer as the session graded it: a later game's isn't a choice)
+      const a = v.answers[v.i], mine = v.players.find((p) => p.who === this.me)?.pick;
+      cue(a && (mine ? mine.ok : a.k === this.items[v.i]?.answer) ? 'quiz-right' : 'quiz-wrong');
     } else if (v.phase === 'results' && v.g) cue('quiz-end');
   }
 }

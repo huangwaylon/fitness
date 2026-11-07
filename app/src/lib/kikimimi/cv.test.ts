@@ -10,10 +10,11 @@ import { gameCv } from './compile.ts';
 import { deck } from './deck.ts';
 import { ladderDeck } from './ladder.ts';
 import { lessonDeck, type Tier } from './lesson.ts';
-import { ENTRIES, INDEX, gameCvOf, ladders, loadAll, unitPart } from './pool.ts';
+import { ENTRIES, INDEX, gameCvOf, ladders, listenOf, loadAll, unitPart } from './pool.ts';
 import { LESSONS } from './stages.ts';
 import { BUILD_V } from './games/versions.ts';
 import { taikaiDeck } from './games/taikai/source.ts';
+import { boardOf, tierAt, tileDeal } from './games/tile/def.ts';
 
 const SEEDS = Array.from({ length: 20 }, (_, s) => s);
 const TIERS: readonly (Tier | undefined)[] = [undefined, 'easy', 'hard'];
@@ -28,6 +29,8 @@ function decksOf(key: string): unknown {
   if (gm === 'ladder') return SEEDS.map((s) => shape(ladderDeck(s, ladders())));
   // the tournament's: 8 ids a seed, spread over every level's items
   if (gm === 'taikai') return SEEDS.map((s) => shape(taikaiDeck(s, Array.from({ length: 8 }, (_, k) => (s * 37 + k * 101) % ENTRIES.length))));
+  // ことば タイル's: a file's sentences a seed, each one's board at every ear
+  if (gm === 'tile') return SEEDS.map((s) => tileDeal(s, [listenOf(unit)!]).map((c) => [c.tile.id, [0, 1, 2, 3].map((ear) => boardOf(c.tile, s, tierAt(ear, c.lv)))]));
   const part = unitPart(unit)!;
   return LESSONS.filter((l) => part.unit.lessons[l]).map((l) => TIERS.map((t) => SEEDS.map((s) => shape(lessonDeck(part, l, s, t)))));
 }
@@ -54,7 +57,9 @@ describe('ききみみ content versions', () => {
   it('every game the phone deals has one: each level’s quiz, スピード はしご, each unit’s lessons, the tournament over every level (pool.ts gameCvOf)', () => {
     const levels = Object.keys(INDEX.units).filter((u) => /^\d+$/.test(u));
     const units = INDEX.paths.map((p) => p[0]);
-    expect(Object.keys(INDEX.games).sort()).toEqual([...levels.map((l) => `quiz:${l}`), 'ladder:ladder', ...units.map((u) => `lesson:${u}`), 'taikai:all'].sort());
+    const files = (gm: string) => Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === gm);
+    expect(Object.keys(INDEX.games).sort()).toEqual([...levels.map((l) => `quiz:${l}`), 'ladder:ladder', ...units.map((u) => `lesson:${u}`), 'taikai:all',
+      ...files('tile').map((u) => `tile:${u}`)].sort());
     for (const [key, cv] of Object.entries(INDEX.games)) {
       const [gm, unit] = key.split(':');
       expect(cv).toMatch(/^[0-9a-f]{6}$/);

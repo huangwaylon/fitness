@@ -8,6 +8,7 @@ import { lessonL, stageLevel, type Lesson, type UnitPlay } from '#lib/kikimimi/l
 import { taikaiRow, tierLevel, type Trophy } from '#lib/kikimimi/games/taikai/def.ts';
 import { checkRow, placementOf, type Placement } from '#lib/kikimimi/games/check/def.ts';
 import { checkItemOf } from '#lib/kikimimi/games/check/source.ts';
+import { LANES } from '#lib/kikimimi/round/registry.ts';
 import { itemsOf } from './decks.ts';
 import { rememberGame } from './progress.svelte.ts';
 
@@ -55,7 +56,9 @@ export class GameRecorder {
     v: QuizView, now: number, done: boolean, o: { lesson: { unit: UnitPlay; lesson: Lesson } | null; practicing: boolean; taikai?: { trophy: Trophy | null; tier: number } | null }
   ): ListenRow | null {
     if (!v.g || this.#recordedG === v.g || (v.gm === 'check' && !done)) return null;
-    const r = listenAnswers(itemsOf(v), v.answers, v.had, this.#rp, done);
+    // a lane's game whose answers aren't choices: its own record, its game on the row
+    const own = LANES.of(v.gm)?.record;
+    const r = own ? own(v, itemsOf(v), this.#rp, done) : listenAnswers(itemsOf(v), v.answers, v.had, this.#rp, done);
     if (!r.length) return null;
     this.#recordedG = v.g;
     if (v.gm === 'check') return { d: localDateAt(now), g: v.g, n: 1, ms: this.#ms(now), r, ...checkRow(checkPlacement(r)) };
@@ -63,7 +66,7 @@ export class GameRecorder {
     const ls = o.lesson, n = Math.max(1, Math.min(3, v.players.length));
     const unit = ls ? { u: ls.unit.id, l: lessonL(ls.lesson), ...(n > 1 && !v.vs && { tm: Math.min(6, v.teamFirst) }) } : null;
     return {
-      d: localDateAt(now), g: v.g, ...unit, lv: ls ? stageLevel(ls.unit.stage) : v.lv, n,
+      d: localDateAt(now), g: v.g, ...(own && v.gm && { gm: v.gm }), ...unit, lv: ls ? stageLevel(ls.unit.stage) : v.lv, n,
       ms: this.#ms(now), ...(o.practicing && { p: 1 as const }), ...(o.taikai && (o.taikai.trophy ? taikaiRow(o.taikai.trophy, o.taikai.tier) : { gm: 'taikai', lv: tierLevel(o.taikai.tier) })), r
     };
   }

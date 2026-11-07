@@ -62,5 +62,29 @@
  "taikai:all": {
   "cv": "631d74",
   "decks": "23ecbf4401f431bd"
+ },
+ "tile:s1-tile-a": {
+  "cv": "997904",
+  "decks": "624905025d0b61e9"
+ },
+ "tile:s1-tile-b": {
+  "cv": "47b7da",
+  "decks": "b155ac9b63b50de0"
+ },
+ "tile:s2-tile": {
+  "cv": "5985ad",
+  "decks": "ca44979bc6d5feda"
+ },
+ "tile:s2-tile-bank": {
+  "cv": "8cabe6",
+  "decks": "0c5170afa8a33373"
+ },
+ "tile:s3-tile": {
+  "cv": "cd5402",
+  "decks": "5a929fd32c6cb777"
+ },
+ "tile:s3-tile-bank": {
+  "cv": "ee48dd",
+  "decks": "3cc935a7de5d7366"
  }
 }
