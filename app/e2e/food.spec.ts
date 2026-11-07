@@ -1347,6 +1347,8 @@ test('a row opened in place: 焼き ×2 and 追加 in the search; くわしく c
   const add = s.locator('[data-food-open-add]');
   await expect(add).toBeInViewport({ ratio: 1 }); // kept on the screen
   await expect(add).toContainText('558 kcal');
+  await expect(pork.locator('.kc')).toBeHidden(); // the row's own 生 298 kcal steps aside: nothing contradicts
+  await expect(pork.locator('[data-states]')).toBeHidden();
   await tap(add);
   await expect(added).toHaveCount(1);
   await expect(added.first()).toContainText('豚ロース 脂身つき 焼き');
