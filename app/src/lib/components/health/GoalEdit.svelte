@@ -2,6 +2,10 @@
   /** The one editor open, whichever card it's on: opening another closes it. */
   let openId = $state<number | null>(null);
   let nextId = 0;
+  /** The sheet closed: no editor open at the next opening. */
+  export function closeGoalEdit(): void {
+    openId = null;
+  }
 </script>
 
 <script lang="ts">

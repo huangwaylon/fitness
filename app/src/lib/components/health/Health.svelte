@@ -15,7 +15,7 @@
   // shown); either person sets either person's, the guest's phone none (shown read-only; it has no からだ cards).
   // The charts are read-only, computed on read from the store's model (model/health.ts); loaded with the popup, not with the island.
   import '#lib/i18n/kenkou.ts'; // the tab's strings, loaded with it
-  import type { Snippet } from 'svelte';
+  import { untrack, type Snippet } from 'svelte';
   import type { PersonId } from '#lib/types.ts';
   import { CARDS, GROUPS, healthSeries, metricSeries, PERIODS, type Group, type Metric } from '#lib/model/health.ts';
   import { week } from '#lib/store/week.svelte.ts';
@@ -32,7 +32,8 @@
   import { RangePager } from './pager.svelte.ts';
   import { isGuest } from '#lib/ui-state/viewer.ts';
 
-  let { lead = $bindable(null) }: { lead?: Snippet | null } = $props();
+  /** `opens`: the sheet's openings (HealthSheet keeps this mounted between them): each one starts again from `last`. */
+  let { lead = $bindable(null), opens = 0 }: { lead?: Snippet | null; opens?: number } = $props();
 
   const m = $derived(week.model);
   const view = $derived(week.view);
@@ -74,6 +75,20 @@
     picked = last.who = p;
     pager.sel = null;
   }
+
+  // svelte-ignore state_referenced_locally
+  let opened = opens;
+  $effect.pre(() => {
+    if (opens === opened) return;
+    opened = opens;
+    untrack(() => {
+      period = last.period;
+      pickedGroup = last.group;
+      picked = last.who;
+      pager.anchor = null;
+      pager.reset();
+    });
+  });
 
   $effect(() => {
     lead = hs ? whoPill : null;

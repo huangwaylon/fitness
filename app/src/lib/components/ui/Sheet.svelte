@@ -18,7 +18,8 @@
   // `focusField` puts the keyboard up on its first field.
   // `keep`: the content stays mounted after a close (in the closed dialog: not drawn, no focus, no taps), so the next
   // opening shows it at once instead of building it again; a few at most (ui-state/keptSheets.ts: the least recently
-  // opened let go, all of them on pagehide or a lost WebGL context). The sheet resets what each opening resets itself.
+  // opened let go, all of them on pagehide or a lost WebGL context; `keep` false while closed lets it go too). The sheet
+  // resets what each opening resets itself.
   // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts).
   // A full-height sheet (top, pop, full) joins ui.up once its open animation is done: the island hides under it then.
   import { untrack, type Snippet } from 'svelte';
@@ -64,6 +65,10 @@
   /** The content is mounted while closed (`keep`, from its first opening until let go). */
   let kept = $state(false);
   $effect(() => () => unkeepSheet(id));
+  // (`keep` turned off while closed, a level holding a map: let go now)
+  $effect(() => {
+    if (!keep && kept && !open) untrack(() => ((kept = false), unkeepSheet(id)));
+  });
 
   $effect(() => {
     if (!open) return;
