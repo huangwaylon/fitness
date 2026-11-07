@@ -16,8 +16,8 @@
   "decks": "40a579a98762d069"
  },
  "call:s2-call-c": {
-  "cv": "8c92c6",
-  "decks": "835d69fcf7bb4959"
+  "cv": "a1de76",
+  "decks": "ad9dcd26430d6573"
  },
  "call:s3-call": {
   "cv": "fef082",
@@ -34,6 +34,10 @@
  "lesson:ev-wedding": {
   "cv": "773579",
   "decks": "79b86b4b4023ee6f"
+ },
+ "lesson:fd-dinner": {
+  "cv": "9fd612",
+  "decks": "043a40b83df60675"
  },
  "lesson:fd-order": {
   "cv": "4625b7",
