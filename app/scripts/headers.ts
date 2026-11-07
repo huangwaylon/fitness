@@ -14,6 +14,8 @@
 //   layout's had run (the startup review). Its chunk and its static imports, transitively, as modulepreload; its
 //   stylesheets as preload, crossorigin as Vite asks for them (else the preload goes unused and they come twice).
 //   (Before 404.html is copied from it: `npm run build`.)
+// - The models (`*.glb`, ~1,800 files, 51 MB) go as application/x-protobuf: Cloudflare compresses only the types on its
+//   list, and model/gltf-binary isn't (gzip takes 28 % off them); the loaders read the bytes whatever the type.
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -81,6 +83,9 @@ ${base}/food-img/*.webp
 
 ${base}/stt/:dir/*
   Cache-Control: public, max-age=31536000, immutable
+
+${base}/*.glb
+  Content-Type: application/x-protobuf
 `;
 writeFileSync(join(root, '_headers'), headers);
 console.log(`build-pages/_headers: ${headers.split('\n').length} lines`);

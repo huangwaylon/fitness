@@ -23,7 +23,7 @@ this workflow is the gate). CI needs two repo secrets: `CLOUDFLARE_ACCOUNT_ID` a
 resources: that one account; then `gh secret set CLOUDFLARE_API_TOKEN` and `gh secret set
 CLOUDFLARE_ACCOUNT_ID`). By hand, from `app/`: `npm run build`, then `npx wrangler pages deploy build-pages
 --project-name island-fund --branch main` (any `--branch` but `main` is a preview at `<branch>.island-fund.pages.dev`).
-The headers (CSP, nosniff, no-referrer, Permissions-Policy, HSTS, the immutable cache) are `build-pages/_headers`,
+The headers (CSP, nosniff, no-referrer, Permissions-Policy, HSTS, the immutable cache, the models as application/x-protobuf so Cloudflare compresses them) are `build-pages/_headers`,
 written by the build ([testing.md](testing.md) "The headers"). The build also copies `index.html` to `404.html` on
 purpose: with a top-level `404.html` Pages answers a missing file (an old build's chunk, an asset) with a real 404, not
 its single-page fallback's `index.html` and 200, which the app's stale-chunk reload relies on.
