@@ -8,7 +8,7 @@ unit: s1-call-b
 game: call
 stage: 2
 track: life
-seeds: [14, 26, 27, 32, 36, 48, 51]
+seeds: [13, 14, 16, 26, 27, 32, 36, 37, 48, 49, 50, 51]
 features: { primary: self-repair, review: weak-form }
 cando: "電話で 注文や 予約の 確認と 変更を 聞き取って メモできる"
 status: draft
@@ -63,3 +63,28 @@ items:
           - { ask: "取り置きは いつまで？", options: ["金曜 6時", "土曜", "金曜 4時"], answer: 0, cja: ["金曜の6時", "土曜", "金曜の4時"] }
     note: "Actually, no の あとが 本当の 期限"
     tags: { seed: 26, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, flap] }
+
+  - kind: call
+    id: call-neighbor-cat
+    ask: "隣の 人から 電話。メモしよう"
+    ctx: "夜、旅行中の隣の人から電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: tom-nook, en: "Hey, it's Tom from next door. Sorry to call so late. I hate to ask, but my flight's delayed till tomorrow.", tts: "Hey, it's Tom from nex' door. Sorry ta call so late. I hay' ta ask, but my flight's delayed till tomorrow.", ja: "もしもし、隣のトムです。遅くにすみません。頼みにくいんですが、飛行機が明日まで遅れてしまって。" }
+      - { who: me, en: "Oh, no! What do you need?", ja: "え、大変！ どうしたらいいですか？" }
+      - { who: tom-nook, en: "Would you mind feeding Mochi tonight? Just half a can. She gets the fish one, not the chicken.", tts: "Wouldja mind feedin' Mochi tonight? Jus' half a can. She gets the fish one, not the chicken.", ja: "今夜、モチにごはんをあげてもらえませんか？ 缶を半分だけ。チキンじゃなくて、魚のほうです。" }
+      - { who: me, en: "Sure, no problem. How do I get in?", ja: "いいですよ。どうやって入れば？" }
+      - { who: tom-nook, en: "The spare key's under the mat. Oh, wait, no. I moved it. It's in the flower pot by the door, the blue one.", ja: "合鍵はマットの下に…あ、違った。移したんだ。ドアの横の植木鉢の中です。青いほう。", repair: true }
+      - { who: tom-nook, en: "And just so you know, she'll act super hungry, but don't give her more. She's on a diet.", tts: "An' jus' so ya know, she'll act super hungry, but don't give 'er more. She's on a diet.", ja: "それと一応言っておくと、すごくお腹がすいたふりをしますが、それ以上あげないでください。ダイエット中なので。" }
+      - { who: me, en: "Ha! Got it. Half a can of fish, blue flower pot.", ja: "はは！ わかりました。魚の缶を半分、青い植木鉢ですね。" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "頼まれたのは猫のえさで、魚の缶を半分。鍵は Oh, wait, no で言い直した青い植木鉢の中。欲しがってもダイエット中なので、それ以上あげない。"
+        slots:
+          - { ask: "頼まれたのは？", options: ["猫に えさ", "植木に 水", "荷物の 受け取り"], answer: 0, cja: ["猫にえさをあげる", "植木に水をやる", "荷物を受け取る"] }
+          - { ask: "えさは？", options: ["魚を 半分", "チキンを 半分", "魚を 1缶"], answer: 0, cja: ["魚の缶を半分", "チキンの缶を半分", "魚の缶を1つ"] }
+          - { ask: "鍵は どこ？", options: ["青い 植木鉢", "マットの 下", "郵便受け"], answer: 0, cja: ["青い植木鉢の中", "マットの下", "郵便受けの中"] }
+          - { ask: "もっと 欲しがったら？", options: ["あげない", "少し あげる", "チキンを あげる"], answer: 0, cja: ["それ以上あげない", "少しだけあげる", "チキンをあげる"] }
+    note: "Oh, wait, no の あとが 本当の 鍵の 場所"
+    tags: { seed: 37, register: neighbour, pragmatic: indirect, conditions: [phone], features: [self-repair, elision] }
