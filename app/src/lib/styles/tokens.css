@@ -35,7 +35,7 @@
   --text: var(--c-ink); --text-soft: var(--c-ink-soft);
   --leaf-text: var(--c-leaf-text); /* green text on the themed panel / card (night: a light green, 5.8:1 on navy) */
   --coral-text: var(--c-coral-text); /* coral text on the themed panel / card (night: a light coral, 4.7:1 on the navy card) */
-  --dim: .78;                  /* a set-aside thing that is still read (an unpicked choice after the reveal, an away player): >= .75 */
+  --dim: .78;                  /* a set-aside thing that is still read (an away player): >= .75 */
   --focus: var(--c-ink);       /* focus ring: ink by day, cream at night (>= 3:1 on every surface) */
   --scrim: rgba(74, 58, 44, .32);
   --hl: color-mix(in srgb, var(--c-yuzu) 30%, transparent); /* a highlighted strip / pressed row (night: cream, yuzu over navy turns grey) */
@@ -135,7 +135,7 @@
        selected  --ctl-sel       NH yellow (yuzu) fill, ink text, keeps the edge
        disabled  --ctl-off       a sunk tan (night: navy), soft text, no edge, no lip
      Fixed-cream game objects (sheet close, keypad, back pill) use --sh-obj: always brown, every time of day. */
-  --ctl: var(--c-card); --ctl-sel: var(--c-yuzu); --ctl-off: #EAD7AC; --edge: var(--c-edge);
+  --c-sunk:#EAD7AC; --ctl: var(--c-card); --ctl-sel: var(--c-yuzu); --ctl-off: var(--c-sunk); --edge: var(--c-edge);
   --sh-ctl: inset 0 0 0 2px var(--edge), 0 var(--lip-h) 0 var(--edge);
   --sh-ctl-press: inset 0 0 0 2px var(--edge), 0 1px 0 var(--edge);
   --sh-obj: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge);

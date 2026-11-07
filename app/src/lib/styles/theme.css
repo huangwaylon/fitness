@@ -123,11 +123,13 @@ input, textarea, select, [data-kb-scroll] { scroll-margin-bottom: calc(var(--kb,
 /* ---------- an always-cream object (a bubble, a cream button, a transcript line, a legend, a scene's pill, 解説): cream at
    every time of day, so the theme's text colours inside it are put back to the day ones. Day-only --c-* text colours go on
    these alone; themed surfaces (the panel, a .card) take the theme ones (night: light on navy). A disabled cream button
-   keeps its cream fill, so its soft text is the day ink-soft (6:1), not night's light one. ---------- */
+   keeps its cream fill, so its soft text is the day ink-soft (6:1), not night's light one. The controls inside one (a
+   ticket's choices) take the day ones too: cream with the brown edge, sunk tan (ink on night's navy was 2:1). ---------- */
 .obj-cream, .btn.paper {
   --text: var(--c-ink); --text-soft: var(--c-ink-soft); --leaf-text: var(--c-leaf-text); --coral-text: var(--c-coral-text);
   --sky-text: var(--c-sky-text);
 }
+.obj-cream { --ctl: var(--c-card); --ctl-off: var(--c-sunk); --sh-ctl: var(--sh-obj); --sh-ctl-press: var(--sh-obj-press); }
 
 .titlebar { flex: none; position: relative; z-index: 2; margin-bottom: 4px; }
 /* a full-height sheet's NavBar (Sheet top / pop): rows scrolling up fade out under it, not cut at a hard edge */
