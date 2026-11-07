@@ -20,7 +20,7 @@ cando:
   catch: どこへ・何時に・何を 持っていくか
   short: 週末の 行き先と 集合が わかる
   en: "I can follow friends deciding where to go this weekend, over outdoor noise at natural speed, and catch where we're going, what time we're meeting, and what to bring."
-status: draft
+status: voiced
 letter:
   en: "Lemme guess: you caught every plan this weekend! Rain on Saturday, a crazy line on Sunday, and you still knew where to meet and what to bring. Next time, I'm down for anything you pick. We'll beat the crowds, or just play it by ear. See you at the park!"
   ja: "あててみようか。こんしゅうまつの よてい、ぜんぶ ききとれたでしょ！ どようは あめ、にちようは すごい ぎょうれつ。それでも どこで あうか、なにを もっていくか、ちゃんと わかってた。こんどは きみが きめた ところなら どこでも いくよ。こむ まえに いくか、その ときの きぶんで きめよう。こうえんで まってるね！"
@@ -465,6 +465,7 @@ items:
     voice: us
     cast: us-m4
     en: "Ramen after? I'm down."
+    tts: "Rah-men after? I'm down."
     ja: "そのあとラーメン？ いいね、行く。"
     note: "down は「ダウン」と はっきり。done は 短い「ダン」"
     choices: ["I'm down", "I'm done", "I'm downtown"]

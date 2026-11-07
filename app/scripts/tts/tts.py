@@ -107,6 +107,10 @@ FOLD = [(r"\bgonna\b", 'going to'), (r"\bwanna\b", 'want to'), (r"\bgotta\b", 'g
         (r"\bmee-?kahn\b|\bmekon\b", 'mikan'), (r"\bmissing tea\b", 'missing t'), (r"\btwo teas\b", "two t's"), (r"\bwhat'dja\b", 'what did you'), (r"\bwhat'd\b", 'what did'),
         (r"\bdon'tcha\b", "don't you"), (r"\bopen in a\b", 'opening a'),(r"\badviser", 'advisor'), (r"\bkm/h\b", 'kilometres an hour'), (r"\bkm\b", 'kilometres'),
         (r"\bholden\b", 'holding'),  # holdin' as whisper writes it
+        # wave 2's respellings (ta, fer, yer, meetcha, aboutcha) and names whisper spells its own way (Marshall, Kid
+        # for Kidd, wait list)
+        (r"\bta\b", 'to'), (r"\bfer\b", 'for'), (r"\byer\b", 'your'), (r"\bmeetcha\b", 'meet you'),
+        (r"\baboutcha\b", 'about you'), (r"\bmarshall\b", 'marshal'), (r"\bkidd\b", 'kid'), (r"\bwait list\b", 'waitlist'),
         (r"\bbells\b", 'bell'), (r"\bokay\b", 'ok')]
 # not "content": articles and fillers (a dropped "the" or an added "oh" isn't a mishearing of the line)
 MINOR = {'a', 'an', 'the', 'um', 'uh', 'er', 'ah', 'aw', 'oh', 'hm', 'hmm', 'mm', 'so', 'well'}
@@ -117,7 +121,7 @@ def normaliser():
     norm = EnglishTextNormalizer()
 
     def n(t):
-        t = t.lower().replace('’', "'").replace('—', ', ').replace('…', '. ')
+        t = t.lower().replace('’', "'").replace('—', ', ').replace('…', '. ').replace('...', '. ')
         for a, b in FOLD:
             t = re.sub(a, b, t)
         t = norm(re.sub(r'\b(\d{1,2})[:.](\d{2})\b', r'\1\2', t))  # 2:15 and "two fifteen" both 215
