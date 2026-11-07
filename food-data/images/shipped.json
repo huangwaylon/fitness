@@ -25848,6 +25848,45 @@
 "checked": false
 },
 {
+"key": "mext-06131",
+"ja": "だいこん 葉 ゆで",
+"desc": "boiled daikon leaves: chopped dark green radish leaves and stems, soft, in a small dish",
+"items": [
+"mext:06131"
+],
+"roll": 0,
+"seed": 65374,
+"prompt": "1de3d23069",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06132",
+"ja": "だいこん 皮つき 生",
+"desc": "daikon radish: a long thick white radish with a pale green top, a cut piece showing crisp white flesh, skin on, raw",
+"items": [
+"mext:06132"
+],
+"roll": 0,
+"seed": 4932,
+"prompt": "427179c209",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06133",
+"ja": "だいこん 皮つき ゆで",
+"desc": "boiled daikon: thick round slices of radish, soft and translucent pale ivory, in a small bowl",
+"items": [
+"mext:06133"
+],
+"roll": 0,
+"seed": 29746,
+"prompt": "3b14024e9c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06134",
 "ja": "だいこん 生",
 "desc": "a whole long white Japanese daikon radish with green leafy top, a section cut into thick round slices",
@@ -25892,6 +25931,19 @@
 "checked": false
 },
 {
+"key": "mext-06137",
+"ja": "だいこん ぬかみそ漬",
+"desc": "daikon nukazuke: rice-bran pickled radish cut into half-moon slices, pale off-white and slightly translucent, in a small dish",
+"items": [
+"mext:06137"
+],
+"roll": 0,
+"seed": 63883,
+"prompt": "a503c91a21",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06138",
 "ja": "たくあん",
 "desc": "a few slices of takuan, bright yellow pickled daikon radish half-moons in a small dish",
@@ -25904,6 +25956,45 @@
 "seed": 69946,
 "prompt": "6b4425d08d",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06140",
+"ja": "だいこん 守口漬",
+"desc": "moriguchi-zuke: a very long thin radish pickled in sake lees, wrinkled glossy dark amber brown, coiled, with a few slices",
+"items": [
+"mext:06140"
+],
+"roll": 0,
+"seed": 24079,
+"prompt": "9d307048b1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06141",
+"ja": "だいこん べったら漬",
+"desc": "bettara-zuke: thick pieces of daikon pickled in rice koji, glistening translucent white with sticky white koji grains clinging, sliced in a small dish",
+"items": [
+"mext:06141"
+],
+"roll": 0,
+"seed": 13145,
+"prompt": "e00ea4c630",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06142",
+"ja": "だいこん みそ漬",
+"desc": "miso-pickled daikon: slices of radish pickle, firm and amber brown from miso, in a small dish",
+"items": [
+"mext:06142"
+],
+"roll": 0,
+"seed": 19971,
+"prompt": "d009103f8a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -25920,6 +26011,60 @@
 "checked": false
 },
 {
+"key": "mext-06144",
+"ja": "つまみな 生",
+"desc": "tsumamina: tiny greens seedlings, small round bright green leaves on thin white stems, a delicate bunch, raw",
+"items": [
+"mext:06144"
+],
+"roll": 0,
+"seed": 47990,
+"prompt": "0f5ac0755f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06145",
+"ja": "たいさい 生",
+"desc": "taisai: a loose bunch of Chinese greens with spoon-shaped glossy dark green leaves on thick white stems, raw",
+"items": [
+"mext:06145"
+],
+"roll": 0,
+"seed": 58080,
+"prompt": "cc72bfa5bd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06146",
+"ja": "たいさい 塩漬",
+"desc": "salt-pickled taisai: limp olive green leaves and pale stems, chopped and heaped in a small dish",
+"items": [
+"mext:06146",
+"mext:06255",
+"mext:06273"
+],
+"roll": 0,
+"seed": 57402,
+"prompt": "efc728a604",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06147",
+"ja": "たかな 生",
+"desc": "takana: a large mustard leaf, broad wrinkled green with a reddish purple tinge and a thick pale stem, raw",
+"items": [
+"mext:06147"
+],
+"roll": 0,
+"seed": 33100,
+"prompt": "eca531e9c2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06148",
 "ja": "たかな漬",
 "desc": "takana zuke, pickled mustard greens, dark olive-green chopped leaves in a small dish",
@@ -25929,6 +26074,19 @@
 "roll": 0,
 "seed": 76637,
 "prompt": "0a0869ceaf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06149",
+"ja": "たけのこ 生",
+"desc": "bamboo shoot: a whole conical shoot wrapped in brown hairy husks, one halved to show cream-white layered flesh with comb-like inner chambers, raw",
+"items": [
+"mext:06149"
+],
+"roll": 0,
+"seed": 45867,
+"prompt": "fc4c28a101",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -25970,6 +26128,32 @@
 "seed": 47412,
 "prompt": "2a7569263c",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06154",
+"ja": "たまねぎ 水さらし",
+"desc": "onion soaked in water: thin crisp translucent white onion slices in a small dish",
+"items": [
+"mext:06154"
+],
+"roll": 0,
+"seed": 24055,
+"prompt": "25eb0ae04e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06155",
+"ja": "たまねぎ ゆで",
+"desc": "boiled onion: soft translucent pale onion wedges in a small dish",
+"items": [
+"mext:06155"
+],
+"roll": 0,
+"seed": 69537,
+"prompt": "0ff320c282",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -26026,6 +26210,19 @@
 "checked": false
 },
 {
+"key": "mext-06161",
+"ja": "チンゲンサイ ゆで",
+"desc": "boiled bok choy: small heads halved lengthwise, pale green spoon-shaped stems and bright green leaves, on a plate",
+"items": [
+"mext:06161"
+],
+"roll": 0,
+"seed": 46523,
+"prompt": "f0399f853c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06162",
 "ja": "つくし 生",
 "desc": "tsukushi horsetail shoots, slender pale brown segmented stems with cone-like caps",
@@ -26036,6 +26233,19 @@
 "roll": 0,
 "seed": 91233,
 "prompt": "f81a12a409",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06164",
+"ja": "つるな 生",
+"desc": "tsuruna: New Zealand spinach, thick fleshy triangular green leaves on trailing stems, raw",
+"items": [
+"mext:06164"
+],
+"roll": 0,
+"seed": 33908,
+"prompt": "0714831552",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -26064,6 +26274,58 @@
 "roll": 0,
 "seed": 81134,
 "prompt": "e8f3235108",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06169",
+"ja": "とうがらし 葉･果実 生",
+"desc": "chili pepper leaves: soft green leaves with small slender green chilies still attached on sprigs, raw",
+"items": [
+"mext:06169"
+],
+"roll": 0,
+"seed": 47401,
+"prompt": "811a8d6db8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06170",
+"ja": "とうがらし 葉･果実 油いため",
+"desc": "stir-fried chili leaves: wilted glossy dark green leaves with small green chilies mixed in, in a small dish",
+"items": [
+"mext:06170"
+],
+"roll": 0,
+"seed": 84876,
+"prompt": "d18a801189",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06171",
+"ja": "とうがらし 果実 生",
+"desc": "fresh red chili: long slender glossy red chili peppers, one cut to show pale seeds inside",
+"items": [
+"mext:06171"
+],
+"roll": 0,
+"seed": 79354,
+"prompt": "601bb269ae",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06172",
+"ja": "とうがらし 果実 乾",
+"desc": "dried red chili: small wrinkled shiny deep red dried chili peppers with stems, brittle, in a small dish",
+"items": [
+"mext:06172"
+],
+"roll": 0,
+"seed": 34208,
+"prompt": "ac8ef21c48",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -26105,6 +26367,32 @@
 "seed": 58073,
 "prompt": "3adb124d06",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06177",
+"ja": "スイートコーン 穂軸つき 冷凍",
+"desc": "frozen corn on the cob: short cob pieces with frosty pale yellow kernels and a dusting of ice",
+"items": [
+"mext:06177"
+],
+"roll": 0,
+"seed": 76111,
+"prompt": "d4e680a15f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06178",
+"ja": "スイートコーン カーネル 冷凍",
+"desc": "frozen corn kernels: loose frosty pale yellow kernels in a small bowl",
+"items": [
+"mext:06178"
+],
+"roll": 0,
+"seed": 10622,
+"prompt": "bc85ba9478",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -26201,6 +26489,20 @@
 "checked": false
 },
 {
+"key": "mext-06186",
+"ja": "トマト ミックスジュース 食塩添加",
+"desc": "tomato vegetable juice: a glass of thick opaque red-orange juice",
+"items": [
+"mext:06186",
+"mext:06341"
+],
+"roll": 0,
+"seed": 7126,
+"prompt": "10132cec57",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06187",
 "ja": "トレビス 生",
 "desc": "a head of radicchio (treviso), round tight leaves of deep red-purple with white veins",
@@ -26227,6 +26529,32 @@
 "checked": false
 },
 {
+"key": "mext-06189",
+"ja": "ながさきはくさい 生",
+"desc": "nagasaki hakusai: a non-heading Chinese cabbage, a flat spreading rosette of dark green crinkled leaves with pale stems, raw",
+"items": [
+"mext:06189"
+],
+"roll": 0,
+"seed": 70375,
+"prompt": "494f974b3f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06190",
+"ja": "ながさきはくさい ゆで",
+"desc": "boiled nagasaki hakusai: soft green leaves with pale stems, squeezed and chopped in a small dish",
+"items": [
+"mext:06190"
+],
+"roll": 0,
+"seed": 57346,
+"prompt": "94313506fd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06191",
 "ja": "なす 生",
 "desc": "two Japanese eggplants, glossy deep purple-black oval fruits with green caps, one cut showing white flesh",
@@ -26240,6 +26568,97 @@
 "checked": false
 },
 {
+"key": "mext-06192",
+"ja": "なす ゆで",
+"desc": "boiled eggplant: pieces with dull purple skin and soft pale grey-green flesh, in a small dish",
+"items": [
+"mext:06192"
+],
+"roll": 0,
+"seed": 22574,
+"prompt": "54f184a447",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06193",
+"ja": "べいなす 生",
+"desc": "American eggplant: a large plump oval glossy dark purple eggplant with a green cap, one cut to show white flesh, raw",
+"items": [
+"mext:06193"
+],
+"roll": 0,
+"seed": 78136,
+"prompt": "22cdea149e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06194",
+"ja": "べいなす 素揚げ",
+"desc": "deep-fried eggplant: thick halves fried without batter, glossy deep purple skin and soft golden flesh, on a plate",
+"items": [
+"mext:06194"
+],
+"roll": 0,
+"seed": 50331,
+"prompt": "a397f69b6e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06195",
+"ja": "なす 塩漬",
+"desc": "salt-pickled eggplant: small eggplants with vivid glossy deep purple-blue skin, sliced to show pale greenish flesh, in a small dish",
+"items": [
+"mext:06195"
+],
+"roll": 0,
+"seed": 16365,
+"prompt": "ccf70042b5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06196",
+"ja": "なす ぬかみそ漬",
+"desc": "eggplant nukazuke: rice-bran pickled eggplant slices, deep indigo skin and pale tan-green flesh, in a small dish",
+"items": [
+"mext:06196"
+],
+"roll": 0,
+"seed": 84311,
+"prompt": "f198fd59e5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06197",
+"ja": "なす こうじ漬",
+"desc": "koji-pickled eggplant: small purple eggplants coated in sticky white rice koji grains, in a small dish",
+"items": [
+"mext:06197"
+],
+"roll": 0,
+"seed": 69761,
+"prompt": "129718fba1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06198",
+"ja": "なす からし漬",
+"desc": "mustard-pickled eggplant: tiny whole eggplants coated in yellowish mustard paste, dark purple showing through, in a small dish",
+"items": [
+"mext:06198"
+],
+"roll": 0,
+"seed": 59920,
+"prompt": "9df7ac87b8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06199",
 "ja": "しば漬",
 "desc": "a small dish of shibazuke, finely chopped eggplant and cucumber pickled with red shiso, vivid purple-red",
@@ -26249,6 +26668,19 @@
 "roll": 0,
 "seed": 66822,
 "prompt": "51ab00210c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06200",
+"ja": "なずな 生",
+"desc": "nazuna: shepherd's purse, a flat rosette of deeply lobed toothed green leaves, raw",
+"items": [
+"mext:06200"
+],
+"roll": 0,
+"seed": 45362,
+"prompt": "41f6507c65",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -26267,6 +26699,32 @@
 "checked": false
 },
 {
+"key": "mext-06203",
+"ja": "洋種なばな 生",
+"desc": "western nabana: rapeseed greens, smooth blue-green leaves on thick stems with small yellow-green flower buds, raw",
+"items": [
+"mext:06203"
+],
+"roll": 0,
+"seed": 14792,
+"prompt": "5c3a05f34a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06204",
+"ja": "洋種なばな ゆで",
+"desc": "boiled nabana: soft bright green stems, leaves and buds cut into lengths in a small dish",
+"items": [
+"mext:06204"
+],
+"roll": 0,
+"seed": 52779,
+"prompt": "4bd1fad4f3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06205",
 "ja": "ゴーヤ（にがうり）",
 "desc": "a bitter melon (goya), a long bright green fruit covered with warty bumps, one cut showing white pith and seeds",
@@ -26276,6 +26734,19 @@
 "roll": 0,
 "seed": 60989,
 "prompt": "c1b37e741d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06206",
+"ja": "にがうり 油いため",
+"desc": "stir-fried bitter gourd: crescent slices of bumpy warty green goya, glossy with oil, on a small plate",
+"items": [
+"mext:06206"
+],
+"roll": 0,
+"seed": 35751,
+"prompt": "d9b4dd0b6b",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -26290,6 +26761,19 @@
 "seed": 29777,
 "prompt": "2f08b9da96",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06208",
+"ja": "にら ゆで",
+"desc": "boiled garlic chives: soft dark green flat blades cut into lengths in a small dish",
+"items": [
+"mext:06208"
+],
+"roll": 0,
+"seed": 61824,
+"prompt": "0831cc3a1b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -26319,6 +26803,19 @@
 "checked": false
 },
 {
+"key": "mext-06211",
+"ja": "葉にんじん 生",
+"desc": "carrot greens: a bunch of feathery finely divided green leaves on thin stems, raw",
+"items": [
+"mext:06211"
+],
+"roll": 0,
+"seed": 83813,
+"prompt": "97577a6889",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06212",
 "ja": "にんじん 皮つき 生",
 "desc": "two whole fresh orange carrots with a little green leafy top, smooth tapered roots",
@@ -26329,6 +26826,19 @@
 "seed": 70015,
 "prompt": "1f01ca32c6",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06213",
+"ja": "にんじん 皮つき ゆで",
+"desc": "boiled carrot: thick round orange carrot slices with skin, soft, in a small dish",
+"items": [
+"mext:06213"
+],
+"roll": 0,
+"seed": 57257,
+"prompt": "bb97f62865",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -27118,6 +27628,32 @@
 "checked": false
 },
 {
+"key": "mext-06334",
+"ja": "切干しだいこん ゆで",
+"desc": "rehydrated kiriboshi daikon: soft tangled pale beige dried radish shreds in a small bowl",
+"items": [
+"mext:06334"
+],
+"roll": 0,
+"seed": 1311,
+"prompt": "9ef09df16a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06335",
+"ja": "切干しだいこん 油いため",
+"desc": "stir-fried kiriboshi daikon: tangled tan radish shreds glossy with oil and lightly browned, on a small plate",
+"items": [
+"mext:06335"
+],
+"roll": 0,
+"seed": 19817,
+"prompt": "5d709a11c2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06336",
 "ja": "たまねぎ 油いため",
 "desc": "sauteed sliced onion, soft glossy translucent golden onion strips with browned edges on a plate",
@@ -27131,6 +27667,45 @@
 "checked": false
 },
 {
+"key": "mext-06337",
+"ja": "葉たまねぎ 生",
+"desc": "young onion: a small white bulb with long hollow green leaves, a couple together, raw",
+"items": [
+"mext:06337"
+],
+"roll": 0,
+"seed": 15109,
+"prompt": "e6f340aa7b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06338",
+"ja": "チンゲンサイ 油いため",
+"desc": "stir-fried bok choy: cut pale green stems and dark green leaves glossy with oil, on a small plate",
+"items": [
+"mext:06338"
+],
+"roll": 0,
+"seed": 80244,
+"prompt": "f20be1f7b9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06339",
+"ja": "スイートコーン 電子レンジ調理",
+"desc": "microwaved sweet corn: an ear of corn with plump glossy bright yellow kernels, on a plate",
+"items": [
+"mext:06339"
+],
+"roll": 0,
+"seed": 6466,
+"prompt": "5d000e6714",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06342",
 "ja": "なす 油いため",
 "desc": "stir-fried eggplant pieces, glossy purple skin and soft golden-brown flesh, on a plate",
@@ -27140,6 +27715,45 @@
 "roll": 0,
 "seed": 75277,
 "prompt": "e22c436b95",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06343",
+"ja": "なす 天ぷら",
+"desc": "eggplant tempura: fan-cut eggplant halves in light crisp pale golden batter, purple skin peeking through, on a plate",
+"items": [
+"mext:06343"
+],
+"roll": 0,
+"seed": 72539,
+"prompt": "4f72c70554",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06344",
+"ja": "にら 油いため",
+"desc": "stir-fried garlic chives: glossy wilted dark green flat chive lengths on a small plate",
+"items": [
+"mext:06344"
+],
+"roll": 0,
+"seed": 90072,
+"prompt": "d33e54826b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06345",
+"ja": "にんじん 皮なし 油いため",
+"desc": "stir-fried carrot: thin julienne strips of peeled orange carrot, glossy with oil, on a small plate",
+"items": [
+"mext:06345"
+],
+"roll": 0,
+"seed": 38510,
+"prompt": "e284943b8a",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27235,6 +27849,32 @@
 "checked": false
 },
 {
+"key": "mext-06368",
+"ja": "だいこん 皮なし 生 おろし汁",
+"desc": "grated daikon juice: watery thin cloudy whitish liquid in a small glass dish",
+"items": [
+"mext:06368"
+],
+"roll": 0,
+"seed": 87569,
+"prompt": "a86a401c19",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06369",
+"ja": "だいこん 皮なし 生 おろし水洗い",
+"desc": "grated daikon: a small fluffy mound of finely grated white radish, moist and squeezed, in a small dish",
+"items": [
+"mext:06369"
+],
+"roll": 0,
+"seed": 52711,
+"prompt": "97e000c0c6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-06370",
 "ja": "ドライトマト",
 "desc": "sun-dried tomatoes, flat wrinkled dark red dried tomato halves",
@@ -27270,6 +27910,58 @@
 "roll": 0,
 "seed": 70349,
 "prompt": "f9a6155a78",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06376",
+"ja": "ちぢみゆきな 生",
+"desc": "chijimi yukina: a flat rosette of thick dark green crinkled blistered leaves like savoy cabbage, raw",
+"items": [
+"mext:06376"
+],
+"roll": 0,
+"seed": 53847,
+"prompt": "8e06f0e09e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06377",
+"ja": "ちぢみゆきな ゆで",
+"desc": "boiled chijimi yukina: soft dark green crinkled leaves chopped into pieces in a small dish",
+"items": [
+"mext:06377"
+],
+"roll": 0,
+"seed": 2689,
+"prompt": "9128460615",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06378",
+"ja": "スイートコーン カーネル 冷凍 ゆで",
+"desc": "boiled corn kernels: plump moist bright yellow kernels in a small bowl",
+"items": [
+"mext:06378"
+],
+"roll": 0,
+"seed": 48944,
+"prompt": "103b811863",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06379",
+"ja": "スイートコーン カーネル 冷凍 油いため",
+"desc": "stir-fried corn kernels: glossy yellow kernels, some lightly browned, in a small dish",
+"items": [
+"mext:06379"
+],
+"roll": 0,
+"seed": 7686,
+"prompt": "e0ddb454ea",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -27335,6 +28027,32 @@
 "roll": 0,
 "seed": 57599,
 "prompt": "3c5a3bb105",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06389",
+"ja": "たまねぎ 油いため（あめ色）",
+"desc": "caramelized onion: thin onion slices cooked down to a soft sticky deep amber brown jam-like heap in a small dish",
+"items": [
+"mext:06389"
+],
+"roll": 0,
+"seed": 5289,
+"prompt": "e30bab78b4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-06390",
+"ja": "つるにんじん 生",
+"desc": "tsurunin: a pale tan wrinkled ringed tapering root like ginseng, a cut piece showing whitish flesh, raw",
+"items": [
+"mext:06390"
+],
+"roll": 0,
+"seed": 59116,
+"prompt": "abfb20904f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
