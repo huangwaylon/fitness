@@ -16,7 +16,7 @@
   // (back to the day). A meal's search also has ⚡ クイック (`onquicknew`: kcal only, eating out) under the つくる row, and a
   // kcal typed (「650」) offers itself as a quick entry above the catalog's rows (its row the form, its ＋ logged at once).
   import type { Who } from '#lib/types.ts';
-  import type { FoodCustom, FoodEntry } from '#lib/contract/food.ts';
+  import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
   import { entryKcal, searchFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
@@ -46,16 +46,18 @@
      *  its serving. */
     onquick?: (item: Item, g?: number, u?: string, f?: FoodEntry['f']) => void;
     oncustomquick?: (c: FoodCustom) => void;
-    /** The entries this trip added (oldest first), each taken back by ✕ (`onunadd`); おわり (`onfinish`) ends the trip. */
-    added?: readonly FoodEntry[];
-    onunadd?: (e: FoodEntry) => void;
+    /** What this trip added (oldest first: a meal's entries, a recipe's ingredients), each taken back by ✕ (`onunadd`);
+     *  完了 (`onfinish`) ends the trip; `addedHead` its heading's string (追加したもの（n）, 追加した材料（n）). */
+    added?: readonly { id: string; g: number; f: FoodSnap }[];
+    onunadd?: (id: string) => void;
+    addedHead?: string;
     onfinish?: () => void;
     /** クイック: the quick entry's form (`k`: a kcal typed), or one logged at once with that kcal (`onquicklog`). */
     onquicknew?: (k?: number) => void;
     onquicklog?: (k: number) => void;
   }
   let {
-    recent, onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd,
+    recent, onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, addedHead = 'food.addedHead',
     onfinish, onquicknew, onquicklog
   }: Props = $props();
 
@@ -187,7 +189,7 @@
   {#if onfinish && added.length}
     <section class="card added" data-food-added aria-labelledby="fs-added">
       <header>
-        <h3 id="fs-added">{t('food.addedHead', { n: added.length })}</h3>
+        <h3 id="fs-added">{t(addedHead, { n: added.length })}</h3>
         <button type="button" class="btn small" data-sfx="confirm" data-food-finish onclick={onfinish}>{t('food.finish')}</button>
       </header>
       <ul>
@@ -196,7 +198,7 @@
             <span class="nm">{e.f.n}</span>
             <small class="meta">{amountText(e)}</small>
             <b class="kc money">{kcalText(entryKcal(e))}</b>
-            <span class="un"><NavButton kind="close" label={t('food.unadd', { name: e.f.n })} sfx="undo" data-unadd={e.id} onclick={() => onunadd?.(e)} /></span>
+            <span class="un"><NavButton kind="close" label={t('food.unadd', { name: e.f.n })} sfx="undo" data-unadd={e.id} onclick={() => onunadd?.(e.id)} /></span>
           </li>
         {/each}
       </ul>

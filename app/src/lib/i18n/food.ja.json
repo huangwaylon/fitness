@@ -130,6 +130,7 @@
   "food.rcp.mine": "マイレシピ",
   "food.rcp.title": "レシピ",
   "food.rcp.addItem": "材料を追加",
+  "food.rcp.addedHead": "追加した材料（{n}）",
   "food.rcp.item": "材料",
   "food.rcp.itemAdd": "追加",
   "food.rcp.itemRemove": "削除",
