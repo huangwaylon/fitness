@@ -535,7 +535,7 @@ items:
     tags: { seed: 30, register: neighbour, pragmatic: literal, conditions: [phone, street], features: [h-drop, self-repair] }
     lines:
       - { who: cyd, cast: us-m4, en: "Hey, it's Cyd. Bad news. Tex's truck broke down, so he can't make it today.", tts: "Hey, it's Cyd. Bad news. Tex's truck broke down, so 'e can't make it today.", ja: "もしもし、サイドだけど。悪い知らせ。テックスのトラックが故障して、今日は来られないって。" }
-      - { who: lily, cast: us-f1, en: "Ugh. So when?", ja: "えー。じゃあいつ？" }
+      - { who: lily, cast: us-f1, en: "Ugh. So when?", ja: "えー。じゃあいつ？", cond: { kind: signal, level: light, bed: street } }
       - { who: cyd, cast: us-m4, en: "He said tomorrow, between 10 and 2. Wait, no, he said 12 and 4. Sorry. I'll have him text you when he's on his way.", tts: "He said tomorrow, between ten an' two. Wait, no, he said twelve an' four. Sorry. I'll have 'im text ya when 'e's on 'is way.", ja: "明日の10時から2時の間って…待って、違う、12時から4時って言ってた。ごめん。向かうときにメッセージさせるよ。" }
       - { who: lily, cast: us-f1, en: "Twelve to four. Okay.", ja: "12時から4時ね。わかりました。" }
   - id: rp-fast-m-pipe
