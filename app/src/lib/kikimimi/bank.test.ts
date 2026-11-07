@@ -368,7 +368,7 @@ describe('kikimimi bank', () => {
     expect(Object.keys(CLIPS).filter((id) => !ids.has(id))).toEqual([]);
   });
 
-  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB, a はつおん word 20 KB; the games’ packs under 62 MB, the stories’ 20 MB)', () => {
+  it('ships no other clips (no loose ones), and the clips stay small (each under 60 KB; level 4’s 80 KB, the アナウンス pack’s and やま’s 100 KB, ほし’s 2-4 sentences 160 KB, a ladder rung 80 KB, a story’s segment and a listening kind’s 100 KB, a はつおん word 20 KB; the games’ packs under 78 MB, the stories’ 20 MB)', () => {
     expect(existsSync(join(STATIC, 'audio/kikimimi')), 'the loose clips are gone (increment 9: the packs)').toBe(false);
     const rungs = new Set(RUNG_ITEMS.map((it) => it.id));
     const want = new Set([...[...BANK, ...UNIT_ITEMS].flatMap((it) => clipIds(it).flatMap((id) => [id, ...(it.lv <= 2 ? [`${id}-slow`] : [])])), ...rungs, ...STORY_IDS, ...LISTEN_IDS, ...PAIR_IDS]);
@@ -384,12 +384,12 @@ describe('kikimimi bank', () => {
     // Pages' 20,000 files no longer bind: past 50 MB the packs move to R2 behind PACK_BASE, docs/kikimimi-framework.md §6;
     // the bedtime stories, ~35 minutes of speech fetched a chapter at a time, have their own 20 MB beside them: 70 in all.
     // A stopgap (docs/curriculum-wave2.md §5, open question 3): wave 2's audio batches outgrow the 50 before R2 is
-    // enabled, so the line is raised to each batch's total and a little margin (A2: 59.3 MiB). Pages takes files of up to
+    // enabled, so the line is raised to each batch's total and a little margin (A2: 60.5 MiB, A3: 75.5). Pages takes files of up to
     // 25 MiB and a pack is ≤ 1.2 MB, so the total isn't Pages' limit; the real fix is W2-R, the packs on R2 behind
     // PACK_BASE, after which these lines measure what Pages serves.)
     const size = (story: boolean) => Object.entries(PACKS).filter(([, e]) => e.clips.some(([id]) => STORY_IDS.has(id)) === story)
       .reduce((n, [name, e]) => n + statSync(join(STATIC, 'audio/listen', packFile(name, e))).size, 0);
-    expect(size(false)).toBeLessThan(62 * 1024 * 1024);
+    expect(size(false)).toBeLessThan(78 * 1024 * 1024);
     expect(size(true)).toBeLessThan(20 * 1024 * 1024);
   });
 });

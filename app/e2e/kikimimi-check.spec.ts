@@ -5,6 +5,8 @@
 // page opens at もり as おまかせ (a tap overrides it, 「おまかせに もどす」 brings it back), and せってい shows the place
 // with 「みみ チェックを もういちど」. あとで instead: the hub with the check card, and the welcome never again. Screenshots
 // (KIKI_SHOTS=1) into /tmp/kikimimi-shots/check/. The logic tier (Playwright's Chromium is muted: nothing is heard).
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
@@ -35,6 +37,8 @@ async function guest(page: Page) {
 }
 /** やま's and ほし's items (levels 6 and 7): the ones a listener at もり misses. */
 const HARD = /^d?(ya|yb|vy|ho)-/;
+/** かわ's items (level 3) as this build ships them (kawa-b's breadth set among them since A2). */
+const LV3 = new Set((JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', 'lv3.json'), 'utf8')) as { items: { id: string }[] }).items.map((it) => it.id));
 
 test('the first run: welcome, the sound check, みみ チェック to its result; then おまかせ at the placed stage', async ({ page }) => {
   test.slow();
@@ -59,7 +63,7 @@ test('the first run: welcome, the sound check, みみ チェック to its result
     const id = await kiki(page, (k) => k.items()[k.view().i]);
     heard.push(id);
     if (i === 0) {
-      expect(id).toMatch(/^(p3|w3|n3|r3)-/); // (かわ's: level 3)
+      expect(LV3.has(id), id).toBe(true); // (かわ's: level 3)
       await snap(page, 'check-q', false);
     }
     const right = await kiki(page, (k) => k.right());

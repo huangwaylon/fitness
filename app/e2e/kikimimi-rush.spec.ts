@@ -1,12 +1,11 @@
-// すうじ ラッシュ (docs/curriculum-wave2.md §2.4): the mode shows once a rush file is `listened` (here only in the test:
-// the built index's s1-rush and s2-rush, flipped as they're served; the shipped files stay drafts till audio batch A3
-// and the listening check), on あそぶ's さくっと shelf; a solo queue of 8 (the counter, the line, the ticket's chips
+// すうじ ラッシュ (docs/curriculum-wave2.md §2.4): the mode shows once a rush file is `listened` (s1-rush and s2-rush, shipped
+// listened since audio batch A3), on あそぶ's さくっと shelf; a solo queue of 8 (the counter, the line, the ticket's chips
 // waiting for the order's end, one tap), one ticket wrong (the customer says it again, the combo starts over, the run
 // goes on), the results' served count, best combo, review and my row (gm rush, the picks as authored); then two phones
 // in co-op over the demo's relay: two registers, the customers alternating, each phone passing the other's; the team
-// serves them all. Unvoiced, each order plays as 2 s of silence (Playwright's Chromium is muted anyway). Screenshots
+// serves them all. The orders play their voiced length (A3), silent: Playwright's Chromium is muted. Screenshots
 // (KIKI_SHOTS=1) into /tmp/kikimimi-shots/rush/, by day and at night.
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -23,22 +22,6 @@ const PARTS = ['s1-rush', 's2-rush'].map((u) => JSON.parse(readFileSync(join(imp
   listen: { items: { id: string; options: string[]; answer: number }[] };
 });
 const RIGHT = new Map(PARTS.flatMap((p) => p.listen.items.map((it) => [it.id, it.options[it.answer]] as const)));
-
-/** The built index with both rush files `listened` (the fixture: the shipped files stay drafts): the chunk that holds
- *  the index (build-pages/, as served), its lines flipped as it's served. */
-const LINE = /("s[12]-rush":\[[`"']rush[`"'],[23],[`"'])draft/g;
-const CHUNKS = join(import.meta.dirname, '..', 'build-pages', '_app', 'immutable', 'chunks');
-/** (read when a test runs: `playwright test --list` loads this file before any build exists) */
-const indexChunk = () => readdirSync(CHUNKS).find((f) => f.endsWith('.js') && /"s1-rush":\[[`"']rush/.test(readFileSync(join(CHUNKS, f), 'utf8')));
-async function listened(ctx: BrowserContext) {
-  const INDEX_CHUNK = indexChunk();
-  expect(INDEX_CHUNK, 'the built index').toBeTruthy();
-  await ctx.route(`**/_app/immutable/chunks/${INDEX_CHUNK}`, async (route) => {
-    const res = await route.fetch();
-    const headers = Object.fromEntries(Object.entries(res.headers()).filter(([k]) => k !== 'content-encoding' && k !== 'content-length'));
-    await route.fulfill({ status: res.status(), headers, body: (await res.text()).replace(LINE, '$1listened') });
-  });
-}
 
 type Kiki = { view(): { phase: string; i: number; gm: string | null; roles: Record<string, number> }; items(): string[]; recorded(): { gm?: string; r: [string, number, number, number][] } | null };
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;
@@ -83,7 +66,6 @@ async function serve(p: Page, i: number, wrong = false) {
 
 test('solo: the mode once listened, a queue of 8 with one ticket wrong (the run goes on), the results and my row', async ({ context }) => {
   test.setTimeout(240_000);
-  await listened(context);
   const page = await phone(context, DAY);
   await toRush(page);
   await snap(page, 'mode');
@@ -133,7 +115,6 @@ test('solo: the mode once listened, a queue of 8 with one ticket wrong (the run 
 test('night: the counter and the ticket in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
   test.setTimeout(120_000);
-  await listened(context);
   const page = await phone(context, NIGHT);
   await toRush(page);
   await sheet(page).locator('[data-kiki-start]').click();
@@ -146,7 +127,6 @@ test('night: the counter and the ticket in the night palette', async ({ context 
 test('co-op on two phones: two registers, the customers alternating, the other phone passing; the team serves the line', async ({ browser }) => {
   test.setTimeout(300_000);
   const ctx = await browser.newContext();
-  await listened(ctx);
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');
   await a.bringToFront();
   await toRush(a);

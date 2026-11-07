@@ -103,7 +103,7 @@ describe('しずえの ニュース: the content', () => {
 describe('しずえの ニュース: the deal', () => {
   it('only listened files, at their place (やま)', () => {
     expect(filesOf('news', 6, { 'news-a': ['news', 4, 'listened'], 'news-b': ['news', 4, 'draft'] })).toEqual(['news-a']);
-    expect(filesOf('news', 6, INDEX.listen)).toEqual([]); // (this build: drafts until A3 and the listening check)
+    expect(filesOf('news', 6, INDEX.listen)).toEqual(['news-a', 'news-b']); // (this build: both listened since A3)
   });
 
   it('one bulletin a day: of its season or any, a weekday’s only on that day', () => {

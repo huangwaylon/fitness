@@ -445,8 +445,8 @@ Every game goes through `kikimimi/round/registry.ts` as a **lane**. The quiz, la
 - **Points:** a right ticket pays `questionPoints(ear, b)`, with b the place plus 0.5 for a correction (the tournament's rule), so しょうぶ (`modes.vs`) works against expectation. Co-op results count customers, not points.
 - **Co-op 「ふたつの レジ」:** `roles: 2`; customer i goes to register `i % 2`. The other phone answers `PASS` (99) as its window opens. PASS is valid, never right and has no row, so the team's `team.right` is the customers served. The partner's pick is shown on my chips at the reveal.
 - **Combo:** customers served right on the first listen in a row (mine without a replay; co-op the partner's as each reveal showed them, board.ts `HEARD`). A miss resets it, the customer says the line again (one replay at the reveal), and the line goes on. The results show the best combo.
-- **Audio:** none yet. Both files stay `draft`. Batch A3 voices them with `npm run audio:kikimimi -- --only '^rush-'` (240 clips; `--clips` lists them), the café, konbini and deli lines on the café bed and the ticket window on the station one. bank.test's every-clip rule now applies per file.
-- **e2e** kikimimi-rush (solo with one miss, night shots, co-op on two phones): both files flipped to `listened` as served; unvoiced, each order plays 2 s of silence.
+- **Audio (A3, 2026-11-07):** 240 clips, `npm run audio:kikimimi -- --only '^rush-'` (`--clips` lists them), clean takes (the bed is only tagged); both files `listened` (kikimimi.md "Audio"). bank.test's every-clip rule applies per file.
+- **e2e** kikimimi-rush (solo with one miss, night shots, co-op on two phones) on the shipped, listened files.
 
 ### しずえの ニュース as built (W2-5, 2026-11-07)
 
@@ -457,8 +457,8 @@ Every game goes through `kikimimi/round/registry.ts` as a **lane**. The quiz, la
 - **Tiers:** easy shows the answer and its `trap` only; else all four. The question count is the same for everyone (co-op shares one session), so easy never drops the detail.
 - **Rounds:** the bulletin plays before the gist, then the answers (+5 s to read). After the first play, NewsStage's story chips replay a segment (`segItem`, `game.hear`). The last reveal shows the note and the whole bulletin.
 - **Co-op:** everyone answers every question; 「ふたりで k / n」 is `team.all`. **Row:** `gm: 'news'`, `[card id, ok, choice as authored, rp]`.
-- **Audio (A3):** 291 clips: 235 bulletin lines and 56 weather sentences, in us-f4 at −18 LUFS like the stories (`--only '^news-'`). Both files stay `draft` until the listening check. Joins happen between sentences only, and they're judged on the iOS Simulator.
-- **e2e** kikimimi-news (solo, night shots, co-op): both files flipped to `listened` as served, the weather planted in `island.wx` on the `?date=` day (dry, then rain from 15:00, 17 °C).
+- **Audio (A3):** 291 clips: 235 bulletin lines and 56 weather sentences, in us-f4 at −18 LUFS like the stories (`--only '^news-'`). Voiced 2026-11-07 and both files `listened` (kikimimi.md "Audio"). Joins happen between sentences only, and they're judged on the iOS Simulator.
+- **e2e** kikimimi-news (solo, night shots, co-op) on the shipped, listened files, the weather planted in `island.wx` on the `?date=` day (dry, then rain from 15:00, 17 °C).
 
 ## 10. Risks
 

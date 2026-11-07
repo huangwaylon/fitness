@@ -1,13 +1,12 @@
-// しずえの ニュース (docs/curriculum-wave2.md §2.5): the mode shows once a news file is `listened` (here only in the test:
-// the built index's news-a and news-b, flipped as they're served; the shipped files stay drafts till audio batch A3 and
-// the listening check), on あそぶ's じっくり shelf, its page without places; a solo game on the day's bulletin with
+// しずえの ニュース (docs/curriculum-wave2.md §2.5): the mode shows once a news file is `listened` (news-a and news-b, shipped
+// listened since audio batch A3), on あそぶ's じっくり shelf, its page without places; a solo game on the day's bulletin with
 // today's weather pinned (a timeline planted in the phone's cache as the relay leaves it: dry, then rain from 15:00, a
 // high of 17 °C on the `?date=` day): しずえ at her desk reads it (the 放送中 lamp, its stories), then the gist right,
 // a story replayed, the detail wrong, 「傘は いる？」 right (rain later: いる); the last reveal's whole bulletin, the
 // results' review and my row (gm news, the choices as authored). Then two phones in co-op over the demo's relay: both
-// answer every question, the team's are those both got. Unvoiced, each line plays as 2 s of silence (Playwright's
-// Chromium is muted anyway). Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/news/, by day and at night.
-import { readFileSync, readdirSync } from 'node:fs';
+// answer every question, the team's are those both got. The lines play their voiced length (A3), silent:
+// Playwright's Chromium is muted. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/news/, by day and at night.
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -32,22 +31,6 @@ function rightOf(id: string): string {
   if (id.endsWith('-kasa')) return 'Yes, take one.';
   const b = BY_ID.get(id.replace(/-d$/, ''))!, q = id.endsWith('-d') ? b.detail! : b.gist!;
   return q.choices[q.answer];
-}
-
-/** The built index with both news files `listened` (the fixture: the shipped files stay drafts): the chunk that holds
- *  the index (build-pages/, as served), its lines flipped as it's served. */
-const LINE = /("news-[ab]":\[[`"']news[`"'],4,[`"'])draft/g;
-const CHUNKS = join(import.meta.dirname, '..', 'build-pages', '_app', 'immutable', 'chunks');
-/** (read when a test runs: `playwright test --list` loads this file before any build exists) */
-const indexChunk = () => readdirSync(CHUNKS).find((f) => f.endsWith('.js') && /"news-a":\[[`"']news/.test(readFileSync(join(CHUNKS, f), 'utf8')));
-async function listened(ctx: BrowserContext) {
-  const INDEX_CHUNK = indexChunk();
-  expect(INDEX_CHUNK, 'the built index').toBeTruthy();
-  await ctx.route(`**/_app/immutable/chunks/${INDEX_CHUNK}`, async (route) => {
-    const res = await route.fetch();
-    const headers = Object.fromEntries(Object.entries(res.headers()).filter(([k]) => k !== 'content-encoding' && k !== 'content-length'));
-    await route.fulfill({ status: res.status(), headers, body: (await res.text()).replace(LINE, '$1listened') });
-  });
 }
 
 /** Today's weather in the phone's cache, as the relay leaves it (live-protocol.ts Wx): the `?date=` day's hours from
@@ -97,7 +80,6 @@ async function answer(p: Page, i: number, wrong = false) {
 
 test('solo: the mode once listened, the day’s bulletin at しずえ’s desk with today’s weather, three questions, the results and my row', async ({ context }) => {
   test.setTimeout(240_000);
-  await listened(context);
   await weather(context);
   const page = await phone(context, DAY);
   await toNews(page);
@@ -153,7 +135,6 @@ test('solo: the mode once listened, the day’s bulletin at しずえ’s desk w
 test('night: the desk and a reveal in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
   test.setTimeout(120_000);
-  await listened(context);
   await weather(context, '2026-11-07T21:30');
   const page = await phone(context, NIGHT);
   await toNews(page);
@@ -167,7 +148,6 @@ test('night: the desk and a reveal in the night palette', async ({ context }) =>
 test('co-op on two phones: both answer every question; the team’s are the ones both got', async ({ browser }) => {
   test.setTimeout(240_000);
   const ctx = await browser.newContext();
-  await listened(ctx);
   await weather(ctx);
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');
   await a.bringToFront();

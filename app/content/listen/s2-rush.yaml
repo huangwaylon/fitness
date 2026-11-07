@@ -9,7 +9,7 @@ track: life
 seeds: [4, 5, 13, 24, 27, 51]
 features: { primary: numbers, review: self-repair }
 cando: "数字が2つ以上ある注文から、聞かれた数字を選び、言い直しを聞き分けられる"
-status: draft
+status: listened
 items:
   - kind: rush
     id: rush-capps-1

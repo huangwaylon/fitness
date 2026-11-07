@@ -9,7 +9,7 @@ track: life
 seeds: [4, 5, 13, 24, 27, 51]
 features: { primary: numbers, review: self-repair }
 cando: "注文や受付で、数・値段・時刻・番号を聞き取り、言い直しにも気づける"
-status: draft
+status: listened
 items:
   - kind: rush
     id: rush-latte-1
