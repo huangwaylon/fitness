@@ -635,6 +635,7 @@ lessons:
   check: [fn-order-pasta, fn-r-nuts, fn-m-almost-out, fn-n-tip, fn-garlic-wings, fn-r-share]
   oto: [fn-w-feel-like, fn-w-in-it, fn-w-share, fn-w-good-with, fn-w-cant-do, fn-w-split-it]
   jissen: [fn-fast-no-sushi, fn-fast-m-peanut, fn-fast-r-specials, fn-fast-n-share, fn-fast-veggie, fn-fast-m-italian]
+  tiles: [tile-din-feel-like-tonight, tile-din-nuts-in-it, tile-din-share-a-few, tile-din-good-with-whatever, tile-din-split-it, tile-din-mood-for-burgers]
   call: [call-dinner-six]
 tiers:
   fn-pick-place:

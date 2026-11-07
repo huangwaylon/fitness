@@ -647,6 +647,7 @@ lessons:
   check: [tk-row-f, tk-r-face-value, tk-m-two-limit, tk-n-orchestra, tk-will-call-next, tk-r-matinee]
   oto: [tk-w-aisle, tk-w-row-g, tk-w-matinee, tk-w-fifty, tk-w-standing, tk-w-doors]
   jissen: [tk-fast-balcony, tk-fast-m-box-office, tk-fast-r-together, tk-fast-n-show, tk-fast-three, tk-fast-m-account]
+  tiles: [tile-tix-aisle-seat, tile-tix-the-matinee, tile-tix-plus-fees, tile-tix-standing-room, tile-tix-four-ticket-limit, tile-tix-face-value]
   call: [call-matinee-meet]
 tiers:
   tk-sold-out:

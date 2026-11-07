@@ -646,6 +646,7 @@ lessons:
   check: [rp-dishwasher, rp-r-lock, rp-m-motor, rp-n-late, rp-hose-next, rp-r-heads-up]
   oto: [rp-w-have-him, rp-w-tell-her, rp-w-his-truck, rp-w-run-you, rp-w-worst-case, rp-w-between]
   jissen: [rp-fast-truck, rp-fast-m-pipe, rp-fast-r-window, rp-fast-n-number, rp-fast-code, rp-fast-m-friday]
+  tiles: [tile-rep-have-him-call, tile-rep-tell-her, tile-rep-his-truck, tile-rep-run-you, tile-rep-truck-broke-down, tile-rep-on-his-way]
   call: [call-dryer-window]
 tiers:
   rp-leak-window:
