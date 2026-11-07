@@ -147,7 +147,7 @@
 
 <style>
   .trip { flex: 1; min-height: 0; display: flex; flex-direction: column; position: relative; }
-  /* the title bar: over the photo on 日程 (‹ ✕ on smoked discs) till the photo scrolls away; in the flow on the other
+  /* the title bar: over the photo on 日程 (‹ ✕ the app's discs) till the photo scrolls away; in the flow on the other
      pages */
   .hd { flex: none; padding: var(--ui-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); position: relative; z-index: 6; background: var(--surface); }
   .hd.over { position: absolute; top: 0; left: 0; right: 0; background: none; transition: background-color var(--dur-quick); }

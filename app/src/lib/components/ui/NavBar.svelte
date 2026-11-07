@@ -5,7 +5,8 @@
   // level (けんこう's and ごはん's whose data pill); `trailing`: controls before ✕ (＋, ⚙). The sides share the row evenly
   // so the title stays centred, and a level's ‹ takes the place back (the caller passes no lead there).
   // One size on every sheet: 48px, the title 18 (--fs-talk, --font-ui 700), the NavButtons' 32px discs. `over`: laid
-  // over a photo (a trip's hero, a trail's map): no title shown (it stays the bar's name), ‹ ✕ on smoked discs.
+  // over a photo (a trip's hero, a trail's map): no title or band shown (it stays the bar's name), ‹ ✕ the same
+  // discs as everywhere.
   //   <NavBar title="記録" onback={…} onclose={…} />   <NavBar title="りょこう" onclose={…} trailing={add} />
   import type { Snippet } from 'svelte';
   import NavButton from './NavButton.svelte';
@@ -21,18 +22,17 @@
     lead?: Snippet | null;
     /** Right of the title, before ✕. */
     trailing?: Snippet | null;
-    /** On a photo: the title hidden, ‹ ✕ on smoked discs. */
+    /** On a photo: the title hidden (‹ ✕ unchanged). */
     over?: boolean;
   }
   let { title = '', onback = null, onclose = null, sfx = 'back', lead = null, trailing = null, over = false }: Props = $props();
   const led = $derived((!onback && !!lead) || !!trailing);
-  const look = $derived(over ? 'photo' : 'game');
 </script>
 
 <div class="navbar" class:led class:over>
-  <span class="side">{#if onback}<NavButton kind="back" onclick={onback} {sfx} {look} />{:else if lead}{@render lead()}{/if}</span>
+  <span class="side">{#if onback}<NavButton kind="back" onclick={onback} {sfx} />{:else if lead}{@render lead()}{/if}</span>
   {#if title}<h2 class="ttl" class:sr-only={over}>{title}</h2>{:else}<span></span>{/if}
-  <span class="side end">{#if trailing}{@render trailing()}{/if}{#if onclose}<NavButton kind="close" onclick={onclose} {sfx} {look} />{/if}</span>
+  <span class="side end">{#if trailing}{@render trailing()}{/if}{#if onclose}<NavButton kind="close" onclick={onclose} {sfx} />{/if}</span>
 </div>
 
 <style>

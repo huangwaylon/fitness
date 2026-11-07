@@ -45,6 +45,11 @@ describe('navigation', () => {
     const sized = files.filter((x) => /<Nav(Bar|Button)\b[^>]*\bsize=/.test(x.src)).map((x) => x.f);
     expect(sized).toEqual([]);
   });
+  it('one look: ‹ ✕ ⚙ are the game disc everywhere, over a photo or a map too (no smoked "photo" variant, no look prop)', () => {
+    const btn = files.find((x) => x.f.endsWith('ui/NavButton.svelte'))!.src;
+    expect(btn).not.toMatch(/\blook\??:|\.photo\b|backdrop-filter/);
+    expect(files.filter((x) => /<Nav(Bar|Button)\b[^>]*\blook=/.test(x.src)).map((x) => x.f)).toEqual([]);
+  });
   it('the title bar\'s lead / trailing slots hold compact controls only (a NavButton tool, a pill), never a chip of words like キャンセル', () => {
     const snippets = files.flatMap((x) => [...x.src.matchAll(/\b(?:lead|trailing)=\{(?:[^}]*?\?\s*)?(\w+)\s*(?::\s*null\s*)?\}/g)].map((m) => ({ f: x.f, name: m[1], src: x.src })));
     expect(snippets.length).toBeGreaterThan(0);

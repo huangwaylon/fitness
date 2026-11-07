@@ -570,8 +570,8 @@ One rule app-wide (the user, 2026-11-07: "x and back are not consistent"); `ui/n
   (never on a top level); they never swap or move. Backdrop tap and Esc also close.
 - **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc drawn in the 44px hit (`--ctl`,
   `--sh-ctl-s`: cream by day, navy at night), the glyph `ui/Icon` at stroke 2.4, the cue `back`. Its disc sits on the
-  container's content edge (NavBar pulls 6px out). `look="photo"`: the same disc smoked, over a photo or a map (a
-  trip's hero, a trail's map). A map's own controls (zoom, locate, layers, the save pill) are the same family: its
+  container's content edge (NavBar pulls 6px out). One look everywhere, over a photo or a map too (a trip's hero, a
+  trail's map): no smoked or photo variant. A map's own controls (zoom, locate, layers, the save pill) are the same family: its
   32px disc (or pill) drawn in the 44px hit, `--ctl` and `--sh-ctl-s` (the coordinator, 2026-11-07). `text`: ‹ grown into a pill, a page's way
   back (‹ 島へ in a room, ‹ 戻る on the board). No other ✕ or ‹: no typed ✕, no hand-drawn glyph, no 閉じる button.
   Floating cards (the museum's, the HHA letter, the say picker, the K.K. picker, a board note, ごはん's photo) put
@@ -624,8 +624,8 @@ nothing feature-local (`--wed-pink` → `--c-rose`, Pass's blue → `--c-sky`, h
   - `Sheet variant="full"`: the column edge to edge on `--surface`, `.kit` scope; inside: NavBar (its band pads 12 and
     `--ui-top` itself, or a PhotoBand `edge`), one scroller, TabBar (pads the home indicator).
     Default (paper) is the form sheet: `title`, fields, `footer` (保存), `focusField`.
-  - `NavBar` ("Navigation": 48px, title 18): `title`, `onback`, `onclose`, `lead`, `trailing`, `over` (on a photo).
-    `NavButton`: `kind` back / close / tool (`icon`, `label`, `pressed`), `look="photo"`, `text`; one size.
+  - `NavBar` ("Navigation": 48px, title 18): `title`, `onback`, `onclose`, `lead`, `trailing`, `over` (on a photo: hides the title only).
+    `NavButton`: `kind` back / close / tool (`icon`, `label`, `pressed`), `text`; one size, one look.
   - `TabBar`: `items {id,label,icon}`, `value`, `label`, `attr` (`data-<attr>`), `onpick`; a cream dock plate, the shown
     tab on a yuzu pill; 56px + the safe area.
   - `Chip` (`label`, `count`, `dot`, `selected`, `onclick`, `data-*`) in `ChipRow` (`label`; one scrolling row, end fade).
