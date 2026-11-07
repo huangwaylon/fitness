@@ -204,6 +204,12 @@ Every mode draws from these. The only new audio is はつおん's isolated pair 
 - **Co-op:** none in v1.
 - **Where:** 声に 出す, second tile.
 - **Row:** minutes only (`gm: 'kuri'`).
+- **As built (M4, 2026-11-07):**
+  - games/kuri/ (def.ts pure, lane.ts, mode.ts) and components/kikimimi/kuri/ (KuriPlay, KuriMic, KuriResults, board.ts); strings in i18n/kiki-kuri.*. Its LATER line brings its mode: shelf `koe`, `requires: 'mic'`, `gate()` = the mic on in せってい (and Safari's recogniser present when picked). 自動 without the model on the phone, or an unpaired relay, is known only at the round, which says so in Japanese with やめる.
+  - The run is at the mode page's おまかせ level (no places row: the level's items, not listening files). Each sentence is the unused eligible item (US, one voice, 5–16 words, clean; light conditions from もり) nearest its rung's syllables (8, 10 … 22). `GameDef.next`'s `done` now carries each answer and its replays (round/types.ts, session.ts).
+  - Answer `[hit, of, heard]` (three ints: a pair reads as the wager). Grade: ≥ 80% is said; `pts` 0, nothing scored. A take with nothing heard shows the reason, then 「もう一度話す」 or 「この文はとばす」 (a skip neither climbs nor counts as a miss). The take's cap is the clip × 2 + 2 s (≤ 15 s); the answer window has no limit.
+  - The reveal: the climb line, 大事な語 k / n, the sentence lit word by word (match.ts `align`, a contraction as its two words), the missed words, 聞こえた言葉, the Japanese (a reply's own, before 「→」), then `note`, else `why`. The results: 「ここまで n語」 (the longest sentence said) and 言えた文 k / n, only for you; the speaking span isn't kept yet.
+  - The row: `{ gm: 'kuri', r: [] }` (the lane records no answers; the recorder keeps a mic game's row as M2's), its minutes in きろく's 声に出す line only.
 
 ### 2.3 こたえて！ (say the reply)
 

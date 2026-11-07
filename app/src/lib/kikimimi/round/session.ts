@@ -616,7 +616,7 @@ export class RoundSession {
     const mine = gm.answers.get(this.me);
     const done = Array.from({ length: gm.n }, (_, i) => {
       const r = gm.deck.round(i), a = mine?.get(i);
-      return { id: r?.id ?? '', ok: !!a && gm.deck.grade(i, a.a, a.rp).ok };
+      return { id: r?.id ?? '', ok: !!a && gm.deck.grade(i, a.a, a.rp).ok, ...(a && { a: a.a, rp: a.rp }) };
     });
     return gm.def.next(gm.seed, opts, gm.goAt === undefined ? [] : done);
   }

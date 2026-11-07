@@ -29,11 +29,13 @@ describe('listenOf', () => {
     // the other member's summary carries neither
     expect(JSON.parse(listenSummaryJson(JSON.stringify(tile))!)).toEqual({ d: '2026-11-05', g: 'ab12', n: 2, ms: 180_000 });
   });
-  it('a bedtime story (STORY_GM): no answers, only its minutes; any other game needs one', () => {
+  it('a bedtime story (STORY_GM) and a mic game: no answers, only minutes; any other game needs one', () => {
     const story = { d: '2026-11-05', g: 'st12ab', gm: STORY_GM, u: 'st-johnny', lv: 4, n: 1, ms: 600_000, r: [] };
     expect(listenOf(story)).toEqual(story);
     expect(listenOf({ ...story, gm: undefined })).toBeNull();
     expect(listenOf({ ...story, gm: 'tile' })).toBeNull();
+    // くりかえし チャレンジ's (a mic game): minutes only too
+    expect(listenOf({ ...story, gm: 'kuri', u: undefined })).toEqual({ ...story, gm: 'kuri', u: undefined });
     expect(JSON.parse(listenSummaryJson(JSON.stringify(story))!)).toEqual({ d: '2026-11-05', g: 'st12ab', n: 1, ms: 600_000 });
   });
   it('a unit’s lesson (docs/curriculum-units.md §10): `l` 1-5 with `u`, `tm` 0-6 with `l`', () => {
