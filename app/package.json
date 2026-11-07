@@ -30,6 +30,7 @@
     "audio:kikimimi-words": "node scripts/kikimimi-words.ts",
     "kikimimi:levels": "node scripts/kikimimi-levels.ts",
     "kikimimi:packs": "node scripts/kikimimi-packs.ts",
+    "stt:models": "node scripts/stt-models.ts",
     "kikimimi:units-dry-run": "node scripts/kikimimi-units-dry-run.ts",
     "kikimimi:tiles": "node scripts/kikimimi-tiles.ts",
     "audio:kikimimi-beds": "node scripts/kikimimi-beds.ts",
@@ -55,6 +56,7 @@
     "unused:probe": "node scripts/unused-probe.ts"
   },
   "devDependencies": {
+    "@huggingface/transformers": "4.3.2",
     "@maplibre/maplibre-gl-style-spec": "^26.5.1",
     "@playwright/test": "^1.64.1",
     "@sveltejs/adapter-static": "^4.0.0",
@@ -83,5 +85,10 @@
   },
   "engines": {
     "node": ">=24"
+  },
+  "overrides": {
+    "onnxruntime-node": "file:./vendor/none",
+    "sharp": "file:./vendor/none",
+    "onnxruntime-common": "1.31.0-dev.20260911-2a43ec07e"
   }
 }

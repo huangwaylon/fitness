@@ -2,7 +2,8 @@
 // the log is off under automation otherwise), in the chromium-mic project: a fake mic fed one of our clips through a
 // getUserMedia shim (e2e/fixtures/mic/ladder-line.wav: sp-cat-2's slice of the ladder pack, `ffmpeg -i <clip>.m4a -ac 1
 // -ar 16000 -c:a pcm_s16le`), nothing played out loud, no network. Safari's recogniser is the stub (`localStorage['e2e.stt']`),
-// the relay's `/stt` this test's own answer. Every step once (the earphones skipped, whisper not there yet), then
+// the relay's `/stt` this test's own answer, whisper the stub too (nothing downloaded, no worker: lib/mic/backends/whisper.ts).
+// Every step once (the earphones skipped), then
 // 「結果を送信」: the batch reaches the relay's real log code with the `mic.*` events, numbers and closed sets only,
 // and nothing of what was "heard". Then a reopen: the 2b check alone.
 import { expect, test } from './fixtures.ts';
@@ -84,18 +85,20 @@ test('the mic probe: each step, its numbers to the log, never the heard text; a 
   await expect(probe.locator('[data-mic-ear]')).toHaveAttribute('data-mic-ear', 'bluetooth');
   await probe.locator('[data-mic-noear]').click();
 
-  // 4 whisper isn't there yet: said so, skipped
+  // 4 whisper on the phone: offered with its size, downloaded on the tap, tried on our 3 clips (decoded, never played)
   await at('whisper');
-  await expect(probe.locator('[data-mic-whisper]')).toHaveAttribute('data-mic-whisper', 'soon');
-  await probe.locator('[data-mic-next]').click();
+  await expect(probe.locator('[data-mic-whisper]')).toHaveAttribute('data-mic-whisper', 'ready');
+  await expect(probe).toContainText('70MB');
+  await probe.locator('[data-mic-dl]').click();
+  await expect(probe.locator('[data-mic-clips]')).toBeVisible();
 
-  // 5 Safari's recogniser (the stub) and 6 the relay's, each on the 3 sentences read aloud: a match % from the WER
-  for (const be of ['webkit', 'relay']) {
+  // 4 whisper, 5 Safari's recogniser (the stub) and 6 the relay's, each on the 3 sentences read aloud: a match % from the WER
+  for (const be of ['whisper', 'webkit', 'relay']) {
     await at(be);
     for (let i = 0; i < 3; i++) {
       await expect(probe.locator('[data-mic-line]')).toHaveAttribute('data-mic-line', ['sp-cat-2', 'sp-half-nine-2', 'sp-onions-2'][i]);
       await probe.locator('[data-mic-talk]').click();
-      if (be === 'relay') {
+      if (be !== 'webkit') {
         // (stopped once 2 s are in: a take of the clip, not of nothing)
         await expect(probe.locator('[data-mic-listening]')).toHaveAttribute('data-mic-secs', '2');
         await probe.locator('[data-mic-stop]').click();
@@ -111,14 +114,21 @@ test('the mic probe: each step, its numbers to the log, never the heard text; a 
   await at('result');
   await expect(probe.locator('[data-mic-row="none"]')).toContainText('ふつう');
   await expect(probe.locator('[data-mic-row="relay"]')).toContainText('一致');
+  await expect(probe.locator('[data-mic-row="whisper"]')).toContainText('一致');
   await probe.locator('[data-mic-send]').click();
   await expect(probe.locator('[data-mic-sent]')).toHaveAttribute('data-mic-sent', 'yes');
   const rows = logs.query({ since: 0, ev: 'mic.' }).rows;
   const count = (ev: string) => rows.filter((r) => r.ev === ev).length;
-  expect([count('mic.env'), count('mic.perm'), count('mic.duplex'), count('mic.stt')]).toEqual([1, 1, 2, 6]);
+  expect([count('mic.env'), count('mic.perm'), count('mic.duplex')]).toEqual([1, 1, 2]);
   expect(rows.find((r) => r.ev === 'mic.perm')?.d).toMatchObject({ st: 'granted', again: false });
   expect(rows.filter((r) => r.ev === 'mic.duplex').map((r) => [r.d.ear, r.d.aec, r.d.loud])).toEqual([['none', true, 'ok'], ['none', false, 'ok']]);
-  expect(rows.filter((r) => r.ev === 'mic.stt').every((r) => r.d.ok === true && typeof r.d.wer === 'number' && r.d.step === 'spoken')).toBe(true);
+  const stts = rows.filter((r) => r.ev === 'mic.stt'), at4 = (step: string) => stts.filter((r) => r.d.step === step);
+  expect(stts.every((r) => r.d.ok === true)).toBe(true);
+  expect(at4('spoken').map((r) => [String(r.d.be).replace(/^whisper-.*/, 'whisper'), typeof r.d.wer])).toEqual(['whisper', 'webkit', 'relay'].flatMap((b) => Array(3).fill([b, 'number'])));
+  // the download (the stub's: 0 MB), a load per device (WebGPU when a Worker has it, then WASM) and our 3 clips on each
+  expect(at4('dl').map((r) => [r.d.be, r.d.model, r.d.mb])).toEqual([['whisper-wasm', 'tiny.en', 0]]);
+  expect(at4('load').length).toBeGreaterThanOrEqual(1);
+  expect(at4('clip').map((r) => typeof r.d.wer)).toEqual(Array(3 * at4('load').length).fill('number'));
   expect(bodies.join('\n')).not.toContain('pineapple');
 
   // a reopen: the probe offers the 2b check, which asks and sends one mic.perm (again)

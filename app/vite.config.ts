@@ -153,6 +153,26 @@ const mapLibreNames: Plugin = {
   }
 };
 
+/** ききみみ's recogniser (lib/mic/backends/whisper.worker.ts: transformers.js and the ONNX runtime's JS, ~1 MB) under a
+ *  stable name (`_app/immutable/workers/stt.<hash>.js`, a split chunk `workers/chunks/stt.<hash>.js`), so the service
+ *  worker leaves it out of its precache and serves it from the recogniser's own cache (caches.ts isStt). A worker's
+ *  build has its own output names (Kit's `worker` options); this wraps them. */
+const STT_WORKER = /\/src\/lib\/mic\/backends\/whisper\.worker\.ts$/;
+const sttNames: Plugin = {
+  name: 'stt-names',
+  outputOptions(o) {
+    const entry = o.entryFileNames, chunk = o.chunkFileNames;
+    if (typeof entry !== 'string' || typeof chunk !== 'string' || !entry.endsWith('/workers/[name]-[hash].js') || !chunk.endsWith('/workers/chunks/[hash].js')) throw new Error("vite.config.ts stt-names: Kit's worker file names changed; recheck the recogniser's names");
+    const ours = (c: { facadeModuleId?: string | null; moduleIds?: readonly string[] }) =>
+      STT_WORKER.test(c.facadeModuleId ?? '') || !!c.moduleIds?.some((id) => id.includes('/node_modules/@huggingface/transformers/') || id.includes('/node_modules/onnxruntime-'));
+    return {
+      ...o,
+      entryFileNames: (c) => (ours(c) ? entry.replace('[name]-[hash]', 'stt.[hash]') : entry),
+      chunkFileNames: (c) => (ours(c) ? chunk.replace('[hash]', 'stt.[hash]') : chunk)
+    };
+  }
+};
+
 // A static SPA (GitHub Pages). The backend is the relay: the record at its /api (lib/sync/transport.ts), the room at /room.
 // Output goes to build-pages/.
 export default defineConfig({
@@ -192,6 +212,11 @@ export default defineConfig({
       }
     })
   ],
+  // The recogniser's worker (sttNames): the ONNX runtime's build that takes its wasm from where it's told
+  // (lib/mic/backends/whisper.worker.ts: `/stt/ort/<ver>/`), not the bundle's, which names its 27 MB wasm for Vite to
+  // emit (over Pages' 25 MiB a file, and into the precache).
+  resolve: { alias: [{ find: /^onnxruntime-web\/webgpu$/, replacement: `${import.meta.dirname}/node_modules/onnxruntime-web/dist/ort.webgpu.min.mjs` }] },
+  worker: { format: 'es', plugins: () => [sttNames] },
   build: {
     // The two phones it's for: an iPhone 15 and an iPhone 16 (shipped with iOS 17 and 18), on Safari.
     target: ['safari17', 'ios17'],

@@ -289,6 +289,12 @@ jobs:
   # Once the gate is green, the build to Cloudflare Pages (https://island-fund.pages.dev, project island-fund: direct
   # upload, no Git integration, so this workflow stays the gate). Secrets CLOUDFLARE_API_TOKEN (Pages: Edit, this
   # account only) and CLOUDFLARE_ACCOUNT_ID (docs/ops/runbook.md §1); without them the job says so and deploys nothing.
+  # With the site: ききみみ's recogniser under stt/ (docs/kikimimi-mic.md §3.6, the stopgap till R2): whisper tiny.en and
+  # the ONNX runtime, ~67 MiB in parts ≤ 20 MiB, never in git nor in the `site` artifact, from an Actions cache keyed on
+  # their pins (app/src/lib/mic/models.ts), which scripts/stt-models.ts fills on a miss (Hugging Face at the pinned
+  # revision, npm; every file's sha256 checked; an older entry restored first, so only what changed is fetched). Pages
+  # uploads a file once (by its hash): an unchanged model costs a deploy a cache restore (~2 s). And app/functions/
+  # (functions/stt/[[path]].ts: R2 under /stt/ once the bucket is bound; till then it passes to the static files).
   deploy:
     needs: [build, checks, e2e-logic, e2e-changed]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -311,6 +317,16 @@ jobs:
           else
             echo "go=true" >> "$GITHUB_OUTPUT"
           fi
+      # (before the artifact: a checkout cleans its folder)
+      - if: steps.ready.outputs.go == 'true'
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            app/functions
+            app/scripts/stt-models.ts
+            app/src/lib/mic/models.ts
+          sparse-checkout-cone-mode: false
       - if: steps.ready.outputs.go == 'true'
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
@@ -321,7 +337,18 @@ jobs:
         with:
           node-version: 24
       - if: steps.ready.outputs.go == 'true'
-        run: npx --yes wrangler@4.156.0 pages deploy site --project-name island-fund --branch main --commit-hash "$GITHUB_SHA" --commit-message "${GITHUB_SHA::12}"
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: stt
+          key: stt-${{ hashFiles('app/src/lib/mic/models.ts', 'app/scripts/stt-models.ts') }}
+          restore-keys: stt-
+      - if: steps.ready.outputs.go == 'true'
+        run: |
+          node app/scripts/stt-models.ts --out ../stt
+          cp -R stt site/stt
+      - if: steps.ready.outputs.go == 'true'
+        working-directory: app
+        run: npx --yes wrangler@4.156.0 pages deploy ../site --project-name island-fund --branch main --commit-hash "$GITHUB_SHA" --commit-message "${GITHUB_SHA::12}"
       # the site answers this commit's build (the version SvelteKit polls), with its headers
       - if: steps.ready.outputs.go == 'true'
         run: |
@@ -333,4 +360,6 @@ jobs:
           done
           [ "$got" = "$want" ] || { echo "::error::island-fund.pages.dev answers build '$got', not '$want'"; exit 1; }
           curl -sSI --max-time 20 https://island-fund.pages.dev/ | grep -i '^content-security-policy:.*frame-ancestors' > /dev/null || { echo "::error::no CSP header on island-fund.pages.dev"; exit 1; }
-          echo "island-fund.pages.dev serves $want with its headers"
+          stt=$(node -p "require('./stt/manifest.json').id")
+          curl -sS --max-time 20 "https://island-fund.pages.dev/stt/manifest.json?t=$(date +%s)" | grep -qF "$stt" || { echo "::error::island-fund.pages.dev/stt/ doesn't serve $stt"; exit 1; }
+          echo "island-fund.pages.dev serves $want with its headers, and stt/ $stt"

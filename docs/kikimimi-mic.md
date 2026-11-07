@@ -390,6 +390,7 @@ Each game is a `GameDef` with a lazy `view` (W2-C2's slot), its deck pure and se
   - The page's transformers.js `env.customCache` serves each model file from our `island-stt-v1` cache, assembling the parts. A failed sha256 throws the file away.
   - **The home is R2**, behind a same-origin route `/stt/*`: its own Pages Function file (functions/stt/[[path]].ts), disjoint from W2-R's packs route, on the same bucket and binding (the user's one Cloudflare step, shared with W2-R).
   - **Stopgap if R2 isn't ready for M0:** the deploy job copies tiny.en int8's 3 parts (39 MiB) and ort's wasm from an Actions cache (filled by stt-models.ts from the pinned revision, sha256-checked) into build-pages/stt/. Never in git.
+  - **As built (M0w, 2026-11-07):** the stopgap is live. Pinned: whisper-tiny.en @ `2575352d`, onnxruntime-web `1.31.0-dev.20260914-8d85527a0` (package.json's overrides; transformers.js 4.3.2 exact, its Node-only deps replaced by an empty package). ort's asyncify wasm is 25.6 MiB, so it's in parts too: the download is **~70 MB** (the model 41 MB + the runtime 27 MB), and the probe says so. The worker is `workers/stt.<hash>.js`, 136 KB gz. The R2 switch: bind the bucket to the Pages project as `STT_BUCKET`, run `node scripts/stt-models.ts --r2 <bucket>`, then drop the deploy's copy step.
 - **The service worker:**
   - caches.ts gains `isStt` (`/stt/`, and the recogniser chunk named `stt.<hash>.js` by a `stt-names` rule in vite.config.ts, the maplibre-names pattern) and `STT_CACHE = 'island-stt-v1'`;
   - `precachable()` excludes both;
