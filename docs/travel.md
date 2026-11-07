@@ -20,9 +20,10 @@ The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Document
 
 Every trip is drawn by the unified kit (`TripView`; design.md §Trips): Okinawa's campsites and candidate layers and
 Seattle's hikes are pages and cards of it. A trip that's over is **read-only**, one rule for all (`when.ts`
-`readOnly`: its phase is past): its packing list is the seed as it was (`packing.frozen`: no op read from or sent to
-the relay; the trip note is still read), nothing else on it changes. Okinawa and Seattle are over; NZ will be after
-its flight home (its relay edits then no longer show).
+`readOnly`: its phase is past): its packing list is frozen as everyone left it (`packing.frozen`: the live list's
+fold of the record's rows, who packed what shown, no Tick or 編集, nothing sent; the user, 2026-11-07: "freeze final
+list"), nothing else on it changes. Okinawa and Seattle are over (no relay rows: their seed); NZ will be after its
+flight home.
 
 ## Content
 
@@ -74,7 +75,7 @@ types and their wire limits: [backend.md#events](backend.md#events) (`pack`, `pa
 | Caps | 300 `pack` rows a trip (past them the oldest removal of an op-made id is dropped, else `pack full`), 300 ticks a trip and person. |
 | The phone | `packFold` takes the record's rows as they are and judges this phone's queued ones by the record's rules, so the list shows what the record will. |
 
-The demo has a made-up note for each trip and うめ's ticks on NZ's list (the past trips' lists are frozen).
+The demo has a made-up note for each trip and うめ's ticks on NZ's list (a past trip's list shows it frozen).
 
 ## Maps
 

@@ -3,7 +3,7 @@
 // (a row's or a category's actions: 名前を変更 · 上へ · 下へ · 削除; 「＋ 追加」 under each category; a new
 // category; 削除 with とりけす, a category's asked first), リセット inside 編集 (mine only, asked first, とりけす), the
 // guest's own only, two tabs in step (the demo's tabs share the record's rows through localStorage, as phones share
-// the record), and a trip that's over: frozen (when.ts readOnly: the seed as it was, no ticks, no 編集, nothing sent:
+// the record), and a trip that's over: frozen (when.ts readOnly: its final list as everyone left it, no ticks, no 編集, nothing sent:
 // NZ after its dates, Okinawa and Seattle now). SHOTS=<dir>: screenshots of the list.
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { BASE, islandQuery } from './island.ts';
@@ -198,17 +198,22 @@ test('the guest ticks and adds, and changes only what it added', async ({ contex
 /** The packing ops this page has sent (the demo keeps its taps under `island-demo.*`, store/demo/backend.ts). */
 const sends = (p: Page) => p.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('island-demo.')).map((k) => localStorage.getItem(k) ?? '').join('').match(/"pack(_chk|_reset)?"/g)?.length ?? 0);
 
-test('a trip that’s over is frozen: the seed as it was (no one’s ticks, nothing added), no Tick, no 編集; a tap sends nothing', async ({ context }) => {
+test('a trip that’s over is frozen as everyone left it (each one’s ticks, what was added), no Tick, no 編集; a tap sends nothing', async ({ context }) => {
   const a = await open(context, 'A', AFTER);
   const list = a.locator('[data-pack]');
   await expect(list).toHaveAttribute('data-pack-frozen', 'true');
   await expect(a.locator('[data-pack-past]')).toHaveText('終わった旅');
-  await expect(list).toHaveAttribute('data-pack-total', String(TOTAL - 1));
-  await expect(item(a, '_demob001')).toHaveCount(0);
-  await expect(list.locator('[data-chip]')).toHaveCount(0);
+  await expect(list).toHaveAttribute('data-pack-total', String(TOTAL));
+  // the demo's record: うめ's sunscreen (added, ticked), her and A's ticks, each by their name
+  await expect(item(a, '_demob001')).toContainText('日焼け止め');
+  await expect(chip(a, '_demob001', 'B')).toBeVisible();
+  await expect(chip(a, 'nz-0-0', 'A')).toBeVisible();
+  await expect(chip(a, 'nz-0-0', 'B')).toBeVisible();
+  await expect(chip(a, 'nz-0-1', 'A')).toHaveCount(0);
   await expect(list.locator('button, input, [role="checkbox"], [role="progressbar"]')).toHaveCount(0);
   const before = await sends(a);
   await item(a, 'nz-0-1').click();
+  await item(a, '_demob001').click();
   expect(await sends(a)).toBe(before);
   await shot(a, 'pack-A-past');
 });
