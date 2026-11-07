@@ -474,22 +474,28 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   three. A keystroke's search over the 20k items takes ~0.7 ms in Playwright's WebKit on a Mac (expect 2–3× on an iPhone);
   its frame is the rows': the first 24 are drawn, the rest once the list's end is 400 px away (Chrome at 4× CPU, the
   first keystroke's input to frame: ~77 → ~58 ms).
-- **Amount:** the food's picture when it has one (160 px, centred, alt 「…の イメージ」, the イメージ badge at its top
-  left: every picture is generated; until its cell is in, the row's thumbnail, cached, scaled up: never a category tile
-  with the badge, the badge only over a picture; none: no picture area; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
-  min(100vw − 64, 360) px, with the badge, the name, the 「これは…」 line and 「AI生成の イメージ
-  …」; ✕, Esc or a tap outside close it, the focus back on the picture), its name, then (only with one) its everyday name and its
-  one line 「これは…」 (the data's `desc`); the food's values per 100 g; a food in its states, **じょうたい** above 量: a
-  chip per state (乾 生 ゆで … in process order) with its kcal at the amount it would take, picking one swaps the food
-  (its values follow; its name keeps the cut's words, 豚ロース 脂身つき 焼き, and the raw one's portions carry over through
-  the yield of a pair they share, 1枚（とんかつ用） 120 g → 90 g, 薄切り1枚 → 15 g: `foodUi.ts` stateItem; a portion label
-  it also has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き; typed grams stay; else its default), one leaf line for a meat's or fish's 生 (パックの重さなら 生) and for 乾 beside ゆで (ゆでる前の重さなら
-  乾); on my entry a ほぞん (`editFood` f), a recipe's ingredient alike; its portions as chips (100 g last), −/＋ by a whole portion for the things
-  counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece: おにぎり,
-  むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
-  grams are typed), a grams field (ml for a drink; typing grams leaves the portions); kcal and P/F/C/salt live; which
-  meal (a row above 量, clear of the foot's ついか); ついか, or ほぞん / けす for my entry (a いつもの's: 「変更はこの日だけです
-  （いつものはそのまま）」 above them) (けす at once, its banner's とりけす logs it again).
+- **Amount:** one screen on an iPhone 15 for the common case (豚ロース: picture, 3 states, 4 portions), in the order it's
+  decided. The head: the food's picture when it has one (104 px beside the name, alt 「…の イメージ」, the イメージ badge
+  at its top left: every picture is generated; until its cell is in, the row's thumbnail, cached, scaled up, the badge
+  only over a picture; none: the name the whole width; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
+  min(100vw − 64, 360) px, with the badge, the name, the 「これは…」 line and 「AI生成のイメージ…」; ✕, Esc or a tap
+  outside close it, the focus back on the picture), its name, then (only with one) its everyday name and its 「これは…」
+  line (the data's `desc`); at the name column's foot what this amount holds, live: the kcal at title size (the sheet's
+  loudest number) and 「100gあたり ▾」 (a serving's 「1食あたり」), the values per 100 g behind it, closed on every open;
+  under the picture's row P · F · C · 塩分 in g, label over value. Then **状態** (a food in its states): a chip per state
+  (乾 生 ゆで … in process order) with its kcal at the amount it would take, picking one swaps the food (its values
+  follow; its name keeps the cut's words, 豚ロース 脂身つき 焼き, and the raw one's portions carry over through the yield
+  of a pair they share, 1枚（とんかつ用） 120 g → 90 g, 薄切り1枚 → 15 g: `foodUi.ts` stateItem; a portion label it also
+  has stays picked at its own grams, 1/2枚 125 g 生 → 90 g 焼き; typed grams stay; else its default), one leaf line for
+  a meat's or fish's 生 (パックの重さなら 生) and for 乾 beside ゆで (ゆでる前の重さなら 乾); on my entry a 保存
+  (`editFood` f), a recipe's ingredient alike; **量**, its portions as chips (100 g last), −/＋ by a whole portion for
+  the things counted (本 · 個 · 杯 · 缶 · 枚 · 切れ · 貫 · パック · ジョッキ …, and the 1人前 of a food eaten by the piece:
+  おにぎり, むすび, ゆで卵, 目玉焼き, ハンバーグ …: foodUi.ts PIECE) and by half for 茶碗, 人前 and weights (±10 g once
+  grams are typed), a grams field (ml for a drink; typing grams leaves the portions). The foot (the level's actions, at
+  the screen's foot even for a short food): which meal, four 44 px buttons over 追加, or 保存 / 削除 for my entry (a
+  いつもの's: 「変更はこの日だけです（いつものはそのまま）」 above them) (削除 at once, its banner's 取り消す logs it
+  again). While the grams are typed (the keyboard up) the meal row leaves the foot, and 追加 says the kcal (「追加 298
+  kcal」: the head's may be scrolled away).
 - **A level's actions** (the amount, マイ食品, マイレシピ, いつもの; theme.css `.level-acts`): at its end, held at the
   sheet's foot while the level runs past the screen and over the keyboard while a field is typed in; the action (leaf)
   takes the row's room, the cream ones (けす, レシピを ひらく, コピーして へんしゅう) their own.

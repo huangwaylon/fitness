@@ -611,8 +611,10 @@
 </div>
 
 <style>
-  .food { padding-bottom: 8px; }
-  .lv { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  /* the sheet's height, so a level can put its actions at the screen's foot (the amount: .lv:has(> .amt) stretches it) */
+  .food { padding-bottom: 8px; display: flex; flex-direction: column; min-height: 100%; }
+  .lv { flex: 1 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 12px; }
+  .lv:has(> :global(.amt)) { align-content: stretch; }
   /* a level slides in from the right (design.md "Navigation": one push motion, 240ms; as けんこう's goal level) */
   .lvl { animation: lvl 240ms cubic-bezier(.2, .8, .2, 1); }
   @keyframes lvl { from { opacity: 0; transform: translateX(24%); } to { opacity: 1; transform: none; } }
