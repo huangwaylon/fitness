@@ -122,6 +122,7 @@
           {#each report.days as on, i (i)}<li class:on aria-label="{t(`kiki.day.${i}`)} {on ? '✓' : ''}"><span aria-hidden="true">{t(`kiki.day.${i}`)}</span></li>{/each}
         </ol>
         <p class="note">{t('kiki.prog.weekN', { n: daysN, m: report.minutes })}</p>
+        {#if report.koe}<p class="note" data-kiki-koe-mins={report.koe}>{t('kiki.prog.koeMins', { m: report.koe })}</p>{/if}
       </section>
     </div>
 
