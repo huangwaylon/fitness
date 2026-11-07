@@ -13,14 +13,23 @@
     img?: { url: string; x: number; y: number; size: number } | null;
     /** What the picture shows (the amount's: 「…の イメージ」); none: decorative. */
     alt?: string;
+    /** A smaller cell of the same picture, in already (the row's thumbnail): shown scaled up while `img` loads. */
+    under?: { url: string; x: number; y: number; size: number } | null;
+    /** A picture is on screen (`img`, or `under` for it): FoodAmount's イメージ badge. */
+    pictured?: boolean;
   }
-  let { cat, size = 48, img = null, alt }: Props = $props();
+  let { cat, size = 48, img = null, alt, under = null, pictured = $bindable(false) }: Props = $props();
 
   const key = $derived(cat && FOOD_CAT[cat] ? cat : 'その他');
   const tile = $derived(FOOD_CAT[key]);
   let failed = $state<string | null>(null);
   let loaded = $state<string | null>(null);
   const shown = $derived(!!img && failed !== img.url && loaded === img.url);
+  let underIn = $state<string | null>(null);
+  const stand = $derived(!shown && !!under && !!img && failed !== img.url && underIn === under.url);
+  $effect.pre(() => {
+    pictured = shown || stand;
+  });
   /** The cell's scale into the box. */
   const k = $derived(img ? size / img.size : 1);
   /** Each glyph's lines on a 24 × 24 grid. */
@@ -56,9 +65,14 @@
   };
 </script>
 
-<span class="th" class:pic={shown} data-thumb={shown ? 'img' : 'cat'} data-cat={key} role={alt ? 'img' : undefined} aria-label={alt} aria-hidden={alt ? undefined : 'true'}
+<span class="th" class:pic={shown || stand} data-thumb={shown ? 'img' : stand ? 'under' : 'cat'} data-cat={key} role={alt ? 'img' : undefined} aria-label={alt} aria-hidden={alt ? undefined : 'true'}
   style:--t={tile.tint} style:--s="{size}px" style:--r="{Math.round(size / 4)}px">
-  {#if !shown}
+  {#if under && img && !shown && failed !== img.url}
+    <!-- the thumbnail, cached, scaled up until the cell decodes (never the tile in between) -->
+    <img class="cell" class:in={stand} src={under.url} alt="" decoding="async" width={under.size} height={under.size}
+      style:object-position="{-under.x}px {-under.y}px" style:scale={size / under.size} onload={() => (underIn = under.url)} />
+  {/if}
+  {#if !shown && !stand}
     <svg viewBox="0 0 24 24" width={Math.round(size * 0.46)} height={Math.round(size * 0.46)}><path d={GLYPH[tile.glyph]} /></svg>
     <span class="w">{tile.word}</span>
   {/if}

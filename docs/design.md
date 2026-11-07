@@ -474,7 +474,8 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   its frame is the rows': the first 24 are drawn, the rest once the list's end is 400 px away (Chrome at 4× CPU, the
   first keystroke's input to frame: ~77 → ~58 ms).
 - **Amount:** the food's picture when it has one (160 px, centred, alt 「…の イメージ」, the イメージ badge at its top
-  left: every picture is generated; none: no picture area; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
+  left: every picture is generated; until its cell is in, the row's thumbnail, cached, scaled up: never a category tile
+  with the badge, the badge only over a picture; none: no picture area; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
   min(100vw − 64, 360) px, with the badge, the name, the 「これは…」 line and 「AI生成の イメージ
   …」; ✕, Esc or a tap outside close it, the focus back on the picture), its name, then (only with one) its everyday name and its
   one line 「これは…」 (the data's `desc`); the food's values per 100 g; a food in its states, **じょうたい** above 量: a
