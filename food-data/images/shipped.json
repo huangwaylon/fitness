@@ -22454,6 +22454,39 @@
 "checked": false
 },
 {
+"key": "mext-03012",
+"ja": "しょ糖型液糖",
+"desc": "liquid sugar syrup: a small glass of clear colourless thick syrup",
+"items": [
+"mext:03012",
+"mext:03013",
+"mext:03014",
+"mext:03026",
+"mext:03027",
+"mext:03028"
+],
+"roll": 0,
+"seed": 54691,
+"prompt": "5992bab0ae",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03018",
+"ja": "ぶどう糖 含水結晶",
+"desc": "glucose crystals: a small dish of fine white sugar crystals",
+"items": [
+"mext:03018",
+"mext:03019",
+"mext:03020"
+],
+"roll": 0,
+"seed": 38493,
+"prompt": "6c2caf6075",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-03022",
 "ja": "はちみつ",
 "desc": "a glass jar of golden honey with a wooden honey dipper dripping honey",
@@ -22506,6 +22539,34 @@
 "checked": false
 },
 {
+"key": "mext-03032",
+"ja": "還元水あめ",
+"desc": "starch syrup: a small dish of thick clear glossy syrup like mizuame, stretching and viscous",
+"items": [
+"mext:03032",
+"mext:03024",
+"mext:03025"
+],
+"roll": 0,
+"seed": 39393,
+"prompt": "8306397a6f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-03033",
+"ja": "はちみつ 国産品",
+"desc": "honey: a small glass dish of golden amber honey, glossy and thick",
+"items": [
+"mext:03033"
+],
+"roll": 0,
+"seed": 76055,
+"prompt": "38d432c105",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04001",
 "ja": "あずき（乾）",
 "desc": "a small heap of dry azuki beans, small glossy dark red beans with a white line",
@@ -22515,6 +22576,19 @@
 "roll": 0,
 "seed": 92801,
 "prompt": "05632a014e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04002",
+"ja": "あずき ゆで",
+"desc": "boiled azuki beans: a small bowl of soft whole dark red beans, glossy",
+"items": [
+"mext:04002"
+],
+"roll": 0,
+"seed": 74683,
+"prompt": "a9790a18df",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -22533,6 +22607,149 @@
 "checked": false
 },
 {
+"key": "mext-04004",
+"ja": "あずき こし生あん",
+"desc": "koshi nama-an: a small dish of smooth unsweetened red bean paste, moist and pale reddish-brown",
+"items": [
+"mext:04004"
+],
+"roll": 0,
+"seed": 81774,
+"prompt": "6965e85257",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04005",
+"ja": "あずき さらしあん",
+"desc": "sarashi-an: a small dish of dry powdery reddish-brown bean paste powder",
+"items": [
+"mext:04005"
+],
+"roll": 0,
+"seed": 76216,
+"prompt": "2ab1a1deca",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04007",
+"ja": "いんげんまめ 乾",
+"desc": "dried kidney beans: a small dish of glossy deep red kidney-shaped kintoki beans",
+"items": [
+"mext:04007"
+],
+"roll": 0,
+"seed": 7956,
+"prompt": "d9d52e2a80",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04008",
+"ja": "いんげんまめ ゆで",
+"desc": "boiled kidney beans: a small bowl of plump soft deep red kidney beans",
+"items": [
+"mext:04008"
+],
+"roll": 0,
+"seed": 51877,
+"prompt": "e6419015ac",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04009",
+"ja": "いんげんまめ うずら豆",
+"desc": "uzura-mame: sweet simmered beans, glossy brown with mottled speckles, in a small dish",
+"items": [
+"mext:04009"
+],
+"roll": 0,
+"seed": 87187,
+"prompt": "aaef2b904b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04010",
+"ja": "いんげんまめ こし生あん",
+"desc": "white bean nama-an: a small dish of smooth pale ivory bean paste",
+"items": [
+"mext:04010"
+],
+"roll": 0,
+"seed": 90326,
+"prompt": "4c96ee18dc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04011",
+"ja": "いんげんまめ 豆きんとん",
+"desc": "mame-kinton: sweet mashed white bean paste with whole white beans mixed in, pale cream and glossy, in a small dish",
+"items": [
+"mext:04011"
+],
+"roll": 0,
+"seed": 98240,
+"prompt": "aa17beb438",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04012",
+"ja": "青えんどう 乾",
+"desc": "dried green peas: a small dish of hard round dull green dried peas",
+"items": [
+"mext:04012"
+],
+"roll": 0,
+"seed": 50746,
+"prompt": "808a995360",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04013",
+"ja": "青えんどう ゆで",
+"desc": "boiled green peas, from dried: a small bowl of soft olive-green round peas",
+"items": [
+"mext:04013"
+],
+"roll": 0,
+"seed": 56972,
+"prompt": "493ba88571",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04014",
+"ja": "えんどう グリンピース（揚げ豆）",
+"desc": "fried green peas: a small dish of crunchy deep green fried peas, some skins split, salted",
+"items": [
+"mext:04014"
+],
+"roll": 0,
+"seed": 19983,
+"prompt": "f5b23aede0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04015",
+"ja": "えんどう 塩豆",
+"desc": "shio-mame: roasted peas with a white salt crust over greenish skins, in a small dish",
+"items": [
+"mext:04015"
+],
+"roll": 0,
+"seed": 53593,
+"prompt": "3d5110c360",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04016",
 "ja": "うぐいす豆",
 "desc": "a small dish of uguisu-mame, sweet simmered green peas, glossy olive-green beans",
@@ -22542,6 +22759,84 @@
 "roll": 0,
 "seed": 66883,
 "prompt": "c5a50c4ca3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04017",
+"ja": "ささげ 乾",
+"desc": "dried sasage, cowpeas: a small dish of small dark red beans, each with a white eye",
+"items": [
+"mext:04017"
+],
+"roll": 0,
+"seed": 94197,
+"prompt": "e31414b47c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04018",
+"ja": "ささげ ゆで",
+"desc": "boiled sasage: a small bowl of soft dark red beans with white eyes",
+"items": [
+"mext:04018"
+],
+"roll": 0,
+"seed": 39268,
+"prompt": "41427bebfe",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04019",
+"ja": "そらまめ 乾",
+"desc": "dried broad beans: a small dish of large flat brown dried fava beans",
+"items": [
+"mext:04019"
+],
+"roll": 0,
+"seed": 80594,
+"prompt": "143f81b4fa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04020",
+"ja": "そらまめ フライビーンズ",
+"desc": "fried broad beans: fava beans fried until they split open, golden-brown and crunchy, salted, in a small dish",
+"items": [
+"mext:04020"
+],
+"roll": 0,
+"seed": 83957,
+"prompt": "11db5272e9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04021",
+"ja": "そらまめ おたふく豆",
+"desc": "otafuku-mame: large glossy dark brown simmered sweet fava beans with wrinkled skins, in a small dish",
+"items": [
+"mext:04021"
+],
+"roll": 0,
+"seed": 49539,
+"prompt": "1006812683",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04022",
+"ja": "そらまめ ふき豆",
+"desc": "fuki-mame: peeled fava beans simmered sweet, pale yellow-green and soft with mashed edges, in a small dish",
+"items": [
+"mext:04022"
+],
+"roll": 0,
+"seed": 35353,
+"prompt": "2e776ba4bf",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -22574,6 +22869,21 @@
 "checked": false
 },
 {
+"key": "mext-04025",
+"ja": "黄大豆 米国産 乾",
+"desc": "dried yellow soybeans: a small dish of round pale yellow-beige soybeans",
+"items": [
+"mext:04025",
+"mext:04026",
+"mext:04027"
+],
+"roll": 0,
+"seed": 86842,
+"prompt": "4b5f1dfba3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04029",
 "ja": "きな粉",
 "desc": "a small dish of kinako roasted soybean flour, fine light tan-yellow powder",
@@ -22584,6 +22894,20 @@
 "seed": 70065,
 "prompt": "4b05aa4ab0",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04030",
+"ja": "きな粉 黄大豆 脱皮大豆",
+"desc": "kinako: a small dish of fine light golden-tan roasted soybean powder",
+"items": [
+"mext:04030",
+"mext:04110"
+],
+"roll": 0,
+"seed": 1716,
+"prompt": "397ec6ddcc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -22733,6 +23057,32 @@
 "checked": false
 },
 {
+"key": "mext-04044",
+"ja": "豆腐竹輪 蒸し",
+"desc": "steamed tofu chikuwa: a tube of tofu and fish paste with a smooth pale white surface and a hollow centre, sliced",
+"items": [
+"mext:04044"
+],
+"roll": 0,
+"seed": 47050,
+"prompt": "f7c942ca39",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04045",
+"ja": "豆腐竹輪 焼き",
+"desc": "grilled tofu chikuwa: a tube of tofu and fish paste with browned grill-marked skin and a hollow centre, sliced",
+"items": [
+"mext:04045"
+],
+"roll": 0,
+"seed": 22588,
+"prompt": "20229fb6db",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04046",
 "ja": "納豆",
 "desc": "natto fermented soybeans in a small bowl, glossy small brown beans stringy and sticky with fine white threads, a dab of yellow mustard",
@@ -22810,6 +23160,20 @@
 "roll": 0,
 "seed": 51901,
 "prompt": "a3ee9055e8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04056",
+"ja": "濃縮大豆たんぱく",
+"desc": "soy protein powder: a small dish of fine pale cream powder",
+"items": [
+"mext:04056",
+"mext:04090"
+],
+"roll": 0,
+"seed": 80487,
+"prompt": "c279971bbc",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -22905,6 +23269,58 @@
 "checked": false
 },
 {
+"key": "mext-04074",
+"ja": "赤えんどう 乾",
+"desc": "dried red peas: a small dish of hard round reddish-brown speckled peas",
+"items": [
+"mext:04074"
+],
+"roll": 0,
+"seed": 15625,
+"prompt": "1a99b91be3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04075",
+"ja": "赤えんどう ゆで",
+"desc": "boiled red peas: a small dish of soft brownish-red round peas, as in mitsumame",
+"items": [
+"mext:04075"
+],
+"roll": 0,
+"seed": 31135,
+"prompt": "ab4896ce53",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04076",
+"ja": "そらまめ しょうゆ豆",
+"desc": "shoyu-mame: roasted fava beans soaked in sweet soy sauce, glossy dark brown with wrinkled skins, in a small dish",
+"items": [
+"mext:04076"
+],
+"roll": 0,
+"seed": 21829,
+"prompt": "1b579f91bd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04077",
+"ja": "黒大豆 国産 乾",
+"desc": "dried black soybeans: a small dish of round glossy black soybeans with a faint dusty bloom",
+"items": [
+"mext:04077"
+],
+"roll": 0,
+"seed": 8563,
+"prompt": "e0ded9fcaa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04078",
 "ja": "いり大豆",
 "desc": "roasted soybeans, round beans with cracked toasty brown skins, in a small wooden masu box",
@@ -22914,6 +23330,99 @@
 "roll": 0,
 "seed": 73570,
 "prompt": "5967fb00f1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04079",
+"ja": "いり大豆 黒大豆",
+"desc": "roasted black soybeans: a small dish of crunchy soybeans with cracked black skins showing pale yellow-green insides",
+"items": [
+"mext:04079"
+],
+"roll": 0,
+"seed": 21076,
+"prompt": "f7da2d2f60",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04080",
+"ja": "いり大豆 青大豆",
+"desc": "roasted green soybeans: a small dish of crunchy soybeans with cracked pale green-tan skins and browned spots",
+"items": [
+"mext:04080"
+],
+"roll": 0,
+"seed": 71199,
+"prompt": "6bb966116e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04082",
+"ja": "きな粉 青大豆 全粒大豆",
+"desc": "green kinako: a small dish of fine pale green roasted soybean powder",
+"items": [
+"mext:04082",
+"mext:04096",
+"mext:04109"
+],
+"roll": 0,
+"seed": 1619,
+"prompt": "919fb63f92",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04083",
+"ja": "大豆はいが",
+"desc": "soybean germ: a small dish of small pale yellow granules",
+"items": [
+"mext:04083"
+],
+"roll": 0,
+"seed": 87173,
+"prompt": "3b86b72f21",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04084",
+"ja": "油揚げ 油抜き 生",
+"desc": "aburaage, oil drained: thin flat golden-brown fried tofu sheets, spongy and damp",
+"items": [
+"mext:04084"
+],
+"roll": 0,
+"seed": 78342,
+"prompt": "997c3d588a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04085",
+"ja": "油揚げ 油抜き 焼き",
+"desc": "grilled aburaage: crisp toasted fried tofu sheet with darker brown grill marks, cut into strips",
+"items": [
+"mext:04085"
+],
+"roll": 0,
+"seed": 58064,
+"prompt": "92a7127e78",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04086",
+"ja": "油揚げ 油抜き ゆで",
+"desc": "boiled aburaage: soft limp pale beige strips of fried tofu in a small dish",
+"items": [
+"mext:04086"
+],
+"roll": 0,
+"seed": 95274,
+"prompt": "04291bdb7c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -22946,6 +23455,19 @@
 "checked": false
 },
 {
+"key": "mext-04089",
+"ja": "おから 乾燥",
+"desc": "dried okara: a small dish of crumbly pale cream dry soy pulp flakes",
+"items": [
+"mext:04089"
+],
+"roll": 0,
+"seed": 28539,
+"prompt": "57dc031ccf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04094",
 "ja": "レンズ豆（ゆで）",
 "desc": "a small bowl of cooked lentils, small flat round brown-green lentils",
@@ -22972,6 +23494,34 @@
 "checked": false
 },
 {
+"key": "mext-04097",
+"ja": "木綿豆腐（にがり）",
+"desc": "momen tofu: a firm white tofu block with a faint cloth-pressed texture on its slightly rough surface",
+"items": [
+"mext:04097",
+"mext:04098"
+],
+"roll": 0,
+"seed": 20637,
+"prompt": "0134ec26f7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04099",
+"ja": "絹ごし豆腐（にがり）",
+"desc": "kinugoshi tofu: a smooth glossy silky white tofu block, soft and wobbly",
+"items": [
+"mext:04099",
+"mext:04100"
+],
+"roll": 0,
+"seed": 71834,
+"prompt": "f7b742643e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-04101",
 "ja": "こしあん",
 "desc": "a small bowl of koshian smooth sweet red bean paste, very smooth dense dark purple-brown paste",
@@ -22982,6 +23532,98 @@
 "seed": 30262,
 "prompt": "beb3a9a706",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04102",
+"ja": "あずき こし練りあん（中割りあん）",
+"desc": "koshi neri-an: a small dish of smooth glossy dark purplish-brown sweet red bean paste",
+"items": [
+"mext:04102",
+"mext:04103"
+],
+"roll": 0,
+"seed": 99244,
+"prompt": "1a5143fcd8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04104",
+"ja": "青大豆 国産 乾",
+"desc": "dried green soybeans: a small dish of round pale green dried soybeans",
+"items": [
+"mext:04104"
+],
+"roll": 0,
+"seed": 62073,
+"prompt": "b859a8cc09",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04105",
+"ja": "青大豆 国産 ゆで",
+"desc": "boiled green soybeans: a small bowl of plump soft pale green soybeans",
+"items": [
+"mext:04105"
+],
+"roll": 0,
+"seed": 89455,
+"prompt": "acd476fab9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04106",
+"ja": "黒大豆 国産 ゆで",
+"desc": "boiled black soybeans: a small bowl of plump glossy black soybeans, soft",
+"items": [
+"mext:04106"
+],
+"roll": 0,
+"seed": 88757,
+"prompt": "6e430a3399",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04111",
+"ja": "あずき つぶし生あん",
+"desc": "tsubushi nama-an: a small dish of coarse mashed red bean paste with bean skins visible, dull reddish-brown",
+"items": [
+"mext:04111"
+],
+"roll": 0,
+"seed": 11607,
+"prompt": "5b2add074f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04112",
+"ja": "えんどう うぐいすあん",
+"desc": "uguisu-an: a small dish of smooth sweet pale olive-green pea paste",
+"items": [
+"mext:04112"
+],
+"roll": 0,
+"seed": 42349,
+"prompt": "a022bcb622",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-04113",
+"ja": "絹生揚げ",
+"desc": "kinu namaage: a deep-fried silken tofu block with a thin golden-brown skin, cut to show smooth white inside",
+"items": [
+"mext:04113"
+],
+"roll": 0,
+"seed": 81563,
+"prompt": "31a3833b3f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
