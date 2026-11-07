@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
@@ -196,7 +196,7 @@ describe('food data fetches (foodFetch)', () => {
   let offline: boolean;
   const net = async (r: Request) => {
     if (offline) throw new TypeError('offline');
-    await new Promise((ok) => setTimeout(ok, slow));
+    if (slow) await new Promise((ok) => setTimeout(ok, slow));
     const b = served[r.url];
     return b === undefined ? new Response('', { status: 404 }) : new Response(b);
   };
@@ -204,7 +204,13 @@ describe('food data fetches (foodFetch)', () => {
     const res = await foodFetch(new Request(url), cache as unknown as Cache, net, (p) => bg.push(p), 40);
     return res.type === 'error' ? null : await res.text();
   };
-  const settled = async () => { while (bg.length) await bg.shift(); };
+  /** The background work done (a late answer's timer run out on the fake clock first). */
+  const settled = async () => {
+    while (bg.length) {
+      await vi.runAllTimersAsync();
+      await bg.shift();
+    }
+  };
   const serve = (v: string) => {
     served = { [`${BASE}index.json`]: index(v) };
     for (const f of files(v)) served[f] = `${f}-body`;
@@ -214,8 +220,18 @@ describe('food data fetches (foodFetch)', () => {
     bg = [];
     slow = 0;
     offline = false;
+    vi.useFakeTimers(); // the network's lateness and the timeout on a fake clock (docs/ops/testing.md "Hermetic")
     serve('aaa');
   });
+  afterEach(() => vi.useRealTimers());
+  /** `p` once `ms` of fake time have passed: it must have answered by then. */
+  const by = async <T,>(p: Promise<T>, ms: number): Promise<T> => {
+    let done = false;
+    void p.then(() => (done = true), () => (done = true));
+    await vi.advanceTimersByTimeAsync(ms);
+    expect(done).toBe(true);
+    return p;
+  };
   const loadAll = async (v: string) => {
     expect(await get(`${BASE}index.json`)).toBe(index(v));
     for (const f of files(v)) expect(await get(f)).toBe(`${f}-body`);
@@ -227,19 +243,17 @@ describe('food data fetches (foodFetch)', () => {
     offline = true;
     expect(await get(`${BASE}index.json`)).toBe(index('aaa'));
     offline = false;
-    // (the network at 200 ms, past the 40 ms timeout: settled() below waits it out, so no slower than it needs to be)
+    // (the network at 200 ms, past the 40 ms timeout: settled() below runs it out on the fake clock)
     slow = 200;
     serve('bbb');
-    const t0 = Date.now();
-    expect(await get(`${BASE}index.json`)).toBe(index('aaa')); // the cached copy, not the 200 ms one
-    expect(Date.now() - t0).toBeLessThan(150);
+    expect(await by(get(`${BASE}index.json`), 40)).toBe(index('aaa')); // the cached copy at the timeout, not the 200 ms one
     for (const f of files('aaa')) expect(await get(f)).toBe(`${f}-body`); // its files, all cached
     await settled(); // the late answer stored, for when its files come
   });
 
   it('index.json with nothing cached waits for the network however slow', async () => {
     slow = 100;
-    expect(await get(`${BASE}index.json`)).toBe(index('aaa'));
+    expect(await by(get(`${BASE}index.json`), 100)).toBe(index('aaa'));
     offline = true;
     expect(await get(`${BASE}foods.json?v=aaa`)).toBeNull();
   });
@@ -338,7 +352,7 @@ describe("ごはん's picture fetches (foodImgFetch)", () => {
   let cache: MemCache, bg: Promise<unknown>[], served: Record<string, string>, slow: number, offline: boolean;
   const net = async (r: Request) => {
     if (offline) throw new TypeError('offline');
-    await new Promise((ok) => setTimeout(ok, slow));
+    if (slow) await new Promise((ok) => setTimeout(ok, slow));
     const b = served[r.url];
     return b === undefined ? new Response('', { status: 404 }) : new Response(b);
   };
@@ -346,14 +360,31 @@ describe("ごはん's picture fetches (foodImgFetch)", () => {
     const res = await foodImgFetch(new Request(BASE + f), cache as unknown as Cache, net, (p) => bg.push(p), 40);
     return res.type === 'error' ? null : await res.text();
   };
-  const settled = async () => { while (bg.length) await bg.shift(); };
+  /** The background work done (a late answer's timer run out on the fake clock first). */
+  const settled = async () => {
+    while (bg.length) {
+      await vi.runAllTimersAsync();
+      await bg.shift();
+    }
+  };
   beforeEach(() => {
     cache = new MemCache();
     bg = [];
     slow = 0;
     offline = false;
+    vi.useFakeTimers(); // the network's lateness and the timeout on a fake clock (docs/ops/testing.md "Hermetic")
     served = { [`${BASE}index.json`]: JSON.stringify({ sheets: ['t-a-0-11111111.webp'] }), [`${BASE}t-a-0-11111111.webp`]: 'sheet' };
   });
+
+  afterEach(() => vi.useRealTimers());
+  /** `p` once `ms` of fake time have passed: it must have answered by then. */
+  const by = async <T,>(p: Promise<T>, ms: number): Promise<T> => {
+    let done = false;
+    void p.then(() => (done = true), () => (done = true));
+    await vi.advanceTimersByTimeAsync(ms);
+    expect(done).toBe(true);
+    return p;
+  };
 
   it('answers a sheet before it is stored, from the cache after; a failed store still shows it', async () => {
     cache.failPut = true;
@@ -374,7 +405,7 @@ describe("ごはん's picture fetches (foodImgFetch)", () => {
     expect([...cache.m.keys()]).toEqual([`${BASE}index.json`]);
     slow = 200;
     served[`${BASE}index.json`] = JSON.stringify({ sheets: ['t-a-0-22222222.webp'] });
-    expect(await get('index.json')).toContain('11111111');
+    expect(await by(get('index.json'), 40)).toContain('11111111');
     await settled();
     offline = true;
     expect(await get('index.json')).toContain('22222222');
