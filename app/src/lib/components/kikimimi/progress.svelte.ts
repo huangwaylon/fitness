@@ -16,6 +16,7 @@ import type { Rec } from '#lib/kikimimi/advice.ts';
 import { levelMark, sx } from './look.ts';
 import { remember, type Recent } from '#lib/kikimimi/recent.ts';
 import { unitsOf, type UnitState } from '#lib/kikimimi/stamps.ts';
+import { madaOf, markMada } from '#lib/kikimimi/srs.ts';
 import { INDEX, unitIds, unitPart } from '#lib/kikimimi/pool.ts';
 import { lessonsOfMask, pathOf, type Filter, type Path, type PathUnit } from '#lib/kikimimi/path.ts';
 import { LESSONS } from '#lib/kikimimi/stages.ts';
@@ -55,6 +56,14 @@ export function recordGame(me: Who, row: ListenRow): void {
   week.send('listen', row as unknown as Record<string, unknown>);
 }
 
+/** よみきき サンド's まだ: a mark on this phone for me, today (srs.ts; the report folds it in as "hard"). */
+export function keepMada(id: string): void {
+  const m = week.model;
+  if (!m) return;
+  markMada(localKV(), m.me, id, localDateAt(m.now));
+  kept++;
+}
+
 /** The `listen` rows きろく reads: the record's (and the queue's) and, for a game of mine they lack, the phone's. */
 function progressRows(me: Who, record: readonly EventRow[]): EventRow[] {
   const have = new Set<string>();
@@ -78,7 +87,7 @@ function memoNow(): typeof memo {
   if (!m) return null;
   const listen = m.state.listen, me = m.me, day = localDateAt(m.now);
   if (memo && memo.listen === listen && memo.me === me && memo.day === day && memo.kept === k) return memo;
-  return (memo = { listen, me, day, kept: k, report: reportOf(progressRows(me, listen), me, day, LEVELS, LADDER_OK) });
+  return (memo = { listen, me, day, kept: k, report: reportOf(progressRows(me, listen), me, day, LEVELS, LADDER_OK, madaOf(localKV(), me)) });
 }
 
 /** My report now (null before the week's first load). Reactive: call it in a $derived. */

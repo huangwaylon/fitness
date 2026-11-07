@@ -118,6 +118,7 @@ All five join きまぐれ's rotation (today.ts) and the みんなで picker. A 
 - **The framework:** frame/ReviewList and frame/RevealFrame get the button; a new lazy frame/Sandwich.svelte reuses Transcript, scene/karaoke and SoundLine.
 - **The risk:** a reading crutch. The clip always plays blind first.
 - **Effort:** S (0.5 d). No content, no audio.
+- **As built (W2-0, 2026-11-07):** frame/SandButton (「📖 読んでから もう一度」) under a solo reveal's verdict and in an open review row; frame/Sandwich a full-height sheet (the reveal behind blurred), 読む / 聞き取れた waiting for the blind clip's end (or 3 s with no voice). まだ: DEVICE.kikiMada `{[who]: [id, day][]}` (≤ 200), srs.ts cardsOf folds it in as "hard" after that day's answers, the report's `due` and にがて れんしゅう with it. e2e kikimimi-sandwich.spec.
 
 ### 2.1 ことば タイル: rebuild what you heard
 

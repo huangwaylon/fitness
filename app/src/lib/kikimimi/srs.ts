@@ -2,9 +2,12 @@
 // for the items I missed (or got only after a replay) and for every feature I answered, folded from my answers in
 // order (never stored), and a solo deck of my weak spots. The shared deck (deck.ts) stays deterministic for every
 // multiplayer game; this is solo only. Pure over the index (pool.ts ENTRIES): only the picks' levels are loaded to deal
-// them (report.ts practiceFor).
+// them (report.ts practiceFor). よみきき サンド's まだ (docs/curriculum-wave2.md §2.0) is a mark on this phone only
+// (DEVICE.kikiMada), folded in as a "hard" answer on its day: no row changes, nothing goes on the wire.
 import { mulberry32, shuffle } from '#lib/random.ts';
-import type { LocalDate } from '../types.ts';
+import type { LocalDate, Who } from '../types.ts';
+import type { KV } from '../sync/storage.ts';
+import { DEVICE, readJson, writeJson } from '../sync/storage.ts';
 import { firstListenRight } from '../contract/listen.ts';
 import type { Accent, Entry, Feature, Item, Level } from './bank.ts';
 import { levelRank, shuffleChoices } from './bank.ts';
@@ -44,9 +47,9 @@ export interface Cards {
 
 /** The cards my answers (in order) leave: an item card from its first miss or replay on, a feature card for every
  *  feature answered. */
-export function cardsOf(answers: readonly Answer[], items: { get(id: string): Entry | undefined } = { get: entryOf }): Cards {
+export function cardsOf(answers: readonly Answer[], items: { get(id: string): Entry | undefined } = { get: entryOf }, mada: readonly Mada[] = []): Cards {
   const out: Cards = { items: new Map(), features: new Map() };
-  for (const a of answers) {
+  for (const a of withMada(answers, mada)) {
     const it = items.get(a.id);
     if (!it) continue;
     const g = gradeOf(a), day = dayNum(a.d);
@@ -55,6 +58,38 @@ export function cardsOf(answers: readonly Answer[], items: { get(id: string): En
     for (const f of tagsOf(it).features) out.features.set(f, step(out.features.get(f), g, day));
   }
   return out;
+}
+
+// ---- よみきき サンド's まだ: this phone's marks ------------------------------------------------------------------------
+
+/** A まだ (still not caught after reading it and hearing it again): the item and the day, on this phone only. */
+export type Mada = { id: string; d: LocalDate };
+/** The marks a phone keeps per player (the newest). */
+const MADA_KEEP = 200;
+
+/** The answers with each まだ as a "hard" one on its day, after that day's answers (the game came first). */
+function withMada(answers: readonly Answer[], mada: readonly Mada[]): readonly Pick<Answer, 'id' | 'ok' | 'rp' | 'd'>[] {
+  if (!mada.length) return answers;
+  const out: Pick<Answer, 'id' | 'ok' | 'rp' | 'd'>[] = [...answers];
+  for (const m of [...mada].sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0))) {
+    let k = out.length;
+    while (k > 0 && out[k - 1].d > m.d) k--;
+    out.splice(k, 0, { id: m.id, ok: true, rp: 1, d: m.d });
+  }
+  return out;
+}
+
+/** `who`'s まだ marks on this phone (`kv`: its localStorage), oldest first. */
+export function madaOf(kv: KV | null, who: Who): Mada[] {
+  const v = readJson<Record<string, unknown>>(kv, DEVICE.kikiMada)?.[who];
+  return Array.isArray(v) ? v.flatMap((m) => (Array.isArray(m) && typeof m[0] === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(m[1]) ? [{ id: m[0], d: m[1] as LocalDate }] : [])) : [];
+}
+
+/** A まだ kept on this phone for `who` (the newest MADA_KEEP; one an item a day). */
+export function markMada(kv: KV | null, who: Who, id: string, d: LocalDate): void {
+  const all = readJson<Record<string, unknown>>(kv, DEVICE.kikiMada) ?? {};
+  const mine = madaOf(kv, who).filter((m) => m.id !== id || m.d !== d);
+  writeJson(kv, DEVICE.kikiMada, { ...all, [who]: [...mine, { id, d }].slice(-MADA_KEEP).map((m) => [m.id, m.d]) });
 }
 
 /** The cards due on `today`. */
@@ -93,7 +128,7 @@ export function practicePicks(o: PracticeOpts): { ids: string[]; deal: (item: (i
   const t = dayNum(o.today);
   const focus = o.focus ?? null;
   const pool = shuffle(ENTRIES.filter((it) => o.levels.includes(it.lv) && drawn(it, MIX) && fits(it, focus)), r);
-  const cards = cardsOf(o.answers);
+  const cards = cardsOf(o.answers, undefined, o.mada);
   const lastSeen = new Map<string, number>();
   for (const a of o.answers) lastSeen.set(a.id, dayNum(a.d));
   const near = o.stats.level ?? 2;
@@ -204,7 +239,7 @@ export function phraseReview(phrases: readonly PhraseIn[], answers: readonly Ans
   return due.sort((a, b) => a.card.box - b.card.box || a.card.due - b.card.due).slice(0, Math.max(0, REVIEW_CAP - reviewed)).map(({ phrase, item }) => ({ phrase, item }));
 }
 
-type PracticeOpts = { answers: readonly Answer[]; stats: Stats; today: LocalDate; seed: number; levels: readonly Level[]; focus?: Focus; recent?: Recent };
+type PracticeOpts = { answers: readonly Answer[]; mada?: readonly Mada[]; stats: Stats; today: LocalDate; seed: number; levels: readonly Level[]; focus?: Focus; recent?: Recent };
 
 /** にがて れんしゅう's deck (practicePicks), its levels already loaded. */
 export const practiceDeck = (o: PracticeOpts): Item[] => practicePicks(o).deal(itemOf);

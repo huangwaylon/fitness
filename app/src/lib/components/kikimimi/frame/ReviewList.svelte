@@ -1,18 +1,26 @@
 <script lang="ts">
   // A game's review list (docs/kikimimi.md "Results"; framework §5 ReviewList), the main learning moment: 「まちがえた
   // だけ」 (the misses only: the game's rows read it), a game's retry above the rows (`retry`: the misses again), all right
-  // said when no row is left, then the game's rows (`children`). Any game's.
+  // said when no row is left, then the game's rows (`children`). Any game's. A row puts よみきき サンド's way in where
+  // it likes (`children`'s `sand(item)`: 「読んでから もう一度」, frame/SandButton; nothing without a `player`).
   import type { Snippet } from 'svelte';
+  import type { Item } from '#lib/kikimimi/bank.ts';
+  import type { SandPlayer } from './Sandwich.svelte';
+  import SandButton from './SandButton.svelte';
   import { t } from '#lib/i18n/index.ts';
 
-  let { missedOnly = $bindable(), none, retry, children }: {
+  let { missedOnly = $bindable(), none, retry, player, children }: {
     missedOnly: boolean;
     /** No row to show (all right, the misses only). */
     none: boolean;
     retry?: Snippet;
-    children: Snippet;
+    /** The game's clips (よみきき サンド plays through them). */
+    player?: SandPlayer;
+    children: Snippet<[Snippet<[Item]>]>;
   } = $props();
 </script>
+
+{#snippet sand(it: Item)}{#if player}<SandButton {it} {player} />{/if}{/snippet}
 
 <section class="sec" aria-labelledby="kk-review">
   <div class="rev-head">
@@ -21,7 +29,7 @@
   </div>
   {@render retry?.()}
   {#if none}<p class="none">{t('kiki.allRight')}</p>{/if}
-  {@render children()}
+  {@render children(sand)}
 </section>
 
 <style>

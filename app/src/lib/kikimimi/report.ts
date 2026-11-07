@@ -6,7 +6,7 @@ import type { LocalDate, Who } from '../types.ts';
 import type { Item, Level } from './bank.ts';
 import { ENTRIES, itemOf, loadIds } from './pool.ts';
 import { answersOf, daysPlayed, gamesOf, recentOf, speedOf, statsOf, together, trendOf, weekDays, type Game, type OtherGame, type Speed, type Stats, type StoryGame } from './progress.ts';
-import { cardsOf, dueOf, practicePicks, type Focus } from './srs.ts';
+import { cardsOf, dueOf, practicePicks, type Focus, type Mada } from './srs.ts';
 import { feedback, recommend, type Feedback, type Rec } from './advice.ts';
 import type { Recent } from './recent.ts';
 
@@ -19,6 +19,8 @@ export interface Report {
   stats: Stats;
   /** Item cards due today. */
   due: number;
+  /** よみきき サンド's まだ marks on this phone (srs.ts: "hard" on their day). */
+  mada: readonly Mada[];
   recs: Rec[];
   trend: number[];
   recent: { now: number | null; delta: number | null };
@@ -31,16 +33,16 @@ export interface Report {
 }
 
 /** The report of `me`'s rows as of `today`, the levels this phone offers (the advice's level nudge and tries) and
- *  whether it offers スピード はしご. */
-export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, levels: readonly Level[], ladder = false): Report {
+ *  whether it offers スピード はしご; my サンド まだ marks on this phone. */
+export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, levels: readonly Level[], ladder = false, mada: readonly Mada[] = []): Report {
   const { mine, others, stories } = gamesOf(rows, me);
   const answers = answersOf(mine);
   const stats = statsOf(answers, today);
-  const due = dueOf(cardsOf(answers), today).items.length;
+  const due = dueOf(cardsOf(answers, undefined, mada), today).items.length;
   const week = new Set(weekDays(today));
   const speed = speedOf(mine);
   return {
-    today, games: mine, others, stories, stats, due, speed,
+    today, games: mine, others, stories, stats, due, mada, speed,
     recs: recommend({ stats, games: mine, dueItems: due, levels, bank: ENTRIES, speed, ladder }),
     trend: trendOf(mine), recent: recentOf(mine), days: daysPlayed(mine, today),
     together: together(mine, others, today),
@@ -51,7 +53,7 @@ export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, l
 /** にがて れんしゅう's deck for this report (a recommendation's focus, or every weak spot): picked from the index, dealt
  *  once the picks' levels are loaded. */
 export async function practiceFor(r: Report, levels: readonly Level[], seed: number, focus: Focus = null, recent: Recent = []): Promise<Item[]> {
-  const picks = practicePicks({ answers: answersOf(r.games), stats: r.stats, today: r.today, seed, levels, focus, recent });
+  const picks = practicePicks({ answers: answersOf(r.games), mada: r.mada, stats: r.stats, today: r.today, seed, levels, focus, recent });
   await loadIds(picks.ids);
   return picks.deal(itemOf);
 }
