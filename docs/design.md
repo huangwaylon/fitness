@@ -1050,6 +1050,16 @@ hidden (opacity 0) and carries no filter (the night's tint, a drop shadow) and n
 campfire's flames) under the 3D island (IslandScene's `[data-r3]` rules). With them, the island at rest at night cost
 the render server 60–70 % of a core against 17 by day; without, 20 (iOS Simulator, nothing else running frames).
 
+**At rest** (the user's call, 2026-11-07: engine.ts REST_MS, REST_FPS) the island draws its ambience at **12** a second:
+no finger on it for 2 s, and the last frame wanting only the ambience (no fling, spring back or focus under way, nothing
+at the full rate: a walk, a fast critter, a flourish, a jiggle). Any of those, or a touch, draws at the full rate at
+once. On those frames the shadow map redraws at most every 250 ms (once more after the last change; a change from
+outside a frame, a model in, at once). Under the 3D island a fish shadow's and a bug's own walk, its invisible
+sprite's CSS transition, is off (the canvas moves the model by the same curves and its taps go by the model's spot):
+each running one held the page at 60 frames a second whatever the canvas drew. The models' empty carriers (`.m3n`,
+`bare`) keep their being in view and get no style writes. The demo at rest (Chromium 4× CPU, 393×852): 20 → 12 fps,
+main thread 17–26 → 8–10 %, style writes 290 → 7 a second; WebKit (Mac): WebContent 19–20 → 4–10 % of a core.
+
 A gesture stays at the setting's rate: the measured cost of a gesture at 60 is the highest of all (scrolling and
 pinching), the added latency at 30 is under a vsync, NH itself runs at 30, and 60 then means 60 everywhere (a switch
 whose difference shows where one looks for it, a scroll). 60 is there for whoever prefers smoothness to battery.

@@ -426,7 +426,7 @@
        art hidden; the same instance falls to its ground spot (FruitTree's own fall) -->
   {#each spots as s (s.f)}
     {#if !s.down}
-      <i class="m3n" {@attach w.at({ x: x + s.tx * 1.25, z: z - 34, lift: s.up + 14, h: 4, always: true,
+      <i class="m3n" {@attach w.at({ bare: true, x: x + s.tx * 1.25, z: z - 34, lift: s.up + 14, h: 4, always: true,
         m3: { key: `fruit/${s.f}`, id: `fruit-${person.person}-${s.f}`, grey: s.grey, art: () => canopyEl?.parentElement?.querySelector(`.fruit.up[data-fruit="${s.f}"]`) } })}></i>
     {/if}
   {/each}

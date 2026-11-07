@@ -1298,6 +1298,11 @@
      bottle's rock, a 3D villager's 2D bob, but a hat's or the trick's glasses riding it; else their style and layers
      ran every frame for nothing. No animationend waits on them) */
   .scene[data-r3] :global(:is(.mover.m3on *, [data-m3]:not(.m3off) .bottle .rock, .vil .body.bob:not(:has(> [data-hat], > [data-tricked])))) { animation-play-state: paused; }
+  /* (and a fish shadow's or a bug's own walk, its invisible sprite's transition, its turn's too: the canvas moves its model
+     by the same curves, Critters' glide, and a tap on it goes by the model's spot, so the sprite stands at its move's end
+     at once; each running transition held the page at 60 frames a second at rest whatever the canvas drew, half the
+     island's main thread at rest, Chromium 4x CPU) */
+  .scene[data-r3] :global(:is(.mover.shadow, .mover.bug).m3on), .scene[data-r3] :global(:is(.mover.shadow, .mover.bug).m3on *) { transition: none !important; }
   /* (and the hidden art holds no compositing layer: no filter, the night's tint or a drop shadow, and none of its own
      endless animations, a campfire's flames: each made a layer over the canvas that every frame it drew recomposited) */
   .scene[data-r3] :global(:is(.spr > .art, .spr .door > *, .spr .deco > *, .fl > .b, .tree > .oak, .m3on :is([data-m3art], .official), [data-m3]:not(.m3off) :is([data-m3art], .official), .mover.m3on > *, .in3d, .notes.m3on)),
