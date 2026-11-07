@@ -52,10 +52,12 @@ let html = readFileSync(join(root, 'index.html'), 'utf8');
 const csp = /<meta http-equiv="content-security-policy" content="([^"]+)"/.exec(html)?.[1];
 if (!csp) throw new Error('headers: no content-security-policy <meta> in build-pages/index.html');
 
-const permissions = ['camera', 'microphone', 'payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'accelerometer', 'gyroscope', 'magnetometer', 'display-capture', 'browsing-topics']
+const permissions = ['camera', 'payment', 'usb', 'serial', 'bluetooth', 'hid', 'midi', 'accelerometer', 'gyroscope', 'magnetometer', 'display-capture', 'browsing-topics']
   .map((f) => `${f}=()`)
   // the trip map's location dot (docs/travel.md "Maps"): our own origin only, asked when its button is tapped
   .concat('geolocation=(self)')
+  // ききみみ's mic (docs/kikimimi-mic.md §3.6): our own origin only, opened only from a tap
+  .concat('microphone=(self)')
   .join(', ');
 
 const headers = `${base}/*

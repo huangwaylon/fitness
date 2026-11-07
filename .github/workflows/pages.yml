@@ -120,10 +120,10 @@ jobs:
       - if: steps.browsers.outputs.cache-hit != 'true'
         run: npx playwright install --only-shell chromium
       - run: npm run build
-      - run: node scripts/e2e-shards.ts plan 12 shards e2e/timings.json -- --project=chromium --grep-invert "@render|@quarantine"
+      - run: node scripts/e2e-shards.ts plan 12 shards e2e/timings.json -- --project=chromium --project=chromium-mic --grep-invert "@render|@quarantine"
       - id: e2e
         continue-on-error: true
-        run: npx playwright test --project=chromium --test-list shards/${{ matrix.shard }}.txt
+        run: npx playwright test --project=chromium --project=chromium-mic --test-list shards/${{ matrix.shard }}.txt
       # (each test's time, for the next run's plan: the first run's report)
       - if: always() && steps.e2e.outcome != 'skipped'
         run: cp playwright-results.json timings-${{ matrix.shard }}.json 2>/dev/null || true
@@ -143,7 +143,7 @@ jobs:
           if [ "$n" -eq 0 ] || [ "$n" -gt 5 ]; then
             echo "::error::$n tests failed: broken, not flaky (no rerun)"; exit 1
           fi
-          npx playwright test --project=chromium --last-failed
+          npx playwright test --project=chromium --project=chromium-mic --last-failed
           echo "::warning::$n flaky e2e test(s) in logic shard ${{ matrix.shard }}: failed, then passed; quarantine it (docs/ops/testing.md)"
           ANNOTATE=1 node scripts/e2e-report.ts first-run.json "Flaky e2e (logic tier)"
           node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): quarantine it and fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"
@@ -203,7 +203,7 @@ jobs:
         env:
           SPECS: ${{ steps.specs.outputs.list }}
         # ($SPECS unquoted: the list splits into its files)
-        run: npx playwright test --project=chromium --grep-invert "@render|@quarantine" --repeat-each=5 --shard=${{ matrix.shard }}/3 --pass-with-no-tests $SPECS
+        run: npx playwright test --project=chromium --project=chromium-mic --grep-invert "@render|@quarantine" --repeat-each=5 --shard=${{ matrix.shard }}/3 --pass-with-no-tests $SPECS
       - if: failure()
         run: |
           node scripts/e2e-report.ts playwright-results.json "A changed spec failed in its 5 runs (a flake the push brought: fix its cause)" >> "$GITHUB_STEP_SUMMARY"
@@ -250,7 +250,7 @@ jobs:
           if [ "$n" -eq 0 ] || [ "$n" -gt 2 ]; then
             echo "::error::$n tests failed: broken, not flaky (no rerun)"; exit 1
           fi
-          npx playwright test --project=chromium --last-failed
+          npx playwright test --project=chromium --project=chromium-mic --last-failed
           echo "::warning::$n flaky drawn smoke test(s): failed, then passed; quarantine it (docs/ops/testing.md)"
           ANNOTATE=1 node scripts/e2e-report.ts first-run.json "Flaky e2e (drawn smoke)"
           node scripts/e2e-report.ts first-run.json "Flaky e2e (failed, then passed on a rerun): quarantine it and fix the cause, docs/ops/testing.md" >> "$GITHUB_STEP_SUMMARY"

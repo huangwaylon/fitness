@@ -42,7 +42,10 @@ const ALLOW: Record<string, string[]> = {
   travel: ['contract'],
   // トレイル (docs/hiking.md): the trails' data and their tracks, pure; a text pair is the guides' (travel), a locale i18n's
   hiking: ['travel', 'i18n'],
-  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking']
+  // ききみみ's mic (docs/kikimimi-mic.md): the capture's audio session (sound/engine.ts applySession), the relay's
+  // `/stt` and the key (sync)
+  mic: ['sync', 'sound'],
+  components: [...DOMAIN, 'layout', 'food', 'wedding', 'sync', 'store', 'ui-state', 'i18n', 'art', 'villagers', 'sound', 'kikimimi', 'random', 'travel', 'hiking', 'mic']
 };
 
 function files(dir: string): string[] {

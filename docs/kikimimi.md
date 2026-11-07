@@ -363,6 +363,8 @@ The user asked for "a mechanic for progress and improvement and learning trackin
 - Heard text is never put into a log event or an `Error`. The probe's `mic.*` events are numbers and closed sets (contract/log.ts).
 - The Permissions-Policy allows the microphone to our origin only.
 
+**The probe (M0, built 2026-11-07):** せってい's last row 「マイク診断（テスト）」 opens `mic/MicProbe.svelte` (lazy) in the page's place: 環境 · マイクの許可 (and, on a later open, 開き直しの確認) · 再生と録音 per earphone route · Whisper (skipped until M0w) · Safari の音声認識 · サーバーで文字起こし, each speaking step on the 3 pinned sentences read aloud (lib/mic/probe/steps.ts `SENTENCES`), the WER computed on the phone (lib/mic/match.ts). 「結果を送信」 sends the `mic.*` events through the log; the heard text shows on screen only. The capture is lib/mic/probe/run.ts's (its own context, a ScriptProcessor: M1 brings the real capture). e2e: `e2e/kikimimi-mic-probe.spec.ts` in the `chromium-mic` project.
+
 ## Performance
 
 - Nothing heavy loads before the sheet opens. The banner listener is a few hundred bytes.
