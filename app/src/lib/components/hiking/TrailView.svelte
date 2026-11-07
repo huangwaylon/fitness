@@ -1,6 +1,7 @@
 <script lang="ts">
-  // A trail: the map full screen (TrailMap) under NavBar s `over` (‹ to the list, ✕ the sheet) and the map's own smoked
-  // discs (zoom under ✕, locate bottom-left over the sheet), and the drag-up sheet over it, on the app's paper: the grip
+  // A trail: the map full screen (TrailMap) under the game's buttons: NavBar's ‹ (to the list) and ✕ (the sheet), the
+  // cream discs with the brown lip (the HUD's and the island's), and the map's own in the same disc (＋ − under ✕, locate
+  // bottom-left over the sheet), 44px each; and the drag-up sheet over it, on the app's paper: the grip
   // and the peek (the name, 距離 · 標高差 · 時間 · 難易度) at a height that shows the whole elevation chart (so it
   // scrubs without opening the sheet), dragged or tapped up to 90 %; its body the chart, the plan card, 概要, コース紹介,
   // the tips, the facts and the credits, each a dense card. The location dot only after the locate button (the trip map's
@@ -128,13 +129,13 @@
 <section class="detail" data-trail-view={trail.slug} data-sheet={sheetState}>
   <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} {fix} bottom={peekH} />
 
-  <div class="top"><NavBar size="s" over title={pick(trail.name, L)} {onback} {onclose} /></div>
+  <div class="top"><NavBar {onback} {onclose} /></div>
   <div class="zoom" inert={full}>
-    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={18} /></button>
-    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomOut, L)} onclick={() => map?.zoom(-1)}><Icon name="minus" size={18} /></button>
+    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={20} stroke={2.4} /></button>
+    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomOut, L)} onclick={() => map?.zoom(-1)}><Icon name="minus" size={20} stroke={2.4} /></button>
   </div>
-  <button type="button" class="disc locate" class:on={!!fix} style:bottom="{peekH + 8}px" inert={full} data-locate data-sfx="tick" aria-label={pick(S.locate, L)} aria-pressed={!!fix} onclick={locate}>
-    <Icon name="locate" size={20} />
+  <button type="button" class="disc locate" class:on={!!fix} style:bottom="{peekH + 12}px" inert={full} data-locate data-sfx="tick" aria-label={pick(S.locate, L)} aria-pressed={!!fix} onclick={locate}>
+    <Icon name="locate" size={20} stroke={2.4} />
   </button>
   {#if denied}<p class="denied" role="status">{pick(S.locDenied, L)}</p>{/if}
 
@@ -181,25 +182,23 @@
 <style>
   .detail { position: absolute; inset: 0; z-index: 10; background: var(--surface); overflow: hidden; }
 
-  /* ‹ ✕ over the map (NavBar s over: smoked discs); the map's own buttons in the same disc */
-  .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; padding: var(--ui-top) calc(4px + var(--safe-right)) 0 calc(4px + var(--safe-left)); pointer-events: none; }
+  /* ‹ ✕ over the map: NavBar's game buttons (44px cream discs, the brown edge and lip; cream at every time of day, as
+     the map is); the map's own buttons the same object */
+  .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; padding: var(--ui-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); pointer-events: none; }
   .top :global(.nav) { pointer-events: auto; }
   .disc {
-    position: relative; appearance: none; border: 0; padding: 0; width: var(--hit); height: var(--hit); display: grid; place-items: center;
-    background: none; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: opacity var(--dur-quick), bottom .32s var(--ease-soft);
+    appearance: none; border: 0; padding: 0; width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center;
+    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj), 0 6px 14px rgb(60 40 20 / .18); cursor: pointer;
+    -webkit-tap-highlight-color: transparent; transition: transform var(--dur-base) var(--ease-bounce), bottom .32s var(--ease-soft);
   }
-  .disc::before {
-    content: ''; position: absolute; inset: 6px; border-radius: 50%; background: rgb(30 24 18 / .35);
-    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: background var(--dur-quick);
-  }
-  .disc :global(svg) { position: relative; }
-  .disc:active { opacity: .55; }
-  .disc:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
-  .zoom { position: absolute; z-index: 500; top: calc(var(--ui-top) + 48px); right: calc(4px + var(--safe-right)); display: flex; flex-direction: column; }
-  .locate { position: absolute; z-index: 500; left: calc(4px + var(--safe-left)); }
-  .locate.on::before { background: var(--c-sky); }
+  .disc:active { transform: translateY(2px) scale(1.06, .92); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap), .32s; }
+  .disc:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .disc:active { transform: none; } }
+  .zoom { position: absolute; z-index: 500; top: calc(var(--ui-top) + 62px); right: calc(12px + var(--safe-right)); display: flex; flex-direction: column; gap: 10px; }
+  .locate { position: absolute; z-index: 500; left: calc(12px + var(--safe-left)); }
+  .locate.on { background: var(--c-sky); color: #fff; }
   .denied {
-    position: absolute; z-index: 560; top: calc(var(--ui-top) + 52px); left: 50%; translate: -50% 0; width: min(88vw, 344px); margin: 0; padding: 10px 12px;
+    position: absolute; z-index: 560; top: calc(var(--ui-top) + 62px); left: 50%; translate: -50% 0; width: min(88vw, 344px); margin: 0; padding: 10px 12px;
     background: var(--card); color: var(--text); border-radius: var(--r-row); box-shadow: var(--sh-float); font-size: var(--fs-s); line-height: 1.45;
   }
 
