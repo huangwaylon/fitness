@@ -1,5 +1,5 @@
 <script lang="ts">
-  // トレイル's list: NavBar s on the grain band, one ChipRow under it (the difficulties with their counts, then the two
+  // トレイル's list: NavBar s on the plain band (the body's --surface), one ChipRow under it (the difficulties with their counts, then the two
   // sorts, each off again on a second tap), and a dense photo card per trail (its level's sticker, name and area on a
   // PhotoBand, 距離 · 標高差 · 時間 in a StatStrip under it). A card opens the trail.
   import { asset } from '$app/paths';
@@ -33,7 +33,7 @@
 </script>
 
 <section class="screen" {hidden} data-trail-list>
-  <div class="top grain"><NavBar size="s" title={pick(S.title, L)} {onclose} /></div>
+  <div class="top"><NavBar size="s" title={pick(S.title, L)} {onclose} /></div>
   <ChipRow label={pick(S.filterBar, L)}>
     {#each FILTERS as f (f)}
       <Chip label={pick(f === 'all' ? S.all : DIFF[f], L)} count={count(f)} selected={filter === f} data-filter={f} onclick={() => (filter = f)} />
