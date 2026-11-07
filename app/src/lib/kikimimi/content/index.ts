@@ -1,6 +1,6 @@
 // ききみみ クイズ: the content sprint's sets (2026-11-06; docs/kikimimi.md "Levels 6 and 7"), folded into the bank
 // (source.ts BANK): もり's two (level 4, beside bank4.ts and dialogues.ts), やま's two (level 6), ほし (level 7) and the
-// variety set's two (levels 4 and 6, waiting for their voices: WAITING). Each set
+// variety set's two (levels 4 and 6) and かわ's breadth set (level 3, kawa-b.ts), waiting for their voices (WAITING). Each set
 // writes its items' staging in place (`scene`, `channel`, `marks`: staging.ts's rules, its PLACES and MARKS are the
 // older banks'); here each live item heard in a noisy scene (a café, a street, a platform or an airport gate) gets
 // that scene's bed, light (+15 dB: docs/kikimimi.md "Conditions"), as staging.ts NOISE does for bank4.ts. `word` items
@@ -12,6 +12,7 @@ import * as yamaA from './yama-a.ts';
 import * as yamaB from './yama-b.ts';
 import * as hoshi from './hoshi.ts';
 import * as variety from './variety.ts';
+import * as kawaB from './kawa-b.ts';
 
 /** Each set's single items and dialogues, by name (content/sets.test.ts checks each set's own rules). */
 export const SETS: Readonly<Record<string, { items: readonly Item[]; dialogues: readonly Item[]; family?: Readonly<Record<string, string>> }>> = {
@@ -21,11 +22,12 @@ export const SETS: Readonly<Record<string, { items: readonly Item[]; dialogues: 
   'yama-b': { items: yamaB.ITEMS, dialogues: yamaB.DIALOGUES, family: yamaB.FAMILY },
   hoshi: { items: hoshi.ITEMS, dialogues: hoshi.DIALOGUES, family: hoshi.FAMILY },
   'variety-mori': { items: variety.MORI_ITEMS, dialogues: variety.MORI_DIALOGUES, family: variety.MORI_FAMILY },
-  'variety-yama': { items: variety.YAMA_ITEMS, dialogues: variety.YAMA_DIALOGUES, family: variety.YAMA_FAMILY }
+  'variety-yama': { items: variety.YAMA_ITEMS, dialogues: variety.YAMA_DIALOGUES, family: variety.YAMA_FAMILY },
+  'kawa-b': { items: kawaB.ITEMS, dialogues: [], family: kawaB.FAMILY }
 };
 
 /** The sets written after their levels were offered: their items join the bank as they're voiced (source.ts joined). */
-const WAITS = ['variety-mori', 'variety-yama'];
+const WAITS = ['variety-mori', 'variety-yama', 'kawa-b'];
 /** Their items' ids. */
 export const WAITING: ReadonlySet<string> = new Set(WAITS.flatMap((s) => [...SETS[s].items, ...SETS[s].dialogues].map((it) => it.id)));
 

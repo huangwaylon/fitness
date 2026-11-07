@@ -4,7 +4,7 @@
 // size and split, its id prefixes, its level, its families, how long its clips may run, its accents.
 import { describe, expect, it } from 'vitest';
 import { isDialogue, type Item, type ItemType, type Level } from '../bank.ts';
-import { SETS } from './index.ts';
+import { SETS, WAITING } from './index.ts';
 
 interface Want {
   lv: Level;
@@ -28,13 +28,15 @@ const WANT: Record<string, Want> = {
   'yama-b': { lv: 6, items: 80, dialogues: [10, 10], prefix: ['yb', 'dyb'], least: 15, families: [12, 7], words: 26, lines: 2 },
   hoshi: { lv: 7, items: 90, dialogues: [13, 12], prefix: ['ho', 'dho'], least: 6, families: [10, 5], words: 45, lines: 3 },
   'variety-mori': { lv: 4, items: 30, dialogues: [3, 3], prefix: ['vm', 'dvm'], least: 7, families: [8, 3], words: 26, lines: 2 },
-  'variety-yama': { lv: 6, items: 30, dialogues: [3, 3], prefix: ['vy', 'dvy'], least: 7, families: [8, 3], words: 26, lines: 2 }
+  'variety-yama': { lv: 6, items: 30, dialogues: [3, 3], prefix: ['vy', 'dvy'], least: 7, families: [8, 3], words: 26, lines: 2 },
+  // かわ's breadth (level 3: reply, word and num, no mean)
+  'kawa-b': { lv: 3, items: 40, dialogues: [0, 0], prefix: ['kb', 'dkb'], least: 0, families: [5, 8], words: 20, lines: 2 }
 };
 
 const spoken = (it: Item) => (isDialogue(it) ? it.lines.map((l) => l.tts ?? l.en) : [it.tts ?? it.en]);
 
 describe('kikimimi content sets', () => {
-  it('the seven sets, nothing else', () => expect(Object.keys(SETS).sort()).toEqual(Object.keys(WANT).sort()));
+  it('the eight sets, nothing else', () => expect(Object.keys(SETS).sort()).toEqual(Object.keys(WANT).sort()));
 
   for (const [name, w] of Object.entries(WANT))
     it(`${name}: ${w.items} items and ${w.dialogues[0] + w.dialogues[1]} dialogues at level ${w.lv}, ids ${w.prefix.join('- / ')}-, its families, clips ≤ ${w.words} words`, () => {
@@ -63,5 +65,16 @@ describe('kikimimi content sets', () => {
     const { items } = SETS.hoshi;
     expect(items.filter((it) => it.type === 'gist').length).toBeGreaterThanOrEqual(6);
     expect(items.filter((it) => it.type === 'next').length).toBeGreaterThanOrEqual(6);
+  });
+
+  it("かわ's breadth: level 3's own types (8 of each at least, no mean), every item with its help and tags, waiting for its voices", () => {
+    const { items } = SETS['kawa-b'];
+    for (const t of ['reply', 'word', 'num'] as ItemType[]) expect(items.filter((it) => it.type === t).length, t).toBeGreaterThanOrEqual(8);
+    expect(items.filter((it) => it.type === 'mean')).toEqual([]);
+    for (const it of items) {
+      expect(it.cast, it.id).toBeUndefined();
+      expect(it.ctx && it.cja && it.why && it.note && it.tags, it.id).toBeTruthy();
+      expect(WAITING.has(it.id), it.id).toBe(true);
+    }
   });
 });
