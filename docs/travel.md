@@ -10,11 +10,10 @@ The three travel guides (Okinawa, Seattle, New Zealand), ported from `~/Document
   removes only what it added; the members edit everything.
 - Booking references, full names and personal URLs never enter the repo: they are a trip note on the relay, read by
   **all three keys** (the guest too).
-- Maps: MapLibre GL JS on OpenFreeMap's public vector tiles in our own NookPhone style, **online only** (no download,
-  no self-hosting for now; Protomaps on R2 rejected: decisions.md "The trip map"). Neither MapLibre (chunk, worker,
-  CSS, and `map/engine.ts`'s chunk: vite.config.ts `maplibre-names`) nor anything under `travel/` is precached. No terrain shading.
+- Maps: MapLibre GL JS on OpenFreeMap's public vector tiles in our own NookPhone style (no self-hosting for now;
+  Protomaps on R2 rejected: decisions.md "The trip map"). No terrain shading. Offline: see "Offline" below.
 - A "you are here" dot; **the position never leaves the phone** (never logged, sent or kept).
-- Past trips download nothing ahead of time (no offline maps, no photo prefetch).
+- Past trips download nothing ahead of time (no photo or tile prefetch); what was seen is kept (2026-11-07: "Offline").
 - A km / mi switch per device. No ベル / economy tie-in.
 
 ## Past trips (the user, 2026-11-07)
@@ -96,7 +95,8 @@ NookPhone palette), `overlay.ts` (pins, legs, candidates, the location dot), `fo
   candidates as circles behind MapPane's layer button (off at first).
 - **States** (`data-mode`): `loading`, `ready`; `offline` (drawn, no basemap tile came: the route alone, with
   「地図はオフライン — ルートのみ」); `failed` (the chunk or WebGL didn't come: 「地図を読み込めません」 + もう一度; offline
-  the chunk isn't even asked for, and it draws by itself when the phone is back online); `lost` (iOS took the WebGL
+  the chunk is asked for only if the service worker holds it, `map/cached.ts`, and it draws by itself when the phone
+  is back online); `lost` (iOS took the WebGL
   context, till restored). `map.remove()` on unmount.
 - **Locate:** the button asks permission the first time it's tapped (`geolocation=(self)`); the first fix flies the
   map there (zoom ≥ 14), unless the phone is more than 50 km from every stop: then the dot shows where it is, the map
@@ -107,8 +107,18 @@ NookPhone palette), `overlay.ts` (pins, legs, candidates, the location dot), `fo
 ## Photos
 
 `static/travel/<trip>/` (WebP ≤ 720 px wide: each trip's `hero` and `cover`, Okinawa's 26 campsites and the dive boat,
-Seattle's 8 hikes). Not precached (`caches.ts` `isTravel`); loaded lazily as a trip is read (the hero eagerly), from
-the network and the browser's HTTP cache. There is no prefetch, for any trip.
+Seattle's 8 hikes). Loaded lazily as a trip is read (the hero eagerly). A photo that can't load (offline, never seen)
+is the paper with a small picture icon (`ui/photoFallback.ts`, on every `<img>` of the guides), never WebKit's "?".
+
+## Offline
+
+(2026-11-07, phase A: docs/backend.md "Service worker" › Offline.) After one visit online the trips read offline: the
+text, 持ち物 (ticks queue till back), each trip's cover and hero (precached, ~0.26 MB with the trails' tracks), every
+photo already seen (`island-photos-v1`). The map draws offline once it has drawn on the phone: MapLibre is kept in the
+shell, and the tiles it drew (`island-tiles-v1`, 60 MB, least recently used out; OpenFreeMap's tiles fetched by the
+page, `map/tiles.ts`, as WebKit's service worker doesn't see MapLibre's worker's fetches) with the TileJSON
+(`island-map-meta-v1`). Where no tile was kept: the route with 「地図はオフライン — ルートのみ」. Nothing is prefetched;
+saving an area ahead is phase B.
 
 ## Open
 
@@ -116,6 +126,8 @@ the network and the browser's HTTP cache. There is no prefetch, for any trip.
 - The map has no night tint (the day palette at every hour).
 - Offline, then back: in Playwright's WebKit the pill's import can still fail after もういちど's reload (no request
   made; `travel.spec` "offline before the first opening" fails about half its WebKit runs). Check on the phone.
+- Offline maps on the phone: `e2e/offline.spec.ts` checks them in Chromium (a drawn map offline from the caches) and
+  the tiles kept in Playwright's WebKit by hand; not yet on an iPhone.
 - Packing: no icon picker (a new category is always the shopping bag), no note editing, no moving an item to another
   category.
 

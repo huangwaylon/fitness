@@ -896,8 +896,9 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
 
 `app/src/service-worker/` (pure rules in `caches.ts`).
 
-- **Install:** precaches built JS/CSS and static files except fonts, audio, the art manifest, the app icons, villager art
-  beyond the two defaults and the critters', finds' and presents' art (all cached on first use). Non-hashed files and the shell are fetched with `cache: 'no-cache'` (revalidated past the HTTP
+- **Install:** precaches built JS/CSS and static files except the rarer font slices, audio, the art manifest, the app
+  icons, villager art beyond the two defaults, the critters', finds' and presents' art (all cached on first use), the
+  guides' photos and MapLibre (Offline, below). Non-hashed files and the shell are fetched with `cache: 'no-cache'` (revalidated past the HTTP
   cache). The hashed chunks (an older shell's copy where it has one, else fetched) are all or nothing (`addAll`): one
   not fetched fails the install, and the page asks again later. The static files (~300: the art, the manifest) each
   on its own (`allSettled`): one that fails is served from the previous shell or the network, and no longer fails the
@@ -937,7 +938,33 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   bounded-by-bytes code (`boundedCache` in the worker: an index of each pack's bytes and last use in the cache), with
   `listenEvict`: a pack's older version (another hash) once unused for 10 minutes, then the least recently used past
   30 MB, never a pack used in the last 10 minutes (a game in progress). Range requests pass through.
-- **Runtime:** fonts, villager, critter, find and present art cache-first on first use; audio (`island-audio-v1`)
+- **Offline** (phase A, 2026-11-07, decisions.md): what a phone has shown once reads offline; nothing is prefetched.
+  - *Precached* (~1 MB of the 3.3 MB precache, `scripts/load-budget.ts` ≤ 3.5 MB): the Zen Maru Gothic slices holding
+    ~99% of the app's own characters, both weights, and Fredoka's Latin (`caches.ts PRECACHED_FONT_SLICES`, 0.7 MB;
+    the rest on first use, `island-fonts-v1`), each trip's cover and hero and the ten trail tracks (0.26 MB).
+  - *Photos* (`island-photos-v1`: every other file under `travel/` and `hiking/`, ~3.4 MB in all): kept on first view,
+    stale-while-revalidate (`caches.ts swrFetch`: the copy at once, refetched in the background once a day old; the
+    copy stamped with when it was stored, `x-island-stored`), bounded at 20 MB, least recently used out. A photo that
+    can't load is the paper placeholder (`ui/photoFallback.ts`).
+  - *MapLibre* (its chunk, worker and CSS and the two engines, ~480 KB on the wire): into this version's shell the first
+    time a map draws; each install copies the unchanged files from an older shell and fetches the changed ones, once
+    a map has drawn on the phone. Offline the maps import it only if a shell holds it (`travel/map/cached.ts`: Safari
+    keeps a failed import for the page's life).
+  - *Tiles* (`island-tiles-v1`): the tiles a map drew (OpenFreeMap, `basemap.nationalmap.gov`,
+    `cyberjapandata.gsi.go.jp`; all send `Access-Control-Allow-Origin: *`, so no opaque answer is ever kept: one would
+    cost quota unread), stale-while-revalidate past 14 days, bounded at 60 MB, least recently used out (`bytesEvict`,
+    the room's `boundedCache` index, `__tile-index`). OpenFreeMap's are keyed without the week's build in their path
+    (`tileKey`), so last week's tile answers under this week's TileJSON. They are fetched by the page, not MapLibre's
+    worker (`travel/map/tiles.ts`: WebKit's service worker doesn't see that worker's fetches). One function serves a
+    tile (`index.ts serveTile`), where phase B's saved areas go first. The TileJSON (`island-map-meta-v1`): the copy
+    within an hour, else the network within 2.5 s, else the copy.
+  - *Storage kept:* the installed app asks `navigator.storage.persist()` once, after its first sync that worked
+    (`sync/persist.ts`), and logs `storage.persist` (granted, already, MB used and quota).
+  - *The sync pill* offline counts the taps waiting to go (`sync/queue.ts`); its label says when the record last came.
+  - `e2e/offline.spec.ts` (Chromium, the worker on): a visit, then offline: the hero, a photo seen, a trail's track and
+    chart, a photo never seen as the placeholder; drawn (@render), a map drawn online drawn offline with no tile asked.
+- **Runtime:** fonts, villager, critter, find and present art cache-first on first use (a precached font slice from
+  the shell); audio (`island-audio-v1`)
   cache-first and never revalidated: every audio URL carries its file's content hash (`?v=`, `lib/sound/manifest.ts`;
   `/audio/*` is served immutable, `scripts/headers.ts`), so a re-cut file is a new URL. An LRU per class keeps the 3
   most recent music files (the hours, the event music, the rooms), K.K.'s 2 (a run of songs never pushes the hours

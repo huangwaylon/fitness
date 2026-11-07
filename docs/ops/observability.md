@@ -50,6 +50,7 @@ A phone sends batches to `POST /log` (text/plain JSON, a simple request, `keepal
 | `gl.lost` | warn | `where`, `restored` | WebGL context lost / back |
 | `chunk.fail` | warn | | a chunk failed to load |
 | `storage.fail` | warn | `store`, `kind` | storage refused a write |
+| `storage.persist` | info | `ok`, `was`, `useMb`, `quotaMb` | the installed app asked to keep its storage (once, after a sync) |
 | `use` | info | counters `sheet:<i18n key>`, `ev:<event type>`, `route:<route>` | summed, one a flush |
 | `log.drop` | warn | `n`, `why` (cap, full, day, pending) | the phone's log dropped events |
 | `mic.env` / `mic.perm` / `mic.duplex` / `mic.stt` | info | the mic probe's numbers and closed sets (docs/kikimimi-mic.md §1.1): the page's capabilities; the permission (`st`, `ms`, `again`, `asked`, `ec`, `sr`, `inp`); per earphone route the bleed (dB), round trip (ms), loudness and restore; per recogniser and step its `ms`, `mb`, `audS`, `wer` (%, computed on the phone), `ok`, `err`. **Never heard text, a device label or a sentence** | せってい's 「マイク診断（テスト）」, on 「結果を送信」 |
