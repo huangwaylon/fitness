@@ -1,0 +1,20 @@
+{
+  "kiki.tile.wait": "The tiles come once it's played",
+  "kiki.tile.ask": "Tap the words in the order you heard",
+  "kiki.tile.askOdd": "You: words 1, 3, 5…",
+  "kiki.tile.askEven": "You: words 2, 4, 6…",
+  "kiki.tile.sentence": "Your sentence",
+  "kiki.tile.slot": "Word {n}",
+  "kiki.tile.partner": "Word {n} (your partner's)",
+  "kiki.tile.remove": "Take back {w}",
+  "kiki.tile.pool": "Tiles",
+  "kiki.tile.done": "Done",
+  "kiki.tile.clear": "Take all back",
+  "kiki.tile.words": "{k} / {n} words",
+  "kiki.tile.made": "Built it together!",
+  "kiki.tile.short": "{k} words short together",
+  "kiki.tile.heard": "Heard wrong: {w}",
+  "kiki.tile.host.all": "You built every one! Your ears are getting sharp!",
+  "kiki.tile.host.some": "You're catching the squashed sounds!",
+  "kiki.tile.host.few": "Tricky sounds today. Let's hear them again in the review"
+}

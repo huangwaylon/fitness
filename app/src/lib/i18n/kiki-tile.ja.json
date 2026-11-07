@@ -1,0 +1,20 @@
+{
+  "kiki.tile.wait": "最後まで聞くと、タイルが出ます",
+  "kiki.tile.ask": "聞こえた順にタップ",
+  "kiki.tile.askOdd": "あなたは 1・3・5…番目の言葉",
+  "kiki.tile.askEven": "あなたは 2・4・6…番目の言葉",
+  "kiki.tile.sentence": "あなたの文",
+  "kiki.tile.slot": "{n}番目",
+  "kiki.tile.partner": "{n}番目（相手）",
+  "kiki.tile.remove": "{w}を戻す",
+  "kiki.tile.pool": "タイル",
+  "kiki.tile.done": "できた",
+  "kiki.tile.clear": "全部戻す",
+  "kiki.tile.words": "{k} / {n} 語",
+  "kiki.tile.made": "ふたりで完成！",
+  "kiki.tile.short": "ふたりの文は、あと {k} 語",
+  "kiki.tile.heard": "聞き違えた: {w}",
+  "kiki.tile.host.all": "ぜんぶ くみたてられました！ みみが よく なってますね！",
+  "kiki.tile.host.some": "ちぢむ おとが だいぶ きこえて きましたね！",
+  "kiki.tile.host.few": "むずかしい おとでしたね。ふりかえりで もういちど きいて みましょう"
+}

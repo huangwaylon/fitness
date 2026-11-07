@@ -18,6 +18,8 @@ export type QuizPhase = RoundPhase;
  *  tournament's wager, its bet too. */
 interface QuizAnswer {
   k: number;
+  /** As given, when it isn't a choice (a later game's own: tiles, memo slots). */
+  a?: AnswerValue;
   bet?: number;
   rp: boolean;
   t: number;
@@ -29,7 +31,7 @@ interface QuizPlayer {
   here: boolean;
   answered: boolean;
   /** Their choice for the current question, in its reveal only (and whether it was right). */
-  pick?: { k: number; ok: boolean; bet?: number };
+  pick?: { k: number; a?: AnswerValue; ok: boolean; bet?: number };
   /** In a reveal: they tapped よみおわった (done reading; the host's つぎへ counts them). */
   ready: boolean;
   score: number;
@@ -101,10 +103,11 @@ export interface QuizView {
   notice: RoundNotice | null;
 }
 
-/** An answer value as the quiz reads it: its choice (a wager's `[choice, bet / 10]`: the choice, and the bet). */
+/** An answer value as the quiz reads it: its choice (a wager's `[choice, bet / 10]`: the choice, and the bet), and as
+ *  given when it's neither (a later game's). */
 const answerOf = (a: AnswerValue) => {
   const w = typeof a === 'number' ? null : wagerOf(a);
-  return { k: choiceOf(a), ...(w && { bet: w.bet }) };
+  return { k: choiceOf(a), ...(typeof a !== 'number' && !w && { a }), ...(w && { bet: w.bet }) };
 };
 
 /** The quiz's view of a round game's (the tournament's too: its options [tier, timer], its wager's answers). */

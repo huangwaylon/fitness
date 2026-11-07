@@ -17,6 +17,7 @@ import type { QuizView } from '../games/quiz/view.ts';
 import type { Defs, SeedAsk } from './session.ts';
 import type { GameDef, GameId } from './types.ts';
 import type { QuizLv } from '../../contract/live-protocol.ts';
+import type { ListenRow } from '../../contract/listen.ts';
 import { addMode, contentLevels, type ModeMeta } from '../catalog.ts';
 import { quizOpts } from '../games/quiz/def.ts';
 import { quizLane } from '../games/quiz/lane.ts';
@@ -61,9 +62,14 @@ export interface Lane<O = any> {
   myTier?(u: string | undefined, my: { level: number | null; tierOf(stage: Stage): Tier | undefined }): number | undefined;
   /** The chunks to have in while a game of it runs (みみ チェック's: the levels round its band). */
   ahead?(v: QuizView, items: readonly Item[]): Unit[];
-  /** A lobby's options from its page's picks (a place's level, こたえる じかん); none: `[lv, timer]` (quizOpts). They lead
-   *  with those two as the quiz's do (the lobby's view reads its level and timer from them), a game's own after. */
-  opts?(p: { lv: number; timer: QuizTimer }): number[];
+  /** A lobby's options from its page's picks (a place's level, こたえる じかん) and my comfortable level (a host's tier);
+   *  none: `[lv, timer]` (quizOpts). They lead with those two as the quiz's do (the lobby's view reads its level and timer
+   *  from them), a game's own after. */
+  opts?(p: { lv: number; timer: QuizTimer; level?: number | null }): number[];
+  /** My answers of its game as my `listen` row's (components/kikimimi/recorder.ts), when they aren't choices (else
+   *  progress.ts listenAnswers): from the view (my options, seed, raw answers, the rounds I had), its items and my
+   *  replays; the row carries its `gm`. */
+  record?(v: QuizView, items: readonly Item[], rp: readonly number[], done: boolean): ListenRow['r'];
   /** The title bar's i18n key while it runs and at its results (else the question's count), and a lobby of another's
    *  I joined (else みんなで). */
   title?: { game?: string; lobby?: string };
@@ -87,6 +93,7 @@ const EAGER: readonly Lane[] = [quizLane, ladderLane, lessonLane, taikaiLane, ch
 /** The games of their own chunks, by id (docs/curriculum-wave2.md §2: tile, tachi, call, rush, news; the mic modes). */
 const LATER: Readonly<Record<GameId, Later>> = {
   // one line a game (Later)
+  tile: { lane: () => import('../games/tile/lane.ts') },
 };
 
 /** The levels of the places a game's listened files are at (catalog.ts contentLevels over this build's index). */
@@ -100,7 +107,7 @@ export function levelFor(gm: GameId, want: number, listen: Readonly<Record<strin
 }
 
 /** A lobby's options for a lane's game from the picks (Lane.opts, else the quiz's `[lv, timer]`). */
-export const laneOpts = (lane: Lane, p: { lv: number; timer: QuizTimer }): number[] =>
+export const laneOpts = (lane: Lane, p: { lv: number; timer: QuizTimer; level?: number | null }): number[] =>
   lane.opts?.(p) ?? quizOpts.encode({ lv: p.lv as QuizLv, timer: p.timer });
 
 export class Registry {
