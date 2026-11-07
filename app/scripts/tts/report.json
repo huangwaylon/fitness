@@ -14,15 +14,15 @@
    "by": "atempo"
   },
   "l1Tempo": 0.92,
-  "at": "2026-11-07T11:39:22.351Z",
-  "wallSeconds": 83,
-  "spokenNow": 33,
+  "at": "2026-11-07T14:06:54.336Z",
+  "wallSeconds": 6,
+  "spokenNow": 1,
   "clips": 4123,
   "perfect": 3999,
   "contentClean": 4031,
   "rerolled": 365,
   "conditioned": 1325,
-  "condWer": 0.01,
+  "condWer": 0.009,
   "flagged": [
    "call-bag-found-5",
    "call-card-blocked-5",
@@ -160,7 +160,6 @@
    "r3-hat",
    "r3-how-long",
    "r3-keep-down",
-   "rp-fast-truck-2",
    "serial-cafe-3-16",
    "serial-tokyo-4-30",
    "sm-eighty-next-3",
@@ -243,7 +242,7 @@
    "contentClean": 552
   },
   "files": 4218,
-  "kb": 113438,
+  "kb": 113439,
   "perVoice": {
    "au-f1": {
     "n": 9,
@@ -43644,7 +43643,7 @@
    "mos": 4.308
   },
   "rp-fast-truck-2": {
-   "src": "373fa4c2b0",
+   "src": "2af83f747e",
    "cast": "us-f1",
    "engine": "qwen3",
    "text": "Ugh. So when?",
@@ -43652,17 +43651,15 @@
    "wpm": 118,
    "seed": 1234,
    "tries": 1,
-   "flags": [
-    "cond-wer"
-   ],
+   "flags": [],
    "hyp": "Ugh, so when?",
    "wer": 0,
    "content": 0,
    "sim": 0.582,
    "rtf": 0.395,
-   "cond": "signal:heavy+street",
-   "condHyp": "Oh, thank you.",
-   "condWer": 1,
+   "cond": "signal:light+street",
+   "condHyp": "Ugh. So when?",
+   "condWer": 0,
    "mos": 3.602
   },
   "rp-fast-truck-3": {

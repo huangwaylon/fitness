@@ -325,7 +325,7 @@ The games' packs went 41 → 89.3 MiB (bank.test's line 92) and the stories' 12.
 
 ### 4.1 Pending: the listening check
 
-Still flagged after the gate's re-rolls, for the user's ear on the phone (§3.4, pipeline step 6: the flagged clips plus a 20% sample). The whole list is report.json's summary `flagged` (app/scripts/tts/report.json: 195 clips, 2026-11-07); most are whisper's own spellings. By group, the ones worth a listen:
+Still flagged after the gate's re-rolls, for the user's ear on the phone (§3.4, pipeline step 6: the flagged clips plus a 20% sample). The whole list is report.json's summary `flagged` (app/scripts/tts/report.json: 194 clips, 2026-11-07); most are whisper's own spellings. By group, the ones worth a listen:
 
 - **The bank (content sprint, 2026-11-06):** whaddaya (ml-w-whaddaya, ya-r-whaddaya), mw-used-to, mw-ya-gonna, ya-w-whydja; voice drift on dya-capital-3, dya-parking-2; over a bed (`cond-wer`), mw-tickets and ya-n-rent; the conditions' d4-landlord-1, d4-installer-3, w2-read, w3-gotta, w3-shouldve.
 - **スピード はしご:** number formats, 'em heard as "him", a swallowed "Breakfast's" / "I've"; sp-key-code at 1.4× (UTMOS 3.38); 9 rungs clamped (the tempo's 0.7–1.6).
@@ -333,7 +333,7 @@ Still flagged after the gate's re-rolls, for the user's ear on the phone (§3.4,
 - **A1:** 'em heard "him" (tachi-standup-blocked-3/5), "kinduva trek" (tachi-im-easy-3), "manager's joinin'" (call-handouts-favour-5, `cond-wer`).
 - **A2:** tip's (dk-fast-check-2); Kid Cat and Bea as names (dk-pickup-fifteen-2, dk-fast-late-doc-1); "greadon" heard "great in" (kw-great-on, tile-shop-great-on-you); dk-hike-dinner-2 (UTMOS 3.49), dk-dentist-day-4 (similarity 0.49).
 - **A3:** none.
-- **A4:** couldja heard "Kuja" (wg-n-rsvp); "Will call" heard "We'll call" (tk-will-call-next-1); standin' / citin' / jus' an' (tk-fast-three-3, tachi-deposit-letter-7, tachi-movers-or-truck-8); the heavy signal over "Ugh. So when?" (rp-fast-truck-2, mixed WER 1.0 in every take); cu-r-landlord's café mix ("sell in"); short lines' voice (tk-w-fifty and its tile, sm-eighty-next-3, UTMOS 3.02); the h-drop "but 'is" (tachi-hiring-pick-3); possessives.
+- **A4:** couldja heard "Kuja" (wg-n-rsvp); "Will call" heard "We'll call" (tk-will-call-next-1); standin' / citin' / jus' an' (tk-fast-three-3, tachi-deposit-letter-7, tachi-movers-or-truck-8); cu-r-landlord's café mix ("sell in"); short lines' voice (tk-w-fifty and its tile, sm-eighty-next-3, UTMOS 3.02); the h-drop "but 'is" (tachi-hiring-pick-3); possessives. rp-fast-truck-2's "Ugh. So when?" was lost under the heavy signal in every take (mixed WER 1.0): its line takes the light one (the line's own `cond`), heard as written.
 - **Stories:** serial-cafe-3-16's "Bean There" (heard "Being there" in every take: a pun on "been there"); serial-tokyo-4-30's "her sister's" (heard "sisters").
 - **はつおん ききわけ's pair words** (`pr-*`, kikimimi-mic.md §2.4): 65 single words flagged for low similarity or drift, as single words are; "berry" is heard "Barry" in every take.
 
