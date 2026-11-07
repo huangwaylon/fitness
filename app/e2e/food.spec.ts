@@ -470,7 +470,7 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   await riceRow.locator('button.it').click();
   await expect(sheet(page).locator('[data-pick-meal]')).toHaveCount(0); // an ingredient: no meal
   await sheet(page).locator('[data-grams]').fill('100');
-  await expect(sheet(page).locator('[data-done]')).toHaveText('追加');
+  await expect(sheet(page).locator('[data-done]')).toHaveText('追加 156 kcal'); // grams typed: 追加 says the kcal
   expect(await overflowOf(page)).toEqual([]);
   await sheet(page).locator('[data-done]').click();
   await expect(h2).toHaveText('材料を追加');
@@ -846,6 +846,41 @@ test('the amount: the compact card while there are no pictures, its 「これは
   await expect(head.locator('[data-food-about]')).toHaveCount(0); // an everyday food: no line
 });
 
+// The amount's layout (docs/design.md "Gohan" Amount) on an iPhone 15's whole screen: the most a raw food shows (its
+// picture, 3 states and their line, 4 portions) without a scroll; the kcal, the per-100 g values closed behind
+// 「100gあたり」 (closed again on the next open); the meal in the foot over 追加, gone while grams are typed, when 追加
+// says the kcal.
+test('the amount: 豚ロース fits on the screen, kcal in the head, 100gあたり closed, the meal in the foot but while typing', async ({ page }) => {
+  await page.setViewportSize({ width: 393, height: 852 });
+  const open = async () => {
+    await openFood(page);
+    await sheet(page).locator('[data-add=l]').click();
+    await sheet(page).locator('[data-food-q]').fill('豚ロース');
+    await sheet(page).locator('[data-food-results] button.it').filter({ has: page.locator('.nm', { hasText: /^豚ロース 脂身つき(✓|$)/ }) }).click({ timeout: 15_000 });
+    await expect(sheet(page).locator('[data-food-pic] [data-thumb]')).toHaveAttribute('data-thumb', /img|under/);
+  };
+  await open();
+  expect(await sheet(page).locator('.fs-body').evaluate((b) => b.scrollHeight - b.clientHeight)).toBeLessThanOrEqual(0);
+  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('298');
+  const per = sheet(page).locator('[data-food-per]');
+  await expect(per).toHaveAttribute('aria-expanded', 'false');
+  await expect(sheet(page).locator('.head .per')).toHaveCount(0);
+  await per.click();
+  await expect(sheet(page).locator('.head .per')).toContainText('248 kcal');
+  const meals = sheet(page).locator('.level-acts [data-pick-meal]');
+  await expect(meals).toHaveCount(4);
+  for (const b of await meals.all()) expect((await b.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await sheet(page).locator('[data-grams]').focus();
+  await expect(meals).toHaveCount(0);
+  await expect(sheet(page).locator('[data-done-kcal]')).toHaveText('298 kcal');
+  await sheet(page).locator('[data-grams]').blur();
+  await expect(meals).toHaveCount(4);
+  await expect(sheet(page).locator('[data-done-kcal]')).toHaveCount(0);
+  expect(await overflowOf(page)).toEqual([]);
+  await open(); // nothing remembered
+  await expect(sheet(page).locator('[data-food-per]')).toHaveAttribute('aria-expanded', 'false');
+});
+
 // A food in its states (food data's vg/st: 豚ロース 脂身つき 生 · 焼き · ゆで) is one row: its name without the state,
 // the state its kcal is for filled and the others after it; a word of the query picks the state.
 test('search: one row per food in its states, the state filled; 豚ロース 焼き shows 焼き; 焼きいも its own name', async ({ page }) => {
@@ -869,7 +904,7 @@ test('search: one row per food in its states, the state filled; 豚ロース 焼
 });
 
 // The pictures (static/food-img: generated イメージ in sprite sheets, lib/food/images.ts imgOf): a food with one shows
-// it in its row's box (no size change) and on its amount at 160 px with the イメージ badge; a sheet that fails to load
+// it in its row's box (no size change) and on its amount at 104 px beside the name with the イメージ badge; a sheet that fails to load
 // leaves the category's tile; データの出典 says they are generated.
 test('pictures: ごはん’s row and amount show its イメージ (badge, alt), the box unchanged; a broken sheet keeps the tile; the credit', async ({ page }) => {
   await openFood(page);
@@ -886,7 +921,9 @@ test('pictures: ごはん’s row and amount show its イメージ (badge, alt),
   await expect(pic).toHaveAccessibleName('ごはん（精白米）のイメージを拡大');
   await expect(pic.locator('.badge')).toHaveText('イメージ');
   const p = (await pic.locator('[data-thumb]').boundingBox())!;
-  expect([p.width, p.height].map(Math.round)).toEqual([160, 160]);
+  expect([p.width, p.height].map(Math.round)).toEqual([104, 104]);
+  const [pr, nr] = await sheet(page).locator('.card.head').evaluate((h) => [h.querySelector('[data-food-pic]')!.getBoundingClientRect().right, h.querySelector('h3')!.getBoundingClientRect().left]);
+  expect(pr).toBeLessThan(nr); // beside the name
   expect(await overflowOf(page)).toEqual([]);
   // a tap: it enlarged, its name, the badge and that it is generated; Esc, ✕ and a tap outside close it, the focus back
   const big = page.locator('[data-food-photo]');
@@ -1075,7 +1112,9 @@ test('マイ食品: made from a search that finds nothing (no weight), logged at
   await row.click();
   await expect(sheet(page).locator('[data-grams]')).toHaveCount(0);
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toHaveText('1食');
-  await expect(sheet(page).locator('.amt .head')).toContainText('1食あたり 650 kcal');
+  await expect(sheet(page).locator('[data-food-per]')).toHaveText(/^1食あたり/);
+  await sheet(page).locator('[data-food-per]').click();
+  await expect(sheet(page).locator('.amt .head .per')).toContainText('650 kcal');
   await expect(sheet(page).locator('.amt .head')).not.toContainText('100g');
   await sheet(page).locator('[data-step="1"]').click();
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('1,300');

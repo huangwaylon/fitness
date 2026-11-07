@@ -1,19 +1,19 @@
 <script lang="ts">
-  // ごはん's amount (a level over the search or the day): its picture when it has one (160 px, the イメージ badge: every
-  // picture is generated; none: no picture area; a tap: FoodPhoto, it enlarged), the food's name, its everyday name (glossOf) and 「これは…」
-  // line (`desc`, when it has one), its values per 100 g; a food in its states (the data's vg/st), じょうたい: a chip per
-  // state with that state's kcal at the amount it would take (`onitem` swaps the food: a portion label the state also
-  // has stays picked at its own grams, typed grams stay typed, else its default), and one line why (the 生 chip:
-  // パックの重さなら 生; 乾 beside ゆで: ゆでる前の重さなら 乾); its portions as chips
-  // (the first the default; 100 g last), −/＋ by a whole portion for the things you count (本, 個, 杯 …) and by half
-  // one for the rest (茶碗, 人前; ±10 g once grams are typed: stepOf), the grams field (ml for a drink; typed grams leave
-  // the portions); what that amount holds, live; which meal; then ついか (a new entry) or ほぞん / けす (my entry). For a
-  // recipe's ingredient (`pick`, マイレシピ): no meal, and ついか (into the recipe) or ほぞん / けす (an ingredient of it).
+  // ごはん's amount (a level over the search or the day; docs/design.md "Gohan" Amount). The head: its picture when it
+  // has one (104 px beside the name, the イメージ badge: every picture is generated; a tap: FoodPhoto, it enlarged),
+  // its name, everyday name (glossOf) and 「これは…」 line (`desc`); under them what this amount holds, live: the kcal
+  // (the sheet's loudest number), P · F · C · 塩分, and behind 「100gあたり」 (closed on each open) the values per 100 g.
+  // Then the controls in the order they're decided: じょうたい, a food in its states (the data's vg/st), a chip per
+  // state with its kcal at the amount it would take (`onitem` swaps the food: a portion label the state also has stays
+  // picked at its own grams, typed grams stay typed, else its default), one line why (パックの重さなら 生 / ゆでる前の
+  // 重さなら 乾); its portions as chips (the first the default; 100 g last), −/＋ by a whole portion for the things you
+  // count and by half one for the rest (±10 g once grams are typed: stepOf), the grams field (ml for a drink). The foot
+  // (sticky, at the screen's foot for a short food): which meal (gone while the grams are typed: the keyboard's up),
+  // then 追加 (a new entry) or 保存 / 削除 (my entry). For a recipe's ingredient (`pick`): no meal, the recipe's words.
   // The item may be swapped while it is open (an entry opened from its snapshot, the catalog's portions arriving):
   // untouched, the amount starts again from the same grams; touched, the portion picked stays picked (by its label).
   // A serving with no known weight (`serving`: a custom food's, マイ食品): its values per serving, its one portion stepped
-  // by whole servings, no grams field (its nominal 100 g never shown). A recipe's or custom food's: `open`, a button
-  // left of ついか to open it (mine to edit, anyone else's to copy).
+  // by whole servings, no grams field. A recipe's or custom food's: `open`, a button left of 追加 to open it.
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
   import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
@@ -88,7 +88,14 @@
   const states = $derived(serving || !onitem ? [] : variantsOf(db, item));
   let imgs = $state.raw<FoodImageIndex | null>(null);
   $effect(() => withImages((ix) => (imgs = ix)));
+  /** The picture's box beside the name (its detail cell scaled down: sharp at 3×). */
+  const PIC = 104;
   const pic = $derived(imgOf(imgs, item.id, 160));
+  /** The values per 100 g (or per serving) shown: closed on every open, never remembered. */
+  let perOpen = $state(false);
+  /** The grams field focused (the keyboard up): the meal row leaves the foot, which then covers less, and 追加 says
+   *  the kcal (the head's may be scrolled off over the keyboard). */
+  let typing = $state(false);
   /** The picture enlarged (FoodPhoto), and what opened it (the focus goes back there). */
   let big = $state(false);
   /** A picture on screen (its thumbnail while the cell loads): then the イメージ badge, never on a tile. */
@@ -154,28 +161,36 @@
 </script>
 
 <form class="amt" onsubmit={(e) => { e.preventDefault(); done(); }}>
-  <section class="card head">
-    {#if pic}
-      <button type="button" class="pic" data-food-pic data-sfx="page" bind:this={picBtn} aria-label={t('food.img.big', { name: item.name })} onclick={() => (big = true)}>
-        <FoodThumb cat={item.cat} size={160} img={pic} under={imgOf(imgs, item.id, 48)} bind:pictured />{#if pictured}<span class="badge">{t('food.img.badge')}</span>{/if}
-      </button>
-      {#if big}<FoodPhoto {item} img={imgOf(imgs, item.id, 384) ?? pic} onclose={() => { big = false; picBtn?.focus(); }} />{/if}
-    {/if}
-    <h3>{item.name}</h3>
-    {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
-    {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
-    <p class="per money">{serving ? t('food.my.per', { u: ps[0].label, k: formatNum(item.kcal) }) : t('food.per100', { k: formatNum(item.kcal) })} · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>
+  <section class="card head" data-food-live>
+    <div class="id">
+      {#if pic}
+        <button type="button" class="pic" data-food-pic data-sfx="page" bind:this={picBtn} aria-label={t('food.img.big', { name: item.name })} onclick={() => (big = true)}>
+          <FoodThumb cat={item.cat} size={PIC} img={pic} under={imgOf(imgs, item.id, 48)} bind:pictured />{#if pictured}<span class="badge">{t('food.img.badge')}</span>{/if}
+        </button>
+        {#if big}<FoodPhoto {item} img={imgOf(imgs, item.id, 384) ?? pic} onclose={() => { big = false; picBtn?.focus(); }} />{/if}
+      {/if}
+      <div class="txt">
+        <h3>{item.name}</h3>
+        {#if gloss || item.desc}<p class="gl" data-food-about>{#if gloss}<span data-gloss>{gloss}</span>{/if}{#if gloss && item.desc}{' — '}{/if}{#if item.desc}<span data-desc>{item.desc}</span>{/if}</p>{/if}
+        {#if agree}<p class="vf" data-verified={agree}>{t('food.verifiedBadge', { n: agree })}</p>{/if}
+        <div class="kline">
+          <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small></p>
+          <button type="button" class="per-t" data-food-per aria-expanded={perOpen} aria-controls="food-per" data-sfx="tick" onclick={() => (perOpen = !perOpen)}>
+            {serving ? t('food.my.perOne', { u: ps[0].label }) : t('food.per100Head')}<span class="caret" aria-hidden="true">▾</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <dl class="nut">
+      <div><dt>{t('food.p')}</dt><dd class="money">{n.p.toFixed(1)}<small>g</small></dd></div>
+      <div><dt>{t('food.fa')}</dt><dd class="money">{n.fa.toFixed(1)}<small>g</small></dd></div>
+      <div><dt>{t('food.c')}</dt><dd class="money">{n.c.toFixed(1)}<small>g</small></dd></div>
+      <div><dt>{t('food.s')}</dt><dd class="money">{n.s.toFixed(1)}<small>g</small></dd></div>
+    </dl>
+    {#if perOpen}<p class="per money" id="food-per">{formatNum(item.kcal)} kcal · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>{/if}
   </section>
 
-  {#if !pick}
-    <div class="seg" role="group" aria-label={t('food.whichMeal')}>
-      {#each MEALS as id (id)}
-        <button type="button" class="sb" aria-pressed={m === id} data-pick-meal={id} data-sfx={m === id ? 'none' : 'tick'} onclick={() => (m = id)}>{t(`food.meal.${id}`)}</button>
-      {/each}
-    </div>
-  {/if}
-
-  <section class="card">
+  <section class="card ctl">
     {#if states.length}
       <h4>{t('food.st.head')}</h4>
       <div class="chips" role="group" aria-label={t('food.st.head')} data-states>
@@ -198,51 +213,75 @@
     </div>
     <div class="qty">
       <button type="button" class="nb" data-sfx="tick" aria-label={t('food.less')} data-step="-1" onclick={() => step(-1)}>−</button>
-      <b class="mult money" aria-live="polite">{custom ? `${gramsText(g)}${unit}` : `×${mult}`}</b>
+      <b class="mult money">{custom ? `${gramsText(g)}${unit}` : `×${mult}`}</b>
       <button type="button" class="nb" data-sfx="tick" aria-label={t('food.more')} data-step="1" onclick={() => step(1)}>＋</button>
       {#if !serving}<label class="grams">
         <span class="sr-only">{t(unit === 'ml' ? 'food.ml' : 'food.grams')}</span>
         <input type="text" inputmode="decimal" data-sfx="none" data-grams autocomplete="off" enterkeyhint="done" maxlength="8" size="5"
-          value={custom ? typed : gramsText(g)} aria-invalid={!ok} oninput={(e) => { typed = e.currentTarget.value; onGrams(); }} />
+          value={custom ? typed : gramsText(g)} aria-invalid={!ok} oninput={(e) => { typed = e.currentTarget.value; onGrams(); }}
+          onfocus={() => (typing = true)} onblur={() => (typing = false)} />
         <span class="u" aria-hidden="true">{unit}</span>
       </label>{/if}
     </div>
-    <dl class="live" data-food-live>
-      <div class="k"><dt class="sr-only">kcal</dt><dd class="money">{formatNum(n.kcal)}<small>kcal</small></dd></div>
-      <div><dt>{t('food.p')}</dt><dd class="money">{n.p.toFixed(1)}<span class="sr-only"> g</span></dd></div>
-      <div><dt>{t('food.fa')}</dt><dd class="money">{n.fa.toFixed(1)}<span class="sr-only"> g</span></dd></div>
-      <div><dt>{t('food.c')}</dt><dd class="money">{n.c.toFixed(1)}<span class="sr-only"> g</span></dd></div>
-      <div><dt>{t('food.s')}</dt><dd class="money">{n.s.toFixed(1)}<span class="sr-only"> g</span></dd></div>
-    </dl>
   </section>
-
 
   {#if once}<p class="once" data-once>{t('food.rep.once')}</p>{/if}
   <div class="acts level-acts">
+    {#if !pick && !typing}
+      <div class="seg" role="group" aria-label={t('food.whichMeal')}>
+        {#each MEALS as id (id)}
+          <button type="button" class="sb" aria-pressed={m === id} data-pick-meal={id} data-sfx={m === id ? 'none' : 'tick'} onclick={() => (m = id)}>{t(`food.meal.${id}`)}</button>
+        {/each}
+      </div>
+    {/if}
     {#if open}<button type="button" class="btn paper small open" data-sfx="page" data-amount-open onclick={open.run}>{open.label}</button>{/if}
     {#if editing}<button type="button" class="btn paper small" data-sfx="undo" data-remove onclick={() => onremove?.()}>{t(pick ? 'food.rcp.itemRemove' : 'food.remove')}</button>{/if}
     <button type="submit" class="btn small" data-sfx="confirm" data-done aria-disabled={!ok}>
-      {pick ? t(editing ? 'food.rcp.save' : 'food.rcp.itemAdd') : editing ? t('food.save') : t('food.addOk')}
+      {pick ? t(editing ? 'food.rcp.save' : 'food.rcp.itemAdd') : editing ? t('food.save') : t('food.addOk')}{#if typing}{' '}<small class="dk money" data-done-kcal>{formatNum(n.kcal)} kcal</small>{/if}
     </button>
   </div>
 </form>
 
 <style>
-  .amt { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding-bottom: 8px; }
+  /* a column: the head (the food and what this amount holds), the controls in the order decided, the foot (the meal,
+     追加) at the level's end, the foot of the screen when the food is short (Food.svelte stretches the level) */
+  .amt { display: flex; flex-direction: column; gap: 12px; min-height: 100%; }
+  .amt > .level-acts { margin-top: auto; }
   .card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px 14px; }
-  .head { gap: 4px; }
-  .pic { position: relative; justify-self: center; margin-bottom: 8px; appearance: none; border: 0; padding: 0; background: none; cursor: zoom-in; border-radius: 40px; }
+  .head { gap: 10px; }
+  /* the picture beside the name; none: the name the whole width */
+  .id { display: flex; gap: 12px; align-items: flex-start; }
+  .txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; align-self: stretch; padding-top: 2px; }
+  .pic { position: relative; flex: none; appearance: none; border: 0; padding: 0; background: none; cursor: zoom-in; border-radius: 26px; }
   .pic:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .badge {
-    position: absolute; top: 8px; left: 8px; padding: 3px 8px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.1 var(--font-ui);
+    position: absolute; top: 5px; left: 5px; padding: 2px 6px; border-radius: var(--r-pill); font: 700 var(--fs-xs)/1.1 var(--font-ui);
     color: var(--c-ink); background: color-mix(in srgb, var(--c-card) 92%, transparent);
   }
   .gl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text); line-height: 1.4; }
-  h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; overflow-wrap: anywhere; }
+  h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
   h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .once { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
-  .per { margin: 0; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
+  /* what this amount holds, live: the kcal (the loudest thing on the sheet) at the name column's foot, the per-100 g
+     toggle beside it (under it when there's no room), the four nutrients under the picture's row (label over value) */
+  .kline { margin-top: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; column-gap: 8px; }
+  .k { margin: 0; font-size: var(--fs-title); line-height: 1; }
+  .k small { margin-left: 4px; font-size: var(--fs-s); color: var(--text-soft); }
+  .per-t {
+    appearance: none; border: 0; background: none; cursor: pointer; min-height: var(--hit); padding: 0 0 0 6px; margin-right: -2px;
+    display: inline-flex; align-items: center; gap: 4px; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text-soft);
+  }
+  .per-t:focus-visible { outline: 3px solid var(--focus); outline-offset: -2px; border-radius: var(--r-chip); }
+  .caret { transition: transform 160ms; }
+  .per-t[aria-expanded='true'] .caret { transform: rotate(180deg); }
+  .per { margin: -4px 0 0; font-size: var(--fs-s); color: var(--text-soft); line-height: 1.4; }
+  .nut { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 0;
+    padding-top: 10px; border-top: 2px dashed color-mix(in srgb, var(--lip) 45%, transparent); }
+  .nut div { min-width: 0; }
+  .nut dt { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nut dd { margin: 2px 0 0; font-size: var(--fs-body); }
+  .nut small { margin-left: 2px; font-size: var(--fs-s); color: var(--text-soft); }
   .why { margin: -2px 2px 4px; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   /* the portions: theme.css .chip.big */
   .sb, .nb {
@@ -264,15 +303,9 @@
   .grams input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   .grams input[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
   .u { font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); }
-  /* the kcal large on its own line, the four nutrients under it (FoodSummary's cells) */
-  .live { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: end; gap: 6px; margin: 0; }
-  .live .k { grid-column: 1 / -1; }
-  .live div:not(.k) { padding: 8px 6px 6px; border-radius: var(--r-chip); background: color-mix(in srgb, var(--lip) 22%, transparent); }
-  .live div { min-width: 0; }
-  .live dt { font-size: var(--fs-xs); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .live dd { margin: 3px 0 0; font-size: var(--fs-body); }
-  .live .k dd { font-size: var(--fs-title); }
-  .live .k small { margin-left: 4px; font-size: var(--fs-s); color: var(--text-soft); }
-  .seg { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-  .sb { padding: 0 2px; font-size: var(--fs-s); white-space: nowrap; }
+  /* the meal, a row of the foot over 追加 (theme.css .level-acts wraps): 44 px, never under the foot */
+  .seg { flex: 1 1 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  /* (never a tap's target: it leaves on the blur that tap makes, and a press whose target went never clicks) */
+  .dk { pointer-events: none; margin-left: 4px; font-size: var(--fs-s); opacity: .8; }
+  .sb { padding: 0 2px; font-size: var(--fs-s); white-space: nowrap; margin-bottom: var(--lip-h); }
 </style>
