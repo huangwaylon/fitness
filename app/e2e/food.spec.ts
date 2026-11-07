@@ -819,7 +819,7 @@ test('search rows: a category tile, no raw alias or English under the name, the 
   expect(await overflowOf(page)).toEqual([]);
 });
 
-// The amount: no picture area while there are no pictures (the compact card: the name first), the data's 「これは…」
+// The amount: no picture area without a picture (a product's: the compact card, the name first), the data's 「これは…」
 // line under the name (food-data descriptions.json), and no line without an everyday name or a description.
 test('the amount: the compact card while there are no pictures, its 「これは…」 line, none without a gloss or a description', async ({ page }) => {
   await openFood(page);
@@ -828,9 +828,15 @@ test('the amount: the compact card while there are no pictures, its 「これは
   await sheet(page).locator('[data-food-results] button.it', { hasText: 'キャッサバでん粉' }).first().click({ timeout: 15_000 });
   const head = sheet(page).locator('.card.head');
   await expect(head.locator('h3')).toHaveText('キャッサバでん粉');
-  await expect(head.locator('[data-thumb]')).toHaveCount(0);
   await expect(head.locator('[data-food-about] [data-desc]')).toHaveText('キャッサバの根のでん粉。タピオカとも');
   expect(await overflowOf(page)).toEqual([]);
+  // a packaged product never has a picture (its category's tile in the rows): the compact card, the name first
+  await openFood(page);
+  await sheet(page).locator('[data-add=s]').click();
+  await sheet(page).locator('[data-food-q]').fill('THE 餅');
+  await sheet(page).locator('[data-food-results] button.it', { hasText: 'THE 餅' }).first().click({ timeout: 15_000 });
+  await expect(head.locator('h3')).toHaveText('THE 餅');
+  await expect(head.locator('[data-thumb]')).toHaveCount(0);
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
   await sheet(page).locator('[data-food-q]').fill('キャベツ');
@@ -1274,6 +1280,10 @@ test('several foods a trip: a row’s ＋ logs it at once, 追加 comes back to 
 test('the balance views: a meal’s protein chip, the PFC bar, the period’s average, fibre and alcohol with their goals', async ({ page }) => {
   await openFood(page);
   const s = sheet(page);
+  // each entry of the day with its 40px picture box (its picture, else its category's tile), the row no taller for it
+  const th = s.locator('[data-meal] [data-entry] [data-thumb]');
+  expect(await th.count()).toBe(await s.locator('[data-meal] [data-entry]').count());
+  expect((await th.first().boundingBox())!.width).toBe(40);
   // each meal with entries has its protein, green once at the per-meal target (its words say the target)
   const chips = s.locator('[data-meal] [data-meal-protein]');
   expect(await chips.count()).toBeGreaterThan(0);

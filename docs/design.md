@@ -399,7 +399,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   グラフ's kcal chip). Never coral, never blocking: けってい still saves it. No note for the other goals.
 - **Meals:** 朝ごはん · 昼ごはん · 夜ごはん · おやつ, a card each with its kcal, under its header (with entries) its protein as
   a chip (「たんぱく質 28g」, the leaf's once at the per-meal aim: `profile.ts` mealProteinTarget, a third of the day's
-  protein goal, at least 20 g; 25 g with none; the aim in its spoken words), and a row per entry (the food, its
+  protein goal, at least 20 g; 25 g with none; the aim in its spoken words), and a row per entry (its 40px picture box, FoodThumb: the picture, else the category's tile; the food, its
   amount in one format, a weight once: 「茶碗1杯（150g）」, 「1パック（110g）」, 「中ジョッキ×2（700ml）」; kcal). On my
   day ＋ → the search (its field focused in the same tap, so the iPhone's keyboard comes up), an entry → its amount
   at once (from its snapshot: its own portion; the catalog's portions swapped in when they come); anyone else's day is
