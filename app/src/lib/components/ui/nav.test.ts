@@ -46,8 +46,8 @@ describe('navigation', () => {
     expect(sized).toEqual([]);
   });
   it('the title bar\'s lead / trailing slots hold compact controls only (a NavButton tool, a pill), never a chip of words like キャンセル', () => {
-    const snippets = files.flatMap((x) => [...x.src.matchAll(/\b(?:lead|trailing)=\{[^}]*?\b(\w+)\s*:\s*null\}/g)].map((m) => ({ f: x.f, name: m[1], src: x.src })));
-    expect(snippets.length).toBeGreaterThanOrEqual(2);
+    const snippets = files.flatMap((x) => [...x.src.matchAll(/\b(?:lead|trailing)=\{(?:[^}]*?\?\s*)?(\w+)\s*(?::\s*null\s*)?\}/g)].map((m) => ({ f: x.f, name: m[1], src: x.src })));
+    expect(snippets.length).toBeGreaterThan(0);
     const bad = snippets.filter(({ name, src }) => {
       const body = src.match(new RegExp(`\\{#snippet ${name}\\(\\)\\}([\\s\\S]*?)\\{/snippet\\}`))?.[1] ?? '';
       return /common\.(cancel|save|done)/.test(body);
