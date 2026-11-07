@@ -1,11 +1,11 @@
 // けっこんしき (docs/wedding.md): the wedding board's sheet from the menu's pill, over the demo's made-up board
 // (store/demo/rows.ts: the record's rows through the store, components/wedding/board.svelte.ts), on the unified kit: the
-// banner (the photo under the countdown, the names' plate, the day, the rose ring with its percent and count, ⚙), the chips and their counts (pinned),
+// banner (the photo under the countdown, the names' plate, the day, the rose ring with its percent and count), the chips and their counts (pinned),
 // the lifted sections and the months, ticking (a ticked row stays put), a row opened in place (its checklist ticked,
 // who finished it, the old Sheet's tick in a soft line, 完了), 編集 and ＋ in a form sheet (every missing field said
 // at once, the checklist renamed and grown, 削除 with とりけす), the letter (rendered safely, written with the format
 // tools, 完了 over a keyboard; the draft kept through ✕; an unchanged save sends nothing; two phones' crossed saves:
-// both versions, mine marked, これにする with とりけす, ふたつを合わせる), 設定 (names, ‹ right after typing, categories
+// both versions, mine marked, これにする with とりけす, ふたつを合わせる), 設定, the third tab (names, プラン right after typing, categories
 // with とりけす, the deleted list, 完全に削除 after its ask) and the guest's read-only board (`?demo&as=G`). Logic tier:
 // nothing here is drawn 3D. Pictures under SHOTS=<dir>.
 import { expect, test, type Locator, type Page } from './fixtures.ts';
@@ -47,10 +47,10 @@ async function bannerIn(p: Page, text: string) {
   await played(banner(p));
 }
 
-test('the menu\'s けっこんしき opens the board over the island, with its ⚙ and ＋; ✕ closes it', async ({ page }) => {
+test('the menu\'s けっこんしき opens the board over the island, with ＋ and the 設定 tab; ✕ closes it', async ({ page }) => {
   await board(page);
   await expect(hudMenu(page)).toHaveAttribute('aria-expanded', 'false');
-  await expect(sheet(page).locator('[data-wed-top] [data-wed-gear]')).toBeVisible();
+  await expect(root(page).locator('[data-wed-tab]')).toHaveText(['プラン', 'メモ', '設定']);
   await expect(root(page).locator('[data-wed-add]')).toBeVisible();
   await expect(root(page).locator('[data-wed-tab="plan"]')).toHaveAttribute('aria-current', 'page');
   await expect(sheet(page).locator('[data-wed-tick]').first()).toBeVisible();
@@ -242,14 +242,13 @@ test('the ＋ sits over the tab bar, clear of every row\'s tick (659 px tall)', 
   await sheet(page).evaluate((el) => el.scrollTo({ top: el.scrollHeight }));
   const last = (await sheet(page).locator('[data-wed-task]').last().boundingBox())!;
   expect(last.y + last.height).toBeLessThanOrEqual(add.y);
-  // the first row in view under the banner, its ring whole on the photo, clear of ⚙ and the type
+  // the first row in view under the banner, its ring whole on the photo, clear of the type
   await sheet(page).evaluate((el) => el.scrollTo({ top: 0 }));
   const top = (await sheet(page).locator('[data-wed-top]').boundingBox())!;
   const ring = (await sheet(page).locator('[data-wed-progress]').boundingBox())!;
-  const gear = (await sheet(page).locator('[data-wed-gear]').boundingBox())!;
   const days = (await sheet(page).locator('[data-wed-days]').boundingBox())!;
   expect(ring.height).toBeGreaterThanOrEqual(100);
-  expect(ring.y).toBeGreaterThanOrEqual(gear.y + gear.height);
+  expect(ring.y).toBeGreaterThanOrEqual(top.y);
   expect(ring.y + ring.height).toBeLessThanOrEqual(top.y + top.height);
   expect(days.x + days.width).toBeLessThanOrEqual(ring.x);
   const first = (await sheet(page).locator('[data-wed-task]').first().boundingBox())!;
@@ -371,10 +370,11 @@ test('a note saved unchanged after the other phone\'s save sends nothing (no con
 
 test('設定: the names, a category added and removed, a deleted task restored, 完全に削除 after its ask', async ({ page }) => {
   await board(page);
-  await sheet(page).locator('[data-wed-gear]').click();
-  await expect(sheet(page)).toHaveAttribute('data-level', 'settings');
-  await expect(bar(page)).toContainText('設定');
-  await expect(root(page).locator('.tabbar, [data-wed-add]')).toHaveCount(0);
+  await root(page).locator('[data-wed-tab="settings"]').click();
+  await expect(sheet(page)).toHaveAttribute('data-tab', 'settings');
+  await expect(root(page).locator('[data-wed-tab="settings"]')).toHaveAttribute('aria-current', 'page');
+  await expect(bar(page).locator('.back')).toHaveCount(0);
+  await expect(root(page).locator('[data-wed-add]')).toHaveCount(0);
   await sheet(page).locator('[data-wed-set="venue"]').fill('も'.repeat(150));
   await sheet(page).locator('[data-wed-set="venue"]').blur();
   await expect(sheet(page).locator('[data-wed-set="venue"]')).toHaveValue('も'.repeat(150));
@@ -394,18 +394,18 @@ test('設定: the names, a category added and removed, a deleted task restored, 
   await shot(page, 'e2e-settings');
   await sheet(page).locator('[data-wed-restore="wdemo07"]').click();
   await expect(sheet(page).locator('[data-wed-deleted]')).toHaveCount(0);
-  // ‹ right after typing (no blur first): the name saved, the board still open, home
+  // プラン right after typing (no blur first): the name saved, the board still open, on the plan
   await sheet(page).locator('[data-wed-set="p1"]').fill('たろうさん');
-  await bar(page).locator('.back').click();
+  await root(page).locator('[data-wed-tab="plan"]').click();
   await bannerIn(page, '保存しました');
-  await expect(sheet(page)).toHaveAttribute('data-level', 'home');
+  await expect(sheet(page)).toHaveAttribute('data-tab', 'plan');
   await expect(sheet(page).locator('[data-wed-names]')).toHaveText('たろうさん & はなこ');
   await expect(card(page, 'wdemo07')).toBeVisible();
   // delete it again, then for good
   await open(page, 'wdemo07');
   await card(page, 'wdemo07').locator('[data-wed-edit]').click();
   await form(page).locator('[data-wed-remove]').click();
-  await sheet(page).locator('[data-wed-gear]').click();
+  await root(page).locator('[data-wed-tab="settings"]').click();
   await sheet(page).locator('[data-wed-purge]').click();
   const ask = page.locator('dialog[open]:has(> .inner > .acts)');
   await expect(ask).toContainText('1件');
@@ -422,7 +422,8 @@ test('the guest reads everything and has nothing to tick or edit', async ({ page
   await expect(sheet(page).locator('[data-wed-days]')).toHaveAttribute('data-wed-days', '336');
   await expect(sheet(page).locator('[data-wed-top] [data-wed-progress]')).toHaveAttribute('data-wed-progress', '33');
   await expect(card(page, 'wdemo02')).toBeVisible();
-  await expect(root(page).locator(':is([data-wed-tick], [data-wed-add], [data-wed-gear])')).toHaveCount(0);
+  await expect(root(page).locator(':is([data-wed-tick], [data-wed-add], [data-wed-tab="settings"])')).toHaveCount(0);
+  await expect(root(page).locator('[data-wed-tab]')).toHaveText(['プラン', 'メモ']);
   await sheet(page).locator('[data-wed-showdone]').click();
   await expect(card(page, 'wdemo09').locator('[data-wed-mark]')).toBeVisible();
   await open(page, 'wdemo02');

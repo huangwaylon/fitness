@@ -1,17 +1,17 @@
 <script lang="ts">
   // けっこんしき (docs/wedding.md): the wedding board's sheet, its own chunk with its strings, full height (Sheet's
   // `full`, the unified kit: docs/design.md), over the board's store (board.svelte.ts), following the time of day. One
-  // title bar (NavBar s: けっこんしき, ✕), one scroller, the bottom tab bar (プラン / メモ). プラン: the banner (Head),
+  // title bar (NavBar s: けっこんしき, ✕), one scroller, the bottom tab bar (プラン / メモ / 設定, 設定 a member's only). プラン: the banner (Head),
   // the filters and the months (Plan); a row opens in place, its 編集 and the ＋ over the tab bar open the form
   // (TaskForm, a form sheet). メモ: the letter (Notes, its 編集 inside it); writing it, the title bar says so (キャンセル)
-  // and the format tools take the tab bar's place. 設定 is a level with ‹ (back on the plan where it was scrolled). The
-  // guest's phone (board.canEdit false) reads it all: no tick, 編集, ＋ or ⚙.
+  // and the format tools take the tab bar's place. 設定: the names, the day, the categories, the deleted (Settings). The
+  // guest's phone (board.canEdit false) reads it all: no tick, 編集, ＋ or 設定.
   import { tick } from 'svelte';
   import '#lib/i18n/wedding.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import TabBar from '../ui/TabBar.svelte';
-  import Icon from '../ui/Icon.svelte';
+  import Icon, { type IconName } from '../ui/Icon.svelte';
   import Head from './Head.svelte';
   import Plan from './Plan.svelte';
   import Notes from './Notes.svelte';
@@ -30,16 +30,14 @@
 
   let { open = $bindable() }: { open: boolean } = $props();
 
-  let level = $state<'home' | 'settings'>('home');
-  let tab = $state<'plan' | 'notes'>('plan');
+  type Tab = 'plan' | 'notes' | 'settings';
+  let tab = $state<Tab>('plan');
   let filter = $state<Filter>('all');
   let held = $state(new Set<string>());
   let expanded = $state<string | null>(null);
   const kv = localKV();
   let showDone = $state(kv?.getItem(DEVICE.weddingDone) === '1');
   let body: HTMLElement | undefined = $state();
-  /** The plan's scroll when 設定 was opened over it (‹ comes back to it). */
-  let homeScroll = 0;
   /** The form: open, on which task (null: a new one), and a fresh one each opening. */
   let form = $state({ open: false, id: null as string | null, n: 0 });
 
@@ -48,8 +46,13 @@
   const names = $derived<Record<Who, string>>({ A: view ? villagerNameOf(view, 'A') : 'A', B: view ? villagerNameOf(view, 'B') : 'B', G: view ? villagerNameOf(view, 'G') : 'G' });
   const tasks = $derived(board.tasks);
   const formTask = $derived(form.id ? (tasks.find((x) => x.id === form.id) ?? null) : null);
-  const writing = $derived(pad.editing && tab === 'notes' && level === 'home');
-  const title = $derived(level === 'settings' ? t('wed.settings') : writing ? t('wed.note.editing') : t('wed.title'));
+  const writing = $derived(pad.editing && tab === 'notes');
+  const title = $derived(writing ? t('wed.note.editing') : t('wed.title'));
+  const TABS = $derived<{ id: Tab; label: string; icon: IconName }[]>([
+    { id: 'plan', label: t('wed.tab.plan'), icon: 'clipboard' },
+    { id: 'notes', label: t('wed.tab.notes'), icon: 'file' },
+    ...(canEdit ? [{ id: 'settings' as const, label: t('wed.settings'), icon: 'gear' as const }] : [])
+  ]);
 
   // its open and close tunes (it mounts on the first tap, already open: that is an open too)
   let wasOpen = false;
@@ -60,27 +63,16 @@
     cue(o ? 'panel-open' : 'panel-close');
   });
 
-  /** Closed: the next opening is home, すべて, the plan's top (a note being written stays: back in its editor). */
+  /** Closed: the next opening is on its tab (設定: the plan), すべて, the plan's top (a note being written stays: back in its editor). */
   function closed() {
     if (toasts.current) toasts.dismiss();
     flush();
-    level = 'home';
-    homeScroll = 0;
+    if (tab === 'settings') tab = 'plan';
     expanded = null;
     form.open = false;
     setFilter('all');
   }
-  function settings() {
-    homeScroll = body?.scrollTop ?? 0;
-    level = 'settings';
-  }
-  async function back() {
-    cue('back');
-    level = 'home';
-    await tick();
-    body?.scrollTo({ top: homeScroll });
-  }
-  function pickTab(id: 'plan' | 'notes') {
+  function pickTab(id: Tab) {
     tab = id;
     body?.scrollTo({ top: 0 });
   }
@@ -123,23 +115,23 @@
 
 <Sheet bind:open label={t('wed.title')} variant="full" onclose={closed}>
   <div class="wd">
-    <NavBar size="s" {title} onback={level === 'settings' ? back : null} onclose={() => (open = false)} trailing={writing ? cancelNote : null} />
-    <div class="wd-body" class:writing class:plan={tab === 'plan' && level === 'home'} bind:this={body} data-wedding data-level={level} data-tab={tab} data-guest={!canEdit || undefined}>
-      {#if level === 'settings' && canEdit}
+    <NavBar size="s" {title} onclose={() => (open = false)} trailing={writing ? cancelNote : null} />
+    <div class="wd-body" class:writing class:plan={tab === 'plan'} bind:this={body} data-wedding data-tab={tab} data-guest={!canEdit || undefined}>
+      {#if tab === 'settings' && canEdit}
         <Settings />
       {:else if tab === 'plan'}
-        <Head config={board.config} days={board.countdown} sum={board.overall} onsettings={canEdit ? settings : null} />
+        <Head config={board.config} days={board.countdown} sum={board.overall} />
         <Plan {tasks} overall={board.overall} today={board.today} wedding={board.config.date} {canEdit} {names} {filter} {showDone} {held} {expanded}
           onfilter={setFilter} onshowdone={setShowDone} onexpand={(id) => (expanded = id)} ontick={tickTask} onedit={edit} />
-      {:else}
+      {:else if tab === 'notes'}
         <Notes {names} />
       {/if}
     </div>
-    {#if level === 'home' && tab === 'plan' && canEdit}
+    {#if tab === 'plan' && canEdit}
       <button type="button" class="fab" aria-label={t('wed.add')} data-wed-add data-sfx="open" onclick={() => edit(null)}><Icon name="plus" size={24} stroke={2.6} /></button>
     {/if}
-    {#if level === 'home' && !writing}
-      <TabBar items={[{ id: 'plan', label: t('wed.tab.plan'), icon: 'clipboard' }, { id: 'notes', label: t('wed.tab.notes'), icon: 'file' }]} value={tab} label={t('wed.tab')} attr="wed-tab" onpick={pickTab} />
+    {#if !writing}
+      <TabBar items={TABS} value={tab} label={t('wed.tab')} attr="wed-tab" onpick={pickTab} />
     {/if}
   </div>
   {#if canEdit}
