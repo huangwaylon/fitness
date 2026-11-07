@@ -563,12 +563,12 @@ One rule app-wide (the user, 2026-11-07: "x and back are not consistent"); `ui/n
 - **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc drawn in the 44px hit (`--ctl`,
   `--sh-ctl-s`: cream by day, navy at night), the glyph `ui/Icon` at stroke 2.4, the cue `back`. Its disc sits on the
   container's content edge (NavBar pulls 6px out). `look="photo"`: the same disc smoked, over a photo or a map (a
-  trip's hero, a trail's map and its zoom / locate, the wedding banner). `text`: ‹ grown into a pill, a page's way
+  trip's hero, a trail's map). A map's own controls (zoom, locate) are the feature's. `text`: ‹ grown into a pill, a page's way
   back (‹ 島へ in a room, ‹ 戻る on the board). No other ✕ or ‹: no typed ✕, no hand-drawn glyph, no 閉じる button.
   Floating cards (the museum's, the HHA letter, the say picker, the K.K. picker, a board note, ごはん's photo) put
   the same ✕ at their top-right corner; a level inside one (the say picker's field) gets ‹ top-left.
 - **Lead and trailing:** on a top level the lead slot (‹'s place) may hold one compact control: ⚙ (`kind="tool"`,
-  ききみみ, けっこんしき), whose data (けんこう, ごはん's who pill), km | mi (りょこう). Trailing, before ✕: tool icons
+  ききみみ), whose data (けんこう, ごはん's who pill), km | mi (りょこう). Trailing, before ✕: tool icons
   only (＋). Never words (キャンセル, 完了) in the bar.
 - **Forms and confirms:** a form sheet (`Sheet` default) is ✕ to cancel + one action in its footer (保存, a leaf `.btn`),
   no キャンセル. An edit mode inside a sheet or the world (メモ, the board's note, a goal's tray) has キャンセル (paper)
