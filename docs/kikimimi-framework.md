@@ -44,7 +44,8 @@ app/src/lib/kikimimi/
   compile.ts, pool.ts, packing.ts, listen.ts, story.ts   §6
   progress.ts, srs.ts, advice.ts, report.ts, tags.ts     きろく, over every game's rows
 app/src/lib/components/kikimimi/
-  frame/          RoundFrame, RevealFrame, Results, ReviewList, ChoiceGrid, PlayerChip, Why, Sandwich, SandButton
+  frame/          RoundFrame, RevealFrame, Results, ResultsShell, ScoreCard, ReviewList, ReviewRow, LineRow, HearButton,
+                  Note, FirstStamp, ChoiceGrid, PlayerChip, Why, Sandwich, SandButton
   <gm>/views.ts   a game's lazy lobby / play / results pages
   KikimimiSheet.svelte, game.svelte.ts, clipPlayer.svelte.ts, chunkQueue.ts, packs.ts, recorder.ts
   Lobby, Play, Results, Verdict, Transcript, scene/*     the quiz's pages and the shared pieces
@@ -142,6 +143,8 @@ Validation in `playOf`, which keeps known fields only, as `quizOf` does:
 ## 5. Shared UI (`components/kikimimi/frame/`)
 
 As built (8b, then W2-C2): `RoundFrame` (chips, timer, status line, つぎへ / よみおわった; the game's stage and input as snippets), `RevealFrame` (sat out, ○ +points / ×, いっぱつ, co-op's count; the game's own line), `Results` (しずえ's line, team tally or ranking, my tally and first listens, おわる / もういっかい; the game's strip and sections as snippets), `ReviewList` (まちがえた だけ, a retry, all right), `ChoiceGrid` (choices, not an Item; the mic's answer slot), `PlayerChip`, `Why` (かいせつ), `Sandwich` / `SandButton` (よみきき サンド, curriculum-wave2.md §2.0). The quiz's Lobby, Play, Verdict and Results sit over them; `Transcript` (seats: two speakers left/right, three left/centre/right, overlaps from line offsets) and `scene/*` stay at components/kikimimi/. Every `data-kiki-*` hook stayed on its element through 8b and 8c.
+
+Every game's results are built from the same parts (2026-11-07 review): `ResultsShell` (しずえ's line in the bubble, the game's sections, 終わる / もう一度遊ぶ) around a `ScoreCard` (the headline: `.big` / `.sub` lines, the 一発 stamp, a 🔒 `note`; yuzu on cream at any time of day); a review row is `ReviewRow` (the head a button with ○ / × per round it holds, the summary and 一発; opened, ▶︎ then the game's text), a voice game's line `LineRow` (its mark, the English and Japanese, ▶︎); ▶︎ / 🐢 is `HearButton`, the trap's `note` is `Note` (at a reveal and in a row), 一発 is `FirstStamp` (`pop` at a reveal, `sm` on a row).
 
 Not built, and not needed: a generic `RoundSheet` and `RoundGame`. KikimimiSheet and game.svelte.ts serve every game through its lane, and a game's pages come from its `views.ts` ("The registry as built").
 
@@ -276,7 +279,7 @@ Every game is a **lane** in `kikimimi/round/registry.ts`. The quiz, ladder, less
 
 ### The listening games' shared pieces (2026-11-07 review)
 
-ことば タイル, たちぎき, ようじ でんわ and すうじ ラッシュ share `games/listened.ts` (pure): `EMPTY` (63), `ROLES` (2), `listenOpts` (`[lv, timer, ear]`), `filesOf(gm, lv)` (the `listened` files at the place), `tierAt`, `shareOf` (a role's slots or rows), `cvOver`, and `listenGame` / `listenRecord` over a game's `ListenRules` (its rounds at an ear, timing, valid, ok, the row's `pick`). Each lane.ts is one line, `listenLane(RULES, deal)`. The pages share `components/kikimimi/listenView.ts` (`isCoop`, `roleOf`, `easy`, `blank`, `playAgain`). A unit's lesson on recipe 2 (W2-9, curriculum-units.md §16) deals their cards with the same deals and grades them with the same rules (games/lesson/recipe.ts); its pages get the lesson's game through components/kikimimi/lesson/board.ts `cardGame`.
+ことば タイル, たちぎき, ようじ でんわ and すうじ ラッシュ share `games/listened.ts` (pure): `EMPTY` (63), `ROLES` (2), `listenOpts` (`[lv, timer, ear]`), `filesOf(gm, lv)` (the `listened` files at the place), `tierAt`, `shareOf` (a role's slots or rows), `cvOver`, and `listenGame` / `listenRecord` over a game's `ListenRules` (its rounds at an ear, timing, valid, ok, the row's `pick`). Each lane.ts is one line, `listenLane(RULES, deal, more?)`; `more` overrides what a game does its own way (`codec`, `game`, `lobby`, `seed`, `record`): すうじ ラッシュ its GameDef and row, しずえの ニュース its options' codec, GameDef, the host's weather and the Tokyo day's seed. The pages share `components/kikimimi/listenView.ts` (`isCoop`, `roleOf`, `easy`, `blank`, `playAgain`). A unit's lesson on recipe 2 (W2-9, curriculum-units.md §16) deals their cards with the same deals and grades them with the same rules (games/lesson/recipe.ts); its pages get the lesson's game through components/kikimimi/lesson/board.ts `cardGame`.
 
 ### ことば タイル as built (W2-1, 2026-11-07)
 

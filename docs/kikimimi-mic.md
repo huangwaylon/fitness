@@ -177,7 +177,8 @@ app/src/lib/mic/
   models.ts                        the pinned manifest: files, bytes, sha256, parts; ensureStt
   backends/{whisper.ts, whisper.worker.ts, webkit.ts, relay.ts, stub.ts}
   probe/{steps.ts, run.ts, gpu.worker.ts}   M0
-app/src/lib/components/kikimimi/mic/   MicProbe, MicOptIn, MicButton (72 px, ring meter), MicAnswer, Contour
+app/src/lib/components/kikimimi/mic/   MicProbe, MicOptIn, MicButton (72 px, ring meter), MicAnswer, Contour, sttRound.ts
+app/src/lib/kikimimi/games/modes.ts   the mic modes' metas and gates (§3.4)
 app/src/lib/kikimimi/games/{mane,kuri,pair,role}/ and components/kikimimi/{mane,kuri,pair,role}/
 app/content/mic/pairs.yaml
 app/scripts/stt-models.ts   fetch the pinned files (HF, npm), verify, split ≤ 20 MiB, write the manifest; --r2 <bucket> uploads
@@ -230,7 +231,7 @@ Each game is a `GameDef` with a lazy view, its deck pure and seeded:
 | `pair` | solo, coop (あてっこ, `roles: 2`) | 8 cards | the word (solo); the picture tapped (あてっこ) | two tries a card |
 | `role` | coop only, `roles: 2` | 8–10 turns | phrase bitmask (bits 0–5, bit 6 spoken) | untimed per turn |
 
-**Grading** is pure over the ints: the device does the hearing and the session sees numbers, so the RoundSession, the wire and the relay are unchanged. Every row is minutes only. W2-C2 gave the mic what it asked: a per-mode `gate()`, the shelf `koe` (声に 出す), and `requires: 'mic'` (the みんなで picker's 「マイクがオフです」). **こたえて！** isn't a game: `MicAnswer` inside frame/ChoiceGrid.svelte (§2.3).
+**Grading** is pure over the ints: the device does the hearing and the session sees numbers, so the RoundSession, the wire and the relay are unchanged. Every row is minutes only. W2-C2 gave the mic what it asked: a per-mode `gate()`, the shelf `koe` (声に 出す), and `requires: 'mic'` (the みんなで picker's 「マイクがオフです」). The four metas live in games/modes.ts (round/registry.ts adds them): まねっこ, はつおん and ロールプレイ show while the mic is on (DEVICE.mic); くりかえし also needs a recogniser that can run here (the stub, or anything but Safari's where it's missing). Every mic page gets its recogniser through components/kikimimi/mic/sttRound.ts: stt.ts loaded lazily, `ready()` (the recogniser, or null), `release()` on the page's destroy. **こたえて！** isn't a game: `MicAnswer` inside frame/ChoiceGrid.svelte (§2.3).
 
 ### 3.5 The relay endpoint
 
@@ -262,7 +263,7 @@ Each game is a `GameDef` with a lazy view, its deck pure and seeded:
 ### 3.8 Hermetic tests
 
 - **vitest (pure):** pitch, prosody and vad on synthetic signals; match.ts; pick.ts; models.ts (parts, sha check, ensureStt's cache); stt.ts; each GameDef; caches.test `isStt`; relay stt.test (auth, sizes, the cap, a chunked body cut off, nothing kept); log.ts accepting `mic.*` and refusing text.
-- **e2e:** the Playwright project **`chromium-mic`** (`kikimimi-mic*.spec.ts`: probe, optin, mane, kuri, reply, pair, role), with Chromium's fake media device on a committed clean clip, `--mute-audio` (**no audio plays on the dev Mac**), no network, and the stub recogniser via `localStorage['e2e.stt']`.
+- **e2e:** the Playwright project **`chromium-mic`** (`kikimimi-mic*.spec.ts`: probe, optin, mane, kuri, reply, pair, role), with Chromium's fake media device on a committed clean clip, `--mute-audio` (**no audio plays on the dev Mac**), no network, and the stub recogniser via `localStorage['e2e.stt']` (DEVICE.sttStub: a JSON list of what it hears, one entry a take; set at all, it's this phone's recogniser and the speech modes show). pick.ts reads it: `stubbed()`, `stubScript()` (the list), `stubNext()` (the next entry, the list rotated: backends/stub.ts, the probe).
 - **What the tests don't do:** load whisper, touch WebGPU, or judge the analysis's numbers; only the flow and that feedback appears. The real model was checked once by hand in local Chromium (§2.4). Rendering and the feel are judged on the iOS Simulator and the phones. Pinned date, seeded decks, no sleeps.
 
 ---

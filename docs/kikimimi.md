@@ -225,6 +225,7 @@ Validation: `g` `/^[a-z0-9]{4,8}$/`; `lv` 1-8 (8 room for the next level without
 - **Mid-game,** a backdrop tap or Esc doesn't close the sheet; ✕ asks 「ここでやめますか？」 (Sheet's `ondismiss`). Notices: 「ホストが ゲームを とじました」, 「ホストが いなくなりました」, 「じかんが たったので おわりました」.
 - **おなじへや:** 🔁 / 🐢 only on the host's phone; the others show them off with 「ホストの スマホで ながれます」.
 - **Look.** The paper theme, `ui/Sheet.svelte`, villager art via `villagerArt()`; taps ≥ 44 px with `data-sfx`; reduced motion honoured; `pic` choices have Japanese labels for VoiceOver so the English isn't given away; strings an `addCatalog` chunk (ja + en). Play: 🔁 / 🐢 under the bubble, the question centred, choices `clamp(56px, 8vh, 72px)`; an item without `ask` gets its type's (「きこえた ことばは？」, 「なんて こたえる？」). Reveal: 「せいかい！ +100」 and the いっぱつ stamp apart; a missed picture names the right one; しずえ's word per verdict.
+- **Shared parts.** Every game's results page, review rows and ▶︎ come from frame/ (ResultsShell, ScoreCard, ReviewRow, LineRow, HearButton, Note, FirstStamp: kikimimi-framework.md §5); a listening game's lane is listenLane with its own overrides (framework §6); the mic modes' gates, sttRound and the tests' stub recogniser are in kikimimi-mic.md §3.
 
 ## Progress & feedback (built 2026-11-05)
 
