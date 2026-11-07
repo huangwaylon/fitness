@@ -38,3 +38,28 @@ items:
           - { ask: "受け取りは 何時？", options: ["7:14", "7:15", "7:40"], answer: 2, cja: ["7時14分", "7時15分", "7時40分"] }
     note: "I had the time wrong の あとが 正しい 時間"
     tags: { seed: 27, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, weak-form, numbers] }
+
+  - kind: call
+    id: call-coat-hold
+    ask: "服屋から 電話。メモしよう"
+    ctx: "取り寄せを頼んだ服屋から電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: label, en: "Hi, this is Label from Able Sisters. You asked about the wool coat in a medium?", tts: "Hi, this is Label from Able Sisters. Ya asked about the wool coat in a medium?", ja: "もしもし、エイブル・シスターズのラベルです。ウールのコートのMサイズをお問い合わせいただいた件で。" }
+      - { who: me, en: "Oh, yes! Did it come in?", ja: "あ、はい！ 入りました？" }
+      - { who: label, en: "So, we're all out of the medium in gray, but we got it in navy. Or there's a large in gray, and it runs pretty small.", tts: "So, we're all oudda the medium in gray, but we got it in navy. Or there's a large in gray, an' it runs preddy small.", ja: "グレーのMは在庫がないんですが、ネイビーなら入りました。それか、グレーのLがあって、かなり小さめの作りです。" }
+      - { who: me, en: "Hmm. I'll take the large in gray, I think.", ja: "うーん。グレーのLにしようかな。" }
+      - { who: label, en: "Perfect. I can hold it for you until Saturday.", ja: "かしこまりました。土曜までお取り置きできます。" }
+      - { who: label, en: "Oh, actually, no, sorry. We're closed this Saturday. So, until Friday at six. Is that okay?", ja: "あ、違いました、すみません。今週の土曜は休みなんです。なので金曜の6時まで。よろしいですか？", repair: true }
+      - { who: me, en: "Friday at six. That works. Thanks so much!", ja: "金曜の6時ですね。大丈夫です。ありがとうございます！" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "グレーのMだけ在庫切れ。グレーのLは runs pretty small（かなり小さめ）なのでLにした。土曜は休みなので、Actually, no で金曜6時までに変わった。"
+        slots:
+          - { ask: "グレーの M は？", options: ["在庫なし", "ある", "取り寄せ中"], answer: 0, cja: ["在庫がない", "在庫がある", "取り寄せている"] }
+          - { ask: "選んだのは？", options: ["グレーの L", "ネイビーの M", "グレーの M"], answer: 0, cja: ["グレーのラージ", "ネイビーのミディアム", "グレーのミディアム"] }
+          - { ask: "L の 作りは？", options: ["小さめ", "大きめ", "ふつう"], answer: 0, cja: ["小さめ", "大きめ", "ふつう"] }
+          - { ask: "取り置きは いつまで？", options: ["金曜 6時", "土曜", "金曜 4時"], answer: 0, cja: ["金曜の6時", "土曜", "金曜の4時"] }
+    note: "Actually, no の あとが 本当の 期限"
+    tags: { seed: 26, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, flap] }

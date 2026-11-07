@@ -4,8 +4,8 @@
   "decks": "30b5d72dc5b5db3a"
  },
  "call:s1-call-b": {
-  "cv": "7f18de",
-  "decks": "ca3e2c23cd039d07"
+  "cv": "9e0b14",
+  "decks": "0434478eba8da915"
  },
  "call:s2-call-a": {
   "cv": "dd15fc",
@@ -42,6 +42,10 @@
  "lesson:gl-endcall": {
   "cv": "d6ff72",
   "decks": "07928598ad1e94cc"
+ },
+ "lesson:sh-shop": {
+  "cv": "b61cce",
+  "decks": "b11527b83565a6cd"
  },
  "lesson:tr-guide": {
   "cv": "b7aee3",
