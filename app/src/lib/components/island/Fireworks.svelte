@@ -31,8 +31,10 @@
     allMet?: boolean;
     /** A villager cheers (IslandScene: a hop and a glad mark). */
     cheer?: () => void;
+    /** The camera's horizon (px down the scene), on the band's own box (Sky.svelte's `h`). */
+    horizon: number;
   }
-  let { enabled, forced = false, allMet = false, cheer }: Props = $props();
+  let { enabled, forced = false, allMet = false, cheer, horizon }: Props = $props();
 
   const pinned = $derived(scenePreview().event === 'fireworks');
   const rand = Math.random;
@@ -120,7 +122,7 @@
   }
 </script>
 
-<div class="fireworks" bind:this={band} aria-hidden="true">
+<div class="fireworks" bind:this={band} aria-hidden="true" style:--horizon-y="{horizon}px">
   {#each bursts as b (b.id)}
     <span class="burst {b.shape}" data-firework={b.shape} style:left="{b.x}px" style:top="{b.y}px" style:--rad={b.rad} style:--rise="{b.rise}px">
       <b class="shell"></b>
@@ -131,7 +133,7 @@
 </div>
 
 <style>
-  /* the fixed sky and a little of the far ground below the horizon (in the scene: --horizon-y; a fifth of the ground's
+  /* the fixed sky and a little of the far ground below the horizon (--horizon-y, the camera's; a fifth of the ground's
      height), above the stage (they're lights: not under the night tint), under the HUD (outside the scene) */
   .fireworks {
     position: absolute; left: 0; right: 0; top: var(--safe-top); z-index: calc(var(--z-stage) + 1); pointer-events: none; overflow: hidden;

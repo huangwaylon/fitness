@@ -71,9 +71,8 @@ const probe = (page: Page) => page.evaluate(() => {
 /** Open sea, under the horizon: plain scenery, no control under the finger. */
 const sea = (page: Page) =>
   page.locator('.if-scene .stage').evaluate((st) => {
-    const cs = getComputedStyle(st);
     const r = st.getBoundingClientRect();
-    return { x: r.left + r.width * 0.7, y: r.top + parseFloat(cs.getPropertyValue('--if-hy')) - parseFloat(cs.getPropertyValue('--if-st')) + 14 };
+    return { x: r.left + r.width * 0.7, y: r.top + Number(st.closest<HTMLElement>('.if-scene')!.dataset.horizon) + 14 };
   });
 
 test.describe('the first tap starts the music', () => {

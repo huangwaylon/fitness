@@ -209,10 +209,6 @@
 :root[data-tod="dusk"] { --sea-flat:#3D78A3; }
 :root[data-tod="night"] { --sea-flat:#255CC5; }
 
-/* the horizon and the stage top in px, resolved on the stage against the scene (IslandScene .stage) */
-@property --if-hy { syntax: '<length>'; inherits: true; initial-value: 0px; }
-@property --if-st { syntax: '<length>'; inherits: true; initial-value: 0px; }
-
 .if-scene {
   /* sky (day; spring) · sun · moon · clouds */
   --sky-top:#4AA3F6; --sky-mid:#79C9FC; --sky-hz:#C6EEFF;

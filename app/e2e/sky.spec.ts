@@ -43,8 +43,8 @@ test('a shooting star crosses the sky, never the HUD; a tap meanwhile is a wish,
   // its path (sampled as it flies): in the sky, off the HUD: the leaf, the bowl and the health button
   const rib = (await hudMenu(page).boundingBox())!, jar = (await page.locator('.hud-health').first().boundingBox())!;
   const pot = (await page.locator('.hud-food').boundingBox())!;
-  // the fixed sky ends at the camera's horizon (--horizon-y)
-  const horizon = await page.locator('.if-scene').evaluate((sc) => sc.getBoundingClientRect().top + parseFloat(getComputedStyle(sc).getPropertyValue('--horizon-y')));
+  // the fixed sky ends at the camera's horizon (the scene's data-horizon)
+  const horizon = await page.locator('.if-scene').evaluate((sc) => sc.getBoundingClientRect().top + Number((sc as HTMLElement).dataset.horizon));
   for (let i = 0; i < 6; i++) {
     const head = await page.locator('[data-fx="shoot"] .streak').first().evaluate((el) => {
       const r = el.getBoundingClientRect();

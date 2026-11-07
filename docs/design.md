@@ -798,7 +798,16 @@ the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/worl
     put, its x as far as the room lets it); pinching back toward the default eases x to the middle; past the default
     it gives with rubber-band resistance and, on release, springs back to the default over 350 ms, eased out (the
     user's approved automatic move). In: up to 1.8. A gesture is one kind from start to end. No native scroll: the
-    island's viewport never scrolls.
+    island's viewport never scrolls. A touch landing on a fling still faster than 0.1 px/ms only stops it (iOS's
+    scroll: no tap), as the tap areas lag a rush (below).
+  - **A rush** (engine.ts `rushing`: a finger's drag or pinch, a fling faster than 0.1 px/ms) places only what shows
+    (camera.svelte.ts `quiet`): the nodes found painting nothing as it starts (tap areas whose art the canvas draws:
+    a tree's, a building's, a villager's) are kept in view or not (a model's `shown`), not moved; a change in one (a
+    mark, a popup in it) or a balloon following it (`frameOf`) keeps it placed. The rush over, the next step places
+    every node, and `camStill` waits for it. The sky's height is on its own boxes (Sky, Weather, Fireworks; the
+    scene's `data-horizon` for the e2e): as custom properties on the scene they restyled every node under it each frame
+    a pinch moved the horizon. Chromium 4× CPU, the demo, 393×852: a drag's style writes 2,700–2,850 → ~580 a second,
+    a pinch's 2,100 → ~500, its style recalc ~1.45 → ~0.4 s in 4.5 s.
   - **What comes and goes** is drawn from the DOM island's own nodes (`camera.svelte.ts`): a node with an `m3` art key
     stands as NH's model where the node is (its live position too; a move eases over `ms` as its sprite's CSS
     transition; `drop` falls in from above; `y` an absolute height: a fish's shadow under the sea), and one with a

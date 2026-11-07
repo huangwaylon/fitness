@@ -14,8 +14,11 @@
     tod: Tod;
     /** The sky itself (under the tint) or its lights (over it). */
     layer?: 'sky' | 'lights';
+    /** Its height (px: the camera's horizon and a little), on its own box: as a custom property on the scene it
+     *  restyled every node under it each frame a pinch moved the horizon. */
+    h: number;
   }
-  let { tod, layer = 'sky' }: Props = $props();
+  let { tod, layer = 'sky', h }: Props = $props();
   const uid = $props.id();
   const night = $derived(tod === 'night');
   const low = $derived(tod === 'dawn' || tod === 'dusk');
@@ -26,7 +29,7 @@
 </script>
 
 {#if layer === 'lights'}
-<div class="sky lights" aria-hidden="true">
+<div class="sky lights" aria-hidden="true" style:--sky-h="{h}px">
   <div class="band">
     {#if night}
       {#each STARS as [x, y], i (i)}
@@ -44,7 +47,7 @@
   </div>
 </div>
 {:else}
-<div class="sky" aria-hidden="true">
+<div class="sky" aria-hidden="true" style:--sky-h="{h}px">
   <div class="band">
     <!-- NH's distant cloud bank resting on the horizon (static): fills the low sky on tall phones -->
     <svg class="bank" viewBox="0 0 400 40" preserveAspectRatio="none">

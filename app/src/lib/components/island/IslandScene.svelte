@@ -13,7 +13,7 @@
   // health and ごほうび work as ever.
   //   <IslandScene {view} onhighfive onhighfivegot paused />
   // Layout contract (for the page): give it the whole page (--scene-h, e.g. 100dvh); --hud-bottom is the top chrome's
-  // bottom edge. Read back --horizon-y (set on .if-scene) to place overlays in the sky.
+  // bottom edge. Read back data-horizon (on .if-scene: the camera's horizon, px down it) to place overlays in the sky.
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while not `paused`.
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
@@ -1137,7 +1137,7 @@
 </script>
 
 <div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={weather.sky} data-paused={life.hidden || undefined}
-  data-covered={covered || undefined} data-sheet={paused || undefined} data-live="true" style:--horizon-y="{horizonPx}px" style:--sky-h="{horizonPx + 6}px">
+  data-covered={covered || undefined} data-sheet={paused || undefined} data-live="true" data-horizon={horizonPx}>
   {#if picking && sceneEl}
     <!-- what my villager says: outside the viewport (its field's focus never moves the island), over the stage -->
     <SayPicker scene={sceneEl} anchor={picking} onpick={pickSay} onclose={(e) => {
@@ -1151,7 +1151,7 @@
   {/if}
   <!-- every catch's plate: a stack at the bottom centre, outside the viewport (the newest at the bottom) -->
   <CatchStack scene={sceneEl} />
-  {#if FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} />{/if}
+  {#if FireworksC}<FireworksC bind:this={fireworks} enabled={() => !covered && !life.hidden} forced={life.devFireworks || wedding.fireworks} {allMet} {cheer} horizon={horizonPx} />{/if}
 
   <div class="scroller" bind:this={scroller} data-world-scroller>
     <div class="track" style:height="{vh}px">
@@ -1161,11 +1161,11 @@
         </svg>
         <!-- the sky is the stage's backdrop, behind the 3D island and every world thing (a tree top rising over the horizon
              stands in front of the sun or moon); the sun or moon and the stars sit high in the sky -->
-        <Sky {tod} />
-        <Sky {tod} layer="lights" />
+        <Sky {tod} h={horizonPx + 6} />
+        <Sky {tod} layer="lights" h={horizonPx + 6} />
         <!-- the balloon present: NH's, flying over the island in 3D (its tap area a world node on it) -->
         {#if life.balloon}<Balloon ondone={() => (life.balloon = false)} />{/if}
-        {#if WeatherC}<WeatherC where="sky" />{/if}
+        {#if WeatherC}<WeatherC where="sky" skyH={horizonPx + 6} />{/if}
         {#if r3 && Island3DC && sceneEl}
           <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
             wet={wetNow.a} cast={cast3} enabled={() => !covered && !life.hidden}
@@ -1323,7 +1323,6 @@
   /* the stage stays on screen while the track scrolls under it; its width is 390 units (cqw) and --u one unit */
   .stage {
     position: sticky; top: 0; width: 100%; overflow: hidden; container-type: inline-size; contain: layout paint;
-    --if-st: 0px; --if-hy: var(--horizon-y);
     /* the island's layers stand over every world thing (depths run to ~12M; camera.svelte.ts OVER is 50M). Six
        significant digits at most: the CSS minifier rounds a longer number (60000080 shipped as 60000100, so the
        tint stood over the lights at 60000081); the lights (Scenery's, the fireflies', Halloween's) are 60310000 */

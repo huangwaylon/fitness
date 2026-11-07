@@ -158,6 +158,9 @@ export interface Proj3 {
   horizon(): number;
   /** Bumped on every camera move. */
   rev(): number;
+  /** The camera moving fast under a gesture (a drag, a pinch, a fast fling: engine.ts rushing): the nodes that paint
+   *  nothing are only kept in view meanwhile, not placed (World `quiet`); a touch landing on it only stops it. */
+  rushing?(): boolean;
   /** Where the camera is now (world z): the move's own, before the frame that writes it into the view. */
   camZ?(): number;
   /** Ask for a frame (the engine runs the World's step in it, then draws). */
@@ -187,10 +190,35 @@ interface Node extends NodeSpec {
   zIndex: number;
   invS: string;
   invY: string;
+  /** Something follows it (a speech balloon's speaker: frameOf): placed in a rush too, its box read. */
+  followed?: boolean;
 }
 
 /** The stacking order of what stands over every world thing (a popup, a plate): above any depth. */
 export const OVER = 50_000_000;
+
+/** Whether an element paints anything, itself or what's in it: not hidden (display, opacity 0, the 3D island's art:
+ *  `--art3d: off`), and an image, a fill, a border, a shadow, text or a pseudo-element's content (a tap area alone,
+ *  transparent, paints nothing). Its size isn't read (no layout): a fill on an empty box counts. */
+function paints(el: Element): boolean {
+  const s = getComputedStyle(el);
+  if (s.display === 'none' || s.opacity === '0' || s.getPropertyValue('--art3d').trim() === 'off') return false;
+  if (s.visibility !== 'hidden') {
+    if (/^(img|svg|canvas|video|picture)$/i.test(el.localName) || filled(s)) return true;
+    for (const c of el.childNodes) if (c.nodeType === 3 && c.textContent?.trim()) return true;
+    for (const p of ['::before', '::after']) {
+      const ps = getComputedStyle(el, p);
+      // (a pseudo-element with text, or an empty one filled: a tap area's widening paints nothing)
+      if (!/^(none|normal)$/.test(ps.content) && ps.opacity !== '0' && (ps.content !== '""' || filled(ps))) return true;
+    }
+  }
+  for (const c of el.children) if (paints(c)) return true;
+  return false;
+}
+/** A box's own paint: an image, a fill, a shadow, a border. */
+const filled = (s: CSSStyleDeclaration): boolean =>
+  s.backgroundImage !== 'none' || !/^(transparent|rgba\(0, 0, 0, 0\))$/.test(s.backgroundColor) || s.boxShadow !== 'none' ||
+  parseFloat(s.borderTopWidth) + parseFloat(s.borderRightWidth) + parseFloat(s.borderBottomWidth) + parseFloat(s.borderLeftWidth) > 0;
 
 /** The depth order of feet at (x, z): nearer in front, ties by x (left first). */
 const depthAt = (x: number, z: number): number => zIndexAt(z, x, PLAN.z1);
@@ -237,6 +265,40 @@ export class World {
   private simWants = false;
   /** The 3D island's camera (null: not up yet, or gone: nothing is placed). */
   three: Proj3 | null = null;
+  /** A rush under way (Proj3 rushing): the nodes found painting nothing as it began (tap areas whose art the canvas
+   *  draws) are only kept in view or not while it lasts (`bare`), till something in one changes (a mark, a popup in it:
+   *  the observer); placed again the frame it ends. A drag wrote ~3,500 styles a second, every node each frame. */
+  private rush = false;
+  private quiet = new Set<Node>();
+  private hushMo: MutationObserver | null = null;
+  private hush(): void {
+    for (const n of this.nodes) if (n.shown && !n.bare && !n.followed && !paints(n.el)) this.quiet.add(n);
+    if (!this.quiet.size || typeof MutationObserver === 'undefined') return;
+    this.hushMo ??= new MutationObserver((rs) => {
+      for (const r of rs) {
+        // (its own visibility, written here)
+        if (r.attributeName === 'style' && this.byEl.get(r.target as Element)) continue;
+        for (let at: globalThis.Node | null = r.target; at; at = at.parentNode) {
+          const n = this.byEl.get(at as Element);
+          if (n) {
+            if (this.quiet.delete(n)) this.dirty.add(n);
+            break;
+          }
+        }
+      }
+    });
+    for (const n of this.quiet) this.hushMo.observe(n.el, { subtree: true, childList: true, characterData: true, attributes: true });
+  }
+  private unhush(): void {
+    this.hushMo?.disconnect();
+    this.quiet.clear();
+    // (every node placed again for where the camera is)
+    this.lastCam = NaN;
+  }
+  /** Bare now: its own, or quiet in a rush. */
+  private bareNow(n: Node): boolean {
+    return !!n.bare || (this.rush && this.quiet.has(n));
+  }
 
   /** Draw through the 3D island's camera from now on (null: it's gone). */
   useThree(p: Proj3 | null): void {
@@ -276,6 +338,7 @@ export class World {
     while (at && !(n = this.byEl.get(at))) at = at.parentElement;
     if (!n || n.mode === 'quad' || n.mode === 'body') return null;
     const node = n;
+    node.followed = true;
     return () => {
       const t = this.three, v = this.view;
       if (!t || !this.nodes.has(node)) return null;
@@ -355,6 +418,7 @@ export class World {
       const c = [t.at(b.x0, b.z1, 0), t.at(b.x1, b.z1, 0), t.at(b.x1, b.z0, 0), t.at(b.x0, b.z0, 0)];
       if (c.every((q) => !q.visible) || c.every((q) => q.sy > v.vh + 2) || c.every((q) => q.sy < v.horizon - 4)) return this.hide(n);
       this.show(n);
+      if (this.bareNow(n)) return;
       const m = quadMatrix((b.x1 - b.x0) * v.s, (b.z1 - b.z0) * v.s, c.flatMap((q) => [q.sx, q.sy]) as [number, number, number, number, number, number, number, number]);
       const tf = `matrix3d(${m.map((q) => +q.toFixed(6)).join(',')})`;
       if (tf !== n.tf) {
@@ -363,11 +427,12 @@ export class World {
       }
       return;
     }
-    if (mode === 'body') return this.placeBody(n, t);
+    // (a building's tap area, quiet in a rush: as it was till the rush ends)
+    if (mode === 'body') return this.bareNow(n) ? undefined : this.placeBody(n, t);
     const q = t.at(x, z, lift), h = n.h ?? 80, k = q.k / v.s;
     if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return this.hide(n);
     this.show(n);
-    if (n.bare) return;
+    if (this.bareNow(n)) return;
     const X = q.sx.toFixed(1), Y = q.sy.toFixed(1);
     const ky = mode === 'flat' ? k * Math.max(0.02, q.ground) : n.model ? k * q.up : k;
     const tf = ky === k ? `translate(${X}px,${Y}px) scale(${k.toFixed(4)})` : `translate(${X}px,${Y}px) scale(${k.toFixed(4)},${ky.toFixed(4)})`;
@@ -415,7 +480,7 @@ export class World {
   }
 
   private zOf(n: Node, x: number, z: number): void {
-    if (n.zi === null || n.mode === 'quad' || n.bare) return;
+    if (n.zi === null || n.mode === 'quad' || this.bareNow(n)) return;
     const zi = n.zi ?? depthAt(x, z + (n.dz ?? 0));
     if (zi !== n.zIndex) {
       n.el.style.zIndex = String((n.zIndex = zi));
@@ -441,6 +506,12 @@ export class World {
     this.perf.frames++;
     const more = this.hook?.(ts) ?? false;
     const v = this.view;
+    const rush = !!this.three?.rushing?.();
+    if (rush !== this.rush) {
+      this.rush = rush;
+      if (rush) this.hush();
+      else this.unhush();
+    }
     const cam = this.three ? this.three.rev() : NaN;
     if (cam !== this.lastCam) {
       this.lastCam = cam;
@@ -546,6 +617,7 @@ export class World {
 
   /** Stop (the scene unmounts). */
   stop(): void {
+    this.hushMo?.disconnect();
     if (this.simTimer) clearTimeout(this.simTimer);
     this.simTimer = 0;
     this.hook = null;
@@ -594,6 +666,7 @@ export class World {
         this.movers.delete(n);
         this.dirty.delete(n);
         this.unshaped.delete(n);
+        this.quiet.delete(n);
       };
     };
   }

@@ -136,6 +136,8 @@ const LEAN = 0.42;
  *  once. On those frames the shadow map redraws at most every REST_SHADOW_MS (a slow critter's shadow, a card's), once
  *  more after the last change. */
 const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250;
+/** A fling faster than this (px/ms) rushes (Island3['rushing']): a touch on it only stops it, as iOS's scroll. */
+const RUSH_V = 0.1;
 /** The screen's samples (columns × rows, below the horizon) where the camera's view is looked for water. */
 const WATER_COLS = 12, WATER_ROWS = 20;
 const now = () => performance.now();
@@ -180,6 +182,9 @@ export interface Island3 {
   /** A release's fling (px/ms). */
   fling(vy: number, vx?: number): void;
   touching(on: boolean): void;
+  /** The camera moving fast under a gesture: a finger's drag or pinch, or a fling faster than RUSH_V. The DOM's tap
+   *  areas may lag it meanwhile (the World places only what shows), and a touch landing on a fast fling only stops it. */
+  rushing(): boolean;
   /** The camera (the e2e, the way back from the tent). */
   view(): { camZ: number; zoom: number; pitch: number; camX: number };
   /** `free`: past the ends if need be (the e2e's camera, at world.ts's old stops: the ends widen to take it); `x` the
@@ -507,6 +512,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
 
   // ---- the finger ----
   let touch = false, vel = 0, lastT = 0, settling = false;
+  /** The finger has moved the camera since it touched (a drag or a pinch, not a tap). */
+  let moved = false;
+  const rushing = () => (touch ? moved : !focus && (Math.abs(vel) > RUSH_V || Math.abs(velX) > RUSH_V));
   const unitsPerPx = () => (2 * (D0 / zoomK) * Math.tan(((FOV / 2) * Math.PI) / 180)) / H;
   /** Past an end the scroll gives less and less (iOS's rubber band). */
   const rubber = (over: number) => (over <= 0 ? 0 : (1 - 1 / (over / 160 + 1)) * 160);
@@ -537,6 +545,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (focus) return;
     light(true);
     settling = false;
+    moved ||= touch;
     rawZ += (dy * unitsPerPx()) / Math.sin(pitch);
     camZ = clampZ(rawZ);
     // sideways only zoomed in (the drag's x moves the view with the finger)
@@ -556,6 +565,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (focus) return;
     light(true);
     settling = false;
+    moved ||= touch;
     zoomBack = null;
     const before = groundAt(sx, sy);
     rawK *= f;
@@ -962,7 +972,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       kick();
     },
     touching(on) {
+      // (a rush over: the World's next step places every node again, and camStill waits for it)
+      if (rushing()) rev++;
       touch = on;
+      moved = false;
       lastInput = now();
       if (on) {
         vel = velX = 0;
@@ -976,6 +989,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       }
       activity();
     },
+    rushing,
     view: () => ({ camZ, zoom: zoomK, pitch, camX }),
     xRoom,
     zoomRange: () => ({ ...ZOOM }),
