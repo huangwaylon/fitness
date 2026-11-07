@@ -16,7 +16,7 @@ track: life
 seeds: [66, 32]
 features: { primary: contraction, review: linking }
 cando: "ねる まえに 東京の 日常の はなしを 聞いて、だいたい わかる"
-status: draft
+status: listened
 host: rosie
 cast: { narrator: us-f3 }
 items:

@@ -166,6 +166,9 @@ const PINNED: Readonly<Record<string, number>> = {
   // batch A3 (2026-11-07), the best of five seed runs: "colds" heard as said, a slip-and-fix order 14.4 → 12.9 s (under
   // a listening clip's 14), an "um" line's UTMOS 3.44 → 4.01
   'news-plaza-lights-5': 2001, 'rush-lunch-4': 3000, 'rush-bagels-1': 5000,
+  // batch A5, st-tokyo (2026-11-07), the best of five seed runs: Sherb's sleepy night-shift line (UTMOS 3.92 → 4.37) and Rosie's
+  // cry at the goldfish scoop (3.41 → 4.35)
+  'serial-tokyo-2-9': 2003, 'serial-tokyo-4-26': 5000,
   // はつおん's words (M6, 2026-11-07), each the best of ten seed runs by UTMOS among the takes heard as written (a word
   // alone is too short for ECAPA: these are kept with --retries 0, never re-rolled for their similarity)
   'pr-13-2': 2000, 'pr-14-1': 3000, 'pr-14-2': 1238, 'pr-15-1': 2000, 'pr-15-2': 1237, 'pr-16-2': 1237, 'pr-17-1': 1235,

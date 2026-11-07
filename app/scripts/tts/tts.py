@@ -114,6 +114,9 @@ FOLD = [(r"\bgonna\b", 'going to'), (r"\bwanna\b", 'want to'), (r"\bgotta\b", 'g
         # the rush's and the news's: Nikko, しずえ's Isabelle, flower beds, heatstroke, coworkers as whisper writes them
         (r"\bnic?k?o\b", 'nikko'), (r"\bisabel\b", 'isabelle'), (r"\bflowerbeds\b", 'flower beds'),
         (r"\bheat stroke\b", 'heatstroke'), (r"\bco-workers?\b", lambda m: m.group(0).replace('-', '')),
+        # st-tokyo's Gayle and wasshoi as whisper writes them, and its g'morning / g'night
+        (r"\bg(?:ail|ale|ayle)\b", 'gayle'), (r"\bwa(?:sh|ssh|s)oy\b", 'wasshoi'), (r"\bg'morning\b", 'good morning'),
+        (r"\bg'night\b|\bg(?:ee,?)?[ -]night\b", 'good night'),
         (r"\bbells\b", 'bell'), (r"\bokay\b", 'ok')]
 # not "content": articles and fillers (a dropped "the" or an added "oh" isn't a mishearing of the line)
 MINOR = {'a', 'an', 'the', 'um', 'uh', 'er', 'ah', 'aw', 'oh', 'hm', 'hmm', 'mm', 'so', 'well'}
