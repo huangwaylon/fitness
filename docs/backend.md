@@ -476,9 +476,8 @@ older phone or relay drops it, and shows the villager at the shop's door as befo
 - **Cost:** the Hibernation API (`ctx.acceptWebSocket`): an idle socket keeps no DO in memory. Free plan: 100k
   requests/day (incoming WebSocket messages count 20:1), 13,000 GB-s/day; two people tapping are far below.
 - **Client** (`app/src/lib/sync/live.ts`, `createLive({key})`): connects while the page is visible and online, closes
-  on hide or offline (no socket, no timers), reconnects after a drop with backoff (1 s doubling to 15 s, ±25 %; 60 s till 2026-11-07: on screen only, so the cap
-  is a game's longest wait for a link back); after
-  4001/4002/4004 it waits until the page is shown again. Clock: pings at welcome and +2 s; the offset is the shortest
+  on hide or offline (no socket, no timers), reconnects after a drop with backoff (1 s doubling to 15 s, ±25 %: only while shown, so the cap is a game's longest
+  wait for a link back; 60 s till 2026-11-07); after 4001/4002/4004 it waits until the page is shown again. Clock: pings at welcome and +2 s; the offset is the shortest
   round trip's of the last 8 (`serverNow()`), across sockets: a welcome takes its own guess (`t` − now, short by the
   trip) only when the pings' offset from before falls outside its bounds (2026-11-07: a reconnect moved a game's clock
   by the welcome's trip, a second on a slow link), kept across reloads (`island.liveOffset`, 2026-11-05: rewritten when it
