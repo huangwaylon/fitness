@@ -33,7 +33,8 @@
 // not a re-synthesis; level 1's normal clips are slowed to 0.92 the same way).
 // Conditions (docs/kikimimi.md "Conditions", src/lib/kikimimi/conditions.ts): a clip with a speech condition (its `cond`,
 // or a phone or PA channel's light one: condOf) is mixed after the clean take passed the gate: a phone band and codec, a
-// voicemail's room, a PA hall with its chime, a noise bed (scripts/tts/beds/, scripts/kikimimi-beds.ts) at its SNR. The
+// line breaking up (its dropouts), a voicemail's room, a PA hall with its chime, a noise bed (scripts/tts/beds/,
+// scripts/kikimimi-beds.ts) at its SNR. The
 // condition (its plan and its bed's file hash) is part of the clip's source hash; the raw take stays cached by the clean
 // master's hash, so re-mixing never re-speaks. The strict gate runs on the clean take; the conditioned clip is only
 // checked loosely (whisper's WER ≤ the condition's bound, else flagged `cond-wer`), and UTMOS is the clean take's. The
@@ -69,7 +70,7 @@ import { AUTHORED as ITEMS } from '../src/lib/kikimimi/source.ts';
 import { ROSTER } from '../src/lib/villagers/roster.ts';
 import type { Clip } from '../src/lib/kikimimi/clips.ts';
 import { CAST_IDS, castOf, spokenText } from '../src/lib/kikimimi/speech.ts';
-import { codecArgs, condOf, condPlan, condSource, stepFilter, type CondPlan, type Step } from '../src/lib/kikimimi/conditions.ts';
+import { codecArgs, condOf, condPlan, condSource, dropGaps, dropOut, stepFilter, type CondPlan, type Step } from '../src/lib/kikimimi/conditions.ts';
 import type { Bed } from '../src/lib/kikimimi/bank.ts';
 import { SR, chime, convolve, filter, gain, impulse, lufs, noise, readPcm, writeWav } from './tts/dsp.ts';
 import { FFMPEG, FFPROBE, WHISPER_MODEL, measureLoudness, staged, writeAtomic } from './tts/tools.ts';
@@ -287,23 +288,25 @@ function stretch(wav: string, tempo: number, out: string): void {
 // ---- speech conditions (conditions.ts: what each does; here, how) -----------------------------------------------------
 
 const bedPcm = new Map<Bed, Float32Array>();
-/** A stretch of a bed `n` samples long from an offset picked by the clip's id (the bed loops), faded in and out. */
-function bedSegment(b: Bed, n: number, id: string): Float32Array {
+/** A stretch of a bed `n` samples long from an offset picked by the clip's id (the bed loops), faded in and out over
+ *  `fade` s. */
+function bedSegment(b: Bed, n: number, id: string, fade: number): Float32Array {
   if (!bedPcm.has(b)) bedPcm.set(b, readPcm(bedFile(b)));
-  const bed = bedPcm.get(b)!, at = fnv1a(id) % bed.length, out = new Float32Array(n), f = Math.round(0.25 * SR);
+  const bed = bedPcm.get(b)!, at = fnv1a(id) % bed.length, out = new Float32Array(n), f = Math.round(fade * SR);
   for (let i = 0; i < n; i++) out[i] = bed[(at + i) % bed.length] * Math.min(1, i / f, (n - 1 - i) / f);
   return out;
 }
-/** Speech over its bed: the bed from `pre` before it to `post` after, at `snr` dB under the speech's loudness `ref`. */
+/** Speech over its bed: the bed from `pre` before it to `post` after (faded 0.25 s; under the speech only, 0.04 s), at
+ *  `snr` dB under the speech's loudness `ref`. */
 function withBed(x: Float32Array, plan: CondPlan, id: string, ref: number): Float32Array {
   const pre = Math.round(plan.pre * SR), post = Math.round(plan.post * SR);
-  const seg = bedSegment(plan.bed!.id, pre + x.length + post, id);
+  const seg = bedSegment(plan.bed!.id, pre + x.length + post, id, plan.pre ? 0.25 : 0.04);
   const out = gain(seg, ref - plan.bed!.snr - lufs(seg));
   for (let i = 0; i < x.length; i++) out[pre + i] += x[i];
   return out;
 }
-/** A channel's steps over the speech: band and compressor steps as one ffmpeg chain, a room by convolution, a codec
- *  round trip at 8 kHz, line hiss at its SNR. */
+/** A channel's steps over the speech: band and compressor steps as one ffmpeg chain, a room by convolution, dropouts
+ *  (conditions.ts dropGaps, dropOut), a codec round trip at 8 kHz, line hiss at its SNR. */
 function channel(x: Float32Array, steps: readonly Step[], id: string): Float32Array {
   let y = x;
   for (let i = 0; i < steps.length; ) {
@@ -316,6 +319,7 @@ function channel(x: Float32Array, steps: readonly Step[], id: string): Float32Ar
     }
     if (s.op === 'room') y = convolve(y, impulse(s, Math.round(s.rt60 * 100)));
     else if (s.op === 'codec') y = filter(y, '', codecArgs(s));
+    else if (s.op === 'drop') y = dropOut(y, dropGaps(y.length, SR, s, id), SR);
     else if (s.op === 'hiss') {
       const h = noise(y.length, mulberry32(fnv1a(`${id}:hiss`)), 6000, 200);
       const g = 10 ** ((lufs(y) - s.snr - lufs(h)) / 20);

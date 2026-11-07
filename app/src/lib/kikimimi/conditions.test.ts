@@ -1,14 +1,16 @@
 // ききみみ's speech conditions (docs/kikimimi.md "Conditions"): what each condition does (conditions.ts condPlan), which
 // clips get one (condOf: their own, or a phone or PA channel's), the source hash they give a clip, the noise beds on
 // disk, and the report showing every conditioned clip mixed as its plan says.
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { parse } from 'yaml';
 import { BEDS, COND_KINDS, channelOf, clipItems, type Cond } from './bank.ts';
 import { BANK } from './source.ts';
 import { unitItems } from './compile.ts';
 import { NOISE } from './staging.ts';
-import { COND_MAX_WER, SNR, codecArgs, condOf, condPlan, condSource, stepFilter, type Step } from './conditions.ts';
+import { COND_MAX_WER, SIGNAL_MAX_WER, SNR, codecArgs, condOf, condPlan, condSource, dropGaps, dropOut, stepFilter, type Step } from './conditions.ts';
+import { listenClipItems } from './listen.ts';
 import type { Clip } from './clips.ts';
 import { spokenText } from './speech.ts';
 import clipsJson from './clips.json';
@@ -31,6 +33,21 @@ describe('kikimimi conditions: the plan per condition', () => {
     expect(ops(h.steps)).toEqual(['band', 'comp', 'hiss', 'codec']);
     expect(h.steps[0]).toMatchObject({ lo: 350, hi: 3200 });
     expect(h.steps[3]).toMatchObject({ codec: 'g726', kbps: 24 });
+  });
+
+  it('a line breaking up: the phone band, dropouts, then G.726 (24 kbps; heavy 16 kbps with hiss); a looser WER bound', () => {
+    const p = condPlan(c('signal')), h = condPlan(c('signal', 'heavy'));
+    expect(ops(p.steps)).toEqual(['band', 'comp', 'drop', 'codec']);
+    expect(p.steps[0]).toEqual(condPlan(c('phone')).steps[0]);
+    expect(p.steps[3]).toMatchObject({ codec: 'g726', kbps: 24 });
+    expect(ops(h.steps)).toEqual(['band', 'comp', 'hiss', 'drop', 'codec']);
+    expect(h.steps[4]).toMatchObject({ codec: 'g726', kbps: 16 });
+    const [d, dh] = [p.steps[2], h.steps[3]] as Extract<Step, { op: 'drop' }>[];
+    expect(dh.every).toBeLessThan(d.every);
+    expect(dh.ms[1]).toBeGreaterThan(d.ms[1]);
+    expect([p.maxWer, h.maxWer]).toEqual([SIGNAL_MAX_WER.light, SIGNAL_MAX_WER.heavy]);
+    expect(p.maxWer).toBeGreaterThan(COND_MAX_WER.light);
+    expect(condPlan(c('signal', 'light', 'street')).bed).toEqual({ id: 'street', snr: 15, at: 'source' });
   });
 
   it("a voicemail: the caller's small room, then the phone line", () => {
@@ -63,6 +80,10 @@ describe('kikimimi conditions: the plan per condition', () => {
     expect(condPlan(c('phone', 'light', 'street')).bed).toEqual({ id: 'street', snr: 15, at: 'source' });
     expect(condPlan(c('pa', 'heavy', 'station')).bed).toEqual({ id: 'station', snr: 10, at: 'listener' });
     expect(() => condPlan(c('cafe', 'light', 'street'))).toThrow();
+    // under the speech only: no lead-in or tail (a たちぎき's line keeps its length), a plan of its own
+    const u = condPlan({ kind: 'party', level: 'light', under: true });
+    expect([u.pre, u.post, u.bed]).toEqual([0, 0, { id: 'party', snr: 15, at: 'listener' }]);
+    expect(condSource('abcdef0123', u)).not.toBe(condSource('abcdef0123', condPlan(c('party'))));
   });
 
   it('every kind and level has a plan with its loose WER bound and a key', () => {
@@ -70,7 +91,7 @@ describe('kikimimi conditions: the plan per condition', () => {
       for (const level of ['light', 'heavy'] as const) {
         const p = condPlan(c(kind, level));
         expect(p.key).toBe(`${kind}:${level}`);
-        expect(p.maxWer).toBe(COND_MAX_WER[level]);
+        expect(p.maxWer).toBe((kind === 'signal' ? SIGNAL_MAX_WER : COND_MAX_WER)[level]);
       }
     expect(condPlan(c('pa', 'light', 'station')).key).toBe('pa:light+station');
   });
@@ -94,6 +115,32 @@ describe('kikimimi conditions: which clips, and their hashes', () => {
     expect(condOf({ channel: 'pa' })).toEqual(c('pa'));
     expect(condOf({ tags: tags(['video']) })).toBeNull();
     expect(condOf({})).toBeNull();
+  });
+
+  it("a signal call's line that breaks off breaks up, its other lines a plain phone line; a party file's lines over the party, under the speech", () => {
+    const tags = (conditions: string[]) => ({ seed: 1, register: 'service', pragmatic: 'literal', conditions }) as unknown as Parameters<typeof condOf>[0]['tags'];
+    expect(condOf({ channel: 'phone', tags: tags(['phone', 'signal']), en: "So the back wheel's... and that's why." })).toEqual(c('signal'));
+    expect(condOf({ channel: 'phone', tags: tags(['phone', 'signal']), en: "It's bent." })).toEqual(c('phone'));
+    expect(condOf({ channel: 'phone', tags: tags(['phone']), en: 'So that is 090-2861...' })).toEqual(c('phone'));
+    expect(condOf({ tags: tags(['party']), en: 'Okay, so who is bringing what?' })).toEqual({ kind: 'party', level: 'light', under: true });
+    expect(condOf({ tags: tags(['street']) })).toBeNull();
+  });
+
+  it('in the listening files, a line breaking up is followed by the player asking again (the answer said after it, never under a dropout)', () => {
+    const dir = join(import.meta.dirname, '../../../content/listen');
+    let signal = 0;
+    for (const f of readdirSync(dir).filter((f) => f.endsWith('.yaml'))) {
+      const raw = parse(readFileSync(join(dir, f), 'utf8')) as { items: { id: string; kind: string; lines?: { who: string }[] }[] };
+      const conds = new Map(listenClipItems(raw).map((it) => [it.id, condOf(it)]));
+      for (const it of raw.items)
+        it.lines?.forEach((_, n) => {
+          if (conds.get(`${it.id}-${n + 1}`)?.kind !== 'signal') return;
+          signal++;
+          expect(it.kind, it.id).toBe('call');
+          expect(it.lines![n + 1]?.who, `${it.id}-${n + 1}`).toBe('me');
+        });
+    }
+    expect(signal).toBeGreaterThan(0);
   });
 
   it('a clean clip keeps its master hash; a condition, its plan or its bed changes the hash', () => {
@@ -124,6 +171,50 @@ describe('kikimimi conditions: which clips, and their hashes', () => {
     // level 4 stays fair: mostly light
     const l4 = clips.filter((it) => it.lv === 4 && condOf(it));
     expect(l4.filter((it) => condOf(it)!.level === 'heavy').length / l4.length).toBeLessThan(0.15);
+  });
+});
+
+describe('kikimimi conditions: dropouts', () => {
+  const SR = 24000, drop = { op: 'drop', every: 1.4, ms: [120, 320], stutter: 0.4 } as const;
+
+  it('seeded by the clip, none in the first 0.3 s or the last 0.2 s, apart, their lengths in range, about one every `every` s', () => {
+    expect(dropGaps(SR * 5, SR, drop, 'x-1')).toEqual(dropGaps(SR * 5, SR, drop, 'x-1'));
+    expect(dropGaps(SR * 5, SR, drop, 'x-1')).not.toEqual(dropGaps(SR * 5, SR, drop, 'x-2'));
+    let n = 0, stutters = 0;
+    for (let k = 0; k < 200; k++) {
+      const gaps = dropGaps(SR * 6, SR, drop, `x-${k}`);
+      n += gaps.length;
+      stutters += gaps.filter((g) => g.stutter).length;
+      gaps.forEach((g, i) => {
+        expect(g.at).toBeGreaterThanOrEqual(0.3 * SR);
+        expect(g.at + g.len).toBeLessThanOrEqual(5.8 * SR);
+        expect(g.len).toBeGreaterThanOrEqual(0.12 * SR - 1);
+        expect(g.len).toBeLessThanOrEqual(0.32 * SR + 1);
+        if (i) expect(g.at - (gaps[i - 1].at + gaps[i - 1].len)).toBeGreaterThanOrEqual(0.25 * SR - 1);
+      });
+    }
+    // 5.5 s usable a line, a gap and its spacing ~1.6 s: ~3 a line
+    expect(n / 200).toBeGreaterThan(2.5);
+    expect(n / 200).toBeLessThan(4.5);
+    expect(stutters / n).toBeGreaterThan(0.3);
+    expect(stutters / n).toBeLessThan(0.5);
+    expect(dropGaps(Math.round(0.4 * SR), SR, drop, 'x-1')).toEqual([]);
+  });
+
+  it('a gap goes silent or stutters the 20 ms before it, fading; the speech ramps into and out of it; the rest untouched', () => {
+    const x = Float32Array.from({ length: SR }, (_, i) => Math.sin(i / 7) * 0.5), frame = 0.02 * SR, ramp = 0.004 * SR;
+    const before = x.slice();
+    const y = dropOut(x, [{ at: 6000, len: 2400, stutter: false }, { at: 15000, len: 1200, stutter: true }], SR);
+    expect(y.length).toBe(x.length);
+    expect(x).toEqual(before);
+    expect(y.subarray(6000, 8400).every((v) => v === 0)).toBe(true);
+    expect(Math.abs(y[6000 - 1])).toBeLessThan(Math.abs(x[6000 - 1]));
+    expect(y[6000 - ramp - 1]).toBe(x[6000 - ramp - 1]);
+    expect(y[8400 + ramp]).toBe(x[8400 + ramp]);
+    for (const i of [0, 100, frame - 1]) expect(y[15000 + i]).toBeCloseTo(x[15000 - frame + i] * 0.7);
+    for (const i of [frame, frame + 50]) expect(y[15000 + i]).toBeCloseTo(x[15000 - frame + (i % frame)] * 0.49);
+    expect(y.subarray(0, 6000 - ramp)).toEqual(x.subarray(0, 6000 - ramp));
+    expect(y.subarray(16200 + ramp)).toEqual(x.subarray(16200 + ramp));
   });
 });
 

@@ -157,20 +157,24 @@ export type SoundMark = readonly ['say', at: string, said: string] | readonly ['
 
 /**
  * A speech condition, mixed offline over the clean take (docs/kikimimi.md "Conditions", docs/curriculum.md §5.3 and §9;
- * scripts/kikimimi-audio.ts with conditions.ts): a channel (a phone line, a voicemail, a PA in a hall) or a noise bed
- * (a café, a street, a station), `light` or `heavy` (the beds' SNR +15 / +10 dB), and a channel's `bed` behind it (a PA
- * on a platform, a caller in a café). Part of the clip's source hash; the clean master stays cached.
+ * scripts/kikimimi-audio.ts with conditions.ts): a channel (a phone line, one breaking up, a voicemail, a PA in a hall)
+ * or a noise bed (a café, a street, a station, a party), `light` or `heavy` (the beds' SNR +15 / +10 dB), and a
+ * channel's `bed` behind it (a PA on a platform, a caller in a café). Part of the clip's source hash; the clean master
+ * stays cached.
  */
-export const COND_KINDS = ['phone', 'voicemail', 'pa', 'cafe', 'street', 'station'] as const;
+export const COND_KINDS = ['phone', 'signal', 'voicemail', 'pa', 'cafe', 'street', 'station', 'party'] as const;
 type CondKind = (typeof COND_KINDS)[number];
-/** The noise beds (scripts/tts/beds/<bed>.m4a, made by scripts/kikimimi-beds.ts). */
-export const BEDS = ['cafe', 'street', 'station'] as const;
+/** The noise beds (scripts/tts/beds/<bed>.m4a, made by scripts/kikimimi-beds.ts; a new one goes last: its seed). */
+export const BEDS = ['cafe', 'street', 'station', 'party'] as const;
 export type Bed = (typeof BEDS)[number];
 export interface Cond {
   kind: CondKind;
   level: 'light' | 'heavy';
   /** A channel's background (a bed kind is its own). */
   bed?: Bed;
+  /** The bed under the speech only, no lead-in or tail: a line of a conversation whose lines overlap (たちぎき), so
+   *  its clip's length and the lines' offsets hold. */
+  under?: true;
 }
 
 /** An item's channel: its own, else from its conditions (a phone or voicemail, a PA, a video call), else face to face. */
