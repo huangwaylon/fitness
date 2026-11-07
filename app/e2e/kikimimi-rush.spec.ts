@@ -55,13 +55,16 @@ async function phone(ctx: BrowserContext, q: string, as: 'A' | 'B' = 'A'): Promi
   await islandUp(page);
   return page;
 }
-/** From the hub: あそぶ › すうじ ラッシュ's page. */
+/** From the hub: あそぶ › すうじ ラッシュ's page, its answer times. */
 async function toRush(p: Page) {
   await fromMenu(p, 'kikimimi');
   await atHub(p);
   await sheet(p).locator('[data-kiki-tile="asobu"]').click();
   await sheet(p).locator('[data-kiki-mode-tile="rush"]').click();
   await expect(sheet(p).locator('[data-kiki-mode-page="rush"]')).toBeVisible();
+  // its own 8 s or なし (no 20 / 30 / 60 s)
+  await expect(sheet(p).locator('[data-kiki-timer] [data-timer]')).toHaveCount(2);
+  await expect(sheet(p).locator('[data-timer="8"]')).toHaveAttribute('aria-checked', 'true');
 }
 
 /** Customer i's ticket, once its chips open: the right chip (or `wrong`, another), tapped. */

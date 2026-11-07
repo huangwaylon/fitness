@@ -15,6 +15,7 @@ import { registry } from '../../round/registry.ts';
 import { playIn, playOut, type PlayIn, type RoundOut } from '../../round/wire.ts';
 import { questionPoints } from '../taikai/def.ts';
 import { filesOf, listenOpts } from '../listened.ts';
+import { modeOf } from '../../catalog.ts';
 import { PASS, RUSH, RUSH_QS, WINDOW, bestCombo, chipsAt, comboAt, twins, registerOf, rushDeal, rushGameOf, rushRecord, rushRounds, valueOf, type RushCard } from './def.ts';
 
 const FILES = ['s1-rush', 's2-rush'];
@@ -105,6 +106,9 @@ describe('すうじ ラッシュ: rounds and grading', () => {
     expect(RUSH.timing(r, 60_000, WINDOWS).answer).toBe(WINDOW);
     expect(RUSH.timing(r, Infinity, WINDOWS).answer).toBe(Infinity);
     expect(rushRounds(cards, { lv: 3, ear: 1 }, () => undefined)[0].play).toBe(2000);
+    // its pages offer just this window and なし; the other lanes take the lobby's 20 / 30 / 60 s
+    expect(modeOf('rush').window! * 1000).toBe(WINDOW);
+    expect((['tile', 'tachi', 'call', 'news'] as const).map((m) => modeOf(m).window)).toEqual([undefined, undefined, undefined, undefined]);
   });
 
   it('a right ticket pays against expectation: more for a correction, more for a weaker ear; the deck counts them', () => {
