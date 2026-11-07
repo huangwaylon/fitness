@@ -1,0 +1,657 @@
+# スマホの トラブル (sh-phone): wave 2b, もり, かいもの (+ いえ) (docs/curriculum-wave2.md §3.1). A phone-store clerk and a
+# repair tech explaining what's wrong and what it costs: "have you tried restarting it?", "it's under warranty" (and
+# what isn't covered), "you'd have to back it up", "sign in", "it'll take about an hour", a trade-in, so much a month.
+# Catch the cause, the options and the price. The sound: assimilation, sounds that change at the join (hafta, im
+# person, tem bucks, wouldja, doncha, greem button). Who recurs: Kid Cat at the store on Elm Street, Audie on the plans,
+# Raymond the tech; Olivia's battery, Bea's cracked screen. 受付と 薬局's "insurance", 誘う・断る's "swamped", ききかえす's
+# "did you say" and "I meant", 週末 どこ行く's "let me check" and お店で 聞く's "honestly" are recycled.
+# Its call: call-screen-ready (content/listen/s2-call-c.yaml).
+# きょうの ひとこと: "Have you tried restarting it?" (再起動 してみた？)
+schema: 1
+unit: sh-phone
+name: スマホの トラブル
+stage: mori
+domain: kaimono
+also: [ie]
+host: kid-cat
+scene: shop
+sound: assimilation
+cando:
+  who: 店員
+  does: スマホや 回線の 問題を 説明する
+  cond: 店の ざわざわの 中で
+  catch: 原因・選択肢・料金
+  short: スマホの 修理と 料金が わかる
+  en: "I can follow a phone-store clerk explaining what's wrong with a phone or a plan, over the noise of a busy store, and catch the cause, the options and the price."
+status: draft
+letter:
+  en: "Your phone's fixed, and so is your ear! You caught the warranty, what wasn't covered, and how long it'd take, even with the whole store talking. Next time, back it up first, okay? And if anything acts weird, have you tried restarting it? Ha. Come see me anytime. No charge for advice."
+  ja: "スマホも なおったし、きみの みみも ばっちり！ ほしょうの ことも、たいしょうがいの ことも、どのくらい かかるかも、みせじゅう ざわざわ してるのに ききとれたね。こんどは さきに バックアップを とってね。へんな うごきを したら、さいきどう してみた？ なんてね。いつでも きて。そうだんは むりょうだよ。"
+ph:
+  - { id: ph-tried-restarting, en: "have you tried restarting it?", ja: "再起動して みた？", match: "\\b(tried|try) (restarting|turning it off|resetting|rebooting)\\b", register: service, scene: "the first fix", trap: "責めて いない。まず 試す 定番の 質問" }
+  - { id: ph-under-warranty, en: "it's under warranty", ja: "保証期間内", match: "\\bwarranty\\b", register: service, scene: "repair or replace", trap: "under＝下 ではなく「期間内」" }
+  - { id: ph-back-it-up, en: "back it up", ja: "バックアップを 取る", match: "\\bback(ed|ing|s)? (it|everything|your (phone|photos|data|stuff)) up\\b|\\bbacks up\\b", register: service, scene: "before a reset", trap: "後ろに 下がる ではなく、データを 保存する" }
+  - { id: ph-sign-in, en: "sign in", ja: "サインイン（ログイン）する", match: "\\bsign(ed|ing|s)? (back )?in\\b", register: service, scene: "after a reset", trap: "署名 ではなく ログイン" }
+  - { id: ph-about-an-hour, en: "it'll take about an hour", ja: "1時間 くらい かかる", match: "\\btakes? (about |around |like )?(an hour|a day|a week|two weeks|[a-z]+ hours|[a-z]+ minutes|[a-z]+ days)\\b", register: service, scene: "how long a repair takes", trap: "take＝時間が かかる。持って いく ではない" }
+  - { id: ph-trade-in, en: "a trade-in", ja: "下取り", match: "\\btrade[- ]in\\b|\\btrade (it|this one|that one|yours|your (old )?phone) in\\b", register: service, scene: "buying a new phone", trap: "交換 ではなく「下取り」。値引きに なる" }
+  - { id: ph-covered, en: "that's not covered", ja: "対象外です", match: "\\b(isn't|not|is that|is it|is|it's|that's|are) covered\\b", register: service, scene: "what the warranty pays for", trap: "覆われて いない ではなく「保証の 対象外」" }
+  - { id: ph-a-month, en: "forty dollars a month", ja: "月 40ドル", match: "\\b(a|per) (month|day)\\b", register: service, scene: "plans and roaming", trap: "a month＝1か月 あたり。合計 ではない" }
+items:
+  # ---- であい: the battery, the backup, the warranty ----
+  - id: sm-battery
+    lv: 4
+    type: gist
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Hi. My battery dies by, like, two in the afternoon. It's only a year old. Have you tried restarting it? Sometimes an app's running in the background. Yeah, a bunch of times. Okay. Then it's probably the battery. Good news, it's still under warranty, so the replacement's free. It'll take about an hour."
+    ja: "電池を無料で交換。1時間くらいかかる。"
+    note: "under warranty＝保証期間内。だから 無料"
+    choices: ["The battery gets replaced for free, in about an hour.", "She needs to buy a new phone.", "Restarting fixed the problem."]
+    answer: 0
+    cja: ["電池を無料で交換、1時間くらい。", "新しいスマホを買う必要がある。", "再起動で直った。"]
+    why: "再起動は何度も試した。原因は電池で、under warranty（保証期間内）なので交換は無料。It'll take about an hour は「1時間くらいかかる」。"
+    ctx: "電池の減りが早くて、携帯ショップに来ました"
+    focus: "Good news, it's still under warranty, so the replacement's free."
+    ask: "どう なった？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+    lines:
+      - { who: olivia, cast: us-f4, en: "Hi. My battery dies by, like, two in the afternoon. It's only a year old.", ja: "こんにちは。電池が午後2時くらいには切れちゃうんです。まだ1年なのに。" }
+      - { who: kid-cat, cast: us-m1, en: "Have you tried restarting it? Sometimes an app's running in the background.", tts: "Have ya tried restartin' it? Sometimes an app's runnin' in the background.", ja: "再起動はしてみました？ アプリが裏で動いていることがあるんです。" }
+      - { who: olivia, cast: us-f4, en: "Yeah, a bunch of times.", ja: "はい、何回も。" }
+      - { who: kid-cat, cast: us-m1, en: "Okay. Then it's probably the battery. Good news, it's still under warranty, so the replacement's free. It'll take about an hour.", tts: "Okay. Then it's probably the battery. Good news, it's still under warranty, so the replacement's free. It'll take aboud an hour.", ja: "なるほど。じゃあ、たぶん電池ですね。よかった、まだ保証期間内なので交換は無料です。1時間くらいかかります。" }
+  - id: sm-backup-next
+    lv: 4
+    type: next
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Before we send it in, you'd have to back it up. They wipe everything. Wait, everything? My photos too? Everything. Do you have cloud storage?"
+    ja: "たぶん。確認するのを手伝ってもらえますか？"
+    note: "wipe＝データを 全部 消す"
+    choices: ["I think so. Can you help me check?", "No thanks, I don't need a cloud.", "Wipe it? It's pretty clean already."]
+    answer: 0
+    cja: ["たぶん。確認するのを手伝ってもらえますか？", "いえ、雲はいりません。", "拭く？ もうけっこうきれいですよ。"]
+    why: "修理に出すとデータが全部消える（wipe）ので、先に back it up（バックアップを取る）。クラウドがあるか聞かれたので、確かめるのが自然。拭く話ではない。"
+    ctx: "スマホを修理に出す前に、店員が説明します"
+    focus: "Before we send it in, you'd have to back it up."
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+    lines:
+      - { who: kid-cat, cast: us-m1, en: "Before we send it in, you'd have to back it up. They wipe everything.", tts: "Before we send it in, you'd hafta back it up. They wipe everything.", ja: "修理に出す前に、バックアップを取っておく必要があります。データが全部消されるので。" }
+      - { who: bea, cast: us-f1, en: "Wait, everything? My photos too?", ja: "待って、全部？ 写真も？" }
+      - { who: kid-cat, cast: us-m1, en: "Everything. Do you have cloud storage?", tts: "Everything. D'you have cloud storage?", ja: "全部です。クラウドの保存先はありますか？" }
+  - id: sm-r-restart
+    lv: 4
+    type: reply
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Have you tried turning it off and on again?"
+    tts: "Have ya tried turnin' it off an' on again?"
+    ja: "電源を切って、もう一度入れてみましたか？ →「はい、2回ほど。だめでした。」"
+    note: "まず 試す 定番の 質問"
+    choices: ["Yeah, a couple of times. No luck.", "No, I just bought it on Tuesday.", "It's off right now, actually."]
+    answer: 0
+    cja: ["はい、2回ほど。だめでした。", "いいえ、火曜に買ったばかりです。", "実は、今は電源が切れています。"]
+    why: "tried turning it off and on again? は「電源を入れ直してみた？」という定番の質問。試したかどうかを答える。いつ買ったかや、今の状態の話ではない。"
+    ctx: "スマホが固まって、携帯ショップで相談しています"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: formula, conditions: [cafe], features: [assimilation] }
+  - id: sm-m-not-covered
+    lv: 4
+    type: mean
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "The warranty covers defects, but a cracked screen from a drop isn't covered. That'd be out of pocket."
+    tts: "The warranty covers defects, but a cracked screen from a drop isn't covered. That'd be oudda pocket."
+    ja: "保証は製品の不具合が対象で、落として割れた画面は対象外です。自己負担になります。 → つまり、落として割れた画面は保証がきかず、自分で払う。"
+    note: "out of pocket＝自分の お金で"
+    choices: ["A screen cracked from a drop isn't free; you pay.", "The warranty pays for any cracked screen.", "He found the phone in his pocket."]
+    answer: 0
+    cja: ["落として割れた画面は無料ではなく、自分で払う。", "割れた画面なら何でも保証で直る。", "ポケットの中でスマホを見つけた。"]
+    why: "warranty は不具合（defects）だけが対象で、落とした画面は isn't covered（対象外）。out of pocket は「自腹で」。ポケットの話ではない。"
+    ctx: "画面の割れたスマホを、携帯ショップに持ってきました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 26, register: service, pragmatic: refusal, conditions: [cafe], features: [assimilation, idiom] }
+  - id: sm-n-screen
+    lv: 4
+    type: num
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "The screen's $129, or $29 if you have insurance on it."
+    tts: "The screen's a hundred twenty-nine, or twenty-nine if ya have insurance on it."
+    ja: "画面は129ドルです。補償に入っていれば29ドルです。"
+    note: "if you have insurance の 前が 保険 ありの 値段"
+    choices: ["$29", "$129", "$290"]
+    answer: 0
+    cja: ["29ドル", "129ドル", "290ドル"]
+    why: "画面の修理は129ドル（a hundred twenty-nine）、端末の補償（insurance）があれば twenty-nine（29ドル）。290ドルは聞き違いの罠。"
+    ctx: "補償に入っている人が、画面の修理代を聞きました"
+    ask: "補償 ありなら いくら？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 26, register: service, pragmatic: literal, conditions: [cafe], features: [numbers] }
+  - id: sm-m-sign-in
+    lv: 4
+    type: mean
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "Once it's set up, you'll have to sign in with your old account, or your photos won't show up."
+    tts: "Once it's set up, you'll hafta sign in with yer old account, or yer photos won't show up."
+    ja: "設定が済んだら、前のアカウントでサインインしてください。そうしないと写真が表示されません。 → つまり、前のアカウントでログインすれば写真が戻る。"
+    note: "sign in＝ログイン。署名 ではない"
+    choices: ["Log in with the old account to get the photos back.", "Sign a form to get a new account.", "The photos are gone for good."]
+    answer: 0
+    cja: ["前のアカウントでログインすれば、写真が戻る。", "新しいアカウントのために書類に署名する。", "写真は完全に消えた。"]
+    why: "sign in は「ログインする」。前のアカウントでログインしないと写真が出ない（won't show up）。署名の話でも、写真が消えたわけでもない。"
+    ctx: "新しいスマホを受け取るとき、店員が説明します"
+    ask: "つまり、どう する？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+  # ---- ばめん: roaming, the receipt, a trade-in, the Wi-Fi ----
+  - id: sm-roaming
+    lv: 4
+    type: gist
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "I'm going to Seoul next week. Will my phone work there? It will, but roaming's five bucks a day. Or you can add the travel plan. It's forty a month, unlimited data. Wait, did you say five a day? I'm only there five days. Then the daily one's cheaper. Five days, that's twenty-five bucks."
+    ja: "1日5ドルのローミングで、5日で25ドル。"
+    note: "a day と a month を 比べる"
+    choices: ["The daily roaming, about $25 in all.", "The travel plan, $40 a month.", "Nothing. It works for free."]
+    answer: 0
+    cja: ["1日ずつのローミングで、全部で25ドルくらい。", "旅行プランで、月40ドル。", "何もいらない。無料で使える。"]
+    why: "ローミングは five bucks a day（1日5ドル）、旅行プランは forty a month（月40ドル）。5日だけなら1日ずつのほうが安く、合計25ドル。"
+    ctx: "海外旅行の前に、携帯ショップで相談です"
+    focus: "Then the daily one's cheaper. Five days, that's twenty-five bucks."
+    ask: "どちらが 安い？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation, numbers] }
+    lines:
+      - { who: punchy, cast: us-m4, en: "I'm going to Seoul next week. Will my phone work there?", tts: "I'm goin' to Seoul next week. Will my phone work there?", ja: "来週ソウルに行くんですけど、スマホは使えますか？" }
+      - { who: audie, cast: us-f2, en: "It will, but roaming's five bucks a day. Or you can add the travel plan. It's forty a month, unlimited data.", tts: "It will, but roaming's fi' bucks a day. Or ya can add the travel plan. It's forty a month, unlimited data.", ja: "使えますが、ローミングは1日5ドルです。または旅行プランを追加できます。月40ドルで、データ無制限です。" }
+      - { who: punchy, cast: us-m4, en: "Wait, did you say five a day? I'm only there five days.", ja: "待って、1日5ドルって言いました？ 5日しかいないんです。" }
+      - { who: audie, cast: us-f2, en: "Then the daily one's cheaper. Five days, that's twenty-five bucks.", ja: "それなら1日ずつのほうが安いですね。5日で25ドルです。" }
+  - id: sm-r-warranty
+    lv: 4
+    type: reply
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Is it still under warranty? Do you have the receipt?"
+    tts: "Is it still under warranty? D'you have the receipt?"
+    ja: "まだ保証期間内ですか？ レシートはありますか？ →「たぶん。3月に買いました。」"
+    note: "under warranty＝保証期間内。下 ではない"
+    choices: ["I think so. I got it in March.", "No, it's in my bag right now.", "Warranty? No thanks, just the phone."]
+    answer: 0
+    cja: ["たぶん。3月に買いました。", "いいえ、今はかばんの中です。", "保証？ いえ、本体だけでいいです。"]
+    why: "under warranty は「保証期間内」で、何かの下にあるという意味ではない。いつ買ったかを答えれば、期間内かどうかがわかる。"
+    ctx: "壊れたスマホを、携帯ショップに持ってきました"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 26, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+  - id: sm-m-trade-in
+    lv: 4
+    type: mean
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "If you trade in your old phone, we'll take a hundred off the new one."
+    tts: "If ya trade in yer old phone, we'll take a hundred off the new one."
+    ja: "古いスマホを下取りに出せば、新しいのから100ドル引きます。 → つまり、下取りで100ドル安くなる。"
+    note: "trade in＝下取りに 出す"
+    choices: ["Give them your old phone and get $100 off.", "Swap phones with someone for a day.", "Pay $100 more for the new one."]
+    answer: 0
+    cja: ["古いスマホを渡すと、100ドル引き。", "誰かと1日スマホを交換する。", "新しいのに100ドル多く払う。"]
+    why: "trade in は「下取りに出す」。take a hundred off は「100ドル引く」。人と交換するのでも、追加で払うのでもない。"
+    ctx: "新しいスマホを見に、携帯ショップに来ました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 26, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+  - id: sm-n-come-back
+    lv: 4
+    type: num
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "It'll take about an hour and a half, so come back around 4:15."
+    tts: "It'll take about an hour an' a half, so come back around four-fifteen."
+    ja: "1時間半くらいかかるので、4時15分ごろに戻ってきてください。"
+    note: "fifTEEN は 後ろが 強い"
+    choices: ["4:15", "4:50", "5:15"]
+    answer: 0
+    cja: ["4時15分", "4時50分", "5時15分"]
+    why: "come back around four-fifteen は「4時15分ごろ戻って」。fifteen は後ろの teen が強く長い。fifty なら前が強い。"
+    ctx: "スマホを修理に預けて、店員が"
+    ask: "何時に 戻る？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [numbers, teen-ty] }
+  - id: sm-wifi-next
+    lv: 4
+    type: next
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "My phone won't connect to the Wi-Fi at home. Everything else does. Did you try forgetting the network and signing in again? Forgetting it? How do I do that?"
+    ja: "やってみせますね。設定を開いてください。"
+    note: "forget the network＝登録を 削除する"
+    choices: ["Here, I'll show you. Open your settings.", "Just try not to think about it.", "You'll have to buy a new router."]
+    answer: 0
+    cja: ["やってみせますね。設定を開いてください。", "そのことを考えないようにして。", "新しいルーターを買う必要があります。"]
+    why: "forget the network は、スマホからネットワークの登録を削除すること。忘れようとする話ではない。やり方を聞かれたので、設定画面で教えるのが自然。"
+    ctx: "家のネットにつながらず、店員に相談しています"
+    focus: "Did you try forgetting the network and signing in again?"
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+    lines:
+      - { who: sherb, cast: us-m4, en: "My phone won't connect to the Wi-Fi at home. Everything else does.", ja: "家のWi-Fiに、スマホだけつながらないんです。ほかは全部つながるのに。" }
+      - { who: kid-cat, cast: us-m1, en: "Did you try forgetting the network and signing in again?", tts: "Didja try forgettin' the network an' signing in again?", ja: "ネットワークを一度削除して、もう一度接続してみました？" }
+      - { who: sherb, cast: us-m4, en: "Forgetting it? How do I do that?", ja: "削除？ どうやるんですか？" }
+  - id: sm-m-swamped
+    lv: 4
+    type: mean
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "We can fix it here, but we're swamped today, so it'll take about three hours. Or you could come in tomorrow morning."
+    tts: "We can fix it here, but we're swamped today, so it'll take about three hours. Or ya could come in tomorrow morning."
+    ja: "ここで直せますが、今日は立て込んでいるので3時間くらいかかります。または、明日の朝に来ていただくこともできます。 → つまり、今日だと3時間、明日の朝なら早い。"
+    note: "swamped＝すごく 忙しい"
+    choices: ["Today it'd take three hours; tomorrow morning is an option.", "They can't fix it at the store.", "It takes three hours, even tomorrow."]
+    answer: 0
+    cja: ["今日なら3時間。明日の朝という手もある。", "店では直せない。", "明日でも3時間かかる。"]
+    why: "swamped は「とても忙しい」。今日なら3時間くらいかかるが、come in tomorrow morning（明日の朝来る）もできる。店で直せないわけではない。"
+    ctx: "混んだ携帯ショップで、修理を頼みました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+  # ---- チェック ----
+  - id: sm-water-damage
+    lv: 4
+    type: gist
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "So, the screen's cracked, and there's water damage too. Is that covered? It's under warranty. The warranty doesn't cover water damage, sorry. But you have insurance, so it's a $99 deductible, and we can do it today. Okay. How long will it take? About an hour. You'd have to back it up first."
+    ja: "保険で99ドル、1時間ほど。先にバックアップ。"
+    note: "deductible＝保険の 自己負担額"
+    choices: ["$99 through insurance, about an hour, back it up first.", "Free under the warranty, done today.", "$99, but it takes a week."]
+    answer: 0
+    cja: ["保険で99ドル、1時間くらい、先にバックアップ。", "保証で無料、今日できる。", "99ドルで、1週間かかる。"]
+    why: "水濡れは保証の対象外。でも端末の保険（insurance）があるので、自己負担の99ドルで今日直せる。1時間ほどで、先に back it up。"
+    ctx: "画面が割れて水にも濡れたスマホを修理に"
+    focus: "But you have insurance, so it's a $99 deductible, and we can do it today."
+    ask: "どう なった？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 26, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation, numbers] }
+    lines:
+      - { who: raymond, cast: us-m5, en: "So, the screen's cracked, and there's water damage too.", ja: "画面が割れているのと、水濡れもありますね。" }
+      - { who: bea, cast: us-f1, en: "Is that covered? It's under warranty.", ja: "それって対象になりますか？ 保証期間内なんですけど。" }
+      - { who: raymond, cast: us-m5, en: "The warranty doesn't cover water damage, sorry. But you have insurance, so it's a $99 deductible, and we can do it today.", tts: "The warranty doesn't cover water damage, sorry. But ya have insurance, so it's a ninety-nine-dollar deductible, an' we can do it today.", ja: "すみません、保証は水濡れが対象外です。でも端末の保険に入っているので、自己負担99ドルで、今日直せますよ。" }
+      - { who: bea, cast: us-f1, en: "Okay. How long will it take?", ja: "わかりました。どのくらいかかりますか？" }
+      - { who: raymond, cast: us-m5, en: "About an hour. You'd have to back it up first.", tts: "About an hour. You'd hafta back it up first.", ja: "1時間くらいです。先にバックアップを取っておいてください。" }
+  - id: sm-r-sign-in
+    lv: 4
+    type: reply
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "Okay, now just sign in with your email and password."
+    tts: "Okay, now just sign in with yer email an' password."
+    ja: "では、メールアドレスとパスワードでサインインしてください。 →「あ、パスワードを忘れちゃいました。」"
+    note: "sign in＝ログイン"
+    choices: ["Hmm, I forgot my password.", "Sure. Where do I sign? Here?", "My email? It's fine, thanks."]
+    answer: 0
+    cja: ["うーん、パスワードを忘れちゃいました。", "はい。どこに署名すれば？ ここ？", "メール？ 大丈夫です、どうも。"]
+    why: "sign in は「ログインする」で、紙に署名するのではない。メールとパスワードを入れる場面なので、パスワードを忘れたと返すのが自然。"
+    ctx: "新しいスマホの設定を、店員と一緒にしています"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+  - id: sm-m-in-person
+    lv: 4
+    type: mean
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "You'd have to come in person with your ID. We can't do it over the phone."
+    tts: "You'd hafta come im person with yer I D. We can't do it over the phone."
+    ja: "身分証を持って、ご本人が来店してください。電話ではできないんです。 → つまり、身分証を持って店に行く必要がある。"
+    note: "in person が「イムパーソン」"
+    choices: ["She has to go to the store with her ID.", "She can do it over the phone.", "Someone else can go for her."]
+    answer: 0
+    cja: ["身分証を持って店に行かなければならない。", "電話で済ませられる。", "代わりの人が行ってもいい。"]
+    why: "in person は「本人が直接」で、n が p の前で m になり「イムパーソン」。have to は「ハフタ」。電話ではできず、代理でもだめ。"
+    ctx: "回線の名義変更について、携帯会社に電話しました"
+    ask: "つまり、どう する？"
+    scene: living
+    channel: phone
+    cond: { kind: phone, level: light }
+    tags: { seed: 21, register: service, pragmatic: refusal, conditions: [phone], features: [assimilation] }
+  - id: sm-n-plan
+    lv: 4
+    type: num
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "The new plan's $65 a month, but it's $15 off for the first six months, so $50."
+    tts: "The new plan's sixty-five a month, but it's fifteen off fer the first six months, so fifty."
+    ja: "新しいプランは月65ドルですが、最初の6か月は15ドル引きで、50ドルです。"
+    note: "for the first six months＝最初の 6か月"
+    choices: ["$50", "$65", "$15"]
+    answer: 0
+    cja: ["50ドル", "65ドル", "15ドル"]
+    why: "通常は月65ドル、最初の6か月は15ドル引きで so fifty（50ドル）。15ドルは割引の額。fifty と fifteen も聞き分ける。"
+    ctx: "携帯ショップで、新しい料金プランの説明です"
+    ask: "最初の 6か月は 月 いくら？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 29, register: service, pragmatic: literal, conditions: [cafe], features: [numbers, teen-ty] }
+  - id: sm-eighty-next
+    lv: 4
+    type: next
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "How much can I get for my old phone? Let me check. With a trade-in, up to two hundred. But yours has a cracked back, so probably more like eighty. Eighty? Hmm."
+    ja: "まあ、80ドルでもないよりはいいか。"
+    note: "more like〜＝むしろ〜くらい"
+    choices: ["Okay, eighty's still better than nothing.", "Great, two hundred it is!", "Eighteen? That's nothing."]
+    answer: 0
+    cja: ["まあ、80ドルでもないよりはいいか。", "よし、200ドルで決まり！", "18ドル？ それじゃ何にもならない。"]
+    why: "下取りは最大200ドルだが、背面が割れているので more like eighty（80ドルくらい）。eighty は前が強く、eighteen（18）とは違う。"
+    ctx: "古いスマホの下取り額を、店員に聞きました"
+    focus: "But yours has a cracked back, so probably more like eighty."
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 26, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation, numbers, teen-ty] }
+    lines:
+      - { who: punchy, cast: us-m4, en: "How much can I get for my old phone?", ja: "古いスマホ、いくらになりますか？" }
+      - { who: kid-cat, cast: us-m1, en: "Let me check. With a trade-in, up to two hundred. But yours has a cracked back, so probably more like eighty.", tts: "Lemme check. With a trade-in, up ta two hundred. But yours has a cracked back, so probably more like eighty.", ja: "確認しますね。下取りなら最大200ドル。でも背面が割れているので、80ドルくらいですね。" }
+      - { who: punchy, cast: us-m4, en: "Eighty? Hmm.", ja: "80ドル？ うーん。" }
+  - id: sm-r-three
+    lv: 4
+    type: reply
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "It'll take about an hour. You can wait here, or come back around three."
+    tts: "It'll take about an hour. Ya can wait here, or come back around three."
+    ja: "1時間くらいかかります。ここで待っても、3時ごろに戻ってきてもいいですよ。 →「じゃあ、3時に戻ってきます。」"
+    note: "around three＝3時 ごろ"
+    choices: ["I'll come back at three, then.", "Three hours? That's too long.", "Okay, I'll wait about three."]
+    answer: 0
+    cja: ["じゃあ、3時に戻ってきます。", "3時間？ 長すぎます。", "わかりました、3くらい待ちます。"]
+    why: "about an hour は「1時間くらい」、around three は「3時ごろ」。3時間ではない。待つか戻るかを選ぶ場面なので、3時に戻ると答えるのが自然。"
+    ctx: "スマホの電池交換を、店で頼みました"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+  # ---- おと: sounds that change at the join ----
+  - id: sm-w-hafta
+    lv: 4
+    type: word
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "You'd have to back it up first."
+    tts: "You'd hafta back it up first."
+    ja: "先にバックアップを取る必要があります。"
+    note: "have to は v が f に なり「ハフタ」"
+    choices: ["have to", "half to", "had to"]
+    answer: 0
+    cja: ["〜する必要がある", "半分まで", "〜する必要があった"]
+    why: "have to は v が次の t につられて f になり「ハフタ」。half（半分）と同じ音に聞こえても、意味は「〜しなければ」。had to なら d が入る。"
+    ctx: "携帯ショップで、修理の前に"
+    focus: "have to"
+    marks: [[say, "have to", "hafta"]]
+    tags: { seed: 22, register: service, pragmatic: literal, features: [assimilation] }
+  - id: sm-w-in-person
+    lv: 4
+    type: word
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "You have to do it in person."
+    tts: "Ya hafta do it im person."
+    ja: "ご本人が直接来ていただく必要があります。"
+    note: "in の n が p の 前で m に なる"
+    choices: ["in person", "in purses", "a person"]
+    answer: 0
+    cja: ["本人が直接", "財布の中で", "一人の人"]
+    why: "in person は n が p の前で m になり「イムパーソン」。purses（財布）は「パーシズ」で最後が違う。a person には n の音がない。"
+    ctx: "電話で、契約の変更について聞いています"
+    focus: "in person"
+    marks: [[say, "in person", "im person"]]
+    tags: { seed: 21, register: service, pragmatic: literal, features: [assimilation] }
+  - id: sm-w-ten-bucks
+    lv: 4
+    type: word
+    speaker: punchy
+    voice: us
+    cast: us-m4
+    en: "It's only ten bucks a month."
+    tts: "It's only tem bucks a month."
+    ja: "月たったの10ドルだよ。"
+    note: "ten の n が b の 前で m「テムバックス」"
+    choices: ["ten bucks", "ten books", "tempo"]
+    answer: 0
+    cja: ["10ドル", "10冊の本", "テンポ"]
+    why: "ten は b の前で n が m になり「テムバックス」。bucks（ドル）は「バ」、books（本）は「ブ」で母音が違う。a month とも合う。"
+    ctx: "友だちが、スマホの補償の話をしています"
+    focus: "ten bucks"
+    marks: [[say, "ten bucks", "tem bucks"]]
+    tags: { seed: 22, register: friend, pragmatic: literal, features: [assimilation] }
+  - id: sm-w-would-you
+    lv: 4
+    type: word
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Would you like a case with that?"
+    tts: "Wouldja like a case with that?"
+    ja: "ケースも一緒にいかがですか？"
+    note: "would you が「ウジュ」と 一つに"
+    choices: ["Would you", "Did you", "Could you"]
+    answer: 0
+    cja: ["〜はいかがですか", "〜しましたか", "〜してもらえますか"]
+    why: "would you は d と y が混ざって「ウジュ」。did you なら「ディジュ」、could you なら「クジュ」と最初の音が違う。like と続くので「いかが？」。"
+    ctx: "新しいスマホを買うときに、店員が"
+    focus: "Would you"
+    marks: [[say, "Would you", "wouldja"]]
+    tags: { seed: 26, register: service, pragmatic: formula, features: [assimilation] }
+  - id: sm-w-dont-you
+    lv: 4
+    type: word
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "Why don't you try restarting it?"
+    tts: "Why doncha try restartin' it?"
+    ja: "再起動してみたらどうですか？"
+    note: "don't you が「ドンチャ」"
+    choices: ["Why don't you", "Why won't you", "Why did you"]
+    answer: 0
+    cja: ["〜してみたら？", "なぜ〜してくれないの？", "なぜ〜したの？"]
+    why: "don't you は t と y が混ざって「ドンチャ」。Why don't you〜? は「〜してみたら？」という提案。won't you は「ウォンチャ」と w で始まる。"
+    ctx: "スマホが動かなくて、店員に見せました"
+    focus: "Why don't you"
+    marks: [[say, "don't you", "doncha"]]
+    tags: { seed: 22, register: service, pragmatic: literal, features: [assimilation] }
+  - id: sm-w-green-button
+    lv: 4
+    type: word
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Just tap the green button."
+    tts: "Just tap the greem button."
+    ja: "緑のボタンを押すだけです。"
+    note: "green の n が b の 前で m に"
+    choices: ["green button", "green bottom", "clean button"]
+    answer: 0
+    cja: ["緑のボタン", "緑の底", "きれいなボタン"]
+    why: "green は b の前で n が m になり「グリームボタン」。button は最後が「トゥン」、bottom は「タム」。clean は k で始まる「クリーン」。"
+    ctx: "店員が、スマホの画面を見せながら"
+    focus: "green button"
+    marks: [[say, "green button", "greem button"]]
+    tags: { seed: 22, register: service, pragmatic: literal, features: [assimilation] }
+  # ---- じっせん: a busy store, fast ----
+  - id: sm-fast-lint
+    lv: 4
+    type: gist
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Okay, so it's not the battery. It's the charging port. There's lint in it. Lint? Seriously? Happens all the time. I can clean it out right now, no charge. If that doesn't work, it's a $79 repair, and it's not covered. Let's try the free thing first."
+    ja: "今すぐ無料で充電口を掃除する。だめなら79ドル。"
+    note: "no charge＝無料。charge は 充電 ではない"
+    choices: ["He'll clean the port now for free; if that fails, it's $79.", "The battery needs replacing for $79.", "It's covered, so the repair is free."]
+    answer: 0
+    cja: ["今すぐ無料で充電口を掃除。だめなら79ドル。", "電池の交換が必要で79ドル。", "保証の対象なので修理は無料。"]
+    why: "原因は電池ではなく充電口のほこり（lint）。掃除は no charge（無料）。それでだめなら79ドルの修理で、not covered（保証の対象外）。"
+    ctx: "混んだ携帯ショップで、充電できないスマホを"
+    focus: "I can clean it out right now, no charge."
+    ask: "どう なった？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation, numbers] }
+    lines:
+      - { who: kid-cat, cast: us-m1, en: "Okay, so it's not the battery. It's the charging port. There's lint in it.", tts: "Okay, so it's not the battery. It's the chargin' port. There's lint in it.", ja: "えっと、電池じゃないですね。充電口です。ほこりが詰まってます。" }
+      - { who: olivia, cast: us-f4, en: "Lint? Seriously?", ja: "ほこり？ ほんとに？" }
+      - { who: kid-cat, cast: us-m1, en: "Happens all the time. I can clean it out right now, no charge. If that doesn't work, it's a $79 repair, and it's not covered.", tts: "Happens all the time. I can clean it out right now, no charge. If that doesn't work, it's a seventy-nine-dollar repair, an' it's not covered.", ja: "よくあるんですよ。今すぐ無料で掃除できます。それでだめなら79ドルの修理で、保証の対象外です。" }
+      - { who: olivia, cast: us-f4, en: "Let's try the free thing first.", ja: "まずは無料のほうでお願いします。" }
+  - id: sm-fast-m-roaming
+    lv: 4
+    type: mean
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "So if you don't turn off data roaming before you land, it'll just keep charging you ten bucks a day, and honestly, people come back to bills of, like, three hundred."
+    tts: "So if ya don't turn off data roamin' before ya land, it'll just keep chargin' ya tem bucks a day, an' honestly, people come back to bills of, like, three hundred."
+    ja: "着く前にデータローミングを切っておかないと、1日10ドルずつかかり続けます。正直、帰ってきたら300ドルくらいの請求が来る人もいるんです。 → つまり、着く前にローミングを切らないと高くつく。"
+    note: "before you land＝着陸 する 前に"
+    choices: ["Turn off roaming before landing, or it costs $10 a day.", "Roaming is free for the first ten days.", "The bill is always $300."]
+    answer: 0
+    cja: ["着く前にローミングを切らないと、1日10ドルかかる。", "ローミングは最初の10日間無料。", "請求はいつも300ドル。"]
+    why: "着く前に data roaming を切る。切らないと ten bucks a day（1日10ドル）かかり続け、300ドルの請求が来る人もいる。"
+    ctx: "旅行前に、混んだ携帯ショップで店員が早口で"
+    ask: "つまり、どう する？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+  - id: sm-fast-r-reset
+    lv: 4
+    type: reply
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Did you back it up before you reset it? 'Cause if not, those photos are gone."
+    tts: "Didja back it up before ya reset it? 'Cause if not, those photos are gone."
+    ja: "リセットする前に、バックアップは取りました？ 取っていないなら、写真は消えてますよ。 →「はい、毎晩自動でバックアップされてると思います。」"
+    note: "back it up＝バックアップを 取る"
+    choices: ["Yeah, it backs up every night, I think.", "Back? No, I reset it from the front.", "Reset? I just set it up today."]
+    answer: 0
+    cja: ["はい、毎晩バックアップされてると思います。", "後ろ？ いいえ、前からリセットしました。", "リセット？ 今日設定したばかりです。"]
+    why: "back it up は「バックアップを取る」で、前後の話ではない。リセット前に取ったかを聞いているので、自動で取れていると答えるのが自然。"
+    ctx: "混んだ店で、初期化したスマホを見せました"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+  - id: sm-fast-n-monthly
+    lv: 4
+    type: num
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "It's $40 a month for the phone, plus $35 for the plan, so $75. Wait, sorry, I meant $30. So $70."
+    tts: "It's forty a month fer the phone, plus thirty-five fer the plan, so seventy-five. Wait, sorry, I meant thirty. So seventy."
+    ja: "端末が月40ドル、プランが35ドルで、75ドルです。あ、すみません、プランは30ドルでした。なので70ドルです。"
+    note: "I meant の 後で 合計が 変わる"
+    choices: ["$70", "$75", "$40"]
+    answer: 0
+    cja: ["70ドル", "75ドル", "40ドル"]
+    why: "端末40ドルとプラン35ドルで75ドルと言ったが、I meant でプランを30ドルに訂正し、合計は seventy（70ドル）。40ドルは端末だけ。"
+    ctx: "騒がしい店内で、毎月の料金を聞いています"
+    ask: "月 いくら？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [numbers, self-repair] }
+  - id: sm-fast-ready
+    lv: 4
+    type: next
+    speaker: raymond
+    voice: us
+    cast: us-m5
+    en: "Your phone's ready! New screen, and I updated the software. Great! Do I need to sign in again? Yeah, sorry, you'll have to sign back in to everything. Your photos are safe, though."
+    ja: "大丈夫です。写真を守ってくれてありがとう！"
+    note: "sign back in＝もう 一度 ログイン"
+    choices: ["No problem. Thanks for keeping them safe!", "Oh no, my photos are gone?", "Sign? Where's the pen?"]
+    answer: 0
+    cja: ["大丈夫です。写真を守ってくれてありがとう！", "えっ、写真が消えたの？", "署名？ ペンはどこ？"]
+    why: "sign back in は「もう一度ログインする」で、署名ではない。写真は safe（無事）と言われたので、消えたわけではない。お礼を言うのが自然。"
+    ctx: "混んだ店で、修理の終わったスマホを受け取ります"
+    focus: "Yeah, sorry, you'll have to sign back in to everything."
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 22, register: service, pragmatic: literal, conditions: [cafe], features: [assimilation] }
+    lines:
+      - { who: raymond, cast: us-m5, en: "Your phone's ready! New screen, and I updated the software.", ja: "スマホ、できましたよ！ 画面を新しくして、ソフトも更新しておきました。" }
+      - { who: bea, cast: us-f1, en: "Great! Do I need to sign in again?", ja: "よかった！ またサインインが必要ですか？" }
+      - { who: raymond, cast: us-m5, en: "Yeah, sorry, you'll have to sign back in to everything. Your photos are safe, though.", tts: "Yeah, sorry, you'll hafta sign back in ta everything. Yer photos are safe, though.", ja: "はい、すみません、全部もう一度サインインが必要です。でも写真は無事ですよ。" }
+  - id: sm-fast-m-part
+    lv: 4
+    type: mean
+    speaker: audie
+    voice: us
+    cast: us-f2
+    en: "We could order the part, but honestly, it'll take about two weeks, so you might be better off with a new phone. You can trade this one in."
+    tts: "We could order the part, but honestly, it'll take about two weeks, so ya might be better off with a new phone. Ya can trade this one in."
+    ja: "部品を取り寄せることもできますが、正直、2週間ほどかかるので、新しいスマホにしたほうがいいかもしれません。これは下取りに出せますし。 → つまり、修理は2週間かかるので、下取りして買い替えるのも手。"
+    note: "better off＝〜の ほうが 得"
+    choices: ["The repair takes two weeks, so a new phone might be better.", "The part arrives tomorrow.", "She can't trade in a broken phone."]
+    answer: 0
+    cja: ["修理に2週間かかるので、買い替えたほうがいいかも。", "部品は明日届く。", "壊れたスマホは下取りに出せない。"]
+    why: "部品の取り寄せに2週間ほどかかる。だから better off with a new phone（買い替えたほうが得）かも。古いのは下取り（trade in）に出せる。"
+    ctx: "混んだ携帯ショップで、古いスマホの修理を相談"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 26, register: service, pragmatic: hedge, conditions: [cafe], features: [assimilation] }
+lessons:
+  v: 2
+  deai: [sm-battery, sm-backup-next, sm-r-restart, sm-m-not-covered, sm-n-screen, sm-m-sign-in]
+  bamen: [sm-roaming, sm-r-warranty, sm-m-trade-in, sm-n-come-back, sm-wifi-next, sm-m-swamped]
+  check: [sm-water-damage, sm-r-sign-in, sm-m-in-person, sm-n-plan, sm-eighty-next, sm-r-three]
+  oto: [sm-w-hafta, sm-w-in-person, sm-w-ten-bucks, sm-w-would-you, sm-w-dont-you, sm-w-green-button]
+  jissen: [sm-fast-lint, sm-fast-m-roaming, sm-fast-r-reset, sm-fast-n-monthly, sm-fast-ready, sm-fast-m-part]
+  call: [call-screen-ready]
+tiers:
+  sm-battery:
+    easy: { choices: ["The battery gets replaced for free.", "She needs to buy a new phone."], answer: 0, cja: ["電池を無料で交換する。", "新しいスマホを買う必要がある。"] }
+    hard: { choices: ["The battery gets replaced for free, in about an hour.", "The battery gets replaced for free, in about a day.", "The battery gets replaced for a fee, in about an hour.", "An app was draining it, so he deleted it."], answer: 0, cja: ["電池を無料で交換、1時間くらい。", "電池を無料で交換、1日くらい。", "電池を有料で交換、1時間くらい。", "アプリが原因だったので削除した。"] }
+  sm-n-plan:
+    easy: { choices: ["$50", "$65"], answer: 0, cja: ["50ドル", "65ドル"] }
+  sm-fast-lint:
+    hard: { choices: ["He'll clean the port now for free; if that fails, it's $79.", "He'll clean the port now for $79.", "He'll clean the port now for free; if that fails, the warranty covers it.", "He'll replace the port now for free."], answer: 0, cja: ["今すぐ無料で充電口を掃除。だめなら79ドル。", "今すぐ79ドルで充電口を掃除。", "今すぐ無料で掃除。だめなら保証で直る。", "今すぐ無料で充電口を交換。"] }

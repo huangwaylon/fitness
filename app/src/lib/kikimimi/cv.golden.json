@@ -16,8 +16,8 @@
   "decks": "40a579a98762d069"
  },
  "call:s2-call-c": {
-  "cv": "acc348",
-  "decks": "996a35904bcd0f4a"
+  "cv": "0743ad",
+  "decks": "4292c2cc0a3cc033"
  },
  "call:s3-call": {
   "cv": "fef082",
@@ -82,6 +82,10 @@
  "lesson:mc-weekend": {
   "cv": "b9dcb6",
   "decks": "dfcae6d9afcc7101"
+ },
+ "lesson:sh-phone": {
+  "cv": "437d34",
+  "decks": "9ba27070d388da8b"
  },
  "lesson:sh-shop": {
   "cv": "b61cce",
