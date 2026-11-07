@@ -577,7 +577,8 @@ nothing feature-local (`--wed-pink` → `--c-rose`, Pass's blue → `--c-sky`, h
   Japanese with kanji (設定 記録 完了 削除 保存 編集); the menu pills stay kana.
 - **Shape:** cards `--card`, `--r-row`, `--sh-lip-s`, no hairline; rows split by a 12px-inset stitch; controls 32px drawn /
   44px hit, `--ctl` + `--sh-ctl-s`; selected = yuzu (never green); the action = the leaf `.btn` (its 4px lip). One control
-  row per view, under the header. Grain only on the header band and the letter. Side padding 12, stack gap 8.
+  row per view, under the header. Grain only on the letter: a header band is plain `--surface`, the body's colour
+  (as ごはん's and けんこう's). Side padding 12, stack gap 8.
 - **Components** (ui/):
   - `Sheet variant="full"`: the column edge to edge on `--surface`, `.kit` scope; inside: NavBar s (its band pads
     `--ui-top` itself, or a PhotoBand `edge`), one scroller, TabBar (pads the home indicator).
