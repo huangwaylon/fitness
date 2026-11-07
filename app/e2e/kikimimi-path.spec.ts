@@ -1,11 +1,13 @@
 // しまの みち's polish, U7 (docs/kikimimi-ux.md U7, §6.3, §6.3b): a built unit's チェック (tr-hotel's, from とばして
 // チェック, all right on the first listen) stamps it, and its host's letter arrives on the results (open, the English
 // first, 「にほんごやく」 its gloss); the unit's page has it folded under the stamps, and ずかん lists it. Then a phone
-// with a みみ チェック placed at かわ and かわ's four units stamped one by one (rows kept on the phone): 「ここから」 on
+// with a みみ チェック placed at かわ and every かわ unit stamped one by one (rows kept on the phone): 「ここから」 on
 // かわ, もり above it soft (open: the current unit is its first), はまべ folded, かわ's landmark celebrated once (やったね:
 // never again, the badge stays). The
 // logic tier (Playwright's Chromium is muted: nothing is heard). Screenshots at 393×852 (KIKI_SHOTS=1) into
 // /tmp/kikimimi-shots/path/.
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
@@ -96,26 +98,28 @@ test('a stamp brings the host’s letter: on the results, then on the unit’s p
   await snap(page, 'zukan-letters');
 });
 
-/** かわ's four units' チェック rows, each a pass (6 / 6 on the first listen), and a みみ チェック placed at かわ: kept on
- *  A's phone (DEVICE.kikimimiGames), as if played here before. */
-const KAWA = ['gl-clarify', 'gl-endcall', 'fr-replan', 'ev-bday'];
+/** Every かわ unit's チェック row, each a pass (6 / 6 on the first listen), and a みみ チェック placed at かわ: kept on
+ *  A's phone (DEVICE.kikimimiGames), as if played here before. The units from the committed index (drafts too: ?demo
+ *  shows them on the path), so a new かわ unit is stamped as well. */
+const INDEX = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'index.json'), 'utf8')) as { paths: [string, string, string][] };
+const KAWA = INDEX.paths.filter((p) => p[2] === 'kawa').map((p) => p[0]);
 async function seedKawa(page: Page) {
   const rows = [
     { at: Date.parse('2026-10-20T03:00:00Z'), row: { d: '2026-10-20', g: 'chk0001', gm: 'check', u: '22222', lv: 3, n: 1, ms: 180_000, r: ['r4-leak', 'm4-easy', 'n4-reference', 'w4-youll-need', 'r4-triage', 'm4-see-what', 'r4-reschedule', 'm4-upgrade'].map((id) => [id, 1, 0, 0]) } },
     ...KAWA.map((u, k) => ({
-      at: Date.parse(`2026-11-0${k + 1}T03:00:00Z`),
-      row: { d: `2026-11-0${k + 1}`, g: `kawa000${k}`, u, l: 3, lv: 3, n: 1, ms: 150_000, r: Array.from({ length: 6 }, (_, i) => [`${u}-q${i}`, 1, 0, 0]) }
+      at: Date.parse('2026-11-01T03:00:00Z') + k * 3_600_000,
+      row: { d: '2026-11-01', g: `kawa000${k}`, u, l: 3, lv: 3, n: 1, ms: 150_000, r: Array.from({ length: 6 }, (_, i) => [`${u}-q${i}`, 1, 0, 0]) }
     }))
   ];
   await page.addInitScript((v) => localStorage.setItem('island.kikimimiGames', v), JSON.stringify({ who: 'A', rows }));
 }
 
-test('the placement and a landmark: 「ここから」 at かわ, もり above it soft; かわ cleared one by one, celebrated once', { tag: '@quarantine', annotation: { type: 'quarantine', description: 'owner: ききみみ session (fitness-fa), since 2026-11-07: red on main from 3866b8f1, an element never visible (CI run for 60b141d7); quarantined by the ごはん session to unblock deploys' } }, async ({ page }) => {
+test('the placement and a landmark: 「ここから」 at かわ, もり above it soft; かわ cleared one by one, celebrated once', async ({ page }) => {
   await seedKawa(page);
   await toPath(page);
   const kawa = sheet(page).locator('[data-kiki-stage="kawa"]');
   await expect(kawa.locator('[data-kiki-here]')).toHaveText('ここから');
-  await expect(kawa.locator('[data-kiki-stage-count]')).toHaveAttribute('data-kiki-stage-count', '4');
+  await expect(kawa.locator('[data-kiki-stage-count]')).toHaveAttribute('data-kiki-stage-count', String(KAWA.length));
   await expect(kawa.locator('[data-kiki-landmark="kawa"]')).toBeVisible();
   // the celebration, scrolled to; かわ open, もり (above the placement) soft, open on the current unit; はまべ folded
   const party = kawa.locator('[data-kiki-landmark-party="kawa"]');
