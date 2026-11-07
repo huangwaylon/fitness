@@ -9,6 +9,7 @@
   "food.meal.s": "おやつ",
   "food.add": "{meal}に追加",
   "food.kcalHead": "この日のカロリー",
+  "food.details": "くわしく",
   "food.left": "あと {n} kcal",
   "food.over": "{n} kcal オーバー",
   "food.under": "目標より {n} kcal 少なめ",

@@ -9,6 +9,7 @@
   "food.meal.s": "Snacks",
   "food.add": "Add to {meal}",
   "food.kcalHead": "Calories this day",
+  "food.details": "Details",
   "food.left": "{n} kcal left",
   "food.over": "{n} kcal over",
   "food.under": "{n} kcal under goal",
