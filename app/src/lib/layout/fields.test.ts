@@ -9,6 +9,8 @@ import { Ch, adoptFields, computeFields, fieldsOf, hasFields, type RawFields } f
 import { codeOf, idx } from './grid.ts';
 import { Layout, defaultLayout, layoutOf } from './model.ts';
 import { fieldsSoon, primeFields } from './fieldsPrime.ts';
+import { configureFieldsCache, fieldsKey, fieldsWriter, readFields } from './fieldsCache.ts';
+import { IDBFactory } from 'fake-indexeddb';
 import { CHUNK_COUNT, adoptChunks, chunkMesh } from './mesh.ts';
 
 const record = () =>
@@ -84,7 +86,7 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
     class Mute { onmessage = null; onerror = null; onmessageerror = null; postMessage() {} terminate() {} }
     vi.stubGlobal('Worker', Mute);
     try {
-      void primeFields(m, 60_000);
+      void primeFields(m, 'test', 60_000);
       const t = Date.now();
       await fieldsSoon(m, 50);
       expect(Date.now() - t).toBeGreaterThanOrEqual(45);
@@ -96,7 +98,65 @@ describe('the fields off the main thread (fieldsPrime.ts)', () => {
   });
   it('resolves at once with no worker (the main thread then builds them)', async () => {
     const m = altered(defaultLayout(), 5);
-    await primeFields(m);
+    await primeFields(m, 'test');
     expect(hasFields(m)).toBe(false);
+  });
+});
+
+describe('the fields kept for the next launch (fieldsCache.ts)', () => {
+  const primedOf = (l: Layout) => {
+    const raw = computeFields(l);
+    const wl = new Layout(l.codes, l.objects, l.homes);
+    adoptFields(wl, raw);
+    return { raw, chunks: Array.from({ length: CHUNK_COUNT }, (_, i) => chunkMesh(wl, i)) };
+  };
+  it('keyed by the layout and the build: another tile, piece or build is another key', () => {
+    const l = altered(defaultLayout(), 11);
+    const k = fieldsKey(l, 'b1');
+    expect(fieldsKey(new Layout(l.codes.slice(), new Map(l.objects), l.homes), 'b1')).toBe(k);
+    expect(fieldsKey(l, 'b2')).not.toBe(k);
+    expect(fieldsKey(altered(defaultLayout(), 12), 'b1')).not.toBe(k);
+    const moved = new Map(l.objects);
+    const [id, o] = [...moved][0];
+    moved.set(id, { ...o, x: o.x + 1 });
+    expect(fieldsKey(new Layout(l.codes, moved, l.homes), 'b1')).not.toBe(k);
+  });
+  it('written once, read back for its key only; a launch with it adopts them with no worker', async () => {
+    const idb = new IDBFactory();
+    configureFieldsCache({ indexedDB: idb });
+    try {
+      const l = altered(record(), 13);
+      const key = fieldsKey(l, 'b1');
+      expect(await readFields(key)).toBeNull();
+      const write = await fieldsWriter();
+      await write!(key, primedOf(l));
+      const back = await readFields(key);
+      expect(back?.chunks).toHaveLength(CHUNK_COUNT);
+      expect(same(back!.raw.ch[0], computeFields(l).ch[0])).toBe(true);
+      expect(await readFields(fieldsKey(l, 'b2'))).toBeNull();
+      // the launch (fresh modules: nothing built yet): from the cache, no worker made
+      vi.resetModules();
+      const fc = await import('./fieldsCache.ts'), fp = await import('./fieldsPrime.ts'), ff = await import('./fields.ts');
+      fc.configureFieldsCache({ indexedDB: idb });
+      vi.stubGlobal('Worker', class { constructor() { throw new Error('no worker on a hit'); } });
+      const next = new Layout(l.codes.slice(), new Map(l.objects), l.homes);
+      expect(ff.hasFields(next)).toBe(false);
+      await fp.primeFields(next, 'b1');
+      expect(ff.hasFields(next)).toBe(true);
+      expect(fp.fieldsFrom(next)).toBe('cache');
+    } finally {
+      vi.unstubAllGlobals();
+      configureFieldsCache({ indexedDB: null });
+    }
+  });
+  it('anything odd read back is a miss', async () => {
+    configureFieldsCache({ indexedDB: new IDBFactory() });
+    try {
+      const write = await fieldsWriter();
+      await write!('k', { raw: { ch: [], sf: null }, chunks: [] } as unknown as Parameters<NonNullable<typeof write>>[1]);
+      expect(await readFields('k')).toBeNull();
+    } finally {
+      configureFieldsCache({ indexedDB: null });
+    }
   });
 });
