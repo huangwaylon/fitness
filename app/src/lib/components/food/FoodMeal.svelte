@@ -118,11 +118,13 @@
   .sub { margin-left: auto; font-size: var(--fs-body); color: var(--text-soft); white-space: nowrap; }
   /* ＋: GoalCard's ✎ object, a cross in it */
   .add {
-    appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
-    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); margin-bottom: var(--lip-h);
+    appearance: none; border: 0; cursor: pointer; position: relative; width: 36px; height: 36px; border-radius: 12px; flex: none;
+    display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-ctl); margin: 0 4px 2px;
   }
-  .add:active { transform: translateY(2px); box-shadow: var(--sh-obj-press); }
-  .add svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+  /* 36px drawn in the 44px hit (docs/design.md "Sizes") */
+  .add::after { content: ''; position: absolute; inset: -4px; }
+  .add:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
+  .add svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; }
   ul { list-style: none; margin: 0; padding: 0; }
   /* the meal's protein: a soft chip, the leaf's once at the per-meal target */
   .pm {
@@ -157,9 +159,10 @@
   }
   .rep span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   button.rep {
-    appearance: none; border: 0; cursor: pointer; min-height: var(--hit); padding: 0 12px; margin-bottom: var(--lip-h);
+    appearance: none; border: 0; cursor: pointer; position: relative; min-height: 32px; padding: 0 12px; margin-bottom: 2px;
     color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
+  button.rep::after { content: ''; position: absolute; inset: -6px -2px; }
   button.rep:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   button.rep:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
   /* いつものに する: a text link's weight (no pill, no lip), a 44px target all the same */

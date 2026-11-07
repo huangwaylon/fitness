@@ -142,7 +142,7 @@
   /* Rows shared by the sections (ことば, つうしん, サウンド, むらびと). */
   .panel-body :global(.prows) { display: grid; gap: 10px; }
   .panel-body :global(.prow) {
-    appearance: none; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 16px;
+    appearance: none; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px;
     border-radius: var(--r-card); border: 0; background: var(--ctl); color: var(--text);
     box-shadow: var(--sh-ctl); text-align: left; width: 100%; font: inherit;
   }
