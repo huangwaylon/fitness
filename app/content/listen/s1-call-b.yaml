@@ -1,7 +1,7 @@
 # ようじ でんわ S1 かわ (b): the calls of wave 2a's かわ units (docs/curriculum-wave2.md §3.1, §3.2: one per unit, its
 # チェック from recipe v2), each with one complication: a pizza place out of an ingredient and running late (fd-order),
 # a shop calling about a size it's out of (sh-shop), a neighbor's favor that grows (hm-neighbor), a clinic moving an
-# appointment and a pharmacy's directions (hl-clinic), a weekend plan that changes on the line (mc-weekend), a friend
+# appointment twice (hl-clinic), a weekend plan that changes on the line (mc-weekend), a friend
 # who's bringing someone (gl-intro), an invitation half-declined (gl-invite). Unvoiced: batch A2.
 schema: 1
 unit: s1-call-b
@@ -88,3 +88,28 @@ items:
           - { ask: "もっと 欲しがったら？", options: ["あげない", "少し あげる", "チキンを あげる"], answer: 0, cja: ["それ以上あげない", "少しだけあげる", "チキンをあげる"] }
     note: "Oh, wait, no の あとが 本当の 鍵の 場所"
     tags: { seed: 37, register: neighbour, pragmatic: indirect, conditions: [phone], features: [self-repair, elision] }
+
+  - kind: call
+    id: call-clinic-move
+    ask: "クリニックから 電話。メモしよう"
+    ctx: "金曜に予約したクリニックから電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: pashmina, en: "Hi, this is Pashmina from Sunny Clinic, calling about your appointment on Friday at 9:30.", tts: "Hi, this is Pashmina from Sunny Clinic, callin' about yer appointment on Friday at nine-thirty.", ja: "もしもし、サニークリニックのパシュミナです。金曜9時半のご予約の件でお電話しました。" }
+      - { who: me, en: "Yes, hi. Is something wrong?", ja: "はい、どうも。何かありました？" }
+      - { who: pashmina, en: "Dr. Julian's out on Friday, so the soonest we have is Monday at 11:15. Would that work?", tts: "Dr. Julian's out on Friday, so the soonest we have is Monday at eleven-fifteen. Would that work?", ja: "金曜はジュリアン先生がお休みで、いちばん早い空きが月曜の11時15分なんです。いかがですか？" }
+      - { who: me, en: "Monday at 11:15 is fine.", tts: "Monday at eleven-fifteen is fine.", ja: "月曜の11時15分で大丈夫です。" }
+      - { who: pashmina, en: "Great. Oh, wait, sorry. I misread that. It's 11:50, not 11:15.", tts: "Great. Oh, wait, sorry. I misread that. It's eleven-fifty, not eleven-fifteen.", ja: "ありがとうございます。あ、待って、すみません。見間違えました。11時15分ではなく、11時50分です。", repair: true }
+      - { who: me, en: "11:50, okay. Should I bring anything?", tts: "Eleven-fifty, okay. Should I bring anything?", ja: "11時50分ですね。何か持っていくものはありますか？" }
+      - { who: pashmina, en: "Just your insurance card. And please come in ten minutes early to fill out a form.", tts: "Jus' yer insurance card. An' please come in ten minutes early ta fill out a form.", ja: "保険証だけで大丈夫です。それと、書類を書いていただくので10分早めにお越しください。" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "金曜は先生が休み。月曜11時15分と言ったあと、I misread that（見間違えた）で11時50分に訂正した。持ち物は保険証だけで、書類を書くため10分早めに行く。"
+        slots:
+          - { ask: "新しい 予約は？", options: ["月曜 11:50", "月曜 11:15", "金曜 9:30"], answer: 0, cja: ["月曜の11時50分", "月曜の11時15分", "金曜の9時半"] }
+          - { ask: "変わった 理由は？", options: ["先生が 休み", "機械の 故障", "予約の 間違い"], answer: 0, cja: ["先生が休み", "機械が故障した", "予約の間違い"] }
+          - { ask: "持ち物は？", options: ["保険証", "薬", "紹介状"], answer: 0, cja: ["保険証", "今飲んでいる薬", "紹介状"] }
+          - { ask: "何分 早く 行く？", options: ["10分", "15分", "50分"], answer: 0, cja: ["10分", "15分", "50分"] }
+    note: "I misread that の あとが 本当の 時間"
+    tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, numbers, teen-ty] }
