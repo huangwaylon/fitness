@@ -140,7 +140,8 @@ test.describe('offline after a visit', () => {
     await kiki(page).locator('[data-kiki-start]').click();
     await expect.poll(gm).toBe('tile');
     await expect(kiki(page).locator('[data-kiki-tile-wait], [data-kiki-tile-pool]').first()).toBeVisible({ timeout: 15_000 });
-    await expect.poll(held, { timeout: 10_000 }).toContain('kiki-s2-tile-bank');
+    // (its first place's tile files: かわ's since their A1 flip)
+    await expect.poll(async () => (await held()).some((c) => /^kiki-s\d-tile/.test(c)), { timeout: 10_000 }).toBe(true);
     expect(await held()).not.toContain('kiki-ladder');
 
     await context.setOffline(true);
