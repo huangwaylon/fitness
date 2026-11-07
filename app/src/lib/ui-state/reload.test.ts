@@ -48,6 +48,14 @@ describe('lazy', () => {
     expect(load).toHaveBeenCalledTimes(2);
   });
 
+  it('a quiet load (a prefetch ahead of any tap) never reloads for a chunk not fetched, and forgets it', async () => {
+    const load = vi.fn().mockRejectedValueOnce(new TypeError('Importing a module script failed.')).mockResolvedValue('mod');
+    const get = lazy(load, async () => 'next');
+    await expect(get(true)).rejects.toThrow(TypeError);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(reload).not.toHaveBeenCalled();
+    expect(await get()).toBe('mod');
+  });
   it('reloads nothing on a page that is leaving (or offline): version.json not fetched', async () => {
     for (const deployedNow of [async () => null, async () => { throw new TypeError('Load failed'); }]) {
       const get = lazy(vi.fn().mockRejectedValue(new TypeError('Importing a module script failed.')), deployedNow);

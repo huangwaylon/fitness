@@ -128,13 +128,14 @@ export async function reloadForUpdate(): Promise<boolean> {
 }
 
 /** A memoised lazy import that forgets a failed load (the next call retries) and, for a chunk not fetched, reloads
- *  into a newer deployed build (reloadUnlessLeaving). */
-export function lazy<T>(load: () => Promise<T>, deployedNow?: () => Promise<string | null>): () => Promise<T> {
+ *  into a newer deployed build (reloadUnlessLeaving). `quiet`: a prefetch ahead of any tap (sheetChunks), whose
+ *  failure never reloads the page under the player: the tap's own load reports it. */
+export function lazy<T>(load: () => Promise<T>, deployedNow?: () => Promise<string | null>): (quiet?: boolean) => Promise<T> {
   let mod: Promise<T> | null = null;
-  return () =>
+  return (quiet = false) =>
     (mod ??= load().catch((e: unknown) => {
       mod = null;
-      if (isChunkError(e)) void reloadUnlessLeaving(deployedNow);
+      if (isChunkError(e) && !quiet) void reloadUnlessLeaving(deployedNow);
       throw e;
     }));
 }

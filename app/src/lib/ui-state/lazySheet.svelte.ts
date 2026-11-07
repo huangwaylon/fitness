@@ -18,6 +18,6 @@ export function lazySheet(load: () => Promise<{ default: SheetComponent }>): Laz
     () => {
       if (again && navigator.onLine && safeReload(Date.now(), 'chunk')) return;
       toasts.show(t('panel.sheetOffline'), 6000, { action: { label: t('panel.sheetRetry'), run: () => s.show(true) } });
-    }), prefetch: () => get() });
+    }), prefetch: () => get(true) });
   return s;
 }

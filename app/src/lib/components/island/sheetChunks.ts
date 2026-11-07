@@ -17,15 +17,15 @@ export const loadSettings = lazy(() => import('../panel/SettingsSheet.svelte'));
 export const loadKikimimi = lazy(() => import('../kikimimi/KikimimiSheet.svelte'));
 
 const CHUNKS = {
-  health: loadHealth,
-  food: loadFood,
-  kikimimi: () => loadKikimimi().then((m) => m.warm()),
+  health: () => loadHealth(true),
+  food: () => loadFood(true),
+  kikimimi: () => loadKikimimi(true).then((m) => m.warm()),
   travel: () => trips.prefetch(),
   hiking: () => hiking.prefetch(),
   wedding: () => weddingSheet.prefetch(),
-  panel: loadPanel,
-  settings: loadSettings,
-  zukan: loadZukan
+  panel: () => loadPanel(true),
+  settings: () => loadSettings(true),
+  zukan: () => loadZukan(true)
 } satisfies Record<string, () => Promise<unknown>>;
 export type SheetChunk = keyof typeof CHUNKS;
 
