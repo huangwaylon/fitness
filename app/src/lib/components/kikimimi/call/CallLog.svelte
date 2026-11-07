@@ -36,7 +36,7 @@
   .ln.me .who { order: 2; }
   .who { display: grid; place-items: center; line-height: 0; }
   .me-tag { line-height: 1.2; font: 700 var(--fs-s)/1.2 var(--font-ui); color: var(--text-soft); padding-top: 8px; }
-  .b { display: grid; gap: 2px; padding: 8px 12px; border-radius: 16px; background: var(--c-card); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-lip); }
+  .b { display: grid; gap: 2px; padding: 8px 12px; border-radius: 16px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .me .b { background: color-mix(in srgb, var(--c-mint) 45%, var(--c-card)); }
   .en { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); }
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); word-break: normal; line-break: strict; }

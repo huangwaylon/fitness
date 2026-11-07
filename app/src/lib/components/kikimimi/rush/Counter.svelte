@@ -71,7 +71,7 @@
   .counter { display: grid; gap: 8px; }
   .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .sign {
-    padding: 4px 12px; border-radius: var(--r-pill); background: var(--c-card); color: var(--c-ink); box-shadow: 0 2px 0 var(--c-lip);
+    padding: 4px 12px; border-radius: var(--r-pill); background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
     font: 700 var(--fs-s)/1.3 var(--font-ui); white-space: nowrap;
   }
   .combo { display: inline-flex; align-items: center; gap: 6px; font: 700 var(--fs-s)/1 var(--font-ui); color: var(--text); }
@@ -97,7 +97,7 @@
   .react :global(svg) { width: 100%; height: 100%; }
   .bubble {
     position: relative; min-height: 64px; display: grid; align-content: center; gap: 6px; padding: 12px 16px;
-    border-radius: 28px; background: var(--c-card); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    border-radius: 28px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
   }
   .bubble::before { content: ''; position: absolute; left: -9px; top: 50%; width: 20px; height: 20px; margin-top: -10px; rotate: 45deg; background: var(--c-card); border-radius: 4px; }
   .notes { margin: 0; font: 700 var(--fs-title)/1 var(--font-ui); color: var(--c-ink-soft); letter-spacing: .1em; }

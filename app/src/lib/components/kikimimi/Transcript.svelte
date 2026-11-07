@@ -73,7 +73,7 @@
   .head { line-height: 0; justify-self: center; }
   .b {
     position: relative; display: grid; gap: 2px; padding: 8px 12px; border-radius: 18px; background: var(--c-card); color: var(--c-ink);
-    box-shadow: 0 var(--lip-h) 0 var(--c-lip); transition: transform var(--dur-quick);
+    box-shadow: var(--sh-lip-cream); transition: transform var(--dur-quick);
   }
   .ln:not(.right) .b { border-bottom-left-radius: 6px; }
   .ln.right .b { border-bottom-right-radius: 6px; background: color-mix(in srgb, var(--c-mint) 45%, var(--c-card)); }

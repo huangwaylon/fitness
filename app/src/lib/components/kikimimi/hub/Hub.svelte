@@ -253,7 +253,8 @@
   .taikai {
     display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: var(--r-card); text-align: left; width: 100%;
     background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); color: var(--c-ink);
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c-yuzu) 80%, var(--c-lip)), 0 var(--lip-h) 0 var(--c-lip);
+    --tk-edge: color-mix(in srgb, var(--c-yuzu) 80%, var(--c-lip));
+    --sh-ctl: inset 0 0 0 1.5px var(--tk-edge), 0 2px 0 var(--c-lip); --sh-ctl-press: inset 0 0 0 1.5px var(--tk-edge), 0 0 0 var(--c-lip);
   }
   .cup {
     flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; font-size: 28px; line-height: 1;

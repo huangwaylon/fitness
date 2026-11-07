@@ -194,7 +194,7 @@
   .climb { margin: 0; text-align: center; font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--coral-text); }
   [data-kuri-line='up'], [data-kuri-line='top'] { color: var(--leaf-text); }
   .got { padding: 4px 12px; border-radius: var(--r-pill); background: var(--ctl-off); font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text); }
-  .said { display: grid; gap: 6px; padding: 12px 14px; border-radius: 16px; background: var(--c-card); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
+  .said { display: grid; gap: 6px; padding: 12px 14px; border-radius: 16px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .en { margin: 0; font: 700 var(--fs-talk)/1.45 var(--font-ui); overflow-wrap: anywhere; }
   .w[data-got='true'] { color: var(--c-ink); background: color-mix(in srgb, var(--c-yuzu) 55%, transparent); border-radius: 4px; }
   .w[data-got='false'] { color: color-mix(in srgb, var(--c-ink) 55%, transparent); }

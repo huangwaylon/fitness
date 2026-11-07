@@ -22,7 +22,7 @@ dialog { overscroll-behavior: contain; }
    error page). The world (the HUD, the menu, the rooms) keeps the game's 2px edge and 4px lip; the action (.btn) its lip. */
 :is(dialog, .sheet-copy) {
   --sh-ctl: var(--sh-ctl-s); --sh-ctl-press: var(--sh-ctl-s-press);
-  --r-card: var(--r-row); --sh-lip: var(--sh-lip-s); --side: 12px;
+  --r-card: var(--r-row); --sh-lip: var(--sh-lip-s); --sh-lip-cream: 0 var(--lip-s) 0 var(--c-lip); --side: 12px;
 }
 body {
   font-family: var(--font-ui); font-weight: 500; color: var(--text); background: var(--bg);

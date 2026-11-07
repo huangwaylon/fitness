@@ -200,7 +200,7 @@
 
   /* the claims: each a cream card, its words and the three faces (44 px targets) */
   .claims { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .claim { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px 10px 8px 14px; border-radius: 16px; background: var(--c-card); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip); }
+  .claim { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px 10px 8px 14px; border-radius: 16px; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-lip-cream); }
   .claim[data-given] { opacity: .8; }
   .say { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); word-break: keep-all; overflow-wrap: anywhere; }
   .faces { display: flex; gap: 4px; }

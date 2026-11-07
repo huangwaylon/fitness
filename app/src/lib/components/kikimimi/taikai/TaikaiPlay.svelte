@@ -96,7 +96,7 @@
   /* しずえ's show bar: her head, the round, the team's count (or my chips) */
   .show {
     display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; border-radius: var(--r-pill);
-    background: color-mix(in srgb, var(--c-yuzu) 50%, var(--c-card)); color: var(--c-ink); box-shadow: 0 var(--lip-h) 0 var(--c-lip);
+    background: color-mix(in srgb, var(--c-yuzu) 50%, var(--c-card)); color: var(--c-ink); box-shadow: var(--sh-lip-cream);
   }
   .head { flex: none; line-height: 0; }
   .ttl { flex: 1; min-width: 0; display: grid; }
