@@ -53,6 +53,8 @@
   "kiki.mode.kuri": "くりかえし チャレンジ",
   "kiki.modeSub.kuri": "聞いた文をそのまま言う",
   "kiki.modeAbout.kuri": "1回だけ聞いた文を、そのまま声に出して言います。言えたら少しずつ長い文へ。結果はあなたにだけ見えます。",
+  "kiki.mode.role": "ふたりで ロールプレイ",
+  "kiki.micGame": "マイクを使います",
   "kiki.level": "場所",
   "kiki.lv.1": "はまべ 1",
   "kiki.lv.2": "はまべ 2",

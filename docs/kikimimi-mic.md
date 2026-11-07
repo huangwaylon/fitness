@@ -264,6 +264,12 @@ Every mode draws from these. The only new audio is はつおん's isolated pair 
 - **Score:** the team's phrases, 「ふたりで 9 / 11 フレーズ」, never per person. Not in たいかい.
 - **Where:** the みんなで picker, and a unit page's じっせん row 「ふたりで ロールプレイ」 when both are on the island and the mic is on. Not on the shelf (it needs two).
 - **Row:** minutes only (`gm: 'role'`).
+- **As built (M7, 2026-11-07):** games/role/ (scenes.ts, def.ts pure, lane.ts, mode.ts) and components/kikimimi/role/ (RoleLobby, RolePlay, RoleMic, RoleResults, MicJoin, board.ts); strings in i18n/kiki-role.*. Its registry line brings the mode: group `together` (catalog.ts: on no shelf, only the みんなで picker), `requires: 'mic'`, `gate` the mic on. The unit page's じっせん row waits for W2-9.
+  - **Scenes:** 7, one per voiced unit, each two of its dialogues chained (8–10 turns), authored in scenes.ts with the roles' names and each part's goal (kanji Japanese); the scene is the options' third int (`[lv, timer, scene]`), the host's pick on the lobby page. cv: the unit's lesson cv, BUILD_V.role and the scene's dialogues.
+  - **Lobby:** the scene chips, both role cards (name, each part's villager and goal, its key phrases with Japanese; mine marked あなた by our places among those joined), who's in; 始める only with two; 「ほかのゲームにする」 back to the quiz's picker.
+  - **Consent:** the sheet's さんか (hub card and banner) for a mode with `requires: 'mic'` opens MicJoin first: mic on, 「マイクを使います」 and 参加する / やめる (joining is the consent); mic off, 「マイクがオフです」 and no join. The invite line adds 「🎤 マイクを使います」.
+  - **A turn:** a round, no clip (`play` 0, `quietReveal`), answer untimed, the reveal `auto`. The speaker (the role whose line it is; a role with no one here: me) sees the line's Japanese, its key phrases (the unit's `ph` found in the line by its `match`, else its words) as chips, the English faded on easy or by 「英文を見る」, the mic; takes add up; what came through shows on that phone only; 次へ answers the mask (bits 0–5 the phrases, bit 6 spoken), 「マイクなしで次へ」 always. The other phone shows the chips dim and acks (255) once the speaker's answer is in; the reveal shows the ✓ chips, the line as written and one line of encouragement.
+  - **Results:** 「ふたりで k / n フレーズ」 from the players' running totals (each turn's points are its phrases), the phrase list (✓ as this phone saw each turn), お手本: each part's ▶︎ and its karaoke transcript.
 
 ### 2.6 Placement (kikimimi-ux.md §6.2)
 

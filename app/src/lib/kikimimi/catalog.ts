@@ -30,8 +30,9 @@ export interface Ctx {
 
 export interface ModeMeta {
   id: ModeId;
-  /** Its shelf; 'event': none (the hub's banner while it's on: the tournament's weekend). */
-  group: Group | 'event';
+  /** Its shelf; 'event': none (the hub's banner while it's on: the tournament's weekend); 'together': none, only the
+   *  みんなで picker (it needs two: ロールプレイ). */
+  group: Group | 'event' | 'together';
   /** Its tile's and page's icon. */
   icon: string;
   /** About how long a game takes (minutes) and its questions (clips). */

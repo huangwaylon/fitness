@@ -67,6 +67,7 @@ const NONE: Record<string, string> = {
   'lib/components/island/SayPicker.svelte': 'the phrase field: the system keyboard clicks',
   'lib/components/board/BoardView.svelte': 'the note field: the system keyboard clicks',
   'lib/components/kikimimi/Lobby.svelte': 'the game already chosen does nothing',
+  'lib/components/kikimimi/role/RoleLobby.svelte': 'the scene already chosen does nothing',
   'lib/components/kikimimi/mode/StageRow.svelte': 'the place already chosen, or one with no level yet, does nothing',
   'lib/components/kikimimi/mode/TimerRow.svelte': 'the answer time already chosen does nothing',
   'lib/components/kikimimi/settings/KikiSettings.svelte': 'the translation or weekly target already chosen does nothing',

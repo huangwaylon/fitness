@@ -15,10 +15,11 @@ const BUILD = join(APP, 'build-pages');
 const MANIFEST = join(APP, '.svelte-kit/output/client/.vite/manifest.json');
 /** 2026-11-07: 365 KB of JS, 60 KB of CSS (most of it the fonts' 150 unicode-range rules); the precache 2.6 MB, then
  *  3.3 MB with offline phase A (docs/backend.md "Service worker" › Offline: the common font slices 0.7 MB, the trips'
- *  covers and heroes and the trails' tracks 0.26 MB), so its cap 3 → 3.5 MB. */
+ *  covers and heroes and the trails' tracks 0.26 MB), so its cap 3 → 3.5 MB; 3.6 MB with wave 2's lanes and the mic
+ *  games' pages (ロールプレイ's took it past 3.5). */
 const FIRST_JS = 400 * 1024;
 const FIRST_CSS = 70 * 1024;
-const PRECACHE = 3.5 * 1024 * 1024;
+const PRECACHE = 3.6 * 1024 * 1024;
 /** ききみみ's recogniser (docs/kikimimi-mic.md §3.6): its worker (`workers/stt.<hash>.js`: transformers.js and the ONNX
  *  runtime's JS) is one file ≤ STT_JS gzipped, never precached, never in the first load; 2026-11-07: 136 KB. */
 const STT_JS = 450 * 1024;

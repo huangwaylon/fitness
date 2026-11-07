@@ -27,6 +27,7 @@ import { taikaiLane } from '../games/taikai/lane.ts';
 import { checkLane } from '../games/check/lane.ts';
 import { DEVICE, localKV, readJson } from '../../sync/storage.ts';
 import { KURI_MODE } from '../games/kuri/mode.ts';
+import { ROLE_MODE } from '../games/role/mode.ts';
 
 /** A game's deck as the phone names it: its game, seed, options (as on the wire), unit and items' ids (an `open`'s). */
 export interface DeckOf {
@@ -105,6 +106,7 @@ const LATER: Readonly<Record<GameId, Later>> = {
   news: { lane: () => import('../games/news/lane.ts') },
   mane: { lane: () => import('../games/mane/lane.ts'), content: () => true, mode: { id: 'mane', group: 'koe', icon: '🦜', mins: 2, qs: 4, coop: false, game: 'mane', requires: 'mic', gate: micOn } },
   kuri: { lane: () => import('../games/kuri/lane.ts'), content: () => true, mode: KURI_MODE },
+  role: { lane: () => import('../games/role/lane.ts'), content: () => true, mode: ROLE_MODE },
 };
 
 /** The levels of the places a game's listened files are at (catalog.ts contentLevels over this build's index). */

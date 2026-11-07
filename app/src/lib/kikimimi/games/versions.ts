@@ -14,4 +14,5 @@ export const BUILD_V: Readonly<Record<string, number>> = {
   call: 1,
   rush: 1,
   news: 1,
+  role: 1,
 };
