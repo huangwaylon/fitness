@@ -41,6 +41,27 @@ function base64(b: Uint8Array): string {
   return btoa(s);
 }
 
+/** The body's bytes, read no further than `max` (a body without Content-Length, chunked, is cut off there: null). */
+async function readCapped(req: Request, max: number): Promise<Uint8Array | null> {
+  if (!req.body) return new Uint8Array(0);
+  const reader = req.body.getReader(), parts: Uint8Array[] = [];
+  let n = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    n += value.length;
+    if (n > max) {
+      void reader.cancel().catch(() => {});
+      return null;
+    }
+    parts.push(value);
+  }
+  const out = new Uint8Array(n);
+  let at = 0;
+  for (const p of parts) out.set(p, (at += p.length) - p.length);
+  return out;
+}
+
 const isWav = (b: Uint8Array): boolean => b.length > 44 && String.fromCharCode(...b.subarray(0, 4)) === 'RIFF' && String.fromCharCode(...b.subarray(8, 12)) === 'WAVE';
 
 /** The model's answer as `{text, words?}` (its segments' word times, seconds). */
@@ -74,8 +95,8 @@ export async function sttRoute(req: Request, env: SttEnv): Promise<Response> {
     return json(body, st);
   };
   if (Number(req.headers.get('Content-Length') ?? 0) > STT_MAX) return done(413, Number(req.headers.get('Content-Length')), 'too_large');
-  const bytes = new Uint8Array(await req.arrayBuffer());
-  if (bytes.length > STT_MAX) return done(413, bytes.length, 'too_large');
+  const bytes = await readCapped(req, STT_MAX);
+  if (!bytes) return done(413, STT_MAX + 1, 'too_large');
   if (!isWav(bytes)) return done(400, bytes.length, 'bad_request');
   if (!(await env.spend(role).catch(() => false))) return done(429, bytes.length, 'capped');
   try {
