@@ -68,7 +68,7 @@ const free = (p: number): Promise<boolean> => new Promise((ok) => {
 if (!port) for (let p = 4600; p < 4700; p++) if (await free(p)) { port = String(p); break; }
 
 const env: NodeJS.ProcessEnv = { ...process.env, CI: '1', E2E_SWIFTSHADER: '1', E2E_PORT: port };
-const pw = ['playwright', 'test', '--project=chromium', `--workers=${workers}`, `--repeat-each=${repeat}`, '--reporter=list'];
+const pw = ['playwright', 'test', '--project=chromium', '--project=chromium-mic', `--workers=${workers}`, `--repeat-each=${repeat}`, '--reporter=list'];
 if (tier === 'logic') env.E2E_RENDER = 'none', pw.push('--grep-invert', '@render|@quarantine');
 if (tier === 'render') pw.push('--grep', '@render|@smoke', '--grep-invert', '@quarantine');
 if (tier === 'full') env.E2E_SLOW = '1', pw.push('--grep-invert', '@quarantine|@logic');

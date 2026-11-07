@@ -17,6 +17,8 @@ const ISLAND = { storageState: { cookies: [], origins: [{ origin: `http://127.0.
 
 // E2E_SLOW=1 (the full tier: everything drawn under CI's software GL, a frame ~0.5 s): 3× the test's time, 2× an expect's
 const SLOW = !!process.env.E2E_SLOW;
+/** The mic's specs: their own project (chromium-mic), no other's. */
+const MIC = /kikimimi-mic.*\.spec\.ts$/;
 
 export default defineConfig({
   testDir: 'e2e',
@@ -31,12 +33,13 @@ export default defineConfig({
   reporter: process.env.CI ? [['github'], ['list'], ['json', { outputFile: 'playwright-results.json' }]] : 'list',
   projects: [
     // the users' browser (CI: on macOS, Safari's own WebKit; Linux's draws the island at ~1 frame a second)
-    { name: 'webkit', use: { ...devices['iPhone 15'] }, grepInvert: /@chromium/ },
+    { name: 'webkit', use: { ...devices['iPhone 15'] }, grepInvert: /@chromium/, testIgnore: MIC },
     // Chromium: the whole suite, gating the deploy until WebKit is green across the board (pages.yml); and what WebKit
     // can't stage, tagged @chromium: stale.spec's deploy (its reload re-requests the very chunk URLs that just failed,
     // which WebKit's modulepreload never fetches again; a real new build has new URLs).
     {
       name: 'chromium',
+      testIgnore: MIC,
       use: {
         ...devices['iPhone 13'],
         browserName: 'chromium',
@@ -56,6 +59,28 @@ export default defineConfig({
             '--disable-audio-output',
             ...(process.env.RELAY_E2E ? [] : ['--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost']),
             ...(process.env.E2E_SWIFTSHADER ? ['--use-angle=swiftshader', '--use-gl=angle'] : [])
+          ]
+        }
+      }
+    },
+    // the mic's specs (docs/kikimimi-mic.md §3.8): Chromium's fake media (the permission granted without a prompt; the
+    // capture fed one of our clips), else as `chromium` (muted, no audio out, no host but the preview). On a Mac headless
+    // Chrome's capture waits on the OS's mic permission, so the specs feed the same clip through a getUserMedia shim too
+    {
+      name: 'chromium-mic',
+      testMatch: MIC,
+      use: {
+        ...devices['iPhone 13'],
+        browserName: 'chromium',
+        channel: process.env.CI ? undefined : 'chrome',
+        launchOptions: {
+          args: [
+            '--mute-audio',
+            '--disable-audio-output',
+            '--use-fake-ui-for-media-stream',
+            '--use-fake-device-for-media-stream',
+            `--use-file-for-fake-audio-capture=${import.meta.dirname}/e2e/fixtures/mic/ladder-line.wav`,
+            '--host-resolver-rules=MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost'
           ]
         }
       }
