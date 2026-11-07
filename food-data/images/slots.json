@@ -1407,7 +1407,53 @@
 "kurume-056",
 "kurume-052",
 "kurume-057",
-"toyonaka-117749"
+"toyonaka-117749",
+"toyonaka-119636",
+"toyonaka-118563",
+"toyonaka-118587",
+"toyonaka-118643",
+"toyonaka-118658",
+"toyonaka-118644",
+"toyonaka-118555",
+"toyonaka-117833",
+"toyonaka-120167",
+"toyonaka-265147",
+"toyonaka-119463",
+"toyonaka-261438",
+"toyonaka-118646",
+"toyonaka-117809",
+"toyonaka-265161",
+"toyonaka-118661",
+"toyonaka-118586",
+"toyonaka-117838",
+"toyonaka-265184",
+"toyonaka-118560",
+"toyonaka-265168",
+"toyonaka-118554",
+"toyonaka-119222",
+"toyonaka-265174",
+"toyonaka-118557",
+"toyonaka-265078",
+"toyonaka-119221",
+"toyonaka-117837",
+"toyonaka-118561",
+"toyonaka-118664",
+"toyonaka-118665",
+"toyonaka-118625",
+"toyonaka-119466",
+"toyonaka-118631",
+"toyonaka-117812",
+"toyonaka-265157",
+"toyonaka-117824",
+"toyonaka-261437",
+"toyonaka-119464",
+"toyonaka-265178",
+"toyonaka-265177",
+"toyonaka-117814",
+"toyonaka-119637",
+"toyonaka-118659",
+"toyonaka-119260",
+"toyonaka-117831"
 ],
 "meat": [
 "mext-11227",
@@ -1755,7 +1801,10 @@
 "takatsuki-r38",
 "kurume-048",
 "takatsuki-r39",
-"takatsuki-r20"
+"takatsuki-r20",
+"toyonaka-265158",
+"toyonaka-119220",
+"toyonaka-265185"
 ],
 "other": [
 "mext-02034",
@@ -2552,7 +2601,24 @@
 "kurume-132",
 "kurume-177",
 "kurume-162",
-"kurume-159"
+"kurume-159",
+"toyonaka-118666",
+"toyonaka-118627",
+"toyonaka-261439",
+"toyonaka-118556",
+"toyonaka-119223",
+"toyonaka-118588",
+"toyonaka-117839",
+"toyonaka-265190",
+"toyonaka-265169",
+"toyonaka-117832",
+"toyonaka-118589",
+"toyonaka-120169",
+"toyonaka-265164",
+"toyonaka-117826",
+"toyonaka-119261",
+"toyonaka-265179",
+"toyonaka-117815"
 ],
 "soup": [
 "dishes-miso-tofu-wakame",
@@ -2745,7 +2811,16 @@
 "kurume-194",
 "kurume-184",
 "toyonaka-117761",
-"takatsuki-r11"
+"takatsuki-r11",
+"toyonaka-118657",
+"toyonaka-265183",
+"toyonaka-265188",
+"toyonaka-119259",
+"toyonaka-265167",
+"toyonaka-265172",
+"toyonaka-265146",
+"toyonaka-117830",
+"toyonaka-119462"
 ],
 "soy": [
 "mext-04032",
@@ -3336,7 +3411,10 @@
 "mext-15040",
 "kurume-246",
 "mext-15120",
-"mext-15067"
+"mext-15067",
+"toyonaka-265079",
+"toyonaka-117827",
+"toyonaka-118645"
 ],
 "veg": [
 "mext-08001",
@@ -3845,7 +3923,8 @@
 "mext-07180",
 "mext-07153",
 "kurume-227",
-"mext-17018"
+"mext-17018",
+"toyonaka-118661"
 ],
 "banana": [
 "mext-07107",
@@ -3912,7 +3991,10 @@
 "mext-11102",
 "mext-11100",
 "mext-14015",
-"takatsuki-r15"
+"takatsuki-r15",
+"toyonaka-119221",
+"toyonaka-118631",
+"toyonaka-117812"
 ],
 "beer": [
 "mext-16006",
@@ -4037,7 +4119,8 @@
 "mext-13041",
 "mext-13050",
 "mext-13039",
-"mext-13058"
+"mext-13058",
+"toyonaka-118555"
 ],
 "chicken": [
 "mext-11227",
@@ -4128,7 +4211,16 @@
 "kurume-056",
 "kurume-052",
 "kurume-057",
-"toyonaka-117749"
+"toyonaka-117749",
+"toyonaka-261439",
+"toyonaka-265168",
+"toyonaka-119222",
+"toyonaka-265177",
+"toyonaka-117814",
+"toyonaka-119637",
+"toyonaka-118659",
+"toyonaka-119260",
+"toyonaka-117831"
 ],
 "curry": [
 "eatout-curry_pork_chain",
@@ -4160,7 +4252,9 @@
 "toyonaka-119196",
 "takatsuki-r39",
 "kurume-183",
-"takatsuki-r45"
+"takatsuki-r45",
+"toyonaka-119261",
+"toyonaka-117824"
 ],
 "dairy": [
 "mext-13020",
@@ -4980,7 +5074,8 @@
 "kurume-199",
 "takatsuki-r17",
 "kurume-193",
-"kurume-194"
+"kurume-194",
+"toyonaka-117830"
 ],
 "konbini": [
 "eatout-bento_makunouchi",
@@ -5337,7 +5432,27 @@
 "kurume-094",
 "takatsuki-r42",
 "kurume-085",
-"kurume-080"
+"kurume-080",
+"toyonaka-119636",
+"toyonaka-118563",
+"toyonaka-118587",
+"toyonaka-118643",
+"toyonaka-118658",
+"toyonaka-118644",
+"toyonaka-120167",
+"toyonaka-265147",
+"toyonaka-261438",
+"toyonaka-117809",
+"toyonaka-265161",
+"toyonaka-118586",
+"toyonaka-118560",
+"toyonaka-118554",
+"toyonaka-265174",
+"toyonaka-265078",
+"toyonaka-118665",
+"toyonaka-119466",
+"toyonaka-265157",
+"toyonaka-265178"
 ],
 "meat": [
 "mext-11279",
@@ -5421,7 +5536,8 @@
 "kurume-188",
 "kurume-186",
 "toyonaka-117806",
-"kurume-184"
+"kurume-184",
+"toyonaka-119462"
 ],
 "natto": [
 "mext-04046",
@@ -5568,7 +5684,9 @@
 "kurume-049",
 "takatsuki-r37",
 "takatsuki-r53",
-"takatsuki-r20"
+"takatsuki-r20",
+"toyonaka-265158",
+"toyonaka-119220"
 ],
 "pork": [
 "mext-11276",
@@ -5644,7 +5762,17 @@
 "toyonaka-119197",
 "takatsuki-r24",
 "kurume-051",
-"toyonaka-117807"
+"toyonaka-117807",
+"toyonaka-117833",
+"toyonaka-118646",
+"toyonaka-117838",
+"toyonaka-118588",
+"toyonaka-117832",
+"toyonaka-120169",
+"toyonaka-117837",
+"toyonaka-118561",
+"toyonaka-261437",
+"toyonaka-119464"
 ],
 "ramen": [
 "dishes-ramen-shoyu",
@@ -5867,7 +5995,8 @@
 "mext-10162",
 "mext-10403",
 "mext-10155",
-"takatsuki-r22"
+"takatsuki-r22",
+"toyonaka-119463"
 ],
 "salad": [
 "dishes-green-salad",
@@ -5902,7 +6031,17 @@
 "kurume-147",
 "kurume-148",
 "kurume-155",
-"kurume-153"
+"kurume-153",
+"toyonaka-118666",
+"toyonaka-118556",
+"toyonaka-119223",
+"toyonaka-117839",
+"toyonaka-265190",
+"toyonaka-265169",
+"toyonaka-118589",
+"toyonaka-265164",
+"toyonaka-117826",
+"toyonaka-265179"
 ],
 "salmon": [
 "mext-10139",
@@ -6444,7 +6583,9 @@
 "kurume-132",
 "kurume-177",
 "kurume-162",
-"kurume-159"
+"kurume-159",
+"toyonaka-118627",
+"toyonaka-117815"
 ],
 "soba": [
 "dishes-zaru-soba",
@@ -6498,7 +6639,8 @@
 "kurume-045",
 "mext-15062",
 "kurume-043",
-"mext-17144"
+"mext-17144",
+"toyonaka-265185"
 ],
 "soup": [
 "mext-18005",
@@ -6575,7 +6717,14 @@
 "toyonaka-119200",
 "takatsuki-r13",
 "kurume-204",
-"toyonaka-117761"
+"toyonaka-117761",
+"toyonaka-118657",
+"toyonaka-265183",
+"toyonaka-265188",
+"toyonaka-119259",
+"toyonaka-265167",
+"toyonaka-265172",
+"toyonaka-265146"
 ],
 "soy": [
 "mext-05018",
@@ -7127,7 +7276,9 @@
 "mext-15040",
 "kurume-246",
 "mext-15120",
-"mext-15067"
+"mext-15067",
+"toyonaka-265079",
+"toyonaka-118645"
 ],
 "tofu": [
 "mext-04032",
@@ -7190,7 +7341,9 @@
 "takatsuki-r30",
 "kurume-116",
 "takatsuki-r52",
-"kurume-060"
+"kurume-060",
+"toyonaka-118664",
+"toyonaka-118625"
 ],
 "tomato": [
 "mext-06182",
@@ -7206,7 +7359,8 @@
 "takatsuki-r19",
 "kurume-131",
 "mext-17034",
-"mext-17035"
+"mext-17035",
+"toyonaka-265184"
 ],
 "tuna": [
 "mext-10260",
@@ -7225,7 +7379,9 @@
 "mext-10261",
 "mext-10257",
 "mext-10256",
-"mext-10258"
+"mext-10258",
+"toyonaka-118557",
+"toyonaka-117827"
 ],
 "udon": [
 "mext-01039",
