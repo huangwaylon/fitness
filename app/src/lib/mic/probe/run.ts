@@ -4,9 +4,11 @@
 // the heard text is returned only to the screen (the WER is computed there and nothing of it is kept). A take lives in
 // memory until its step ends.
 import { applySession } from '#lib/sound/engine.ts';
-import { logUrl } from '#lib/sync/transport.ts';
-import { getKey } from '#lib/sync/storage.ts';
-import { dbfs, inputClass, onset, silenceAfterSpeech, sttErr, type Inp, type SttErr } from './steps.ts';
+import { postWav } from '../backends/relay.ts';
+import { webkitOnce as webkitUtterance } from '../backends/webkit.ts';
+import { dbfs, inputClass, onset, silenceAfterSpeech, type Inp, type SttErr } from './steps.ts';
+
+export { relayReady } from '../backends/relay.ts';
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const TAKE_MAX_MS = 10_000;
@@ -236,36 +238,15 @@ function stubbed(): string | null {
   }
 }
 
-type Sr = { lang: string; interimResults: boolean; maxAlternatives: number; continuous: boolean; start(): void; abort(): void;
-  onresult: ((e: { results: { 0: { transcript: string } }[] }) => void) | null; onerror: ((e: { error: string }) => void) | null;
-  onspeechstart: (() => void) | null; onspeechend: (() => void) | null; onend: (() => void) | null };
-
-/** One utterance through webkitSpeechRecognition (en-US, final only): its text, ms from the speech's end to the result,
+/** One utterance through Safari's recogniser (backends/webkit.ts): its text, ms from the speech's end to the result,
  *  the speech's length; or its error code. `withCapture`: our own capture open meanwhile (do both work at once?). */
 export async function webkitOnce(withCapture: boolean): Promise<Heard> {
   const stub = stubbed();
   if (stub !== null) return { text: stub, ms: 1, audS: 1 };
-  const SR = (window as unknown as { webkitSpeechRecognition?: new () => Sr }).webkitSpeechRecognition;
-  if (!SR) return { err: 'other' };
+  if (!('webkitSpeechRecognition' in window)) return { err: 'other' };
   const cap = withCapture ? await openRec({ aec: true }).catch(() => null) : null;
   try {
-    return await new Promise<Heard>((done) => {
-      const r = new SR();
-      Object.assign(r, { lang: 'en-US', interimResults: false, maxAlternatives: 1, continuous: false });
-      let t0 = performance.now(), spoke = 0, ended = 0, settled = false;
-      const end = (h: Heard) => void (settled || ((settled = true), clearTimeout(cap2), done(h)));
-      const cap2 = setTimeout(() => (r.abort(), end({ err: 'timeout' })), 15_000);
-      r.onspeechstart = () => (spoke = performance.now());
-      r.onspeechend = () => (ended = performance.now());
-      r.onresult = (e) => {
-        const now = performance.now();
-        end({ text: e.results[0]?.[0]?.transcript ?? '', ms: Math.round(now - (ended || t0)), audS: Math.round(((ended || now) - (spoke || t0)) / 100) / 10 });
-      };
-      r.onerror = (e) => end({ err: sttErr(e.error) });
-      r.onend = () => end({ err: 'no-speech' });
-      t0 = performance.now();
-      r.start();
-    });
+    return await webkitUtterance().done;
   } finally {
     cap?.stop();
   }
@@ -273,20 +254,9 @@ export async function webkitOnce(withCapture: boolean): Promise<Heard> {
 
 // ---- 6. the relay ----------------------------------------------------------------------------------------------------
 
-/** The relay's `/stt` (beside `/log`), or '' when the build has no relay. */
-const sttUrl = (): string => (logUrl() ? logUrl().replace(/\/log$/, '/stt') : '');
-/** Whether this phone can use the relay's step (paired, a relay configured). */
-export const relayReady = (): boolean => !!sttUrl() && !!getKey();
-
-/** A take as WAV to the relay's Workers AI: the text and the round trip (ms); or the error. */
+/** A take as WAV to the relay's Workers AI (backends/relay.ts): the text and the round trip (ms); or the error. */
 export async function relayOnce(body: Uint8Array): Promise<Heard> {
-  const t0 = performance.now();
-  try {
-    const res = await fetch(sttUrl(), { method: 'POST', headers: { 'Content-Type': 'audio/wav', Authorization: `Bearer ${getKey() ?? ''}` }, body: body as BodyInit, signal: AbortSignal.timeout(20_000) });
-    const r = (await res.json().catch(() => null)) as { ok?: boolean; text?: string } | null;
-    if (!r?.ok || typeof r.text !== 'string') return { err: res.status === 429 ? 'other' : 'network' };
-    return { text: r.text, ms: Math.round(performance.now() - t0), audS: Math.round(((body.length - 44) / 32000) * 10) / 10 };
-  } catch (e) {
-    return { err: e instanceof DOMException && e.name === 'TimeoutError' ? 'timeout' : 'network' };
-  }
+  const r = await postWav(body);
+  if (r.ok) return { text: r.text, ms: r.ms, audS: Math.round(((body.length - 44) / 32000) * 10) / 10 };
+  return { err: r.miss === 'timeout' ? 'timeout' : r.miss === 'network' ? 'network' : 'other' };
 }

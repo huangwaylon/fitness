@@ -4,15 +4,16 @@
 // custom cache, the runtime's wasm handed over as bytes, its script from `/stt/ort/<ver>/` (the service worker answers
 // it from the same cache). Remote models are off and every fetch outside our `/stt/` is refused: nothing goes to
 // Hugging Face or a CDN. Messages: `load` (a device; the last pipeline disposed), `run` (16 kHz mono PCM); each
-// answered once with the ms it took, `run` with the text. The text goes back to the page only; errors carry a closed
-// code, never what was heard. Its own chunk (`workers/stt.<hash>.js`: vite.config.ts stt-names).
-import { env, pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
+// answered once with the ms it took, `run` with the text. `cand` (はつおん): each candidate word's score given the audio
+// by forced decoding (the mean log-probability of its tokens after the start and no-timestamps tokens; the encoder run
+// once), not a transcript. The text goes back to the page only; errors carry a closed code, never what was heard. Its own chunk (`workers/stt.<hash>.js`: vite.config.ts stt-names).
+import { Tensor, env, pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
 import { STT_CACHE } from '../../../service-worker/caches.ts';
 import { ORT, WHISPER } from '../models.ts';
 
 export type Device = 'webgpu' | 'wasm';
-export type WIn = { op: 'load'; root: string; device: Device } | { op: 'run'; pcm: Float32Array };
-export type WOut = { ok: true; ms: number; text?: string } | { ok: false; err: 'oom' | 'timeout' | 'other' };
+export type WIn = { op: 'load'; root: string; device: Device } | { op: 'run'; pcm: Float32Array } | { op: 'cand'; pcm: Float32Array; cand: readonly string[] };
+export type WOut = { ok: true; ms: number; text?: string; cand?: number[] } | { ok: false; err: 'oom' | 'timeout' | 'other' };
 
 let ready: Promise<void> | null = null;
 /** transformers.js and the runtime pointed at `root` (`https://…/stt/`), once. */
@@ -46,6 +47,44 @@ function configure(root: string): Promise<void> {
 let asr: AutomaticSpeechRecognitionPipeline | null = null;
 const errOf = (e: unknown): 'oom' | 'other' => (e instanceof RangeError || /memory|alloc/i.test(e instanceof Error ? e.message : String(e)) ? 'oom' : 'other');
 
+type Model = { generation_config: { decoder_start_token_id: number; no_timestamps_token_id: number } | null;
+  _encode_input(session: string, inputs: Record<string, unknown>, out: string): Promise<unknown>;
+  (inputs: Record<string, unknown>): Promise<{ logits: Tensor }> };
+
+/** The log-probability of token `id` in a row of logits (log-softmax at one position). */
+function logProb(row: ArrayLike<number>, from: number, n: number, id: number): number {
+  let max = -Infinity, sum = 0;
+  for (let i = 0; i < n; i++) max = Math.max(max, row[from + i]);
+  for (let i = 0; i < n; i++) sum += Math.exp(row[from + i] - max);
+  return row[from + id] - max - Math.log(sum);
+}
+
+/** Each candidate's score given the audio: the best of its spellings (` rice`, ` Rice`), the mean log-probability of
+ *  its tokens decoded after <|startoftranscript|><|notimestamps|>. */
+async function scores(p: AutomaticSpeechRecognitionPipeline, pcm: Float32Array, cands: readonly string[]): Promise<number[]> {
+  const model = p.model as unknown as Model, gc = model.generation_config;
+  if (!gc) throw new Error('stt: no generation config');
+  const { input_features } = (await p.processor(pcm)) as { input_features: Tensor };
+  const encoder_outputs = await model._encode_input('model', { input_features }, 'last_hidden_state');
+  const prefix = [gc.decoder_start_token_id, gc.no_timestamps_token_id];
+  const out: number[] = [];
+  for (const c of cands) {
+    let best = -Infinity;
+    for (const v of new Set([` ${c.trim()}`, ` ${c.trim()[0]?.toUpperCase() ?? ''}${c.trim().slice(1)}`])) {
+      const ids = p.tokenizer.encode(v, { add_special_tokens: false });
+      if (!ids.length) continue;
+      const all = [...prefix, ...ids];
+      const { logits } = await model({ encoder_outputs, decoder_input_ids: new Tensor('int64', BigInt64Array.from(all, BigInt), [1, all.length]) });
+      const f = logits.type === 'float32' ? logits : logits.to('float32'), n = f.dims[2], row = f.data as Float32Array;
+      let s = 0;
+      for (let k = 0; k < ids.length; k++) s += logProb(row, (prefix.length - 1 + k) * n, n, ids[k]);
+      best = Math.max(best, s / ids.length);
+    }
+    out.push(Math.round(best * 1000) / 1000);
+  }
+  return out;
+}
+
 async function handle(m: WIn): Promise<WOut> {
   const t0 = performance.now();
   try {
@@ -57,6 +96,7 @@ async function handle(m: WIn): Promise<WOut> {
       return { ok: true, ms: Math.round(performance.now() - t0) };
     }
     if (!asr) return { ok: false, err: 'other' };
+    if (m.op === 'cand') return { ok: true, cand: await scores(asr, m.pcm, m.cand), ms: Math.round(performance.now() - t0) };
     const out = await asr(m.pcm);
     const text = (Array.isArray(out) ? out[0]?.text : out.text) ?? '';
     return { ok: true, ms: Math.round(performance.now() - t0), text: text.trim() };
