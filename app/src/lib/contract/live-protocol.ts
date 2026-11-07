@@ -279,12 +279,14 @@ export const WX_SRCS = ['om', 'fx'] as const;
 /**
  * Tokyo's sky by the hour, as the room keeps it and sends it (`wx`, ≤ ~150 bytes): `h0` the first hour (hours since the
  * epoch, UTC), `s` a letter an hour from it (WX_SKIES), `fx` the hours (offsets into `s`) with fog, `at` when it was
- * fetched (ms), `src` from where, `rev` its revision (bumped when the sky changes). @public (relay/, sync/live.ts)
+ * fetched (ms), `src` from where, `rev` its revision (bumped when the sky or the high changes), `hi` the Tokyo day
+ * of the fetch (tokyoDay) and its high (°C, rounded: しずえの ニュース's weather). @public (relay/, sync/live.ts)
  */
 export interface Wx {
   h0: number;
   s: string;
   fx?: number[];
+  hi?: [day: number, c: number];
   at: number;
   src: (typeof WX_SRCS)[number];
   rev: number;
@@ -298,7 +300,9 @@ export function wxOf(o: unknown): Wx | null {
   const n = o.s.length;
   if (o.fx !== undefined && !(Array.isArray(o.fx) && o.fx.length <= n && o.fx.every((i) => Number.isInteger(i) && i >= 0 && i < n))) return null;
   const fx = o.fx as number[] | undefined;
-  return { h0: o.h0 as number, s: o.s, ...(fx?.length ? { fx: [...fx] } : {}), at: o.at, src: o.src, rev: o.rev as number };
+  const hi = o.hi as unknown[] | undefined;
+  if (hi !== undefined && !(Array.isArray(hi) && hi.length === 2 && Number.isInteger(hi[0]) && (hi[0] as number) > 0 && (hi[0] as number) < 1e6 && Number.isInteger(hi[1]) && Math.abs(hi[1] as number) <= 60)) return null;
+  return { h0: o.h0 as number, s: o.s, ...(fx?.length ? { fx: [...fx] } : {}), ...(hi ? { hi: [hi[0], hi[1]] as [number, number] } : {}), at: o.at, src: o.src, rev: o.rev as number };
 }
 
 /** When each person's phone left the room (the relay's clock), as the welcome tells it. @public (relay/, sync/live.ts) */

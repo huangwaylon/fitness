@@ -19,6 +19,7 @@ import { boardOf, tileDeal } from './games/tile/def.ts';
 import { tachiDeal } from './games/tachi/def.ts';
 import { callDeal, callRounds } from './games/call/def.ts';
 import { rushDeal, rushRounds } from './games/rush/def.ts';
+import { newsDeal } from './games/news/def.ts';
 
 const SEEDS = Array.from({ length: 20 }, (_, s) => s);
 const TIERS: readonly (Tier | undefined)[] = [undefined, 'easy', 'hard'];
@@ -41,6 +42,8 @@ function decksOf(key: string): unknown {
   if (gm === 'call') return SEEDS.map((s) => { const cs = callDeal(s, [listenOf(unit)!]); return [0, 1, 2, 3].map((ear) => callRounds(cs, { lv: cs[0].lv, ear }, () => 0).map((r) => [r.id, r.part, r.rows.map((x) => [x.n, x.chips.length, x.answer])])); });
   // すうじ ラッシュ's: a file's customers a seed, each one's chips at every ear
   if (gm === 'rush') return SEEDS.map((s) => { const cs = rushDeal(s, [listenOf(unit)!]); return [0, 1, 2, 3].map((ear) => rushRounds(cs, { lv: cs[0].lv, ear }, () => 0).map((r) => [r.id, r.map, r.answer])); });
+  // しずえの ニュース's: the bulletin of a day a seed (spread over the year), each card's answer, trap and clips, on a rainy 23 °C day
+  if (gm === 'news') return SEEDS.map((s) => newsDeal(20_400 + s * 19, [listenOf(unit)!], { sky: 'rain', fog: false, hi: 23 }).map((c) => [c.id, c.answer, c.news.trap, c.choices.length, c.lines?.map((l) => l.clip) ?? []]));
   const part = unitPart(unit)!;
   return LESSONS.filter((l) => part.unit.lessons[l]).map((l) => TIERS.map((t) => SEEDS.map((s) => shape(lessonDeck(part, l, s, t)))));
 }
@@ -69,7 +72,7 @@ describe('ききみみ content versions', () => {
     const units = INDEX.paths.map((p) => p[0]);
     const files = (gm: string) => Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === gm);
     expect(Object.keys(INDEX.games).sort()).toEqual([...levels.map((l) => `quiz:${l}`), 'ladder:ladder', ...units.map((u) => `lesson:${u}`), 'taikai:all',
-      ...files('tile').map((u) => `tile:${u}`), ...files('tachi').map((u) => `tachi:${u}`), ...files('call').map((u) => `call:${u}`), ...files('rush').map((u) => `rush:${u}`)].sort());
+      ...files('tile').map((u) => `tile:${u}`), ...files('tachi').map((u) => `tachi:${u}`), ...files('call').map((u) => `call:${u}`), ...files('rush').map((u) => `rush:${u}`), ...files('news').map((u) => `news:${u}`)].sort());
     for (const [key, cv] of Object.entries(INDEX.games)) {
       const [gm, unit] = key.split(':');
       expect(cv).toMatch(/^[0-9a-f]{6}$/);

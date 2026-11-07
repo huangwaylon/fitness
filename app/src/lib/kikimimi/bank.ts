@@ -60,7 +60,7 @@ export type Feature = 'contraction' | 'weak-form' | 'flap' | 'yod' | 'gonna' | '
   'l-r' | 'vowel' | 'b-v' | 'th' | 'sh-s' | 'f-h' | 'ending' | 'katakana' | 'contrast' | 'clock' | 'accent-exposure';
 
 /** A dialogue's line: who says it (their cast voice), what's shown and its Japanese, what's spoken when it differs. Each
- *  line is its own clip (clips.ts clipIds: `<item>-<n>`). */
+ *  line is its own clip (clipIds: `<item>-<n>`, or its own `clip`). */
 export interface Line {
   who: RosterId;
   cast: CastId;
@@ -71,6 +71,8 @@ export interface Line {
   marks?: readonly SoundMark[];
   /** This line's speech condition, when it isn't the dialogue's (`Item.cond`). */
   cond?: Cond;
+  /** Its clip when it's another item's (しずえの ニュース's weather sentences, shared by every bulletin). */
+  clip?: string;
 }
 
 export interface Item {
@@ -184,8 +186,8 @@ export function channelOf(it: Pick<Item, 'channel' | 'tags'>): Channel {
 /** Whether an item is a dialogue (its lines are its clips). */
 export const isDialogue = (it: Pick<Item, 'lines'>): it is Item & { lines: readonly Line[] } => !!it.lines?.length;
 
-/** An item's clip ids: its own id, or a dialogue's one per line, `<id>-<n>` (n from 1). */
-export const clipIds = (it: Pick<Item, 'id' | 'lines'>): string[] => (isDialogue(it) ? it.lines.map((_, n) => `${it.id}-${n + 1}`) : [it.id]);
+/** An item's clip ids: its own id, or a dialogue's one per line, `<id>-<n>` (n from 1) unless the line names its own. */
+export const clipIds = (it: Pick<Item, 'id' | 'lines'>): string[] => (isDialogue(it) ? it.lines.map((l, n) => l.clip ?? `${it.id}-${n + 1}`) : [it.id]);
 
 /** What the audio script speaks, one item per clip (scripts/kikimimi-audio.ts maps it over the bank; here, not in clips.ts, so
  *  the script needn't load clips.json): the item itself,

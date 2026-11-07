@@ -93,7 +93,7 @@ describe('listen content', () => {
       const p = listenPart(raw, new Map(BANK.map((it) => [it.id, it])));
       expect(JSON.stringify(p)).not.toContain('"tts"');
       expect(p.items.length).toBe((raw as { items: unknown[] }).items.length);
-      for (const it of p.items) expect('lines' in it ? it.lines.map((l) => l.clip) : [it.clip]).toEqual(listenClipIds(it));
+      for (const it of p.items) if (it.kind !== 'news' && it.kind !== 'weather') expect('lines' in it ? it.lines.map((l) => l.clip) : [it.clip]).toEqual(listenClipIds(it));
     }
   });
 

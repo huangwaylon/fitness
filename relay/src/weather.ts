@@ -3,7 +3,7 @@
 // it's due), mapped to the game's skies with dead bands so the sky doesn't flicker, and kept as a 36-hour timeline
 // (live-protocol.ts Wx). An hour is locked once it starts (the next one from :45): every phone that has the timeline
 // shows the same sky at the same hour, whenever it got it. Pure but for `tick`'s fetch, which comes in.
-import { WX_MAX_HOURS, type Wx, type WxSky } from '../../app/src/lib/contract/live-protocol.ts';
+import { WX_MAX_HOURS, tokyoDay, type Wx, type WxSky } from '../../app/src/lib/contract/live-protocol.ts';
 
 /** Hours the timeline holds from the current one, and before it. */
 export const WX_HOURS = 36;
@@ -145,6 +145,13 @@ export function hourOf(wx: Wx | null, h: number): { sky: WxSky; fog: boolean } |
   return { sky: wx.s[i] as WxSky, fog: wx.fx?.includes(i) ?? false };
 }
 
+/** The high (°C, rounded) of Tokyo's day `day` (tokyoDay) from the forecast's hours, when it has at least 12 of them
+ *  with a temperature (しずえの ニュース reads it out); else null. */
+export function highOf(hours: readonly Hour[], day: number): number | null {
+  const temps = hours.flatMap((h) => (h.temp !== null && tokyoDay(h.h * HOUR_MS) === day ? [h.temp] : []));
+  return temps.length >= 12 ? Math.round(Math.max(...temps)) : null;
+}
+
 /**
  * The timeline around the current hour (`now`): the past WX_PAST hours (a rainbow is the first clear hour after rain:
  * the phones look back) and the next WX_HOURS, keeping what `prev` (the one kept) has for the hours already locked: the
@@ -177,13 +184,14 @@ export function timeline(hours: readonly Hour[], prev: Wx | null, now: number, s
   gapFill(out, before, locked);
   const n = Math.min(out.length, WX_MAX_HOURS);
   const fx = out.slice(0, n).flatMap((x, i) => (x.fog ? [i] : []));
-  return { h0: first, s: out.slice(0, n).map((x) => x.sky).join(''), ...(fx.length ? { fx } : {}), at: now, src };
+  const day = tokyoDay(now), hi = highOf(hours, day);
+  return { h0: first, s: out.slice(0, n).map((x) => x.sky).join(''), ...(fx.length ? { fx } : {}), ...(hi !== null ? { hi: [day, hi] as [number, number] } : {}), at: now, src };
 }
 
 /** Whether `next` changes what a phone holding `prev` would show: an hour both cover reads otherwise, or `next` reaches
- *  6 hours or more further, or `prev` no longer covers the current hour (or there was none). */
+ *  6 hours or more further, or `prev` no longer covers the current hour (or there was none), or the day's high moved. */
 export function changed(prev: Wx | null, next: Omit<Wx, 'rev'>): boolean {
-  if (!prev || prev.src !== next.src) return true;
+  if (!prev || prev.src !== next.src || prev.hi?.join() !== next.hi?.join()) return true;
   if (!hourOf(prev, Math.floor(next.at / HOUR_MS))) return true;
   for (let i = 0; i < next.s.length; i++) {
     const a = hourOf(prev, next.h0 + i), b = hourOf(next as Wx, next.h0 + i);

@@ -41,7 +41,7 @@ is an error over `en`, the lines and the plan choices (never `tts`).
 
 | field | |
 |---|---|
-| `kind` | `tile`, `call`, `tachi` or `rush` (the quiz kinds come over from bank.ts in 9b) |
+| `kind` | `tile`, `call`, `tachi`, `rush`, `news` or `weather` (the quiz kinds come over from bank.ts in 9b) |
 | `id` | see above |
 | `note` | the trap, in Japanese, ≤ 40 字 (counted with `[...s].length`, spaces included). No grammar terms |
 | `tags` | `{seed, register, pragmatic, conditions?, features}`, from the vocabulary below |
@@ -173,6 +173,26 @@ there, never the files. `--check` fails when a file is stale, and `--clips` list
 
 - One customer is one clip (its id). A tier keeps 3 or 4 chips by their numbers (games/rush/def.ts `chipsAt`), so
   the chips must read as numbers.
+
+## `news` (しずえの ニュース, wave 2 §2.5)
+
+```yaml
+- kind: news
+  id: news-flea-market             # ≤ 24 characters (its rounds add -d, -kasa)
+  season: spring                   # spring | summer | autumn | winter | any (true on any day of it)
+  weekday: mon                     # optional: dealt only on that day
+  ctx: "月曜の 朝の ニュース。週末の 予定と 東京の 暮らし"
+  segments:
+    - { topic: island, lines: [{ en: "...", ja: "..." }] }   # island | season, 3-5 lines of 6-32 words
+    - { topic: tokyo, lines: [...] }                         # 100-170 words in all
+  gist: { choices: [4 English], answer: 0, trap: 2, cja: [...], why: "..." }
+  detail: { ask: "フリーマーケットは 何時 開始？", choices: [...], answer: 2, trap: 1, cja: [...], why: "..." }
+```
+
+- しずえ reads every line (the file's `cast.isabelle`). Evergreen: nothing to fact-check, no weather (the game adds
+  today's). `trap` is the easy tier's other choice.
+- `weather` (one item in all, news-a's): `sky` (8, each with the umbrella question's `why`), `high` (`en`, `one`, `ja`
+  with `{n}`), `alerts` (6), `end`. The compiler makes its 56 sentences (games/news/weather.ts says which are read).
 
 ## Stories (`story/`, おやすみ ものがたり, curriculum §7.1)
 
