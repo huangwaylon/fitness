@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, isSavedArea, SAVE_HEADER, saveFetch, savedTile, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, installStatics, keepShell, STATIC_HASHES, type StaticFile, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -23,14 +23,14 @@ const VILLAGERS = 'island-villagers-v1';
 // their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
 // never precached: AUDIO_CACHE. Nor the maps' MapLibre (its chunk, worker and CSS, the engines) and ききみみ's parts:
 // kept in the shell the first time they're used, then carried by each install (CARRIED; caches.ts carryPlan).
-const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(precachable);
+const CHUNKS = immutable.map((f) => f.path).filter(precachable);
 const CARRIED = immutable.map((f) => f.path).filter(carried);
+/** The static files, each with its content hash (vite.config.ts swPrecacheOnly writes it into the manifest). */
+const STATICS = (assets as unknown as StaticFile[]).filter((f) => precachable(f.path));
 /** Checked with the server past the browser's HTTP cache (a host's own max-age): a static file or the shell
- *  fetched within 10 minutes before a deploy would otherwise be stored stale for the whole version. Revalidated, not
- *  reloaded: an unchanged file (most of the art, each deploy) is a 304 from the HTTP cache's copy, not a download. The
- *  hashed chunks can't be stale. */
+ *  fetched within 10 minutes before a deploy would otherwise be stored stale for the whole version. The hashed chunks
+ *  can't be stale. */
 const fresh = (path: string) => new Request(path, { cache: 'no-cache' });
-const HASHED = new Set(immutable.map((f) => f.path));
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -39,12 +39,8 @@ self.addEventListener('install', (event) => {
       // a hashed chunk an older shell holds is the very same file: copied over, not downloaded again (each deploy
       // fetched every chunk and font anew, ~3 MB; now only what changed)
       const olds = await Promise.all(olderShells(await caches.keys(), CACHE).map((k) => caches.open(k)));
-      const chunks: string[] = [], statics: Request[] = [];
-      for (const p of PRECACHE) {
-        if (!HASHED.has(p)) {
-          statics.push(fresh(p));
-          continue;
-        }
+      const chunks: string[] = [];
+      for (const p of CHUNKS) {
         let hit: Response | undefined;
         for (const c of olds) if ((hit = await c.match(p))) break;
         if (hit) await cache.put(p, hit);
@@ -53,7 +49,8 @@ self.addEventListener('install', (event) => {
       // the build's code all or nothing: a chunk not fetched fails the install (the page keeps its worker and asks
       // again later: ui-state/reload.ts newWorker); the static files (the art, the manifest: ~300) each on its own, so
       // one that fails costs that file (served from the previous shell's copy or the network: `cached`), not the
-      // install (one flaky fetch of ~370 failed it, and every resume's update with it)
+      // install (one flaky fetch of ~370 failed it, and every resume's update with it), an unchanged one copied from an
+      // older shell (caches.ts installStatics: by its content hash)
       await cache.addAll(chunks);
       // what this phone used of MapLibre and ききみみ's parts (an older shell holds it): an unchanged file copied, a
       // changed one fetched (each on its own: a miss costs only that map or game offline till it's used again)
@@ -69,10 +66,8 @@ self.addEventListener('install', (event) => {
         }
       }
       await Promise.allSettled(plan.fetch.map((p) => cache.add(p)));
-      await Promise.allSettled(statics.map(async (r) => {
-        const res = await fetch(r);
-        if (res.ok) await cache.put(r, res);
-      }));
+      // (this version's own cache first: a worker reinstalled under the same version, the e2e's deploy, has its files)
+      await installStatics(STATICS, cache, [cache, ...olds], (p) => fetch(fresh(p)), new URL(STATIC_HASHES, self.registration.scope).href);
       // The SPA shell (ssr = false): any navigation can be served by the scope root. Only this build's (a deploy
       // landing during the install would give a newer build's HTML, whose chunks this cache hasn't): else none, and
       // navigations go to the network till a newer worker installs its own.

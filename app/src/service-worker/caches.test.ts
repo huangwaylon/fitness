@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { contentHash, installStatics, STATIC_HASHES, MAP_META_CACHE, PHOTO_CACHE, isSavedArea, saveFetch, savedTile, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -144,6 +144,76 @@ describe('precache', () => {
       expect(precachable(p)).toBe(false);
     }
     expect(precachable('/fitness/audio/music/hour-07.m4a')).toBe(false);
+  });
+});
+
+describe("an install's static files (installStatics: copied when unchanged, by content hash)", () => {
+  const KEY = `https://x.test/${STATIC_HASHES}`;
+  /** A shell: its files by path (the index's key too). */
+  const shell = (files: Record<string, string> = {}) => {
+    const m = new Map<string, Response>(Object.entries(files).map(([k, v]) => [k, new Response(v)]));
+    return {
+      m,
+      match: async (k: RequestInfo | URL) => m.get(String(k))?.clone(),
+      put: async (k: RequestInfo | URL, r: Response) => void m.set(String(k), r)
+    };
+  };
+  const text = async (c: ReturnType<typeof shell>, k: string) => (await c.match(k))!.text();
+  const hashOf = (s: string) => contentHash(new TextEncoder().encode(s));
+
+  it('hashes as the build does: SHA-256, its first 8 bytes in hex', async () => {
+    expect(await hashOf('abc')).toBe('ba7816bf8f01cfea');
+  });
+
+  it("copies a file an older shell recorded at the build's hash; fetches the changed, the new and the unrecorded", async () => {
+    const [a, b, c, d] = await Promise.all(['A', 'B', 'C2', 'D'].map(hashOf));
+    // the previous shell: a and b recorded; c at its old bytes; e held but never recorded (a failed fetch's gap)
+    const prev = shell({ 'art/a.webp': 'A', 'art/b.webp': 'B', 'art/c.webp': 'C1', 'art/e.webp': 'E' });
+    await prev.put(KEY, new Response(JSON.stringify({ 'art/a.webp': a, 'art/b.webp': b, 'art/c.webp': await hashOf('C1') })));
+    const asked: string[] = [];
+    const net = async (p: string) => (asked.push(p), new Response({ 'art/c.webp': 'C2', 'art/d.webp': 'D', 'art/e.webp': 'E' }[p] ?? '', { status: p in { 'art/c.webp': 1, 'art/d.webp': 1, 'art/e.webp': 1 } ? 200 : 404 }));
+    const cache = shell();
+    const files = [{ path: 'art/a.webp', hash: a }, { path: 'art/b.webp', hash: b }, { path: 'art/c.webp', hash: c }, { path: 'art/d.webp', hash: d }, { path: 'art/e.webp', hash: await hashOf('E') }];
+    expect(await installStatics(files, cache, [prev], net, KEY)).toEqual({ copied: 2, fetched: 3 });
+    expect(asked.sort()).toEqual(['art/c.webp', 'art/d.webp', 'art/e.webp']);
+    expect(await Promise.all(['art/a.webp', 'art/b.webp', 'art/c.webp', 'art/d.webp'].map((p) => text(cache, p)))).toEqual(['A', 'B', 'C2', 'D']);
+    // the next install copies all five
+    const again: string[] = [];
+    expect(await installStatics(files, shell(), [cache], async (p) => (again.push(p), new Response('')), KEY)).toEqual({ copied: 5, fetched: 0 });
+    expect(again).toEqual([]);
+  });
+
+  it('records the hash of the bytes stored: a file the server answered with another build fetches again', async () => {
+    const want = await hashOf('NEW');
+    const first = shell();
+    await installStatics([{ path: 'm.json', hash: want }], first, [], async () => new Response('OLD'), KEY);
+    expect(JSON.parse(await text(first, KEY))).toEqual({ 'm.json': await hashOf('OLD') });
+    const asked: string[] = [];
+    await installStatics([{ path: 'm.json', hash: want }], shell(), [first], async (p) => (asked.push(p), new Response('NEW')), KEY);
+    expect(asked).toEqual(['m.json']);
+  });
+
+  it('a fetch that fails costs that file (not recorded, not the install); a shell from before the hashes fetches all once', async () => {
+    const h = await hashOf('X');
+    const old = shell({ 'x.webp': 'X', 'y.webp': 'Y' }); // no index: an install from before
+    const cache = shell();
+    const net = async (p: string) => (p === 'y.webp' ? Promise.reject(new TypeError('offline')) : new Response('X'));
+    expect(await installStatics([{ path: 'x.webp', hash: h }, { path: 'y.webp', hash: await hashOf('Y') }], cache, [old], net, KEY)).toEqual({ copied: 0, fetched: 1 });
+    expect(JSON.parse(await text(cache, KEY))).toEqual({ 'x.webp': h });
+    // a broken index: the same
+    const broken = shell({ 'x.webp': 'X' });
+    await broken.put(KEY, new Response('{'));
+    expect(await installStatics([{ path: 'x.webp', hash: h }], shell(), [broken], async () => new Response('X'), KEY)).toEqual({ copied: 0, fetched: 1 });
+  });
+
+  it('the newest shell that recorded the file at this hash and still holds it', async () => {
+    const h = await hashOf('Z');
+    const newer = shell(), older = shell({ 'z.webp': 'Z' });
+    await newer.put(KEY, new Response(JSON.stringify({ 'z.webp': h }))); // recorded, the file gone
+    await older.put(KEY, new Response(JSON.stringify({ 'z.webp': h })));
+    const cache = shell();
+    expect(await installStatics([{ path: 'z.webp', hash: h }], cache, [newer, older], async () => new Response('net'), KEY)).toEqual({ copied: 1, fetched: 0 });
+    expect(await text(cache, 'z.webp')).toBe('Z');
   });
 });
 

@@ -895,13 +895,27 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
 
 `app/src/service-worker/` (pure rules in `caches.ts`).
 
+- **Registration:** by the app, not Kit (`kit.serviceWorker.register = false`; `lib/ui-state/swLate.ts`): once the 3D
+  island has its models in (Island3D's `loaded()`) or can't draw; off the island (another route, /pair, the error and
+  not-set-up screens) 2 s after the window's load; on the island 30 s after the start at the latest. Kit registered it on
+  the window's load, so a first visit's precache (2.9 MB) loaded alongside three.js and the island's models. A phone
+  the worker already controls is unaffected (the browser checks for a new worker on each navigation itself).
 - **Install:** precaches built JS/CSS and static files except the rarer font slices, audio, the art manifest, the app
   icons, villager art beyond the two defaults, the critters', finds' and presents' art (all cached on first use), the
-  guides' photos, MapLibre and ききみみ's parts (Offline, below). Non-hashed files and the shell are fetched with `cache: 'no-cache'` (revalidated past the HTTP
-  cache). The hashed chunks (an older shell's copy where it has one, else fetched) are all or nothing (`addAll`): one
-  not fetched fails the install, and the page asks again later. The static files (~300: the art, the manifest) each
-  on its own (`allSettled`): one that fails is served from the previous shell or the network, and no longer fails the
-  install (one flaky fetch of ~370 did, and each resume's update with it). The worker's script carries only the
+  guides' photos, MapLibre and ききみみ's parts (Offline, below). The hashed chunks (an older shell's copy where it has
+  one, else fetched) are all or nothing (`addAll`): one not fetched fails the install, and the page asks again later.
+  The static files (~65: the art, the manifest, the trails' tracks) by content hash (`caches.ts installStatics`; the
+  worker's manifest carries each file's, `vite.config.ts swPrecacheOnly`): one an older shell recorded at the same
+  hash (its `__static-hashes`: the hashes of the bytes it stored) is copied, the rest fetched with `cache: 'no-cache'`
+  (past the HTTP cache), each on its own: one that fails is served from the previous shell or the network and doesn't
+  fail the install. The shell is fetched with `no-cache` too.
+- **Its cost** (`npm run sw:measure -- <buildA> <buildB>`: two builds, B a deploy of A, served as Pages serves them over
+  10 Mbps / 70 ms; WebKit as an iPhone 15, Chromium at 4× CPU; 2026-11-07): a first visit's island `loaded()` in WebKit
+  12.2 s → 4.5 s once the worker waited for it (Chromium's load event already came after the island: 4.6 s, unchanged);
+  an app open right after a deploy, the install 102 requests / 1.5 MB → 38 / 0.85 MB in WebKit (it fetched every static
+  file whole), 104 (66 revalidations) → 40 in Chromium, the new worker in 1.4 s sooner. Chromium installs the same
+  worker a second time when the post-deploy reload starts (a claim after it; seen only with the worker registered
+  after the load, e2e/sw-update.spec takes the first). The worker's script carries only the
   precached paths (`vite.config.ts swPrecacheOnly` filters Kit's `$app/manifest` lists by `caches.ts precachable` at
   build time): 22 KB (6 KB gzipped), from 565 KB (56 KB) listing all ~11,700 files of the build.
 - **Activate:** keeps the current shell (`island-shell-<version>`), the previous one (an old page loads its lazy chunks

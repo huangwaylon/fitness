@@ -17,6 +17,7 @@
   // Life (islandLife.svelte.ts): the motion bus (emit('highfive-sent') etc.), reactions to the `view` diff (partner
   // data, fruit stages, a received high-five), naps, the balloon; idle life runs while not `paused`.
   import { lazyComponent } from '#lib/ui-state/lazyComponent.svelte.ts';
+  import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { showAt } from './fireworks.ts';
   import { hook, hookFlag, hooksOn } from './devHooks.ts';
   import type { PersonId, WeekView, Who } from '#lib/types.ts';
@@ -1169,7 +1170,7 @@
         {#if r3 && Island3DC && sceneEl}
           <Island3DC bind:this={island3d} {world} scene={sceneEl} {season} {foliage} {month} {tod} scenery={scenery3} pieces={pieces3} {hybrid} floating={ev.cherry ? 'petal' : ev.maple ? 'maple' : null}
             wet={wetNow.a} cast={cast3} enabled={() => !covered && !life.hidden}
-            start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => (failed3 = true)} onready={() => measure()} />
+            start={start3} onscroll={onScroll} onhorizon={(px) => (horizonPx = px)} onfail={() => ((failed3 = true), releaseWorker())} onready={() => measure()} />
         {:else if failed3}
           <!-- no WebGL (never on the users' iPhones): a line instead of the island; the rest of the app works as ever -->
           <div class="no3d" role="status" data-no3d><p>{t('island.no3d')}</p><p class="sub">{t('island.no3dSub')}</p></div>

@@ -23,6 +23,8 @@
   import { startViewport } from '#lib/ui-state/viewport.ts';
   import { doorTransition } from '#lib/ui-state/doorTransition.ts';
   import { isChunkError, lazy, newWorker, reloadUnlessLeaving, safeReload } from '#lib/ui-state/reload.ts';
+  import { registerLate, releaseWorker } from '#lib/ui-state/swLate.ts';
+  import { opensIsland } from '#lib/ui-state/boot.ts';
   import { musicNow, startSound } from '#lib/sound/sound.svelte.ts';
   import { acked, bindStage, hear, hush, request, stage } from '#lib/sound/stage.svelte.ts';
   import { hooksOn } from '#lib/ui-state/preview.ts';
@@ -81,6 +83,11 @@
     if (workerReady && !onPair && !showHarvest && !ui.sheets.length) safeReload(Date.now(), 'update');
   });
 
+  // the service worker once the island is up (ui-state/swLate.ts); a screen with no island coming releases it
+  $effect(() => {
+    if (week.status === 'unconfigured' || (!week.view && week.status === 'error')) releaseWorker();
+  });
+
   // the log's coarse usage: which routes are opened (sync/log.ts `use`)
   $effect(() => {
     count(`route:${route.split('/')[1] || 'island'}`);
@@ -90,6 +97,7 @@
   doorTransition();
 
   onMount(() => {
+    registerLate(route === '/' && opensIsland());
     const stopTheme = startTheme();
     const stopWeather = startWeather();
     week.init();

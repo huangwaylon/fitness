@@ -60,6 +60,7 @@
   import { TIER_H } from '#lib/layout/grid.ts';
   import type { EditStage } from '../layoutEdit/IslandEdit.svelte';
   import { drawOff } from '../../ui-state/testMode.ts';
+  import { releaseWorker } from '#lib/ui-state/swLate.ts';
   import { DEVICE, localKV } from '#lib/sync/storage.ts';
   import { setDrawnFps } from '#lib/sync/log.ts';
   import { weather } from '../island/weatherNow.svelte.ts';
@@ -737,6 +738,9 @@
           queueMicrotask(onready);
           // the flourishes' models on the GPU ahead of their first use (a high five's sparkles whole at once)
           setTimeout(() => void e.warmFx().catch(() => {}), 400);
+          // the service worker registered once every model is in (loaded()), not competing with them (ui-state/swLate.ts)
+          const settled = () => void (eng !== e || !e.stats().loading ? releaseWorker() : setTimeout(settled, 250));
+          settled();
         }
         loaded = true;
       });
