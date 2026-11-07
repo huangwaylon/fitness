@@ -404,7 +404,7 @@
   {#key d.n}
     <!-- a bagworm or a spider on its thread, out of the canopy beside the trunk: it drops, sways, and climbs back up -->
     <!-- the 3D island's: the bug at its thread's end, the thread from the canopy -->
-    <i class="m3n" {@attach w.at({ x: d.x, z: d.y, lift: d.up ? d.from : DANGLE_UP, h: 4, always: true,
+    <i class="m3n" {@attach w.at({ bare: true, x: d.x, z: d.y, lift: d.up ? d.from : DANGLE_UP, h: 4, always: true,
       m3: { key: `critters/${d.bug}`, id: `dangle-${d.n}`, ms: 900, art: () => scene?.querySelector(`[data-dangle="${d.bug}"]`), line: () => [d.x, d.y, d.from] } })}></i>
     <div class="node" {@attach w.at({ x: d.x, z: d.y, h: d.from, dz: NEAR, inv: true })}>
       <span class="dangle {d.bug}" class:up={d.up} data-dangle={d.bug} style:top={u(-d.from)} style:--len={u(d.from - DANGLE_UP)}>

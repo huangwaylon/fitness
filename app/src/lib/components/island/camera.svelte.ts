@@ -38,6 +38,10 @@ export interface NodeSpec {
   live?: () => readonly [number, number, number?];
   /** Always place it, whatever the live window (something that may come into view from far off). */
   always?: boolean;
+  /** Nothing of its own on screen: an empty carrier of a 3D model's spot (`m3`, the critters' and the trees' `.m3n`).
+   *  Whether it's in view is kept (its model's `shown`), nothing else written to it: its transform and stacking were
+   *  ~200 style writes a second at rest, each frame of a critter's move. */
+  bare?: boolean;
   /** Set --inv = 1 / scale on the node (a popup or a label drawn at its true size). */
   inv?: boolean;
   /** A light (a lamp's glow, a lit window, a firefly): sorted by its depth like any node, but never dimmed by the time
@@ -363,6 +367,7 @@ export class World {
     const q = t.at(x, z, lift), h = n.h ?? 80, k = q.k / v.s;
     if (!q.visible || q.sy - (h + lift) * q.k > v.vh + 40 || q.sy < -60 || q.sx < -400 || q.sx > v.vw + 400) return this.hide(n);
     this.show(n);
+    if (n.bare) return;
     const X = q.sx.toFixed(1), Y = q.sy.toFixed(1);
     const ky = mode === 'flat' ? k * Math.max(0.02, q.ground) : n.model ? k * q.up : k;
     const tf = ky === k ? `translate(${X}px,${Y}px) scale(${k.toFixed(4)})` : `translate(${X}px,${Y}px) scale(${k.toFixed(4)},${ky.toFixed(4)})`;
@@ -410,7 +415,7 @@ export class World {
   }
 
   private zOf(n: Node, x: number, z: number): void {
-    if (n.zi === null || n.mode === 'quad') return;
+    if (n.zi === null || n.mode === 'quad' || n.bare) return;
     const zi = n.zi ?? depthAt(x, z + (n.dz ?? 0));
     if (zi !== n.zIndex) {
       n.el.style.zIndex = String((n.zIndex = zi));

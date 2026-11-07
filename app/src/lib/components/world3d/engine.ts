@@ -10,7 +10,7 @@
 //   The lights: lights.ts (always-on emissive and halos, faded point lights). Shadows on by default.
 //   The frames: せってい's frame rate (30 or 60: store/frameRate.svelte.ts) while anything moves; while only the
 //   ambience does (the water, the season's fall, a fire's flicker, a sleeper's zzz, a blink) `ambient` a second (30 at
-//   most; a software renderer's few; REST_FPS once no finger has touched it for REST_MS), the water's only while some
+//   most; a software renderer's few; REST_FPS at rest: REST_MS), the water's only while some
 //   is on screen; none when nothing does, none hidden or paused (a sheet over the island). The
 //   World's step runs in each frame before it draws, so the DOM moves with the picture.
 // Plain TS; world3d/Island3D.svelte drives it.
@@ -80,6 +80,8 @@ interface Stats {
   geometries: number;
   /** The GPU programs compiled (three's). */
   programs: number;
+  /** The shadow map's redraws so far. */
+  shadows: number;
   dpr: number;
   frames: number;
   loading: number;
@@ -127,9 +129,13 @@ const SHADOW_STEP = 40;
 const SHADOW_MIN = 200;
 /** The cards lean back this share of the camera's pitch. */
 const LEAN = 0.42;
-/** No finger on the island for this long (ms), the ambience's frames drop to REST_FPS a second (the battery and the
- *  phone's heat at rest: the water, the fall and the weather still move, at a calm rate). */
-const REST_MS = 8000, REST_FPS = 20;
+/** At rest the ambience draws REST_FPS a second (the battery and the phone's heat: the water, the fall, the weather and
+ *  a slow critter still move, at a calm rate; the user's call, 2026-11-07). At rest: no finger on the island for REST_MS,
+ *  and the last frame wanted only the ambience (no camera move under way: a fling, a spring back, a focus; nothing
+ *  moving at the full rate: a walk, a fast critter, a flourish, a jiggle); either of those draws at the full rate at
+ *  once. On those frames the shadow map redraws at most every REST_SHADOW_MS (a slow critter's shadow, a card's), once
+ *  more after the last change. */
+const REST_MS = 2000, REST_FPS = 12, REST_SHADOW_MS = 250;
 /** The screen's samples (columns × rows, below the horizon) where the camera's view is looked for water. */
 const WATER_COLS = 12, WATER_ROWS = 20;
 const now = () => performance.now();
@@ -297,8 +303,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   scene.add(ground.group);
 
   // ---- the things, the cards, the lights ----
-  const things = createThings(scene, src.height, (sh = true, soon = false) => (sh && (shadowsDirty = true), soon && pace.queued() ? undefined : kick()));
-  const cards = createCards(scene, (sh) => (sh && (shadowsDirty = true), kick()));
+  const things = createThings(scene, src.height, (sh = true, soon = false) => (sh && shadowed(), soon && pace.queued() ? undefined : kick()));
+  const cards = createCards(scene, (sh) => (sh && shadowed(), kick()));
   const lights = createLights(scene);
   const effects = createEffects(scene, src.feet, () => kick());
   const marks = createBiteMarks(addObj);
@@ -307,7 +313,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   async function place(list: readonly Inst[]) {
     await things.place(list);
     relight();
-    shadowsDirty = true;
+    shadowed();
     kick();
   }
 
@@ -363,7 +369,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       sun.position.set(xq + todLook.sunAt[0] * 700, todLook.sunAt[1] * 700, -zq - 120 + todLook.sunAt[2] * 700);
       sun.target.position.set(xq, 0, -zq - 120);
       sun.target.updateMatrixWorld();
-      shadowsDirty = true;
+      shadowed();
     }
     // the ground's bands in reach (the bend drops the far ones behind the horizon)
     if (ground.chunks)
@@ -719,13 +725,13 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
         const m = (n as Mesh).material as Material | Material[] | undefined;
         for (const x of m ? (Array.isArray(m) ? m : [m]) : []) x.needsUpdate = true;
       });
-      shadowsDirty = true;
+      shadowed();
     }
     activity();
   }
 
   // ---- the frames ----
-  let frames = 0, disposed = false, shadowsDirty = true, activeUntil = 0, lastFrame = 0, lastInput = now();
+  let frames = 0, shadowsDrawn = 0, shadowAt = 0, disposed = false, shadowsDirty = true, activeUntil = 0, lastFrame = 0, lastInput = now();
   /** The ground's water wanted its ambience in the last frame; the water's test and whether it's in view (as of
    *  the camera's rev `waterRev`). */
   let groundAmb = false, waterAt: ((x: number, z: number) => boolean) | null = null, waterRev = -1, waterOn = true;
@@ -759,6 +765,14 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   // between is skipped; a kick from outside while nothing moves draws at once; the ambience's next is due at its own
   // rate: its timer lands just before, and a page with no other frames running has its rAF at once, not at a vsync)
   const pace = pacer(frame);
+  /** The shadow map changed from outside a frame (a model in, a layout's edit, the time of day): redrawn at once, at
+   *  rest too. */
+  let shadowsNow = false;
+  /** The shadows changed (a caster moved or came or went). */
+  function shadowed() {
+    shadowsDirty = true;
+    if (!inFrame) shadowsNow = true;
+  }
   /** The last frame's: something moved (the full rate), only the ambience did. */
   let busy = false, ambience = false, paused = false, inFrame = false;
   let hook: ((t: number) => Want) | null = null;
@@ -781,7 +795,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       const on = frustum.intersectsSphere(bentBall);
       if (g.obj.visible !== on) {
         g.obj.visible = on;
-        shadowsDirty = true;
+        shadowed();
       }
     }
   }
@@ -824,6 +838,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (w === true) busy = true, why.add(name);
     else if (w === 'ambient') ambience = true, why.add(`~${name}`);
   };
+  /** At rest (REST_MS): no finger for a while (the frame's own wants say whether anything moves). */
+  const resting = (t: number) => !touch && t - lastInput > REST_MS && t >= activeUntil;
   function frame(vsync = now()) {
     if (disposed || document.hidden || paused) return;
     const t = now();
@@ -842,8 +858,10 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     if (busy || touch || now() < activeUntil) pace.kick();
     else {
       if (groundAmb && !ambience && waterSeen()) (ambience = true), why.add('~ground');
-      const fps = now() - lastInput > REST_MS ? Math.min(opts.ambient, REST_FPS) : opts.ambient;
+      const fps = resting(now()) ? Math.min(opts.ambient, REST_FPS) : opts.ambient;
       if (ambience && fps > 0) pace.later(Math.min(fps, frameRate.fps));
+      // (a shadow held back at rest, with no frame coming to draw it: one of its own)
+      if (shadowsDirty && opts.shadows && !pace.queued()) wake(REST_SHADOW_MS - (now() - shadowAt));
     }
   }
   function draw(t: number) {
@@ -878,7 +896,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     // (a wobbling model moves its shadow: the map redraws; a walker's is a blob)
     if (things.frame(t)) {
-      shadowsDirty = true;
+      shadowed();
       want(true, 'things');
     }
     if (hook) want(hook(t), 'scene');
@@ -895,9 +913,12 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     want(lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ), 'lights');
     cullGroups();
-    if (opts.shadows && shadowsDirty) {
+    // (at rest, only the ambience moving: the map at most every REST_SHADOW_MS; a change from outside a frame at once)
+    if (opts.shadows && shadowsDirty && (shadowsNow || busy || !resting(t) || t - shadowAt >= REST_SHADOW_MS)) {
       renderer.shadowMap.needsUpdate = true;
-      shadowsDirty = false;
+      shadowsDirty = shadowsNow = false;
+      shadowAt = t;
+      shadowsDrawn++;
     }
     if (!noDraw) renderer.render(scene, camera);
     // (nothing drawn: the counts are none, whatever the layout's ground baked on the GPU as it was built)
@@ -924,7 +945,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
   };
   const onRestored = () => {
     log('gl.lost', { where: 'island', restored: true });
-    shadowsDirty = true;
+    shadowed();
     resize();
   };
   canvas.addEventListener('webglcontextlost', onLost);
@@ -1031,7 +1052,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
         groupsPlaced.set(id, { obj, off: addObj(obj), ball: new Box3().setFromObject(obj).getBoundingSphere(new Sphere()) });
         culledRev = -1;
       }
-      shadowsDirty = true;
+      shadowed();
       kick();
     },
     add: addObj,
@@ -1079,7 +1100,7 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       return {
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
-        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, dpr: renderer.getPixelRatio(), frames,
+        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, dpr: renderer.getPixelRatio(), frames,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
       };
