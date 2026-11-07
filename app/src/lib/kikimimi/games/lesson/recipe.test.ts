@@ -47,7 +47,7 @@ const base = (unit: string, lessons: object, stage = 'mori') => ({
   ph: [{ id: `ph-${unit.slice(3)}-room`, en: 'room', register: 'service', scene: 'hotel desk', trap: 'ルーム だけで なく へや ぜんぶ' }],
   lessons
 });
-/** A もり unit on recipe 2 (tiles from s2-tile-bank, listened in this build; a たちぎき and a call from draft files). */
+/** A もり unit on recipe 2 (tiles from s2-tile-bank, a たちぎき from s2-tachi-a and a call from s2-call-a: all listened in this build). */
 const V2 = base('tr-recipe', { v: 2, ...LESSON_IDS, ...KINDS });
 /** The same unit on recipe 1 (its items V2's: here for review). */
 const V1 = { ...base('tr-recipev1', { v: 1, ...LESSON_IDS }), review: [...new Set(Object.values(LESSON_IDS).flat())] };
@@ -57,8 +57,10 @@ const REFS = listenRefs(LISTEN);
 let index: Index;
 let v2: UnitChunk, v1: UnitChunk;
 const build: KindSource = { entry: (f) => INDEX.listen[f], part: listenOf };
-/** The build's files with some flipped to listened, as A2/A4's listening check will (and the e2e's served index). */
-const listened = (...files: string[]): KindSource => ({ entry: (f) => (files.includes(f) ? ([INDEX.listen[f][0], INDEX.listen[f][1], 'listened'] as ListenEntry) : INDEX.listen[f]), part: listenOf });
+/** The build's files with some at another status (a draft as before the listening check, or listened). */
+const at = (status: ListenEntry[2], files: string[]): KindSource => ({ entry: (f) => (files.includes(f) ? ([INDEX.listen[f][0], INDEX.listen[f][1], status] as ListenEntry) : INDEX.listen[f]), part: listenOf });
+const listened = (...files: string[]) => at('listened', files);
+const drafts = (...files: string[]) => at('draft', files);
 const filesOf = (c: UnitChunk, l: 'oto' | 'jissen' | 'check') => unitKinds(c.unit.id)[l] ?? [];
 
 beforeAll(async () => {
@@ -112,9 +114,9 @@ describe('recipe 2: the manifest', () => {
 });
 
 describe('recipe 2: the lesson loads its kind’s files, then deals', () => {
-  it('a lesson’s chunks: its unit’s, then its kind’s listened files (a draft’s none)', () => {
+  it('a lesson’s chunks: its unit’s, then its kind’s listened files', () => {
     expect(lessonChunks('tr-recipe', 'oto')).toEqual(['tr-recipe', 's2-tile-bank']);
-    expect(lessonChunks('tr-recipe', 'check')).toEqual(['tr-recipe']); // (s2-call-a is a draft in this build)
+    expect(lessonChunks('tr-recipe', 'check')).toEqual(['tr-recipe', 's2-call-a']);
     expect(lessonChunks('tr-recipe', 'deai')).toEqual(['tr-recipe']);
     expect(lessonChunks('tr-recipev1', 'oto')).toEqual(['tr-recipev1']);
     expect(lessonLane.chunks({ o: lessonOpts.encode({ lv: 4, timer: 30, lesson: 'oto' }), u: 'tr-recipe' })).toEqual(['tr-recipe', 's2-tile-bank']);
@@ -142,6 +144,9 @@ describe('recipe 2: the lesson loads its kind’s files, then deals', () => {
       expect(d.slice(2).map((it) => it.id)).toEqual(lessonDeck(v2, 'check', seed).slice(0, 4).map((it) => it.id));
       for (const it of d.slice(2)) expect(LESSON_IDS.check).toContain(it.id);
     }
+    // and through the lane, as a phone deals it (this build's call file is listened)
+    const o = lessonOpts.encode({ lv: 4, timer: 30, lesson: 'check' });
+    expect(lessonLane.deal({ gm: 'lesson', seed: 3, o, u: 'tr-recipe' })).toEqual(recipeDeck(v2, 'check', 3, undefined, filesOf(v2, 'check'), build));
   });
 
   it('じっせん: a たちぎき’s 3 rounds, then 3 of its quiz items', () => {
@@ -151,17 +156,15 @@ describe('recipe 2: the lesson loads its kind’s files, then deals', () => {
   });
 
   it('falls back to recipe 1, exactly, while a kind’s file isn’t listened (a draft, or only voiced)', () => {
+    const draft = drafts('s2-call-a', 's2-tachi-a');
     for (const seed of [0, 7, 42]) {
       for (const tier of [undefined, 'easy', 'hard'] as const) {
-        expect(recipeDeck(v2, 'check', seed, tier, filesOf(v2, 'check'), build)).toEqual(lessonDeck(v2, 'check', seed, tier));
-        expect(recipeDeck(v2, 'jissen', seed, tier, filesOf(v2, 'jissen'), build)).toEqual(lessonDeck(v2, 'jissen', seed, tier));
+        expect(recipeDeck(v2, 'check', seed, tier, filesOf(v2, 'check'), draft)).toEqual(lessonDeck(v2, 'check', seed, tier));
+        expect(recipeDeck(v2, 'jissen', seed, tier, filesOf(v2, 'jissen'), draft)).toEqual(lessonDeck(v2, 'jissen', seed, tier));
       }
     }
     const voiced: KindSource = { entry: (f) => (f === 's2-call-a' ? ['call', 3, 'voiced'] : INDEX.listen[f]), part: listenOf };
     expect(kindCards(v2, 'check', 1, filesOf(v2, 'check'), voiced)).toBeNull();
-    // and through the lane, as a phone deals it (this build's call file is a draft)
-    const o = lessonOpts.encode({ lv: 4, timer: 30, lesson: 'check' });
-    expect(lessonLane.deal({ gm: 'lesson', seed: 3, o, u: 'tr-recipe' })).toEqual(lessonDeck(v2, 'check', 3));
   });
 
   it('falls back when a file isn’t loaded, isn’t its kind’s, or an id is gone', () => {

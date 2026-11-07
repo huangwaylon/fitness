@@ -1,10 +1,10 @@
-// ことば タイル (docs/curriculum-wave2.md §2.1): the mode shows once a tile file is `listened` (s2-tile-bank, the derived
-// tiles that play their bank clips, shipped listened), on
-// あそぶ's さくっと shelf and its page at もり; a solo game (the clip first with no tiles, then tap the tiles into their
-// slots, tap a placed one back, できた), one sentence wrong, the reveal's spoken shape, Japanese and 解説, the results'
-// review and my row (gm tile, the wrong slots as the pick); then two phones in co-op over the demo's relay: each fills
-// its own half of one sentence, the reveal shows the team's, the results count the sentences built whole. Screenshots
-// (KIKI_SHOTS=1) into /tmp/kikimimi-shots/tile/, by day and at night. The logic tier (Playwright's Chromium is muted).
+// ことば タイル (docs/curriculum-wave2.md §2.1): the mode shows once a tile file is `listened` (かわ's s1-tile-a and s1-tile-b,
+// shipped listened), on あそぶ's さくっと shelf and its page at かわ; a solo game (the clip first with no tiles, then tap the
+// tiles into their slots, tap a placed one back, できた), one sentence wrong, the reveal's spoken shape, Japanese and 解説,
+// the results' review and my row (gm tile, the wrong slots as the pick); then two phones in co-op over the demo's
+// relay: each fills its own half of one sentence, the reveal shows the team's, the results count the sentences built
+// whole. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/tile/, by day and at night. The logic tier (Playwright's
+// Chromium is muted).
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
@@ -17,11 +17,10 @@ const SHOTS = '/tmp/kikimimi-shots/tile';
 const DAY = 'date=2026-11-07T10:00&critter=none&visitor=none&kikimimi=fast';
 const NIGHT = 'date=2026-11-07T21:30&critter=none&visitor=none&kikimimi=fast';
 
-/** The derived tiles' file as compiled: each sentence's words by the clip it plays. */
-const PART = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', 's2-tile-bank.json'), 'utf8')) as {
+/** かわ's tile files as compiled: each sentence's words by the clip it plays. */
+const WORDS = new Map(['s1-tile-a', 's1-tile-b'].flatMap((u) => (JSON.parse(readFileSync(join(import.meta.dirname, '..', 'src', 'lib', 'kikimimi', 'levels', 'parts', `${u}.json`), 'utf8')) as {
   listen: { items: { id: string; clip: string; tiles: string[]; decoys: string[] }[] };
-};
-const WORDS = new Map(PART.listen.items.map((it) => [it.clip, it]));
+}).listen.items.map((it) => [it.clip, it] as const)));
 
 type Kiki = { view(): { phase: string; i: number; n: number; gm: string | null; roles: Record<string, number> }; items(): string[]; recorded(): { gm?: string; r: [string, number, number, number][] } | null };
 const kiki = <R,>(p: Page, fn: (k: Kiki) => R) => p.evaluate(`(${fn.toString()})(window.__kiki)`) as Promise<R>;

@@ -9,7 +9,7 @@ track: life
 seeds: [3, 10, 14, 25, 30]
 features: { primary: self-repair, review: numbers }
 cando: "でんわで 番号や 日時の 訂正を ききとって メモできる"
-status: draft
+status: listened
 cast: { me: us-m3 }
 items:
   - kind: call

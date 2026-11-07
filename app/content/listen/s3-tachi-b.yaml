@@ -8,7 +8,7 @@ track: people
 seeds: [8, 36, 38, 50, 55]
 features: { primary: overlap, review: intonation }
 cando: "3人の 速い かいわで 皮肉や 本音を ききわけられる"
-status: draft
+status: listened
 items:
   - kind: tachi
     id: tachi-two-seats

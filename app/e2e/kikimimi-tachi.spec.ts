@@ -1,13 +1,12 @@
-// たちぎき (docs/curriculum-wave2.md §2.2): the mode shows once a tachi file is `listened` (here only in the test: the
-// built index's s2-tachi-a and -b flipped to listened as they're served; every tachi file ships a draft), on あそぶ's
-// まちで・でんわで shelf and its page at もり; a solo game: the conversation first (three seats, nothing to answer), then
-// the opinions round (a face on each claim, できた), who changed their mind (a face) and the plan (a choice); a line
-// replayed alone; the last round's reveal with the whole transcript in three seats; one round wrong, the results'
-// review and my row (gm tachi, a row a round). Then two phones in co-op 「たんとう」 over the demo's relay: each has a
-// speaker of their own and a shared one (easy: the shared one placed), places their own face; the team's rounds are the
-// ones both got. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/tachi/, by day and at night. The logic tier
-// (Playwright's Chromium is muted; a conversation still takes its 30-50 s).
-import { readFileSync, readdirSync } from 'node:fs';
+// たちぎき (docs/curriculum-wave2.md §2.2): the mode shows once a tachi file is `listened` (s2-tachi-a and -b, shipped
+// listened after A1 and the listening check), on あそぶ's まちで・でんわで shelf and its page at もり; a solo game: the conversation
+// first (three seats, nothing to answer), then the opinions round (a face on each claim, できた), who changed their mind
+// (a face) and the plan (a choice); a line replayed alone; the last round's reveal with the whole transcript in three
+// seats; one round wrong, the results' review and my row (gm tachi, a row a round). Then two phones in co-op 「たんとう」
+// over the demo's relay: each has a speaker of their own and a shared one (easy: the shared one placed), places their
+// own face; the team's rounds are the ones both got. Screenshots (KIKI_SHOTS=1) into /tmp/kikimimi-shots/tachi/, by day
+// and at night. The logic tier (Playwright's Chromium is muted; a conversation still takes its 30-50 s).
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -28,22 +27,6 @@ const BY_ID = new Map(PARTS.map((it) => [it.id, it]));
 function answerOf(id: string, k: number): number | number[] {
   const it = BY_ID.get(id)!, who = [...new Set(it.lines.map((l) => l.who))], r = it.rounds[k];
   return r.type === 'opinions' ? r.answer.map((w) => who.indexOf(w)) : r.type === 'changed' ? who.indexOf(r.answer) : r.answer;
-}
-
-/** The built index with もり's tachi files `listened` (the fixture: they ship drafts), its lines flipped as served. */
-const LINE = /("s2-tachi-[ab]":\[[`"']tachi[`"'],3,[`"'])draft/g;
-const CHUNKS = join(import.meta.dirname, '..', 'build-pages', '_app', 'immutable', 'chunks');
-/** (read when a test runs: `playwright test --list` loads this file before any build exists) */
-const indexChunk = () => readdirSync(CHUNKS).find((f) => f.endsWith('.js') && new RegExp(LINE.source).test(readFileSync(join(CHUNKS, f), 'utf8')));
-async function listened(ctx: BrowserContext) {
-  const INDEX_CHUNK = indexChunk();
-  expect(INDEX_CHUNK, 'the built index').toBeTruthy();
-  await ctx.route(`**/_app/immutable/chunks/${INDEX_CHUNK}`, async (route) => {
-    const res = await route.fetch();
-    // (the body as served, decoded: its encoding and length headers dropped)
-    const headers = Object.fromEntries(Object.entries(res.headers()).filter(([k]) => k !== 'content-encoding' && k !== 'content-length'));
-    await route.fulfill({ status: res.status(), headers, body: (await res.text()).replace(LINE, '$1listened') });
-  });
 }
 
 type Kiki = { view(): { phase: string; i: number; gm: string | null; roles: Record<string, number> }; items(): string[]; recorded(): { gm?: string; r: [string, number, number, number][] } | null };
@@ -101,7 +84,6 @@ async function answer(p: Page, o: { wrong?: boolean; faces?: number[] } = {}) {
 
 test('solo: the mode once listened, the conversation first, then whose view, who changed, the plan; a line again; the transcript; my row', async ({ context }) => {
   test.setTimeout(240_000); // two real conversations (30–50 s each) play through: past test.slow()'s 90 s on CI's 3 workers
-  await listened(context);
   const page = await phone(context, DAY);
   await toTachi(page);
   await snap(page, 'mode');
@@ -175,7 +157,6 @@ test('solo: the mode once listened, the conversation first, then whose view, who
 test('night: the claims and a reveal in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
   test.setTimeout(240_000); // two real conversations (30–50 s each) play through: past test.slow()'s 90 s on CI's 3 workers
-  await listened(context);
   const page = await phone(context, NIGHT);
   await toTachi(page);
   await sheet(page).locator('[data-kiki-start]').click();
@@ -199,7 +180,6 @@ test('night: the claims and a reveal in the night palette', async ({ context }) 
 test('co-op on two phones 「たんとう」: a speaker each and a shared one, each places their own; the team’s rounds are those both got', async ({ browser }) => {
   test.setTimeout(240_000);
   const ctx = await browser.newContext();
-  await listened(ctx);
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');
   await a.bringToFront();
   await toTachi(a);

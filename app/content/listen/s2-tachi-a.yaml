@@ -8,7 +8,7 @@ track: people
 seeds: [27, 38, 50, 52]
 features: { primary: overlap, review: contraction }
 cando: "3人の かいわで だれが どう 思っているか ききわけられる"
-status: draft
+status: listened
 items:
   - kind: tachi
     id: tachi-shibuya-dinner

@@ -1,13 +1,13 @@
 // Recipe 2 (docs/curriculum-units.md §16; docs/curriculum-wave2.md §3.1, W2-9): a fixture unit on recipe 2 (put in
-// through the dev hook with its kinds' files, never shipped). Its チェック, once its call's file is `listened` (here only
-// in the test: the built index's s2-call-a flipped as it's served), is the call on the phone with its memo (2 rounds)
-// then 4 of its quiz items: all right, the stamp, my row a lesson's with the call's rounds in it, the call's rows in the
-// review with its transcript. While the file is a draft (the build as shipped) the チェック is recipe 1's, its 6 quiz
-// items. Its おと plays ことば タイル on the derived tiles (s2-tile-bank, listened in the build). The logic tier (the
-// voiced call plays its length, silent: Playwright's Chromium is muted).
-import { readFileSync, readdirSync } from 'node:fs';
+// through the dev hook with its kinds' files, never shipped). Its チェック, its call's file `listened` (s2-call-a, as
+// shipped), is the call on the phone with its memo (2 rounds) then 4 of its quiz items: all right, the stamp, my row a
+// lesson's with the call's rounds in it, the call's rows in the review with its transcript. With its call in a file
+// still a draft (s2-call-c, wave 2's, unvoiced) the チェック is recipe 1's, its 6 quiz items. Its おと plays ことば タイル
+// on the derived tiles (s2-tile-bank, listened in the build). The logic tier (the voiced call plays its length,
+// silent: Playwright's Chromium is muted).
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
+import { expect, test, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
 import { fromMenu } from './hud.ts';
 import { openStage } from './kikimimi-nav.ts';
@@ -22,20 +22,6 @@ const RIGHT = new Map(CALLS.listen.items.map((it) => [it.id, it.memo.flatMap((m)
 /** s2-tile-bank as compiled: each sentence's words by the clip it plays. */
 const TILES = JSON.parse(readFileSync(join(parts, 's2-tile-bank.json'), 'utf8')) as { listen: { items: { id: string; clip: string; tiles: string[] }[] } };
 const WORDS = new Map(TILES.listen.items.map((it) => [it.clip, it.tiles]));
-
-/** The built index with s2-call-a `listened` (the shipped file stays a draft), its line flipped as it's served. */
-const LINE = /("s2-call-a":\[[`"']call[`"'],3,[`"'])draft/;
-const CHUNKS = join(import.meta.dirname, '..', 'build-pages', '_app', 'immutable', 'chunks');
-const indexChunk = () => readdirSync(CHUNKS).find((f) => f.endsWith('.js') && LINE.test(readFileSync(join(CHUNKS, f), 'utf8')));
-async function listened(ctx: BrowserContext) {
-  const INDEX_CHUNK = indexChunk();
-  expect(INDEX_CHUNK, 'the built index').toBeTruthy();
-  await ctx.route(`**/_app/immutable/chunks/${INDEX_CHUNK}`, async (route) => {
-    const res = await route.fetch();
-    const headers = Object.fromEntries(Object.entries(res.headers()).filter(([k]) => k !== 'content-encoding' && k !== 'content-length'));
-    await route.fulfill({ status: res.status(), headers, body: (await res.text()).replace(LINE, '$1listened') });
-  });
-}
 
 type Kiki = {
   view(): { phase: string; i: number; gm: string | null };
@@ -54,24 +40,26 @@ const LESSONS = {
   check: ['ml-n-room', 'ml-n-late-checkout', 'r4-leak', 'm4-easy', 'n4-reference', 'w4-youll-need'],
   oto: ['w4-shouldve', 'w4-wouldnt-have', 'w4-wanna', 'w4-gotta', 'w4-didja', 'w4-them']
 };
-const KINDS = { tiles: ['tile-m4-be-good', 'tile-m4-put-through', 'tile-w4-shouldve', 'tile-w4-wouldnt-have', 'tile-w4-wanna', 'tile-w4-gotta'], call: [CALL] };
-/** A recipe-2 unit as its chunk holds it (compile.ts unitChunk), over the bank's level-4 items. */
-const UNIT = {
+/** A call in a file still a draft (wave 2's s2-call-c, unvoiced): its チェック falls back to recipe 1. */
+const DRAFT = { call: 'call-wedding-weekend', file: 's2-call-c' };
+const TILE_IDS = ['tile-m4-be-good', 'tile-m4-put-through', 'tile-w4-shouldve', 'tile-w4-wouldnt-have', 'tile-w4-wanna', 'tile-w4-gotta'];
+/** A recipe-2 unit as its chunk holds it (compile.ts unitChunk), over the bank's level-4 items, its チェック on `call`. */
+const unitOf = (call: string) => ({
   id: 'tr-recipe', name: 'ホテルで こまった', stage: 'mori', domain: 'tabi', host: 'diana', scene: 'lobby', sound: 'self-repair', status: 'draft',
   cando: { ja: 'ホテルの スタッフが へやの もんだいへの たいおうを せつめいするのを ロビーの ざつおんの なかで きいて、できる ことと ついかの りょうきんが わかる', short: 'ホテルの もんだいを ききとれる', en: 'I can follow hotel staff…' },
-  lessons: { v: 2, ...LESSONS, ...KINDS }, home: Object.values(LESSONS).flat(),
+  lessons: { v: 2, ...LESSONS, tiles: TILE_IDS, call: [call] }, home: Object.values(LESSONS).flat(),
   ph: [{ id: 'ph-tr-room', en: 'the room is ready', register: 'service', scene: 'hotel desk', trap: 'ready = もう はいれる', in: ['r4-room-ready'] }]
-};
-/** Its recipe-2 lessons' files (the index's units[<id>].kinds). */
-const FILES = { oto: ['s2-tile-bank'], check: ['s2-call-a'] };
+});
 
-/** The hub, the fixture put in, its unit page from しまの みち. */
-async function toUnit(page: Page) {
+/** The hub, the fixture put in (its チェック on `call` in `file`), its unit page from しまの みち. */
+async function toUnit(page: Page, { call, file } = { call: CALL, file: 's2-call-a' }) {
+  /** its recipe-2 lessons' files (the index's units[<id>].kinds) */
+  const files = { oto: ['s2-tile-bank'], check: [file] };
   await page.goto(`?demo&${Q}`);
   await islandUp(page);
   await fromMenu(page, 'kikimimi');
   await expect(sheet(page)).toHaveAttribute('data-phase', 'lobby');
-  await page.evaluate(([u, ids, kinds]) => (window as unknown as { __kiki: Kiki }).__kiki.unit(u, ids as string[], undefined, kinds), [UNIT, Object.values(LESSONS).flat(), FILES] as const);
+  await page.evaluate(([u, ids, kinds]) => (window as unknown as { __kiki: Kiki }).__kiki.unit(u, ids as string[], undefined, kinds), [unitOf(call), Object.values(LESSONS).flat(), files] as const);
   await sheet(page).locator('[data-kiki-tile="asobu"]').click();
   await sheet(page).locator('[data-kiki-path-open]').click();
   await openStage(page, 'mori');
@@ -101,10 +89,8 @@ async function memo(p: Page) {
   await expect(sheet(p).locator('[data-kiki-verdict="right"]')).toBeVisible();
 }
 
-test('recipe 2’s チェック once its call is listened: the call and its memo, then 4 quiz items; the stamp, my row, the review', async ({ context }) => {
+test('recipe 2’s チェック, its call listened: the call and its memo, then 4 quiz items; the stamp, my row, the review', async ({ page }) => {
   test.setTimeout(300_000); // (the call plays its voiced length)
-  await listened(context);
-  const page = await context.newPage();
   await toUnit(page);
   await startCheck(page);
   const items = await kiki(page, (k) => k.items());
@@ -147,7 +133,7 @@ test('recipe 2’s チェック once its call is listened: the call and its memo
 
 test('recipe 2 falls back to recipe 1 while the call is a draft; its おと plays the listened tiles', async ({ page }) => {
   test.slow();
-  await toUnit(page);
+  await toUnit(page, DRAFT);
   await startCheck(page);
   expect([...(await kiki(page, (k) => k.items()))].sort()).toEqual([...LESSONS.check].sort());
 

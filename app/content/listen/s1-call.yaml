@@ -8,7 +8,7 @@ track: life
 seeds: [16, 27, 35, 37, 49]
 features: { primary: self-repair, review: weak-form }
 cando: "でんわで とちゅうの へんこうや いいなおしを ききとって メモできる"
-status: draft
+status: listened
 cast: { me: us-m3 }
 items:
   - kind: call

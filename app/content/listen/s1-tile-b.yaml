@@ -7,7 +7,7 @@ track: people
 seeds: [1, 2, 13, 16, 26, 30, 35, 37, 39, 42, 49, 50, 51]
 features: { primary: yod, review: weak-form }
 cando: "did you・would you・let me の つながった おとを ききとって ぶんを くみたてられる"
-status: draft
+status: listened
 items:
   - kind: tile
     id: tile-hot-or-iced

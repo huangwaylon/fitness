@@ -8,7 +8,7 @@ track: life
 seeds: [6, 24, 26, 45, 56]
 features: { primary: self-repair, review: numbers }
 cando: "でんわで 用件の 変更と えんきょくな 頼みを ききとって メモできる"
-status: draft
+status: listened
 cast: { me: us-m3 }
 items:
   - kind: call
