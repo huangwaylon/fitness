@@ -15470,6 +15470,526 @@
 "checked": false
 },
 {
+"key": "maff_kyodo-kone_tsuke_nagano",
+"ja": "こねつけ",
+"desc": "konetsuke, small round flat patties of rice kneaded with flour, pan-fried golden, each topped with a disc of dark brown sweet miso, on a blue plate",
+"items": [
+"maff_kyodo:kone_tsuke_nagano"
+],
+"roll": 0,
+"seed": 16275,
+"prompt": "a407d9a7d3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-koneri_oita",
+"ja": "こねり",
+"desc": "koneri, stir-fried purple eggplant pieces and green bitter melon slices bound in a thick pale beige miso and flour sauce, on a white plate",
+"items": [
+"maff_kyodo:koneri_oita"
+],
+"roll": 0,
+"seed": 68994,
+"prompt": "f43d0cd464",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-konnyaku_no_hachihai_kagawa",
+"ja": "こんにゃくのはちはい",
+"desc": "konnyaku no hachihai, thin triangular slices of grey konnyaku simmered with shiitake, taro, orange carrot and knotted kanpyo gourd strips in soy broth, topped with grated ginger, in a bowl",
+"items": [
+"maff_kyodo:konnyaku_no_hachihai_kagawa"
+],
+"roll": 0,
+"seed": 8491,
+"prompt": "45212d2247",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-konnyaku_no_shiraae_kagawa",
+"ja": "こんにゃくの白あえ",
+"desc": "konnyaku no shiraae, thin strips of grey konnyaku coated in a creamy off-white mashed tofu and sesame dressing, in a small brown bowl",
+"items": [
+"maff_kyodo:konnyaku_no_shiraae_kagawa"
+],
+"roll": 0,
+"seed": 42580,
+"prompt": "ba67354fb8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kono_shirono_sugata_zushi_kumamoto",
+"ja": "このしろの姿寿司",
+"desc": "konoshiro no sugata-zushi, whole gizzard shad with silver dotted skin, head and tail on, stuffed with vinegared rice and sliced across, laid on green leaves on a plate",
+"items": [
+"maff_kyodo:kono_shirono_sugata_zushi_kumamoto"
+],
+"roll": 0,
+"seed": 52973,
+"prompt": "dbceb66fb6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-koppa_mochi_kumamoto",
+"ja": "こっぱもち",
+"desc": "koppa mochi, thick flat slabs of soft pale tan mochi made with sweet potato, cut into rough oval pieces on a white plate",
+"items": [
+"maff_kyodo:koppa_mochi_kumamoto"
+],
+"roll": 0,
+"seed": 75342,
+"prompt": "3c030b953c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-korokakinamasu_kyoto",
+"ja": "古老柿なます",
+"desc": "korokaki namasu, julienned white daikon and orange carrot tossed in vinegar with thin dark reddish-brown strips of dried persimmon, in a small white bowl",
+"items": [
+"maff_kyodo:korokakinamasu_kyoto"
+],
+"roll": 0,
+"seed": 44582,
+"prompt": "5b8aa5ed4b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-koshimeshi_kochi",
+"ja": "こうし飯",
+"desc": "koushi meshi, white rice mixed with dark green flakes of rock seaweed, chopped yellow pickled daikon and tiny dried whitebait, in a wooden rice tub",
+"items": [
+"maff_kyodo:koshimeshi_kochi"
+],
+"roll": 0,
+"seed": 87942,
+"prompt": "eaae93e8d1",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kounago_no_kugini_mie",
+"ja": "こうなごのくぎ煮",
+"desc": "kounago no kugini, tiny sand lance fish simmered in soy and sugar until dark brown, curled and stiff like rusty nails, glossy and piled in a small bowl",
+"items": [
+"maff_kyodo:kounago_no_kugini_mie"
+],
+"roll": 0,
+"seed": 64315,
+"prompt": "d0d1c10499",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kujaku_oita",
+"ja": "くじゃく",
+"desc": "kujaku, a fried fish paste ball wrapping a whole boiled egg, cut in half to show the yellow yolk, a pink-red dyed white ring and green fish paste layer, on a bamboo leaf in a dark dish",
+"items": [
+"maff_kyodo:kujaku_oita"
+],
+"roll": 0,
+"seed": 29384,
+"prompt": "1256baf7b8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kujira_jiru_niigata",
+"ja": "くじら汁",
+"desc": "kujira-jiru, miso soup with pieces of salted whale fat, white daikon, potato, eggplant and gourd, topped with shredded pink myoga, in a black bowl",
+"items": [
+"maff_kyodo:kujira_jiru_niigata"
+],
+"roll": 0,
+"seed": 95840,
+"prompt": "0f256b40fb",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kujiragohan_shimane",
+"ja": "くじらご飯",
+"desc": "kujira gohan, brown seasoned rice mixed with small pieces of whale skin, daikon, burdock and shiitake, in a lacquered box and a small lidded bowl",
+"items": [
+"maff_kyodo:kujiragohan_shimane"
+],
+"roll": 0,
+"seed": 29752,
+"prompt": "104fe30fdc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kujirajiru_hokkaido",
+"ja": "鯨汁",
+"desc": "kujira-jiru, a soy-flavoured soup with white salted whale blubber pieces, daikon, tofu, konnyaku and green vegetables, in a black lacquered bowl",
+"items": [
+"maff_kyodo:kujirajiru_hokkaido"
+],
+"roll": 0,
+"seed": 61230,
+"prompt": "6948cec580",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kujiramochi_yamagata",
+"ja": "くじら餅",
+"desc": "kujira mochi, long rectangular bars of steamed sweet rice-flour cake, one pale cream with walnut pieces and one dark reddish-brown, with small cut blocks in front",
+"items": [
+"maff_kyodo:kujiramochi_yamagata"
+],
+"roll": 0,
+"seed": 78573,
+"prompt": "83a5a645bf",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kurenonimono_kochi",
+"ja": "暮れの煮物",
+"desc": "kure no nimono, simmered whale meat with daikon rounds, orange carrot, konnyaku, shredded kelp and other root vegetables, in a deep white bowl",
+"items": [
+"maff_kyodo:kurenonimono_kochi"
+],
+"roll": 0,
+"seed": 3398,
+"prompt": "b2cfc949ef",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kurigohan_kyoto",
+"ja": "栗ごはん",
+"desc": "kuri gohan, white rice cooked with whole peeled golden-yellow chestnuts, sprinkled with black sesame, in a dark rice bowl",
+"items": [
+"maff_kyodo:kurigohan_kyoto"
+],
+"roll": 0,
+"seed": 1780,
+"prompt": "f74d1620cd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kurodaseritohorensonoohitashi_shimane",
+"ja": "黒田せりとほうれんそうのおひたし",
+"desc": "kuroda seri to horenso no ohitashi, blanched dark green spinach and slender pale green Japanese parsley stems cut into lengths, in a little dashi in a small grey bowl",
+"items": [
+"maff_kyodo:kurodaseritohorensonoohitashi_shimane"
+],
+"roll": 0,
+"seed": 99387,
+"prompt": "113e56f018",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kurumafu_no_nimono_niigata",
+"ja": "車麩の煮物",
+"desc": "kurumafu no nimono, thick wheel-shaped wheat gluten rings with a brown spiral, simmered with white eggplant and green beans in a brown broth, in a blue-and-white bowl",
+"items": [
+"maff_kyodo:kurumafu_no_nimono_niigata"
+],
+"roll": 0,
+"seed": 82867,
+"prompt": "9142b445aa",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kurumi_gobou_shiga",
+"ja": "くるみごぼう",
+"desc": "kurumi gobo, short sticks of brown burdock root coated in a bright green coarse mashed edamame paste, on a pale plate",
+"items": [
+"maff_kyodo:kurumi_gobou_shiga"
+],
+"roll": 0,
+"seed": 89095,
+"prompt": "d890e50034",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kushiasari_aichi",
+"ja": "串あさり",
+"desc": "kushi asari, small sun-dried shelled clams threaded onto thin bamboo skewers, amber-brown and shrunken, laid on a white rectangular plate",
+"items": [
+"maff_kyodo:kushiasari_aichi"
+],
+"roll": 0,
+"seed": 63006,
+"prompt": "01ce6a6571",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kutuzoko_no_nituke_fukuoka",
+"ja": "くつぞこの煮つけ",
+"desc": "kutsuzoko no nitsuke, whole flat tongue sole fish simmered dark brown in soy, glossy skin, garnished with white needle ginger and green onion stalks, on a long plate",
+"items": [
+"maff_kyodo:kutuzoko_no_nituke_fukuoka"
+],
+"roll": 0,
+"seed": 5662,
+"prompt": "ebfd178aa2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kuzu_mochi_nara",
+"ja": "葛餅",
+"desc": "kuzumochi, smooth translucent white kudzu starch cakes cut into pieces, drizzled with dark brown black sugar syrup and topped with beige kinako, on a pale blue plate",
+"items": [
+"maff_kyodo:kuzu_mochi_nara"
+],
+"roll": 0,
+"seed": 32853,
+"prompt": "046cef361f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kyuritokawaebinonimono_kochi",
+"ja": "きゅうりと川エビの煮物",
+"desc": "kyuri to kawa-ebi no nimono, chunks of cucumber and small pink river prawns simmered in a thickened brown sauce, topped with shredded green shiso, in a white bowl",
+"items": [
+"maff_kyodo:kyuritokawaebinonimono_kochi"
+],
+"roll": 0,
+"seed": 10260,
+"prompt": "2a42720689",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-kyuuri_no_hiyajiru_mie",
+"ja": "きゅうりの冷や汁",
+"desc": "kyuri no hiya-jiru, a cold soup of thin round cucumber slices floating in pale beige ground sesame miso broth, in a black bowl",
+"items": [
+"maff_kyodo:kyuuri_no_hiyajiru_mie"
+],
+"roll": 0,
+"seed": 62259,
+"prompt": "0820a8c16f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-makigaki_kumamoto",
+"ja": "巻柿",
+"desc": "makigaki, dried persimmons rolled tightly and sliced into thin rounds showing an orange and pale tan spiral pattern, fanned out on a white plate",
+"items": [
+"maff_kyodo:makigaki_kumamoto"
+],
+"roll": 0,
+"seed": 58357,
+"prompt": "5ecb901341",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-makononitsuke_ishikawa",
+"ja": "真子の煮つけ",
+"desc": "mako no nitsuke, simmered cod roe in fluffy pale beige-grey crumbled clumps, in a dark bowl",
+"items": [
+"maff_kyodo:makononitsuke_ishikawa"
+],
+"roll": 0,
+"seed": 23284,
+"prompt": "8d6648f466",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-mame_gohan_wakayama",
+"ja": "豆ごはん",
+"desc": "mame gohan, white rice cooked with bright green peas and a few pink flecks, in a dark earthenware pot",
+"items": [
+"maff_kyodo:mame_gohan_wakayama"
+],
+"roll": 0,
+"seed": 62992,
+"prompt": "d923ed0498",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-mana_mehari_nara",
+"ja": "まなめはり",
+"desc": "manamehari, balls of white rice wrapped in large dark green pickled mustard leaves, cut showing white rice inside, on a green leaf on a white plate with pink pickled ginger",
+"items": [
+"maff_kyodo:mana_mehari_nara"
+],
+"roll": 0,
+"seed": 13707,
+"prompt": "c2b655d78f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-manbano_kenchan_kagawa",
+"ja": "まんばのけんちゃん",
+"desc": "manba no kenchan, dark green chopped manba greens stir-fried with crumbled white tofu and fried tofu, in a red-and-white patterned bowl",
+"items": [
+"maff_kyodo:manbano_kenchan_kagawa"
+],
+"roll": 0,
+"seed": 78641,
+"prompt": "9b190ac653",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-manganzitougarashitojakonotaitan_kyoto",
+"ja": "万願寺とうがらしとじゃこの炊いたん",
+"desc": "manganji togarashi to jako no taitan, cut pieces of long bright green mild peppers simmered with tiny white dried baby sardines, in a white bowl",
+"items": [
+"maff_kyodo:manganzitougarashitojakonotaitan_kyoto"
+],
+"roll": 0,
+"seed": 89706,
+"prompt": "17092c9906",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-maruyaki_saba_fukui",
+"ja": "丸焼き鯖",
+"desc": "maruyaki saba, whole split mackerel threaded on long bamboo skewers, charcoal-grilled until browned and crisp, silvery-blue skin, lying on a wire grill",
+"items": [
+"maff_kyodo:maruyaki_saba_fukui"
+],
+"roll": 0,
+"seed": 9350,
+"prompt": "9776f229e6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-masunoankake_yamagata",
+"ja": "鱒のあんかけ",
+"desc": "masu no ankake, boiled pink cherry salmon pieces with green garlic chives under a clear amber sweet kudzu sauce, topped with grated ginger, in a patterned bowl",
+"items": [
+"maff_kyodo:masunoankake_yamagata"
+],
+"roll": 0,
+"seed": 40369,
+"prompt": "b80176fa07",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-matsu_yama_zushi_ehime",
+"ja": "松山鮓",
+"desc": "matsuyama zushi, scattered sushi rice topped with brown simmered conger eel, vinegared mackerel, pink shrimp, yellow omelette strips and green peas, on a blue-patterned plate",
+"items": [
+"maff_kyodo:matsu_yama_zushi_ehime"
+],
+"roll": 0,
+"seed": 12270,
+"prompt": "dff9c4658f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-matsutakegohan_kyoto",
+"ja": "松茸ごはん",
+"desc": "matsutake gohan, white rice cooked with thin pale beige slices of matsutake mushroom, in a white rice bowl",
+"items": [
+"maff_kyodo:matsutakegohan_kyoto"
+],
+"roll": 0,
+"seed": 52452,
+"prompt": "fd627dd0bc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-maze_meshi_kumamoto",
+"ja": "まぜ飯",
+"desc": "mazemeshi, light brown mixed rice with chicken, shiitake, bamboo shoot, burdock and orange carrot bits, in a white rice bowl with a blue rim",
+"items": [
+"maff_kyodo:maze_meshi_kumamoto"
+],
+"roll": 0,
+"seed": 11372,
+"prompt": "075c1a069b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-megisunodangojiru_ishikawa",
+"ja": "メギスのだんご汁",
+"desc": "megisu no dango-jiru, round pale fish dumplings in a pale miso broth with plenty of sliced green onion, in a dark red lacquered bowl",
+"items": [
+"maff_kyodo:megisunodangojiru_ishikawa"
+],
+"roll": 0,
+"seed": 46290,
+"prompt": "445acb464f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-mehari_zushi_wakayama",
+"ja": "めはりずし",
+"desc": "mehari-zushi, large round rice balls fully wrapped in dark green pickled takana mustard leaves, two cut to show white rice and a green pickled-stem centre, on a plate",
+"items": [
+"maff_kyodo:mehari_zushi_wakayama"
+],
+"roll": 0,
+"seed": 55894,
+"prompt": "54eddf1645",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-mehikari_no_karaage_miyazaki",
+"ja": "めひかりの唐揚げ",
+"desc": "mehikari no karaage, small whole slender greeneye fish deep-fried golden-brown, lined up on a white rectangular plate with green salad leaves",
+"items": [
+"maff_kyodo:mehikari_no_karaage_miyazaki"
+],
+"roll": 0,
+"seed": 69788,
+"prompt": "cfb129a823",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-memaki_yama_nashi",
+"ja": "めまき",
+"desc": "memaki, small fish rolled into triangles in dark black-brown arame seaweed strips with ridged texture, simmered sweet, on a white plate",
+"items": [
+"maff_kyodo:memaki_yama_nashi"
+],
+"roll": 0,
+"seed": 55724,
+"prompt": "1ca636de58",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-meno_mochi_arare_miyazaki",
+"ja": "めの餅あられ",
+"desc": "meno mochi arare, bite-sized irregular cubes of fried rice cake crackers, puffed and golden-brown with crisp craggy surfaces, heaped on white paper on a dark tray",
+"items": [
+"maff_kyodo:meno_mochi_arare_miyazaki"
+],
+"roll": 0,
+"seed": 83788,
+"prompt": "3c345f36fd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01004",
 "ja": "オートミール",
 "desc": "a small bowl heaped with dry rolled oats: many thin flat irregular pale beige oat flakes, matte and papery, a few loose flakes beside the bowl, with a wooden spoon",
