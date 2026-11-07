@@ -406,6 +406,19 @@ Every game goes through `kikimimi/round/registry.ts` as a **lane**. The quiz, la
 - **Row:** `gm: 'tile'`, each round I had `[tile id, ok, wrong-slot mask, rp]` (`tileRecord`; `wrongWords` reads a mask back).
 - **e2e** kikimimi-tile (solo, co-op): the built index's s2-tile-bank flipped to `listened` as the test serves it; nothing ships listened.
 
+### たちぎき as built (W2-2, 2026-11-07)
+
+`games/tachi/` (def.ts pure, lane.ts) and `components/kikimimi/tachi/` (TachiPlay, TachiResults, board.ts); strings in i18n/kiki-tachi.*.
+- **Deck:** options `[lv, timer, ear]` (ことば タイル's `tileOpts`); the `listened` tachi files at the lobby's place (`tachiFiles`), 2 conversations by the seed, each 3 rounds in turn: opinions, changed, plan (6 rounds, ~3 min). A card is an Item whose `id` is the conversation's (its lines' clips `<id>-<n>`), its lines with `at`, the round's `ctx`/`why` (the plan's `ja`/`cja`), `tachi.row` the row's id (`<id>-op|ch|pl`).
+- **Timing:** the conversation plays before the opinions round only (`play` its length: clips.ts `itemDur` over the offsets; answer +10 s); changed and plan have no lead and no clip, and clipPlayer plays nothing there and no replay at any reveal (`quietReveal`). After the first play each line replays alone (a chip per line, its face and number; `game.hear` of the line's clip, so not counted in `rp`).
+- **Offsets** (clips.ts): `lineGaps` (a line's `at`, else LINE_GAP) feed `sequenceStarts` and `itemDur`, on the audio clock; clipPlayer's `talk` keeps the latest line begun and `all`, every line under way (two in an overlap). Transcript seats speakers by first line: two left/right, three left/centre/right (yuzu tint, set in).
+- **The party bed:** a card from a file tagged `party` has `bed: 'party'`; clipPlayer plays static/audio/beds/party.<sha8>.m4a (a copy of scripts/tts/beds/party.m4a, board.test checks it) under the whole sequence, a line replay too: from the item's place in the loop, 0.5 s before to 0.35 s after, 0.25 s fades, at −1 dB (the light +15 dB SNR), one AudioBuffer built per play (`bedSamples`).
+- **Answers:** opinions `[speaker of claim 0, 1, 2]` (0-2 by first line, EMPTY 63); changed a speaker; plan a choice. Opinions is right when every placed face is at its claim and the faces are all three or one role's two (`facesOf`).
+- **Tiers:** ear below the deck's place is easy: the third speaker's claim placed (not movable).
+- **Co-op 「たんとう」:** `roles: 2`; role 0 follows the first speaker, role 1 the second, the third is shared (the seats say 「あなたの担当」「ふたりで」「相手の担当」); in opinions each places their own face and the shared one; everyone answers changed and plan. The results' 「ふたりで k / n」 is `team.all`.
+- **Row:** `gm: 'tachi'`, each round I had `[row id, ok, pick, rp]`: the pick a choice, or opinions in base 4 (3 none; `opinionsOf` reads it back).
+- **e2e** kikimimi-tachi (solo, night shots, co-op): s2-tachi-a/b flipped to `listened` as served; nothing ships listened.
+
 ## 10. Risks
 
 1. **Subtle regressions in the extraction** (lateness, co-op `had`, beacon timing were each hard-won). Mitigation: the parity test before deleting `QuizSession`, porting session.test case for case, no behaviour change in 8b.

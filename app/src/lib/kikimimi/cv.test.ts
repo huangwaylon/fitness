@@ -15,6 +15,7 @@ import { LESSONS } from './stages.ts';
 import { BUILD_V } from './games/versions.ts';
 import { taikaiDeck } from './games/taikai/source.ts';
 import { boardOf, tierAt, tileDeal } from './games/tile/def.ts';
+import { tachiDeal } from './games/tachi/def.ts';
 
 const SEEDS = Array.from({ length: 20 }, (_, s) => s);
 const TIERS: readonly (Tier | undefined)[] = [undefined, 'easy', 'hard'];
@@ -30,6 +31,8 @@ function decksOf(key: string): unknown {
   // the tournament's: 8 ids a seed, spread over every level's items
   if (gm === 'taikai') return SEEDS.map((s) => shape(taikaiDeck(s, Array.from({ length: 8 }, (_, k) => (s * 37 + k * 101) % ENTRIES.length))));
   // ことば タイル's: a file's sentences a seed, each one's board at every ear
+  // たちぎき's: a file's two conversations a seed, each round's row, answer and choices, the lines' offsets, the bed
+  if (gm === 'tachi') return SEEDS.map((s) => tachiDeal(s, [listenOf(unit)!]).map((c) => [c.tachi.row, c.tachi.answer, c.choices.length, c.bed ?? '', c.lines.map((l) => l.at ?? null)]));
   if (gm === 'tile') return SEEDS.map((s) => tileDeal(s, [listenOf(unit)!]).map((c) => [c.tile.id, [0, 1, 2, 3].map((ear) => boardOf(c.tile, s, tierAt(ear, c.lv)))]));
   const part = unitPart(unit)!;
   return LESSONS.filter((l) => part.unit.lessons[l]).map((l) => TIERS.map((t) => SEEDS.map((s) => shape(lessonDeck(part, l, s, t)))));
@@ -59,7 +62,7 @@ describe('ききみみ content versions', () => {
     const units = INDEX.paths.map((p) => p[0]);
     const files = (gm: string) => Object.keys(INDEX.listen).filter((u) => INDEX.listen[u][0] === gm);
     expect(Object.keys(INDEX.games).sort()).toEqual([...levels.map((l) => `quiz:${l}`), 'ladder:ladder', ...units.map((u) => `lesson:${u}`), 'taikai:all',
-      ...files('tile').map((u) => `tile:${u}`)].sort());
+      ...files('tile').map((u) => `tile:${u}`), ...files('tachi').map((u) => `tachi:${u}`)].sort());
     for (const [key, cv] of Object.entries(INDEX.games)) {
       const [gm, unit] = key.split(':');
       expect(cv).toMatch(/^[0-9a-f]{6}$/);

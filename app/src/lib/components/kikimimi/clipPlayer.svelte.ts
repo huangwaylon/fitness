@@ -1,28 +1,62 @@
 // A ききみみ game's clips on this phone (docs/kikimimi.md "Audio"; game.svelte.ts): each question's played at its start
 // on the relay's clock (playVoice's relayAt), the next one fetched meanwhile, the reveal's replay, the player's 🔁 / 🐢
 // and a review row's ▶︎. A dialogue's lines are a sequence of clips (playSequence: each line scheduled on the relay's
-// clock after the one before, LINE_GAP apart; the session's schedule has their summed length, clips.ts itemDur), and
-// `talk` follows its turns on every phone.
+// clock after the one before, its offset apart: LINE_GAP, or a たちぎき line's `at`, negative an overlap; the session's
+// schedule has the sequence's length, clips.ts itemDur), and `talk` follows its turns on every phone (two lines at
+// once where they overlap). A card may ask for a bed under its whole sequence (a たちぎき at a party: the party bed,
+// static/audio/beds/, from the item's own place in its loop, faded in and out, so it never stops between lines), and
+// for no replay at its reveals (a 40 s conversation); a round with no clip of its own plays nothing.
 import { clipIds, isDialogue, type Item } from '#lib/kikimimi/bank.ts';
-import { clipDur, sequenceStarts } from '#lib/kikimimi/clips.ts';
+import { BED_LEAD, BED_TAIL, bedSamples, clipDur, lineGaps, sequenceStarts } from '#lib/kikimimi/clips.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import { TEST_CLIP } from '#lib/kikimimi/pool.ts';
-import { playVoice } from '#lib/sound/sound.svelte.ts';
+import { fnv1a } from '#lib/random.ts';
+import { audioUrl } from '#lib/sound/manifest.ts';
+import { loadVoice, playVoice } from '#lib/sound/sound.svelte.ts';
 import { prefetchClips, voiceClip } from './packs.ts';
 import { preloadStage } from './scene/stage.ts';
 
 type Handle = { stop(): void };
 
+/** What a later game's card may say about how it plays (games/tachi/def.ts TachiCard): a bed under its whole
+ *  sequence, no replay at its reveals. */
+interface PlayHints {
+  bed?: 'party';
+  quietReveal?: boolean;
+}
+const hints = (it: Item): PlayHints => it as PlayHints;
+
+/** The party bed as shipped: scripts/tts/beds/party.m4a (W2-A's) copied, the first 8 hex of its sha256 in the name
+ *  (clipPlayer.test: the same bytes). Fetched once a party conversation plays; /audio/ is cached for good. */
+export const PARTY_BED = 'beds/party.10a2a279.m4a';
+/** The bed's level under the voice: the clips at −16 LUFS, the bed made at −30, at the light SNR (+15 dB). */
+const BED_GAIN = 10 ** ((-16 - 15 + 30) / 20);
+
 /** A dialogue's lines' lengths (s, clips.json; 2 s while one has no clip). */
 const lineDurs = (it: Item): number[] => clipIds(it).map((id) => clipDur(id) ?? 2);
+
+/** The bed's loop, decoded (the engine's few keep it; null: offline and never cached, or no voice session). */
+const bedLoop = (): Promise<AudioBuffer | null> =>
+  loadVoice(`bed:${PARTY_BED}`, () => fetch(audioUrl(PARTY_BED)).then((r) => (r.ok ? r.arrayBuffer() : null)).catch(() => null));
+
+/** The bed for `ms` of a sequence: from its item's place in the loop, at its level, faded in and out. */
+function bedFor(loop: AudioBuffer, ms: number, id: string): AudioBuffer | null {
+  const n = Math.round((ms / 1000) * loop.sampleRate);
+  if (n <= 0 || typeof AudioBuffer === 'undefined') return null;
+  const buf = new AudioBuffer({ length: n, numberOfChannels: 1, sampleRate: loop.sampleRate });
+  buf.copyToChannel(bedSamples(loop.getChannelData(0), n, loop.sampleRate, BED_GAIN, fnv1a(id)), 0);
+  return buf;
+}
 
 export class ClipPlayer {
   /** A replay sounding (🔁, 🐢, the reveal's, a review row's: i -1), on the relay's clock: the bubble's bar, the
    *  karaoke (`at` the item's id). */
   sounding = $state.raw<{ i: number; at: string; from: number; until: number; slow: boolean } | null>(null);
   /** A dialogue's line being spoken (its speaker bobs, its karaoke runs): question i (-1: a review row), line k of item
-   *  `at`, started at `from` (the relay's clock); on every phone, from the schedule (おなじへや's others hear the host's). */
-  talk = $state.raw<{ i: number; k: number; at: string; from: number } | null>(null);
+   *  `at`, started at `from` (the relay's clock), the latest begun (kept through the gap after it); `all`, every line
+   *  speaking now (a たちぎき's overlap: two), in order; on every phone, from the schedule (おなじへや's others hear the
+   *  host's). */
+  talk = $state.raw<{ i: number; k: number; at: string; from: number; all: readonly { k: number; from: number }[] } | null>(null);
 
   readonly #now: () => number;
   readonly #question: () => number;
@@ -57,6 +91,7 @@ export class ClipPlayer {
       this.#fetched = dealt;
       prefetchClips(items.flatMap((it) => clipIds(it)));
       if (v.speaks) void voiceClip(clipIds(items[0])[0]);
+      if (v.speaks && hints(items[0]).bed) void bedLoop();
       preloadStage(items[0]);
     }
     if (v.phase === 'idle' || v.phase === 'lobby' || v.phase === 'results') {
@@ -72,9 +107,11 @@ export class ClipPlayer {
       this.#stopAll();
       this.#planned = null;
     }
-    // (untimed, a phone that came in after the clip: its first play now, once, not counted as a replay)
+    // (untimed, a phone that came in after the clip: its first play now, once, not counted as a replay; a round with no
+    // clip of its own, a たちぎき's after its first, plays nothing)
+    const silent = v.playEnd <= v.playAt;
     const late = v.phase === 'answer' && !Number.isFinite(v.limit) && !v.answers[v.i] && this.#planned?.i !== v.i;
-    const first = v.phase === 'lead' || v.phase === 'play' || late;
+    const first = !silent && (v.phase === 'lead' || v.phase === 'play' || late);
     if (first && v.speaks && !v.out && (!this.#planned || (this.#planned.at !== v.playAt && now < this.#planned.at) || late)) {
       this.#planned?.h?.stop();
       const plan: { i: number; at: number; h: Handle | null } = { i: v.i, at: v.playAt, h: null };
@@ -93,8 +130,9 @@ export class ClipPlayer {
     }
     if (v.phase === 'reveal' && this.#revealed !== v.i) {
       this.#revealed = v.i;
-      // (a スピード はしご rung below the top: no replay, the next rung's listen is the next, faster one)
-      if (v.speaks && !v.out && !hidesLine(it)) void this.playNow(it, v.i, false);
+      // (a スピード はしご rung below the top: no replay, the next rung's listen is the next, faster one; a たちぎき's
+      // conversation: none, its lines replay one at a time)
+      if (v.speaks && !v.out && !hidesLine(it) && !hints(it).quietReveal) void this.playNow(it, v.i, false);
     }
   }
 
@@ -133,35 +171,47 @@ export class ClipPlayer {
   }
 
   /**
-   * An item's clips played as one, from `at` on the relay's clock: a single clip, or a dialogue's lines each after the
-   * one before with LINE_GAP between (sequenceStarts: heard late, a line over is skipped and the one under way plays
-   * whole from now). Each line through playVoice; the buffers decoded first (all held here, whatever the engine's LRU
-   * drops). `at` null: now, once decoded. `still()`: false once it's no longer wanted (the plan moved); `before()` runs
-   * as it starts (a replay stops what sounds). One handle stops them all, with its start and length (ms).
+   * An item's clips played as one, from `at` on the relay's clock: a single clip, or a dialogue's lines each its offset
+   * after the one before (sequenceStarts: heard late, a line over is skipped and the one under way plays whole from
+   * now). Each line through playVoice; the buffers decoded first (all held here, whatever the engine's LRU drops); the
+   * bed it asks for under the whole of it (from BED_LEAD before to BED_TAIL after; none if it can't load). `at` null:
+   * now, once decoded. `still()`: false once it's no longer wanted (the plan moved); `before()` runs as it starts (a
+   * replay stops what sounds). One handle stops them all, with its start and length (ms, to the last line's end).
    */
   async #playSequence(it: Item, at: number | null, still: () => boolean, o: { slow?: boolean; before?: () => void } = {}): Promise<(Handle & { from: number; ms: number }) | null> {
-    const bufs = await Promise.all(clipIds(it).map((id) => voiceClip(id, o.slow)));
+    const [bufs, loop] = await Promise.all([Promise.all(clipIds(it).map((id) => voiceClip(id, o.slow))), hints(it).bed ? bedLoop() : null]);
     if (bufs.some((b) => !b) || this.#gone || !still()) return null;
     o.before?.();
     const now = this.#now;
     const from = at ?? now();
-    const starts = sequenceStarts(bufs.map((b) => b!.duration), from, now());
+    const starts = sequenceStarts(bufs.map((b) => b!.duration), from, now(), lineGaps(it));
     const hs = bufs.flatMap((b, k) => (starts[k] < 0 ? [] : [this.#track(playVoice(b!, { relayAt: starts[k], now }))])).filter((h) => !!h);
     if (!hs.length) return null;
-    const last = starts.length - 1;
-    return { stop: () => hs.forEach((h) => h.stop()), from, ms: Math.max(0, starts[last] + bufs[last]!.duration * 1000 - from) };
+    const end = Math.max(...starts.map((s, k) => (s < 0 ? from : s + bufs[k]!.duration * 1000)));
+    if (loop) {
+      const bedAt = Math.max(now(), from - BED_LEAD * 1000), bed = bedFor(loop, end + BED_TAIL * 1000 - bedAt, it.id);
+      const h = bed && this.#track(playVoice(bed, { relayAt: bedAt, now }));
+      if (h) hs.push(h);
+    }
+    return { stop: () => hs.forEach((h) => h.stop()), from, ms: Math.max(0, end - from) };
   }
 
-  /** A dialogue's turns from `from` (relay clock): `talk` follows its lines (clips.json lengths), then clears. */
+  /** A dialogue's turns from `from` (relay clock): `talk` follows its lines (clips.json lengths, their offsets), each in
+   *  `all` from its start to its end (two at once where they overlap), then clears. */
   #turns(it: Item, i: number, from: number): void {
     this.#untalk();
     const now = this.#now();
-    const durs = lineDurs(it), starts = sequenceStarts(durs, from, from); // the schedule as planned (none heard late)
+    const durs = lineDurs(it), starts = sequenceStarts(durs, from, from, lineGaps(it)); // the schedule as planned (none heard late)
     const ends = starts.map((start, k) => start + durs[k] * 1000);
-    starts.forEach((start, k) => {
-      if (ends[k] > now) this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = { i, k, at: it.id, from: start }), Math.max(0, start - now)));
-    });
-    this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = null), Math.max(0, ends.at(-1)! - now)));
+    const over = Math.max(...ends);
+    /** Who speaks at t: the latest line begun (kept through a gap, as the turn), and every line under way. */
+    const at = (t: number) => {
+      const k = starts.findLastIndex((s) => s <= t);
+      return k < 0 || t >= over ? null : { i, k, at: it.id, from: starts[k], all: starts.flatMap((s, j) => (s <= t && t < ends[j] ? [{ k: j, from: s }] : [])) };
+    };
+    // a change at each line's start and end still to come (and now, mid-way)
+    this.talk = at(now);
+    for (const t of new Set([...starts, ...ends])) if (t > now) this.#talkTimers.push(setTimeout(() => !this.#gone && (this.talk = at(t)), t - now));
   }
 
   #untalk(): void {
