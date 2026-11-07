@@ -30,10 +30,13 @@
     healthOpen?: boolean;
     /** Bindable: the meal log is open (the island pauses under it too). */
     foodOpen?: boolean;
+    /** Bindable: ずかん, せってい open (the island pauses under them too). */
+    zukanOpen?: boolean;
+    settingsOpen?: boolean;
     /** The page's timer (cleared with the page). */
     later: (fn: () => void, ms: number) => void;
   }
-  let { today, balance, panelOpen = $bindable(false), healthOpen = $bindable(false), foodOpen = $bindable(false), later }: Props = $props();
+  let { today, balance, panelOpen = $bindable(false), healthOpen = $bindable(false), foodOpen = $bindable(false), zukanOpen = $bindable(false), settingsOpen = $bindable(false), later }: Props = $props();
   const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
   const loadHealth = lazy(() => import('../health/HealthSheet.svelte'));
   const loadFood = lazy(() => import('../food/FoodSheet.svelte'));
@@ -45,8 +48,6 @@
   let foodMounted = $state(false);
   let zukanMounted = $state(false);
   let settingsMounted = $state(false);
-  let zukanOpen = $state(false);
-  let settingsOpen = $state(false);
   // the old /jar page (`?panel=rewards`): the panel open at once
   onMount(() => {
     if (new URLSearchParams(location.search).get('panel') !== 'rewards') return;
