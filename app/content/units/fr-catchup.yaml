@@ -1,0 +1,644 @@
+# 久しぶりに 会う (fr-catchup): wave 2b, もり, ともだち (docs/curriculum-wave2.md §3.1). Friends catching up at a café:
+# "how have you been?", "you'll never guess…", "long story short", "wait, back up", "whatever happened with…?",
+# "that sounds rough", "good for you!", "catch me up". Catch what happened and how they feel about it. The sound:
+# self-repair, the story told and fixed on the fly (Denver, no, Boulder; the 13th, I meant the 30th; her brother, I
+# mean her cousin). Who recurs: Maple quit the bank and teaches yoga; Goldie broke her wrist skiing; Whitney moved to
+# Boulder and adopted Biscuit; Rosie sold her car; Maple's brother is getting married in July. ("No way!" is heard, the
+# st-johnny story's phrase.) ききかえす's "actually, no", "I mean" and "I meant", でんわを おえる's "anyway", "gotta run"
+# and "text me", よていを かえる's "work for" and お店で 聞く's "honestly" are recycled.
+# Its call: call-brunch-moved (content/listen/s2-call-c.yaml).
+# きょうの ひとこと: "How have you been? Catch me up!" (元気だった？ 近況 聞かせて！)
+schema: 1
+unit: fr-catchup
+name: 久しぶりに 会う
+stage: mori
+domain: tomodachi
+host: rosie
+scene: cafe
+sound: self-repair
+cando:
+  who: 友だち
+  does: 近況や 出来事を 話す
+  cond: カフェの ざわざわで
+  catch: 何が あったか・相手の 気持ち
+  short: 友だちの 近況と 気持ちが わかる
+  en: "I can follow friends catching up on their news and telling stories, in a noisy café, and catch what happened and how they feel about it."
+status: draft
+letter:
+  en: "How have you been? Wait, don't answer, I already know: you've been listening! You caught every story today, even when Maple fixed hers halfway through. Long story short, I'm so proud of you. Good for you! Let's get brunch again soon, and you can catch me up on everything."
+  ja: "げんきだった？ まって、こたえなくて いいよ。もう しってる。ずっと ききとりを がんばってたんだよね！ きょうは どの はなしも ききとれた。メイプルが とちゅうで いいなおした ときもね。てみじかに いうと、すごく ほこらしい。よく がんばったね！ また すぐ ブランチ しよう。そのとき ぜんぶ きかせてね。"
+ph:
+  - { id: ph-youll-never-guess, en: "you'll never guess…", ja: "聞いて、びっくりするよ", match: "\\byou'?ll never guess\\b", register: friend, scene: "starting a story", trap: "当てて ほしい ではない。話の 前置き" }
+  - { id: ph-long-story-short, en: "long story short", ja: "手短に 言うと", match: "\\blong story short\\b", register: friend, scene: "skipping to the end", trap: "長い 話を するの ではなく、結論だけ 言う" }
+  - { id: ph-wait-back-up, en: "wait, back up", ja: "待って、ちょっと 戻って", match: "\\bwait,? back up\\b|\\bback up a (sec|second|bit|minute)\\b", register: friend, scene: "a detail you missed", trap: "後ろに 下がる ではなく、話を 戻して" }
+  - { id: ph-sounds-rough, en: "that sounds rough", ja: "それは 大変だね", match: "\\b(that's|that sounds|sounds|that) (so |really |super |pretty )?(rough|tough)\\b", register: friend, scene: "hearing bad news", trap: "rough＝大変。荒い・乱暴 ではない" }
+  - { id: ph-what-happened-with, en: "whatever happened with…?", ja: "〜って その後 どう なった？", match: "\\b(what|whatever) happened (with|to)\\b", register: friend, scene: "asking for an update", trap: "事故 ではない。その後の 話を 聞く" }
+  - { id: ph-how-have-you-been, en: "how have you been?", ja: "元気だった？", match: "\\bhow (have you|ya|you) been\\b", register: friend, scene: "meeting after a long time", trap: "How ya been。今の 様子より「最近 どう」" }
+  - { id: ph-good-for-you, en: "good for you!", ja: "よかったね・えらい！", match: "\\bgood for (you|her|him|them)\\b", register: friend, scene: "good news", trap: "体に いい ではなく、ほめる・祝う 一言" }
+  - { id: ph-catch-me-up, en: "catch me up", ja: "近況を 聞かせて", match: "\\bcatch (me|you|us) up\\b", register: friend, scene: "arriving late", trap: "追いつく ではなく「何が あったか 教えて」" }
+items:
+  # ---- であい: a year later, a broken wrist ----
+  - id: cu-yoga
+    lv: 4
+    type: gist
+    speaker: maple
+    voice: us
+    cast: us-f3
+    en: "Maple! Oh my gosh, how have you been? It's been, what, a year? More! Okay, you'll never guess. I quit the bank. No way! What are you doing now? Long story short, I'm teaching yoga. Full-time. And I've never been happier."
+    ja: "銀行を辞めてヨガを教えていて、とても幸せ。"
+    note: "never been happier＝今が いちばん 幸せ"
+    choices: ["She quit her bank job, teaches yoga now, and she's happy.", "She lost her bank job and is looking for work.", "She does yoga after work at the bank."]
+    answer: 0
+    cja: ["銀行を辞めて今はヨガを教えていて、幸せ。", "銀行をクビになって、仕事を探している。", "銀行の仕事のあとにヨガをしている。"]
+    why: "I quit the bank は「自分で辞めた」。結論だけ言うと、今はヨガの先生。never been happier は「今がいちばん幸せ」。"
+    ctx: "1年ぶりに、カフェで友だちに会いました"
+    focus: "Long story short, I'm teaching yoga."
+    ask: "メイプルの 近況は？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair] }
+    lines:
+      - { who: rosie, cast: us-f1, en: "Maple! Oh my gosh, how have you been? It's been, what, a year?", tts: "Maple! Oh my gosh, how ya been? It's been, what, a year?", ja: "メイプル！ うわあ、元気だった？ どのくらいぶり、1年？" }
+      - { who: maple, cast: us-f3, en: "More! Okay, you'll never guess. I quit the bank.", ja: "もっとだよ！ ねえ、聞いてびっくりするよ。銀行、辞めたの。" }
+      - { who: rosie, cast: us-f1, en: "No way! What are you doing now?", ja: "うそでしょ！ 今は何してるの？" }
+      - { who: maple, cast: us-f3, en: "Long story short, I'm teaching yoga. Full-time. And I've never been happier.", ja: "手短に言うと、ヨガを教えてるの。本業で。今がいちばん幸せ。" }
+  - id: cu-wrist-next
+    lv: 4
+    type: next
+    speaker: goldie
+    voice: us
+    cast: us-f2
+    en: "So I went skiing, broke my wrist, and then my flight got canceled. Wait, back up. You broke your wrist? Yeah! Day one. On the bunny hill."
+    ja: "うわあ！ それは大変だったね。"
+    note: "bunny hill＝初心者 コース"
+    choices: ["Oh no! That sounds so rough.", "Great! How was the rest of the trip?", "A bunny? Did you see a rabbit?"]
+    answer: 0
+    cja: ["うわあ！ それは大変だったね。", "いいね！ 旅行の残りはどうだった？", "うさぎ？ うさぎを見たの？"]
+    why: "wait, back up は「待って、話を戻して」。初日に初心者コース（bunny hill）で手首を折ったと聞いたので、気づかうのが自然。うさぎの話ではない。"
+    ctx: "カフェで、スキー旅行から帰った友だちと"
+    focus: "Wait, back up. You broke your wrist?"
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: attitude, conditions: [cafe], features: [self-repair] }
+    lines:
+      - { who: goldie, cast: us-f2, en: "So I went skiing, broke my wrist, and then my flight got canceled.", tts: "So I went skiin', broke my wrist, an' then my flight got canceled.", ja: "それでね、スキーに行って、手首を折って、そのうえ飛行機が欠航になったの。" }
+      - { who: rosie, cast: us-f1, en: "Wait, back up. You broke your wrist?", ja: "待って、ちょっと戻って。手首を折ったの？" }
+      - { who: goldie, cast: us-f2, en: "Yeah! Day one. On the bunny hill.", ja: "そう！ 初日に。初心者コースで。" }
+  - id: cu-r-stranger
+    lv: 4
+    type: reply
+    speaker: marshal
+    voice: us
+    cast: us-m1
+    en: "Hey, stranger! How have you been?"
+    tts: "Hey, stranger! How ya been?"
+    ja: "やあ、久しぶり！ 元気だった？ →「まあまあ！ 忙しいけど元気だよ。そっちは？」"
+    note: "Hey, stranger＝久しぶり（親しい あいさつ）"
+    choices: ["Pretty good! Busy, but good. You?", "I've been here since two.", "I'm not a stranger, it's me!"]
+    answer: 0
+    cja: ["まあまあ！ 忙しいけど元気。そっちは？", "2時からここにいるよ。", "知らない人じゃないよ、私だよ！"]
+    why: "Hey, stranger は「久しぶり」という親しいあいさつで、知らない人扱いではない。How have you been? は「最近どう？」なので、近況を一言返す。"
+    ctx: "カフェで、しばらく会っていない友だちが"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: ritual, conditions: [cafe], features: [self-repair] }
+  - id: cu-m-broke-up
+    lv: 4
+    type: mean
+    speaker: maple
+    voice: us
+    cast: us-f3
+    en: "Long story short, we broke up, but we're still friends. It's actually fine."
+    ja: "手短に言うと、別れたけど、今も友だちなの。本当に大丈夫。 → つまり、詳しくは省くけど別れた。でも仲はいい。"
+    note: "long story short＝細かい 話は 省いて"
+    choices: ["They broke up but stayed friends; she's skipping the details.", "It's a long story, so she'll tell all of it now.", "They're getting married."]
+    answer: 0
+    cja: ["別れたが友だちのまま。詳しい話は省いている。", "長い話なので、今から全部話す。", "二人は結婚する。"]
+    why: "long story short は「手短に言うと」で、細かい経緯を省いて結論だけ言う合図。別れたが still friends（今も友だち）で、本人は fine と言っている。"
+    ctx: "カフェで、友だちに恋人のことを聞きました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair] }
+  - id: cu-n-ten-years
+    lv: 4
+    type: num
+    speaker: rosie
+    voice: us
+    cast: us-f1
+    en: "We met, what, eight years ago? Actually, no, it was 2016, so ten years."
+    tts: "We met, what, eight years ago? Actually, no, it was twenty sixteen, so ten years."
+    ja: "私たちが会ったのって、8年前だっけ？ あ、違う、2016年だから10年だ。"
+    note: "Actually, no の 後が 正しい 年数"
+    choices: ["10 years", "8 years", "16 years"]
+    answer: 0
+    cja: ["10年", "8年", "16年"]
+    why: "最初は8年と言ったが、Actually, no で2016年だったと思い出し、ten years（10年）に言い直した。16は年号の一部。"
+    ctx: "カフェで、昔からの友だちと思い出話です"
+    ask: "知り合って 何年？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair, numbers] }
+  - id: cu-m-better-now
+    lv: 4
+    type: mean
+    speaker: goldie
+    voice: us
+    cast: us-f2
+    en: "Honestly, it's been a rough few months. But I'm doing a lot better now."
+    tts: "Honestly, it's been a rough few months. But I'm doin' a lot better now."
+    ja: "正直、ここ数か月は大変だった。でも今はずいぶんよくなったよ。 → つまり、大変な時期があったが、今は持ち直している。"
+    note: "rough＝大変な。but の 後が 今"
+    choices: ["It was a hard few months, but she's much better now.", "She's still having a really hard time.", "The last few months were great."]
+    answer: 0
+    cja: ["数か月大変だったが、今はずっとよくなった。", "今もとても大変。", "ここ数か月はすごくよかった。"]
+    why: "a rough few months は「大変な数か月」。でも but のあと、doing a lot better now（今はずっとよくなった）。今も大変なわけではない。"
+    ctx: "久しぶりに会った友だちに、最近どうか聞きました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: attitude, conditions: [cafe], features: [self-repair] }
+  # ---- ばめん: Whitney, a raise, catch me up ----
+  - id: cu-boulder
+    lv: 4
+    type: gist
+    speaker: rosie
+    voice: us
+    cast: us-f1
+    en: "Whatever happened with Whitney? Didn't she move? Yeah, to Denver. Wait, no, Boulder. It's close to Denver. She got a job at the university. Good for her! Does she like it? She loves it, but she says she misses the ocean."
+    ja: "大学の仕事でボルダーに引っ越した。気に入っているが海が恋しい。"
+    note: "Wait, no の 後が 正しい 町"
+    choices: ["She moved to Boulder for a university job; she loves it but misses the ocean.", "She moved to Denver and doesn't like it.", "She's moving back because she misses the ocean."]
+    answer: 0
+    cja: ["大学の仕事でボルダーへ。気に入っているが、海が恋しい。", "デンバーに引っ越して、気に入っていない。", "海が恋しくて戻ってくる。"]
+    why: "最初はデンバーと言ったが、Wait, no で近くのボルダーに訂正。大学で働き、loves it。でも misses the ocean（海が恋しい）だけで、戻るとは言っていない。"
+    ctx: "カフェで、共通の友だちの話になりました"
+    focus: "Yeah, to Denver. Wait, no, Boulder."
+    ask: "ホイットニーは どう してる？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair] }
+    lines:
+      - { who: bob, cast: us-m3, en: "Whatever happened with Whitney? Didn't she move?", tts: "Whatever happened with Whitney? Didn' she move?", ja: "ホイットニーってどうなったの？ 引っ越したんじゃなかった？" }
+      - { who: rosie, cast: us-f1, en: "Yeah, to Denver. Wait, no, Boulder. It's close to Denver. She got a job at the university.", ja: "そう、デンバーに。待って、違う、ボルダー。デンバーの近く。大学で仕事が見つかったの。" }
+      - { who: bob, cast: us-m3, en: "Good for her! Does she like it?", ja: "よかったね！ 気に入ってるの？" }
+      - { who: rosie, cast: us-f1, en: "She loves it, but she says she misses the ocean.", ja: "すごく気に入ってる。でも海が恋しいって。" }
+  - id: cu-r-ran-into
+    lv: 4
+    type: reply
+    speaker: maple
+    voice: us
+    cast: us-f3
+    en: "Okay, you'll never guess who I ran into yesterday."
+    tts: "Okay, you'll never guess who I ran inta yesterday."
+    ja: "ねえ、昨日誰にばったり会ったと思う？ →「誰？ 教えて！」"
+    note: "ran into＝ばったり 会った"
+    choices: ["Who? Tell me!", "You're right. I'll never guess.", "Oh no, did you get hurt?"]
+    answer: 0
+    cja: ["誰？ 教えて！", "そうだね。絶対当てられない。", "えっ、けがしたの？"]
+    why: "you'll never guess は「聞いたら驚くよ」という前置きで、当てっこではない。ran into は「ばったり会った」でぶつかったのではない。続きを促すのが自然。"
+    ctx: "カフェで、友だちがうれしそうに話し始めました"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 53, register: friend, pragmatic: formula, conditions: [cafe], features: [self-repair] }
+  - id: cu-m-raise
+    lv: 4
+    type: mean
+    speaker: rosie
+    voice: us
+    cast: us-f1
+    en: "You finally asked for a raise? Good for you! I'm so proud of you."
+    tts: "You finally asked fer a raise? Good for you! I'm so proud of ya."
+    ja: "ついに昇給をお願いしたの？ えらい！ すごく誇らしいよ。 → つまり、昇給を頼んだ勇気をほめている。"
+    note: "good for you＝よかったね・えらい"
+    choices: ["She's proud he finally asked for a raise.", "She thinks it's good for her own career.", "She's annoyed he waited so long."]
+    answer: 0
+    cja: ["ついに昇給を頼んだことを誇りに思っている。", "自分の仕事にとっていいと思っている。", "こんなに待ったことにいらいらしている。"]
+    why: "good for you は相手をほめたり祝ったりする一言で、「あなたの体にいい」ではない。finally（ついに）頼んだことを so proud とほめている。"
+    ctx: "カフェで、友だちが仕事の話をしてくれました"
+    ask: "つまり、どういう 気持ち？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: attitude, conditions: [cafe], features: [self-repair] }
+  - id: cu-n-cast
+    lv: 4
+    type: num
+    speaker: goldie
+    voice: us
+    cast: us-f2
+    en: "Okay, let me catch you up. The cast comes off in six weeks. Sorry, I meant four. The doctor said four last time."
+    tts: "Okay, lemme catch ya up. The cast comes off in six weeks. Sorry, I meant four. The doctor said four last time."
+    ja: "じゃあ、近況ね。ギプスは6週間後に取れるの。ごめん、4週間だった。前回お医者さんが4週間って言ってた。"
+    note: "I meant の 後が 正しい 数"
+    choices: ["4 weeks", "6 weeks", "10 weeks"]
+    answer: 0
+    cja: ["4週間", "6週間", "10週間"]
+    why: "最初は six weeks と言ったが、Sorry, I meant four で4週間に訂正し、医者がそう言ったと理由も添えた。10週間は足し算の罠。"
+    ctx: "カフェで、手首を折った友だちの話を聞いています"
+    ask: "ギプスは あと 何週間？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair, numbers] }
+  - id: cu-catch-me-up
+    lv: 4
+    type: next
+    speaker: marshal
+    voice: us
+    cast: us-m1
+    en: "Sorry I'm late! Okay, catch me up. What did I miss? Goldie broke her wrist skiing, and Maple quit her job. Wait, what? Goldie broke her wrist? That sounds so rough. And Maple quit? She loved that job!"
+    ja: "実はそうでもなかったみたい。今はヨガを教えていて、すごく楽しいって。"
+    note: "catch me up＝何が あったか 教えて"
+    choices: ["Not really. She's teaching yoga now and loves it.", "Yeah, she's skiing with Goldie now.", "No, Goldie quit, and Maple broke her wrist."]
+    answer: 0
+    cja: ["そうでもなかったみたい。今はヨガを教えて楽しんでる。", "そう、今はゴールディとスキーしてる。", "違う、ゴールディが辞めて、メイプルが手首を折ったの。"]
+    why: "マーシャルは She loved that job! と驚いたので、今の仕事のほうが好きだと伝える。辞めたのはメイプル、けがはゴールディで、逆ではない。"
+    ctx: "カフェに遅れて来た友だちに、近況を伝えます"
+    focus: "Wait, what? Goldie broke her wrist? That sounds so rough. And Maple quit? She loved that job!"
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair] }
+    lines:
+      - { who: marshal, cast: us-m1, en: "Sorry I'm late! Okay, catch me up. What did I miss?", tts: "Sorry I'm late! Okay, catch me up. What'd I miss?", ja: "遅れてごめん！ で、何があったか教えて。何を聞き逃した？" }
+      - { who: rosie, cast: us-f1, en: "Goldie broke her wrist skiing, and Maple quit her job.", ja: "ゴールディがスキーで手首を折って、メイプルは仕事を辞めたの。" }
+      - { who: marshal, cast: us-m1, en: "Wait, what? Goldie broke her wrist? That sounds so rough. And Maple quit? She loved that job!", ja: "え、何？ ゴールディが手首を？ それは大変だ。それにメイプルが辞めた？ あの仕事、大好きだったのに！" }
+  - id: cu-m-back-up
+    lv: 4
+    type: mean
+    speaker: bob
+    voice: us
+    cast: us-m3
+    en: "Wait, back up. You're moving? Since when?"
+    tts: "Wait, back up. You're movin'? Since when?"
+    ja: "待って、ちょっと戻って。引っ越すの？ いつから決まってたの？ → つまり、引っ越しの話を聞き逃したので、そこに戻ってほしい。"
+    note: "back up＝話を 戻して"
+    choices: ["He wants to go back to the part about moving.", "He's asking her to back up her phone.", "He wants her to step back."]
+    answer: 0
+    cja: ["引っ越しの話に戻ってほしい。", "スマホのバックアップを取ってほしい。", "一歩下がってほしい。"]
+    why: "wait, back up は「待って、話を戻して」。さらっと出た引っ越しの話に驚いて聞き返している。バックアップや、体を下げる話ではない。"
+    ctx: "カフェで、友だちが話の途中で驚きました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair] }
+  # ---- チェック ----
+  - id: cu-biscuit
+    lv: 4
+    type: gist
+    speaker: whitney
+    voice: us
+    cast: us-f4
+    en: "So, long story short, I adopted a dog. His name's Biscuit. Stop! I need pictures. What kind? A beagle. Well, half beagle. The shelter said beagle, but the vet thinks he's mostly basset hound. Ha! Either way, I love him already."
+    ja: "犬を引き取った。獣医の見立てでは、ほとんどバセットハウンド。"
+    note: "Well, の 後で 言い直す"
+    choices: ["She adopted a dog that's probably mostly basset hound.", "She's thinking about getting a beagle.", "The vet said he's all beagle."]
+    answer: 0
+    cja: ["犬を引き取った。たぶんほとんどバセットハウンド。", "ビーグルを飼おうか考えている。", "獣医は純粋なビーグルだと言った。"]
+    why: "結論は、犬を引き取ったこと。保護施設はビーグルと言ったが、Well, half beagle と言い直し、獣医は mostly basset hound と見ている。"
+    ctx: "ビデオ通話で、遠くに住む友だちと近況報告です"
+    focus: "The shelter said beagle, but the vet thinks he's mostly basset hound."
+    ask: "ホイットニーの 近況は？"
+    scene: living
+    channel: video
+    tags: { seed: 57, register: friend, pragmatic: literal, features: [self-repair] }
+    lines:
+      - { who: whitney, cast: us-f4, en: "So, long story short, I adopted a dog. His name's Biscuit.", ja: "それでね、手短に言うと、犬を引き取ったの。名前はビスケット。" }
+      - { who: rosie, cast: us-f1, en: "Stop! I need pictures. What kind?", ja: "うそ！ 写真見せて。何の犬？" }
+      - { who: whitney, cast: us-f4, en: "A beagle. Well, half beagle. The shelter said beagle, but the vet thinks he's mostly basset hound.", ja: "ビーグル。まあ、半分ビーグル。保護施設はビーグルって言ってたけど、獣医さんはほとんどバセットハウンドだって。" }
+      - { who: rosie, cast: us-f1, en: "Ha! Either way, I love him already.", ja: "はは！ どっちにしても、もう大好き。" }
+  - id: cu-r-landlord
+    lv: 4
+    type: reply
+    speaker: goldie
+    voice: us
+    cast: us-f2
+    en: "My landlord's selling the building, so I have to move out by March."
+    tts: "My landlord's sellin' the building, so I hafta move out by March."
+    ja: "大家さんが建物を売るから、3月までに引っ越さなきゃいけないの。 →「えー、それは大変だね。荷造り手伝おうか？」"
+    note: "by March＝3月 までに"
+    choices: ["Oh no, that sounds rough. Need help packing?", "Nice! Congrats on the new place!", "March? So you're buying the building?"]
+    answer: 0
+    cja: ["えー、それは大変だね。荷造り手伝おうか？", "いいね！ 新居おめでとう！", "3月？ じゃあ建物を買うの？"]
+    why: "大家が建物を売るので、3月までに出なければならない。望んだ引っ越しではないので、お祝いは合わない。that sounds rough と気づかい、手伝いを申し出るのが自然。"
+    ctx: "カフェで、友だちが困った顔で話し出しました"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: attitude, conditions: [cafe], features: [self-repair] }
+  - id: cu-m-kicks
+    lv: 4
+    type: mean
+    speaker: marshal
+    voice: us
+    cast: us-m1
+    en: "You'll never guess who's getting married. Kicks! I know, right?"
+    ja: "誰が結婚すると思う？ キックスだよ！ でしょ、びっくりだよね？ → つまり、意外にもキックスが結婚すると驚いている。"
+    note: "I know, right?＝でしょ？（同意を 求める）"
+    choices: ["He's surprised that Kicks is getting married.", "He doesn't know who's getting married.", "He wants her to guess for a prize."]
+    answer: 0
+    cja: ["キックスが結婚することに驚いている。", "誰が結婚するのか知らない。", "賞品つきで当ててほしい。"]
+    why: "you'll never guess は「聞いたら驚くよ」の前置きで、当てさせたいわけではない。すぐ Kicks! と言い、I know, right? で驚きを分かち合っている。"
+    ctx: "カフェで、友だちがニュースを持ってきました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 53, register: friend, pragmatic: attitude, conditions: [cafe], features: [self-repair] }
+  - id: cu-n-moved-in
+    lv: 4
+    type: num
+    speaker: whitney
+    voice: us
+    cast: us-f4
+    en: "I moved in on the 13th. Sorry, I meant the 30th. It was the very end of the month."
+    tts: "I moved in on the thirteenth. Sorry, I meant the thirtieth. It was the very end of the month."
+    ja: "13日に引っ越したの。ごめん、30日だった。月末ぎりぎりだったから。"
+    note: "I meant の 後が 正しい 日。月末も ヒント"
+    choices: ["the 30th", "the 13th", "the 3rd"]
+    answer: 0
+    cja: ["30日", "13日", "3日"]
+    why: "13日と言ったが、I meant the thirtieth で30日に訂正。the very end of the month（月末ぎりぎり）とも合う。"
+    ctx: "ビデオ通話で、引っ越した友だちと話しています"
+    ask: "引っ越したのは 何日？"
+    scene: living
+    channel: video
+    tags: { seed: 57, register: friend, pragmatic: literal, features: [self-repair, numbers, teen-ty] }
+  - id: cu-car-next
+    lv: 4
+    type: next
+    speaker: rosie
+    voice: us
+    cast: us-f1
+    en: "Whatever happened with your car? Did you get it fixed? Ugh, no. Long story short, it wasn't worth fixing. I sold it. Oh, man. That sounds rough. So how are you getting around?"
+    ja: "だいたい自転車。実はけっこう気に入ってる。"
+    note: "getting around＝移動する"
+    choices: ["Bike, mostly. It's actually kind of nice.", "I fixed it last week, so by car.", "Around? Usually around eight."]
+    answer: 0
+    cja: ["だいたい自転車。実はけっこういいよ。", "先週直したから、車で。", "ごろ？ だいたい8時ごろ。"]
+    why: "車は売った（sold it）。how are you getting around? は「どうやって移動してるの？」で、時間の around ではない。移動手段を答える。"
+    ctx: "カフェで、友だちに車のことを聞かれました"
+    focus: "So how are you getting around?"
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair] }
+    lines:
+      - { who: bob, cast: us-m3, en: "Whatever happened with your car? Did you get it fixed?", tts: "Whatever happened with yer car? Didja get it fixed?", ja: "車、どうなった？ 直ったの？" }
+      - { who: rosie, cast: us-f1, en: "Ugh, no. Long story short, it wasn't worth fixing. I sold it.", ja: "うう、ううん。手短に言うと、直す価値がなかったの。売っちゃった。" }
+      - { who: bob, cast: us-m3, en: "Oh, man. That sounds rough. So how are you getting around?", tts: "Oh, man. That sounds rough. So how're ya gettin' around?", ja: "うわあ。それは大変だったね。じゃあ、移動はどうしてるの？" }
+  - id: cu-r-half
+    lv: 4
+    type: reply
+    speaker: whitney
+    voice: us
+    cast: us-f4
+    en: "I finally finished my first half marathon!"
+    ja: "ついに初めてのハーフマラソンを完走したの！ →「すごい！ 体はどう？」"
+    note: "half marathon＝ハーフマラソン（約 21km）"
+    choices: ["Good for you! How do you feel?", "Half? So you stopped in the middle?", "Only half? Maybe the whole thing next time."]
+    answer: 0
+    cja: ["すごい！ 体はどう？", "半分？ じゃあ途中でやめたの？", "半分だけ？ 次は全部走れるといいね。"]
+    why: "half marathon は約21kmのレースで、途中でやめたのではない。finally finished は「ついに完走した」なので祝う。「半分だけ」は失礼。"
+    ctx: "ビデオ通話で、友だちがうれしそうに報告"
+    scene: living
+    channel: video
+    tags: { seed: 57, register: friend, pragmatic: attitude, features: [self-repair] }
+  # ---- おと: the story's chunks ----
+  - id: cu-w-never-guess
+    lv: 4
+    type: word
+    speaker: maple
+    voice: us
+    cast: us-f3
+    en: "You'll never guess what happened."
+    ja: "何があったか、聞いたらびっくりするよ。"
+    note: "You'll の ll は 弱く「ヨゥ」"
+    choices: ["You'll never guess", "You never guessed", "You'd never guess"]
+    answer: 0
+    cja: ["聞いたら驚くよ", "あなたは当てなかった", "（もし聞いても）当てられないだろう"]
+    why: "You'll は ll が弱く「ヨゥ」と短い。never の前に音が残るのが手がかり。guessed なら最後に t、You'd なら d の音が入る。"
+    ctx: "カフェで、友だちが身を乗り出して"
+    focus: "You'll never guess"
+    tags: { seed: 57, register: friend, pragmatic: formula, features: [self-repair] }
+  - id: cu-w-long-story
+    lv: 4
+    type: word
+    speaker: rosie
+    voice: us
+    cast: us-f1
+    en: "Long story short, I sold it."
+    ja: "手短に言うと、売っちゃった。"
+    note: "short の 最後の t は 軽い"
+    choices: ["Long story short", "Long story, sure", "Long stories short"]
+    answer: 0
+    cja: ["手短に言うと", "長い話、たしかに", "長い話の数々を短く"]
+    why: "short は「ショー(ト)」と t が軽く、sure（シュア）と違って最後に r の伸びがない。story は単数で、stories の z の音はない。"
+    ctx: "友だちが、車の話を終わらせようと"
+    focus: "Long story short"
+    tags: { seed: 57, register: friend, pragmatic: formula, features: [self-repair] }
+  - id: cu-w-back-up
+    lv: 4
+    type: word
+    speaker: bob
+    voice: us
+    cast: us-m3
+    en: "Wait, back up a second."
+    ja: "待って、ちょっと話を戻して。"
+    note: "back up が「バカップ」と つながる"
+    choices: ["back up", "pack up", "back off"]
+    answer: 0
+    cja: ["話を戻して", "荷物をまとめて", "引き下がって"]
+    why: "back up は k と u がつながり「バカップ」。pack は p で始まる「パック」。back off（引き下がる）は最後が「オフ」。"
+    ctx: "カフェで、友だちが話をさえぎって"
+    focus: "back up"
+    marks: [[link, "back up"]]
+    tags: { seed: 57, register: friend, pragmatic: literal, features: [self-repair] }
+  - id: cu-w-how-been
+    lv: 4
+    type: word
+    speaker: marshal
+    voice: us
+    cast: us-m1
+    en: "How have you been?"
+    tts: "How ya been?"
+    ja: "元気だった？"
+    note: "have you が 消えて「ハウヤビン」"
+    choices: ["How have you been", "Where have you been", "Who have you been"]
+    answer: 0
+    cja: ["元気だった？", "どこにいたの？", "誰だったの？"]
+    why: "How have you been は have がほぼ消えて「ハウヤビン」。where なら「ウェア」、who なら「フー」で始まる。久しぶりのあいさつは How。"
+    ctx: "久しぶりに会った友だちが、手を振って"
+    focus: "How have you been"
+    marks: [[say, "have you", "ya"]]
+    tags: { seed: 57, register: friend, pragmatic: ritual, features: [self-repair] }
+  - id: cu-w-cousin
+    lv: 4
+    type: word
+    speaker: rosie
+    voice: us
+    cast: us-f1
+    en: "Her brother, I mean, her cousin, lives in Boulder."
+    ja: "彼女のお兄さん、じゃなくて、いとこがボルダーに住んでるの。"
+    note: "I mean の 後が 正しい 人"
+    choices: ["her cousin", "her cousins", "her customer"]
+    answer: 0
+    cja: ["彼女のいとこ", "彼女のいとこたち", "彼女のお客さん"]
+    why: "brother は言い間違いで、I mean のあとの her cousin が正しい。cousin は「カズン」、cousins なら z が付く。customer は別の語。"
+    ctx: "カフェで、友だちが知り合いの話をしています"
+    focus: "her cousin"
+    tags: { seed: 57, register: friend, pragmatic: literal, features: [self-repair] }
+  - id: cu-w-sounds-rough
+    lv: 4
+    type: word
+    speaker: rosie
+    voice: us
+    cast: us-f1
+    en: "Aw, that sounds rough."
+    ja: "ああ、それは大変だね。"
+    note: "rough は「ラフ」。f の 音で 終わる"
+    choices: ["sounds rough", "sounds rude", "sounds loud"]
+    answer: 0
+    cja: ["大変そう", "失礼そう", "うるさそう"]
+    why: "rough は「ラフ」と f の音で終わる。rude（失礼な）は「ルード」と d、loud（うるさい）は l で始まる。悪い知らせへの返事なので rough。"
+    ctx: "友だちの引っ越しの話を聞いて"
+    focus: "sounds rough"
+    tags: { seed: 57, register: friend, pragmatic: attitude, features: [self-repair] }
+  # ---- じっせん: a loud café, fast ----
+  - id: cu-fast-july
+    lv: 4
+    type: gist
+    speaker: maple
+    voice: us
+    cast: us-f3
+    en: "Okay, so, my brother's getting married in June. No, July. July 4th weekend, which, I know, is crazy. Wait, back up. Your brother? Whatever happened with the never-getting-married thing? Ha! Long story short, he met someone at a wedding, of all places. Good for him!"
+    ja: "結婚しないと言っていた兄が、7月に結婚する。"
+    note: "No, July の 後が 正しい 月"
+    choices: ["Her brother, who said he'd never marry, is getting married in July.", "Her brother is getting married in June.", "Her brother met someone, but he won't marry."]
+    answer: 0
+    cja: ["結婚しないと言っていた兄が、7月に結婚する。", "兄が6月に結婚する。", "兄は相手が見つかったが、結婚はしない。"]
+    why: "6月と言ったが、No, July で7月に訂正。結婚しないと言っていた兄が、よりによって結婚式（of all places）で相手に出会った。"
+    ctx: "混んだカフェで、友だちが早口で話します"
+    focus: "Okay, so, my brother's getting married in June. No, July."
+    ask: "何の 話？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair] }
+    lines:
+      - { who: maple, cast: us-f3, en: "Okay, so, my brother's getting married in June. No, July. July 4th weekend, which, I know, is crazy.", tts: "Okay, so, my brother's gettin' married in June. No, July. July fourth weekend, which, I know, is crazy.", ja: "それでね、兄が6月に結婚するの。違う、7月。7月4日の連休。わかってる、ありえないよね。" }
+      - { who: rosie, cast: us-f1, en: "Wait, back up. Your brother? Whatever happened with the never-getting-married thing?", ja: "待って、戻って。お兄さん？ 「絶対結婚しない」って話はどうなったの？" }
+      - { who: maple, cast: us-f3, en: "Ha! Long story short, he met someone at a wedding, of all places.", ja: "はは！ 手短に言うと、よりによって結婚式で誰かと出会ったの。" }
+      - { who: rosie, cast: us-f1, en: "Good for him!", ja: "よかったじゃない！" }
+  - id: cu-fast-m-boss
+    lv: 4
+    type: mean
+    speaker: goldie
+    voice: us
+    cast: us-f2
+    en: "So I'm at the airport, I mean, the train station, and guess who's on my train? My old boss. For four hours."
+    tts: "So I'm at the airport, I mean, the train station, an' guess who's on my train? My old boss. Fer four hours."
+    ja: "それでね、空港で、じゃなくて駅でね、同じ電車に誰が乗ってたと思う？ 前の上司。4時間も。 → つまり、元上司と4時間同じ電車で気まずかった。"
+    note: "I mean の 後が 正しい 場所"
+    choices: ["She was stuck on a long train ride with her old boss.", "She met her old boss at the airport.", "Her old boss drove her to the station."]
+    answer: 0
+    cja: ["前の上司と、長い電車の旅で一緒だった。", "空港で前の上司に会った。", "前の上司が駅まで車で送ってくれた。"]
+    why: "空港と言ったが I mean で駅に訂正。同じ電車に前の上司がいて、For four hours（4時間も）と強調しているので、気まずかったということ。"
+    ctx: "にぎやかなカフェで、友だちが旅の話を"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 57, register: friend, pragmatic: attitude, conditions: [cafe], features: [self-repair] }
+  - id: cu-fast-r-promotion
+    lv: 4
+    type: reply
+    speaker: marshal
+    voice: us
+    cast: us-m1
+    en: "Dude, I got the promotion! They told me, like, this morning!"
+    tts: "Dude, I got the promotion! They told me, like, this mornin'!"
+    ja: "ねえ、昇進したんだ！ 今朝言われたばっかり！ →「すごい！ よかったね！ お祝いしよう。」"
+    note: "promotion＝昇進"
+    choices: ["No way! Good for you! We should celebrate.", "Oh no, I'm so sorry.", "This morning? So you're late for work?"]
+    answer: 0
+    cja: ["うそ！ よかったね！ お祝いしよう。", "えっ、本当に残念だね。", "今朝？ じゃあ仕事に遅刻？"]
+    why: "promotion は「昇進」でうれしい知らせ。今朝知らされたばかりと興奮しているので、Good for you! と祝うのが自然。残念がるのは逆。"
+    ctx: "騒がしいカフェに、友だちが駆け込んできました"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 57, register: friend, pragmatic: attitude, conditions: [cafe], features: [self-repair] }
+  - id: cu-fast-n-boulder
+    lv: 4
+    type: num
+    speaker: whitney
+    voice: us
+    cast: us-f4
+    en: "Boulder's like 20 minutes from Denver. Well, 40 with traffic. Actually, no, more like an hour on a bad day."
+    tts: "Boulder's like twenty minutes from Denver. Well, forty with traffic. Actually, no, more like an hour on a bad day."
+    ja: "ボルダーはデンバーから20分くらい。まあ、混んでたら40分。いや、ひどい日は1時間くらいかな。"
+    note: "Actually, no の 後が 本当の ところ"
+    choices: ["about an hour", "20 minutes", "40 minutes"]
+    answer: 0
+    cja: ["1時間くらい", "20分", "40分"]
+    why: "空いていれば20分、混んでいれば40分と言ったが、Actually, no で on a bad day（ひどい日）は an hour（1時間くらい）と言い直した。"
+    ctx: "ビデオ通話で、友だちが新しい町の話を"
+    ask: "道が ひどい 日は？"
+    scene: living
+    channel: video
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 57, register: friend, pragmatic: literal, features: [self-repair, numbers] }
+  - id: cu-fast-second
+    lv: 4
+    type: next
+    speaker: bob
+    voice: us
+    cast: us-m3
+    en: "We should do this more often. Like, every month? Totally. How about the first Saturday of every month? First Saturday's tough for me. What about the second? Would that work?"
+    ja: "第2土曜で大丈夫。そうしよう！"
+    note: "tough＝都合が 悪い。second＝第2"
+    choices: ["The second Saturday works. Let's do it!", "Great, the first Saturday it is.", "The second? So, twice a month?"]
+    answer: 0
+    cja: ["第2土曜で大丈夫。そうしよう！", "よし、第1土曜で決まり。", "2回目？ じゃあ月に2回？"]
+    why: "第1土曜は tough（都合が悪い）と言われ、the second（第2土曜）を提案された。月2回という意味ではない。それに乗るのが自然。"
+    ctx: "混んだカフェで、帰りぎわに次の約束を"
+    focus: "First Saturday's tough for me. What about the second? Would that work?"
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 57, register: friend, pragmatic: literal, conditions: [cafe], features: [self-repair] }
+    lines:
+      - { who: bob, cast: us-m3, en: "We should do this more often. Like, every month?", ja: "もっとこういうの、やろうよ。毎月とか？" }
+      - { who: rosie, cast: us-f1, en: "Totally. How about the first Saturday of every month?", ja: "ほんとに。毎月第1土曜はどう？" }
+      - { who: bob, cast: us-m3, en: "First Saturday's tough for me. What about the second? Would that work?", tts: "First Saturday's tough fer me. What about the second? Would that work?", ja: "第1土曜はちょっと厳しいな。第2はどう？ 大丈夫？" }
+  - id: cu-fast-m-run
+    lv: 4
+    type: mean
+    speaker: maple
+    voice: us
+    cast: us-f3
+    en: "Anyway, I've gotta run, but text me, and catch me up properly soon. I want the whole story."
+    tts: "Anyway, I've gotta run, but text me, an' catch me up properly soon. I want the whole story."
+    ja: "とにかく、もう行かなきゃ。でも連絡して、近いうちにちゃんと近況を聞かせて。全部聞きたいから。 → つまり、もう帰るが、近いうちにゆっくり話を聞きたい。"
+    note: "gotta run＝もう 行かなきゃ"
+    choices: ["She has to leave, but wants to hear everything soon.", "She's going running and wants company.", "She doesn't want to hear any more."]
+    answer: 0
+    cja: ["もう行くが、近いうちに全部聞きたい。", "走りに行くので一緒に来てほしい。", "もう話は聞きたくない。"]
+    why: "Anyway と I've gotta run は「そろそろ行かなきゃ」の合図。走る話ではない。text me、catch me up で、近いうちに全部聞かせてと言っている。"
+    ctx: "混んだカフェで、友だちが時計を見て"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 57, register: friend, pragmatic: ritual, conditions: [cafe], features: [self-repair] }
+lessons:
+  v: 2
+  deai: [cu-yoga, cu-wrist-next, cu-r-stranger, cu-m-broke-up, cu-n-ten-years, cu-m-better-now]
+  bamen: [cu-boulder, cu-r-ran-into, cu-m-raise, cu-n-cast, cu-catch-me-up, cu-m-back-up]
+  check: [cu-biscuit, cu-r-landlord, cu-m-kicks, cu-n-moved-in, cu-car-next, cu-r-half]
+  oto: [cu-w-never-guess, cu-w-long-story, cu-w-back-up, cu-w-how-been, cu-w-cousin, cu-w-sounds-rough]
+  jissen: [cu-fast-july, cu-fast-m-boss, cu-fast-r-promotion, cu-fast-n-boulder, cu-fast-second, cu-fast-m-run]
+  call: [call-brunch-moved]
+tiers:
+  cu-yoga:
+    easy: { choices: ["She quit the bank and teaches yoga now.", "She lost her bank job and is looking for work."], answer: 0, cja: ["銀行を辞めて、今はヨガを教えている。", "銀行をクビになって、仕事を探している。"] }
+    hard: { choices: ["She quit her bank job, teaches yoga full-time, and she's happy.", "She quit her bank job, teaches yoga part-time, and she's happy.", "She was let go from the bank and teaches yoga to get by.", "She quit her bank job, teaches yoga, and misses the bank."], answer: 0, cja: ["銀行を辞めて、本業でヨガを教えていて、幸せ。", "銀行を辞めて、副業でヨガを教えていて、幸せ。", "銀行をクビになり、生活のためにヨガを教えている。", "銀行を辞めてヨガを教えているが、銀行が恋しい。"] }
+  cu-n-cast:
+    easy: { choices: ["4 weeks", "6 weeks"], answer: 0, cja: ["4週間", "6週間"] }
+  cu-fast-july:
+    hard: { choices: ["Her brother, who said he'd never marry, is getting married in July.", "Her brother, who said he'd never marry, is getting married in June.", "Her cousin, who said he'd never marry, is getting married in July.", "Her brother is getting married in July, to someone from work."], answer: 0, cja: ["結婚しないと言っていた兄が、7月に結婚する。", "結婚しないと言っていた兄が、6月に結婚する。", "結婚しないと言っていたいとこが、7月に結婚する。", "兄が7月に、職場の人と結婚する。"] }
