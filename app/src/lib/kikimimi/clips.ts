@@ -110,13 +110,11 @@ export const BED_TAIL = 0.35;
 /** Its fades in and out (s). */
 const BED_FADE = 0.25;
 
-/** `n` samples of a bed from its loop (seamless: each loop's end crossfaded into its start, scripts/kikimimi-beds.ts),
- *  from `offset` (any int: wrapped), at `gain`, faded in and out over BED_FADE. */
-export function bedSamples(loop: Float32Array, n: number, rate: number, gain: number, offset: number): Float32Array<ArrayBuffer> {
-  const out = new Float32Array(n), len = loop.length, fade = Math.max(1, Math.min(Math.round(BED_FADE * rate), Math.floor(n / 2)));
-  if (!len) return out;
-  for (let j = 0, p = ((offset % len) + len) % len; j < n; j++, p = p + 1 === len ? 0 : p + 1) out[j] = loop[p] * gain * Math.min(1, j / fade, (n - 1 - j) / fade);
-  return out;
+/** A bed of `dur` s from its loop of `len` samples at `rate` (seamless: each loop's end crossfaded into its start,
+ *  scripts/kikimimi-beds.ts), from sample `offset` (any int: wrapped), at `gain`, faded in and out over BED_FADE (at
+ *  most half of it): engine.ts playClip's loop. */
+export function bedLoop(len: number, rate: number, dur: number, gain: number, offset: number): { from: number; dur: number; gain: number; fade: number } {
+  return { from: len ? (((offset % len) + len) % len) / rate : 0, dur, gain, fade: Math.min(BED_FADE, dur / 2) };
 }
 
 // ---- the karaoke's word timings -------------------------------------------------------------------------------------

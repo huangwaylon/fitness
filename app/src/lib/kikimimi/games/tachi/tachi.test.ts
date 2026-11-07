@@ -4,7 +4,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import type { Who } from '../../../types.ts';
 import { ITEM_ID_RE } from '../../../contract/listen.ts';
-import { BED_LEAD, bedSamples, itemDur, lineGaps, sequenceStarts, LINE_GAP } from '../../clips.ts';
+import { BED_LEAD, bedLoop, itemDur, lineGaps, sequenceStarts, LINE_GAP } from '../../clips.ts';
 import { INDEX, listenOf, load, type Unit } from '../../pool.ts';
 import type { ListenEntry, ListenPart } from '../../listen.ts';
 import { RoundSession, WINDOWS } from '../../round/session.ts';
@@ -124,13 +124,9 @@ describe('たちぎき: the lines on the audio clock (clips.ts)', () => {
   });
 
   it('a bed: from its offset round the loop, at its gain, faded in and out', () => {
-    const loop = Float32Array.from({ length: 1000 }, (_, k) => (k % 10) / 10);
-    const s = bedSamples(loop, 3000, 1000, 0.5, 1995);
-    expect(s).toHaveLength(3000);
-    expect([s[0], s[2999]]).toEqual([0, 0]);
-    expect(s[1000]).toBeCloseTo(((1995 + 1000) % 1000 % 10) / 10 * 0.5);
-    expect(s[250]).toBeCloseTo(((1995 + 250) % 1000 % 10) / 10 * 0.5);
-    expect(s[125]).toBeCloseTo((((1995 + 125) % 1000 % 10) / 10) * 0.5 * 0.5);
+    expect(bedLoop(1000, 1000, 3, 0.5, 1995)).toEqual({ from: 0.995, dur: 3, gain: 0.5, fade: 0.25 });
+    expect(bedLoop(1000, 1000, 3, 0.5, -5).from).toBeCloseTo(0.995);
+    expect(bedLoop(1000, 1000, 0.3, 0.5, 0).fade).toBeCloseTo(0.15); // a short one: its fades at most half of it
     expect(BED_LEAD).toBeGreaterThan(0);
   });
 });

@@ -13,7 +13,7 @@
 //   micSession(true) · audioCtx()                         // ききみみ's mic open: play-and-record on the voice's context
 import { untrack } from 'svelte';
 import type { SoundId } from './ids.ts';
-import { Engine, applySession } from './engine.ts';
+import { Engine, applySession, type ClipLoop } from './engine.ts';
 import { HourClock, QUEUED_DROP_MS, type Gesture } from './session.ts';
 import { DEFAULT_SOUND, loadSound, sanitize, saveSound, silent, type SoundSettings } from './settings.ts';
 import { AUDIO, hasMusic } from './manifest.ts';
@@ -268,11 +268,11 @@ export const loadVoice = (key: string, fetchBytes: () => Promise<ArrayBuffer | n
 /** Play a decoded clip now, or at `relayAt` (ms on the relay's clock; `now`: that clock's reading, default the
  *  device's), on the voice bus with the music ducked. Null when it can't sound (no session, locked, interrupted).
  *  `endsAt` is on the audio clock (engine.ts playClip). */
-export function playVoice(buf: AudioBuffer, o: { relayAt?: number; now?: () => number } = {}): { stop(): void; endsAt: number } | null {
+export function playVoice(buf: AudioBuffer, o: { relayAt?: number; now?: () => number; loop?: ClipLoop } = {}): { stop(): void; endsAt: number } | null {
   const ctx = engine?.ctx;
   if (!ctx) return null;
   const at = o.relayAt === undefined ? undefined : ctx.currentTime + (o.relayAt - (o.now ?? Date.now)()) / 1000;
-  return engine!.playClip(buf, { at });
+  return engine!.playClip(buf, { at, loop: o.loop });
 }
 
 /** The music held down under a bedtime story's run of clips (on), or let back up (engine.ts holdDuck). */
