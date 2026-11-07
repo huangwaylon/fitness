@@ -10,6 +10,8 @@
   "sync.syncing": "つうしん中…",
   "sync.offline": "オフライン · タップで つなぐ",
   "sync.retryLabel": "オフライン · {time}に とどいた。タップで つなぐ",
+  "sync.queued": "{n}けん まち",
+  "sync.queuedLabel": "。{n}けん まだ おくっていない",
   "sync.never": "まだ",
   "demo.badge": "デモ",
   "state.loading": "島へ向かっています…",

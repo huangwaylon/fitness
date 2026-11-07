@@ -158,7 +158,9 @@ export const DEVICE = {
   /** localStorage: `km` | `mi`: りょこう's distances on this phone (components/travel/units.ts; km by default). */
   travelUnits: 'island.travel.units',
   /** localStorage: `1` | `0`: けっこんしき's plan shows the finished tasks under すべて on this phone (hidden by default). */
-  weddingDone: 'island.weddingDone'
+  weddingDone: 'island.weddingDone',
+  /** localStorage: `1`: the installed app asked the browser to keep its storage (sync/persist.ts: once). */
+  persistAsked: 'island.persistAsked'
 } as const;
 
 /** The island scene's own small keys (not data: losing them only replays a greeting or a balloon). */

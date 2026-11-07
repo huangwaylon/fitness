@@ -10,6 +10,8 @@
   "sync.syncing": "Updating…",
   "sync.offline": "Offline · tap to reconnect",
   "sync.retryLabel": "Offline, last updated {time}. Tap to reconnect",
+  "sync.queued": "{n} waiting",
+  "sync.queuedLabel": ". {n} not sent yet",
   "sync.never": "Not yet",
   "demo.badge": "Demo",
   "state.loading": "Sailing to the island…",
