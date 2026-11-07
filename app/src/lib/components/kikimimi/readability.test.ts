@@ -4,7 +4,7 @@
 //    which puts the theme's text colours back to the day ones inside it, so the same token reads on navy and on cream.
 // 2. Content text is at least 13px (--fs-s): 11px (--fs-xs) and smaller only for the decorative counts, marks and badges
 //    listed here.
-// 3. The palettes themselves: the soft text and the .obj-cream reset hold 4.5:1 where they're read.
+// 3. The palettes themselves: the soft text and the .obj-cream reset hold 4.5:1 where they're read, a set-aside choice too.
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -77,10 +77,23 @@ describe('ききみみ readability', () => {
     for (const k of ['text', 'text-soft', 'leaf-text', 'coral-text', 'sky-text']) expect(rule).toMatch(new RegExp(`--${k}:\\s*var\\(--c-`));
   });
 
+  it('.obj-cream puts the controls inside it back to the day ones (a ticket’s choices: not ink on night’s navy)', () => {
+    const rule = theme.match(/\.obj-cream \{([^}]*)\}/)?.[1] ?? '';
+    for (const k of ['ctl', 'ctl-off']) expect(rule).toMatch(new RegExp(`--${k}:\\s*var\\(--c-`));
+    expect(rule).toMatch(/--sh-ctl:\s*var\(--sh-obj\)/);
+  });
+
   it('reads at 4.5:1: night soft text on the night card, the day ink-soft on cream', () => {
     expect(contrast(tok(night, '--text-soft'), tok(night, '--card'))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(tok(night, '--coral-text'), tok(night, '--card'))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(tok(tokens, '--c-ink-soft'), tok(tokens, '--c-card'))).toBeGreaterThanOrEqual(4.5);
     expect(contrast(tok(tokens, '--c-coral-text'), tok(tokens, '--c-card'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it('a choice set aside after the reveal: sunk, its soft text at 4.5:1 by day and at night', () => {
+    const grid = comps.find((c) => c.f === 'frame/ChoiceGrid.svelte')!.src;
+    expect(style(grid)).toMatch(/\.ch:not\(\[data-mark\]\) \{ background: var\(--ctl-off\); color: var\(--text-soft\);/);
+    expect(contrast(tok(night, '--text-soft'), tok(night, '--ctl-off'))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(tok(tokens, '--c-ink-soft'), tok(tokens, '--c-sunk'))).toBeGreaterThanOrEqual(4.5);
   });
 });

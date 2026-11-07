@@ -79,13 +79,14 @@
   /* the marked ones on fixed cream (any time of day, .obj-cream): the day leaf and coral text */
   .ch[data-mark='right'] { background: color-mix(in srgb, var(--c-leaf) 55%, var(--c-card)); color: var(--c-ink); box-shadow: inset 0 0 0 3px var(--c-leaf-edge), 0 var(--lip-h) 0 var(--c-leaf-edge); }
   .ch[data-mark='wrong'] { background: color-mix(in srgb, var(--c-coral) 30%, var(--c-card)); color: var(--c-ink); }
-  .choices:has([data-mark='right']) .ch:not([data-mark]) { opacity: var(--dim); }
+  /* set aside after the reveal: sunk (the off control: no edge, no lip), its soft text >= 4.5:1 (night 7.5, day 4.9) */
+  .choices:has([data-mark='right']) .ch:not([data-mark]) { background: var(--ctl-off); color: var(--text-soft); box-shadow: none; }
   .ch .sym { position: absolute; top: 4px; right: 10px; font: 700 26px/1 var(--font-ui); }
   .ch .sym.ok { color: var(--leaf-text); }
   .ch .sym.ng { color: var(--coral-text); }
   .tx { overflow-wrap: anywhere; }
   /* the Japanese under it: smaller, in the choice's own full colour (any tile, any time of day: >= 4.5:1 even on a
-     set-aside choice at --dim) */
+     set-aside choice) */
   .cja { display: block; margin-top: 2px; font: 700 var(--fs-s)/1.4 var(--font-ui); }
   @media (prefers-reduced-motion: reduce) { .choices { transition: none; } }
 </style>
