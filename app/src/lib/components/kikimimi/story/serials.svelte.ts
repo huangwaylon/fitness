@@ -24,9 +24,10 @@ export interface Serial {
   chapters: ChapterLine[];
 }
 
-/** The serials this phone can play, in the index's order. */
+/** The serials this phone can play, in the index's order: voiced or listened (past the listening check), a draft only
+ *  with the dev hooks. */
 export const SERIALS: readonly Serial[] = Object.entries(INDEX.stories)
-  .filter(([, s]) => s.status === 'voiced' || (s.status === 'draft' && hooksOn()))
+  .filter(([, s]) => s.status !== 'draft' || hooksOn())
   .map(([unit, s]) => ({
     unit, name: s.name, host: s.host,
     chapters: s.chapters.map(([part, , title, line, segs, cs], k) => ({ part, ch: k + 1, title, line, segs, secs: cs / 100 }))
