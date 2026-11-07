@@ -425,7 +425,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   **Set up in place** (the user, 2026-11-07: "see and configure settings right away instead of having to add first and
   then edit"): in a meal's search a food row's tap (not a recipe's) opens it under the row (`FoodOpen`): the amount's
   controls (`FoodPortion`: 状態, 量, −/＋, grams, the same rules), one line P · F · C, くわしく › (the amount level at what
-  is set: picture, 100 g values, another meal) and 「追加 558 kcal」, logged in the search's meal on this trip, the row
+  is set: picture, 100 g values, another meal) and 「追加 558 kcal」 (the row's own state chip, amount and kcal hidden meanwhile), logged in the search's meal on this trip, the row
   closed, the field cleared and focused in the tap. One row at a time (another closes at once, the scroll made up so
   nothing jumps); its row again, Esc (the sheet stays) or a new query close it; height and fade over 150 ms (none with
   reduced motion). Opening blurs the field (the keyboard down) and, when it would run past the screen, scrolls the row

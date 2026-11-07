@@ -16,9 +16,9 @@
   // (back to the day). A meal's search also has ⚡ クイック (`onquicknew`: kcal only, eating out) under the つくる row, and a
   // kcal typed (「650」) offers itself as a quick entry above the catalog's rows (its row the form, its ＋ logged at once).
   // In a meal's search (`inline`) a food row (さいきん's, マイ食品's, the catalog's) opens in place instead (FoodOpen: the
-  // amount's controls, くわしく, 追加): one at a time, kept in view (scrolled under the field when it would run past the
-  // screen; a row closed above it never shifts it), closed by its row again, Esc, or a new query; its 追加 logs it and
-  // clears and focuses the field, as the amount's does.
+  // amount's controls, くわしく, 追加; the row's own state, amount and kcal hidden meanwhile): one at a time, kept in
+  // view (scrolled under the field when it would run past the screen; a row closed above it never shifts it), closed by
+  // its row again, Esc, or a new query; its 追加 logs it and clears and focuses the field, as the amount's does.
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
@@ -318,7 +318,7 @@
           aria-controls={inline && open === key ? `fo-${key}` : undefined} onclick={tap(key, () => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}>
           <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} />
           <span class="nm">{e.f.n}</span>
-          <small class="meta"><span>{amountText(e)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
+          <small class="meta"><span class="as">{amountText(e)}{#if gl}{' · '}{/if}</span>{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(entryKcal(e))}</b>
         </button>{#if onquick}{@render qa(e.f.n, () => onquick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}{/if}{@render opened(key, itemOf(e.f, db, e.g), e.f, e.g, e.f.u)}</li>
       {/each}
@@ -448,6 +448,9 @@
   li > :global(.ex) { grid-column: 1 / -1; margin-top: 8px; }
   .rw > :global(.ex) { margin-top: 0; }
   .it[aria-expanded='true'] { box-shadow: inset 0 0 0 2px var(--c-edge), var(--sh-lip); }
+  /* open, the controls under it say the state, amount and kcal: the row's own (its default, as I had it) step aside */
+  .it[aria-expanded='true'] :is(.kc, .sts) { visibility: hidden; }
+  .it[aria-expanded='true'] .as { display: none; }
   .qa {
     appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
     display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); margin-bottom: var(--lip-h);
