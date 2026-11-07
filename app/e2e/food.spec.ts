@@ -501,7 +501,7 @@ test('マイレシピ: made from a meal’s search (2 ingredients, 2人前), lis
   await expect(row).toContainText('195 kcal');
   await expect(row).toContainText('2人前');
   await row.click();
-  await expect(h2).toHaveText('ごはんに追加');
+  await expect(h2).toHaveText('昼ごはん');
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('1人前');
   await expect(sheet(page).locator('[data-pick-meal=l]')).toHaveAttribute('aria-pressed', 'true'); // the meal's own
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('195');
@@ -554,7 +554,7 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   expect(await overflowOf(page)).toEqual([]);
 
   await view.locator('[data-recipe-log]').click();
-  await expect(h2).toHaveText('ごはんに追加');
+  await expect(h2).toHaveText('夜ごはん');
   await expect(sheet(page).locator('[data-pick-meal=d]')).toHaveAttribute('aria-pressed', 'true');
   await sheet(page).locator('[data-done]').click();
   await sheet(page).locator('[data-food-finish]').click(); // 完了: the day
@@ -580,7 +580,7 @@ test('マイレシピ: someone else’s recipe in the meal search is read-only f
   expect(bb.y + bb.height).toBeLessThanOrEqual(acts.y);
   await sheet(page).getByRole('button', { name: '戻る' }).click(); // ‹: the amount
   await expect(banner).toHaveCount(0);
-  await expect(h2).toHaveText('ごはんに追加');
+  await expect(h2).toHaveText('おやつ');
   await sheet(page).getByRole('button', { name: '戻る' }).click(); // ‹: the search
   await expect(curry).toHaveCount(2);
 
@@ -639,6 +639,7 @@ test('a いつもの’s entry: opened and ‹ leaves the day the repeat’s; �
   expect(n).toBeGreaterThan(0); // the demo's: ウェイ's breakfast, every day
   await reps.first().click();
   await expect(sheet(page).locator('[data-done]')).toHaveText('保存'); // open at once
+  await expect(sheet(page).locator('[data-once]')).toHaveText('変更はこの日だけです（いつものはそのまま）');
   await expect(sheet(page).locator('.chip[aria-pressed=true]')).toContainText('茶碗1杯');
   await sheet(page).getByRole('button', { name: '戻る' }).click();
   await expect(reps).toHaveCount(n); // ‹ changed nothing
@@ -753,7 +754,7 @@ test('whose day is kept for the session; an empty past day says きろく なし
   await expect(sheet(page).locator('[data-nutrient]')).toHaveCount(0);
 });
 
-test('search rows: a product’s brand on its second line, the same name, brand and kcal once; ✓n says 一致; no つくる while typing', async ({ page }) => {
+test('search rows: a product’s brand on its second line, the same name, brand and kcal once; ✓ says 一致; no つくる while typing', async ({ page }) => {
   await openFood(page);
   await sheet(page).locator('[data-add=s]').click();
   await expect(sheet(page).locator('[data-recipe-new]')).toBeVisible();
@@ -762,7 +763,9 @@ test('search rows: a product’s brand on its second line, the same name, brand 
   const rows = sheet(page).locator('[data-food-results] button.it');
   await expect(rows.first()).toBeVisible({ timeout: 15_000 });
   // ✓n in words on the row itself (a title alone never shows on an iPhone)
-  await expect(sheet(page).locator('[data-food-results] [data-verified]').first()).toHaveText(/^✓\d+ 一致$/);
+  const agree = sheet(page).locator('[data-food-results] [data-verified]').first();
+  await expect(agree).toHaveAttribute('aria-label', /^\d+件のデータで同じ値$/);
+  await expect(agree).toHaveText(/^✓( \d+つの資料で一致)?$/); // in words on a free second line, else a ✓ beside the name
   await expect.poll(() => sheet(page).locator('[data-food-results] [data-brand]').count(), { timeout: 20_000 }).toBeGreaterThan(0); // the products, lazily
   const keys = await rows.evaluateAll((bs) => bs.map((b) => `${b.querySelector('.nm')?.textContent}|${b.querySelector('[data-brand]')?.textContent ?? ''}|${b.getAttribute('data-per100')}`));
   expect(new Set(keys).size).toBe(keys.length);
@@ -771,6 +774,7 @@ test('search rows: a product’s brand on its second line, the same name, brand 
   await sheet(page).locator('[data-food-q]').fill('豚ロース 赤肉');
   const lean = rows.filter({ has: page.locator('.nm', { hasText: /^豚ロース 赤肉 生$/ }) });
   await expect(lean.locator('.meta [data-verified]')).toHaveCount(1);
+  await expect(lean.locator('.meta [data-verified]')).toHaveText('✓ 2つの資料で一致');
   expect((await lean.boundingBox())!.height).toBeLessThanOrEqual(72);
 });
 
@@ -985,6 +989,12 @@ test('状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼�
   await sheet(page).locator('[data-state=乾]').click();
   await expect(sheet(page).locator('[data-state-why]')).toHaveText('ゆでる前の重さなら乾');
   expect(await overflowOf(page)).toEqual([]);
+  // キャベツ 生: no パックの重さ line (only meat's and fish's)
+  await sheet(page).getByRole('button', { name: '戻る' }).click();
+  await sheet(page).locator('[data-food-q]').fill('キャベツ');
+  await sheet(page).locator('[data-food-results] [data-item="mext:06061"]').click();
+  await expect(sheet(page).locator('[data-state=生]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(sheet(page).locator('[data-state-why]')).toHaveCount(0);
   // 豚ロース 脂身つき 生 → 焼き: the cut's words stay (MEXT's own name drops them), its portions through the yield
   await sheet(page).getByRole('button', { name: '戻る' }).click();
   await sheet(page).locator('[data-food-q]').fill('豚ロース');

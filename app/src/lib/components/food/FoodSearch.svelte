@@ -262,7 +262,8 @@
     {:else}{#each vs as x (x.id)}{#if x === it}<b data-state={it.st}>{x.st}</b>{:else}<span class="st">{x.st}</span>{/if}{/each}{/if}</span>
 {/snippet}
 
-{#snippet verified(n: number)}<i class="ok" role="img" data-verified={n} aria-label={t('food.verified', { n })}>{t('food.verifiedBadge', { n })}</i>{/snippet}
+<!-- n independent sources agree on its kcal: in words on a free second line, else a ✓ beside the name (its words its label) -->
+{#snippet verified(n: number, short = false)}<i class="ok" class:short role="img" data-verified={n} aria-label={t('food.verified', { n })}>{short ? '✓' : t('food.verifiedBadge', { n })}</i>{/snippet}
 
 {#snippet catalog()}
   {#if failed}
@@ -295,7 +296,7 @@
         {@const ok = v && v.n >= 2 ? v.n : 0}
         <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={it.id} data-per100={it.kcal} onclick={() => onpick(it)}>
           <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} />
-          <span class="nm">{vs.length ? stemName(it) : it.name}{#if ok && !solo}{@render verified(ok)}{/if}</span>
+          <span class="nm">{vs.length ? stemName(it) : it.name}{#if ok && !solo}{@render verified(ok, true)}{/if}</span>
           <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
         </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}</li>
@@ -342,6 +343,7 @@
     font: 700 var(--fs-xs)/1.1 var(--font-num); font-style: normal; color: var(--c-ink); background: color-mix(in srgb, var(--c-mint) 70%, var(--c-cream));
   }
   .meta .ok { margin-left: 0; }
+  .ok.short { padding: 2px 5px; }
   .meta { grid-area: meta; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); overflow-wrap: anywhere; }
   .br { color: var(--text); }
   /* the shown state a chip within the line (inline padding: the row no taller), the others faded */
