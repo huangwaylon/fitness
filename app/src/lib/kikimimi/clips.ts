@@ -56,33 +56,60 @@ export const clipAt = (id: string, slow = false): PackRef | undefined => (slow ?
 /** The gap between a dialogue's lines (s): a breath, the next speaker taking the turn. */
 export const LINE_GAP = 0.3;
 
+/** The offset before each of a dialogue's lines after the first (s): a たちぎき line's `at`, from the previous line's
+ *  end (negative: an overlap, played on the audio clock, never baked into a clip, so a line still plays alone), else
+ *  LINE_GAP. */
+export const lineGaps = (it: Pick<Item, 'lines'>): number[] => ((it.lines ?? []) as readonly { at?: number }[]).slice(1).map((l) => (typeof l.at === 'number' ? l.at : LINE_GAP));
+
 /** Whether every clip of an item exists (in `clips`: clips.json, the compiler's). */
 export const voiced = (it: Pick<Item, 'id' | 'lines'>, clips: Readonly<Record<string, unknown>>): boolean => clipIds(it).every((id) => id in clips);
 
-/** An item's length as played (s): its clip, or a dialogue's lines in turn with LINE_GAP between them (the session's
- *  schedule: components/kikimimi/decks.ts, a round's `play`); undefined while a clip is missing. */
+/** An item's length as played (s): its clip, or a dialogue's lines in turn, each its offset after the one before
+ *  (lineGaps), to the last one's end (the session's schedule: components/kikimimi/decks.ts, a round's `play`);
+ *  undefined while a clip is missing. */
 export function itemDur(it: Pick<Item, 'id' | 'lines'>, clips: Readonly<Record<string, Pick<Clip, 'dur'>>> = CLIPS): number | undefined {
   const durs = clipIds(it).map((id) => clips[id]?.dur);
-  return durs.some((d) => d === undefined) ? undefined : (durs as number[]).reduce((a, b) => a + b, 0) + LINE_GAP * (durs.length - 1);
+  if (durs.some((d) => d === undefined)) return undefined;
+  const starts = sequenceStarts(durs as number[], 0, 0, lineGaps(it));
+  return Math.max(...starts.map((s, k) => s + (durs[k] as number) * 1000)) / 1000;
 }
 
-/** A sequence's start times (relay ms) from `at`, its lines' lengths `durs` (s): each LINE_GAP after the one before.
- *  Heard late (`now` past `at`), a line already over is skipped (-1) and one under way plays whole from now, the ones
- *  after it moving on by as much: never two lines at once. */
-export function sequenceStarts(durs: readonly number[], at: number, now: number): number[] {
+/** A sequence's start times (relay ms) from `at`, its lines' lengths `durs` (s): each its gap (s, `gaps[k - 1]`, else
+ *  LINE_GAP) after the end of the one before. Heard late (`now` past `at`), a line already over is skipped (-1) and
+ *  one under way plays whole from now, the ones after it moving on by as much. */
+export function sequenceStarts(durs: readonly number[], at: number, now: number, gaps: readonly number[] = []): number[] {
   const out: number[] = [];
   let t = at;
-  for (const d of durs) {
+  for (const [k, d] of durs.entries()) {
     const ms = d * 1000;
+    if (k > 0) t += (gaps[k - 1] ?? LINE_GAP) * 1000;
     if (t + ms <= now) {
       out.push(-1);
-      t += ms + LINE_GAP * 1000;
+      t += ms;
       continue;
     }
     const start = Math.max(t, now);
     out.push(start);
-    t = start + ms + LINE_GAP * 1000;
+    t = start + ms;
   }
+  return out;
+}
+
+// ---- a bed under a sequence ------------------------------------------------------------------------------------------
+
+/** A bed under a whole conversation (a たちぎき at a party: components/kikimimi/clipPlayer.svelte.ts) starts this long
+ *  (s) before its first line and ends this long after its last, as a mixed clip's bed (conditions.ts condPlan). */
+export const BED_LEAD = 0.5;
+export const BED_TAIL = 0.35;
+/** Its fades in and out (s). */
+const BED_FADE = 0.25;
+
+/** `n` samples of a bed from its loop (seamless: each loop's end crossfaded into its start, scripts/kikimimi-beds.ts),
+ *  from `offset` (any int: wrapped), at `gain`, faded in and out over BED_FADE. */
+export function bedSamples(loop: Float32Array, n: number, rate: number, gain: number, offset: number): Float32Array<ArrayBuffer> {
+  const out = new Float32Array(n), len = loop.length, fade = Math.max(1, Math.min(Math.round(BED_FADE * rate), Math.floor(n / 2)));
+  if (!len) return out;
+  for (let j = 0, p = ((offset % len) + len) % len; j < n; j++, p = p + 1 === len ? 0 : p + 1) out[j] = loop[p] * gain * Math.min(1, j / fade, (n - 1 - j) / fade);
   return out;
 }
 

@@ -10,4 +10,5 @@ export const BUILD_V: Readonly<Record<string, number>> = {
   lesson: 1,
   taikai: 1,
   tile: 1,
+  tachi: 1,
 };
