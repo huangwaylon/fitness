@@ -1,17 +1,18 @@
 # Listening content (`content/listen/`)
 
 Source units for the ききみみ games, one YAML file per unit (docs/kikimimi-framework.md §6, §8 and "Listen parts as
-built", docs/curriculum.md §5 and §9, docs/curriculum-wave2.md §2.1–2.3). `npm run kikimimi:levels` checks them
-(src/lib/kikimimi/listen.ts) and compiles each into `levels/parts/<unit>.json`; a problem in any file stops it, and
-content.test runs the same checker. The games show `listened` files only.
+built", docs/curriculum.md §5 and §9, docs/curriculum-wave2.md §2.1–2.5). `npm run kikimimi:levels` checks them
+(src/lib/kikimimi/listen.ts) and compiles each, whatever its status, into `levels/parts/<unit>.json`, with its game,
+stage and status in the index's `listen`; a problem in any file stops it, and content.test runs the same checker. The
+games show `listened` files only (a story shows from `voiced`); a draft plays only with the dev hooks. All 25 files
+here are `listened` (2026-11-07).
 
 ## Files and names
 
 - `<unit>.yaml`, where `unit` is the file name: `[a-z0-9-]{1,12}`. It is the pack name and the `u` on the wire.
 - The prefix is the curriculum stage (`s0` はまべ … `s4` ほし), then the game, then a letter when a stage has more
   than one unit: `s1-tile-a`, `s2-call-b`, `s3-tachi-a`.
-- `stage` in the header is 1–5 (S0–S4), so an `s2-` unit has `stage: 3`. The framework's `s2-clinic` / `stage: 2`
-  example predates this rule.
+- `stage` in the header is 1–5 (S0–S4), so an `s2-` unit has `stage: 3`; its clips are spoken at level stage + 1.
 - Item ids are `[a-z0-9][a-z0-9-]{0,31}` and unique across all units, prefixed by kind (`tile-`, `call-`, `tachi-`).
   They key SRS history and `listen` rows, so **never rename or reuse one**. Retire an item by deleting it.
 
@@ -20,13 +21,13 @@ content.test runs the same checker. The games show `listened` files only.
 ```yaml
 schema: 1
 unit: s2-call-a
-game: call                       # the GameDef that shows it: tile | call | tachi | quiz | ladder | news | long | serial
+game: call                       # the GameDef that shows it: tile | call | tachi | rush | news | quiz | ladder | long | serial
 stage: 3                         # 1-5 = S0-S4
 track: life                      # life | people | work | broadcast
 seeds: [3, 10, 14, 25, 30]       # curriculum §5.5 (1-66); every item's tags.seed is one of these
 features: { primary: self-repair, review: numbers }
 cando: "でんわで 番号や 日時の 訂正を ききとって メモできる"
-status: draft                    # draft | voiced | listened (the compiler ships listened only)
+status: draft                    # draft | voiced | listened (the games show listened only)
 cast: { me: us-m3 }              # optional: speaker -> cast voice for this unit
 items: [...]
 ```
@@ -41,20 +42,26 @@ is an error over `en`, the lines and the plan choices (never `tts`).
 
 | field | |
 |---|---|
-| `kind` | `tile`, `call`, `tachi`, `rush`, `news` or `weather` (the quiz kinds come over from bank.ts in 9b) |
+| `kind` | `tile`, `call`, `tachi`, `rush`, `news` or `weather` (the quiz kinds stay in bank.ts) |
 | `id` | see above |
 | `note` | the trap, in Japanese, ≤ 40 字 (counted with `[...s].length`, spaces included). No grammar terms |
 | `tags` | `{seed, register, pragmatic, conditions?, features}`, from the vocabulary below |
 | `scene` | optional backdrop: `cafe platform pharmacy office door gate street living` (bank.ts `SCENE_IDS`). None means the plain stage |
 | `channel` | optional: `live phone pa video`, when `tags.conditions` don't already say it |
 | `ask` | optional: what the scene card says while it plays (Japanese, UI style) |
-| `ctx` | the situation, Japanese with kanji, one line ≤ 30 字: who, where, why, never the answer (a tile's and a call's; a たちぎき's per round) |
-| `why` | 解説: why the answer fits and what each trap was, Japanese with kanji, ≤ 90 字 (a tile's; a call's per memo round; a たちぎき's per round) |
-| `cja` | the choices in Japanese, one per option in the authored order, no Latin letters (a call's per memo slot; optional on a たちぎき's plan round) |
+| `ctx` | the situation, Japanese with kanji, one line ≤ 30 字: who, where, why, never the answer |
+| `why` | 解説: why the answer fits and what each trap was, Japanese with kanji, ≤ 90 字 |
+| `cja` | the choices in Japanese, one per option in the authored order, no Latin letters |
 
-The help (bank.ts `helpProblems`) is checked wherever it is, and required once a file's status is past `draft`: a
-tile's `ctx` and `why`; a call's `ctx`, each memo round's `why` and each slot's `cja`; each たちぎき round's `ctx` and
-`why`.
+The help (bank.ts `helpProblems`) is checked wherever it is, and required once a file's status is past `draft`:
+
+| kind | required help |
+|---|---|
+| `tile` | `ctx`, `why` |
+| `call` | `ctx`; each memo round's `why`; each slot's `cja` |
+| `tachi` | each round's `ctx` and `why` (`cja` optional on the plan round) |
+| `rush` | `ctx`, `why`, `cja` |
+| `news` | `ctx`; the gist's and the detail's `cja` and `why`; each sky's umbrella `why` |
 
 ## Text rules (curriculum §9)
 
@@ -69,7 +76,7 @@ tile's `ctx` and `why`; a call's `ctx`, each memo round's `why` and each slot's 
   phrases, like the app's other Japanese copy (「何時に 行く？」).
 - Adult, real life: yen and real places, villagers playing people, no island currency (curriculum §5.4).
 
-## `tile` (ことば タイル, increment 10)
+## `tile` (ことば タイル, W2-1)
 
 ```yaml
 - kind: tile
@@ -100,7 +107,7 @@ digits and a reduction feature (a dialogue's lines aren't one-clip items). Each 
 keeps the reviewed `decoys`, `marks`, `note`, `ctx` and `why`; a new tile comes with defaults and `review: true` until
 a person writes its help. A draft that says what a bank item already says is folded into that item's derived tile.
 
-## `call` (ようじ でんわ, increment 14)
+## `call` (ようじ でんわ, W2-3)
 
 ```yaml
 - kind: call
@@ -125,7 +132,7 @@ a person writes its help. A draft that says what a bank item already says is fol
   amounts ascending reads best), and `answer` is an index. The distractors are the corrected value, a value heard
   elsewhere in the call, and a plausible inference (a sum, the time to arrive early).
 
-## `tachi` (たちぎき, increment 15)
+## `tachi` (たちぎき, W2-2)
 
 ```yaml
 - kind: tachi
@@ -174,7 +181,7 @@ there, never the files. `--check` fails when a file is stale, and `--clips` list
 - One customer is one clip (its id). A tier keeps 3 or 4 chips by their numbers (games/rush/def.ts `chipsAt`), so
   the chips must read as numbers.
 
-## `news` (しずえの ニュース, wave 2 §2.5)
+## `news` (しずえの ニュース, W2-5)
 
 ```yaml
 - kind: news
@@ -196,7 +203,7 @@ there, never the files. `--check` fails when a file is stale, and `--clips` list
 
 ## Stories (`story/`, おやすみ ものがたり, curriculum §7.1)
 
-Bedtime serials in the framework's `serial` shape, one file per serial (`st-johnny`, `st-cafe`, and `st-tokyo`, a draft until A5): extensive listening
+Bedtime serials in the framework's `serial` shape, one file per serial (`st-johnny` and `st-cafe` voiced, `st-tokyo` listened): extensive listening
 at ~95 % comprehension, so no score, no questions, no notes or tags. They live in `story/` so content.test doesn't
 read them; `src/lib/kikimimi/stories.test.ts` does.
 
@@ -224,7 +231,7 @@ items:
   are unique across stories and units.
 - `predict` is for the morning after, never during the story; `answer` is what the next chapter tells. The last
   chapter has none.
-- **Voiced** (2026-11-06, `status: voiced`): `npm run audio:kikimimi` speaks every segment as a clip of its own,
+- **Voicing:** `npm run audio:kikimimi` speaks every segment as a clip of its own,
   `<chapter>-<n>` (n from 1), in the narrator's voice or the villager's (story.ts), as the engine speaks it (Qwen has
   no pace setting: ~200 wpm), with no noise bed, at −18 LUFS (the quiz's −16). The gate is the quiz's (whisper, re-rolls).
   Each chapter's clips go into its own packs (`st-johnny-3`, a second part past 1.2 MB) and its chunk,
@@ -268,5 +275,5 @@ listen.ts `checkListen` (the compiler and content.test) checks:
 - every answer in range.
 
 It doesn't check whether the English is natural, whether a decoy is fair, or whether a claim really belongs to one
-speaker. Those need an English reviewer and a Japanese reviewer, then the listening check on `/dev/listen` once the
-items are voiced.
+speaker. Those need an English reviewer and a Japanese reviewer, then the listening check once the items are voiced
+(`npm run audio:kikimimi -- --listen --only <regex>`; what's still flagged: docs/curriculum-wave2.md §4.1).

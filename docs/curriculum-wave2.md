@@ -1,4 +1,6 @@
-# ききみみ curriculum wave 2: more content, more ways to listen (signed off, 2026-11-07)
+# ききみみ curriculum wave 2: more content, more ways to listen (signed off and built, 2026-11-07)
+
+**Status (2026-11-07).** Built and shipped: よみきき サンド, the five modes, the conditions, recipe 2, the 14 units, every content lane and audio batches A1–A5, all `listened` with the user's go-ahead ("proceed for all"). **Pending:** W2-R (the packs on R2: the user's Cloudflare step, §5 question 3), the 7 new backdrops (ART, §3.3), the tone spike (W2-6, §2.6), and the user's listening check of the flagged clips (§4.1).
 
 **The user, 2026-11-07:** "work with curriculum team, lets start developing more content. more types and ways of studying."
 
@@ -9,7 +11,7 @@
 2. 100 items for three new modes are already drafted (60 tiles, 20 calls, 20 たちぎき) and only need a game: the cheapest new ways of studying.
 3. Build one feature and five modes, in this order: よみきき サンド, ことば タイル, たちぎき, ようじ でんわ, すうじ ラッシュ, しずえの ニュース. トーン あて is a spike only.
 4. Write 14 units, 7 at かわ and 7 at もり, so both stages pass the compiler's coverage rule (≥ 7 of 9 domains). Today かわ covers 2 and もり 2.
-5. Wave 2 adds ~60 MB of audio. Today the games' packs are 41 MB (bank.test's line: 50) and the stories' 12 MB (line: 20). Both lines are crossed by wave 2, so the packs move to R2 (W2-R) before audio batch A2.
+5. Wave 2 adds ~60 MB of audio: the games' packs 41 → ~90 MB (bank.test's line was 50), the stories' 12 → ~23 MB (line 20), so the packs move to R2 (W2-R). As built: 89.3 and 21.4 MiB, still on Pages under raised lines until W2-R (§5, question 3).
 
 **Rules for every new mode** (the user's constraints):
 - short (≤ 3 min a game), fun, never homework: no streaks, no keyboard, replays free;
@@ -37,6 +39,8 @@
 | Engineer | The drafted modes first, lazy chunks | The sheet, game.svelte.ts and decks.ts branch per game, so every game rides the sheet's chunk and edits shared files | W2-C1/C2 (compiler, registry, view slot) before any game. トーン あて is a 1-day spike |
 
 ## 1. The gaps
+
+A snapshot at the team round (aff5e496): the why of §2–3. What wave 2 added is in §3.4.
 
 ### 1.1 What exists
 
@@ -117,20 +121,18 @@ All five join きまぐれ's rotation (today.ts) and the みんなで picker. A 
 - **The data:** まだ is a device-local mark (DEVICE, like the last timer) that srs.ts folds in as "hard" on this phone. No row change, nothing on the wire.
 - **The framework:** frame/ReviewList and frame/RevealFrame get the button; a new lazy frame/Sandwich.svelte reuses Transcript, scene/karaoke and SoundLine.
 - **The risk:** a reading crutch. The clip always plays blind first.
-- **Effort:** S (0.5 d). No content, no audio.
-- **As built (W2-0, 2026-11-07):** frame/SandButton (「📖 読んでから もう一度」) under a solo reveal's verdict and in an open review row; frame/Sandwich a full-height sheet (the reveal behind blurred), 読む / 聞き取れた waiting for the blind clip's end (or 3 s with no voice). まだ: DEVICE.kikiMada `{[who]: [id, day][]}` (≤ 200), srs.ts cardsOf folds it in as "hard" after that day's answers, the report's `due` and にがて れんしゅう with it. e2e kikimimi-sandwich.spec.
+- **As built (W2-0):** frame/SandButton (「📖 読んでから もう一度」) under a solo reveal's verdict and in an open review row; frame/Sandwich a full-height sheet (the reveal behind blurred), 読む / 聞き取れた waiting for the blind clip's end (or 3 s with no voice). まだ: DEVICE.kikiMada `{[who]: [id, day][]}` (≤ 200), folded by srs.ts cardsOf as "hard" after that day's answers (the report's `due` and にがて れんしゅう with it). e2e kikimimi-sandwich.spec.
 
 ### 2.1 ことば タイル: rebuild what you heard
 
 - **Solo (2½ min):** 6 sentences. The clip plays once with no tiles; then the sentence's words plus 1–4 decoys appear; tap them into order. Replay is free (counts as "hard"). The reveal shows the **spoken shape** over the written one (should've → *shoulda*), then `ja`, `why` and ▶︎.
 - **Co-op:** one board, odd slots for role 0, even for role 1 (`roles: 2`); `team` is the union. Both hear the same clip in one room.
 - **The skill:** segmentation, weak forms, contractions, h-drop, elision, chains, linking.
-- **The content:** the `tile` schema (content/listen/README.md): **53 drafts** (60 less the 7 duplicates of bank lines, folded into their bank items), **76 derived** from voiced bank items by scripts/kikimimi-tiles.ts (tiles from `en`, decoys from a weak-form/contraction/near-sound table) then reviewed by a person, and 30 new for the zero-count features.
+- **The content:** the `tile` schema (content/listen/README.md): **53 drafts** (60 less the 7 duplicates of bank lines, folded into their bank items), **65 derived** from voiced bank items by scripts/kikimimi-tiles.ts (s2/s3-tile-bank, then reviewed by a person), 30 for the zero-count features (s2-tile-b) and the units' おと tiles (s1-tile-c, s2-tile-c: 42 each).
 - **Tiers:** easy 1 decoy and the first tile placed; hard 3–4 decoys.
 - **The framework:** GameDef `tile`; answer ≤ 12 ints (in the contract); `pick` the wrong-slot bitmask (fits the row's 0–4095). A tap-to-place TileBoard that wraps at 393 px. The derived tiles play their bank item's clip from its level's pack.
-- **The audio:** ~83 new clips (≈ 4 min, ~1.5 MB) over the 12 US voices.
 - **The risks:** a grammar puzzle (sound decoys only, tiles hidden until the first listen ends); overflow (≤ 12 tiles).
-- **Effort:** S–M (2 d game; content in B1).
+- **Built (W2-1):** kikimimi-framework.md "ことば タイル as built".
 
 ### 2.2 たちぎき: overheard three-speaker talk
 
@@ -143,9 +145,9 @@ All five join きまぐれ's rotation (today.ts) and the みんなで picker. A 
   - GameDef `tachi`, a FaceMatch input (array of 3); each round's row id is the item's id plus a round suffix (ITEM_ID_RE allows `-`);
   - **line offsets:** `at` (negative = overlap) replaces LINE_GAP in clips.ts `sequenceStarts` and `itemDur`, played on the audio clock, not baked, so segment replay still works; clipPlayer's `talk` holds more than one line at once;
   - **three seats** in components/kikimimi/Transcript.svelte (`seat`: left, centre, right). Only this lane edits Transcript and clipPlayer.
-- **The audio:** 30 conversations × ~9 lines ≈ 270 clips, ≈ 22 min, ~8 MB; three distinct voices per item (ECAPA ≤ 0.64 between them); the party bed (W2-A).
+- **The audio:** three distinct voices per item; the party bed (W2-A) is looped by the player under the whole conversation, so its lines are mixed dry.
 - **The risks:** overlap masking the answer (overlap only on lines whose start carries none, −0.2 to −0.5 s); voices hard to tell apart (mixed genders, faces bob while speaking).
-- **Effort:** M (2.5 d).
+- **Built (W2-2):** kikimimi-framework.md "たちぎき as built".
 
 ### 2.3 ようじ でんわ: phone errands that change mid-call
 
@@ -153,12 +155,12 @@ All five join きまぐれ's rotation (today.ts) and the みんなで picker. A 
 - **Rounds:** 2 per call (6 a game, ≤ the row's 12): the call plays in memo round 1; round 2 has `play` 0.
 - **Co-op 「わけて メモ」:** both hear the whole call; the slots split by role; the team's memo is the union.
 - **The skill:** multi-detail listening, self-repair, phone-band audio, a detail remembered late.
-- **The content:** the `call` schema: 20 drafts (s1-call, s2-call-a/b, s3-call) and **16 new**: 8 at かわ, 8 at もり (one per wave-2 unit for its チェック, plus a spare each). Settings: konbini, a prescription pickup, a delivery slot, a restaurant booking.
+- **The content:** the `call` schema: 20 drafts (s1-call, s2-call-a/b, s3-call) and **14 new**, one per wave-2 unit for its チェック (s1-call-b at かわ, s2-call-c at もり; the two planned spares weren't written).
 - **Tiers:** easy 2 slots; hard 4 slots and an extra distractor chip.
 - **The framework:** GameDef `call`, a MemoPad of chip rows, PhoneFrame reused (its bars drop on `signal` lines).
-- **The audio:** 36 calls × ~7 lines ≈ 250 clips, ≈ 18 min, ~6.5 MB; phone band, and the `signal` condition (W2-A) never over a memo answer.
+- **The audio:** the phone band, and the `signal` condition (W2-A) never over a memo answer.
 - **The risk:** form fatigue. 3 calls only, chips not typing, the basket payoff.
-- **Effort:** M (3 d).
+- **Built (W2-3):** kikimimi-framework.md "ようじ でんわ as built".
 
 ### 2.4 すうじ ラッシュ: a café rush of numbers
 
@@ -166,12 +168,12 @@ All five join きまぐれ's rotation (today.ts) and the みんなで picker. A 
 - **Settings:** a café, a konbini, a ticket counter, a deli, a taxi fare, a prescription pickup.
 - **Co-op:** two registers, customers alternating by role, one shared queue. しょうぶ: the same queue, scored against expectation (the たいかい rule).
 - **The skill:** numbers at speed, self-repair, teen/ty, yen and dollars.
-- **The content:** template-made. scripts/kikimimi-rush.ts expands seeded frames (speaker × setting × number × correction) into content/listen/s1-rush.yaml and s2-rush.yaml, ~240 lines, with `ctx`, `cja` and `why` from each frame ("make that three: 最後の 数が 答え"). A person samples 20%. Rush items are exempt from the near-duplicate gate among themselves (one frame makes many).
+- **The content:** template-made. scripts/kikimimi-rush.ts expands seeded frames (speaker × setting × number × correction) into content/listen/s1-rush.yaml and s2-rush.yaml, 240 lines, with `ctx`, `cja` and `why` from each frame ("make that three: 最後の 数が 答え"). A person samples 20%. Rush items are exempt from the near-duplicate gate among themselves (one frame makes many).
 - **Tiers:** easy 3 chips; hard 4, the pre-correction value always among them.
 - **The framework:** GameDef `rush`, `num`-like kinds with an 8 s answer window (the lobby's なし turns it off), ChoiceGrid, a small Counter stage.
-- **The audio:** 240 clips over the 12 US voices, ≈ 12 min, ~4.3 MB, on the café bed.
+- **The audio:** 240 clean takes over the 12 US voices (a bed is tagged in `tags.conditions` only, not mixed).
 - **The risk:** a TOEIC drill. In-character lines and the combo meter.
-- **Effort:** S–M (1.5 d game, 0.5 d generator).
+- **Built (W2-4):** kikimimi-framework.md "すうじ ラッシュ as built".
 
 ### 2.5 しずえの ニュース: the morning bulletin
 
@@ -180,16 +182,16 @@ All five join きまぐれ's rotation (today.ts) and the みんなで picker. A 
 - **Co-op:** together, one shared answer count.
 - **The skill:** news register, signposting, extended listening; the bridge to ほし.
 - **The content:** 30 evergreen bulletins we write (open question 1's default), content/listen/news-a.yaml and -b.yaml, tagged by season and weekday.
-- **The weather tail:** one clip per **whole sentence**, joined only between sentences: 8 conditions, highs −2…38 °C ("a high of twenty-three degrees": Celsius, as Tokyo reports it), 6 alerts ≈ 55 clips. The data is the relay's Open-Meteo `wx` (sync/wx.ts); without it the bulletin ends after segment 2 and the weather question is skipped.
+- **The weather tail:** one clip per **whole sentence**, joined only between sentences: 8 conditions, highs −2…38 °C ("a high of twenty-three degrees": Celsius, as Tokyo reports it), 6 alerts: 56 sentences. The data is the relay's Open-Meteo `wx` (sync/wx.ts); without it the bulletin ends after segment 2 and the weather question is skipped.
 - **Tiers:** easy asks the gist and the umbrella; hard adds the detail.
 - **The framework:** GameDef `news`, segment rounds, answers after play; a NewsStage with しずえ at her desk (PaFrame-like).
-- **The audio:** 90 segments + 55 weather ≈ 35 min, ~12 MB; one fixed US newsreader voice, −18 LUFS like the stories.
+- **The audio:** one fixed US newsreader voice (us-f4), −18 LUFS like the stories.
 - **The risks:** "homework" (60 s, the weather hook, no streak); choppy joins (sentence joins only, checked on the iOS Simulator).
-- **Effort:** M (2 d game; content in B5).
+- **Built (W2-5, B5):** kikimimi-framework.md "しずえの ニュース as built".
 
 ### 2.6 トーン あて (conditional)
 
-One line spoken three ways (sincere, sarcastic, resigned), matched to a face or to what happens next. **Spike (1 d):** 10 lines × 3 tones through Qwen3-TTS with style instructions against the Base clone. It passes only if the voice holds (ECAPA ≥ 0.6 to the cast's reference) **and** the user, on the phone, tells the takes apart blind. Pass: S, a quiz kind of 3 clips. Fail: cut; attitude stays word-borne (`mean`).
+One line spoken three ways (sincere, sarcastic, resigned), matched to a face or to what happens next. **Spike (1 d):** 10 lines × 3 tones through Qwen3-TTS with style instructions against the Base clone. It passes only if the voice holds (ECAPA ≥ 0.6 to the cast's reference) **and** the user, on the phone, tells the takes apart blind. Pass: S, a quiz kind of 3 clips. Fail: cut; attitude stays word-borne (`mean`). **Not run yet** (W2-6, whenever the GPU is idle).
 
 ## 3. Content wave 2
 
@@ -225,13 +227,15 @@ Per curriculum-units.md §2 and §11: one situation and one can-do; 6–10 key p
 
 **Coverage:** かわ → ともだち, イベント, たべもの, かいもの, いえ, からだ, まち: **7 of 9** ✓ (11 units with 4 glue, past PLANNED 10, so the rule becomes an error). もり → **9 of 9** ✓ (10 units, still a warning until 14). No domain over 25%.
 
-**Landing order (keeps main green):** at かわ, land the 5 domain units before gl-intro and gl-invite. At 10 かわ units the coverage check turns into an error, and it fails if fewer than 7 domains are in by then.
+**Landing order (kept main green):** the 5 かわ domain units landed before gl-intro and gl-invite, since at 10 かわ units the coverage check becomes an error.
 
-**Lessons:** each unit ships on recipe v1 (playable at once) with its call and tiles already written in content/listen/. W2-9 flips it to v2: おと = 6 tiles from the unit's lines; じっせん = a ladder, or a たちぎき where one fits; チェック = 1 call (2 memo rounds) + 4 quiz items (a 6-answer row, 5 of 6 stamps it). The 7 wave-1 units stay on v1 until they have calls (wave 3).
+**Lessons (as built, W2-9):** the 14 units are on recipe 2 (`lessons.v: 2`, curriculum-units.md §16): おと = 6 tiles from the unit's lines; じっせん = a ladder, or a たちぎき where one fits; チェック = 1 call (2 memo rounds) + 4 quiz items (a 6-answer row, 5 of 6 stamps it). A lesson plays recipe 1 until its content is `listened` (all of it is now). The 7 wave-1 units stay on recipe 1 until they have calls (wave 3).
 
 **Not in wave 2:** やま and ほし units (351 level items between them; daily conversation comes first). Wave 3 opens やま with idioms and group talk on たちぎき. C1 practice in wave 2 comes from s3 tiles, calls and たちぎき, the 5 new やま たちぎき, and ニュース.
 
 ### 3.2 More items for the thin spots
+
+All written (B4, B6, B7) and voiced; the planned calls became the units' 14 (§2.3).
 
 | Where | What | How many |
 |---|---|---|
@@ -242,27 +246,27 @@ Per curriculum-units.md §2 and §11: one situation and one can-do; 6–10 key p
 | `ctx` back-fill | levels 1–3 (138), L4 (36), units (40) | 214, text only |
 | Cleanup | fold the 7 duplicate tiles; spread Osaka, refunds, bill splits, "actually"; the bank's US-lint hits | – |
 
-**Bedtime: a third serial, 「トウキョウ ひとりぐらし」** (st-tokyo), 7 chapters of ~4 min. An American newcomer's first month in Tokyo (the konbini, the ward office, a festival, the first earthquake drill) in US English, recycling the units' phrases; narrator us-f3, villagers as the people she meets. With 10 chapters a nightly listener runs out in under two weeks. More ジョニー chapters wait until st-tokyo is played. ~28 min, ~11 MB: past the stories' 20 MB line, so A5 needs W2-R.
+**Bedtime: a third serial, 「トウキョウ ひとりぐらし」** (st-tokyo), 7 chapters of ~4 min. An American newcomer's first month in Tokyo (the konbini, the ward office, a festival, the first earthquake drill) in US English, recycling the units' phrases; narrator us-f3, villagers as the people she meets. With 10 chapters a nightly listener runs out in under two weeks. More ジョニー chapters wait until st-tokyo is played. As built: 7 chapters of 681–694 words, 230 segments, 25.6 min, 9.7 MB.
 
 ### 3.3 Visuals
 
-Seven painted backdrops: `party`, `restaurant`, `shop`, `clinic`, `park`, `konbini`, `lobby` (tr-hotel already names it). The existing pipeline (scripts/scenes/, Z-Image-Turbo, paper style, 1x/2x/3x webp) on the second Mac, throttled against the food images and never during a TTS batch.
+Seven painted backdrops: `party`, `restaurant`, `shop`, `clinic`, `park`, `konbini`, `lobby`. The existing pipeline (scripts/scenes/, Z-Image-Turbo, paper style, 1x/2x/3x webp) on the second Mac, throttled against the food images and never during a TTS batch. **Pending (ART):** not painted yet. bank.ts `SCENE_IDS` still holds the 8, so the units' headers name these scenes while their items use the existing backdrops or the plain stage.
 
 ### 3.4 Volume, pipeline and gates
 
-| | Items | New clips | Audio | Packs |
-|---|---|---|---|---|
-| 14 units | ~420 (~70% inline) | ~630 | ~45 min | ~17 MB |
-| Tiles | 159 (76 reused) | ~83 | 4 min | 1.5 MB |
-| Calls | 36 | ~250 | 18 min | 6.5 MB |
-| たちぎき | 30 | ~270 | 22 min | 8 MB |
-| すうじ ラッシュ | 240 | 240 | 12 min | 4.3 MB |
-| しずえの ニュース | 30 + weather | ~145 | 35 min | 12 MB |
-| かわ breadth | 40 | 40 | 3 min | 1 MB |
-| st-tokyo | 7 chapters | ~230 | 28 min | 11 MB |
-| **Total** | **~1,000 rounds** | **~1,900** | **~2.8 h** | **~60 MB** (games 41 → ~90, stories 12 → ~23) |
+| | Planned | As built (2026-11-07) |
+|---|---|---|
+| 14 units | ~420 items, ~630 clips | 14 × 30 items, 719 unit lines |
+| Tiles | 159 (76 reused) | 232: 53 drafts, 65 derived (playing their bank clips), 30 feature, 84 units' おと |
+| Calls | 36 | 34 (20 drafts + 14 for the units) |
+| たちぎき | 30 | 30 |
+| すうじ ラッシュ | 240 | 240 |
+| しずえの ニュース | 30 + weather | 30 bulletins + 56 weather sentences |
+| かわ breadth | 40 | 40 (content/kawa-b.ts, level 3) |
+| st-tokyo | 7 chapters | 7 chapters, 230 clips |
+| **Audio** | ~1,900 clips, ~2.8 h, ~60 MB | 2,164 clips (A1–A5), ~2.6 h; the games' packs 41 → 89.3 MiB, the stories' 12.8 → 21.4 MiB |
 
-Synthesis is ~3–4 GPU hours (Qwen3 at RTF ~0.65 on the M5 Max, with re-rolls and whisper). The human listen is the bottleneck.
+The human listen is the bottleneck, not the GPU.
 
 **Pipeline:**
 1. **Seed sheet** (the lead): can-do, phrases, sound, host and scene, §5.5 seeds; for modes the kind and tier sets.
@@ -275,62 +279,71 @@ Synthesis is ~3–4 GPU hours (Qwen3 at RTF ~0.65 on the M5 Max, with re-rolls a
 
 ## 4. The build plan
 
-One agent per increment, disjoint files, each landing green on main and playable on its own. ≤ 3 agents at once (the ACC proxy), one GPU job at a time. Audio batches are script runs by the lead, not agent slots.
+One agent per increment, disjoint files, each landing green on main and playable on its own; ≤ 3 agents at once (the ACC proxy), one GPU job at a time; audio batches are the lead's script runs. After W2-C1/C2 a game lane adds only its own folder, i18n file and one registry line. All of it landed on 2026-11-07 but the rows marked pending.
 
-| # | Increment | Files it owns | Depends on | Effort |
+| # | Increment | Status |
+|---|---|---|
+| **W2-C1** | Compiler for the listening kinds: content/listen/*.yaml → `levels/parts/<file>.json` and the index's `listen` / `games`; the kinds' checker (listen.ts), the help checks and the US-only lint | Built: kikimimi-framework.md "Listen parts as built" |
+| **W2-C2** | The games' registry: lazy per-game chunks and views, the data-driven catalog, per-game i18n, the budget glob | Built: kikimimi-framework.md "The registry as built" |
+| **W2-0** | よみきき サンド | Built (§2.0) |
+| **W2-A** | Conditions: the party bed and `signal` | Built: kikimimi.md "Conditions" |
+| **W2-1** | ことば タイル | Built (§2.1) |
+| **W2-2** | たちぎき | Built (§2.2) |
+| **W2-3** | ようじ でんわ | Built (§2.3) |
+| **W2-4** | すうじ ラッシュ | Built (§2.4) |
+| **W2-5** | しずえの ニュース | Built (§2.5) |
+| **W2-9** | Recipe 2: a unit's lessons play the listening games | Built: curriculum-units.md §16 |
+| **W2-R** | The packs on R2 behind `PACK_BASE` (a same-origin route, the URL scheme unchanged); bank.test's lines then measure what Pages serves | **Pending: the user enables R2 in the Cloudflare dashboard (a bucket and a token).** Until then the stopgap (§5, question 3) |
+| **W2-6** | The tone spike | **Pending** (§2.6), whenever the GPU is idle |
+
+**Content lanes** (YAML/text only, one author per file, each batch reviewed before its audio):
+
+| Lane | Work | Status |
+|---|---|---|
+| B1 | The US pass and `ctx`/`cja`/`why` on the 100 drafts; the 7 duplicate tiles folded; the derived tiles | Written |
+| B2 | Wave 2a: 7 かわ units and their calls (s1-call-b) and おと tiles (s1-tile-c) | Written |
+| B3 | Wave 2b: 7 もり units and their calls (s2-call-c) and おと tiles (s2-tile-c) | Written |
+| B4 | 10 たちぎき (s2-tachi-c, s3-tachi-c), 30 feature tiles (s2-tile-b), かわ's 40 breadth items (content/kawa-b.ts) | Written |
+| B5 | 30 bulletins and the weather sentences (news-a, news-b) | Written |
+| B6 | st-tokyo, 7 chapters | Written (reviewed: docs/reviews/2026-11-06-bedtime-stories-review.md "st-tokyo") |
+| B7 | `ctx` back-fill (214) and the bank's US-lint hits | Written |
+| ART | 7 backdrops | **Pending** (§3.3) |
+
+**Audio batches** (the M5 Max, each after its review). Each batch's gate figures, retakes and flags are in kikimimi.md "Audio"; every file is `listened` (the user's go-ahead, "proceed for all").
+
+| Batch | Content | Clips | Minutes | Packs |
 |---|---|---|---|---|
-| **W2-C1** | Compiler for the new kinds: content/listen/*.yaml → `levels/parts/<file>.json` (≤ 32 KB gz) and the index's `games` entries; the listen-kinds checker (content.test's rules move into it); the help checks and the US-only lint; the kinds' clip ids for voicing | kikimimi/compile.ts, a new kikimimi/listen.ts, content.test.ts, scripts/kikimimi-audio.ts, scripts/kikimimi-levels.ts | – | 1 d |
-| **W2-C2** | Runtime registry: lazy per-game chunks (GameDef + a `view` loaded by `import()`), a per-game `deal`/`chunks`/seed hook so decks.ts and game.svelte.ts stop branching per game, a view slot in the sheet; the catalog data-driven (each mode's shelf, icon, places; playable = the index has its content and the registry its game), all five modes pre-registered; per-game i18n catalogs (`addCatalog`, as food.ts); kikimimi-budget.ts globbing each game's folder and frame/Sandwich at 15 KB | round/registry.ts, components/kikimimi/decks.ts, game.svelte.ts, KikimimiSheet.svelte, Play.svelte, catalog.ts, asobu/Asobu.svelte, mode/ModeDetail.svelte, games/versions.ts, scripts/kikimimi-budget.ts | – | 1 d |
-| **W2-0** | よみきき サンド | frame/ReviewList, frame/RevealFrame, new frame/Sandwich.svelte, srs.ts (the device mark), its i18n keys | W2-C2 (budget line) | 0.5 d |
-| **W2-A** | Conditions: the party bed (babble from our own clips) and `signal` (dropouts plus codec artifacts) | kikimimi/conditions.ts, bank.ts (Bed/Cond), scripts/kikimimi-beds.ts, scripts/tts/beds/; the dropout step in kikimimi-audio.ts | W2-C1 | 0.5 d |
-| **W2-1** | ことば タイル | games/tile/, components/kikimimi/tile/, i18n/kiki-tile.* | W2-C1, C2 | 2 d |
-| **W2-2** | たちぎき | games/tachi/, components/kikimimi/tachi/, Transcript.svelte (seats), clips.ts (offsets), clipPlayer.svelte.ts, i18n/kiki-tachi.* | W2-C1, C2 | 2.5 d |
-| **W2-3** | ようじ でんわ | games/call/, components/kikimimi/call/ (MemoPad, basket), i18n/kiki-call.* | W2-C1, C2 | 3 d |
-| **W2-R** | Packs on R2 behind `PACK_BASE` (same-origin route; URL scheme unchanged); bank.test's 50/20 MB lines then measure what Pages serves | packs.ts, the Pages route, bank.test.ts, docs/ops | open question 3, the user's Cloudflare step | 0.5 d |
-| **W2-4** | すうじ ラッシュ | games/rush/, components/kikimimi/rush/, scripts/kikimimi-rush.ts, content/listen/s*-rush.yaml, i18n/kiki-rush.* | W2-C1, C2 | 2 d |
-| **W2-5** | しずえの ニュース | games/news/, components/kikimimi/news/, the weather tail, i18n/kiki-news.* | W2-C1, C2 | 2 d |
-| **W2-6** | Tone spike | scripts/tts/ (an experiment outside the build), a report | – | 1 d, GPU idle |
-| **W2-9** | Recipe v2 (the lesson loads its kinds' chunks before its deck) | kikimimi/lesson.ts, units.ts (RECIPES [1, 2]), stages.ts, games/lesson/ | W2-1, W2-3 | 1.5 d |
+| A1 | B1's tiles, calls and たちぎき | 352 | 24.1 | 9.3 MB |
+| A2 | The 7 かわ units with their calls, then their tiles and かわ's breadth | 404 + 82 | 26.2 + 3.2 | 10.0 MB + |
+| A3 | すうじ ラッシュ, the bulletins and the weather | 531 | 41.3 | 15.7 MB |
+| A4 | The 7 もり units with their calls, their tiles, B4's たちぎき and feature tiles | 565 | 38.0 | 14.5 MB |
+| A5 | st-tokyo | 230 | 25.6 | 9.7 MB |
 
-After W2-C1/C2 a game lane adds only its own folder, i18n file and one registry line. **W2-C1 landed 2026-11-07.** The part and index shapes, the clip ids and where the help goes are in kikimimi-framework.md "Listen parts as built". **W2-A landed 2026-11-07** (kikimimi.md "Conditions", Wave 2). **W2-1 landed 2026-11-07** (kikimimi-framework.md "ことば タイル as built"); it shows once A1 is voiced and a tile file is marked `listened`. **W2-3 landed 2026-11-07** (kikimimi-framework.md "ようじ でんわ as built"); it shows once a call file is marked `listened`. **A1 voiced 2026-11-07** (kikimimi.md "Audio"), its 12 files `listened` after the user's check the same day: ことば タイル, ようじ でんわ and たちぎき on their shelves. **W2-2 landed 2026-11-07** (kikimimi-framework.md "たちぎき as built"); it shows once a tachi file is marked `listened`. **W2-4 landed 2026-11-07** (kikimimi-framework.md "すうじ ラッシュ as built"): 240 generated customers in s1-rush and s2-rush, voiced by A3 and `listened` 2026-11-07. **W2-5 and B5 landed 2026-11-07** (kikimimi-framework.md "しずえの ニュース as built"): 30 bulletins and the 56 weather sentences in news-a and news-b, voiced by A3 and `listened` 2026-11-07. **B6 landed 2026-11-07:** st-tokyo, 7 chapters of 681-694 words (4,816 in all, 230 segments, so A5 is 230 clips), reviewed 2026-11-07 (docs/reviews/2026-11-06-bedtime-stories-review.md "st-tokyo"), voiced by A5 and `listened` 2026-11-07 (kikimimi.md "Audio"). **B2 written 2026-11-07:** the 7 かわ units (fd-order, sh-shop, hm-neighbor, hl-clinic, mc-weekend, then gl-intro and gl-invite; 30 items each, 8 phrases, ≥ 20% recycled, a letter, 3 tiers) and their 7 calls in s1-call-b, still `draft`, voiced by A2 (≈ 404 clips: 355 unit lines, 49 call lines); their おと tiles are in s1-tile-c (6 a unit, 42 clips, each unit now `lessons.v: 2`). **A2 voiced 2026-11-07** (kikimimi.md "Audio"): the 7 units `voiced`, then their tiles (s1-tile-c) and kawa-b's 40, s1-tile-c and s1-call-b `listened`; R2 isn't enabled yet, so bank.test's games line is raised (the stopgap below, question 3). **B3 written 2026-11-07:** the 7 もり units (ev-wedding, fd-dinner, hl-doctor, hm-repair, sh-phone, fr-catchup, mc-tickets; 30 items each, 8 phrases, 23-37% recycled, a letter, 3 tiers; もり now 7 of 9 domains) and their 7 calls in s2-call-c, each unit on recipe 2 with its call as its チェック (recipe 1 till the call is `listened`), voiced by A4 (413 clips: 364 unit lines, 49 call lines); their おと tiles are in s2-tile-c (6 a unit, 42 clips). **A4 voiced 2026-11-07** (kikimimi.md "Audio"): the 7 もり units `voiced`; s2-call-c, s2-tile-c and B4's s2-tile-b, s2-tachi-c and s3-tachi-c `listened`, so the もり units' recipe 2 switches on. **B4 written 2026-11-07:** 10 たちぎき (s2-tachi-c at もり, s3-tachi-c at やま for C1), 30 feature tiles in s2-tile-b (6 each for h-drop, chains, assimilation, fillers, elision), voiced by A4 (80 + 30 clips); かわ's 40 breadth items in content/kawa-b.ts (level 3: 21 reply, 11 word, 8 num), unvoiced, so they wait for their voices (content/index.ts WAITING) and level 3's decks and goldens change only as A2 voices them (40 clips). **W2-9 landed 2026-11-07** (curriculum-units.md §16): a unit opts in with `lessons.v: 2` and `tiles`, `tachi`, `call`; each lesson plays recipe 1 till its content is `listened`. W2-C1 ∥ W2-C2 (disjoint). W2-1 ∥ W2-2 ∥ W2-3. W2-4 ∥ W2-5.
+The games' packs went 41 → 89.3 MiB (bank.test's line 92) and the stories' 12.8 → 21.4 MiB (line 23): the stopgap until W2-R.
 
-**Content lanes** (YAML/text only, one author per file; each batch reviewed before its audio):
+**Tests:** each game has kinds unit tests (determinism, grade, team, the row's round-trip through `listenOf`, `valid` bounds) and an e2e run solo and co-op (Chromium, logic only); rendering and the weather joins are judged on the iOS Simulator. No relay change: `gm` is free-form on the wire and in rows.
 
-| Lane | Work | Files | Effort |
-|---|---|---|---|
-| B1 | The US pass and `ctx`/`cja`/`why` on the 100 drafts; fold the 7 duplicate tiles; the 76 derived tiles (script plus review). One agent, in turn: tiles, calls, たちぎき | content/listen/s*-tile*, s*-call*, s*-tachi*, scripts/kikimimi-tiles.ts | 1.5 d |
-| B2 | Wave 2a: 7 かわ units, each with its call and tiles (the landing order above) | content/units/{gl-intro,gl-invite,fd-order,sh-shop,hm-neighbor,hl-clinic,mc-weekend}.yaml, content/listen/s1-call-b.yaml | 3 d |
-| B3 | Wave 2b: 7 もり units, the same | content/units/{ev-wedding,fd-dinner,hl-doctor,hm-repair,sh-phone,fr-catchup,mc-tickets}.yaml, content/listen/s2-call-c.yaml | 3 d |
-| B4 | たちぎき 10, feature tiles 30, かわ breadth 40 (level 3's decks and their golden change: one commit) | content/listen/s2-tachi-c, s3-tachi-c, s2-tile-b; src/lib/kikimimi/content/kawa-b.ts plus its line in content/index.ts | 2 d |
-| B5 | 30 bulletins and the weather sentences | content/listen/news-a/-b.yaml | 1 d |
-| B6 | st-tokyo, 7 chapters | content/listen/story/st-tokyo.yaml | 1.5 d |
-| B7 | `ctx` back-fill (214) and the bank's US-lint hits | bank1.ts, bank4.ts, the 7 wave-1 unit YAMLs (text only; deck goldens unchanged) | 0.5 d |
-| ART | 7 backdrops | static/art/scene/, scripts/scenes/ | 0.5 d (second Mac) |
+### 4.1 Pending: the listening check
 
-**Audio batches** (sequential on the M5 Max, each after its review; the user listens on the phone after each):
+Still flagged after the gate's re-rolls, for the user's ear on the phone (§3.4, pipeline step 6: the flagged clips plus a 20% sample). The whole list is report.json's summary `flagged` (app/scripts/tts/report.json: 195 clips, 2026-11-07); most are whisper's own spellings. By group, the ones worth a listen:
 
-| Batch | Content | Clips | Needs | Unblocks |
-|---|---|---|---|---|
-| A1 | B1's drafts and derived tiles (53 tiles, 20 calls, 20 たちぎき), party and signal | ~360 | B1, W2-C1, W2-A | W2-1..3 playable (~47 MB: under the line) |
-| A2 | Wave 2a units with their calls + かわ breadth | ~360 | B2, B4's breadth, **W2-R** | the partner's かわ path |
-| A3 | Rush + news + weather | ~385 | W2-4's generator, B5 | W2-4, W2-5 |
-| A4 | Wave 2b units with their calls + B4's たちぎき and tiles | ~560 | B3, B4, **wave 1's first week of rows** | もり; recipe v2 |
-| A5 | st-tokyo | ~230 | B6, W2-R | stories |
+- **The bank (content sprint, 2026-11-06):** whaddaya (ml-w-whaddaya, ya-r-whaddaya), mw-used-to, mw-ya-gonna, ya-w-whydja; voice drift on dya-capital-3, dya-parking-2; over a bed (`cond-wer`), mw-tickets and ya-n-rent; the conditions' d4-landlord-1, d4-installer-3, w2-read, w3-gotta, w3-shouldve.
+- **スピード はしご:** number formats, 'em heard as "him", a swallowed "Breakfast's" / "I've"; sp-key-code at 1.4× (UTMOS 3.38); 9 rungs clamped (the tempo's 0.7–1.6).
+- **Wave 1 units:** names, homophones and reductions (Marshal, Kicks, two/too, gotta, up ta).
+- **A1:** 'em heard "him" (tachi-standup-blocked-3/5), "kinduva trek" (tachi-im-easy-3), "manager's joinin'" (call-handouts-favour-5, `cond-wer`).
+- **A2:** tip's (dk-fast-check-2); Kid Cat and Bea as names (dk-pickup-fifteen-2, dk-fast-late-doc-1); "greadon" heard "great in" (kw-great-on, tile-shop-great-on-you); dk-hike-dinner-2 (UTMOS 3.49), dk-dentist-day-4 (similarity 0.49).
+- **A3:** none.
+- **A4:** couldja heard "Kuja" (wg-n-rsvp); "Will call" heard "We'll call" (tk-will-call-next-1); standin' / citin' / jus' an' (tk-fast-three-3, tachi-deposit-letter-7, tachi-movers-or-truck-8); the heavy signal over "Ugh. So when?" (rp-fast-truck-2, mixed WER 1.0 in every take); cu-r-landlord's café mix ("sell in"); short lines' voice (tk-w-fifty and its tile, sm-eighty-next-3, UTMOS 3.02); the h-drop "but 'is" (tachi-hiring-pick-3); possessives.
+- **Stories:** serial-cafe-3-16's "Bean There" (heard "Being there" in every take: a pun on "been there"); serial-tokyo-4-30's "her sister's" (heard "sisters").
+- **はつおん ききわけ's pair words** (`pr-*`, kikimimi-mic.md §2.4): 65 single words flagged for low similarity or drift, as single words are; "berry" is heard "Barry" in every take.
 
-**Order** (≤ 3 agents):
-1. W2-C1 ∥ W2-C2 ∥ B1. When the C lanes finish: W2-0 and W2-A. Then A1.
-2. W2-1 ∥ W2-2 ∥ W2-3. When W2-1 finishes: W2-R, then B2.
-3. W2-4 ∥ W2-5 ∥ B2 (or B3). Then A2 and A3.
-4. W2-9 ∥ B3 ∥ B4, then B5 and B7. A4 when wave 1's rows allow.
-5. B6 and A5; ART on the second Mac at any point; W2-6 whenever the GPU is idle.
-
-**Tests:** each game gets kinds unit tests (determinism, grade, team, row round-trip through `listenOf`, `valid` bounds) and one e2e run solo and one co-op (Chromium, logic only). Rendering and the weather joins are judged on the iOS Simulator. No relay change: `gm` is free-form on the wire and in rows.
+A clip fixed after the listen is re-spoken with `PINNED` or a `tts` respelling, then `npm run audio:kikimimi-words`.
 
 ## 5. Open questions for the user (the defaults are taken)
 
 1. **News: evergreen or current?** (curriculum Q9.) **Default, taken:** evergreen bulletins we write ourselves, plus today's real Tokyo weather. Nothing to fact-check and nothing goes stale. The alternative is a weekly topical batch, which would need fact-checking.
 2. **トーン あて if the clone can't act.** **Default, taken:** ship only if the same voice holds (ECAPA ≥ 0.6) and you can tell the tones apart on the phone; otherwise cut it.
-3. **Audio hosting.** Wave 2 takes the games' packs from 41 to ~90 MB and the stories' from 12 to ~23 MB. **Default, taken:** R2 behind a same-origin route (W2-R, before A2). It needs your Cloudflare step: an R2 bucket and a token. The phones' cache stays a 30 MB LRU. If R2 isn't ready by A2, the stopgap is to raise bank.test's lines, since Pages limits files to 25 MiB each and packs are ≤ 1.2 MB. The alternative is to cap wave 2 at ~30 MB by cutting the news and st-tokyo.
+3. **Audio hosting.** Wave 2 took the games' packs from 41 to 89.3 MiB and the stories' from 12.8 to 21.4 MiB. **Default, taken:** R2 behind a same-origin route (W2-R). **Pending your Cloudflare step:** enable R2 in the dashboard, with a bucket and a token. The phones' cache stays a 30 MB LRU. Meanwhile the stopgap is in use: bank.test's lines are raised per batch (the games' 50 → 92 MiB, the stories' 20 → 23), which Pages allows, since it limits files to 25 MiB each and a pack is ≤ 1.2 MB. (The alternative, capping wave 2 at ~30 MB by cutting the news and st-tokyo, was not taken.)
 
 ## Sign-off (2026-11-07)
 
