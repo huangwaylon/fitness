@@ -100,7 +100,7 @@ async function answer(p: Page, o: { wrong?: boolean; faces?: number[] } = {}) {
 }
 
 test('solo: the mode once listened, the conversation first, then whose view, who changed, the plan; a line again; the transcript; my row', async ({ context }) => {
-  test.slow();
+  test.setTimeout(240_000); // two real conversations (30–50 s each) play through: past test.slow()'s 90 s on CI's 3 workers
   await listened(context);
   const page = await phone(context, DAY);
   await toTachi(page);
@@ -174,7 +174,7 @@ test('solo: the mode once listened, the conversation first, then whose view, who
 
 test('night: the claims and a reveal in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
-  test.slow();
+  test.setTimeout(240_000); // two real conversations (30–50 s each) play through: past test.slow()'s 90 s on CI's 3 workers
   await listened(context);
   const page = await phone(context, NIGHT);
   await toTachi(page);
