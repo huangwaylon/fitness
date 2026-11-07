@@ -4,7 +4,7 @@
 // (toSnap), the recipe (recipeSnap) or the custom food (customSnap) as it is now, its portion label kept. Nothing is
 // ever updated by itself: the owner taps it (store/actions.ts refreshFood, an ordinary edit).
 import { customSnap, recipeSnap, type FoodCustom, type FoodSnap, type RepeatItem } from '#lib/contract/food.ts';
-import { toSnap, type FoodDb, type Item } from '#lib/food/index.ts';
+import { itemById, toSnap, type FoodDb } from '#lib/food/index.ts';
 
 /** Differences within these are rounding (kcal: the data's whole kcal, a recipe's or custom food's tenth; grams: a
  *  tenth), not a fix. */
@@ -33,18 +33,6 @@ export function snapDiffers(was: FoodSnap, now: FoodSnap): boolean {
 /** Where the foods are now: the catalogue (null: not loaded yet), the recipes and custom foods. */
 export interface FoodSources { db: FoodDb | null; recipes: readonly { id: string; n: string; sv: number; it: readonly RepeatItem[] }[]; customs: readonly FoodCustom[] }
 
-const byId = new WeakMap<FoodDb, { n: number; m: Map<string, Item> }>();
-/** The catalogue item with this id (a map per catalogue, rebuilt once a lazy dataset has come in). */
-function itemById(db: FoodDb, id: string): Item | undefined {
-  let c = byId.get(db);
-  if (!c || c.n !== db.entries.length) {
-    const m = new Map<string, Item>();
-    for (const e of db.entries) if (!m.has(e.it.id)) m.set(e.it.id, e.it);
-    byId.set(db, (c = { n: db.entries.length, m }));
-  }
-  return c.m.get(id);
-}
-
 /** The food of snapshot `f` as it is now (its portion label kept), or null: it's gone, not loaded, the same within
  *  rounding, or now logged otherwise (a serving with no weight become one with a weight, or back: its grams would mean
  *  something else). */
@@ -57,7 +45,7 @@ export function latestSnap(f: FoodSnap, src: FoodSources): FoodSnap | null {
     const c = src.customs.find((x) => `custom:${x.id}` === f.id);
     now = c ? customSnap(c, f.u) : null;
   } else {
-    const it = src.db ? itemById(src.db, f.id) : undefined;
+    const it = itemById(src.db, f.id);
     now = it ? toSnap(it, f.u) : null;
   }
   if (!now || (now.sv === true) !== (f.sv === true)) return null;
