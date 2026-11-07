@@ -1,8 +1,8 @@
 <script lang="ts">
-  // A trail's map (docs/hiking.md "Map"): MapLibre on the region's raster topo (map/engine.ts, its own lazy chunk, never
-  // precached: online only), the track, its ends and waypoints, the scrub's dot, the location dot (map/style.ts C). Under
-  // drawOff() (the e2e's logic tier) no map is made: a stub that draws the track and the dots as SVG and says where
-  // they are. Offline before the chunk came: a retry; the tiles not coming: the track alone, with a note.
+  // A trail's map (docs/hiking.md "Map"): MapLibre on the region's raster topo (map/engine.ts, its own lazy chunk, kept
+  // by the service worker once drawn, with the tiles seen: docs/hiking.md "Offline"), the track, its ends and
+  // waypoints, the scrub's dot, the location dot (map/style.ts C). Under drawOff() (the e2e's logic tier) no map is
+  // made: a stub that draws the track and the dots as SVG and says where they are. Offline before the chunk came: a retry; the tiles not coming: the track alone, with a note.
   // `window.__trailMap` (hooks on) is the specs' view of a drawn map.
   import { onMount } from 'svelte';
   import { lazy } from '#lib/ui-state/reload.ts';
@@ -16,6 +16,7 @@
   import { C } from './map/style.ts';
   import type { Fix } from './map/engine.ts';
   import { EngineFeed } from './map/feed.svelte.ts';
+  import { engineReady } from '../travel/map/cached.ts';
 
   interface Props {
     region: Region;
@@ -44,9 +45,8 @@
   export const flyToFix = () => (fix ? feed.engine?.setFix(fix, true) : (feed.flyNext = true));
 
   function draw() {
-    if (!navigator.onLine) return void (mode = 'failed');
     mode = 'loading';
-    loadEngine().then(
+    engineReady().then((ok) => (ok ? loadEngine() : Promise.reject(new Error('offline')))).then(
       ({ createEngine }) => {
         if (gone || !el) return;
         try {

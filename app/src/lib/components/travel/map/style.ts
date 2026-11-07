@@ -11,8 +11,8 @@ import { KIND_COLOR } from './types.ts';
 
 /** The tiles' origin: the CSP's connect-src names it (vite.config.ts). The one third party the phones contact: it sees
  *  the phone's IP and which tiles it views, never the trip. Self-hosting later (the same schema) changes this. */
-const TILE_ORIGIN = 'https://tiles.openfreemap.org';
-/** OpenFreeMap's public planet (OpenStreetMap data, ODbL), online only: its TileJSON (versioned tile URLs, maxzoom 14,
+export const TILE_ORIGIN = 'https://tiles.openfreemap.org';
+/** OpenFreeMap's public planet (OpenStreetMap data, ODbL): its TileJSON (versioned tile URLs, maxzoom 14,
  *  overzoomed past it), with the attribution the licences ask for (OpenFreeMap's terms, OpenMapTiles' CC-BY,
  *  OpenStreetMap's ODbL). */
 export const BASEMAP = {

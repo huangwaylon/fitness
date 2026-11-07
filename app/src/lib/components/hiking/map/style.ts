@@ -1,6 +1,6 @@
 // トレイル's map style (docs/hiking.md "Map"), pure: the hiking app's own basemaps, raster topo for the trail's region
-// (USGS Topo in the US, GSI 地理院タイル std in Japan: keyless, contours and hillshade baked in; online only, nothing
-// saved: their hosts are in the CSP's connect-src, vite.config.ts), under the trail's overlays in the app's colours
+// (USGS Topo in the US, GSI 地理院タイル std in Japan: keyless, contours and hillshade baked in; the tiles a map drew
+// kept by the service worker: their hosts are in the CSP's connect-src, vite.config.ts), under the trail's overlays in the app's colours
 // (the track coral on a cream halo, the trailhead leaf, the end coral, the waypoints yuzu, the scrub's dot violet, the
 // location dot sky).
 import type { LayerSpecification, StyleSpecification } from 'maplibre-gl';

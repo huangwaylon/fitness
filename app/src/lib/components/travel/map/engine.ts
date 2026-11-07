@@ -2,9 +2,10 @@
 // under drawOff()). MapLibre's CSP-safe path: its worker is a file of our own origin (`?worker&url`, under
 // _app/immutable/workers), so no blob: worker and no eval; the basemap's TileJSON and tiles fetched from OpenFreeMap
 // (style.ts BASEMAP: the CSP's one third-party connect-src); labels in the app's font (fonts.ts). Neither this chunk
-// nor its worker nor its CSS is precached (service-worker/caches.ts): the map is online only. One map per TripMap;
+// nor its worker nor its CSS is precached; the service worker keeps them, and the tiles drawn, once a map has drawn
+// (service-worker/caches.ts isMapLibre, tileKey). One map per TripMap;
 // destroy() lets go of it all (remove.ts).
-import { AttributionControl, Map as GLMap, Marker, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature } from 'maplibre-gl';
+import { addProtocol, AttributionControl, Map as GLMap, Marker, setWorkerUrl, type GeoJSONSource, type MapGeoJSONFeature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 // (bundled as our own worker chunk, a .js: a raw .mjs is served as application/octet-stream by some hosts, which a
 // module worker under nosniff refuses)
@@ -13,7 +14,8 @@ import { pick } from '../text.ts';
 import { labelLayout } from './basemap.ts';
 import { fontFaces } from './fonts.ts';
 import { boundsOf, candidatesData, candidatesOf, keepoutData, legsData, locData, pinLabel, pinsOf, type Fix, type Pin } from './overlay.ts';
-import { buildStyle, haloRadius, KEEP_IMAGES, labelLayers, SRC } from './style.ts';
+import { buildStyle, haloRadius, KEEP_IMAGES, labelLayers, SRC, TILE_ORIGIN } from './style.ts';
+import { loadViaPage, VIA, viaPage } from './tiles.ts';
 import { dayColor, type TripMapProps } from './types.ts';
 import { removeMap } from './remove.ts';
 
@@ -43,6 +45,7 @@ const reduced = () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-
 
 export function createEngine(el: HTMLElement, input: EngineInput, on: { select(id: string): void; mode(m: EngineMode): void }): Engine {
   setWorkerUrl(workerUrl);
+  addProtocol(VIA, loadViaPage());
   const style = buildStyle(input.locale, fontFaces());
   const labels = labelLayers(style);
   const map = new GLMap({
@@ -58,6 +61,8 @@ export function createEngine(el: HTMLElement, input: EngineInput, on: { select(i
     renderWorldCopies: false,
     fadeDuration: 120,
     validateStyle: import.meta.env.DEV,
+    // the tiles through the page, so the service worker keeps them (tiles.ts)
+    transformRequest: viaPage(TILE_ORIGIN),
     // the first view: the day's (refit once the style is in)
     bounds: boundsOf(input.places, input.legs, input.day) ?? undefined,
     fitBoundsOptions: { padding: 56, maxZoom: 15 }
