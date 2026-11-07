@@ -80,7 +80,7 @@
       {/if}
     </svg>
   {/if}
-  {#if sky !== 'clear'}<div class="overcast" class:fading data-sky={sky} aria-hidden="true" style:opacity={OVERCAST[sky] * level} style:--sky-h="{skyH}px"></div>{/if}
+  {#if sky !== 'clear'}<div class="overcast" class:fading data-sky={sky} aria-hidden="true" style:--sky-h="{skyH}px" style:opacity={OVERCAST[sky] * level}></div>{/if}
 {:else}
   {#if sky !== 'clear'}
     <div class="wet" class:fading data-sky={sky} aria-hidden="true" style:background={WET[sky][0]} style:opacity={WET[sky][1] * level}></div>
