@@ -15,6 +15,10 @@
   // focused for the next; the foods added on this trip (`added`) are listed under the field, each with ✕, with おわり
   // (back to the day). A meal's search also has ⚡ クイック (`onquicknew`: kcal only, eating out) under the つくる row, and a
   // kcal typed (「650」) offers itself as a quick entry above the catalog's rows (its row the form, its ＋ logged at once).
+  // In a meal's search (`inline`) a food row (さいきん's, マイ食品's, the catalog's) opens in place instead (FoodOpen: the
+  // amount's controls, くわしく, 追加): one at a time, kept in view (scrolled under the field when it would run past the
+  // screen; a row closed above it never shifts it), closed by its row again, Esc, or a new query; its 追加 logs it and
+  // clears and focuses the field, as the amount's does.
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry, FoodSnap } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
@@ -23,9 +27,11 @@
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
+  import { flushSync, untrack } from 'svelte';
   import FoodThumb from './FoodThumb.svelte';
+  import FoodOpen, { type Set } from './FoodOpen.svelte';
   import NavButton from '../ui/NavButton.svelte';
-  import { amountText, catalogOf, catOf, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, withImages } from './foodUi.ts';
+  import { amountText, catalogOf, catOf, customItem, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, withImages } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -55,10 +61,17 @@
     /** クイック: the quick entry's form (`k`: a kcal typed), or one logged at once with that kcal (`onquicklog`). */
     onquicknew?: (k?: number) => void;
     onquicklog?: (k: number) => void;
+    /** A food row opened in place (a meal's search; none: a row opens its amount): what it logs as (`of`: Food's
+     *  pickOf), its 追加 (`add`, in the search's meal) and くわしく (`more`: the amount level at what was set). */
+    inline?: {
+      of: (item: Item, f?: FoodEntry['f']) => { item: Item; serving: boolean; swap: boolean };
+      add: (item: Item, f: FoodEntry['f'] | undefined, v: Set) => void;
+      more: (item: Item, f: FoodEntry['f'] | undefined, v: Set) => void;
+    };
   }
   let {
     recent, onpick, recipes = [], names, onrecipe, onnewrecipe, customs = [], oncustom, oncreate, onquick, oncustomquick, added = [], onunadd, addedHead = 'food.addedHead',
-    onfinish, onquicknew, onquicklog
+    onfinish, onquicknew, onquicklog, inline
   }: Props = $props();
 
   let db = $state.raw<FoodDb | null>(null);
@@ -127,6 +140,50 @@
     text = q = '';
     input?.focus();
   }
+  /** The row open in place (`r:` さいきん's, `c:` マイ食品's, `f:` the catalog's, then its id), and it closing. */
+  let open = $state<string | null>(null);
+  let closing = $state(false);
+  let box: HTMLFormElement | undefined = $state();
+  // a new query closes it
+  $effect.pre(() => {
+    void q;
+    untrack(() => {
+      open = null;
+      closing = false;
+    });
+  });
+  /** A row's tap: it opened in place (another closed at once), the field blurred (the keyboard down: room), kept in
+   *  view: a row closed above it is made up for, and when it would run past the screen it goes under the field. */
+  function toggle(e: MouseEvent, key: string) {
+    if (open === key) return shut();
+    const li = (e.currentTarget as HTMLElement).closest('li')!;
+    const sc = li.closest<HTMLElement>('[data-food-sheet]');
+    const y0 = li.getBoundingClientRect().top;
+    input?.blur();
+    closing = false;
+    open = key;
+    flushSync();
+    if (!sc) return;
+    sc.scrollTop += li.getBoundingClientRect().top - y0;
+    const r = li.getBoundingClientRect();
+    const full = (li.querySelector<HTMLElement>('.it')?.offsetHeight ?? 0) + 8 + (li.querySelector<HTMLElement>('.ex > *')?.scrollHeight ?? 0);
+    const top = (box?.getBoundingClientRect().bottom ?? sc.getBoundingClientRect().top) + 8;
+    const bottom = Math.min(sc.getBoundingClientRect().bottom, window.visualViewport?.height ?? Infinity);
+    if (r.top < top || r.top + full > bottom) sc.scrollBy({ top: r.top - top, behavior: 'smooth' });
+  }
+  function shut() {
+    if (!open) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) open = null;
+    else closing = true;
+  }
+  function onEsc(e: KeyboardEvent) {
+    if (e.key !== 'Escape' || !open) return;
+    e.preventDefault(); // (the sheet stays: Esc closes the row)
+    shut();
+  }
+  /** A row's tap: open in place (a meal's search), else its amount. */
+  const tap = (key: string, pick: () => void) => (e: MouseEvent) => (inline ? toggle(e, key) : pick());
+
   /** A row's ＋: logged at once, the field cleared and focused in the same tap (the keyboard stays up for the next). */
   function quick(run: () => void) {
     run();
@@ -139,15 +196,27 @@
     <h3 class="lh">{t('food.my.head')}</h3>
     <ul class="list" data-food-customs>
       {#each myFoods as c (c.id)}
-        <li class:rw={!!oncustomquick}><button type="button" class="card it tt" data-sfx="page" data-custom={c.id} onclick={() => oncustom?.(c)}>
+        {@const key = `c:${c.id}`}
+        <li class:rw={!!oncustomquick}><button type="button" class="card it tt" data-sfx="page" data-custom={c.id} aria-expanded={inline ? open === key : undefined}
+          aria-controls={inline && open === key ? `fo-${key}` : undefined} onclick={tap(key, () => oncustom?.(c))}>
           <FoodThumb />
           <span class="nm">{c.n}</span>
           <small class="meta">{names?.[c.who] ?? c.who}</small>
           <span class="kc"><b class="money">{kcalText(c.k)}</b><small>{servingText(c)}</small></span>
-        </button>{#if oncustomquick}{@render qa(c.n, () => oncustomquick(c))}{/if}</li>
+        </button>{#if oncustomquick}{@render qa(c.n, () => oncustomquick(c))}{/if}{@render opened(key, customItem(c))}</li>
       {/each}
     </ul>
     {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
+  {/if}
+{/snippet}
+
+<!-- a row opened in place, under it -->
+{#snippet opened(key: string, item: Item, f?: FoodEntry['f'], g0?: number, u0?: string)}
+  {#if inline && open === key}
+    {@const p = inline.of(item, f)}
+    <FoodOpen id="fo-{key}" item={p.item} {g0} {u0} serving={p.serving} swap={p.swap} {closing}
+      onadd={(v) => { inline.add(item, f, v); open = null; clear(); }} onmore={(v) => inline.more(item, f, v)}
+      onclosed={() => { open = null; closing = false; }} />
   {/if}
 {/snippet}
 
@@ -177,8 +246,10 @@
   {/if}
 {/snippet}
 
+<svelte:window onkeydown={onEsc} />
+
 <div class="search">
-  <form class="box" role="search" onsubmit={(e) => { e.preventDefault(); input?.blur(); }}>
+  <form class="box" bind:this={box} role="search" onsubmit={(e) => { e.preventDefault(); input?.blur(); }}>
     <svg class="glass" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" /><path d="M15 15 L20 20" /></svg>
     <input bind:this={input} bind:value={text} type="search" data-sfx="none" data-food-q enterkeyhint="search" autocomplete="off"
       autocapitalize="off" spellcheck="false" aria-label={t('food.search')} placeholder={t('food.searchHint')}
@@ -242,12 +313,14 @@
     <ul class="list" data-food-recent>
       {#each recent as e (e.id)}
         {@const gl = glossOf(catalogOf(db, e.f.id) ?? itemOf(e.f, null), e.f.n)}
-        <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={e.f.id} onclick={() => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f)}>
+        {@const key = `r:${e.id}`}
+        <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={e.f.id} aria-expanded={inline ? open === key : undefined}
+          aria-controls={inline && open === key ? `fo-${key}` : undefined} onclick={tap(key, () => onpick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}>
           <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} />
           <span class="nm">{e.f.n}</span>
           <small class="meta"><span>{amountText(e)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
           <b class="kc money">{kcalText(entryKcal(e))}</b>
-        </button>{#if onquick}{@render qa(e.f.n, () => onquick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}{/if}</li>
+        </button>{#if onquick}{@render qa(e.f.n, () => onquick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}{/if}{@render opened(key, itemOf(e.f, db, e.g), e.f, e.g, e.f.u)}</li>
       {/each}
     </ul>
   {:else}
@@ -294,12 +367,14 @@
         <!-- ✓n beside the name, or on the second line when that would be empty: a row two lines, never three -->
         {@const solo = !it.brand && !gl && !vs.length}
         {@const ok = v && v.n >= 2 ? v.n : 0}
-        <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={it.id} data-per100={it.kcal} onclick={() => onpick(it)}>
+        {@const key = `f:${it.id}`}
+        <li class:rw={!!onquick}><button type="button" class="card it tt" data-sfx="page" data-item={it.id} data-per100={it.kcal} aria-expanded={inline ? open === key : undefined}
+          aria-controls={inline && open === key ? `fo-${key}` : undefined} onclick={tap(key, () => onpick(it))}>
           <FoodThumb cat={it.cat} img={imgOf(imgs, it.id, 48)} />
           <span class="nm">{vs.length ? stemName(it) : it.name}{#if ok && !solo}{@render verified(ok, true)}{/if}</span>
           <small class="meta">{#if it.brand}<span class="br" data-brand>{it.brand}</span>{#if gl}{' · '}{/if}{/if}{#if gl}<span class="gl" data-gloss>{gl}</span>{/if}{#if vs.length}{#if gl || it.brand}{'\u3000'}{/if}{@render states(it, vs)}{:else if solo}{#if ok}{@render verified(ok)}{:else}{'\u00a0'}{/if}{/if}</small>
           <span class="kc"><b class="money">{kcalText(p.kcal)}</b><small>{p.label}</small></span>
-        </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}</li>
+        </button>{#if onquick}{@render qa(it.name, () => onquick(it))}{/if}{@render opened(key, it)}</li>
       {/each}
     </ul>
     {#if results.length > drawn}<div class="more" use:rest aria-hidden="true"></div>{/if}
@@ -369,6 +444,10 @@
   .new .make svg { width: 14px; height: 14px; }
   /* a row with its own ＋ beside it (FoodMeal's ＋ object) */
   .rw { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
+  /* a row opened in place: its card under the row and its ＋, the row's width; the row says so (its edge) */
+  li > :global(.ex) { grid-column: 1 / -1; margin-top: 8px; }
+  .rw > :global(.ex) { margin-top: 0; }
+  .it[aria-expanded='true'] { box-shadow: inset 0 0 0 2px var(--c-edge), var(--sh-lip); }
   .qa {
     appearance: none; border: 0; cursor: pointer; width: var(--hit); height: var(--hit); border-radius: var(--r-btn); flex: none;
     display: grid; place-items: center; background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj); margin-bottom: var(--lip-h);
