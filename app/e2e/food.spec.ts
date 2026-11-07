@@ -927,12 +927,16 @@ test('状態: 鶏もも 皮つき 生 → 焼き keeps 1/2枚 at 90 g, logs 焼�
   await expect(sheet(page).locator('[data-grams]')).toHaveValue('90');
   await expect(sheet(page).locator('[data-food-live] .k')).toContainText('198');
   await expect(sheet(page).locator('[data-state-why]')).toHaveCount(0);
+  // typed grams read as the editors read them: 「1,200」 is 1,200 g, 「150g」 150 g
+  await sheet(page).locator('[data-grams]').fill('1,200');
+  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('2,640');
   // typed grams stay typed across a switch
-  await sheet(page).locator('[data-grams]').fill('150');
+  await sheet(page).locator('[data-grams]').fill('150g');
+  await expect(sheet(page).locator('[data-food-live] .k')).toContainText('330');
   await sheet(page).locator('[data-state=ゆで]').click();
-  await expect(sheet(page).locator('[data-grams]')).toHaveValue('150');
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('150g');
   await sheet(page).locator('[data-state=焼き]').click();
-  await expect(sheet(page).locator('[data-grams]')).toHaveValue('150');
+  await expect(sheet(page).locator('[data-grams]')).toHaveValue('150g');
   await sheet(page).locator('[data-done]').click();
   await expect(sheet(page).locator('[data-food-added] [data-added]').first()).toContainText('鶏もも肉 皮つき 焼き');
   // 最近: the state as logged, its amount opened on it

@@ -22,7 +22,7 @@
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import FoodPhoto from './FoodPhoto.svelte';
-  import { catalogOf, foodDb, foodDbNow, glossOf, inState, gramsText, halfWidth, hasWeight, portionLabel, startOf, stepOf, unitOf, withImages } from './foodUi.ts';
+  import { catalogOf, foodDb, foodDbNow, glossOf, inState, gramsText, hasWeight, parseAmount, portionLabel, startOf, stepOf, unitOf, withImages } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -72,8 +72,8 @@
   });
   const pi = $derived(Math.max(0, ps.findIndex((p) => p.label === pl)));
 
-  const typedG = $derived(Number(halfWidth(typed).replace(',', '.')));
-  const g = $derived(custom ? (Number.isFinite(typedG) ? Math.round(typedG * 10) / 10 : 0) : Math.round(ps[pi].g * mult * 10) / 10);
+  /** Typed grams as the editors read them (parseAmount: 「1,200」 is 1,200 g, 「150g」 150; out of range or not a number: 0). */
+  const g = $derived(custom ? (parseAmount(typed, FOOD_GRAMS.min, FOOD_GRAMS.max) ?? 0) : Math.round(ps[pi].g * mult * 10) / 10);
   const ok = $derived(g >= FOOD_GRAMS.min && g <= FOOD_GRAMS.max);
   const n = $derived(nutrientsFor(item, ok ? g : 0));
   /** The catalog (the food's states); in already, mostly. */
@@ -183,7 +183,7 @@
       <button type="button" class="nb" data-sfx="tick" aria-label={t('food.more')} data-step="1" onclick={() => step(1)}>＋</button>
       {#if !serving}<label class="grams">
         <span class="sr-only">{t(unit === 'ml' ? 'food.ml' : 'food.grams')}</span>
-        <input type="text" inputmode="decimal" data-sfx="none" data-grams autocomplete="off" enterkeyhint="done" maxlength="6" size="5"
+        <input type="text" inputmode="decimal" data-sfx="none" data-grams autocomplete="off" enterkeyhint="done" maxlength="8" size="5"
           value={custom ? typed : gramsText(g)} aria-invalid={!ok} oninput={(e) => { typed = e.currentTarget.value; onGrams(); }} />
         <span class="u" aria-hidden="true">{unit}</span>
       </label>{/if}

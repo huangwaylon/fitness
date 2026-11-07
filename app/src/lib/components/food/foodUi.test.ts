@@ -163,6 +163,9 @@ describe('マイ食品: the editor\'s fields, a custom food as a food', () => {
   it('reads amounts as typed: full-width, a decimal comma, a unit; blank is null, nonsense undefined', () => {
     expect(parseAmount('６５０', 0, 5000)).toBe(650);
     expect(parseAmount('１２．５ g', 0, 500)).toBe(12.5);
+    expect(parseAmount('1,200', 0.1, 5000)).toBe(1200); // the amount's grams: thousands, not 1.2 g
+    expect(parseAmount('150g', 0.1, 5000)).toBe(150);
+    expect(parseAmount('200ml', 0.1, 5000)).toBe(200);
     expect(parseAmount('12,25', 0, 500)).toBe(12.3);
     // (thousands commas, as the kcal goal reads them: never 1,200 → 1.2)
     expect(parseAmount('1,200', 0, 5000)).toBe(1200);

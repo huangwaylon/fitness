@@ -72,7 +72,7 @@ export const amountText = (e: Pick<FoodEntry, 'g' | 'f'>): string =>
   servingOnly(e.f) ? (e.f.u ?? `×${gramsText(e.g / 100)}`) : portionText(e.f.u, e.g);
 
 /** Full-width digits, point and comma typed on a Japanese keyboard (「６５０」, 「１２．５」) as ASCII. */
-export const halfWidth = (text: string): string => text.replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+const halfWidth = (text: string): string => text.replace(/[０-９．，]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
 
 /** A logged snapshot as a catalog item: the catalog's own when it has it (its portions), else the snapshot's values
  *  and, with its grams `g`, the portion it was logged by (「茶碗1杯」 of 150 g; offline, a recipe's 1人前). */
@@ -313,9 +313,9 @@ export function customDraft(c: FoodCustom | null, name = ''): CustomDraft {
 
 /** A typed amount → a number to one decimal within [min, max]; '' → null (left blank); undefined when it isn't one.
  *  Full-width digits, thousands commas (1,200: as parseKcalGoal reads them), else a decimal comma, and a trailing unit
- *  (g, kcal) are fine. */
+ *  (g, ml, kcal) are fine. */
 export function parseAmount(text: string, min: number, max: number): number | null | undefined {
-  const t = halfWidth(text.trim()).replace(/\s*(g|kcal|グラム)$/i, '');
+  const t = halfWidth(text.trim()).replace(/\s*(g|ml|kcal|グラム)$/i, '');
   const s = /^\d{1,3}(,\d{3})+(\.\d+)?$/.test(t) ? t.replace(/,/g, '') : t.replace(',', '.');
   if (!s) return null;
   if (!/^\d{1,5}(\.\d+)?$/.test(s)) return undefined;
