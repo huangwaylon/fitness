@@ -806,6 +806,12 @@ the camera, the frames), `island/Scenery.svelte`, `e2e/world.spec.ts`, `e2e/worl
     user's approved automatic move). In: up to 1.8. A gesture is one kind from start to end. No native scroll: the
     island's viewport never scrolls. A touch landing on a fling still faster than 0.1 px/ms only stops it (iOS's
     scroll: no tap), as the tap areas lag a rush (below).
+  - **Programs compiled ahead** (engine.ts `hold`, where the GPU has KHR_parallel_shader_compile: WebKit and Chromium
+    both): a frame that finds a material never compiled in view compiles the scene's (what isn't in view yet too) and
+    draws what waits on a program still linking only once it has linked (polled each 16 ms; its shadow at once then),
+    so a new model's link is never waited for in a frame (three's first use of a program). Startup, the demo, Chromium
+    4× CPU: the main thread's time in WebGL's sync calls 195–203 → 89–99 ms, long tasks 820–833 → 643–666 ms; WebKit
+    (Mac, its checks off as on a phone) 296–317 → 135–204 ms. Not the shadow map's own depth programs (its pass).
   - **A rush** (engine.ts `rushing`: a finger's drag or pinch, a fling faster than 0.1 px/ms) places only what shows
     (camera.svelte.ts `quiet`): the nodes found painting nothing as it starts (tap areas whose art the canvas draws:
     a tree's, a building's, a villager's) are kept in view or not (a model's `shown`), not moved; a change in one (a

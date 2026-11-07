@@ -82,6 +82,9 @@ interface Stats {
   programs: number;
   /** The shadow map's redraws so far. */
   shadows: number;
+  /** The scene's compiles ahead (programs: hold), and materials linking now. */
+  compiles: number;
+  linking: number;
   dpr: number;
   frames: number;
   loading: number;
@@ -826,12 +829,60 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       kick();
     };
   }
+  // ---- the programs, compiled ahead: what's new in view is compiled before its first draw and not drawn until the GPU
+  // has linked its programs (KHR_parallel_shader_compile: off the main thread). Drawn at once, a new material's link
+  // was waited for in the frame (three's first use: its uniforms), 108-129 ms long tasks as the island loaded ----
+  const parallel = !noDraw && renderer.extensions.has('KHR_parallel_shader_compile');
+  /** A kick since the last frame's look (a model in, a card, a flourish: maybe a new material). */
+  let fresh = true;
+  /** Compiled, its programs still linking: what uses them is held back. */
+  const linking = new Set<Material>();
+  const heldBack: Object3D[] = [];
+  let compiles = 0, holding = false;
+  const unlinked = (m: Material) => {
+    const ps = (renderer.properties.get(m) as { programs?: Map<string, { isReady(): boolean }> }).programs;
+    if (!ps) return true;
+    for (const p of ps.values()) if (!p.isReady()) return true;
+    return false;
+  };
+  const materialsOf = (o: Object3D): Material[] => {
+    const m = (o as Mesh).material as Material | Material[] | undefined;
+    return !m || !((o as Mesh).isMesh || (o as unknown as { isPoints?: boolean }).isPoints || (o as unknown as { isLine?: boolean }).isLine) ? [] : Array.isArray(m) ? m : [m];
+  };
+  /** Before a frame draws: a new material in view compiles (the whole scene's at once: what's coming too), and what's
+   *  still linking is hidden for this frame (hold's list, shown again after it). True: some is held back. */
+  function hold(): boolean {
+    if (!parallel || (!fresh && !linking.size)) return false;
+    let any = fresh;
+    fresh = false;
+    if (any) {
+      any = false;
+      scene.traverseVisible((o) => {
+        if (!any) for (const m of materialsOf(o)) if (!renderer.properties.has(m)) any = true;
+      });
+      if (any) {
+        compiles++;
+        for (const m of renderer.compile(scene, camera)) if (unlinked(m)) linking.add(m);
+      }
+    }
+    for (const m of linking) if (!unlinked(m)) linking.delete(m);
+    if (!linking.size) {
+      // (what was held back is drawn now, its shadow too, at once)
+      if (holding) (shadowed(), (shadowsNow = true));
+      return (holding = false);
+    }
+    scene.traverseVisible((o) => {
+      for (const m of materialsOf(o)) if (linking.has(m)) return void heldBack.push(o);
+    });
+    for (const o of heldBack) o.visible = false;
+    return (holding = true);
+  }
   const cpu: number[] = [], gaps: number[] = [], stamps: number[] = [];
   /** What wanted the last frames (the e2e's and perf's: which part keeps the island drawing). */
   const why = new Set<string>();
   const activity = (ms = 300) => {
     activeUntil = Math.max(activeUntil, now() + ms);
-    kick();
+    kick(false);
   };
   /** A frame as soon as the display has one (a change from outside: a model in, a tap, the camera). A kick from inside
    *  a frame is that frame's own (what it changed is drawn in it): its parts' wants say whether another follows. At
@@ -839,7 +890,9 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
    *  leaf's model in: ~35 kicks a second on the demo, each a frame at once, held the ambience at 30, not REST_FPS).
    *  Paused or hidden, none: the frame would draw nothing (an animation frame asked for under a sheet, ~1 a second
    *  from a model in or a critter's tick); pause(false) and the page shown again kick. */
-  function kick() {
+  function kick(changed = true) {
+    // (something may be new in the scene: the frame looks for programs to compile first, `linking`)
+    if (changed) fresh = true;
     if (inFrame || disposed || paused || document.hidden) return;
     if (pace.queued() && now() - lastInput > REST_MS) return;
     pace.kick();
@@ -923,6 +976,8 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
     }
     want(lights.frame(t, camX, camZ + 110, bendU.uBendR.value, -camZ), 'lights');
     cullGroups();
+    // (new programs compiled ahead, what waits on them held back: before the shadow map's turn, which they join once in)
+    const held = !noDraw && hold();
     // (at rest, only the ambience moving: the map at most every REST_SHADOW_MS; a change from outside a frame at once)
     if (opts.shadows && shadowsDirty && (shadowsNow || busy || !resting(t) || t - shadowAt >= REST_SHADOW_MS)) {
       renderer.shadowMap.needsUpdate = true;
@@ -930,7 +985,15 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       shadowAt = t;
       shadowsDrawn++;
     }
-    if (!noDraw) renderer.render(scene, camera);
+    if (!noDraw) {
+      renderer.render(scene, camera);
+      if (held) {
+        for (const o of heldBack) o.visible = true;
+        heldBack.length = 0;
+        // (the GPU's links are polled: a frame again soon, till they're in)
+        wake(16);
+      }
+    }
     // (nothing drawn: the counts are none, whatever the layout's ground baked on the GPU as it was built)
     else renderer.info.reset();
     cpu.push(now() - t);
@@ -1114,13 +1177,14 @@ export function createIsland(canvas: HTMLCanvasElement, makeGround: (renderer: W
       return {
         fps: stamps.length, cpu: [pctl(cpu, 0.5), pctl(cpu, 0.95)], gap: [pctl(gaps, 0.5), pctl(gaps, 0.95)],
         calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures,
-        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, dpr: renderer.getPixelRatio(), frames,
+        geometries: renderer.info.memory.geometries, programs: renderer.info.programs?.length ?? 0, shadows: shadowsDrawn, compiles, linking: linking.size, dpr: renderer.getPixelRatio(), frames,
         loading: things.pending() + cards.pending(), camZ, zoom: zoomK, points: l.points, lamps: l.lamps, fx: effects.count(),
         fxShown: effects.shown(), why: [...why], paused, drawn: !noDraw
       };
     },
     dispose() {
       disposed = true;
+      linking.clear();
       pace.stop();
       if (wakeTimer) clearTimeout(wakeTimer);
       document.removeEventListener('visibilitychange', onVis);
