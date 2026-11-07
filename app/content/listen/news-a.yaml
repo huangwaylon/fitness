@@ -1,0 +1,574 @@
+schema: 1
+unit: news-a
+game: news
+stage: 4
+track: broadcast
+seeds: [59, 60, 62]
+features: { primary: linking, review: numbers }
+cando: "朝の ニュースの 話題と 大事な ところを 聞き取れる"
+status: draft
+cast: { isabelle: us-f4 }
+items:
+  - kind: news
+    id: news-flea-market
+    season: spring
+    weekday: mon
+    ctx: "月曜の 朝の ニュース。週末の 予定と 東京の 暮らし"
+    note: "「nine」の 後に 新しい 時間。前の 時間に つられない"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [linking, clock, self-repair] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, and happy Monday. I'm Isabelle, and here's what's happening on the island.", ja: "おはようございます。月曜日ですね。しずえです。島のニュースをお伝えします。" }
+          - { en: "First up, the spring flea market returns to the plaza this weekend, with about twenty residents signed up to sell.", ja: "まずは、春のフリーマーケットが今週末、広場に戻ってきます。出店を申し込んだ住民は約二十人です。" }
+          - { en: "The market, which used to open at nine, will now start at eight-thirty, so sellers should plan to arrive early.", ja: "これまで九時開始だったマーケットは八時半開始に変わります。出店者は早めの到着を予定してください。" }
+          - { en: "Organizers are asking shoppers to bring their own bags.", ja: "主催者は、買い物客にマイバッグの持参を呼びかけています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, spring is moving season in Tokyo, and that means long waits at many ward offices.", ja: "続いて東京の話題です。春は東京の引っ越しシーズンで、多くの区役所で長い待ち時間が発生します。" }
+          - { en: "Officials remind new residents to file their moving-in paperwork within two weeks of arriving at a new address.", ja: "担当者は、新しい住所に移ってから二週間以内に転入の手続きをするよう、新しい住民に呼びかけています。" }
+          - { en: "Mornings tend to be busiest, so if you can, plan your visit for the early afternoon instead.", ja: "午前中がいちばん混み合う傾向があるので、できれば午後の早い時間に行くようにしましょう。" }
+          - { en: "And don't forget a photo ID; without one, the counter may not be able to help you.", ja: "また、写真付きの身分証を忘れずに。ないと窓口で対応してもらえない場合があります。" }
+    gist:
+      choices: ["A flea market and paperwork at ward offices", "A museum sale and new bike parking rules", "A flea market and crowded morning trains", "A plaza cleanup and moving to a new island"]
+      answer: 0
+      trap: 2
+      cja: ["フリーマーケットと 区役所の 手続き", "博物館の セールと 自転車置き場の 新ルール", "フリーマーケットと 朝の 満員電車", "広場の 清掃と 新しい 島への 引っ越し"]
+      why: "島はフリーマーケット、東京は引っ越しの季節の区役所の手続き。「Mornings are busiest」を朝の電車と取ると罠に。"
+    detail:
+      ask: "フリーマーケットは 何時 開始？"
+      choices: ["Eight a.m.", "Nine a.m.", "Eight-thirty", "Nine-thirty"]
+      answer: 2
+      trap: 1
+      cja: ["8時", "9時", "8時半", "9時半"]
+      why: "「used to open at nine」は以前の時間。今は「eight-thirty」開始です。"
+
+  - kind: news
+    id: news-garden-plots
+    season: spring
+    ctx: "春の 朝の ニュース。島の 申し込みと 東京の 健康"
+    note: "「instead of」の 前と 後、どちらが 今年の 数か 聞き分ける"
+    tags: { seed: 60, register: broadcast, pragmatic: literal, features: [numbers, contrast, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, everyone, and welcome to the island news.", ja: "皆さん、おはようございます。島のニュースの時間です。" }
+          - { en: "First up, sign-ups for the community garden open today, and this year there are twelve plots instead of eight.", ja: "まずは、コミュニティガーデンの区画の申し込みが今日から始まります。今年は八区画ではなく十二区画です。" }
+          - { en: "Plots go to the first residents who sign up at the town hall, so organizers suggest stopping by early.", ja: "区画は役場で申し込んだ先着順で割り当てられるので、主催者は早めに立ち寄るよう勧めています。" }
+          - { en: "Seeds and watering cans will be provided, but gardeners are asked to bring their own gloves.", ja: "種とじょうろは用意されますが、手袋は各自で持参するよう求められています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, pollen is a major concern for many Tokyo residents this time of year.", ja: "続いて東京の話題です。この時期、多くの都民にとって花粉は大きな悩みです。" }
+          - { en: "Doctors suggest wearing a mask outdoors and changing your clothes as soon as you get home.", ja: "医師は、外出時のマスク着用と、帰宅後すぐの着替えを勧めています。" }
+          - { en: "They also recommend drying laundry indoors, since sheets hung outside can collect pollen in just a few hours.", ja: "外に干したシーツは数時間で花粉がつくことがあるため、洗濯物は部屋干しが勧められています。" }
+          - { en: "If symptoms get worse, many clinics can help, but appointments fill up fast, so call ahead.", ja: "症状が悪化したら多くのクリニックで対応できますが、予約はすぐ埋まるので事前に電話しましょう。" }
+    gist:
+      choices: ["Garden tools for sale and spring cleaning tips", "Garden plot sign-ups and dealing with pollen", "A flower show and a new clinic opening", "Garden plot sign-ups and laundry rules for apartments"]
+      answer: 1
+      trap: 3
+      cja: ["園芸道具の 販売と 春の 大掃除の コツ", "菜園の 区画の 申し込みと 花粉 対策", "花の 展示会と 新しい クリニックの 開院", "菜園の 区画の 申し込みと 集合住宅の 洗濯 ルール"]
+      why: "島は菜園の区画の申し込み、東京は花粉対策。部屋干しは花粉対策の一つで、洗濯のルールの話ではありません。"
+    detail:
+      ask: "今年の 区画は いくつ？"
+      choices: ["Eight", "Two", "Twenty", "Twelve"]
+      answer: 3
+      trap: 0
+      cja: ["8区画", "2区画", "20区画", "12区画"]
+      why: "「twelve plots instead of eight」。八は去年までの数です。"
+
+  - kind: news
+    id: news-butterfly-hall
+    season: spring
+    ctx: "春の 朝の ニュース。博物館と 東京の 通勤"
+    note: "訂正の「that was a mistake」で 正しい 時間が 決まる"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [self-repair, clock, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. I'm Isabelle, and this is your island morning news.", ja: "おはようございます。しずえです。島の朝のニュースです。" }
+          - { en: "First up, the museum's insect hall has opened a new spring exhibit on butterflies, and residents are already lining up.", ja: "まずは、博物館の虫の展示室で蝶の春の特別展が始まり、すでに住民が列を作っています。" }
+          - { en: "The exhibit runs through the end of spring, and admission, as always, is free.", ja: "特別展は春の終わりまで開かれ、入場はいつもどおり無料です。" }
+          - { en: "Guided tours start at ten each morning; an earlier notice said eleven, but that was a mistake.", ja: "ガイドツアーは毎朝十時開始です。以前のお知らせでは十一時となっていましたが、誤りでした。" }
+      - topic: tokyo
+        lines:
+          - { en: "In other news from the city, spring brings a wave of new students and employees onto Tokyo's morning trains.", ja: "東京の話題です。春は、新入生や新社会人が大勢、朝の電車に乗り込んでくる季節です。" }
+          - { en: "Rail staff remind riders to take backpacks off and hold them in front, so there's room for everyone.", ja: "駅員は、皆が乗れるよう、リュックを前に抱えるよう乗客に呼びかけています。" }
+          - { en: "They also ask passengers to move toward the center of the car instead of crowding near the doors.", ja: "また、ドア付近に固まらず、車内の中ほどへ詰めるよう求めています。" }
+          - { en: "And if you're new in town, leaving even ten minutes early can make the ride a lot less stressful.", ja: "東京に来たばかりなら、十分早く出るだけでも通勤のストレスがずっと減ります。" }
+    gist:
+      choices: ["A new museum café and crowded trains", "A bug-catching contest and train delays", "A butterfly exhibit and manners on crowded trains", "A butterfly exhibit and school entrance ceremonies"]
+      answer: 2
+      trap: 3
+      cja: ["博物館の 新しい カフェと 満員電車", "虫取り 大会と 電車の 遅れ", "蝶の 特別展と 満員電車での マナー", "蝶の 特別展と 入学式"]
+      why: "島は博物館の蝶の特別展、東京は満員電車のマナー。「new students」は乗客の話で、入学式の話ではありません。"
+    detail:
+      ask: "ガイドツアーは 何時から？"
+      choices: ["Ten", "Eleven", "Two", "Seven"]
+      answer: 0
+      trap: 1
+      cja: ["10時", "11時", "2時", "7時"]
+      why: "「start at ten」。「eleven」は以前のお知らせの誤りです。"
+
+  - kind: news
+    id: news-plaza-sweep
+    season: spring
+    ctx: "春の 朝の ニュース。島の 行事と 東京の 自転車"
+    note: "「not ... as first announced」で 場所が 訂正される"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [self-repair, contrast, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, and thanks for tuning in to the island news.", ja: "おはようございます。島のニュースをお聞きいただきありがとうございます。" }
+          - { en: "First up, the spring plaza cleanup is slated for this weekend, and volunteers are needed to sweep paths and replant flower beds.", ja: "まずは、春の広場の清掃が今週末に予定されています。道の掃除や花壇の植え替えをするボランティアを募集しています。" }
+          - { en: "Volunteers should meet by the fountain at seven-thirty, not at the town hall as first announced.", ja: "ボランティアは七時半に噴水のそばに集合してください。最初のお知らせにあった役場ではありません。" }
+          - { en: "Gloves and trash bags will be handed out, and tea will be served afterward at the café.", ja: "手袋とごみ袋が配られ、終了後にはカフェでお茶がふるまわれます。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, as spring brings more cyclists out, many Tokyo wards are cracking down on illegal bike parking.", ja: "続いて東京の話題です。春になり自転車に乗る人が増えるなか、多くの区が違法駐輪の取り締まりを強めています。" }
+          - { en: "Bikes left near station entrances can be removed and taken to a storage lot, sometimes far from the station.", ja: "駅の入り口付近に置かれた自転車は撤去され、駅から遠い保管所に運ばれることもあります。" }
+          - { en: "Getting one back usually means a trip to that lot and a fee, so officials suggest using paid parking instead.", ja: "取り戻すには保管所まで行って手数料を払う必要があるため、有料駐輪場の利用が勧められています。" }
+          - { en: "Check your ward's website for bike parking near your station.", ja: "最寄り駅の近くの駐輪場は、区のウェブサイトで確認してください。" }
+    gist:
+      choices: ["A café opening and a new bike-sharing service", "A flower show and bike registration rules", "A fountain repair and illegal parking near stations", "A plaza cleanup and towed bikes near stations"]
+      answer: 3
+      trap: 2
+      cja: ["カフェの 開店と 新しい シェアサイクル", "花の 展示会と 自転車の 登録 ルール", "噴水の 修理と 駅前の 違法駐輪", "広場の 清掃と 駅前の 撤去 自転車"]
+      why: "島は広場の清掃、東京は駅前の自転車の撤去。噴水は集合場所で、修理の話ではありません。"
+    detail:
+      ask: "ボランティアの 集合 場所は？"
+      choices: ["The town hall", "The fountain", "The café", "The station"]
+      answer: 1
+      trap: 0
+      cja: ["役場", "噴水", "カフェ", "駅"]
+      why: "「by the fountain」が正解。「town hall」は最初のお知らせの場所で、訂正されました。"
+
+  - kind: news
+    id: news-story-hour
+    season: spring
+    ctx: "春の 朝の ニュース。島の 図書館と 東京の 公園"
+    note: "「forty」と「fourteen」は 強く 読む 場所で 聞き分ける"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [teen-ty, self-repair, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, island. Isabelle here with today's top stories.", ja: "島の皆さん、おはようございます。しずえが今日の主なニュースをお伝えします。" }
+          - { en: "First up, the library is starting a weekly story hour for young residents, held in the reading room upstairs.", ja: "まずは、図書館が子ども向けの週一回の読み聞かせ会を始めます。会場は二階の読書室です。" }
+          - { en: "Each session runs forty minutes, not fourteen as printed on the flyer, and no sign-up is needed.", ja: "各回は四十分です。チラシに印刷された十四分ではありません。申し込みは不要です。" }
+          - { en: "The librarian is also asking for donations of picture books in good condition.", ja: "司書は、状態のよい絵本の寄付も呼びかけています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, spring weekends bring big crowds to Tokyo's parks for picnics under the trees.", ja: "続いて東京の話題です。春の週末は、木の下でピクニックを楽しむ人で東京の公園が混み合います。" }
+          - { en: "Park officials are reminding visitors to take their trash home, since bins fill up quickly on busy days.", ja: "混雑する日はごみ箱がすぐいっぱいになるため、公園の管理者はごみを持ち帰るよう呼びかけています。" }
+          - { en: "They're also asking groups not to save large spaces with tarps early in the morning and then leave them empty.", ja: "また、朝早くからシートで広い場所を取ったまま空けておかないよう求めています。" }
+          - { en: "And many parks ban barbecues, so check the rules before you go.", ja: "多くの公園ではバーベキューが禁止されているので、行く前にルールを確認しましょう。" }
+    gist:
+      choices: ["A library story hour and picnic manners in parks", "A library book sale and barbecue spots in parks", "A story hour and a new recycling program", "A picture book contest and spring festivals"]
+      answer: 0
+      trap: 1
+      cja: ["図書館の 読み聞かせ会と 公園での ピクニックの マナー", "図書館の 古本市と 公園の バーベキュー 場所", "読み聞かせ会と 新しい リサイクルの 取り組み", "絵本の コンテストと 春祭り"]
+      why: "島は読み聞かせ会、東京は公園でのピクニックのマナー。絵本の寄付やバーベキュー禁止だけ拾うと罠を選びがち。"
+    detail:
+      ask: "読み聞かせ会は 一回 何分？"
+      choices: ["Fourteen minutes", "Thirty minutes", "Forty minutes", "Fifty minutes"]
+      answer: 2
+      trap: 0
+      cja: ["14分", "30分", "40分", "50分"]
+      why: "「forty minutes, not fourteen」。十四分はチラシの誤植です。"
+
+  - kind: news
+    id: news-fishing-derby
+    season: summer
+    weekday: fri
+    ctx: "金曜の 朝の ニュース。島の 大会と 東京の 健康"
+    note: "「not seven」の 七時は 例年の 時間。つられない"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [clock, contrast, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, and happy Friday! I'm Isabelle, and here's what's happening on the island.", ja: "おはようございます。金曜日ですね！しずえです。島のニュースをお伝えします。" }
+          - { en: "First up, the summer fishing contest kicks off tomorrow on the pier, and anyone with a fishing rod can join.", ja: "まずは、夏の釣り大会が明日、桟橋で始まります。釣りざおがあれば誰でも参加できます。" }
+          - { en: "Registration opens at six, not seven as in past years, and the contest runs until noon.", ja: "受付は例年の七時ではなく六時に始まり、大会は正午まで続きます。" }
+          - { en: "Prizes go to the three biggest catches, and organizers are asking everyone to release small fish.", ja: "大きな魚を釣った上位三人に賞品があり、主催者は小さな魚は逃がすよう呼びかけています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, Tokyo officials are reminding residents that heatstroke can strike indoors, not just outside.", ja: "続いて東京の話題です。都の担当者は、熱中症は屋外だけでなく屋内でも起こりうると呼びかけています。" }
+          - { en: "Many cases involve older people at home, so check on elderly neighbors and family members when you can.", ja: "多くは自宅にいる高齢者のケースなので、できるときに近所の高齢者や家族の様子を確かめましょう。" }
+          - { en: "Doctors suggest drinking water before you feel thirsty and using air conditioning, even at night.", ja: "医師は、のどが渇く前に水を飲み、夜でもエアコンを使うよう勧めています。" }
+          - { en: "And if someone feels dizzy or confused, move them somewhere cool and call for help right away.", ja: "誰かがめまいを感じたり意識がもうろうとしたりしたら、涼しい場所に移してすぐに助けを呼んでください。" }
+    gist:
+      choices: ["A boat race and elderly neighbors moving away", "A fishing contest and heatstroke risks at home", "A fishing contest and saving power on air conditioners", "A beach party and a night market in Tokyo"]
+      answer: 1
+      trap: 2
+      cja: ["ボートレースと 引っ越す 近所の 高齢者", "釣り大会と 家の 中での 熱中症の 危険", "釣り大会と エアコンの 節電", "ビーチパーティーと 東京の 夜市"]
+      why: "島は釣り大会、東京は屋内でも起こる熱中症。エアコンは熱中症対策として使う話で、節電の話ではありません。"
+    detail:
+      ask: "大会の 受付は 何時から？"
+      choices: ["Seven", "Noon", "Three", "Six"]
+      answer: 3
+      trap: 0
+      cja: ["7時", "正午", "3時", "6時"]
+      why: "「opens at six, not seven」。七時は例年の時間です。"
+
+  - kind: news
+    id: news-star-night
+    season: summer
+    ctx: "夏の 朝の ニュース。島の 夜の 行事と 東京の 夏"
+    note: "「rather than」の 後ろは 古い 時間"
+    tags: { seed: 60, register: broadcast, pragmatic: literal, features: [clock, contrast, numbers] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, everyone. Here's a look at what's happening on the island.", ja: "皆さん、おはようございます。島の話題をお伝えします。" }
+          - { en: "First up, the island's summer stargazing night is slated for later this week on the hilltop by the museum.", ja: "まずは、島の夏の星空観察会が今週後半、博物館そばの丘の上で予定されています。" }
+          - { en: "Our resident stargazer will lead the event, which now begins at nine-fifteen rather than eight-forty-five, once the sky is fully dark.", ja: "島の星好きが案内役を務めます。空が完全に暗くなってからにするため、開始は八時四十五分から九時十五分に変わりました。" }
+          - { en: "Telescopes will be shared, but organizers suggest bringing a blanket and insect spray.", ja: "望遠鏡は共用ですが、主催者はブランケットと虫よけスプレーの持参を勧めています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, summer in Tokyo is festival season, and neighborhood events can draw big crowds.", ja: "続いて東京の話題です。東京の夏はお祭りの季節で、地域の行事にも大勢の人が集まります。" }
+          - { en: "Organizers are asking visitors to carry their trash home, since temporary bins tend to overflow by evening.", ja: "仮設のごみ箱は夕方までにあふれがちなので、主催者はごみを持ち帰るよう来場者に呼びかけています。" }
+          - { en: "Police also remind people to follow staff directions near stations, where crowds can build up quickly after the events end.", ja: "警察も、行事の終了後は駅付近がすぐに混雑するため、係員の誘導に従うよう呼びかけています。" }
+          - { en: "If you're wearing a yukata, give yourself extra time to get there.", ja: "浴衣を着るなら、時間に余裕をもって出かけましょう。" }
+    gist:
+      choices: ["A telescope sale and new train schedules", "A stargazing night and fireworks over the bay", "A stargazing night and manners at summer festivals", "A museum night tour and yukata rentals"]
+      answer: 2
+      trap: 1
+      cja: ["望遠鏡の 販売と 新しい 電車の ダイヤ", "星空観察会と 湾の 花火", "星空観察会と 夏祭りの マナー", "博物館の 夜間 ツアーと 浴衣の レンタル"]
+      why: "島は星空観察会、東京は夏祭りでのごみや混雑のマナー。「festival」から花火を想像すると罠に。花火の話は出ません。"
+    detail:
+      ask: "星空観察会の 開始 時間は？"
+      choices: ["Nine-fifteen", "Eight-forty-five", "Nine-forty-five", "Eight-fifteen"]
+      answer: 0
+      trap: 1
+      cja: ["9時15分", "8時45分", "9時45分", "8時15分"]
+      why: "「now begins at nine-fifteen」。「rather than」の後の八時四十五分は以前の予定です。"
+
+  - kind: news
+    id: news-beach-sweep
+    season: summer
+    ctx: "夏の 朝の ニュース。島の 浜辺と 東京の 家事"
+    note: "「from A to B」の Bが 新しい 場所"
+    tags: { seed: 59, register: broadcast, pragmatic: literal, features: [contrast, linking, numbers] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. I'm Isabelle, and here's your island update.", ja: "おはようございます。しずえです。島の最新情報です。" }
+          - { en: "First up, residents are invited to the summer beach cleanup, which has moved from the north beach to the south beach this year.", ja: "まずは、夏のビーチ清掃への参加が呼びかけられています。今年は会場が北の浜から南の浜に変わりました。" }
+          - { en: "Volunteers will meet by the lighthouse at six-thirty, before the sand gets too hot.", ja: "ボランティアは砂が熱くなる前の六時半に灯台のそばに集合します。" }
+          - { en: "Last year's cleanup collected over thirty bags of trash, and organizers hope to beat that number.", ja: "去年の清掃ではごみ袋三十袋以上が集まり、主催者はその記録を超えたいと考えています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, the humid summer months make laundry a challenge for many Tokyo households.", ja: "続いて東京の話題です。湿気の多い夏の間は、東京の多くの家庭で洗濯物が悩みの種になります。" }
+          - { en: "Clothes dried indoors can develop a musty smell, so experts suggest running a fan or a dehumidifier nearby.", ja: "部屋干しした服はにおいが出やすいので、専門家は近くで扇風機や除湿機を使うよう勧めています。" }
+          - { en: "Leaving space between items helps too, as does washing smaller loads more often.", ja: "洗濯物の間隔を空けたり、少量をこまめに洗ったりするのも効果的です。" }
+          - { en: "And if you hang laundry on your balcony, keep an eye out for sudden afternoon downpours.", ja: "ベランダに干すなら、午後の急な大雨に気をつけてください。" }
+    gist:
+      choices: ["A lighthouse tour and buying a dehumidifier", "A beach cleanup and storms in the afternoon", "A swimming race and balcony safety rules", "A beach cleanup and drying laundry in humid weather"]
+      answer: 3
+      trap: 1
+      cja: ["灯台の 見学ツアーと 除湿機の 購入", "ビーチ清掃と 午後の 嵐", "水泳 大会と ベランダの 安全 ルール", "ビーチ清掃と 湿気の 多い 時期の 洗濯物"]
+      why: "島はビーチ清掃、東京は湿気の中での部屋干しのコツ。急な大雨は最後の一言だけで、話の中心ではありません。"
+    detail:
+      ask: "今年の 清掃の 会場は？"
+      choices: ["The north beach", "The south beach", "The lighthouse", "The pier"]
+      answer: 1
+      trap: 0
+      cja: ["北の 浜", "南の 浜", "灯台", "桟橋"]
+      why: "「moved from the north beach to the south beach」。北の浜は去年までの会場で、灯台は集合場所です。"
+
+  - kind: news
+    id: news-cafe-summer
+    season: summer
+    ctx: "夏の 朝の ニュース。島の お店と 東京の 備え"
+    note: "開店と 閉店、二つの 時間が 続けて 出てくる"
+    tags: { seed: 60, register: broadcast, pragmatic: literal, features: [clock, numbers, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, and welcome to the island news.", ja: "おはようございます。島のニュースへようこそ。" }
+          - { en: "First up, the café is switching to summer hours, opening an hour earlier, at seven, and closing at eight in the evening.", ja: "まずは、カフェが夏の営業時間に切り替わります。一時間早い七時に開店し、夜八時に閉店します。" }
+          - { en: "The owner is also adding iced coffee to the menu, which, he says, has been the most requested drink all year.", ja: "店主はアイスコーヒーもメニューに加えます。一年中、いちばんリクエストが多かった飲み物だそうです。" }
+          - { en: "He's also looking for a part-time helper during the busy afternoon hours.", ja: "また、忙しい午後の時間帯に手伝ってくれるアルバイトも探しています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, summer and early fall are typhoon season, and officials urge Tokyo residents to prepare now.", ja: "続いて東京の話題です。夏から初秋は台風シーズンで、担当者は都民に今のうちに備えるよう呼びかけています。" }
+          - { en: "That means bringing in anything on your balcony that could blow away, like plant pots or drying racks.", ja: "ベランダの植木鉢や物干しなど、飛ばされそうなものは室内に入れておきましょう。" }
+          - { en: "It's also a good idea to keep a flashlight, drinking water, and a charged phone battery close at hand.", ja: "懐中電灯、飲み水、充電済みのモバイルバッテリーを手元に置いておくのもよいでしょう。" }
+          - { en: "And check your ward's hazard map to see whether your area is at risk of flooding.", ja: "また、区のハザードマップで、自分の地域に浸水の危険があるか確認してください。" }
+    gist:
+      choices: ["Café summer hours and getting ready for typhoons", "A new café menu and summer flood drills", "Café summer hours and selling balcony plants", "A coffee festival and a power outage in Tokyo"]
+      answer: 0
+      trap: 1
+      cja: ["カフェの 夏の 営業時間と 台風への 備え", "カフェの 新メニューと 夏の 水害訓練", "カフェの 夏の 営業時間と ベランダの 植木の 販売", "コーヒー祭りと 東京の 停電"]
+      why: "島はカフェの夏の営業時間、東京は台風への備え。ハザードマップで浸水を確かめる話を訓練と取ると罠に。"
+    detail:
+      ask: "夏の カフェは 何時に 開店？"
+      choices: ["Six", "Eight", "Seven", "Nine"]
+      answer: 2
+      trap: 1
+      cja: ["6時", "8時", "7時", "9時"]
+      why: "「opening an hour earlier, at seven」。八時は閉店の時間です。"
+
+  - kind: news
+    id: news-fireworks
+    season: summer
+    ctx: "夏の 朝の ニュース。島の 夜と 東京の 電車"
+    note: "「fifteen」と「fifty」は 強く 読む 場所が 違う"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [teen-ty, self-repair, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, and thanks for joining me. I'm Isabelle.", ja: "おはようございます。お聞きいただきありがとうございます。しずえです。" }
+          - { en: "First up, the island's summer fireworks show is back, and this year it will be held over the water by the pier.", ja: "まずは、島の夏の花火大会が帰ってきます。今年は桟橋そばの海の上で行われます。" }
+          - { en: "The show lasts fifteen minutes, not fifty, as some residents had heard, so don't be late.", ja: "花火は十五分間です。一部の住民が聞いていた五十分ではないので、遅れないでください。" }
+          - { en: "Food stands will open on the beach in the afternoon, and the museum will stay open late.", ja: "午後には浜辺に屋台が並び、博物館も遅くまで開館します。" }
+      - topic: tokyo
+        lines:
+          - { en: "Meanwhile in the city, if you find Tokyo trains too cold in summer, rail officials have a tip.", ja: "一方、東京では、夏の電車が寒すぎると感じる人に、鉄道会社からのアドバイスがあります。" }
+          - { en: "Many lines run one or two mildly air-conditioned cars, often marked with a sticker on the window.", ja: "多くの路線には弱冷房車が一、二両あり、窓のステッカーで表示されていることが多いです。" }
+          - { en: "These cars are kept a little warmer, which can help riders who feel chilly after coming in from the heat.", ja: "これらの車両は少し暖かめに設定されていて、暑い外から入って寒く感じる人には助かります。" }
+          - { en: "And a light jacket in your bag can make a long ride much more comfortable.", ja: "また、薄手の上着をかばんに入れておくと、長い乗車がずっと快適になります。" }
+    gist:
+      choices: ["A fireworks show and longer museum hours in Tokyo", "A fireworks show and train cars with milder air conditioning", "A beach food festival and heat on Tokyo trains", "A fireworks show and new jacket rules on trains"]
+      answer: 1
+      trap: 2
+      cja: ["花火大会と 東京の 博物館の 開館時間 延長", "花火大会と 冷房の 弱い 車両", "浜辺の 屋台祭りと 東京の 電車の 暑さ", "花火大会と 電車での 上着の 新ルール"]
+      why: "島は花火大会、東京は弱冷房車。屋台は花火の付け足しで、東京の話は暑さではなく冷えすぎの対策です。"
+    detail:
+      ask: "花火は 何分間？"
+      choices: ["Fifty minutes", "Thirty minutes", "Five minutes", "Fifteen minutes"]
+      answer: 3
+      trap: 0
+      cja: ["50分", "30分", "5分", "15分"]
+      why: "「fifteen minutes, not fifty」。五十分は住民の聞き違いでした。"
+
+  - kind: news
+    id: news-new-neighbor
+    season: any
+    weekday: wed
+    ctx: "水曜の 朝の ニュース。島の 住民と 東京の 決まり"
+    note: "「pushed back」は 後ろに ずらすこと"
+    tags: { seed: 62, register: broadcast, pragmatic: literal, features: [clock, idiom, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, and happy Wednesday. We're halfway through the week, and here's the island news.", ja: "おはようございます。水曜日、週の半ばですね。島のニュースをお伝えします。" }
+          - { en: "First up, a new resident is moving in this week, and the welcome party at the plaza is set for tomorrow evening.", ja: "まずは、今週新しい住民が引っ越してきます。広場での歓迎会は明日の夕方に予定されています。" }
+          - { en: "The party was first planned for six, but it's been pushed back to seven so more residents can make it.", ja: "歓迎会は当初六時の予定でしたが、より多くの住民が参加できるよう七時に変更されました。" }
+          - { en: "Residents are welcome to bring a small gift, like fruit or flowers from their gardens.", ja: "果物や庭の花など、ちょっとした贈り物を持ってきても構いません。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, if you've recently moved within Tokyo, officials remind you that trash rules vary by ward.", ja: "続いて東京の話題です。最近都内で引っ越した人へ。ごみのルールは区によって違うので注意してください。" }
+          - { en: "Burnable garbage, plastics, and cans may go out on different days, and some wards collect them early in the morning.", ja: "燃えるごみ、プラスチック、缶は出す日がそれぞれ違うことがあり、早朝に回収する区もあります。" }
+          - { en: "Putting bags out on the wrong day can leave them uncollected, and neighbors do notice.", ja: "間違った日に出すと回収されないこともあり、ご近所にも気づかれます。" }
+          - { en: "Most wards offer a printed calendar or an app, so check yours.", ja: "多くの区は印刷したカレンダーやアプリを用意しているので、確認しましょう。" }
+    gist:
+      choices: ["A garden party and a new recycling app", "A new resident's party and moving to another ward", "A welcome party and trash collection rules by ward", "A flower market and early morning street cleaning"]
+      answer: 2
+      trap: 1
+      cja: ["ガーデンパーティーと 新しい リサイクル アプリ", "新しい 住民の 歓迎会と 別の 区への 引っ越し", "歓迎会と 区ごとの ごみ収集の ルール", "花の 市場と 早朝の 道路清掃"]
+      why: "島は新住民の歓迎会、東京は区ごとのごみ出しのルール。「moved within Tokyo」は導入で、引っ越しが話題ではありません。"
+    detail:
+      ask: "歓迎会は 何時から？"
+      choices: ["Seven", "Six", "Eight", "Six-thirty"]
+      answer: 0
+      trap: 1
+      cja: ["7時", "6時", "8時", "6時半"]
+      why: "「pushed back to seven」。六時は当初の予定です。"
+
+  - kind: news
+    id: news-music-night
+    season: any
+    weekday: sat
+    ctx: "土曜の 朝の ニュース。島の 夜と 東京の 電車"
+    note: "「up from」の 後は 前回の 数"
+    tags: { seed: 60, register: broadcast, pragmatic: literal, features: [numbers, contrast, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, and happy Saturday! Here's what's going on around the island this weekend.", ja: "おはようございます。土曜日ですね！今週末の島の話題をお伝えします。" }
+          - { en: "First up, the plaza hosts a music night this evening, with island residents performing songs they've written themselves.", ja: "まずは、今夜広場で音楽の夜が開かれ、島の住民が自作の曲を披露します。" }
+          - { en: "There are eleven performers on the list, up from seven last time, so the show will run a bit longer.", ja: "出演者は前回の七人から増えて十一人。そのため、ショーは少し長くなります。" }
+          - { en: "Chairs are limited, and organizers suggest bringing something to sit on.", ja: "いすの数に限りがあるため、主催者は座るものを持ってくるよう勧めています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, a reminder for Tokyo riders: you can top up your IC card at most station ticket machines.", ja: "続いて東京の話題です。都内で電車に乗る人へ。ICカードは駅のほとんどの券売機でチャージできます。" }
+          - { en: "Many convenience stores will also add money to your card at the register, which can save time during rush hour.", ja: "多くのコンビニでもレジでチャージでき、ラッシュ時の時間の節約になります。" }
+          - { en: "If your balance is too low at the gate, don't worry; a fare adjustment machine nearby can fix it.", ja: "改札で残高が足りなくても心配いりません。近くの精算機で対応できます。" }
+          - { en: "And register your card if you can, so it can be replaced if it's lost.", ja: "また、できればカードを登録しておきましょう。なくしても再発行できます。" }
+    gist:
+      choices: ["A music night and new ticket machines at stations", "A singing contest and lost train cards", "A dance party and convenience store hours", "A music night and topping up train cards"]
+      answer: 3
+      trap: 0
+      cja: ["音楽の 夜と 駅の 新しい 券売機", "歌の コンテストと なくした 交通系 カード", "ダンスパーティーと コンビニの 営業時間", "音楽の 夜と 交通系 カードの チャージ"]
+      why: "島は広場の音楽の夜、東京は交通系カードのチャージ方法。券売機はチャージする場所で、新しい機械の話ではありません。"
+    detail:
+      ask: "今回の 出演者は 何人？"
+      choices: ["Seven", "Eleven", "Seventeen", "Twelve"]
+      answer: 1
+      trap: 0
+      cja: ["7人", "11人", "17人", "12人"]
+      why: "「eleven performers, up from seven」。七人は前回の数です。"
+
+  - kind: news
+    id: news-bridge-work
+    season: any
+    ctx: "朝の ニュース。島の 道と 東京の 通勤"
+    note: "閉まる 橋と 代わりに 使う 橋の 両方が 出てくる"
+    tags: { seed: 59, register: broadcast, pragmatic: literal, features: [contrast, linking, numbers] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning. Isabelle here, with the news you need before you head out.", ja: "おはようございます。しずえです。出かける前に知っておきたいニュースをお伝えします。" }
+          - { en: "First up, the east bridge over the river will close for repairs starting tomorrow, and the work is expected to take three days.", ja: "まずは、川にかかる東の橋が明日から修理のため通行止めになります。工事は三日かかる見込みです。" }
+          - { en: "Residents heading to the beach should use the west bridge instead, or the small footbridge near the museum.", ja: "浜辺へ向かう住民は、代わりに西の橋か、博物館近くの小さな歩道橋を使ってください。" }
+          - { en: "Officials apologize for the trouble and say the bridge will reopen with new railings.", ja: "担当者は不便をわびており、橋は新しい手すりをつけて再開するとのことです。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, train delays are part of life in Tokyo, but there's a way to show you weren't at fault.", ja: "続いて東京の話題です。東京では電車の遅れはつきものですが、自分のせいではないと示す方法があります。" }
+          - { en: "When a train runs late, station staff often hand out delay certificates at the gates, and many are also posted online.", ja: "電車が遅れたとき、駅員が改札で遅延証明書を配ることが多く、オンラインで出ているものも多いです。" }
+          - { en: "Many schools and employers accept them, so grab one if you're going to be late.", ja: "多くの学校や職場で認められるので、遅刻しそうなら受け取っておきましょう。" }
+    gist:
+      choices: ["A bridge closure and proof of train delays", "A bridge reopening and new railings at stations", "A museum footbridge and late-night trains", "A beach closure and school start times"]
+      answer: 0
+      trap: 1
+      cja: ["橋の 通行止めと 電車の 遅延証明", "橋の 再開と 駅の 新しい 手すり", "博物館の 歩道橋と 深夜の 電車", "浜辺の 閉鎖と 学校の 始業時間"]
+      why: "島は東の橋の通行止め、東京は遅延証明書。「reopen」は工事の後の話で、今は閉鎖のニュースです。"
+    detail:
+      ask: "通行止めに なる 橋は？"
+      choices: ["The west bridge", "The footbridge", "The east bridge", "The museum bridge"]
+      answer: 2
+      trap: 0
+      cja: ["西の 橋", "歩道橋", "東の 橋", "博物館の 橋"]
+      why: "閉まるのは「the east bridge」。西の橋は代わりに使う道です。"
+
+  - kind: news
+    id: news-library-hours
+    season: any
+    ctx: "朝の ニュース。島の 施設と 東京の 防災"
+    note: "「instead of」の 後ろは これまでの 時間"
+    tags: { seed: 59, register: broadcast, pragmatic: literal, features: [clock, contrast, linking] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, everyone. I'm Isabelle, and here's what's new on the island.", ja: "皆さん、おはようございます。しずえです。島の新しい話題です。" }
+          - { en: "First up, the library is extending its evening hours and will now stay open until nine instead of six.", ja: "まずは、図書館が夜の開館時間を延長し、六時ではなく九時まで開くことになりました。" }
+          - { en: "The librarian says many residents asked for more time to study after work.", ja: "司書によると、仕事の後に勉強する時間がほしいという住民の声が多かったそうです。" }
+          - { en: "The quiet room upstairs is open to everyone, though snacks and drinks are still not allowed.", ja: "二階の静かな部屋は誰でも使えますが、飲食は引き続き禁止です。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to Tokyo, ward officials are reminding residents to keep an earthquake kit ready at home.", ja: "続いて東京の話題です。区の担当者は、自宅に地震に備えた防災セットを用意しておくよう呼びかけています。" }
+          - { en: "A good kit includes water, food that keeps, a flashlight, and enough for at least three days.", ja: "よい防災セットには、水、保存のきく食べ物、懐中電灯が入っていて、少なくとも三日分は必要です。" }
+          - { en: "Experts suggest checking expiration dates once or twice a year and replacing anything old.", ja: "専門家は、年に一、二回は期限を確認し、古いものは入れ替えるよう勧めています。" }
+          - { en: "And make sure everyone at home knows where your nearest evacuation site is.", ja: "また、家族全員が最寄りの避難場所を知っているようにしましょう。" }
+    gist:
+      choices: ["A new quiet room and food safety tips", "Longer library hours and preparing for earthquakes", "Longer library hours and an evacuation drill", "A library book sale and a new emergency hotline"]
+      answer: 1
+      trap: 2
+      cja: ["新しい 静かな 部屋と 食品の 安全の ヒント", "図書館の 開館時間 延長と 地震への 備え", "図書館の 開館時間 延長と 避難訓練", "図書館の 古本市と 新しい 緊急 電話"]
+      why: "島は図書館の時間延長、東京は防災セットの準備。避難場所の確認は最後の一言で、訓練の話はありません。"
+    detail:
+      ask: "図書館は 何時まで 開く？"
+      choices: ["Six", "Seven", "Eight", "Nine"]
+      answer: 3
+      trap: 0
+      cja: ["6時", "7時", "8時", "9時"]
+      why: "「until nine instead of six」。六時はこれまでの閉館時間です。"
+
+  - kind: news
+    id: news-cliff-trail
+    season: any
+    ctx: "朝の ニュース。島の 新しい 場所と 東京の 便利"
+    note: "目安の 時間と 一人の 記録、二つの 数が 出る"
+    tags: { seed: 60, register: broadcast, pragmatic: literal, features: [numbers, linking, contrast] }
+    segments:
+      - topic: island
+        lines:
+          - { en: "Good morning, and welcome to the island morning news.", ja: "おはようございます。島の朝のニュースです。" }
+          - { en: "First up, a new walking trail along the cliffs is now open, linking the lighthouse to the waterfall on the north side.", ja: "まずは、崖沿いの新しい散歩道が開通しました。灯台と北側の滝を結んでいます。" }
+          - { en: "The full loop takes about forty-five minutes, though one resident told me she did it in thirty-five.", ja: "一周は約四十五分ですが、ある住民は三十五分で歩いたそうです。" }
+          - { en: "Officials ask walkers to stay on the marked path and to keep an eye on children near the edge.", ja: "担当者は、印のある道から外れず、崖の近くでは子どもから目を離さないよう呼びかけています。" }
+      - topic: tokyo
+        lines:
+          - { en: "Turning to the city, Tokyo's convenience stores do a lot more than sell snacks.", ja: "続いて東京の話題です。東京のコンビニはお菓子を売るだけではありません。" }
+          - { en: "At many locations, you can pay utility bills, send packages, and print documents, often around the clock.", ja: "多くの店舗では、公共料金の支払い、荷物の発送、書類の印刷が、たいてい二十四時間できます。" }
+          - { en: "Some machines even let residents print certain ward documents with an ID card, which can save a trip to the ward office.", ja: "一部の機械では、身分証明のカードで区の書類を印刷でき、区役所に行かずに済みます。" }
+          - { en: "Just check the hours, since that service isn't always available late at night.", ja: "ただし、そのサービスは深夜には使えないこともあるので、時間を確認してください。" }
+    gist:
+      choices: ["A waterfall tour and late-night snack shopping", "A cliff trail and new rules for sending packages", "A new walking trail and services at convenience stores", "A lighthouse reopening and a new ward office"]
+      answer: 2
+      trap: 1
+      cja: ["滝の 見学ツアーと 深夜の 買い物", "崖の 散歩道と 荷物の 発送の 新ルール", "新しい 散歩道と コンビニで できる こと", "灯台の 再開と 新しい 区役所"]
+      why: "島は新しい散歩道、東京はコンビニで支払い・発送・印刷ができること。荷物の発送は例の一つにすぎません。"
+    detail:
+      ask: "散歩道 一周に かかる 時間は？"
+      choices: ["About forty-five minutes", "About thirty-five minutes", "About fifty-five minutes", "About fifteen minutes"]
+      answer: 0
+      trap: 1
+      cja: ["約45分", "約35分", "約55分", "約15分"]
+      why: "目安は「about forty-five minutes」。三十五分はある住民の記録です。"
+  # The weather tail (games/news/weather.ts): one clip a sentence, joined between sentences only; today's real Tokyo
+  # weather picks them (the sky over the day's waking hours, the high in Celsius as Tokyo reports it, at most two alerts),
+  # the sign-off ends every bulletin. Each sky's `why` is the umbrella question's 解説.
+  - kind: weather
+    id: news-wx
+    note: "天気は 一文ずつ。最初の 一文に 雨の 時間が 入る"
+    tags: { seed: 60, register: broadcast, pragmatic: literal, features: [numbers, linking] }
+    sky:
+      sunny:
+        en: "Turning to the weather here in Tokyo, it's shaping up to be a beautiful day, with sunshine from morning to evening."
+        ja: "東京の天気です。朝から夕方まで日差しが続き、すばらしい一日になりそうです。"
+        why: "sunshine from morning to evening（朝から夕方まで晴れ）。雨の話はなく、傘はいりません"
+      partly:
+        en: "Turning to the weather here in Tokyo, look for a mix of sun and clouds today, and it should stay dry."
+        ja: "東京の天気です。今日は晴れ時々くもりで、雨は降らない見込みです。"
+        why: "a mix of sun and clouds（晴れ時々くもり）に it should stay dry（雨は降らない）。傘はいりません"
+      cloudy:
+        en: "Turning to the weather here in Tokyo, skies stay gray for most of the day, but we're not expecting any rain."
+        ja: "東京の天気です。一日中ほぼくもり空ですが、雨の心配はなさそうです。"
+        why: "gray（くもり）でも we're not expecting any rain（雨は降らない）。くもりの印象に引っぱられないこと"
+      later:
+        en: "Turning to the weather here in Tokyo, it starts out dry, but rain moves in later in the day."
+        ja: "東京の天気です。朝のうちは降りませんが、後半には雨が降り出します。"
+        why: "starts out dry（降らずに始まる）の but のあと、rain moves in later（あとで雨）。帰りに備えて傘がいります"
+      clearing:
+        en: "Turning to the weather here in Tokyo, a wet start gives way to drier skies as the day goes on."
+        ja: "東京の天気です。朝は雨ですが、時間がたつにつれて天気は回復していきます。"
+        why: "a wet start（雨で始まる）が大事。drier skies（回復）は後半の話なので、朝は傘がいります"
+      rain:
+        en: "Turning to the weather here in Tokyo, it's a rainy one, with showers on and off throughout the day."
+        ja: "東京の天気です。今日は雨で、一日を通して降ったりやんだりします。"
+        why: "on and off（降ったりやんだり）でも throughout the day（一日中）。やむ時間があっても傘はいります"
+      storm:
+        en: "Turning to the weather here in Tokyo, heavy rain is in the forecast, and it could come down hard at times."
+        ja: "東京の天気です。大雨の予報で、ときおり激しく降るおそれがあります。"
+        why: "heavy rain（大雨）、come down hard（激しく降る）。傘はもちろん、足もとにも注意"
+      snow:
+        en: "Turning to the weather here in Tokyo, snow is in the forecast, so expect a wintry day around the city."
+        ja: "東京の天気です。雪の予報で、街は冬らしい一日になりそうです。"
+        why: "snow is in the forecast（雪の予報）。東京の雪は湿っていて、傘をさす人が多いです"
+    high:
+      en: "Look for a high of {n} degrees."
+      one: "Look for a high of {n} degree."
+      ja: "最高気温は{n}度の予想です。"
+    alerts:
+      storm:
+        en: "A heavy rain advisory is in effect, so watch out for flooded streets and train delays."
+        ja: "大雨注意報が出ています。道路の冠水や電車の遅れに気をつけてください。"
+      snow:
+        en: "Roads and sidewalks could get slippery, so take it slow and leave a little extra time."
+        ja: "道路や歩道がすべりやすくなるおそれがあります。ゆっくり、時間に余裕を持って出かけましょう。"
+      fog:
+        en: "Dense fog could cut visibility early on, so drivers, please take extra care."
+        ja: "早い時間は濃い霧で見通しが悪くなるおそれがあります。運転する方は十分注意してください。"
+      heat:
+        en: "There's a heatstroke alert out today, so drink plenty of water and try to stay out of the midday sun."
+        ja: "今日は熱中症警戒アラートが出ています。水分をこまめにとり、昼間の日差しは避けましょう。"
+      hot:
+        en: "It'll feel hot and sticky out there, so remember to stay hydrated."
+        ja: "外は蒸し暑く感じそうです。水分補給を忘れずに。"
+      cold:
+        en: "It's going to be a cold one, so bundle up if you're heading out."
+        ja: "今日は寒くなりそうです。出かけるときは暖かくしてください。"
+    end:
+      en: "And that's the news for this morning. I'm Isabelle. Have a wonderful day!"
+      ja: "以上、朝のニュースでした。しずえがお伝えしました。すてきな一日を！"

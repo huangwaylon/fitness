@@ -1,5 +1,6 @@
 // ききみみ's listening kinds (docs/curriculum-wave2.md §3.4, kikimimi-framework.md §8 and "Listen parts", content/listen/
-// README.md): the schema of app/content/listen/*.yaml (ことば タイル `tile`, ようじ でんわ `call`, たちぎき `tachi`, すうじ ラッシュ `rush`), its
+// README.md): the schema of app/content/listen/*.yaml (ことば タイル `tile`, ようじ でんわ `call`, たちぎき `tachi`,
+// すうじ ラッシュ `rush`, しずえの ニュース `news` and its weather sentences `weather`), its
 // checker (the README's rules, the Japanese help on each kind, the US-only lint), the kinds' clip ids and the clips as
 // the audio script speaks them, and each file as compiled (compile.ts: `parts/<unit>.json`, the index's `listen` and
 // `games`). The compiler's, the audio scripts' and the tests' (it reads the roster); the phone imports its types only.
@@ -7,8 +8,11 @@ import { ROSTER, type RosterId } from '#lib/villagers/roster.ts';
 import { CHANNELS, PRAGMATICS, REGISTERS, SCENE_IDS, accentOf, helpProblems, type CastId, type Channel, type Item, type Level, type SoundMark, type Tags } from './bank.ts';
 import { CAST } from './cast.ts';
 import { CAST_IDS } from './speech.ts';
+import { ALERTS, HI_MAX, HI_MIN, SKIES, hiKey, type Alert, type Sky } from './games/news/weather.ts';
 
-const LISTEN_KINDS = ['tile', 'call', 'tachi', 'rush'] as const;
+const LISTEN_KINDS = ['tile', 'call', 'tachi', 'rush', 'news'] as const;
+/** The kinds an item may be: a game's, or the news's weather sentences. */
+const ITEM_KINDS: readonly string[] = [...LISTEN_KINDS, 'weather'];
 type ListenKind = (typeof LISTEN_KINDS)[number];
 type ListenStatus = 'draft' | 'voiced' | 'listened';
 
@@ -109,7 +113,81 @@ interface RushItem extends Common {
 /** すうじ ラッシュ's counters. */
 export const RUSH_AT = ['cafe', 'konbini', 'ticket', 'deli', 'taxi', 'pharmacy'] as const;
 
-export type ListenItem = TileItem | CallItem | TachiItem | RushItem;
+// ---- しずえの ニュース (wave 2 §2.5) ----
+
+/** A bulletin's line, read by しずえ (the file's `cast.isabelle`); compiled with its clip, `<item>-<n>` (n from 1 over
+ *  the bulletin). */
+export interface NewsLine {
+  en: string;
+  ja: string;
+  tts?: string;
+  clip?: string;
+}
+/** A question after the bulletin: 4 English choices, the right one, the real trap (the easy tier's other choice), one
+ *  Japanese per choice and 解説. The gist's question is the game's own; the detail's is authored (UI copy). */
+interface NewsAsk {
+  ask?: string;
+  choices: string[];
+  answer: number;
+  trap: number;
+  cja?: string[];
+  why?: string;
+}
+const SEASONS = ['spring', 'summer', 'autumn', 'winter', 'any'] as const;
+export const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
+/** A bulletin: an island or seasonal item, then a Tokyo-life one (the weather and the sign-off come after, by the day:
+ *  games/news/), its season and maybe its weekday (dealt only then), the gist and one detail. */
+interface NewsItem extends Common {
+  kind: 'news';
+  season: (typeof SEASONS)[number];
+  weekday?: (typeof WEEKDAYS)[number];
+  segments: { topic: 'island' | 'season' | 'tokyo'; lines: NewsLine[] }[];
+  gist: NewsAsk;
+  detail: NewsAsk & { ask: string };
+}
+/** A weather sentence as compiled: its key (`sky-rain`, `hi-23`, `alert-heat`, `end`), clip (`<item>-<key>`), text and,
+ *  for a sky, the umbrella question's 解説. */
+export interface WxSentence {
+  key: string;
+  clip: string;
+  en: string;
+  ja: string;
+  tts?: string;
+  why?: string;
+}
+type Said = { en: string; ja: string };
+/** The weather tail's sentences (one item in the news files): one per sky (with the umbrella question's 解説), the high
+ *  as a template (`{n}` the number; `one` for 1 degree), one per alert, the sign-off. Compiled: `sentences`, all 56. */
+interface WeatherItem extends Common {
+  kind: 'weather';
+  sky: Record<Sky, Said & { why: string }>;
+  high: Said & { one: string };
+  alerts: Record<Alert, Said>;
+  end: Said;
+  sentences?: WxSentence[];
+}
+
+const ONES = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+  'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS = ['', '', 'twenty', 'thirty', 'forty'];
+/** A number as said, −49…49 ("minus two", "twenty-three"). */
+const inWords = (n: number): string => (n < 0 ? `minus ${inWords(-n)}` : n < 20 ? ONES[n] : TENS[Math.floor(n / 10)] + (n % 10 ? `-${ONES[n % 10]}` : ''));
+
+/** Every sentence of the weather tail: the skies, the highs HI_MIN…HI_MAX (the figure shown, the words spoken), the
+ *  alerts, the sign-off. */
+export function wxSentences(it: Pick<WeatherItem, 'id' | 'sky' | 'high' | 'alerts' | 'end'>): WxSentence[] {
+  const of = (key: string, x: Said & { why?: string }, tts?: string): WxSentence => ({ key, clip: `${it.id}-${key}`, en: x.en, ja: x.ja, ...(tts && { tts }), ...(x.why && { why: x.why }) });
+  const highs = Array.from({ length: HI_MAX - HI_MIN + 1 }, (_, k) => {
+    const c = k + HI_MIN, tpl = c === 1 ? it.high.one : it.high.en;
+    return of(`hi-${hiKey(c)}`, { en: tpl.replace('{n}', c < 0 ? `minus ${-c}` : `${c}`), ja: it.high.ja.replace('{n}', c < 0 ? `マイナス${-c}` : `${c}`) }, tpl.replace('{n}', inWords(c)));
+  });
+  return [...SKIES.map((k) => of(`sky-${k}`, it.sky[k])), ...highs, ...ALERTS.map((k) => of(`alert-${k}`, it.alerts[k])), of('end', it.end)];
+}
+
+/** A bulletin's lines in order (both segments). */
+export const newsLines = (it: Pick<NewsItem, 'segments'>): NewsLine[] => it.segments.flatMap((s) => s.lines);
+
+export type ListenItem = TileItem | CallItem | TachiItem | RushItem | NewsItem | WeatherItem;
 
 /** A file's header (content/listen/README.md "Header"). */
 interface ListenHead {
@@ -133,7 +211,11 @@ export type ListenEntry = [game: ListenKind, stage: number, status: ListenStatus
 
 /** An item's clip ids: a tile's own id (or its bank item's), a call's or a たちぎき's one per line, `<id>-<n>` (n from 1). */
 export const listenClipIds = (it: ListenItem): string[] =>
-  it.kind === 'tile' ? [it.clip ?? it.id] : it.kind === 'rush' ? [it.id] : it.lines.map((_, n) => `${it.id}-${n + 1}`);
+  it.kind === 'tile' ? [it.clip ?? it.id]
+    : it.kind === 'rush' ? [it.id]
+      : it.kind === 'news' ? newsLines(it).map((_, n) => `${it.id}-${n + 1}`)
+        : it.kind === 'weather' ? wxSentences(it).map((x) => x.clip)
+          : it.lines.map((_, n) => `${it.id}-${n + 1}`);
 
 /** A file as parsed (compile.ts readListen). */
 export interface ListenSource {
@@ -261,7 +343,7 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
   for (const [n, it] of (u.items ?? []).entries()) {
     const where = `item ${n} ${it.id ?? ''}`;
     if (!isStr(it.id) || !/^[a-z0-9][a-z0-9-]{0,31}$/.test(it.id)) at(where, 'id');
-    if (!(LISTEN_KINDS as readonly unknown[]).includes(it.kind)) at(where, `kind ${it.kind}`);
+    if (!ITEM_KINDS.includes(it.kind as string)) at(where, `kind ${it.kind}`);
     if (!isStr(it.note)) at(where, 'note');
     else if (chars(it.note) > 40) at(where, `note is ${chars(it.note)} 字 (≤ 40)`);
     if (it.scene !== undefined && !(SCENE_IDS as readonly string[]).includes(it.scene as string)) at(where, `scene ${it.scene}`);
@@ -365,8 +447,72 @@ export function checkListen({ file, raw }: ListenSource, bank: ReadonlyMap<strin
         at(where, 'plan: ask, ja, 3-4 choices, answer in range');
       rounds.forEach((r, i) => help(`${where} round ${i}`, r.type === 'plan' ? r : { ctx: r.ctx, why: r.why }, ['ctx', 'why']));
     }
+
+    if (it.kind === 'news') checkNews(where, it, { at, speaker, spoken, help });
+    if (it.kind === 'weather') checkWeather(where, it, at, u.game === 'news');
   }
   return bad;
+}
+
+// ---- しずえの ニュース's checks ----
+
+type At = (where: string, msg: string) => void;
+interface Checks {
+  at: At;
+  speaker(where: string, who: unknown): void;
+  spoken(where: string, o: Obj): void;
+  help(where: string, o: { choices?: unknown; cja?: unknown; why?: unknown; ctx?: unknown }, need: readonly ('cja' | 'why' | 'ctx')[]): void;
+}
+const wordCount = (s: string) => s.split(/\s+/).filter(Boolean).length;
+const strsOf = (v: unknown): string[] => (strs(v) ? v : []);
+
+/** A bulletin's problems: its season and weekday; two segments (an island or seasonal item, then Tokyo's) of 3-5 lines
+ *  of 6-32 words, 100-170 words in all, read by しずえ; the gist and the detail, each 4 choices with the answer and the
+ *  trap apart; the help (ctx, each question's cja and why) past draft; US English. */
+function checkNews(where: string, it: Obj, c: Checks) {
+  const { at } = c;
+  if (!(SEASONS as readonly unknown[]).includes(it.season)) at(where, `season ${it.season}`);
+  if (it.weekday !== undefined && !(WEEKDAYS as readonly unknown[]).includes(it.weekday)) at(where, `weekday ${it.weekday}`);
+  if (String(it.id).length > 24) at(where, 'a bulletin id ≤ 24 characters (its rounds add -kasa)');
+  c.speaker(where, 'isabelle');
+  const segs = (Array.isArray(it.segments) ? it.segments : []) as Obj[];
+  if (segs.length !== 2 || !['island', 'season'].includes(segs[0].topic as string) || segs[1].topic !== 'tokyo') at(where, 'segments: an island or season one, then tokyo');
+  segs.forEach((s, k) => { if (!Array.isArray(s.lines) || s.lines.length < 3 || s.lines.length > 5) at(where, `segment ${k}: 3-5 lines`); });
+  const lines = segs.flatMap((s) => (Array.isArray(s.lines) ? (s.lines as Obj[]) : []));
+  lines.forEach((l, k) => {
+    c.spoken(`${where} line ${k}`, l);
+    if (isStr(l.en) && (wordCount(l.en) < 6 || wordCount(l.en) > 32)) at(`${where} line ${k}`, `${wordCount(l.en)} words (6-32)`);
+  });
+  const total = lines.reduce((n, l) => n + (isStr(l.en) ? wordCount(l.en) : 0), 0);
+  if (total < 100 || total > 170) at(where, `${total} words (100-170: about 45 s before the weather)`);
+  c.help(where, { ctx: it.ctx }, ['ctx']);
+  for (const k of ['gist', 'detail'] as const) {
+    const q = (it[k] ?? {}) as Obj;
+    if (!(strs(q.choices) && q.choices.length === 4 && new Set(q.choices).size === 4 && isInt(q.answer, 0, 3) && isInt(q.trap, 0, 3) && q.trap !== q.answer))
+      at(`${where} ${k}`, '4 distinct choices, the answer and the trap 0-3 and apart');
+    if (k === 'detail' && !isStr(q.ask)) at(`${where} ${k}`, 'ask');
+    c.help(`${where} ${k}`, { choices: q.choices, cja: q.cja, why: q.why }, ['cja', 'why']);
+  }
+  const choices = [...strsOf((it.gist as Obj)?.choices), ...strsOf((it.detail as Obj)?.choices)];
+  for (const p of usProblems({ lines, choices, tags: it.tags as Common['tags'] })) at(where, p);
+}
+
+/** The weather sentences' problems: only in a news file; every sky (with its 解説), alert and the sign-off said, in US
+ *  English and no digits; the high's templates each with `{n}` (the figure shown, spoken in words). */
+function checkWeather(where: string, it: Obj, at: At, inNews: boolean) {
+  if (!inNews) at(where, 'weather sentences belong in a news file');
+  const one = (k: string, x: unknown, why = false) => {
+    const o = (x ?? {}) as Obj;
+    if (!isStr(o.en) || !isStr(o.ja) || /\d/.test(o.en)) at(`${where} ${k}`, 'en (no digits) and ja');
+    if (why && !isStr(o.why)) at(`${where} ${k}`, 'why: the umbrella question’s 解説');
+    for (const p of helpProblems({ why: o.why })) at(`${where} ${k}`, p);
+    if (isStr(o.en)) for (const p of notUs(o.en)) at(`${where} ${k}`, `not US English (${p})`);
+  };
+  for (const k of SKIES) one(`sky.${k}`, (it.sky as Obj)?.[k], true);
+  for (const k of ALERTS) one(`alerts.${k}`, (it.alerts as Obj)?.[k]);
+  one('end', it.end);
+  const h = (it.high ?? {}) as Obj;
+  if (![h.en, h.one, h.ja].every((x) => isStr(x) && x.includes('{n}'))) at(`${where} high`, 'en, one and ja, each with {n}');
 }
 
 /** Every file's problems, and ids unique across them and apart from `taken` (the bank's and the units' clip ids: the
@@ -380,6 +526,8 @@ export function checkListenAll(sources: readonly ListenSource[], bank: ReadonlyM
     else if (taken.has(id) || (it.kind !== 'tile' && Array.isArray(it.lines) && it.lines.some((_, n) => taken.has(`${id}-${n + 1}`)))) bad.push(`${file}: id ${id} is a bank or unit clip's`);
     seen.set(id, file);
   }
+  const wx = sources.flatMap(({ file, raw }) => ((raw as { items?: Obj[] })?.items ?? []).filter((it) => it.kind === 'weather').map(() => file));
+  if (wx.length > 1) bad.push(`the weather sentences are in ${wx.join(', ')}: one item in all`);
   return bad;
 }
 
@@ -405,6 +553,11 @@ export function listenClipItems(raw: unknown): Item[] {
       const cast = castOf(it.speaker);
       return [{ ...base, id: it.id, en: it.en, ja: it.ja, speaker: it.speaker, voice: accentOf(cast), cast, ...(it.tts && { tts: it.tts }) }];
     }
+    if (it.kind === 'news' || it.kind === 'weather') {
+      // (しずえ reads every one: the file's cast.isabelle)
+      const cast = castOf('isabelle'), ids = listenClipIds(it), said = it.kind === 'news' ? newsLines(it) : wxSentences(it);
+      return said.map((l, n): Item => ({ ...base, id: ids[n], en: l.en, ja: l.ja, speaker: 'isabelle', voice: accentOf(cast), cast, ...(l.tts && { tts: l.tts }) }));
+    }
     const icon = it.lines.find((l) => l.who !== ME)!.who as RosterId;
     return it.lines.map((l, n): Item => {
       const cast = castOf(l.who);
@@ -422,19 +575,27 @@ export function listenPart(raw: unknown, bank: ReadonlyMap<string, Pick<Item, 's
     unit, game, stage, status, cando,
     items: items.map((it): ListenItem => {
       const ids = listenClipIds(it);
-      return (it.kind === 'tile'
-        ? { ...drop(it), ...(it.clip && { speaker: bank.get(it.clip)!.speaker }), clip: ids[0] }
-        : it.kind === 'rush' ? { ...drop(it), clip: ids[0] }
-          : { ...it, lines: it.lines.map((l, n) => ({ ...drop(l), clip: ids[n] })) }) as ListenItem;
+      if (it.kind === 'tile') return { ...drop(it), ...(it.clip && { speaker: bank.get(it.clip)!.speaker }), clip: ids[0] };
+      if (it.kind === 'rush') return { ...drop(it), clip: ids[0] };
+      if (it.kind === 'weather') return { ...it, sentences: wxSentences(it).map(drop) };
+      if (it.kind === 'news') {
+        let n = 0;
+        return { ...it, segments: it.segments.map((s) => ({ ...s, lines: s.lines.map((l) => ({ ...drop(l), clip: ids[n++] })) })) };
+      }
+      return { ...it, lines: it.lines.map((l, n) => ({ ...drop(l), clip: ids[n] })) } as ListenItem;
     })
   };
 }
 
 /** What shapes a file's decks (its content version's input, compile.ts): each item's id, kind and answer shape (a
  *  tile's tiles and decoys; a call's halves and its memo's option counts and answers; a たちぎき's speakers, offsets
- *  and answers; a rush's chips (a tier keeps them by their numbers), answer and `was`). No Japanese, notes or marks. */
-export const listenShape = (it: ListenItem): unknown =>
-  it.kind === 'tile' ? [it.id, it.kind, it.tiles, it.decoys]
-    : it.kind === 'rush' ? [it.id, it.kind, it.options, it.answer, it.was ?? -1]
-    : it.kind === 'call' ? [it.id, it.kind, it.half, it.memo.map((r) => r.slots.map((s) => [s.options.length, s.answer]))]
-      : [it.id, it.kind, it.lines.map((l) => [l.who, l.at]), it.rounds.map((r) => [r.type, r.answer, r.type === 'plan' ? r.choices.length : 0])];
+ *  and answers; a rush's chips (a tier keeps them by their numbers), answer and `was`; a bulletin's season, weekday,
+ *  lines and its questions' answers and traps; the weather's sentences). No Japanese, notes or marks. */
+export function listenShape(it: ListenItem): unknown {
+  if (it.kind === 'tile') return [it.id, it.kind, it.tiles, it.decoys];
+  if (it.kind === 'rush') return [it.id, it.kind, it.options, it.answer, it.was ?? -1];
+  if (it.kind === 'call') return [it.id, it.kind, it.half, it.memo.map((r) => r.slots.map((s) => [s.options.length, s.answer]))];
+  if (it.kind === 'news') return [it.id, it.kind, it.season, it.weekday ?? '', it.segments.map((s) => s.lines.length), [it.gist, it.detail].map((q) => [q.answer, q.trap])];
+  if (it.kind === 'weather') return [it.id, it.kind, wxSentences(it).map((x) => x.key)];
+  return [it.id, it.kind, it.lines.map((l) => [l.who, l.at]), it.rounds.map((r) => [r.type, r.answer, r.type === 'plan' ? r.choices.length : 0])];
+}

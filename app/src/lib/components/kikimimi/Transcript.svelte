@@ -44,7 +44,7 @@
     <li class="ln {seatOf(l.who)}" class:talk={at !== null} data-line={k} data-seat={seatOf(l.who)}>
       <span class="head"><OfficialArt key={villagerArt(l.who, true)} alt={name(l.who)} size={compact ? 28 : 36} /></span>
       <div class="b obj-cream">
-        <p class="en"><SoundLine en={l.en} focus={it.focus} marks={l.marks} clip="{it.id}-{k + 1}" from={at} {clock} /></p>
+        <p class="en"><SoundLine en={l.en} focus={it.focus} marks={l.marks} clip={l.clip ?? `${it.id}-${k + 1}`} from={at} {clock} /></p>
         <p class="ja">{l.ja}</p>
       </div>
     </li>

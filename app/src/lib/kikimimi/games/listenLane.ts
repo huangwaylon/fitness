@@ -13,7 +13,7 @@ import { tierOf } from './taikai/def.ts';
 import { cvOver, filesOf, listenGame, listenOpts, listenRecord, rawOf, type ListenOpts, type ListenRules, type ListenSource } from './listened.ts';
 
 /** An item's length as played (its lines and the gaps between them), ms; undefined while a clip is missing. */
-const itemMs = (it: Pick<Item, 'id' | 'lines'>): number | undefined => {
+export const itemMs = (it: Pick<Item, 'id' | 'lines'>): number | undefined => {
   const s = itemDur(it);
   return s === undefined ? undefined : Math.round(s * 1000);
 };

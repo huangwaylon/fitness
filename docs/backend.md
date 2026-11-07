@@ -556,7 +556,7 @@ Tokyo's sky by the hour for the island ([design](design.md#weather); decisions: 
   :15 and :45. A hello fetches too when it's due (the test copy has no cron; production's safety net). One fetch at a
   time, a 5 s timeout. A failure (an error status, a bad body, a timeout, no current hour) keeps the timeline it had,
   logs `wx-fail <why>` and backs off 30 min, 1 h, then 2 h.
-- **The timeline** (storage `wx`: `{wx, fails, failAt?}`): `wx = {h0, s, fx?, at, src, rev}`. `h0` is the first hour
+- **The timeline** (storage `wx`: `{wx, fails, failAt?}`): `wx = {h0, s, fx?, hi?, at, src, rev}`. `hi` is `[tokyoDay, °C]`, the high of the fetch's Tokyo day (from ≥ 12 of its hours; しずえの ニュース reads it out), and a changed high bumps `rev` too. `h0` is the first hour
   (hours since the epoch, UTC) and `s` a letter an hour: `c` fine, `o` cloudy, `r` rain, `h` a downpour, `s` snow. The
   12 hours before now (the phones' rainbow looks back) and the next 36, ≤ 48 letters. `fx` lists the foggy hours,
   `at` is the fetch time, `src` is `om` (Open-Meteo) or `fx` (an admin fixture), and `rev` bumps when an hour a phone

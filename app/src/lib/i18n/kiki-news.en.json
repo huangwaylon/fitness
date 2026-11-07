@@ -1,0 +1,18 @@
+{
+  "kiki.news.onAir": "On air",
+  "kiki.news.seg.island": "Island news",
+  "kiki.news.seg.season": "Seasonal news",
+  "kiki.news.seg.tokyo": "Tokyo news",
+  "kiki.news.seg.weather": "Today's weather",
+  "kiki.news.segs": "Hear a story again",
+  "kiki.news.wait": "Listen to the whole bulletin",
+  "kiki.news.ask.gist": "What were today's stories about?",
+  "kiki.news.ask.kasa": "Do you need an umbrella in Tokyo today?",
+  "kiki.news.script": "The whole bulletin",
+  "kiki.news.hearAll": "Hear the news",
+  "kiki.news.answer": "Answer: {a}",
+  "kiki.news.mine": "Your answer: {a}",
+  "kiki.news.host.all": "You caught it all! Tune in again tomorrow!",
+  "kiki.news.host.some": "You got the main points! Listen again tomorrow!",
+  "kiki.news.host.few": "The news is fast, isn't it? Try each story again."
+}

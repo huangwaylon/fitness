@@ -4,8 +4,8 @@
 // fake fetch and a fixed clock.
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { wxOf, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
-import { BACKOFF_MS, WX_EMPTY, changed, due, fetchTick, fixture, fold, mapHour, mapHours, omUrl, parseOpenMeteo, served, timeline, wxHealth, type FetchLike, type Hour, type WxState } from '../src/weather.ts';
+import { tokyoDay, wxOf, type Wx } from '../../app/src/lib/contract/live-protocol.ts';
+import { BACKOFF_MS, WX_EMPTY, changed, due, fetchTick, fixture, fold, highOf, mapHour, mapHours, omUrl, parseOpenMeteo, served, timeline, wxHealth, type FetchLike, type Hour, type WxState } from '../src/weather.ts';
 
 const DIR = `${import.meta.dirname}/fixtures/open-meteo`;
 const load = (f: string): { hourly: Record<string, unknown[]> } => JSON.parse(readFileSync(`${DIR}/${f}.json`, 'utf8'));
@@ -220,6 +220,20 @@ describe('the real weather (relay)', () => {
     // the next good one clears the failures
     const again = await fetchTick(results[0].st, t0 + H, fakeFetch({ body: load('live-2026-11-04') }));
     expect([again.st.fails, again.st.failAt]).toEqual([0, undefined]);
+  });
+
+  it('carries the Tokyo day’s high (しずえの ニュース): rounded, of that day’s hours only; a new high is sent', () => {
+    const hours = hoursOf('clear');
+    const t0 = nowOf(hours), day = tokyoDay(t0);
+    const today = hours.filter((h) => tokyoDay(h.h * H) === day).map((h) => h.temp!);
+    const wx = timeline(hours, null, t0)!;
+    expect(wx.hi).toEqual([day, Math.round(Math.max(...today))]);
+    expect(highOf(hours.slice(0, 5), day)).toBeNull(); // (too few of the day's hours)
+    const warmer = timeline(hours.map((h) => ({ ...h, temp: h.temp! + 3 })), null, t0)!;
+    expect(changed({ ...wx, rev: 1 }, warmer)).toBe(true);
+    expect(changed({ ...wx, rev: 1 }, timeline(hours, null, t0)!)).toBe(false);
+    expect(wxOf({ ...wx, rev: 1 })?.hi).toEqual(wx.hi);
+    expect([{ ...wx, rev: 1, hi: [day, 61] }, { ...wx, rev: 1, hi: [day] }, { ...wx, rev: 1, hi: [day, 2.5] }].map(wxOf)).toEqual([null, null, null]);
   });
 
   it('serves a timeline for 36 hours while it covers the hour; the wire form parses on both sides', () => {

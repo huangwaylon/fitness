@@ -35,8 +35,8 @@ const ALLOW: Record<string, string[]> = {
   // (contract: the music stages' records and their rule, sound/stage.svelte.ts)
   sound: ['types', 'contract', 'time', 'sync', 'i18n', 'random'],
   // ききみみ クイズ (docs/kikimimi.md): the session's pure state machine over the quiz intent (sync: the Live's type), the
-  // bank naming roster ids (a type), the deck seeded by random
-  kikimimi: ['types', 'contract', 'sync', 'random', 'villagers'],
+  // bank naming roster ids (a type), the deck seeded by random; the scene clock (time: しずえの ニュース's day and weather)
+  kikimimi: ['types', 'contract', 'time', 'sync', 'random', 'villagers'],
   // りょこう (docs/travel.md): the guides' data and its tokens, pure; the packing seed is the relay contract's type
   // (contract/pack.ts PackSeed)
   travel: ['contract'],
