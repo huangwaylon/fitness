@@ -12,7 +12,7 @@
   import { CHOICES, keepMic, pickBackend, readMic, type Can, type Choice, type MicPrefs } from '#lib/mic/pick.ts';
   import type { Allowed } from '#lib/mic/capture.ts';
   import { deleteWhisper, downloadWhisper, whisperCached, whisperServed } from '#lib/mic/backends/whisper.ts';
-  import { relayReady } from '#lib/mic/probe/run.ts';
+  import { relayReady } from '#lib/mic/backends/relay.ts';
   import { sttMB } from '#lib/mic/models.ts';
   import type { Got } from '#lib/mic/session.ts';
   import MicButton from './MicButton.svelte';

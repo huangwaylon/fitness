@@ -287,7 +287,7 @@ app/src/lib/mic/
   backends/whisper.worker.ts  transformers.js: pipeline('automatic-speech-recognition'), WebGPU else WASM; candidates
                         by forced decoding (decoder logits on given token ids)
   backends/webkit.ts    webkitSpeechRecognition, en-US, interim off, one utterance
-  backends/relay.ts     16 kHz 16-bit WAV (≤ 10 s, ≤ 330 KB) → POST /stt
+  backends/relay.ts     16 kHz 16-bit WAV (≤ 10 s, ≤ 340 KB) → POST /stt
   backends/stub.ts      the e2e's: scripted Heard from localStorage['e2e.stt'] (inert without it, like e2e.date)
   probe/steps.ts        M0's steps and their measurements (pure where possible: bleed, rtl from a click)
   models.ts             the pinned manifest: model, revision, files, sha256, parts
@@ -307,12 +307,13 @@ relay/src/sttRoute.ts      POST /stt
 export type Backend = 'whisper' | 'webkit' | 'relay' | 'stub';
 export interface Heard { text: string; words?: readonly { w: string; t0: number; t1: number }[];
   /** per candidate, a log-probability (whisper only) */ cand?: readonly number[]; ms: number; be: Backend }
-export interface Hint { maxS: number; candidates?: readonly string[] }   // never the expected sentence
-export interface Take { readonly level: number; stop(): Promise<Heard | null>; cancel(): void }
+export interface Hint { maxS?: number; candidates?: readonly string[]; frame?: (v: VadState) => void }   // never the expected sentence
+export type Outcome = Heard | { miss: Miss; be: Backend };
+export interface Take { readonly level: number; readonly heard: Promise<Outcome>; stop(): Promise<Outcome>; cancel(): void }
 export interface Recogniser {
   readonly be: Backend;
-  ready(progress?: (got: number, of: number) => void): Promise<void>;   // the download, once, opted in
-  listen(mic: Mic, h: Hint): Take;    // whisper/relay read mic's PCM at stop(); webkit runs its own recognition
+  ready(progress?: (got: number, of: number) => void): Promise<boolean>;   // whisper: the download if missing, the load
+  listen(h?: Hint): Take;    // inside a tap; whisper/relay/stub capture through session.ts, webkit runs its own
   dispose(): void;
 }
 ```

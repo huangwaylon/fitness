@@ -8,8 +8,6 @@ import { postWav } from '../backends/relay.ts';
 import { webkitOnce as webkitUtterance } from '../backends/webkit.ts';
 import { dbfs, inputClass, onset, silenceAfterSpeech, type Inp, type SttErr } from './steps.ts';
 
-export { relayReady } from '../backends/relay.ts';
-
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const TAKE_MAX_MS = 10_000;
 
