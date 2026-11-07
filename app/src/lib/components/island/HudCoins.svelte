@@ -10,7 +10,7 @@
   // ベル row's number) (CoinFlow); it squashes as each flight lands and the ベル row's number counts up by it
   // (coinsInFlight), today's +N flashing by it. It all waits while a sheet, the panel or the harvest covers the scene.
   //   <HudCoins {view} {covered} {later} />
-  import { untrack } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import type { PersonId, RingBells, WeekView } from '#lib/types.ts';
   import { RING_FRUITS } from '#lib/config/rules.ts';
   import CoinFlow, { type Flight } from './CoinFlow.svelte';
@@ -29,6 +29,14 @@
     later: (fn: () => void, ms: number) => void;
   }
   let { view, covered, later }: Props = $props();
+  /** A frame drawn since the mount: the first look (its stage and landing measured, a forced layout of ~19 ms at 4×
+   *  CPU) waits for the page's first frame, out of the mount's long task. */
+  let drawn = $state(false);
+  onMount(() => {
+    let t: ReturnType<typeof setTimeout> | undefined;
+    const r = requestAnimationFrame(() => (t = setTimeout(() => (drawn = true))));
+    return () => (cancelAnimationFrame(r), clearTimeout(t));
+  });
 
   /** At most this many flights at once (one per person × fruit is 8). */
   const MAX_FLIGHTS = 8;
@@ -96,7 +104,7 @@
   $effect(() => {
     void view.people.A.today.rings;
     void view.people.B.today.rings;
-    if (covered) return;
+    if (covered || !drawn) return;
     untrack(() => {
       const measured = measure();
       const fresh = newFlights();

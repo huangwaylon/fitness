@@ -24,7 +24,9 @@ let raf = 0;
 
 function apply(): void {
   raf = 0;
-  const h = fullScreenHeight(window.innerWidth, isStandalone(), screen.width, screen.height);
+  // (the window's width only standalone: a read of it forced the page's first layout in the mount, ~29 ms at 4x CPU)
+  const standalone = isStandalone();
+  const h = standalone ? fullScreenHeight(window.innerWidth, true, screen.width, screen.height) : null;
   if (h === last) return;
   last = h;
   const root = document.documentElement.style;
