@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, isGuidePhoto, isMapLibre, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, carried, carryPlan, isGuidePhoto, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -21,10 +21,10 @@ const VILLAGERS = 'island-villagers-v1';
 // Precache built JS/CSS + static files (caches.ts precachable): the common font slices (the rest, many files, are
 // cached on first use); the art and audio manifests are bundled into the JS (lib/art.ts, lib/sound/manifest.ts), so
 // their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
-// never precached: AUDIO_CACHE. Nor the maps' MapLibre (its chunk, worker and CSS, the engines): kept in the shell the
-// first time a map draws, then carried by each install (MAP_FILES).
+// never precached: AUDIO_CACHE. Nor the maps' MapLibre (its chunk, worker and CSS, the engines) and ききみみ's parts:
+// kept in the shell the first time they're used, then carried by each install (CARRIED; caches.ts carryPlan).
 const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(precachable);
-const MAP_FILES = immutable.map((f) => f.path).filter((p) => isMapLibre(`/${p.replace(/^\//, '')}`));
+const CARRIED = immutable.map((f) => f.path).filter(carried);
 /** Checked with the server past the browser's HTTP cache (a host's own max-age): a static file or the shell
  *  fetched within 10 minutes before a deploy would otherwise be stored stale for the whole version. Revalidated, not
  *  reloaded: an unchanged file (most of the art, each deploy) is a 304 from the HTTP cache's copy, not a download. The
@@ -55,17 +55,20 @@ self.addEventListener('install', (event) => {
       // one that fails costs that file (served from the previous shell's copy or the network: `cached`), not the
       // install (one flaky fetch of ~370 failed it, and every resume's update with it)
       await cache.addAll(chunks);
-      // the maps' MapLibre, once a map has drawn on this phone (an older shell holds some of it): an unchanged file
-      // copied, a changed one fetched (on its own: a miss costs only the map offline till it draws again)
-      const maps = await Promise.all(MAP_FILES.map(async (p) => {
+      // what this phone used of MapLibre and ききみみ's parts (an older shell holds it): an unchanged file copied, a
+      // changed one fetched (each on its own: a miss costs only that map or game offline till it's used again)
+      const held = (await Promise.all(olds.map((c) => c.keys()))).flat().map((r) => r.url);
+      const plan = carryPlan(CARRIED, held);
+      for (const p of plan.copy) {
         for (const c of olds) {
           const hit = await c.match(p);
-          if (hit) return void (await cache.put(p, hit));
+          if (hit) {
+            await cache.put(p, hit);
+            break;
+          }
         }
-        return p;
-      }));
-      const missing = maps.filter((p): p is string => !!p);
-      if (missing.length < MAP_FILES.length) await Promise.allSettled(missing.map((p) => cache.add(p)));
+      }
+      await Promise.allSettled(plan.fetch.map((p) => cache.add(p)));
       await Promise.allSettled(statics.map(async (r) => {
         const res = await fetch(r);
         if (res.ok) await cache.put(r, res);
@@ -297,8 +300,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // the maps' MapLibre the first time a map draws: kept in this version's shell (the install carries it on)
-  if (isMapLibre(url.pathname)) {
+  // the maps' MapLibre the first time a map draws, a ききみみ part the first time a game loads it: kept in this
+  // version's shell (the install carries them on)
+  if (carried(url.pathname)) {
     event.respondWith((async () => {
       const hit = await cached(req);
       if (hit) return hit;

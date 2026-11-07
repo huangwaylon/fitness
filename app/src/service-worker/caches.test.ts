@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { MAP_META_CACHE, PHOTO_CACHE, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, isGuidePhoto, isTileJson, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { MAP_META_CACHE, PHOTO_CACHE, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, carried, carryPlan, isGuidePhoto, isKikiPart, isTileJson, kikiPartOf, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -79,6 +79,23 @@ describe('precache', () => {
     for (const p of ['_app/immutable/chunks/maplibre.D4lzds31.js', '/fitness/_app/immutable/workers/maplibre-gl-worker-Br3j0JGE.js', '_app/immutable/assets/maplibre.qvkd0SPb.css']) expect(precachable(p)).toBe(false);
     // the map's own light component and the rest of the chunks stay
     for (const p of ['_app/immutable/chunks/LRf9-Dmh.js', '_app/immutable/assets/TravelSheet.oVavZwKD.css']) expect(precachable(p)).toBe(true);
+  });
+  it("leaves ききみみ's parts out (levels/parts/*.json's chunks): kept once a game loads them, carried with MapLibre", () => {
+    for (const p of ['_app/immutable/chunks/kiki-lv4-1.DjWTDWF4.js', '/fitness/_app/immutable/chunks/kiki-s2-call-b.CpMVfY-b.js']) expect([isKikiPart(p.replace(/^\/?/, '/')), precachable(p), carried(p)]).toEqual([true, false, true]);
+    expect([kikiPartOf('https://x.test/fitness/_app/immutable/chunks/kiki-lv4-1.DjWTDWF4.js'), kikiPartOf('/_app/immutable/chunks/DjWTDWF4.js')]).toEqual(['kiki-lv4-1', null]);
+    // ききみみ's code (its sheet, pages, lanes) stays precached; so does a chunk merely named like one
+    for (const p of ['_app/immutable/chunks/Ckfv2d2q.js', '_app/immutable/assets/KikimimiSheet.x1.css', '_app/immutable/chunks/kikimimi.Ab1.js']) expect([precachable(p), carried(p)]).toEqual([true, false]);
+    expect(carried('_app/immutable/chunks/maplibre.D4lzds31.js')).toBe(true);
+  });
+  it("an install copies the carried files an older shell holds, fetches a changed part by name and MapLibre's once a map drew", () => {
+    const files = ['_app/immutable/chunks/kiki-lv1.NEW1.js', '_app/immutable/chunks/kiki-lv2.SAME.js', '_app/immutable/chunks/kiki-lv4.NEW4.js', '_app/immutable/chunks/maplibre.M2.js', '_app/immutable/assets/maplibre.C1.css'];
+    const old = (p: string) => `https://x.test/fitness/_app/immutable/${p}`;
+    // lv1 changed (another hash held), lv2 the same, lv4 never loaded (lv4-1 is another part); no map drawn
+    expect(carryPlan(files, [old('chunks/kiki-lv1.OLD1.js'), old('chunks/kiki-lv2.SAME.js'), old('chunks/kiki-lv4-1.X.js'), old('chunks/Ab.js')]))
+      .toEqual({ copy: ['_app/immutable/chunks/kiki-lv2.SAME.js'], fetch: ['_app/immutable/chunks/kiki-lv1.NEW1.js'] });
+    // a map drew: its unchanged CSS copied, its changed chunk fetched
+    expect(carryPlan(files, [old('assets/maplibre.C1.css')])).toEqual({ copy: ['_app/immutable/assets/maplibre.C1.css'], fetch: ['_app/immutable/chunks/maplibre.M2.js'] });
+    expect(carryPlan(files, [])).toEqual({ copy: [], fetch: [] });
   });
   it("leaves ききみみ's recogniser out (the model, the runtime, its worker): only a phone that opted in fetches it", () => {
     const stt = ['stt/manifest.json', '/stt/whisper-tiny.en@2575352d/onnx/encoder_model_quantized.onnx.e93ec822.p0', '/fitness/stt/ort/1.31.0/ort-wasm-simd-threaded.asyncify.mjs',

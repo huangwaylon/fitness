@@ -120,13 +120,42 @@ function take(name: string, part: Part): void {
   for (const l of part.ladders ?? []) for (const it of l.rungs) ITEMS.set(it.id, it);
 }
 
+/** Offline, the parts a shell holds (`kiki-<part>`): the service worker keeps a part once loaded, never at install
+ *  (service-worker/caches.ts isKikiPart); null online. One look for a burst of loads. */
+let held: Promise<ReadonlySet<string>> | null = null;
+function offlineHeld(): Promise<ReadonlySet<string>> | null {
+  if (globalThis.navigator?.onLine !== false) return null;
+  if (held) return held;
+  const p = (async () => {
+    const out = new Set<string>();
+    try {
+      for (const k of (await caches.keys()).filter((k) => k.startsWith('island-shell-'))) {
+        for (const r of await (await caches.open(k)).keys()) {
+          const m = /\/chunks\/kiki-([\w-]+)\.[\w-]+\.js$/.exec(r.url);
+          if (m) out.add(m[1]);
+        }
+      }
+    } catch {
+      /* no caches, or storage refused */
+    }
+    return out;
+  })();
+  held = p;
+  void p.finally(() => held === p && (held = null));
+  return p;
+}
+
 function fetchPart(name: string): Promise<void> {
   if (got.has(name)) return Promise.resolve();
   let p = coming.get(name);
   if (!p) {
     const load = PARTS[`./levels/parts/${name}.json`];
     if (!load) return Promise.reject(new Error(`kikimimi: no chunk ${name}`));
-    p = load().then((part) => take(name, part)).finally(() => coming.delete(name));
+    // offline, a part no shell holds isn't imported at all (Safari keeps a failed dynamic import for the page's life:
+    // the retry back online would fail too)
+    const off = offlineHeld();
+    const go = off ? off.then((h) => (h.has(name) ? load() : Promise.reject(new Error(`kikimimi: ${name} isn't kept (offline)`)))) : load();
+    p = go.then((part) => take(name, part)).finally(() => coming.delete(name));
     coming.set(name, p);
   }
   return p;

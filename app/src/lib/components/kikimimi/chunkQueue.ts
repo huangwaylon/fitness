@@ -1,6 +1,8 @@
 // What waits for a chunk (pool.ts) in a ききみみ game (game.svelte.ts): what's heard and my own taps run in order, each
 // once the chunks the deck it touches needs are loaded (and a later game's lane before them: round/registry.ts).
 import { load, loaded, type Unit } from '#lib/kikimimi/pool.ts';
+import { toasts } from '#lib/ui-state/toast.svelte.ts';
+import { t } from '#lib/i18n/index.ts';
 
 export class ChunkQueue {
   /** What's waiting, in order; null when nothing is. */
@@ -38,7 +40,11 @@ export class ChunkQueue {
   }
 
   #settle(p: Promise<void>): void {
-    const q: Promise<void> = p.catch((e) => console.warn('kikimimi: a chunk didn’t load', e)).then(() => {
+    const q: Promise<void> = p.catch((e) => {
+      console.warn('kikimimi: a chunk didn’t load', e);
+      // (a game never played on this phone, offline: its part isn't kept, service-worker/caches.ts isKikiPart)
+      if (globalThis.navigator?.onLine === false) toasts.show(t('panel.sheetOffline'), 4000);
+    }).then(() => {
       if (this.#queue === q) this.#queue = null;
     });
     this.#queue = q;

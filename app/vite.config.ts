@@ -2,7 +2,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import adapterStatic from '@sveltejs/adapter-static';
 import { defineConfig, type Plugin } from 'vitest/config';
 import { execSync } from 'node:child_process';
-import { precachable } from './src/service-worker/caches.ts';
+import { carried, precachable } from './src/service-worker/caches.ts';
 
 /** The app version (the log's `build`, names the SW cache, and in _app/version.json for Kit's update check): the build date (UTC) + the commit, e.g. `2026-10-29.ef93d8b`. Deterministic per commit and day. */
 function appVersion(): string {
@@ -94,7 +94,8 @@ const preloadListenersOff: Plugin = {
  *  lists every file of the build (~11,700: the art, the rooms, the fonts' subsets), which the worker filtered as it
  *  started, 560 KB of script (56 KB gzipped) fetched with each update check that finds a deploy. The lists are Kit's
  *  defines, set on the worker's environment just before its build; its manifest module names them, and here they're
- *  written in already filtered. */
+ *  written in already filtered. The chunks kept on first use (caches.ts carried: MapLibre, ききみみ's parts) stay listed:
+ *  each install carries them on. */
 const swPrecacheOnly: Plugin = {
   name: 'sw-precache-only',
   applyToEnvironment: (env) => env.name === 'serviceWorker',
@@ -105,7 +106,7 @@ const swPrecacheOnly: Plugin = {
     for (const name of ['__SVELTEKIT_MANIFEST_IMMUTABLE__', '__SVELTEKIT_MANIFEST_ASSETS__']) {
       const list = define[name];
       if (typeof list !== 'string' || !out.includes(name)) throw new Error(`vite.config.ts sw-precache-only: Kit's ${name} changed; recheck the service worker's manifest`);
-      const kept = (JSON.parse(list) as { path: string }[]).filter((f) => precachable(f.path));
+      const kept = (JSON.parse(list) as { path: string }[]).filter((f) => precachable(f.path) || carried(f.path));
       out = out.replace(name, JSON.stringify(kept));
     }
     return { code: out, map: null };
@@ -153,6 +154,35 @@ const mapLibreNames: Plugin = {
   }
 };
 
+/** ききみみ's content chunks (pool.ts: each levels/parts/<part>.json its own chunk, ~690 KB gzipped in all) under a
+ *  stable name (`_app/immutable/chunks/kiki-<part>.<hash>.js`), so the service worker leaves them out of its precache
+ *  (caches.ts isKikiPart: kept once a game loads them; useless offline without their audio packs, kept the same way)
+ *  and an install fetches a changed part by its name. Nothing imports a part statically (the bundle's check). */
+const KIKI_PART = /\/src\/lib\/kikimimi\/levels\/parts\/([\w-]+)\.json$/;
+const kikiPartNames: Plugin = {
+  name: 'kiki-part-names',
+  applyToEnvironment: (env) => env.name === 'client',
+  outputOptions(o) {
+    const chunk = o.chunkFileNames;
+    if (typeof chunk !== 'function') throw new Error("vite.config.ts kiki-part-names: Kit's client chunk names changed; recheck the parts' names");
+    return {
+      ...o,
+      chunkFileNames: (c) => {
+        const part = KIKI_PART.exec(c.facadeModuleId ?? '')?.[1];
+        return part && c.moduleIds.every((id) => KIKI_PART.test(id)) ? chunk(c).replace('[hash]', `kiki-${part}.[hash]`) : chunk(c);
+      }
+    };
+  },
+  generateBundle(_, bundle) {
+    const isPart = (f: string) => /(^|\/)kiki-[\w-]+\./.test(f.slice(f.lastIndexOf('/') + 1));
+    const parts = Object.values(bundle).filter((c) => c.type === 'chunk' && isPart(c.fileName));
+    if (!parts.length) throw new Error('vite.config.ts kiki-part-names: no ききみみ part chunk named; recheck pool.ts PARTS');
+    for (const c of Object.values(bundle)) {
+      if (c.type === 'chunk' && c.imports.some(isPart)) throw new Error(`vite.config.ts kiki-part-names: ${c.fileName} imports a ききみみ part statically; load it through pool.ts`);
+    }
+  }
+};
+
 /** ききみみ's recogniser (lib/mic/backends/whisper.worker.ts: transformers.js and the ONNX runtime's JS, ~1 MB) under a
  *  stable name (`_app/immutable/workers/stt.<hash>.js`, a split chunk `workers/chunks/stt.<hash>.js`), so the service
  *  worker leaves it out of its precache and serves it from the recogniser's own cache (caches.ts isStt). A worker's
@@ -183,6 +213,7 @@ export default defineConfig({
     swPrecacheOnly,
     globsUncached,
     mapLibreNames,
+    kikiPartNames,
     sveltekit({
       adapter: adapterStatic({ pages: 'build-pages', assets: 'build-pages', fallback: 'index.html', strict: false }),
       version: { name: appVersion() },
