@@ -63,12 +63,12 @@
   const right = $derived(!!sentA && !!round && callOk(round, sentA));
   const verdict = $derived(v.out ? 'out' : right ? 'right' : sent ? 'wrong' : 'none');
   const mineRight = $derived(sentA && round ? mine.filter((j) => rowOk(round, sentA, j)).length : 0);
-  /** The team's rows not right: of my round's, and of the partner's own (at another tier, rows I wasn't asked). */
   /** The memo as shown: my rows; at a co-op reveal, the partner's own rows too (at another tier). */
   const shownRows = $derived(it && round ? (reveal && coop ? revealRows(v, it, game.me) : round.rows) : []);
   /** My rows' places in what's shown, and my chips there (picks only ever come before the reveal: the same places). */
   const shownMine = $derived(mine.map((j) => shownRows.findIndex((r) => r.n === round?.rows[j]?.n)));
   const shownPlaced = $derived(shownRows.map((r) => placed[round?.rows.findIndex((x) => x.n === r.n) ?? -1] ?? EMPTY));
+  /** The team's rows not right: of my round's, and of the partner's own (at another tier, rows I wasn't asked). */
   const teamShort = $derived(round ? new Set([...round.rows.filter((r) => !team.get(r.n)?.ok).map((r) => r.n), ...[...team].filter(([, x]) => !x.ok).map(([m]) => m)]).size : 0);
   const basket = $derived(reveal && it ? basketOf(v, cards, v.i, game.me) : []);
   const why = $derived(it ? whyOf(it) : undefined);
