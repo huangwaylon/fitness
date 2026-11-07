@@ -616,12 +616,13 @@ items:
       - { who: bob, cast: us-m3, en: "Anyway, I should go find the host and say hi.", ja: "さてと、主役を探してあいさつしてこなきゃ。" }
       - { who: marshal, cast: us-m1, en: "Sure! It was so great to meet you. Let's grab coffee sometime.", tts: "Sure! It was so great ta meetcha. Let's grab coffee sometime.", ja: "うん！ 会えて本当によかった。今度コーヒーでも行こう。" }
 lessons:
-  v: 1
+  v: 2
   deai: [dk-meet-coworker, dk-sister-heard, kr-how-know, km-way-back, kn-met-years, kr-name-again]
   bamen: [dk-common-hiking, km-partner, kr-heard-about, kn-met-year, dk-forgot-name, km-you-two-met]
   check: [dk-cousin-bakery, kr-guys-met, km-heard-great, kn-twelve-years, kr-cats-common, dk-way-back-kinder]
   oto: [kw-meetcha, kw-didja, kw-this-is-my, kw-aboutcha, kw-whatcha, kw-how-know]
   jissen: [dk-fast-intros, km-fast-in-law, kn-fast-nineteen, kr-fast-name, km-fast-osaka, dk-fast-find-host]
+  tiles: [tile-intro-nice-to-meet, tile-intro-didja-meet, tile-intro-heard-so-much, tile-intro-whatcha-drinking, tile-intro-know-each-other, tile-intro-name-again]
 tiers:
   dk-meet-coworker:
     easy: { choices: ["Audie is his coworker, and Kidd is an old friend.", "Audie and Kidd are old friends."], answer: 0, cja: ["オーディーは同僚で、キッドは古い友だち。", "オーディーとキッドは古い友だち。"] }

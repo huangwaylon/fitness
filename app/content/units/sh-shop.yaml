@@ -601,12 +601,13 @@ items:
       - { who: maple, cast: us-f3, en: "They're out of the red in my size. Did you say there's another store by the station?", tts: "They're oudda the red in my size. Didja say there's another store by the station?", ja: "赤、私のサイズがないって。駅の近くに別の店があるって言ってたよね？" }
       - { who: dom, cast: us-m1, en: "Yeah, on the second floor of the mall. Want me to text you the address?", tts: "Yeah, on the second floor a' the mall. Want me ta text ya the address?", ja: "うん、モールの2階。住所送ろうか？" }
 lessons:
-  v: 1
+  v: 2
   deai: [dk-jacket-size, dk-runs-small, kr-just-looking, km-looks-great, kn-sale-price, km-not-you]
   bamen: [dk-shoe-pair, kr-try-on, km-runs-big, kn-two-for, dk-which-blue, dk-just-looking]
   check: [dk-dress-honest, kr-boots-small, km-back-next-week, kn-members, kr-get-it, km-ever-wear]
   oto: [kw-little-bigger, kw-great-on, kw-out-of, kw-try-it-on, kw-better, kw-what-about]
   jissen: [dk-fast-sweater, km-fast-honest, kn-fast-shoes, kr-fast-back, km-fast-looking, dk-fast-text]
+  tiles: [tile-shop-little-bigger, tile-shop-great-on-you, tile-shop-all-out-of, tile-shop-try-it-on, tile-shop-navy-better, tile-shop-what-about]
 tiers:
   dk-jacket-size:
     easy: { choices: ["She'll try on a navy jacket.", "She'll buy a black jacket."], answer: 0, cja: ["ネイビーのジャケットを試着する。", "黒のジャケットを買う。"] }

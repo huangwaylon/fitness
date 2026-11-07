@@ -616,12 +616,13 @@ items:
       - { who: dom, cast: us-m1, en: "Dom. July 30th.", tts: "Dom. July thirtieth.", ja: "ドムです。7月30日。" }
       - { who: pashmina, cast: us-f5, en: "Sorry? July 13th?", tts: "Sorry? July thirteenth?", ja: "え？ 7月13日？" }
 lessons:
-  v: 1
+  v: 2
   deai: [dk-booking, dk-pharmacy-pick, kr-allergic, km-with-food, kn-dose, kr-insurance]
   bamen: [dk-move-appt, kr-cancellation, km-forms-early, kn-copay, dk-penicillin, km-not-ready]
   check: [dk-dentist-day, kr-one-pill, km-waitlist, kn-room, kr-ten-early, dk-pickup-fifteen]
   oto: [kw-twice-a-day, kw-allergic-to, kw-two-fifteen, kw-thirteenth, kw-with-food, kw-prescription]
   jissen: [dk-fast-late-doc, km-fast-dosage, kn-fast-callback, kr-fast-twenty, km-fast-processing, dk-fast-birthday]
+  tiles: [tile-cln-allergic-to, tile-cln-the-thirteenth, tile-cln-with-food, tile-cln-prescription, tile-cln-two-fifteen, tile-cln-in-twenty]
 tiers:
   dk-booking:
     easy: { choices: ["Thursday at 10:15.", "Thursday at 10:50."], answer: 0, cja: ["木曜の10時15分。", "木曜の10時50分。"] }
