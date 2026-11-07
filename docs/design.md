@@ -1054,9 +1054,9 @@ the render server 60–70 % of a core against 17 by day; without, 20 (iOS Simula
 no finger on it for 2 s, and the last frame wanting only the ambience (no fling, spring back or focus under way, nothing
 at the full rate: a walk, a fast critter, a flourish, a jiggle). Any of those, or a touch, draws at the full rate at
 once. On those frames the shadow map redraws at most every 250 ms (once more after the last change; a change from
-outside a frame, a model in, at once). Under the 3D island a fish shadow's and a bug's own walk, its invisible
-sprite's CSS transition, is off (the canvas moves the model by the same curves and its taps go by the model's spot):
-each running one held the page at 60 frames a second whatever the canvas drew. The models' empty carriers (`.m3n`,
+outside a frame, a model in, at once). Under the 3D island a fish shadow's own swim, its invisible sprite's CSS
+transition, is off (the canvas moves the model by the same curves and its taps go by the model's spot): the shadows'
+running ones held the page at 60 frames a second whatever the canvas drew (a bug's keeps its flight: its box is read). The models' empty carriers (`.m3n`,
 `bare`) keep their being in view and get no style writes. The demo at rest (Chromium 4× CPU, 393×852): 20 → 12 fps,
 main thread 17–26 → 8–10 %, style writes 290 → 7 a second; WebKit (Mac): WebContent 19–20 → 4–10 % of a core.
 
