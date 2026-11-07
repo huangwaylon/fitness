@@ -402,6 +402,7 @@ items:
     note: "twice a day が「トワイサデイ」と つながる"
     choices: ["twice a day", "two a day", "twice today"]
     answer: 0
+    ctx: "薬局のカウンターで、薬を渡されて"
     cja: ["1日2回", "1日2つ", "今日2回"]
     why: "twice a day はつながって「トワイサデイ」。two a day は「1日2つ」、twice today は「今日2回」で意味が違う。"
     focus: "twice a day"
@@ -418,6 +419,7 @@ items:
     note: "allergic は 真ん中が 強い「アラージック」"
     choices: ["allergic to", "energetic", "a logic to"]
     answer: 0
+    ctx: "薬局で、薬を出してもらう前に"
     cja: ["〜にアレルギーがある", "元気な", "〜の理屈"]
     why: "allergic は真ん中の ler を強く「アラージック」と言う。日本語のアレルギーとは音が違う。to も弱く「タ」。"
     focus: "allergic to"
@@ -434,6 +436,7 @@ items:
     note: "fifTEEN は 後ろが 強く 長い"
     choices: ["2:15", "2:50", "2:05"]
     answer: 0
+    ctx: "歯医者に予約の電話をしています"
     cja: ["2時15分", "2時50分", "2時5分"]
     why: "fifteen は後ろの teen を強く長く言う。fifty は前の fif が強く、最後が短い「フィフティ」。2時5分なら two-oh-five と言う。"
     focus: "2:15"
@@ -450,6 +453,7 @@ items:
     note: "thirTEENth。30th は 前が 強い"
     choices: ["13th", "30th", "3rd"]
     answer: 0
+    ctx: "友だちが、病院の予約の話をしています"
     cja: ["13日", "30日", "3日"]
     why: "thirteenth は teen を強く長く言う。thirtieth（30日）は前の thir が強く、「ティエス」と短い。third（3日）は一音節。"
     focus: "13th"
@@ -466,6 +470,7 @@ items:
     note: "with と without は 最後の out で 決まる"
     choices: ["with food", "without food", "with fruit"]
     answer: 0
+    ctx: "薬局で、薬の袋を渡されて"
     cja: ["食事と一緒に", "空腹で", "果物と一緒に"]
     why: "with food は「ウィズフード」。without なら「ウィザウト」と out が入り、意味は逆（空腹で）。fruit は「フルート」と r の音がある。"
     focus: "with food"
@@ -481,6 +486,7 @@ items:
     note: "prescription＝処方薬。最初の pre を 聞く"
     choices: ["prescription's ready", "description's ready", "subscription's ready"]
     answer: 0
+    ctx: "薬局の待合で、名前を呼ばれて"
     cja: ["処方薬ができた", "説明ができた", "定期購入ができた"]
     why: "prescription は最初が pre の「プリスクリプション」。description（説明）は de、subscription（定期購入）は sub で始まる。"
     focus: "prescription's ready"

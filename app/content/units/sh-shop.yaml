@@ -395,6 +395,7 @@ items:
     note: "little の t は「ラ行」っぽく「リドゥル」"
     choices: ["a little bigger", "a lot bigger", "a little better"]
     answer: 0
+    ctx: "服屋の試着室から、客が店員に"
     cja: ["少し大きい", "ずっと大きい", "少しいい"]
     why: "little の t は弾んで「リドゥル」。a lot（アラッ）とは母音が違う。bigger と better は真ん中の音（g と t）で聞き分ける。"
     focus: "a little bigger"
@@ -411,6 +412,7 @@ items:
     note: "great on が つながって「グレイドン」"
     choices: ["great on", "great one", "greater"]
     answer: 0
+    ctx: "服屋で試着すると、友だちが"
     cja: ["〜に似合う", "すごいもの", "もっとすごい"]
     why: "great の t が弾んで on とつながり「グレイドン」。on you は「あなたが着ると」。great one（いいもの）とは最後の音が違う。"
     focus: "great on"
@@ -427,6 +429,7 @@ items:
     note: "out of は「アウダ」。of は ほぼ 消える"
     choices: ["out of", "out on", "around"]
     answer: 0
+    ctx: "服屋で、店員が在庫を調べて"
     cja: ["〜を切らして", "〜に出て", "〜のあたりに"]
     why: "out of は t が弾み、of が弱くなって「アウダ」。all out of は「全部切らしている」。out on（出かけて）とは最後の音が違う。"
     focus: "out of"
@@ -443,6 +446,7 @@ items:
     note: "it on が つながって「イドン」"
     choices: ["try it on", "try it out", "tried it on"]
     answer: 0
+    ctx: "服屋で、友だちが服を手に取って"
     cja: ["試着する", "試しに使う", "試着した"]
     why: "it の t が弾んで on とつながり「トライイドン」。try it out は「使ってみる」。tried なら d の音が入る。"
     focus: "try it on"
@@ -459,6 +463,7 @@ items:
     note: "better の tt は「ラ行」っぽく「ベダー」"
     choices: ["better", "bigger", "redder"]
     answer: 0
+    ctx: "服屋で2着を比べていると、友だちが"
     cja: ["いい", "大きい", "赤い"]
     why: "better の tt は弾んで「ベダー」。bigger は g、redder は r で始まる。ネイビーと比べているのは色の好み。"
     focus: "better"
@@ -475,6 +480,7 @@ items:
     note: "What about が「ワダバウ」と ひと続き"
     choices: ["What about", "What's up", "Without"]
     answer: 0
+    ctx: "服屋で迷っていると、店員が"
     cja: ["〜はどう？", "どうしたの？", "〜なしで"]
     why: "What の t が弾んで about とつながり「ワダバウ」。What about〜? は「〜はどう？」と提案するとき。What's up は「ワッツァップ」。"
     focus: "What about"

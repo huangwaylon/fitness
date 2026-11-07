@@ -400,6 +400,7 @@ items:
     note: "just の t が 消えて「ジャスソヤノウ」"
     choices: ["Just so you know", "Just so you go", "Just show you"]
     answer: 0
+    ctx: "隣の人が、部屋のカギを渡しながら"
     cja: ["念のため言うと", "ちょうど行くように", "ちょっと見せる"]
     why: "just の t は次の s とぶつかって消え、you も弱く「ヤ」になって「ジャスソヤノウ」。最後の know まで聞くと決まり文句だとわかる。"
     focus: "Just so you know"
@@ -416,6 +417,7 @@ items:
     note: "next の t が 消えて「ネクスドア」"
     choices: ["next door", "next floor", "the door"]
     answer: 0
+    ctx: "引っ越しの日、廊下であいさつされて"
     cja: ["隣（の家）", "次の階", "そのドア"]
     why: "next の t は次の d とぶつかって消え「ネクスドア」。next door は「隣」。floor なら fl の音がはっきり聞こえる。"
     focus: "next door"
@@ -432,6 +434,7 @@ items:
     note: "hate の t が 消えて「ヘイタアスク」"
     choices: ["hate to ask", "had to ask", "hate the task"]
     answer: 0
+    ctx: "廊下で会った隣の人が、遠慮がちに"
     cja: ["頼みにくい", "聞くしかなかった", "その作業が嫌い"]
     why: "hate の t は次の to とつながってほぼ消え、to も「タ」と弱い。had to なら「ハットゥ」と d の音が残る。お願いの前置きの決まり文句。"
     focus: "hate to ask"
@@ -448,6 +451,7 @@ items:
     note: "last の t が 消えて「ラスナイ」"
     choices: ["last night", "late night", "last light"]
     answer: 0
+    ctx: "朝、ゴミ出しで会った近所の人が"
     cja: ["昨日の夜", "夜遅く", "最後の明かり"]
     why: "last の t は次の n とぶつかって消え「ラスナイ」。late night（夜遅く）は「レイト」と母音が違う。Did you も「ディジャ」とつながる。"
     focus: "last night"
@@ -464,6 +468,7 @@ items:
     note: "keep an eye on が「キーパナイオン」"
     choices: ["keep an eye on", "keep it on", "keep in mind"]
     answer: 0
+    ctx: "近所の人が、犬を連れてやって来て"
     cja: ["見ておく", "つけたままにする", "覚えておく"]
     why: "keep an eye on はつながって「キーパナイオン」。an と eye が溶けて聞こえにくい。keep it on は「つけたまま」、keep in mind は「覚える」"
     focus: "keep an eye on"
@@ -480,6 +485,7 @@ items:
     note: "Would you が「ウッジャ」と ひとつに なる"
     choices: ["Would you mind", "Did you mind", "Would you like"]
     answer: 0
+    ctx: "大きな荷物を抱えた隣の人が"
     cja: ["〜してもらえますか", "いやだった？", "〜はいかが？"]
     why: "Would you は d と y が混ざって「ウッジャ」になる。Did you も「ディジャ」と似るので、最初の音で聞き分ける。mind と like は最後の音が違う。"
     focus: "Would you mind"
