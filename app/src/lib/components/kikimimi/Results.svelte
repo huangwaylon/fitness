@@ -14,6 +14,7 @@
   // (`extra`: the trophy).
   import type { Snippet } from 'svelte';
   import { canSlow, type QuizGame } from './game.svelte.ts';
+  import { isCoop } from './listenView.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
   import Transcript from './Transcript.svelte';
   import LadderSteps from './LadderSteps.svelte';
@@ -49,7 +50,7 @@
   const v = $derived(game.view);
   const items = $derived(game.items);
   /** Co-op (several players, not たいせん): the team's tally, no ranking and no one's points. */
-  const coop = $derived(v.players.length > 1 && !v.vs);
+  const coop = $derived(isCoop(v));
   /** スピード はしご: my climb on each ladder (rungs right on the first listen, in order), its ladders' places. */
   const ladders = $derived(laddersIn(items));
   const mine = $derived(climbs(items, new Map(v.answers.flatMap((a, i) => (a ? [[i, { k: a.k, rp: a.rp }] as const] : [])))));
