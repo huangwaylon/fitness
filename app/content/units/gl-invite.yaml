@@ -608,12 +608,13 @@ items:
       - { who: sherb, cast: us-m4, en: "So, are you coming Saturday or not? I need a headcount.", ja: "で、土曜は来るの、来ないの？ 人数を知りたいんだ。" }
       - { who: judy, cast: us-f1, en: "Ugh, I'm gonna pass this time. Sorry! Anyway, I've gotta run.", ja: "うーん、今回はやめとく。ごめん！ じゃ、そろそろ行かなきゃ。" }
 lessons:
-  v: 1
+  v: 2
   deai: [dk-karaoke-fri, dk-try-make-it, kr-wanna-come, km-gonna-pass, kn-meet-640, kr-maybe-next]
   bamen: [dk-bbq-parents, km-fun-but, kr-you-in, kn-swing-915, dk-thats-a-no, kr-drinks-friday]
   check: [dk-hike-dinner, kr-party-sat, km-no-promises, kn-headcount, kr-tag-along, dk-game-night]
   oto: [kw-wanna, kw-gonna-pass, kw-count-me-in, kw-try-make-it, kw-next-time, kw-hafta]
   jissen: [dk-fast-both, km-fast-wiped, kn-fast-815, kr-fast-tacos, km-fast-late, dk-fast-headcount]
+  tiles: [tile-inv-come-with-us, tile-inv-gonna-pass, tile-inv-try-make-it, tile-inv-next-time, tile-inv-hafta-work, tile-inv-grabbing-ramen]
 tiers:
   dk-karaoke-fri:
     easy: { choices: ["Yes, he's coming later.", "No, he's not coming."], answer: 0, cja: ["来る、あとで。", "来ない。"] }

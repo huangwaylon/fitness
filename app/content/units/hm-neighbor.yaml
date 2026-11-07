@@ -612,12 +612,13 @@ items:
       - { who: whitney, cast: us-f4, en: "So that's Saturday, around noon?", ja: "じゃあ、土曜のお昼ごろね？" }
       - { who: cyd, cast: us-m4, en: "Yep, I'll stop by with the ladder. Anyway, I won't keep you.", ja: "うん、はしごを持って寄るよ。じゃあ、引きとめないね。" }
 lessons:
-  v: 1
+  v: 2
   deai: [dk-package, dk-music-down, kr-heads-up, km-trash-early, kn-across-hall, km-keep-eye]
   bamen: [dk-dog-bark, kr-park-mind, km-feed-cat, kn-back-sunday, dk-spare-key, kr-paper-oops]
   check: [dk-recycling, kr-water-plants, km-ladder, kn-delivery-window, kr-watch-bike, dk-cookies]
   oto: [kw-just-so, kw-next-door, kw-hate-to-ask, kw-last-night, kw-keep-an-eye, kw-wouldja-mind]
   jissen: [dk-fast-parking, km-fast-pipes, kn-fast-code, kr-fast-mail, km-fast-scratch, dk-fast-ladder]
+  tiles: [tile-nbr-just-so, tile-nbr-next-door, tile-nbr-hate-to-ask, tile-nbr-noise-last-night, tile-nbr-eye-on-him, tile-nbr-heads-up]
 tiers:
   dk-package:
     easy: { choices: ["She'll take his package for him.", "He's bringing her a package."], answer: 0, cja: ["彼の荷物を代わりに受け取る。", "彼が彼女に荷物を届ける。"] }

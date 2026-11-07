@@ -617,12 +617,13 @@ items:
       - { who: bea, cast: us-f1, en: "Sorry, the line's crazy. Let me see... okay, I'm by the big clock.", tts: "Sorry, the line's crazy. Lemme see... okay, I'm by the big clock.", ja: "ごめん、列がすごくて。えっと…うん、大きな時計のそばにいる。" }
       - { who: walker, cast: us-m1, en: "Did you say the big clock? Okay, I'll meet you there in five.", tts: "Didja say the big clock? Okay, I'll meetcha there in five.", ja: "大きな時計って言った？ わかった、5分でそっちに行く。" }
 lessons:
-  v: 1
+  v: 2
   deai: [dk-rain-sunday, dk-picnic-bring, kr-text-tonight, km-line-crazy, kn-gate-945, kr-by-ear]
   bamen: [dk-sold-aquarium, km-so-down, kn-leave-815, dk-bbq-chair, km-clear-up, kr-leave-seven]
   check: [dk-hike-later, kr-sold-dinner, km-meet-there, kn-thirteen-deg, kr-ramen-wait, dk-zoo-pandas]
   oto: [kw-lemme-check, kw-supposed-to, kw-gonna-crazy, kw-by-ear, kw-im-down, kw-meet-ya]
   jissen: [dk-fast-fireworks, km-fast-ear, kn-fast-show, kr-fast-pour, km-fast-crowds, dk-fast-clock]
+  tiles: [tile-wkd-lemme-check, tile-wkd-supposed-to-rain, tile-wkd-by-ear, tile-wkd-meetcha-there, tile-wkd-text-tonight, tile-wkd-whats-in-fridge]
 tiers:
   dk-rain-sunday:
     easy: { choices: ["Sunday at nine.", "Saturday at nine."], answer: 0, cja: ["日曜の9時。", "土曜の9時。"] }

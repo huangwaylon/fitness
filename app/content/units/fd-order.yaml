@@ -630,12 +630,13 @@ items:
       - { who: dom, cast: us-m1, en: "Thanks. Sorry, did you say the tip's included?", ja: "どうも。すみません、チップ込みって言いました？" }
       - { who: goldie, cast: us-f2, en: "Nope, the tip isn't included. Cash or card is fine.", ja: "いいえ、チップは含まれていません。現金でもカードでも大丈夫です。" }
 lessons:
-  v: 1
+  v: 2
   deai: [dk-diner-order, dk-for-here, kr-soup-salad, km-still-working, kn-total-extra, kr-im-good]
   bamen: [dk-allergy, km-comes-with, kr-did-you-say, kn-wait-time, dk-wrong-order, km-box-it-up]
   check: [dk-brunch, kr-latte-here, km-right-out, kn-split, kr-chowder, dk-rice-swap]
   oto: [kw-soup-or, kw-for-here, kw-on-the-side, kw-working-on, kw-right-back, kw-side-of]
   jissen: [dk-loud-order, km-fast-plates, kn-fast-total, kr-fast-combo, km-im-good, dk-fast-check]
+  tiles: [tile-ord-soup-or-salad, tile-ord-for-here, tile-ord-still-working, tile-ord-right-back, tile-ord-side-of-fries, tile-ord-large-or-small]
 tiers:
   dk-diner-order:
     easy: { choices: ["A sandwich and a salad.", "A sandwich and fries."], answer: 0, cja: ["サンドイッチとサラダ。", "サンドイッチとポテト。"] }
