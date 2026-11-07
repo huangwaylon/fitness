@@ -1,7 +1,8 @@
 // ききみみ's daily menu (docs/kikimimi-ux.md §6.1, §7.1): しずえ's three cards for the Tokyo day — 1 おさらい (the
 // due cards, ≤ 8; the 30-day recheck takes its place when one's due; none due: 「おさらいは ぜんぶ おわり！」), 2 きょうの
 // いっぽ (the current unit's next lesson; before units, ひとこと クイズ at my place), 3 きまぐれ (one playable mode seeded
-// in turn by the day, never yesterday's; at night, 21:00-04:00, おやすみ ものがたり). Any one finished session (≥ 4 answers,
+// in turn by the day, never yesterday's; a mode with its hours only then, else the next in turn: ニュース in the morning;
+// at night, 21:00-04:00, おやすみ ものがたり). Any one finished session (≥ 4 answers,
 // or a story heard ≥ 3 min) means 「きょうは OK」: each of today's sessions ticks the first undone card it matches, else the
 // first undone card, so free play is never "off menu". Same inputs, same menu, on every phone of mine. Pure.
 import type { LocalDate } from '../types.ts';
@@ -47,6 +48,8 @@ export interface MenuIn {
   lv: number;
   /** The playable modes きまぐれ picks from. */
   whims: readonly ModeId[];
+  /** The Tokyo hour (a mode with its hours, ModeMeta.hours, only then; none: any). */
+  hour?: number;
   /** It's night (21:00-04:00) and a bedtime story can be played: きまぐれ is おやすみ ものがたり. */
   night?: boolean;
   /** Today's finished sessions, in order. */
@@ -72,10 +75,12 @@ export const finishedStory = (ms: number): boolean => ms >= 180_000;
 export const isNight = (hour: number): boolean => hour >= 21 || hour < 4;
 
 /** きまぐれ's mode for a day: one of `whims` in turn, a new one each day (the quiz left out when card 2 is already a
- *  quiz and there's another), so never yesterday's. */
-export function whimOf(day: number, whims: readonly ModeId[], step: 'quiz' | 'lesson'): ModeId | null {
+ *  quiz and there's another), so never yesterday's; one outside its hours at `hour` gives way to the next in turn. */
+export function whimOf(day: number, whims: readonly ModeId[], step: 'quiz' | 'lesson', hour?: number): ModeId | null {
   const pool = whims.filter((m) => m !== 'review' && !(step === 'quiz' && m === 'quiz' && whims.length > 1));
-  return pool.length ? pool[day % pool.length] : null;
+  const now = (m: ModeId) => { const h = modeOf(m).hours; return !h || hour === undefined || (hour >= h[0] && hour < h[1]); };
+  for (let k = 0; k < pool.length; k++) if (now(pool[(day + k) % pool.length])) return pool[(day + k) % pool.length];
+  return null;
 }
 
 const matches = (a: Act | null, s: Session): boolean => {
@@ -94,7 +99,7 @@ const matches = (a: Act | null, s: Session): boolean => {
 export function pickMenu(o: MenuIn): Menu {
   const review: Act | null = o.recheck ? { k: 'recheck', unit: o.recheck } : o.due > 0 ? { k: 'review', n: Math.min(CAP, o.due) } : null;
   const step: Act = o.next ? { k: 'lesson', ...o.next } : { k: 'quiz', lv: o.lv };
-  const w = whimOf(dayNum(o.day), o.whims, step.k === 'lesson' ? 'lesson' : 'quiz');
+  const w = whimOf(dayNum(o.day), o.whims, step.k === 'lesson' ? 'lesson' : 'quiz', o.hour);
   const whim: Act | null = o.night ? { k: 'story' } : w === 'quiz' ? { k: 'quiz', lv: o.lv } : w && w !== 'review' ? { k: 'mode', m: w } : null;
   const cards: Card[] = [
     { slot: 'review', act: review, done: !review },

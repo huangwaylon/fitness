@@ -44,6 +44,9 @@ export interface ModeMeta {
   game?: string;
   /** Its page offers the ばしょ (ひとこと クイズ: the levels this build offers; a lane's game: its content's places). */
   places?: boolean;
+  /** The Tokyo hours [from, to) きまぐれ picks it in (しずえの ニュース: the morning bulletin, 05:00-11:00, the hub's
+   *  おはよう); none: any time. */
+  hours?: readonly [number, number];
   /** Its game's own answer window (s), whatever the lobby's こたえる じかん but なし: its pages offer just that and なし. */
   window?: number;
   /** Playable by this build and this player (not a lane's game). */
@@ -64,7 +67,7 @@ const MODES: ModeMeta[] = [
   { id: 'announce', group: 'scene', icon: '📢', mins: 4, qs: 8, coop: true, ok: (c) => c.levels.includes(5) },
   { id: 'call', group: 'scene', icon: '📞', mins: 3, qs: 6, coop: true, game: 'call', places: true },
   { id: 'tachi', group: 'scene', icon: '👂', mins: 3, qs: 6, coop: true, game: 'tachi', places: true },
-  { id: 'news', group: 'long', icon: '📻', mins: 2, qs: 3, coop: true, game: 'news' },
+  { id: 'news', group: 'long', icon: '📻', mins: 2, qs: 3, coop: true, game: 'news', hours: [5, 11] },
   { id: 'story', group: 'night', icon: '🌙', mins: 4, qs: 0, coop: false, ok: (c) => !!c.story },
   { id: 'taikai', group: 'event', icon: '🏆', mins: 6, qs: 8, coop: true, ok: (c) => !!c.taikai && quizLevels(c) }
 ];

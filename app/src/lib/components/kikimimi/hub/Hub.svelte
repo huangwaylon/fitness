@@ -90,7 +90,7 @@
       ? pickMenu({
           day: report.today, due: report.due, recheck: rechecksDue(currentUnits(), report.today)[0] ?? null,
           next: cur ? { unit: cur.id, lesson: cur.next } : null, lv,
-          whims: whims(ctx), night,
+          whims: whims(ctx), hour, night,
           sessions: [
             ...report.games.filter((g) => g.d === report.today && finished(g.r.length)).map((g) => ({ at: g.at, p: g.p, u: g.u, ladder: isLadderGame(g), lv: g.lv, gm: g.gm })),
             ...report.stories.filter((s) => s.d === report.today && finishedStory(s.ms)).map((s) => ({ at: s.at, p: false, ladder: false, lv: 4, story: true }))
