@@ -897,7 +897,7 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
 
 - **Install:** precaches built JS/CSS and static files except the rarer font slices, audio, the art manifest, the app
   icons, villager art beyond the two defaults, the critters', finds' and presents' art (all cached on first use), the
-  guides' photos and MapLibre (Offline, below). Non-hashed files and the shell are fetched with `cache: 'no-cache'` (revalidated past the HTTP
+  guides' photos, MapLibre and ききみみ's parts (Offline, below). Non-hashed files and the shell are fetched with `cache: 'no-cache'` (revalidated past the HTTP
   cache). The hashed chunks (an older shell's copy where it has one, else fetched) are all or nothing (`addAll`): one
   not fetched fails the install, and the page asks again later. The static files (~300: the art, the manifest) each
   on its own (`allSettled`): one that fails is served from the previous shell or the network, and no longer fails the
@@ -938,7 +938,7 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   `listenEvict`: a pack's older version (another hash) once unused for 10 minutes, then the least recently used past
   30 MB, never a pack used in the last 10 minutes (a game in progress). Range requests pass through.
 - **Offline** (phase A, 2026-11-07, decisions.md): what a phone has shown once reads offline; nothing is prefetched.
-  - *Precached* (~1 MB of the 3.3 MB precache, `scripts/load-budget.ts` ≤ 3.5 MB): the Zen Maru Gothic slices holding
+  - *Precached* (~1 MB of the 2.9 MB precache, `scripts/load-budget.ts` ≤ 3 MB): the Zen Maru Gothic slices holding
     ~99% of the app's own characters, both weights, and Fredoka's Latin (`caches.ts PRECACHED_FONT_SLICES`, 0.7 MB;
     the rest on first use, `island-fonts-v1`), each trip's cover and hero and the ten trail tracks (0.26 MB).
   - *Photos* (`island-photos-v1`: every other file under `travel/` and `hiking/`, ~3.4 MB in all): kept on first view,
@@ -948,7 +948,16 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   - *MapLibre* (its chunk, worker and CSS and the two engines, ~480 KB on the wire): into this version's shell the first
     time a map draws; each install copies the unchanged files from an older shell and fetches the changed ones, once
     a map has drawn on the phone. Offline the maps import it only if a shell holds it (`travel/map/cached.ts`: Safari
-    keeps a failed import for the page's life).
+    keeps a failed import for the page's life). The worker's manifest lists these carried files though it doesn't
+    precache them (`caches.ts carried`, `vite.config.ts swPrecacheOnly`; before 2026-11-07 it filtered them out, so no
+    install carried MapLibre).
+  - *ききみみ's parts* (each `levels/parts/<part>.json`'s chunk, `kiki-<part>.<hash>.js`: `vite.config.ts
+    kiki-part-names`; ~0.69 MB on the wire in all, 53 parts: the precache 3.57 → 2.88 MB): kept out of
+    the precache, since a game's text is of no use offline without its audio packs (Listen cache, on first use too).
+    Into this version's shell the first time a game loads one; each install copies the unchanged and fetches a changed
+    part whose name an older shell holds (`caches.ts carryPlan`). Offline, `pool.ts` imports only a part a shell holds
+    (Safari's failed import, as above); a game never played says オフラインです (`chunkQueue.ts`). ききみみ's code (the
+    sheet, its pages, the lanes) stays precached.
   - *Tiles* (`island-tiles-v1`): the tiles a map drew (OpenFreeMap, `basemap.nationalmap.gov`,
     `cyberjapandata.gsi.go.jp`; all send `Access-Control-Allow-Origin: *`, so no opaque answer is ever kept: one would
     cost quota unread), stale-while-revalidate past 14 days, bounded at 60 MB, least recently used out (`bytesEvict`,
@@ -961,7 +970,8 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
     (`sync/persist.ts`), and logs `storage.persist` (granted, already, MB used and quota).
   - *The sync pill* offline counts the taps waiting to go (`sync/queue.ts`); its label says when the record last came.
   - `e2e/offline.spec.ts` (Chromium, the worker on): a visit, then offline: the hero, a photo seen, a trail's track and
-    chart, a photo never seen as the placeholder; drawn (@render), a map drawn online drawn offline with no tile asked.
+    chart, a photo never seen as the placeholder; drawn (@render), a map drawn online drawn offline with no tile asked;
+    ききみみ: no part at install, a game played online played offline, one never played says オフラインです.
 - **Runtime:** fonts, villager, critter, find and present art cache-first on first use (a precached font slice from
   the shell); audio (`island-audio-v1`)
   cache-first and never revalidated: every audio URL carries its file's content hash (`?v=`, `lib/sound/manifest.ts`;
