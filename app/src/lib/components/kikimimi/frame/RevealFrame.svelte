@@ -2,10 +2,14 @@
   // A round's verdict at its reveal (docs/kikimimi.md "The game"; framework §5 RevealFrame): sat out, ○ right (+its
   // points) or × wrong / time up, and the 「いっぱつ！」 stamp (a badge, no points); co-op, how many of us got it (never
   // who). A game may say its own line in place of ○ / × (`line`: スピード はしご's climb) and add under it (`extra`).
+  // Solo, よみきき サンド's 「読んでから もう一度」 under it (`sand`: never in a game of several, it'd hold up their つぎへ).
   import type { Snippet } from 'svelte';
+  import type { Item } from '#lib/kikimimi/bank.ts';
+  import type { SandPlayer } from './Sandwich.svelte';
+  import SandButton from './SandButton.svelte';
   import { t } from '#lib/i18n/index.ts';
 
-  let { out, right, picked, pts, badge = false, coop, rightNow, line, extra }: {
+  let { out, right, picked, pts, badge = false, coop, rightNow, line, extra, sand }: {
     /** I sat this round out. */
     out: boolean;
     right: boolean;
@@ -20,6 +24,8 @@
     rightNow: number;
     line?: Snippet;
     extra?: Snippet;
+    /** A solo game's item and clips: サンド offered. */
+    sand?: { it: Item; player: SandPlayer };
   } = $props();
   const verdict = $derived(out ? 'out' : right ? 'right' : picked ? 'wrong' : 'none');
 </script>
@@ -37,6 +43,7 @@
     {/if}
     {#if coop}<span class="team-now" data-kiki-team-now={rightNow}>{rightNow ? t('kiki.teamNow', { n: rightNow }) : t('kiki.teamNone')}</span>{/if}
     {@render extra?.()}
+    {#if sand}<SandButton it={sand.it} player={sand.player} />{/if}
   {/if}
 </div>
 

@@ -1,7 +1,7 @@
 <script lang="ts">
   // A quiz question's verdict at its reveal (docs/kikimimi.md "The game"): the frame's (frame/RevealFrame.svelte: sat
   // out, ○ +100 or ×, いっぱつ, co-op's count), a スピード はしご rung's climb in place of ○ / × (climbed +100, right but
-  // held, or stopped), and a missed picture's name.
+  // held, or stopped), and a missed picture's name. Solo, よみきき サンド's way in (`sand`: the game's clips).
   import type { Item } from '#lib/kikimimi/bank.ts';
   import { PIC_JA } from '#lib/kikimimi/bank.ts';
   import { RUNG_POINTS, SPEEDS, type rungState } from '#lib/kikimimi/ladder.ts';
@@ -9,8 +9,9 @@
   import { RIGHT, firstListen } from '#lib/kikimimi/score.ts';
   import { t } from '#lib/i18n/index.ts';
   import RevealFrame from './frame/RevealFrame.svelte';
+  import type { SandPlayer } from './frame/Sandwich.svelte';
 
-  let { it, out, right, picked, replayed, same, rs, climbed, coop, rightNow, plain = false }: {
+  let { it, out, right, picked, replayed, same, rs, climbed, coop, rightNow, plain = false, sand }: {
     it: Item;
     /** I sat this question out. */
     out: boolean;
@@ -29,6 +30,8 @@
     rightNow: number;
     /** No points shown (みみ チェック). */
     plain?: boolean;
+    /** Solo: the game's clips, for よみきき サンド. */
+    sand?: SandPlayer;
   } = $props();
 </script>
 
@@ -49,7 +52,7 @@
   {#if !right && it.type === 'pic'}<span class="answer-is">{t('kiki.answerIs', { a: PIC_JA[it.choices[it.answer]] ?? '' })}</span>{/if}
 {/snippet}
 
-<RevealFrame {out} {right} {picked} pts={plain ? 0 : RIGHT} badge={!rs && firstListen(right, replayed, same)} {coop} {rightNow} line={rs ? climb : undefined} extra={missedPic} />
+<RevealFrame {out} {right} {picked} pts={plain ? 0 : RIGHT} badge={!rs && firstListen(right, replayed, same)} {coop} {rightNow} line={rs ? climb : undefined} extra={missedPic} sand={sand && { it, player: sand }} />
 
 <style>
   /* a rung's line: the frame's ○ / × line (frame/RevealFrame.svelte), the themed coral and leaf text */

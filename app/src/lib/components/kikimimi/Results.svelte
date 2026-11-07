@@ -6,7 +6,7 @@
   // practice; a quiz's). Each row: ○ / × and the sentence; tapped open, its English with the sound marks and the karaoke
   // as ▶︎ plays it (a dialogue: its whole transcript), the marks' key, the Japanese (a reply's on two lines), the trap's
   // note, every choice with its Japanese (cja) and 解説 (why) where the item has them, what I picked, ▶︎ and 🐢
-  // (levels 1-2). いっぱつ (right on the first listen) a stamp.
+  // (levels 1-2), and よみきき サンド's 「読んでから もう一度」. いっぱつ (right on the first listen) a stamp.
   // スピード はしご: しずえ's line is how high I climbed; a card of my climbs (each ladder's steps, how high); the review
   // one row a ladder: its line (the chunk marked), its Japanese and note, each rung's question with my ○ / ×, and ▶︎ at
   // each speed.
@@ -162,7 +162,8 @@
     </section>
   {/if}
 
-  <ReviewList bind:missedOnly none={ladders.length ? !shown.length : !rows.length} {retry}>
+  <ReviewList bind:missedOnly none={ladders.length ? !shown.length : !rows.length} {retry} player={game}>
+    {#snippet children(sand)}
     {#if ladders.length}
       <ul class="review">
         {#each shown as { l, j } (l.ladder)}
@@ -243,12 +244,14 @@
                   <button type="button" class="ib tile-btn" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(r.it)}>▶︎</button>
                   {#if canSlow(r.it)}<button type="button" class="ib tile-btn" aria-label={t('kiki.playSlow')} data-kiki-slow={r.i} data-sfx="tick" onclick={() => game.hear(r.it, true)}>🐢</button>{/if}
                 </div>
+                <div class="hear">{@render sand(r.it)}</div>
               </div>
             {/if}
           </li>
         {/each}
       </ul>
     {/if}
+    {/snippet}
   </ReviewList>
 </ResultsFrame>
 

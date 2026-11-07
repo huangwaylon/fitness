@@ -189,7 +189,7 @@
       <p class="line" lang="en">{parts[0]}<span class="blank"><span aria-hidden="true">　　　</span><span class="sr-only">{t('kiki.blank')}</span></span>{parts[2]}</p>
     {/if}
   {:else}
-    <Verdict {it} out={v.out} {right} picked={!!mine} replayed={!!mine?.rp} same={v.same} {rs} {climbed} {coop} rightNow={v.rightNow} {plain} />
+    <Verdict {it} out={v.out} {right} picked={!!mine} replayed={!!mine?.rp} same={v.same} {rs} {climbed} {coop} rightNow={v.rightNow} {plain} sand={v.players.length <= 1 && v.speaks && !hidesLine(it) ? game : undefined} />
     {#if it.why}<Why text={it.why} />{/if}
   {/if}
 
