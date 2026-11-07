@@ -4,8 +4,8 @@
   "decks": "30b5d72dc5b5db3a"
  },
  "call:s1-call-b": {
-  "cv": "5c3e57",
-  "decks": "1180848a6b136329"
+  "cv": "76aa0b",
+  "decks": "67a0768fd371f8c3"
  },
  "call:s2-call-a": {
   "cv": "dd15fc",
@@ -50,6 +50,10 @@
  "lesson:hm-neighbor": {
   "cv": "4d32d1",
   "decks": "95723504b970d143"
+ },
+ "lesson:mc-weekend": {
+  "cv": "b9dcb6",
+  "decks": "dfcae6d9afcc7101"
  },
  "lesson:sh-shop": {
   "cv": "b61cce",

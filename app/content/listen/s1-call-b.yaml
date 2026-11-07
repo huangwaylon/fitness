@@ -113,3 +113,28 @@ items:
           - { ask: "何分 早く 行く？", options: ["10分", "15分", "50分"], answer: 0, cja: ["10分", "15分", "50分"] }
     note: "I misread that の あとが 本当の 時間"
     tags: { seed: 14, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, numbers, teen-ty] }
+
+  - kind: call
+    id: call-flea-market
+    ask: "友だちから 電話。メモしよう"
+    ctx: "週末にフリマへ行く約束の友だちから電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: punchy, en: "Hey, it's me. So, about the flea market on Saturday. It's supposed to rain all day.", tts: "Hey, it's me. So, about the flea market on Saturday. It's supposed ta rain all day.", ja: "もしもし、僕だよ。土曜のフリマのことなんだけど。一日中雨の予報なんだ。" }
+      - { who: me, en: "Oh no. Should we skip it?", ja: "えー。やめておく？" }
+      - { who: punchy, en: "Nah, let's do Sunday instead. Let me check the times. Okay, it opens at ten.", tts: "Nah, let's do Sunday instead. Lemme check the times. Okay, it opens at ten.", ja: "ううん、代わりに日曜にしよう。時間を見てみるね。うん、10時開場だ。" }
+      - { who: punchy, en: "The line's gonna be crazy, so let's meet at the south exit at nine-thirty.", ja: "列がすごくなるから、9時半に南口で待ち合わせよう。" }
+      - { who: punchy, en: "Oh, wait, no. The south exit's closed for construction. Make it the east exit.", ja: "あ、待って、違う。南口は工事で閉まってるんだ。東口にしよう。", repair: true }
+      - { who: punchy, en: "And bring cash. A lot of the stalls don't take cards.", tts: "An' bring cash. A lotta the stalls don't take cards.", ja: "それと現金を持ってきて。カードが使えない店が多いから。" }
+      - { who: me, en: "Got it. Sunday, nine-thirty, east exit, and cash. See you there!", ja: "了解。日曜の9時半、東口、現金ね。じゃあそこで！" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "土曜は雨の予報なので日曜に。10時は開場の時間で、集合は9時半。南口は工事で閉まっているので、Oh, wait, no で東口に変わった。持ち物は現金。"
+        slots:
+          - { ask: "いつ 行く？", options: ["日曜", "土曜", "来週"], answer: 0, cja: ["日曜", "土曜", "来週"] }
+          - { ask: "集合は 何時？", options: ["9:30", "10:00", "9:00"], answer: 0, cja: ["9時半", "10時", "9時"] }
+          - { ask: "どこで 会う？", options: ["東口", "南口", "会場の 入口"], answer: 0, cja: ["東口", "南口", "会場の入口"] }
+          - { ask: "持っていくのは？", options: ["現金", "カード", "かさ"], answer: 0, cja: ["現金", "クレジットカード", "かさ"] }
+    note: "Oh, wait, no の あとが 本当の 集合場所"
+    tags: { seed: 36, register: friend, pragmatic: literal, conditions: [phone], features: [self-repair, lemme] }
