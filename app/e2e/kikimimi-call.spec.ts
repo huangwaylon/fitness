@@ -29,8 +29,10 @@ const RIGHT = new Map(PART.listen.items.map((it) => [it.id, it.memo.flatMap((m) 
  *  (build-pages/, as served), its line flipped as it's served. */
 const LINE = /("s1-call":\[[`"']call[`"'],2,[`"'])draft/;
 const CHUNKS = join(import.meta.dirname, '..', 'build-pages', '_app', 'immutable', 'chunks');
-const INDEX_CHUNK = readdirSync(CHUNKS).find((f) => f.endsWith('.js') && LINE.test(readFileSync(join(CHUNKS, f), 'utf8')));
+/** (read when a test runs: `playwright test --list` loads this file before any build exists) */
+const indexChunk = () => readdirSync(CHUNKS).find((f) => f.endsWith('.js') && LINE.test(readFileSync(join(CHUNKS, f), 'utf8')));
 async function listened(ctx: BrowserContext) {
+  const INDEX_CHUNK = indexChunk();
   expect(INDEX_CHUNK, 'the built index').toBeTruthy();
   await ctx.route(`**/_app/immutable/chunks/${INDEX_CHUNK}`, async (route) => {
     const res = await route.fetch();
