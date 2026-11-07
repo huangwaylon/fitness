@@ -7,6 +7,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import type { Region } from '#lib/hiking/types.ts';
 import type { Prepared } from '#lib/hiking/track.ts';
 import { buildStyle, SRC, TOPO } from './style.ts';
+import { SAVED_MAX_Z } from '#lib/offline/plan.ts';
 import { removeMap } from '../../travel/map/remove.ts';
 
 export interface Fix { lon: number; lat: number }
@@ -34,11 +35,13 @@ function boundsOf(p: Prepared): LngLatBoundsLike {
   return [[w, s], [e, n]];
 }
 
-export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; bottom: number }, on: { mode(m: EngineMode): void }): Engine {
+/** `savedOnly`: drawn offline from a saved area (lib/offline: the topo to z16), the source capped there so MapLibre
+ *  scales those up past it rather than asking for tiles never saved. */
+export function createEngine(el: HTMLElement, i: { region: Region; center: Fix; bottom: number; savedOnly?: boolean }, on: { mode(m: EngineMode): void }): Engine {
   setWorkerUrl(workerUrl);
   const map = new GLMap({
     container: el,
-    style: buildStyle(i.region),
+    style: buildStyle(i.region, i.savedOnly ? Math.min(SAVED_MAX_Z, TOPO[i.region].maxzoom) : undefined),
     attributionControl: false,
     dragRotate: false,
     pitchWithRotate: false,

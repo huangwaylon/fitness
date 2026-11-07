@@ -11,7 +11,7 @@
   import type { Prepared } from '#lib/hiking/track.ts';
   import type { Region } from '#lib/hiking/types.ts';
   import { S } from '#lib/hiking/strings.ts';
-  import { i18n } from '#lib/i18n/index.ts';
+  import { i18n, t } from '#lib/i18n/index.ts';
   import { pick } from '../travel/text.ts';
   import { C } from './map/style.ts';
   import type { Fix } from './map/engine.ts';
@@ -24,10 +24,13 @@
     prep: Prepared | null;
     scrub: Fix | null;
     fix: Fix | null;
-    /** The px the sheet's peek covers at the bottom (the track is fitted above it). */
+    /** The px the sheet's peek covers at the bottom (the track is fitted above it; the credit kept over it). */
     bottom: number;
+    /** The trail's area is saved for offline (lib/offline): offline, 「保存した範囲のみ」, the topo to its z16. */
+    saved?: boolean;
   }
-  let { region, center, prep, scrub, fix, bottom }: Props = $props();
+  let { region, center, prep, scrub, fix, bottom, saved = false }: Props = $props();
+  let online = $state(typeof navigator === 'undefined' || navigator.onLine);
 
   const loadEngine = lazy(() => import('./map/engine.ts'));
   let el: HTMLDivElement | undefined = $state();
@@ -51,7 +54,7 @@
         if (gone || !el) return;
         try {
           // (the props follow it in: feed.svelte.ts)
-          feed.engine = createEngine(el, { region, center, bottom }, { mode: (m) => (mode = m) });
+          feed.engine = createEngine(el, { region, center, bottom, savedOnly: saved && !navigator.onLine }, { mode: (m) => (mode = m) });
         } catch (e) {
           console.error(e);
           mode = 'failed';
@@ -62,14 +65,19 @@
   }
 
   onMount(() => {
-    const online = () => mode === 'failed' && draw();
-    if (mode !== 'stub') (draw(), addEventListener('online', online));
+    const on = () => (online = navigator.onLine);
+    addEventListener('online', on);
+    addEventListener('offline', on);
+    const back = () => mode === 'failed' && draw();
+    if (mode !== 'stub') (draw(), addEventListener('online', back));
     const hook = { state: () => ({ mode, ...feed.engine?.state() }) };
     const w = window as unknown as { __trailMap?: unknown };
     if (hooksOn(new URLSearchParams(location.search))) w.__trailMap = hook;
     return () => {
       gone = true;
-      removeEventListener('online', online);
+      removeEventListener('online', back);
+      removeEventListener('online', on);
+      removeEventListener('offline', on);
       feed.engine?.destroy();
       feed.engine = null;
       if (w.__trailMap === hook) delete w.__trailMap;
@@ -87,7 +95,7 @@
   });
 </script>
 
-<div class="map" data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)}
+<div class="map" data-trail-map data-mode={mode} role="application" aria-label={pick(S.mapAria, i18n.locale)} style:--peek="{bottom}px"
   data-scrub={scrub ? `${scrub.lon.toFixed(5)},${scrub.lat.toFixed(5)}` : ''}>
   {#if mode === 'stub'}
     {#if stub}
@@ -104,6 +112,8 @@
       <p>{pick(S.mapFailed, i18n.locale)}</p>
       <button type="button" class="btn small paper" data-sfx="tick" onclick={draw}>{pick(S.retry, i18n.locale)}</button>
     </div>
+  {:else if saved && !online && mode !== 'stub'}
+    <p class="note" role="status" data-map-note="saved">{t('offline.savedOnly')}</p>
   {:else if mode === 'offline'}
     <p class="note" role="status" data-map-note>{pick(S.mapOffline, i18n.locale)}</p>
   {/if}
@@ -122,7 +132,8 @@
     position: absolute; z-index: 2; top: calc(var(--ui-top) + 52px); left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 32px); margin: 0;
     padding: 6px 12px; border-radius: var(--r-pill); background: var(--c-ink); color: var(--c-cream); font: 700 var(--fs-s)/1.3 var(--font-ui); box-shadow: var(--sh-float);
   }
-  /* MapLibre's attribution, small, on the card */
+  /* MapLibre's attribution, small, on the card, always over the sheet's peek (GSI's 出典 must show) */
+  .map :global(.maplibregl-ctrl-bottom-right) { bottom: var(--peek, 0px); transition: bottom .32s var(--ease-soft); }
   .map :global(.maplibregl-ctrl-attrib) { font-size: 9px; background: color-mix(in srgb, var(--c-card) 86%, transparent); color: var(--c-ink-soft); }
   .map :global(.maplibregl-ctrl-attrib a) { color: var(--c-leaf-text); }
 </style>

@@ -161,6 +161,91 @@ test.describe('offline after a visit', () => {
   });
 });
 
+// Saved ahead (offline phase B, lib/offline): a trail's area saved on fixture tiles (a blank PNG for every USGS tile,
+// never the network), in its own cache; offline, the map draws from it alone; せってい lists it and 削除 frees it.
+test.describe('a map area saved ahead', () => {
+  test.use({ serviceWorkers: 'allow' });
+  const TILE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==', 'base64');
+  const AREA = 'island-offline-trail-talapus-lake';
+  const trail = (p: Page) => hiking(p).locator('[data-trail-view="talapus-lake"]');
+  /** USGS from the fixture; offline, every tile asked is noted and refused. */
+  async function usgs(context: import('@playwright/test').BrowserContext) {
+    const s = { offline: false, missed: [] as string[], asked: 0, headers: [] as string[] };
+    await context.route(/^https:\/\/basemap\.nationalmap\.gov\//, (route) => {
+      if (s.offline) return (s.missed.push(route.request().url()), route.abort('internetdisconnected'));
+      s.asked++;
+      s.headers.push(...Object.keys(route.request().headers()).filter((h) => h.startsWith('x-')));
+      return route.fulfill({ contentType: 'image/png', body: TILE, headers: { 'access-control-allow-origin': '*' } });
+    });
+    return s;
+  }
+  const count = (page: Page, name: string) => page.evaluate(async (n) => ((await caches.has(n)) ? (await (await caches.open(n)).keys()).length : -1), name);
+  async function saveTalapus(page: Page) {
+    await page.goto(URL_);
+    await up(page);
+    await page.waitForFunction(() => !!navigator.serviceWorker.controller, null, { timeout: 60_000 });
+    await fromMenu(page, 'hiking');
+    await hiking(page).locator('[data-trail="talapus-lake"]').click();
+    const save = trail(page).locator('[data-offline-save]');
+    await expect(save).toHaveAttribute('data-offline-save', 'none', { timeout: 15_000 });
+    await expect(save).toContainText(/オフライン用に保存（\d+\.\d MB）/);
+    await save.click();
+    await expect(save).toHaveAttribute('data-offline-save', 'saved', { timeout: 60_000 });
+    await expect(save).toContainText(/保存済み · \d+\.\d MB/);
+  }
+
+  test('saved in its own cache, never the seen tiles; listed in せってい; 削除 frees it', { tag: '@chromium' }, async ({ page, context }) => {
+    test.setTimeout(120_000);
+    await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
+    const net = await usgs(context);
+    await saveTalapus(page);
+    // the plan's 91 tiles and the manifest; none of them among the seen tiles; no header of ours on the wire
+    expect(await count(page, AREA)).toBe(92);
+    expect(await count(page, 'island-tiles-v1')).toBeLessThanOrEqual(0);
+    expect(net.headers).toEqual([]);
+    const manifest = await page.evaluate(async (n) => (await (await caches.open(n)).match('https://island-fund.invalid/__manifest'))!.json(), AREA);
+    expect(manifest).toMatchObject({ id: 'trail-talapus-lake', source: 'usgs', tileVersion: null, tiles: 91, stored: 91, done: true });
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog[open]')).toHaveCount(0);
+
+    await fromMenu(page, 'settings');
+    const row = page.locator('dialog[open] [data-offline-area="trail-talapus-lake"]');
+    await row.scrollIntoViewIfNeeded();
+    await expect(row).toHaveAttribute('data-offline-state', 'saved');
+    await expect(row).toContainText('タラパス');
+    await expect(page.locator('dialog[open] [data-offline-total]')).toContainText('/ 150 MB');
+    await row.locator('[data-offline-delete]').click();
+    await expect(row).toHaveCount(0);
+    await expect(page.locator('dialog[open] [data-offline-none]')).toBeVisible();
+    expect(await count(page, AREA)).toBe(-1);
+    expect(await page.evaluate(() => localStorage.getItem('island.offlineAreas'))).toBe('{}');
+  });
+
+  test('drawn: offline, the saved area draws from its cache alone, with 「保存した範囲のみ」', { tag: ['@chromium', '@render'] }, async ({ page, context }) => {
+    test.setTimeout(150_000);
+    const net = await usgs(context);
+    await drawn(page);
+    await saveTalapus(page);
+    // the tiles the map drew online forgotten: what draws offline is the area's
+    await page.evaluate(() => caches.delete('island-tiles-v1'));
+    net.offline = true;
+    await context.setOffline(true);
+    await page.reload();
+    await up(page);
+    await fromMenu(page, 'hiking');
+    await hiking(page).locator('[data-trail="talapus-lake"]').click();
+    await expect(trail(page).locator('[data-trail-map]')).toHaveAttribute('data-mode', 'ready', { timeout: 30_000 });
+    await expect(trail(page).locator('[data-map-note="saved"]')).toHaveText('保存した範囲のみ');
+    await expect(trail(page).locator('.maplibregl-ctrl-attrib')).toContainText('USGS');
+    await page.evaluate(() => new Promise((r) => setTimeout(r, 1500))); // hold: no tile goes out while the map settles
+    // the saved tiles from the area's cache; past it (the screen is wider than the 1 km band) none asked of the network
+    expect(net.missed).toEqual([]);
+    await expect(trail(page).locator('[data-trail-map]')).toHaveAttribute('data-mode', /ready|offline/);
+    await expect(trail(page).locator('[data-map-note="saved"]')).toBeVisible();
+    await context.setOffline(false);
+  });
+});
+
 test('a photo that fails to load is the paper placeholder with its box kept, and the photo once it comes', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('e2e.render', 'none'));
   let fail = true;

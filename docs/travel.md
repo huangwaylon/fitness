@@ -117,8 +117,14 @@ text, 持ち物 (ticks queue till back), each trip's cover and hero (precached, 
 photo already seen (`island-photos-v1`). The map draws offline once it has drawn on the phone: MapLibre is kept in the
 shell, and the tiles it drew (`island-tiles-v1`, 60 MB, least recently used out; OpenFreeMap's tiles fetched by the
 page, `map/tiles.ts`, as WebKit's service worker doesn't see MapLibre's worker's fetches) with the TileJSON
-(`island-map-meta-v1`). Where no tile was kept: the route with 「地図はオフライン — ルートのみ」. Nothing is prefetched;
-saving an area ahead is phase B.
+(`island-map-meta-v1`). Where no tile was kept: the route with 「地図はオフライン — ルートのみ」. Nothing is prefetched.
+
+Phase B (the user, 2026-11-07): every trip with a map (Okinawa, NZ: past ones too, read-only otherwise) has
+「オフライン用に保存」 on its 地図 page (design.md "Offline maps"); nothing downloads by itself. The plan
+(`lib/offline/plan.ts planTrip`): z5–9 over the trip's `bbox`, z10–12 within 3 km of its legs and places, z13–14 within
+1 km of its places. As built: **NZ 438 tiles, 20.4 MB** (measured; the brief's 16.8 was an earlier estimate: Auckland's
+z14 tiles are ~145 KB), **Okinawa 310 tiles, 7.6 MB**; both well inside OpenFreeMap's ≤ 3,000 tiles and ≤ 50 MB an area.
+Offline with it saved, the map says 「保存した範囲のみ」.
 
 ## Open
 

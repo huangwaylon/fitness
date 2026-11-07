@@ -14,6 +14,9 @@
   import ElevCard from './ElevCard.svelte';
   import PlanCard from './PlanCard.svelte';
   import TrailMap from './TrailMap.svelte';
+  import SaveButton from '../offline/SaveButton.svelte';
+  import { areas } from '#lib/offline/areas.svelte.ts';
+  import { planTrail, type Plan } from '#lib/offline/plan.ts';
   import { LocWatch } from '../travel/map/geo.ts';
   import { packing } from '../travel/packing.svelte.ts';
   import { pick } from '../travel/text.ts';
@@ -30,13 +33,16 @@
   // the track
   let prep = $state.raw<Prepared | null>(null);
   let track = $state<'loading' | 'ok' | 'failed'>('loading');
+  /** The trail's area to save ahead (lib/offline/plan.ts: from the track's own points). */
+  let plan = $state.raw<Plan | null>(null);
   function load() {
     track = 'loading';
     void loadTrack(trail.slug).then((r) => {
-      if (r.k === 'ok') ((prep = prepare(r.track)), (track = 'ok'));
+      if (r.k === 'ok') ((prep = prepare(r.track)), (plan = planTrail(trail.slug, trail.tiles, r.track.pts)), (track = 'ok'));
       else track = 'failed';
     });
   }
+  const saved = $derived(['saved', 'partial', 'saving'].includes(areas.state(`trail-${trail.slug}`).k));
   load();
 
   // the scrub: a distance held on the chart, its point on the map
@@ -127,15 +133,16 @@
 <svelte:window bind:innerHeight={vh} />
 
 <section class="detail" data-trail-view={trail.slug} data-sheet={sheetState}>
-  <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} {fix} bottom={peekH} />
+  <TrailMap bind:this={map} region={trail.tiles} center={trail.center} {prep} {scrub} {fix} bottom={peekH} {saved} />
 
   <div class="top"><NavBar {onback} {onclose} /></div>
+  <div class="offline" inert={full}><SaveButton {plan} name={trail.name} /></div>
   <div class="zoom" inert={full}>
-    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={20} stroke={2.4} /></button>
-    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomOut, L)} onclick={() => map?.zoom(-1)}><Icon name="minus" size={20} stroke={2.4} /></button>
+    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomIn, L)} onclick={() => map?.zoom(1)}><Icon name="plus" size={18} stroke={2.4} /></button>
+    <button type="button" class="disc" data-sfx="tick" aria-label={pick(S.zoomOut, L)} onclick={() => map?.zoom(-1)}><Icon name="minus" size={18} stroke={2.4} /></button>
   </div>
-  <button type="button" class="disc locate" class:on={!!fix} style:bottom="{peekH + 12}px" inert={full} data-locate data-sfx="tick" aria-label={pick(S.locate, L)} aria-pressed={!!fix} onclick={locate}>
-    <Icon name="locate" size={20} stroke={2.4} />
+  <button type="button" class="disc locate" class:on={!!fix} style:bottom="{peekH + 6}px" inert={full} data-locate data-sfx="tick" aria-label={pick(S.locate, L)} aria-pressed={!!fix} onclick={locate}>
+    <Icon name="locate" size={18} stroke={2.4} />
   </button>
   {#if denied}<p class="denied" role="status">{pick(S.locDenied, L)}</p>{/if}
 
@@ -182,21 +189,25 @@
 <style>
   .detail { position: absolute; inset: 0; z-index: 10; background: var(--surface); overflow: hidden; }
 
-  /* ‹ ✕ over the map: NavBar's game buttons (44px cream discs, the brown edge and lip; cream at every time of day, as
-     the map is); the map's own buttons the same object */
+  /* ‹ ✕ over the map: NavBar's buttons; the map's own (＋ − locate, the save pill) the same family: NavButton's 32px disc
+     drawn in the 44px hit, the kit's control (--ctl, --sh-ctl-s) */
   .top { position: absolute; z-index: 1000; top: 0; left: 0; right: 0; padding: var(--ui-top) calc(12px + var(--safe-right)) 0 calc(12px + var(--safe-left)); pointer-events: none; }
   .top :global(.nav) { pointer-events: auto; }
   .disc {
-    appearance: none; border: 0; padding: 0; width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center;
-    background: var(--c-card); color: var(--c-ink); box-shadow: var(--sh-obj), 0 6px 14px rgb(60 40 20 / .18); cursor: pointer;
-    -webkit-tap-highlight-color: transparent; transition: transform var(--dur-base) var(--ease-bounce), bottom .32s var(--ease-soft);
+    appearance: none; position: relative; border: 0; padding: 0; width: var(--hit); height: var(--hit); display: grid; place-items: center;
+    background: none; color: var(--text); cursor: pointer; -webkit-tap-highlight-color: transparent; transition: bottom .32s var(--ease-soft);
   }
-  .disc:active { transform: translateY(2px) scale(1.06, .92); box-shadow: var(--sh-obj-press); transition-duration: var(--dur-tap), .32s; }
-  .disc:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  @media (prefers-reduced-motion: reduce) { .disc:active { transform: none; } }
-  .zoom { position: absolute; z-index: 500; top: calc(var(--ui-top) + 62px); right: calc(12px + var(--safe-right)); display: flex; flex-direction: column; gap: 10px; }
-  .locate { position: absolute; z-index: 500; left: calc(12px + var(--safe-left)); }
-  .locate.on { background: var(--c-sky); color: #fff; }
+  .disc::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
+  .disc :global(svg) { position: relative; }
+  .disc:active::before { transform: translateY(2px); box-shadow: var(--sh-ctl-s-press); }
+  .disc:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
+  @media (prefers-reduced-motion: reduce) { .disc:active::before { transform: none; } }
+  /* the discs' drawn edge on the bar's (NavBar pulls its 6px out) */
+  .zoom { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); right: calc(6px + var(--safe-right)); display: flex; flex-direction: column; gap: 0; }
+  .offline { position: absolute; z-index: 500; top: calc(var(--ui-top) + 52px); left: calc(12px + var(--safe-left)); }
+  .locate { position: absolute; z-index: 500; left: calc(6px + var(--safe-left)); }
+  .locate.on { color: #fff; }
+  .locate.on::before { background: var(--c-sky); }
   .denied {
     position: absolute; z-index: 560; top: calc(var(--ui-top) + 62px); left: 50%; translate: -50% 0; width: min(88vw, 344px); margin: 0; padding: 10px 12px;
     background: var(--card); color: var(--text); border-radius: var(--r-row); box-shadow: var(--sh-float); font-size: var(--fs-s); line-height: 1.45;

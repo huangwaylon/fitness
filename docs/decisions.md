@@ -1143,3 +1143,13 @@ first view, bounded, never prefetched. Saving a map area ahead of time is phase 
 the signal is worst (a ferry, a trailhead), and these are a few MB. Rejected: precaching every photo and MapLibre at
 install (≈ 6 MB more on every phone and every deploy for screens one phone may never open), prefetching a trip's
 tiles (tens of MB, OpenFreeMap's goodwill).
+
+### Offline: map areas saved ahead, phase B (2026-11-07)
+The user: every trip (past ones too) and all ten trails get 「オフライン用に保存」; nothing downloads by itself; lean
+plans (a trip: z5–9 its area, z10–12 within 3 km of its legs and places, z13–14 within 1 km of its places; a trail:
+z12–13 within 3 km, z14–16 within 1 km); GSI kept on the phone only, credited 「出典：国土地理院」, to z16; 150 MB in all,
+a warning at 80 %; OpenFreeMap ≤ 3,000 tiles and ≤ 50 MB an area, ≤ 4 at a time; USGS and GSI 2 with a pause. Built
+as docs/backend.md "Service worker" › Offline › Saved areas. Why: the trailhead and the ferry have no signal, and a
+seen-tiles cache only holds what was looked at. Rejected: auto-downloading a trip before it starts (OpenFreeMap's
+goodwill, phone storage), an `X-Client` header (OpenFreeMap refuses the preflight), downloading in the worker (the
+page already fetches tiles for WebKit: one path).

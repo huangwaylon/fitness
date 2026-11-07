@@ -36,7 +36,7 @@ export const S = {
   factLocation: { ja: '場所', en: 'Location' },
   attribTrail: { ja: 'コース情報・写真：AllTrails', en: 'Trail info & photo via AllTrails.' },
   attribUsgs: { ja: '地図 © USGS National Map', en: 'Map © USGS National Map' },
-  attribGsi: { ja: '地図 © 国土地理院（地理院タイル）', en: 'Map © GSI Japan (地理院タイル)' },
+  attribGsi: { ja: '出典：国土地理院（地理院タイル）', en: 'Source: GSI Japan (地理院タイル)' },
   mapAria: { ja: 'コース地図', en: 'Trail map' },
   sheetToggle: { ja: 'コース詳細を開く・閉じる', en: 'Expand or collapse trail details' },
   zoomIn: { ja: '拡大', en: 'Zoom in' },

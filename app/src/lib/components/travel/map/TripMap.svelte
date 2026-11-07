@@ -18,7 +18,7 @@
   import { dayColor, type MapState, type TripMapProps } from './types.ts';
   import type { Engine } from './engine.ts';
 
-  let { places, legs, dayColors, day, selected, layers, locale, onselect }: TripMapProps = $props();
+  let { places, legs, dayColors, day, selected, layers, locale, saved = false, onselect }: TripMapProps = $props();
 
   const loadEngine = lazy(() => import('./engine.ts'));
 
@@ -127,7 +127,15 @@
     };
   });
 
-  const note = $derived(mode === 'offline' ? 'offline' : mode === 'failed' ? null : say);
+  /** Offline with the trip's area saved (lib/offline): 「保存した範囲のみ」 over the map, whatever it drew. */
+  let online = $state(typeof navigator === 'undefined' || navigator.onLine);
+  onMount(() => {
+    const on = () => (online = navigator.onLine);
+    addEventListener('online', on);
+    addEventListener('offline', on);
+    return () => (removeEventListener('online', on), removeEventListener('offline', on));
+  });
+  const note = $derived(mode === 'failed' ? null : saved && !online ? 'saved' : mode === 'offline' ? 'offline' : say);
 </script>
 
 <div class="tm" bind:this={host} data-travel-map data-mode={mode} data-day={day} data-selected={selected ?? ''}>
@@ -151,7 +159,7 @@
       <button type="button" class="btn small paper" data-map-retry data-sfx="tick" onclick={draw}>{t('travel.map.retry')}</button>
     </div>
   {:else}
-    {#if note}<p class="note" data-map-note={note} role="status">{t(`travel.map.note.${note}`)}</p>{/if}
+    {#if note}<p class="note" data-map-note={note} role="status">{note === 'saved' ? t('offline.savedOnly') : t(`travel.map.note.${note}`)}</p>{/if}
     <button type="button" class="locate" data-locate={loc} data-sfx="tick" aria-label={t(`travel.map.locate.${loc}`)} aria-pressed={loc === 'on'} onclick={locate}>
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 2.8v3.4M12 17.8v3.4M2.8 12h3.4M17.8 12h3.4" />
@@ -221,25 +229,22 @@
   .tm :global(.maplibregl-ctrl-attrib a) { color: inherit; }
   .tm :global(.maplibregl-ctrl-bottom-left) { z-index: 1001; }
 
-  /* the locate button: the app's cream disc (EyeToggle's measures), yuzu while on */
+  /* the locate button: NavButton's disc (32px in the 44px hit, the kit's control), yuzu while on */
   .locate {
-    position: absolute; right: 8px; bottom: 10px; z-index: 1001; appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer;
-    width: var(--hit, 44px); height: var(--hit, 44px); display: grid; place-items: center; color: var(--c-ink-soft, #6B5544);
+    position: absolute; right: 2px; bottom: 4px; z-index: 1001; appearance: none; border: 0; padding: 0; margin: 0; background: none; cursor: pointer;
+    width: var(--hit, 44px); height: var(--hit, 44px); display: grid; place-items: center; color: var(--text);
     -webkit-tap-highlight-color: transparent; touch-action: manipulation;
   }
-  .locate::before {
-    content: ''; position: absolute; left: 2px; top: 2px; width: 40px; height: 40px; border-radius: 50%;
-    background: var(--c-cream, #FFF9E3); box-shadow: inset 0 0 0 2px var(--c-edge, #937047), 0 var(--lip-h, 4px) 0 var(--c-edge, #937047);
-  }
+  .locate::before { content: ''; position: absolute; inset: 6px; border-radius: 50%; background: var(--ctl); box-shadow: var(--sh-ctl-s); }
   .locate[aria-pressed='true'] { color: var(--c-ink, #4A3A2C); }
-  .locate[aria-pressed='true']::before { background: var(--c-yuzu, #FFD84D); }
+  .locate[aria-pressed='true']::before { background: var(--ctl-sel); }
   .locate[data-locate='asking'] svg { animation: tm-spin 1.2s linear infinite; }
-  .locate[data-locate='denied'], .locate[data-locate='unavailable'] { color: #A88B68; }
-  .locate:active::before { translate: 0 2px; box-shadow: inset 0 0 0 2px var(--c-edge, #937047), 0 1px 0 var(--c-edge, #937047); }
+  .locate[data-locate='denied'], .locate[data-locate='unavailable'] { color: var(--text-soft); }
+  .locate:active::before { translate: 0 2px; box-shadow: var(--sh-ctl-s-press); }
   .locate:active svg { translate: 0 2px; }
   .locate:focus-visible { outline: none; }
   .locate:focus-visible::before { outline: 3px solid var(--focus); outline-offset: 2px; }
-  svg { position: relative; width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+  svg { position: relative; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; }
   .in { fill: currentColor; stroke: none; }
   @keyframes tm-spin { to { rotate: 360deg; } }
   @media (prefers-reduced-motion: reduce) { .locate[data-locate='asking'] svg { animation: none; } }

@@ -571,7 +571,8 @@ One rule app-wide (the user, 2026-11-07: "x and back are not consistent"); `ui/n
 - **One button**, `ui/NavButton`, for ‹, ✕ and the bar's tools: a 32px disc drawn in the 44px hit (`--ctl`,
   `--sh-ctl-s`: cream by day, navy at night), the glyph `ui/Icon` at stroke 2.4, the cue `back`. Its disc sits on the
   container's content edge (NavBar pulls 6px out). `look="photo"`: the same disc smoked, over a photo or a map (a
-  trip's hero, a trail's map). A map's own controls (zoom, locate) are the feature's. `text`: ‹ grown into a pill, a page's way
+  trip's hero, a trail's map). A map's own controls (zoom, locate, layers, the save pill) are the same family: its
+  32px disc (or pill) drawn in the 44px hit, `--ctl` and `--sh-ctl-s` (the coordinator, 2026-11-07). `text`: ‹ grown into a pill, a page's way
   back (‹ 島へ in a room, ‹ 戻る on the board). No other ✕ or ‹: no typed ✕, no hand-drawn glyph, no 閉じる button.
   Floating cards (the museum's, the HHA letter, the say picker, the K.K. picker, a board note, ごはん's photo) put
   the same ✕ at their top-right corner; a level inside one (the say picker's field) gets ‹ top-left.
@@ -2588,7 +2589,17 @@ menu's 「りょこう」 pill (Orville's head) opens a full-height sheet (`comp
   arrival). A row selects its stop and the map flies there; a pin marks its rows (a merged pin all of them) and
   scrolls them into view. The locate button at the bottom right; a trip with candidate places (Okinawa) has one layer
   button at the top right (the locate button's disc, yuzu while open), its panel a row per layer (キャンプ場 · 自然 ·
-  食べる, each its colour's dot; all off at first); a campsite's pin opens its card.
+  食べる, each its colour's dot; all off at first); a campsite's pin opens its card. Over the chips, at the page's top
+  (it scrolls away), the save pill ("Offline maps").
+- <a id="offline-maps"></a>**Offline maps** (`components/offline/SaveButton.svelte`; data: backend.md "Service worker" ›
+  Offline): one pill per area, on the trip's 地図 page (Okinawa, NZ; Seattle has no map: its hikes are trails) and on
+  every trail's map under ‹. 「⬇ オフライン用に保存（20.5 MB）」 (the plan's estimate) → 「× 保存中… 42%」 (the pill fills
+  yuzu; tapped: stopped, what's in kept) → 「✓ 保存済み · 20.4 MB」 (a label, the bytes stored). 「一部のみ · もう一度」
+  and 「消えました · もう一度保存」 are taps; an OpenFreeMap area past 30 days 「保存済み · 更新」. A save that can't start
+  says why for 4 s (オフライン, 合計 150 MB, 空き容量, ほかの地図を保存中). Offline with nothing saved: no pill. Offline with
+  the area saved, the map's note 「保存した範囲のみ」; the credit stays visible (the trail's above the sheet's peek;
+  GSI's 「出典：国土地理院」). せってい › オフラインの地図 (`panel/OfflineSection.svelte`): a row per area (name, MB · date,
+  削除; 続きを保存 / もう一度保存 / 更新 when due), the total's bar against 150 MB, coral past 80 %.
 - **キャンプ場** (`CampList.svelte`, `camps.ts`; Okinawa's 26): the source's intro, one ChipRow (すべて 26 · 無料 · 有料 ·
   ビーチ · トイレ · シャワー: one criterion at a time) held at the top, the sites in one dense card (a row each: a 48 px
   photo thumb, the name with our nights' yellow stickers, kind · town · the drive from the office, the amenities'

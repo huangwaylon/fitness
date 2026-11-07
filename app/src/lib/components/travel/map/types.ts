@@ -25,6 +25,8 @@ export interface TripMapProps {
   /** Which candidate layers show (default: none). */
   layers?: Layers;
   locale: Locale;
+  /** The trip's area is saved for offline (lib/offline): offline, the map says 「保存した範囲のみ」. */
+  saved?: boolean;
   /** A pin (a stop or a candidate) tapped: a merged pin's first stop. */
   onselect?: (id: string) => void;
 }

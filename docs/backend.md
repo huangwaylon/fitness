@@ -964,8 +964,28 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
     the room's `boundedCache` index, `__tile-index`). OpenFreeMap's are keyed without the week's build in their path
     (`tileKey`), so last week's tile answers under this week's TileJSON. They are fetched by the page, not MapLibre's
     worker (`travel/map/tiles.ts`: WebKit's service worker doesn't see that worker's fetches). One function serves a
-    tile (`index.ts serveTile`), where phase B's saved areas go first. The TileJSON (`island-map-meta-v1`): the copy
+    tile (`index.ts serveTile`), the saved areas first (below). The TileJSON (`island-map-meta-v1`): the copy
     within an hour, else the network within 2.5 s, else the copy.
+  - *Saved areas* (phase B, the user 2026-11-07; nothing downloads unasked): 「オフライン用に保存」 on a trip's map and a
+    trail's (design.md "Offline maps"). `lib/offline/plan.ts` (pure): a trip's or a trail's tiles and MB, by measured
+    means per source and zoom (`npm run offline:measure -- --full`: every tile once, ~5 min, never in CI) times the
+    area's density (a city's vector tiles weigh ~6× a coast's); within ±20 % of the measured bytes (plan.test). The
+    page fetches them (`lib/offline/save.ts`: one path, as WebKit's worker never sees MapLibre's worker): OpenFreeMap 4
+    at a time, USGS and GSI 2 with 150 ms after each; header `x-island-save`, which the worker answers from the network
+    (a raster tile's seen copy first) and never stores among the seen tiles, dropping the header (OpenFreeMap answers a
+    preflight 405, so no `X-Client` header can be sent: the app is known by its Referer; email them before wider use).
+    Into `island-offline-<id>` (`trip-nz`, `trail-lake-22`) under the tile keys, with the TileJSON and a manifest
+    `{id, source, tileVersion, tiles, stored, empty, bytes, done, at}`. Resumable (stored tiles skipped); a failed
+    tile asked again over 3 more passes, then `done: false` (「一部のみ」); a 404/204 is none there. An OpenFreeMap area
+    keeps its week's build; a save at another build starts it again whole (更新, offered past 30 days: never two builds
+    in one area). Before it starts: online, ≤ 3,000 tiles and ≤ 50 MB an area, all areas ≤ 150 MB (`TOTAL_CAP_BYTES`,
+    a warning past 80 %), `storage.estimate()` free ≥ 1.2× the plan; the first save asks `storage.persist()`.
+    `localStorage island.offlineAreas` mirrors the manifests, so an area Safari evicted shows 「消えました」.
+    `serveTile` asks the saved areas first (never revalidated), then the seen tiles; offline, a tile in neither isn't
+    asked of the network. Offline with no TileJSON kept, an area's copy answers. `activate` never deletes an
+    `island-offline-*` cache (`caches.ts isSavedArea`) and the 60 MB bound indexes only `island-tiles-v1`.
+    `e2e/offline.spec.ts`: a trail saved on fixture tiles, its cache, せってい's row and 削除; drawn (@render), offline
+    from the area alone, no tile asked of the network.
   - *Storage kept:* the installed app asks `navigator.storage.persist()` once, after its first sync that worked
     (`sync/persist.ts`), and logs `storage.persist` (granted, already, MB used and quota).
   - *The sync pill* offline counts the taps waiting to go (`sync/queue.ts`); its label says when the record last came.
