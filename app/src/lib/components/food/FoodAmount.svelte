@@ -3,7 +3,7 @@
   // has one (104 px beside the name, the イメージ badge: every picture is generated; a tap: FoodPhoto, it enlarged),
   // its name, everyday name (glossOf) and 「これは…」 line (`desc`); under them what this amount holds, live: the kcal
   // (the sheet's loudest number), P · F · C · 塩分, and behind 「100gあたり」 (closed on each open) the values per 100 g.
-  // Then the controls in the order they're decided: じょうたい, a food in its states (the data's vg/st), a chip per
+  // Then the controls (FoodPortion, their rules amount.svelte.ts) in the order they're decided: じょうたい, a food in its states (the data's vg/st), a chip per
   // state with its kcal at the amount it would take (`onitem` swaps the food: a portion label the state also has stays
   // picked at its own grams, typed grams stay typed, else its default), one line why (パックの重さなら 生 / ゆでる前の
   // 重さなら 乾); its portions as chips (the first the default; 100 g last), −/＋ by a whole portion for the things you
@@ -16,13 +16,15 @@
   // by whole servings, no grams field. A recipe's or custom food's: `open`, a button left of 追加 to open it.
   import { untrack } from 'svelte';
   import type { Meal } from '#lib/contract/food.ts';
-  import { FOOD_GRAMS, MEALS } from '#lib/contract/food.ts';
-  import { nutrientsFor, portionsOf, unitOf, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { MEALS } from '#lib/contract/food.ts';
+  import { verifyOf, type Item } from '#lib/food/index.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import FoodPhoto from './FoodPhoto.svelte';
-  import { catalogOf, foodDb, foodDbNow, glossOf, inState, gramsText, hasWeight, parseAmount, portionLabel, startOf, stepOf, withImages } from './foodUi.ts';
+  import FoodPortion from './FoodPortion.svelte';
+  import { AmountPick } from './amount.svelte.ts';
+  import { catalogOf, glossOf, withImages } from './foodUi.ts';
 
   interface Props {
     item: Item;
@@ -47,45 +49,11 @@
   }
   let { item, meal, g0, u0, editing = false, pick = false, serving = false, ondone, onremove, open = null, onitem, once = false }: Props = $props();
 
-  const ps = $derived(serving ? (item.portions?.length ? item.portions : [{ label: t('food.my.one'), g: 100 }]) : portionsOf(item));
-  /** g or ml: a drink's portions are in ml (100 ml counts as 100 g). */
-  const unit = $derived(ps.some((p) => unitOf(p.label) === 'ml') ? 'ml' : 'g');
-  // (the level is keyed: a new food or entry mounts a new picker, so the start is read once)
-  const s0 = untrack(() => ({ ...startOf(ps, g0, u0), typed: g0 === undefined ? '' : gramsText(g0), meal, ps }));
-  /** The portion picked, by its label (an index would point elsewhere once the catalog's portions are in). */
-  let pl = $state(s0.ps[s0.pi].label);
-  let mult = $state(s0.mult);
-  let custom = $state(s0.custom);
-  let typed = $state(s0.custom ? s0.typed : '');
-  let m = $state<Meal>(s0.meal);
-  /** Anything changed by hand (then a swapped item keeps the pick). */
-  let touched = false;
-  let seen = s0.ps;
-  $effect.pre(() => {
-    const now = ps;
-    if (now === seen) return;
-    seen = now;
-    if (touched) return;
-    const s = startOf(now, g0, u0);
-    pl = now[s.pi].label;
-    mult = s.mult;
-    custom = s.custom;
-    typed = s.custom ? s0.typed : '';
-  });
-  const pi = $derived(Math.max(0, ps.findIndex((p) => p.label === pl)));
-
-  /** Typed grams as the editors read them (parseAmount: 「1,200」 is 1,200 g, 「150g」 150; out of range or not a number: 0). */
-  const g = $derived(custom ? (parseAmount(typed, FOOD_GRAMS.min, FOOD_GRAMS.max) ?? 0) : Math.round(ps[pi].g * mult * 10) / 10);
-  const ok = $derived(g >= FOOD_GRAMS.min && g <= FOOD_GRAMS.max);
-  const n = $derived(nutrientsFor(item, ok ? g : 0));
-  /** The catalog (the food's states); in already, mostly. */
-  let db = $state.raw<FoodDb | null>(foodDbNow());
-  $effect(() => {
-    let live = true;
-    if (!db) foodDb().then((d) => live && (db = d), () => {});
-    return () => void (live = false);
-  });
-  const states = $derived(serving || !onitem ? [] : variantsOf(db, item));
+  /** The picker (状態, 量, ×n, grams: amount.svelte.ts, its controls FoodPortion). */
+  const a = new AmountPick(() => ({ item, g0, u0, serving, onitem }));
+  // (the level is keyed: a new food or entry mounts a new one, so the meal is read once)
+  let m = $state<Meal>(untrack(() => meal));
+  const n = $derived(a.n);
   let imgs = $state.raw<FoodImageIndex | null>(null);
   $effect(() => withImages((ix) => (imgs = ix)));
   /** The picture's box beside the name (its detail cell scaled down: sharp at 3×). */
@@ -101,62 +69,16 @@
   /** A picture on screen (its thumbnail while the cell loads): then the イメージ badge, never on a tile. */
   let pictured = $state(false);
   let picBtn: HTMLButtonElement | undefined = $state();
-  const gloss = $derived(glossOf(catalogOf(db, item.id) ?? item, item.name));
+  const gloss = $derived(glossOf(catalogOf(a.db, item.id) ?? item, item.name));
   /** How many independent sources agree on its kcal (2 or more: said under its name). */
   const agree = $derived.by(() => {
-    const v = db ? verifyOf(db, item.id) : null;
+    const v = a.db ? verifyOf(a.db, item.id) : null;
     return v && v.n >= 2 ? v.n : 0;
   });
   const per = (v: number | null | undefined) => (v === null || v === undefined ? '–' : v.toFixed(1));
 
-  function portion(i: number) {
-    touched = true;
-    pl = ps[i].label;
-    mult = 1;
-    custom = false;
-  }
-  function step(d: -1 | 1) {
-    touched = true;
-    if (custom) {
-      typed = gramsText(Math.max(0, Math.min(FOOD_GRAMS.max, Math.round(g + d * 10))));
-      return;
-    }
-    const s = serving ? 1 : stepOf(ps[pi].label, item.name);
-    mult = Math.max(s, Math.min(20, Math.round((mult + d * s) / s) * s));
-  }
-  function onGrams() {
-    touched = true;
-    custom = true;
-  }
-  /** What picking state `v` keeps: the portion of the same label at its own grams, typed grams as typed, else its
-   *  default; and its grams. */
-  function keepIn(v: Item): { label: string; mult: number; custom: boolean; g: number } {
-    const vp = portionsOf(inState(db, v));
-    const same = !custom ? vp.find((p) => p.label === pl) : undefined;
-    if (same) return { label: same.label, mult, custom: false, g: Math.round(same.g * mult * 10) / 10 };
-    if (custom) return { label: vp[0].label, mult: 1, custom: true, g };
-    return { label: vp[0].label, mult: 1, custom: false, g: vp[0].g };
-  }
-  function pickState(v: Item) {
-    if (v.id === item.id) return;
-    const k = keepIn(v);
-    touched = true;
-    pl = k.label;
-    mult = k.mult;
-    if (!k.custom) custom = false;
-    onitem?.(inState(db, v));
-  }
-  /** The line under the chips, for the state picked: why that one (none for the rest). */
-  const why = $derived.by(() => {
-    if (!states.length) return null;
-    const has = (s: string) => states.some((x) => x.st === s);
-    // a pack's weight is raw meat's or fish's (a vegetable's is weighed as it comes)
-    if (item.st === '生' && (item.cat === '肉' || item.cat === '魚介') && states.some((x) => x.st !== '生' && x.st !== '乾')) return t('food.st.rawWhy');
-    if (item.st === '乾' && has('ゆで')) return t('food.st.dryWhy');
-    return null;
-  });
   function done() {
-    if (ok) ondone({ m, g, u: custom ? null : portionLabel(ps[pi], mult) });
+    if (a.ok) ondone({ m, g: a.g, u: a.u });
   }
 </script>
 
@@ -176,7 +98,7 @@
         <div class="kline">
           <p class="k money" aria-live="polite">{formatNum(n.kcal)}<small>kcal</small></p>
           <button type="button" class="per-t" data-food-per aria-expanded={perOpen} aria-controls="food-per" data-sfx="tick" onclick={() => (perOpen = !perOpen)}>
-            {serving ? t('food.my.perOne', { u: ps[0].label }) : t('food.per100Head')}<span class="caret" aria-hidden="true">▾</span>
+            {serving ? t('food.my.perOne', { u: a.ps[0].label }) : t('food.per100Head')}<span class="caret" aria-hidden="true">▾</span>
           </button>
         </div>
       </div>
@@ -190,40 +112,7 @@
     {#if perOpen}<p class="per money" id="food-per">{formatNum(item.kcal)} kcal · P {per(item.p)} · F {per(item.f)} · C {per(item.c)} · {t('food.s')} {per(item.salt)}</p>{/if}
   </section>
 
-  <section class="card ctl">
-    {#if states.length}
-      <h4>{t('food.st.head')}</h4>
-      <div class="chips" role="group" aria-label={t('food.st.head')} data-states>
-        {#each states as v (v.id)}
-          {@const k = keepIn(v)}
-          <button type="button" class="chip big" aria-pressed={v.id === item.id} data-sfx={v.id === item.id ? 'none' : 'tick'} data-state={v.st} onclick={() => pickState(v)}>
-            {v.st}<small>{formatNum(nutrientsFor(v, k.g).kcal)} kcal</small>
-          </button>
-        {/each}
-      </div>
-      {#if why}<p class="why" data-state-why>{why}</p>{/if}
-    {/if}
-    <h4>{t('food.amount')}</h4>
-    <div class="chips" role="group" aria-label={t('food.amount')}>
-      {#each ps as p, i (p.label)}
-        <button type="button" class="chip big" aria-pressed={!custom && pi === i} data-sfx={!custom && pi === i ? 'none' : 'tick'} data-portion={p.label} onclick={() => portion(i)}>
-          {p.label}{#if !serving && !hasWeight(p.label)}<small>{gramsText(p.g)}{unit}</small>{/if}
-        </button>
-      {/each}
-    </div>
-    <div class="qty">
-      <button type="button" class="nb" data-sfx="tick" aria-label={t('food.less')} data-step="-1" onclick={() => step(-1)}>−</button>
-      <b class="mult money">{custom ? `${gramsText(g)}${unit}` : `×${mult}`}</b>
-      <button type="button" class="nb" data-sfx="tick" aria-label={t('food.more')} data-step="1" onclick={() => step(1)}>＋</button>
-      {#if !serving}<label class="grams">
-        <span class="sr-only">{t(unit === 'ml' ? 'food.ml' : 'food.grams')}</span>
-        <input type="text" inputmode="decimal" data-sfx="none" data-grams autocomplete="off" enterkeyhint="done" maxlength="8" size="5"
-          value={custom ? typed : gramsText(g)} aria-invalid={!ok} oninput={(e) => { typed = e.currentTarget.value; onGrams(); }}
-          onfocus={() => (typing = true)} onblur={() => (typing = false)} />
-        <span class="u" aria-hidden="true">{unit}</span>
-      </label>{/if}
-    </div>
-  </section>
+  <section class="card ctl"><FoodPortion {a} bind:typing /></section>
 
   {#if once}<p class="once" data-once>{t('food.rep.once')}</p>{/if}
   <div class="acts level-acts">
@@ -236,7 +125,7 @@
     {/if}
     {#if open}<button type="button" class="btn paper small open" data-sfx="page" data-amount-open onclick={open.run}>{open.label}</button>{/if}
     {#if editing}<button type="button" class="btn paper small" data-sfx="undo" data-remove onclick={() => onremove?.()}>{t(pick ? 'food.rcp.itemRemove' : 'food.remove')}</button>{/if}
-    <button type="submit" class="btn small" data-sfx="confirm" data-done aria-disabled={!ok}>
+    <button type="submit" class="btn small" data-sfx="confirm" data-done aria-disabled={!a.ok}>
       {pick ? t(editing ? 'food.rcp.save' : 'food.rcp.itemAdd') : editing ? t('food.save') : t('food.addOk')}{#if typing}{' '}<small class="dk money" data-done-kcal>{formatNum(n.kcal)} kcal</small>{/if}
     </button>
   </div>
@@ -260,7 +149,6 @@
   }
   .gl { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text); line-height: 1.4; }
   h3 { margin: 0; font-size: var(--fs-talk); font-weight: 700; line-height: 1.3; overflow-wrap: anywhere; }
-  h4 { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   .vf { margin: 0; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
   .once { margin: 0 2px; font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); }
   /* what this amount holds, live: the kcal (the loudest thing on the sheet) at the name column's foot, the per-100 g
@@ -282,27 +170,12 @@
   .nut dt { font-size: var(--fs-s); font-weight: 700; color: var(--text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .nut dd { margin: 2px 0 0; font-size: var(--fs-body); }
   .nut small { margin-left: 2px; font-size: var(--fs-s); color: var(--text-soft); }
-  .why { margin: -2px 2px 4px; font-size: var(--fs-s); font-weight: 700; color: var(--leaf-text); }
-  /* the portions: theme.css .chip.big */
-  .sb, .nb {
+  .sb {
     appearance: none; border: 0; cursor: pointer; min-height: var(--hit); border-radius: var(--r-pill);
     font: 700 var(--fs-body)/1 var(--font-ui); color: var(--text); background: var(--ctl); box-shadow: var(--sh-ctl);
   }
-  .chip small { margin-left: 4px; font-size: var(--fs-xs); color: var(--text-soft); }
-  .chip[aria-pressed='true'] small { color: inherit; opacity: .7; }
   .sb[aria-pressed='true'] { background: var(--ctl-sel); color: var(--c-ink); box-shadow: inset 0 0 0 2px var(--c-edge), 0 var(--lip-h) 0 var(--c-edge); }
-  .sb:active, .nb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
-  .qty { display: flex; align-items: center; gap: 8px; }
-  .nb { width: var(--hit); flex: none; font-size: var(--fs-talk); }
-  .mult { min-width: 3.4em; text-align: center; font-size: var(--fs-talk); }
-  .grams { margin-left: auto; display: flex; align-items: baseline; gap: 6px; }
-  .grams input {
-    width: 5.5em; min-height: var(--hit); padding: 6px 10px; border: 0; border-radius: var(--r-btn); text-align: right;
-    font: 700 var(--fs-input)/1.1 var(--font-num); color: var(--text); background: var(--ctl); box-shadow: inset 0 0 0 2px var(--edge);
-  }
-  .grams input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
-  .grams input[aria-invalid='true'] { box-shadow: inset 0 0 0 2px var(--c-coral); }
-  .u { font: 700 var(--fs-body)/1 var(--font-num); color: var(--text-soft); }
+  .sb:active { transform: translateY(2px); box-shadow: var(--sh-ctl-press); }
   /* the meal, a row of the foot over 追加 (theme.css .level-acts wraps): 44 px, never under the foot */
   .seg { flex: 1 1 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
   /* (never a tap's target: it leaves on the blur that tap makes, and a press whose target went never clicks) */

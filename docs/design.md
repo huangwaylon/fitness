@@ -475,7 +475,7 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
   its frame is the rows': the first 24 are drawn, the rest once the list's end is 400 px away (Chrome at 4× CPU, the
   first keystroke's input to frame: ~77 → ~58 ms).
 - **Amount:** one screen on an iPhone 15 for the common case (豚ロース: picture, 3 states, 4 portions), in the order it's
-  decided. The head: the food's picture when it has one (104 px beside the name, alt 「…の イメージ」, the イメージ badge
+  decided. (Its controls are `FoodPortion`, their rules `amount.svelte.ts` AmountPick: one picker.) The head: the food's picture when it has one (104 px beside the name, alt 「…の イメージ」, the イメージ badge
   at its top left: every picture is generated; until its cell is in, the row's thumbnail, cached, scaled up, the badge
   only over a picture; none: the name the whole width; a tap, `FoodPhoto`: it enlarged in a small modal of its own,
   min(100vw − 64, 360) px, with the badge, the name, the 「これは…」 line and 「AI生成のイメージ…」; ✕, Esc or a tap
