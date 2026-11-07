@@ -936,7 +936,14 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
   "Audio"): cache first on first use, never revalidated (the hash is in the name), outliving builds; the room's
   bounded-by-bytes code (`boundedCache` in the worker: an index of each pack's bytes and last use in the cache), with
   `listenEvict`: a pack's older version (another hash) once unused for 10 minutes, then the least recently used past
-  30 MB, never a pack used in the last 10 minutes (a game in progress). Range requests pass through.
+  30 MB, never a pack used in the last 10 minutes (a game in progress). Range requests pass through. The packs are
+  ~110 MiB in all on Pages today (docs/kikimimi.md "Audio"); moving them to R2 behind a same-origin `PACK_BASE` (W2-R)
+  is pending the user's R2 step and changes nothing here (same origin, same cache).
+- **STT cache** (`island-stt-v1`: ききみみ's recogniser, docs/kikimimi-mic.md §3.6): the whisper model and its ONNX
+  runtime under `/stt/` (~70 MB) and the worker that runs them (`_app/immutable/workers/stt.<hash>.js`, named by
+  `vite.config.ts stt-names`). Never precached: the page fills the cache itself after the mic opt-in (`lib/mic/models.ts
+  ensureStt`, the parts assembled and checked); the worker serves `/stt/` from it first and never stores, so a phone
+  that never opted in holds 0 bytes of it and a deploy never refetches it.
 - **Offline** (phase A, 2026-11-07, decisions.md): what a phone has shown once reads offline; nothing is prefetched.
   - *Precached* (~1 MB of the 2.9 MB precache, `scripts/load-budget.ts` ≤ 3 MB): the Zen Maru Gothic slices holding
     ~99% of the app's own characters, both weights, and Fredoka's Latin (`caches.ts PRECACHED_FONT_SLICES`, 0.7 MB;
@@ -952,7 +959,8 @@ went on 2026-11-05, once both phones ran builds from after (their `/push/*` woul
     precache them (`caches.ts carried`, `vite.config.ts swPrecacheOnly`; before 2026-11-07 it filtered them out, so no
     install carried MapLibre).
   - *ききみみ's parts* (each `levels/parts/<part>.json`'s chunk, `kiki-<part>.<hash>.js`: `vite.config.ts
-    kiki-part-names`; ~0.69 MB on the wire in all, 53 parts: the precache 3.57 → 2.88 MB): kept out of
+    kiki-part-names`; 77 parts today (levels, ladders, units, story chapters, listening files); taking the 53 of
+    2026-11-07, ~0.69 MB on the wire, out of the precache took it 3.57 → 2.88 MB): kept out of
     the precache, since a game's text is of no use offline without its audio packs (Listen cache, on first use too).
     Into this version's shell the first time a game loads one; each install copies the unchanged and fetches a changed
     part whose name an older shell holds (`caches.ts carryPlan`). Offline, `pool.ts` imports only a part a shell holds
