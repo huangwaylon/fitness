@@ -124,7 +124,7 @@ const globsUncached: Plugin = {
 
 /** The trip map's MapLibre chunk and its CSS under a stable name (`_app/immutable/chunks/maplibre.<hash>.js`,
  *  `assets/maplibre.<hash>.css`; its worker is `workers/maplibre-gl-worker-<hash>.js` already), so the service worker
- *  leaves them out of its precache (caches.ts isMapLibre: the map is online only). So are the maps' engines (travel's
+ *  leaves them out of its precache (caches.ts isMapLibre: kept once a map draws). So are the maps' engines (travel's
  *  and トレイル's map/engine.ts: their basemap, fonts and layers, ~40 KB gzipped), which import MapLibre and run only
  *  with it; the bundle's check keeps any other chunk from importing MapLibre. Kit enforces its own file names in the
  *  client build; this wraps them. */
@@ -145,7 +145,7 @@ const mapLibreNames: Plugin = {
     };
   },
   generateBundle(_, bundle) {
-    // a chunk that imports MapLibre is only of use with it (online): out of the precache with it, by its name
+    // a chunk that imports MapLibre is only of use with it: out of the precache with it, by its name
     const isMap = (f: string) => /(^|\/)maplibre\./.test(f.slice(f.lastIndexOf('/') + 1));
     for (const c of Object.values(bundle)) {
       if (c.type === 'chunk' && !isMap(c.fileName) && c.imports.some(isMap)) throw new Error(`vite.config.ts maplibre-names: ${c.fileName} imports MapLibre statically (${[...c.moduleIds].find((id) => id.includes('/src/'))}); name it a map chunk or import MapLibre lazily`);

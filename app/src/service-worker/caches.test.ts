@@ -1,5 +1,6 @@
+import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
+import { MAP_META_CACHE, PHOTO_CACHE, PRECACHED_FONT_SLICES, TILE_CACHE, bytesEvict, isGuidePhoto, isTileJson, keepable, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, LISTEN_CACHE, LISTEN_CAP_BYTES, LISTEN_KEEP_MS, ROOM_CAP_BYTES, ROOM_KEEP_MS, foodFetch, foodImgFetch, foodImgStale, isDecorArt, isFoodImg, isAudio, isFoodData, isListenPack, isMusic, isShellOf, isStt, keepShell, listenEvict, lruEvict, olderShells, precachable, roomEvict, staleCaches, staleFood, staleUse, type RoomIndex } from './caches.ts';
 
 describe('service worker cache generations', () => {
   const keep = ['island-fonts-v1', 'island-villagers-v1'];
@@ -74,10 +75,7 @@ describe('precache', () => {
     // ききみみ's scene backdrops, at every scale
     for (const p of ['art/scene/cafe.webp', '/fitness/art/scene/gate@2x.webp', 'art/scene/living@3x.webp']) expect(precachable(p)).toBe(false);
   });
-  it("leaves the trips' photos out: fetched as a trip is read", () => {
-    for (const p of ['travel/okinawa/cover.webp', '/fitness/travel/nz/hero.webp']) expect(precachable(p)).toBe(false);
-  });
-  it("leaves the trip map's MapLibre out (its chunk, worker and CSS): the map is online only", () => {
+  it("leaves the maps' MapLibre out (its chunk, worker and CSS, the engines): kept once a map draws", () => {
     for (const p of ['_app/immutable/chunks/maplibre.D4lzds31.js', '/fitness/_app/immutable/workers/maplibre-gl-worker-Br3j0JGE.js', '_app/immutable/assets/maplibre.qvkd0SPb.css']) expect(precachable(p)).toBe(false);
     // the map's own light component and the rest of the chunks stay
     for (const p of ['_app/immutable/chunks/LRf9-Dmh.js', '_app/immutable/assets/TravelSheet.oVavZwKD.css']) expect(precachable(p)).toBe(true);
@@ -116,7 +114,7 @@ describe('precache', () => {
   });
   it('leaves out audio, fonts, other villagers, the bundled manifests and .DS_Store (paths come without a leading slash)', () => {
     for (const p of ['audio/music/hour-07.m4a', 'audio/music/opening.m4a', 'audio/manifest.json', 'audio/sfx/coin.m4a',
-      '_app/immutable/assets/zen-maru-gothic-54-500-normal.woff2', 'art/villagers/raymond.webp', 'art/manifest.json', 'icons/.DS_Store']) {
+      '_app/immutable/assets/zen-maru-gothic-54-500-normal.Dk3_x-9a.woff2', 'art/villagers/raymond.webp', 'art/manifest.json', 'icons/.DS_Store']) {
       expect(precachable(p)).toBe(false);
     }
     expect(precachable('/fitness/audio/music/hour-07.m4a')).toBe(false);
@@ -157,15 +155,161 @@ describe('the offline shell from a navigation (keepShell)', () => {
   });
 });
 
-describe('travel photos', () => {
-  it('are never precached (a guide fetches its own when it shows them)', () => {
-    for (const p of ['travel/okinawa/hero.webp', '/fitness/travel/okinawa/camps/katsuren-beach.webp', 'travel/seattle/lake-22.webp', '/fitness/travel/nz/cover.webp']) expect(precachable(p)).toBe(false);
+describe('the guides offline: what is precached', () => {
+  it("a trip's cover and hero, and every trail's track; the other photos are cached on first view", () => {
+    for (const p of ['travel/okinawa/hero.webp', '/fitness/travel/nz/cover.webp', 'hiking/tracks/kinpu-odarumi.json', '/fitness/hiking/tracks/lake-22.json']) expect([precachable(p), isGuidePhoto(`/${p.replace(/^\//, '')}`)]).toEqual([true, false]);
+    for (const p of ['travel/okinawa/camps/katsuren-beach.webp', 'travel/seattle/lake-22.webp', 'hiking/photos/lake-22.webp']) expect([precachable(p), isGuidePhoto(`/${p}`)]).toEqual([false, true]);
+  });
+
+  it('the font slices that hold most of the app\'s characters, both weights, and Fredoka\'s Latin; the rest on first use', () => {
+    for (const p of ['_app/immutable/assets/zen-maru-gothic-119-500-normal.BuX2_a-1.woff2', '_app/immutable/assets/zen-maru-gothic-119-700-normal.C9zz.woff2', '_app/immutable/assets/zen-maru-gothic-latin-700-normal.a1.woff2', '/fitness/_app/immutable/assets/fredoka-latin-600-normal.x.woff2']) expect(precachable(p)).toBe(true);
+    for (const p of ['_app/immutable/assets/zen-maru-gothic-1190-500-normal.a.woff2', '_app/immutable/assets/zen-maru-gothic-6-700-normal.a.woff2', '_app/immutable/assets/zen-maru-gothic-latin-ext-500-normal.a.woff2', '_app/immutable/assets/fredoka-latin-ext-600-normal.a.woff2']) expect(precachable(p)).toBe(false);
+  });
+
+  it('every precached slice is one fonts.css loads (a renamed or dropped slice is caught)', () => {
+    const css = readFileSync(new URL('../lib/styles/fonts.css', import.meta.url), 'utf8');
+    for (const k of PRECACHED_FONT_SLICES) for (const w of [500, 700]) expect(css, `${k} ${w}`).toContain(`zen-maru-gothic-${k}-${w}-normal.woff2`);
   });
 });
 
-describe('trail photos and tracks', () => {
-  it('are never precached (a trail fetches its own as it shows)', () => {
-    for (const p of ['hiking/photos/lake-22.webp', '/fitness/hiking/tracks/kinpu-odarumi.json']) expect(precachable(p)).toBe(false);
+describe('the maps offline: tiles and the TileJSON', () => {
+  const U = (s: string) => new URL(s);
+  it("keys a tile by its URL; OpenFreeMap's without the week's build (last week's tile answers under this week's TileJSON)", () => {
+    expect(tileKey(U('https://tiles.openfreemap.org/planet/20261101_080013_pt/12/3629/1612.pbf'))).toBe('https://tiles.openfreemap.org/planet/_/12/3629/1612.pbf');
+    expect(tileKey(U('https://tiles.openfreemap.org/planet/20261108_080013_pt/12/3629/1612.pbf'))).toBe('https://tiles.openfreemap.org/planet/_/12/3629/1612.pbf');
+    const usgs = 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/12/1430/657', gsi = 'https://cyberjapandata.gsi.go.jp/xyz/std/12/3629/1612.png';
+    expect([tileKey(U(usgs)), tileKey(U(gsi))]).toEqual([usgs, gsi]);
+  });
+  it('the TileJSON is not a tile; no other host is either (the relay stays live)', () => {
+    expect([isTileJson(U('https://tiles.openfreemap.org/planet')), tileKey(U('https://tiles.openfreemap.org/planet'))]).toEqual([true, null]);
+    for (const u of ['https://relay.example/api/snapshot', 'https://tiles.openfreemap.org/fonts/x.pbf', 'https://example.com/12/1/2.png']) expect(tileKey(U(u))).toBeNull();
+  });
+  it('never keeps an opaque answer (it would cost quota unread), a partial or a failed one', () => {
+    const opaque = { ok: false, status: 0, type: 'opaque' } as Response;
+    expect([keepable(new Response('x')), keepable(opaque), keepable(new Response('x', { status: 206 })), keepable(new Response('', { status: 404 }))]).toEqual([true, false, false, false]);
+  });
+  it('a bounded cache lets the least recently used go till it fits (bytesEvict), never one used within keepMs', () => {
+    const idx: RoomIndex = { a: [30, 1], b: [30, 3], c: [30, 2], d: [30, 9] };
+    expect(bytesEvict(idx, 10, 70)).toEqual(['a', 'c']);
+    expect(bytesEvict(idx, 10, 200)).toEqual([]);
+    expect(bytesEvict(idx, 10, 0, 8)).toEqual(['a']);
+  });
+  it('the runtime caches outlive builds', () => {
+    expect(staleCaches(['island-shell-1', PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE, 'island-shell-2', 'island-shell-3'], 'island-shell-3', [PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])).toEqual(['island-shell-1']);
+  });
+});
+
+describe('stale-while-revalidate (swrFetch: the guides\' photos, the tiles)', () => {
+  class Mem {
+    m = new Map<string, Response>();
+    async match(k: string) { return this.m.get(k)?.clone(); }
+    async put(k: string, r: Response) { this.m.set(k, r); }
+  }
+  let cache: Mem, bg: Promise<unknown>[], served: Record<string, string>, offline: boolean, calls: string[], t: number, used: [string, number | undefined][];
+  const net = async (r: Request) => {
+    calls.push(r.url);
+    if (offline) throw new TypeError('offline');
+    const b = served[r.url];
+    return b === undefined ? new Response('', { status: 404 }) : new Response(b);
+  };
+  const get = async (url: string, key?: string) => {
+    const res = await swrFetch(new Request(url), cache as unknown as Cache, net, (p) => bg.push(p), { key, freshMs: 100, now: () => t, used: (k, n) => void used.push([k, n]) }).catch(() => null);
+    while (bg.length) await bg.shift();
+    return res && res.ok ? await res.text() : null;
+  };
+  const P = 'https://x.example/travel/seattle/lake-22.webp';
+  beforeEach(() => {
+    cache = new Mem(); bg = []; served = { [P]: 'v1' }; offline = false; calls = []; t = 1000; used = [];
+  });
+
+  it('first view from the network, stored after; offline it answers from the cache', async () => {
+    expect(await get(P)).toBe('v1');
+    expect(used).toEqual([[P, 2]]);
+    offline = true;
+    expect(await get(P)).toBe('v1');
+  });
+  it('never seen and offline: the error (the page shows its placeholder); a 404 is never stored', async () => {
+    offline = true;
+    expect(await get(P)).toBeNull();
+    offline = false;
+    served = {};
+    expect(await get(P)).toBeNull();
+    expect(cache.m.size).toBe(0);
+  });
+  it('a stored copy at once; past freshMs refetched in the background, the next view the new one', async () => {
+    await get(P);
+    served[P] = 'v2';
+    t += 50;
+    expect(await get(P)).toBe('v1');
+    expect(calls).toHaveLength(1); // fresh: not asked
+    t += 100;
+    expect(await get(P)).toBe('v1'); // stale: still at once, refetched behind it
+    expect(calls).toHaveLength(2);
+    expect(await get(P)).toBe('v2');
+  });
+  it('a failed revalidation keeps the stored copy', async () => {
+    await get(P);
+    t += 500;
+    offline = true;
+    expect(await get(P)).toBe('v1');
+    expect(await get(P)).toBe('v1');
+  });
+  it('stores under its key (a tile under tileKey): another build\'s URL is answered from it', async () => {
+    const a = 'https://tiles.openfreemap.org/planet/w1/1/0/0.pbf', b = 'https://tiles.openfreemap.org/planet/w2/1/0/0.pbf';
+    served = { [a]: 'tile' };
+    expect(await get(a, tileKey(new URL(a))!)).toBe('tile');
+    offline = true;
+    expect(await get(b, tileKey(new URL(b))!)).toBe('tile');
+  });
+});
+
+describe("OpenFreeMap's TileJSON (tileJsonFetch)", () => {
+  const J = 'https://tiles.openfreemap.org/planet';
+  let m: Map<string, Response>, bg: Promise<unknown>[], body: string, offline: boolean, slow: number, t: number, calls: number;
+  const cache = { match: async (k: string) => m.get(k)?.clone(), put: async (k: string, r: Response) => void m.set(k, r) } as unknown as Cache;
+  const net = async () => {
+    calls++;
+    if (offline) throw new TypeError('offline');
+    await new Promise((ok) => setTimeout(ok, slow));
+    return new Response(body);
+  };
+  /** The answer once `ms` of the fake clock has run (the network's lateness, the 20 ms timeout), the stores settled. */
+  const get = async (ms = 0) => {
+    const p = tileJsonFetch(new Request(J), cache, net, (q) => bg.push(q), { ttlMs: 100, timeoutMs: 20, now: () => t }).catch(() => null);
+    await vi.advanceTimersByTimeAsync(ms);
+    const res = await p;
+    const text = res?.ok ? await res.text() : null;
+    await vi.runAllTimersAsync();
+    while (bg.length) await bg.shift();
+    return text;
+  };
+  beforeEach(() => {
+    vi.useFakeTimers(); // (docs/ops/testing.md "Hermetic")
+    m = new Map(); bg = []; body = 'w1'; offline = false; slow = 0; t = 0; calls = 0;
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it('within its TTL the stored copy without asking; past it the network; offline or slower than the timeout the stored copy', async () => {
+    expect(await get()).toBe('w1');
+    body = 'w2';
+    t = 50;
+    expect([await get(), calls]).toEqual(['w1', 1]);
+    t = 200;
+    expect(await get()).toBe('w2');
+    t = 400;
+    offline = true;
+    expect(await get()).toBe('w2');
+    offline = false;
+    slow = 60;
+    body = 'w3';
+    expect(await get(20)).toBe('w2');
+    // (the late answer stored for the next time)
+    t = 401;
+    expect(await get()).toBe('w3');
+  });
+  it('nothing stored and offline: the error (the map shows its route with the offline note)', async () => {
+    offline = true;
+    expect(await get()).toBeNull();
   });
 });
 

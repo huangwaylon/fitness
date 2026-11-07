@@ -3,7 +3,7 @@
 import { self } from '$app/service-worker';
 import { immutable, assets } from '$app/manifest';
 import { version } from '$app/env';
-import { AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
+import { MAP_META_CACHE, PHOTO_CACHE, PHOTO_CAP_BYTES, PHOTO_FRESH_MS, TILE_CACHE, TILE_CAP_BYTES, TILE_FRESH_MS, bytesEvict, isGuidePhoto, isMapLibre, isTileJson, swrFetch, tileJsonFetch, tileKey, AUDIO_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, LISTEN_INDEX, foodImgFetch, isFoodImg, ROOM_CACHE, ROOM_INDEX, SHELL, STT_CACHE, isStt, foodFetch, listenEvict, roomEvict, type RoomIndex, isAudio, isListenPack, isShellOf, isFoodData, isCritterArt, isDecorArt, isFont, isRoomAsset, isVillagerArt, keepShell, lruEvict, olderShells, precachable, staleCaches, staleUse } from './caches.ts';
 
 // The app may live under a base path (BASE_PATH); the registration scope carries it.
 const SCOPE = new URL(self.registration.scope).pathname;
@@ -18,12 +18,13 @@ const NAV_TIMEOUT_MS = 3000;
 // (bump the suffix if villager art is re-fetched under the same paths).
 const VILLAGERS = 'island-villagers-v1';
 
-// Precache built JS/CSS + static files (caches.ts precachable): font subsets (Japanese = many files) are cached on
-// first use instead; the art and audio manifests are bundled into the JS (lib/art.ts, lib/sound/manifest.ts), so
+// Precache built JS/CSS + static files (caches.ts precachable): the common font slices (the rest, many files, are
+// cached on first use); the art and audio manifests are bundled into the JS (lib/art.ts, lib/sound/manifest.ts), so
 // their files are never fetched. Villager art: see VILLAGERS. Audio (~14 MB of hourly music, off by default) is
-// never precached: AUDIO_CACHE. Nor the trip map's MapLibre (its chunk, worker and CSS: online only, like its tiles):
-// fetched from the network each time a map is drawn (the browser's HTTP cache aside).
+// never precached: AUDIO_CACHE. Nor the maps' MapLibre (its chunk, worker and CSS, the engines): kept in the shell the
+// first time a map draws, then carried by each install (MAP_FILES).
 const PRECACHE = [...immutable.map((f) => f.path), ...assets.map((f) => f.path)].filter(precachable);
+const MAP_FILES = immutable.map((f) => f.path).filter((p) => isMapLibre(`/${p.replace(/^\//, '')}`));
 /** Checked with the server past the browser's HTTP cache (a host's own max-age): a static file or the shell
  *  fetched within 10 minutes before a deploy would otherwise be stored stale for the whole version. Revalidated, not
  *  reloaded: an unchanged file (most of the art, each deploy) is a 304 from the HTTP cache's copy, not a download. The
@@ -54,6 +55,17 @@ self.addEventListener('install', (event) => {
       // one that fails costs that file (served from the previous shell's copy or the network: `cached`), not the
       // install (one flaky fetch of ~370 failed it, and every resume's update with it)
       await cache.addAll(chunks);
+      // the maps' MapLibre, once a map has drawn on this phone (an older shell holds some of it): an unchanged file
+      // copied, a changed one fetched (on its own: a miss costs only the map offline till it draws again)
+      const maps = await Promise.all(MAP_FILES.map(async (p) => {
+        for (const c of olds) {
+          const hit = await c.match(p);
+          if (hit) return void (await cache.put(p, hit));
+        }
+        return p;
+      }));
+      const missing = maps.filter((p): p is string => !!p);
+      if (missing.length < MAP_FILES.length) await Promise.allSettled(missing.map((p) => cache.add(p)));
       await Promise.allSettled(statics.map(async (r) => {
         const res = await fetch(r);
         if (res.ok) await cache.put(r, res);
@@ -78,7 +90,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     (async () => {
-      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, STT_CACHE])) await caches.delete(key);
+      for (const key of staleCaches(await caches.keys(), CACHE, [FONTS, VILLAGERS, AUDIO_CACHE, ROOM_CACHE, FOOD_CACHE, FOOD_IMG_CACHE, LISTEN_CACHE, STT_CACHE, PHOTO_CACHE, TILE_CACHE, MAP_META_CACHE])) await caches.delete(key);
       await self.clients.claim();
     })()
   );
@@ -134,6 +146,15 @@ function boundedCache(name: string, indexPath: string, evict: (idx: RoomIndex, n
 }
 const roomUsed = boundedCache(ROOM_CACHE, ROOM_INDEX, (idx, now) => roomEvict(idx, now));
 const listenUsed = boundedCache(LISTEN_CACHE, LISTEN_INDEX, (idx, now) => listenEvict(idx, now));
+const photoUsed = boundedCache(PHOTO_CACHE, '__photo-index', (idx, now) => bytesEvict(idx, now, PHOTO_CAP_BYTES));
+const tileUsed = boundedCache(TILE_CACHE, '__tile-index', (idx, now) => bytesEvict(idx, now, TILE_CAP_BYTES));
+
+/** A map tile (its key: caches.ts tileKey) from the seen-tiles cache, else the network (kept after). The one place a
+ *  tile is looked up: a cache of saved areas (offline phase B) goes before the seen tiles here, out of their LRU. */
+function serveTile(event: FetchEvent, key: string): Promise<Response> {
+  return caches.open(TILE_CACHE).then((cache) =>
+    swrFetch(event.request, cache, (r) => fetch(r), (p) => event.waitUntil(p), { key, freshMs: TILE_FRESH_MS, used: (k, n) => event.waitUntil(tileUsed(k, n).catch(() => {})) }));
+}
 
 /** Ours first (a static file may change under the same path), then the previous generation's. */
 async function cached(req: Request | string): Promise<Response | undefined> {
@@ -144,7 +165,16 @@ self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // the relay (the record, the room): always live
+  if (url.origin !== self.location.origin) {
+    // the maps' tiles, as a map draws them (never prefetched): kept, bounded (60 MB, least recently used out),
+    // refetched in the background past TILE_FRESH_MS; the TileJSON from the network within its TTL's rule
+    const tile = tileKey(url);
+    if (tile) event.respondWith(serveTile(event, tile));
+    else if (isTileJson(url)) {
+      event.respondWith(caches.open(MAP_META_CACHE).then((cache) => tileJsonFetch(req, cache, (r) => fetch(r), (p) => event.waitUntil(p))));
+    }
+    return; // the relay (the record, the room): always live
+  }
 
   // Stale-while-revalidate: this version's cached shell at once (its chunks are in the same cache: installed together),
   // never a wait on the network. The revalidation is the worker's own: the browser checks for a new service worker on
@@ -256,14 +286,40 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // the guides' photos (a trip's cover and hero precached): kept once seen, revalidated in the background after a day
+  if (isGuidePhoto(url.pathname)) {
+    event.respondWith((async () => {
+      const pre = await caches.open(CACHE).then((c) => c.match(req));
+      if (pre) return pre;
+      const cache = await caches.open(PHOTO_CACHE);
+      return swrFetch(req, cache, (r) => fetch(r, { cache: 'no-cache' }), (p) => event.waitUntil(p), { freshMs: PHOTO_FRESH_MS, used: (k, n) => event.waitUntil(photoUsed(k, n).catch(() => {})) });
+    })());
+    return;
+  }
+
+  // the maps' MapLibre the first time a map draws: kept in this version's shell (the install carries it on)
+  if (isMapLibre(url.pathname)) {
+    event.respondWith((async () => {
+      const hit = await cached(req);
+      if (hit) return hit;
+      const res = await fetch(req);
+      if (res.ok) {
+        const copy = res.clone();
+        event.waitUntil(caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {}));
+      }
+      return res;
+    })());
+    return;
+  }
+
   // fonts, villagers, critters, the decor and the tent's room: cached on first use (critters and the decor share the
   // villagers' on-use art cache; the room has its own)
   if (isFont(url.pathname) || isVillagerArt(url.pathname) || isCritterArt(url.pathname) || isDecorArt(url.pathname) || isRoomAsset(url.pathname)) {
     const font = isFont(url.pathname), room = isRoomAsset(url.pathname);
     event.respondWith(
       (async () => {
-        // the two default villagers are precached (fonts never are)
-        const precached = font || room ? undefined : await caches.open(CACHE).then((c) => c.match(req));
+        // the two default villagers and the common font slices are precached
+        const precached = room ? undefined : await caches.open(CACHE).then((c) => c.match(req));
         if (precached) return precached;
         const cache = await caches.open(font ? FONTS : room ? ROOM_CACHE : VILLAGERS);
         const hit = await cache.match(req);

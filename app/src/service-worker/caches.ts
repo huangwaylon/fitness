@@ -282,13 +282,24 @@ export async function foodImgFetch(req: Request, cache: FoodCacheLike, net: (r: 
 /** The home-screen and install icons: the OS fetches them when the app is added, never the page offline (the favicon
  *  only needs the network). */
 const isAppIcon = (path: string): boolean => path.includes('/icons/');
-/** The trips' photos (static/travel/; docs/travel.md): fetched as a trip is read, never at install. */
+/** The trips' photos (static/travel/; docs/travel.md "Offline"): each trip's cover and hero precached, the rest in
+ *  PHOTO_CACHE on first view. */
 const isTravel = (path: string): boolean => path.includes('/travel/');
-/** トレイル's photos and tracks (static/hiking/; docs/hiking.md): fetched as a trail is read, never at install. */
+/** トレイル's photos and tracks (static/hiking/; docs/hiking.md "Offline"): the ten tracks precached (~70 KB), the photos
+ *  in PHOTO_CACHE on first view. */
 const isHiking = (path: string): boolean => path.includes('/hiking/');
-/** The trip map's MapLibre: its chunk (`maplibre.*.js`, named so by vite.config.ts), its worker and its CSS (~1.8 MB
- *  in all): online only, like the tiles, so fetched when a map is drawn and never at install. */
-const isMapLibre = (path: string): boolean => /\/_app\/immutable\/(chunks\/maplibre\.|workers\/maplibre-gl-worker-|assets\/maplibre\.)/.test(path);
+const PRECACHED_TRIP_FILES = /\/travel\/[\w-]+\/(cover|hero)\.webp$|\/hiking\/tracks\/[\w-]+\.json$/;
+/** The guides' photos the SW caches on first view (everything under travel/ and hiking/ but the precached). */
+export const isGuidePhoto = (path: string): boolean => (isTravel(path) || isHiking(path)) && !PRECACHED_TRIP_FILES.test(path);
+/** The maps' MapLibre: its chunk (`maplibre.*.js`, named so by vite.config.ts, with the maps' engines), its worker and
+ *  its CSS (~1.8 MB raw, ~480 KB on the wire): not at install, but kept in the shell the first time a map draws, and
+ *  carried by each install after that (copied when unchanged, fetched when changed: index.ts). */
+export const isMapLibre = (path: string): boolean => /\/_app\/immutable\/(chunks\/maplibre\.|workers\/maplibre-gl-worker-|assets\/maplibre\.)/.test(path);
+/** The font slices precached (Zen Maru Gothic's 500 and 700, src/lib/styles/fonts.css; Fredoka's Latin): the ones
+ *  holding ~99% of the characters the app's own strings show (scripts/font-subsets.ts's count), ~0.7 MB. The other
+ *  slices (rare kanji, the map's labels) are cached on first use (FONTS). */
+export const PRECACHED_FONT_SLICES = ['119', '117', '116', '115', '114', '113', '112', '111', '110', '109', '108', '118', '107', '106', '105', '104', '103', '102', '101', '100', '99', '98', '97', '96', '95', '94', '92', 'latin'];
+const PRECACHED_FONT = new RegExp(`/(zen-maru-gothic-(${PRECACHED_FONT_SLICES.join('|')})-[57]00-normal|fredoka-latin-[67]00-normal)\\.[\\w-]+\\.woff2$`);
 /** ききみみ's recogniser (docs/kikimimi-mic.md §3.6): the model and the ONNX runtime under `/stt/`, and the worker that
  *  runs them (`_app/immutable/workers/stt.<hash>.js` and its chunks, named so by vite.config.ts stt-names): never
  *  precached (~67 MB; only a phone that opted in fetches any of it). The page fills STT_CACHE itself on the probe's
@@ -300,13 +311,14 @@ export const isStt = (path: string): boolean => /^(\/[\w-]+)?\/stt\/|\/_app\/imm
 const PRECACHED_VILLAGERS = /\/art\/villagers\/(goldie|anchovy)(-icon)?\.webp$/;
 
 /** Whether a build file goes into the install-time precache. Paths come from `$app/manifest` relative to the base
- *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: font subsets (cached on first use),
+ *  (`art/…`, `audio/…`), so they are matched with a leading slash. Not precached: the font slices but the common ones
+ *  (PRECACHED_FONT_SLICES; the rest cached on first use),
  *  the bundled art and audio manifests, every villager but the defaults, every critter, find and present (all cached
- *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the trips' photos (travel/), トレイル's photos and tracks (hiking/), the maps' MapLibre, the recogniser (stt/, STT_CACHE), the app icons and macOS
+ *  on first use), all audio (AUDIO_CACHE, on first play; ききみみ's packs LISTEN_CACHE, on first use), the tent's room (ROOM_CACHE, on first use), the food data (FOOD_CACHE, on first use), the food pictures (FOOD_IMG_CACHE, on first use), the guides' photos but the trips' covers and heroes and the trails' tracks (PHOTO_CACHE), the maps' MapLibre (kept once a map draws), the recogniser (stt/, STT_CACHE), the app icons and macOS
  *  litter. */
 export function precachable(path: string): boolean {
   const p = path.startsWith('/') ? path : `/${path}`;
-  if (isFont(p) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isTravel(p) || isHiking(p) || isMapLibre(p) || isStt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
+  if ((isFont(p) && !PRECACHED_FONT.test(p)) || isAudio(p) || isCritterArt(p) || isDecorArt(p) || isRoomAsset(p) || isFoodData(p) || isFoodImg(p) || isGuidePhoto(p) || isMapLibre(p) || isStt(p) || isAppIcon(p) || p.endsWith('/art/manifest.json') || p.endsWith('.DS_Store')) return false;
   return !isVillagerArt(p) || PRECACHED_VILLAGERS.test(p);
 }
 
@@ -324,4 +336,130 @@ export const isShellOf = (html: string, version: string): boolean => html.includ
 export async function keepShell(cache: Pick<Cache, 'match' | 'put'>, scope: string, res: Response, version: string): Promise<void> {
   if (res.ok && !(await cache.match(scope)) && isShellOf(await res.clone().text(), version)) return cache.put(scope, res);
   await res.body?.cancel().catch(() => {}); // the unused copy: don't buffer it
+}
+
+// ---- offline guides and maps (docs/backend.md "Service worker" › Offline): kept as they are seen, never prefetched
+
+/** The guides' photos (isGuidePhoto) once seen: a cache that outlives builds, revalidated in the background. */
+export const PHOTO_CACHE = 'island-photos-v1';
+/** All the guides' photos are ~3.7 MB: the bound is for what a new trip adds. */
+export const PHOTO_CAP_BYTES = 20_000_000;
+/** A seen photo is served from the cache and checked again in the background once it is older than this. */
+export const PHOTO_FRESH_MS = 24 * 3600_000;
+/** The maps' tiles once seen (OpenFreeMap's vector tiles, USGS's and GSI's raster topo): only what a map drew. */
+export const TILE_CACHE = 'island-tiles-v1';
+export const TILE_CAP_BYTES = 60_000_000;
+/** Tiles change seldom (OpenFreeMap rebuilds weekly, the topo maps yearly): a seen one is refetched past this. */
+export const TILE_FRESH_MS = 14 * 24 * 3600_000;
+/** OpenFreeMap's TileJSON (it names the week's tile URLs): its own small cache, never evicted. */
+export const MAP_META_CACHE = 'island-map-meta-v1';
+/** Within this the cached TileJSON answers without asking; past it, the network first (MAP_META_TIMEOUT_MS), else the
+ *  cached copy. */
+const TILEJSON_TTL_MS = 3600_000;
+const MAP_META_TIMEOUT_MS = 2500;
+/** When a copy was stored (ms), on the stored copy itself (a header of ours). */
+const STORED_AT = 'x-island-stored';
+
+const OPENFREEMAP = 'tiles.openfreemap.org';
+const TILE_HOSTS = new Set([OPENFREEMAP, 'basemap.nationalmap.gov', 'cyberjapandata.gsi.go.jp']);
+/** OpenFreeMap's TileJSON (style.ts BASEMAP's url). */
+export const isTileJson = (u: URL): boolean => u.hostname === OPENFREEMAP && /^\/[\w-]+\/?$/.test(u.pathname);
+/**
+ * A map tile's key in TILE_CACHE, or null for any other URL. OpenFreeMap's tile URLs carry the week's build
+ * (`/planet/20261101_080013_pt/12/3629/1612.pbf`): keyed without it, so a tile seen under last week's build still
+ * answers offline under this week's TileJSON (and is refetched under the new one when due).
+ */
+export function tileKey(u: URL): string | null {
+  if (!TILE_HOSTS.has(u.hostname) || isTileJson(u)) return null;
+  if (u.hostname !== OPENFREEMAP) return u.href;
+  const m = /^\/([\w-]+)\/[\w.-]+\/(\d+\/\d+\/\d+\.pbf)$/.exec(u.pathname);
+  return m ? `${u.origin}/${m[1]}/_/${m[2]}` : null;
+}
+
+/** A response worth keeping: a whole 200, readable (an opaque one, a no-cors answer, would count ~7 MB of quota
+ *  whatever its size in WebKit, and can't be checked). */
+export const keepable = (res: Response): boolean => res.ok && res.status === 200 && res.type !== 'opaque';
+
+/** A bounded cache's entries (any order: [bytes, last use]) to delete so the rest is within `cap`: the least recently
+ *  used first, never one used within `keepMs`. */
+export function bytesEvict(index: RoomIndex, now: number, cap: number, keepMs = 0): string[] {
+  let total = 0;
+  for (const u in index) total += index[u][0];
+  const out: string[] = [];
+  for (const u of Object.keys(index).filter((u) => now - index[u][1] > keepMs).sort((a, b) => index[a][1] - index[b][1])) {
+    if (total <= cap) break;
+    out.push(u);
+    total -= index[u][0];
+  }
+  return out;
+}
+
+type SwrCache = Pick<Cache, 'match' | 'put'>;
+export interface SwrOptions {
+  /** The cache's key for the request (tileKey), its URL by default. */
+  key?: string;
+  freshMs: number;
+  now?: () => number;
+  /** A copy stored (its key and bytes) or used (no bytes): the bounded cache's index (index.ts boundedCache). */
+  used?: (key: string, bytes?: number) => void;
+}
+
+/** A readable copy of `res` with when it was stored (the answer's own headers that a page can read: a CORS answer's
+ *  are the safelisted ones). */
+async function stamped(res: Response, at: number): Promise<{ copy: Response; bytes: number }> {
+  const body = await res.blob();
+  const headers = new Headers(res.headers);
+  headers.set(STORED_AT, String(at));
+  return { copy: new Response(body, { status: 200, statusText: res.statusText, headers }), bytes: body.size };
+}
+
+/**
+ * Stale-while-revalidate (the guides' photos, the tiles; pure for tests): a stored copy at once, fetched again in the
+ * background (`after`: waitUntil) once older than `freshMs`; nothing stored: the network, its answer stored after it
+ * is answered (a failed or opaque one never). Offline with nothing stored: the network's error (the page's
+ * placeholder, the map's offline note).
+ */
+export async function swrFetch(req: Request, cache: SwrCache, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, o: SwrOptions): Promise<Response> {
+  const key = o.key ?? req.url, now = o.now ?? Date.now;
+  const store = (res: Response) =>
+    (async () => {
+      if (!keepable(res)) return void (await res.body?.cancel().catch(() => {}));
+      const { copy, bytes } = await stamped(res, now());
+      await cache.put(key, copy);
+      o.used?.(key, bytes);
+    })().catch(() => {});
+  const hit = await cache.match(key).catch(() => undefined);
+  if (hit) {
+    const at = Number(hit.headers.get(STORED_AT));
+    o.used?.(key);
+    if (!(now() - at < o.freshMs)) after(net(req).then(store, () => {}));
+    return hit;
+  }
+  const res = await net(req);
+  if (keepable(res)) after(store(res.clone()));
+  return res;
+}
+
+/**
+ * OpenFreeMap's TileJSON (pure for tests): the stored copy within `ttlMs`; else the network within `timeoutMs`, stored
+ * when it comes; slower, or offline, the stored copy (the tiles it names are the ones cached: tileKey).
+ */
+export async function tileJsonFetch(req: Request, cache: SwrCache, net: (r: Request) => Promise<Response>, after: (p: Promise<unknown>) => void, o: { ttlMs?: number; timeoutMs?: number; now?: () => number } = {}): Promise<Response> {
+  const now = o.now ?? Date.now;
+  const hit = await cache.match(req.url).catch(() => undefined);
+  if (hit && now() - Number(hit.headers.get(STORED_AT)) < (o.ttlMs ?? TILEJSON_TTL_MS)) return hit;
+  let copy: Response | null = null;
+  const live = net(req).then((res) => {
+    if (keepable(res)) copy = res.clone();
+    return res;
+  });
+  after(live.then(async () => {
+    if (copy) await cache.put(req.url, (await stamped(copy, now())).copy);
+  }).catch(() => {}));
+  if (!hit) return live;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const late = new Promise<null>((ok) => (timer = setTimeout(ok, o.timeoutMs ?? MAP_META_TIMEOUT_MS, null)));
+  const first = await Promise.race([live.catch(() => null), late]);
+  clearTimeout(timer);
+  return first?.ok ? first : hit;
 }
