@@ -107,7 +107,8 @@
     }
   };
   const title = $derived(
-    story ? t('kiki.mode.story') : lane?.title?.game && (mid || v?.phase === 'results') ? t(lane.title.game) : v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
+    // every game's results are 「結果」 (みみ チェック's end is its placement, under its own name)
+    story ? t('kiki.mode.story') : lane?.title?.game && (mid || (v?.phase === 'results' && v.gm === 'check')) ? t(lane.title.game) : v?.phase === 'results' ? t('kiki.results') : v && v.i >= 0 && v.i < v.n && mid ? t('kiki.q', { i: v.i + 1, n: v.n })
       : lesson ? (lesson.recheck ? t('kiki.lesson.recheck') : t(`kiki.lesson.${lesson.lesson}`))
       : hosting && page ? pageTitle(page) : guest ? t(lane?.title?.lobby ?? 'kiki.tile.together') : t('kiki.title')
   );

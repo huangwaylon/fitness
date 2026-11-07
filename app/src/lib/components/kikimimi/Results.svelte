@@ -21,6 +21,9 @@
   import ResultsFrame from './frame/Results.svelte';
   import ReviewList from './frame/ReviewList.svelte';
   import Why from './frame/Why.svelte';
+  import ReviewRow from './frame/ReviewRow.svelte';
+  import HearButton from './frame/HearButton.svelte';
+  import Note from './frame/Note.svelte';
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { villagerArt } from '#lib/art.ts';
   import SoundLine from './scene/SoundLine.svelte';
@@ -210,84 +213,62 @@
           {@const dlg = isDialogue(r.it) ? r.it : null}
           {@const kind = cardKind(r.it)}
           {#if kind}
-            <!-- a recipe-2 card (docs/curriculum-units.md §16): its sentence or situation; open, the tile's line, the call's or
-                 the conversation's transcript, the note and 解説, ▶︎ (a memo round's: its call's) -->
+            <!-- a recipe-2 card (docs/curriculum-units.md §16): its sentence or situation; open, ▶︎ (a memo round's: its call's),
+                 the tile's line, the call's or the conversation's transcript, the note and 解説 -->
             {@const call = kind === 'call' ? (r.it as CallCard).call : null}
             {@const hearIt = call ? items[r.i - call.part] : r.it}
-            <li class="item card" data-review={r.i} data-ok={r.ok} data-open={open} data-kiki-card={kind}>
-              <button type="button" class="head" aria-expanded={open} data-kiki-row={r.i} data-sfx="tick" onclick={() => toggle(r.i)}>
-                <span class="sym" class:ok={r.ok}><span aria-hidden="true">{r.ok ? '○' : '×'}</span><span class="sr-only">{r.ok ? t('kiki.right') : t('kiki.wrong')}</span></span>
-                <span class="sum">{#if kind === 'tile'}<span class="en" lang="en">{r.it.en}</span>{:else}<span class="en">{r.it.ctx ?? r.it.en}</span>{/if}</span>
-                {#if first(r.i)}<span class="stamp sm obj-cream">{t('kiki.firstTry')}</span>{/if}
-                <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
-              </button>
-              {#if open}
-                <div class="txt" data-kiki-detail={r.i}>
-                  {#if call}
-                    {#await Promise.all([import('./call/CallLog.svelte'), import('#lib/i18n/kiki-call.ts')]) then [{ default: CallLog }]}<CallLog info={call.info} />{/await}
-                  {:else if dlg}
-                    <Transcript it={dlg} talk={game.talk?.i === -1 && game.talk.at === dlg.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} />
-                  {:else}
-                    <span class="en big" data-kiki-review-en><SoundLine en={r.it.en} marks={r.it.marks} clip={r.it.id} from={playing(r.it)} clock={() => game.clock()} /></span>
-                    {#if r.it.ja}<p class="ja">{r.it.ja}</p>{/if}
-                  {/if}
-                  {#if r.it.note}<p class="note" data-kiki-note>{r.it.note}</p>{/if}
-                  {#if r.it.why}<Why text={r.it.why} />{/if}
-                  {#if hearIt}
-                    <div class="hear">
-                      <button type="button" class="ib tile-btn" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(hearIt)}>▶︎</button>
-                    </div>
-                  {/if}
-                </div>
+            <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => toggle(r.i)} first={first(r.i)} data-kiki-card={kind}>
+              {#snippet summary()}{#if kind === 'tile'}<span class="en" lang="en">{r.it.en}</span>{:else}<span class="en">{r.it.ctx ?? r.it.en}</span>{/if}{/snippet}
+              {#snippet hear()}{#if hearIt}<HearButton data-kiki-hear={r.i} onclick={() => game.hear(hearIt)} />{/if}{/snippet}
+              {#if call}
+                {#await Promise.all([import('./call/CallLog.svelte'), import('#lib/i18n/kiki-call.ts')]) then [{ default: CallLog }]}<CallLog info={call.info} />{/await}
+              {:else if dlg}
+                <Transcript it={dlg} talk={game.talk?.i === -1 && game.talk.at === dlg.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} />
+              {:else}
+                <span class="en big" data-kiki-review-en><SoundLine en={r.it.en} marks={r.it.marks} clip={r.it.id} from={playing(r.it)} clock={() => game.clock()} /></span>
+                {#if r.it.ja}<p class="ja">{r.it.ja}</p>{/if}
               {/if}
-            </li>
+              {#if r.it.note}<Note text={r.it.note} />{/if}
+              {#if r.it.why}<Why text={r.it.why} />{/if}
+            </ReviewRow>
           {:else}
-          <li class="item card" data-review={r.i} data-ok={r.ok} data-open={open}>
-            <button type="button" class="head" aria-expanded={open} data-kiki-row={r.i} data-sfx="tick" onclick={() => toggle(r.i)}>
-              <span class="sym" class:ok={r.ok}><span aria-hidden="true">{r.ok ? '○' : '×'}</span><span class="sr-only">{r.ok ? t('kiki.right') : t('kiki.wrong')}</span></span>
-              <span class="sum">
+            <ReviewRow i={r.i} ok={r.ok} {open} ontoggle={() => toggle(r.i)} first={first(r.i)}>
+              {#snippet summary()}
                 {#if dlg}<span class="en" lang="en">→ {dlg.choices[dlg.answer]}</span>
                 {:else if open}<span class="en big" data-kiki-review-en><SoundLine en={r.it.en} focus={r.it.focus} marks={r.it.marks} clip={r.it.id} from={playing(r.it)} clock={() => game.clock()} /></span>
                 {:else}<span class="en" lang="en">{pre}{#if focus}<mark>{focus}</mark>{/if}{post}</span>{/if}
                 {#if !open && !r.ok && r.k !== null}<span class="picked">{t('kiki.picked', { a: choiceText(r.it, r.k) })} ×</span>{/if}
-              </span>
-              {#if first(r.i)}<span class="stamp sm obj-cream">{t('kiki.firstTry')}</span>{/if}
-              <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
-            </button>
-            {#if open}
-              <div class="txt" data-kiki-detail={r.i}>
-                {#if dlg}
-                  <Transcript it={dlg} talk={game.talk?.i === -1 && game.talk.at === dlg.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} />
-                  {#if dlg.type === 'gist'}<p class="ans" lang="en">→ {dlg.choices[dlg.answer]}<span>{dlg.ja}</span></p>{/if}
-                {:else}
-                  {#if r.it.marks}<MarkLegend marks={r.it.marks} />{/if}
-                  <p class="ja">{#each jaLines(r.it) as l, n (n)}<span>{l}</span>{/each}</p>
-                {/if}
-                {#if r.it.type === 'pic' || r.it.type === 'num'}<p class="ans">→ {choiceText(r.it, r.it.answer)}</p>{/if}
-                {#if r.it.cja && r.it.type !== 'pic'}
-                  <!-- every choice with its Japanese (the item's cja): ○ the answer, × my pick -->
-                  <ul class="opts" aria-label={t('kiki.choicesJa')} data-kiki-opts>
-                    {#each r.it.choices as c, k (k)}
-                      {@const m = k === r.it.answer ? 'right' : k === r.k ? 'wrong' : null}
-                      <li data-mark={m ?? undefined}>
-                        <span class="o" aria-hidden="true">{m === 'right' ? '○' : m === 'wrong' ? '×' : '・'}</span>
-                        <span><span lang={r.it.type === 'num' ? undefined : 'en'}>{c}</span><small data-kiki-cja={k}>{r.it.cja[k]}</small></span>
-                      </li>
-                    {/each}
-                  </ul>
-                {/if}
-                {#if r.it.note}<p class="note" data-kiki-note>{r.it.note}</p>{/if}
-                {#if r.it.why}<Why text={r.it.why} />{/if}
-                {#if !r.ok}<p class="tags">{tripKeys(r.it.id).map((x) => tripLabel(x.key)).join(' · ')}</p>{/if}
-                {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
-                <div class="hear">
-                  <button type="button" class="ib tile-btn" aria-label={t('kiki.play')} data-kiki-hear={r.i} data-sfx="tick" onclick={() => game.hear(r.it)}>▶︎</button>
-                  {#if canSlow(r.it)}<button type="button" class="ib tile-btn" aria-label={t('kiki.playSlow')} data-kiki-slow={r.i} data-sfx="tick" onclick={() => game.hear(r.it, true)}>🐢</button>{/if}
-                </div>
-                <div class="hear">{@render sand(r.it)}</div>
-              </div>
-            {/if}
-          </li>
+              {/snippet}
+              {#snippet hear()}
+                <HearButton data-kiki-hear={r.i} onclick={() => game.hear(r.it)} />
+                {#if canSlow(r.it)}<HearButton slow data-kiki-slow={r.i} onclick={() => game.hear(r.it, true)} />{/if}
+              {/snippet}
+              {#if dlg}
+                <Transcript it={dlg} talk={game.talk?.i === -1 && game.talk.at === dlg.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} />
+                {#if dlg.type === 'gist'}<p class="ans" lang="en">→ {dlg.choices[dlg.answer]}<span>{dlg.ja}</span></p>{/if}
+              {:else}
+                {#if r.it.marks}<MarkLegend marks={r.it.marks} />{/if}
+                <p class="ja">{#each jaLines(r.it) as l, n (n)}<span>{l}</span>{/each}</p>
+              {/if}
+              {#if r.it.type === 'pic' || r.it.type === 'num'}<p class="ans">→ {choiceText(r.it, r.it.answer)}</p>{/if}
+              {#if r.it.cja && r.it.type !== 'pic'}
+                <!-- every choice with its Japanese (the item's cja): ○ the answer, × my pick -->
+                <ul class="opts" aria-label={t('kiki.choicesJa')} data-kiki-opts>
+                  {#each r.it.choices as c, k (k)}
+                    {@const m = k === r.it.answer ? 'right' : k === r.k ? 'wrong' : null}
+                    <li data-mark={m ?? undefined}>
+                      <span class="o" aria-hidden="true">{m === 'right' ? '○' : m === 'wrong' ? '×' : '・'}</span>
+                      <span><span lang={r.it.type === 'num' ? undefined : 'en'}>{c}</span><small data-kiki-cja={k}>{r.it.cja[k]}</small></span>
+                    </li>
+                  {/each}
+                </ul>
+              {/if}
+              {#if r.it.note}<Note text={r.it.note} />{/if}
+              {#if r.it.why}<Why text={r.it.why} />{/if}
+              {#if !r.ok}<p class="tags">{tripKeys(r.it.id).map((x) => tripLabel(x.key)).join(' · ')}</p>{/if}
+              {#if !r.ok && r.k !== null}<p class="picked" data-kiki-picked>{t('kiki.picked', { a: choiceText(r.it, r.k) })} <span aria-hidden="true">×</span></p>{/if}
+              <div class="sand">{@render sand(r.it)}</div>
+            </ReviewRow>
           {/if}
         {/each}
       </ul>
@@ -297,7 +278,7 @@
 </ResultsFrame>
 
 <style>
-  /* a lesson's strip (the UX review's sketch C): the unit, its dots, then つぎは… or the stamp */
+  /* a lesson's strip (the UX review's sketch C): the unit, its dots, then 次は… or the stamp */
   .lesson.card { display: grid; justify-items: center; gap: 8px; padding: 12px 14px; text-align: center; }
   .lesson.won { background: color-mix(in srgb, var(--c-yuzu) 28%, var(--card)); }
   .lesson p { margin: 0; }
@@ -322,49 +303,31 @@
     padding: 4px 10px; border-radius: var(--r-pill); font: 700 var(--fs-s)/1.3 var(--font-ui);
     background: color-mix(in srgb, var(--c-coral) 16%, var(--card)); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--c-coral) 55%, transparent);
   }
-  .none { margin: 0; text-align: center; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--leaf-text); }
-  .trips .none { text-align: left; }
+  .none { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--leaf-text); }
   .tags { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  /* ▶︎ / 🐢 under the text (the text's column), so the Japanese has the card's width */
-  .item { display: grid; gap: 8px; padding: 0; }
-  /* a row's head: the whole width a button (○ / ×, the sentence, いっぱつ, ▾) */
-  .head {
-    appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; width: 100%;
-    display: grid; grid-template-columns: auto 1fr auto auto; align-items: start; gap: 10px; padding: 12px 14px; min-height: var(--hit);
-  }
-  .sum { min-width: 0; display: grid; gap: 2px; }
-  .chev { font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
-  .item .txt { padding: 0 14px 12px 46px; }
   .en.big { font-size: max(17px, var(--fs-talk)); }
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
   .retry { width: 100%; }
   .opts { list-style: none; margin: 2px 0; padding: 0; display: grid; gap: 4px; }
   .opts li { display: grid; grid-template-columns: 1.2em 1fr; gap: 4px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
   .opts li[data-mark='right'] { color: var(--leaf-text); }
   .opts li[data-mark='wrong'] { color: var(--coral-text); }
   .opts small { display: block; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  /* いっぱつ: a rubber stamp (no points), a cream sticker at any time of day (so its coral is the fixed one) */
-  .stamp {
-    display: inline-block; padding: 3px 10px; border-radius: 8px; rotate: -4deg; color: var(--coral-text);
-    background: color-mix(in srgb, var(--c-yuzu) 45%, var(--c-card)); box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui);
-  }
-  .stamp.sm { padding: 2px 6px; white-space: nowrap; }
   .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
   .sym.ok { color: var(--leaf-text); }
-  .txt { min-width: 0; display: grid; gap: 4px; }
-  .en { margin: 0; font: 700 17px/1.4 var(--font-ui); }
+  .en { margin: 0; font: 700 17px/1.4 var(--font-ui); color: var(--text); }
   .en mark { background: linear-gradient(transparent 55%, color-mix(in srgb, var(--c-yuzu) 85%, transparent) 55%); color: inherit; }
   .ja, .ans, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .ja span, .ans span { display: block; }
   .picked { color: var(--coral-text); }
-  .hear { display: flex; gap: 6px; }
-  .ib { width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center; font: 700 18px/1 var(--font-ui); }
-  /* スピード はしご: each ladder's steps, climbed leaf */
+  .sand:empty { display: none; }
+  /* スピード はしご: each ladder's steps, climbed leaf; its review row (not folded: the rungs and ▶︎ at each speed) */
   .climbs { display: grid; gap: 8px; padding: 12px 14px; }
   .climbs ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .climbs > ul > li { display: flex; align-items: center; gap: 12px; }
   .climbs b { font: 700 var(--fs-body)/1.2 var(--font-ui); }
+  .ladder { display: grid; grid-template-columns: auto 1fr; gap: 10px; padding: 12px 14px; }
+  .ladder .txt { min-width: 0; display: grid; gap: 4px; }
   .qs { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 4px; }
   .qs li { display: grid; grid-template-columns: 2.6em 1.2em 1fr; gap: 4px; align-items: baseline; font: 700 var(--fs-s)/1.4 var(--font-ui); }
   .qs .x { font-family: var(--font-num); color: var(--text-soft); }

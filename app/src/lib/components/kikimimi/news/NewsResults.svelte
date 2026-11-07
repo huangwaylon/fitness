@@ -12,6 +12,9 @@
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import Why from '../frame/Why.svelte';
+  import ReviewRow from '../frame/ReviewRow.svelte';
+  import HearButton from '../frame/HearButton.svelte';
+  import Note from '../frame/Note.svelte';
   import Transcript from '../Transcript.svelte';
   import { t } from '#lib/i18n/index.ts';
 
@@ -49,29 +52,22 @@
   <ReviewList bind:missedOnly none={!shown.length}>
     <ul class="review">
       {#each shown as r (r.i)}
-        {@const open = opened.includes(r.i)}
-        <li class="item card" data-review={r.i} data-ok={r.ok} data-open={open}>
-          <button type="button" class="head" aria-expanded={open} data-kiki-row={r.i} data-sfx="tick" onclick={() => toggle(r.i)}>
-            <span class="sym" class:ok={r.ok}><span aria-hidden="true">{r.ok ? '○' : '×'}</span><span class="sr-only">{r.ok ? t('kiki.right') : t('kiki.wrong')}</span></span>
-            <span class="sum">{ask(r.c)}</span>
-            <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
-          </button>
-          {#if open}
-            <div class="txt" data-kiki-detail={r.i}>
-              <p class="ans">{t('kiki.news.answer', { a: r.right ?? '' })}</p>
-              {#if !r.ok}<p class="picked" data-kiki-news-mine>{t('kiki.news.mine', { a: r.mine ?? t('kiki.timeUp') })}</p>{/if}
-              {#if r.c.why}<Why text={r.c.why} />{/if}
-            </div>
-          {/if}
-        </li>
+        <ReviewRow i={r.i} ok={r.ok} open={opened.includes(r.i)} ontoggle={() => toggle(r.i)}>
+          {#snippet summary()}{ask(r.c)}{/snippet}
+          <p class="ans">{t('kiki.news.answer', { a: r.right ?? '' })}</p>
+          {#if !r.ok}<p class="picked" data-kiki-news-mine>{t('kiki.news.mine', { a: r.mine ?? t('kiki.timeUp') })}</p>{/if}
+          {#if r.c.why}<Why text={r.c.why} />{/if}
+        </ReviewRow>
       {/each}
     </ul>
   </ReviewList>
   {#if news?.lines}
     <section class="script card" data-kiki-news-script>
-      <h3>{t('kiki.news.script')}</h3>
-      <div class="hear"><button type="button" class="btn small paper" data-kiki-hear="news" data-sfx="tick" onclick={() => game.hear(news)}>▶︎ {t('kiki.news.hearAll')}</button></div>
-      {#if news.note}<p class="note" data-kiki-note>{news.note}</p>{/if}
+      <div class="sh">
+        <h3>{t('kiki.news.script')}</h3>
+        <HearButton label={t('kiki.news.hearAll')} data-kiki-hear="news" onclick={() => game.hear(news)} />
+      </div>
+      {#if news.note}<Note text={news.note} />{/if}
       <Transcript it={{ ...news, lines: news.lines }} all={playing} clock={() => game.clock()} compact />
     </section>
   {/if}
@@ -79,20 +75,10 @@
 
 <style>
   .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .item { display: grid; gap: 8px; padding: 0; }
-  .head {
-    appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; width: 100%;
-    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; padding: 12px 14px; min-height: var(--hit);
-  }
-  .sym { font: 700 20px/1.2 var(--font-ui); color: var(--coral-text); }
-  .sym.ok { color: var(--leaf-text); }
-  .sum { min-width: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text); }
-  .chev { font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
-  .txt { min-width: 0; display: grid; gap: 6px; padding: 0 12px 12px; }
   .ans, .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); word-break: normal; line-break: strict; }
   .picked { color: var(--coral-text); }
   .script { display: grid; gap: 8px; padding: 12px; }
-  .script h3 { margin: 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .hear { display: flex; justify-content: center; }
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
+  /* the bulletin's head: its name, ▶︎ beside it (as a role-play's お手本) */
+  .sh { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .sh h3 { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
 </style>

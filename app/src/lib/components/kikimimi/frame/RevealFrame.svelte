@@ -7,6 +7,7 @@
   import type { Item } from '#lib/kikimimi/bank.ts';
   import type { SandPlayer } from './Sandwich.svelte';
   import SandButton from './SandButton.svelte';
+  import FirstStamp from './FirstStamp.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   let { out, right, picked, pts, badge = false, coop, rightNow, line, extra, sand }: {
@@ -38,7 +39,7 @@
       <p>
         {#if right}<span class="sym" aria-hidden="true">○</span>{t('kiki.right')}{#if pts} <b>+{pts}</b>{/if}
         {:else}<span class="sym" aria-hidden="true">×</span>{picked ? t('kiki.wrong') : t('kiki.timeUp')}{/if}
-        {#if badge}<span class="bonus obj-cream" data-kiki-bonus>{t('kiki.firstTry')}</span>{/if}
+        {#if badge}<FirstStamp pop data-kiki-bonus />{/if}
       </p>
     {/if}
     {#if coop}<span class="team-now" data-kiki-team-now={rightNow}>{rightNow ? t('kiki.teamNow', { n: rightNow }) : t('kiki.teamNone')}</span>{/if}
@@ -54,14 +55,7 @@
   .verdict.ok p { color: var(--leaf-text); }
   .verdict b { font-family: var(--font-num); }
   .verdict .sym { font-size: 1.2em; }
-  /* 「いっぱつ！」: a stamp beside the +100, on its line (a row of its own left a gap over 解説); a badge, no points, tilted
-     like a rubber stamp; a cream sticker at any time of day (.obj-cream: the day coral) */
-  .bonus {
-    align-self: center; padding: 4px 12px; border-radius: 8px; rotate: -6deg; background: color-mix(in srgb, var(--c-yuzu) 55%, var(--c-card)); color: var(--coral-text);
-    box-shadow: inset 0 0 0 2px var(--c-coral); font: 700 var(--fs-s)/1.2 var(--font-ui); animation: pop-in 320ms var(--ease-bounce) 200ms both;
-  }
+  /* 一発 (frame/FirstStamp) sits beside the +100, on its line: a row of its own left a gap over 解説 */
   /* co-op: how many of us got it (never who) */
   .team-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
-  @keyframes pop-in { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
-  @media (prefers-reduced-motion: reduce) { .bonus { animation: none; } }
 </style>

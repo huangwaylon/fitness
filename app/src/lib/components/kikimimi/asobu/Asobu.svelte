@@ -28,7 +28,7 @@
             <span class="ic" aria-hidden="true">{m.icon}</span>
             <b>{t(`kiki.mode.${m.id}`)}</b>
             <small>{t(`kiki.modeSub.${m.id}`)}</small>
-            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span aria-label={t('kiki.chip.coop')}> · 👥</span>{/if}</span>
+            <span class="meta">{t('kiki.chip.mins', { n: m.mins })}{#if m.coop}<span aria-label={t('kiki.chip.coop')}> · 👥</span>{/if}{#if m.requires === 'mic'}<span aria-label={t('kiki.micGame')}> · 🎤</span>{/if}</span>
           </button>
         {/each}
       </div>

@@ -98,7 +98,7 @@ test('solo: the lobby, eight questions answered, the reveal, the results and the
   await expect(sheet(page).locator('[data-review]')).toHaveCount(1);
   await expect(sheet(page).locator('[data-review="3"]')).toHaveAttribute('data-ok', 'false');
   await expect(sheet(page).locator('[data-review="3"] [data-kiki-review-en]')).toBeVisible();
-  await expect(sheet(page).locator('[data-review="3"] [data-kiki-picked]')).toContainText('選んだ');
+  await expect(sheet(page).locator('[data-review="3"] [data-kiki-picked]')).toContainText('あなたの答え');
   await expect(sheet(page).locator('[data-kiki-hear="3"]')).toBeVisible();
   // a row folds and opens
   await sheet(page).locator('[data-kiki-row="3"]').click();

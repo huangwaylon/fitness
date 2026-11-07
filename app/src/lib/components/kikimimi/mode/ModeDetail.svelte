@@ -77,6 +77,7 @@
       {#if meta.qs && !meta.requires}<span class="tag">{t('kiki.chip.qs', { n: m === 'review' && due ? due : meta.qs })}</span>{/if}
       <span class="tag">{t('kiki.chip.mins', { n: meta.mins })}</span>
       {#if meta.coop}<span class="tag">👥 {t('kiki.chip.coop')}</span>{/if}
+      {#if meta.requires === 'mic'}<span class="tag">🎤 {t('kiki.micGame')}</span>{/if}
     </div>
   </div>
 

@@ -15,6 +15,9 @@
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import Why from '../frame/Why.svelte';
+  import ReviewRow from '../frame/ReviewRow.svelte';
+  import HearButton from '../frame/HearButton.svelte';
+  import Note from '../frame/Note.svelte';
   import OfficialArt from '../../characters/OfficialArt.svelte';
   import { villagerArt } from '#lib/art.ts';
   import { rosterName as name } from '../scene/stage.ts';
@@ -54,63 +57,38 @@
   const again = () => playAgain(game, 'call', onagain);
 </script>
 
-{#snippet top()}
-  <p class="errands"><span class="pill" data-kiki-call-errands={errands}>📞 {t('kiki.call.errands', { k: errands, n: calls.length })}</span></p>
-{/snippet}
+{#snippet more()}<span class="sub" data-kiki-call-errands={errands}>📞 {t('kiki.call.errands', { k: errands, n: calls.length })}</span>{/snippet}
 
-<ResultsFrame v={frameV} {tally} of={cards.length} {firsts} {line} {top} {ondone} onagain={again}>
+<ResultsFrame v={frameV} {tally} of={cards.length} {firsts} {line} {more} {ondone} onagain={again}>
   <ReviewList bind:missedOnly none={!shown.length}>
     <ul class="review">
       {#each shown as x (x.i)}
-        {@const open = opened.includes(x.i)}
-        <li class="item card" data-review={x.i} data-ok={x.ok} data-open={open}>
-          <button type="button" class="head" aria-expanded={open} data-kiki-row={x.i} data-sfx="tick" onclick={() => (opened = toggle(opened, x.i))}>
-            <span class="sym" class:ok={x.ok}><span aria-hidden="true">{x.ok ? '○' : '×'}</span><span class="sr-only">{x.ok ? t('kiki.right') : t('kiki.wrong')}</span></span>
-            <span class="who"><OfficialArt key={villagerArt(x.c.speaker, true)} alt="" size={32} /></span>
-            <span class="sum"><b>{name(x.c.speaker)}</b>{#if x.c.ctx}<span class="ctx">{x.c.ctx}</span>{/if}</span>
-            <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
-          </button>
-          {#if open}
-            <div class="txt" data-kiki-detail={x.i}>
-              <Basket tags={x.tags} />
-              {#if x.wrong.length}
-                <p class="picked" data-kiki-call-heard>{t('kiki.call.heard', { w: x.wrong.map((w) => `${w.put ?? '—'} → ${w.right}`).join('、') })}</p>
-              {/if}
-              {#if x.c.note}<p class="note" data-kiki-note>{x.c.note}</p>{/if}
-              {#each x.whys as w (w)}<Why text={w} />{/each}
-              <div class="hear">
-                <button type="button" class="ib tile-btn" aria-label={t('kiki.play')} data-kiki-hear={x.i} data-sfx="tick" onclick={() => game.hear(x.c)}>▶︎</button>
-                <button type="button" class="btn small paper" aria-expanded={logs.includes(x.i)} data-kiki-call-log-btn data-sfx="tick" onclick={() => (logs = toggle(logs, x.i))}>
-                  {logs.includes(x.i) ? t('kiki.call.logClose') : t('kiki.call.log')}
-                </button>
-              </div>
-              {#if logs.includes(x.i)}<CallLog info={x.c.call.info} />{/if}
-            </div>
+        <ReviewRow i={x.i} ok={x.ok} open={opened.includes(x.i)} ontoggle={() => (opened = toggle(opened, x.i))}>
+          {#snippet lead()}<span class="who"><OfficialArt key={villagerArt(x.c.speaker, true)} alt="" size={32} /></span>{/snippet}
+          {#snippet summary()}<b>{name(x.c.speaker)}</b>{#if x.c.ctx}<span class="ctx">{x.c.ctx}</span>{/if}{/snippet}
+          {#snippet hear()}
+            <HearButton data-kiki-hear={x.i} onclick={() => game.hear(x.c)} />
+            <button type="button" class="btn small paper" aria-expanded={logs.includes(x.i)} data-kiki-call-log-btn data-sfx="tick" onclick={() => (logs = toggle(logs, x.i))}>
+              {logs.includes(x.i) ? t('kiki.call.logClose') : t('kiki.call.log')}
+            </button>
+          {/snippet}
+          {#if logs.includes(x.i)}<CallLog info={x.c.call.info} />{/if}
+          <Basket tags={x.tags} />
+          {#if x.wrong.length}
+            <p class="picked" data-kiki-call-heard>{t('kiki.call.heard', { w: x.wrong.map((w) => `${w.put ?? '—'} → ${w.right}`).join('、') })}</p>
           {/if}
-        </li>
+          {#if x.c.note}<Note text={x.c.note} />{/if}
+          {#each x.whys as w (w)}<Why text={w} />{/each}
+        </ReviewRow>
       {/each}
     </ul>
   </ReviewList>
 </ResultsFrame>
 
 <style>
-  .errands { margin: 0; text-align: center; }
-  .pill { display: inline-block; padding: 6px 14px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); color: var(--text); font: 700 var(--fs-body)/1.3 var(--font-ui); }
   .review { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-  .item { display: grid; gap: 8px; padding: 0; }
-  .head {
-    appearance: none; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; width: 100%;
-    display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 10px; padding: 12px 14px; min-height: var(--hit);
-  }
-  .sym { font: 700 22px/1.2 var(--font-ui); color: var(--coral-text); }
-  .sym.ok { color: var(--leaf-text); }
   .who { line-height: 0; }
-  .sum { min-width: 0; display: grid; gap: 2px; font: 700 var(--fs-body)/1.35 var(--font-ui); }
+  .review b { font: 700 var(--fs-body)/1.35 var(--font-ui); }
   .ctx { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .chev { font: 700 var(--fs-s)/1.6 var(--font-ui); color: var(--text-soft); }
-  .txt { min-width: 0; display: grid; gap: 8px; padding: 0 14px 12px; }
   .picked { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--coral-text); }
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
-  .hear { display: flex; align-items: center; gap: 8px; }
-  .ib { width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center; font: 700 18px/1 var(--font-ui); }
 </style>

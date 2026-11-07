@@ -8,6 +8,7 @@
   // The reveal: ○ / × and my words right, the spoken shape over the written (the bubble's sound marks: should've →
   // shoulda) with the karaoke as it replays, the Japanese, the trap's note, each slot's word (○, or × with what was put
   // there: co-op the team's), then 解説 (`why`).
+  import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import type { TileCard } from '#lib/kikimimi/games/tile/def.ts';
   import { EMPTY } from '#lib/kikimimi/games/listened.ts';
@@ -107,7 +108,7 @@
           <span class="accent" data-accent={it.voice}>{t(`kiki.accent.${it.voice}`)}</span>
           {#if it.marks}<MarkLegend marks={it.marks} />{/if}
         </div>
-        {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+        {#if it.note}<Note text={it.note} />{/if}
       {:else}
         <p class="notes"><span aria-hidden="true">♪…</span><span class="sr-only">{t('kiki.listen')}</span></p>
         <ClipBar {bar} now={game.now} height={8} />
@@ -201,7 +202,6 @@
   .ja { margin: 0; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--c-ink-soft); position: relative; word-break: normal; line-break: strict; }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; position: relative; }
   .accent { padding: 3px 10px; border-radius: var(--r-pill); background: var(--c-mint); color: var(--c-ink); font: 700 var(--fs-s)/1.2 var(--font-ui); }
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); position: relative; padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
   .ctx { grid-column: 1 / -1; margin: 0; text-align: center; font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .hear { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; }
   .hint { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }

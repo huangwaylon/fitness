@@ -7,6 +7,7 @@
   // The reveal: ○ / × (+ the points against my ear), the combo, the right chip (○) and the pick (×), the one said before
   // a correction marked, what the customer said and its Japanese, the trap's note and 解説. A miss never ends the run:
   // the customer says it again.
+  import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { PASS, type RushCard } from '#lib/kikimimi/games/rush/def.ts';
   import { firstListen } from '#lib/kikimimi/score.ts';
@@ -118,7 +119,7 @@
   {/if}
 
   {#if reveal && !v.out}
-    {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+    {#if it.note}<Note text={it.note} />{/if}
     {#if it.why}<Why text={it.why} />{/if}
   {/if}
 {/snippet}
@@ -141,5 +142,4 @@
   .was { margin: 0; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--c-ink-soft); }
   .combo-now { padding: 4px 12px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--c-yuzu) 45%, var(--card)); color: var(--text); font: 700 var(--fs-s)/1.2 var(--font-ui); }
   .again { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
 </style>

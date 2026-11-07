@@ -11,6 +11,7 @@
   // After the first play, its lines replay one at a time (a chip per line: its number and face, text hidden till the
   // last reveal). The reveal: ○ / ×, the right faces and mine, 解説 (`why`); the conversation's last adds its note and the
   // whole transcript.
+  import Note from '../frame/Note.svelte';
   import type { QuizGame } from '../game.svelte.ts';
   import { EMPTY, rawOf } from '#lib/kikimimi/games/listened.ts';
   import { SHARED, facesOf, givenClaim, type TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
@@ -172,7 +173,7 @@
 
 {#snippet after()}
   {#if last && !v.out}
-    {#if it.note}<p class="note" data-kiki-note>{it.note}</p>{/if}
+    {#if it.note}<Note text={it.note} />{/if}
     <h3 class="script">{t('kiki.tachi.script')}</h3>
     <Transcript it={it} all={game.talk?.i === -1 && game.talk.at === it.id ? game.talk.all : []} clock={() => game.clock()} />
   {/if}
@@ -230,7 +231,6 @@
   .ln[data-on] { box-shadow: inset 0 0 0 3px var(--c-leaf); }
   .n { font: 700 var(--fs-s)/1 var(--font-num); }
 
-  .note { margin: 0; font: 700 var(--fs-s)/1.5 var(--font-ui); color: var(--c-ink); padding: 6px 10px; border-radius: 10px; background: color-mix(in srgb, var(--c-yuzu) 35%, var(--c-card)); }
   .script { margin: 4px 0 0; text-align: center; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
 
   @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-5px); } }

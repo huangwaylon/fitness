@@ -5,7 +5,7 @@
   "kiki.pair.hear": "{w}を聞く",
   "kiki.pair.try": "{n}回目",
   "kiki.pair.tip": "コツ",
-  "kiki.pair.skip": "とばす",
+  "kiki.pair.skip": "飛ばす",
   "kiki.pair.private": "録音はこのiPhoneの中だけ。保存も送信もされません",
   "kiki.pair.readying": "マイクを準備しています…",
   "kiki.pair.react.right": "{kana}！ ばっちり つうじたよ！",
@@ -13,14 +13,14 @@
   "kiki.pair.react.unsure": "うーん、 どっちかな？",
   "kiki.pair.react.none": "あれ？ こえが きこえなかったよ",
   "kiki.pair.react.skip": "また こんど いってみてね",
-  "kiki.pair.once": "もう一回。言う単語のコツを見てみよう",
+  "kiki.pair.once": "もう一度。言う単語のコツを見てみよう",
   "kiki.pair.unsure": "判定が難しいときは、聞いて選んでね。言えたと思う方をタップ",
   "kiki.pair.self": "このiPhoneでは聞き取りが使えません。声に出してから、言えたと思う方をタップ",
   "kiki.pair.miss": "うまく聞き取れませんでした。言えたと思う方をタップ",
-  "kiki.pair.none": "声が聞こえませんでした。マイクに近づいて、もう一回",
+  "kiki.pair.none": "声が聞こえませんでした。マイクに近づいて、もう一度どうぞ",
   "kiki.pair.verdict.right": "通じた！",
   "kiki.pair.verdict.wrong": "「{w}」に聞こえたみたい",
-  "kiki.pair.verdict.skip": "今回はとばしました",
+  "kiki.pair.verdict.skip": "今回は飛ばしました",
   "kiki.pair.how": "口の形と使い方",
   "kiki.pair.coop.say": "あなたが言う番",
   "kiki.pair.coop.sayHint": "相手に聞こえるように、はっきり声に出して",
@@ -32,5 +32,5 @@
   "kiki.pair.score": "通じた {k} / {n}",
   "kiki.pair.host": "おつかれさま！ くちの かたちを いしきしてね",
   "kiki.pair.cards": "言った単語",
-  "kiki.pair.row": "記録されるのは遊んだ時間だけです"
+  "kiki.pair.row": "記録には遊んだ時間だけが残ります"
 }

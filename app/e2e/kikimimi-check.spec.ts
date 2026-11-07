@@ -83,7 +83,7 @@ test('the first run: welcome, the sound check, みみ チェック to its result
   await expect(placed).toHaveAttribute('data-kiki-placed', 'mori');
   await expect(sheet(page).locator('[data-kiki-placed-say]')).toHaveText('もりから はじめましょう！');
   await expect(placed.locator('li.on')).toHaveAttribute('data-stage', 'mori');
-  await expect(placed).toContainText('この結果はあなただけに見えます。');
+  await expect(placed).toContainText('この結果はあなたにだけ見えます。');
   await snap(page, 'placed');
   // its row: the game 'check', the placed level, a digit a skill
   const row = await page.evaluate(() => (window as unknown as { __kiki: { recorded(): { gm?: string; lv: number; u?: string; r: unknown[] } | null } }).__kiki.recorded());

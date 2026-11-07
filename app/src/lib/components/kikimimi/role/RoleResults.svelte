@@ -10,7 +10,10 @@
   import { partsOf, saidAt } from './board.ts';
   import { playAgain } from '../listenView.ts';
   import Transcript from '../Transcript.svelte';
-  import Bubble from '../../ui/Bubble.svelte';
+  import ResultsShell from '../frame/ResultsShell.svelte';
+  import ScoreCard from '../frame/ScoreCard.svelte';
+  import LineRow from '../frame/LineRow.svelte';
+  import HearButton from '../frame/HearButton.svelte';
   import { t } from '#lib/i18n/index.ts';
 
   let { game, onagain, ondone }: { game: QuizGame; onagain: () => void; ondone: () => void } = $props();
@@ -29,22 +32,17 @@
   const again = () => playAgain(game, 'role', onagain);
 </script>
 
-<div class="results" data-kiki-results data-role-results>
-  <Bubble text={line} host="wave" size={64} />
-  <div class="team card" data-role-team={said} data-role-of={of}>
-    <b>{of ? t('kiki.role.team', { k: said, n: of }) : t('kiki.role.teamNone')}</b>
-    <small>🔒 {t('kiki.role.rowNote')}</small>
-  </div>
+<ResultsShell {line} {ondone} onagain={again} data-role-results>
+  <ScoreCard data-role-team={said} data-role-of={of} note={t('kiki.role.rowNote')}>
+    <b class="big">{of ? t('kiki.role.team', { k: said, n: of }) : t('kiki.role.teamNone')}</b>
+  </ScoreCard>
 
   {#if rows.length}
     <section class="sec" aria-labelledby="kr-list">
       <h3 id="kr-list" class="sec-label">{t('kiki.role.list')}</h3>
       <ul class="list">
         {#each rows as r (`${r.i}:${r.k.ph}`)}
-          <li class="row card" data-role-said={r.k.ph} data-ok={r.ok}>
-            <span class="sym" aria-hidden="true">{r.ok ? '✓' : '・'}</span>
-            <span class="txt"><b lang="en">{r.k.en}</b><small>{r.k.ja}</small></span>
-          </li>
+          <LineRow data-role-said={r.k.ph} data-ok={r.ok} sym={r.ok ? '✓' : '・'} tone={r.ok ? 'ok' : 'soft'} en={r.k.en} ja={r.k.ja} />
         {/each}
       </ul>
     </section>
@@ -56,35 +54,18 @@
       <div class="model card" data-role-model={j}>
         <div class="mh">
           <span>{t('kiki.role.part', { k: j + 1 })}{p.card.ctx ? `・${p.card.ctx}` : ''}</span>
-          <button type="button" class="ib tile-btn" aria-label={t('kiki.role.hear')} data-role-hear={j} data-sfx="tick" onclick={() => game.hear(p.card)}>▶︎</button>
+          <HearButton data-role-hear={j} onclick={() => game.hear(p.card)} />
         </div>
         <Transcript it={p.card} talk={game.talk?.i === -1 && game.talk.at === p.card.id ? game.talk.k : -1} from={game.talk?.from ?? null} clock={() => game.clock()} compact />
       </div>
     {/each}
   </section>
-</div>
-
-<div class="level-acts">
-  <button type="button" class="btn paper" data-kiki-done data-sfx="back" onclick={ondone}>{t('kiki.done')}</button>
-  <button type="button" class="btn" data-kiki-again data-sfx="confirm" onclick={again}>{t('kiki.again')}</button>
-</div>
+</ResultsShell>
 
 <style>
-  .results { display: grid; gap: 14px; }
-  .results :global(.bubble) { margin-bottom: 0; }
-  .team { display: grid; justify-items: center; gap: 4px; padding: 14px 16px; text-align: center; background: color-mix(in srgb, var(--c-leaf) 30%, var(--card)); }
-  .team b { font: 700 var(--fs-title)/1.2 var(--font-ui); color: var(--text); }
-  .team small { font: 700 var(--fs-s)/1.45 var(--font-ui); color: var(--text-soft); }
   .sec { display: grid; gap: 8px; }
   .sec-label small { display: block; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-  .row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px; padding: 8px 12px; }
-  .sym { font: 700 20px/1.2 var(--font-ui); color: var(--text-soft); }
-  .row[data-ok='true'] .sym { color: var(--leaf-text); }
-  .txt { display: grid; gap: 1px; min-width: 0; }
-  .txt b { font: 700 var(--fs-body)/1.35 var(--font-ui); color: var(--text); }
-  .txt small { font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
+  .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
   .model { display: grid; gap: 8px; padding: 10px 12px; }
   .mh { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 700 var(--fs-s)/1.4 var(--font-ui); color: var(--text-soft); }
-  .ib { flex: none; width: var(--hit); height: var(--hit); border-radius: 50%; display: grid; place-items: center; font: 700 18px/1 var(--font-ui); }
 </style>

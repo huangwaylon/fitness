@@ -18,7 +18,7 @@
   "kiki.call.me": "あなた",
   "kiki.call.repair": "言い直し",
   "kiki.call.drop": "途切れた",
-  "kiki.call.heard": "聞き違えた: {w}",
+  "kiki.call.heard": "聞き違えた：{w}",
   "kiki.call.errands": "用事 {k} / {n} 件 完了",
   "kiki.call.host.all": "ようじ ぜんぶ かんりょう！ でんわでも ばっちり ききとれましたね！",
   "kiki.call.host.some": "いいなおしも だいぶ つかめて きましたね！",
