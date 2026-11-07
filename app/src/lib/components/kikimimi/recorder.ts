@@ -2,7 +2,7 @@
 // this phone's history (recent.ts) and my answers as a `listen` row (contract/listen.ts), once.
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import { localDateAt } from '#lib/contract/tokyo.ts';
-import type { ListenRow } from '#lib/contract/listen.ts';
+import { minutesOnly, type ListenRow } from '#lib/contract/listen.ts';
 import { listenAnswers } from '#lib/kikimimi/progress.ts';
 import { lessonL, stageLevel, type Lesson, type UnitPlay } from '#lib/kikimimi/lesson.ts';
 import { taikaiRow, tierLevel, type Trophy } from '#lib/kikimimi/games/taikai/def.ts';
@@ -59,7 +59,8 @@ export class GameRecorder {
     // a lane's game whose answers aren't choices: its own record, its game on the row
     const own = LANES.of(v.gm)?.record;
     const r = own ? own(v, itemsOf(v), this.#rp, done) : listenAnswers(itemsOf(v), v.answers, v.had, this.#rp, done);
-    if (!r.length) return null;
+    // (a mic game's: my minutes only, its `r` empty)
+    if (!r.length && !(own && minutesOnly(v.gm ?? undefined))) return null;
     this.#recordedG = v.g;
     if (v.gm === 'check') return { d: localDateAt(now), g: v.g, n: 1, ms: this.#ms(now), r, ...checkRow(checkPlacement(r)) };
     // a unit's lesson: its unit and lesson (the stamps, stamps.ts), the stage's level; co-op, the team's first listens (§10)

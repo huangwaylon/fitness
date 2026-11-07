@@ -11,6 +11,8 @@ export interface Mic {
   readonly vad: VadState;
   /** The take's cap was reached. */
   readonly full: boolean;
+  /** When what stop() returned began, on the context's clock (s; まねっこ's lag against the clip it played). */
+  readonly at?: number;
   /** The track released and the graph torn down: the speech (16 kHz, with a little air; null: none was heard). */
   stop(): Float32Array | null;
 }
@@ -41,9 +43,11 @@ export async function openMic(ctx: AudioContext, o: { maxS: number; frame?: (v: 
     throw e;
   }
   const to16 = new To16k(ctx.sampleRate), pcm = new Pcm(Math.ceil(o.maxS * SR)), vad = new Vad();
-  let open = true;
+  let open = true, t0 = NaN, from = 0;
   node.port.onmessage = (e: MessageEvent<Float32Array>) => {
     if (!open) return;
+    // the first block's start: the clock now, less the block (it was captured just before it came)
+    if (Number.isNaN(t0)) t0 = ctx.currentTime - e.data.length / ctx.sampleRate;
     const x = to16.push(e.data);
     pcm.push(x);
     o.frame?.(vad.push(x));
@@ -52,6 +56,9 @@ export async function openMic(ctx: AudioContext, o: { maxS: number; frame?: (v: 
     vad: vad.state,
     get full() {
       return pcm.full;
+    },
+    get at() {
+      return t0 + from / SR;
     },
     stop() {
       if (!open) return null;
@@ -63,6 +70,7 @@ export async function openMic(ctx: AudioContext, o: { maxS: number; frame?: (v: 
       mute.disconnect();
       tracks();
       const span = speechSpan(vad.state, pcm.length);
+      from = span?.[0] ?? 0;
       return span ? pcm.slice(...span) : null;
     }
   };
