@@ -25,10 +25,20 @@ const hidden = (el: Element) => getComputedStyle(el).getPropertyValue('--art3d')
  *  m3on / m3off, a node's data-m3). */
 export function artGate(on: () => boolean, root: () => Element | undefined): ArtGate {
   const waiting = new Map<Element, () => void>();
+  /** What changed since the last look (a mutation's target, a new art): only the art in or under one is looked at
+   *  again. The art the 3D island draws waits for good, and the island's nodes change class many times a second
+   *  while the camera moves: a computed style for every waiting art each time forced a style pass (and a layout)
+   *  per frame of a pinch. */
+  const changed = new Set<Node>();
   let mo: MutationObserver | null = null, frame = 0;
   const check = () => {
     frame = 0;
-    for (const [el, open] of waiting) if (!el.isConnected || !hidden(el)) (waiting.delete(el), el.isConnected && open());
+    const at = [...changed];
+    changed.clear();
+    for (const [el, open] of waiting) {
+      if (!el.isConnected) waiting.delete(el);
+      else if (at.some((n) => n === el || n.contains(el)) && !hidden(el)) (waiting.delete(el), open());
+    }
     if (!waiting.size) (mo?.disconnect(), (mo = null));
   };
   const soon = () => {
@@ -40,9 +50,13 @@ export function artGate(on: () => boolean, root: () => Element | undefined): Art
     },
     hold(el, open) {
       waiting.set(el, open);
+      changed.add(el);
       const r = root();
       if (!mo && r && typeof MutationObserver !== 'undefined') {
-        mo = new MutationObserver(soon);
+        mo = new MutationObserver((rs) => {
+          for (const m of rs) changed.add(m.target);
+          soon();
+        });
         mo.observe(r, { subtree: true, attributes: true, attributeFilter: ['class', 'data-m3', 'data-r3'] });
       }
       // (the first look a frame on: the node's data-m3 and Island3D's m3on land after the art mounts)

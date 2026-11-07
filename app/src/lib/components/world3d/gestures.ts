@@ -24,6 +24,9 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
   const pts = new Map<number, { x: number; y: number }>();
   let mode: 'none' | 'tap' | 'pan' | 'pinch' = 'none';
   let t0 = 0, start = { x: 0, y: 0 }, startZ = 0, startK = 1, startX: number | undefined, pinchD = 0;
+  /** The scene's corner on screen, read once a pinch starts: a read on each move forced a style and layout pass
+   *  right after the frame's writes (the camera's nodes), every move of a pinch. */
+  let top = 0, left = 0;
   let trail: { x: number; y: number; t: number }[] = [];
   let swallowUntil = 0;
   const skip = (e: PointerEvent) => !o.enabled() || (e.target instanceof Element && !!e.target.closest('[data-nopan], input, textarea, select'));
@@ -50,6 +53,8 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
       if (mode === 'pan' && e.timeStamp - t0 < PINCH_JOIN_MS) cam.go(startZ, startK, false, startX);
       mode = 'pinch';
       pinchD = dist();
+      top = o.top();
+      left = o.left?.() ?? 0;
     }
   }
   const dist = () => {
@@ -66,7 +71,7 @@ export function attachGestures(el: HTMLElement, cam: Cam, o: { enabled: () => bo
       if (pts.size < 2) return;
       const d = dist();
       const [a, b] = [...pts.values()];
-      if (pinchD > 0 && d > 0) cam.zoom(d / pinchD, (a.y + b.y) / 2 - o.top(), (a.x + b.x) / 2 - (o.left?.() ?? 0));
+      if (pinchD > 0 && d > 0) cam.zoom(d / pinchD, (a.y + b.y) / 2 - top, (a.x + b.x) / 2 - left);
       pinchD = d;
       e.preventDefault();
       return;

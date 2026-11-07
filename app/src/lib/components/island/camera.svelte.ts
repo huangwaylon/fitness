@@ -194,6 +194,11 @@ const depthAt = (x: number, z: number): number => zIndexAt(z, x, PLAN.z1);
 /** Another player's sound: heard this far off screen (px), and this loud at the view's edge (docs/sound-sync.md). */
 const EAR_PAD = 60;
 const EAR_FAR = 0.35;
+/** A node's `--inv` (its tap area's least size against its scale) moves in steps of this much (log scale), rounded up
+ *  (never a size under its least): a change of the custom property restyles the node's whole subtree and re-lays its
+ *  tap areas, and the perspective moves every node's scale a little each frame the camera moves. */
+const INV_STEP = Math.log(1.03);
+const invOf = (x: number): string => Math.exp(Math.ceil(Math.log(x) / INV_STEP - 1e-9) * INV_STEP).toFixed(3);
 
 export class World {
   /** The hot state (read every frame). `s` = CSS px per unit (vw / 390); camZ: the 3D camera's z (Island3D writes it in
@@ -368,10 +373,10 @@ export class World {
     if (n.op) n.el.style.opacity = n.op = '';
     if (n.clip) n.el.style.clipPath = n.clip = '';
     if (n.inv) {
-      const iv = (1 / k).toFixed(3);
+      const iv = invOf(1 / k);
       if (iv !== n.invS) n.el.style.setProperty('--inv', (n.invS = iv));
       // (a model's node is squashed upright: its true px up there, for a tap area's least height)
-      const iy = n.model ? (1 / ky).toFixed(3) : '';
+      const iy = n.model ? invOf(1 / ky) : '';
       if (iy !== n.invY) n.el.style.setProperty('--inv-y', (n.invY = iy) || null);
     }
   }
