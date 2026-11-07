@@ -342,6 +342,6 @@ Every game is a **lane** in `kikimimi/round/registry.ts`. The quiz, ladder, less
 3. **Byte budget creep** (`open` at about 197 B). Mitigation: size tests per op at worst case; `ids` capped at 8; extend through `o` and `ev`.
 4. **Evicting a pack mid-game.** Mitigation: never evict one used in the last 10 minutes; a missing pack refetches (a failed fetch is a silent clip).
 5. **Audio outgrowing the repo** until W2-R: each batch raises bank.test's lines; the user's R2 step unblocks the real fix (§6).
-6. **The listening check** is the content bottleneck (curriculum §13): the gate flags clips for the user's ear (docs/kikimimi.md "Audio").
+6. **The listening check** is the content bottleneck (curriculum §13): the gate flags clips for the user's ear, listed in curriculum-wave2.md §4.1.
 
 Retired: the extraction's regressions (parity held, 8b), conflicts with increments 6 and 7 (landed first), slicing m4a in WebKit (the spike passed), lazy content vs a sync deal (chunkQueue), schema drift (`schema: 1`, drafts compile without audio).
