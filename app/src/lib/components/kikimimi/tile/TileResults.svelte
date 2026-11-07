@@ -10,7 +10,7 @@
   import { tileOk, slotOk, type TileCard } from '#lib/kikimimi/games/tile/def.ts';
   import { firstListen } from '#lib/kikimimi/score.ts';
   import { boardFor, mySlots } from './board.ts';
-  import { isCoop } from '../listenView.ts';
+  import { isCoop, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import Why from '../frame/Why.svelte';
@@ -45,14 +45,7 @@
   const shown = $derived(rows.filter((r) => !missedOnly || !r.ok));
   const playing = (c: TileCard) => (game.sounding && game.sounding.i === -1 && game.sounding.at === c.id ? game.sounding.from : null);
 
-  /** もういっかい: a new deal of this game at its place (the host's; solo it starts at once). */
-  function again() {
-    const host = v.amHost, solo = v.local, lv = v.lv, timer = v.timer;
-    onagain();
-    if (!host) return;
-    game.setGame('tile', { lv, timer });
-    if (solo) game.go();
-  }
+  const again = () => playAgain(game, 'tile', onagain);
 </script>
 
 <ResultsFrame v={frameV} {tally} of={cards.length} {firsts} {line} {ondone} onagain={again}>

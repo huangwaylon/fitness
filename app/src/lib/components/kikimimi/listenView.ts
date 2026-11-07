@@ -1,7 +1,9 @@
 // What the listening games' pages share (ことば タイル, たちぎき, ようじ でんわ: games/listened.ts): whether it's co-op,
-// my role, whether I'm on easy, an empty answer.
+// my role, whether I'm on easy, an empty answer, もういっかい.
 import type { Who } from '#lib/types.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
+import type { GameId } from '#lib/kikimimi/round/types.ts';
+import type { QuizGame } from './game.svelte.ts';
 import { EMPTY, listenOpts, tierAt } from '#lib/kikimimi/games/listened.ts';
 
 /** Co-op: several players, not たいせん (the listening games have none). */
@@ -18,3 +20,12 @@ export function easy(v: Pick<QuizView, 'o'>): boolean {
 
 /** An empty answer (every slot or row EMPTY). */
 export const blank = (n: number): number[] => Array.from({ length: n }, () => EMPTY);
+
+/** もういっかい: a new deal of this game at its place (the host's; solo it starts at once; another back to the invite). */
+export function playAgain(game: Pick<QuizGame, 'view' | 'setGame' | 'go'>, gm: GameId, onagain: () => void): void {
+  const v = game.view, host = v.amHost, solo = v.local, lv = v.lv, timer = v.timer;
+  onagain();
+  if (!host) return;
+  game.setGame(gm, { lv, timer });
+  if (solo) game.go();
+}

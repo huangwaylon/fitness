@@ -9,7 +9,7 @@
   import { EMPTY, rawOf } from '#lib/kikimimi/games/listened.ts';
   import type { TachiCard } from '#lib/kikimimi/games/tachi/def.ts';
   import { okFor } from './board.ts';
-  import { isCoop } from '../listenView.ts';
+  import { isCoop, playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import Why from '../frame/Why.svelte';
@@ -50,14 +50,7 @@
   const shown = $derived(convs.filter((c) => !missedOnly || !c.all));
   const playing = (c: TachiCard) => (game.talk && game.talk.i === -1 && game.talk.at === c.id ? game.talk.all : []);
 
-  /** もういっかい: a new deal of this game at its place (the host's; solo it starts at once). */
-  function again() {
-    const host = v.amHost, solo = v.local, lv = v.lv, timer = v.timer;
-    onagain();
-    if (!host) return;
-    game.setGame('tachi', { lv, timer });
-    if (solo) game.go();
-  }
+  const again = () => playAgain(game, 'tachi', onagain);
 </script>
 
 <ResultsFrame v={frameV} {tally} of={cards.length} firsts={0} {line} {ondone} onagain={again}>

@@ -11,6 +11,7 @@
   import { basketOf, myRows, roundFor, whyOf } from './board.ts';
   import Basket from './Basket.svelte';
   import CallLog from './CallLog.svelte';
+  import { playAgain } from '../listenView.ts';
   import ResultsFrame from '../frame/Results.svelte';
   import ReviewList from '../frame/ReviewList.svelte';
   import Why from '../frame/Why.svelte';
@@ -50,14 +51,7 @@
   const toggle = (list: number[], i: number) => (list.includes(i) ? list.filter((x) => x !== i) : [...list, i]);
   const shown = $derived(calls.filter((x) => !missedOnly || !x.ok));
 
-  /** もういっかい: a new deal of this game at its place (the host's; solo it starts at once). */
-  function again() {
-    const host = v.amHost, solo = v.local, lv = v.lv, timer = v.timer;
-    onagain();
-    if (!host) return;
-    game.setGame('call', { lv, timer });
-    if (solo) game.go();
-  }
+  const again = () => playAgain(game, 'call', onagain);
 </script>
 
 {#snippet top()}
