@@ -17,7 +17,7 @@ import { points } from '../../score.ts';
 import type { AnswerValue, Graded, Round, RoundDeck, RoundWindows } from '../../round/types.ts';
 import { QUIZ_MAX_S, QUIZ_QS } from '../../../contract/live-protocol.ts';
 import { PLAY_UNKNOWN, QUIZ_KINDS, roundOf } from '../quiz/kinds.ts';
-import { EARS, placeOf, rawOf, type ListenOpts, type ListenRules } from '../listened.ts';
+import { EARS, listenRecord, placeOf, rawOf, type ListenOpts, type ListenRules } from '../listened.ts';
 import { TILE, tileDeal } from '../tile/def.ts';
 import { CALL, callDeal } from '../call/def.ts';
 import { TACHI, tachiDeal } from '../tachi/def.ts';
@@ -125,7 +125,4 @@ export function rightAt(items: readonly Item[], rounds: readonly Round[], i: num
 
 /** A card's round as my `listen` row's answer (contract/listen.ts): its round's id, right or not, its game's pick (-1:
  *  none, or not valid), my replays. */
-export function cardAnswer(r: Round, a: AnswerValue | null, rp: number): ListenRow['r'][number] {
-  const k = kindOf(r)!, valid = a !== null && RULES[k].valid(r, a);
-  return [r.id, valid && RULES[k].ok(r, a) ? 1 : 0, valid ? RULES[k].pick(r, a) : -1, Math.min(99, rp)];
-}
+export const cardAnswer = (r: Round, a: AnswerValue | null, rp: number): ListenRow['r'][number] => listenRecord(RULES[kindOf(r)!], [r], [a], [true], [rp], true)[0];
