@@ -8,7 +8,7 @@ import {
   type FoodEntry, type FoodSnap, type RepeatItem
 } from '#lib/contract/food.ts';
 import type { Recipe } from '#lib/model/food.ts';
-import { itemById, loadFoodDb, portionsOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
+import { itemById, loadFoodDb, portionsOf, unitOf, type FoodDb, type Item, type Portion } from '#lib/food/index.ts';
 import { loadFoodImages, type FoodImageIndex } from '#lib/food/images.ts';
 import { searchKey } from '#lib/food/text.ts';
 import { formatNum, t } from '#lib/i18n/index.ts';
@@ -45,8 +45,6 @@ export const gramsText = (g: number): string => String(Math.round(g * 10) / 10);
 /** Whether a portion label already says its weight (「1枚(60g)」, 「200ml」): no second （Ng） after it. */
 export const hasWeight = (label: string): boolean => /\d\s*(g|ml|グラム)/i.test(label.normalize('NFKC'));
 
-/** A portion label's measure: ml for a drink's (「中ジョッキ（350ml）」, 「200ml」), else g. */
-export const unitOf = (label: string | null | undefined): 'g' | 'ml' => (label && /\d\s*ml|ミリリットル/i.test(label.normalize('NFKC')) ? 'ml' : 'g');
 
 /** A label's own weight in brackets (「（110g）」, 「(350ml)」), dropped when a ×n makes it wrong. */
 const OWN_WEIGHT = /[（(][^（）()]*\d\s*(g|ml|グラム)[^（）()]*[）)]/gi;
@@ -89,11 +87,11 @@ export const catalogOf = itemById;
 export const catOf = (db: FoodDb | null, id: string): string | undefined => catalogOf(db, id)?.cat ?? (/^c[0-9a-z]+$/.test(id) ? 'レシピ' : undefined);
 
 /** A name's head: up to its first space or bracket (「鶏もも肉 皮つき 生」 → 鶏もも肉). */
-const headOf = (s: string): string => s.trim().split(/[\s　（(［[]/)[0];
+const nameHead = (s: string): string => s.trim().split(/[\s　（(［[]/)[0];
 /** Whether a name says something the shown one doesn't: not it or a part of it, nor holding its head (生うどん), nor
  *  mostly the head's own characters (焼鮭 beside 焼き鮭). */
 function says(a: string, name: string): boolean {
-  const k = searchKey(a), nk = searchKey(name), hk = searchKey(headOf(name));
+  const k = searchKey(a), nk = searchKey(name), hk = searchKey(nameHead(name));
   if (!k || nk.includes(k) || (hk && k.includes(hk))) return false;
   return [...k].filter((c) => hk.includes(c)).length * 2 < k.length;
 }
@@ -102,7 +100,7 @@ function says(a: string, name: string): boolean {
  *  name when the row shows an older one (a snapshot's 「若どり もも 皮つき 生」 → 鶏もも肉), else the food data's vetted
  *  `gloss`, else nothing. `it` is the catalog's item (or the row's own), `name` what the row shows. */
 export function glossOf(it: Item, name = it.name): string | null {
-  const now = headOf(it.name);
+  const now = nameHead(it.name);
   if (name !== it.name && says(now, name)) return now;
   return it.gloss && says(it.gloss, name) ? it.gloss : null;
 }
@@ -228,17 +226,6 @@ export function defaultPortion(it: Item): { label: string; kcal: number } {
   const w = `${gramsText(p.g)}${ps.some((q) => unitOf(q.label) === 'ml') ? 'ml' : 'g'}`;
   const base = bareLabel(p.label);
   return { label: !base || /^\d+(\.\d+)?\s*(g|ml)$/i.test(base.normalize('NFKC')) ? w : `${base} ${w}`, kcal: Math.round((it.kcal * p.g) / 100) };
-}
-
-/** The search's rows with the true duplicates gone (the same name, brand and kcal: the products' copies of one). */
-export function uniqueItems(items: readonly Item[]): Item[] {
-  const seen = new Set<string>();
-  return items.filter((it) => {
-    const k = `${it.name}\u0001${it.brand ?? ''}\u0001${it.kcal}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
 }
 
 /** The day's kcal against the goal, in words and tone: today 「あと N kcal」 / 「N kcal オーバー」, a past day

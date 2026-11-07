@@ -3,7 +3,7 @@
   // tap: Food's openSearch), then さいきん (my latest entry of each food, as I last had it, its portion with it) until
   // something is typed, or the catalog's best matches (each: its category's tile (FoodThumb), the name, a product's
   // brand, its everyday name (glossOf; a food in its states: then its states after a wide space), a food in its states once (its name without the state, the state shown filled
-  // and the others after it: 「(生) 焼き ゆで」, past four 「ほか N」), its default portion's kcal, ✓n when n independent sources agree on it; the same name, brand and kcal shown once). The
+  // and the others after it: 「(生) 焼き ゆで」, past four 「ほか N」), its default portion's kcal, ✓n when n independent sources agree on it; one row per name and kcal: search.ts, a brand's copy of another's too). The
   // catalog not loading (offline): もういちど, and さいきん still under it (they need no catalog). Japanese IME-safe: half-composed text (「なt」) is
   // never searched; the search runs on each committed change. A row opens the amount. From a meal's ＋, マイレシピ
   // too (everyone's recipes: all of them after さいきん, the matching ones before the catalog's); a recipe opens its own.
@@ -18,14 +18,14 @@
   import type { Who } from '#lib/types.ts';
   import type { FoodCustom, FoodEntry } from '#lib/contract/food.ts';
   import type { Recipe } from '#lib/model/food.ts';
-  import { searchFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
+  import { entryKcal, searchFoods, variantsOf, verifyOf, type FoodDb, type Item } from '#lib/food/index.ts';
   import { searchKey } from '#lib/food/text.ts';
   import { formatNum, t } from '#lib/i18n/index.ts';
   import { kcalText } from '../kiroku/fmt.ts';
   import { imgOf, type FoodImageIndex } from '#lib/food/images.ts';
   import FoodThumb from './FoodThumb.svelte';
   import NavButton from '../ui/NavButton.svelte';
-  import { amountText, catalogOf, catOf, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, uniqueItems, withImages } from './foodUi.ts';
+  import { amountText, catalogOf, catOf, defaultPortion, stemName, foodDb, glossOf, itemOf, servingText, typedKcal, withImages } from './foodUi.ts';
 
   interface Props {
     /** My recent entries (recentOf). */
@@ -92,7 +92,7 @@
   const kcalTyped = $derived(onquicknew ? typedKcal(q) : null);
   const results = $derived.by(() => {
     void more;
-    return db && q.trim() ? uniqueItems(searchFoods(db, q, 40)) : [];
+    return db && q.trim() ? searchFoods(db, q, 40) : [];
   });
   /** The rows drawn: the first FIRST of a new query (a keystroke's frame, about six over the keyboard), the rest once the
    *  list's end nears the screen (`more`'s sentinel). */
@@ -195,7 +195,7 @@
           <li data-added={e.id}>
             <span class="nm">{e.f.n}</span>
             <small class="meta">{amountText(e)}</small>
-            <b class="kc money">{kcalText(Math.round((e.f.k * e.g) / 100))}</b>
+            <b class="kc money">{kcalText(entryKcal(e))}</b>
             <span class="un"><NavButton kind="close" label={t('food.unadd', { name: e.f.n })} sfx="undo" data-unadd={e.id} onclick={() => onunadd?.(e)} /></span>
           </li>
         {/each}
@@ -244,7 +244,7 @@
           <FoodThumb cat={catOf(db, e.f.id)} img={imgOf(imgs, e.f.id, 48)} />
           <span class="nm">{e.f.n}</span>
           <small class="meta"><span>{amountText(e)}</span>{#if gl}{' · '}<span class="gl" data-gloss>{gl}</span>{/if}</small>
-          <b class="kc money">{kcalText(Math.round((e.f.k * e.g) / 100))}</b>
+          <b class="kc money">{kcalText(entryKcal(e))}</b>
         </button>{#if onquick}{@render qa(e.f.n, () => onquick(itemOf(e.f, db, e.g), e.g, e.f.u, e.f))}{/if}</li>
       {/each}
     </ul>
