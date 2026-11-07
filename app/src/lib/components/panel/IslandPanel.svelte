@@ -69,7 +69,7 @@
   });
 </script>
 
-<Sheet bind:open label={t('wallet.title')} variant="top" onclose={closed}>
+<Sheet bind:open label={t('wallet.title')} variant="top" onclose={closed} timed="panel">
   <div class="titlebar"><NavBar title={date ? dayTitle(date) : t('wallet.title')} onback={date ? back : null} onclose={() => (open = false)} sfx="self" /></div>
 
   <div class="panel-body" bind:this={body}>

@@ -1,12 +1,13 @@
 <script lang="ts">
   // The health popup (docs/design.md "Kenkou"): the HUD's dumbbell opens it, full height like the island panel, but
   // grown out of the button (Sheet's `pop`: a live CSS zoom about the dumbbell, no View Transition). Its title bar
-  // (whose data, けんこう, ✕) over one scroller holding けんこう (Health.svelte, its own chunk with
-  // its strings). ✕, the backdrop and Esc close it; the next opening starts at 1週 on かつどう (whose data is kept for
+  // (whose data, けんこう, ✕) over one scroller holding けんこう (Health.svelte, in this chunk: the
+  // first frame of the zoom has it). ✕, the backdrop and Esc close it; the next opening starts at 1週 on かつどう (whose data is kept for
   // the session).
   import type { Snippet } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
+  import Health from './Health.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
@@ -14,9 +15,6 @@
   import { resetHealth } from './healthLast.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
-  /** けんこう's code: its own chunk, fetched on the first opening. */
-  let healthChunk: Promise<typeof import('./Health.svelte')> | null = null;
-  const loadHealth = () => (healthChunk ??= import('./Health.svelte'));
   /** Whose data's pill (Health's), left of the title. */
   let lead = $state<Snippet | null>(null);
 
@@ -35,11 +33,11 @@
   });
 </script>
 
-<Sheet bind:open label={t('title.health')} variant="pop" onclose={closed}>
+<Sheet bind:open label={t('title.health')} variant="pop" onclose={closed} timed="health">
   <div class="titlebar"><NavBar title={t('title.health')} {lead} onclose={() => (open = false)} sfx="self" /></div>
   <div class="hs-body" data-health-sheet>
     {#if week.view}
-      {#await loadHealth() then { default: Health }}<Health bind:lead />{/await}
+      <Health bind:lead />
     {/if}
   </div>
 </Sheet>

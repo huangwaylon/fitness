@@ -171,6 +171,11 @@
   const onIsland = (id: VillagerActor): boolean => id === 'mine' || whoOf(id) !== 'G' || hereNow.includes('G');
 
   const covered = $derived(paused || ui.overlay || quiz.open);
+  /** Its CSS (data-covered, data-sheet: every animation held, the island hidden): under a sheet only once the sheet is
+   *  up (its open animation done, ui.up), not in the tap's frame, where restyling the island's 600 elements held up the
+   *  sheet's first frame (docs/perf-plan.md A6). (data-sheet: never for ききみみ's alone, whose sheet is in the scene
+   *  and animates.) */
+  const up = $derived(ui.up.length > 0);
   // The island in 3D (world3d/Island3D.svelte: its own chunk with three.js); the DOM island runs over its canvas as the
   // taps and the overlays. No WebGL (failed3): the island's message instead (never on the users' iPhones).
   let failed3 = $state(false);
@@ -1138,7 +1143,7 @@
 </script>
 
 <div class="if-scene scene" bind:this={sceneEl} data-r3={r3 || undefined} data-decorating={decorating || undefined} data-season={season} data-tod={tod} data-sky={weather.sky} data-paused={life.hidden || undefined}
-  data-covered={covered || undefined} data-sheet={paused || undefined} data-live="true" data-horizon={horizonPx}>
+  data-covered={ui.overlay || (covered && up) || undefined} data-sheet={(paused && up) || undefined} data-live="true" data-horizon={horizonPx}>
   {#if picking && sceneEl}
     <!-- what my villager says: outside the viewport (its field's focus never moves the island), over the stage -->
     <SayPicker scene={sceneEl} anchor={picking} onpick={pickSay} onclose={(e) => {

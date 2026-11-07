@@ -33,7 +33,7 @@ const MIC_CORE = 'src/lib/mic/session.ts';
 const LAZY_NAMES = ['three.module'];
 const LAZY_SOURCES = [
   'src/lib/components/world3d/Island3D.svelte', 'src/lib/components/travel/TravelSheet.svelte', 'src/lib/components/hiking/HikingSheet.svelte',
-  'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/kikimimi/KikimimiSheet.svelte', 'src/lib/components/food/Food.svelte',
+  'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/kikimimi/KikimimiSheet.svelte', 'src/lib/components/food/FoodSheet.svelte',
   'src/lib/components/kikimimi/mic/MicProbe.svelte', 'src/lib/components/kikimimi/mic/MicOptIn.svelte', MIC_CORE
 ];
 /** Nor any chunk of the mic's own code (lib/mic/). */

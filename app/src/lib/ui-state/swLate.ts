@@ -31,5 +31,12 @@ export function registerLate(island: boolean, sw: ServiceWorkerContainer | undef
     if (document.readyState === 'complete') later();
     else addEventListener('load', later, { once: true });
   });
-  void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).catch(() => {});
+  void wait.then(() => sw.register(`${resolve('/')}service-worker.js`, { type: 'module' })).then(() => sw.ready).then(() => active(!!sw.controller), () => {});
 }
+
+let active: (on: boolean) => void = () => {};
+const controls = new Promise<boolean>((r) => (active = r));
+
+/** Once the worker is registered (released, above) and active: whether it controls this page (its caches serve the
+ *  chunks). Never settles without a worker (the specs block it). */
+export const workerControls = (): Promise<boolean> => controls;

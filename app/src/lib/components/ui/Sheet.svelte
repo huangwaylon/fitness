@@ -11,11 +11,16 @@
   // variant="top": the island panel, sliding down from the top (the leaf menu's ベル row opens it) (rounded at the bottom, the safe area on top).
   // It does not scroll itself: it is a flex column, and the panel puts its own title bar (with ‹) and its one
   // scrolling body (`.panel-body`) inside. variant="pop": the same full-height column (the health popup), grown out of
-  // the HUD's dumbbell (--pop-x / --pop-y on the root, set by the button) instead of sliding down. variant="full": the
+  // the HUD's dumbbell (--pop-x / --pop-y on the dialog, from the button's popFrom) instead of sliding down. variant="full": the
   // pop's column for the info sheets (docs/design.md "Unified kit": りょこう, けっこんしき, トレイル): the paper edge to
   // edge, body text in --font-body, the kit's scope (`.kit`); the sheet puts its own NavBar, one scroller and
   // a TabBar inside. The default (paper) is also the kit's form sheet: the fields, then 保存 (a leaf .btn) in `footer`;
   // `focusField` puts the keyboard up on its first field.
+  // `keep`: the content stays mounted after a close (in the closed dialog: not drawn, no focus, no taps), so the next
+  // opening shows it at once instead of building it again; a few at most (ui-state/keptSheets.ts: the least recently
+  // opened let go, all of them on pagehide or a lost WebGL context). The sheet resets what each opening resets itself.
+  // `timed`: its openings timed for the log (`perf.sheet`, ui-state/sheetTiming.ts).
+  // A full-height sheet (top, pop, full) joins ui.up once its open animation is done: the island hides under it then.
   import { untrack, type Snippet } from 'svelte';
   import { onScrim } from './scrim.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
@@ -27,6 +32,10 @@
   import { cue } from '#lib/sound/cues.ts';
   import { count, logOn } from '#lib/sync/log.ts';
   import { keyOfText } from '#lib/i18n/index.ts';
+  import type { LogSheet } from '#lib/contract/log.ts';
+  import { timeSheet } from '#lib/ui-state/sheetTiming.ts';
+  import { keepSheet, unkeepSheet } from '#lib/ui-state/keptSheets.ts';
+  import { popOrigin } from '../island/popFrom.ts';
 
   interface Props {
     open: boolean;
@@ -41,13 +50,20 @@
     footer?: Snippet;
     /** On open, focus the first input / textarea / select (a form sheet: the keyboard comes up with it). */
     focusField?: boolean;
+    /** Keep the content mounted after a close (the next opening at once). */
+    keep?: boolean;
+    /** Time its openings for the log, by this name. */
+    timed?: LogSheet;
   }
-  let { open = $bindable(), label, title, variant = 'paper', onclose, ondismiss, children, footer, focusField = false }: Props = $props();
+  let { open = $bindable(), label, title, variant = 'paper', onclose, ondismiss, children, footer, focusField = false, keep = false, timed }: Props = $props();
   const cls = $derived(variant === 'full' ? 'pop full kit' : variant);
   let dlg: HTMLDialogElement | undefined = $state();
   const id = ++seq;
   /** The topmost open sheet hosts the banner. */
   const hosts = $derived(open && ui.sheets.at(-1) === id);
+  /** The content is mounted while closed (`keep`, from its first opening until let go). */
+  let kept = $state(false);
+  $effect(() => () => unkeepSheet(id));
 
   $effect(() => {
     if (!open) return;
@@ -69,7 +85,20 @@
   $effect(() => {
     if (!dlg) return;
     if (open && !dlg.open) {
+      const d = dlg;
+      if (timed) untrack(() => timeSheet(d, timed, kept));
+      if (keep)
+        untrack(() => {
+          kept = true;
+          keepSheet(id, () => (kept = false), () => !!dlg?.open);
+        });
+      const o = variant === 'pop' ? popOrigin() : null;
+      if (o) {
+        d.style.setProperty('--pop-x', `${o[0]}px`);
+        d.style.setProperty('--pop-y', `${o[1]}px`);
+      }
       dlg.showModal();
+      if (variant !== 'paper') untrack(() => whenUp(d));
       // the sheet itself, not the first control (no stray focus ring); showModal's own focus on that control may have
       // scrolled it (the undo banner's とりけす comes first), so start at the top
       dlg.focus({ preventScroll: true });
@@ -77,6 +106,20 @@
       if (focusField) queueMicrotask(() => dlg?.querySelector<HTMLElement>('input, textarea, select')?.focus());
     } else if (!open && dlg.open) dlg.close();
   });
+
+  /** Once the open animation is done (none: at once), the sheet is up: in ui.up while it stays open. */
+  function whenUp(d: HTMLDialogElement) {
+    const up = () => {
+      if (d.open && !ui.up.includes(id)) ui.up = [...ui.up, id];
+    };
+    const runs = d.getAnimations?.() ?? [];
+    if (!runs.length) return up();
+    void Promise.allSettled(runs.map((a) => a.finished)).then(up);
+  }
+  $effect(() => {
+    if (!open) untrack(() => ui.up.includes(id) && (ui.up = ui.up.filter((x) => x !== id)));
+  });
+  $effect(() => () => untrack(() => (ui.up = ui.up.filter((x) => x !== id))));
 
   /** The native close event (Esc, backdrop, ✕, or `open = false`); a late one, after the sheet was opened again at once
    *  (the event is queued: トレイル's openTrail straight after ✕), isn't a close. */
@@ -105,7 +148,7 @@
 
 <dialog bind:this={dlg} class={cls} class:toasting={hosts && !!toasts.current?.action} tabindex="-1" aria-label={label}
   onclose={closed} oncancel={dismissed} onclick={backdrop} data-sfx="self" {@attach open && withKeyboardInset}>
-  {#if open}
+  {#if open || kept}
     {#if hosts}<ToastHost />{/if}
     <div class="inner">
       {#if variant === 'paper'}<div class="bar"><NavBar {title} onclose={() => dlg?.close()} /></div>{/if}

@@ -1,20 +1,19 @@
 <script lang="ts">
   // The meal log's popup (docs/design.md "Gohan"): the HUD's bowl opens it, full height like the health popup and
   // grown out of the button the same way (Sheet's `pop`). Its title bar (whose day, ごはん, ✕; or the level's: ‹ back to the day)
-  // over one scroller holding ごはん (Food.svelte, its own chunk with its strings). ✕, the backdrop and Esc close it;
+  // over one scroller holding ごはん (Food.svelte, in this chunk: the first frame of the zoom has it, never popping in
+  // mid-zoom; the food data still loads on use). ✕, the backdrop and Esc close it;
   // each opening starts on today, on this phone's person.
   import type { Snippet } from 'svelte';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
+  import Food from './Food.svelte';
   import { week } from '#lib/store/week.svelte.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
   import { cue } from '#lib/sound/cues.ts';
 
   let { open = $bindable() }: { open: boolean } = $props();
-  /** ごはん's code: its own chunk, fetched on the first opening. */
-  let foodChunk: Promise<typeof import('./Food.svelte')> | null = null;
-  const loadFood = () => (foodChunk ??= import('./Food.svelte'));
   /** The open level's title and ‹ (set by Food: search, an amount, the goal). */
   let title = $state('');
   let back = $state<(() => void) | null>(null);
@@ -37,11 +36,11 @@
   });
 </script>
 
-<Sheet bind:open label={t('island.food')} variant="pop" onclose={closed}>
+<Sheet bind:open label={t('island.food')} variant="pop" onclose={closed} timed="food">
   <div class="titlebar"><NavBar title={title || t('island.food')} onback={back} {lead} onclose={() => (open = false)} sfx="self" /></div>
   <div class="fs-body" data-food-sheet>
     {#if week.view}
-      {#await loadFood() then { default: Food }}<Food bind:title bind:back bind:lead />{/await}
+      <Food bind:title bind:back bind:lead />
     {/if}
   </div>
 </Sheet>

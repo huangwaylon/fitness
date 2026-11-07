@@ -56,6 +56,27 @@ describe('the service worker registered late (swLate)', () => {
     expect(sw.register).toHaveBeenCalledTimes(1);
   });
 
+  it('workerControls: once registered and active, whether it controls the page', async () => {
+    const { registerLate, releaseWorker, workerControls } = await fresh();
+    const sw = { ...container(), ready: Promise.resolve({}), controller: {} };
+    let got: boolean | undefined;
+    void workerControls().then((v) => (got = v));
+    registerLate(true, sw as unknown as ServiceWorkerContainer);
+    await tick();
+    expect(got).toBeUndefined();
+    releaseWorker();
+    await tick();
+    expect(got).toBe(true);
+
+    const first = await fresh(), sw2 = { ...container(), ready: Promise.resolve({}), controller: null };
+    let got2: boolean | undefined;
+    void first.workerControls().then((v) => (got2 = v));
+    first.releaseWorker();
+    first.registerLate(true, sw2 as unknown as ServiceWorkerContainer);
+    await tick();
+    expect(got2).toBe(false);
+  });
+
   it('no service workers (a private window, an old browser): nothing', async () => {
     const { registerLate } = await fresh();
     expect(() => registerLate(true, undefined)).not.toThrow();

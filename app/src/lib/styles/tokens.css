@@ -263,10 +263,12 @@
    villagers' idle bob, so the compositor draws no frames for a scene nobody is looking at. One-off motions (a hop,
    an emote) still finish. */
 .if-scene[data-covered] :is(.cloud, .glints, .star, .ff, .body.bob) { animation-play-state: paused !important; }
-/* Under a full-height sheet (the panel, けんこう, ごはん: IslandScene's `paused`) nothing of the island is seen: every
-   animation in it holds (a one-off finishes once the sheet closes), so no layer behind the sheet asks the compositor
-   for a frame while it's open. */
+/* Under a full-height sheet (the panel, けんこう, ごはん, りょこう…: IslandScene's data-sheet, set once the sheet's open
+   animation is done) nothing of the island is seen: every animation in it holds (a one-off finishes once the sheet
+   closes), so no layer behind the sheet asks the compositor for a frame while it's open; and where the sheet's column
+   covers the screen (a phone), the island isn't drawn at all. */
 .if-scene[data-sheet] *, .if-scene[data-sheet] *::before, .if-scene[data-sheet] *::after { animation-play-state: paused !important; }
+@media (max-width: 480px) { .if-scene[data-sheet] { visibility: hidden; } .if-scene[data-sheet] dialog[open] { visibility: visible; } }
 
 /* Motion primitives (design.md "Motion"): all on `.body` (transform-origin 50% 100%) unless noted; every one starts
    and ends at `transform: none`, so the idle loop resumes without a jump. */

@@ -2,19 +2,19 @@
   // The meal button in the HUD's top-right cluster, between the dumbbell and the leaf menu (docs/design.md "Island", "Gohan"): the health
   // button's cream pill (HudHealth), NH's ramen bowl (`items/dinner`) across it, no number. Tap: a press squash, the
   // villagers glance up at it (R18), and the meal log (ごはん) grows out of the bowl (FoodSheet, Sheet's `pop`, --pop-x / --pop-y).
-  //   <HudFood onopen={() => …} {later} />
+  //   <HudFood onopen={() => …} />
   import OfficialArt from '../characters/OfficialArt.svelte';
   import { react } from '../motion/director.svelte.ts';
   import { popFrom } from './popFrom.ts';
+  import { prefetchSheet } from './sheetChunks.ts';
+  import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
   import { t } from '#lib/i18n/index.ts';
 
   interface Props {
-    /** Tapped (open the meal log), after the press beat. */
+    /** Tapped (open the meal log): at once (the press squash plays over its zoom). */
     onopen?: () => void;
-    /** The page's timer (cleared with the page). */
-    later: (fn: () => void, ms: number) => void;
   }
-  let { onopen, later }: Props = $props();
+  let { onopen }: Props = $props();
 
   let pressed = $state(false);
   let artEl: HTMLElement | undefined = $state();
@@ -24,12 +24,13 @@
     popFrom(artEl);
     // the villagers glance up to the right, at it
     react('R18');
-    later(() => onopen?.(), 90);
+    sheetTap();
+    onopen?.();
   }
 </script>
 
 <button type="button" class="hud-food" class:pressed aria-label={t('island.food')} aria-haspopup="dialog" data-sfx="self" onclick={tap}
-  onpointerdown={() => (pressed = true)} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
+  onpointerdown={() => ((pressed = true), void prefetchSheet('food'))} onpointerup={() => (pressed = false)} onpointerleave={() => (pressed = false)} onpointercancel={() => (pressed = false)}>
   <span class="art" data-guard bind:this={artEl}><OfficialArt key="items/dinner" size="100%" eager /></span>
 </button>
 
