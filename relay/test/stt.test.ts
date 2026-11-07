@@ -73,6 +73,17 @@ describe('POST /stt', () => {
     expect(logged.map((e) => e.d?.err)).toEqual(['too_large', 'bad_request']);
   });
 
+  it('a body with no Content-Length (streamed) is read no further than STT_MAX: 413', async () => {
+    let pulled = 0;
+    const chunk = new Uint8Array(64_000);
+    const body = new ReadableStream<Uint8Array>({ pull: (c) => void (pulled++ < 100 ? c.enqueue(chunk) : c.close()) });
+    const req = new Request('https://relay/stt', { method: 'POST', body, duplex: 'half', headers: { Origin: ORIGIN, Authorization: `Bearer ${KEY_A}` } } as RequestInit);
+    expect(req.headers.get('Content-Length')).toBeNull();
+    expect((await sttRoute(req, env())).status).toBe(413);
+    expect(pulled).toBeLessThan(10);
+    expect(ai.run).not.toHaveBeenCalled();
+  });
+
   it('caps a role’s day (429), the other role apart; a new UTC day opens it again', async () => {
     for (let i = 0; i < 3; i++) expect((await sttRoute(post(), env())).status).toBe(200);
     const over = await sttRoute(post(), env());
