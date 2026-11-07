@@ -19949,6 +19949,19 @@
 "checked": false
 },
 {
+"key": "mext-01068",
+"ja": "焼きふ 車ふ",
+"desc": "kuruma-fu: large dry rings of baked wheat gluten with a hole in the middle, the cut face showing a spiral of brown baked layers",
+"items": [
+"mext:01068"
+],
+"roll": 0,
+"seed": 93201,
+"prompt": "b826c9d255",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01069",
 "ja": "ちくわぶ",
 "desc": "pieces of chikuwabu, thick white wheat-dough tubes with star-shaped ridged outsides and a hole through the middle, some cut in diagonal slices",
@@ -19959,6 +19972,58 @@
 "seed": 32231,
 "prompt": "833a23a42a",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01070",
+"ja": "小麦はいが",
+"desc": "wheat germ: a small dish of toasted flaky golden-brown granules",
+"items": [
+"mext:01070"
+],
+"roll": 0,
+"seed": 63170,
+"prompt": "ca141b5ce8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01071",
+"ja": "小麦たんぱく 粉末状",
+"desc": "wheat protein powder: a small dish of fine pale cream powder",
+"items": [
+"mext:01071"
+],
+"roll": 0,
+"seed": 67348,
+"prompt": "ccd75988a2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01072",
+"ja": "小麦たんぱく 粒状",
+"desc": "granular wheat protein: a small dish of small crumbly beige granules",
+"items": [
+"mext:01072"
+],
+"roll": 0,
+"seed": 6030,
+"prompt": "85aad0117c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01073",
+"ja": "小麦たんぱく ペースト状",
+"desc": "wheat protein paste: a small dish of smooth sticky beige paste",
+"items": [
+"mext:01073"
+],
+"roll": 0,
+"seed": 8024,
+"prompt": "deb199d81c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -19975,6 +20040,19 @@
 "checked": false
 },
 {
+"key": "mext-01075",
+"ja": "しゅうまいの皮 生",
+"desc": "raw shumai wrappers: a stack of thin square pale yellow wheat wrappers dusted with starch",
+"items": [
+"mext:01075"
+],
+"roll": 0,
+"seed": 27341,
+"prompt": "b51ebcc260",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01076",
 "ja": "ピザ生地",
 "desc": "a round flat raw pizza dough base, pale cream, with a thick rim",
@@ -19985,6 +20063,32 @@
 "seed": 70199,
 "prompt": "717a81ac71",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01077",
+"ja": "パン粉 生",
+"desc": "fresh panko: a small dish of fluffy coarse moist white breadcrumb flakes in large irregular shards",
+"items": [
+"mext:01077"
+],
+"roll": 0,
+"seed": 35777,
+"prompt": "e4dcc36465",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01078",
+"ja": "パン粉 半生",
+"desc": "semi-dried panko: a small dish of coarse pale cream breadcrumb flakes, slightly drier and crisper",
+"items": [
+"mext:01078"
+],
+"roll": 0,
+"seed": 34864,
+"prompt": "53b4475a80",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -20014,6 +20118,34 @@
 "checked": false
 },
 {
+"key": "mext-01081",
+"ja": "米（半つき米）",
+"desc": "half-milled rice, raw: a small dish of short rice grains, pale beige-cream with patches of bran left",
+"items": [
+"mext:01081",
+"mext:01103"
+],
+"roll": 0,
+"seed": 24475,
+"prompt": "1e11a234d9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01082",
+"ja": "米（七分つき米）",
+"desc": "mostly milled rice, raw: a small dish of short rice grains, nearly white with a faint cream tint",
+"items": [
+"mext:01082",
+"mext:01104"
+],
+"roll": 0,
+"seed": 93249,
+"prompt": "e148e50ae2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01083",
 "ja": "米（精白米・炊く前）",
 "desc": "a small heap of uncooked polished white rice grains, translucent short pearly grains, in a wooden measuring box",
@@ -20024,6 +20156,19 @@
 "seed": 22679,
 "prompt": "0e15748019",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01084",
+"ja": "米（はいが精米）",
+"desc": "haiga rice, germ rice: a small dish of raw white rice grains, each with a small yellowish germ spot at the tip",
+"items": [
+"mext:01084"
+],
+"roll": 0,
+"seed": 55860,
+"prompt": "0dd8b59c1c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -20069,6 +20214,34 @@
 "checked": false
 },
 {
+"key": "mext-01090",
+"ja": "全がゆ（玄米）",
+"desc": "brown rice porridge: a bowl of thick porridge of swollen beige brown rice grains in creamy liquid",
+"items": [
+"mext:01090",
+"mext:01214"
+],
+"roll": 0,
+"seed": 80588,
+"prompt": "37af1f728c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01091",
+"ja": "全がゆ（半つき米）",
+"desc": "half-milled rice porridge: a bowl of thick pale cream porridge of soft swollen rice grains",
+"items": [
+"mext:01091",
+"mext:01092"
+],
+"roll": 0,
+"seed": 72922,
+"prompt": "4a5153014a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01093",
 "ja": "全がゆ（精白米）",
 "desc": "a bowl of Japanese rice porridge (okayu), soft swollen white rice in thick milky white liquid",
@@ -20081,6 +20254,127 @@
 "seed": 63286,
 "prompt": "fd1d43f8b7",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01094",
+"ja": "五分がゆ（玄米）",
+"desc": "thin brown rice porridge: a bowl of watery beige porridge, soft brown rice grains floating in lots of liquid",
+"items": [
+"mext:01094"
+],
+"roll": 0,
+"seed": 68693,
+"prompt": "596820dce3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01095",
+"ja": "五分がゆ（半つき米）",
+"desc": "thin rice porridge: a bowl of watery pale cream porridge, soft rice grains floating in lots of liquid",
+"items": [
+"mext:01095",
+"mext:01096"
+],
+"roll": 0,
+"seed": 35331,
+"prompt": "e0f3790730",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01098",
+"ja": "おもゆ（玄米）",
+"desc": "omoyu from brown rice: a bowl of thin strained rice gruel, a cloudy pale beige liquid with no grains",
+"items": [
+"mext:01098"
+],
+"roll": 0,
+"seed": 31518,
+"prompt": "dcc09a67f7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01099",
+"ja": "おもゆ（半つき米）",
+"desc": "omoyu: a bowl of thin strained rice gruel, a cloudy milky white liquid with no grains",
+"items": [
+"mext:01099",
+"mext:01100",
+"mext:01101"
+],
+"roll": 0,
+"seed": 90440,
+"prompt": "a361530093",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01102",
+"ja": "陸稲米（玄米）",
+"desc": "upland brown rice, raw: a small dish of short light tan brown rice grains",
+"items": [
+"mext:01102"
+],
+"roll": 0,
+"seed": 42206,
+"prompt": "da93bf29f5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01105",
+"ja": "陸稲米（精白米）",
+"desc": "raw white rice: a small dish of short polished translucent white rice grains",
+"items": [
+"mext:01105"
+],
+"roll": 0,
+"seed": 13181,
+"prompt": "3ed1d0ffd4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01106",
+"ja": "陸稲ごはん（玄米）",
+"desc": "cooked brown rice: a rice bowl of glossy light brown cooked rice grains",
+"items": [
+"mext:01106"
+],
+"roll": 0,
+"seed": 13863,
+"prompt": "9dbc075e1f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01107",
+"ja": "陸稲ごはん（半つき米）",
+"desc": "cooked half-milled rice: a rice bowl of glossy cooked rice with a faint cream-beige tint",
+"items": [
+"mext:01107",
+"mext:01108"
+],
+"roll": 0,
+"seed": 40465,
+"prompt": "7419695025",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01109",
+"ja": "陸稲ごはん（精白米）",
+"desc": "cooked white rice: a rice bowl heaped with glossy fluffy white rice",
+"items": [
+"mext:01109"
+],
+"roll": 0,
+"seed": 1110,
+"prompt": "48ab67ab5e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -20140,6 +20434,32 @@
 "checked": false
 },
 {
+"key": "mext-01114",
+"ja": "上新粉",
+"desc": "joshinko, rice flour: a small dish of fine smooth pure white powder",
+"items": [
+"mext:01114"
+],
+"roll": 0,
+"seed": 49642,
+"prompt": "e9fdb68ba4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01116",
+"ja": "米こうじ",
+"desc": "kome-koji: rice grains coated in fluffy white mould, clumped into crumbly white cakes",
+"items": [
+"mext:01116"
+],
+"roll": 0,
+"seed": 998,
+"prompt": "4f1e8b872f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01117",
 "ja": "もち",
 "desc": "three rectangular blocks of Japanese kirimochi rice cake, smooth matte white, one grilled and puffed golden",
@@ -20170,6 +20490,19 @@
 "checked": false
 },
 {
+"key": "mext-01119",
+"ja": "あくまき",
+"desc": "akumaki: a log of glutinous rice cooked in lye until translucent amber-brown and jelly-like, sliced, on a bamboo sheath, with kinako",
+"items": [
+"mext:01119"
+],
+"roll": 0,
+"seed": 11511,
+"prompt": "09465172c9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01120",
 "ja": "白玉粉",
 "desc": "a small mound of white shiratamako flour in coarse irregular lumps, beside three small white shiratama dumplings",
@@ -20179,6 +20512,84 @@
 "roll": 0,
 "seed": 12432,
 "prompt": "f3137fb709",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01121",
+"ja": "道明寺粉",
+"desc": "domyoji-ko: a small dish of coarse white granules of crushed steamed glutinous rice, like cracked rice",
+"items": [
+"mext:01121"
+],
+"roll": 0,
+"seed": 32102,
+"prompt": "e3c47473ea",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01122",
+"ja": "そば粉 全層粉",
+"desc": "whole buckwheat flour: a small dish of greyish-brown flour speckled with dark flecks",
+"items": [
+"mext:01122"
+],
+"roll": 0,
+"seed": 87388,
+"prompt": "4eed0ea0e4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01123",
+"ja": "そば粉 内層粉",
+"desc": "inner-layer buckwheat flour: a small dish of fine pale whitish-cream flour",
+"items": [
+"mext:01123"
+],
+"roll": 0,
+"seed": 69898,
+"prompt": "27f1a8c84c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01124",
+"ja": "そば粉 中層粉",
+"desc": "middle-layer buckwheat flour: a small dish of fine light grey-beige flour with a faint green tint",
+"items": [
+"mext:01124"
+],
+"roll": 0,
+"seed": 56105,
+"prompt": "74ccde7f23",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01125",
+"ja": "そば粉 表層粉",
+"desc": "outer-layer buckwheat flour: a small dish of darker greenish grey-brown flour with dark specks",
+"items": [
+"mext:01125"
+],
+"roll": 0,
+"seed": 19295,
+"prompt": "d665ac34cd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01126",
+"ja": "そば米",
+"desc": "sobamai, hulled buckwheat grains: a small dish of small pale green-beige triangular kernels",
+"items": [
+"mext:01126"
+],
+"roll": 0,
+"seed": 16549,
+"prompt": "fad2301e41",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -20220,6 +20631,19 @@
 "seed": 33748,
 "prompt": "1b1b3f9ad7",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01131",
+"ja": "とうもろこし 玄穀 黄色種",
+"desc": "dried yellow corn kernels: a small dish of hard golden-yellow dent corn kernels",
+"items": [
+"mext:01131"
+],
+"roll": 0,
+"seed": 99399,
+"prompt": "454b4bf6bd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -20341,6 +20765,45 @@
 "checked": false
 },
 {
+"key": "mext-01151",
+"ja": "米（精白米・もち米）",
+"desc": "raw glutinous rice: a small dish of opaque chalky white short round grains, not translucent",
+"items": [
+"mext:01151"
+],
+"roll": 0,
+"seed": 73921,
+"prompt": "f5009b94f4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01152",
+"ja": "米（精白米・インディカ米）",
+"desc": "raw indica rice: a small dish of long slender translucent white grains",
+"items": [
+"mext:01152"
+],
+"roll": 0,
+"seed": 95963,
+"prompt": "ab2f469947",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01153",
+"ja": "米（発芽玄米）",
+"desc": "germinated brown rice: a small dish of light brown raw rice grains with tiny pale sprout tips",
+"items": [
+"mext:01153"
+],
+"roll": 0,
+"seed": 39693,
+"prompt": "be3cdbe628",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01154",
 "ja": "もち米ごはん",
 "desc": "a bowl of cooked sticky glutinous rice, glossy translucent white grains clumped together",
@@ -20350,6 +20813,32 @@
 "roll": 0,
 "seed": 45710,
 "prompt": "5bbbd2a1cd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01156",
+"ja": "アルファ化米 学校給食用強化品",
+"desc": "alpha rice, instant dried rice: a small dish of hard dry translucent white rice grains, slightly cracked, uncooked-looking",
+"items": [
+"mext:01156"
+],
+"roll": 0,
+"seed": 66818,
+"prompt": "b42357d6b6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01157",
+"ja": "玄米粉",
+"desc": "brown rice flour: a small dish of fine light beige powder",
+"items": [
+"mext:01157"
+],
+"roll": 0,
+"seed": 49364,
+"prompt": "b3e80a413c",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -20367,6 +20856,19 @@
 "checked": false
 },
 {
+"key": "mext-01159",
+"ja": "米粉パン 小麦グルテン不使用のもの",
+"desc": "gluten-free rice flour bread: a slice of square loaf with a pale golden crust and dense moist white crumb",
+"items": [
+"mext:01159"
+],
+"roll": 0,
+"seed": 42963,
+"prompt": "d951b54337",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01160",
 "ja": "米粉めん",
 "desc": "a bundle of thin dried white rice vermicelli noodles (bifun), tangled wiry strands",
@@ -20377,6 +20879,19 @@
 "roll": 0,
 "seed": 11348,
 "prompt": "ad6c8690c8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01161",
+"ja": "米ぬか",
+"desc": "rice bran: a small dish of soft fine light tan-yellow powder",
+"items": [
+"mext:01161"
+],
+"roll": 0,
+"seed": 63522,
+"prompt": "beedcfced8",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -20511,6 +21026,45 @@
 "checked": false
 },
 {
+"key": "mext-01177",
+"ja": "油ふ",
+"desc": "abura-fu: a long log of deep-fried wheat gluten, golden-brown crust, cut into rounds showing pale spongy porous insides",
+"items": [
+"mext:01177"
+],
+"roll": 0,
+"seed": 72854,
+"prompt": "1e27e299a7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01178",
+"ja": "かやきせんべい",
+"desc": "kayaki senbei: thin flat round pale wheat crackers with toasted golden rims, crisp and slightly blistered, stacked",
+"items": [
+"mext:01178"
+],
+"roll": 0,
+"seed": 91079,
+"prompt": "d693f90fd8",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01179",
+"ja": "春巻きの皮 生",
+"desc": "raw spring roll wrappers: a stack of thin smooth square off-white wheat sheets, slightly translucent",
+"items": [
+"mext:01179"
+],
+"roll": 0,
+"seed": 19953,
+"prompt": "2f78eaab9e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01180",
 "ja": "春巻きの皮（揚げ）",
 "desc": "crisp golden fried spring roll wrapper sheets, thin bubbly square sheets",
@@ -20521,6 +21075,71 @@
 "seed": 14970,
 "prompt": "bcdeab842e",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01181",
+"ja": "米（赤米）",
+"desc": "raw red rice: a small dish of short rice grains with reddish-brown bran",
+"items": [
+"mext:01181"
+],
+"roll": 0,
+"seed": 75628,
+"prompt": "1439c5bff0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01182",
+"ja": "米（黒米）",
+"desc": "raw black rice: a small dish of glossy deep purple-black rice grains",
+"items": [
+"mext:01182"
+],
+"roll": 0,
+"seed": 57302,
+"prompt": "44a9493d23",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01183",
+"ja": "ごはん（赤米）",
+"desc": "cooked red rice: a rice bowl of cooked rice tinted a dusky pinkish-red, grains glossy",
+"items": [
+"mext:01183"
+],
+"roll": 0,
+"seed": 19648,
+"prompt": "8054d98dd3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01184",
+"ja": "ごはん（黒米）",
+"desc": "cooked black rice: a rice bowl of glossy cooked rice in deep purple-black",
+"items": [
+"mext:01184"
+],
+"roll": 0,
+"seed": 41379,
+"prompt": "00c43af00f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01185",
+"ja": "軟飯（精白米）",
+"desc": "soft rice: a small bowl of very soft moist white rice, swollen grains between plain rice and porridge",
+"items": [
+"mext:01185"
+],
+"roll": 0,
+"seed": 14261,
+"prompt": "0622b7f1ca",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -20621,6 +21240,19 @@
 "roll": 0,
 "seed": 37646,
 "prompt": "4f38c7f49b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01197",
+"ja": "半生そば",
+"desc": "semi-dried soba: a bundle of thin square-cut grey-brown buckwheat noodles, firm and uncooked",
+"items": [
+"mext:01197"
+],
+"roll": 0,
+"seed": 86520,
+"prompt": "0dabf0465f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -20756,6 +21388,19 @@
 "roll": 0,
 "seed": 33642,
 "prompt": "ae585c070a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01212",
+"ja": "米粉パン ロールパン",
+"desc": "rice flour dinner rolls: small rounded golden-brown rolls with smooth tops, one cut showing moist white crumb",
+"items": [
+"mext:01212"
+],
+"roll": 0,
+"seed": 42854,
+"prompt": "8c753132ca",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
