@@ -57,6 +57,7 @@
   }
   let { id, H, pad, range, today, label, ticks, goal, selected, onselect, onswipe, slide, bleed = 0, defs, plot, over, tip, running }: Props = $props();
 
+  /** The chart's width: its last while the sheet is closed (kept mounted, display none, it reads 0): its picture kept. */
   let w = $state(0);
   let dx = $state(0);
   const n = $derived(range.buckets.length);
@@ -89,7 +90,7 @@
   const goalY = $derived(goal === null ? 0 : goal.off === 'below' ? base - 5 : goal.off === 'above' ? pad.t + 8 : Math.max(pad.t + 8, goal.y - 5));
 </script>
 
-<div class="chart" bind:this={box} bind:clientWidth={w} style:height="{H}px" use:chartGestures={{ tap, swipe: onswipe, drag: (d) => (dx = d) }}>
+<div class="chart" bind:this={box} bind:clientWidth={() => w, (v) => v > 0 && (w = v)} style:height="{H}px" use:chartGestures={{ tap, swipe: onswipe, drag: (d) => (dx = d) }}>
   {#if w > 0}
     <svg width={w} height={H} viewBox="0 0 {w} {H}" role="img" aria-label={label}>
       <defs>

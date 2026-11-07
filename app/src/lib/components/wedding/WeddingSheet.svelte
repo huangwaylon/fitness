@@ -5,7 +5,8 @@
   // the filters and the months (Plan); a row opens in place, its 編集 and the ＋ over the tab bar open the form
   // (TaskForm, a form sheet). メモ: the letter (Notes, its 編集 inside it); writing it, the title bar says so and the format
   // tools (with キャンセル and 保存) take the tab bar's place. 設定: the names, the day, the categories, the deleted (Settings). The
-  // guest's phone (board.canEdit false) reads it all: no tick, 編集, ＋ or 設定.
+  // guest's phone (board.canEdit false) reads it all: no tick, 編集, ＋ or 設定. Kept mounted between openings (Sheet's
+  // `keep`): a reopening shows it at once, closed() and the open effect resetting what an opening resets.
   import { tick } from 'svelte';
   import '#lib/i18n/wedding.ts';
   import Sheet from '../ui/Sheet.svelte';
@@ -61,6 +62,8 @@
     if (o === wasOpen) return;
     wasOpen = o;
     cue(o ? 'panel-open' : 'panel-close');
+    // (kept mounted between openings, Sheet's `keep`: the plan's top again, after the dialog shows)
+    if (o) queueMicrotask(() => body?.scrollTo({ top: 0 }));
   });
 
   /** Closed: the next opening is on its tab (設定: the plan), すべて, the plan's top (a note being written stays: back in its editor). */
@@ -110,7 +113,7 @@
 </script>
 
 
-<Sheet bind:open label={t('wed.title')} variant="full" onclose={closed} timed="wedding">
+<Sheet bind:open label={t('wed.title')} variant="full" onclose={closed} timed="wedding" keep>
   <div class="wd">
     <NavBar {title} onclose={() => (open = false)} />
     <div class="wd-body" class:writing class:plan={tab === 'plan'} bind:this={body} data-wedding data-tab={tab} data-guest={!canEdit || undefined}>

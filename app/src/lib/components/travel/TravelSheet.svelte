@@ -5,7 +5,10 @@
   // chunk; offline before it is cached, 読み込めませんでした and もう一度).
   // The list's title bar has this phone's km | mi switch at its left (units.ts; the one place it is).
   // An opening goes straight into the trip on now, else back where it was left (the trip and its page, while the app
-  // runs). The island is paused under it (open.svelte.ts → the page's `paused`).
+  // runs). The island is paused under it (open.svelte.ts → the page's `paused`). Kept mounted between openings (Sheet's
+  // `keep`: a reopening at once, where it was left, its scroll too), but for a trip on now (built again: today's day,
+  // the row that is now in view) and the 地図 page (a closed sheet holds no MapLibre map: let go at the close).
+  import { untrack } from 'svelte';
   import '#lib/i18n/travel.ts';
   import Sheet from '../ui/Sheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
@@ -54,9 +57,14 @@
   /** An opening: straight into the trip on now, else where it was left. */
   function opening() {
     const on = TRIP_META.find((m) => phaseOf(m, now).k === 'now');
-    if (on) show(on.id);
-    else if (sel) load(sel);
+    if (on) {
+      show(on.id);
+      fresh++;
+    } else if (sel) load(sel);
   }
+  /** Bumped by an opening onto the trip on now: its level built afresh. */
+  let fresh = $state(0);
+  const keep = $derived(!(sel && tabs[sel] === 'map'));
 
   function back() {
     cue('back');
@@ -77,7 +85,7 @@
     if (o === wasOpen) return;
     wasOpen = o;
     cue(o ? 'panel-open' : 'panel-close');
-    if (o) opening();
+    if (o) untrack(opening);
   });
 </script>
 
@@ -85,9 +93,9 @@
   <Segmented size="s" items={UNITS.map((u) => ({ id: u, label: u }))} value={units.current} label={t('travel.units')} attr="units" onpick={setUnits} />
 {/snippet}
 
-<Sheet bind:open label={t('travel.title')} variant="full" onclose={closed} timed="travel">
+<Sheet bind:open label={t('travel.title')} variant="full" onclose={closed} timed="travel" {keep}>
   <div class="tv" data-travel data-level={sel ? 'trip' : 'list'}>
-    {#key sel}
+    {#key `${sel}|${fresh}`}
       <div class="lvl">
         {#if !sel}
           <div class="top"><NavBar title={t('travel.title')} onclose={close} {lead} /></div>
