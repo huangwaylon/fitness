@@ -160,6 +160,9 @@ const PINNED: Readonly<Record<string, number>> = {
   'dk-jacket-size-3': 4004, 'kw-prescription': 3000, 'kw-im-down': 1238, 'dk-hike-dinner-2': 2002, 'kw-keep-an-eye': 2000,
   'dk-for-here-1': 2000, 'kw-meetcha': 2000, 'dk-cookies-2': 3000, 'dk-rain-sunday-3': 3000, 'dk-dentist-day-4': 5002,
   'kw-great-on': 3004,
+  // s1-tile-c's tiles of those same lines in the same voices, the same takes
+  'tile-ord-soup-or-salad': 4001, 'tile-shop-great-on-you': 3004, 'tile-nbr-eye-on-him': 2000, 'tile-cln-prescription': 3000,
+  'tile-intro-nice-to-meet': 2000,
   // はつおん's words (M6, 2026-11-07), each the best of ten seed runs by UTMOS among the takes heard as written (a word
   // alone is too short for ECAPA: these are kept with --retries 0, never re-rolled for their similarity)
   'pr-13-2': 2000, 'pr-14-1': 3000, 'pr-14-2': 1238, 'pr-15-1': 2000, 'pr-15-2': 1237, 'pr-16-2': 1237, 'pr-17-1': 1235,

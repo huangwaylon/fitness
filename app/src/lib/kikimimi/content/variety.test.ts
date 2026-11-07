@@ -36,7 +36,8 @@ describe('kikimimi variety set', () => {
     // one voiced: it joins, the rest still wait
     const one = MORI_DIALOGUES[0];
     const more = { ...clips, ...Object.fromEntries(clipIds(one).map((id) => [id, { dur: 3, hash: '00000000' }])) };
-    expect(joined(more).filter((it) => WAITING.has(it.id)).map((it) => it.id)).toEqual(ALL.filter((it) => it === one || clipIds(it).every((id) => id in clips)).map((it) => it.id));
+    const mine = new Set(ALL.map((it) => it.id)); // (the other waiting sets: their own tests)
+    expect(joined(more).filter((it) => mine.has(it.id)).map((it) => it.id)).toEqual(ALL.filter((it) => it === one || clipIds(it).every((id) => id in clips)).map((it) => it.id));
     expect(playable(clips)).toEqual(expect.arrayContaining([4, 6]));
   });
 });

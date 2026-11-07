@@ -11,7 +11,7 @@ track: life
 seeds: [13, 14, 16, 26, 27, 32, 36, 37, 48, 49, 50, 51, 53]
 features: { primary: self-repair, review: weak-form }
 cando: "電話で 注文や 予約の 確認と 変更を 聞き取って メモできる"
-status: draft
+status: listened
 cast: { me: us-m3 }
 items:
   - kind: call
