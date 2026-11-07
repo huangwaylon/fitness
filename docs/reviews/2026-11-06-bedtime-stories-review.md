@@ -34,3 +34,21 @@ The panel: a native American editor, an EFL teacher and a native Japanese review
 - **When it's voiced:** check how the US voice says "mikan", "Litle" and "à la mode". Voiced 2026-11-06: "à la mode"
   heard as written; "mikan" came out "MY-kan" and is respelt mee-kahn; "Litle" is said "Little" (a `tts`), the
   narrator's "with only one T" carrying the joke.
+
+## st-tokyo (2026-11-07)
+
+The same panel (an American children's and YA author, an EFL teacher of Japanese adults, a Japanese translator) read the
+draft `st-tokyo.yaml` before A5. **Ready to voice once W2-R lands.** It's warm and plainly American, the Tokyo is real
+(Nakameguro by the Meguro River, the ward office, the September shrine festival, the 起震車 at a school drill, a sento
+with Fuji on the wall, 十五夜 on Friday 2026-09-25), and the umbrella thread pays off. Ids kept.
+
+- **Story logic:** Rosie arrived at nine and fell asleep "at eight": now "It wasn't even ten o'clock" (and the summary).
+  Sherb was "only the third person I've talked to": now "really talked to". The moon dumplings were never bought: one
+  line added. Sherb's "He likes you" (the uncle or the fish?) is now "This little guy likes you".
+- **Culture:** a Japanese address isn't "city, town, block": now "Tokyo first. Then the ward, the neighborhood, the
+  block, and then your building".
+- **Naturalness:** "everything will look a little smaller, in a good way" became "feel a little less strange".
+- **Predictions:** ch5's decoy "the hardware store again" pointed at nothing: now "a camping store".
+- **Japanese:** ch1's summary said 下の階…下から (now 真下の部屋の…); "make yourself at home" = 自分の家だと思ってくつろいでね;
+  the line says トウキョウ like the title.
+- **When it's voiced:** check "Nakameguro", "Meguro", "mikoshi", "wasshoi", "yukata" and "konbini" in the US voices.

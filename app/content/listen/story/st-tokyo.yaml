@@ -1,0 +1,416 @@
+# おやすみ ものがたり (docs/curriculum.md §7.1, docs/curriculum-wave2.md §3.2 B6): トウキョウ ひとりぐらし, a bedtime
+# serial in seven chapters. Rosie, from a small town in Ohio, spends her first month living alone in Tokyo, in a small
+# building by the Meguro River in Nakameguro: the trash schedule, the konbini at three a.m., the ward office, the shrine
+# festival on her street, a small earthquake and the neighborhood drill, the bathhouse, and the harvest moon. The thread
+# is Gayle's navy umbrella, lent in the first rain and given back for good in the last chapter (and Mochi, a festival
+# goldfish). Everyday and cozy, nothing at stake. Extensive listening at ~95 % comprehension for a B1+ ear: no score, no
+# questions, a sleep timer. The narrator is us-f3 (gentle, calm); every speaker is a US voice. Each chapter's `predict`
+# is for the morning after; its `answer` is what the next chapter tells. Draft: voiced in batch A5 (after W2-R), shown
+# only with the dev hooks until then. Checks: src/lib/kikimimi/stories.test.ts.
+schema: 1
+unit: st-tokyo
+game: serial
+name: トウキョウ ひとりぐらし
+stage: 3
+track: life
+seeds: [66, 32]
+features: { primary: contraction, review: linking }
+cando: "ねる まえに 東京の 日常の はなしを 聞いて、だいたい わかる"
+status: draft
+host: rosie
+cast: { narrator: us-f3 }
+items:
+  - kind: serial
+    id: serial-tokyo-1
+    chapter: 1
+    title: "A Small Room by the River"
+    line: "ブーケが トウキョウで ひとりぐらしを はじめます"
+    ja: "8月の最後の夜、オハイオの小さな町から来たブーケが、中目黒の目黒川ぞいの小さなアパートに着く。はじめてのひとり暮らし。大家のたぬきちが部屋を案内し、ごみの日（燃えるごみは火・金、プラは水、缶・びんは隔週の木曜）を説明する。真下の部屋のアリゲッティが声をかけてくれて「何かあったらノックしてね」。荷ほどきするつもりが、ブーケは服のまま、夜10時前に眠ってしまう。"
+    scene: door
+    segments:
+      - { who: narrator, en: "On the last night of August, a little train pulled into Nakameguro Station, and Rosie stepped off it with two big suitcases." }
+      - { who: narrator, en: "She also had a backpack that was much too full, a map on her phone, and a key she had never used." }
+      - { who: narrator, en: "Two weeks ago, she was living in a small town in Ohio. Now she had a job in Tokyo, and an apartment of her own." }
+      - { who: narrator, en: "It was her first time living alone. Her mom had cried at the airport. Rosie had cried a little on the plane, too." }
+      - { who: narrator, en: "The air was hot and heavy, even at nine at night. The cicadas were still buzzing in the trees, like somebody had left a radio on." }
+      - { who: narrator, en: "She rolled her suitcases along a narrow street by the Meguro River. The water was low and quiet, and cherry trees leaned over it from both sides." }
+      - { who: rosie, en: "Okay. Left at the bakery, then right at the vending machine. Wait. There's a vending machine on every corner. This could take a while." }
+      - { who: narrator, en: "Her building was small and white, just two floors, with stairs on the outside and a row of potted plants by the front door." }
+      - { who: narrator, en: "The landlord, Tom Nook, was waiting under the light with a folder, smiling like he had been waiting all day." }
+      - { who: tom-nook, en: "Welcome, welcome! You must be Rosie. How was your flight? Long, I'm sure. Come in, come in. Shoes off right here, please." }
+      - { who: narrator, en: "The apartment was one room, six tatami mats, with a tiny kitchen, a tiny bathroom, and a sliding glass door to a tiny balcony." }
+      - { who: narrator, en: "Everything was small and clean, and it all fit together like a puzzle. Rosie loved it right away." }
+      - { who: tom-nook, en: "Now, this is very important. The trash schedule. Burnable trash on Tuesdays and Fridays. Plastic on Wednesdays. Cans and bottles every other Thursday." }
+      - { who: rosie, en: "Every other Thursday. Okay. I'm going to need to write this down. Actually, can I just take a picture of it?", tts: "Every other Thursday. Okay. I'm gonna need to write this down. Actually, can I just take a picture of it?" }
+      - { who: tom-nook, en: "Of course, of course. It's a lot to take in on your first night. Don't worry. You'll get the hang of it. Everybody does." }
+      - { who: narrator, en: "He showed her how the hot water worked, which buttons on the toilet did what, and where to leave her shoes. Then he handed her the folder." }
+      - { who: tom-nook, en: "Make yourself at home, Rosie. And if you need anything at all, my number's on the first page. Good night!" }
+      - { who: narrator, en: "And then he was gone, and it was very, very quiet." }
+      - { who: narrator, en: "Rosie sat down in the middle of her new room. There was no furniture yet. Just her suitcases, the folder, and the hum of the fridge." }
+      - { who: rosie, en: "Hi, apartment. I'm Rosie. I guess we live together now. I promise I'll learn the trash schedule." }
+      - { who: narrator, en: "She opened the glass door and stepped out onto the balcony. From there, she could see a little piece of the river, and the city lights beyond it." }
+      - { who: narrator, en: "Somewhere down the street, a train went by. Somewhere else, a dog barked twice, and then thought better of it." }
+      - { who: narrator, en: "Then a door opened downstairs, and a voice called up to her, soft and friendly." }
+      - { who: gayle, en: "Hello? Are you the new neighbor? I heard the suitcases on the stairs. I'm Gayle. I live right below you." }
+      - { who: narrator, en: "Gayle was an older lady with reading glasses on a chain, and she was holding a watering can, even though it was dark." }
+      - { who: rosie, en: "Hi! Yes, I'm Rosie. I just got here. Sorry about the noise. Those suitcases weigh about as much as I do." }
+      - { who: gayle, en: "Oh, don't worry about it, dear. I lived in California for ten years when I was young. I remember my first night there." }
+      - { who: gayle, en: "Get some sleep. Tomorrow, everything will feel a little less strange. And come knock if you need anything." }
+      - { who: narrator, en: "Rosie thanked her and went back inside. She meant to unpack. She meant to take a shower. She meant to call her mom." }
+      - { who: narrator, en: "Instead, she lay down on the tatami for just a minute, still in her clothes, and she was out like a light." }
+      - { who: narrator, en: "It wasn't even ten o'clock. Outside, the cicadas finally stopped, and the river kept going, slow and dark, under the cherry trees." }
+    ph:
+      - { id: ph-every-other, en: "every other Thursday", ja: "隔週の木曜", match: "every other", register: neighbour, scene: "the trash schedule", trap: "every other＝ほかの全部 ではなく「ひとつおき」" }
+      - { id: ph-take-in, en: "a lot to take in", ja: "いっぺんには覚えきれない", match: "a lot to take in", register: neighbour, scene: "a landlord's long list", trap: "take in＝中に入れる ではなく、情報を受けとめる" }
+      - { id: ph-hang-of-it, en: "get the hang of it", ja: "コツをつかむ", match: "get the hang of", register: neighbour, scene: "learning new rules", trap: "hang＝つるす ではなく「やり方の感じ」" }
+      - { id: ph-make-at-home, en: "make yourself at home", ja: "自分の家だと思ってくつろいでね", register: neighbour, scene: "a new apartment", trap: "家を作る ではなく、くつろいでという決まり文句" }
+      - { id: ph-need-anything, en: "if you need anything", ja: "何かあったら（言ってね）", match: "if you need anything", register: neighbour, scene: "a neighbor's offer", trap: "本当に困ったら頼っていいという、温かい申し出" }
+      - { id: ph-thought-better, en: "thought better of it", ja: "思いなおしてやめた", match: "thought better of it", register: friend, scene: "a dog in the night", trap: "もっとよく考えた ではなく、考えなおしてやめた" }
+      - { id: ph-out-like-a-light, en: "out like a light", ja: "あっというまに眠る", register: friend, scene: "the first night", trap: "電気が消える ではなく、ぐっすり眠りこむ" }
+    predict:
+      ask: "ブーケは よなかに なにを する？"
+      choices:
+        - "She knocks on Gayle's door to borrow some food."
+        - "She wakes up at three in the morning, starving, and goes to the convenience store."
+        - "She sleeps all the way to the next evening."
+      answer: 1
+      ja: "夜中の3時におなかぺこぺこで目がさめ、コンビニに行く。"
+
+  - kind: serial
+    id: serial-tokyo-2
+    chapter: 2
+    title: "Three in the Morning"
+    line: "ブーケが よなかの コンビニに いきます"
+    ja: "時差ぼけで夜中の3時に目がさめたブーケは、角のコンビニへ。夜勤の大学生レムに鮭の弁当を温めてもらい、袋もはしも「イエス」。おにぎりの開け方（1、2、3の順）を教わるが、2つ目でのりがやぶれてしまう。川べりで卵サンドを食べ、空が明るくなったころ、とつぜんの夏の大雨。ずぶぬれのブーケを、散歩帰りのアリゲッティが紺色の大きな傘に入れてくれ、「しばらく使って。返すのはいつでも」とそのまま貸してくれる。"
+    scene: street
+    segments:
+      - { who: narrator, en: "Rosie opened her eyes. The room was dark. For a moment, she had no idea where she was, or why the floor smelled like grass." }
+      - { who: narrator, en: "Then she remembered. Tokyo. The tatami. Her phone said it was three in the morning, and she was wide awake." }
+      - { who: rosie, en: "Oh no. This is jet lag, isn't it? My body thinks it's lunchtime. And I'm starving. I haven't eaten since the plane." }
+      - { who: narrator, en: "There was nothing in her kitchen but a bottle of water and some tea bags from her mom. So she put on her sneakers and went out." }
+      - { who: narrator, en: "The street was empty. But down at the corner there was a light, big and bright, like a lighthouse in the dark." }
+      - { who: narrator, en: "It was a convenience store, open all night, like they always are in Japan. The doors slid open with a little song." }
+      - { who: narrator, en: "Inside, it was cool and clean and full of everything. Rice balls. Sandwiches. Hot drinks in a warm little case. Ice cream. Socks. Even neckties." }
+      - { who: narrator, en: "Behind the counter was a sleepy young goat with a name tag that said Sherb, a college student working the night shift." }
+      - { who: sherb, en: "Oh, hey. Good morning. Or, um, good night? Honestly, I'm not sure anymore at this hour. Take your time.", tts: "Oh, hey. G'morning. Or, um, g'night? Honestly, I'm not sure anymore at this hour. Take your time." }
+      - { who: narrator, en: "Rosie took her time. She picked out an egg sandwich, two rice balls, a little box of salmon and rice, and, after some thought, a pudding." }
+      - { who: sherb, en: "Want me to heat that up for you? It only takes like a minute. And do you need a bag? Chopsticks?", tts: "Want me to heat that up for ya? It only takes like a minute. And d'you need a bag? Chopsticks?" }
+      - { who: rosie, en: "Yes, please. And yes to the bag, and yes to chopsticks. And no, sorry, I don't have a points card. I just got here." }
+      - { who: sherb, en: "No worries. Hey, is this your first konbini rice ball? Here, let me show you. There's a trick to it.", tts: "No worries. Hey, is this your first konbini rice ball? Here, lemme show you. There's a trick to it." }
+      - { who: narrator, en: "He picked up one of the rice balls and showed her the little numbers printed on the plastic. One, two, three." }
+      - { who: sherb, en: "Pull number one, straight down the middle. Then two, then three. And that's it. The seaweed stays nice and crispy." }
+      - { who: narrator, en: "Rosie tried the second one herself. She pulled number one. Then number three. Then number two." }
+      - { who: narrator, en: "The seaweed tore in half and stayed stuck inside the plastic. The rice fell into her hand in one big lump." }
+      - { who: sherb, en: "Hey, that's okay. Everybody messes it up the first time. It still tastes the same. Seriously, don't worry about it.", tts: "Hey, that's okay. Ev'rybody messes it up the first time. It still tastes the same. Seriously, don't worry about it." }
+      - { who: rosie, en: "Thank you. Really. You're only the third person I've really talked to in Tokyo. Thanks, Sherb." }
+      - { who: narrator, en: "She ate the egg sandwich on a bench by the river. It was soft and sweet and perfect." }
+      - { who: narrator, en: "Slowly, the sky turned gray, then pink. An old man walked by with a tiny dog in a stroller. A crow said something loud from a power line." }
+      - { who: narrator, en: "And then, with no warning at all, it started to rain. Not a gentle rain. A big summer rain, warm and heavy, all at once." }
+      - { who: rosie, en: "Oh, come on! Seriously? It was totally clear a second ago!", tts: "Oh, c'mon! Seriously? It was totally clear a second ago!" }
+      - { who: narrator, en: "She ran home with the plastic bag over her head. By the time she reached her street, she was soaked. Only the pudding was dry." }
+      - { who: narrator, en: "At the corner, someone was standing under a big navy umbrella with a wooden handle. It was Gayle, coming home from her morning walk." }
+      - { who: gayle, en: "Good morning, dear! My goodness, look at you. Come here, come under. The weather changes its mind fast in summer." }
+      - { who: narrator, en: "They walked home together under the big umbrella. At the front door, Gayle closed it, shook it once, and handed it to Rosie." }
+      - { who: gayle, en: "Here. Keep this for now. It's supposed to rain all week, and you start work tomorrow, don't you? I have more umbrellas than I need." }
+      - { who: rosie, en: "Are you sure? Thank you so much. I'll bring it right back, I promise. As soon as the rain stops." }
+      - { who: gayle, en: "Oh, there's no hurry. Bring it back whenever. That's what neighbors are for." }
+      - { who: narrator, en: "Upstairs, Rosie leaned the umbrella by her door, where she would see it. Then she ate the pudding, very slowly, and watched the rain." }
+      - { who: narrator, en: "She fell asleep again right there by the window, with the spoon still in her hand. This time, she slept until noon." }
+    ph:
+      - { id: ph-wide-awake, en: "wide awake", ja: "すっかり目がさえている", register: friend, scene: "jet lag at three a.m.", trap: "wide＝広い ではなく「完全に」" }
+      - { id: ph-take-your-time, en: "take your time", ja: "ごゆっくりどうぞ", match: "take (your|her|my) time|took her time", register: service, scene: "a late-night shop", trap: "時間を取る ではなく、急がなくていいよ" }
+      - { id: ph-heat-up, en: "heat that up", ja: "温める", match: "heat (that|it) up", register: service, scene: "a boxed meal at the counter", trap: "up で「しっかり温める」。コンビニの「温めますか？」" }
+      - { id: ph-mess-up, en: "mess it up", ja: "しくじる", match: "mess(es|ed)? it up", register: friend, scene: "opening a rice ball", trap: "mess＝散らかす。mess up でやりそこなう" }
+      - { id: ph-come-on, en: "oh, come on!", ja: "うそでしょ、もう！", match: "come on", register: friend, scene: "sudden rain", trap: "おいで ではなく、不満やあきれた気持ち" }
+      - { id: ph-for-now, en: "keep this for now", ja: "とりあえず持ってて", match: "for now", register: neighbour, scene: "lending an umbrella", trap: "for now＝ずっと ではなく「さしあたり」" }
+      - { id: ph-neighbors-for, en: "that's what neighbors are for", ja: "おたがいさまよ", match: "that's what neighbors are for", register: neighbour, scene: "a kind favor", trap: "隣人の目的 ではなく、気にしないでという決まり文句" }
+    predict:
+      ask: "ブーケは つぎに どこへ いく？"
+      choices:
+        - "Back to the convenience store, to apply for a job."
+        - "To Gayle's door, to give the umbrella back the next day."
+        - "To the ward office, to register her new address."
+      answer: 2
+      ja: "区役所へ行き、新しい住所を届ける。"
+
+  - kind: serial
+    id: serial-tokyo-3
+    chapter: 3
+    title: "Number Forty-Two"
+    line: "ブーケが くやくしょで じゅうしょを とどけます"
+    ja: "日本では引っ越したら2週間以内に区役所へ届けを出す。月曜の朝、ブーケはアリゲッティの傘をさして区役所へ。案内のモーリーに言われて番号札（42番）を取り、用紙に記入して待つ。住所の書き方が逆で、日本は大きい方から書くと教わって書きなおすと、在留カードの裏に新しい住所が印字される。次は国民健康保険の窓口でまた番号札。同僚のチッチからは「次は本と、おやつを持っていって」。お昼までかかったけれど、新しい保険証を手にして大満足。傘を忘れてモーリーが走って届けてくれる。帰って返しに行くと、アリゲッティは土曜まで留守。トマトの水やりをたのむ書き置きがあった。"
+    scene: office
+    segments:
+      - { who: narrator, en: "In Japan, when you move, you have to tell the ward office within two weeks. Rosie had a reminder on her phone, with three exclamation points." }
+      - { who: narrator, en: "So on Monday morning, she took a few hours off work and walked to the ward office by the station. It was raining again." }
+      - { who: narrator, en: "She took Gayle's umbrella. Of course she did. It was the only umbrella she had." }
+      - { who: narrator, en: "The ward office was a big, busy building, full of signs, counters, and people waiting quietly in rows of chairs." }
+      - { who: narrator, en: "Rosie stood in the middle of the lobby and turned around slowly, like someone looking for their car in a parking lot." }
+      - { who: narrator, en: "A man at the information desk waved her over. He had a neat tie, a big smile, and a name tag: Orville." }
+      - { who: orville, en: "Good morning! Welcome! How can I help you? Please, don't be shy. I'm practicing my English. I love to practice." }
+      - { who: rosie, en: "Hi! I just moved here, and I think I need to register my address? I'm sorry, I don't really know how this works." }
+      - { who: orville, en: "No problem at all. First, please take a number from the machine. Then fill out this form, and have a seat." }
+      - { who: narrator, en: "The machine gave her a little paper ticket. Number forty-two. The screen above the counters said number twenty-nine." }
+      - { who: rosie, en: "Okay. Thirteen people ahead of me. That's fine. I've got a pen. I've got a form. I can do this." }
+      - { who: narrator, en: "The form had a lot of boxes. Name. Date of birth. Old address. New address. She filled them all out carefully, in her neatest handwriting." }
+      - { who: narrator, en: "When number forty-two came up, Orville was at the counter, and he seemed very happy to see her again." }
+      - { who: orville, en: "Ah, it's you! Let me see. Very good. Very good. Oh. Oh, I see. Your address is the other way around." }
+      - { who: rosie, en: "The other way around? What do you mean?" , tts: "The other way around? Whaddaya mean?" }
+      - { who: orville, en: "In America, you start small. Your apartment, your street, your city. In Japan, we start big. Tokyo first. Then the ward, the neighborhood, the block, then your building." }
+      - { who: rosie, en: "Oh, that's funny. It's like zooming in on a map instead of out. Okay, give me one second.", tts: "Oh, that's funny. It's like zooming in on a map instead of out. Okay, gimme one second." }
+      - { who: narrator, en: "She wrote it all again, from big to small. Orville checked every line with his finger, nodding at each one." }
+      - { who: narrator, en: "Then he printed her new address on the back of her residence card and handed it to her with both hands." }
+      - { who: orville, en: "Perfect. Now, one more thing. Health insurance. That's a different counter, over there on the right. Please take another number." }
+      - { who: rosie, en: "Another number? Okay. Sure. Why not." }
+      - { who: narrator, en: "The second number was fifty-eight. She sat down again. The lady next to her was knitting a tiny sweater. The man on her other side was asleep." }
+      - { who: narrator, en: "She texted Nana, her coworker at the design studio in Ebisu, who had lived in Tokyo for years. Nana sent a voice message back." }
+      - { who: nana, en: "Oh, the ward office! I remember. Next time, bring a book. And snacks. Don't worry, it's always slow, but it always works out." }
+      - { who: narrator, en: "By the time she had her insurance card, it was almost one o'clock. It had taken all morning." }
+      - { who: narrator, en: "But walking outside with a brand new card in her bag, she felt like she had won a prize." }
+      - { who: orville, en: "Excuse me! Rosie! Wait, please! Your umbrella! You forgot your umbrella!" }
+      - { who: narrator, en: "Orville came running down the front steps, holding Gayle's big navy umbrella over his head like a flag." }
+      - { who: rosie, en: "Oh my gosh, thank you! It's not even mine. My neighbor would never forgive me. I owe you one, Orville." }
+      - { who: orville, en: "You're welcome. And welcome to the neighborhood. Now it's official. You're on paper! Have a nice day!" }
+      - { who: narrator, en: "For lunch, she found a tiny restaurant with plastic food in the window, and pointed at the grilled fish. It came with rice, soup, and pickles." }
+      - { who: narrator, en: "On the way home, the rain stopped. She went straight to Gayle's door to give back the umbrella. She knocked. Nobody answered." }
+      - { who: narrator, en: "There was only a little note on the door, in neat handwriting. Visiting my sister. Back on Saturday. Could you water my tomatoes? G." }
+      - { who: narrator, en: "So Rosie watered the tomatoes, and carried the umbrella back upstairs. And that night, she stuck ticket number forty-two on her fridge." }
+    ph:
+      - { id: ph-take-a-number, en: "take a number", ja: "番号札を取る", match: "take (a|another) number", register: official, scene: "the ward office", trap: "数を取る ではなく、順番待ちの札を取る" }
+      - { id: ph-fill-out, en: "fill out this form", ja: "用紙に記入する", match: "fill(ed)? (out this|them all out)", register: official, scene: "an address form", trap: "アメリカ英語は fill out。fill in も通じる" }
+      - { id: ph-have-a-seat, en: "have a seat", ja: "おかけください", register: official, scene: "waiting to be called", trap: "席を持つ ではなく「座ってください」の丁寧な言い方" }
+      - { id: ph-other-way-around, en: "the other way around", ja: "逆、反対", register: official, scene: "writing an address", trap: "別の道をまわる ではなく、順番や向きが逆" }
+      - { id: ph-one-more-thing, en: "one more thing", ja: "もうひとつだけ", register: official, scene: "a second counter", trap: "もうひとつの物 ではなく、話を追加する合図" }
+      - { id: ph-works-out, en: "it always works out", ja: "最後はなんとかなる", match: "works out", register: colleague, scene: "a slow office", trap: "work out＝運動する の意味もあるが、ここは「うまくいく」" }
+      - { id: ph-owe-you-one, en: "I owe you one", ja: "ひとつ借りができたね", register: stranger, scene: "a forgotten umbrella", trap: "お金の借り ではなく、気軽なお礼" }
+    predict:
+      ask: "どようび、ブーケは どこへ いく？"
+      choices:
+        - "To the shrine festival on her own street."
+        - "Back to the ward office, for a third number."
+        - "To the airport, to pick up her mom."
+      answer: 0
+      ja: "自分の家の通りでひらかれる神社のお祭りへ。"
+
+  - kind: serial
+    id: serial-tokyo-4
+    chapter: 4
+    title: "The Festival on Our Street"
+    line: "ブーケが まちの おまつりに いきます"
+    ja: "土曜の午後、窓の外で太鼓の音。いつもの通りがちょうちんと屋台でいっぱいになっていた。浴衣のチッチと、焼きそば、チョコバナナ、かき氷。神輿がやってきて、町内会のたいへいたに「担いでみなよ！」と言われ、ブーケも「わっしょい」とさけびながら2ブロック担ぐ。川のそばでは、コンビニのレムがおじさんの金魚すくいの屋台を手伝っていた。ポイがやぶれて「もう少しだったのに！」。でもレムがこっそり1匹くれて、金魚の名前はモチ。帰り道、浴衣姿のアリゲッティが「傘はまだ持ってて。あしたは雨よ」。"
+    scene: street
+    segments:
+      - { who: narrator, en: "On Saturday afternoon, Rosie heard drums. Not far away. Close. Right outside her window." }
+      - { who: narrator, en: "She looked down from the balcony. Her quiet little street had changed. There were paper lanterns on strings, and food stands all the way to the river." }
+      - { who: narrator, en: "Her phone buzzed. It was Nana, standing in the street below and waving, in a blue cotton robe called a yukata." }
+      - { who: nana, en: "Surprise! It's the shrine festival! It's the biggest night of the year on your street. You've got to come down!", tts: "Surprise! It's the shrine festival! It's the biggest night of the year on your street. Ya gotta come down!" }
+      - { who: rosie, en: "There's a festival? On my street? Nobody told me! Okay, count me in. Give me two minutes.", tts: "There's a festival? On my street? Nobody told me! Okay, count me in. Gimme two minutes." }
+      - { who: narrator, en: "The street smelled like grilled corn and soy sauce. Kids ran past with masks on the backs of their heads. Old men sat fanning themselves." }
+      - { who: nana, en: "Okay, here's the plan. We eat everything. Fried noodles first. Then chocolate bananas. Then shaved ice. Trust me." }
+      - { who: narrator, en: "They ate fried noodles from paper boats, standing up, and shared a chocolate banana with rainbow sprinkles." }
+      - { who: narrator, en: "Rosie ate her strawberry shaved ice much too fast and gave herself a brain freeze." }
+      - { who: narrator, en: "Then the drums got louder, and the crowd moved to the sides of the street. Here it came." }
+      - { who: narrator, en: "It was a small golden shrine on thick wooden poles, carried on the shoulders of about thirty people, all shouting together." }
+      - { who: nana, en: "That's the mikoshi. It's like a shrine you can carry. People say the god of the shrine rides inside and gets a tour of the neighborhood." }
+      - { who: narrator, en: "In the front, shouting louder than anyone, was a big bear in a white headband. When he saw Rosie, he grinned and waved her over." }
+      - { who: teddy, en: "Hey! You're the new girl in Mr. Nook's building, right? I'm Teddy, from the neighborhood association. Come on, grab a pole! Give it a shot!", tts: "Hey! You're the new girl in Mr. Nook's building, right? I'm Teddy, from the neighborhood association. C'mon, grab a pole! Give it a shot!" }
+      - { who: rosie, en: "Me? Really? Are you sure? I don't know the words!" }
+      - { who: teddy, en: "Easy. There's only one word. Wasshoi! You shout it, and you push. That's the whole thing. You got this!" }
+      - { who: narrator, en: "So Rosie squeezed in under one of the poles, between a tall man and a tiny grandmother who was much stronger than she looked." }
+      - { who: narrator, en: "The pole was heavy on her shoulder. Everyone moved together, shouted together, and bounced the shrine up and down." }
+      - { who: narrator, en: "Wasshoi, wasshoi. She shouted until her voice cracked. She had no idea where they were going, and she didn't care." }
+      - { who: narrator, en: "After two blocks, her shoulder was sore, and she was laughing so hard she could barely breathe." }
+      - { who: teddy, en: "See? Now you're part of the neighborhood. Next year, you're carrying it the whole way. No excuses!" }
+      - { who: narrator, en: "Near the river was a stand with a shallow pool full of little orange goldfish. Behind it, looking sleepy, was Sherb from the convenience store." }
+      - { who: sherb, en: "Oh, hey! It's the rice ball girl! My uncle runs this stand. Wanna try? You get a paper scoop. If you catch a fish, you keep it.", tts: "Oh, hey! It's the rice ball girl! My uncle runs this stand. Wanna try? Ya get a paper scoop. If ya catch a fish, ya keep it." }
+      - { who: narrator, en: "The scoop was just a thin circle of paper on a plastic handle. Rosie leaned over and chased one little fish into a corner, very carefully." }
+      - { who: narrator, en: "She lifted it. For one second, the fish was on the scoop. Then the paper tore, and it dropped back in with a tiny splash." }
+      - { who: rosie, en: "No! I almost had it! It was right there!" }
+      - { who: sherb, en: "Yeah, everybody says that. Here, don't tell my uncle. You can have this one anyway. This little guy likes you. I can tell.", tts: "Yeah, ev'rybody says that. Here, don't tell my uncle. You can have this one anyway. This little guy likes you. I can tell." }
+      - { who: narrator, en: "He handed her a small plastic bag of water. Inside, one little orange fish looked at her very seriously." }
+      - { who: rosie, en: "Hi, little guy. I'm going to call you Mochi. Welcome to the family. It's just the two of us, but it's a nice apartment.", tts: "Hi, little guy. I'm gonna call you Mochi. Welcome to the family. It's just the two of us, but it's a nice apartment." }
+      - { who: narrator, en: "On the way home, she ran into Gayle, back from her sister's, in a pale purple yukata." }
+      - { who: narrator, en: "Rosie held up the fish, and then she started to say sorry about the umbrella." }
+      - { who: gayle, en: "Oh, you got one! Wonderful. And thank you for watering my tomatoes. The umbrella? Hang on to it. It's going to rain tomorrow." }
+      - { who: narrator, en: "That night, Mochi swam around and around in a salad bowl on the counter. Rosie lay on the tatami, with a sore shoulder and a full stomach." }
+      - { who: narrator, en: "Through the open window, she could still hear the drums, far away now, and somebody, somewhere, still shouting wasshoi." }
+    ph:
+      - { id: ph-count-me-in, en: "count me in", ja: "わたしも行く、のった！", register: friend, scene: "a surprise invitation", trap: "数に入れて＝参加する、という意味" }
+      - { id: ph-give-it-a-shot, en: "give it a shot", ja: "やってみなよ", register: neighbour, scene: "carrying the shrine", trap: "shot＝撃つ ではなく「ためし」" }
+      - { id: ph-you-got-this, en: "you got this", ja: "きみならできる", register: neighbour, scene: "cheering a beginner", trap: "これを手に入れた ではなく、はげましの言葉" }
+      - { id: ph-no-excuses, en: "no excuses", ja: "言いわけはなしだよ", register: neighbour, scene: "next year's festival", trap: "おこっているのではなく、明るく念をおしている" }
+      - { id: ph-almost-had-it, en: "I almost had it", ja: "もう少しだったのに", register: friend, scene: "goldfish scooping", trap: "持っていた ではなく、あと一歩でできた" }
+      - { id: ph-i-can-tell, en: "I can tell", ja: "見ればわかるよ", match: "\\bI can tell\\b", register: friend, scene: "a free goldfish", trap: "話せる ではなく、様子でわかる" }
+      - { id: ph-hang-on-to, en: "hang on to it", ja: "持っておいて", register: neighbour, scene: "the borrowed umbrella", trap: "ぶらさがる ではなく、手放さずに持っておく" }
+    predict:
+      ask: "つぎの はなしで、なにが おこる？"
+      choices:
+        - "Mochi the goldfish jumps out of the bowl and into the river."
+        - "A small earthquake shakes her apartment, and the next day there's a drill."
+        - "Teddy asks her to lead the festival next year."
+      answer: 1
+      ja: "小さな地震で部屋がゆれ、次の日は防災訓練。"
+
+  - kind: serial
+    id: serial-tokyo-5
+    chapter: 5
+    title: "The Night the Floor Moved"
+    line: "ブーケが はじめて じしんに あいます"
+    ja: "次の土曜の夜、歯みがき中に鏡がゆれだした。はじめての地震。ブーケは歯ブラシをくわえたまま固まってしまう。10秒ほどでおさまると、アリゲッティが「大丈夫？」と様子を見に来て、麦茶をいれてくれる。翌朝は小学校で町内の防災訓練。名簿を持ったたぬきち、消火器、煙の中を歩くテント、そして地震体験車。消防のチーフに「テーブルの下に入って、脚をしっかり持って。手を離すな」と教わる。午後はアリゲッティと赤い防災リュックを作る。水、懐中電灯、ラジオ、乾パン、そして「気持ちを落ちつける」ためのあめ。リュックは紺色の傘のとなりに。"
+    scene: gate
+    segments:
+      - { who: narrator, en: "The next Saturday night, Rosie was brushing her teeth when the bathroom mirror began to shake." }
+      - { who: narrator, en: "At first, she thought it was a truck. Then the ceiling light started to swing, and the water in Mochi's bowl moved like a tiny ocean." }
+      - { who: rosie, en: "Oh. Oh no. Is this an earthquake? This is an earthquake. Okay. Okay. What do I do? What do I do?" }
+      - { who: narrator, en: "She stood very still, with the toothbrush in her mouth. The floor creaked. The glasses in the kitchen rattled." }
+      - { who: narrator, en: "After maybe ten seconds, it just stopped. The light swung a little more and was still. Outside, a dog barked once." }
+      - { who: narrator, en: "Her heart was pounding. Then she heard footsteps on the stairs, and a gentle knock on her door." }
+      - { who: gayle, en: "Rosie? It's Gayle. Are you all right, dear? I thought I'd better check on you. Was that your first one?" }
+      - { who: rosie, en: "Yes! I just stood there. With a toothbrush. I didn't know what to do. Was that a big one?" }
+      - { who: gayle, en: "Oh, no, that was a small one. We get those now and then. But there's a neighborhood drill tomorrow morning, at the school. Come with me." }
+      - { who: narrator, en: "Gayle made them both cold barley tea, and they drank it on Rosie's floor until her hands stopped shaking." }
+      - { who: narrator, en: "The next morning, the school playground was full of neighbors. Kids, grandparents, families with strollers. Tom Nook was there with a clipboard, of course." }
+      - { who: tom-nook, en: "Good morning, everyone! Thank you for coming! Yes, yes. Please find your name on the list. And Rosie, welcome to your very first drill!" }
+      - { who: narrator, en: "Firefighters had set up stations all around the playground. At one, people were taking turns with a fire extinguisher on a pretend fire." }
+      - { who: narrator, en: "At another, there was a tent full of harmless white smoke, and you walked through it bent over low, a cloth over your mouth." }
+      - { who: narrator, en: "And at the far end was a truck with a little kitchen built on the back. The sign said Earthquake Experience." }
+      - { who: narrator, en: "The firefighter in charge was a gray wolf with a serious face and a loud voice. His name, of all things, was Chief." }
+      - { who: chief, en: "All right. In this room, we make a real earthquake. When it starts, get under the table and hold on to the leg. Don't let go. Got it?" }
+      - { who: rosie, en: "Got it. Under the table. Hold on to the leg. Don't let go. Wait. How big is big?" }
+      - { who: chief, en: "Big enough. Don't worry, it's safe. It's better to feel it here, with me, than for the first time at home, alone." }
+      - { who: narrator, en: "Rosie and Gayle sat down in the little kitchen. And then the whole room began to shake. Not a little. A lot. Like being inside a washing machine." }
+      - { who: narrator, en: "Rosie dove under the table and held on to the leg with both hands. Next to her, Gayle was holding on too, and somehow she was laughing." }
+      - { who: gayle, en: "Hold on tight, dear! Here comes the big part! Oh, my glasses! There they go!" }
+      - { who: narrator, en: "When it stopped, Rosie crawled out. Her legs felt like noodles. Chief looked at her for a long moment. Then he gave her a thumbs-up." }
+      - { who: chief, en: "Good. You stayed under. That's the most important thing. Now. Do you have an emergency bag at home?" }
+      - { who: rosie, en: "An emergency bag? Um. I have a suitcase. And a few rice balls. Does that count?" }
+      - { who: gayle, en: "Don't worry, I'll help you make one. Water, a flashlight, a radio, some crackers. You never know. Better safe than sorry." }
+      - { who: narrator, en: "That afternoon, they filled a red backpack together. Bottles of water. A flashlight. A little radio. Hard crackers that would keep for years." }
+      - { who: narrator, en: "Gayle also put in a pair of socks, a whistle, and a small bag of hard candy." }
+      - { who: gayle, en: "The candy is for your nerves. That's not official. That's just my advice." }
+      - { who: narrator, en: "Back home, Rosie put the red backpack by her door, next to Gayle's navy umbrella. Looking at them, she felt a little braver." }
+      - { who: rosie, en: "Okay, Mochi. If the floor moves again, I'm getting under the table. And you're, well, you're already in the water. You'll be fine.", tts: "Okay, Mochi. If the floor moves again, I'm gettin' under the table. And you're, well, you're already in the water. You'll be fine." }
+      - { who: narrator, en: "That night, a train went by, and the glasses rattled a little on the shelf. Rosie opened one eye. Then she smiled, and went back to sleep." }
+    ph:
+      - { id: ph-check-on, en: "check on you", ja: "様子を見に来る", match: "check on (you|her|him)", register: neighbour, scene: "after a small earthquake", trap: "チェックする ではなく、大丈夫か見に行く" }
+      - { id: ph-got-it, en: "got it?", ja: "わかった？", match: "\\bgot it\\b", register: official, scene: "a safety drill", trap: "手に入れた ではなく「了解」。答えも Got it." }
+      - { id: ph-dont-let-go, en: "don't let go", ja: "手を離さないで", register: official, scene: "under the table", trap: "let go＝行かせる ではなく、つかんだ手を離す" }
+      - { id: ph-hold-on-tight, en: "hold on tight", ja: "しっかりつかまって", register: neighbour, scene: "the earthquake truck", trap: "hold on は「待って」の意味もあるが、ここは文字どおり" }
+      - { id: ph-you-never-know, en: "you never know", ja: "何があるかわからないから", register: neighbour, scene: "packing an emergency bag", trap: "あなたは知らない ではなく「万一にそなえて」" }
+      - { id: ph-better-safe, en: "better safe than sorry", ja: "備えあれば憂いなし", register: neighbour, scene: "packing an emergency bag", trap: "後悔するより、用心しておくほうがいい" }
+    predict:
+      ask: "つぎの はなしで、ブーケと アリゲッティは どこへ いく？"
+      choices:
+        - "To a camping store, to buy a second emergency bag."
+        - "To Mount Fuji itself, on an early morning bus."
+        - "To the neighborhood bathhouse, with Mount Fuji painted on the wall."
+      answer: 2
+      ja: "富士山の絵がある、近所の銭湯へ。"
+
+  - kind: serial
+    id: serial-tokyo-6
+    chapter: 6
+    title: "Mount Fuji on the Wall"
+    line: "ブーケが はじめて せんとうに いきます"
+    ja: "夕方がやっと涼しくなったある木曜、仕事帰りのブーケをアリゲッティが銭湯にさそう。男湯と女湯は別。木の札の靴箱、初めての人はアリゲッティのおごり。「まず体を洗ってから湯船へ」。壁いっぱいに富士山の絵。お湯は熱くて「スープじゃないの？」。でもゆっくり入ると、区役所の用紙もごみの日も全部とけていく。向かいのおばあさんの「何年も通ってる人みたい」は、最高のほめ言葉。最後は腰に手をあててコーヒー牛乳。「毎週木曜ね」と約束し、小雨の中、紺色の傘にふたりで入って帰る。"
+    scene: living
+    segments:
+      - { who: narrator, en: "A few days later, the evenings were finally cooler. The cicadas had gone quiet, and the crickets had taken over." }
+      - { who: narrator, en: "One Thursday, Rosie came home late, stiff from a long day at her desk. Gayle was on the stairs, holding a little plastic basket." }
+      - { who: gayle, en: "Perfect timing! I'm going to the bathhouse. Why don't you come along? Nothing fixes a long day like a hot bath. Bring a towel." }
+      - { who: rosie, en: "A public bath? With other people? Um. I've never done that. Is it, like, everybody together?", tts: "A public bath? With other people? Um. I've never done that. Is it, like, ev'rybody together?" }
+      - { who: gayle, en: "Men on one side, women on the other. Don't worry, I'll show you everything. And if you hate it, you never have to go again." }
+      - { who: narrator, en: "The bathhouse was three streets away, on a corner. It had a tall chimney, a blue cloth curtain over the door, and a sign Rosie couldn't read yet." }
+      - { who: narrator, en: "Inside, they put their shoes in little lockers with wooden keys, and Gayle paid for both of them before Rosie could find her wallet." }
+      - { who: gayle, en: "My treat. You're a first-timer, and first-timers don't pay. That's my rule, not theirs." }
+      - { who: narrator, en: "In the changing room, a few older ladies were drying their hair. One of them smiled at Rosie, the kind of smile that says, oh, a new one." }
+      - { who: narrator, en: "Rosie was nervous. But nobody was looking at anybody. Everyone was just there to get clean and warm, and to talk about their grandchildren." }
+      - { who: gayle, en: "Rule number one. You wash first, sitting on a stool. Then you get in. The bath is for soaking, not for washing." }
+      - { who: narrator, en: "So they sat on low plastic stools in front of little mirrors and washed. Then Rosie stood up, turned around, and saw the wall." }
+      - { who: narrator, en: "It was covered with a huge painting of Mount Fuji. Blue sky, snow on top, and a blue lake at the bottom." }
+      - { who: rosie, en: "Whoa. Gayle. There's a mountain. There's a whole mountain on the wall." }
+      - { who: gayle, en: "Isn't it lovely? A lot of the old bathhouses have one. Somebody painted it by hand, and every few years, they touch it up." }
+      - { who: narrator, en: "Then Rosie put one foot in the water, and pulled it right back out." }
+      - { who: rosie, en: "Oh my gosh, it's so hot! How is anybody sitting in this? Are you sure this isn't soup?" }
+      - { who: gayle, en: "Take it slow. One foot, then the other. Then sit, and don't move. Believe me, in a minute, you won't want to get out.", tts: "Take it slow. One foot, then the other. Then sit, and don't move. Believe me, in a minute, you won't wanna get out." }
+      - { who: narrator, en: "Rosie went in very slowly. Then she sat down, up to her shoulders, and let out a long breath." }
+      - { who: narrator, en: "The heat went into her shoulders, her back, and her tired feet. The ward office forms, the trash days, all of it just floated away." }
+      - { who: rosie, en: "Okay. I take it back. This is the best thing that's ever happened to me. I'm never getting out. I live here now.", tts: "Okay. I take it back. This is the best thing that's ever happened to me. I'm never gettin' out. I live here now." }
+      - { who: narrator, en: "An old lady across the bath laughed and said something to Gayle in Japanese. Gayle laughed too." }
+      - { who: rosie, en: "Wait, what did she say? Was it about me?", tts: "Wait, what'd she say? Was it about me?" }
+      - { who: gayle, en: "She said you look like you've been coming here for years. That's a compliment, dear. A big one." }
+      - { who: narrator, en: "They soaked until their faces were pink. Then they got dressed, and Gayle bought two little glass bottles of coffee milk from a fridge by the door." }
+      - { who: gayle, en: "Now, this is important. You drink it standing up, with one hand on your hip. Like this. Don't ask me why. It's just how it's done." }
+      - { who: narrator, en: "So they stood side by side, each with one hand on her hip, and drank their coffee milk all at once. It was sweet and cold and perfect." }
+      - { who: rosie, en: "Oh, that hits the spot. Gayle, I'm serious. Can we do this every Thursday?" }
+      - { who: gayle, en: "Every Thursday. It's a date. But next time, you bring your own towel." }
+      - { who: narrator, en: "Outside, it had started to drizzle. Rosie opened the big navy umbrella over both of them, and they walked home slowly, warm all the way through." }
+      - { who: rosie, en: "You know, I keep meaning to give this back to you. And then it rains every single time." }
+      - { who: gayle, en: "Then it's doing its job, isn't it? Keep it a little longer." }
+      - { who: narrator, en: "That night, Rosie slept better than ever. She dreamed she was floating on a warm blue lake, at the foot of a very big mountain." }
+    ph:
+      - { id: ph-come-along, en: "come along", ja: "いっしょに来る", match: "come along", register: neighbour, scene: "an invitation on the stairs", trap: "沿って来る ではなく、ついて来る、同行する" }
+      - { id: ph-my-treat, en: "my treat", ja: "わたしのおごり", register: neighbour, scene: "paying at the front", trap: "わたしのごほうび ではなく「ここは払うよ」" }
+      - { id: ph-first-timer, en: "first-timer", ja: "初めての人", match: "first-timers?", register: neighbour, scene: "a bathhouse beginner", trap: "first time の人＝初心者、初めて来た人" }
+      - { id: ph-take-it-slow, en: "take it slow", ja: "ゆっくりね", register: neighbour, scene: "very hot water", trap: "ゆっくり取る ではなく、あせらず少しずつ" }
+      - { id: ph-take-it-back, en: "I take it back", ja: "さっきのは取り消し", register: friend, scene: "changing her mind", trap: "返品する ではなく、言ったことを撤回する" }
+      - { id: ph-hits-the-spot, en: "that hits the spot", ja: "これこれ、最高", register: friend, scene: "cold coffee milk", trap: "場所に当たる ではなく、まさにほしかった味" }
+      - { id: ph-its-a-date, en: "it's a date", ja: "決まりね、約束よ", register: neighbour, scene: "every Thursday", trap: "デート ではなく、約束成立の決まり文句" }
+    predict:
+      ask: "さいごの はなしで、ブーケは かさを どうする？"
+      choices:
+        - "She finally gives it back, with a gift, and Gayle hands it right back to her."
+        - "She leaves it on a train and searches all over Tokyo for it."
+        - "A strong wind blows it into the river."
+      answer: 0
+      ja: "やっと引っ越しのあいさつの品を持って返しに行くが、アリゲッティは傘をそのままくれる。"
+
+  - kind: serial
+    id: serial-tokyo-7
+    chapter: 7
+    title: "Under the Harvest Moon"
+    line: "ブーケが みんなと おつきみを します"
+    ja: "9月の終わり、東京に来てもうすぐ1か月。ごみの日も、おにぎりの開け方もわかるようになり、もう地図もいらない。職場のチッチから、今夜は十五夜、お月見の日だと聞く。それに、引っ越したらご近所にあいさつの品を持っていくものだとも。あわてたブーケは、コンビニでレムから最後の月見だんごを買い、お菓子の箱と紺色の傘を持ってアリゲッティのもとへ。アリゲッティはお菓子を受け取り、傘は「もうあなたの傘。ノックする理由になるでしょ」と返す。夜は川ぞいの小さな公園で、たぬきち、チッチ、休憩中のレムといっしょにお月見。月のうさぎがもちをついているのが見えた。「時がたつのは早いわね。来年はあなたが、新しい人に傘を貸す番よ」。"
+    scene: street
+    segments:
+      - { who: narrator, en: "By the end of September, Rosie had been in Tokyo for almost a month. She knew, because she had been crossing off the days on her calendar." }
+      - { who: narrator, en: "She knew a lot of things now. Burnable trash on Tuesdays and Fridays. Pull number one, then two, then three. Wash first, then soak." }
+      - { who: narrator, en: "She knew which vending machine had hot corn soup, and which bakery had melon bread at four o'clock. She didn't need the map anymore." }
+      - { who: narrator, en: "On Friday afternoon, at the studio, Nana leaned over the little wall between their desks." }
+      - { who: nana, en: "Hey, tonight's the harvest moon. It's kind of a thing here. You look at the moon, eat little white rice dumplings, and just hang out.", tts: "Hey, tonight's the harvest moon. It's kinda a thing here. You look at the moon, eat little white rice dumplings, and just hang out." }
+      - { who: nana, en: "Oh, and when you move in somewhere, you're supposed to bring your neighbors a little gift. Like a box of sweets. Did you do that?", tts: "Oh, and when you move in somewhere, you're s'posed to bring your neighbors a little gift. Like a box of sweets. Did you do that?" }
+      - { who: rosie, en: "A gift? When you move in? No! Nobody told me! It's been a whole month! And Gayle has done so much for me." }
+      - { who: narrator, en: "So on the way home, Rosie stopped at the sweet shop by the station, and then at the convenience store, where Sherb was just starting his shift." }
+      - { who: sherb, en: "Moon dumplings? Yeah, we've got them. You're lucky. Last two boxes. Are you having a party or something?", tts: "Moon dumplings? Yeah, we got 'em. You're lucky. Last two boxes. Are you havin' a party or somethin'?" }
+      - { who: narrator, en: "Rosie bought both boxes, and just in case." }
+      - { who: narrator, en: "That evening, she knocked on Gayle's door with a box of sweets, the big navy umbrella, and a very red face." }
+      - { who: rosie, en: "Gayle, I'm so sorry. I just found out I was supposed to bring you a gift when I moved in. So, here. A month late." }
+      - { who: rosie, en: "And here's your umbrella. Finally. Thank you for lending it to me." }
+      - { who: gayle, en: "Oh, Rosie. You shouldn't have. You watered my tomatoes. You came to the bath with me. That's better than any box of sweets." }
+      - { who: narrator, en: "Gayle took the sweets. Then she looked at the umbrella for a moment, and gently pushed it back into Rosie's hands." }
+      - { who: gayle, en: "No, you keep this one. It knows the way to your door now. And any time you need a reason to knock, you'll have one." }
+      - { who: narrator, en: "Rosie didn't trust herself to say anything. So she just gave her a hug, umbrella and all." }
+      - { who: narrator, en: "Later, when it was dark, they met at the little park by the river. Tom Nook brought folding chairs. Nana brought a thermos of tea." }
+      - { who: narrator, en: "And Sherb came over on his break, still in his uniform, with a bag of snacks the store was about to throw away." }
+      - { who: tom-nook, en: "What a night! Not a single cloud. Yes, yes. You know, Rosie, people here say there's a rabbit in the moon, making rice cakes. Look closely." }
+      - { who: rosie, en: "A rabbit? Really? Where? Back home, people say there's a face. The man in the moon." }
+      - { who: gayle, en: "Look at the dark parts. There are his long ears. There's his little hammer. And there, that's the bowl he makes the rice cakes in." }
+      - { who: rosie, en: "Oh! I see it! I actually see it! Now I'm never going to be able to unsee that.", tts: "Oh! I see it! I actually see it! Now I'm never gonna be able to unsee that." }
+      - { who: narrator, en: "They ate the dumplings, which were soft and chewy and only a little bit sweet. Sherb ate four. Nobody said anything." }
+      - { who: nana, en: "So? One month. How does it feel? Honestly." }
+      - { who: rosie, en: "Honestly? On my first night, I sat on the floor and talked to my apartment. I was so lonely." }
+      - { who: rosie, en: "And now look. I have a neighbor, and a landlord, and a coworker, and a convenience store guy." }
+      - { who: sherb, en: "Hey, I'm not just the convenience store guy. I'm also the goldfish guy." }
+      - { who: rosie, en: "And a goldfish guy. And a goldfish. And a bath on Thursdays. I think I really live here now." }
+      - { who: gayle, en: "Time flies, doesn't it? You'll see. Next year, you'll be the one lending an umbrella to somebody new." }
+      - { who: narrator, en: "When the tea was gone, everybody said good night and went home, one by one, down the little streets by the river." }
+      - { who: narrator, en: "Rosie climbed the stairs, said good night to Mochi, and stood the big navy umbrella by her door. Her umbrella now." }
+      - { who: narrator, en: "Then she called her mom, who was just having breakfast back in Ohio, and told her all about the rabbit." }
+      - { who: narrator, en: "Outside, the moon was high and white over the river. And the whole neighborhood was asleep under it. Goodnight." }
+    ph:
+      - { id: ph-its-a-thing, en: "it's kind of a thing", ja: "ちょっとした恒例なの", match: "kind of a thing", register: colleague, scene: "the harvest moon", trap: "物 ではなく「よくある習慣、定番」" }
+      - { id: ph-hang-out, en: "hang out", ja: "のんびり過ごす", match: "\\bhang out\\b", register: colleague, scene: "moon viewing", trap: "外にぶらさがる ではなく、だらだら一緒に過ごす" }
+      - { id: ph-supposed-to, en: "you're supposed to", ja: "〜するものだ、〜することになっている", match: "supposed to", register: colleague, scene: "a gift for the neighbors", trap: "想像する ではなく、ふつうはそうするというきまり" }
+      - { id: ph-shouldnt-have, en: "you shouldn't have", ja: "気をつかわなくていいのに", register: neighbour, scene: "receiving a gift", trap: "するべきでなかった と責めていない。うれしいお礼" }
+      - { id: ph-and-all, en: "umbrella and all", ja: "傘ごと", match: "\\band all\\b", register: friend, scene: "a hug at the door", trap: "そしてすべて ではなく「〜もいっしょに、〜ごと」" }
+      - { id: ph-time-flies, en: "time flies", ja: "時がたつのは早い", register: neighbour, scene: "one month in Tokyo", trap: "時間が飛ぶ＝あっというまに過ぎる" }

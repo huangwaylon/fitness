@@ -196,7 +196,7 @@ there, never the files. `--check` fails when a file is stale, and `--clips` list
 
 ## Stories (`story/`, おやすみ ものがたり, curriculum §7.1)
 
-Bedtime serials in the framework's `serial` shape, one file per serial (`st-johnny`, `st-cafe`): extensive listening
+Bedtime serials in the framework's `serial` shape, one file per serial (`st-johnny`, `st-cafe`, and `st-tokyo`, a draft until A5): extensive listening
 at ~95 % comprehension, so no score, no questions, no notes or tags. They live in `story/` so content.test doesn't
 read them; `src/lib/kikimimi/stories.test.ts` does.
 
