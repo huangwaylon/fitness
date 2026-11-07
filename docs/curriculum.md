@@ -303,7 +303,7 @@ The learning scientist, the EFL teacher with the curriculum designer, and the ga
 
 **Tier 3 (later or seasonal, none built):** とたけけの よふかしラジオ, いっしょに クッキング, ウィスプの なぞとき, わらいどころ (humour is hard for TTS); フータの ノート and おなじ はなし、3にん fold into long-form and たちぎき.
 
-**Cut:** minimal-pair fishing (barely transfers at TOEIC 700+), riddles (no listening target), karaoke and the K.K. chant (recall, and singing is embarrassing). Mic modes were parked for iOS fragility and shyness, then designed as private, opt-in modes and approved 2026-11-07 (docs/kikimimi-mic.md; the user's phone probe comes first).
+**Cut:** minimal-pair fishing (barely transfers at TOEIC 700+), riddles (no listening target), karaoke and the K.K. chant (recall, and singing is embarrassing). Mic modes were parked for iOS fragility and shyness, then designed as private, opt-in modes, approved and built 2026-11-07 (M0–M7, docs/kikimimi-mic.md); pending: the user's mic probe on both phones.
 
 **Two changes the scientist flagged, both adopted:** the speed ladder rewards rungs climbed in order and stops at the first miss; 「いっぱつ」 is a badge, not +30 points (the user's decision, 2026-11-06), so replaying isn't discouraged.
 
@@ -476,6 +476,6 @@ Each increment took 1–3 agent-days, landed on main green and shipped something
 - Q8. たいせん: an opt-in toggle, co-op the default (the user's choice).
 - Q9. The news: evergreen bulletins plus today's real Tokyo weather (curriculum-wave2.md §5).
 - Q10. The listening check: the gate's flags, heard by the user on the phone after each batch.
-- Q11. Shadowing: the mic modes, approved 2026-11-07 (docs/kikimimi-mic.md).
+- Q11. Shadowing: the mic modes, approved and built 2026-11-07 (docs/kikimimi-mic.md).
 - Q12. The daily hook: the hub's daily menu (kikimimi-ux.md §7.1), no push.
 - Q13. The guest: its own きろく, no couple summary.
