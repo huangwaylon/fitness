@@ -6,7 +6,7 @@ track: broadcast
 seeds: [59, 60, 62]
 features: { primary: linking, review: numbers }
 cando: "朝の ニュースの 話題と 大事な ところを 聞き取れる"
-status: draft
+status: listened
 cast: { isabelle: us-f4 }
 items:
   - kind: news

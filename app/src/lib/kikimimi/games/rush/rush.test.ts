@@ -24,12 +24,12 @@ const items = (u: string) => listenOf(u)!.items.filter((it): it is Extract<Liste
 beforeAll(() => load(...(FILES as Unit[])));
 
 describe('すうじ ラッシュ: the deal', () => {
-  it('deals the listened files at the lobby’s place only (this build: both drafts, till A3 and the listening check)', () => {
+  it('deals the listened files at the lobby’s place only (this build: both listened since A3)', () => {
     const listen: Record<string, ListenEntry> = { 's1-rush': ['rush', 2, 'listened'], 's2-rush': ['rush', 3, 'draft'], 's2-call-a': ['call', 3, 'listened'] };
     expect(filesOf('rush', 3, listen)).toEqual(['s1-rush']);
     expect(filesOf('rush', 4, listen)).toEqual([]);
-    expect(filesOf('rush', 3, INDEX.listen)).toEqual([]);
-    expect(FILES.map((u) => INDEX.listen[u])).toEqual([['rush', 2, 'draft'], ['rush', 3, 'draft']]);
+    expect(filesOf('rush', 3, INDEX.listen)).toEqual(['s1-rush']);
+    expect(FILES.map((u) => INDEX.listen[u])).toEqual([['rush', 2, 'listened'], ['rush', 3, 'listened']]);
   });
 
   it('is the same for a seed: 8 customers, each its own clip, no two of one frame; the seeds vary it', () => {

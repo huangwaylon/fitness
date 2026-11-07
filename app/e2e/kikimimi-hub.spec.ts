@@ -48,7 +48,7 @@ test('the hub, あそぶ, a mode’s page, きろく and せってい: ‹ pops 
   // あそぶ: the modes by situation, only the playable ones (おさらい: the demo's A has played)
   await sheet(page).locator('[data-kiki-tile="asobu"]').click();
   await expect(title(page)).toHaveText('遊ぶ');
-  await expect(sheet(page).locator('[data-kiki-group="quick"] [data-kiki-mode-tile]')).toHaveText([/ひとこと クイズ/, /スピード はしご/, /おさらい/, /ことば タイル/]);
+  await expect(sheet(page).locator('[data-kiki-group="quick"] [data-kiki-mode-tile]')).toHaveText([/ひとこと クイズ/, /スピード はしご/, /おさらい/, /ことば タイル/, /すうじ ラッシュ/]);
   await expect(sheet(page).locator('[data-kiki-group="scene"] [data-kiki-mode-tile]')).toHaveText([/アナウンス/, /ようじ でんわ/, /たちぎき/]);
   await snap(page, 'asobu');
 

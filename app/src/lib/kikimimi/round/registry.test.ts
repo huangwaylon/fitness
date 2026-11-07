@@ -38,8 +38,8 @@ describe('the registry', () => {
       's1-tile-a': ['tile', 2, 'listened'], 's1-call': ['call', 2, 'voiced'], 's2-tachi-a': ['tachi', 3, 'listened']
     });
     expect(['tile', 'call', 'tachi', 'mane', 'quiz'].map((gm) => r.ready(gm))).toEqual([true, false, false, true, false]);
-    // this build: ことば タイル's, ようじ でんわ's and たちぎき's files listened (A1); すうじ ラッシュ's and ニュース's still drafts
-    expect(['tile', 'call', 'tachi', 'rush', 'news'].map((gm) => LANES.ready(gm))).toEqual([true, true, true, false, false]);
+    // this build: ことば タイル's, ようじ でんわ's and たちぎき's files listened (A1), すうじ ラッシュ's and ニュース's (A3)
+    expect(['tile', 'call', 'tachi', 'rush', 'news'].map((gm) => LANES.ready(gm))).toEqual([true, true, true, true, true]);
   });
 
   it('a lane’s game plays at a place its listened files have, its options the quiz’s by default', () => {
