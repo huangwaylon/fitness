@@ -1,0 +1,640 @@
+# 注文する (fd-order): wave 2a, かわ, たべもの (docs/curriculum-wave2.md §3.1). A server checking an order in a busy
+# American diner: what comes with it, what's on the side, what costs extra, and the table talk around it ("Are you
+# still working on that?", "I'm good"). The weak forms of or / for / of / to ("soup er salad", "fer here er ta go").
+# ききかえす's "Sorry?", "did you say" and "so that's" are recycled. Its call: call-pizza-order (content/listen/s1-call-b.yaml).
+# きょうの ひとこと: "Are you still working on that? …Can I have a bite?" (まだ 食べてる？…ひとくち ちょうだい。)
+schema: 1
+unit: fd-order
+name: 注文する
+stage: kawa
+domain: tabemono
+host: brewster
+scene: restaurant
+sound: weak-form
+cando:
+  who: 店員
+  does: 注文の 確認や 質問を する
+  cond: レストランの ざわざわの 中で
+  catch: 何が 来るか・追加の 料金
+  short: 注文の 確認が 聞き取れる
+  en: "I can follow a server checking my order and asking questions, over a busy restaurant at natural speed, and catch what's coming and any extra charge."
+status: draft
+letter:
+  en: "You ordered like a regular today. Soup or salad, for here or to go, dressing on the side: you caught every question, even with the lunch crowd. Next time, try the pie. It comes with a little extra whipped cream, on the house. I'll have a cup ready for you. Coo."
+  ja: "きょうは じょうれんさん みたいに ちゅうもん できたね。スープか サラダか、てんないか もちかえりか、ドレッシングは べつで。おひるの こみあいの なかでも、ぜんぶの しつもんが きこえてた。こんどは パイを ためして みて。ホイップクリームを すこし おおめに、おみせからの サービスで。コーヒーも 1ぱい よういして おくよ。クルッ。"
+ph:
+  - { id: ph-for-here, en: "for here or to go", ja: "店内で？ 持ち帰り？", match: "\\bfor here\\b", register: service, scene: "a counter or a café", trap: "to go＝持ち帰り。「行く」ではない" }
+  - { id: ph-soup-salad, en: "soup or salad", ja: "スープか サラダか", match: "\\bsoup or (a )?salad\\b", register: service, scene: "what comes with a main", trap: "「スーパーサラダ」ではない。A か B かの質問" }
+  - { id: ph-on-the-side, en: "on the side", ja: "別添えで", match: "\\bon the side\\b", register: service, scene: "sauce and dressing", trap: "横に置く ではなく「別の器で」" }
+  - { id: ph-still-working, en: "are you still working on that?", ja: "まだ 食べて いますか？", match: "\\bstill working on (that|this|it|those|the)\\b", register: service, scene: "clearing plates", trap: "仕事ではない。「お皿を下げても いい？」" }
+  - { id: ph-right-back, en: "I'll be right back with…", ja: "すぐ お持ちします", match: "\\b(be|coming|come) right (back|out|over)\\b", register: service, scene: "the server leaving the table", trap: "戻るだけでなく「持ってくる」約束" }
+  - { id: ph-comes-with, en: "it comes with", ja: "〜が 付いて きます", match: "\\bcomes? with\\b", register: service, scene: "what's included", trap: "一緒に来る人 ではなく「セットで付く」" }
+  - { id: ph-im-good, en: "I'm good", ja: "大丈夫です（いりません）", match: "\\b(I'm|we're) good\\b", register: service, scene: "turning down more", trap: "元気です ではなく「結構です」" }
+  - { id: ph-extra, en: "it's two dollars extra", ja: "追加料金が かかる", match: "\\b(dollars?|bucks|\\$[0-9.]+) extra\\b|\\bextra (charge|fee)\\b|\\b(is|it's|that's) extra\\b", register: service, scene: "add-ons and swaps", trap: "extra＝追加料金。「おまけ」ではない" }
+items:
+  # ---- であい: an order at a diner ----
+  - id: dk-diner-order
+    lv: 3
+    type: gist
+    speaker: brewster
+    voice: us
+    cast: us-m3
+    en: "Hi there! Are you guys ready to order, or do you need a minute? I think we're ready. Can I get the chicken sandwich? Sure. That comes with fries or a side salad. Salad, please, with the dressing on the side. You got it. Anything to drink? Just water, thanks! Perfect. I'll be right back with your water."
+    ja: "チキンサンドとサラダ。ドレッシングは別添え。"
+    note: "on the side＝別添え。サラダに かけずに 来る"
+    choices: ["A chicken sandwich and a salad, dressing on the side.", "A chicken sandwich and fries.", "A salad with the dressing already on it."]
+    answer: 0
+    cja: ["チキンサンドとサラダ。ドレッシングは別添え。", "チキンサンドとポテト。", "ドレッシングがかかったサラダ。"]
+    why: "fries or a side salad から Salad を選んだ。dressing on the side は別の器で来るので、かかっていない。ポテトは選ばなかった。"
+    ctx: "ダイナーで、店員が注文を取りに来ました"
+    focus: "with the dressing on the side"
+    ask: "何が 来る？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+    lines:
+      - { who: brewster, cast: us-m3, en: "Hi there! Are you guys ready to order, or do you need a minute?", ja: "いらっしゃいませ！ ご注文お決まりですか、それとももう少しお待ちしましょうか？" }
+      - { who: maple, cast: us-f3, en: "I think we're ready. Can I get the chicken sandwich?", ja: "決まったと思います。チキンサンドをお願いできますか？" }
+      - { who: brewster, cast: us-m3, en: "Sure. That comes with fries or a side salad.", ja: "かしこまりました。ポテトかサラダが付きます。" }
+      - { who: maple, cast: us-f3, en: "Salad, please, with the dressing on the side.", ja: "サラダで、ドレッシングは別にしてください。" }
+      - { who: brewster, cast: us-m3, en: "You got it. Anything to drink?", ja: "承知しました。お飲み物は？" }
+      - { who: maple, cast: us-f3, en: "Just water, thanks!", ja: "お水だけで、ありがとう！" }
+      - { who: brewster, cast: us-m3, en: "Perfect. I'll be right back with your water.", ja: "かしこまりました。すぐお水をお持ちします。" }
+  - id: dk-for-here
+    lv: 3
+    type: next
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Hi! What can I get for you? Can I get a turkey club and a small coffee? Sure. For here or to go?"
+    ja: "持ち帰りで。"
+    note: "to go＝持ち帰り。どこへ 行くかは 聞いて いない"
+    choices: ["To go, please.", "I'm going to the station.", "Here you are."]
+    answer: 0
+    cja: ["持ち帰りでお願いします。", "駅に行くところです。", "はい、どうぞ。"]
+    why: "For here or to go? は「店内で食べるか、持ち帰りか」。to go を「行く」と取ると、行き先を答えてしまう。Here you are は物を渡すときの言葉。"
+    ctx: "サンドイッチ店のカウンターで注文中です"
+    focus: "For here or to go?"
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+    lines:
+      - { who: tia, cast: us-f4, en: "Hi! What can I get for you?", ja: "こんにちは！ ご注文は？" }
+      - { who: dom, cast: us-m1, en: "Can I get a turkey club and a small coffee?", ja: "ターキーのクラブサンドと、コーヒーのSをください。" }
+      - { who: tia, cast: us-f4, en: "Sure. For here or to go?", ja: "かしこまりました。店内でお召し上がりですか、お持ち帰りですか？" }
+  - id: kr-soup-salad
+    lv: 3
+    type: reply
+    speaker: brewster
+    voice: us
+    cast: us-m3
+    en: "And with your pasta, soup or salad?"
+    tts: "An' with yer pasta, soup er salad?"
+    ja: "パスタには、スープとサラダどちらにしますか？ →「サラダでお願いします。」"
+    note: "soup or salad が「スーパーサラダ」に 聞こえる"
+    choices: ["Salad, please.", "Super! Thanks.", "Yes, please."]
+    answer: 0
+    cja: ["サラダでお願いします。", "最高！ ありがとう。", "はい、お願いします。"]
+    why: "soup or salad はつながって「スーパーサラダ」に聞こえるが、「スープかサラダか」の質問。A か B かを聞かれたら Yes ではなく、どちらかを答える。"
+    ctx: "レストランで、パスタを注文したところです"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+    marks: [[say, "or", "er"], [link, "soup or salad"]]
+  - id: km-still-working
+    lv: 3
+    type: mean
+    speaker: cherry
+    voice: us
+    cast: us-f6
+    en: "Are you still working on that, or can I take it for you?"
+    tts: "Are ya still workin' on that, or can I take it for ya?"
+    ja: "食べ終わったかどうか聞いている。"
+    note: "working on＝まだ 食べている。仕事の 話 ではない"
+    choices: ["She's asking if he's done eating.", "She's asking if he's still at work.", "She wants him to eat faster."]
+    answer: 0
+    cja: ["食べ終わったか聞いている。", "まだ職場にいるか聞いている。", "早く食べてほしい。"]
+    why: "Are you still working on that? は「まだ召し上がっていますか？」。お皿を下げてもいいかの確認で、仕事や急かす意味はない。"
+    ctx: "食事の途中、店員がテーブルに来ました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+  - id: kn-total-extra
+    lv: 3
+    type: num
+    speaker: brewster
+    voice: us
+    cast: us-m3
+    en: "The burger's $12.50, and avocado's $2 extra. So that's $14.50."
+    tts: "The burger's twelve fifty, an' avocado's two dollars extra. So that's fourteen fifty."
+    ja: "バーガーは12ドル50セントで、アボカドは2ドル追加です。なので14ドル50セントです。"
+    note: "extra＝追加料金。So that's の あとが 合計"
+    choices: ["$14.50", "$12.50", "$40.50"]
+    answer: 0
+    cja: ["14ドル50セント", "12ドル50セント", "40ドル50セント"]
+    why: "12ドル50セントにアボカドの追加2ドルで14ドル50セント。So that's〜は合計の確認。fourteen と forty は強く言う場所が違う。"
+    ctx: "バーガーにアボカドを足せるか聞きました"
+    ask: "全部で いくら？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [numbers, weak-form] }
+  - id: kr-im-good
+    lv: 3
+    type: reply
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Can I get you anything else? Dessert, maybe a coffee?"
+    tts: "Can I getcha anything else? Dessert, maybe a coffee?"
+    ja: "ほかに何かお持ちしましょうか？ デザートか、コーヒーでも？ →「大丈夫です、ありがとう。お会計をお願いできますか？」"
+    note: "I'm good＝もう 結構です。元気 ではない"
+    choices: ["I'm good, thanks. Could we get the check?", "Good, thanks. And you?", "Yes, everything was good."]
+    answer: 0
+    cja: ["大丈夫です、ありがとう。お会計をお願いできますか？", "元気です、ありがとう。あなたは？", "はい、全部おいしかったです。"]
+    why: "ほかに何か要るかと聞かれたら、I'm good（もう結構です）が自然。あいさつの返事や、味の感想は質問に合っていない。"
+    ctx: "食事が終わるころ、店員が聞いてきました"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+  # ---- ばめん: allergies, swaps, a wait, a wrong order ----
+  - id: dk-allergy
+    lv: 3
+    type: gist
+    speaker: kid-cat
+    voice: us
+    cast: us-m1
+    en: "Quick question. Does the pad thai have peanuts in it? It does, but I can ask the kitchen to leave them off. Sorry? Leave them what? Leave them off. No peanuts. Or I can put them on the side for your friend. Oh, perfect. No peanuts, then. Thanks!"
+    ja: "ピーナッツなしのパッタイが来る。"
+    note: "leave off＝入れない。on the side は 別添え"
+    choices: ["The pad thai will come with no peanuts.", "It'll come with peanuts on top.", "He'll order a different dish."]
+    answer: 0
+    cja: ["ピーナッツなしのパッタイが来る。", "ピーナッツがのって来る。", "別の料理を頼む。"]
+    why: "leave them off は「入れないでおく」。on the side（別添え）という案も出たが、最後に No peanuts, then と決めた。料理は変えていない。"
+    ctx: "タイ料理店で、料理の中身を聞いています"
+    focus: "No peanuts, then."
+    ask: "パッタイは どう なる？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+    lines:
+      - { who: kid-cat, cast: us-m1, en: "Quick question. Does the pad thai have peanuts in it?", ja: "ちょっと質問です。パッタイにピーナッツは入っていますか？" }
+      - { who: cherry, cast: us-f6, en: "It does, but I can ask the kitchen to leave them off.", ja: "入っていますが、抜くようキッチンに頼めますよ。" }
+      - { who: kid-cat, cast: us-m1, en: "Sorry? Leave them what?", ja: "え？ 何て？" }
+      - { who: cherry, cast: us-f6, en: "Leave them off. No peanuts. Or I can put them on the side for your friend.", ja: "抜くんです。ピーナッツなし。それか、お連れの方用に別添えにもできます。" }
+      - { who: kid-cat, cast: us-m1, en: "Oh, perfect. No peanuts, then. Thanks!", ja: "あ、ばっちり。じゃあピーナッツなしで。ありがとう！" }
+  - id: km-comes-with
+    lv: 3
+    type: mean
+    speaker: kicks
+    voice: us
+    cast: us-m4
+    en: "The steak comes with two sides. The mashed potatoes are a dollar extra, though."
+    ja: "付け合わせ2品は込みだが、マッシュポテトだけは追加料金。"
+    note: "comes with＝込み。a dollar extra＝1ドル 追加"
+    choices: ["Two sides are included, but the potatoes cost more.", "Everything, potatoes too, is included.", "He has to pay extra for both sides."]
+    answer: 0
+    cja: ["付け合わせ2品は込みだが、ポテトは追加料金。", "ポテトも含めて全部込み。", "付け合わせは2品とも追加料金。"]
+    why: "comes with two sides は「付け合わせ2品付き」。ただし though の前で、マッシュポテトは a dollar extra（1ドル追加）と言っている。"
+    ctx: "ステーキを頼もうとして、店員に聞きました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+  - id: kr-did-you-say
+    lv: 3
+    type: reply
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Sorry, did you say the large fries or the small? It's so loud in here."
+    tts: "Sorry, didja say the large fries er the small? It's so loud in here."
+    ja: "すみません、ポテトは大きいほうと小さいほう、どちらでしたか？ ここ、すごくうるさくて。 →「小さいほうでお願いします。」"
+    note: "did you say A or B?＝どっちか 答える"
+    choices: ["The small, please.", "Yes, fries, please.", "I said it's loud."]
+    answer: 0
+    cja: ["小さいほうでお願いします。", "はい、ポテトをお願いします。", "うるさいって言ったんです。"]
+    why: "Did you say A or B? は聞き取れなかったところの確認。どちらかを答える。Yes では答えにならず、うるさいと言ったのは店員のほう。"
+    ctx: "混んだ店で、店員が注文を聞き返しています"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+  - id: kn-wait-time
+    lv: 3
+    type: num
+    speaker: brewster
+    voice: us
+    cast: us-m3
+    en: "Right now it's about a 15-minute wait for a table for two. Is that okay?"
+    tts: "Right now it's about a fifteen-minute wait for a table fer two. Is that okay?"
+    ja: "今、2名様のお席は15分ほどお待ちいただきます。よろしいですか？"
+    note: "fifTEEN は 後ろが 強い。two は 人数"
+    choices: ["15 minutes", "50 minutes", "2 minutes"]
+    answer: 0
+    cja: ["15分", "50分", "2分"]
+    why: "fifteen は後ろの teen を強く長く言う。fifty なら前が強い。table for two の two は人数で、待ち時間ではない。"
+    ctx: "人気の店の入り口で、待ち時間を聞きました"
+    ask: "どれくらい 待つ？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [teen-ty, weak-form] }
+  - id: dk-wrong-order
+    lv: 3
+    type: next
+    speaker: maple
+    voice: us
+    cast: us-f3
+    en: "Excuse me, I think this is the wrong burger. I asked for no cheese. Oh, I'm so sorry about that! Let me get that fixed for you. I'll be right back."
+    ja: "ありがとう、気にしないで。"
+    note: "I'll be right back＝すぐ 作り直して 持ってくる"
+    choices: ["Thanks, no worries.", "Right, the back of the restaurant.", "Okay, I'll have the cheese."]
+    answer: 0
+    cja: ["ありがとう、気にしないで。", "そう、店の奥ね。", "じゃあ、チーズ入りでいいです。"]
+    why: "店員はすぐ作り直すと言っている。お礼と「気にしないで」が自然。right back を場所の「奥」と取るのは誤り。チーズなしを頼んだのに、受け入れる必要はない。"
+    ctx: "頼んだものと違うバーガーが来ました"
+    focus: "Let me get that fixed for you."
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+    lines:
+      - { who: maple, cast: us-f3, en: "Excuse me, I think this is the wrong burger. I asked for no cheese.", ja: "すみません、バーガーが違うみたいです。チーズなしで頼んだんですけど。" }
+      - { who: brewster, cast: us-m3, en: "Oh, I'm so sorry about that! Let me get that fixed for you. I'll be right back.", ja: "大変失礼しました！ すぐお作り直しします。少々お待ちください。" }
+  - id: km-box-it-up
+    lv: 3
+    type: mean
+    speaker: cherry
+    voice: us
+    cast: us-f6
+    en: "Want me to box that up for you? I can grab you a to-go container."
+    tts: "Want me ta box that up for ya? I can grab ya a to-go container."
+    ja: "残りを持ち帰れるように包んでくれる。"
+    note: "box up＝持ち帰り用に つめる"
+    choices: ["She'll pack the leftovers for him to take home.", "She wants him to leave now.", "She'll bring a new dish to go with it."]
+    answer: 0
+    cja: ["残りを持ち帰り用に包んでくれる。", "もう帰ってほしい。", "合う料理をもう一品持ってくる。"]
+    why: "box that up は「箱に詰める」、to-go container は持ち帰り用の容器。アメリカは量が多いので、残りを持ち帰るのはふつう。帰れという意味ではない。"
+    ctx: "料理が多くて、食べきれずに残っています"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+  # ---- チェック ----
+  - id: dk-brunch
+    lv: 3
+    type: gist
+    speaker: sherb
+    voice: us
+    cast: us-m4
+    en: "Morning! So, the pancakes come with eggs or fruit. Fruit, please. And could I get the syrup on the side? Sure thing. And it's two dollars extra for bacon, if you want it. Hmm, no, I'm good. Just the pancakes."
+    ja: "フルーツ付きのパンケーキ。シロップは別添え、ベーコンなし。"
+    note: "I'm good＝いらない。two dollars extra は 頼まなかった"
+    choices: ["Pancakes with fruit, syrup on the side, no bacon.", "Pancakes with eggs and bacon.", "Pancakes with fruit, plus bacon."]
+    answer: 0
+    cja: ["フルーツ付きのパンケーキ。シロップは別添え、ベーコンなし。", "卵とベーコン付きのパンケーキ。", "フルーツ付きのパンケーキに、ベーコンも追加。"]
+    why: "eggs or fruit から fruit を選び、シロップは on the side。ベーコンは2ドル追加と聞いて no, I'm good（いらない）と断った。"
+    ctx: "週末のブランチで、パンケーキを頼みます"
+    focus: "no, I'm good"
+    ask: "何が 来る？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+    lines:
+      - { who: sherb, cast: us-m4, en: "Morning! So, the pancakes come with eggs or fruit.", ja: "おはようございます！ パンケーキには卵かフルーツが付きます。" }
+      - { who: bea, cast: us-f1, en: "Fruit, please. And could I get the syrup on the side?", ja: "フルーツで。あと、シロップは別にしてもらえますか？" }
+      - { who: sherb, cast: us-m4, en: "Sure thing. And it's two dollars extra for bacon, if you want it.", ja: "もちろん。ベーコンは2ドル追加でお付けできますが、いかがですか。" }
+      - { who: bea, cast: us-f1, en: "Hmm, no, I'm good. Just the pancakes.", ja: "うーん、大丈夫です。パンケーキだけで。" }
+  - id: kr-latte-here
+    lv: 3
+    type: reply
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Okay, one oat milk latte. Is that for here or to go?"
+    tts: "Okay, one oat milk latte. Is that fer here er ta go?"
+    ja: "オーツミルクラテをおひとつですね。店内ですか、お持ち帰りですか？ →「店内で。」"
+    note: "for here＝店内で。here の 前の for は「ファ」"
+    choices: ["For here, please.", "I'm going home.", "Here you go."]
+    answer: 0
+    cja: ["店内でお願いします。", "家に帰るところです。", "はい、どうぞ。"]
+    why: "for here or to go は「店内か、持ち帰りか」。店で飲むなら For here。to go を「行く」と取ると I'm going home になってしまう。"
+    ctx: "カフェのカウンターでラテを頼みました"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+  - id: km-right-out
+    lv: 3
+    type: mean
+    speaker: brewster
+    voice: us
+    cast: us-m3
+    en: "Sorry for the wait! Your pizzas are coming right out. The kitchen's just slammed tonight."
+    ja: "ピザはもうすぐ来る。今夜は厨房がとても忙しい。"
+    note: "coming right out＝すぐ 出てくる。slammed＝大忙し"
+    choices: ["The pizzas are almost ready; the kitchen is very busy.", "The pizzas will come out later tonight.", "The kitchen is closed tonight."]
+    answer: 0
+    cja: ["ピザはもうすぐ来る。厨房がとても忙しい。", "ピザは今夜遅くに出てくる。", "今夜は厨房が閉まっている。"]
+    why: "coming right out は「すぐお持ちします」。slammed は「てんてこまい」で、待たせたことのおわび。閉まっているわけでも、ずっと後でもない。"
+    ctx: "ピザがなかなか来ないので、店員を呼びました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+  - id: kn-split
+    lv: 3
+    type: num
+    speaker: cherry
+    voice: us
+    cast: us-f6
+    en: "So that's $36 total, with the extra side. Want me to split it?"
+    tts: "So that's thirty-six total, with the extra side. Want me ta split it?"
+    ja: "追加のサイドを入れて、合計36ドルです。別々にしましょうか？"
+    note: "thirty-six。63 と 聞きまちがえない"
+    choices: ["$36", "$63", "$26"]
+    answer: 0
+    cja: ["36ドル", "63ドル", "26ドル"]
+    why: "thirty-six は36。順番を入れ替えた63や、twenty-six（26）と聞き分ける。So that's〜は合計の確認、split は割り勘。"
+    ctx: "友だちと食事して、会計をお願いしました"
+    ask: "合計は？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [numbers] }
+  - id: kr-chowder
+    lv: 3
+    type: reply
+    speaker: kicks
+    voice: us
+    cast: us-m4
+    en: "Your fish comes with soup or salad. The soup today is clam chowder."
+    tts: "Yer fish comes with soup er salad. The soup today is clam chowder."
+    ja: "魚料理にはスープかサラダが付きます。今日のスープはクラムチャウダーです。 →「チャウダーをお願いします。」"
+    note: "soup or salad＝どちらか 選ぶ"
+    choices: ["Ooh, the chowder, please.", "Yes, please.", "A super salad sounds great."]
+    answer: 0
+    cja: ["わあ、チャウダーをお願いします。", "はい、お願いします。", "スーパーサラダ、いいですね。"]
+    why: "soup or salad は二択。今日のスープ（クラムチャウダー）を選ぶのが自然。Yes では選んでいない。「スーパーサラダ」はつながった音の聞き違い。"
+    ctx: "シーフードの店で、魚料理を頼みました"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+  - id: dk-rice-swap
+    lv: 3
+    type: gist
+    speaker: dom
+    voice: us
+    cast: us-m1
+    en: "Can I get the fish tacos, but with rice instead of the beans? Sure, but just so you know, swapping is a dollar extra. Oh, that's fine. Go ahead."
+    ja: "豆の代わりにご飯にして、1ドル多く払う。"
+    note: "swapping is a dollar extra＝変更は 1ドル 追加"
+    choices: ["He'll get rice instead, and pay a dollar more.", "He'll keep the beans, since rice costs extra.", "He'll get rice and beans for free."]
+    answer: 0
+    cja: ["ご飯に変えて、1ドル多く払う。", "ご飯は追加料金なので、豆のまま。", "ご飯も豆も無料で付く。"]
+    why: "rice instead of the beans で豆をご飯に変更。変更は a dollar extra だが、that's fine. Go ahead と了承した。"
+    ctx: "タコスの店で、付け合わせを変えたいそうです"
+    focus: "swapping is a dollar extra"
+    ask: "どう なった？"
+    scene: cafe
+    cond: { kind: cafe, level: light }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+    lines:
+      - { who: dom, cast: us-m1, en: "Can I get the fish tacos, but with rice instead of the beans?", ja: "フィッシュタコスを、豆の代わりにご飯でもらえますか？" }
+      - { who: goldie, cast: us-f2, en: "Sure, but just so you know, swapping is a dollar extra.", ja: "はい、ただ念のため、変更は1ドル追加になります。" }
+      - { who: dom, cast: us-m1, en: "Oh, that's fine. Go ahead.", ja: "あ、大丈夫です。それでお願いします。" }
+  # ---- おと: the weak forms ----
+  - id: kw-soup-or
+    lv: 3
+    type: word
+    speaker: cherry
+    voice: us
+    cast: us-f6
+    en: "Would you like soup or salad with that?"
+    tts: "Wouldja like soup er salad with that?"
+    ja: "スープとサラダ、どちらをお付けしますか？"
+    note: "or は「アー」と 弱く。つながって「スーパー」"
+    choices: ["soup or salad", "super salad", "soup and salad"]
+    answer: 0
+    cja: ["スープかサラダ", "スーパーサラダ", "スープとサラダ"]
+    why: "or は弱く「ア」になり、soup とつながって「スーパーサラダ」に聞こえる。and なら「ン」になる。両方付くわけではない。"
+    focus: "soup or salad"
+    marks: [[say, "or", "er"], [link, "soup or salad"]]
+  - id: kw-for-here
+    lv: 3
+    type: word
+    speaker: brewster
+    voice: us
+    cast: us-m3
+    en: "Is that for here or to go?"
+    tts: "Is that fer here er ta go?"
+    ja: "店内ですか、お持ち帰りですか？"
+    note: "for は「ファ」、to は「タ」と 弱く なる"
+    choices: ["for here", "for her", "from here"]
+    answer: 0
+    cja: ["店内で", "彼女のために", "ここから"]
+    why: "for は弱く「ファ」、here とつながって「ファヒア」。for her（彼女に）とは最後の音が違う。to go の to も「タ」と弱い。"
+    focus: "for here"
+    marks: [[say, "for", "fer"], [say, "to", "ta"]]
+  - id: kw-on-the-side
+    lv: 3
+    type: word
+    speaker: dom
+    voice: us
+    cast: us-m1
+    en: "Can I get the sauce on the side?"
+    tts: "C'n I get the sauce on the side?"
+    ja: "ソースを別添えにしてもらえますか？"
+    note: "on the が つながって「オンザ」。the は ほぼ 聞こえない"
+    choices: ["on the side", "on this side", "and the side"]
+    answer: 0
+    cja: ["別添えで", "こちら側に", "そしてサイドを"]
+    why: "on the side は「オンザサイド」とひと息。the は弱くて短い。this なら「ディス」とはっきり聞こえる。can も弱く「クン」になる。"
+    focus: "on the side"
+    marks: [[say, "Can", "c'n"], [link, "on the side"]]
+  - id: kw-working-on
+    lv: 3
+    type: word
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Are you still working on that?"
+    tts: "Are ya still workin' on that?"
+    ja: "まだ召し上がっていますか？"
+    note: "working on は「ワーキノン」と つながる"
+    choices: ["working on", "walking on", "waiting on"]
+    answer: 0
+    cja: ["まだ食べている", "歩いている", "待っている"]
+    why: "working の g は落ちて on とつながり「ワーキノン」。walking（ウォーキン）とは母音が違う。お皿を下げていいかの決まり文句。"
+    focus: "working on"
+    marks: [[drop, "working", g], [link, "working on"]]
+  - id: kw-right-back
+    lv: 3
+    type: word
+    speaker: kicks
+    voice: us
+    cast: us-m4
+    en: "I'll be right back with your drinks."
+    tts: "I'll be right back with yer drinks."
+    ja: "すぐお飲み物をお持ちします。"
+    note: "I'll は「アル」と 短い。I'd と まぎらわしい"
+    choices: ["I'll be", "I'd be", "I've been"]
+    answer: 0
+    cja: ["すぐ〜します", "〜だろう", "〜していた"]
+    why: "I'll be は「アルビ」と短く、l の音がわずかに残る。I'd be なら d で止まる。これから飲み物を持ってくる約束なので未来の I'll。"
+    focus: "I'll be"
+    marks: [[say, "your", "yer"]]
+  - id: kw-side-of
+    lv: 3
+    type: word
+    speaker: goldie
+    voice: us
+    cast: us-f2
+    en: "It comes with a side of fries."
+    tts: "It comes with a side a' fries."
+    ja: "ポテトが付いてきます。"
+    note: "of は「ア」だけ。a side of で「アサイダ」"
+    choices: ["a side of", "outside of", "the side of"]
+    answer: 0
+    cja: ["付け合わせの", "〜の外に", "〜の横に"]
+    why: "of は弱く「ア」だけになり、a side of が「アサイダ」とひと続き。outside（アウトサイド）と似ているが、a side of fries は「付け合わせのポテト」。"
+    focus: "a side of"
+    marks: [[say, "of", "a'"], [link, "comes with"]]
+  # ---- じっせん: a loud Friday night ----
+  - id: dk-loud-order
+    lv: 3
+    type: gist
+    speaker: brewster
+    voice: us
+    cast: us-m3
+    en: "Sorry, it's crazy in here tonight! So, two of the specials? One special, and the salmon salad for her, dressing on the side. Sorry? One special and the… Salmon salad! Dressing on the side. Got it. And it's three dollars extra to add avocado, if you want. No, I'm good, thanks."
+    ja: "日替わり1つと、サーモンサラダ（アボカドなし）。"
+    note: "two ではなく One special。avocado は 断った"
+    choices: ["One special and a salmon salad, no avocado.", "Two specials, with avocado.", "One special and a salmon salad with avocado."]
+    answer: 0
+    cja: ["日替わり1つと、アボカドなしのサーモンサラダ。", "日替わり2つ、アボカド付き。", "日替わり1つと、アボカド付きのサーモンサラダ。"]
+    why: "店員の two of the specials を One special と直した。もう一品はサーモンサラダ。アボカドは3ドル追加と聞いて No, I'm good と断った。"
+    ctx: "金曜の夜、混んだレストランで注文中"
+    focus: "One special, and the salmon salad"
+    ask: "何を 頼んだ？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form, self-repair] }
+    lines:
+      - { who: brewster, cast: us-m3, en: "Sorry, it's crazy in here tonight! So, two of the specials?", ja: "すみません、今夜はすごく混んでて！ で、日替わりを2つですか？" }
+      - { who: dom, cast: us-m1, en: "One special, and the salmon salad for her, dressing on the side.", ja: "日替わり1つと、彼女にサーモンサラダ、ドレッシングは別で。" }
+      - { who: brewster, cast: us-m3, en: "Sorry? One special and the…", ja: "え？ 日替わり1つと…" }
+      - { who: dom, cast: us-m1, en: "Salmon salad! Dressing on the side.", ja: "サーモンサラダ！ ドレッシングは別で。" }
+      - { who: brewster, cast: us-m3, en: "Got it. And it's three dollars extra to add avocado, if you want.", ja: "承知しました。アボカドは3ドル追加でのせられますが。" }
+      - { who: maple, cast: us-f3, en: "No, I'm good, thanks.", ja: "いえ、大丈夫です。ありがとう。" }
+  - id: km-fast-plates
+    lv: 3
+    type: mean
+    speaker: cherry
+    voice: us
+    cast: us-f6
+    en: "Hey, you guys still working on those, or can I grab a couple of plates out of your way?"
+    tts: "Hey, you guys still workin' on those, or can I grab a couple a' plates outta yer way?"
+    ja: "空いたお皿を少し下げたい。"
+    note: "out of your way＝じゃまに ならない ように 下げる"
+    choices: ["She'd like to clear some empty plates.", "She wants them to move to another table.", "She's asking if they're still at work."]
+    answer: 0
+    cja: ["空いたお皿を少し下げたい。", "別のテーブルに移ってほしい。", "まだ職場にいるか聞いている。"]
+    why: "still working on those? は「まだ召し上がっていますか？」。grab a couple of plates は「お皿を少し下げる」こと。席を移れではない。"
+    ctx: "混んだ店で、食事の途中に店員が来ました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+  - id: kn-fast-total
+    lv: 3
+    type: num
+    speaker: kicks
+    voice: us
+    cast: us-m4
+    en: "With the two drinks, that's $27.80. Actually, no, I forgot the dessert. $33.80."
+    tts: "With the two drinks, that's twenty-seven eighty. Actually, no, I forgot the dessert. Thirty-three eighty."
+    ja: "飲み物2杯で27ドル80セントです。あ、違った、デザートを忘れてました。33ドル80セントです。"
+    note: "Actually, no の あとが 正しい 金額"
+    choices: ["$33.80", "$27.80", "$38.30"]
+    answer: 0
+    cja: ["33ドル80セント", "27ドル80セント", "38ドル30セント"]
+    why: "最初の27ドル80セントはデザートを入れ忘れた金額。Actually, no で言い直した33ドル80セントが正しい。thirty-three eighty は33ドル80セント。"
+    ctx: "騒がしい店で、会計をしてもらっています"
+    ask: "いくら 払う？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [numbers, self-repair] }
+  - id: kr-fast-combo
+    lv: 3
+    type: reply
+    speaker: tia
+    voice: us
+    cast: us-f4
+    en: "Next! Hi, for here or to go? And do you want the combo? It's two bucks more with a drink."
+    tts: "Next! Hi, fer here er ta go? An' d'you want the combo? It's two bucks more with a drink."
+    ja: "次の方！ 店内ですか、お持ち帰りですか？ セットにしますか？ ドリンク付きで2ドル増しです。 →「持ち帰りで、セットはなしで。」"
+    note: "二つの 質問に 一度に 答える"
+    choices: ["To go, and no combo, thanks.", "Yes, two, please.", "I'm going, thanks."]
+    answer: 0
+    cja: ["持ち帰りで、セットはなしで。", "はい、2つお願いします。", "もう行きます、どうも。"]
+    why: "質問は二つ：店内か持ち帰りか、セットにするか。両方に答えているのは一つだけ。two bucks は値段（2ドル増し）で、個数ではない。"
+    ctx: "昼どきのファストフード店、レジの前です"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+  - id: km-im-good
+    lv: 3
+    type: mean
+    speaker: dom
+    voice: us
+    cast: us-m1
+    en: "Oh, I'm good, thanks. Just the check whenever you get a chance."
+    tts: "Oh, I'm good, thanks. Just the check whenever ya get a chance."
+    ja: "もう何もいらない。手が空いたら会計を持ってきてほしい。"
+    note: "I'm good＝いりません。the check＝お会計"
+    choices: ["He doesn't want anything else; he's ready to pay.", "He's feeling well today.", "He wants to check the food."]
+    answer: 0
+    cja: ["もう何もいらない。会計をしたい。", "今日は体調がいい。", "料理を確かめたい。"]
+    why: "I'm good は「もう結構です」。the check は「お会計（伝票）」で、確かめる意味ではない。whenever you get a chance は「手が空いたときに」。"
+    ctx: "店員にデザートをすすめられて、答えました"
+    ask: "つまり、どういう こと？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 27, register: service, pragmatic: formula, conditions: [cafe], features: [weak-form] }
+  - id: dk-fast-check
+    lv: 3
+    type: next
+    speaker: goldie
+    voice: us
+    cast: us-f2
+    en: "Here's your check! No rush. Take your time. Thanks. Sorry, did you say the tip's included? Nope, the tip isn't included. Cash or card is fine."
+    ja: "わかりました。じゃあカードで。ありがとう！"
+    note: "Nope＝いいえ。チップは 自分で 足す"
+    choices: ["Got it. Card, then. Thanks!", "Included? Great, so no tip.", "Cash or card? Both, please."]
+    answer: 0
+    cja: ["わかりました。じゃあカードで。ありがとう！", "込み？ よかった、じゃあチップはなしで。", "現金かカード？ 両方で。"]
+    why: "Nope, the tip isn't included で、チップは含まれていない。アメリカでは自分で足す。支払いは現金でもカードでもいいので、どちらかを選ぶ。"
+    ctx: "食事のあと、伝票が来ました"
+    focus: "the tip isn't included"
+    ask: "次の ひとことは？"
+    scene: cafe
+    cond: { kind: cafe, level: heavy }
+    tags: { seed: 27, register: service, pragmatic: literal, conditions: [cafe], features: [weak-form] }
+    lines:
+      - { who: goldie, cast: us-f2, en: "Here's your check! No rush. Take your time.", ja: "お会計です！ ごゆっくりどうぞ。" }
+      - { who: dom, cast: us-m1, en: "Thanks. Sorry, did you say the tip's included?", ja: "どうも。すみません、チップ込みって言いました？" }
+      - { who: goldie, cast: us-f2, en: "Nope, the tip isn't included. Cash or card is fine.", ja: "いいえ、チップは含まれていません。現金でもカードでも大丈夫です。" }
+lessons:
+  v: 1
+  deai: [dk-diner-order, dk-for-here, kr-soup-salad, km-still-working, kn-total-extra, kr-im-good]
+  bamen: [dk-allergy, km-comes-with, kr-did-you-say, kn-wait-time, dk-wrong-order, km-box-it-up]
+  check: [dk-brunch, kr-latte-here, km-right-out, kn-split, kr-chowder, dk-rice-swap]
+  oto: [kw-soup-or, kw-for-here, kw-on-the-side, kw-working-on, kw-right-back, kw-side-of]
+  jissen: [dk-loud-order, km-fast-plates, kn-fast-total, kr-fast-combo, km-im-good, dk-fast-check]
+tiers:
+  dk-diner-order:
+    easy: { choices: ["A sandwich and a salad.", "A sandwich and fries."], answer: 0, cja: ["サンドイッチとサラダ。", "サンドイッチとポテト。"] }
+    hard: { choices: ["A chicken sandwich and a salad, dressing on the side.", "A chicken sandwich and a salad with the dressing on it.", "A chicken sandwich, fries and a salad.", "A chicken sandwich and fries, with water."], answer: 0, cja: ["チキンサンドとサラダ。ドレッシングは別添え。", "チキンサンドと、ドレッシングがかかったサラダ。", "チキンサンドとポテトとサラダ。", "チキンサンドとポテト、それに水。"] }
+  kr-soup-salad:
+    easy: { choices: ["Salad, please.", "Yes, please."], answer: 0, cja: ["サラダでお願いします。", "はい、お願いします。"] }
+  km-fast-plates:
+    hard: { choices: ["She'd like to clear some empty plates.", "She'd like to bring them more plates.", "She wants them to move to another table.", "She's asking if they're still at work."], answer: 0, cja: ["空いたお皿を少し下げたい。", "お皿をもっと持ってきたい。", "別のテーブルに移ってほしい。", "まだ職場にいるか聞いている。"] }
