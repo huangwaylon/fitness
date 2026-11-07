@@ -1087,7 +1087,10 @@
       precip: () => p3?.state() ?? null,
       precipCalls: () => p3?.calls() ?? 0,
       /** The launch timed (boot.ts), once its watch is over; null before (or not the page's first mount). */
-      boot: () => bootReport()
+      boot: () => bootReport(),
+      /** The GPU programs (three's): each one's shader, cache key and how many materials use it (the perf plan's
+       *  program count, docs/perf-plan.md). */
+      programs: () => ((e.renderer().info.programs ?? []) as unknown as { name: string; cacheKey: string; usedTimes: number }[]).map((p) => ({ name: p.name, key: p.cacheKey, used: p.usedTimes }))
     };
     setDrawnFps(() => e.stats().fps);
     return () => {

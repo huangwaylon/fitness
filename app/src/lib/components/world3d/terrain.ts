@@ -15,6 +15,7 @@ import {
   Scene, ShaderChunk, ShaderMaterial, Texture, TextureLoader, Uint32BufferAttribute, UnsignedByteType, WebGLRenderTarget, type WebGLRenderer
 } from 'three';
 import { bend, BEND_GLSL, bendU } from './bend.ts';
+import { withMaps } from './blank.ts';
 import { waterU } from './water.ts';
 import { CHUNK, CHUNKS_X, CHUNKS_Z, GRID, TILE, chunkOf, idx, kindOf } from '#lib/layout/grid.ts';
 import { chunkMesh, stairsMesh, type Part, type WallPart, type WaterPart } from '#lib/layout/mesh.ts';
@@ -641,7 +642,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   }
   const bands: Band[] = [];
   const topMats: MeshLambertMaterial[] = [];
-  const wallMat = bend(new MeshLambertMaterial({ map: tex.cliff, color: 0xffffff }));
+  const wallMat = bend(withMaps(new MeshLambertMaterial({ map: tex.cliff, color: 0xffffff })));
   const fallsMat = waterMat(FALLS_VERT, FALLS_FRAG, { uStreak: { value: tex.falls } });
   const freshMat = waterMat(FRESH_VERT, FRESH_FRAG, { uSdfA: { value: sdfA }, uGrid: { value: [GRID.x0, GRID.z0, GW, GD] }, uFar: { value: FAR } });
   const BAND_D = 8 * TILE;
@@ -735,7 +736,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     b.water.geometry = waterGeometry(join(ms.map((m) => m.water), ['flow', 'path']));
   }
   for (let row = 0; row < CHUNKS_Z; row++) {
-    const tm = bend(washed(new MeshLambertMaterial({ map: null, color: 0xf4f4f4 }), washU));
+    const tm = bend(washed(withMaps(new MeshLambertMaterial({ color: 0xf4f4f4 })), washU));
     topMats.push(tm);
     const top = new Mesh(new BufferGeometry(), tm);
     top.receiveShadow = true;
@@ -754,7 +755,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
     build(b);
   }
   // the stairs: stone steps up each cliff they climb
-  const stairsMat = bend(new MeshLambertMaterial({ map: tex.steps, color: 0xe8e2d6 }));
+  const stairsMat = bend(withMaps(new MeshLambertMaterial({ map: tex.steps, color: 0xe8e2d6 })));
   const stairs = new Mesh(new BufferGeometry(), stairsMat);
   stairs.castShadow = stairs.receiveShadow = true;
   stairs.frustumCulled = false;
@@ -789,7 +790,7 @@ export function buildGround(layout: Layout, opts: GroundOptions): Ground {
   deepGeo.translate(GRID.x0 + GW / 2, DEEP_Y - 0.1, -(GRID.z0 + GD / 2));
   // (lit as the ground's top is, the bed's deep blue under its tint: seen through the shallows' see-through water, the
   // grid's edge never shows, day or night)
-  const deep = new Mesh(deepGeo, bend(new MeshLambertMaterial({ color: new Color(0x2f74b8).multiply(new Color(0xf4f4f4)) })));
+  const deep = new Mesh(deepGeo, bend(withMaps(new MeshLambertMaterial({ color: new Color(0x2f74b8).multiply(new Color(0xf4f4f4)) }))));
   deep.frustumCulled = false;
   group.add(sea, deep);
 

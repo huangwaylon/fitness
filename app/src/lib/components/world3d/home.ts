@@ -5,6 +5,7 @@
 // DoorModel0 joint); a colour swaps the albedo of the materials it names. NH's soft look: Lambert, lit a little by its own colour (things.ts's), a lamp's own glow its night
 // light. The scene places the group (engine.ts attach: bent there; homePlaces for where).
 import { Color, Group, MeshLambertMaterial, SRGBColorSpace, TextureLoader, type Material, type Mesh, type MeshStandardMaterial, type Object3D, type Side, type Texture } from 'three';
+import { withMaps } from './blank.ts';
 import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { FAMILIES, partsOf, type HomeStyle } from '#lib/layout/homes.ts';
@@ -109,7 +110,7 @@ export function homeLambert(src: MeshStandardMaterial, map: Texture | null = nul
   });
   m.name = src.name;
   m.userData.lamp = own;
-  return m;
+  return withMaps(m);
 }
 
 /** The time of day on a built home: its lamp lit (0 … 1) and its self-light. */

@@ -13,6 +13,7 @@ import {
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { bend, glow as addLight } from './bend.ts';
+import { withMaps } from './blank.ts';
 import { splitSides } from './sides.ts';
 import { MODELS } from './models3d.ts';
 import { pace } from './pace.ts';
@@ -214,10 +215,10 @@ export function createEffects(scene: Scene, ground: (x: number, z: number) => nu
    *  own in their vertex colours (the 「！」's red mark on its cream disc, the zzz's blue; they drew all white), unless
    *  tinted (the tint is its colour then). */
   const matFor = (s: Src[number], tint?: string, side: Side = DoubleSide) => {
-    const mat = bend(new MeshBasicMaterial({
+    const mat = bend(withMaps(new MeshBasicMaterial({
       map: s.map, color: tint ? new Color(tint) : s.color, vertexColors: !!s.vc && !tint, transparent: true, depthWrite: false, side, alphaTest: s.add ? 0 : 0.02,
       blending: NormalBlending
-    }));
+    })));
     if (s.add) addLight(mat, true);
     return mat;
   };

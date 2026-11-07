@@ -12,6 +12,7 @@ import { GLTFLoader, type GLTF } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { lean } from './release.ts';
 import { bend } from './bend.ts';
+import { withMaps } from './blank.ts';
 import { twoPass } from './sides.ts';
 import type { Inst, ModelName } from './objects.ts';
 import type { LampSpot } from './lights.ts';
@@ -349,7 +350,7 @@ export function createThings(scene: Scene, height: (x: number, z: number) => num
       };
       m.customProgramCacheKey = () => (uFlap ? 'fade-flap' : 'fade');
     }
-    return bend(m);
+    return bend(withMaps(m));
   }
 
   // ---- the instances ----
