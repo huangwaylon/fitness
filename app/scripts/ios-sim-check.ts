@@ -131,6 +131,7 @@ async function bootRuns(n: number) {
       if (!r) await sleep(500);
     }
     if (r) rows.push(r);
+    else console.log('no report:', JSON.stringify(await run('const w = window.__world3d; return w ? { loaded: w.loaded(), stats: w.stats(), hidden: document.hidden } : { up: false, hidden: document.hidden };').catch(String)));
     console.log(JSON.stringify(r));
     await sleep(1500);
   }
