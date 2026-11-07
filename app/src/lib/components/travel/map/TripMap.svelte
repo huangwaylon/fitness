@@ -175,7 +175,7 @@
      day chips; the map's chrome (the note, the locate button, the attribution) at 1001 over them */
   .tm { position: relative; isolation: isolate; width: 100%; height: 100%; min-height: 240px; overflow: hidden; background: #86CDEB; touch-action: none; -webkit-user-select: none; user-select: none; }
   .gl { position: absolute; inset: 0; touch-action: none; }
-  .stub { position: absolute; inset: 0; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; padding: 12px; }
+  .stub { position: absolute; inset: 0; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px; padding: 52px 12px 12px; } /* (under the save pill) */
 
   /* the stops: NH's round pins, the day's colour, the number in Fredoka, a white rim, the little tail, a 44px hit */
   :global(.tm-pin) {
@@ -207,9 +207,10 @@
   :global(.tm-pin:focus-visible .tm-head) { outline: 3px solid var(--focus, #4A3A2C); outline-offset: 2px; }
   .cand { width: var(--hit); height: var(--hit); border: 0; border-radius: 50%; background: #FFFFFF; }
 
-  /* a note over the map (offline, the location off or far): a cream tag at the top, the pins under it still tappable */
+  /* a note over the map (offline, the location off or far): a cream tag under the save pill and the layer button, the
+     pins under it still tappable */
   .note {
-    position: absolute; z-index: 1001; top: 10px; left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 24px); margin: 0; padding: 6px 12px;
+    position: absolute; z-index: 1001; top: 50px; left: 50%; translate: -50% 0; width: max-content; max-width: calc(100% - 24px); margin: 0; padding: 6px 12px;
     border-radius: 14px; background: var(--c-cream, #FFF9E3); color: var(--c-ink, #4A3A2C); font: 700 var(--fs-s, 13px)/1.35 var(--font-ui); text-align: center;
     white-space: pre-line; pointer-events: none;
     box-shadow: inset 0 0 0 2px var(--c-edge, #937047), 0 3px 0 var(--c-edge, #937047);
