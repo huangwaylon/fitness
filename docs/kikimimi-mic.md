@@ -411,6 +411,7 @@ Each game is a `GameDef` with a lazy `view` (W2-C2's slot), its deck pure and se
 - sound.svelte.ts gets `micSession(on)` beside `voiceSession`: `play-and-record` while a capture is open, back to what it was after. It also exports `audioCtx()` so capture.ts uses **the voice's context** (one clock for the clip and the mic).
 - Music is held ducked while recording (`holdVoiceDuck`).
 - The capture stops on `visibilitychange` hidden, the sheet closing, or 15 s max, and it releases the track: the orange dot goes off at once.
+- **As built (M1, 2026-11-07):** `micSession(on)` layers the type (mic 'play-and-record' over a game's 'playback', the one from before back once both are over, in either order); `audioCtx()` wakes the voice's context. lib/mic/session.ts owns a take: one at a time, ended by stop / cancel, the VAD (vad.ts: 20 ms frames, energy over a following floor + zero-crossing, 300 ms hang, done after 1 s quiet), the 15 s cap, 8 s without speech, a new take, `visibilitychange` hidden or `pagehide`; each end releases the track. The core chunk is ~2.5 KB gz (load-budget's line). せってい › マイク (MicOptIn): the switch asks the permission first; DEVICE.mic `{ on, be }`; 自動 = whisper only; M0's 「マイク診断（テスト）」 kept as a small row under it until the user has run the probe.
 - 「おとを 1だいに まとめる」 (same room) stays as it is. Mic games are solo or role-play, where each phone plays only its own prompts.
 
 ### 3.8 Hermetic tests

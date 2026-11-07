@@ -2,8 +2,9 @@
   // ききみみ's せってい (docs/kikimimi-ux.md §6.11), pushed from the hub's ⚙: 🔊 「きこえる？」 (a clip through the game's
   // voice, with the earphones tip and the volume-0 line); 「おとを 1だいに まとめる」 as a new lobby's default; にほんごやく
   // (when the Japanese shows: いつも / まちがえた とき / みない); こんしゅうの めあて (3 / 5 / 7 にち). Each kept on this
-  // phone; 「みみ チェックを もういちど」 (the placement check again, at once; the place it gave me under it); last,
-  // 「マイク診断（テスト）」 (docs/kikimimi-mic.md §1.1: the mic probe, a lazy chunk, in this page's place). Its own chunk.
+  // phone; 「みみ チェックを もういちど」 (the placement check again, at once; the place it gave me under it); last, マイク
+  // (docs/kikimimi-mic.md §2.6: MicOptIn, a lazy chunk, with the probe's row under it, which opens MicProbe in this
+  // page's place, another). Its own chunk.
   import type { QuizGame } from '../game.svelte.ts';
   import { JA_MODES, WEEK_GOALS, keepSame, keepWeekGoal, sameDefault, weekGoal, type JaMode, type WeekGoal } from '../prefs.ts';
   import { sound } from '#lib/sound/sound.svelte.ts';
@@ -11,7 +12,6 @@
   import { PLACES, placeOfLv } from '#lib/kikimimi/catalog.ts';
   import { currentPlacement } from '../progress.svelte.ts';
   import { t } from '#lib/i18n/index.ts';
-  import '#lib/i18n/kiki-mic.ts';
 
   let { game, ja, onja, oncheck }: { game: QuizGame; ja: JaMode; onja: (m: JaMode) => void; oncheck: () => void } = $props();
   /** Where my last みみ チェック placed me (null: none yet). */
@@ -90,12 +90,7 @@
     <p class="hint">{t('kiki.set.goalSub')}</p>
   </section>
 
-  <section class="sec">
-    <button type="button" class="row tile-btn" data-kiki-set-mic data-sfx="confirm" onclick={() => (probing = true)}>
-      <span class="rl">🎤 {t('kiki.mic.probe')}<small>{t('kiki.mic.probeSub')}</small></span>
-      <span class="chev" aria-hidden="true">›</span>
-    </button>
-  </section>
+  {#await import('../mic/MicOptIn.svelte') then { default: MicOptIn }}<MicOptIn onprobe={() => (probing = true)} />{/await}
 </div>
 {/if}
 

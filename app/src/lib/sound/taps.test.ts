@@ -36,6 +36,7 @@ const SELF: Record<string, string> = {
   'lib/components/layoutEdit/IslandEdit.svelte': 'tick to pick, turn or move a thing and for a tab, confirm to put it down, boop when it can\'t, undo to put away (TentEdit\'s)',
   'lib/components/kikimimi/Lobby.svelte': 'おなじへや → toggle-on / toggle-off',
   'lib/components/kikimimi/settings/KikiSettings.svelte': 'おとを 1だいに まとめる → toggle-on / toggle-off',
+  'lib/components/kikimimi/mic/MicOptIn.svelte': 'マイクを使う → toggle-on / toggle-off, boop when the permission is refused',
   'lib/components/homes/HomePicker.svelte': 'これにする → confirm once the new look goes out (silent while it would not fit, or nothing changed)'
 };
 
@@ -69,6 +70,7 @@ const NONE: Record<string, string> = {
   'lib/components/kikimimi/mode/StageRow.svelte': 'the place already chosen, or one with no level yet, does nothing',
   'lib/components/kikimimi/mode/TimerRow.svelte': 'the answer time already chosen does nothing',
   'lib/components/kikimimi/settings/KikiSettings.svelte': 'the translation or weekly target already chosen does nothing',
+  'lib/components/kikimimi/mic/MicOptIn.svelte': 'the 音声認識 already chosen does nothing',
   'lib/components/kikimimi/story/StoryFrame.svelte': 'おやすみ ものがたり: ⏮ ⏯ ⏭, the sleep timer and the words are silent at bedtime (no cue over the story\'s voice)',
   'lib/components/kikimimi/frame/RoundFrame.svelte': 'よみおわった once tapped does nothing',
   'lib/components/kikimimi/frame/ChoiceGrid.svelte': 'a choice outside the answer window, or after my one answer (the reveal plays its right / wrong cue)',

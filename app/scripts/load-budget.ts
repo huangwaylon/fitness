@@ -22,12 +22,16 @@ const PRECACHE = 3.5 * 1024 * 1024;
 /** ききみみ's recogniser (docs/kikimimi-mic.md §3.6): its worker (`workers/stt.<hash>.js`: transformers.js and the ONNX
  *  runtime's JS) is one file ≤ STT_JS gzipped, never precached, never in the first load; 2026-11-07: 136 KB. */
 const STT_JS = 450 * 1024;
+/** ききみみ's mic core (§3.6: lib/mic/session.ts, its capture and VAD, the worklet): a lazy chunk and what it alone
+ *  loads ≤ MIC_JS gzipped; 2026-11-07: see the build's line. */
+const MIC_JS = 10 * 1024;
+const MIC_CORE = 'src/lib/mic/session.ts';
 /** Chunks the first load never holds (vite's manifest: a chunk's `name`, or its source). */
 const LAZY_NAMES = ['three.module'];
 const LAZY_SOURCES = [
   'src/lib/components/world3d/Island3D.svelte', 'src/lib/components/travel/TravelSheet.svelte', 'src/lib/components/hiking/HikingSheet.svelte',
   'src/lib/components/wedding/WeddingSheet.svelte', 'src/lib/components/kikimimi/KikimimiSheet.svelte', 'src/lib/components/food/Food.svelte',
-  'src/lib/components/kikimimi/mic/MicProbe.svelte'
+  'src/lib/components/kikimimi/mic/MicProbe.svelte', 'src/lib/components/kikimimi/mic/MicOptIn.svelte', MIC_CORE
 ];
 /** Nor any chunk of the mic's own code (lib/mic/). */
 const LAZY_DIRS = ['src/lib/mic/'];
@@ -57,7 +61,7 @@ for (const f of first) {
 if (js > FIRST_JS) fail.push(`the first load's JS is ${kb(js)} gzipped (≤ ${kb(FIRST_JS)})`);
 if (css > FIRST_CSS) fail.push(`the first load's CSS is ${kb(css)} gzipped (≤ ${kb(FIRST_CSS)})`);
 
-const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Record<string, { file: string; name?: string }>;
+const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8')) as Record<string, { file: string; name?: string; imports?: string[]; assets?: string[] }>;
 for (const name of LAZY_NAMES) {
   const c = Object.values(manifest).find((x) => x.name === name);
   if (!c) fail.push(`no ${name} chunk in the build`);
@@ -70,6 +74,22 @@ for (const src of LAZY_SOURCES) {
 }
 for (const [src, c] of Object.entries(manifest)) if (LAZY_DIRS.some((d) => src.startsWith(d)) && first.has(c.file)) fail.push(`${src} is in the first load (it must stay lazy)`);
 for (const f of first) if (/\/maplibre\./.test(f)) fail.push(`${f} (MapLibre) is in the first load`);
+
+// the mic core: its chunk and the chunks and scripts (the worklet; not a Worker's) it imports that the first load doesn't hold
+let micGz = 0;
+{
+  const seen = new Set<string>(), files = new Set<string>(), todo = [MIC_CORE];
+  while (todo.length) {
+    const k = todo.pop()!, c = manifest[k];
+    if (!c || seen.has(k) || first.has(c.file)) continue;
+    seen.add(k);
+    files.add(c.file);
+    for (const a of c.assets ?? []) if (a.endsWith('.js') && !a.includes('/workers/')) files.add(a);
+    todo.push(...(c.imports ?? []));
+  }
+  for (const f of files) micGz += gzipSync(readFileSync(join(BUILD, f))).length;
+  if (micGz > MIC_JS) fail.push(`the mic core is ${kb(micGz)} gzipped (≤ ${kb(MIC_JS)})`);
+}
 
 // the recogniser's worker: one file, its own line, never precached nor loaded first
 const workers = join(BUILD, '_app/immutable/workers');
@@ -97,7 +117,7 @@ const walk = (d: string) => {
 walk(BUILD);
 if (pre > PRECACHE) fail.push(`the precache is ${kb(pre)} on the wire (≤ ${kb(PRECACHE)})`);
 
-console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files; precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; the recogniser's worker ${kb(sttGz)}`);
+console.log(`first load (gzipped): JS ${kb(js)}, CSS ${kb(css)}, ${first.size} files; precache ${preFiles} files, ${(pre / 1048576).toFixed(2)} MB on the wire; the recogniser's worker ${kb(sttGz)}; the mic core ${kb(micGz)}`);
 if (fail.length) {
   console.error(`load-budget: ${fail.join('; ')}`);
   process.exit(1);
