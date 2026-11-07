@@ -8,7 +8,7 @@ track: life
 seeds: [1, 2, 5, 9, 15, 16, 18, 21, 22, 26, 27, 30, 35, 38, 39, 40, 41, 43, 44, 46, 48, 50, 53, 54, 56]
 features: { primary: weak-form, review: contraction }
 cando: "クイズで 聞いた 文を、ちぢんだ 音から ことばごとに 組み立てられる"
-status: draft
+status: listened
 items:
   - kind: tile
     id: tile-m4-be-good

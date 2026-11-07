@@ -1,11 +1,11 @@
-// ことば タイル (docs/curriculum-wave2.md §2.1): the mode shows once a tile file is `listened` (here only in the test: the
-// built index's s2-tile-bank, the derived tiles that play their bank clips, flipped to listened as it's served), on
+// ことば タイル (docs/curriculum-wave2.md §2.1): the mode shows once a tile file is `listened` (s2-tile-bank, the derived
+// tiles that play their bank clips, shipped listened), on
 // あそぶ's さくっと shelf and its page at もり; a solo game (the clip first with no tiles, then tap the tiles into their
 // slots, tap a placed one back, できた), one sentence wrong, the reveal's spoken shape, Japanese and 解説, the results'
 // review and my row (gm tile, the wrong slots as the pick); then two phones in co-op over the demo's relay: each fills
 // its own half of one sentence, the reveal shows the team's, the results count the sentences built whole. Screenshots
 // (KIKI_SHOTS=1) into /tmp/kikimimi-shots/tile/, by day and at night. The logic tier (Playwright's Chromium is muted).
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test, type BrowserContext, type Page } from './fixtures.ts';
 import { islandUp } from './island.ts';
@@ -32,20 +32,6 @@ async function snap(p: Page, name: string, fullPage = false) {
   await p.screenshot({ path: `${SHOTS}/${name}.png`, fullPage });
 }
 
-/** The built index with s2-tile-bank `listened` (the fixture: the shipped file stays a draft): the one chunk that holds
- *  the index (build-pages/, as served), its line flipped as it's served. */
-const LINE = /("s2-tile-bank":\[[`"']tile[`"'],3,[`"'])draft/;
-const CHUNKS = join(import.meta.dirname, '..', 'build-pages', '_app', 'immutable', 'chunks');
-const INDEX_CHUNK = readdirSync(CHUNKS).find((f) => f.endsWith('.js') && LINE.test(readFileSync(join(CHUNKS, f), 'utf8')));
-async function listened(ctx: BrowserContext) {
-  expect(INDEX_CHUNK, 'the built index').toBeTruthy();
-  await ctx.route(`**/_app/immutable/chunks/${INDEX_CHUNK}`, async (route) => {
-    const res = await route.fetch();
-    // (the body as served, decoded: its encoding and length headers dropped)
-    const headers = Object.fromEntries(Object.entries(res.headers()).filter(([k]) => k !== 'content-encoding' && k !== 'content-length'));
-    await route.fulfill({ status: res.status(), headers, body: (await res.text()).replace(LINE, '$1listened') });
-  });
-}
 async function phone(ctx: BrowserContext, q: string, as: 'A' | 'B' = 'A'): Promise<Page> {
   const page = await ctx.newPage();
   await page.goto(`?demo&${q}${as === 'A' ? '' : `&as=${as}`}`);
@@ -84,7 +70,6 @@ async function build(p: Page, wrong = false) {
 
 test('solo: the mode once listened, the clip before the tiles, tap to place and take back, できた; the reveal and the results; my row', async ({ context }) => {
   test.slow();
-  await listened(context);
   const page = await phone(context, DAY);
   await toTile(page);
   await snap(page, 'mode');
@@ -147,7 +132,6 @@ test('solo: the mode once listened, the clip before the tiles, tap to place and 
 
 test('night: the board in the night palette', async ({ context }) => {
   test.skip(!process.env.KIKI_SHOTS, 'screenshots only');
-  await listened(context);
   const page = await phone(context, NIGHT);
   await toTile(page);
   await sheet(page).locator('[data-kiki-start]').click();
@@ -162,7 +146,6 @@ test('night: the board in the night palette', async ({ context }) => {
 test('co-op on two phones: each fills its own half of one sentence; the reveal shows the team’s; the results count the sentences built whole', async ({ browser }) => {
   test.setTimeout(240_000);
   const ctx = await browser.newContext();
-  await listened(ctx);
   const a = await phone(ctx, DAY, 'A'), b = await phone(ctx, DAY, 'B');
   await a.bringToFront();
   await toTile(a);
