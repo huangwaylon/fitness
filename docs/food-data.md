@@ -197,7 +197,7 @@ not drawn yet keep their category's tile. `food-data/images/fi.py` (its docstrin
   items come first. `slots.json` is append-only, so a full sheet never changes. The names carry the content hash (cached for a year, `scripts/headers.ts`).
   `index.json` maps each food id to its picture's two cells (`lib/food/images.ts` `imgOf`).
 - **Budget** (`lib/food/images.test.ts`): ≤ 1,600 files and 90 MB in food-img/, ≤ 400 KB a sheet, ≤ 19,000 files under
-  static/ (Cloudflare Pages takes 20,000 a deploy). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),
+  static/ (Cloudflare Pages takes 20,000 a deploy), and every generic food in a table row (a new catalogue item fails the test until it has one). The service worker caches the sheets on first use (`FOOD_IMG_CACHE`),
   never at install.
 
 ## Sources evaluated and not used

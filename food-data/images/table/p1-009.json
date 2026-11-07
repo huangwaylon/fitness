@@ -1,0 +1,27 @@
+[
+ {
+  "key": "dishes-nikomi-hamburg",
+  "ja": "煮込みハンバーグ",
+  "desc": "nikomi hamburg, a thick oval hamburg steak simmered in a rich glossy dark-brown demi-glace sauce with sliced mushrooms and onion, in a shallow dish",
+  "items": [
+   "dishes:nikomi-hamburg"
+  ]
+ },
+ {
+  "key": "dishes-oroshi-hamburg",
+  "ja": "和風おろしハンバーグ",
+  "desc": "wafu oroshi hamburg, a browned oval hamburg steak topped with a mound of white grated daikon, a shiso leaf and a little clear brown ponzu, on a plate",
+  "items": [
+   "dishes:oroshi-hamburg"
+  ]
+ },
+ {
+  "key": "dishes-cheese-hamburg",
+  "ja": "チーズハンバーグ",
+  "desc": "cheese hamburg, a thick browned oval hamburg steak with a slice of melted yellow cheese draped over it and demi-glace sauce around, with corn and French fries, on a plate",
+  "items": [
+   "dishes:cheese-hamburg",
+   "eatout:cheese_hamburg"
+  ]
+ }
+]
