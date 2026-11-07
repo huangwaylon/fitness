@@ -88,7 +88,7 @@
   });
 </script>
 
-<Sheet bind:open label={t('title.settings')} variant="pop" onclose={closed}>
+<Sheet bind:open label={t('title.settings')} variant="pop" onclose={closed} timed="settings">
   <div class="titlebar"><NavBar {title} onback={push ? back : null} onclose={() => (open = false)} sfx="self" /></div>
   <div class="panel-body" class:fill={push !== null} data-settings bind:this={body}>
     {#if push === 'look' && view}

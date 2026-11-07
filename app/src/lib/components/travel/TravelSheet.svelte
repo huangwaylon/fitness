@@ -85,7 +85,7 @@
   <Segmented size="s" items={UNITS.map((u) => ({ id: u, label: u }))} value={units.current} label={t('travel.units')} attr="units" onpick={setUnits} />
 {/snippet}
 
-<Sheet bind:open label={t('travel.title')} variant="full" onclose={closed}>
+<Sheet bind:open label={t('travel.title')} variant="full" onclose={closed} timed="travel">
   <div class="tv" data-travel data-level={sel ? 'trip' : 'list'}>
     {#key sel}
       <div class="lvl">

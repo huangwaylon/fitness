@@ -2566,7 +2566,7 @@ is [kikimimi.md](kikimimi.md) (the quiz, its engine, audio and sync); the hub an
 - **Opening.** The HUD menu's 「ききみみ」 with its small 「えいご」 (しずえ's head, above せってい; the guest's too) opens a
   full-height sheet (`components/kikimimi/KikimimiSheet.svelte`, lazy, its strings `i18n/kikimimi.*.json`; the content
   in per-level chunks and audio packs, kikimimi.md "Loading"). The tap itself starts the voice session (`invite.svelte.ts`
-  wakeQuizVoice → `voiceSession(true)`, before the press beat), so clips play with the silent switch on. The sheet opens
+  wakeQuizVoice → `voiceSession(true)`), so clips play with the silent switch on. The sheet opens
   on its hub: today's card, あそぶ · みんなで · ずかん · きろく, ⚙ (kikimimi-ux.md §5, §6.1). The island is covered
   (the 3D island paused) while it's open.
 - **Invites.** `KikimimiHost.svelte`, always loaded in the island scene, listens on the scene's one Live (`relay ??

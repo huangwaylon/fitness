@@ -54,7 +54,7 @@ export function liveInvite(): { g: string; host: Who } | null {
 /** The island's Live, for the sheet (null: no relay, a solo game). */
 export const quizLive = (): Live | null => link;
 
-/** The menu pill's tap, before its press beat: the voice session must begin inside the tap itself (iOS). */
+/** The menu pill's tap: the voice session must begin inside the tap itself (iOS). */
 export const wakeQuizVoice = (): void => void voiceSession(true);
 
 /** Open the sheet (**inside a tap**, or after wakeQuizVoice in one: the voice session starts here, so the clips can

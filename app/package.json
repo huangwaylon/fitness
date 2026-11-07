@@ -43,6 +43,7 @@
     "bench": "node scripts/bench-model.ts",
     "leak": "node scripts/leak-probe.ts",
     "perf:start": "node scripts/perf-start.ts",
+    "perf:sheets": "node scripts/perf-sheets.ts",
     "knip": "knip",
     "models": "node scripts/models.ts",
     "room-models": "node scripts/room-models.ts",

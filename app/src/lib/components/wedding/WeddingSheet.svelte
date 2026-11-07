@@ -110,7 +110,7 @@
 </script>
 
 
-<Sheet bind:open label={t('wed.title')} variant="full" onclose={closed}>
+<Sheet bind:open label={t('wed.title')} variant="full" onclose={closed} timed="wedding">
   <div class="wd">
     <NavBar {title} onclose={() => (open = false)} />
     <div class="wd-body" class:writing class:plan={tab === 'plan'} bind:this={body} data-wedding data-tab={tab} data-guest={!canEdit || undefined}>

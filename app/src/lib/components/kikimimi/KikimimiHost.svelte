@@ -4,7 +4,7 @@
   // own chunk, mounted from its first opening (せってい's あそぶ, the banner's さんか: invite.svelte.ts openQuiz).
   import type { Live } from '#lib/sync/live.ts';
   import type { Who } from '#lib/types.ts';
-  import { lazy } from '#lib/ui-state/reload.ts';
+  import { loadKikimimi as loadSheet } from '../island/sheetChunks.ts';
   import { toasts } from '#lib/ui-state/toast.svelte.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
@@ -13,7 +13,6 @@
   import { listenQuiz, openQuiz, quiz } from './invite.svelte.ts';
 
   let { live }: { live: Live | null } = $props();
-  const loadSheet = lazy(() => import('./KikimimiSheet.svelte'));
   let Sheet = $state.raw<typeof import('./KikimimiSheet.svelte').default | null>(null);
 
   // The sheet's chunk from its first opening; failed to load (offline, a deploy's moment): not open (the voice session

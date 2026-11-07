@@ -9,8 +9,8 @@
   // hiking/open.svelte.ts) and せってい (a gear);
   // no かいがら: the shop is the building. Folded by default: the sky keeps only the dumbbell, the bowl and the leaf.
   // It folds again on a second tap of the leaf, a tap anywhere else (that tap still goes where it was aimed), Esc, a
-  // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), then its sheet grows out of
-  // it, Sheet's `pop`). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
+  // sheet opening, or a pick (a pill: a press squash, the villagers glance up at it (R18), and its sheet grows out of
+  // it at once, Sheet's `pop`; its chunk fetched from the pill's touch-down). Folded, the pills are hidden and inert (no taps, no focus, out of placement.ts' guards).
   // The goals' coins fly into it (HudCoins): into the leaf while it's folded, into the ベル row's number while it's
   // open; the number holds while they are in the air and counts up as each lands, and today's +N flashes by where
   // they land (a yuzu bubble that fades: earnings only, never a とりけす's refund).
@@ -27,6 +27,8 @@
   import { coinsInFlight } from './HudCoins.svelte';
   import { react } from '../motion/director.svelte.ts';
   import { popFrom } from './popFrom.ts';
+  import { prefetchSheet, type SheetChunk } from './sheetChunks.ts';
+  import { sheetTap } from '#lib/ui-state/sheetTiming.ts';
   import { ui } from '#lib/ui-state/ui.svelte.ts';
   import { formatBells, formatNum, t } from '#lib/i18n/index.ts';
 
@@ -37,11 +39,11 @@
     today: number;
     /** The panel the ベル row opens is open (its aria-expanded). */
     expanded?: boolean;
-    /** The ベル row picked (open the panel on ごほうび), after the press beat. */
+    /** The ベル row picked (open the panel on ごほうび), at once. */
     onbells?: () => void;
-    /** ずかん picked (open the ずかん), after the press beat. */
+    /** ずかん picked (open the ずかん), at once. */
     onzukan?: () => void;
-    /** せってい picked (open せってい), after the press beat. */
+    /** せってい picked (open せってい), at once. */
     onsettings?: () => void;
     /** The page's timer (cleared with the page). */
     later: (fn: () => void, ms: number) => void;
@@ -118,8 +120,12 @@
     react('R18');
     open = false;
     refocus = true;
-    later(() => go?.(), 90);
+    sheetTap();
+    go?.();
   }
+
+  /** A pill touched down: its sheet's chunk on its way before the tap lands. */
+  const ahead = (k: SheetChunk) => void prefetchSheet(k);
 
   /** The ベル the row shows: the wallet less what is still flying in (never down while coins fly; a spend at once). */
   // svelte-ignore state_referenced_locally
@@ -181,39 +187,39 @@
   {#if !open}{@render plus()}{/if}
   <div class="items" id="hud-menu-items" role="group" aria-label={t('island.menu')} inert={!open}>
     <button type="button" class="item bells" data-hud-bells data-bells={bells} data-today={today} aria-haspopup="dialog" aria-expanded={expanded}
-      aria-label={t('island.bells', { bells: formatBells(bells), today: formatBells(today) })} data-sfx="self" onclick={(e) => pick(e, onbells)}>
+      aria-label={t('island.bells', { bells: formatBells(bells), today: formatBells(today) })} data-sfx="self" onpointerdown={() => ahead('panel')} onclick={(e) => pick(e, onbells)}>
       <span class="lbl" aria-hidden="true">{t('island.bellsRow')}</span>
       <b class="num money" aria-hidden="true" onanimationend={(e) => e.currentTarget.classList.remove('catch')}>{formatNum(Math.round(shown.current))}</b>
       {#if open}{@render plus()}{/if}
     </button>
-    <button type="button" class="item" data-hud-zukan aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onzukan)}>
+    <button type="button" class="item" data-hud-zukan aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('zukan')} onclick={(e) => pick(e, onzukan)}>
       <span class="lbl">{t('zukan.title')}</span>
       <span class="ic"><OfficialArt key="critters/agrias-butterfly" size={30} eager /></span>
     </button>
-    <!-- the voice session begins in the tap itself (iOS: the clips play with the silent switch on), the sheet after the beat -->
-    <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self"
+    <!-- the voice session begins in the tap itself (iOS: the clips play with the silent switch on) -->
+    <button type="button" class="item" data-hud-kikimimi aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('kikimimi')}
       onclick={(e) => (wakeQuizVoice(), pick(e, () => openQuiz()))}>
       <span class="lbl">{t('panel.kikimimi')}{#if invited}<small class="invited" data-hud-kikimimi-invited>{t('panel.kikimimiInvited')}</small>{:else}<small class="sub">{t('panel.kikimimiSub')}</small>{/if}</span>
       <span class="ic"><Host head size={30} animate={false} eager /></span>
     </button>
     <!-- りょこう: the trips (Orville's head on the pill only) -->
-    <button type="button" class="item" data-hud-travel aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => trips.show())}>
+    <button type="button" class="item" data-hud-travel aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('travel')} onclick={(e) => pick(e, () => trips.show())}>
       <span class="lbl">{t('panel.travel')}</span>
       <span class="ic"><OfficialArt key="villagers/orville-icon" size={30} eager /></span>
     </button>
     <!-- けっこんしき: the wedding board (Harvey's head on the pill only) -->
-    <button type="button" class="item" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, () => weddingSheet.show())}>
+    <button type="button" class="item" data-hud-wedding aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('wedding')} onclick={(e) => pick(e, () => weddingSheet.show())}>
       <span class="lbl">{t('panel.wedding')}</span>
       <span class="ic"><OfficialArt key="villagers/harvey-icon" size={30} eager /></span>
     </button>
     <!-- トレイル: the hiking trails (no mountain in NH's art: drawn in the gear's soft brown, its snow cream) -->
-    <button type="button" class="item" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, openTrails)}>
+    <button type="button" class="item" data-hud-hiking aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('hiking')} onclick={(e) => pick(e, openTrails)}>
       <span class="lbl">{t('panel.hiking')}</span>
       <span class="ic">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="gear" d="M1.8 20.2 8.6 8.4c.4-.7 1.4-.7 1.8 0l2.3 4 2.2-3.2c.4-.6 1.3-.6 1.7 0l5.6 8.4c.5.7 0 1.6-.8 1.6H2.7c-.8 0-1.3-.9-.9-1.6Z" /><path class="snow" d="M7.1 11 8.6 8.4c.4-.7 1.4-.7 1.8 0L12 11.2l-1.6 1-1-1.1-1 1.2Z" /></svg>
       </span>
     </button>
-    <button type="button" class="item" data-hud-settings aria-haspopup="dialog" data-sfx="self" onclick={(e) => pick(e, onsettings)}>
+    <button type="button" class="item" data-hud-settings aria-haspopup="dialog" data-sfx="self" onpointerdown={() => ahead('settings')} onclick={(e) => pick(e, onsettings)}>
       <span class="lbl">{t('island.settings')}</span>
       <span class="ic">
         <!-- a gear in the say button's soft brown (no settings icon in NH's art) -->

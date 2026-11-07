@@ -37,7 +37,7 @@
   const close = () => (open = false);
 </script>
 
-<Sheet bind:open label={pick(S.title, i18n.locale)} variant="full" ondismiss={() => !view?.escape()}>
+<Sheet bind:open label={pick(S.title, i18n.locale)} variant="full" ondismiss={() => !view?.escape()} timed="hiking">
   <div class="hk" lang={i18n.locale} data-hiking data-level={sel ? 'trail' : 'list'}>
     <TrailList hidden={!!sel} onopen={(t) => (sel = t)} onclose={close} />
     {#if sel}

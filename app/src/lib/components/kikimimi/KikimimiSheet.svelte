@@ -1,3 +1,13 @@
+<script module lang="ts">
+  import { load as loadUnits } from '#lib/kikimimi/pool.ts';
+  import { lastLv as rememberedLv } from './prefs.ts';
+  /** Ahead of an opening (island/sheetChunks.ts, a quiet moment): the hub's chunk and the remembered level's items,
+   *  what the opening waits for before its first page shows. */
+  export function warm(): Promise<unknown> {
+    return Promise.all([import('./hub/Hub.svelte'), loadUnits(rememberedLv())]);
+  }
+</script>
+
 <script lang="ts">
   // ききみみ's sheet (docs/kikimimi-ux.md §5; docs/kikimimi.md "UI"), its own chunk with the bank, the deck, the session
   // and the strings: full height (Sheet's `pop`), one title bar (the page's name, the game's question 3 / 8; ‹ and ✕,
@@ -341,7 +351,7 @@
   {/await}
 {/snippet}
 
-<Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss}>
+<Sheet bind:open label={t('kiki.title')} variant="pop" onclose={closed} ondismiss={dismiss} timed="kikimimi">
   <div class="titlebar"><NavBar {title} onback={canBack ? back : null} onclose={requestClose} sfx="self" lead={atHub && !welcome ? gear : null} /></div>
   <div class="kk-body" data-kikimimi data-phase={v?.phase} data-host={v?.amHost || undefined} data-kiki-at={story ? 'story-frame' : atHub ? (welcome ? 'welcome' : 'hub') : hosting && page ? page.k : guest ? 'lobby' : undefined} data-kiki-night={story ? '' : undefined}
     data-kiki-ja={ja} data-kiki-right={right || undefined}>

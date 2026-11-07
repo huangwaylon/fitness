@@ -4,7 +4,7 @@
   // the meal button (NH's ramen bowl) → the meal log (ごはん); the menu (NH's leaf, at the screen's side) drops six
   // pills under it (HudMenu): the ベル row (the shared wallet's balance; today's +N flashing by the leaf as coins land)
   // → the island panel slides down (ごほうび), the others (ずかん, えいご, りょこう, けっこんしき, せってい) each open their own
-  // sheet grown out of them. Only when sync is not ok, the sync chip centred under the row; under it, while せってい's
+  // sheet grown out of them (each sheet's chunk fetched ahead: sheetChunks.ts). Only when sync is not ok, the sync chip centred under the row; under it, while せってい's
   // きせつ is on, its chip. The panel, the popups and every sheet are their own chunks, loaded on first open.
   import { onMount } from 'svelte';
   import { replaceState } from '$app/navigation';
@@ -17,7 +17,7 @@
   import { trips } from '../travel/open.svelte.ts';
   import { weddingSheet } from '../wedding/open.svelte.ts';
   import { hiking } from '../hiking/open.svelte.ts';
-  import { lazy } from '#lib/ui-state/reload.ts';
+  import { loadFood, loadHealth, loadPanel, loadSettings, loadZukan, prefetchSheets } from './sheetChunks.ts';
 
   interface Props {
     /** Today's ベル so far, both people (the ベル row's label and the flash; shown in full in ごほうび). */
@@ -37,11 +37,6 @@
     later: (fn: () => void, ms: number) => void;
   }
   let { today, balance, panelOpen = $bindable(false), healthOpen = $bindable(false), foodOpen = $bindable(false), zukanOpen = $bindable(false), settingsOpen = $bindable(false), later }: Props = $props();
-  const loadPanel = lazy(() => import('../panel/IslandPanel.svelte'));
-  const loadHealth = lazy(() => import('../health/HealthSheet.svelte'));
-  const loadFood = lazy(() => import('../food/FoodSheet.svelte'));
-  const loadZukan = lazy(() => import('../kiroku/ZukanSheet.svelte'));
-  const loadSettings = lazy(() => import('../panel/SettingsSheet.svelte'));
   /** Mounted from the first open on (each keeps its state between opens). */
   let opened = $state(false);
   let healthMounted = $state(false);
@@ -49,6 +44,8 @@
   let zukanMounted = $state(false);
   let settingsMounted = $state(false);
   // the old /jar page (`?panel=rewards`): the panel open at once
+  // every sheet's chunk ahead of its first tap, once the island is in and the worker serves them
+  onMount(prefetchSheets);
   onMount(() => {
     if (new URLSearchParams(location.search).get('panel') !== 'rewards') return;
     // the param goes (a reload opens the island as ever), the rest of the query stays as it was written
@@ -61,8 +58,8 @@
 <!-- (.ribbon-wrap: the HUD's box, by its old name: the 3D island measures it for the sky under it) -->
 <div class="ribbon-wrap">
   <div class="hud-row">
-    <HudHealth {later} onopen={() => { healthMounted = true; healthOpen = true; }} />
-    <HudFood {later} onopen={() => { foodMounted = true; foodOpen = true; }} />
+    <HudHealth onopen={() => { healthMounted = true; healthOpen = true; }} />
+    <HudFood onopen={() => { foodMounted = true; foodOpen = true; }} />
     <HudMenu bells={balance} {today} {later} expanded={panelOpen} onbells={() => (opened = panelOpen = true)}
       onzukan={() => { zukanMounted = true; zukanOpen = true; }} onsettings={() => { settingsMounted = true; settingsOpen = true; }} />
   </div>
