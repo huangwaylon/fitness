@@ -2,6 +2,7 @@
   // 準備: one logistics card (a flight, the car, a dive, what to know; docs/design.md §Trips): a dense card, its head
   // (the icon on a cream disc, or the card's photo; the title, the line under it), its figures as key · value rows,
   // then a row that opens the rest (the description, the lists, the links out), named by its lists' heads.
+  import { photoFallback } from '../ui/photoFallback.ts';
   import type { Card } from '#lib/travel/types.ts';
   import { i18n, t } from '#lib/i18n/index.ts';
   import Icon from '../ui/Icon.svelte';
@@ -25,7 +26,7 @@
 <article class="card dense prep" data-card={card.id} data-open={open || undefined}>
   <div class="row hd">
     {#if card.photo}
-      <img class="pi photo" src={asset(card.photo.src as Parameters<typeof asset>[0])} alt="" width="36" height="36" loading="lazy" decoding="async" />
+      <img class="pi photo" src={asset(card.photo.src as Parameters<typeof asset>[0])} alt="" width="36" height="36" loading="lazy" decoding="async" {@attach photoFallback} />
     {:else}
       <span class="pi"><Icon name={card.icon} size={18} /></span>
     {/if}

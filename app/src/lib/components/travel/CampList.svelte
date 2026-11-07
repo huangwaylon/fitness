@@ -4,6 +4,7 @@
   // thumb, the name, kind · town and the drive from the office, our nights' sticker, its amenities' icons), a row
   // opening its card (CampSheet), then the source's foot.
   //   <CampList {trip} {note} />
+  import { photoFallback } from '../ui/photoFallback.ts';
   import type { Camp, Trip } from '#lib/travel/types.ts';
   import { t } from '#lib/i18n/index.ts';
   import { asset } from '$app/paths';
@@ -42,7 +43,7 @@
       {@const nights = c.chips.filter((x) => x.pick)}
       <li>
         <button type="button" class="row camp" data-camp={c.id} data-sfx="open" onclick={() => show(c)}>
-          <img class="th" src={asset(c.photo.src as Parameters<typeof asset>[0])} alt="" width="48" height="48" loading="lazy" decoding="async" />
+          <img class="th" src={asset(c.photo.src as Parameters<typeof asset>[0])} alt="" width="48" height="48" loading="lazy" decoding="async" {@attach photoFallback} />
           <span class="tx">
             <span class="nm guide"><Txt l={c.name} {note} />{#each nights as n, i (i)}<span class="sticker"><Txt l={n.text} {note} /></span>{/each}</span>
             <span class="sb guide"><Txt l={c.sub} {note} /> · {t('travel.camps.drive', { min: c.fromMin })}</span>
