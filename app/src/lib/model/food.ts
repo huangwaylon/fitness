@@ -179,9 +179,16 @@ export function repeatOn(s: Pick<State, 'foodRepeat'>, who: Who, meal: Meal, dat
 const repeatEntries = (r: FoodRepeat, date: LocalDate): FoodEntry[] =>
   r.it.map(({ g, f }, i) => ({ id: `${r.id}:${i}`, who: r.who, at: r.at, d: date, m: r.m, g, f, rep: r.id }));
 
-/** All of `who`'s live entries across days, the latest changed first (the 最近 list). */
-export function foodEntries(s: Pick<State, 'food'>, who: Who): FoodEntry[] {
-  return entriesOf(s).filter((e) => e.who === who).sort((a, b) => b.at - a.at);
+const byWho = new WeakMap<FoodEntry[], Map<Who, readonly FoodEntry[]>>();
+/** All of `who`'s live entries across days, the latest changed first (the 最近 list). Memoised per fold and person:
+ *  the sheet asks several times an update (さいきん, this trip's entries, the entry to change). */
+export function foodEntries(s: Pick<State, 'food'>, who: Who): readonly FoodEntry[] {
+  const all = entriesOf(s);
+  let m = byWho.get(all);
+  if (!m) byWho.set(all, (m = new Map()));
+  let out = m.get(who);
+  if (!out) m.set(who, (out = all.filter((e) => e.who === who).sort((a, b) => b.at - a.at)));
+  return out;
 }
 
 /** `who`'s entries of `date` and their totals: by meal, each meal's repeat's items first (in its order; the UI keeps
