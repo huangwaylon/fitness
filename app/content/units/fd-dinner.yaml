@@ -629,12 +629,13 @@ items:
     cond: { kind: street, level: heavy }
     tags: { seed: 50, register: friend, pragmatic: hedge, conditions: [street], features: [chain] }
 lessons:
-  v: 1
+  v: 2
   deai: [fn-pick-place, fn-special-pesto, fn-r-feel-like, fn-m-cant-do, fn-n-split, fn-m-share]
   bamen: [fn-allergy-salad, fn-r-whatever, fn-m-mood, fn-n-wait, fn-dessert-split, fn-m-not-sushi]
   check: [fn-order-pasta, fn-r-nuts, fn-m-almost-out, fn-n-tip, fn-garlic-wings, fn-r-share]
   oto: [fn-w-feel-like, fn-w-in-it, fn-w-share, fn-w-good-with, fn-w-cant-do, fn-w-split-it]
   jissen: [fn-fast-no-sushi, fn-fast-m-peanut, fn-fast-r-specials, fn-fast-n-share, fn-fast-veggie, fn-fast-m-italian]
+  call: [call-dinner-six]
 tiers:
   fn-pick-place:
     easy: { choices: ["A tapas place, sharing small plates.", "Pizza, because Judy is starving."], answer: 0, cja: ["タパスの店で、小皿料理を分ける。", "ジュディがお腹ぺこぺこなので、ピザ。"] }
