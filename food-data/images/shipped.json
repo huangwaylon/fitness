@@ -38367,6 +38367,58 @@
 "checked": false
 },
 {
+"key": "mext-11023",
+"ja": "和牛そともも 脂身つき 生",
+"desc": "Raw outside round with fat: a block of dark red lean beef with a thin white fat layer along one side",
+"items": [
+"mext:11023",
+"mext:11024",
+"mext:11053",
+"mext:11054",
+"mext:11079",
+"mext:11080",
+"mext:11261",
+"mext:11262"
+],
+"roll": 0,
+"seed": 37965,
+"prompt": "1dce128f38",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11026",
+"ja": "和牛ランプ 脂身つき 生",
+"desc": "Raw beef rump with fat: a red rump steak with a white fat cap along one edge, on a plate",
+"items": [
+"mext:11026",
+"mext:11027",
+"mext:11056",
+"mext:11057",
+"mext:11082",
+"mext:11083"
+],
+"roll": 0,
+"seed": 78370,
+"prompt": "4d1283a164",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11029",
+"ja": "和牛ヒレ 赤肉 生",
+"desc": "Raw beef fillet: a thick round tenderloin medallion, deep red, very fine and tender, no fat, on a plate",
+"items": [
+"mext:11029",
+"mext:11267"
+],
+"roll": 0,
+"seed": 15027,
+"prompt": "0fe284e8b5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11059",
 "ja": "国産牛 ヒレ 生",
 "desc": "a raw beef fillet (hire) steak, a thick round cylinder of deep red very lean beef",
@@ -38377,6 +38429,45 @@
 "roll": 0,
 "seed": 71828,
 "prompt": "c95ccae954",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11086",
+"ja": "子牛リブロース 脂身なし 生",
+"desc": "Raw veal rib loin: pale pink lean veal slab, much lighter than beef, fine grain, on a plate",
+"items": [
+"mext:11086"
+],
+"roll": 0,
+"seed": 18152,
+"prompt": "0e4ff69f59",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11087",
+"ja": "子牛バラ 脂身なし 生",
+"desc": "Raw veal belly: pale pink layered veal belly meat with thin pale fat seams, on a plate",
+"items": [
+"mext:11087"
+],
+"roll": 0,
+"seed": 46302,
+"prompt": "f32e4695ec",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11088",
+"ja": "子牛もも肉 脂身なし 生",
+"desc": "Raw veal round: a pale pink lean veal block, smooth and fine, no fat, on a plate",
+"items": [
+"mext:11088"
+],
+"roll": 0,
+"seed": 60879,
+"prompt": "f082c34bab",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38407,6 +38498,19 @@
 "checked": false
 },
 {
+"key": "mext-11091",
+"ja": "牛ハツ 生",
+"desc": "Raw beef heart (hatsu): dense dark red muscle slices with a white fat edge, on a plate",
+"items": [
+"mext:11091"
+],
+"roll": 0,
+"seed": 17738,
+"prompt": "fec82c2688",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11092",
 "ja": "牛レバー 生",
 "desc": "raw beef liver, a glossy smooth dark red-brown slab, a few slices",
@@ -38420,6 +38524,19 @@
 "checked": false
 },
 {
+"key": "mext-11093",
+"ja": "牛マメ（じん臓） 生",
+"desc": "Raw beef kidney: a dark red-brown kidney made of many small lobes like a cluster, on a plate",
+"items": [
+"mext:11093"
+],
+"roll": 0,
+"seed": 2630,
+"prompt": "4626d53fec",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11094",
 "ja": "牛ミノ（第一胃） ゆで",
 "desc": "boiled beef rumen (mino), pale white thick slices with a scored surface",
@@ -38429,6 +38546,45 @@
 "roll": 0,
 "seed": 20773,
 "prompt": "40a471676d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11095",
+"ja": "牛ハチノス ゆで",
+"desc": "Boiled honeycomb tripe (hachinosu): pale grey-white tripe with a raised hexagonal honeycomb pattern, cut pieces in a small dish",
+"items": [
+"mext:11095"
+],
+"roll": 0,
+"seed": 46643,
+"prompt": "45e465cf2f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11096",
+"ja": "牛センマイ 生",
+"desc": "Raw beef omasum (senmai): thin dark grey-black leaf-like pleats covered in tiny bumps, sliced, on a small plate",
+"items": [
+"mext:11096"
+],
+"roll": 0,
+"seed": 36745,
+"prompt": "21b143147c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11097",
+"ja": "牛ギアラ ゆで",
+"desc": "Boiled beef abomasum (giara): thick folded chewy strips, brownish-grey with pinkish fatty patches, on a small plate",
+"items": [
+"mext:11097"
+],
+"roll": 0,
+"seed": 17055,
+"prompt": "b78b5ad76f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38460,6 +38616,19 @@
 "checked": false
 },
 {
+"key": "mext-11100",
+"ja": "牛直腸 生",
+"desc": "Raw beef rectum: thick-walled pinkish-white tube of intestine, cut into rings, on a plate",
+"items": [
+"mext:11100"
+],
+"roll": 0,
+"seed": 94370,
+"prompt": "fcbcacc118",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11101",
 "ja": "牛すじ ゆで",
 "desc": "boiled beef tendon (gyusuji), wobbly translucent pale brown chunks",
@@ -38469,6 +38638,19 @@
 "roll": 0,
 "seed": 64340,
 "prompt": "afa5d364d5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11102",
+"ja": "牛子宮 ゆで",
+"desc": "Boiled beef uterus: pale pinkish-white chewy curved tube slices, on a small plate",
+"items": [
+"mext:11102"
+],
+"roll": 0,
+"seed": 77166,
+"prompt": "da56c5ebbf",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38512,6 +38694,19 @@
 "checked": false
 },
 {
+"key": "mext-11106",
+"ja": "味付け缶詰",
+"desc": "Canned seasoned beef (yamato-ni): shreds and chunks of beef simmered dark brown in sweet soy, glossy, in a small dish",
+"items": [
+"mext:11106"
+],
+"roll": 0,
+"seed": 6455,
+"prompt": "a34ddf7942",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11107",
 "ja": "ビーフジャーキー",
 "desc": "strips of beef jerky, dark red-brown chewy dried meat",
@@ -38521,6 +38716,19 @@
 "roll": 0,
 "seed": 82177,
 "prompt": "0c86988d1c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11108",
+"ja": "スモークタン",
+"desc": "Smoked beef tongue: oval slices, dark pink inside with a darker brown smoked rim, fine grain, fanned on a plate",
+"items": [
+"mext:11108"
+],
+"roll": 0,
+"seed": 82000,
+"prompt": "e94a95bfd5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38538,6 +38746,74 @@
 "checked": false
 },
 {
+"key": "mext-11110",
+"ja": "くじら肉 赤肉 生",
+"desc": "Raw whale meat: very dark crimson, almost black-red lean meat cut into sashimi slices, on a plate",
+"items": [
+"mext:11110"
+],
+"roll": 0,
+"seed": 59203,
+"prompt": "6d8ddb2de6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11111",
+"ja": "くじら うねす 生",
+"desc": "Raw whale unesu: ventral groove blubber, thick white fat with striped pinkish ridged layers, sliced, on a plate",
+"items": [
+"mext:11111"
+],
+"roll": 0,
+"seed": 81333,
+"prompt": "17dafbd949",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11112",
+"ja": "くじら 本皮 生",
+"desc": "Raw whale skin (honkawa): black skin over a thick layer of white blubber, cut blocks, on a plate",
+"items": [
+"mext:11112"
+],
+"roll": 0,
+"seed": 3215,
+"prompt": "b1b604f136",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11113",
+"ja": "さらしくじら",
+"desc": "Sarashi kujira: thin wavy frilly curls of white blanched whale blubber, translucent edges, in a small dish",
+"items": [
+"mext:11113"
+],
+"roll": 0,
+"seed": 87257,
+"prompt": "858ef900c3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11114",
+"ja": "鹿 あかしか 赤肉 生",
+"desc": "Raw venison, lean: a block of very dark red lean deer meat with no fat, on a plate",
+"items": [
+"mext:11114",
+"mext:11294",
+"mext:11295",
+"mext:11311"
+],
+"roll": 0,
+"seed": 8090,
+"prompt": "ea22c15c4a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11115",
 "ja": "豚肩 脂身つき 生",
 "desc": "raw pork shoulder slices, pink meat with white fat marbling, on a plate",
@@ -38550,6 +38826,34 @@
 "roll": 0,
 "seed": 77836,
 "prompt": "e2e1ad3efd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11117",
+"ja": "豚肩 赤肉 生",
+"desc": "Raw pork shoulder, lean: a block of pink lean pork, slightly coarse, no fat, on a plate",
+"items": [
+"mext:11117",
+"mext:11143"
+],
+"roll": 0,
+"seed": 31936,
+"prompt": "03f86375a5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11121",
+"ja": "豚肩ロース 赤肉 生",
+"desc": "Raw pork shoulder loin, lean: pink lean pork slices with fine fat streaks, on a plate",
+"items": [
+"mext:11121",
+"mext:11147"
+],
+"roll": 0,
+"seed": 24246,
+"prompt": "ec041a2f56",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38582,6 +38886,37 @@
 "checked": false
 },
 {
+"key": "mext-11125",
+"ja": "豚ロース 脂身つき ゆで",
+"desc": "Boiled pork loin with fat: thin shabu-shabu pork slices cooked pale greyish-white with a white fat edge, in a small bowl",
+"items": [
+"mext:11125"
+],
+"roll": 0,
+"seed": 66479,
+"prompt": "7a9a64bf1b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11127",
+"ja": "豚ロース 赤肉 生",
+"desc": "Raw pork loin, lean: a pale pink lean pork slab with no fat, smooth grain, on a plate",
+"items": [
+"mext:11127",
+"mext:11134",
+"mext:11138",
+"mext:11151",
+"mext:11156",
+"mext:11160"
+],
+"roll": 0,
+"seed": 32451,
+"prompt": "2199568489",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11129",
 "ja": "豚バラ 脂身つき 生",
 "desc": "raw pork belly slices, alternating layers of pink meat and white fat",
@@ -38609,6 +38944,52 @@
 "checked": false
 },
 {
+"key": "mext-11132",
+"ja": "豚もも肉 脂身なし 焼き",
+"desc": "Grilled lean pork: lean pork slices browned on the surface and white inside, on a plate",
+"items": [
+"mext:11132"
+],
+"roll": 0,
+"seed": 52717,
+"prompt": "b19a73ca85",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11133",
+"ja": "豚もも肉 脂身なし ゆで",
+"desc": "Boiled lean pork: pale greyish-white cooked lean pork slices, no fat, in a small bowl",
+"items": [
+"mext:11133"
+],
+"roll": 0,
+"seed": 80091,
+"prompt": "e1447bec8e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11136",
+"ja": "豚そともも 脂身つき 生",
+"desc": "Raw pork with fat: a block of pink lean pork with a white fat layer along one side, on a plate",
+"items": [
+"mext:11136",
+"mext:11137",
+"mext:11141",
+"mext:11142",
+"mext:11154",
+"mext:11155",
+"mext:11158",
+"mext:11159"
+],
+"roll": 0,
+"seed": 62196,
+"prompt": "1df1ed2eb0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11140",
 "ja": "豚ヒレ 生",
 "desc": "a raw pork tenderloin, a long smooth pale pink lean cylinder",
@@ -38618,6 +38999,60 @@
 "roll": 0,
 "seed": 7622,
 "prompt": "dc3dd26563",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11145",
+"ja": "豚肩ロース 脂身つき 生（中型種）",
+"desc": "Raw pork shoulder loin with fat: pink pork slices marbled with streaks and seams of white fat, on a plate",
+"items": [
+"mext:11145",
+"mext:11146"
+],
+"roll": 0,
+"seed": 40169,
+"prompt": "a008b1245b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11149",
+"ja": "豚ロース 脂身つき 生（中型種）",
+"desc": "Raw pork loin with fat: a pink pork loin chop with a thick white fat rim, on a plate",
+"items": [
+"mext:11149",
+"mext:11150"
+],
+"roll": 0,
+"seed": 94434,
+"prompt": "70a33d1380",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11153",
+"ja": "豚バラ 脂身つき 生（中型種）",
+"desc": "Raw pork belly: a slab showing alternating stripes of pink meat and white fat, on a plate",
+"items": [
+"mext:11153"
+],
+"roll": 0,
+"seed": 33277,
+"prompt": "28d10385ae",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11162",
+"ja": "豚ヒレ 赤肉 生（中型種）",
+"desc": "Raw pork tenderloin: a long slender cylinder of pale pink lean pork, cut end showing fine grain, on a plate",
+"items": [
+"mext:11162"
+],
+"roll": 0,
+"seed": 33032,
+"prompt": "abbebf08a8",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38635,6 +39070,32 @@
 "checked": false
 },
 {
+"key": "mext-11164",
+"ja": "豚タン 生",
+"desc": "Raw pork tongue: a whole pink tongue with a rough textured surface, some slices cut, on a plate",
+"items": [
+"mext:11164"
+],
+"roll": 0,
+"seed": 79581,
+"prompt": "c579ec3284",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11165",
+"ja": "豚ハツ 生",
+"desc": "Raw pork heart: small dark red dense heart sliced open, on a plate",
+"items": [
+"mext:11165"
+],
+"roll": 0,
+"seed": 50763,
+"prompt": "c0174ea550",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11166",
 "ja": "豚レバー 生",
 "desc": "raw pork liver, a glossy dark red-brown slab and slices",
@@ -38644,6 +39105,19 @@
 "roll": 0,
 "seed": 81009,
 "prompt": "e493cf6a6a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11167",
+"ja": "豚マメ（じん臓） 生",
+"desc": "Raw pork kidney: smooth bean-shaped reddish-brown kidney, halved showing the pale core, on a plate",
+"items": [
+"mext:11167"
+],
+"roll": 0,
+"seed": 32839,
+"prompt": "275e0ea2f1",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38661,6 +39135,19 @@
 "checked": false
 },
 {
+"key": "mext-11169",
+"ja": "豚小腸 ゆで",
+"desc": "Boiled pork small intestine (motsu): pale greyish-white chewy curled tube pieces, in a small bowl",
+"items": [
+"mext:11169"
+],
+"roll": 0,
+"seed": 48512,
+"prompt": "af2a41d960",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11170",
 "ja": "豚もつ（大腸） ゆで",
 "desc": "boiled pork intestine (motsu), soft pale curled pieces",
@@ -38674,6 +39161,19 @@
 "checked": false
 },
 {
+"key": "mext-11171",
+"ja": "豚子宮 生",
+"desc": "Raw pork uterus (kobukuro): long thin pale pink rippled tube pieces, on a plate",
+"items": [
+"mext:11171"
+],
+"roll": 0,
+"seed": 94547,
+"prompt": "454462519e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11172",
 "ja": "豚足 ゆで",
 "desc": "boiled pig's trotters (tonsoku), pale glossy skin, split in half",
@@ -38683,6 +39183,32 @@
 "roll": 0,
 "seed": 94345,
 "prompt": "cd96e36400",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11173",
+"ja": "豚軟骨 ゆで",
+"desc": "Boiled pork cartilage (nankotsu): white translucent cartilage chunks with bits of meat attached, in a small dish",
+"items": [
+"mext:11173"
+],
+"roll": 0,
+"seed": 70111,
+"prompt": "254980d922",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11174",
+"ja": "骨付きハム",
+"desc": "Bone-in ham: a large leg ham with the bone, a browned smoked rind, and a pink cut face, a slice beside it",
+"items": [
+"mext:11174"
+],
+"roll": 0,
+"seed": 7100,
+"prompt": "a57cafc2ce",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38712,6 +39238,20 @@
 "seed": 79248,
 "prompt": "20659753b9",
 "model": "Z-Image-Turbo q8 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11180",
+"ja": "チョップドハム",
+"desc": "Chopped pressed ham: round pink slices showing chunky meat pieces bound together, mosaic-like, on a plate",
+"items": [
+"mext:11180",
+"mext:11179"
+],
+"roll": 0,
+"seed": 93514,
+"prompt": "824f37d15f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
 {
@@ -38758,6 +39298,19 @@
 "checked": false
 },
 {
+"key": "mext-11187",
+"ja": "セミドライソーセージ",
+"desc": "Semi-dry sausage: a firm dark red salami-like sausage, sliced into rounds with white fat specks",
+"items": [
+"mext:11187"
+],
+"roll": 0,
+"seed": 55497,
+"prompt": "c7c6a248f9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11188",
 "ja": "サラミ（ドライソーセージ）",
 "desc": "slices of salami, deep red with white fat specks",
@@ -38782,6 +39335,58 @@
 "roll": 0,
 "seed": 92142,
 "prompt": "4105a7a204",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11190",
+"ja": "ボロニアソーセージ",
+"desc": "Bologna sausage: large round slices, smooth pale pink, even texture, fanned on a plate",
+"items": [
+"mext:11190"
+],
+"roll": 0,
+"seed": 8235,
+"prompt": "4ba894eda0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11191",
+"ja": "リオナソーセージ",
+"desc": "Lyoner sausage: round pale pink slices studded with small red and green diced pepper pieces, on a plate",
+"items": [
+"mext:11191"
+],
+"roll": 0,
+"seed": 15645,
+"prompt": "d5b9ff2971",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11192",
+"ja": "レバーソーセージ",
+"desc": "Liver sausage: soft greyish-brown spreadable slices, fine and smooth, on a plate",
+"items": [
+"mext:11192"
+],
+"roll": 0,
+"seed": 85319,
+"prompt": "8f11a64ed6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11193",
+"ja": "混合ソーセージ",
+"desc": "Mixed meat and fish sausage: a smooth pink sausage, cut into rounds, uniform fine texture, on a plate",
+"items": [
+"mext:11193"
+],
+"roll": 0,
+"seed": 21937,
+"prompt": "a03e81928f",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38825,6 +39430,19 @@
 "checked": false
 },
 {
+"key": "mext-11197",
+"ja": "スモークレバー",
+"desc": "Smoked pork liver: dense dark brown smoked liver slices, smooth and firm, on a plate",
+"items": [
+"mext:11197"
+],
+"roll": 0,
+"seed": 26056,
+"prompt": "56e8f3bacc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11198",
 "ja": "ゼラチン",
 "desc": "gelatin powder and a few clear gelatin sheets, pale translucent",
@@ -38855,6 +39473,45 @@
 "checked": false
 },
 {
+"key": "mext-11200",
+"ja": "マトンもも肉 脂身つき 生",
+"desc": "Raw mutton leg with fat: dark red meat with a white fat layer, on a plate",
+"items": [
+"mext:11200"
+],
+"roll": 0,
+"seed": 26939,
+"prompt": "5eee88905a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11201",
+"ja": "ラム肩 脂身つき 生",
+"desc": "Raw lamb shoulder with fat: pinkish-red lamb slices with seams of white fat, on a plate",
+"items": [
+"mext:11201"
+],
+"roll": 0,
+"seed": 49869,
+"prompt": "9e09370459",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11204",
+"ja": "やぎ肉 赤肉 生",
+"desc": "Raw goat meat, lean: a block of dark red lean goat meat with no fat, on a plate",
+"items": [
+"mext:11204"
+],
+"roll": 0,
+"seed": 33250,
+"prompt": "cc4c068c25",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11205",
 "ja": "あいがも 生",
 "desc": "raw duck breast, deep red meat with a thick creamy-white skin and fat layer, sliced",
@@ -38864,6 +39521,98 @@
 "roll": 0,
 "seed": 44020,
 "prompt": "bc0f811823",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11206",
+"ja": "かも あひる肉 皮つき 生",
+"desc": "Raw duck with skin: a red duck breast with a thick white fatty skin layer on top, on a plate",
+"items": [
+"mext:11206"
+],
+"roll": 0,
+"seed": 63726,
+"prompt": "c9f6a38f4e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11207",
+"ja": "うずら肉 皮つき 生",
+"desc": "Raw quail meat with skin: small pinkish-red quail pieces with thin pale skin, a tiny dressed bird shape, on a plate",
+"items": [
+"mext:11207"
+],
+"roll": 0,
+"seed": 952,
+"prompt": "2937f49371",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11208",
+"ja": "かも まがも肉 皮なし 生",
+"desc": "Raw wild duck, skinless: a deep dark red duck breast with no skin or fat, on a plate",
+"items": [
+"mext:11208",
+"mext:11247"
+],
+"roll": 0,
+"seed": 48841,
+"prompt": "1288e3178a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11209",
+"ja": "きじ肉 皮なし 生",
+"desc": "Raw pheasant, skinless: pinkish-red lean bird meat, fine grain, on a plate",
+"items": [
+"mext:11209"
+],
+"roll": 0,
+"seed": 67327,
+"prompt": "ee36c13c4a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11210",
+"ja": "七面鳥肉 皮なし 生",
+"desc": "Raw turkey, skinless: a pale pink lean breast fillet, on a plate",
+"items": [
+"mext:11210"
+],
+"roll": 0,
+"seed": 29210,
+"prompt": "5fac26ff64",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11211",
+"ja": "すずめ肉 骨・皮つき 生",
+"desc": "Raw sparrow with bone and skin: tiny whole plucked birds flattened open, pink with pale skin and small bones, on a plate",
+"items": [
+"mext:11211"
+],
+"roll": 0,
+"seed": 29164,
+"prompt": "5347135458",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11212",
+"ja": "親鶏手羽 皮つき 生",
+"desc": "Raw hen wings with skin: chicken wings with pale yellowish bumpy skin, on a plate",
+"items": [
+"mext:11212"
+],
+"roll": 0,
+"seed": 42870,
+"prompt": "4c5feb65ca",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -38878,6 +39627,32 @@
 "roll": 0,
 "seed": 65408,
 "prompt": "1b0d878451",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11214",
+"ja": "親鶏むね肉 皮なし 生",
+"desc": "Raw hen breast, skinless: a pale pink chicken breast fillet with no skin, on a plate",
+"items": [
+"mext:11214"
+],
+"roll": 0,
+"seed": 72451,
+"prompt": "d5cfc21394",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11215",
+"ja": "親鶏もも肉 皮つき 生",
+"desc": "Raw hen thigh with skin: darker pink chicken thigh meat covered in yellowish skin, on a plate",
+"items": [
+"mext:11215"
+],
+"roll": 0,
+"seed": 89237,
+"prompt": "a82dc3b269",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -39106,6 +39881,19 @@
 "checked": false
 },
 {
+"key": "mext-11239",
+"ja": "がちょう フォアグラ ゆで",
+"desc": "Boiled goose foie gras: a smooth plump lobe of liver, pale beige-yellow, creamy and glossy, sliced, on a plate",
+"items": [
+"mext:11239"
+],
+"roll": 0,
+"seed": 39868,
+"prompt": "5228bd7970",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11248",
 "ja": "和牛リブロース 脂身つき 焼き",
 "desc": "Grilled ribeye with fat: a beef steak with a browned seared crust and visible marbling, sliced showing a pink centre",
@@ -39135,6 +39923,93 @@
 "roll": 0,
 "seed": 8571,
 "prompt": "d1281978c2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11250",
+"ja": "和牛もも肉 脂身なし 焼き",
+"desc": "Grilled lean beef: a lean steak with a browned seared surface and pink inside, sliced, on a plate",
+"items": [
+"mext:11250",
+"mext:11049",
+"mext:11270",
+"mext:11302",
+"mext:11263"
+],
+"roll": 0,
+"seed": 96638,
+"prompt": "c922b9ff06",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11251",
+"ja": "和牛もも肉 脂身なし ゆで",
+"desc": "Boiled lean beef: slices of lean beef cooked through to grey-brown, no fat, in a small bowl",
+"items": [
+"mext:11251",
+"mext:11050",
+"mext:11271",
+"mext:11301",
+"mext:11264"
+],
+"roll": 0,
+"seed": 64552,
+"prompt": "20f7d68c2c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11252",
+"ja": "国産牛バラ 脂身つき 焼き",
+"desc": "Grilled beef belly (karubi): thin short rib slices streaked with fat, browned and glossy with grill marks, on a plate",
+"items": [
+"mext:11252"
+],
+"roll": 0,
+"seed": 60114,
+"prompt": "d069ac1092",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11253",
+"ja": "国産牛ヒレ 赤肉 焼き",
+"desc": "Grilled beef fillet: a thick round fillet steak with a browned crust, cut to show a pink centre, on a plate",
+"items": [
+"mext:11253"
+],
+"roll": 0,
+"seed": 14692,
+"prompt": "5c8408e063",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11254",
+"ja": "交雑牛リブロース 脂身つき 生",
+"desc": "Raw crossbred ribeye with fat: red beef slices heavily marbled with white fat, on a plate",
+"items": [
+"mext:11254",
+"mext:11257"
+],
+"roll": 0,
+"seed": 29991,
+"prompt": "95823b9093",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11260",
+"ja": "交雑牛バラ 脂身つき 生",
+"desc": "Raw beef belly: slices of short rib in alternating layers of red meat and white fat, on a plate",
+"items": [
+"mext:11260"
+],
+"roll": 0,
+"seed": 75773,
+"prompt": "0417e4aba5",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -39220,6 +40095,19 @@
 "checked": false
 },
 {
+"key": "mext-11278",
+"ja": "豚ヒレ 赤肉 焼き",
+"desc": "Grilled pork fillet: round tenderloin medallions browned outside, pale white inside, on a plate",
+"items": [
+"mext:11278"
+],
+"roll": 0,
+"seed": 82318,
+"prompt": "04acc15f59",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11279",
 "ja": "ヒレかつ",
 "desc": "hire katsu, small round breaded pork fillet cutlets in a crisp golden panko crust, one cut showing white lean pork, with shredded cabbage",
@@ -39248,6 +40136,19 @@
 "checked": false
 },
 {
+"key": "mext-11281",
+"ja": "マトンロース 脂身つき 焼き",
+"desc": "Grilled mutton loin with fat: lamb loin slices grilled brown with fat edges and grill marks, on a plate",
+"items": [
+"mext:11281"
+],
+"roll": 0,
+"seed": 76421,
+"prompt": "919e59dfd9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11282",
 "ja": "ラム ロース 焼き",
 "desc": "grilled lamb chops, browned with grill marks, small bones",
@@ -39257,6 +40158,32 @@
 "roll": 0,
 "seed": 15071,
 "prompt": "c096560b63",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11283",
+"ja": "ラムもも肉 脂身つき 焼き",
+"desc": "Grilled lamb leg with fat: lamb slices browned outside and pink inside with fat edges, on a plate",
+"items": [
+"mext:11283"
+],
+"roll": 0,
+"seed": 83785,
+"prompt": "0d8873ea2c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11284",
+"ja": "かも あひる 皮 生",
+"desc": "Raw duck skin: thick creamy white fatty skin pieces with a pimpled surface, on a plate",
+"items": [
+"mext:11284"
+],
+"roll": 0,
+"seed": 17962,
+"prompt": "9d8c5f57ec",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
@@ -39360,6 +40287,19 @@
 "checked": false
 },
 {
+"key": "mext-11296",
+"ja": "牛ハラミ ゆで",
+"desc": "Boiled beef skirt (harami): fibrous strips of diaphragm meat cooked to grey-brown, coarse grain visible, in a small dish",
+"items": [
+"mext:11296"
+],
+"roll": 0,
+"seed": 75303,
+"prompt": "0989ab6d2a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11297",
 "ja": "牛ハラミ 焼き",
 "desc": "grilled beef skirt (harami) yakiniku pieces, browned with grill marks, glossy",
@@ -39387,6 +40327,45 @@
 "checked": false
 },
 {
+"key": "mext-11303",
+"ja": "ロースハム ゆで",
+"desc": "Boiled loin ham: round pink ham slices with a thin fat rim, pale and moist from boiling, on a plate",
+"items": [
+"mext:11303"
+],
+"roll": 0,
+"seed": 37270,
+"prompt": "bb4171e728",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11304",
+"ja": "ロースハム 焼き",
+"desc": "Grilled loin ham: round pink ham slices browned and slightly curled at the edges, on a plate",
+"items": [
+"mext:11304"
+],
+"roll": 0,
+"seed": 34165,
+"prompt": "ec7d1e1c8d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11305",
+"ja": "ロースハム フライ",
+"desc": "Ham fry (ham katsu): a thin breaded cutlet with a golden crumb coat, cut to show a pink ham layer inside",
+"items": [
+"mext:11305"
+],
+"roll": 0,
+"seed": 44707,
+"prompt": "3943010279",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11307",
 "ja": "ウインナー 焼き",
 "desc": "pan-fried wiener sausages, plump sausages with browned blistered skins, cut ends",
@@ -39400,6 +40379,71 @@
 "checked": false
 },
 {
+"key": "mext-11308",
+"ja": "ウインナーソーセージ フライ",
+"desc": "Wiener sausage fry: small sausages coated in golden breadcrumbs and deep-fried, one cut showing pink inside",
+"items": [
+"mext:11308"
+],
+"roll": 0,
+"seed": 19166,
+"prompt": "1b9402be1f",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11310",
+"ja": "国産牛肩 脂身つき 焼き",
+"desc": "Grilled beef shoulder with fat: browned beef slices with fat edges and grill marks, on a plate",
+"items": [
+"mext:11310"
+],
+"roll": 0,
+"seed": 62957,
+"prompt": "17acb9dcf0",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11312",
+"ja": "豚頭部 ジョウルミート 生",
+"desc": "Raw pork jowl (tontoro): flat pinkish-white slices densely marbled with fat, on a plate",
+"items": [
+"mext:11312"
+],
+"roll": 0,
+"seed": 55201,
+"prompt": "ec8b87c197",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11313",
+"ja": "豚頭部 ジョウルミート 焼き",
+"desc": "Grilled pork jowl (tontoro): fatty marbled slices grilled golden-brown with crisp edges, on a plate",
+"items": [
+"mext:11313"
+],
+"roll": 0,
+"seed": 77591,
+"prompt": "29ef291e57",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11314",
+"ja": "ばらベーコン ゆで",
+"desc": "Boiled bacon: slices of pork belly bacon, pale pink with white fat stripes, soft and limp, on a plate",
+"items": [
+"mext:11314"
+],
+"roll": 0,
+"seed": 73172,
+"prompt": "146653381e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-11315",
 "ja": "ベーコン 焼き",
 "desc": "crisp fried bacon strips, browned rippled",
@@ -39409,6 +40453,19 @@
 "roll": 0,
 "seed": 90114,
 "prompt": "3eae3ff9c7",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-11316",
+"ja": "ばらベーコン 油いため",
+"desc": "Stir-fried bacon: crisp browned curled strips of bacon glistening with fat, on a plate",
+"items": [
+"mext:11316"
+],
+"roll": 0,
+"seed": 83544,
+"prompt": "a295e88987",
 "model": "Z-Image-Turbo q4 9 steps 512px",
 "checked": false
 },
