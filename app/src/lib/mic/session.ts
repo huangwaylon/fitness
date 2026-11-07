@@ -16,6 +16,8 @@ export const MAX_S = 15, WAIT_S = 8;
 export interface Got {
   pcm: Float32Array;
   s: number;
+  /** When it began, on the audio context's clock (s), where the capture knows it. */
+  at?: number;
 }
 export interface Take {
   /** The take's end: the speech, or null (none heard, cancelled, the app hidden). */
@@ -57,10 +59,10 @@ export function takes(d: Deps): (o?: TakeOpts) => Promise<Take> {
       over = true;
       if (current === end) current = null;
       for (const off of offs) off();
-      const pcm = mic?.stop() ?? null;
+      const m = mic, pcm = m?.stop() ?? null, at = m?.at;
       mic = null;
       d.session(false);
-      finish(keep && pcm ? { pcm, s: pcm.length / SR } : null);
+      finish(keep && pcm ? { pcm, s: pcm.length / SR, ...(at !== undefined && Number.isFinite(at) && { at }) } : null);
     };
     current = end;
     d.session(true);

@@ -1,0 +1,8 @@
+// まねっこ シャドーイング's strings (`kiki.mane.*` but its mode's name and about, docs/kikimimi-mic.md §2.1): a catalog of
+// their own, merged in when its pages load (components/kikimimi/mane/). usage.test, linebreaks.test and fonts.test read
+// them.
+import ja from './kiki-mane.ja.json';
+import en from './kiki-mane.en.json';
+import { addCatalog } from './index.ts';
+
+addCatalog({ ja, en });

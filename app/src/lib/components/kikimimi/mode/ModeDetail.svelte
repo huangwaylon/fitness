@@ -89,7 +89,8 @@
   {:else if m === 'review' && due}
     <p class="hint" data-kiki-review-due>{t('kiki.review.picked', { n: due })}</p>
   {/if}
-  {#if m !== 'review'}
+  <!-- (a mic mode keeps its own time: no こたえる じかん) -->
+  {#if m !== 'review' && !meta.requires}
     <TimerRow timer={v.timer} onpick={(x) => (game.configure({ timer: x }), keepTimer(x))} />
   {/if}
   {#if zero}<p class="hint warn" data-kiki-zero>🔊 {t('kiki.testZero')}</p>{/if}

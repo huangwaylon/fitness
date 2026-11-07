@@ -3,14 +3,15 @@
   // around it. A tap starts a take (lib/mic/session.ts; the audio context woken inside the tap), a tap stops it; it
   // also stops by itself on silence after speech, at the cap, with no speech in a while, or when the app hides. Never
   // starts on its own. The speech goes to `onheard` (null: none) and is kept nowhere here; leaving cancels the take.
-  // The mic core is its own chunk, fetched when the button shows.
+  // The mic core is its own chunk, fetched when the button shows. `onstart`: the take is open (まねっこ plays its clip
+  // then, to be spoken over).
   import { onDestroy, onMount } from 'svelte';
   import '#lib/i18n/kiki-mic.ts';
   import { t } from '#lib/i18n/index.ts';
   import { audioCtx } from '#lib/sound/sound.svelte.ts';
   import type { Got, Take } from '#lib/mic/session.ts';
 
-  let { onheard, maxS }: { onheard: (g: Got | null) => void; maxS?: number } = $props();
+  let { onheard, onstart, maxS }: { onheard: (g: Got | null) => void; onstart?: () => void; maxS?: number } = $props();
 
   type St = 'idle' | 'opening' | 'listening' | 'denied';
   let st = $state<St>('idle');
@@ -38,6 +39,7 @@
       // left while the mic was opening: let it go at once
       if (gone) return take.cancel();
       st = 'listening';
+      onstart?.();
       const got = await take.done;
       take = null;
       st = 'idle';

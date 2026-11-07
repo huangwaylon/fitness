@@ -179,6 +179,12 @@ Every mode draws from these. The only new audio is はつおん's isolated pair 
 - **Co-op:** none. It stays private (the panel and the user).
 - **Where:** the 声に 出す shelf, first tile. Also 「まねして みる」 on a unit's おと lesson's results, only when the mic is on (after W2-9).
 - **Row:** `{gm: 'mane', ms, n: 1, r: []}`: minutes only (like the stories' no-answer rows).
+- **As built (M2, 2026-11-07):** games/mane/ (def.ts pure, lane.ts) and components/kikimimi/mane/ (ManePlay, ManeResults), mic/Contour.svelte, lib/mic/{pitch,prosody}.ts, strings in i18n/kiki-mane.*; its registry line brings the mode (shelf `koe`, `gate`: DEVICE.mic on, `requires: 'mic'`).
+  - **Lines:** 4 at my placed level (the mode page's おまかせ; 5 plays 4), from the bank's single-speaker US items with a clean take (no `cond`, no `channel`), 4–12 words, no figures; shortest first. Not the ladders' lines (10–27 words, number drills). A reply item shows only its own Japanese; a line said with reductions shows its spoken form (`tts`) under it.
+  - **The round:** the session plays the clip once (listen only), then the answer window is untimed: 重ねて言う 🎧 (the mic's tap opens the take, then plays the line) or あとから言う (お手本, then the mic); the choice is kept while the app is open. A take ends on the VAD's silence; then the two contours, the villager's reaction (spaced kana), ≤ 2 feedback lines, 自分の声を聞く, もう一回, 次の文へ / この文はとばす. 次の文へ answers a bare 0 and the reveal is skipped at once.
+  - **The lag:** session.ts's `Got.at` (the trimmed take's start on the voice's context clock, from capture.ts) minus the clip's speech start, less the output latency. No probe number is stored yet, so the input latency isn't taken off.
+  - **The row:** contract/listen.ts `minutesOnly`: a row of `mane`, `kuri`, `pair` or `role` has `r: []` and is refused with any answer (the relay validates it too: deploy the relay for the rows to be kept). きろく doesn't show those minutes yet.
+  - ModeDetail hides こたえる じかん for a mic mode.
 
 ### 2.2 くりかえし チャレンジ (elicited imitation)
 
