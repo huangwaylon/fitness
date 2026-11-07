@@ -2,12 +2,24 @@
 
 export const SHELL = 'island-shell-';
 
+/** The map areas saved ahead (offline phase B, lib/offline/save.ts): one cache an area, `island-offline-<id>`, its
+ *  tiles under their tileKey and its manifest (SAVED_MANIFEST). Kept until the phone deletes them: never a build's
+ *  cleanup nor the seen tiles' bound. */
+export const SAVED_PREFIX = 'island-offline-';
+export const isSavedArea = (name: string): boolean => name.startsWith(SAVED_PREFIX);
+/** An area's manifest's key in its cache (no tile's URL). */
+export const SAVED_MANIFEST = 'https://island-fund.invalid/__manifest';
+/** The page's own fetch of a tile to save (lib/offline/save.ts): the worker answers it from the network (USGS's and
+ *  GSI's from the seen copy if there is one), never storing it among the seen tiles, and drops this header (a
+ *  cross-origin request with it would need a preflight the tile hosts refuse). */
+export const SAVE_HEADER = 'x-island-save';
+
 /** What `activate` deletes: every cache but the current shell, the previous shell (the newest older one: a page
- *  still running the old build loads its lazy chunks from it) and the long-lived runtime caches. `keys` is in
- *  creation order (CacheStorage.keys()). */
+ *  still running the old build loads its lazy chunks from it), the long-lived runtime caches and the saved areas.
+ *  `keys` is in creation order (CacheStorage.keys()). */
 export function staleCaches(keys: readonly string[], current: string, keep: readonly string[]): string[] {
   const previous = keys.filter((k) => k.startsWith(SHELL) && k !== current).at(-1);
-  return keys.filter((k) => k !== current && k !== previous && !keep.includes(k));
+  return keys.filter((k) => k !== current && k !== previous && !keep.includes(k) && !isSavedArea(k));
 }
 
 /** The older shells a new install may copy its unchanged hashed chunks from, the newest first (`keys` in creation
@@ -393,7 +405,7 @@ const MAP_META_TIMEOUT_MS = 2500;
 /** When a copy was stored (ms), on the stored copy itself (a header of ours). */
 const STORED_AT = 'x-island-stored';
 
-const OPENFREEMAP = 'tiles.openfreemap.org';
+export const OPENFREEMAP = 'tiles.openfreemap.org';
 const TILE_HOSTS = new Set([OPENFREEMAP, 'basemap.nationalmap.gov', 'cyberjapandata.gsi.go.jp']);
 /** OpenFreeMap's TileJSON (style.ts BASEMAP's url). */
 export const isTileJson = (u: URL): boolean => u.hostname === OPENFREEMAP && /^\/[\w-]+\/?$/.test(u.pathname);
@@ -407,6 +419,27 @@ export function tileKey(u: URL): string | null {
   if (u.hostname !== OPENFREEMAP) return u.href;
   const m = /^\/([\w-]+)\/[\w.-]+\/(\d+\/\d+\/\d+\.pbf)$/.exec(u.pathname);
   return m ? `${u.origin}/${m[1]}/_/${m[2]}` : null;
+}
+
+/** A tile from the saved areas (`names`), else undefined. `match` with a cacheName never creates the cache (an area
+ *  deleted a moment ago stays deleted). */
+export async function savedTile(store: Pick<CacheStorage, 'match'>, names: readonly string[], key: string): Promise<Response | undefined> {
+  for (const cacheName of names) {
+    const hit = await store.match(key, { cacheName }).catch(() => undefined);
+    if (hit) return hit;
+  }
+  return undefined;
+}
+
+/** The answer to the page's fetch of a tile to save (SAVE_HEADER): a raster tile's seen copy (USGS's and GSI's have no
+ *  versions), else the network without the header; never stored here (the page puts it into the area's cache).
+ *  OpenFreeMap's always from the network: a seen copy may be another week's build, and an area never mixes builds. */
+export async function saveFetch(req: Request, seen: Pick<Cache, 'match'>, key: string, net: (r: Request) => Promise<Response>): Promise<Response> {
+  if (new URL(req.url).hostname !== OPENFREEMAP) {
+    const hit = await seen.match(key).catch(() => undefined);
+    if (hit) return hit;
+  }
+  return net(new Request(req.url, { mode: 'cors', credentials: 'omit', signal: req.signal }));
 }
 
 /** A response worth keeping: a whole 200, readable (an opaque one, a no-cors answer, would count ~7 MB of quota
