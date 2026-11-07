@@ -6,18 +6,18 @@
   // strip (`top`: a lesson's), たいせん's ranking (the winner's row with 🏆; しずえ names the winner, or a tie), then the
   // game's sections (`children`: feedback, the review list). Any game's.
   import type { Snippet } from 'svelte';
-  import type { Who } from '#lib/types.ts';
-  import type { Team } from '#lib/kikimimi/round/tally.ts';
+  import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
   import ResultsShell from './ResultsShell.svelte';
   import ScoreCard from './ScoreCard.svelte';
   import FirstStamp from './FirstStamp.svelte';
   import PlayerChip from './PlayerChip.svelte';
+  import { isCoop } from '../listenView.ts';
   import { week } from '#lib/store/week.svelte.ts';
   import { villagerNameOf } from '#lib/ui-state/viewer.ts';
   import { t } from '#lib/i18n/index.ts';
 
   let { v, tally, of, firsts, line, top, more, children, ondone, onagain }: {
-    v: { players: { who: Who; score: number }[]; vs: boolean; n: number; team: Team };
+    v: Pick<QuizView, 'players' | 'vs' | 'n' | 'team'>;
     /** My rounds right, of how many. */
     tally: number;
     of: number;
@@ -39,7 +39,7 @@
     return rows.map((p) => ({ ...p, rank: rows.findIndex((q) => q.score === p.score) + 1 }));
   });
   /** Co-op (several players, not たいせん): the team's tally, no ranking and no one's points. */
-  const coop = $derived(v.players.length > 1 && !v.vs);
+  const coop = $derived(isCoop(v));
   const teamKey = $derived(v.players.length >= 3 ? 'kiki.team.3' : 'kiki.team.2');
   const said = $derived.by(() => {
     if (line) return line;

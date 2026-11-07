@@ -25,6 +25,7 @@
   import Note from './frame/Note.svelte';
   import type { Snippet } from 'svelte';
   import { canSlow, hidesLine, type QuizGame } from './game.svelte.ts';
+  import { isCoop } from './listenView.ts';
   import { SPEEDS, laddersIn, rungState } from '#lib/kikimimi/ladder.ts';
   import { sx } from './look.ts';
   import { PIC_JA, isDialogue, jaLines, splitFocus, type Item } from '#lib/kikimimi/bank.ts';
@@ -81,7 +82,7 @@
     return 'ahead';
   }
   /** Co-op (a game of several, not たいせん): how many got it at the reveal, never who. */
-  const coop = $derived(v.players.length > 1 && !v.vs);
+  const coop = $derived(isCoop(v));
 
   /** The bubble's bar: a replay sounding, else the first play (on every phone: おなじへや's others hear the host's). */
   const bar = $derived.by(() => {
