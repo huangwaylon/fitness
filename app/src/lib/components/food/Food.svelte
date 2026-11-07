@@ -17,9 +17,10 @@
   // Several foods a trip: a new entry logged from a meal's search (its amount's ついか, a row's own ＋, a recipe's or a
   // custom food's) comes back to that search, listed at its top (each with ✕), its field focused; おわり ends the trip.
   // クイック (the search's ⚡, or a kcal typed): kcal and what else is known as one entry (FoodCustom `quick`), no food saved.
+  // Kept mounted between openings (FoodSheet, Sheet's `keep`): `open` false (closed) resets what an opening resets (reset()).
   import '#lib/i18n/food.ts'; // the meal log's strings, loaded with it
   import '#lib/i18n/kenkou.ts'; // けんこう's: the period dropdown
-  import { flushSync, tick, type Snippet } from 'svelte';
+  import { flushSync, tick, untrack, type Snippet } from 'svelte';
   import type { LocalDate, Who } from '#lib/types.ts';
   import { customGrams, customSnap, FOOD_GOAL_OF, MEALS, newFoodId, RECIPE, type FoodCustom as Custom, type FoodEntry, type FoodGoalOf, type FoodSnap, type Meal } from '#lib/contract/food.ts';
   import { copySources, customs, foodDay, foodEntries, foodGoal, recipes, repeatOn, repeats, type CopySource, type Recipe } from '#lib/model/food.ts';
@@ -56,8 +57,8 @@
     quickDraft, quickSnap, recipeServing, sameItems, servingOnly, type CustomDraft, type RecipeDraft
   } from './foodUi.ts';
 
-  let { title = $bindable(''), back = $bindable(null), lead = $bindable(null) }: {
-    title?: string; back?: (() => void) | null; lead?: Snippet | null
+  let { title = $bindable(''), back = $bindable(null), lead = $bindable(null), open = true }: {
+    title?: string; back?: (() => void) | null; lead?: Snippet | null; open?: boolean
   } = $props();
 
   const m = $derived(week.model);
@@ -168,6 +169,21 @@
     backTo(stack.length - 1);
   }
   const home = () => backTo(0);
+  /** データの出典 opened (closed at each opening). */
+  let credits = $state(false);
+  /** The sheet closed (this kept mounted, not drawn): the next opening as a fresh one, on きろく, today, the day (no
+   *  level, so no search, amount or editor), 1週 for グラフ, データの出典 closed; whose day and くわしく are the session's. */
+  function reset() {
+    tab = 'log';
+    period = 'week';
+    picked_d = null;
+    stack = [];
+    under = [];
+    credits = false;
+  }
+  $effect.pre(() => {
+    if (!open) untrack(reset);
+  });
   /** Back to the meal's search under the levels (a recipe or custom food saved, removed); none: the day. */
   const toSearch = () => backTo(stack.findIndex((l) => l.k === 'search') + 1);
 
@@ -502,8 +518,9 @@
     catalog = db;
     void db.more.then(() => catalogRev++);
   })));
+  // (only while open: a quick close cancels it, as an unmount did; the next opening asks again until it is in)
   $effect(() => {
-    if (catalog || !day?.entries.some((e) => !/^(recipe|custom):/.test(e.f.id))) return;
+    if (!open || catalog || !day?.entries.some((e) => !/^(recipe|custom):/.test(e.f.id))) return;
     return foodDbSoon();
   });
   /** Entry id → its food as it is now, for my day's entries whose food changed. */
@@ -622,7 +639,7 @@
             onrepeat={mine && (live || (!r && date === today)) ? () => go({ k: 'repeat', meal: k }, `[data-repeat="${k}"], [data-repeat-new="${k}"]`) : null} onpick={edit} {ptarget}
             {fresh} onfresh={refresh} />
         {/each}
-        <FoodCredits />
+        <FoodCredits bind:open={credits} />
       {/if}
     {/if}
     </div>{/key}

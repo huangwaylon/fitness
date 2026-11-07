@@ -361,7 +361,10 @@ Everyone sees everyone's meals, the guest's phone too; only the owner changes an
 (`i18n/food.*.json`) load with the first opening. The day renders from its entries' snapshots and never waits on the
 food data: the catalogue loads with the first search or amount, or at idle after the open (`foodUi.ts` foodDbSoon: 600 ms,
 then an idle moment) once a day shows a catalogue entry, fetched and parsed in a worker (`food/dataset.worker.ts`), its
-items handed over in slices so no task is a whole file's (docs/perf-plan.md A4).
+items handed over in slices so no task is a whole file's (docs/perf-plan.md A4). Kept mounted between openings (Sheet's
+`keep`, A5): a reopening shows the day at once (what came meanwhile in it), yet each opening is a fresh one: きろく, today,
+the day at its top, no level (no search, query, row opened in place, amount or editor), データの出典 closed; whose day and
+くわしく are the session's.
 
 - **Tabs:** first, right under the title bar (stable across tabs), けんこう's group switch (`ui/Segmented`, a list
   of tabs: `Food.svelte` TABS): きろく (on each opening; its icon NH's rice cooker, `art.ts` FOOD_TAB_ART) · グラフ (`FoodChart`). Under it, per tab: きろく the day row, グラフ the range row

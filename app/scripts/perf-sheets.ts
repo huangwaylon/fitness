@@ -6,11 +6,12 @@
 // as an iPhone 13 on Metal, not SwiftShader (THROTTLE=4: its CPU 4x slower). Audio is stubbed (never a sound). A desktop's numbers, for an A/B
 // of two builds; the phone's are IslandLog's `perf.sheet`. Never in CI.
 //   npm run perf:sheets -- <port> [runs] [webkit|chromium]     (the build served: node scripts/serve-build.ts <port>)
+// ONLY=food,health: those sheets alone (more than three kept sheets in turn let each other go: ui-state/keptSheets.ts).
 import { chromium, devices, webkit, type Page } from '@playwright/test';
 
 const [port = '4694', runs = '3', eng = 'webkit'] = process.argv.slice(2);
 const Q = process.env.Q ?? '?demo&date=2026-11-04T12:00';
-const SHEETS: [string, string | null, string][] = [
+const ALL: [string, string | null, string][] = [
   ['health', null, '.hud-health'],
   ['food', null, '.hud-food'],
   ['travel', '[data-hud-menu]', '[data-hud-travel]'],
@@ -18,6 +19,7 @@ const SHEETS: [string, string | null, string][] = [
   ['hiking', '[data-hud-menu]', '[data-hud-hiking]'],
   ['kikimimi', '[data-hud-menu]', '[data-hud-kikimimi]']
 ];
+const SHEETS = ALL.filter(([n]) => !process.env.ONLY || process.env.ONLY.split(',').includes(n));
 type Sample = { open: number; settled: number; anim: number; long: number; blocked: number; what?: string };
 
 async function measure(page: Page, menu: string | null, button: string): Promise<Sample> {
