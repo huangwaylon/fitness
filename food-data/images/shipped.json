@@ -18649,6 +18649,619 @@
 "checked": false
 },
 {
+"key": "maff_kyodo-tsukeage_kagoshima",
+"ja": "つけあげ",
+"desc": "tsukeage, rectangular and oval golden-brown deep-fried fish cakes with a smooth surface, in a pale blue footed dish",
+"items": [
+"maff_kyodo:tsukeage_kagoshima"
+],
+"roll": 0,
+"seed": 24673,
+"prompt": "cf93ca9c92",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-tsumireni_shimane",
+"ja": "つみれ煮",
+"desc": "tsumire ni, a large grey-pink fish ball of minced fish simmered in clear pale broth, topped with thin shreds of ginger and green onion, in a cream bowl",
+"items": [
+"maff_kyodo:tsumireni_shimane"
+],
+"roll": 0,
+"seed": 61522,
+"prompt": "4213163d97",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-tsuwa_buki_no_abura_itame_miyazaki",
+"ja": "つわぶきの油炒め",
+"desc": "tsuwabuki no aburaitame, short pale green sticks of peeled tsuwabuki stalk stir-fried with strips of fried tofu in soy, in an orange-red bowl",
+"items": [
+"maff_kyodo:tsuwa_buki_no_abura_itame_miyazaki"
+],
+"roll": 0,
+"seed": 62571,
+"prompt": "66212d8ed4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-tukekenchin_ibaraki",
+"ja": "つけけんちん",
+"desc": "tsuke kenchin, chilled thick grey-brown soba noodles on a plate, served with a separate bowl of hot brown kenchin soup with taro, daikon, carrot and konnyaku for dipping, on a wooden tray",
+"items": [
+"maff_kyodo:tukekenchin_ibaraki"
+],
+"roll": 0,
+"seed": 13521,
+"prompt": "2008ea19e6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-tukino_shizuku_yama_nashi",
+"ja": "月の雫",
+"desc": "tsuki no shizuku, whole green Koshu grapes coated in an opaque white sugar shell, one cut open to show the translucent pinkish grape inside, on a dark plate",
+"items": [
+"maff_kyodo:tukino_shizuku_yama_nashi"
+],
+"roll": 0,
+"seed": 71450,
+"prompt": "bcffd11dd9",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-uchikomi_jiru_kagawa",
+"ja": "打ち込み汁",
+"desc": "uchikomi jiru, thick flat hand-cut white wheat noodles simmered in a pale miso soup with carrot, daikon, taro and green chives, in a green ceramic bowl",
+"items": [
+"maff_kyodo:uchikomi_jiru_kagawa"
+],
+"roll": 0,
+"seed": 62003,
+"prompt": "c7a61d04a4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-uchimame_jiru_shiga",
+"ja": "打ち豆汁",
+"desc": "uchimame jiru, miso soup with flattened pale yellow soybean discs, white turnip chunks, taro, fried tofu and green onion, in a black bowl",
+"items": [
+"maff_kyodo:uchimame_jiru_shiga"
+],
+"roll": 0,
+"seed": 10363,
+"prompt": "86e7ef233d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-udotoshimidaikonnodonkoroni_yamagata",
+"ja": "うどと凍み大根のどんころ煮",
+"desc": "udo to shimi daikon no donkoroni, chunks of green udo stalk, spongy freeze-dried daikon, dried herring and fish cake simmered brown in soy, in an octagonal blue and white bowl",
+"items": [
+"maff_kyodo:udotoshimidaikonnodonkoroni_yamagata"
+],
+"roll": 0,
+"seed": 99678,
+"prompt": "ea05d8fec5",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-ujikintoki_kyoto",
+"ja": "宇治金時",
+"desc": "uji kintoki, a tall mound of shaved ice soaked in bright green matcha syrup, with dark red sweet adzuki beans and round white rice dumplings, in a glass dish",
+"items": [
+"maff_kyodo:ujikintoki_kyoto"
+],
+"roll": 0,
+"seed": 59615,
+"prompt": "d5e2b46fcd",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-ukoginokiriae_yamagata",
+"ja": "うこぎの切り和え",
+"desc": "ukogi no kiriae, finely chopped green ukogi leaves mixed with grilled miso and bonito flakes into a coarse dark green relish, in a small blue bowl",
+"items": [
+"maff_kyodo:ukoginokiriae_yamagata"
+],
+"roll": 0,
+"seed": 15371,
+"prompt": "de3a0e51a3",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-unaginohobikini_ibaraki",
+"ja": "うなぎの帆引き煮",
+"desc": "unagi no hobiki ni, long fillets of eel simmered in sweet soy until glossy dark brown, stacked on a round plate with two large bamboo leaves standing up like sails",
+"items": [
+"maff_kyodo:unaginohobikini_ibaraki"
+],
+"roll": 0,
+"seed": 74381,
+"prompt": "bc789f6f0c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-usuyaki_yama_nashi",
+"ja": "うすやき",
+"desc": "usuyaki, thin round flour pancakes speckled with tiny white dried baby sardines and green shiso shreds, lightly browned, overlapping on a plate",
+"items": [
+"maff_kyodo:usuyaki_yama_nashi"
+],
+"roll": 0,
+"seed": 55260,
+"prompt": "ae198d1c45",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-uzumaki_mochi_kagawa",
+"ja": "うずまきもち",
+"desc": "uzumaki mochi, slices of a rolled log showing a spiral of dark purple-brown smooth bean paste and white rice dough, arranged in a round dish",
+"items": [
+"maff_kyodo:uzumaki_mochi_kagawa"
+],
+"roll": 0,
+"seed": 82149,
+"prompt": "ca9702f3df",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-uzumemeshi_shimane",
+"ja": "うずめ飯",
+"desc": "uzume meshi, a bowl of white rice with a dab of green grated wasabi on top, hiding simmered vegetables, tofu and sea bream in soy broth underneath",
+"items": [
+"maff_kyodo:uzumemeshi_shimane"
+],
+"roll": 0,
+"seed": 43293,
+"prompt": "15696290ce",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-wakadori_no_mizutaki_fukuoka",
+"ja": "若鶏の水炊き",
+"desc": "wakadori no mizutaki, an earthenware pot of cloudy white chicken broth with bone-in chicken, beside a platter of cabbage, greens, mushrooms, tofu and carrot and small dishes of ponzu and condiments",
+"items": [
+"maff_kyodo:wakadori_no_mizutaki_fukuoka"
+],
+"roll": 0,
+"seed": 4769,
+"prompt": "4c6e1ddb73",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-wakame_zushi_wakayama",
+"ja": "わかめずし",
+"desc": "wakame zushi, thick cylinders of white sushi rice wrapped in dark green wakame seaweed instead of nori, cut to show the rice and pink fillings, with a red chrysanthemum garnish",
+"items": [
+"maff_kyodo:wakame_zushi_wakayama"
+],
+"roll": 0,
+"seed": 33985,
+"prompt": "0ac99a8929",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-wakasa_no_oyaki_tottori",
+"ja": "若桜のおやき",
+"desc": "wakasa no oyaki, flat hexagonal dark green mugwort rice cakes stamped with a pattern on top, filled with sweet bean paste, laid out on white cloth",
+"items": [
+"maff_kyodo:wakasa_no_oyaki_tottori"
+],
+"roll": 0,
+"seed": 59923,
+"prompt": "cf2299367c",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-wakegiae_kagawa",
+"ja": "わけぎあえ",
+"desc": "wakegi ae, short boiled green and white wakegi scallion pieces and red-edged octopus chunks tossed in a pale yellow mustard white miso dressing, in a brown bowl",
+"items": [
+"maff_kyodo:wakegiae_kagawa"
+],
+"roll": 0,
+"seed": 77987,
+"prompt": "097877d769",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-warabi_mochi_nara",
+"ja": "蕨餅",
+"desc": "warabimochi, a soft translucent pale amber bracken-starch jelly, stretchy and glossy, in a glass dish dusted with tan kinako",
+"items": [
+"maff_kyodo:warabi_mochi_nara"
+],
+"roll": 0,
+"seed": 18803,
+"prompt": "3370bc3d12",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-warabitataki_yamagata",
+"ja": "わらびたたき",
+"desc": "warabi tataki, finely chopped green-brown bracken fern beaten with grilled miso into a sticky coarse paste, mounded in a small celadon bowl",
+"items": [
+"maff_kyodo:warabitataki_yamagata"
+],
+"roll": 0,
+"seed": 3158,
+"prompt": "ecca7a29d6",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-warigo_bentou_kagawa",
+"ja": "わりご弁当",
+"desc": "warigo bento, rectangular wooden boxes each filled with a block of white rice cut with a wooden mould and simmered konnyaku, shiitake, carrot, burdock and chikuwa, with red and green garnishes",
+"items": [
+"maff_kyodo:warigo_bentou_kagawa"
+],
+"roll": 0,
+"seed": 12114,
+"prompt": "86c542f6d2",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-wasabi_zushi_wakayama",
+"ja": "わさびずし",
+"desc": "wasabi zushi, oblong packets of vinegared rice and cured mackerel tightly wrapped in large dark green wasabi leaves, lined up on a plate",
+"items": [
+"maff_kyodo:wasabi_zushi_wakayama"
+],
+"roll": 0,
+"seed": 8915,
+"prompt": "02e37d297e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yaki_morokono_dorozu_shiga",
+"ja": "焼きもろこのどろ酢",
+"desc": "yaki moroko no dorozu, small whole grilled silver-brown honmoroko fish laid on a green leaf-shaped plate with a thick yellow-brown mustard miso vinegar sauce",
+"items": [
+"maff_kyodo:yaki_morokono_dorozu_shiga"
+],
+"roll": 0,
+"seed": 5083,
+"prompt": "a79cae833a",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yakiayu_no_kanroni_kumamoto",
+"ja": "焼鮎の甘露煮",
+"desc": "yakiayu no kanroni, whole grilled sweetfish simmered in sweet soy until glossy golden-brown, four side by side on a white plate with green fern leaves",
+"items": [
+"maff_kyodo:yakiayu_no_kanroni_kumamoto"
+],
+"roll": 0,
+"seed": 73753,
+"prompt": "7ee8a5d0f4",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yakome_yama_nashi",
+"ja": "やこめ",
+"desc": "yakome, steamed white glutinous rice mixed with roasted tan soybeans and black sesame seeds, in a black bowl",
+"items": [
+"maff_kyodo:yakome_yama_nashi"
+],
+"roll": 0,
+"seed": 29975,
+"prompt": "ed784718bc",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yama_surume_no_kinpira_kumamoto",
+"ja": "山するめのきんぴら",
+"desc": "yama surume no kinpira, thin long strips of dried bamboo shoot and black kikurage mushroom stir-fried in soy until glossy brown, in a blue patterned bowl",
+"items": [
+"maff_kyodo:yama_surume_no_kinpira_kumamoto"
+],
+"roll": 0,
+"seed": 96208,
+"prompt": "5c9f8fe284",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yamato_no_zouni_nara",
+"ja": "大和の雑煮",
+"desc": "yamato no zoni, a creamy white miso soup in a lacquered bowl with round rice cakes, a thick round of white daikon, red carrot and taro, with a rice cake dipped in sweet kinako on a side dish",
+"items": [
+"maff_kyodo:yamato_no_zouni_nara"
+],
+"roll": 0,
+"seed": 35591,
+"prompt": "68a077ed65",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yamatona_to_usuage_no_nimono_nara",
+"ja": "大和まなと薄揚げの煮もの",
+"desc": "yamato mana to usuage no nimono, soft simmered green leafy yamato-mana greens and strips of thin fried tofu in a little light broth, in a pale green bowl",
+"items": [
+"maff_kyodo:yamatona_to_usuage_no_nimono_nara"
+],
+"roll": 0,
+"seed": 85962,
+"prompt": "323fd1ed87",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yanagawa_nabe_fukuoka",
+"ja": "柳川なべ",
+"desc": "yanagawa nabe, a shallow earthenware pot of split loaches and shaved burdock simmered in sweet soy, covered with fluffy yellow soft-set egg and green mitsuba leaves",
+"items": [
+"maff_kyodo:yanagawa_nabe_fukuoka"
+],
+"roll": 0,
+"seed": 49409,
+"prompt": "4ef81a5758",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yangome_chiba",
+"ja": "ヤンゴメ",
+"desc": "yangome, roasted light brown rice grains steamed with sweet red adzuki beans, packed in a square red lacquered box with green leaves on top",
+"items": [
+"maff_kyodo:yangome_chiba"
+],
+"roll": 0,
+"seed": 10665,
+"prompt": "f2e0536618",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yaseuma_oita",
+"ja": "やせうま",
+"desc": "yaseuma, long flat wide ribbons of boiled wheat dough coated all over in tan sweet kinako, piled in a blue and white bowl",
+"items": [
+"maff_kyodo:yaseuma_oita"
+],
+"roll": 0,
+"seed": 5956,
+"prompt": "56f7d92019",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yashouma_nagano",
+"ja": "やしょうま",
+"desc": "yashoma, sliced logs of steamed rice-flour dough with flower and heart-shaped patterns inside, in pastel white, yellow, green and purple, on a pale green plate",
+"items": [
+"maff_kyodo:yashouma_nagano"
+],
+"roll": 0,
+"seed": 50478,
+"prompt": "1016f7ec66",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yatara_nagano",
+"ja": "やたら",
+"desc": "yatara, finely chopped cucumber, eggplant, myoga, green chili and miso-pickled daikon mixed into a coarse green and yellow relish, in a light blue dish",
+"items": [
+"maff_kyodo:yatara_nagano"
+],
+"roll": 0,
+"seed": 5497,
+"prompt": "691bba5895",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yoshida_no_udon_yama_nashi",
+"ja": "吉田のうどん",
+"desc": "yoshida no udon, very thick firm white wheat noodles in a brown miso and soy broth, topped with boiled cabbage and fried tofu, in a white bowl",
+"items": [
+"maff_kyodo:yoshida_no_udon_yama_nashi"
+],
+"roll": 0,
+"seed": 87664,
+"prompt": "eaeb17fc8b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yude_rakkasei_chiba",
+"ja": "ゆで落花生",
+"desc": "yude rakkasei, whole salt-boiled peanuts in their wrinkled tan shells, one cracked open to show pinkish nuts, piled in a dark-rimmed white bowl",
+"items": [
+"maff_kyodo:yude_rakkasei_chiba"
+],
+"roll": 0,
+"seed": 81731,
+"prompt": "0f5af7d94d",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yudemochi_oita",
+"ja": "ゆでもち",
+"desc": "yudemochi, flat round thin white boiled wheat dough cakes with dark red bean paste showing faintly through, overlapping on a black plate",
+"items": [
+"maff_kyodo:yudemochi_oita"
+],
+"roll": 0,
+"seed": 18659,
+"prompt": "9b2a8b2193",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-yuzunokawani_oita",
+"ja": "ゆずの皮煮",
+"desc": "yuzu no kawani, large pieces of yuzu peel simmered in sugar until glossy translucent yellow, in a turquoise dish",
+"items": [
+"maff_kyodo:yuzunokawani_oita"
+],
+"roll": 0,
+"seed": 42930,
+"prompt": "017cbfb6ea",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-zabujiru_miyazaki",
+"ja": "ざぶ汁",
+"desc": "zabu jiru, a clear soy soup full of sliced carrot, burdock, potato, daikon, pumpkin and fish cake, topped with white leek rings, in a red lacquered bowl",
+"items": [
+"maff_kyodo:zabujiru_miyazaki"
+],
+"roll": 0,
+"seed": 92274,
+"prompt": "edd8f1a598",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-zangi_hokkaido",
+"ja": "ザンギ",
+"desc": "zangi, dark brown deep-fried chicken chunks with a craggy soy-marinated crust, on a rectangular plate with a lemon wedge and salt and pepper",
+"items": [
+"maff_kyodo:zangi_hokkaido"
+],
+"roll": 0,
+"seed": 99148,
+"prompt": "7bdc71974b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-zeitaku_ni_shiga",
+"ja": "ぜいたく煮",
+"desc": "zeitaku ni, thick round and half-moon slices of old pickled daikon simmered soft and amber-brown in soy and dashi, piled on a white plate",
+"items": [
+"maff_kyodo:zeitaku_ni_shiga"
+],
+"roll": 0,
+"seed": 30653,
+"prompt": "132a7a8233",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-zemmainoitameni_kochi",
+"ja": "ぜんまいの炒め煮",
+"desc": "zenmai no itameni, thin dark reddish-brown strands of rehydrated royal fern stir-fried and simmered with strips of fried tofu, in a white bowl",
+"items": [
+"maff_kyodo:zemmainoitameni_kochi"
+],
+"roll": 0,
+"seed": 39689,
+"prompt": "8468d66834",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-zenmaino_nimono_niigata",
+"ja": "ぜんまいの煮物",
+"desc": "zenmai no nimono, soft brown strands of rehydrated royal fern simmered in soy with orange carrot strips and fried tofu, in a pink-patterned bowl",
+"items": [
+"maff_kyodo:zenmaino_nimono_niigata"
+],
+"roll": 0,
+"seed": 94234,
+"prompt": "4d6d329e2e",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-zoni_aichi",
+"ja": "雑煮",
+"desc": "zoni, clear soy broth in a red lacquered bowl with square white rice cakes, a bundle of green mochina greens and bonito flakes on top",
+"items": [
+"maff_kyodo:zoni_aichi",
+"maff_kyodo:zouni_fukui",
+"maff_kyodo:zouni_mie"
+],
+"roll": 0,
+"seed": 3948,
+"prompt": "6c3e8dbb7b",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-zuiki_no_nimono_nara",
+"ja": "ずいきの煮もの",
+"desc": "zuiki no nimono, short strips of taro stem simmered pale brown with thin fried tofu, in a blue and white bowl",
+"items": [
+"maff_kyodo:zuiki_no_nimono_nara"
+],
+"roll": 0,
+"seed": 55392,
+"prompt": "0d099c5d46",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "maff_kyodo-zuikinotaitan_kyoto",
+"ja": "ずいきの炊いたん",
+"desc": "zuiki no taitan, short pinkish-brown pieces of taro stem simmered in light dashi and slightly thickened, topped with a dab of grated ginger, in a pale green bowl",
+"items": [
+"maff_kyodo:zuikinotaitan_kyoto"
+],
+"roll": 0,
+"seed": 90936,
+"prompt": "52ee920499",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01001",
+"ja": "アマランサス 玄穀",
+"desc": "amaranth whole grain: a small dish heaped with tiny round pale golden-beige seeds, poppy-seed sized, raw and dry, not rice or millet",
+"items": [
+"mext:01001"
+],
+"roll": 0,
+"seed": 91603,
+"prompt": "6809d01d30",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
+"key": "mext-01002",
+"ja": "あわ 精白粒",
+"desc": "awa, polished foxtail millet: a small dish of tiny round bright yellow grains, much smaller than rice, dry and raw",
+"items": [
+"mext:01002"
+],
+"roll": 0,
+"seed": 71881,
+"prompt": "cf995b3140",
+"model": "Z-Image-Turbo q4 9 steps 512px",
+"checked": false
+},
+{
 "key": "mext-01004",
 "ja": "オートミール",
 "desc": "a small bowl heaped with dry rolled oats: many thin flat irregular pale beige oat flakes, matte and papery, a few loose flakes beside the bowl, with a wooden spoon",
