@@ -130,10 +130,10 @@ test('a menu card plays at once (きまぐれ: its mode); ✕ asks first, やめ
   await atHub(page);
   await sheet(page).locator('[data-kiki-card-go="whim"]').click();
   await expect(sheet(page)).toHaveAttribute('data-phase', 'countdown');
-  // ✕ asks, つづける goes on; then the game left (やめる) and opened again: the hub
+  // ✕ asks 「ここでやめますか？」; やめる leaves the game
   await page.locator('dialog[open] .navbar .close').click();
-  await expect(page.locator('[data-kiki-quit="quit"]')).toBeVisible();
-  await page.locator('[data-kiki-quit-yes]').click();
+  await expect(page.getByRole('dialog', { name: 'ここでやめますか？' })).toBeVisible();
+  await page.locator('dialog[open] [data-action="kiki-quit"]').click();
   await expect(page.locator('dialog[open]')).toHaveCount(0);
 });
 
@@ -163,10 +163,12 @@ test('みんなで: さそう shares my lobby; B’s さんか lands on みん�
   await expect(sheet(a).locator('[data-player="B"]')).toHaveAttribute('data-state', 'here');
   await expect(sheet(a).locator('[data-kiki-start]')).toHaveText('始める（2人）');
   await snap(a, 'lobby-shared');
-  // ✕ with B in my lobby asks first; もどる keeps it
+  // ✕ with B in my lobby asks first; the question's ✕ keeps it
   await a.locator('dialog[open] .navbar .close').click();
-  await expect(a.locator('[data-kiki-quit="close"]')).toContainText('みんなの部屋がなくなります');
-  await a.locator('[data-kiki-stay]').click();
+  const ask = a.getByRole('dialog', { name: '部屋を閉じますか？' });
+  await expect(ask).toContainText('みんなの部屋がなくなります');
+  await ask.locator('.navbar .close').click();
+  await expect(ask).toHaveCount(0);
   // B's ‹: A's lobby left, B's own hub
   await b.bringToFront();
   await b.locator('dialog[open] .navbar .back').click();

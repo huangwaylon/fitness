@@ -8,7 +8,7 @@
   // backdrop tap or Esc pops (closes at the hub). A game sits over the stack: its notice, よーい 3-2-1, a question (Play),
   // the results (おわる back to the hub; a lesson's back to its page); a game whose lane has its own views (round/
   // registry.ts; views.ts: the tournament's, みみ チェック's, a later game's) shows them in their place, each its own chunk. Another's lobby I joined is みんなで (‹ leaves it
-  // for the hub). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks 「ここで やめる？」. Opened from the HUD's
+  // for the hub). Mid-game a backdrop tap or Esc doesn't close it, and ✕ asks 「ここでやめますか？」 (ui/ActionSheet: やめる, ✕ goes on). Opened from the HUD's
   // ききみみ (my own lobby, kept alone: the hub) or the banner's さんか (that game joined: [hub, みんなで]). The voice
   // session is the opener's tap's (invite.svelte.ts openQuiz); closing ends it and drops every clip. A player's first
   // open on this phone (none played yet) has the welcome in the hub's place (onboarding/: hello, the sound check, then
@@ -16,6 +16,7 @@
   import { untrack } from 'svelte';
   import '#lib/i18n/kikimimi.ts';
   import Sheet from '../ui/Sheet.svelte';
+  import ActionSheet from '../ui/ActionSheet.svelte';
   import NavBar from '../ui/NavBar.svelte';
   import NavButton from '../ui/NavButton.svelte';
   import Host from '../characters/Host.svelte';
@@ -58,7 +59,8 @@
   let { open = $bindable(), join = null }: { open: boolean; join?: string | null } = $props();
 
   let game = $state.raw<QuizGame | null>(null);
-  /** ✕ (or a backdrop tap, Esc) mid-game: 「ここで やめる？」; ✕ with others in my lobby: 「みんなの へやが なくなります」. */
+  /** ✕ (or a backdrop tap, Esc) mid-game: 「ここでやめますか？」; ✕ with others in my lobby: 「部屋を閉じますか？」. The kit's
+   *  confirm (docs/design.md "Forms and confirms"): an ActionSheet, the verb its one row, its ✕ the safe choice. */
   let asking = $state<false | 'quit' | 'close'>(false);
   /** A mic game's さんか asked first (role/MicJoin.svelte: joining is consenting): its game, and whether the mic is on. */
   let micJoin = $state<{ g: string; on: boolean } | null>(null);
@@ -434,19 +436,9 @@
       <MicJoin on={micJoin.on} onjoin={() => micJoin && joinIt(micJoin.g)} oncancel={() => (micJoin = null)} />
     {/await}
   {/if}
-  {#if asking}
-    <div class="veil" role="alertdialog" aria-modal="true" aria-labelledby="kk-quit" data-kiki-quit={asking}>
-      <div class="ask card">
-        <h3 id="kk-quit">{t(asking === 'quit' ? 'kiki.quit' : 'kiki.closeAsk')}</h3>
-        <p>{t(asking === 'quit' ? 'kiki.quitBody' : 'kiki.closeAskBody')}</p>
-        <div class="row">
-          <!-- つづける the primary (the safe choice), やめる the paper one -->
-          <button type="button" class="btn paper small" data-kiki-quit-yes data-sfx="back" onclick={quit}>{t(asking === 'quit' ? 'kiki.quitYes' : 'kiki.closeYes')}</button>
-          <button type="button" class="btn small" data-kiki-stay data-sfx="confirm" onclick={() => (asking = false)}>{t(asking === 'quit' ? 'kiki.quitNo' : 'kiki.back')}</button>
-        </div>
-      </div>
-    </div>
-  {:else if voice.on && voice.state !== 'running'}
+  <ActionSheet bind:open={() => !!asking, (o) => { if (!o) asking = false; }} title={t(asking === 'close' ? 'kiki.closeAsk' : 'kiki.quit')}
+    note={t(asking === 'close' ? 'kiki.closeAskBody' : 'kiki.quitBody')} groups={[[{ id: 'kiki-quit', label: t(asking === 'close' ? 'kiki.closeYes' : 'kiki.quitYes') }]]} onpick={quit} />
+  {#if !asking && voice.on && voice.state !== 'running'}
     <!-- a lock or an app switch suspended the voice: a tap wakes it (inside the tap) -->
     <button type="button" class="veil resume" data-kiki-resume data-sfx="tick" onclick={() => voiceSession(true)}>
       <span class="ask card">
@@ -495,10 +487,6 @@
     background: var(--scrim); appearance: none; font: inherit; color: inherit; width: 100%;
   }
   .veil .ask { display: grid; justify-items: center; gap: 10px; padding: 20px 18px 16px; width: min(100%, 320px); box-sizing: border-box; text-align: center; color: var(--text); }
-  .ask h3 { margin: 0; font: 700 var(--fs-title)/1.2 var(--font-ui); }
-  .ask p { margin: 0; font: 700 var(--fs-body)/1.4 var(--font-ui); color: var(--text-soft); }
-  .ask .row { display: flex; gap: 10px; width: 100%; }
-  .ask .row .btn { flex: 1; }
   .resume { cursor: pointer; }
   .resume b { font: 700 var(--fs-talk)/1.2 var(--font-ui); }
   .resume small { font: 700 var(--fs-s)/1.3 var(--font-ui); color: var(--text-soft); }
