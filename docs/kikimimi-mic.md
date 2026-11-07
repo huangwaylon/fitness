@@ -322,6 +322,12 @@ export interface Recogniser {
 - `cand` exists only on whisper. はつおん uses it when present.
 - Whisper runs in a dedicated Worker, so the sheet stays at 60 fps. The Worker is created only after opt-in and the first mic round, and is terminated when the sheet closes (iOS memory).
 - Whisper's input is the capture's 16 kHz PCM, trimmed by the VAD. Silence never reaches the model (no hallucinated "Thank you.").
+- **As built (M3, 2026-11-07):**
+  - `recogniser(be?)` gives this phone's recogniser: the stub under `e2e.stt`; else, with the mic on, pick.ts's choice from what can run (whisper only once the model is on the phone: a round never downloads). One recogniser at a time, one take at a time (a new take cancels the last); `release()` when the sheet closes.
+  - `listen(h)` is called inside a tap and returns `{ level, heard, stop(), cancel() }`. `heard` never rejects: a `Heard`, or `{ miss }` with miss one of none, aborted, denied, capped (429: 「今日は ここまで」), off (STT_OFF), unpaired, network, timeout, oom, service-not-allowed or other.
+  - whisper loads on WebGPU, else WASM; one GPU failure keeps it on WASM. A timed-out request terminates the Worker. `candidates` scores each word by forced decoding (the encoder runs once), with the transcript as the fallback.
+  - The relay sends ≤ 10 s of WAV with a 20 s timeout; cancel aborts the request.
+  - match.ts: `words`, `wer`, `align`, `recall` (content words), `choose` (lenient, with a margin; −1 = 「通じるかも」), `phrases` (a bitmask) and `candidate`.
 
 ### 3.3 The pitch and timing analysis (prosody.ts)
 
