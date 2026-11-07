@@ -15,6 +15,7 @@ import { roundLink, soloLink, wire, type RoundLink } from '#lib/kikimimi/round/l
 import { QuizRounds } from '#lib/kikimimi/games/quiz/session.ts';
 import { quizOpts } from '#lib/kikimimi/games/quiz/def.ts';
 import { lessonOpts, tierIndex } from '#lib/kikimimi/games/lesson/def.ts';
+import { lessonChunks } from '#lib/kikimimi/games/lesson/lane.ts';
 import type { QuizView } from '#lib/kikimimi/games/quiz/view.ts';
 import type { QuizTimer } from '#lib/kikimimi/seed.ts';
 import type { Live } from '#lib/sync/live.ts';
@@ -178,7 +179,8 @@ export class QuizGame {
    *  (`go`). `recheck`: the 30-day おさらい チェック (a チェック like any). Kept alone: nothing on the wire; shared: a
    *  co-op lesson (docs/curriculum-units.md §4), everyone's at their own tier. */
   playLesson(unit: string, lesson: Lesson, o: { tier?: Tier | ((stage: Stage) => Tier | undefined); recheck?: boolean } = {}): void {
-    this.#queue.then(() => [unit as Unit], () => {
+    // (its unit's chunk, and on recipe 2 its kind's listening files: games/lesson/lane.ts)
+    this.#queue.then(() => lessonChunks(unit, lesson), () => {
       const v = this.view, part = unitPart(unit);
       if (!part || !v?.g || v.phase !== 'lobby' || !v.amHost || v.ladder) return;
       const tier = typeof o.tier === 'function' ? o.tier(part.unit.stage) : o.tier;

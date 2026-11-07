@@ -56,7 +56,8 @@ export class GameRecorder {
     v: QuizView, now: number, done: boolean, o: { lesson: { unit: UnitPlay; lesson: Lesson } | null; practicing: boolean; taikai?: { trophy: Trophy | null; tier: number } | null }
   ): ListenRow | null {
     if (!v.g || this.#recordedG === v.g || (v.gm === 'check' && !done)) return null;
-    // a lane's game whose answers aren't choices: its own record, its game on the row
+    // a lane's game whose answers aren't choices: its own record, its game on the row (a lesson's stays a lesson's row,
+    // no `gm`, whatever its rounds: progress.ts gamesOf, the stamps)
     const own = LANES.of(v.gm)?.record;
     const r = own ? own(v, itemsOf(v), this.#rp, done) : listenAnswers(itemsOf(v), v.answers, v.had, this.#rp, done);
     // (a mic game's: my minutes only, its `r` empty)
@@ -67,7 +68,7 @@ export class GameRecorder {
     const ls = o.lesson, n = Math.max(1, Math.min(3, v.players.length));
     const unit = ls ? { u: ls.unit.id, l: lessonL(ls.lesson), ...(n > 1 && !v.vs && { tm: Math.min(6, v.teamFirst) }) } : null;
     return {
-      d: localDateAt(now), g: v.g, ...(own && v.gm && { gm: v.gm }), ...unit, lv: ls ? stageLevel(ls.unit.stage) : v.lv, n,
+      d: localDateAt(now), g: v.g, ...(own && v.gm && v.gm !== 'lesson' && { gm: v.gm }), ...unit, lv: ls ? stageLevel(ls.unit.stage) : v.lv, n,
       ms: this.#ms(now), ...(o.practicing && { p: 1 as const }), ...(o.taikai && (o.taikai.trophy ? taikaiRow(o.taikai.trophy, o.taikai.tier) : { gm: 'taikai', lv: tierLevel(o.taikai.tier) })), r
     };
   }

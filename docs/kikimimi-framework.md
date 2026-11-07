@@ -398,7 +398,7 @@ Every game goes through `kikimimi/round/registry.ts` as a **lane**. The quiz, la
 
 ### The listening games' shared pieces (2026-11-07 review)
 
-ことば タイル, たちぎき and ようじ でんわ share `games/listened.ts` (pure): `EMPTY` (63), `ROLES` (2), `listenOpts` (`[lv, timer, ear]`), `filesOf(gm, lv)` (the `listened` files at the place), `tierAt`, `shareOf` (a role's slots or rows), `cvOver`, and `listenGame` / `listenRecord` over a game's `ListenRules` (its rounds at an ear, timing, valid, ok, the row's `pick`). Each lane.ts is one line, `listenLane(RULES, deal)` (games/listenLane.ts). The pages share `components/kikimimi/listenView.ts` (`isCoop`, `roleOf`, `easy`, `blank`, `playAgain`). A new listening game writes its rules and deal, not a deck.
+ことば タイル, たちぎき and ようじ でんわ share `games/listened.ts` (pure): `EMPTY` (63), `ROLES` (2), `listenOpts` (`[lv, timer, ear]`), `filesOf(gm, lv)` (the `listened` files at the place), `tierAt`, `shareOf` (a role's slots or rows), `cvOver`, and `listenGame` / `listenRecord` over a game's `ListenRules` (its rounds at an ear, timing, valid, ok, the row's `pick`). Each lane.ts is one line, `listenLane(RULES, deal)` (games/listenLane.ts). The pages share `components/kikimimi/listenView.ts` (`isCoop`, `roleOf`, `easy`, `blank`, `playAgain`). A new listening game writes its rules and deal, not a deck. A unit's lesson on recipe 2 (W2-9, curriculum-units.md §16) deals their cards with the same deals and grades them with the same rules (games/lesson/recipe.ts); their pages get the lesson's game through components/kikimimi/lesson/board.ts `cardGame`, a view at the card's place and ears.
 
 ### ことば タイル as built (W2-1, 2026-11-07)
 

@@ -41,7 +41,7 @@
   import { inviteStack, pop, push as pushOn, taikaiStack, type Page } from './nav.ts';
   import type { Tile, HubInvite } from './hub/Hub.svelte';
   import { INDEX, addUnit, itemOf, load, loadIds, unitPart } from '#lib/kikimimi/pool.ts';
-  import { tierFor, type UnitPlay } from '#lib/kikimimi/lesson.ts';
+  import { tierFor, type Lesson, type UnitPlay } from '#lib/kikimimi/lesson.ts';
   import type { Item } from '#lib/kikimimi/bank.ts';
   import type { WireMode } from '#lib/kikimimi/round/wire.ts';
   import { reloadForUpdate } from '#lib/ui-state/reload.ts';
@@ -161,9 +161,10 @@
             deck: (ids: string[], help: Record<string, Pick<Item, 'cja' | 'why' | 'ctx'>> = {}) =>
               loadIds(ids).then(() => it.practice(ids.map(itemOf).filter((x) => !!x).map((x) => ({ ...x, ...help[x.id] })))),
             talk: () => it.talk,
-            // (a fixture unit put in from the bank's items, as if its chunk were the build's: the units' e2e)
-            unit: (unit: UnitPlay, ids: string[], cv?: string) => loadIds(ids).then(() => {
-              addUnit(unit.id, { unit, items: ids.map(itemOf).filter((x) => !!x) }, cv);
+            // (a fixture unit put in from the bank's items, as if its chunk were the build's: the units' e2e; `kinds` its
+            // recipe-2 lessons' listening files, the index's units[<id>].kinds)
+            unit: (unit: UnitPlay, ids: string[], cv?: string, kinds?: Partial<Record<Lesson, string[]>>) => loadIds(ids).then(() => {
+              addUnit(unit.id, { unit, items: ids.map(itemOf).filter((x) => !!x) }, cv, kinds);
               unitAdded();
             }),
             lesson: () => it.lesson && { u: it.lesson.unit.id, lesson: it.lesson.lesson, tier: it.lesson.tier ?? null },

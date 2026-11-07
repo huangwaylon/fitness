@@ -4,6 +4,7 @@
 // (open, its stack of pages: nav.ts) and hands it in as `ui`; what's solo (a practice deck, the recheck) only in my own lobby kept alone, a
 // unit's lesson in any lobby I host (shared: a co-op lesson, docs/curriculum-units.md §4).
 import type { QuizGame } from './game.svelte.ts';
+import { cardKind } from '#lib/kikimimi/games/lesson/recipe.ts';
 import type { Item, Level } from '#lib/kikimimi/bank.ts';
 import { LEVELS } from '#lib/kikimimi/deck.ts';
 import { modeOf } from '#lib/kikimimi/catalog.ts';
@@ -141,7 +142,8 @@ export class KikiActions {
   replayMissed = (): void => {
     const g = this.#game(), v = g?.view;
     if (!g || !v) return;
-    const missed = g.items.filter((it, i) => v.answers[i]?.k !== it.answer);
+    // (a recipe-2 lesson's cards play in their own games: its quiz items only)
+    const missed = g.items.filter((it, i) => !cardKind(it) && v.answers[i]?.k !== it.answer);
     if (!missed.length) return;
     const lv = v.lv as Level, timer = v.timer;
     g.close();

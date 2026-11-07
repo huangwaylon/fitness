@@ -42,3 +42,17 @@ export const isUnitDomain = (d: string): d is UnitDomain => d === 'glue' || (DOM
 
 /** A lesson is one 6-question game (plan §3; the `listen` row's bound). */
 export { LESSON_QS } from '../contract/listen.ts';
+
+/** Recipe 2 (docs/curriculum-wave2.md §3.1, W2-9): the lessons that play a listening game when the unit names that
+ *  content (`lessons.<key>`, ids in content/listen/) and it's `listened`: おと 6 ことば タイル, じっせん たちぎき (1-2
+ *  conversations, 3 rounds each), チェック 1 ようじ でんわ call (its 2 memo rounds) and 4 of its own quiz items. Each
+ *  lesson's recipe-1 list stays: what it plays while its content isn't ready. */
+export const RECIPE2 = {
+  oto: { key: 'tiles', game: 'tile' },
+  jissen: { key: 'tachi', game: 'tachi' },
+  check: { key: 'call', game: 'call' }
+} as const;
+export type Recipe2Lesson = keyof typeof RECIPE2;
+export type KindKey = (typeof RECIPE2)[Recipe2Lesson]['key'];
+/** The kinds' keys, as a manifest's `lessons` carries them. */
+export const KIND_KEYS: readonly KindKey[] = Object.values(RECIPE2).map((r) => r.key);
