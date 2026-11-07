@@ -13,7 +13,7 @@ const levelOf = (o: readonly number[]) => maneLevel(quizOpts.decode(o)?.lv ?? 1)
 const chunks = ({ o }: { o: readonly number[] }): Unit[] => [levelOf(o)];
 const source = (phone: Phone) => ({
   items: (seed: number, o: QuizOpts): readonly Item[] => phone.items({ gm: 'mane', seed, o: quizOpts.encode(o) }),
-  playMs: (id: string) => itemMs({ id })
+  playMs: itemMs
 });
 
 export const lane: Lane<QuizOpts> = {

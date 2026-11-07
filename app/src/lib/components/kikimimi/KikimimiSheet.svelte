@@ -167,7 +167,6 @@
               addUnit(unit.id, { unit, items: ids.map(itemOf).filter((x) => !!x) }, cv, kinds);
               unitAdded();
             }),
-            lesson: () => it.lesson && { u: it.lesson.unit.id, lesson: it.lesson.lesson, tier: it.lesson.tier ?? null },
             recorded: () => it.recorded
           };
       });
