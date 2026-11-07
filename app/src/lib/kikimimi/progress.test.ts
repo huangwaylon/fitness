@@ -85,6 +85,16 @@ describe('gamesOf: bedtime stories', () => {
   });
 });
 
+describe('gamesOf: the mic’s games', () => {
+  it('a mic game’s row (minutes only) is a koe game, its minutes summed by game id; never a game of the stats', () => {
+    const ev = (id: string, data: object, s = 1): EventRow => [`2026-11-05T13:00:0${s}.000Z`, 'A', id, 'listen', JSON.stringify(data)];
+    const mane = { d: TODAY, g: 'ma01ab', gm: 'mane', lv: 2, n: 1, ms: 90_000, r: [] };
+    const { mine, koe } = gamesOf([ev('e1', mane), ev('e2', { ...mane, ms: 30_000 }, 2)], 'A');
+    expect(mine).toEqual([]);
+    expect(koe).toEqual([{ d: TODAY, g: 'ma01ab', gm: 'mane', ms: 120_000 }]);
+  });
+});
+
 describe('gamesOf: a newer build’s rows', () => {
   it('skips answers whose ids this build doesn’t know: a row from a newer game leaves the games and the stats unchanged', () => {
     const quiz = { d: TODAY, g: 'ab12', lv: 2, n: 1, ms: 120_000, r: [['w2-read', 1, 0, 0], ['n2-price-1', 0, 2, 1]] };

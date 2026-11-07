@@ -28,6 +28,8 @@ export interface Report {
   together: { games: number; minutes: number; partner: boolean };
   /** Minutes I listened this week. */
   minutes: number;
+  /** Of them, the mic's games' (声に出す: progress.ts KoeGame). */
+  koe: number;
   /** スピード はしご's measure: the fastest comfortable speed. */
   speed: Speed;
 }
@@ -35,7 +37,7 @@ export interface Report {
 /** The report of `me`'s rows as of `today`, the levels this phone offers (the advice's level nudge and tries) and
  *  whether it offers スピード はしご; my サンド まだ marks on this phone. */
 export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, levels: readonly Level[], ladder = false, mada: readonly Mada[] = []): Report {
-  const { mine, others, stories } = gamesOf(rows, me);
+  const { mine, others, stories, koe } = gamesOf(rows, me);
   const answers = answersOf(mine);
   const stats = statsOf(answers, today);
   const due = dueOf(cardsOf(answers, undefined, mada), today).items.length;
@@ -46,9 +48,12 @@ export function reportOf(rows: readonly EventRow[], me: Who, today: LocalDate, l
     recs: recommend({ stats, games: mine, dueItems: due, levels, bank: ENTRIES, speed, ladder }),
     trend: trendOf(mine), recent: recentOf(mine), days: daysPlayed(mine, today),
     together: together(mine, others, today),
-    minutes: Math.round([...mine, ...stories].filter((g) => week.has(g.d)).reduce((s, g) => s + g.ms, 0) / 60_000)
+    minutes: mins([...mine, ...stories, ...koe].filter((g) => week.has(g.d))),
+    koe: mins(koe.filter((g) => week.has(g.d)))
   };
 }
+
+const mins = (gs: readonly { ms: number }[]) => Math.round(gs.reduce((s, g) => s + g.ms, 0) / 60_000);
 
 /** にがて れんしゅう's deck for this report (a recommendation's focus, or every weak spot): picked from the index, dealt
  *  once the picks' levels are loaded. */

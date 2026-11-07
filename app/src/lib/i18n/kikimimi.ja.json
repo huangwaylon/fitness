@@ -190,6 +190,7 @@
   "kiki.prog.trendDelta": "前の5回より {d}",
   "kiki.prog.week": "今週聞いた日",
   "kiki.prog.weekN": "{n}日・{m}分",
+  "kiki.prog.koeMins": "声に出す {m}分",
   "kiki.prog.together": "ふたりで今週",
   "kiki.prog.trophies": "トロフィー",
   "kiki.prog.trophyWeek": "{m}/{d}の週末",
