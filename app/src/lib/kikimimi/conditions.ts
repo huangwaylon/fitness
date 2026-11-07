@@ -12,7 +12,7 @@
 // caller's café, before the phone line) and at the listener for a PA (the platform, after the hall).
 //   A line breaking up (`signal`: a call's line that trails off, "the back wheel's... and"): the phone band, then
 // dropouts (silences, and packet-loss stutters: the 20 ms before repeated, fading), then G.726 at 24 kbps (heavy: 16 kbps,
-// with hiss) for the codec's warble. A bed `under` the speech has no lead-in or tail (a clip keeps its length).
+// with hiss) for the codec's warble.
 // A たちぎき's lines are mixed clean: the game loops the party bed under the whole conversation.
 import { createHash } from 'node:crypto';
 import { seeded } from '#lib/random.ts';
@@ -102,11 +102,10 @@ export function condPlan(c: Cond): CondPlan {
   if (bedOnly && c.bed && c.bed !== c.kind) throw new Error(`kikimimi: ${key}: a bed condition has no other bed`);
   const call = c.kind === 'phone' || c.kind === 'signal' || c.kind === 'voicemail';
   const steps = c.kind === 'phone' ? PHONE[c.level] : c.kind === 'signal' ? SIGNAL[c.level] : c.kind === 'voicemail' ? [ROOM, ...PHONE[c.level]] : c.kind === 'pa' ? HALL[c.level] : [];
-  const lead = bedId && !c.under;
   return {
     key, steps, chime: c.kind === 'pa',
     bed: bedId ? { id: bedId, snr: SNR[c.level], at: call ? 'source' : 'listener' } : null,
-    pre: lead ? 0.5 : 0, post: lead ? 0.35 : 0,
+    pre: bedId ? 0.5 : 0, post: bedId ? 0.35 : 0,
     maxWer: (c.kind === 'signal' ? SIGNAL_MAX_WER : COND_MAX_WER)[c.level]
   };
 }
