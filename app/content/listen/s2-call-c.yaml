@@ -1,13 +1,14 @@
 # ようじ でんわ S2 もり (c): the calls of wave 2b's もり units (docs/curriculum-wave2.md §3.1, §3.2: one per unit, its
 # チェック from recipe v2), each with one complication: a wedding weekend whose rehearsal dinner moves (ev-wedding),
-# a dinner booking that grows to six and moves later (fd-dinner), a clinic reading the wrong chart (hl-doctor).
+# a dinner booking that grows to six and moves later (fd-dinner), a clinic reading the wrong chart (hl-doctor), a
+# repair visit pushed a day by a part on back order (hm-repair).
 # Unvoiced: batch A4.
 schema: 1
 unit: s2-call-c
 game: call
 stage: 3
 track: life
-seeds: [14, 15, 18, 48, 50, 54, 55]
+seeds: [14, 15, 18, 25, 48, 50, 54, 55]
 features: { primary: self-repair, review: numbers }
 cando: "電話で 予定や 用件の 変更と 条件を 聞き取って メモできる"
 status: draft
@@ -87,3 +88,28 @@ items:
           - { ask: "次の 診察は？", options: ["木曜 9:15", "木曜 9:50", "火曜 9:15"], answer: 0, cja: ["木曜の9時15分", "木曜の9時50分", "火曜の9時15分"] }
     note: "wrong chart の あとで 日数と 薬局が 変わる"
     tags: { seed: 15, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, stress, numbers] }
+
+  - kind: call
+    id: call-dryer-window
+    ask: "修理会社から 電話。メモしよう"
+    ctx: "乾燥機の修理を頼んだ会社から電話です"
+    scene: living
+    channel: phone
+    lines:
+      - { who: tammy, en: "Hi, this is Tammy from Fix-It Appliance, calling about your dryer. We've got you down for Thursday, between eight and noon.", tts: "Hi, this is Tammy from Fix-It Appliance, callin' about yer dryer. We've got ya down fer Thursday, between eight an' noon.", ja: "もしもし、フィックスイット家電のタミーです。乾燥機の件でお電話しました。木曜の8時から12時の間で承っています。" }
+      - { who: me, en: "Okay. Can you narrow that down at all?", ja: "わかりました。もう少し絞れませんか？" }
+      - { who: tammy, en: "Sorry, that's the window. But I'll have him text you when he's on his way. And just so you know, the visit's eighty-five, but it goes toward the repair.", tts: "Sorry, that's the window. But I'll have 'im text ya when 'e's on 'is way. An' just so ya know, the visit's eighty-five, but it goes toward the repair.", ja: "すみません、その時間帯になります。でも、向かうときに本人からメッセージを送らせます。それと、出張費は85ドルですが、修理代に充てられます。" }
+      - { who: me, en: "Got it. Do I need to be home?", ja: "わかりました。家にいる必要はありますか？" }
+      - { who: tammy, en: "Someone over eighteen has to be there, yeah.", ja: "はい、18歳以上の方がいらっしゃる必要があります。" }
+      - { who: tammy, en: "Oh, hang on. I'm seeing the part's on back order, so it won't be Thursday. Let's make it Friday, same window.", tts: "Oh, hang on. I'm seein' the part's on back order, so it won't be Thursday. Let's make it Friday, same window.", ja: "あ、少々お待ちください。部品が取り寄せ中なので、木曜は無理ですね。金曜の同じ時間帯にしましょう。", repair: true }
+      - { who: me, en: "Friday, eight to noon. That works.", ja: "金曜の8時から12時ですね。大丈夫です。" }
+    half: [0, 0, 0, 0, 1, 1, 1]
+    memo:
+      - why: "最初は木曜だったが、部品が取り寄せ中（on back order）で金曜の同じ時間帯（8時〜12時）に変わった。出張費85ドルは修理代に充てられる。18歳以上の人が家にいる。"
+        slots:
+          - { ask: "何曜日？", options: ["木曜", "金曜", "土曜"], answer: 1, cja: ["木曜日", "金曜日", "土曜日"] }
+          - { ask: "時間帯は？", options: ["8時〜12時", "8時〜10時", "12時〜4時"], answer: 0, cja: ["8時から12時", "8時から10時", "12時から4時"] }
+          - { ask: "出張費は？", options: ["85ドル（修理代に 込み）", "85ドル（修理代と 別）", "無料"], answer: 0, cja: ["85ドルで、修理代に充てられる", "85ドルで、修理代とは別", "無料"] }
+          - { ask: "家に いるのは？", options: ["18歳 以上の 人", "本人だけ", "誰も いなくて いい"], answer: 0, cja: ["18歳以上の人", "本人だけ", "誰もいなくていい"] }
+    note: "on back order の あとで 曜日が 変わる"
+    tags: { seed: 25, register: service, pragmatic: literal, conditions: [phone], features: [self-repair, h-drop, numbers] }
