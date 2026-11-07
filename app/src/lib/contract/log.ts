@@ -17,6 +17,8 @@ export const LOG_ACTIONS = ['health', 'ingest', 'event', 'events', 'snapshot', '
 export const LOG_STATUS = ['ok', 'unauthorized', 'forbidden', 'bad_request', 'too_large', 'busy', 'unavailable', 'offline', 'http', 'json', 'none'] as const;
 /** The app's routes (their first segment). */
 export const LOG_ROUTES = ['/', '/pair', '/tent', '/shop', '/museum', '/jar', '/editor', '/dev', '/world3d', 'other'] as const;
+/** The island's sheets, as `perf.sheet` names them (ui-state/sheetTiming.ts). */
+const LOG_SHEETS = ['food', 'health', 'travel', 'wedding', 'hiking', 'kikimimi', 'panel', 'zukan', 'settings', 'other'] as const;
 const EV_TYPES = [...EVENT_TYPES, 'other'] as const;
 
 /** A field's kind: `n` a number (rounded to 0.1, within ±1e7), `b` a boolean, `t` a token, a closed set (an array),
@@ -37,6 +39,10 @@ export const LOG_EVENTS = {
   "app.show": { src: 'c', f: { awayS: 'n', route: LOG_ROUTES } },
   "app.reload": { src: 'c', f: { why: ['update', 'chunk', 'stale', 'other'] } },
   "perf.frames": { src: 'c', f: { p50: 'n', p95: 'n', fps: 'n', long: 'n', drawFps: 'n', hz: 'n', mode: ['3d', 'none'], when: ['ready', 'show'] } },
+  // a sheet's opening (ui-state/sheetTiming.ts), ms from the tap: its chunk in and the dialog shown (`chunk`), the last
+  // change inside it (`content`), its open animation's end (`anim`); the longest frame in that time (`long`) and those
+  // over 33 ms (`slow`); its first opening this load, or a kept one shown again (`kept`). Every first, a share of the rest
+  "perf.sheet": { src: 'c', f: { sheet: LOG_SHEETS, first: 'b', kept: 'b', chunk: 'n', content: 'n', anim: 'n', long: 'n', slow: 'n' } },
   "js.error": { src: 'c', f: { kind: ['error', 'rejection'], msg: 'msg', stack: 'stack', src: 't', n: 'n', leaving: 'b', route: LOG_ROUTES } },
   "api.fail": { src: 'c', f: API },
   "api.ok": { src: 'c', f: API },

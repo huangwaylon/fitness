@@ -205,7 +205,7 @@ describe('privacy: nothing of theirs in a stored row', () => {
     const s = new StoreCore({ sql: memSql().sql, tx: (fn) => fn(), keys, now: () => now, notify: () => {} });
     const roleOf = (k: unknown) => (typeof k === 'string' ? keyOwner(k, keys) : null);
     // every registry event, every field (and unknown ones) filled with them
-    const all = ['app.open', 'app.ready', 'app.show', 'app.reload', 'perf.frames', 'js.error', 'api.fail', 'api.ok', 'auth.lost', 'sync.fail', 'queue.retry', 'queue.drop', 'ws.open', 'ws.close', 'ws.park', 'gl.lost', 'chunk.fail', 'storage.fail', 'use', 'log.drop'];
+    const all = ['app.open', 'app.ready', 'app.show', 'app.reload', 'perf.frames', 'perf.sheet', 'js.error', 'api.fail', 'api.ok', 'auth.lost', 'sync.fail', 'queue.retry', 'queue.drop', 'ws.open', 'ws.close', 'ws.park', 'gl.lost', 'chunk.fail', 'storage.fail', 'use', 'log.drop'];
     const fill = (e: string) => ({ msg: loud, stack: `f@https://x/pair#key=${KEY_A}:1:2\n${loud}`, src: loud, kind: loud, route: `/pair#key=${KEY_A}`, err: loud, action: loud, type: loud, why: loud, name: 'Umeko', weight: 68.4, note: 'Chicken salad', [`sheet:${KEY_A}`]: 1, 'sheet:鮭の塩焼き': 1, [`ev:${e}`]: 1 });
     for (let i = 0; i < all.length; i += 10) log.ingestText(batch(all.slice(i, i + 10).map((e) => ({ ...ev(e, fill(e), 3), r: KEY_A })), { build: loud, os: loud, s: 'sess0001' }));
     // requests that fail with those in them: an ingest out of bounds (its warnings name values), broken JSON with the
